@@ -5628,8 +5628,7 @@ NOTE: The xf86DrvMsg() functions cannot be used from the Probe.
                     /* add screen to entity */
                 }
              }
-             if (numUsed > 0)
-                 xfree(usedChips);
+             xfree(usedChips);
          }
 
      #ifdef HAS_ISA_DEVS
@@ -5660,8 +5659,7 @@ NOTE: The xf86DrvMsg() functions cannot be used from the Probe.
                  foundScreen = TRUE;
              }
          }
-         if (numUsed > 0)
-             xfree(usedChips);
+         xfree(usedChips);
      #endif /* HAS_ISA_DEVS */
 
          xfree(devSections);
@@ -6307,4 +6305,4 @@ eScreen() function.
      Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.34 2000/12/01 19:37:20 dawes Exp $
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/DESIGN,v 1.30 2000/12/01 19:47:44 dawes Exp $
