@@ -1,40 +1,40 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dga.c,v 1.11 2002/01/25 21:56:06 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/riva/riva_dga.c $ */
 
-#include "nv_local.h"
-#include "nv_include.h"
-#include "nv_type.h"
-#include "nv_proto.h"
+#include "riva_local.h"
+#include "riva_include.h"
+#include "riva_type.h"
+#include "riva_proto.h"
 #include "xaalocal.h"
 #include "dgaproc.h"
 
 
-static Bool NV_OpenFramebuffer(ScrnInfoPtr, char **, unsigned char **, 
+static Bool Riva_OpenFramebuffer(ScrnInfoPtr, char **, unsigned char **, 
 					int *, int *, int *);
-static Bool NV_SetMode(ScrnInfoPtr, DGAModePtr);
-static int  NV_GetViewport(ScrnInfoPtr);
-static void NV_SetViewport(ScrnInfoPtr, int, int, int);
-static void NV_FillRect(ScrnInfoPtr, int, int, int, int, unsigned long);
-static void NV_BlitRect(ScrnInfoPtr, int, int, int, int, int, int);
-static void NV_BlitTransRect(ScrnInfoPtr, int, int, int, int, int, int, 
+static Bool Riva_SetMode(ScrnInfoPtr, DGAModePtr);
+static int  Riva_GetViewport(ScrnInfoPtr);
+static void Riva_SetViewport(ScrnInfoPtr, int, int, int);
+static void Riva_FillRect(ScrnInfoPtr, int, int, int, int, unsigned long);
+static void Riva_BlitRect(ScrnInfoPtr, int, int, int, int, int, int);
+static void Riva_BlitTransRect(ScrnInfoPtr, int, int, int, int, int, int, 
 					unsigned long);
 
 static
-DGAFunctionRec NV_DGAFuncs = {
-   NV_OpenFramebuffer,
+DGAFunctionRec Riva_DGAFuncs = {
+   Riva_OpenFramebuffer,
    NULL,
-   NV_SetMode,
-   NV_SetViewport,
-   NV_GetViewport,
-   NVSync,
-   NV_FillRect,
-   NV_BlitRect,
-   NV_BlitTransRect
+   Riva_SetMode,
+   Riva_SetViewport,
+   Riva_GetViewport,
+   RivaSync,
+   Riva_FillRect,
+   Riva_BlitRect,
+   Riva_BlitTransRect
 };
 
 
 
 static DGAModePtr
-NVSetupDGAMode(
+RivaSetupDGAMode(
    ScrnInfoPtr pScrn,
    DGAModePtr modes,
    int *num,
@@ -48,7 +48,7 @@ NVSetupDGAMode(
    short visualClass
 ){
    DisplayModePtr firstMode, pMode;
-   NVPtr pNv = NVPTR(pScrn);
+   RivaPtr pRiva = RivaPTR(pScrn);
    DGAModePtr mode, newmodes;
    int size, pitch, Bpp = bitsPerPixel >> 3;
 
@@ -62,7 +62,7 @@ SECOND_PASS:
 	size = pitch * Bpp * pMode->VDisplay;
 
 	if((!secondPitch || (pitch != secondPitch)) &&
-		(size <= pNv->ScratchBufferStart)) {
+		(size <= pRiva->FbUsableSize)) {
 
 	    if(secondPitch)
 		pitch = secondPitch; 
@@ -78,7 +78,7 @@ SECOND_PASS:
 
 	    if(pixmap)
 		mode->flags |= DGA_PIXMAP_AVAILABLE;
-	    if(!pNv->NoAccel)
+	    if(!pRiva->NoAccel)
 		mode->flags |= DGA_FILL_RECT | DGA_BLIT_RECT;
 	    if(pMode->Flags & V_DBLSCAN)
 		mode->flags |= DGA_DOUBLESCAN;
@@ -97,11 +97,10 @@ SECOND_PASS:
 	    mode->yViewportStep = 1;
 	    mode->viewportFlags = DGA_FLIP_RETRACE;
 	    mode->offset = 0;
-	    mode->address = pNv->FbStart;
+	    mode->address = pRiva->FbStart;
 	    mode->bytesPerScanline = pitch * Bpp;
 	    mode->imageWidth = pitch;
-	    mode->imageHeight =  pNv->ScratchBufferStart / 
-                                 mode->bytesPerScanline; 
+	    mode->imageHeight =  pRiva->FbUsableSize / mode->bytesPerScanline; 
 	    mode->pixmapWidth = mode->imageWidth;
 	    mode->pixmapHeight = mode->imageHeight;
 	    mode->maxViewportX = mode->imageWidth - mode->viewportWidth;
@@ -124,41 +123,35 @@ SECOND_PASS:
 
 
 Bool
-NVDGAInit(ScreenPtr pScreen)
+RivaDGAInit(ScreenPtr pScreen)
 {   
    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-   NVPtr pNv = NVPTR(pScrn);
+   RivaPtr pRiva = RivaPTR(pScrn);
    DGAModePtr modes = NULL;
    int num = 0;
 
    /* 8 */
-   modes = NVSetupDGAMode (pScrn, modes, &num, 8, 8, 
+   modes = RivaSetupDGAMode (pScrn, modes, &num, 8, 8, 
 		(pScrn->bitsPerPixel == 8),
 		(pScrn->bitsPerPixel != 8) ? 0 : pScrn->displayWidth,
 		0, 0, 0, PseudoColor);
 
    /* 15 */
-   modes = NVSetupDGAMode (pScrn, modes, &num, 16, 15, 
+   modes = RivaSetupDGAMode (pScrn, modes, &num, 16, 15, 
 		(pScrn->bitsPerPixel == 16),
 		(pScrn->depth != 15) ? 0 : pScrn->displayWidth,
 		0x7c00, 0x03e0, 0x001f, TrueColor);
 
-   /* 16 */
-   modes = NVSetupDGAMode (pScrn, modes, &num, 16, 16, 
-		(pScrn->bitsPerPixel == 16),
-		(pScrn->depth != 16) ? 0 : pScrn->displayWidth,
-		0xf800, 0x07e0, 0x001f, TrueColor);
-
    /* 32 */
-   modes = NVSetupDGAMode (pScrn, modes, &num, 32, 24, 
+   modes = RivaSetupDGAMode (pScrn, modes, &num, 32, 24, 
 		(pScrn->bitsPerPixel == 32),
 		(pScrn->bitsPerPixel != 32) ? 0 : pScrn->displayWidth,
 		0xff0000, 0x00ff00, 0x0000ff, TrueColor);
 
-   pNv->numDGAModes = num;
-   pNv->DGAModes = modes;
+   pRiva->numDGAModes = num;
+   pRiva->DGAModes = modes;
 
-   return DGAInit(pScreen, &NV_DGAFuncs, modes, num);  
+   return DGAInit(pScreen, &Riva_DGAFuncs, modes, num);  
 }
 
 
@@ -175,39 +168,39 @@ BitsSet(unsigned long data)
 }
 
 static Bool
-NV_SetMode(
+Riva_SetMode(
    ScrnInfoPtr pScrn,
    DGAModePtr pMode
 ){
-   static NVFBLayout SavedLayouts[MAXSCREENS];
+   static RivaFBLayout SavedLayouts[MAXSCREENS];
    int index = pScrn->pScreen->myNum;
 
-   NVPtr pNv = NVPTR(pScrn);
+   RivaPtr pRiva = RivaPTR(pScrn);
 
    if(!pMode) { /* restore the original mode */
-      if(pNv->DGAactive)
-        memcpy(&pNv->CurrentLayout, &SavedLayouts[index], sizeof(NVFBLayout));
+      if(pRiva->DGAactive)
+        memcpy(&pRiva->CurrentLayout, &SavedLayouts[index], sizeof(RivaFBLayout));
                 
-      pScrn->currentMode = pNv->CurrentLayout.mode;
-      NVSwitchMode(index, pScrn->currentMode, 0);
-      NVAdjustFrame(index, pScrn->frameX0, pScrn->frameY0, 0);
-      pNv->DGAactive = FALSE;
+      pScrn->currentMode = pRiva->CurrentLayout.mode;
+      RivaSwitchMode(index, pScrn->currentMode, 0);
+      RivaAdjustFrame(index, pScrn->frameX0, pScrn->frameY0, 0);
+      pRiva->DGAactive = FALSE;
    } else {
-      if(!pNv->DGAactive) {  /* save the old parameters */
-	memcpy(&SavedLayouts[index], &pNv->CurrentLayout, sizeof(NVFBLayout));
-	pNv->DGAactive = TRUE;
+      if(!pRiva->DGAactive) {  /* save the old parameters */
+	memcpy(&SavedLayouts[index], &pRiva->CurrentLayout, sizeof(RivaFBLayout));
+	pRiva->DGAactive = TRUE;
       }
 
       /* update CurrentLayout */
-      pNv->CurrentLayout.bitsPerPixel = pMode->bitsPerPixel;
-      pNv->CurrentLayout.depth = pMode->depth;
-      pNv->CurrentLayout.displayWidth = pMode->bytesPerScanline / 
+      pRiva->CurrentLayout.bitsPerPixel = pMode->bitsPerPixel;
+      pRiva->CurrentLayout.depth = pMode->depth;
+      pRiva->CurrentLayout.displayWidth = pMode->bytesPerScanline / 
                               (pMode->bitsPerPixel >> 3);
-      pNv->CurrentLayout.weight.red = BitsSet(pMode->red_mask);
-      pNv->CurrentLayout.weight.green = BitsSet(pMode->green_mask);
-      pNv->CurrentLayout.weight.blue = BitsSet(pMode->blue_mask);
-      /* NVModeInit() will set the mode field */
-      NVSwitchMode(index, pMode->mode, 0);
+      pRiva->CurrentLayout.weight.red = BitsSet(pMode->red_mask);
+      pRiva->CurrentLayout.weight.green = BitsSet(pMode->green_mask);
+      pRiva->CurrentLayout.weight.blue = BitsSet(pMode->blue_mask);
+      /* RivaModeInit() will set the mode field */
+      RivaSwitchMode(index, pMode->mode, 0);
    }
    
    return TRUE;
@@ -216,83 +209,83 @@ NV_SetMode(
 
 
 static int  
-NV_GetViewport(
+Riva_GetViewport(
   ScrnInfoPtr pScrn
 ){
-    NVPtr pNv = NVPTR(pScrn);
+    RivaPtr pRiva = RivaPTR(pScrn);
 
-    return pNv->DGAViewportStatus;
+    return pRiva->DGAViewportStatus;
 }
 
 static void 
-NV_SetViewport(
+Riva_SetViewport(
    ScrnInfoPtr pScrn, 
    int x, int y, 
    int flags
 ){
-   NVPtr pNv = NVPTR(pScrn);
+   RivaPtr pRiva = RivaPTR(pScrn);
 
-   NVAdjustFrame(pScrn->pScreen->myNum, x, y, flags);
+   RivaAdjustFrame(pScrn->pScreen->myNum, x, y, flags);
 
-   while(VGA_RD08(pNv->PCIO, 0x3da) & 0x08);
-   while(!(VGA_RD08(pNv->PCIO, 0x3da) & 0x08));
+   while(VGA_RD08(pRiva->riva.PCIO, 0x3da) & 0x08);
+   while(!(VGA_RD08(pRiva->riva.PCIO, 0x3da) & 0x08));
 
-   pNv->DGAViewportStatus = 0;  
+   pRiva->DGAViewportStatus = 0;  
 }
 
 static void 
-NV_FillRect (
+Riva_FillRect (
    ScrnInfoPtr pScrn, 
    int x, int y, int w, int h, 
    unsigned long color
 ){
-    NVPtr pNv = NVPTR(pScrn);
+    RivaPtr pRiva = RivaPTR(pScrn);
 
-    if(!pNv->AccelInfoRec) return;
+    if(!pRiva->AccelInfoRec) return;
 
-    (*pNv->AccelInfoRec->SetupForSolidFill)(pScrn, color, GXcopy, ~0);
-    (*pNv->AccelInfoRec->SubsequentSolidFillRect)(pScrn, x, y, w, h);
+    (*pRiva->AccelInfoRec->SetupForSolidFill)(pScrn, color, GXcopy, ~0);
+    (*pRiva->AccelInfoRec->SubsequentSolidFillRect)(pScrn, x, y, w, h);
 
-    SET_SYNC_FLAG(pNv->AccelInfoRec);
+    SET_SYNC_FLAG(pRiva->AccelInfoRec);
 }
 
 static void 
-NV_BlitRect(
+Riva_BlitRect(
    ScrnInfoPtr pScrn, 
    int srcx, int srcy, 
    int w, int h, 
    int dstx, int dsty
 ){
-    NVPtr pNv = NVPTR(pScrn);
+    RivaPtr pRiva = RivaPTR(pScrn);
     int xdir = ((srcx < dstx) && (srcy == dsty)) ? -1 : 1;
     int ydir = (srcy < dsty) ? -1 : 1;
 
-    if(!pNv->AccelInfoRec) return;
+    if(!pRiva->AccelInfoRec) return;
 
-    (*pNv->AccelInfoRec->SetupForScreenToScreenCopy)(
+    (*pRiva->AccelInfoRec->SetupForScreenToScreenCopy)(
 		pScrn, xdir, ydir, GXcopy, ~0, -1);
 
-    (*pNv->AccelInfoRec->SubsequentScreenToScreenCopy)(
+    (*pRiva->AccelInfoRec->SubsequentScreenToScreenCopy)(
 		pScrn, srcx, srcy, dstx, dsty, w, h);
 
-    SET_SYNC_FLAG(pNv->AccelInfoRec);
+    SET_SYNC_FLAG(pRiva->AccelInfoRec);
 }
 
 
 static void 
-NV_BlitTransRect(
+Riva_BlitTransRect(
    ScrnInfoPtr pScrn, 
    int srcx, int srcy, 
    int w, int h, 
    int dstx, int dsty,
    unsigned long color
 ){
-   /* not implemented */
+   /* not implemented... yet */
 }
 
 
 static Bool 
-NV_OpenFramebuffer(
+Riva_OpenFramebuffer(
    ScrnInfoPtr pScrn, 
    char **name,
    unsigned char **mem,
@@ -300,11 +293,11 @@ NV_OpenFramebuffer(
    int *offset,
    int *flags
 ){
-    NVPtr pNv = NVPTR(pScrn);
+    RivaPtr pRiva = RivaPTR(pScrn);
 
     *name = NULL; 		/* no special device */
-    *mem = (unsigned char*)pNv->FbAddress;
-    *size = pNv->FbMapSize;
+    *mem = (unsigned char*)pRiva->FbAddress;
+    *size = pRiva->FbMapSize;
     *offset = 0;
     *flags = DGA_NEED_ROOT;
 
