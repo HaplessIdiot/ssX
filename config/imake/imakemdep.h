@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.59 2002/05/31 16:31:20 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.61tsi Exp $ */
 
 
 /* 
@@ -306,6 +306,10 @@ in this Software without prior written authorization from The Open Group.
 #else
 #define DEFAULT_CPP "/usr/X11R6/bin/cpp"
 #endif
+#endif
+#if defined(__GNUC__) && !defined(DEFAULT_CC)
+#define DEFAULT_CC "gcc"
+#define USE_CC_E
 #endif
 
 #endif /* !defined (CROSSCOMPILE) || defined (CROSSCOMPILE_CPP) */
