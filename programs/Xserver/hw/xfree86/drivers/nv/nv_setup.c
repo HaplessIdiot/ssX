@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.29 2003/04/04 00:18:50 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.30 2003/05/04 01:20:52 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -222,10 +222,6 @@ NVProbeDDC (ScrnInfoPtr pScrn, int bus)
     xf86MonPtr MonInfo = NULL;
 
     if(!pNv->I2C) return NULL;
-
-#if defined(__powerpc__) 
-    return NULL;
-#endif
 
     pNv->DDCBase = bus ? 0x36 : 0x3e;
 
