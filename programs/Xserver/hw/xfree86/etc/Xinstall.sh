@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.64 2003/12/11 21:08:18 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.65 2003/12/19 04:26:36 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -506,7 +506,7 @@ FindDistName()
 	CYGWIN*)
 		case "$OsArch" in
 		i*86)
-			DistName="Cygwin-ix86"
+			DistName="Cygwin"
 			;;
 		*)
 			Message="Cygwin binaries are only available for ix86 platforms"
