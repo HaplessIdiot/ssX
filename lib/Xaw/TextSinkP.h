@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextSinkP.h,v 1.5 1998/10/03 08:42:27 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSinkP.h,v 1.6 1999/06/06 08:48:17 dawes Exp $ */
 
 #ifndef _XawTextSinkP_h
 #define _XawTextSinkP_h
@@ -99,6 +99,9 @@ typedef struct _TextSinkClassPart {
     _XawSinkMaxHeightProc MaxHeight;
     _XawSinkSetTabsProc	SetTabs;
     _XawSinkGetCursorBoundsProc GetCursorBounds;
+#ifndef OLDXAW
+    XtPointer extension;
+#endif
 } TextSinkClassPart;
 
 /* Full class record */
@@ -123,7 +126,7 @@ typedef struct {
 #ifndef OLDXAW
     /* more resources */
     Pixel cursor_color;
-    char pad[16];	/* for future use and keep binary compatability */
+    XtPointer pad[4];	/* for future use and keep binary compatability */
 #endif
 } TextSinkPart;
 

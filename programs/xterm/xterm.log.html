@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.29 1999/06/12 15:37:20 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.30 1999/06/13 13:48:00 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_108">Patch #108 - 1999/6/19 - XFree86 3.9Ps</A>
 <LI><A HREF="#xterm_107">Patch #107 - 1999/6/12 - XFree86 3.9Pq</A>
 <LI><A HREF="#xterm_106">Patch #106 - 1999/6/9 - XFree86 3.9Pq</A>
 <LI><A HREF="#xterm_105">Patch #105 - 1999/6/5 - XFree86 3.9Pp</A>
@@ -150,6 +151,27 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_108">Patch #108 - 1999/6/19 - XFree86 3.9Ps</A></H1>
+<ul>
+	<li>add a range-check to LastTextCol(), to guard against indexing
+	  before the beginning of the scrollback buffer.  This appears to
+	  happen with certain fonts under X11R5 (reported by Stephane Chazelas
+	  &lt;Stephane_Chazelas@Raytheon.com&gt;).
+
+	<li>implement resource <em>boldMode</em>, to allow disabling the
+	  simulation of bold fonts when the bold and normal fonts are not
+	  different (requested by Will Day &lt;willday@rom.oit.gatech.edu&gt;).
+
+	<li>change the atom "UTF-8" to "UTF8_STRING", and fixes a few bugs in
+	  the UTF-8 selection (patch by Juliusz Chroboczek).
+
+	<li>correct logic of binary-search in keysym2ucs.c (patch by Markus
+	  Kuhn).
+
+	<li>add special interpretation of keysym codes above 0x1000000 as
+	  the corresponding UCS value plus 0x1000000 (patch by Markus Kuhn).
+</ul>
 
 <H1><A NAME="xterm_107">Patch #107 - 1999/6/12 - XFree86 3.9Pq</A></H1>
 <ul>

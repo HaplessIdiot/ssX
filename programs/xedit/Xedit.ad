@@ -1,4 +1,4 @@
-! $XFree86: xc/programs/xedit/Xedit.ad,v 1.12 1999/05/30 03:03:36 dawes Exp $
+! $XFree86: xc/programs/xedit/Xedit.ad,v 1.13 1999/06/06 08:49:14 dawes Exp $
 
 *geometry:				590x440
 *input:					TRUE
@@ -256,8 +256,6 @@ c<Key>G:	cancel-find-file()\n\
 *ispell*Label.right:			chainLeft
 *ispell*Label.top:			chainTop
 *ispell*Label.bottom:			chainTop
-*ispell*mispelled.left:			chainLeft
-*ispell*mispelled.right:		chainRight
 *ispell*mispelled.label:		Misspelled word:
 *ispell*mispelled.top:			chainTop
 *ispell*mispelled.bottom:		chainTop

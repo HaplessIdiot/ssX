@@ -1,5 +1,5 @@
 .\" $XConsortium: xterm.man /main/85 1996/12/09 17:10:53 kaleb $
-.\" $XFree86: xc/programs/xterm/xterm.man,v 3.44 1999/06/06 08:49:19 dawes Exp $
+.\" $XFree86: xc/programs/xterm/xterm.man,v 3.45 1999/06/13 13:48:01 dawes Exp $
 .\"
 .\"
 .\" Copyright 1999 by Thomas E. Dickey <dickey@clark.net>
@@ -881,6 +881,13 @@ The default is ``true.''
 .TP 8
 .B "boldFont (\fPclass\fB BoldFont)"
 Specifies the name of the bold font to use instead of overstriking.
+.TP 8
+.B "boldMode (\fPclass\fB BoldMode)"
+This specifies whether or not text with the bold attribute should be
+overstruck to simulate bold fonts if the resolved bold font is the
+same as the normal font.
+It may be desirable to disable bold fonts when color is being
+used for the bold attribute.
 .TP 8
 .B "c132 (\fPclass\fB C132)"
 Specifies whether or not the VT102 DECCOLM escape sequence should be honored.

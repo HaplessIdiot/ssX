@@ -26,7 +26,7 @@
 .\"
 .\" Author: Paulo César Pereira de Andrade
 .\"
-.\" $XFree86: xc/lib/Xaw/Xaw.man,v 1.1 1999/05/09 10:51:43 dawes Exp $
+.\" $XFree86: xc/lib/Xaw/Xaw.man,v 1.2 1999/05/16 10:12:51 dawes Exp $
 .\"
 .de TQ
 .br
@@ -292,6 +292,16 @@ respectively. Example:
 .br
 .I join-style round
 .TP 8
+.B image \fP{pixmap-spec},xs,ys,[xe,ye]
+This function is implemented as a way to quickly compose complex decorations in
+widgets. \fIPixmap-spec\fP is as defined in the \fIPIXMAPS\fP section of this
+manual page, \fIxs\fP and \fIys\fP are the coodinates from where start copying
+the pixmap, \fIxe\fP and \fIye\fP are optional (defaults to xs + pixmap.width
+and ys + pixmap.height respectively). If the pixmap has a mask, the copy is
+masked accordingly. Example:
+.br
+.I image pixmap.xpm,0,0,20,20
+.TP 8
 .B line \fPx1,y1,x2,y2
 .TQ
 .B draw-line \fPx1,y1,x2,y2
@@ -531,14 +541,15 @@ parent of the smeBSBObject.
 
 .SH RESTRICTIONS
 .B Xaw
-is actually being actively worked. Programs intending  to be compatible with
-future releases of the  Xaw library should  use only the  public interfaces.
-While  widget  subclassification  is  not a bad, and  some  times encouraged
-programming practice,  programs  that  access  private data  structures  are
-unlikely to be binary compatible  with newer releases, in  the current stage
-of the
+is actually being actively worked. Programs intending to be fully compatible
+with future  releases  of  the  Xaw  library  should  use  only  the  public
+interfaces. While  widget subclassification  is not  a bad,  and some  times
+encouraged  programming   practice,  programs   that  access   private  data
+structures may have problems  with newer releases,  in the current  stage of
+the
 .I Xaw
-development.
+development. Several efforts are being done to avoid  such problems, and, at
+least, guarantee that newer releases will be source and binary compatible.
 
 .SH AUTHORS
 The XFree86 additions and modifications to \fIXaw\fR,  were written by Paulo

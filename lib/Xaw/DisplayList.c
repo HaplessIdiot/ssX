@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/lib/Xaw/DisplayList.c,v 3.12 1999/05/23 06:33:26 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/DisplayList.c,v 3.13 1999/06/06 08:47:55 dawes Exp $ */
 
 #include <ctype.h>
 #include <string.h>
@@ -536,6 +536,12 @@ typedef struct _XawDLCopyArgs {
   int plane;
 } XawDLCopyArgs;
 
+typedef struct _XawDLImageArgs {
+  XawPixmap *pixmap;
+  XawDLPosition pos[4];
+  int depth;
+} XawDLImageArgs;
+
 #define X_ARG(x) (Position)(((x).denom != 0) ?				      \
 		  ((float)XtWidth(w) * ((float)(x).pos / (float)(x).denom)) : \
 		  ((x).high ? XtWidth(w) - (x).pos : (x).pos))
@@ -581,6 +587,7 @@ typedef struct _XawDLCopyArgs {
 #define CLIPRECTS	36
 #define COPYAREA	37
 #define COPYPLANE	38
+#define IMAGE		39
 
 static void
 Dl1Point(Widget w, XtPointer args, XtPointer data, int id)
@@ -1432,6 +1439,71 @@ DlCopyPlane(Widget w, XtPointer args, XtPointer data,
   DlCopy(w, args, data, True);
 }
 
+/*ARGSUSED*/
+/* Note:
+ *	  This function is destructive if you set the ts_x_origin, ts_y_origin,
+ *	and/or clip-mask. It is meant to be the only function used in a display
+ *	list. If you need to use other functions (and those values), be sure to
+ *	set them after calling this function.
+ */
+static void
+DlImage(Widget w, XtPointer args, XtPointer data, XEvent *event, Region region)
+{
+  XawDLImageArgs *image = (XawDLImageArgs *)args;
+  XawXlibData *xdata = (XawXlibData *)data;
+  int x, y, xs, ys, xe, ye, width, height;
+  Display *display;
+  Window window;
+
+  width = image->pixmap->width;
+  height = image->pixmap->height;
+  xs = X_ARG(image->pos[0]);
+  ys = Y_ARG(image->pos[1]);
+  xe = X_ARG(image->pos[2]);
+  ye = Y_ARG(image->pos[3]);
+
+  if (xe <= 0)
+    xe = xs + width;
+  if (ye <= 0)
+    ye = ys + height;
+
+  if (!XtIsWidget(w))
+    {
+      Position xpad, ypad;
+
+      xpad = XtX(w) + XtBorderWidth(w);
+      ypad = XtY(w) + XtBorderWidth(w);
+      xe += xpad;
+      ye += ypad;
+      xe += xpad;
+      ye += ypad;
+      display = XtDisplayOfObject(w);
+      window = XtWindowOfObject(w);
+    }
+  else
+    {
+      display = XtDisplay(w);
+      window = XtWindow(w);
+    }
+
+  for (y = ys; y < ye; y += height)
+    for (x = xs; x < xe; x += width)
+      {
+	XSetClipOrigin(display, xdata->gc, x, y);
+	if (image->pixmap->mask)
+	  XSetClipMask(display, xdata->gc, image->pixmap->mask);
+	if (image->depth == 1)
+	  XCopyPlane(display, image->pixmap->pixmap, window, xdata->gc,
+		     0, 0, XawMin(width, xe - x), XawMin(height, ye - y),
+		     x, y, 1L);
+	else
+	  XCopyArea(display, image->pixmap->pixmap, window, xdata->gc, 0, 0,
+		     XawMin(width, xe - x), XawMin(height, ye - y), x, y);
+      }
+
+  XSetClipMask(display, xdata->gc, None);
+}
+
 typedef struct _Dl_init Dl_init;
 struct _Dl_init {
   String name;
@@ -1474,6 +1546,7 @@ static Dl_init dl_init[] =
   {"font",		DlFont,			FONT},
   {"foreground",	DlForeground,		GCFG},
   {"function",		DlFunction,		FUNCTION},
+  {"image",		DlImage,		IMAGE},
   {"join-style",	DlJoinStyle,		JOINSTYLE},
   {"line",		DlLine,			LINE},
   {"line-style",	DlLineStyle,		LINESTYLE},
@@ -1914,6 +1987,29 @@ _Xaw_Xlib_ArgsInitProc(String proc_name, String *params, Cardinal *num_params,
 	    }
 	}
       break;
+    case IMAGE:
+      if (*num_params > 2 && *num_params <= 7)
+	{
+	  XawDLImageArgs *args = (XawDLImageArgs *)
+		XtCalloc(1, sizeof(XawDLImageArgs));
+
+	  retval = args;
+	  args->pixmap = XawLoadPixmap(params[0], screen, colormap, depth);
+	  if (args->pixmap == NULL)
+	    {
+	      XtDisplayStringConversionWarning(DisplayOfScreen(screen),
+					       (String)params[0], XtRPixmap);
+	      retval = XAWDL_CONVERT_ERROR;
+	      XtFree((char *)args);
+	    }
+	  else
+	    {
+	      args->depth = depth;
+	      for (i = 1; i < *num_params && i < 5; i++)
+		read_position(params[i], &args->pos[i - 1]);
+	    }
+	}
+      break;
     }
 
   return (retval);
@@ -1971,6 +2067,7 @@ _Xaw_Xlib_ArgsDestructor(Display *display, String proc_name, XtPointer args,
     case CLIPORIGIN:
     case COPYAREA:
     case COPYPLANE:
+    case IMAGE:
       XtFree(args);
       break;
     case DSTRING:

@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/BoxP.h,v 1.7 1998/11/15 04:29:59 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/BoxP.h,v 1.8 1999/06/06 08:47:53 dawes Exp $ */
 
 #ifndef _XawBoxP_h
 #define _XawBoxP_h
@@ -83,7 +83,7 @@ typedef struct {
     XtGeometryMask last_query_mode;
 #ifndef OLDXAW
     XawDisplayList *display_list;
-    char pad[16];	/* for future use and keep binary compatability */
+    XtPointer pad[4];	/* for future use and keep binary compatability */
 #endif
 } BoxPart;
 

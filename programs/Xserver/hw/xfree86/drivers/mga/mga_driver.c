@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.101 1999/06/13 07:11:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.102 1999/06/20 05:23:38 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -205,7 +205,8 @@ typedef enum {
     OPTION_SHADOW_FB,
     OPTION_FBDEV,
     OPTION_COLOR_KEY,
-    OPTION_SET_MCLK
+    OPTION_SET_MCLK,
+    OPTION_OVERCLOCK_MEM
 } MGAOpts;
 
 static OptionInfoRec MGAOptions[] = {
@@ -222,6 +223,7 @@ static OptionInfoRec MGAOptions[] = {
     { OPTION_FBDEV,		"UseFBDev",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_COLOR_KEY,		"ColorKey",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_SET_MCLK,		"SetMclk",	OPTV_FREQ,	{0}, FALSE },
+    { OPTION_OVERCLOCK_MEM,	"OverclockMem",	OPTV_FREQ,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -533,7 +535,7 @@ MGAProbe(DriverPtr drv, int flags)
 	pScrn->FreeScreen	 = MGAFreeScreen;
 	pScrn->ValidMode	 = MGAValidMode;
 	foundScreen = TRUE;
-#ifndef DISALBLE_VGA_IO
+#ifndef DISABLE_VGA_IO
 	xf86ConfigActivePciEntity(pScrn, usedChips[i], MGAPciChipsets, NULL,
 				      NULL, NULL, NULL, NULL);
 #else
@@ -647,6 +649,7 @@ MGAReadBios(ScrnInfoPtr pScrn)
 	    if ( pBios2->StructLen != 0x40 ) {
 		xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 			"Video BIOS info block not detected!\n");
+		pBios2->PinID = 0;
 		return;
 	    }
 	    /* check that the chksum is correct */
@@ -1224,6 +1227,10 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	pMga->FBDev = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
 		"Using framebuffer device\n");
+    }
+    if (xf86ReturnOptValBool(MGAOptions, OPTION_OVERCLOCK_MEM, FALSE)) {
+	pMga->OverclockMem = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Overclocking memory\n");
     }
 
     if (pMga->FBDev) {

@@ -47,7 +47,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xaw/VendorEP.h,v 1.3 1999/06/06 15:35:48 dawes Exp $ */
 
 #ifndef _VendorEP_h
 #define _VendorEP_h
@@ -68,7 +68,7 @@ typedef struct {
     XawImPart	im;
     XawIcPart	ic;
 #ifndef OLDXAW
-    char pad[16];	/* for future use and keep binary compatability */
+    XtPointer pad[4];	/* for future use and keep binary compatability */
 #endif
 } XawVendorShellExtPart;
 

@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/AsciiSinkP.h,v 1.6 1998/10/03 08:41:59 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiSinkP.h,v 1.7 1999/06/06 08:47:51 dawes Exp $ */
 
 #ifndef _XawAsciiSinkP_h
 #define _XawAsciiSinkP_h
@@ -83,7 +83,7 @@ typedef struct {
     XawTextInsertState laststate;
     short cursor_x, cursor_y;	/* Cursor Location. */
 #ifndef OLDXAW
-    char pad[16];	/* for future use and keep binary compatability */
+    XtPointer pad[4];	/* for future use and keep binary compatability */
 #endif
 } AsciiSinkPart;
 

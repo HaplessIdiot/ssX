@@ -1,4 +1,28 @@
 XFree86 3.9Pt (20 June 1999)
+2773. Fix a PM2 lockup problem during GLINTSave, and fix a text mode font
+      corruption problem (#2907, Egbert Eich).
+2772. Xterm patch #108 (#2906, Thomas Dickey).
+2771. Fix a problem with duplicate ShmCompletion events in Xinerama mode
+      (#2905, Mark Vojkovich).
+2770. Add a XDGAKeyEventToXKeyEvent helper function to the DGA client library
+      (#2904, Mark Vojkovich).
+2769. Fix some incorrect XAA GC validation checks (#2903, Mark Vojkovich).
+2768. Fix some XAA caching problems with shared memory pixmaps (#2903,
+      Mark Vojkovich).
+2767. Wait for the fifo to clear out in the mga driver before returning to
+      the client after any cpu->screen color expansion or image writes (#2901,
+      Mark Vojkovich).
+2766. Don't use the BIOS info for the MGA G400 since we don't understand
+      the format (#2901, Mark Vojkovich).
+2765. Fix some MGA bitblit problems when more than 16MB of memory is being
+      used (#2901, Mark Vojkovich).
+2764. Set memory clocks to the bios defaults in the MGA driver, and add an
+      Option "OverclockMem" to allow the previous settings to be used (#2901,
+      Mark Vojkovich).
+2763. Xaw and xedit updates (see lib/Xaw/Changelog) (#2899,
+      Paulo Cesar Pereira de Andrade).
+2762. Ansification and warning elimination in lib/xtrans (#2896,
+      Matthieu Herrb).
 2761. Fix a glint scanline interleave bug introduced by the change in
       device scaning order in the new RAC code (#2890, Jens Owen).
 2760. Fix a dual head Xinerama crash that happens when running the xv program
@@ -14,7 +38,7 @@ XFree86 3.9Pt (20 June 1999)
 2754. Update the TGA driver for the new RAC (#2886, Matt Grossman).
 2753. Fix a fatal event problem with DGA 2.0 (#2884, Mark Vojkovich).
 2752. Fix some macros in xf86str.h that conflict with system headers on some
-      platforms (#2883, 2888, Matt Grossman).
+      platforms (#2883, 2888, 2902, Matt Grossman).
 
 XFree86 3.9Ps (14 June 1999)
 2751. Some small RAC updates (Egbert Eich).
@@ -8203,4 +8227,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.779 1999/06/20 05:23:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.780 1999/06/20 07:14:15 dawes Exp $

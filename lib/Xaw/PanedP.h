@@ -43,7 +43,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/PanedP.h,v 1.4 1998/10/03 08:42:14 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/PanedP.h,v 1.5 1999/06/06 08:48:02 dawes Exp $ */
 
 /*
  * Updated and significantly modified from the Athena VPaned Widget.
@@ -159,7 +159,7 @@ typedef struct {
     int		num_panes;                 /* count of managed panes */
     PaneStack	*stack;			   /* The pane stack for this widget */
 #ifndef OLDXAW
-    char pad[16];	/* for future use and keep binary compatability */
+    XtPointer pad[4];	/* for future use and keep binary compatability */
 #endif
 } PanedPart;
 

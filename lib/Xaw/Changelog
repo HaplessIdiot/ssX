@@ -1148,7 +1148,7 @@ xedit.c:
    *ispell*skipLines: <VALUE>
 
 
-# 12 Jun 1999
+#2877 12 Jun 1999
 -- Xaw --
  + Note: The compatible old version of Xaw is not fully compatible. There
    a few things that are not equal to the standard old Xaw. These are:
@@ -1207,5 +1207,41 @@ xedit.c:
    scrollbars in options.c.
 
 
+# 19 Jun 1999
+-- Xaw --
+ + Changed all the 'char pad[<number>]' to 'XtPointer pad[<number>/4]' to
+   make sure 64 bit machines will not have binary compatibility problems before
+   the 32 bit ones.
+ + Added a new static function 'WritePiecesToFile' to AsciiSrc.c, to avoid
+   allocation of temporary memory. This is useful when editing very large
+   files (I have some people using xedit on text files that can have up to
+   80,000 lines).
+ + Added more some optimizations to AsciiSrc.c:Scan, to try to get the maximum
+   speed of this function.
+ + Added a new function to the displayList's, called 'image', that will tile
+   pixmaps on the widget. It is documented in Xaw.man.
+ + Several widget classes did not have a 'extension' field. I added it to them.
+   The first usage of this field that I'm planning is to extend the *Src and
+   *Sink objects to handle formatted text, and add text properties, like
+   foreground, background, font and so on.
+ + Fixed a bug in MultiSrc.c, that was crashing Xaw after the first character
+   was typed, or if text was removed.
+ + Some minor changes to SimpleMenu.c, to work properly with very large menus.
+ + Fixed some bugs that were caused by my previous optimizations of the text
+   redisplay code.
+ + Bug fixes and optimizations to TextPop.c, there were some cases that the
+   function XawTextDisableRediplay was being called, but XawTextEnableRedisplay
+   was not being called later because of a error condition (the error
+   conditions were only warnings).
++  Updates to Xaw.man.
 
-$XFree86: xc/lib/Xaw/Changelog,v 3.24 1999/06/06 08:47:53 dawes Exp $
+-- xedit --
+ + Fixed a memory leak when freeing list widget strings. The code was not
+   releasing the memory of the string at offset 0, in the list.
+ + Changed the way the ispell undo code handles the terse mode, to not need
+   to make the toggle button insensitive.
+ + Updated xedit.man.
+
+
+
+$XFree86: xc/lib/Xaw/Changelog,v 3.25 1999/06/13 13:47:16 dawes Exp $

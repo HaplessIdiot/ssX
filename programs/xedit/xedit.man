@@ -25,7 +25,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from the X Consortium.
 .\"
-.\" $XFree86: xc/programs/xedit/xedit.man,v 1.10 1999/05/30 03:03:37 dawes Exp $
+.\" $XFree86: xc/programs/xedit/xedit.man,v 1.11 1999/06/06 08:49:14 dawes Exp $
 .\"
 .TH XEDIT 1 "Release 6" "X Version 11"
 .SH NAME
@@ -192,16 +192,30 @@ by \fIsome long string with
 \fP
 when you type that words.
 .TP 8
-.B ispell.wordChars (\fPClass \fBispell.Chars)
-Specifies a set of characters that can be part of a legal word.
+.B ispell.dictionaries (\fPClass \fBispell.Dictionary)
+Specifies a list of dictionary names, separeted by spaces, available to the
+ispell program. The default value is \fI"american americamed+ english"\fP.
+.TP 8
+.B ispell.dictionary (\fPClass \fBispell.Dictionary)
+Specifies the default dictionary to use.
+.TP 8
+.B ispell*<DICTIONARY>.wordChars (\fPClass \fBispell*Chars)
+Specifies a set of characters that can be part of a legal word. The
+\fI<DICTIONARY>\fP field is one of the dictionaries specified in the
+\fIdictionaries\fP resource.
 .TP 8
 .B ispell.ispellCommand (\fPClass \fBispell.CommandLine)
 The path to the ispell program, and possibly, additional arguments. You don't
 need to specify the ``-w'' option, neither the ``-a'' option.
 Refer to the \fIispell\fP(1) manpage for more information on ispell options.
 .TP 8
-.B ispell.skipLines (\fPClass \fBispell.Skip)
-Lines starting one of the characters in this string will not be spell checked.
+.B ispell.formatting (\fPClass \fPispell.TextFormat)
+Specifies which text formatting to use while spell checking the file. The
+available formats are \fItext\fP and \fIhtml\fP.
+.TP 8
+.B ispell*text.skipLines (\fPClass \fBispell*text.Skip)
+Lines starting with one of the characters in this string will not be spell
+checked. This resource is only used in \fItext\fP mode.
 .TP 8
 .B ispell.terseMode (\fPClass \fBispell.Terse)
 When enabled, runs ispell in terse mode, not asking user interaction for words
@@ -249,6 +263,11 @@ The default value is \fIEnd Of File\fP.
 .B ispell.repeatLabel (\fPClass \fBispell.Status)
 The string displayed in the ispell status bar when two indentical words are found
 together in the file. The default value is \fIRepeat\fP.
+.TP 8
+.B ispell.lookLabel (\fPClass \fBispell.Status)
+The string displayed in the ispell status bar after displaying the results of
+the \fILook\fP command. If no results are found, the value of the
+\fIispell.noneLabel\fP resource is shown.
 .TP 8
 .B ispell.workingLabel (\fPClass \fBispell.Status)
 The string displayed in the ispell status bar while xedit is communicating with

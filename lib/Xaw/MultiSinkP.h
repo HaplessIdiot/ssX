@@ -67,7 +67,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/MultiSinkP.h,v 1.5 1998/10/03 08:42:09 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/MultiSinkP.h,v 1.6 1999/06/06 08:48:00 dawes Exp $ */
 
 #ifndef _XawMultiSinkP_h
 #define _XawMultiSinkP_h
@@ -107,7 +107,7 @@ typedef struct {
     short cursor_x, cursor_y;		/* Cursor Location */
     XFontSet fontset;			/* font set to draw */
 #ifndef OLDXAW
-    char pad[16];	/* for future use and keep binary compatability */
+    XtPointer pad[4];	/* for future use and keep binary compatability */
 #endif
 } MultiSinkPart;
 

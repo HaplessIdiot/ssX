@@ -67,7 +67,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/MultiSrcP.h,v 1.5 1998/11/15 04:30:00 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/MultiSrcP.h,v 1.6 1999/06/06 08:48:01 dawes Exp $ */
 
 /*
  * MultiSrcP.h - Private Header for Multi Text Source.
@@ -155,7 +155,7 @@ typedef struct _MultiSrcPart {
     XawTextPosition length; 	/* length of file - IN CHARACTERS, NOT BYTES */
     MultiPiece *first_piece;	/* first piece of the text */
 #ifndef OLDXAW
-    char pad[16];	/* for future use and keep binary compatability */
+    XtPointer pad[4];	/* for future use and keep binary compatability */
 #endif
 } MultiSrcPart;
 

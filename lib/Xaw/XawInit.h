@@ -18,7 +18,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
-/* $XFree86: xc/lib/Xaw/XawInit.h,v 1.7 1998/12/06 06:08:15 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/XawInit.h,v 1.8 1999/06/06 08:48:22 dawes Exp $ */
 
 #ifndef _XawInit_h
 #define _XawInit_h
@@ -26,9 +26,9 @@ in this Software without prior written authorization from The Open Group.
 #define XawVendor	"XFree86"
 
 #ifdef OLDXAW
-#define XawVersion	6700L
+#define XawVersion	6700000L
 #else
-#define	XawVersion	7000L
+#define	XawVersion	7000000L
 
 typedef struct _XawDL XawDisplayList;
 #endif /* OLDXAW */

@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.cpp,v 1.3 1999/04/04 08:46:16 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.cpp,v 1.4 1999/04/27 12:05:12 dawes Exp $ 
 .TH MGA __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 mga \- Matrox video driver
@@ -34,10 +34,12 @@ Mystique
 .B MGA2164W
 Millennium II
 .TP 12
+.B G100
+.TP 12
 .B G200
 Millennium G200 and Mystique G200
 .TP 12
-.B G100
+.B G400
 .SH CONFIGURATION DETAILS
 Please refer to XF86Config(__filemansuffix__) for general configuration
 details.  This section only covers configuration details specific to this
@@ -51,7 +53,7 @@ section, and will override the auto-detection:
 .PP
 .RS 4
 "mga2064w", "mga1064sg", "mga2164w", "mga2164w agp", "mgag100", "mgag200",
-"mgag200 pci".
+"mgag200 pci" "mgag400".
 .RE
 .PP
 The driver will auto-detect the amount of video memory present for all
@@ -82,6 +84,9 @@ be used to override that auto-detection.  Default: auto-detected.
 .TP
 .BI "Option ""NoAccel"" """ boolean """
 Disable or enable acceleration.  Default: acceleration is enabled.
+.TP
+.BI "Option ""OverclockMem""
+Enable memory overclocking.  Default: off.
 .TP
 .BI "Option ""Overlay""
 Enable 8+24 overlay mode.  Only appropriate for depth 24.  Default: off.

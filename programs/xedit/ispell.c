@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/ispell.c,v 1.8 1999/06/06 08:49:14 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/ispell.c,v 1.9 1999/06/13 13:47:50 dawes Exp $ */
 
 #include "xedit.h"
 #ifndef X_NOT_STDC_ENV
@@ -117,7 +117,7 @@ struct _ispell {
     char *cmd;
     char *skip;
     char *command;
-    Boolean terse_mode;
+    Boolean terse_mode, undo_terse_mode;
     char *guess_label, *miss_label, *root_label, *none_label, *eof_label,
 	 *compound_label, *ok_label, *repeat_label, *working_label, *look_label;
     char *look_cmd;
@@ -382,7 +382,7 @@ IspellCheckUndo(void)
 
     undo->next = NULL;
     undo->repeat = False;
-    undo->terse = ispell.terse_mode;
+    undo->terse = ispell.undo_terse_mode;
     undo->format = ispell.format_mode;
     if ((undo->prev = ispell.undo_head) != NULL)
 	undo->prev->next = undo;
@@ -486,27 +486,29 @@ IspellIgnoredWord(char *word, int cmd, int add)
     /* add/remove uncapped word to/of list,
      * or cheks for correct capitalization */
     if (add == UNCAP || cmd == CHECK) {
-	char string[1024];
+	unsigned char *str = (unsigned char*)word;
+	unsigned char string[1024];
 	Bool upper, status;
 	int i;
 
 	status = True;
-	upper = IsUpper(*word);
-	*string = upper ? ToLower(*word) : *word;
-	if (*word)
-	    word++;
-	if (IsLower(*word))
+	upper = IsUpper(*str);
+	*string = upper ? ToLower(*str) : *str;
+	if (*str)
+	    str++;
+	if (IsLower(*str))
 	    upper = False;
-	for (i = 1; *word && i < sizeof(string) - 1; i++, word++) {
-	    if (upper && IsLower(*word))
+	for (i = 1; *str && i < sizeof(string) - 1; i++, str++) {
+	    if (upper && IsLower(*str))
 		status = False;
-	    else if (!upper && IsUpper(*word))
+	    else if (!upper && IsUpper(*str))
 		status = False;
-	    string[i] = ToLower(*word);
+	    string[i] = ToLower(*str);
 	}
 	string[i] = '\0';
 
-	if ((cmd != CHECK || status) && IspellDoIgnoredWord(string, cmd, add))
+	if ((cmd != CHECK || status) &&
+	    IspellDoIgnoredWord((char*)string, cmd, add))
 	    return (True);
     }
 
@@ -579,7 +581,7 @@ IspellReceive(void)
 			    string[l] = str[k];
 			string[l] = '\0';
 			*tmp = '\0';
-			if ((p = strstr(word, string)) != NULL) {
+			if (l && (p = strstr(word, string)) != NULL) {
 			    char *sav = p;
 
 			    while ((p = strstr(p + l, string)) != NULL)
@@ -635,7 +637,7 @@ IspellReceive(void)
 		XawListHighlight(ispell.list, i);
 
 	    if (old_len > 1 || (XtName(ispell.list) != old_list[0])) {
-		while (--old_len)
+		while (--old_len > -1)
 		    XtFree(old_list[old_len]);
 		XtFree((char*)old_list);
 	    }
@@ -650,7 +652,7 @@ IspellReceive(void)
 
 	    IspellSetStatus(ispell.buf[0] == '?' ?
 			    ispell.guess_label : ispell.miss_label);
-	    XtSetSensitive(ispell.terse, True);
+	    ispell.undo_terse_mode = ispell.terse_mode;
 	    ispell.format_mode = ispell.format_info->value;
 	    ispell.lock = True;
 	    break;
@@ -691,7 +693,7 @@ IspellReceive(void)
 		    XawListHighlight(ispell.list, 0);
 	    }
 	    if (old_len > 1 || (XtName(ispell.list) != old_list[0])) {
-		while (--old_len)
+		while (--old_len > -1)
 		    XtFree(old_list[old_len]);
 		XtFree((char*)old_list);
 	    }
@@ -704,6 +706,7 @@ IspellReceive(void)
 		    IspellSetRepeated(ispell.repeat = False);
 	    }
 
+	    ispell.undo_terse_mode = ispell.terse_mode;
 	    ispell.format_mode = ispell.format_info->value;
 	    ispell.lock = True;
 	    if (ispell.buf[0] == '+') {
@@ -717,7 +720,6 @@ IspellReceive(void)
 		IspellSetStatus(ispell.buf[0] == '#' ? ispell.none_label :
 				ispell.buf[0] == '-' ? ispell.compound_label :
 				ispell.ok_label);
-	    XtSetSensitive(ispell.terse, !!strchr("#*", ispell.buf[0]));
 	    break;
 	case '*':	/* OK */
 	case '\0':	/* when running in terse mode */
@@ -746,6 +748,7 @@ IspellReceive(void)
 	    }
 	    else {
 		IspellSetStatus(ispell.repeat_label);
+		ispell.undo_terse_mode = ispell.terse_mode;
 		ispell.format_mode = ispell.format_info->value;
 		ispell.lock = True;
 		return (True);
@@ -968,8 +971,7 @@ IspellSend(void)
 	    }
 	    else if (html && *mb == '<')
 		inside_html = True;
-	    else if (spaces >= 0 && (isspace(*mb == ' ') ||
-				     (html && *mb == '\n')))
+	    else if (spaces >= 0 && (isspace(*mb) || (html && *mb == '\n')))
 		++spaces;
 	    else
 		spaces = -1;
@@ -1095,7 +1097,7 @@ IspellSend(void)
 	XtSetSensitive(ispell.list, True);
 	XawListHighlight(ispell.list, 0);
 	if (old_len > 1 || (XtName(ispell.list) != old_list[0])) {
-	    while (--old_len)
+	    while (--old_len > -1)
 		XtFree(old_list[old_len]);
 	    XtFree((char*)old_list);
 	}
@@ -1104,7 +1106,6 @@ IspellSend(void)
 	IspellSetSelection(old_left, ispell.right);
 	IspellSetStatus(ispell.repeat_label);
 	ispell.repeat = ispell.lock = True;
-	XtSetSensitive(ispell.terse, True);
 
 	return (1);
     }
@@ -1265,13 +1266,12 @@ IspellAction(Widget w, XEvent *event, String *params, Cardinal *num_params)
     XtSetValues(ispell.list, args, 2);
 
     if (n_strs > 1 || (XtName(ispell.list) != strs[0])) {
-	while (--n_strs)
+	while (--n_strs > -1)
 	    XtFree(strs[n_strs]);
 	XtFree((char*)strs);
     }
 
     IspellSetStatus(ispell.working_label);
-    XtSetSensitive(ispell.terse, True);
 
     if (!ispell.pid)
 	(void)IspellStartProcess();
@@ -1718,7 +1718,7 @@ UndoIspell(Widget w, XtPointer client_data, XtPointer call_data)
 	XawListHighlight(ispell.list, 0);
 
 	if (old_len > 1 || (XtName(ispell.list) != old_list[0])) {
-	    while (--old_len)
+	    while (--old_len > -1)
 		XtFree(old_list[old_len]);
 	    XtFree((char*)old_list);
 	}
@@ -1756,8 +1756,6 @@ UndoIspell(Widget w, XtPointer client_data, XtPointer call_data)
 	while (IspellSend() == 0)
 	    ;
     }
-    else
-	XtSetSensitive(ispell.terse, True);
 }
 
 /*ARGSUSED*/
@@ -1891,7 +1889,7 @@ LookIspell(Widget w, XtPointer client_data, XtPointer call_data)
     IspellSetStatus(sensitive ? ispell.look_label : ispell.none_label);
 
     if (old_len > 1 || (XtName(ispell.list) != old_list[0])) {
-	while (--old_len)
+	while (--old_len > -1)
 	    XtFree(old_list[old_len]);
 	XtFree((char*)old_list);
     }
@@ -1946,7 +1944,6 @@ ChangeDictionaryIspell(Widget w, XtPointer client_data, XtPointer call_data)
     IspellSetStatus(ispell.working_label);
 
     (void)IspellEndProcess(True, False);
-    XtSetSensitive(ispell.terse, True);
     ispell.lock = ispell.checkit = False;
     (void)IspellStartProcess();
 

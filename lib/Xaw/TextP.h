@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextP.h,v 3.16 1999/05/23 06:33:28 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextP.h,v 3.17 1999/06/06 08:48:15 dawes Exp $ */
 
 #ifndef _XawTextP_h
 #define _XawTextP_h
@@ -252,7 +252,7 @@ typedef struct _TextPart {
      */
     short left_column, right_column;
     XawTextJustifyMode justify;
-    char pad[16];	/* for future use and keep binary compatability */
+    XtPointer pad[4];	/* for future use and keep binary compatability */
 #endif
 } TextPart;
 

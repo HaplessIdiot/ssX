@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xterm/fontutils.c,v 1.10 1999/05/15 06:25:03 dawes Exp $
+ * $XFree86: xc/programs/xterm/fontutils.c,v 1.11 1999/05/15 12:10:40 dawes Exp $
  */
 
 /************************************************************
@@ -570,7 +570,8 @@ xtermLoadFont (
 	}
 #endif
 
-	screen->enbolden = (nfs == bfs) || same_font_name(normal, bfontname);
+	screen->enbolden = screen->bold_mode
+		&& ((nfs == bfs) || same_font_name(normal, bfontname));
 	TRACE(("Will %suse 1-pixel offset/overstrike to simulate bold\n", screen->enbolden ? "" : "not "))
 
 	set_menu_font (False);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.40 1999/06/13 07:11:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.41 1999/06/14 06:06:35 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -113,7 +113,10 @@ typedef struct {
     int			Rounding;
     int			BppShift;
     Bool		HasFBitBlt;
+    Bool		OverclockMem;
     int			YDstOrg;
+    int			DstOrg;
+    int			SrcOrg;
     CARD32		IOAddress;
     CARD32		FbAddress;
     CARD32		ILOADAddress;

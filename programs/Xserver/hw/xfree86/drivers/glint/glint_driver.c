@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.42 1999/06/20 05:23:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.43 1999/06/20 07:14:28 dawes Exp $ */
 /* $PI: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.29 1999/06/09 20:05:12 jens Exp $ */
 
 #define PSZ 8
@@ -1245,8 +1245,8 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     if((pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_500TX) &&
-       (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_MX) &&
-       (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_GAMMA)) {
+       (pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_MX) &&
+       (pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_GAMMA)) {
 	pGlint->VGAcore = TRUE; /* chip has a vga core */
     	/* The vgahw module should be loaded here when needed */
     	if (!xf86LoadSubModule(pScrn, "vgahw"))

@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Chris D. Peterson, MIT X Consortium
  */
-/* $XFree86: xc/lib/Xaw/SmeBSBP.h,v 1.5 1999/04/25 10:01:26 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SmeBSBP.h,v 1.6 1999/06/06 08:48:11 dawes Exp $ */
 
 #ifndef _XawSmeBSBP_h
 #define _XawSmeBSBP_h
@@ -73,7 +73,7 @@ typedef struct {
 #ifndef OLDXAW
     /* new resources */
     String menu_name;			/* name of nested sub menu or NULL */
-    char pad[16];	/* for future use and keep binary compatability */
+    XtPointer pad[4];	/* for future use and keep binary compatability */
 #endif
 } SmeBSBPart;
 
