@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.169 2002/09/29 23:39:40 keithp Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.170 2002/09/30 18:46:26 keithp Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1756,7 +1756,7 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 
 #if BuildXvLibrary
 #ifndef SharedLibXv
-#define SharedLibXv		NO
+#define SharedLibXv		YES
 #endif
 #ifndef NormalLibXv
 #define NormalLibXv		YES
