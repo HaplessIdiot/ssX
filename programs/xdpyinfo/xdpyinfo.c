@@ -25,7 +25,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.19 2001/01/12 19:28:36 dawes Exp $ */
+/* $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.20 2001/01/17 23:45:26 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -128,7 +128,15 @@ print_display_info(Display *dpy)
 	char vers1[10], vers2[10] = "", vers3[10] = "";
 	int vendrel = VendorRelease(dpy);
 
-	if (vendrel < 3900) {
+	if (vendrel < 336) {
+	    /*
+	     * vendrel was set incorrectly for 3.3.4 and 3.3.5, so handle
+	     * those cases here.
+	     */
+	    sprintf(vers1, "%d.%d.%d", vendrel / 100, (vendrel / 10) % 10,
+					vendrel % 10);
+	} else if (vendrel < 3900) {
+	    /* 3.3.x versions, other than the exceptions handled above */
 	    sprintf(vers1, "%d.%d", vendrel / 1000, (vendrel / 100) % 10);
 	    if (((vendrel / 10) % 10) || (vendrel % 10)) {
 		sprintf(vers2, ".%d", (vendrel / 10) % 10);
@@ -137,6 +145,7 @@ print_display_info(Display *dpy)
 		}
 	    }
 	} else if (vendrel < 4000000) {
+	    /* 4.0.x versions */
 	    sprintf(vers1, "%d.%d", vendrel / 1000, (vendrel / 10) % 10);
 	    if (vendrel % 10) {
 		sprintf(vers2, ".%d", vendrel % 10);
