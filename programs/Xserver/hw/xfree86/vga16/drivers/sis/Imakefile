@@ -1,0 +1,27 @@
+XCOMM $XFree86$
+#include <Server.tmpl>
+
+SRCS = sis86c201.c sis_bank.s
+
+OBJS = sis86c201.o sis_bank.o
+
+#if XF86LinkKit
+INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
+#else
+INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
+           -I$(XF86SRC)/vga256/vga -I$(SERVERSRC)/include -I$(INCLUDESRC)
+#endif
+
+DEFINES = -DXF86VGA16
+
+NormalLibraryObjectRule()
+NormalAsmObjectRule()
+
+NormalRelocatableTarget(sis_drv,$(OBJS))
+
+LinkSourceFile(sis86c201.c,$(VGADRIVERSRC)/sis)
+LinkSourceFile(sis_bank.s,$(VGADRIVERSRC)/sis)
+
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga16/sis)
+
+DependTarget()
