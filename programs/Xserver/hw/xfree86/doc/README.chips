@@ -93,7 +93,7 @@
         the cost of performance (which will still be reasonable on
         VLB/PCI).
 
-     Option "no_bitblt" (Chips later than 65545)
+     Option "no_bitblt" (Chips 65545 and later)
         This option will disable the use of the BitBLT engine which the
         65545 and above have. If you can use the  "noaccel" option to
         correct a problem, then this option might be better to use.  It
@@ -105,7 +105,7 @@
         Note that many ct655xx chips only allow up to 1Mb of videoram,
         and the amount should be correctly detected.
 
-          Option "nolinear" (Chips later than 65530)
+          Option "nolinear" (Chips 65530 and later)
         By default linear addressing is used on all ct655xx chips.
         However this might be broken in some implementations. It is
         possible to turn the linear addressing off with this option.
@@ -117,7 +117,7 @@
         framebuffer. Typically this is probed correctly, but if you
         believe it to be misprobed, this option might help.
 
-     Option "sw_cursor" (Chips later than 65545)
+     Option "sw_cursor" (Chips 65545 and later)
         This disables use of the hardware cursor provided by the chip.
         Try this if the cursor seems to have problems.
 
@@ -156,8 +156,8 @@
         effect of which is that the right-hand edge of the mode will be
         pushed off the screen.
 
-     Option "hw_clocks" (Chips later than 65540)
-        On chips later the 65540, the default is to use the programmable
+     Option "hw_clocks" (Chips 65540 and later)
+        On chips 65540 and later, the default is to use the programmable
         clock for all clocks. It is possible to use the fixed clocks
         supported by the chip instead by using this option. Typically
         this will give you some or all of the clocks 25.175, 28.322,
@@ -184,17 +184,23 @@
         when using "no_bitblt"), or for the 65550 which can only use
         MMIO for access to the BitBLT engine.
 
+     Option "suspend_hack"
+        This option sets the centering and stretching to the bios
+        default values. This can fix suspend/resume problems on some
+        machines. It overrides the options "lcd_center" and
+        "no_stretch".
+
      Chipset "ct65546" (or some other chip)
         It is possible that the chip could be misidentified, particular
         due to interactions with other drivers in the server. It is
         possible to force the server to identify a particular chip with
         this option.  Some later releases of the ct65545, in particular
+
         the ct65545A1 and ct65545B1, actually have limitations very
         similar to those of the 65546. The server is not currently
         configured to recognise these chips, so the user might wish to
         force the server to identify their chip as a ct65546 and so have
         a larger maximum bandwidth.
-
 
   4.  Modelines
 
@@ -256,9 +262,8 @@
   specified, only the clock, polarities, vertical and horizontal sizes
   are used in the mode calculations on an LCD. Hence a mode like
 
-
-
        Modeline "640x480@8bpp"   21.000  640    0    0    0   480    0    0    0
+
 
 
 
@@ -327,7 +332,6 @@
         Horizontal waving or jittering of the whole screen, continuously
         (independent from drawing operations).  You are probably using a
         dot clock that is too high (or too low); it is also possible
-
         that there is interference with a close MCLK. Try a lower dot
         clock.  You can also try to tweak the mode timings; try
         increasing the second horizontal value somewhat.
@@ -389,10 +393,9 @@
       I can't start X-windows with 16 or 24bpp
         Firstly, is your machine capable of 16/24bpp with the mode
         specified. You need at least a 65540 to use 16/24bpp, and the
+
         amount of memory used by the mode will be doubled/tripled. The
         correct options to start the server with these modes are
-
-
 
                   startx -- -bpp 16               5-6-5 RGB ('64K color', XGA)
                   startx -- -bpp 16 -weight 555   5-5-5 RGB ('Hicolor')
@@ -443,10 +446,7 @@
      o  David Bateman
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.2 1996/08/21 08:39:08 dawes Exp $
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.3 1996/08/24 12:52:18 dawes Exp $
 
 
 

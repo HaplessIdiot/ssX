@@ -1,14 +1,13 @@
-  Release Notes for XFree86[TM] 3.1.2E (beta version)
+  Release Notes for XFree86[TM] 3.1.2F (beta version)
   The XFree86 Project, Inc
 
-  25 May 1996
+  25 August 1996
 
   This document describes the rationale and conditions of this beta
-  release, what is new in the XFree86 beta versions 3.1.2E, 3.1.2D,
-  3.1.2B and 3.1.2A compared with the current release version 3.1.2, and
-  how to install this beta release.  Note: version 3.1.2C was an inter-
-  nal-only release, but it will appear in source form in the X Consor-
-  tium's X11R6.1 release.
+  release, what is new in the XFree86 beta versions 3.1.2F, 3.1.2E,
+  3.1.2D, 3.1.2B and 3.1.2A compared with the current release version
+  3.1.2, and how to install this beta release.  Note: version 3.1.2C is
+  included (in source form) in the X Consortium's X11R6.1 release.
 
   1.  General Information about Beta Releases
 
@@ -63,8 +62,8 @@
   R6, and is intended to be compatible with R6 at the source and
   protocol levels.  Binaries should be upward-compatible.  X11R6.1
   includes some new Xserver extensions: DOUBLE-BUFFER, XKEYBOARD and
-
   RECORD.  LBX has been dropped from R6.1, and as such, has been dropped
+
   from XFree86 too.  It is expected that it will reappear in some form
   in a future release.
 
@@ -126,6 +125,7 @@
 
      o  Added options "slow_dram" and "slow_edodram" to avoid pixel
         errors on the display for some broken cards.
+
 
 
 
@@ -1061,7 +1061,7 @@
   line.  Check /etc/rc to see how ldconfig gets run at boot time.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.33 1996/06/10 09:15:16 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.34 1996/08/24 12:52:17 dawes Exp $
 
 
 
