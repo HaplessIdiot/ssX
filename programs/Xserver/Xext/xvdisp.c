@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xvdisp.c,v 1.18 2001/03/03 21:17:54 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvdisp.c,v 1.19 2001/03/07 19:37:51 mvojkovi Exp $ */
 
 /*
 ** File: 
@@ -2177,7 +2177,7 @@ void XineramifyXv(void)
 	 	 
 	 for(k = 0; k < xvsp->nAdaptors; k++) {
 	    pAdapt = xvsp->pAdaptors + k;
-	    if((pAdapt->type & XvImageMask) & (pAdapt->nImages > 0)) {
+	    if((pAdapt->type & XvImageMask) && (pAdapt->nImages > 0)) {
 	      	 MatchingAdaptors[j] = pAdapt;
 		 break;
 	    }
