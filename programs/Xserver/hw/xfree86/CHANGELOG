@@ -1,4 +1,6 @@
 XFree86 4.4.99.23 (xx January 2005)
+ 306. Add support to the fpit driver for the passive pen of the Stylistic
+      3400, and fix a number of bugs in the original driver (David M. Clay).
  305. Fix a DRI initialization problem which occurred when people continued
       to use the i830 DRM kernel driver and not the newer i915 kernel driver.
       (Alan Hourihane)
@@ -19345,7 +19347,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3414 2005/02/01 02:25:06 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3415 2005/02/01 19:49:39 alanh Exp $
 
 
 
