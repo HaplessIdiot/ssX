@@ -3,10 +3,11 @@
  * Support for using the Quartz Window Manager cursor
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCursor.c,v 1.9 2001/09/23 06:10:55 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCursor.c,v 1.10 2001/09/24 06:56:52 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "quartzCursor.h"
+#include "darwin.h"
 
 #include "mi.h"
 #include "scrnintstr.h"
@@ -21,6 +22,7 @@
 typedef struct {
     int                     qdCursorMode;
     int                     qdCursorVisible;
+    int                     useQDCursor;
     CursorPtr               latentCursor;
     QueryBestSizeProcPtr    QueryBestSize;
     miPointerSpriteFuncPtr  spriteFuncs;
@@ -218,7 +220,7 @@ QuartzRealizeCursor(
 
     // if the cursor is too big we use a software cursor
     if ((pCursor->bits->height > CURSORHEIGHT) ||
-        (pCursor->bits->width > CURSORWIDTH))
+        (pCursor->bits->width > CURSORWIDTH) || !ScreenPriv->useQDCursor)
         return (*ScreenPriv->spriteFuncs->RealizeCursor)(pScreen, pCursor);
 
     // make new cursor image
@@ -244,7 +246,7 @@ QuartzUnrealizeCursor(
     QuartzCursorScreenPtr ScreenPriv = CURSOR_PRIV(pScreen);
 
     if ((pCursor->bits->height > CURSORHEIGHT) ||
-        (pCursor->bits->width > CURSORWIDTH)) {
+        (pCursor->bits->width > CURSORWIDTH) || !ScreenPriv->useQDCursor) {
         return (*ScreenPriv->spriteFuncs->UnrealizeCursor)(pScreen, pCursor);
     } else {
         DisposeCCursor((CCrsrHandle) pCursor->devPriv[pScreen->myNum]);
@@ -280,7 +282,7 @@ QuartzSetCursor(
             (*ScreenPriv->spriteFuncs->SetCursor)(pScreen, 0, x, y);
     }
     else if ((pCursor->bits->height <= CURSORHEIGHT) &&
-             (pCursor->bits->width <= CURSORWIDTH))
+             (pCursor->bits->width <= CURSORWIDTH) && ScreenPriv->useQDCursor)
     {
         // Cursor is small enough to use QuickDraw directly.
         CCrsrHandle curs;
@@ -451,6 +453,7 @@ QuartzInitCursor(
 {
     QuartzCursorScreenPtr   ScreenPriv;
     miPointerScreenPtr      PointPriv;
+    DarwinFramebufferPtr    dfb = SCREEN_PRIV(pScreen);
 
     // initialize software cursor handling (always needed as backup)
     if (!miDCInitialize(pScreen, &quartzScreenFuncsRec)) {
@@ -481,6 +484,7 @@ QuartzInitCursor(
     ScreenPriv->spriteFuncs = PointPriv->spriteFuncs;
     PointPriv->spriteFuncs = &quartzSpriteFuncsRec; 
 
+    ScreenPriv->useQDCursor = QuartzFSUseQDCursor(dfb->colorBitsPerPixel);
     ScreenPriv->qdCursorMode = TRUE;
     ScreenPriv->qdCursorVisible = TRUE;
     ScreenPriv->latentCursor = NULL;

@@ -5,7 +5,7 @@
  * By Gregory Robert Parker
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.17 2001/09/23 04:04:49 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.18 2001/09/23 06:10:55 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "quartz.h"
@@ -442,15 +442,15 @@ void QuartzShow(
     int i;
 
     if (!quartzServerVisible) {
+        quartzServerVisible = TRUE;
         for (i = 0; i < screenInfo.numScreens; i++) {
             if (screenInfo.screens[i]) {
+                QuartzResumeXCursor(screenInfo.screens[i], x, y);
                 if (!quartzRootless)
                     xf86SetRootClip(screenInfo.screens[i], TRUE);
-                QuartzResumeXCursor(screenInfo.screens[i], x, y);
             }
         }
     }
-    quartzServerVisible = TRUE;
 }
 
 

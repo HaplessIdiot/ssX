@@ -6,7 +6,7 @@
  * This file should be included before any X11 or IOKit headers
  * so that it can avoid symbol conflicts.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCommon.h,v 1.1 2001/09/23 04:04:49 torrey Exp $ */
 
 #ifndef _QUARTZCOMMON_H
 #define _QUARTZCOMMON_H
@@ -51,6 +51,7 @@ extern int              aquaMenuBarHeight;
 void QuartzCapture(void);
 void QuartzReadPreferences(void);
 void QuartzMessageMainThread(unsigned msg);
+int QuartzFSUseQDCursor(int depth);
 
 // Messages that can be sent to the main thread.
 enum {
