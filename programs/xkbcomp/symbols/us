@@ -6,7 +6,7 @@
 // uses the punctuation keys configurations common on PC 
 // keyboards (e.g. key <ABO9> is { [ period greater ] })
 
-// $XFree86: xc/programs/xkbcomp/symbols/us,v 3.13 2003/06/09 19:59:46 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/us,v 3.14 2003/10/25 13:24:05 pascal Exp $
 
 partial hidden alphanumeric_keys modifier_keys 
 xkb_symbols "basic" {
@@ -243,7 +243,7 @@ xkb_symbols "intl" {
 			[	eth,	ETH		]	};
 
     key <AC09> {	[	  l,	L		],
-			[    oslash,	Oslash		]	};
+			[    oslash,	Ooblique	]	};
     key <AC10> {	[ semicolon,	colon		],
 			[ paragraph,	degree		]	};
     key <AC11> {	[ dead_acute,	dead_diaeresis	],
