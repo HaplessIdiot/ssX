@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.57 2002/09/16 20:14:46 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.58tsi Exp $ */
 /*
  * Copyright (c) 1997-2002 by The XFree86 Project, Inc.
  */
@@ -1153,7 +1153,7 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, unsigned long type)
     resPtr resSize = NULL;
     resPtr w_tmp, w = NULL, w_2nd = NULL;
     PCITAG tag;
-    PciBusPtr pbp = xf86PciBus, pbp1 = xf86PciBus;
+    PciBusPtr pbp = xf86PciBus;
     pciConfigPtr pcp;
     resPtr tmp;
     
@@ -1234,23 +1234,17 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, unsigned long type)
 		if (pbp->io) 
 		    w = xf86FindIntersectOfLists(pbp->io,ResRange);
 	    }
-	    
-	    while (pbp1) {
-		if (pbp1->primary == pvp->bus) {
-		    if ((type & ResPhysMask) == ResMem) {
-			tmp = xf86DupResList(pbp1->preferred_pmem);
-			avoid = xf86JoinResLists(avoid,tmp);
-			tmp = xf86DupResList(pbp1->preferred_mem);
-			avoid = xf86JoinResLists(avoid,tmp);
-		    } else {
-			tmp = xf86DupResList(pbp1->preferred_io);
-			avoid = xf86JoinResLists(avoid,tmp);
-		    }
-		}	
-		pbp1 = pbp1->next;
+	} else if (pbp->primary == pvp->bus) {
+	    if ((type & ResPhysMask) == ResMem) {
+		tmp = xf86DupResList(pbp->preferred_pmem);
+		avoid = xf86JoinResLists(avoid, tmp);
+		tmp = xf86DupResList(pbp->preferred_mem);
+		avoid = xf86JoinResLists(avoid, tmp);
+	    } else {
+		tmp = xf86DupResList(pbp->preferred_io);
+		avoid = xf86JoinResLists(avoid, tmp);
 	    }
-	    break;
-	}
+	}	
 	pbp = pbp->next;
     }
     
@@ -1509,7 +1503,7 @@ memType
 getValidBIOSBase(PCITAG tag, int num)
 {
     pciVideoPtr pvp = NULL;
-    PciBusPtr pbp, pbp1;
+    PciBusPtr pbp;
     resPtr m = NULL;
     resPtr tmp, avoid, mem = NULL;
     resRange range;
@@ -1570,7 +1564,7 @@ getValidBIOSBase(PCITAG tag, int num)
 
       /* Now find the ranges for validation */
       avoid = xf86DupResList(pciAvoidRes);
-      pbp = pbp1 = xf86PciBus;
+      pbp = xf86PciBus;
       while (pbp) {
 	  if (pbp->secondary == pvp->bus) {
 	      if (pbp->preferred_pmem)
@@ -1588,19 +1582,15 @@ getValidBIOSBase(PCITAG tag, int num)
 		  tmp->block_end = MIN(tmp->block_end,PCI_MEM32_LENGTH_MAX);
 		  tmp = tmp->next;
 	      }
-	  }
-	  while (pbp1) {
-	      if (pbp1->primary == pvp->bus) {
-		  tmp = xf86DupResList(pbp1->preferred_pmem);
-		  avoid = xf86JoinResLists(avoid,tmp);
-		  tmp = xf86DupResList(pbp1->pmem);
-		  avoid = xf86JoinResLists(avoid,tmp);
-		  tmp = xf86DupResList(pbp1->preferred_mem);
-		  avoid = xf86JoinResLists(avoid,tmp);
-		  tmp = xf86DupResList(pbp1->mem);
-		  avoid = xf86JoinResLists(avoid,tmp);
-	      }
-	      pbp1 = pbp1->next;
+	  } else if (pbp->primary == pvp->bus) {
+	      tmp = xf86DupResList(pbp->preferred_pmem);
+	      avoid = xf86JoinResLists(avoid, tmp);
+	      tmp = xf86DupResList(pbp->pmem);
+	      avoid = xf86JoinResLists(avoid, tmp);
+	      tmp = xf86DupResList(pbp->preferred_mem);
+	      avoid = xf86JoinResLists(avoid, tmp);
+	      tmp = xf86DupResList(pbp->mem);
+	      avoid = xf86JoinResLists(avoid, tmp);
 	  }	
 	  pbp = pbp->next;
       }	
@@ -2264,7 +2254,7 @@ void
 ValidatePci(void)
 {
     pciVideoPtr pvp, pvp1;
-    PciBusPtr pbp, pbp1;
+    PciBusPtr pbp;
     pciConfigPtr pcrp, *pcrpp;
     CARD32 *basep;
     resPtr Sys;
@@ -2400,7 +2390,7 @@ ValidatePci(void)
 	xf86MsgVerb(X_INFO, 3,"NonSys:\n");
 	xf86PrintResList(3,NonSys);
 #endif
-	pbp = pbp1 = xf86PciBus;
+	pbp = xf86PciBus;
 	while (pbp) {
 	    if (pbp->secondary == pvp->bus) {
 		if (pbp->preferred_pmem) {
@@ -2426,17 +2416,13 @@ ValidatePci(void)
 		    res_m_io = xf86JoinResLists(res_m_io,
 			xf86FindIntersectOfLists(pbp->preferred_io,ResRange));
 		}
-	    }
-	    while (pbp1) {
-		if (pbp1->primary == pvp->bus) {
-		    tmp = xf86DupResList(pbp1->preferred_pmem);
-		    avoid = xf86JoinResLists(avoid,tmp);
-		    tmp = xf86DupResList(pbp1->preferred_mem);
-		    avoid = xf86JoinResLists(avoid,tmp);
-		    tmp = xf86DupResList(pbp1->preferred_io);
-		    avoid = xf86JoinResLists(avoid,tmp);
-		}
-		pbp1 = pbp1->next;
+	    } else if (pbp->primary == pvp->bus) {
+		tmp = xf86DupResList(pbp->preferred_pmem);
+		avoid = xf86JoinResLists(avoid, tmp);
+		tmp = xf86DupResList(pbp->preferred_mem);
+		avoid = xf86JoinResLists(avoid, tmp);
+		tmp = xf86DupResList(pbp->preferred_io);
+		avoid = xf86JoinResLists(avoid, tmp);
 	    }	
 	    pbp = pbp->next;
 	}
