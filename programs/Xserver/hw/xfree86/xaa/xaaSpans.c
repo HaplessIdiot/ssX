@@ -391,12 +391,13 @@ XAAFillSolidSpans(
 ){
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
 
+    (*infoRec->SetupForSolidFill)(pScrn, fg, rop, planemask);
+
     if(infoRec->ClipBox)
 	(*infoRec->SetClippingRectangle)(infoRec->pScrn,
 		infoRec->ClipBox->x1, infoRec->ClipBox->y1, 
 		infoRec->ClipBox->x2 - 1, infoRec->ClipBox->y2 - 1);
 
-    (*infoRec->SetupForSolidFill)(pScrn, fg, rop, planemask);
     while(n--) {
 	if (*pwidth > 0)
             (*infoRec->SubsequentSolidFillRect)(pScrn, ppt->x, ppt->y, 
@@ -453,13 +454,13 @@ XAAFillMono8x8PatternSpansScreenOrigin(
 	}	
     }
 
+    (*infoRec->SetupForMono8x8PatternFill)(pScrn, patx, paty,
+	fg, bg, rop, planemask);
+
     if(infoRec->ClipBox)
 	(*infoRec->SetClippingRectangle)(infoRec->pScrn,
 		infoRec->ClipBox->x1, infoRec->ClipBox->y1, 
 		infoRec->ClipBox->x2 - 1, infoRec->ClipBox->y2 - 1);
-
-    (*infoRec->SetupForMono8x8PatternFill)(pScrn, patx, paty,
-	fg, bg, rop, planemask);
 
      while(n--) {
         (*infoRec->SubsequentMono8x8PatternFillRect)(pScrn, 
@@ -496,13 +497,13 @@ XAAFillMono8x8PatternSpans(
 	patx = pCache->x;  paty = pCache->y;
     }
 
+    (*infoRec->SetupForMono8x8PatternFill)(pScrn, patx, paty,
+					fg, bg, rop, planemask);
+
     if(infoRec->ClipBox)
 	(*infoRec->SetClippingRectangle)(infoRec->pScrn,
 		infoRec->ClipBox->x1, infoRec->ClipBox->y1, 
 		infoRec->ClipBox->x2 - 1, infoRec->ClipBox->y2 - 1);
-
-    (*infoRec->SetupForMono8x8PatternFill)(pScrn, patx, paty,
-					fg, bg, rop, planemask);
 
      while(n--) {
 	xorg = (ppt->x - xorigin) & 0x07;
@@ -567,13 +568,13 @@ XAAFillColor8x8PatternSpansScreenOrigin(
 	xorg = patx;  yorg = paty;
     }	
 
+    (*infoRec->SetupForColor8x8PatternFill)(pScrn, patx, paty,
+			 rop, planemask, pCache->trans_color);
+
     if(infoRec->ClipBox)
 	(*infoRec->SetClippingRectangle)(infoRec->pScrn,
 		infoRec->ClipBox->x1, infoRec->ClipBox->y1, 
 		infoRec->ClipBox->x2 - 1, infoRec->ClipBox->y2 - 1);
-
-    (*infoRec->SetupForColor8x8PatternFill)(pScrn, patx, paty,
-			 rop, planemask, pCache->trans_color);
 
      while(n--) {
         (*infoRec->SubsequentColor8x8PatternFillRect)(pScrn, 
@@ -602,14 +603,13 @@ XAAFillColor8x8PatternSpans(
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
     int xorg, yorg, slot;
 
+    (*infoRec->SetupForColor8x8PatternFill)(pScrn, pCache->x, pCache->y,
+			 rop, planemask, pCache->trans_color);
 
     if(infoRec->ClipBox)
 	(*infoRec->SetClippingRectangle)(infoRec->pScrn,
 		infoRec->ClipBox->x1, infoRec->ClipBox->y1, 
 		infoRec->ClipBox->x2 - 1, infoRec->ClipBox->y2 - 1);
-
-    (*infoRec->SetupForColor8x8PatternFill)(pScrn, pCache->x, pCache->y,
-			 rop, planemask, pCache->trans_color);
 
      while(n--) {
 	xorg = (ppt->x - xorigin) & 0x07;
@@ -653,13 +653,13 @@ XAAFillCacheBltSpans(
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
     int x, w, phaseX, phaseY, blit_w;  
 
+    (*infoRec->SetupForScreenToScreenCopy)(pScrn, 1, 1, rop, planemask,
+		pCache->trans_color);
+
     if(infoRec->ClipBox)
 	(*infoRec->SetClippingRectangle)(infoRec->pScrn,
 		infoRec->ClipBox->x1, infoRec->ClipBox->y1, 
 		infoRec->ClipBox->x2 - 1, infoRec->ClipBox->y2 - 1);
-
-    (*infoRec->SetupForScreenToScreenCopy)(pScrn, 1, 1, rop, planemask,
-		pCache->trans_color);
 
      while(n--) {
 	x = ppt->x;
@@ -718,13 +718,13 @@ XAAFillCacheExpandSpans(
     cacheWidth = (pCache->w * pScrn->bitsPerPixel) / 
 	infoRec->CacheColorExpandDensity;
 
+    (*infoRec->SetupForScreenToScreenColorExpandFill)(pScrn, fg, bg, rop, 
+							planemask);
+
     if(infoRec->ClipBox)
 	(*infoRec->SetClippingRectangle)(infoRec->pScrn,
 		infoRec->ClipBox->x1, infoRec->ClipBox->y1, 
 		infoRec->ClipBox->x2 - 1, infoRec->ClipBox->y2 - 1);
-
-    (*infoRec->SetupForScreenToScreenColorExpandFill)(pScrn, fg, bg, rop, 
-							planemask);
 
      while(n--) {
 	x = ppt->x;

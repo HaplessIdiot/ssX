@@ -829,15 +829,6 @@ XAAPolylinesWideSolid (
 	return;
     }
 
-    infoRec->ClipBox = &pGC->pCompositeClip->extents;
-
-    if(infoRec->ClippingFlags & HARDWARE_CLIP_SOLID_FILL) {
-	hardClip = TRUE;
-	(*infoRec->SetClippingRectangle)(infoRec->pScrn,
-              infoRec->ClipBox->x1, infoRec->ClipBox->y1, 
-              infoRec->ClipBox->x2 - 1, infoRec->ClipBox->y2 - 1);		
-    }
-
     if (mode == CoordModePrevious) {
 	pPts->x += xorg;
 	pPts->y += yorg;
@@ -880,6 +871,14 @@ XAAPolylinesWideSolid (
     (*infoRec->SetupForSolidFill)(infoRec->pScrn, pGC->fgPixel, pGC->alu, 
 						pGC->planemask);
 
+    infoRec->ClipBox = &pGC->pCompositeClip->extents;
+
+    if(infoRec->ClippingFlags & HARDWARE_CLIP_SOLID_FILL) {
+	hardClip = TRUE;
+	(*infoRec->SetClippingRectangle)(infoRec->pScrn,
+              infoRec->ClipBox->x1, infoRec->ClipBox->y1, 
+              infoRec->ClipBox->x2 - 1, infoRec->ClipBox->y2 - 1);		
+    }
 
     while (--npt) {
 	x1 = x2;
