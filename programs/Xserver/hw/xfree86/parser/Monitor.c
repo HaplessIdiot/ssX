@@ -424,83 +424,71 @@ xf86parseMonitorSection (void)
 		case HORIZSYNC:
 			if (xf86getToken (NULL) != NUMBER)
 				Error (HORIZSYNC_MSG, NULL);
-			ptr->mon_hsync[ptr->mon_n_hsync].lo = val.realnum;
-			if (xf86getToken (NULL) == DASH)
-			{
-				if (xf86getToken (NULL) != NUMBER)
-					Error (HORIZSYNC_MSG, NULL);
-				ptr->mon_hsync[ptr->mon_n_hsync].hi = val.realnum;
-			}
-			else
-			{
-				xf86unGetToken (token);
-				ptr->mon_hsync[ptr->mon_n_hsync].hi =
-					ptr->mon_hsync[ptr->mon_n_hsync].lo;
-			}
-			ptr->mon_n_hsync++;
-			while ((token = xf86getToken (NULL)) == COMMA)
-			{
+			do {
+				ptr->mon_hsync[ptr->mon_n_hsync].lo = val.realnum;
+				switch (token = xf86getToken (NULL))
+				{
+					case COMMA:
+						ptr->mon_hsync[ptr->mon_n_hsync].hi =
+						ptr->mon_hsync[ptr->mon_n_hsync].lo;
+						break;
+					case DASH:
+						if (xf86getToken (NULL) != NUMBER ||
+						    val.realnum < ptr->mon_hsync[ptr->mon_n_hsync].lo)
+							Error (HORIZSYNC_MSG, NULL);
+						ptr->mon_hsync[ptr->mon_n_hsync].hi = val.realnum;
+						break;
+					default:
+						/* We cannot currently know if a '\n' was found,
+						 * or this is a real error
+						 */
+						ptr->mon_hsync[ptr->mon_n_hsync].hi =
+						ptr->mon_hsync[ptr->mon_n_hsync].lo;
+						ptr->mon_n_hsync++;
+						goto HorizDone;
+				}
 				if (ptr->mon_n_hsync == CONF_MAX_HSYNC)
 					Error ("Sorry. Too many horizontal sync intervals.", NULL);
-				if (xf86getToken (NULL) != NUMBER)
-					Error (HORIZSYNC_MSG, NULL);
-				ptr->mon_hsync[ptr->mon_n_hsync].lo = val.realnum;
-				if (xf86getToken (NULL) == DASH)
-				{
-					if (xf86getToken (NULL) != NUMBER)
-						Error (HORIZSYNC_MSG, NULL);
-					ptr->mon_hsync[ptr->mon_n_hsync].hi = val.realnum;
-				}
-				else
-				{
-					xf86unGetToken (token);
-					ptr->mon_hsync[ptr->mon_n_hsync].hi =
-						ptr->mon_hsync[ptr->mon_n_hsync].lo;
-				}
 				ptr->mon_n_hsync++;
-			}
+			} while ((token = xf86getToken (NULL)) == NUMBER);
+HorizDone:
 			xf86unGetToken (token);
 			break;
+
 		case VERTREFRESH:
 			if (xf86getToken (NULL) != NUMBER)
 				Error (VERTREFRESH_MSG, NULL);
-			ptr->mon_vrefresh[ptr->mon_n_vrefresh].lo = val.realnum;
-			if (xf86getToken (NULL) == DASH)
-			{
-				if (xf86getToken (NULL) != NUMBER)
-					Error (VERTREFRESH_MSG, NULL);
-				ptr->mon_vrefresh[ptr->mon_n_vrefresh].hi = val.realnum;
-			}
-			else
-			{
-				xf86unGetToken (token);
-				ptr->mon_vrefresh[ptr->mon_n_vrefresh].hi =
-					ptr->mon_vrefresh[ptr->mon_n_vrefresh].lo;
-			}
-			ptr->mon_n_vrefresh++;
-			while ((token = xf86getToken (NULL)) == COMMA)
-			{
-				if (ptr->mon_n_vrefresh == CONF_MAX_HSYNC)
-					Error ("Sorry. Too many vertical refresh intervals.", NULL);
-				if (xf86getToken (NULL) != NUMBER)
-					Error (VERTREFRESH_MSG, NULL);
+			do {
 				ptr->mon_vrefresh[ptr->mon_n_vrefresh].lo = val.realnum;
-				if (xf86getToken (NULL) == DASH)
+				switch (token = xf86getToken (NULL))
 				{
-					if (xf86getToken (NULL) != NUMBER)
-						Error (VERTREFRESH_MSG, NULL);
-					ptr->mon_vrefresh[ptr->mon_n_vrefresh].hi = val.realnum;
-				}
-				else
-				{
-					xf86unGetToken (token);
-					ptr->mon_vrefresh[ptr->mon_n_vrefresh].hi =
+					case COMMA:
+						ptr->mon_vrefresh[ptr->mon_n_vrefresh].hi =
 						ptr->mon_vrefresh[ptr->mon_n_vrefresh].lo;
+						break;
+					case DASH:
+						if (xf86getToken (NULL) != NUMBER ||
+						    val.realnum < ptr->mon_vrefresh[ptr->mon_n_vrefresh].lo)
+							Error (VERTREFRESH_MSG, NULL);
+						ptr->mon_vrefresh[ptr->mon_n_vrefresh].hi = val.realnum;
+						break;
+					default:
+						/* We cannot currently know if a '\n' was found,
+						 * or this is a real error
+						 */
+						ptr->mon_vrefresh[ptr->mon_n_vrefresh].hi =
+						ptr->mon_vrefresh[ptr->mon_n_vrefresh].lo;
+						ptr->mon_n_vrefresh++;
+						goto VertDone;
 				}
+				if (ptr->mon_n_vrefresh == CONF_MAX_VREFRESH)
+					Error ("Sorry. Too many vertical refresh intervals.", NULL);
 				ptr->mon_n_vrefresh++;
-			}
+			} while ((token = xf86getToken (NULL)) == NUMBER);
+VertDone:
 			xf86unGetToken (token);
 			break;
+
 		case GAMMA:
 			if( xf86getToken (NULL) != NUMBER )
 			{
