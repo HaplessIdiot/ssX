@@ -1,4 +1,5 @@
 XFree86 4.2.99.1 (5 June 2002)
+ 186. Add Peritek Borealis support to the I128 driver (Robin Cutshaw).
  185. Modify the r128 and radeon drivers to use fbdev's DPMS support when
       fbdev is enabled (#5219, Michel Dänzer).
  184. Add support for the composite sync mode flag to the radeon driver
@@ -14896,4 +14897,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2244 2002/06/05 19:46:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2245 2002/06/05 20:05:40 dawes Exp $
