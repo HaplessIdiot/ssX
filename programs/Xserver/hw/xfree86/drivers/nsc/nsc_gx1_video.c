@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_video.c,v 1.2 2002/12/12 21:27:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_video.c,v 1.3 2003/01/14 09:34:32 alanh Exp $ */
 /*
  * $Workfile: nsc_gx1_video.c $
  * $Revision$
@@ -206,6 +206,10 @@ static int GX1QueryImageAttributes(ScrnInfoPtr,
 				   int *, int *);
 
 static void GX1BlockHandler(int, pointer, pointer, pointer);
+static void SetVideoPosition(int x, int y, int width, int height,
+			     short src_w, short src_h, short drw_w,
+			     short drw_h, int id, int offset,
+			     ScrnInfoPtr pScrn);
 
 extern void GX1AccelSync(ScrnInfoPtr pScreenInfo);
 
@@ -885,6 +889,59 @@ GX1AllocateMemory(ScrnInfoPtr pScrn, FBAreaPtr area, int numlines)
    }
    return new_area;
 }
+static BoxRec dstBox;
+static int srcPitch = 0, srcPitch2 = 0, dstPitch = 0;
+static INT32 Bx1, Bx2, By1, By2;
+static int top, left, npixels, nlines;
+static int offset, s1offset = 0, s2offset = 0, s3offset = 0;
+static unsigned char *dst_start;
+static int TVOverScanX;
+static void
+SetVideoPosition(int x, int y, int width, int height,
+		 short src_w, short src_h, short drw_w, short drw_h,
+		 int id, int offset, ScrnInfoPtr pScrn)
+{
+   long xstart, ystart;
+   unsigned long lines = 0;
+   unsigned long y_extra;
+   unsigned short xcrop = 0;
+
+   if (x < 0) {
+      if (TVOverScanX) {
+	 xcrop = TVOverScanX - x;
+	 xstart = TVOverScanX;
+	 drw_w -= (TVOverScanX - x);
+      } else {
+	 xcrop = (-x);
+	 xstart = 0;
+	 drw_w -= (-x);
+      }
+   } else {
+      if (TVOverScanX) {
+	 xcrop = TVOverScanX - x;
+	 xstart = TVOverScanX;
+	 drw_w -= (TVOverScanX - x);
+      } else {
+	 xcrop = 0;
+	 xstart = (unsigned long)x;
+      }
+   }
+   if (y < 0) {
+      lines = (-y) * src_h / drw_h;
+      ystart = 0;
+      drw_h += y;
+      y_extra = lines * dstPitch;
+   } else {
+      ystart = y;
+      lines = 0;
+      y_extra = 0;
+   }
+
+   GFX(set_video_window(xstart, ystart, drw_w, drw_h));
+   GFX(set_video_offset(offset + y_extra));
+   GFX(set_video_left_crop(xcrop));
+
+}
 
 /*----------------------------------------------------------------------------
  * GX1DisplayVideo
@@ -937,22 +994,19 @@ GX1DisplayVideo(ScrnInfoPtr pScrn,
    }
 
    if (pGeode->TV_Overscan_On) {
+      if (dstBox->x1 < 0)
+	 TVOverScanX = pGeode->TVOx;
+      else
+	 TVOverScanX = 0;
       dstBox->x1 += pGeode->TVOx;
       dstBox->y1 += pGeode->TVOy;
    }
    GFX(set_video_size(width, height));
-   GFX(set_video_offset(offset));
-   GFX(set_video_window(dstBox->x1, dstBox->y1, drw_w, drw_h));
    GFX(set_video_scale(width, height, drw_w, drw_h));
+   SetVideoPosition(dstBox->x1, dstBox->y1, width, height, src_w, src_h,
+		    drw_w, drw_h, id, offset, pScrn);
    GFX(set_color_space_YUV(0));
 }
-
-static BoxRec dstBox;
-static int srcPitch = 0, srcPitch2 = 0, dstPitch = 0;
-static INT32 Bx1, Bx2, By1, By2;
-static int top, left, npixels, nlines;
-static int offset, s1offset = 0, s2offset = 0, s3offset = 0;
-static unsigned char *dst_start;
 
 /*----------------------------------------------------------------------------
  * GX1PutImage	: This function writes a single frame of video into a drawable.

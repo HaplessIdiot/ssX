@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_video.c,v 1.2 2002/12/12 21:27:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_video.c,v 1.3 2003/01/14 09:34:32 alanh Exp $ */
 /*
  * $Workfile: nsc_gx2_video.c $
  * $Revision$
@@ -202,6 +202,9 @@ static int GX2QueryImageAttributes(ScrnInfoPtr, int, unsigned short *,
 				   unsigned short *, int *, int *);
 
 static void GX2BlockHandler(int, pointer, pointer, pointer);
+static void SetVideoPosition(int x, int y, int width, int height,
+			     short src_w, short src_h, short drw_w,
+			     short drw_h, int id, int offset);
 
 extern void GX2AccelSync(ScrnInfoPtr pScreenInfo);
 
@@ -848,6 +851,36 @@ static int offset, s1offset = 0, s2offset = 0, s3offset = 0;
 static unsigned char *dst_start;
 static int d2offset = 0, d3offset = 0;
 
+static void
+SetVideoPosition(int x, int y, int width, int height,
+		 short src_w, short src_h, short drw_w, short drw_h,
+		 int id, int offset)
+{
+   unsigned long lines = 0;
+   unsigned long y_extra, uv_extra = 0;
+
+   if (y < 0) {
+      lines = (-y) * src_h / drw_h;
+      drw_h += y;
+      y = 0;
+      y_extra = lines * dstPitch;
+      uv_extra = (lines >> 1) * (dstPitch2);
+   } else {
+      lines = 0;
+      y_extra = 0;
+   }
+
+   if ((id == FOURCC_Y800) || (id == FOURCC_I420) || (id == FOURCC_YV12)) {
+      GFX(set_video_window(x, y, drw_w, drw_h));
+      GFX(set_video_yuv_offsets(offset + y_extra,
+				offset + d3offset + uv_extra,
+				offset + d2offset + uv_extra));
+   } else {
+      GFX(set_video_window(x, y, drw_w, drw_h));
+      GFX(set_video_offset(offset + y_extra));
+   }
+}
+
 /*----------------------------------------------------------------------------
  * GX2DisplayVideo
  *
@@ -881,35 +914,29 @@ GX2DisplayVideo(ScrnInfoPtr pScrn,
    case FOURCC_UYVY:			/* UYVY */
       GFX(set_video_format(VIDEO_FORMAT_UYVY));
       GFX(set_video_size(width, height));
-      GFX(set_video_offset(offset));
       break;
    case FOURCC_Y800:			/* Y800 - greyscale - we munge it! */
    case FOURCC_YV12:			/* YV12 */
    case FOURCC_I420:			/* I420 */
       GFX(set_video_format(VIDEO_FORMAT_Y0Y1Y2Y3));
       GFX(set_video_size(width, height));
-      GFX(set_video_yuv_offsets(offset,
-				offset + d3offset, offset + d2offset));
       GFX(set_video_yuv_pitch(dstPitch, dstPitch2));
       break;
    case FOURCC_YUY2:			/* YUY2 */
       GFX(set_video_format(VIDEO_FORMAT_YUYV));
       GFX(set_video_size(width, height));
-      GFX(set_video_offset(offset));
       break;
    case FOURCC_Y2YU:			/* Y2YU */
       GFX(set_video_format(VIDEO_FORMAT_Y2YU));
       GFX(set_video_size(width, height));
-      GFX(set_video_offset(offset));
       break;
    case FOURCC_YVYU:			/* YVYU */
       GFX(set_video_format(VIDEO_FORMAT_YVYU));
       GFX(set_video_size(width, height));
-      GFX(set_video_offset(offset));
       break;
    }
-
-   GFX(set_video_window(dstBox->x1, dstBox->y1, drw_w, drw_h));
+   SetVideoPosition(dstBox->x1, dstBox->y1, width, height, src_w,
+		    src_h, drw_w, drw_h, id, offset);
    GFX(set_video_scale(width, height, drw_w, drw_h));
 
 }

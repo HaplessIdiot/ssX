@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_cursor.c,v 1.1 2002/12/10 15:12:24 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_cursor.c,v 1.3 2003/01/14 09:34:32 alanh Exp $ */
 /*
  * $Workfile: nsc_gx2_cursor.c $
  * $Revision$
@@ -241,7 +241,18 @@ GX2SetCursorPosition(ScrnInfoPtr pScreenInfo, int x, int y)
 {
    GeodePtr pGeode = GEODEPTR(pScreenInfo);
 
-   GFX(set_cursor_position(pGeode->CursorStartOffset, x, y, 0, 0));
+   unsigned short xhot = 0, yhot = 0;
+
+   if (x < 0) {
+      xhot = (unsigned short)(-x);
+      x = 0;
+   }
+   if (y < 0) {
+      yhot = (unsigned short)(-y);
+      y = 0;
+   }
+
+   GFX(set_cursor_position(pGeode->CursorStartOffset, x, y, xhot, yhot));
    GFX(set_cursor_enable(1));
 }
 

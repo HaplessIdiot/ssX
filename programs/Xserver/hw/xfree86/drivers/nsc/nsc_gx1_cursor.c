@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_cursor.c,v 1.1 2002/12/10 15:12:23 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_cursor.c,v 1.3 2003/01/14 09:34:31 alanh Exp $ */
 /*
  * $Workfile: nsc_gx1_cursor.c $
  * $Revision$
@@ -241,11 +241,22 @@ GX1SetCursorPosition(ScrnInfoPtr pScreenInfo, int x, int y)
 {
    GeodePtr pGeode = GEODEPTR(pScreenInfo);
 
+   unsigned short xhot = 0, yhot = 0;
+
+   if (x < 0) {
+      xhot = (unsigned short)(-x);
+      x = 0;
+   }
+   if (y < 0) {
+      yhot = (unsigned short)(-y);
+      y = 0;
+   }
+
    if (pGeode->TV_Overscan_On) {
       x += pGeode->TVOx;
       y += pGeode->TVOy;
    }
-   GFX(set_cursor_position(pGeode->CursorStartOffset, x, y, 0, 0));
+   GFX(set_cursor_position(pGeode->CursorStartOffset, x, y, xhot, yhot));
    GFX(set_cursor_enable(1));
 }
 
