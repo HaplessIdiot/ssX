@@ -33,7 +33,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 **
 **
 ***************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/XvMC/hw/i810/I810XvMC.c,v 1.1 2001/09/27 08:25:03 alanh Exp $ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -107,7 +107,7 @@ Status XvMCCreateContext(Display *display, XvPortID port,
 			 XvMCContext *context) {  
   i810XvMCContext *pI810XvMC;
   char busIdString[10];
-  uint priv_count;
+  int priv_count;
   uint *priv_data;
   uint magic;
   Status ret;
@@ -407,7 +407,7 @@ Status XvMCCreateSurface( Display *display, XvMCContext *context,
 			  XvMCSurface *surface) {
   i810XvMCContext *pI810XvMC;
   i810XvMCSurface *pI810Surface;
-  uint priv_count;
+  int priv_count;
   uint *priv_data;
   Status ret;
 
@@ -2815,12 +2815,15 @@ Status XvMCPutSurface(Display *display,XvMCSurface *surface,
   unsigned int xscaleInt = 0,xscaleFract = 0,yscaleInt = 0,yscaleFract = 0;
   unsigned int xscaleFractUV = 0,xscaleIntUV = 0,yscaleFractUV = 0;
   unsigned int yscaleIntUV = 0,yPitch = 0,uvPitch = 0;
-  unsigned int ovcmd = 0,d;
+  unsigned int ovcmd = 0;
+  uint d;
   double xscale,yscale;
   int diff;
   int clipped_srcx, clipped_srcy, clipped_destx, clipped_desty;
   int clipped_srcw, clipped_srch, clipped_destw, clipped_desth;
-  int x1,y1,x2 = 0,y2 = 0,nChilds;
+  uint x1,y1;
+  int x2 = 0, y2 = 0;
+  uint nChilds;
   int stat;
   Window win,root,parent,*pChilds;
 
@@ -2875,7 +2878,7 @@ Status XvMCPutSurface(Display *display,XvMCSurface *surface,
     y1 += y2;
     win = parent;
   }while(win != root);
-  XGetGeometry(display,root, &root, &d, &d, &x2, &y2, &d, &d);
+  XGetGeometry(display,root, &root, &x2, &y2, &d, &d, &d, &d);
 
   /* Extents is the window clipped with the screen */
   extents.x1 = 0;
@@ -3577,7 +3580,8 @@ Status XvMCCreateSubpicture(Display *display, XvMCContext *context,
                           int xvimage_id) {
   i810XvMCContext *pI810XvMC;
   i810XvMCSubpicture *pI810Subpicture;
-  uint priv_count,*priv_data;
+  int priv_count;
+  uint *priv_data;
   Status ret;
 
   if((subpicture == NULL) || (context == NULL) || (display == NULL)){
