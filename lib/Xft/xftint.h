@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftint.h,v 1.9 2000/12/05 03:13:28 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftint.h,v 1.10 2000/12/06 18:03:24 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -131,6 +131,63 @@ typedef struct _XftSubst {
     XftTest		*test;
     XftEdit		*edit;
 } XftSubst;
+
+/*
+ * I tried this with functions that took va_list* arguments
+ * but portability concerns made me change these functions
+ * into macros (sigh).
+ */
+
+#define _XftPatternVapBuild(result, orig, va)			    \
+{								    \
+    XftPattern	*__p__ = (orig);				    \
+    const char	*__o__;						    \
+    XftValue	__v__;						    \
+								    \
+    if (!__p__)							    \
+    {								    \
+	__p__ = XftPatternCreate ();				    \
+	if (!__p__)		    				    \
+	    goto _XftPatternVapBuild_bail0;			    \
+    }				    				    \
+    for (;;)			    				    \
+    {				    				    \
+	__o__ = va_arg (va, const char *);			    \
+	if (!__o__)		    				    \
+	    break;		    				    \
+	__v__.type = va_arg (va, XftType);			    \
+	switch (__v__.type) {	    				    \
+	case XftTypeVoid:					    \
+	    goto _XftPatternVapBuild_bail1;       		    \
+	case XftTypeInteger:	    				    \
+	    __v__.u.i = va_arg (va, int);			    \
+	    break;						    \
+	case XftTypeDouble:					    \
+	    __v__.u.d = va_arg (va, double);			    \
+	    break;						    \
+	case XftTypeString:					    \
+	    __v__.u.s = va_arg (va, char *);			    \
+	    break;						    \
+	case XftTypeBool:					    \
+	    __v__.u.b = va_arg (va, Bool);			    \
+	    break;						    \
+	}							    \
+	if (!XftPatternAdd (__p__, __o__, __v__, True))		    \
+	    goto _XftPatternVapBuild_bail1;			    \
+    }								    \
+    result = __p__;						    \
+    goto _XftPatternVapBuild_return;				    \
+								    \
+_XftPatternVapBuild_bail1:					    \
+    if (!orig)							    \
+	XftPatternDestroy (__p__);				    \
+_XftPatternVapBuild_bail0:					    \
+    result = 0;							    \
+								    \
+_XftPatternVapBuild_return:					    \
+    ;								    \
+}
+
 
 /* xftcfg.c */
 Bool
@@ -339,8 +396,6 @@ Bool
 XftNameConstant (char *string, int *result);
 
 /* xftpat.c */
-XftPattern *
-_XftPatternVapBuild (XftPattern *orig, va_list *vap);
 
 /* xftrender.c */
 

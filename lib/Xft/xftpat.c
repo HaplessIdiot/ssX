@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/lib/Xft/xftpat.c,v 1.2 2000/11/30 06:59:45 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -339,57 +339,12 @@ bail0:
 }
 
 XftPattern *
-_XftPatternVapBuild (XftPattern *orig, va_list *vap)
-{
-    va_list	va = *vap;
-    const char	*object;
-    XftValue	v;
-    XftPattern	*p;
-    
-    p = orig;
-    if (!p)
-    {
-	p = XftPatternCreate ();
-	if (!p)
-	    return 0;
-    }
-    for (;;)
-    {
-	object = va_arg (va, const char *);
-	if (!object)
-	    break;
-	v.type = va_arg (va, XftType);
-	switch (v.type) {
-	case XftTypeVoid:
-	    goto bail;
-	case XftTypeInteger:
-	    v.u.i = va_arg (va, int);
-	    break;
-	case XftTypeDouble:
-	    v.u.d = va_arg (va, double);
-	    break;
-	case XftTypeString:
-	    v.u.s = va_arg (va, char *);
-	    break;
-	case XftTypeBool:
-	    v.u.b = va_arg (va, Bool);
-	    break;
-	}
-	if (!XftPatternAdd (p, object, v, True))
-	    goto bail;
-    }
-    *vap = va;
-    return p;
-bail:
-    if (!orig)
-	XftPatternDestroy (p);
-    return 0;
-}
-
-XftPattern *
 XftPatternVaBuild (XftPattern *orig, va_list va)
 {
-    return _XftPatternVapBuild (orig, &va);
+    XftPattern	*ret;
+    
+    _XftPatternVapBuild (ret, orig, va);
+    return ret;
 }
 
 XftPattern *
@@ -398,7 +353,7 @@ XftPatternBuild (XftPattern *orig, ...)
     va_list	va;
     
     va_start (va, orig);
-    orig = _XftPatternVapBuild (orig, &va);
+    _XftPatternVapBuild (orig, orig, va);
     va_end (va);
     return orig;
 }

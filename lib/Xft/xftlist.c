@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/lib/Xft/xftlist.c,v 1.1 2000/11/30 06:59:45 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -70,35 +70,38 @@ XftObjectSetDestroy (XftObjectSet *os)
     free (os);
 }
 
-XftObjectSet *
-_XftObjectSetVapBuild (const char *first, va_list *vap)
-{
-    XftObjectSet    *os;
-    const char	    *object;
-    va_list	    va = *vap;
-    
-    os = XftObjectSetCreate ();
-    if (!os)
-	goto bail0;
-    object = first;
-    while (object)
-    {
-	if (!XftObjectSetAdd (os, object))
-	    goto bail1;
-	object = va_arg (va, const char *);
-    }
-    *vap = va;
-    return os;
-bail1:
-    XftObjectSetDestroy (os);
-bail0:
-    return 0;
+#define _XftObjectSetVapBuild(__ret__, __first__, __va__) 		\
+{									\
+    XftObjectSet    *__os__;						\
+    const char	    *__ob__;						\
+									\
+    __ret__ = 0;						    	\
+    __os__ = XftObjectSetCreate ();					\
+    if (!__os__)							\
+	goto _XftObjectSetVapBuild_bail0;				\
+    __ob__ = __first__;							\
+    while (__ob__)							\
+    {									\
+	if (!XftObjectSetAdd (__os__, __ob__))				\
+	    goto _XftObjectSetVapBuild_bail1;				\
+	__ob__ = va_arg (__va__, const char *);				\
+    }									\
+    __ret__ = __os__;							\
+									\
+_XftObjectSetVapBuild_bail1:						\
+    if (!__ret__ && __os__)					    	\
+	XftObjectSetDestroy (__os__);					\
+_XftObjectSetVapBuild_bail0:						\
+    ;									\
 }
 
 XftObjectSet *
 XftObjectSetVaBuild (const char *first, va_list va)
 {
-    return _XftObjectSetVapBuild (first, &va);
+    XftObjectSet    *ret;
+
+    _XftObjectSetVapBuild (ret, first, va);
+    return ret;
 }
 
 XftObjectSet *
@@ -108,7 +111,7 @@ XftObjectSetBuild (const char *first, ...)
     XftObjectSet    *os;
 
     va_start (va, first);
-    os = _XftObjectSetVapBuild (first, &va);
+    _XftObjectSetVapBuild (os, first, va);
     va_end (va);
     return os;
 }
@@ -310,10 +313,14 @@ XftListFonts (Display	*dpy,
     const char	    *first;
 
     va_start (va, screen);
-    pattern = _XftPatternVapBuild (0, &va);
+    
+    _XftPatternVapBuild (pattern, 0, va);
+    
     first = va_arg (va, const char *);
-    os = _XftObjectSetVapBuild (first, &va);
+    _XftObjectSetVapBuild (os, first, va);
+    
     va_end (va);
+    
     fs = XftListFontsPatternObjects (dpy, screen, pattern, os);
     XftPatternDestroy (pattern);
     XftObjectSetDestroy (os);
