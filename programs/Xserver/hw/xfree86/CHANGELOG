@@ -1,4 +1,11 @@
 XFree86 4.3.99.6 (xx May 2003)
+ 197. Fixes and updates for XKB keyboard maps:
+      - add asciitilde to Swedish 'nodeadkeys' map (Bugzilla #291).
+      - add map for true Romanian keyboard (Bugzilla #300, Manfred Pohler).
+      - add EuroSign to "us_intl" keyboard map (Bugzilla #309, Paul Bolle).
+      - fix some keys in Armenian 'phonetic' layout (Bugzilla #313, Ani).
+      - add some geometry files (Alexander Pohoyda).
+      - some cosmetic changes.
  196. Import FreeType 2.1.4, and do initial merge for config/build
       (David Dawes).
  195. Remove unnecessary links of libm (Marc La France).
@@ -17030,7 +17037,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2717 2003/05/28 16:02:32 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2718 2003/05/29 03:05:09 dawes Exp $
 
 
 

@@ -1747,7 +1747,14 @@
         <description xml:lang="bg">румънска</description>
         <description xml:lang="ru">Румынская</description>
       </configItem>
-      <variantList/>
+      <variantList>
+        <variant>
+          <configItem>
+            <name>ro_us</name>
+            <description>US keyboard with Romanian letters</description>
+          </configItem>
+        </variant>
+      </variantList>
     </layout>
     <layout>
       <configItem>
