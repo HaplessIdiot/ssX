@@ -3,12 +3,12 @@ XCOMM $Xorg: Imakefile,v 1.5 2000/08/17 19:41:44 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/Imakefile,v 3.22 2001/01/22 22:23:29 dawes Exp $
+XCOMM $XFree86: xc/Imakefile,v 3.23 2001/01/24 17:28:53 tsi Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
-RELEASE = "Release 6.5"
+RELEASE = XOrgReleaseString
 #ifndef OSName
 #define OSName Unknown Operating System!
 #endif
