@@ -679,7 +679,7 @@
   an ftp site for the binary distribution.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.4 1995/01/21 10:44:32 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.5 1995/01/25 11:08:52 dawes Exp $
 
 
 

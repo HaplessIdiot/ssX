@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.33 1995/01/21 07:12:25 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.34 1995/01/25 10:42:52 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -288,12 +288,12 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.33 1995/01/21 07:12:25 dawes Exp $
  * LinuxDoc stuff.  Uncomment those of these you want.  Check in
  * lnxdoc.tmpl for other things you might need to define/change here.
  *
- */
 #define HasLinuxDoc		YES
 #define HasLatex		YES
 #define HasDvips		YES
 #define BuildLinuxDocHtml	YES
 #define BuildAllDocs		YES
+ */
 
 /*
  * To install Japanese versions of the documentation uncomment this.

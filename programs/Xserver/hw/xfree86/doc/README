@@ -1,4 +1,4 @@
-  README for XFree86(TM) 3.1.1
+  README for XFree86[TM] 3.1.1
   The XFree86 Project, Inc
 
   15 January 1995
@@ -196,7 +196,7 @@
 
         o  SCO: 3.2.2, 3.2.4
 
-        o  ISC: 4.0, 4.1
+        o  ISC: 3.0, 4.0, 4.1
 
 
 
@@ -997,7 +997,7 @@
   archive, and which compile-time option selections were made when
   building the distribution.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.14 1995/01/23 01:30:05 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.15 1995/01/25 10:53:45 dawes Exp $
 
 
 

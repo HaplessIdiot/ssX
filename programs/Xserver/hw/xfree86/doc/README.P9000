@@ -168,8 +168,8 @@
 
   2.1.  Diamond Viper VLB
 
-  All Viper VLB's should work with this server, hopefully....  :-) Due
-  to Diamond's putting the same BIOS in some Viper VLB's as are used in
+  All Viper VLB's should work with this server, hopefully...  :-) Due to
+  Diamond's putting the same BIOS in some Viper VLB's as are used in
   Viper PCI's, the probe may detect you have a Viper PCI when you really
   have a Viper VLB.  If this happens, put chipset "vipervlb" into your
   XF86Config file.
@@ -456,7 +456,7 @@
   During the course of the next few months, people will be working on
   acceleration, etc.  Please send any patches to me (nygren@mit.edu).
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.6 1995/01/21 10:44:27 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.7 1995/01/25 11:08:51 dawes Exp $
 
 
 
