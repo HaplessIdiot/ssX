@@ -1005,11 +1005,11 @@ CloseDownFileDescriptor(oc)
 	_XSERVTransDisconnect(oc->trans_conn);
 	_XSERVTransClose(oc->trans_conn);
     }
-#ifdef LBX
-    ConnectionTranslation[connection] = 0;
-#else
+#ifndef LBX
     FreeOsBuffers(oc);
+    xfree(oc);
 #endif
+    ConnectionTranslation[connection] = 0;
     FD_CLR(connection, &AllSockets);
     FD_CLR(connection, &AllClients);
     FD_CLR(connection, &ClientsWithInput);
@@ -1024,9 +1024,6 @@ CloseDownFileDescriptor(oc)
     if (!XFD_ANYSET(&ClientsWriteBlocked))
     	AnyClientsWriteBlocked = FALSE;
     FD_CLR(connection, &OutputPending);
-#ifndef LBX
-    xfree(oc);
-#endif
 }
 
 /*****************
