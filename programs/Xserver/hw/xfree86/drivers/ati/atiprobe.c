@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.38 2001/01/06 20:58:07 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.39 2001/01/30 22:06:19 tsi Exp $ */
 /*
  * Copyright 1997 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -681,9 +681,14 @@ ATIMach64Probe
     CARD32 IOValue;
     CARD16 ChipType = 0;
 
+    if (!IOBase)
+        return NULL;
+
     if (pVideo)
     {
-        if ((IODecoding == BLOCK_IO) && (pVideo->size[1] < 8))
+        if ((IODecoding == BLOCK_IO) &&
+            ((pVideo->size[1] < 8) ||
+             (IOBase >= (CARD32)(-1 << pVideo->size[1]))))
             return NULL;
 
         ChipType = pVideo->chipType;
@@ -1310,7 +1315,7 @@ ATIProbe
             {
                 if ((pVideo->vendor != PCI_VENDOR_ATI) ||
                     (pVideo->chipType == PCI_CHIP_MACH32) ||
-                    IsATIBlockIOBase(pVideo->ioBase[1]))
+                    pVideo->size[1])
                     continue;
 
                 pPCI = pVideo->thisCard;
@@ -1346,10 +1351,10 @@ ATIProbe
             {
                 if ((pVideo->vendor != PCI_VENDOR_ATI) ||
                     (pVideo->chipType == PCI_CHIP_MACH32) ||
-                    !IsATIBlockIOBase(pVideo->ioBase[1]))
+                    !pVideo->size[1])
                     continue;
 
-                /* For now, ignore Rage128's */
+                /* For now, ignore Rage128's and Radeon's */
                 Chip = ATIChipID(pVideo->chipType, pVideo->chipRev);
                 if (Chip > ATI_CHIP_Mach64)
                     continue;
@@ -1523,7 +1528,7 @@ ATIProbe
             {
                 if ((pVideo->vendor != PCI_VENDOR_ATI) ||
                     (pVideo->chipType == PCI_CHIP_MACH32) ||
-                    IsATIBlockIOBase(pVideo->ioBase[1]))
+                    pVideo->size[1])
                     continue;
 
                 pPCI = pVideo->thisCard;
@@ -1619,7 +1624,7 @@ ATIProbe
             {
                 if ((pVideo->vendor != PCI_VENDOR_ATI) ||
                     (pVideo->chipType == PCI_CHIP_MACH32) ||
-                    IsATIBlockIOBase(pVideo->ioBase[1]))
+                    pVideo->base[1])
                     continue;
 
                 /* Check if this one has already been detected */
@@ -1674,7 +1679,7 @@ ATIProbe
         {
             if ((pVideo->vendor != PCI_VENDOR_ATI) ||
                 (pVideo->chipType == PCI_CHIP_MACH32) ||
-                !IsATIBlockIOBase(pVideo->ioBase[1]))
+                !pVideo->size[1])
                 continue;
 
             /* Check for Rage128's, Radeon's and later adapters */
