@@ -1,4 +1,7 @@
 XFree86 4.3.99.15 (xx October 2003)
+ 502. Build most libraries as shared by default. (Matthieu Herrb, 
+      David Dawes).
+ 501. Add missing symbol definition files for libraries (Matthieu Herrb).
  500. Add 'inet' keymaps for two Logitec keyboard models (Bugzilla #762,
       Eric Mountain; Bugzilla #766, Chris Hornbaker) and cleanup Logitec
       keymaps (Ivan Pascal).
@@ -17941,7 +17944,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2882 2003/10/13 11:32:25 pascal Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2883 2003/10/14 13:38:56 pascal Exp $
 
 
 
