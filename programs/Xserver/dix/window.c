@@ -70,7 +70,7 @@ SOFTWARE.
 *                                                               *
 *****************************************************************/
 
-/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.34tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.35 2003/11/10 18:21:47 tsi Exp $ */
 
 #include "misc.h"
 #include "scrnintstr.h"
@@ -1629,6 +1629,17 @@ MoveWindowInStack(pWin, pNextSib)
 	    (*pWin->drawable.pScreen->RestackWindow)(pWin, pOldNextSib);
     }
 
+#ifdef ROOTLESS
+    /*
+     * In rootless mode we can't optimize away window restacks.
+     * There may be non-X windows around, so even if the window
+     * is in the correct position from X's point of view,
+     * the underlying window system may want to reorder it.
+     */
+    else if (pWin->drawable.pScreen->RestackWindow)
+        (*pWin->drawable.pScreen->RestackWindow)(pWin, pWin->nextSib);
+#endif
+
     return( pFirstChange );
 }
 
@@ -2447,7 +2458,10 @@ ConfigureWindow(pWin, mask, vlist, client)
 	    goto ActuallyDoSomething;
     if (mask & CWStackMode)
     {
+#ifndef ROOTLESS
+        /* See above for why we always reorder in rootless mode. */
 	if (pWin->nextSib != pSib)
+#endif
 	    goto ActuallyDoSomething;
     }
     return(Success);
