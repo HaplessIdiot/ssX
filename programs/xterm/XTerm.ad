@@ -3,7 +3,10 @@
 !
 !
 !
-! $XFree86: xc/programs/xterm/XTerm.ad,v 3.26 2003/10/27 01:07:56 dickey Exp $
+! $XTermId: XTerm.ad,v 1.60 2004/07/03 00:46:21 tom Exp $
+! $XFree86: xc/programs/xterm/XTerm.ad,v 3.27 2004/03/04 02:21:54 dickey Exp $
+
+*saveLines: 1024
 
 *SimpleMenu*BackingStore: NotUseful
 *SimpleMenu*menuLabel.font: -adobe-helvetica-bold-r-normal--*-120-*-*-*-*-iso8859-*

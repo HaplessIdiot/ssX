@@ -1,10 +1,10 @@
-/* $XTermId: misc.c,v 1.224 2004/05/31 17:32:12 tom Exp $ */
+/* $XTermId: misc.c,v 1.226 2004/07/06 16:41:34 tom Exp $ */
 
 /*
  *	$Xorg: misc.c,v 1.3 2000/08/17 19:55:09 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/misc.c,v 3.88 2004/05/26 01:19:55 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/misc.c,v 3.89 2004/06/06 22:15:25 dickey Exp $ */
 
 /*
  *
@@ -241,6 +241,7 @@ HandleKeyPressed(Widget w GCC_UNUSED,
 {
     register TScreen *screen = &term->screen;
 
+    TRACE(("Handle 7bit-key\n"));
 #ifdef ACTIVEWINDOWINPUTONLY
     if (w == CURRENT_EMU(screen))
 #endif
@@ -256,6 +257,7 @@ HandleEightBitKeyPressed(Widget w GCC_UNUSED,
 {
     register TScreen *screen = &term->screen;
 
+    TRACE(("Handle 8bit-key\n"));
 #ifdef ACTIVEWINDOWINPUTONLY
     if (w == CURRENT_EMU(screen))
 #endif
