@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.33 2001/04/16 15:47:56 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.34 2001/04/19 14:14:04 tsi Exp $ */
 /*
  * Copyright 1997 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -1684,6 +1684,9 @@ ATIMach64AccelInit
      */
     pXAAInfo->ScanlineCPUToScreenColorExpandFillFlags =
         LEFT_EDGE_CLIPPING | LEFT_EDGE_CLIPPING_NEGATIVE_X |
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+	BIT_ORDER_IN_BYTE_MSBFIRST |
+#endif
         CPU_TRANSFER_PAD_DWORD | SCANLINE_PAD_DWORD;
     if (pATI->XModifier != 1)
         pXAAInfo->ScanlineCPUToScreenColorExpandFillFlags |= TRIPLE_BITS_24BPP;

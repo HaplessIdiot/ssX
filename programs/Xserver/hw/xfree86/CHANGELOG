@@ -1,4 +1,9 @@
 XFree86 4.0.99.3 (xx April 2001)
+ 418. Fix backwards font glyphs in the ati/Mach64 driver for big endian
+      platforms (#4579, Michael Dänzer).
+ 417. Add a build-time option to xf86config to make it append the major version
+      number to the config file name (David Dawes, prompted by #4577,
+      Branden Robinson).
  416. xf86config build fix for non-GNU make (Marc La France).
  415. Build fix for Summa driver on SunOS/Sparc (Marc La France).
  414. compiler.h cleanup (Marc La France).
@@ -13036,4 +13041,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1709 2001/04/23 15:54:00 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1710 2001/04/23 16:17:08 tsi Exp $
