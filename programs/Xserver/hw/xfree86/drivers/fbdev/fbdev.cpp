@@ -1,21 +1,18 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.cpp,v 1.5 2000/03/03 01:05:36 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.cpp,v 1.6 2000/03/20 15:57:54 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH FBDEV __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 fbdev \- video driver for framebuffer device
 .SH SYNOPSIS
+.nf
 .B "Section \*qDevice\*q"
-.br
 .BI "  Identifier \*q"  devname \*q
-.br
 .B  "  Driver \*qfbdev\*q"
-.br
 .BI "  BusID  \*qpci:" bus : dev : func \*q
-.br
 \ \ ...
-.br
 .B EndSection
+.fi
 .SH DESCRIPTION
 .B fbdev
 is an XFree86 driver for framebuffer devices.  This is a non-accelerated
@@ -53,6 +50,6 @@ Enable or disable use of the shadow framebuffer layer.  See
 shadowfb(__drivermansuffix__) for further information.  Default: on.
 .SH "SEE ALSO"
 XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1),
-X(1), fbdevhw(__drivermansuffix__)
+X(__miscmansuffix__), fbdevhw(__drivermansuffix__)
 .SH AUTHORS
 Authors include: Gerd Knorr

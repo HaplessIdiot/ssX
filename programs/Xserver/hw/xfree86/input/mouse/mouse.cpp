@@ -1,23 +1,19 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.cpp,v 1.1 2000/03/03 01:05:50 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.cpp,v 1.2 2000/03/20 15:58:03 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH MOUSE __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 mouse \- Mouse input driver
 .SH SYNOPSIS
+.nf
 .B "Section \*qInputDevice\*q"
-.br
 .BI "  Identifier \*q" idevname \*q
-.br
 .B  "  Driver \*qmouse\*q"
-.br
 .BI "  Option \*qProtocol\*q \*q" protoname \*q
-.br
 .BI "  Option \*qDevice\*q   \*q" devpath \*q
-.br
 \ \ ...
-.br
 .B EndSection
+.fi
 .SH DESCRIPTION
 .B mouse 
 is an XFree86 input driver for mice.  The driver supports most available
@@ -151,5 +147,5 @@ There are some other options that may be used to control various parameters
 for serial port communication, but they are not documented here because
 the driver sets them correctly for each mouse protocol type.
 .SH "SEE ALSO"
-XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(1),
+XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(__miscmansuffix__),
 README.mouse.

@@ -1,19 +1,17 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/chips.cpp,v 1.3 2000/03/03 01:05:34 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/chips.cpp,v 1.4 2000/03/20 15:57:52 dawes Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH CHIPS __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 chips \- Chips and Technologies video driver
 .SH SYNOPSIS
+.nf
 .B "Section \*qDevice\*q"
-.br
 .BI "  Identifier \*q"  devname \*q
-.br
 .B  "  Driver \*qchips\*q"
-.br
 \ \ ...
-.br
 .B EndSection
+.fi
 .SH DESCRIPTION
 .B chips 
 is an XFree86 driver for Chips and Technologies video processors.  The majority
@@ -189,7 +187,7 @@ Default: off.
 Force the driver to assume that the flat panel has an 18bit data bus.
 Default: off.
 .SH "SEE ALSO"
-XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(1)
+XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(__miscmansuffix__)
 .PP
 You are also recommended to read the README.chips file that comes with all
 XFree86 distributions, which discusses the

@@ -1,19 +1,17 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/vga.cpp,v 1.3 2000/03/03 01:05:47 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/vga.cpp,v 1.4 2000/03/20 15:58:00 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH VGA __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 vga \- Generic VGA video driver
 .SH SYNOPSIS
+.nf
 .B "Section \*qDevice\*q"
-.br
 .BI "  Identifier \*q"  devname \*q
-.br
 .B  "  Driver \*qvga\*q"
-.br
 \ \ ...
-.br
 .B EndSection
+.fi
 .SH DESCRIPTION
 .B vga 
 is an XFree86 driver for generic VGA video cards.  It can drive most
@@ -63,6 +61,6 @@ This option is recommended for performance reasons when running at depths
 when using those depths in a multi-head configuration where one or more
 of the other screens is operating at a different depth.
 .SH "SEE ALSO"
-XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(1)
+XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(__miscmansuffix__)
 .SH AUTHORS
 Authors include: Marc La France, David Dawes, and Dirk Hohndel.

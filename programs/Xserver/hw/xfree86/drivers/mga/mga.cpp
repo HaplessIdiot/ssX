@@ -1,19 +1,17 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.cpp,v 1.13 2000/03/07 01:37:49 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.cpp,v 1.14 2000/03/20 15:57:55 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH MGA __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 mga \- Matrox video driver
 .SH SYNOPSIS
+.nf
 .B "Section \*qDevice\*q"
-.br
 .BI "  Identifier \*q"  devname \*q
-.br
 .B  "  Driver \*qmga\*q"
-.br
 \ \ ...
-.br
 .B EndSection
+.fi
 .SH DESCRIPTION
 .B mga 
 is an XFree86 driver for Matrox video cards.  The driver is fully
@@ -126,7 +124,7 @@ Default: off.
 This sets the default pixel value for the YUV video overlay key.
 Default: undefined.
 .SH "SEE ALSO"
-XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(1)
+XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(__miscmansuffix__)
 .SH AUTHORS
 Authors include: Radoslaw Kapitan, Mark Vojkovich, and also David Dawes, Guy
 Desbief, Dirk Hohndel, Doug Merritt, Andrew E. Mileski, Andrew van der Stock,

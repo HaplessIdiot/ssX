@@ -1,19 +1,17 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128.cpp,v 1.3 2000/03/06 22:59:26 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128.cpp,v 1.4 2000/03/20 15:57:57 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH R128 __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 r128 \- ATI Rage 128 video driver
 .SH SYNOPSIS
+.nf
 .B "Section \*qDevice\*q"
-.br
 .BI "  Identifier \*q"  devname \*q
-.br
 .B  "  Driver \*qr128\*q"
-.br
 \ \ ...
-.br
 .B EndSection
+.fi
 .SH DESCRIPTION
 .B r128
 is an XFree86 driver for ATI Rage 128 based video cards.  It contains
@@ -65,7 +63,7 @@ mode (emulates VGA mode).  By default, all 8 bits per color component
 are used.  The default is
 .B off.
 .SH "SEE ALSO"
-XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(1)
+XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(__miscmansuffix__)
 .SH AUTHORS
 .nf
 Rickard E. (Rik) Faith   \fIfaith@precisioninsight.com\fP

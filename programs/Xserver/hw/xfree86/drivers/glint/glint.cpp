@@ -1,19 +1,17 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.cpp,v 1.2 2000/03/07 01:37:46 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.cpp,v 1.3 2000/03/20 15:57:54 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH GLINT __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 glint \- GLINT/Permedia video driver
 .SH SYNOPSIS
+.nf
 .B "Section \*qDevice\*q"
-.br
 .BI "  Identifier \*q"  devname \*q
-.br
 .B  "  Driver \*qglint\*q"
-.br
 \ \ ...
-.br
 .B EndSection
+.fi
 .SH DESCRIPTION
 .B glint 
 is an XFree86 driver for 3Dlabs & Texas Instruments GLINT/Permedia based video
@@ -109,6 +107,6 @@ The driver will try to auto-detect the memory clock for all chips.  If it's not
 detected correctly, the actual value (in MHz) should be specified with this
 option.
 .SH "SEE ALSO"
-XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(1)
+XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(__miscmansuffix__)
 .SH AUTHORS
 Authors include: Alan Hourihane, Dirk Hohndel, Stefan Dirsch, Michel Dänzer

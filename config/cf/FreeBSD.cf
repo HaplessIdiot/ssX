@@ -2,7 +2,7 @@ XCOMM platform:  $TOG: FreeBSD.cf /main/21 1997/10/05 20:42:34 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.90 2000/02/14 18:11:44 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.91 2000/02/15 13:51:38 dawes Exp $
 
 #ifndef UseElfFormat
 #define UseElfFormat		DefaultToElfFormat
@@ -382,6 +382,8 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 
 #ifndef InstallManPageLong
 #define InstallManPageLong(file,destdir,dest)				@@\
+BuildInstallHtmlManPage(file,dest,$(MANSUFFIX))				@@\
+									@@\
 install.man:: file.man							@@\
 	MakeDir($(DESTDIR)destdir)					@@\
 	$(RM) $(DESTDIR)destdir/dest.$(MANSUFFIX)*			@@\
@@ -392,6 +394,8 @@ install.man:: file.man							@@\
 
 #ifndef InstallGenManPageLong
 #define InstallGenManPageLong(file,destdir,dest,suffix)			@@\
+BuildInstallHtmlManPage(file,dest,suffix)				@@\
+									@@\
 install.man:: file.man							@@\
 	MakeDir($(DESTDIR)destdir)					@@\
 	$(RM) $(DESTDIR)destdir/dest.suffix*				@@\
@@ -418,8 +422,8 @@ install.man:: list							@@\
 /*
  * InstallManPageAliases - install soft links for aliases.
  */
-#ifndef InstallManPageAliases
-#define InstallManPageAliases(file,destdir,aliases)			@@\
+#ifndef InstallManPageAliasesBase
+#define InstallManPageAliasesBase(file,destdir,aliases)			@@\
 install.man::								@@\
 	@(SUFFIX=`echo $(DESTDIR)destdir/file.* | sed -e 's,.*/[^\.]*.,,'`; \ @@\
 	for i in aliases; do (set -x; \					@@\
@@ -429,12 +433,22 @@ install.man::								@@\
 	done)
 #endif
 
+#ifndef InstallManPageAliases
+#define InstallManPageAliases(file,destdir,aliases)			@@\
+InstallHtmlManPageAliases(file,aliases,$(MANSUFFIX))			@@\
+									@@\
+InstallManPageAliasesBase(file,destdir,aliases)
+#endif
+
+
 /*
  * InstallGenManPageAliases - install soft links for aliases.
  */
 #ifndef InstallGenManPageAliases
 #define InstallGenManPageAliases(file,destdir,suffix,aliases)		@@\
-	InstallManPageAliases(file,destdir,aliases)
+InstallHtmlManPageAliases(file,aliases,suffix)				@@\
+									@@\
+InstallManPageAliasesBase(file,destdir,aliases)
 #endif
 #endif
 

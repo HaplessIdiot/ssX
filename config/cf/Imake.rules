@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.64 2000/02/13 06:15:16 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.65 2000/03/05 16:59:00 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1177,6 +1177,8 @@ InstallTarget(install.ln,Concat(llib-l,libname.ln),$(INSTLIBFLAGS),dest)
  */
 #ifndef InstallManPageLong
 #define	InstallManPageLong(file,destdir,dest)				@@\
+BuildInstallHtmlManPage(file,dest,$(MANSUFFIX))				@@\
+									@@\
 InstallNamedTarget(install.man,file.man,$(INSTMANFLAGS),destdir,dest.$(MANSUFFIX))
 #endif /* InstallManPageLong */
 
@@ -1195,6 +1197,8 @@ InstallManPageLong(file,destdir,file)
  */
 #ifndef InstallManPageAliases
 #define	InstallManPageAliases(file,destdir,aliases)			@@\
+InstallHtmlManPageAliases(file,aliases,$(MANSUFFIX))			@@\
+									@@\
 install.man::								@@\
 	@(TMP=/tmp/tmp.$$$$; \						@@\
 	RemoveFile($${TMP}); \						@@\
@@ -1212,6 +1216,8 @@ install.man::								@@\
  */
 #ifndef InstallGenManPageLong
 #define	InstallGenManPageLong(file,destdir,dest,suffix)			@@\
+BuildInstallHtmlManPage(file,dest,suffix)				@@\
+									@@\
 install.man:: file.man							@@\
 	MakeDir($(DESTDIR)destdir)					@@\
 	$(INSTALL) -c $(INSTMANFLAGS) file.man $(DESTDIR)destdir/dest.suffix
@@ -1232,6 +1238,8 @@ InstallGenManPageLong(file,destdir,file,suffix)
  */
 #ifndef InstallGenManPageAliases
 #define	InstallGenManPageAliases(file,destdir,suffix,aliases)		@@\
+InstallHtmlManPageAliases(file,aliases,suffix)				@@\
+									@@\
 install.man::								@@\
 	@(TMP=/tmp/tmp.$$$$; \						@@\
 	RemoveFile($${TMP}); \						@@\
@@ -1241,6 +1249,35 @@ install.man::								@@\
 	done; \								@@\
 	RemoveFile($${TMP}))
 #endif /* InstallGenManPageAliases */
+
+#ifndef BuildInstallHtmlManPage
+#if BuildRman
+#define BuildInstallHtmlManPage(file,dest,suffix)			@@\
+AllTarget(dest.suffix.html)						@@\
+									@@\
+dest.suffix.html: file.man						@@\
+	RemoveFile(dest.suffix.html)					@@\
+	$(RMANCMD) < file.man > dest.suffix.html			@@\
+									@@\
+InstallNamedTarget(install.man,dest.suffix.html,$(INSTMANFLAGS),$(DOCHTMLDIR),dest.suffix.html)
+#else
+#define BuildInstallHtmlManPage(file,dest,suffix) /**/
+#endif
+#endif
+
+#ifndef InstallHtmlManPageAliases
+#if BuildRman
+#define InstallHtmlManPageAliases(file,aliases,suffix)			@@\
+install.man:: file.suffix.html						@@\
+	@for i in aliases; do (set -x; \				@@\
+	  RemoveFile($(DESTDIR)$(DOCHTMLDIR)/$$i.suffix.html); \	@@\
+	  (cd $(DESTDIR)$(DOCHTMLDIR); \				@@\
+	    $(LN) file.suffix.html $$i.suffix.html)); \			@@\
+	done
+#else
+#define InstallHtmlManPageAliases(file,aliases,suffix) /**/
+#endif
+#endif
 
 /*
  * ManKeywordsTarget - generate the database used by "man -k".

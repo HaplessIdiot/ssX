@@ -2,7 +2,7 @@ XCOMM platform:  $XConsortium: NetBSD.cf /main/16 1996/10/31 14:47:14 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.79 2000/02/21 18:05:30 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.80 2000/02/29 03:08:55 dawes Exp $
 
 
 #ifndef OSName
@@ -307,7 +307,8 @@ dirs:	.EXEC								@@\
 #define FileManSuffix	5
 #define ManSourcePath	$(MANPATH)/cat
 
-#define InstallManPageLong(file,destdir,dest)                           @@\
+#define InstallManPageLongBase(file,destdir,dest)			@@\
+									@@\
 all:: file.0								@@\
 									@@\
 file.0:: file.man							@@\
@@ -328,8 +329,15 @@ install.man::                                                           @@\
 clean::									@@\
 	RemoveFile(file.0)
 
+#define InstallManPageLong(file,destdir,dest)				@@\
+BuildInstallHtmlManPage(file,dest,$(MANSUFFIX))				@@\
+									@@\
+InstallManPageLongBase(file,destdir,dest)
+
 #define InstallGenManPageLong(file,destdir,dest,suffix)			@@\
-	InstallManPageLong(file,destdir,dest)
+BuildInstallHtmlManPage(file,dest,suffix)				@@\
+									@@\
+InstallManPageLongBase(file,destdir,dest)
 
 #define InstallMultipleMan(list,dest)                                   @@\
 install.man:: 								@@\
@@ -358,7 +366,7 @@ install.man:: 								@@\
 	  $(RM) $$i.0 ); \						@@\
 	done
 
-#define InstallManPageAliases(file,destdir,aliases)                     @@\
+#define InstallManPageAliasesBase(file,destdir,aliases)			@@\
 install.man:: 								@@\
 	@case '${MFLAGS}' in *[i]*) set +e;; esac; \                    @@\
 	for i in aliases; do \                                          @@\
@@ -368,8 +376,15 @@ install.man:: 								@@\
 		); \							@@\
 	done
 
+#define InstallManPageAliases(file,destdir,aliases)			@@\
+InstallHtmlManPageAliases(file,aliases,$(MANSUFFIX))			@@\
+									@@\
+InstallManPageAliasesBase(file,destdir,aliases)
+
 #define InstallGenManPageAliases(file,destdir,suffix,aliases)		@@\
-	InstallManPageAliases(file,destdir,aliases)
+InstallHtmlManPageAliases(file,aliases,suffix)				@@\
+									@@\
+InstallManPageAliasesBase(file,destdir,aliases)
 
 /*
  * Shared libraries supported starting in 1.0 on a.out platforms,

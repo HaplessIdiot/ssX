@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/16 1996/11/13 14:43:28 lehors $
-XCOMM $XFree86: xc/config/util/Imakefile,v 3.22 1999/12/27 00:39:18 robin Exp $
+XCOMM $XFree86: xc/config/util/Imakefile,v 3.23 1999/12/30 03:56:16 robin Exp $
 
 #if UseCCMakeDepend
 MDEP_PROG = makedepend
@@ -82,6 +82,19 @@ SimpleProgramTarget_1(makestrs)
 
 AllTarget(ProgramTargetName(revpath))
 SimpleProgramTarget_4(revpath)
+
+#if BuildRman
+VOLLIST="1:2:3:4:5:6:7:8:9:o:l:n:p"
+MANTITLEPRINTF="%s(%s) manual page"
+MANREFPRINTF="%s.%s.html"
+RMANVERSION="3.0.8+XFree86"
+AllTarget(ProgramTargetName(rman))
+SimpleProgramTarget_5(rman)
+SpecialCObjectRule(rman,NullParameter,-DVOLLIST='$(VOLLIST)' -DMANTITLEPRINTF='$(MANTITLEPRINTF)' -DMANREFPRINTF='$(MANREFPRINTF)' -DPOLYGLOTMANVERSION='$(RMANVERSION)')
+LinkSourceFile(rman.c,$(TOP)/extras/rman)
+LinkFile(rman.man,$(TOP)/extras/rman/rman.1)
+LinkBuildBinary(ProgramTargetName(rman))
+#endif
 
 InstallManPage(xmkmf,$(MANDIR))
 

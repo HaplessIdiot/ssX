@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.69 2000/03/03 01:05:22 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.70 2000/03/07 14:31:34 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -630,6 +630,24 @@ TCLIBDIR = TclLibDir
 #endif
 #ifndef ExtraManDefs
 #define ExtraManDefs -D__projectroot__=$(PROJECTROOT)
+#endif
+
+#ifndef BuildRman
+#define BuildRman YES
+#endif
+
+#ifndef RmanCmd
+#if BuildRman
+#define RmanCmd $(RMAN) -f HTML
+#endif
+#endif
+
+#ifndef BuildHtmlManPages
+#ifdef RmanCmd
+#define BuildHtmlManPages YES
+#else
+#define BuildHtmlManPages NO
+#endif
 #endif
 
 #ifndef LogDirectory

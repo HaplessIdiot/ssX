@@ -1,19 +1,17 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/input/keyboard/keyboard.cpp,v 1.1 2000/03/03 01:05:49 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/input/keyboard/keyboard.cpp,v 1.2 2000/03/20 15:58:01 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH KEYBOARD __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 keyboard \- Keyboard input driver
 .SH SYNOPSIS
+.nf
 .B "Section \*qInputDevice\*q"
-.br
 .BI "  Identifier \*q" idevname \*q
-.br
 .B  "  Driver \*qkeyboard\*q"
-.br
 \ \ ...
-.br
 .B EndSection
+.fi
 .SH DESCRIPTION
 .B keyboard 
 is an XFree86 input driver for keyboards.  The driver supports the standard
@@ -96,4 +94,4 @@ Some other XKB-related options are available, but they are incompatible
 with the ones listed above and are not recommended, so they are not
 documented here.
 .SH "SEE ALSO"
-XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(1).
+XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(__miscmansuffix__).
