@@ -26,7 +26,7 @@
  * this work is sponsored by Appian Graphics.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.23 2001/05/09 09:48:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.24 2001/05/16 07:56:07 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -157,6 +157,121 @@ PM3DAC_CalculateClock
     }
 
     return(actualclock);
+}
+
+static unsigned long
+PM4DAC_CalculateClock
+(
+ unsigned long req_clock,		/* In kHz units */
+ unsigned long ref_clock,		/* In kHz units */
+ unsigned char *param_m,		/* ClkPreScale */
+ unsigned char *param_n, 		/* ClkFeedBackScale */
+ unsigned char *param_p			/* ClkPostScale */
+ )
+{
+#define INITIALFREQERR 10000
+
+  long fMinVCO = 200000;	/* min fVCO is 200MHz (in 10000Hz units) */
+  long fMaxVCO = 400000;	/* max fVCO is 400MHz (in 10000Hz units) */
+  unsigned long int	M, N, P;
+  unsigned long int	fVCO;
+  unsigned long int	ActualClock;
+  int		Error;
+  int		LowestError = INITIALFREQERR;
+  short		bFoundFreq = FALSE;
+  int		cInnerLoopIterations = 0;
+  int		LoopCount;
+
+  /*
+   * Actual Equations:
+   *		fVCO = (ref_clock * M)/(N+1)
+   *		PIXELCLOCK = fVCO/(1<<p)
+   *		200 <= fVCO <= 400
+   *		24 <= N <= 80
+   *		1 <= M <= 15
+   *		0 <= P <= 3
+   *		1Mhz < ref_clock/(N+1) <= 2Mhz - not used
+   * For refclk == 14.318 we have the tighter equations:
+   *		32 <= N <= 80
+   *		3 <= M <= 12
+   * Notes:
+   *		The spec says that the PLLs will only do 260Mhz, but I have assumed 300Mhz 'cos
+   *		260Mhz is a crap limit.
+   */
+
+#define	P4RD_PLL_MIN_P	0
+#define	P4RD_PLL_MAX_P	3
+#define	P4RD_PLL_MIN_M	1
+#define	P4RD_PLL_MAX_M	12
+#define	P4RD_PLL_MIN_N	24
+#define	P4RD_PLL_MAX_N	80
+
+  for(P = P4RD_PLL_MIN_P; P <= P4RD_PLL_MAX_P; ++P) {
+      unsigned long int fVCOLowest, fVCOHighest;
+
+      /* it's pointless going through the main loop if all values of 
+       * N produce an fVCO outside the acceptable range */ 
+
+      M = P4RD_PLL_MIN_M;
+      N = ((M + 1) * (1 << P) * req_clock) / ref_clock;
+
+      fVCOLowest = (ref_clock * N) / (M + 1);
+
+      M = P4RD_PLL_MAX_M;
+      N = ((M + 1) * (1 << P) * req_clock) / ref_clock;
+
+      fVCOHighest = (ref_clock * N) / (M + 1);
+
+      if(fVCOHighest < fMinVCO || fVCOLowest > fMaxVCO)
+	  continue;
+
+      for(M = P4RD_PLL_MIN_M; M <= P4RD_PLL_MAX_M; ++M, ++cInnerLoopIterations)
+	{
+	  N = ((M + 1) * (1 << P) * req_clock) / ref_clock;
+
+	  if(N > P4RD_PLL_MAX_N || N < P4RD_PLL_MIN_N)
+	      continue;
+
+	  /*  we can expect rounding errors in calculating M, which will always be rounded down. */
+	  /*  So we'll checkout our calculated value of M along with (M+1) */
+
+	  for(LoopCount = (N == P4RD_PLL_MAX_N) ? 1 : 2; --LoopCount >= 0; ++N)
+	    {
+	      fVCO = (ref_clock * N) / (M + 1);
+	      
+	      if( (fVCO >= fMinVCO) && (fVCO <= fMaxVCO) )
+		{
+		  ActualClock = (fVCO / (1 << P));
+
+		  Error = ActualClock - req_clock;
+
+		  if(Error < 0)
+		      Error = -Error;
+
+		  /*  It is desirable that we use the lowest value of M if the*/
+		  /*  frequencies are the same.*/
+		  if(Error < LowestError || (Error == LowestError && M < *param_m))
+		    {
+		      bFoundFreq = TRUE;
+		      LowestError = Error;
+		      *param_m = M;
+		      *param_n = N;
+		      *param_p = P;
+		      if(Error == 0)
+			goto Done;
+		    }
+		}
+	    }
+	}
+    }
+
+Done:
+  if(bFoundFreq)
+    ActualClock = (ref_clock * (*param_n)) / (((*param_m) + 1) * (1 << (*param_p)));
+  else
+    ActualClock = 0;
+  
+  return(ActualClock);
 }
 
 void
@@ -296,8 +411,15 @@ Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode, GLINTRegPtr pReg)
     	unsigned long clockused;
 	
 	/* Let's program the dot clock */
-    	clockused = PM3DAC_CalculateClock(mode->Clock,
-	    pGlint->RefClock, &m,&n,&p);
+	switch (pGlint->Chipset) {
+	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA4:
+	  clockused = PM4DAC_CalculateClock(mode->Clock * 1, /* HACK */
+					    pGlint->RefClock, &m,&n,&p);
+	  break;
+	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
+	  clockused = PM3DAC_CalculateClock(mode->Clock,
+					    pGlint->RefClock, &m,&n,&p);
+	}
 	STOREDAC(PM3RD_DClk0PreScale, m);
 	STOREDAC(PM3RD_DClk0FeedbackScale, n);
 	STOREDAC(PM3RD_DClk0PostScale, p);
@@ -342,7 +464,7 @@ Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode, GLINTRegPtr pReg)
     case 24:
     	temp3 |= PM3RD_MiscControl_DIRECTCOLOR_ENABLE;
 	STOREDAC(PM2VDACRDPixelSize, 0x04);
-	STOREDAC(PM2VDACRDColorFormat, 0x60);
+	STOREDAC(PM2VDACRDColorFormat, 0x20);
     	break;
     case 32:
     	temp3 |= PM3RD_MiscControl_DIRECTCOLOR_ENABLE;
@@ -509,9 +631,7 @@ void Permedia3LoadPalette(
     LOCO *colors,
     VisualPtr pVisual
 ){
-#if 0 /* NOT YET */
     GLINTPtr pGlint = GLINTPTR(pScrn);
-#endif
     int i, index, shift = 0, j, repeat = 1;
 
     if (pScrn->depth == 15) {
@@ -527,14 +647,11 @@ void Permedia3LoadPalette(
 	    Permedia2WriteData(pScrn, colors[index].green);
 	    Permedia2WriteData(pScrn, colors[index].blue);
 	}
-	/* for video i/o */
-#if 0 /* NOT YET */
         GLINT_SLOW_WRITE_REG(index, PM3LUTIndex);
 	GLINT_SLOW_WRITE_REG((colors[index].red & 0xFF) |
 			     ((colors[index].green & 0xFF) << 8) |
 			     ((colors[index].blue & 0xFF) << 16),
 			     PM3LUTData);
-#endif
     }
 }
 
@@ -546,9 +663,7 @@ void Permedia3LoadPalette16(
     LOCO *colors,
     VisualPtr pVisual
 ){
-#if 0 /* NOT YET */
     GLINTPtr pGlint = GLINTPTR(pScrn);
-#endif
     int i, index, j;
 
     for(i = 0; i < numColors; i++) {
@@ -559,13 +674,11 @@ void Permedia3LoadPalette16(
 	    Permedia2WriteData(pScrn, colors[index].green);
 	    Permedia2WriteData(pScrn, colors[index >> 1].blue);
 	}
-#if 0 /* NOT YET */
         GLINT_SLOW_WRITE_REG(index, PM3LUTIndex);
 	GLINT_SLOW_WRITE_REG((colors[index].red & 0xFF) |
 			     ((colors[index].green & 0xFF) << 8) |
 			     ((colors[index].blue & 0xFF) << 16),
 			     PM3LUTData);
-#endif
 
 	if(index <= 31) {
 	    for (j = 0; j < 4; j++) {

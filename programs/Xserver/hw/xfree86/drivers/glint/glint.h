@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.48 2001/05/04 19:05:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.49 2001/05/24 19:55:04 alanh Exp $ */
 /*
  * Copyright 1997-2001 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -35,6 +35,7 @@
 #include "xf86cmap.h"
 #include "xf86i2c.h"
 #include "xf86DDC.h"
+#include "xf86xv.h"
 #ifdef XF86DRI
 #include "xf86drm.h"
 #include "sarea.h"
@@ -162,6 +163,11 @@ typedef struct {
     CARD32		PM3_AreaStippleMode;
     CARD32		PM3_VideoControl;
     int			InFifoSpace;
+#ifdef XvExtension
+    void		(*VideoTimerCallback)(ScrnInfoPtr, Time);
+    XF86VideoAdaptorPtr adaptor;
+    int                 videoKey;
+#endif
 #ifdef XF86DRI
     Bool		directRenderingEnabled;
     DRIInfoPtr		pDRIInfo;
@@ -189,6 +195,8 @@ typedef struct {
 			((PCI_VENDOR_3DLABS << 16) | PCI_CHIP_PERMEDIA2V)
 #define PCI_VENDOR_3DLABS_CHIP_PERMEDIA3	\
 			((PCI_VENDOR_3DLABS << 16) | PCI_CHIP_PERMEDIA3)
+#define PCI_VENDOR_3DLABS_CHIP_PERMEDIA4	\
+			((PCI_VENDOR_3DLABS << 16) | PCI_CHIP_PERMEDIA4)
 #define PCI_VENDOR_3DLABS_CHIP_300SX	\
 			((PCI_VENDOR_3DLABS << 16) | PCI_CHIP_300SX)
 #define PCI_VENDOR_3DLABS_CHIP_500TX	\

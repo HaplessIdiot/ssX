@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_regs.h,v 1.6 2001/04/18 09:24:48 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_regs.h,v 1.7 2001/05/08 19:31:22 alanh Exp $ */
 
 /*
  * glint register file 
@@ -915,6 +915,8 @@
 #define PM3TextureIndexMode1					0xb340
 #define PM3TextureIndexMode1And					0xb3d0
 #define PM3TextureIndexMode1Or					0xb3d8
+#define PM3TextureLODBiasS					0x8450
+#define PM3TextureLODBiasT					0x8458
 /* ... */
 #define PM3TextureMapSize					0xb428
 #define PM3TextureMapWidth0					0x8580

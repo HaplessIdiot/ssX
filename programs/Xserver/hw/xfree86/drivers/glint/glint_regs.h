@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.26 2001/04/19 09:28:32 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.27 2001/05/24 19:55:05 alanh Exp $ */
 
 /*
  * glint register file 
@@ -29,6 +29,7 @@
 #define PCI_CHIP_3DLABS_GAMMA					0x08
 #define PCI_CHIP_3DLABS_PERMEDIA2V				0x09
 #define PCI_CHIP_3DLABS_PERMEDIA3				0x0A
+#define PCI_CHIP_3DLABS_PERMEDIA4				0x0C
 #define PCI_CHIP_TI_PERMEDIA 	  				0x3d04
 
 /* The boards we know */
