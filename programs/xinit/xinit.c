@@ -1,5 +1,5 @@
 /* $XConsortium: xinit.c,v 11.61 95/01/09 21:20:29 kaleb Exp $ */
-/* $XFree86: xc/programs/xinit/xinit.c,v 3.6 1996/02/09 08:22:53 dawes Exp $ */
+/* $XFree86: xc/programs/xinit/xinit.c,v 3.7 1996/02/19 09:52:23 dawes Exp $ */
 
 /*
 
@@ -193,12 +193,12 @@ static void Execute (vec, envp)
     char **vec;				/* has room from up above */
     char **envp;
 {
-    execvpe (vec[0], vec, envp);
+    execve (vec[0], vec, envp);
 #ifndef __EMX__
     if (access (vec[0], R_OK) == 0) {
 	vec--;				/* back it up to stuff shell in */
 	vec[0] = SHELL;
-	execvpe (vec[0], vec, envp);
+	execve (vec[0], vec, envp);
     }
 #endif
     return;
