@@ -1,4 +1,7 @@
 XFree86 4.2.99.3 (xx November 2002)
+ 487. Change imake so that, when compiled with GCC, it invokes the pre-
+      processor through the gcc front-end, passing it imake's -v flag
+      (Marc La France).
  486. xf86cfg and xf86config patches, includind 1400x1050 mode, update list
       of modules, auto inclusion of the xtt module when running X -configure
       (A.1363, A.1364, A.1365, Chisato Yamauchi).
@@ -15509,4 +15512,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2391 2002/11/17 18:41:58 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2392 2002/11/18 05:24:21 paulo Exp $
