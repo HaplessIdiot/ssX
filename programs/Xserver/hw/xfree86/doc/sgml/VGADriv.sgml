@@ -386,6 +386,8 @@ responsibilities of the driver are:
 	   the video memory.  This implements the virtual-screen for the
 	   server.
 <item>	   Perhaps provide a function for use during VT-switching.
+<item>	   Perhaps provide a function to check if each mode is suitable for
+	   the chipset being used.
 </enum>
 
 Before stepping through the driver file in detail, here are some important
@@ -671,6 +673,13 @@ the displayed resolution.  All it does is set the starting address on the
 chipset to match the specified coordinate.  Follow the comments in the 
 stub driver for details on how to implement it.
 
+<sect1> The ValidMode() function <p>
+The <bf>ValidMode()</bf> function is required.  It is used to check
+for any chipset-dependent reasons why a graphics mode might not be valid.  It
+gets called by higher levels of the code after the Probe() stage.  In
+many cases no special checking will be required and this function will
+simply return TRUE always.
+
 <sect1> The SaveScreen() function <p>
 The <bf>SaveScreen()</bf> function is not needed by most chipsets.  This function
 would only be required if the extended registers that your driver needs
@@ -894,7 +903,7 @@ Sunnyvale, CA  94086 <newline>
 </descrip>
 
 <verb>
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VGADriv.sgml,v 3.0 1994/12/25 12:27:19 dawes Exp $
 </verb>
 
 </article>

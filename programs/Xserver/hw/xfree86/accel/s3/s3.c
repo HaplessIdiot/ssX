@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.56 1994/12/29 10:06:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.57 1995/01/10 10:22:54 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -61,6 +61,12 @@ void (*vgaSaveScreenFunc)() = (void (*)())NoopDDA;
 
 extern int defaultColorVisualClass;
 
+static Bool s3ValidMode(
+#if NeedFunctionPrototypes 
+    DisplayModePtr 
+#endif
+);
+
 ScrnInfoRec s3InfoRec =
 {
    FALSE,			/* Bool configured */
@@ -68,7 +74,7 @@ ScrnInfoRec s3InfoRec =
    -1,				/* int scrnIndex */
    s3Probe,			/* Bool (* Probe)() */
    (Bool (*)())NoopDDA,		/* Bool (* Init)() */
-   (Bool (*)())NoopDDA,		/* Bool (* ValidMode)() */
+   (Bool (*)())s3ValidMode,	/* Bool (* ValidMode)() */
    (void (*)())NoopDDA,		/* void (* EnterLeaveVT)() */
    (void (*)())NoopDDA,		/* void (* EnterLeaveMonitor)() */
    (void (*)())NoopDDA,		/* void (* EnterLeaveCursor)() */
@@ -2349,4 +2355,11 @@ ti3025ClockSelect(freq)
    }
    LOCK_SYS_REGS;
    return(result);
+}
+
+static Bool
+s3ValidMode(mode)
+     DisplayModePtr mode;
+{
+   return(TRUE);
 }
