@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.136tsi Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.137 2002/11/22 22:55:56 tsi Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -803,7 +803,7 @@ TCLIBDIR = TclLibDir
  * various standards (e.g., Linux/OpenGL).
  */
 #ifndef SystemUsrLibDir
-#define SystemUsrLibDir /usr/lib
+#define SystemUsrLibDir /usr/LibDirName
 #endif
 #ifndef SystemUsrIncDir
 #define SystemUsrIncDir /usr/include
@@ -1109,7 +1109,7 @@ TCLIBDIR = TclLibDir
 #define GzipCmd gzip
 #endif
 #ifndef CppCmd
-#define CppCmd /lib/cpp
+#define CppCmd /LibDirName/cpp
 #endif
 #ifndef RawCppCmd
 #define RawCppCmd CppCmd -undef
