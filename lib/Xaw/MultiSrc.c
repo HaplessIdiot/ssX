@@ -27,7 +27,7 @@
  *
  * Much code taken from X11R3 String and Disk Sources.
  */
-/* $XFree86: xc/lib/Xaw/MultiSrc.c,v 1.27 2002/07/04 17:04:20 paulo Exp $ */
+/* $XFree86: xc/lib/Xaw/MultiSrc.c,v 1.28 2002/11/21 16:22:52 paulo Exp $ */
 
 /*
 
@@ -1254,7 +1254,7 @@ InitStringOrFile(MultiSrcObject src, Bool newString)
     }
     
     if (!src->multi_src.is_tempfile) {
-	if ((fd = open((char *)src->multi_src.string, open_mode, 0666)) != 0) {
+	if ((fd = open((char *)src->multi_src.string, open_mode, 0666)) != -1) {
 	    if ((file = fdopen(fd, fdopen_mode)) != NULL) {
 		(void)fseek(file, 0, SEEK_END);
 		src->multi_src.length = (XawTextPosition)ftell(file);
