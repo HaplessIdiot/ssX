@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.46 2002/01/23 17:00:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.47 2002/02/16 16:35:51 alanh Exp $ */
 
 
 /*
@@ -56,6 +56,10 @@
 #ifdef RENDER
 #include "mipict.h"
 #endif
+#include "selection.h"
+
+extern Selection *CurrentSelections;
+extern int NumCurrentSelections;
 
 /* DIX things */
 
@@ -85,6 +89,8 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(InitPtrFeedbackClassDeviceStruct)
   SYMFUNC(InitValuatorClassDeviceStruct)
   SYMFUNC(InitKeyClassDeviceStruct)
+  SYMFUNC(InitKeyboardDeviceStruct)
+  SYMFUNC(SendMappingNotify)
   /* dispatch.c */
   SYMFUNC(SetInputCheck)
   SYMFUNC(SendErrorToClient)
@@ -95,6 +101,8 @@ LOOKUP dixLookupTab[] = {
   SYMVAR(isItTimeToYield)
   SYMVAR(ClientStateCallback)
   SYMVAR(ServerGrabCallback)
+  SYMVAR(CurrentSelections)
+  SYMVAR(NumCurrentSelections)
   /* dixfonts.c */
   SYMFUNC(CloseFont)
   SYMFUNC(FontToXError)
@@ -323,6 +331,9 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(miCompositeRects)
   SYMVAR(PictureScreenPrivateIndex)
 #endif
+
+  /* os/utils.c */
+  SYMFUNC(GiveUp)
 
   { 0, 0 },
 
