@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/print_edid.c,v 1.11 2000/05/31 07:15:01 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/print_edid.c,v 1.12 2000/06/07 22:03:08 tsi Exp $ */
 
 /* print_edid.c: print out all information retrieved from display device 
  * 
@@ -131,6 +131,7 @@ print_dpms_features(int scrnIndex, struct disp_features *c)
 	xf86ErrorF("; Non RGB Multicolor Display\n");
 	break;
     default:
+	xf86ErrorF("\n");
 	break;
     }
     if (STD_COLOR_SPACE(c->msc))
@@ -217,13 +218,13 @@ print_detailed_monitor_section(int scrnIndex,
 	    print_detailed_timings(scrnIndex,&m[i].section.d_timings);
 	    break;
 	case DS_SERIAL:
-	    xf86DrvMsg(scrnIndex,X_INFO,"Serial No: %s",m[i].section.serial);
+	    xf86DrvMsg(scrnIndex,X_INFO,"Serial No: %s\n",m[i].section.serial);
 	    break;
 	case DS_ASCII_STR:
-	    xf86DrvMsg(scrnIndex,X_INFO," %s",m[i].section.ascii_data);
+	    xf86DrvMsg(scrnIndex,X_INFO," %s\n",m[i].section.ascii_data);
 	    break;
 	case DS_NAME:
-	    xf86DrvMsg(scrnIndex,X_INFO,"Monitor name: %s",m[i].section.name);
+	    xf86DrvMsg(scrnIndex,X_INFO,"Monitor name: %s\n",m[i].section.name);
 	    break;
 	case DS_RANGES:
 	    xf86DrvMsg(scrnIndex,X_INFO,
@@ -231,7 +232,7 @@ print_detailed_monitor_section(int scrnIndex,
 		       m[i].section.ranges.min_v, m[i].section.ranges.max_v, 
 		       m[i].section.ranges.min_h, m[i].section.ranges.max_h);
 	    if (m[i].section.ranges.max_clock != 0)
-		xf86ErrorF(" PixClock max %i MHz\n",m[i].section.ranges.max_clock);
+		xf86ErrorF(" PixClock max %i kHz\n",m[i].section.ranges.max_clock);
 	    else
 		xf86DrvMsg(scrnIndex,X_INFO,"\n");
 	    break;

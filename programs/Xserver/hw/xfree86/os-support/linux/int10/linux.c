@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/linux.c,v 1.9 2000/04/17 16:30:13 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/linux.c,v 1.11 2000/05/31 07:15:10 eich Exp $ */
 /*
  * linux specific part of the int10 module
  * Copyright 1999 Egbert Eich
@@ -158,7 +158,7 @@ xf86InitInt10(int entityIndex)
 	CARD8 *bios_base = (unsigned char *)(cs << 4);
 	
 	if (!int10_read_bios(screen,cs,bios_base)) {
-	    int cs = ((CARD16*)0)[(0x42<<1)+1];
+	    cs = ((CARD16*)0)[(0x42<<1)+1];
 	    bios_base = (unsigned char *)(cs << 4);
 	    if (!int10_read_bios(screen,cs,bios_base)) {
 		cs = V_BIOS >> 4;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.25 2000/05/03 00:44:07 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.26 2000/06/19 15:00:57 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -340,6 +340,8 @@ ATIPreInit
     GDevPtr          pGDev;
     EntityInfoPtr    pEntity;
     resPtr           pResources;
+    pciVideoPtr      pVideo;
+    pciConfigPtr     pPCI;
     DisplayModePtr   pMode;
     xf86Int10InfoPtr pInt10Info;
     vbeInfoPtr       pVBE;
@@ -433,6 +435,26 @@ ATIPreInit
         xf86UnloadSubModule(pDDCModule);
         return TRUE;
     }
+
+    if ((pVideo = pATI->PCIInfo))
+    {
+        pPCI = (pciConfigPtr)(pVideo->thisCard);
+
+        /* Resource conflict resolution might have moved I/O base */
+        if (pATI->CPIODecoding == BLOCK_IO)
+        {
+            pPCI->pci_base1 = pciReadLong(pPCI->tag, PCI_CMD_BASE_REG + 4);
+            pVideo->ioBase[1] = PCIGETIO(pPCI->pci_base1);
+
+            if (pATI->CPIOBase != pVideo->ioBase[1])
+            {
+                pATI->CPIO_BUS_CNTL = ATIIOPort(BUS_CNTL);
+                pATI->CPIO_GEN_TEST_CNTL = ATIIOPort(GEN_TEST_CNTL);
+            }
+        }
+    }
+    else
+        pPCI = NULL;
 
     /* Register resources */
     pEntity = xf86GetEntityInfo(pScreenInfo->entityList[0]);
@@ -1359,9 +1381,18 @@ ATIPreInit
         if (pATI->depth >= 8)
         {
             /* Set MMIO address from PCI configuration space, if available */
-            if (pATI->PCIInfo &&
-                (pATI->Block0Base = pATI->PCIInfo->memBase[2]))
-                pATI->Block0Base += 0x0400U;
+            if (pVideo)
+            {
+                /*
+                 * Update MMIO base address in case it was relocated by
+                 * resource conflict resolution.
+                 */
+                pPCI->pci_base2 = pciReadLong(pPCI->tag, PCI_CMD_BASE_REG + 8);
+                pVideo->memBase[2] = PCIGETMEMORY(pPCI->pci_base2);
+
+                if ((pATI->Block0Base = pVideo->memBase[2]))
+                   pATI->Block0Base += 0x0400U;
+            }
 
             /* Possibly set up for linear aperture */
             if (pATI->OptionLinear)

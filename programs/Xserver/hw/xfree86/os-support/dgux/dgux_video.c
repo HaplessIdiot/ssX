@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/dgux/dgux_video.c,v 1.4 1999/04/29 12:24:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/dgux/dgux_video.c,v 1.5 2000/06/27 14:27:29 tsi Exp $ */
 /*
  * INTEL DG/UX RELEASE 4.20 MU03
  * Copyright 1997 Takis Psarogiannakopoulos Cambridge,UK
@@ -82,32 +82,12 @@ Bool xf86LinearVidMem()
    return(TRUE);
 }
 
-
-
-pointer AllocAddress[MAXSCREENS][NUM_REGIONS];
-#ifndef SVR4
-static int mmapFd = -2;
-#endif
-
-
-
-#if 0
-/* For DGA support?? */
-static struct xf86memMap {
-  int offset;
-  int memSize;
-} xf86memMaps[MAXSCREENS];
-#endif
-
-
-
 pointer
 xf86MapVidMem(int ScreenNum, int Region, unsigned long Base, unsigned long Size)
 {
         pointer base;
         int fd;
 
-#if defined(DGUX)
         if ((fd = open(DEV_MEM, O_RDWR)) < 0)
         {
                 FatalError("xf86MapVidMem: failed to open %s (%s)\n",
@@ -121,76 +101,9 @@ xf86MapVidMem(int ScreenNum, int Region, unsigned long Base, unsigned long Size)
                 FatalError("%s: Could not mmap framebuffer [s=%x,a=%x] (%s)\n",
                            "xf86MapVidMem", Size, Base, strerror(errno));
         }
-#else /* HAS SVR#_MMAPDRV */
-#ifdef HAS_SVR3_MMAPDRV
-        if (mmapFd == -2)
-        {
-                mmapFd = open("/dev/mmap", O_RDWR);
-        }
-#endif
-        if (mmapFd >= 0)
-        {
-                /* To force the MMAP driver to provide the address */
-                base = (pointer)0;
-        }
-        else
-        {
-            AllocAddress[ScreenNum][Region] = xalloc(Size + 0x1000);
-            if (AllocAddress[ScreenNum][Region] == (pointer)0)
-            {
-                FatalError("xf86MapVidMem: can't alloc framebuffer space\n");
-                /* NOTREACHED */
-            }
-            base = (pointer)(((unsigned int)AllocAddress[ScreenNum][Region]
-                              & ~0xFFF) + 0x1000);
-        }
 
-
-#ifdef HAS_SVR3_MMAPDRV
-        if(mmapFd >= 0)
-        {
-            if((base = (pointer)ioctl(mmapFd, MAP,
-                           &(MapDSC[ScreenNum][Region]))) == MAP_FAILED)
-            {
-                FatalError("%s: Could not mmap framebuffer [s=%x,a=%x] (%s)\n",
-                           "xf86MapVidMem", Size, Base, strerror(errno));
-                /* NOTREACHED */
-            }
-
-#if 0
-/* inserted for DGA support */
-            xf86memMaps[ScreenNum].offset = Base;
-            xf86memMaps[ScreenNum].memSize = Size;
-#endif
-            return((pointer)base);
-        }
-#endif
-#endif /* DGUX */
-#if 0
-        xf86memMaps[ScreenNum].offset = Base;
-        xf86memMaps[ScreenNum].memSize = Size;
-#endif
         return(base);
 }
-
-
-
-
-
-
-#if 0
-void xf86GetVidMemData(ScreenNum, Base, Size)
-int ScreenNum;
-int *Base;
-int *Size;
-{
-   *Base = xf86memMaps[ScreenNum].offset;
-   *Size = xf86memMaps[ScreenNum].memSize;
-}
-#endif
-
-
-
 
 void xf86UnMapVidMem(ScreenNum, Region, Base, Size)
 int ScreenNum;

@@ -1,4 +1,17 @@
 XFree86 4.0.1a (XX XXXX 2000)
+ 441. Allow memory mapping during probe phase (Marc La France).
+ 440. Clean up os-support/dgux/dgux_video.c (Marc La France).
+ 439. Fix int10 bug that prevented recognition of video BIOS'es that are part
+      of the system BIOS (Marc La France).
+ 438. MGA driver warning fix (Marc La France).
+ 437. An update to change 425 (Marc La France).
+ 436. More EDID formatting changes (Marc La France).
+ 435. Fix bug that caused the relocation of PCI I/O bases assigned to multiples
+      of 0x0200 (but not 0x0400) by the system BIOS (Marc La France).
+ 434. Add ATI driver to Alpha, and experimentally, to ppc architectures.  ppc
+      support is still known to be incomplete (Marc La France).
+ 433. For IA64, compile everything, except PEX, that is also compiled for IA32
+      (Marc La France).
  432. Fix Cyrix driver for -configure (Alan Hourihane).
  431. Fix Glint PM3 memory detect when only 1MB of videoram (Alan Hourihane). 
  430. Fix DAC colour problem and blank out issue in glint driver 
@@ -10842,4 +10855,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1237 2000/07/09 21:02:15 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1238 2000/07/10 14:03:34 alanh Exp $

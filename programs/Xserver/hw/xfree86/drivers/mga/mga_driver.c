@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.163 2000/06/29 21:03:11 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.164 2000/07/08 22:09:10 mvojkovi Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -79,14 +79,6 @@
 #include "xf86RAC.h"
 #include "vbe.h"
 
-
-/*
- * If using cfb, cfb.h is required.  Select the others for the bpp values
- * the driver supports.
- */
-#define PSZ 8	/* needed for cfb.h */
-#include "cfb.h"
-#undef PSZ
 #include "cfb8_32.h"
 #include "fb.h"
 
