@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.48 2001/11/24 14:38:18 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.49 2001/12/06 15:28:23 tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -116,8 +116,6 @@ static void R128Restore(ScrnInfoPtr pScrn);
 static Bool R128ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static void R128DisplayPowerManagementSet(ScrnInfoPtr pScrn,
 					  int PowerManagementMode, int flags);
-static Bool R128EnterVTFBDev(int scrnIndex, int flags);
-static void R128LeaveVTFBDev(int scrnIndex, int flags);
 
 typedef enum {
   OPTION_NOACCEL,
@@ -1845,8 +1843,6 @@ Bool R128PreInit(ScrnInfoPtr pScrn, int flags)
 	if (!fbdevHWInit(pScrn, info->PciInfo, NULL)) return FALSE;
 	pScrn->SwitchMode    = fbdevHWSwitchMode;
 	pScrn->AdjustFrame   = fbdevHWAdjustFrame;
-	pScrn->EnterVT       = R128EnterVTFBDev;
-	pScrn->LeaveVT       = R128LeaveVTFBDev;
 	pScrn->ValidMode     = fbdevHWValidMode;
     }
 
@@ -3406,15 +3402,19 @@ Bool R128EnterVT(int scrnIndex, int flags)
     R128InfoPtr info  = R128PTR(pScrn);
 
     R128TRACE(("R128EnterVT\n"));
+    if (info->FBDev) {
+        if (!fbdevHWEnterVT(scrnIndex,flags)) return FALSE;
+    } else
+        if (!R128ModeInit(pScrn, pScrn->currentMode)) return FALSE;
+    if (info->accelOn)
+	R128EngineInit(pScrn);
+
 #ifdef XF86DRI
-    if (R128PTR(pScrn)->directRenderingEnabled) {
+    if (info->directRenderingEnabled) {
 	R128CCE_START(pScrn, info);
 	DRIUnlock(pScrn->pScreen);
     }
 #endif
-    if (!R128ModeInit(pScrn, pScrn->currentMode)) return FALSE;
-    if (info->accelOn)
-	R128EngineInit(pScrn);
 
     info->PaletteSavedOnVT = FALSE;
     pScrn->AdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
@@ -3439,29 +3439,12 @@ void R128LeaveVT(int scrnIndex, int flags)
 #endif
     R128SavePalette(pScrn, save);
     info->PaletteSavedOnVT = TRUE;
-    R128Restore(pScrn);
+    if (info->FBDev)
+        fbdevHWLeaveVT(scrnIndex,flags);
+    else
+        R128Restore(pScrn);
 }
 
-static Bool
-R128EnterVTFBDev(int scrnIndex, int flags)
-{
-    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-    R128InfoPtr info = R128PTR(pScrn);
-    R128SavePtr restore = &info->SavedReg;
-    fbdevHWEnterVT(scrnIndex,flags);
-    R128RestorePalette(pScrn,restore);
-    R128EngineInit(pScrn);
-    return TRUE;
-}
-
-static void R128LeaveVTFBDev(int scrnIndex, int flags)
-{
-    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-    R128InfoPtr info = R128PTR(pScrn);
-    R128SavePtr save = &info->SavedReg;
-    R128SavePalette(pScrn,save);
-    fbdevHWLeaveVT(scrnIndex,flags);
-}
 
 /* Called at the end of each server generation.  Restore the original text
    mode, unmap video memory, and unwrap and call the saved CloseScreen
