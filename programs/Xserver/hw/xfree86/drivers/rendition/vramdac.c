@@ -427,7 +427,7 @@ verite_setpalette(ScrnInfoPtr pScreenInfo, int numColors, int *indices,
 #ifdef DEBUG
     ErrorF ("Rendition: Debug verite_setpalette called\n");
 #endif
-
+    return;
     while (1) {
         crtc_status=verite_in32(iob+CRTCSTATUS);
         if (crtc_status & CRTCSTATUS_VERT_SYNC) 
