@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.38 2000/07/01 01:40:45 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.40 2000/08/04 16:13:32 eich Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -431,9 +431,11 @@ static pointer R128Setup(pointer module, pointer opts, int *errmaj,
 #endif
 			  fbdevHWSymbols,
 			  vbeSymbols,
-                          0 /* ddcsymbols */,
-			  0 /* i2csymbols */,
-			  0 /* shadowSymbols */,
+#if 0
+                          NULL /* ddcsymbols */,
+			  NULL /* i2csymbols */,
+			  NULL /* shadowSymbols */,
+#endif
 			  NULL);
 
         /*
