@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c /main/189 1996/01/10 17:15:44 kaleb $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.13 1996/01/10 05:44:08 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.14 1996/01/11 10:38:57 dawes Exp $
  */
 
 /*
@@ -2886,7 +2886,7 @@ static void VTInitI18N()
 	for(ns=s=tmp; ns && *s;) {
 	    while (*s && isspace(*s)) s++;
 	    if (!*s) break;
-	    if ((ns = end = index(s, ',')) != 0)
+	    if ((ns = end = index(s, ',')) == 0)
 		end = s + strlen(s);
 	    while (isspace(*end)) end--;
 	    *end = '\0';

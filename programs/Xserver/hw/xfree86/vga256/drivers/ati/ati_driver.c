@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.21tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.22 1995/05/28 11:52:30 dawes Exp $ */
 /*
  * Copyright 1994 and 1995 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -203,6 +203,16 @@
 #include "xf86_Config.h"
 #include "vga.h"
 #include "regati.h"
+
+#ifdef XFreeXDGA
+#include "X.h"
+#include "Xproto.h"
+#include "extnsionst.h"
+#include "scrnintstr.h"
+#include "servermd.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
 
 #ifndef __inline__
 #define __inline__ inline
@@ -2016,6 +2026,12 @@ ATIProbe()
          */
         ATIEnterLeave(LEAVE);
 
+#ifndef MONOVGA
+#ifdef XFreeXDGA
+	vga256InfoRec.directMode = XF86DGADirectPresent;
+#endif
+#endif
+
         /*
          * Return success.
          */
@@ -2044,6 +2060,13 @@ ATIEnterLeave(const Bool enter)
 
         static Bool entered = LEAVE;
         unsigned int tmp;
+
+#ifndef MONOVGA
+#ifdef XFreeXDGA
+	if (vga256InfoRec.directMode&XF86DGADirectGraphics && !enter)
+		return;
+#endif
+#endif
 
         if (enter == entered)
                 return;

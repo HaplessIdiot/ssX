@@ -1,5 +1,5 @@
 /* $XConsortium: et3_driver.c,v 1.4 95/01/16 13:18:13 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et3000/et3_driver.c,v 3.7 1995/01/28 17:08:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et3000/et3_driver.c,v 3.8 1995/05/27 03:16:28 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -39,6 +39,16 @@
 #include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #include "vga.h"
+
+#ifdef XFreeXDGA 
+#include "X.h"
+#include "Xproto.h"
+#include "extnsionst.h"
+#include "scrnintstr.h"
+#include "servermd.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
 
 typedef struct {
   vgaHWRec std;               /* good old IBM VGA */
@@ -211,6 +221,12 @@ ET3000Probe()
 
   vga256InfoRec.chipset = ET3000Ident(0);
   vga256InfoRec.bankedMono = TRUE;
+#ifndef MONOVGA
+#ifdef XFreeXDGA 
+  vga256InfoRec.directMode = XF86DGADirectPresent;
+#endif
+#endif
+
   return(TRUE);
 }
 
@@ -226,6 +242,13 @@ ET3000EnterLeave(enter)
      Bool enter;
 {
   unsigned char temp;
+
+#ifndef MONOVGA
+#ifdef XFreeXDGA 
+  if (vga256InfoRec.directMode&XF86DGADirectGraphics && !enter)
+    return;
+#endif
+#endif
 
   if (enter)
     {

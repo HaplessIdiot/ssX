@@ -1,6 +1,6 @@
 /*
  * $XConsortium: pvg_driver.c,v 1.5 95/01/16 13:18:21 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.19 1995/07/13 14:15:55 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.20 1995/09/23 06:54:13 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -58,6 +58,16 @@
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 #include "vga.h"
+
+#ifdef XFreeXDGA
+#include "X.h"
+#include "Xproto.h"
+#include "extnsionst.h"  
+#include "scrnintstr.h"
+#include "servermd.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
 
 #ifdef XF86VGA16
 #define MONOVGA
@@ -608,6 +618,12 @@ PVGA1Probe()
 	OFLG_SET(OPTION_FAST_DRAM, &PVGA1.ChipOptionFlags);
     }
     
+#ifndef MONOVGA
+#ifdef XFreeXDGA
+    vga256InfoRec.directMode = XF86DGADirectPresent;
+#endif
+#endif
+
     return(TRUE);
 }
 
@@ -693,6 +709,13 @@ PVGA1EnterLeave(enter)
      Bool enter;
 {
   unsigned char temp;
+
+#ifndef MONOVGA
+#ifdef XFreeXDGA 
+  if (vga256InfoRec.directMode&XF86DGADirectGraphics && !enter)
+    return;
+#endif
+#endif
 
   if (enter)
     {

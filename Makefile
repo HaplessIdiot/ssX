@@ -141,6 +141,8 @@ external.ln:
 	    $(MAKE_CMD) $@
 includes:
 	    $(MAKE_CMD) $@
+install.linkkit:
+	    $(MAKE_CMD) $@
 install.ln:
 	    $(MAKE_CMD) $@
 install.man:
