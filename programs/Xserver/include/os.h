@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.31 2000/04/05 18:14:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.32 2000/05/18 23:46:23 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -281,11 +281,13 @@ extern int MakeClientGrabPervious(
 #endif
 );
 
+#ifdef LBX
 extern void CloseDownFileDescriptor(
 #if NeedFunctionPrototypes
     ClientPtr /* client */
 #endif
 );
+#endif
 
 extern void AvailableClientInput(
 #if NeedFunctionPrototypes
