@@ -5,10 +5,10 @@
 
 <title>Information for SCO OpenServer Users
 <author>J. Kean Johnston (jkj@sco.com)
-<date>9 November 2002
+<date>14 February 2003
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.20 2002/06/03 21:22:09 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.21 2002/11/20 23:00:42 dawes Exp $
 </ident>
 
 <!-- Table of contents -->
@@ -21,17 +21,17 @@ $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.20 2002/06/03 21:
 Before you can either compile or execute a binary distribution of
 XFree86, the following conditions must be met:
 <itemize>
-  <item>Ensure that you are running Release 5.0.6 or later. This is required
+  <item>Ensure that you are running Release 5.0.4 or later. This is required
     because OSS646 is only supported on those platforms. There are no plans
     to support XFree86 on earlier releases of OpenServer.
-  <item>Ensure that OSS646, the ``Linkers and Libraries Update'' package is
+  <item>Ensure that OSS646, the ``Execution Environment Update'' package is
     installed, if appropriate.  Check the release notes for that update
     to see whether or not your current operating system requires this
-    update.  This supplement will be available to the public in March
+    update.  This supplement will be available to the public in February
     2003.
   <item>Ensure that OSS631, the "Graphics, Web and X11 Libraries" package
     is installed.  This ships standard with release 5.0.7 and later, and
-    is only required for 5.0.6 users.  This package will be updated fairly
+    is only required for 5.0.[456] users.  This package will be updated fairly
     frequently, and it us always suggested you have the latest possible
     version installed.  At some point in the future it may even update the
     libraries in 5.0.7, so it is worth checking the release notes for this
@@ -105,7 +105,7 @@ The SCO <tt/xterm/ terminfo description is not compatible with the <tt/xterm/
 in the R5 distribution.<p>
 
 To use a Bus/Keyboard or PS2 mouse you should configure the mouse drivers
-under SCO as above using '<tt>mkdev mouse</tt>'.  You may then use the 
+using '<tt>mkdev mouse</tt>'.  You may then use the 
 <tt>OsMouse</tt> option in your <tt>XF86Config</tt> to specify that XFree86
 should use the SCO mouse drivers.  To do this, set the <tt>Protocol</tt> to
 "<tt>OsMouse</tt>" in the <tt>Pointer</tt> section of your
