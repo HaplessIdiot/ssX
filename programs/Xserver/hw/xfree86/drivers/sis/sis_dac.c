@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.15 2000/08/01 20:52:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.c,v 1.16 2000/09/22 11:35:46 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -61,6 +61,9 @@ static  void    SiS530Threshold(ScrnInfoPtr pScrn, DisplayModePtr mode,
                                 unsigned short *Low, unsigned short *High);
 static  void    SiSThreshold(ScrnInfoPtr pScrn, DisplayModePtr mode,
                                 unsigned short *Low, unsigned short *High);
+
+unsigned short ch7005idx[0x11]={0x00,0x07,0x08,0x0a,0x0b,0x04,0x09,0x20,0x21,0x18,0x19,0x1a,0x1b,0x1c,0x1d,0x1e,0x1f};
+
 
 int
 compute_vclk(
@@ -465,10 +468,11 @@ SiS300Save(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     /*sisReg->sisRegs3C2 = inb(0x3CC);*/
     sisReg->sisRegs3C2 = inb(pSiS->RelIO+0x4c);
 
-    if (pSiS->LVDSFlags) 
+    if ((pSiS->VBFlags & (VB_LVDS | CRT2_LCD))==(VB_LVDS|CRT2_LCD)) 
         (*pSiS->SiSSaveLVDS)(pScrn, sisReg);
-
-    if (pSiS->VBFlags & CRT2_ENABLE) 
+    if ((pSiS->VBFlags & (VB_CHRONTEL | CRT2_TV))==(VB_CHRONTEL|CRT2_TV))
+	(*pSiS->SiSSaveChrontel)(pScrn,sisReg);		
+    if ((pSiS->VBFlags & (VB_301|VB_302|VB_303)) && (pSiS->VBFlags & (CRT2_LCD|CRT2_TV|CRT2_VGA))) 
         (*pSiS->SiSSave2)(pScrn, sisReg);
 }
 
@@ -514,12 +518,14 @@ SiS300Restore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
                         "Restore to - %02X Read after - %02X\n",
                         sisReg->sisRegs3C4[i], inb(VGA_SEQ_DATA));
     }
-    if (pSiS->LVDSFlags)  { /* For SiS LVDS */
-        (*pSiS->SiSRestoreLVDS)(pScrn, sisReg);  
-    }
-    if (pSiS->VBFlags & CRT2_ENABLE)  { /* For SiS301 */
-        (*pSiS->SiSRestore2)(pScrn, sisReg);  
-    }
+
+    if ((pSiS->VBFlags & (VB_LVDS | CRT2_LCD))==(VB_LVDS|CRT2_LCD)) 
+        (*pSiS->SiSRestoreLVDS)(pScrn, sisReg);
+    if ((pSiS->VBFlags & (VB_CHRONTEL | CRT2_TV))==(VB_CHRONTEL|CRT2_TV))
+	(*pSiS->SiSRestoreChrontel)(pScrn,sisReg);		
+    if ((pSiS->VBFlags & (VB_301|VB_302|VB_303)) && (pSiS->VBFlags & (CRT2_LCD|CRT2_TV|CRT2_VGA))) 
+        (*pSiS->SiSRestore2)(pScrn, sisReg);
+    
 
     /*outb(0x3C2, sisReg->sisRegs3C2);*/
     outb(pSiS->RelIO+0x42, sisReg->sisRegs3C2);
@@ -565,6 +571,23 @@ SiSLVDSSave(ScrnInfoPtr pScrn, SISRegPtr sisReg)
         }
         sisReg->sisRegs3C4[0x32] &= ~0x20;      /* Disable Lock Mode */
 }
+
+
+SiSChrontelSave(ScrnInfoPtr pScrn, SISRegPtr sisReg)
+{
+        SISPtr  pSiS = SISPTR(pScrn);
+        int     i;
+
+        /* for SiS Chrontel TV */
+        for (i=0; i<0x29; i++)  {
+                inSISIDXREG(pSiS->RelIO+4, i, sisReg->VBPart1[i]);
+        }
+	for (i=0; i<0x11; i++)
+		sisReg->ch7005[i]=GetCH7005(ch7005idx[i]);
+
+        sisReg->sisRegs3C4[0x32] &= ~0x20;      /* Disable Lock Mode */
+}
+
 
 static void
 SiS301Restore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
@@ -627,6 +650,42 @@ SiSLVDSRestore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 
         DisableBridge(pSiS->RelIO+0x30); 
         UnLockCRT2(pSiS->RelIO+0x30);  
+
+        /* SetCRT2ModeRegs() */
+        outSISIDXREG(pSiS->RelIO+0x04, 4, 0);
+        outSISIDXREG(pSiS->RelIO+0x04, 5, 0);
+        outSISIDXREG(pSiS->RelIO+0x04, 6, 0);
+        outSISIDXREG(pSiS->RelIO+0x04, 0, sisReg->VBPart1[0]);
+        outSISIDXREG(pSiS->RelIO+0x04, 1, sisReg->VBPart1[1]);
+
+        if (!(sisReg->sisRegs3D4[0x30] & 0x03) &&
+             (sisReg->sisRegs3D4[0x31] & 0x20))  {      /* disable CRT2 */
+                LockCRT2(pSiS->RelIO+0x30);  
+                return;
+        }
+        SetBlock(pSiS->RelIO+0x04, 0x02, 0x23, &(sisReg->VBPart1[0x02]));
+
+        orSISIDXREG(pSiS->RelIO+SROFFSET, 0x1E, 0x20);
+        andSISIDXREG(pSiS->RelIO+SROFFSET, 1, ~0x20);   /* DisplayOn */
+
+        EnableBridge(pSiS->RelIO+0x30);  
+        LockCRT2(pSiS->RelIO+0x30);  
+}
+
+static void
+SiSChrontelRestore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
+{
+        SISPtr  pSiS = SISPTR(pScrn);
+	int i;
+	unsigned short wtemp;
+
+        DisableBridge(pSiS->RelIO+0x30); 
+        UnLockCRT2(pSiS->RelIO+0x30);  
+
+	for (i=0; i<0x11; i++)
+	{	wtemp = ((sisReg->ch7005[i]) << 8) + (ch7005idx[i] & 0x00FF);
+		SetCH7005(wtemp);
+	}
 
         /* SetCRT2ModeRegs() */
         outSISIDXREG(pSiS->RelIO+0x04, 4, 0);
@@ -1139,9 +1198,11 @@ SISDACPreInit(ScrnInfoPtr pScrn)
                 pSiS->SiSSave           = SiS300Save;
                 pSiS->SiSSave2          = SiS301Save;
                 pSiS->SiSSaveLVDS       = SiSLVDSSave;
+                pSiS->SiSSaveChrontel   = SiSChrontelSave;
                 pSiS->SiSRestore        = SiS300Restore;
                 pSiS->SiSRestore2       = SiS301Restore;
                 pSiS->SiSRestoreLVDS    = SiSLVDSRestore;
+                pSiS->SiSRestoreChrontel= SiSChrontelRestore;
                 pSiS->LoadCRT2Palette   = SiS301LoadPalette;
                 pSiS->SetThreshold      = SiS630Threshold;
                 break;
@@ -1150,9 +1211,11 @@ SISDACPreInit(ScrnInfoPtr pScrn)
                 pSiS->SiSSave           = SiS300Save;
                 pSiS->SiSSave2          = SiS301Save;
                 pSiS->SiSSaveLVDS       = SiSLVDSSave;
+                pSiS->SiSSaveChrontel   = SiSChrontelSave;
                 pSiS->SiSRestore        = SiS300Restore;
                 pSiS->SiSRestore2       = SiS301Restore;
                 pSiS->SiSRestoreLVDS    = SiSLVDSRestore;
+                pSiS->SiSRestoreChrontel= SiSChrontelRestore;
                 pSiS->LoadCRT2Palette   = SiS301LoadPalette;
                 pSiS->SetThreshold      = SiS300Threshold;
                 break;

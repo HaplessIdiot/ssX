@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_vb.h,v 1.2 2000/08/04 03:51:46 tsi Exp $ */
 
 /* CR30 VBInfo = CR31:CR30 */
 #define	SET_SIMU_SCAN_MODE	0x0001
@@ -27,6 +27,8 @@ extern void   EnableBridge(unsigned short);
 extern void   DisableBridge(unsigned short);
 extern void   LockCRT2(unsigned short);
 extern void   UnLockCRT2(unsigned short);
+extern void   SetCH7005(unsigned short);
+extern unsigned short GetCH7005(unsigned short);
 
 typedef	struct	_SiS301Reg  {
 	CARD8	*VBPart1;

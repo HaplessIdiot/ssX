@@ -26,52 +26,52 @@
  *           David Thomas <davtom@dream.org.uk>. 
  *           Xavier Ducoin <x.ducoin@lectra.com>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis300_accel.h,v 1.2 1999/05/15 06:24:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis300_accel.h,v 1.1 2000/02/12 20:45:32 dawes Exp $ */
 
 
 /* Definitions for the SIS engine communication. */
 
-#define PATREGSIZE	384
-#define BR(x)	(0x8200 | (x) << 2)
-#define PBR(x)	(0x8300 | (x) << 2)
+#define PATREGSIZE      384
+#define BR(x)   (0x8200 | (x) << 2)
+#define PBR(x)  (0x8300 | (x) << 2)
 
 /* Definitions for the SiS300 engine command */
 #define BITBLT                  0x00000000
 #define COLOREXP                0x00000001
-#define ENCOLOREXP		0x00000002
+#define ENCOLOREXP              0x00000002
 #define MULTIPLE_SCANLINE       0x00000003
 #define LINE                    0x00000004
 #define TRAPAZOID_FILL          0x00000005
 #define TRANSPARENT_BITBLT      0x00000006
 
-#define SRCVIDEO		0x00000000
-#define SRCSYSTEM		0x00000010
+#define SRCVIDEO                0x00000000
+#define SRCSYSTEM               0x00000010
 #define SRCAGP                  0x00000020
 
-#define PATFG   		0x00000000
-#define PATPATREG		0x00000040
-#define PATMONO   	 	0x00000080
+#define PATFG                   0x00000000
+#define PATPATREG               0x00000040
+#define PATMONO                 0x00000080
 
 #define X_INC                   0x00010000
 #define X_DEC                   0x00000000
 #define Y_INC                   0x00020000
 #define Y_DEC                   0x00000000
 
-#define NOCLIP			0x00000000
-#define NOMERGECLIP		0x04000000
-#define CLIPENABLE		0x00040000
-#define CLIPWITHOUTMERGE	0x04040000
+#define NOCLIP                  0x00000000
+#define NOMERGECLIP             0x04000000
+#define CLIPENABLE              0x00040000
+#define CLIPWITHOUTMERGE        0x04040000
 
 #define OPAQUE                  0x00000000
-#define TRANSPARENT		0x00100000
+#define TRANSPARENT             0x00100000
 
-#define DSTAGP			0x02000000
+#define DSTAGP                  0x02000000
 #define DSTVIDEO                0x02000000
 
 /* Line */
-#define LINE_STYLE		0x00800000
-#define NO_RESET_COUNTER	0x00400000
-#define NO_LAST_PIXEL		0x00200000
+#define LINE_STYLE              0x00800000
+#define NO_RESET_COUNTER        0x00400000
+#define NO_LAST_PIXEL           0x00200000
 
 /* Macros to do useful things with the SIS BitBLT engine */
 
@@ -81,80 +81,130 @@
    bit 29 Command queue: 1 is empty
 */
 
+int     CmdQueLen;
+
 #define SiSIdle \
-  while( (MMIO_IN16(pSiS->IOBase, BR(16)+2) & 0xE000) != 0xE000){};
+  while( (MMIO_IN16(pSiS->IOBase, BR(16)+2) & 0xE000) != 0xE000){}; \
+  while( (MMIO_IN16(pSiS->IOBase, BR(16)+2) & 0xE000) != 0xE000){}; \
+  CmdQueLen=MMIO_IN16(pSiS->IOBase, 0x8240);    
+        
 
 #define SiSSetupSRCBase(base) \
-	MMIO_OUT32(pSiS->IOBase, BR(0), base);
+                if (CmdQueLen <= 0)  SiSIdle;\
+                MMIO_OUT32(pSiS->IOBase, BR(0), base);\
+                CmdQueLen --;
+        
 
 #define SiSSetupSRCPitch(pitch) \
-	MMIO_OUT16(pSiS->IOBase, BR(1), pitch);
+                if (CmdQueLen <= 0)  SiSIdle;\
+                MMIO_OUT16(pSiS->IOBase, BR(1), pitch);\
+                CmdQueLen --;
 
 #define SiSSetupSRCXY(x,y) \
-	MMIO_OUT32(pSiS->IOBase, BR(2), (x)<<16 | (y) );
+                if (CmdQueLen <= 0)  SiSIdle;\
+                MMIO_OUT32(pSiS->IOBase, BR(2), (x)<<16 | (y) );\
+                CmdQueLen --;
 
 #define SiSSetupDSTBase(base) \
-	MMIO_OUT32(pSiS->IOBase, BR(4), base);
+                if (CmdQueLen <= 0)  SiSIdle;\
+                MMIO_OUT32(pSiS->IOBase, BR(4), base);\
+                CmdQueLen --;
 
 #define SiSSetupDSTXY(x,y) \
-	MMIO_OUT32(pSiS->IOBase, BR(3), (x)<<16 | (y) );
+                if (CmdQueLen <= 0)  SiSIdle;\
+                MMIO_OUT32(pSiS->IOBase, BR(3), (x)<<16 | (y) );\
+                CmdQueLen --;
 
 #define SiSSetupDSTRect(x,y) \
-	MMIO_OUT32(pSiS->IOBase, BR(5), (y)<<16 | (x) );
+                if (CmdQueLen <= 0)  SiSIdle;\
+                MMIO_OUT32(pSiS->IOBase, BR(5), (y)<<16 | (x) );\
+                CmdQueLen --;
 
 #define SiSSetupDSTColorDepth(bpp) \
-	MMIO_OUT16(pSiS->IOBase, BR(1)+2, bpp);
+                if (CmdQueLen <= 0)  SiSIdle;\
+                MMIO_OUT16(pSiS->IOBase, BR(1)+2, bpp);\
+                CmdQueLen --;
 
 #define SiSSetupRect(w,h) \
-	MMIO_OUT32(pSiS->IOBase, BR(6), (h)<<16 | (w) );
+                if (CmdQueLen <= 0)  SiSIdle;\
+                MMIO_OUT32(pSiS->IOBase, BR(6), (h)<<16 | (w) );\
+                CmdQueLen --;
 
 #define SiSSetupPATFG(color) \
-	MMIO_OUT32(pSiS->IOBase, BR(7), color);
+                if (CmdQueLen <= 0)  SiSIdle;\
+                MMIO_OUT32(pSiS->IOBase, BR(7), color);\
+                CmdQueLen --;
 
 #define SiSSetupPATBG(color) \
-	MMIO_OUT32(pSiS->IOBase, BR(8), color);
+                if (CmdQueLen <= 0)  SiSIdle;\
+                MMIO_OUT32(pSiS->IOBase, BR(8), color);\
+                CmdQueLen --;
 
 #define SiSSetupSRCFG(color) \
-	MMIO_OUT32(pSiS->IOBase, BR(9), color);
+                if (CmdQueLen <= 0)  SiSIdle;\
+                MMIO_OUT32(pSiS->IOBase, BR(9), color);\
+                CmdQueLen --;
 
 #define SiSSetupSRCBG(color) \
-	MMIO_OUT32(pSiS->IOBase, BR(10), color);
+                if (CmdQueLen <= 0)  SiSIdle;\
+                MMIO_OUT32(pSiS->IOBase, BR(10), color);\
+                CmdQueLen --;
 
 #define SiSSetupMONOPAT(p0,p1) \
-	MMIO_OUT32(pSiS->IOBase, BR(11), p0); \
-	MMIO_OUT32(pSiS->IOBase, BR(12), p1);
+                if (CmdQueLen <= 1)  SiSIdle;\
+                MMIO_OUT32(pSiS->IOBase, BR(11), p0);\
+                MMIO_OUT32(pSiS->IOBase, BR(12), p1);\
+                CmdQueLen =CmdQueLen-2;
 
 #define SiSSetupClipLT(left,top) \
-	MMIO_OUT32(pSiS->IOBase, BR(13), ((left) & 0xFFFF) | (top)<<16 );
+                if (CmdQueLen <= 0)  SiSIdle;\
+                MMIO_OUT32(pSiS->IOBase, BR(13), ((left) & 0xFFFF) | (top)<<16 );\
+                CmdQueLen--;
 
 #define SiSSetupClipRB(right,bottom) \
-	MMIO_OUT32(pSiS->IOBase, BR(14), ((right) & 0xFFFF) | (bottom)<<16 );
+                if (CmdQueLen <= 0)  SiSIdle;\
+                MMIO_OUT32(pSiS->IOBase, BR(14), ((right) & 0xFFFF) | (bottom)<<16 );\
+                CmdQueLen --;
 
 #define SiSSetupROP(rop) \
-	pSiS->CommandReg = (rop) << 8;
+        pSiS->CommandReg = (rop) << 8;
 
 #define SiSSetupCMDFlag(flags) \
-	pSiS->CommandReg |= (flags);
+        pSiS->CommandReg |= (flags);
 
 #define SiSDoCMD \
-	MMIO_OUT32(pSiS->IOBase, BR(15), pSiS->CommandReg); \
-	MMIO_OUT32(pSiS->IOBase, BR(16), 0);
+                if (CmdQueLen <= 1)  SiSIdle;\
+                MMIO_OUT32(pSiS->IOBase, BR(15), pSiS->CommandReg); \
+                MMIO_OUT32(pSiS->IOBase, BR(16), 0);\
+                CmdQueLen =CmdQueLen-2;
 
 #define SiSSetupX0Y0(x,y) \
-	MMIO_OUT32(pSiS->IOBase, BR(2), (y)<<16 | (x) );
+                if (CmdQueLen <= 0)  SiSIdle;\
+                MMIO_OUT32(pSiS->IOBase, BR(2), (y)<<16 | (x) );\
+                CmdQueLen --;
 
 #define SiSSetupX1Y1(x,y) \
-	MMIO_OUT32(pSiS->IOBase, BR(3), (y)<<16 | (x) );
+                if (CmdQueLen <= 0)  SiSIdle;\
+                MMIO_OUT32(pSiS->IOBase, BR(3), (y)<<16 | (x) );\
+                CmdQueLen --;
 
 #define SiSSetupLineCount(c) \
-	MMIO_OUT16(pSiS->IOBase, BR(6), c);
+                if (CmdQueLen <= 0)  SiSIdle;\
+                MMIO_OUT16(pSiS->IOBase, BR(6), c);\
+                CmdQueLen --;
 
 #define SiSSetupStylePeriod(p) \
-	MMIO_OUT16(pSiS->IOBase, BR(6)+2, p);
+                if (CmdQueLen <= 0)  SiSIdle;\
+                MMIO_OUT16(pSiS->IOBase, BR(6)+2, p);\
+                CmdQueLen --;
 
 #define SiSSetupStyleLow(ls) \
-	MMIO_OUT32(pSiS->IOBase, BR(11), ls);
+                if (CmdQueLen <= 0)  SiSIdle;\
+                MMIO_OUT32(pSiS->IOBase, BR(11), ls);\
+                CmdQueLen --;
 
 #define SiSSetupStyleHigh(ls) \
-	MMIO_OUT32(pSiS->IOBase, BR(12), ls);
+                if (CmdQueLen <= 0)  SiSIdle;\
+                MMIO_OUT32(pSiS->IOBase, BR(12), ls);\
+                CmdQueLen --;
 

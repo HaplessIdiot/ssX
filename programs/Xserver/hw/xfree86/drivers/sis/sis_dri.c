@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.6 2000/10/10 16:38:19 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.7 2000/11/09 11:32:21 alanh Exp $ */
 
 /* modified from tdfx_dri.c, mga_dri.c */
 
@@ -178,29 +178,6 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
   SISPtr pSIS = SISPTR(pScrn);
   DRIInfoPtr pDRIInfo;
   SISDRIPtr pSISDRI;
-
-{
-  unsigned int port_3c5_value;
-
-#if 0
-  /* Set magic number */
-  outb (0x3c4, 0x05);
-  if (inb (0x3c5) == 0x21){
-    outb (0x3c4, 0x05);
-    outb (0x3c5, 0x86);
-  }
-
-  /* Enable 2D/3D */
-  outb (0x3c4, 0x1E);
-  port_3c5_value = inb (0x3c5);
-  port_3c5_value |= 0x5A;
-  outb (0x3c5, port_3c5_value);
-  
-  /* Enable HW to retry MMIO command */
-  outb (0x3c4, 0x22);
-  outb (0x3c5, 0xb2);
-#endif
-}
 
    /* Check that the GLX, DRI, and DRM modules have been loaded by testing
     * for canonical symbols in each module. */

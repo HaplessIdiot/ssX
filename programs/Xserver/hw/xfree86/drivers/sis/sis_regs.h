@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_regs.h,v 1.12 2000/02/12 23:08:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_regs.h,v 1.13 2000/02/14 19:20:52 dawes Exp $ */
 
 #include "vgaHW.h"
 
@@ -98,6 +98,12 @@
 #define	SISCR		pSiS->RelIO+CROFFSET
 #define	SISMISCR	pSiS->RelIO+MISCROFFSET
 #define	SISMISCW	pSiS->RelIO+MISCWOFFSET
+#define SISPART1        pSiS->RelIO+0x04
+#define SISPART2        pSiS->RelIO+0x10
+#define SISPART3        pSiS->RelIO+0x12
+#define SISPART4        pSiS->RelIO+0x14 
+#define SISPART5        pSiS->RelIO+0x16 
+
 
 /* 3C4 */
 #define BankReg 0x06

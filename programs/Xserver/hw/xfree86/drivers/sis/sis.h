@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.17 2000/09/22 11:35:46 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.18 2000/09/26 15:57:14 tsi Exp $ */
 
 #ifndef _SIS_H
 #define _SIS_H_
@@ -48,6 +48,8 @@
 #include "sis_dri.h"
 #endif
 
+#include "xf86xv.h"
+
 #define SIS_NAME                "SIS"
 #define SIS_DRIVER_NAME         "sis"
 #define SIS_MAJOR_VERSION       0
@@ -64,6 +66,7 @@
 #define BIOS_BASE               0xC0000
 #define BIOS_SIZE               0x10000
 
+#define CRT2_DEFAULT            0x00000001
 #define CRT2_LCD                0x00000010
 #define CRT2_TV                 0x00000020
 #define CRT2_VGA                0x00000040
@@ -80,10 +83,11 @@
 #define TV_SVIDEO               0x00020000
 #define TV_SCART                0x00040000
 #define TV_INTERFACE            0x00070000
-#define SIS301                  0x00100000
-#define SIS302                  0x00200000
-#define LVDS                    0x01000000
-#define CHRONTEL_TV             0x02000000
+#define VB_301                  0x00100000
+#define VB_302                  0x00200000
+#define VB_303			0x00400000
+#define VB_LVDS                 0x01000000
+#define VB_CHRONTEL             0x02000000
 #define SINGLE_MODE             0x00000000
 #define SIMU_MODE               0x10000000
 #define MM_MODE                 0x20000000
@@ -108,6 +112,7 @@ typedef struct {
         unsigned char VBPart2[0x46];
         unsigned char VBPart3[0x3F];
         unsigned char VBPart4[0x1C];
+	unsigned short ch7005[0x11];
 } SISRegRec, *SISRegPtr;
 
 #define SISPTR(p)       ((SISPtr)((p)->driverPrivate))
@@ -143,12 +148,10 @@ typedef struct {
     Bool                HWCursor;
     Bool                UsePCIRetry;
     Bool                TurboQueue;
+    int			ForceCRT2Type;	
     Bool                ValidWidth;
     Bool                FastVram;
-    int                 LVDSFlags;
     int                 VBFlags;
-    int                 LCDFlags;
-    int                 TVFlags;
     short               scrnOffset;
     short               DstColor;
     int                 Xdirection;
@@ -175,9 +178,11 @@ typedef struct {
     void                (*SiSSave)(ScrnInfoPtr pScrn, SISRegPtr sisreg);
     void                (*SiSSave2)(ScrnInfoPtr pScrn, SISRegPtr sisreg);
     void                (*SiSSaveLVDS)(ScrnInfoPtr pScrn, SISRegPtr sisreg);
+    void                (*SiSSaveChrontel)(ScrnInfoPtr pScrn, SISRegPtr sisreg);
     void                (*SiSRestore)(ScrnInfoPtr pScrn, SISRegPtr sisreg);
     void                (*SiSRestore2)(ScrnInfoPtr pScrn, SISRegPtr sisreg);
     void                (*SiSRestoreLVDS)(ScrnInfoPtr pScrn, SISRegPtr sisreg);
+    void                (*SiSRestoreChrontel)(ScrnInfoPtr pScrn, SISRegPtr sisreg);
     void                (*SetThreshold)(ScrnInfoPtr pScrn, DisplayModePtr mode,
                                 unsigned short *Low, unsigned short *High);
     void                (*LoadCRT2Palette)(ScrnInfoPtr pScrn, int numColors,
@@ -194,6 +199,15 @@ typedef struct {
   unsigned int agpCmdBufFree;
   Bool irqEnabled;
   int irq;
+  int ColorExpandRingHead;
+  int ColorExpandRingTail;      
+  int PerColorExpandBufferSize; 
+  int ColorExpandBufferNumber;
+  int ColorExpandBufferCountMask;
+  unsigned char *ColorExpandBufferAddr[32];     
+  int ColorExpandBufferScreenOffset[32];
+  int ImageWriteBufferSize;
+  unsigned char *ImageWriteBufferAddr;
   
 #ifdef XF86DRI
   Bool directRenderingEnabled;
@@ -204,6 +218,9 @@ typedef struct {
   SISConfigPrivPtr pVisualConfigsPriv;
   SISRegRec DRContextRegs;
 #endif
+
+  XF86VideoAdaptorPtr adaptor;
+  ScreenBlockHandlerProcPtr BlockHandler;
 } SISRec, *SISPtr;
 
 /* Prototypes */

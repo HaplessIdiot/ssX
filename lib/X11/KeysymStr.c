@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/KeysymStr.c,v 3.3 1999/05/09 10:49:39 dawes Exp $ */
 
 #include "Xlibint.h"
 #include <X11/Xresource.h>
@@ -130,7 +130,32 @@ char *XKeysymToString(ks)
 	data.value = &resval;
 	(void)XrmEnumerateDatabase(keysymdb, &empty, &empty, XrmEnumAllLevels,
 				   SameValue, (XPointer)&data);
-	return data.name;
+        if (data.name)
+	    return data.name;
+    }
+    if ((ks & 0xff000000) == 0x01000000){
+        KeySym val = ks;
+        char *s;
+        int i;
+        if (val & 0xff0000)
+            i = 8;
+        else
+            i = 6;
+        s = Xmalloc(i);
+        if (s == NULL)
+            return s;
+        i--;
+        s[i--] = '\0';
+        for (; i; i--){
+            val1 = val & 0xf;
+            val >>= 4;
+            if (val1 < 10)
+                s[i] = '0'+ val1;
+            else
+                s[i] = 'A'+ val1 - 10;
+        }
+        s[i] = 'U';
+        return s; 
     }
     return ((char *) NULL);
 }

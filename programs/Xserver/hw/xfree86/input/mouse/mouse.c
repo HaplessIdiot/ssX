@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.35 2000/08/08 08:58:08 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.36 2000/10/24 18:07:51 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -594,8 +594,8 @@ static unsigned char proto[PROT_NUMPROTOS][8] = {
   {  0xc0, 0x00, 0x00, 0x00,  6,   0x00, 0xff, MPF_NONE },  /* NetScroll */
 							    /* Bus Mouse */
   {  0xf8, 0x80, 0x00, 0x00,  5,   0x00, 0xff, MPF_NONE },  /* BusMouse */
-							    /* Auto */
-  {  0xf8, 0x80, 0x00, 0x00,  5,   0x00, 0xff, MPF_NONE },  /* dummy entry */
+  {  0xf8, 0x80, 0x00, 0x00,  5,   0x00, 0xff, MPF_NONE },  /* Auto (dummy) */
+  {  0xf8, 0x80, 0x00, 0x00,  8,   0x00, 0xff, MPF_NONE },  /* SysMouse */
 };
 
 /*
