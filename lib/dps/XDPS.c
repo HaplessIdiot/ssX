@@ -35,7 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86: xc/lib/dps/XDPS.c,v 1.3 2001/10/28 03:32:42 tsi Exp $ */
+/* $XFree86: xc/lib/dps/XDPS.c,v 1.4tsi Exp $ */
 
 #define NEED_EVENTS
 #define NEED_REPLIES
@@ -1380,7 +1380,7 @@ XDPSLTestErrorCode(Display *dpy, int ecode)
     XExtCodes *c = XDPSLGetCodes(dpy);
 
     if (c == NULL)
-        return False;	/* Not inited on that display; must be False */
+        return not_pserror;
 
     switch (ecode - c->first_error)
         {
