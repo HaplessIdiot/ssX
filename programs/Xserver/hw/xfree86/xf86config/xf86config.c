@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.10 1995/03/18 11:10:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.11 1995/06/04 02:56:48 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -1831,7 +1831,7 @@ void write_XF86Config(filename)
 		fprintf(f, "    Ramdac      \"%s\"\n", config_ramdac);
 	if (card_selected != -1)
 		if (card[card_selected].dacspeed != NULL)
-			fprintf(f, "    Dacspeed    \"%s\"\n",
+			fprintf(f, "    Dacspeed    %s\n",
 				card[card_selected].dacspeed);
 	if (config_clockchip != NULL)
 		fprintf(f, "    Clockchip   \"%s\"\n", config_clockchip);
