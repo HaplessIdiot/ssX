@@ -1,7 +1,18 @@
-XFree86 4.0.99.x (xx April 2001)
+XFree86 4.0.99.3 (xx April 2001)
+ 387. Enable wide character support for NetBSD 1.5P and later (#4553,
+      Matthias Scheler).
+ 386. Add offscreen image support to the i810 driver (for Xv), and fix
+      physMemBase (#4552, Matthew Sottek).
+ 385. Fix bad cut&paste update to the sunffb driver (#4551, David S. Miller).
+ 384. Fix "DriDrivers" typo in the sparc section of xfree86.cf (#4550,
+      David S. Miller).
+ 383. Update UCS 75dpi and 100dpi fonts, including adding UCS versions of
+      the UTBI and UTB fonts that were in the unnec_75dpi and unnec_100dpi
+      directories.  The other "unnec" fonts are also moved over (#4548,
+      Markus Kuhn).
+ 382. Make the v4l driver module keep searching for more devices if the first
+      one can't do overlay (#4545, Gerd Knorr).
  381. Bug fixes for Xv support using a Permedia3 chip (#4564, Sven Luther).
-
-XFree86 4.0.99.3 (11 April 2001)
  380. Xterm patches #151, #152, #153, #154 (Thomas Dickey):
        - improve select/paste of COMPOUND_TEXT and UTF8_STRING (Juliusz
          Chroboczek, Bruno Haible).
@@ -12963,4 +12974,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1689 2001/04/17 09:32:11 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1690 2001/04/18 09:24:44 alanh Exp $
