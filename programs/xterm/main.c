@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c /main/247 1996/11/29 10:33:51 swick $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.47 1997/01/18 07:03:21 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.48 1997/05/21 15:17:14 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -67,6 +67,10 @@ SOFTWARE.
 
 
 /* main.c */
+
+#ifdef HAVE_CONFIG_H
+#include <xtermcfg.h>
+#endif
 
 #include "ptyx.h"
 #include <X11/StringDefs.h>

@@ -1,5 +1,5 @@
 /* $XConsortium: menu.c /main/66 1996/12/01 23:46:59 swick $ */
-/* $XFree86: xc/programs/xterm/menu.c,v 3.8 1996/12/24 02:28:08 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/menu.c,v 3.9 1997/01/08 20:52:29 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -26,6 +26,10 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
+
+#ifdef HAVE_CONFIG_H
+#include <xtermcfg.h>
+#endif
 
 #include "ptyx.h"
 #include "data.h"

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c /main/196 1996/12/03 16:52:46 swick $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.41 1997/01/08 20:52:24 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.42 1997/01/25 04:22:02 dawes Exp $
  */
 
 /*
@@ -53,6 +53,10 @@ in this Software without prior written authorization from the X Consortium.
  */
 
 /* charproc.c */
+
+#ifdef HAVE_CONFIG_H
+#include <xtermcfg.h>
+#endif
 
 #include "ptyx.h"
 #include <X11/Xos.h>
@@ -4464,7 +4468,7 @@ HandleSetFont(w, event, params, param_count)
     if (*param_count == 0) {
 	fontnum = fontMenu_fontdefault;
     } else {
-	int maxparams = 1;		/* total number of params allowed */
+	Cardinal maxparams = 1;		/* total number of params allowed */
 
 	switch (params[0][0]) {
 	  case 'd': case 'D': case '0':
