@@ -1,4 +1,7 @@
 XFree86 3.9.17a (20 January 2000)
+3537. Fix glint/Imakefile so that the correct fb.h is included, and rename
+      the private fb.h file in fbdevhw so that it won't be mistakenly included
+      instead of the one in Xserver/fb (David Dawes).
 3536. Fix some (unused) bad usages of InstallDynamicModule (David Dawes).
 3535. Make the Glint driver use the new fb module and fix correct operation
       for 24bpp support (Alan Hourihane).
@@ -9251,4 +9254,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.933 2000/01/18 18:47:14 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.934 2000/01/19 22:37:09 dawes Exp $
