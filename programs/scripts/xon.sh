@@ -158,7 +158,7 @@ x*)
 	sess_mangr="SESSION_MANAGER=$SESSION_MANAGER "
 	;;
 esac
-vars="$xpath$xauth$sess_mangr"DISPLAY="$DISPLAY"
+vars='PATH=$PATH:/usr/X11R6/bin '"$xpath$xauth$sess_mangr"DISPLAY="$DISPLAY"
 case $# in
 0)
 	$rcmd 'sh -c '"'$vars"' xterm '$ls' -name "'"$resource"'" -T "'"$label"'" -n "'"$label"'" '"$redirect'"
