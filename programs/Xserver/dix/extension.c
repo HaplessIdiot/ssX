@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/extension.c,v 3.6 1998/10/04 09:38:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/extension.c,v 3.7 1999/01/13 08:30:53 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -71,8 +71,9 @@ int lastEvent = EXTENSION_EVENT_BASE;
 static int lastError = FirstExtensionError;
 static unsigned int NumExtensions = 0;
 
-ExtensionEntry *AddExtension(name, NumEvents, NumErrors, MainProc, 
-			      SwappedMainProc, CloseDownProc, MinorOpcodeProc)
+ExtensionEntry *
+AddExtension(name, NumEvents, NumErrors, MainProc, 
+	     SwappedMainProc, CloseDownProc, MinorOpcodeProc)
     char *name;
     int NumEvents;
     int NumErrors;
@@ -198,6 +199,22 @@ FindExtension(extname, len)
 	if (j >= 0) break;
     }
     return ((i == NumExtensions) ? -1 : i);
+}
+
+/*
+ * CheckExtension returns the extensions[] entry for the requested
+ * extension name.  Maybe this could just return a Bool instead?
+ */
+ExtensionEntry *
+CheckExtension(const char *extname)
+{
+    int n;
+
+    n = FindExtension(extname, strlen(extname));
+    if (n != -1)
+	return extensions[n];
+    else
+	return NULL;
 }
 
 void

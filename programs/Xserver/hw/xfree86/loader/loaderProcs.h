@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loaderProcs.h,v 1.14 1999/01/24 13:32:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loaderProcs.h,v 1.15 1999/04/18 04:08:47 dawes Exp $ */
 
 /*
  *
@@ -71,6 +71,7 @@ void FreeModuleDesc (ModuleDescPtr mod);
 ModuleDescPtr NewModuleDesc (const char *);
 ModuleDescPtr AddSibling (ModuleDescPtr head, ModuleDescPtr new);
 void LoaderSetPath(const char *path);
+void LoaderSortExtensions(void);
 
 
 void LoaderVReqSymLists(const char **, va_list args);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.43 1999/12/27 00:50:54 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.44 2000/01/25 18:37:49 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -73,7 +73,7 @@ extern Bool noXkbExtension;
 #endif
 typedef void (*InitExtension)(INITARGS);
 #else /* XFree86Loader */
-#include "xf86Module.h"
+#include "loaderProcs.h"
 #endif
 
 #include "Xlib.h"
@@ -451,8 +451,8 @@ InitExtensions(argc, argv)
     int		argc;
     char	*argv[];
 {
-    int i;
-    ExtensionModule *ext;
+    int i, j, k, numExts, ii;
+    ExtensionModule *ext, *newList;
 
     /* Add built-in extensions to the list. */
     for (i = 0; staticExtensions[i].name; i++)
@@ -462,6 +462,8 @@ InitExtensions(argc, argv)
      * XXX Need to add code here to sort the list of extension modules
      * based on the dependencies fields.
      */
+
+    LoaderSortExtensions();
 
     for (i = 0; ExtensionModuleList[i].name != NULL; i++) {
 	ext = &ExtensionModuleList[i];

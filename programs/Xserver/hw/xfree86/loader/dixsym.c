@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.26 1999/12/27 02:22:36 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.27 1999/12/29 14:47:06 robin Exp $ */
 
 
 /*
@@ -131,6 +131,7 @@ LOOKUP dixLookupTab[] = {
   /* extension.c */
   SYMFUNC(AddExtension)
   SYMFUNC(AddExtensionAlias)
+  SYMFUNC(CheckExtension)
   SYMFUNC(DeclareExtensionSecurity)
   SYMFUNC(MinorOpcodeOfRequest)
   SYMFUNC(StandardMinorOpcode)

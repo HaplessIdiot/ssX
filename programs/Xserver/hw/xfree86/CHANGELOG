@@ -1,4 +1,9 @@
-XFree86 3.9.17c (27 January 2000)
+XFree86 3.9.17c (29 January 2000)
+3601. Add a CheckExtension() function that can be called to check if an
+      extension has been initialised (David Dawes).
+3600. Allow extensions to specify which other extensions must be
+      initialised first, and sort the initialisation order according to
+      this information (David Dawes).
 3599. Force BIOS to be read from 0xc0000 for r128 driver (Kevin Martin).
 3598. Add a XXXAvailableOptions to DriverRec which allows passing available
       options back to the -configure option.
@@ -9370,4 +9375,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.964 2000/01/27 01:27:45 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.965 2000/01/28 03:27:46 martin Exp $
