@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/miext/layer/layerwin.c,v 1.1 2001/05/29 04:54:13 keithp Exp $
+ * $XFree86: xc/programs/Xserver/miext/layer/layerwin.c,v 1.2 2001/06/04 09:45:41 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -304,6 +304,12 @@ layerCreateWindow (WindowPtr pWin)
 
     pLayWin->isList = FALSE;
     pLayWin->u.pLayer = 0;
+    
+    /*
+     * input only windows don't live in any layer
+     */
+    if (pWin->drawable.type == UNDRAWABLE_WINDOW)
+	return TRUE;
     /*
      * Use a reasonable default layer -- the first
      * layer matching the windows depth.  Subsystems needing
@@ -322,8 +328,8 @@ layerCreateWindow (WindowPtr pWin)
 	ret = (*pScreen->CreateWindow) (pWin);
 	pLayer->pKind->CreateWindow = pScreen->CreateWindow;
 	pScreen->CreateWindow = layerCreateWindow;
+	LayerWindowAdd (pScreen, pLayer, pWin);
     }
-    LayerWindowAdd (pScreen, pLayer, pWin);
     return ret;
 }
 
