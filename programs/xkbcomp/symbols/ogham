@@ -1,4 +1,4 @@
-// $XFree86: xc/programs/xkbcomp/symbols/ogham,v 1.1 2002/11/22 03:15:50 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/ogham,v 1.2 2002/12/19 00:49:41 dawes Exp $
 //
 // Ogham keyboard map for XFree86
 //
@@ -76,7 +76,7 @@ xkb_symbols "basic" {
 
 };
 
-partial default alphanumeric_keys
+partial alphanumeric_keys
 xkb_symbols "laptop" {
     // For laptops which don't have the RWIN key but are otherwise
     // the same as 105-key layouts.
@@ -85,7 +85,7 @@ xkb_symbols "laptop" {
 };
 
 
-default partial alphanumeric_keys
+partial alphanumeric_keys
 xkb_symbols "is434" {
 
     // This has the full layout of IS434 with an Irish QWERTY keyboard,
@@ -184,13 +184,13 @@ xkb_symbols "is434" {
     key <RWIN>  { type[Group1]="TWO_LEVEL", [ Multi_key, ISO_Next_Group ]  };
 };
 
-default partial alphanumeric_keys
+partial alphanumeric_keys
 xkb_symbols "IS434" {
     // just has uppercase in the name
     include "ogham(is434)"
 };
 
-partial default alphanumeric_keys
+partial alphanumeric_keys
 xkb_symbols "is434laptop" {
     // For laptops which don't have the RWIN key but are otherwise
     // the same as 105-key layouts.
@@ -198,7 +198,7 @@ xkb_symbols "is434laptop" {
     key <MENU>  { type[Group1]="TWO_LEVEL", [ Multi_key, ISO_Next_Group ]  };
 };
 
-partial default alphanumeric_keys
+partial alphanumeric_keys
 xkb_symbols "IS434laptop" {
     // just has uppercase in the name
     include "ogham(is434)"
