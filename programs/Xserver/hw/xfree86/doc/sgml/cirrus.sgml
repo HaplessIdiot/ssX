@@ -18,7 +18,7 @@ There are two different SVGA drivers for Cirrus chipsets, one called
 ``cirrus'' and one called ``cl64xx''.
 The ``cirrus'' driver is used in the 256-color SVGA server (with
 acceleration) and the mono server (without acceleration). The SVGA server
-supports 16 and 32 bits-per-pixel truecolor modes on some configurations.
+supports 16, 24, and 32 bits-per-pixel truecolor modes on some configurations.
 The ``cl64xx'' driver is used in the 256-color SVGA, 16-color and mono
 servers.  Note that except where stated otherwise, this document is
 referring to the ``cirrus'' driver.
@@ -80,7 +80,8 @@ The following chipsets by Cirrus Logic are supported:
 	use Rambus RDRAM memory.  The '62 is a 64-bit 2D 
 	accelerator, including a BitBlit engine, video windows (not currently
 	used by the server), and 64x64 HW cursor.  Mono modes have not been
-	tested. The CL-GD5464 is also supported, but has not been tested.
+	tested. The CL-GD5464 is the next chip in the Laguna family, and 
+	is supported and has been tested.
 <tag>CL-GD7541/7542/7543/7548</tag>
 	Laptop chipsets more or less compatible with the 5428/3x. The
 	only dot clock supported is 25 MHz (more on an external
@@ -105,7 +106,7 @@ CL-GD5436/1Mb	85 MHz	 110 MHz (3)  60 MHz (3)   40 MHz (3)
 CL-GD5436/2Mb	85 MHz	 135 MHz      85 MHz       85 MHz (3)   60 MHz (3)
 CL-GD5446/1Mb	85 MHz	 110 MHz (3)  60 MHz (3)   40 MHz (3)
 CL-GD5446/2Mb	85 MHz	 135 MHz      85 MHz       85 MHz (3)   60 MHz (3)
-CL-GD5462	170 MHz  170 Mhz      170 MHz      170 MHz      170 MHz
+CL-GD546X	170 MHz  170 Mhz      170 MHz      170 MHz      170 MHz
 CL-GD754x	80 MHz   80 MHz       40 MHz (4)   (5)
 
 (1) with 512K memory.
@@ -126,13 +127,16 @@ video memory:
 4096K       2304x1728   2272x1704   1600x1200   1360x1020  1152x900
 </verb>
 </quote>
-For 546x chips, the virtual width will be rounded up to one of the following
-values (this places restrictions on the size of the virtual screen by
-possibly increasing the amount of video memory required):
+For 546x chips, the virtual width may be any size.  However, the 
+screen <it>pitch</it> will be rounded up to the nearest value in the table
+below.  Thus, each line on the screen will take more video memory than just
+what is displayed.  To maximize video memory, then, choose the virtual
+desktop width from the table of pixel widths below:
 <quote><verb>
 8bpp:	640, 1024, 1280, 1664, 2048, 2560, 3328, 4096, 5120, 6656
-16bpp:	320, 512, 640, 832, 1024, 1280, 1664, 2048, 2560, 3328
-32bpp:	160, 256, 320, 416, 512, 640, 832, 1024, 1280, 1664
+16bpp:	320,  512,  640,  832, 1024, 1280, 1664, 2048, 2560, 3328
+24bpp:	640, 1024, 1280, 1664, 2048, 2560, 3328, 4096, 5120, 6656
+32bpp:	160,  256,  320,  416,  512,  640,  832, 1024, 1280, 1664
 </verb></quote>
  
 For other Cirrus chips, it's advisable to have a virtual width that is a
@@ -143,7 +147,7 @@ To run <tt>XF86_SVGA</tt> at a higher color depth, pass options to the
 X server as follows:
 <verb>
 startx -- -bpp 16		5-6-5 RGB ('64K color', XGA)
-startx -- -bpp 16 -weight 555	5-5-5 RGB ('Hicolor') (not on 546X)
+startx -- -bpp 16 -weight 555	5-5-5 RGB ('Hicolor') (not on 5462)
 startx -- -bpp 24		8-8-8 RGB truecolor
 startx -- -bpp 32		8-8-8 XRGB truecolor (543X/46/6X)
 </verb>
@@ -312,7 +316,7 @@ videoram 1024 (or another value)
         memory, or if the memory detection goes wrong. It must be specified
 	in the Device section.
 <tag>
-Option &dquot;fifo_conservative&dquot; (5424/6/8/9/3x/46/754x)
+Option &dquot;fifo_conservative&dquot; (5424/6/8/9/3x/46/6x/754x)
 </tag>
 	This option will set the CRT FIFO threshold to a conservative value
 	for high dot clocks (&gt;= 65 MHz), reducing performance but hopefully
@@ -321,7 +325,7 @@ Option &dquot;fifo_conservative&dquot; (5424/6/8/9/3x/46/754x)
 	screen (especially when	a BitBLT operation is in progress, e.g.
 	scrolling).
 <tag>
-Option &dquot;fifo_aggressive&dquot; (5424/6/8/9/3x/46/754x)
+Option &dquot;fifo_aggressive&dquot; (5424/6/8/9/3x/46/6x/754x)
 </tag>
 	This option will set the CRT FIFO threshold to an aggressive value;
 	it will be the same as that used for lower dot clocks. It improves
@@ -513,6 +517,11 @@ a default of 64Mb if MemBase isn't specified. A few examples for MemBase:
 	MemBase	0x04000000	64Mb
 	MemBase	0x80000000	2048Mb
 </verb></tscreen>
+
+Finally, for 546X cards, you are in luck:  there are no "issues" to worry
+about.  The '6X will always use linear addressing and memmory-mapped I/O,
+and will use the memory addresses up near 4GB.  Yay for PCI!
+
 The 16bpp and 32bpp modes have limited acceleration (scroll, text, fill)
 which means they can be slow, although a good local bus host
 interface (like the 543x has) helps a lot. Note that the standard cfb
@@ -636,11 +645,10 @@ all of the horizontal timing parameters).
 <tag>Horizontal jitter at high dot clocks.</tag>
 	This problem shows especially when drawing operations such as
 	scrolling are in progress.
-	If you're using a 542x/3x/46, try the <tt>"fifo_conservative"</tt> 
+	If you're using a 542x/3x/46/6x, try the <tt>"fifo_conservative"</tt> 
 	option. Failing that, you can try the <tt>"fast_dram"</tt> option, 
-	or use a lower dot clock.  If that is not sufficient, or if you
-	have a 546X, the <tt>"noaccel"</tt> option or <tt>"no_bitblt"</tt> 
-	will probably help.
+	or use a lower dot clock.  If that is not sufficient, the 
+	<tt>"noaccel"</tt> option or <tt>"no_bitblt"</tt> will probably help.
 <tag>`Wavy' screen.</tag>
 	Horizontal waving or jittering of the whole screen, continuously
 	(independent from drawing operations).
@@ -677,26 +685,6 @@ Screen is `wrapped' vertically. (542x/3x/46)
 	megabytes of memory, try the <tt>"no_2mb_banksel"</tt> option, or use
 	<tt>videoram "1024"</tt> if you only use 1 Mbyte for the virtual
 	screen.
-<tag>
-Screen is `wrapped' horizontally. (546x)
-</tag>
-	The 546x chips must have their viewport on the virtual screen 
-	aligned to tile boundaries, typically 128, 64, or 32 pixels.  For
-	display modes that are not a multiple of the tile size (i.e., 800x600
-	display on a 1664x1024 virtual desktop), the display may wrap about
-	half a tile on the far right hand side.  This is because the 
-	<it>left</it> side of the viewable screen is aligned to a tile, but
-	the <it>right</it> side is hanging over the edge of the virtual 
-	desktop.
-	The solution is to use a display resolution that is a multiple of
-	the tile size.  Horizontal resolutions of 640, 896, 1024, and 1280
-	are usually okay.
-
-<tag>
-Screen won't pan over all of virtual desktop. (546x)
-</tag>
-	Same as previous entry.
-
 <tag>
 Corrupted text in terminal window.
 </tag>
@@ -782,6 +770,10 @@ the latest information check the latest version of this document on
 	any FIFO-related problems, and without requiring "fifo_conservative".
 
 <tag>CL-GD5462 with 2MB memory on PCI bus</tag>
+
+<tag>CL-GD5462 with 4MB memory on PCI bus</tag>
+
+<tag>CL-GD5464 with 4MB memory on PCI bus</tag>
 	Works OK at 8bpp, 16bpp, 24bpp and 32bpp.
 
 <tag>CL-GD6440 on ISA bus</tag>
@@ -828,7 +820,7 @@ New features in XFree86 3.2:
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.13 1996/08/26 14:08:47 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.14 1996/10/10 14:04:02 dawes Exp $
 
 
 

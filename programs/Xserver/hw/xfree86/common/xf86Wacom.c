@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.20 1996/10/03 08:34:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.21 1996/10/06 13:16:10 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV protocol.
@@ -210,6 +210,10 @@ static const char * setup_string = WC_MULTI WC_UPPER_ORIGIN
 #define BUTTONS_BITS	0x78
 #define TILT_SIGN_BIT	0x40
 #define TILT_BITS	0x7f
+
+/* defines to discriminate second side button and the eraser */
+#define ERASER_PROX	4
+#define OTHER_PROX	1
 
 #define HANDLE_TILT(priv) ((priv)->wcmPktLength == 9)
 
@@ -724,9 +728,13 @@ xf86WcmReadInput(LocalDevicePtr         local)
 		* if we haven't an independent device for the eraser
 		* report the button as button 3 of the stylus.
 		*/
-		if ((buttons > 3) && (priv->wcmEraser)) {
+		if ((buttons > 3) && (priv->wcmEraser) &&
+		    ((is_proximity && !*pprox && buttons == 4) ||
+		     (*pprox == ERASER_PROX))) {
+		    DBG(10, ErrorF("Eraser\n"));
 		    local = priv->wcmEraser;
 		} else {  
+		    DBG(10, ErrorF("Stylus\n"));
 		    local = priv->wcmStylus;
 		}
 	    }
@@ -773,12 +781,37 @@ xf86WcmReadInput(LocalDevicePtr         local)
 
 		if (!*pprox) {
 		    if (!is_core_pointer) {
-			xf86PostProximityEvent(device, 1, 0, 6, rx, ry, z, tx, ty, 0);
+			xf86PostProximityEvent(device, 1, 0, 5, rx, ry, z, tx, ty);
 		    }
 		    local->private_flags |= FIRST_TOUCH_FLAG;
 		    DBG(4, ErrorF("xf86WcmReadInput FIRST_TOUCH_FLAG set\n"));
+		    
+		    /* handle the two sides switches in the stylus */
+		    if (is_stylus && (buttons == 4)) {
+			*pprox = ERASER_PROX;
+		    }
+		    else {
+			*pprox = OTHER_PROX;
+		    }
 		}      
 
+		/* The stylus reports button 4 for the second side
+		* switch and button 4/5 for the eraser tip. We know
+		* how to choose when we come in proximity for the
+		* first time. If we are in proximity and button 4 then
+		* we have the eraser else we have the second side
+		* switch.
+		*/
+		if (is_stylus && buttons > 3) {
+		    if (buttons == 4) {
+			buttons = (*pprox == ERASER_PROX) ? 0 : 4;
+		    }
+		    else {
+			if (*pprox == ERASER_PROX && buttons == 5)
+			    buttons = (priv->wcmEraser ? 1 : 3);
+		    }
+		}
+		
 		DBG(4, ErrorF("xf86WcmReadInput %s rx=%d ry=%d z=%d *pbuttons=%d\n",
 			      is_stylus ? "stylus" : "cursor", rx, ry, z, *pbuttons));
     
@@ -791,82 +824,52 @@ xf86WcmReadInput(LocalDevicePtr         local)
 			local->private_flags -= FIRST_TOUCH_FLAG;
 			DBG(4, ErrorF("xf86WcmReadInput FIRST_TOUCH_FLAG unset\n"));
 		    } else {
-			xf86PostMotionEvent(device, is_absolute, 0, 6, rx, ry, z,
-					    tx, ty, 0); 
+			xf86PostMotionEvent(device, is_absolute, 0, 5, rx, ry, z,
+					    tx, ty); 
 		    }
 		}
 		if (*pbuttons != buttons) {
 		    int		delta;
 		    int		button;
 
-		    /*
-		    * handle the eraser button treated as the third button
-		    */
-		    if (is_stylus && (!priv->wcmEraser) && (buttons > 3)) {
-			delta = (buttons == 5) ? 1 : 0;
-			button = 3;
-			buttons = (buttons == 5) ? 3 : 0;
-		    } else {
-			delta = buttons - *pbuttons;
-			button = (delta > 0) ? delta
-			    : ((delta == 0) ? *pbuttons : -delta);
-		    }
-
-		    if (*pbuttons != buttons) {
-			DBG(6, ErrorF("xf86WcmReadInput button=%d delta=%d\n", button,
-				      delta));
+		    delta = buttons - *pbuttons;
+		    button = (delta > 0) ? delta : -delta;
+		    
+		    DBG(4, ErrorF("xf86WcmReadInput button=%d delta=%d\n", button,
+				  delta));
 	    
-			if (is_stylus && (delta == 3)) {
-			    xf86PostButtonEvent(device, is_absolute, 1, (delta > 0), 0, 6,
-						rx, ry, z, tx, ty, 0);
-			    xf86PostButtonEvent(device, is_absolute, 2, (delta > 0), 0, 6,
-						rx, ry, z, tx, ty, 0);
-			} else {
-			    xf86PostButtonEvent(device, is_absolute, button, (delta > 0),
-						0, 6, rx, ry, z, tx, ty, 0); 
-			}
-		    }
+		    xf86PostButtonEvent(device, is_absolute, button, (delta > 0),
+					0, 5, rx, ry, z, tx, ty); 
 		}
 		*pbuttons = buttons;
 		*px = x;
 		*py = y;
 		*pz = z;
-		*pprox = is_proximity;
 		priv->wcmOldTiltX = tx;
 		priv->wcmOldTiltY = ty;
 	    }
 	    else { /* !PROXIMITY */
-		/* reports button up when the device has been down and out of proximity */
+		/* reports button up when the device has been down and becomes out of proximity */
 		if (*pbuttons) {
-		    /*
-		    * the tablet reports button 3 sometimes if we press button 1
-		    * and button 2 together.
-		    */
-		    if (is_stylus && (*pbuttons == 3) && (!priv->wcmEraser)) {
-			xf86PostButtonEvent(device, is_absolute, 1, 0, 0, 6, rx, ry, z,
-					    tx, ty, 0);
-			xf86PostButtonEvent(device, is_absolute, 2, 0, 0, 6, rx, ry, z,
-					    tx, ty, 0);
-		    }
-		    else {
-			xf86PostButtonEvent(device, is_absolute, *pbuttons, 0, 0, 6,
-					    rx, ry, z, tx, ty, 0);
-		    }
+		    xf86PostButtonEvent(device, is_absolute, *pbuttons, 0, 0, 5,
+					rx, ry, z, tx, ty);
 		    *pbuttons = 0;
 		}
 		if (!is_core_pointer) {
 		    if (*pprox) {
-			xf86PostProximityEvent(device, 0, 0, 6, rx, ry, z,
-					       tx, ty, 0);
+			xf86PostProximityEvent(device, 0, 0, 5, rx, ry, z,
+					       tx, ty);
 		    }
-		    /* macro button management button number is in pressure */
+		    /* macro button management */
 		    if (buttons) {
 			int	macro = z / 2;
-		  
-			xf86PostButtonEvent(device, is_absolute, buttons, 1, 0, 6,
-					    0, 0, 0, tx, ty, macro);
-			xf86PostButtonEvent(device, is_absolute, buttons, 0, 0, 6,
-					    0, 0, 0, tx, ty, macro);
+
+			DBG(6, ErrorF("macro=%d buttons=%d\n", macro, buttons));
+			
+			xf86PostButtonEvent(device, is_absolute, macro, 1, 0, 5,
+					    0, 0, buttons, tx, ty);
+			xf86PostButtonEvent(device, is_absolute, macro, 0, 0, 5,
+					    0, 0, buttons, tx, ty);
 		    }
 		}
 		*pprox = 0;
@@ -1202,13 +1205,6 @@ xf86WcmOpenDevice(DeviceIntPtr       pWcm)
 			   128,		/* resolution ??? */
 			   0,
 			   128);
-    InitValuatorAxisStruct(pWcm,
-			   5,
-			   0,		/* min val */
-			   32,		/* max val */
-			   1,		/* resolution ??? */
-			   0,
-			   1);
     return (local->fd != -1);
 }
 
@@ -1224,7 +1220,7 @@ static int
 xf86WcmProc(DeviceIntPtr       pWcm,
 	    int                what)
 {
-    CARD8                 map[25];
+    CARD8                 map[(32 << 4) + 1];
     int                   nbaxes;
     int                   nbbuttons;
     int                   loop;
@@ -1241,19 +1237,15 @@ xf86WcmProc(DeviceIntPtr       pWcm,
 	case DEVICE_INIT: 
 	    DBG(1, ErrorF("xf86WcmProc pWcm=0x%x what=INIT\n", pWcm));
       
-	    nbaxes = 6;			/* X, Y, Pressure, Tilt-X, Tilt-Y, macro button */
-	    switch (DEVICE_ID(local->private_flags)) {
-	    case STYLUS_ID:
-	    case CURSOR_ID:
-		nbbuttons = 16;
-		break;
-
-	    default:		/* this shouldn't happen */
-	    case ERASER_ID:
+	    nbaxes = 5;			/* X, Y, Pressure, Tilt-X, Tilt-Y */
+	    
+	    if (DEVICE_ID(local->private_flags) == ERASER_ID) {
 		nbbuttons = 1;
-		break;
 	    }
-  
+	    else {
+		nbbuttons = 32;		/* 16 buttons max but 32 macro buttons max */
+	    }
+	    
 	    for(loop=1; loop<=nbbuttons; loop++) map[loop] = loop;
 
 	    if (InitButtonClassDeviceStruct(pWcm,

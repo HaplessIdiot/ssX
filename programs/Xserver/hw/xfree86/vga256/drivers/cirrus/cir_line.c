@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_line.c,v 3.5 1996/09/29 13:39:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_line.c,v 3.6 1996/10/03 08:46:44 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -188,18 +188,22 @@ CirrusMMIOLineSS (pDrawable, pGC, mode, npt, pptInit)
     xorg = pDrawable->x;
     yorg = pDrawable->y;
 
+#ifdef USEBLTEXTENSIONS
     if (HAVEBLTEXTENSIONS()) {
     	/* The 5436/46 don't need a pattern for solid fills. */
 	SETBLTMODEEXT(SOLIDCOLORFILL);
     }
     else {
+#endif
 	/*
 	 * The source address for the pattern is irrelevant, since the
 	 * background and foreground colors are the same.
 	 */
 	SETSRCADDR(0);
 	SETBACKGROUNDCOLOR(pGC->fgPixel);
+#ifdef USEBLTEXTENSIONS
     }
+#endif
     SETBLTMODE(FORWARDS | COLOREXPAND | PATTERNCOPY);
     SETROP(cirrus_rop[alu]);
     destpitch = nlwidth * 4;
@@ -603,7 +607,9 @@ CirrusMMIOLineSS (pDrawable, pGC, mode, npt, pptInit)
 #endif
 
     do { BLTBUSY(busy); } while (busy);
+#ifdef USEBLTEXTENSIONS
     if (HAVEBLTEXTENSIONS()) {
-      SETBLTMODEEXT(0);
+        SETBLTMODEEXT(0);
     }
+#endif
 }

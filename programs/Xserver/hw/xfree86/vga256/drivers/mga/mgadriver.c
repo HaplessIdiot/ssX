@@ -32,7 +32,7 @@
  *		RAMDAC timing, and BIOS stuff
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.4 1996/10/08 12:28:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.5 1996/10/10 14:04:47 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -124,6 +124,7 @@ static void		MGAAdjust();
 static void		MGAFbInit();
 static void 		MGACursorInit();
 static int		MGAPitchAdjust();
+static int		MGAScrnInit();
 
 extern void		MGASetRead();
 extern void		MGASetWrite();
@@ -800,9 +801,7 @@ MGAProbe()
 	
 #ifdef DEBUG
 	ErrorF("Config Word %lx\n",pcibusRead(MGAPciTag, 0x40));
-#if 0
-	ErrorF("RAMDACRev %x\n", MGADacReadByte(0x01));
-#endif
+	ErrorF("RAMDACRev %x\n", inTi3026(0x01));
 #endif
 
 	/*
@@ -1120,16 +1119,18 @@ MGAFbInit()
 			if (!MGAWaitForBlitter())
 				FatalError("MGA: BitBlt Engine timeout\n");
 	
+			vgaSetScreenInitHook(MGAScrnInit);
+
+#if 0
 			/*
-			 * Hardware cursor is not supported yet, but I have to catch
-			 * CopyWindow after screen initialization and before 
-			 * cursor initialization.
+			 * Hardware cursor is not supported yet.
 			 */
 			vgaHWCursor.Initialized = TRUE;
 			vgaHWCursor.Init = MGACursorInit;
 			vgaHWCursor.Restore = (void (*)())NoopDDA;
 			vgaHWCursor.Warp = xf86PointerScreenFuncs.WarpCursor;
 			vgaHWCursor.QueryBestSize = mfbQueryBestSize;
+#endif
 		}
 	}
 	
@@ -1148,20 +1149,21 @@ MGAFbInit()
 }
 
 /*
- * MGACursorInit --
+ * MGAScrnInit --
  *
- * Sets CopyWindow to vga256CopyWindow 
- * which uses vga256LowlevFuncs.doBitbltCopy
+ * Sets some accelerated functions
  */		
-static void
-MGACursorInit(pm, pScreen)
-char *pm;
+static int
+MGAScrnInit(pScreen, LinearBase, virtualX, virtualY, res1, res2, width)
 ScreenPtr pScreen;
+char *LinearBase;
+int virtualX, virtualY, res1, res2, width;
 {
 	pScreen->CopyWindow = vga256CopyWindow;
+	pScreen->PaintWindowBackground = mgaPaintWindow;
+	pScreen->PaintWindowBorder = mgaPaintWindow;
 	
-	vgaHWCursor.Initialized = FALSE;
-	miDCInitialize(pScreen, &xf86PointerScreenFuncs);
+	return(TRUE);
 }
 
  /*

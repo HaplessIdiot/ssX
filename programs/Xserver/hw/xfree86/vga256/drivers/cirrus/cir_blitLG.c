@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitLG.c,v 3.0 1996/08/16 12:31:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitLG.c,v 3.1 1996/09/29 13:39:39 dawes Exp $ */
 
 #include "vga256.h"
 #include "cfbrrop.h"
@@ -446,18 +446,21 @@ extern void cfb16DoBitbltCopy();
 extern void cfb16DoBitbltXor();
 extern void cfb16DoBitbltOr();
 extern void cfb16DoBitbltGeneral();
+extern void cfb16CopyWindow();
 
 extern RegionPtr cfb24BitBlt();
 extern void cfb24DoBitbltCopy();
 extern void cfb24DoBitbltXor();
 extern void cfb24DoBitbltOr();
 extern void cfb24DoBitbltGeneral();
+extern void cfb24CopyWindow();
 
 extern RegionPtr cfb32BitBlt();
 extern void cfb32DoBitbltCopy();
 extern void cfb32DoBitbltXor();
 extern void cfb32DoBitbltOr();
 extern void cfb32DoBitbltGeneral();
+extern void cfb32CopyWindow();
 
 static void CirrusLgBppDoBitbltCopy();
 
@@ -485,7 +488,7 @@ CirrusLgCopyArea32(pSrcDrawable, pDstDrawable,
 
     if (doBitBlt == cfb32DoBitbltCopy && 
 	pSrcDrawable->type == DRAWABLE_WINDOW && 
-	pDstDrawable->type == DRAWABLE_WINDOW)
+	pDstDrawable->type == DRAWABLE_WINDOW && xf86VTSema)
       doBitBlt = CirrusLgBppDoBitbltCopy;
     
     return cfb32BitBlt(pSrcDrawable, pDstDrawable, pGC, srcx, srcy, 
@@ -510,7 +513,7 @@ CirrusLgCopyArea24(pSrcDrawable, pDstDrawable,
 
     if (doBitBlt == cfb24DoBitbltCopy && 
 	pSrcDrawable->type == DRAWABLE_WINDOW && 
-	pDstDrawable->type == DRAWABLE_WINDOW)
+	pDstDrawable->type == DRAWABLE_WINDOW && xf86VTSema)
       doBitBlt = CirrusLgBppDoBitbltCopy;
     
     return cfb24BitBlt(pSrcDrawable, pDstDrawable, pGC, srcx, srcy, 
@@ -535,7 +538,7 @@ CirrusLgCopyArea16(pSrcDrawable, pDstDrawable,
 
     if (doBitBlt == cfb16DoBitbltCopy && 
 	pSrcDrawable->type == DRAWABLE_WINDOW && 
-	pDstDrawable->type == DRAWABLE_WINDOW)
+	pDstDrawable->type == DRAWABLE_WINDOW && xf86VTSema)
       doBitBlt = CirrusLgBppDoBitbltCopy;
     
     return cfb16BitBlt(pSrcDrawable, pDstDrawable, pGC, srcx, srcy, 
@@ -563,6 +566,22 @@ CirrusLgCopyWindow(pWin, ptOldOrg, prgnSrc)
     register int dx, dy;
     register int i, nbox;
     WindowPtr pwinRoot;
+
+    if (!xf86VTSema)
+        switch (vgaBitsPerPixel) {
+        case 8 :
+            vga256CopyWindow(pWin, ptOldOrg, prgnSrc);
+	    return;
+        case 16 :
+            cfb16CopyWindow(pWin, ptOldOrg, prgnSrc);
+	    return;
+        case 24 :
+            cfb24CopyWindow(pWin, ptOldOrg, prgnSrc);
+	    return;
+        case 32 :
+            cfb32CopyWindow(pWin, ptOldOrg, prgnSrc);
+	    return;
+        }
 
     pwinRoot = WindowTable[pWin->drawable.pScreen->myNum];
 

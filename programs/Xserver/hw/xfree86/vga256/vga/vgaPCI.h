@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.16 1996/09/29 13:41:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.17 1996/10/10 14:05:06 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -131,6 +131,7 @@
 #define PCI_CHIP_1000PV		0xA091
 #define PCI_CHIP_2000PV		0xA099
 #define PCI_CHIP_2000MT		0xA0A1
+#define PCI_CHIP_2000MI		0xA0A9
 
 /* Increase this as required */
 #define MAX_DEV_PER_VENDOR 16
@@ -270,6 +271,7 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_1000PV,	"1000PV"},
 				{PCI_CHIP_2000PV,	"2000PV"},
 				{PCI_CHIP_2000MT,	"2000MT"},
+				{PCI_CHIP_2000MI,	"2000MI"},
 				{0x0000,		NULL}}},
     {0x0000,		NULL,	{
 				{0x0000,		NULL}}},

@@ -1,4 +1,5 @@
 /* $XConsortium: xkbatom.c /main/2 1996/01/01 10:52:48 kaleb $ */
+/* $XFree86$ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -145,12 +146,12 @@ _XkbMakeAtom(string, len, makeit)
     {
 	register NodePtr nd;
 
-	nd = (NodePtr) malloc(sizeof(NodeRec));
+	nd = (NodePtr) _XkbAlloc(sizeof(NodeRec));
 	if (!nd)
 	    return BAD_RESOURCE;
-	nd->string = (char *) malloc(len + 1);
+	nd->string = (char *) _XkbAlloc(len + 1);
 	if (!nd->string) {
-	    free(nd);
+	    _XkbFree(nd);
 	    return BAD_RESOURCE;
 	}
 	strncpy(nd->string, string, (int)len);
@@ -158,12 +159,12 @@ _XkbMakeAtom(string, len, makeit)
 	if ((lastAtom + 1) >= tableLength) {
 	    NodePtr *table;
 
-	    table = (NodePtr *) realloc(nodeTable,
+	    table = (NodePtr *) _XkbRealloc(nodeTable,
 					 tableLength * (2 * sizeof(NodePtr)));
 	    if (!table) {
 		if (nd->string != string)
-		    free(nd->string);
-		free(nd);
+		    _XkbFree(nd->string);
+		_XkbFree(nd);
 		return BAD_RESOURCE;
 	    }
 	    tableLength <<= 1;
@@ -202,7 +203,7 @@ _XkbInitAtoms()
 #endif
 {
     tableLength = InitialTableSize;
-    nodeTable = (NodePtr *)malloc(InitialTableSize*sizeof(NodePtr));
+    nodeTable = (NodePtr *)_XkbAlloc(InitialTableSize*sizeof(NodePtr));
     nodeTable[None] = (NodePtr)NULL;
 }
     

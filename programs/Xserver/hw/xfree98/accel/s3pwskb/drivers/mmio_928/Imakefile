@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3pwskb/drivers/mmio_928/Imakefile,v 3.4 1996/08/14 14:36:09 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3pwskb/drivers/mmio_928/Imakefile,v 3.5 1996/10/08 12:41:54 dawes Exp $
 
 
 
@@ -20,10 +20,6 @@ INCLUDES = -I. -I../.. -I$(XF86COMSRC) -I$(XF86HWSRC) \
 	   -I$(XF86OSSRC) -I$(SERVERSRC)/mi \
            -I$(XF86SRC)/vga256/vga -I$(SERVERSRC)/include -I$(INCLUDESRC) \
 	   -I$(XF86SRC)/accel/cache
-#endif
-
-#if XF86LinkKit
-DEFINES = -DS3_SERVER -DPSZ=8 -DPC98 -DPC98_PW -DPC98_XKB
 #endif
 
 NormalLibraryObjectRule()

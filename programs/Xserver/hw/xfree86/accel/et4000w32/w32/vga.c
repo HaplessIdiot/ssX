@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.33 1996/09/15 11:16:43 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.34 1996/09/29 13:18:49 dawes Exp $ */ 
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -49,6 +49,14 @@
 #include "w32version.h"
 #include "w32box.h"
 
+#ifdef XFreeXDGA
+#include "scrnintstr.h"
+#include "servermd.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
+
+extern vgaVideoChipRec ET4000;
 extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed;
 extern Bool miDCInitialize();
 extern Bool W32SaveScreen();
@@ -569,6 +577,14 @@ vgaProbe()
 
         vgaHWCursor.Initialized = FALSE;
 
+#ifdef XFreeXDGA
+        {
+            vga256InfoRec.physBase = 0xA0000 + ET4000.ChipWriteBottom;
+            vga256InfoRec.physSize = ET4000.ChipSegmentSize;
+            vga256InfoRec.setBank = ET4000.ChipSetReadWrite;
+        }
+#endif
+
 	/* Free PCI information */
 	xf86cleanpci();
 	if (vgaPCIInfo) {
@@ -724,7 +740,16 @@ vgaEnterLeaveVT(enter, screen_idx)
       xf86MapDisplay(screen_idx, VGA_REGION);
 
       (vgaEnterLeaveFunc)(ENTER);
-      vgaOrigVideoState = (pointer)(vgaSaveFunc)(vgaOrigVideoState);
+
+#ifdef XFreeXDGA
+      if (vga256InfoRec.directMode & XF86DGADirectGraphics) {
+        /* Should we do something here or not ? */
+      } else
+#endif
+      {
+        vgaOrigVideoState = (pointer)(vgaSaveFunc)(vgaOrigVideoState);
+      }
+
       XRamdac();
       vgaRestore(vgaNewVideoState);
 
@@ -795,13 +820,20 @@ vgaEnterLeaveVT(enter, screen_idx)
        * abnormaly. Therefore there MUST be a check whether vgaOrigVideoState
        * is valid or not.
        */
-      if (vgaOrigVideoState)
-	vgaRestore(vgaOrigVideoState);
-      VGARamdac();
+#ifdef XFreeXDGA
+      if (vga256InfoRec.directMode & XF86DGADirectGraphics) {
+         (vgaEnterLeaveFunc)(LEAVE);
+      } else
+#endif
+      { 
+         if (vgaOrigVideoState)
+  	    vgaRestore(vgaOrigVideoState);
+         VGARamdac();
 
-      (vgaEnterLeaveFunc)(LEAVE);
+         (vgaEnterLeaveFunc)(LEAVE);
 
-      xf86UnMapDisplay(screen_idx, VGA_REGION);
+         xf86UnMapDisplay(screen_idx, VGA_REGION);
+      }
     }
 }
 

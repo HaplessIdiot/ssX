@@ -786,6 +786,8 @@ XFree86 Project has been provided from its proceeds.
   <item>  <url url="http://www.elsa.de/"
 	name="Elsa GmbH">, Aachen, Germany
   <item>  Genoa Systems Corporation
+  <item>  <url url="http://www.helius.com/"
+	name="Helius, Inc.">
   <item>  <url url="http://www.hercules.com/"
 	name="Hercules Computer Technology, Inc.">
   <item>  Ralf Hockens
@@ -997,7 +999,7 @@ file that describes what files you need to take from the archive, and which
 compile-time option selections were made when building the distribution.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.57 1996/10/03 08:34:51 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.58 1996/10/06 13:16:46 dawes Exp $
 
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blt16.c,v 3.3 1996/09/29 13:39:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blt16.c,v 3.4 1996/10/06 13:17:29 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -118,7 +118,7 @@ Cirrus16CopyArea(pSrcDrawable, pDstDrawable,
     }
 
     if (doBitBlt == cfb16DoBitbltCopy && pSrcDrawable->type == DRAWABLE_WINDOW
-    && pDstDrawable->type == DRAWABLE_WINDOW)
+    && pDstDrawable->type == DRAWABLE_WINDOW && xf86VTSema)
         doBitBlt = CirrusBppDoBitbltCopy;
 
     return cfb16BitBlt (pSrcDrawable, pDstDrawable,
@@ -161,7 +161,7 @@ Cirrus24CopyArea(pSrcDrawable, pDstDrawable,
     }
 
     if (doBitBlt == cfb24DoBitbltCopy && pSrcDrawable->type == DRAWABLE_WINDOW
-    && pDstDrawable->type == DRAWABLE_WINDOW)
+    && pDstDrawable->type == DRAWABLE_WINDOW && xf86VTSema)
         doBitBlt = CirrusBppDoBitbltCopy;
 
     return cfb24BitBlt (pSrcDrawable, pDstDrawable,
@@ -204,7 +204,7 @@ Cirrus32CopyArea(pSrcDrawable, pDstDrawable,
     }
 
     if (doBitBlt == cfb32DoBitbltCopy && pSrcDrawable->type == DRAWABLE_WINDOW
-    && pDstDrawable->type == DRAWABLE_WINDOW)
+    && pDstDrawable->type == DRAWABLE_WINDOW && xf86VTSema)
         doBitBlt = CirrusBppDoBitbltCopy;
 
     return cfb32BitBlt (pSrcDrawable, pDstDrawable,
@@ -232,6 +232,19 @@ CirrusCopyWindow(pWin, ptOldOrg, prgnSrc)
     register int dx, dy;
     register int i, nbox;
     WindowPtr pwinRoot;
+
+    if (!xf86VTSema)
+        switch (vgaBitsPerPixel) {
+        case 16 :
+            cfb16CopyWindow(pWin, ptOldOrg, prgnSrc);
+	    return;
+        case 24 :
+            cfb24CopyWindow(pWin, ptOldOrg, prgnSrc);
+	    return;
+        case 32 :
+            cfb32CopyWindow(pWin, ptOldOrg, prgnSrc);
+	    return;
+        }
 
     pwinRoot = WindowTable[pWin->drawable.pScreen->myNum];
 

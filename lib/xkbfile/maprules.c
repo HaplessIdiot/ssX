@@ -1,5 +1,5 @@
 /* $XConsortium: maprules.c /main/5 1996/03/22 12:52:33 kaleb $ */
-/* $XFree86: xc/lib/xkbfile/maprules.c,v 3.3 1996/08/14 23:39:06 dawes Exp $ */
+/* $XFree86: xc/lib/xkbfile/maprules.c,v 3.4 1996/08/23 11:01:32 dawes Exp $ */
 /************************************************************
  Copyright (c) 1996 by Silicon Graphics Computer Systems, Inc.
 
@@ -729,10 +729,8 @@ int	len;
 	}
     }
     *outstr++= '\0';
-#if 0
     if (orig!=name)
-	free(orig);
-#endif
+	_XkbFree(orig);
     return name;
 }
 
@@ -1332,7 +1330,7 @@ char *	pval;
 	_XkbLibError(_XkbErrXReqFailure,"XkbRF_SetNamesProp",X_InternAtom);
         return False;
     }
-    pval= (char *)malloc(len);
+    pval= (char *)_XkbAlloc(len);
     if (!pval) {
 	_XkbLibError(_XkbErrBadAlloc,"XkbRF_SetNamesProp",len);
         return False;
@@ -1365,13 +1363,13 @@ char *	pval;
     pval[out++]= '\0';
     if (out!=len) {
 	_XkbLibError(_XkbErrBadLength,"XkbRF_SetNamesProp",out);
-	free(pval);
+	_XkbFree(pval);
 	return False;
     }
 
     XChangeProperty(dpy,DefaultRootWindow(dpy),name,XA_STRING,8,PropModeReplace,
                    (unsigned char *)pval,len);
-    free(pval);
+    _XkbFree(pval);
     return True;
 }
 

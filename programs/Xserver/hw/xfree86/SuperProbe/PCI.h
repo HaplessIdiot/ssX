@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.12 1996/09/22 05:01:41 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.13 1996/09/29 12:50:44 dawes Exp $ */ 
 /*
  * PCI Probe
  *
@@ -296,6 +296,7 @@ void xf86writepci(
 #define PCI_CHIP_1000PV		0xA091
 #define PCI_CHIP_2000PV		0xA099
 #define PCI_CHIP_2000MT		0xA0A1
+#define PCI_CHIP_2000MI		0xA0A9
 
 /* 3Dlabs */
 #define PCI_CHIP_3DLABS_300SX      0x0001

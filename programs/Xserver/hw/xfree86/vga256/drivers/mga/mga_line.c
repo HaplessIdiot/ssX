@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga_line.c,v 3.0 1996/09/29 13:40:23 dawes Exp $ */
 
 /***********************************************************
 
@@ -115,6 +115,7 @@ mgaLine (pDrawable, pGC, mode, npt, pptInit)
     cfbPrivGCPtr    devPriv;
     unsigned long   xor, and;
     int		    alu;
+    unsigned long   pixel;
 
     if (!xf86VTSema || pDrawable->type != DRAWABLE_WINDOW ||
     (pGC->planemask & 0xFF) != 0xFF) 
@@ -123,6 +124,7 @@ mgaLine (pDrawable, pGC, mode, npt, pptInit)
 	return;
     }
 
+    pixel = pGC->fgPixel; pixel |= pixel << 8; pixel |= pixel << 16;
     addrl = 0;
 
     devPriv = cfbGetGCPrivate(pGC);
@@ -171,6 +173,7 @@ mgaLine (pDrawable, pGC, mode, npt, pptInit)
 		{
 		    if(!MGAWaitForBlitter())
         			ErrorF("MGA: BitBlt Engine timeout\n");
+		    OUTREG(MGAREG_FCOL, pixel);
 		    OUTREG(MGAREG_CXBNDRY, (((pbox->x2 - 1) << 16) | pbox->x1));
 		    OUTREG(MGAREG_YTOP, MGAScrnWidth * pbox->y1);
 		    OUTREG(MGAREG_YBOT, MGAScrnWidth * pbox->y2);

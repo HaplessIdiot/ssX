@@ -46,6 +46,34 @@
 	set <tt>XF86W32Server</tt> to <tt>YES</tt>.
     <item>To build the IBM 8514/A server:
 	set <tt>XF86I8514Server</tt> to <tt>YES</tt>.
+    <item>To build the I128 server:
+	set <tt>XF86I128Server</tt> to <tt>YES</tt>.
+    <item>To build the TGA server:
+	set <tt>XF86TGAServer</tt> to <tt>YES</tt>.
+    <item>To build the GA-98NB/WAP server:
+	set <tt>XF98GANBServer</tt> to <tt>YES</tt>.
+    <item>To build the NEC480 server:
+	set <tt>XF98NEC480Server</tt> to <tt>YES</tt>.
+    <item>To build the NEC-CIRRUS/EPSON NKV/NKV2 server:
+	set <tt>XF98NKVNECServer</tt> to <tt>YES</tt>.
+    <item>To build the WAB-S server:
+	set <tt>XF98WABSServer</tt> to <tt>YES</tt>.
+    <item>To build the WAB-EP server:
+	set <tt>XF98WABEPServer</tt> to <tt>YES</tt>.
+    <item>To build the WSN-A2F server:
+	set <tt>XF98WSNAServer</tt> to <tt>YES</tt>.
+    <item>To build the Trident Cyber9320/9680 server:
+	set <tt>XF98TGUIServer</tt> to <tt>YES</tt>.
+    <item>To build the EGC server:
+	set <tt>XF98EGCServer</tt> to <tt>YES</tt>.
+    <item>To build the NEC S3 server:
+	set <tt>XF98NECS3Server</tt> to <tt>YES</tt>.
+    <item>To build the S3 PW/PCSKB server:
+	set <tt>XF98PWSKBServer</tt> to <tt>YES</tt>.
+    <item>To build the S3 PW/LB server:
+	set <tt>XF98PWLBServer</tt> to <tt>YES</tt>.
+    <item>To build the S3 GA-968 server:
+	set <tt>XF98GA968Server</tt> to <tt>YES</tt>.
     <item>To build the Xnest server:
 	set <tt>XnestServer</tt> to <tt>YES</tt>.
 
@@ -116,7 +144,7 @@
 </enum>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LinkKit.sgml,v 3.8tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LinkKit.sgml,v 3.9 1996/10/03 08:34:47 dawes Exp $
 $XConsortium: LinkKit.sgml /main/4 1995/11/12 19:59:36 kaleb $
 </verb>
 

@@ -1,4 +1,5 @@
 /* $XConsortium: cout.c /main/3 1996/01/01 10:52:28 kaleb $ */
+/* $XFree86$ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -1208,7 +1209,7 @@ Bool			(*func)(
 	if (tmp==NULL)
 	     tmp= name;
 	else tmp++;
-	hdrdef= (char *)calloc(strlen(tmp+1),sizeof(char));
+	hdrdef= (char *)_XkbCalloc(strlen(tmp+1),sizeof(char));
 	if (hdrdef) {
 	    strcpy(hdrdef,tmp);
 	    tmp= hdrdef;

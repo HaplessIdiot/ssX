@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 # 
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.42 1996/09/29 14:02:52 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.43 1996/10/10 14:05:10 dawes Exp $
 
 #Chips & Technologies
 
@@ -112,14 +112,24 @@ NAME Creative Labs Graphics Blaster MA202
 SEE Cirrus Logic GD544x
 
 #tested
-NAME Cirrus Logic GD546x
-CHIPSET CL-GD546x
+NAME Cirrus Logic GD5462
+CHIPSET CL-GD5462
+SERVER SVGA
+NOCLOCKPROBE
+
+#tested
+NAME Cirrus Logic GD5464
+CHIPSET CL-GD5464
 SERVER SVGA
 NOCLOCKPROBE
 
 NAME Creative Labs Graphics Blaster MA302
-CHIPSET CL-GD546x
-SEE Cirrus Logic GD546x
+CHIPSET CL-GD5462
+SEE Cirrus Logic GD5462
+
+NAME Creative Labs Graphics Blaster MA334
+CHIPSET CL-GD5464
+SEE Cirrus Logic GD5464
 
 #tested
 NAME Diamond SpeedStar 64

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.66 1996/10/06 13:17:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.67 1996/10/08 12:23:53 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -327,7 +327,7 @@ vgaVideoChipRec CIRRUS = {
   TRUE,				/* ChipUse2Banks, Uses 2 bank */
   VGA_DIVIDE_VERT,		/* ChipInterlaceType -- don't divide verts */
   {0,},				/* ChipOptionFlags */
-  /* 8 */1,				/* ChipRounding */
+  8,				/* ChipRounding */
   FALSE,			/* ChipUseLinearAddressing */
   0,				/* ChipLinearBase */
   0x100000,			/* ChipLinearSize */
@@ -1435,10 +1435,16 @@ cirrusProbe()
       * moved around on the screen.
       *
       * XXX For later laptop chips for which lcd_is_on is set
-      *     (e.g. 754x), this may be an artificial limit. 
+      *     (e.g. 754x), this may be an artificial limit.
+      *
+      * The 754x laptop support seems to have been based on a
+      * mistaken idea for clock selection, where the driver
+      * needed to be hoaxed with a "Clocks" line.
+      *
+      * I have no idea what the real limits should be.
       */
      if (lcd_is_on && vgaBitsPerPixel <= 8) {
-         cirrusClockLimit[cirrusChip] = 26000;
+         cirrusClockLimit[cirrusChip] = 44000;
      }
 
      cirrusClockNo = cirrusNumClocks(cirrusChip);
@@ -1464,15 +1470,12 @@ cirrusProbe()
 	           vga256InfoRec.clocks = last_valid_clock + 1;
 	       }
 	  }
-     else
-          if (vga256InfoRec.clocks > cirrusClockNo)
-	       {
-		 ErrorF("%s %s: %s: Too many Clocks specified in configuration file.\n",
-			XCONFIG_PROBED, vga256InfoRec.name,
-			vga256InfoRec.chipset);
-		 ErrorF("\t\tAt most %d clocks may be specified\n",
-			cirrusClockNo);
-	       }
+     else {
+         ErrorF("%s %s: %s: Specifying a Clocks line makes no sense "
+             "for this driver\n", XCONFIG_PROBED, vga256InfoRec.name,
+	     vga256InfoRec.chipset);
+	 return FALSE;
+     }
 
      vga256InfoRec.bankedMono = TRUE;
 #ifdef ALLOW_OUT_OF_SPEC_CLOCKS
@@ -3606,13 +3609,13 @@ cirrusInit(mode)
          && xf86weight.blue == 5)
              /* 5-6-5 RGB mode */
              if (!(MUST_DOUBLE_VCLK_FOR_16BPP))
-                 new->HIDDENDAC = 0xd1;
+                 new->HIDDENDAC = 0xc1;
              else
                  new->HIDDENDAC = 0xe1;
      }
      if (vgaBitsPerPixel == 24 || vgaBitsPerPixel == 32)
          /* Set 24-bit color 8-8-8 RGB mode. */
-         new->HIDDENDAC = 0xe5;
+         new->HIDDENDAC = 0xc5;
 
 #ifdef ALLOW_8BPP_MULTIPLEXING
      if (multiplexing) {
@@ -3706,7 +3709,15 @@ cirrusInit(mode)
 	  break;
 
 	case 16:
-	  new->FORMAT = 0x1400;
+	  if (cirrusChip == CLGD5464 &&
+	      xf86weight.red == 5 && xf86weight.green == 5
+	      && xf86weight.blue == 5) {
+	    /* 5-5-5 RGB mode */
+	    new->FORMAT = 0x1600;
+	  } else {
+	    /* 5-6-5 RGB mode */	    
+	    new->FORMAT = 0x1400;
+	  }
 
 	  /* The display pitch must be an even multiple of the tile size.
 	     In fact, it must be one of only a handful of tile sizes.  So

@@ -1,6 +1,6 @@
 /* This is sun.h modified for LynxOS */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/sunLynx/sun.h,v 3.0 1996/09/29 12:47:21 dawes Exp $ */
 
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
@@ -123,8 +123,14 @@ extern int getpagesize();
 #    define __P(x)	x
 #   endif
 #   include <signal.h>
-#   include <kbio.h>
-#   include <kbd.h>
+#   ifdef PATCHED_CONSOLE
+#    include <kbio.h>
+#    include <kbd.h>
+#   else
+#    define KB_SUN2		2		/* type 2 keyboard */
+#    define KB_SUN3		3		/* type 3 keyboard */
+#    define KB_SUN4		4		/* type 4 keyboard */
+#   endif
 #   include <smem.h>
 #   include "fbio.h"
 #   include "vuid_event.h"

@@ -1,5 +1,5 @@
 // $XConsortium: no /main/2 1995/12/07 21:43:06 kaleb $
-// $XFree86$
+// $XFree86: xc/programs/xkbcomp/symbols/no,v 3.1 1996/09/14 13:15:19 dawes Exp $
 partial default alphanumeric_keys 
 xkb_symbols "basic" {
 
@@ -49,6 +49,15 @@ xkb_symbols "Sundeadkeys" {
     // For naming consistency
 
     include "no(basic)"
+
+};
+
+partial alphanumeric_keys 
+xkb_symbols "sundeadkeys" {
+
+    // For naming consistency
+
+    include "no(Sundeadkeys)"
 
 };
 

@@ -1,3 +1,30 @@
+XFree86 3.1.2Gm (13 October 1996)
+980. Set foreground colour for MGA line code (Ansgar Hockmann).
+979. Add weight 555 support for the Cirrus 5464 (Corin Anderson).
+978. Fix Cirrus HAVE546X macro to detect the 5464 (Corin Anderson).
+977. Updates to Cirrus docs and Cards database (Corin Anderson).
+976. Add detection of the ARK2000MI to SuperProbe (Harm Hanemaayer).
+975. Cirrus updates, including fix MMIO for the Cirrus 5446, update some
+     DAC register values, disallow clocks line and change max clock for
+     LCD displays (Harm Hanemaayer).
+974. Add some sanity checks for potential VT problems in the cirrus and
+     ARK drivers (Harm Hanemaayer).
+973. Fix for LynxOS microSPARC (Thomas Mueller).
+972. Update the LynxOS docs for 3.2 (Thomas Mueller).
+971. Change the various malloc/free calls in the XKB code to use the
+     XkbMalloc/XkbFree equivalents (Joe Moss).
+970. Update the Wacom driver to support the new stylus with two side
+     buttons.  The second side button is reported as button 4
+     (Frederic Lepied).
+969. Update the LinkKit to build the SVGA and I128 servers, and update the
+     LinkKit README (Takaaki Nomura).
+968. DGA support for the W32 server (Koen Gadeyne).
+967. Resynch some PC98 Imakefiles (Takaaki Nomura).
+966. LinkKit updates for a PC98-only LinkKit (Takaaki Nomura).
+965. Add some missing bits to the MGA solid box fill patch (Radoslaw Kapitan).
+964. Fix a typo in SuperProbe that would result in incorrect chipset
+     reporting for some Cirrus chips (Harm Hanemaayer).
+
 XFree86 3.1.2Gl (10 October 1996)
 963. PC98 doc updates (Michio "Karl" Jinbo).
 962. Add some solid box fills to the MGA driver (Radoslaw Kapitan).

@@ -1,5 +1,5 @@
 // $XConsortium: fr /main/2 1995/12/07 21:42:30 kaleb $
-// $XFree86$
+// $XFree86: xc/programs/xkbcomp/symbols/fr,v 3.1 1996/09/14 13:15:15 dawes Exp $
 partial default alphanumeric_keys 
 xkb_symbols "basic" {
 
@@ -70,6 +70,11 @@ xkb_symbols "Sundeadkeys" {
     key <AD11> {	[    SunFA_Circum, SunFA_Diaeresis	]	};
     key <AB07> {	[           comma,        question	],
 			[     SunFA_Acute,dead_doubleacute	]	};
+};
+
+partial alphanumeric_keys 
+xkb_symbols "sundeadkeys" {
+    include "fr(Sundeadkeys)"
 };
 
 partial alphanumeric_keys 

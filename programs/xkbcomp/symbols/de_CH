@@ -1,5 +1,5 @@
 // $XConsortium: de_CH /main/2 1995/12/07 21:41:34 kaleb $
-// $XFree86$
+// $XFree86: xc/programs/xkbcomp/symbols/de_CH,v 3.1 1996/09/14 13:15:11 dawes Exp $
 partial default alphanumeric_keys 
 xkb_symbols "basic" {
 
@@ -59,6 +59,10 @@ xkb_symbols "basic" {
 partial alphanumeric_keys 
 xkb_symbols "Sundeadkeys" {
     include "de_CH(basic)" // for the sake of consistency
+};
+partial alphanumeric_keys 
+xkb_symbols "sundeadkeys" {
+    include "de_CH(Sundeadkeys)" // for the sake of consistency
 };
 partial alphanumeric_keys 
 xkb_symbols "nodeadkeys" {

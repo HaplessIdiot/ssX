@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_blt16.c,v 3.2 1996/09/24 13:55:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_blt16.c,v 3.3 1996/09/29 14:01:50 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -119,7 +119,7 @@ Ark16CopyArea(pSrcDrawable, pDstDrawable,
     }
 
     if (doBitBlt == cfb16DoBitbltCopy && pSrcDrawable->type == DRAWABLE_WINDOW
-    && pDstDrawable->type == DRAWABLE_WINDOW)
+    && pDstDrawable->type == DRAWABLE_WINDOW && xf86VTSema)
         doBitBlt = ArkBppDoBitbltCopy;
 
     return cfb16BitBlt (pSrcDrawable, pDstDrawable,
@@ -161,7 +161,7 @@ Ark24CopyArea(pSrcDrawable, pDstDrawable,
     }
 
     if (doBitBlt == cfb24DoBitbltCopy && pSrcDrawable->type == DRAWABLE_WINDOW
-    && pDstDrawable->type == DRAWABLE_WINDOW)
+    && pDstDrawable->type == DRAWABLE_WINDOW && xf86VTSema)
         doBitBlt = ArkBppDoBitbltCopy;
 
     return cfb24BitBlt (pSrcDrawable, pDstDrawable,
@@ -204,7 +204,7 @@ Ark32CopyArea(pSrcDrawable, pDstDrawable,
     }
 
     if (doBitBlt == cfb32DoBitbltCopy && pSrcDrawable->type == DRAWABLE_WINDOW
-    && pDstDrawable->type == DRAWABLE_WINDOW)
+    && pDstDrawable->type == DRAWABLE_WINDOW && xf86VTSema)
         doBitBlt = ArkBppDoBitbltCopy;
 
     return cfb32BitBlt (pSrcDrawable, pDstDrawable,
@@ -235,7 +235,7 @@ ArkCopyWindow(pWin, ptOldOrg, prgnSrc)
 
     pwinRoot = WindowTable[pWin->drawable.pScreen->myNum];
 
-    if (((DrawablePtr)pwinRoot)->type != DRAWABLE_WINDOW) {
+    if (!xf86VTSema) {
     	if (vgaBitsPerPixel == 16)
     		cfb16CopyWindow(pWin, ptOldOrg, prgnSrc);
     	else if (vgaBitsPerPixel == 24)

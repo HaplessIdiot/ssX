@@ -4,7 +4,7 @@
 
 <title> README for XFree86 3.2 on LynxOS
 <author>Thomas Mueller
-<date>Last modified on: 30 September 1996
+<date>Last modified on: 12 October 1996
 <toc>
 
 <sect>What and Where is XFree86?<p>
@@ -49,7 +49,7 @@ which are the executables, servers, fonts, libraries, include files,
 man pages, config files, and the server link kit.  The full distribution
 takes over 80MB of disk space.  
 
-At a minimum you need to unpack the 'required' <tt/X312*.tgz/ archives
+At a minimum you need to unpack the 'required' <tt/X32*.tgz/ archives
 plus at least one server that matches your vga card. If you will be
 using the new <tt/XF86Setup/ utility you will also need the VGA16
 server.  You'll need about 40Mb for the minimum required run-time
@@ -58,43 +58,44 @@ binaries only.
 <descrip>
 <tag/REQUIRED:/
     <descrip>
-    <tag/312Gbin/	Clients, run-time libs, and app-defaults files
-    <tag/312Gdoc/	Documentation
-    <tag/312Gfnts/	75dpi and misc fonts
-    <tag/312Glib/	Data files required at run-time
-    <tag/312Gman/	Manual pages
-    <tag/312Gset/	XF86Setup utility
-    <tag/312GVG16/	16 colour VGA server (XF86Setup needs this server)
+    <tag/X32bin/	Clients, run-time libs, and app-defaults files
+    <tag/X32doc/	Documentation
+    <tag/X32fnts/	75dpi and misc fonts
+    <tag/X32lib/	Data files required at run-time
+    <tag/X32cfg/	sample config files for xinit, xdm
+    <tag/X32set/	XF86Setup utility
+    <tag/X32VG16/	16 colour VGA server (XF86Setup needs this server)
     </descrip>
 
     Choose at least one of the following server to match your hardware:
 
     <descrip>
-    <tag/312G8514/	8514/A server
-    <tag/312GAGX/	AGX server
-    <tag/312GI128/	I128 server
-    <tag/312GMa64/	Mach 64 server
-    <tag/312GMa32/	Mach 32 server
-    <tag/312GMa8/	Mach 8 server
-    <tag/312GMono/	Monochrome server
-    <tag/312GP9K/	P9000 server
-    <tag/312GS3/	S3 server
-    <tag/312GSVGA/	SVGA server
-    <tag/312GVG16/	16 colour VGA server
-    <tag/312GW32/	ET4000/W32, ET6000 server
+    <tag/X328514/	8514/A server
+    <tag/X32AGX/	AGX server
+    <tag/X32I128/	I128 server
+    <tag/X32Ma64/	Mach 64 server
+    <tag/X32Ma32/	Mach 32 server
+    <tag/X32Ma8/	Mach 8 server
+    <tag/X32Mono/	Monochrome server
+    <tag/X32P9K/	P9000 server
+    <tag/X32S3/		S3 server
+    <tag/X32S3V/	S3 ViRGE server
+    <tag/X32SVGA/	SVGA server
+    <tag/X32VG16/	16 colour VGA server
+    <tag/X32W32/	ET4000/W32, ET6000 server
     </descrip>
 
 <tag/OPTIONAL:/
 
     <descrip>
-    <tag/312Gf100/ 100dpi fonts
-    <tag/312Gfcyr/ Cyrillic fonts
-    <tag/312Gfnon/ Other fonts (Chinese, Japanese, Korean, Hebrew)
-    <tag/312Gfscl/ Scalable fonts (Speedo and Type1)
-    <tag/312Gfsrv/ Font server and config files
-    <tag/312Gprog/ X header files, config files and compile-time libs
-    <tag/312Gcfg/  sample config files for xinit, xdm
-    <tag/312Gnest/ Nested X server
+    <tag/X32f100/ 100dpi fonts
+    <tag/X32fcyr/ Cyrillic fonts
+    <tag/X32fnon/ Other fonts (Chinese, Japanese, Korean, Hebrew)
+    <tag/X32fscl/ Scalable fonts (Speedo and Type1)
+    <tag/X32fsrv/ Font server and config files
+    <tag/X32prog/ X header files, config files and compile-time libs
+    <tag/X32man/  Manual pages
+    <tag/X32nest/ Nested X server
     </descrip>
 </descrip>
 
@@ -125,14 +126,14 @@ config, and one X server.
      If you are using bash:
 
 <tscreen><verb>
- # for i in X312*.tgz; do
+ # for i in X32*.tgz; do
  #   gnutar -xzpPf $i
  # done
 </verb></tscreen>
 
      Else, if you are using csh:
 <tscreen><verb>
- % foreach i (X312*.tgz)
+ % foreach i (X32*.tgz)
  %   gnutar -xzpPf $i
  % end
 </verb></tscreen>
@@ -153,7 +154,7 @@ First do numbers 1 and 2 above. Then unpack the required archives:
 
 <tscreen><verb>
  # for i in bin fnts lib xicf; do
- #   gnutar -xzpPf  X312$i.tgz
+ #   gnutar -xzpPf  X32$i.tgz
  # done
 </verb></tscreen>
 
@@ -163,7 +164,7 @@ sets supported by each server.  For example, if you have an ET4000
 based card you will use the XF86_SVGA server:
 
 <tscreen><verb>
- # gnutar -xzpPf X312SVGA.tgz
+ # gnutar -xzpPf X32SVGA.tgz
  # cd /usr/X11R6/bin; rm X; ln -s XF86_SVGA X
 </verb></tscreen>
 
@@ -300,7 +301,8 @@ few little adjustments to your system:
   installation. This is due to a problem with the strip program which
   shows up when installing across file system boundaries.
 
-  Refer to section 5 for manual page installation.
+  Refer to section <ref id="installman" name="Installing XFree86 manual pages"> 
+  for manual page installation.
 
 <sect>Running XFree86<p><label id="running">
 <sect1>System requirements<p>
@@ -397,7 +399,7 @@ few little adjustments to your system:
   lost. After server shutdown the screen contents of other consoles
   may be inconsistent with what one would expect (i.e. random).
 
-<sect>Installing XFree86 manual pages<p>
+<sect>Installing XFree86 manual pages<p><label id="installman">
 
   LynxOS uses cat-able manual pages, and because a doc preparation
   system is definitely not a vital component of a real-time operating
@@ -411,7 +413,7 @@ few little adjustments to your system:
   </verb></tscreen>
 
   The index and whatis database for the XFree86 manual pages will be
-  created automatically. If you have already a whatis database or
+  created automatically. If you already have a whatis database or
   index file in the destination directories you should perform a
   sort/uniq operation to remove duplicate entries:
 
@@ -576,7 +578,7 @@ few little adjustments to your system:
   <tt>lynx.cf</tt> but it has never been tested.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.7 1996/09/14 13:10:24 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.8 1996/10/03 08:34:48 dawes Exp $
 
 
 

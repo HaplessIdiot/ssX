@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.39 1996/09/29 12:50:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.40 1996/10/06 13:12:51 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -68,7 +68,7 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "Cirrus CL-GD6225", "Cirrus CL-GD6235",
 		  "Cirrus CL-GD5410",
 		  "Cirrus CL-GD6410", "Cirrus CL-GD6412",
-		  "Cirrus CL-GD6420A", "Cirrus CL-GD6420B" 
+		  "Cirrus CL-GD6420A", "Cirrus CL-GD6420B",
 		  "Cirrus CL-GD6440",
 		  "Cirrus CL-GD5436",
 		  "Cirrus CL-GD7541", "Cirrus CL-GD7542",
@@ -166,7 +166,8 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "ARK Logic ARK1000VL",
 		  "ARK Logic ARK1000PV",
 		  "ARK Logic ARK2000PV",
-		  "ARK Logic ARK2000MT" },
+		  "ARK Logic ARK2000MT",
+		  "ARK Logic ARK2000MI (Quadro64)" },
 };
 
 static CONST char *Herc_Names[] = 

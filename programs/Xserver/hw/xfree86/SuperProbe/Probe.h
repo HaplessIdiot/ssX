@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.39 1996/10/03 08:32:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.40 1996/10/06 13:12:52 dawes Exp $ */
 
 /*
  * Includes
@@ -406,6 +406,7 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_ARK1000PV	SVGA_TYPE(V_ARK,2)	/* ARK Logic ARK1000PV	*/
 #define CHIP_ARK2000PV	SVGA_TYPE(V_ARK,3)	/* ARK Logic ARK2000PV	*/
 #define CHIP_ARK2000MT	SVGA_TYPE(V_ARK,4)	/* ARK Logic ARK2000MT	*/
+#define CHIP_ARK2000MI	SVGA_TYPE(V_ARK,5)	/* ARK Logic ARK2000MI	*/
 #define CHIP_ATI_UNK	SVGA_TYPE(V_ATI,0)	/* ATI unknown		*/
 #define CHIP_ATI18800	SVGA_TYPE(V_ATI,1)	/* ATI 18800 		*/
 #define CHIP_ATI18800_1	SVGA_TYPE(V_ATI,2)	/* ATI 18800-1 		*/
