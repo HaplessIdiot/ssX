@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/vga_driver.c,v 1.12 1998/03/20 19:07:50 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/vga_driver.c,v 1.13 1998/03/20 21:06:58 hohndel Exp $ */
 /*
  * Stubs driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -428,8 +428,8 @@ GenericProbe()
 	    GenericEnterLeave(LEAVE);
 	    return(FALSE);
 	}
-#endif /* PC98_EGC */
     }
+#endif /* PC98_EGC */
 	if (!vga256InfoRec.videoRam)
     	{
 	    if( xf86bpp == 4 ) {
