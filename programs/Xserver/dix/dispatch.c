@@ -64,7 +64,7 @@ SOFTWARE.
 *                                                               *
 *****************************************************************/
 
-/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.19 2000/05/05 17:53:46 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.21 2000/09/22 05:57:18 keithp Exp $ */
 
 #ifdef PANORAMIX_DEBUG
 #include <stdio.h>
@@ -1991,8 +1991,6 @@ ProcPolyFillArc(client)
         (*pGC->ops->PolyFillArc) (pDraw, pGC, narcs, (xArc *) &stuff[1]);
     return (client->noClientException);
 }
-
-#undef MATCH_CLIENT_ENDIAN
 
 #ifdef MATCH_CLIENT_ENDIAN
 
