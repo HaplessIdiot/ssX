@@ -24,7 +24,7 @@
  * Authors:
  *    Keith Whitwell <keith@tungstengraphics.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgavb.c,v 1.13 2002/02/26 23:37:35 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgavb.c,v 1.14tsi Exp $ */
 
 #include "mgacontext.h"
 #include "mgavb.h"
@@ -93,7 +93,7 @@ static struct {
 #define GET_VIEWPORT_MAT() mmesa->hw_viewport
 #define GET_TEXSOURCE(n)  mmesa->tmu_source[n]
 #define GET_VERTEX_FORMAT() mmesa->vertex_format
-#define GET_VERTEX_STORE() mmesa->verts
+#define GET_VERTEX_STORE() ((GLubyte *)mmesa->verts)
 #define GET_VERTEX_STRIDE_SHIFT() mmesa->vertex_stride_shift
 #define GET_UBYTE_COLOR_STORE() &mmesa->UbyteColor
 #define GET_UBYTE_SPEC_COLOR_STORE() &mmesa->UbyteSecondaryColor

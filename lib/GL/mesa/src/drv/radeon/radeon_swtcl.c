@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_swtcl.c,v 1.3 2002/12/16 16:18:59 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_swtcl.c,v 1.4tsi Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -134,7 +134,7 @@ static struct {
 #define GET_VIEWPORT_MAT() 0
 #define GET_TEXSOURCE(n)  n
 #define GET_VERTEX_FORMAT() RADEON_CONTEXT(ctx)->swtcl.vertex_format
-#define GET_VERTEX_STORE() RADEON_CONTEXT(ctx)->swtcl.verts
+#define GET_VERTEX_STORE() ((GLubyte *)RADEON_CONTEXT(ctx)->swtcl.verts)
 #define GET_VERTEX_STRIDE_SHIFT() RADEON_CONTEXT(ctx)->swtcl.vertex_stride_shift
 #define GET_UBYTE_COLOR_STORE() &RADEON_CONTEXT(ctx)->UbyteColor
 #define GET_UBYTE_SPEC_COLOR_STORE() &RADEON_CONTEXT(ctx)->UbyteSecondaryColor
@@ -471,7 +471,7 @@ static __inline void *radeonAllocDmaLowVerts( radeonContextPtr rmesa,
 
 
    {
-      GLubyte *head = rmesa->dma.current.address + rmesa->dma.current.ptr;
+      char *head = rmesa->dma.current.address + rmesa->dma.current.ptr;
       rmesa->dma.current.ptr += bytes;
       rmesa->swtcl.numverts += nverts;
       return head;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_screen.c,v 1.1 2002/10/30 12:51:52 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_screen.c,v 1.2tsi Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -141,7 +141,7 @@ r200CreateScreen( __DRIscreenPrivate *sPriv )
       drmRadeonGetParam gp;
 
       gp.param = RADEON_PARAM_AGP_BUFFER_OFFSET;
-      gp.value = &r200Screen->agp_buffer_offset;
+      gp.value = (int *) &r200Screen->agp_buffer_offset;
 
       ret = drmCommandWriteRead( sPriv->fd, DRM_RADEON_GETPARAM,
 				 &gp, sizeof(gp));
@@ -157,7 +157,7 @@ r200CreateScreen( __DRIscreenPrivate *sPriv )
 
       if (sPriv->drmMinor >= 6) {
 	 gp.param = RADEON_PARAM_AGP_BASE;
-	 gp.value = &r200Screen->agp_base;
+	 gp.value = (int *) &r200Screen->agp_base;
 
 	 ret = drmCommandWriteRead( sPriv->fd, DRM_RADEON_GETPARAM,
 				    &gp, sizeof(gp));
@@ -172,7 +172,7 @@ r200CreateScreen( __DRIscreenPrivate *sPriv )
 
       if (sPriv->drmMinor >= 6) {
 	 gp.param = RADEON_PARAM_IRQ_NR;
-	 gp.value = &r200Screen->irq;
+	 gp.value = (int *) &r200Screen->irq;
 
 	 ret = drmCommandWriteRead( sPriv->fd, DRM_RADEON_GETPARAM,
 				    &gp, sizeof(gp));

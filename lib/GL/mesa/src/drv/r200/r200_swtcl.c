@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_swtcl.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_swtcl.c,v 1.3tsi Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -147,7 +147,7 @@ static int se_vtx_fmt_1[] = {
 #define GET_VIEWPORT_MAT() 0
 #define GET_TEXSOURCE(n)  n
 #define GET_VERTEX_FORMAT() R200_CONTEXT(ctx)->swtcl.vertex_format
-#define GET_VERTEX_STORE() R200_CONTEXT(ctx)->swtcl.verts
+#define GET_VERTEX_STORE() ((GLubyte *)R200_CONTEXT(ctx)->swtcl.verts)
 #define GET_VERTEX_STRIDE_SHIFT() R200_CONTEXT(ctx)->swtcl.vertex_stride_shift
 #define GET_UBYTE_COLOR_STORE() &R200_CONTEXT(ctx)->UbyteColor
 #define GET_UBYTE_SPEC_COLOR_STORE() &R200_CONTEXT(ctx)->UbyteSecondaryColor
@@ -442,7 +442,7 @@ static __inline void *r200AllocDmaLowVerts( r200ContextPtr rmesa,
 
 
    {
-      GLubyte *head = rmesa->dma.current.address + rmesa->dma.current.ptr;
+      char *head = rmesa->dma.current.address + rmesa->dma.current.ptr;
       rmesa->dma.current.ptr += bytes;
       rmesa->swtcl.numverts += nverts;
       return head;

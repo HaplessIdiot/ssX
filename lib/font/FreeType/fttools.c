@@ -21,7 +21,7 @@
   THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/fttools.c,v 1.3 2002/10/01 00:02:10 alanh Exp $ */
+/* $XFree86: xc/lib/font/FreeType/fttools.c,v 1.4tsi Exp $ */
 
 #include "fontmisc.h"
 #ifndef FONTMODULE
@@ -57,8 +57,8 @@ int FTtoXReturnCode(int rc)
 /* Convert slen bytes from UCS-2 to ISO 8859-1.  Byte specifies the
    endianness of the string, max the maximum number of bytes written into
    to. */
-int
-FTu2a(int slen, char *from, char *to, int byte, int max)
+static int
+FTu2a(int slen, FT_Byte *from, char *to, int byte, int max)
 {
     int i, n;
 

@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/xkbfile/xkbmisc.c,v 1.4tsi Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -297,7 +297,7 @@ _AddIncl(file,result,topLevel,showImplicit,index,priv)
     void *		priv;
 #endif
 {
-    if ((priv)&&(strcmp(priv,"%")!=0))
+    if ((priv)&&(strcmp((char *)priv,"%")!=0))
 	fprintf(file,"    include \"%s\"\n",(char *)priv);
     return;
 }

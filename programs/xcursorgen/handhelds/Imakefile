@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/xcursorgen/handhelds/Imakefile,v 1.4tsi Exp $
 
 #define CursorSources(name) $(PNGDIR)/name-16.png
 
@@ -29,7 +29,7 @@ dst: src								@@\
 clean::									@@\
 	$(RM) dst							@@\
 									@@\
-install.link:: $(DESTDIR)$(THEMEDIR)/src				@@\
+install.link::								@@\
 	RemoveFile($(DESTDIR)$(THEMEDIR)/dst)				@@\
 	(set -x; cd $(DESTDIR)$(THEMEDIR) && $(LN) src dst)
 
