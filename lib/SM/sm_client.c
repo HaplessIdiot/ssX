@@ -179,6 +179,17 @@ char 		*errorStringRet;
 	SIZEOF (smRegisterClientMsg), WORD64COUNT (extra),
 	smRegisterClientMsg, pMsg, pData);
 
+    if (pData == NULL)
+    {
+	strncpy (errorStringRet, "Malformed previous session ID", errorLength);
+
+	free (smcConn->vendor);
+	free (smcConn->release);
+	free ((char *) smcConn);
+
+	return (NULL);
+    }
+
     STORE_ARRAY8 (pData, len, previousId);
 
     IceFlush (iceConn);
