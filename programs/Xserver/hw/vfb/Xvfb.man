@@ -19,10 +19,8 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\"
-.\" $XFree86: xc/programs/Xserver/hw/vfb/Xvfb.man,v 1.6 2001/01/23 23:51:19 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/vfb/Xvfb.man,v 1.7 2001/01/27 18:20:41 dawes Exp $
 .\"
-.\" Shorthand for "#" that survives preprocessing
-.ds h \N'35'
 .TH XVFB 1 __xorgversion__
 .SH NAME
 Xvfb \- virtual framebuffer X server for X Version 11
@@ -47,9 +45,9 @@ that don't really need an X server but insist on having one anyway.
 .SH BUILDING
 To build \fIXvfb\fP, put the following in your host.def and remake.
 .PP
-\*hdefine BuildServer YES /* if you aren't already building other servers */
+\&#define BuildServer YES /* if you aren't already building other servers */
 .br
-\*hdefine XVirtualFramebufferServer YES
+\&#define XVirtualFramebufferServer YES
 
 .SH OPTIONS
 .PP

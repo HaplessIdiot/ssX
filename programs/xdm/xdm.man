@@ -19,10 +19,8 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\" 
-.\" $XFree86: xc/programs/xdm/xdm.man,v 3.17 2001/01/27 18:21:10 dawes Exp $
+.\" $XFree86: xc/programs/xdm/xdm.man,v 3.18 2001/02/07 22:51:57 tsi Exp $
 .\" 
-.\" Shorthand for "#" that survives preprocessing
-.ds h \N'35'
 .TH XDM 1 __xorgversion__
 .SH NAME
 xdm \- X Display Manager with support for XDMCP, host chooser
@@ -814,7 +812,7 @@ parameters for that widget:
 Please note the translations entry; it specifies
 a few new translations for the widget which allow users to escape from the
 default session (and avoid troubles that may occur in it).  Note that if
-\*hoverride is not specified, the default translations are removed and replaced
+\&#override is not specified, the default translations are removed and replaced
 by the new value, not a very useful result as some of the default translations
 are quite useful (such as ``<Key>: insert-char ()'' which responds to normal
 typing).

@@ -19,10 +19,8 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\" 
-.\" $XFree86: xc/programs/xinit/xinit.man,v 3.7 2001/01/24 00:06:46 dawes Exp $
+.\" $XFree86: xc/programs/xinit/xinit.man,v 3.8 2001/01/27 18:21:16 dawes Exp $
 .\" 
-.\" Shorthand for "#" that survives preprocessing
-.ds h \N'35'
 .TH XINIT 1 __xorgversion__
 .SH NAME
 xinit \- X Window System initializer
@@ -149,7 +147,7 @@ a default \fI\.xinitrc\fP that references a site-wide startup file:
 .sp
 .in +8
 .nf
-\*h!/bin/sh
+\&#!/bin/sh
 \&. /usr/local/lib/site.xinitrc
 .fi
 .in -8
@@ -161,7 +159,7 @@ novice users:
 .sp
 .in +8
 .nf
-\*h!/bin/sh
+\&#!/bin/sh
 xinit /usr/local/lib/site.xinitrc \-\^\- /usr/X11R6/bin/X bc
 .fi
 .in -8
