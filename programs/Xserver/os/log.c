@@ -76,7 +76,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
  * authorization from the copyright holder(s) and author(s).
  */
 
-/* $XFree86: xc/programs/Xserver/os/log.c,v 1.1 2003/09/09 03:20:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/log.c,v 1.2 2003/09/09 03:23:20 dawes Exp $ */
 
 #include "Xos.h"
 #include <stdio.h>
@@ -201,6 +201,7 @@ LogInit(const char *fname, const char *backup)
      */
     if (saveBuffer && bufferSize > 0) {
 	free(saveBuffer);	/* Must be free(), not xfree() */
+	saveBuffer = NULL;
 	bufferSize = 0;
     }
     needBuffer = FALSE;
@@ -268,12 +269,15 @@ LogVWrite(int verb, const char *f, va_list args)
 	} else if (needBuffer) {
 	    /*
 	     * Note, this code is used before OsInit() has been called, so
-	     * xalloc and friends can't be used.
+	     * xalloc() and friends can't be used.
 	     */
 	    if (len > bufferUnused) {
 		bufferSize += 1024;
 		bufferUnused += 1024;
-		saveBuffer = realloc(saveBuffer, bufferSize);
+		if (saveBuffer)
+		    saveBuffer = realloc(saveBuffer, bufferSize);
+		else
+		    saveBuffer = malloc(bufferSize);
 		if (!saveBuffer)
 		    FatalError("realloc() failed while saving log messages\n");
 	    }
