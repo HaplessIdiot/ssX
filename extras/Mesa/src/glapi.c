@@ -42,7 +42,13 @@
 
 
 
-#include "glheader.h"
+#ifdef XFree86LOADER
+#include "xf86_ansic.h"
+#else
+#include <assert.h>
+#include <stdlib.h>  /* to get NULL */
+#include <string.h>
+#endif
 #include "glapi.h"
 #include "glapinoop.h"
 #include "glapioffsets.h"

@@ -30,7 +30,11 @@
  */
 
 
-#include "glheader.h"
+#ifdef XFree86LOADER
+#include "xf86_ansic.h"
+#else
+#include <stdio.h>
+#endif
 #include "glapi.h"
 #include "glapinoop.h"
 #include "glapitable.h"

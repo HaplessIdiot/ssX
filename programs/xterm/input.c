@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: input.c /main/21 1996/04/17 15:54:23 kaleb $
- *	$XFree86: xc/programs/xterm/input.c,v 3.40 2000/01/29 18:58:38 dawes Exp $
+ *	$XFree86: xc/programs/xterm/input.c,v 3.41 2000/02/08 17:19:35 dawes Exp $
  */
 
 /*
@@ -515,7 +515,6 @@ Input (
 		key = TRUE;
 #if 0	/* OPT_SUNPC_KBD should suppress - but only for vt220 compatibility */
 	} else if (term->keyboard.type == keyboardIsVT220
-		&& screen->old_fkeys == False
 		&& screen->ansi_level <= 1
 		&& IsEditFunctionKey(keysym)) {
 		key = FALSE;	/* ignore editing-keypad in vt100 mode */
@@ -540,8 +539,11 @@ Input (
 		|| IsMiscFunctionKey(keysym)
 		|| IsEditFunctionKey(keysym)
 		|| (keysym == XK_Delete
-		 && term->keyboard.type != keyboardIsSun 
-		 && !screen->old_fkeys)) {
+		 && ((modify_parm > 1)
+#if OPT_SUNPC_KBD
+		  || term->keyboard.type == keyboardIsVT220)
+#endif
+		  )) {
 #if OPT_SUNPC_KBD
 		if (term->keyboard.type == keyboardIsVT220) {
 			if ((event->state & ControlMask)
@@ -564,7 +566,7 @@ Input (
 		 * Interpret F1-F4 as PF1-PF4 for VT52, VT100
 		 */
 		else if (term->keyboard.type != keyboardIsSun 
-		 && screen->old_fkeys == False
+		 && term->keyboard.type != keyboardIsLegacy
 		 && (dec_code >= 11 && dec_code <= 14))
 		{
 			reply.a_type = SS3;

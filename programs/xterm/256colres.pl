@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 # Author: Thomas Dickey <dickey@clark.net>
-# $XFree86$
+# $XFree86: xc/programs/xterm/256colres.pl,v 1.1 1999/07/18 03:27:04 dawes Exp $
 
 # Construct a header file defining default resources for the 256-color model
 # of xterm.  This is modeled after the 256colors2.pl script.
@@ -16,9 +16,9 @@ print <<EOF;
 /* \$XFree86\$ */
 EOF
 
-$line1="{\"color%d\", XtCForeground, XtRPixel, sizeof(Pixel),\n";
-$line2="\tXtOffsetOf(XtermWidgetRec, screen.Acolors[%d]),\n";
-$line3="\tXtRString, DFT_COLOR(\"rgb:%2.2x/%2.2x/%2.2x\")},\n";
+$line1="COLOR_RES(\"color%d\",";
+$line2="\tscreen.Acolors[%d],";
+$line3="\tDFT_COLOR(\"rgb:%2.2x/%2.2x/%2.2x\")),\n";
 
 # colors 16-231 are a 6x6x6 color cube
 for ($red = 0; $red < 6; $red++) {

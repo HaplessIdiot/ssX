@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
 <!--
  *****************************************************************************
- * Copyright 1997-2000 by Thomas E. Dickey (dickey@clark.net)                *
+ * Copyright 1996,1997,1998,1999,2000 by Thomas E. Dickey (dickey@clark.net) *
  * All Rights Reserved.                                                      *
  *                                                                           *
  * Permission to use, copy, modify, and distribute this software and its     *
@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.43 2000/01/29 18:58:42 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.44 2000/02/08 17:19:46 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -29,7 +29,7 @@
 </HEAD>
 <BODY>
 <HR>
-Copyright 1997-2000 by Thomas E. Dickey
+Copyright 1997,1998,1999,2000 by Thomas E. Dickey
 <HR>
 <H1>Contents</H1>
 This file contains a list of the changes that I have made for XFree86 xterm,
@@ -41,6 +41,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_126">Patch #126 - 2000/2/8 - XFree86 3.9.17c</A>
 <LI><A HREF="#xterm_125">Patch #125 - 2000/1/31 - XFree86 3.9.17c</A>
 <LI><A HREF="#xterm_124">Patch #124 - 2000/1/27 - XFree86 3.9.17b</A>
 <LI><A HREF="#xterm_123">Patch #123 - 2000/1/22 - XFree86 3.9.17a</A>
@@ -168,6 +169,29 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_126">Patch #126 - 2000/2/8 - XFree86 3.9.17c</A></H1>
+<ul>
+	<li>patch by Markus Kuhn:
+	  ensure that xterm will automatically activate the UTF-8 mode whenever
+	  the name of the locale environment variable suggests that a UTF-8
+	  locale is in use.  This will help that by simply setting LC_CTYPE an
+	  entire system can be switched over to UTF-8, without users having to
+	  remember the UTF-8 command line options ("-u8", etc.) of the various
+	  applications.  Command line options and X resource entries can still
+	  be used to override this default choice.
+
+	<li>add old function-keys control sequences and popup menu entry, for
+	  compatibility with legacy X11R6 xterm.
+
+	<li>revert translation of editing keypad "Delete" key to legacy \177.
+
+	<li>simplify the color-resource data expressions with macro COLOR_RES,
+	  for later use in restructuring color initialization.
+
+	<li>change encoding of wheel mouse (buttons 4 and 5) to avoid conflict
+	  with legacy mouse modifiers (suggested by Bram Moolenaar).
+</ul>
 
 <H1><A NAME="xterm_125">Patch #125 - 2000/1/31 - XFree86 3.9.17c</A></H1>
 <ul>
