@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Layout.c,v 1.20 2002/09/17 18:54:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Layout.c,v 1.21 2003/01/01 19:22:20 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -116,7 +116,8 @@ xf86parseLayoutSection (void)
 					Error (SCREEN_MSG, NULL);
 				aptr->adj_screen_str = val.str;
 
-				token = xf86getSubTokenWithTab(&(ptr->lay_comment), AdjTab);
+				while ((token = xf86getSubTokenWithTab(&(ptr->lay_comment), AdjTab)) == EOL_TOKEN)
+					;
 				switch (token)
 				{
 				case RIGHTOF:
@@ -140,8 +141,6 @@ xf86parseLayoutSection (void)
 					break;
 				case EOF_TOKEN:
 					Error (UNEXPECTED_EOF_MSG, NULL);
-					break;
-				case EOL_TOKEN:
 					break;
 				default:
 					xf86unGetToken (token);
