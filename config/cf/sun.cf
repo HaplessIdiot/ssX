@@ -1,4 +1,5 @@
 XCOMM platform:  $XConsortium: sun.cf,v 1.130 94/05/13 16:03:10 matt Exp $
+XCOMM platform:  $XFree86$
 
 #ifdef SVR4
 #ifdef i386Architecture
