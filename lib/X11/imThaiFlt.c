@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.15 2003/01/04 02:25:26 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.16 2003/01/07 02:04:59 dawes Exp $ */
 
 /*
 **++ 
@@ -586,7 +586,7 @@ Private Bool ThaiComposeConvert();
      ((0x0E01<=(wc)&&(wc)<=0x0E5F) ? ((wc)-0x0E00+0xA0) : 0))
 #define tis2ucs(c)  \
   ( \
-   (0<=(c)&&(c)<=0x7F) ? \
+   ((c)<=0x7F) ? \
      (wchar_t)(c) : \
      ((0x0A1<=(c)&&(c)<=0x0FF) ? ((wchar_t)(c)-0xA0+0x0E00) : 0))
 
@@ -1285,7 +1285,7 @@ ThaiFltAcceptInput(ic, new_char, symbol)
     ic->private.local.composed->wc[0] = tis2ucs(new_char);
     ic->private.local.composed->wc[1] = '\0';
 
-    if ((0 <= new_char && new_char <= 0x1f) || new_char == 0x7f)
+    if ((new_char <= 0x1f) || (new_char == 0x7f))
         ic->private.local.composed->keysym = symbol;
     else
         ic->private.local.composed->keysym = NoSymbol;
@@ -1326,7 +1326,7 @@ ThaiFltReplaceInput(ic, new_char, symbol)
     ic->private.local.composed->wc[0] = tis2ucs(new_char);
     ic->private.local.composed->wc[1] = '\0';
 
-    if ((0 <= new_char && new_char <= 0x1f) || new_char == 0x7f)
+    if ((new_char <= 0x1f) || (new_char == 0x7f))
         ic->private.local.composed->keysym = symbol;
     else
         ic->private.local.composed->keysym = NoSymbol;
