@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/x11perf/do_text.c,v 1.5 2000/12/01 03:27:59 keithp Exp $ */
 
 #include "x11perf.h"
 #include <stdio.h>
@@ -427,6 +427,7 @@ InitAAText(XParms xp, Parms p, int reps)
 	printf ("FreeType font '%s' not available, benchmark omitted\n",
 		p->font);
 	XftFontClose (xp->d, aafont);
+	return 0;
     }
     
     aadraw = XftDrawCreate (xp->d, xp->w, 
