@@ -1,4 +1,8 @@
-XFree86 3.1.2a (5 August 1995)
+XFree86 3.1.2a (13 August 1995)
+  9. Allow the Xserver to accept InvertVCLK, EarlySC and BlankDelay.  It
+     previously expected Invert_VCLK, Early_SC and Blank_Delay.
+  8. Fix problem selecting a StaticGray visual with the VGA16 server
+     (Olivier De Smet).
   7. Fix compile problem on FreeBSD 1.1.5 (David Bremner).
   6. Change index and rindex macros in Xos.h when X_NOT_STDC_ENV is not
      defined.
