@@ -9,7 +9,7 @@
 <date>15 January 2002
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.65 2002/01/14 18:02:58 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.66 2002/01/15 21:24:46 dawes Exp $
 </ident>
 
 <abstract>
@@ -94,17 +94,12 @@ don't have enough space to cover them all here.
 
 <p>
 <itemize>
-<!--
-<item> more drivers converted from the cfb to fb framebuffer layer
-<item> more drivers support the RENDER extension
-<item> big-endian support for the mga and tdfx drivers
-<item> support for ATI Radeon on Linux/Alpha
--->
+<item> An s3 driver is added, which provides support for many of the
+	older non-ViRGE and non-Savage S3 chipsets.
 <item> Some vmware driver problems are fixed, and the driver is updated
 	to take advantage of VMWare Workstation 3.0 features.  These
 	include improved hardware cursor handling and support for 8 bit
 	emulation.
-
 <item> Support added for Trident *BladeXP chipsets (currently not-accelerated).
 <item> Xv support added for Trident TGUI series chips (not 9440 though).
 <item> Support added for the older Trident chipsets again for ISA/VLBus (not tested)
@@ -116,9 +111,12 @@ don't have enough space to cover them all here.
 <item> Support added for NVIDIA nForce integrated graphics.
 <item> Fixes for the savage driver on 64-bit platforms, XVideo support for the
 	SuperSavage, and other savage driver updates.
-<item> The s3 driver is updated to support the Aurora64V+ and a console
-	restoration problem is fixed.
 <item> Cirrus driver updates.
+<item> The ATI r128 driver now uses the CCE DMA engine for 2D acceleration
+	when direct rendering is enabled, which reduces context switching
+	overhead and improves stability and performance for XVideo and some 2D
+	operations.
+<item> The fbdev driver now supports rotation.
 
 </itemize>
 
@@ -232,7 +230,7 @@ XFree86 &relvers; includes the following video drivers:
    <tabrow><tt>cirrus</tt><colsep>Cirrus Logic<colsep>&nbsp;</tabrow>
    <tabrow><tt>cyrix</tt> (*)<colsep>Cyrix MediaGX<colsep><htmlurl
 		name="README.cyrix" url="cyrix.html"></tabrow>
-   <tabrow><tt>fbdev</tt><colsep>Linux fbdev<colsep><htmlurl
+   <tabrow><tt>fbdev</tt><colsep>Linux framebuffer device<colsep><htmlurl
 		name="fbdev(4)" url="fbdev.4.html"></tabrow>
    <tabrow><tt>glide</tt><colsep>Glide2x (3Dfx)<colsep><htmlurl
 		name="glide(4)" url="glide.4.html"></tabrow>
@@ -802,12 +800,15 @@ entry:  <tt>Option "NoDDC"</tt>.  We have support for DDC versions 1
 and 2; these can be disabled independently with <tt>Option "NoDDC1"</tt>
 and <tt>Option "NoDDC2"</tt>.
 
-At startup the server prints out DDC information from the display,
-but it does not yet use it the determine modelines.  For some drivers,
-the X server's new <tt>-configure</tt> option uses the DDC information
-when generating the config file.
+At startup the server prints out DDC information from the display, and
+can use this information to set or warn about monitor sync limits (but
+not modelines yet).  For some drivers, the X server's new
+<tt>-configure</tt> option uses the DDC information when generating the
+config file.
 
-Changed behavior caused by DDC. Several drivers uses DDC information to
+<sect2>Changed behavior caused by DDC.
+<p>
+Several drivers uses DDC information to
 set the screen size and pitch.  This can be overridden by explicitly
 resetting it to the and non-DDC default value 75 with the <tt>-dpi
 75</tt> command line option for the X server, or by specifying appropriate
