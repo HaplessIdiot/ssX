@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.114 2001/02/05 10:44:58 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.115 2001/02/05 15:43:33 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -1031,14 +1031,8 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	return TRUE;
     }
 
-    /*
-     * VGA isn't used, so mark it so.  XXX Should check if any VGA resources
-     * are decoded or not, and if not, change them from Unused to Disabled.
-     * Mem resources seem to be disabled. This is importand to avoid conflicts
-     * with DGA
-     */
     xf86SetOperatingState(resVgaMemShared, pGlint->pEnt->index, ResDisableOpr);
-    xf86SetOperatingState(resVgaIoShared, pGlint->pEnt->index, ResUnusedOpr);
+    xf86SetOperatingState(resVgaIoShared, pGlint->pEnt->index, ResDisableOpr);
     
     /* Operations for which memory access is required. */
     pScrn->racMemFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
@@ -1505,6 +1499,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     switch (pGlint->Chipset) {
 	case PCI_VENDOR_TI_CHIP_PERMEDIA2:
 	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
+	    pGlint->FIFOSize = 256;
 	    maxheight = 2048;
 	    maxwidth = 2048;
 	    pGlint->RefClock = 14318;
@@ -1522,6 +1517,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	    }
 	    break;
 	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
+	    pGlint->FIFOSize = 256;
 	    maxheight = 2048;
 	    maxwidth = 2048;
 	    pGlint->RefClock = 14318;
@@ -1632,6 +1628,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	 	 * safely set the FIFOSize to 120 again */
 		pGlint->FIFOSize = 120;
 #endif
+		break;
 	    }
 	    if (IS_GMX2000) {
 		xf86DrvMsg(pScrn->scrnIndex, X_PROBED, 
@@ -1648,10 +1645,8 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     		pGlint->RamDacRec->ReadData = GMX2000ReadData;
     		pGlint->RamDacRec->WriteData = GMX2000WriteData;
 		pGlint->RefClock = 14318;
-#if 1 /* Oops - I broke the HWcursor for the GMX2000 - FIXME ! */
-		pGlint->HWCursor = FALSE;
-#endif
-	    }
+		break;
+	    } 
 	    /* Test for an TI ramdac */
 	    if (!pGlint->RamDac) {
 	    	GLINTProbeTIramdac(pScrn);
@@ -2250,8 +2245,8 @@ GLINTSave(ScrnInfoPtr pScrn)
 
     pGlint = GLINTPTR(pScrn);
     pRAMDAC = RAMDACHWPTR(pScrn);
-    glintReg = &pGlint->SavedReg;
-    glintReg2 = &pGlint->SavedReg2;
+    glintReg = &pGlint->SavedReg[0];
+    glintReg2 = &pGlint->SavedReg[1];
     RAMDACreg = &pRAMDAC->SavedReg;
     TRACE_ENTER("GLINTSave");
 
@@ -2330,8 +2325,8 @@ GLINTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     GLINTPtr pGlint = GLINTPTR(pScrn);
     RamDacHWRecPtr pRAMDAC = RAMDACHWPTR(pScrn);
     RamDacRegRecPtr RAMDACreg;
-    GLINTRegPtr glintReg = &pGlint->ModeReg;
-    GLINTRegPtr glintReg2 = &pGlint->ModeReg2;
+    GLINTRegPtr glintReg = &pGlint->ModeReg[0];
+    GLINTRegPtr glintReg2 = &pGlint->ModeReg[1];
 
     if (pGlint->VGAcore) {
     	vgaHWPtr hwp = VGAHWPTR(pScrn);
@@ -2397,8 +2392,8 @@ GLINTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	vgaHWRestore(pScrn, vgaReg, VGA_SR_MODE);
     }
 
-    glintReg = &pGlint->ModeReg;
-    glintReg2 = &pGlint->ModeReg2;
+    glintReg = &pGlint->ModeReg[0];
+    glintReg2 = &pGlint->ModeReg[1];
     RAMDACreg = &pRAMDAC->ModeReg;
 
     pGlint->STATE = FALSE;
@@ -2475,8 +2470,8 @@ GLINTRestore(ScrnInfoPtr pScrn)
 
     pGlint = GLINTPTR(pScrn);
     pRAMDAC = RAMDACHWPTR(pScrn);
-    glintReg = &pGlint->SavedReg;
-    glintReg2 = &pGlint->SavedReg2;
+    glintReg = &pGlint->SavedReg[0];
+    glintReg2 = &pGlint->SavedReg[1];
     RAMDACreg = &pRAMDAC->SavedReg;
 
     TRACE_ENTER("GLINTRestore");

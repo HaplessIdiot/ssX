@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.19 2000/12/21 12:22:56 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.20 2001/01/31 16:14:54 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -306,8 +306,8 @@ GLINTInitVisualConfigs(ScreenPtr pScreen)
                           LBRF_GIDWidth4       |
                           LBRF_GIDPos32         ), LBWriteFormat);
     if (pGlint->numMultiDevices == 2) {
-    ACCESSCHIP2();
-    GLINT_SLOW_WRITE_REG(
+    	ACCESSCHIP2();
+    	GLINT_SLOW_WRITE_REG(
 			 (LBRF_DepthWidth16    | 
                           LBRF_StencilWidth8   |
                           LBRF_StencilPos16    |
@@ -315,7 +315,7 @@ GLINTInitVisualConfigs(ScreenPtr pScreen)
                           LBRF_FrameCountPos24 |
                           LBRF_GIDWidth4       |
                           LBRF_GIDPos32         ), LBReadFormat);
-    GLINT_SLOW_WRITE_REG(
+    	GLINT_SLOW_WRITE_REG(
 			 (LBRF_DepthWidth16    | 
                           LBRF_StencilWidth8   |
                           LBRF_StencilPos16    |
@@ -323,7 +323,7 @@ GLINTInitVisualConfigs(ScreenPtr pScreen)
                           LBRF_FrameCountPos24 |
                           LBRF_GIDWidth4       |
                           LBRF_GIDPos32         ), LBWriteFormat);
-    ACCESSCHIP1();
+    	ACCESSCHIP1();
     }
 
     return TRUE;

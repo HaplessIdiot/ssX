@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/gamma/Imakefile,v 1.15 2000/11/13 23:31:26 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/gamma/Imakefile,v 1.16 2000/12/12 23:24:27 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -64,7 +64,7 @@ MESA_INCLUDES = -I. -I.. -I../../include \
 		gamma_matrix.c \
 		gamma_inithw.c \
 		gamma_texture.c \
-		/* gamma_dlist.c */
+		gamma_dlist.c
 
     GAMMAOBJS = gamma_gl.o \
 		gamma_xmesa.o \
@@ -72,7 +72,7 @@ MESA_INCLUDES = -I. -I.. -I../../include \
 		gamma_matrix.o \
 		gamma_inithw.o \
 		gamma_texture.o \
-		/* gamma_dlist.o */
+		gamma_dlist.o
 
      MESASRCS = ../../aatriangle.c \
 		../../accum.c \
