@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbscreen.c,v 1.9 2000/05/06 21:09:34 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbscreen.c,v 1.10 2000/08/25 23:39:56 keithp Exp $ */
 
 #include "fb.h"
 
@@ -258,6 +258,7 @@ const miBSFuncRec fbBSFuncRec = {
 };
 #endif
 
+#if 0
 void
 fbInitializeBackingStore (ScreenPtr pScreen)
 {
@@ -267,3 +268,4 @@ fbInitializeBackingStore (ScreenPtr pScreen)
     miInitializeBackingStore (pScreen);
 #endif
 }
+#endif
