@@ -1,4 +1,6 @@
-XFree86 4.4.99.19 (xx November 2004)
+XFree86 4.4.99.20 (xx December 2004)
+
+XFree86 4.4.99.19 (12 December 2004)
  235. Add an experimental "EDID Data" option to allow EDID data to be
       provided through the config file, and change the type of the
       DDC/EDID root window property data from signed to unsigned (David Dawes).
@@ -19199,7 +19201,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3359 2004/12/07 21:53:44 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3360 2004/12/11 20:38:45 dawes Exp $
 
 
 
