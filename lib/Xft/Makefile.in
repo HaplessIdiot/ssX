@@ -1,5 +1,5 @@
 #
-# $XFree86: xc/lib/Xft/Makefile.in,v 1.1 2002/05/23 23:01:56 keithp Exp $
+# $XFree86: xc/lib/Xft/Makefile.in,v 1.2 2002/05/23 23:18:23 keithp Exp $
 #
 # Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 #
@@ -111,20 +111,9 @@ HEADERS=Xft.h \
 	
 all:: $(LIBFILE) $(LIBMAJOR) $(LIBBASE)
 
-install:: $(LIBDIR)/$(LIB) $(LIBDIR)/$(LIBMAJOR) $(LIBDIR)/$(LIBBASE)
-
-$(LIBDIR)/$(LIBFILE): $(LIBFILE)
-	$(INSTALL_PROGRAM) $< $(LIBDIR)
-
-$(LIBDIR)/$(LIBMAJOR): $(LIBDIR)/$(LIBFILE)
-	$(LN_S) $(LIBDIR)/$(LIBFILE) $(LIBDIR)/$(LIBMAJOR)
-
-$(LIBDIR)/$(LIBBASE): $(LIBDIR)/$(LIBMAJOR)
-	$(LN_S) $(LIBDIR)/$(LIBMAJOR) $(LIBDIR)/$(LIBBASE)
-
-clean::
-	rm -f $(LIBFILE) $(LIBMAJOR) $(LIBBASE) $(OBJS)
-
+#
+# Build the library
+#
 $(LIBFILE): $(OBJS)
 	rm -f $@
 	$(MKSHLIB) $(OBJS) $(LIBS)
@@ -139,30 +128,74 @@ $(LIBBASE): $(LIBMAJOR)
 
 $(OBJS): $(HEADERS)
 
-install:: $(BINDIR)/xft-config
+#
+# install directories
+#
 
-all:: xft-config
+install:: $(DESTDIR)$(LIBDIR) $(DESTDIR)$(LIBDIR)/pkgconfig
+install:: $(DESTDIR)$(INCLUDEDIR) $(DESTDIR)$(BINDIR)
 
-$(BINDIR)/xft-config: xft-config
-	$(INSTALL_SCRIPT) $< $(BINDIR)
-
-install:: $(LIBDIR)/pkgconfig $(LIBDIR)/pkgconfig/xft.pc
-
-$(LIBDIR)/pkgconfig:
+$(DESTDIR)$(LIBDIR):
 	mkdir -p $@
 
-all:: xft.pc
-
-$(LIBDIR)/pkgconfig/xft.pc: xft.pc
-	$(INSTALL_DATA) $< $(LIBDIR)/pkgconfig
-
-install:: $(INCLUDEDIR) $(INCLUDEDIR)/Xft.h $(INCLUDEDIR)/XftCompat.h
-
-$(INCLUDEDIR):
+$(DESTDIR)$(LIBDIR)/pkgconfig:
 	mkdir -p $@
 
-$(INCLUDEDIR)/Xft.h: Xft.h
-	$(INSTALL_DATA) $< $(INCLUDEDIR)
+$(DESTDIR)$(INCLUDEDIR):
+	mkdir -p $@
 
-$(INCLUDEDIR)/XftCompat.h: XftCompat.h
-	$(INSTALL_DATA) $< $(INCLUDEDIR)
+$(DESTDIR)$(BINDIR):
+	mkdir -p $@
+
+#
+# install library
+#
+
+install:: $(DESTDIR)$(LIBDIR)/$(LIB) $(DESTDIR)$(LIBDIR)/$(LIBMAJOR) 
+install:: $(DESTDIR)$(LIBDIR)/$(LIBBASE)
+
+$(DESTDIR)$(LIBDIR)/$(LIBFILE): $(LIBFILE)
+	$(INSTALL_PROGRAM) $< $(DESTDIR)$(LIBDIR)
+
+$(DESTDIR)$(LIBDIR)/$(LIBMAJOR): $(DESTDIR)$(LIBDIR)/$(LIBFILE)
+	$(LN_S) $(LIBFILE) $(DESTDIR)$(LIBDIR)/$(LIBMAJOR)
+
+$(DESTDIR)$(LIBDIR)/$(LIBBASE): $(DESTDIR)$(LIBDIR)/$(LIBMAJOR)
+	$(LN_S) $(LIBMAJOR) $(DESTDIR)$(LIBDIR)/$(LIBBASE)
+
+#
+# install xft-config script
+#
+
+install:: $(DESTDIR)$(BINDIR)/xft-config
+
+$(DESTDIR)$(BINDIR)/xft-config: xft-config
+	$(INSTALL_SCRIPT) $< $(DESTDIR)$(BINDIR)
+
+#
+# install pkgconfig control file
+#
+
+install:: $(DESTDIR)$(LIBDIR)/pkgconfig/xft.pc
+
+$(DESTDIR)$(LIBDIR)/pkgconfig/xft.pc: xft.pc
+	$(INSTALL_DATA) $< $(DESTDIR)$(LIBDIR)/pkgconfig
+
+
+# 
+# install header files
+#
+
+install::$(DESTDIR)$(INCLUDEDIR)/Xft.h $(DESTDIR)$(INCLUDEDIR)/XftCompat.h
+
+$(DESTDIR)$(INCLUDEDIR)/Xft.h: Xft.h
+	$(INSTALL_DATA) $< $(DESTDIR)$(INCLUDEDIR)
+
+$(DESTDIR)$(INCLUDEDIR)/XftCompat.h: XftCompat.h
+	$(INSTALL_DATA) $< $(DESTDIR)$(INCLUDEDIR)
+
+#
+# delete generated files
+#
+clean::
+	rm -f $(LIBFILE) $(LIBMAJOR) $(LIBBASE) $(OBJS)
