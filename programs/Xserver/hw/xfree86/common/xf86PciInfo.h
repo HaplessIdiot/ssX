@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.120 2002/01/29 22:40:35 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.121 2002/02/19 23:35:42 mvojkovi Exp $ */
 /*
  * PCI Probe
  *
@@ -1035,7 +1035,7 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_MGA2164_AGP,	"MGA 2164W AGP",0},
 				{PCI_CHIP_MGAG200_PCI,	"MGA G200 PCI",0},
 				{PCI_CHIP_MGAG200,	"MGA G200 AGP",0},
-				{PCI_CHIP_MGAG400,	"MGA G400 AGP",0},
+				{PCI_CHIP_MGAG400,	"MGA G400/450 AGP",0},
 				{PCI_CHIP_MGAG550,	"MGA G550 AGP",0},
 				{PCI_CHIP_MGAG100_PCI,	"MGA G100 PCI",0},
 				{PCI_CHIP_MGAG100,	"MGA G100 AGP",0},
