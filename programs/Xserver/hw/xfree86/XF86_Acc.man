@@ -40,7 +40,7 @@ The servers support the following chipsets in 256 color mode.
 .RS .5i
 .TP 13
 XF86_S3:
-86C911, 86C924, 86C801, 86C805, 86C928
+86C911, 86C924, 86C801, 86C805, 86C805i, 86C928, 86C928P
 .TP 13
 XF86_Mach8:
 ATI Mach8, ATI Mach32
