@@ -1016,7 +1016,8 @@ DGAProcessPointerEvent (ScreenPtr pScreen, dgaEvent *de, DeviceIntPtr mouse)
 	{
 	case ButtonPress: 
 	    mouse->valuator->motionHintWindow = NullWindow;
-	    butc->buttonsDown++;
+	    if (!(*kptr & bit))
+		butc->buttonsDown++;
 	    butc->motionMask = ButtonMotionMask;
 	    *kptr |= bit;
 	    if (key <= 5)
@@ -1024,7 +1025,9 @@ DGAProcessPointerEvent (ScreenPtr pScreen, dgaEvent *de, DeviceIntPtr mouse)
 	    break;
 	case ButtonRelease: 
 	    mouse->valuator->motionHintWindow = NullWindow;
-	    if (!--butc->buttonsDown)
+	    if (*kptr & bit)
+		--butc->buttonsDown;
+	    if (!butc->buttonsDown)
 		butc->motionMask = 0;
 	    *kptr &= ~bit;
 	    if (key == 0)
