@@ -218,6 +218,15 @@ configureModuleSection (void)
 {
     parsePrologue (XF86ConfModulePtr, XF86ConfModuleRec)
 
+    {
+	XF86LoadPtr module1;
+    	module1 = xf86confmalloc(sizeof(XF86LoadRec));
+    	memset((XF86LoadPtr)module1,0,sizeof(XF86LoadRec));
+    	module1->load_name = "extmod";
+	ptr->mod_load_lst = (XF86OptionPtr)addListItem(
+					(glp)ptr->mod_load_lst, (glp)module1);
+    }
+
     return ptr;
 }
 
