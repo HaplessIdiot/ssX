@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbpict.c,v 1.1 2000/09/20 00:09:13 keithp Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbpict.c,v 1.2 2000/10/02 05:25:46 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -558,6 +558,61 @@ fbCompositeSrc_0565x0565 (CARD8      op,
     }
 }
 
+void
+fbCompositeSrcAdd_8000x8000 (CARD8	op,
+			     PicturePtr pSrc,
+			     PicturePtr pMask,
+			     PicturePtr pDst,
+			     INT16      xSrc,
+			     INT16      ySrc,
+			     INT16      xMask,
+			     INT16      yMask,
+			     INT16      xDst,
+			     INT16      yDst,
+			     CARD16     width,
+			     CARD16     height)
+{
+    CARD8	*dstLine, *dst;
+    CARD8	*srcLine, *src;
+    FbBits	*dstBits, *srcBits;
+    FbStride	dstStride, srcStride;
+    int		dstBpp, srcBpp;
+    CARD8	w;
+    CARD8	s, d;
+    CARD16	t;
+    
+    fbGetDrawable(pSrc->pDrawable, srcBits, srcStride, srcBpp);
+    srcLine = (CARD8 *) srcBits;
+    srcStride = srcStride * sizeof (FbBits) / sizeof (CARD8);
+    srcLine += srcStride * ySrc + xSrc;
+
+    fbGetDrawable(pDst->pDrawable, dstBits, dstStride, dstBpp);
+    dstLine = (CARD8 *) dstBits;
+    dstStride = dstStride * sizeof (FbBits) / sizeof (CARD8);
+    dstLine += dstStride * yDst + xDst;
+
+    while (height--)
+    {
+	dst = dstLine;
+	dstLine += dstStride;
+	src = srcLine;
+	srcLine += srcStride;
+	w = width;
+
+	while (w--)
+	{
+	    s = *src++;
+	    if (s != 0xff)
+	    {
+		d = *dst;
+		t = d + s;
+		s = t | (0 - (t >> 8));
+	    }
+	    *dst++ = s;
+	}
+    }
+}
+
 # define mod(a,b)	((b) == 1 ? 0 : (a) >= 0 ? (a) % (b) : (b) - (-a) % (b))
 
 void
@@ -609,85 +664,102 @@ fbComposite (CARD8      op,
 	return;
 				   
     func = fbCompositeGeneral;
-    if (pMask)
-    {
-	if (srcRepeat && 
-	    pSrc->pDrawable->width == 1 &&
-	    pSrc->pDrawable->height == 1)
+    switch (op) {
+    case PictOpOver:
+	if (pMask)
 	{
-	    srcRepeat = FALSE;
-	    if (PICT_FORMAT_COLOR(pSrc->format)) {
-		switch (pMask->format) {
-		case PICT_a8:
-		    switch (pDst->format) {
-		    case PICT_r5g6b5:
-		    case PICT_b5g6r5:
-			func = fbCompositeSolidMask_nx8x0565;
-			break;
-		    case PICT_r8g8b8:
-		    case PICT_b8g8r8:
-			func = fbCompositeSolidMask_nx8x0888;
-			break;
-		    case PICT_a8r8g8b8:
-		    case PICT_x8r8g8b8:
-		    case PICT_a8b8g8r8:
-		    case PICT_x8b8g8r8:
-			func = fbCompositeSolidMask_nx8x8888;
+	    if (srcRepeat && 
+		pSrc->pDrawable->width == 1 &&
+		pSrc->pDrawable->height == 1)
+	    {
+		srcRepeat = FALSE;
+		if (PICT_FORMAT_COLOR(pSrc->format)) {
+		    switch (pMask->format) {
+		    case PICT_a8:
+			switch (pDst->format) {
+			case PICT_r5g6b5:
+			case PICT_b5g6r5:
+			    func = fbCompositeSolidMask_nx8x0565;
+			    break;
+			case PICT_r8g8b8:
+			case PICT_b8g8r8:
+			    func = fbCompositeSolidMask_nx8x0888;
+			    break;
+			case PICT_a8r8g8b8:
+			case PICT_x8r8g8b8:
+			case PICT_a8b8g8r8:
+			case PICT_x8b8g8r8:
+			    func = fbCompositeSolidMask_nx8x8888;
+			    break;
+			}
 			break;
 		    }
+		}
+	    }
+	}
+	else
+	{
+	    switch (pSrc->format) {
+	    case PICT_a8r8g8b8:
+	    case PICT_x8r8g8b8:
+		switch (pDst->format) {
+		case PICT_a8r8g8b8:
+		case PICT_x8r8g8b8:
+		    func = fbCompositeSrc_8888x8888;
+		    break;
+		case PICT_r8g8b8:
+		    func = fbCompositeSrc_8888x0888;
+		    break;
+		case PICT_r5g6b5:
+		    func = fbCompositeSrc_8888x0565;
+		    break;
+		}
+		break;
+	    case PICT_a8b8g8r8:
+	    case PICT_x8b8g8r8:
+		switch (pDst->format) {
+		case PICT_a8b8g8r8:
+		case PICT_x8b8g8r8:
+		    func = fbCompositeSrc_8888x8888;
+		    break;
+		case PICT_b8g8r8:
+		    func = fbCompositeSrc_8888x0888;
+		    break;
+		case PICT_b5g6r5:
+		    func = fbCompositeSrc_8888x0565;
+		    break;
+		}
+		break;
+	    case PICT_r5g6b5:
+		switch (pDst->format) {
+		case PICT_r5g6b5:
+		    func = fbCompositeSrc_0565x0565;
+		    break;
+		}
+		break;
+	    case PICT_b5g6r5:
+		switch (pDst->format) {
+		case PICT_b5g6r5:
+		    func = fbCompositeSrc_0565x0565;
+		    break;
+		}
+		break;
+	    }
+	}
+	break;
+    case PictOpAdd:
+	if (pMask == 0)
+	{
+	    switch (pSrc->format) {
+	    case PICT_a8:
+		switch (pDst->format) {
+		case PICT_a8:
+		    func = fbCompositeSrcAdd_8000x8000;
 		    break;
 		}
 	    }
 	}
-    }
-    else
-    {
-	switch (pSrc->format) {
-	case PICT_a8r8g8b8:
-	case PICT_x8r8g8b8:
-	    switch (pDst->format) {
-	    case PICT_a8r8g8b8:
-	    case PICT_x8r8g8b8:
-		func = fbCompositeSrc_8888x8888;
-		break;
-	    case PICT_r8g8b8:
-		func = fbCompositeSrc_8888x0888;
-		break;
-	    case PICT_r5g6b5:
-		func = fbCompositeSrc_8888x0565;
-		break;
-	    }
-	    break;
-	case PICT_a8b8g8r8:
-	case PICT_x8b8g8r8:
-	    switch (pDst->format) {
-	    case PICT_a8b8g8r8:
-	    case PICT_x8b8g8r8:
-		func = fbCompositeSrc_8888x8888;
-		break;
-	    case PICT_b8g8r8:
-		func = fbCompositeSrc_8888x0888;
-		break;
-	    case PICT_b5g6r5:
-		func = fbCompositeSrc_8888x0565;
-		break;
-	    }
-	    break;
-	case PICT_r5g6b5:
-	    switch (pDst->format) {
-	    case PICT_r5g6b5:
-		func = fbCompositeSrc_0565x0565;
-		break;
-	    }
-	    break;
-	case PICT_b5g6r5:
-	    switch (pDst->format) {
-	    case PICT_b5g6r5:
-		func = fbCompositeSrc_0565x0565;
-		break;
-	    }
-	    break;
-	}
+	break;
     }
     n = REGION_NUM_RECTS (&region);
     pbox = REGION_RECTS (&region);
