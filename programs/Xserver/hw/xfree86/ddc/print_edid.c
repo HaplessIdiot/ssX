@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/print_edid.c,v 1.1 1998/11/28 10:43:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/print_edid.c,v 1.2 1998/12/06 06:08:27 dawes Exp $ */
 
 /* print_edid.c: print out all information retrieved from display device 
  * 
@@ -11,7 +11,7 @@
 #include "xf86DDC.h"
 
 static void print_vendor(struct vendor *);
-static void print_version(struct version *);
+static void print_version(struct edid_version *);
 static void print_display(struct disp_features *);
 static void print_established_timings(struct established_timings *);
 static void print_std_timings(struct std_timings *);
@@ -45,7 +45,7 @@ print_vendor(struct vendor *c)
 }
 
 static void
-print_version(struct version *c)
+print_version(struct edid_version *c)
 {
     ErrorF("EDID Version: %u.%u\n",c->version,c->revision);  
 }
