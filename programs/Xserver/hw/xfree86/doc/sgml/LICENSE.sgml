@@ -8,7 +8,7 @@
 <date>22 February 2004</date>
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.31 2004/02/20 18:17:04 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.32 2004/02/24 01:13:10 dawes Exp $
 </ident>
 
 <sect>Introduction
@@ -50,17 +50,10 @@ fits in with the XFree86 licensing policy, please contact us.
 <p>
 <sect1>Open Source
 <p>
-With one possible exception, we believe that all of the code in this
-release (&relvers;) of XFree86 meet the requirements of the <url name="Open
-Source Definition" url="http://opensource.org/docs/definition.php">, as
-maintained by the <url name="Open Source Initiative (OSI)"
-url="http://opensource.org/">.
-
-The one exception is a file containing font decompression code
-(<tt>xc/lib/font/fontfile/decompress.c</tt>) which contains a licence
-that does not explicitly give permission to make modifications.  This
-file has been part of the X11 sample implementation since at least X11R5,
-and has been present in all versions of XFree86.
+We believe that all of the code in this release (&relvers;) of XFree86
+meet the requirements of the <url name="Open Source Definition"
+url="http://opensource.org/docs/definition.php">, as maintained by the
+<url name="Open Source Initiative (OSI)" url="http://opensource.org/">.
 
 <sect1>Free Software
 <p>
@@ -70,10 +63,8 @@ meets the requirements of the <url name="Free Software definition"
 url="http://www.fsf.org/philosophy/free-sw.html"> as defined by the <url
 name="Free Software Foundation (FSF)" url="http://www.fsf.org/">.
 
-The exceptions, aside from the font decompression code mentioned in the
-previous section, are the GLX extension and CID font code that are
-covered by the <ref name="SGI Free Software License B, version 1.1"
-id="sgi">.
+The exceptions are the GLX extension and CID font code that are covered
+by the <ref name="SGI Free Software License B, version 1.1" id="sgi">.
 
 <sect1>GPL-compatible
 <p>
