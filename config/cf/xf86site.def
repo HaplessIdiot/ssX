@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.122 1997/06/29 07:54:18 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.123 1997/07/29 12:07:15 hohndel Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -233,7 +233,11 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.122 1997/06/29 07:54:18 dawes Exp 
  */
 
 /*
- * To enable/disable individual PC98 servers/modules, use these
+ * Which servers do you wish to build, you can save a lot of disk space
+ * by only compiling the server you will be using.  It will also save you
+ * considerable compile time.
+ *
+ * The following servers are supported in Intel/pc98 platforms:
  *
 #define XF98LoaderServer        YES
 #define XF98EGCModule		YES
@@ -245,6 +249,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.122 1997/06/29 07:54:18 dawes Exp 
 #define XF98WSNAModule		YES
 #define XF98TGUIModule		YES
 #define XF98MGAModule		YES
+#define XF98SVGAModule		YES
 #define XF98NECS3Module		YES
 #define XF98PWSKBModule		YES
 #define XF98PWLBModule		YES
@@ -259,6 +264,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.122 1997/06/29 07:54:18 dawes Exp 
 #define XF98WSNAServer		YES
 #define XF98TGUIServer		YES
 #define XF98MGAServer		YES
+#define XF98SVGAServer		YES
 #define XF98NECS3Server		YES
 #define XF98PWSKBServer		YES
 #define XF98PWLBServer		YES

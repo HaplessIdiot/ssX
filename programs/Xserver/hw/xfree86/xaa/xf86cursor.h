@@ -1,3 +1,4 @@
+/* $XFree86: $ */
 typedef struct {
     int Flags;
     int MaxWidth;
