@@ -9,7 +9,7 @@
 <date>15 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.50 2000/12/15 19:38:39 keithp Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.51 2000/12/15 20:01:56 dawes Exp $
 </ident>
 
 <abstract>
@@ -955,7 +955,7 @@ hardware scaling and filtering.
 <sect1>X Rendering Extension (Render) <label id="render">
 <p>
 
-The X Rendering extension provides a new 2D rendering model that more
+The X Rendering extension provides a 2D rendering model that more
 closely matches application demands and hardware capabilities.  It provides
 a rendering model derived from Plan 9 based on Porter/Duff image
 composition rather than binary raster operations.
@@ -979,10 +979,10 @@ access to the available font information while still providing hardware
 acceleration.  The Xft library provides font access for
 Render applications.
 
-<sect2>The new Xft Library
+<sect2>The Xft Library
 <p>
 
-On the client side, the new Xft library provides access to fonts for
+On the client side, the Xft library provides access to fonts for
 applications using the FreeType library, version 2.  FreeType currently
 supports Type1 and TrueType font files, a future release is expected to 
 support BDF and PCF files as well, so Render applications will have access 
@@ -1044,7 +1044,7 @@ applications may occur in future releases.
 
 <p>
 By default, xterm uses core fonts through the standard core API.  It has
-two new command line options and associated resources to direct it to use
+two command line options and associated resources to direct it to use
 Xft instead:
 <itemize>
   <item><tt>-fa</tt>family/<tt>.VT100.faceName:</tt> family.  Selects the 
