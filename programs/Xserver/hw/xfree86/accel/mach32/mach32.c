@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.61 1996/12/23 06:38:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.62 1997/01/18 06:54:25 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -668,6 +668,14 @@ mach32Probe()
 	ErrorF("\n");
     }
 
+    if (!mach32InfoRec.videoRam) {
+#ifdef NEW_MEM_DETECT
+	mach32InfoRec.videoRam = mach32GetMemSize();
+#else
+	mach32InfoRec.videoRam = info->Mem_Size;
+#endif
+    }
+
     tx = mach32InfoRec.virtualX;
     ty = mach32InfoRec.virtualY;
     pMode = mach32InfoRec.modes;
@@ -685,6 +693,28 @@ mach32Probe()
 	   */
 	  if(xf86LookupMode(pMode, &mach32InfoRec, LOOKUP_DEFAULT) == FALSE) {
 		pModeSv=pMode->next;
+		xf86DeleteMode(&mach32InfoRec, pMode);
+		pMode = pModeSv; 
+	  } else if (pMode->HDisplay > 1536) {
+		pModeSv=pMode->next;
+		ErrorF("%s %s: Width of mode \"%s\" is too large (max is"
+		       " 1536)\n", XCONFIG_PROBED, mach32InfoRec.name,
+		       pMode->name);
+		xf86DeleteMode(&mach32InfoRec, pMode);
+		pMode = pModeSv; 
+	  } else if (pMode->VDisplay > 1536) {
+		pModeSv=pMode->next;
+		ErrorF("%s %s: Height of mode \"%s\" is too large (max is"
+		       " 1536)\n", XCONFIG_PROBED, mach32InfoRec.name,
+		       pMode->name);
+		xf86DeleteMode(&mach32InfoRec, pMode);
+		pMode = pModeSv; 
+	  } else if (pMode->HDisplay * pMode->VDisplay *
+		     (mach32InfoRec.bitsPerPixel / 8) >
+		     mach32InfoRec.videoRam*1024) {
+		pModeSv=pMode->next;
+		ErrorF("%s %s: Too little memory for mode \"%s\"\n",
+		       XCONFIG_PROBED, mach32InfoRec.name, pMode->name);
 		xf86DeleteMode(&mach32InfoRec, pMode);
 		pMode = pModeSv; 
 	  } else if (((tx > 0) && (pMode->HDisplay > tx)) || 
@@ -746,14 +776,6 @@ mach32Probe()
     if (xf86Verbose) {
 	ErrorF("%s %s: Display width: %d\n",
 		XCONFIG_PROBED, mach32InfoRec.name, mach32DisplayWidth);
-    }
-
-    if (!mach32InfoRec.videoRam) {
-#ifdef NEW_MEM_DETECT
-	mach32InfoRec.videoRam = mach32GetMemSize();
-#else
-	mach32InfoRec.videoRam = info->Mem_Size;
-#endif
     }
 
     /* Set mach32MemorySize to required MEM_SIZE value in MISC_OPTIONS */

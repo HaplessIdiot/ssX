@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/234 1996/12/27 16:16:06 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.82 1997/01/14 22:13:51 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.83 1997/01/18 06:52:46 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -1326,8 +1326,11 @@ CFB32DIR = cfb32
 DDXDIR1  = hw/xfree86
 XF86TGASUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) \
                  $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
-XF86TGAOBJS = $(XF86COMSRC)/XF86_TGA.o
-XF86TGALIBS = $(XF86ACCELSRC)/tga/LibraryTargetName(tga) $(XF86LIBS) \
+XF86TGAOBJS = $(XF86COMSRC)/XF86_TGA.o \
+	      $(XF86SRC)/xaa/xaa8/xaa8.o $(XF86SRC)/xaa/xaa16/xaa16.o \
+	      $(XF86SRC)/xaa/xaa24/xaa24.o $(XF86SRC)/xaa/xaa32/xaa32.o
+XF86TGALIBS = $(XF86ACCELSRC)/tga/LibraryTargetName(tga) \
+	      $(XF86SRC)/xaa/LibraryTargetName(xaa) $(XF86LIBS) \
                CFBLibs $(XF86ACCELSRC)/cache/LibraryTargetName(xf86cache)
 XF86TGASYSLIBS = $(SYSLIBS)
 #if HasParallelMake
