@@ -1,10 +1,28 @@
-/* $XFree86: xc/include/XF86keysym.h,v 1.3 2000/02/10 15:48:28 dawes Exp $ */
+/* $XFree86: xc/include/XF86keysym.h,v 1.4 2000/06/17 00:27:29 dawes Exp $ */
 
 /*
- * ModeLock (not needed since XKB offers this functionality)
+ * XFree86 vendor specific keysyms.
+ *
+ * The XFree86 keysym range is 0x1008FF01 - 0x1008FFFF.
+ *
+ * When adding new entries, the xc/lib/XKeysymDB file should also be
+ * updated to make the new entries visible to Xlib.
+ */
+
+/*
+ * ModeLock
+ *
+ * This one is old, and not really used any more since XKB offers this
+ * functionality.
  */
 
 #define XF86XK_ModeLock		0x1008FF01	/* Mode Switch Lock */
+
+/*
+ * Note, 0x1008FF02 - 0x1008FF0F are free and should be used for misc new
+ * keysyms that don't fit into any of the groups below.
+ */
+
 
 /*
  * Keys found on some "Internet" keyboards.
@@ -39,6 +57,10 @@
 #define XF86XK_Forward		0x1008FF27
 #define XF86XK_Stop		0x1008FF28
 #define XF86XK_Refresh		0x1008FF29
+
+/* Note, 0x1008FF2A - 0x1008FF2F are free and should be used next */
+
+/* Some more ... */
 #define XF86XK_Favorites	0x1008FF30
 #define XF86XK_AudioPause	0x1008FF31
 #define XF86XK_AudioMedia	0x1008FF32
