@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/interp_tmp.h,v 1.5 2001/04/01 13:59:57 tsi Exp $ */
+
 /*
  * Mesa 3-D graphics library
  * Version:  3.1
