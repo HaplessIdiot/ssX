@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.25 2003/01/28 22:47:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.26 2003/02/06 04:18:04 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -174,7 +174,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 static SymTabRec I830BIOSChipsets[] = {
    {PCI_CHIP_I830_M,		"i830"},
    {PCI_CHIP_845_G,		"845G"},
-   {PCI_CHIP_I855_GM,		"855GM"},
+   {PCI_CHIP_I855_GM,		"852GM/855GM"},
    {PCI_CHIP_I865_G,		"865G"},
    {-1,				NULL}
 };
