@@ -31,7 +31,7 @@
  *		Harold L Hunt II
  *		MATSUZAKI Kensuke
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.31 2002/10/17 08:18:21 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.32 2002/10/31 23:04:39 alanh Exp $ */
 
 #ifndef _WIN_H_
 #define _WIN_H_
@@ -48,7 +48,7 @@
  * Build toggles for experimental features
  */
 #define WIN_NATIVE_GDI_SUPPORT		YES
-#define WIN_LAYER_SUPPORT		YES
+#define WIN_LAYER_SUPPORT		NO
 #define WIN_NEW_KEYBOARD_SUPPORT	NO
 #define WIN_EMULATE_PSEUDO_SUPPORT	YES
 #define WIN_UPDATE_STATS		NO
