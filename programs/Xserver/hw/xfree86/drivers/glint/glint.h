@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.52 2001/11/20 00:09:13 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.53 2001/11/28 21:53:00 alanh Exp $ */
 /*
  * Copyright 1997-2001 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -198,6 +198,8 @@ typedef struct {
 			((PCI_VENDOR_3DLABS << 16) | PCI_CHIP_PERMEDIA3)
 #define PCI_VENDOR_3DLABS_CHIP_PERMEDIA4	\
 			((PCI_VENDOR_3DLABS << 16) | PCI_CHIP_PERMEDIA4)
+#define PCI_VENDOR_3DLABS_CHIP_R4		\
+			((PCI_VENDOR_3DLABS << 16) | PCI_CHIP_R4)
 #define PCI_VENDOR_3DLABS_CHIP_300SX	\
 			((PCI_VENDOR_3DLABS << 16) | PCI_CHIP_300SX)
 #define PCI_VENDOR_3DLABS_CHIP_500TX	\
@@ -206,6 +208,8 @@ typedef struct {
 			((PCI_VENDOR_3DLABS << 16) | PCI_CHIP_MX)
 #define PCI_VENDOR_3DLABS_CHIP_GAMMA	\
 			((PCI_VENDOR_3DLABS << 16) | PCI_CHIP_GAMMA)
+#define PCI_VENDOR_3DLABS_CHIP_GAMMA2	\
+			((PCI_VENDOR_3DLABS << 16) | PCI_CHIP_GAMMA2)
 #define PCI_VENDOR_3DLABS_CHIP_DELTA	\
 			((PCI_VENDOR_3DLABS << 16) | PCI_CHIP_DELTA)
 

@@ -26,7 +26,7 @@
  * this work is sponsored by Appian Graphics.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.27 2001/11/20 00:09:14 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.28 2001/11/28 21:53:01 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -461,7 +461,8 @@ Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode, GLINTRegPtr pReg)
 	/* Let's program the dot clock */
 	switch (pGlint->Chipset) {
 	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA4:
-	  clockused = PM4DAC_CalculateClock(mode->Clock * 1, /* HACK */
+	case PCI_VENDOR_3DLABS_CHIP_R4:
+	  clockused = PM4DAC_CalculateClock(mode->Clock,
 					    pGlint->RefClock, &m,&n,&p);
 	  break;
 	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
@@ -472,6 +473,10 @@ Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode, GLINTRegPtr pReg)
 	  switch (pGlint->MultiChip) {
 	    case PCI_CHIP_PERMEDIA3:
 	  	clockused = PM3DAC_CalculateClock(mode->Clock,
+					    pGlint->RefClock, &m,&n,&p);
+		break;
+	    case PCI_CHIP_R4:
+	  	clockused = PM4DAC_CalculateClock(mode->Clock,
 					    pGlint->RefClock, &m,&n,&p);
 		break;
 	  }
