@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbcompose.c,v 1.1 2000/10/02 05:25:46 keithp Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbcompose.c,v 1.2 2000/10/05 21:59:29 tsi Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -63,6 +63,31 @@ fbCombineMask (FbCompositeOperand   *src,
     o = FbIn(x,16,a,t);
     p = FbIn(x,24,a,t);
     return m|n|o|p;
+}
+
+/*
+ * Combine src and mask using IN, generating only the alpha component
+ */
+CARD32
+fbCombineMaskAlpha (FbCompositeOperand   *src,
+		    FbCompositeOperand   *msk)
+{
+    CARD32  x;
+    CARD16  a;
+    CARD16  t;
+
+    if (!msk)
+	return (*src->fetch) (src->line, src->offset);
+    
+    a = (*msk->fetch) (msk->line, msk->offset) >> 24;
+    if (!a)
+	return 0;
+    
+    x = (*src->fetch) (src->line, src->offset);
+    if (a == 0xff)
+	return x;
+    
+    return FbIn(x,24,a,t);
 }
 
 /*
@@ -184,7 +209,7 @@ fbCombineInReverse (FbCompositeOperand  *src,
     CARD16  t;
     CARD32  m,n,o,p;
 
-    s = fbCombineMask (src, msk);
+    s = fbCombineMaskAlpha (src, msk);
     a = s >> 24;
     if (a != 0xff)
     {
@@ -240,7 +265,7 @@ fbCombineOutReverse (FbCompositeOperand *src,
     CARD16  t;
     CARD32  m,n,o,p;
 
-    s = fbCombineMask (src, msk);
+    s = fbCombineMaskAlpha (src, msk);
     a = ~s >> 24;
     if (a != 0xff)
     {
