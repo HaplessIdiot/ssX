@@ -1,4 +1,6 @@
-XFree86 3.1.0Zd (27 January 1995)
+XFree86 3.1.0Zd (28 January 1995)
+259. Merge in XC fix-09.
+258. Minor updates (mostly typographical) to smooth the fix-11 merge.
 257. Define X_LOCALE for Linux.
 
 XFree86 3.1.0Zc (27 January 1995)
