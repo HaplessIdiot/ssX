@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.87 1997/03/22 09:36:15 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.88 1997/03/27 08:31:11 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -78,8 +78,8 @@ extern pointer pc98PvramBase;
 #endif
 
 
-extern void mfbDoBitbltCopy();
-extern void mfbDoBitbltCopyInverted();
+extern void vga2_mfbDoBitbltCopy();
+extern void vga2_mfbDoBitbltCopyInverted();
 extern void mfbDoBitbltTwoBanksCopy();
 extern void mfbDoBitbltTwoBanksCopyInverted();
 void (*ourmfbDoBitbltCopy)();
@@ -442,8 +442,12 @@ vgaProbe()
       xf86bpp = vga256InfoRec.depth;
   } else {
       vga256InfoRec.depth = xf86bpp;
-      vga256InfoRec.bitsPerPixel = xf86bpp;
   }
+  /* Oddly enough vga16 needs bitsPerPixel == 8 */
+  if (xf86bpp == 4)
+      vga256InfoRec.bitsPerPixel = 8;
+  else
+      vga256InfoRec.bitsPerPixel = xf86bpp;
   if (xf86weight.red == 0 || xf86weight.green == 0 || xf86weight.blue == 0) {
       xf86weight = vga256InfoRec.weight;
   }
@@ -467,7 +471,6 @@ vgaProbe()
       if (vgaBitsPerPixel == 32 || vgaBitsPerPixel == 24)
           xf86weight.red = xf86weight.green = xf86weight.blue = 8;
       vga256InfoRec.weight = xf86weight;
-      vga256InfoRec.bitsPerPixel = vgaBitsPerPixel;
       vga256InfoRec.blackColour.red = 0;
       vga256InfoRec.blackColour.green = 0;
       vga256InfoRec.blackColour.blue = 0;
@@ -531,6 +534,23 @@ vgaProbe()
     if ((Drivers[i]->ChipProbe)())
       {
         xf86ProbeFailed = FALSE;
+
+        /*
+         * Make sure the driver supports the requested depth.
+         */
+        if ((vgaBitsPerPixel == 1 && !Drivers[i]->ChipHas1bpp)
+        || (vgaBitsPerPixel == 4 && !Drivers[i]->ChipHas4bpp)
+        || (vgaBitsPerPixel == 8 && !Drivers[i]->ChipHas8bpp)
+	/* Not sure what to do about 15bpp yet */
+        || (vgaBitsPerPixel == 16 && !Drivers[i]->ChipHas16bpp)
+        || (vgaBitsPerPixel == 24 && !Drivers[i]->ChipHas24bpp)
+        || (vgaBitsPerPixel == 32 && !Drivers[i]->ChipHas32bpp)) {
+            ErrorF("\n%s %s: %dbpp not supported for this chipset\n",
+                XCONFIG_GIVEN, vga256InfoRec.name, vgaBitsPerPixel);
+	    Drivers[i]->ChipEnterLeave(LEAVE);
+	    return(FALSE);
+        }
+
 	if (xf86bpp == 1) {
 #ifdef BANKEDMONOVGA
 	  /*
@@ -628,18 +648,6 @@ vgaProbe()
 	  }
 	}
 
-        /*
-         * If bpp is 16 or 32, make sure the driver supports it.
-         */
-        if ((vgaBitsPerPixel == 16 && !Drivers[i]->ChipHas16bpp)
-        || (vgaBitsPerPixel == 24 && !Drivers[i]->ChipHas24bpp)
-        || (vgaBitsPerPixel == 32 && !Drivers[i]->ChipHas32bpp)) {
-            ErrorF("\n%s %s: %dbpp not supported for this chipset\n",
-                XCONFIG_GIVEN, vga256InfoRec.name, vgaBitsPerPixel);
-	    Drivers[i]->ChipEnterLeave(LEAVE);
-	    return(FALSE);
-        }
-
 	vgaEnterLeaveFunc = Drivers[i]->ChipEnterLeave;
 	vgaInitFunc = Drivers[i]->ChipInit;
 	vgaValidModeFunc = Drivers[i]->ChipValidMode;
@@ -695,39 +703,8 @@ vgaProbe()
 	}
 
 	/* if Virtual given: is the virtual size too big? */
-#ifdef BANKEDMONOVGA
-	if (vga256InfoRec.virtualX > (2048)) {
- 		ErrorF("%s: Virtual width %i exceeds max. virtual width %i\n",
-		       vga256InfoRec.name, vga256InfoRec.virtualX, (2048));
-		vgaEnterLeaveFunc(LEAVE);
-		return(FALSE);
-	}
-	vga256InfoRec.displayWidth = ((vga256InfoRec.virtualX + rounding - 1) /
-		rounding) * rounding;
-	if (vga256InfoRec.displayWidth*vga256InfoRec.virtualY <= 8*vgaSegmentSize)
-	{	/* may be unbanked */
-		if (vga256InfoRec.displayWidth > vga256InfoRec.virtualX)
-			ErrorF("%s %s: Display width set to %d (a multiple of"
-			       " %d)\n", XCONFIG_PROBED, vga256InfoRec.name,
-			       vga256InfoRec.displayWidth, rounding);
-	}
-	else if (vga256InfoRec.virtualX > (1024))
-		vga256InfoRec.displayWidth=2048;
-	     else vga256InfoRec.displayWidth=1024;
-
-	if (vga256InfoRec.virtualX > 0 &&
-	    vga256InfoRec.displayWidth * vga256InfoRec.virtualY > needmem)
-	  {
-	    ErrorF("%s: Too little memory for virtual resolution\n"
-                   "      %d (display width %d) x %d\n",
-                   vga256InfoRec.name, vga256InfoRec.virtualX,
-                   vga256InfoRec.displayWidth, vga256InfoRec.virtualY);
-            vgaEnterLeaveFunc(LEAVE);
-	    return(FALSE);
-	  }
-#else
-#ifndef USE_OLD_ROUNDING
 	if (vga256InfoRec.virtualX > 0) {
+#ifndef USE_OLD_ROUNDING
 	  /* Let the driver have a chance to use a larger screen pitch if
 	     it needs.  This ability is particularly useful for the Cirrus
 	     Laguna family, which uses tiled memory.  Each scanline must be
@@ -740,39 +717,37 @@ vgaProbe()
 	     of _pixels_. */
 	  if (vgaPitchAdjustFunc != (int (*)())NoopDDA)
 	    vga256InfoRec.displayWidth = (*vgaPitchAdjustFunc)();
-          else {
-	    if (vga256InfoRec.virtualX % rounding) {
-	      vga256InfoRec.displayWidth = vga256InfoRec.virtualX +
-					   (rounding -
-				           (vga256InfoRec.virtualX % rounding));
-	      ErrorF("%s %s: Display width set to %d (a multiple of %d)\n",
-	             XCONFIG_PROBED, vga256InfoRec.name,
-		     vga256InfoRec.displayWidth, rounding);
-	    } else {
-	      vga256InfoRec.displayWidth = vga256InfoRec.virtualX;
+	  else
+#endif
+	    vga256InfoRec.displayWidth = ((vga256InfoRec.virtualX + rounding - 1) /
+	      rounding) * rounding;
+
+#ifdef BANKEDMONOVGA
+	  if (xf86bpp == 1) {
+	    if (vga256InfoRec.virtualX > 2048) {
+	      ErrorF("%s: Virtual width %i exceeds maximum virtual width %i\n",
+		vga256InfoRec.name, vga256InfoRec.virtualX, 2048);
+	      (*vgaEnterLeaveFunc)(LEAVE);
+	      return(FALSE);
 	    }
+	    if (vga256InfoRec.displayWidth * vga256InfoRec.virtualY > 8*vgaSegmentSize)
+	      if (vga256InfoRec.virtualX <= 1024)
+		vga256InfoRec.displayWidth = 1024;
+	      else
+		vga256InfoRec.displayWidth = 2048;
 	  }
-	  if (vga256InfoRec.displayWidth * vga256InfoRec.virtualY > needmem)
-	  {
-	    ErrorF("%s: Too little memory for virtual resolution %d %d\n",
-                   vga256InfoRec.name, vga256InfoRec.virtualX,
-                   vga256InfoRec.virtualY);
-            vgaEnterLeaveFunc(LEAVE);
+#endif
+	  if (vga256InfoRec.displayWidth * vga256InfoRec.virtualY > needmem) {
+	    /* Tell user what the display width is before complaining */
+	    if (vga256InfoRec.virtualX < vga256InfoRec.displayWidth)
+	      ErrorF("%s %s: Display width set to %d\n", XCONFIG_PROBED,
+	        vga256InfoRec.name, vga256InfoRec.displayWidth);
+	    ErrorF("%s: Too little memory for virtual resolution %d x %d\n",
+	      vga256InfoRec.name, vga256InfoRec.virtualX, vga256InfoRec.virtualY);
+	    (*vgaEnterLeaveFunc)(LEAVE);
 	    return(FALSE);
 	  }
 	}
-#else
-	if (vga256InfoRec.virtualX > 0 &&
-	    vga256InfoRec.virtualX * vga256InfoRec.virtualY > needmem)
-	  {
-	    ErrorF("%s: Too little memory for virtual resolution %d %d\n",
-                   vga256InfoRec.name, vga256InfoRec.virtualX,
-                   vga256InfoRec.virtualY);
-            vgaEnterLeaveFunc(LEAVE);
-	    return(FALSE);
-	  }
-#endif
-#endif
 
         maxX = maxY = -1;
 	tx = vga256InfoRec.virtualX;
@@ -855,33 +830,11 @@ vgaProbe()
 
         vga256InfoRec.virtualX = max(maxX, vga256InfoRec.virtualX);
         vga256InfoRec.virtualY = max(maxY, vga256InfoRec.virtualY);
-#ifdef BANKEDMONOVGA
-	if (vga256InfoRec.virtualX > (2048)) {
-		ErrorF("%s: Max. width %i exceeds max. virtual width %i\n",
-			vga256InfoRec.name, vga256InfoRec.virtualX, (2048));
-		vgaEnterLeaveFunc(LEAVE);
-		return(FALSE);
-	}
-	/* Now that modes are resolved and max. extents are found,
-	 * test size again */
-	vga256InfoRec.displayWidth = ((vga256InfoRec.virtualX + rounding - 1) /
-		rounding) * rounding;
-	if (vga256InfoRec.displayWidth*vga256InfoRec.virtualY > 8*vgaSegmentSize)
-	  {
-             if (vga256InfoRec.virtualX > (1024))
-		vga256InfoRec.displayWidth=2048;
-	     else vga256InfoRec.displayWidth=1024;
-          }
-	if ((xf86Verbose) &&
-	    (vga256InfoRec.displayWidth != vga256InfoRec.virtualX))
-		ErrorF("%s %s: Display width set to %d (a multiple of %d)\n",
-			XCONFIG_PROBED, vga256InfoRec.name,
-		        vga256InfoRec.displayWidth, rounding);
-#endif
 
-#ifndef BANKEDMONOVGA
+	if ((tx != vga256InfoRec.virtualX) || (ty != vga256InfoRec.virtualY)) {
+	  /* Revalidate virtual size */
+	  OFLG_CLR(XCONFIG_VIRTUAL, &vga256InfoRec.xconfigFlag);
 #ifndef USE_OLD_ROUNDING
-	if (vga256InfoRec.displayWidth < 0) {
 	  /* Let the driver have a chance to use a larger screen pitch if
 	     it needs.  This ability is particularly useful for the Cirrus
 	     Laguna family, which uses tiled memory.  Each scanline must be
@@ -894,91 +847,43 @@ vgaProbe()
 	     of _pixels_. */
 	  if (vgaPitchAdjustFunc != (int (*)())NoopDDA)
 	    vga256InfoRec.displayWidth = (*vgaPitchAdjustFunc)();
-          else {
-	    if (vga256InfoRec.virtualX % rounding) {
-	      vga256InfoRec.displayWidth = vga256InfoRec.virtualX + (rounding -
-				           (vga256InfoRec.virtualX % rounding));
-	      ErrorF("%s %s: Display width set to %d (a multiple of %d)\n",
-	             XCONFIG_PROBED, vga256InfoRec.name,
-		     vga256InfoRec.displayWidth, rounding);
-	    } else {
-	      vga256InfoRec.displayWidth = vga256InfoRec.virtualX;
+	  else
+#endif
+	    vga256InfoRec.displayWidth = ((vga256InfoRec.virtualX + rounding - 1) /
+	      rounding) * rounding;
+
+#ifdef BANKEDMONOVGA
+	  if (xf86bpp == 1) {
+	    if (vga256InfoRec.virtualX > 2048) {
+	      ErrorF("%s: Virtual width %i exceeds maximum virtual width %i\n",
+		vga256InfoRec.name, vga256InfoRec.virtualX, 2048);
+	      (*vgaEnterLeaveFunc)(LEAVE);
+	      return(FALSE);
 	    }
+	    if (vga256InfoRec.displayWidth * vga256InfoRec.virtualY > 8*vgaSegmentSize)
+	      if (vga256InfoRec.virtualX <= 1024)
+		vga256InfoRec.displayWidth = 1024;
+	      else
+		vga256InfoRec.displayWidth = 2048;
 	  }
-	  if (vga256InfoRec.displayWidth * vga256InfoRec.virtualY > needmem)
-	  {
-	    ErrorF("%s: Too little memory for virtual resolution %d %d\n",
-                   vga256InfoRec.name, vga256InfoRec.virtualX,
-                   vga256InfoRec.virtualY);
-            vgaEnterLeaveFunc(LEAVE);
+#endif
+
+	  if (vga256InfoRec.virtualX < vga256InfoRec.displayWidth)
+	    ErrorF("%s %s: Display width set to %d\n", XCONFIG_PROBED,
+	      vga256InfoRec.name, vga256InfoRec.displayWidth);
+	  if (vga256InfoRec.displayWidth * vga256InfoRec.virtualY > needmem) {
+	    if ((vga256InfoRec.virtualX == maxX) &&
+		(vga256InfoRec.virtualY == maxY) && (pmaxX != pmaxY))
+	      ErrorF("%s: Too little memory to accomodate modes %s and %s\n",
+		vga256InfoRec.name, pmaxX->name, pmaxY->name);
+	    else
+	      ErrorF("%s: Too little memory to accomodate virtual size and mode %s\n",
+		vga256InfoRec.name, (vga256InfoRec.virtualX == maxX) ?
+		pmaxX->name : pmaxY->name);
+	    (*vgaEnterLeaveFunc)(LEAVE);
 	    return(FALSE);
 	  }
 	}
-#else
-	if (vga256InfoRec.virtualX % rounding)
-	  {
-	    vga256InfoRec.virtualX -= vga256InfoRec.virtualX % rounding;
-	    ErrorF(
-	     "%s %s: Virtual width rounded down to a multiple of %d (%d)\n",
-	     XCONFIG_PROBED, vga256InfoRec.name, rounding,
-	     vga256InfoRec.virtualX);
-            if (vga256InfoRec.virtualX < maxX)
-            {
-              ErrorF(
-               "%s: Rounded down virtual width (%d) is too small for mode %s",
-	       vga256InfoRec.name, vga256InfoRec.virtualX, pmaxX->name);
-              vgaEnterLeaveFunc(LEAVE);
-              return(FALSE);
-            }
-	  }
-
-	if ( vga256InfoRec.virtualX * vga256InfoRec.virtualY > needmem)
-	{
-          if (vga256InfoRec.virtualX != maxX ||
-              vga256InfoRec.virtualY != maxY)
-	    ErrorF(
-              "%s: Too little memory to accomodate virtual size and mode %s\n",
-               vga256InfoRec.name,
-               (vga256InfoRec.virtualX == maxX) ? pmaxX->name : pmaxY->name);
-          else
-	    ErrorF("%s: Too little memory to accomodate modes %s and %s\n",
-                   vga256InfoRec.name, pmaxX->name, pmaxY->name);
-          vgaEnterLeaveFunc(LEAVE);
-	  return(FALSE);
-	}
-#endif
-#else
-	if ( vga256InfoRec.displayWidth * vga256InfoRec.virtualY > needmem) {
-		ErrorF("%s: Too little memory to accomodate display width %i"
-			" and virtual height %i\n",
-			vga256InfoRec.name,
-			vga256InfoRec.displayWidth, vga256InfoRec.virtualY);
-		vgaEnterLeaveFunc(LEAVE);
-		return(FALSE);
-	}
-#endif
-	if ((tx != vga256InfoRec.virtualX) || (ty != vga256InfoRec.virtualY))
-            OFLG_CLR(XCONFIG_VIRTUAL,&vga256InfoRec.xconfigFlag);
-
-#ifdef USE_OLD_ROUNDING
-#ifndef BANKEDMONOVGA
-	/* Let the driver have a chance to use a larger screen pitch if
-	   it needs.  This ability is particularly useful for the Cirrus
-	   Laguna family, which uses tiled memory.  Each scanline must be
-	   an integer number of tiles wide, where tiles are 128 or 256
-	   bytes wide.  Furthermore, there are only a few tile pitches
-	   allowed.  It just so happens that none of these tile pitches
-	   yield a screen byte pitch that is divisible by 3.  The upshot:
-	   you can't have 24bpp if the screen pitch is not a multiple of 
-	   three -- i.e., if the screen pitch is not an integer number
-	   of _pixels_. */
-
-	if (vgaPitchAdjustFunc != (int (*)())NoopDDA)
-	  vga256InfoRec.displayWidth = (*vgaPitchAdjustFunc)();
-        else
-          vga256InfoRec.displayWidth = vga256InfoRec.virtualX;
-#endif
-#endif
         if (xf86Verbose)
           ErrorF("%s %s: Virtual resolution set to %dx%d\n",
                  OFLG_ISSET(XCONFIG_VIRTUAL,&vga256InfoRec.xconfigFlag) ? 
@@ -1454,14 +1359,12 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
     pointer    vgaVirtPtr;
     pointer    vgaPhysPtr;
 
-#if !defined(BANKEDMONOVGA)		/* { */
     if (vgaBitsPerPixel > 8){
         /* Currently 16/32bpp uses linear addressing. */
         /* use original linear base from MapVidMem() */
         xf86memset(vgaLinearOrig, 0, vga256InfoRec.videoRam * 1024);
       }
     else /* 8bpp: */
-#endif					/* } */
     {
       int factor;
       if (xf86bpp < 8)

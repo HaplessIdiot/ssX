@@ -4,7 +4,7 @@
 #define _MFBMAP_H
 
 #define InverseAlu  vga2_InverseAlu
-#define endtab  vga2_endtab
+/* #define endtab  vga2_endtab */
 #define mask  vga2_mask
 #define mergeRopBits  vga2_mergeRopBits
 #define mfbAllocatePrivates  vga2_mfbAllocatePrivates

@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.50 1997/03/22 09:34:44 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.51 1997/03/27 08:29:48 hohndel Exp $ */
 
 #include "Probe.h"
 
@@ -42,7 +42,9 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "ATI 88800GX-C", "ATI 88800GX-D", "ATI 88800GX-E",
 		  "ATI 88800GX-F",
 		  "ATI 88800CX",
-		  "ATI 264CT", "ATI 264ET", "ATI 264VT or 264VT2", "ATI 264GT" },
+		  "ATI 264CT", "ATI 264ET", "ATI 264LT",
+		  "ATI 264VT", "ATI 264VT-B",
+		  "ATI 264GT (3D Rage I)", "ATI 264GT-B (#D Rage II)" },
 /* AL */	{ "Avance Logic (chipset unknown)",
 		  "Avance Logic 2101", "Avance Logic 2228" },
 /* CT */	{ "Chips & Tech (chipset unknown)",

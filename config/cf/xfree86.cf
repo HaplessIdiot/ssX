@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.151 1997/03/18 10:04:22 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.152 1997/03/27 08:29:12 hohndel Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -1029,7 +1029,7 @@ XFREE86JAPANESEDOCDIR = $(XFREE86DOCDIR)/Japanese
 
 #if HasGcc
 #ifndef DefaultCCOptions
-#ifdef UseInstalled
+#if defined(UseInstalled) && !XF86LinkKit
 #define DefaultCCOptions /* -ansi */
 #else
 #define DefaultCCOptions -ansi -pedantic

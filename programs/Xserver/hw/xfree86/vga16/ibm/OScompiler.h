@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/OScompiler.h,v 3.5 1996/12/23 06:52:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/OScompiler.h,v 3.6tsi Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -82,9 +82,15 @@ b/**/
 /* GJA -- Actually, they are added because I have not yet tidied up
  * my include file structure (mfb/mfb.banked). Be careful or it will break.
  */
+#ifdef __alpha__
 #define VSETR(x)  { x = vgaSetRead((void *)x); }
 #define VSETW(x)  { x = vgaSetWrite((void *)x); }
 #define VSETRW(x) { x = vgaSetReadWrite((void *)x); }
+#else
+#define VSETR(x)  { x = vga16SetRead((void *)x); }
+#define VSETW(x)  { x = vga16SetWrite((void *)x); }
+#define VSETRW(x) { x = vga16SetReadWrite((void *)x); }
+#endif
 #define VCHECKRO(x) { if(((void *)x >= vgaReadTop)) \
 			 x = vgaReadNext((void *)x); }
 #define VCHECKRU(x) { if(((void *)x < vgaReadBottom)) \

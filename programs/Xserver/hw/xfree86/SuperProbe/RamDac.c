@@ -794,19 +794,21 @@ int *RamDac;
 {
 	extern Word ATIMach64DAC_CNTL, ATIMach64SCRATCH_REG1;
 
+	if (ChipSet >= CHIP_ATI264CT)
+	{
+		*RamDac = DAC_ATI_INTERNAL;
+		*RamDac |= DAC_6_8_PROGRAM;
+		if (Width8Check())
+			*RamDac |= DAC_8BIT;
+		return;
+	}
+
 	EnableIOPorts(1, &ATIMach64DAC_CNTL);
 	EnableIOPorts(1, &ATIMach64SCRATCH_REG1);
 
 	switch (((inpl(ATIMach64DAC_CNTL) & 0x00070000) |
 		 (inpl(ATIMach64SCRATCH_REG1) & 0x0000F000)) >> 12)
 	{
-	case 0x00:  case 0x01:  case 0x02:  case 0x03:
-	case 0x04:  case 0x05:  case 0x06:  case 0x07:
-	case 0x08:  case 0x09:  case 0x0A:  case 0x0B:
-	case 0x0C:  case 0x0D:  case 0x0E:  case 0x0F:
-		*RamDac = DAC_ATI_INTERNAL;
-		*RamDac |= DAC_6_8_PROGRAM;
-		break;
 	case 0x10:
 		*RamDac = DAC_IBMRGB525;
 		*RamDac |= DAC_6_8_PROGRAM;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaBank.s,v 3.8 1997/03/11 13:07:54 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaBank.s,v 3.9tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -131,11 +131,7 @@ GLNAME(vgaSetReadWrite):
 	MOV_L	(REGOFF(4,ESP),EAX)
 	PUSH_L	(ECX)
 	PUSH_L	(EDX)
-#ifdef XF86VGA16
-	SUB_L	(CONTENT(GLNAME(vgaBase)),EAX)
-#else
 	SUB_L	(VGABASE,EAX)
-#endif
 	MOV_L	(CONTENT(GLNAME(vgaSegmentShift)),ECX)
 	SHR_L	(CL,EAX)
 	MOV_L	(EAX,CONTENT(GLNAME(writeseg)))
@@ -144,9 +140,6 @@ GLNAME(vgaSetReadWrite):
 	POP_L	(EDX)
 	POP_L	(ECX)
 	MOV_L	(REGOFF(4,ESP),EAX)
-#ifdef XF86VGA16
-	SUB_L	(CONTENT(GLNAME(vgaBase)),EAX)
-#endif
 	AND_L	(CONTENT(GLNAME(vgaSegmentMask)),EAX)
 	ADD_L	(CONTENT(GLNAME(vgaWriteBottom)),EAX)
  	RET
@@ -273,11 +266,7 @@ GLNAME(vgaSetRead):
 	MOV_L	(REGOFF(4,ESP),EAX)
 	PUSH_L  (ECX)
 	PUSH_L	(EDX)
-#ifdef XF86VGA16
-	SUB_L	(CONTENT(GLNAME(vgaBase)),EAX)
-#else
 	SUB_L	(VGABASE,EAX)
-#endif
 	MOV_L	(CONTENT(GLNAME(vgaSegmentShift)),ECX)
 	SHR_L	(CL,EAX)
 	MOV_L	(EAX,CONTENT(GLNAME(readseg)))
@@ -286,9 +275,6 @@ GLNAME(vgaSetRead):
 	POP_L	(EDX)
 	POP_L	(ECX)
 	MOV_L	(REGOFF(4,ESP),EAX)
-#ifdef XF86VGA16
-	SUB_L	(CONTENT(GLNAME(vgaBase)),EAX)
-#endif
 	AND_L	(CONTENT(GLNAME(vgaSegmentMask)),EAX)
 	ADD_L	(CONTENT(GLNAME(vgaReadBottom)),EAX)
  	RET
@@ -415,11 +401,7 @@ GLNAME(vgaSetWrite):
 	MOV_L	(REGOFF(4,ESP),EAX)
 	PUSH_L  (ECX)
 	PUSH_L	(EDX)
-#ifdef XF86VGA16
-	SUB_L	(CONTENT(GLNAME(vgaBase)),EAX)
-#else
 	SUB_L	(VGABASE,EAX)
-#endif
 	MOV_L	(CONTENT(GLNAME(vgaSegmentShift)),ECX)
 	SHR_L	(CL,EAX)
 	MOV_L	(EAX,CONTENT(GLNAME(writeseg)))
@@ -428,9 +410,6 @@ GLNAME(vgaSetWrite):
 	POP_L	(EDX)
 	POP_L	(ECX)
 	MOV_L	(REGOFF(4,ESP),EAX)
-#ifdef XF86VGA16
-	SUB_L	(CONTENT(GLNAME(vgaBase)),EAX)
-#endif
 	AND_L	(CONTENT(GLNAME(vgaSegmentMask)),EAX)
 	ADD_L	(CONTENT(GLNAME(vgaWriteBottom)),EAX)
  	RET

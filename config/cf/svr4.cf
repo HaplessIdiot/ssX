@@ -1,5 +1,5 @@
 XCOMM $XConsortium: svr4.cf /main/16 1996/09/28 16:13:41 rws $
-XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.24 1996/12/23 05:50:36 dawes Exp $
+XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.25tsi Exp $
 /*
  * A default OS name
  */
@@ -153,12 +153,6 @@ XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.24 1996/12/23 05:50:36 dawes Exp $
 #ifndef DefaultCCOptions
 #if !HasGcc
 #define DefaultCCOptions -Xa -Dasm=__asm
-#else
-#ifdef UseInstalled
-#define DefaultCCOptions /**/
-#else
-#define DefaultCCOptions -ansi -pedantic
-#endif
 #endif
 #endif
 #ifndef DefaultCDebugFlags

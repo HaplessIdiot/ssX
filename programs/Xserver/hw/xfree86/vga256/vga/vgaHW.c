@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.55 1997/03/11 13:07:57 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.56tsi Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1067,7 +1067,7 @@ vgaHWInit(mode, size)
   new->CRTC[19] = vga256InfoRec.displayWidth >> 4;  /* just a guess */
   new->CRTC[20] = 0x00;
   new->CRTC[21] = mode->CrtcVSyncStart & 0xFF; 
-  new->CRTC[22] = (mode->CrtcVSyncStart +1) & 0xFF;
+  new->CRTC[22] = (mode->CrtcVSyncEnd + 1) & 0xFF;
   if (xf86bpp < 8)
     new->CRTC[23] = 0xE3;
   else

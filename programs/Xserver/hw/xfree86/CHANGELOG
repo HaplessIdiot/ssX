@@ -1,4 +1,19 @@
-XFree86 3.2Ar (27 March 1997)
+XFree86 3.2Ar (28 March 1997)
+ 625. Fix setting of CRTC[22] on VGA compatibles (#220, Marc Aurele La France).
+ 624. Fix vga16 & banked vga2; don't remap *fb's endtab. Use the correct
+      banking functions, displayWidth handling (#219, Marc Aurele La France).
+ 623. Change Mach64 to use the known extended post-devider setting on the
+      3D Rage II (#218, Marc Aurele La France).
+ 622. Lots of changes to the SVGA/ATI driver, including 3D Rage II support,
+      memory type detection (#217, Marc Aurele La France).
+ 621. Clean up internal allocator a bit, and make it log more information
+      (when enabled) (#216, Marc Aurele La France).
+ 620. Fix misuse of UseInstalled in the .cf files for BSD derivatives.
+      Make LinkKit use the same default CCOPTIONS as the main build.
+      Remove redundancy in svr4.cf (#215, Marc Aurele La France).
+ 619. Add newer ATI chipsets to SuperProbe (#214, Marc Aurele La France).
+ 618. Fix color expansion and pixmap cache in trident driver (#212,213, 
+      Alan Hourihane).
  617. Change XAA to delay syncing (#211, Mark Vojkovich).
  616. Fix OS/2 naming problem in Xserver Imakefile and XAA 8x8 pattern
       rotations and flag checking inconsistency (#210, Sebastien Marineau).
@@ -4243,4 +4258,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.438 1997/03/24 16:28:53 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.439 1997/03/27 08:29:25 hohndel Exp $

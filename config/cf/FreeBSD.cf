@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: FreeBSD.cf /main/13 1996/09/29 20:13:31 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.61 1997/03/10 10:09:15 hohndel Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.62tsi Exp $
 
 #ifndef OSName
 #define OSName			DefaultOSName
@@ -53,7 +53,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define CppCmd			/usr/libexec/cpp
 #define PreProcessCmd		CppCmd
 #define StandardCppDefines	-traditional
-#if UseInstalled
+#if defined(UseInstalled) && (!defined(XF86LinkKit) || !XF86LinkKit)
 #define DefaultCCOptions	/**/
 #else
 #define DefaultCCOptions	-ansi -pedantic -Dasm=__asm

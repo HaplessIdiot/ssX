@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaBank.h,v 3.6 1996/12/09 11:54:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaBank.h,v 3.7tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -39,13 +39,21 @@ extern unsigned long writeseg;
 extern void *writeseg;
 #endif /* __alpha__ */
 
-/* vgaBank.s */
+/* vgaBank.s or vgaBankc.c */
 
 void *vgaSetReadWrite(
 #if NeedFunctionPrototypes
     void *
 #endif
 );
+
+#ifndef __alpha__
+void *vga16SetReadWrite(
+#if NeedFunctionPrototypes
+    void *
+#endif
+);
+#endif
 
 void *vgaReadWriteNext(
 #if NeedFunctionPrototypes
@@ -65,6 +73,14 @@ void *vgaSetRead(
 #endif
 );
 
+#ifndef __alpha__
+void *vga16SetRead(
+#if NeedFunctionPrototypes
+    void *
+#endif
+);
+#endif
+
 void *vgaReadNext(
 #if NeedFunctionPrototypes
     void *
@@ -82,6 +98,14 @@ void *vgaSetWrite(
     void *
 #endif
 );
+
+#ifndef __alpha__
+void *vga16SetWrite(
+#if NeedFunctionPrototypes
+    void *
+#endif
+);
+#endif
 
 void *vgaWriteNext(
 #if NeedFunctionPrototypes
