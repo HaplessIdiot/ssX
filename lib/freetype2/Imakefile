@@ -1,66 +1,29 @@
-#ifndef SharedFreetypeRev
-#define SharedFreetypeRev 6.0
-#endif
+XCOMM $XFree86: $
 
-FREETYPELIBSRC=$(TOP)/lib/freetype2
-FREETYPE2ORIG=$(TOP)/extras/freetype2
-SharedLibReferences(FREETYPE,freetype,$(FREETYPELIBSRC),SOFREETYPEREV,SharedFreetypeRev)
+#define IHaveSubdirs
+#define PassCDebugFlags
 
-#define DoNormalLib	NO
-#define DoSharedLib	YES
-#define DoExtraLib	NO
-#define DoDebugLib	NO
-#define DoProfileLib	NO
-#define HasSharedData	YES
-#define LibName		freetype
-#define SoRev		SOFREETYPEREV
-#define LibHeaders	NO
+#define DoNormalLib NormalLibFreetype2
+#define DoSharedLib SharedLibFreetype2
+#define DoExtraLib SharedLibFreetype2
+#define DoDebugLib DebugLibFreetype2
+#define DoProfileLib ProfileLibFreetype2
+#define HasSharedData YES
+#define LibName freetype
+#define SoRev SOFREETYPE2REV
+#define LibHeaders NO
 
 #include <Threads.tmpl>
 
-SRCDIR    = $(FREETYPE2ORIG)/src
-BASE      = $(SRCDIR)/base
+FREETYPETOP = $(TOP)/extras/freetype2
+FREETYPESRC = $(FREETYPETOP)/src
+FREETYPEINC = $(FREETYPETOP)/include/freetype
 
-INCLUDES=-I$(FREETYPE2ORIG)/include -I$(FREETYPE2ORIG)/src
+INCLUDES    = $(FREETYPE2INCLUDES) -I$(FREETYPETOP)/src
 
-INCDIR   = $(FREETYPE2ORIG)/include/freetype
+SUBDIRS=freetype
 
-HEADERS= \
-        $(INCDIR)/freetype.h \
-        $(INCDIR)/ftbbox.h \
-        $(INCDIR)/ftcache.h \
-        $(INCDIR)/fterrors.h \
-        $(INCDIR)/ftglyph.h \
-        $(INCDIR)/ftimage.h \
-        $(INCDIR)/ftlist.h \
-        $(INCDIR)/ftmac.h \
-        $(INCDIR)/ftmm.h \
-        $(INCDIR)/ftmodule.h \
-        $(INCDIR)/ftnames.h \
-        $(INCDIR)/ftoutln.h \
-        $(INCDIR)/ftrender.h \
-        $(INCDIR)/ftsynth.h \
-        $(INCDIR)/ftsystem.h \
-        $(INCDIR)/fttypes.h \
-        $(INCDIR)/internal \
-        $(INCDIR)/t1tables.h \
-        $(INCDIR)/ttnameid.h \
-        $(INCDIR)/tttables.h \
-        $(INCDIR)/tttags.h
 
-HEADERS_CACHE= \
-        $(INCDIR)/cache/ftcchunk.h \
-        $(INCDIR)/cache/ftcglyph.h \
-        $(INCDIR)/cache/ftcimage.h \
-        $(INCDIR)/cache/ftcmanag.h \
-        $(INCDIR)/cache/ftcsbits.h \
-        $(INCDIR)/cache/ftlru.h
-
-HEADERS_CONFIG= \
-        $(INCDIR)/config/ftbuild.h \
-        $(INCDIR)/config/ftconfig.h \
-        $(INCDIR)/config/ftmodule.h \
-        $(INCDIR)/config/ftoption.h
 
 SRCS_BASE = ftsystem.c ftinit.c ftdebug.c ftbase.c ftglyph.c ftbbox.c ftmm.c
 OBJS_BASE = ftsystem.o ftinit.o ftdebug.o ftbase.o ftglyph.o ftbbox.o ftmm.o
@@ -118,33 +81,25 @@ MANSUFFIX = $(LIBMANSUFFIX)
 InstallManPage(Freetype,$(LIBMANDIR))
 #endif
 
-BuildIncludes($(HEADERS),freetype2/freetype,../..)
-InstallMultipleFlags($(HEADERS),freetype2/freetype,$(INSTINCFLAGS))
 
-BuildIncludes($(HEADERS_CACHE),freetype2/freetype/cache,../../..)
-InstallMultipleFlags($(HEADERS_CACHE),freetype2/freetype/cache,$(INSTINCFLAGS))
+LinkSourceFile(ftsystem.c,$(FREETYPESRC)/base)
+LinkSourceFile(ftinit.c,$(FREETYPESRC)/base)
+LinkSourceFile(ftdebug.c,$(FREETYPESRC)/base)
+LinkSourceFile(ftbase.c,$(FREETYPESRC)/base)
+LinkSourceFile(ftglyph.c,$(FREETYPESRC)/base)
+LinkSourceFile(ftbbox.c,$(FREETYPESRC)/base)
+LinkSourceFile(ftmm.c,$(FREETYPESRC)/base)
+LinkSourceFile(autohint.c,$(FREETYPESRC)/autohint)
+LinkSourceFile(sfnt.c,$(FREETYPESRC)/sfnt)
+LinkSourceFile(cff.c,$(FREETYPESRC)/cff)
+LinkSourceFile(psnames.c,$(FREETYPESRC)/psnames)
+LinkSourceFile(psaux.c,$(FREETYPESRC)/psaux)
+LinkSourceFile(truetype.c,$(FREETYPESRC)/truetype)
+LinkSourceFile(type1.c,$(FREETYPESRC)/type1)
+LinkSourceFile(type1cid.c,$(FREETYPESRC)/cid)
+LinkSourceFile(raster.c,$(FREETYPESRC)/raster)
+LinkSourceFile(smooth.c,$(FREETYPESRC)/smooth)
+LinkSourceFile(winfnt.c,$(FREETYPESRC)/winfonts)
 
-BuildIncludes($(HEADERS_CONFIG),freetype2/freetype/config,../../..)
-InstallMultipleFlags($(HEADERS_CONFIG),freetype2/freetype/config,$(INSTINCFLAGS))
-
-LinkSourceFile(ftsystem.c,$(BASE))
-LinkSourceFile(ftinit.c,$(BASE))
-LinkSourceFile(ftdebug.c,$(BASE))
-LinkSourceFile(ftbase.c,$(BASE))
-LinkSourceFile(ftglyph.c,$(BASE))
-LinkSourceFile(ftbbox.c,$(BASE))
-LinkSourceFile(ftmm.c,$(BASE))
-LinkSourceFile(autohint.c,$(SRCDIR)/autohint)
-LinkSourceFile(sfnt.c,$(SRCDIR)/sfnt)
-LinkSourceFile(cff.c,$(SRCDIR)/cff)
-LinkSourceFile(psnames.c,$(SRCDIR)/psnames)
-LinkSourceFile(psaux.c,$(SRCDIR)/psaux)
-LinkSourceFile(truetype.c,$(SRCDIR)/truetype)
-LinkSourceFile(type1.c,$(SRCDIR)/type1)
-LinkSourceFile(type1cid.c,$(SRCDIR)/cid)
-LinkSourceFile(raster.c,$(SRCDIR)/raster)
-LinkSourceFile(smooth.c,$(SRCDIR)/smooth)
-LinkSourceFile(winfnt.c,$(SRCDIR)/winfonts)
 
 DependTarget()
-
