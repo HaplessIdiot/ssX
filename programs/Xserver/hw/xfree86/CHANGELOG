@@ -1,4 +1,8 @@
 XFree86 4.0.99.x (xx April 2001)
+ 456. Xterm patch #156 (Thomas Dickey):  change preference of types for
+      selection-target between UTF8_STRING and STRING (Juliusz Chroboczek),
+      fixes for configure script and documentation (report by Adam
+      <adam@cfar.umd.edu>).
  455. Fix XDarwin so display number preference is followed (Torrey Lyons).
  454. Fix Xserver/Imakefile for Cygwin/XFree86 (Harold Hunt, Alan Hourihane).
 
@@ -13109,4 +13113,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1727 2001/04/27 22:39:27 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1728 2001/04/28 20:42:17 torrey Exp $
