@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.44 2002/11/23 08:26:49 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.45 2002/11/23 21:41:51 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -61,6 +61,7 @@ typedef struct _LispMac LispMac;
 #define APPLY(fun, args)	LispFuncall(fun, args, 0)
 #define APPLY1(fun, arg)	LispApply1(fun, arg)
 #define APPLY2(fun, arg1, arg2)	LispApply2(fun, arg1, arg2)
+#define APPLY3(f, a1, a2, a3)	LispApply3(f, a1, a2, a3)
 #define EXECUTE(string)		LispExecute(string)
 #define SYMBOL(atom)		LispNewSymbol(atom)
 #define ATOM(string)		LispNewAtom(string, 1)
@@ -675,6 +676,7 @@ LispObj *LispEval(LispObj*);
 LispObj *LispFuncall(LispObj*, LispObj*, int);
 LispObj *LispApply1(LispObj*, LispObj*);
 LispObj *LispApply2(LispObj*, LispObj*, LispObj*);
+LispObj *LispApply3(LispObj*, LispObj*, LispObj*, LispObj*);
 
 LispObj *LispNew(LispObj*, LispObj*);
 LispObj *LispNewSymbol(LispAtom*);

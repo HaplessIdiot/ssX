@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/package.h,v 1.5 2002/11/23 08:26:49 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/package.h,v 1.6 2002/11/23 21:41:52 paulo Exp $ */
 
 #ifndef Lisp_package_h
 #define Lisp_package_h
@@ -45,6 +45,7 @@ LispObj *Lisp_DoExternalSymbols(LispBuiltin*);
 LispObj *Lisp_DoSymbols(LispBuiltin*);
 LispObj *Lisp_FindAllSymbols(LispBuiltin*);
 LispObj *Lisp_FindPackage(LispBuiltin*);
+LispObj *Lisp_FindSymbol(LispBuiltin*);
 LispObj *Lisp_Export(LispBuiltin*);
 LispObj *Lisp_Import(LispBuiltin*);
 LispObj *Lisp_InPackage(LispBuiltin*);

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/compile.c,v 1.8 2002/11/23 08:26:48 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/compile.c,v 1.9 2002/11/23 21:41:51 paulo Exp $ */
 
 #define VARIABLE_USED		0x0001
 #define VARIABLE_ARGUMENT	0x0002
@@ -1473,7 +1473,8 @@ optional_label:
 
 	    com->lex = base;
 	    lisp__data.env.head = lisp__data.env.length;
-	    ComPush(com, symbols[i], defaults[i], eval, 0, compile);
+	    /* default arguments are evaluated for macros */
+	    ComPush(com, symbols[i], defaults[i], 1, 0, compile);
 	    if (!com->macro)
 		COM_VARIABLE_ARGUMENT(symbols[i]->data.atom);
 	    lisp__data.env.head = head;
@@ -1589,7 +1590,8 @@ key_label:
 		    ComPush(com, sforms[i], T, 0, builtin, compile);
 	    }
 	    else {
-		if (eval && !builtin) {
+		/* default arguments are evaluated for macros */
+		if (!builtin) {
 		    int lex = com->lex;
 		    int head = lisp__data.env.head;
 

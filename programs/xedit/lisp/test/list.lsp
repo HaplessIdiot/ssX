@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/test/list.lsp,v 1.3 2002/11/23 21:41:53 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/test/list.lsp,v 1.4 2002/11/25 02:35:32 paulo Exp $
 ;;
 
 ;; basic lisp function tests
@@ -51,7 +51,6 @@
    interned symbol is always returned.
 |#
 
-
 (defun compare-test (test expect function arguments
 		     &aux result (error t) unused error-value)
     (multiple-value-setq
@@ -62,9 +61,9 @@
 	)
     )
     (if error
-	(format t "ERROR: (~A~{ ~S~}) => ~S~%" function arguments error-value)
+	(format t "ERROR: (~S~{ ~S~}) => ~S~%" function arguments error-value)
 	(or (funcall test result expect)
-	    (format t "(~A~{ ~S~}) => should be ~S not ~S~%"
+	    (format t "(~S~{ ~S~}) => should be ~S not ~S~%"
 		function arguments expect result
 	    )
 	)
@@ -96,7 +95,7 @@
 	(setq error nil)
     )
     (or error
-	(format t "ERROR: no error for (~A~{ ~S~}), result was ~S~%"
+	(format t "ERROR: no error for (~S~{ ~S~}), result was ~S~%"
 	    function arguments result)
     )
 )
@@ -135,6 +134,12 @@
 
 (defun equalp-eval (expect form)
     (compare-eval #'equalp expect form))
+
+;; clisp treats strings loaded from a file as constants
+(defun xseq (sequence)
+    #+clisp (if *load-pathname* (copy-seq sequence) sequence)
+    #-clisp sequence
+)
 
 ;; apply				- function
 (equal-test '((+ 2 3) . 4) #'apply 'cons '((+ 2 3) 4))
@@ -367,6 +372,12 @@
 (eql-eval t '(let ((a 1)) (case a ((3 2) nil) (1 t) (t :error))))
 (error-eval '(let ((a 1)) (case a (2 :error) (t nil) (otherwise t))))
 (error-eval '(let ((a 1)) (case a (2 :error) (otherwise t) (t nil))))
+
+;; catch				- special operator
+(eql-eval 3 '(catch 'dummy-tag 1 2 (throw 'dummy-tag 3) 4))
+(eql-eval 4 '(catch 'dummy-tag 1 2 3 4))
+(eq-eval 'throw-back '(defun throw-back (tag) (throw tag t)))
+(eq-eval t '(catch 'dummy-tag (throw-back 'dummy-tag) 2))
 
 ;; char					- function
 (eql-test #\a #'char "abc" 0)
@@ -688,15 +699,54 @@
 (equal-test '((4 4 4 4) (4 4 4 4) (4 4 4 4) (4 4 4 4)) #'fill x '(4 4 4 4))
 (eq-eval t '(eq (car x) (cadr x)))
 (equalp-test '#(a z z d e) #'fill '#(a b c d e) 'z :start 1 :end 3)
-(equal-test "012ee" #'fill "01234" #\e :start 3)
+(equal-test "012ee" #'fill (xseq "01234") #\e :start 3)
 (error-test #'fill 1 #\a)
 
-;; find
+;; find					- function
 (eql-test #\Space #'find #\d "here are some letters that can be looked at" :test #'char>)
 (eql-test 3 #'find-if #'oddp '(1 2 3 4 5) :end 3 :from-end t)
 (eq-test nil #'find-if-not #'complexp '#(3.5 2 #C(1.0 0.0) #C(0.0 1.0)) :start 2)
 (eq-test nil #'find 1 "abc")
 (error-test #'find 1 #c(1 2))
+
+;; find-symbol				- function
+(equal-eval '(nil nil)
+    '(multiple-value-list (find-symbol "NEVER-BEFORE-USED")))
+(equal-eval '(nil nil)
+    '(multiple-value-list (find-symbol "NEVER-BEFORE-USED")))
+(setq test (multiple-value-list (intern "NEVER-BEFORE-USED")))
+(equal-eval test '(read-from-string "(never-before-used nil)"))
+(equal-eval '(never-before-used :internal)
+    '(multiple-value-list (intern "NEVER-BEFORE-USED")))
+(equal-eval '(never-before-used :internal)
+    '(multiple-value-list (find-symbol "NEVER-BEFORE-USED")))
+(equal-eval '(nil nil)
+    '(multiple-value-list (find-symbol "never-before-used")))
+(equal-eval '(car :inherited)
+    '(multiple-value-list (find-symbol "CAR" 'common-lisp-user)))
+(equal-eval '(car :external)
+   '(multiple-value-list  (find-symbol "CAR" 'common-lisp)))
+;; XXX these will generate wrong results, NIL is not really a symbol
+;; currently in the interpreter
+(equal-eval '(nil :inherited)
+    '(multiple-value-list (find-symbol "NIL" 'common-lisp-user)))
+(equal-eval '(nil :external)
+    '(multiple-value-list (find-symbol "NIL" 'common-lisp)))
+(setq test (multiple-value-list
+     (find-symbol "NIL" (prog1 (make-package "JUST-TESTING" :use '())
+			       (intern "NIL" "JUST-TESTING")))))
+(equal-eval (read-from-string "(just-testing::nil :internal)") 'test)
+(eq-eval t '(export 'just-testing::nil 'just-testing))
+(equal-eval '(just-testing:nil :external)
+    '(multiple-value-list (find-symbol "NIL" 'just-testing)))
+
+#+xedit (equal-eval '(nil nil)
+	'(multiple-value-list (find-symbol "NIL" "KEYWORD")))
+#|
+;; optional result of previous form:
+(equal-eval '(:nil :external)
+    '(multiple-value-list (find-symbol "NIL" "KEYWORD")))
+|#
 
 
 
@@ -732,6 +782,36 @@
 (eq-test nil #'eq sym1 sym2)
 (eq-test nil #'equalp (gensym) (gensym))
 
+;; get					- accessor
+(defun make-person (first-name last-name)
+  (let ((person (gensym "PERSON")))
+    (setf (get person 'first-name) first-name)
+    (setf (get person 'last-name) last-name)
+    person))
+(eq-eval '*john* '(defvar *john* (make-person "John" "Dow")))
+(eq-eval '*sally* '(defvar *sally* (make-person "Sally" "Jones")))
+(equal-eval "John" '(get *john* 'first-name))
+(equal-eval "Jones" '(get *sally* 'last-name))
+(defun marry (man woman married-name)
+  (setf (get man 'wife) woman)
+  (setf (get woman 'husband) man)
+  (setf (get man 'last-name) married-name)
+  (setf (get woman 'last-name) married-name)
+  married-name)
+(equal-eval "Dow-Jones" '(marry *john* *sally* "Dow-Jones"))
+(equal-eval "Dow-Jones" '(get *john* 'last-name))
+(equal-eval "Sally" '(get (get *john* 'wife) 'first-name))
+(equal-eval `(wife ,*sally* last-name "Dow-Jones" first-name "John")
+    '(symbol-plist *john*))
+(eq-eval 'age
+    '(defmacro age (person &optional (default ''thirty-something))
+      `(get ,person 'age ,default)))
+(eq-eval 'thirty-something '(age *john*))
+(eql-eval 20 '(age *john* 20))
+(eql-eval 25 '(setf (age *john*) 25))
+(eql-eval 25 '(age *john*))
+(eql-eval 25 '(age *john* 20))
+
 ;; graphic-char-p			- function
 (eq-test t #'graphic-char-p #\a)
 (eq-test t #'graphic-char-p #\Space)
@@ -761,7 +841,7 @@
 
 ;; intersection				- function
 (setq list1 (list 1 1 2 3 4 'a 'b 'c "A" "B" "C" "d")
-      list2 (list 1 4 5 'b 'c 'd "a" "B" "c" "D")) 
+      list2 (list 1 4 5 'b 'c 'd "a" "B" "c" "D"))
 (equal-test '(1 1 4 b c) #'intersection list1 list2)
 (equal-test '(1 1 4 b c "B") #'intersection list1 list2 :test 'equal)
 (equal-test '(1 1 4 b c "A" "B" "C" "d")
@@ -819,6 +899,18 @@
 (equal-test '(1) #'list 1)
 (equal-test '(3 4 a b 4) #'list 3 4 'a (car '(b . c)) (+ 6 -2))
 (eq-test nil #'list)
+
+;; list-length				- function
+(eql-test 4 #'list-length '(a b c d))
+(eql-test 3 #'list-length '(a (b c) d))
+(eql-test 0 #'list-length '())
+(eql-test 0 #'list-length nil)
+(defun circular-list (&rest elements)
+  (let ((cycle (copy-list elements))) 
+    (nconc cycle cycle)))
+(eq-test nil #'list-length (circular-list 'a 'b))
+(eq-test nil #'list-length (circular-list 'a))
+(eql-test 0 #'list-length (circular-list))
 
 ;; list*				- function
 (eql-test 1 #'list* 1)
@@ -880,6 +972,10 @@
 ;; This will fail
 (eq-test nil #'eq (make-symbol a) (make-symbol a))
 (equal-test a #'symbol-name (make-symbol a))
+(setq temp-string "temp")
+(setq temp-symbol (make-symbol temp-string))
+(equal-test temp-string #'symbol-name temp-symbol)
+(equal-eval '(nil nil) '(multiple-value-list (find-symbol temp-string)))
 
 ;; makunbound				- function
 (eq-eval 1 '(setf (symbol-value 'a) 1))
@@ -1158,7 +1254,7 @@
 (eq-eval 'a '(prog1 (car temp) (setf (car temp) 'alpha)))
 (equal-eval '(alpha b c) 'temp)
 (equal-eval '(1)
-    '(multiple-value-list (prog1 (values 1 2) (values 4 5)))) 
+    '(multiple-value-list (prog1 (values 1 2) (values 4 5))))
 
 ;; prog2				- macro
 (setq temp 1)
@@ -1222,16 +1318,15 @@
     #'remove-duplicates '((foo #\a) (bar #\%) (baz #\A))
      :test #'char-equal :key #'cadr)
 (equal-test '((foo #\a) (bar #\%))
-    #'remove-duplicates '((foo #\a) (bar #\%) (baz #\A)) 
+    #'remove-duplicates '((foo #\a) (bar #\%) (baz #\A))
      :test #'char-equal :key #'cadr :from-end t)
 (setq tester (list 0 1 2 3 4 5 6))
 (equal-test '(0 4 5 6) #'delete-duplicates tester :key #'oddp :start 1 :end 6)
 
 ;; replace				- function
 (equal-test "abcd456hij"
-    #'replace (copy-seq "abcdefghij") "0123456789" :start1 4 :end1 7 :start2 4) 
-(setq lst "012345678")
-;(equal-test "010123456" #'replace lst lst :start1 2 :start2 0)
+    #'replace (copy-seq "abcdefghij") "0123456789" :start1 4 :end1 7 :start2 4)
+(setq lst (xseq "012345678"))
 (equal-test "010123456" #'replace lst lst :start1 2 :start2 0)
 (equal-eval "010123456" 'lst)
 
@@ -1265,7 +1360,7 @@
 (error-eval '(funcall (block nil #'(lambda () (return-from nil)))))
 
 ;; reverse				- function
-(setq str "abc" test str)
+(setq str (xseq "abc") test str)
 (equal-test "cba" #'reverse str)
 (eq-eval test 'str)
 (equal-eval "cba" '(setq test (nreverse str)))
@@ -1292,6 +1387,8 @@
 	(mapcar #'(lambda (x) (+ x (char-code #\0)))
 	'(1 2 34 3 2 1 2 3 4 3 2 1)) :from-end t
 	:key #'(lambda (x) (if (integerp x) (code-char x) x)))
+(eql-test 0 #'search "abc" "abcd" :from-end t)
+(eql-test 3 #'search "bar" "foobar")
 
 ;; set					- function
 (eql-eval 1 '(setf (symbol-value 'n) 1))
@@ -1454,31 +1551,31 @@
 ;; string-{upcase,downcase,capitalize}	- function
 (equal-test "ABCDE" #'string-upcase "abcde")
 (equal-test "aBCDe" #'string-upcase "abcde" :start 1 :end 4)
-(equal-test "aBCDe" #'nstring-upcase "abcde" :start 1 :end 4)
+(equal-test "aBCDe" #'nstring-upcase (xseq "abcde") :start 1 :end 4)
 (equal-test "DR. LIVINGSTON, I PRESUME?"
     #'string-upcase "Dr. Livingston, I presume?")
 (equal-test "Dr. LIVINGSTON, I Presume?"
     #'string-upcase "Dr. Livingston, I presume?" :start 4 :end 19)
 (equal-test "Dr. LIVINGSTON, I Presume?"
-    #'nstring-upcase "Dr. Livingston, I presume?" :start 4 :end 19)
+    #'nstring-upcase (xseq "Dr. Livingston, I presume?") :start 4 :end 19)
 (equal-test "Dr. LiVINGston, I presume?"
     #'string-upcase "Dr. Livingston, I presume?" :start 6 :end 10)
 (equal-test "Dr. LiVINGston, I presume?"
-    #'nstring-upcase "Dr. Livingston, I presume?" :start 6 :end 10)
+    #'nstring-upcase (xseq "Dr. Livingston, I presume?") :start 6 :end 10)
 (equal-test "dr. livingston, i presume?"
     #'string-downcase "Dr. Livingston, I presume?")
 (equal-test "Dr. livingston, i Presume?"
     #'string-downcase "Dr. Livingston, I Presume?" :start 1 :end 17)
 (equal-test "Dr. livingston, i Presume?"
-    #'nstring-downcase "Dr. Livingston, I Presume?" :start 1 :end 17)
+    #'nstring-downcase (xseq "Dr. Livingston, I Presume?") :start 1 :end 17)
 (equal-test "Elm 13c Arthur;Fig Don'T"
     #'string-capitalize "elm 13c arthur;fig don't")
 (equal-test "elm 13C Arthur;Fig Don't"
     #'string-capitalize "elm 13c arthur;fig don't" :start 6 :end 21)
 (equal-test "elm 13C Arthur;Fig Don't"
-    #'nstring-capitalize "elm 13c arthur;fig don't" :start 6 :end 21)
+    #'nstring-capitalize (xseq "elm 13c arthur;fig don't") :start 6 :end 21)
 (equal-test " Hello " #'string-capitalize " hello ")
-(equal-test " Hello " #'nstring-capitalize " hello ")
+(equal-test " Hello " #'nstring-capitalize (xseq " hello "))
 (equal-test "Occluded Casements Forestall Inadvertent Defenestration"
    #'string-capitalize "occlUDeD cASEmenTs FOreSTAll iNADVertent DEFenestraTION")
 (equal-test "Don'T!" #'string-capitalize "DON'T!")
@@ -1515,3 +1612,294 @@
     #'nstring-right-trim " (*)" " ( *three (silly) words* ) ")
 (error-test #'string-trim 123 "123")
 (error-test #'string-left-trim 123 "123")
+
+;; stringp				- function (predicate)
+(eq-test t #'stringp "abc")
+(eq-test nil #'stringp #\a)
+(eq-test nil #'stringp 1)
+(eq-test nil #'stringp #(#\a #\b #\c))
+
+;; subseq				- accessor
+(setq str (xseq "012345"))
+(equal-test "2345" #'subseq str 2)
+(equal-test "34" #'subseq str 3 5)
+(equal-eval "abc" '(setf (subseq str 4) "abc"))
+(equal-eval "0123ab" 'str)
+(equal-eval "A" '(setf (subseq str 0 2) "A"))
+(equal-eval "A123ab" 'str)
+
+;; subsetp				- function
+(setq cosmos '(1 "a" (1 2)))
+(eq-test t #'subsetp '(1) cosmos)
+(eq-test nil #'subsetp '((1 2)) cosmos)
+(eq-test t #'subsetp '((1 2)) cosmos :test 'equal)
+(eq-test t #'subsetp '(1 "A") cosmos :test #'equalp)
+(eq-test nil #'subsetp '((1) (2)) '((1) (2)))
+(eq-test t #'subsetp '((1) (2)) '((1) (2)) :key #'car)
+
+;; svref				- function
+;; XXX vectors will be reimplemented, just a test for the current implementation
+(setq v (vector 1 2 'sirens))
+(eql-eval 1 '(svref v 0))
+(eql-eval 'sirens '(svref v 2))
+(eql-eval 'newcomer '(setf (svref v 1) 'newcomer))
+(equalp-eval #(1 newcomer sirens) 'v)
+
+;; symbol-name				- function
+(equal-test "TEMP" #'symbol-name 'temp)
+(equal-test "START" #'symbol-name :start)
+(error-test #'symbol-name 1)
+
+;; symbol-package			- function
+(eq-test (find-package "LISP") #'symbol-package 'car)
+(eql-test *package* #'symbol-package 'bus)
+(eq-test (find-package "KEYWORD") #'symbol-package :optional)
+;; Gensyms are uninterned, so have no home package.
+(eq-test nil #'symbol-package (gensym))
+(setq pk1 (make-package 'pk1))
+(intern "SAMPLE1" "PK1")
+(eq-eval t '(export (find-symbol "SAMPLE1" "PK1") "PK1"))
+(setq pk2 (make-package 'pk2 :use '(pk1)))
+(equal-eval '(pk1:sample1 :inherited)
+    '(multiple-value-list (find-symbol "SAMPLE1" "PK2")))
+(eq-test pk1 #'symbol-package 'pk1::sample1)
+(eq-test pk1 #'symbol-package 'pk2::sample1)
+(eq-test pk1 #'symbol-package 'pk1::sample2)
+(eq-test pk2 #'symbol-package 'pk2::sample2)
+;; The next several forms create a scenario in which a symbol
+;; is not really uninterned, but is "apparently uninterned",
+;; and so SYMBOL-PACKAGE still returns NIL.
+(setq s3 'pk1::sample3)
+(eq-eval t '(import s3 'pk2))
+(eq-eval t '(unintern s3 'pk1))		;; XXX unintern not yet implemented
+(eq-test nil #'symbol-package s3)	;; fail due to unintern not implemented
+(eq-test t #'eq s3 'pk2::sample3)
+
+;; symbol-plist				- accessor
+(setq sym (gensym))
+(eq-eval () '(symbol-plist sym))
+(eq-eval 'val1 '(setf (get sym 'prop1) 'val1))
+(equal-eval '(prop1 val1) '(symbol-plist sym))
+(eq-eval 'val2 '(setf (get sym 'prop2) 'val2))
+(equal-eval '(prop2 val2 prop1 val1) '(symbol-plist sym))
+(setq sym-plist (list 'prop3 'val3))
+(eq-eval sym-plist '(setf (symbol-plist sym) sym-plist))
+(eq-eval sym-plist '(symbol-plist sym))
+
+;; symbol-value				- accessor
+(eql-eval 1 '(setf (symbol-value 'a) 1))
+(eql-eval 1 '(symbol-value 'a))
+;; SYMBOL-VALUE cannot see lexical variables.
+(eql-eval 1 '(let ((a 2)) (symbol-value 'a)))
+(eql-eval 1 '(let ((a 2)) (setq a 3) (symbol-value 'a)))
+
+#+xedit	;; incorrect...
+(progn
+    ;; SYMBOL-VALUE can see dynamic variables.
+	    ;; declare not yet implemented
+	    (proclaim '(special a))
+    (eql-eval 2 '(let ((a 2)) (symbol-value 'a)))
+    (eql-eval 1 'a)
+    (eql-eval 3 '(let ((a 2)) (setq a 3) (symbol-value 'a)))
+    (eql-eval 1 'a)
+	    ;; declare not yet implement
+	    (makunbound 'a)
+    (eql-eval 2 '(let ((a 2)) (setf (symbol-value 'a) 3) a))
+    (eql-eval 3 'a)
+    (eql-eval 3 '(symbol-value 'a))
+	    ;; declare not yet implement
+	    (makunbound 'a)
+    (equal-eval '(5 4)
+	'(multiple-value-list
+	    (let ((a 4))
+
+			;; declare not yet implemented
+			(defparameter a 3)
+
+	      (let ((b (symbol-value 'a)))
+		(setf (symbol-value 'a) 5)
+		(values a b)))))
+    (eql-eval 3 'a)
+)
+(eq-eval :any-keyword '(symbol-value :any-keyword))
+;; XXX these will fail
+(eq-eval nil '(symbol-value 'nil))
+(eq-eval nil '(symbol-value '()))
+
+;; symbolp				- function (predicate)
+(eq-test t #'symbolp 'elephant)
+(eq-test nil #'symbolp 12)
+;; XXX these will fail
+(eq-test t #'symbolp nil)
+(eq-test t #'symbolp '())
+(eq-test t #'symbolp :test)
+(eq-test nil #'symbolp "hello")
+
+;; remprop				- function
+(setq test (make-symbol "PSEUDO-PI"))
+(eq-eval () '(symbol-plist test))
+(eq-eval t '(setf (get test 'constant) t))
+(eql-eval 3.14 '(setf (get test 'approximation) 3.14))
+(eql-eval 'noticeable '(setf (get test 'error-range) 'noticeable))
+(equal-eval '(error-range noticeable approximation 3.14 constant t)
+    '(symbol-plist test))
+(eq-eval nil '(setf (get test 'approximation) nil))
+(equal-eval '(error-range noticeable approximation nil constant t)
+    '(symbol-plist test))
+(eq-eval nil (get test 'approximation))
+(eq-test t #'remprop test 'approximation)
+(eq-eval nil '(get test 'approximation))
+(equal-eval '(error-range noticeable constant t) '(symbol-plist test))
+(eq-test nil #'remprop test 'approximation)
+(equal-eval '(error-range noticeable constant t) '(symbol-plist test))
+(eq-test t #'remprop test 'error-range)
+(eql-eval 3 '(setf (get test 'approximation) 3))
+(equal-eval '(approximation 3 constant t) '(symbol-plist test))
+
+;; throw				- special operator
+(equal-eval '(3 9)
+    '(multiple-value-list
+	(catch 'result
+	    (setq i 0 j 0)
+	    (loop (incf j 3) (incf i)
+		  (if (= i 3) (throw 'result (values i j)))))))
+(eql-eval 2 '(catch nil (unwind-protect (throw nil 1) (throw nil 2))))
+
+;; XXX undefined consequences
+(eql-eval 2
+   '(catch 'a
+      (catch 'b
+	(unwind-protect (throw 'a 1)
+	  (throw 'b 2)))))
+(eq-eval :outer-catch
+   '(catch 'foo
+	(setq string (format nil "The inner catch returns ~s."
+	    (catch 'foo
+		(unwind-protect (throw 'foo :first-throw)
+		    (throw 'foo :second-throw)))))
+         :outer-catch))
+(equal-eval "The inner catch returns :SECOND-THROW." 'string)
+
+;; tree-equal				- function
+(setq tree1 '(1 (1 2))
+      tree2 '(1 (1 2)))
+(eq-test t #'tree-equal tree1 tree2)
+(eq-test nil #'eql tree1 tree2)
+(setq tree1 '('a ('b 'c))
+      tree2 '('a ('b 'c)))
+(eq-test t #'tree-equal tree1 tree2 :test 'eq)
+(eq-test t #'tree-equal 1 1)
+(eq-test nil #'tree-equal (list 1 2) (cons 1 2))
+(eq-test nil #'tree-equal 1 2)
+
+;; union				- function
+(equal-test '(b c f a d) #'union '(a b c) '(f a d))
+(equal-test '((y 6) (z 2) (x 4))
+    #'union '((x 5) (y 6)) '((z 2) (x 4)) :key #'car)
+(setq lst1 (list 1 2 '(1 2) "a" "b")
+      lst2 (list 2 3 '(2 3) "B" "C"))
+(equal-test '(1 (1 2) "a" "b" 2 3 (2 3) "B" "C") #'nunion lst1 lst2)
+
+;; unless				- macro
+(eq-eval 'hello '(when t 'hello))
+(eq-eval nil '(unless t 'hello))
+(eq-eval nil (when nil 'hello))
+(eq-eval 'hello '(unless nil 'hello))
+(eq-eval nil (when t))
+(eql-eval nil '(unless nil))
+(setq test nil)
+(equal-eval '(3 2 1) '(when t (push 1 test) (push 2 test) (push 3 test)))
+(equal-eval '(3 2 1) 'test)
+(setq test nil)
+(eq-eval nil '(unless t (push 1 test) (push 2 test) (push 3 test)))
+(eq-eval nil 'test)
+(eq-eval nil '(when nil (push 1 test) (push 2 test) (push 3 test)))
+(eq-eval nil 'test)
+(equal-eval '(3 2 1) '(unless nil (push 1 test) (push 2 test) (push 3 test)))
+(equal-eval '(3 2 1) 'test)
+(equal-eval '((4) nil (5) nil 6 (6) 7 (7))
+   '(let ((x 3))
+      (list (when (oddp x) (incf x) (list x))
+	    (when (oddp x) (incf x) (list x))
+	    (unless (oddp x) (incf x) (list x))
+	    (unless (oddp x) (incf x) (list x))
+	    (if (oddp x) (incf x) (list x))
+	    (if (oddp x) (incf x) (list x))
+	    (if (not (oddp x)) (incf x) (list x))
+	    (if (not (oddp x)) (incf x) (list x)))))
+
+;; unwind-protect			- special operator
+(defun dummy-function (x)
+   (setq state 'running)
+   (unless (numberp x) (throw 'abort 'not-a-number))
+   (setq state (1+ x)))
+(eql-eval 2 '(catch 'abort (dummy-function 1)))
+(eql-eval 2 'state)
+(eq-eval 'not-a-number '(catch 'abort (dummy-function 'trash)))
+(eq-eval 'running 'state)
+(eq-eval 'not-a-number
+    '(catch 'abort (unwind-protect (dummy-function 'trash)
+		   (setq state 'aborted))))
+(eq-eval 'aborted 'state)
+(eql-eval 2 '(block nil (unwind-protect (return 1) (return 2))))
+;; XXX undefined consequences
+(eql-eval 2
+   '(block a
+	(block b
+	    (unwind-protect (return-from a 1)
+			    (return-from b 2)))))
+(eql-eval 2 '(catch nil (unwind-protect (throw nil 1) (throw nil 2))))
+;; XXX undefined consequences
+(eql-eval 2
+   '(catch 'a (catch 'b (unwind-protect (throw 'a 1) (throw 'b 2)))))
+(eq-eval ':outer-catch
+   '(catch 'foo
+	(setq string
+	    (format nil "The inner catch returns ~s."
+		(catch 'foo
+		    (unwind-protect (throw 'foo :first-throw)
+		    (throw 'foo :second-throw)))))
+         :outer-catch))
+(equal-eval "The inner catch returns :SECOND-THROW." 'string)
+(eql-eval 10
+   '(catch 'a
+	(catch 'b
+	    (unwind-protect (1+ (catch 'a (throw 'b 1)))
+		(throw 'a 10)))))
+;; XXX undefined consequences
+(eql-eval 4
+   '(catch 'foo
+       (catch 'bar
+	   (unwind-protect (throw 'foo 3)
+	     (throw 'bar 4)
+	     (print 'xxx)))))
+(eql-eval 4
+   '(catch 'bar
+       (catch 'foo
+	   (unwind-protect (throw 'foo 3)
+	     (throw 'bar 4)
+	     (print 'xxx)))))
+(eql-eval 5
+   '(block nil
+       (let ((x 5))
+	 (unwind-protect (return)
+	   (return x)))))
+
+;; upper-case-p				- function
+(eq-test t #'upper-case-p #\A)
+(eq-test nil #'upper-case-p #\a)
+(eq-test nil #'upper-case-p #\5)
+(error-test #'upper-case-p 1)
+
+;; values				- accessor
+(eq-eval () '(multiple-value-list (values)))
+(equal-eval '(1) '(multiple-value-list (values 1)))
+(equal-eval '(1 2) '(multiple-value-list (values 1 2)))
+(equal-eval '(1 2 3) '(multiple-value-list (values 1 2 3)))
+(equal-eval '(1 4 5) '(multiple-value-list (values (values 1 2 3) 4 5)))
+
+;; values-list				- function
+(eq-eval nil '(multiple-value-list (values-list nil)))
+(equal-eval '(1) '(multiple-value-list (values-list '(1))))
+(equal-eval '(1 2) '(multiple-value-list (values-list '(1 2))))
+(equal-eval '(1 2 3) '(multiple-value-list (values-list '(1 2 3))))

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.77 2002/11/25 02:35:30 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.78 2002/11/25 12:42:24 tsi Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -102,6 +102,7 @@ static LispObj *LispRunFunMac(LispObj*, LispObj*, int, int);
 
 /* expands and executes a setf method, to be called only by Lisp_Setf */
 LispObj *LispRunSetf(LispArgList*, LispObj*, LispObj*, LispObj*);
+LispObj *LispRunSetfMacro(LispAtom*, LispObj*, LispObj*);
 
 /* increases storage size for environment */
 void LispMoreEnvironment(void);
@@ -146,7 +147,7 @@ static void LispDecrementAtomReference(LispAtom*);
 	/* Removes all atom properties */
 static void LispRemAtomAllProperties(LispAtom*);
 
-static LispObj *LispDoGetAtomProperty(LispAtom*, LispObj*, int);
+static LispObj *LispAtomPropertyFunction(LispAtom*, LispObj*, int);
 
 static INLINE void LispCheckMemLevel(void);
 
@@ -235,7 +236,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Car, "car list", 0, 0, Com_C_r},
     {LispFunction, Lisp_Car, "first list", 0, 0, Com_C_r},
     {LispMacro, Lisp_Case, "case keyform &rest body"},
-    {LispMacro, Lisp_Catch, "catch tag &rest body"},
+    {LispMacro, Lisp_Catch, "catch tag &rest body", 1},
     {LispFunction, Lisp_Cdr, "cdr list", 0, 0, Com_C_r},
     {LispFunction, Lisp_Cdr, "rest list", 0, 0, Com_C_r},
     {LispFunction, Lisp_Ceiling, "ceiling number &optional divisor", 1},
@@ -351,6 +352,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_FileNamestring, "file-namestring pathname"},
     {LispFunction, Lisp_Fill, "fill sequence item &key start end"},
     {LispFunction, Lisp_FindAllSymbols, "find-all-symbols string-or-symbol"},
+    {LispFunction, Lisp_FindSymbol, "find-symbol string &optional package", 1},
     {LispFunction, Lisp_FindPackage, "find-package name"},
     {LispFunction, Lisp_Float, "float number &optional other"},
     {LispFunction, Lisp_Floatp, "floatp object"},
@@ -397,6 +399,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_ListP, "list* object &rest more-objects"},
     {LispFunction, Lisp_ListAllPackages, "list-all-packages"},
     {LispFunction, Lisp_List, "list &rest args"},
+    {LispFunction, Lisp_ListLength, "list-length list"},
     {LispFunction, Lisp_Listp, "listp object", 0, 0, Com_Listp},
     {LispFunction, Lisp_Listen, "listen &optional input-stream"},
     {LispFunction, Lisp_Load, "load filename &key verbose print if-does-not-exist"},
@@ -413,11 +416,11 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_MakePackage, "make-package package-name &key nicknames use"},
     {LispFunction, Lisp_MakePathname, "make-pathname &key host device directory name type version defaults"},
     {LispFunction, Lisp_MakeString, "make-string size &key initial-element element-type"},
+    {LispFunction, Lisp_MakeSymbol, "make-symbol name"},
     {LispFunction, Lisp_MakeStringInputStream, "make-string-input-stream string &optional start end"},
     {LispFunction, Lisp_MakeStringOutputStream, "make-string-output-stream &key element-type"},
     {LispFunction, Lisp_GetOutputStreamString, "get-output-stream-string string-output-stream"},
     {LispFunction, Lisp_Makunbound, "makunbound symbol"},
-    {LispFunction, Lisp_MakeSymbol, "make-symbol string"},
     {LispFunction, Lisp_Mapc, "mapc function list &rest more-lists"},
     {LispFunction, Lisp_Mapcar, "mapcar function list &rest more-lists"},
     {LispFunction, Lisp_Mapcan, "mapcan function list &rest more-lists"},
@@ -504,6 +507,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_RemoveDuplicates, "remove-duplicates sequence &key from-end test test-not start end key"},
     {LispFunction, Lisp_RemoveIf, "remove-if predicate sequence &key from-end start end count key"},
     {LispFunction, Lisp_RemoveIfNot, "remove-if-not predicate sequence &key from-end start end count key"},
+    {LispFunction, Lisp_Remprop, "remprop symbol indicator"},
     {LispMacro, Lisp_Return, "return &optional result", 1, 0, Com_Return},
     {LispMacro, Lisp_ReturnFrom, "return-from name &optional result", 1, 0, Com_ReturnFrom},
     {LispFunction, Lisp_Reverse, "reverse sequence"},
@@ -565,9 +569,10 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Terpri, "terpri &optional output-stream"},
     {LispFunction, Lisp_Typep, "typep object type"},
     {LispMacro, Lisp_The, "the value-type form"},
-    {LispMacro, Lisp_Throw, "throw tag result"},
+    {LispMacro, Lisp_Throw, "throw tag result", 1},
     {LispMacro, Lisp_Time, "time form"},
     {LispFunction, Lisp_Truename, "truename pathname"},
+    {LispFunction, Lisp_TreeEqual, "tree-equal tree-1 tree-2 &key test test-not"},
     {LispFunction, Lisp_Truncate, "truncate number &optional divisor", 1},
     {LispFunction, Lisp_Ftruncate, "ftruncate number &optional divisor", 1},
     {LispFunction, Lisp_Unexport, "unexport symbols &optional package"},
@@ -590,6 +595,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_XeditMakeStruct, "lisp::make-struct atom &rest init", 0, 1},
     {LispFunction, Lisp_XeditPut, " lisp::put symbol indicator value", 0, 1},
     {LispFunction, Lisp_XeditPuthash, "lisp::puthash key hash-table value", 0, 1},
+    {LispFunction, Lisp_XeditSetSymbolPlist, "lisp::set-symbol-plist symbol list", 0, 1},
     {LispFunction, Lisp_XeditStructAccess, "lisp::struct-access atom struct", 0, 1},
     {LispFunction, Lisp_XeditStructType, "lisp::struct-type atom struct", 0, 1},
     {LispFunction, Lisp_XeditStructStore, "lisp::struct-store atom struct value", 0, 1},
@@ -1638,51 +1644,101 @@ LispGetPermAtom(char *str)
     return (LispDoGetAtom(str, 1));
 }
 
+#define GET_PROPERTY	0
+#define ADD_PROPERTY	1
+#define REM_PROPERTY	2
 static LispObj *
-LispDoGetAtomProperty(LispAtom *atom, LispObj *key, int add)
+LispAtomPropertyFunction(LispAtom *atom, LispObj *key, int function)
 {
-    LispObj *obj = NIL, *res = NIL;
+    LispObj *list = NIL, *result = NIL;
 
-    if (add && atom->property->properties == NULL) {
-	atom->a_property = 1;
-	atom->property->properties = NIL;
+    if (function == ADD_PROPERTY) {
+	if (atom->property == NOPROPERTY)
+	    LispAllocAtomProperty(atom);
+	if (atom->property->properties == NULL) {
+	    atom->a_property = 1;
+	    atom->property->properties = NIL;
+	}
     }
 
     if (atom->a_property) {
-	for (obj = atom->property->properties; obj != NIL; obj = CDR(CDR(obj))) {
-	    if (XEQL(key, CAR(obj)) == T) {
-		res = CDR(obj);
+	LispObj *base;
+
+	for (base = list = atom->property->properties;
+	     CONSP(list);
+	     list = CDR(list)) {
+	    if (key == CAR(list)) {
+		result = CDR(list);
 		break;
 	    }
+	    base = list;
+	    list = CDR(list);
+	    if (!CONSP(list))
+		LispDestroy("%s: %s has an odd property list length",
+			    STROBJ(atom->object),
+			    function == REM_PROPERTY ? "REMPROP" : "GET");
+	}
+	if (CONSP(list) && function == REM_PROPERTY) {
+	    if (!CONSP(CDR(list)))
+		LispDestroy("REMPROP: %s has an odd property list length",
+			    STROBJ(atom->object));
+	    if (base == list)
+		atom->property->properties = CDDR(list);
+	    else
+		RPLACD(CDR(base), CDDR(list));
 	}
     }
 
-    if (obj == NIL) {
-	if (add) {
+    if (!CONSP(list)) {
+	if (function == ADD_PROPERTY) {
 	    atom->property->properties =
 		CONS(key, CONS(NIL, atom->property->properties));
-	    res = CDR(atom->property->properties);
+	    result = CDR(atom->property->properties);
 	}
     }
+    else if (function == REM_PROPERTY)
+	result = T;
 
-    return (res);
+    return (result);
 }
 
 LispObj *
 LispGetAtomProperty(LispAtom *atom, LispObj *key)
 {
-    return (LispDoGetAtomProperty(atom, key, 0));
+    return (LispAtomPropertyFunction(atom, key, GET_PROPERTY));
 }
 
 LispObj *
-LispPutAtomProperty(LispAtom *atom, LispObj *key, LispObj *val)
+LispPutAtomProperty(LispAtom *atom, LispObj *key, LispObj *value)
 {
-    LispObj *res = LispDoGetAtomProperty(atom, key, 1);
+    LispObj *result = LispAtomPropertyFunction(atom, key, ADD_PROPERTY);
 
-    RPLACA(res, val);
+    RPLACA(result, value);
 
-    return (res);
+    return (result);
 }
+
+LispObj *
+LispRemAtomProperty(LispAtom *atom, LispObj *key)
+{
+    return (LispAtomPropertyFunction(atom, key, REM_PROPERTY));
+}
+
+LispObj *
+LispReplaceAtomPropertyList(LispAtom *atom, LispObj *list)
+{
+    if (atom->property == NOPROPERTY)
+	LispAllocAtomProperty(atom);
+    if (atom->property->properties == NULL)
+	atom->a_property = 1;
+    atom->property->properties = list;
+
+    return (list);
+}
+#undef GET_PROPERTY
+#undef ADD_PROPERTY
+#undef REM_PROPERTY
+
 
 /* Used to make sure that when defining a function like:
  *	(defun my-function (... &key key1 key2 key3 ...)
@@ -4234,24 +4290,6 @@ optional_label:
 		    NORMAL_ARGUMENT(sforms[i], T);
 		}
 	    }
-	    for (; i < count; i++) {
-		if (!CONSTANTP(defaults[i])) {
-		    int head = lisp__data.env.head;
-		    int lex = lisp__data.env.lex;
-
-		    lisp__data.env.lex = base;
-		    lisp__data.env.head = lisp__data.env.length;
-		    NORMAL_ARGUMENT(symbols[i], EVAL(defaults[i]));
-		    lisp__data.env.head = head;
-		    lisp__data.env.lex = lex;
-		}
-		else {
-		    NORMAL_ARGUMENT(symbols[i], defaults[i]);
-		}
-		if (sforms[i]) {
-		    NORMAL_ARGUMENT(sforms[i], NIL);
-		}
-	    }
 	}
 	else {
 	    for (; i < count && CONSP(values); i++, values = CDR(values)) {
@@ -4260,11 +4298,25 @@ optional_label:
 		    NORMAL_ARGUMENT(sforms[i], T);
 		}
 	    }
-	    for (; i < count; i++) {
+	}
+
+	/* default arguments are evaluated for macros */
+	for (; i < count; i++) {
+	    if (!CONSTANTP(defaults[i])) {
+		int head = lisp__data.env.head;
+		int lex = lisp__data.env.lex;
+
+		lisp__data.env.lex = base;
+		lisp__data.env.head = lisp__data.env.length;
+		NORMAL_ARGUMENT(symbols[i], EVAL(defaults[i]));
+		lisp__data.env.head = head;
+		lisp__data.env.lex = lex;
+	    }
+	    else {
 		NORMAL_ARGUMENT(symbols[i], defaults[i]);
-		if (sforms[i]) {
-		    NORMAL_ARGUMENT(sforms[i], NIL);
-		}
+	    }
+	    if (sforms[i]) {
+		NORMAL_ARGUMENT(sforms[i], NIL);
 	    }
 	}
     }
@@ -4454,7 +4506,8 @@ keyword_duplicated_label:;
 		    if (j < offset) {
 			/* Argument not specified. Use default value */
 
-			if (eval && !CONSTANTP(defaults[i])) {
+			/* default arguments are evaluated for macros */
+			if (!CONSTANTP(defaults[i])) {
 			    int head = lisp__data.env.head;
 			    int lex = lisp__data.env.lex;
 
@@ -4779,6 +4832,22 @@ LispApply2(LispObj *function, LispObj *argument1, LispObj *argument2)
     return (LispFuncall(function, &arguments, 0));
 }
 
+LispObj *
+LispApply3(LispObj *function, LispObj *arg1, LispObj *arg2, LispObj *arg3)
+{
+    LispObj arguments, car, cdr;
+
+    arguments.type = car.type = cdr.type = LispCons_t;
+    arguments.data.cons.car = arg1;
+    arguments.data.cons.cdr = &car;
+    car.data.cons.car = arg2;
+    car.data.cons.cdr = &cdr;
+    cdr.data.cons.car = arg3;
+    cdr.data.cons.cdr = NIL;
+
+    return (LispFuncall(function, &arguments, 0));
+}
+
 static LispObj *
 LispRunFunMac(LispObj *name, LispObj *code, int macro, int base)
 {
@@ -4835,7 +4904,7 @@ LispRunSetf(LispArgList *alist, LispObj *setf, LispObj *place, LispObj *value)
     quote.data.quote = value;
     LispDoAddVar(CAR(store), &quote);
     ++lisp__data.env.head;
-    base = LispMakeEnvironment(alist, CDR(place), Oexpand_setf_method, 0, 0);
+    base = LispMakeEnvironment(alist, place, Oexpand_setf_method, 0, 0);
 
     /* build expansion macro */
     expression = NIL;
@@ -4848,6 +4917,40 @@ LispRunSetf(LispArgList *alist, LispObj *setf, LispObj *place, LispObj *value)
     /* protect expansion, and executes it */
     GC_PROTECT(expression);
     result = EVAL(expression);
+    GC_LEAVE();
+
+    return (result);
+}
+
+LispObj *
+LispRunSetfMacro(LispAtom *atom, LispObj *arguments, LispObj *value)
+{
+    int base;
+    GC_ENTER();
+    LispObj *place, *body, *result, quote;
+
+    place = NIL;
+    base = LispMakeEnvironment(atom->property->alist,
+			       arguments, atom->object, 0, 0);
+    body = atom->property->fun.function->data.lambda.code;
+
+    /* expand macro body */
+    for (; CONSP(body); body = CDR(body))
+	place = EVAL(CAR(body));
+
+    /* protect expansion */
+    GC_PROTECT(place);
+
+    /* restore environment */
+    lisp__data.env.head = lisp__data.env.length = base;
+
+    /* value is already evaluated */
+    quote.type = LispQuote_t;
+    quote.data.quote = value;
+
+    /* call setf again */
+    result = APPLY2(Osetf, place, &quote);
+
     GC_LEAVE();
 
     return (result);
@@ -5115,7 +5218,8 @@ LispBegin(void)
 
     /* Initialize package system, the current package is LISP. Order of
      * initialization is very important here */
-    lisp__data.lisp = LispNewPackage(STRING("LISP"), NIL);
+    lisp__data.lisp = LispNewPackage(STRING("LISP"),
+				     CONS(STRING("COMMON-LISP"), NIL));
 
     /* Make LISP package the current one */
     lisp__data.pack = lisp__data.savepack =
@@ -5340,7 +5444,10 @@ LispBegin(void)
 	LispAddBuiltinFunction(&extbuiltins[i]);
 
     /* Create and make USER the current package */
-    PACKAGE = LispNewPackage(STRING("USER"), NIL);
+    GCDisable();
+    PACKAGE = LispNewPackage(STRING("USER"),
+			     CONS(STRING("COMMON-LISP-USER"), NIL));
+    GCEnable();
     lisp__data.pack = lisp__data.savepack = PACKAGE->data.package.package;
 
     /* Update list of packages */

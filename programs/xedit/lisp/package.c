@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/package.c,v 1.17 2002/11/23 08:26:49 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/package.c,v 1.18 2002/11/23 21:41:52 paulo Exp $ */
 
 #include "package.h"
 #include "private.h"
@@ -38,6 +38,7 @@
 static int LispDoSymbol(LispObj*, LispAtom*, int, int);
 static LispObj *LispReallyDoSymbols(LispBuiltin*, int, int);
 static LispObj *LispDoSymbols(LispBuiltin*, int, int);
+static LispObj *LispFindSymbol(LispBuiltin*, int);
 static LispObj *LispFindPackageOrDie(LispBuiltin*, LispObj*);
 static void LispDoExport(LispBuiltin*, LispObj*, LispObj*, int);
 static void LispDoImport(LispBuiltin*, LispObj*);
@@ -305,6 +306,102 @@ LispDoSymbols(LispBuiltin *builtin, int only_externs, int all_symbols)
 }
 
 LispObj *
+LispFindSymbol(LispBuiltin *builtin, int intern)
+{
+    int i;
+    char *ptr;
+    LispAtom *atom;
+    LispObj *symbol;
+    LispPackage *pack;
+
+    LispObj *string, *package;
+
+    package = ARGUMENT(1);
+    string = ARGUMENT(0);
+
+    CHECK_STRING(string);
+    if (package != UNSPEC)
+	package = LispFindPackageOrDie(builtin, package);
+    else
+	package = PACKAGE;
+
+    /* If got here, package is a LispPackage_t */
+    pack = package->data.package.package;
+
+    /* Search symbol in specified package */
+    ptr = THESTR(string);
+
+    RETURN_COUNT = 1;
+
+    symbol = NULL;
+    /* Fix for current behaviour where NIL and T aren't symbols... */
+    if (STRLEN(string) == 3 && memcmp(ptr, "NIL", 3) == 0)
+	symbol = NIL;
+    else if (STRLEN(string) == 1 && ptr[0] == 'T')
+	symbol = T;
+    if (symbol) {
+	RETURN(0) = NIL;
+	return (symbol);
+    }
+
+    for (i = 0; i < STRTBLSZ && symbol == NULL; i++) {
+	atom = pack->atoms[i];
+	while (atom) {
+	    if (strcmp(atom->string, ptr) == 0) {
+		symbol = atom->object;
+		break;
+	    }
+	    atom = atom->next;
+	}
+    }
+
+    if (symbol == NULL || symbol->data.atom->package == NULL) {
+	RETURN(0) = NIL;
+	if (intern) {
+	    /* symbol does not exist in the specified package, create a new
+	     * internal symbol */
+
+	    if (package == PACKAGE)
+		symbol = ATOM(ptr);
+	    else {
+		LispPackage *savepack;
+		LispObj *savepackage;
+
+		/* Save package environment */
+		savepackage = PACKAGE;
+		savepack = lisp__data.pack;
+
+		/* Change package environment */
+		PACKAGE = package;
+		lisp__data.pack = package->data.package.package;
+
+		symbol = ATOM(ptr);
+
+		/* Restore package environment */
+		PACKAGE = savepackage;
+		lisp__data.pack = savepack;
+	    }
+
+	    symbol->data.atom->unreadable = !LispCheckAtomString(ptr);
+	    /* If symbol being create in the keyword package, make it external */
+	    if (package == lisp__data.keyword)
+		symbol->data.atom->ext = symbol->data.atom->constant = 1;
+	}
+	else
+	    symbol = NIL;
+    }
+    else {
+	if (symbol->data.atom->package == package)
+	    RETURN(0) = symbol->data.atom->ext ? Kexternal : Kinternal;
+	else
+	    RETURN(0) = Kinherited;
+    }
+
+    return (symbol);
+}
+
+
+LispObj *
 Lisp_DoAllSymbols(LispBuiltin *builtin)
 /*
  do-all-symbols init &rest body
@@ -390,6 +487,15 @@ Lisp_FindAllSymbols(LispBuiltin *builtin)
     GC_LEAVE();
 
     return (result);
+}
+
+LispObj *
+Lisp_FindSymbol(LispBuiltin *builtin)
+/*
+ find-symbol string &optional package
+ */
+{
+    return (LispFindSymbol(builtin, 0));
 }
 
 LispObj *
@@ -511,80 +617,7 @@ Lisp_Intern(LispBuiltin *builtin)
  intern string &optional package
  */
 {
-    int i;
-    char *ptr;
-    LispAtom *atom;
-    LispObj *symbol;
-    LispPackage *pack;
-
-    LispObj *string, *package;
-
-    package = ARGUMENT(1);
-    string = ARGUMENT(0);
-
-    CHECK_STRING(string);
-    if (package != UNSPEC)
-	package = LispFindPackageOrDie(builtin, package);
-    else
-	package = PACKAGE;
-
-    /* If got here, package is a LispPackage_t */
-    pack = package->data.package.package;
-
-    /* Search symbol in specified package */
-    ptr = THESTR(string);
-    for (i = 0, symbol = NULL; i < STRTBLSZ && symbol == NULL; i++) {
-	atom = pack->atoms[i];
-	while (atom) {
-	    if (strcmp(atom->string, ptr) == 0) {
-		symbol = atom->object;
-		break;
-	    }
-	    atom = atom->next;
-	}
-    }
-
-    if (symbol == NULL) {
-	/* symbol does not exist in the specified package, create a new
-	 * internal symbol */
-
-	if (package == PACKAGE)
-	    symbol = ATOM(ptr);
-	else {
-	    LispPackage *savepack;
-	    LispObj *savepackage;
-
-	    /* Save package environment */
-	    savepackage = PACKAGE;
-	    savepack = lisp__data.pack;
-
-	    /* Change package environment */
-	    PACKAGE = package;
-	    lisp__data.pack = package->data.package.package;
-
-	    symbol = ATOM(ptr);
-
-	    /* Restore package environment */
-	    PACKAGE = savepackage;
-	    lisp__data.pack = savepack;
-	}
-
-	symbol->data.atom->unreadable = !LispCheckAtomString(ptr);
-	/* If symbol being create in the keyword package, make it external */
-	if (package == lisp__data.keyword)
-	    symbol->data.atom->ext = symbol->data.atom->constant = 1;
-	RETURN(0) = NIL;
-    }
-    else {
-	if (symbol->data.atom->package == package)
-	    RETURN(0) = symbol->data.atom->ext ? Kexternal : Kinternal;
-	else
-	    RETURN(0) = Kinherited;
-    }
-
-    RETURN_COUNT = 1;
-
-    return (symbol);
+    return (LispFindSymbol(builtin, 1));
 }
 
 LispObj *
