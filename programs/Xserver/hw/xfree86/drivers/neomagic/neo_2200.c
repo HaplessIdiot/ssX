@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_2200.c,v 1.4 1999/12/03 19:17:34 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_2200.c,v 1.5 2000/06/15 01:26:22 dawes Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -180,7 +180,7 @@ Neo2200AccelInit(ScreenPtr pScreen)
      * Setup some global variables
      */
 
-    /* Initialize for 8bpp or 15/16bpp support accellerated */
+    /* Initialize for 8bpp or 15/16bpp support accelerated */
     switch (pScrn->bitsPerPixel) {
     case 8:
 	nAcl->BltModeFlags = NEO_MODE1_DEPTH8;
@@ -192,8 +192,11 @@ Neo2200AccelInit(ScreenPtr pScreen)
         nAcl->PixelWidth = 2;
 	break;
     case 24:
-	nAcl->BltModeFlags = NEO_MODE1_DEPTH24;
-        nAcl->PixelWidth = 3;
+	if (nPtr->NeoChipset == NM2360) {
+	    nAcl->BltModeFlags = NEO_MODE1_DEPTH24;
+            nAcl->PixelWidth = 3;
+	} else
+	    return FALSE;
 	break;
     default:
 	return FALSE;

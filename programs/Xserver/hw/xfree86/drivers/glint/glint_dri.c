@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.13 2000/05/10 18:55:29 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.14 2000/05/11 18:14:31 tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -336,13 +336,11 @@ GLINTDRIScreenInit(ScreenPtr pScreen)
     GLINTDRIPtr pGlintDRI;
     int dmabufs = 0;
 
-#if XFree86LOADER
     /* Check that the GLX, DRI, and DRM modules have been loaded by testing
        for canonical symbols in each module. */
-    if (!LoaderSymbol("GlxSetVisualConfigs")) return FALSE;
-    if (!LoaderSymbol("DRIScreenInit"))       return FALSE;
-    if (!LoaderSymbol("drmAvailable"))        return FALSE;
-#endif
+    if (!xf86LoaderCheckSymbol("GlxSetVisualConfigs")) return FALSE;
+    if (!xf86LoaderCheckSymbol("DRIScreenInit"))       return FALSE;
+    if (!xf86LoaderCheckSymbol("drmAvailable"))        return FALSE;
 
     if (pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_GAMMA) return FALSE;
 

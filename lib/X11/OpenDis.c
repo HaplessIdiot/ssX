@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/OpenDis.c,v 3.4 1998/10/03 08:41:20 dawes Exp $ */
+/* $XFree86: xc/lib/X11/OpenDis.c,v 3.6 2000/06/15 23:59:06 keithp Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -593,6 +593,7 @@ Display *XOpenDisplay (display)
 	    if (_XReply (dpy, (xReply *) &reply, 0, xFalse)) {
 		if (reply.format == 8 && reply.propertyType == XA_STRING &&
 		    (reply.nItems + 1 > 0) &&
+		    (reply.nItems <= req->longLength * 4) &&
 		    (dpy->xdefaults = Xmalloc (reply.nItems + 1))) {
 		    _XReadPad (dpy, dpy->xdefaults, reply.nItems);
 		    dpy->xdefaults[reply.nItems] = '\0';
