@@ -30,17 +30,10 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/wincmap.c,v 1.6 2001/06/25 08:12:33 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/wincmap.c,v 1.7 2001/07/02 09:37:17 alanh Exp $ */
 
 #include "win.h"
 
-#if 0
-gcc -o XWin.exe -O2 -fno-strength-reduce -ansi -pedantic -Wall -Wpointer-arith -L../../exports/lib hw/xwin/stubs.o dix/libdix.a os/libos.a ../../lib/Xau/libXau.a ../../lib/Xdmcp/libXdmcp.a hw/xwin/libXwin.a fb/libfb.a dix/libxpstubs.a mi/libmi.a Xext/libext.a xkb/libxkb.a Xi/libxinput.a lbx/liblbx.a ../../lib/lbxutil/liblbxutil.a dbe/libdbe.a record/librecord.a GL/glx/libglx.a GL/mesa/src/X/libGLcoreX.a GL/mesa/src/libGLcore.a render/librender.a miext/layer/liblayer.a miext/shadow/libshadow.a  -L/usr/X11R6/lib ../../lib/font/libXfont.a dix/libxpstubs.a -L../../exports/lib -lXext -lX11 -lz.dll -lgdi32 -lddraw
-
-gcc -o XWin.exe -g -ansi -pedantic -Wall -Wpointer-arith -L../../exports/lib hw/xwin/stubs.o dix/libdix.a os/libos.a ../../lib/Xau/libXau.a ../../lib/Xdmcp/libXdmcp.a  hw/xwin/libXwin.a fb/libfb.a dix/libxpstubs.a mi/libmi.a Xext/libext.a xkb/libxkb.a Xi/libxinput.a lbx/liblbx.a ../../lib/lbxutil/liblbxutil.a dbe/libdbe.a record/librecord.a   GL/glx/libglx.a GL/mesa/src/X/libGLcoreX.a  GL/mesa/src/libGLcore.a render/librender.a randr/librandr.a miext/layer/liblayer.a miext/shadow/libshadow.a -L/usr/X11R6/lib ../../lib/font/libXfont.a dix/libxpstubs.a -L../../exports/lib -lXext -lX11 -lz.dll -lgdi32 -lddraw
-
-gcc -o XWin.exe -O2 -fno-strength-reduce -ansi -pedantic -Wall -Wpointer-arith -L../../exports/lib hw/xwin/stubs.o dix/libdix.a os/libos.a ../../lib/Xau/libXau.a ../../lib/Xdmcp/libXdmcp.a  hw/xwin/libXwin.a fb/libfb.a dix/libxpstubs.a mi/libmi.a Xext/libext.a xkb/libxkb.a Xi/libxinput.a lbx/liblbx.a ../../lib/lbxutil/liblbxutil.a dbe/libdbe.a record/librecord.a GL/glx/libglx.a GL/mesa/src/X/libGLcoreX.a GL/mesa/src/libGLcore.a render/librender.a randr/librandr.a miext/shadow/libshadow.a miext/layer/liblayer.a -L/usr/X11R6/lib ../../lib/font/libXfont.a dix/libxpstubs.a -L../../exports/lib -lXext -lX11 -lz.dll -lgdi32 -lddraw
-#endif
 
 /* See Porting Layer Definition - p. 30 */
 /*
@@ -51,12 +44,7 @@ gcc -o XWin.exe -O2 -fno-strength-reduce -ansi -pedantic -Wall -Wpointer-arith -
 int
 winListInstalledColormaps (ScreenPtr pScreen, Colormap *pmaps)
 {
-#if WIN_PSEUDO_SUPPORT
   winScreenPriv(pScreen);
-
-#if CYGDEBUG
-  ErrorF ("winListInstalledColormaps ()\n");
-#endif
 
   /*
    * There will only be one installed colormap, so we only need
@@ -65,22 +53,16 @@ winListInstalledColormaps (ScreenPtr pScreen, Colormap *pmaps)
    */
   *pmaps = pScreenPriv->pcmapInstalled->mid;
   return 1;
-
-#else /* WIN_PSEUDO_SUPPORT */
-  return miListInstalledColormaps (pScreen, pmaps);
-#endif
 }
+
 
 /* See Porting Layer Definition - p. 30 */
 /* See Programming Windows - p. 663 */
 void
-winInstallColormap (ColormapPtr pmap)
+winInstallColormap (ColormapPtr pColormap)
 {
-#if WIN_PSEUDO_SUPPORT
-  ScreenPtr		pScreen = pmap->pScreen;
+  ScreenPtr		pScreen = pColormap->pScreen;
   winScreenPriv(pScreen);
-  winCmapPriv(pmap);
-  winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
   ColormapPtr		oldpmap = pScreenPriv->pcmapInstalled;
 
 #if CYGDEBUG
@@ -88,7 +70,7 @@ winInstallColormap (ColormapPtr pmap)
 #endif
  
   /* Did the colormap actually change? */
-  if (pmap != oldpmap)
+  if (pColormap != oldpmap)
     {
 #if CYGDEBUG
       ErrorF ("winInstallColormap () - Colormap has changed, attempt "
@@ -99,60 +81,31 @@ winInstallColormap (ColormapPtr pmap)
       if (oldpmap != (ColormapPtr) None)
 	{
 	  /* There was a previous colormap; tell clients it is gone */
-	  WalkTree (pmap->pScreen, TellLostMap, (char *)&oldpmap->mid);
+	  WalkTree (pColormap->pScreen, TellLostMap, (char *)&oldpmap->mid);
 	}
       
       /* Install new colormap */
-      pScreenPriv->pcmapInstalled = pmap;
-      WalkTree (pmap->pScreen, TellGainedMap, (char *)&pmap->mid);
+      pScreenPriv->pcmapInstalled = pColormap;
+      WalkTree (pColormap->pScreen, TellGainedMap, (char *)&pColormap->mid);
       
-      /*
-       * Tell Windows to install the new colormap
-       */
-      if (SelectPalette (pScreenPriv->hdcScreen,
-			 pCmapPriv->hPalette,
-			 FALSE) == NULL)
+      /* Call the engine specific colormap install procedure */
+      if (!((*pScreenPriv->pwinInstallColormap) (pColormap)))
 	{
-	  ErrorF ("winInstallColormap () - SelectPalette () failed\n");
-	  return;
+	  ErrorF ("winInstallColormap () - Screen specific colormap install "
+		  "procedure failed.  Continuing, but colors may be "
+		  "messed up from now on.\n");
 	}
-      
-      /* Realize the palette */
-      if (GDI_ERROR == RealizePalette (pScreenPriv->hdcScreen))
-	{
-	  ErrorF ("winInstallColormap () - RealizePalette () failed\n");
-	  return;
-	}
-
-      /* Set the DIB color table */
-      if (SetDIBColorTable (pScreenPriv->hdcShadow,
-			    0,
-			    WIN_NUM_PALETTE_ENTRIES,
-			    pCmapPriv->rgbColors) == 0)
-	{
-	  ErrorF ("winInstallColormap () - SetDIBColorTable () failed\n");
-	  return;
-	}
-
-      /* Redraw the whole window, to take account for the new colors */
-      BitBlt (pScreenPriv->hdcScreen,
-	      0, 0,
-	      pScreenInfo->dwWidth, pScreenInfo->dwHeight,
-	      pScreenPriv->hdcShadow,
-	      0, 0,
-	      SRCCOPY);
     }
 
-#else /* WIN_PSEUDO_SUPPORT */
-  miInstallColormap (pmap);
-#endif
+  /* Save a pointer to the newly installed colormap */
+  pScreenPriv->pcmapInstalled = pColormap;
 }
+
 
 /* See Porting Layer Definition - p. 30 */
 void
 winUninstallColormap (ColormapPtr pmap)
 {
-#if WIN_PSEUDO_SUPPORT
   winScreenPriv(pmap->pScreen);
   ColormapPtr curpmap = pScreenPriv->pcmapInstalled;
 
@@ -160,13 +113,16 @@ winUninstallColormap (ColormapPtr pmap)
   ErrorF ("winUninstallColormap ()\n");
 #endif
 
-  /* Is the colormap installed? */
+  /* Is the colormap currently installed? */
   if (pmap != curpmap)
     {
       /* Colormap not installed, nothing to do */
       return;
     }
-
+  
+  /* Clear the installed colormap flag */
+  pScreenPriv->pcmapInstalled = NULL;
+  
   /*
    * NOTE: The default colormap does not get "uninstalled" before
    * it is destroyed.
@@ -179,10 +135,6 @@ winUninstallColormap (ColormapPtr pmap)
 					     RT_COLORMAP);
       (*pmap->pScreen->InstallColormap) (curpmap);
     }
-
-#else /* WIN_PSEUDO_SUPPORT */
-  miUninstallColormap (pmap);
-#endif
 }
 
 
@@ -192,12 +144,11 @@ winStoreColors (ColormapPtr pmap,
 		int ndef,
 		xColorItem *pdefs)
 {
-#if WIN_PSEUDO_SUPPORT
-  winScreenPriv(pmap->pScreen);
+  ScreenPtr		pScreen = pmap->pScreen;
+  winScreenPriv(pScreen);
   winCmapPriv(pmap);
   int			i;
   unsigned short	nRed, nGreen, nBlue;
-  ColormapPtr curpmap = pScreenPriv->pcmapInstalled;
 
 #if CYGDEBUG
   if (ndef != 1)
@@ -229,37 +180,15 @@ winStoreColors (ColormapPtr pmap,
 #endif
     }
 
-  /* Put the X colormap entries into the Windows logical palette */
-  if (SetPaletteEntries (pCmapPriv->hPalette,
-			 pdefs[0].pixel,
-			 ndef,
-			 pCmapPriv->peColors + pdefs[0].pixel) == 0)
+  /* Call the engine specific store colors procedure */
+  if (!((pScreenPriv->pwinStoreColors) (pmap, ndef, pdefs)))
     {
-      ErrorF ("winStoreColors () - SetPaletteEntries () failed\n");
-      return;
+      ErrorF ("winStoreColors () - Engine cpecific color storage procedure "
+	      "failed.  Continuing, but colors may be messed up from now "
+	      "on.\n");
     }
-
-  /* Don't install the Windows palette if the colormap is not isntalled */
-  if (pmap != curpmap)
-    {
-      return;
-    }
-
-  /* Tell Windows that the palette has changed */
-  RealizePalette (pScreenPriv->hdcScreen);
-  
-  /* Set the DIB color table */
-  if (SetDIBColorTable (pScreenPriv->hdcShadow,
-			pdefs[0].pixel,
-			ndef,
-			pCmapPriv->rgbColors + pdefs[0].pixel) == 0)
-    {
-      ErrorF ("winInstallColormap () - SetDIBColorTable () failed\n");
-      return;
-    }
-
-#endif /* WIN_PSEUDO_SUPPORT */
 }
+
 
 /* See Porting Layer Definition - p. 30 */
 void
@@ -272,45 +201,17 @@ winResolveColor (unsigned short *pred,
   ErrorF ("winResolveColor ()\n");
 #endif
 
-#if 0
-  if ((pVisual->class | DynamicClass) == PseudoColor)
-    {
-#if 0
-      ErrorF ("winResolveColor () - PseudoColor\n");
-#endif
-
-      /* I'll resolve your damn color for ya, have a little of this! */
-      *pred >>= 8;
-      *pgreen >>= 8;
-      *pblue >>= 8;
-    }
-  else
-    {
-#if 0
-      ErrorF ("winResolveColor () - !PseudoColor\n");
-#endif
-    }
-#endif
-
   miResolveColor (pred, pgreen, pblue, pVisual);
-
-  ErrorF ("winResolveColor () - Returning %s %d %d %d\n",
-	  (pVisual->class | DynamicClass) == PseudoColor ? "Pseudo" : "Other",
-	  *pred, *pgreen, *pblue);
 }
+
 
 /* See Porting Layer Definition - p. 29 */
 Bool
 winCreateColormap (ColormapPtr pmap)
 {
-#if WIN_PSEUDO_SUPPORT
-  LPLOGPALETTE		lpPaletteNew = NULL;
-  VisualPtr		pVisual;
-  DWORD			dwEntriesMax;
-  DWORD			dwColorLimit;
-  DWORD			dwShift;
-  HPALETTE		hpalNew = NULL;
   winPrivCmapPtr	pCmapPriv = NULL;
+  ScreenPtr		pScreen = pmap->pScreen;
+  winScreenPriv(pScreen);
 
 #if CYGDEBUG
   ErrorF ("winCreateColormap ()\n");
@@ -342,121 +243,42 @@ winCreateColormap (ColormapPtr pmap)
   pCmapPriv->peColors[WIN_NUM_PALETTE_ENTRIES - 1].peGreen = 255;
   pCmapPriv->peColors[WIN_NUM_PALETTE_ENTRIES - 1].peBlue = 255;
 
-  /* Get a pointer to the visual that the colormap belongs to */
-  pVisual = pmap->pVisual;
-  
-  /* Set the top-end color limit */
-  dwColorLimit = (1 << pVisual->bitsPerRGBValue) - 1;
-  
-  /* How many bits do we need to shift color values by? */
-  dwShift = 16 - pVisual->bitsPerRGBValue;
-
-  /* Get the maximum number of palette entries for this visual */
-  dwEntriesMax = pVisual->ColormapEntries;
-  
-#if CYGDEBUG
-  ErrorF ("winCreateColormap () - dwEntriesMax: %d\n",
-	  dwEntriesMax);
-#endif
-
-  /* Allocate a Windows logical color palette with max entries */
-  lpPaletteNew = xalloc (sizeof (LOGPALETTE)
-			 + (dwEntriesMax - 1) * sizeof (PALETTEENTRY));
-  if (lpPaletteNew == NULL)
+  /* Call the engine specific colormap initialization procedure */
+  if (!((*pScreenPriv->pwinCreateColormap) (pmap)))
     {
-      ErrorF ("winCreateColormap () - Couldn't allocate palette "
-	      "with %d entries\n",
-	      dwEntriesMax);
+      ErrorF ("winCreateColormap () - Engine specific colormap creation "
+	      "procedure failed.  Aborting.\n");
       return FALSE;
     }
-
-  /* Zero out the colormap */
-  ZeroMemory (lpPaletteNew, sizeof (LOGPALETTE)
-	      + (dwEntriesMax - 1) * sizeof (PALETTEENTRY));
-  
-  /* Set the logical palette structure */
-  lpPaletteNew->palVersion = 0x0300;
-  lpPaletteNew->palNumEntries = dwEntriesMax;
-
-  /* Tell Windows to create the palette */
-  hpalNew = CreatePalette (lpPaletteNew);
-  if (hpalNew == NULL)
-    {
-      ErrorF ("winCreateColormap () - CreatePalette () failed\n");
-      free (lpPaletteNew);
-      return FALSE;
-    }
-
-  /* Save the Windows logical palette handle in the X colormaps' privates */
-  pCmapPriv->hPalette = hpalNew;
-
-  /* Free the palette initialization memory */
-  xfree (lpPaletteNew);
 
   return TRUE;
-
-#else /* WIN_PSEUDO_SUPPORT */
-  return miInitializeColormap (pmap);
-#endif
 }
+
 
 /* See Porting Layer Definition - p. 29, 30 */
 void
-winDestroyColormap (ColormapPtr pmap)
+winDestroyColormap (ColormapPtr pColormap)
 {
-#if WIN_PSEUDO_SUPPORT
-  winScreenPriv(pmap->pScreen);
-  winCmapPriv(pmap);
+  winScreenPriv(pColormap->pScreen);
+  winCmapPriv(pColormap);
 
-#if CYGDEBUG
-  ErrorF ("winDestroyColormap () pCmapPriv %08x\n",
-	  pCmapPriv);
-#endif
-
-  /* Is colormap to be destroyed the default?
-   *
-   * Non-default colormaps should have had winUninstallColormap
-   * called on them before we get here.  The default colormap
-   * will not have had winUninstallColormap called on it.  Thus,
-   * we need to handle the default colormap in a special way.
-   */
-  if (pmap->flags & IsDefault)
+  /* Call the engine specific colormap destruction procedure */
+  if (!((*pScreenPriv->pwinDestroyColormap) (pColormap)))
     {
-#if CYGDEBUG
-      ErrorF ("winDestroyColormap () - Destroying default colormap\n");
-#endif
-      
-      /*
-       * FIXME: Walk the list of all screens, popping the default
-       * palette out of each screen device context.
-       */
-      
-      /* Pop the palette out of the device context */
-      SelectPalette (pScreenPriv->hdcScreen,
-		     GetStockObject (DEFAULT_PALETTE),
-		     FALSE);
+      ErrorF ("winDestroyColormap () - Engine specific colormap destruction "
+	      "procedure failed.  Continuing, but it is possible that memory "
+	      "was leaked, or that colors will be messed up from now on.\n");
+    }
 
-      /* Clear our private installed colormap pointer */
-      pScreenPriv->pcmapInstalled = NULL;
-    }
-  
-  /* Try to delete the logical palette */
-  if (DeleteObject (pCmapPriv->hPalette) == 0)
-    {
-      ErrorF ("winDestroyColormap () - DeleteObject () failed\n");
-    }
-  
-  /* Gotta free go of the colormap privates */
-  pCmapPriv->hPalette = NULL;
+  /* Free the colormap privates */
   xfree (pCmapPriv);
-  winSetCmapPriv (pmap, NULL);
+  winSetCmapPriv (pColormap, NULL);
 
 #if CYGDEBUG
   ErrorF ("winDestroyColormap () - Returning\n");
 #endif
-
-#endif /* WIN_PSEUDO_SUPPORT */
 }
+
 
 int
 winExpandDirectColors (ColormapPtr pmap, int ndef,
@@ -468,15 +290,9 @@ winExpandDirectColors (ColormapPtr pmap, int ndef,
 
 
 /*
- *
- *
- *
- *
- */
-
-/*
  * Load the palette used by the Shadow DIB
  */
+
 static
 Bool
 winGetPaletteDIB (ScreenPtr pScreen, ColormapPtr pcmap)
@@ -566,6 +382,7 @@ winGetPaletteDIB (ScreenPtr pScreen, ColormapPtr pcmap)
 
   return TRUE;
 }
+
 
 /*
  * Load the standard system palette being used by GDI
@@ -671,6 +488,7 @@ winGetPaletteDD (ScreenPtr pScreen, ColormapPtr pcmap)
   return TRUE;
 }
 
+
 /*
  * Install the standard fb colormap, or the GDI colormap,
  * depending on the current screen depth.
@@ -763,10 +581,10 @@ winCreateDefColormap (ScreenPtr pScreen)
       bp = pScreen->blackPixel;
       
       /* Allocate a black and white pixel */
-      if ((AllocColor(pcmap, &ones, &ones, &ones, &wp, 0) !=
+      if ((AllocColor (pcmap, &ones, &ones, &ones, &wp, 0) !=
 	   Success)
 	  ||
-	  (AllocColor(pcmap, &zero, &zero, &zero, &bp, 0) !=
+	  (AllocColor (pcmap, &zero, &zero, &zero, &bp, 0) !=
 	   Success))
 	{
 	  ErrorF ("winCreateDefColormap () - Couldn't allocate bp or wp\n");
@@ -775,6 +593,29 @@ winCreateDefColormap (ScreenPtr pScreen)
       
       pScreen->whitePixel = wp;
       pScreen->blackPixel = bp;
+
+#if 0
+      /* Have to reserve first 10 and last ten pixels in DirectDraw windowed */
+      if (pScreenInfo->dwEngine != WIN_SERVER_SHADOW_GDI)
+	{
+	  int		k;
+	  Pixel		p;
+
+	  for (k = 1; k < 10; ++k)
+	    {
+	      p = k;
+	      if (AllocColor (pcmap, &ones, &ones, &ones, &p, 0) != Success)
+		FatalError ("Foo!\n");
+	    }
+	  
+	  for (k = 245; k < 255; ++k)
+	    {
+	      p = k;
+	      if (AllocColor (pcmap, &zero, &zero, &zero, &p, 0) != Success)
+		FatalError ("Baz!\n");
+	    }
+	}
+#endif
     }
 
   /* Install the created colormap */

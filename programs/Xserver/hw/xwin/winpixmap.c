@@ -28,7 +28,7 @@
  * Authors:	drewry, september 1986
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winpixmap.c,v 1.4 2001/06/04 13:04:41 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winpixmap.c,v 1.5 2001/07/02 09:37:17 alanh Exp $ */
 
 #include "win.h"
 
@@ -72,20 +72,22 @@ winCreatePixmapNativeGDI (ScreenPtr pScreen,
   pPixmap->devKind = 0;
   pPixmap->refcnt = 1;
   pPixmap->devPrivate.ptr = NULL;
-  
+
+  /* Pixmap privates are allocated by AllocatePixmap */
+  pPixmapPriv = winGetPixmapPriv (pPixmap);
+
+  /* Initialize pixmap privates */
+  pPixmapPriv->hBitmap = NULL;
+  pPixmapPriv->hdcSelected = NULL;
+  pPixmapPriv->pvBits = NULL;
+  pPixmapPriv->dwScanlineBytes = PixmapBytePad (nWidth, nDepth);
+
   /* Check for zero width or height pixmaps */
   if (nWidth == 0 || nHeight == 0)
     {
       /* Don't allocate a real pixmap, just set fields and return */
       return pPixmap;
     }
-
-  /* Pixmap privates are allocated by AllocatePixmap */
-  pPixmapPriv = winGetPixmapPriv (pPixmap);
-
-#if CYGDEBUG
-  ErrorF ("winCreatePixmapNativeGDI () - Allocated privates\n");
-#endif
 
   /* Create a scratch DC */
   hdcMem = CreateCompatibleDC (NULL);
@@ -104,6 +106,9 @@ winCreatePixmapNativeGDI (ScreenPtr pScreen,
       return FALSE;
     }
   ZeroMemory (pbmih, sizeof(BITMAPINFOHEADER) + 256 * sizeof (RGBQUAD));
+
+  /* Save a pointer to the bitmap info header */
+  pPixmapPriv->pbmih = pbmih;
 
   /* Describe bitmap to be created */
   pbmih->biSize = sizeof (BITMAPINFOHEADER);
@@ -135,17 +140,9 @@ winCreatePixmapNativeGDI (ScreenPtr pScreen,
       return NullPixmap;
     }
 
-  /* Free the bitmap info header memory */
-  xfree (pbmih);
-  pbmih = NULL;
-
 #if CYGDEBUG
   ErrorF ("winCreatePixmapNativeGDI () - CreateDIBSection () returned\n");
 #endif
-
-  /* Save the pixmap padded scanlie width */
-  pPixmapPriv->dwScanlineBytes = PixmapBytePad (nWidth, nDepth);
-  pPixmapPriv->hdcSelected = NULL;
 
   /* Free the scratch DC */
   DeleteDC (hdcMem);
@@ -163,8 +160,13 @@ winCreatePixmapNativeGDI (ScreenPtr pScreen,
 #endif
 }
 
-/* See Porting Layer Definition - p. 35 */
-/* See mfb/mfbpixmap.c - mfbDestroyPixmap() */
+
+/* 
+ * See Porting Layer Definition - p. 35
+ *
+ * See mfb/mfbpixmap.c - mfbDestroyPixmap()
+ */
+
 Bool
 winDestroyPixmapNativeGDI (PixmapPtr pPixmap)
 {
@@ -190,12 +192,24 @@ winDestroyPixmapNativeGDI (PixmapPtr pPixmap)
   /* Free GDI bitmap */
   if (pPixmapPriv->hBitmap) DeleteObject (pPixmapPriv->hBitmap);
   
+  /* Free the bitmap info header memory */
+  if (pPixmapPriv->pbmih != NULL)
+    {
+      xfree (pPixmapPriv->pbmih);
+      pPixmapPriv->pbmih = NULL;
+    }
+
   /* Free the pixmap memory */
   xfree (pPixmap);
   pPixmap = NULL;
 
   return TRUE;
 }
+
+
+/* 
+ * Not used yet
+ */
 
 Bool
 winModifyPixmapHeaderNativeGDI (PixmapPtr pPixmap,
@@ -209,7 +223,12 @@ winModifyPixmapHeaderNativeGDI (PixmapPtr pPixmap,
   return TRUE;
 }
 
-/* See cfb/cfbpixmap.c */
+
+/* 
+ * Not used yet.
+ * See cfb/cfbpixmap.c
+ */
+
 void
 winXRotatePixmapNativeGDI (PixmapPtr pPix, int rw)
 {
@@ -217,7 +236,11 @@ winXRotatePixmapNativeGDI (PixmapPtr pPix, int rw)
   /* fill in this function, look at CFB */
 }
 
-/* See cfb/cfbpixmap.c */
+
+/*
+ * Not used yet.
+ * See cfb/cfbpixmap.c
+ */
 void
 winYRotatePixmapNativeGDI (PixmapPtr pPix, int rh)
 {
@@ -225,7 +248,12 @@ winYRotatePixmapNativeGDI (PixmapPtr pPix, int rh)
   /* fill in this function, look at CFB */
 }
 
-/* See cfb/cfbpixmap.c */
+
+/* 
+ * Not used yet.
+ * See cfb/cfbpixmap.c
+ */
+
 void
 winCopyRotatePixmapNativeGDI (PixmapPtr psrcPix, PixmapPtr *ppdstPix,
 			      int xrot, int yrot)

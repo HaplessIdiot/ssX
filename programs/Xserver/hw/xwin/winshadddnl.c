@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshadddnl.c,v 1.12 2001/07/02 09:37:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshadddnl.c,v 1.13 2001/07/25 14:30:08 alanh Exp $ */
 
 #include "win.h"
 
@@ -392,11 +392,6 @@ winShadowUpdateDDNL (ScreenPtr pScreen,
   DWORD			dwBox = REGION_NUM_RECTS (damage);
   BoxPtr		pBox = REGION_RECTS (damage);
 
-#if 0
-  ErrorF ("winShadowUpdateDDNL () dwBox %d\n",
-	  dwBox);
-#endif
-
   /* Return immediately if the app is not active and we are fullscreen */
   if (!pScreenPriv->fActive && pScreenInfo->fFullScreen) return;
 
@@ -409,18 +404,13 @@ winShadowUpdateDDNL (ScreenPtr pScreen,
   /* Loop through all boxes in the damaged region */
   while (dwBox--)
     {
-#if 0
-      ErrorF ("winShadowUpdateDDNL () x1 %d y1 %d x2 %d y2 %d\n",
-	      pBox->x1, pBox->y1, pBox->x2, pBox->y2);
-#endif
-
       /* Assign damage box to source rectangle */
       rcSrc.left = pBox->x1;
       rcSrc.top = pBox->y1;
       rcSrc.right = pBox->x2;
       rcSrc.bottom = pBox->y2;
       
-      /* Calculate destination rectange */
+      /* Calculate destination rectangle */
       rcDest.left = rcClient.left + rcSrc.left;
       rcDest.top = rcClient.top + rcSrc.top;
       rcDest.right = rcClient.left + rcSrc.right;
@@ -583,9 +573,11 @@ winInitVisualsShadowDDNL (ScreenPtr pScreen)
 
     case 8:
       if (!miSetVisualTypesAndMasks (pScreenInfo->dwDepth,
-				     StaticColorMask,
+				     pScreenInfo->fFullScreen 
+				     ? PseudoColorMask : StaticColorMask,
 				     pScreenPriv->dwBitsPerRGB,
-				     StaticColor,
+				     pScreenInfo->fFullScreen 
+				     ? PseudoColor : StaticColor,
 				     pScreenPriv->dwRedMask,
 				     pScreenPriv->dwGreenMask,
 				     pScreenPriv->dwBlueMask))
@@ -600,14 +592,6 @@ winInitVisualsShadowDDNL (ScreenPtr pScreen)
       ErrorF ("winInitVisualsDDNL () - Unknown screen depth\n");
       return FALSE;
     }
-
-#if WIN_LAYER_SUPPORT
-  miSetVisualTypesAndMasks (8,
-			    PseudoColorMask,
-			    8,
-			    -1,
-			    0, 0, 0);
-#endif
 
 #if CYGDEBUG
   ErrorF ("winInitVisualsShadowDDNL () - Returning\n");
@@ -712,17 +696,11 @@ winBltExposedRegionsShadowDDNL (ScreenPtr pScreen)
       goto winBltExposedRegionsShadowDDNL_Exit;
     }
 
-  /* Map the client coords to client relative coords */
-  if (MapWindowPoints (pScreenPriv->hwndScreen,
-		       HWND_DESKTOP,
-		       (LPPOINT)&rcClient,
-		       2) == 0)
-    {
-      fReturn = FALSE;
-      ErrorF ("winBltExposedRegionsShadowDDNL () - MapWindowPoints () "
-	      "failed\n");
-      goto winBltExposedRegionsShadowDDNL_Exit;
-    }
+  /* Map the client coords to screen coords */
+  MapWindowPoints (pScreenPriv->hwndScreen,
+		   HWND_DESKTOP,
+		   (LPPOINT)&rcClient,
+		   2);
 	  
   /* Source can be entire shadow surface, as Blt should clip for us */
   rcSrc.left = 0;
@@ -774,6 +752,201 @@ winActivateAppShadowDDNL (ScreenPtr pScreen)
   return TRUE;
 }
 
+
+/*
+ * Reblit the shadow framebuffer to the screen.
+ */
+
+Bool
+winRedrawScreenShadowDDNL (ScreenPtr pScreen)
+{
+  winScreenPriv(pScreen);
+  winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
+  HRESULT		ddrval = DD_OK;
+  RECT			rcClient, rcSrc;
+
+  /* Get location of display window's client area, in screen coords */
+  GetClientRect (pScreenPriv->hwndScreen, &rcClient);
+  MapWindowPoints (pScreenPriv->hwndScreen,
+		   HWND_DESKTOP,
+		   (LPPOINT)&rcClient, 2);
+
+  /* Source can be entire shadow surface, as Blt should clip for us */
+  rcSrc.left = 0;
+  rcSrc.top = 0;
+  rcSrc.right = pScreenInfo->dwWidth;
+  rcSrc.bottom = pScreenInfo->dwHeight;
+
+  /* Redraw the whole window, to take account for the new colors */
+  ddrval = IDirectDrawSurface4_Blt (pScreenPriv->pddsPrimary4,
+				    &rcClient,
+				    pScreenPriv->pddsShadow4,
+				    &rcSrc,
+				    DDBLT_WAIT,
+				    NULL);
+  if (FAILED (ddrval))
+    {
+      ErrorF ("winRedrawScreenShadowDDNL () - IDirectDrawSurface4_Blt () "
+	      "failed: %08x\n",
+	      ddrval);
+    }
+
+  return TRUE;
+}
+
+
+/* Realize the currently installed colormap */
+Bool
+winRealizeInstalledPaletteShadowDDNL (ScreenPtr pScreen)
+{
+  return TRUE;
+}
+
+/* Install the specified colormap */
+Bool
+winInstallColormapShadowDDNL (ColormapPtr pColormap)
+{
+  ScreenPtr		pScreen = pColormap->pScreen;
+  winScreenPriv(pScreen);
+  winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
+  winCmapPriv(pColormap);
+  HRESULT		ddrval = DD_OK;
+
+  /* Install the DirectDraw palette on the primary surface */
+  ddrval = IDirectDrawSurface4_SetPalette (pScreenPriv->pddsPrimary4,
+					   pCmapPriv->lpDDPalette);
+  if (FAILED (ddrval))
+    {
+      ErrorF ("winInstallColormapShadowDDNL () - Failed installing the "
+	      "DirectDraw palette.\n");
+      return FALSE;
+    }
+
+  /* Save a pointer to the newly installed colormap */
+  pScreenPriv->pcmapInstalled = pColormap;
+
+  return TRUE;
+}
+
+
+/* Store the specified colors in the specified colormap */
+Bool
+winStoreColorsShadowDDNL (ColormapPtr pColormap, 
+			  int ndef,
+			  xColorItem *pdefs)
+{
+  ScreenPtr		pScreen = pColormap->pScreen;
+  winScreenPriv(pScreen);
+  winCmapPriv(pColormap);
+  ColormapPtr curpmap = pScreenPriv->pcmapInstalled;
+  HRESULT		ddrval = DD_OK;
+  
+  /* Put the X colormap entries into the Windows logical palette */
+  ddrval = IDirectDrawPalette_SetEntries (pCmapPriv->lpDDPalette,
+					  0,
+					  pdefs[0].pixel,
+					  ndef,
+					  pCmapPriv->peColors 
+					  + pdefs[0].pixel);
+  if (FAILED (ddrval))
+    {
+      ErrorF ("winStoreColorsShadowDDNL () - SetEntries () failed\n");
+      return FALSE;
+    }
+
+  /* Don't install the DirectDraw palette if the colormap is not installed */
+  if (pColormap != curpmap)
+    {
+      return TRUE;
+    }
+
+  if (!winInstallColormapShadowDDNL (pColormap))
+    {
+      ErrorF ("winStoreColorsShadowDDNL () - Failed installing colormap\n");
+      return FALSE;
+    }
+
+  return TRUE;
+}
+
+
+/* Colormap initialization procedure */
+Bool
+winCreateColormapShadowDDNL (ColormapPtr pColormap)
+{
+  HRESULT		ddrval = DD_OK;
+  ScreenPtr		pScreen = pColormap->pScreen;
+  winScreenPriv(pScreen);
+  winCmapPriv(pColormap);
+  
+  /* Create a DirectDraw palette */
+  ddrval = IDirectDraw4_CreatePalette (pScreenPriv->pdd4,
+				       DDPCAPS_8BIT | DDPCAPS_ALLOW256,
+				       pCmapPriv->peColors,
+				       &pCmapPriv->lpDDPalette,
+				       NULL);
+  if (FAILED (ddrval))
+    {
+      ErrorF ("winCreateColormapShadowDDNL () - CreatePalette failed\n");
+      return FALSE;
+    }
+
+  return TRUE;
+}
+
+
+/* Colormap destruction procedure */
+Bool
+winDestroyColormapShadowDDNL (ColormapPtr pColormap)
+{
+  winScreenPriv(pColormap->pScreen);
+  winCmapPriv(pColormap);
+  HRESULT		ddrval = DD_OK;
+
+  /*
+   * Is colormap to be destroyed the default?
+   *
+   * Non-default colormaps should have had winUninstallColormap
+   * called on them before we get here.  The default colormap
+   * will not have had winUninstallColormap called on it.  Thus,
+   * we need to handle the default colormap in a special way.
+   */
+  if (pColormap->flags & IsDefault)
+    {
+#if CYGDEBUG
+      ErrorF ("winDestroyColormapShadowDDNL () - Destroying default "
+	      "colormap\n");
+#endif
+      
+      /*
+       * FIXME: Walk the list of all screens, popping the default
+       * palette out of each screen device context.
+       */
+      
+      /* Pop the palette out of the primary surface */
+      ddrval = IDirectDrawSurface4_SetPalette (pScreenPriv->pddsPrimary4,
+					       NULL);
+      if (FAILED (ddrval))
+	{
+	  ErrorF ("winDestroyColormapShadowDDNL () - Failed freeing the "
+		  "default colormap DirectDraw palette.\n");
+	  return FALSE;
+	}
+
+      /* Clear our private installed colormap pointer */
+      pScreenPriv->pcmapInstalled = NULL;
+    }
+  
+  /* Release the palette */
+  IDirectDrawPalette_Release (pCmapPriv->lpDDPalette);
+ 
+  /* Invalidate the colormap privates */
+  pCmapPriv->lpDDPalette = NULL;
+
+  return TRUE;
+}
+
+
 /* Set pointers to our engine specific functions */
 Bool
 winSetEngineFunctionsShadowDDNL (ScreenPtr pScreen)
@@ -794,9 +967,13 @@ winSetEngineFunctionsShadowDDNL (ScreenPtr pScreen)
   pScreenPriv->pwinFinishScreenInit = winFinishScreenInitFB;
   pScreenPriv->pwinBltExposedRegions = winBltExposedRegionsShadowDDNL;
   pScreenPriv->pwinActivateApp = winActivateAppShadowDDNL;
-  pScreenPriv->pwinRedrawScreen = (winRedrawScreenProcPtr) NoopDDA;
+  pScreenPriv->pwinRedrawScreen = winRedrawScreenShadowDDNL;
   pScreenPriv->pwinRealizeInstalledPalette
-    = (winRealizeInstalledPaletteProcPtr) NoopDDA;
+    = winRealizeInstalledPaletteShadowDDNL;
+  pScreenPriv->pwinInstallColormap = winInstallColormapShadowDDNL;
+  pScreenPriv->pwinStoreColors = winStoreColorsShadowDDNL;
+  pScreenPriv->pwinCreateColormap = winCreateColormapShadowDDNL;
+  pScreenPriv->pwinDestroyColormap = winDestroyColormapShadowDDNL;
 
   return TRUE;
 }

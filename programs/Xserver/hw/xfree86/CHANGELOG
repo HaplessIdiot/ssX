@@ -1,4 +1,5 @@
 XFree86 4.1.99.1 (xx July 2001)
+ 158. Cygwin/XFree86 updates (#4824, #4826 Harold Hunt).
  157. Fix horizontal stripes problem in Permedia3 driver (Alan Hourihane).
  156. Remove most X_NOT_STDC_ENV code, and assume that __STDC__ is defined
       (David Dawes).
@@ -13587,4 +13588,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1888 2001/07/26 10:42:53 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1889 2001/07/29 14:24:32 alanh Exp $

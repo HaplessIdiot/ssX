@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winsetsp.c,v 1.2 2001/06/04 13:04:41 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winsetsp.c,v 1.3 2001/07/02 09:37:17 alanh Exp $ */
 
 #include "win.h"
 
@@ -100,7 +100,9 @@ winSetSpansNativeGDI (DrawablePtr	pDrawable,
 	  /* Blast the bits to the drawable */
 	  SetDIBits (pGCPriv->hdcMem,
 		     pPixmapPriv->hBitmap,
-		     pPoint->y, 1, pSrc, &bmih, 0);
+		     pPoint->y, 1, 
+		     pSrc,
+		     pPixmapPriv->pbmih, 0);
 	  
 	  /* Display some useful information */
 	  ErrorF ("(%dx%dx%d) (%d,%d) w: %d ps: %08x\n",

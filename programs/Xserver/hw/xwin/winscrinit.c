@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.14 2001/07/02 09:37:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.15 2001/07/25 14:30:08 alanh Exp $ */
 
 #include "win.h"
 
@@ -180,7 +180,7 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen)
 			    WS_OVERLAPPED
 			    | WS_CAPTION
 			    | WS_SYSMENU
-			    | WS_MINIMIZEBOX,	/* Almost an OverlappedWindow */
+			    | WS_MINIMIZEBOX,	/* Almost OverlappedWindow */
 			    0,			/* Horizontal position */
 			    0,			/* Vertical position */
 			    iWidth,		/* Right edge */
@@ -207,19 +207,23 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen)
       return FALSE;
     }
   ErrorF ("winCreateBoundingWindowWindowed () - WindowClient "\
-	  "width %d height %d\n",
+	  "w %d h %d r %d l %d b %d t %d\n",
 	  rcClient.right - rcClient.left,
-	  rcClient.bottom - rcClient.top);
+	  rcClient.bottom - rcClient.top,
+	  rcClient.right, rcClient.left,
+	  rcClient.bottom, rcClient.top);
 
-  if (MapWindowPoints (*phwnd,
-		       HWND_DESKTOP,
-		       (LPPOINT)&rcClient,
-		       2) == 0)
-    {
-      ErrorF ("winCreateBoundingWindowWindowed () - MapWindowPoints () "
-	      "failed\n");
-      return FALSE;
-    }
+  /*
+   * Transform the client relative coords to screen relative coords.
+   * It is almost impossible to tell if the function has failed, thus
+   * we do not want to check for a return value of 0, as that could
+   * simply indicated that the window was positioned with the upper
+   * left corner at (0,0).
+   */
+  MapWindowPoints (*phwnd,
+		   HWND_DESKTOP,
+		   (LPPOINT)&rcClient,
+		   2);
 
   /* Show the window */
   ShowWindow (*phwnd, SW_SHOW);
@@ -323,9 +327,7 @@ winFinishScreenInitFB (int index,
 {
   winScreenPriv(pScreen);
   winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
-#if WIN_PSEUDO_SUPPORT
   VisualPtr		pVisual = NULL;
-#endif
   char			*pbits = NULL;
 
   pScreenInfo->dwBPP = winBitsPerPixel (pScreenInfo->dwDepth);
@@ -337,7 +339,12 @@ winFinishScreenInitFB (int index,
 #endif
 
   /* Create display window */
-  (*pScreenPriv->pwinCreateBoundingWindow) (pScreen);
+  if (!(*pScreenPriv->pwinCreateBoundingWindow) (pScreen))
+    {
+      ErrorF ("winFinishScreenInitFB () - pwinCreateBoundingWindow () "
+	      "failed\n");
+      return FALSE;
+    }
 
   /* Set the padded screen width */
   pScreenInfo->dwPaddedWidth = PixmapBytePad (pScreenInfo->dwWidth,
@@ -378,11 +385,13 @@ winFinishScreenInitFB (int index,
       return FALSE;
     }
 
-#if WIN_PSEUDO_SUPPORT
   /* Override default colormap routines if visual class is dynamic */
-  /* FIXME: PseudoColor is only supported with the GDI engine */
   if (pScreenInfo->dwDepth == 8
-      && pScreenInfo->dwEngine == WIN_SERVER_SHADOW_GDI)
+      && (pScreenInfo->dwEngine == WIN_SERVER_SHADOW_GDI
+	  || (pScreenInfo->dwEngine == WIN_SERVER_SHADOW_DDNL
+	      && pScreenInfo->fFullScreen)
+	  || (pScreenInfo->dwEngine == WIN_SERVER_SHADOW_DD
+	      && pScreenInfo->fFullScreen)))
     {
       pScreen->CreateColormap = winCreateColormap;
       pScreen->DestroyColormap = winDestroyColormap;
@@ -404,7 +413,6 @@ winFinishScreenInitFB (int index,
       pScreen->blackPixel = 0;
       pScreen->whitePixel = 1;
     }
-#endif
 
   /* Place our save screen function */
   pScreen->SaveScreen = winSaveScreen;
@@ -486,7 +494,7 @@ winFinishScreenInitFB (int index,
   
   /* KDrive does RandRInit right after LayerCreate */
 #ifdef RANDR
-  if (!winRandRInit (pScreen))
+  if (pScreenInfo->dwDepth != 8 && !winRandRInit (pScreen))
     {
       ErrorF ("winFinishScreenInitFB () - winRandRInit () failed\n");
       return FALSE;
@@ -627,7 +635,6 @@ winDetectSupportedEngines (ScreenPtr pScreen)
       else
 	{
 	  /* We have DirectDraw */
-	  /* FIXME: Assuming we have DirectDraw3+ */
 	  ErrorF ("winDetectSupportedEngines () - DirectDraw installed\n");
 	  pScreenInfo->dwEnginesSupported |= WIN_SERVER_SHADOW_DD;
 
@@ -773,8 +780,6 @@ winFinishScreenInitNativeGDI (int index,
 {
   winScreenPriv(pScreen);
   winScreenInfoPtr      pScreenInfo = &g_ScreenInfo[index];
-  PictFormatPtr         formats = NULL;
-  int                   nformats = 0;
   VisualPtr		pVisuals = NULL;
   DepthPtr		pDepths = NULL;
   VisualID		rootVisual = 0;
@@ -884,12 +889,12 @@ winFinishScreenInitNativeGDI (int index,
 
   ErrorF ("winFinishScreenInitNativeGDI () - calling miDCInitialize\n");
 
+  /* Initialize the cursor */
   if (!miDCInitialize (pScreen, &g_winPointerCursorFuncs))
     {
       ErrorF ("winFinishScreenInitNativeGDI () - miDCInitialize failed\n");
       return FALSE;
     }
-
   ErrorF ("winFinishScreenInitNativeGDI () - miDCInitialize () returned\n");
 
   /* Set the default white and black pixel positions */
@@ -906,9 +911,11 @@ winFinishScreenInitNativeGDI (int index,
   ErrorF ("winFinishScreenInitNativeGDI () - miCreateDefColormap () "
 	  "returned\n");
 
+#if 0
 #ifdef RENDER
   ErrorF ("winFinishScreenInitNativeGDI () - calling miPictureInit()\n");
   miPictureInit (pScreen, formats, nformats);
+#endif
 #endif
   
   /*
@@ -916,16 +923,10 @@ winFinishScreenInitNativeGDI (int index,
    * process messages in our Windows message queue; specifically,
    * they process mouse and keyboard input.
    */
-#if 0
-  RegisterBlockAndWakeupHandlers (winBlockHandler,
-				  winWakeupHandler,
-				  pScreen);
-#else
   pScreen->BlockHandler = winBlockHandler;
   pScreen->WakeupHandler = winWakeupHandler;
   pScreen->blockData = pScreen;
   pScreen->wakeupData = pScreen;
-#endif
 
   /* Wrap mi's CloseScreen with our CloseScreen */
   pScreenPriv->CloseScreen = pScreen->CloseScreen;
@@ -937,7 +938,6 @@ winFinishScreenInitNativeGDI (int index,
   /* Tell the server that we are enabled */
   pScreenPriv->fEnabled = TRUE;
 
-
   /* Allocate a DC for the client window */
   pScreenPriv->hdcScreen = GetDC (pScreenPriv->hwndScreen);
   if (pScreenPriv->hdcScreen == NULL)
@@ -945,7 +945,6 @@ winFinishScreenInitNativeGDI (int index,
       ErrorF ("winFinishScreenInitNativeGDI () - Couldn't get DC\n");
       return FALSE;
     }
-
 
   ErrorF ("winFinishScreenInitNativeGDI () - Successful addition of "
 	  "screen %08x\n",
