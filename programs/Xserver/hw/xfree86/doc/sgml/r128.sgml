@@ -1,9 +1,19 @@
-<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN">
+<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN"[
+<!ENTITY % defs SYSTEM "defs.ent"> %defs;
+]>
 
 <article>
 <title>Information for ATI Rage 128 Users
 <author>Precision Insight, Inc., SuSE GmBH
 <date>12 November 1999
+
+<ident>
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/r128.sgml,v 1.2 1999/11/19 13:54:28 hohndel Exp $
+</ident>
+<!--
+$PI: xc/programs/Xserver/hw/xfree86/doc/sgml/r128.sgml,v 1.2 1999/10/21 20:51:15 faith Exp $
+-->
+
 <toc>
 
 <sect>Supported Hardware
@@ -50,7 +60,8 @@ initialize the card.  The only lines you need in the "Device"
 section of your XF86Config file are:
 <verb>
        Section "Device"
-           Identifier "r128"
+	   Identifier "Rage 128"
+           Driver "r128"
        EndSection
 </verb>
 or let xf86config or XF86Setup do this for you.
@@ -86,8 +97,8 @@ However, if you have problems with auto-detection, you can specify:
 <p>
 The XFree86 3.9 driver was ported from XFree86 3.3 and enhanced by:
 <itemize>
-   <item>Rickard E. (Rik) Faith <it>&lt;faith@precisioninsight.com&gt;</it>
-   <item>Kevin E. Martin <it>&lt;kevin@precisioninsight.com&gt;</it>
+   <item>Rickard E. (Rik) Faith <email>faith@precisioninsight.com</email>
+   <item>Kevin E. Martin <email>kevin@precisioninsight.com</email>
 </itemize>
 <p>
 The XFree86 3.9 driver was funded by ATI and was donated to The XFree86
@@ -100,15 +111,15 @@ Project by:
 <p>
 The XFree86 3.3 driver used for the port was written by:
 <itemize>
-   <item>Rickard E. (Rik) Faith <it>&lt;faith@precisioninsight.com&gt;</it>
-   <item>Kevin E. Martin <it>&lt;kevin@precisioninsight.com&gt;</it>
+   <item>Rickard E. (Rik) Faith <email>faith@precisioninsight.com</email>
+   <item>Kevin E. Martin <email>kevin@precisioninsight.com</email>
 </itemize>
 The XFree86 3.3 driver was funded by ATI and was donated to The XFree86
 Project by Precision Insight, Inc.  It was based in part on an earlier
 driver that was written by:
 <itemize>
-   <item>Alan Hourihane <it>&lt;alanh@fairlite.demon.co.uk&lt;</it>
-   <item>Dirk Hohndel <it>&lt;hohndel@suse.de&gt;</it>
+   <item>Alan Hourihane <email>alanh@fairlite.demon.co.uk</email>
+   <item>Dirk Hohndel <email>hohndel@suse.de</email>
 </itemize>
 <p>This early driver was funded and donated to The XFree86 Project by:
 <verb>
@@ -125,9 +136,5 @@ driver that was written by:
 <htmlurl name="http://www.suse.com"
           url="http://www.suse.com">
 
-<verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/r128.sgml,v 1.1.2.1 1999/10/11 21:04:38 hohndel Exp $
-$PI: xc/programs/Xserver/hw/xfree86/doc/sgml/r128.sgml,v 1.2 1999/10/21 20:51:15 faith Exp $
-</verb>
 
 </article>
