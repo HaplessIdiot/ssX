@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                               8 December 2000
+                              15 December 2000
 
                                   Abstract
 
@@ -12,16 +12,17 @@
 
 1.  What is XFree86 4.0.2?
 
-XFree86 4.0.2 is a the upgrade to the first full release in the new XFree86 4
-series.  Release 4 is a major re-design of the basic architectural underpin-
+XFree86 4.0.2 is the third full release in the new XFree86 4 series.
+
+XFree86 release 4 is a major re-design of the basic architectural underpin-
 nings of XFree86's implementation of the original X Consortium's X Server.
 This re-design allows for a modular interaction between the hardware drivers
-and the XFree86 core X server.  With 4.0, upgrades to the X server with new
+and the XFree86 core X server.  With 4.x, upgrades to the X server with new
 and unsupported hardware can be easily done and installed without undergoing
-the previous process of rebuilding a X server.  All that is required is
+the previous process of rebuilding an X server.  All that is required is
 installing the new driver module and updating the configuration file.
 
-The road to XFree86 Release 4 began as an architectural concept in mid 1997,
+The road to XFree86 release 4 began as an architectural concept in mid 1997,
 with the serious framework being implemented in code the beginning of 1998.
 There were several snapshots on the road to 4.0 which are now part of the 4.0
 base release.  The 4.0.2 version is an upgrade to 4.0.1, which include more
@@ -29,12 +30,13 @@ hardware ports, code enhancements and bug fixes.
 
 Release 4 also included the long-awaited integration of the DRI (Direct Ren-
 dering Infrastructure).  This upgrade into the code base  gives XFree86 the
-abilities of direct 3-D graphics rendering, used widely in games and other
-visualization programs.
+abilities of accelerated direct 3-D graphics rendering, used widely in games
+and other visualization programs.
 
-Many drivers used in the old 3.3.x series have not be converted over to the
-4.0 design and so check first whether your hardware is supported before
-upgrading to the 4.0 series in the Driver Status document.
+While some driver available in the old 3.3.x release series have not been
+converted over to the 4.x series, those required for most modern video hard-
+ware are available.  Please check the Driver Status document first to see
+whether your hardware is supported before upgrading to the 4.x series.
 
 Specific release enhancements can be viewed in the Release Notes.
 
@@ -49,9 +51,9 @@ can be found in the License Document.
 2.1  Development
 
 If you would like to work on the development of XFree86 4, either by helping
-with the conversion of our older drivers to the new 4.0 design, or assisting
+with the conversion of our older drivers to the new 4.x design, or assisting
 in the addition of new drivers or platforms to the code base then send a
-request to to join the XFree86 development team
+request to join the XFree86 development team
 <URL:http://www.xfree86.org:/developer.html>.  This will give you direct
 access to the latest XFree86 related development topics and discussions.
 Include in your note, your name, email address, reason for joining (what you
@@ -96,13 +98,6 @@ For those who want to see what has been committed recently to our CVS reposi-
 tory this is the list that will show you those updates.  This list is updated
 dynamically every time the repository is updated after the the commit hap-
 pens.
-
-A followup to the commit list is the soon to be public, patch archives.  This
-archive will be available on our web-site and will show what patches have
-been submitted and will soon be committed.  This is helpful for people who
-are interested in a specific area and want to know what work is happening
-there.  When this goes public we will announce it on our web site and our
-Announce mailing list, so keep watching.
 
 3.4  Xpert
 
@@ -163,7 +158,7 @@ yourself, send the entire log file with your bug report but not the operating
 system core dump.  Do not edit  the log file as our developers use it to
 reproduce and debug your problem.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.109 2000/12/09 03:06:24 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.110 2000/12/15 16:11:57 dawes Exp $
 
 
 $XFree86$
