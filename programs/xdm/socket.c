@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the copyright holder.
 
 */
-/* $XFree86: xc/programs/xdm/socket.c,v 3.15tsi Exp $ */
+/* $XFree86: xc/programs/xdm/socket.c,v 3.16 2004/03/30 17:22:46 tsi Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -65,6 +65,9 @@ CreateWellKnownSockets (void)
 {
     char *name = localHostname ();
     registerHostname (name, strlen (name));
+
+    if (request_port == 0)
+	return;
 
 #if defined(IPv6) && defined(AF_INET6)
     chooserFd = socket (AF_INET6, SOCK_STREAM, 0);
