@@ -1,4 +1,5 @@
 XFree86 4.X.Ya (?? January 2001)
+  69. Fix Neomagic 2200 screen corruption (Egbert Eich).
   68. Disable RENDER extension support in the ATI(misc) driver when mibank
       and/or shadowfb is used (Marc La France).
   67. Remove cfb & friends from the ATI driver (Marc La France).
@@ -12274,4 +12275,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1529 2001/01/21 21:19:09 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1530 2001/01/22 19:46:11 dawes Exp $
