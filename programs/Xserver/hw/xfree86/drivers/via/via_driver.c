@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.19 2003/12/30 18:10:26 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.20 2003/12/31 05:42:04 dawes Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -81,7 +81,6 @@ static void VIADisableMMIO(ScrnInfoPtr pScrn);
 static Bool VIAMapMMIO(ScrnInfoPtr pScrn);
 static Bool VIAMapFB(ScrnInfoPtr pScrn);
 static void VIAUnmapMem(ScrnInfoPtr pScrn);
-static int  VIAGetMemSize(void);
 Bool VIADeviceSelection(ScrnInfoPtr pScrn);
 Bool VIADeviceDispatch(ScrnInfoPtr pScrn);
 
@@ -1359,7 +1358,10 @@ static Bool VIAPreInit(ScrnInfoPtr pScrn, int flags)
             pScrn->videoRam = bMemSize << 6;
         }
         else {
-            VGAOUT8(0x3C4, 0x34);	/* Was 0x39 */
+            if(pVia->Chipset == VIA_CLE266)
+                VGAOUT8(0x3C4, 0x34);
+            else
+            	VGAOUT8(0x3C4, 0x39);
             bMemSize = VGAIN8(0x3c5);
             if (bMemSize > 16 && bMemSize <= 128) {
                 pScrn->videoRam = (bMemSize + 1) << 9;
@@ -1370,7 +1372,7 @@ static Bool VIAPreInit(ScrnInfoPtr pScrn, int flags)
             else {
                 DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
                 "bMemSize = %d\nGet Video Memory Size by default.\n", bMemSize));
-                pScrn->videoRam = VIAGetMemSize();
+                pScrn->videoRam = 16 << 10;	/* Assume the base 16Mb */
             }
         }
     }
@@ -3083,14 +3085,6 @@ static void VIADPMS(ScrnInfoPtr pScrn, int mode, int flags)
     return;
 }
 
-
-int VIAGetMemSize()
-{
-    /* TODO: Do memory sizing  */
-
-    /* Default 16MB */
-    return (16 << 10);
-}
 
 /* Active Device according connected status */
 Bool VIADeviceSelection(ScrnInfoPtr pScrn)
