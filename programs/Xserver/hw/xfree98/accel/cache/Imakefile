@@ -1,0 +1,29 @@
+XCOMM $XFree86$
+#include <Server.tmpl>
+
+SRCS = 	xf86bcache.c xf86fcache.c xf86text.c
+
+OBJS = 	xf86bcache.o xf86fcache.o xf86text.o
+
+DEFINES = -DPSZ=8
+
+INCLUDES = -I$(XF98COMSRC) -I$(XF98HWSRC) -I$(XF98OSSRC) -I. \
+	   -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
+           -I$(SERVERSRC)/cfb -I$(INCLUDESRC) -I$(FONTINCSRC)
+
+NormalLibraryObjectRule()
+
+NormalAsmObjectRule()
+
+NormalLibraryTarget(xf86cache,$(OBJS))
+
+LinkSourceFile(xf86bcache.c,$(XF86SRC)/accel/cache)
+LinkSourceFile(xf86bcache.h,$(XF86SRC)/accel/cache)
+LinkSourceFile(xf86fcache.c,$(XF86SRC)/accel/cache)
+LinkSourceFile(xf86fcache.h,$(XF86SRC)/accel/cache)
+LinkSourceFile(xf86text.c,$(XF86SRC)/accel/cache)
+LinkSourceFile(xf86text.h,$(XF86SRC)/accel/cache)
+
+InstallLinkKitLibrary(xf86cache,$(LINKKITDIR)/lib)
+
+DependTarget()

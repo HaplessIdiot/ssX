@@ -1,0 +1,173 @@
+XCOMM $XConsortium: Imakefile,v 1.5 95/01/26 15:36:06 kaleb Exp $
+XCOMM $XFree86$
+#include <Server.tmpl>
+
+#ifdef i386MachArchitecture
+        KBD = xf86KbdMach
+#else
+# ifdef i386BsdArchitecture
+        KBD = xf86KbdBSD
+# else
+#  ifdef LinuxArchitecture
+        KBD = xf86KbdLnx
+#  else
+        KBD = xf86Kbd
+#  endif
+# endif
+#endif
+
+  XCONFIGSRC = xf86Config
+  XCONFIGFILE = XF86Config
+
+SERVERSRCS = \
+	XF86_SVGA.c \
+	XF86_VGA16.c \
+	XF86_Mono.c \
+	XF86_S3.c \
+	XF86_8514.c \
+	XF86_Mach8.c \
+	XF86_Mach32.c \
+	XF86_Mach64.c \
+	XF86_P9000.c \
+	XF86_AGX.c \
+	XF86_W32.c \
+	XF86_I128.c
+
+SRCS =	\
+	$(XCONFIGSRC).c \
+	xf86IniExt.c \
+	xf86MIniExt.c \
+	xf86Cursor.c \
+	xf86Events.c \
+	xf86Init.c \
+	xf86Init_m.c \
+	xf86Io.c \
+	xf86Lock.c \
+	xf86_Mouse.c \
+	xf86_Option.c \
+	$(KBD).c \
+	$(SERVERSRCS)
+
+OBJS = \
+	$(XCONFIGSRC).o \
+	xf86Cursor.o \
+	xf86Events.o \
+	xf86Io.o \
+	xf86Lock.o \
+	xf86_Mouse.o \
+	$(KBD).o
+
+OFILES = \
+	xf86Init.o \
+	xf86Init_m.o \
+	xf86IniExt.o \
+	xf86MIniExt.o \
+	xf86_Option.o
+
+   INCLUDES = -I. -I.. -I$(XF98OSSRC) -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
+              -I$(SERVERSRC)/include -I$(SERVERSRC)/os \
+              -I$(INCLUDESRC) -I$(EXTINCSRC)
+
+     OSNAME = OSName
+   OSVENDOR = OSVendor
+  OSNAMEDEF = -DOSNAME='"$(OSNAME)"' -DOSVENDOR='"$(OSVENDOR)"'
+CONSDEFINES = XFree86ConsoleDefines
+/* 823132800 is Thu Feb  1 00:00:00 1996 GMT */
+/* 828316800 is Mon Apr  1 00:00:00 1996 GMT */
+EXP_DEFINES = -DEXPIRY_TIME=828316800
+
+    DEFINES = $(XCONFIGDEFINES) $(CONSDEFINES) -DPC98
+
+#if XF98EGCServer
+VGA16BUILD = -DBUILD_VGA16
+#endif
+
+XF86SCREENFLAGS = $(VGA16BUILD) $(VGA16MONOBUILD)
+
+all:: $(OFILES)
+
+SpecialObjectRule($(XCONFIGSRC).o,$(XCONFIGSRC).c,'-DSERVER_CONFIG_FILE="$(LIBDIR)/$(XCONFIGFILE)"')
+SpecialObjectRule(xf86Init.o,xf86Init.c $(ICONFIGFILES),$(OSNAMEDEF) $(EXT_DEFINES) $(EXP_DEFINES))
+SpecialCObjectRule(xf86Events,$(ICONFIGFILES),$(EXT_DEFINES))
+#if XF98GANBWAPServer || XF98NEC480Server || XF98NKVNECServer ||\
+    XF98WABSServer || XF98SVGAServer
+SpecialObjectRule(XF86_SVGA.o,XF86_SVGA.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
+all:: XF86_SVGA.o
+#endif
+#if XF98EGCServer
+SpecialObjectRule(XF86_VGA16.o,XF86_VGA16.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
+all:: XF86_VGA16.o
+#endif
+#if XF98NECS3Server || XF98PWSKBServer || XF98PWLBServer
+SpecialObjectRule(XF86_S3.o,XF86_S3.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
+all:: XF86_S3.o
+#endif
+
+ObjectFromSpecialSource(xf86Init_m,../../xfree86/common/xf86Init,$(OSNAMEDEF) $(EXT_DEFINES) $(EXP_DEFINES) -DXF86MONOVGA)
+ObjectFromSpecialSource(xf86IniExt,$(SERVERSRC)/mi/miinitext,$(EXT_DEFINES) -DXFREE86)
+ObjectFromSpecialSource(xf86MIniExt,$(SERVERSRC)/mi/miinitext,$(EXT_DEFINES) -DXFREE86 -UPEXEXT -UXIE)
+
+NormalLibraryObjectRule()
+NormalLibraryTarget(xf86,$(OBJS))
+
+LinkFile(XF86_Mach8.c,$(XF86SRC)/common/Mach8.c)
+LinkFile(XF86_Mach32.c,$(XF86SRC)/common/Mach32.c)
+LinkFile(XF86_Mach64.c,$(XF86SRC)/common/Mach64.c)
+LinkSourceFile(XF86_8514.c,$(XF86SRC)/common)
+LinkSourceFile(XF86_AGX.c,$(XF86SRC)/common)
+LinkSourceFile(XF86_Mono.c,$(XF86SRC)/common)
+LinkSourceFile(XF86_P9000.c,$(XF86SRC)/common)
+LinkSourceFile(XF86_S3.c,$(XF86SRC)/common)
+LinkSourceFile(XF86_SVGA.c,$(XF86SRC)/common)
+LinkSourceFile(XF86_VGA16.c,$(XF86SRC)/common)
+LinkSourceFile(XF86_W32.c,$(XF86SRC)/common)
+LinkSourceFile(atKeynames.h,$(XF86SRC)/common)
+LinkSourceFile(cfb16.h,$(XF86SRC)/common)
+LinkSourceFile(cfb32.h,$(XF86SRC)/common)
+LinkSourceFile(coKeynames.h,$(XF86SRC)/common)
+LinkSourceFile(compiler.h,$(XF86SRC)/common)
+LinkSourceFile(xf86.h,$(XF86SRC)/common)
+LinkSourceFile(xf86Config.c,$(XF86SRC)/common)
+LinkSourceFile(xf86Cursor.c,$(XF86SRC)/common)
+LinkSourceFile(xf86Events.c,$(XF86SRC)/common)
+LinkSourceFile(xf86ExtInit.h,$(XF86SRC)/common)
+LinkSourceFile(xf86Init.c,$(XF86SRC)/common)
+LinkSourceFile(xf86Io.c,$(XF86SRC)/common)
+LinkSourceFile(xf86Kbd.c,$(XF86SRC)/common)
+LinkSourceFile(xf86KbdBSD.c,$(XF86SRC)/common)
+LinkSourceFile(xf86KbdLnx.c,$(XF86SRC)/common)
+LinkSourceFile(xf86KbdMach.c,$(XF86SRC)/common)
+LinkSourceFile(xf86Keymap.h,$(XF86SRC)/common)
+LinkSourceFile(xf86Lock.c,$(XF86SRC)/common)
+LinkSourceFile(xf86Priv.h,$(XF86SRC)/common)
+LinkSourceFile(xf86Procs.h,$(XF86SRC)/common)
+LinkSourceFile(xf86_Config.h,$(XF86SRC)/common)
+LinkSourceFile(xf86_Mouse.c,$(XF86SRC)/common)
+LinkSourceFile(xf86_Option.c,$(XF86SRC)/common)
+LinkSourceFile(xf86_Option.h,$(XF86SRC)/common)
+
+InstallLinkKitLibrary(xf86,$(XF98LINKKITDIR)/lib)
+InstallLinkKitNonExecFile(xf86Init.o,$(XF98LINKKITDIR)/lib)
+InstallLinkKitNonExecFile(xf86Init_m.o,$(XF98LINKKITDIR)/lib)
+InstallLinkKitNonExecFile(xf86.h,$(XF98LINKKITDIR)/include)
+InstallLinkKitNonExecFile(xf86ExtInit.h,$(XF98LINKKITDIR)/include)
+InstallLinkKitNonExecFile(xf86Priv.h,$(XF98LINKKITDIR)/include)
+InstallLinkKitNonExecFile(xf86Procs.h,$(XF98LINKKITDIR)/include)
+InstallLinkKitNonExecFile(xf86_Option.h,$(XF98LINKKITDIR)/include)
+InstallLinkKitNonExecFile(xf86_Option.c,$(XF98LINKKITDIR))
+InstallLinkKitNonExecFile(xf86_Config.h,$(XF98LINKKITDIR)/include)
+InstallLinkKitNonExecFile(compiler.h,$(XF98LINKKITDIR)/include)
+InstallLinkKitNonExecFile(XF86_SVGA.c,$(XF98LINKKITDIR))
+InstallLinkKitNonExecFile(XF86_VGA16.c,$(XF98LINKKITDIR))
+InstallLinkKitNonExecFile(XF86_Mono.c,$(XF98LINKKITDIR))
+InstallLinkKitNonExecFile(XF86_S3.c,$(XF98LINKKITDIR))
+InstallLinkKitNonExecFile(XF86_8514.c,$(XF98LINKKITDIR))
+InstallLinkKitNonExecFile(XF86_Mach8.c,$(XF98LINKKITDIR))
+InstallLinkKitNonExecFile(XF86_Mach32.c,$(XF98LINKKITDIR))
+InstallLinkKitNonExecFile(XF86_Mach64.c,$(XF98LINKKITDIR))
+InstallLinkKitNonExecFile(XF86_P9000.c,$(XF98LINKKITDIR))
+InstallLinkKitNonExecFile(XF86_AGX.c,$(XF98LINKKITDIR))
+InstallLinkKitNonExecFile(XF86_W32.c,$(XF98LINKKITDIR))
+InstallLinkKitNonExecFile(XF86_I128.c,$(XF98LINKKITDIR))
+
+DependTarget()

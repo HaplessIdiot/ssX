@@ -1,0 +1,26 @@
+XCOMM $XFree86$
+#include <Server.tmpl>
+#define IHaveSubdirs
+
+SUBDIRS = XF98Vga16Drivers
+
+#ifndef OS2Architecture
+SRCS = */?*.c 
+
+OBJS = */?*_drv.o 
+#else
+SRCS = generic/?*.c
+
+OBJS = generic/?*_drv.o
+#endif
+
+NormalDepLibraryTarget(driver16,$(SUBDIRS),$(OBJS))
+
+NormalLibraryObjectRule()
+
+ForceSubdirs($(SUBDIRS))
+
+DependSubdirs($(SUBDIRS))
+
+InstallLinkKitNonExecFile(Imakefile,$(XF98LINKKITDIR)/drivers/vga16)
+

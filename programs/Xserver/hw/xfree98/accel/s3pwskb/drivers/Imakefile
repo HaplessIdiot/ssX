@@ -1,0 +1,11 @@
+XCOMM $XFree86$
+#include <Server.tmpl>
+#define IHaveSubdirs
+
+SUBDIRS = XF98S3Drivers
+
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
+
+InstallLinkKitNonExecFile(Imakefile,$(XF98LINKKITDIR)/drivers/s3)
+

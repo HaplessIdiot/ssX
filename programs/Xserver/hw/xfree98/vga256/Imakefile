@@ -1,0 +1,118 @@
+XCOMM $XFree86$
+#include <Server.tmpl>
+
+#define IHaveSubdirs
+
+#if XF98GANBWAPServer
+GANBWAPSUBDIRS = ganbwap 
+GANBWAPSRCS    = ganbwap/?*.c vgainit/?*.c
+GANBWAPOBJS    = ganbwap/?*.o vgainit/?*.o
+GANBWAPDONES   = ganbwap/DONE
+#endif
+
+#if XF98NEC480Server
+NEC480SUBDIRS = nec480
+NEC480SRCS    = nec480/?*.c vgainit/?*.c
+NEC480OBJS    = nec480/?*.o vgainit/?*.o
+NEC480DONES   = nec480/DONE
+#endif
+
+#if XF98NKVNECServer
+NKVNECSUBDIRS = nkvnec
+NKVNECSRCS    = nkvnec/?*.c vgainit/?*.c
+NKVNECOBJS    = nkvnec/?*.o vgainit/?*.o
+NKVNECDONES   = nkvnec/DONE
+#endif
+
+#if XF98WABSServer
+WABSSUBDIRS = wabs
+WABSSRCS    = wabs/?*.c vgainit/?*.c
+WABSOBJS    = wabs/?*.o vgainit/?*.o
+WABSDONES   = wabs/DONE
+#endif
+
+#if XF98SVGAServer
+VGA256SUBDIRS  = vga
+VGA256SRCS     = vga/?*.c vgainit/?*.c
+VGA256OBJS     = vga/?*.o vgainit/?*.o
+VGA256DONES    = vga/DONE
+#endif
+
+SUBDIRS = vgainit drivers $(GANBWAPSUBDIRS) $(NEC480SUBDIRS) \
+	  $(NKVNECSUBDIRS) $(WABSSUBDIRS) $(VGA256SUBDIRS)
+SRCS    = $(GANBWAPSRCS) $(NEC480SRCS) $(NKVNECSRCS) \
+	  $(WABSSRCS) $(VGA256SRCS)
+OBJS    = $(GANBWAPOBJS) $(NEC480OBJS) $(NKVNECOBJS) \
+	  $(WABSOBJS) $(VGA256OBJS)
+DONES   = $(GANBWAPDONES) $(NEC480DONES) $(NKVNECDONES) \
+	  $(WABSDONES) $(VGA256DONES)
+
+INCLUDES = -Ivga -I$(XF98COMSRC) -I$(XF98OSSRC) -I$(SERVERSRC)/include \
+           -I$(INCLUDESRC)
+
+VGADRIVERS = XF98SvgaDrivers
+
+#if HasParallelMake
+MakeMutex($(SUBDIRS) $(OBJS) $(DONES))
+#endif
+
+#ifdef OS2Architecture
+all:: DONE
+	cp $(OBJS) .
+
+#if XF98GANBWAPServer
+NormalDepLibraryTarget(ganbwap,$(GANBWAPSUBDIRS) drivers vgainit $(GANBWAPDONES),?*.o)
+#endif
+#if XF98NEC480Server
+NormalDepLibraryTarget(nec480,$(NEC480SUBDIRS) drivers vgainit $(NEC480DONES),?*.o)
+#endif
+#if XF98NKVNECServer
+NormalDepLibraryTarget(nkvnec,$(NKVNECSUBDIRS) drivers vgainit $(NKVNECDONES),?*.o)
+#endif
+#if XF98WABSServer
+NormalDepLibraryTarget(wabs,$(WABSSUBDIRS) drivers vgainit $(WABSDONES),?*.o)
+#endif
+#if XF98SVGAServer
+NormalDepLibraryTarget(vga256,$(VGA256SUBDIRS) drivers vgainit $(VGA256DONES),?*.o)
+#endif
+#else
+#if XF98GANBWAPServer
+NormalDepLibraryTarget(ganbwap,$(GANBWAPSUBDIRS) drivers vgainit $(GANBWAPDONES),$(GANBWAPOBJS))
+#endif
+#if XF98NEC480Server
+NormalDepLibraryTarget(nec480,$(NEC480SUBDIRS) drivers vgainit $(NEC480DONES),$(NEC480OBJS))
+#endif
+#if XF98NKVNECServer  
+NormalDepLibraryTarget(nkvnec,$(NKVNECSUBDIRS) drivers vgainit $(NKVNECDONES),$(NKVNECOBJS))
+#endif
+#if XF98WABSServer
+NormalDepLibraryTarget(wabs,$(WABSSUBDIRS) drivers vgainit $(WABSDONES),$(WABSOBJS))
+#endif
+#if XF98SVGAServer
+NormalDepLibraryTarget(vga256,$(VGA256SUBDIRS) drivers vgainit $(VGA256DONES),$(VGA256OBJS))
+#endif
+#endif
+#if XF98GANBWAPServer
+ConfigTargetNoDepend(ganbwapConf,$(ICONFIGFILES),cganbwap.SHsuf,cirrus)
+#endif
+#if XF98NEC480Server
+ConfigTargetNoDepend(nec480Conf,$(ICONFIGFILES),cnec480.SHsuf,nec480)
+#endif
+#if XF98NKVNECServer
+ConfigTargetNoDepend(nkvnecConf,$(ICONFIGFILES),cnkvnec.SHsuf,cirrus)
+#endif
+#if XF98WABSServer
+ConfigTargetNoDepend(wabsConf,$(ICONFIGFILES),cwabs.SHsuf,cirrus)
+#endif
+#if XF98SVGAServer
+ConfigTargetNoDepend(vga256Conf,$(ICONFIGFILES),cvga256.SHsuf,$(VGADRIVERS))
+#endif
+
+NormalLibraryObjectRule()
+
+ForceSubdirs($(SUBDIRS))
+
+InstallLinkKitLibrary(vga256,$(XF98LINKKITDIR)/drivers)
+InstallLinkKitNonExecFile(cvga256.SHsuf,$(XF98LINKKITDIR))
+
+DependSubdirs($(SUBDIRS))

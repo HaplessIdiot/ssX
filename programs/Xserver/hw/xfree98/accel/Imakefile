@@ -1,0 +1,8 @@
+XCOMM $XFree86$
+#include <Server.tmpl>
+#define IHaveSubdirs
+
+SUBDIRS = XF98AccelServerDirs cache
+
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))

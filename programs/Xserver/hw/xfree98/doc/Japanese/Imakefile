@@ -1,0 +1,27 @@
+XCOMM $XConsortium: Imakefile,v 1.1 95/01/16 12:30:46 kaleb Exp $
+XCOMM $XFree86$
+
+#include <Server.tmpl>
+
+#ifdef LinuxArchitecture
+OSREADME = README.Linux
+#endif
+
+MAINDOCS = COPYRIGHT README README.Config INSTALL AccelCards VideoModes.doc \
+	   README.S3
+
+FILES = $(MAINDOCS) $(OSREADME)
+
+all::
+
+InstallMultipleDest(install,$(FILES),$(XFREE86JAPANESEDOCDIR))
+
+LinkSourceFile(AccelCards,$(XF86SRC)/doc/Japanese)
+LinkSourceFile(COPYRIGHT,$(XF86SRC)/doc/Japanese)
+LinkSourceFile(INSTALL,$(XF86SRC)/doc/Japanese)
+LinkSourceFile(README,$(XF86SRC)/doc/Japanese)
+LinkSourceFile(README.Config,$(XF86SRC)/doc/Japanese)
+LinkSourceFile(README.Linux,$(XF86SRC)/doc/Japanese)
+LinkSourceFile(README.S3,$(XF86SRC)/doc/Japanese)
+LinkSourceFile(VideoModes.doc,$(XF86SRC)/doc/Japanese)
+

@@ -1,0 +1,19 @@
+XCOMM $XFree86$
+
+all:: mkmf
+
+CppScriptTarget(mkmf,mkmf.cpp,-DCONFIGDIRSPEC=-I$(CONFIGDIR),$(ICONFIGFILES))
+InstallLinkKitNamedNonExec(Imakefile.LK,Imakefile,$(LINKKITDIR))
+InstallLinkKitNamedNonExec(site.def.LK,xf86site.def,$(LINKKITDIR))
+InstallLinkKitNamedProg(mkmf,mkmf,$(LINKKITDIR))
+#if !HasLinuxDoc
+InstallLinkKitNonExecFile(README,$(LINKKITDIR))
+InstallNamedNonExec(README,README.LinkKit,$(XFREE86DOCDIR))
+#endif
+
+LinkSourceFile(Imakefile.LK,$(XF86SRC)/LinkKit)
+LinkSourceFile(README,$(XF86SRC)/LinkKit)
+LinkSourceFile(mkmf.cpp,$(XF86SRC)/LinkKit)
+LinkSourceFile(site.def.LK,$(XF86SRC)/LinkKit)
+
+DependTarget()

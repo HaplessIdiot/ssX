@@ -1,0 +1,28 @@
+XCOMM $XFree86$
+#include <Server.tmpl>
+
+SRCS = mmio_928.c
+
+OBJS = mmio_928.o
+
+#if XF86LinkKit
+INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
+#else
+INCLUDES = -I. -I../.. -I$(XF98COMSRC) -I$(XF98HWNECSRC) \
+	   -I$(XF98OSSRC) -I$(SERVERSRC)/mi \
+           -I$(XF98SRC)/vga256/vga -I$(SERVERSRC)/include -I$(INCLUDESRC) \
+	   -I$(XF98SRC)/accel/cache
+#endif
+
+NormalLibraryObjectRule()
+NormalAsmObjectRule()
+
+all:: mmio_928.o
+
+LinkSourceFile(mmio_928.c,$(XF86SRC)/accel/s3/drivers/mmio_928)
+
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/s3/mmio_928)
+InstallLinkKitNonExecFile(mmio_928.c,$(LINKKITDIR)/drivers/s3/mmio_928)
+
+DependTarget()
+

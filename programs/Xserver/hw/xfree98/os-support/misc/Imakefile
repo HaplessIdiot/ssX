@@ -1,0 +1,19 @@
+XCOMM $XFree86$
+#include <Server.tmpl>
+
+SRCS = xf86_Util.c xf86_IlHack.c
+
+OBJS = xf86_Util.o xf86_IlHack.o
+
+INCLUDES = -I$(XF98COMSRC) -I$(XF98OSSRC) -I. -I$(SERVERSRC)/include \
+           -I$(INCLUDESRC)
+
+DEFINES = -DPC98
+
+SubdirLibraryRule($(OBJS))
+NormalLibraryObjectRule()
+
+LinkSourceFile(xf86_IlHack.c,$(XF86OSSRC)/misc)
+LinkSourceFile(xf86_Util.c,$(XF86OSSRC)/misc)
+
+DependTarget()
