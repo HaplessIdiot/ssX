@@ -15,6 +15,7 @@
 #include "servermd.h"
 #include "xf86str.h"
 #include "xaa.h"
+#include "xaacexp.h"
 #include "xaalocal.h"
 #include "xaawrap.h"
 
@@ -1069,12 +1070,21 @@ XAAInitPixmapCache(
     CACHEINIT(pScrn) = 1;
 }
 
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+static CARD32 StippleMasks[4] = {
+   0x80808080,
+   0xC0C0C0C0,
+   0x00000000,
+   0xF0F0F0F0
+};
+#else
 static CARD32 StippleMasks[4] = {
    0x01010101,
    0x03030303,
    0x00000000,
    0x0F0F0F0F
 };
+#endif
 
 Bool
 XAACheckStippleReducibility(PixmapPtr pPixmap)
@@ -1086,6 +1096,7 @@ XAACheckStippleReducibility(PixmapPtr pPixmap)
     int h = pPixmap->drawable.height;
     int i;
     CARD32 bits[8];
+    CARD32 mask = SHIFT_R(0xFFFFFFFF,24);
 
     pPriv->flags |= REDUCIBILITY_CHECKED | REDUCIBLE_TO_2_COLOR;
     pPriv->flags &= ~REDUCIBLE_TO_8x8;
@@ -1098,23 +1109,23 @@ XAACheckStippleReducibility(PixmapPtr pPixmap)
     switch(w) {
     case 32:
  	while(i--) {
-	    bits[i] = IntPtr[i] & 0x000000FF;
-	    if(	(bits[i] != ((IntPtr[i] & 0x0000FF00) >> 8)) ||
-		(bits[i] != ((IntPtr[i] & 0x00FF0000) >> 16)) ||
-		(bits[i] != ((IntPtr[i] & 0xFF000000) >> 24)))
+	   bits[i] = IntPtr[i] & mask;
+	    if(	(bits[i] != SHIFT_R((IntPtr[i] & SHIFT_L(mask, 8)), 8)) ||
+		(bits[i] != SHIFT_R((IntPtr[i] & SHIFT_L(mask,16)),16)) ||
+		(bits[i] != SHIFT_R((IntPtr[i] & SHIFT_L(mask,24)),24)))
 	    	return FALSE; 
 	}
 	break;
     case 16:
 	while(i--) {
-	    bits[i] = IntPtr[i] & 0x000000FF;
-	    if(bits[i] != ((IntPtr[i] & 0x0000FF00) >> 8))
+	   bits[i] = IntPtr[i] & mask;
+	    if(bits[i] != ((IntPtr[i] & SHIFT_R(SHIFT_L(mask,8),8))))
 	    	return FALSE; 
 	}
 	break;
     default: 
 	while(i--)
-	   bits[i] = IntPtr[i] & 0x000000FF;
+	   bits[i] = IntPtr[i] & mask;
 	break;
     }    
 
@@ -1146,20 +1157,20 @@ XAACheckStippleReducibility(PixmapPtr pPixmap)
 	
     pPriv->flags |= REDUCIBLE_TO_8x8;
 
-    pPriv->pattern0 = bits[0] | (bits[1]<<8) | (bits[2]<<16) | (bits[3]<<24);
-    pPriv->pattern1 = bits[4] | (bits[5]<<8) | (bits[6]<<16) | (bits[7]<<24);
+    pPriv->pattern0 = bits[0] | SHIFT_L(bits[1],8) | SHIFT_L(bits[2],16) | SHIFT_L(bits[3],24);
+    pPriv->pattern1 = bits[4] | SHIFT_L(bits[5],8) | SHIFT_L(bits[6],16) | SHIFT_L(bits[7],24);
  
     if(w < 8) {
 	pPriv->pattern0 &= StippleMasks[w - 1];
 	pPriv->pattern1 &= StippleMasks[w - 1];
 
 	switch(w) {
-	case 1: pPriv->pattern0 |= (pPriv->pattern0 << 1);
-		pPriv->pattern1 |= (pPriv->pattern1 << 1);
-	case 2:	pPriv->pattern0 |= (pPriv->pattern0 << 2);
-		pPriv->pattern1 |= (pPriv->pattern1 << 2);
-	case 4:	pPriv->pattern0 |= (pPriv->pattern0 << 4);
-		pPriv->pattern1 |= (pPriv->pattern1 << 4);
+	case 1: pPriv->pattern0 |= SHIFT_L(pPriv->pattern0,1);
+		pPriv->pattern1 |= SHIFT_L(pPriv->pattern1,1);
+	case 2:	pPriv->pattern0 |= SHIFT_L(pPriv->pattern0,2);
+		pPriv->pattern1 |= SHIFT_L(pPriv->pattern1,2);
+	case 4:	pPriv->pattern0 |= SHIFT_L(pPriv->pattern0,4);
+		pPriv->pattern1 |= SHIFT_L(pPriv->pattern1,4);
 	}
     }
 
