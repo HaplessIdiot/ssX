@@ -27,7 +27,7 @@
 # dealings in this Software without prior written authorization from the
 # XFree86 Project.
 #
-# $XFree86$
+# $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/XF86Config.indy,v 1.1 2000/12/01 19:47:57 dawes Exp $
 
 # **********************************************************************
 # This is a configuration file for the Indy's Newport Graphics and the
@@ -279,22 +279,10 @@ EndSection
 # **********************************************************************
 
 Section "Device"
-    Identifier	"Newport Graphics 1"
+    Identifier	"Newport Graphics"
     Driver	"newport"
 
-#    Option	"shadowfb" "yes"
-#    Option     "Silkenmouse" "no"
-#    VideoRam	1280
 #    Option	"bitplanes" "24"
-     BusID	"0"
-EndSection
-
-Section "Device"
-    Identifier	"Newport Graphics 2"
-    Driver	"newport"
-
-     Option	"shadowfb" "yes"
-     BusID	"1"
 EndSection
 
 # **********************************************************************
@@ -308,7 +296,7 @@ EndSection
 
 Section "Screen"
     Identifier	"Screen 1"
-    Device	"Newport Graphics 1"
+    Device	"Newport Graphics"
     Monitor	"SGI GDM17e11"
     DefaultDepth 8
 
@@ -317,19 +305,6 @@ Section "Screen"
         Modes		"1280x1024"
     EndSubSection
 EndSection
-
-Section "Screen"
-    Identifier	"Screen 2"
-    Device	"Newport Graphics 2"
-    Monitor	"SGI GDM17e11"
-    DefaultDepth 24
-
-    SubSection "Display"
-	Depth		24
-        Modes		"1280x1024"
-    EndSubSection
-EndSection
-
 
 # **********************************************************************
 # ServerLayout sections.
@@ -342,10 +317,3 @@ Section "ServerLayout"
     InputDevice "Keyboard1" "CoreKeyboard"
 EndSection
 
-Section "ServerLayout"
-    Identifier	"multihead layout"
-    Screen	"Screen 1" "" "" "" "Screen 2"
-    Screen	"Screen 2" "" "" "Screen 1" ""
-    InputDevice	"Mouse1" "CorePointer"
-    InputDevice "Keyboard1" "CoreKeyboard"
-EndSection

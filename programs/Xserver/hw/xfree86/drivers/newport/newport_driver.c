@@ -30,7 +30,7 @@
  * Project.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.4 2000/12/07 15:43:44 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.5 2000/12/09 03:31:36 dawes Exp $ */
 
 /* function prototypes, common data structures & generic includes */
 #include "newport.h"
@@ -378,13 +378,19 @@ NewportPreInit(ScrnInfoPtr pScrn, int flags)
 		pNewport->cmap_rev, pNewport->xmap9_rev);
 
 	if ( (xf86GetOptValInteger(NewportOptions, OPTION_BITPLANES, &pNewport->bitplanes)))
-		from = X_CONFIG;
+	from = X_CONFIG;
 	xf86DrvMsg(pScrn->scrnIndex, from, "Newport has %d bitplanes\n", pNewport->bitplanes);
 
 	if ( pScrn->depth > pNewport->bitplanes ) {
 		xf86DrvMsg(pScrn->scrnIndex, X_ERROR, \
 			"Display depth(%d) > number of bitplanes on Newport board(%d)\n", \
 			pScrn->depth, pNewport->bitplanes);
+		return FALSE;
+	}
+	if ( ( pNewport->bitplanes != 8 ) && ( pNewport->bitplanes != 24 ) ) {
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR, \
+			"Number of bitplanes on newport must be either 8 or 24 not %d\n", \
+			pNewport->bitplanes);
 		return FALSE;
 	}
 	
