@@ -20,7 +20,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_memory.c,v 1.1 2003/12/17 18:58:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_memory.c,v 1.2tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -66,10 +66,12 @@ void VIAFreeLinear(VIAMemPtr mem)
 			mem->pool = 0;
 			return;
 		case 2:
+#ifdef XF86DRI
 			if(drmCommandWrite(mem->drm_fd, DRM_VIA_FREEMEM,
 					&mem->drm, sizeof(drmViaMem)) < 0)
 				ErrorF("DRM module failed free.\n");
 			drmClose(mem->drm_fd);
+#endif
 			mem->pool = 0;
 			return;
 		case 3:
