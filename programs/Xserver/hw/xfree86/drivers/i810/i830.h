@@ -147,6 +147,7 @@ typedef struct _I830Rec {
    unsigned long TotalVideoRam;
    I830MemRange StolenMemory;		/* pre-allocated memory */
    unsigned long BIOSMemorySize;	/* min stolen pool size */
+   int BIOSMemSizeLoc;
 
    /* These change according to what has been allocated. */
    long FreeMemory;
@@ -299,6 +300,7 @@ typedef struct _I830Rec {
    int xoffset;
    int yoffset;
 
+   int SaveGeneration;
 } I830Rec;
 
 #define I830PTR(p) ((I830Ptr)((p)->driverPrivate))
@@ -395,5 +397,8 @@ extern void I830ChangeFrontbuffer(ScrnInfoPtr pScrn,int buffer);
 
 #define ALLOCATE_DRY_RUN		0x80000000
 
+/* Chipset registers for VIDEO BIOS memory RW access */
+#define DRAM_RW_CONTROL 0x58
+#define DRAM_WRITE    0x33330000
 
 #endif /* _I830_H_ */

@@ -108,6 +108,7 @@ typedef struct {
 #define ChipsVideoSupport	0x00000100
 #define ChipsDualChannelSupport	0x00000200
 #define ChipsDualRefresh	0x00000400
+#define Chips64BitMemory	0x00000800
 
 /* Options flags for the C&T chipsets */
 #define ChipsHWCursor		0x00001000

@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.101 2003/09/24 02:43:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.102 2003/09/24 06:03:13 herrb Exp $ */
 
 /*
  * Authors:
@@ -2232,6 +2232,21 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 
   xf86DPMSInit(pScreen, TDFXDisplayPowerManagementSet, 0);
 
+  /* Initialize Xv support */
+  TDFXInitVideo (pScreen);
+
+  pScreen->SaveScreen = TDFXSaveScreen;
+  pTDFX->CloseScreen = pScreen->CloseScreen;
+  pScreen->CloseScreen = TDFXCloseScreen;
+
+  pTDFX->BlockHandler = pScreen->BlockHandler;
+  pScreen->BlockHandler = TDFXBlockHandler;
+
+  /*
+   * DRICloseScreen isn't called thru a wrapper but explicitely
+   * in of TDFXCloseScreen() before the rest is unwrapped
+   */
+  
 #ifdef XF86DRI
   if (pTDFX->directRenderingEnabled) {
 	/* Now that mi, fb, drm and others have done their thing, 
@@ -2245,16 +2260,6 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 	xf86DrvMsg(pScrn->scrnIndex, driFrom, "Direct rendering disabled\n");
   }
 #endif
-
-  /* Initialize Xv support */
-  TDFXInitVideo (pScreen);
-
-  pScreen->SaveScreen = TDFXSaveScreen;
-  pTDFX->CloseScreen = pScreen->CloseScreen;
-  pScreen->CloseScreen = TDFXCloseScreen;
-
-  pTDFX->BlockHandler = pScreen->BlockHandler;
-  pScreen->BlockHandler = TDFXBlockHandler;
 
   if (serverGeneration == 1)
     xf86ShowUnusedOptions(pScrn->scrnIndex, pScrn->options);

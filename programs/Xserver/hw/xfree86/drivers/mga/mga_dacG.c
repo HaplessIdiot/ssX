@@ -1131,6 +1131,7 @@ MGAGRamdacInit(ScrnInfoPtr pScrn)
     				HARDWARE_CURSOR_TRUECOLOR_AT_8BPP;
 
     MGAdac->LoadPalette 	   = MGAGLoadPalette;
+    MGAdac->RestorePalette	   = MGAGRestorePalette;
 
     if ( pMga->Bios2.PinID && pMga->Bios2.PclkMax != 0xFF )
     {

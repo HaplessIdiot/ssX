@@ -370,8 +370,8 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
  		pReg->tridentRegs3x4[CRTHiOrd] = LCD[i].shadow_HiOrd;
 	    }
 	    
-	    fullSize = (pScrn->currentMode->HDisplay == LCD[i].display_x) 
-	        && (pScrn->currentMode->VDisplay == LCD[i].display_y);
+	    fullSize = (mode->HDisplay == LCD[i].display_x) 
+	        && (mode->VDisplay == LCD[i].display_y);
  	}
  	
   	/* copy over common bits from normal VGA */
@@ -457,7 +457,7 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    if (!mul) mul = 1;
 	    
 	    /* this is what my BIOS does */ 
-	    val = (pScrn->currentMode->HDisplay * mul / 8) + 16;
+	    val = (mode->HDisplay * mul / 8) + 16;
 
 	    pReg->tridentRegs3x4[PreEndControl] = ((val >> 8) < 2 ? 2 :0)
 	      | ((val >> 8) & 0x01);
@@ -472,15 +472,17 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	/* set mode */
 	if (pTrident->Chipset < BLADEXP) {
 	  pReg->tridentRegs3CE[BiosMode] = TridentFindMode(
-					   pScrn->currentMode->HDisplay,
-					   pScrn->currentMode->VDisplay,
+					   mode->HDisplay,
+					   mode->VDisplay,
 					   pScrn->depth);
 	  xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 1, 
-			 "Setting BIOS Mode: %x\n",
-			 pReg->tridentRegs3CE[BiosMode]);
+			 "Setting BIOS Mode: %x for: %ix%i\n",
+			 pReg->tridentRegs3CE[BiosMode],
+			 mode->HDisplay,
+			 mode->VDisplay);
 	} else {
-	  TridentFindNewMode(pScrn->currentMode->HDisplay,
-			     pScrn->currentMode->VDisplay,
+	  TridentFindNewMode(mode->HDisplay,
+			     mode->VDisplay,
 			     &pReg->tridentRegs3CE[BiosNewMode1],
 			     &pReg->tridentRegs3CE[BiosNewMode2]);
 	  xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 1, 

@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.91 2003/09/24 03:16:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.92 2003/09/28 20:15:58 alanh Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -1408,13 +1408,20 @@ DoRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, I810RegPtr i810Reg,
    /* Setting the OVRACT Register for video overlay */
    {
        CARD32 LCD_TV_Control = INREG(LCD_TV_C);
+       CARD32 TV_HTotal = INREG(LCD_TV_HTOTAL);
+       CARD32 ActiveStart, ActiveEnd;
        
-       if(!(LCD_TV_Control & LCD_TV_ENABLE)
-	  || (LCD_TV_Control & LCD_TV_VGAMOD)) {
-	   OUTREG(LCD_TV_OVRACT,
-		  (i810Reg->OverlayActiveEnd << 16)
-		  | i810Reg->OverlayActiveStart);
+       if((LCD_TV_Control & LCD_TV_ENABLE)
+	  && !(LCD_TV_Control & LCD_TV_VGAMOD)
+	   && TV_HTotal) {
+	   ActiveStart = ((TV_HTotal >> 16) & 0xfff) - 31;
+	   ActiveEnd = (TV_HTotal & 0x3ff) - 31;
+       } else {
+	   ActiveStart = i810Reg->OverlayActiveStart;
+	   ActiveEnd = i810Reg->OverlayActiveEnd;
        }
+       OUTREG(LCD_TV_OVRACT,
+	      (ActiveEnd << 16) | ActiveStart);
    }
    
    /* Turn on DRAM Refresh */
@@ -2221,6 +2228,7 @@ I810AdjustFrame(int scrnIndex, int x, int y, int flags)
    I810Ptr pI810 = I810PTR(pScrn);
    vgaHWPtr hwp = VGAHWPTR(pScrn);
    int Base;
+
 #if 1
    if (pI810->showCache) {
      int lastline = pI810->FbMapSize / 

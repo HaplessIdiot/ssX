@@ -868,5 +868,5 @@ SXSubsequentSolidBresenhamLine( ScrnInfoPtr pScrn,
                 (octant & XDECREASING) ? -1 : 1, 
                 (octant & YDECREASING) ? -1 : 1, 
                 (octant & YMAJOR) ? Y_AXIS : X_AXIS,
-                x, y, dmin + e, dmin, -dmaj, len);
+                x, y,  e, dmin, -dmaj, len);
 }
