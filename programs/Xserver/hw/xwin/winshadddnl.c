@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshadddnl.c,v 1.5 2001/05/14 16:52:33 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshadddnl.c,v 1.6 2001/05/31 09:11:19 alanh Exp $ */
 
 #include "win.h"
 
@@ -309,7 +309,6 @@ winShadowUpdateDDNL (ScreenPtr pScreen,
 {
   winScreenPriv(pScreen);
   winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
-  PixmapPtr		pShadow = pBuf->pPixmap;
   RegionPtr		damage = &pBuf->damage;
   HRESULT		ddrval = DD_OK;
   RECT			rcClient, rcDest, rcSrc;

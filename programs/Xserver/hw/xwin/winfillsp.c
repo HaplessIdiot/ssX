@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winfillsp.c,v 1.1 2001/04/05 20:13:49 dawes Exp $ */
 
 #include "win.h"
 
@@ -55,7 +55,7 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
   DEBUGVARS;
   //DEBUGPROC_MSG;
   
-  fprintf (stderr, "winFillSpans () - pDrawable: %08x\n",
+  ErrorF ( "winFillSpans () - pDrawable: %08x\n",
 	   pDrawable);
 
   /* Branch on the fill type */
@@ -78,11 +78,10 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
 	  MoveToEx (g_hdcMem, pPoint->x, pPoint->y, NULL);
 	  LineTo (g_hdcMem, pPoint->x + *pnWidth, pPoint->y);
 
-	  fprintf (stderr,
-		   "(%dx%dx%d) from: (%d,%d) to: (%d,%d), color: %08x\n",
-		   pDrawable->width, pDrawable->height, pDrawable->depth,
-		   pPoint->x, pPoint->y, pPoint->x + *pnWidth, pPoint->y,
-		   pGC->fgPixel);
+	  ErrorF ("(%dx%dx%d) from: (%d,%d) to: (%d,%d), color: %08x\n",
+		  pDrawable->width, pDrawable->height, pDrawable->depth,
+		  pPoint->x, pPoint->y, pPoint->x + *pnWidth, pPoint->y,
+		  pGC->fgPixel);
 	}
 
       BitBlt (g_hdc, pDrawable->width * 2, pDrawable->height,
@@ -92,10 +91,10 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
       break;
     case FillStippled:
       /* TODO: Construct the correct stipple, store it in hdcStipple */
-      fprintf (stderr, "winFillSpans () - Stipple bitmap: %08x (%dx%d)\n",
-	       pGC->stipple->devPrivate.ptr,
-	       pGC->stipple->drawable.width,
-	       pGC->stipple->drawable.height);
+      ErrorF ("winFillSpans () - Stipple bitmap: %08x (%dx%d)\n",
+	      pGC->stipple->devPrivate.ptr,
+	      pGC->stipple->drawable.width,
+	      pGC->stipple->drawable.height);
       SelectObject (hdcStipple, (HBITMAP)pGC->stipple->devPrivate.ptr);
       BitBlt (g_hdc, 0, 0,
 	      pGC->stipple->drawable.width,
@@ -214,7 +213,7 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
       ((PixmapPtr)pDrawable)->devPrivate.ptr = hbmpFilledStipple;
       break;
     case FillOpaqueStippled:
-      fprintf (stderr, "\n\nwinFillSpans () - OpaqueStippled\n\n");
+      ErrorF ("\n\nwinFillSpans () - OpaqueStippled\n\n");
       break;
     case FillTiled:
       /* Assumes that the drawable is the screen and the tile has been
@@ -254,7 +253,7 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
 	}
       break;
     default:
-      fprintf (stderr, "winFillSpans () - Unknown fillStyle\n");
+      ErrorF ("winFillSpans () - Unknown fillStyle\n");
       exit (1);
       break;
     }

@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:47:01 cpqbld Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.236 2001/06/03 21:52:31 keithp Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.237 2001/06/04 09:45:39 keithp Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -1198,30 +1198,18 @@ XCOMM
 FBDIR = fb
 SHADOWDIR = miext/shadow
 XWINDDXDIR = hw/xwin
-XWIN = $(XWINDDXDIR)/LibraryTargetName(Xwin)
-XWINGDI32 = -lgdi32
-XWINDDRAW = -lddraw
+XWINLIB = $(XWINDDXDIR)/LibraryTargetName(Xwin)
 XWINDIRS = $(STDDIRS) $(FBDIR) $(SHADOWDIR) $(XWINDDXDIR) $(DEPDIRS)
-
-XWINOBJSA = $(XWINDDXDIR)/stubs.o
-
-#if BuildDPMS
-XWINOBJSB = $(XWINDDXDIR)/dpmsstubs.o
-#endif
-
-XWINOBJS = $(XWINOBJSA) $(XWINOBJSB)
-
-XWINLIBS = PreFbLibs $(XWIN) FbPostFbLibs $(SHADOW)
-
-XWINSYSLIBS = $(FONTLIBS) $(LDPRELIBS) $(XLIB) $(SYSLIBS) \
-	$(XWINGDI32) $(XWINDDRAW)
+XWINOBJS = $(XWINDDXDIR)/stubs.o
+XWINLIBS = PreFbLibs $(XWINLIB) FbPostFbLibs $(SHADOW)
+XWINSYSLIBS = $(FONTLIBS) $(LDPRELIBS) $(XLIB) $(SYSLIBS) -lgdi32 -lddraw
 
 #if HasParallelMake
-MakeMutex($(XWINDIRS) $(XWINOBJS) $(XWIN) $(XWINLIBS) $(XWINSYSLIBS))
+MakeMutex($(XWINDIRS) $(XWINOBJS) $(XWINLIB) $(XWINLIBS) $(XWINSYSLIBS))
 #endif
 
 #if ForceServerRemake
-$(XWINOBJS) $(XWIN) $(XWINLIBS) $(XWINSYSLIBS):: $(XWINDIRS)
+$(XWINOBJS) $(XWINLIB) $(XWINLIBS) $(XWINSYSLIBS):: $(XWINDIRS)
 	@if [ -f $@ ]; then touch $@; fi
 #endif
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.4 2001/04/18 16:13:17 dawes Exp $
+XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.5 2001/04/27 12:32:42 alanh Exp $
 
 #define CPPOnlyAsm(basename,options) RemoveFile(basename.i)		@@\
 	$(CPP) AsmDefines $(DEFINES) $(INCLUDES) options  basename.S | grep -v '^\#' > basename.i
@@ -24,13 +24,11 @@ XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.4 2001/04/18 16:13:17 dawes Exp $
 #define SharedOldX YES
 #define SharedLibXp YES
 #define SharedLibGL YES
-#define SharedLibXpm YES
 #define SharedLibFont NO
 #define SharedLibXaw6 NO
 #define SharedLibgetsurf NO 
 #define SharedLibDps	YES
 #define SharedLibDpsTk	YES
-#define NormalLibGlu	YES
 #define SharedLibGlu	YES
 
 #ifndef SharedDataSeparation

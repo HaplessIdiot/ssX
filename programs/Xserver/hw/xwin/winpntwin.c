@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winpntwin.c,v 1.1 2001/04/05 20:13:50 dawes Exp $ */
 
 #include "win.h"
 
@@ -41,5 +41,5 @@ winPaintWindowNativeGDI (WindowPtr pWin,
 			 RegionPtr pRegion,
 			 int nKind)
 {
-  fprintf (stderr, "winPaintWindow()\n");
+  ErrorF ("winPaintWindow()\n");
 }

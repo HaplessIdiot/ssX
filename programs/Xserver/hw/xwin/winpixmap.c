@@ -28,7 +28,7 @@
  * Authors:	drewry, september 1986
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winpixmap.c,v 1.2 2001/05/01 22:57:15 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winpixmap.c,v 1.3 2001/05/02 00:45:26 alanh Exp $ */
 
 #include "win.h"
 
@@ -44,7 +44,7 @@ winCreatePixmapNativeGDI (ScreenPtr pScreen,
   HBITMAP		hBitmap;
   BITMAPINFOHEADER	bmih;
 
-  fprintf (stderr, "winCreatePixmap()\n");
+  ErrorF ("winCreatePixmap()\n");
 
   /* FIXME: For now we create all pixmaps in system memory.  Pixmaps
      with the same depth as the screen depth can be created in offscreen
@@ -99,8 +99,9 @@ winCreatePixmapNativeGDI (ScreenPtr pScreen,
   /* We will use devPrivate to point to our bitmap */
   pPixmap->devPrivate.ptr = hBitmap;
   
-  fprintf (stderr, "winCreatePixmap () - Created a pixmap %08x, %dx%dx%d, for screen: %08x\n",
-	   hBitmap, nWidth, nHeight, nDepth, pScreen);
+  ErrorF ("winCreatePixmap () - Created a pixmap %08x, %dx%dx%d, for " \
+	  "screen: %08x\n",
+	  hBitmap, nWidth, nHeight, nDepth, pScreen);
 
   return pPixmap;
 #else /* CYGX_GDI */
@@ -115,8 +116,8 @@ winDestroyPixmapNativeGDI (PixmapPtr pPixmap)
 {
   HBITMAP		hBitmap;
 
-  fprintf (stderr, "winDestroyPixmap - pPixmap->devPrivate.ptr: %08x\n",
-	   (UINT) pPixmap->devPrivate.ptr);
+  ErrorF ("winDestroyPixmap - pPixmap->devPrivate.ptr: %08x\n",
+	  (UINT) pPixmap->devPrivate.ptr);
 
   /* Decrement reference count, and, if zero, free the pixmap */
   --(pPixmap->refcnt);
@@ -141,7 +142,7 @@ winDestroyPixmapNativeGDI (PixmapPtr pPixmap)
 void
 winXRotatePixmapNativeGDI (PixmapPtr pPix, int rw)
 {
-  fprintf (stderr, "winXRotatePixmap()\n");
+  ErrorF ("winXRotatePixmap()\n");
   /* fill in this function, look at CFB */
 }
 
@@ -149,7 +150,7 @@ winXRotatePixmapNativeGDI (PixmapPtr pPix, int rw)
 void
 winYRotatePixmapNativeGDI (PixmapPtr pPix, int rh)
 {
-  fprintf (stderr, "winYRotatePixmap()\n");
+  ErrorF ("winYRotatePixmap()\n");
   /* fill in this function, look at CFB */
 }
 
@@ -158,6 +159,6 @@ void
 winCopyRotatePixmapNativeGDI (PixmapPtr psrcPix, PixmapPtr *ppdstPix,
 			      int xrot, int yrot)
 {
-  fprintf (stderr, "winCopyRotatePixmap()\n");
+  ErrorF ("winCopyRotatePixmap()\n");
   /* fill in this function, look at CFB */
 }

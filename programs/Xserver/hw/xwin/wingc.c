@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/wingc.c,v 1.1 2001/04/05 20:13:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/wingc.c,v 1.2 2001/04/19 12:56:03 alanh Exp $ */
 
 #include "win.h"
 
@@ -75,8 +75,8 @@ const GCOps winGCOps = {
 Bool
 winCreateGCNativeGDI (GCPtr pGC)
 {
-  fprintf (stderr, "\nwinCreateGC () depth: %d\n\n",
-	   pGC->depth);
+  ErrorF ("\nwinCreateGC () depth: %d\n\n",
+	  pGC->depth);
 
   pGC->clientClip = NULL;
   pGC->clientClipType = CT_NONE;
@@ -122,8 +122,8 @@ winValidateGCNativeGDI (GCPtr pGC,
   DEBUGVARS;
   //DEBUGPROC_MSG;
 
-  fprintf (stderr, "winValidateGC - pDrawable: %08x, pGC: %08x\n",
-	   pDrawable, pGC);
+  ErrorF ("winValidateGC - pDrawable: %08x, pGC: %08x\n",
+	  pDrawable, pGC);
 
   switch (pDrawable->type)
     {
@@ -131,8 +131,8 @@ winValidateGCNativeGDI (GCPtr pGC,
       /* I can handle drawable pixmaps, no problem */
       pPixmap = (PixmapPtr) pDrawable;
 
-      fprintf (stderr, "winValidateGC - pPixmap->devPrivate.ptr: %08x\n",
-	       pPixmap->devPrivate.ptr);
+      ErrorF ("winValidateGC - pPixmap->devPrivate.ptr: %08x\n",
+	      pPixmap->devPrivate.ptr);
 
       /* Select the bitmap into the memory device context.
 	 NOTE: A bitmap can only be selected into a single
@@ -210,72 +210,72 @@ winValidateGCNativeGDI (GCPtr pGC,
 	{
 	case GCFunction:
 	  /* mfb falls through to GCForeground */
-	  fprintf (stderr, "winValidateGC - GCFunction\n");
+	  ErrorF ("winValidateGC - GCFunction\n");
 	  break;
 	case GCForeground:
-	  fprintf (stderr, "winValidateGC - GCForeground\n");
+	  ErrorF ("winValidateGC - GCForeground\n");
 	  break;
 	case GCPlaneMask:
-	  fprintf (stderr, "winValidateGC - GCPlaneMask\n");
+	  ErrorF ("winValidateGC - GCPlaneMask\n");
 	  break;
 	case GCBackground:
-	  fprintf (stderr, "winValidateGC - GCBackground\n");
+	  ErrorF ("winValidateGC - GCBackground\n");
 	  break;
 	case GCLineStyle:
 	case GCLineWidth:
 	case GCJoinStyle:
-	  fprintf (stderr, "winValidateGC - GCLineStyle, etc.\n");
+	  ErrorF ("winValidateGC - GCLineStyle, etc.\n");
 	  break;
 	case GCCapStyle:
-	  fprintf (stderr, "winValidateGC - GCCapStyle\n");
+	  ErrorF ("winValidateGC - GCCapStyle\n");
 	  break;
 	case GCFillStyle:
-	  fprintf (stderr, "winValidateGC - GCFillStyle\n");
+	  ErrorF ("winValidateGC - GCFillStyle\n");
 	  break;
 	case GCFillRule:
-	  fprintf (stderr, "winValidateGC - GCFillRule\n");
+	  ErrorF ("winValidateGC - GCFillRule\n");
 	  break;
 	case GCTile:
-	  fprintf (stderr, "winValidateGC - GCTile\n");
+	  ErrorF ("winValidateGC - GCTile\n");
 	  break;
 	case GCStipple:
-	  fprintf (stderr, "winValidateGC - GCStipple\n");
+	  ErrorF ("winValidateGC - GCStipple\n");
 	  break;
 	case GCTileStipXOrigin:
-	  fprintf (stderr, "winValidateGC - GCTileStipXOrigin\n");
+	  ErrorF ("winValidateGC - GCTileStipXOrigin\n");
 	  break;
 	case GCTileStipYOrigin:
-	  fprintf (stderr, "winValidateGC - GCTileStipYOrigin\n");
+	  ErrorF ("winValidateGC - GCTileStipYOrigin\n");
 	  break;
 	case GCFont:
-	  fprintf (stderr, "winValidateGC - GCFont\n");
+	  ErrorF ("winValidateGC - GCFont\n");
 	  break;
 	case GCSubwindowMode:
-	  fprintf (stderr, "winValidateGC - GCSubwindowMode\n");
+	  ErrorF ("winValidateGC - GCSubwindowMode\n");
 	  break;
 	case GCGraphicsExposures:
-	  fprintf (stderr, "winValidateGC - GCGraphicsExposures\n");
+	  ErrorF ("winValidateGC - GCGraphicsExposures\n");
 	  break;
 	case GCClipXOrigin:
-	  fprintf (stderr, "winValidateGC - GCClipXOrigin\n");
+	  ErrorF ("winValidateGC - GCClipXOrigin\n");
 	  break;
 	case GCClipYOrigin:
-	  fprintf (stderr, "winValidateGC - GCClipYOrigin\n");
+	  ErrorF ("winValidateGC - GCClipYOrigin\n");
 	  break;
 	case GCClipMask:
-	  fprintf (stderr, "winValidateGC - GCClipMask\n");
+	  ErrorF ("winValidateGC - GCClipMask\n");
 	  break;
 	case GCDashOffset:
-	  fprintf (stderr, "winValidateGC - GCDashOffset\n");
+	  ErrorF ("winValidateGC - GCDashOffset\n");
 	  break;
 	case GCDashList:
-	  fprintf (stderr, "winValidateGC - GCDashList\n");
+	  ErrorF ("winValidateGC - GCDashList\n");
 	  break;
 	case GCArcMode:
-	  fprintf (stderr, "winValidateGC - GCArcMode\n");
+	  ErrorF ("winValidateGC - GCArcMode\n");
 	  break;
 	default:
-	  fprintf (stderr, "winValidateGC - default\n");
+	  ErrorF ("winValidateGC - default\n");
 	  break;
 	}
     }

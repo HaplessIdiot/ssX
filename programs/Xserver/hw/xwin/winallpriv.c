@@ -28,7 +28,7 @@
  * Authors:	Keith Packard, MIT X Consortium
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winallpriv.c,v 1.2 2001/04/18 17:14:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winallpriv.c,v 1.3 2001/05/14 16:52:33 alanh Exp $ */
 
 #include "win.h"
 
@@ -39,11 +39,11 @@ winAllocatePrivates (ScreenPtr pScreen)
   winPrivScreenPtr	pScreenPriv;
 
   /* We need a new slot for our privates if the screen gen has changed */
-  if (g_winGeneration != serverGeneration)
+  if (g_ulServerGeneration != serverGeneration)
     {
       /* Get an index that we can store our privates at */
-      g_winScreenPrivateIndex = AllocateScreenPrivateIndex ();
-      g_winGeneration = serverGeneration;
+      g_iScreenPrivateIndex = AllocateScreenPrivateIndex ();
+      g_ulServerGeneration = serverGeneration;
     }
 
   /* Allocate memory for our private structure */

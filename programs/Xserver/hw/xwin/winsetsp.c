@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winsetsp.c,v 1.1 2001/04/05 20:13:50 dawes Exp $ */
 
 #include "win.h"
 
@@ -64,23 +64,23 @@ winSetSpansNativeGDI (DrawablePtr	pDrawable,
   bmih.biClrUsed = 0;
   bmih.biClrImportant = 0;
 
-  fprintf (stderr, "\nwinSetSpans () - pDrawable: %08x\n",
-	   pDrawable);
+  ErrorF ("\nwinSetSpans () - pDrawable: %08x\n",
+	  pDrawable);
 
   /* What kind of raster op have we got here? */
   switch (pGC->alu)
     {
     case GXclear:
-      fprintf (stderr, "winSetSpans () - GXclear\n");
+      ErrorF ("winSetSpans () - GXclear\n");
       break;
     case GXand:
-      fprintf (stderr, "winSetSpans () - GXand:\n");
+      ErrorF ("winSetSpans () - GXand:\n");
       break;
     case GXandReverse:
-      fprintf (stderr, "winSetSpans () - GXandReverse\n");
+      ErrorF ("winSetSpans () - GXandReverse\n");
       break;
     case GXcopy:
-      fprintf (stderr, "winSetSpans () - GXcopy\n");
+      ErrorF ("winSetSpans () - GXcopy\n");
 
       /* Loop through spans */
       for (iIdx = 0; iIdx < nSpans; ++iIdx)
@@ -93,34 +93,34 @@ winSetSpansNativeGDI (DrawablePtr	pDrawable,
 		     pPoint->y, 1, pSrc, &bmih, 0);
 	  
 	  /* Display some useful information */
-	  fprintf (stderr, "(%dx%dx%d) (%d,%d) w: %d ps: %08x\n",
-		   pDrawable->width, pDrawable->height, pDrawable->depth,
-		   pPoint->x, pPoint->y, *pWidth, pSrc);
+	  ErrorF ("(%dx%dx%d) (%d,%d) w: %d ps: %08x\n",
+		  pDrawable->width, pDrawable->height, pDrawable->depth,
+		  pPoint->x, pPoint->y, *pWidth, pSrc);
 
 	  /* Calculate offset of next bit source */
 	  pSrc += 4 * ((*pWidth  + 31) / 32);
 	}
       break;
     case GXandInverted:
-      fprintf (stderr, "winSetSpans () - GXandInverted\n");
+      ErrorF ("winSetSpans () - GXandInverted\n");
       break;
     case GXnoop:
-      fprintf (stderr, "winSetSpans () - GXnoop\n");
+      ErrorF ("winSetSpans () - GXnoop\n");
       break;
     case GXxor:
-      fprintf (stderr, "winSetSpans () - GXxor\n");
+      ErrorF ("winSetSpans () - GXxor\n");
       break;
     case GXor:
-      fprintf (stderr, "winSetSpans () - GXor\n");
+      ErrorF ("winSetSpans () - GXor\n");
       break;
     case GXnor:
-      fprintf (stderr, "winSetSpans () - GXnor\n");
+      ErrorF ("winSetSpans () - GXnor\n");
       break;
     case GXequiv:
-      fprintf (stderr, "winSetSpans () - GXequiv\n");
+      ErrorF ("winSetSpans () - GXequiv\n");
       break;
     case GXinvert:
-      fprintf (stderr, "winSetSpans () - GXinvert\n");
+      ErrorF ("winSetSpans () - GXinvert\n");
 
       hdcMem = CreateCompatibleDC (g_hdc);
  
@@ -160,9 +160,9 @@ winSetSpansNativeGDI (DrawablePtr	pDrawable,
 		  hdcMem, 0, 0, NOTSRCCOPY);
 
 	  /* Display some useful information */
-	  fprintf (stderr, "(%dx%dx%d) (%d,%d) w: %d ps: %08x\n",
-		   pDrawable->width, pDrawable->height, pDrawable->depth,
-		   pPoint->x, pPoint->y, *pWidth, pSrc);
+	  ErrorF ("(%dx%dx%d) (%d,%d) w: %d ps: %08x\n",
+		  pDrawable->width, pDrawable->height, pDrawable->depth,
+		  pPoint->x, pPoint->y, *pWidth, pSrc);
 
 	  /* Calculate offset of next bit source */
 	  pSrc += 4 * ((*pWidth + 31) / 32);
@@ -180,21 +180,21 @@ winSetSpansNativeGDI (DrawablePtr	pDrawable,
 
       break;
     case GXorReverse:
-      fprintf (stderr, "winSetSpans () - GXorReverse\n");
+      ErrorF ("winSetSpans () - GXorReverse\n");
       break;
     case GXcopyInverted:
-      fprintf (stderr, "winSetSpans () - GXcopyInverted\n");
+      ErrorF ("winSetSpans () - GXcopyInverted\n");
       break;
     case GXorInverted:
-      fprintf (stderr, "winSetSpans () - GXorInverted\n");
+      ErrorF ("winSetSpans () - GXorInverted\n");
       break;
     case GXnand:
-      fprintf (stderr, "winSetSpans () - GXnand\n");
+      ErrorF ("winSetSpans () - GXnand\n");
       break;
     case GXset:
-      fprintf (stderr, "winSetSpans () - GXset\n");
+      ErrorF ("winSetSpans () - GXset\n");
     default:
-      fprintf (stderr, "winSetSpans () - Unknown ROP\n");
+      ErrorF ("winSetSpans () - Unknown ROP\n");
       break;
     }
 #endif
