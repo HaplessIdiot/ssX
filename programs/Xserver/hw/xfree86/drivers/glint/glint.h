@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.42 2001/02/01 12:26:01 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.43 2001/02/05 10:44:57 alanh Exp $ */
 /*
  * Copyright 1997-2001 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -56,7 +56,6 @@
 #define GLINT_PATCHLEVEL 0
 
 typedef struct {
-	/* number of glintRegs match the number of MAX_MULTI_DEVICES */
 	CARD32 glintRegs[0x2000];
 	CARD32 DacRegs[0x100];
 	CARD8 cmap[0x300];
@@ -134,10 +133,8 @@ typedef struct {
     int			MinClock;
     int			MaxClock;
     int			RefClock;
-    GLINTRegRec		SavedReg; /* Reflect GLINT_MAX_MULTI_DEVICES */
-    GLINTRegRec		SavedReg2;
-    GLINTRegRec		ModeReg;
-    GLINTRegRec		ModeReg2;
+    GLINTRegRec		SavedReg[GLINT_MAX_MULTI_DEVICES]; 
+    GLINTRegRec		ModeReg[GLINT_MAX_MULTI_DEVICES];
     CARD32		AccelFlags;
     CARD32		ROP;
     CARD32		FrameBufferReadMode;

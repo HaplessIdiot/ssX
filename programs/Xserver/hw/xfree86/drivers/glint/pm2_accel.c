@@ -30,7 +30,7 @@
  * 
  * Permedia 2 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_accel.c,v 1.25 2001/01/30 17:31:04 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_accel.c,v 1.26 2001/01/31 16:14:57 alanh Exp $ */
 
 #include "Xarch.h"
 #include "xf86.h"
@@ -132,8 +132,6 @@ static void Permedia2PolylinesThinSolidWrapper(DrawablePtr pDraw, GCPtr pGC,
    				int mode, int npt, DDXPointPtr pPts);
 static void Permedia2PolySegmentThinSolidWrapper(DrawablePtr pDraw, GCPtr pGC,
  				int nseg, xSegment *pSeg);
-
-#define MAX_FIFO_ENTRIES 256
 
 #if X_BYTE_ORDER == X_BIG_ENDIAN
 # define STIPPLE_SWAP	1<<18		/* Mirror stipple pattern horizontally */
@@ -321,7 +319,7 @@ Permedia2AccelInit(ScreenPtr pScreen)
     }
 
     infoPtr->ScanlineCPUToScreenColorExpandFillFlags = 
-					       BIT_ORDER_IN_BYTE_LSBFIRST;
+						BIT_ORDER_IN_BYTE_LSBFIRST;
 
     infoPtr->NumScanlineColorExpandBuffers = 1;
     infoPtr->ScanlineColorExpandBuffers = 
@@ -335,8 +333,6 @@ Permedia2AccelInit(ScreenPtr pScreen)
 			Permedia2SubsequentScanlineCPUToScreenColorExpandFill;
     infoPtr->SubsequentColorExpandScanline = 
 			Permedia2SubsequentColorExpandScanline;
-
-    infoPtr->ColorExpandRange = MAX_FIFO_ENTRIES;
 
     infoPtr->WriteBitmap = Permedia2WriteBitmap;
 
@@ -980,43 +976,27 @@ Permedia2WriteBitmap(ScrnInfoPtr pScrn,
     }
 
     if(bg == -1) {
-	/* >>>>> set fg <<<<<<<< */
 	REPLICATE(fg);
-    if ((pScrn->bitsPerPixel != 24) && (rop == GXcopy)) {
+        if ((pScrn->bitsPerPixel != 24) && (rop == GXcopy)) {
 	    GLINT_WRITE_REG(fg, FBBlockColor);
 	} else {
 	    GLINT_WRITE_REG(fg, ConstantColor);
 	}
-    } else if(rop == GXcopy) {
-	/* >>>>> set bg <<<<<<< */
- 	/* >>>>> draw rect (x,y,w,h) */
+    } else if((rop == GXcopy) && (pScrn->bitsPerPixel != 24)) {
 	REPLICATE(bg);
-    if ((pScrn->bitsPerPixel != 24) && (rop == GXcopy)) {
-	    GLINT_WRITE_REG(bg, FBBlockColor);
-	} else {
-	    GLINT_WRITE_REG(bg, ConstantColor);
-	}
-	GLINT_WRITE_REG(PrimitiveRectangle | XPositive | YPositive |mode,Render);
-	/* >>>>>> set fg <<<<<< */
+	GLINT_WRITE_REG(bg, FBBlockColor);
+	GLINT_WRITE_REG(PrimitiveRectangle | XPositive |YPositive |mode,Render);
 	REPLICATE(fg);
-    if ((pScrn->bitsPerPixel != 24) && (rop == GXcopy)) {
-	    GLINT_WRITE_REG(fg, FBBlockColor);
-	} else {
-	    GLINT_WRITE_REG(fg, ConstantColor);
-	}
+	GLINT_WRITE_REG(fg, FBBlockColor);
     } else {
 	SecondPass = TRUE;
-	/* >>>>> set fg <<<<<<< */
 	REPLICATE(fg);
-    if ((pScrn->bitsPerPixel != 24) && (rop == GXcopy)) {
+        if ((pScrn->bitsPerPixel != 24) && (rop == GXcopy)) {
 	    GLINT_WRITE_REG(fg, FBBlockColor);
 	} else {
 	    GLINT_WRITE_REG(fg, ConstantColor);
 	}
     }
-
-   /* >>>>>>>>> initiate transfer (x,y,w,h).  Skipleft pixels on the
-	left edge will be clipped <<<<<< */
 
 SECOND_PASS:
     GLINT_WRITE_REG(PrimitiveRectangle | XPositive | YPositive | mode | SyncOnBitMask, Render);
@@ -1034,10 +1014,9 @@ SECOND_PASS:
 
     if(SecondPass) {
 	SecondPass = FALSE;
-	/* >>>>>> invert bitmask and set bg <<<<<<<< */
 	REPLICATE(bg);
 	GLINT_WAIT(3);
-    if ((pScrn->bitsPerPixel != 24) && (rop == GXcopy)) {
+        if ((pScrn->bitsPerPixel != 24) && (rop == GXcopy)) {
    	    GLINT_WRITE_REG(InvertBitMask|pGlint->RasterizerSwap,RasterizerMode);
 	    GLINT_WRITE_REG(bg, FBBlockColor);
 	} else {
@@ -1116,17 +1095,17 @@ Permedia2WritePixmap8bpp(
 	      address = ((y * pScrn->displayWidth) + x) >> 2;
 	      srcp = (CARD32*)src;
 	      GLINT_WRITE_REG(address, TextureDownloadOffset);
-	      while(count >= MAX_FIFO_ENTRIES) {
-    	    	GLINT_WAIT(MAX_FIFO_ENTRIES);
+	      while(count >= pGlint->FIFOSize) {
+    	    	GLINT_WAIT(pGlint->FIFOSize);
 		/* (0x11 << 4) | 0x0D is the TAG for TextureData */
-        	GLINT_WRITE_REG(((MAX_FIFO_ENTRIES - 2) << 16) | (0x11 << 4) |
+        	GLINT_WRITE_REG(((pGlint->FIFOSize - 2) << 16) | (0x11 << 4) |
 						0x0D, OutputFIFO);
 		GLINT_MoveDWORDS(
 			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
-	 		(CARD32*)srcp, MAX_FIFO_ENTRIES - 1);
-		count -= MAX_FIFO_ENTRIES - 1;
-		address += MAX_FIFO_ENTRIES - 1;
-		srcp += MAX_FIFO_ENTRIES - 1;
+	 		(CARD32*)srcp, pGlint->FIFOSize - 1);
+		count -= pGlint->FIFOSize - 1;
+		address += pGlint->FIFOSize - 1;
+		srcp += pGlint->FIFOSize - 1;
 	      }
 	      if(count) {
     	    	GLINT_WAIT(count + 1);
@@ -1165,16 +1144,16 @@ Permedia2WritePixmap8bpp(
 	    while(h--) {
 	      count = dwords;
 	      srcp = (CARD32*)src;
-	      while(count >= MAX_FIFO_ENTRIES) {
-    	    	GLINT_WAIT(MAX_FIFO_ENTRIES);
+	      while(count >= pGlint->FIFOSize) {
+    	    	GLINT_WAIT(pGlint->FIFOSize);
 		/* (0x15 << 4) | 0x05 is the TAG for FBSourceData */
-        	GLINT_WRITE_REG(((MAX_FIFO_ENTRIES - 2) << 16) | (0x15 << 4) | 
+        	GLINT_WRITE_REG(((pGlint->FIFOSize - 2) << 16) | (0x15 << 4) | 
 					0x05, OutputFIFO);
 		GLINT_MoveDWORDS(
 			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
-	 		(CARD32*)srcp, MAX_FIFO_ENTRIES - 1);
-		count -= MAX_FIFO_ENTRIES - 1;
-		srcp += MAX_FIFO_ENTRIES - 1;
+	 		(CARD32*)srcp, pGlint->FIFOSize - 1);
+		count -= pGlint->FIFOSize - 1;
+		srcp += pGlint->FIFOSize - 1;
 	      }
 	      if(count) {
     	    	GLINT_WAIT(count + 1);
@@ -1191,16 +1170,16 @@ Permedia2WritePixmap8bpp(
 	    while(h--) {
 	      count = w;
 	      srcpbyte = (unsigned char *)src;
-	      while(count >= MAX_FIFO_ENTRIES) {
-    	    	GLINT_WAIT(MAX_FIFO_ENTRIES);
+	      while(count >= pGlint->FIFOSize) {
+    	    	GLINT_WAIT(pGlint->FIFOSize);
 		/* (0x15 << 4) | 0x05 is the TAG for FBSourceData */
-        	GLINT_WRITE_REG(((MAX_FIFO_ENTRIES - 2) << 16) | (0x15 << 4) | 
+        	GLINT_WRITE_REG(((pGlint->FIFOSize - 2) << 16) | (0x15 << 4) | 
 					0x05, OutputFIFO);
 		GLINT_MoveBYTE(
 			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
-	 		(unsigned char *)srcpbyte, MAX_FIFO_ENTRIES - 1);
-		count -= MAX_FIFO_ENTRIES - 1;
-		srcpbyte += MAX_FIFO_ENTRIES - 1;
+	 		(unsigned char *)srcpbyte, pGlint->FIFOSize - 1);
+		count -= pGlint->FIFOSize - 1;
+		srcpbyte += pGlint->FIFOSize - 1;
 	      }
 	      if(count) {
     	    	GLINT_WAIT(count + 1);
@@ -1281,17 +1260,17 @@ Permedia2WritePixmap16bpp(
 	      address = ((y * pScrn->displayWidth) + x) >> 1;
 	      srcp = (CARD32*)src;
 	      GLINT_WRITE_REG(address, TextureDownloadOffset);
-	      while(count >= MAX_FIFO_ENTRIES) {
-    	    	GLINT_WAIT(MAX_FIFO_ENTRIES);
+	      while(count >= pGlint->FIFOSize) {
+    	    	GLINT_WAIT(pGlint->FIFOSize);
 		/* (0x11 << 4) | 0x0D is the TAG for TextureData */
-        	GLINT_WRITE_REG(((MAX_FIFO_ENTRIES - 2) << 16) | (0x11 << 4) |
+        	GLINT_WRITE_REG(((pGlint->FIFOSize - 2) << 16) | (0x11 << 4) |
 						0x0D, OutputFIFO);
 		GLINT_MoveDWORDS(
 			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
-	 		(CARD32*)srcp, MAX_FIFO_ENTRIES - 1);
-		count -= MAX_FIFO_ENTRIES - 1;
-		address += MAX_FIFO_ENTRIES - 1;
-		srcp += MAX_FIFO_ENTRIES - 1;
+	 		(CARD32*)srcp, pGlint->FIFOSize - 1);
+		count -= pGlint->FIFOSize - 1;
+		address += pGlint->FIFOSize - 1;
+		srcp += pGlint->FIFOSize - 1;
 	      }
 	      if(count) {
     	    	GLINT_WAIT(count + 1);
@@ -1330,16 +1309,16 @@ Permedia2WritePixmap16bpp(
 	    while(h--) {
 	      count = dwords;
 	      srcp = (CARD32*)src;
-	      while(count >= MAX_FIFO_ENTRIES) {
-    	    	GLINT_WAIT(MAX_FIFO_ENTRIES);
+	      while(count >= pGlint->FIFOSize) {
+    	    	GLINT_WAIT(pGlint->FIFOSize);
 		/* (0x15 << 4) | 0x05 is the TAG for FBSourceData */
-        	GLINT_WRITE_REG(((MAX_FIFO_ENTRIES - 2) << 16) | (0x15 << 4) | 
+        	GLINT_WRITE_REG(((pGlint->FIFOSize - 2) << 16) | (0x15 << 4) | 
 					0x05, OutputFIFO);
 		GLINT_MoveDWORDS(
 			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
-	 		(CARD32*)srcp, MAX_FIFO_ENTRIES - 1);
-		count -= MAX_FIFO_ENTRIES - 1;
-		srcp += MAX_FIFO_ENTRIES - 1;
+	 		(CARD32*)srcp, pGlint->FIFOSize - 1);
+		count -= pGlint->FIFOSize - 1;
+		srcp += pGlint->FIFOSize - 1;
 	      }
 	      if(count) {
     	    	GLINT_WAIT(count + 1);
@@ -1356,16 +1335,16 @@ Permedia2WritePixmap16bpp(
 	    while(h--) {
 	      count = w;
 	      srcpword = (unsigned short *)src;
-	      while(count >= MAX_FIFO_ENTRIES) {
-    	    	GLINT_WAIT(MAX_FIFO_ENTRIES);
+	      while(count >= pGlint->FIFOSize) {
+    	    	GLINT_WAIT(pGlint->FIFOSize);
 		/* (0x15 << 4) | 0x05 is the TAG for FBSourceData */
-        	GLINT_WRITE_REG(((MAX_FIFO_ENTRIES - 2) << 16) | (0x15 << 4) | 
+        	GLINT_WRITE_REG(((pGlint->FIFOSize - 2) << 16) | (0x15 << 4) | 
 					0x05, OutputFIFO);
 		GLINT_MoveWORDS(
 			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
-	 		(unsigned short *)srcpword, MAX_FIFO_ENTRIES - 1);
-		count -= MAX_FIFO_ENTRIES - 1;
-		srcpword += MAX_FIFO_ENTRIES - 1;
+	 		(unsigned short *)srcpword, pGlint->FIFOSize - 1);
+		count -= pGlint->FIFOSize - 1;
+		srcpword += pGlint->FIFOSize - 1;
 	      }
 	      if(count) {
     	    	GLINT_WAIT(count + 1);
@@ -1440,17 +1419,17 @@ Permedia2WritePixmap32bpp(
 	      address = (y * pScrn->displayWidth) + x;
 	      srcp = (CARD32*)src;
 	      GLINT_WRITE_REG(address, TextureDownloadOffset);
-	      while(count >= MAX_FIFO_ENTRIES) {
-    	    	GLINT_WAIT(MAX_FIFO_ENTRIES);
+	      while(count >= pGlint->FIFOSize) {
+    	    	GLINT_WAIT(pGlint->FIFOSize);
 		/* (0x11 << 4) | 0x0D is the TAG for TextureData */
-        	GLINT_WRITE_REG(((MAX_FIFO_ENTRIES - 2) << 16) | (0x11 << 4) |
+        	GLINT_WRITE_REG(((pGlint->FIFOSize - 2) << 16) | (0x11 << 4) |
 						0x0D, OutputFIFO);
 		GLINT_MoveDWORDS(
 			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
-	 		(CARD32*)srcp, MAX_FIFO_ENTRIES - 1);
-		count -= MAX_FIFO_ENTRIES - 1;
-		address += MAX_FIFO_ENTRIES - 1;
-		srcp += MAX_FIFO_ENTRIES - 1;
+	 		(CARD32*)srcp, pGlint->FIFOSize - 1);
+		count -= pGlint->FIFOSize - 1;
+		address += pGlint->FIFOSize - 1;
+		srcp += pGlint->FIFOSize - 1;
 	      }
 	      if(count) {
     	    	GLINT_WAIT(count + 1);
@@ -1479,16 +1458,16 @@ Permedia2WritePixmap32bpp(
 	   while(h--) {
 	      count = dwords;
 	      srcp = (CARD32*)src;
-	      while(count >= MAX_FIFO_ENTRIES) {
-    	    	GLINT_WAIT(MAX_FIFO_ENTRIES);
+	      while(count >= pGlint->FIFOSize) {
+    	    	GLINT_WAIT(pGlint->FIFOSize);
 		/* (0x15 << 4) | 0x05 is the TAG for FBSourceData */
-        	GLINT_WRITE_REG(((MAX_FIFO_ENTRIES - 2) << 16) | (0x15 << 4) | 
+        	GLINT_WRITE_REG(((pGlint->FIFOSize - 2) << 16) | (0x15 << 4) | 
 					0x05, OutputFIFO);
 		GLINT_MoveDWORDS(
 			(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
-	 		(CARD32*)srcp, MAX_FIFO_ENTRIES - 1);
-		count -= MAX_FIFO_ENTRIES - 1;
-		srcp += MAX_FIFO_ENTRIES - 1;
+	 		(CARD32*)srcp, pGlint->FIFOSize - 1);
+		count -= pGlint->FIFOSize - 1;
+		srcp += pGlint->FIFOSize - 1;
 	      }
 	      if(count) {
     	    	GLINT_WAIT(count + 1);

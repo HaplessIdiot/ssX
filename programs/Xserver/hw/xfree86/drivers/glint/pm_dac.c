@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm_dac.c,v 1.7 1999/03/28 15:32:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm_dac.c,v 1.8 2001/01/31 16:15:04 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -44,7 +44,7 @@ Bool
 PermediaInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
-    GLINTRegPtr pReg = &pGlint->ModeReg;
+    GLINTRegPtr pReg = &pGlint->ModeReg[0];
     RamDacHWRecPtr pIBM = RAMDACHWPTR(pScrn);
     RamDacRegRecPtr ramdacReg = &pIBM->ModeReg;
     CARD32 temp1, temp2, temp3, temp4;

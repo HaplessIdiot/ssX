@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_dac.c,v 1.20 2000/09/11 16:58:56 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_dac.c,v 1.21 2001/01/31 16:14:58 alanh Exp $ */
 
 #include "Xarch.h"
 #include "xf86.h"
@@ -91,7 +91,7 @@ Bool
 Permedia2Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
-    GLINTRegPtr pReg = &pGlint->ModeReg;
+    GLINTRegPtr pReg = &pGlint->ModeReg[0];
     CARD32 temp1, temp2, temp3, temp4;
     
     pReg->glintRegs[Aperture0 >> 3] = 0;
