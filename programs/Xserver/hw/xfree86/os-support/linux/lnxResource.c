@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnxResource.c,v 3.13 2001/02/12 01:25:24 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnxResource.c,v 3.14 2001/02/14 22:07:28 tsi Exp $ */
 
 /* Resource information code */
 
@@ -129,7 +129,6 @@ xf86IsaBusAccWindowsFromOS(void)
 resPtr
 xf86AccResFromOS(resPtr ret)
 {
-    resPtr ret = NULL;
     resRange range;
 
     /*
@@ -235,7 +234,6 @@ xf86IsaBusAccWindowsFromOS(void)
 resPtr
 xf86AccResFromOS(resPtr ret)
 {
-    resPtr ret = NULL;
     resRange range;
 
     /*
