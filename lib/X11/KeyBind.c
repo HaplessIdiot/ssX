@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/KeyBind.c,v 1.2 1999/05/09 10:49:38 dawes Exp $ */
 
 /* Beware, here be monsters (still under construction... - JG */
 
@@ -34,6 +34,7 @@ in this Software without prior written authorization from The Open Group.
 #define XK_LATIN4
 #define XK_CYRILLIC
 #define XK_GREEK
+#define XK_ARMENIAN
 #define XK_XKB_KEYS
 #include <X11/keysymdef.h>
 #include <stdio.h>
@@ -390,6 +391,12 @@ XConvertCase(sym, lower, upper)
 	else if (sym >= XK_Greek_alpha && sym <= XK_Greek_omega &&
 		 sym != XK_Greek_finalsmallsigma)
 	    *upper -= (XK_Greek_alpha - XK_Greek_ALPHA);
+        break;
+    case 0x14: /* Armenian */
+	if (sym >= XK_Armenian_AYB && sym <= XK_Armenian_fe) {
+	    *lower = sym | 1;
+	    *upper = sym & ~1;
+	}
         break;
     }
 }
