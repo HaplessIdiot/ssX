@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.17 1999/06/13 13:47:23 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.18 1999/07/11 08:49:16 dawes Exp $ */
 
 /*
  * Author:  Chris Peterson, MIT X Consortium.
@@ -221,8 +221,10 @@ TextSrcClassRec textSrcClassRec = {
 WidgetClass textSrcObjectClass = (WidgetClass)&textSrcClassRec;
 
 static XrmQuark QRead, QAppend, QEdit;
+#ifndef OLDXAW
 static char *SrcNL = "\n";
 static wchar_t SrcWNL[2];
+#endif
 
 /*
  * Implementation
@@ -232,8 +234,10 @@ XawTextSrcClassInitialize(void)
 {
     XawInitializeWidgetSet();
 
+#ifndef OLDXAW
     SrcWNL[0] = _Xaw_atowc(XawLF);
     SrcWNL[1] = 0;
+#endif
     QRead   = XrmPermStringToQuark(XtEtextRead);
     QAppend = XrmPermStringToQuark(XtEtextAppend);
     QEdit   = XrmPermStringToQuark(XtEtextEdit);

@@ -49,7 +49,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/XawI18n.c,v 1.4 1998/10/03 08:42:32 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/XawI18n.c,v 1.5 1999/05/03 12:15:47 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include "XawI18n.h"
@@ -85,3 +85,13 @@ _Xaw_iswspace(wchar_t w)
   return (ret);
 }
 #endif
+
+int
+_Xaw_iswalnum(wchar_t ch)
+{
+    unsigned char mb[sizeof(wchar_t)];
+
+    wctomb((char*)mb, ch);
+
+    return (isalnum(*mb));
+}

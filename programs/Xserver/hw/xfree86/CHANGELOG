@@ -1,3 +1,18 @@
+XFree86 3.9.15 (19 July 1999)
+2913. Fix a bug in the InstallGenManPageLong() rule in lynx.cf (#3043,
+      Thomas Mueller).
+2912. Fix a problem with the library spec in xgc/Imakefile (#3042,
+      Thomas Mueller).
+2911. Add native 69030 support to the C&T driver (#3041, David Bateman).
+2910. Update release notes for the apm driver (#3040, Loic Grenie).
+2909. Fix a small bug in the color expands in the TGA driver (#3039,
+      Matt Grossman).
+2908. Updates for the Japanese (PC98) docs (#3038, Takaaki Nomura).
+2907. Some Xaw and xedit updates (#3037, Paulo Cesar Pereira de Andrade).
+2906. Fix a problem with the VidMode extension (#3036, David Bateman).
+2905. Sample config file for Japanese PC98 architecture (#3035,
+      Takaaki Nomura).
+
 XFree86 3.9Py (18 July 1999)
 2904. Add a visualClass to the XDGAMode request and a XDGACreateColormap
       request to DGA 2.0 so Colormaps can be created for XDGADevices
@@ -8473,4 +8488,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.806 1999/07/18 08:14:25 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.807 1999/07/18 15:47:42 dawes Exp $

@@ -1271,7 +1271,7 @@ xedit.c:
  + Fixed some problems in the undo code of ispell interface.
 
 
-# 10 Jul 1999
+#2999 10 Jul 1999
 -- Xaw --
  + Added code to check the return value of XAllocColor and XAllocNamedColor in
    Pixmap.c.
@@ -1293,4 +1293,4 @@ xedit.c:
 
 
 
-$XFree86: xc/lib/Xaw/Changelog,v 3.28 1999/07/04 06:38:25 dawes Exp $
+$XFree86: xc/lib/Xaw/Changelog,v 3.29 1999/07/11 08:49:13 dawes Exp $

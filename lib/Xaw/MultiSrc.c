@@ -27,7 +27,7 @@
  *
  * Much code taken from X11R3 String and Disk Sources.
  */
-/* $XFree86: xc/lib/Xaw/MultiSrc.c,v 1.17 1999/06/06 08:48:01 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/MultiSrc.c,v 1.18 1999/06/20 08:41:03 dawes Exp $ */
 
 /*
 
@@ -571,6 +571,7 @@ Scan(Widget w, register XawTextPosition position, XawTextScanType type,
 	case XawstEOL:
 	case XawstParagraph:
 	case XawstWhiteSpace:
+	case XawstAlphaNumeric:
 	    for (; cnt > 0 ; cnt--) {
 		Bool non_space = False, first_eol = True;
 
@@ -596,9 +597,6 @@ Scan(Widget w, register XawTextPosition position, XawTextScanType type,
 		    ptr += inc;
 		    position += inc;
 
-#ifndef iswalnum
-#define iswalnum(c)	isalnum(c & 0xff)
-#endif
 		    if (type == XawstAlphaNumeric) {
 			if (!iswalnum(c)) {
 			    if (non_space)

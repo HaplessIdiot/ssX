@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.62 1999/06/27 14:08:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.63 1999/07/18 03:26:54 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -493,6 +493,7 @@ static SymTabRec CHIPSChipsets[] = {
     { CHIPS_CT65555,		"ct65555" },
     { CHIPS_CT68554,		"ct68554" },
     { CHIPS_CT69000,		"ct69000" },
+    { CHIPS_CT69030,		"ct69030" },
     { CHIPS_CT64200,		"ct64200" },
     { CHIPS_CT64300,		"ct64300" },
     { -1,			NULL }
@@ -507,6 +508,7 @@ static PciChipsets CHIPSPCIchipsets[] = {
     { CHIPS_CT65555, PCI_CHIP_65555, RES_SHARED_VGA },
     { CHIPS_CT68554, PCI_CHIP_68554, RES_SHARED_VGA },
     { CHIPS_CT69000, PCI_CHIP_69000, RES_SHARED_VGA },
+    { CHIPS_CT69030, PCI_CHIP_69030, RES_SHARED_VGA },
     { -1,	     -1,	     RES_UNDEFINED}
 };
 
@@ -524,6 +526,7 @@ static IsaChipsets CHIPSISAchipsets[] = {
     { CHIPS_CT65555,		RES_EXCLUSIVE_VGA },
     { CHIPS_CT68554,		RES_EXCLUSIVE_VGA },
     { CHIPS_CT69000,		RES_EXCLUSIVE_VGA },
+    { CHIPS_CT69030,		RES_EXCLUSIVE_VGA },
     { CHIPS_CT64200,		RES_EXCLUSIVE_VGA },
     { CHIPS_CT64300,		RES_EXCLUSIVE_VGA },
     { -1,			RES_UNDEFINED }
@@ -913,6 +916,12 @@ chipsFindIsaDevice(GDevPtr dev)
 			found = CHIPS_CT68554; break;
 		    case 0xC0:		/* CT69000 */
 			found = CHIPS_CT69000; break;
+		    case 0x30:		/* CT69030 */
+			outb(0x3D6, 0x03);
+			tmp = inb(0x3D7);
+			if (tmp == 0xC)
+			    found = CHIPS_CT69030;
+			break;
 		    default:
 			break;
 		    }
@@ -972,7 +981,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	if ((cPtr->Chipset == CHIPS_CT64200) ||
 	    (cPtr->Chipset == CHIPS_CT64300)) cPtr->Flags |= ChipsWingine;
 	if ((cPtr->Chipset >= CHIPS_CT65550) &&
-	    (cPtr->Chipset <= CHIPS_CT69000)) cPtr->Flags |= ChipsHiQV;
+	    (cPtr->Chipset <= CHIPS_CT69030)) cPtr->Flags |= ChipsHiQV;
 
 	/* This driver can handle ISA and PCI buses */
 	if (cPtr->pEnt->location.type == BUS_PCI) {
@@ -985,6 +994,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     }
     /* Now that we've identified the chipset, setup the capabilities flags */
     switch (cPtr->Chipset) {
+    case CHIPS_CT69030:
     case CHIPS_CT69000:
 	cPtr->Flags |= ChipsFullMMIOSupport;
 	/* Fall through */
@@ -1510,6 +1520,10 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     } else {
         /* not given, probe it    */
 	switch (cPtr->Chipset) {
+	case CHIPS_CT69030:
+	    /* The ct69000 has 4Mb of SGRAM integrated */
+	    pScrn->videoRam = 4096;
+	    break;
 	case CHIPS_CT69000:
 	    /* The ct69000 has 2Mb of SGRAM integrated */
 	    pScrn->videoRam = 2048;
@@ -1787,6 +1801,9 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     case CHIPS_CT69000:
 	MemClk->Max = 83000;
 	break;
+    case CHIPS_CT69030:
+	MemClk->Max = 100000;
+	break;
     }
 
     /* Probe the dot clocks */
@@ -1886,6 +1903,9 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	       (float)(cPtr->MinClock / 1000.));
     /* Set the max pixel clock */
     switch (cPtr->Chipset) {
+    case CHIPS_CT69030:
+	cPtr->MaxClock = 170000;
+	break;
     case CHIPS_CT69000:
 	cPtr->MaxClock = 135000;
 	break;
@@ -4681,8 +4701,8 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
     ChipsNew->CR[0x31] = ((mode->CrtcVDisplay - 1) & 0xF00) >> 8;
     ChipsNew->CR[0x32] = (mode->CrtcVSyncStart & 0xF00) >> 8;
     ChipsNew->CR[0x33] = (mode->CrtcVBlankStart & 0xF00) >> 8;
-    if (cPtr->Chipset == CHIPS_CT69000) {
-	/* The 69000 has overflow bits for the horizontal values as well */
+    if ((cPtr->Chipset == CHIPS_CT69000) || (cPtr->Chipset == CHIPS_CT69030)) {
+	/* The 690xx has overflow bits for the horizontal values as well */
 	ChipsNew->CR[0x38] = (((mode->CrtcHTotal >> 3) - 5) & 0x100) >> 8;
 	ChipsNew->CR[0x3C] = ((mode->CrtcHSyncEnd >> 3) & 0xC0);
     }

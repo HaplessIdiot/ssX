@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/12/16 12:31:46 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.57 1999/07/06 14:51:29 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.58 1999/07/17 05:30:52 dawes Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -86,11 +86,12 @@ SUBDIRS = os-support common $(XAADIR) $(XF1BPPDIR) $(XF4BPPDIR) \
 
 #ifndef OS2Architecture
 XF86CONFIG = XF86Config
+XF98CONFIG = XF98Config
 #else
 XF86CONFIG = XF86Conf
 #endif
 
-all:: $(XF86CONFIG)
+all:: $(XF86CONFIG) $(XF98CONFIG)
 
 #if defined(i386BsdArchitecture) && !defined(FreeBSDArchitecture)
 MANPAGE=Concat(FileManDir,/XF86Config.0)
@@ -108,6 +109,31 @@ DPI75FONTPATH=\"$(LIBDIR)/fonts/75dpi/\"
 DPI100FONTPATH=\"$(LIBDIR)/fonts/100dpi/\"
 DPI75USFONTPATH=\"$(LIBDIR)/fonts/75dpi/:unscaled\"
 DPI100USFONTPATH=\"$(LIBDIR)/fonts/100dpi/:unscaled\"
+
+#ifdef FreeBSDArchitecture
+  FREEBSDMOUSEDEV="    Option	\"Device\"	\"/dev/mse0\""
+#else
+  FREEBSDMOUSEDEV="XCOMM    Option	\"Device\"	\"/dev/mse0\""
+#endif
+
+#if defined(i386BsdArchitecture)&&defined(NetBSDArchitecture)
+#  if (OSMajorVersion >= 1) && (OSMinorVersion >= 1)
+  NETBSDOLDMOUSEDEV="XCOMM    Option	\"Device\"	\"/dev/mms0\""
+  NETBSDNEWMOUSEDEV="    Option	\"Device\"	\"/dev/lms0\""
+#  else
+  NETBSDOLDMOUSEDEV="    Option	\"Device\"	\"/dev/mms0\""
+  NETBSDNEWMOUSEDEV="XCOMM    Option	\"Device\"	\"/dev/lms0\""
+#  endif
+#else
+  NETBSDOLDMOUSEDEV="XCOMM    Option	\"Device\"	\"/dev/mms0\""
+  NETBSDNEWMOUSEDEV="XCOMM    Option	\"Device\"	\"/dev/lms0\""
+#endif
+
+#ifdef LinuxArchitecture
+  LINUXMOUSEDEV="    Option	\"Device\"	\"/dev/mouse\""
+#else
+  LINUXMOUSEDEV="XCOMM    Option	\"Device\"	\"/dev/mouse\""
+#endif
 
 #ifdef MinixArchitecture
 CppFileTarget($(XF86CONFIG), XF86Conf.cpp,
@@ -132,11 +158,28 @@ CppFileTarget($(XF86CONFIG), XF86Conf.cpp, \
     -DDPI100USFONTPATH=$(DPI100USFONTPATH) \
     -DMANPAGE=$(MANPAGE) -DMODULEPATH=\"$(MODULEDIR)\", \
     $(ICONFIGFILES))
+CppFileTarget($(XF98CONFIG), XF98Conf.cpp, \
+    -DRGBPATH=$(RGBPATH) -DMISCFONTPATH=$(MISCFONTPATH) \
+    -DLOCALFONTPATH=$(LOCALFONTPATH) \
+    -DT1FONTPATH=$(T1FONTPATH) \
+    -DCIDFONTPATH=$(CIDFONTPATH) \
+    -DSPFONTPATH=$(SPFONTPATH) \
+    -DDPI75FONTPATH=$(DPI75FONTPATH) \
+    -DDPI100FONTPATH=$(DPI100FONTPATH) \
+    -DDPI75USFONTPATH=$(DPI75USFONTPATH) \
+    -DDPI100USFONTPATH=$(DPI100USFONTPATH) \
+    -DFREEBSDMOUSEDEV=$(FREEBSDMOUSEDEV) \
+    -DNETBSDOLDMOUSEDEV=$(NETBSDOLDMOUSEDEV) \
+    -DNETBSDNEWMOUSEDEV=$(NETBSDNEWMOUSEDEV) \
+    -DLINUXMOUSEDEV=$(LINUXMOUSEDEV) \
+    -DMANPAGE=$(MANPAGE) -DMODULEPATH=\"$(MODULEDIR)\", \
+    $(ICONFIGFILES))
 #endif
 
 InstallManPage(XFree86,$(MANDIR))
 InstallGenManPageLong(XF86Conf,$(FILEMANDIR),XF86Config,$(FILEMANSUFFIX))
 InstallNamedNonExec($(XF86CONFIG),XF86Config.eg,$(LIBDIR))
+InstallNamedNonExec($(XF98CONFIG),XF86Config.98,$(LIBDIR))
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
