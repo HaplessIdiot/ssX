@@ -1,5 +1,5 @@
 /* $XConsortium: mach32text.c,v 1.1 94/03/28 21:09:31 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32text.c,v 3.1 1994/05/08 06:21:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32text.c,v 3.2 1994/08/31 04:21:51 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -232,10 +232,10 @@ mach32NoCPolyText(pDraw, pGC, x, y, count, chars, is8bit)
 
    for (; --numRects >= 0; ++pBox) {
       WaitQueue(4);
-      outw(MULTIFUNC_CNTL, SCISSORS_L | (short)pBox->x1);
-      outw(MULTIFUNC_CNTL, SCISSORS_T | (short)pBox->y1);
-      outw(MULTIFUNC_CNTL, SCISSORS_R | (short)(pBox->x2 - 1));
-      outw(MULTIFUNC_CNTL, SCISSORS_B | (short)(pBox->y2 - 1));
+      outw(EXT_SCISSOR_L, (short)pBox->x1);
+      outw(EXT_SCISSOR_T, (short)pBox->y1);
+      outw(EXT_SCISSOR_R, (short)(pBox->x2 - 1));
+      outw(EXT_SCISSOR_B, (short)(pBox->y2 - 1));
 
       mach32PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int)n, charinfo,
 						FONTGLYPHS(pGC->font));
@@ -246,10 +246,10 @@ mach32NoCPolyText(pDraw, pGC, x, y, count, chars, is8bit)
    outw (FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
    outw (BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
    outw (MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
-   outw(MULTIFUNC_CNTL, SCISSORS_T | 0);
-   outw(MULTIFUNC_CNTL, SCISSORS_L | 0);
-   outw(MULTIFUNC_CNTL, SCISSORS_R | mach32MaxX);
-   outw(MULTIFUNC_CNTL, SCISSORS_B | mach32MaxY);
+   outw(EXT_SCISSOR_T, 0);
+   outw(EXT_SCISSOR_L, 0);
+   outw(EXT_SCISSOR_R, mach32MaxX);
+   outw(EXT_SCISSOR_B, mach32MaxY);
    DEALLOCATE_LOCAL(charinfo);
 
    return ret_x;
@@ -368,10 +368,10 @@ mach32NoCImageText(pDraw, pGC, x, y, count, chars, is8bit)
 
    for (; --numRects >= 0; ++pBox) {
       WaitQueue(4);
-      outw (MULTIFUNC_CNTL, SCISSORS_L | (short)pBox->x1);
-      outw(MULTIFUNC_CNTL, SCISSORS_T | (short)pBox->y1);
-      outw(MULTIFUNC_CNTL, SCISSORS_R | (short)(pBox->x2 - 1));
-      outw(MULTIFUNC_CNTL, SCISSORS_B | (short)(pBox->y2 - 1));
+      outw(EXT_SCISSOR_L, (short)pBox->x1);
+      outw(EXT_SCISSOR_T, (short)pBox->y1);
+      outw(EXT_SCISSOR_R, (short)(pBox->x2 - 1));
+      outw(EXT_SCISSOR_B, (short)(pBox->y2 - 1));
 
       mach32PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int)n, charinfo,
 						FONTGLYPHS(pGC->font));
@@ -382,10 +382,10 @@ mach32NoCImageText(pDraw, pGC, x, y, count, chars, is8bit)
    outw(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
    outw(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
    outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
-   outw(MULTIFUNC_CNTL, SCISSORS_T | 0);
-   outw(MULTIFUNC_CNTL, SCISSORS_L | 0);
-   outw(MULTIFUNC_CNTL, SCISSORS_R | mach32MaxX);
-   outw(MULTIFUNC_CNTL, SCISSORS_B | mach32MaxY);
+   outw(EXT_SCISSOR_T, 0);
+   outw(EXT_SCISSOR_L, 0);
+   outw(EXT_SCISSOR_R, mach32MaxX);
+   outw(EXT_SCISSOR_B, mach32MaxY);
    }
    
  /* put all the toys away when done playing */

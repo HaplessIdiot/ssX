@@ -1,5 +1,5 @@
 /* $XConsortium: mach32fcach.c,v 1.1 94/03/28 21:07:38 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32fcach.c,v 3.2 1994/08/31 04:21:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32fcach.c,v 3.3 1994/08/31 05:45:49 dawes Exp $ */
 /*
  * Copyright 1992, 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -157,7 +157,6 @@ Domach32CPolyText8(x, y, count, chars, fentry, pGC, pBox)
    for (;count > 0; count--, chars++) {
       CharInfoPtr pci;
       short xoff;
-      short yoff;
 
       pci = fentry->pci[(int)*chars];
 
@@ -177,10 +176,10 @@ Domach32CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 		   * the xf86loadfontblock function.
 		   */
 		  WaitQueue(8);
-		  outw(MULTIFUNC_CNTL, SCISSORS_T | 0);
-		  outw(MULTIFUNC_CNTL, SCISSORS_L | 0);
-		  outw(MULTIFUNC_CNTL, SCISSORS_R | mach32MaxX); 
-		  outw(MULTIFUNC_CNTL, SCISSORS_B | mach32MaxY);
+		  outw(EXT_SCISSOR_T, 0);
+		  outw(EXT_SCISSOR_L, 0);
+		  outw(EXT_SCISSOR_R, mach32MaxX); 
+		  outw(EXT_SCISSOR_B, mach32MaxY);
 		  outw(RD_MASK, 0xFFFF);
 		  outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
                   outw(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
@@ -192,10 +191,10 @@ Domach32CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 		   * Restore the GE context.
 		   */
 		  WaitQueue(9);
-		  outw(MULTIFUNC_CNTL, SCISSORS_L | (short)pBox->x1);
-		  outw(MULTIFUNC_CNTL, SCISSORS_T | (short)pBox->y1);
-		  outw(MULTIFUNC_CNTL, SCISSORS_R | (short)(pBox->x2 - 1));
-		  outw(MULTIFUNC_CNTL, SCISSORS_B | (short)(pBox->y2 - 1));
+		  outw(EXT_SCISSOR_L, (short)pBox->x1);
+		  outw(EXT_SCISSOR_T, (short)pBox->y1);
+		  outw(EXT_SCISSOR_R, (short)(pBox->x2 - 1));
+		  outw(EXT_SCISSOR_B, (short)(pBox->y2 - 1));
 		  outw(FRGD_COLOR, (short)pGC->fgPixel);
 		  outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPBLT | COLCMPOP_F);
 		  outw(FRGD_MIX, FSS_FRGDCOL | mach32alu[pGC->alu]);
@@ -204,7 +203,7 @@ Domach32CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 		  height = width = pmsk = 0;
 	       }
 	       WaitQueue(2);
-	       outw(CUR_Y, block->y);	       
+	       outw(CUR_Y, (short)block->y);	       
 
 	       /*
 		* Is thre readmask altered
@@ -224,13 +223,13 @@ Domach32CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 		  (short)(x + pci->metrics.leftSideBearing));
 	    outw(DESTY_AXSTP, (short)(y - pci->metrics.ascent));
 
-	    if ((short)(GLYPHWIDTHPIXELS(pci)) != width) {
+	    if (!width || (short)(GLYPHWIDTHPIXELS(pci)) != width) {
 	       width = (short)(GLYPHWIDTHPIXELS(pci));
-	       outw(MAJ_AXIS_PCNT, width - 1);
+	       outw(MAJ_AXIS_PCNT, (short)(width - 1));
 	    }
-	    if ((short)(gHeight) != height) {
+	    if (!height || (short)(gHeight) != height) {
 	       height = (short)(gHeight);
-	       outw(MULTIFUNC_CNTL, MIN_AXIS_PCNT | height - 1);
+	       outw(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(height - 1));
 	    }
 	    outw(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
 	 }
@@ -261,19 +260,19 @@ mach32GlyphWrite(x, y, count, chars, fentry, pGC, pBox, numRects)
 
    for (; --numRects >= 0; ++pBox) {
       WaitQueue(4);
-      outw(MULTIFUNC_CNTL, SCISSORS_L | (short)pBox->x1);
-      outw(MULTIFUNC_CNTL, SCISSORS_T | (short)pBox->y1);
-      outw(MULTIFUNC_CNTL, SCISSORS_R | (short)(pBox->x2 - 1));
-      outw(MULTIFUNC_CNTL, SCISSORS_B | (short)(pBox->y2 - 1));
+      outw(EXT_SCISSOR_L, (short)pBox->x1);
+      outw(EXT_SCISSOR_T, (short)pBox->y1);
+      outw(EXT_SCISSOR_R, (short)(pBox->x2 - 1));
+      outw(EXT_SCISSOR_B, (short)(pBox->y2 - 1));
 
       Domach32CPolyText8(x, y, count, chars, fentry, pGC, pBox);
    }
 
    WaitQueue(8);
-   outw(MULTIFUNC_CNTL, SCISSORS_T | 0);
-   outw(MULTIFUNC_CNTL, SCISSORS_L | 0);
-   outw(MULTIFUNC_CNTL, SCISSORS_R | mach32MaxX);
-   outw(MULTIFUNC_CNTL, SCISSORS_B | mach32MaxY);
+   outw(EXT_SCISSOR_T, 0);
+   outw(EXT_SCISSOR_L, 0);
+   outw(EXT_SCISSOR_R, mach32MaxX);
+   outw(EXT_SCISSOR_B, mach32MaxY);
    outw(RD_MASK, 0xFFFF);
    outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
    outw(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);

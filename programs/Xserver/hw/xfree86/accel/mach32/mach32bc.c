@@ -1,4 +1,4 @@
-/* $XFree86$$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32bc.c,v 3.0 1994/08/31 04:21:39 dawes Exp $$ */
 /*
  * Copyright 1993 by Jon Tombs. Oxford University
  * 
@@ -59,10 +59,10 @@ unsigned int id;
 
 {
     WaitQueue(8);
-    outw(MULTIFUNC_CNTL, SCISSORS_T | 0);
-    outw(MULTIFUNC_CNTL, SCISSORS_L | 0);
-    outw(MULTIFUNC_CNTL, SCISSORS_R | mach32MaxX);
-    outw(MULTIFUNC_CNTL, SCISSORS_B | mach32MaxY);
+    outw(EXT_SCISSOR_T, 0);
+    outw(EXT_SCISSOR_L, 0);
+    outw(EXT_SCISSOR_R, mach32MaxX);
+    outw(EXT_SCISSOR_B, mach32MaxY);
     outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX);  
     outw(FRGD_MIX, FSS_BITBLT | MIX_SRC);
     outw(BKGD_MIX, BSS_BITBLT | MIX_SRC);

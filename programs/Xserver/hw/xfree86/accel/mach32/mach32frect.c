@@ -1,5 +1,5 @@
 /* $XConsortium: mach32frect.c,v 1.2 94/04/17 20:30:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32frect.c,v 3.2 1994/08/01 12:10:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32frect.c,v 3.3 1994/08/31 04:21:43 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -105,10 +105,10 @@ CacheInfoPtr pci;
     int cur_h = pci->pix_h;
 
     WaitQueue(7);
-    outw(MULTIFUNC_CNTL, SCISSORS_T | 0);
-    outw(MULTIFUNC_CNTL, SCISSORS_L | 0);
-    outw(MULTIFUNC_CNTL, SCISSORS_R | mach32MaxX);
-    outw(MULTIFUNC_CNTL, SCISSORS_B | mach32MaxY);
+    outw(EXT_SCISSOR_T, 0);
+    outw(EXT_SCISSOR_L, 0);
+    outw(EXT_SCISSOR_R, mach32MaxX);
+    outw(EXT_SCISSOR_B, mach32MaxY);
     outw(FRGD_MIX, FSS_BITBLT | MIX_SRC);
     outw(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
     outw(WRT_MASK, 0xffff);
@@ -256,10 +256,10 @@ short planemask;
     ywmid = h - (pci->h - starty + endy + 1);
 
     WaitQueue(7);
-    outw(MULTIFUNC_CNTL, SCISSORS_T | 0);
-    outw(MULTIFUNC_CNTL, SCISSORS_L | 0);
-    outw(MULTIFUNC_CNTL, SCISSORS_R | mach32MaxX);
-    outw(MULTIFUNC_CNTL, SCISSORS_B | mach32MaxY);
+    outw(EXT_SCISSOR_T, 0);
+    outw(EXT_SCISSOR_L, 0);
+    outw(EXT_SCISSOR_R, mach32MaxX);
+    outw(EXT_SCISSOR_B, mach32MaxY);
     outw(FRGD_MIX, fgmix | fgalu);
     outw(BKGD_MIX, bgmix | bgalu);
     outw(WRT_MASK, planemask);
