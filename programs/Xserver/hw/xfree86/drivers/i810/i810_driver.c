@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.48 2001/05/10 21:14:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.49 2001/05/19 00:26:44 dawes Exp $ */
 
 /*
  * Authors:
@@ -1543,6 +1543,32 @@ I810ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
    return TRUE;
 }
 
+
+static void
+I810LoadPalette15(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
+		  VisualPtr pVisual) {
+   I810Ptr pI810;
+   vgaHWPtr hwp;
+   int i, j, index;
+   unsigned char r, g, b;
+
+   pI810 = I810PTR(pScrn);
+   hwp = VGAHWPTR(pScrn);
+
+   for (i=0; i<numColors; i++) {
+      index=indices[i];
+      r=colors[index].red;
+      g=colors[index].green;
+      b=colors[index].blue;
+      for (j=0; j<8; j++) {
+	 hwp->writeDacWriteAddr(hwp, (index<<3)+j);
+	 hwp->writeDacData(hwp, r);
+	 hwp->writeDacData(hwp, g);
+	 hwp->writeDacData(hwp, b);
+      }
+   }
+}
+
 static void
 I810LoadPalette16(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
 		  VisualPtr pVisual) {
@@ -1872,10 +1898,17 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 
    /* Use driver specific palette load routines for Direct Color support. -jens */
    if (pScrn->bitsPerPixel==16) {
-      if (!xf86HandleColormaps(pScreen, 256, 8, I810LoadPalette16, 0,
-			       CMAP_PALETTED_TRUECOLOR|
-			       CMAP_RELOAD_ON_MODE_SWITCH))
+      if (pScrn->depth == 15) {
+	 if (!xf86HandleColormaps(pScreen, 256, 8, I810LoadPalette15, 0,
+				CMAP_PALETTED_TRUECOLOR|
+				CMAP_RELOAD_ON_MODE_SWITCH))
 	 return FALSE;
+      } else {
+	 if (!xf86HandleColormaps(pScreen, 256, 8, I810LoadPalette16, 0,
+				CMAP_PALETTED_TRUECOLOR|
+				CMAP_RELOAD_ON_MODE_SWITCH))
+	 return FALSE;
+      }
    } else {
       if (!xf86HandleColormaps(pScreen, 256, 8, I810LoadPalette24, 0,
 			       CMAP_PALETTED_TRUECOLOR|

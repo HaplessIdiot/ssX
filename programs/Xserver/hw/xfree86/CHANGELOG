@@ -1,4 +1,8 @@
 XFree86 4.1.99.1 (xx June 2001)
+  14. Fix some apm driver bugs, including one that prevented acceleration
+      from working (#4674, Loïc Grenié).
+  13. Fix 555 (depth 15) palette handling in the i810 driver (#4673,
+      Andrew C. Aitchison).
   12. [SECURITY] Fix authentication issues with mmap() on drm devices
       (Jeff Hartmann).
   11. Add euro locales and some other missing locales to locale.alias and
@@ -13327,4 +13331,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1795 2001/05/23 16:03:46 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1796 2001/05/23 18:40:48 dawes Exp $
