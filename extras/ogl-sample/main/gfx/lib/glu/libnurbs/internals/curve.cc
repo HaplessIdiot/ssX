@@ -48,6 +48,7 @@
 #include "types.h"
 #include "quilt.h"
 #include "nurbsconsts.h"
+#include "gluint.h"
 
 /*--------------------------------------------------------------------------
  * Curve::Curve - copy curve from quilt and transform control points
@@ -170,7 +171,7 @@ Curve::getstepsize( void )
             REAL t = mapdesc->getProperty( N_PIXEL_TOLERANCE );
 	    if( mapdesc->isParametricDistanceSampling() ) {
 		REAL d = mapdesc->calcPartialVelocity( &tmp[0][0], tstride, order, 2, range[2] );
-		stepsize = (d > 0.0) ? ::sqrtf( 8.0 * t / d ) : range[2];
+		stepsize = (d > 0.0) ? ::SQRT( 8.0 * t / d ) : range[2];
 		minstepsize = ( mapdesc->maxrate > 0.0 ) ? (range[2] / mapdesc->maxrate) : 0.0;
 	    } else if( mapdesc->isPathLengthSampling() ) {
 		// t is upper bound on path (arc) length
