@@ -628,7 +628,7 @@ XftFreeTypeClose (Display *dpy, XftFontStruct *font)
 	    if (--gs->ref == 0)
 	    {
 		XRenderFreeGlyphSet (dpy, font->glyphset);
-		for (i = 0; i < font->nrealized; font++)
+		for (i = 0; i < font->nrealized; i++)
 		{
 		    gi = font->realized[i];
 		    if (gi && gi != XftUntestedGlyph)
