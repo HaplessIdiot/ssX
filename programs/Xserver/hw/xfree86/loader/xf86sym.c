@@ -279,6 +279,11 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86FindScreenForEntity)
    SYMFUNC(xf86FindPciDeviceVendor)
    SYMFUNC(xf86FindPciClass)
+   SYMFUNC(xf86RegisterStateChangeNotificationCallback)
+   SYMFUNC(xf86DeregisterStateChangeNotificationCallback)
+#ifdef async
+   SYMFUNC(xf86QueueAsyncEvent)
+#endif
 	   
    /* xf86Cursor.c  XXX not all of these should be exported */
    SYMFUNC(xf86LockZoom)
@@ -901,7 +906,9 @@ LOOKUP xfree86LookupTab[] = {
    SYMVAR(xf86PCICardInfo)
    SYMVAR(xf86PCIVendorInfo)
    SYMVAR(xf86PCIVendorNameInfo)
-
+#ifdef async
+   SYMVAR(xf86CurrentScreen)
+#endif
    /* predefined resource lists from xf86Bus.h */
    SYMVAR(resVgaExclusive)
    SYMVAR(resVgaShared)
