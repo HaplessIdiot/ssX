@@ -75,16 +75,16 @@
  * It should be fairly easy to write new special-purpose point, line or
  * triangle functions and hook them into this module.
  */
-
+/* $XFree86: xc/lib/GL/mesa/src/X/xmesa3.c,v 1.0tsi Exp $ */
 
 struct timespec;  /* this silences a compiler warning on several systems */
 struct itimerspec;
 
+#ifndef XFree86Server
 #include <sys/time.h>
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
-#ifndef XFree86Server
 #include <X11/Xlib.h>
 #endif
 #include "depth.h"

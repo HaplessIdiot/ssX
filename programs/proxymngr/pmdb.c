@@ -21,7 +21,7 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from The Open Group.
 */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/proxymngr/pmdb.c,v 1.3tsi Exp $ */
 
 #include "pmint.h"
 #include "pmdb.h"
@@ -35,14 +35,14 @@ from The Open Group.
 #else
 #define SIGVAL void
 #endif
-typedef SIGVAL (*SignalHandler)(int);
+typedef SIGVAL (*Signal_Handler)(int);
 
 void SetCloseOnExec (int fd);
 
 static proxy_service *proxyServiceList = NULL;
 
-static SignalHandler 
-Signal (int sig, SignalHandler handler)
+static Signal_Handler 
+Signal (int sig, Signal_Handler handler)
 {
 #ifndef X_NOT_POSIX
     struct sigaction sigact, osigact;

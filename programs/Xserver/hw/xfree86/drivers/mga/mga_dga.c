@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dga.c,v 1.2tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -10,7 +10,6 @@
 #include "mga_bios.h"
 #include "mga.h"
 #include "mga_reg.h"
-#include "mga_map.h"
 #include "mga_macros.h"
 #include "dgaproc.h"
 
@@ -87,8 +86,8 @@ SECOND_PASS:
 	currentMode->xViewportStep = 1;
 	currentMode->yViewportStep = 1;
 	currentMode->viewportFlags = DGA_FLIP_RETRACE;
-	currentMode->memBase = pMga->FbAddress + 
-			pMga->YDstOrg * (pScrn->bitsPerPixel / 8);
+	currentMode->memBase = (pointer)(pMga->FbAddress + 
+			pMga->YDstOrg * (pScrn->bitsPerPixel / 8));
 
 	if(oneMore) { /* first one is narrow width */
 	    currentMode->bytesPerScanline = ((pMode->HDisplay * Bpp) + 3) & ~3L;

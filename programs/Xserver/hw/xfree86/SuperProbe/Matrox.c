@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Matrox.c,v 3.3tsi Exp $ */
 /*
  * (c) Copyright 1997 Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -61,11 +62,32 @@ int *Chipset;
 		{
 			switch (pcrp->_device)
 			{
+			case PCI_CHIP_MGA1064SG:
+				*Chipset = CHIP_MGA1064SG;
+				break;
 			case PCI_CHIP_MGA2064W:
 				*Chipset = CHIP_MGA2064W;
 				break;
+			case PCI_CHIP_MGA2164W:
+				*Chipset = CHIP_MGA2164W;
+				break;
 			case PCI_CHIP_MGA2085PX:
 				*Chipset = CHIP_MGA2085PX;
+				break;
+			case PCI_CHIP_MGA2164W_AGP:
+				*Chipset = CHIP_MGA2164WAGP;
+				break;
+			case PCI_CHIP_MGAG100_PCI:
+				*Chipset = CHIP_MGAG100PCI;
+				break;
+			case PCI_CHIP_MGAG100_AGP:
+				*Chipset = CHIP_MGAG100AGP;
+				break;
+			case PCI_CHIP_MGAG200_PCI:
+				*Chipset = CHIP_MGAG200PCI;
+				break;
+			case PCI_CHIP_MGAG200_AGP:
+				*Chipset = CHIP_MGAG200AGP;
 				break;
 			default:
 				Chip_data = chip;

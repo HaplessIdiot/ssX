@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.101 1999/03/06 13:12:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.102 1999/03/07 08:29:44 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -114,6 +114,8 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 #ifdef __EMX__
   os2ServerVideoAccess();  /* See if we have access to the screen before doing anything */
 #endif
+
+  xf86Initialising = TRUE;
 
   /* Do this early? */
   if (generation != serverGeneration) {
@@ -603,8 +605,10 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
        */
       if (!xf86Info.sharedMonitor) (xf86Screens[i]->EnterLeaveMonitor)(ENTER);
 #endif
-      xf86Resetting = FALSE;
   }
+
+  xf86Resetting = FALSE;
+  xf86Initialising = FALSE;
 
 #ifndef AMOEBA
   RegisterBlockAndWakeupHandlers(xf86Block, xf86Wakeup, (void *)0);

@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Chris D. Peterson, MIT X Consortium
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/editres/svpopup.c,v 1.3tsi Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>	/* Get standard string definations. */
@@ -159,7 +159,7 @@ Widget new, old;
     Pixel new_border, old_border, old_bg;
     
     if (!XtIsSensitive(new)) {
-#if XKB
+#ifdef XKB
 	/* Don't set field to an inactive Widget. */
 	XkbStdBell(XtDisplay(old), XtWindow(new), 0, XkbBI_InvalidLocation); 
 #else

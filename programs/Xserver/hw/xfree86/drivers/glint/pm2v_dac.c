@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2v_dac.c,v 1.8 1999/02/07 06:18:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2v_dac.c,v 1.9 1999/02/12 22:52:05 hohndel Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -149,9 +149,11 @@ Permedia2VInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pReg->glintRegs[PMVsStart >> 3] = temp2;
     pReg->glintRegs[PMVbEnd >> 3] = mode->CrtcVTotal - mode->CrtcVDisplay;
 
-    pReg->glintRegs[PMVideoControl >> 3] = 
- 	    (((mode->Flags & V_PHSYNC) ? 0x1 : 0x3) << 3) |  
- 	    (((mode->Flags & V_PVSYNC) ? 0x1 : 0x3) << 5) | 1; 
+    /* The hw cursor needs /VSYNC to recognize vert retrace. We'll stick
+       both sync lines to active low here and if needed invert them
+       using the RAMDAC's RDSyncControl below. */
+    pReg->glintRegs[PMVideoControl >> 3] =
+	(1 << 5) | (1 << 3) | 1;
 
     /* We stick the RAMDAC into 64bit mode */
     /* And reduce the horizontal timings and clock by half */
@@ -188,6 +190,12 @@ Permedia2VInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
         pReg->DacRegs[PM2VDACRDMiscControl] = 0x01; /* 8bit DAC */
     else
 	pReg->DacRegs[PM2VDACRDMiscControl] = 0x00; /* 6bit DAC */
+
+    pReg->DacRegs[PM2VDACRDSyncControl] = 0x00;
+    if (!(mode->Flags & V_PHSYNC))
+        pReg->DacRegs[PM2VDACRDSyncControl] |= 0x01; /* invert hsync */
+    if (!(mode->Flags & V_PVSYNC))
+        pReg->DacRegs[PM2VDACRDSyncControl] |= 0x04; /* invert vsync */
 
     switch (pScrn->bitsPerPixel)
     {
@@ -264,6 +272,8 @@ Permedia2VSave(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
 				Permedia2vInIndReg(pScrn, PM2VDACRDIndexControl);
     glintReg->DacRegs[PM2VDACRDOverlayKey] = 
 				Permedia2vInIndReg(pScrn, PM2VDACRDOverlayKey);
+    glintReg->DacRegs[PM2VDACRDSyncControl] = 
+				Permedia2vInIndReg(pScrn, PM2VDACRDSyncControl);
     glintReg->DacRegs[PM2VDACRDMiscControl] = 
 				Permedia2vInIndReg(pScrn, PM2VDACRDMiscControl);
     glintReg->DacRegs[PM2VDACRDDACControl] = 
@@ -324,6 +334,8 @@ Permedia2VRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
 				glintReg->DacRegs[PM2VDACRDIndexControl]);
     Permedia2vOutIndReg(pScrn, PM2VDACRDOverlayKey, 0x00, 
 				glintReg->DacRegs[PM2VDACRDOverlayKey]);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDSyncControl, 0x00, 
+				glintReg->DacRegs[PM2VDACRDSyncControl]);
     Permedia2vOutIndReg(pScrn, PM2VDACRDMiscControl, 0x00, 
 				glintReg->DacRegs[PM2VDACRDMiscControl]);
     Permedia2vOutIndReg(pScrn, PM2VDACRDDACControl, 0x00, 
@@ -382,11 +394,10 @@ Permedia2vSetCursorPosition(
 {
     x += 64;
     y += 64;
-
-    /* Output position - "only" 12 bits of location documented */
+    /* Output position - "only" 11 bits of location documented */
    
-    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorHotSpotX, 0x00, 0x00);
-    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorHotSpotY, 0x00, 0x00);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorHotSpotX, 0x00, 0x3f);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorHotSpotY, 0x00, 0x3f);
     Permedia2vOutIndReg(pScrn, PM2VDACRDCursorXLow, 0x00, x & 0xFF);
     Permedia2vOutIndReg(pScrn, PM2VDACRDCursorXHigh, 0x00, (x>>8) & 0x0F);
     Permedia2vOutIndReg(pScrn, PM2VDACRDCursorYLow, 0x00, y & 0xFF);
@@ -402,20 +413,13 @@ Permedia2vSetCursorColors(
     int i;
     /* The Permedia2v cursor is always 8 bits so shift 8, not 10 */
 
-for (i=0;i<0x30;i++) {
-    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+i, 0x00, 0x55);
-}
-return;
+    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+0, 0x00, bg >> 16);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+1, 0x00, bg >> 8);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+2, 0x00, bg);
 
-    /* Background color */
-    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+6, 0x00, bg >> 16);
-    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+7, 0x00, bg >> 8);
-    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+8, 0x00, bg);
-
-    /* Foreground color */
-    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+9, 0x00, fg >> 16);
-    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+10, 0x00, fg >> 8);
-    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+11, 0x00, fg);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+3, 0x00, fg >> 16);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+4, 0x00, fg >> 8);
+    Permedia2vOutIndReg(pScrn, PM2VDACRDCursorPalette+5, 0x00, fg);
 }
 
 static Bool 
@@ -438,7 +442,8 @@ Permedia2vHWCursorInit(ScreenPtr pScreen)
 
     infoPtr->MaxWidth = 64;
     infoPtr->MaxHeight = 64;
-    infoPtr->Flags = 0;
+    infoPtr->Flags = HARDWARE_CURSOR_TRUECOLOR_AT_8BPP |
+		HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_1;
     infoPtr->SetCursorColors = Permedia2vSetCursorColors;
     infoPtr->SetCursorPosition = Permedia2vSetCursorPosition;
     infoPtr->LoadCursorImage = Permedia2vLoadCursorImage;

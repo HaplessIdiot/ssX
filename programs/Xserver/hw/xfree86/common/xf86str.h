@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.19 1999/02/12 22:51:58 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.20 1999/02/28 11:19:34 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -620,6 +620,7 @@ typedef enum {
     PROT_SYSMOUSE,			/* SysMouse */
     PROT_WSMOUSE,			/* wsmouse (NetBSD) */
     PROT_AUTO,				/* automatic */
+    PROT_ACECAD,			/* Acecad tablets */
     NUM_PROTOCOLS			/* MUST BE LAST */
 } MouseProtocol;
 

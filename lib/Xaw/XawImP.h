@@ -47,7 +47,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/XawImP.h,v 3.4 1998/08/20 13:59:19 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/XawImP.h,v 3.5 1998/10/03 08:42:33 dawes Exp $ */
 
 #ifndef _XawImP_h
 #define _XawImP_h
@@ -180,6 +180,16 @@ int _XawImWcLookupString
  int			bytes_buffer,
  KeySym			*keysym_return,
  Status			*status_return
+ );
+
+int _XawLookupString
+(
+ Widget			w,
+ XKeyEvent		*event,
+ char			*buffer_return,
+ int			buffer_size,
+ KeySym			*keysym_return,
+ XComposeStatus		*status_return
  );
 
 int _XawImGetImAreaHeight

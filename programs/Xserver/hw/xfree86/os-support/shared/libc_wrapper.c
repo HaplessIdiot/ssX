@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.35 1999/01/24 13:32:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.36tsi Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -409,7 +409,7 @@ int
 xf86munmap(void *start, xf86size_t length)
 {
 #ifndef NO_MMAP
-    void *rc = munmap(start,length);
+    int rc = munmap(start,length);
 
     xf86errno = xf86GetErrno();
     return rc;

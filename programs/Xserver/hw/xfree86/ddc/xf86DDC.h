@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.h,v 1.1 1998/11/28 10:43:06 dawes Exp $ */
 
 /* xf86DDC.h
  *
@@ -24,24 +24,18 @@ typedef enum {
 } xf86ddcSpeed;
 
 extern xf86MonPtr xf86DoEDID_DDC1(
-#if NeedFunctionPrototypes
     int scrnIndex, 
     void (*DDC1SetSpeed)(ScrnInfoPtr, xf86ddcSpeed),
     unsigned int (*DDC1Read)(ScrnInfoPtr)
-#endif
 );
 
 extern xf86MonPtr xf86DoEDID_DDC2(
-#if NeedFunctionPrototypes
    int scrnIndex,
    I2CBusPtr pBus
-#endif
 );
 
 extern void xf86PrintEDID(
-#if NeedFunctionPrototypes
     xf86MonPtr 
-#endif
 );
 
 #endif

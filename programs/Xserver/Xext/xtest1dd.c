@@ -48,7 +48,7 @@ Telephone and Telegraph Company or of the Regents of the
 University of California.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/xtest1dd.c,v 3.0 1996/05/06 05:55:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xtest1dd.c,v 3.1tsi Exp $ */
 
 /***************************************************************
  * include files
@@ -485,8 +485,8 @@ XTestStealJumpData(jx, jy, dev_type)
 /*
  * the x and y coordinates to jump to
  */
-short	jx;
-short	jy;
+int	jx;
+int	jy;
 /*
  * which device caused the jump
  */
@@ -708,8 +708,8 @@ XTestStealMotionData(dx, dy, dev_type, mx, my)
 /*
  * the x and y delta motion of the locator
  */
-short	dx;
-short	dy;
+int	dx;
+int	dy;
 /*
  * which locator did the moving
  */
@@ -717,8 +717,8 @@ int	dev_type;
 /*
  * the x and y position of the locator before the delta motion
  */
-short	mx;
-short	my;
+int	mx;
+int	my;
 {
 	/*
 	 * pointer to a XTestMOTION_ACTION input action
@@ -826,20 +826,20 @@ XTestStealKeyData(keycode, keystate, dev_type, locx, locy)
 /*
  * which key/button moved
  */
-CARD8	keycode;
+unsigned	keycode;
 /*
  * whether the key/button was pressed or released
  */
-char	keystate;
+int		keystate;
 /*
  * which device caused the input action
  */
-int	dev_type;
+int		dev_type;
 /*
  * the x and y coordinates of the locator when the action happenned
  */
-short	locx;
-short	locy;
+int		locx;
+int		locy;
 {
 	/*
 	 * pointer to key/button motion input action

@@ -1,5 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/interpret_vdif.c,v 1.1 1998/11/28 10:43:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/interpret_vdif.c,v 1.2tsi Exp $ */
 
+#include "Xarch.h"
 #include "vdif.h"
 static xf86VdifLimitsPtr* get_limits(CARD8 *c);
 static xf86VdifGammaPtr* get_gamma(CARD8 *c);

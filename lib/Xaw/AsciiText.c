@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $XFree86: xc/lib/Xaw/AsciiText.c,v 3.3 1998/10/03 08:42:01 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiText.c,v 3.4 1998/11/15 04:29:58 dawes Exp $ */
 
 /*
  * AsciiText.c - Source code for AsciiText Widget
@@ -311,13 +311,14 @@ XawAsciiInitialize(Widget request, Widget cnew,
   XawTextDisableRedisplay(cnew);
   XawTextEnableRedisplay(cnew);
 
+  _XawImRegister(cnew);
+
   /* If we are using a MultiSink we need to tell the input method stuff */
   if (w->simple.international == True) {
     Arg list[4];
     Cardinal ac = 0;
 
     sink = (MultiSinkObject)w->text.sink;
-    _XawImRegister(cnew);
     XtSetArg(list[ac], XtNfontSet, sink->multi_sink.fontset);		ac++;
     XtSetArg(list[ac], XtNinsertPosition, w->text.insertPos);		ac++;
     XtSetArg(list[ac], XtNforeground, sink->text_sink.foreground);	ac++;
@@ -331,9 +332,7 @@ XawAsciiDestroy(Widget w)
 {
     AsciiWidget ascii = (AsciiWidget)w;
 
-    /* Disconnect input method */
-    if (ascii->simple.international == True)
-	_XawImUnregister(w);
+    _XawImUnregister(w);
 
     if (w == XtParent(ascii->text.sink))
 	XtDestroyWidget(ascii->text.sink);

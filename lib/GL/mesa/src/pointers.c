@@ -62,14 +62,16 @@
  * initial rev
  *
  */
-
+/* $XFree86: xc/lib/GL/mesa/src/pointers.c,v 1.0tsi Exp $ */
 
 #ifdef PC_HEADER
 #include "all.h"
 #else
+#ifndef XFree86Server
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#endif
 #include "accum.h"
 #include "alpha.h"
 #include "attrib.h"
@@ -93,7 +95,7 @@
 #include "macros.h"
 #include "masking.h"
 #include "matrix.h"
-#include "misc.h"
+#include "glmisc.h"
 #include "pixel.h"
 #include "points.h"
 #include "polygon.h"
@@ -110,7 +112,6 @@
 #include "vbfill.h"
 #include "winpos.h"
 #ifdef XFree86Server
-#undef MISC_H
 #include "GL/xf86glx.h"
 #endif
 #endif

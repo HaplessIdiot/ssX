@@ -5,7 +5,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.227.1.2 95/06/29 18:13:15 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/os2main.c,v 3.22 1999/01/23 09:56:22 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/os2main.c,v 3.23 1999/02/07 06:19:00 dawes Exp $ */
 
 /***********************************************************
 
@@ -1003,7 +1003,7 @@ main (int argc, char **argv, char **envp)
 	    term->flags |= WRAPAROUND;
 	    update_autowrap();
 	}
-	if (term->misc.re_verse) {
+	if (term->misc.re_verse != term->misc.re_verse0) {
 	    term->flags |= REVERSE_VIDEO;
 	    update_reversevideo();
 	}
@@ -1828,6 +1828,15 @@ static int parse_tty_modes (char *s, struct _xttymodes *modelist)
 	if (*s == '^') {
 	    s++;
 	    c = ((*s == '?') ? 0177 : *s & 31);	 /* keep control bits */
+	    if (*s == '-') {
+		errno = 0;
+		c = fpathconf(0, _PC_VDISABLE);
+		if (c == -1) {
+		    if (errno != 0)
+			continue;	/* skip this (error) */
+		    c = 0377;
+		}
+	    }
 	} else {
 	    c = *s;
 	}

@@ -1,5 +1,5 @@
 ! $XConsortium: xdm-conf.cpp /main/3 1996/01/15 15:17:26 gildea $
-! $XFree86$
+! $XFree86: xc/programs/xdm/config/xdm-conf.cpp,v 1.3 1998/12/06 13:30:40 dawes Exp $
 DisplayManager.errorLogFile:	XDMDIR/xdm-errors
 DisplayManager.pidFile:		XDMDIR/xdm-pid
 DisplayManager.keyFile:		XDMDIR/xdm-keys
@@ -19,3 +19,7 @@ DisplayManager._0.reset:	XDMDIR/TakeConsole
 DisplayManager*resources:	XDMDIR/Xresources
 DisplayManager*session:		XDMDIR/Xsession
 DisplayManager*authComplain:	false
+#ifdef XPM
+! this is a new line Caolan, 9312811@ul.ie
+DisplayManager*loginmoveInterval:      10
+#endif /* XPM */

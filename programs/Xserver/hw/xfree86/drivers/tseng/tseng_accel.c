@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.26 1998/09/05 06:36:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.27tsi Exp $ */
 
 
 
@@ -152,7 +152,7 @@ TsengXAAInit(ScreenPtr pScreen)
 	else			       /* W32, W32i */
 	    pXAAinfo->SubsequentSolidFillRect = TsengW32iSubsequentSolidFillRect;
     }
-#if TSENG_TRAPEZOIDS
+#ifdef TSENG_TRAPEZOIDS
     if (Is_ET6K) {
 	/* disabled for now: not fully compliant yet */
 	pXAAinfo->SubsequentFillTrapezoidSolid = TsengSubsequentFillTrapezoidSolid;

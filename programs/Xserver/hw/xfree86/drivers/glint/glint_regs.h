@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.8 1999/02/07 06:18:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.9tsi Exp $ */
 
 /*
  * glint register file 
@@ -252,6 +252,7 @@
 
 /* Permedia 2V extensions */
 #define PM2VDACRDMiscControl						0x000
+#define PM2VDACRDSyncControl						0x001
 #define PM2VDACRDDACControl						0x002
 #define PM2VDACRDPixelSize						0x003
 #define PM2VDACRDColorFormat						0x004
@@ -971,7 +972,7 @@
 #define CI8     14
 #define CI4     15
 
-#if DEBUG
+#ifdef DEBUG
 #define GLINT_WRITE_REG(v,r)					\
 	GLINT_VERB_WRITE_REG(pGlint,v,r,__FILE__,__LINE__)
 #define GLINT_READ_REG(r)					\

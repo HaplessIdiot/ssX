@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/Login.h,v 3.1 1995/10/21 12:52:32 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/Login.h,v 3.2 1998/10/04 09:41:03 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -73,6 +73,29 @@ from The Open Group.
 # define XtNallowAccess		"allowAccess"
 # define XtNallowNullPasswd	"allowNullPasswd"
 
+#ifdef XPM
+/* added by Amit Margalit Oct 1996 */
+# define XtNhiColor		"hiColor"
+# define XtNshdColor		"shdColor"
+# define XtNframeWidth		"frameWidth"
+# define XtNinnerFramesWidth	"innerFramesWidth"
+# define XtNsepWidth		"sepWidth"
+
+/* caolan begin */
+#define XtNlastEventTime "lastEventTime"
+#define XtCLastEventTime "LastEventTime"
+/* caolan end */
+
+#define XtNuseShape "useShape"
+#define XtCUseShape "UseShape"
+#define XtNlogoFileName "logoFileName"
+#define XtCLogoFileName "LogoFileName"
+#define XtNlogoPadding "logoPadding"
+#define XtCLogoPadding "LogoPadding"
+
+# define XtCFrameWidth		"FrameWidth"
+
+#endif /* XPM */
 # define XtCGreeting		"Greeting"
 # define XtCNamePrompt		"NamePrompt"
 # define XtCPasswdPrompt	"PasswdPrompt"

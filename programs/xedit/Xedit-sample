@@ -1,4 +1,4 @@
-! $XFree86: xc/programs/xedit/Xedit-sample,v 1.1 1998/12/06 06:08:52 dawes Exp $
+! $XFree86: xc/programs/xedit/Xedit-sample,v 1.2 1999/01/11 05:13:36 dawes Exp $
 
 Xedit*insertFile*text.width:		150
 Xedit*search*searchText.width:		192
@@ -145,3 +145,20 @@ Xedit*fileMenu.HorizontalMargins:	2
 Xedit*fileMenu.borderWidth:		0
 Xedit*fileMenu.?.foreground:		rgb:d/c/8
 Xedit*fileMenu.background:		rgb:9/0/2
+Xedit*dirlabel*font:			-*-courier-bold-r-*-*-12-*-*-*-*-*-*-1
+Xedit*dirlabel*background:		rgb:9/0/2
+Xedit*dirlabel*foreground:		rgb:d/c/8
+Xedit*dirlabel*backgroundPixmap:	XtUnspecifiedPixmap
+Xedit*dirlabel.displayList:\
+foreground	rgb:3/0/1;\
+draw-lines	+1,-1,-1,-1,-1,+1;\
+foreground	rgb:d/0/3;\
+draw-lines	-1,+0,+0,+0,+0,-1;\
+foreground	rgb:b/2/3;\
+draw-lines	+2,-2,-2,-2,-2,+2;\
+foreground	rgb:8/0/1;\
+draw-lines	-2,+1,+1,+1,+1,-2
+Xedit*dirwindow*font:			-*-courier-bold-r-*-*-12-*-*-*-*-*-*-1
+Xedit*dirwindow*foreground:		rgb:9/0/2
+Xedit*dirwindow.backgroundPixmap:	gradient:vertical?dimension=3&start=rgb:e/d/d&end=rgb:f/e/e
+Xedit*viewport*Scrollbar.thumb:		hlines2

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.8 1999/01/24 03:13:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.9 1999/01/26 10:40:16 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -137,6 +137,7 @@ serverLayoutRec xf86ConfigLayout = {NULL, };
 XF86ConfigPtr xf86configptr = NULL;
 Bool xf86Exiting = FALSE;
 Bool xf86Resetting = FALSE;
+Bool xf86Initialising = FALSE;
 Bool xf86ProbeFailed = FALSE;
 #ifdef XFree86LOADER
 DriverPtr *xf86DriverList = NULL;

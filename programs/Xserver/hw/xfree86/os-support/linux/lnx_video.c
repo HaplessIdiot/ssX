@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.19 1999/02/28 11:19:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.20 1999/03/02 10:42:01 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -115,7 +115,9 @@ getVidMapRec(int scrnIndex)
 				   a problem. */
 static int mtrr_fd = MTRR_FD_UNOPENED;
 
-/* Open /proc/mtrr. FALSE on failure. */
+/* Open /proc/mtrr. FALSE on failure. Will always fail on Linux 2.0, 
+   and will fail on Linux 2.2 with MTRR support configured out,
+   so verbosity should be chosen appropriately. */
 static Bool
 mtrr_open(int verbosity)
 {
@@ -139,7 +141,9 @@ mtrr_open(int verbosity)
 	}
 
 	if (mtrr_fd == MTRR_FD_PROBLEM) {
-		if (!warned) {
+		/* To make sure we only ever warn once, need to check
+		   verbosity outside xf86MsgVerb */
+		if (!warned && verbosity <= xf86GetVerbosity()) {
 			xf86MsgVerb(X_WARNING, verbosity,
 				  "System lacks support for changing MTRRs\n");
 			warned = TRUE;
@@ -161,7 +165,8 @@ mtrr_cull_mmio_region(ScrnInfoPtr scrn, pointer base, unsigned long size)
 	struct mtrr_gentry gent;
 	char buf[20];
 
-	if (!mtrr_open(0))
+	/* Linux 2.0 users should not get a warning without -verbose */
+	if (!mtrr_open(2))
 		return;
 
 	for (gent.regnum = 0; 
@@ -191,36 +196,86 @@ mtrr_cull_mmio_region(ScrnInfoPtr scrn, pointer base, unsigned long size)
 	}
 }
 
+
+/* xf86UnmapVidMem only gets the virtual address of the region to
+   unmap, so we maintain a list of WC regions to map to the physical
+   address */
+struct mtrr_wc_region {
+	pointer virtual_base;
+	struct mtrr_sentry sentry;
+	struct mtrr_wc_region *next;
+};
+
+static struct mtrr_wc_region *mtrr_wc_regions;
+
+
 static void
-mtrr_write_combining_region(ScrnInfoPtr scrn, 
-			    pointer base, unsigned long size)
+mtrr_add_wc_region(ScrnInfoPtr scrn, pointer base, unsigned long size,
+		   pointer vbase)
 {
-	struct mtrr_sentry sent;
+	struct mtrr_wc_region *wcr;
 	VidMapPtr vp = VIDMAPPTR(scrn);
 
-	/* Only warn about problems opening /proc/mtrr if the user
-	   explicitly asks for it, since failure is to be expected on
-	   Linux-2.0 */
+	/* Linux 2.0 should not warn, unless the user explicitly asks for
+	   WC. */
 	if (!mtrr_open(vp->mtrrFrom == X_CONFIG ? 0 : 2))
 		return;
 
-	sent.base = (unsigned long) base;
-	sent.size = size;
-	sent.type = MTRR_TYPE_WRCOMB;
+	wcr = xalloc(sizeof(*wcr));
+	if (!wcr)
+		return;
+
+	wcr->virtual_base = vbase;
+	wcr->sentry.base = (unsigned long) base;
+	wcr->sentry.size = size;
+	wcr->sentry.type = MTRR_TYPE_WRCOMB;
 		
-	if (ioctl(mtrr_fd, MTRRIOC_ADD_ENTRY, &sent) >= 0)
-		xf86DrvMsg(scrn->scrnIndex, vp->mtrrFrom,
-			   "Write-combining range (0x%lx,0x%lx)\n",
-			   (unsigned long)base, (unsigned long)size);
-	else if ((unsigned long)base >= 0x100000)
+	if (ioctl(mtrr_fd, MTRRIOC_ADD_ENTRY, &wcr->sentry) >= 0) {
+		wcr->next = mtrr_wc_regions;
+		mtrr_wc_regions = wcr;
+
+		/* Avoid printing on every VT switch */
+		if (xf86ServerIsInitialising())
+			xf86DrvMsg(scrn->scrnIndex, vp->mtrrFrom,
+				"Write-combining range (0x%lx,0x%lx)\n",
+				(unsigned long)base, (unsigned long)size);
+	}
+	else {
+		xfree(wcr);
+		
 		/* Don't complain about the VGA region: MTRR fixed
 		   regions aren't currently supported, but might be in
 		   the future. */
-		xf86DrvMsgVerb(scrn->scrnIndex, X_WARNING, 0,
-			       "Failed to set up write-combining range "
-			       "(0x%lx,0x%lx)\n", 
-			       (unsigned long)base, (unsigned long)size);
+		if ((unsigned long)base >= 0x100000)
+			xf86DrvMsgVerb(scrn->scrnIndex, X_WARNING, 0,
+				"Failed to set up write-combining range "
+				"(0x%lx,0x%lx)\n", 
+				(unsigned long)base, (unsigned long)size);
+	}
 }
+
+static void
+mtrr_del_wc_region(ScrnInfoPtr scrn, pointer vbase, unsigned long size)
+{
+	struct mtrr_wc_region *p, **pto;
+
+	if (mtrr_fd > 0) {
+		/* Find the region with the given virtual base addr */
+		for (pto = &mtrr_wc_regions, p = *pto;
+		     p && p->virtual_base != vbase;
+		     pto = &p->next, p = *pto)
+			;
+
+		if (!p)
+			/* Didn't WC this region */
+			return;
+
+		*pto = p->next;
+		ioctl(mtrr_fd, MTRRIOC_DEL_ENTRY, &p->sentry);
+		xfree(p);
+	}
+}
+
 
 #endif /* HAS_MTRR_SUPPORT */
 
@@ -287,8 +342,8 @@ xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
 					      Size);
 
 		if (Flags & VIDMEM_FRAMEBUFFER)
-			mtrr_write_combining_region(xf86Screens[ScreenNum],
-						    Base, Size);
+			mtrr_add_wc_region(xf86Screens[ScreenNum],
+					   Base, Size, base);
 	}
 #endif
 
@@ -298,7 +353,17 @@ xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
 void
 xf86UnMapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 {
-    munmap((caddr_t)JENSEN_SHIFT(Base), JENSEN_SHIFT(Size));
+#ifdef HAS_MTRR_SUPPORT
+	/* The MTRR driver would clean up for us when the server exits
+	   and hangs up the fd, but because of VT switches and server
+	   generations the region ought to be deleted here. */
+
+	VidMapPtr vp = getVidMapRec(ScreenNum);
+	if (vp->mtrrEnabled)
+		mtrr_del_wc_region(xf86Screens[ScreenNum], Base, Size);
+#endif
+
+	munmap((caddr_t)JENSEN_SHIFT(Base), JENSEN_SHIFT(Size));
 }
 
 Bool

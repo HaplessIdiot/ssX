@@ -126,15 +126,15 @@
  * the clear pixel value if needed.
  *
  */
+/* $XFree86: xc/lib/GL/mesa/src/X/xmesa1.c,v 1.0tsi Exp $ */
 
-
+#ifndef XFree86Server
 #include <assert.h>
 #include <ctype.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifndef XFree86Server
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #ifdef SHM

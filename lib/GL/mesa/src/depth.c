@@ -62,7 +62,7 @@
  * initial rev
  *
  */
-
+/* $XFree86: xc/lib/GL/mesa/src/depth.c,v 1.0tsi Exp $ */
 
 /*
  * Depth buffer functions
@@ -72,8 +72,10 @@
 #ifdef PC_HEADER
 #include "all.h"
 #else
+#ifndef XFree86Server
 #include <stdlib.h>
 #include <string.h>
+#endif
 #include "context.h"
 #include "depth.h"
 #include "macros.h"

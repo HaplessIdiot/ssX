@@ -1,5 +1,6 @@
 
 XCOMM Header: /p0/cvs/X39-3D/xc/programs/Xserver/GL/mesa/src/Imakefile,v 1.4 1999/02/27 03:25:03 jens Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/Imakefile,v 1.0tsi Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -57,6 +58,8 @@ LinkSourceFile(fog.c,../../../../../lib/GL/mesa/src)
 LinkSourceFile(fog.h,../../../../../lib/GL/mesa/src)
 LinkSourceFile(get.c,../../../../../lib/GL/mesa/src)
 LinkSourceFile(get.h,../../../../../lib/GL/mesa/src)
+LinkSourceFile(glmisc.c,../../../../../lib/GL/mesa/src)
+LinkSourceFile(glmisc.h,../../../../../lib/GL/mesa/src)
 LinkSourceFile(hash.c,../../../../../lib/GL/mesa/src)
 LinkSourceFile(hash.h,../../../../../lib/GL/mesa/src)
 LinkSourceFile(image.c,../../../../../lib/GL/mesa/src)
@@ -74,8 +77,6 @@ LinkSourceFile(masking.c,../../../../../lib/GL/mesa/src)
 LinkSourceFile(masking.h,../../../../../lib/GL/mesa/src)
 LinkSourceFile(matrix.c,../../../../../lib/GL/mesa/src)
 LinkSourceFile(matrix.h,../../../../../lib/GL/mesa/src)
-LinkSourceFile(misc.c,../../../../../lib/GL/mesa/src)
-LinkSourceFile(misc.h,../../../../../lib/GL/mesa/src)
 LinkSourceFile(mmath.c,../../../../../lib/GL/mesa/src)
 LinkSourceFile(mmath.h,../../../../../lib/GL/mesa/src)
 LinkSourceFile(mthreads.c,../../../../../lib/GL/mesa/src)
@@ -138,8 +139,8 @@ LinkSourceFile(zoom.h,../../../../../lib/GL/mesa/src)
     CORE_SRCS = accum.c alpha.c alphabuf.c api1.c api2.c apiext.c \
                 attrib.c bitmap.c blend.c clip.c colortab.c context.c \
                 copypix.c depth.c dlist.c drawpix.c enable.c eval.c \
-                feedback.c fog.c get.c hash.c image.c light.c lines.c \
-                logic.c masking.c matrix.c misc.c mmath.c mthreads.c \
+                feedback.c fog.c get.c glmisc.c hash.c image.c light.c \
+		lines.c logic.c masking.c matrix.c mmath.c mthreads.c \
                 pb.c pixel.c points.c pointers.c polygon.c quads.c \
                 rastpos.c readpix.c rect.c scissor.c shade.c span.c \
                 stencil.c teximage.c texobj.c texstate.c texture.c \
@@ -148,8 +149,8 @@ LinkSourceFile(zoom.h,../../../../../lib/GL/mesa/src)
     CORE_OBJS = accum.o alpha.o alphabuf.o api1.o api2.o apiext.o \
                 attrib.o bitmap.o blend.o clip.o colortab.o context.o \
                 copypix.o depth.o dlist.o drawpix.o enable.o eval.o \
-                feedback.o fog.o get.o hash.o image.o light.o lines.o \
-                logic.o masking.o matrix.o misc.o mmath.o mthreads.o \
+                feedback.o fog.o get.o glmisc.o hash.o image.o light.o \
+                lines.o logic.o masking.o matrix.o mmath.o mthreads.o \
                 pb.o pixel.o points.o pointers.o polygon.o quads.o \
                 rastpos.o readpix.o rect.o scissor.o shade.o span.o \
                 stencil.o teximage.o texobj.o texstate.o texture.o \

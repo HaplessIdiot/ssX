@@ -22,9 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XlibInt.c,v 3.14 1998/10/03 08:41:29 dawes Exp $ */
-
-/* $XFree86: xc/lib/X11/XlibInt.c,v 3.14 1998/10/03 08:41:29 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlibInt.c,v 3.15tsi Exp $ */
 
 /*
  *	XlibInt.c - Internal support routines for the C subroutine
@@ -3231,22 +3229,6 @@ Screen *_XScreenOfWindow (dpy, w)
     return NULL;
 }
 
-
-#if (MSKCNT > 4)
-/*
- * This is a macro if MSKCNT <= 4
- */
-_XANYSET(src)
-    long	*src;
-{
-    int i;
-
-    for (i=0; i<MSKCNT; i++)
-	if (src[ i ])
-	    return (1);
-    return (0);
-}
-#endif
 
 #if defined(WIN32)
 

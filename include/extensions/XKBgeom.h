@@ -24,9 +24,12 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
+/* $XFree86: xc/include/extensions/XKBgeom.h,v 1.0tsi Exp $ */
 
 #ifndef _XKBGEOM_H_
 #define	_XKBGEOM_H_
+
+#include <X11/extensions/XKBstr.h>
 
 #ifdef XKB_IN_SERVER
 #define XkbAddGeomKeyAlias 		SrvXkbAddGeomKeyAlias
@@ -679,6 +682,15 @@ XkbAllocGeometry(
 #if NeedFunctionPrototypes
 	XkbDescPtr		/* xkb */,
 	XkbGeometrySizesPtr	/* sizes */
+#endif
+);
+
+extern	Status
+XkbSetGeometry(
+#if NeedFunctionPrototypes
+	Display *		/* dpy */,
+	unsigned		/* deviceSpec */,
+	XkbGeometryPtr		/* geom */
 #endif
 );
 

@@ -1,5 +1,5 @@
 XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.86 1999/02/19 21:26:46 hohndel Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.87tsi Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -100,7 +100,7 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #if LinuxCLibMajorVersion >= 6
 #define LinuxSourceDefines	-D_POSIX_C_SOURCE=199309L \
 				-D_POSIX_SOURCE -D_XOPEN_SOURCE \
-				-D_BSD_SOURCE -D_SVID_SOURCE
+				-D_BSD_SOURCE -D_SVID_SOURCE -D_GNU_SOURCE
 #define XawI18nDefines		-DHAS_WCHAR_H -DHAS_WCTYPE_H -DNO_WIDEC_H
 #if !defined(AlphaArchitecture)
 #define HasPosixThreads		YES
@@ -114,7 +114,7 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #endif
 #define HasPoll			YES
 #else
-#define LinuxSourceDefines	-D_POSIX_SOURCE \
+#define LinuxSourceDefines	-D_POSIX_SOURCE -D_GNU_SOURCE \
 				-D_BSD_SOURCE -D_SVID_SOURCE LinuxLocaleDefines
 #define XawI18nDefines		-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
 #ifndef HasLibCrypt
@@ -138,6 +138,15 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #endif
 #else
 #define LinuxMTRRSupport	NO	/* no for non-ix86 */
+#endif
+#endif
+
+/* determine whether to build with FBDev support (fbdevhw.c needs 2.2.x too) */
+#ifndef LinuxFBDevSupport
+#if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 2)
+#define LinuxFBDevSupport	YES
+#else
+#define LinuxFBDevSupport	NO
 #endif
 #endif
 
@@ -261,7 +270,7 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define AsmDefines		-DUSE_GAS
 #endif
 #endif
-#if UseElfFormat
+#if UseElfFormat && !defined(PpcArchitecture)
 #ifndef DoLoadableServer
 #define DoLoadableServer	YES
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbimage.c,v 1.4 1998/07/25 09:06:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbimage.c,v 1.5tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -51,10 +51,7 @@ SOFTWARE.
 #include "cfb.h"
 #include "cfbmskbits.h"
 #include "servermd.h"
-
-#ifdef LOWMEMFTPT
 #include "mi.h"
-#endif /* ifdef LOWMEMFTPT */
 
 void
 cfbPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)

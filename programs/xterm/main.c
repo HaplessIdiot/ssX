@@ -64,7 +64,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.82 1999/01/23 09:56:21 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.83tsi Exp $ */
 
 
 /* main.c */
@@ -193,16 +193,11 @@ static Bool IsPts = False;
 #include <termio.h>
 #endif
 
-#ifdef CSRG_BASED
-#define USE_POSIX_TERMIOS
-#endif
-
 #ifdef SCO325
 #define _SVID3
 #endif
 
 #ifdef __GNU__
-#define USE_POSIX_TERMIOS
 #define USE_SYSV_PGRP
 #define WTMP
 #define HAS_BSD_GROUPS
@@ -381,7 +376,7 @@ static Bool IsPts = False;
 #include <sys/param.h>	/* for NOFILE */
 #endif
 
-#if (BSD >= 199103)
+#if defined(BSD) && (BSD >= 199103)
 #define USE_POSIX_WAIT
 #define LASTLOG
 #define WTMP
@@ -439,7 +434,7 @@ extern struct utmp *getutid __((struct utmp *_Id));
 #ifdef UTMP
 #include <utmp.h>
 #endif
-#if defined(LASTLOG) && (BSD < 199103)
+#if defined(LASTLOG) && (!defined(BSD) || (BSD < 199103))
 #include <lastlog.h>
 #endif
 #endif
@@ -1647,7 +1642,7 @@ main (int argc, char *argv[])
 	    term->flags |= WRAPAROUND;
 	    update_autowrap();
 	}
-	if (term->misc.re_verse) {
+	if (term->misc.re_verse != term->misc.re_verse0) {
 	    term->flags |= REVERSE_VIDEO;
 	    update_reversevideo();
 	}
@@ -3112,7 +3107,7 @@ spawn (void)
 
 		/* set up the new entry */
 		utmp.ut_type = USER_PROCESS;
-#if !(defined(linux) && __GLIBC__ < 2) && !defined(SVR4)
+#if !(defined(linux) && (!defined(__GLIBC__) || (__GLIBC__ < 2))) && !defined(SVR4)
 		utmp.ut_exit.e_exit = 2;
 #endif
 		(void) strncpy(utmp.ut_user,
@@ -3140,7 +3135,7 @@ spawn (void)
 			       sizeof(utmp.ut_name));
 
 		utmp.ut_pid = getpid();
-#if defined(SVR4) || defined(SCO325) || (defined(linux) && __GLIBC__ >= 2 && !(defined(__powerpc__) && __GLIBC__ == 2 && __GLIBC_MINOR__ == 0))
+#if defined(SVR4) || defined(SCO325) || (defined(linux) && defined(__GLIBC__) && __GLIBC__ >= 2 && !(defined(__powerpc__) && __GLIBC__ == 2 && __GLIBC_MINOR__ == 0))
 		utmp.ut_session = getsid(0);
 		utmp.ut_xtime = time ((time_t *) 0);
 		utmp.ut_tv.tv_usec = 0;
@@ -3155,7 +3150,7 @@ spawn (void)
 #if defined(SVR4) || defined(SCO325)
 		if (term->misc.login_shell)
 		    updwtmpx(WTMPX_FILE, &utmp);
-#elif defined(linux) && __GLIBC__ >= 2 && !(defined(__powerpc__) && __GLIBC__ == 2 && __GLIBC_MINOR__ == 0)
+#elif defined(linux) && defined(__GLIBC__) && __GLIBC__ >= 2 && !(defined(__powerpc__) && __GLIBC__ == 2 && __GLIBC_MINOR__ == 0)
 		if (term->misc.login_shell)
 		    updwtmp(etc_wtmp, &utmp);
 #else
@@ -3908,7 +3903,7 @@ Exit(int n)
 #endif
 	char* ptyname;
 	char* ptynameptr = 0;
-#if defined(WTMP) && !defined(SVR4) && !(defined(linux) && __GLIBC__ >= 2 && !(defined(__powerpc__) && __GLIBC__ == 2 && __GLIBC_MINOR__ == 0))
+#if defined(WTMP) && !defined(SVR4) && !(defined(linux) && defined(__GLIBC__) && __GLIBC__ >= 2 && !(defined(__powerpc__) && __GLIBC__ == 2 && __GLIBC_MINOR__ == 0))
 	int fd;			/* for /etc/wtmp */
 	int i;
 #endif
@@ -3940,7 +3935,7 @@ Exit(int n)
 	    /* write it out only if it exists, and the pid's match */
 	    if (utptr && (utptr->ut_pid == screen->pid)) {
 		    utptr->ut_type = DEAD_PROCESS;
-#if defined(SVR4) || defined(SCO325) || (defined(linux) && __GLIBC__ >= 2 && !(defined(__powerpc__) && __GLIBC__ == 2 && __GLIBC_MINOR__ == 0))
+#if defined(SVR4) || defined(SCO325) || (defined(linux) && defined(__GLIBC__) &&__GLIBC__ >= 2 && !(defined(__powerpc__) && __GLIBC__ == 2 && __GLIBC_MINOR__ == 0))
 		    utptr->ut_session = getsid(0);
 		    utptr->ut_xtime = time ((time_t *) 0);
 		    utptr->ut_tv.tv_usec = 0;
@@ -3953,7 +3948,7 @@ Exit(int n)
 #if defined(SVR4) || defined(SCO325)
 		    if (term->misc.login_shell)
 			updwtmpx(WTMPX_FILE, utptr);
-#elif defined(linux) && __GLIBC__ >= 2 && !(defined(__powerpc__) && __GLIBC__ == 2 && __GLIBC_MINOR__ == 0)
+#elif defined(linux) && defined(__GLIBC__) && __GLIBC__ >= 2 && !(defined(__powerpc__) && __GLIBC__ == 2 && __GLIBC_MINOR__ == 0)
 		    strncpy (utmp.ut_line, utptr->ut_line, sizeof (utmp.ut_line));
 		    if (term->misc.login_shell)
 			updwtmp(etc_wtmp, utptr);
@@ -4166,6 +4161,25 @@ static int parse_tty_modes (char *s, struct _xttymodes *modelist)
 	if (*s == '^') {
 	    s++;
 	    c = ((*s == '?') ? 0177 : *s & 31);	 /* keep control bits */
+	    if (*s == '-') {
+#if HAVE_TERMIOS_H && HAVE_TCGETATTR
+#  if HAVE_POSIX_VDISABLE
+		c = _POSIX_VDISABLE;
+#  else
+		errno = 0;
+		c = fpathconf(0, _PC_VDISABLE);
+		if (c == -1) {
+		    if (errno != 0)
+			continue;	/* skip this (error) */
+		    c = 0377;
+		}
+#  endif
+#elif defined(VDISABLE)
+		c = VDISABLE;
+#else
+		continue;		/* ignore */
+#endif
+	    }
 	} else {
 	    c = *s;
 	}

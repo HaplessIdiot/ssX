@@ -1,6 +1,7 @@
 /* $XConsortium: Main.c /main/11 1996/10/25 11:33:16 kaleb $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
+ * (c) Copyright 1994-1998 by The XFree86 Project, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a 
  * copy of this software and associated documentation files (the "Software"), 
@@ -15,18 +16,19 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
- * DAVID WEXELBLAT BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
  * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF 
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
  * SOFTWARE.
  * 
- * Except as contained in this notice, the name of David Wexelblat shall not be
- * used in advertising or otherwise to promote the sale, use or other dealings
- * in this Software without prior written authorization from David Wexelblat.
+ * Except as contained in this notice, the name of the copyright holders shall
+ * not be used in advertising or otherwise to promote the sale, use or other
+ * dealings in this Software without prior written authorization from
+ * the copyright holders.
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.26 1998/10/25 07:12:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.27tsi Exp $ */
 
 #include "Probe.h"
 #include "PatchLevel.h"
@@ -65,6 +67,7 @@ static Chip_Descriptor *SVGA_Descriptors[] = {
     &AL_Descriptor,
     &Cirrus54_Descriptor,
     &Cirrus64_Descriptor,
+    &Epson_Descriptor,	/* is detected as Tseng (has 0x3cd as Segment too) */
     &Tseng_Descriptor,
     &RealTek_Descriptor,
     &Rendition_Descriptor,
@@ -78,6 +81,7 @@ static Chip_Descriptor *SVGA_Descriptors[] = {
     &ARK_Descriptor,
     &Alliance_Descriptor,
     &SigmaDesigns_Descriptor,
+    &Intergraphics_Descriptor,
     &CT_Descriptor, /* I think this is screwing people up, so put it last */
     NULL
 };
@@ -238,7 +242,7 @@ int *Chipset;
 	    else
 	    {
 		(void)strncpy(name, p, sizeof(name) - 1);
-		name[sizeof(name)] = '\0';
+		name[sizeof(name) - 1] = '\0';
 	    }
 	    if (StrCaseCmp(name, chip_p->name) == 0)
 	    {
@@ -521,6 +525,7 @@ char *argv[];
 
     PRINT_VERSION;
     printf("\t(c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>\n");
+    printf("\t(c) Copyright 1994-1998 by The XFree86 Project, Inc\n");
     printf("\n\tThis work is derived from the 'vgadoc2.zip' and\n");
     printf("\t'vgadoc3.zip' documentation packages produced by Finn\n");
     printf("\tThoegersen, and released with all appropriate permissions\n");

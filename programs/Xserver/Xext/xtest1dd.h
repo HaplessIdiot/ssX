@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xext/xtest1dd.h,v 3.0tsi Exp $ */
 /************************************************************
 
 Copyright 1996 by Thomas E. Dickey <dickey@clark.net>
@@ -57,32 +57,32 @@ flush_input_actions(
 
 extern void
 XTestStealJumpData(
-#if NeedFunctionPrototypes2
-	short                  /* jx */,
-	short                  /* jy */,
+#if NeedFunctionPrototypes
+	int                    /* jx */,
+	int                    /* jy */,
 	int                    /* dev_type */
 #endif
 );
 
 extern void
 XTestStealMotionData(
-#if NeedFunctionPrototypes2
-	short                  /* dx */,
-	short                  /* dy */,
+#if NeedFunctionPrototypes
+	int                    /* dx */,
+	int                    /* dy */,
 	int                    /* dev_type */,
-	short                  /* mx */,
-	short                  /* my */
+	int                    /* mx */,
+	int                    /* my */
 #endif
 );
 
 extern Bool
 XTestStealKeyData(
-#if NeedFunctionPrototypes2
-	CARD8                  /* keycode */,
-	char                   /* keystate */,
+#if NeedFunctionPrototypes
+	unsigned               /* keycode */,
+	int                    /* keystate */,
 	int                    /* dev_type */,
-	short                  /* locx */,
-	short                  /* locy */
+	int                    /* locx */,
+	int                    /* locy */
 #endif
 );
 

@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.61 1997/10/25 13:50:07 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.62tsi Exp $ */
 
 #include "Probe.h"
 
@@ -43,10 +43,11 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "ATI 88800GX-F",
 		  "ATI 88800CX",
 		  "ATI 264CT", "ATI 264ET",
-		  "ATI 264VT", "ATI 264VT-B",
-		  "ATI 264GT (3D Rage I)", "ATI 264GT-B (3D Rage II or II+)",
-		  "ATI 264LT",
-		  "ATI 264GT3 (3D Rage III)" },
+		  "ATI 264VT", "ATI 264VT-B", "ATI 264VT3", "ATI 264VT4",
+		  "ATI 264GT (3D Rage I)", "ATI 264GT-B (3D Rage II)",
+		  "ATI 264GT-B+DVD (3D Rage II+DVD)",
+		  "ATI 264GT-IIc (3D Rage IIc)", "ATI 264GT3 (3D Rage Pro)",
+		  "ATI 264LT", "ATI 264LT Pro" },
 /* AL */	{ "Avance Logic (chipset unknown)",
 		  "Avance Logic 2101", "Avance Logic 2228" },
 /* CT */	{ "Chips & Tech (chipset unknown)",
@@ -84,6 +85,8 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "Cirrus CL-GD5462",
 		  "Cirrus CL-GD7548",
 		  "Cirrus CL-GD5464",
+		  "Cirrus CL-GD5480",
+		  "Cirrus CL-GD5465",
 		},
 /* Compaq */	{ "Compaq (chipset unknown)",
 		  "Compaq Int. Vid. Graphics Sys.",
@@ -135,6 +138,8 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "S3 ViRGE/GX",
 		  "S3 PLATO/PX",
 		  "S3 ViRGE/GX2",
+		  "S3 ViRGE/MX",
+		  "S3 ViRGE/MXP",
 	       },
 /* Trident */	{ "Trident (chipset unknown)",
 		  "Trident LX8200",
@@ -147,7 +152,10 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
                   "Trident GUI 9680", "Trident ProVidia 9682",
 		  "Trident ProVidia 9685", "Trident ProVidia 9692",
 		  "Trident Cyber9382", "Trident Cyber9385",
-		  "Trident Cyber9385-1", },
+		  "Trident Cyber9385-1",
+		  "Trident Cyber9388", "Trident Cyber9388-1",
+		  "Trident Cyber9397", "Trident Cyber9520",
+                  "Trident 3DImage975", "Trident 3DImage985", },
 /* Tseng */	{ "Tseng (chipset unknown)",
 		  "Tseng ET3000", "Tseng ET4000", 
 		  "Tseng ET4000/W32", "Tseng ET4000/W32i", 
@@ -194,9 +202,19 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 /* Matrox */	{ "Matrox (chipset unknown)",
 		  "Matrox Atlas",
 		  "Matrox Millennium",
-		  "Matrox Mystique" },
+		  "Matrox Mystique",
+		  "Matrox Millennium II",
+		  "Matrox Millennium II AGP",
+		  "Matrox G100 PCI",
+		  "Matrox G100 AGP",
+		  "Matrox G200 PCI",
+		  "Matrox G200 AGP" },
 /* Sigma Designs */	{ "Sigma Designs (chipset unknown)",
 		  "Sigma Designs REALmagic64/GX (SD 6425)" },
+/* Intergraphics */	{ "Intergraphics (chipset unknown)",
+		  "Intergraphics IGA-1680",
+		  "Intergraphics IGA-1682" },
+/* Epson */	{ "Epson SPC8110" },
 };
 
 static CONST char *Herc_Names[] = 
@@ -279,6 +297,10 @@ struct RamDac_Name RamDac_Names[] =
 	  "ICS5301 GENDAC 15/16/24-bit DAC w/clock-PLL" },
 	{ "MGA1064SG",
 	  "Matrox Mystique built-in DAC w/clock" },
+	{ "MGAG100",
+	  "Matrox G100 built-in DAC w/clock" },
+	{ "MGAG200",
+	  "Matrox G200 built-in DAC w/clock" },
 };
 
 static CONST char *CoProc_Names[NUM_CP_TYPES][CHPS_PER_CPTYPE] = 

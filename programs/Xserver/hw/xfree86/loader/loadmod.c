@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.42 1999/03/01 02:15:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.43tsi Exp $ */
 
 /*
  *
@@ -173,7 +173,8 @@ InitPathList(const char *path)
 		}
 		elem = strtok(NULL, ",");
 	}
-	list[n] = NULL;
+	if (list)
+		list[n] = NULL;
 	return list;
 }
 
@@ -643,7 +644,7 @@ CheckVersion (const char *module, XF86ModuleVersionInfo *data,
 		}
 	}
 
-#if NOTYET
+#ifdef NOTYET
 	if (data->checksum)
 	{
 		/* verify the checksum field */

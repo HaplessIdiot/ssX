@@ -96,14 +96,16 @@
  * initial rev
  *
  */
-
+/* $XFree86: xc/lib/GL/mesa/src/image.c,v 1.0tsi Exp $ */
 
 #ifdef PC_HEADER
 #include "all.h"
 #else
+#ifndef XFree86Server
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#endif
 #include "context.h"
 #include "image.h"
 #include "macros.h"

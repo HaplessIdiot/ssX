@@ -77,7 +77,7 @@
  * initial rev
  *
  */
-
+/* $XFree86: xc/lib/GL/mesa/src/xform.c,v 1.0tsi Exp $ */
 
 /*
  * Matrix/vertex/vector transformation stuff
@@ -96,7 +96,9 @@
 #ifdef PC_HEADER
 #include "all.h"
 #else
+#ifndef XFree86Server
 #include <math.h>
+#endif
 #include "asm_386.h"
 #include "vb.h"
 #include "context.h"

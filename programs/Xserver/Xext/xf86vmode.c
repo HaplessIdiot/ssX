@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.42 1999/03/07 08:29:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.43 1999/03/07 13:38:43 dawes Exp $ */
 
 /*
 
@@ -46,6 +46,10 @@ from Kaleb S. KEITHLEY
 #include "swaprep.h"
 #include "xf86.h"
 #include "vidmodeproc.h"
+
+#ifdef EXTMODULE
+#include "xf86_ansic.h"
+#endif
 
 static int VidModeErrorBase;
 static int VidModeGeneration = 0;

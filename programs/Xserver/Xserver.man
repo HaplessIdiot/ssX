@@ -18,7 +18,7 @@
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
-.\" $XFree86: xc/programs/Xserver/Xserver.man,v 3.10 1998/04/05 02:28:24 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/Xserver.man,v 3.11tsi Exp $
 .TH XSERVER 1 "Release 6.4"  "X Version 11"
 .SH NAME
 Xserver \- X Window System display server
@@ -158,6 +158,12 @@ Disable a transport type.  For example, TCP/IP connections can be disabled
 with
 .B \-nolisten tcp
 .TP 8
+.B \-noreset
+prevents a server reset when the last client connection is closed.  This
+overrides a previous
+.B \-terminate
+command line option.
+.TP 8
 .B \-p \fIminutes\fP
 sets screen-saver pattern cycle time in minutes.
 .TP 8
@@ -184,6 +190,9 @@ pointer acceleration should take effect).
 .TP 8
 .B \-terminate
 causes the server to terminate at server reset, instead of continuing to run.
+This overrides a previous
+.B \-noreset
+command line option.
 .TP 8
 .B \-to \fIseconds\fP
 sets default connection timeout in seconds.
@@ -260,6 +269,9 @@ Enable XDMCP and send IndirectQuery packets to the specified host.
 .B \-port \fIport-num\fP
 Use an alternate port number for XDMCP packets.  Must be specified before
 any \-query, \-broadcast or \-indirect options.
+.TP 8
+.B \-once
+Causes the server to terminate (rather than reset) when the XDMCP session ends.
 .TP 8
 .B \-class \fIdisplay-class\fP
 XDMCP has an additional display qualifier used in resource lookup for

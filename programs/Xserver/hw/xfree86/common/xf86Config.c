@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.161 1999/02/12 22:51:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.162 1999/03/07 08:29:42 dawes Exp $ */
 
 
 /*
@@ -796,6 +796,7 @@ static SymTabRec MouseTab[] = {
   { PROT_SYSMOUSE,		"sysmouse" },
   { PROT_WSMOUSE,		"wsmouse" },
   { PROT_AUTO,			"auto" },
+  { PROT_ACECAD,		"acecad" },
   { -1,				"" },
 };
 
@@ -803,7 +804,7 @@ static SymTabRec MouseTab[] = {
 	((m) == PROT_MS || (m) == PROT_MSC || (m) == PROT_MM ||	\
 	 (m) == PROT_LOGI || (m) == PROT_LOGIMAN || (m) == PROT_MMHIT || \
 	 (m) == PROT_GLIDEPOINT || (m) == PROT_IMSERIAL || \
-	 (m) == PROT_THINKING || (m) == PROT_AUTO)
+	 (m) == PROT_THINKING || (m) == PROT_AUTO || (m) == PROT_ACECAD)
 
 /* XXXSTU The interface in xf86XInput.c also needs to change to match this.
  * This function is also used for the (*device_config)() function */
@@ -1339,7 +1340,9 @@ configMonitor(MonPtr monitorp, XF86ConfMonitorPtr conf_monitor)
         last = mode;
         cmodep = (XF86ConfModeLinePtr)cmodep->list.next;
     }
-    last->next = NULL;
+    if(last){
+      last->next = NULL;
+    }
     monitorp->Last = last;
 
     if (conf_monitor->mon_gamma_red > GAMMA_ZERO)

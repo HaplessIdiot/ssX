@@ -1,8 +1,9 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_macros.h,v 1.5 1998/10/05 13:23:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_macros.h,v 1.6tsi Exp $ */
 
 #ifndef _MGA_MACROS_H_
 #define _MGA_MACROS_H_
 
+#ifdef PSZ
 #if PSZ == 8
 #define REPLICATE(r) r &= 0xFF; r |= r << 8; r |= r << 16
 #elif PSZ == 16
@@ -11,6 +12,7 @@
 #define REPLICATE(r) r &= 0xFFFFFF; r |= r << 24
 #else
 #define REPLICATE(r) /* */
+#endif
 #endif
 
 #define RGBEQUAL(c) (!((((c) >> 8) ^ (c)) & 0xffff)) 
@@ -30,6 +32,8 @@
 	 (MAKEDMAINDEX(three) << 16) | \
  	 (MAKEDMAINDEX(four) << 24) ) 
 
+
+#ifdef PSZ
 #if PSZ == 24
 #define SET_PLANEMASK(p) /**/
 #else
@@ -55,6 +59,7 @@
 	   REPLICATE((c)); \
 	   OUTREG(MGAREG_BCOL,(c)); \
 	}
+#endif
 
 #define DISABLE_CLIP() { \
 	pMga->AccelFlags &= ~CLIPPER_ON; \

@@ -46,9 +46,10 @@ from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * 
  */
-/* $XFree86: xc/lib/lbxutil/lbx_zlib/lbx_zlib.h,v 1.3 1997/01/18 07:18:19 dawes Exp $ */
+/* $XFree86: xc/lib/lbxutil/lbx_zlib/lbx_zlib.h,v 1.4tsi Exp $ */
 
 #include "zlib.h"
+#include "Xfuncproto.h"
 
 struct compress_private {
     z_stream	stream;
@@ -108,3 +109,21 @@ struct iovec {
 #undef BOOL
 #define EWOULDBLOCK WSAEWOULDBLOCK
 #endif
+
+void
+FreeInput(
+#if NeedFunctionPrototypes
+    ZlibBufferPtr	/* inbuf */,
+    int			/* len */
+#endif
+);
+
+int
+GetInputPtr(
+#if NeedFunctionPrototypes
+    int			/* fd */,
+    ZlibBufferPtr	/* inbuf */,
+    int			/* reqlen */,
+    unsigned char **	/* ppkt */
+#endif
+);

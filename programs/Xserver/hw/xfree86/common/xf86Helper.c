@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.29 1999/03/06 13:12:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.30 1999/03/07 08:29:43 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1753,6 +1753,13 @@ Bool
 xf86ServerIsResetting()
 {
     return xf86Resetting;
+}
+
+
+Bool
+xf86ServerIsInitialising()
+{
+    return xf86Initialising;
 }
 
 

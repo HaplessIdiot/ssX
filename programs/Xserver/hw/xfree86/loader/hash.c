@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.10 1999/01/14 13:04:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.11tsi Exp $ */
 
 /*
  *
@@ -258,7 +258,7 @@ unsigned long address;
     entry=LoaderHashFindNearest(address);
     if (entry) {
 	const char *module, *section;
-#if __alpha__
+#ifdef __alpha__
 	ErrorF("0x%016lx %s+%lx\n", entry->address, entry->name,
 		   address - (unsigned long) entry->address);
 #else
@@ -278,7 +278,7 @@ LoaderPrintItem(itemPtr pItem)
 {
     if (pItem) {
 	const char *module, *section;
-#if __alpha__
+#ifdef __alpha__
 	ErrorF("0x%016lx %s\n", pItem->address, pItem->name);
 #else
 	ErrorF("0x%lx %s\n", pItem->address, pItem->name);

@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/util.c,v 1.7 1999/02/25 06:01:08 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/util.c,v 1.8 1999/02/28 11:20:15 dawes Exp $ */
 
 #include <stdio.h>
 #ifndef X_NOT_STDC_ENV
@@ -343,7 +343,7 @@ SwitchTextSource(xedit_flist_item *item)
 	    && XtIsManaged(texts[i]))
 	    break;
 
-    if (i <= 3) {
+    if (i < 3) {
 	/* Text may have changed in the other window, before the
 	 * displayPosition or insertPosition, and it is not worth
 	 * the work to calculate the offset changes outside of Xaw.
@@ -467,6 +467,12 @@ DeleteWindow(Widget w, XEvent *event, String *params, Cardinal *num_params)
     Widget unmanage[2];
     int idx = WindowIndex(w), uidx;
     Bool current = False;
+
+    if (*num_params == 1 && (*params[0] == 'd' || *params[0] == 'D')) {
+	if (XtIsManaged(XtParent(dirwindow)))
+	    SwitchDirWindow(False);
+	return;
+    }
 
     if (idx < 0 || (!XtIsManaged(texts[1]) && !XtIsManaged(texts[2]))) {
 	Feep();
@@ -714,4 +720,102 @@ SplitWindow(Widget w, XEvent *event, String *params, Cardinal *num_params)
 
     XawTextEnableRedisplay(textwindow);
     XawTextEnableRedisplay(ntext);
+}
+
+void
+SwitchDirWindow(Bool show)
+{
+    static int map;	/* There must be one instance of this
+			 * variable per top level window */
+    Widget manage[2];
+
+    if (!show && XtIsManaged(XtParent(dirwindow))) {
+	manage[0] = dirlabel;
+	manage[1] = XtParent(dirwindow);
+	XtUnmanageChildren(manage, 2);
+	XtUnmanageChild(vpanes[1]);
+
+	XtManageChild(vpanes[0]);
+	if (map == 2) {
+	    Arg args[2];
+	    Dimension width, bw;
+
+	    XtSetArg(args[0], XtNwidth, &width);
+	    XtGetValues(texts[0], args, 1);
+	    XtSetArg(args[0], XtNinternalBorderWidth, &bw);
+	    XtGetValues(XtParent(texts[0]), args, 1);
+	    width = (width - bw) >> 1;
+	    XtSetArg(args[0], XtNmin, width);
+	    XtSetArg(args[0], XtNmax, width);
+	    XtSetValues(vpanes[0], args, 1);
+	    manage[0] = forms[2];
+	    manage[1] = texts[2];
+	    XtManageChildren(manage, 2);
+	    XtManageChild(vpanes[1]);
+	    XtSetArg(args[0], XtNmin, 1);
+	    XtSetArg(args[0], XtNmax, 65535);
+	    XtSetValues(vpanes[0], args, 1);
+	}
+    }
+    else if (show && !XtIsManaged(XtParent(dirwindow))) {
+	XtUnmanageChild(vpanes[0]);
+	if (XtIsManaged(texts[2])) {
+	    manage[0] = forms[2];
+	    manage[1] = texts[2];
+	    XtUnmanageChildren(manage, 2);
+	    map = 2;
+	}
+	else {
+	    map = XtIsManaged(texts[1]);
+	    XtManageChild(vpanes[1]);
+	}
+
+	manage[0] = dirlabel;
+	manage[1] = XtParent(dirwindow);
+	XtManageChildren(manage, 2);
+    }
+}
+
+/*ARGSUSED*/
+void
+DirWindow(Widget w, XEvent *event, String *params, Cardinal *num_params)
+{
+    Arg args[1];
+    char path[BUFSIZ + 1], *dir;
+
+    if (XtIsManaged(XtParent(dirwindow)))
+	return;
+
+    if (*num_params == 1) {
+	strncpy(path, params[0], sizeof(path - 2));
+	path[sizeof(path) - 2] = '\0';
+    }
+    else {
+	char *slash;
+	xedit_flist_item *item = FindTextSource(XawTextGetSource(textwindow), NULL);
+
+	if (item == NULL || item->source == scratch
+	    || (slash = rindex(item->filename, '/')) == NULL)
+	    strcpy(path, "./");
+	else {
+	    int len = slash - item->filename + 1;
+
+	    if (len > sizeof(path) - 2)
+		len = sizeof(path) - 2;
+	    strncpy(path, item->filename, len);
+	    path[len] = '\0';
+	}
+    }
+
+    dir = ResolveName(path);
+    strncpy(path, dir, sizeof(path) - 2);
+    path[sizeof(path) - 2] = '\0';
+    if (*path && path[strlen(path) - 1] != '/')
+	strcat(path, "/");
+
+    XtSetArg(args[0], XtNlabel, "");
+    XtSetValues(dirlabel, args, 1);
+
+    SwitchDirWindow(True);
+    DirWindowCB(dirwindow, path, NULL);
 }

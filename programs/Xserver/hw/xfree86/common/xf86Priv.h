@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.34 1999/01/26 10:40:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.35 1999/02/13 16:44:57 hohndel Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -69,6 +69,7 @@ extern DriverPtr xf86DriverList[];
 extern int xf86NumDrivers;
 extern Bool xf86Exiting;
 extern Bool xf86Resetting;
+extern Bool xf86Initialising;
 extern Bool xf86ProbeFailed;
 extern char xf86ConfigFile[];
 extern int xf86NumScreens;

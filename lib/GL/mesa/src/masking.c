@@ -47,7 +47,7 @@
  * initial rev
  *
  */
-
+/* $XFree86: xc/lib/GL/mesa/src/masking.c,v 1.0tsi Exp $ */
 
 /*
  * Implement the effect of glColorMask and glIndexMask in software.
@@ -57,7 +57,9 @@
 #ifdef PC_HEADER
 #include "all.h"
 #else
+#ifndef XFree86Server
 #include <string.h>
+#endif
 #include "alphabuf.h"
 #include "context.h"
 #include "macros.h"

@@ -77,15 +77,17 @@
  * initial rev
  *
  */
-
+/* $XFree86: xc/lib/GL/mesa/src/light.c,v 1.0tsi Exp $ */
 
 #ifdef PC_HEADER
 #include "all.h"
 #else
+#ifndef XFree86Server
 #include <assert.h>
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
+#endif
 #include "context.h"
 #include "light.h"
 #include "macros.h"

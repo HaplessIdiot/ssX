@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.27 1999/03/06 13:12:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.28tsi Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -752,7 +752,6 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     ClockRangePtr clockRanges;
     char *mod = NULL;
 
-    xf86AddControlledResource(pScrn, MEM_IO);
 
     /*
      * Note: This function is only called once at server startup, and
@@ -767,6 +766,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
      * AllocateScreenPrivateIndex() from the ScreenInit() function.
      */
 
+    xf86AddControlledResource(pScrn, MEM);
     xf86EnableAccess(&pScrn->Access);
 
     /* The ramdac module should be loaded here when needed */
@@ -1432,6 +1432,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
 
+    xf86DelControlledResource(&pScrn->Access, FALSE);
     return TRUE;
 }
 
@@ -1605,6 +1606,9 @@ GLINTSave(ScrnInfoPtr pScrn)
     glintReg = &pGlint->SavedReg;
     RAMDACreg = &pRAMDAC->SavedReg;
 
+    xf86AddControlledResource(pScrn, MEM);
+    xf86EnableAccess(&pScrn->Access);
+
     if (pGlint->VGAcore) {
     	vgaRegPtr vgaReg;
     	vgaReg = &VGAHWPTR(pScrn)->SavedReg;
@@ -1631,6 +1635,8 @@ GLINTSave(ScrnInfoPtr pScrn)
 	(*pGlint->RamDac->Save)(pScrn, pGlint->RamDacRec, RAMDACreg);
 	break;
     }
+
+    xf86DelControlledResource(&pScrn->Access, TRUE);
 }
 
 
@@ -1657,6 +1663,7 @@ GLINTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     	if (!vgaHWInit(pScrn, mode))
 	    return FALSE;
     }
+
 
     pScrn->vtSema = TRUE;
 
@@ -1735,6 +1742,9 @@ GLINTRestore(ScrnInfoPtr pScrn)
     glintReg = &pGlint->SavedReg;
     RAMDACreg = &pRAMDAC->SavedReg;
 
+    xf86AddControlledResource(pScrn, MEM);
+    xf86EnableAccess(&pScrn->Access);
+
     if (pGlint->VGAcore) {
     	vgaHWProtect(pScrn, TRUE);
     }
@@ -1767,6 +1777,8 @@ GLINTRestore(ScrnInfoPtr pScrn)
 	vgaHWRestore(pScrn, vgaReg, VGA_SR_MODE | VGA_SR_FONTS);
     	vgaHWProtect(pScrn, FALSE);
     }
+
+    xf86DelControlledResource(&pScrn->Access, FALSE);
 }
 
 
@@ -1976,11 +1988,9 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    (pGlint->Chipset == PCI_VENDOR_TI_CHIP_PERMEDIA2))
 	    Permedia2HWCursorInit(pScreen);
 	else
-#if 0
 	if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V)
 	    Permedia2vHWCursorInit(pScreen);
 	else
-#endif
 	if ( ((pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_PERMEDIA2) &&
 	      (pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V) &&
 	      (pGlint->Chipset != PCI_VENDOR_TI_CHIP_PERMEDIA2)) &&
@@ -2245,7 +2255,7 @@ GLINTSaveScreen(ScreenPtr pScreen, Bool unblank)
     	return TRUE;
 }
 
-#if DEBUG
+#ifdef DEBUG
 void
 GLINT_VERB_WRITE_REG(GLINTPtr pGlint, CARD32 v, int r, char *file, int line)
 {

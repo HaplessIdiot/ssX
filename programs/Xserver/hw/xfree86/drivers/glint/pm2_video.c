@@ -3,7 +3,7 @@
  *  Copyright (C) 1998-1999 Michael Schimek
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.1 1999/02/07 06:18:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.2 1999/02/28 11:19:40 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -111,10 +111,10 @@ InputVideoEncodings[] =
 static XF86VideoEncodingRec
 OutputVideoEncodings[] =
 {
-    { 1, "pal-composite_adaptor",	704, 576, { 1, 50 }},
-    { 2, "pal-svideo",			704, 576, { 1, 50 }},
-    { 4, "ntsc-composite_adaptor",	704, 480, { 1001, 60000 }},
-    { 5, "ntsc-svideo",			704, 480, { 1001, 60000 }},
+    { 0, "pal-composite_adaptor",	704, 576, { 1, 50 }},
+    { 1, "pal-svideo",			704, 576, { 1, 50 }},
+    { 2, "ntsc-composite_adaptor",	704, 480, { 1001, 60000 }},
+    { 3, "ntsc-svideo",			704, 480, { 1001, 60000 }},
 };
 
 static XF86VideoFormatRec
@@ -193,13 +193,11 @@ EncVS[2][14] =
       0x66, (I2CByte)(FSC(SUBCARRIER_FREQ_NTSC) >> 24) }
 };
 
+#undef MIN
+#define MIN(a, b) (((a) < (b)) ? (a) : (b)) 
+
 #undef CLAMP
-#define CLAMP(value, min, max)  \
-(                               \
-    ((value) < (min)) ? (min) : \
-    ((value) > (max)) ? (max) : \
-                        (value) \
-)
+#define CLAMP(v, min, max) (((v) < (min)) ? (min) : MIN(v, max))
 
 #undef ABS
 #define ABS(n) (((n) < 0) ? -(n) : (n))
@@ -1276,23 +1274,24 @@ Permedia2SetPortAttribute(ScrnInfoPtr pScrn,
 	    }
 	    /* fall thru */
 	} else if (attribute == xvBrightness) {
-	    pPPriv->Attribute[0] = value = CLAMP(value, 0, +1000);
-	    return SetAttr(&pAPriv->Port[0], 0, 0x0A, (value * 255) / 1000);
+	    pPPriv->Attribute[0] = value = CLAMP(value, -1000, +1000);
+	    return SetAttr(&pAPriv->Port[0], 0, 0x0A, 128 + (MIN(value, +999) * 128) / 1000);
 	} else if (attribute == xvContrast) {
-	    pPPriv->Attribute[1] = value = CLAMP(value, -1000, +1000);
-	    return SetAttr(&pAPriv->Port[0], 1, 0x0B, (value * 127) / 1000);
+	    pPPriv->Attribute[1] = value = CLAMP(value, -3000, +1000);
+	    return SetAttr(&pAPriv->Port[0], 1, 0x0B, 64 + (MIN(value, +999) * 64) / 1000);
    	} else if (attribute == xvSaturation) {
-	    pPPriv->Attribute[2] = value = CLAMP(value, -1000, +1000);
-	    return SetAttr(&pAPriv->Port[0], 2, 0x0C, (value * 127) / 1000);
+	    pPPriv->Attribute[2] = value = CLAMP(value, -3000, +1000);
+	    return SetAttr(&pAPriv->Port[0], 2, 0x0C, 64 + (MIN(value, +999) * 64) / 1000);
 	} else if (attribute == xvHue) {
 	    pPPriv->Attribute[3] = value = CLAMP(value, -1000, +1000);
-	    return SetAttr(&pAPriv->Port[0], 3, 0x0D, (value * 127) / 1000);
+	    return SetAttr(&pAPriv->Port[0], 3, 0x0D, (MIN(value, +999) * 128) / 1000);
 	} else
 	    return BadMatch;
     } else { /* Output */
 	if (attribute == xvEncoding) {
-	    if ((value % 3) == 0 || value > 5)
+	    if (value < 0 || value > 3)
 		return XvBadEncoding;
+	    if (++value >= 3) value++;
 	} else
     	    return Success;
     }
@@ -1414,9 +1413,9 @@ AdaptorPrivInit(ScrnInfoPtr pScrn)
 	pAPriv->Port[0].pAdaptor = pAPriv;
 	pAPriv->Port[1].pAdaptor = pAPriv;
 
-	pAPriv->Port[0].Attribute[0] = 500;	/* Brightness (0..1000) */
-	pAPriv->Port[0].Attribute[1] = 500; 	/* Contrast (-1000..+1000) */
-	pAPriv->Port[0].Attribute[2] = 500; 	/* Color saturation (-1000..+1000) */
+	pAPriv->Port[0].Attribute[0] = 0;	/* Brightness (-1000..+1000) */
+	pAPriv->Port[0].Attribute[1] = 0; 	/* Contrast (-3000..+1000) */
+	pAPriv->Port[0].Attribute[2] = 0; 	/* Color saturation (-3000..+1000) */
 	pAPriv->Port[0].Attribute[3] = 0;	/* Hue (-1000..+1000) */
 	pAPriv->Port[0].Attribute[4] = 1;	/* Interlaced (Bool) */
 	pAPriv->Port[0].Attribute[5] = 0;	/* Bilinear Filter (Bool) */

@@ -94,13 +94,13 @@
  *
  * This file contains the implementations of all the device driver functions.
  */
+/* $XFree86: xc/lib/GL/mesa/src/X/xmesa2.c,v 1.0tsi Exp $ */
 
 
-
+#ifndef XFree86Server
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifndef XFree86Server
 #include <X11/Xlib.h>
 #endif
 #include "GL/xmesa.h"

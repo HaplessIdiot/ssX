@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.17 1999/01/31 12:22:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.18tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -206,6 +206,10 @@ typedef struct _xReq *xReqPtr;
 #define MAXINT INT_MAX
 #undef MININT
 #define MININT INT_MIN
+
+#include <assert.h>
+#include <stdio.h>	/* for fopen, etc... */
+
 #endif
 
 /* some macros to help swap requests, replies, and events */

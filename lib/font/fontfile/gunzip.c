@@ -2,6 +2,7 @@
 /* lib/font/fontfile/gunzip.c
    written by Mark Eichin <eichin@kitten.gen.ma.us> September 1996.
    intended for inclusion in X11 public releases. */
+/* $XFree86: xc/lib/font/fontfile/gunzip.c,v 1.0tsi Exp $ */
 
 #include "fontmisc.h"
 #include <bufio.h>
@@ -58,7 +59,7 @@ BufFilePushZIP (f)
     return 0;
   }
 
-  return BufFileCreate(x,
+  return BufFileCreate((char *)x,
 		       BufZipFileFill,
 		       BufZipFileSkip,
 		       BufZipFileClose);

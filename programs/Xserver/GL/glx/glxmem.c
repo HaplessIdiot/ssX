@@ -17,6 +17,7 @@
 ** are Copyright (c) 1991-9 Silicon Graphics, Inc. All Rights Reserved.
 **
 ** Header: /p0/cvs/X39-3D/xc/programs/Xserver/GL/glx/glxmem.c,v 1.3 1999/02/26 08:52:44 martin Exp $
+** $XFree86: xc/programs/Xserver/GL/glx/glxmem.c,v 1.0tsi Exp $
 */
 
 /*
@@ -25,6 +26,7 @@
 
 #include "glxserver.h"
 #include "glxmem.h"
+#include "glxext.h"
 #include "GL/internal/glcore.h"
 
 /* don't want to include glmath.h */

@@ -77,13 +77,15 @@
  * initial rev
  *
  */
-
+/* $XFree86: xc/lib/GL/mesa/src/blend.c,v 1.0tsi Exp $ */
 
 #ifdef PC_HEADER
 #include "all.h"
 #else
+#ifndef XFree86Server
 #include <assert.h>
 #include <stdlib.h>
+#endif
 #include "alphabuf.h"
 #include "asm_mmx.h"
 #include "blend.h"

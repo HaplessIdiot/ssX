@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/commands.c,v 1.8 1999/02/25 06:01:07 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/commands.c,v 1.9 1999/02/28 11:20:15 dawes Exp $ */
 
 #include <X11/Xfuncs.h>
 #include <X11/Xos.h>
@@ -302,6 +302,10 @@ DoSave(Widget w, XtPointer client_data, XtPointer call_data)
 	  Arg args[1];
 	  char label_buf[BUFSIZ];
 
+	  /* Keep file protection mode */
+	  if (item && item->mode)
+	      chmod(filename, item->mode);
+
 	  XmuSnprintf(label_buf, sizeof(label_buf),
 		      "%s       Read - Write", name);
 	  XtSetArg(args[0], XtNlabel, label_buf);
@@ -388,6 +392,31 @@ ReallyDoLoad(char *name, char *filename)
 	SwitchTextSource(item);
 	return (True);
     }
+    else {
+	struct stat st;
+
+	if (stat(filename, &st) == 0 && ((st.st_mode & S_IFMT) != S_IFREG)) {
+	    if ((st.st_mode & S_IFDIR) == S_IFDIR
+		|| ((st.st_mode) & S_IFLNK) == S_IFLNK && IsDir(filename, False)) {
+		Arg args[1];
+		char path[BUFSIZ + 1];
+
+		strncpy(path, filename, sizeof(path) - 2);
+		path[sizeof(path) - 2] = '\0';
+		if (*path) {
+		    if (path[strlen(path) - 1] != '/')
+			strcat(path, "/");
+		}
+		else
+		    strcpy(path, "./");
+		XtSetArg(args[0], XtNlabel, "");
+		XtSetValues(dirlabel, args, 1);
+		SwitchDirWindow(True);
+		DirWindowCB(dirwindow, path, NULL);
+		return (False);
+	    }
+	}
+    }
 
     {
 	Boolean exists;
@@ -446,6 +475,12 @@ ReallyDoLoad(char *name, char *filename)
 	XtSetValues(source, args, num_args);
 
 	item = AddTextSource(source, name, filename, flags, file_access);
+	if (exists && file_access == WRITE_OK) {
+	    struct stat st;
+
+	    if (stat(filename, &st) == 0)
+		item->mode = st.st_mode & (S_IRWXU | S_IRWXG | S_IRWXO);
+	}
 	SwitchTextSource(item);
 	ResetSourceChanged(item);
     }
@@ -581,8 +616,10 @@ FindFile(Widget w, XEvent *event, String *params, Cardinal *num_params)
 void
 LoadFile(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
-    if (ReallyDoLoad(GetString(filenamewindow), ResolveName(NULL)))
+    if (ReallyDoLoad(GetString(filenamewindow), ResolveName(NULL))) {
+	SwitchDirWindow(False);
 	XtSetKeyboardFocus(topwindow, textwindow);
+    }
 }
 
 /*ARGSUSED*/
@@ -603,9 +640,12 @@ CancelFindFile(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	XtSetArg(args[0], XtNstring, NULL);
 
     XtSetValues(filenamewindow, args, 1);
+
+   if (XtIsManaged(XtParent(dirwindow)))
+	SwitchDirWindow(False);
 }
 
-static Bool
+Bool
 IsDir(char *path, Bool feep)
 {
     char lname[BUFSIZ];
@@ -625,11 +665,12 @@ IsDir(char *path, Bool feep)
     return (False);
 }
 
-/*
- * XXX To use the code under SHOW_MATCHES, it is required to have one
- * completions buffer/window, or change the code to print the matches
- * to stderr.
- */
+static int
+compar(_Xconst void *a, _Xconst void *b)
+{
+    return (strcmp(*(char **)a, *(char **)b));
+}
+
 /*ARGSUSED*/
 void
 FileCompletion(Widget w, XEvent *event, String *params, Cardinal *num_params)
@@ -640,13 +681,11 @@ FileCompletion(Widget w, XEvent *event, String *params, Cardinal *num_params)
     char **matches, *save, *dir_name, *file_name, match[257];
     unsigned n_matches, len, mlen, buflen;
     DIR *dir;
-    Bool slash = False, dot = False;
-#ifdef SHOW_MATCHES
+    Bool changed, slash = False, dot = False;
 #define	SM_NEVER	0
 #define SM_HINT		1
 #define SM_ALWAYS	2
     int show_matches;
-#endif
 
     text = GetString(filenamewindow);
 
@@ -671,7 +710,6 @@ FileCompletion(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	    length = strlen(text);
     }
 
-#ifdef SHOW_MATCHES
     if (*num_params == 1 && length == strlen(text)) {
 	switch (params[0][0]) {
 	case 'n':		/* Never */
@@ -696,7 +734,6 @@ FileCompletion(Widget w, XEvent *event, String *params, Cardinal *num_params)
     }
     else
 	show_matches = SM_NEVER;
-#endif
 
     matches = NULL;
     n_matches = buflen = 0;
@@ -784,12 +821,17 @@ FileCompletion(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	    if (d_namlen >= len && strncmp(ent->d_name, file_name, len) == 0) {
 		char *tmp = &(ent->d_name[len]), *mat = match;
 		struct stat st;
+		Bool is_dir;
 
 		strncpy(pptr, ent->d_name, bytes);
 		pptr[bytes] = '\0';
-		if (stat(path, &st) != 0) {
-		    Feep();
-		    continue;
+		if (stat(path, &st) != 0) /* Probably a broken symbolic link */
+		    is_dir = False;
+		else if (first || show_matches != SM_NEVER) {
+		    if ((st.st_mode & S_IFLNK) == S_IFLNK)
+			is_dir = IsDir(path, False);
+		    else
+			is_dir = (st.st_mode & S_IFDIR) == S_IFDIR;
 		}
 
 		if (first) {
@@ -797,10 +839,7 @@ FileCompletion(Widget w, XEvent *event, String *params, Cardinal *num_params)
 		    match[sizeof(match) - 2] = '\0';
 		    mlen = strlen(match);
 		    first = 0;
-		    if ((st.st_mode & S_IFLNK) == S_IFLNK)
-			isdir = IsDir(path, True);
-		    else
-			isdir = (st.st_mode & S_IFDIR) == S_IFDIR;
+		    isdir = is_dir;
 		}
 		else {
 		    while (*tmp && *mat && *tmp++ == *mat)
@@ -810,14 +849,7 @@ FileCompletion(Widget w, XEvent *event, String *params, Cardinal *num_params)
 			match[mlen] = '\0';
 		    }
 		}
-#ifdef SHOW_MATCHES
 		if (show_matches != SM_NEVER) {
-		    Bool is_dir;
-
-		    if ((st.st_mode & S_IFLNK) == S_IFLNK)
-			is_dir = IsDir(path, False);
-		    else
-			is_dir = (st.st_mode & S_IFDIR) == S_IFDIR;
 		    matches = (char **)XtRealloc((char*)matches, sizeof(char**)
 						 * (n_matches + 1));
 		    buflen += d_namlen + 1;
@@ -830,20 +862,19 @@ FileCompletion(Widget w, XEvent *event, String *params, Cardinal *num_params)
 		    else
 			matches[n_matches] = XtNewString(ent->d_name);
 		}
-		else
-#endif
-		    if (mlen == 0 && n_matches >= 1) {
-			++n_matches;
-			break;
-		    }
+		else if (mlen == 0 && n_matches >= 1) {
+		    ++n_matches;
+		    break;
+		}
 		++n_matches;
 	    }
 	}
 
 	closedir(dir);
+	changed = mlen != 0;
 
 	if (n_matches) {
-	    Bool add_slash = n_matches == 1 && isdir && !slash;
+	    Bool free_matches = True, add_slash = n_matches == 1 && isdir && !slash;
 
 	    if (mlen >= 1 && match[mlen - 1] == '.' && text[length] == '.')
 		--mlen;
@@ -872,34 +903,49 @@ FileCompletion(Widget w, XEvent *event, String *params, Cardinal *num_params)
 		}
 	    }
 	    else if (n_matches != 1 || isdir) {
-#ifdef SHOW_MATCHES
 		if (show_matches == SM_NEVER)
-#endif
 		    Feep();
 	    }
 
-#ifdef SHOW_MATCHES
 	    if (show_matches != SM_NEVER) {
-		if (show_matches == SM_ALWAYS || n_matches != 1) {
-		    unsigned i;
-		    char *list = XtMalloc(buflen + 1), *ptr = list;
+		if (show_matches == SM_ALWAYS || (!changed && n_matches != 1)) {
+		    char **list = NULL, *label;
+		    int n_list;
+		    Arg args[2];
 
-		    for (i = 0; i < n_matches; i++) {
-			strcpy(ptr, matches[i]);
-			while (*ptr)
-			    ++ptr;
-			*ptr = '\n';
-			++ptr;
+		    XtSetArg(args[0], XtNlist, &list);
+		    XtSetArg(args[1], XtNnumberStrings, &n_list);
+		    XtGetValues(dirwindow, args, 2);
+
+		    if (n_list > 0
+			&& (n_list != 1 || list[0] != XtName(dirwindow))) {
+			while (--n_list)
+			    XtFree(list[n_list]);
+			XtFree((char*)list);
 		    }
-		    *ptr = '\0';
-		    XeditPrintf(list);
-		    XtFree(list);
+
+		    matches = (char **)XtRealloc((char*)matches, sizeof(char**)
+						 * (n_matches + 2));
+		    matches[n_matches++] = XtNewString("./");
+		    matches[n_matches++] = XtNewString("../");
+		    qsort(matches, n_matches, sizeof(char*), compar);
+		    XtSetArg(args[0], XtNlist, matches);
+		    XtSetArg(args[1], XtNnumberStrings, n_matches);
+		    XtSetValues(dirwindow, args, 2);
+
+		    label = ResolveName(dir_name);
+		    XtSetArg(args[0], XtNlabel, label);
+		    XtSetValues(dirlabel, args, 1);
+		    SwitchDirWindow(True);
+		    free_matches = False;
 		}
+
+	    }
+	    if (free_matches) {
 		while (--n_matches)
 		    XtFree(matches[n_matches]);
 		XtFree((char*)matches);
 	    }
-#endif
 	}
 	else
 	    Feep();
@@ -908,4 +954,104 @@ FileCompletion(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	Feep();
 
     XtFree(save);
+}
+
+/*ARGSUSED*/
+void
+DirWindowCB(Widget w, XtPointer user_data, XtPointer call_data)
+{
+    XawListReturnStruct *file_info = (XawListReturnStruct *)call_data;
+    char *dir_name, *string, path[BUFSIZ];
+    Arg args[2];
+
+    if (file_info == NULL)
+	string = (char *)user_data;
+    else
+	string = file_info->string;
+
+    XtSetArg(args[0], XtNlabel, &dir_name);
+    XtGetValues(dirlabel, args, 1);
+    if (*dir_name == '\0') {
+	strncpy(path, string, sizeof(path) - 1);
+	path[sizeof(path) - 1] = '\0';
+    }
+    else if (strcmp(dir_name, "/") == 0)
+	XmuSnprintf(path, sizeof(path), "/%s", string);
+    else
+	XmuSnprintf(path, sizeof(path), "%s/%s", dir_name, string);
+
+    if (*string && string[strlen(string) - 1] == '/') {
+	DIR *dir;
+
+	if ((dir = opendir(path)) != NULL) {
+	    struct dirent *ent;
+	    struct stat st;
+	    unsigned d_namlen;
+	    Bool isdir;
+	    char **entries = NULL, **list = NULL;
+	    int n_entries = 0, n_list = 0;
+	    char *label, *pptr = path + strlen(path);
+	    int bytes = sizeof(path) - (pptr - path) - 1;
+
+	    while ((ent = readdir(dir)) != NULL) {
+		d_namlen = strlen(ent->d_name);
+		strncpy(pptr, ent->d_name, bytes);
+		pptr[bytes] = '\0';
+		if (stat(path, &st) == 0) {
+		    if ((st.st_mode & S_IFLNK) == S_IFLNK)
+			isdir = IsDir(path, False);
+		    else
+			isdir = (st.st_mode & S_IFDIR) == S_IFDIR;
+		}
+		else
+		    isdir = False;	/* Probably a broken symbolic link */
+
+		entries = (char **)XtRealloc((char*)entries, sizeof(char**)
+					     * (n_entries + 1));
+		if (isdir) {
+		    entries[n_entries] = XtMalloc(d_namlen + 2);
+		    strcpy(entries[n_entries], ent->d_name);
+		    strcat(entries[n_entries], "/");
+		}
+		else
+		    entries[n_entries] = XtNewString(ent->d_name);
+		++n_entries;
+	    }
+	    closedir(dir);
+
+	    XtSetArg(args[0], XtNlist, &list);
+	    XtSetArg(args[1], XtNnumberStrings, &n_list);
+	    XtGetValues(dirwindow, args, 2);
+
+	    if (n_list > 0
+		&& (n_list != 1 || list[0] != XtName(dirwindow))) {
+		while (--n_list)
+		    XtFree(list[n_list]);
+		XtFree((char*)list);
+	    }
+	    qsort(entries, n_entries, sizeof(char*), compar);
+	    XtSetArg(args[0], XtNlist, entries);
+	    XtSetArg(args[1], XtNnumberStrings, n_entries);
+	    XtSetValues(dirwindow, args, 2);
+
+	    *pptr = '\0';
+	    label = ResolveName(path);
+	    XtSetArg(args[0], XtNlabel, label);
+	    XtSetValues(dirlabel, args, 1);
+
+	    strncpy(path, label, sizeof(path) - 2);
+	    if (*path && path[strlen(path) - 1] != '/')
+		strcat(path, "/");
+	    XtSetArg(args[0], XtNstring, path);
+	    XtSetValues(filenamewindow, args, 1);
+	    XtSetKeyboardFocus(topwindow, filenamewindow);
+	}
+	else
+	    Feep();
+    }
+    else {
+	(void)ReallyDoLoad(path, path);
+	SwitchDirWindow(False);
+	XtSetKeyboardFocus(topwindow, textwindow);
+    }
 }

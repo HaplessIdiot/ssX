@@ -22,7 +22,7 @@
 ** Header: /p0/cvs/X39-3D/xc/lib/GL/include/GL/internal/glcore.h,v 1.2 1999/02/23 07:49:34 martin Exp $
 */
 
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/include/GL/internal/glcore.h,v 1.3tsi Exp $ */
 
 #ifndef XFree86LOADER
 #include <sys/types.h>
@@ -261,7 +261,7 @@ struct __GLdrawablePrivateRec {
     __GLdrawableBuffer accumBuffer;
     __GLdrawableBuffer depthBuffer;
     __GLdrawableBuffer stencilBuffer;
-#if __GL_NUMBER_OF_AUX_BUFFERS > 0
+#if defined(__GL_NUMBER_OF_AUX_BUFFERS) && (__GL_NUMBER_OF_AUX_BUFFERS > 0)
     __GLdrawableBuffer *auxBuffer;
 #endif
 

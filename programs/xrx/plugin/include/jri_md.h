@@ -4,6 +4,7 @@
  * Java Runtime Interface - Machine Dependent Types
  * Copyright (c) 1996 Netscape Communications Corporation. All rights reserved.
  ******************************************************************************/
+/* $XFree86: xc/programs/xrx/plugin/jri_md.h,v 1.0tsi Exp $ */
  
 #ifndef JRI_MD_H
 #define JRI_MD_H
@@ -65,7 +66,7 @@ extern "C" {
 #	endif
 
 /* Mac */
-#elif macintosh || Macintosh || THINK_C
+#elif defined(macintosh) || defined(Macintosh) || defined(THINK_C)
 #	if defined(__MWERKS__)				/* Metrowerks */
 #		if !__option(enumsalwaysint)
 #			error You need to define 'Enums Always Int' for your project.

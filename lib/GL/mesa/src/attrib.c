@@ -71,20 +71,21 @@
  * initial rev
  *
  */
-
+/* $XFree86: xc/lib/GL/mesa/src/attrib.c,v 1.0tsi Exp $ */
 
 #ifdef PC_HEADER
 #include "all.h"
 #else
+#ifndef XFree86Server
 #include <stdlib.h>
 #include <string.h>
+#endif
 #include "attrib.h"
 #include "context.h"
 #include "macros.h"
-#include "misc.h"
+#include "glmisc.h"
 #include "types.h"
 #ifdef XFree86Server
-#undef MISC_H
 #include "GL/xf86glx.h"
 #endif
 #endif

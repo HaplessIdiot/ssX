@@ -24,6 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
+/* $XFree86: xc/lib/X11/XKBMisc.c,v 1.0tsi Exp $ */
 
 #ifndef XKB_IN_SERVER
 
@@ -564,7 +565,7 @@ unsigned		changed,changedVMods,tmp;
 	if (((explicit&XkbExplicitAutoRepeatMask)==0)&&(xkb->ctrls)) {
 	    CARD8 old;
 	    old= xkb->ctrls->per_key_repeat[key/8];
-#if RETURN_SHOULD_REPEAT
+#ifdef RETURN_SHOULD_REPEAT
 	    if (*XkbKeySymsPtr(xkb,key) != XK_Return)
 #endif
 		xkb->ctrls->per_key_repeat[key/8]|= (1<<(key%8));

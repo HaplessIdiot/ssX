@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.70 1999/03/06 13:12:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.71tsi Exp $ */
 
 /*
  *
@@ -380,6 +380,7 @@ LOOKUP xfree86LookupTab[] = {
 
    /* xf86VidMode.c */
    SYMFUNC(VidModeExtensionInit)
+#ifdef XF86VIDMODE
    SYMFUNC(VidModeGetCurrentModeline)
    SYMFUNC(VidModeGetFirstModeline)
    SYMFUNC(VidModeGetNextModeline)
@@ -404,6 +405,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(VidModeGetModeValue)
    SYMFUNC(VidModeSetModeValue)
    SYMFUNC(VidModeGetMonitorValue)
+#endif
 
    /* Misc */
    SYMFUNC(GetTimeInMillis)

@@ -8,7 +8,7 @@
  * be passed to the template file.                                         *
  *                                                                         *
  ***************************************************************************/
-/* $XFree86: xc/config/imake/imake.c,v 3.29 1998/10/06 09:55:48 dawes Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.30tsi Exp $ */
 
 /*
  * 
@@ -263,6 +263,7 @@ extern int	errno;
 #endif
 #ifdef linux
 #include <limits.h>
+#include <stdio.h>
 #endif
 /* 
  * is strstr() in <strings.h> on X_NOT_STDC_ENV? 

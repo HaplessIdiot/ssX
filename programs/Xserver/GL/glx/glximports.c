@@ -17,11 +17,9 @@
 ** are Copyright (c) 1991-9 Silicon Graphics, Inc. All Rights Reserved.
 **
 ** Header: /p0/cvs/X39-3D/xc/programs/Xserver/GL/glx/glximports.c,v 1.2 1999/02/23 07:49:27 martin Exp $
+** $XFree86: xc/programs/Xserver/GL/glx/glximports.c,v 1.0tsi Exp $
 */
 
-#include <stdlib.h>
-#include <stdarg.h>
-#include <stdio.h>
 #include "glxserver.h"
 #include "glxcontext.h"
 #include "glximports.h"

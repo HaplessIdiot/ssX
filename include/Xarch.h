@@ -25,7 +25,7 @@
  * IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/include/Xarch.h,v 1.5 1999/02/28 11:19:16 dawes Exp $ */
+/* $XFree86: xc/include/Xarch.h,v 1.6tsi Exp $ */
 
 
 /*
@@ -51,6 +51,19 @@
 #define __STRICT_ANSI__
 #else
 #include <endian.h>
+#endif
+/* 'endian.h' might have been included before 'Xarch.h' */
+#if !defined(LITTLE_ENDIAN) && defined(__LITTLE_ENDIAN)
+#define LITTLE_ENDIAN __LITTLE_ENDIAN
+#endif
+#if !defined(BIG_ENDIAN) && defined(__BIG_ENDIAN)
+#define BIG_ENDIAN __BIG_ENDIAN
+#endif
+#if !defined(PDP_ENDIAN) && defined(__PDP_ENDIAN)
+#define PDP_ENDIAN __PDP_ENDIAN
+#endif
+#if !defined(BYTE_ORDER) && defined(__BYTE_ORDER)
+#define BYTE_ORDER __BYTE_ORDER
 #endif
 #elif defined(Lynx)
 #if 0

@@ -54,7 +54,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.13 1998/01/25 04:00:01 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.14tsi Exp $ */
 
 #include "IntrinsicI.h"
 #include <stdio.h>
@@ -673,7 +673,7 @@ WaitLoop:
 		/* see if the hook(s) generated any protocol */
 		for (dd = 0; dd < app->count; dd++)
 		    if (XEventsQueued(app->list[dd], QueuedAlready)) {
-#if USE_POLL
+#ifdef USE_POLL
 			XtStackFree ((XtPointer) wf.fdlist, fdlist);
 #endif
 			return dd;
@@ -726,7 +726,7 @@ WaitLoop:
 		    /* get Xlib to detect a bad connection */
 		    for (dd = 0; dd < app->count; dd++)
 			if (XEventsQueued(app->list[dd], QueuedAfterReading)) {
-#if USE_POLL
+#ifdef USE_POLL
 			    XtStackFree ((XtPointer) wf.fdlist, fdlist);
 #endif
 			    return dd;

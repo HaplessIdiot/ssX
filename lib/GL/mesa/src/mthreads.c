@@ -41,7 +41,7 @@
  * Initial revision
  *
  */
-
+/* $XFree86: xc/lib/GL/mesa/src/mthreads.c,v 1.0tsi Exp $ */
 
 /*
  * mthreads.c -- platform dependent thread support for Mesa 
@@ -53,13 +53,14 @@
  */
 
 
+#ifndef XFree86Server
 #include <stdio.h>  /* for printing errors etc. */
 #include <stdlib.h> /* malloc/free and the boys. */
 #include <errno.h>  /* error determination for system calls */
                     /* NOTE: Some platforms will do bad things with errno  */
                     /*       if correct compile-time options are not used. */
                     /*       See mthreads.h for specific examples.         */
-#ifdef XFree86Server
+#else
 #include "GL/xf86glx.h"
 #endif
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PnPMouse.c,v 1.1 1998/07/25 16:55:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PnPMouse.c,v 1.2tsi Exp $ */
 
 /*
  * Copyright 1998 by Kazutaka YOKOTA <yokota@zodiac.mech.utsunomiya-u.ac.jp>
@@ -84,7 +84,7 @@ static symtab_t pnpprod[] = {
      */
     { "PNP0F04",  PROT_MSC },		/* MouseSystems */ 
     { "PNP0F05",  PROT_MSC },		/* MouseSystems */ 
-#if notyet
+#ifdef notyet
     { "PNP0F06",  PROT_??? },		/* Genius Mouse */ 
     { "PNP0F07",  PROT_??? },		/* Genius Mouse */ 
 #endif
@@ -96,23 +96,23 @@ static symtab_t pnpprod[] = {
     { "PNP0F0D",  PROT_BM },		/* MS InPort comatible */
     { "PNP0F0E",  PROT_PS2 },		/* MS PS/2 comatible */
     { "PNP0F0F",  PROT_MS },		/* MS BallPoint comatible */
-#if notyet
+#ifdef notyet
     { "PNP0F10",  PROT_??? },		/* TI QuickPort */
 #endif
     { "PNP0F11",  PROT_BM },		/* MS bus comatible */
     { "PNP0F12",  PROT_PS2 },		/* Logitech PS/2 */
     { "PNP0F13",  PROT_PS2 },		/* PS/2 */
-#if notyet
+#ifdef notyet
     { "PNP0F14",  PROT_??? },		/* MS Kids Mouse */
 #endif
     { "PNP0F15",  PROT_BM },		/* Logitech bus */ 
-#if notyet
+#ifdef notyet
     { "PNP0F16",  PROT_??? },		/* Logitech SWIFT */
 #endif
     { "PNP0F17",  PROT_LOGIMAN },	/* Logitech serial compat */
     { "PNP0F18",  PROT_BM },		/* Logitech bus compatible */
     { "PNP0F19",  PROT_PS2 },		/* Logitech PS/2 compatible */
-#if notyet
+#ifdef notyet
     { "PNP0F1A",  PROT_??? },		/* Logitech SWIFT compatible */
     { "PNP0F1B",  PROT_??? },		/* HP Omnibook */
     { "PNP0F1C",  PROT_??? },		/* Compaq LTE TrackBall PS/2 */

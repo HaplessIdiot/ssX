@@ -80,7 +80,7 @@
  * initial rev
  *
  */
-
+/* $XFree86: xc/lib/GL/mesa/src/span.c,v 1.0tsi Exp $ */
 
 /*
  * pixel span rasterization:
@@ -91,8 +91,10 @@
 #ifdef PC_HEADER
 #include "all.h"
 #else
+#ifndef XFree86Server
 #include <assert.h>
 #include <string.h>
+#endif
 #include "alpha.h"
 #include "alphabuf.h"
 #include "blend.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mouse.c,v 1.7 1999/01/14 13:04:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mouse.c,v 1.8 1999/01/26 10:40:18 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -114,10 +114,11 @@ Bool xf86SupportedMouseTypes[NUM_PROTOCOLS] =
 	FALSE,	/* wsmouse */
 #endif
 #ifdef PNP_MOUSE
-	TRUE	/* auto */
+	TRUE,	/* auto */
 #else
-	FALSE	/* auto */
+	FALSE,	/* auto */
 #endif
+	TRUE	/* Acecad tablets */
 };
 
 int xf86NumMouseTypes = sizeof(xf86SupportedMouseTypes) /
@@ -155,7 +156,8 @@ unsigned short xf86MouseCflags[NUM_PROTOCOLS] =
 	0,						     /* wsmouse */
 
 	(CS8 | CSTOPB          | CREAD | CLOCAL | HUPCL ),   /* sysmouse */
-	0						     /* auto */
+	0,						     /* auto */
+	(CS8 | PARENB | PARODD | CREAD | CLOCAL | HUPCL )    /* ACECAD */
 };
 
 
@@ -212,6 +214,8 @@ static unsigned char proto[][8] = {
 #else
   {  0x00, 0x00, 0x00, 0x00, 0,    0x00, 0xff, 0       },  /* wsmouse */
 #endif
+  {  0xf8,   0x80, 0x00,   0x00, 5,    0x00,   0xff },  /* dummy entry for auto - used only to fill space */
+  {  0x80,   0x80, 0x80,   0x00, 3,    0x00,   0xff },  /* ACECAD */
 };
 #endif /* ! MOUSE_PROTOCOL_IN_KERNEL */
 
@@ -465,6 +469,17 @@ MouseDevPtr mouse;
           }
 #endif
         break;
+
+      case PROT_ACECAD:
+	  xf86SetMouseSpeed(mouse, 9600, mouse->baudRate,
+			    xf86MouseCflags[mouse->mseType]);
+	  /* initialize */
+	  /* a nul charactor resets */
+	  write(mouse->mseFd, "", 1);
+	  usleep(50000);
+	  /* stream out relative mode high resolution increments of 1 */
+	  write(mouse->mseFd, "@EeI!", 5);
+	  break;
 
 #if defined(__FreeBSD__) && defined(MOUSE_PROTO_SYSMOUSE)
       case PROT_SYSMOUSE:
@@ -866,6 +881,13 @@ xf86MouseProtocol(device, rBuf, nBytes)
       buttons = pBuf[0] & 0x07;
       if (buttons != 0)
         buttons = 1 << (buttons - 1);
+      dx = (pBuf[0] & 0x10) ?   pBuf[1] : - pBuf[1];
+      dy = (pBuf[0] & 0x08) ? - pBuf[2] :   pBuf[2];
+      break;
+
+    case PROT_ACECAD:	    /* ACECAD */
+	/* ACECAD is almost exactly like MM but the buttons are different */
+      buttons = (pBuf[0] & 0x02) | ((pBuf[0] & 0x04) >> 2) | ((pBuf[0] & 1) << 2);
       dx = (pBuf[0] & 0x10) ?   pBuf[1] : - pBuf[1];
       dy = (pBuf[0] & 0x08) ? - pBuf[2] :   pBuf[2];
       break;

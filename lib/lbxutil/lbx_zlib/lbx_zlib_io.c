@@ -22,7 +22,7 @@
  *
  * Author:  Dale Tonogai, Network Computing Devices
  */
-/* $XFree86: xc/lib/lbxutil/lbx_zlib/lbx_zlib_io.c,v 1.7 1997/10/26 13:24:55 dawes Exp $ */
+/* $XFree86: xc/lib/lbxutil/lbx_zlib/lbx_zlib_io.c,v 1.8tsi Exp $ */
 
 #ifdef WIN32
 #define _WILLWINSOCK_
@@ -109,7 +109,7 @@ GetInputPtr(fd, inbuf, reqlen, ppkt)
     int		 fd;
     ZlibBufferPtr inbuf;
     int		 reqlen;
-    char	 **ppkt;
+    unsigned char **ppkt;
 {
     int		 readbytes;
     int		 gotbytes;
@@ -118,7 +118,7 @@ GetInputPtr(fd, inbuf, reqlen, ppkt)
 	inbuf->bufptr = inbuf->bufbase;
 
     if (reqlen <= inbuf->bufcnt) {
-	*ppkt = inbuf->bufptr;
+	*ppkt = (unsigned char *)inbuf->bufptr;
 	return 1;
     }
 
@@ -130,7 +130,7 @@ GetInputPtr(fd, inbuf, reqlen, ppkt)
     gotbytes = read(fd, inbuf->bufptr + inbuf->bufcnt, readbytes);
     if (gotbytes > 0) {
 	if (reqlen <= (inbuf->bufcnt += gotbytes)) {
-	    *ppkt = inbuf->bufptr;
+	    *ppkt = (unsigned char *)inbuf->bufptr;
 	    return 1;
 	}
     }

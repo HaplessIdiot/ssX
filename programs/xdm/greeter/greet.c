@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/greet.c,v 3.3 1998/10/04 09:41:04 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/greet.c,v 3.4tsi Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -42,7 +42,7 @@ from The Open Group.
 #include "greet.h"
 #include "Login.h"
 
-#if GREET_LIB
+#ifdef GREET_LIB
 /*
  * Function pointers filled in by the initial call ito the library
  */

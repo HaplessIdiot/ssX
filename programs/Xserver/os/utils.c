@@ -45,7 +45,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.45 1998/12/20 11:58:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.46tsi Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -68,6 +68,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
 #undef _POSIX_SOURCE
 #endif
 #endif
+#include <sys/wait.h>
 #if !defined(SYSV) && !defined(AMOEBA) && !defined(_MINIX) && !defined(WIN32) && !defined(Lynx) && !defined(QNX)
 #include <sys/resource.h>
 #endif
@@ -867,6 +868,12 @@ char	*argv[];
 	    else
 		UseMsg();
 	}
+	else if ( strcmp( argv[i], "-noreset") == 0)
+	{
+	    extern char dispatchExceptionAtReset;
+
+	    dispatchExceptionAtReset = 0;
+	}
 	else if ( strcmp( argv[i], "-p") == 0)
 	{
 	    if(++i < argc)
@@ -902,9 +909,9 @@ char	*argv[];
 	}
 	else if ( strcmp( argv[i], "-terminate") == 0)
 	{
-	    extern Bool terminateAtReset;
+	    extern char dispatchExceptionAtReset;
 	    
-	    terminateAtReset = TRUE;
+	    dispatchExceptionAtReset = DE_TERMINATE;
 	}
 	else if ( strcmp( argv[i], "-to") == 0)
 	{

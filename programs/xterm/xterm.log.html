@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
 <!--
  *****************************************************************************
- * Copyright 1997,1998 by Thomas E. Dickey (dickey@clark.net)                *
+ * Copyright 1997,1998,1999 by Thomas E. Dickey (dickey@clark.net)           *
  * All Rights Reserved.                                                      *
  *                                                                           *
  * Permission to use, copy, modify, and distribute this software and its     *
@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.16 1999/01/23 09:56:24 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.17 1999/02/07 06:19:03 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -29,7 +29,7 @@
 </HEAD>
 <BODY>
 <HR>
-Copyright 1997,1998 by Thomas E. Dickey
+Copyright 1997,1998,1999 by Thomas E. Dickey
 <HR>
 <H1>Contents</H1>
 This file contains a list of the changes that I have made for XFree86 xterm,
@@ -41,6 +41,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_93">Patch #93 - 1999/3/14 - XFree86 3.9Pd</A>
 <LI><A HREF="#xterm_92">Patch #92 - 1999/2/5 - XFree86 3.9Nz</A>
 <LI><A HREF="#xterm_91">Patch #91 - 1999/1/21 - XFree86 3.9Nw</A>
 <LI><A HREF="#xterm_90">Patch #90 - 1998/12/13 - XFree86 3.9Nq</A>
@@ -136,6 +137,67 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
 
+<H1><A NAME="xterm_93">Patch #93 - 1999/3/14 - XFree86 3.9Pd</A></H1>
+Here are several fixes and minor enhancements.  The chief ones
+are the fixes for NumLock mode and reverse video, since we had become
+used to working around the problems.
+<ul>
+	<li>remove kfnd/kll/kslt strings from terminfo, because curses
+	  applications do not necessarily return khome/kend pairs
+	  (reported by Vikas Agnihotri).
+
+	<li>implement NumLock resource which overrides the keyboard tables for the
+	  special case of keypad keys.  This is a problem introduced in xterm
+	  by X11R6 changes, i.e., an ambiguity which in effect discarded vt100
+	  keypad support.
+
+	<li>modify Sun/PC keyboard mode to extend this (emulation of DEC vt100
+	  keypad) to the remainder of the numeric keypad.  Now, the default
+	  operating mode of xterm uses the keyboard tables as-is (except if
+	  the NumLock mode overrides), but provides good vt100 keypad compatibility
+	  if the Sun/PC keyboard menu item is checked.
+
+	<li>separate command-line settings for reverse video from that done
+	  under program control.  This is a problem which was introduced by
+	  X11R6.  Though <em>correct</em>, most users are confused by allowing
+	  the reset command to undo the effect of the command-line <kbd>-rv</kbd>
+	  option.
+
+	<li>add description of function keys, keypad and cursor keys to ctlseqs.ms
+
+	<li>add terminfo entries for xterm-vt52, xterm-sun and xterm-hp
+
+	<li>correct typo (missing case value) for DECSET 35, enable/disable
+	  shifted keypad action and a few compiler warnings (reported by Zdenek
+	  Sekera &lt;zs@sgi.com&gt;).
+
+	<li>correct reporting of color values 8-15 in DECRQSS (reported by
+	  Vikas Agnihotri).
+
+	<li>modify parsing of ttyModes resource to recognize "^-" as "undef"
+	  (requested by Tomas Vanhala).
+
+	<li>integrate/extend changes to add iconify/maximize actions
+	  (from Edward S. Arthur &lt;eda@ultranet.com&gt;).
+
+	<li>add control sequences for maximizing/restoring window, and
+	  for reporting maximum screen size.
+
+	<li>add 'interpret' action, to support local function-key interpretation.
+	  Used properly, this makes most of the specialized actions of xterm
+	  redundant.
+
+	<li>add control sequence private modes 1051, 1052 and 1052, for
+	  setting the Sun and HP function key modes, and for setting the
+	  Sun/PC keyboard mode.
+
+	<li>add configure option --disable-maximize
+
+	<li>add configure option --disable-num-lcok
+
+	<li>extend descriptions of configure script options in INSTALL.
+</ul>
+
 <H1><A NAME="xterm_92">Patch #92 - 1999/2/5 - XFree86 3.9Nz</A></H1>
 <ul>
 	<li>increase buffer size for tgetent (i.e., termcap) to 1500.  This
@@ -145,16 +207,22 @@ xc/programs/Xserver/hw/xfree86).
 	  latter is assumed to be no longer than 1023 characters.  The
 	  <em>screen</em> program's termcap entry is about 1200 characters
 	  long.
+
 	<li>change update_menu_item() to a function, to simplify debugging.
 	  This also reduces the executable by 4Kb.
+
 	<li>add control sequences for DECSET 30, 1010, 1011 like rxvt (enable
 	  or disable some features that were only settable via resources or
 	  command line arguments).
+
 	<li>add control sequence for DECSET 35, which enables/disables the
 	  shifted keypad functions.
+
 	<li>add support for switching font sizes, by stepping through the
-	  font menu using shifted keypad plus and minue.
+	  font menu using shifted keypad plus and minus.
+
 	<li>correct missing initialization of tekInhibit and tekSmall resources.
+
 	<li>correct ifdefs in charproc.c for XtNgeometry and XtCGeometry
 	  (reported by Bram Moolenaar).
 </ul>
@@ -164,11 +232,15 @@ xc/programs/Xserver/hw/xfree86).
 	<li>Implement logic to translate input characters which are mapped
 	  when in vt220 National Replacement Character mode (requested by
 	  Tomas Vanhala).
+
 	<li>Resync configure scripts with my patches to autoconf 2.13
+
 	<li>Change order of -lXmu and -lXext to accommodate cygwin32
 	  (reported by Vikas Agnihotri).
+
 	<li>Add "-ti" option to set terminal emulation level from command
 	  line rather than via resource.
+
 	<li>Simplify some of the preprocessor logic using #elif.
 </ul>
 

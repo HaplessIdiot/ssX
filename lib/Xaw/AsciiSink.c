@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/AsciiSink.c,v 1.12 1998/10/25 07:11:12 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiSink.c,v 1.13 1998/11/15 04:29:57 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -226,7 +226,7 @@ CharWidth(AsciiSinkObject sink, XFontStruct *font, int x, unsigned int c)
       /*NOTREACHED*/
     }
 
-  if (c < XawSP || c >= 0177) {
+  if ((c & 0177) < XawSP || c == 0177) {
       if (sink->ascii_sink.display_nonprinting) {
 	  if (c > 0177) {
 	      width = CharWidth(sink, font, x, '\\');
@@ -364,7 +364,7 @@ DisplayText(Widget w, int x, int y,
 
 	      j = -1;
 	    }
-	  else if (buf[j] < ' ' || buf[j] >= 0177)
+	  else if ((buf[j] & 0177) < XawSP || buf[j] == 0177)
 	    {
 	      if (sink->ascii_sink.display_nonprinting)
 		{
@@ -449,8 +449,8 @@ InsertCursor(Widget w, int x, int y, XawTextInsertState state)
 	    ochar = NULL;
 	  else if (block.ptr[0] == '\t')
 	    ochar = " ";
-	  else if (*((unsigned char*)block.ptr) < XawSP
-		   || *((unsigned char*)block.ptr) >= 0177)
+	  else if ((*((unsigned char*)block.ptr) & 0177) < XawSP
+	      || *(unsigned char*)block.ptr == 0177)
 	    {
 	      if (sink->ascii_sink.display_nonprinting) {
 		ochar = *((unsigned char*)block.ptr) > 0177 ? "\\" : "^";
@@ -482,8 +482,8 @@ InsertCursor(Widget w, int x, int y, XawTextInsertState state)
 				  position, &block, 1);
 	  if (!block.length || block.ptr[0] == '\n' || block.ptr[0] == '\t')
 	    nchar = " ";
-	  else if (*((unsigned char*)block.ptr) < XawSP
-	      || (*(unsigned char*)block.ptr) >= 0177)
+	  else if ((*((unsigned char*)block.ptr) & 0177) < XawSP
+	      || *(unsigned char*)block.ptr == 0177)
 	    {
 	      if (sink->ascii_sink.display_nonprinting)
 		nchar = *((unsigned char*)block.ptr) > 0177 ? "\\" : "^";

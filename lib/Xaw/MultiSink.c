@@ -66,7 +66,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/MultiSink.c,v 1.10 1998/10/10 15:25:07 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/MultiSink.c,v 1.11 1998/10/25 07:11:13 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -488,19 +488,21 @@ InsertCursor(Widget w, int x, int y, XawTextInsertState state)
 					 (sink->multi_sink.cursor_y - 1
 					  - fheight),
 					 CharWidth(sink, fontset, 0, wspace[0]), fheight);
-	  if (XwcTextEscapement(sink->multi_sink.fontset, ochar, 1) != 0)
-	    DisplayText(w, sink->multi_sink.cursor_x,
+	  else {
+	      if (XwcTextEscapement(sink->multi_sink.fontset, ochar, 1) != 0)
+		  DisplayText(w, sink->multi_sink.cursor_x,
 			sink->multi_sink.cursor_y - 1 - fheight,
 			sink->multi_sink.cursor_position,
 			sink->multi_sink.cursor_position + 1,
 			False);
-	  else
-	    PaintText(w,
+	      else
+		  PaintText(w,
 		      sink->multi_sink.normgc,
 		      sink->multi_sink.cursor_x,
 		      sink->multi_sink.cursor_y - 1 - fdiff,
 		      ochar, 1,
 		      ctx->core.background_pixmap != XtUnspecifiedPixmap);
+	  }
 	}
 
       if (!has_selection && state != XawisOff)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.27 1997/11/01 15:04:27 hohndel Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.28tsi Exp $ */ 
 /*
  * PCI Probe
  *
@@ -199,15 +199,6 @@ struct pci_config_reg {
 
 extern struct pci_config_reg *pci_devp[];
 
-void xf86writepci(
-#if NeedFunctionPrototypes
-	int,
-	int,
-	unsigned long,
-	unsigned long
-#endif
-);
-
 #define PCI_VENDOR_NCR_1	0x1000
 #define PCI_VENDOR_ATI		0x1002
 #define PCI_VENDOR_AVANCE	0x1005
@@ -226,30 +217,28 @@ void xf86writepci(
 #define PCI_VENDOR_NVIDIA       0x10DE
 #define PCI_VENDOR_ALLIANCE	0x1142
 #define PCI_VENDOR_TRITECH	0x1292
-#define PCI_VENDOR_NVIDIA_SGS   0x12d2
+#define PCI_VENDOR_NVIDIA_SGS   0x12D2
 #define PCI_VENDOR_RENDITION	0x1163
 #define PCI_VENDOR_SIGMADESIGNS	0x1236
 #define PCI_VENDOR_S3		0x5333
 #define PCI_VENDOR_ARK		0xEDD8
 #define PCI_VENDOR_3DLABS	0x3D3D
+#define PCI_VENDOR_INTERGRAPHICS	0x10EA
 
 /* Matrox */
 #define PCI_CHIP_MGA2085PX	0x0518
 #define PCI_CHIP_MGA2064W	0x0519
 #define PCI_CHIP_MGA1064SG	0x051A
+#define PCI_CHIP_MGA2164W	0x051B
+#define PCI_CHIP_MGA2164W_AGP	0x051F
+#define PCI_CHIP_MGAG100_PCI	0x1000
+#define PCI_CHIP_MGAG100_AGP	0x1001
+#define PCI_CHIP_MGAG200_PCI	0x0520
+#define PCI_CHIP_MGAG200_AGP	0x0521
 
 /* ATI */
 #define PCI_CHIP_MACH32		0x4158
-#define PCI_CHIP_MACH64GX	0x4758
-#define PCI_CHIP_MACH64CX	0x4358
-#define PCI_CHIP_MACH64CT	0x4354
-#define PCI_CHIP_MACH64ET	0x4554
-#define PCI_CHIP_MACH64VT	0x5654
-#define PCI_CHIP_MACH64VU       0x5655
-#define PCI_CHIP_MACH64GP       0x4750
-#define PCI_CHIP_MACH64GT	0x4754
-#define PCI_CHIP_MACH64GU       0x4755
-#define PCI_CHIP_MACH64LT       0x4C47
+	/* Other ATI ChipID's deleted;  not used by SuperProbe */
 
 /* Avance Logic */
 #define PCI_CHIP_ALG2301	0x2301
@@ -273,12 +262,11 @@ void xf86writepci(
 #define PCI_CHIP_GD5434_8	0x00A8
 #define PCI_CHIP_GD5436		0x00AC
 #define PCI_CHIP_GD5446		0x00B8
-#define PCI_CHIP_GD5480         0x00BC
+#define PCI_CHIP_GD5480		0x00BC
 #define PCI_CHIP_GD5462		0x00D0
 #define PCI_CHIP_GD5464		0x00D4
 #define PCI_CHIP_GD5464BD       0x00D5
-#define PCI_CHIP_GD5465         0x00D6
-#define PCI_CHIP_GD7541         0x1204
+#define PCI_CHIP_GD5465		0x00D6
 #define PCI_CHIP_GD7542		0x1200
 #define PCI_CHIP_GD7543		0x1202
 #define PCI_CHIP_GD7541		0x1204
@@ -290,6 +278,11 @@ void xf86writepci(
 #define PCI_CHIP_9660		0x9660
 #define PCI_CHIP_9680		0x9680
 #define PCI_CHIP_9682		0x9682
+#define PCI_CHIP_9388		0x9388
+#define PCI_CHIP_9397		0x9397
+#define PCI_CHIP_9520		0x9520
+#define PCI_CHIP_9750		0x9750
+#define PCI_CHIP_9850		0x9850
 
 /* Chips & Tech */
 #define PCI_CHIP_65545		0x00D8
@@ -350,6 +343,8 @@ void xf86writepci(
 #define PCI_CHIP_ViRGE_VX	0x883D
 #define PCI_CHIP_ViRGE_DXGX	0x8A01
 #define PCI_CHIP_ViRGE_GX2	0x8A10
+#define PCI_CHIP_ViRGE_MX	0x8C01
+#define PCI_CHIP_ViRGE_MXP	0x8C03
 
 /* ARK Logic */
 #define PCI_CHIP_1000PV		0xA091
@@ -364,9 +359,13 @@ void xf86writepci(
 #define PCI_CHIP_3DLABS_PERMEDIA   0x0004
 
 /* Tritech Microelectronics */
-#define PCI_CHIP_TR25202	0xfc02
+#define PCI_CHIP_TR25202	0xFC02
+
+/* Intergraphics */
+#define PCI_CHIP_INTERG_1680	0x1680
+#define PCI_CHIP_INTERG_1682	0x1682
 
 /* Increase this as required */
-#define MAX_DEV_PER_VENDOR 16
+#define MAX_DEV_PER_VENDOR 18
    
 #endif /* _PCI_H */

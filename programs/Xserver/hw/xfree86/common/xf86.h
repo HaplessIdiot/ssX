@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.93 1999/02/28 11:19:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.94 1999/03/07 08:29:40 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -156,6 +156,7 @@ Bool xf86GetFlipPixels(void);
 const char *xf86GetServerName(void);
 Bool xf86ServerIsExiting(void);
 Bool xf86ServerIsResetting(void);
+Bool xf86ServerIsInitialising(void);
 Bool xf86CaughtSignal(void);
 Bool xf86GetVidModeAllowNonLocal(void);
 Bool xf86GetVidModeEnabled(void);
