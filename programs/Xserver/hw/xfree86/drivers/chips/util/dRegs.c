@@ -4,14 +4,14 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/util/dRegs.c,v 1.7 2001/05/25 18:19:13 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/util/dRegs.c,v 1.8 2001/10/01 13:44:04 eich Exp $ */
 
 #ifdef __NetBSD__
 #  include <sys/types.h>
 #  include <machine/pio.h>
 #  include <machine/sysarch.h>
 #else
-#  ifdef SVR4 
+#  if defined(SVR4) && defined(i386)
 #    include <sys/types.h>
 #    ifdef NCR
        /* broken NCR <sys/sysi86.h> */
@@ -42,7 +42,7 @@
 #  define SET_IOPL() i386_iopl(3)
 #  define RESET_IOPL() i386_iopl(0)
 #else
-#  ifdef SVR4
+#  if defined(SVR4) && defined(i386)
 #    ifndef SI86IOPL
 #      define SET_IOPL() sysi86(SI86V86,V86SC_IOPL,PS_IOPL)
 #      define RESET_IOPL() sysi86(SI86V86,V86SC_IOPL,0)
@@ -51,21 +51,21 @@
 #      define RESET_IOPL() sysi86(SI86IOPL,0)
 #    endif
 #  else
-#    ifndef Lynx
+#    ifdef linux
 #      define SET_IOPL() iopl(3)
 #      define RESET_IOPL() iopl(0)
 #    else
-#      define SET_IOPL() 0
-#      define RESET_IOPL() 0
+#      define SET_IOPL() (void)0
+#      define RESET_IOPL() (void)0
 #    endif
 #  endif
 #endif
 
-void main(void)
+int main(void)
 {
     int i, HTotal, HDisplay, HSyncStart, HSyncEnd, 
-    VTotal, VDisplay, VSyncStart, VSyncEnd, Clock;
-    unsigned char storeReg, bpp, shift, IOSS, MSS, again;
+    VTotal, VDisplay, VSyncStart, VSyncEnd;
+    unsigned char storeReg, bpp, shift, IOSS = 0, MSS = 0, again = 0;
     unsigned short port;
     int isHiQV = 0;
     int is69030 = 0;
@@ -301,7 +301,5 @@ void main(void)
       }
     }
     RESET_IOPL();
+    return 0;
 }
-
-
-
