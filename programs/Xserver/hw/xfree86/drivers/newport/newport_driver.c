@@ -30,7 +30,7 @@
  * Project.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.3 2000/12/06 22:00:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.4 2000/12/07 15:43:44 tsi Exp $ */
 
 /* function prototypes, common data structures & generic includes */
 #include "newport.h"
@@ -87,8 +87,8 @@ static Bool NewportModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static void NewportRestore(ScrnInfoPtr pScrn, Bool Closing);
 static Bool NewportGetRec(ScrnInfoPtr pScrn);
 static Bool NewportFreeRec(ScrnInfoPtr pScrn);
-static NewportRegsPtr NewportMapRegs(unsigned cardNum);
-static Bool NewportUnmapRegs(unsigned cardNum);
+static Bool NewportMapRegs(ScrnInfoPtr pScrn);
+static void NewportUnmapRegs(ScrnInfoPtr pScrn);
 static Bool NewportProbeCardInfo(ScrnInfoPtr pScrn);
 /* ------------------------------------------------------------------ */
 
@@ -366,10 +366,10 @@ NewportPreInit(ScrnInfoPtr pScrn, int flags)
     	pScrn->videoRam = 1280 * (pScrn->bitsPerPixel >> 3);
 
 	/* get revisions of REX3, etc. */
-	if( !(pNewport->pNewportRegs = NewportMapRegs(busID)))
+	if( ! NewportMapRegs(pScrn))
 		return FALSE;
 	NewportProbeCardInfo(pScrn);
-	NewportUnmapRegs(busID);
+	NewportUnmapRegs(pScrn);
 
 	from=X_PROBED;
 	xf86DrvMsg(pScrn->scrnIndex, from,
@@ -467,7 +467,7 @@ NewportScreenInit(int index, ScreenPtr pScreen, int argc, char **argv)
 	pNewport = NEWPORTPTR(pScrn);
 
 	/* map the Newportregs until the server dies */
-	if( !(pNewport->pNewportRegs = NewportMapRegs(pNewport->busID))) 
+	if( ! NewportMapRegs(pScrn)) 
 		return FALSE;
 
 	/* Reset visual list. */
@@ -593,8 +593,7 @@ NewportCloseScreen(int scrnIndex, ScreenPtr pScreen)
 		xfree(pNewport->ShadowPtr);
 
 	/* unmap the Newport's registers from memory */
-	if(!NewportUnmapRegs(pNewport->busID))
-		return FALSE;
+	NewportUnmapRegs(pScrn);
 	pScrn->vtSema = FALSE;
  
 	pScreen->CloseScreen = pNewport->CloseScreen;
@@ -731,40 +730,27 @@ static Bool NewportProbeCardInfo(ScrnInfoPtr pScrn)
 
 
 /* map NewportRegs */
-static NewportRegsPtr
-NewportMapRegs(unsigned cardNum)
-{
-	int fd;
-	pointer base;
-	
-	if ((fd = open("/dev/mem", O_RDWR)) < 0) {
-		FatalError("NewportMapRegs: failed to open /dev/mem (%s)\n", \
-			strerror(errno));
-		return (NewportRegsPtr)NULL;
-        }
-
-	base = mmap((pointer)0, sizeof(NewportRegs), \
-			PROT_READ | PROT_WRITE, MAP_SHARED, fd, \
-			NEWPORT_BASE_ADDR0 + cardNum * NEWPORT_BASE_OFFSET);
-	close(fd);
-	if (base == MAP_FAILED) {
-		FatalError("NewportMapRegs: Could not mmap NewportRegs (0x%08x,0x%x) (%s)\n", \
-				NEWPORT_BASE_ADDR0 + cardNum * NEWPORT_BASE_OFFSET, \
-				sizeof(NewportRegs), strerror(errno));
-		return (NewportRegsPtr)NULL;
-	}
-	return (NewportRegsPtr)base;
-}
-
-/* unmap NewportRegs */
 static Bool
-NewportUnmapRegs(unsigned cardNum)
+NewportMapRegs(ScrnInfoPtr pScrn)
 {
-	if(munmap( (pointer)(NEWPORT_BASE_ADDR0 + cardNum * NEWPORT_BASE_OFFSET), \
-				sizeof(NewportRegs)) == -1) {
-		FatalError("NewportUnmapRegs: Could not munmap NewportRegs\n");
+	NewportPtr pNewport = NEWPORTPTR(pScrn);
+
+	pNewport->pNewportRegs = xf86MapVidMem(pScrn->scrnIndex, 
+			VIDMEM_MMIO,
+			NEWPORT_BASE_ADDR0 + pNewport->busID * NEWPORT_BASE_OFFSET,
+			 sizeof(NewportRegs));
+	if ( ! pNewport->pNewportRegs ) 
 		return FALSE;
-	}
 	return TRUE;
 }
 
+/* unmap NewportRegs */
+static void
+NewportUnmapRegs(ScrnInfoPtr pScrn)
+{
+	NewportPtr pNewport = NEWPORTPTR(pScrn);
+
+	xf86UnMapVidMem( pScrn->scrnIndex, pNewport->pNewportRegs,
+			sizeof(NewportRegs));
+	pNewport->pNewportRegs = NULL;
+}

@@ -1,4 +1,9 @@
 XFree86 4.0.1Z (8 December 2000)
+1153. Flesh out the wacom man page (#4358, Frederic Lepied).
+1152. Fix incorrect documentation for xf86UnMapVidMem() in README.OS-lib
+      (#4357, Guido Guenther).
+1151. Update the newport driver to use the map/unmap functions provided by
+      the os-support layer (#4356, Guido Guenther).
 1150. Bugfix to xf86UDelay() (Egbert Eich).
 1149. Added a sanity check to  pciConvertRange2Host() (Egbert Eich).
 1148. Added more log messages to Linux APM code (Egbert Eich).
@@ -11995,4 +12000,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1461 2000/12/08 22:04:37 paulo Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1462 2000/12/09 00:17:51 dawes Exp $
