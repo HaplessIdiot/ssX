@@ -24,7 +24,7 @@
  * Authors:
  *    Ian Romanick <idr@us.ibm.com>
  */
-/* $XFree86:$ */
+/* $XFree86: xc/lib/GL/glx/glxextensions.c,v 1.1 2003/09/28 20:15:03 alanh Exp $ */
 
 #include "packsingle.h"
 #include "glxclient.h"
@@ -58,10 +58,10 @@ static const struct {
     */
    unsigned char  version_major;
    unsigned char  version_minor;
-   unsigned char  client_support:1;
-   unsigned char  direct_support:1;
-   unsigned char  client_only:1;     /** Is the extension client-side only? */
-   unsigned char  direct_only:1;     /** Is the extension for direct
+   unsigned char  client_support;
+   unsigned char  direct_support;
+   unsigned char  client_only;     /** Is the extension client-side only? */
+   unsigned char  direct_only;     /** Is the extension for direct
 				      * contexts only?
 				      */
 } known_glx_extensions[] = {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/compsize.c,v 1.5 2003/09/28 20:15:01 alanh Exp $ */
+/* $XFree86: xc/lib/GL/glx/compsize.c,v 1.6 2004/01/28 18:11:38 alanh Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -35,7 +35,7 @@
 */
 
 #include <GL/gl.h>
-
+#include "glxclient.h"
 #include "size.h"
 
 /*
