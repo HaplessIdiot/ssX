@@ -1206,6 +1206,7 @@ static void SelectionReceived(
 {
     char **text_list = NULL;
     Char *(*conversion_function)(Char*, int, int*) = NULL;
+    Char *line = (Char*)value;
     int text_list_count;
     XTextProperty text_prop;
     TScreen *screen;
@@ -1267,7 +1268,6 @@ static void SelectionReceived(
 		text_list = NULL;
 	    }
 	}
-    }
 #if OPT_USE_UTF8_API
 	if(*type == XA_UTF8_STRING(XtDisplay(w))) {
 	    GettingSelection("UTF8_STRING", line, *length);
@@ -1293,6 +1293,7 @@ static void SelectionReceived(
 	    if(rc < 0) {
 		TRACE(("Conversion failed\n"));
 		text_list = NULL;
+	    }
 	}
     }
 
