@@ -1,6 +1,6 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.141tsi Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.142 2005/01/23 17:05:23 tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -382,7 +382,7 @@ XCOMM special target for clearmake					@@\
 #endif /* RemoveFiles */
 
 #if RemoveObsoleteFiles
-#define RemoveOldFile(new,old,dir)					@@\
+#define RemoveOldFile(new,old,dir)					\
 	@if [ -f new ]; then set -x; \					@@\
 		RemoveFile($(DESTDIR)dir/old); \			@@\
 	fi
