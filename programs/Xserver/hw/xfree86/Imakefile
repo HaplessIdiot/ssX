@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:01:00 dpw Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.10 1994/09/03 02:50:10 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.11 1994/09/08 14:24:38 dawes Exp $
 #include <Server.tmpl>
 #define IHaveSubdirs
 
@@ -35,9 +35,9 @@ SUBDIRS = common common_hw os-support $(SCREENS) $(ACCELDIRS) doc \
 all:: XF86Config
 
 #if defined(i386BsdArchitecture) && !defined(FreeBSDArchitecture)
-MANPAGE=Concat(FileManDir,/Xconfig.0)
+MANPAGE=Concat(FileManDir,/XF86Config.0)
 #else
-MANPAGE=Concat3(FileManDir,/Xconfig.,FileManSuffix)
+MANPAGE=Concat3(FileManDir,/XF86Config.,FileManSuffix)
 #endif
 
 RGBPATH=\"DefaultRGBDatabase\"
@@ -103,12 +103,12 @@ CppFileTarget(XF86Config, XF86Conf.cpp, \
 #endif
 
 InstallManPage(XFree86,$(MANDIR))
-InstallNamedTarget(install.man,Xconfig.man,$(INSTMANFLAGS),$(FILEMANDIR),Xconfig.$(FILEMANSUFFIX))
+InstallNamedTarget(install.man,XF86Conf.man,$(INSTMANFLAGS),$(FILEMANDIR),XF86Config.$(FILEMANSUFFIX))
 InstallManPage(XF86_Mono,$(MANDIR))
 InstallManPage(XF86_VGA16,$(MANDIR))
 InstallManPage(XF86_SVGA,$(MANDIR))
 InstallManPageLong(XF86_Acc,$(MANDIR),XF86_Accel)
-InstallManPageAliases(XF86_Accel,$(MANDIR),XF86_S3 XF86_Mach32 XF86_P9000 XF86_Mach8 XF86_8514 XF86_AGX)
+InstallManPageAliases(XF86_Accel,$(MANDIR),XF86_S3 XF86_Mach32 XF86_P9000 XF86_Mach8 XF86_8514 XF86_AGX XF86_W32)
 InstallNamedNonExec(XF86Config,XF86Config.eg,$(LIBDIR))
 
 MakeSubdirs($(SUBDIRS))
