@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:41:52 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/config/util/Imakefile,v 3.48tsi Exp $
+XCOMM $XFree86: xc/config/util/Imakefile,v 3.49 2003/10/21 17:41:45 tsi Exp $
 
 CCMDEP_PROG = ccmakedep
 
@@ -156,5 +156,5 @@ InstallDriverSDKNamedProg(bsdinst.sh,bsdinst.sh,$(DRIVERSDKDIR)/config/util)
 
 InstallDriverSDKNamedProg(revpath,revpath,$(DRIVERSDKDIR)/config/util)
 #ifdef OS2Architecture
-InstallNamedProg(gccmakedep.cmd,gccmakedep.cmd,$(BINDIR))
+InstallNamedProg(makedef.cmd,makedef.cmd,$(BINDIR))
 #endif

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/freetype2/Imakefile,v 1.16 2003/11/05 16:54:28 tsi Exp $
+XCOMM $XFree86: xc/lib/freetype2/Imakefile,v 1.17 2003/11/05 22:25:20 torrey Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags
@@ -10,11 +10,7 @@ XCOMM $XFree86: xc/lib/freetype2/Imakefile,v 1.16 2003/11/05 16:54:28 tsi Exp $
 #define DoDebugLib DebugLibFreetype2
 #define DoProfileLib ProfileLibFreetype2
 #define HasSharedData YES
-#ifndef OS2Architecture
 #define LibName freetype
-#else
-#define LibName frtype
-#endif
 #define SoRev SOFREETYPE2REV
 #ifdef SharedLibtoolFreetype2Rev
 #define SharedLibtoolRev SharedLibtoolFreetype2Rev
@@ -246,10 +242,6 @@ LinkSourceFile(truetype.c,$(FREETYPESRC)/truetype)
 LinkSourceFile(type1.c,$(FREETYPESRC)/type1)
 LinkSourceFile(type42.c,$(FREETYPESRC)/type42)
 LinkSourceFile(winfnt.c,$(FREETYPESRC)/winfonts)
-
-#if defined(OS2Architecture)
-LinkFile(frtype-def.cpp,freetype-def.cpp)
-#endif
 
 DependTarget()
 

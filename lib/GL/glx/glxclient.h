@@ -31,7 +31,7 @@
 ** published by SGI, but has not been independently verified as being
 ** compliant with the OpenGL(R) version 1.2.1 Specification.
 */
-/* $XFree86: xc/lib/GL/glx/glxclient.h,v 1.15 2002/10/30 12:51:26 alanh Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxclient.h,v 1.16 2003/09/28 20:15:01 alanh Exp $ */
 
 /*
  * Direct rendering support added by Precision Insight, Inc.
@@ -63,6 +63,11 @@
 #endif
 #ifdef GLX_BUILT_IN_XMESA
 #include "realglx.h"  /* just silences prototype warnings */
+#endif
+
+#ifdef __UNIXOS2__
+#define WE_DONT_NEED_QUADS
+#include <db.h>
 #endif
 
 #define GLX_MAJOR_VERSION	1	/* current version numbers */

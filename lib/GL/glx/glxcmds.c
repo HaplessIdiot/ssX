@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.22tsi Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.23 2003/10/23 15:30:07 tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -34,7 +34,9 @@
 **
 */
 
+#ifndef __UNIXOS2__
 #include <inttypes.h>
+#endif
 #include "packsingle.h"
 #include "glxclient.h"
 #include <extutil.h>
