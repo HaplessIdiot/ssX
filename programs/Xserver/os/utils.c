@@ -49,7 +49,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.93 2003/09/24 02:43:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.94 2003/09/25 14:09:34 alanh Exp $ */
 
 #ifdef __CYGWIN__
 #include <stdlib.h>
@@ -1152,7 +1152,7 @@ set_font_authorizations(char **authorizations, int *authlen, pointer client)
 	memmove(p, hnameptr, len);
 	p += len;
 #if defined(IPv6) && defined(AF_INET6)
-	if (hnameptr == ai->ai_canonname) {
+	if (ai) {
 	    freeaddrinfo(ai);
 	}
 #endif
