@@ -21,7 +21,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_video.c,v 1.1 2003/04/15 15:35:48 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_video.c,v 1.2tsi Exp $ */
 #include "xf86.h"
 #include "xf86_OSproc.h"
 #include "xf86Resources.h"
@@ -132,9 +132,20 @@ ScreenBlockHandlerProcPtr origBlockHandler;
 
 VIAPtr	pVIASWOV;
 viaPortPrivPtr pPrivOV = NULL;
+
 /*
  *  S T R U C T S
  */
+static char * XVPORTNAME[1] =
+{
+   "XV_SWOV",
+};
+
+static int XVPORTID[1] =
+{
+   XV_SWOV_PORTID   ,
+};
+
 /* client libraries expect an encoding */
 static XF86VideoEncodingRec DummyEncoding[8] =
 {
@@ -507,10 +518,10 @@ viaSetupImageVideoG(ScreenPtr pScreen)
 	SetPortPriv(i, SET_XVPORTID, XVPORTID[i]);
 	SetPortPriv(i, SET_BRIGHTNESS, 0);
 	SetPortPriv(i, SET_CONTRAST, 128);
-	#ifdef COLOR_KEY
+#	ifdef COLOR_KEY
 	/* SetPortPriv(i, SET_COLORKEY, 0x00ff00ff); */
 	SetPortPriv(i, SET_COLORKEY, 0x0821);
-	#endif
+#	endif
 
 	/* gotta uninit this someplace */
 	REGION_INIT(pScreen, &gviaPortPriv[i]->clip, NullBox, 0);
@@ -873,12 +884,12 @@ viaPutImageG(
     int i;
     BoxPtr pbox;
 
-    #ifdef XV_DEBUG
+#   ifdef XV_DEBUG
     ErrorF(" via_video.c : viaPutImageG : called\n");
     ErrorF(" via_video.c : FourCC=0x%x width=%d height=%d sync=%d\n",id,width,height,sync);
     ErrorF(" via_video.c : src_x=%d src_y=%d src_w=%d src_h=%d colorkey=0x%x\n",src_x, src_y, src_w, src_h, pPriv->colorKey);
     ErrorF(" via_video.c : drw_x=%d drw_y=%d drw_w=%d drw_h=%d\n",drw_x,drw_y,drw_w,drw_h);
-    #endif
+#   endif
 
     switch ( IdentifyPort((viaPortPrivPtr)data ) )
     {
