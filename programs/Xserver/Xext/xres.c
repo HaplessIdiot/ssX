@@ -173,7 +173,7 @@ ProcXResQueryClientResources (ClientPtr client)
         }
     }
 
-    DEALLOCATE_LOCAL(types);
+    DEALLOCATE_LOCAL(counts);
     
     return (client->noClientException);
 }
