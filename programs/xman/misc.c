@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xman/misc.c,v 1.7 2001/12/28 17:09:08 dawes Exp $ */
+/* $XFree86: xc/programs/xman/misc.c,v 1.8tsi Exp $ */
 
 /*
  * xman - X window system manual page display program.
@@ -98,15 +98,10 @@ PopupWarning(ManpageGlobals * man_globals, char * string)
   Arg wargs[3];
   Dimension topX, topY;
   char buffer[BUFSIZ];
-  Widget positionto;
   Boolean hasPosition;
 
   sprintf( buffer, "Xman Warning: %s", string);
   hasPosition = FALSE;
-  if (man_globals->This_Manpage)
-    positionto = man_globals->This_Manpage;
-  else
-    positionto = top;
   if (top)
   {
     n=0;

@@ -27,7 +27,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xset/xset.c,v 3.29 2003/02/05 00:54:30 dawes Exp $ */
+/* $XFree86: xc/programs/xset/xset.c,v 3.30tsi Exp $ */
 /* Modified by Stephen so keyboard rate is set using XKB extensions */
 
 #include <stdio.h>
@@ -691,8 +691,8 @@ for (i = 1; i < argc; ) {
 #if defined(XF86MISC) || defined(XKB)
     else if (strcmp(arg, "rate") == 0) {       /*  ...or this one. */
       int delay = 0, rate = 0;
-      int rate_set = 0;
 #ifdef XF86MISC
+      int rate_set = 0;
       if (XF86MiscQueryVersion(dpy, &major, &minor)) {
         delay=KBDDELAY_DEFAULT, rate=KBDRATE_DEFAULT;
       } else {
@@ -728,7 +728,9 @@ for (i = 1; i < argc; ) {
 #ifdef XKB
       if (xkbpresent) {
         xkbset_repeatrate(dpy, delay, 1000/rate);
+#ifdef XF86MISC
 	rate_set = 1;
+#endif
       }
 #endif
 #ifdef XF86MISC

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/io.h,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/io.h,v 1.9tsi Exp $ */
 
 #ifndef Lisp_io_h
 #define Lisp_io_h
@@ -55,13 +55,13 @@ struct _LispFile {
     int length;			/* number of bytes used */
     int offset;			/* read/write offset */
     int unget : 8;		/* unread char */
-    int readable : 1;
-    int writable : 1;
-    int regular : 1;		/* regular file */
-    int buffered : 1;
-    int available : 1;		/* unget field holds a char */
-    int nonblock : 1;		/* in nonblock mode */
-    int binary : 1;		/* if set, don't calculate column/line-number */
+    unsigned int readable : 1;
+    unsigned int writable : 1;
+    unsigned int regular : 1;	/* regular file */
+    unsigned int buffered : 1;
+    unsigned int available : 1;	/* unget field holds a char */
+    unsigned int nonblock : 1;	/* in nonblock mode */
+    unsigned int binary : 1;	/* if set, don't calculate column/line-number */
     io_write_fn io_write;
 };
 
@@ -73,8 +73,8 @@ struct _LispString {
     int length;			/* number of bytes used */
     int input;			/* input offset, for read operations */
     int output;			/* output offset, for write operations */
-    int fixed : 1;		/* if set, don't try to reallocate string */
-    int binary : 1;		/* if set, don't calculate column/line-number */
+    unsigned int fixed : 1;	/* if set, don't try to reallocate string */
+    unsigned int binary : 1;	/* if set, don't calculate column/line-number */
 };
 
 /*

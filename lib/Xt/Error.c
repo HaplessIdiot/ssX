@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Error.c,v 3.12 2001/12/14 19:56:11 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Error.c,v 3.13tsi Exp $ */
 
 /*
 
@@ -214,7 +214,7 @@ static void DefaultMsg (name,type,class,defaultp,params,num_params,error,fn)
     String* params;
     Cardinal* num_params;
     Bool error;
-    void (*fn)(String);
+    void (*fn)(_Xconst _XtString);
 {
 #define BIGBUF 1024
 #ifdef notyet /* older versions don't, might want to wait until more do */

@@ -26,7 +26,7 @@ in this Software without prior written authorization from The Open Group.
 
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
-/* $XFree86: xc/lib/ICE/process.c,v 3.7 2001/10/28 03:32:28 tsi Exp $ */
+/* $XFree86: xc/lib/ICE/process.c,v 3.8tsi Exp $ */
 
 #include <X11/ICE/ICElib.h>
 #include "ICElibint.h"
@@ -1697,8 +1697,10 @@ IceReplyWaitInfo 	*replyWait;
     char 			*pData, *pStart, *pEnd;
     Bool			replyReady;
 
+#if 0 /* No-op */
     CHECK_AT_LEAST_SIZE (iceConn, ICE_ConnectionReply,
 	length, SIZEOF (iceConnectionReplyMsg), IceFatalToConnection);
+#endif
 
     IceReadCompleteMessage (iceConn, SIZEOF (iceConnectionReplyMsg),
 	iceConnectionReplyMsg, message, pStart);
@@ -2196,8 +2198,10 @@ IceReplyWaitInfo 	*replyWait;
     char		*pData, *pStart, *pEnd;
     Bool		replyReady;
 
+#if 0 /* No-op */
     CHECK_AT_LEAST_SIZE (iceConn, ICE_ProtocolReply,
 	length, SIZEOF (iceProtocolReplyMsg), IceFatalToProtocol);
+#endif
 
     IceReadCompleteMessage (iceConn, SIZEOF (iceProtocolReplyMsg),
 	iceProtocolReplyMsg, message, pStart);

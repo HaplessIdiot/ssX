@@ -1,5 +1,5 @@
 XCOMM platform:  $Xorg: sgi.cf,v 1.4 2000/08/17 19:41:48 cpqbld Exp $
-XCOMM $XFree86: xc/config/cf/sgi.cf,v 1.8 1999/06/06 15:36:03 dawes Exp $
+XCOMM $XFree86: xc/config/cf/sgi.cf,v 1.9tsi Exp $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -13,7 +13,7 @@ XCOMM $XFree86: xc/config/cf/sgi.cf,v 1.8 1999/06/06 15:36:03 dawes Exp $
 #ifndef OSTeenyVersion
 # define OSTeenyVersion	DefaultOSTeenyVersion 
 #endif
-XCOMM operating system: OSName (OSMajorVersion.OSMinorVersion.OSTeenyVersion)
+XCOMM operating system: OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVersion)
 
 #if OSMajorVersion < 4
 /* We do not guarantee this will work */
@@ -39,6 +39,8 @@ XCOMM operating system: OSName (OSMajorVersion.OSMinorVersion.OSTeenyVersion)
 #define XawI18nDefines		-DHAS_WCTYPE_H -DHAS_ISW_FUNCS
 #else
 #define XawI18nDefines		-DHAS_WCHAR_H -DHAS_ISW_FUNCS
+#define HasSetenv		NO
+#define HasSnprintf		YES
 #endif
 #define AllocateLocalDefines	-DINCLUDE_ALLOCA_H
 #ifndef ExtraLoadFlags
@@ -80,6 +82,7 @@ XCOMM operating system: OSName (OSMajorVersion.OSMinorVersion.OSTeenyVersion)
 #define HasNdbm			YES
 #define HasPoll                 YES
 #define ExpandManNames          YES
+#define LexLib			/* Not needed */
 #ifndef BuildXInputExt
 #define BuildXInputExt		YES
 #endif
@@ -148,9 +151,19 @@ XCOMM operating system: OSName (OSMajorVersion.OSMinorVersion.OSTeenyVersion)
 # define ExtraLibraries /**/
 #endif
 
+#if !defined(OptimizedCDebugFlags) && !HasGcc
+#define OptimizedCDebugFlags -O -OPT:Olimit=0
+#endif
+
+#ifndef DefaultCCOptions
 #define DefaultCCOptions sgiCCOptions SymbolTables
+#endif
+#ifndef PexCCOptions
 #define PexCCOptions sgiCCOptions PexSymbolTables
+#endif
+#ifndef ServerCCOptions
 #define ServerCCOptions sgiCCOptions ServerSymbolTables
+#endif
 
 /* For SGI C++ compiler, need to search extra dirs in make depend */
 #ifndef CplusplusDependIncludes
@@ -223,6 +236,8 @@ man_keywords::								@@\
 
 #define MotifDefines		-DSYS_DIR -DPORT_NOVFORK -DNO_REGCOMP
 
+#if !defined(HasGcc) || !HasGcc
+
 #ifndef CppFileTarget
 #define CppFileTarget(dst,src,defs,deplist)				@@\
 dst::  src deplist							@@\
@@ -258,3 +273,5 @@ clean::									@@\
 	RemoveFile(dst)
 #endif /* ExecableScripts */
 #endif /* CppScriptTarget */
+
+#endif /* !HasGcc */

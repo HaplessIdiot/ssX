@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.15tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.16tsi Exp $ */
 
 
 /*
@@ -395,11 +395,10 @@ Lisp_Compile(LispBuiltin *builtin)
 	    goto finished_compilation;
 	else if (atom->a_function) {
 	    LispCom com;
-	    int failed, *pfailed;
-	    int lex, base, *plex, *pbase;
+	    int failed;
+	    int lex, base;
 	    LispArgList *alist;
-	    LispObj *lambda, *form, *arguments, **parguments;
-	    LispObj **presult, **pwarnings_p, **pfailure_p, **pform;
+	    LispObj *lambda, *form, *arguments;
 
 	    lambda = atom->property->fun.function;
 	    if (definition != UNSPEC || lambda->funtype != LispFunction)
@@ -485,14 +484,6 @@ Lisp_Compile(LispBuiltin *builtin)
 	    com.plist = CONS(NIL, NIL);
 	    GC_PROTECT(com.plist);
 
-	    pfailed = &failed;
-	    plex = &lex;
-	    pbase = &base;
-	    pform = &form;
-	    presult = &result;
-	    pwarnings_p = &warnings_p;
-	    pfailure_p = &failure_p;
-	    parguments = &arguments;
 	    failed = 1;
 	    if (setjmp(com.jmp) == 0) {
 		/* Save interpreter state */
@@ -681,7 +672,6 @@ Lisp_Disassemble(LispBuiltin *builtin)
 	LispObj **constants;
 	LispAtom **symbols;
 	LispBuiltin **builtins;
-	unsigned char **codes;
 	LispObj **names;
 	short stack, num_constants, num_symbols, num_builtins, num_bytecodes;
 	unsigned char *base, *stream = bytecode->data.bytecode.bytecode->code;
@@ -720,7 +710,6 @@ Lisp_Disassemble(LispBuiltin *builtin)
 	stream += num_symbols * sizeof(LispAtom*);
 	builtins = (LispBuiltin**)stream;
 	stream += num_builtins * sizeof(LispBuiltin*);
-	codes = (unsigned char**)stream;
 	stream += num_bytecodes * sizeof(unsigned char*);
 	names = (LispObj**)stream;
 	stream += num_bytecodes * sizeof(LispObj*);
@@ -1200,9 +1189,8 @@ LispObj *
 LispCompileForm(LispObj *form)
 {
     GC_ENTER();
-    int failed, *pfailed;
+    int failed;
     LispCom com;
-    LispObj *code, **pform;
 
     if (!CONSP(form))
 	/* Incorrect call or NIL */
@@ -1217,11 +1205,9 @@ LispCompileForm(LispObj *form)
     com.plist = CONS(NIL, NIL);
     GC_PROTECT(com.plist);
 
-    pfailed = &failed;
-    pform = &form;
     failed = 1;
     if (setjmp(com.jmp) == 0) {
-	for (code = form; CONSP(form); form = CDR(form)) {
+	for (; CONSP(form); form = CDR(form)) {
 	    com.form = form;
 	    ComEval(&com, CAR(form));
 	}

@@ -27,7 +27,7 @@ in this Software without prior written authorization from the X Consortium.
  * *
  * Author:  Jim Fulton, MIT X Consortium
  */
-/* $XFree86: xc/programs/viewres/viewres.c,v 1.4 2000/02/18 12:20:17 tsi Exp $ */
+/* $XFree86: xc/programs/viewres/viewres.c,v 1.5tsi Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -216,7 +216,7 @@ static struct _nametable {
 };
 
 static Widget treeWidget;
-static Widget quitButton, viewButton, viewMenu, selectButton, selectMenu;
+static Widget viewButton, viewMenu, selectButton, selectMenu;
 static Widget view_widgets[VIEW_number];
 static Widget select_widgets[SELECT_number];
 static XmuWidgetNode *topnode;
@@ -930,8 +930,8 @@ main (argc, argv)
 
     box = XtCreateManagedWidget ("buttonbox", boxWidgetClass, pane,
 				 (ArgList) NULL, ZERO);
-    quitButton = XtCreateManagedWidget ("quit", commandWidgetClass, box,
-					(ArgList) NULL, ZERO);
+    (void) XtCreateManagedWidget ("quit", commandWidgetClass, box,
+				  (ArgList) NULL, ZERO);
 
     /*
      * Format menu

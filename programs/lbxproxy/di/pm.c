@@ -25,7 +25,7 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from The Open Group.
 */
-/* $XFree86: xc/programs/lbxproxy/di/pm.c,v 1.9 2002/09/16 18:06:20 eich Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/pm.c,v 1.10tsi Exp $ */
 
 #include <ctype.h>
 #include <stdio.h>
@@ -322,8 +322,10 @@ PMprocessMessages (iceConn, clientData, opcode, length,
 	char * colon;
 	char * tmpAddress = NULL;
 	
+#if 0 /* No-op */
 	CHECK_AT_LEAST_SIZE (iceConn, PMopcode, opcode,
 	    length, SIZEOF (pmGetProxyAddrMsg), IceFatalToProtocol);
+#endif
 
 	IceReadCompleteMessage (iceConn, SIZEOF (pmGetProxyAddrMsg),
 	    pmGetProxyAddrMsg, pMsg, pStart);

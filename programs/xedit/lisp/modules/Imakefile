@@ -1,11 +1,14 @@
-XCOMM $XFree86: xc/programs/xedit/lisp/modules/Imakefile,v 1.14tsi Exp $
+XCOMM $XFree86: xc/programs/xedit/lisp/modules/Imakefile,v 1.15tsi Exp $
 
 #include "../lisp.cf"
 #include "../lisp.rules"
 
-INCLUDES	= -I../..  -I../mp -I../re -I$(XINCLUDESRC) -I-
-
 #if BuildSharedLispModules
+
+    SRCS = x11.c xt.c xaw.c
+    OBJS = x11.o xt.o xaw.o
+INCLUDES = -I../.. -I../mp -I../re -I$(XINCLUDESRC)
+
 LispModuleTarget(x11, $(XLIB) $(LOCAL_LIBRARIES),)
 LispModuleTarget(xt, $(XTOOLLIB) $(XLIB) $(LOCAL_LIBRARIES),)
 LispModuleTarget(xaw, $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB) $(LOCAL_LIBRARIES),)
@@ -13,7 +16,10 @@ LispModuleTarget(xaw, $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB) $(LOCAL_LIBRARIES)
 InstallMultipleFlags(x11.so,$(LISPDIR),$(INSTINCFLAGS))
 InstallMultipleFlags(xt.so,$(LISPDIR),$(INSTINCFLAGS))
 InstallMultipleFlags(xaw.so,$(LISPDIR),$(INSTINCFLAGS))
-#endif
+
+DependTarget()
+
+#endif  /* InstallSharedLispModules */
 
 InstallMultipleFlags(lisp.lsp,$(LISPDIR),$(INSTINCFLAGS))
 InstallMultipleFlags(xedit.lsp,$(LISPDIR),$(INSTINCFLAGS))

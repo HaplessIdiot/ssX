@@ -26,7 +26,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xdm/choose.c,v 3.14 2001/08/26 16:21:29 herrb Exp $ */
+/* $XFree86: xc/programs/xdm/choose.c,v 3.15tsi Exp $ */
 
 /*
  * choose.c
@@ -280,13 +280,17 @@ RegisterIndirectChoice (
 {
     ChoicePtr	c;
     int		insert;
+#if 0
     int		found = 0;
+#endif
 
     Debug ("Got indirect choice back\n");
     for (c = choices; c; c = c->next) {
 	if (XdmcpARRAY8Equal (clientAddress, &c->client) &&
 	    connectionType == c->connectionType) {
+#if 0
 	    found = 1;
+#endif
 	    break;
 	}
     }

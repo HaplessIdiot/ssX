@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/compile.c,v 1.13 2003/01/29 03:05:53 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/compile.c,v 1.14tsi Exp $ */
 
 #define VARIABLE_USED		0x0001
 #define VARIABLE_ARGUMENT	0x0002
@@ -2142,7 +2142,7 @@ ComMacroExpandEval(LispCom *com, LispObj *object)
 static LispObj *
 ComMacroExpand(LispCom *com, LispObj *lambda)
 {
-    LispObj *result, **presult = &result, **plambda;
+    LispObj *result, **presult = &result;
     int jumped, *pjumped = &jumped, backquote, *pbackquote = &backquote;
     LispBlock *block;
 
@@ -2154,7 +2154,6 @@ ComMacroExpand(LispCom *com, LispObj *lambda)
     interpreter_lex = lisp__data.env.lex;
 
     /* Use the variables */
-    plambda = &lambda;
     *presult = NIL;
     *pjumped = 1;
     *pbackquote = !CONSP(lambda);

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.48tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.49tsi Exp $ */
 
 #include "lisp/helper.h"
 #include "lisp/pathname.h"
@@ -691,14 +691,12 @@ LispDo(LispBuiltin *builtin, int refs)
  do* init test &rest body
  */
 {
-    int jumped, *pjumped;
-    LispObj *result, **presult;
+    int jumped;
+    LispObj *result;
     LispBlock *block;
 
     jumped = 1;
     result = NIL;
-    presult = &result;
-    pjumped = &jumped;
     block = LispBeginBlock(NIL, LispBlockTag);
     if (setjmp(block->jmp) == 0) {
 	result = LispReallyDo(builtin, refs);

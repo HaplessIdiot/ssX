@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xgc/main.c,v 1.5 2001/10/28 03:34:34 tsi Exp $ */
+/* $XFree86: xc/programs/xgc/main.c,v 1.6tsi Exp $ */
 
 /* xgc
 **
@@ -82,7 +82,6 @@ static Widget commandform;	/* form with run, quit, clear, etc. */
        Widget test;		/* where the test is run */
        Widget result;           /* where the results are displayed */
 static Widget runbutton;	/* command for running */
-static Widget quitbutton;	/* command for quitting */
 static Widget clearbutton;	/* command for clearing the test window */
        Widget recordbutton;	/* start/stop recording */
 static Widget playbackbutton;	/* playback from file */
@@ -413,8 +412,8 @@ fill_up_commandform(Widget w)
 
   quitargs[0].value = (XtArgVal) quitcallbacklist;
   quitargs[1].value = (XtArgVal) keyinputbutton; /* under */
-  quitbutton = XtCreateManagedWidget("Quit",commandWidgetClass,
-   			      w,quitargs,XtNumber(quitargs));
+  (void) XtCreateManagedWidget("Quit",commandWidgetClass,
+			       w,quitargs,XtNumber(quitargs));
     
 }    
 /* quit()

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccharset.c,v 1.18 2002/08/22 07:36:44 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fccharset.c,v 1.19tsi Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -1800,7 +1800,7 @@ FcFreeTypeCheckGlyph (FT_Face face, FcChar32 ucs4,
 FcCharSet *
 FcFreeTypeCharSet (FT_Face face, FcBlanks *blanks)
 {
-    FcChar32	    page, off, max, ucs4;
+    FcChar32	    page, off, ucs4;
 #ifdef CHECK
     FcChar32	    font_max = 0;
 #endif
@@ -1847,7 +1847,6 @@ FcFreeTypeCharSet (FT_Face face, FcBlanks *blanks)
 	{
 	    FT_UInt gindex;
 	  
-	    max = fcFontDecoders[o].max;
 	    /*
 	     * Find the first encoded character in the font
 	     */

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/fontconfig/src/fccache.c,v 1.12 2002/08/22 07:36:44 keithp Exp $
+ * $XFree86: xc/lib/fontconfig/src/fccache.c,v 1.14tsi Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -743,11 +743,8 @@ FcGlobalCacheUpdate (FcGlobalCache  *cache,
 		     int	    id,
 		     const FcChar8  *name)
 {
-    const FcChar8	*match;
     struct stat		statb;
     FcGlobalCacheInfo	*info;
-
-    match = file;
 
     if (stat ((char *) file, &statb) < 0)
 	return FcFalse;

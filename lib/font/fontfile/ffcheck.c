@@ -25,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/ffcheck.c,v 1.14 2001/01/17 19:43:30 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/ffcheck.c,v 1.15tsi Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -115,9 +115,6 @@ FontFileCheckListNextFontOrAlias(pointer client, FontPathElementPtr fpe,
     return BadFontName;
 }
 
-typedef int (*IntFunc) (void);
-static int  font_file_check_type;
-
 void
 FontFileCheckRegisterFpeFunctions (void)
 {
@@ -160,19 +157,19 @@ FontFileCheckRegisterFpeFunctions (void)
     }
 #endif
 
-    font_file_check_type = RegisterFPEFunctions(FontFileNameCheck,
-				  FontFileInitFPE,
-				  FontFileFreeFPE,
-				  FontFileResetFPE,
-				  FontFileCheckOpenFont,
-				  FontFileCloseFont,
-				  FontFileCheckListFonts,
-				  FontFileCheckStartListFontsWithInfo,
-				  FontFileCheckListNextFontWithInfo,
-				  NULL,
-				  NULL,
-				  NULL,
-				  FontFileCheckStartListFontsAndAliases,
-				  FontFileCheckListNextFontOrAlias,
-				  FontFileEmptyBitmapSource);
+    RegisterFPEFunctions(FontFileNameCheck,
+			 FontFileInitFPE,
+			 FontFileFreeFPE,
+			 FontFileResetFPE,
+			 FontFileCheckOpenFont,
+			 FontFileCloseFont,
+			 FontFileCheckListFonts,
+			 FontFileCheckStartListFontsWithInfo,
+			 FontFileCheckListNextFontWithInfo,
+			 NULL,
+			 NULL,
+			 NULL,
+			 FontFileCheckStartListFontsAndAliases,
+			 FontFileCheckListNextFontOrAlias,
+			 FontFileEmptyBitmapSource);
 }

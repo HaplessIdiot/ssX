@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/TMparse.c,v 3.9 2002/05/31 18:45:46 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/TMparse.c,v 3.10tsi Exp $ */
 
 /*
 
@@ -430,10 +430,10 @@ static void CompileNameValueTable(table)
         table[i].signature = XrmPermStringToQuark(table[i].name);
 }
 
-static int OrderEvents(a, b)
-    EventKey	*a, *b;
+static int OrderEvents(_Xconst void *a, _Xconst void *b)
 {
-    return ((a->signature < b->signature) ? -1 : 1);
+    return ((((_Xconst EventKey *)a)->signature <
+	     ((_Xconst EventKey *)b)->signature) ? -1 : 1);
 }
 
 static void Compile_XtEventTable(table, count)
@@ -448,10 +448,10 @@ static void Compile_XtEventTable(table, count)
     qsort(table, count, sizeof(EventKey), OrderEvents);
 }
 
-static int OrderModifiers(a, b)
-    ModifierRec *a, *b;
+static int OrderModifiers(_Xconst void *a, _Xconst void *b)
 {
-    return ((a->signature < b->signature) ? -1 : 1);
+    return ((((_Xconst ModifierRec *)a)->signature <
+	     ((_Xconst ModifierRec *)b)->signature) ? -1 : 1);
 }
 
 static void Compile_XtModifierTable(table, count)

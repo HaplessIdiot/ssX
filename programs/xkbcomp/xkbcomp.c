@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/xkbcomp.c,v 3.17 2002/06/05 00:00:37 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/xkbcomp.c,v 3.18tsi Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -88,7 +88,6 @@ static	Display *	inDpy;
 static	Display *	outDpy;
 static	Bool		showImplicit= False;
 static	Bool		synch= False;
-static	Bool		merge= False;
 static	Bool		computeDflts= False;
 static	Bool		xkblist= False;
 	unsigned	warningLevel= 5;
@@ -135,8 +134,6 @@ Usage(int argc,char *argv[])
 	M("                     default is all options off\n");
     }
     M("-m[ap] <map>         Specifies map to compile\n");
-    if (!xkblist)
-	M("-merge               Merge file with map on server\n");
     M("-o <file>            Specifies output file name\n");
     if (!xkblist) {
 	M("-opt[ional] <parts>  Specifies optional components of keymap\n");
@@ -334,7 +331,7 @@ register int i,tmp;
 	    else inputMap= argv[i];
 	}
 	else if ((strcmp(argv[i],"-merge")==0)&&(!xkblist)) {
-	    merge= True;
+	    /* Ignored */
 	}
 	else if (strcmp(argv[i],"-o")==0) {
 	    if (++i>=argc) {

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.30tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.31tsi Exp $ */
 
 #include "lisp/write.h"
 #include "lisp/hash.h"
@@ -258,14 +258,9 @@ Lisp_Write(LispBuiltin *builtin)
 {
     int head = lisp__data.env.length;
 
-    LispObj *object, *ocase, *circle, *escape, *length, *level,
-	    *lines, *pretty, *readably, *right_margin, *stream;
+    LispObj *object, *ocase, *circle, *escape, *length, *level, *stream;
 
     stream = ARGUMENT(10);
-    right_margin = ARGUMENT(9);		/* yet unused */
-    readably = ARGUMENT(8);		/* yet unused */
-    pretty = ARGUMENT(7);		/* yet unused */
-    lines = ARGUMENT(6);		/* yet unused */
     level = ARGUMENT(5);
     length = ARGUMENT(4);
     escape = ARGUMENT(3);

@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Command.c,v 1.14 2001/12/27 21:17:54 paulo Exp $ */
+/* $XFree86: xc/lib/Xaw/Command.c,v 1.15tsi Exp $ */
 
 /*
  * Command.c - Command button widget
@@ -430,7 +430,7 @@ PaintCommandWidget(Widget w, XEvent *event, Region region, Bool change)
 {
     CommandWidget cbw = (CommandWidget)w;
     Bool very_thick;
-    GC norm_gc, rev_gc;
+    GC rev_gc;
    
     very_thick = cbw->command.highlight_thickness
 		 > Min(XtWidth(cbw), XtHeight(cbw)) / 2;
@@ -445,11 +445,9 @@ PaintCommandWidget(Widget w, XEvent *event, Region region, Bool change)
      */
 
     if (cbw->command.highlighted != HighlightNone) {
-	norm_gc = cbw->command.inverse_GC;
 	rev_gc = cbw->command.normal_GC;
     }
     else {
-	norm_gc = cbw->command.normal_GC;
 	rev_gc = cbw->command.inverse_GC;
     }
 

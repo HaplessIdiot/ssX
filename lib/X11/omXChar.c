@@ -34,7 +34,7 @@
 /*
  * Modifiers: Jeff Walls, Paul Anderson (HEWLETT-PACKARD)
  */
-/* $XFree86: xc/lib/X11/omXChar.c,v 1.5 2001/01/17 19:41:57 dawes Exp $ */
+/* $XFree86: xc/lib/X11/omXChar.c,v 1.6tsi Exp $ */
 
 #include "Xlibint.h"
 #include "XlcPublic.h"
@@ -48,15 +48,13 @@ ismatch_scopes(
     unsigned long *value,
     Bool	  is_shift)
 {
-    register int side, scopes_num = fontdata->scopes_num;
+    register int scopes_num = fontdata->scopes_num;
     FontScope scopes = fontdata->scopes;
     if (!scopes_num)
         return False;
 
     if(fontdata->font == NULL)
 	return False;
-
-    side = fontdata->side;
 
     for(;scopes_num--;scopes++)
         if ((scopes->start <= (*value & 0x7f7f)) &&

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.35tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.36tsi Exp $ */
 
 #include <errno.h>
 #include "lisp/read.h"
@@ -255,9 +255,8 @@ Lisp_Read(LispBuiltin *builtin)
 {
     LispObj *result;
 
-    LispObj *input_stream, *eof_error_p, *eof_value, *recursive_p;
+    LispObj *input_stream, *eof_error_p, *eof_value;
 
-    recursive_p = ARGUMENT(3);
     eof_value = ARGUMENT(2);
     eof_error_p = ARGUMENT(1);
     input_stream = ARGUMENT(0);
@@ -298,11 +297,9 @@ static LispObj *
 LispReadChar(LispBuiltin *builtin, int nohang)
 {
     int character;
-    LispObj *result;
 
-    LispObj *input_stream, *eof_error_p, *eof_value, *recursive_p;
+    LispObj *input_stream, *eof_error_p, *eof_value;
 
-    recursive_p = ARGUMENT(3);
     eof_value = ARGUMENT(2);
     eof_error_p = ARGUMENT(1);
     input_stream = ARGUMENT(0);
@@ -318,7 +315,6 @@ LispReadChar(LispBuiltin *builtin, int nohang)
     if (eof_value == UNSPEC)
 	eof_value = NIL;
 
-    result = NIL;
     character = EOF;
 
     if (input_stream->data.stream.readable) {
@@ -414,9 +410,8 @@ Lisp_ReadLine(LispBuiltin *builtin)
     int ch, length;
     LispObj *result, *status = NIL;
 
-    LispObj *input_stream, *eof_error_p, *eof_value, *recursive_p;
+    LispObj *input_stream, *eof_error_p, *eof_value;
 
-    recursive_p = ARGUMENT(3);
     eof_value = ARGUMENT(2);
     eof_error_p = ARGUMENT(1);
     input_stream = ARGUMENT(0);

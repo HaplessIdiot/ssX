@@ -23,7 +23,7 @@
 /* OF WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT	*/
 /* OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.	*/
 /************************************************************************/
-/* $XFree86: xc/programs/rstart/server.c,v 1.4 2001/01/17 23:45:03 dawes Exp $ */
+/* $XFree86: xc/programs/rstart/server.c,v 1.5tsi Exp $ */
 
 /* Extended rsh "helper" program */
 #include <stdio.h>
@@ -768,7 +768,7 @@ key_posix_umask(ac, av)
 int ac;
 char **av;
 {
-	unsigned i;
+	int i;
 	char *s;
 
 	if(ac != 2) {

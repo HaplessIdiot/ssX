@@ -14,7 +14,7 @@
 /*  understand and accept it fully.                                        */
 /*                                                                         */
 /***************************************************************************/
-
+/* $XFree86$ */
 
 #include <ft2build.h>
 #include FT_INTERNAL_DEBUG_H
@@ -971,7 +971,7 @@
                      FT_Validator  valid )
   {
     FT_Byte*  p;
-    FT_UInt   length, start, count;
+    FT_UInt   length, count;
 
 
     if ( table + 10 > valid->limit )
@@ -981,7 +981,7 @@
     length = TT_NEXT_USHORT( p );
 
     p      = table + 6;             /* skip language */
-    start  = TT_NEXT_USHORT( p );
+    (void)   TT_NEXT_USHORT( p );
     count  = TT_NEXT_USHORT( p );
 
     if ( table + length > valid->limit || length < 10 + count * 2 )
@@ -1352,7 +1352,7 @@
                       FT_Validator  valid )
   {
     FT_Byte*  p = table + 4;
-    FT_ULong  length, start, count;
+    FT_ULong  length, count;
 
 
     if ( table + 20 > valid->limit )
@@ -1360,7 +1360,7 @@
 
     length = TT_NEXT_ULONG( p );
     p      = table + 12;
-    start  = TT_NEXT_ULONG( p );
+    (void)   TT_NEXT_ULONG( p );
     count  = TT_NEXT_ULONG( p );
 
     if ( table + length > valid->limit || length < 20 + count * 2 )
@@ -1408,7 +1408,6 @@
                        FT_UInt32  *pchar_code )
   {
     FT_Byte*   table     = cmap->data;
-    FT_UInt32  result    = 0;
     FT_UInt32  char_code = *pchar_code + 1;
     FT_UInt    gindex    = 0;
     FT_Byte*   p         = table + 12;
@@ -1428,7 +1427,6 @@
       gindex = TT_NEXT_USHORT( p );
       if ( gindex != 0 )
       {
-        result = char_code;
         break;
       }
       char_code++;

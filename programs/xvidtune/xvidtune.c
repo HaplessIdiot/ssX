@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.32 2003/02/19 18:55:22 eich Exp $ */
+/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.33tsi Exp $ */
 
 /*
 
@@ -1127,7 +1127,7 @@ CreateHierarchy(Widget top)
     char buf[5];
     Widget form, forms[14], s3form;
     Widget wids[10];
-    Widget boxW,messageW, popdownW, w;   
+    Widget boxW, popdownW, w;   
     int i;
     int x, y;
     static String form_names[] = {
@@ -1368,20 +1368,20 @@ CreateHierarchy(Widget top)
                                    invalid_mode_popup,
                                    NULL);
         
-    messageW = XtVaCreateManagedWidget(
+    (void) XtVaCreateManagedWidget(
 		   "ErrorMessage",
                    labelWidgetClass,
                    boxW,
                    NULL);
 
-   popdownW = XtVaCreateManagedWidget(
+    popdownW = XtVaCreateManagedWidget(
                                      "AckError",
                                      commandWidgetClass,
                                      boxW,
                                      NULL);
 
-   XtAddCallback (popdownW, XtNcallback, (XtCallbackProc)popdownInvalid, 
-		  (XtPointer) invalid_mode_popup);
+    XtAddCallback (popdownW, XtNcallback, (XtCallbackProc)popdownInvalid, 
+		   (XtPointer) invalid_mode_popup);
 }
 
 static void

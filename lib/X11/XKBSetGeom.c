@@ -24,6 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
+/* $XFree86$ */
 
 #ifdef DEBUG
 #include <stdio.h>
@@ -474,7 +475,6 @@ _SendSetGeometry(dpy,geom,req)
     xkbSetGeometryReq *	req;
 #endif
 {
-xkbSetGeometryReq	tmp;
 int			sz;
 char *			wire,*tbuf;
 
@@ -487,7 +487,6 @@ char *			wire,*tbuf;
     sz+= _SizeGeomDoodads(geom->num_doodads,geom->doodads);
     sz+= _SizeGeomKeyAliases(geom);
     req->length+= (sz/4);
-    tmp= *req;
     if (sz<BUFSIZE) {
 	BufAlloc(char *,wire,sz);
 	tbuf= NULL;

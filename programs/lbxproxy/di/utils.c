@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/lbxproxy/di/utils.c,v 1.14tsi Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/utils.c,v 1.15tsi Exp $ */
 
 #include "lbx.h"
 #include <stdio.h>
@@ -110,7 +110,6 @@ extern Bool compStats;
  */
 static Bool CoreDump;
 static Bool Must_have_memory = FALSE;
-static char *dev_tty_from_init = NULL;	/* since we need to parse it anyway */
 
 /*
  * Debug stuff
@@ -519,8 +518,7 @@ char	*argv[];
 	}
 	else if (strncmp (argv[i], "tty", 3) == 0)
 	{
-	    /* just in case any body is interested */
-	    dev_tty_from_init = argv[i];
+	    /* Ignored */
 	}
  	else
 	    ShowHelpAndExit (1);

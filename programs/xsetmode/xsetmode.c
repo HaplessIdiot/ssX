@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xsetmode/xsetmode.c,v 3.4 1999/03/07 11:41:20 dawes Exp $ */
+/* $XFree86: xc/programs/xsetmode/xsetmode.c,v 3.5tsi Exp $ */
 
 /*
  * Copyright 1995 by Frederic Lepied, France. <fred@sugix.frmug.fr.net>       
@@ -62,8 +62,6 @@ main(int argc, char * argv[])
   char          **extensions;
   XDeviceInfo   *devices;
   Display       *dpy;
-  Window        root_win;
-  unsigned long screen;
   int		list = 0;
   
   if (argc != 3) {
@@ -85,9 +83,6 @@ main(int argc, char * argv[])
 #ifdef DEBUG
   printf("connected to %s\n", XDisplayString(dpy));
 #endif
-
-  screen = DefaultScreen(dpy);
-  root_win = RootWindow(dpy, screen);
 
   extensions = XListExtensions(dpy, &num_extensions);
   for (loop = 0; loop < num_extensions &&

@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Shell.c,v 3.15 2001/12/14 19:56:30 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Shell.c,v 3.16tsi Exp $ */
 
 /*
 
@@ -2897,9 +2897,7 @@ static SmProp * CardPack(name, closure)
     return p;
 }
 
-static SmProp * ArrayPack(name, closure)
-    char *name;
-    XtPointer closure;
+static SmProp * ArrayPack(char *name, XtPointer closure)
 {
     String prop = *(String *) closure;
     SmProp *p;

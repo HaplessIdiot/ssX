@@ -32,7 +32,7 @@
  * Modifier:  Takanori Tateno   FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/omGeneric.c,v 3.25 2002/11/26 13:41:40 eich Exp $ */
+/* $XFree86: xc/lib/X11/omGeneric.c,v 3.26tsi Exp $ */
 
 /*
  * Fixed the algorithms in parse_fontname() and parse_fontdata()
@@ -1481,7 +1481,6 @@ destroy_oc(
 {
     Display *dpy = oc->core.om->core.display;
     XOCGenericPart *gen = XOC_GENERIC(oc);
-    XFontStruct **font_list;
 
     if (gen->mbs_to_cs)
 	_XlcCloseConverter(gen->mbs_to_cs);
@@ -1504,7 +1503,7 @@ destroy_oc(
     if (oc->core.font_info.font_name_list)
 	XFreeStringList(oc->core.font_info.font_name_list);
 
-    if ((font_list = oc->core.font_info.font_struct_list)) {
+    if (oc->core.font_info.font_struct_list) {
 	Xfree(oc->core.font_info.font_struct_list);
     }
 
