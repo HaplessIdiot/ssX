@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Xft1/Imakefile,v 1.3 2002/02/15 07:36:14 keithp Exp $
+XCOMM $XFree86: xc/lib/Xft1/Imakefile,v 1.4 2002/03/01 01:00:53 keithp Exp $
 
 #define DoNormalLib NO
 #define DoSharedLib SharedLibXft1
@@ -27,7 +27,7 @@ REQUIREDLIBS=$(LDPRELIBS) $(XRENDERLIB) $(XLIB) $(FONTCONFIGLIB) $(FREETYPE2REQL
 #if UseFreetype2
 FT_OLD = xftcache.c
 FT_HEADERS = XftFreetype.h
-   FT_SRCS = xftfreetype.c xftglyphs.c xftrender.c xftdir.o
+   FT_SRCS = xftfreetype.c xftglyphs.c xftrender.c xftdir.c
    FT_OBJS = xftfreetype.o xftglyphs.o xftrender.o xftdir.o 
 #endif
 
