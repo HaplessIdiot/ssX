@@ -44,7 +44,7 @@ XFree86 4.2.99.3 (xx December 2002)
  563. #define DEALLOCATE_LOCAL as "do {} while(0)" instead of nothing to
       eliminate GCC warnings caused by code that does not assume
       DEALLOCATE_LOCAL can deal with null pointers (suggested by Kevin Martin).
- 562. Add XFIXES extension (Keith Packard, Bill Haneman, Owen Taylor)
+ 562. -
  561. Fix bug in kldload() call on FreeBSD (reported by Joy Ganguly).
  560. Adding int10 symbols to the list of possibly unresolved symbols in
       Rage128 driver (Egbert Eich).
@@ -15698,4 +15698,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2434 2002/12/09 02:55:59 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2435 2002/12/09 11:32:45 eich Exp $
