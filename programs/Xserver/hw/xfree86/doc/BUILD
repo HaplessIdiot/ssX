@@ -213,7 +213,7 @@ drivers installed:
 
 6.  Other useful make targets
 
-There are some other useful targets defined in the top level Makefileof
+There are some other useful targets defined in the top level Makefile of
 XFree86:
 
    o Everything after a make World, make Everything does everything a make
@@ -248,7 +248,7 @@ XFree86:
      shown do not match your system, you probably need to set them manually
      in host.def and report the problem to <XFree86@XFree86.org>.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.11 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.12 herrb Exp $
 
 
 $XFree86: $
