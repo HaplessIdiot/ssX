@@ -3,7 +3,7 @@
 !
 !
 !
-! $XFree86: xc/programs/xdm/config/Xres.cpp,v 1.3 2000/11/27 05:06:46 dawes Exp $
+! $XFree86: xc/programs/xdm/config/Xres.cpp,v 1.4 2001/01/22 22:32:34 dawes Exp $
 !
 #define BS \ /* cpp can be trickier than m4 */
 #define NLBS \n\ /* don't remove these comments */
@@ -14,7 +14,7 @@ xlogin*login.translations: #override BS
 	<Key>Left: move-backward-character()NLBS
 	<Key>Right: move-forward-character()NLBS
 	<Key>Home: move-to-begining()NLBS
-	<Key>End: move-to-end()NLBS\
+	<Key>End: move-to-end()NLBS
 	Ctrl<Key>KP_Enter: set-session-argument(failsafe) finish-field()NLBS
 	<Key>KP_Enter: set-session-argument() finish-field()NLBS
 	Ctrl<Key>Return: set-session-argument(failsafe) finish-field()NLBS
