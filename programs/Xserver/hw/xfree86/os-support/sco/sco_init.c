@@ -1,5 +1,5 @@
 /* $XConsortium: sco_init.c,v 1.1 94/03/28 21:30:32 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_init.c,v 3.0 1994/05/21 23:57:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_init.c,v 3.1 1994/09/23 10:25:15 dawes Exp $ */
 /*
  * Copyright 1993 by David McCullough <davidm@stallion.oz.au>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -96,13 +96,6 @@ void xf86OpenConsole()
 
 	sprintf(vtname,"/dev/tty%02d", xf86Info.vtno+1); /* /dev/tty[01-12] */
 
-	xf86Config(FALSE); /* Read XF86Config */
-
-	if (!KeepTty)
-	{
-	    setpgrp();
-	}
-
 	if ((xf86Info.consoleFd = open(vtname, O_RDWR | O_NDELAY, 0)) < 0)
 	{
 	    FatalError("xf86OpenConsole: Cannot open %s (%s)\n",
@@ -110,8 +103,35 @@ void xf86OpenConsole()
 	}
 
 	/* now we can dispose of stdin */
-	fclose(stdin);
+
+	if (freopen(vtname, "r+", stdin) == (FILE *) NULL)
+	{
+	    FatalError("xf86OpenConsole: Cannot reopen stdin as %s (%s)\n",
+		       vtname, strerror(errno));
+	}
+
+	/* now we can fixup stdout */
+
+	if (freopen(vtname, "r+", stdout) == (FILE *) NULL)
+	{
+	    FatalError("xf86OpenConsole: Cannot reopen stdout as %s (%s)\n",
+		       vtname, strerror(errno));
+	}
+
+	/* We activate the console just in case its not the one we are on */
+
+	if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno) != 0)
+	{
+	    ErrorF("xf86OpenConsole: VT_ACTIVATE failed\n");
+	}
     
+	xf86Config(FALSE); /* Read XF86Config */
+
+	if (!KeepTty)
+	{
+	    setpgrp();
+	}
+
 	/*
 	 * now get the VT
 	 */

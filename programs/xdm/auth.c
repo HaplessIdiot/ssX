@@ -1,5 +1,5 @@
 /* $XConsortium: auth.c,v 1.55 94/06/03 16:34:12 mor Exp $ */
-/* $XFree86: xc/programs/xdm/auth.c,v 3.4 1994/06/28 12:32:27 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/auth.c,v 3.5 1994/10/20 06:15:06 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -60,7 +60,7 @@ from the X Consortium.
 # include <netdnet/dnetdb.h>
 #endif
 
-#if (defined(_POSIX_SOURCE) && !defined(AIXV3)) || defined(hpux) || defined(USG) || defined(SVR4) || (defined(SYSV) && defined(i386))
+#if (defined(_POSIX_SOURCE) && !defined(AIXV3)) || defined(hpux) || defined(USG) || defined(SVR4) || (defined(SYSV) && defined(i386) && !defined(SCO))
 #define NEED_UTSNAME
 #include <sys/utsname.h>
 #endif
