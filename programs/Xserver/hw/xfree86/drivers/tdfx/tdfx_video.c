@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_video.c,v 1.12 2001/06/05 12:52:42 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_video.c,v 1.13 2001/06/28 20:35:24 alanh Exp $ */
 
 #include "xf86.h"
 #include "tdfx.h"
@@ -132,33 +132,37 @@ void TDFXInitVideo(ScreenPtr pScreen)
     if(pTDFX->cpp == 1)
       return;
     
-    /* Start with the generic adaptors */
-    num_adaptors = xf86XVListGenericAdaptors(pScrn, &adaptors);
-
     if(!pTDFX->AccelInfoRec || !pTDFX->AccelInfoRec->FillSolidRects)
 	return;
 
     if (!pTDFX->TextureXvideo) {
-    	/* Overlay adaptor */
-        newAdaptor = TDFXSetupImageVideoOverlay(pScreen);
-
 	/* Offscreen support for Overlay only */
     	TDFXInitOffscreenImages(pScreen);
+
+    	/* Overlay adaptor */
+        newAdaptor = TDFXSetupImageVideoOverlay(pScreen);
     } else {
     	/* Texture adaptor */
         newAdaptor = TDFXSetupImageVideoTexture(pScreen);
     }
 
+    num_adaptors = xf86XVListGenericAdaptors(pScrn, &adaptors);
 
-    /* Add the adaptor to the list */
     if(newAdaptor) {
-        newAdaptors = xalloc((num_adaptors + 1) * sizeof(XF86VideoAdaptorPtr*));
-        if(newAdaptors) {
-            if (num_adaptors) memcpy(newAdaptors, adaptors, num_adaptors * sizeof(XF86VideoAdaptorPtr));
-            newAdaptors[num_adaptors] = newAdaptor;
-            adaptors = newAdaptors;
-            num_adaptors++;
-        }
+	if (!num_adaptors) {
+	    num_adaptors = 1;
+	    adaptors = &newAdaptor;
+	} else {
+            newAdaptors = 
+		xalloc((num_adaptors + 1) * sizeof(XF86VideoAdaptorPtr*));
+            if(newAdaptors) {
+                memcpy(newAdaptors, adaptors, num_adaptors * 
+						sizeof(XF86VideoAdaptorPtr));
+                newAdaptors[num_adaptors] = newAdaptor;
+                adaptors = newAdaptors;
+                num_adaptors++;
+            }
+	}
     }
 
     if(num_adaptors)
