@@ -1,3 +1,7 @@
+XFree86 3.2Aa (10 February 1997)
+   3. Fix 24bpp clock limit for ViRGE (Harald Koenig).
+   2. Fix 16bpp 6554x 8x8 pattern fill problem (David Bateman).
+   1. Fix core dump in C&T driver (David Bateman).
 XFree86 3.2A (28 January 1997)
  386. Updates to the OS/2 pipe xtrans code (Sebastien Marineau).
  385. Update the max clock for the TGUI ProVidia 968x (Alan Hourihane).
