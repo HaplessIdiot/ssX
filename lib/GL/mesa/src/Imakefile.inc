@@ -187,9 +187,6 @@ COREMESAOBJS =	$(MESABUILDDIR)aatriangle.o \
 		$(MESABUILDDIR)feedback.o \
 		$(MESABUILDDIR)fog.o \
 		$(MESABUILDDIR)get.o \
-		$(MESABUILDDIR)glapi.o \
-		$(MESABUILDDIR)glapinoop.o \
-		$(MESABUILDDIR)glthread.o \
 		$(MESABUILDDIR)hash.o \
 		$(MESABUILDDIR)hint.o \
 		$(MESABUILDDIR)image.o \
@@ -238,6 +235,10 @@ COREMESAOBJS =	$(MESABUILDDIR)aatriangle.o \
 		$(MESABUILDDIR)xform.o \
 		$(MESABUILDDIR)zoom.o
 
+    GLAPIOBJS = $(MESABUILDDIR)glapi.o
+GLAPINOOPOBJS = $(MESABUILDDIR)glapinoop.o
+ GLTHREADOBJS = $(MESABUILDDIR)glthread.o
+
 COREMESAUOBJS =	$(MESABUILDDIR)unshared/aatriangle.o \
 		$(MESABUILDDIR)unshared/accum.o \
 		$(MESABUILDDIR)unshared/alpha.o \
@@ -264,9 +265,6 @@ COREMESAUOBJS =	$(MESABUILDDIR)unshared/aatriangle.o \
 		$(MESABUILDDIR)unshared/feedback.o \
 		$(MESABUILDDIR)unshared/fog.o \
 		$(MESABUILDDIR)unshared/get.o \
-		$(MESABUILDDIR)unshared/glapi.o \
-		$(MESABUILDDIR)unshared/glapinoop.o \
-		$(MESABUILDDIR)unshared/glthread.o \
 		$(MESABUILDDIR)unshared/hash.o \
 		$(MESABUILDDIR)unshared/hint.o \
 		$(MESABUILDDIR)unshared/image.o \
@@ -315,6 +313,10 @@ COREMESAUOBJS =	$(MESABUILDDIR)unshared/aatriangle.o \
 		$(MESABUILDDIR)unshared/xform.o \
 		$(MESABUILDDIR)unshared/zoom.o
 
+    GLAPIUOBJS = $(MESABUILDDIR)unshared/glapi.o
+GLAPINOOPUOBJS = $(MESABUILDDIR)unshared/glapinoop.o
+ GLTHREADUOBJS = $(MESABUILDDIR)unshared/glthread.o
+
 COREMESADOBJS =	$(MESABUILDDIR)debugger/aatriangle.o \
 		$(MESABUILDDIR)debugger/unshared/accum.o \
 		$(MESABUILDDIR)debugger/alpha.o \
@@ -341,9 +343,6 @@ COREMESADOBJS =	$(MESABUILDDIR)debugger/aatriangle.o \
 		$(MESABUILDDIR)debugger/feedback.o \
 		$(MESABUILDDIR)debugger/fog.o \
 		$(MESABUILDDIR)debugger/get.o \
-		$(MESABUILDDIR)debugger/glapi.o \
-		$(MESABUILDDIR)debugger/glapinoop.o \
-		$(MESABUILDDIR)debugger/glthread.o \
 		$(MESABUILDDIR)debugger/hash.o \
 		$(MESABUILDDIR)debugger/hint.o \
 		$(MESABUILDDIR)debugger/image.o \
@@ -392,6 +391,10 @@ COREMESADOBJS =	$(MESABUILDDIR)debugger/aatriangle.o \
 		$(MESABUILDDIR)debugger/xform.o \
 		$(MESABUILDDIR)debugger/zoom.o
 
+    GLAPIDOBJS = $(MESABUILDDIR)debugger/glapi.o
+GLAPINOOPDOBJS = $(MESABUILDDIR)debugger/glapinoop.o
+ GLTHREADDOBJS = $(MESABUILDDIR)debugger/glthread.o
+
 COREMESAPOBJS =	$(MESABUILDDIR)profiled/aatriangle.o \
 		$(MESABUILDDIR)profiled/unshared/accum.o \
 		$(MESABUILDDIR)profiled/alpha.o \
@@ -418,9 +421,6 @@ COREMESAPOBJS =	$(MESABUILDDIR)profiled/aatriangle.o \
 		$(MESABUILDDIR)profiled/feedback.o \
 		$(MESABUILDDIR)profiled/fog.o \
 		$(MESABUILDDIR)profiled/get.o \
-		$(MESABUILDDIR)profiled/glapi.o \
-		$(MESABUILDDIR)profiled/glapinoop.o \
-		$(MESABUILDDIR)profiled/glthread.o \
 		$(MESABUILDDIR)profiled/hash.o \
 		$(MESABUILDDIR)profiled/hint.o \
 		$(MESABUILDDIR)profiled/image.o \
@@ -468,4 +468,8 @@ COREMESAPOBJS =	$(MESABUILDDIR)profiled/aatriangle.o \
 		$(MESABUILDDIR)profiled/winpos.o \
 		$(MESABUILDDIR)profiled/xform.o \
 		$(MESABUILDDIR)profiled/zoom.o
+
+    GLAPIPOBJS = $(MESABUILDDIR)profiled/glapi.o
+GLAPINOOPPOBJS = $(MESABUILDDIR)profiled/glapinoop.o
+ GLTHREADPOBJS = $(MESABUILDDIR)profiled/glthread.o
 

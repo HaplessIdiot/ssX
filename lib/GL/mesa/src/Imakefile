@@ -1,10 +1,14 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.22 2001/03/21 16:14:20 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.23 2001/03/23 19:18:35 dawes Exp $
 
 #include <Threads.tmpl>
 
-/* Only need SharedLib build unless OSMesa lib is built */
+/*
+ * Only need SharedLib build unless OSMesa lib is built, or driver is built
+ * in to libGL
+ */
 #if BuildXF86DRI && !GlxUseSGISI && \
-        (!GlxBuiltInMesa || !defined(GlxDriverUsesMesa))
+        (GlxUseBuiltInDRIDriver || \
+	 !GlxBuiltInMesa || !defined(GlxDriverUsesMesa))
 #define DoNormalLib NormalLibGlx
 #define DoSharedLib SharedLibGlx
 #define DoExtraLib SharedLibGlx
@@ -22,6 +26,9 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.22 2001/03/21 16:14:20 dawes Ex
 ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
 
+#if GlxBuiltInTdfx
+    TDFX_DEFS = -DFX
+#endif
 
 #ifdef i386Architecture
 #define MesaX86BuildDir /**/

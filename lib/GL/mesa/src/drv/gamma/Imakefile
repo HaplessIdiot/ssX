@@ -1,12 +1,20 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/gamma/Imakefile,v 1.19 2001/03/21 16:14:20 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/gamma/Imakefile,v 1.20 2001/03/23 19:18:39 dawes Exp $
 
 #include <Threads.tmpl>
 
+#if GlxUseBuiltInDRIDriver
+#define DoNormalLib NormalLibGlx
+#define DoSharedLib SharedLibGlx
+#define DoExtraLib SharedLibGlx
+#define DoDebugLib DebugLibGlx
+#define DoProfileLib ProfileLibGlx
+#else
 #define DoSharedLib YES
 #define DoNormalLib NO
 #define DoExtrasLib NO
 #define DoDebugLib NO
 #define DoProfileLib NO
+#endif
 
 #include "../common/Imakefile.inc"
 #include "Imakefile.inc"
@@ -44,14 +52,19 @@ REQUIREDLIBS = MathLibrary $(LDPRELIB) $(GLXLIB)
 
 LibraryObjectRule()
 
+SubdirLibraryRule($(GAMMAOBJS))
+NormalLintTarget($(SRCS))
+
+#if !GlxUseBuiltInDRIDriver
 LIBNAME = gamma_dri.so
-SharedDriModuleTarget($(LIBNAME),$(GAMMAOBJS),$(OBJS))
+SharedDriModuleTarget($(LIBNAME),DONE,$(OBJS))
 InstallDynamicModule($(LIBNAME),$(MODULEDIR),dri)
 
 #ifdef GlxSoProf
 SOPROF_LIBNAME = _gamma_dri_p
-NormalDepLibraryTarget($(SOPROF_LIBNAME),$(LOOBJS) $(HIOBJS) $(GAMMAOBJS),$(OBJS))
+NormalDepLibraryTarget($(SOPROF_LIBNAME),DONE,$(OBJS))
 InstallLibrary($(SOPROF_LIBNAME),$(MODULEDIR)/dri)
+#endif
 #endif
 
 DependTarget()

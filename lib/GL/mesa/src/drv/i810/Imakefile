@@ -1,12 +1,20 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/i810/Imakefile,v 1.15 2001/03/21 16:14:21 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/i810/Imakefile,v 1.16 2001/03/23 19:18:40 dawes Exp $
 
 #include <Threads.tmpl>
 
+#if GlxUseBuiltInDRIDriver
+#define DoNormalLib NormalLibGlx
+#define DoSharedLib SharedLibGlx
+#define DoExtraLib SharedLibGlx
+#define DoDebugLib DebugLibGlx
+#define DoProfileLib ProfileLibGlx
+#else
 #define DoSharedLib YES
 #define DoNormalLib NO
-#define DoExtraLib NO
+#define DoExtrasLib NO
 #define DoDebugLib NO
 #define DoProfileLib NO
+#endif
 
 #include "../common/Imakefile.inc"
 #include "Imakefile.inc"
@@ -44,14 +52,19 @@ REQUIREDLIBS = MathLibrary $(LDPRELIB) $(GLXLIB)
 
 LibraryObjectRule()
 
+SubdirLibraryRule($(I810OBJS))
+NormalLintTarget($(SRCS))
+
+#if !GlxUseBuiltInDRIDriver
 LIBNAME = i810_dri.so
-SharedDriModuleTarget($(LIBNAME),$(I810OBJS),$(OBJS))
+SharedDriModuleTarget($(LIBNAME),DONE,$(OBJS))
 InstallDynamicModule($(LIBNAME),$(MODULEDIR),dri)
 
 #ifdef GlxSoProf
 SOPROF_LIBNAME = _i810_dri_p
-NormalDepLibraryTarget($(SOPROF_LIBNAME),$(LOOBJS) $(HIOBJS) $(I810OBJS),$(ALL_OBJS))
+NormalDepLibraryTarget($(SOPROF_LIBNAME),DONE,$(ALL_OBJS))
 InstallLibrary($(SOPROF_LIBNAME),$(MODULEDIR)/dri)
+#endif
 #endif
 
 DependTarget()

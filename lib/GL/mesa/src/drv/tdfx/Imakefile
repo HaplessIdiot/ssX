@@ -1,12 +1,20 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/tdfx/Imakefile,v 1.21 2001/03/21 16:14:26 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/tdfx/Imakefile,v 1.22 2001/03/23 19:18:44 dawes Exp $
 
 #include <Threads.tmpl>
 
+#if GlxUseBuiltInDRIDriver
+#define DoNormalLib NormalLibGlx
+#define DoSharedLib SharedLibGlx
+#define DoExtraLib SharedLibGlx
+#define DoDebugLib DebugLibGlx
+#define DoProfileLib ProfileLibGlx
+#else
 #define DoSharedLib YES
 #define DoNormalLib NO
 #define DoExtrasLib NO
 #define DoDebugLib NO
 #define DoProfileLib NO
+#endif
 
 #include "../common/Imakefile.inc"
 #include "Imakefile.inc"
@@ -45,14 +53,19 @@ REQUIREDLIBS = -l$(GLIDE3LIBNAME) MathLibrary $(LDPRELIB) $(GLXLIB)
 
 LibraryObjectRule()
 
+SubdirLibraryRule($(TDFXOBJS))
+NormalLintTarget($(SRCS))
+
+#if !GlxUseBuiltInDRIDriver
 LIBNAME = tdfx_dri.so
-SharedDriModuleTarget($(LIBNAME),$(TDFXOBJS),$(OBJS))
+SharedDriModuleTarget($(LIBNAME),DONE,$(OBJS))
 InstallDynamicModule($(LIBNAME),$(MODULEDIR),dri)
 
 #ifdef GlxSoProf
 SOPROF_LIBNAME = _tdfx_dri_p
-NormalDepLibraryTarget($(SOPROF_LIBNAME),$(LOOBJS) $(HIOBJS) $(TDFXOBJS),$(OBJS))
+NormalDepLibraryTarget($(SOPROF_LIBNAME),DONE,$(OBJS))
 InstallLibrary($(SOPROF_LIBNAME),$(MODULEDIR)/dri)
+#endif
 #endif
 
 DependTarget()

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.35 2001/01/08 01:07:16 martin Exp $
+XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.36 2001/03/23 19:18:23 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -6,7 +6,8 @@ XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.35 2001/01/08 01:07:16 martin Exp $
 
 #define PassCDebugFlags
 
-      GLXDIRS = GL
+LIBGLBUILDDIR = GL
+      GLXDIRS = glx
 
 #if BuildXF86DRI && !GlxUseSGISI && \
 	(!GlxBuiltInMesa || !defined(GlxDriverUsesMesa))
@@ -14,13 +15,17 @@ XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.35 2001/01/08 01:07:16 martin Exp $
    OSMESADIRS = mesa/src/OSmesa
 #endif
 
-#if BuildXF86DRI && !GlxUseBuiltInDRIDriver
+#if BuildXF86DRI
       DRIDIRS = dri mesa/dri
      MESADIRS = mesa/src
    DRIVERDIRS = mesa/src/drv
 #endif
 
-SUBDIRS = $(GLXDIRS) $(DRIDIRS) $(MESADIRS) $(OSMESADIRS) $(DRIVERDIRS)
+#if GlxUseBuiltInDRIDriver
+SUBDIRS = $(MESADIRS) $(DRIDIRS) $(DRIVERDIRS) $(GLXDIRS) $(LIBGLBUILDDIR) $(OSMESADIRS)
+#else
+SUBDIRS = $(MESADIRS) $(GLXDIRS) $(DRIDIRS) $(LIBGLBUILDDIR) $(OSMESADIRS) $(DRIVERDIRS)
+#endif
 
 MakeSubdirs($(SUBDIRS))
 

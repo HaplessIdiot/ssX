@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/OSmesa/Imakefile,v 1.7 2001/03/21 16:14:20 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/OSmesa/Imakefile,v 1.8 2001/03/23 19:18:36 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -45,7 +45,7 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src/OSmesa -I$(MESASRCDIR)/src \
 #endif
 
 #if !GlxUseBuiltInDRIDriver
- REQUIREDLIBS = -lGL
+ REQUIREDLIBS = $(LDPRELIB) $(GLXLIB)
 #endif
 
 #include <Library.tmpl>

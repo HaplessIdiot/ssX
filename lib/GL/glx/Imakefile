@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/GL/glx/Imakefile,v 1.1 2001/03/22 21:47:57 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/GL/glx/Imakefile,v 1.2 2001/03/23 19:18:25 dawes Exp $
 XCOMM The contents of this file are subject to the GLX Public License Version 1.0
 XCOMM (the "License"). You may not use this file except in compliance with the
 XCOMM License. You may obtain a copy of the License at Silicon Graphics, Inc.,
@@ -38,28 +38,8 @@ LinkSourceFile(glapinoop.c, $(MESASRCDIR)/src)
 LinkSourceFile(glthread.c, $(MESASRCDIR)/src)
 LinkSourceFile(glapi_x86.S, $(MESASRCDIR)/src/X86)
 
-# Files from glx.  Maybe some of these could come from
-# xc/extras/ogl-sample/main/glx/lib at some point.  For now we take all
-# of them from  $(GLXLIBSRC)/glx.
-
-LinkSourceFile(clientattrib.c, $(GLXLIBSRC)/glx)
-LinkSourceFile(compsize.c, $(GLXLIBSRC)/glx)
-LinkSourceFile(dispatch.c, $(GLXLIBSRC)/glx)
-LinkSourceFile(eval.c, $(GLXLIBSRC)/glx)
-LinkSourceFile(g_render.c, $(GLXLIBSRC)/glx)
-LinkSourceFile(g_single.c, $(GLXLIBSRC)/glx)
-LinkSourceFile(g_vendpriv.c, $(GLXLIBSRC)/glx)
-LinkSourceFile(glxcmds.c, $(GLXLIBSRC)/glx)
-LinkSourceFile(glxext.c, $(GLXLIBSRC)/glx)
-LinkSourceFile(indirect_init.c, $(GLXLIBSRC)/glx)
-LinkSourceFile(pixel.c, $(GLXLIBSRC)/glx)
-LinkSourceFile(pixelstore.c, $(GLXLIBSRC)/glx)
-LinkSourceFile(render2.c, $(GLXLIBSRC)/glx)
-LinkSourceFile(renderpix.c, $(GLXLIBSRC)/glx)
-LinkSourceFile(single2.c, $(GLXLIBSRC)/glx)
-LinkSourceFile(singlepix.c, $(GLXLIBSRC)/glx)
-LinkSourceFile(vertarr.c, $(GLXLIBSRC)/glx)
-LinkSourceFile(xfont.c, $(GLXLIBSRC)/glx)
+# Maybe some of these could come from
+# xc/extras/ogl-sample/main/glx/lib at some point.
 
      GLX_SRCS = \
 		clientattrib.c \
@@ -128,6 +108,7 @@ LinkSourceFile(xfont.c, $(GLXLIBSRC)/glx)
 		-I$(INCLUDESRC)/GL \
 		-I$(GLXLIBSRC)/glx \
 		-I$(MESASRCDIR)/src \
+		-I$(MESASRCDIR)/src/X86 \
 		-I$(MESASRCDIR)/include \
 		$(DRI_INCS)
 
