@@ -1,4 +1,5 @@
 XFree86 3.9Nl (1 November 1998)
+1939. xterm patch #88 (#2152, Thomas Dickey).
 1938. Fix some build problems that show up on SunOS 4.1.4.
 1937. Allow the driver to give XAA the definition of a full planemask,
       with a reasonable default set when it doesn't (#2150, Mark Vojkovich).
@@ -6694,4 +6695,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.639 1998/10/25 07:12:03 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.640 1998/11/01 12:35:41 dawes Exp $

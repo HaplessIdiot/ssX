@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.11 1998/10/10 15:25:52 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.12 1998/10/25 07:12:54 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_88">Patch #88 - 1998/10/31 - XFree86 3.9Nk and 3.3.2h</A>
 <LI><A HREF="#xterm_87">Patch #87 - 1998/10/21 - XFree86 3.9Nj and 3.3.2f</A>
 <LI><A HREF="#xterm_86">Patch #86 - 1998/10/14 - XFree86 3.9Nj and 3.3.2e</A>
 <LI><A HREF="#xterm_85">Patch #85 - 1998/10/12 - XFree86 3.9Nj and 3.3.2e</A>
@@ -130,6 +131,15 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_88">Patch #88 - 1998/10/31 - XFree86 3.9Nk and 3.3.2h</A></H1>
+This refines my #85 patch by checking for a case where the font server
+returns a bold font that does not quite correspond to the normal font.
+When I asked for a bold version of the 6x12 font, the font server
+returned a near equivalent where the ascent and descent values did not
+match, causing xterm to leave lines across the display.
+This patch makes xterm reject that type of mismatch, falling back to the
+old font behavior.
 
 <H1><A NAME="xterm_87">Patch #87 - 1998/10/21 - XFree86 3.9Nj and 3.3.2f</A></H1>
 This corrects a problem reported by Stefan Dalibor.  My table entries for the
