@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessWindow.c,v 1.10 2002/08/28 06:41:26 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessWindow.c,v 1.11 2002/09/28 00:43:39 torrey Exp $ */
 
 #include "rootlessCommon.h"
 #include "rootlessWindow.h"
@@ -483,17 +483,19 @@ StartFrameResize(WindowPtr pWin, Bool gravity,
     SetPixmapBaseToScreen(gResizeDeathPix, oldX, oldY);
     RootlessStopDrawing(pWin);
 
+    // Update the window frame's size and location
     winRec->frame.x = newX;
     winRec->frame.y = newY;
     winRec->frame.w = newW;
     winRec->frame.h = newH;
     winRec->borderWidth = newBW;
 
+    // Move the window on screen and create a new pixmap for it
     CallFrameProc(pScreen, StartResizeFrame,
                   (pScreen, &winRec->frame, oldX, oldY, oldW, oldH));
     RootlessStartDrawing(pWin);
 
-    // Use custom CopyWindow when moving gravity bits around
+    // Use custom CopyWindow when moving gravity bits around.
     // ResizeWindow assumes the old window contents are in the same
     // pixmap, but here they're in deathPix instead.
     if (gravity) {
@@ -503,9 +505,9 @@ StartFrameResize(WindowPtr pWin, Bool gravity,
     }
 
     // Copy pixels in intersection from src to dst.
-    // ResizeWindow assumes these pixels are already present when
-    // making gravity adjustments.
-    // pWin currently has new-sized pixmap but is in old position.
+    // ResizeWindow assumes these pixels are already present when making
+    // gravity adjustments. pWin currently has new-sized pixmap but its
+    // drawable is in the old position.
     // fixme border width change!
     {
         BoxRec rect;
@@ -525,8 +527,21 @@ StartFrameResize(WindowPtr pWin, Bool gravity,
 
         // rect is the intersection of the old location and new location
         if (BOX_NOT_EMPTY(rect)) {
+            int dx, dy;
+
+            /* The window drawable still has the old frame position, which
+               means that DST doesn't actually point at the origin of our
+               physical backing store when adjusted by the drawable.x,y
+               position. So sneakily adjust it temporarily while copying.. */
+
+            dx = newX - oldX;
+            dy = newY - oldY;
+            SetPixmapBaseToScreen (dst, dx, dy);
+
             fbCopyWindowProc(src, dst, NULL, &rect, 1, 0, 0,
                              FALSE, FALSE, 0, 0);
+
+            SetPixmapBaseToScreen (dst, -dx, -dy);
         }
     }
 }
