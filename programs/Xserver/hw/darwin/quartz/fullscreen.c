@@ -26,13 +26,14 @@
  * dealings in this Software without prior written authorization from
  * Torrey T. Lyons.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/fullscreen.c,v 1.1 2002/02/17 03:15:19 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/fullscreen.c,v 1.1 2002/03/28 02:21:18 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "darwin.h"
 #include "colormapst.h"
 #include "scrnintstr.h"
 #include "micmap.h"
+#include "shadow.h"
 
 // Full screen specific per screen storage structure
 typedef struct {
@@ -41,6 +42,8 @@ typedef struct {
     CFDictionaryRef     aquaDisplayMode;
     CGDirectPaletteRef  xPalette;
     CGDirectPaletteRef  aquaPalette;
+    unsigned char      *framebuffer;
+    unsigned char      *shadowPtr;
 } QuartzFSScreenRec, *QuartzFSScreenPtr;
 
 #define FULLSCREEN_PRIV(pScreen) \
@@ -344,9 +347,56 @@ Bool QuartzFSAddScreen(
                                   dfb->pixelInfo.bitsPerComponent);
     }
 
-    dfb->framebuffer = CGDisplayBaseAddress(cgID);
+    fsDisplayInfo->framebuffer = CGDisplayBaseAddress(cgID);
+
+    // allocate shadow framebuffer
+    fsDisplayInfo->shadowPtr = shadowAlloc(dfb->width, dfb->height,
+                                           dfb->bitsPerPixel);
+    dfb->framebuffer = fsDisplayInfo->shadowPtr;
 
     return TRUE;
+}
+
+
+/*
+ * QuartzFSShadowUpdate
+ *  Update the damaged regions of the shadow framebuffer on the display.
+ */
+static void QuartzFSShadowUpdate(ScreenPtr pScreen, 
+                                 shadowBufPtr pBuf)
+{
+    DarwinFramebufferPtr dfb = SCREEN_PRIV(pScreen);
+    QuartzFSScreenPtr fsDisplayInfo = FULLSCREEN_PRIV(pScreen);
+    RegionPtr damage = &pBuf->damage;
+    int numBox = REGION_NUM_RECTS(damage);
+    BoxPtr pBox = REGION_RECTS(damage);
+    int pitch = dfb->pitch;
+    int bpp = dfb->bitsPerPixel/8;
+
+    // Don't update if the X server is not visible
+    if (!quartzServerVisible)
+        return;
+
+    // Loop through all the damaged boxes
+    while (numBox--) {
+        int width, height, offset;
+        unsigned char *src, *dst;
+
+        width = (pBox->x2 - pBox->x1) * bpp;
+        height = pBox->y2 - pBox->y1;
+        offset = (pBox->y1 * pitch) + (pBox->x1 * bpp);
+        src = fsDisplayInfo->shadowPtr + offset;
+        dst = fsDisplayInfo->framebuffer + offset;
+
+        while (height--) {
+            memcpy(dst, src, width);
+            dst += pitch;
+            src += pitch;
+        }
+
+        // Get the next box
+        pBox++;
+    }
 }
 
 
@@ -361,6 +411,13 @@ Bool QuartzFSSetupScreen(
     DarwinFramebufferPtr dfb = SCREEN_PRIV(pScreen);
     QuartzFSScreenPtr fsDisplayInfo = FULLSCREEN_PRIV(pScreen);
     CGDirectDisplayID cgID = fsDisplayInfo->displayID;
+
+    // Initialize shadow framebuffer support
+    if (! shadowInit(pScreen, QuartzFSShadowUpdate, NULL)) {
+        ErrorF("Failed to initalize shadow framebuffer for screen %i.\n",
+               index);
+        return FALSE;
+    }
 
     if (dfb->pixelInfo.pixelType == kIOCLUTPixels) {
         // Initialize colormap handling
