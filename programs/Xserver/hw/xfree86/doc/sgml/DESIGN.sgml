@@ -36,7 +36,7 @@
 
 
 <ident>
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.36 2000/12/02 22:38:40 tsi Exp $
 </ident>
 
 
@@ -3845,8 +3845,7 @@ typedef struct {
 	   &s.code;drw_w&e.code; by &s.code;drw_h&e.code; on the screen.
 	   Since it is not expected that all hardware will be able to
 	   get the target dimensions exactly, it is important that the
-	   driver provide this function.  The returned dimensions must
-	   be less than or equal to the requested dimension.
+	   driver provide this function.
 
     </quote>
 
