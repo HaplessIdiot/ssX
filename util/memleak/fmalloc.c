@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/util/memleak/fmalloc.c,v 3.3 1996/12/31 05:02:25 dawes Exp $ */
+/* $XFree86: xc/util/memleak/fmalloc.c,v 3.4 1998/10/04 08:19:36 dawes Exp $ */
 
 
 /*
@@ -38,6 +38,7 @@ in this Software without prior written authorization from The Open Group.
 
 extern char **environ;
 extern etext;
+extern __data_start;
 
 #ifndef FALSE
 #define FALSE 0
