@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/scanpci/xf86ScanPci.c,v 1.1 1999/02/12 22:52:12 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/scanpci/xf86PciData.c,v 1.1 1999/02/13 16:47:33 hohndel Exp $ */
 /*
  * the PCI data structures
  *
@@ -17,11 +17,10 @@
 #include "xf86Priv.h"
 #include "xf86Pci.h"
 
-#define INIT_PCI_CARD_INFO TRUE
-#define DECLARE_CARD_DATASTRUCTURES TRUE
-#ifdef XFree86LOADER
-#define INIT_PCI_VENDOR_INFO TRUE
-#endif
+#define INIT_PCI_CARD_INFO		TRUE
+#define DECLARE_CARD_DATASTRUCTURES	TRUE
+#define INIT_PCI_VENDOR_INFO		TRUE
+#define INIT_PCI_VENDOR_NAME_INFO	TRUE
 #include "xf86PciInfo.h"
 
 #ifdef XFree86LOADER

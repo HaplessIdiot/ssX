@@ -1,3 +1,6 @@
+XFree86 3.9Pb (14 February 1999)
+2259. Updates to the PCI database (Dirk Hohndel, David Monro).
+
 XFree86 3.9Pa (14 February 1999)
 2258. Use /dev/io to enable I/O access on FreeBSD instead of KDENABIO.
 2257. Correct some typos/grammatical problems with the DESIGN doc (Ivan Bach).
@@ -7290,4 +7293,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.689 1999/02/14 03:20:34 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.690 1999/02/14 12:14:08 dawes Exp $
