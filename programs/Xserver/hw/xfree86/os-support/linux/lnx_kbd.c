@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_kbd.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_kbd.c,v 1.4 2003/11/03 05:11:52 tsi Exp $ */
 
 /*
  * Copyright (c) 2002 by The XFree86 Project, Inc.
@@ -446,7 +446,7 @@ OpenKeyboard(InputInfoPtr pInfo)
 {
     KbdDevPtr pKbd = (KbdDevPtr) pInfo->private;
     int i;
-    KbdProtocolId prot = PROT_UNKNOWN;
+    KbdProtocolId prot = PROT_UNKNOWN_KBD;
     char *s;
 
     s = xf86SetStrOption(pInfo->options, "Protocol", NULL);
