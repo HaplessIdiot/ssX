@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.22tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.23 2004/12/07 15:59:16 tsi Exp $ */
 
 /*
 
@@ -73,7 +73,7 @@ ProcXF86DGAGetVideoLL(ClientPtr client)
 	return BadAlloc;
 
     /* There's room only for the bottom 32 bits of the address */
-    if ((addr[1] != 0) || (rep.bank_size == 0) ||
+    if ((name && *name) || (addr[1] != 0) || (rep.bank_size == 0) ||
 	(((rep.offset = addr[0]) ^ (unsigned int)(-1L)) < offset) ||
 	(((rep.offset += offset) ^ (unsigned int)(-1L)) < mode.offset) ||
 	(((rep.offset += mode.offset) ^ (unsigned int)(-1L)) < rep.bank_size))
