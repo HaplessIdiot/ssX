@@ -8,6 +8,7 @@ GPERFFLAGS	= -T -n -a -c -p -j1 -g -o -t -D -N
 #if BuildSharedLispModules
 GperfLispFile(x11,x11table,$(GPERFFLAGS) x11FindFun)
 GperfLispFile(xt,xttable,$(GPERFFLAGS) xtFindFun)
+GperfLispFile(xaw,xawtable,$(GPERFFLAGS) xawFindFun)
 
 LispModuleTarget(x11.so,x11.o, $(XLIB))
 LispModuleTarget(xt.so,xt.o, $(XTOOLLIB) $(XLIB))

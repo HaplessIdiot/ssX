@@ -27,11 +27,12 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/xt.c,v 1.1 2001/08/31 15:00:14 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/xt.c,v 1.2 2001/09/21 05:08:43 paulo Exp $ */
 
+#include <stdlib.h>
+#include <stdio.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
-#include <stdio.h>
 #include "internal.h"
 
 /*
@@ -57,7 +58,7 @@ typedef struct {
 
 typedef struct {
     LispMac *mac;
-    char *callback;
+    LispObj *callback;
     LispObj *argument;		/* XXX must be gc protected outside here */
 } CallbackArgs;
 
@@ -134,11 +135,11 @@ _LispXtCallback(Widget w, XtPointer user_data, XtPointer call_data)
     LispObj *code;
 
     GCPRO();
-    code = CONS(QUOTE(ATOM(args->callback)), CONS(OPAQUE(w, xtWidget_t),
+    code = CONS(QUOTE(args->callback), CONS(OPAQUE(w, xtWidget_t),
 		CONS(args->argument, CONS(OPAQUE(call_data, 0), NIL))));
+    GCUPRO();
 
     (void)Lisp_Funcall(mac, code, "FUNCALL");
-    GCUPRO();
 }
 
 LispObj *
@@ -164,16 +165,19 @@ Lisp_XtAddCallback(LispMac *mac, LispObj *list, char *fname)
 	LispDestroy(mac, "expecting atom, at %s", fname);
     list = CDR(list);
 
+    GCProtect();
     if (list == NIL)
 	args = list;
     else {
-	args = CAR(list);
+	args = QUOTE(CAR(list));
 	PROTECT(args);
     }
+    PROTECT(callback);
+    GCUProtect();
 
     arguments = XtNew(CallbackArgs);
     arguments->mac = mac;
-    arguments->callback = LispGetString(mac, callback->data.atom);
+    arguments->callback = callback;
     arguments->argument = args;
 
     XtAddCallback((Widget)(widget->data.opaque.data), name->data.atom,
@@ -185,7 +189,6 @@ Lisp_XtAddCallback(LispMac *mac, LispObj *list, char *fname)
 LispObj *
 Lisp_XtAppInitialize(LispMac *mac, LispObj *list, char *fname)
 {
-    LispObj *obj;
     XtAppContext appcon;
     char *app, *cname;
     Widget shell;
@@ -203,9 +206,11 @@ Lisp_XtAppInitialize(LispMac *mac, LispObj *list, char *fname)
     }
     cname = CAR(list)->data.atom;
 
+    GCProtect();
     shell = XtAppInitialize(&appcon, cname, NULL, 0, &zero, NULL, NULL, NULL, 0);
     (void)LispSetVariable(mac, ATOM(app), OPAQUE(appcon, xtAppContext_t),
 			  fname, 0);
+    GCUProtect();
 
     list = CDR(list);
     if (list == NIL || CAR(list) == NIL)
@@ -270,7 +275,6 @@ _LispXtCreateWidget(LispMac *mac, LispObj *list, char *fname, int managed)
     char *name;
     WidgetClass widget_class;
     Widget widget, parent;
-    LispObj *arg, *val;
     Resources *resources = NULL;
 
     if (CAR(list)->type != LispString_t)
@@ -337,6 +341,7 @@ Lisp_XtGetValues(LispMac *mac, LispObj *list, char *fname)
     rlist = GetResourceList(XtClass(widget));
     plist =  XtParent(widget) ? GetResourceList(XtClass(XtParent(widget))) : NULL;
 
+    GCProtect();
     res = NIL;
     for (list = CAR(list); list != NIL; list = CDR(list)) {
 	if (CAR(list)->type != LispString_t)
@@ -411,6 +416,7 @@ Lisp_XtGetValues(LispMac *mac, LispObj *list, char *fname)
 	    ptr = CDR(ptr);
 	}
     }
+    GCUProtect();
 
     return (res);
 }
@@ -455,7 +461,6 @@ LispConvertResources(LispMac *mac, LispObj *list, Widget widget,
     ResourceInfo *resource;
     char *fname = "XT-INTERNAL:CONVERT-RESOURCES";
     Resources *resources = (Resources*)XtCalloc(1, sizeof(Resources));
-    static ResourceInfo info;
 
     for (; list != NIL; list = CDR(list)) {
 	if (list->type != LispCons_t || CAR(list)->type != LispCons_t) {

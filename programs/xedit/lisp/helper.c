@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.4 2001/09/09 23:03:47 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.5 2001/09/21 05:08:43 paulo Exp $ */
 
 #include "helper.h"
 #include <ctype.h>
@@ -194,10 +194,10 @@ _LispBoolCond(LispMac *mac, LispObj *list, char *name, int op)
 LispObj *
 _LispDefLambda(LispMac *mac, LispObj *list, LispFunType type)
 {
-    unsigned num_args;
     LispObj *name = NIL, *args, *code, *obj = NIL, *fun;
     static char *types[3] = {"LAMBDA", "FUNCTION", "MACRO"};
     static char *fnames[3] = {"LAMBDA", "DEFUN", "DEFMACRO"};
+    int num_args, rest, optional, key;
 
     /* name */
     if (type != LispLambda) {
@@ -213,14 +213,70 @@ _LispDefLambda(LispMac *mac, LispObj *list, LispFunType type)
 
     /* args */
     args = CAR(list);
-    num_args = 0;
+    num_args = rest = optional = key = 0;
 
     if (args->type == LispCons_t) {
 	for (obj = args; obj != NIL; obj = CDR(obj), ++num_args)
-	    if (CAR(obj)->type != LispAtom_t)
+	    if (CAR(obj)->type == LispCons_t && (key || optional)) {
+		/* is this a default value? */
+		if (CAR(CAR(obj))->type != LispAtom_t)
+		    LispDestroy(mac, "%s cannot be a %s argument name, at %s %s",
+				LispStrObj(mac, CAR(CAR(obj))), types[type],
+				fnames[type],
+				type == LispLambda ? "..." : name->data.atom);
+		else if (CDR(CAR(obj)) != NIL &&
+			 (CDR(CAR(obj))->type != LispCons_t ||
+			  CDR(CDR(CAR(obj))) != NIL))
+		    LispDestroy(mac, "bad argument specification %s, at %s %s",
+				LispStrObj(mac, CAR(obj)), types[type],
+				fnames[type],
+				type == LispLambda ? "..." : name->data.atom);
+	    }
+	    else if (CAR(obj)->type != LispAtom_t ||
+		CAR(obj)->data.atom[0] == ':')
 		LispDestroy(mac, "%s cannot be a %s argument name, at %s %s",
 			    LispStrObj(mac, CAR(obj)), types[type], fnames[type],
 			    type == LispLambda ? "..." : name->data.atom);
+	    else if (CAR(obj)->data.atom[0] == '&') {
+		if (strcmp(CAR(obj)->data.atom + 1, "REST") == 0) {
+		    if (rest || CDR(obj) == NIL || CDR(CDR(obj)) != NIL)
+			LispDestroy(mac, "syntax error parsing &REST,"
+				    " at %s %s", fnames[type],
+				    type == LispLambda ?
+				    "..." : name->data.atom);
+		    rest = 1;
+		}
+		else if (strcmp(CAR(obj)->data.atom + 1, "KEY") == 0) {
+		    if (rest)
+			LispDestroy(mac, "&KEY not allowed after &REST,"
+				    " at %s %s", fnames[type],
+				    type == LispLambda ?
+				    "..." : name->data.atom);
+		    if (key || optional || CDR(obj) == NIL)
+			LispDestroy(mac, "syntax error parsing &KEY,"
+				    " at %s %s", fnames[type],
+				    type == LispLambda ?
+				    "..." : name->data.atom);
+		    key = 1;
+		}
+		else if (strcmp(CAR(obj)->data.atom + 1, "OPTIONAL") == 0) {
+		    if (rest)
+			LispDestroy(mac, "&OPTIONAL not allowed after &REST,"
+				    " at %s %s", fnames[type],
+				    type == LispLambda ?
+				    "..." : name->data.atom);
+		    if (key || optional || CDR(obj) == NIL)
+			LispDestroy(mac, "syntax error parsing &OPTIONAL,"
+				    " at %s %s", fnames[type],
+				    type == LispLambda ?
+				    "..." : name->data.atom);
+		    optional = 1;
+		}
+		else
+		    LispDestroy(mac, "%s not allowed %at %s %s",
+				CAR(obj)->data.atom, fnames[type],
+				type == LispLambda ? "..." : name->data.atom);
+	    }
     }
     else if (args != NIL)
 	LispDestroy(mac, "%s cannot be a %s argument list, at %s %s",
@@ -239,8 +295,9 @@ _LispDefLambda(LispMac *mac, LispObj *list, LispFunType type)
 	    }
     }
 
+    GCProtect();
     fun = LispNewLambda(mac, type == LispLambda ? NULL : name->data.atom,
-			args, code, num_args, type);
+			args, code, num_args, type, key, optional, rest);
 
     if (type != LispLambda) {
 	if (obj != NIL)
@@ -251,9 +308,11 @@ _LispDefLambda(LispMac *mac, LispObj *list, LispFunType type)
 	    CDR(FUN) = CONS(CAR(FUN), CDR(FUN));
 	    CAR(FUN) = fun;
 	}
+	GCUProtect();
 
 	return (name);
     }
+    GCUProtect();
 
     return (fun);
 }
