@@ -1,16 +1,19 @@
-XFree86 3.9Aj (28 June 1998)
-1696. Lots of Xaw work.  See xc/lib/Xaw/Changelog for details
-      (#1660, 1673, 1678, 1686, 1701, 1738, 1752, 1755,
+XFree86 3.9Aj (04 Jul 1998)
+1697. PC98 fix for VT switching, VideoBoard98 update (#1766, Takaaki Nomura).
+1696. xterm patches 79 and 80.  Fix for F1-F4 key handling, fg/bg pixel
+      value with -flipPixels, scrollbar color, keypad handling, and
+      various terminfo enhancements (#1758,1762 Thomas Dickey).
+1695. Lots of Xaw work.  See xc/lib/Xaw/Changelog for details
+      (#1660, 1673, 1678, 1686, 1701, 1738, 1752, 1755, 1765
       Paulo Cesar Pereira de Andrade).
-1695. Add the library security fixes (#1722).
-1694. Fix rendering errors in the generic bit expansion code (#1746,
+1694. Add the library security fixes (#1722).
+1693. Fix rendering errors in the generic bit expansion code (#1746,
       Jens Owen).
-1693. Fix problem in Oak clock setting routines (#1744, Kevin Buhr).
-1692. Clean up vga16 (remove unused code, remove vga16's mfb (vga2 is used
+1692. Fix problem in Oak clock setting routines (#1744, Kevin Buhr).
+1691. Clean up vga16 (remove unused code, remove vga16's mfb (vga2 is used
       instead), clean up vga16's external name space). Minor fix to ATI
       driver. (#1742, Marc LaFrance).
-1691. Fix macro expansion in xf86Config.c (#1730, Jens Maurer).
-1690. Increase performance for 24bpp bitblt (#1724, Nozomi Ytow).
+1690. Fix macro expansion in xf86Config.c (#1730, Jens Maurer).
 1689. On Linux, default the use of special or internal malloc's to NO
       (instead of forcing it to NO). Allow CloseScreen to free wrapper
       private storage in most servers. Push out backing store initialisation
@@ -39,7 +42,7 @@ XFree86 3.9Ai (05 June 1998)
       no need for XFree86LOADER specifics in mibitblt.c(#1690, Marc La France).
 1679. Fix hw cursor on CT65555 and fix loader problem (#1688,1689 Nozomi Ytow).
 1678. Fix freeing of names when removing modes (#1685, Matthieu Herrb).
-1677. Enable ImageWrite in 24 bpp for C&T HiQV (#1684,1687,1700 Nozomi Ytow).
+1677. Enable ImageWrite in 24 bpp for C&T HiQV (#1684,1687 Nozomi Ytow).
 1676. Fix unknown symbol type 1e message in a.out loader (#1683, 
       Matthieu Herrb).
 1675. xterm patches 75 and 76. Fix for print-window function, minor cleanups,
@@ -6182,4 +6185,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.598 1998/06/28 13:09:19 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.599 1998/06/29 13:41:20 dawes Exp $

@@ -26,7 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.6 1998/06/28 13:04:21 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.7 1998/06/29 13:41:16 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -172,7 +172,7 @@ extern void _XawTextSetScrollBars(TextWidget);
 extern void _XawTextSetSelection(TextWidget, XawTextPosition, XawTextPosition,
 				 String*, Cardinal);
 extern void _XawTextVScroll(TextWidget, int);
-
+extern void XawTextScroll(TextWidget, int, int);
 
 static void
 ParameterError(Widget w, String param)
@@ -642,7 +642,8 @@ MovePage(TextWidget ctx, XEvent *event, XawTextScanDirection dir)
   StartAction(ctx, event);
 
   if (scroll_val)
-    _XawTextVScroll(ctx, scroll_val);
+    XawTextScroll(ctx, scroll_val,
+		  ctx->text.margin.left - ctx->text.r_margin.left);
 
   old_pos = ctx->text.insertPos;
   switch (dir)

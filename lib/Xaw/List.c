@@ -47,6 +47,8 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/ListP.h>
 
+#include "Private.h"
+
 /* These added so widget knows whether its height, width are user selected.
 I also added the freedoms member of the list widget part. */
 
@@ -59,6 +61,11 @@ I also added the freedoms member of the list widget part. */
 #define LongestFree( w ) !(((ListWidget)(w))->list.freedoms & LongestLock )
 
 #define MaxSize 32767
+
+/*
+ * Prototypes
+ */
+static void ResetList(Widget, Bool, Bool);
 
 /* 
  * Default Translation table.
@@ -276,23 +283,28 @@ Widget w;
 /*	Function Name: ResetList
  *	Description: Resets the new list when important things change.
  *	Arguments: w - the widget.
- *                 changex, changey - allow the height or width to change?
+ *		   changex, changey - allow the height or width to change?
  *
  *	Returns: TRUE if width or height have been changed
  */
-
 static void
-ResetList( w, changex, changey )
-Widget w;
-Boolean changex, changey;
+ResetList(Widget w, Bool changex, Bool changey)
 {
-    Dimension width = w->core.width;
-    Dimension height = w->core.height;
+  Dimension width = XtWidth(w);
+  Dimension height = XtHeight(w);
 
-    CalculatedValues( w );
+  CalculatedValues(w);
 
-    if( Layout( w, changex, changey, &width, &height ) )
-      ChangeSize( w, width, height );
+  if (Layout(w, changex, changey, &width, &height))
+    {
+      if (XtIsComposite(XtParent(w)))
+	ChangeSize(w, width, height);
+      else
+	{
+	  XtWidth(w) = width;
+	  XtHeight(w) = height;
+	}
+    }
 }
 
 /*	Function Name: ChangeSize.
@@ -855,14 +867,14 @@ Dimension *width, *height;
 	change = TRUE;
     }
 
-    /* Quick hack: Silently changes lw->list.nrows if the list widget window
-     * is too big. This is useful at least for xman.
+    /* Silently changes lw->list.nrows if the list widget window
+     * is too big.
      */
-    if (!lw->list.force_cols)
+    if (!lw->list.force_cols && lw->list.nrows)
       {
 	while (1)
 	  {
-	    lw->list.nrows = ( ( lw->list.nitems - 1) / lw->list.ncols) + 1 ;
+	    lw->list.nrows = ((lw->list.nitems - 1) / lw->list.ncols) + 1 ;
 	    width2 = lw->list.ncols * lw->list.col_width
 	      + 2 * lw->list.internal_width;
 	    height2 = (lw->list.nrows * lw->list.row_height)
