@@ -66,7 +66,7 @@ terms and conditions:
 	Larry Hare -- AGE Logic, Inc. August, 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/mixie/process/mphist.c,v 3.1 1996/08/20 13:16:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/process/mphist.c,v 3.2 1998/10/04 09:36:34 dawes Exp $ */
 
 #define _XIEC_MPHIST
 #define _XIEC_PHIST
@@ -74,8 +74,6 @@ terms and conditions:
 /*
  *  Include files
  */
-#include <stdio.h>
-#include <math.h>
 #ifndef M_PI
 #define M_PI    3.14159265358979323846
 #endif

@@ -66,14 +66,13 @@ terms and conditions:
 	Dean Verheiden, AGE Logic, Inc., April 1993
 
 ****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/request/roi.c,v 3.0 1996/03/29 22:11:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/request/roi.c,v 3.1 1998/10/04 09:35:54 dawes Exp $ */
 
 #define _XIEC_ROI
 
 /*
  *  Include files
  */
-#include <stdio.h>
 /*
  *  Core X Includes
  */

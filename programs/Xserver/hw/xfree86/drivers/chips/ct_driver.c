@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.34 1998/09/20 06:01:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.35 1998/09/26 08:34:11 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -316,6 +316,49 @@ static DisplayModeRec ChipsPALMode = {
 	NULL, NULL,     /* prev, next */
 	"PAL",          /* identifier of this mode */
 	MODE_OK,        /* mode status */
+	M_T_BUILTIN,    /* mode type */
+	15000,		/* Clock frequency */
+	776,		/* HDisplay */
+	800,		/* HSyncStart */
+	872,		/* HSyncEnd */
+	960,		/* HTotal */
+	0,		/* HSkew */
+	585,		/* VDisplay */
+	590,		/* VSyncStart */
+	595,		/* VSyncEnd */
+	625,		/* VTotal */
+	0,		/* VScan */
+	V_INTERLACE,	/* Flags */
+	-1,		/* ClockIndex */
+	15000,		/* SynthClock */
+	776,		/* CRTC HDisplay */
+	800,            /* CRTC HBlankStart */
+	800,            /* CRTC HSyncStart */
+	872,            /* CRTC HSyncEnd */
+	872,            /* CRTC HBlankEnd */
+	960,            /* CRTC HTotal */
+	0,              /* CRTC HSkew */
+	585,		/* CRTC VDisplay */
+	590,		/* CRTC VBlankStart */
+	590,		/* CRTC VSyncStart */
+	595,		/* CRTC VSyncEnd */
+	595,		/* CRTC VBlankEnd */
+	625,		/* CRTC VTotal */
+	FALSE,		/* CrtcHAdjusted */
+	FALSE,		/* CrtcVAdjusted */
+	0,		/* PrivSize */
+	NULL		/* Private */
+};
+
+/*
+** So far, it looks like SECAM uses the same values as PAL
+*/
+static DisplayModeRec ChipsSECAMMode = {
+	NULL,           /* prev */
+	&ChipsPALMode,  /* next */   
+	"SECAM",        /* identifier of this mode */
+	MODE_OK,        /* mode status */
+	M_T_BUILTIN,    /* mode type */
 	15000,		/* Clock frequency */
 	776,		/* HDisplay */
 	800,		/* HSyncStart */
@@ -351,9 +394,11 @@ static DisplayModeRec ChipsPALMode = {
 
 
 static DisplayModeRec ChipsNTSCMode = {
-	NULL, NULL,     /* prev, next */
-	"NTSC",          /* identifier of this mode */
+	NULL,           /* prev */
+	&ChipsSECAMMode,/* next */
+	"NTSC",         /* identifier of this mode */
 	MODE_OK,        /* mode status */
+	M_T_BUILTIN,    /* mode type */
 	11970,		/* Clock frequency */
 	584,		/* HDisplay */
 	640,		/* HSyncStart */
@@ -889,6 +934,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     CHIPSPtr cPtr;
     int *numChipsets;
     const char *reqSym = NULL;
+    int apertureSize;
 
     xf86AddControlledResource(pScrn,IO);
 
@@ -1007,22 +1053,61 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	clockRanges->interlaceAllowed = TRUE;
     clockRanges->doubleScanAllowed = FALSE;
 
-    cPtr->Rounding = 8;
-    if (pScrn->bitsPerPixel >= 8)
-	cPtr->Rounding *= pScrn->bitsPerPixel;
+    apertureSize = cPtr->FbMapSize - cPtr->FrameBufferSize;
+    
+    if (cPtr->Flags & ChipsAccelSupport) {
+	/*
+	 * If we are using acceleration then we want a display pitch that is
+	 * a multiple of 64 pixels. This allows for alignment issues for the
+	 * 8x8 pattern fills. Try to widen the display pitch to 64 if necessary
+	 */
+        cPtr->Rounding = 64;
+	/* 16 Kb cache for each bpp */
+	apertureSize -= 16 * 1024 * (pScrn->bitsPerPixel >> 3);
+    } else {
+	cPtr->Rounding = 8;
+	if (pScrn->bitsPerPixel >= 8)
+	    cPtr->Rounding *= (pScrn->bitsPerPixel >> 3);
+    }
 
     i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
 			  pScrn->display->modes, clockRanges,
 			  NULL, 256, 2048, cPtr->Rounding,
 			  128, 2048, pScrn->display->virtualX,
-			  pScrn->display->virtualY, cPtr->FbMapSize,
+			  pScrn->display->virtualY, apertureSize,
 			  LOOKUP_BEST_REFRESH);
 
+    /*
+     * If we are using accel and don't find any valid modes
+     * we might not have enough memory for a 64 bit rounding
+     * and 16 Kb per bpp cache. Let's try without it.
+     * Should we disable accel also ?
+     */
+    if (i == -1 && (cPtr->Flags & ChipsAccelSupport)) {
+	cPtr->Rounding = 8;
+	if (pScrn->bitsPerPixel >= 8)
+	    cPtr->Rounding *= pScrn->bitsPerPixel;
+	apertureSize += 16 * 1024 * (pScrn->bitsPerPixel >> 3);
+	
+	i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
+			      pScrn->display->modes, clockRanges,
+			      NULL, 256, 2048, cPtr->Rounding,
+			      128, 2048, pScrn->display->virtualX,
+			      pScrn->display->virtualY, apertureSize,
+			      LOOKUP_BEST_REFRESH);
+
+	if (i > -1) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		       "not enough free memory to adjust display pitch.\n");
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		       "some acceleration may be disabled.\n");
+	}
+    }
     if (i == -1) {
 	CHIPSFreeRec(pScrn);
 	return FALSE;
     }
-    
+
     /* Prune the modes marked as invalid */
     xf86PruneDriverModes(pScrn);
 
@@ -1030,26 +1115,6 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "No valid modes found\n");
 	CHIPSFreeRec(pScrn);
 	return FALSE;
-    }
-
-    /*
-     * If we are using acceleration then we want a display pitch that is
-     * a multiple of 64 pixels. This allows for alignment issues for the
-     * 8x8 pattern fills. Try to widen the display pitch to 64 if necessary
-     */
-    if ((cPtr->Flags & ChipsAccelSupport) && (pScrn->displayWidth % 64)) {
-	int pitch = ((pScrn->displayWidth + 63) / 64) * 64;
-
-	/* Don't adjust pitch if less than 16kb free. What's the point ! */
-	if ((pScrn->videoRam << 10) - cPtr->FrameBufferSize < pitch *
-	    pScrn->virtualY * (pScrn->bitsPerPixel >> 3) + 16 * 1024) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		       "not enough free memory to adjust display pitch.\n");
-	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		       "some acceleration may be disabled.\n");
-	} else {
-	    pScrn->displayWidth = pitch;
-	}
     }
 
     /*
@@ -1680,53 +1745,8 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     }
 
 #if defined(__arm32__) && defined(__NetBSD__)
-    /* 
-     ** If PAL. SECAM or NTSC is specified as the first mode in 
-     ** /etc/XF86Config, add it as the Built in mode.
-     */
-    if (strlen(pScrn->modes->name) == 3
-		&& strcmp(pScrn->modes->name, "PAL") == 0) {
-	pScrn->virtualX     = 776;
-	pScrn->virtualY     = 585;
-	pScrn->displayWidth = 776;
-	pScrn->modes = &ChipsPALMode;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Using built-in PAL TV mode\n");
-	cPtr->TVMode = XMODE_PAL;
-    } else if (strlen(pScrn->modes->name) == 4
-		&& strcmp(pScrn->modes->name, "NTSC") == 0) {
-	pScrn->virtualX     = 584;
-	pScrn->virtualY     = 450;
-	pScrn->displayWidth = 584;
-	pScrn->modes = &ChipsNTSCMode;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-		   "Using built-in NTSC TV mode\n");
-	cPtr->TVMode = XMODE_NTSC;
-    } else if (strlen(pScrn->modes->name) == 5
-		&& strcmp(pScrn->modes->name, "SECAM") == 0) {
-	/*
-	** So far, it looks like SECAM uses the same values as PAL
-	*/
-	pScrn->virtualX     = 776;
-	pScrn->virtualY     = 585;
-	pScrn->displayWidth = 776;
-	pScrn->modes = &ChipsPALMode;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-		   "Using built-in SECAM TV mode\n");
-	cPtr->TVMode = XMODE_SECAM;
-    } else
-	 cPtr->TVMode = XMODE_RGB;
-  
-    if (cPtr->TVMode != XMODE_RGB) {
-	/*
-	 ** These are normally set in xf86LookupMode, but that's not called
-	 ** for a built in mode, so do it here.
-	 */
-	pScrn->numClocks = 3;
-	pScrn->clock[0] = 25175;
-	pScrn->clock[1] = 28322;
-	pScrn->clock[2] = pScrn->modes->SynthClock;
-	pScrn->modes->Clock = 2;
-    }
+    ChipsPALMode.next = pScrn->monitor->Modes;
+    pScrn->monitor->Modes = &ChipsNTSCMode;
 #endif
 
     return TRUE;
@@ -2779,7 +2799,6 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     pScrn = xf86Screens[pScreen->myNum];
     cPtr = CHIPSPTR(pScrn);
     cAcl = CHIPSACLPTR(pScrn);
-    
     hwp = VGAHWPTR(pScrn);
     hwp->MapSize = 0x10000;		/* Standard 64k VGA window */
 
@@ -2790,6 +2809,22 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* Map the Chips memory and possible MMIO areas */
     if (!chipsMapMem(pScrn))
 	return FALSE;
+
+#if defined(__arm32__) && defined(__NetBSD__)
+    if (strcmp(pScrn->currentMode->name,"PAL") == 0) {
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Using built-in PAL TV mode\n");
+	cPtr->TVMode = XMODE_PAL;
+    } else if (strcmp(pScrn->currentMode->name,"SECAM") == 0){
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		   "Using built-in SECAM TV mode\n");
+	cPtr->TVMode = XMODE_SECAM;
+    } else if (strcmp(pScrn->currentMode->name,"NTSC") == 0) {
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		   "Using built-in NTSC TV mode\n");
+	cPtr->TVMode = XMODE_NTSC;
+    } else 
+	cPtr->TVMode = XMODE_RGB;
+#endif
 
     xf86EnableAccess(&pScrn->Access);
 
@@ -3143,10 +3178,9 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     if (pScrn->bitsPerPixel <= 8)
         racflag = RAC_COLORMAP;
-    if (!(cPtr->Flags & ChipsLinearSupport))
-        racflag |= RAC_FB;
     if (cPtr->Flags & ChipsHWCursor)
         racflag |= RAC_CURSOR;
+        racflag |= RAC_FB;
     xf86RACInit(pScreen, racflag);
 
     pScreen->SaveScreen = CHIPSSaveScreen;
@@ -4081,8 +4115,12 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    ChipsNew->XR[0xA0] = 0x70;     /* Enable cursor stretching */
 	    if (xf86IsOptionSet(cPtr->Options, OPTION_HW_CURSOR))
 		cPtr->Accel.UseHWCursor = TRUE;      /* H/W  cursor forced */
-	    else
+	    else {
+	        if(cPtr->Accel.UseHWCursor)
+		    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+			       "Disabling HW Cursor\n");
 		cPtr->Accel.UseHWCursor = FALSE;     /* Possible H/W bug? */
+	    }
 	}
     }
 
@@ -4741,8 +4779,12 @@ chipsModeInit655xx(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		if (tmp == 0)
 		    if (xf86IsOptionSet(cPtr->Options, OPTION_HW_CURSOR))
 			cPtr->Accel.UseHWCursor = TRUE; /* H/W cursor forced */
-		    else
-		        cPtr->Accel.UseHWCursor = FALSE;
+		    else {
+			if(cPtr->Accel.UseHWCursor)
+			    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+					"Disabling HW Cursor\n");
+			cPtr->Accel.UseHWCursor = FALSE;
+		    }
 		else
 		    cPtr->Accel.UseHWCursor = TRUE;
 		if (xf86IsOptionSet(cPtr->Options, OPTION_HW_CURSOR) &&

@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/main.c,v 3.12 1997/05/03 12:12:29 dawes Exp $ */
+/* $XFree86: xc/config/makedepend/main.c,v 3.13 1998/10/02 06:15:22 dawes Exp $ */
 
 #include "def.h"
 #ifdef hpux
@@ -96,8 +96,7 @@ boolean	verbose = FALSE;
 boolean	show_where_not = FALSE;
 boolean warn_multiple = FALSE;	/* Warn on multiple includes of same file */
 
-void freefile();
-void redirect();
+static void redirect(char *line, char *makefile);
 #if !NeedVarargsPrototypes
 void fatalerr();
 void warning();
@@ -110,8 +109,7 @@ int
 #else
 void
 #endif
-catch (sig)
-    int sig;
+catch (int sig)
 {
 	fflush (stdout);
 	fatalerr ("got signal %d\n", sig);
@@ -122,7 +120,7 @@ catch (sig)
 #endif
 
 #ifndef USGISH
-#ifndef _POSIX_SOURCE
+#ifdef X_NOT_POSIX
 #define sigaction sigvec
 #define sa_handler sv_handler
 #define sa_mask sv_mask
@@ -131,14 +129,13 @@ catch (sig)
 struct sigaction sig_act;
 #endif /* USGISH */
 
-main(argc, argv)
-	int	argc;
-	char	**argv;
+int
+main(int argc, char *argv[])
 {
-	register char	**fp = filelist;
-	register char	**incp = includedirs;
-	register char	*p;
-	register struct inclist	*ip;
+	char	**fp = filelist;
+	char	**incp = includedirs;
+	char	*p;
+	struct inclist	*ip;
 	char	*makefile = NULL;
 	struct filepointer	*filecontent;
 	struct symtab *psymp = predefs;
@@ -461,14 +458,15 @@ main(argc, argv)
 	}
 	if (printed)
 		printf("\n");
-	exit(0);
+	return 0;
 }
 
 #ifdef __EMX__
 /*
  * eliminate \r chars from file
  */
-static int elim_cr(char *buf, int sz)
+static int 
+elim_cr(char *buf, int sz)
 {
 	int i,wp;
 	for (i= wp = 0; i<sz; i++) {
@@ -479,10 +477,10 @@ static int elim_cr(char *buf, int sz)
 }
 #endif
 
-struct filepointer *getfile(file)
-	char	*file;
+struct filepointer *
+getfile(char *file)
 {
-	register int	fd;
+	int	fd;
 	struct filepointer	*content;
 	struct stat	st;
 
@@ -512,26 +510,24 @@ struct filepointer *getfile(file)
 }
 
 void
-freefile(fp)
-	struct filepointer	*fp;
+freefile(struct filepointer *fp)
 {
 	free(fp->f_base);
 	free(fp);
 }
 
-char *copy(str)
-	register char	*str;
+char *copy(char *str)
 {
-	register char	*p = (char *)malloc(strlen(str) + 1);
+	char	*p = (char *)malloc(strlen(str) + 1);
 
 	strcpy(p, str);
 	return(p);
 }
 
-match(str, list)
-	register char	*str, **list;
+int
+match(char *str, char **list)
 {
-	register int	i;
+	int	i;
 
 	for (i=0; *list; i++, list++)
 		if (strcmp(str, *list) == 0)
@@ -543,13 +539,12 @@ match(str, list)
  * Get the next line.  We only return lines beginning with '#' since that
  * is all this program is ever interested in.
  */
-char *getline(filep)
-	register struct filepointer	*filep;
+char *getline(struct filepointer *filep)
 {
-	register char	*p,	/* walking pointer */
-			*eof,	/* end of file pointer */
-			*bol;	/* beginning of line pointer */
-	register int	lineno;	/* line number */
+	char	*p,	/* walking pointer */
+		*eof,	/* end of file pointer */
+		*bol;	/* beginning of line pointer */
+	int	lineno;	/* line number */
 
 	p = filep->f_p;
 	eof = filep->f_end;
@@ -590,7 +585,7 @@ char *getline(filep)
 		else if (*p == '\n') {
 			lineno++;
 			if (*bol == '#') {
-				register char *cp;
+				char *cp;
 
 				*p++ = '\0';
 				/* punt lines with just # (yacc generated) */
@@ -613,10 +608,9 @@ done:
  * Strip the file name down to what we want to see in the Makefile.
  * It will have objprefix and objsuffix around it.
  */
-char *base_name(file)
-	register char	*file;
+char *base_name(char *file)
 {
-	register char	*p;
+	char	*p;
 
 	file = copy(file);
 	for(p=file+strlen(file); p>file && *p != '.'; p--) ;
@@ -627,8 +621,7 @@ char *base_name(file)
 }
 
 #if defined(USG) && !defined(CRAY) && !defined(SVR4) && !defined(__EMX__) && !defined(clipper) && !defined(__clipper__)
-int rename (from, to)
-    char *from, *to;
+int rename (char *from, char *to)
 {
     (void) unlink (to);
     if (link (from, to) == 0) {
@@ -641,9 +634,7 @@ int rename (from, to)
 #endif /* USGISH */
 
 void
-redirect(line, makefile)
-	char	*line,
-		*makefile;
+redirect(char *line, char *makefile)
 {
 	struct stat	st;
 	FILE	*fdin, *fdout;

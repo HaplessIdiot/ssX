@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.9 1998/09/13 05:23:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.10 1998/09/27 04:43:43 dawes Exp $ */
 
 #ifndef _XAA_H
 #define _XAA_H
@@ -77,6 +77,7 @@
 #include "xf86str.h"
 #include "regionstr.h"
 #include "xf86fbman.h"
+#include "xf86_8plus24.h"
 
 /* Flags */
 #define PIXMAP_CACHE			0x00000001
@@ -1207,6 +1208,6 @@ XAADestroyInfoRec(
 );
 
 
-
+extern OverlayFBfuncs XAAOverlayFBfuncs;
 
 #endif /* _XAA_H */

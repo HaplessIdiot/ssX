@@ -1,6 +1,6 @@
 /* (c) Itai Nahshon */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_i2c.c,v 1.1 1998/09/05 06:36:45 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -21,7 +21,7 @@
  */
 static Bool
 CIRI2CSwitchToBus(I2CBusPtr b) {
-    CIRPtr pCir = ((CIRPtr)b->DriverPrivate);
+    CIRPtr pCir = ((CIRPtr)b->DriverPrivate.ptr);
     if (b == pCir->I2CPtr1) {
         if ((pCir->ModeReg.ExtVga[GR17] & 0x60) == 0)
 		return TRUE;
@@ -39,33 +39,33 @@ CIRI2CSwitchToBus(I2CBusPtr b) {
     return TRUE;
 }
 
-static Bool
+static void
 CIRI2CPutBits(I2CBusPtr b, int clock,  int data) {
     unsigned int reg = 0;
     
     if(!CIRI2CSwitchToBus(b))
-        return FALSE;
+        return /*FALSE*/;
 
     if(clock) reg |= 1;
     if(data)  reg |= 2;
     outw(0x3C4, (reg << 8) | 0x08);
     /* ErrorF("CIRI2CPutBits: %d %d\n", clock, data); */
-    return TRUE;
+    return /*TRUE*/;
 }
 
-static Bool
+static void
 CIRI2CGetBits(I2CBusPtr b, int *clock, int *data) {
     unsigned int reg;
 
     if(!CIRI2CSwitchToBus(b))
-        return FALSE;
+        return /*FALSE*/;
 
     outb(0x3C4, 0x08);
     reg = inb(0x3C5);
     *clock = (reg & 0x04) != 0;
     *data  = (reg & 0x80) != 0;
     /* ErrorF("CIRI2CGetBits: %d %d\n", *clock, *data); */
-    return TRUE;
+    return /*TRUE*/;
 }
 
 Bool 
@@ -88,7 +88,7 @@ CIRI2CInit(ScreenPtr pScreen)
     I2CPtr->I2CPutBits = CIRI2CPutBits;
     I2CPtr->I2CPutBits = CIRI2CPutBits;
     I2CPtr->I2CGetBits = CIRI2CGetBits;
-    I2CPtr->DriverPrivate = pCir;
+    I2CPtr->DriverPrivate.ptr = pCir;
     
     if(!xf86I2CBusInit(I2CPtr))
        return FALSE;
@@ -101,7 +101,7 @@ CIRI2CInit(ScreenPtr pScreen)
     I2CPtr->BusName    = "I2C bus 2";
     I2CPtr->I2CPutBits = CIRI2CPutBits;
     I2CPtr->I2CGetBits = CIRI2CGetBits;
-    I2CPtr->DriverPrivate = pCir;
+    I2CPtr->DriverPrivate.ptr = pCir;
     
     if(!xf86I2CBusInit(I2CPtr))
        return FALSE;

@@ -67,7 +67,7 @@ terms and conditions:
 							   July, 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/mixie/process/mppaste.c,v 3.1 1996/08/20 13:16:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/process/mppaste.c,v 3.2 1998/10/04 09:36:36 dawes Exp $ */
 
 #define _XIEC_MPPASTE
 #define _XIEC_PPASTE
@@ -75,7 +75,6 @@ terms and conditions:
 /*
  *  Include files
  */
-#include <stdio.h>
 
 /*
  *  Core X Includes

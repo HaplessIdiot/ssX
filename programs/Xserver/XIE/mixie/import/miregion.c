@@ -117,11 +117,10 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/mixie/import/miregion.c,v 3.2 1997/02/18 10:51:58 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/import/miregion.c,v 3.3 1998/10/04 09:36:16 dawes Exp $ */
 
 #define _XIEC_MIREGION
 
-#include <stdio.h>
 #include <memory.h>
 
 #include "miscstruct.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.150 1998/08/13 14:45:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.151 1998/09/05 06:36:40 dawes Exp $ */
 
 
 /*
@@ -1241,6 +1241,7 @@ configMonitor(MonPtr monitorp, XF86ConfMonitorPtr conf_monitor)
     while( cmodep ) {
         mode = (DisplayModePtr)xnfalloc(sizeof(DisplayModeRec));
         memset(mode,'\0',sizeof(DisplayModeRec));
+	mode->type       = 0;
         mode->Clock      = cmodep->ml_clock;
         mode->HDisplay   = cmodep->ml_hdisplay;
         mode->HSyncStart = cmodep->ml_hsyncstart;

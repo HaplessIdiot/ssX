@@ -67,14 +67,13 @@ terms and conditions:
 	Dean Verheiden  -- AGE Logic, Inc. August, 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/mixie/import/microi.c,v 3.1 1996/08/20 13:16:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/import/microi.c,v 3.2 1998/10/04 09:36:12 dawes Exp $ */
 
 #define _XIEC_MICROI
 
 /*
  *  Include files
  */
-#include <stdio.h>
 /*
  *  Core X Includes
  */

@@ -66,14 +66,13 @@ terms and conditions:
 	Dean Verheiden -- AGE Logic, Inc. August 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/process/phist.c,v 3.1 1996/08/20 12:21:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/process/phist.c,v 3.2 1998/10/04 09:35:43 dawes Exp $ */
 
 #define _XIEC_PHIST
 
 /*
  *  Include files
  */
-#include <stdio.h>
   /*
    *  Core X Includes
    */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.4 1998/09/05 06:36:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.5 1998/09/19 12:14:50 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -142,6 +142,97 @@ xf86ShowClockRanges(ScrnInfoPtr scrp, ClockRangePtr clockRanges)
 }
 
 /*
+ * xf86HandleBuiltinMode() - handles built-in modes
+ */
+static ModeStatus
+xf86HandleBuiltinMode(ScrnInfoPtr scrp,
+		      DisplayModePtr p,
+		      DisplayModePtr modep,
+		      ClockRangePtr clockRanges,
+		      Bool allowDiv2)
+{
+    ClockRangePtr cp;
+    int extraFlags = 0;
+    int MulFactor = 1;
+    int DivFactor = 1;
+    int clockIndex;
+    
+    if ( p->type & M_T_CLOCK_C ) {
+	/* Check clock is in range */
+	for (cp = clockRanges; cp != NULL; cp = cp->next) {
+	    if ((cp->minClock <= p->Clock) &&
+		(cp->maxClock >= p->Clock) &&
+		(cp->interlaceAllowed ||
+		 !(p->Flags & V_INTERLACE)) &&
+		(cp->doubleScanAllowed ||
+		 ((!(p->Flags & V_DBLSCAN)) && (p->VScan <= 1))))
+		break;
+	}
+	if (cp == NULL){
+	    modep->type = p->type;
+	    return MODE_CLOCK_RANGE;
+	}
+	DivFactor = cp->ClockDivFactor;
+	MulFactor = cp->ClockMulFactor;
+	if (!scrp->progClock) {
+	    clockIndex = xf86GetNearestClock(scrp, p->Clock, allowDiv2,
+					     cp->ClockDivFactor,
+					     cp->ClockMulFactor, &extraFlags);
+	    modep->Clock = (scrp->clock[clockIndex] * DivFactor)
+		/ MulFactor;
+	    modep->ClockIndex	= clockIndex;
+	    modep->SynthClock	= scrp->clock[clockIndex];
+	    if (extraFlags & V_CLKDIV2) {
+		modep->Clock /= 2;
+		modep->SynthClock /= 2;
+	    }
+	} else {
+	    modep->Clock = p->Clock;
+	    modep->ClockIndex = -1;
+	    modep->SynthClock = (modep->Clock * MulFactor)
+		/ DivFactor;
+	}
+	modep->PrivFlags = cp->PrivFlags;
+    } else {
+	if(!scrp->progClock) {
+	    modep->Clock = p->Clock;
+	    modep->ClockIndex = p->ClockIndex;
+	    modep->SynthClock = p->SynthClock;
+	} else {
+	    modep->Clock = p->Clock;
+	    modep->ClockIndex = -1;
+	    modep->SynthClock = p->SynthClock;
+	}
+	modep->PrivFlags = p->PrivFlags;
+    }
+    modep->type = p->type;
+    modep->HDisplay  = p->HDisplay;
+    modep->HSyncStart = p->HSyncStart;
+    modep->HSyncEnd = p->HSyncEnd;
+    modep->HTotal = p->HTotal;
+    modep->HSkew = p->HSkew;
+    modep->VDisplay	= p->VDisplay;
+    modep->VSyncStart = p->VSyncStart;
+    modep->VSyncEnd	= p->VSyncEnd;
+    modep->VTotal = p->VTotal;
+    modep->VScan = p->VScan;
+    modep->Flags = p->Flags | extraFlags;
+    modep->CrtcHDisplay = p->CrtcHDisplay;
+    modep->CrtcHSyncStart = p->CrtcHSyncStart;
+    modep->CrtcHSyncEnd = p->CrtcHSyncEnd;
+    modep->CrtcHTotal = p->CrtcHTotal;
+    modep->CrtcHSkew = p->CrtcHSkew;
+    modep->CrtcVDisplay = p->CrtcVDisplay;
+    modep->CrtcVSyncStart = p->CrtcVSyncStart;
+    modep->CrtcVSyncEnd = p->CrtcVSyncEnd;
+    modep->CrtcVTotal = p->CrtcVTotal;
+    modep->CrtcHAdjusted = p->CrtcHAdjusted;
+    modep->CrtcVAdjusted = p->CrtcVAdjusted;
+    
+    return MODE_OK;
+}
+
+/*
  * xf86LookupMode
  *
  * This function returns a mode from the given list which matches the
@@ -210,6 +301,17 @@ xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
     /* Scan the mode pool for matching names */
     for (p = scrp->modePool; p != NULL; p = p->next) {
 	if (strcmp(p->name, modep->name) == 0) {
+
+	    /*
+	     * Requested mode is a built-in mode. Don't let the user
+	     * override it.
+	     * Since built-in modes always come before user specified
+	     * modes it will always be found first.  
+	     */
+	    if ( p->type & M_T_BUILTIN ) 
+		return xf86HandleBuiltinMode(scrp, p,modep, clockRanges,
+					     allowDiv2);
+		
 	    /* Check clock is in range */
 	    for (cp = clockRanges; cp != NULL; cp = cp->next) {
 		if ((cp->minClock <= p->Clock) &&
@@ -354,6 +456,7 @@ xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
 	    modep->SynthClock /= 2;
 	}
     }
+    modep->type                 = bestMode->type;
     modep->PrivFlags		= ModePrivFlags;
     modep->HDisplay		= bestMode->HDisplay;
     modep->HSyncStart		= bestMode->HSyncStart;
@@ -728,9 +831,14 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 		new->prev = q;
 		q = new;
 	    } else {
-		xf86DrvMsg(scrp->scrnIndex, X_WARNING,
-			   "Mode \"%s\" deleted (%s)\n", p->name,
-			   xf86ModeStatusToString(status));
+		if (p->type & M_T_BUILTIN)
+		    xf86DrvMsg(scrp->scrnIndex, X_WARNING,
+			       "Built-in mode \"%s\" deleted (%s)\n", p->name,
+			       xf86ModeStatusToString(status));
+		else
+		    xf86DrvMsg(scrp->scrnIndex, X_WARNING,
+			       "Mode \"%s\" deleted (%s)\n", p->name,
+			       xf86ModeStatusToString(status));
 	    }
 	}
     }
@@ -981,9 +1089,14 @@ xf86PruneDriverModes(ScrnInfoPtr scrp)
 	    return;
 	n = p->next;
 	if (p->status != MODE_OK) {
-	    xf86DrvMsg(scrp->scrnIndex, X_WARNING,
-		       "Mode \"%s\" deleted (%s)\n", p->name,
-		       xf86ModeStatusToString(p->status));
+	    if (p->type & M_T_BUILTIN)
+		xf86DrvMsg(scrp->scrnIndex, X_WARNING,
+			   "Built-in mode \"%s\" deleted (%s)\n", p->name,
+			   xf86ModeStatusToString(p->status));
+	    else
+		xf86DrvMsg(scrp->scrnIndex, X_WARNING,
+			   "Mode \"%s\" deleted (%s)\n", p->name,
+			   xf86ModeStatusToString(p->status));
 	    xf86DeleteMode(&(scrp->modes), p);
 	}
 	p = n;
@@ -1008,60 +1121,63 @@ xf86SetCrtcForModes(ScrnInfoPtr scrp, int adjustFlags)
 	return;
 
     do {
-	p->CrtcHDisplay		= p->HDisplay;
-	p->CrtcHSyncStart	= p->HSyncStart;
-	p->CrtcHSyncEnd		= p->HSyncEnd;
-	p->CrtcHTotal		= p->HTotal;
-	p->CrtcHSkew		= p->HSkew;
-	p->CrtcVDisplay		= p->VDisplay;
-	p->CrtcVSyncStart	= p->VSyncStart;
-	p->CrtcVSyncEnd		= p->VSyncEnd;
-	p->CrtcVTotal		= p->VTotal;
-        if ((p->Flags & V_INTERLACE) && (adjustFlags & INTERLACE_HALVE_V)) {
-	    p->CrtcVDisplay	/= 2;
-	    p->CrtcVSyncStart	/= 2;
-	    p->CrtcVSyncEnd	/= 2;
-	    p->CrtcVTotal	/= 2;
+	if (p->type & M_T_CRTC_C){
+	    p->CrtcHDisplay		= p->HDisplay;
+	    p->CrtcHSyncStart	        = p->HSyncStart;
+	    p->CrtcHSyncEnd		= p->HSyncEnd;
+	    p->CrtcHTotal		= p->HTotal;
+	    p->CrtcHSkew		= p->HSkew;
+	    p->CrtcVDisplay		= p->VDisplay;
+	    p->CrtcVSyncStart    	= p->VSyncStart;
+	    p->CrtcVSyncEnd		= p->VSyncEnd;
+	    p->CrtcVTotal		= p->VTotal;
+	    if ((p->Flags & V_INTERLACE) && (adjustFlags & INTERLACE_HALVE_V))
+	    {
+		p->CrtcVDisplay	        /= 2;
+		p->CrtcVSyncStart	/= 2;
+		p->CrtcVSyncEnd	        /= 2;
+		p->CrtcVTotal           /= 2;
+	    }
+	    if (p->Flags & V_DBLSCAN) {
+		p->CrtcVDisplay	        *= 2;
+		p->CrtcVSyncStart	*= 2;
+		p->CrtcVSyncEnd	        *= 2;
+		p->CrtcVTotal           *= 2;
+	    }
+	    if (p->VScan > 1) {
+		p->CrtcVDisplay	        *= p->VScan;
+		p->CrtcVSyncStart	*= p->VScan;
+		p->CrtcVSyncEnd	        *= p->VScan;
+		p->CrtcVTotal	        *= p->VScan;
+	    }
+	    p->CrtcHAdjusted = FALSE;
+	    p->CrtcVAdjusted = FALSE;
+	    p->CrtcVBlankStart = min(p->CrtcVSyncStart, p->CrtcVDisplay);
+	    p->CrtcVBlankEnd = max(p->CrtcVSyncEnd, p->CrtcVTotal);
+	    if ((p->CrtcVBlankEnd - p->CrtcVBlankStart) >= 127) {
+		/* 
+		 * V Blanking size must be < 127.
+		 * Moving blank start forward is safer than moving blank end
+		 * back, since monitors clamp just AFTER the sync pulse (or in
+		 * the sync pulse), but never before.
+		 */
+		p->CrtcVBlankStart = p->CrtcVBlankEnd - 127;
+	    }
+	    p->CrtcHBlankStart = min(p->CrtcHSyncStart, p->CrtcHDisplay);
+	    p->CrtcHBlankEnd = max(p->CrtcHSyncEnd, p->CrtcHTotal);
+	    if ((p->CrtcHBlankEnd - p->CrtcHBlankStart) >= 63 * 8) {
+		/*
+		 * H Blanking size must be < 63*8. Same remark as above.
+		 */
+		p->CrtcHBlankStart = p->CrtcHBlankEnd - 63 * 8;
+	    }
 	}
-	if (p->Flags & V_DBLSCAN) {
-	    p->CrtcVDisplay	*= 2;
-	    p->CrtcVSyncStart	*= 2;
-	    p->CrtcVSyncEnd	*= 2;
-	    p->CrtcVTotal	*= 2;
-	}
-	if (p->VScan > 1) {
-	    p->CrtcVDisplay	*= p->VScan;
-	    p->CrtcVSyncStart	*= p->VScan;
-	    p->CrtcVSyncEnd	*= p->VScan;
-	    p->CrtcVTotal	*= p->VScan;
-	}
-	p->CrtcHAdjusted = FALSE;
-	p->CrtcVAdjusted = FALSE;
-	p->CrtcVBlankStart = min(p->CrtcVSyncStart, p->CrtcVDisplay);
-	p->CrtcVBlankEnd = max(p->CrtcVSyncEnd, p->CrtcVTotal);
-	if ((p->CrtcVBlankEnd - p->CrtcVBlankStart) >= 127) {
-	    /* 
-	     * V Blanking size must be < 127.
-	     * Moving blank start forward is safer than moving blank end
-	     * back, since monitors clamp just AFTER the sync pulse (or in
-	     * the sync pulse), but never before.
-	     */
-	    p->CrtcVBlankStart = p->CrtcVBlankEnd - 127;
-	}
-	p->CrtcHBlankStart = min(p->CrtcHSyncStart, p->CrtcHDisplay);
-	p->CrtcHBlankEnd = max(p->CrtcHSyncEnd, p->CrtcHTotal);
-	if ((p->CrtcHBlankEnd - p->CrtcHBlankStart) >= 63 * 8) {
-	    /*
-	     * H Blanking size must be < 63*8. Same remark as above.
-	     */
-	    p->CrtcHBlankStart = p->CrtcHBlankEnd - 63 * 8;
-	}
-	ErrorF("Mode %s: %d (%d) %d %d (%d) %d %d (%d) %d %d (%d) %d\n", p->name,
-	p->CrtcHDisplay, p->CrtcHBlankStart, p->CrtcHSyncStart, p->CrtcHSyncEnd,
-	p->CrtcHBlankEnd, p->CrtcHTotal,
-	p->CrtcVDisplay, p->CrtcVBlankStart, p->CrtcVSyncStart, p->CrtcVSyncEnd,
-	p->CrtcVBlankEnd, p->CrtcVTotal);
-
+	ErrorF("Mode %s: %d (%d) %d %d (%d) %d %d (%d) %d %d (%d) %d\n",
+	       p->name, p->CrtcHDisplay, p->CrtcHBlankStart,
+	       p->CrtcHSyncStart, p->CrtcHSyncEnd, p->CrtcHBlankEnd,
+	       p->CrtcHTotal, p->CrtcVDisplay, p->CrtcVBlankStart,
+	       p->CrtcVSyncStart, p->CrtcVSyncEnd, p->CrtcVBlankEnd,
+	       p->CrtcVTotal);
 	p = p->next;
     } while (p != NULL && p != scrp->modes);
 }
@@ -1102,15 +1218,28 @@ xf86PrintModes(ScrnInfoPtr scrp)
 	    desc2 = " (VScan)";
 	}
 	if (p->Clock == p->SynthClock) {
-	    xf86DrvMsg(scrp->scrnIndex, X_CONFIG, "Mode \"%s\": %.1f MHz, "
-		   "%.1f kHz, %.1f Hz%s%s\n",
-		   p->name, p->Clock / 1000.0,
-		   hsync, refresh, desc, desc2);
+	    if (p->type & M_T_BUILTIN)
+		xf86DrvMsg(scrp->scrnIndex, X_CONFIG, "Built-in mode \"%s\": "
+			   "%.1f MHz, %.1f kHz, %.1f Hz%s%s\n",
+			   p->name, p->Clock / 1000.0, hsync,
+			   refresh, desc, desc2);
+	    else
+		xf86DrvMsg(scrp->scrnIndex, X_CONFIG, "Mode \"%s\": %.1f MHz, "
+			   "%.1f kHz, %.1f Hz%s%s\n",
+			   p->name, p->Clock / 1000.0,
+			   hsync, refresh, desc, desc2);
 	} else {
-	    xf86DrvMsg(scrp->scrnIndex, X_CONFIG, "Mode \"%s\": %.1f MHz "
-		   "(scaled from %.1f MHz), %.1f kHz, %.1f Hz%s%s\n",
-		   p->name, p->Clock / 1000.0, p->SynthClock / 1000.0,
-		   hsync, refresh, desc, desc2);
+	    if (p->type & M_T_BUILTIN)
+		xf86DrvMsg(scrp->scrnIndex, X_CONFIG, "Built-in Mode \"%s\": "
+			   "%.1f MHz (scaled from %.1f MHz), %.1f kHz, "
+			   "%.1f Hz%s%s\n", p->name, p->Clock / 1000.0,
+			   p->SynthClock / 1000.0, hsync, refresh, desc,
+			   desc2);
+	    else
+		xf86DrvMsg(scrp->scrnIndex, X_CONFIG, "Mode \"%s\": %.1f MHz "
+			   "(scaled from %.1f MHz), %.1f kHz, %.1f Hz%s%s\n",
+			   p->name, p->Clock / 1000.0, p->SynthClock / 1000.0,
+			   hsync, refresh, desc, desc2);
 	}
 	p = p->next;
     } while (p != NULL && p != scrp->modes);

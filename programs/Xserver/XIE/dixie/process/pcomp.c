@@ -66,14 +66,13 @@ terms and conditions:
 	Dean Verheiden -- AGE Logic, Inc. July 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pcomp.c,v 3.0 1996/03/29 22:10:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pcomp.c,v 3.1 1998/10/04 09:35:40 dawes Exp $ */
 
 #define _XIEC_PCOMP
 
 /*
  *  Include files
  */
-#include <stdio.h>
   /*
    *  Core X Includes
    */

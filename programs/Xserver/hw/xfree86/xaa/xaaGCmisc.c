@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGCmisc.c,v 1.8 1998/09/13 05:23:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGCmisc.c,v 1.9 1998/09/27 04:43:43 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -206,10 +206,9 @@ XAAValidatePolyGlyphBlt(
    pGC->ops->PolyText16 = XAAFallbackOps.PolyText16;
    pGC->ops->PolyGlyphBlt = XAAFallbackOps.PolyGlyphBlt;
 
-
+   if(!pGC->font) return;
    if(pGC->fillStyle != FillSolid) return;
 
-   /* no fonts wider than 32 pixels */
    if((FONTMAXBOUNDS(pGC->font, rightSideBearing) - 
 	FONTMINBOUNDS(pGC->font, leftSideBearing) > 32))
 	BigFont = TRUE;
@@ -262,7 +261,8 @@ XAAValidateImageGlyphBlt(
    pGC->ops->ImageText16 = XAAFallbackOps.ImageText16;
    pGC->ops->ImageGlyphBlt = XAAFallbackOps.ImageGlyphBlt;
 
-   /* no fonts wider than 32 pixels */
+   if(!pGC->font) return;
+
    if((FONTMAXBOUNDS(pGC->font, rightSideBearing) - 
 	FONTMINBOUNDS(pGC->font, leftSideBearing) > 32))
 	BigFont = TRUE;

@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.51 1998/09/20 15:08:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.53 1998/09/26 13:24:18 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -95,6 +95,7 @@
 #include "mga_reg.h"
 #include "mga.h"
 #include "xaa.h"
+#include "xf86_8plus24.h"
 
 
 /*
@@ -190,7 +191,9 @@ typedef enum {
     OPTION_RGB_BITS,
     OPTION_SYNC_ON_GREEN,
     OPTION_NOACCEL,
-    OPTION_SHOWCACHE
+    OPTION_SHOWCACHE,
+    OPTION_8_PLUS_24,
+    OPTION_MGA_SDRAM
 } MGAOpts;
 
 static OptionInfoRec MGAOptions[] = {
@@ -201,6 +204,8 @@ static OptionInfoRec MGAOptions[] = {
     { OPTION_SYNC_ON_GREEN,	"SyncOnGreen",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SHOWCACHE,		"ShowCache",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_8_PLUS_24,		"8Plus24",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_MGA_SDRAM,		"MGASDRAM",	OPTV_BOOLEAN,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -881,6 +886,31 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	pMga->ShowCache = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ShowCache enabled\n");
     }
+    if (xf86IsOptionSet(MGAOptions, OPTION_MGA_SDRAM)) {
+	pMga->HasSDRAM = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Has SDRAM\n");
+    }
+    if (xf86IsOptionSet(MGAOptions, OPTION_8_PLUS_24)) {
+	if(pScrn->bitsPerPixel == 32) {
+	    /* move the depth 8 format before the depth 24 */
+	    int num = pScrn->numFormats;
+	    pScrn->formats[num].depth = pScrn->formats[num - 1].depth;
+	    pScrn->formats[num].bitsPerPixel =
+				 pScrn->formats[num - 1].bitsPerPixel;
+	    pScrn->formats[num].scanlinePad = 
+				pScrn->formats[num - 1].scanlinePad;
+	    pScrn->formats[num - 1].depth = 8;
+	    pScrn->formats[num - 1].bitsPerPixel = 32;
+	    pScrn->formats[num - 1].scanlinePad = BITMAP_SCANLINE_PAD;
+	    pScrn->numFormats++;
+	    pMga->Overlay8Plus24 = TRUE;
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+				"PseudoColor overlay enabled\n");
+	} else {
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+		"Option \"8Plus24\" is not supported in this configuration\n");
+	}
+    } 
 
     /* Find the PCI slot for this screen */
     /*
@@ -1654,22 +1684,26 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     /* Setup the visuals we support. */
 
-    /*
-     * For bpp > 8, the default visuals are not acceptable because we only
-     * support TrueColor and not DirectColor.  To deal with this, call
-     * miSetVisualTypes with the appropriate visual mask.
-     */
-    /* But the Millennium/TVP3026 does support DirectColor */
-    if (pScrn->bitsPerPixel > 8 && pMga->Bios.RamdacType!=0x0001) {
-	if (!miSetVisualTypes(pScrn->depth, TrueColorMask, pScrn->rgbBits,
-				pScrn->defaultVisual))
-	    return FALSE;
+    /* All MGA support DirectColor and can do overlays in 32bpp */
+    if(pMga->Overlay8Plus24 && (pScrn->bitsPerPixel == 32)) {
+	/* We force the defaultVisual here just to get things to
+	   work.  This should a user settable option with PseudoColor
+	   the default.  Both work fine but applications like a
+	   PseudoColor root better */
+	pScrn->defaultVisual = PseudoColor;
+	if (!miSetVisualTypes(8, PseudoColorMask | GrayScaleMask,
+			      pScrn->rgbBits, pScrn->defaultVisual))
+		return FALSE;
+	if (!miSetVisualTypes(24, TrueColorMask, 
+				pScrn->rgbBits, pScrn->defaultVisual))
+		return FALSE;
     } else {
 	if (!miSetVisualTypes(pScrn->depth,
 			      miGetDefaultVisualMask(pScrn->depth),
 			      pScrn->rgbBits, pScrn->defaultVisual))
 	    return FALSE;
     }
+
 
     /*
      * Call the framebuffer layer's ScreenInit function, and fill in other
@@ -1734,6 +1768,10 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	MGAStormAccelInit(pScreen);
 
     miInitializeBackingStore(pScreen);
+
+    if(pMga->Overlay8Plus24)
+	xf86Overlay8Plus24Init(pScreen, TRANSPARENCY_KEY, KEY_COLOR, FALSE, 
+		 pMga->NoAccel ? NULL : &XAAOverlayFBfuncs); 
 
     /* Initialise cursor functions */
     miDCInitialize(pScreen, xf86GetPointerScreenFuncs());

@@ -66,14 +66,13 @@ terms and conditions:
 	Robert NC Shelley -- AGE Logic, Inc. April 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/export/edrawp.c,v 3.0 1996/03/29 22:10:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/export/edrawp.c,v 3.1 1998/10/04 09:35:26 dawes Exp $ */
 
 #define _XIEC_EDRAWP
 
 /*
  *  Include files
  */
-#include <stdio.h>
   /*
    *  Core X Includes
    */

@@ -17,7 +17,7 @@ XCOMM $TOG: Imake.cf /main/30 1998/04/28 13:55:25 barstow $
  *
  *     4.  Create a .cf file with the name given by MacroFile.
  */
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.42 1998/09/06 04:46:48 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.43 1998/10/02 06:14:58 dawes Exp $
 
 #if defined(clipper) || defined(__clipper__)
 # undef clipper
@@ -562,6 +562,12 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.42 1998/09/06 04:46:48 dawes Exp $
 #  define AlphaArchitecture
 #  undef __alpha
 # endif /* __alpha */
+# ifdef __alpha__
+#  ifndef AlphaArchitecture
+#   define AlphaArchitecture
+#  endif
+#  undef __alpha__
+# endif /* __alpha__ */
 # ifdef mc68000
 #  define Mc68020Architecture
 #  undef mc68000

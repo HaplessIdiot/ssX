@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.6 1998/09/13 05:23:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.7 1998/09/13 09:10:17 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -67,6 +67,12 @@ typedef enum {
     MODE_ERROR	= -1	/* error condition */
 } ModeStatus;
 
+# define M_T_BUILTIN 0x01        /* built-in mode */
+# define M_T_CLOCK_C (0x02 | M_T_BUILTIN) /* built-in mode - configure clock */
+# define M_T_CRTC_C  (0x04 | M_T_BUILTIN) /* built-in mode - configure CRTC  */
+# define M_T_CLOCK_CRTC_C  (M_T_CLOCK_C | M_T_CRTC_C)
+                               /* built-in mode - configure CRTC and clock */
+
 /* Video mode */
 
 typedef struct _DisplayModeRec {
@@ -74,7 +80,8 @@ typedef struct _DisplayModeRec {
     struct _DisplayModeRec *	next;
     char *			name;		/* identifier for the mode */
     ModeStatus			status;
-
+    int                         type;
+    
     /* These are the values that the user sees/provides */
     int				Clock;		/* pixel clock freq */
     int				HDisplay;	/* horizontal timing */
@@ -175,6 +182,8 @@ typedef struct {
     int numChipset;
     BusResource Resource;
 } IsaChipsets;
+
+typedef int (*FindIsaDevProc)(void);
 
 typedef struct { 
     int numChipset;

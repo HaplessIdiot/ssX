@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.80 1998/09/13 05:23:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.81 1998/09/20 14:41:01 dawes Exp $ */
 
 /*
  * Copyright 1991-1998 by The XFree86 Project, Inc.
@@ -534,6 +534,7 @@ ErrorF("Screen deleted because of no matching config section\n");
        */
       if (!xf86Info.sharedMonitor) (xf86Screens[i]->EnterLeaveMonitor)(ENTER);
 #endif
+      xf86Resetting = FALSE;
   }
 
 #ifndef AMOEBA

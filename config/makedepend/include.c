@@ -20,6 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
+/* $XFree86$ */
 
 
 #include "def.h"
@@ -31,27 +32,24 @@ extern char	*notdotdot[ ];
 extern boolean show_where_not;
 extern boolean warn_multiple;
 
-boolean
-isdot(p)
-	register char	*p;
+static boolean
+isdot(char *p)
 {
 	if(p && *p++ == '.' && *p++ == '\0')
 		return(TRUE);
 	return(FALSE);
 }
 
-boolean
-isdotdot(p)
-	register char	*p;
+static boolean
+isdotdot(char *p)
 {
 	if(p && *p++ == '.' && *p++ == '.' && *p++ == '\0')
 		return(TRUE);
 	return(FALSE);
 }
 
-boolean
-issymbolic(dir, component)
-	register char	*dir, *component;
+static boolean
+issymbolic(char *dir, char *component)
 {
 #ifdef S_IFLNK
 	struct stat	st;
@@ -77,9 +75,8 @@ issymbolic(dir, component)
  * Any of the 'x/..' sequences within the name can be eliminated.
  * (but only if 'x' is not a symbolic link!!)
  */
-void
-remove_dotdot(path)
-	char	*path;
+static void
+remove_dotdot(char *path)
 {
 	register char	*end, *from, *to, **cp;
 	char		*components[ MAXFILES ],
@@ -150,8 +147,8 @@ remove_dotdot(path)
 /*
  * Add an include file to the list of those included by 'file'.
  */
-struct inclist *newinclude(newfile, incstring)
-	register char	*newfile, *incstring;
+struct inclist *
+newinclude(char *newfile, char *incstring)
 {
 	register struct inclist	*ip;
 
@@ -172,8 +169,7 @@ struct inclist *newinclude(newfile, incstring)
 }
 
 void
-included_by(ip, newfile)
-	register struct inclist	*ip, *newfile;
+included_by(struct inclist *ip, struct inclist *newfile)
 {
 	register int i;
 
@@ -223,7 +219,7 @@ included_by(ip, newfile)
 }
 
 void
-inc_clean ()
+inc_clean (void)
 {
 	register struct inclist *ip;
 
@@ -232,10 +228,8 @@ inc_clean ()
 	}
 }
 
-struct inclist *inc_path(file, include, dot)
-	register char	*file,
-			*include;
-	boolean	dot;
+struct inclist *
+inc_path(char *file, char *include, boolean dot)
 {
 	static char	path[ BUFSIZ ];
 	register char		**pp, *p;

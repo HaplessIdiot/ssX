@@ -66,14 +66,13 @@ terms and conditions:
 	Dean Verheiden -- AGE Logic, Inc. July 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pbandc.c,v 3.0 1996/03/29 22:10:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pbandc.c,v 3.1 1998/10/04 09:35:37 dawes Exp $ */
 
 #define _XIEC_PBANDC
 
 /*
  *  Include files
  */
-#include <stdio.h>
   /*
    *  Core X Includes
    */

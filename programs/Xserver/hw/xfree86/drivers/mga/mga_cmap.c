@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_cmap.c,v 1.4 1998/09/20 06:01:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_cmap.c,v 1.6 1998/09/26 13:24:17 dawes Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -104,6 +104,7 @@ MGAInstallColormap(ColormapPtr pmap)
     int index = pmap->pScreen->myNum;
     ScrnInfoPtr pScrn = xf86Screens[index];
     ColormapPtr oldpmap = InstalledMaps[index];
+    MGAPtr pMga = MGAPTR(pScrn);
     VisualPtr pVisual = pmap->pVisual;
     Pixel 	*ppix;
     xrgb 	*prgb;
@@ -131,11 +132,13 @@ MGAInstallColormap(ColormapPtr pmap)
 			pmap->pVisual->blueMask) + 1;
 	else
 	     entries = pmap->pVisual->ColormapEntries;
+    } else if ((pScrn->bitsPerPixel == 32) && pMga->Overlay8Plus24) {
+	if((pmap->pVisual->class == PseudoColor) ||
+	   (pmap->pVisual->class == GrayScale))
+	   entries = pmap->pVisual->ColormapEntries;
+	else return;
     } else if ((pmap->pVisual->class | DynamicClass) == DirectColor) {
       entries = pmap->pVisual->ColormapEntries;
-    } else if ((pScrn->bitsPerPixel == 32) && 
-		(pmap->pVisual->class == PseudoColor)) {
-	     entries = pmap->pVisual->ColormapEntries;
     } else return;
 
 

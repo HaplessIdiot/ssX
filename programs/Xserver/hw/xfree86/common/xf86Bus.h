@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.h,v 1.2 1998/07/25 16:54:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.h,v 1.3 1998/09/13 05:23:31 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -63,12 +63,6 @@ typedef struct pci_io {
     CARD32 saveio;
     CARD32 restoreio;
 } pciAccRec, *pciAccPtr;
-
-typedef enum {
-    DEV_NONE,
-    DEV_VGA,
-    DEV_8514
-} devType;
 
 #define pciBusId        x_busId.x_pciBusId
 #define isaBusId        x_busId.x_isaBusId

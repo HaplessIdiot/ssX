@@ -66,7 +66,7 @@ terms and conditions:
 	Ben Fahy -- AGE Logic, Inc. Oct, 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/mixie/export/mejpeg.c,v 3.2 1997/06/30 05:49:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/export/mejpeg.c,v 3.3 1998/10/04 09:36:04 dawes Exp $ */
 
 #define _XIEC_MEPHOTO
 #define _XIEC_EPHOTO
@@ -75,7 +75,6 @@ terms and conditions:
 /*
  *  Include files
  */
-#include <stdio.h>
 
 /*
  *  Core X Includes

@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.30 1998/08/29 05:42:52 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.31 1998/10/02 06:15:17 dawes Exp $ */
 
 
 /* 
@@ -301,9 +301,12 @@ char *cpp_argv[ARGUMENTS] = {
 #ifdef unix
 	"-Uunix",	/* remove unix symbol so that filename unix.c okay */
 #endif
-#if defined(__386BSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__) || defined(MACH)
+#if defined(__386BSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__) || defined(MACH) || defined(linux)
 # ifdef __i386__
 	"-D__i386__",
+# endif
+# ifdef __alpha__
+	"-D__alpha__",
 # endif
 # ifdef __GNUC__
 	"-traditional",
@@ -496,7 +499,6 @@ char *cpp_argv[ARGUMENTS] = {
 	"-DNCR",	/* NCR */
 #endif
 #ifdef linux
-        "-traditional",
         "-Dlinux",
 #endif
 #if defined(Lynx) || defined(__Lynx__)

@@ -66,23 +66,27 @@ terms and conditions:
 	Robert NC Shelley -- AGE Logic, Inc. April, 1993
 
 ******************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/include/error.h,v 3.1 1996/10/16 14:52:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/include/error.h,v 3.2 1998/10/04 09:35:58 dawes Exp $ */
 
 #ifndef _XIEH_ERROR
 #define _XIEH_ERROR
 
-#ifndef _XIEC_ERROR
 #include <flo.h>
-extern	int	 SendResourceError();
-extern	int	 SendFloIDError();
-extern	int	 SendFloError();
-extern	void	 ErrGeneric();
-extern	void	 ErrResource();
-extern	void	 ErrDomain();
-extern	void	 ErrOperator();
-extern	void	 ErrTechnique();
-extern	void	 ErrValue();
-#endif
+#include <XIE.h>	
+#include <XIEproto.h>		/* declares xieFloEvn */
+#include <XIEprotost.h>		/* declares xieTypPhototag */
+#include <flostr.h>		/* declares floDefPtr */
+
+extern	int	 SendFloError(ClientPtr client, floDefPtr flo);
+extern	int	 SendFloIDError(ClientPtr client, XID spaceID, XID floID);
+extern	int	 SendResourceError(ClientPtr client, CARD8 code, XID id);
+extern	void	 ErrDomain(floDefPtr flo, peDefPtr ped, xieTypPhototag domain);
+extern	void	 ErrGeneric(floDefPtr flo, peDefPtr ped, CARD8 code);
+extern	void	 ErrOperator(floDefPtr flo, peDefPtr ped, CARD8 operator);
+extern	void	 ErrResource(floDefPtr flo, peDefPtr ped, CARD8 code, CARD32 id);
+extern	void	 ErrTechnique(floDefPtr flo, peDefPtr ped, CARD8 group, CARD16 tech, CARD16 lenParams);
+extern	void	 ErrValue(floDefPtr flo, peDefPtr ped, CARD32 value);
+extern	void	 FloError(floDefPtr flo, xieTypPhototag tag, CARD16 type, CARD8 code);
 
 /*
  *  Convenience macros for dealing with the floDef generic error packet

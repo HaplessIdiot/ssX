@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.6 1998/09/13 13:47:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.7 1998/09/19 12:14:49 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -36,8 +36,9 @@ static xf86AccessRec AccessNULL = {NULL,NULL,NULL};
 
 static xf86CurrentAccessRec xf86CurrentAccessVga = {&AccessNULL,&AccessNULL};
 static xf86CurrentAccessRec xf86CurrentAccess8514 = {&AccessNULL,&AccessNULL};
-static xf86ScrnAccessRec xf86PrimaryAccess = {NULL,NULL,MEM_IO};
+static xf86CurrentAccessRec xf86CurrentAccessMono = {&AccessNULL,&AccessNULL};
 
+static BusType primaryBus = BUS_NONE;
 static xf86AccessPtr primaryPciAccess = NULL;
 static struct {
     int bus;
@@ -924,16 +925,16 @@ DisablePciAccess(void)
 	pciIo_MemAccessDisable(paccp->io_memAccess.arg);
     }
 }
-static devType
+
+void
 FindPciPrimaryDevice(void)
 {  
     int i = 0;
     int j;
     pciConfigPtr pcp;
     pciAccPtr paccp;
-    devType DevType = DEV_NONE;
   
-    if (!xf86PciInfo) return DevType;
+    if (!xf86PciInfo) return;
 
     while ((pcp = xf86PciInfo[i]) != NULL) { 
 	if (pcp->_command & PCI_CMD_IO_ENABLE) {
@@ -948,14 +949,15 @@ FindPciPrimaryDevice(void)
 			    primaryPciDev.bus = pcp->busnum;
 			    primaryPciDev.dev = pcp->devnum;
 			    primaryPciDev.func = pcp->funcnum;
+			    primaryBus = BUS_PCI;
 			    /* prefer VGA */
-			    return DEV_VGA;
+			    return;
 			} else if (pcp->_prog_if == 1){
 			    primaryPciAccess = &paccp->ioAccess;
 			    primaryPciDev.bus = pcp->busnum;
 			    primaryPciDev.dev = pcp->devnum;
 			    primaryPciDev.func = pcp->funcnum;
-			    DevType = DEV_8514;
+			    primaryBus = BUS_PCI;
 			}
 		}
 		j++;
@@ -963,7 +965,6 @@ FindPciPrimaryDevice(void)
 	}
 	i++;
     }
-    return DevType;
 }
 
 /*
@@ -974,11 +975,21 @@ FindPciPrimaryDevice(void)
 Bool
 xf86IsPrimaryPci(pciVideoPtr pPci)
 {
-    /* if invalid bus primary device is not PCI */
-    if (primaryPciDev.bus == 0x7FFF) return FALSE;
+    if (primaryBus != BUS_PCI) return FALSE;
     return (pPci->bus == primaryPciDev.bus &&
 	    pPci->device == primaryPciDev.dev &&
 	    pPci->func == primaryPciDev.func);
+}
+
+/*
+ * xf86IsPrimaryIsa() -- return TRUE if primary device
+ * is ISA.
+ */
+ 
+Bool
+xf86IsPrimaryIsa(void)
+{
+    if ( primaryBus != BUS_ISA ) return FALSE;
 }
 
 /*
@@ -1067,17 +1078,24 @@ xf86AddControlledResource(ScrnInfoPtr pScreen, resType rt)
     BusResource *br;
     if (pScreen->Access.pAccess)
 	xf86DelControlledResource(&pScreen->Access,FALSE);
-    pScreen->Access.rt = rt;
     num = GetRBTypesForScreen(pScreen->scrnIndex,&bt,&br);
+    pScreen->Access.CurrentAccess = NULL;
     for (i = 0; i < num; i++) {
 	switch (br[i]) {
 	case RES_VGA:
 	    pScreen->Access.CurrentAccess = &xf86CurrentAccessVga;
 	    pScreen->Access.pAccess = &AccessNULL;
+	    pScreen->Access.rt = rt;
 	    RETURN;
 	case RES_8514:
 	    pScreen->Access.CurrentAccess = &xf86CurrentAccess8514;
 	    pScreen->Access.pAccess = &AccessNULL;
+	    pScreen->Access.rt = rt;
+	    RETURN;
+	case RES_MONO:
+	    pScreen->Access.CurrentAccess = &xf86CurrentAccessMono;
+	    pScreen->Access.pAccess = &AccessNULL;
+	    pScreen->Access.rt = rt;
 	    RETURN;
 	case RES_SHARED_VGA:
 	    pScreen->Access.CurrentAccess = &xf86CurrentAccessVga;
@@ -1090,6 +1108,14 @@ xf86AddControlledResource(ScrnInfoPtr pScreen, resType rt)
 	}
 	break;
     }
+    /* 
+     * Screen doesn't require any generic interface
+     * for sanity set resources type to none.
+     */
+    if ( pScreen->Access.CurrentAccess == NULL ) 
+      rt = NONE;
+    pScreen->Access.rt = rt;
+
     if (i < num) {
 	switch (bt[i]) {
 	case BUS_ISA:
@@ -1243,17 +1269,6 @@ xf86EnableAccess(xf86ScrnAccessPtr pScAcc)
 }
 
 /*
- * xf86EnablePrimaryDevice() - enable the device which
- * was active when the server was started.
- */
-void
-xf86EnablePrimaryDevice(void)
-{
-    xf86EnableAccess(&xf86PrimaryAccess);
-    
-}
-
-/*
  * xf86DisableAccess() -- Disable access to VGA resources of _all_
  * video devices on buses which allow this.
  */
@@ -1263,71 +1278,35 @@ xf86DisableAccess(void)
     DisablePciAccess();
 }
 
-static devType CheckGenericVga();
+static void CheckGenericGA();
 
 /*
  * xf86FindPrimaryDevice() - Find the display device which
  * was active when the server was started. Side effects:
  * - disable IO access to all VGA/8514 display adaptors 
  *   if possible.
- * - fill out Resources structure
  */
-
 void
 xf86FindPrimaryDevice()
 {
-    devType isaDevType, pciDevType, defaultDevType;
     Bool found = FALSE;
 
     xf86DisableAccess();
 
     /* if no VGA device is found check for primary PCI device */
-    isaDevType = CheckGenericVga();
-    pciDevType = FindPciPrimaryDevice();
-    if (isaDevType == DEV_VGA) {  /* we prefer VGA */
-	xf86Msg(X_PROBED, "Found active ISA/VL VGA device\n");
-	xf86PrimaryAccess.pAccess = &AccessNULL;
-	xf86PrimaryAccess.CurrentAccess = &xf86CurrentAccessVga;
-	/*
-	 * Try to catch the case where a PCI device doesn't have its VGA
-	 * core disabled.  XXX How should this be handled?
-	 */
-	if (pciDevType != DEV_NONE) {
-	   xf86Msg(X_PROBED,
-		   "This is may be a misbehaving PCI device (%d:%d:%d)\n",
-		   primaryPciDev.bus, primaryPciDev.dev, primaryPciDev.func);
-	}
-    } else if (pciDevType != DEV_NONE) {
-	xf86Msg(X_PROBED, "Found active PCI device (%d:%d:%d)\n",
-		primaryPciDev.bus, primaryPciDev.dev, primaryPciDev.func);
-	xf86PrimaryAccess.pAccess = primaryPciAccess;
-	switch (pciDevType) {
-	case DEV_VGA:
-	    xf86PrimaryAccess.CurrentAccess = &xf86CurrentAccessVga;
-	    break;
-	case DEV_8514:
-	    xf86PrimaryAccess.CurrentAccess = &xf86CurrentAccess8514;
-	    xf86PrimaryAccess.rt = MEM;
-	    break;
-	case DEV_NONE:
-	    break;
-	}
-    } else if (isaDevType == DEV_8514){
-	xf86Msg(X_PROBED, "Found active ISA/VL 8514 device\n");
-	xf86PrimaryAccess.rt = MEM;
-	xf86PrimaryAccess.pAccess = &AccessNULL;
-	xf86PrimaryAccess.CurrentAccess = &xf86CurrentAccess8514;
-    } 
+    CheckGenericGA();
+    if (primaryBus == BUS_NONE)
+	FindPciPrimaryDevice();
 }
 
 #include "vgaHW.h"
 #include "compiler.h"
 
 /*
- * xf86CheckGenericVga() - Check for presence of a VGA device.
+ * CheckGenericGA() - Check for presence of a VGA device.
  */
-static devType
-CheckGenericVga()
+static void
+CheckGenericGA()
 {
     CARD16 GenericIOBase = VGAHW_GET_IOBASE();
     CARD8 CurrentValue, TestValue;
@@ -1347,15 +1326,36 @@ CheckGenericVga()
     /* XXX:  This should restore lock state, rather than relock */
     VGAHW_LOCK(GenericIOBase);
 
-    /* return DEV_NONE if no VGA is present -- we don't have a test for
-     * generic 8514 yet */
-    if ((CurrentValue ^ 0x0F) == TestValue){
-	Resources.exclusive_Vga = 1;
-	return DEV_VGA;
-    } else 
-	/* if non is found return previous type */
-	return DEV_NONE;
+    if ((CurrentValue ^ 0x0F) == TestValue) {
+        Resources.exclusive_Vga = 1;
+	primaryBus = BUS_ISA;
+    }
 }
 
-
-
+/*
+ * xf86CheckPciGAType() -- return type of PCI graphics adapter.
+ */
+int
+xf86CheckPciGAType(pciVideoPtr pPci)
+{
+    int i = 0;
+    pciConfigPtr pcp;
+    
+    while ((pcp = xf86PciInfo[i]) != NULL) { 
+	if (pPci->bus == pcp->busnum && pPci->device == pcp->devnum
+	    && pPci->func == pcp->funcnum) {
+	    if (pcp->_base_class == PCI_CLASS_PREHISTORIC &&
+		pcp->_sub_class == PCI_SUBCLASS_PREHISTORIC_VGA)
+		return PCI_CHIP_VGA ;
+	    if (pcp->_base_class == PCI_CLASS_DISPLAY &&
+		pcp->_sub_class == PCI_SUBCLASS_DISPLAY_VGA) {
+		if (pcp->_prog_if == 0)
+		    return PCI_CHIP_VGA ; 
+		if (pcp->_prog_if == 1)
+		    return PCI_CHIP_8514;
+	    }
+	    return -1;
+	}
+    i++;
+    }
+}

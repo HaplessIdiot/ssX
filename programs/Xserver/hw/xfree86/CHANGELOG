@@ -1,3 +1,45 @@
+XFree86 3.9Ni (5 October 1998)
+1897. Add some option code to do a soft reset when restoring the video state
+      for the "dacG" part of the MGA driver (#2012, Uli Walther).
+1896. Add some TTF encoding files (#2013-2016, Juliusz Chroboczek).
+1895. Resync the FreeType server interface with Xfsft-1.0.2, including
+      code to read encodings from plain text files (#2013-2016,
+      Juliusz Chroboczek).
+1894. Add an "8plus24" option to the MGA driver that turns on overlays when
+      in 32bpp mode.  Support is there only for the 1064 and SGRAM G100/G200
+      chips so far (#2024, Mark Vojkovich).
+1893. Fix an MGA dashed line bug (#2024, Mark Vojkovich).
+1892. Add an "mga_sdram" option that turns off block mode and disables
+      planemasks (#2024, Mark Vojkovich).
+1891. Add SGRAM and NonTEText optimisations to the MGA driver (#2024,
+      Mark Vojkovich).
+1890. Add XYPixmap support to XAA (#2023, Mark Vojkovich).
+1889. Preliminary support for depth 8 + 24 mode.  Depth 8 currently uses
+      32bpp pixmaps.  Support is included for destructive and non-destructive
+      overlays and driver-chosen transparency key (#2022, Mark Vojkovich).
+1888. Update imake for cpp changes with egcs-1.1 and gcc-2.8.1 (#2017,
+      David Wragg).
+1887. Fix XvQueryAdaptors() when more than one adaptor is present, and
+      export xf86XVScreenInit() to drivers (#2018, Michael Schimek).
+1886. Updates/improvements to the I2C module (#2008, 2018, Michael Schimek).
+1885. Don't include standard system headers when building XIE as a module.
+1884. Cleanup Xlibint.h, which significantly reduces the level of compiler
+      warnings, and also cleanup XIE's error.h (#2007, Thomas Dickey).
+1883. Add support for built-in driver modes (#2006, Egbert Eich).
+1882. Ansify and remove gcc warnings for imake, makedepend, lndir, makestrs,
+      makekeys and mkg3states) (#2005, Matthieu Herrb).
+1881. Introduce a "generic" PCI device (pseudo vendor/devids) for use with
+      the generic vga driver (#1994, Egbert Eich).
+1880. Fix some bugs in the C&T driver (#1994, Egbert Eich).
+1879. Fix an XAA bug with CPU_TRANSFER_PAD_QWORD handling (#1994, Egbert Eich).
+1878. Sanity fix: if all devices of a screen are of type none assume
+      resource type NONE in xf86AddControlledResource() even if specified
+      otherwise (#1994, Egbert Eich).
+1877. Added more support to the resource code for mono devices (for
+      consistency) (#1994, Egbert Eich).
+1876. Add RAC wrappers to the sprite functions (#1994, Egbert Eich).
+1875. Reset xf86Resetting in xf86Init.c (#1994, Egbert Eich).
+
 XFree86 3.9Nh (5 October 1998)
 1874. Temporary workaround to avoid static server build problem introduced
       in 3.9Ng.
@@ -6579,4 +6621,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.630 1998/09/27 04:43:38 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.631 1998/10/05 00:12:57 dawes Exp $

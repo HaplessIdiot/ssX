@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.27 1998/07/25 16:55:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.28 1998/07/26 09:56:14 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -86,6 +86,10 @@ extern void xf86CheckBeta(int extraDays, char *key);
 
 void xf86BusProbe(void);
 void xf86ChangeBusIndex(int oldIndex, int newIndex);
+void xf86AccessEnter(void);
+void xf86AccessLeave(void);
+void xf86AccessSetup(void);
+void xf86FindPrimaryDevice(void);
 
 /* xf86Dl.c */
 

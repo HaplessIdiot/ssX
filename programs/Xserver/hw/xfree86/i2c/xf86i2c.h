@@ -1,62 +1,89 @@
-/* (c) Itai Nahshon */
+/* 
+ *  Copyright (C) 1998 Itai Nahshon, Michael Schimek
+ */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/i2c/xf86i2c.h,v 1.1 1998/09/05 06:36:57 dawes Exp $ */
 
-typedef unsigned char I2CByte;
-typedef unsigned char I2CAddr;
+typedef unsigned char  I2CByte;
+typedef unsigned short I2CSlaveAddr;
+
 typedef struct _I2CBusRec *I2CBusPtr;
 typedef struct _I2CDevRec *I2CDevPtr;
 
-/* I2C masters have to register themselve */
+/* I2C masters have to register themselves */
+
 typedef struct _I2CBusRec {
-    char	*BusName;
-    int		scrnIndex;
-    Bool	(*I2CPutBits)(I2CBusPtr m, int  scl, int  sda);
-    Bool	(*I2CGetBits)(I2CBusPtr m, int *scl, int *sda);
-    Bool	(*I2CPutByte)(I2CBusPtr m, I2CByte data, int wait_for_ack, int *ack);
-    Bool	(*I2CGetByte)(I2CBusPtr m, I2CByte *data, Bool last);
-    pointer	DriverPrivate;
-    I2CDevPtr	FirstDev;
-    I2CBusPtr	NextBus;
+    char *		BusName;
+    int			scrnIndex;
+    
+    void		(*I2CUDelay) (I2CBusPtr b, int usec);
+    
+    void		(*I2CPutBits)(I2CBusPtr b, int  scl, int  sda);
+    void		(*I2CGetBits)(I2CBusPtr b, int *scl, int *sda);
+
+    /* Look at the generic routines to see how these functions should behave. */
+
+    Bool        	(*I2CAddress)(I2CDevPtr d, I2CSlaveAddr);
+    void        	(*I2CStop)   (I2CDevPtr d);
+    Bool		(*I2CPutByte)(I2CDevPtr d, I2CByte data);
+    Bool		(*I2CGetByte)(I2CDevPtr d, I2CByte *data, Bool);
+
+    DevUnion		DriverPrivate;
+
+    int         	HoldTime; 	/* 1 / bus clock frequency, 5 or 2 usec */
+
+    int			BitTimeout;	/* usec */
+    int 		ByteTimeout;	/* usec */
+    int			AcknTimeout;    /* usec */
+    int 		StartTimeout;	/* usec */
+
+    I2CDevPtr		FirstDev;
+    I2CBusPtr		NextBus;
 } I2CBusRec;
 
-I2CBusPtr xf86CreateI2CBusRec(void);
-void      xf86DestroyI2CBusRec(I2CBusPtr pI2CBus);
-Bool      xf86I2CBusInit(I2CBusPtr pI2CBus);
+I2CBusPtr 	xf86CreateI2CBusRec(void);
+void      	xf86DestroyI2CBusRec(I2CBusPtr pI2CBus, Bool unalloc, Bool devs_too);
+Bool      	xf86I2CBusInit(I2CBusPtr pI2CBus);
+I2CBusPtr 	xf86I2CFindBus(int scrnIndex, char *name);
 
 /* I2C slave devices */
+
 typedef struct _I2CDevRec {
-    char        *DevName;
-    int         scrnIndex;
-    I2CAddr	i2caddr;
-    I2CBusPtr	pI2CBus;
-    I2CDevPtr	NextDev;
+    char *		DevName;
+
+    int			BitTimeout;	/* usec */
+    int 		ByteTimeout;	/* usec */
+    int			AcknTimeout;    /* usec */
+    int 		StartTimeout;	/* usec */
+
+    I2CSlaveAddr	SlaveAddr;
+    I2CBusPtr		pI2CBus;
+    I2CDevPtr		NextDev;
 } I2CDevRec;
 
-I2CDevPtr xf86CreateI2CDevRec(void);
-void      xf86DestroyI2CDevRec(I2CDevPtr pI2CDev);
-Bool      xf86I2CDevInit(I2CDevPtr pI2CDev);
-I2CBusPtr xf86I2CFindBus(char *name);
+I2CDevPtr 	xf86CreateI2CDevRec(void);
+void      	xf86DestroyI2CDevRec(I2CDevPtr pI2CDev, Bool unalloc);
+Bool      	xf86I2CDevInit(I2CDevPtr pI2CDev);
+I2CDevPtr 	xf86I2CFindDev(I2CBusPtr, I2CSlaveAddr);
 
 /* Function for probing. Just send the address and return
    true if the device returns and ack. */
-Bool	  xf86I2CTryAddress(I2CBusPtr pI2CBus, I2CAddr addr);
+Bool	  	xf86I2CProbeAddress(I2CBusPtr pI2CBus, I2CSlaveAddr);
 
-/* Input/Output done by slaves */
-/* 8 bit address is taken fron the I2CDev */
+/* Input/Output helper functions. They take the 
+ * slave address and timeouts from I2CDev,
+ * return False if the transmission failed.
+ */
 
-/* Write N bytes and then read N bytes. Only one Stop signal. */
-Bool      xf86I2CWriteNReadN(I2CDevPtr I2CDev,
-                           I2CByte *WriteBuffer, int nWrite, 
-                           I2CByte *ReadBuffer,  int nRead);
-
-/* Write 1 byte */
-Bool    xf86I2CWrite(I2CDevPtr I2CDev, I2CByte Out);
-/* Write 2 bytes (short) */
-Bool    xf86I2CWriteShort(I2CDevPtr I2CDev, unsigned short Out);
-/* Read  1 byte  */
-Bool    xf86I2CRead(I2CDevPtr I2CDev, I2CByte *In);
-/* Read  2 bytes (short) */
-Bool    xf86I2CReadShort(I2CDevPtr I2CDev, unsigned short *In);
-/* Write 1 byte and then read 1 byte */
-Bool    xf86I2CWriteRead(I2CDevPtr I2CDev, unsigned char Out, unsigned char *In);
+Bool 		xf86I2CWriteRead(I2CDevPtr d, I2CByte *WriteBuffer, int nWrite,
+		                   I2CByte *ReadBuffer,  int nRead);
+#define 	xf86I2CRead(d, rb, nr) xf86I2CWriteRead(d, NULL, 0, rb, nr)
+Bool 		xf86I2CReadStatus(I2CDevPtr d, I2CByte *pbyte);
+Bool 		xf86I2CReadByte(I2CDevPtr d, I2CByte subaddr, I2CByte *pbyte);
+Bool 		xf86I2CReadBytes(I2CDevPtr d, I2CByte subaddr, I2CByte *pbyte, int n);
+Bool 		xf86I2CReadWord(I2CDevPtr d, I2CByte subaddr, unsigned short *pword);
+#define 	xf86I2CWrite(d, wb, nw) xf86I2CWriteRead(d, wb, nw, NULL, 0)
+Bool 		xf86I2CWriteByte(I2CDevPtr d, I2CByte subaddr, I2CByte byte);
+Bool 		xf86I2CWriteBytes(I2CDevPtr d, I2CByte subaddr, I2CByte *WriteBuffer, int nWrite);
+Bool 		xf86I2CWriteWord(I2CDevPtr d, I2CByte subaddr, unsigned short word);
+Bool 		xf86I2CWriteVec(I2CDevPtr d, I2CByte *vec, int nValues);

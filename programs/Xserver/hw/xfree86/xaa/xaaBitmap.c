@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaBitmap.c,v 1.2 1998/07/25 16:58:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaBitmap.c,v 1.3 1998/08/02 05:17:05 dawes Exp $ */
 
 
 #include "xaa.h"
@@ -224,6 +224,7 @@ EXPNAME(XAAWriteBitmapColorExpand)(
     int shift = 0, dwords;
     BitmapScanlineProcPtr firstFunc;
     BitmapScanlineProcPtr secondFunc;
+    int flag;
 
 #ifdef TRIPLE_BITS
     if((bg != -1) && 
@@ -268,6 +269,8 @@ EXPNAME(XAAWriteBitmapColorExpand)(
 
 SECOND_PASS:
 
+    flag = (infoRec->CPUToScreenColorExpandFillFlags 
+	     & CPU_TRANSFER_PAD_QWORD) && ((dwords * h) & 0x01);
     (*infoRec->SetupForCPUToScreenColorExpandFill)(
 					pScrn, fg, bg, rop, planemask);
     (*infoRec->SubsequentCPUToScreenColorExpandFill)(
@@ -287,9 +290,8 @@ SECOND_PASS:
 	    srcp += srcwidth;
 	}
 
-    if((infoRec->CPUToScreenColorExpandFillFlags & CPU_TRANSFER_PAD_QWORD) &&
-				((dwords * h) & 0x01)) {
-	base = (CARD32*)infoRec->ColorExpandBase;
+    if(flag){
+        base = (CARD32*)infoRec->ColorExpandBase;
 	base[0] = 0x00000000;
     }
 

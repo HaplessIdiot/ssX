@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.4 1998/08/13 14:46:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.5 1998/08/29 05:44:07 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -311,6 +311,11 @@ XAAPutImage(
 	     CHECK_ROPSRC(pGC,infoRec->WriteBitmapFlags) &&
 	     CHECK_PLANEMASK(pGC,infoRec->WriteBitmapFlags) &&
 	     CHECK_COLORS(pGC,infoRec->WriteBitmapFlags) &&
+	     !(infoRec->WriteBitmapFlags & TRANSPARENCY_ONLY)) ||
+       ((format == XYPixmap) && infoRec->WriteBitmap &&
+	     CHECK_ROP(pGC,infoRec->WriteBitmapFlags) &&
+	     CHECK_ROPSRC(pGC,infoRec->WriteBitmapFlags) &&
+	     !(infoRec->WriteBitmapFlags & NO_PLANEMASK) &&
 	     !(infoRec->WriteBitmapFlags & TRANSPARENCY_ONLY))){
 
 	int MaxBoxes = REGION_NUM_RECTS(pGC->pCompositeClip);
@@ -345,7 +350,7 @@ XAAPutImage(
 	 		pGC->alu, pGC->planemask);
 		pbox++;
 	    }
-        } else {
+        } else if(format == ZPixmap) {
 	    /* here we assume XImages match the framebuffer.  We will have
 	       to lookup Bpp by depth when this changes */
 	    int Bpp = infoRec->pScrn->bitsPerPixel >> 3;
@@ -361,6 +366,32 @@ XAAPutImage(
 			Bpp << 3, depth);
 		pbox++;
 	    }
+	} else { /* XYPixmap */
+	    int depth = pGC->depth;
+	    int i, numBox, increment;
+	    BoxPtr pntBox;
+	    
+	    srcwidth = ((leftPad + w + 31) >> 5) << 2;
+	    increment = h * srcwidth;
+	    for(i = 1 << (depth - 1); i ; i >>= 1, pImage += increment) {
+		if(i & pGC->planemask) {
+		    pntBox = pbox;
+		    numBox = nboxes;
+		    while(numBox--) {
+			srcx = pntBox->x1 - TheRect.x + leftPad;
+			srcy = pntBox->y1 - TheRect.y;
+			(*infoRec->WriteBitmap)(infoRec->pScrn, 
+				pntBox->x1, pntBox->y1, 
+				pntBox->x2 - pntBox->x1, 
+				pntBox->y2 - pntBox->y1, 
+				(unsigned char*)pImage + 
+				(srcwidth * srcy) + ((srcx >> 5) << 2), 
+				srcwidth, srcx & 31, ~0, 0, pGC->alu, i);
+			pntBox++;
+	    	    }
+		}
+	    }
+
 	}
 
 	if(pClipBoxes != infoRec->PreAllocBoxes)

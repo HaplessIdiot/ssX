@@ -28,7 +28,7 @@
  * 
  * Permedia accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm_accel.c,v 1.5 1998/09/05 06:36:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm_accel.c,v 1.6 1998/10/04 14:35:53 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -888,6 +888,7 @@ PermediaTEGlyphRenderer(
     SET_SYNC_FLAG(infoRec);
 }
 
+#if 0
 static void 
 PermediaNonTEGlyphRenderer(
     ScrnInfoPtr pScrn,
@@ -912,17 +913,16 @@ PermediaNonTEGlyphRenderer(
 					pScrn, xText, y, wText, h, 0);
 
    	while(h--) {
-#if 0 /* XXX FIX THIS! */
 	    XAANonTEGlyphScanlineFuncLSBFirst(
 		(CARD32*)infoRec->ColorExpandBase, 
 		glyphp, startline++, wText, skipleft);
-#endif
 
     	}
     }
 
     SET_SYNC_FLAG(infoRec);
 }
+#endif
 
 static void 
 PermediaFillColorExpandSpans(

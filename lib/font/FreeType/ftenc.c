@@ -1,82 +1,64 @@
-/* This code is Copyright (c) 1997 by Mark Leisher
- *              Copyright (c) 1998 by Juliusz Chroboczek
- * 
- * License, to use, copy, modify, and distribute this software and its
- * documentation for any purpose and without fee is hereby granted,
- * provided that the above copyright notice appear in all copies and that
- * both that copyright notice and this permission notice appear in
- * supporting documentation.
- * 
- * THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT ANY WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO ANY IMPLIED
- * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND
- * NONINFRINGEMENT OF THIRD PARTY RIGHTS.  THE ENTIRE RISK AS TO THE
- * QUALITY AND PERFORMANCE OF THE SOFTWARE, INCLUDING ANY DUTY TO SUPPORT
- * OR MAINTAIN, BELONGS TO THE LICENSEE.  SHOULD ANY PORTION OF THE
- * SOFTWARE PROVE DEFECTIVE, THE LICENSEE ASSUMES THE ENTIRE COST OF ALL
- * SERVICING, REPAIR AND CORRECTION.  IN NO EVENT SHALL THE AUTHORS BE
- * LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY
- * DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
- * WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
- * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
- * SOFTWARE. */
+/* $XFree86: xc/lib/font/FreeType/ftenc.c,v 1.8 1998/09/06 12:35:39 dawes Exp $ */
 
-/* $XFree86: xc/lib/font/FreeType/ftenc.c,v 1.7 1998/09/06 07:31:57 dawes Exp $ */
+/* 
+Copyright (c) 1998 by Juliusz Chroboczek
+ 
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions: 
+ 
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software. 
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
 
 #include "ttconfig.h"
 #include "freetype.h"
 #include "ft.h"
+#include "ftenc.h"
 
 /* Reencoding functions and search for a suitable CharMap. */
 
 static int ttf_find_cmap(int, int, TT_Face, TT_CharMap *);
+static int loadEncodingInfo(char*, char*);
 
-/* This structure represents a cmap and eventually a recoding
- * function.  In order to convert a code into an index, we first apply
- * the recoding function and then the cmap. */
 
-struct ttf_encoding_alternative {
-  int pid, eid;
-  unsigned (*recode)(unsigned);
-};
+unsigned
+ttf_simple_remap(unsigned code, void *client_data)
+{
+  struct ttf_simple_remapping *map;
 
-/* This is the structure that holds the info for one charset.  It
- * consists of a charset name, its size, and an alternative like
- * above.  For efficiency reasons, there should be no recoding
- * functions for large charsets (but it should still work). */
-
-struct ttf_encoding_info {
-  char *charset;
-  int size;
-  struct ttf_encoding_alternative *alternatives;
-};
+  map=client_data;
+  if(map && code>=map->first && code<map->first+map->len)
+    return map->map[code-map->first];
+  else
+    return code;
+}
 
 /* Of course, one could add millions of tables here.  In order for a table
  * to be suitable for inclusion, it must satisfy the following condition:
  * some fonts will be useless under Unix for some people without it.  This
  * means that an encoding function must go from some encoding used under
  * Unix to either Unicode or an Apple encoding.  Apple encodings should be
- * avoided, as most fonts will have a Unicode table anyway. */
-
-/* What we are going to do just screams for higher-order functions.
- * 
- * (defun recoding-function (table, offset, condition)
- *   (lambda (code) 
- *     (if (funcall condition code) (aref table (- code offset)) code)))
+ * avoided, as most fonts will have a Unicode table anyway.
  *
- * As this is C, we'll have to fake them.  There are two ways to do this:
- *  1. split the closure into code and environment (now you know what
- *     the private pointers in fonts and client data pointers in
- *     callbacks really are);
- *  2. change scopes so that all functions can live with a null
- *     environment; this is not possible in general.
- * Option 1 complicates the interface somewhat, so we chose option 2.
- * Is it possible to use the preprocessor for this? */
+ * Now that the code knows how to load an encoding from a file, most
+ * of these hard-coded tables should go away. */
 
 static struct ttf_encoding_alternative iso10646[]=
 {
-  {0,0,0},                      /* any Unicode table */
-  {-1,-1,0}
+  {-2,0,0,0},                      /* any Unicode table */
+  {-1,-1,0,0}
 };
 
 /* Notice that the Apple encodings do not have all the characters in the
@@ -99,8 +81,9 @@ iso8859_1_apple_roman[]=
   0x00, 0x96, 0x98, 0x97, 0x99, 0x9B, 0x9A, 0xD6,
   0xBF, 0x9D, 0x9C, 0x9E, 0x9F, 0x00, 0x00, 0xD8 };
 
+/* Cannot use simple_remapping because need to eliminate 0x80<=code<0xA0 */
 static unsigned
-iso8859_1_to_apple_roman(unsigned isocode)
+iso8859_1_to_apple_roman(unsigned isocode, void *client_data)
 {
   if(isocode<=0x80)
     return isocode;
@@ -112,10 +95,10 @@ iso8859_1_to_apple_roman(unsigned isocode)
 
 static struct ttf_encoding_alternative iso8859_1[]=
 {
-  {2,2,0},                      /* ISO 8859-1 */
-  {0,0,0},                      /* ISO 8859-1 coincides with Unicode*/
-  {1,0,iso8859_1_to_apple_roman},
-  {-1,-1,0}
+  {2,2,0,0},                    /* ISO 8859-1 */
+  {-2,0,0,0},                   /* ISO 8859-1 coincides with Unicode*/
+  {1,0,iso8859_1_to_apple_roman,0},
+  {-1,-1,0,0}
 };
 
 static unsigned short iso8859_2_tophalf[]=
@@ -130,16 +113,10 @@ static unsigned short iso8859_2_tophalf[]=
   0x0155, 0x00E1, 0x00E2, 0x0103, 0x00E4, 0x013A, 0x0107, 0x00E7,
   0x010D, 0x00E9, 0x0119, 0x00EB, 0x011B, 0x00ED, 0x00EE, 0x010F,
   0x0111, 0x0144, 0x0148, 0x00F3, 0x00F4, 0x0151, 0x00F6, 0x00F7,
-  0x0159, 0x016F, 0x00FA, 0x0171, 0x00FC, 0x00FD, 0x0163, 0x02D9};
+  0x0159, 0x016F, 0x00FA, 0x0171, 0x00FC, 0x00FD, 0x0163, 0x02D9 };
 
-static unsigned 
-iso8859_2_to_unicode(unsigned isocode)
-{
-  if(isocode<=0xa0)
-    return isocode;
-  else
-    return iso8859_2_tophalf[isocode-0xa0];
-}
+static struct ttf_simple_remapping iso8859_2_to_unicode_map=
+{ 0xA0, 0x60, iso8859_2_tophalf };
 
 static unsigned short iso8859_2_apple_centeuro[]=
 { 0xCA, 0x84, 0x00, 0xFC, 0x00, 0xBB, 0xE5, 0xA4,
@@ -156,7 +133,7 @@ static unsigned short iso8859_2_apple_centeuro[]=
   0xDE, 0xF3, 0x9C, 0xF5, 0x9F, 0xF9, 0x00, 0x00 };
 
 static unsigned
-iso8859_2_to_apple_centeuro(unsigned isocode)
+iso8859_2_to_apple_centeuro(unsigned isocode, void *client_data)
 {
   if(isocode<=0x80)
     return isocode;
@@ -169,9 +146,9 @@ iso8859_2_to_apple_centeuro(unsigned isocode)
 
 static struct ttf_encoding_alternative iso8859_2[]=
 {
-  {0,0,iso8859_2_to_unicode},
-  {1,29,iso8859_2_to_apple_centeuro},
-  {-1,-1,0}
+  {-2,0,ttf_simple_remap,&iso8859_2_to_unicode_map},
+  {1,29,iso8859_2_to_apple_centeuro,0},
+  {-1,-1,0,0}
 };
 
 static unsigned short iso8859_3_tophalf[]=
@@ -183,24 +160,18 @@ static unsigned short iso8859_3_tophalf[]=
   0x00C8, 0x00C9, 0x00CA, 0x00CB, 0x00CC, 0x00CD, 0x00CE, 0x00CF,
   0x0000, 0x00D1, 0x00D2, 0x00D3, 0x00D4, 0x0120, 0x00D6, 0x00D7,
   0x011C, 0x00D9, 0x00DA, 0x00DB, 0x00DC, 0x016C, 0x015C, 0x00DF,
-  0x00E0, 0x00E1, 0x00E2, 0x00E4, 0x010B, 0x0109, 0x00E7, 0x00E8,
-  0x00E9, 0x00EA, 0x00EB, 0x00EC, 0x00ED, 0x00EE, 0x00EF, 0x0000,
-  0x00F1, 0x00F2, 0x00F3, 0x00F4, 0x0121, 0x00F6, 0x00F7, 0x011D,
-  0x00F9, 0x0000, 0x00FA, 0x00FB, 0x00FC, 0x016D, 0x015D, 0x02D9};
+  0x00E0, 0x00E1, 0x00E2, 0x0000, 0x00E4, 0x010B, 0x0109, 0x00E7,
+  0x00E8, 0x00E9, 0x00EA, 0x00EB, 0x00EC, 0x00ED, 0x00EE, 0x00EF,
+  0x0000, 0x00F1, 0x00F2, 0x00F3, 0x00F4, 0x0121, 0x00F6, 0x00F7,
+  0x011D, 0x00F9, 0x00FA, 0x00FB, 0x00FC, 0x016D, 0x015D, 0x02D9};
 
-static unsigned 
-iso8859_3_to_unicode(unsigned isocode)
-{
-  if(isocode<=0xa0)
-    return isocode;
-  else
-    return iso8859_3_tophalf[isocode-0xa0];
-}
+static struct ttf_simple_remapping iso8859_3_to_unicode_map=
+{ 0xA0, 0x60, iso8859_3_tophalf };
 
 static struct ttf_encoding_alternative iso8859_3[]=
 {
-  {0,0,iso8859_3_to_unicode},
-  {-1,-1,0}
+  {-2,0,ttf_simple_remap,&iso8859_3_to_unicode_map},
+  {-1,-1,0,0}
 };
 
 
@@ -219,19 +190,13 @@ static unsigned short iso8859_4_tophalf[]=
   0x00F8, 0x0173, 0x00FA, 0x00FB, 0x00FC, 0x0169, 0x016B, 0x02D9,
 };
 
-static unsigned 
-iso8859_4_to_unicode(unsigned isocode)
-{
-  if(isocode<=0xa0)
-    return isocode;
-  else
-    return iso8859_4_tophalf[isocode-0xa0];
-}
+static struct ttf_simple_remapping iso8859_4_to_unicode_map=
+{ 0xA0, 0x60, iso8859_4_tophalf };
 
 static struct ttf_encoding_alternative iso8859_4[]=
 {
-  {0,0,iso8859_4_to_unicode},
-  {-1,-1,0}
+  {-2,0,ttf_simple_remap,&iso8859_4_to_unicode_map},
+  {-1,-1,0,0}
 };
 
 static unsigned short iso8859_5_tophalf[]=
@@ -248,14 +213,8 @@ static unsigned short iso8859_5_tophalf[]=
   0x2116, 0x0451, 0x0452, 0x0453, 0x0454, 0x0455, 0x0456, 0x0457,
   0x0458, 0x0459, 0x045A, 0x045B, 0x045C, 0x00A7, 0x045E, 0x045F};
 
-static unsigned 
-iso8859_5_to_unicode(unsigned isocode)
-{
-  if(isocode<=0xa0)
-    return isocode;
-  else
-    return iso8859_5_tophalf[isocode-0xa0];
-}
+static struct ttf_simple_remapping iso8859_5_to_unicode_map=
+{ 0xA0, 0x60, iso8859_5_tophalf };
 
 static unsigned short 
 iso8859_5_apple_cyrillic[]=
@@ -273,7 +232,7 @@ iso8859_5_apple_cyrillic[]=
   0xC0, 0xBD, 0xBF, 0xCC, 0xCE, 0xA4, 0xD9, 0xDB };
 
 static unsigned
-iso8859_5_to_apple_cyrillic(unsigned isocode)
+iso8859_5_to_apple_cyrillic(unsigned isocode, void *client_data)
 {
   if(isocode<=0x80)
     return isocode;
@@ -284,9 +243,9 @@ iso8859_5_to_apple_cyrillic(unsigned isocode)
 
 static struct ttf_encoding_alternative iso8859_5[]=
 {
-  {0,0,iso8859_5_to_unicode},
-  {1,7,iso8859_5_to_apple_cyrillic},
-  {-1,-1,0}
+  {-2,0,ttf_simple_remap,&iso8859_5_to_unicode_map},
+  {1,7,iso8859_5_to_apple_cyrillic,0},
+  {-1,-1,0,0}
 };
 
 /* ISO 8859-6 seems useless for serving fonts (not enough presentation
@@ -294,7 +253,7 @@ static struct ttf_encoding_alternative iso8859_5[]=
  * tables for the Mule specific encodings.  */
 
 static unsigned 
-iso8859_6_to_unicode(unsigned isocode)
+iso8859_6_to_unicode(unsigned isocode, void *client_data)
 {
   if(isocode<=0xA0 || isocode==0xA4 || isocode==0xAD)
     return isocode;
@@ -309,12 +268,12 @@ iso8859_6_to_unicode(unsigned isocode)
 
 static struct ttf_encoding_alternative iso8859_6[]=
 {
-  {0,0,iso8859_6_to_unicode},
-  {-1,-1,0}
+  {-2,0,iso8859_6_to_unicode,0},
+  {-1,-1,0,0}
 };
 
 static unsigned 
-iso8859_7_to_unicode(unsigned isocode)
+iso8859_7_to_unicode(unsigned isocode, void *client_data)
 {
   if(isocode<=0xA0 ||
      (isocode>=0xA3 && isocode<=0xAD) ||
@@ -335,12 +294,12 @@ iso8859_7_to_unicode(unsigned isocode)
 
 static struct ttf_encoding_alternative iso8859_7[]=
 {
-  {0,0,iso8859_7_to_unicode},
-  {-1,-1,0}
+  {-2,0,iso8859_7_to_unicode,0},
+  {-1,-1,0,0}
 };
 
 static unsigned
-iso8859_8_to_unicode(unsigned isocode)
+iso8859_8_to_unicode(unsigned isocode, void *client_data)
 {
   if(isocode==0xA1)
     return 0;
@@ -356,12 +315,12 @@ iso8859_8_to_unicode(unsigned isocode)
 
 static struct ttf_encoding_alternative iso8859_8[]=
 {
-  {0,0,iso8859_8_to_unicode},
-  {-1,-1,0}
+  {-2,0,iso8859_8_to_unicode,0},
+  {-1,-1,0,0}
 };
 
 static unsigned
-iso8859_9_to_unicode(unsigned isocode)
+iso8859_9_to_unicode(unsigned isocode, void *client_data)
 {
   switch(isocode) {
   case 0xD0: return 0x011E;
@@ -376,8 +335,8 @@ iso8859_9_to_unicode(unsigned isocode)
 
 static struct ttf_encoding_alternative iso8859_9[]=
 {
-  {0,0,iso8859_9_to_unicode},
-  {-1,-1,0}
+  {-2,0,iso8859_9_to_unicode,0},
+  {-1,-1,0,0}
 };
 
 static unsigned short iso8859_10_tophalf[]=
@@ -394,23 +353,17 @@ static unsigned short iso8859_10_tophalf[]=
   0x00F0, 0x0146, 0x014D, 0x00F3, 0x00F4, 0x00F5, 0x00F6, 0x0169,
   0x00F8, 0x0173, 0x00FA, 0x00FB, 0x00FC, 0x00FD, 0x00FE, 0x0138};
 
-static unsigned 
-iso8859_10_to_unicode(unsigned isocode)
-{
-  if(isocode<=0xa0)
-    return isocode;
-  else
-    return iso8859_10_tophalf[isocode-0xa0];
-}
+static struct ttf_simple_remapping iso8859_10_to_unicode_map=
+{ 0xA0, 0x60, iso8859_10_tophalf };
 
 static struct ttf_encoding_alternative iso8859_10[]=
 {
-  {0,0,iso8859_10_to_unicode},
-  {-1,-1,0}
+  {-2,0,ttf_simple_remap,&iso8859_10_to_unicode_map},
+  {-1,-1,0,0}
 };
 
 static unsigned
-iso8859_15_to_unicode(unsigned isocode)
+iso8859_15_to_unicode(unsigned isocode, void *client_data)
 {
   switch(isocode) {
   case 0xA4: return 0x20AC;
@@ -427,8 +380,8 @@ iso8859_15_to_unicode(unsigned isocode)
 
 static struct ttf_encoding_alternative iso8859_15[]=
 {
-  {0,0,iso8859_15_to_unicode},
-  {-1,-1,0}
+  {-2,0,iso8859_15_to_unicode,0},
+  {-1,-1,0,0}
 };
 
 static unsigned short koi8_r_tophalf[]=
@@ -449,25 +402,20 @@ static unsigned short koi8_r_tophalf[]=
   0x041F, 0x042F, 0x0420, 0x0421, 0x0422, 0x0423, 0x0416, 0x0412,
   0x042C, 0x042B, 0x0417, 0x0428, 0x042D, 0x0429, 0x0427, 0x042A};
 
-static unsigned 
-koi8_r_to_unicode(unsigned koicode)
-{
-  if(koicode<=0x80)
-    return koicode;
-  else
-    return koi8_r_tophalf[koicode-0x80];
-}
+static struct ttf_simple_remapping koi8_r_to_unicode_map=
+{ 0xA0, 0x100, koi8_r_tophalf };
+
 
 static struct ttf_encoding_alternative koi8_r[]=
 {
-  {0,0,koi8_r_to_unicode},
-  {-1,-1,0}
+  {-2,0,ttf_simple_remap,&koi8_r_to_unicode_map},
+  {-1,-1,0,0}
 };
 
 /* See RFC 2319 */
 
 static unsigned 
-koi8_u_to_unicode(unsigned koicode)
+koi8_u_to_unicode(unsigned koicode, void *client_data)
 {
   switch(koicode) {
   case 0xA4: return 0x0454;
@@ -478,18 +426,18 @@ koi8_u_to_unicode(unsigned koicode)
   case 0xB6: return 0x0406;
   case 0xB7: return 0x0407;
   case 0xBD: return 0x0490;
-  default: return koi8_r_to_unicode(koicode);
+  default: return ttf_simple_remap(koicode, &koi8_r_to_unicode_map);
   }
 }
 
 static struct ttf_encoding_alternative koi8_u[]=
 {
-  {0,0,koi8_u_to_unicode},
-  {-1,-1,0}
+  {-2,0,koi8_u_to_unicode,0},
+  {-1,-1,0,0}
 };
 
 static unsigned 
-koi8_ru_to_unicode(unsigned koicode)
+koi8_ru_to_unicode(unsigned koicode, void *client_data)
 {
   switch(koicode) {
   case 0x93: return 0x201C;
@@ -511,14 +459,14 @@ koi8_ru_to_unicode(unsigned koicode)
   case 0xB7: return 0x0407;
   case 0xBD: return 0x0490;
   case 0xBE: return 0x040E;
-  default: return koi8_r_to_unicode(koicode);
+  default: return ttf_simple_remap(koicode, &koi8_r_to_unicode_map);
   }
 }
 
 static struct ttf_encoding_alternative koi8_ru[]=
 {
-  {0,0,koi8_ru_to_unicode},
-  {-1,-1,0}
+  {-2,0,koi8_ru_to_unicode,0},
+  {-1,-1,0,0}
 };
 
 static unsigned short koi8_uni_tophalf[]=
@@ -539,19 +487,13 @@ static unsigned short koi8_uni_tophalf[]=
   0x041F, 0x042F, 0x0420, 0x0421, 0x0422, 0x0423, 0x0416, 0x0412,
   0x042C, 0x042B, 0x0417, 0x0428, 0x042D, 0x0429, 0x0427, 0x042A };
 
-static unsigned 
-koi8_uni_to_unicode(unsigned koicode)
-{
-  if(koicode<=0x80)
-    return koicode;
-  else
-    return koi8_uni_tophalf[koicode-0x80];
-}
+static struct ttf_simple_remapping koi8_uni_to_unicode_map=
+{ 0xA0, 0x100, koi8_uni_tophalf };
 
 static struct ttf_encoding_alternative koi8_uni[]=
 {
-  {0,0,koi8_uni_to_unicode},
-  {-1,-1,0}
+  {-2,0,ttf_simple_remap, &koi8_uni_to_unicode_map},
+  {-1,-1,0,0}
 };
 
 /* Apparently, Microsoft Symbol aims at being compatible with Unicode
@@ -559,42 +501,44 @@ static struct ttf_encoding_alternative koi8_uni[]=
  * 0xF000. */
 
 static unsigned
-eight_bit_to_microsoft_symbol(unsigned code)
+eight_bit_to_microsoft_symbol(unsigned code, void *client_data)
 {
   return code+0xF000;
 }
 
 static struct ttf_encoding_alternative microsoft_symbol[]=
-{{3,0,eight_bit_to_microsoft_symbol}, {-1,-1,0}};
+{{3,0,eight_bit_to_microsoft_symbol,0}, {-1,-1,0,0}};
 
 static struct ttf_encoding_alternative apple_roman[]=
-{{1,0,0}, {-1,-1,0}};
+{{1,0,0,0}, {-1,-1,0,0}};
 
 /* The data for recodings */
 
-static struct ttf_encoding_info ttf_encoding_info[]=
+static struct ttf_encoding_info ttf_initial_encoding_info[]=
 {
-  {"iso10646-1",256*256,iso10646}, /* Unicode */
-  {"iso8859-1",256,iso8859_1},  /* Latin 1 (West European) */
-  {"iso8859-2",256,iso8859_2},  /* Latin 2 (East European) */
-  {"iso8859-3",256,iso8859_3},  /* Latin 3 (South European) */
-  {"iso8859-4",256,iso8859_4},  /* Latin 4 (North European) */
-  {"iso8859-5",256,iso8859_5},  /* Cyrillic */
-  {"iso8859-6",256,iso8859_6},  /* Arabic */
-  {"iso8859-7",256,iso8859_7},  /* Greek */
-  {"iso8859-8",256,iso8859_8},  /* Hebrew */
-  {"iso8859-9",256,iso8859_9},  /* Latin 5 (Turkish) */
-  {"iso8859-10",256,iso8859_10},/* Latin 6 (Nordic) */
-  {"iso8859-15",256,iso8859_15},/* Latin 9 */
-  {"fcd8859-15",256,iso8859_15},/* for compatibility with X11R6.4 */
-  {"koi8-r",256,koi8_r},        /* Russian */
-  {"koi8-u",256,koi8_u},        /* Ukrainian */
-  {"koi8-ru",256,koi8_ru},      /* Ukrainian too */
-  {"koi8-uni",256,koi8_uni},    /* Russian/Ukrainian/Bielorussian */
-  {"microsoft-symbol",256,microsoft_symbol},
-  {"apple-roman",256,apple_roman},
+  {"iso10646-1",256*256,iso10646,0}, /* Unicode */
+  {"iso8859-1",256,iso8859_1,0},  /* Latin 1 (West European) */
+  {"iso8859-2",256,iso8859_2,0},  /* Latin 2 (East European) */
+  {"iso8859-3",256,iso8859_3,0},  /* Latin 3 (South European) */
+  {"iso8859-4",256,iso8859_4,0},  /* Latin 4 (North European) */
+  {"iso8859-5",256,iso8859_5,0},  /* Cyrillic */
+  {"iso8859-6",256,iso8859_6,0},  /* Arabic */
+  {"iso8859-7",256,iso8859_7,0},  /* Greek */
+  {"iso8859-8",256,iso8859_8,0},  /* Hebrew */
+  {"iso8859-9",256,iso8859_9,0},  /* Latin 5 (Turkish) */
+  {"iso8859-10",256,iso8859_10,0},/* Latin 6 (Nordic) */
+  {"iso8859-15",256,iso8859_15,0},/* Latin 9 */
+  {"fcd8859-15",256,iso8859_15,0},/* for compatibility with X11R6.4 */
+  {"koi8-r",256,koi8_r,0},        /* Russian */
+  {"koi8-u",256,koi8_u,0},        /* Ukrainian */
+  {"koi8-ru",256,koi8_ru,0},      /* Ukrainian too */
+  {"koi8-uni",256,koi8_uni,0},    /* Russian/Ukrainian/Bielorussian */
+  {"microsoft-symbol",256,microsoft_symbol,0},
+  {"apple-roman",256,apple_roman,0},
   {0,0,0}
 };
+
+static struct ttf_encoding_info *ttf_encoding_info=NULL;
 
 static int
 mystrcasecmp(const char *s1, const char *s2)
@@ -620,25 +564,57 @@ mystrcasecmp(const char *s1, const char *s2)
   return c1 - c2;
 }
 
+static void
+define_initial_encoding_info(void)
+{
+  struct ttf_encoding_info *info;
+  struct ttf_encoding_alternative *alt;
+
+  ttf_encoding_info=ttf_initial_encoding_info;
+  for(info=ttf_initial_encoding_info; ; info++) {
+    info->next=info+1;
+    for(alt=info->alternatives; ; alt++) {
+      alt->next=alt+1;
+      if(alt->next->pid==-1) {
+        alt->next=NULL;
+        break;
+      }
+    }
+    if(!info->next->charset) {
+      info->next=NULL;
+      break;
+    }
+  }
+}
+
 int
-ttf_find_cmap_from_charset(char *charset, TT_Face face,
+ttf_find_cmap_from_charset(char *charset, char *fileName, TT_Face face,
                            struct ttf_encoding *cinfo)
 {
   struct ttf_encoding_info *info;
   struct ttf_encoding_alternative *alt;
   TT_CharMap cmap;
 
-  for(info=ttf_encoding_info; info->charset; info++)
+  if(ttf_encoding_info==NULL)
+    define_initial_encoding_info();
+
+  for(info=ttf_encoding_info; info; info=info->next)
     if(!mystrcasecmp(info->charset, charset)) {
-      for(alt=info->alternatives; alt->pid>=0; alt++) {
+      for(alt=info->alternatives; alt; alt=alt->next) {
         if(!ttf_find_cmap(alt->pid, alt->eid, face, &cmap)) {
           cinfo->cmap=cmap;
           cinfo->nchars=info->size;
           cinfo->recode=alt->recode;
+          cinfo->client_data=alt->client_data;
           return 0;
         }
       }
+      return 1;                 /* known charset, no suitable cmap */
     }
+
+  /* Unknown charset */
+  if(fileName && loadEncodingInfo(charset, fileName))
+    return ttf_find_cmap_from_charset(charset,0,face,cinfo);
   return 1;
 }
 
@@ -653,7 +629,7 @@ int ttf_find_cmap_default(TT_Face face,
   cinfo->recode=0;
 
   /* Try to find a Unicode charmap */
-    if(ttf_find_cmap(0, 0, face, &cmap)) {
+    if(!ttf_find_cmap(-2, 0, face, &cmap)) {
       cinfo->cmap=cmap;
       cinfo->nchars=256;
       cinfo->recode=0;
@@ -663,7 +639,7 @@ int ttf_find_cmap_default(TT_Face face,
   /* Try to get the first charmap in the file */
   if(!TT_Get_CharMap(face, 0, &cmap)) {
     cinfo->cmap=cmap;
-    cinfo->nchars=256*256;
+    cinfo->nchars=256;
     return 0;
   }
 
@@ -671,7 +647,7 @@ int ttf_find_cmap_default(TT_Face face,
   return 1;
 }
 
-/* Find a cmap for a given (pid,eid).  pid=0 means any Unicode table. */
+/* Find a cmap for a given (pid,eid).  pid<0 are special.*/
 
 static int 
 ttf_find_cmap(int pid, int eid, TT_Face face, TT_CharMap *cmap)
@@ -681,13 +657,21 @@ ttf_find_cmap(int pid, int eid, TT_Face face, TT_CharMap *cmap)
 
   n=TT_Get_CharMap_Count(face);
 
-  if(pid!=0) {                  /* specific cmap */
+  if(pid>=0) {                  /* specific cmap */
     for(i=0; i<n; i++) {
       if(!TT_Get_CharMap_ID(face, i, &p, &e) && p==pid && e==eid) {
         if(!TT_Get_CharMap(face, i, cmap))
           return 0;
       }
     }
+  } else if(pid==-3) {           /* any Apple Unicode cmap */
+    for(i=0; i<n; i++)
+      if(!TT_Get_CharMap_ID(face, i, &p, &e) && p==0) {
+        if(!TT_Get_CharMap(face, i, cmap))
+          return 0;
+        else
+          break;
+      }
   } else {                      /* any Unicode cmap */
     /* prefer Microsoft Unicode */
     for(i=0; i<n; i++) {
@@ -703,7 +687,7 @@ ttf_find_cmap(int pid, int eid, TT_Face face, TT_CharMap *cmap)
       if(!TT_Get_CharMap_ID(face, i, &p, &e) && p==0) {
         if(!TT_Get_CharMap(face, i, cmap))
           return 0;
-        /* but don't give up yet -- there may be more than one cmaps
+        /* but don't give up yet -- there may be more than one cmap
          * with pid=0 */
       }
     }
@@ -720,11 +704,9 @@ ttf_find_cmap(int pid, int eid, TT_Face face, TT_CharMap *cmap)
   return 1;
 }
 
-/* Pick a suitable CMAP.  Returns the CMAP id, a bound on the number
- * of characters and a recoding function. */
-
+/* Pick a suitable CMAP.  On success, fills cinfo and returns 0. */
 int
-ttf_pick_cmap(char *name, int length, TT_Face face, 
+ttf_pick_cmap(char *name, int length, char *filename, TT_Face face, 
               struct ttf_encoding *cinfo)
 {
   char *p,*q;
@@ -758,15 +740,40 @@ ttf_pick_cmap(char *name, int length, TT_Face face,
 
   if(!p || mystrcasecmp(charset,"truetype-raw")) {
     /* Search for a suitable cmap */
-    if(p && !ttf_find_cmap_from_charset(charset, face, cinfo)) {
+    if(p && !ttf_find_cmap_from_charset(charset, filename, face, cinfo)) {
       return 0;
     }
     /* search for an unsuitable one */
-    else if(!ttf_find_cmap_default(face, cinfo))
+    else if(!ttf_find_cmap_default(face, cinfo)) {
       return 0;
+    }
   }
 
   /* Either we failed in finding a cmap, or we were asked for a raw font */
   return 1;
 }
 
+unsigned 
+ttf_recode(unsigned code, struct ttf_encoding *cinfo)
+{
+  if(cinfo->recode)
+    return TT_Char_Index(cinfo->cmap,
+                         (*cinfo->recode)(code, cinfo->client_data));
+  else
+    return TT_Char_Index(cinfo->cmap, code);
+}
+
+static int
+loadEncodingInfo(char *charset, char *filename)
+{
+  struct ttf_encoding_info *info;
+
+  if((info=loadEncodingFile(charset, filename))==NULL) {
+    MUMBLE1("Couldn't parse file for charset `%s'!\n", charset);
+    return 0;
+  } else {
+    info->next=ttf_encoding_info;
+    ttf_encoding_info=info;
+    return 1;
+  }
+}

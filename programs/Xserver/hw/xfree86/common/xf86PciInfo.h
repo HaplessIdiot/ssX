@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.4 1998/09/05 06:36:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.5 1998/09/05 06:49:19 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -10,6 +10,9 @@
 
 #ifndef _XF86_PCIINFO_H
 #define _XF86_PCIINFO_H
+
+/* PCI Pseudo Vendor */
+#define PCI_VENDOR_GENERIC      0x00FF
 
 #define PCI_VENDOR_NCR_1	0x1000
 #define PCI_VENDOR_ATI		0x1002
@@ -41,6 +44,10 @@
 #define PCI_VENDOR_INTEL	0x8086
 #define PCI_VENDOR_ARK		0xEDD8
 
+
+/* Generic */
+#define PCI_CHIP_VGA            0x0000
+#define PCI_CHIP_8514           0x0001
 
 /* ATI */
 #define PCI_CHIP_MACH32		0x4158

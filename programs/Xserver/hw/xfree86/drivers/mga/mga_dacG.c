@@ -2,7 +2,7 @@
  * MGA-1064, MGA-G100, MGA-G200 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.5 1998/09/20 08:39:21 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.7 1998/09/26 13:24:18 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -24,12 +24,22 @@
 #include "mga_reg.h"
 #include "mga.h"
 
+#include "mga_macros.h"
+
+
 /*
  * implementation
  */
  
 #define DACREGSIZE 0x50
     
+/*
+ * Set this flag if you want to soft-reset the MGA during mode changes.
+ * This is useful during development.
+ */
+
+/* #define USE_RESET */
+
 /*
  * Only change bits shown in this mask.  Ideally reserved bits should be
  * zeroed here.  Also, don't change the vgaioen bit here since it is
@@ -316,7 +326,12 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		pReg->DacRegs[ MGA1064_MUL_CTL ] = MGA1064_MUL_CTL_24bits;
 		break;
 	case 32:
-		pReg->DacRegs[ MGA1064_MUL_CTL ] = MGA1064_MUL_CTL_32_24bits;
+		if(pMga->Overlay8Plus24) {
+		   pReg->DacRegs[ MGA1064_MUL_CTL ] = MGA1064_MUL_CTL_32bits;
+		   pReg->DacRegs[ MGA1064_COL_KEY_MSK_LSB ] = 0xFF;
+		   pReg->DacRegs[ MGA1064_COL_KEY_LSB ] = TRANSPARENCY_KEY;
+		} else 
+		   pReg->DacRegs[ MGA1064_MUL_CTL ] = MGA1064_MUL_CTL_32_24bits;
 		break;
 	default:
 		FatalError("MGA: unsupported depth\n");
@@ -506,6 +521,39 @@ MGAGSavePalette(ScrnInfoPtr pScrn, unsigned char* pntr)
         *(pntr++) = inMGAdreg(MGA1064_COL_PAL);
 }
 
+
+static void
+MGAGReset(MGAPtr pMga)
+{
+#ifdef USE_RESET
+	CARD32 tmp;
+
+#ifdef DEBUG	
+	ErrorF("Resetting...\n");
+#endif
+
+	/* set soft reset bit */
+	OUTREG(MGAREG_Reset, 1);
+	usleep(10);
+	OUTREG(MGAREG_Reset, 0);
+
+	/* reset memory */
+	tmp = INREG(MGAREG_MACCESS);
+	tmp |= 1<<15;
+	OUTREG(MGAREG_MACCESS, tmp);
+	usleep(10);
+
+	/* wait until drawing engine is ready */
+	while ( MGAISBUSY() )
+		usleep(1000);
+		
+#ifdef DEBUG		
+	ErrorF("Reset done\n");
+#endif	
+
+#endif
+}
+
 /*
  * MGAGRestore
  *
@@ -518,6 +566,8 @@ MGAGRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 {
 	int i;
 	MGAPtr pMga = MGAPTR(pScrn);
+
+	MGAReset(pMga);
 
 	/*
 	 * Code is needed to get things back to bank zero.

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/util/makekeys.c,v 3.2 1997/10/26 13:24:51 dawes Exp $ */
+/* $XFree86: xc/lib/X11/util/makekeys.c,v 3.3 1998/10/03 08:41:55 dawes Exp $ */
 
 /* Constructs hash tables for XStringToKeysym and XKeysymToString. */
 
@@ -58,7 +58,8 @@ unsigned short indexes[KTNUM];
 KeySym values[KTNUM];
 char buf[1024];
 
-main()
+int
+main(int argc, char *argv[])
 {
     int ksnum;
     int max_rehash;
@@ -113,7 +114,7 @@ main()
 	for (i = 0; i < ksnum; i++) {
 	    name = info[i].name;
 	    sig = 0;
-	    while (c = *name++)
+	    while ((c = *name++))
 		sig = (sig << 1) + c;
 	    first = j = sig % z;
 	    for (k = 0; tab[j]; k++) {
@@ -147,7 +148,7 @@ next1:	;
     for (i = 0; i < ksnum; i++) {
 	name = info[i].name;
 	sig = 0;
-	while (c = *name++)
+	while ((c = *name++))
 	    sig = (sig << 1) + c;
 	first = j = sig % z;
 	while (offsets[j]) {
@@ -158,10 +159,10 @@ next1:	;
 	offsets[j] = k;
 	indexes[i] = k;
 	val = info[i].val;
-	printf("0x%.2x, 0x%.2x, 0x%.2x, 0x%.2x, ",
+	printf("0x%.2lx, 0x%.2lx, 0x%.2lx, 0x%.2lx, ",
 	       (sig >> 8) & 0xff, sig & 0xff,
 	       (val >> 8) & 0xff, val & 0xff);
-	for (name = info[i].name, k += 5; c = *name++; k++)
+	for (name = info[i].name, k += 5; (c = *name++); k++)
 	    printf("'%c',", c);
 	printf((i == (ksnum-1)) ? "0\n" : "0,\n");
     }

@@ -2,7 +2,7 @@
 
                                   DRAFT
 
-Last modified: 26 September 1998.
+Last modified: 1 October 1998.
 
 
 
@@ -1016,29 +1016,155 @@ xf86AllocateScrnInfoPrivateIndex() function.
       this respect by returning -1 when the allocation fails.
 
 
-Section 7: Keeping Track of Bus Slots
-=====================================
+Section 7: Keeping Track of Bus Resources
+=========================================
 
-The XFree86 common layer keeps track of bus slot usage.  The data
-structures used for this are opaque to the drivers, and a function
-interface is provided for drivers to use.  Currently PCI (and basic ISA)
-bus it implemented.  Others will be added as required.
+The XFree86 common layer keeps track of bus slot usage, and provides a
+mechanism for coordinating access to shared bus resources.  The latter,
+Resource Access Control (RAC), allows devices that need to be accessed
+via generic graphics interfaces like VGA or 8514/A I/O ports and memory
+windows to share these resources in a multi-head, or multiple graphics
+card environment.  This requires that the underlying bus system provides
+a way of disabling access to memory and I/O resources selectively for
+a specific bus slot.  This means that ISA and VL bus devices can not
+make use of RAC.
 
-    Bool xf86CheckPciSlot(int bus, int device, int func, PciBusType type)
+7.1 Classification of Devices and Resources
+
+Devices can be classified into the following categories, and the associated
+resource types are shown in parentheses:
+
+  1. Devices that are accessible via VGA resources, and where the memory
+     and I/O access cannot be disabled at the bus level (RES_VGA).
+
+  2. Devices that are accessible via VGA resources, and where the memory
+     and I/O access can be disabled at the bus level (RES_SHARED_VGA).
+
+  3. Devices that are accessible via 8514/A resources, and where the memory
+     and I/O access cannot be disabled at the bus level (RES_8514).
+
+  4. Devices that are accessible via 8514/A resources, and where the memory
+     and I/O access can be disabled at the bus level (RES_SHARED_8514).
+
+  5. Devices that are accessible as "standard" ISA monochrome devices
+     (RES_MONO).
+
+  6. Devices that cannot be accessed through any of the "standard"
+     ISA-compatible interfaces (for example PCI-only devices that don't
+     include VGA compatibility) (RES_NONE).
+
+  TODO: Check if a separate category is required for XGA devices.
+
+Each device will have an intrinsic classification, but a driver might
+use a device in a more restrictive way.  This can lead to the effective
+classification being different from the intrinsic classification.
+
+Resource types 1, 3 and 5 apply to ISA/VL busses while all PCI bus resources
+are currently assumed sharable.  Any device that can be accessed via any of
+the supported generic interfaces at the time of the Probe() function call
+must be assigned one of the resource types 1-5.
+
+
+7.2  Allocating Resources
+
+Before any drivers are accessed the XFree86 common layer disables I/O
+and memory address for all devices in classes 2 and 4 above.  It then
+probes for a VGA device (a probe for 8514/A devices is not yet
+implemented).  This will detect devices that can't have their resource
+access disabled by the standard bus-level methods.  For example, if an
+ISA VGA card is present it will be detected at this point.  This
+information places some restrictions on what other classes of devices
+can co-exist.  The common layer also identifies the primary video device.
+
+I/O and memory access is left disabled when the driver Probe() functions
+are called.
+
+The driver Probe() functions need to detect enough information about
+the hardware present to determine which of the classes each device it
+can drive fits in to.
+
+7.2.1  PCI Devices
+
+For PCI devices, the following functions together with some driver-defined
+tables do the bulk of the work in matching up detected hardware with
+config file device sections and keeping track of resource classes.
+
+
+    int xf86MatchPciInstances(const char *driverName, int vendorID,
+			      SymTabPtr chipsets, PciChipsets *PCIchipsets,
+			      GDevPtr *devList, int numDevs,
+			      GDevPtr **foundDevs, pciVideoPtr **foundPCI,
+			      int **foundChips)
+
+      This function finds matches between PCI cards that a driver supports
+      and config file device sections.  It is intended for use in the
+      ChipProbe() function of drivers for PCI cards.  Only probed PCI
+      devices with a vendor ID matching `vendorID' are considered.
+      `devList' and `numDevs' are typically those found from calling
+      xf86MatchDevice(), and represent the active config file device
+      sections relevant to the driver.  `PCIchipsets' is a table that
+      provides a mapping between the PCI device IDs, the driver's internal
+      chipset tokens and the resource classes.
+
+      When a device section doesn't have a BusID entry it can only match
+      the primary video device.  Secondary devices are only matched with
+      device sections that have a matching BusID entry.
+
+      Once the preliminary matches have been found, a final match is
+      confirmed by checking if the chipset override, ChipID override or
+      probed PCI chipset type match one of those given in the `chipsets'
+      and `PCIchipsets' lists.  The `PCIchipsets' list includes a list
+      of the PCI device IDs supported by the driver.  The list should
+      be terminated with an entry with PCI ID "-1".  The `chipsets' list
+      is a table mapping the driver's internal chipset tokens to names,
+      and should be terminated with a NULL entry.  Only those entries
+      with a corresponding entry in the `PCIchipsets' list are considered.
+      The order of precedence is: config file chipset, config file
+      ChipID, probed PCI device ID.
+
+      In cases where a driver handles PCI chipsets with more than one
+      vendor ID, it may set `vendorID' to 0, and OR each devID in the
+      list with (the vendor ID << 16).
+
+      The config file device sections and PCI records for confirmed
+      matches are returned as arrays via `foundDevs' and `foundPCI'.
+      The chipset tokens are returned as an array via `foundChips'.
+      The function return value is the number of confirmed matches.  A
+      return value of -1 indicates an internal error.  The returned
+      arrays should be freed by the driver with xfree() when they are
+      no longer needed in cases where the return value is greater than
+      zero.
+
+Once the matching is done, the PCI bus needs to be claimed while informing
+the common layer of the resource classes for each device.
+
+
+    BusResource xf86FindPciResource(int numChipset, PciChipsets *PCIchipsets)
+
+      This function returns the resource type associated with the
+      entry in the `PCIchipsets' corresponding to the chipset token
+      `numChipset'.
+
+
+    Bool xf86CheckPciSlot(int bus, int device, int func, BusResource res)
 
       Checks if the PCI slot bus:device:func has been claimed.  If so,
       it returns FALSE, and otherwise TRUE.  The "type" argument is used
-      to indicate if the card is pure PCI, or PCI that also uses the
-      standard VGA ports.  In the latter case, if any other card that has
-      claimed the "VGA" slot this function will return FALSE.
+      to indicate what resource class is required.  If the required class
+      is not usable the return value is FALSE.  For example, a shared VGA
+      class will not be usable if some other device requires exclusive
+      VGA resource access.  The `res' value is normally obtained by calling
+      xf86FindPciResource().
 
 
-    Bool xf86ClaimPciSlot(int bus, int device, int func, PciBusType type,
-                          int scrnIndex)
+    Bool xf86ClaimPciSlot(int bus, int device, int func, BusResource res,
+                          DriverPtr drvp, int chipset, int scrnIndex)
 
-      Claims a PCI slot, and marks it as belonging to the screen with index
-      scrnIndex.  Returns FALSE if the slot was already claimed, and TRUE
-      otherwise.
+      This function is used to claims a PCI slot.  It marks it as belonging
+      to the screen with index scrnIndex.  Returns FALSE if the slot
+      was already claimed or if the resource type requested is not
+      usable, and TRUE otherwise.  This function should always return TRUE
+      if xf86CheckPciSlot() returned TRUE for the same PCI slot/resource.
 
 
     void xf86ReleasePciSlot(int bus, int device, int func)
@@ -1047,16 +1173,16 @@ bus it implemented.  Others will be added as required.
 
 
     int xf86GetPciInfoForScreen(int scrnIndex, pciVideoPtr **pPciList,
-                                PciBusType **pType)
+                                BusResource **pRes)
 
       Returns the PCI information for the PCI slots claimed by the
       screen with index scrnIndex.  *pPciList is an array of the PCI
-      config information and *pType is a corresponding array indicating
-      the PCI card type.  If either of pPciList or pType is NULL, then
+      config information and *pRes is a corresponding array indicating
+      the resource types.  If either of pPciList or pRes is NULL then
       its array will not be allocated.  The return value is the number
       of cards found.
 
-      The caller should use xfree() to free *pPciList and *pType when
+      The caller should use xfree() to free *pPciList and *pRes when
       they are no longer needed.
 
 
@@ -1065,11 +1191,12 @@ bus it implemented.  Others will be added as required.
 
       Takes a BusID string, and if it is in the correct format, returns
       the PCI bus, device, func values that it indicates.  The format
-      of the string is expected to be "bus:device:func" or
-      "PCI:bus:device:func" , where each are decimal integers.  The
-      ":func" part may be omitted, and the func value assumed to be
-      zero, but this isn't encouraged.  If the string isn't a valid PCI
-      BusID, the return value is FALSE.
+      of the string is expected to be "PCI:bus:device:func" where each
+      of `bus', `device' and `func' are decimal integers.  The ":func"
+      part may be omitted, and the func value assumed to be zero, but
+      this isn't encouraged.  The "PCI" prefix may also be omitted.
+      The prefix "AGP" is currently equivalent to the "PCI" prefix.  If
+      the string isn't a valid PCI BusID, the return value is FALSE.
 
 
     Bool xf86ComparePciBusString(const char *busID, int bus, int device,
@@ -1079,15 +1206,50 @@ bus it implemented.  Others will be added as required.
       match TRUE is returned, and FALSE if they don't.
 
 
-    Bool xf86CheckIsaSlot(IsaBusType type)
+7.2.2  ISA devices
 
-      Primarily used to check if the standard VGA ports have been used.
-      The "type" value can indicate other ISA types of hardware though.
+For ISA devices, the following functions together with some driver-defined
+tables do the bulk of the work in matching up detected hardware with
+config file device sections and keeping track of resource classes.
 
 
-    Bool xf86ClaimIsaSlot(IsaBusType type, int scrnIndex)
+    int xf86MatchIsaInstances(const char *driverName, SymTabPtr chipsets,
+                              IsaChipsets *ISAchipsets,
+                              FindIsaDevProc FindIsaDevice, GDevPtr *devList,
+                              int numDevs, GDevPtr *foundDev)
 
-      Claim an ISA bus slot (typically the standard VGA ports).
+      This function finds matches between ISA cards that a driver supports
+      and config file device sections.  It is intended for use in the
+      ChipProbe() function of drivers for ISA cards.  `devList' and
+      `numDevs' are typically those found from calling xf86MatchDevice(),
+      and represent the active config file device sections relevant to
+      the driver.  `ISAchipsets' is a table that provides a mapping
+      between the driver's internal chipset tokens and the resource
+      classes.  `FindIsaDevice' is a driver-provided function that probes
+      the hardware and returns the chipset token corresponding to what was
+      detected, and -1 if nothing was detected.
+
+      If the config file device section contains a chipset entry then
+      it is checked against the `chipsets' list.  When no chipset entry
+      is present, the `FindIsaDevice' function is called instead.
+
+      The config file device sections for confirmed matches are returned
+      as arrays via `foundDev'.  The function return value is the number
+      of confirmed matches.  A return value of -1 indicates an internal
+      error.  The returned arrays should be freed by the driver with
+      xfree() when they are no longer needed in cases where the return
+      value is greater than zero.
+
+
+    Bool xf86CheckIsaSlot(BusResource res)
+
+      Check if the ISA resource `res' is available.
+
+
+    Bool xf86ClaimIsaSlot(BusResource res, DriverPtr drvp, int chipset,
+                          int scrnIndex)
+
+      Claim an ISA bus slot by resource type `res'.
 
 
     void xf86ReleaseIsaSlot(IsaBusType type)
@@ -1095,17 +1257,94 @@ bus it implemented.  Others will be added as required.
       Release a previously claimed ISA slot.
 
 
-    int xf86GetIsaInfoForScreen(int scrnIndex, IsaBusType **pType)
+    int xf86GetIsaInfoForScreen(int scrnIndex, BusResrouce **pRes)
 
-      Returns the ISA "slot" type for the ISA slots claimed by the screen
-      with index scrnIndex.  *pType is an array of the slot types.  If
-      pType is NULL, then its array will not be allocated.  The return
-      value is the number of cards found.  Note that return values other
-      than 0 or 1 are not useful given the implicit assumptions in the
-      bus management code about ISA types.
+      Returns the ISA resource type for the ISA slots claimed by the screen
+      with index scrnIndex.  *pRes is an array of the resource types.  If
+      pRes is NULL, then this array will not be allocated.  The return
+      value is the number of cards found.
 
-      The caller should use xfree() to free *pType when it is no longer
+      The caller should use xfree() to free *pBus when it is no longer
       needed.
+
+
+7.3  Placing Devices Under Access Control
+
+Before memory or the I/O registers of a device which has a resource
+class other than RES_NONE can be accessed, it needs to be placed under
+access control.  Even if no generic resources are accessed explicitly
+by a driver, any resource by which it may be accessed must be put under
+access control.  For example, if a device uses a linear framebuffer,
+but cannot disable its VGA memory window independently of the linear
+window then it must put its memory resource under access control, and
+leave it under access control.  Another example is where a driver is
+able to disable the resource independently of the VGA resource, and
+never needs to use the VGA resource.  In this case the resource needs
+to be placed under access control at least for the purposes of enabling
+it at ScreenInit and EnterVT and disabling it at CloseScreen and LeaveVT.
+
+The following functions are used to control this:
+
+
+    void xf86AddControlledResource(ScrnInfoPtr pScreen, resType rt)
+
+      Place a screen's resources described by `rt' under access control.
+      `rt' can have one of the following values: IO, MEM, MEM_IO, NONE.
+      These should be self-explanatory.
+
+
+    void xf86DelControlledResource(xf86ScrnAccessPtr pScAcc, Bool enable)
+
+      Remove a resource from access control.  The state that the access
+      to the resource is left in is determined by the `enable' value.
+
+Once a resource is under access control access to the resource is
+initially disabled.  It may be enabled with the xf86EnableAccess()
+function.
+
+
+    void xf86EnableAccess(xf86ScrnAccessPtr pScAcc)
+
+      This functions enables the resource referenced by pScAcc.  Before
+      doing so it checks if the currently enabled resource is different,
+      and disables it if it is.  If the currently enabled resource is the
+      same the function exits without changing anything.
+
+      There is no function provided to expliclty disable access to a
+      resource.  That happens implictly when another resource gets enabled.
+      A resource may of course be left in a disabled state when removed
+      from access control.
+
+
+7.4  RAC Wrappers
+
+Wrapper functions are available to enable access to memory and I/O resources
+before control is passed to a function that needs access to those resources.
+The RAC wrappers are initialised (when needed) in the driver ScreenInit()
+function, and they should be initialised after all other subsystems have
+been initialised.
+
+The driver's primary interface functions (except for Probe(), PreInit()
+and ScreenInit()) are also wrapped.
+
+
+    Bool xf86RACInit(ScreenPtr pScreen, unsigned int flag)
+
+      This function initialised the RAC wrappers.  The `flag' parameter
+      may be any ORed combination of RAC_COLORMAP, RAC_CURSOR and RAC_FB.
+      RAC_COLORMAP enables wrapping of the screen colourmap function
+      that loads a new colourmap, and is only required for depth <= 8
+      or where DirectColor visuals are supported at higher depths.
+      RAC_CURSOR enables wrapping of cursor-related functions.  RAC_FB
+      enables wrapping for all functions that may access the framebuffer.
+      The driver's primary interface functions (with the exceptions noted
+      above) are wrapped unconditionally when the RAC wrapper is used.
+
+      The wrappers enable access by calling xf86EnableAccess() prior to
+      calling the wrapped function.  Access is not subsequently disabled
+      explicitly, but implicitly when another screen calls
+      xf86EnableAccess().
+      
 
 
 Section 8: Config file "Option" entries
@@ -2481,46 +2720,6 @@ A.6  Functions for finding which config file entries to use:
 
       The caller should use xfree() to free *driversectlist when it is
       no longer needed.
-
-
-    int xf86MatchPciInstances(const char *driverName, int vendorID,
-                              unsigned int *devIDs, char **chipsets,
-                              GDevPtr *devList, int numDevs,
-                              GDevPtr **foundDevs, pciVideoPtr **foundPCI)
-
-      This function finds matches between PCI cards that a driver supports
-      and config file device sections.  It is intended for use in the
-      ChipProbe() function of drivers for PCI cards.  Only probed PCI
-      devices with a vendor ID matching "vendorID" are considered.
-      "devList" and "numDevs" are typically those found from calling
-      xf86MatchDevice().  When there is only one such device section
-      and only one card with the given vendor ID detected, a match is
-      found in the absence of a conflicting BusID entry in the device
-      section.  When there is more than one of either of these, matches
-      are made by strictly matching BusID values.
-
-      Once the preliminary matches have been found, a final match is
-      confirmed by checking if the chipset override, ChipID override or
-      probed PCI chipset type match one of those given in the "chipsets"
-      and "devIDs" lists.  The devIDs list is expected to be a list of
-      the PCI device IDs supported by the driver.  The list should be
-      terminated with an entry with value "~0".  The chipsets list is
-      expected to be a list of chipset names for PCI devices supported
-      by the driver.  This list should be terminated with a NULL.  The
-      order of precedence is: config file chipset, config file ChipID,
-      probed PCI device ID.
-
-      In cases where a driver handles PCI chipsets with more than one
-      vendor ID, it may set "vendorID" to 0, and OR each devID in the
-      list with (the vendor ID << 16).
-
-      The config file device sections and PCI records for confirmed
-      matches are returned as arrays via "foundDevs" and "foundPCI".
-      The function return value is the number of confirmed matches.  A
-      return value of -1 indicates an internal error.  The returned
-      arrays should be freed by the driver with xfree() when they are
-      no longer needed in cases where the return value is greater than
-      zero.
 
 
 A.7  Probing discrete clocks on old hardware:
@@ -3927,4 +4126,4 @@ C.3  Functions
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.13 1998/09/20 06:01:16 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.14 1998/09/26 08:34:02 dawes Exp $

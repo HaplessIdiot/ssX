@@ -66,14 +66,13 @@ terms and conditions:
 	Dean Verheiden -- AGE Logic, Inc. July 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/export/echist.c,v 3.0 1996/03/29 22:10:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/export/echist.c,v 3.1 1998/10/04 09:35:24 dawes Exp $ */
 
 #define _XIEC_ECHIST
 
 /*
  *  Include files
  */
-#include <stdio.h>
   /*
    *  Core X Includes
    */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/font/FreeType/ft.h,v 1.3 1998/06/04 16:43:10 hohndel Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ft.h,v 1.4 1998/09/06 12:35:38 dawes Exp $ */
 
 #undef DEBUG
 
@@ -41,7 +41,7 @@ struct ttf_encoding
 {
   TT_CharMap cmap;
   int nchars;
-  unsigned (*recode)(unsigned); /* 0 means no supplementary coding */
+  unsigned (*recode)(unsigned, void*); /* 0 means no supplementary coding */
 };
 
 /* Prototypes */
@@ -52,8 +52,8 @@ void FreeTypeRegisterFontFileFunctions(void);
 
 /* ftenc.c */
 
-int ttf_pick_cmap(char*, int, TT_Face,
-                  struct ttf_encoding *);
+int ttf_pick_cmap(char*, int, TT_Face, struct ttf_encoding *);
+unsigned ttf_recode(unsigned, struct ttf_encoding*);
 
 /* ftutil.c */
 

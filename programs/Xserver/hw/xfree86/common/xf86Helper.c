@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.7 1998/09/19 12:14:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.8 1998/09/26 08:34:09 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -21,6 +21,7 @@
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
 #include "micmap.h"
+#include "xf86PciInfo.h"
 
 /* For xf86GetClocks */
 #if defined(CSRG_BASED) || defined(MACH386)
@@ -817,6 +818,9 @@ xf86SaveRestoreImage(int scrnIndex, SaveRestoreFlags what)
 	 * Reinstate the screen pixmap and copy the dummy pixmap back
 	 * to the screen.
 	 */
+	
+ErrorF("xf86SaveRestoreImage: restore, xf86Resetting is %s\n", BOOLTOSTRING(xf86Resetting));
+
 	if (!xf86Resetting) {
 	    if (!ppix[scrnIndex]) {
 		(*pScreen->RegionUninit)(&pixReg);
@@ -1161,7 +1165,7 @@ xf86MatchDevice(const char *drivername, GDevPtr **driversectlist)
 #define DEBUG
 int
 xf86MatchPciInstances(const char *driverName, int vendorID, 
-		      SymTabRec *chipsets, PciChipsets *PCIchipsets,
+		      SymTabPtr chipsets, PciChipsets *PCIchipsets,
 		      GDevPtr *devList, int numDevs,
 		      GDevPtr **foundDevs, pciVideoPtr **foundPCI, 
 		      int **foundChips)
@@ -1205,8 +1209,24 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 	        }
 	    }
         }
+    } else if (vendorID == PCI_VENDOR_GENERIC) {
+	for (ppPci = xf86PciVideoInfo; *ppPci != NULL; ppPci++) {
+	    for (id = PCIchipsets; id->PCIid != -1; id++) {
+		if (id->PCIid == xf86CheckPciGAType(*ppPci)) {
+		    numClaimedInstances = ++allocatedInstances;
+		    instances = (struct Inst *)xnfrealloc(instances,
+				  allocatedInstances * sizeof(struct Inst));
+		    instances[allocatedInstances - 1].inuse = TRUE;
+		    instances[allocatedInstances - 1].pci = *ppPci;
+		    instances[allocatedInstances - 1].dev = NULL;
+		    instances[allocatedInstances - 1].claimed = FALSE;
+		    instances[allocatedInstances - 1].foundHW = TRUE;
+		    instances[allocatedInstances - 1].chip = id->numChipset;
+		}
+	    }
+	}
     } else {
-	/* Find PCI devices that match the given vendor ID */
+	    /* Find PCI devices that match the given vendor ID */
 
 	for (ppPci = xf86PciVideoInfo; *ppPci != NULL; ppPci++) {
 	    if ((*ppPci)->vendor == vendorID) {
@@ -1430,8 +1450,8 @@ xf86FindPciResource(int numChipset, PciChipsets *PCIchipsets)
 }
 
 int
-xf86MatchIsaInstances(const char *driverName, SymTabRec *chipsets,
-		      IsaChipsets *ISAchipsets, int (*FindIsaDevice)(),
+xf86MatchIsaInstances(const char *driverName, SymTabPtr chipsets,
+		      IsaChipsets *ISAchipsets, FindIsaDevProc FindIsaDevice,
 		      GDevPtr *devList, int numDevs, GDevPtr *foundDev)
 {
     GDevPtr dev = NULL;
@@ -1452,11 +1472,13 @@ xf86MatchIsaInstances(const char *driverName, SymTabRec *chipsets,
 		else devBus = devList[i];
 	    } 
 	} else {
-	    if (dev) xf86MsgVerb(X_WARNING,0,
-				 "%s: More than one matching "
-				 "Device section found: %s\n",
-				 driverName,devList[i]->identifier);
-	    else dev = devList[i];
+	    if (xf86IsPrimaryIsa()) {
+		if (dev) xf86MsgVerb(X_WARNING,0,
+				     "%s: More than one matching "
+				     "Device section found: %s\n",
+				     driverName,devList[i]->identifier);
+		else dev = devList[i];
+	    }
 	}
     }
     if (devBus) dev = devBus; 

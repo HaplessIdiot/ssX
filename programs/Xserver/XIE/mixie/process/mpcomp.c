@@ -66,7 +66,7 @@ terms and conditions:
 	Larry Hare -- AGE Logic, Inc. August, 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/mixie/process/mpcomp.c,v 3.1 1996/08/20 13:16:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/process/mpcomp.c,v 3.2 1998/10/04 09:36:31 dawes Exp $ */
 
 
 #define _XIEC_MPCOMP
@@ -75,7 +75,6 @@ terms and conditions:
 /*
  *  Include files
  */
-#include <stdio.h>
 
 /*
  *  Core X Includes

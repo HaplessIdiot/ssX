@@ -1,27 +1,27 @@
-/* This code is Copyright (c) 1997 by Mark Leisher
- *              Copyright (c) 1998 by Juliusz Chroboczek
- * 
- * License, to use, copy, modify, and distribute this software and its
- * documentation for any purpose and without fee is hereby granted,
- * provided that the above copyright notice appear in all copies and that
- * both that copyright notice and this permission notice appear in
- * supporting documentation.
- * 
- * THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT ANY WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO ANY IMPLIED
- * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND
- * NONINFRINGEMENT OF THIRD PARTY RIGHTS.  THE ENTIRE RISK AS TO THE
- * QUALITY AND PERFORMANCE OF THE SOFTWARE, INCLUDING ANY DUTY TO SUPPORT
- * OR MAINTAIN, BELONGS TO THE LICENSEE.  SHOULD ANY PORTION OF THE
- * SOFTWARE PROVE DEFECTIVE, THE LICENSEE ASSUMES THE ENTIRE COST OF ALL
- * SERVICING, REPAIR AND CORRECTION.  IN NO EVENT SHALL THE AUTHORS BE
- * LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY
- * DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
- * WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
- * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
- * SOFTWARE. */
+/*
+Copyright (c) 1997 by Mark Leisher
+Copyright (c) 1998 by Juliusz Chroboczek
 
-/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.4 1998/09/06 05:05:31 dawes Exp $ */
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
+
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.5 1998/09/06 07:31:58 dawes Exp $ */
 
 #include "fntfilst.h"
 #include "FSproto.h"
@@ -485,10 +485,10 @@ FreeTypeLoadFont(char *fileName,
   /* Get the requested cmap. */
 
   if(entry->name.ndashes==14)
-    nocmap=ttf_pick_cmap(entry->name.name, entry->name.length,
+    nocmap=ttf_pick_cmap(entry->name.name, entry->name.length, fileName,
                          face, &cinfo);
   else
-    nocmap=ttf_pick_cmap(0,0,face,&cinfo);
+    nocmap=ttf_pick_cmap(0,0,fileName,face,&cinfo);
 
   /* Create fontPrivate storage which will store a list of the glyphs
    * and encodings. */
@@ -603,7 +603,7 @@ FreeTypeLoadFont(char *fileName,
       idx = code;
     else
       if(cinfo.recode)
-        idx = TT_Char_Index(cinfo.cmap, (*cinfo.recode)(code));
+        idx = ttf_recode(code, &cinfo);
 
     /* As a special case, we pass 0 even when its not in the ranges;
      * this will allow for the default glyph, which should exist in
@@ -682,6 +682,10 @@ FreeTypeLoadFont(char *fileName,
         tep = new_encoding + (tep - tf->encoding);
         free(tf->encoding);
         tf->encoding=new_encoding;
+        if (haveDefaultGlyphP) {
+          /* Reset the default glyph if it's been set previously. */
+          tf->defaultGlyph = new_glyphs + (tf->defaultGlyph - tf->glyphs);
+        }
         tgp = new_glyphs + (tgp - tf->glyphs);
         free(tf->glyphs);
         tf->glyphs=new_glyphs;

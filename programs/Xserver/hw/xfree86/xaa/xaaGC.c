@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGC.c,v 1.3 1998/08/02 05:17:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGC.c,v 1.4 1998/09/05 06:37:03 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -74,11 +74,6 @@ XAAValidateGC(
     }
 
     XAA_GC_FUNC_EPILOGUE(pGC);
-
-    /* keep the colors out of the overlay planes */
-    if(changes & GCForeground) pGC->fgPixel &= infoRec->FullPlanemask;
-    if(changes & GCBackground) pGC->bgPixel &= infoRec->FullPlanemask;
-
 
     if(!pGCPriv->wrapOps) return;
 
@@ -163,7 +158,6 @@ XAAValidateGC(
  
     if(changes & infoRec->PushPixelsMask) 
 	(*infoRec->ValidatePushPixels)(pGC, changes, pDraw); 	
-
 }
 
 

@@ -67,7 +67,7 @@ terms and conditions:
 	Larry Hare -- AGE Logic, Inc. May, 1993
   
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/mixie/process/mpdither.c,v 3.1 1996/08/20 13:16:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/process/mpdither.c,v 3.2 1998/10/04 09:36:32 dawes Exp $ */
 
 
 #define _XIEC_MPDITHER
@@ -76,7 +76,6 @@ terms and conditions:
 /*
  *  Include files
  */
-#include <stdio.h>
 
 /*
  *  Core X Includes
