@@ -1,4 +1,6 @@
 XFree86 4.2.99.5 (XX January 2003)
+ 791. Fix bug that at times prevented recognition of resources decoded on PCI
+      root busses (Marc La France).
  790. Fix XDarwin's spurious transparent regions in rootless windows
       (Torrey T. Lyons).
  789. Fix bug in recognition of certain ix86 Host-to-PCI bridges
@@ -16127,4 +16129,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2498 2003/01/27 00:01:40 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2499 2003/01/27 06:04:58 torrey Exp $
