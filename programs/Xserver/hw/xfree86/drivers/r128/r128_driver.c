@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.12 2000/02/12 03:39:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.13 2000/02/12 20:45:29 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -376,13 +376,16 @@ static Bool R128MapMMIO(ScrnInfoPtr pScrn)
 				   R128_MMIOSIZE);
     }
 
+#ifdef __alpha__
     info->MMIO32 = xf86MapPciMem(pScrn->scrnIndex,
 			       VIDMEM_MMIO | VIDMEM_READSIDEEFFECT | VIDMEM_MMIO_32BIT,
 			       info->PciTag,
 			       info->MMIOAddr,
 			       R128_MMIOSIZE);
 
-    if (!info->MMIO || !info->MMIO32) return FALSE;
+    if (!info->MMIO32) return FALSE;
+#endif
+    if (!info->MMIO) return FALSE;
     return TRUE;
 }
 
@@ -396,10 +399,14 @@ static Bool R128UnmapMMIO(ScrnInfoPtr pScrn)
 	fbdevHWUnmapMMIO(pScrn);
     else {
 	xf86UnMapVidMem(pScrn->scrnIndex, info->MMIO, R128_MMIOSIZE);
+#ifdef __alpha__
 	xf86UnMapVidMem(pScrn->scrnIndex, info->MMIO32, R128_MMIOSIZE);
+#endif
     }
     info->MMIO = NULL;
+#ifdef __alpha__
     info->MMIO32 = NULL;
+#endif
     return TRUE;
 }
 
@@ -456,8 +463,7 @@ static Bool R128UnmapMem(ScrnInfoPtr pScrn)
 /* Read PLL information */
 int INPLL(ScrnInfoPtr pScrn, int addr)
 {
-    unsigned char *R128MMIO = R128PTR(pScrn)->MMIO;
-    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
+    R128MMIO_VARS();
     
     OUTREG8(R128_CLOCK_CNTL_INDEX, addr & 0x1f);
     return INREG(R128_CLOCK_CNTL_DATA);
@@ -467,8 +473,7 @@ int INPLL(ScrnInfoPtr pScrn, int addr)
 /* Read PAL information (only used for debugging). */
 static int INPAL(int idx)
 {
-    unsigned char *R128MMIO = R128PTR(NULL)->MMIO;
-    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
+    R128MMIO_VARS();
     
     OUTREG(R128_PALETTE_INDEX, idx << 16);
     return INREG(R128_PALETTE_DATA);
@@ -478,9 +483,8 @@ static int INPAL(int idx)
 /* Wait for vertical sync. */
 void R128WaitForVerticalSync(ScrnInfoPtr pScrn)
 {
-    unsigned char *R128MMIO = R128PTR(pScrn)->MMIO;
-    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
-    int           i;
+    int i;
+    R128MMIO_VARS();
 
     OUTREG(R128_GEN_INT_STATUS, R128_VSYNC_INT_AK);
     for (i = 0; i < R128_TIMEOUT; i++) {
@@ -491,8 +495,7 @@ void R128WaitForVerticalSync(ScrnInfoPtr pScrn)
 /* Blank screen. */
 static void R128Blank(ScrnInfoPtr pScrn)
 {
-    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
-    unsigned char *R128MMIO = R128PTR(pScrn)->MMIO;
+    R128MMIO_VARS();
 
     OUTREGP(R128_CRTC_EXT_CNTL, R128_CRTC_DISPLAY_DIS, ~R128_CRTC_DISPLAY_DIS);
 }
@@ -500,8 +503,7 @@ static void R128Blank(ScrnInfoPtr pScrn)
 /* Unblank screen. */
 static void R128Unblank(ScrnInfoPtr pScrn)
 {
-    unsigned char *R128MMIO = R128PTR(pScrn)->MMIO;
-    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
+    R128MMIO_VARS();
 
     OUTREGP(R128_CRTC_EXT_CNTL, 0, ~R128_CRTC_DISPLAY_DIS);
 }
@@ -531,7 +533,7 @@ static Bool R128GetPLLParameters(ScrnInfoPtr pScrn)
     CARD16        bios_header;
     CARD16        pll_info_block;
     CARD8         tmp[64];
-    Bool	  BIOSFromPCI = info->BIOSFromPCI;
+    Bool	  BIOSFromPCI = TRUE;
 	
 #define R128ReadBIOS(offset, buffer, length)                                  \
     (BIOSFromPCI ?							      \
@@ -539,9 +541,14 @@ static Bool R128GetPLLParameters(ScrnInfoPtr pScrn)
      xf86ReadBIOS(info->BIOSAddr, offset, buffer, length))
 
     R128ReadBIOS(0, tmp, sizeof(tmp));
-    if ((tmp[0] != 0x55 || tmp[1] != 0xaa) && !BIOSFromPCI)
+    if (tmp[0] != 0x55 || tmp[1] != 0xaa)
     {
-	BIOSFromPCI = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		   "Video BIOS not detected in PCI space!\n");
+	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		   "Attempting to read Video BIOS from legacy ISA space!\n");
+	BIOSFromPCI = FALSE;
+	info->BIOSAddr = 0x000c0000;
 	R128ReadBIOS(0, tmp, sizeof(tmp));
     }
     if (tmp[0] != 0x55 || tmp[1] != 0xaa) {
@@ -764,7 +771,9 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
     int           offset = 0;	/* RAM Type */
     MessageType   from;
     unsigned char *R128MMIO;
+#ifdef __alpha__
     unsigned char *R128MMIO32;
+#endif
 
 				/* Chipset */
     from = X_PROBED;
@@ -834,19 +843,7 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
 
 				/* BIOS */
     from              = X_PROBED;
-#if 1
-    /* Force to read BIOS from C000:0 */
-    info->BIOSAddr    = 0;
-    info->BIOSFromPCI = FALSE;
-#else
     info->BIOSAddr    = info->PciInfo->biosBase & 0xfffe0000;
-    info->BIOSFromPCI = TRUE;
-#endif
-    if (!info->BIOSAddr) {
-	info->BIOSAddr    = 0x000c0000;
-	from              = X_DEFAULT;
-	info->BIOSFromPCI = FALSE;
-    }
     if (dev->BiosBase) {
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 		   "BIOS address override, using 0x%08x instead of 0x%08x\n",
@@ -864,13 +861,18 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
     from             = X_PROBED;
     R128MapMMIO(pScrn);
     R128MMIO         = info->MMIO;
+#ifdef __alpha__
     R128MMIO32       = info->MMIO32;
+#endif
     if (info->FBDev)
 	pScrn->videoRam = fbdevHWGetVidmem(pScrn) / 1024;
     else
 	pScrn->videoRam = INREG(R128_CONFIG_MEMSIZE) / 1024;
     info->MemCntl    = INREG(R128_MEM_CNTL);
     R128MMIO         = NULL;
+#ifdef __alpha__
+    R128MMIO32       = NULL;
+#endif
     R128UnmapMMIO(pScrn);
     switch (info->MemCntl & 0x3) {
     case 0:			/* SDR SGRAM 1:1 */
@@ -1142,11 +1144,10 @@ static Bool R128PreInit(ScrnInfoPtr pScrn, int flags)
 static void R128LoadPalette15(ScrnInfoPtr pScrn, int numColors,
 			      int *indices, LOCO *colors, VisualPtr pVisual)
 {
-    unsigned char *R128MMIO    = R128PTR(pScrn)->MMIO;
-    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
     int           i;
     int           idx;
     unsigned char r, g, b;
+    R128MMIO_VARS();
 
     for (i = 0; i < numColors; i++) {
 	idx = indices[i];
@@ -1161,11 +1162,10 @@ static void R128LoadPalette15(ScrnInfoPtr pScrn, int numColors,
 static void R128LoadPalette16(ScrnInfoPtr pScrn, int numColors,
 			      int *indices, LOCO *colors, VisualPtr pVisual)
 {
-    unsigned char *R128MMIO    = R128PTR(pScrn)->MMIO;
-    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
     int           i;
     int           idx;
     unsigned char r, g, b;
+    R128MMIO_VARS();
 
 				/* There are twice as many green values as
                                    there are values for red and blue.  So,
@@ -1185,11 +1185,10 @@ static void R128LoadPalette16(ScrnInfoPtr pScrn, int numColors,
 static void R128LoadPalette(ScrnInfoPtr pScrn, int numColors,
 			    int *indices, LOCO *colors, VisualPtr pVisual)
 {
-    unsigned char *R128MMIO    = R128PTR(pScrn)->MMIO;
-    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
     int           i;
     int           idx;
     unsigned char r, g, b;
+    R128MMIO_VARS();
 
     for (i = 0; i < numColors; i++) {
 	idx = indices[i];
@@ -1431,8 +1430,7 @@ static Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen,
 /* Write common registers (initialized to 0). */
 static void R128RestoreCommonRegisters(ScrnInfoPtr pScrn, R128SavePtr restore)
 {
-    unsigned char *R128MMIO = R128PTR(pScrn)->MMIO;
-    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
+    R128MMIO_VARS();
     
     OUTREG(R128_OVR_CLR,              restore->ovr_clr);
     OUTREG(R128_OVR_WID_LEFT_RIGHT,   restore->ovr_wid_left_right);
@@ -1451,8 +1449,7 @@ static void R128RestoreCommonRegisters(ScrnInfoPtr pScrn, R128SavePtr restore)
 /* Write CRTC registers. */
 static void R128RestoreCrtcRegisters(ScrnInfoPtr pScrn, R128SavePtr restore)
 {
-    unsigned char *R128MMIO = R128PTR(pScrn)->MMIO;
-    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
+    R128MMIO_VARS();
     
     OUTREG(R128_CRTC_GEN_CNTL,        restore->crtc_gen_cntl);
 
@@ -1478,8 +1475,7 @@ static void R128PLLWaitForReadUpdateComplete(ScrnInfoPtr pScrn)
 
 static void R128PLLWriteUpdate(ScrnInfoPtr pScrn)
 {
-    unsigned char *R128MMIO = R128PTR(pScrn)->MMIO;
-    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
+    R128MMIO_VARS();
     
     OUTPLLP(pScrn, R128_PPLL_REF_DIV, R128_PPLL_ATOMIC_UPDATE_W, 0xffff);
 }
@@ -1487,8 +1483,7 @@ static void R128PLLWriteUpdate(ScrnInfoPtr pScrn)
 /* Write PLL registers. */
 static void R128RestorePLLRegisters(ScrnInfoPtr pScrn, R128SavePtr restore)
 {
-    unsigned char *R128MMIO = R128PTR(pScrn)->MMIO;
-    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
+    R128MMIO_VARS();
     
     OUTREGP(R128_CLOCK_CNTL_INDEX, R128_PLL_DIV_SEL, 0xffff);
     
@@ -1532,8 +1527,7 @@ static void R128RestorePLLRegisters(ScrnInfoPtr pScrn, R128SavePtr restore)
 /* Write DDA registers. */
 static void R128RestoreDDARegisters(ScrnInfoPtr pScrn, R128SavePtr restore)
 {
-    unsigned char *R128MMIO = R128PTR(pScrn)->MMIO;
-    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
+    R128MMIO_VARS();
     
     OUTREG(R128_DDA_CONFIG, restore->dda_config);
     OUTREG(R128_DDA_ON_OFF, restore->dda_on_off);
@@ -1542,9 +1536,8 @@ static void R128RestoreDDARegisters(ScrnInfoPtr pScrn, R128SavePtr restore)
 /* Write palette data. */
 static void R128RestorePalette(ScrnInfoPtr pScrn, R128SavePtr restore)
 {
-    unsigned char *R128MMIO = R128PTR(pScrn)->MMIO;
-    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
-    int           i;
+    int i;
+    R128MMIO_VARS();
 
     if (!restore->palette_valid) return;
 
@@ -1566,8 +1559,7 @@ static void R128RestoreMode(ScrnInfoPtr pScrn, R128SavePtr restore)
 /* Read common registers. */
 static void R128SaveCommonRegisters(ScrnInfoPtr pScrn, R128SavePtr save)
 {
-    unsigned char *R128MMIO = R128PTR(pScrn)->MMIO;
-    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
+    R128MMIO_VARS();
     
     save->ovr_clr            = INREG(R128_OVR_CLR);
     save->ovr_wid_left_right = INREG(R128_OVR_WID_LEFT_RIGHT);
@@ -1586,8 +1578,7 @@ static void R128SaveCommonRegisters(ScrnInfoPtr pScrn, R128SavePtr save)
 /* Read CRTC registers. */
 static void R128SaveCrtcRegisters(ScrnInfoPtr pScrn, R128SavePtr save)
 {
-    unsigned char *R128MMIO = R128PTR(pScrn)->MMIO;
-    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
+    R128MMIO_VARS();
     
     save->crtc_gen_cntl        = INREG(R128_CRTC_GEN_CNTL);
     save->crtc_ext_cntl        = INREG(R128_CRTC_EXT_CNTL);
@@ -1621,8 +1612,7 @@ static void R128SavePLLRegisters(ScrnInfoPtr pScrn, R128SavePtr save)
 /* Read DDA registers. */
 static void R128SaveDDARegisters(ScrnInfoPtr pScrn, R128SavePtr save)
 {
-    unsigned char *R128MMIO = R128PTR(pScrn)->MMIO;
-    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
+    R128MMIO_VARS();
     
     save->dda_config           = INREG(R128_DDA_CONFIG);
     save->dda_on_off           = INREG(R128_DDA_ON_OFF);
@@ -1631,9 +1621,8 @@ static void R128SaveDDARegisters(ScrnInfoPtr pScrn, R128SavePtr save)
 /* Read palette data. */
 static void R128SavePalette(ScrnInfoPtr pScrn, R128SavePtr save)
 {
-    unsigned char *R128MMIO = R128PTR(pScrn)->MMIO;
-    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
-    int           i;
+    int i;
+    R128MMIO_VARS();
     
     INPAL_START(0);
     for (i = 0; i < 256; i++) save->palette[i] = INPAL_NEXT();
@@ -1657,11 +1646,10 @@ static void R128SaveMode(ScrnInfoPtr pScrn, R128SavePtr save)
 /* Save everything needed to restore the original VC state. */
 static void R128Save(ScrnInfoPtr pScrn)
 {
-    R128InfoPtr   info      = R128PTR(pScrn);
-    R128SavePtr   save      = &info->SavedReg;
-    unsigned char *R128MMIO = info->MMIO;
-    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
-    vgaHWPtr      hwp       = VGAHWPTR(pScrn);
+    R128InfoPtr   info = R128PTR(pScrn);
+    R128SavePtr   save = &info->SavedReg;
+    vgaHWPtr      hwp  = VGAHWPTR(pScrn);
+    R128MMIO_VARS();
 
     R128TRACE(("R128Save\n"));
     if (info->FBDev) {
@@ -1684,11 +1672,10 @@ static void R128Save(ScrnInfoPtr pScrn)
 /* Restore the original (text) mode. */
 static void R128Restore(ScrnInfoPtr pScrn)
 {
-    R128InfoPtr   info      = R128PTR(pScrn);
-    R128SavePtr   restore   = &info->SavedReg;
-    unsigned char *R128MMIO = info->MMIO;
-    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
-    vgaHWPtr      hwp       = VGAHWPTR(pScrn);
+    R128InfoPtr   info    = R128PTR(pScrn);
+    R128SavePtr   restore = &info->SavedReg;
+    vgaHWPtr      hwp     = VGAHWPTR(pScrn);
+    R128MMIO_VARS();
 
     R128TRACE(("R128Restore\n"));
     if (info->FBDev) {
@@ -2020,7 +2007,7 @@ static Bool R128ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
 static Bool R128SaveScreen(ScreenPtr pScreen, Bool unblank)
 {
-    ScrnInfoPtr   pScrn     = xf86Screens[pScreen->myNum];
+    ScrnInfoPtr   pScrn = xf86Screens[pScreen->myNum];
 
     if (unblank) R128Unblank(pScrn); else R128Blank(pScrn);
     return TRUE;
@@ -2042,11 +2029,10 @@ static int R128ValidMode(int scrnIndex, DisplayModePtr mode,
    is (x,y) in virtual space. */
 static void R128AdjustFrame(int scrnIndex, int x, int y, int flags)
 {
-    ScrnInfoPtr   pScrn     = xf86Screens[scrnIndex];
-    R128InfoPtr   info      = R128PTR(pScrn);
-    unsigned char *R128MMIO = info->MMIO;
-    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
+    ScrnInfoPtr   pScrn = xf86Screens[scrnIndex];
+    R128InfoPtr   info  = R128PTR(pScrn);
     int           Base;
+    R128MMIO_VARS();
 
     Base = y * pScrn->displayWidth + x;
 
@@ -2151,11 +2137,10 @@ static void R128FreeScreen(int scrnIndex, int flags)
 static void R128DisplayPowerManagementSet(ScrnInfoPtr pScrn,
 					  int PowerManagementMode, int flags)
 {
-    unsigned char *R128MMIO = R128PTR(pScrn)->MMIO;
-    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
-    int           mask      = (R128_CRTC_DISPLAY_DIS
-			       | R128_CRTC_HSYNC_DIS
-			       | R128_CRTC_VSYNC_DIS);
+    int mask = (R128_CRTC_DISPLAY_DIS
+		| R128_CRTC_HSYNC_DIS
+		| R128_CRTC_VSYNC_DIS);
+    R128MMIO_VARS();
     
     switch (PowerManagementMode) {
     case DPMSModeOn:

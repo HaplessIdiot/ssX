@@ -1,3 +1,8 @@
+3761. Attempt to first read the PLL parameters in the BIOS from PCI space,
+      then fallback to 0xc0000, and then fallback to default PLL parameters
+      in r128 driver (Kevin Martin).
+3760. Fix compiler warnings in r128 driver (Kevin Martin).
+
 XFree86 3.9.17f (12 February 2000)
 3759. Mga fix for pMga->PointerMoved init (#3684, Isao Ohishi).
 3758. Import FreeType 1.3.1 and X-TrueType 1.3, and incorporate the
@@ -9652,4 +9657,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1001 2000/02/13 06:50:36 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1002 2000/02/13 07:26:55 dawes Exp $
