@@ -26,7 +26,7 @@
  *          Dirk H. Hohndel (hohndel@suse.de),
  *          Portions: the GGI project & confidential CYRIX databooks.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.14 2000/12/02 15:30:37 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.15 2000/12/27 04:57:10 dawes Exp $ */
 
 #include "fb.h"
 #include "mibank.h"
@@ -45,15 +45,12 @@
 
 #include "cyrix.h"
 
-#ifdef XFreeXDGA
 #define _XF86DGA_SERVER_
 #include "extensions/xf86dgastr.h"
-#endif
 
-#ifdef DPMSExtension
 #include "opaque.h"
+#define DPMS_SERVER
 #include "extensions/dpms.h"
-#endif
 
 static OptionInfoPtr CYRIXAvailableOptions(int chip, int busid);
 static void	CYRIXIdentify(int flags);
@@ -238,7 +235,6 @@ CYRIXFreeRec(ScrnInfoPtr pScrn)
     pScrn->driverPrivate = NULL;
 }
 
-#ifdef DPMSExtension
 static void 
 CYRIXDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags)
 {
@@ -278,7 +274,6 @@ CYRIXDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int f
 	outb(0x83C6, PMCont);
 	outw(0x3C4, (temp<<8) | 0x0E);
 }
-#endif
 
 /* Mandatory */
 static void
@@ -1084,9 +1079,7 @@ CYRIXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (!vgaHWHandleColormaps(pScreen))
 	return FALSE;
 
-#ifdef DPMSExtension
     xf86DPMSInit(pScreen, (DPMSSetProcPtr)CYRIXDisplayPowerManagementSet, 0);
-#endif
 
     pScrn->memPhysBase = pCyrix->FbAddress;
     pScrn->fbOffset = 0;

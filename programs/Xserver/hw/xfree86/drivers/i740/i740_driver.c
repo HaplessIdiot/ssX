@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.26 2000/12/02 15:30:41 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.27 2000/12/27 04:57:11 dawes Exp $ */
 
 /*
  * Authors:
@@ -133,11 +133,9 @@ static void I740FreeScreen(int scrnIndex, int flags);
 static int I740ValidMode(int scrnIndex, DisplayModePtr mode, Bool
 		       verbose, int flags);
 
-#ifdef DPMSExtension
 /* Switch to various Display Power Management System levels */
 static void I740DisplayPowerManagementSet(ScrnInfoPtr pScrn, 
 					int PowerManagermentMode, int flags);
-#endif
 
 #define VERSION 4000
 #define I740_NAME "I740"
@@ -1534,9 +1532,7 @@ I740ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
       return FALSE;
   }
 
-#ifdef DPMSExtension
   xf86DPMSInit(pScreen, I740DisplayPowerManagementSet, 0);
-#endif
 
 #ifdef XvExtension
   {
@@ -1712,7 +1708,6 @@ I740SaveScreen(ScreenPtr pScreen, int mode)
   return vgaHWSaveScreen(pScreen, mode);
 }
 
-#ifdef DPMSExtension
 static void
 I740DisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, 
 			      int flags) {
@@ -1751,4 +1746,3 @@ I740DisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
   /* Set the DPMS mode */
   pI740->writeControl(pI740, XRX, DPMS_SYNC_SELECT, DPMSSyncSelect);
 }
-#endif

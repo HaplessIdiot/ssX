@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.79 2000/12/14 16:33:10 eich Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.80 2000/12/27 04:57:17 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -44,9 +44,6 @@
 #include "mibstore.h"
 
 #include "fb.h"
-#ifdef RENDER
-#include "picturestr.h"
-#endif
 
 #include "xf86RAC.h"
 #include "xf86Resources.h"
@@ -1831,11 +1828,8 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
 	  TsengFreeRec(pScrn);
 	  return FALSE;
 	}
-	xf86LoaderReqSymbols("fbScreenInit", NULL);
-#ifdef RENDER
-	xf86LoaderReqSymbols("fbPictureInit", NULL);
-#endif
-       break;
+	xf86LoaderReqSymbols("fbScreenInit", "fbPictureInit", NULL);
+	break;
     }
 
     /* Load XAA if needed */
@@ -2055,10 +2049,8 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			pScrn->displayWidth, pScrn->bitsPerPixel);
-#ifdef RENDER
 	if (ret)
 	  fbPictureInit(pScreen, 0, 0);
-#endif
 	break;
     }
 
@@ -2147,7 +2139,6 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* Wrap the current CloseScreen and SaveScreen functions */
     pScreen->SaveScreen = TsengSaveScreen;
 
-#ifdef DPMSExtension
     /* Support for DPMS, the ET4000W32Pc and newer uses a different and
      * simpler method than the older cards.
      */
@@ -2156,7 +2147,6 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     } else {
 	xf86DPMSInit(pScreen, (DPMSSetProcPtr)TsengHVSyncDPMSSet, 0);
     }
-#endif
 
     pTseng->CloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = TsengCloseScreen;
@@ -2195,7 +2185,6 @@ TsengLeaveVT(int scrnIndex, int flags)
     TsengPtr pTseng = TsengPTR(pScrn);
 
 #ifdef TODO
-#ifdef XFreeXDGA
     if (pScrn->bitsPerPixel >= 8) {
 	if (pScrn->directMode & XF86DGADirectGraphics) {
 	    if (vgaHWCursor.Initialized == TRUE)
@@ -2203,7 +2192,6 @@ TsengLeaveVT(int scrnIndex, int flags)
 	    return;
 	}
     }
-#endif
 #endif
 
     PDEBUG("	TsengLeaveVT\n");
@@ -2740,13 +2728,11 @@ TsengAdjustFrame(int scrnIndex, int x, int y, int flags)
     outw(iobase + 4, ((Base & 0x0F0000) >> 8) | 0x33);
 
 #ifdef TODO
-#ifdef XFreeXDGA
     if (pScrn->directMode & XF86DGADirectGraphics) {
 	/* Wait until vertical retrace is in progress. */
 	while (inb(iobase + 0xA) & 0x08) ;
 	while (!(inb(iobase + 0xA) & 0x08)) ;
     }
-#endif
 #endif
 }
 
@@ -3269,10 +3255,8 @@ ET4000Probe()
 	...
 	
     vga256InfoRec.bankedMono = TRUE;
-#ifdef XFreeXDGA
     if (pScrn->bitsPerPixel >= 8)
 	vga256InfoRec.directMode = XF86DGADirectPresent;
-#endif
 
   ...
 

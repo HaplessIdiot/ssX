@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.15 2000/10/10 15:16:34 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.16 2001/01/06 20:58:04 tsi Exp $ */
 /*
  * Copyright 1997 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -327,9 +327,11 @@ ATIMach64ChipID
 
         case OldChipID('L', 'I'):
         case OldChipID('L', 'P'):
+        case OldChipID('L', 'Q'):
             pATI->ChipType = OldToNewChipID(pATI->ChipType);
         case NewChipID('L', 'I'):
         case NewChipID('L', 'P'):
+        case NewChipID('L', 'Q'):
             pATI->ChipRevision =
                 GetBits(pATI->config_chip_id, CFG_CHIP_REVISION);
             pATI->Chip = ATI_CHIP_264LTPRO;
@@ -507,6 +509,7 @@ ATIChipID
         case OldChipID('L', 'D'):  case NewChipID('L', 'D'):
         case OldChipID('L', 'I'):  case NewChipID('L', 'I'):
         case OldChipID('L', 'P'):  case NewChipID('L', 'P'):
+        case OldChipID('L', 'Q'):  case NewChipID('L', 'Q'):
             return ATI_CHIP_264LTPRO;
 
         case OldChipID('G', 'L'):  case NewChipID('G', 'L'):

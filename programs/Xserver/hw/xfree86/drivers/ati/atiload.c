@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiload.c,v 1.3 2001/01/06 20:19:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiload.c,v 1.4 2001/01/06 20:58:05 tsi Exp $ */
 /*
  * Copyright 2000 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -73,17 +73,8 @@ ATILoadModules
 
 #endif /* AVOID_CPIO */
 
-#ifdef USE_FB
         "fbScreenInit",
-#ifdef RENDER
         "fbPictureInit",
-#endif
-#else
-        "cfbScreenInit",
-        "cfb16ScreenInit",
-        "cfb24ScreenInit",
-        "cfb32ScreenInit",
-#endif
         "ShadowFBInit",
         "XAACreateInfoRec",
         "XAADestroyInfoRec",
@@ -119,25 +110,17 @@ ATILoadModules
 
 #endif /* AVOID_CPIO */
 
-#ifdef USE_FB
         case 8:
         case 16:
         case 24:
         case 32:
-            return ATILoadModule(pScreenInfo, "fb", "fbScreenInit");
-#else
-        case 8:
-            return ATILoadModule(pScreenInfo, "cfb", "cfbScreenInit");
+            if (!ATILoadModule(pScreenInfo, "fb", "fbScreenInit"))
+                return FALSE;
 
-        case 16:
-            return ATILoadModule(pScreenInfo, "cfb16", "cfb16ScreenInit");
+            /* Require more fb symbols */
+            xf86LoaderReqSymbols("fbPictureInit", FALSE);
+            return TRUE;
 
-        case 24:
-            return ATILoadModule(pScreenInfo, "cfb24", "cfb24ScreenInit");
-
-        case 32:
-            return ATILoadModule(pScreenInfo, "cfb32", "cfb32ScreenInit");
-#endif
         default:
             return FALSE;
     }

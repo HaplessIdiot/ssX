@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.h,v 1.23 2000/02/15 18:01:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.h,v 1.24 2000/11/02 16:33:27 tsi Exp $ */
 
 
 /*
@@ -24,11 +24,9 @@
 
 #include "xf86DDC.h"
 
-#ifdef DPMSExtension
 #include "globals.h"
 #define DPMS_SERVER
 #include "extensions/dpms.h"
-#endif
 
 extern int vgaHWGetIndex(void);
 

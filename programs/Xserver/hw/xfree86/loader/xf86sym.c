@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.179 2001/01/06 21:29:20 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.180 2001/01/11 03:37:00 tsi Exp $ */
 
 /*
  *
@@ -183,11 +183,7 @@ extern int testinx2(unsigned short, unsigned char, unsigned char);
 extern int testinx(unsigned short, unsigned char);
 #endif
 
-/* XXX This needs to be cleaned up for the new design */
-
-#ifdef DPMSExtension
 extern void DPMSSet(CARD16);
-#endif
 
 /* XFree86 things */
 
@@ -609,9 +605,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86XInputSetSendCoreEvents)
 /* End merged segment */
 #endif
-#ifdef DPMSExtension
    SYMFUNC(DPMSSet)
-#endif
 /* xf86Debug.c */
 #ifdef BUILDDEBUG
    SYMFUNC(xf86Break1)

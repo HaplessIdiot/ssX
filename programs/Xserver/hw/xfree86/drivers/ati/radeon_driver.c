@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.12 2001/01/11 03:36:58 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.13 2001/01/16 05:11:10 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -1060,9 +1060,7 @@ static Bool RADEONPreInitModes(ScrnInfoPtr pScrn)
     xf86LoaderReqSymbols(Sym, NULL);
 
 #ifdef USE_FB
-#ifdef RENDER
     xf86LoaderReqSymbols("fbPictureInit", NULL);
-#endif
 #endif
 
     info->CurrentLayout.displayWidth = pScrn->displayWidth;
@@ -1531,9 +1529,7 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		       pScrn->xDpi, pScrn->yDpi, pScrn->displayWidth,
 		       pScrn->bitsPerPixel))
 	return FALSE;
-#ifdef RENDER
     fbPictureInit (pScreen, 0, 0);
-#endif
 #else
     switch (pScrn->bitsPerPixel) {
     case 8:
@@ -1841,14 +1837,10 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			     )) return FALSE;
 
 				/* DPMS setup */
-#ifdef DPMSExtension
 #ifdef ENABLE_FLAT_PANEL
     if (!info->HasPanelRegs || info->CRTOnly)
-	xf86DPMSInit(pScreen, RADEONDisplayPowerManagementSet, 0);
 #else
-    xf86DPMSInit(pScreen, RADEONDisplayPowerManagementSet, 0);
-#endif
-#endif
+	xf86DPMSInit(pScreen, RADEONDisplayPowerManagementSet, 0);
 
     RADEONInitVideo(pScreen);
 
@@ -2974,7 +2966,6 @@ void RADEONFreeScreen(int scrnIndex, int flags)
     RADEONFreeRec(pScrn);
 }
 
-#ifdef DPMSExtension
 /* Sets VESA Display Power Management Signaling (DPMS) Mode.  */
 static void RADEONDisplayPowerManagementSet(ScrnInfoPtr pScrn,
 					  int PowerManagementMode, int flags)
@@ -3006,4 +2997,3 @@ static void RADEONDisplayPowerManagementSet(ScrnInfoPtr pScrn,
 	break;
     }
 }
-#endif

@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/include/resource.h,v 1.6 2001/01/14 16:41:32 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/include/resource.h,v 1.7 2001/01/17 22:36:57 dawes Exp $ */
 
 #ifndef RESOURCE_H
 #define RESOURCE_H 1
@@ -107,7 +107,7 @@ typedef unsigned long RESTYPE;
 #define CLIENT_BITS(id) ((id) & RESOURCE_CLIENT_MASK)
 /* extract the client id from an XID */
 #define CLIENT_ID(id) ((int)(CLIENT_BITS(id) >> CLIENTOFFSET))
-#define SERVER_BIT		0x40000000		/* use illegal bit */
+#define SERVER_BIT		(Mask)0x40000000	/* use illegal bit */
 
 #ifdef INVALID
 #undef INVALID	/* needed on HP/UX */

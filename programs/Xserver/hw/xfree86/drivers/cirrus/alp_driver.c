@@ -11,7 +11,7 @@
  *    Guy DESBIEF
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.16 2000/12/06 15:35:15 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.17 2000/12/07 15:43:44 tsi Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -59,10 +59,8 @@
 
 /* These need to be checked */
 #if 0
-#ifdef XFreeXDGA
 #define _XF86DGA_SERVER_
 #include "extensions/xf86dgastr.h"
-#endif
 #endif
 
 #include "xf86DDC.h"
@@ -112,10 +110,8 @@ static void AlpProbeLCD(ScrnInfoPtr pScrn);
 
 static void AlpSetClock(CirPtr pCir, vgaHWPtr hwp, int freq);
 
-#ifdef DPMSExtension
-static void	AlpDisplayPowerManagementSet(ScrnInfoPtr pScrn,
-											int PowerManagementMode, int flags);
-#endif
+static void AlpDisplayPowerManagementSet(ScrnInfoPtr pScrn,
+					 int PowerManagementMode, int flags);
 
 /*
  * This is intentionally screen-independent.  It indicates the binding
@@ -1078,10 +1074,7 @@ AlpPreInit(ScrnInfoPtr pScrn, int flags)
 	        AlpFreeRec(pScrn);
 		return FALSE;
 	    } 
-	    xf86LoaderReqSymbols("fbScreenInit",NULL);
-#ifdef RENDER
-	    xf86LoaderReqSymbols("fbPictureInit", NULL);
-#endif
+	    xf86LoaderReqSymbols("fbScreenInit", "fbPictureInit", NULL);
 	    break;
 	}
 
@@ -1582,9 +1575,7 @@ AlpScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	}
 	if (!ret)
 		return FALSE;
-#ifdef RENDER
 	fbPictureInit (pScreen, 0, 0);
-#endif
 
 #ifdef ALP_DEBUG
 	ErrorF("AlpScreenInit after depth dependent init\n");
@@ -1716,9 +1707,7 @@ AlpScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	if (pScrn->bitsPerPixel > 1 && pScrn->bitsPerPixel <= 8)
 		vgaHWHandleColormaps(pScreen);
 
-#ifdef DPMSExtension
 	xf86DPMSInit(pScreen, AlpDisplayPowerManagementSet, 0);
-#endif
 
 	pScrn->memPhysBase = pCir->FbAddress;
 	pScrn->fbOffset = 0;
@@ -1983,7 +1972,6 @@ AlpSetClock(CirPtr pCir, vgaHWPtr hwp, int freq)
  *
  * Sets VESA Display Power Management Signaling (DPMS) Mode.
  */
-#ifdef DPMSExtension
 static void
 AlpDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 			     int flags)
@@ -2031,7 +2019,6 @@ AlpDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 	gr0e |= hwp->readGr(hwp, 0x0E) & ~0x06;
 	hwp->writeGr(hwp, 0x0E, gr0e);
 }
-#endif
 
 #ifdef ALPPROBEI2C
 static void AlpProbeI2C(int scrnIndex)

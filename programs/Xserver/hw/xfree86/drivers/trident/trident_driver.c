@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.120 2000/12/28 15:03:46 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.121 2001/01/17 11:17:38 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -57,16 +57,12 @@
 #include "trident.h"
 #include "trident_regs.h"
 
-#ifdef XFreeXDGA
 #define _XF86DGA_SERVER_
 #include "extensions/xf86dgastr.h"
-#endif
 
-#ifdef DPMSExtension
 #include "globals.h"
 #define DPMS_SERVER
 #include "extensions/dpms.h"
-#endif
 
 #ifdef XvExtension
 #include "xf86xv.h"
@@ -445,9 +441,7 @@ static const char *vgahwSymbols[] = {
 
 static const char *fbSymbols[] = {
     "fbScreenInit",
-#ifdef RENDER
     "fbPictureInit",
-#endif
     "xf1bppScreenInit",
     "xf4bppScreenInit",
     NULL
@@ -541,7 +535,6 @@ TRIDENTFreeRec(ScrnInfoPtr pScrn)
     pScrn->driverPrivate = NULL;
 }
 
-#ifdef DPMSExtension
 static void 
 TRIDENTDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags)
 {
@@ -586,7 +579,6 @@ TRIDENTDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int
     OUTB(0x83C6, PMCont);
     OUTW(0x3C4, (temp<<8) | 0x0E);
 }
-#endif
 
 static void
 TRIDENTBlockHandler (
@@ -1990,10 +1982,8 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     xf86LoaderReqSymbols(Sym, NULL);
-#ifdef RENDER
     if (pScrn->depth > 8)
     	xf86LoaderReqSymbols("fbPictureInit", NULL);
-#endif
 
     if (!xf86LoadSubModule(pScrn, "i2c")) {
 	if (IsPciCard && UseMMIO) {
@@ -2434,10 +2424,8 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	ret = fbScreenInit(pScreen, FBStart, width,
 			height, pScrn->xDpi, pScrn->yDpi, 
 			displayWidth, pScrn->bitsPerPixel);
-#ifdef RENDER
 	if (ret)
     	    fbPictureInit (pScreen, 0, 0);
-#endif
     
 	break;
     default:
@@ -2577,9 +2565,7 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 #endif
     }
 
-#ifdef DPMSExtension
     xf86DPMSInit(pScreen, (DPMSSetProcPtr)TRIDENTDisplayPowerManagementSet, 0);
-#endif
 
     pScrn->memPhysBase = pTrident->FbAddress;
     pScrn->fbOffset = 0;

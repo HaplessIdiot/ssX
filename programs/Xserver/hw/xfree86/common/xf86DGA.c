@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.36 2000/06/24 18:59:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.37 2000/06/30 19:06:56 keithp Exp $ */
 
 #include "xf86.h"
 #include "xf86str.h"
@@ -42,7 +42,7 @@ DGACopyModeInfo(
    XDGAModePtr xmode
 );
 
-#ifdef XFree86LOADER
+#if defined(XFree86LOADER) || !defined(XFreeXDGA)
 int *XDGAEventBase = NULL;
 #else
 int *XDGAEventBase = &DGAEventBase;

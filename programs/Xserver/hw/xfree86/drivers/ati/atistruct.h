@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.22 2000/12/20 02:00:22 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.23 2001/01/06 20:58:07 tsi Exp $ */
 /*
  * Copyright 1999 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -30,8 +30,6 @@
 
 #include "xf86Resources.h"
 #include "xaa.h"
-
-#define USE_FB
 
 #define CacheSlotOf(____Register) ((____Register) / UnitOf(DWORD_SELECT))
 

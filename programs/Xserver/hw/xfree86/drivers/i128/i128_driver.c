@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.16 2000/12/06 01:07:34 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.17 2000/12/11 01:53:01 robin Exp $ */
 
 
 /* All drivers should typically include these */
@@ -86,11 +86,9 @@ static Bool	I128SaveScreen(ScreenPtr pScreen, int mode);
 static void	I128FreeScreen(int scrnIndex, int flags);
 static int	I128ValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose,
 			     int flags);
-#ifdef DPMSExtension
 static void	I128DisplayPowerManagementSet(ScrnInfoPtr pScrn,
 					     int PowerManagementMode,
 					     int flags);
-#endif
 
 /* Internally used functions */
 static Bool	I128GetRec(ScrnInfoPtr pScrn);
@@ -188,9 +186,7 @@ static const char *vgahwSymbols[] = {
 
 static const char *fbSymbols[] = {
     "fbScreenInit",
-#ifdef RENDER
     "fbPictureInit",
-#endif
     NULL
 };
 
@@ -1158,10 +1154,7 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
 	I128FreeRec(pScrn);
 	return FALSE;
     }
-    xf86LoaderReqSymbols("fbScreenInit", NULL);
-#ifdef RENDER
-    xf86LoaderReqSymbols("fbPictureInit", NULL);
-#endif
+    xf86LoaderReqSymbols("fbScreenInit", "fbPictureInit", NULL);
 
     /* Load XAA if needed */
     if (!pI128->NoAccel) {
@@ -1536,9 +1529,7 @@ I128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (!ret)
 	return FALSE;
 
-#ifdef RENDER
     fbPictureInit(pScreen, 0, 0);
-#endif
 
     if (pScrn->bitsPerPixel > 8) {
         /* Fixup RGB ordering */
@@ -1603,9 +1594,7 @@ I128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	CMAP_PALETTED_TRUECOLOR | CMAP_RELOAD_ON_MODE_SWITCH))	
 	return FALSE;
 
-#ifdef DPMSExtension
     xf86DPMSInit(pScreen, I128DisplayPowerManagementSet, 0);
-#endif
 
     pScrn->memPhysBase = (unsigned long)pI128->MemoryPtr;
     pScrn->fbOffset = 0;
@@ -1980,7 +1969,6 @@ I128getDDC(ScrnInfoPtr pScrn)
  *
  * Sets VESA Display Power Management Signaling (DPMS) Mode.
  */
-#ifdef DPMSExtension
 void
 I128DisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 			     int flags)
@@ -2018,8 +2006,6 @@ I128DisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
     pI128->mem.rbase_g[IDXL_I] = IBMRGB_sync;				MB;
     pI128->mem.rbase_g[DATA_I] = snc;					MB;
 }
-
-#endif
 
 void
 I128DumpBaseRegisters(ScrnInfoPtr pScrn)

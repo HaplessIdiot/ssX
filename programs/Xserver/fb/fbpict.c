@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbpict.c,v 1.3 2000/10/21 00:26:48 keithp Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbpict.c,v 1.5 2000/11/29 08:43:08 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -24,6 +24,9 @@
  */
 
 #include "fb.h"
+
+#ifdef RENDER
+
 #include "picturestr.h"
 #include "mipict.h"
 #include "fbpict.h"
@@ -937,9 +940,14 @@ fbComposite (CARD8      op,
     REGION_UNINIT (pDst->pDrawable->pScreen, &region);
 }
 
+#endif /* RENDER */
+
 Bool
 fbPictureInit (ScreenPtr pScreen, PictFormatPtr formats, int nformats)
 {
+
+#ifdef RENDER
+
     PictureScreenPtr    ps;
 
     if (!miPictureInit (pScreen, formats, nformats))
@@ -948,5 +956,8 @@ fbPictureInit (ScreenPtr pScreen, PictFormatPtr formats, int nformats)
     ps->Composite = fbComposite;
     ps->Glyphs = miGlyphs;
     ps->CompositeRects = miCompositeRects;
+
+#endif /* RENDER */
+
     return TRUE;
 }

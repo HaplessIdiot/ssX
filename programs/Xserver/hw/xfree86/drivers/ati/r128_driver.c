@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.18 2001/01/09 21:07:39 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.19 2001/01/16 05:11:06 martin Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -1133,9 +1133,7 @@ static Bool R128PreInitModes(ScrnInfoPtr pScrn)
     if (mod && !xf86LoadSubModule(pScrn, mod)) return FALSE;
     xf86LoaderReqSymbols(Sym, NULL);
 #ifdef USE_FB
-#ifdef RENDER
     xf86LoaderReqSymbols("fbPictureInit", NULL);
-#endif
 #endif
 
     info->CurrentLayout.displayWidth = pScrn->displayWidth;
@@ -1607,9 +1605,7 @@ Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		       pScrn->xDpi, pScrn->yDpi, pScrn->displayWidth,
 		       pScrn->bitsPerPixel))
 	return FALSE;
-#ifdef RENDER
     fbPictureInit (pScreen, 0, 0);
-#endif
 #else
     switch (pScrn->bitsPerPixel) {
     case 8:
@@ -1944,10 +1940,8 @@ Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			     )) return FALSE;
 
 				/* DPMS setup */
-#ifdef DPMSExtension
     if (!info->HasPanelRegs || info->BIOSDisplay == R128_BIOS_DISPLAY_CRT)
 	xf86DPMSInit(pScreen, R128DisplayPowerManagementSet, 0);
-#endif
 
 	R128InitVideo(pScreen);
 
@@ -3007,7 +3001,6 @@ void R128FreeScreen(int scrnIndex, int flags)
     R128FreeRec(pScrn);
 }
 
-#ifdef DPMSExtension
 /* Sets VESA Display Power Management Signaling (DPMS) Mode.  */
 static void R128DisplayPowerManagementSet(ScrnInfoPtr pScrn,
 					  int PowerManagementMode, int flags)
@@ -3039,4 +3032,3 @@ static void R128DisplayPowerManagementSet(ScrnInfoPtr pScrn,
 	break;
     }
 }
-#endif

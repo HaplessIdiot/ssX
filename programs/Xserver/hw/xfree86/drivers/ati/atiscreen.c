@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.14 2001/01/06 20:19:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.15 2001/01/06 20:58:07 tsi Exp $ */
 /*
  * Copyright 1999 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -35,18 +35,7 @@
 #include "xf1bpp.h"
 #include "xf4bpp.h"
 
-#ifdef USE_FB
 #include "fb.h"
-#else
-
-#undef PSZ
-#define PSZ 8
-#include "cfb.h"
-#undef PSZ
-#include "cfb16.h"
-#include "cfb24.h"
-#include "cfb32.h"
-#endif
 
 #include "mibank.h"
 #include "micmap.h"
@@ -125,7 +114,8 @@ ATIScreenInit
                           pScreenInfo->defaultVisual))
         return FALSE;
 
-    miSetPixmapDepths ();
+    if (!miSetPixmapDepths())
+        return FALSE;
 
     pFB = pATI->pMemory;
     if (pATI->OptionShadowFB)
@@ -162,7 +152,6 @@ ATIScreenInit
 
 #endif /* AVOID_CPIO */
 
-#ifdef USE_FB
         case 8:
         case 16:
         case 24:
@@ -171,36 +160,23 @@ ATIScreenInit
                 pScreenInfo->virtualX, pScreenInfo->virtualY,
                 pScreenInfo->xDpi, pScreenInfo->yDpi, pATI->displayWidth,
                 pATI->bitsPerPixel);
-#ifdef RENDER
-            if (pATI->Closeable)
-                fbPictureInit (pScreen, 0, 0);
-#endif
-            break;
-#else
-        case 8:
-            pATI->Closeable = cfbScreenInit(pScreen, pFB,
-                pScreenInfo->virtualX, pScreenInfo->virtualY,
-                pScreenInfo->xDpi, pScreenInfo->yDpi, pATI->displayWidth);
-            break;
 
-        case 16:
-            pATI->Closeable = cfb16ScreenInit(pScreen, pFB,
-                pScreenInfo->virtualX, pScreenInfo->virtualY,
-                pScreenInfo->xDpi, pScreenInfo->yDpi, pATI->displayWidth);
-            break;
+            if (!pATI->Closeable)
+                return FALSE;
 
-        case 24:
-            pATI->Closeable = cfb24ScreenInit(pScreen, pFB,
-                pScreenInfo->virtualX, pScreenInfo->virtualY,
-                pScreenInfo->xDpi, pScreenInfo->yDpi, pATI->displayWidth);
-            break;
+            if (pATI->OptionShadowFB)
+                xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                    "RENDER extension not supported with a shadowed"
+                    " framebuffer.\n");
+            else if (pATI->BankInfo.BankSize)
+                xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                    "RENDER extension not supported with a banked"
+                    " framebuffer.\n");
+            else if (!fbPictureInit(pScreen, NULL, 0))
+                xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                    "RENDER extension initialisation failed.\n");
 
-        case 32:
-            pATI->Closeable = cfb32ScreenInit(pScreen, pFB,
-                pScreenInfo->virtualX, pScreenInfo->virtualY,
-                pScreenInfo->xDpi, pScreenInfo->yDpi, pATI->displayWidth);
             break;
-#endif
 
         default:
             return FALSE;

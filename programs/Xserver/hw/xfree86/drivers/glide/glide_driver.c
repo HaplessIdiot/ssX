@@ -45,7 +45,7 @@
    * Support static loading.  
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.20 2000/12/27 04:57:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.21 2001/01/09 16:34:41 paulo Exp $ */
 
 #include "xaa.h"
 #include "xf86Cursor.h"
@@ -57,11 +57,9 @@
 #include "mibstore.h"
 #include "micmap.h"
 #include "xf86DDC.h"
-#ifdef DPMSExtension
 #include "globals.h"
 #define DPMS_SERVER
 #include "extensions/dpms.h"
-#endif
 #define PSZ 8	/* needed for cfb.h */
 #include "cfb.h"
 #undef PSZ
@@ -157,11 +155,9 @@ static Bool     GLIDEModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static void     GLIDERestore(ScrnInfoPtr pScrn, Bool Closing);
 static void     GLIDERefreshAll(ScrnInfoPtr pScrn);
 
-#ifdef DPMSExtension
 static void	GLIDEDisplayPowerManagementSet(ScrnInfoPtr pScrn,
                                                int PowerManagementMode,
                                                int flags);
-#endif
 
 
 static int LoadGlide(void);
@@ -768,9 +764,7 @@ GLIDEScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
   ShadowFBInit(pScreen, GLIDERefreshArea);
 
-#ifdef DPMSExtension
   xf86DPMSInit(pScreen, GLIDEDisplayPowerManagementSet, 0);
-#endif
 
   pScreen->SaveScreen = GLIDESaveScreen;
 
@@ -1101,7 +1095,6 @@ GLIDERefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
  *
  * Sets VESA Display Power Management Signaling (DPMS) Mode.
  */
-#ifdef DPMSExtension
 static void
 GLIDEDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
                                int flags)
@@ -1136,7 +1129,6 @@ GLIDEDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
   }
   oldmode = PowerManagementMode;
 }
-#endif
 
 
 static void

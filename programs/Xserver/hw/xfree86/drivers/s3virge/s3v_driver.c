@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.69 2000/12/02 15:30:47 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.70 2000/12/14 00:55:25 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -52,11 +52,9 @@ in this Software without prior written authorization from the XFree86 Project.
 #include	"s3v.h"
 		
 
-#ifdef DPMSExtension
 #include "globals.h"
 #define DPMS_SERVER
 #include "extensions/dpms.h"
-#endif /* DPMSExtension */
 
 /*
  * Internals
@@ -97,11 +95,9 @@ static void S3VInitSTREAMS(ScrnInfoPtr pScrn, unsigned int *streams, DisplayMode
 /* s3v.h - static Bool S3VSwitchMode(int scrnIndex, DisplayModePtr mode, int flags); */
 static void S3VLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indicies, LOCO *colors, VisualPtr pVisual);
 
-#ifdef DPMSExtension
 static void S3VDisplayPowerManagementSet(ScrnInfoPtr pScrn,
 					 int PowerManagementMode,
 					 int flags);
-#endif
 static Bool S3Vddc1(int scrnIndex);
 static Bool S3Vddc2(int scrnIndex);
 
@@ -319,9 +315,7 @@ static const char *vbeSymbols[] = {
 static const char *fbSymbols[] = {
   "fbScreenInit",
   "fbBres",
-#ifdef RENDER
   "fbPictureInit",
-#endif
   NULL
 };
 
@@ -1302,9 +1296,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 
 
 #if 0
-#ifdef XFreeXDGA
    vga256InfoRec.directMode = XF86DGADirectPresent;
-#endif
 #endif
 
 
@@ -2544,10 +2536,8 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
   ps3v->CloseScreen = pScreen->CloseScreen;
   pScreen->CloseScreen = S3VCloseScreen;
 
-#ifdef DPMSExtension
   if(xf86DPMSInit(pScreen, S3VDisplayPowerManagementSet, 0) == FALSE)
     xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "DPMS initialization failed!\n");
-#endif
   
 #ifndef XvExtension
     {
@@ -2633,10 +2623,8 @@ S3VInternalScreenInit( int scrnIndex, ScreenPtr pScreen)
 	  ret = FALSE;
 	  break;
 	}
-#ifdef RENDER
       if (ret)
 	fbPictureInit (pScreen, 0, 0);
-#endif
     }
   else
     {
@@ -3727,7 +3715,6 @@ print_subsys_stat(void *s3vMmioMem)
  *
  * Sets VESA Display Power Management Signaling (DPMS) Mode.
  */
-#ifdef DPMSExtension
 static void
 S3VDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 			     int flags)
@@ -3776,7 +3763,6 @@ S3VDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 
   return;
 }
-#endif /* DPMSExtension */
 
 static unsigned int
 S3Vddc1Read(ScrnInfoPtr pScrn)

@@ -31,12 +31,13 @@
 ** published by SGI, but has not been independently verified as being
 ** compliant with the OpenGL(R) version 1.2.1 Specification.
 */
+/* $XFree86$ */
 
 /*
  * glcurveval.c++
  *
- * $Date: 2001/01/15 21:48:13 $ $Revision: 1.1 $
- * $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/interface/glcurveval.cc,v 1.1 2001/01/15 21:48:13 dawes Exp $
+ * $Date: 2001/01/21 21:19:07 $ $Revision: 1.2 $
+ * $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/interface/glcurveval.cc,v 1.2 2001/01/21 21:19:07 tsi Exp $
  */
 
 /* Polynomial Evaluator Interface */
@@ -149,8 +150,8 @@ OpenGLCurveEvaluator::mapgrid1f(long nu, REAL u0, REAL u1)
 {
   if(output_triangles)
     {
-      global_grid_u0 = u0;
-      global_grid_u1 = u1;
+      global_grid_u0 = (int)u0;
+      global_grid_u1 = (int)u1;
       global_grid_nu = nu;
     }
   else

@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.30 2000/08/08 08:58:06 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.33 2000/12/06 15:35:24 eich Exp $ */
 
 
 
@@ -352,10 +352,8 @@ Bool TsengHWCursorInit(ScreenPtr pScreen);
  * From tseng_dpms.c
  */
 
-#ifdef DPMSExtension
 void TsengHVSyncDPMSSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags);
 void TsengCrtcDPMSSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags);
-#endif
 
 /*
  * For debugging

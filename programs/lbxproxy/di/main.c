@@ -41,8 +41,9 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/lbxproxy/di/main.c,v 1.6 1998/12/20 11:58:06 dawes Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/main.c,v 1.7 2001/01/17 23:44:56 dawes Exp $ */
 
+#include <stdlib.h>
 #include "lbx.h"
 #include "wire.h"
 #include "atomcache.h"

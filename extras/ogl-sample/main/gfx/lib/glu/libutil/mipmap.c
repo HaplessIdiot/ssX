@@ -31,9 +31,10 @@
 ** published by SGI, but has not been independently verified as being
 ** compliant with the OpenGL(R) version 1.2.1 Specification.
 **
-** $Date: 2001/01/15 21:49:36 $ $Revision: 1.1 $
-** $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libutil/mipmap.c,v 1.1 2001/01/15 21:49:36 dawes Exp $
+** $Date: 2001/01/21 21:19:07 $ $Revision: 1.2 $
+** $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libutil/mipmap.c,v 1.2 2001/01/21 21:19:07 tsi Exp $
 */
+/* $XFree86$ */
 
 #include "gluos.h"
 #include <assert.h>
@@ -3330,7 +3331,7 @@ static GLboolean isLegalInternalFormat(GLenum internalFormat)
           */ 
          if (strtod((const char *)glGetString(GL_VERSION),NULL) >= 1.1)
  	    return GL_TRUE;	/* OGL 1.1+ */
-	 else if (gluCheckExtension("GL_EXT_texture",
+	 else if (gluCheckExtension((GLubyte *)"GL_EXT_texture",
 				      glGetString(GL_EXTENSIONS))) 
 	    return GL_TRUE;	/* OGL 1.0 & texture extension supported */
 	 else return GL_FALSE;	/* OGL 1.0 & texture extension not supported */

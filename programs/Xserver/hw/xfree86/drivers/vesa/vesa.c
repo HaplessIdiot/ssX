@@ -26,7 +26,7 @@
  *
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.8 2000/12/02 15:31:00 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.9 2001/01/11 03:36:59 tsi Exp $
  */
 
 #include "vesa.h"
@@ -139,9 +139,7 @@ static const char *fbSymbols[] = {
     "xf4bppScreenInit",
     "afbScreenInit",
     "fbScreenInit",
-#ifdef RENDER
     "fbPictureInit",
-#endif
     "cfbScreenInit",
     "mfbScreenInit",
     "cfb24_32ScreenInit",
@@ -956,9 +954,7 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 	return (FALSE);
     }
     xf86LoaderReqSymbols(reqSym, NULL);
-#ifdef RENDER
     xf86LoaderReqSymbols("fbPictureInit", NULL);
-#endif
 
     return (TRUE);
 }
@@ -1129,9 +1125,7 @@ VESAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    break;
     }
 
-#ifdef RENDER
     fbPictureInit(pScreen, 0, 0);
-#endif
 
     if (pScrn->bitsPerPixel > 8) {
 	/* Fixup RGB ordering */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.46 2000/12/02 15:30:31 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.47 2001/01/06 21:29:12 tsi Exp $ */
 
 #define COMPILER_H_EXTRAS
 #include "apm.h"
@@ -9,10 +9,9 @@
 #include "xf86RAC.h"
 #include "vbe.h"
 
-#ifdef DPMSExtension
 #include "opaque.h"
+#define DPMS_SERVER
 #include "extensions/dpms.h"
-#endif
 
 #define VERSION			4000
 #define APM_NAME		"APM"
@@ -47,11 +46,9 @@ static void	ApmRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg,
 			    ApmRegPtr ApmReg);
 static void	ApmLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
 				LOCO *colors, VisualPtr pVisual);
-#ifdef DPMSExtension
 static void	ApmDisplayPowerManagementSet(ScrnInfoPtr pScrn,
 					     int PowerManagementMode,
 					     int flags);
-#endif
 static void	ApmProbeDDC(ScrnInfoPtr pScrn, int index);
 
 
@@ -1978,9 +1975,7 @@ ApmScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (pApm->ShadowFB)
 	ShadowFBInit(pScreen, ApmRefreshArea);
 
-#ifdef DPMSExtension
     xf86DPMSInit(pScreen, ApmDisplayPowerManagementSet, 0);
-#endif
 
     if (pApm->noLinear)
 	ApmInitVideo_IOP(pScreen);
@@ -2233,7 +2228,6 @@ ApmValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
  *
  * Sets VESA Display Power Management Signaling (DPMS) Mode.
  */
-#ifdef DPMSExtension
 static void
 ApmDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 			     int flags)
@@ -2270,7 +2264,6 @@ ApmDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 	WRXB(0xD0, (tmp & 0xFC) | dpmsreg);
     }
 }
-#endif
 
 static Bool
 ApmSaveScreen(ScreenPtr pScreen, int mode)

@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.53 2000/12/14 16:33:09 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.54 2000/12/27 04:57:14 dawes Exp $ */
 
 #include "nv_include.h"
 
@@ -35,9 +35,6 @@
 #include "nvvga.h"
 
 #include "xf86int10.h"
-#ifdef RENDER
-#include "picturestr.h"
-#endif
 
 /*
  * Forward definitions for the functions that make up the driver.
@@ -153,9 +150,7 @@ static const char *vgahwSymbols[] = {
     "vgaHWFreeHWRec",
     "vgaHWSaveScreen",
     "vgaHWddc1SetSpeed",
-#ifdef DPMSExtension
     "vgaHWDPMSSet",
-#endif
     NULL
 };
 
@@ -174,9 +169,7 @@ static const char *cfbSymbols[] = {
 static const char *fbSymbols[] = {
     "fbScreenInit",
     "fbBres",
-#ifdef RENDER
     "fbPictureInit",
-#endif
     NULL
 };
 #endif
@@ -1694,10 +1687,8 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
             ret = fbScreenInit(pScreen, FBStart, pScrn->virtualX,
                                pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
                                displayWidth, pScrn->bitsPerPixel);
-#ifdef RENDER
             if (ret)
                 fbPictureInit (pScreen, 0, 0);
-#endif
             break;
 #endif           
         default:
@@ -1790,12 +1781,10 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	ShadowFBInit(pScreen, refreshArea);
     }
 
-#ifdef DPMSExtension
     /* Call the vgaHW DPMS function directly.
        XXX There must be a way to get all the DPMS modes. */
     xf86DPMSInit(pScreen, vgaHWDPMSSet, 0);
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- DPMS set up\n"));
-#endif
 
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- Color maps etc. set up\n"));
     

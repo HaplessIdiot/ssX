@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_dd.c,v 1.1 2001/01/08 01:07:26 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_dd.c,v 1.2 2001/01/11 03:36:55 tsi Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -67,14 +67,14 @@ static void radeonDDGetBufferSize( GLcontext *ctx,
 static const GLubyte *radeonDDGetString( GLcontext *ctx, GLenum name )
 {
    radeonContextPtr rmesa = RADEON_CONTEXT(ctx);
-   static GLubyte buffer[128];
+   static char buffer[128];
 
    switch ( name ) {
    case GL_VENDOR:
       return (GLubyte *)"VA Linux Systems, Inc.";
 
    case GL_RENDERER:
-      sprintf( (pointer)buffer, "Mesa DRI Radeon " RADEON_DATE );
+      sprintf( buffer, "Mesa DRI Radeon " RADEON_DATE );
 
       /* Append any chipset-specific information.  None yet.
        */
@@ -110,7 +110,7 @@ static const GLubyte *radeonDDGetString( GLcontext *ctx, GLenum name )
 	 strncat( buffer, "/SSE", 4 );
       }
 #endif
-      return buffer;
+      return (GLubyte *)buffer;
 
    default:
       return NULL;

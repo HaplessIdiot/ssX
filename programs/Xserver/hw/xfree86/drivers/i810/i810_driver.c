@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.41 2000/12/27 04:57:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.42 2001/01/06 20:19:11 tsi Exp $ */
 
 /*
  * Authors:
@@ -84,11 +84,9 @@ static void I810FreeScreen(int scrnIndex, int flags);
 static int I810ValidMode(int scrnIndex, DisplayModePtr mode, Bool
 			 verbose, int flags);
 
-#ifdef DPMSExtension
 static void I810DisplayPowerManagementSet(ScrnInfoPtr pScrn, 
 					  int PowerManagermentMode, 
 					  int flags);
-#endif
 
 DriverRec I810 = {
    I810_VERSION,
@@ -1725,9 +1723,7 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
         }
    }
 
-#ifdef RENDER
    fbPictureInit (pScreen, 0, 0);
-#endif
 
    xf86SetBlackWhitePixels(pScreen);
 
@@ -1797,9 +1793,7 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 	return FALSE;
 #endif
 
-#ifdef DPMSExtension
    xf86DPMSInit(pScreen, I810DisplayPowerManagementSet, 0);
-#endif
 
    I810InitVideo(pScreen);
 
@@ -2024,7 +2018,6 @@ I810SaveScreen(ScreenPtr pScreen, Bool unblack)
    return vgaHWSaveScreen(pScreen, unblack);
 }
 
-#ifdef DPMSExtension
 static void
 I810DisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, 
 			      int flags) {
@@ -2063,10 +2056,3 @@ I810DisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
    /* Set the DPMS mode */
    OUTREG8(DPMS_SYNC_SELECT, DPMSSyncSelect);
 }
-#endif
-
-
-
-
-
-

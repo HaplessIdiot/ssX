@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.2 2001/01/11 03:36:58 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.3 2001/01/16 05:11:10 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario,
  *                VA Linux Systems Inc., Fremont, California.
@@ -105,7 +105,7 @@ static Bool RADEONInitVisualConfigs(ScreenPtr pScreen)
 	    for (stencil = 0; stencil <= RADEON_USE_STENCIL; stencil++) {
 		pRADEONConfigPtrs[i] = &pRADEONConfigs[i];
 
-		pConfigs[i].vid                = -1;
+		pConfigs[i].vid                = (VisualID)(-1);
 		pConfigs[i].class              = -1;
 		pConfigs[i].rgba               = TRUE;
 		pConfigs[i].redSize            = 5;
@@ -181,7 +181,7 @@ static Bool RADEONInitVisualConfigs(ScreenPtr pScreen)
 	    for (stencil = 0; stencil <= RADEON_USE_STENCIL; stencil++) {
 		pRADEONConfigPtrs[i] = &pRADEONConfigs[i];
 
-		pConfigs[i].vid                = -1;
+		pConfigs[i].vid                = (VisualID)(-1);
 		pConfigs[i].class              = -1;
 		pConfigs[i].rgba               = TRUE;
 		pConfigs[i].redSize            = 8;
@@ -594,7 +594,7 @@ static void RADEONDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
     }
 
     (*info->accel->SetupForScreenToScreenCopy)(pScrn, xdir, ydir, GXcopy,
-					       -1, -1);
+					       (CARD32)(-1), -1);
 
     for (; nbox-- ; pbox++) {
 	int xa    = pbox->x1;
@@ -1028,9 +1028,9 @@ static void RADEONDRISAREAInit(ScreenPtr pScreen,
     ctx->pp_rot_matrix_0 = 0x00000000;
     ctx->pp_rot_matrix_1 = 0x00000000;
 
-    ctx->rb3d_stencilrefmask = ((0x00 << RADEON_STENCIL_REF_SHIFT) |
-				(0xff << RADEON_STENCIL_MASK_SHIFT) |
-				(0xff << RADEON_STENCIL_WRITEMASK_SHIFT));
+    ctx->rb3d_stencilrefmask = ((0x000 << RADEON_STENCIL_REF_SHIFT) |
+				(0x0ff << RADEON_STENCIL_MASK_SHIFT) |
+				(0x0ff << RADEON_STENCIL_WRITEMASK_SHIFT));
 
     ctx->rb3d_ropcntl   = 0x00000000;
     ctx->rb3d_planemask = 0xffffffff;
