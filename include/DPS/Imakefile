@@ -1,0 +1,33 @@
+XCOMM $XFree86$
+
+HEADERS = \
+	XDPS.h\
+	XDPSproto.h\
+	dpsclient.h\
+	dpsexcept.h\
+	XDPSlib.h\
+	dpsXclient.h\
+	dpsconfig.h\
+	dpsfriends.h\
+	dpsNXargs.h\
+	dpsXshare.h\
+	dpsXuserpath.h\
+	dpsXpreview.h\
+	dpsXcommon.h\
+	FontSB.h\
+	FontSBP.h\
+	FontSample.h\
+	FontSamplP.h\
+	FontCreato.h\
+	FontCreatP.h\
+	ColorSB.h\
+	ColorSBP.h\
+	DPSScrollW.h\
+	DPSScrollWP.h\
+	PSres.h
+
+BuildIncludes($(HEADERS),DPS,..)
+
+MakeDirectories(install,$(INCDIR)/DPS)
+
+InstallMultiple($(HEADERS),$(INCDIR)/DPS)

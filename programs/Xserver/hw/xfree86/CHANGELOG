@@ -1,4 +1,7 @@
 XFree86 3.9.17Z (12 February 2000)
+3750. Add DPS libraries.  Building these is disabled right now because
+      some more work is needed on the Imakefiles and portability issues
+      (#3645, 3680, Juliusz Chroboczek).
 3749. Fix the mga driver to work with the MGA 2064W on Alpha architectures
       (#3679, Doug Rabson).
 3748. Support for building XFree86 on FreeBSD/alpha (#3678, Doug Rabson).
@@ -9634,4 +9637,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.993 2000/02/12 03:55:07 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.994 2000/02/12 20:45:05 dawes Exp $
