@@ -45,17 +45,24 @@ SRCS =	InitInput.c \
 	winregistry.c \
 	winconfig.c \
 	winmsg.c \
+	winmultiwindowclass.c \
+	winmultiwindowicons.c \
+	winmultiwindowshape.c \
 	winmultiwindowwindow.c \
 	winmultiwindowwm.c \
+	winmultiwindowwndproc.c \
 	winclipboardinit.c \
 	winclipboardtextconv.c \
 	winclipboardthread.c \
 	winclipboardunicode.c \
 	winclipboardwndproc.c \
-	winclipboardxevents.c
+	winclipboardxevents.c \
+	winvideo.c \
+	wintrayicon.c \
+	windialogs.c
 
 /*
- * NOTE: The windialogs.rc file is compiled into windialogs.res.
+ * NOTE: The XWin.rc file is compiled into XWin.res.
  * This compiled-resource file must be directly linked into XWin.exe
  * by the commands in xc/programs/Xserver/Imakefile; it cannot be
  * linked into libXwin.a because it will not be correctly positioned
@@ -98,14 +105,21 @@ OBJS =	InitInput.o \
 	winregistry.o \
 	winconfig.o \
 	winmsg.o \
+	winmultiwindowclass.o \
+	winmultiwindowicons.o \
+	winmultiwindowshape.o \
 	winmultiwindowwindow.o \
 	winmultiwindowwm.o \
+	winmultiwindowwndproc.o \
 	winclipboardinit.o \
 	winclipboardtextconv.o \
 	winclipboardthread.o \
 	winclipboardunicode.o \
 	winclipboardwndproc.o \
-	winclipboardxevents.o
+	winclipboardxevents.o \
+	winvideo.o \
+	wintrayicon.o \
+	windialogs.o
 
 INCLUDES = -I. -I$(XBUILDINCDIR) -I$(FONTINCSRC) \
 	   -I$(SERVERSRC)/fb -I$(SERVERSRC)/mi \
@@ -125,7 +139,7 @@ SpecialCObjectRule(stubs,$(ICONFIGFILES),$(EXT_DEFINES))
  * Build the Windows resource file (contains the program icon, etc.)
  */
 
-ResourceObjectRule(XWin,,)
+ResourceObjectRule(XWin,X.ico,)
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(Xwin,$(OBJS))

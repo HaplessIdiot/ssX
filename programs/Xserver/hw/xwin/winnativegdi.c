@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winnativegdi.c,v 1.12 2002/07/05 09:19:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winnativegdi.c,v 1.13 2002/10/17 08:18:22 alanh Exp $ */
 
 #include "win.h"
 
@@ -65,6 +65,17 @@ winCloseScreenNativeGDI (int nIndex, ScreenPtr pScreen)
   
   ErrorF ("winCloseScreenNativeGDI - Destroying window\n");
   
+  /* Delete tray icon, if we have one */
+  if (!pScreenInfo->fNoTrayIcon)
+    winDeleteNotifyIcon (pScreenPriv);
+
+  /* Free the exit confirmation dialog box, if it exists */
+  if (g_hDlgExit != NULL)
+    {
+      DestroyWindow (g_hDlgExit);
+      g_hDlgExit = NULL;
+    }
+
   /* Kill our window */
   if (pScreenPriv->hwndScreen)
     {

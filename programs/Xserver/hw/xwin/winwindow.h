@@ -41,19 +41,21 @@
 #endif
 
 /* Constant strings */
-#define WINDOW_CLASS		"cygwin/xfree86 rl"
-#define WINDOW_TITLE		"Cygwin/XFree86 rl"
-#define WIN_SCR_PROP		"cyg_screen_prop_rl"
+#define WINDOW_CLASS		"cygwin/xfree86"
+#define WINDOW_TITLE		"Cygwin/XFree86 - %s:%d"
+#define WIN_SCR_PROP		"cyg_screen_prop rl"
 #define WINDOW_CLASS_X		"cygwin/xfree86 X rl"
-#define WINDOW_TITLE_X		"Cygwin/XFree86 X rl"
+#define WINDOW_TITLE_X		"Cygwin/XFree86 X"
 #define WIN_WINDOW_PROP		"cyg_window_prop_rl"
 #define WIN_MSG_QUEUE_FNAME	"/dev/windows"
-#define WIN_LOG_FNAME		"/tmp/XWinrl.log"
+#define WIN_LOG_FNAME		"/tmp/XWin.log"
 #define WIN_WID_PROP		"cyg_wid_prop_rl"
 #define WIN_NEEDMANAGE_PROP	"cyg_override_redirect_prop_rl"
+#define WIN_HWND_CACHE          "cyg_privmap_rl"
 #define CYGMULTIWINDOW_DEBUG    NO
 
 typedef struct _winPrivScreenRec *winPrivScreenPtr;
+
 
 /*
  * Window privates
@@ -70,6 +72,8 @@ typedef struct
   int			iWidth;
   int			iHeight;
   Bool			fXKilled;
+  Bool                  fNeedRestore;
+  POINT                 ptRestore;
 } winPrivWinRec, *winPrivWinPtr;
 
 typedef struct _winWMMessageRec{
@@ -81,19 +85,21 @@ typedef struct _winWMMessageRec{
   int			iWidth, iHeight;
 } winWMMessageRec, *winWMMessagePtr;
 
+
 /*
  * winrootlesswm.c
  */
-#define		WM_WM_MOVE	(WM_USER + 1)
-#define		WM_WM_SIZE	(WM_USER + 2)
-#define		WM_WM_RAISE	(WM_USER + 3)
-#define		WM_WM_LOWER	(WM_USER + 4)
-#define		WM_WM_MAP	(WM_USER + 5)
-#define		WM_WM_UNMAP	(WM_USER + 6)
-#define		WM_WM_KILL	(WM_USER + 7)
-#define		WM_WM_ACTIVATE	(WM_USER + 8)
 
-#define		WMMSG_MSG	10
+#define		WM_WM_MOVE		(WM_USER + 1)
+#define		WM_WM_SIZE		(WM_USER + 2)
+#define		WM_WM_RAISE		(WM_USER + 3)
+#define		WM_WM_LOWER		(WM_USER + 4)
+#define		WM_WM_MAP		(WM_USER + 5)
+#define		WM_WM_UNMAP		(WM_USER + 6)
+#define		WM_WM_KILL		(WM_USER + 7)
+#define		WM_WM_ACTIVATE		(WM_USER + 8)
+#define	        WM_WM_NAME_EVENT	(WM_USER + 9)
+#define	        WM_WM_HINTS_EVENT	(WM_USER + 10)
 
 
 /*
@@ -106,13 +112,15 @@ winSendMessageToWM (void *pWMInfo, winWMMessagePtr msg);
 Bool
 winInitWM (void **ppWMInfo,
 	   pthread_t *ptWMProc,
-#if 0
-	   pthread_cond_t *ppcServerStarted,
-#endif
+	   pthread_t *ptXMsgProc,
 	   pthread_mutex_t *ppmServerStarted,
-#if 0
-	   Bool *pfServerStarted,
-#endif
 	   int dwScreen);
+
+/*
+ * winmultiwindowicons.c
+ */
+
+void
+winUpdateIcon (Window id);
 
 #endif

@@ -41,12 +41,12 @@ winAddRgn (WindowPtr pWindow, pointer data);
 
 static
 void
-winUpdateRgn (WindowPtr pWindow);
+winUpdateRgnPRootless (WindowPtr pWindow);
 
 #ifdef SHAPE
 static
 void
-winReshape (WindowPtr pWin);
+winReshapePRootless (WindowPtr pWin);
 #endif
 
 
@@ -153,7 +153,6 @@ winCreateWindowPRootless (WindowPtr pWin)
   fResult = winGetScreenPriv(pWin->drawable.pScreen)->CreateWindow(pWin);
   
   pWinPriv->hRgn = NULL;
-  /*winUpdateRgn (pWin);*/
   
   return fResult;
 }
@@ -180,7 +179,7 @@ winDestroyWindowPRootless (WindowPtr pWin)
       pWinPriv->hRgn = NULL;
     }
   
-  winUpdateRgn (pWin);
+  winUpdateRgnPRootless (pWin);
   
   return fResult;
 }
@@ -200,7 +199,7 @@ winPositionWindowPRootless (WindowPtr pWin, int x, int y)
 
   fResult = winGetScreenPriv(pWin->drawable.pScreen)->PositionWindow(pWin, x, y);
   
-  winUpdateRgn (pWin);
+  winUpdateRgnPRootless (pWin);
   
   return fResult;
 }
@@ -220,7 +219,7 @@ winChangeWindowAttributesPRootless (WindowPtr pWin, unsigned long mask)
 
   fResult = winGetScreenPriv(pWin->drawable.pScreen)->ChangeWindowAttributes(pWin, mask);
   
-  winUpdateRgn (pWin);
+  winUpdateRgnPRootless (pWin);
   
   return fResult;
 }
@@ -248,7 +247,7 @@ winUnmapWindowPRootless (WindowPtr pWin)
       pWinPriv->hRgn = NULL;
     }
   
-  winUpdateRgn (pWin);
+  winUpdateRgnPRootless (pWin);
   
   return fResult;
 }
@@ -269,9 +268,9 @@ winMapWindowPRootless (WindowPtr pWin)
 
   fResult = winGetScreenPriv(pWin->drawable.pScreen)->RealizeWindow(pWin);
   
-  winReshape (pWin);
+  winReshapePRootless (pWin);
   
-  winUpdateRgn (pWin);
+  winUpdateRgnPRootless (pWin);
   
   return fResult;
 }
@@ -287,8 +286,8 @@ winSetShapePRootless (WindowPtr pWin)
 
   winGetScreenPriv(pWin->drawable.pScreen)->SetShape(pWin);
   
-  winReshape (pWin);
-  winUpdateRgn (pWin);
+  winReshapePRootless (pWin);
+  winUpdateRgnPRootless (pWin);
   
   return;
 }
@@ -366,7 +365,7 @@ winAddRgn (WindowPtr pWin, pointer data)
 
 static
 void
-winUpdateRgn (WindowPtr pWin)
+winUpdateRgnPRootless (WindowPtr pWin)
 {
   HRGN		hRgn = CreateRectRgn (0, 0, 0, 0);
   
@@ -378,7 +377,7 @@ winUpdateRgn (WindowPtr pWin)
     }
   else
     {
-      ErrorF ("winUpdateRgn - CreateRectRgn failed.\n");
+      ErrorF ("winUpdateRgnPRootless - CreateRectRgn failed.\n");
     }
 }
 
@@ -386,17 +385,19 @@ winUpdateRgn (WindowPtr pWin)
 #ifdef SHAPE
 static
 void
-winReshape (WindowPtr pWin)
+winReshapePRootless (WindowPtr pWin)
 {
   int		nRects;
+#if 0
   ScreenPtr	pScreen = pWin->drawable.pScreen;
+#endif
   RegionRec	rrNewShape;
   BoxPtr	pShape, pRects, pEnd;
   HRGN		hRgn, hRgnRect;
   winWindowPriv(pWin);
 
 #if CYGDEBUG
-  ErrorF ("winReshape ()\n");
+  ErrorF ("winReshapePRootless ()\n");
 #endif
 
   /* Bail if the window is the root window */
@@ -439,13 +440,13 @@ winReshape (WindowPtr pWin)
 				    pRects->x2, pRects->y2);
 	  if (hRgnRect == NULL)
 	    {
-	      ErrorF("winReshape - CreateRectRgn() failed\n");
+	      ErrorF("winReshapePRootless - CreateRectRgn() failed\n");
 	    }
 
 	  /* Merge the Windows region with the accumulated region */
 	  if (CombineRgn (hRgn, hRgn, hRgnRect, RGN_OR) == ERROR)
 	    {
-	      ErrorF("winReshape - CombineRgn() failed\n");
+	      ErrorF("winReshapePRootless - CombineRgn() failed\n");
 	    }
 
 	  /* Delete the temporary Windows region */

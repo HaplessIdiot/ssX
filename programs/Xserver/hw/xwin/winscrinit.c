@@ -510,6 +510,11 @@ winFinishScreenInitFB (int index,
   /* Set the ServerStarted flag to false */
   pScreenPriv->fServerStarted = FALSE;
 
+  /* Set the WindowOrderChanged flag to false */
+  pScreenPriv->fWindowOrderChanged = FALSE;
+
+  pScreenPriv->fRestacking = FALSE;
+
 #if CYGDEBUG || YES
   if (pScreenInfo->fMultiWindow)
     ErrorF ("winFinishScreenInitFB - Calling winInitWM.\n");
@@ -519,6 +524,7 @@ winFinishScreenInitFB (int index,
   if (pScreenInfo->fMultiWindow
       && !winInitWM (&pScreenPriv->pWMInfo,
 		     &pScreenPriv->ptWMProc,
+		     &pScreenPriv->ptXMsgProc,
 		     &pScreenPriv->pmServerStarted,
 		     pScreenInfo->dwScreen))
     {
