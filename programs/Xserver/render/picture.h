@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picture.h,v 1.15 2002/11/05 05:41:57 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/picture.h,v 1.16 2002/11/05 06:05:04 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -201,6 +201,11 @@ typedef	xFixed_16_16	xFixed;
 
 #define xFixedFraction(f)	((f) & xFixed1MinusE)
 #define xFixedMod2(f)		((f) & (xFixed1 | xFixed1MinusE))
+
+/* whether 't' is a well defined not obviously empty trapezoid */
+#define xTrapezoidValid(t)  ((t)->left.p1.y != (t)->left.p2.y && \
+			     (t)->right.p1.y != (t)->right.p2.y && \
+			     (int) ((t)->bottom - (t)->top) > 0)
 
 /*
  * Standard NTSC luminance conversions:
