@@ -9,7 +9,7 @@
 <date>18 December 2003
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.94 2004/01/02 06:07:14 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.95 2004/01/04 20:55:01 dawes Exp $
 </ident>
 
 <abstract>
@@ -1029,7 +1029,8 @@ or the 'cvs log' information for individual source files.
 	Marc Aurele La France, Matthieu Herrb, David H. Dawes.
   <tag>NVIDIA 'nv' driver rewrite:</tag>Mark Vojkovich.
   <tag>SiS driver enhancements:</tag>Thomas Winischhofer.
-  <tag>New VIA video driver:</tag>VIA, Alan Cox, Luc Verhaegen.
+  <tag>New VIA video driver:</tag>VIA, Alan Cox, Luc Verhaegen, Thomas
+	Hellstr&ouml;m.
   <tag>Intel 'i810' driver fixes and stability improvements:</tag>Egbert Eich,
 	David H. Dawes, Christian Zietz
   <tag>Improved and more flexible Compose system:</tag>Ivan Pascal.
@@ -1117,9 +1118,10 @@ Ralf Habacker,
 Bruno Haible,
 Lindsay Haigh,
 John Harper,
-Mike Harris,
+Mike A. Harris,
 Bryan W. Headley,
 John Heasley,
+Thomas Hellstr&ouml;m,
 Matthieu Herrb,
 Jonathan Hough,
 Alan Hourihane,
