@@ -878,8 +878,10 @@ SISProbe(DriverPtr drv, int flags)
 
 
 /* If monitor section has no HSync/VRefresh data,
- * derive it from DDC data.
+ * derive it from DDC data. Done by common layer
+ * since 4.3.99.14.
  */
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,14,0)
 static void
 SiSSetSyncRangeFromEdid(ScrnInfoPtr pScrn, int flag)
 {
@@ -1017,6 +1019,7 @@ SiSSetSyncRangeFromEdid(ScrnInfoPtr pScrn, int flag)
 
     }
 }
+#endif
 
 /* Some helper functions for MergedFB mode */
 
@@ -4509,8 +4512,10 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 #endif
 
     /* If there is no HSync or VRefresh data for the monitor,
-     * derive it from DDC data. (Idea taken from radeon driver)
+     * derive it from DDC data. Done by common layer since
+     * 4.3.99.14.
      */
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,14,0)
     if(pScrn->monitor->DDC) {
        if(pScrn->monitor->nHsync <= 0) {
          xf86DrvMsg(pScrn->scrnIndex, X_INFO, subshstr,
@@ -4529,9 +4534,11 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
          SiSSetSyncRangeFromEdid(pScrn, 0);
        }
     }
+#endif
 
 #ifdef SISMERGED
     if(pSiS->MergedFB) {
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,14,0)
        if(pSiS->CRT2pScrn->monitor->DDC) {
           if(pSiS->CRT2pScrn->monitor->nHsync <= 0) {
              xf86DrvMsg(pScrn->scrnIndex, X_INFO, subshstr, 2);
@@ -4542,6 +4549,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
              SiSSetSyncRangeFromEdid(pSiS->CRT2pScrn, 0);
           }
        }
+#endif
 
        xf86DrvMsg(pScrn->scrnIndex, X_INFO, crtsetupstr, 1);
     }
