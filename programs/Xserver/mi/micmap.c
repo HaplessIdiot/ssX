@@ -27,7 +27,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/mi/micmap.c,v 1.1.2.1 1998/07/19 13:22:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/micmap.c,v 1.2 1998/07/26 02:33:07 dawes Exp $ */
 
 /*
  * This is based on cfbcmap.c.  The functions here are useful independently
@@ -251,15 +251,19 @@ miCreateDefColormap(ScreenPtr pScreen)
 		       0)
 	!= Success)
 	return FALSE;
-    wp = pScreen->whitePixel;
-    bp = pScreen->blackPixel;
-    if ((AllocColor(cmap, &ones, &ones, &ones, &wp, 0) !=
-       	   Success) ||
-    	(AllocColor(cmap, &zero, &zero, &zero, &bp, 0) !=
-       	   Success))
-    	return FALSE;
-    pScreen->whitePixel = wp;
-    pScreen->blackPixel = bp;
+
+    if (pScreen->rootDepth > 1) {
+	wp = pScreen->whitePixel;
+	bp = pScreen->blackPixel;
+	if ((AllocColor(cmap, &ones, &ones, &ones, &wp, 0) !=
+       	       Success) ||
+	    (AllocColor(cmap, &zero, &zero, &zero, &bp, 0) !=
+       	       Success))
+    	    return FALSE;
+	pScreen->whitePixel = wp;
+	pScreen->blackPixel = bp;
+    }
+
     (*pScreen->InstallColormap)(cmap);
     return TRUE;
 }

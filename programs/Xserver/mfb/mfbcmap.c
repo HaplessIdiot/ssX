@@ -182,18 +182,5 @@ Bool
 mfbCreateDefColormap (pScreen)
     ScreenPtr	pScreen;
 {
-    VisualPtr	pVisual;
-    ColormapPtr	pColormap;
-    
-    for (pVisual = pScreen->visuals;
-	 pVisual->vid != pScreen->rootVisual;
-	 pVisual++)
-	;
-    if (CreateColormap (pScreen->defColormap, pScreen, pVisual,
-			&pColormap, AllocNone, 0) != Success)
-    {
-	return FALSE;
-    }
-    (*pScreen->InstallColormap) (pColormap);
-    return TRUE;
+    return miCreateDefColormap(pScreen);
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ChipsTech.c,v 3.15 1998/09/05 06:36:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ChipsTech.c,v 3.16 1998/09/13 05:23:29 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -64,111 +64,102 @@ int *Chipset;
 		 */
 		result = TRUE;
 		vers = rdinx(0x3D6, 0x00);
-		switch (vers >> 4)
+		switch (vers)
 		{
-		case 0x0:
+		case 0x00:
 			*Chipset = CHIP_CT451;
 			break;
-		case 0x1:
+		case 0x10:
 			*Chipset = CHIP_CT452;
 			break;
-		case 0x2:
+		case 0x20:
 			*Chipset = CHIP_CT455;
 			break;
-		case 0x3:
+		case 0x30:
 			*Chipset = CHIP_CT453;
 			break;
-		case 0x4:
+		case 0x40:
 			*Chipset = CHIP_CT450;
 			break;
-		case 0x5:
+		case 0x50:
 			*Chipset = CHIP_CT456;
 			break;
-		case 0x6:
+		case 0x60:
 			*Chipset = CHIP_CT457;
 			break;
-		case 0x7:
+		case 0x70:
 			*Chipset = CHIP_CTF65520;
 			break;
-		case 0x8:
-		case 0xc:				/* guess */
+		case 0x80:
+		case 0xc0:				/* guess */
 			*Chipset = CHIP_CTF65530;
 			break;
-		case 0x9:
+		case 0x90:
 			*Chipset = CHIP_CTF65510;
 			break;
-		case 0xa:
+		case 0xa0:
 			*Chipset = CHIP_CTF64200;
 			break;
-		case 0xb:
+		case 0xb0:
 			*Chipset = CHIP_CTF64300;
 			break;
-		case 0xd:
-			switch (vers & 0xf)
-			{
-			case 0x0:
-				*Chipset = CHIP_CTF65540;
-				break;
-			case 0x8:
-			case 0x9:
-			case 0xa:
-				*Chipset = CHIP_CTF65545;
-				break;
-			case 0xb:
-				*Chipset = CHIP_CTF65546;
-				break;
-			case 0xc:
-				*Chipset = CHIP_CTF65548;
-				break;
-			default:
-				Chip_data = vers;
-				*Chipset = CHIP_CT_UNKNOWN;
-				break;
-			}
+		case 0xd0:
+			*Chipset = CHIP_CTF65540;
+			break;
+		case 0xd8:
+		case 0xd9:
+		case 0xda:
+			*Chipset = CHIP_CTF65545;
+			break;
+		case 0xdb:
+			*Chipset = CHIP_CTF65546;
+			break;
+		case 0xdc:
+			*Chipset = CHIP_CTF65548;
 			break;
 		default:
-			Chip_data = (vers >> 4);
+			Chip_data = vers;
 			*Chipset = CHIP_CT_UNKNOWN;
 			break;
 		}
 	}
 	/* 
 	 * We could still have a HiQV style chipset. C&T have the PCI
-	 * vendor ID stored in XR01 and XR02 for HiQV chips, regardless
+	 * vendor ID stored in XR00 and XR01 for HiQV chips, regardless
 	 * of whether the chip is actually connected to a PCI BUS. So
 	 * probe for C&T vendor ID.
 	 */
 	if ((rdinx(0x3D6, 0x00) == 0x2C) && (rdinx(0x3D6, 0x01) == 0x10))
 	{
+		/*
+		 * It's a HiQV PCI Chips & Tech.
+		 * Now figure out which one on PCI device ID low
+		 * stored in XR02.
+		 */
 		result = TRUE;
 		*Chipset = CHIP_CT_UNKNOWN;
-		if (*Chipset == CHIP_CT_UNKNOWN)
+		vers = rdinx(0x3D6, 0x02);
+		switch (vers)
 		{
-			vers = rdinx(0x3D6, 0x02);
-			if ((vers & 0xf0) == 0xe0) {
-				switch (vers & 0x0f)
-				{
-				case 0x0:
-					*Chipset = CHIP_CTF65550;
-					break;
-				case 0x4:
-					*Chipset = CHIP_CTF65554;
-					break;
-				case 0x5:
-					*Chipset = CHIP_CTF65555;
-					break;
-				default:
-					Chip_data = vers & 0x0f;
-					*Chipset = CHIP_CT_UNKNOWN;
-					break;
-				}
-			}
-			if (vers == 0xf4) {
-			  *Chipset = CHIP_CTF68554;
-			}
-			if (vers == 0xC0) {
-			  *Chipset = CHIP_CTF69000;
-			}
+		case 0xe0:
+			*Chipset = CHIP_CTF65550;
+			break;
+		case 0xe4:
+			*Chipset = CHIP_CTF65554;
+			break;
+		case 0xe5:
+			*Chipset = CHIP_CTF65555;
+			break;
+		case 0xf4:
+			*Chipset = CHIP_CTF68554;
+			break;
+		case 0xc0:
+			*Chipset = CHIP_CTF69000;
+			break;
+		default:
+			Chip_data = vers;
+			*Chipset = CHIP_CT_UNKNOWN;
+			break;
 		}
 	}
 	DisableIOPorts(NUMPORTS, Ports);

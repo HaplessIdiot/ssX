@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.8 1998/09/19 12:14:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.9 1998/09/20 06:01:30 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -752,20 +752,7 @@ GenericScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
 
     /* Setup default colourmap */
-    switch (pScreenInfo->depth)
-    {
-        case 1:
-            Inited = xf1bppCreateDefColormap(pScreen);
-            break;
-
-        case 4:
-            Inited = xf4bppCreateDefColormap(pScreen);
-            break;
-
-        default:
-            Inited = cfbCreateDefColormap(pScreen);
-            break;
-    }
+    Inited = miCreateDefColormap(pScreen);
 
 #ifdef DPMSExtension
     xf86DPMSInit(pScreen, GenericDPMSSet, 0);

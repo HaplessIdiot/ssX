@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.50 1998/09/20 14:41:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.51 1998/09/20 15:08:14 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -205,30 +205,12 @@ static OptionInfoRec MGAOptions[] = {
 };
 
 
-#ifdef XFree86LOADER
-
-MODULEINITPROTO(mgaModuleInit);
-static MODULESETUPPROTO(mgaSetup);
-
-static XF86ModuleVersionInfo mgaVersRec =
-{
-	"mga",
-	MODULEVENDORSTRING,
-	MODINFOSTRING1,
-	MODINFOSTRING2,
-	XF86_VERSION_CURRENT,
-	MGA_DRIVER_VERSION,
-	ABI_CLASS_VIDEODRV,			/* This is a video driver */
-	ABI_VIDEODRV_VERSION,
-	{0,0,0,0}
-};
-
 /*
  * List of symbols from other modules that this module references.  This
  * list is used to tell the loader that it is OK for symbols here to be
  * unresolved providing that it hasn't been told that they haven't been
- * told that they are essential via a call to LoaderReqSymbols() or
- * LoaderReqSymLists().  The purpose is this is to avoid warnings about
+ * told that they are essential via a call to xf86LoaderReqSymbols() or
+ * xf86LoaderReqSymLists().  The purpose is this is to avoid warnings about
  * unresolved symbols that are not required.
  */
 
@@ -267,6 +249,24 @@ static const char *ramdacSymbols[] = {
     "xf86CreateCursorInfoRec",
     "xf86DestroyCursorInfoRec",
     NULL
+};
+
+#ifdef XFree86LOADER
+
+MODULEINITPROTO(mgaModuleInit);
+static MODULESETUPPROTO(mgaSetup);
+
+static XF86ModuleVersionInfo mgaVersRec =
+{
+	"mga",
+	MODULEVENDORSTRING,
+	MODINFOSTRING1,
+	MODINFOSTRING2,
+	XF86_VERSION_CURRENT,
+	MGA_DRIVER_VERSION,
+	ABI_CLASS_VIDEODRV,			/* This is a video driver */
+	ABI_VIDEODRV_VERSION,
+	{0,0,0,0}
 };
 
 /*
@@ -742,7 +742,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     if (!xf86LoadSubModule(pScrn, "vgahw"))
 	return FALSE;
 
-    LoaderReqSymLists(vgahwSymbols, NULL);
+    xf86LoaderReqSymLists(vgahwSymbols, NULL);
 
     /*
      * Allocate a vgaHWRec
@@ -1010,11 +1010,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 
      
     pMga->ILOADAddress = 0;
-    if ( 	pMga->Chipset == PCI_CHIP_MGA1064 ||
-		pMga->Chipset == PCI_CHIP_MGA2164 ||
-		pMga->Chipset == PCI_CHIP_MGA2164_AGP ||
-		pMga->Chipset == PCI_CHIP_MGAG200 ||
-		pMga->Chipset == PCI_CHIP_MGAG200_PCI ) {
+    if ( pMga->Chipset != PCI_CHIP_MGA2064 ) {
 	    if (pMga->PciInfo->memBase[2] != 0) {
 	    	pMga->ILOADAddress = pMga->PciInfo->memBase[2] & 0xffffc000;
 	        xf86DrvMsg(pScrn->scrnIndex, X_PROBED, 
@@ -1091,6 +1087,22 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
      */
     xf86DelControlledResource(&pScrn->Access, FALSE);
 
+    /* Set the bpp shift value */
+    switch (pScrn->bitsPerPixel) {
+    case 8:
+	pMga->BppShift = 0;
+	break;
+    case 16:
+	pMga->BppShift = 1;
+	break;
+    case 24:
+	pMga->BppShift = 0;
+	break;
+    case 32:
+	pMga->BppShift = 2;
+	break;
+    }
+
     /*
      * fill MGAdac struct
      * Warning: currently, it should be after RAM counting
@@ -1109,7 +1121,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
      * file, we respect that setting.
      */
     if (pScrn->device->dacSpeeds[0]) {
-	int speed;
+	int speed = 0;
 
 	switch (pScrn->bitsPerPixel) {
 	case 8:
@@ -1160,41 +1172,6 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	}
 	xf86DrvMsg(pScrn->scrnIndex, from, "MCLK used is %.1f MHz\n",
 		   pMga->MemClk / 1000.0);
-    }
-
-    /* Set the bpp shift value */
-    switch (pScrn->bitsPerPixel) {
-    case 8:
-	pMga->BppShift = 0;
-	break;
-    case 16:
-	pMga->BppShift = 1;
-	break;
-    case 24:
-	pMga->BppShift = 0;
-	break;
-    case 32:
-	pMga->BppShift = 2;
-	break;
-    }
-
-    /* Check if interleaving can be used and set the rounding value */
-    switch (pMga->Chipset) {
-    case PCI_CHIP_MGA2064:
-    case PCI_CHIP_MGA2164:
-    case PCI_CHIP_MGA2164_AGP:
-	if (pScrn->videoRam > 2048)
-	    pMga->Interleave = TRUE;
-	else {
-	    pMga->Interleave = FALSE;
-	    pMga->BppShift++;
-	}
-	pMga->Rounding = 128 >> pMga->BppShift;
-	break;
-    default:
-	pMga->Interleave = FALSE;
-	pMga->Rounding = 64 >> pMga->BppShift;
-	break;
     }
 
     /*
@@ -1327,16 +1304,6 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
                 "Too less offscreen memory for HW cursor; using SW cursor\n");
         }
 
-    /* Set Fast bitblt flag */
-    if (pMga->Chipset == PCI_CHIP_MGA1064 ||
-    	    pMga->Chipset == PCI_CHIP_MGAG100 ||
-    	    pMga->Chipset == PCI_CHIP_MGAG200 ||
-	    pMga->Chipset == PCI_CHIP_MGAG200_PCI) {
-	pMga->HasFBitBlt = FALSE;
-    } else {
-	pMga->HasFBitBlt = !(pMga->Bios.FeatFlag & 0x00000001);
-    }
-
     /* Load bpp-specific modules */
     switch (pScrn->bitsPerPixel) {
     case 8:
@@ -1361,7 +1328,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
     }
 
-    LoaderReqSymbols(reqSym, NULL);
+    xf86LoaderReqSymbols(reqSym, NULL);
 
     /* Load XAA if needed */
     if (!pMga->NoAccel) {
@@ -1369,7 +1336,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	    MGAFreeRec(pScrn);
 	    return FALSE;
 	}
-	LoaderReqSymLists(xaaSymbols, NULL);
+	xf86LoaderReqSymLists(xaaSymbols, NULL);
     }
 
     /* Load ramdac if needed */
@@ -1378,7 +1345,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	    MGAFreeRec(pScrn);
 	    return FALSE;
 	}
-	LoaderReqSymLists(ramdacSymbols, NULL);
+	xf86LoaderReqSymLists(ramdacSymbols, NULL);
     }
 
     return TRUE;
@@ -1419,6 +1386,7 @@ MGAMapMem(ScrnInfoPtr pScrn)
      * byte/short access.
      */
     pMga->IOBase = xf86MapPciMemSparse(pScrn->scrnIndex, VIDMEM_MMIO,
+				       pMga->PciTag,
 				       (pointer)pMga->IOAddress, 0x4000);
 #endif
     if (pMga->IOBase == NULL)
@@ -1448,7 +1416,7 @@ MGAMapMem(ScrnInfoPtr pScrn)
      * setting CPUToScreenColorExpandBase.
      */
     pMga->IOBaseDense = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
-					pMga->PciTag, (pointer)pMga->IOAddr,
+					pMga->PciTag, (pointer)pMga->IOAddress,
 					0x4000);
     if (pMga->IOBaseDense == NULL)
 	return FALSE;
@@ -1646,7 +1614,7 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	return FALSE;
 
     /* Initialise the MMIO vgahw functions */
-    vgaHWSetMmioFuncs(hwp, pMga->IOBase + PORT_OFFSET);
+    vgaHWSetMmioFuncs(hwp, pMga->IOBase, PORT_OFFSET);
     vgaHWGetIOBase(hwp);
 
     /* Map the VGA memory when the primary video */
@@ -1691,8 +1659,8 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      * support TrueColor and not DirectColor.  To deal with this, call
      * miSetVisualTypes with the appropriate visual mask.
      */
-
-    if (pScrn->bitsPerPixel > 8) {
+    /* But the Millennium/TVP3026 does support DirectColor */
+    if (pScrn->bitsPerPixel > 8 && pMga->Bios.RamdacType!=0x0001) {
 	if (!miSetVisualTypes(pScrn->depth, TrueColorMask, pScrn->rgbBits,
 				pScrn->defaultVisual))
 	    return FALSE;
@@ -1745,10 +1713,9 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     xf86SetBlackWhitePixels(pScreen);
 
-    if (pScrn->bitsPerPixel == 8) {
-	/* Another VGA dependency to remove */
-	MGAHandleColormaps(pScreen, pScrn);
-    } else {
+    MGAHandleColormaps(pScreen, pScrn);
+
+    if (pScrn->bitsPerPixel > 8) {
         /* Fixup RGB ordering */
         visual = pScreen->visuals + pScreen->numVisuals;
         while (--visual >= pScreen->visuals) {
@@ -1985,7 +1952,7 @@ MGADisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 			     int flags)
 {
 	MGAPtr pMga = MGAPTR(pScrn);
-	unsigned char seq1, crtcext1;
+	unsigned char seq1 = 0, crtcext1 = 0;
 
 ErrorF("MGADisplayPowerManagementSet: %d\n", PowerManagementMode);
 

@@ -1,14 +1,48 @@
+XFree86 3.9Ng (27 September 1998)
+1869. Update the Type1 and Speedo fonts.scale files to take advantage
+      of the recent ISO 8859-2 encoding updates (#1995, Juliusz Chroboczek).
+1868. Update drivers to use miCreateDefColormap instead of calling
+      the ones in the fb-specific code, update mfbCreateDefColormap
+      to call the mi version, and remove the xf4bpp version.
+1867. ANSI-related cleanups for the C&T driver, and make use of the
+      LoaderRefSymobols() code to eliminate loader warnings (#1993,
+      David Bateman).
+1866. Fix pixmap cache sizing for C&T DSTN systems (#1993, David Bateman).
+1865. Fix a typo that affected the memory probing for C&T 65550 sysems
+      with 2MB of memory (#1993, David Bateman).
+1864. Let the C&T driver accept '-depth 15' (#1993, David Bateman).
+1863. Reintroduce DirectColor visual support for depth >8 for the
+      Millennium I (#1992, Andrew Aitchison).
+1862. Fixes and cleanups for Linux/Alpha build problems (#1989,
+      Andrew P. Lentvorski).
+1861. Make some changes to the vgahw MMIO handling for Alpha platforms.
+1860. Cleanup and simply some of the mga driver/dac/clock code (#1991,
+      Radislaw Kapitan).
+1859. Enable mga TVP3026 interlaced cursor (#1991, Radislaw Kapitan).
+1858. Enable the Pseudo-DMA window for the G100 in the mga driver (#1991,
+      Radislaw Kapitan).
+1857. Change some tables in the mga driver to 'const' to help make sure
+      that they are not abused, and fix the code that was abusing them
+      (#1991, Radislaw Kapitan).
+1856. Fix some G200 problems introduced in 3.9Nf (#1988, 1991, Mark Vojkovich,
+      Radislaw Kapitan).
+1855. Fix static server problems caused by item 1851 (based on #1984, 1985,
+      Takaaki Nomura).
+1854. xman improvements for NetBSD/OpenBSD (#1983, Matthieu Herrb,
+      Ross Harvey).
+1853. C&T update for SuperProbe (#1981, Taketoshi Sano).
+
 XFree86 3.9Nf (20 September 1998)
-1852. Update the sample config file to be consistent with the update format.
+1852. Update the sample config file to be consistent with the updated format.
 1851. Add a mechanism to allow modules to tell the loader which symbols from
       from other modules it references, and which of those are essential.
       This makes it possible to eliminate unnecessary warnings about
       unresolved symbols, and to trigger a fatal error where appropriate.
-1850. More attempts towards a working G100 server (1982, Dirk Hohndel).
+1850. More attempts towards a working G100 server (#1982, Dirk Hohndel).
 1849. Update the mga driver for use with the resource management code.
 1848. Fix some bugs and typos in the resource management code.
-1847. Rework the vgahw module, abstracting the register accesses and splitting
-      the save/restore parts up.
+1847. Rework the vgahw module, abstracting the register accesses and split up
+      the save/restore parts.
 1846. Add '\n' to some of the messages in PEXExtensionInit().
 1845. Fix the mga driver's handling of the option register in mga_dac3026.c.
 1844. Trap reentrancy to the FatalError() function and call abort() when
@@ -6535,4 +6569,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.627 1998/09/20 08:39:18 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.628 1998/09/20 14:40:57 dawes Exp $

@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.9 1998/09/13 09:10:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.10 1998/09/20 06:01:22 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -1840,16 +1840,8 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     }
 
     /* Initialise default colourmap */
-    switch (pScrn->bitsPerPixel) {
-	case 4:
-	     if (!xf4bppCreateDefColormap(pScreen))
-		return FALSE;
-	     break;
-	default:
-	     if (!miCreateDefColormap(pScreen))
-		return FALSE;
-	     break;
-    }
+    if (!miCreateDefColormap(pScreen))
+	return FALSE;
 
 #ifdef DPMSExtension
     xf86DPMSInit(pScreen, (DPMSSetProcPtr)GLINTDisplayPowerManagementSet, 0);

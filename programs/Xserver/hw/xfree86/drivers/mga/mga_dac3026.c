@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.27 1998/09/19 12:14:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.28 1998/09/20 06:01:23 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -73,7 +73,7 @@ static Bool MGA3026Init(ScrnInfoPtr, DisplayModePtr);
 /*
  * indexes to ti3026 registers (the order is important)
  */
-static unsigned char MGADACregs[] = {
+const static unsigned char MGADACregs[] = {
 	0x0F, 0x18, 0x19, 0x1A, 0x1C,   0x1D, 0x1E, 0x2A, 0x2B, 0x30,
 	0x31, 0x32, 0x33, 0x34, 0x35,   0x36, 0x37, 0x38, 0x39, 0x3A,
 	0x06
@@ -83,29 +83,29 @@ static unsigned char MGADACregs[] = {
 /*
  * initial values of ti3026 registers
  */
-static unsigned char MGADACbpp8[DACREGSIZE] = {
-	0x06, 0x80,    0, 0x25, 0x00,   0x00, 0x0C, 0x00, 0x1E, 0xFF,
+const static unsigned char MGADACbpp8[DACREGSIZE] = {
+	0x06, 0x80, 0x48, 0x25, 0x00,   0x00, 0x0C, 0x00, 0x1E, 0xFF,
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF,   0xFF, 0xFF, 0x00,    0, 0x00,
-	   0
+	0x00
 };
-static unsigned char MGADACbpp16[DACREGSIZE] = {
-	0x07, 0x05,    0, 0x15, 0x00,   0x00, 0x2C, 0x00, 0x1E, 0xFF,
-	0xFF, 0xFF, 0xFF, 0xFF, 0xFF,   0xFF, 0xFF, 0x00,    0, 0x00,
-	   0
+const static unsigned char MGADACbpp16[DACREGSIZE] = {
+	0x07, 0x45, 0x50, 0x15, 0x00,   0x00, 0x2C, 0x00, 0x1E, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF,   0xFF, 0xFF, 0x10,    0, 0x00,
+	0x00
 };
 /*
  * [0] value was 0x07, but changed to 0x06 by Doug Merrit to fix high res
  * stripe glitches and clock glitches at 24bpp.
  */
-static unsigned char MGADACbpp24[DACREGSIZE] = {
-	0x06, 0x16,    0, 0x25, 0x00,   0x00, 0x2C, 0x00, 0x1E, 0xFF,
-	0xFF, 0xFF, 0xFF, 0xFF, 0xFF,   0xFF, 0xFF, 0x00,    0, 0x00,
-	   0
+const static unsigned char MGADACbpp24[DACREGSIZE] = {
+	0x06, 0x56, 0x58, 0x25, 0x00,   0x00, 0x2C, 0x00, 0x1E, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF,   0xFF, 0xFF, 0x10,    0, 0x00,
+	0x00
 };
-static unsigned char MGADACbpp32[DACREGSIZE] = {
-	0x07, 0x06,    0, 0x05, 0x00,   0x00, 0x2C, 0x00, 0x1E, 0xFF,
-	0xFF, 0xFF, 0xFF, 0xFF, 0xFF,   0xFF, 0xFF, 0x00,    0, 0x00,
-	   0
+const static unsigned char MGADACbpp32[DACREGSIZE] = {
+	0x07, 0x46, 0x58, 0x05, 0x00,   0x00, 0x2C, 0x00, 0x1E, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF,   0xFF, 0xFF, 0x10,    0, 0x00,
+	0x00
 };
     
 /*
@@ -165,7 +165,7 @@ MGATi3026CalcClock (
    long f_out, long f_max,
    int *m, int *n, int *p
 ){
-	int best_m, best_n;
+	int best_m = 0, best_n = 0;
 	double f_pll, f_vco;
 	double m_err, inc_m, calc_m;
 
@@ -462,44 +462,48 @@ static Bool
 MGA3026Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
 	int hd, hs, he, hbs, hbe, ht, vd, vs, ve, vbs, vbe, vt, wd;
-	int i, index_1d;
-	unsigned char* initDAC;
+	int i, index_1d = 0;
+	const unsigned char* initDAC;
 	MGAPtr pMga = MGAPTR(pScrn);
 	MGARamdacPtr MGAdac = &pMga->Dac;
 	MGARegPtr pReg = &pMga->ModeReg;
 	vgaRegPtr pVga = &VGAHWPTR(pScrn)->ModeReg;
 
 
-	/* Allocate the DacRegs space if not done already */
-	if (pReg->DacRegs == NULL) {
-		pReg->DacRegs = (unsigned char *)xnfcalloc(DACREGSIZE, 1);
-	}
-
 	switch(pScrn->bitsPerPixel)
 	{
 	case 8:
 		initDAC = MGADACbpp8;
-		initDAC[2] = pMga->Interleave? 0x4C : 0x4B;
 		break;
 	case 16:
 		initDAC = MGADACbpp16;
-		initDAC[2] = pMga->Interleave? 0x54 : 0x53;
-		if ( (pScrn->weight.red == 5) && (pScrn->weight.green == 5)
-					&& (pScrn->weight.blue == 5) )
-			initDAC[1] = 0x04 ;
 		break;
 	case 24:
 		initDAC = MGADACbpp24;
-		initDAC[2] = pMga->Interleave? 0x5C : 0x5B;
 		break;
 	case 32:
 		initDAC = MGADACbpp32;
-		initDAC[2] = pMga->Interleave? 0x5C : 0x5B;
 		break;
 	default:
 		FatalError("MGA: unsupported depth\n");
 	}
-		
+	
+	/* Allocate the DacRegs space if not done already */
+	if (pReg->DacRegs == NULL) {
+		pReg->DacRegs = (unsigned char *)xnfcalloc(DACREGSIZE, 1);
+	}
+	for (i = 0; i < DACREGSIZE; i++) {
+	    pReg->DacRegs[i] = initDAC[i]; 
+	    if (MGADACregs[i] == 0x1D)
+		index_1d = i;
+	}
+
+	if ( (pScrn->bitsPerPixel == 16) && (pScrn->weight.red == 5)
+		&& (pScrn->weight.green == 5) && (pScrn->weight.blue == 5) ) {
+	    pReg->DacRegs[1] &= ~0x01;
+	}
+	pReg->DacRegs[2] |= pMga->Interleave? 0x04 : 0x03;	
+
 	/*
 	 * This will initialize all of the generic VGA registers.
 	 */
@@ -528,7 +532,6 @@ MGA3026Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
 	pReg->ExtVga[0] = 0;
 	pReg->ExtVga[5] = 0;
-	initDAC[20] = 0;
 	
 	if (mode->Flags & V_INTERLACE)
 	{
@@ -538,7 +541,7 @@ MGA3026Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		vt &= 0xFFFE;
 		
 		/* enable interlaced cursor */
-		initDAC[20] |= 0x20;
+		pReg->DacRegs[20] |= 0x20;
 	}
 
 	pReg->ExtVga[0]	|= (wd & 0x300) >> 4;
@@ -587,13 +590,6 @@ MGA3026Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	if (mode->Flags & V_DBLSCAN)
 		pVga->CRTC[9] |= 0x80;
     
-	for (i = 0; i < DACREGSIZE; i++)
-	{
-	    pReg->DacRegs[i] = initDAC[i]; 
-	    if (MGADACregs[i] == 0x1D)
-		index_1d = i;
-	}
-
 	/* Per DDK vid.c line 75, sync polarity should be controlled
 	 * via the TVP3026 RAMDAC register 1D and so MISC Output Register
 	 * should always have bits 6 and 7 set. */
@@ -865,10 +861,7 @@ MGA3026SetCursorColors(
 static Bool 
 MGA3026UseHWCursor(ScreenPtr pScrn, CursorPtr pCurs)
 {
-    /* The TVP3026 actually supports interlaced cursors.  We
-	just need somebody to write the support for it */
-    if((XF86SCRNINFO(pScrn)->currentMode->Flags & V_DBLSCAN) ||
-	(XF86SCRNINFO(pScrn)->currentMode->Flags & V_INTERLACE))
+    if( XF86SCRNINFO(pScrn)->currentMode->Flags & V_DBLSCAN )
     	return FALSE;
     return TRUE;
 }
@@ -987,6 +980,18 @@ MGA3026RamdacInit(ScrnInfoPtr pScrn)
      * Should initialise a sane default when the probed value is
      * obviously garbage.
      */
+     
+    /* Check if interleaving can be used and set the rounding value */
+    if (pScrn->videoRam > 2048)
+        pMga->Interleave = TRUE;
+    else {
+        pMga->Interleave = FALSE;
+        pMga->BppShift++;
+    }
+    pMga->Rounding = 128 >> pMga->BppShift;
+    
+    /* Set Fast bitblt flag */
+    pMga->HasFBitBlt = !(pMga->Bios.FeatFlag & 0x00000001);
 }
 
 static void

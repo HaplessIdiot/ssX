@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.79 1998/09/13 09:10:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.80 1998/09/19 12:14:48 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -162,6 +162,8 @@ Bool xf86ServerIsExiting(void);
 Bool xf86ServerIsResetting(void);
 Bool xf86CaughtSignal(void);
 pointer xf86LoadSubModule(ScrnInfoPtr pScrn, const char *name);
+void xf86LoaderReqSymLists(const char **, ...);
+void xf86LoaderReqSymbols(const char *, ...);
 void xf86Break1(void);
 void xf86Break2(void);
 void xf86Break3(void);

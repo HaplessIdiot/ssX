@@ -2,7 +2,7 @@
  * MGA-1064, MGA-G100, MGA-G200 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.3 1998/09/13 05:23:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.5 1998/09/20 08:39:21 hohndel Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -89,18 +89,17 @@ static Bool MGAGInit(ScrnInfoPtr, DisplayModePtr);
  */
 
 /* The following values are in kHz */
-#define MGA_MIN_VCO_FREQ    120000
+#define MGA_MIN_VCO_FREQ     50000
 #define MGA_MAX_VCO_FREQ    250000
 
 static double
-MGAGCalcClock ( ScrnInfoPtr pScrn, long f_out, long f_max,
-		int *best_m, int *best_n, int *best_p, int *s )
+MGAGCalcClock ( ScrnInfoPtr pScrn, long f_out,
+		int *best_m, int *best_n, int *p, int *s )
 {
 	MGAPtr pMga = MGAPTR(pScrn);
-	int m, n, p;
+	int m, n;
 	double f_pll, f_vco;
-	double m_err, calc_f, base_freq;
-
+	double m_err, calc_f;
 	double ref_freq;
 	int feed_div_min, feed_div_max;
 	int in_div_min, in_div_max;
@@ -114,7 +113,7 @@ MGAGCalcClock ( ScrnInfoPtr pScrn, long f_out, long f_max,
 		feed_div_max = 127;
 		in_div_min   = 1;
 		in_div_max   = 31;
-		post_div_max = 3;
+		post_div_max = 7;
 		break;
 	case PCI_CHIP_MGAG100:
 	case PCI_CHIP_MGAG200:
@@ -125,48 +124,39 @@ MGAGCalcClock ( ScrnInfoPtr pScrn, long f_out, long f_max,
 		feed_div_max = 127;
 		in_div_min   = 1;
 		in_div_max   = 6;
-		post_div_max = 3;
+		post_div_max = 7;
 		break;
 	}
 	
-	/* Make sure that f_min <= f_out <= f_max */
-
+	/* Make sure that f_min <= f_out */
 	if ( f_out < ( MGA_MIN_VCO_FREQ / 8))
 		f_out = MGA_MIN_VCO_FREQ / 8;
 
-	if ( f_out > f_max )
-		f_out = f_max;
-
 	/*
-	 * f_pll = f_vco /  (2^p)
+	 * f_pll = f_vco / (p+1)
 	 * Choose p so that MGA_MIN_VCO_FREQ   <= f_vco <= MGA_MAX_VCO_FREQ  
 	 * we don't have to bother checking for this maximum limit.
 	 */
 	f_vco = ( double ) f_out;
-	for ( p = 0; p < post_div_max && f_vco < MGA_MIN_VCO_FREQ; p++ )
-		f_vco *= 2.0;
-
-	/* Initial value of calc_f for the loop */
-	calc_f = 0;
-
-	base_freq = ref_freq / ( 1 << p );
+	for ( *p = 0; *p <= post_div_max && f_vco < MGA_MIN_VCO_FREQ;
+		*p = *p * 2 + 1, f_vco *= 2.0);
 
 	/* Initial amount of error for frequency maximum */
 	m_err = f_out;
 
 	/* Search for the different values of ( m ) */
-	for ( m = in_div_min ; m < in_div_max ; m++ )
+	for ( m = in_div_min ; m <= in_div_max ; m++ )
 	{
 		/* see values of ( n ) which we can't use */
 		for ( n = feed_div_min; n <= feed_div_max; n++ )
 		{ 
-			calc_f = base_freq * (n + 1) / (m + 1) ;
+			calc_f = ref_freq * (n + 1) / (m + 1) ;
 
 			/*
 			 * Pick the closest frequency.
 			 */
-			if (abs( calc_f - f_out ) < m_err ) {
-				m_err = abs(calc_f - f_out);
+			if ( abs(calc_f - f_vco) < m_err ) {
+				m_err = abs(calc_f - f_vco);
 				*best_m = m;
 				*best_n = n;
 			}
@@ -186,13 +176,10 @@ MGAGCalcClock ( ScrnInfoPtr pScrn, long f_out, long f_max,
 	if ( (140000.0 <= f_vco)
 	&& (f_vco < 180000.0) )
 		*s = 2;	
-	if ( (180000.0 <= f_vco)
-	&& (f_vco < 250000.0) )
+	if ( (180000.0 <= f_vco) )
 		*s = 3;	
 
-	f_pll = f_vco / ( 1 << p );
-
-	*best_p = ( 1 << p ) - 1 ; 
+	f_pll = f_vco / ( *p + 1 );
 
 #ifdef DEBUG
 	ErrorF( "f_out_requ =%ld f_pll_real=%.1f f_vco=%.1f n=0x%x m=0x%x p=0x%x s=0x%x\n",
@@ -218,13 +205,8 @@ MGAGSetPCLK( ScrnInfoPtr pScrn, long f_out )
 	/* The actual frequency output by the clock */
 	double f_pll;
 
-	long f_max = MGA_MAX_VCO_FREQ;
-
-	if ( pMga->MaxClock > f_max )
-		f_max = pMga->MaxClock;
-
 	/* Do the calculations for m, n, p and s */
-	f_pll = MGAGCalcClock( pScrn, f_out, f_max, &m, &n, &p, &s );
+	f_pll = MGAGCalcClock( pScrn, f_out, &m, &n, &p, &s );
 
 	/* Values for the pixel clock PLL registers */
 	pReg->DacRegs[ MGA1064_PIX_PLLC_M ] = m & 0x1F;
@@ -241,26 +223,13 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	/*
 	 * initial values of the DAC registers
 	 */
-	static unsigned char initDAC1064[] = {
+	const static unsigned char initDAC[] = {
 	/* 0x00: */	   0,    0,    0,    0,    0,    0, 0x00,    0,
 	/* 0x08: */	   0,    0,    0,    0,    0,    0,    0,    0,
 	/* 0x10: */	   0,    0,    0,    0,    0,    0,    0,    0,
 	/* 0x18: */	0x00,    0, 0x09, 0xFF, 0xBF, 0x20, 0x1F, 0x20,
 	/* 0x20: */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	/* 0x28: */	0x00, 0x00, 0x00, 0x00, 0x0A, 0x72, 0x10, 0x40,
-	/* 0x30: */	0x00, 0xB0, 0x00, 0xC2, 0x34, 0x14, 0x02, 0x83,
-	/* 0x38: */	0x00, 0x93, 0x00, 0x77, 0x00, 0x00, 0x00, 0x3A,
-	/* 0x40: */	   0,    0,    0,    0,    0,    0,    0,    0,
-	/* 0x48: */	   0,    0,    0,    0,    0,    0,    0,    0
-	};
-
-	static unsigned char initDACG200[] = {
-	/* 0x00: */	   0,    0,    0,    0,    0,    0, 0x00,    0,
-	/* 0x08: */	   0,    0,    0,    0,    0,    0,    0,    0,
-	/* 0x10: */	   0,    0,    0,    0,    0,    0,    0,    0,
-	/* 0x18: */	0x00,    0, 0x09, 0xFF, 0xBF, 0x20, 0x1F, 0x20,
-	/* 0x20: */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	/* 0x28: */	0x00, 0x00, 0x00, 0x00, 0x04, 0x2D, 0x19, 0x40,
+	/* 0x28: */	0x00, 0x00, 0x00, 0x00,    0,    0,    0, 0x40,
 	/* 0x30: */	0x00, 0xB0, 0x00, 0xC2, 0x34, 0x14, 0x02, 0x83,
 	/* 0x38: */	0x00, 0x93, 0x00, 0x77, 0x00, 0x00, 0x00, 0x3A,
 	/* 0x40: */	   0,    0,    0,    0,    0,    0,    0,    0,
@@ -272,7 +241,6 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	MGAPtr pMga;
 	MGARegPtr pReg;
 	vgaRegPtr pVga;
-	unsigned char *initDAC;
 	int weight555 = FALSE;
 	
 	pMga = MGAPTR(pScrn);
@@ -283,28 +251,36 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	if (pReg->DacRegs == NULL) {
 		pReg->DacRegs = (unsigned char *)xnfcalloc(DACREGSIZE, 1);
 	}
+	for (i = 0; i < DACREGSIZE; i++) {
+	    pReg->DacRegs[i] = initDAC[i]; 
+	}
 
 	switch(pMga->Chipset)
 	{
 	case PCI_CHIP_MGA1064:
-		initDAC = initDAC1064;
-		pReg->Option = 0x5F094E21;
+		pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x0A;
+		pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x72;
+		pReg->DacRegs[ MGA1064_SYS_PLL_P ] = 0x10;
+		pReg->Option  = 0x5F094E21;
+		pReg->Option2 = 0x00000000;
 		break;
 	case PCI_CHIP_MGAG100:
-		initDAC = initDACG200;
-		initDAC[MGAGDAC_XVREFCTRL] = 0x03;
-		initDAC[ MGA1064_SYS_PLL_M ] = 0x02;
-		initDAC[ MGA1064_SYS_PLL_N ] = 0x15;
-		initDAC[ MGA1064_SYS_PLL_P ] = 0x18;
-		pReg->Option = 0x40079121;
-		pReg->Option = 0x400791A9;
-		pReg->Option2= 0x000000015;
+		pReg->DacRegs[ MGAGDAC_XVREFCTRL ] = 0x03;
+		pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x02;
+		pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x15;
+		pReg->DacRegs[ MGA1064_SYS_PLL_P ] = 0x18;
+		pReg->Option  = 0x40079121;
+		pReg->Option  = 0x400791A9;
+		pReg->Option2 = 0x00000015;
 		break;
 	case PCI_CHIP_MGAG200:
 	case PCI_CHIP_MGAG200_PCI:
 	default:
-		initDAC = initDACG200;
-		pReg->Option = 0x4007CC21;
+		pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x04;
+		pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x2D;
+		pReg->DacRegs[ MGA1064_SYS_PLL_P ] = 0x19;
+		pReg->Option  = 0x4007CC21;
+		pReg->Option2 = 0x00008000;
 		break;
 	}
 	
@@ -316,21 +292,21 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	switch(pScrn->bitsPerPixel)
 	{
 	case 8:
-		initDAC[ MGA1064_MUL_CTL ] = MGA1064_MUL_CTL_8bits;
+		pReg->DacRegs[ MGA1064_MUL_CTL ] = MGA1064_MUL_CTL_8bits;
 		break;
 	case 16:
-		initDAC[ MGA1064_MUL_CTL ] = MGA1064_MUL_CTL_16bits;
+		pReg->DacRegs[ MGA1064_MUL_CTL ] = MGA1064_MUL_CTL_16bits;
 		if ( (pScrn->weight.red == 5) && (pScrn->weight.green == 5)
 					&& (pScrn->weight.blue == 5) ) {
-			weight555 = TRUE;
-			initDAC[ MGA1064_MUL_CTL ] = MGA1064_MUL_CTL_15bits;
+		    weight555 = TRUE;
+		    pReg->DacRegs[ MGA1064_MUL_CTL ] = MGA1064_MUL_CTL_15bits;
 		}
 		break;
 	case 24:
-		initDAC[ MGA1064_MUL_CTL ] = MGA1064_MUL_CTL_24bits;
+		pReg->DacRegs[ MGA1064_MUL_CTL ] = MGA1064_MUL_CTL_24bits;
 		break;
 	case 32:
-		initDAC[ MGA1064_MUL_CTL ] = MGA1064_MUL_CTL_32_24bits;
+		pReg->DacRegs[ MGA1064_MUL_CTL ] = MGA1064_MUL_CTL_32_24bits;
 		break;
 	default:
 		FatalError("MGA: unsupported depth\n");
@@ -428,17 +404,14 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	if (mode->Flags & V_DBLSCAN)
 		pVga->CRTC[9] |= 0x80;
     
-	initDAC[ MGA1064_CURSOR_BASE_ADR_LOW ] = pMga->FbCursorOffset >> 10;
-	initDAC[ MGA1064_CURSOR_BASE_ADR_HI ]  = pMga->FbCursorOffset >> 18;
+	pReg->DacRegs[ MGA1064_CURSOR_BASE_ADR_LOW ] =
+						pMga->FbCursorOffset >> 10;
+	pReg->DacRegs[ MGA1064_CURSOR_BASE_ADR_HI ]  =
+						pMga->FbCursorOffset >> 18;
 	
 	if (pMga->SyncOnGreen) {
-	    initDAC[ MGA1064_GEN_CTL ] &= ~0x20;
+	    pReg->DacRegs[ MGA1064_GEN_CTL ] &= ~0x20;
 	    pReg->ExtVga[3] |= 0x40;
-	}
-
-	for (i = 0; i < DACREGSIZE; i++)
-	{
-	    pReg->DacRegs[i] = initDAC[i]; 
 	}
 
 	/* select external clock and disable VGA frame buffer mapping */
@@ -447,7 +420,6 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	pVga->MiscOutReg &= 0x02;
 #endif
 	
-	/* XXX Need to check the first argument */
 	MGAGSetPCLK( pScrn, mode->Clock );
 
 	/*
@@ -543,7 +515,7 @@ MGAGRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	 
 	/* restore DAC registers 
 	 * according to the docs we shouldn't write to reserved regs*/
-	for (i = 0; i < DACREGSIZE; i++)
+	for (i = 0; i < DACREGSIZE; i++) {
 	    if( (i <= 0x03) ||
 	    	(i == 0x07) ||
 	    	(i == 0x0b) ||
@@ -553,12 +525,14 @@ MGAGRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	    	(i == 0x1c) ||
 	       ((i >= 0x1f) && (i <= 0x29)) ||
 	       ((i >= 0x30) && (i <= 0x37)) )
-	       		continue;
+	       		continue; 
 	    outMGAdac(i, mgaReg->DacRegs[i]);
+	}
 
 	/* restore pci_option register */
 	pciWriteLong(pMga->PciTag, PCI_OPTION_REG, mgaReg->Option);
-	pciWriteLong(pMga->PciTag, PCI_MGA_OPTION2, mgaReg->Option2);
+	if (pMga->Chipset != PCI_CHIP_MGA1064)
+		pciWriteLong(pMga->PciTag, PCI_MGA_OPTION2, mgaReg->Option2);
 
 	/* restore CRTCEXT regs */
 	for (i = 0; i < 6; i++)
@@ -775,6 +749,13 @@ MGAGRamdacInit(ScrnInfoPtr pScrn)
 	}
 	MGAdac->ClockFrom = X_DEFAULT;
     }
+    
+    /* Disable interleaving and set the rounding value */
+    pMga->Interleave = FALSE;
+    pMga->Rounding = 64 >> pMga->BppShift;
+    
+    /* Clear Fast bitblt flag */
+    pMga->HasFBitBlt = FALSE;
 }
 
 void MGAGSetupFuncs(ScrnInfoPtr pScrn)

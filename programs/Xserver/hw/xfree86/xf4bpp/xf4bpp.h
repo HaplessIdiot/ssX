@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/xf4bpp.h,v 1.1.2.2 1998/07/18 17:54:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/xf4bpp.h,v 1.2 1998/07/25 16:59:46 dawes Exp $ */
 
 
 #ifndef __XF4BPP_H__
@@ -321,11 +321,6 @@ void xf4bppResolveColor(
 Bool xf4bppInitializeColormap(
 #if NeedFunctionPrototypes
     ColormapPtr
-#endif
-);
-Bool xf4bppCreateDefColormap(
-#if NeedFunctionPrototypes
-    ScreenPtr
 #endif
 );
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.24 1998/08/19 07:49:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.25 1998/09/20 14:41:05 dawes Exp $ */
 
 /*
  *
@@ -580,38 +580,52 @@ LoaderRefSymLists(const char **list0, ...)
 }
 
 void
-LoaderReqSymLists(const char **list0, ...)
+LoaderVReqSymLists(const char **list0, va_list args)
 {
-    va_list ap;
     const char **l;
 
     if (list0 == NULL)
 	return;
 
-    va_start(ap, list0);
     l = list0;
     do {
 	AppendSymList(&reqList, l);
-	l = va_arg(ap, const char **);
+	l = va_arg(args, const char **);
     } while (l != NULL);
+}
+
+void
+LoaderReqSymLists(const char **list0, ...)
+{
+    va_list ap;
+
+    va_start(ap, list0);
+    LoaderVReqSymLists(list0, ap);
     va_end(ap);
+}
+
+void
+LoaderVReqSymbols(const char *sym0, va_list args)
+{
+    const char *s;
+
+    if (sym0 == NULL)
+	return;
+
+    s = sym0;
+    do {
+	AppendSymbol(&reqList, s);
+	s = va_arg(args, const char *);
+    } while (s != NULL);
 }
 
 void
 LoaderReqSymbols(const char *sym0, ...)
 {
     va_list ap;
-    const char *s;
-
-    if (sym0 == NULL)
-	return;
 
     va_start(ap, sym0);
-    s = sym0;
-    do {
-	AppendSymbol(&reqList, s);
-	s = va_arg(ap, const char *);
-    } while (s != NULL);
+    LoaderVReqSymbols(sym0, ap);
     va_end(ap);
 }
 

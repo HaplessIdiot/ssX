@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.26 1998/08/29 05:43:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.27 1998/09/19 12:14:51 dawes Exp $ */
 /*
  * Copyright 1996, 1997, 1998 by David Bateman <dbateman@ee.uts.edu.au>
  *   Modified 1997, 1998 by Nozomi Ytow
@@ -151,7 +151,7 @@ CTNAME(AccelInit)(ScreenPtr pScreen)
     /*
      * Set up the main acceleration flags.
      */
-    infoPtr->Flags = PIXMAP_CACHE;
+    if (cAcl->CacheEnd > cAcl->CacheStart) infoPtr->Flags = PIXMAP_CACHE;
     infoPtr->PixmapCacheFlags |= DO_NOT_BLIT_STIPPLES;
 
     /*

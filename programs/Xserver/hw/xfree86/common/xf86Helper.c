@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.6 1998/09/13 12:23:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.7 1998/09/19 12:14:49 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -16,6 +16,7 @@
 #include "pixmapstr.h"
 #include "windowstr.h"
 #include "gcstruct.h"
+#include "loaderProcs.h"
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
@@ -1736,6 +1737,30 @@ xf86LoadSubModule(ScrnInfoPtr pScrn, const char *name)
     return ret;
 #else
     return (pointer)1;
+#endif
+}
+
+void
+xf86LoaderReqSymLists(const char **list0, ...)
+{
+#ifdef XFree86LOADER
+    va_list ap;
+
+    va_start(ap, list0);
+    LoaderVReqSymLists(list0, ap);
+    va_end(ap);
+#endif
+}
+
+void
+xf86LoaderReqSymbols(const char *sym0, ...)
+{
+#ifdef XFree86LOADER
+    va_list ap;
+
+    va_start(ap, sym0);
+    LoaderVReqSymbols(sym0, ap);
+    va_end(ap);
 #endif
 }
 
