@@ -18,7 +18,8 @@ INCLUDES = -I. -I../../include
 #else
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/Xext \
            -I$(SERVERSRC)/mi -I$(XF86SRC)/xaa -I$(SERVERSRC)/fb \
-	   -I$(XF86SRC)/xf1bpp -I$(XF86SRC)/shadowfb \
+	   -I$(XF86SRC)/xf1bpp -I$(SERVERSRC)/miext/shadow \
+	   -I$(SERVERSRC)/render \
 	   -I$(XF86SRC)/xf4bpp -I$(SERVERSRC)/mfb \
            -I$(XF86SRC)/vgahw -I$(XF86SRC)/ramdac \
            -I$(XF86SRC)/rac -I$(XF86SRC)/int10 \

@@ -53,7 +53,7 @@
 #include "mipointer.h"
 
 #include "mibstore.h"
-#include "shadowfb.h"
+#include "shadow.h"
 #include "trident.h"
 #include "trident_regs.h"
 
@@ -486,7 +486,7 @@ static const char *i2cSymbols[] = {
 };
 
 static const char *shadowSymbols[] = {
-    "ShadowFBInit",
+    "shadowInit",
     NULL
 };
 
@@ -961,7 +961,7 @@ GetAccelPitchValues(ScrnInfoPtr pScrn)
     return linePitches;
 }
 
-void
+static void
 TRIDENTRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
@@ -988,7 +988,16 @@ TRIDENTRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
     }
 } 
 
-void
+static void
+TRIDENTShadowUpdate (ScreenPtr pScreen, PixmapPtr pShadow, RegionPtr damage)
+{
+    ScrnInfoPtr pScrn;
+    pScrn = xf86Screens[pScreen->myNum];
+
+    TRIDENTRefreshArea (pScrn, REGION_NUM_RECTS(damage), REGION_RECTS(damage));
+}
+
+static void
 TRIDENTProbeDDC(ScrnInfoPtr pScrn, int index)
 {
     vbeInfoPtr pVbe;
@@ -1983,9 +1992,9 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 
     xf86LoaderReqSymLists(i2cSymbols, NULL);
 
-    /* Load shadowfb if needed */
+    /* Load shadow if needed */
     if (pTrident->ShadowFB) {
-	if (!xf86LoadSubModule(pScrn, "shadowfb")) {
+	if (!xf86LoadSubModule(pScrn, "shadow")) {
 	    TRIDENTFreeRec(pScrn);
 	    return FALSE;
 	}
@@ -2370,7 +2379,7 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     }
 
     /* FIXME - we don't do shadowfb for < 4 */
-    if(pTrident->ShadowFB && (pScrn->bitsPerPixel >= 8)) {
+    if(pTrident->ShadowFB) {
  	pTrident->ShadowPitch = BitmapBytePad(pScrn->bitsPerPixel * pScrn->virtualX);
         pTrident->ShadowPtr = xalloc(pTrident->ShadowPitch * pScrn->virtualY);
 	pScrn->displayWidth = pTrident->ShadowPitch / (pScrn->bitsPerPixel >> 3);
@@ -2504,8 +2513,12 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	return FALSE;
 
     if(pTrident->ShadowFB) {
+#if 0
 	RefreshAreaFuncPtr refreshArea = TRIDENTRefreshArea;
 	ShadowFBInit(pScreen, refreshArea);
+#else
+	shadowInit (pScreen, TRIDENTShadowUpdate, 0);
+#endif
     }
 
 #ifdef DPMSExtension
