@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Internal header files (specification only).                          */
 /*                                                                         */
-/*  Copyright 1996-2000 by                                                 */
+/*  Copyright 1996-2001 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -14,7 +14,7 @@
 /*  understand and accept it fully.                                        */
 /*                                                                         */
 /***************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/extras/freetype2/include/freetype/internal/internal.h,v 1.5 2001/10/28 03:32:17 tsi Exp $ */
 
   /*************************************************************************/
   /*                                                                       */
