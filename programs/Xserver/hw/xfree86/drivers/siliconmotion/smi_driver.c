@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from The XFree86 Project or Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.10 2001/03/08 17:12:12 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.12 2001/05/15 10:19:40 eich Exp $ */
 
 #include "xf86Resources.h"
 #include "xf86RAC.h"
@@ -982,6 +982,7 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 	if (pSmi->pVbe)
 	{
 		vbeFree(pSmi->pVbe);
+		pSmi->pVbe = NULL;
 	}
 
 	/*
