@@ -1,4 +1,6 @@
 XFree86 4.4.99.903 (xx February 2005)
+ 349. Fix for ServerFlags "Log" option, and document it in the XF86Config
+      man page (David Dawes).
  348. Fix an off by one error when scaling which caused occasional
       overlay color lines at the far right and bottom of the window for
       i830 chips (Alan Hourihane).
@@ -19425,7 +19427,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3454 2005/03/01 03:48:51 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3455 2005/03/01 19:56:30 alanh Exp $
 
 
 
