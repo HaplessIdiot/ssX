@@ -24,7 +24,7 @@
  * Authors:
  *    Ian Romanick <idr@us.ibm.com>
  */
-/* $XFree86:$ */
+/* $XFree86: xc/lib/GL/glx/glxextensions.h,v 1.1 2003/09/28 20:15:03 alanh Exp $ */
 
 #ifndef GLX_GLXEXTENSIONS_H
 #define GLX_GLXEXTENSIONS_H
@@ -92,7 +92,7 @@ typedef void (* PFNGLXDISABLEEXTENSIONPROC) ( const char * name );
 #ifdef GLX_NO_STATIC_EXTENSION_FUNCTIONS
 # define GLX_ALIAS(return_type, real_func, proto_args, args, aliased_func)
 #else
-# ifdef __GNUC__
+# if defined(__GNUC__) && !defined(GLX_ALIAS_UNSUPPORTED)
 #  define GLX_ALIAS(return_type, real_func, proto_args, args, aliased_func) \
 	return_type GLX_PREFIX( real_func ) proto_args \
 	__attribute__ ((alias( # aliased_func ) ))

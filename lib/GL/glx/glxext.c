@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.17 2003/06/30 01:45:10 torrey Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.19 2003/09/28 20:15:03 alanh Exp $ */
 
 /*
 ** License Applicability. Except to the extent portions of this file are
@@ -1379,6 +1379,12 @@ static Bool MakeContextCurrent(Display *dpy,
                if (!IndirectAPI)
                   IndirectAPI = __glXNewIndirectAPI();
                _glapi_set_dispatch(IndirectAPI);
+# ifdef GLX_USE_APPLEGL
+               do {
+                   extern void XAppleDRIUseIndirectDispatch(void);
+                   XAppleDRIUseIndirectDispatch();
+               } while (0);
+# endif
             }
 #else
             /* if not direct rendering, always need indirect dispatch */
