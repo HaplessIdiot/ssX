@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.7 2001/06/15 21:23:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.8 2001/09/21 15:22:55 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -81,9 +81,6 @@ void TRIDENTInitVideo(ScreenPtr pScreen)
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     int num_adaptors;
 	
-    if (pTrident->NoAccel || !pTrident->AccelInfoRec->SetupForSolidFill)
-	return;
-
     /* 
      * The following has been tested on:
      *
@@ -1012,11 +1009,9 @@ TRIDENTPutImage(
 
     /* update cliplist */
     if(!RegionsEqual(&pPriv->clip, clipBoxes)) {
+    	/* update cliplist */
         REGION_COPY(pScreen, &pPriv->clip, clipBoxes);
-        /* draw these */
-        XAAFillSolidRects(pScrn, pPriv->colorKey, GXcopy, ~0, 
-					REGION_NUM_RECTS(clipBoxes),
-					REGION_RECTS(clipBoxes));
+        xf86XVFillKeyHelper(pScreen, pPriv->colorKey, clipBoxes);
     }
 
     offset += top * dstPitch;
@@ -1226,9 +1221,7 @@ TRIDENTDisplaySurface(
 	     surface->width, surface->height, surface->pitches[0],
 	     x1, y1, x2, y2, &dstBox, src_w, src_h, drw_w, drw_h);
 
-    XAAFillSolidRects(pScrn, portPriv->colorKey, GXcopy, ~0, 
-                                        REGION_NUM_RECTS(clipBoxes),
-                                        REGION_RECTS(clipBoxes));
+    xf86XVFillKeyHelper(pScreen, portPriv->colorKey, clipBoxes);
 
     pPriv->isOn = TRUE;
     /* we've prempted the XvImage stream so set its free timer */
