@@ -539,6 +539,7 @@ Insert(XeditReqInfo *info, XeditReqArgs *args, char **result)
     block.length = strlen(args->args[0].string);
     block.ptr = args->args[0].string;
     XawTextReplace(info->text, point, point, &block);
+    XawTextSetInsertionPoint(info->text, point + block.length);
 
     return (True);
 }
