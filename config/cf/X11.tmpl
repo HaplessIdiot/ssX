@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
 XCOMM $XConsortium: X11.tmpl /main/290 1996/12/27 16:14:21 kaleb $
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.5 1996/12/29 13:36:56 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.6 1996/12/30 13:57:35 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -814,6 +814,13 @@ XCOMM X Window System make variables; these need to be coordinated with rules
    TRANS_INCLUDES = -I$(TRANSCOMMSRC)
 #ifdef X11ProjectRoot
      XPROJECTROOT = X11ProjectRoot
+#endif
+#if HasSharedLibraries
+#ifndef DontUseLibPathVar
+#ifndef BuildLibPathVar
+#define BuildLibPathVar LD_LIBRARY_PATH
+#endif
+#endif
 #endif
 #ifdef BuildLibPathVar
 # ifdef SystemBuildLibPath
