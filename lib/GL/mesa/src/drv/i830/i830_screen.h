@@ -39,17 +39,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "dri_util.h"
 
 
-/* All structures go here */
-typedef struct 
-{  
-     GLubyte   blue;
-     GLubyte       green;
-     GLubyte       red;
-     GLubyte       alpha;
-}i830_color;
-
-
-
 typedef struct {
    drmHandle handle;
    drmSize size;
@@ -59,37 +48,40 @@ typedef struct {
 typedef struct 
 {
    
-      i830Region front;
-      i830Region back;
-      i830Region depth;
-      i830Region tex;
+   i830Region front;
+   i830Region back;
+   i830Region depth;
+   i830Region tex;
    
-      int deviceID;
-      int width;
-      int height;
-      int mem;
+   int deviceID;
+   int width;
+   int height;
+   int mem;
    
-      int cpp;         /* for front and back buffers */
-      int bitsPerPixel;
+   int cpp;         /* for front and back buffers */
+   int bitsPerPixel;
    
-      int fbFormat;
-      int fbOffset;
-      int fbStride;
+   int fbFormat;
+   int fbOffset;
+   int fbStride;
    
-      int backOffset;
-      int depthOffset;
+   int backOffset;
+   int depthOffset;
    
-      int backPitch;
-      int backPitchBits;
+   int backPitch;
+   int backPitchBits;
    
-      int textureOffset;
-      int textureSize;
-      int logTextureGranularity;
+   int textureOffset;
+   int textureSize;
+   int logTextureGranularity;
    
-      __DRIscreenPrivate *driScrnPriv;
-      drmBufMapPtr  bufs;
-      int use_copy_buf;
-      unsigned int sarea_priv_offset;
+   __DRIscreenPrivate *driScrnPriv;
+   drmBufMapPtr  bufs;
+   int use_copy_buf;
+   unsigned int sarea_priv_offset;
+
+   int drmMinor;
+   int irq_active;
 }i830ScreenPrivate;
 
 

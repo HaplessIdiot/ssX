@@ -24,7 +24,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_video.c,v 1.1 2002/09/12 04:08:25 dawes Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -77,6 +77,10 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "xaalocal.h"
 #include "dixstruct.h"
 #include "fourcc.h"
+
+#ifndef USE_USLEEP_FOR_VIDEO
+#define USE_USLEEP_FOR_VIDEO 0
+#endif
 
 #define OFF_DELAY 	250		/* milliseconds */
 #define FREE_DELAY 	15000
@@ -205,6 +209,9 @@ Edummy(const char *dummy, ...)
 
 /* OCONFIG register */
 #define CC_OUT_8BIT		(0x1<<3)
+#define OVERLAY_PIPE_MASK	(0x1<<18)		
+#define OVERLAY_PIPE_A		(0x0<<18)		
+#define OVERLAY_PIPE_B		(0x1<<18)		
 
 /* DCLRKM register */
 #define DEST_KEY_ENABLE		(0x1<<31)
@@ -347,6 +354,9 @@ typedef struct {
    FBLinearPtr linear;
 
    I830OverlayStateRec hwstate;
+
+   Bool refreshOK;
+   int maxRate;
 } I830PortPrivRec, *I830PortPrivPtr;
 
 #define GET_PORT_PRIVATE(pScrn) \
@@ -484,6 +494,15 @@ I830ResetVideo(ScrnInfoPtr pScrn)
    overlay->SCLRKEN = 0;		/* source color key disable */
    overlay->OCONFIG = CC_OUT_8BIT;
 
+   /*
+    * Select which pipe the overlay is enabled on.  Give preference to
+    * pipe A.
+    */
+   if (pI830->pipeEnabled[0])
+      overlay->OCONFIG |= OVERLAY_PIPE_A;
+   else if (pI830->pipeEnabled[1])
+      overlay->OCONFIG |= OVERLAY_PIPE_B;
+
    overlay->OCMD = YUV_420;
 
    /* setup hwstate */
@@ -516,6 +535,22 @@ I830ResetVideo(ScrnInfoPtr pScrn)
    OUTREG(OGAMC0, hwstate->GAMC0);
 
 }
+
+/*
+ * Each chipset has a limit on the pixel rate that the video overlay can
+ * be used for.  Enabling the overlay above that limit can result in a
+ * lockup.  These two functions check the pixel rate for the new mode
+ * and turn the overlay off before switching to the new mode if it exceeds
+ * the limit, or turn it back on if the new mode is below the limit.
+ */
+
+/*
+ * Approximate pixel rate limits for the video overlay.
+ * The rate is calculated based on the mode resolution and refresh rate.
+ */
+#define I830_OVERLAY_RATE	 79	/* 1024x768@85, 1280x1024@60 */
+#define I845_OVERLAY_RATE	120	/* 1280x1024@85, 1600x1200@60 */
+#define DEFAULT_OVERLAY_RATE	120
 
 static XF86VideoAdaptorPtr
 I830SetupImageVideo(ScreenPtr pScreen)
@@ -565,6 +600,21 @@ I830SetupImageVideo(ScreenPtr pScreen)
    pPriv->contrast = 64;
    pPriv->linear = NULL;
    pPriv->currentBuf = 0;
+
+   switch (pI830->PciInfo->chipType) {
+   case PCI_CHIP_I830_M:
+      pPriv->maxRate = I830_OVERLAY_RATE;
+      break;
+   case PCI_CHIP_845_G:
+      pPriv->maxRate = I845_OVERLAY_RATE;
+      break;
+   default:
+      pPriv->maxRate = DEFAULT_OVERLAY_RATE;
+      break;
+   }
+
+   /* Initialise pPriv->refreshOK */
+   I830VideoSwitchModeAfter(pScrn, pScrn->currentMode);
 
    /* gotta uninit this someplace */
    REGION_INIT(pScreen, &pPriv->clip, NullBox, 0);
@@ -659,13 +709,15 @@ I830SetPortAttribute(ScrnInfoPtr pScrn,
 	 return BadValue;
       pPriv->brightness = value;
       overlay->OCLRC0 = (pPriv->contrast << 18) | (pPriv->brightness & 0xff);
-      OVERLAY_UPDATE;
+      if (pPriv->refreshOK)
+         OVERLAY_UPDATE;
    } else if (attribute == xvContrast) {
       if ((value < 0) || (value > 255))
 	 return BadValue;
       pPriv->contrast = value;
       overlay->OCLRC0 = (pPriv->contrast << 18) | (pPriv->brightness & 0xff);
-      OVERLAY_UPDATE;
+      if (pPriv->refreshOK)
+         OVERLAY_UPDATE;
    } else if (attribute == xvColorKey) {
       pPriv->colorKey = value;
       switch (pScrn->depth) {
@@ -679,7 +731,8 @@ I830SetPortAttribute(ScrnInfoPtr pScrn,
 	 overlay->DCLRKV = pPriv->colorKey;
 	 break;
       }
-      OVERLAY_UPDATE;
+      if (pPriv->refreshOK)
+         OVERLAY_UPDATE;
       REGION_EMPTY(pScrn->pScreen, &pPriv->clip);
    } else
       return BadMatch;
@@ -967,6 +1020,9 @@ I830DisplayVideo(ScrnInfoPtr pScrn, int id, short width, short height,
 
    DPRINTF(PFX, "I830DisplayVideo: %dx%d (pitch %d)\n", width, height,
 	   dstPitch);
+
+   if (!pPriv->refreshOK)
+      return;
 
    CompareOverlay(pI830, (CARD32 *) overlay, 0x100);
 
@@ -1311,6 +1367,9 @@ I830PutImage(ScrnInfoPtr pScrn,
    /* Make sure this buffer isn't in use */
    loops = 0;
    while (loops < 1000000) {
+#if USE_USLEEP_FOR_VIDEO
+      usleep(10);
+#endif
       if (((INREG(DOVSTA) & OC_BUF) >> 20) == pPriv->currentBuf) {
 	 break;
       }
@@ -1650,6 +1709,9 @@ I830DisplaySurface(XF86SurfacePtr surface,
 
    /* wait for the last rendered buffer to be flipped in */
    while (((INREG(DOVSTA) & OC_BUF) >> 20) != pI830Priv->currentBuf) {
+#if USE_USLEEP_FOR_VIDEO
+      usleep(10);
+#endif
       if (loops == 200000) {
 	 xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Overlay Lockup\n");
 	 break;
@@ -1709,3 +1771,39 @@ I830InitOffscreenImages(ScreenPtr pScreen)
 
    xf86XVRegisterOffscreenImages(pScreen, offscreenImages, 1);
 }
+
+void
+I830VideoSwitchModeBefore(ScrnInfoPtr pScrn, DisplayModePtr mode)
+{
+   I830PortPrivPtr pPriv = GET_PORT_PRIVATE(pScrn);
+   int pixrate;
+
+   if (!pPriv) {
+      xf86ErrorF("pPriv isn't set\n");
+      return;
+   }
+
+   pixrate = mode->HDisplay * mode->VDisplay * mode->VRefresh;
+   if (pixrate > pPriv->maxRate && pPriv->refreshOK) {
+      I830StopVideo(pScrn, pPriv, TRUE);
+      pPriv->refreshOK = FALSE;
+   }
+}
+
+void
+I830VideoSwitchModeAfter(ScrnInfoPtr pScrn, DisplayModePtr mode)
+{
+   I830PortPrivPtr pPriv;
+   int pixrate;
+
+   if (!I830PTR(pScrn)->adaptor) {
+      return;
+   }
+   pPriv = GET_PORT_PRIVATE(pScrn);
+   if (!pPriv)
+      return;
+
+   pixrate = (mode->HDisplay * mode->VDisplay * mode->VRefresh) / 1000000;
+   pPriv->refreshOK = (pixrate <= pPriv->maxRate);
+}
+

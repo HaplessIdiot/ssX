@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.71 2002/09/11 00:29:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.73 2002/11/25 14:04:59 eich Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -269,12 +269,9 @@ static const char *drmSymbols[] = {
    "drmGetInterruptFromBusID",
    "drmGetLibVersion",
    "drmGetVersion",
-   "drmI810CleanupDma",
-   "drmI810InitDma",
-   "drmI830CleanupDma",
-   "drmI830InitDma",
    NULL
 };
+
 
 static const char *driSymbols[] = {
    "DRICloseScreen",
@@ -291,7 +288,17 @@ static const char *driSymbols[] = {
    "GlxSetVisualConfigs",
    NULL
 };
+
 #endif
+#endif
+
+#ifdef XF86DRI
+const char *I810shadowSymbols[] = {
+   "shadowInit",
+   "shadowSetup",
+   "shadowAdd",
+   NULL
+};
 #endif
 
 #endif /* I830_ONLY */
@@ -345,7 +352,7 @@ i810Setup(pointer module, pointer opts, int *errmaj, int *errmin)
 {
    static Bool setupDone = 0;
 
-   /* This module should be loaded only once, but check to be sure. 
+   /* This module should be loaded only once, but check to be sure.
     */
    if (!setupDone) {
       setupDone = 1;
@@ -358,7 +365,9 @@ i810Setup(pointer module, pointer opts, int *errmaj, int *errmin)
       LoaderRefSymLists(I810vgahwSymbols,
 			I810fbSymbols, I810xaaSymbols, I810ramdacSymbols,
 #ifdef XF86DRI
-			drmSymbols, driSymbols,
+			drmSymbols,
+			driSymbols,
+			I810shadowSymbols,
 #endif
 			I810vbeSymbols, vbeOptionalSymbols,
 			I810ddcSymbols, I810int10Symbols, NULL);
@@ -381,7 +390,7 @@ i810Setup(pointer module, pointer opts, int *errmaj, int *errmin)
 /*
  * I810GetRec and I810FreeRec --
  *
- * Private data for the driver is stored in the screen structure. 
+ * Private data for the driver is stored in the screen structure.
  * These two functions create and destroy that private data.
  *
  */
@@ -412,7 +421,7 @@ I810FreeRec(ScrnInfoPtr pScrn)
  *
  * Returns the string name for the driver based on the chipset. In this
  * case it will always be an I810, so we can return a static string.
- * 
+ *
  */
 static void
 I810Identify(int flags)
@@ -461,7 +470,7 @@ I810Probe(DriverPtr drv, int flags)
       return FALSE;
    }
 
-   /* 
+   /*
     * This probing is just checking the PCI data the server already
     * collected.
     */
@@ -520,11 +529,13 @@ I810Probe(DriverPtr drv, int flags)
 	    pScrn->name = I810_NAME;
 	    pScrn->Probe = I810Probe;
 	    foundScreen = TRUE;
-	    if (pEnt->chipset == PCI_CHIP_I830_M ||
-		pEnt->chipset == PCI_CHIP_845_G)
+	    switch (pEnt->chipset) {
+	    case PCI_CHIP_I830_M:
+	    case PCI_CHIP_845_G:
 	       I830InitpScrn(pScrn);
-	    else {
+	       break;
 #ifndef I830_ONLY
+	    default:
 	       pScrn->PreInit = I810PreInit;
 	       pScrn->ScreenInit = I810ScreenInit;
 	       pScrn->SwitchMode = I810SwitchMode;
@@ -533,6 +544,7 @@ I810Probe(DriverPtr drv, int flags)
 	       pScrn->LeaveVT = I810LeaveVT;
 	       pScrn->FreeScreen = I810FreeScreen;
 	       pScrn->ValidMode = I810ValidMode;
+	       break;
 #endif
 	    }
 	 }
@@ -807,7 +819,7 @@ I810PreInit(ScrnInfoPtr pScrn, int flags)
    /* Default to 4MB framebuffer, which is sufficient for all
     * supported 2d resolutions.  If the user has specified a different
     * size in the XF86Config, use that amount instead.
-    * 
+    *
     *  Changed to 8 Meg so we can have acceleration by default (Mark).
     */
    pScrn->videoRam = 8192;
@@ -1124,7 +1136,7 @@ DoSave(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, I810RegPtr i810Reg,
       vgaHWSave(pScrn, vgaReg, VGA_SR_MODE | VGA_SR_CMAP);
 
    /*
-    * The port I/O code necessary to read in the extended registers 
+    * The port I/O code necessary to read in the extended registers
     * into the fields of the vgaI810Rec structure goes here.
     */
    i810Reg->IOControl = hwp->readCrtc(hwp, IO_CTNL);
@@ -1295,7 +1307,7 @@ DoRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, I810RegPtr i810Reg,
 
    /*
     * Code to restore any SVGA registers that have been saved/modified
-    * goes here.  Note that it is allowable, and often correct, to 
+    * goes here.  Note that it is allowable, and often correct, to
     * only modify certain bits in a register by a read/modify/write cycle.
     *
     * A special case - when using an external clock-setting program,
@@ -1604,8 +1616,8 @@ I810SetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
    }
 
    /* OVRACT Register */
-   i810Reg->OverlayActiveStart = mode->CrtcHTotal - 32; 
-   i810Reg->OverlayActiveEnd = mode->CrtcHDisplay - 32;   
+   i810Reg->OverlayActiveStart = mode->CrtcHTotal - 32;
+   i810Reg->OverlayActiveEnd = mode->CrtcHDisplay - 32;
 
    /* Turn on interlaced mode if necessary */
    if (mode->Flags & V_INTERLACE)
@@ -1842,7 +1854,7 @@ I810AllocateFront(ScrnInfoPtr pScrn)
     * Not sure why 256 was initially subtracted from videoRam in the
     * maxCacheLines calculation, but that was causing a problem
     * for configurations that have exactly enough Ram for the framebuffer.
-    * Common code should catch the case where there isn't enough space for 
+    * Common code should catch the case where there isn't enough space for
     * framebuffer, we'll just check for no space for cache_lines.  -jens
     *
     */
@@ -2094,7 +2106,7 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 #ifdef XF86DRI
    if (pI810->directRenderingEnabled) {
-      /* Now that mi, cfb, drm and others have done their thing, 
+      /* Now that mi, cfb, drm and others have done their thing,
        * complete the DRI setup.
        */
       pI810->directRenderingEnabled = I810DRIFinishScreenInit(pScreen);
@@ -2165,7 +2177,7 @@ I810AdjustFrame(int scrnIndex, int x, int y, int flags)
    case 24:
       /* KW: Need to do 16-pixel alignment for i810, otherwise you
        * get bad watermark problems.  Need to fixup the mouse
-       * pointer positioning to take this into account.  
+       * pointer positioning to take this into account.
        */
       pI810->CursorOffset = (Base & 0x3) * 4;
       Base &= ~0x3;
@@ -2204,7 +2216,6 @@ I810EnterVT(int scrnIndex, int flags)
    if (pI810->directRenderingEnabled) {
       if (I810_DEBUG & DEBUG_VERBOSE_DRI)
 	 ErrorF("calling dri unlock\n");
-      xf86EnablePciBusMaster(pI810->PciInfo, TRUE);
       DRIUnlock(screenInfo.screens[scrnIndex]);
       pI810->LockHeld = 0;
    }

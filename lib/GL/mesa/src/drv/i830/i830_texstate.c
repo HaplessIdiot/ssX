@@ -25,7 +25,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
-/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_texstate.c,v 1.1 2002/09/09 19:18:48 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_texstate.c,v 1.2 2002/09/11 00:29:26 dawes Exp $ */
 
 /*
  * Author:
@@ -114,17 +114,13 @@ static void i830SetTexImages( i830ContextPtr imesa,
     * GL_TEXTURE_MAX_LOD, GL_TEXTURE_BASE_LEVEL, and GL_TEXTURE_MAX_LEVEL.
     * Yes, this looks overly complicated, but it's all needed.
     */
-   if (tObj->MinFilter == GL_LINEAR || tObj->MinFilter == GL_NEAREST) {
-      firstLevel = lastLevel = tObj->BaseLevel;
-   } else {
-      firstLevel = tObj->BaseLevel + (GLint) (tObj->MinLod + 0.5);
-      firstLevel = MAX2(firstLevel, tObj->BaseLevel);
-      lastLevel = tObj->BaseLevel + (GLint) (tObj->MaxLod + 0.5);
-      lastLevel = MAX2(lastLevel, tObj->BaseLevel);
-      lastLevel = MIN2(lastLevel, tObj->BaseLevel + baseImage->MaxLog2);
-      lastLevel = MIN2(lastLevel, tObj->MaxLevel);
-      lastLevel = MAX2(firstLevel, lastLevel); /* need at least one level */
-   }
+   firstLevel = tObj->BaseLevel + (GLint) (tObj->MinLod + 0.5);
+   firstLevel = MAX2(firstLevel, tObj->BaseLevel);
+   lastLevel = tObj->BaseLevel + (GLint) (tObj->MaxLod + 0.5);
+   lastLevel = MAX2(lastLevel, tObj->BaseLevel);
+   lastLevel = MIN2(lastLevel, tObj->BaseLevel + baseImage->MaxLog2);
+   lastLevel = MIN2(lastLevel, tObj->MaxLevel);
+   lastLevel = MAX2(firstLevel, lastLevel); /* need at least one level */
 
    /* save these values */
    t->firstLevel = firstLevel;
@@ -158,6 +154,9 @@ static void i830SetTexImages( i830ContextPtr imesa,
     */
    for ( height = i = 0 ; i < numLevels ; i++ ) {
       t->image[i].image = tObj->Image[firstLevel + i];
+      if (!t->image[i].image) {
+	 break;
+      }
       t->image[i].offset = height * pitch;
       t->image[i].internalFormat = baseImage->Format;
       height += t->image[i].image->Height;
@@ -167,23 +166,17 @@ static void i830SetTexImages( i830ContextPtr imesa,
    t->totalSize = height*pitch;
    t->max_level = i-1;
 
-   t->Setup[I830_TEXREG_MI1] = (MAP_INFO_TEX(0) |
-				textureFormat |
-				MAP_INFO_OUTMUX_F0F1F2F3 | 
-				MAP_INFO_VERTLINESTRIDE_0 |
-				MAP_INFO_VERTLINESTRIDEOFS_0 |
-				MAP_INFO_FORMAT_2D |
-				MAP_INFO_USE_FENCE);
-   t->Setup[I830_TEXREG_MI2] = (((1 << log2Height) - 1) << 16) |
-				((1 << log2Width) - 1);
-   t->Setup[I830_TEXREG_MI4] = ((pitch / 4) - 1) << 2;
-
-   t->Setup[I830_TEXREG_MLL] = (STATE3D_MAP_LOD_LIMITS_CMD |
-				MAP_UNIT(0) |
-				ENABLE_MAX_MIP_LVL | 
-				LOD_MAX(0) |
-				ENABLE_MIN_MIP_LVL |
-				LOD_MIN(numLevels - 1));
+   t->Setup[I830_TEXREG_TM0S1] = 
+      ((((1 << log2Height) - 1) << TM0S1_HEIGHT_SHIFT) |
+       (((1 << log2Width) - 1) << TM0S1_WIDTH_SHIFT) |
+       textureFormat);
+   t->Setup[I830_TEXREG_TM0S2] = 
+      ((((pitch / 4) - 1) << TM0S2_PITCH_SHIFT));
+   
+   t->Setup[I830_TEXREG_TM0S3] &= ~TM0S3_MAX_MIP_MASK;
+   t->Setup[I830_TEXREG_TM0S3] &= ~TM0S3_MIN_MIP_MASK;
+   t->Setup[I830_TEXREG_TM0S3] |= 
+	 ((numLevels - 1)*4) << TM0S3_MIN_MIP_SHIFT;
 
    t->dirty = I830_UPLOAD_TEX0 | I830_UPLOAD_TEX1;
    LOCK_HARDWARE( imesa );
@@ -1038,85 +1031,147 @@ static void i830SetTexEnvCombine(i830ContextPtr imesa,
       fprintf(stderr, "%s\n", __FUNCTION__);
 
    switch(texUnit->CombineModeRGB) {
-   case GL_REPLACE: blendop = TEXBLENDOP_ARG1; break;
-   case GL_MODULATE: blendop = TEXBLENDOP_MODULATE; break;
-   case GL_ADD: blendop = TEXBLENDOP_ADD; break;
+   case GL_REPLACE: 
+      blendop = TEXBLENDOP_ARG1;
+      break;
+   case GL_MODULATE: 
+      blendop = TEXBLENDOP_MODULATE;
+      break;
+   case GL_ADD: 
+      blendop = TEXBLENDOP_ADD;
+      break;
    case GL_ADD_SIGNED_ARB:
-      blendop = TEXBLENDOP_ADDSIGNED; break;
+      blendop = TEXBLENDOP_ADDSIGNED; 
+      break;
    case GL_INTERPOLATE_ARB:
-      blendop = TEXBLENDOP_BLEND; break;
-   case GL_SUBTRACT_ARB: blendop = TEXBLENDOP_SUBTRACT; break;
-   default: return;
+      blendop = TEXBLENDOP_BLEND; 
+      break;
+   case GL_SUBTRACT_ARB: 
+      blendop = TEXBLENDOP_SUBTRACT;
+      break;
+   default: 
+      return;
    }
 
    switch(texUnit->CombineScaleShiftRGB) {
-   case 0: blendop |= TEXOP_SCALE_1X; break;
-   case 1: blendop |= TEXOP_SCALE_2X; break;
-   case 2: blendop |= TEXOP_SCALE_4X; break;
-   default: return;
+   case 0: 
+      blendop |= TEXOP_SCALE_1X;
+      break;
+   case 1: 
+      blendop |= TEXOP_SCALE_2X;
+      break;
+   case 2: 
+      blendop |= TEXOP_SCALE_4X;
+      break;
+   default: 
+      return;
    }
 
    switch(texUnit->CombineModeA) {
-   case GL_REPLACE: ablendop = TEXBLENDOP_ARG1; break;
-   case GL_MODULATE: ablendop = TEXBLENDOP_MODULATE; break;
-   case GL_ADD: ablendop = TEXBLENDOP_ADD; break;
+   case GL_REPLACE: 
+      ablendop = TEXBLENDOP_ARG1;
+      break;
+   case GL_MODULATE: 
+      ablendop = TEXBLENDOP_MODULATE;
+      break;
+   case GL_ADD: 
+      ablendop = TEXBLENDOP_ADD;
+      break;
    case GL_ADD_SIGNED_ARB:
-      ablendop = TEXBLENDOP_ADDSIGNED; break;
+      ablendop = TEXBLENDOP_ADDSIGNED; 
+      break;
    case GL_INTERPOLATE_ARB:
-      ablendop = TEXBLENDOP_BLEND; break;
-   case GL_SUBTRACT_ARB: ablendop = TEXBLENDOP_SUBTRACT; break;
-   default: return;
+      ablendop = TEXBLENDOP_BLEND; 
+      break;
+   case GL_SUBTRACT_ARB: 
+      ablendop = TEXBLENDOP_SUBTRACT;
+      break;
+   default:
+      return;
    }
 
    switch(texUnit->CombineScaleShiftA) {
-   case 0: ablendop |= TEXOP_SCALE_1X; break;
-   case 1: ablendop |= TEXOP_SCALE_2X; break;
-   case 2: ablendop |= TEXOP_SCALE_4X; break;
-   default: return;
+   case 0: 
+      ablendop |= TEXOP_SCALE_1X;
+      break;
+   case 1: 
+      ablendop |= TEXOP_SCALE_2X;
+      break;
+   case 2: 
+      ablendop |= TEXOP_SCALE_4X;
+      break;
+   default: 
+      return;
    }
 
    /* Handle RGB args */
    for(i = 0; i < 3; i++) {
       switch(texUnit->CombineSourceRGB[i]) {
-      case GL_TEXTURE: args_RGB[i] = texel_op; break;
+      case GL_TEXTURE: 
+	 args_RGB[i] = texel_op;
+	 break;
       case GL_CONSTANT_ARB:
-	 args_RGB[i] = TEXBLENDARG_FACTOR_N; break;
+	 args_RGB[i] = TEXBLENDARG_FACTOR_N; 
+	 break;
       case GL_PRIMARY_COLOR_ARB:
-	 args_RGB[i] = TEXBLENDARG_DIFFUSE; break;
+	 args_RGB[i] = TEXBLENDARG_DIFFUSE;
+	 break;
       case GL_PREVIOUS_ARB:
-	 args_RGB[i] = TEXBLENDARG_CURRENT; break;
-      default: return;
+	 args_RGB[i] = TEXBLENDARG_CURRENT; 
+	 break;
+      default: 
+	 return;
+	 
       }
 
       switch(texUnit->CombineOperandRGB[i]) {
-      case GL_SRC_COLOR: args_RGB[i] |= 0; break;
-      case GL_ONE_MINUS_SRC_COLOR: args_RGB[i] |= TEXBLENDARG_INV_ARG; break;
-      case GL_SRC_ALPHA: args_RGB[i] |= TEXBLENDARG_REPLICATE_ALPHA; break;
+      case GL_SRC_COLOR: 
+	 args_RGB[i] |= 0;
+	 break;
+      case GL_ONE_MINUS_SRC_COLOR: 
+	 args_RGB[i] |= TEXBLENDARG_INV_ARG;
+	 break;
+      case GL_SRC_ALPHA: 
+	 args_RGB[i] |= TEXBLENDARG_REPLICATE_ALPHA;
+	 break;
       case GL_ONE_MINUS_SRC_ALPHA: 
-		args_RGB[i] |= (TEXBLENDARG_REPLICATE_ALPHA | 
-				TEXBLENDARG_INV_ARG); 
-		break;
-      default: return;
+	 args_RGB[i] |= (TEXBLENDARG_REPLICATE_ALPHA | 
+			 TEXBLENDARG_INV_ARG);
+	 break;
+      default: 
+	 return;
       }
    }
 
    /* Handle A args */
    for(i = 0; i < 3; i++) {
       switch(texUnit->CombineSourceA[i]) {
-      case GL_TEXTURE: args_A[i] = texel_op; break;
+      case GL_TEXTURE: 
+	 args_A[i] = texel_op;
+	 break;
       case GL_CONSTANT_ARB:
-	 args_A[i] = TEXBLENDARG_FACTOR_N; break;
+	 args_A[i] = TEXBLENDARG_FACTOR_N; 
+	 break;
       case GL_PRIMARY_COLOR_ARB:
-	 args_A[i] = TEXBLENDARG_DIFFUSE; break;
+	 args_A[i] = TEXBLENDARG_DIFFUSE; 
+	 break;
       case GL_PREVIOUS_ARB:
-	 args_A[i] = TEXBLENDARG_CURRENT; break;
-      default: return;
+	 args_A[i] = TEXBLENDARG_CURRENT; 
+	 break;
+      default: 
+	 return;
+	 
       }
 
       switch(texUnit->CombineOperandA[i]) {
-      case GL_SRC_ALPHA: args_A[i] |= 0; break;
-      case GL_ONE_MINUS_SRC_ALPHA: args_A[i] |= TEXBLENDARG_INV_ARG; break;
-      default: return;
+      case GL_SRC_ALPHA: 
+	 args_A[i] |= 0;
+	 break;
+      case GL_ONE_MINUS_SRC_ALPHA: 
+	 args_A[i] |= TEXBLENDARG_INV_ARG;
+	 break;
+      default: 
+	 return;
       }
    }
 
@@ -1258,14 +1313,10 @@ static void i830TexSetUnit( i830TextureObjectPtr t, GLuint unit )
       if(I830_DEBUG&DEBUG_TEXTURE)
            fprintf(stderr, "%s unit(%d)\n", __FUNCTION__, unit);
    
-      /* This will need to be changed when I support more then 2 t units */
-      I830_SET_FIELD(t->Setup[I830_TEXREG_MI1],
-                       MAP_INFO_MASK | MAP_INFO_USE_PALETTE_1,
-                       MAP_INFO_TEX(unit) | MAP_INFO_USE_PALETTE_N(unit));
-      I830_SET_FIELD(t->Setup[I830_TEXREG_MLC], MAP_UNIT_MASK, MAP_UNIT(unit));
-      I830_SET_FIELD(t->Setup[I830_TEXREG_MLL], MAP_UNIT_MASK, MAP_UNIT(unit));
+      t->Setup[I830_TEXREG_TM0LI] = (STATE3D_LOAD_STATE_IMMEDIATE_2 | 
+				     (LOAD_TEXTURE_MAP0 << unit) | 4);
+
       I830_SET_FIELD(t->Setup[I830_TEXREG_MCS], MAP_UNIT_MASK, MAP_UNIT(unit));
-      I830_SET_FIELD(t->Setup[I830_TEXREG_MF], MAP_UNIT_MASK, MAP_UNIT(unit));
    
       t->current_unit = unit;
 }
@@ -1279,7 +1330,8 @@ static void i830UpdateTexUnit( GLcontext *ctx, GLuint unit )
 
    imesa->TexEnabledMask &= ~(I830_TEX_UNIT_ENABLED(unit));
 
-   if (texUnit->_ReallyEnabled == TEXTURE0_2D) {
+   if (texUnit->_ReallyEnabled == TEXTURE0_2D)
+   {
       struct gl_texture_object *tObj = texUnit->_Current;
       i830TextureObjectPtr t = (i830TextureObjectPtr)tObj->DriverData;
       GLuint mcs = t->Setup[I830_TEXREG_MCS] & TEXCOORDTYPE_MASK;
@@ -1291,10 +1343,16 @@ static void i830UpdateTexUnit( GLcontext *ctx, GLuint unit )
 	 mcs |= TEXCOORDTYPE_CARTESIAN;
       }
 
+      /* Fallback if there's a texture border */
+      if ( tObj->Image[tObj->BaseLevel]->Border > 0 ) {
+	 FALLBACK( imesa, I830_FALLBACK_TEXTURE, GL_TRUE );
+	 return;
+      }
+
       /* Upload teximages (not pipelined)
        */
       if (t->dirty_images) {
-	 I830_FIREVERTICES(imesa);
+/* 	 I830_FIREVERTICES(imesa); */
 	 i830SetTexImages( imesa, tObj );
 	 if (!t->MemBlock) {
 	    FALLBACK( imesa, I830_FALLBACK_TEXTURE, GL_TRUE );
@@ -1314,13 +1372,17 @@ static void i830UpdateTexUnit( GLcontext *ctx, GLuint unit )
       }
 
       /* Update texture environment if texture object image format or 
-       * texture environment state has changed.
+       * texture environment state has changed. 
+       *
+       * KW: doesn't work -- change from tex0 only to tex0+tex1 gets
+       * missed (need to update last stage flag?).  Call
+       * i830UpdateTexEnv always.
        */
       if (tObj->Image[tObj->BaseLevel]->Format !=
 	  imesa->TexEnvImageFmt[unit]) {
 	 imesa->TexEnvImageFmt[unit] = tObj->Image[tObj->BaseLevel]->Format;
-	 i830UpdateTexEnv( ctx, unit );
       }
+      i830UpdateTexEnv( ctx, unit );
       imesa->TexEnabledMask |= I830_TEX_UNIT_ENABLED(unit);
    }
    else if (texUnit->_ReallyEnabled) {
@@ -1374,7 +1436,8 @@ void i830UpdateTexUnitProj( GLcontext *ctx, GLuint unit, GLboolean state )
    i830ContextPtr imesa = I830_CONTEXT(ctx);
    struct gl_texture_unit *texUnit = &ctx->Texture.Unit[unit];
 
-   if (texUnit->_ReallyEnabled == TEXTURE0_2D) {
+   if (texUnit->_ReallyEnabled == TEXTURE0_2D)
+   {
       struct gl_texture_object *tObj = texUnit->_Current;
       i830TextureObjectPtr t = (i830TextureObjectPtr)tObj->DriverData;
       GLuint mcs = t->Setup[I830_TEXREG_MCS] & TEXCOORDTYPE_MASK;

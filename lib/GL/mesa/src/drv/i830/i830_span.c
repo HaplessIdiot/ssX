@@ -25,7 +25,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
-/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_span.c,v 1.2 2002/09/09 19:18:48 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_span.c,v 1.3 2002/09/11 00:29:26 dawes Exp $ */
 
 /*
  * Author:
@@ -263,15 +263,25 @@ do {								\
 #include "stenciltmp.h"
 
 static void i830SetReadBuffer(GLcontext *ctx, GLframebuffer *colorBuffer,
-							  GLenum mode)
+			      GLenum mode)
 {
    i830ContextPtr imesa = I830_CONTEXT(ctx);
-   if (mode == GL_FRONT_LEFT) {
-      imesa->readMap = (char*)imesa->driScreen->pFB;
-   } else if (mode == GL_BACK_LEFT) {
-      imesa->readMap = imesa->i830Screen->back.map;
-   } else {
+   switch( mode ) {
+   case GL_FRONT_LEFT:
+      if ( imesa->sarea->pf_current_page == 1 ) 
+	 imesa->readMap = imesa->i830Screen->back.map;
+      else 
+	 imesa->readMap = (char*)imesa->driScreen->pFB;
+      break;
+   case GL_BACK_LEFT:
+      if ( imesa->sarea->pf_current_page == 1 ) 
+	 imesa->readMap = (char*)imesa->driScreen->pFB;
+      else
+	 imesa->readMap = imesa->i830Screen->back.map;
+      break;
+   default:
       ASSERT(0);
+      break;
    }
 }
 
@@ -283,8 +293,8 @@ void i830SpanRenderStart( GLcontext *ctx )
 {
    i830ContextPtr imesa = I830_CONTEXT(ctx);
    I830_FIREVERTICES(imesa);
-   i830DmaFinish(imesa);
-   LOCK_HARDWARE_QUIESCENT(imesa);
+   LOCK_HARDWARE(imesa);
+   i830RegetLockQuiescent( imesa );
 }
 
 void i830SpanRenderFinish( GLcontext *ctx )

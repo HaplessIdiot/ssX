@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_reg.h,v 1.8 2002/09/12 04:08:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_reg.h,v 1.10 2002/11/25 14:04:59 eich Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -36,7 +36,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
 
-/* I/O register offsets 
+#ifndef _I810_REG_H
+#define _I810_REG_H
+
+/* I/O register offsets
  */
 #define SRX 0x3C4		/* p208 */
 #define GRX 0x3CE		/* p213 */
@@ -666,7 +669,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define ADPA			0x61100
 #define ADPA_DAC_ENABLE 	(1<<31)
 #define ADPA_DAC_DISABLE	0
+#define ADPA_PIPE_SELECT_MASK	(1<<30)
 #define ADPA_PIPE_A_SELECT	0
+#define ADPA_PIPE_B_SELECT	(1<<30)
 #define ADPA_USE_VGA_HVPOLARITY (1<<15)
 #define ADPA_SETS_HVPOLARITY	0
 #define ADPA_VSYNC_CNTL_DISABLE (1<<11)
@@ -679,12 +684,16 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define ADPA_HSYNC_ACTIVE_LOW	0
 
 
-#define DV0A			0x61120
-#define DV0A_DISABLE		(1<<31)
+#define DVOA			0x61120
+#define DVOB			0x61140
+#define DVOC			0x61160
+#define DVO_ENABLE		(1<<31)
 
-#define DV0B			0x61140
-#define DV0B_DISABLE		(1<<31)
+#define DVOA_SRCDIM		0x61124
+#define DVOB_SRCDIM		0x61144
+#define DVOC_SRCDIM		0x61164
 
+#define LVDS			0x61180
 
 #define PIPEACONF 0x70008
 #define PIPEACONF_ENABLE	(1<<31)
@@ -871,18 +880,40 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define ENABLE_FOG_DENSITY	(1<<23)
 
 
+#define MAX_DISPLAY_PIPES	2
+
+typedef enum {
+   CrtIndex = 0,
+   TvIndex,
+   DfpIndex,
+   LfpIndex,
+   Tv2Index,
+   Dfp2Index,
+   UnknownIndex,
+   Unknown2Index,
+   NumDisplayTypes,
+   NumKnownDisplayTypes = UnknownIndex
+} DisplayType;
+
 /* What's connected to the pipes (as reported by the BIOS) */
 #define PIPE_ACTIVE_MASK		0xff
-#define PIPE_CRT_ACTIVE			0x01
-#define PIPE_TV_ACTIVE			0x02
-#define PIPE_DFP_ACTIVE			0x04
-#define PIPE_LCD_ACTIVE			0x08	/* LFP */
-#define PIPE_TV2_ACTIVE			0x10
-#define PIPE_DFP2_ACTIVE		0x20
-#define PIPE_UNKNOWN_ACTIVE		0xc0
+#define PIPE_CRT_ACTIVE			(1 << CrtIndex)
+#define PIPE_TV_ACTIVE			(1 << TvIndex)
+#define PIPE_DFP_ACTIVE			(1 << DfpIndex)
+#define PIPE_LCD_ACTIVE			(1 << LfpIndex)
+#define PIPE_TV2_ACTIVE			(1 << Tv2Index)
+#define PIPE_DFP2_ACTIVE		(1 << Dfp2Index)
+#define PIPE_UNKNOWN_ACTIVE		((1 << UnknownIndex) |	\
+					 (1 << Unknown2Index))
+
+#define PIPE_SIZED_DISP_MASK		(PIPE_DFP_ACTIVE |	\
+					 PIPE_LCD_ACTIVE |	\
+					 PIPE_DFP2_ACTIVE)
 
 #define PIPE_A_SHIFT			0
 #define PIPE_B_SHIFT			8
+#define PIPE_SHIFT(n)			((n) == 0 ? \
+					 PIPE_A_SHIFT : PIPE_B_SHIFT)
 
 /*
  * Some BIOS scratch area registers.  The 845 (and 830?) store the amount
@@ -921,3 +952,4 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define PALETTE_A		0x0a000
 #define PALETTE_B		0x0a800
 
+#endif /* _I810_REG_H */

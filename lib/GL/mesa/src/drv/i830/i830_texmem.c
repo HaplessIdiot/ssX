@@ -25,7 +25,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
-/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_texmem.c,v 1.1 2002/09/09 19:18:48 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_texmem.c,v 1.2 2002/09/11 00:29:26 dawes Exp $ */
 
 /*
  * Author:
@@ -111,10 +111,14 @@ void i830SwapOutTexObj(i830ContextPtr imesa, i830TextureObjectPtr t)
 
 /* Upload an image from mesa's internal copy.
  */
-static void i830UploadTexLevel( i830TextureObjectPtr t, int level )
+static void i830UploadTexLevel( i830TextureObjectPtr t, int hwlevel )
 {
-   const struct gl_texture_image *image = t->image[level].image;
+   int level = hwlevel + t->firstLevel;
+   const struct gl_texture_image *image = t->image[hwlevel].image;
    int i,j;
+
+   if (!image || !image->Data)
+      return;
 
    if (0) fprintf(stderr, "Uploading level : %d\n", level);
 
@@ -122,7 +126,7 @@ static void i830UploadTexLevel( i830TextureObjectPtr t, int level )
    case MESA_FORMAT_I8:
    case MESA_FORMAT_L8:
       {
-	 GLubyte *dst = (GLubyte *)(t->BufAddr + t->image[level].offset);
+	 GLubyte *dst = (GLubyte *)(t->BufAddr + t->image[hwlevel].offset);
 	 GLubyte *src = (GLubyte *)image->Data;
 
 	 for (j = 0 ; j < image->Height ; j++, dst += t->Pitch) {
@@ -139,7 +143,7 @@ static void i830UploadTexLevel( i830TextureObjectPtr t, int level )
    case MESA_FORMAT_ARGB1555:
    case MESA_FORMAT_ARGB4444:
       {
-	 GLushort *dst = (GLushort *)(t->BufAddr + t->image[level].offset);
+	 GLushort *dst = (GLushort *)(t->BufAddr + t->image[hwlevel].offset);
 	 GLushort *src = (GLushort *)image->Data;
 
 	 for (j = 0 ; j < image->Height ; j++, dst += (t->Pitch/2)) {
@@ -153,7 +157,7 @@ static void i830UploadTexLevel( i830TextureObjectPtr t, int level )
 
    case MESA_FORMAT_ARGB8888:
       {
-	 GLuint *dst = (GLuint *)(t->BufAddr + t->image[level].offset);
+	 GLuint *dst = (GLuint *)(t->BufAddr + t->image[hwlevel].offset);
 	 GLuint *src = (GLuint *)image->Data;
 
 	 for (j = 0 ; j < image->Height ; j++, dst += (t->Pitch/4)) {
@@ -289,9 +293,10 @@ void i830TexturesGone( i830ContextPtr imesa,
       fprintf(stderr, "%s\n", __FUNCTION__);
 
    foreach_s ( t, tmp, &imesa->TexObjList ) {
-		      if (t->MemBlock->ofs >= offset + size ||
-			  t->MemBlock->ofs + t->MemBlock->size <= offset)
-		         continue;
+      if (t->MemBlock == 0 ||	
+	  t->MemBlock->ofs >= offset + size ||
+	  t->MemBlock->ofs + t->MemBlock->size <= offset)
+	 continue;
 		
       /* It overlaps - kick it off.  Need to hold onto the currently bound
        * objects, however.
@@ -331,13 +336,14 @@ int i830UploadTexImages( i830ContextPtr imesa, i830TextureObjectPtr t )
 	 if (t->MemBlock)
 	    break;
 
+/*
 	 if (imesa->TexObjList.prev == imesa->CurrentTexObj[0] ||
 	     imesa->TexObjList.prev == imesa->CurrentTexObj[1]) {
   	    fprintf(stderr, "Hit bound texture in upload\n");
-	    i830PrintLocalLRU( imesa );
+ 	    i830PrintLocalLRU( imesa ); 
 	    return -1;
 	 }
-
+*/
 	 if (imesa->TexObjList.prev == &(imesa->TexObjList)) {
  	    fprintf(stderr, "Failed to upload texture, sz %d\n", t->totalSize);
 	    mmDumpMemInfo( imesa->texHeap );
@@ -349,13 +355,14 @@ int i830UploadTexImages( i830ContextPtr imesa, i830TextureObjectPtr t )
 
       ofs = t->MemBlock->ofs;
       t->BufAddr = imesa->i830Screen->tex.map + ofs;
-      t->Setup[I830_TEXREG_MI3] = imesa->i830Screen->textureOffset + ofs;
+      t->Setup[I830_TEXREG_TM0S0] = (TM0S0_USE_FENCE |
+				     (imesa->i830Screen->textureOffset + ofs));
 
       if (t == imesa->CurrentTexObj[0])
-	 I830_STATECHANGE(imesa, I830_UPLOAD_TEX0);
+	 imesa->dirty |= I830_UPLOAD_TEX0;
 
       if (t == imesa->CurrentTexObj[1])
-	 I830_STATECHANGE(imesa, I830_UPLOAD_TEX1);
+	 imesa->dirty |= I830_UPLOAD_TEX1;
 #if 0
       if (t == imesa->CurrentTexObj[2])
 	 I830_STATECHANGE(imesa, I830_UPLOAD_TEX2);
@@ -363,7 +370,8 @@ int i830UploadTexImages( i830ContextPtr imesa, i830TextureObjectPtr t )
       if (t == imesa->CurrentTexObj[3])
 	 I830_STATECHANGE(imesa, I830_UPLOAD_TEX3);
 #endif
-      i830UpdateTexLRU( imesa, t );
+      if (t->MemBlock)
+	 i830UpdateTexLRU( imesa, t );
    }
 
    if (imesa->dirtyAge >= GET_DISPATCH_AGE(imesa))
@@ -371,10 +379,11 @@ int i830UploadTexImages( i830ContextPtr imesa, i830TextureObjectPtr t )
 
    numLevels = t->lastLevel - t->firstLevel + 1;
    for (i = 0 ; i < numLevels ; i++)
-      if (t->dirty_images & (1<<i))
+      if (t->dirty_images & (1<<(i+t->firstLevel)))
 	 i830UploadTexLevel( t, i );
 
    t->dirty_images = 0;
+   imesa->sarea->perf_boxes |= I830_BOX_TEXTURE_LOAD;
 
    return 0;
 }

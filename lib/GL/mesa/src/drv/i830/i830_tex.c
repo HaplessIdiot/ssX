@@ -25,7 +25,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
-/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_tex.c,v 1.2 2002/09/09 19:18:48 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_tex.c,v 1.3 2002/09/11 00:29:26 dawes Exp $ */
 
 /*
  * Author:
@@ -60,12 +60,18 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 /*
  * Compute the 'S2.4' lod bias factor from the floating point OpenGL bias.
  */
-static GLuint i830ComputeLodBias(GLfloat bias)
+static void i830ComputeLodBias(i830ContextPtr imesa,
+			       i830TextureObjectPtr t,
+			       GLfloat bias)
 {
-   int b = (int) (bias * 16.0) + 12;
+   int b;
+
+   b = (int) (bias * 16.0);
    if(b > 63) b = 63;
    else if (b < -64) b = -64;
-   return (GLuint) (b & MAP_LOD_MASK);
+   t->Setup[I830_TEXREG_TM0S3] &= ~TM0S3_LOD_BIAS_MASK;
+   t->Setup[I830_TEXREG_TM0S3] |= ((b << TM0S3_LOD_BIAS_SHIFT) & 
+				   TM0S3_LOD_BIAS_MASK);
 }
 
 static void i830SetTexWrapping(i830TextureObjectPtr tex,
@@ -128,9 +134,9 @@ static void i830SetTexFilter(i830ContextPtr imesa,
       minFilt = FILTER_NEAREST;
       mipFilt = MIPFILTER_NEAREST;
 
-      if(magf == GL_LINEAR) {
-	 bias -= 0.5;
-      }
+/*       if(magf == GL_LINEAR && 0) { */
+/* 	 bias -= 0.5; */
+/*       } */
 
       break;
    case GL_LINEAR_MIPMAP_NEAREST:
@@ -141,9 +147,9 @@ static void i830SetTexFilter(i830ContextPtr imesa,
       minFilt = FILTER_NEAREST;
       mipFilt = MIPFILTER_LINEAR;
 
-      if(magf == GL_LINEAR) {
-	 bias -= 0.5;
-      }
+/*       if(magf == GL_LINEAR && 0) { */
+/* 	 bias -= 0.5; */
+/*       } */
 
       break;
    case GL_LINEAR_MIPMAP_LINEAR:
@@ -169,14 +175,14 @@ static void i830SetTexFilter(i830ContextPtr imesa,
       break;
    }  
 
-   I830_SET_FIELD(t->Setup[I830_TEXREG_MF],
-		     MIN_FILTER_MASK | MIP_FILTER_MASK,
-		     MIN_FILTER(minFilt) | mipFilt);
+   t->Setup[I830_TEXREG_TM0S3] &= ~TM0S3_MIN_FILTER_MASK;
+   t->Setup[I830_TEXREG_TM0S3] &= ~TM0S3_MIP_FILTER_MASK;
+   t->Setup[I830_TEXREG_TM0S3] &= ~TM0S3_MAG_FILTER_MASK;
+   t->Setup[I830_TEXREG_TM0S3] |= ((minFilt << TM0S3_MIN_FILTER_SHIFT) |
+				   (mipFilt << TM0S3_MIP_FILTER_SHIFT) |
+				   (magFilt << TM0S3_MAG_FILTER_SHIFT));
 
-   I830_SET_FIELD(t->Setup[I830_TEXREG_MF],
-		     MAG_FILTER_MASK, MAG_FILTER(magFilt));
-
-   t->Setup[I830_TEXREG_MLC] |= i830ComputeLodBias(bias);
+   i830ComputeLodBias(imesa, t, bias); 
 }
 
 static void i830SetTexBorderColor(i830TextureObjectPtr t, GLubyte color[4])
@@ -184,7 +190,7 @@ static void i830SetTexBorderColor(i830TextureObjectPtr t, GLubyte color[4])
    if(I830_DEBUG&DEBUG_DRI)
       fprintf(stderr, "%s\n", __FUNCTION__);
 
-    t->Setup[I830_TEXREG_MI5] = 
+    t->Setup[I830_TEXREG_TM0S4] = 
         I830PACKCOLOR8888(color[0],color[1],color[2],color[3]);
 }
 
@@ -230,11 +236,10 @@ static void i830TexParameter( GLcontext *ctx, GLenum target,
    case GL_TEXTURE_MAX_LEVEL:
    case GL_TEXTURE_MIN_LOD:
    case GL_TEXTURE_MAX_LOD:
-      /* This isn't the most efficient solution but there doesn't appear to
-       * be a nice alternative for Radeon.  Since there's no LOD clamping,
-       * we just have to rely on loading the right subset of mipmap levels
-       * to simulate a clamped LOD.
+      /* The i830 and its successors can do a lot of this without
+       * reloading the textures.  A project for someone?
        */
+      I830_FIREVERTICES( I830_CONTEXT(ctx) );
       i830SwapOutTexObj( imesa, t );
       break;
 
@@ -283,8 +288,7 @@ static void i830TexEnv( GLcontext *ctx, GLenum target,
       {
          struct gl_texture_object *tObj = ctx->Texture.Unit[unit]._Current;
          i830TextureObjectPtr t = (i830TextureObjectPtr) tObj->DriverData;
-         t->Setup[I830_TEXREG_MLC] &= ~(MLC_LOD_BIAS_MASK);
-         t->Setup[I830_TEXREG_MLC] |= i830ComputeLodBias(*param);
+	 i830ComputeLodBias(imesa, t, *param);
 	 /* Do a state change */
 	 if (t == imesa->CurrentTexObj[unit]) {
 	    I830_STATECHANGE( imesa, I830_UPLOAD_TEX_N(unit) );
@@ -307,6 +311,7 @@ static void i830TexImage2D( GLcontext *ctx, GLenum target, GLint level,
 {
    i830TextureObjectPtr t = (i830TextureObjectPtr) texObj->DriverData;
    if (t) {
+      I830_FIREVERTICES( I830_CONTEXT(ctx) );
       i830SwapOutTexObj( I830_CONTEXT(ctx), t );
    }
    _mesa_store_teximage2d( ctx, target, level, internalFormat,
@@ -327,6 +332,7 @@ static void i830TexSubImage2D( GLcontext *ctx,
 {
    i830TextureObjectPtr t = (i830TextureObjectPtr) texObj->DriverData;
    if (t) {
+      I830_FIREVERTICES( I830_CONTEXT(ctx) );
       i830SwapOutTexObj( I830_CONTEXT(ctx), t );
    }
    _mesa_store_texsubimage2d(ctx, target, level, xoffset, yoffset, width, 
@@ -349,17 +355,15 @@ static void i830BindTexture( GLcontext *ctx, GLenum target,
 	 /* Initialize non-image-dependent parts of the state:
 	  */
 	 t->globj = tObj;
-	 t->Setup[I830_TEXREG_MI0] = STATE3D_MAP_INFO_COLR_CMD;
-	 t->Setup[I830_TEXREG_MI1] = (MAP_INFO_TEX(0) |
-				      MAP_INFO_OUTMUX_F0F1F2F3 | 
-				      MAP_INFO_VERTLINESTRIDE_0 |
-				      MAP_INFO_VERTLINESTRIDEOFS_0 |
-				      MAP_INFO_FORMAT_2D |
-				      MAP_INFO_USE_FENCE);
-	 t->Setup[I830_TEXREG_MLC] = (STATE3D_MAP_LOD_CNTL_CMD |
-				      MAP_UNIT(0) | 
-				      ENABLE_TEXLOD_BIAS |
-				      MAP_LOD_BIAS(0));
+	 t->Setup[I830_TEXREG_TM0LI] = STATE3D_LOAD_STATE_IMMEDIATE_2;
+	 t->Setup[I830_TEXREG_TM0S0] = TM0S0_USE_FENCE;
+	 t->Setup[I830_TEXREG_TM0S1] = 0;
+	 t->Setup[I830_TEXREG_TM0S2] = 0;
+	 t->Setup[I830_TEXREG_TM0S3] = 0;
+
+	 t->Setup[I830_TEXREG_NOP0] = 0;
+	 t->Setup[I830_TEXREG_NOP1] = 0;
+	 t->Setup[I830_TEXREG_NOP2] = 0;
 
 	 t->Setup[I830_TEXREG_MCS] = (STATE3D_MAP_COORD_SET_CMD |
 				      MAP_UNIT(0) |
@@ -371,12 +375,6 @@ static void i830BindTexture( GLcontext *ctx, GLenum target,
 				      ENABLE_ADDR_U_CNTL |
 				      TEXCOORD_ADDR_U_MODE(TEXCOORDMODE_WRAP));
 
-	 t->Setup[I830_TEXREG_MF] = (STATE3D_MAP_FILTER_CMD |
-				     MAP_UNIT(0) |
-				     ENABLE_MIP_MODE_FILTER |
-				     MIPFILTER_NEAREST |
-				     ENABLE_MAG_MODE_FILTER |
-				     ENABLE_MIN_MODE_FILTER);
 
 	 t->dirty_images = ~0;
 

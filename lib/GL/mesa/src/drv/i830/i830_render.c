@@ -26,7 +26,7 @@
  * Adapted for use on the I830:
  *    Jeff Hartmann <jhartmann@2d3d.com>
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_render.c,v 1.1 2002/09/09 19:18:48 dawes Exp $ */
 
 /*
  * Render unclipped vertex buffers by emitting vertices directly to
@@ -38,6 +38,7 @@
 #include "macros.h"
 #include "mem.h"
 #include "mtypes.h"
+#include "enums.h"
 #include "mmath.h"
 
 #include "tnl/t_context.h"
@@ -72,9 +73,9 @@
 #define HAVE_ELTS        0
 
 static GLuint hw_prim[GL_POLYGON+1] = {
-   PRIM3D_POINTLIST,
-   PRIM3D_LINELIST,
    0,
+   PRIM3D_LINELIST,
+   PRIM3D_LINESTRIP,
    PRIM3D_LINESTRIP,
    PRIM3D_TRILIST,
    PRIM3D_TRISTRIP,
@@ -97,7 +98,20 @@ static const GLenum reduced_prim[GL_POLYGON+1] = {
    GL_TRIANGLES
 };
 
-/* Fallback to normal rendering.
+static const int scale_prim[GL_POLYGON+1] = {  
+   0,				/* fallback case */
+   1,
+   2,
+   2,
+   1,
+   3,
+   3,
+   0,				/* fallback case */
+   0,				/* fallback case */
+   3
+};
+
+/* Fallback to normal rendering.  Should now never be called.
  */
 static void VERT_FALLBACK( GLcontext *ctx,
 			   GLuint start,
@@ -124,7 +138,7 @@ static void VERT_FALLBACK( GLcontext *ctx,
 #define GET_CURRENT_VB_MAX_VERTS() \
   (((int)imesa->vertex_high - (int)imesa->vertex_low) / (imesa->vertex_size*4))
 #define GET_SUBSEQUENT_VB_MAX_VERTS() \
-  (I830_DMA_BUF_SZ-4) / (imesa->vertex_size * 4)
+  (I830_DMA_BUF_SZ-8) / (imesa->vertex_size * 4)
   
 #define EMIT_VERTS( ctx, j, nr ) \
   i830_emit_contiguous_verts(ctx, j, (j)+(nr))  
@@ -137,6 +151,46 @@ static void VERT_FALLBACK( GLcontext *ctx,
 /*                          Render pipeline stage                     */
 /**********************************************************************/
 
+/* Heuristic for i830, which can only emit a single primitive per dma
+ * buffer, and has only a small number of dma buffers.
+ */
+static GLboolean choose_render( struct vertex_buffer *VB, int bufsz )
+{
+   int nr_prims = 0;
+   int nr_rprims = 0;
+   int nr_rverts = 0;
+   int rprim = 0;
+   int i = 0, length, flags = 0;
+
+   
+   for (i = VB->FirstPrimitive ; !(flags & PRIM_LAST) ; i += length) {
+      flags = VB->Primitive[i];
+      length = VB->PrimitiveLength[i];
+      if (!length)
+	 continue;
+
+      if (!hw_prim[flags & PRIM_MODE_MASK])
+	 return GL_FALSE;
+
+      nr_prims++;
+      nr_rverts += length * scale_prim[flags & PRIM_MODE_MASK];
+
+      if (reduced_prim[flags&PRIM_MODE_MASK] != rprim) {
+	 nr_rprims++;
+	 rprim = reduced_prim[flags&PRIM_MODE_MASK];
+      }
+   }
+
+   nr_prims += i / bufsz; 
+   nr_rprims += nr_rverts / bufsz; 
+
+   if ((nr_prims > nr_rprims * 2) ||
+       (nr_prims > nr_rprims + 3)) 
+      return GL_FALSE;
+
+   return GL_TRUE;
+}
+
 
 static GLboolean i830_run_render( GLcontext *ctx, 
 				 struct gl_pipeline_stage *stage )
@@ -147,7 +201,8 @@ static GLboolean i830_run_render( GLcontext *ctx,
    GLuint i, length, flags = 0;
    /* Don't handle clipping or indexed vertices.
     */
-   if (VB->ClipOrMask || imesa->RenderIndex != 0 || VB->Elts) {
+   if (VB->ClipOrMask || imesa->RenderIndex != 0 || VB->Elts || 
+       !choose_render( VB, GET_SUBSEQUENT_VB_MAX_VERTS() )) {
       return GL_TRUE;
    }
 

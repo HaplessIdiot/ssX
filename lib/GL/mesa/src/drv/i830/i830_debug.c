@@ -25,7 +25,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
-/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_debug.c,v 1.1 2002/09/09 19:18:48 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_debug.c,v 1.2 2002/09/11 00:29:25 dawes Exp $ */
 
 /*
  * Author:
@@ -138,6 +138,14 @@ void i830DumpBufferState( i830ContextPtr imesa )
    fprintf(stderr, "DR2 : 0x%08x\n", Buffer[I830_DESTREG_DR2]);
    fprintf(stderr, "DR3 : 0x%08x\n", Buffer[I830_DESTREG_DR3]);
    fprintf(stderr, "DR4 : 0x%08x\n", Buffer[I830_DESTREG_DR4]);
+}
+
+void i830DumpStippleState( i830ContextPtr imesa )
+{
+   GLuint *Buffer = imesa->BufferSetup;
+
+   fprintf(stderr, "%s\n", __FUNCTION__);
+   fprintf(stderr, "ST1 : 0x%08x\n", Buffer[I830_STPREG_ST1]);
 }
 
 void i830DumpTextureState( i830ContextPtr imesa, int unit )
@@ -339,6 +347,13 @@ void i830EmitHwStateLockedDebug( i830ContextPtr imesa )
       memcpy( imesa->sarea->BufferState,imesa->BufferSetup, 
 	      sizeof(imesa->BufferSetup) );
       i830DumpBufferState(imesa);
+   }
+
+   if (imesa->dirty & I830_UPLOAD_STIPPLE) {
+      fprintf(stderr, "UPLOAD_STIPPLE\n");
+      memcpy( imesa->sarea->StippleState,imesa->StippleSetup, 
+	      sizeof(imesa->StippleSetup) );
+      i830DumpStippleState(imesa);
    }
 
    if (imesa->dirty & I830_UPLOAD_TEX_PALETTE_SHARED) {

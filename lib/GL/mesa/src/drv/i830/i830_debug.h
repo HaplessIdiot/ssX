@@ -25,7 +25,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
-/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_debug.h,v 1.1 2002/09/09 19:18:48 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_debug.h,v 1.2 2002/09/11 00:29:25 dawes Exp $ */
 
 /*
  * Author:
@@ -41,6 +41,7 @@ void i830DumpContextState( i830ContextPtr imesa );
 void i830DumpBufferState( i830ContextPtr imesa );
 void i830DumpTextureState( i830ContextPtr imesa, int unit );
 void i830DumpTextureBlendState( i830ContextPtr imesa, int unit );
+void i830DumpStippleState( i830ContextPtr imesa );
 void i830VertexSanity( i830ContextPtr imesa, drmI830Vertex vertex );
 void i830EmitHwStateLockedDebug( i830ContextPtr imesa );
 

@@ -24,7 +24,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  * **************************************************************************/
-/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_screen.c,v 1.1 2002/09/09 19:18:48 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_screen.c,v 1.2 2002/09/11 00:29:26 dawes Exp $ */
 
 /*
  * Authors:
@@ -150,8 +150,8 @@ static GLboolean i830InitDriver(__DRIscreenPrivate *sPriv)
    }
 		
    /* Check that the DRM driver version is compatible */
-   if (sPriv->drmMajor != 1 || sPriv->drmMinor < 2) {
-      __driUtilMessage("i830 DRI driver expected DRM driver version 1.2.x but got version %d.%d.%d", sPriv->drmMajor, sPriv->drmMinor, sPriv->drmPatch);
+   if (sPriv->drmMajor != 1 || sPriv->drmMinor < 3) {
+      __driUtilMessage("i830 DRI driver expected DRM driver version 1.3.x but got version %d.%d.%d", sPriv->drmMajor, sPriv->drmMinor, sPriv->drmPatch);
       return GL_FALSE;
    }
 
@@ -250,7 +250,26 @@ static GLboolean i830InitDriver(__DRIscreenPrivate *sPriv)
    }
 			 
    i830Screen->sarea_priv_offset = gDRIPriv->sarea_priv_offset;
-   if (1) i830PrintDRIInfo(i830Screen, sPriv, gDRIPriv);
+   
+   if (0) i830PrintDRIInfo(i830Screen, sPriv, gDRIPriv);
+
+   i830Screen->drmMinor = sPriv->drmMinor;
+
+   if (sPriv->drmMinor >= 3) {
+      int ret;
+      drmI830GetParam gp;
+
+      gp.param = I830_PARAM_IRQ_ACTIVE;
+      gp.value = &i830Screen->irq_active;
+
+      ret = drmCommandWriteRead( sPriv->fd, DRM_I830_GETPARAM,
+				 &gp, sizeof(gp));
+      if (ret) {
+	 fprintf(stderr, "drmI830GetParam: %d\n", ret);
+	 return GL_FALSE;
+      }
+   }
+
    return GL_TRUE;
 }
 		
@@ -336,3 +355,39 @@ void *__driCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
    return (void *) psp;
 }
 	     
+
+/* This function is called by libGL.so as soon as libGL.so is loaded.
+ * This is where we'd register new extension functions with the dispatcher.
+ *
+ * Note: Most of these are probably already registered - just doing
+ * this for the benefit of old libGL.so's out there.
+ */
+#include "glapioffsets.h"
+
+void __driRegisterExtensions( void )
+{
+   int i;
+   static struct { const char *name; int offset; } funcs[] = {
+	{ "glSecondaryColor3bEXT", _gloffset_SecondaryColor3bEXT },
+	{ "glSecondaryColor3dEXT", _gloffset_SecondaryColor3dEXT },
+	{ "glSecondaryColor3fEXT", _gloffset_SecondaryColor3fEXT },
+	{ "glSecondaryColor3iEXT", _gloffset_SecondaryColor3iEXT },
+	{ "glSecondaryColor3sEXT", _gloffset_SecondaryColor3sEXT },
+	{ "glSecondaryColor3ubEXT", _gloffset_SecondaryColor3ubEXT },
+	{ "glSecondaryColor3uiEXT", _gloffset_SecondaryColor3uiEXT },
+	{ "glSecondaryColor3usEXT", _gloffset_SecondaryColor3usEXT },
+	{ "glSecondaryColor3bvEXT", _gloffset_SecondaryColor3bvEXT },
+	{ "glSecondaryColor3dvEXT", _gloffset_SecondaryColor3dvEXT },
+	{ "glSecondaryColor3fvEXT", _gloffset_SecondaryColor3fvEXT },
+	{ "glSecondaryColor3ivEXT", _gloffset_SecondaryColor3ivEXT },
+	{ "glSecondaryColor3svEXT", _gloffset_SecondaryColor3svEXT },
+	{ "glSecondaryColor3ubvEXT", _gloffset_SecondaryColor3ubvEXT },
+	{ "glSecondaryColor3uivEXT", _gloffset_SecondaryColor3uivEXT },
+	{ "glSecondaryColor3usvEXT", _gloffset_SecondaryColor3usvEXT },
+	{ "glSecondaryColorPointerEXT", _gloffset_SecondaryColorPointerEXT }
+   };
+
+   for (i = 0 ; i < sizeof(funcs) / sizeof(*funcs) ; i++ ) 
+      _glapi_add_entrypoint( funcs[i].name, funcs[i].offset );
+}
+

@@ -164,7 +164,7 @@ MGAHEADERS =	mga.h mga_drv.h mga_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
 I810OBJS =	i810_drv.o i810_dma.o
 I810HEADERS =	i810.h i810_drv.h i810_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
 
-I830OBJS =	i830_drv.o i830_dma.o
+I830OBJS =	i830_drv.o i830_dma.o i830_irq.o
 I830HEADERS =	i830.h i830_drv.h i830_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
 
 endif

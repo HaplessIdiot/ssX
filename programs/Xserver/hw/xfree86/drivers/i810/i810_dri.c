@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.30 2002/10/30 12:52:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.32 2002/11/25 14:04:59 eich Exp $ */
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
  *
@@ -393,16 +393,19 @@ I810DRIScreenInit(ScreenPtr pScreen)
 	 version->version_patchlevel = 0;
       }
 
+#define REQ_MAJ 1
+#define REQ_MIN 1
       if (version) {
-	 if (version->version_major != 1 ||
-	     version->version_minor < 1) {
+	 if (version->version_major != REQ_MAJ ||
+	     version->version_minor < REQ_MIN) {
 	    /* incompatible drm library version */
 	    xf86DrvMsg(pScreen->myNum, X_ERROR,
 		       "[dri] I810DRIScreenInit failed because of a version mismatch.\n"
-		       "[dri] libdrm.a module version is %d.%d.%d but version 1.1.x is needed.\n"
+		       "[dri] libdrm.a module version is %d.%d.%d but version %d.%d.x is needed.\n"
 		       "[dri] Disabling DRI.\n",
 		       version->version_major,
-		       version->version_minor, version->version_patchlevel);
+		       version->version_minor, version->version_patchlevel,
+		       REQ_MAJ, REQ_MIN);
 	    drmFreeVersion(version);
 	    I810DRICloseScreen(pScreen);
 	    return FALSE;

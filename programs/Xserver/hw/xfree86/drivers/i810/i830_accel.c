@@ -32,7 +32,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_accel.c,v 1.2 2002/10/08 20:15:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_accel.c,v 1.3 2002/10/30 12:52:18 alanh Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -172,7 +172,7 @@ I830Sync(ScrnInfoPtr pScrn)
       ErrorF("I830Sync\n");
 
 #ifdef XF86DRI
-   /* VT switching tries to do this.  
+   /* VT switching tries to do this.
     */
    if (!pI830->LockHeld && pI830->directRenderingEnabled) {
       return;
@@ -243,38 +243,9 @@ I830RefreshRing(ScrnInfoPtr pScrn)
    if (pI830->LpRing.space < 0)
       pI830->LpRing.space += pI830->LpRing.mem.Size;
 
-   pI830->AccelInfoRec->NeedToSync = TRUE;
+   if (pI830->AccelInfoRec)
+      pI830->AccelInfoRec->NeedToSync = TRUE;
 }
-
-#if 0
-/* Emit on gaining VT?
- */
-void
-I830EmitInvarientState(ScrnInfoPtr pScrn)
-{
-   I830Ptr pI830 = I830PTR(pScrn);
-
-   BEGIN_LP_RING(10);
-
-   OUT_RING(MI_FLUSH | MI_WRITE_DIRTY_STATE | MI_INVALIDATE_MAP_CACHE);
-   OUT_RING(GFX_CMD_CONTEXT_SEL | CS_UPDATE_USE | CS_USE_CTX0);
-   OUT_RING(MI_FLUSH | MI_WRITE_DIRTY_STATE | MI_INVALIDATE_MAP_CACHE);
-   OUT_RING(MI_NOOP);
-
-   OUT_RING(GFX_OP_COLOR_CHROMA_KEY);
-   OUT_RING(CC1_UPDATE_KILL_WRITE |
-	    CC1_DISABLE_KILL_WRITE |
-	    CC1_UPDATE_COLOR_IDX |
-	    CC1_UPDATE_CHROMA_LOW | CC1_UPDATE_CHROMA_HI | 0);
-   OUT_RING(0);
-   OUT_RING(0);
-
-/*     OUT_RING( CMD_OP_Z_BUFFER_INFO ); */
-/*     OUT_RING( pI830->DepthBuffer.Start | pI830->auxPitchBits); */
-
-   ADVANCE_LP_RING();
-}
-#endif
 
 /* I830 Accel Functions */
 

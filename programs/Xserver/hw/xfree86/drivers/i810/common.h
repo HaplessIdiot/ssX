@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/common.h,v 1.1 2002/09/11 00:29:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/common.h,v 1.2 2002/10/30 12:52:17 alanh Exp $ */
 
 /*
  * Authors:
@@ -79,6 +79,7 @@ extern const char *I810vbeSymbols[];
 extern const char *I810ddcSymbols[];
 extern const char *I810fbSymbols[];
 extern const char *I810xaaSymbols[];
+extern const char *I810shadowSymbols[];
 
 extern void DPRINTF_stub(const char *filename, int line, const char *function,
 		         const char *fmt, ...);
@@ -151,21 +152,71 @@ extern void DPRINTF_stub(const char *filename, int line, const char *function,
    } while (_head != _tail);						\
 } while( 0)
 
+/*
+ * This is for debugging a potential problem writing the tail pointer
+ * close to the end of the ring buffer.
+ */
+#ifndef AVOID_TAIL_END
+#define AVOID_TAIL_END 0
+#endif
+#ifndef AVOID_SIZE
+#define AVOID_SIZE 64
+#endif
+
+#if AVOID_TAIL_END
+
 #define BEGIN_LP_RING(n)						\
    unsigned int outring, ringmask;					\
    volatile unsigned char *virt;					\
+   unsigned int needed;							\
    if ((n) & 1)								\
       ErrorF("BEGIN_LP_RING called with odd argument: %d\n", n);	\
    if ((n) > 2 && (I810_DEBUG&DEBUG_ALWAYS_SYNC))			\
       DO_RING_IDLE();							\
-   if (RecPtr->LpRing.space < (n) * 4)					\
-      WaitRingFunc(pScrn, (n) * 4, 0);					\
-   RecPtr->LpRing.space -= (n) * 4;					\
-   if (I810_DEBUG & DEBUG_VERBOSE_RING)					\
-      ErrorF( "BEGIN_LP_RING %d in %s\n", n, FUNCTION_NAME);		\
+   needed = (n) * 4;							\
+   if ((RecPtr->LpRing.tail > RecPtr->LpRing.tail_mask - AVOID_SIZE) ||	\
+       (RecPtr->LpRing.tail + needed) >					\
+	RecPtr->LpRing.tail_mask - AVOID_SIZE) {			\
+      needed += RecPtr->LpRing.tail_mask + 1 - RecPtr->LpRing.tail;	\
+      ErrorF("BEGIN_LP_RING: skipping last 64 bytes of "		\
+	     "ring (%d vs %d)\n", needed, (n) * 4);			\
+   }									\
+   if (RecPtr->LpRing.space < needed)					\
+      WaitRingFunc(pScrn, needed, 0);					\
+   RecPtr->LpRing.space -= needed;					\
    outring = RecPtr->LpRing.tail;					\
    ringmask = RecPtr->LpRing.tail_mask;					\
-   virt = RecPtr->LpRing.virtual_start;
+   virt = RecPtr->LpRing.virtual_start;					\
+   while (needed > (n) * 4) {						\
+      ErrorF("BEGIN_LP_RING: putting MI_NOOP at 0x%x (remaining %d)\n",	\
+	     outring, needed - (n) * 4);				\
+      OUT_RING(MI_NOOP);						\
+      needed -= 4;							\
+   }									\
+   if (I810_DEBUG & DEBUG_VERBOSE_RING)					\
+      ErrorF( "BEGIN_LP_RING %d in %s\n", n, FUNCTION_NAME);
+
+#else /* AVOID_TAIL_END */
+
+#define BEGIN_LP_RING(n)						\
+   unsigned int outring, ringmask;					\
+   volatile unsigned char *virt;					\
+   unsigned int needed;							\
+   if ((n) & 1)								\
+      ErrorF("BEGIN_LP_RING called with odd argument: %d\n", n);	\
+   if ((n) > 2 && (I810_DEBUG&DEBUG_ALWAYS_SYNC))			\
+      DO_RING_IDLE();							\
+   needed = (n) * 4;							\
+   if (RecPtr->LpRing.space < needed)					\
+      WaitRingFunc(pScrn, needed, 0);					\
+   RecPtr->LpRing.space -= needed;					\
+   outring = RecPtr->LpRing.tail;					\
+   ringmask = RecPtr->LpRing.tail_mask;					\
+   virt = RecPtr->LpRing.virtual_start;					\
+   if (I810_DEBUG & DEBUG_VERBOSE_RING)					\
+      ErrorF( "BEGIN_LP_RING %d in %s\n", n, FUNCTION_NAME);
+
+#endif /* AVOID_TAIL_END */
 
 
 /* Memory mapped register access macros */
@@ -195,7 +246,7 @@ extern void DPRINTF_stub(const char *filename, int line, const char *function,
 } while (0)
 
 /* To remove all debugging, make sure I810_DEBUG is defined as a
- * preprocessor symbol, and equal to zero.  
+ * preprocessor symbol, and equal to zero.
  */
 #if 1
 #define I810_DEBUG 0
@@ -232,12 +283,14 @@ extern int I810_DEBUG;
 #endif
 
 
+
 #define IS_I810(pI810) (pI810->PciInfo->chipType == PCI_CHIP_I810 ||	\
 			pI810->PciInfo->chipType == PCI_CHIP_I810_DC100 || \
 			pI810->PciInfo->chipType == PCI_CHIP_I810_E)
 #define IS_I815(pI810) (pI810->PciInfo->chipType == PCI_CHIP_I815)
 #define IS_I830(pI810) (pI810->PciInfo->chipType == PCI_CHIP_I830_M)
 #define IS_845G(pI810) (pI810->PciInfo->chipType == PCI_CHIP_845_G)
+
 #define IS_MOBILE(pI810) IS_I830(pI810)
 
 #define GTT_PAGE_SIZE			KB(4)
@@ -245,7 +298,7 @@ extern int I810_DEBUG;
 #define ROUND_DOWN_TO(x, y)		((x) / (y) * (y))
 #define ROUND_TO_PAGE(x)		ROUND_TO((x), GTT_PAGE_SIZE)
 #define ROUND_TO_MB(x)			ROUND_TO((x), MB(1))
-#define PRIMARY_RINGBUFFER_SIZE		KB(64)
+#define PRIMARY_RINGBUFFER_SIZE		KB(128)
 #define MIN_SCRATCH_BUFFER_SIZE		KB(16)
 #define MAX_SCRATCH_BUFFER_SIZE		KB(64)
 #define HWCURSOR_SIZE			GTT_PAGE_SIZE
@@ -258,5 +311,7 @@ extern int I810_DEBUG;
 /* XXX Need to check if these are reasonable. */
 #define MAX_DISPLAY_PITCH		2048
 #define MAX_DISPLAY_HEIGHT		2048
+
+#define PIPE_NAME(n)			('A' + (n))
 
 #endif /* _INTEL_COMMON_H_ */

@@ -26,7 +26,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drmI830.h,v 1.2 2001/10/04 18:32:29 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_common.h,v 1.1 2002/09/11 00:29:32 dawes Exp $ */
 
 /* Author: Jeff Hartmann <jhartmann@valinux.com> 
 
@@ -93,6 +93,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define I830_UPLOAD_TEXBLEND_MASK	0xf00000
 #define I830_UPLOAD_TEX_PALETTE_N(n)    (0x1000000 << (n))
 #define I830_UPLOAD_TEX_PALETTE_SHARED	0x4000000
+#define I830_UPLOAD_STIPPLE         	0x8000000
 
 /* Indices into buf.Setup where various bits of state are mirrored per
  * context and per buffer.  These can be fired at the card as a unit,
@@ -145,9 +146,14 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define I830_CTXREG_MCSB1		16
 #define I830_CTX_SETUP_SIZE		17
 
+/* 1.3: Stipple state
+ */ 
+#define I830_STPREG_ST0 0
+#define I830_STPREG_ST1 1
+#define I830_STP_SETUP_SIZE 2
+
 /* Texture state (per tex unit)
  */
-
 #define I830_TEXREG_MI0	0		/* GFX_OP_MAP_INFO (6 dwords) */
 #define I830_TEXREG_MI1	1
 #define I830_TEXREG_MI2	2
@@ -159,6 +165,21 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define I830_TEXREG_MLL	8		/* GFX_OP_MAP_LOD_LIMITS */
 #define I830_TEXREG_MCS	9		/* GFX_OP_MAP_COORD_SETS */
 #define I830_TEX_SETUP_SIZE 10
+
+/* New version.  Kernel auto-detects.
+ */
+#define I830_TEXREG_TM0LI 	0 /* load immediate 2 texture map n */
+#define I830_TEXREG_TM0S0	1
+#define I830_TEXREG_TM0S1	2
+#define I830_TEXREG_TM0S2	3
+#define I830_TEXREG_TM0S3	4
+#define I830_TEXREG_TM0S4	5
+#define I830_TEXREG_NOP0	6	/* noop */
+#define I830_TEXREG_NOP1	7	/* noop */
+#define I830_TEXREG_NOP2	8	/* noop */
+#define __I830_TEXREG_MCS	9	/* GFX_OP_MAP_COORD_SETS -- shared */
+#define __I830_TEX_SETUP_SIZE   10
+
 
 #define I830_FRONT   0x1
 #define I830_BACK    0x2
@@ -176,6 +197,11 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define DRM_I830_SWAP                     0x06
 #define DRM_I830_COPY                     0x07
 #define DRM_I830_DOCOPY                   0x08
+#define DRM_I830_FLIP                     0x09
+#define DRM_I830_IRQ_EMIT                 0x0a
+#define DRM_I830_IRQ_WAIT                 0x0b
+#define DRM_I830_GETPARAM                 0x0c
+#define DRM_I830_SETPARAM                 0x0d
 
 #endif /* _I830_DEFINES_ */
 
@@ -233,5 +259,30 @@ typedef struct {
    int request_size;
    int granted;
 } drmI830DMA;
+
+typedef struct drm_i830_irq_emit {
+	int *irq_seq;
+} drmI830IrqEmit;
+
+typedef struct drm_i830_irq_wait {
+	int irq_seq;
+} drmI830IrqWait;
+
+typedef struct drm_i830_getparam {
+	int param;
+	int *value;
+} drmI830GetParam;
+
+#define I830_PARAM_IRQ_ACTIVE  1
+
+
+typedef struct drm_i830_setparam {
+	int param;
+	int value;
+} drmI830SetParam;
+
+#define I830_SETPARAM_USE_MI_BATCHBUFFER_START  1
+
+
 
 #endif /* _I830_DRM_H_ */
