@@ -9,7 +9,7 @@
 <date>4 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.23 2000/12/13 02:01:02 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.24 2000/12/14 08:00:45 herrb Exp $
 </ident>
 
 <abstract>
@@ -31,27 +31,38 @@ XFree86 &relvers;.  It includes information about the status of the
 drivers and the hardware they support, including a comparison of the
 level of support between versions &legacyvers; and &relvers;.
 
-NOTE: Status information needs to be checked carefully and expanded
-where possible.  E.g., include information about acceleration, multi-head,
-known problems, hardware known to work on, platform
-dependencies/limitations, other architectures known to work on
-(e.g., Alpha, PPC), etc.
+In XFree86 &legacyvers;, several X servers are available; much hardware
+uses the XF86_SVGA server, which has a set of driver modules that are built
+into it at compile time.  In other cases, X servers for specific chips (or
+families of chips) are provided (such as XF86_AGX, XF86_Mach64, etc.).
+
+In XFree86 &relvers;, there is only one X server, called "XFree86", which
+can load driver modules at runtime.  Thus there is no specific mention of a
+server binary when &relvers; is discussed; only the XFree86 server is
+used.  Third-party vendors (often the manufacturers of various video
+chipsets) may provide their own drivers for the XFree86 server, but these
+third-party modules are beyond the scope of this document.
+
+NOTE: Status information needs to be checked carefully and expanded where
+possible.  E.g., include information about acceleration, multi-head, known
+problems, hardware known to work on, platform dependencies/limitations,
+other architectures known to work on (e.g., Alpha, PPC), etc.
 
 <sect>3Dfx
 <p>
 <descrip>
 <tag>&legacyvers;:</tag>
-	Support (including acceleration) for Voodoo Banshee and Voodoo
-	3.  Support is provided by the XF86_SVGA server with the tdfx
-	driver).
+	Support (including acceleration) for Voodoo Banshee and Voodoo3
+	cards is provided by the XF86_SVGA server with the tdfx driver.
 
 <tag>&relvers;:</tag>
-	Support for Voodoo 1 and Voodoo 2 via glide on platforms where
-	glide is available (Linux and FreeBSD(?)).  Support is provided by
-	the "glide" driver (requires Glide 2x).
+	Support for Voodoo Graphics and Voodoo 2 chips is available on
+	platforms where Glide is available (Linux and FreeBSD(?)) and is
+	provided by the "glide" driver (requires version 2.x of the Glide
+	library, which is not part of the XFree86 distribution).
 
-	Support (including acceleration) for Voodoo Banshee and Voodoo 3.
-	Support is provided by the "tdfx" driver.
+	Support (including acceleration) for Voodoo Banshee, Voodoo3,
+	Voodoo4, and Voodoo5 is provided by the "tdfx" driver.
 
 <tag>Summary:</tag>
 	All hardware supported in &legacyvers; is also supported in &relvers;.
@@ -64,14 +75,14 @@ dependencies/limitations, other architectures known to work on
 <tag>&legacyvers;:</tag>
 	Support (including acceleration) for GLINT 500TX (with IBM RGB526
 	ramdac), GLINT MX plus Delta or Gamma (with IBM RGB526 and RGB640
-	ramdacs), Permedia with IBM RGB526 ramdac, Permedia 2, 2a, 2v.
-	Support is provided by the XF86_3DLabs server.
+	ramdacs), Permedia with IBM RGB526 RAMDAC, and Permedia 2, 2a, 2v
+	is provided by the XF86_3DLabs server.
 
 
 <tag>&relvers;:</tag>
-	Support (including acceleration) for Permedia, Permedia 2, 2v,
-	(and 2a??), 3, GLINT 500TX, GLINT MX, GLINT Gamma, and Glint Delta
-	coproc.  Support is provided by the "glint" driver.
+	Support (including acceleration) for Permedia, Permedia 2, 2v, (and
+	2a?), Permedia 3, GLINT 500TX, GLINT MX, GLINT Gamma, and GLINT
+	Delta coproc is provided by the "glint" driver.
 
 <tag>Summary:</tag>
 	All hardware supported in &legacyvers; is also supported in &relvers;.
@@ -107,11 +118,11 @@ dependencies/limitations, other architectures known to work on
 	Support is provided by the XF86_SVGA server with the ark driver.
 
 <tag>&relvers;:</tag>
-	No native support for these chipsets, because the old driver
-	has not been ported.
+	Support (including acceleration) for the ARK1000PV, ARK2000PV,
+	and ARK2000MT.  Support is provided by the "ark" driver.
 
 <tag>Summary:</tag>
-	No ARK Logic chips are supported in &relvers;.
+	All hardware supported in &legacyvers; is also supported in &relvers;.
 
 </descrip>
 
@@ -133,11 +144,10 @@ dependencies/limitations, other architectures known to work on
 	server with the r128 driver.
 	
 <tag>&relvers;:</tag>
-	Accelerated support is provided for the Rage 128 chips by the
-	"r128" driver.  Accelerated support is provided for the Mach64
-	Rage variants by the "ati" driver.  Unaccelerated support is
-	provided for all of the others except the Mach8 and some early
-	Mach32 chips by the "ati" driver.
+	Accelerated support is provided for Mach64, Rage, Rage 128 and
+	Radeon chips.  Unaccelerated support is provided for all of the
+	others except the Mach8 and some early Mach32 chips by the "ati"
+	driver.
 
 <tag>Summary:</tag>
 	All chips supported in &legacyvers; are supported in &relvers;
@@ -181,8 +191,7 @@ dependencies/limitations, other architectures known to work on
 	and 64300.  This support is provided by the "chips" driver.
 
 <tag>Summary:</tag>
-	All chips supported in &legacyvers; are also supported in
-	&relvers;.
+	All hardware supported in &legacyvers; is also supported in &relvers;.
 
 </descrip>
 
@@ -198,15 +207,14 @@ dependencies/limitations, other architectures known to work on
 	XF86_SVGA server with the cirrus driver.
 
 <tag>&relvers;:</tag>
-	Support (accelerated) for the Alpine (5430, 5434, 5436, 5446,
-	5480), and Laguna (5462, 5464, 5465) chips is provided by the
+	Support (accelerated) for the Alpine (5430, 5434, 5436, 5446, 5480,
+	7548), and Laguna (5462, 5464, 5465) chips is provided by the
 	"cirrus" driver.
 
 <tag>Summary:</tag>
 	The following chips are supported in &legacyvers; but not in
 	&relvers;: 6410, 6412, 6420, 6440, 5420, 5422, 5424, 5426, 5428,
-	5429, 6205, 6215, 6225, 6235, 7541, 7542, 7543, 7548, 7555 and
-	7556.
+	5429, 6205, 6215, 6225, 6235, 7541, 7542, 7543, 7555 and 7556.
 
 </descrip>
 
@@ -232,7 +240,7 @@ dependencies/limitations, other architectures known to work on
 
 <tag>Summary:</tag>
 	No Compaq AVGA support in &relvers;.  DEC TGA support is equivalent
-	in both versions.
+	in both &legacyvers; and &relvers;.
 
 </descrip>
 
@@ -244,11 +252,12 @@ dependencies/limitations, other architectures known to work on
 	XF86_SVGA server with the cyrix driver.
 
 <tag>&relvers;:</tag>
-	A preliminary port of the driver is available, but it isn't
-	ready for widespread use.
+	The &legacyvers; driver has been ported to &relvers;, including
+	acceleration, but feedback is needed.
 
 <tag>Summary:</tag>
-	No Cyrix chips are well-supported in &relvers;.
+	Cyrix MediaGX users are encouraged to test its support in
+	&relvers;.
 
 </descrip>
 
@@ -317,7 +326,7 @@ dependencies/limitations, other architectures known to work on
 <descrip>
 <tag>&legacyvers;:</tag>
 	Support (accelerated) for the AGX-016, AGX-015 and AGX-014 is
-	provided by the XF86_AGX server..
+	provided by the XF86_AGX server.
 
 <tag>&relvers;:</tag>
 	No native support for these chipsets, because the old driver
@@ -325,6 +334,22 @@ dependencies/limitations, other architectures known to work on
 
 <tag>Summary:</tag>
 	No IIT chips are supported in &relvers;.
+
+</descrip>
+
+<sect>Integrated Micro Solutions (IMS)
+<p>
+<descrip>
+<tag>&legacyvers;:</tag>
+	Support (accelerated) for the IMS Twin Turbo 128 is provided by the
+	XF86_SVGA server with the imstt driver.
+
+<tag>&relvers;:</tag>
+	Support (accelerated) for the IMS Twin Turbo 128 is provided by the
+	"imstt" driver.
+
+<tag>Summary:</tag>
+	All hardware supported in &legacyvers; is also supported in &relvers;.
 
 </descrip>
 
@@ -364,8 +389,7 @@ dependencies/limitations, other architectures known to work on
 	and G400 is provided by the "mga" driver.
 
 <tag>Summary:</tag>
-	All chips supported in &legacyvers; are also supported in
-	&relvers;.
+	All hardware supported in &legacyvers; is also supported in &relvers;.
 
 </descrip>
 
@@ -419,9 +443,8 @@ dependencies/limitations, other architectures known to work on
 	provided by the "neomagic" driver.
 
 <tag>Summary:</tag>
-	All chips supported in &legacyvers; are also supported in
-	&relvers;.  The NM2230 and later chips are only supported in
-	&relvers;.
+	All hardware supported in &legacyvers; is also supported in &relvers;.
+	The NM2230 and later chips are only supported in &relvers;.
 
 </descrip>
 
@@ -436,8 +459,7 @@ dependencies/limitations, other architectures known to work on
 <tag>&relvers;:</tag>
 	Support (accelerated) for the Riva 128, 128ZX, TNT, TNT2 (Ultra,
 	Vanta, M64), GeForce (DDR, 256), GeForce2 (GTS, Ultra, MX), Quadro,
-	and Quadro2 is provided by
-	the nv driver.
+	and Quadro2 is provided by the "nv" driver.
 
 <tag>Summary:</tag>
 	All chipsets supported in &legacyvers; except the NV1 are also
@@ -456,15 +478,14 @@ dependencies/limitations, other architectures known to work on
 
 <tag>&relvers;:</tag>
 	Support (accelerated) for the Imagine 128, Ticket 2 Ride,
-	Revolution 3D and Revolution IV is provided by the XF86_I128
-	server.
+	Revolution 3D and Revolution IV is provided by the "i128" driver.
 
 <tag>Summary:</tag>
-	All Number Nine I128 chips are supported in &legacyvers; and &relvers;.
+	All hardware supported in &legacyvers; is also supported in &relvers;.
 
 </descrip>
 
-<sect>Oak Technologies Inc
+<sect>Oak Technologies, Inc.
 <p>
 <descrip>
 <tag>&legacyvers;:</tag>
@@ -530,8 +551,7 @@ dependencies/limitations, other architectures known to work on
 	"rendition" driver.
 
 <tag>Summary:</tag>
-	All chips supported in &legacyvers; are also supported in
-	&relvers;.
+	All hardware supported in &legacyvers; is also supported in &relvers;.
 
 </descrip>
 
@@ -539,31 +559,43 @@ dependencies/limitations, other architectures known to work on
 <p>
 <descrip>
 <tag>&legacyvers;:</tag>
-	Support (accelerated) for the S3 911, 924, 801, 805, 928, 864,
-	868, 964, 968, Trio32, Trio64, Trio64V+, Trio64UV+, Aurora64V+,
+	Support (accelerated) for the S3 911, 924, 801, 805, 928, 864, 868,
+	964, 968, Trio32, Trio64, Trio64V+, Trio64UV+, Aurora64V+,
 	Trio64V2, PLATO/PX is provided by the XF86_S3 server and the
 	XF86_SVGA server with the s3_svga driver.  Support (accelerated)
 	for the ViRGE, ViRGE/VX, ViRGE/DX, ViRGE/GX, ViRGE/GX2, ViRGE/MX,
 	ViRGE/MX+ is provided by the XF86_S3V server.  Support
 	(accelerated) for those ViRGE chips, as well as the Trio3D and
-	Trio3D/2X is provided by the XF86_SVGA server with the s3v
-	driver.  Support (accelerated) for the Savage3D, Savage3D/MV,
-	Savage4, Savage2000, is provided by the XF86_SVGA server with
- 	the s3_savage driver on some OSes (Linux, *BSD). 
+	Trio3D/2X is provided by the XF86_SVGA server with the s3v driver.
+	Support (accelerated) for the Savage3D, Savage3D/MV, Savage4, and
+	Savage2000, is provided by the XF86_SVGA server with the s3_savage
+	driver on some OSes (Linux, *BSD).
 
 <tag>&relvers;:</tag>
 	Support (accelerated) for the ViRGE, ViRGE/VX, ViRGE/DX, ViRGE/GX,
-	ViRGE/GX2, ViRGE/MX, ViRGE/MX+, Trio3D and Trio3D/2X is provided
-	by the "s3virge" driver.  
-	Support (accelerated) for the Savage3D, Savage3D/MV,
-	Savage4, Savage2000, is provided by the XF86_SVGA server with
- 	the savage driver.
-Support for the other S3 chipsets has
-	not yet been ported.
+	ViRGE/GX2, ViRGE/MX, ViRGE/MX+, Trio3D and Trio3D/2X is provided by
+	the "s3virge" driver.  Support (accelerated) for the Savage3D,
+	Savage3D/MV, Savage4, and Savage2000, is provided by the "savage"
+	driver.  Support for the other S3 chipsets has not yet been ported.
 
 <tag>Summary:</tag>
-	Only the ViRGE, Trio3D and savage chipsets are supported in &relvers;.
+	Only the ViRGE, Trio3D and Savage chipsets are supported in &relvers;.
 	All of the other chipsets are only supported in &legacyvers;.
+
+</descrip>
+
+<sect>Silicon Graphics, Inc. (SGI)
+<p>
+<descrip>
+<tag>&legacyvers;:</tag>
+	No SGI hardware is supported in &legacyvers;.
+
+<tag>&relvers;:</tag>
+	Unaccelerated support for the SGI Indy's Newport cards is provided
+	by the "newport" driver.
+
+<tag>Summary:</tag>
+	SGI hardware is supported only in &relvers;.
 
 </descrip>
 
@@ -587,7 +619,7 @@ Support for the other S3 chipsets has
 
 </descrip>
 
-<sect>Silicon Motion, Inc
+<sect>Silicon Motion, Inc.
 <p>
 <descrip>
 <tag>&legacyvers;:</tag>
@@ -596,12 +628,31 @@ Support for the other S3 chipsets has
 	smi driver.
 
 <tag>&relvers;:</tag>
-	No native support for these chipsets, because the driver
-	has not been ported.
+	Support (accelerated) for the Lynx, LynxE, Lynx3D, LynxEM, LynxEM+
+	and Lynx3DM chips is provided by the "siliconmotion" driver.
 
 <tag>Summary:</tag>
-	No SMI chips are supported in &relvers;, but the fbdev driver is
-	reported to work on Linux.
+	All hardware supported in &legacyvers; is also supported in &relvers;.
+
+</descrip>
+
+<sect>Sun Microsystems
+<p>
+<descrip>
+<tag>&legacyvers;:</tag>
+	No Sun hardware is supported in &legacyvers;.
+
+<tag>&relvers;:</tag>
+	Sun BW2 framebuffers are supported by the "sunbw2" driver.
+	Sun CG3 framebuffers are supported by the "suncg3" driver.
+	Sun CG6 framebuffers are supported by the "suncg6" driver.
+	Sun CG14 framebuffers are supported by the "suncg14" driver.
+	Sun FFB framebuffers are supported by the "sunffb" driver.
+	Sun LEO framebuffers are supported by the "sunleo" driver.
+	Sun TCX framebuffers are supported by the "suntcx" driver.
+
+<tag>Summary:</tag>
+	Sun hardware is supported only in &relvers;.
 
 </descrip>
 
@@ -631,7 +682,8 @@ Support for the other S3 chipsets has
 	The following (older) chipsets that are supported in &legacyvers;
 	are not supported in &relvers;: TVGA8200LX, TVGA8800CS, TVGA8900B,
 	TVGA8900C, TVGA8900CL, TVGA9000, TVGA9000i, TVGA9100B, TVGA9200CXr,
-	TGUI9400CXi, TGUI9420, TGUI9430DGi.
+	TGUI9400CXi, TGUI9420, TGUI9430DGi.  The remaining listed chipsets
+	are supported in &relvers;.
 
 </descrip>
 
