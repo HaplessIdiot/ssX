@@ -1,4 +1,4 @@
-/* $TOG: panoramiX.h /main/1 1997/10/29 13:25:49 kaleb $ */
+/* $TOG: panoramiX.h /main/4 1998/03/17 06:51:02 kaleb $ */
 /****************************************************************
 *                                                               *
 *    Copyright (c) Digital Equipment Corporation, 1991, 1997    *
@@ -20,7 +20,7 @@
 *                                                               *
 *****************************************************************/
 
-/* THIS IS NOT AN OPEN GROUP STANDARD */
+/* THIS IS NOT AN X PROJECT TEAM SPECIFICATION */
 
 /*  
  *	PanoramiX definitions
@@ -50,6 +50,7 @@ typedef struct _PanoramiXInfo {
 typedef struct _PanoramiXList {
     struct 	 _PanoramiXList *next;
     Bool	 FreeMe;
+    Bool         VisibilitySent;
     unsigned int visibility ;
     PanoramiXInfo info[MAXSCREENS];
 } PanoramiXList;

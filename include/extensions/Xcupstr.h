@@ -1,31 +1,25 @@
-/* $TOG: Xcupstr.h /main/2 1997/10/21 15:48:35 kaleb $ */
+/* $TOG: Xcupstr.h /main/3 1998/02/09 11:21:34 kaleb $ */
+
 /*
-Copyright © 1986-1997   The Open Group    All Rights Reserved
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this 
-software and associated documentation files (the Software), to use the Software 
-without restriction, including, without limitation, the rights to copy, modify, merge, 
-publish, distribute and sublicense the Software, to make, have made, license and 
-distribute derivative works thereof, and to permit persons to whom the Software is 
-furnished to do so, subject to the following conditions:
+Copyright 1987, 1988, 1998  The Open Group
 
-The above copyright notice and the following permission notice shall be included in all 
-copies of the Software:
+All Rights Reserved.
 
-THE SOFTWARE IS PROVIDED AS IS, WITHOUT WARRANTY OF ANY KIND, 
-EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE WARRANTIES 
-OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-
-INFRINGEMENT.  IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY 
-CLAIM, DAMAGES OR OTHER SIABILITIY, WHETHER IN AN ACTION OF 
-CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF, OR IN 
-CONNNECTION WITH THE SOFTWARE OR THE USE OF OTHER DEALINGS IN 
-THE SOFTWARE.
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
 
-Except as contained in this notice, the name of The Open Group shall not be used in 
-advertising or otherwise to promote the use or other dealings in this Software without 
-prior written authorization from The Open Group.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-X Window System is a trademark of The Open Group.
+Except as contained in this notice, the name of The Open Group shall not be
+used in advertising or otherwise to promote the sale, use or other dealings
+in this Software without prior written authorization from The Open Group.
+
 */
 
 #ifndef _XCUPSTR_H_ /* { */

@@ -1,4 +1,4 @@
-/* $TOG: panoramiXext.h /main/1 1997/10/29 13:25:54 kaleb $ */
+/* $TOG: panoramiXext.h /main/3 1998/02/13 13:08:51 kaleb $ */
 /****************************************************************
 *                                                               *
 *    Copyright (c) Digital Equipment Corporation, 1991, 1997    *
@@ -23,7 +23,7 @@
  *	PanoramiX definitions
  */
 
-/* THIS IS NOT AN OPEN GROUP STANDARD */
+/* THIS IS NOT AN X PROJECT TEAM SPECIFICATION */
 
 #define PANORAMIX_MAJOR_VERSION         1       /* current version number */
 #define PANORAMIX_MINOR_VERSION         0

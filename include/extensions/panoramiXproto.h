@@ -1,4 +1,4 @@
-/* $TOG: panoramiXproto.h /main/2 1997/11/04 10:35:16 kaleb $ */
+/* $TOG: panoramiXproto.h /main/4 1998/02/13 13:08:58 kaleb $ */
 /****************************************************************
 *                                                               *
 *    Copyright (c) Digital Equipment Corporation, 1991, 1997    *
@@ -20,7 +20,7 @@
 *                                                               *
 *****************************************************************/
 
-/* THIS IS NOT AN OPEN GROUP STANDARD */
+/* THIS IS NOT AN X PROJECT TEAM SPECIFICATION */
 
 #ifndef _PANORAMIXPROTO_H_
 #define _PANORAMIXPROTO_H_
