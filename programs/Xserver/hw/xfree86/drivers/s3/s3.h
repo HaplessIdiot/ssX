@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3.h,v 1.6 1997/06/15 07:12:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3.h,v 1.7 1997/09/25 16:13:54 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -128,6 +128,8 @@ extern Bool  S3InitLevelThree(DisplayModePtr);
 extern Bool  S3Init(DisplayModePtr);
 extern void  S3CursorInit();
 extern unsigned char S3MuxOrNot(DisplayModePtr);
+extern void S3SavePalette(LUTENTRY*);
+extern void S3RestorePalette(LUTENTRY*);
 
 extern void (* dacOutTi3026IndReg)(unsigned char,unsigned char,unsigned char);
 extern unsigned char (* dacInTi3026IndReg)(unsigned char);

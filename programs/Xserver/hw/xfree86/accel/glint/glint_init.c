@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_init.c,v 1.9 1997/09/25 16:13:52 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_init.c,v 1.10 1997/09/29 08:40:29 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -237,6 +237,7 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
      * in order to set up a mode we need to do a few more
      * things here than just set up the CRTC regs...
      */
+    GLINT_WAIT (2);
     if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
 	GLINT_WRITE_REG(crtcRegs->vtgpolarity,	VTGPolarity);
     }
@@ -255,10 +256,11 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
     }
 
     if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
+      GLINT_WAIT (2);
 	GLINT_WRITE_REG(pprod | 0x600,	LBReadMode);
 	GLINT_WRITE_REG(0x01,		LBWriteMode);
    }
-
+    GLINT_WAIT (3);
     GLINT_WRITE_REG(1,			FBWriteMode);
     GLINT_WRITE_REG(pprod,		FBReadMode);
 #if 0
@@ -273,6 +275,9 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
      * this one depends on the color depth
      */  
     if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
+
+      GLINT_WAIT (1);
+
 	switch (glintInfoRec.bitsPerPixel) {
 	case 8:
 	    GLINT_WRITE_REG(0x400 | (0x0e << 2) | 0,DitherMode);
@@ -284,30 +289,39 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
 	    GLINT_WRITE_REG(0x400 | (0x00 << 2) | 0,DitherMode);
 	    break;
 	}
+	GLINT_WAIT (31);
 	GLINT_WRITE_REG(0x3000,		AlphaBlendMode);
-	GLINT_WRITE_REG(0x0,		ColorDDAMode);
-	GLINT_WRITE_REG(0x0,		TextureColorMode);
-	GLINT_WRITE_REG(0x0,		FogMode);
-	GLINT_WRITE_REG(0x0,		AntialiasMode);
-	GLINT_WRITE_REG(0x0,		AlphaTestMode);
-	GLINT_WRITE_REG(0x0,		StencilMode);
-	GLINT_WRITE_REG(0x0,		AreaStippleMode);
-	GLINT_WRITE_REG(0x0,		LineStippleMode);
-	GLINT_WRITE_REG(0x0,		LogicalOpMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,	ColorDDAMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,	TextureColorMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,	TextureAddressMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,   TextureReadMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,   GLINTWindow);
+	GLINT_WRITE_REG(UNIT_DISABLE,   AlphaBlendMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,   LogicalOpMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,   DepthMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,   RouterMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,	FogMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,	AntialiasMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,	AlphaTestMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,	StencilMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,	AreaStippleMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,	LineStippleMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,	LogicalOpMode);
 	GLINT_WRITE_REG(/*0x7b*/0,	DepthMode);
-	GLINT_WRITE_REG(0x0,		StatisticMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,	StatisticMode);
 	GLINT_WRITE_REG(0xc00,		FilterMode);
 	GLINT_WRITE_REG(0xffffffff,	FBHardwareWriteMask);
 	GLINT_WRITE_REG(0xffffffff,	FBSoftwareWriteMask);
-	GLINT_WRITE_REG(0x0,		RasterizerMode);
-	GLINT_WRITE_REG(0x0,		GLINTDepth);
-	GLINT_WRITE_REG(0x0,		FBSourceOffset);
-	GLINT_WRITE_REG(0x0,		FBPixelOffset);
-	GLINT_WRITE_REG(0x0,		LBSourceOffset);
-	GLINT_WRITE_REG(0x0,		WindowOrigin);
-	GLINT_WRITE_REG(0x0,		FBWindowBase);
-	GLINT_WRITE_REG(0x0,		LBWindowBase);
+	GLINT_WRITE_REG(UNIT_DISABLE,	RasterizerMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,	GLINTDepth);
+	GLINT_WRITE_REG(UNIT_DISABLE,	FBSourceOffset);
+	GLINT_WRITE_REG(UNIT_DISABLE,	FBPixelOffset);
+	GLINT_WRITE_REG(UNIT_DISABLE,	LBSourceOffset);
+	GLINT_WRITE_REG(UNIT_DISABLE,	WindowOrigin);
+	GLINT_WRITE_REG(UNIT_DISABLE,	FBWindowBase);
+	GLINT_WRITE_REG(UNIT_DISABLE,	LBWindowBase);
 
+	GLINT_WAIT (1);
 	switch (glintInfoRec.bitsPerPixel) {
 	case 8:
 	    GLINT_WRITE_REG(0x2,	PixelSize);
@@ -321,6 +335,7 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
 	}
     }
     else if (IS_3DLABS_PM_FAMILY(coprotype)) {
+      GLINT_WAIT (1);
 	switch (glintInfoRec.bitsPerPixel) {
 	case 8:
 	  GLINT_WRITE_REG(0x0, FBReadPixel); /* 8 Bits */
@@ -333,31 +348,43 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
 	  break;
 	}
 
+	GLINT_WAIT (31);
+
+	GLINT_WRITE_REG(GWIN_DisableLBUpdate,   GLINTWindow); /* for performance */
 	/*  Framebufferorganisation */
 	GLINT_WRITE_REG(0x0,		DitherMode);
 	GLINT_WRITE_REG(0x3000,		AlphaBlendMode);
-	GLINT_WRITE_REG(0x0,		ColorDDAMode);
-	GLINT_WRITE_REG(0x0,		TextureColorMode);
-	GLINT_WRITE_REG(0x0,		FogMode);
-	GLINT_WRITE_REG(0x0,		StencilMode);
-	GLINT_WRITE_REG(0x0,		AreaStippleMode);
-	GLINT_WRITE_REG(0x0,		LogicalOpMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,	ColorDDAMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,	TextureColorMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,	TextureAddressMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,   TextureReadMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,   AlphaBlendMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,   LogicalOpMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,   DepthMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,   RouterMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,	FogMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,	AntialiasMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,	AlphaTestMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,	StencilMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,	AreaStippleMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,	LogicalOpMode);
 	GLINT_WRITE_REG(/*0x7b*/0,	DepthMode);
-	GLINT_WRITE_REG(0x0,		StatisticMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,	StatisticMode);
 	GLINT_WRITE_REG(0xc00,		FilterMode);
 	GLINT_WRITE_REG(0xffffffff,	FBHardwareWriteMask);
 	GLINT_WRITE_REG(0xffffffff,	FBSoftwareWriteMask);
-	GLINT_WRITE_REG(0x0,		RasterizerMode);
-	GLINT_WRITE_REG(0x0,		GLINTDepth);
-	GLINT_WRITE_REG(0x0,		FBSourceOffset);
-	GLINT_WRITE_REG(0x0,		FBPixelOffset);
-	GLINT_WRITE_REG(0x0,		LBSourceOffset);
-	GLINT_WRITE_REG(0x0,		WindowOrigin);
-	GLINT_WRITE_REG(0x0,		FBWindowBase);
-	GLINT_WRITE_REG(0x0,		LBWindowBase);
+	GLINT_WRITE_REG(UNIT_DISABLE,	RasterizerMode);
+	GLINT_WRITE_REG(UNIT_DISABLE,	GLINTDepth);
+	GLINT_WRITE_REG(UNIT_DISABLE,	FBSourceOffset);
+	GLINT_WRITE_REG(UNIT_DISABLE,	FBPixelOffset);
+	GLINT_WRITE_REG(UNIT_DISABLE,	LBSourceOffset);
+	GLINT_WRITE_REG(UNIT_DISABLE,	WindowOrigin);
+	GLINT_WRITE_REG(UNIT_DISABLE,	FBWindowBase);
+	GLINT_WRITE_REG(UNIT_DISABLE,	LBWindowBase);
     }
 
     if (IS_3DLABS_TX_MX_CLASS(coprotype)) {
+      GLINT_WAIT (24);
 	GLINT_WRITE_REG(0x0,		TextureAddressMode);
 	GLINT_WRITE_REG(0x0,		TextureReadMode);
 	GLINT_WRITE_REG(0x0,		RouterMode);
@@ -395,7 +422,7 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
 	GLINT_WRITE_REG(crtcRegs->v_blank_end,	VTGVGateEnd);
     } 
     else if (IS_3DLABS_PERMEDIA_CLASS(coprotype)) {
-
+      GLINT_WAIT (16);
       GLINT_WRITE_REG(0x0,			TextureAddressMode);
       GLINT_WRITE_REG(0x0,			TextureReadMode);
       GLINT_WRITE_REG(1,			DFIFODis);
@@ -433,6 +460,7 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
   
     if (IS_3DLABS_TX_MX_CLASS(coprotype))
     {
+      GLINT_WAIT (1);
 	GLINT_WRITE_REG(crtcRegs->fbmodesel, FBModeSel);
     } 
 }

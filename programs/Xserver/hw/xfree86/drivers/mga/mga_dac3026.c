@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.12 1997/09/15 07:18:51 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.13 1997/09/19 09:01:16 hohndel Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -744,6 +744,13 @@ DisplayModePtr mode;
 	vs = mode->CrtcVSyncStart		- 1;
 	ve = mode->CrtcVSyncEnd			- 1;
 	vt = mode->CrtcVTotal			- 2;
+	
+	/* HTOTAL & 0xF equal to 0xE in 8bpp or 0x4 in 24bpp causes strange
+	 * vertical stripes
+	 */
+	if((ht & 0x0F) == 0x0E || (ht & 0x0F) == 0x04)
+		ht++;
+		
 	if (vgaBitsPerPixel == 24)
 		wd = (vga256InfoRec.displayWidth * 3) >> (4 - MGABppShft);
 	else

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3misc.c,v 1.1 1997/03/06 23:16:37 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3misc.c,v 1.2 1997/06/10 12:30:30 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -714,3 +714,28 @@ void S3FillInModeInfo(DisplayModePtr mode)
 
 }
 
+
+void S3SavePalette(LUTENTRY* pal)
+{
+    register short i;
+
+    outb(DAC_R_INDEX, 0);
+    for (i=0; i < 256; i++) {
+	 pal[i].r = inb(DAC_DATA);
+	 pal[i].g = inb(DAC_DATA);
+	 pal[i].b = inb(DAC_DATA);
+    }
+}
+
+
+void S3RestorePalette(LUTENTRY* pal)
+{
+    register short i;
+
+    outb(DAC_W_INDEX, 0);
+    for (i=0; i < 256; i++) {
+	 outb(DAC_DATA, pal[i].r);
+	 outb(DAC_DATA, pal[i].g);
+	 outb(DAC_DATA, pal[i].b);
+    }
+}

@@ -24,7 +24,7 @@
  * Written by Alan Hourihane <alanh@fairlite.demon.co.uk>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_curs.c,v 1.3 1997/05/31 13:51:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_curs.c,v 1.4 1997/09/19 08:30:04 hohndel Exp $ */
 
 
 
@@ -149,5 +149,5 @@ TridentLoadCursorImage(bits, xorigin, yorigin)
 	int xorigin, yorigin;
 {
 	xf86memcpy((unsigned char *)vgaLinearBase + TridentCursorAddress,
-			bits, XAACursorInfoRec.MaxWidth * XAACursorInfoRec.MaxHeight);
+			bits, ((XAACursorInfoRec.MaxWidth * XAACursorInfoRec.MaxHeight/8)*2));
 }

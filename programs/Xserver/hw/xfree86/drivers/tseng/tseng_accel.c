@@ -11,7 +11,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.11 1997/08/26 10:01:27 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.12 1997/09/29 08:40:32 hohndel Exp $ */
 
 
 /*
@@ -58,6 +58,9 @@ void TsengSubsequentFillTrapezoidSolid();
 void TsengSetupForScreenToScreenCopy();
 void TsengSubsequentScreenToScreenCopy();
 
+void TsengDoImageWrite();
+void TsengWriteBitmap();
+
 void TsengSetupForScanlineScreenToScreenColorExpand();
 void TsengSubsequentScanlineScreenToScreenColorExpand();
 void TsengSubsequentScanlineScreenToScreenColorExpand_1to2to16();
@@ -85,6 +88,11 @@ static int planemask_mask; /* will hold the "empty" planemask value */
 void *colexp_buf;
 static long FrameBufColExpBase;
 static Bool tseng_use_1_to_8_colexp = FALSE;
+
+/* for ImageWrite and WriteBitmap */
+static unsigned int *FirstLinePntr, *SecondLinePntr;
+static unsigned int FirstLine, SecondLine;
+
 
 /* These will hold the ping-pong registers.
  * Note that ping-pong registers might not be needed when using
@@ -135,6 +143,10 @@ void TsengAccelInit() {
     /* W32 and W32i must wait for ACL before changing registers */
     need_wait_acl = Is_W32_W32i;
 
+    /* we need these shortcuts a lot */
+    bytesperpixel = vgaBitsPerPixel / 8;
+    tseng_line_width = vga256InfoRec.displayWidth * bytesperpixel;
+
     /*
      * We want to set up the FillRectSolid primitive for filling a solid
      * rectangle.
@@ -176,16 +188,40 @@ void TsengAccelInit() {
      */
 #ifdef ET6K_TRANSPARENCY
     xf86GCInfoRec.CopyAreaFlags = NO_PLANEMASK;
-    if (!Is_ET6K)
+    xf86AccelInfoRec.ImageWriteFlags = NO_PLANEMASK;
+    if (!Is_ET6K) {
       xf86GCInfoRec.CopyAreaFlags |= NO_TRANSPARENCY;
+      xf86AccelInfoRec.ImageWriteFlags |= NO_TRANSPARENCY;
+    }
 #else
     xf86GCInfoRec.CopyAreaFlags = NO_TRANSPARENCY;
+    xf86AccelInfoRec.ImageWriteFlags = NO_TRANSPARENCY;
 #endif
     
     xf86AccelInfoRec.SetupForScreenToScreenCopy =
         TsengSetupForScreenToScreenCopy;
     xf86AccelInfoRec.SubsequentScreenToScreenCopy =
         TsengSubsequentScreenToScreenCopy;
+
+    /* overload XAA ImageWrite function */
+    if (tsengImageWriteBase)
+    {
+/*      xf86AccelInfoRec.DoImageWrite = TsengDoImageWrite;*/
+
+      /* Offsets in video memory for line buffers. TsengDoImageWrite assumes
+       * that each line is the screen width (in bytes) + 3 and rounded up to
+       * the next dword.
+       */
+      FirstLine = tsengImageWriteBase;
+      SecondLine = FirstLine + ((tseng_line_width + 6) & ~0x3L);
+      
+      if (TSENG.ChipUseLinearAddressing)
+          FirstLinePntr = (unsigned int *) ((int)vgaLinearBase + FirstLine);
+      else
+          FirstLinePntr = (unsigned int *) ( ((int)vgaBase) + 0x1A000L);
+
+      SecondLinePntr = (unsigned int *)((int)FirstLinePntr + ((tseng_line_width + 6) & ~0x3L));
+    }
 
     /*
      * 8x8 pattern tiling not possible on W32/i/p chips in 24bpp mode.
@@ -275,6 +311,9 @@ void TsengAccelInit() {
       xf86AccelInfoRec.SubsequentScreenToScreenColorExpand =
           TsengSubsequentScreenToScreenColorExpand;
 #endif
+
+      if (tsengImageWriteBase)   /* uses the same buffer memory as ImageWrite */
+        xf86AccelInfoRec.WriteBitmap = TsengWriteBitmap;
 
       xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand =
           TsengSetupForScanlineScreenToScreenColorExpand;
@@ -394,7 +433,6 @@ void TsengAccelInit() {
     /*
      * For Tseng, we set up some often-used values
      */
-     bytesperpixel = vgaBitsPerPixel / 8;
      switch (bytesperpixel)   /* for MULBPP optimization */
      {
        case 1: powerPerPixel = 0;
@@ -415,8 +453,6 @@ void TsengAccelInit() {
                break;
      }
      
-     tseng_line_width = vga256InfoRec.displayWidth * bytesperpixel;
-
      /*
       * Init ping-pong registers.
       * This might be obsoleted by the BACKGROUND_OPERATIONS flag.
@@ -709,6 +745,20 @@ static int old_dir=-1;
 #define SET_SECONDARY_XYDIR(dir) \
       *ACL_SECONDARY_EDGE = (dir);
 
+
+/*
+ * This is called in each ACL function just before the first ACL register is
+ * written to. It waits for a the accelerator to finish on cards that don't
+ * support hardware-wait-state locking, and waits for a free queue entry on
+ * others, if hardware-wait-states are not enabled.
+ */
+static __inline__ void wait_acl_queue()
+{
+   if (!tseng_use_PCI_Retry) WAIT_QUEUE;
+   if (need_wait_acl) WAIT_ACL;
+}
+
+
 /*
  * This is the implementation of the Sync() function.
  *
@@ -741,9 +791,8 @@ void TsengSetupForFillRectSolid(color, rop, planemask)
 
     PINGPONG();
 
-    if (!tseng_use_PCI_Retry) WAIT_QUEUE;
-    if (need_wait_acl) WAIT_ACL;
-
+    wait_acl_queue();
+    
     /*
      * planemask emulation uses a modified "standard" FG ROP (see ET6000
      * data book p 66 or W32p databook p 37: "Bit masking"). We only enable
@@ -777,8 +826,7 @@ void TsengW32pSubsequentFillRectSolid(x, y, w, h)
 {
     int destaddr = FBADDR(x,y);
 
-    if (!tseng_use_PCI_Retry) WAIT_QUEUE;
-    if (need_wait_acl) WAIT_ACL;
+    wait_acl_queue();
 
     SET_XYDIR(0);
 
@@ -791,8 +839,7 @@ void TsengW32iSubsequentFillRectSolid(x, y, w, h)
 {
     int destaddr = FBADDR(x,y);
 
-    if (!tseng_use_PCI_Retry) WAIT_QUEUE;
-    if (need_wait_acl) WAIT_ACL;
+    wait_acl_queue();
 
     SET_XYDIR(0);
 
@@ -805,8 +852,7 @@ void Tseng6KSubsequentFillRectSolid(x, y, w, h)
 {
     int destaddr = FBADDR(x,y);
 
-    if (!tseng_use_PCI_Retry) WAIT_QUEUE;
-    if (need_wait_acl) WAIT_ACL;
+    wait_acl_queue();
 
    /* if XYDIR is not reset here, drawing a hardware line in between
     * blitting, with the same ROP, color, etc will not cause a call to
@@ -833,8 +879,7 @@ static __inline__ void Tseng_setup_screencopy(rop, planemask, transparency_color
     int transparency_color;
     int blit_dir;
 {
-    if (!tseng_use_PCI_Retry) WAIT_QUEUE;
-    if (need_wait_acl) WAIT_ACL;
+    wait_acl_queue();
 
 #ifdef ET6K_TRANSPARENCY
     if (Is_ET6K && (transparency_color != -1))
@@ -945,8 +990,7 @@ void TsengSubsequentScreenToScreenCopy(x1, y1, x2, y2, w, h)
         destaddr += x2;
     }
 
-    if (!tseng_use_PCI_Retry) WAIT_QUEUE;
-    if (need_wait_acl) WAIT_ACL;
+    wait_acl_queue();
 
     SET_XY(w, h);
     *ACL_SOURCE_ADDRESS = srcaddr;
@@ -991,8 +1035,7 @@ void TsengSubsequentFill8x8Pattern(patternx, patterny, x, y, w, h)
   int destaddr = FBADDR(x,y);
   int srcaddr = pat_src_addr + MULBPP(patterny * 8 + patternx);
 
-  if (!tseng_use_PCI_Retry) WAIT_QUEUE;
-  if (need_wait_acl) WAIT_ACL;
+  wait_acl_queue();
 
   *ACL_SOURCE_ADDRESS = srcaddr;
 
@@ -1067,8 +1110,7 @@ void TsengSubsequentScanlineScreenToScreenColorExpand(srcaddr)
      * less font corruption we get. But nothing really solves it.
      */
     
-    if (!tseng_use_PCI_Retry) WAIT_QUEUE;
-    if (need_wait_acl) WAIT_ACL;
+    wait_acl_queue();
 
     *ACL_MIX_ADDRESS = srcaddr;
     START_ACL(ColorExpandDst);
@@ -1166,8 +1208,7 @@ void TsengSetupForCPUToScreenColorExpand(bg, fg, rop, planemask)
 
   PINGPONG();
 
-  if (!tseng_use_PCI_Retry) WAIT_QUEUE;
-  if (need_wait_acl) WAIT_ACL;
+  wait_acl_queue();
 
   SET_FG_ROP(rop);
   SET_BG_ROP_TR(rop, bg);
@@ -1198,8 +1239,7 @@ void TsengSubsequentCPUToScreenColorExpand(x, y, w, h, skipleft)
   /* ErrorF("  %dx%d|%d",w,h,skipleft);*/
   if (skipleft) ErrorF("Can't do: Skipleft = %d\n", skipleft);
   
-  if (!tseng_use_PCI_Retry) WAIT_QUEUE;
-  if (need_wait_acl) WAIT_ACL;
+  wait_acl_queue();
 
   w = (w + 7) & ~7; /* HACK -- FIXME */
   
@@ -1218,8 +1258,7 @@ void TsengSetupForScreenToScreenColorExpand(bg, fg, rop, planemask)
 
     PINGPONG();
 
-    if (!tseng_use_PCI_Retry) WAIT_QUEUE;
-    if (need_wait_acl) WAIT_ACL;
+    wait_acl_queue();
 
     SET_FG_ROP(rop);
     SET_BG_ROP_TR(rop, bg);
@@ -1240,8 +1279,7 @@ void TsengSubsequentScreenToScreenColorExpand(srcx, srcy, x, y, w, h)
 
   int mixaddr = FBADDR(srcx, srcy * 8);
   
-  if (!tseng_use_PCI_Retry) WAIT_QUEUE;
-  if (need_wait_acl) WAIT_ACL;
+  wait_acl_queue();
 
   SET_XY(w, h);
   *ACL_MIX_ADDRESS = mixaddr;
@@ -1284,8 +1322,7 @@ void TsengSubsequentBresenhamLine(x1, y1, octant, err, e1, e2, length)
    if (octant & XDECREASING)
      destaddr += bytesperpixel-1;
 
-   if (!tseng_use_PCI_Retry) WAIT_QUEUE;
-   if (need_wait_acl) WAIT_ACL;
+   wait_acl_queue();
    
    if (!(octant & YMAJOR))
    {
@@ -1386,8 +1423,7 @@ void TsengSubsequentTwoPointLine(x1, y1, x2, y2, bias)
        dy = -dy;
      }
 
-   if (!tseng_use_PCI_Retry) WAIT_QUEUE;
-   if (need_wait_acl) WAIT_ACL;
+   wait_acl_queue();
 
    /* compute axial direction and load registers */
    if (dx >= dy)  /* X is major axis */
@@ -1460,8 +1496,7 @@ void TsengSubsequentFillTrapezoidSolid(ytop, height, left, dxL, dyL, eL, right, 
 
     /* Y direction is always positive (top-to-bottom drawing) */
 
-    if (!tseng_use_PCI_Retry) WAIT_QUEUE;
-    if (need_wait_acl) WAIT_ACL;
+    wait_acl_queue();
 
     /* left edge */
     /* compute axial direction and load registers */
@@ -1525,3 +1560,225 @@ void TsengSubsequentFillTrapezoidSolid(ytop, height, left, dxL, dyL, eL, right, 
 }
 #endif
 
+
+/*
+ * The functions below need "MoveDWORDS()". This is an optimized C-only (no
+ * assembler), but fast "memcpy()"-like function. Author: Harm Hanemaayer (?)
+ */
+
+static void MoveDWORDS(dest, src, dwords)
+   register unsigned int* dest;
+   register unsigned int* src;
+   register int dwords;
+{
+     while(dwords & ~0x03) {
+        *dest = *src;
+        *(dest + 1) = *(src + 1);
+        *(dest + 2) = *(src + 2);
+        *(dest + 3) = *(src + 3);
+        src += 4;
+        dest += 4;
+        dwords -= 4;
+     }
+     switch(dwords) {
+        case 0: return;
+        case 1: *dest = *src;
+                return;
+        case 2: *dest = *src;
+                *(dest + 1) = *(src + 1);
+                return;
+        case 3: *dest = *src;
+                *(dest + 1) = *(src + 1);
+                *(dest + 2) = *(src + 2);
+                return;
+    }
+}
+
+/*
+ * XAA ImageWrite replacement. XAA only supports CPU-to-screen ImageWrite,
+ * so we have to replace the whole thing by our own code.
+ */
+
+/*
+ * A simplified version of TsengSubsequentScreenToScreenCopy used by
+ * ImageWrite. It blits only one line, and always with xdir = ydir = 1.
+ */
+
+void TsengSubsequentScanlineScreenToScreenCopy(LineAddr, skipleft, x, y, w)
+    int LineAddr, skipleft, x, y, w;
+{
+    int destaddr = FBADDR(x,y);
+
+    /* tseng chips want x-sizes in bytes, not pixels */
+    skipleft = MULBPP(skipleft);
+
+    wait_acl_queue();
+
+    SET_XY(w, 1);
+    *ACL_SOURCE_ADDRESS = LineAddr + skipleft;
+    START_ACL(destaddr);
+}
+
+/* 
+ * xf86DoImageWrite transfers 8, 16, 24 and 32 bpp image data
+ * to the image transfer window with dword scanline padding.
+ * Based on xc/programs/Xserver/hw/xfree86/xaa/xf86cparea.c
+ *
+ * It assumes that each line is the screen width (in bytes) + 3 and rounded
+ * up to the next dword. ie:
+ *
+ *     (tseng_line_width + 6) >> 2  dwords.
+ *
+ * So I guess having two of these lines back to back with the first
+ * one starting on a dword boundary should do for all the Tseng's
+ * scanline needs.  Then the address of the first line could double
+ * as the base for the rest of XAA color expansion uses.
+ * Gotta make sure both buffers start on dword boundaries.
+ *
+ *   (author: Mark Vojkovich)
+ */
+
+void
+TsengDoImageWrite(pSrc, pDst, alu, prgnDst, pptSrc, planemask, bitPlane)
+    DrawablePtr	    pSrc, pDst;
+    int		    alu;
+    RegionPtr	    prgnDst;
+    DDXPointPtr	    pptSrc;
+    unsigned int    planemask;
+    int		    bitPlane;
+{
+    int srcwidth, skipleft, dwords;
+    int x,y,w,h;
+    unsigned char* psrcBase;			/* start of image */
+    register unsigned char* srcPntr;		/* index into the image */
+    BoxPtr pbox = REGION_RECTS(prgnDst);
+    int nbox = REGION_NUM_RECTS(prgnDst);
+    Bool PlusOne;
+    
+    cfbGetByteWidthAndPointer(pSrc, srcwidth, psrcBase);
+
+    /* setup for a left-to-right/top-to-bottom ScreenToScreenCopy */
+    TsengSetupForScreenToScreenCopy(1, 1, alu, planemask, -1);
+
+    for(; nbox; pbox++, pptSrc++, nbox--) {
+	x = pbox->x1;
+	y = pbox->y1;
+	w = pbox->x2 - pbox->x1;
+	h = pbox->y2 - pbox->y1;
+	PlusOne = (h & 0x01);
+	h >>= 1;	/* h is now linepairs */
+
+        srcPntr = psrcBase + (pptSrc->y * srcwidth) + (pptSrc->x * bytesperpixel);
+
+	if((skipleft = (int)srcPntr & 0x03)) {
+	    if(bytesperpixel == 3) {
+		skipleft = 4 - skipleft;
+	    	srcPntr = (unsigned char*)(srcPntr - (3*skipleft));  
+	    } else {
+	    	skipleft /= bytesperpixel;
+	    	srcPntr = (unsigned char*)((int)srcPntr & ~0x03);     
+	    }
+	}
+	
+	switch(bytesperpixel) {
+	   case 1:	dwords = (w + skipleft + 3) >> 2;
+			break;
+	   case 2:	dwords = (w + skipleft + 1) >> 1;
+			break;
+	   case 3:	dwords = ((w + skipleft + 1) * 3) >> 2;
+			break;
+	   default:	dwords = w;
+			break;
+	}
+
+	while(h--){
+	   /* WAIT_ACL; */
+	   MoveDWORDS(FirstLinePntr,srcPntr,dwords);
+	   WAIT_QUEUE;
+           TsengSubsequentScanlineScreenToScreenCopy(FirstLine, skipleft, x, y++, w);
+	   srcPntr += srcwidth;
+	   MoveDWORDS(SecondLinePntr,srcPntr,dwords);
+	   WAIT_QUEUE;
+           TsengSubsequentScanlineScreenToScreenCopy(SecondLine, skipleft, x, y++, w);
+	   srcPntr += srcwidth;
+	}
+	if(PlusOne) {
+	   /* WAIT_ACL; */
+	   MoveDWORDS(FirstLinePntr,srcPntr,dwords);
+	   WAIT_QUEUE;
+           TsengSubsequentScanlineScreenToScreenCopy(FirstLine, skipleft, x, y, w);
+	}
+    }
+
+    SET_SYNC_FLAG;
+}
+
+
+/*
+ * EXPERIMENTAL WriteBitmap() code. Largely written by Mark Vojkovich.
+ *
+ * This should really use triple-buffering as does the standard scanline
+ * color expansion XAA code. Now the excessive Syncing causes it to drag a
+ * little. Still, it beats drawing bitmaps through scanline-color expansion: 
+ *   copyplane500 : 493     (up from 365)
+ *   copyplane100 : 4440    (up from 2880)
+ *   copyplane10  : 31900   (up from 24600)
+ *
+ * The main advantage here is that alignment problems are handled by the
+ * accelerator instead of the XAA code (= the CPU).
+ */
+
+void TsengWriteBitmap(x, y, w, h, src, srcwidth, srcx, srcy, 
+                        bg, fg, rop, planemask)
+    int x, y, w, h;
+    unsigned char *src;
+    int srcwidth;
+    int srcx, srcy;
+    int bg, fg;
+    int rop;
+    unsigned int planemask;
+{
+    unsigned char* srcp;        /* pointer to src */
+    Bool PlusOne = (h & 0x01);
+    int dwords;
+    int line = y;
+
+/*    ErrorF("Wb ");*/
+    TsengSetupForScanlineScreenToScreenColorExpand(x, y, w, h, bg, fg, rop, planemask);
+
+    h >>= 1;                        /* h now represents line pairs */
+
+    /* calculate the src pointer to the nearest dword boundary */
+    srcp = (srcwidth * srcy) + (srcx >> 5) + src;   
+    srcx &= 31;                /* srcx now contains the skipleft parameter */ 
+ 
+    dwords = (w + 31 + srcx) >> 5;
+
+    while(h--) {
+        /* WAIT_ACL; */
+        /* write the first line */
+        MoveDWORDS(FirstLinePntr, (CARD32*)srcp, dwords);
+        /* blit it */
+        WAIT_QUEUE;
+        TsengSubsequentScanlineScreenToScreenColorExpand((FirstLine<<3)+srcx);
+        srcp += srcwidth;
+        /* write the second line */
+        MoveDWORDS(SecondLinePntr, (CARD32*)srcp, dwords);
+        /* blit it */
+        WAIT_QUEUE;
+        TsengSubsequentScanlineScreenToScreenColorExpand((SecondLine<<3)+srcx);
+        srcp += srcwidth;
+    }
+
+    if(PlusOne) {
+        /* WAIT_ACL; */
+        /* write the first line */
+        MoveDWORDS(FirstLinePntr, (CARD32*)srcp, dwords);
+        /* blit it */
+        WAIT_QUEUE;
+        TsengSubsequentScanlineScreenToScreenColorExpand((FirstLine<<3)+srcx);
+    }
+
+    SET_SYNC_FLAG;
+ }
+ 

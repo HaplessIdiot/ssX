@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.20 1997/09/29 08:40:32 hohndel Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.21 1997/09/30 04:51:02 hohndel Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -363,9 +363,32 @@ TsengFindBusType()
  *      handle linear memory mode stuff
  */
 
-static Bool
+static void
 ET4000LinMem(Bool autodetect)
 {
+  /*
+   * Check if a linear framebuffer is supported.
+   */
+
+  if (vgaBitsPerPixel < 8) {
+    FatalError("%s %s: Linear memory is not supported for color depth %d.\n",
+           XCONFIG_PROBED, vga256InfoRec.name, vgaBitsPerPixel);
+  }
+
+  if (!CHIP_SUPPORTS_LINEAR) {
+    if (vgaBitsPerPixel > 8)
+      FatalError("%s %s: A color depth of %dbpp is not supported (linear memory required).\n",
+             XCONFIG_PROBED, vga256InfoRec.name, vgaBitsPerPixel);
+    else
+      FatalError("%s %s: This chipset does not support linear memory.\n",
+             XCONFIG_PROBED, vga256InfoRec.name);
+  }
+
+  if (!xf86LinearVidMem()) {
+    FatalError("%s %s: This operating system does not support a linear framebuffer.\n",
+           XCONFIG_PROBED, vga256InfoRec.name);
+  }
+
  /* W32p cards can give us their Lin. memory address through the PCI
   * configuration. For W32i, this is not possible (VL-bus, MCA or ISA). W32i
   * cards have three extra external "address" lines, SEG2..SEG0 which _can_
@@ -385,14 +408,6 @@ ET4000LinMem(Bool autodetect)
   */
 #define DEFAULT_LIN_MEMBASE ( (256 + 128 + 64 + 32 + 16 + 8 + 4) * 1024*1024 )
 #define DEFAULT_LIN_MEMBASE_PCI (DEFAULT_LIN_MEMBASE & 0xFF000000)
-
-  if (vgaBitsPerPixel < 8) return FALSE;
-
-  if (!CHIP_SUPPORTS_LINEAR) {
-    ErrorF("%s %s: This chipset does not support linear memory.\n",
-           XCONFIG_PROBED, vga256InfoRec.name);
-    return (FALSE); /* no can do */
-  }
 
   if (vga256InfoRec.MemBase != 0)   /* MemBase given from XF86Config */
   {
@@ -485,12 +500,9 @@ ET4000LinMem(Bool autodetect)
 
   if (TSENG.ChipLinearBase==0L)
   {
-    ErrorF("%s %s: Linear memory address == 0x0. KABOOM! Going back to banked mode.\n",
+    FatalError("%s %s: Linear MemBase == 0. Giving up (please report this to XFree86@XFree86.Org).\n",
             XCONFIG_PROBED, vga256InfoRec.name);
-    TSENG.ChipUseLinearAddressing = FALSE;
-    return(FALSE);
   }
-  return(TRUE);
 }
 
 
@@ -947,22 +959,16 @@ ET4000Probe()
 
   if (vgaBitsPerPixel >= 8) {
 
+  /* enable option "linear" in XF86Config */
   if (CHIP_SUPPORTS_LINEAR) {
-    /* enable using option "linear" in XF86Config */
     OFLG_SET(OPTION_LINEAR, &TSENG.ChipOptionFlags);
-    /* copy state of option flag, override if > 8bpp */
-    if (OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options) || (vgaBitsPerPixel > 8) )
-    {
-      if (!ET4000LinMem(autodetect))
-        FatalError("%s %s: Linear memory mode not supported on this device.\n",
-                   XCONFIG_PROBED, vga256InfoRec.name);
-    }
   }
-  else {   /* > 8bpp really needs linear mode */
-    if (vgaBitsPerPixel > 8) {
-      FatalError("%s %s: A color depth of %d bits per pixel is not supported on this device.\n",
-                 XCONFIG_PROBED, vga256InfoRec.name, vgaBitsPerPixel);
-      }
+
+  /* check if linear memory is supported and check for a suitable MemBase */
+  /* for >8bpp, linear memory is _required_ */
+  if (OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options) || (vgaBitsPerPixel > 8))
+  {
+    ET4000LinMem(autodetect);
   }
   
   /* what color depths can we handle? */
@@ -1355,6 +1361,24 @@ ET4000FbInit()
         /* TsengAccelInit();
            This relies on variables that are setup later, so it's called there */ 
       }
+
+      /*
+       * XAA ImageWrite support needs two entire line buffers + 3 and rounded
+       * up to the next DWORD boundary.
+       */
+      if (tseng_use_ACL)
+      {
+        int req_ram = (vga256InfoRec.displayWidth * vgaBitsPerPixel / 8 + 6) * 2;
+        req_ram = (req_ram + 1023) / 1024; /* in kb */
+        if ((vga256InfoRec.videoRam - FBmem) > req_ram)
+        {
+          vga256InfoRec.videoRam -= req_ram;
+          tsengImageWriteBase = vga256InfoRec.videoRam * 1024;
+          ErrorF("%s %s: Using %dkb of unused display memory for extra acceleration functions.\n",
+                  XCONFIG_PROBED, vga256InfoRec.name, req_ram);
+        }
+      }
+
     }
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3driver.c,v 1.6 1997/06/10 12:30:29 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3driver.c,v 1.7 1997/09/25 16:13:56 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -91,6 +91,8 @@ unsigned char 	s3SwapBits[256];
 unsigned char 	s3DACBoarder = 0xff;
 ScreenPtr 	s3savepScreen;
 DisplayModePtr	s3CurrentMode = NULL;
+
+static LUTENTRY s3SavedPalette[256];
 
 pointer s3MmioMem = NULL;
 
@@ -241,6 +243,7 @@ void S3EnterLeave(Bool enter)
 {
    unsigned char tmp;
    extern void s3HideCursor();
+   static Bool s3VTSwitchBack = FALSE;
 
 #ifdef S3_DEBUG
    ErrorF("In S3EnterLeave(%s)\n", enter ? "ENTER" : "LEAVE");
@@ -248,7 +251,8 @@ void S3EnterLeave(Bool enter)
 
 #ifdef XFreeXDGA
    if ((vga256InfoRec.directMode & XF86DGADirectGraphics) && !enter) {
-	s3HideCursor();
+	S3SavePalette(s3SavedPalette);
+	s3VTSwitchBack = TRUE;
 	return;
    }
 #endif 
@@ -269,17 +273,24 @@ void S3EnterLeave(Bool enter)
 
       /* needed for virtual console switchback since SVGA server
 	doesn't reinit but restores */
-      if(!xf86ProbeOnly && s3CurrentMode) {
-	s3Initialized = FALSE;
-	if(!S3Init(s3CurrentMode)) {
-	  /* what *should* we do here?  MArk */
-	   FatalError("Whoops!\n");
-	} 
+      if(s3VTSwitchBack) {
+         if(s3CurrentMode) {
+		s3Initialized = FALSE;
+		if(!S3Init(s3CurrentMode)) {
+	  	/* what *should* we do here?  MArk */
+	   	    FatalError("Whoops!\n");
+		} 
+      	  }
+
+	  S3RestorePalette(s3SavedPalette);
+	  s3VTSwitchBack = FALSE;
       }
 
    } else { 
 
 	if(s3Initialized) { 
+	    S3SavePalette(s3SavedPalette);
+	    s3VTSwitchBack = TRUE;
 	    S3CleanUp(); 
 	    s3Initialized = FALSE;
        	}	

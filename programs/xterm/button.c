@@ -21,7 +21,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-/* $XFree86: xc/programs/xterm/button.c,v 3.15 1997/07/31 07:16:17 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/button.c,v 3.16 1997/08/26 10:01:53 hohndel Exp $ */
 
 /*
 button.c	Handles button events in the terminal emulator.
@@ -208,8 +208,7 @@ Cardinal *num_params GCC_UNUSED;
     strcpy( Line, "\030\033G  " );
 
 	line = ( event->xbutton.y - screen->border ) / FontHeight( screen );
-	col = (event->xbutton.x - screen->border - Scrollbar(screen))
-	 / FontWidth(screen);
+	col  = ( event->xbutton.x - OriginX(screen)) / FontWidth( screen );
 	Line[3] = ' ' + col;
 	Line[4] = ' ' + line;
 	v_write(pty, Line, 5 );
@@ -829,7 +828,7 @@ PointToRowCol(y, x, r, c)
 		row = firstValidRow;
 	else if(row > lastValidRow)
 		row = lastValidRow;
-	col = (x - screen->border - Scrollbar(screen)) / FontWidth(screen);
+	col = (x - OriginX(screen)) / FontWidth(screen);
 	if(col < 0)
 		col = 0;
 	else if(col > screen->max_col+1) {
@@ -1489,10 +1488,8 @@ EditorButton(event)
 
 	button = event->button - 1; 
 
-	row = (event->y - screen->border) 
-	 / FontHeight(screen);
-	col = (event->x - screen->border - Scrollbar(screen))
-	 / FontWidth(screen);
+	row = (event->y - screen->border) / FontHeight(screen);
+	col = (event->x - OriginX(screen)) / FontWidth(screen);
 	if (screen->control_eight_bits) {
 		line[count++] = CSI;
 	} else {
