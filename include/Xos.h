@@ -1,6 +1,6 @@
 /*
  * $XConsortium: Xos.h,v 1.68 95/06/02 16:51:21 gildea Exp $
- * $XFree86: xc/include/Xos.h,v 3.15 1996/02/20 14:31:59 dawes Exp $
+ * $XFree86: xc/include/Xos.h,v 3.16 1996/02/24 05:57:18 dawes Exp $
  * 
  * 
 Copyright (c) 1987  X Consortium
@@ -140,6 +140,11 @@ extern int sys_nerr;
 #include <unistd.h>
 #endif
 #endif /* X_NOT_POSIX else */
+
+#ifdef CSRG_BASED
+#include <stdlib.h>
+#include <unistd.h>
+#endif /* CSRG_BASED */
 
 /*
  * Get struct timeval

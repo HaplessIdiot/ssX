@@ -1,4 +1,5 @@
 /* $XConsortium: Manage.c,v 1.35 95/06/29 19:19:29 converse Exp $ */
+/* $XFree86$ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -353,7 +354,7 @@ void XtSetMappedWhenManaged(widget, mapped_when_managed)
 
 	call_data.type = XtHsetMappedWhenManaged;
 	call_data.widget = widget;
-	call_data.event_data = (XtPointer) mapped_when_managed;
+	call_data.event_data = (XtPointer) (unsigned long) mapped_when_managed;
 	XtCallCallbackList(hookobj, 
 		((HookObject)hookobj)->hooks.changehook_callbacks, 
 		(XtPointer)&call_data);
