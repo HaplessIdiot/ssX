@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xev/xev.c,v 1.9 2003/08/22 13:30:26 pascal Exp $ */
+/* $XFree86: xc/programs/xev/xev.c,v 1.10tsi Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -97,7 +97,7 @@ do_KeyPress (XEvent *eventp)
     KeyCode kc = 0;
     Bool kc_set = False;
     char *ksname;
-    int nbytes, nmbbytes;
+    int nbytes, nmbbytes = 0;
     char str[256+1];
     static char *buf = NULL;
     static int bsize = 8;
@@ -726,7 +726,7 @@ main (int argc, char **argv)
     unsigned long back, fore;
     XIM xim;
     XIMStyles *xim_styles;
-    XIMStyle xim_style;
+    XIMStyle xim_style = 0;
     char *modifiers;
     char *imvalret;
 
