@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.7 1996/02/09 08:20:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.8 1996/02/12 11:12:46 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -36,10 +36,10 @@
 #include "compiler.h"
 
 #include "xf86.h"
+#include "xf86_Config.h"
 #include "xf86Procs.h"
 #include "xf86Xinput.h"
 #include "xf86_OSlib.h"
-#include "xf86_Config.h"
 #include "atKeynames.h"
 #include "xf86Version.h"
 

@@ -3,10 +3,8 @@
  *
  */
 
-#ifndef MIPOINTER_H
-#define MIPOINTER_H
-
 /* $XConsortium: mipointer.h,v 5.7 94/04/17 20:27:40 dpw Exp $ */
+/* $XFree86$ */
 
 /*
 
@@ -33,6 +31,9 @@ Except as contained in this notice, the name of the X Consortium shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 */
+
+#ifndef MIPOINTER_H
+#define MIPOINTER_H
 
 typedef struct _miPointerSpriteFuncRec {
     Bool	(*RealizeCursor)(

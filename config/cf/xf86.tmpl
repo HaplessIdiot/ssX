@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.5 1996/02/09 08:17:47 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.6 1996/02/18 03:40:45 dawes Exp $
 
 #if XF86LinkKit
     TOP_INCLUDES = TopIncludes
@@ -31,7 +31,7 @@ XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.5 1996/02/09 08:17:47 dawes Exp $
 #endif
 
 #if BuildDynamicLoading
-	MODULEDIR = $(USRLIBDIR)/modules
+       MODULEDIR = $(USRLIBDIR)/modules
 #endif
 
 #if !BuildDynamicLoading && BuildXInputExt

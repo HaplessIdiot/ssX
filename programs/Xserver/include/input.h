@@ -1,4 +1,5 @@
 /* $XConsortium: input.h /main/21 1996/01/14 16:45:24 kaleb $ */
+/* $XFree86$ */
 /************************************************************
 
 Copyright (c) 1987  X Consortium

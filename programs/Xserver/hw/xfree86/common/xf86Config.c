@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.76 1996/02/12 11:12:41 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.77 1996/02/18 03:42:42 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -2175,6 +2175,7 @@ configDynamicModuleSection()
 	    if (xf86GetToken(NULL) != STRING)
 		xf86ConfigError("Dynamic module expected");
 	    else {
+#ifdef DYNAMIC_MODULE
 		if (!modulePath) {
 		    static Bool firstTime = TRUE;
 
@@ -2187,7 +2188,6 @@ configDynamicModuleSection()
 			firstTime = FALSE;
 		    }
 		}
-#ifdef DYNAMIC_MODULE
 		xf86LoadModule(val.str, modulePath);
 #else
 		ErrorF("Dynamic modules not supported. \"%s\" not loaded\n",
@@ -2206,7 +2206,6 @@ configDynamicModuleSection()
 	}    
     }
 }
-#endif
 
 static void
 readVerboseMode(monp)
