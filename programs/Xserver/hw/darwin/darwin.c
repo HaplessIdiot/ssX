@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.23 2001/05/18 17:48:32 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.24 2001/05/19 02:45:31 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -296,17 +296,16 @@ static int DarwinMouseProc(
     int             what )
 {
     char map[6];
-    
+
     switch (what) {
-    
+
         case DEVICE_INIT:
             pPointer->public.on = FALSE;
 
-            // Set button map. Darwin uses 2 for right and 3 for center.
-            // Reverse these to correspond to typical X usage.
+            // Set button map.
             map[1] = 1;
-            map[2] = 3;
-            map[3] = 2;
+            map[2] = 2;
+            map[3] = 3;
             map[4] = 4;
             map[5] = 5;
             InitPointerDeviceStruct( (DevicePtr)pPointer,
@@ -521,11 +520,12 @@ void ProcessInputEvents(void)
     int	r;
     struct timeval tv;
     struct timezone tz;
-    static int startsec = 0;
-    static Bool gotread = false;
     static int old_state = 0;
 
-#if defined(DARWIN_WITH_QUARTZ)  && defined(QUARTZ_SAFETY_DELAY)
+#if defined(DARWIN_WITH_QUARTZ) && defined(QUARTZ_SAFETY_DELAY)
+    static Bool gotread = false;
+    static int startsec = 0;
+
     // Quartz safety quit. Bail if we don't get any events from the event pipe.
     // If the event writer fails to find us, we will have captured the screen 
     // but not be seeing any events and be unkillable from the console.
@@ -558,8 +558,10 @@ void ProcessInputEvents(void)
             ErrorF( "Only read %i bytes from event pipe!\n", r );
             break;
         }
-    
+
+#if defined(DARWIN_WITH_QUARTZ) && defined(QUARTZ_SAFETY_DELAY)
         gotread = true;
+#endif
         gettimeofday(&tv, &tz);
     
         // translate it to an X event and post it
@@ -710,9 +712,17 @@ void ProcessInputEvents(void)
                     long hwButtons = ev.data.compound.misc.L[1];
                     int i;
     
-                    for (i = 1; i < 4; i++) {
+                    for (i = 1; i < 5; i++) {
                         if (hwDelta & (1 << i)) {
-                            xe.u.u.detail = i + 1;
+                            // IOKit and X have different numbering for the
+                            // middle and right mouse buttons.
+                            if (i == 1) {
+                                xe.u.u.detail = 3;
+                            } else if (i == 2) {
+                                xe.u.u.detail = 2;
+                            } else {
+                                xe.u.u.detail = i + 1;
+                            }
                             if (hwButtons & (1 << i)) {
 #ifdef __i386__
                                 xe.u.u.type = ButtonRelease;
@@ -1092,8 +1102,8 @@ xf86SetRootClip (ScreenPtr pScreen, BOOL enable)
     WindowPtr	pWin = WindowTable[pScreen->myNum];
     WindowPtr	pChild;
     Bool	WasViewable = (Bool)(pWin->viewable);
-    Bool	anyMarked;
-    RegionPtr	pOldClip, bsExposed;
+    Bool	anyMarked = TRUE;
+    RegionPtr	pOldClip = NULL, bsExposed;
 #ifdef DO_SAVE_UNDERS
     Bool	dosave = FALSE;
 #endif
