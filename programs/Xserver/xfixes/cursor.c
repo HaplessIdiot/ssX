@@ -1,5 +1,5 @@
 /*
- * $XFree86: $
+ * $XFree86: xc/programs/Xserver/xfixes/cursor.c,v 1.1 2002/11/30 06:21:46 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -72,7 +72,6 @@ CursorDisplayCursor (ScreenPtr pScreen,
     CursorScreenPtr	cs = GetCursorScreen(pScreen);
     Bool		ret;
 
-    ErrorF ("CursorDisplayCursor %d\n", pCursor->serialNumber);
     Unwrap (cs, pScreen, DisplayCursor);
     ret = (*pScreen->DisplayCursor) (pScreen, pCursor);
     if (pCursor != CursorCurrent)
@@ -85,8 +84,6 @@ CursorDisplayCursor (ScreenPtr pScreen,
 	    if (e->eventMask & XFixesDisplayCursorNotifyMask)
 	    {
 		xXFixesCursorNotifyEvent	ev;
-		ErrorF ("Sending cursor event to win 0x%x id 0x%x\n",
-			e->pWindow->drawable.id, e->clientResource);
 		ev.type = XFixesEventBase + XFixesCursorNotify;
 		ev.subtype = XFixesDisplayCursorNotify;
 		ev.sequenceNumber = e->pClient->sequence;
@@ -125,7 +122,6 @@ XFixesSelectCursorInput (ClientPtr	pClient,
 {
     CursorEventPtr	*prev, e;
 
-    ErrorF("SelectCursor input mask 0x%x\n", eventMask);
     for (prev = &cursorEvents; (e = *prev); prev = &e->next)
     {
 	if (e->pClient == pClient &&
@@ -138,7 +134,6 @@ XFixesSelectCursorInput (ClientPtr	pClient,
     {
 	if (e)
 	{
-	    ErrorF("Freeing existing event record 0x%x\n", e->clientResource);
 	    FreeResource (e->clientResource, 0);
 	}
 	return Success;
@@ -153,7 +148,6 @@ XFixesSelectCursorInput (ClientPtr	pClient,
 	e->pClient = pClient;
 	e->pWindow = pWindow;
 	e->clientResource = FakeClientID(pClient->index);
-	ErrorF ("Adding new event record 0x%x\n", e->clientResource);
 
 	/*
 	 * Add a resource hanging from the window to
@@ -342,12 +336,10 @@ CursorFreeClient (pointer data, XID id)
     CursorEventPtr	old = (CursorEventPtr) data;
     CursorEventPtr	*prev, e;
     
-    ErrorF ("CursorFreeClient xid 0x%x\n", id);
     for (prev = &cursorEvents; (e = *prev); prev = &e->next)
     {
 	if (e == old)
 	{
-	    ErrorF ("Found existing cursor event record\n");
 	    *prev = e->next;
 	    xfree (e);
 	    break;
@@ -362,14 +354,11 @@ CursorFreeWindow (pointer data, XID id)
     WindowPtr		pWindow = (WindowPtr) data;
     CursorEventPtr	e, next;
 
-    ErrorF ("CursorFreeWindow xid 0x%x\n", id);
     for (e = cursorEvents; e; e = next)
     {
 	next = e->next;
 	if (e->pWindow == pWindow)
 	{
-	    ErrorF ("Found matching cursor event record id 0x%x\n",
-		    e->clientResource);
 	    FreeResource (e->clientResource, 0);
 	}
     }
