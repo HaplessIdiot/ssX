@@ -1,4 +1,4 @@
-/* $XConsortium: lbx.h /main/21 1996/11/22 11:02:13 rws $ */
+/* $TOG: lbx.h /main/22 1997/09/12 14:27:39 barstow $ */
 /*
  * Copyright 1992 Network Computing Devices
  * Copyright 1996 X Consortium, Inc.
@@ -267,7 +267,6 @@ typedef struct _Client {
 extern ClientPtr *clients;
 #define MAXCLIENTS       128
 #define NullClient ((ClientPtr) 0)
-extern ClientPtr serverClient;
 extern int currentMaxClients;
 
 extern LbxLargeRequestRec *largeRequestQueue[];
@@ -515,6 +514,16 @@ extern void DoLBXReply(
 #endif
 );
 
+extern void WriteError(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    unsigned /*int majorCode*/,
+    unsigned /*int minorCode*/,
+    XID /*resId*/,
+    int /*errorCode*/
+#endif
+);
+
 extern void SendLbxSync(
 #if NeedFunctionPrototypes
     ClientPtr /*client*/
@@ -541,7 +550,8 @@ extern void SendErrorToClient(
 
 extern ClientPtr NextAvailableClient(
 #if NeedFunctionPrototypes
-    pointer /*ospriv*/
+    pointer /*ospriv*/,
+    int /* connect_fd */	/* the fd the client connected on */
 #endif
 );
 
@@ -642,6 +652,7 @@ extern void ForceSequenceUpdate(
 
 extern void LbxFreeTag(
 #if NeedFunctionPrototypes
+    XServerPtr /*server*/,
     XID /*tag*/,
     int /*tagtype*/
 #endif
@@ -649,6 +660,7 @@ extern void LbxFreeTag(
 
 extern void LbxSendTagData(
 #if NeedFunctionPrototypes
+    ClientPtr /*client*/,
     XID /*tag*/,
     int /*tagtype*/
 #endif
@@ -656,7 +668,7 @@ extern void LbxSendTagData(
 
 extern void SendInitLBXPackets(
 #if NeedFunctionPrototypes
-    void
+    XServerPtr /*server*/
 #endif
 );
 
@@ -670,7 +682,8 @@ extern void LbxCleanupSession(
 
 extern int EventLength(
 #if NeedFunctionPrototypes
-    xEvent * /*ev*/
+    xEvent * /*ev*/,
+    Bool /* squish */
 #endif
 );
 

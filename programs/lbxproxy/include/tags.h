@@ -1,4 +1,4 @@
-/* $XConsortium: tags.h /main/9 1996/11/19 14:25:09 rws $ */
+/* $TOG: tags.h /main/10 1997/09/12 14:28:57 barstow $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -38,7 +38,8 @@ typedef struct _tagdata *TagData;
 
 extern void TagsInit(
 #if NeedFunctionPrototypes
-    Bool useTags
+    XServerPtr /*server*/,
+    Bool /*useTags*/
 #endif
 );
 
@@ -50,6 +51,7 @@ extern void FreeTags(
 
 extern Bool TagStoreData(
 #if NeedFunctionPrototypes
+    XServerPtr /*server*/,
     Cache /*cache*/,
     CacheID /*id*/,
     int /*size*/,
@@ -60,6 +62,7 @@ extern Bool TagStoreData(
 
 extern Bool TagStoreDataNC(
 #if NeedFunctionPrototypes
+    XServerPtr /*server*/,
     Cache /*cache*/,
     CacheID /*id*/,
     int /*size*/,
@@ -70,6 +73,7 @@ extern Bool TagStoreDataNC(
 
 extern TagData TagGetTag(
 #if NeedFunctionPrototypes
+    XServerPtr /*server*/,
     Cache /*cache*/,
     CacheID /*id*/
 #endif
@@ -77,6 +81,7 @@ extern TagData TagGetTag(
 
 extern pointer TagGetData(
 #if NeedFunctionPrototypes
+    XServerPtr /*server*/,
     Cache /*cache*/,
     CacheID /*id*/
 #endif
@@ -84,6 +89,7 @@ extern pointer TagGetData(
 
 extern void TagFreeData(
 #if NeedFunctionPrototypes
+    XServerPtr /*server*/,
     Cache /*cache*/,
     CacheID /*id*/,
     Bool /*notify*/
@@ -92,6 +98,7 @@ extern void TagFreeData(
 
 extern Bool AnyTagBearingReplies(
 #if NeedFunctionPrototypes
+    XServerPtr /*server*/,
     Cache /*cache*/
 #endif
 );

@@ -1,13 +1,15 @@
-/* $TOG: XrmI.h /main/10 1997/08/27 12:12:26 kaleb $ */
-/*
+/* $TOG: pm.h /main/1 1997/09/12 14:28:33 barstow $ */
 
-Copyright (c) 1990  X Consortium
+/*
+Copyright (c) 1997  The Open Group
+
+Copyright (c) 1996  X Consortium
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
 "Software"), to deal in the Software without restriction, including
 without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
+distribute, sublicense, and sell copies of the Software, and to
 permit persons to whom the Software is furnished to do so, subject to
 the following conditions:
 
@@ -26,24 +28,37 @@ Except as contained in this notice, the name of the X Consortium shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from the X Consortium.
-
 */
 
+#include <X11/ICE/ICElib.h>
 
-/*
- * Macros to abstract out reading the file, and getting its size.
- *
- * You may need to redefine these for various other operating systems. 
- */
+extern IceConn PM_iceConn;
+extern int proxy_manager_fd;
+extern Bool proxyMngr;
 
-#include	<X11/Xos.h>
-#include        <sys/stat.h>                        
+extern Bool CheckForProxyManager (
+#if NeedFunctionPrototypes
+    void
+#endif
+);
 
-#define GetSizeOfFile(fd,size)                      \
-{                                                   \
-    struct stat status_buffer;                      \
-    if ( (fstat((fd), &status_buffer)) == -1 )      \
-	size = -1;                                  \
-    else                                            \
-	size = status_buffer.st_size;               \
-}
+extern void ConnectToProxyManager (
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void SendGetProxyAddrReply (
+#if NeedFunctionPrototypes
+    IceConn /*requestor_iceConn*/,
+    int /*status*/,
+    char * /*addr*/,
+    char * /*error*/
+#endif
+);
+
+extern void HandleProxyManagerConnection (
+#if NeedFunctionPrototypes
+    void
+#endif
+);

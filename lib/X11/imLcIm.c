@@ -1,4 +1,4 @@
-/* $XConsortium: imLcIm.c,v 1.7 94/03/30 09:09:55 rws Exp $ */
+/* $TOG: imLcIm.c /main/11 1997/08/27 12:12:44 kaleb $ */
 /******************************************************************
 
           Copyright 1992, 1993, 1994 by FUJITSU LIMITED
@@ -56,10 +56,12 @@ _XimCheckIfLocalProcessing(im)
     if(strcmp(im->core.im_name, "") == 0) {
 	name = _XlcFileName(im->core.lcd, COMPOSE_FILE);
 	if (name != (char *)NULL) {
-	    fp = fopen(name, "r");
+	    fp = _XFopenFile (name, "r");
 	    Xfree(name);
-	    if (fp != (FILE *)NULL)
+	    if (fp != (FILE *)NULL) {
+		fclose(fp);
 		return(True);
+	    }
 	}
 	return(False);
     } else if(strcmp(im->core.im_name, "local") == 0 ||
@@ -86,22 +88,38 @@ _XimLocalIMFree(im)
     Xim		im;
 {
     XimFreeDefaultTree(im->private.local.top);
-    if(im->core.im_resources)
+    if(im->core.im_resources) {
 	Xfree(im->core.im_resources);
-    if(im->core.ic_resources)
+	im->core.im_resources = NULL;
+    }
+    if(im->core.ic_resources) {
 	Xfree(im->core.ic_resources);
-    if(im->core.im_values_list)
+	im->core.ic_resources = NULL;
+    }
+    if(im->core.im_values_list) {
 	Xfree(im->core.im_values_list);
-    if(im->core.ic_values_list)
+	im->core.im_values_list = NULL;
+    }
+    if(im->core.ic_values_list) {
 	Xfree(im->core.ic_values_list);
-    if(im->core.styles)
+	im->core.ic_values_list = NULL;
+    }
+    if(im->core.styles) {
 	Xfree(im->core.styles);
-    if(im->core.res_name)
+	im->core.styles = NULL;
+    }
+    if(im->core.res_name) {
 	Xfree(im->core.res_name);
-    if(im->core.res_class)
+	im->core.res_name = NULL;
+    }
+    if(im->core.res_class) {
 	Xfree(im->core.res_class);
-    if(im->core.im_name)
+	im->core.res_class = NULL;
+    }
+    if(im->core.im_name) {
 	Xfree(im->core.im_name);
+	im->core.im_name = NULL;
+    }
     return;
 }
 
@@ -164,7 +182,7 @@ _XimCreateDefaultTree(im)
     name = _XlcFileName(im->core.lcd, COMPOSE_FILE);
     if (name == (char *)NULL)
          return;
-    fp = fopen(name, "r");
+    fp = _XFopenFile (name, "r");
     Xfree(name);
     if (fp == (FILE *)NULL)
 	 return;
@@ -177,13 +195,17 @@ Private XIMMethodsRec      Xim_im_local_methods = {
     _XimLocalSetIMValues,       /* set_values */
     _XimLocalGetIMValues,       /* get_values */
     _XimLocalCreateIC,          /* create_ic */
-    XLookupString		/* lookup_string */
+    _XimLcctstombs,		/* ctstombs */
+    _XimLcctstowcs		/* ctstowcs */
 };
 
 Public Bool
 _XimLocalOpenIM(im)
     Xim			 im;
 {
+    XLCd		 lcd = im->core.lcd;
+    XlcConv		 ctom_conv;
+    XlcConv		 ctow_conv;
     XimDefIMValues	 im_values;
 
     _XimInitialResourceInfo();
@@ -207,25 +229,46 @@ _XimLocalOpenIM(im)
 
     _XimCreateDefaultTree(im);
 
+    if (!(ctom_conv = _XlcOpenConverter(lcd,
+					XlcNCompoundText, lcd, XlcNMultiByte)))
+	goto Open_Error;
+    if (!(ctow_conv = _XlcOpenConverter(lcd,
+					XlcNCompoundText, lcd, XlcNWideChar)))
+	goto Open_Error;
+
     im->methods = &Xim_im_local_methods;
     im->private.local.current_ic = (XIC)NULL;
+    im->private.local.ctom_conv = ctom_conv;
+    im->private.local.ctow_conv = ctow_conv;
+
     return(True);
 
 Open_Error :
     if (im->core.im_resources) {
 	Xfree(im->core.im_resources);
+	im->core.im_resources = NULL;
     }
     if (im->core.ic_resources) {
 	Xfree(im->core.ic_resources);
+	im->core.ic_resources = NULL;
     }
     if (im->core.im_values_list) {
 	Xfree(im->core.im_values_list);
+	im->core.im_values_list = NULL;
     }
     if (im->core.ic_values_list) {
 	Xfree(im->core.ic_values_list);
+	im->core.ic_values_list = NULL;
     }
     if (im->core.styles) {
 	Xfree(im->core.styles);
+	im->core.styles = NULL;
+    }
+    if (im->private.local.ctom_conv) {
+	_XlcCloseConverter(im->private.local.ctom_conv);
+    }
+    if (im->private.local.ctow_conv) {
+	_XlcCloseConverter(im->private.local.ctow_conv);
     }
     return(False);
 }

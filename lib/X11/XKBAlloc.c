@@ -1,5 +1,4 @@
-/* $XConsortium: XKBAlloc.c /main/6 1996/02/02 14:09:14 kaleb $ */
-/* $XFree86$ */
+/* $TOG: XKBAlloc.c /main/7 1997/08/17 20:47:47 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -25,6 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
+/* $XFree86: xc/lib/X11/XKBAlloc.c,v 3.2 1996/10/13 11:17:24 dawes Exp $ */
 
 #ifndef XKB_IN_SERVER
 

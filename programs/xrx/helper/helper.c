@@ -1,4 +1,4 @@
-/* $XConsortium: helper.c /main/16 1996/12/20 15:30:24 lehors $ */
+/* $TOG: helper.c /main/17 1997/09/11 09:19:16 kaleb $ */
 /*
 
 Copyright (C) 1996 X Consortium
@@ -150,10 +150,10 @@ ProcessUIParams(Display *dpy,
     fwp_dpyname = use_fwp ? GetXFwpDisplayName(DisplayString(rdpy)) : NULL;
 
     if (fwp_dpyname != NULL) {
-	out->ui = GetXUrl(fwp_dpyname, x_ui_auth);
+	out->ui = GetXUrl(fwp_dpyname, x_ui_auth, in->action);
 	free(fwp_dpyname);
     } else
-	out->ui = GetXUrl(DisplayString(rdpy), x_ui_auth);
+	out->ui = GetXUrl(DisplayString(rdpy), x_ui_auth, in->action);
 
     if (in->x_ui_lbx == RxTrue) {
 	if (use_lbx == True) {
@@ -228,10 +228,10 @@ no server found\n");
     pfwp_dpyname = use_fwp ? GetXFwpDisplayName(DisplayString(pdpy)) : NULL;
 
     if (pfwp_dpyname != NULL) {
-	out->print = GetXPrintUrl(pfwp_dpyname, printer, auth);
+	out->print = GetXPrintUrl(pfwp_dpyname, printer, auth, in->action);
 	free(pfwp_dpyname);
     } else
-	out->print = GetXPrintUrl(DisplayString(pdpy), printer, auth);
+	out->print = GetXPrintUrl(DisplayString(pdpy), printer, auth, in->action);
 
     if (auth != NULL)
 	free(auth);

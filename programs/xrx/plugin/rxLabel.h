@@ -1,7 +1,8 @@
-/* $TOG: globals.c /main/12 1997/09/12 14:30:18 barstow $ */
-/************************************************************
+/* $TOG: rxLabel.h /main/2 1997/08/29 15:53:33 kaleb $ */
 
-Copyright (c) 1987  X Consortium
+/***********************************************************
+
+Copyright (c) 1987, 1988, 1994  X Consortium
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 
-Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
+Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts.
 
                         All Rights Reserved
 
@@ -45,13 +46,21 @@ WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
 ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
-********************************************************/
-  
-#include "misc.h"
-#include "lbx.h"
+******************************************************************/
 
-ClientPtr *clients;
-int  currentMaxClients;   /* current size of clients array */
+#ifndef _rxLabel_h
+#define _rxLabel_h
 
-LbxLargeRequestRec *largeRequestQueue[LARGE_REQUEST_QUEUE_LEN];
-int numLargeRequestsInQueue = 0;
+#define XtNcursor "cursor"
+#define XtNcursorName "cursorName"
+#define XtNinsensitiveBorder "insensitiveBorder"
+#define XtCInsensitive "Insensitive"
+#define XtNpointerColor "pointerColor"
+#define XtNpointerColorBackground "pointerColorBackground"
+
+extern WidgetClass rxLabelWidgetClass;
+
+typedef struct _RxLabelClassRec *RxLabelWidgetClass;
+typedef struct _RxLabelRec      *RxLabelWidget;
+
+#endif /* _rxLabel_h */

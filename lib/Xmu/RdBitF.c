@@ -1,5 +1,4 @@
-/* $XConsortium: RdBitF.c,v 1.10 94/04/17 20:16:13 kaleb Exp $ */
-/* $XFree86: xc/lib/Xmu/RdBitF.c,v 3.1 1996/05/06 05:54:37 dawes Exp $ */
+/* $TOG: RdBitF.c /main/11 1997/08/27 12:13:15 kaleb $ */
 
 /*
 
@@ -27,6 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
+/* $XFree86: xc/lib/Xmu/RdBitF.c,v 3.2 1996/05/10 06:55:26 dawes Exp $ */
 
 /*
  * This file contains miscellaneous utility routines and is not part of the
@@ -54,7 +54,6 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xlibint.h>
 #include <stdio.h>
 #include <ctype.h>
-
 
 #define MAX_SIZE 255
 
@@ -260,6 +259,124 @@ int XmuReadBitmapData (fstream, width, height, datap, x_hot, y_hot)
     RETURN (BitmapSuccess);
 }
 
+#if defined(WIN32) || defined(__EMX__) /* || defined(OS2) */
+
+static int access_file (path, pathbuf, len_pathbuf, pathret)
+    char* path;
+    char* pathbuf;
+    int len_pathbuf;
+    char** pathret;
+{
+    if (access (path, F_OK) == 0) {
+	if (strlen (path) < len_pathbuf)
+	    *pathret = pathbuf;
+	else
+	    *pathret = malloc (strlen (path) + 1);
+	if (*pathret) {
+	    strcpy (*pathret, path);
+	    return 1;
+	}
+    }
+    return 0;
+}
+
+static int AccessFile (path, pathbuf, len_pathbuf, pathret)
+    char* path;
+    char* pathbuf;
+    int len_pathbuf;
+    char** pathret;
+{
+#ifndef MAX_PATH
+#define MAX_PATH 512
+#endif
+
+    unsigned long drives;
+    int i, len;
+    char* drive;
+    char buf[MAX_PATH];
+    char* bufp;
+
+    /* just try the "raw" name first and see if it works */
+    if (access_file (path, pathbuf, len_pathbuf, pathret))
+	return 1;
+
+    /* try the places set in the environment */
+    drive = getenv ("_XBASEDRIVE");
+#ifdef __EMX__
+    if (!drive)
+	drive = getenv ("X11ROOT");
+#endif
+    if (!drive)
+	drive = "C:";
+    len = strlen (drive) + strlen (path);
+    if (len < MAX_PATH) bufp = buf;
+    else bufp = malloc (len + 1);
+    strcpy (bufp, drive);
+    strcat (bufp, path);
+    if (access_file (bufp, pathbuf, len_pathbuf, pathret)) {
+	if (bufp != buf) free (bufp);
+	return 1;
+    }
+
+#ifndef __EMX__ 
+    /* one last place to look */
+    drive = getenv ("HOMEDRIVE");
+    if (drive) {
+	len = strlen (drive) + strlen (path);
+	if (len < MAX_PATH) bufp = buf;
+	else bufp = malloc (len + 1);
+	strcpy (bufp, drive);
+	strcat (bufp, path);
+	if (access_file (bufp, pathbuf, len_pathbuf, pathret)) {
+	    if (bufp != buf) free (bufp);
+	    return 1;
+	}
+    }
+
+    /* does OS/2 (with or with gcc-emx) have getdrives? */
+    /* tried everywhere else, go fishing */
+#define C_DRIVE ('C' - 'A')
+#define Z_DRIVE ('Z' - 'A')
+    drives = _getdrives ();
+    for (i = C_DRIVE; i <= Z_DRIVE; i++) { /* don't check on A: or B: */
+	if ((1 << i) & drives) {
+	    len = 2 + strlen (path);
+	    if (len < MAX_PATH) bufp = buf;
+	    else bufp = malloc (len + 1);
+	    *bufp = 'A' + i;
+	    *(bufp + 1) = ':';
+	    *(bufp + 2) = '\0';
+	    strcat (bufp, path);
+	    if (access_file (bufp, pathbuf, len_pathbuf, pathret)) {
+		if (bufp != buf) free (bufp);
+		return 1;
+	    }
+	}
+    }
+#endif
+    return 0;
+}
+
+FILE* fopen_file(path, mode)
+    char* path;
+    char* mode;
+{
+    char buf[MAX_PATH];
+    char* bufp;
+    void* ret = NULL;
+
+    if (AccessFile (path, buf, MAX_PATH, &bufp))
+	ret = fopen (bufp, mode);
+
+    if (bufp != buf) free (bufp);
+
+    return ret;
+}
+
+#else
+#define fopen_file fopen
+#endif
+
 
 #if NeedFunctionPrototypes
 int XmuReadBitmapDataFromFile (_Xconst char *filename, unsigned int *width, 
@@ -279,7 +396,7 @@ int XmuReadBitmapDataFromFile (filename, width, height, datap, x_hot, y_hot)
 #ifdef __EMX__
     filename = __XOS2RedirRoot(filename);
 #endif
-    if ((fstream = fopen (filename, "r")) == NULL) {
+    if ((fstream = fopen_file (filename, "r")) == NULL) {
 	return BitmapOpenFailed;
     }
     status = XmuReadBitmapData (fstream, width, height, datap, x_hot, y_hot);

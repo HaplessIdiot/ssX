@@ -1,4 +1,20 @@
-XFree86 3.9t (25 October 1997)
+XFree86 3.9t (26 October 1997)
+1346. Multi-display support for lbxproxy (#969-971, 977, 978, Arthur Barstow).
+1345. Remove some misleading 32-bit comments in Xlib (#967, Kaleb Keithley).
+1344. Additional symbols for Japanese 109 key keyboard (#962, Kaleb Keithley).
+1343. Faster bit counting algorithm for Xlib/Xt modifier code (#958,
+      Kaleb Keithley).
+1342. XKB updates for hp ddx (#955, 956, Kaleb Keithley).
+1341. Fix Xaw Text Widget call to XtMalloc(0) (#954, Kaleb Keithley).
+1340. Updates to xrx plugins (#953, 957, 959-961, 963, Kaleb Keithley).
+1339. Use dump instead of nm in elistgen.sun (#922, Kaleb Keithley).
+1338. xkb updates (#920, Kaleb Keithley).
+1337. Fix imake's SPARCcompiler CCompilerMajorVersion detection (#919,
+      Kaleb Keithley).
+1336. Updates related to xkbcomp install (#918, Kaleb Keithley).
+1335. General MS-Win lib fixes (#917, Kaleb Keithley).
+1334. xterm support for -lcurses on HPUX 10.2 (#914, 916, 952, Kaleb Keithley).
+1333. Fix incorrect mode name in xf86config.c.
 1332. Fix text restore problem on some Avance Logic cards (#1072, Thomas
       Dreibholz).
 1331. WriteBitmap code for MGA driver (#1069, Mark Vojkovich, Radek Kapitan).

@@ -1,4 +1,4 @@
-/* $XConsortium: gfx.c /main/28 1996/11/18 21:24:20 rws $ */
+/* $TOG: gfx.c /main/29 1997/09/12 14:30:11 barstow $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -130,12 +130,11 @@ static int  pad[4] = {0, 3, 2, 1};
     REENCODE_USHORT(_val, out); \
 }
 
-int         gfx_gc_hit;
-int         gfx_gc_miss;
-int         gfx_draw_hit;
-int         gfx_draw_miss;
-int         gfx_total;
-int         gfx_bail;
+int gfx_gc_hit;
+int gfx_gc_miss;
+int gfx_draw_hit;
+int gfx_draw_miss;
+int gfx_total;
 
 static void
 push(cache, xid)
@@ -322,7 +321,7 @@ reencode_poly(client, lbxreq, reencode_rtn)
     bzero(((char *) newreq) + len, newreq->padBytes);
     len += newreq->padBytes;
     newreq->length = len >> 2;
-    WriteReqToServer(client, len, (char *) newreq);
+    WriteReqToServer(client, len, (char *) newreq, TRUE);
     xfree(newreq);
     return Success;
 bail:
@@ -582,7 +581,7 @@ ProcLBXFillPoly(client)
     bzero(((char *) newreq) + len, newreq->padBytes);
     len += newreq->padBytes;
     newreq->length = len >> 2;
-    WriteReqToServer(client, len, (char *) newreq);
+    WriteReqToServer(client, len, (char *) newreq, TRUE);
     xfree(newreq);
     return Success;
 bail:
@@ -652,7 +651,7 @@ ProcLBXCopyArea(client)
     bzero(((char *) newreq) + len, extra);
     len += extra;
     newreq->length = len >> 2;
-    WriteReqToServer(client, len, (char *) newreq);
+    WriteReqToServer(client, len, (char *) newreq, TRUE);
     return Success;
 bail:
     return ProcStandardRequest(client);
@@ -689,7 +688,7 @@ ProcLBXCopyPlane(client)
     bzero(((char *) newreq) + len, extra);
     len += extra;
     newreq->length = len >> 2;
-    WriteReqToServer(client, len, (char *) newreq);
+    WriteReqToServer(client, len, (char *) newreq, TRUE);
     return Success;
 bail:
     return ProcStandardRequest(client);
@@ -746,7 +745,7 @@ ProcLBXPolyText(client)
     bzero(((char *) newreq) + len, extra);
     len += extra;
     newreq->length = len >> 2;
-    WriteReqToServer(client, len, (char *) newreq);
+    WriteReqToServer(client, len, (char *) newreq, TRUE);
     xfree(newreq);
     return Success;
 bail:
@@ -793,7 +792,7 @@ ProcLBXImageText(client)
     bzero(((char *) newreq) + len, extra);
     len += extra;
     newreq->length = len >> 2;
-    WriteReqToServer(client, len, (char *) newreq);
+    WriteReqToServer(client, len, (char *) newreq, TRUE);
     xfree(newreq);
     return Success;
 bail:
@@ -871,11 +870,11 @@ ProcLBXPutImage(client)
     if (stuff->format != ZPixmap ||
 	(stuff->depth == 1 && LBXZBitsPerPixel1(client) == 1))
     {
-	bcompMethod = LbxFindPreferredBitmapCompMethod ();
+	bcompMethod = LbxFindPreferredBitmapCompMethod (client->server);
 	if (!bcompMethod)
 	    status = LBX_IMAGE_COMPRESS_NO_SUPPORT;
     } else {
-	pcompMethod = LbxFindPreferredPixmapCompMethod (
+	pcompMethod = LbxFindPreferredPixmapCompMethod (client->server,
 	    (int) stuff->format, (int) stuff->depth);
 	if (!pcompMethod)
 	    status = LBX_IMAGE_COMPRESS_NO_SUPPORT;
@@ -1034,7 +1033,7 @@ ProcLBXPutImage(client)
 
     if (newreq->length > (client->req_len >> 2) ||
 	DELTA_CACHEABLE(&server->outdeltas, len))
-	WriteReqToServer(client, len, data);
+	WriteReqToServer(client, len, data, TRUE);
     else
 	WriteToServerUncompressed(client, len, data, TRUE);
 
@@ -1121,7 +1120,8 @@ GetLbxImageReply(client, nr, data)
     {
 	LbxBitmapCompMethod *compMethod;
 
-	compMethod = LbxLookupBitmapCompMethod (rep->compressionMethod);
+	compMethod = LbxLookupBitmapCompMethod (client->server,
+						rep->compressionMethod);
 
 	if (!compMethod)
 	{
@@ -1167,7 +1167,8 @@ GetLbxImageReply(client, nr, data)
     {
 	LbxPixmapCompMethod *compMethod;
 
-	compMethod = LbxLookupPixmapCompMethod (rep->compressionMethod);
+	compMethod = LbxLookupPixmapCompMethod (client->server, 
+						rep->compressionMethod);
 
 	if (!compMethod)
 	{

@@ -1,4 +1,4 @@
-/* $XConsortium: misc.h /main/3 1996/11/22 11:01:56 rws $ */
+/* $TOG: misc.h /main/4 1997/09/12 14:28:08 barstow $ */
 
 /*
 
@@ -47,7 +47,9 @@ from the X Consortium.
 #include "Xfuncproto.h"
 
 typedef void *pointer;
+#ifndef _BOOL_ALREADY_DEFINED_
 typedef int Bool;
+#endif
 #ifndef TRUE
 #define FALSE 0
 #define TRUE 1
@@ -63,9 +65,11 @@ typedef struct _XServer *XServerPtr;
 #define MILLI_PER_SECOND (1000)
 
 /* XXX globals.h? */
+extern int nextFreeClientID; 
+extern int nClients;
+extern char *display_name;
 extern char dispatchException;
 extern char isItTimeToYield;
-extern unsigned long serverGeneration;
 extern int MaxClients;
 
 /* The following byte swapping tools are duplicated in several places.

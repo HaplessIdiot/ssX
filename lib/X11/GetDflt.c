@@ -1,4 +1,4 @@
-/* $TOG: GetDflt.c /main/56 1997/06/11 06:40:28 kaleb $ */
+/* $TOG: GetDflt.c /main/57 1997/08/27 12:11:48 kaleb $ */
 
 /***********************************************************
 
@@ -47,7 +47,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/GetDflt.c,v 3.11 1997/06/11 12:24:25 dawes Exp $ */
+/* $XFree86: xc/lib/X11/GetDflt.c,v 3.12 1997/06/15 07:12:10 dawes Exp $ */
 
 #include "Xlibint.h"
 #include <X11/Xos.h>
@@ -98,17 +98,22 @@ static char *GetHomeDir (dest, len)
     int len;
 {
 #ifdef WIN32
-    register char *ptr;
-    char* users = "/users/";
+    register char *ptr1;
+    register char *ptr2;
+    int len1 = 0, len2 = 0;
 
-    if (ptr = getenv("HOME")) {
-	(void) strncpy(dest, ptr, len);
-	dest[len-1] = '\0';
-    } else if (ptr = getenv("USERNAME")) {
-	(void) strcpy (dest, users);
-	(void) strncat (dest, ptr, len - strlen (users));
-	dest[len-1] = '\0';
-    } else
+    if (ptr1 = getenv("HOME")) {	/* old, deprecated */
+	len1 = strlen (ptr1);
+    } else if ((ptr1 = getenv("HOMEDRIVE")) && (ptr2 = getenv("HOMEDIR"))) {
+	len1 = strlen (ptr1);
+	len2 = strlen (ptr2);
+    } else if (ptr2 = getenv("USERNAME")) {
+	len1 = strlen (ptr1 = "/users/");
+	len2 = strlen (ptr2);
+    }
+    if ((len1 + len2 + 1) < len)
+	sprintf (dest, "%s%s", ptr1, (ptr2) ? ptr2 : "");
+    else
 	*dest = '\0';
 #else
     _Xgetpwparams pwparams;

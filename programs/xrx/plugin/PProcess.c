@@ -1,4 +1,4 @@
-/* $XConsortium: PProcess.c /main/29 1996/12/20 15:30:35 lehors $ */
+/* $TOG: PProcess.c /main/32 1997/09/09 11:13:55 kaleb $ */
 /*
 
 Copyright (C) 1996 X Consortium
@@ -34,8 +34,7 @@ the X Consortium.
 #include "XAuth.h"
 #include "XDpyName.h"
 #include "Prefs.h"
-#include <Xm/Xm.h>
-#include <Xm/Protocols.h>
+#include <X11/StringDefs.h>
 
 #include <limits.h>		/* for MAXHOSTNAMELEN */
 /* and in case we didn't get it from the headers above */
@@ -241,7 +240,7 @@ SetWMColormap(PluginInstance* This, Window win)
 	return;
 
     /* if window's colormap is different from toplevel's one set property */
-    XtSetArg(arg, XmNcolormap, &top_cmap);
+    XtSetArg(arg, XtNcolormap, &top_cmap);
     XtGetValues(This->toplevel_widget, &arg, 1);
     if (This->client_windows[i].colormap != top_cmap) {
 	Window *cur_list;
@@ -448,22 +447,28 @@ void
 RxpWmDelWinHandler (
     Widget widget,
     XtPointer client_data,
-    XtPointer call_data)
+    XEvent* event,
+    Boolean* cont)
 {
     PluginInstance* This = (PluginInstance*) client_data;
     int i;
 
-    for (i = 0; i < This->nclient_windows; i++) {
-	if (This->client_windows[i].flags & RxpWmDelWin) {
-	    XClientMessageEvent ev;
+    if (event == NULL ||
+	(event->type == ClientMessage &&
+	 event->xclient.message_type == RxGlobal.wm_protocols &&
+	 event->xclient.data.l[0] == RxGlobal.wm_delete_window)) {
+	for (i = 0; i < This->nclient_windows; i++) {
+	    if (This->client_windows[i].flags & RxpWmDelWin) {
+		XClientMessageEvent ev;
 
-	    ev.type = ClientMessage;
-	    ev.window = This->client_windows[i].win;
-	    ev.message_type = RxGlobal.wm_protocols;
-	    ev.format = 32;
-	    ev.data.l[0] = RxGlobal.wm_delete_window;
-	    ev.data.l[1] = XtLastTimestampProcessed (XtDisplay (widget));
-	    XSendEvent (RxGlobal.dpy, ev.window, FALSE, 0L, (XEvent*) &ev);
+		ev.type = ClientMessage;
+		ev.window = This->client_windows[i].win;
+		ev.message_type = RxGlobal.wm_protocols;
+		ev.format = 32;
+		ev.data.l[0] = RxGlobal.wm_delete_window;
+		ev.data.l[1] = XtLastTimestampProcessed (XtDisplay (widget));
+		XSendEvent (RxGlobal.dpy, ev.window, FALSE, 0L, (XEvent*) &ev);
+	    }
 	}
     }
 }
@@ -583,10 +588,18 @@ SetupStructureNotify (PluginInstance* This)
 			  False,
 			  StructureNotifyHandler,
 			  (XtPointer) This);
+
+    XtAddRawEventHandler (This->toplevel_widget,
+			  NoEventMask,
+			  True,
+			  RxpWmDelWinHandler,
+			  (XtPointer) This);
+#if 0
     XmAddWMProtocolCallback (This->toplevel_widget,
 			     RxGlobal.wm_delete_window,
 			     RxpWmDelWinHandler,
 			     (XtPointer) This);
+#endif
 }
 
 /***********************************************************************
@@ -677,10 +690,17 @@ RxpTeardown (PluginInstance* This)
 				 False, 
 				 StructureNotifyHandler,
 				 (XtPointer) This);
+	XtRemoveRawEventHandler (This->toplevel_widget,
+				 NoEventMask,
+				 True,
+				 RxpWmDelWinHandler,
+				 (XtPointer) This);
+#if 0
 	XmRemoveWMProtocolCallback (This->toplevel_widget,
 				    RxGlobal.wm_delete_window,
 				    RxpWmDelWinHandler,
 				    (XtPointer) This);
+#endif
     }
 }
 
@@ -714,7 +734,7 @@ ProcessUIParams(PluginInstance* This,
 	    Arg arg;
 
 	    /* use plugin's colormap as the default colormap */
-	    XtSetArg(arg, XmNcolormap, &cmap);
+	    XtSetArg(arg, XtNcolormap, &cmap);
 	    XtGetValues(This->plugin_widget, &arg, 1);
 	    scr = XtScreen(This->plugin_widget);
 	    if (cmap == DefaultColormapOfScreen(scr)) {
@@ -791,9 +811,9 @@ requested, APPGROUP extension not supported\n");
 	    RxGlobal.has_ui_fwp = RxFalse;
     }
     if (use_fwp == True && RxGlobal.has_ui_fwp == RxTrue)
-	out->ui = GetXUrl(RxGlobal.fwp_dpyname, *x_ui_auth_ret);
+	out->ui = GetXUrl(RxGlobal.fwp_dpyname, *x_ui_auth_ret, in->action);
     else
-	out->ui = GetXUrl(display_name, *x_ui_auth_ret);
+	out->ui = GetXUrl(display_name, *x_ui_auth_ret, in->action);
 
     if (in->x_ui_lbx == RxTrue) {
 	if (use_lbx == True) {
@@ -881,10 +901,12 @@ no server found\n");
     }
     if (use_fwp == True && RxGlobal.has_print_fwp == RxTrue)
 	out->print = GetXPrintUrl(RxGlobal.pfwp_dpyname,
-				  RxGlobal.printer_name, auth);
+				  RxGlobal.printer_name, auth,
+				  in->action);
     else
 	out->print = GetXPrintUrl(DisplayString(RxGlobal.pdpy),
-				  RxGlobal.printer_name, auth);
+				  RxGlobal.printer_name, auth,
+				  in->action);
 
     if (auth != NULL)
 	NPN_MemFree(auth);

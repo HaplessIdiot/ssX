@@ -1,4 +1,4 @@
-/* $XConsortium: extensions.c /main/10 1996/11/22 15:01:39 rws $ */
+/* $TOG: extensions.c /main/11 1997/09/12 14:30:05 barstow $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -52,9 +52,7 @@ AddExtension(server, name, reply, rep_mask, ev_mask)
     CARD8      *rep_mask,
                *ev_mask;
 {
-    int         i;
     ExtensionInfoPtr eip = NULL;
-    ClientPtr  *newclients;
     int         req_mask_len;
 
     for (eip = server->extensions; eip; eip = eip->next) {
@@ -289,8 +287,8 @@ ProcLBXQueryExtension(client)
     }
     nr->request_info.lbxqueryextension.name = ename;
     FinishLBXRequest(client, REQ_PASSTHROUGH);
-    WriteToServer(client, sizeof(req), (char *) &req, TRUE);
-    WriteToServer(client, nlen, ename, FALSE);
+    WriteToServer(client, sizeof(req), (char *) &req, TRUE, TRUE);
+    WriteToServer(client, nlen, ename, FALSE, TRUE);
 
     return Success;
 }

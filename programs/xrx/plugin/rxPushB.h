@@ -1,7 +1,8 @@
-/* $TOG: globals.c /main/12 1997/09/12 14:30:18 barstow $ */
-/************************************************************
+/* $TOG: rxPushB.h /main/1 1997/08/29 15:53:49 kaleb $ */
 
-Copyright (c) 1987  X Consortium
+/***********************************************************
+
+Copyright (c) 1987, 1988, 1994  X Consortium
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 
-Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
+Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts.
 
                         All Rights Reserved
 
@@ -45,13 +46,18 @@ WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
 ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
-********************************************************/
-  
-#include "misc.h"
-#include "lbx.h"
+******************************************************************/
 
-ClientPtr *clients;
-int  currentMaxClients;   /* current size of clients array */
+#ifndef _rxPushB_h
+#define _rxPushB_h
 
-LbxLargeRequestRec *largeRequestQueue[LARGE_REQUEST_QUEUE_LEN];
-int numLargeRequestsInQueue = 0;
+#include "rxLabel.h"
+
+#define XtNhighlightThickness "highlightThickness"
+
+extern WidgetClass		rxPushBWidgetClass;
+
+typedef struct _RxPushClassRec	*RxPushBWidgetClass;
+typedef struct _RxPushBRec	*RxPushBWidget;
+
+#endif /* _rxPushB_h */

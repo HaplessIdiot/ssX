@@ -1,4 +1,4 @@
-/* $XConsortium: NewNDest.c /main/14 1996/12/07 17:05:45 kaleb $ */
+/* $TOG: NewNDest.c /main/15 1997/09/03 15:58:29 kaleb $ */
 /*
 
 Copyright (C) 1996 X Consortium
@@ -56,7 +56,7 @@ RxpDestroy(PluginInstance *This)
     fprintf (stderr, "%s\n", "RxpDestroy");
 #endif
     if (RxGlobal.dpy != NULL) {
-	RxpWmDelWinHandler (This->toplevel_widget, (XtPointer) This, NULL);
+	RxpWmDelWinHandler (This->toplevel_widget, (XtPointer) This, NULL, NULL);
 	RxpRemoveDestroyCallback(This);
 	if (This->x_ui_auth_id != 0)
 	    XSecurityRevokeAuthorization(RxGlobal.dpy, This->x_ui_auth_id);

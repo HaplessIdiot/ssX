@@ -1,5 +1,4 @@
-/* $XConsortium: expr.c /main/9 1996/03/01 14:32:05 kaleb $ */
-/* $XFree86$ */
+/* $TOG: expr.c /main/11 1997/08/03 11:49:52 kaleb $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -25,6 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
+/* $XFree86: xc/programs/xkbcomp/expr.c,v 3.2 1996/08/26 15:01:40 dawes Exp $ */
 
 #include "xkbcomp.h"
 #include "tokens.h"

@@ -1,4 +1,4 @@
-/* $XConsortium: init.c /main/15 1996/12/03 14:21:55 kaleb $ */
+/* $TOG: init.c /main/16 1997/09/12 14:30:24 barstow $ */
 /*
  * Copyright 1992 Network Computing Devices
  *
@@ -44,7 +44,6 @@ DisplayOpen (dpy_name, requestp, eventp, errorp, sequencep)
     int	    *sequencep;
 {
     Display *dpy;
-    int	    fd;
     int	    lbxMajor, lbxMinor;
     Window  win;
     XTextProperty name;

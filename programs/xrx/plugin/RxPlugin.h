@@ -1,4 +1,4 @@
-/* $XConsortium: RxPlugin.h /main/21 1996/12/07 17:05:56 kaleb $ */
+/* $TOG: RxPlugin.h /main/22 1997/09/03 15:58:35 kaleb $ */
 /*
 
 Copyright (C) 1996 X Consortium
@@ -165,7 +165,7 @@ extern void
 RxpTeardown (PluginInstance*);
 
 extern void
-RxpWmDelWinHandler (Widget, XtPointer, XtPointer);
+RxpWmDelWinHandler (Widget, XtPointer, XEvent*, Boolean*);
 
 extern void
 RxpRemoveDestroyCallback (PluginInstance*);

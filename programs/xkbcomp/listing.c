@@ -1,5 +1,4 @@
-/* $XConsortium: listing.c /main/3 1996/08/31 12:15:45 kaleb $ */
-/* $XFree86: xc/programs/xkbcomp/listing.c,v 3.2 1996/08/26 14:44:10 dawes Exp $ */
+/* $TOG: listing.c /main/4 1997/08/02 10:09:54 kaleb $ */
 /************************************************************
  Copyright (c) 1996 by Silicon Graphics Computer Systems, Inc.
 
@@ -72,6 +71,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+/* $XFree86: xc/programs/xkbcomp/listing.c,v 3.3 1996/12/23 07:11:36 dawes Exp $ */
 
 
 #include <stdio.h>

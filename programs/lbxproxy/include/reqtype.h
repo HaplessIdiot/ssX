@@ -1,4 +1,4 @@
-/* $XConsortium: reqtype.h /main/7 1996/11/22 11:01:36 rws $ */
+/* $TOG: reqtype.h /main/8 1997/09/12 14:28:45 barstow $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *

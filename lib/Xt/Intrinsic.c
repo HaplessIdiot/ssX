@@ -1,4 +1,4 @@
-/* $TOG: Intrinsic.c /main/150 1997/05/15 17:29:59 kaleb $ */
+/* $TOG: Intrinsic.c /main/151 1997/08/27 12:13:28 kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Intrinsic.c,v 3.8 1997/05/17 12:52:12 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Intrinsic.c,v 3.9 1997/05/31 13:51:19 dawes Exp $ */
 
 /*
 
@@ -867,22 +867,124 @@ Boolean XtIsObject(object)
     return True;
 }
 
+#if defined(WIN32) || defined(__EMX__)
+static int access_file (path, pathbuf, len_pathbuf, pathret)
+    char* path;
+    char* pathbuf;
+    int len_pathbuf;
+    char** pathret;
+{
+    if (access (path, F_OK) == 0) {
+	if (strlen (path) < len_pathbuf)
+	    *pathret = pathbuf;
+	else
+	    *pathret = XtMalloc (strlen (path));
+	if (*pathret) {
+	    strcpy (*pathret, path);
+	    return 1;
+	}
+    }
+    return 0;
+}
+
+static int AccessFile (path, pathbuf, len_pathbuf, pathret)
+    char* path;
+    char* pathbuf;
+    int len_pathbuf;
+    char** pathret;
+{
+    unsigned long drives;
+    int i, len;
+    char* drive;
+    char buf[MAX_PATH];
+    char* bufp;
+
+    /* just try the "raw" name first and see if it works */
+    if (access_file (path, pathbuf, len_pathbuf, pathret))
+	return 1;
+
+    /* try the places set in the environment */
+    drive = getenv ("_XBASEDRIVE");
+#ifdef __EMX__
+    if (!drive)
+	drive = getenv ("X11ROOT");
+#endif
+    if (!drive)
+	drive = "C:";
+    len = strlen (drive) + strlen (path);
+    bufp = XtStackAlloc (len + 1, buf);
+    strcpy (bufp, drive);
+    strcat (bufp, path);
+    if (access_file (bufp, pathbuf, len_pathbuf, pathret)) {
+	XtStackFree (bufp, buf);
+	return 1;
+    }
+
+#ifndef __EMX__ 
+    /* one last place to look */
+    drive = getenv ("HOMEDRIVE");
+    if (drive) {
+	len = strlen (drive) + strlen (path);
+	bufp = XtStackAlloc (len + 1, buf);
+	strcpy (bufp, drive);
+	strcat (bufp, path);
+	if (access_file (bufp, pathbuf, len_pathbuf, pathret)) {
+	    XtStackFree (bufp, buf);
+	    return 1;
+	}
+    }
+
+    /* does OS/2 (with or with gcc-emx) have getdrives()? */
+    /* tried everywhere else, go fishing */
+    drives = _getdrives ();
+#define C_DRIVE ('C' - 'A')
+#define Z_DRIVE ('Z' - 'A')
+    for (i = C_DRIVE; i <= Z_DRIVE; i++) { /* don't check on A: or B: */
+	if ((1 << i) & drives) {
+	    len = 2 + strlen (path);
+	    bufp = XtStackAlloc (len + 1, buf);
+	    *bufp = 'A' + i;
+	    *(bufp + 1) = ':';
+	    *(bufp + 2) = '\0';
+	    strcat (bufp, path);
+	    if (access_file (bufp, pathbuf, len_pathbuf, pathret)) {
+		XtStackFree (bufp, buf);
+		return 1;
+	    }
+	}
+    }
+#endif
+    return 0;
+}
+#endif
 
 static Boolean TestFile(path)
     String path;
 {
-#ifdef VMS
-    return TRUE;	/* Who knows what to do here? */
-#else
+#ifndef VMS
+    int ret = 0;
     struct stat status;
+#if defined(WIN32) || defined(__EMX__) /* || defined(OS2) */
+    char buf[MAX_PATH];
+    char* bufp;
+    int len;
 
-    return (access(path, R_OK) == 0 &&		/* exists and is readable */
+    if (AccessFile (path, buf, MAX_PATH, &bufp))
+	path = bufp; 
+#endif
+    ret = (access(path, R_OK) == 0 &&		/* exists and is readable */
 	    stat(path, &status) == 0 &&		/* get the status */
 #ifndef X_NOT_POSIX
 	    S_ISDIR(status.st_mode) == 0);	/* not a directory */
 #else
 	    (status.st_mode & S_IFDIR) == 0);	/* not a directory */
 #endif /* X_NOT_POSIX else */
+#if defined(WIN32) || defined(__EMX__) /* || defined(OS2) */
+    XtStackFree ((XtPointer)bufp, buf);
+#endif
+    return ret;
+#else /* VMS */
+    return TRUE;	/* Who knows what to do here? */
 #endif /* VMS */
 }
 

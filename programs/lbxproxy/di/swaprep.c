@@ -1,5 +1,5 @@
 /*
- * $XConsortium: swaprep.c /main/8 1996/11/15 21:29:41 rws $
+ * $TOG: swaprep.c /main/11 1997/09/18 11:54:02 barstow $
  *
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -28,9 +28,6 @@
 #include	"assert.h"
 #include	"lbx.h"
 #include	"swap.h"
-
-extern int  (*InitialVector[3]) ();
-extern int  (*ProcVector[256]) ();
 
 void
 SwapConnSetup(pConnSetup, pConnSetupT)
@@ -106,63 +103,6 @@ WriteSConnSetupPrefix(pClient, pcsp)
 }
 
 void
-SwapConnectionInfo(pConnSetup)
-    xConnSetup *pConnSetup;
-{
-    int         i,
-                j,
-                k;
-    xDepth     *pDepth;
-    char        n;
-    xWindowRoot *pRoot;
-    char	*dp = (char *) pConnSetup;
-    static int  pad[4] = {0, 3, 2, 1};
-    xVisualType *pVis;
-
-    swapl(&pConnSetup->release, n);
-    swapl(&pConnSetup->ridBase, n);
-    swapl(&pConnSetup->ridMask, n);
-    swapl(&pConnSetup->motionBufferSize, n);
-    swaps(&pConnSetup->nbytesVendor, n);
-    swaps(&pConnSetup->maxRequestSize, n);
-    dp += sizeof(xConnSetup);
-    /* skip vendor string & pixmap formats */
-    dp += pConnSetup->nbytesVendor + pad[pConnSetup->nbytesVendor & 3];
-    dp += (pConnSetup->numFormats * sizeof(xPixmapFormat));
-
-    for (i = 0; i < pConnSetup->numRoots; i++) {
-	pRoot = (xWindowRoot *) dp;
-	swapl(&pRoot->windowId, n);
-	swapl(&pRoot->defaultColormap, n);
-	swapl(&pRoot->whitePixel, n);
-	swapl(&pRoot->blackPixel, n);
-	swapl(&pRoot->currentInputMask, n);
-	swaps(&pRoot->pixWidth, n);
-	swaps(&pRoot->pixHeight, n);
-	swaps(&pRoot->mmWidth, n);
-	swaps(&pRoot->mmHeight, n);
-	swaps(&pRoot->minInstalledMaps, n);
-	swaps(&pRoot->maxInstalledMaps, n);
-	swapl(&pRoot->rootVisualID, n);
-	dp += sizeof(xWindowRoot);
-	for (j = 0; j < pRoot->nDepths; j++) {
-	    pDepth = (xDepth *) dp;
-	    dp += sizeof(xDepth);
-	    swaps(&pDepth->nVisuals, n);
-	    for (k = 0; k < pDepth->nVisuals; k++) {
-		pVis = (xVisualType *) dp;
-		swapl(&pVis->visualID, n);
-		swaps(&pVis->colormapEntries, n);
-		swapl(&pVis->redMask, n);
-		swapl(&pVis->greenMask, n);
-		swapl(&pVis->blueMask, n);
-		dp += sizeof(xVisualType);
-	    }
-	}
-    }
-}
-
-void
 WriteSConnectionInfo(pClient, size, pInfo)
     ClientPtr   pClient;
     unsigned long size;
@@ -204,7 +144,7 @@ WriteSConnectionInfo(pClient, size, pInfo)
 	pInfo += sizeof(xWindowRoot);
 	pInfoT += sizeof(xWindowRoot);
 	pDepth = (xDepth *) pInfo;
-	for (j = 0; j < numDepths; j++, pDepth++) {
+	for (j = 0; j < numDepths; j++, pDepth = (xDepth *) pInfo) {
 	    ((xDepth *) pInfoT)->depth = ((xDepth *) pInfo)->depth;
 	    cpswaps(((xDepth *) pInfo)->nVisuals, ((xDepth *) pInfoT)->nVisuals);
 	    pInfo += sizeof(xDepth);

@@ -1,4 +1,4 @@
-/* $XConsortium: wire.h /main/15 1996/12/19 19:11:37 rws $ */
+/* $TOG: wire.h /main/17 1997/09/12 14:29:09 barstow $ */
 /*
  * Copyright 1992 Network Computing Devices
  *
@@ -20,11 +20,103 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
+
+#ifdef DEBUG 		/* Need this here because lbx.h undef's DEBUG */
+extern int lbxDebug;
+#endif
+
 #include "misc.h"
 #include "lbx.h"
 #include "lbxdeltastr.h"
+#include "lbximage.h"
+#include "proxyopts.h"
+#include "colormap.h"
+#include "atomcache.h"
+#include "cache.h"
+#include "resource.h"
 
 typedef struct _extinfo *ExtensionInfoPtr;
+
+/*
+ * NOTES on the implementation of the multi-display lbxproxy.
+ *
+ * o Each display has its own listen port(s).
+ *
+ * o Depending on how the proxy is compiled, it may support multiple
+ *   transports thus more than one fd may be associated with a display.
+ *
+ * o When a new client connects, the proxy must be able to determine
+ *   which display the client is interested in.  To facilitate this, when
+ *   a display's listen port(s) are created, a list of the display's
+ *   fd's is cached in the field listen_fds.
+ *
+ * o When accept is called, the listen_fds in the servers array is 
+ *   searched to find the client's display.
+ */
+
+/*
+ * MAXTRANSPORTS is the maximum number of transports or listen
+ * ports that a proxy can support.  See connection.c. 
+ */
+#define MAXTRANSPORTS	6
+
+/*
+ * The maximum number of options that is negotiable.
+ */
+#define MAX_NEG_OPTS	8
+
+typedef struct _LbxOptionsListRec {
+    CARD8       optcode;
+    Bool        negotiate;
+    int         (*req)();
+    int         (*reply)();
+} LbxOptionsListRec;
+
+typedef struct _LbxDeltaOptionsRec {
+    CARD8       minN;                   /* min cache size */
+    CARD8       maxN;                   /* max cache size */
+    CARD8       prefN;                  /* preferred cache size */
+    CARD8       minMaxMsgLen;           /* min max-message-len / 4 */
+    CARD8       maxMaxMsgLen;           /* max max-message-len / 4 */
+    CARD8       prefMaxMsgLen;          /* preferred max-message-len / 4 */
+} LbxDeltaOptionsRec;
+
+typedef struct _LbxStreamComp {
+    int         typelen;
+    char        *type;
+    int         (*req)();
+    int         (*reply)();
+} LbxStreamCompRec;
+
+typedef struct _LbxCmapAllMethod {
+    char *methodName;
+    void (*resolver)(
+#if NeedFunctionPrototypes
+        LbxVisualPtr /* pVisual */,
+        CARD16* /* red */,
+        CARD16* /* green */,
+        CARD16* /* blue */
+#endif
+    );
+    Pixel (*findfree)(
+#if NeedFunctionPrototypes
+        ColormapPtr /* pmap */,
+        CARD32  /* red */,
+        CARD32  /* green */,
+        CARD32  /* blue */
+#endif
+    );
+    Entry * (* findbest)(
+#if NeedFunctionPrototypes
+        ColormapPtr /* pmap */,
+        CARD32  /* red */,
+        CARD32  /* green */,
+        CARD32  /* blue */,
+        int     /* channels */
+#endif
+        );
+
+} LbxCmapAllMethod;
 
 typedef struct _XServer {
     int			index;
@@ -33,6 +125,9 @@ typedef struct _XServer {
     int			lbxEvent;
     int			lbxError;
     Bool		initialized;
+    char		*display_name;  /* The name as requested by the client*/
+    char		*proxy_name;    /* The actual name used by the proxy */
+    int			listen_fds[MAXTRANSPORTS];
     ClientPtr		prev_exec;
     ClientPtr		send, recv;
     ClientPtr		serverClient;
@@ -44,18 +139,100 @@ typedef struct _XServer {
     ExtensionInfoPtr	extensions;
     LBXDeltasRec	indeltas;
     LBXDeltasRec	outdeltas;
+
+    /* 
+     * The following fields are needed to handle the option
+     * negotiation for a multi-display proxy.
+     */
+    LbxOptionsListRec	LbxOptions[MAX_NEG_OPTS]; 
+    int			optcount;    /* Number of options actually negotiated */
+    int			optlist[MAX_NEG_OPTS];
+    LbxNegOptsRec       lbxNegOpt;
+    LbxDeltaOptionsRec	proxyDeltaOpt;
+    LbxDeltaOptionsRec	serverDeltaOpt;
+    LbxStreamCompRec    LbxStreamComp[1];
+    LbxBitmapCompMethod LbxBitmapCompMethods[1];
+    LbxPixmapCompMethod LbxPixmapCompMethods[1];
+    LbxCmapAllMethod	LbxCmapAllMethods[1]; 
+
+    /*
+     * requestVector is the function table to be used by the
+     * "real" clients associated with this server.
+     */
+    int			(**requestVector) (
+#if NeedNestedPrototypes
+	ClientPtr /* pClient */
+#endif
+    );
+
+    /*
+     * The following fields are needed to handle the atom
+     * cache for a multi-display proxy.
+     */
+    AtomControlPtr	atom_control;
+    int			atom_control_count;
+    AtomListPtr		*hashTable;
+    int			hashSize;
+    int			hashUsed;
+    int			hashMask;
+    int			rehash;
+    AtomListPtr		*reverseMap;
+    int			reverseMapSize;
+    Atom		lastAtom;
+
+    /*
+     * The following fields are needed for each server's
+     * global and property caches.
+     */
+    Cache		global_cache;
+    Cache		prop_cache;
+    CachePtr		caches[MAX_NUM_CACHES + 1];
+    int			num_caches;
+    unsigned long	seed;
+
+    /*
+     * The following fields are needed for each server's
+     * colormap caches.
+     */
+    RGBCacheEntryPtr	rgb_cache[NBUCKETS];
+    RGBEntryRec 	rgb_buf;
+    Entry		rgb_ent;
+
+    /*
+     * Server-specific temporary delta buffer
+     */
+    unsigned char 	tempdeltabuf[256];
+
+    /*
+     * The following fields are used to mange a server's resources
+     */
+    ClientResourceRec	clientTable[MAXCLIENTS];
+    ClientPtr		lastLbxClientIndexLookup;
+
+    /*
+     * The following fields maintain a server's state for grab's
+     */
+    int			lbxIgnoringAll;
+    int			lbxGrabInProgress;
+
     struct _XDisplay*	dpy;
+
 } XServerRec;
 
-#define MAX_SERVERS 128
 
-extern XServerPtr   servers[];
+/*
+ * External declarations for global variables defined in main.c
+ */
+extern XServerPtr	* servers;
+extern char 		* display;
+extern int 		lbxMaxServers;
 
 extern void WriteReqToServer(
 #if NeedFunctionPrototypes
     ClientPtr /*client*/,
     int /*len*/,
-    char * /*buf*/
+    char * /*buf*/,
+    Bool /*checkLargeRequest*/
 #endif
 );
 
@@ -64,7 +241,8 @@ extern void WriteToServer(
     ClientPtr /*client*/,
     int /*len*/,
     char * /*buf*/,
-    Bool /* startOfRequest */
+    Bool /*startOfRequest*/,
+    Bool /*checkLargeRequest*/
 #endif
 );
 

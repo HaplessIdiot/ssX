@@ -1,5 +1,5 @@
 /*
- * $XConsortium: swapreq.c /main/12 1996/12/15 21:28:44 rws $
+ * $TOG: swapreq.c /main/13 1997/09/12 14:31:30 barstow $
  *
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -28,9 +28,6 @@
 #include	"assert.h"
 #include	"lbx.h"
 #include	"swap.h"
-
-extern int  (*InitialVector[3]) ();
-extern int  (*ProcVector[256]) ();
 
 /* Byte swap a list of longs */
 void

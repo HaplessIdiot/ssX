@@ -1,4 +1,8 @@
-// $XFree86$
+// $TOG: ataritt /main/1 1997/08/02 10:11:49 kaleb $
+
+
+
+// $XFree86: xc/programs/xkbcomp/symbols/ataritt,v 3.0 1996/08/18 01:55:51 dawes Exp $
 default xkb_symbols "us" {
 
     name[Group1]= "US/ASCII";

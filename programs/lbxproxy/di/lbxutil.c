@@ -1,4 +1,4 @@
-/* $XConsortium: lbxutil.c /main/25 1996/12/15 21:28:27 rws $ */
+/* $TOG: lbxutil.c /main/26 1997/09/12 14:30:38 barstow $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -38,6 +38,10 @@
 #include	"colormap.h"
 
 Bool compStats = FALSE;		/* report stream compression statistics */
+
+#ifdef DEBUG
+extern int lbxDebug;
+#endif
 
 extern int lbxMaxMotionEvents;
 
@@ -79,12 +83,12 @@ RemoveReply(client, rp)
 	prev = &cur->next;
     *prev = cur->next;
     if (cur->major == client->server->lbxReq) {
-	if (CacheTrimNeeded(global_cache) &&
-	    !AnyTagBearingReplies(global_cache))
-	    CacheTrim(global_cache);
-	if (CacheTrimNeeded(prop_cache) &&
-	    !AnyTagBearingReplies(prop_cache))
-	    CacheTrim(prop_cache);
+	if (CacheTrimNeeded(client->server, client->server->global_cache) &&
+	    !AnyTagBearingReplies(client->server, client->server->global_cache))
+	    CacheTrim(client->server, client->server->global_cache);
+	if (CacheTrimNeeded(client->server, client->server->prop_cache) &&
+	    !AnyTagBearingReplies(client->server, client->server->prop_cache))
+	    CacheTrim(client->server, client->server->prop_cache);
     }
     xfree(cur);
 }
@@ -128,7 +132,8 @@ AnyReplies(client)
 }
 
 Bool
-AnyTagBearingReplies(cache)
+AnyTagBearingReplies(server, cache)
+    XServerPtr server;
     Cache cache;
 {
     int i;
@@ -148,14 +153,14 @@ AnyTagBearingReplies(cache)
 		case X_LbxGetModifierMapping:
 		case X_LbxGetKeyboardMapping:
 		case X_LbxQueryFont:
-		    if (cache == global_cache) {
+		    if (cache == server->global_cache) {
 			if (found)
 			    return TRUE;
 			found = TRUE;
 		    }
 		    break;
 		case X_LbxGetProperty:
-		    if (cache == prop_cache) {
+		    if (cache == server->prop_cache) {
 			if (found)
 			    return TRUE;
 			found = TRUE;
@@ -260,7 +265,8 @@ ForceSequenceUpdate(client)
 }
 
 void
-LbxFreeTag(tag, tagtype)
+LbxFreeTag(server, tag, tagtype)
+    XServerPtr	server;
     XID         tag;
     int         tagtype;
 
@@ -269,13 +275,13 @@ LbxFreeTag(tag, tagtype)
 
     switch (tagtype) {
     case LbxTagTypeProperty:
-	tag_cache = prop_cache;
+	tag_cache = server->prop_cache;
 	break;
     case LbxTagTypeFont:
     case LbxTagTypeModmap:
     case LbxTagTypeKeymap:
     case LbxTagTypeConnInfo:
-	tag_cache = global_cache;
+	tag_cache = server->global_cache;
 	break;
     default:
 	fprintf(stderr,
@@ -283,11 +289,12 @@ LbxFreeTag(tag, tagtype)
 		tag, tagtype);
 	return;
     }
-    TagFreeData(tag_cache, tag, TRUE);
+    TagFreeData(server, tag_cache, tag, TRUE);
 }
 
 void
-LbxSendTagData(tag, tagtype)
+LbxSendTagData(client, tag, tagtype)
+    ClientPtr   client;
     XID         tag;
     int         tagtype;
 {
@@ -296,7 +303,8 @@ LbxSendTagData(tag, tagtype)
     pointer     tdata;
     PropertyTagDataPtr ptdp;
 
-    if (tagtype == LbxTagTypeProperty && (td = TagGetTag(prop_cache, tag))) {
+    if (tagtype == LbxTagTypeProperty && (td = TagGetTag(client->server, 
+		client->server->prop_cache, tag))) {
 	ptdp = (PropertyTagDataPtr) td->tdata;
 	tdata = ptdp->data;
 	len = ptdp->length;
@@ -306,7 +314,7 @@ LbxSendTagData(tag, tagtype)
 	len = 0;
 	tdata = NULL;
     }
-    SendTagData(NULL, tag, len, tdata);
+    SendTagData(client, tag, len, tdata);
 }
 
 extern unsigned long  stream_out_compressed;
@@ -399,7 +407,6 @@ extern int	    gfx_gc_miss;
 extern int	    gfx_draw_hit;
 extern int	    gfx_draw_miss;
 extern int	    gfx_total;
-extern int	    gfx_bail;
 
 void
 DumpOtherStats()
@@ -427,7 +434,7 @@ DumpOtherStats()
 	    delta_in_total, delta_in_attempts, delta_in_hits);
 
     fprintf(stderr, "GFX Cache stats\n");
-    fprintf(stderr, "Bailed = %d reencoded = %d\n", gfx_bail, gfx_total);
+    fprintf(stderr, "Reencoded = %d\n", gfx_total);
 #define percent(s,t)	((t) ? ((s) * 100) / (t) : 0)
     
 #define ratios(h,m)	(h), percent (h, (h)+(m)), (m), percent (m, (h) + (m))
@@ -467,13 +474,13 @@ ZeroOtherStats()
     gfx_draw_hit = 0;
     gfx_draw_miss = 0;
     gfx_total = 0;
-    gfx_bail = 0;
 }
 
 #endif
 
 void
-SendInitLBXPackets()
+SendInitLBXPackets(server)
+    XServerPtr server;
 {
 
     ZeroCompressionStats();
@@ -481,7 +488,7 @@ SendInitLBXPackets()
     ZeroOtherStats();
 #endif
 
-    AllowMotion(serverClient, lbxMaxMotionEvents);
+    AllowMotion(server->serverClient, lbxMaxMotionEvents);
 }
 
 void

@@ -1,4 +1,4 @@
-/* $TOG: symbols.c /main/15 1997/06/14 06:35:50 kaleb $ */
+/* $TOG: symbols.c /main/16 1997/08/02 10:10:03 kaleb $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/symbols.c,v 3.5 1996/12/29 13:56:19 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/symbols.c,v 3.6 1997/06/22 10:17:03 dawes Exp $ */
 
 #include "xkbcomp.h"
 #include "tokens.h"

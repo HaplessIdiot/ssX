@@ -1,4 +1,4 @@
-/* $TOG: xkbscan.c /main/10 1997/06/10 06:54:25 kaleb $ */
+/* $TOG: xkbscan.c /main/11 1997/08/02 10:10:26 kaleb $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/xkbscan.c,v 3.6 1996/12/23 07:11:43 dawes Exp $ */
+/* $XFree86: xc/programs/xkbcomp/xkbscan.c,v 3.7 1997/06/22 10:17:04 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>

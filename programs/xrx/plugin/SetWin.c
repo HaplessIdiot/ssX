@@ -1,4 +1,4 @@
-/* $XConsortium: SetWin.c /main/15 1996/12/07 17:06:03 kaleb $ */
+/* $TOG: SetWin.c /main/16 1997/08/29 18:31:53 kaleb $ */
 /*
 
 Copyright (C) 1996 X Consortium
@@ -55,7 +55,6 @@ the X Consortium.
 
 #include "RxPlugin.h"
 #include <X11/StringDefs.h>
-#include <Xm/XmStrDefs.h>
 
 /***********************************************************************
  * Sometimes the plugin widget gets stupidly destroyed, that is whenever
@@ -113,8 +112,8 @@ ResizeCB (Widget widget, XtPointer client_data, XtPointer call_data)
 #endif
     /* make sure plugin widget gets the same size back */
     n = 0;
-    XtSetArg(args[n], XmNwidth, This->width); n++;
-    XtSetArg(args[n], XmNheight, This->height); n++;
+    XtSetArg(args[n], XtNwidth, This->width); n++;
+    XtSetArg(args[n], XtNheight, This->height); n++;
     XtSetValues(This->plugin_widget, args, n);
 }
 
@@ -176,7 +175,7 @@ NPP_SetWindow(NPP instance, NPWindow* window)
 
 	XtAddCallback (This->plugin_widget, XtNdestroyCallback, 
 		       DestroyCB, (XtPointer) This);
-	XtAddCallback (This->plugin_widget, XmNresizeCallback, 
+	XtAddCallback (This->plugin_widget, "resizeCallback", 
 		       ResizeCB, (XtPointer) This);
 
 	if (This->app_group)

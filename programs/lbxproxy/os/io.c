@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c /main/12 1996/11/20 22:20:28 rws $ */
+/* $TOG: io.c /main/15 1997/09/18 12:52:15 barstow $ */
 /*****************************************************************
  * i/o functions
  *
@@ -86,13 +86,9 @@ extern int errno;
 #endif
 
 extern void MarkClientException();
-extern fd_set ClientsWithInput;
-extern fd_set ClientsWriteBlocked;
-extern fd_set OutputPending;
 extern int ConnectionTranslation[];
 extern int ConnectionOutputTranslation[];
-extern Bool NewOutputPending;
-extern Bool AnyClientsWriteBlocked;
+
 static int timesThisConnection = 0;
 static ConnectionInputPtr FreeInputs = (ConnectionInputPtr)NULL;
 static ConnectionOutputPtr FreeOutputs = (ConnectionOutputPtr)NULL;
@@ -113,9 +109,6 @@ static ConnectionOutputPtr AllocateUncompBuffer(
     int count
 #endif
 );
-
-ClientPtr   ReadingClient;
-ClientPtr   WritingClient;
 
 #define get_req_len(req,cli) (((cli)->swapped ? \
 			      lswaps((req)->length) : (req)->length) << 2)
@@ -347,7 +340,6 @@ StandardReadRequestFromClient(client)
 	    oci->bufptr = oci->buffer;
 	    oci->bufcnt = gotnow;
 	}
-	ReadingClient = client;
 	result = (*oc->Read)(fd, oci->buffer + oci->bufcnt, 
 		      oci->size - oci->bufcnt); 
 	if (result <= 0)
@@ -718,7 +710,6 @@ StandardFlushClient(who, oc, extraBuf, extraCount)
 	InsertIOV (padBuffer, padsize)
 
 	errno = 0;
-	WritingClient = who;
 	if ((len = (*oc->Writev) (connection, iov, i)) >= 0)
 	{
 	    written += len;
@@ -830,13 +821,15 @@ ExpandOutputBuffer(oco, len)
 {
     unsigned char *obuf;
 
-    obuf = (unsigned char *)xrealloc(oco->buf, len + BUFSIZE);
+    if (len < BUFSIZE)
+	len = BUFSIZE;
+    obuf = (unsigned char *)xrealloc(oco->buf, len);
     if (!obuf)
     {
 	oco->count = 0;
 	return(-1);
     }
-    oco->size = len + BUFSIZE;
+    oco->size = len;
     oco->buf = obuf;
     return 0;
 }
@@ -848,57 +841,53 @@ LbxFlushClient(who, oc, extraBuf, extraCount)
     char *extraBuf;
     int extraCount; /* do not modify... returned below */
 {
-    ConnectionOutputPtr nextbuf;
+    ConnectionOutputPtr obuf;
     register ConnectionOutputPtr oco;
-    int retval = extraCount;
+    int retval;
 
-    if (!oc->ofirst) {
-	return StandardFlushClient(who, oc, extraBuf, extraCount);
+    if (oco = oc->ofirst) {
+	obuf = oc->output;
+	do {
+	    Bool nocomp = oco->nocompress;
+	    oc->output = oco;
+	    oco = (oco != oc->olast) ? oco->next : NULL;
+	    if (nocomp)
+		(*oc->compressOff)(oc->fd);
+	    retval = StandardFlushClient(who, oc, (char *)NULL, 0);
+	    if (nocomp)
+		(*oc->compressOn)(oc->fd);
+	    if (retval < 0) {
+		oc->output = obuf;
+		return retval;
+	    }
+	    if (oc->output) {
+		if (extraCount) {
+		    int len = obuf->count + (extraCount + 3) & ~3;
+		    if (ExpandOutputBuffer(obuf, len) < 0) {
+			close (oc->fd);
+			MarkClientException(who);
+			return(-1);
+		    }
+		    memmove((char *)obuf->buf + obuf->count,
+			    extraBuf, extraCount);
+		    obuf->count = len;
+		    oc->olast->next = obuf;
+		    oc->olast = obuf;
+		    obuf = NULL;
+		}
+		oc->output = obuf;
+		return extraCount;
+	    }
+	} while (oc->ofirst = oco);
+	oc->output = obuf;
     }
-
-    if (oco = oc->output) {
-	oc->olast->next = oco;
-	oc->olast = oco;
+    retval = StandardFlushClient(who, oc, extraBuf, extraCount);
+    if (retval <= 0)
+	return retval;
+    if (oc->output && extraCount) {
+	oc->ofirst = oc->olast = oc->output;
+	oc->output = NULL;
     }
-
-    oco = oc->ofirst;
-    do {
-	Bool nocomp = oco->nocompress;
-	nextbuf = (oco != oc->olast) ? oco->next : NULL;
-	oc->output = oco;
-	if (nocomp)
-	    (*oc->compressOff)(oc->fd);
-	if (oc->olast == oco) {
-	    StandardFlushClient(who, oc, extraBuf, extraCount);
-	    extraCount = 0;
-	}
-	else
-	    StandardFlushClient(who, oc, (char *)NULL, 0);
-	if (nocomp)
-	    (*oc->compressOn)(oc->fd);
-	if (oc->output != (ConnectionOutputPtr) NULL) {
-	    oc->output = (ConnectionOutputPtr) NULL;
-	    break;
-	}
-    } while (oco = nextbuf);
-    oc->ofirst = oco;
-
-    /*
-     * If we didn't get a chance to flush the extraBuf above, then
-     * we need to buffer it here.
-     */
-    if (extraCount) {
-	int newlen = oco->count + extraCount + padlength[extraCount & 3];
-	oco = oc->olast;
-	if (ExpandOutputBuffer(oco, newlen) < 0) {
-	    close (oc->fd);
-	    MarkClientException(who);
-	    return(-1);
-	}
-	memmove((char *)oco->buf + oco->count, extraBuf, extraCount);
-	oco->count = newlen;
-    }
-
     return retval;
 }
 
@@ -1050,8 +1039,29 @@ UncompressWriteToClient (who, count, buf)
     }
 
     if (!oco) {
-	if (!(oco = AllocateUncompBuffer(paddedLen))) {
-	    close(oc->fd);
+	/*
+	 * First try to use the FreeOutputs buffer
+	 */
+	oco = FreeOutputs;
+	if (oco) {
+	    FreeOutputs = oco->next;
+
+	    oco->next = 0;
+	    oco->count = 0;
+	    oco->nocompress = TRUE;
+
+	    if (oco->size < paddedLen) {
+		oco->buf = (unsigned char *) xrealloc (oco->buf, paddedLen);
+		if (!oco->buf) {
+		    (void) close (oc->fd);
+		    MarkClientException(who);
+		    return -1;
+		}
+		oco->size = paddedLen;
+	    }
+	}
+	else if (!(oco = AllocateUncompBuffer(paddedLen))) {
+	    (void) close(oc->fd);
 	    MarkClientException(who);
 	    return -1;
 	}
@@ -1184,25 +1194,5 @@ FreeOsBuffers(oc)
 		break;
 	    oco = nextoco;
 	} while (1);
-    }
-}
-
-void
-ResetOsBuffers()
-{
-    register ConnectionInputPtr oci;
-    register ConnectionOutputPtr oco;
-
-    while (oci = FreeInputs)
-    {
-	FreeInputs = oci->next;
-	xfree(oci->buffer);
-	xfree(oci);
-    }
-    while (oco = FreeOutputs)
-    {
-	FreeOutputs = oco->next;
-	xfree(oco->buf);
-	xfree(oco);
     }
 }

@@ -1,4 +1,4 @@
-/* $XConsortium: AsciiSrc.c,v 1.65 94/04/17 20:11:45 kaleb Exp $ */
+/* $TOG: AsciiSrc.c /main/67 1997/09/05 15:03:18 kaleb $ */
 
 /*
 
@@ -100,10 +100,6 @@ static String MyStrncpy(), StorePiecesInString();
 static Boolean SetValues(), WriteToFile();
 #ifdef X_NOT_STDC_ENV
 extern int errno;
-#endif
-#if !defined(WIN32) && (defined(X_NOT_STDC_ENV) || (defined(sun) && !defined(SVR4)) || defined(macII))
-extern int sys_nerr;
-extern char* sys_errlist[];
 #endif
 
 #ifdef X_NOT_POSIX
@@ -1060,19 +1056,9 @@ Boolean newString;
 	} else {
 	    String params[2];
 	    Cardinal num_params = 2;
-	    char msg[11];
 	    
 	    params[0] = src->ascii_src.string;
-#if defined(X_NOT_STDC_ENV) || (defined(sun) && !defined(SVR4)) || defined(macII)
-	    if (errno <= sys_nerr)
-		params[1] = sys_errlist[errno];
-	    else {
-		sprintf(msg, "errno=%.4d", errno);
-		params[1] = msg;
-	    }
-#else
 	    params[1] = strerror(errno);
-#endif
 	    XtAppWarningMsg(XtWidgetToApplicationContext((Widget)src),
 			    "openError", "asciiSourceCreate", "XawWarning",
 			    "Cannot open file %s; %s", params, &num_params);
@@ -1255,12 +1241,19 @@ MyStrncpy(s1, s2, n)
 char * s1, * s2;
 int n;
 {
-  char * temp = XtMalloc((unsigned)sizeof(unsigned char) * n);
+  char buf[256];
+  char* temp;
+
+  if (n == 0) return s1;
+
+  if (n < sizeof buf) temp = buf;
+  else temp = XtMalloc((unsigned)sizeof(unsigned char) * n);
 
   strncpy(temp, s2, n);		/* Saber has a bug that causes it to generate*/
   strncpy(s1, temp, n);		/* a bogus warning message here (CDP 6/32/89)*/
-  XtFree(temp);
-  return(s1);
+
+  if (temp != buf) XtFree(temp);
+  return s1;
 }
   
 /*	Function Name: BreakPiece

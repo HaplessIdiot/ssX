@@ -1,5 +1,9 @@
-/* $XConsortium: authutil.c /main/16 1996/09/28 16:33:00 rws $ */
-/* $XFree86: xc/lib/ICE/authutil.c,v 3.1 1996/12/23 05:58:59 dawes Exp $ */
+/* $TOG: authutil.c /main/17 1997/08/27 12:11:42 kaleb $ */
+
+
+
+
+/* $XFree86: xc/lib/ICE/authutil.c,v 3.2 1997/01/05 11:51:53 dawes Exp $ */
 /******************************************************************************
 
 
@@ -84,7 +88,10 @@ IceAuthFileName ()
     static int	bsize;
     int	    	size;
 #if defined(WIN32) || defined(__EMX__)
-    char    	dir[128];
+#ifndef PATH_MAX
+#define PATH_MAX 512
+#endif
+    char    	dir[PATH_MAX];
 #endif
 
     if (name = getenv ("ICEAUTHORITY"))
@@ -95,13 +102,22 @@ IceAuthFileName ()
     if (!name)
     {
 #ifdef WIN32
-	strcpy (dir, "/users/");
-	if (name = getenv ("USERNAME"))
-	{
-	    strcat (dir, name);
-	    name = dir;
-	}
-	if (!name)
+    register char *ptr1;
+    register char *ptr2;
+    int len1 = 0, len2 = 0;
+
+    if ((ptr1 = getenv("HOMEDRIVE")) && (ptr2 = getenv("HOMEDIR"))) {
+	len1 = strlen (ptr1);
+	len2 = strlen (ptr2);
+    } else if (ptr2 = getenv("USERNAME")) {
+	len1 = strlen (ptr1 = "/users/");
+	len2 = strlen (ptr2);
+    }
+    if ((len1 + len2 + 1) < PATH_MAX) {
+	sprintf (dir, "%s%s", ptr1, (ptr2) ? ptr2 : "");
+	name = dir;
+    }
+    if (!name)
 #endif
 #ifdef __EMX__
 	strcpy (dir,"c:");

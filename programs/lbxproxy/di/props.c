@@ -1,4 +1,4 @@
-/* $XConsortium: props.c /main/18 1996/12/15 21:28:36 rws $ */
+/* $TOG: props.c /main/19 1997/09/12 14:31:09 barstow $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -48,7 +48,8 @@ static Bool GetLbxGetPropertyReply();
  * tag cache
  */
 static Bool
-propTagStoreData(tid, dlen, swapit, ptdp)
+propTagStoreData(server, tid, dlen, swapit, ptdp)
+    XServerPtr	server;
     XID         tid;
     unsigned long dlen;
     Bool	swapit;
@@ -73,7 +74,7 @@ propTagStoreData(tid, dlen, swapit, ptdp)
 	    break;
 	}
     }
-    return TagStoreDataNC(prop_cache, tid,
+    return TagStoreDataNC(server, server->prop_cache, tid,
 			  (dlen + sizeof(PropertyTagDataRec)),
 			  LbxTagTypeProperty, new);
 }
@@ -108,14 +109,16 @@ rewrite_change_prop(client, win, property, type, format, mode, nUnits)
     unsigned flags;
 
     /* if tags are turned off, don't try */
-    if (!lbxNegOpt.useTags)
+    if (!client || !client->server)
+	return FALSE;
+    if (!client->server->lbxNegOpt.useTags)
 	return FALSE;
     /* we aren't nearly clever enough to know what data we have */
     if (mode != PropModeReplace)
 	return FALSE;
     if ((nUnits * (format >> 3)) < min_keep_prop_size)
 	return FALSE;
-    flags = FlagsForAtom(property);
+    flags = FlagsForAtom(client->server, property);
     if (flags & AtomNoCacheFlag)
 	return FALSE;
     if ((flags & AtomWMCacheFlag) && !client->server->wm_running)
@@ -195,7 +198,7 @@ GetLbxChangePropertyReply(client, nr, data)
 
     ptdp = &nr->request_info.lbxchangeprop.ptd;
     if (tag) {
-	if (!propTagStoreData(tag, (unsigned long)ptdp->length,
+	if (!propTagStoreData(client->server, tag, (unsigned long)ptdp->length,
 			      client->swapped, ptdp)) {
 	    if (client->swapped) {
 		switch (ptdp->format) {
@@ -293,13 +296,15 @@ GetLbxGetPropertyReply(client, nr, data)
 #endif
 
 	    ptd.data = (pointer) &rep[1];
-	    if (!propTagStoreData(tag, len, client->swapped, &ptd)) {
+	    if (!propTagStoreData(client->server, tag, len, client->swapped, 
+			&ptd)) {
 		/* tell server we lost it */
 		SendInvalidateTag(client, tag);
 	    }
 	} else {
 
-	    ptdp = (PropertyTagDataPtr) TagGetData(prop_cache, tag);
+	    ptdp = (PropertyTagDataPtr) TagGetData(client->server, 
+			client->server->prop_cache, tag);
 
 	    if (!ptdp) {
 		fprintf(stderr, "no data for property tag 0x%x\n", tag);

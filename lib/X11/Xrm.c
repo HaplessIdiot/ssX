@@ -1,4 +1,4 @@
-/* $TOG: Xrm.c /main/92 1997/06/22 07:14:10 kaleb $ */
+/* $TOG: Xrm.c /main/93 1997/08/27 12:12:17 kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988, 1990 by Digital Equipment Corporation, Maynard
@@ -51,7 +51,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/lib/X11/Xrm.c,v 3.5 1997/05/22 14:22:18 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xrm.c,v 3.6 1997/06/22 12:20:20 dawes Exp $ */
 
 #include	<stdio.h>
 #include	<ctype.h>
@@ -299,11 +299,13 @@ typedef unsigned char XrmBits;
 /* parsing types */
 static XrmBits Const xrmtypes[256] = {
     EOS,0,0,0,0,0,0,0,
-#ifndef __EMX__
-    0,SPACE,EOL,0,0,0,0,0,
+    0,SPACE,EOL,0,0,
+#if defined(WIN32) || defined(__EMX__) /* || defined(OS2) */
+                    EOL,	/* treat CR the same as LF, just in case */
 #else
-    0,SPACE,EOL,0,0,EOL,0,0,
+                    0,
 #endif
+                      0,0,
     0,0,0,0,0,0,0,0,
     0,0,0,0,0,0,0,0,
     SPACE,NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,
@@ -1581,20 +1583,35 @@ char * filename;
 {
     register int fd, size;
     char * filebuf;
+
 #ifdef __EMX__
     filename = __XOS2RedirRoot(filename);
 #endif
-    if ( (fd = OpenFile(filename)) == -1 )
+
+    /*
+     * MS-Windows and OS/2 note: Default open mode includes O_TEXT
+     */
+    if ( (fd = _XOpenFile (filename, O_RDONLY)) == -1 )
 	return (char *)NULL;
 
-    GetSizeOfFile(filename, size);
+    /*
+     * MS-Windows and OS/2 note: depending on how the sources are
+     * untarred, the newlines in resource files may or may not have
+     * been expanded to CRLF. Either way the size returned by fstat
+     * is sufficient to read the file into because in text-mode any
+     * CRLFs in a file will be converted to newlines (LF) with the
+     * result that the number of bytes actually read with be <=
+     * to the size returned by fstat.
+     */
+    GetSizeOfFile(fd, size);
 
     if (!(filebuf = Xmalloc(size + 1))) { /* leave room for '\0' */
 	close(fd);
 	return (char *)NULL;
     }
+    size = read (fd, filebuf, size);
 
-    size = ReadFile(fd, filebuf, size);
+#if 0	/* This isn't needed now, is it? */
 #ifdef __EMX__
     { /* kill CRLF */
       int i,k;
@@ -1605,12 +1622,14 @@ char * filename;
 	filebuf[k] = 0;
     }
 #endif
+#endif
+
     if (size < 0) {
-	CloseFile(fd);
+	close (fd);
 	Xfree(filebuf);
 	return (char *)NULL;
     }
-    CloseFile(fd);
+    close (fd);
 
     filebuf[size] = '\0';	/* NULL terminate it. */
     return filebuf;

@@ -1,7 +1,11 @@
-/* $TOG: globals.c /main/12 1997/09/12 14:30:18 barstow $ */
-/************************************************************
+/*
+* $TOG: rxLabelP.h /main/2 1997/08/29 15:53:21 kaleb $
+*/
 
-Copyright (c) 1987  X Consortium
+
+/***********************************************************
+
+Copyright (c) 1987, 1988, 1994  X Consortium
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +29,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 
-Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
+Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts.
 
                         All Rights Reserved
 
@@ -45,13 +49,54 @@ WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
 ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
-********************************************************/
-  
-#include "misc.h"
-#include "lbx.h"
+******************************************************************/
 
-ClientPtr *clients;
-int  currentMaxClients;   /* current size of clients array */
+/* 
+ * rxLabelP.h - Private definitions for Label widget
+ * 
+ */
 
-LbxLargeRequestRec *largeRequestQueue[LARGE_REQUEST_QUEUE_LEN];
-int numLargeRequestsInQueue = 0;
+#ifndef _rxLabelP_h
+#define _rxLabelP_h
+
+#include "rxLabel.h"
+
+/* New fields for the Label widget class record */
+
+typedef struct {
+    int 		not_used;
+} RxLabelClassPart;
+
+/* Full class record declaration */
+typedef struct _RxLabelClassRec {
+    CoreClassPart	core_class;
+    RxLabelClassPart	label_class;
+} RxLabelClassRec;
+
+extern RxLabelClassRec rxLabelClassRec;
+
+/* New fields for the Label widget record */
+typedef struct {
+    /* resources */
+    Pixel		foreground;
+    XFontSet 		fontset;
+    Dimension		internal_width;
+    Dimension		internal_height;
+    Boolean		resize;
+    char		*label;
+
+    /* private state */
+    GC			normal_GC;
+    Position		label_x;
+    Position		label_y;
+    Dimension		label_width;
+    Dimension		label_height;
+    Dimension		label_len;
+} RxLabelPart;
+
+typedef struct _RxLabelRec {
+    CorePart		core;
+    RxLabelPart		label;
+} RxLabelRec;
+
+#endif /* _rxLabelP_h */

@@ -1,5 +1,5 @@
-/* $XFree86: xc/lib/X11/Xlibint.h,v 3.6 1996/12/12 09:13:32 dawes Exp $ */
-/* $XConsortium: Xlibint.h /main/114 1996/10/22 14:24:29 kaleb $ */
+/* $XFree86: xc/lib/X11/Xlibint.h,v 3.7 1996/12/23 05:59:50 dawes Exp $ */
+/* $TOG: Xlibint.h /main/115 1997/08/27 12:12:10 kaleb $ */
 
 /*
 
@@ -1250,5 +1250,30 @@ extern int _XTextHeight16(
     int			/* count */
 #endif
 );
+
+#if defined(WIN32) || defined(__EMX__) /* || defined(OS2) */
+extern int _XOpenFile(
+#if NeedFunctionPrototypes
+    _Xconst char*	/* path */,
+    int			/* flags */
+#endif
+);
+
+extern void* _XFopenFile(
+#if NeedFunctionPrototypes
+    _Xconst char*	/* path */,
+    _Xconst char*	/* mode */
+#endif
+);
+
+extern int _XAccessFile(
+#if NeedFunctionPrototypes
+    _Xconst char*	/* path */
+#endif
+);
+#else
+#define _XOpenFile(path,flags) open(path,flags)
+#define _XFopenFile(path,mode) fopen(path,mode)
+#endif
 
 _XFUNCPROTOEND
