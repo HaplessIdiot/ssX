@@ -23,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.77 2004/06/04 17:16:12 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.78tsi Exp $ */
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1388,6 +1388,9 @@ struct symtab	predefs[] = {
 #endif
 #if defined(__LITTLE_ENDIAN__)
       {"__LITTLE_ENDIAN__", "1"},
+#endif
+#ifdef __SIZE_TYPE__
+      {"__SIZE_TYPE__", DEF_STRINGIFY(__SIZE_TYPE__)},
 #endif
 	/* add any additional symbols before this line */
 	{NULL, NULL}

@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /***************************************************************************/
 /*                                                                         */
 /*  ftlzw.c                                                                */
@@ -26,8 +27,10 @@
 #include FT_INTERNAL_MEMORY_H
 #include FT_INTERNAL_STREAM_H
 #include FT_INTERNAL_DEBUG_H
+#ifndef FONTMODULE
 #include <string.h>
 #include <stdio.h>
+#endif
 
 
 #include FT_MODULE_ERRORS_H
