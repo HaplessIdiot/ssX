@@ -363,6 +363,7 @@ LOOKUP dixLookupTab[] = {
     SYMFUNC(TimerFree)
     SYMFUNC(TimerSet)
     SYMFUNC(TimerCancel)
+    SYMFUNC(SetDPMSTimers)
     /* io.c */
     SYMFUNC(WriteToClient)
     SYMFUNC(SetCriticalOutputPending)
