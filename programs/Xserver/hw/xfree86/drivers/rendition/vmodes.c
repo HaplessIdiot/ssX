@@ -387,12 +387,13 @@ verite_setframebase(ScrnInfoPtr pScreenInfo, vu32 framebase)
     renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
 
     vu32 offset;
-
+    
     int iob=pRendition->board.io_base;
     int swidth=pRendition->board.mode.screenwidth;
     int vwidth=pRendition->board.mode.virtualwidth;
     int bytespp=pRendition->board.mode.bitsperpixel>>3;
     int fifo_size=pRendition->board.mode.fifosize;
+    return;
 
 #ifdef DEBUG
     ErrorF( "Rendition: Debug verite_setframebase w=%d v=%d b=%d f=%d\n", 

@@ -527,8 +527,12 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
                                   _END };
         xf86SetOperatingState(vgamem, pRendition->pEnt->index, ResUnusedOpr);
     }
+
+    if (xf86RegisterResources(pRendition->pEnt->index, NULL, ResExclusive))
+         return FALSE;
+
     /* Operations for which memory access is required. */
-    pScreenInfo->racMemFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
+    pScreenInfo->racMemFlags = RAC_FB | RAC_CURSOR;
     /* Operations for which I/O access is required. (XXX Check this) */
     pScreenInfo->racIoFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
     
@@ -644,10 +648,7 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
 	       pRendition->board.mem_base);
 
     /* First of all get a "clean" starting state */
-#if 1
     verite_resetboard(pScreenInfo);
-#endif
-
     /* determine video ram -- to do so, we assume a full size memory of 16M,
      * then map it and use verite_getmemorysize() to determine the real amount of
      * memory */
@@ -655,7 +656,7 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     renditionMapMem(pScreenInfo);
     videoRam=verite_getmemorysize(pScreenInfo)>>10;
 
-    /* Unmaping delayed until after micrcode loading */
+    /* Unmapping delayed until after micrcode loading */
       /****************************************/
       /* Reserv memory and load the microcode */
       /****************************************/
@@ -801,6 +802,7 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
      * XXX Aren't the clocks programmable?  If so, this discrete clock stuff
      * shouldn't be used.
      */
+#if 0
     if ((pScreenInfo->numClocks = pRendition->pEnt->device->numclocks))
     {
         if (pScreenInfo->numClocks > 4)
@@ -816,33 +818,31 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
         From = X_PROBED;
     }
     xf86ShowClocks(pScreenInfo, From);
+#endif
 
-    if (pScreenInfo->display->modes && pScreenInfo->display->modes[0])
-    {
-        /* Set the virtual X rounding (in bits) */
-        if (pScreenInfo->depth == 8)
-            Rounding = 16 * 8;
-        else
-            Rounding = 16;
+    /* Set the virtual X rounding (in bits) */
+    if (pScreenInfo->depth == 8)
+        Rounding = 16 * 8;
+    else
+        Rounding = 16;
 
-        /*
-         * Validate the modes.  Note that the limits passed to
-         * xf86ValidateModes() are VGA CRTC architectural limits.
-         */
-        pScreenInfo->maxHValue = 2080;
-        pScreenInfo->maxVValue = 1025;
-        nModes = xf86ValidateModes(pScreenInfo,
+    /*
+     * Validate the modes.  Note that the limits passed to
+     * xf86ValidateModes() are VGA CRTC architectural limits.
+     */
+    pScreenInfo->maxHValue = 2080;
+    pScreenInfo->maxVValue = 1025;
+    nModes = xf86ValidateModes(pScreenInfo,
             pScreenInfo->monitor->Modes, pScreenInfo->display->modes,
             &renditionClockRange, NULL, 8, 2040, Rounding, 1, 1024,
             pScreenInfo->display->virtualX, pScreenInfo->display->virtualY,
             0x10000, LOOKUP_CLOSEST_CLOCK | LOOKUP_CLKDIV2);
 
-        if (nModes < 0)
-            return FALSE;
+    if (nModes < 0)
+        return FALSE;
 
-        /* Remove invalid modes */
-        xf86PruneDriverModes(pScreenInfo);
-    }
+    /* Remove invalid modes */
+    xf86PruneDriverModes(pScreenInfo);
 
     /* Set CRTC values for the modes */
     xf86SetCrtcForModes(pScreenInfo, 0);
@@ -917,6 +917,7 @@ renditionRestore(ScrnInfoPtr pScreenInfo)
     vgaHWProtect(pScreenInfo, FALSE);
 
     verite_setmode(pScreenInfo, &RENDITIONPTR(pScreenInfo)->mode);
+
 #ifdef DEBUG
     ErrorF("Restore OK...!!!!\n");
     sleep(1);
@@ -1008,7 +1009,6 @@ renditionSetMode(ScrnInfoPtr pScreenInfo, DisplayModePtr pMode)
     modeinfo->flags=pMode->Flags;
 
     verite_setmode(pScreenInfo,&RENDITIONPTR(pScreenInfo)->mode);
-
 #ifdef DEBUG
     ErrorF("Setmode OK...!!!!\n");
     sleep(1);
@@ -1065,11 +1065,15 @@ renditionLeaveGraphics(ScrnInfoPtr pScreenInfo)
     ErrorF("Leavegraphics..!!!!\n");
     sleep(1);
 #endif
-
+#if 0
+    verite_textmode(&RENDITIONPTR(pScreenInfo)->board);
+#endif
     renditionRestore(pScreenInfo);
     vgaHWLock(VGAHWPTR(pScreenInfo));
 
+#if 0
     verite_textmode(&RENDITIONPTR(pScreenInfo)->board);
+#endif
 #ifdef DEBUG
     ErrorF("Leavegraphics OK...!!!!\n");
     sleep(1);
