@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/15 1996/12/06 09:34:35 swick $
 
 
 
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/lbxproxy/Imakefile,v 1.3 1997/01/02 04:43:50 dawes Exp $
 
 #include <Server.tmpl>
 #define       IHaveSubdirs
@@ -14,6 +14,10 @@ LBXPROXYCONFIGDIR = LbxproxyConfigSubdir
 SUBDIRS = di os $(LBXPROXYCONFIGDIR)
 LBXLIBS = di/LibraryTargetName(dilbx) os/LibraryTargetName(os) $(TOP)/lib/lbxutil/LibraryTargetName(lbxutil)
 OTHERLIBS = $(ICELIB) $(XLIB) GzipLibrary
+
+#if HasParallelMake
+MakeMutex($(SUBDIRS) $(LBXLIBS))
+#endif
 
 ServerTarget(lbxproxy,$(SUBDIRS),NullParameter,$(LBXLIBS),$(OTHERLIBS))
 

@@ -1,5 +1,5 @@
 ! $XConsortium: XErrorDB /main/45 1996/12/04 10:12:00 swick $
-! $XFree86: xc/lib/X11/XErrorDB,v 3.14 1996/10/18 14:57:58 dawes Exp $
+! $XFree86: xc/lib/X11/XErrorDB,v 3.15 1996/12/23 05:59:37 dawes Exp $
 ! Copyright (c) 1993, 1995  X Consortium
 ! 
 ! Permission is hereby granted, free of charge, to any person obtaining
@@ -715,3 +715,12 @@ XProtoError.XpExtension.0: XPBadContext (Print Context invalid or missing)
 XlibMessage.XpExtension.0: Context in failed request:  0x%lx
 XProtoError.XpExtension.1: XPBadSequence (Illegal sequence of XP operations)
 XProtoError.XpExtension.2: XPBadResourceID (X resource not valid)
+! DPMS  -- not an X Consortium standard
+XRequest.DPMS.0: DPMSGetVersion
+XRequest.DPMS.1: DPMSCapable
+XRequest.DPMS.2: DPMSGetTimeouts
+XRequest.DPMS.3: DPMSSetTimeouts
+XRequest.DPMS.4: DPMSEnable
+XRequest.DPMS.5: DPMSDisable
+XRequest.DPMS.6: DPMSForceLevel
+XRequest.DPMS.7: DPMSInfo

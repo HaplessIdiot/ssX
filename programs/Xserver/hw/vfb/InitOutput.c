@@ -1,5 +1,5 @@
 /* $XConsortium: InitOutput.c /main/17 1996/12/02 10:20:41 lehors $ */
-/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.3 1996/11/24 10:24:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.4 1996/12/23 06:30:20 dawes Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium
@@ -981,6 +981,23 @@ InitOutput(screenInfo, argc, argv)
     }
 
 } /* end InitOutput */
+
+#ifdef DPMSExtension
+#if NeedFunctionPrototypes
+void DPMSSet(CARD16 level)
+#else
+void DPMSSet(level)
+     CARD16 level;
+#endif
+{
+    return;
+}
+
+Bool DPMSSupported()
+{
+    return FALSE;
+}
+#endif
 
 /* this is just to get the server to link on AIX */
 #ifdef AIXV3

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/8 1996/10/27 18:08:34 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/Imakefile,v 3.13 1996/12/28 07:42:22 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/Imakefile,v 3.14 1996/12/28 08:29:47 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = t89_driver.c t89_bank.s tgui_curs.c tgui_accel.c tguimaccel.c
@@ -40,7 +40,7 @@ InstallLinkKitNonExecFile(bank.s,$(LINKKITDIR)/drivers/vga256/tvga8900)
 InstallLinkKitNonExecFile(tgui_curs.c,$(LINKKITDIR)/drivers/vga256/tvga8900)
 InstallLinkKitNonExecFile(tgui_drv.h,$(LINKKITDIR)/drivers/vga256/tvga8900)
 InstallLinkKitNonExecFile(tgui_ger.h,$(LINKKITDIR)/drivers/vga256/tvga8900)
-InstallLinkKitNonExecFile(tgui_mmio.h,$(LINKKITDIR)/drviers/vga256/tvga8900)
+InstallLinkKitNonExecFile(tgui_mmio.h,$(LINKKITDIR)/drivers/vga256/tvga8900)
 InstallLinkKitNonExecFile(tgui_accel.c,$(LINKKITDIR)/drivers/vga256/tvga8900)
 InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga256/tvga8900)
 

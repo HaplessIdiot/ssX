@@ -1,6 +1,6 @@
 /* 
  * $XConsortium: xset.c /main/71 1996/11/24 17:24:48 rws $ 
- * $XFree86: xc/programs/xset/xset.c,v 3.3 1996/08/25 14:15:35 dawes Exp $ 
+ * $XFree86: xc/programs/xset/xset.c,v 3.4 1996/12/23 07:14:08 dawes Exp $ 
  */
 
 /*
@@ -37,6 +37,9 @@ in this Software without prior written authorization from the X Consortium.
 #include <stdlib.h>
 #else
 char *malloc();
+#endif
+#ifdef DPMSExtension
+#include <X11/extensions/dpms.h>
 #endif
 
 #include <X11/Xos.h>
@@ -98,6 +101,9 @@ register char *arg;
 register int i;
 int percent;
 int acc_num, acc_denom, threshold;
+#ifdef DPMSExtension
+int standby_timeout, suspend_timeout, off_timeout;
+#endif
 int key, auto_repeat_mode;
 XKeyboardControl values;
 #define MAX_PIXEL_COUNT 512
@@ -327,6 +333,102 @@ for (i = 1; i < argc; ) {
     }
     set_mouse(dpy, acc_num, acc_denom, threshold);
   } 
+#ifdef DPMSExtension
+  else if (strcmp(arg, "+dpms") == 0) {		/* turn on DPMS */
+      int dummy;
+      if (DPMSQueryExtension(dpy, &dummy, &dummy))
+	  DPMSEnable(dpy);
+      else
+	  fprintf(stderr, "server does not have extension for +dpms option\n");
+  }
+  else if (strcmp(arg, "-dpms") == 0) {		/* shut off DPMS */
+      int dummy;
+      if (DPMSQueryExtension(dpy, &dummy, &dummy))
+	  DPMSDisable(dpy);
+      else
+	  fprintf(stderr, "server does not have extension for -dpms option\n");
+
+  }
+  else if (strcmp(arg, "dpms") == 0) {		/* tune DPMS */
+      int dummy;
+      if (DPMSQueryExtension(dpy, &dummy, &dummy)) 
+      {
+	  DPMSGetTimeouts(dpy, &standby_timeout, &suspend_timeout,
+			  &off_timeout);
+	  if (i >= argc) {
+	      DPMSEnable(dpy);
+	      break; 
+	  }
+	  arg = argv[i];
+	  if (*arg >= '0' && *arg <= '9') {
+	      sscanf(arg, "%d", &standby_timeout);
+	      i++;
+	      arg = argv[i];
+	      if ((arg)&&(*arg >= '0' && *arg <= '9')) {
+		  sscanf(arg, "%d", &suspend_timeout);
+		  i++;
+		  arg = argv[i];
+		  if ((arg)&&(*arg >= '0' && *arg <= '9')) {
+		      sscanf(arg, "%d", &off_timeout);
+		      i++;
+		      arg = argv[i];
+		  }
+	      }
+	      if ((suspend_timeout != 0)&&(standby_timeout > suspend_timeout))
+	      {
+		  fprintf(stderr, "illegal combination of values\n");
+		  fprintf(stderr, "  standby time of %d is greater than suspend time of %d\n", standby_timeout, suspend_timeout);
+		  exit(0);
+	      }
+	      if ((off_timeout != 0)&&(suspend_timeout > off_timeout))
+	      {
+		  fprintf(stderr, "illegal combination of values\n");
+		  fprintf(stderr, "  suspend time of %d is greater than off time of %d\n", suspend_timeout, off_timeout);
+		  exit(0);
+	      }
+	      if ((suspend_timeout == 0)&&(standby_timeout > off_timeout))
+	      {
+		  fprintf(stderr, "illegal combination of values\n");
+		  fprintf(stderr, "  standby time of %d is greater than off time of %d\n", standby_timeout, off_timeout);
+		  exit(0);
+	      }
+	      DPMSEnable(dpy);
+	      DPMSSetTimeouts(dpy, standby_timeout, suspend_timeout, off_timeout);
+	  }
+	  else if (strcmp(arg, "force") == 0) {
+	      i++;
+	      arg = argv[i];
+	      if (strcmp(arg, "on") == 0) {
+		  DPMSEnable(dpy);
+		  DPMSForceLevel(dpy, DPMSModeOn);
+		  i++;
+	      }
+	      else if (strcmp(arg, "standby") == 0) {
+		  DPMSEnable(dpy);
+		  DPMSForceLevel(dpy, DPMSModeStandby);
+		  i++;
+	      }
+	      else if (strcmp(arg, "suspend") == 0) {		  
+		  DPMSEnable(dpy);
+		  DPMSForceLevel(dpy, DPMSModeSuspend);
+		  i++;
+	      }
+	      else if (strcmp(arg, "off") == 0) {  
+		  DPMSEnable(dpy);
+		  DPMSForceLevel(dpy, DPMSModeOff);
+		  i++;
+	      }
+	      else { 
+		  fprintf(stderr, "bad parameter %s\n", arg);
+		  i++;
+	      }    
+	  }
+      }
+      else {
+	  fprintf(stderr, "server does not have extension for dpms option\n");
+      }
+}
+#endif /* DPMSExtension */
   else if (strcmp(arg, "s") == 0) {
     if (i >= argc) {
       set_saver(dpy, ALL, 0);  /* Set everything to default  */
@@ -1030,6 +1132,51 @@ if (npaths) {
     }
 }
 #endif
+#ifdef DPMSExtension
+{
+    
+      int dummy;
+      CARD16 standby, suspend, off;
+      BOOL onoff;
+      CARD16 state;
+
+      printf("DPMS (Energy Star):\n");
+      if (DPMSQueryExtension(dpy, &dummy, &dummy)) {
+	  if (DPMSCapable(dpy)) {
+	  DPMSGetTimeouts(dpy, &standby, &suspend, &off);
+	  printf ("  Standby: %d    Suspend: %d    Off: %d\n",
+		  standby, suspend, off);
+	  DPMSInfo(dpy, &state, &onoff);
+	  if (onoff) {
+	      printf("  DPMS is enabled\n");
+	      switch (state) {
+		  case DPMSModeOn:
+		       printf("  Monitor is on\n");
+		       break;
+		  case DPMSModeStandby:
+		       printf("  Monitor is in standby\n");
+		       break;
+		  case DPMSModeSuspend:
+		       printf("  Monitor is in suspend\n");
+		       break;
+		  case DPMSModeOff:
+		       printf("  Monitor is off\n");
+		       break;
+		  default:
+		       printf("  Unrecognized response from server\n");
+	      }
+	  }
+	  else
+	      printf("  DPMS is disabled\n");
+          }
+	  else
+	      printf ("  Display is not capable of DPMS\n");  
+      }
+      else {
+	  printf ("  Server does not have the DPMS Extension\n");
+      }
+}
+#endif
 
 return;
 }
@@ -1062,6 +1209,17 @@ usage (fmt, arg)
     fprintf (stderr, "\t-c                c off               c 0\n");
     fprintf (stderr, "    To set keyclick volume:\n");
     fprintf (stderr, "\t c [0-100]        c on\n");
+#ifdef DPMSExtension
+    fprintf (stderr, "    To control Energy Star (DPMS) features:\n");
+    fprintf (stderr, "\t-dpms      Energy Star features off\n");
+    fprintf (stderr, "\t+dpms      Energy Star features on\n");
+    fprintf (stderr, "\t dpms [standby [suspend [off]]]     \n");
+    fprintf (stderr, "\t      force standby \n");
+    fprintf (stderr, "\t      force suspend \n");
+    fprintf (stderr, "\t      force off \n");
+    fprintf (stderr, "\t      (also implicitly enables DPMS features) \n");
+    fprintf (stderr, "\t      a timeout value of zero disables the mode \n");
+#endif
     fprintf (stderr, "    To set the font path:\n" );
     fprintf (stderr, "\t fp= path[,path...]\n" );
     fprintf (stderr, "    To restore the default font path:\n");

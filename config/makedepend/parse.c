@@ -1,4 +1,4 @@
-/* $XConsortium: parse.c,v 1.30 94/04/17 20:10:38 gildea Exp $ */
+/* $XConsortium: parse.c /main/33 1996/12/04 10:11:28 swick $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -25,137 +25,14 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
+/* $XFree86$ */
 
 #include "def.h"
 
 extern char	*directives[];
 extern struct inclist	maininclist;
 
-find_includes(filep, file, file_red, recursion, failOK)
-	struct filepointer	*filep;
-	struct inclist		*file, *file_red;
-	int			recursion;
-	boolean			failOK;
-{
-	register char	*line;
-	register int	type;
-	boolean recfailOK;
-
-	while (line = getline(filep)) {
-		switch(type = deftype(line, filep, file_red, file, TRUE)) {
-		case IF:
-		doif:
-			type = find_includes(filep, file,
-				file_red, recursion+1, failOK);
-			while ((type == ELIF) || (type == ELIFFALSE) ||
-			       (type == ELIFGUESSFALSE))
-				type = gobble(filep, file, file_red);
-			if (type == ELSE)
-				gobble(filep, file, file_red);
-			break;
-		case IFFALSE:
-		case IFGUESSFALSE:
-		    doiffalse:
-			if (type == IFGUESSFALSE || type == ELIFGUESSFALSE)
-			    recfailOK = TRUE;
-			else
-			    recfailOK = failOK;
-			type = gobble(filep, file, file_red);
-			if (type == ELSE)
-			    find_includes(filep, file,
-					  file_red, recursion+1, recfailOK);
-			else
-			if (type == ELIF)
-			    goto doif;
-			else
-			if ((type == ELIFFALSE) || (type == ELIFGUESSFALSE))
-			    goto doiffalse;
-			break;
-		case IFDEF:
-		case IFNDEF:
-			if ((type == IFDEF && isdefined(line, file_red, NULL))
-			 || (type == IFNDEF && !isdefined(line, file_red, NULL))) {
-				debug(1,(type == IFNDEF ?
-				    "line %d: %s !def'd in %s via %s%s\n" : "",
-				    filep->f_line, line,
-				    file->i_file, file_red->i_file, ": doit"));
-				type = find_includes(filep, file,
-					file_red, recursion+1, failOK);
-				while (type == ELIF || type == ELIFFALSE || type == ELIFGUESSFALSE)
-					type = gobble(filep, file, file_red);
-				if (type == ELSE)
-					gobble(filep, file, file_red);
-			}
-			else {
-				debug(1,(type == IFDEF ?
-				    "line %d: %s !def'd in %s via %s%s\n" : "",
-				    filep->f_line, line,
-				    file->i_file, file_red->i_file, ": gobble"));
-				type = gobble(filep, file, file_red);
-				if (type == ELSE)
-					find_includes(filep, file,
-						file_red, recursion+1, failOK);
-				else if (type == ELIF)
-				    	goto doif;
-				else if (type == ELIFFALSE || type == ELIFGUESSFALSE)
-				    	goto doiffalse;
-			}
-			break;
-		case ELSE:
-		case ELIFFALSE:
-		case ELIFGUESSFALSE:
-		case ELIF:
-			if (!recursion)
-				gobble(filep, file, file_red);
-		case ENDIF:
-			if (recursion)
-				return(type);
-		case DEFINE:
-			define(line, file);
-			break;
-		case UNDEF:
-			if (!*line) {
-			    warning("%s, line %d: incomplete undef == \"%s\"\n",
-				file_red->i_file, filep->f_line, line);
-			    break;
-			}
-			undefine(line, file_red);
-			break;
-		case INCLUDE:
-			add_include(filep, file, file_red, line, FALSE, failOK);
-			break;
-		case INCLUDEDOT:
-			add_include(filep, file, file_red, line, TRUE, failOK);
-			break;
-		case ERROR:
-		    	warning("%s: %d: %s\n", file_red->i_file,
-				 filep->f_line, line);
-		    	break;
-		    
-		case PRAGMA:
-		case IDENT:
-		case SCCS:
-		case EJECT:
-			break;
-		case -1:
-			warning("%s", file_red->i_file);
-			if (file_red != file)
-			    warning1(" (reading %s)", file->i_file);
-			warning1(", line %d: unknown directive == \"%s\"\n",
-				 filep->f_line, line);
-			break;
-		case -2:
-			warning("%s", file_red->i_file);
-			if (file_red != file)
-			    warning1(" (reading %s)", file->i_file);
-			warning1(", line %d: incomplete include == \"%s\"\n",
-				 filep->f_line, line);
-			break;
-		}
-	}
-	return(-1);
-}
-
+int
 gobble(filep, file, file_red)
 	register struct filepointer *filep;
 	struct inclist		*file, *file_red;
@@ -192,6 +69,7 @@ gobble(filep, file, file_red)
 		case IDENT:
 		case SCCS:
 		case EJECT:
+		case WARNING:
 			break;
 		case ELIF:
 		case ELIFFALSE:
@@ -300,15 +178,15 @@ int deftype (line, filep, file_red, file, parse_it)
 
 		/* Support ANSI macro substitution */
 		{
-		    struct symtab *sym = isdefined(p, file_red, NULL);
+		    struct symtab **sym = isdefined(p, file_red, NULL);
 		    while (sym) {
-			p = sym->s_value;
+			p = (*sym)->s_value;
 			debug(3,("%s : #includes SYMBOL %s = %s\n",
 			       file->i_incstring,
-			       sym -> s_name,
-			       sym -> s_value));
+			       (*sym) -> s_name,
+			       (*sym) -> s_value));
 			/* mark file as having included a 'soft include' */
-			file->i_included_sym = TRUE; 
+			file->i_flags |= INCLUDED_SYM; 
 			sym = isdefined(p, file_red, NULL);
 		    }
 		}
@@ -343,6 +221,7 @@ int deftype (line, filep, file_red, file, parse_it)
 	case IDENT:
 	case SCCS:
 	case EJECT:
+	case WARNING:
 		debug(0,("%s, line %d: #%s\n",
 			file->i_file, filep->f_line, directives[ret]));
 		/*
@@ -353,12 +232,47 @@ int deftype (line, filep, file_red, file, parse_it)
 	return(ret);
 }
 
-struct symtab *isdefined(symbol, file, srcfile)
+struct symtab **fdefined(symbol, file, srcfile)
 	register char	*symbol;
 	struct inclist	*file;
 	struct inclist	**srcfile;
 {
-	register struct symtab	*val;
+	register struct inclist	**ip;
+	register struct symtab	**val;
+	register int	i;
+	static int	recurse_lvl = 0;
+
+	if (file->i_flags & DEFCHECKED)
+		return(NULL);
+	file->i_flags |= DEFCHECKED;
+	if (val = slookup(symbol, file))
+		debug(1,("%s defined in %s as %s\n",
+			 symbol, file->i_file, (*val)->s_value));
+	if (val == NULL && file->i_list)
+		{
+		for (ip = file->i_list, i=0; i < file->i_listlen; i++, ip++)
+			if (file->i_merged[i]==FALSE) {
+				val = fdefined(symbol, *ip, srcfile);
+				if ((*ip)->i_flags & FINISHED) {
+					merge2defines(file,*ip);
+					file->i_merged[i]=TRUE;
+				    }
+				if (val!=NULL) break;
+			}
+		}
+	else if (val != NULL && srcfile != NULL) *srcfile = file;
+	recurse_lvl--;
+	file->i_flags &= ~DEFCHECKED;
+
+	return(val);
+}
+
+struct symtab **isdefined(symbol, file, srcfile)
+	register char	*symbol;
+	struct inclist	*file;
+	struct inclist	**srcfile;
+{
+	register struct symtab	**val;
 
 	if (val = slookup(symbol, &maininclist)) {
 		debug(1,("%s defined on command line\n", symbol));
@@ -371,38 +285,10 @@ struct symtab *isdefined(symbol, file, srcfile)
 	return(NULL);
 }
 
-struct symtab *fdefined(symbol, file, srcfile)
-	register char	*symbol;
-	struct inclist	*file;
-	struct inclist	**srcfile;
-{
-	register struct inclist	**ip;
-	register struct symtab	*val;
-	register int	i;
-	static int	recurse_lvl = 0;
-
-	if (file->i_defchecked)
-		return(NULL);
-	file->i_defchecked = TRUE;
-	if (val = slookup(symbol, file))
-		debug(1,("%s defined in %s as %s\n", symbol, file->i_file, val->s_value));
-	if (val == NULL && file->i_list)
-		{
-		for (ip = file->i_list, i=0; i < file->i_listlen; i++, ip++)
-			if (val = fdefined(symbol, *ip, srcfile)) {
-				break;
-			}
-		}
-	else if (val != NULL && srcfile != NULL) *srcfile = file;
-	recurse_lvl--;
-	file->i_defchecked = FALSE;
-
-	return(val);
-}
-
 /*
  * Return type based on if the #if expression evaluates to 0
  */
+int
 zero_value(exp, filep, file_red)
 	register char	*exp;
 	register struct filepointer *filep;
@@ -414,45 +300,26 @@ zero_value(exp, filep, file_red)
 	    return(IF);
 }
 
-define(def, file)
-	char	*def;
-	struct inclist	*file;
-{
-    char *val;
-
-    /* Separate symbol name and its value */
-    val = def;
-    while (isalnum(*val) || *val == '_')
-	val++;
-    if (*val)
-	*val++ = '\0';
-    while (*val == ' ' || *val == '\t')
-	val++;
-
-    if (!*val)
-	val = "1";
-    define2(def, val, file);
-}
-
+void
 define2(name, val, file)
 	char	*name, *val;
 	struct inclist	*file;
 {
     int first, last, below;
-    register struct symtab *sp = NULL, *dest;
+    register struct symtab **sp = NULL, **dest;
+    struct symtab *stab;
 
     /* Make space if it's needed */
     if (file->i_defs == NULL)
     {
-	file->i_defs = (struct symtab *)
-			malloc(sizeof (struct symtab) * SYMTABINC);
-	file->i_deflen = SYMTABINC;
+	file->i_defs = (struct symtab **)
+			malloc(sizeof (struct symtab*) * SYMTABINC);
 	file->i_ndefs = 0;
     }
-    else if (file->i_ndefs == file->i_deflen)
-	file->i_defs = (struct symtab *)
+    else if (!(file->i_ndefs % SYMTABINC))
+	file->i_defs = (struct symtab **)
 			realloc(file->i_defs,
-			    sizeof(struct symtab)*(file->i_deflen+=SYMTABINC));
+			   sizeof(struct symtab*)*(file->i_ndefs+SYMTABINC));
 
     if (file->i_defs == NULL)
 	fatalerr("malloc()/realloc() failure in insert_defn()\n");
@@ -468,7 +335,7 @@ define2(name, val, file)
 
 	/* Fast inline strchr() */
 	s1 = name;
-	s2 = file->i_defs[middle].s_name;
+	s2 = file->i_defs[middle]->s_name;
 	while (*s1++ == *s2++)
 	    if (s2[-1] == '\0') break;
 
@@ -496,8 +363,8 @@ define2(name, val, file)
        just replace its s_value */
     if (sp != NULL)
     {
-	free(sp->s_value);
-	sp->s_value = copy(val);
+	free((*sp)->s_value);
+	(*sp)->s_value = copy(val);
 	return;
     }
 
@@ -508,11 +375,37 @@ define2(name, val, file)
 	*sp = sp[-1];
 	sp--;
     }
-    sp->s_name = copy(name);
-    sp->s_value = copy(val);
+    stab = (struct symtab *) malloc(sizeof (struct symtab));
+    if (stab == NULL)
+	fatalerr("malloc()/realloc() failure in insert_defn()\n");
+
+    stab->s_name = copy(name);
+    stab->s_value = copy(val);
+    *sp = stab;
 }
 
-struct symtab *slookup(symbol, file)
+void
+define(def, file)
+	char	*def;
+	struct inclist	*file;
+{
+    char *val;
+
+    /* Separate symbol name and its value */
+    val = def;
+    while (isalnum(*val) || *val == '_')
+	val++;
+    if (*val)
+	*val++ = '\0';
+    while (*val == ' ' || *val == '\t')
+	val++;
+
+    if (!*val)
+	val = "1";
+    define2(def, val, file);
+}
+
+struct symtab **slookup(symbol, file)
 	register char	*symbol;
 	register struct inclist	*file;
 {
@@ -528,7 +421,7 @@ struct symtab *slookup(symbol, file)
 
 	    /* Fast inline strchr() */
 	    s1 = symbol;
-	    s2 = file->i_defs[middle].s_name;
+	    s2 = file->i_defs[middle]->s_name;
 	    while (*s1++ == *s2++)
 	        if (s2[-1] == '\0') break;
 
@@ -552,11 +445,70 @@ struct symtab *slookup(symbol, file)
 	return(NULL);
 }
 
+int merge2defines(file1, file2)
+	struct inclist	*file1;
+	struct inclist	*file2;
+{
+	if ((file1!=NULL) && (file2!=NULL)) 
+        {
+		int first1 = 0;
+		int last1 = file1->i_ndefs - 1;
+
+		int first2 = 0;
+		int last2 = file2->i_ndefs - 1;
+
+                int first=0;
+                struct symtab** i_defs = NULL;
+		int deflen=file1->i_ndefs+file2->i_ndefs;
+
+                if (deflen>0)
+                { 
+                	/* make sure deflen % SYMTABINC == 0 is still true */
+                	deflen += (SYMTABINC - deflen % SYMTABINC) % SYMTABINC;
+                	i_defs=(struct symtab**)
+			    malloc(deflen*sizeof(struct symtab*));
+                	if (i_defs==NULL) return 0;
+        	}
+
+        	while ((last1 >= first1) && (last2 >= first2))
+        	{
+	    		char *s1=file1->i_defs[first1]->s_name;
+	    		char *s2=file2->i_defs[first2]->s_name;
+
+     			if (strcmp(s1,s2) < 0)
+                        	i_defs[first++]=file1->i_defs[first1++];
+     			else if (strcmp(s1,s2) > 0)
+                        	i_defs[first++]=file2->i_defs[first2++];
+                        else /* equal */
+                        {
+                        	i_defs[first++]=file2->i_defs[first2++];
+                                first1++;
+                        }
+        	}
+        	while (last1 >= first1)
+        	{
+                        i_defs[first++]=file1->i_defs[first1++];
+        	}
+        	while (last2 >= first2)
+        	{
+                        i_defs[first++]=file2->i_defs[first2++];
+        	}
+
+                if (file1->i_defs) free(file1->i_defs);
+                file1->i_defs=i_defs;
+                file1->i_ndefs=first;
+                
+		return 1;
+  	}
+	return 0;
+}
+
+void
 undefine(symbol, file)
 	char	*symbol;
 	register struct inclist	*file;
 {
-	register struct symtab *ptr;
+	register struct symtab **ptr;
 	struct inclist *srcfile;
 	while ((ptr = isdefined(symbol, file, &srcfile)) != NULL)
 	{
@@ -564,4 +516,132 @@ undefine(symbol, file)
 	    for (; ptr < srcfile->i_defs + srcfile->i_ndefs; ptr++)
 		*ptr = ptr[1];
 	}
+}
+
+int
+find_includes(filep, file, file_red, recursion, failOK)
+	struct filepointer	*filep;
+	struct inclist		*file, *file_red;
+	int			recursion;
+	boolean			failOK;
+{
+	register char	*line;
+	register int	type;
+	boolean recfailOK;
+
+	while (line = getline(filep)) {
+		switch(type = deftype(line, filep, file_red, file, TRUE)) {
+		case IF:
+		doif:
+			type = find_includes(filep, file,
+				file_red, recursion+1, failOK);
+			while ((type == ELIF) || (type == ELIFFALSE) ||
+			       (type == ELIFGUESSFALSE))
+				type = gobble(filep, file, file_red);
+			if (type == ELSE)
+				gobble(filep, file, file_red);
+			break;
+		case IFFALSE:
+		case IFGUESSFALSE:
+		    doiffalse:
+			if (type == IFGUESSFALSE || type == ELIFGUESSFALSE)
+			    recfailOK = TRUE;
+			else
+			    recfailOK = failOK;
+			type = gobble(filep, file, file_red);
+			if (type == ELSE)
+			    find_includes(filep, file,
+					  file_red, recursion+1, recfailOK);
+			else
+			if (type == ELIF)
+			    goto doif;
+			else
+			if ((type == ELIFFALSE) || (type == ELIFGUESSFALSE))
+			    goto doiffalse;
+			break;
+		case IFDEF:
+		case IFNDEF:
+			if ((type == IFDEF && isdefined(line, file_red, NULL))
+			 || (type == IFNDEF && !isdefined(line, file_red, NULL))) {
+				debug(1,(type == IFNDEF ?
+				    "line %d: %s !def'd in %s via %s%s\n" : "",
+				    filep->f_line, line,
+				    file->i_file, file_red->i_file, ": doit"));
+				type = find_includes(filep, file,
+					file_red, recursion+1, failOK);
+				while (type == ELIF || type == ELIFFALSE || type == ELIFGUESSFALSE)
+					type = gobble(filep, file, file_red);
+				if (type == ELSE)
+					gobble(filep, file, file_red);
+			}
+			else {
+				debug(1,(type == IFDEF ?
+				    "line %d: %s !def'd in %s via %s%s\n" : "",
+				    filep->f_line, line,
+				    file->i_file, file_red->i_file, ": gobble"));
+				type = gobble(filep, file, file_red);
+				if (type == ELSE)
+					find_includes(filep, file,
+						file_red, recursion+1, failOK);
+				else if (type == ELIF)
+				    	goto doif;
+				else if (type == ELIFFALSE || type == ELIFGUESSFALSE)
+				    	goto doiffalse;
+			}
+			break;
+		case ELSE:
+		case ELIFFALSE:
+		case ELIFGUESSFALSE:
+		case ELIF:
+			if (!recursion)
+				gobble(filep, file, file_red);
+		case ENDIF:
+			if (recursion)
+				return(type);
+		case DEFINE:
+			define(line, file);
+			break;
+		case UNDEF:
+			if (!*line) {
+			    warning("%s, line %d: incomplete undef == \"%s\"\n",
+				file_red->i_file, filep->f_line, line);
+			    break;
+			}
+			undefine(line, file_red);
+			break;
+		case INCLUDE:
+			add_include(filep, file, file_red, line, FALSE, failOK);
+			break;
+		case INCLUDEDOT:
+			add_include(filep, file, file_red, line, TRUE, failOK);
+			break;
+		case ERROR:
+		case WARNING:
+		    	warning("%s: %d: %s\n", file_red->i_file,
+				 filep->f_line, line);
+		    	break;
+		    
+		case PRAGMA:
+		case IDENT:
+		case SCCS:
+		case EJECT:
+			break;
+		case -1:
+			warning("%s", file_red->i_file);
+			if (file_red != file)
+			    warning1(" (reading %s)", file->i_file);
+			warning1(", line %d: unknown directive == \"%s\"\n",
+				 filep->f_line, line);
+			break;
+		case -2:
+			warning("%s", file_red->i_file);
+			if (file_red != file)
+			    warning1(" (reading %s)", file->i_file);
+			warning1(", line %d: incomplete include == \"%s\"\n",
+				 filep->f_line, line);
+			break;
+		}
+	}
+	file->i_flags |= FINISHED;
+	return(-1);
 }

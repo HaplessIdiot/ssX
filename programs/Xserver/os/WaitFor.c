@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $XConsortium: WaitFor.c /main/55 1996/12/02 10:22:24 lehors $ */
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.7 1996/02/09 08:22:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.8 1996/12/23 07:09:53 dawes Exp $ */
 
 /*****************************************************************
  * OS Dependent input routines:
@@ -82,6 +82,11 @@ extern int errno;
 #include "osdep.h"
 #include "dixstruct.h"
 #include "opaque.h"
+
+#ifdef DPMSExtension
+#include "dpms.h"
+extern void DPMSSet();
+#endif
 
 extern fd_set AllSockets;
 extern fd_set AllClients;
@@ -145,6 +150,9 @@ WaitForSomething(pClientsReady)
     int i;
     struct timeval waittime, *wt;
     INT32 timeout;
+#ifdef DPMSExtension
+    INT32 standbyTimeout, suspendTimeout, offTimeout;
+#endif
     fd_set clientsReadable;
     fd_set clientsWritable;
     int curclient;
@@ -184,11 +192,36 @@ WaitForSomething(pClientsReady)
 		wt = &waittime;
 	    }
 	}
+#ifdef DPMSExtension
+	if ((ScreenSaverTime)||
+	    ((DPMSStandbyTime)||(DPMSSuspendTime)||(DPMSOffTime)) && DPMSEnabled)
+#else
 	if (ScreenSaverTime)
+#endif
 	{
+#ifdef DPMSExtension
+
+	    if (ScreenSaverTime)
+		timeout = (ScreenSaverTime -
+			   (now - lastDeviceEventTime.milliseconds));
+	    if (DPMSStandbyTime)
+		standbyTimeout = (DPMSStandbyTime -
+				  (now - lastDeviceEventTime.milliseconds));
+	    if (DPMSSuspendTime)
+		suspendTimeout = (DPMSSuspendTime -
+				  (now - lastDeviceEventTime.milliseconds));
+	    if (DPMSOffTime)
+		offTimeout = (DPMSOffTime -
+			      (now - lastDeviceEventTime.milliseconds));
+#else
 	    timeout = (ScreenSaverTime -
 		       (now - lastDeviceEventTime.milliseconds));
+#endif /* DPMSExtension */
+#ifdef DPMSExtension
+	    if ((timeout <= 0)&&(ScreenSaverTime))
+#else
 	    if (timeout <= 0) /* may be forced by AutoResetServer() */
+#endif /* DPMSExtension */
 	    {
 		INT32 timeSinceSave;
 
@@ -197,7 +230,12 @@ WaitForSomething(pClientsReady)
 		{
 		    ResetOsBuffers(); /* not ideal, but better than nothing */
 		    SaveScreens(SCREEN_SAVER_ON, ScreenSaverActive);
+#ifdef DPMSExtension
+		    if ((ScreenSaverInterval) &&
+			(DPMSPowerLevel == DPMSModeOn))
+#else
 		    if (ScreenSaverInterval)
+#endif /* DPMSExtension */
 			/* round up to the next ScreenSaverInterval */
 			timeTilFrob = ScreenSaverInterval *
 				((timeSinceSave + ScreenSaverInterval) /
@@ -220,6 +258,57 @@ WaitForSomething(pClientsReady)
 					(1000000 / MILLI_PER_SECOND);
 		wt = &waittime;
 	    }
+#ifdef DPMSExtension
+	    /* don't bother unless it's switched on */
+	    if (DPMSEnabled == TRUE)
+	    {
+		/*
+		 * If this mode's enabled, and if the time's come
+		 * and if we're still at a lesser mode, do it now.
+		 */
+		if (DPMSStandbyTime) {
+		    if (standbyTimeout <= 0) {
+			if (DPMSPowerLevel < DPMSModeStandby) {
+			    DPMSSet(DPMSModeStandby);
+			}
+		    }
+		}
+		/*
+		 * and ditto.  Note that since these modes can have the
+		 * same timeouts, they can happen at the same time.
+		 */
+		if (DPMSSuspendTime) {
+		    if (suspendTimeout <= 0) {
+			if (DPMSPowerLevel < DPMSModeSuspend) {
+			    DPMSSet(DPMSModeSuspend);
+			}
+		    }
+		}
+		if (DPMSOffTime) {
+		    if (offTimeout <= 0) {
+			if (DPMSPowerLevel < DPMSModeOff) {
+			    DPMSSet(DPMSModeOff);
+			}
+		    }
+		}
+		/*
+		 * Now decide on the next timer comparing against the screen
+		 * saver timer, select the next low timeout value that's more
+		 * than zero.  Zero or less means that we just enabled that
+		 * mode, or that the mode's disabled.  If we fall through,
+		 * it's ok, it means that screen saver is next.
+		 */
+		if (suspendTimeout > 0)
+		    timeout = (suspendTimeout < timeout) ?
+			      suspendTimeout : timeout;
+		if (standbyTimeout > 0)
+		    timeout = (standbyTimeout < timeout) ?
+			      standbyTimeout : timeout;
+		if (offTimeout > 0)
+		    timeout = (offTimeout < timeout) ?
+			      offTimeout : timeout;
+           }
+#endif
 	}
 	XFD_COPYSET(&AllSockets, &LastSelectMask);
 	BlockHandler((pointer)&wt, (pointer)&LastSelectMask);
@@ -298,6 +387,10 @@ WaitForSomething(pClientsReady)
 #endif
 		QueueWorkProc(EstablishNewConnections, NULL,
 			      (pointer)&LastSelectMask);
+#ifdef DPMSExtension
+	    if (XFD_ANYSET (&devicesReadable) && (DPMSPowerLevel != DPMSModeOn))
+		DPMSSet(DPMSModeOn);
+#endif
 	    if (XFD_ANYSET (&devicesReadable) || XFD_ANYSET (&clientsReadable))
 		break;
 	}
