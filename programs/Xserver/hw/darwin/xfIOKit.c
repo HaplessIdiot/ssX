@@ -8,7 +8,7 @@
  * Significantly rewritten for XFree86 4.0.1 by Torrey Lyons
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.c,v 1.11 2001/12/22 05:28:34 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.c,v 1.12 2001/12/23 02:26:04 torrey Exp $ */
 
 #define NDEBUG 1
 
@@ -270,8 +270,11 @@ static Bool SetupFBandHID(
                                                 &modeInfo );
             if (kr != KERN_SUCCESS)
                 return FALSE;
-            if (modeInfo.maxDepthIndex < darwinDesiredDepth)
-                FatalError("Current screen resolution does not support desired pixel depth!\n");
+            if (modeInfo.maxDepthIndex < darwinDesiredDepth) {
+                ErrorF("Discarding screen %i:\n", index);
+                ErrorF("Current screen resolution does not support desired pixel depth.\n");
+                return FALSE;
+            }
 
             displayDepth = darwinDesiredDepth;
             kr = IOFBSetDisplayModeAndDepth( dfb->fbService, displayMode,
@@ -305,8 +308,12 @@ static Bool SetupFBandHID(
 
                 if (darwinDesiredDepth == -1)
                     darwinDesiredDepth = modeInfo.maxDepthIndex;
-                if (modeInfo.maxDepthIndex < darwinDesiredDepth)
-                    FatalError("Desired screen resolution does not support desired pixel depth!\n");
+                if (modeInfo.maxDepthIndex < darwinDesiredDepth) {
+                    ErrorF("Discarding screen %i:\n", index);
+                    ErrorF("Desired screen resolution does not support desired pixel depth.\n");
+                    return FALSE;
+                }
+
                 if ((darwinDesiredRefresh == -1 ||
                     (darwinDesiredRefresh << 16) == modeInfo.refreshRate)) {
                     displayMode = allModes[i];
@@ -322,8 +329,11 @@ static Bool SetupFBandHID(
         }
 
         xfree( allModes );
-        if (i >= numModes)
-            FatalError("Desired screen resolution or refresh rate is not supported!\n");
+        if (i >= numModes) {
+            ErrorF("Discarding screen %i:\n", index);
+            ErrorF("Desired screen resolution or refresh rate is not supported.\n");
+            return FALSE;
+        }
     }
 
     kr = IOFBGetPixelInformation( dfb->fbService, displayMode, displayDepth,

@@ -1,3 +1,8 @@
+XFree86 4.1.99.6 (xx January 2002)
+ 651. In XDarwin IOKit mode, ignore screens that can not provide the requested
+      size, depth, or refresh rate instead of generating a fatal error
+      (Torrey T. Lyons).
+
 XFree86 4.1.99.5 (7 January 2002)
  650. Fix some typos in the DRI README (#A.757, Andreas Mohr).
  649. xon.sh path setting from 3.3.6 (#A.756, Marc Herbert).
@@ -14474,4 +14479,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2114 2002/01/07 20:38:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2115 2002/01/07 22:12:34 dawes Exp $
