@@ -2,7 +2,7 @@
  * MGA-1064, MGA-G100, MGA-G200 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.18 1999/03/21 07:35:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.19 1999/04/25 10:02:10 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -487,6 +487,8 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	}
 #endif
 
+	/* This disables the VGA memory aperture */
+	pVga->MiscOutReg &= ~0x02;
 	return(TRUE);
 }
 

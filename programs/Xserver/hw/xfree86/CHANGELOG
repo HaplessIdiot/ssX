@@ -1,4 +1,8 @@
 XFree86 3.9Pq (6 June 1999)
+2702. Add missing parsing of the ZAxisMapping option to the revised mouse
+      driver (David Dawes).
+2701. Add a simple verification check for core-capable input devices
+      (David Dawes).
 2700. Update the serial PnP mouse support for the revised mouse driver
       (David Dawes).
 
@@ -8086,4 +8090,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.763 1999/05/30 14:40:58 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.764 1999/06/05 15:55:16 dawes Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.41 1999/03/21 07:35:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.42 1999/04/25 10:02:10 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -679,6 +679,9 @@ MGA3026Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	for (i=0; i<6; i++) ErrorF(" %02X", pReg->ExtVga[i]);
 	ErrorF("\n");
 #endif
+
+	/* This disables the VGA memory aperture */
+	pVga->MiscOutReg &= ~0x02;
 	return(TRUE);
 }
 

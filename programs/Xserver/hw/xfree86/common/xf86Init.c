@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.124 1999/05/30 14:04:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.125 1999/06/05 15:55:22 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -766,8 +766,15 @@ InitInput(argc, argv)
 		      "Attempt to register more than one core keyboard (%s)\n",
 		      pInfo->name);
 		    pInfo->flags &= ~XI86_CORE_KEYBOARD;
-		} else
+		} else {
+		    if (!(pInfo->flags & XI86_KEYBOARD_CAPABLE)) {
+			/* XXX just a warning for now */
+			xf86Msg(X_WARNING,
+			    "%s: does not have core keyboard capabilities\n",
+			    pInfo->name);
+		    }
 		    coreKeyboard = pInfo;
+		}
 	    }
 	    if (pInfo->flags & XI86_CORE_POINTER) {
 		if (corePointer) {
@@ -775,8 +782,15 @@ InitInput(argc, argv)
 			"Attempt to register more than one core pointer (%s)\n",
 			pInfo->name);
 		    pInfo->flags &= ~XI86_CORE_POINTER;
-		} else
+		} else {
+		    if (!(pInfo->flags & XI86_POINTER_CAPABLE)) {
+			/* XXX just a warning for now */
+			xf86Msg(X_WARNING,
+			    "%s: does not have core pointer capabilities\n",
+			    pInfo->name);
+		    }
 		    corePointer = pInfo;
+		}
 	    }
 	}
 #ifdef NEW_INPUT

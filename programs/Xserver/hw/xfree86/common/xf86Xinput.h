@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.24 1999/05/09 06:06:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.25 1999/05/30 02:28:11 dawes Exp $ */
 
 #ifndef _xf86Xinput_h
 #define _xf86Xinput_h
@@ -55,11 +55,15 @@
 #define XI86_SEND_DRAG_EVENTS	0x08
 #define XI86_CORE_POINTER	0x10 /* device is the core pointer */
 #define XI86_CORE_KEYBOARD	0x20 /* device is the core keyboard */
+#define XI86_POINTER_CAPABLE	0x40 /* capable of being a core pointer */
+#define XI86_KEYBOARD_CAPABLE	0x80 /* capable of being a core keyboard */
 
 #define XI_PRIVATE(dev) \
 	(((LocalDevicePtr)((dev)->public.devicePrivate))->private)
 
+#ifndef NEW_INPUT
 #define MOUSE_DEV(dev) (MouseDevPtr) XI_PRIVATE(dev)
+#endif
 
 #ifdef DBG
 #undef DBG
