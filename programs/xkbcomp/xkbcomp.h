@@ -1,4 +1,5 @@
 /* $XConsortium: xkbcomp.h /main/10 1996/02/05 06:00:05 kaleb $ */
+/* $XFree86$ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
