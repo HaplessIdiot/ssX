@@ -4404,6 +4404,9 @@ WriteEventsToClient(pClient, count, events)
     int		count;
     xEvent	*events;
 {
+#ifdef PANORAMIX
+    xEvent    eventCopy;
+#endif
     xEvent    eventTo, *eventFrom;
     int       i;
 
@@ -4413,13 +4416,10 @@ WriteEventsToClient(pClient, count, events)
 #endif
 
 #ifdef PANORAMIX
-    /* I tried to do this back in the FixUpEventFromWindow but that
-       would sometimes get called twice while events were being retried. */
     if(!noPanoramiXExtension && 
        (panoramiXdataPtr[0].x || panoramiXdataPtr[0].y)) 
     {
-	xEvent *xE = events;
-	switch(xE->u.u.type) {
+	switch(events->u.u.type) {
 	case MotionNotify:
 	case ButtonPress:
 	case ButtonRelease:
@@ -4427,14 +4427,22 @@ WriteEventsToClient(pClient, count, events)
 	case KeyRelease:
 	case EnterNotify:
 	case LeaveNotify:
-	    for(i = 0; i < count; i++, xE++) {
-		XE_KBPTR.rootX += panoramiXdataPtr[0].x;
-		XE_KBPTR.rootY += panoramiXdataPtr[0].y;
-		if(XE_KBPTR.event == XE_KBPTR.root) {
-		    XE_KBPTR.eventX += panoramiXdataPtr[0].x;
-		    XE_KBPTR.eventY += panoramiXdataPtr[0].y;
-		}
+	/* 
+	   When multiple clients want the same event DeliverEventsToWindow
+	   passes the same event structure multiple times so we can't 
+	   modify the one passed to us 
+        */
+	    count = 1;  /* should always be 1 */
+	    memcpy(&eventCopy, events, sizeof(xEvent));
+	    eventCopy.u.keyButtonPointer.rootX += panoramiXdataPtr[0].x;
+	    eventCopy.u.keyButtonPointer.rootY += panoramiXdataPtr[0].y;
+	    if(eventCopy.u.keyButtonPointer.event == 
+	       eventCopy.u.keyButtonPointer.root) 
+	    {
+		eventCopy.u.keyButtonPointer.eventX += panoramiXdataPtr[0].x;
+		eventCopy.u.keyButtonPointer.eventY += panoramiXdataPtr[0].y;
 	    }
+	    events = &eventCopy;
 	    break;
 	default: break;
 	}
