@@ -26,7 +26,7 @@
  * Author: Kevin E. Martin <martin@valinux.com>
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmR128.c,v 1.6 2000/12/12 17:17:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmR128.c,v 1.7 2001/01/08 01:07:37 martin Exp $ */
 
 #ifdef XFree86Server
 # include "xf86.h"
@@ -154,8 +154,11 @@ int drmR128StopCCE( int fd )
 
    ret = ioctl( fd, DRM_IOCTL_R128_CCE_STOP, &stop );
 
-   if ( ret && errno != EBUSY )
+   if ( ret == 0 ) {
+      return 0;
+   } else if ( errno != EBUSY ) {
       return -errno;
+   }
 
    stop.flush = 0;
 
@@ -163,8 +166,11 @@ int drmR128StopCCE( int fd )
       ret = ioctl( fd, DRM_IOCTL_R128_CCE_STOP, &stop );
    } while ( ret && errno == EBUSY && i++ < R128_IDLE_RETRY );
 
-   if ( ret && errno != EBUSY )
+   if ( ret == 0 ) {
+      return 0;
+   } else if ( errno != EBUSY ) {
       return -errno;
+   }
 
    stop.idle = 0;
 
@@ -235,19 +241,16 @@ int drmR128SwapBuffers( int fd )
 }
 
 int drmR128Clear( int fd, unsigned int flags,
-		  int x, int y, int w, int h,
-		  unsigned int clear_color,
-		  unsigned int clear_depth )
+		  unsigned int clear_color, unsigned int clear_depth,
+		  unsigned int color_mask, unsigned int depth_mask )
 {
    drm_r128_clear_t clear;
 
    clear.flags = flags;
-   clear.x = x;
-   clear.y = y;
-   clear.w = w;
-   clear.h = h;
    clear.clear_color = clear_color;
    clear.clear_depth = clear_depth;
+   clear.color_mask = color_mask;
+   clear.depth_mask = depth_mask;
 
    if ( ioctl( fd, DRM_IOCTL_R128_CLEAR, &clear ) < 0 ) {
       return -errno;
