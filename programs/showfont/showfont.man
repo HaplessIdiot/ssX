@@ -1,4 +1,5 @@
 .\" $XConsortium: showfont.man,v 1.3 94/04/11 14:29:57 gildea Exp $
+.\" $XFree86$
 .TH SHOWFONT 1 "Release 6" "X Version 11"
 .SH NAME
 showfont \- font dumper for X font server

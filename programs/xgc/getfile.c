@@ -2,6 +2,7 @@
 ** getfilename.c
 **
 */
+/* $XFree86$ */
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>

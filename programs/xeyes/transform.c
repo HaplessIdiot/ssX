@@ -1,6 +1,7 @@
 /*
  * transformed coordinate system objects for X
  */
+/* $XFree86$ */
 
 # include	<X11/Xos.h>
 # include	<stdlib.h>

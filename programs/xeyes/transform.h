@@ -2,6 +2,7 @@
  * header file for transformed coordinate system.  No rotations
  * supported, as elipses cannot be rotated in X.
  */
+/* $XFree86$ */
 
 typedef struct _transform {
 	double	mx, bx;

@@ -36,6 +36,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 #include <ctype.h>
 #include <stdlib.h>

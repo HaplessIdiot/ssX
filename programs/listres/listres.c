@@ -27,6 +27,7 @@ in this Software without prior written authorization from the X Consortium.
  * *
  * Author:  Jim Fulton, MIT X Consortium
  */
+/* $XFree86$ */
 
 #include <stdio.h>
 #include <X11/Xos.h>
