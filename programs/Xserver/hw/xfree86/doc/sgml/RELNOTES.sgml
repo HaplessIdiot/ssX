@@ -6,10 +6,10 @@
 
 <title>Release Notes for XFree86&trade; &relvers;
 <author>The XFree86 Project, Inc
-<date>17 December 2000
+<date>14 January 2002
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.63 2001/08/10 16:38:11 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.64 2002/01/11 17:20:09 alanh Exp $
 </ident>
 
 <abstract>
@@ -72,7 +72,8 @@ The next sections describe what has changed in the update release(s)
 as well as what is new in the latest full release (&fullrelvers;).
 ]]>
 <![ %fullrel [
-The next section describes what is new in the latest version (&relvers;).
+The next section describes what is new in the latest version (&relvers;)
+compared with the previous full release (&prevfullrelvers).
 ]]>
 The other sections below describe some of the new features and changes
 between 3.3.x and 4.0.  There are lot's of new features, and we definitely
@@ -89,7 +90,7 @@ don't have enough space to cover them all here.
 
 <sect>Summary of new features in &fullrelvers;.
 
-<sect1>Card drivers enhancements
+<sect1>Video driver enhancements
 
 <p>
 <itemize>
