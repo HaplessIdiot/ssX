@@ -1,4 +1,6 @@
 XFree86 4.2.99.2 (xx June 2002)
+ 189. Fix rootless XDarwin crash when resizing a window with negative x
+      coordinate (Torrey T. Lyons).
 
 XFree86 4.2.99.1 (7 June 2002)
  188. Fix some build problems when building with shared libraries disabled
@@ -14903,4 +14905,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2248 2002/06/08 03:44:55 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2249 2002/06/08 13:16:10 dawes Exp $
