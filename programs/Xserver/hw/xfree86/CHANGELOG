@@ -1,4 +1,14 @@
 XFree86 3.1.2E (13 May 1996)
+547. Fix Trio64V+ problem with DAC entry#255 for color mode 0 (1 8bpp/DCLK)
+     by only using color mode 8 (2 8bpp pixel/DCLK, CR67=10) (Harald Koenig).
+546. Added options to the S3 server to slow down DRAM and EDO DRAM access
+     (Harald Koenig).
+545. Add inlined assembler code to do unaligned access on Alphas
+     (Harald Koenig).
+544. Fix a font corruption problem for Alphas in cfb (Harald Koenig).
+543. Fix sample Xcms.txt colour entries (Harald Koenig).
+542. Fix some problems building the a.out DLL version of libX11
+     (Harald Koenig).
 541. OS/2 updates (Sebastien Marineau).
 540. Fix(?) server crash on keyboard input when using DGA with XKB disabled.
 539. Install xterm termcap/terminfo files in lib/X11/etc for all OSs, not

@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $XConsortium: gc.c,v 5.28 95/02/27 16:42:14 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/dix/gc.c,v 3.0 1996/04/15 11:19:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/gc.c,v 3.1 1996/05/06 05:56:20 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -125,23 +125,11 @@ NOTE:
 #else
 #ifdef __alpha__  /* alignment check */
 #define NEXTVAL(_type, _var) \
-    { if (fPointer) \
-        if (sizeof(_type)==1 || ((long)(pPtr) & (sizeof(_type)-1))==0) \
-          _var = *((_type*)pPtr++); \
-        else { \
-	  unsigned long __dummy; \
-	  memcpy(&__dummy, (_type*)pPtr++, sizeof(_type)); \
-	  _var = *((_type*)(&__dummy)); \
-	} \
-      else \
-        if (sizeof(_type)==1 || ((long)(pval) & (sizeof(_type)-1))==0) \
-          _var = *((_type*)pval++); \
-        else { \
-	  unsigned long __dummy; \
-	  memcpy(&__dummy, (_type*)pval++, sizeof(_type)); \
-	  _var = *((_type*)(&__dummy)); \
-	} \
-    }
+    { void *__p = (fPointer ? pPtr++ : pval++);			   \
+      _var = (sizeof(_type) == 2 ? ldw_u((unsigned short *)__p) :  \
+              sizeof(_type) == 4 ? ldl_u((unsigned int   *)__p) :  \
+              sizeof(_type) == 8 ? ldq_u((unsigned long  *)__p) :  \
+              *((_type*)__p)); }
 #else
 #define NEXTVAL(_type, _var) \
     { if (fPointer) _var = *((_type*)pPtr++); else _var = *((_type*)pval++); }
