@@ -10502,14 +10502,21 @@ SiSPostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg)
                pSiS->MiscFlags |= MISC_CRT1OVERLAY;
             }
             break;
-         case SIS_315H:
-         case SIS_315:
-         case SIS_315PRO:
          case SIS_550:
          case SIS_650:
          case SIS_740:
+	    if(myclock < 175) {
+               pSiS->MiscFlags |= MISC_CRT1OVERLAY;
+            }
+            break;
+	 case SIS_315H:
+         case SIS_315:
+         case SIS_315PRO:
          case SIS_330:
 	 case SIS_661:
+	 case SIS_741:
+	 case SIS_660:
+	 case SIS_760:
             if(myclock < 180) {
                pSiS->MiscFlags |= MISC_CRT1OVERLAY;
             }
@@ -10520,7 +10527,8 @@ SiSPostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg)
           if((!pSiS->DualHeadMode) || (pSiS->SecondHead))
 #endif
              xf86DrvMsgVerb(pScrn->scrnIndex, X_WARNING, 3,
-	     	"Current dotclock does not permit usage of video overlay on CRT1\n");
+	     	"Current dotclock (%dMhz) too high for video overlay on CRT1\n",
+		myclock);
        }
     }
 
