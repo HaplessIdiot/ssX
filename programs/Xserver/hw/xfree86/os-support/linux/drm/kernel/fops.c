@@ -25,12 +25,13 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/fops.c,v 1.3 1999/08/20 15:36:45 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/fops.c,v 1.2 1999/12/14 01:33:56 robin Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/fops.c,v 1.3 2000/01/20 07:25:35 martin Exp $
  *
  */
 
 #define __NO_VERSION__
 #include "drmP.h"
+#include <linux/poll.h>
 
 /* drm_open is called whenever a process opens /dev/drm. */
 
@@ -219,6 +220,16 @@ int drm_write_string(drm_device_t *dev, const char *s)
 #endif
 	DRM_DEBUG("waking\n");
 	wake_up_interruptible(&dev->buf_readers);
+	return 0;
+}
+
+unsigned int drm_poll(struct file *filp, struct poll_table_struct *wait)
+{
+	drm_file_t   *priv = filp->private_data;
+	drm_device_t *dev  = priv->dev;
+
+	poll_wait(filp, &dev->buf_readers, wait);
+	if (dev->buf_wp != dev->buf_rp) return POLLIN | POLLRDNORM;
 	return 0;
 }
 

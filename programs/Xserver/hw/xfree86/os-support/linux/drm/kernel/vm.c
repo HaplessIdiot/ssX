@@ -25,7 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/vm.c,v 1.7 1999/08/21 02:48:34 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/vm.c,v 1.1 1999/09/25 14:38:02 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/vm.c,v 1.2 1999/12/14 01:33:58 robin Exp $
  *
  */
 
@@ -251,9 +251,10 @@ int drm_mmap(struct file *filp, struct vm_area_struct *vma)
 	switch (map->type) {
 	case _DRM_FRAME_BUFFER:
 	case _DRM_REGISTERS:
+	case _DRM_AGP:
 		if (VM_OFFSET(vma) >= __pa(high_memory)) {
 #if defined(__i386__)
-			if (boot_cpu_data.x86 > 3) {
+			if (boot_cpu_data.x86 > 3 && map->type != _DRM_AGP) {
 				pgprot_val(vma->vm_page_prot) |= _PAGE_PCD;
 				pgprot_val(vma->vm_page_prot) &= ~_PAGE_PWT;
 			}

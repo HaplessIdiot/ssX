@@ -25,7 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/lock.c,v 1.5 1999/08/30 13:05:00 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/lock.c,v 1.1 1999/09/25 14:38:01 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/lock.c,v 1.2 1999/12/14 01:33:57 robin Exp $
  *
  */
 
@@ -117,7 +117,7 @@ int drm_lock_free(drm_device_t *dev,
 	return 0;
 }
 
-static int drm_flush_queue(drm_device_t *dev, int context)
+int drm_flush_queue(drm_device_t *dev, int context)
 {
 	DECLARE_WAITQUEUE(entry, current);
 	int		  ret	= 0;
@@ -151,7 +151,7 @@ static int drm_flush_queue(drm_device_t *dev, int context)
 	return ret;
 }
 
-static int drm_flush_unblock_queue(drm_device_t *dev, int context)
+int drm_flush_unblock_queue(drm_device_t *dev, int context)
 {
 	drm_queue_t	  *q	= dev->queuelist[context];
 	

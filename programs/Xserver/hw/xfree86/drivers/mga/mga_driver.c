@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.119 1999/10/13 16:49:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.134 2000/02/08 13:13:17 eich Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -102,6 +102,10 @@
 #include "xf86cmap.h"
 #include "shadowfb.h"
 #include "fbdevhw.h"
+
+#ifdef XF86DRI 
+#include "dri.h"
+#endif
 
 
 /*
@@ -290,6 +294,54 @@ static const char *ramdacSymbols[] = {
     NULL
 };
 
+#ifdef XF86DRI 
+static const char *drmSymbols[] = {
+    "drmAddBufs",
+    "drmAddMap",
+    "drmAvailable",
+    "drmCtlAddCommand",
+    "drmCtlInstHandler",
+    "drmGetInterruptFromBusID",
+    "drmMapBufs",
+    "drmMarkBufs",
+    "drmUnmapBufs",
+    "drmAgpAcquire",
+    "drmAgpRelease",
+    "drmAgpEnable",
+    "drmAgpAlloc",
+    "drmAgpFree",
+    "drmAgpBind",
+    "drmAgpUnbind",
+    "drmAgpVersionMajor",
+    "drmAgpVersionMinor",
+    "drmAgpGetMode",
+    "drmAgpBase",
+    "drmAgpSize",
+    "drmAgpMemoryUsed",
+    "drmAgpMemoryAvail",
+    "drmAgpVendorId",
+    "drmAgpDeviceId",
+    NULL
+};
+
+static const char *driSymbols[] = {
+    "DRIGetDrawableIndex",
+    "DRIFinishScreenInit",
+    "DRIDestroyInfoRec",
+    "DRICloseScreen",
+    "DRIDestroyInfoRec",
+    "DRIScreenInit",
+    "DRIDestroyInfoRec",
+    "DRICreateInfoRec",
+    "DRILock",
+    "DRIUnlock",
+    "DRIGetSAREAPrivate",
+    "DRIGetContext",
+    "GlxSetVisualConfigs",
+    NULL
+};
+#endif
+
 #define MGAuseI2C 1
 
 static const char *ddcSymbols[] = {
@@ -384,7 +436,12 @@ mgaSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols, 
 			  xf8_32bppSymbols, ramdacSymbols,
 			  ddcSymbols, i2cSymbols, shadowSymbols,
-			  fbdevHWSymbols, NULL);
+			  fbdevHWSymbols,
+#ifdef XF86DRI 
+			  drmSymbols, driSymbols,
+#endif
+			  
+			  NULL);
 
 	/*
 	 * The return value must be non-NULL on success even though there
@@ -2104,6 +2161,13 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     vgaReg = &hwp->ModeReg;
     mgaReg = &pMga->ModeReg;
 
+#ifdef XF86DRI
+   if (pMga->directRenderingEnabled) {
+       DRILock(screenInfo.screens[pScrn->scrnIndex]);
+       MGASwapContext(screenInfo.screens[pScrn->scrnIndex]);
+   }
+#endif
+     
     (*pMga->Restore)(pScrn, vgaReg, mgaReg, FALSE);
 
     MGAStormEngineInit(pScrn);
@@ -2117,6 +2181,11 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     }
 
     pMga->CurrentLayout.mode = mode;
+   
+#ifdef XF86DRI
+   if (pMga->directRenderingEnabled)
+     DRIUnlock(screenInfo.screens[pScrn->scrnIndex]);
+#endif
 
     return TRUE;
 }
@@ -2268,6 +2337,19 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	FBStart = pMga->FbStart;
     }
 
+#ifdef XF86DRI
+     /*
+      * Setup DRI after visuals have been established, but before cfbScreenInit
+      * is called.   cfbScreenInit will eventually call into the drivers
+      * InitGLXVisuals call back.
+      */
+
+   pMga->directRenderingEnabled = MGADRIScreenInit(pScreen);
+   /* Force the initialization of the context */
+   MGALostContext(pScreen);
+#endif
+     
+   
     switch (pScrn->bitsPerPixel) {
     case 8:
 	ret = cfbScreenInit(pScreen, FBStart,
@@ -2394,7 +2476,25 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 #ifdef DPMSExtension
     xf86DPMSInit(pScreen, MGADisplayPowerManagementSet, 0);
 #endif
-
+   
+#ifdef XF86DRI
+    /* Initialize the Warp engine */
+   if (pMga->directRenderingEnabled) {
+    pMga->directRenderingEnabled = mgaConfigureWarp(pScrn);
+   }
+   if (pMga->directRenderingEnabled) {
+      /* Now that mi, cfb, drm and others have done their thing, 
+       * complete the DRI setup.
+       */
+       pMga->directRenderingEnabled = MGADRIFinishScreenInit(pScreen);
+   }
+   if (pMga->directRenderingEnabled) {
+       xf86DrvMsg(pScrn->scrnIndex, X_INFO, "direct rendering enabled\n");
+   } else {
+       xf86DrvMsg(pScrn->scrnIndex, X_INFO, "direct rendering disabled\n");
+   }
+#endif
+     
     pScrn->memPhysBase = pMga->FbAddress;
     pScrn->fbOffset = pMga->YDstOrg * (pScrn->bitsPerPixel / 8);
 
@@ -2482,7 +2582,17 @@ static Bool
 MGAEnterVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+#ifdef XF86DRI 
+    ScreenPtr pScreen;
+    MGAPtr pMGA;
 
+    pMGA = MGAPTR(pScrn);
+    if (pMGA->directRenderingEnabled) {
+        pScreen = screenInfo.screens[scrnIndex];
+        DRIUnlock(pScreen);
+    }
+#endif
+     
     if (!MGAModeInit(pScrn, pScrn->currentMode))
 	return FALSE;
     MGAAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
@@ -2493,6 +2603,16 @@ static Bool
 MGAEnterVTFBDev(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+#ifdef XF86DRI 
+    ScreenPtr pScreen;
+    MGAPtr pMGA;
+
+    pMGA = MGAPTR(pScrn);
+    if (pMGA->directRenderingEnabled) {
+        pScreen = screenInfo.screens[scrnIndex];
+        DRIUnlock(pScreen);
+    }
+#endif
 
     fbdevHWEnterVT(scrnIndex,flags);
     MGAStormEngineInit(pScrn);
@@ -2512,12 +2632,24 @@ MGALeaveVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     vgaHWPtr hwp = VGAHWPTR(pScrn);
+#ifdef XF86DRI
+    ScreenPtr pScreen;
+    MGAPtr pMGA;
+#endif
 
     MGARestore(pScrn);
     vgaHWLock(hwp);
 
     if (xf86IsPc98())
 	outb(0xfac, 0x00);
+#ifdef XF86DRI
+    pMGA = MGAPTR(pScrn);
+    if (pMGA->directRenderingEnabled) {
+        pScreen = screenInfo.screens[scrnIndex];
+        DRILock(pScreen);
+    }
+#endif
+     
 }
 
 
@@ -2547,6 +2679,13 @@ MGACloseScreen(int scrnIndex, ScreenPtr pScreen)
 	    vgaHWUnmapMem(pScrn);
 	}
     }
+#ifdef XF86DRI 
+   if (pMga->directRenderingEnabled) {
+       MGADRICloseScreen(pScreen);
+       pMga->directRenderingEnabled=FALSE;
+   }
+#endif
+     
     if (pMga->AccelInfoRec)
 	XAADestroyInfoRec(pMga->AccelInfoRec);
     if (pMga->CursorInfoRec)

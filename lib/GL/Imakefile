@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.10 1999/12/14 01:32:21 robin Exp $
+XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.11 2000/02/08 17:18:25 dawes Exp $
 XCOMM $PI: xc/lib/GL/Imakefile,v 1.11 1999/06/14 21:10:34 faith Exp $
 
 #define IHaveSubdirs
@@ -78,6 +78,48 @@ DRIMESADONES = mesa/dri/DONE
     DRVDONES = $(TDFXDONES) $(MESADONES) $(DRIMESADONES) $(DRMDONES)
 
  REQUIREDLIBS += -lglide3x
+#elif GlxBuiltInI810
+    I810OBJS = mesa/src/drv/i810/?*.o
+   I810UOBJS = mesa/src/drv/i810/unshared/?*.o
+   I810DOBJS = mesa/src/drv/i810/debugger/?*.o
+   I810POBJS = mesa/src/drv/i810/profiled/?*.o
+   I810DONES = mesa/src/drv/i810/DONE
+  COMMONOBJS = mesa/src/drv/common/?*.o
+ COMMONUOBJS = mesa/src/drv/common/unshared/?*.o
+ COMMONDOBJS = mesa/src/drv/common/debugger/?*.o
+ COMMONPOBJS = mesa/src/drv/common/profiled/?*.o
+ COMMONDONES = mesa/src/drv/common/DONE
+    MESAOBJS = mesa/src/?*.o mesa/src/X86/?*.o
+   MESAUOBJS = mesa/src/unshared/?*.o mesa/src/X86/unshared/?*.o
+   MESADOBJS = mesa/src/debugger/?*.o mesa/src/X86/debugger/?*.o
+   MESAPOBJS = mesa/src/profiled/?*.o mesa/src/X86/profiled/?*.o
+   MESADONES = mesa/src/DONE mesa/src/X86/DONE
+     DRVOBJS = $(I810OBJS) $(COMMONOBJS) $(MESAOBJS)
+    DRVUOBJS = $(I810UOBJS) $(COMMONUOBJS) $(MESAUOBJS)
+    DRVDOBJS = $(I810DOBJS) $(COMMONDOBJS) $(MESADOBJS)
+    DRVPOBJS = $(I810POBJS) $(COMMONPOBJS) $(MESAPOBJS)
+    DRVDONES = $(I810DONES) $(COMMONDONES) $(MESADONES)
+#elif GlxBuiltInMga
+     MGAOBJS = mesa/src/drv/mga/?*.o
+    MGAUOBJS = mesa/src/drv/mga/unshared/?*.o
+    MGADOBJS = mesa/src/drv/mga/debugger/?*.o
+    MGAPOBJS = mesa/src/drv/mga/profiled/?*.o
+    MGADONES = mesa/src/drv/mga/DONE
+  COMMONOBJS = mesa/src/drv/common/?*.o
+ COMMONUOBJS = mesa/src/drv/common/unshared/?*.o
+ COMMONDOBJS = mesa/src/drv/common/debugger/?*.o
+ COMMONPOBJS = mesa/src/drv/common/profiled/?*.o
+ COMMONDONES = mesa/src/drv/common/DONE
+    MESAOBJS = mesa/src/?*.o mesa/src/X86/?*.o
+   MESAUOBJS = mesa/src/unshared/?*.o mesa/src/X86/unshared/?*.o
+   MESADOBJS = mesa/src/debugger/?*.o mesa/src/X86/debugger/?*.o
+   MESAPOBJS = mesa/src/profiled/?*.o mesa/src/X86/profiled/?*.o
+   MESADONES = mesa/src/DONE mesa/src/X86/DONE
+     DRVOBJS = $(MGAOBJS) $(COMMONOBJS) $(MESAOBJS)
+    DRVUOBJS = $(MGAUOBJS) $(COMMONUOBJS) $(MESAUOBJS)
+    DRVDOBJS = $(MGADOBJS) $(COMMONDOBJS) $(MESADOBJS)
+    DRVPOBJS = $(MGAPOBJS) $(COMMONPOBJS) $(MESAPOBJS)
+    DRVDONES = $(MGADONES) $(COMMONDONES) $(MESADONES)
 #elif GlxBuiltInMesa
 #ifndef GlxDriverUsesMesa
      DRVOBJS = mesa/src/?*.o mesa/src/X/?*.o

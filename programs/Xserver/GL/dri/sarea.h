@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/GL/dri/sarea.h,v 1.1 1999/06/14 07:31:20 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -37,7 +37,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _SAREA_H_
 #define _SAREA_H_
 
-#define SAREA_MAX 			0x1000
+#define SAREA_MAX 			0x2000
 #define SAREA_MAX_DRAWABLES 		256
 
 #define SAREA_DRAWABLE_CLAIMED_ENTRY	0x80000000

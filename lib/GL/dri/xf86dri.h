@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/dri/xf86dri.h,v 1.1 1999/06/14 07:23:33 dawes Exp $ */
+/* $XFree86: xc/lib/GL/dri/xf86dri.h,v 1.2 1999/06/27 14:07:24 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -178,7 +178,11 @@ Bool XF86DRIGetDrawableInfo(
     int*		/* W */,
     int*		/* H */,
     int*		/* numClipRects */,
-    XF86DRIClipRectPtr*	/* pClipRects */
+    XF86DRIClipRectPtr*,	/* pClipRects */
+    int*		/* auxX */,
+    int*		/* auxY */,
+    int*		/* numAuxClipRects */,
+    XF86DRIClipRectPtr*	/* pAuxClipRects */    
 #endif
 );
 
