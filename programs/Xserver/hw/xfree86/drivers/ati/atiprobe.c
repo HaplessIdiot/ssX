@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.20 2000/03/22 03:08:19 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.21 2000/05/03 00:44:09 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -848,7 +848,7 @@ ATIProbe
             return FALSE;
 
         ATIGDevs = (ATIGDevPtr)xnfcalloc(nGDev, SizeOf(ATIGDev));
-        memset(fChipsets, FALSE, SizeOf(fChipsets));
+        (void)memset(fChipsets, FALSE, SizeOf(fChipsets));
 
         for (i = 0, pATIGDev = ATIGDevs;  i < nGDev;  i++)
         {
@@ -965,7 +965,7 @@ ATIProbe
                      PCI_CMD_IO_ENABLE) ? 0 : Allowed);
 
     /* Generate ProbeFlags array from list of registered PCI I/O bases */
-    memset(ProbeFlags, Allowed | DoProbe, SizeOf(ProbeFlags));
+    (void)memset(ProbeFlags, Allowed | DoProbe, SizeOf(ProbeFlags));
     for (i = 0;  i < nPCIPort;  i++)
     {
         CARD32 Base = PCIPorts[i].Base;
@@ -1101,7 +1101,7 @@ ATIProbe
                     continue;
 
                 if (!xf86CheckPciSlot(pVideo->bus,
-                                      pVideo->device, 
+                                      pVideo->device,
                                       pVideo->func))
                     continue;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadjust.c,v 1.4 1999/08/01 07:57:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadjust.c,v 1.5 2000/02/18 12:19:12 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -45,26 +45,23 @@
 void
 ATIAdjustPreInit
 (
-    ScrnInfoPtr pScreenInfo,
     ATIPtr      pATI
 )
 {
-    DisplayModePtr pMode;
-    unsigned long  MaxBase = 0;
-    int            MinX, MinY;
+    unsigned long MaxBase;
 
     if ((pATI->CPIO_VGAWonder) &&
         (pATI->Chip <= ATI_CHIP_18800_1) &&
         (pATI->VideoRAM == 256) &&
-        (pScreenInfo->depth >= 8))
+        (pATI->depth >= 8))
     {
         /* Strange, to say the least ... */
-        pATI->AdjustDepth = (pScreenInfo->bitsPerPixel + 3) >> 2;
+        pATI->AdjustDepth = (pATI->bitsPerPixel + 3) >> 2;
         pATI->AdjustMask = (unsigned long)(-32);
     }
     else
     {
-        pATI->AdjustDepth = (pScreenInfo->bitsPerPixel + 7) >> 3;
+        pATI->AdjustDepth = (pATI->bitsPerPixel + 7) >> 3;
 
         pATI->AdjustMask = 64;
         while (pATI->AdjustMask % (unsigned long)(pATI->AdjustDepth))
@@ -79,49 +76,32 @@ ATIAdjustPreInit
         case ATI_CRTC_VGA:
             if (pATI->Chip >= ATI_CHIP_264CT)
             {
-                MaxBase = MaxBits(CRTC_OFFSET_VGA) << 2;
-                if (pScreenInfo->depth <= 4)
-                    MaxBase <<= 1;
+                pATI->AdjustMaxBase = MaxBits(CRTC_OFFSET_VGA) << 2;
+                if (pATI->depth <= 4)
+                    pATI->AdjustMaxBase <<= 1;
             }
             else if (!pATI->CPIO_VGAWonder)
-                MaxBase = 0xFFFFU << 3;
+                pATI->AdjustMaxBase = 0xFFFFU << 3;
             else if (pATI->Chip <= ATI_CHIP_28800_6)
-                MaxBase = 0x03FFFFU << 3;
+                pATI->AdjustMaxBase = 0x03FFFFU << 3;
             else /* Mach32 & Mach64 */
-                MaxBase = 0x0FFFFFU << 3;
+                pATI->AdjustMaxBase = 0x0FFFFFU << 3;
             break;
 
         case ATI_CRTC_MACH64:
-            MaxBase = MaxBits(CRTC_OFFSET) << 3;
+            pATI->AdjustMaxBase = MaxBits(CRTC_OFFSET) << 3;
+            break;
+
+        default:
+            pATI->AdjustMaxBase = 0;
             break;
     }
 
-    MaxBase = (MaxBase / (unsigned long)pATI->AdjustDepth) | ~pATI->AdjustMask;
+    MaxBase = (pATI->AdjustMaxBase / (unsigned long)pATI->AdjustDepth) |
+        ~pATI->AdjustMask;
 
-    pATI->AdjustMaxX = MaxBase % pScreenInfo->displayWidth;
-    pATI->AdjustMaxY = MaxBase / pScreenInfo->displayWidth;
-
-    /*
-     * Warn about modes that are too small, or not aligned, to scroll to the
-     * bottom right corner of the virtual screen.
-     */
-    MinX = pScreenInfo->virtualX - pATI->AdjustMaxX;
-    MinY = pScreenInfo->virtualY - pATI->AdjustMaxY;
-
-    pMode = pScreenInfo->modes;
-    do
-    {
-        if ((pMode->VDisplay <= MinY) &&
-            ((pMode->VDisplay < MinY) || (pMode->HDisplay < MinX)))
-            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
-                "Mode \"%s\" too small to scroll to bottom right corner of"
-                " virtual resolution.\n", pMode->name);
-        else if ((pMode->HDisplay & ~pATI->AdjustMask) / pScreenInfo->xInc)
-            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
-                "Mode \"%s\" cannot scroll to bottom right corner of virtual"
-                " resolution.\n Horizontal dimension not a multiple of %d.\n",
-                pMode->name, ~pATI->AdjustMask + 1);
-    } while ((pMode = pMode->next) != pScreenInfo->modes);
+    pATI->AdjustMaxX = MaxBase % pATI->displayWidth;
+    pATI->AdjustMaxY = MaxBase / pATI->displayWidth;
 }
 
 /*
@@ -155,7 +135,7 @@ ATIAdjustFrame
             y--;
     }
 
-    Base = ((((y * pScreenInfo->displayWidth) + x) & pATI->AdjustMask) *
+    Base = ((((y * pATI->displayWidth) + x) & pATI->AdjustMask) *
             pATI->AdjustDepth) >> 3;
 
     /* Unlock registers */
@@ -193,10 +173,10 @@ ATIAdjustFrame
          * setting the CRTC's offset register to more than 256k needs to be
          * done through the accelerator port.
          */
-        if (pScreenInfo->depth <= 4)
+        if (pATI->depth <= 4)
         {
             outl(pATI->CPIO_CRTC_OFF_PITCH,
-                SetBits(pScreenInfo->displayWidth >> 4, CRTC_PITCH) |
+                SetBits(pATI->displayWidth >> 4, CRTC_PITCH) |
                     SetBits(Base, CRTC_OFFSET));
         }
         else
@@ -204,7 +184,7 @@ ATIAdjustFrame
             if (pATI->NewHW.crtc == ATI_CRTC_VGA)
                 Base <<= 1;                     /* LSBit must be zero */
             outl(pATI->CPIO_CRTC_OFF_PITCH,
-                SetBits(pScreenInfo->displayWidth >> 3, CRTC_PITCH) |
+                SetBits(pATI->displayWidth >> 3, CRTC_PITCH) |
                     SetBits(Base, CRTC_OFFSET));
         }
     }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vboard.c,v 1.10 2000/03/31 20:13:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vboard.c,v 1.11 2000/06/13 02:28:33 dawes Exp $ */
 /*
  * includes
  */
@@ -87,11 +87,11 @@ verite_initboard(ScrnInfoPtr pScreenInfo)
   verite_out8(iob+MEMENDIAN, memendian);
 
   if (V1000_DEVICE == pRendition->board.chip){
-    c=verite_load_ucfile(pScreenInfo, xf86strcat ((char *)MICROCODE_DIR,"v10002d.uc"));
+    c=verite_load_ucfile(pScreenInfo, strcat ((char *)MICROCODE_DIR,"v10002d.uc"));
   }
   else {
     /* V2x00 chip */
-    c=verite_load_ucfile(pScreenInfo, xf86strcat ((char *)MICROCODE_DIR,"v20002d.uc"));
+    c=verite_load_ucfile(pScreenInfo, strcat ((char *)MICROCODE_DIR,"v20002d.uc"));
   }
 
   if (c == -1) {

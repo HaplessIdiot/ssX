@@ -21,7 +21,7 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.15 2000/06/14 21:57:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.16 2000/06/16 01:50:21 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -3074,7 +3074,7 @@ Permedia2VideoInit(ScreenPtr pScreen)
 	xf86InitFBManager(pScreen, &AvailFBArea);
     }
 
-#ifdef XFree86LOADER
+#if defined(XFree86LOADER) && 0
     if (xf86LoaderCheckSymbol("xf86InitLinearFBManagerRegion")) {
 	int last = pGlint->FbMapSize / (pScrn->bitsPerPixel / 8) - 1;
 	BoxRec AvailFBArea;

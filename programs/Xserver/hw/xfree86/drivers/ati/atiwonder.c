@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiwonder.c,v 1.6 1999/10/13 04:21:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiwonder.c,v 1.7 2000/02/18 12:19:45 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -63,13 +63,12 @@
 void
 ATIVGAWonderPreInit
 (
-    ScrnInfoPtr pScreenInfo,
     ATIPtr      pATI,
     ATIHWPtr    pATIHW
 )
 {
     pATIHW->b3 = ATIGetExtReg(0xB3U) & 0x20U;
-    if (pScreenInfo->depth <= 4)
+    if (pATI->depth <= 4)
         pATIHW->b6 = 0x40U;
     else
         pATIHW->b6 = 0x04U;
@@ -135,7 +134,6 @@ ATIVGAWonderSave
 void
 ATIVGAWonderCalculate
 (
-    ScrnInfoPtr    pScreenInfo,
     ATIPtr         pATI,
     ATIHWPtr       pATIHW,
     DisplayModePtr pMode
@@ -162,7 +160,7 @@ ATIVGAWonderCalculate
      * Fill in mode-specific VGA Wonder data.
      */
     pATIHW->b0 = 0x00U;
-    if (pScreenInfo->depth >= 8)
+    if (pATI->depth >= 8)
         pATIHW->b0 = 0x20U;
     if (pATI->Chip >= ATI_CHIP_28800_2)
     {
@@ -171,7 +169,7 @@ ATIVGAWonderCalculate
         else if (pATI->VideoRAM > 256)
             pATIHW->b0 |= 0x10U;
     }
-    else if (pScreenInfo->depth <= 4)
+    else if (pATI->depth <= 4)
     {
         if (pATI->VideoRAM > 256)
             pATIHW->b0 |= 0x08U;
@@ -191,7 +189,7 @@ ATIVGAWonderCalculate
      * adapter can then only be re-enabled with a powerdown.  The bit, when on,
      * blanks out the overscan.
      */
-    if ((pATI->Chip == ATI_CHIP_18800_1) && (pScreenInfo->depth >= 8))
+    if ((pATI->Chip == ATI_CHIP_18800_1) && (pATI->depth >= 8))
         pATIHW->b5 = 0x00U;
     else
         pATIHW->b5 = 0x01U;

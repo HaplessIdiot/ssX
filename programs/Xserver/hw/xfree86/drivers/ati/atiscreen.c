@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.7 2000/03/22 03:08:24 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.8 2000/05/03 00:44:11 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -25,6 +25,7 @@
 #include "atiadapter.h"
 #include "aticonsole.h"
 #include "atidac.h"
+#include "atidga.h"
 #include "atiscreen.h"
 
 #include "shadowfb.h"
@@ -108,21 +109,20 @@ ATIScreenInit
     /* Re-initialise mi's visual list */
     miClearVisualTypes();
 
-    if ((pScreenInfo->depth > 8) && (pATI->DAC == ATI_DAC_INTERNAL))
+    if ((pATI->depth > 8) && (pATI->DAC == ATI_DAC_INTERNAL))
         VisualMask = TrueColorMask;
     else
-        VisualMask = miGetDefaultVisualMask(pScreenInfo->depth);
+        VisualMask = miGetDefaultVisualMask(pATI->depth);
 
-    if (!miSetVisualTypes(pScreenInfo->depth, VisualMask,
-                          pScreenInfo->rgbBits, pScreenInfo->defaultVisual))
+    if (!miSetVisualTypes(pATI->depth, VisualMask, pScreenInfo->rgbBits,
+                          pScreenInfo->defaultVisual))
         return FALSE;
 
     pFB = pATI->pMemory;
     if (pATI->OptionShadowFB)
     {
-        pATI->FBBytesPerPixel = pScreenInfo->bitsPerPixel >> 3;
-        pATI->FBPitch =
-            PixmapBytePad(pScreenInfo->displayWidth, pScreenInfo->depth);
+        pATI->FBBytesPerPixel = pATI->bitsPerPixel >> 3;
+        pATI->FBPitch = PixmapBytePad(pATI->displayWidth, pATI->depth);
         if ((pATI->pShadow = xalloc(pATI->FBPitch * pScreenInfo->virtualY)))
             pFB = pATI->pShadow;
         else
@@ -134,48 +134,42 @@ ATIScreenInit
     }
 
     /* Initialise framebuffer layer */
-    switch (pScreenInfo->bitsPerPixel)
+    switch (pATI->bitsPerPixel)
     {
         case 1:
             pATI->Closeable = xf1bppScreenInit(pScreen, pFB,
                 pScreenInfo->virtualX, pScreenInfo->virtualY,
-                pScreenInfo->xDpi, pScreenInfo->yDpi,
-                pScreenInfo->displayWidth);
+                pScreenInfo->xDpi, pScreenInfo->yDpi, pATI->displayWidth);
             break;
 
         case 4:
             pATI->Closeable = xf4bppScreenInit(pScreen, pFB,
                 pScreenInfo->virtualX, pScreenInfo->virtualY,
-                pScreenInfo->xDpi, pScreenInfo->yDpi,
-                pScreenInfo->displayWidth);
+                pScreenInfo->xDpi, pScreenInfo->yDpi, pATI->displayWidth);
             break;
 
         case 8:
             pATI->Closeable = cfbScreenInit(pScreen, pFB,
                 pScreenInfo->virtualX, pScreenInfo->virtualY,
-                pScreenInfo->xDpi, pScreenInfo->yDpi,
-                pScreenInfo->displayWidth);
+                pScreenInfo->xDpi, pScreenInfo->yDpi, pATI->displayWidth);
             break;
 
         case 16:
             pATI->Closeable = cfb16ScreenInit(pScreen, pFB,
                 pScreenInfo->virtualX, pScreenInfo->virtualY,
-                pScreenInfo->xDpi, pScreenInfo->yDpi,
-                pScreenInfo->displayWidth);
+                pScreenInfo->xDpi, pScreenInfo->yDpi, pATI->displayWidth);
             break;
 
         case 24:
             pATI->Closeable = cfb24ScreenInit(pScreen, pFB,
                 pScreenInfo->virtualX, pScreenInfo->virtualY,
-                pScreenInfo->xDpi, pScreenInfo->yDpi,
-                pScreenInfo->displayWidth);
+                pScreenInfo->xDpi, pScreenInfo->yDpi, pATI->displayWidth);
             break;
 
         case 32:
             pATI->Closeable = cfb32ScreenInit(pScreen, pFB,
                 pScreenInfo->virtualX, pScreenInfo->virtualY,
-                pScreenInfo->xDpi, pScreenInfo->yDpi,
-                pScreenInfo->displayWidth);
+                pScreenInfo->xDpi, pScreenInfo->yDpi, pATI->displayWidth);
             break;
 
         default:
@@ -186,7 +180,7 @@ ATIScreenInit
         return FALSE;
 
     /* Fixup RGB ordering */
-    if (pScreenInfo->depth > 8)
+    if (pATI->depth > 8)
     {
         VisualPtr pVisual = pScreen->visuals + pScreen->numVisuals;
 
@@ -210,8 +204,11 @@ ATIScreenInit
     /* Initialise banking if needed */
     if (!miInitializeBanking(pScreen,
                              pScreenInfo->virtualX, pScreenInfo->virtualY,
-                             pScreenInfo->displayWidth, &pATI->BankInfo))
+                             pATI->displayWidth, &pATI->BankInfo))
         return FALSE;
+
+    /* Initialise DGA support */
+    (void)ATIDGAInit(pScreenInfo, pScreen, pATI);
 
     /* Setup acceleration */
     if (!ATIAdapterAccelInit(pScreenInfo, pScreen, pATI))
@@ -228,8 +225,8 @@ ATIScreenInit
     if (!miCreateDefColormap(pScreen))
         return FALSE;
 
-    if (pScreenInfo->depth > 1)
-        if (!xf86HandleColormaps(pScreen, (pScreenInfo->depth == 4) ? 16 : 256,
+    if (pATI->depth > 1)
+        if (!xf86HandleColormaps(pScreen, (pATI->depth == 4) ? 16 : 256,
                                  pScreenInfo->rgbBits, ATILoadPalette, NULL,
                                  CMAP_PALETTED_TRUECOLOR |
                                  CMAP_LOAD_EVEN_IF_OFFSCREEN))

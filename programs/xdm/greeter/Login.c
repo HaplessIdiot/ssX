@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/Login.c,v 3.7 2000/06/08 20:09:11 tsi Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/Login.c,v 3.8 2000/06/14 00:16:15 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -143,7 +143,7 @@ static XtResource resources[] = {
     {XtNallowNullPasswd, XtCAllowNullPasswd, XtRBoolean, sizeof (Boolean),
 	offset(allow_null_passwd), XtRImmediate, False},
     {XtNallowRootLogin, XtCAllowRootLogin, XtRBoolean, sizeof(Boolean),
-     offset(allow_root_login), XtRImmediate, True}
+     offset(allow_root_login), XtRImmediate, (XtPointer) True}
 };
 
 #undef offset

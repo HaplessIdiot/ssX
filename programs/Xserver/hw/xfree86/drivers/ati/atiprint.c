@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.11 2000/03/07 16:13:35 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.12 2000/04/20 21:28:30 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -47,7 +47,7 @@ ATIPrintBIOS
     if (xf86GetVerbosity() <= 4)
         return;
 
-    memset(Printable, 0, SizeOf(Printable));
+    (void)memset(Printable, 0, SizeOf(Printable));
 
     xf86ErrorFVerb(5, "\n BIOS data at offset 0x%08X:", Start);
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiwonder.h,v 1.3 1999/07/06 11:38:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiwonder.h,v 1.4 2000/02/18 12:19:46 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -28,11 +28,9 @@
 #include "atiproto.h"
 #include "xf86str.h"
 
-extern void ATIVGAWonderPreInit   FunctionPrototype((ScrnInfoPtr, ATIPtr,
-                                                     ATIHWPtr));
+extern void ATIVGAWonderPreInit   FunctionPrototype((ATIPtr, ATIHWPtr));
 extern void ATIVGAWonderSave      FunctionPrototype((ATIPtr, ATIHWPtr));
-extern void ATIVGAWonderCalculate FunctionPrototype((ScrnInfoPtr, ATIPtr,
-                                                     ATIHWPtr,
+extern void ATIVGAWonderCalculate FunctionPrototype((ATIPtr, ATIHWPtr,
                                                      DisplayModePtr));
 extern void ATIVGAWonderSet       FunctionPrototype((ATIPtr, ATIHWPtr));
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.19 2000/04/20 21:28:28 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.20 2000/05/03 00:44:04 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -196,12 +196,10 @@ ATIMach64PreInit
     CARD32 bus_cntl, config_cntl;
     int    tmp;
 
-    if (pScreenInfo->depth <= 4)
-        pATIHW->crtc_off_pitch =
-            SetBits(pScreenInfo->displayWidth >> 4, CRTC_PITCH);
+    if (pATI->depth <= 4)
+        pATIHW->crtc_off_pitch = SetBits(pATI->displayWidth >> 4, CRTC_PITCH);
     else
-        pATIHW->crtc_off_pitch =
-            SetBits(pScreenInfo->displayWidth >> 3, CRTC_PITCH);
+        pATIHW->crtc_off_pitch = SetBits(pATI->displayWidth >> 3, CRTC_PITCH);
 
     bus_cntl = inl(pATI->CPIO_BUS_CNTL);
     pATIHW->bus_cntl = (bus_cntl & ~BUS_HOST_ERR_INT_EN) | BUS_HOST_ERR_INT;
@@ -224,7 +222,7 @@ ATIMach64PreInit
 
     pATIHW->dac_cntl = inl(pATI->CPIO_DAC_CNTL) &
         ~(DAC1_CLK_SEL | DAC_PALETTE_ACCESS_CNTL | DAC_8BIT_EN);
-    if ((pScreenInfo->depth > 8) || (pScreenInfo->rgbBits == 8))
+    if ((pATI->depth > 8) || (pScreenInfo->rgbBits == 8))
         pATIHW->dac_cntl |= DAC_8BIT_EN;
 
     pATIHW->config_cntl = config_cntl = inl(pATI->CPIO_CONFIG_CNTL);
@@ -260,8 +258,7 @@ ATIMach64PreInit
 
         /* Initialise destination registers */
         pATIHW->dst_off_pitch =
-            SetBits((pScreenInfo->displayWidth * pATI->XModifier) >> 3,
-                DST_PITCH);
+            SetBits((pATI->displayWidth * pATI->XModifier) >> 3, DST_PITCH);
         pATIHW->dst_cntl = DST_X_DIR | DST_Y_DIR | DST_LAST_PEL;
 
         /* Initialise source registers */
@@ -271,9 +268,9 @@ ATIMach64PreInit
         pATIHW->src_cntl = SRC_LINE_X_DIR;
 
         /* Initialise scissor, allowing for offscreen areas */
-        pATIHW->sc_right = (pScreenInfo->displayWidth * pATI->XModifier) - 1;
+        pATIHW->sc_right = (pATI->displayWidth * pATI->XModifier) - 1;
         tmp = (pScreenInfo->videoRam * (1024 * 8) /
-            pScreenInfo->displayWidth / pScreenInfo->bitsPerPixel) - 1;
+            pATI->displayWidth / pATI->bitsPerPixel) - 1;
         if (tmp > ATIMach64MaxY)
             tmp = ATIMach64MaxY;
         pATIHW->sc_bottom = tmp;
@@ -282,7 +279,7 @@ ATIMach64PreInit
         pATIHW->dp_frgd_clr = (CARD32)(-1);
         pATIHW->dp_write_mask = (CARD32)(-1);
 
-        switch (pScreenInfo->depth)
+        switch (pATI->depth)
         {
             case 8:
                 pATIHW->dp_chain_mask = DP_CHAIN_8BPP;
@@ -309,7 +306,7 @@ ATIMach64PreInit
                 break;
 
             case 24:
-                if (pScreenInfo->bitsPerPixel == 24)
+                if (pATI->bitsPerPixel == 24)
                 {
                     pATIHW->dp_chain_mask = DP_CHAIN_24BPP_888;
                     pATIHW->dp_pix_width = /* DP_BYTE_PIX_ORDER | */
@@ -462,7 +459,6 @@ ATIMach64Save
 void
 ATIMach64Calculate
 (
-    ScrnInfoPtr    pScreenInfo,
     ATIPtr         pATI,
     ATIHWPtr       pATIHW,
     DisplayModePtr pMode
@@ -580,7 +576,7 @@ ATIMach64Calculate
           CRTC_VGA_TEXT_132 | CRTC_CUR_B_TEST);
     pATIHW->crtc_gen_cntl |=
         CRTC_EXT_DISP_EN | CRTC_EN | CRTC_VGA_LINEAR | CRTC_CNT_EN;
-    switch (pScreenInfo->depth)
+    switch (pATI->depth)
     {
         case 1:
             pATIHW->crtc_gen_cntl |= SetBits(PIX_WIDTH_1BPP, CRTC_PIX_WIDTH);
@@ -598,13 +594,13 @@ ATIMach64Calculate
             pATIHW->crtc_gen_cntl |= SetBits(PIX_WIDTH_16BPP, CRTC_PIX_WIDTH);
             break;
         case 24:
-            if (pScreenInfo->bitsPerPixel == 24)
+            if (pATI->bitsPerPixel == 24)
             {
                 pATIHW->crtc_gen_cntl |=
                     SetBits(PIX_WIDTH_24BPP, CRTC_PIX_WIDTH);
                 break;
             }
-            if (pScreenInfo->bitsPerPixel != 32)
+            if (pATI->bitsPerPixel != 32)
                 break;
             /* Fall through */
         case 32:
@@ -666,7 +662,7 @@ ATIMach64Set
     if (pATI->OptionAccel)
     {
         /* Clobber MMIO cache */
-        memset(pATI->MMIOCached, 0, sizeof(pATI->MMIOCached));
+        (void)memset(pATI->MMIOCached, 0, SizeOf(pATI->MMIOCached));
 
         /* Ensure apertures are enabled */
         outl(pATI->CPIO_BUS_CNTL, pATI->NewHW.bus_cntl);

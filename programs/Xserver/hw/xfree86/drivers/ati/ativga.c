@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.c,v 1.9 2000/02/18 12:19:43 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.c,v 1.10 2000/03/22 03:08:26 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -41,7 +41,6 @@
 void
 ATIVGAPreInit
 (
-    ScrnInfoPtr pScreenInfo,
     ATIPtr      pATI,
     ATIHWPtr    pATIHW
 )
@@ -50,11 +49,11 @@ ATIVGAPreInit
 
     /* Initialise sequencer register values */
     pATIHW->seq[0] = 0x03U;
-    if (pScreenInfo->depth == 1)
+    if (pATI->depth == 1)
         pATIHW->seq[2] = 0x01U << BIT_PLANE;
     else
         pATIHW->seq[2] = 0x0FU;
-    if (pScreenInfo->depth <= 4)
+    if (pATI->depth <= 4)
         pATIHW->seq[4] = 0x06U;
     else if (pATI->Adapter == ATI_ADAPTER_VGA)
         pATIHW->seq[4] = 0x0EU;
@@ -62,22 +61,22 @@ ATIVGAPreInit
         pATIHW->seq[4] = 0x0AU;
 
     /* Initialise CRTC register values */
-    if ((pScreenInfo->depth >= 8) &&
+    if ((pATI->depth >= 8) &&
         ((pATI->Chip >= ATI_CHIP_264CT) ||
          (pATI->CPIO_VGAWonder &&
           (pATI->Chip <= ATI_CHIP_18800_1) &&
           (pATI->VideoRAM == 256))))
-        pATIHW->crt[19] = pScreenInfo->displayWidth >> 3;
+        pATIHW->crt[19] = pATI->displayWidth >> 3;
     else
-        pATIHW->crt[19] = pScreenInfo->displayWidth >> 4;
-    if ((pScreenInfo->depth >= 8) && (pATI->Adapter == ATI_ADAPTER_VGA))
+        pATIHW->crt[19] = pATI->displayWidth >> 4;
+    if ((pATI->depth >= 8) && (pATI->Adapter == ATI_ADAPTER_VGA))
         pATIHW->crt[23] = 0xC3U;
     else
         pATIHW->crt[23] = 0xE3U;
     pATIHW->crt[24] = 0xFFU;
 
     /* Initialise attribute controller register values */
-    if (pScreenInfo->depth == 1)
+    if (pATI->depth == 1)
     {
         Bool FlipPixels = xf86GetFlipPixels();
 
@@ -93,7 +92,7 @@ ATIVGAPreInit
     {
         for (Index = 0;  Index < 16;  Index++)
             pATIHW->attr[Index] = Index;
-        if (pScreenInfo->depth <= 4)
+        if (pATI->depth <= 4)
             pATIHW->attr[16] = 0x81U;
         else if (pATI->Adapter == ATI_ADAPTER_VGA)
             pATIHW->attr[16] = 0x41U;
@@ -104,9 +103,9 @@ ATIVGAPreInit
     pATIHW->attr[18] = 0x0FU;
 
     /* Initialise graphics controller register values */
-    if (pScreenInfo->depth == 1)
+    if (pATI->depth == 1)
         pATIHW->gra[4] = BIT_PLANE;
-    else if (pScreenInfo->depth <= 4)
+    else if (pATI->depth <= 4)
         pATIHW->gra[5] = 0x02U;
     else if (pATI->Chip >= ATI_CHIP_264CT)
         pATIHW->gra[5] = 0x40U;

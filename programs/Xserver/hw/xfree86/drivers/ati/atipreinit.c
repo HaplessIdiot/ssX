@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.24 2000/04/23 19:27:00 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.25 2000/05/03 00:44:07 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -295,7 +295,7 @@ ATIReportMemory
     Message = Buffer +
         snprintf(Buffer, SizeOf(Buffer), "%d kB of %s detected",
             pATI->VideoRAM, MemoryTypeName);
-    if (pScreenInfo->depth == 1)
+    if (pATI->depth == 1)
     {
         /* 1bpp only uses one plane of four */
         pScreenInfo->videoRam /= 4;
@@ -349,9 +349,10 @@ ATIPreInit
     CARD32           IOValue1, IOValue2 = 0;
     int              i, j, AcceleratorVideoRAM = 0, VGAVideoRAM = 0;
     int              Numerator, Denominator;
+    int              MinX, MinY;
     resRange         Resources[2] = {{0, 0, 0}, _END};
     ClockRange       ATIClockRange = {NULL, 0, 80000, 0, TRUE, TRUE, 1, 1, 0};
-    int              minPitch, maxPitch = 0xFFU, pitchInc, maxHeight = 0;
+    int              minPitch, maxPitch = 0xFFU, maxHeight = 0;
     LookupModeFlags  Strategy = LOOKUP_CLOSEST_CLOCK;
 
     if (pScreenInfo->numEntities != 1)
@@ -1132,6 +1133,7 @@ ATIPreInit
         pScreenInfo->rgbBits = 6;
     else
         pScreenInfo->rgbBits = 8;
+    pATI->rgbBits = pScreenInfo->rgbBits;
     if (!xf86SetWeight(pScreenInfo, defaultWeight, defaultWeight))
     {
         ATILock(pATI);
@@ -1186,15 +1188,17 @@ ATIPreInit
         return FALSE;
     }
 
-    pATI->XModifier =
-        pScreenInfo->bitsPerPixel / UnitOf(pScreenInfo->bitsPerPixel);
+    pATI->depth = pScreenInfo->depth;
+    pATI->bitsPerPixel = pScreenInfo->bitsPerPixel;
+    pATI->weight = pScreenInfo->weight;
+    pATI->XModifier = pATI->bitsPerPixel / UnitOf(pATI->bitsPerPixel);
 
     /*
      * Determine which CRT controller to use for video modes.
      */
 
     if ((pATI->Chip >= ATI_CHIP_88800GXC) &&
-        (pScreenInfo->depth >= 8) &&
+        (pATI->depth >= 8) &&
         (pATI->Chipset == ATI_CHIPSET_ATI))
     {
         pATI->NewHW.crtc = ATI_CRTC_MACH64;
@@ -1273,7 +1277,7 @@ ATIPreInit
         {
             pATI->OptionCRT = FALSE;
             xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
-                "Using digital flat panel and disabling CRT interface.\n");
+                "Using digital flat panel interface.\n");
         }
     }
 
@@ -1284,7 +1288,7 @@ ATIPreInit
     AcceleratorVideoRAM = pScreenInfo->videoRam = pATI->VideoRAM;
     if (pATI->Chip == ATI_CHIP_VGA)
     {
-        if (pScreenInfo->depth <= 4)
+        if (pATI->depth <= 4)
             VGAVideoRAM = 256;
         else
             VGAVideoRAM = 64;
@@ -1329,7 +1333,7 @@ ATIPreInit
          * VGA Wonder V3's, V4's and V5's don't appear to support banking in
          * planar modes.
          */
-        if ((pScreenInfo->depth <= 4) &&
+        if ((pATI->depth <= 4) &&
             (pATI->Chip <= ATI_CHIP_18800_1) &&
             (VGAVideoRAM > 256))
         {
@@ -1338,7 +1342,7 @@ ATIPreInit
                 xf86DrvMsg(pScreenInfo->scrnIndex, X_NOTICE,
                     "Virtual resolutions requiring more than %s kB\n of video"
                     " memory might not function properly." ATI_README,
-                    (pScreenInfo->depth == 1) ? "64" : "256");
+                    (pATI->depth == 1) ? "64" : "256");
             }
             else
             {
@@ -1352,7 +1356,7 @@ ATIPreInit
     else if ((pATI->NewHW.crtc == ATI_CRTC_MACH64) ||
              (pATI->Chip >= ATI_CHIP_264CT))
     {
-        if (pScreenInfo->depth >= 8)
+        if (pATI->depth >= 8)
         {
             /* Set MMIO address from PCI configuration space, if available */
             if (pATI->PCIInfo &&
@@ -1507,7 +1511,7 @@ ATIPreInit
             pATI->CPIO_MEM_VGA_WP_SEL = ATIIOPort(MEM_VGA_WP_SEL);
 
             /* Set banking functions */
-            if (pScreenInfo->depth <= 4)
+            if (pATI->depth <= 4)
             {
                 pATI->NewHW.SetBank = ATIMach64SetBankPlanar;
                 pATI->BankInfo.SetSourceBank = ATIMach64SetReadPlanar;
@@ -1569,7 +1573,7 @@ ATIPreInit
     {
         if (pATI->OptionDevel)
         {
-            if (pScreenInfo->depth == 1)
+            if (pATI->depth == 1)
                 AcceleratorVideoRAM /= 4;
 
             xf86DrvMsg(pScreenInfo->scrnIndex, X_NOTICE,
@@ -1671,14 +1675,14 @@ ATIPreInit
             (inl(pATI->CPIO_CRTC_GEN_CNTL) & CRTC_EXT_DISP_EN))
             pATI->OldHW.crtc = ATI_CRTC_MACH64;
 
-        if (pScreenInfo->depth <= 4)
+        if (pATI->depth <= 4)
         {
             pATI->BankInfo.nBankDepth = 1;
             pATI->NewHW.nPlane = 4;
         }
         else
         {
-            pATI->BankInfo.nBankDepth = pScreenInfo->depth;
+            pATI->BankInfo.nBankDepth = pATI->depth;
             pATI->NewHW.nPlane = 1;
         }
 
@@ -1712,7 +1716,7 @@ ATIPreInit
         else
             pATI->OldHW.SetBank = ATIMach64SetBankPlanar;
 
-        if (((pATI->ApertureSize * pScreenInfo->depth) /
+        if (((pATI->ApertureSize * pATI->depth) /
              pATI->BankInfo.nBankDepth) >=
             (unsigned)(pScreenInfo->videoRam * 1024))
             pATI->BankInfo.BankSize = 0;        /* No banking */
@@ -1727,7 +1731,7 @@ ATIPreInit
                 "Cannot shadow a banked frame buffer.\n");
             pATI->OptionShadowFB = FALSE;
         }
-        else if (pScreenInfo->depth < 8)
+        else if (pATI->depth < 8)
         {
             xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
                 "Cannot shadow a planar frame buffer.\n");
@@ -1768,8 +1772,8 @@ ATIPreInit
          */
         if (pATI->ProgrammableClock == ATI_CLOCK_INTERNAL)
             Numerator <<= 1;
-        else if (pScreenInfo->depth > 8)
-            Denominator *= (pScreenInfo->bitsPerPixel / 8);
+        else if (pATI->depth > 8)
+            Denominator *= (pATI->bitsPerPixel / 8);
 
         ATIClockRange.maxClock = (Numerator / (Denominator * 1000)) * 1000;
 
@@ -1790,8 +1794,8 @@ ATIPreInit
             Denominator = pATI->ClockDescriptor.MinM *
                 pATI->XCLKReferenceDivider * pATI->ReferenceDenominator;
 
-            if (pScreenInfo->depth >= 8)
-                Denominator *= pScreenInfo->bitsPerPixel / 4;
+            if (pATI->depth >= 8)
+                Denominator *= pATI->bitsPerPixel / 4;
 
             i = (5 - 2) - pATI->XCLKPostDivider;
             if (pATI->NewHW.crtc != ATI_CRTC_VGA)
@@ -1811,7 +1815,7 @@ ATIPreInit
     if ((pATI->DAC & ~0x0FU) == ATI_DAC_INTERNAL)
     {
         int DacSpeed;
-        switch (pScreenInfo->bitsPerPixel)
+        switch (pATI->bitsPerPixel)
         {
             case 15:
             case 16:
@@ -1836,7 +1840,7 @@ ATIPreInit
         {
             int DefaultmaxClock = 135000;
 
-            if (pScreenInfo->depth > 8)
+            if (pATI->depth > 8)
                 DefaultmaxClock = 80000;
 
             if ((pATI->Chip >= ATI_CHIP_264VTB) &&
@@ -1875,7 +1879,7 @@ ATIPreInit
                 ATIClockRange.maxClock = 40000;
             else if (pATI->CPIO_VGAWonder &&
                     (pATI->VideoRAM < 1024) &&
-                    (pScreenInfo->depth >= 8))
+                    (pATI->depth >= 8))
                 ATIClockRange.maxClock =
                     (GetBits(BIOSByte(0x44U), 0x04U) * 5000) + 40000;
             else
@@ -1886,6 +1890,10 @@ ATIPreInit
         xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
             "Maximum pixel clock:  %.3f MHz.\n",
             (double)ATIClockRange.maxClock / 1000.0);
+
+    /* Map MMIO areas */
+    if (!ATIMapApertures(pScreenInfo, pATI))
+        return FALSE;
 
     /*
      * Determine available pixel clock frequencies.
@@ -1899,12 +1907,12 @@ ATIPreInit
      * Mode validation.
      */
 
-    if ((pScreenInfo->depth >= 8) && (pATI->Chip >= ATI_CHIP_264CT))
+    if ((pATI->depth >= 8) && (pATI->Chip >= ATI_CHIP_264CT))
         minPitch = 8;
     else if (pATI->CPIO_VGAWonder &&
              (pATI->Chip <= ATI_CHIP_18800_1) &&
              (pATI->VideoRAM == 256) &&
-             (pScreenInfo->depth >= 8))
+             (pATI->depth >= 8))
     {
         minPitch = 32;          /* Very strange, but true */
         maxPitch = 0x3FU;
@@ -1912,9 +1920,9 @@ ATIPreInit
     else
         minPitch = 16;
 
-    pitchInc = minPitch;
-    if (pScreenInfo->depth >= 8)
-        pitchInc *= pScreenInfo->bitsPerPixel;
+    pATI->pitchInc = minPitch;
+    if (pATI->depth >= 8)
+        pATI->pitchInc *= pATI->bitsPerPixel;
 
     switch (pATI->NewHW.crtc)
     {
@@ -2005,12 +2013,7 @@ ATIPreInit
         if ((pATI->Chip >= ATI_CHIP_264CT) &&
             ((pATI->Chip >= ATI_CHIP_264VTB) ||
              (pATI->MemoryType >= MEM_264_SGRAM)))
-        {
-            if (pScreenInfo->bitsPerPixel == 24)
-                pitchInc = 64 * 24;
-            else
-                pitchInc = 64 * 8;
-        }
+            pATI->pitchInc = pATI->XModifier * (64 * 8);
     }
 
     if (!pATI->OptionCRT && pATI->LCDPanelID >= 0)
@@ -2031,7 +2034,7 @@ ATIPreInit
         pMode->type = M_T_BUILTIN;
         pMode->Clock = pATI->LCDClock;
         pMode->HDisplay = pATI->LCDHorizontal;
-        pMode->VDisplay = pATI->LCDVertical; 
+        pMode->VDisplay = pATI->LCDVertical;
 
         /*
          * These timings are bogus, but enough to survive sync tolerance
@@ -2071,18 +2074,16 @@ ATIPreInit
 
     i = xf86ValidateModes(pScreenInfo,
             pScreenInfo->monitor->Modes, pScreenInfo->display->modes,
-            &ATIClockRange, NULL, minPitch, maxPitch, pitchInc, 0, maxHeight,
+            &ATIClockRange, NULL, minPitch, maxPitch,
+            pATI->pitchInc, 0, maxHeight,
             pScreenInfo->display->virtualX, pScreenInfo->display->virtualY,
             pATI->ApertureSize, Strategy);
     if (i <= 0)
     {
+        ATIUnmapApertures(pScreenInfo, pATI);
         ATILock(pATI);
         return FALSE;
     }
-
-    /* Map MMIO areas */
-    if (!ATIMapApertures(pScreenInfo, pATI))
-        return FALSE;
 
     /* Remove invalid modes */
     xf86PruneDriverModes(pScreenInfo);
@@ -2106,8 +2107,32 @@ ATIPreInit
     }
 #endif
 
+    pATI->displayWidth = pScreenInfo->displayWidth;
+
     /* Initialise for panning */
-    ATIAdjustPreInit(pScreenInfo, pATI);
+    ATIAdjustPreInit(pATI);
+
+    /*
+     * Warn about modes that are too small, or not aligned, to scroll to the
+     * bottom right corner of the virtual screen.
+     */
+    MinX = pScreenInfo->virtualX - pATI->AdjustMaxX;
+    MinY = pScreenInfo->virtualY - pATI->AdjustMaxY;
+
+    pMode = pScreenInfo->modes;
+    do
+    {
+        if ((pMode->VDisplay <= MinY) &&
+            ((pMode->VDisplay < MinY) || (pMode->HDisplay < MinX)))
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                "Mode \"%s\" too small to scroll to bottom right corner of"
+                " virtual resolution.\n", pMode->name);
+        else if ((pMode->HDisplay & ~pATI->AdjustMask) / pScreenInfo->xInc)
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                "Mode \"%s\" cannot scroll to bottom right corner of virtual"
+                " resolution.\n Horizontal dimension not a multiple of %d.\n",
+                pMode->name, ~pATI->AdjustMask + 1);
+    } while ((pMode = pMode->next) != pScreenInfo->modes);
 
     /* Initialise CRTC code */
     ATIAdapterPreInit(pScreenInfo, pATI, &pATI->NewHW);

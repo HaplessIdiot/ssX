@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidsp.c,v 1.8 2000/02/18 12:19:21 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidsp.c,v 1.9 2000/03/22 03:08:13 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -193,7 +193,6 @@ ATIDSPSave
 void
 ATIDSPCalculate
 (
-    ScrnInfoPtr    pScreenInfo,
     ATIPtr         pATI,
     ATIHWPtr       pATIHW,
     DisplayModePtr pMode
@@ -210,8 +209,8 @@ ATIDSPCalculate
     Multiplier = pATI->XCLKFeedbackDivider *
         pATI->ClockDescriptor.PostDividers[pATIHW->PostDivider];
     Divider = pATIHW->FeedbackDivider * pATI->XCLKReferenceDivider;
-    if (pScreenInfo->depth >= 8)
-        Divider *= pScreenInfo->bitsPerPixel / 4;
+    if (pATI->depth >= 8)
+        Divider *= pATI->bitsPerPixel / 4;
     /* Start by assuming a display FIFO width of 32 bits */
     vshift = (5 - 2) - pATI->XCLKPostDivider;
     if (pATIHW->crtc != ATI_CRTC_VGA)

@@ -1,5 +1,5 @@
 /* $XConsortium: x11perf.c,v 2.54 94/03/30 19:40:27 gildea Exp $ */
-/* $XFree86: xc/programs/x11perf/x11perf.c,v 3.0 1996/05/06 06:00:53 dawes Exp $ */
+/* $XFree86: xc/programs/x11perf/x11perf.c,v 3.1 1999/02/28 11:20:01 dawes Exp $ */
 /****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -390,7 +390,7 @@ Open_Display(char *display_name)
     if (d == NULL) {
 	fprintf (stderr, "%s:  unable to open display '%s'\n",
 		 program_name, XDisplayName (display_name));
-	/* doesn't return */
+	exit(1);
     }
 
     return(d);
