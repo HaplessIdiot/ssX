@@ -4,7 +4,7 @@ XCOMM platform:  $Xorg: linux.cf,v 1.3 2000/08/17 19:41:47 cpqbld Exp $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.185 2002/09/23 12:11:16 alanh Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.186 2002/10/11 02:34:39 dawes Exp $
 
 #ifndef LinuxElfDefault
 # define LinuxElfDefault	YES
@@ -538,7 +538,7 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 # if UseElfFormat
 #  ifdef MipsArchitecture
 #   ifndef AsCmd
-#     define AsCmd		gcc -c -x assembler-with-cpp
+#     define AsCmd		gcc -c -x assembler
 #   endif
 #   ifndef MakeDllModules
 #     define MakeDllModules	YES
@@ -553,7 +553,7 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #  endif
 #  define CplusplusCmd		c++
 #  ifndef AsCmd
-#   define AsCmd		CcCmd -c -x assembler-with-cpp
+#   define AsCmd		CcCmd -c -x assembler
 #  endif
 #  define AsmDefines		-D__ELF__
 #  ifndef LdCmd
@@ -593,42 +593,42 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #  ifdef AlphaArchitecture
 #   define CcCmd		gcc -b alpha-linuxecoff
 #   define CplusplusCmd		g++ -b alpha-linuxecoff
-#   define AsCmd		CcCmd -c -x assembler-with-cpp
+#   define AsCmd		CcCmd -c -x assembler
 #   define LdCmd		CcCmd -nostdlib -Wl,"-m alpha"
 #   define AsmDefines		-DUSE_GAS -U__ELF__
 #  endif /* AlphaArchitecture */
 #  ifdef HPArchitecture
 #   define CcCmd		gcc
 #   define CplusplusCmd		g++
-#   define AsCmd		CcCmd -c -x assembler-with-cpp
+#   define AsCmd		CcCmd -c -x assembler
 #   define LdCmd		CcCmd -nostdlib
 #   define AsmDefines		-DUSE_GAS -U__ELF__
 #  endif /* HPArchitecture */
 #  ifdef i386Architecture
 #   define CcCmd		gcc -b i486-linuxaout
 #   define CplusplusCmd		g++ -b i486-linuxaout
-#   define AsCmd		CcCmd -c -x assembler-with-cpp
+#   define AsCmd		CcCmd -c -x assembler
 #   define LdCmd		CcCmd -nostdlib -Wl,"-m i386linux"
 #   define AsmDefines		-DUSE_GAS -U__ELF__
 #  endif /* i386Architecture */
 #  ifdef ia64Architecture
 #   define CcCmd		gcc
 #   define CplusplusCmd		g++
-#   define AsCmd		CcCmd -c -x assembler-with-cpp
+#   define AsCmd		CcCmd -c -x assembler
 #   define LdCmd		CcCmd -nostdlib
 #   define AsmDefines		-DUSE_GAS -U__ELF__
 #  endif /* ia64Architecture */
 #  ifdef Mc68020Architecture
 #   define CcCmd		gcc -b m68k-linuxaout
 #   define CplusplusCmd		g++ -b m68k-linuxaout
-#   define AsCmd		CcCmd -c -x assembler-with-cpp
+#   define AsCmd		CcCmd -c -x assembler
 #   define LdCmd		CcCmd -nostdlib -Wl'"-m m68klinux"
 #   define AsmDefines		-DUSE_GAS -U__ELF__
 #  endif /* Mc68020Architecture */
 #  ifdef x86_64Architecture
 #   define CcCmd		gcc
 #   define CplusplusCmd		g++
-#   define AsCmd		CcCmd -c -x assembler-with-cpp
+#   define AsCmd		CcCmd -c -x assembler
 #   define LdCmd		CcCmd -nostdlib
 #   define AsmDefines		-DUSE_GAS -U__ELF__
 #  endif /* x86_64Architecture */
@@ -637,7 +637,7 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 # if UseElfFormat
 #  ifdef AlphaArchitecture
 #   define CcCmd		gcc -b alpha-linux
-#   define AsCmd		CcCmd -c -x assembler-with-cpp
+#   define AsCmd		CcCmd -c -x assembler
 #   define LdCmd		CcCmd -nostdlib -Wl,"-m elf64alpha"
 #   define AsmDefines		-D__ELF__
 #   define CplusplusCmd		c++ -b alpha-linux
@@ -645,14 +645,14 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #  ifdef HPArchitecture
 #   define CcCmd		gcc
 #   define CplusplusCmd		g++
-#   define AsCmd		CcCmd -c -x assembler-with-cpp
+#   define AsCmd		CcCmd -c -x assembler
 #   define LdCmd		CcCmd -nostdlib
 #   define AsmDefines		-D__ELF__
 #   define SharedLibXau		YES
 #  endif /* HPArchitecture */
 #  ifdef i386Architecture
 #   define CcCmd		gcc -b i486-linux
-#   define AsCmd		CcCmd -c -x assembler-with-cpp
+#   define AsCmd		CcCmd -c -x assembler
 #   define LdCmd		CcCmd -nosdlib -Wl,"-m elf_i386"
 #   define AsmDefines		-D__ELF__
 #   define CplusplusCmd		c++ -b i486-linux
@@ -660,13 +660,13 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #  ifdef ia64Architecture
 #   define CcCmd		gcc
 #   define CplusplusCmd		g++
-#   define AsCmd		CcCmd -c -x assembler-with-cpp
+#   define AsCmd		CcCmd -c -x assembler
 #   define LdCmd		CcCmd -nostdlib
 #   define AsmDefines		-D__ELF__
 #  endif /* ia64Architecture */
 #  ifdef Mc68020Architecture
 #   define CcCmd		gcc -b m68k-linux
-#   define AsCmd		CcCmd -c -x assembler-with-cpp
+#   define AsCmd		CcCmd -c -x assembler
 #   define LdCmd		CcCmd -nostdlib -W,l"-m m68kelf"
 #   define AsmDefines		-D__ELF__
 #   define CplusplusCmd		c++ -b m68k-linux
@@ -674,13 +674,13 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #  ifdef x86_64Architecture
 #   define CcCmd                 gcc
 #   define CplusplusCmd          g++
-#   define AsCmd                 CcCmd -c -x assembler-with-cpp
+#   define AsCmd                 CcCmd -c -x assembler
 #   define LdCmd                 CcCmd -nostdlib
 #   define AsmDefines            -D__ELF__
 #  endif /* x86_64Architecture */
 # else
 #  define CcCmd			gcc
-#  define AsCmd			CcCmd -c -x assembler-with-cpp
+#  define AsCmd			CcCmd -c -x assembler
 #  define LdCmd			CcCmd -nostdlib
 #  define AsmDefines		-DUSE_GAS
 # endif
