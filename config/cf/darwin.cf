@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.25 2002/03/28 02:21:03 torrey Exp $
+XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.26 2002/04/02 01:35:25 torrey Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -144,10 +144,12 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
  * Set this to NO to just build the client libs, which should work without
  * having to write any platform specific code.
  */
-#define BuildServer             YES
+#ifndef BuildServer
+# define BuildServer            YES
 
 /* our custom X server */
-#define XDarwinServer           YES
+# define XDarwinServer          YES
+#endif
 
 /* Thanks to the IOKit, the X server does not have to be SetUID. */
 #ifndef InstallXserverSetUID
