@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -21,8 +22,9 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-#ifndef _VIA_DRI_
-#define _VIA_DRI_
+
+#ifndef _VIA_DRI_H_
+#define _VIA_DRI_H_ 1
 
 #include "xf86drm.h"
 
@@ -79,5 +81,5 @@ Bool VIADRIScreenInit(ScreenPtr pScreen);
 void VIADRICloseScreen(ScreenPtr pScreen);
 Bool VIADRIFinishScreenInit(ScreenPtr pScreen);
 
-#endif
-#endif
+#endif /* XFree86Server */
+#endif /* _VIA_DRI_H_ */

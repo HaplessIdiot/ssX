@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -22,8 +23,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __VIA_CAPTURE_H
-#define __VIA_CAPTURE_H
+#ifndef _VIA_CAPTURE_H_
+#define _VIA_CAPTURE_H_ 1
 
 typedef struct _VIACapRec {
     unsigned long dwDeinterlaceMode;
@@ -73,4 +74,4 @@ typedef struct _CAPDEVICE {
     CARD32 dwDeinterlaceMode;	/*BOB / WEAVE */
 } CAPDEVICE;
 
-#endif
+#endif /* _VIA_CAPTURE_H_ */

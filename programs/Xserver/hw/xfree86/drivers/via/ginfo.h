@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -21,6 +22,9 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
+#ifndef _VIA_GINFO_H_
+#define _VIA_GINFO_H_ 1
 
 typedef struct {
     CARD32 dwWidth;          /* On screen Width                  */
@@ -46,3 +50,4 @@ typedef struct {
     CARD32 RevisionID;               /* The chip revision ID */
 } ViaGraphicRec;
 
+#endif /* _VIA_GINFO_H_ */

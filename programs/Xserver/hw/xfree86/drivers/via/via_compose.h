@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -23,8 +24,8 @@
  */
 
 /* Definition of APs Distribution */
-#ifndef __VIA_COMPOSE_H
-#define __VIA_COMPOSE_H
+#ifndef _VIA_COMPOSE_H_
+#define _VIA_COMPOSE_H_ 1
 
   /* Video Control definition */
 #define VW_DVD_ONLY              0x00000001  /* ????????????????? */
@@ -63,5 +64,4 @@
 #define AUDIO_SVIDEO       0x00000400        /* not available now    */
 #define AUDIO_COMPOSE      0x00000800        /* 		               */	
                                                 
-#endif  /*end of __VIA_COMPOSE_H*/
-
+#endif  /* _VIA_COMPOSE_H_ */

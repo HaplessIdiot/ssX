@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -22,8 +23,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __VIA_XVPRIV_H
-#define __VIA_XVPRIV_H
+#ifndef _VIA_XVPRIV_H_
+#define _VIA_XVPRIV_H_ 1
 
 #include "videodev.h"
 
@@ -93,4 +94,5 @@ viaPortPrivPtr GetPortPriv(int);
 void SetPortPriv(int nIndex, unsigned long dwAction, unsigned long dwValue);
 unsigned long  IdentifyPort(viaPortPrivPtr);
 #endif
-#endif /* end of  __VIA_XVPRIV_H */
+
+#endif /* _VIA_XVPRIV_H_ */

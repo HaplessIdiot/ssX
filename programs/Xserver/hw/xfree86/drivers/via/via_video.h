@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -22,8 +23,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef _VIA_VIDEO_H
-#define _VIA_VIDEO_H
+#ifndef _VIA_VIDEO_H_
+#define _VIA_VIDEO_H_ 1
 
 /*
  * I N C L U D E S
@@ -131,4 +132,4 @@ typedef struct{
 
 #define vmmtr volatile video_via_regs *
 
-#endif /* _VIA_VIDEO_H */
+#endif /* _VIA_VIDEO_H_ */

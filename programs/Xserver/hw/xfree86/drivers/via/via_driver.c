@@ -29,7 +29,7 @@
  *
  ************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.9 2003/08/25 18:44:37 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.10tsi Exp $ */
 #include "xf86RAC.h"
 #include "shadowfb.h"
 
@@ -3206,12 +3206,6 @@ Bool VIADeviceDispatch(ScrnInfoPtr pScrn)
     DEBUG(xf86DrvMsg(pVIAEnt->pPrimaryScrn->scrnIndex, X_INFO, "Active Device is %d\n", pBIOSInfo0->ActiveDevice));
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Active Device is %d\n", pBIOSInfo1->ActiveDevice));
     return TRUE;
-}
-
-void VIADebugBreak()
-{
-    /* use int3 to set breakpoint */
-    __asm __volatile("int $3");
 }
 
 #ifdef XF86DRI

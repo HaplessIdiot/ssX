@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -21,6 +22,9 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
+#ifndef _VIA_H_
+#define _VIA_H_ 1
 
 /* Video status flag */
 
@@ -571,3 +575,4 @@
 #define GEOutW(port, data)      *((volatile CARD16 *)(lpGEMMIO + (port))) = (data)
 #define GEOutD(port, data)      *((volatile CARD32 *)(lpGEMMIO + (port))) = (data)
 
+#endif /* _VIA_H_ */
