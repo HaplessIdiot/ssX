@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.76 2002/11/23 21:41:51 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.77 2002/11/25 02:35:30 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -1168,7 +1168,8 @@ LispMalloc(size_t size)
     DISABLE_INTERRUPTS();
     LispCheckMemLevel();
     if ((pointer = malloc(size)) == NULL)
-	LispDestroy("out of memory, couldn't allocate %u bytes", size);
+	LispDestroy("out of memory, couldn't allocate %lu bytes",
+		    (unsigned long)size);
 
     lisp__data.mem.mem[lisp__data.mem.index] = pointer;
     ENABLE_INTERRUPTS();
@@ -1184,7 +1185,8 @@ LispCalloc(size_t nmemb, size_t size)
     DISABLE_INTERRUPTS();
     LispCheckMemLevel();
     if ((pointer = calloc(nmemb, size)) == NULL)
-	LispDestroy("out of memory, couldn't allocate %u bytes", size);
+	LispDestroy("out of memory, couldn't allocate %lu bytes",
+		    (unsigned long)size);
 
     lisp__data.mem.mem[lisp__data.mem.index] = pointer;
     ENABLE_INTERRUPTS();
