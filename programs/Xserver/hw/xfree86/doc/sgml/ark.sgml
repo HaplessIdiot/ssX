@@ -115,7 +115,7 @@ Architecture) in the SVGA server. In fact the ARK driver was the
 initial XAA development platform. Most common graphics operations are
 accelerated, including most types of rectangular and non-rectangular
 filling, screen-to-screen BitBLTs, line drawing, and text and bitmap
-expansion. Expect over 300 xstones on a 2MB ARK2000PV/MT.
+expansion. Expect over 300k xstones on a 2MB ARK2000PV/MT.
 
 At 24bpp, acceleration is less complete, but curiously, greyscale colors
 permit faster drawing. If you suspect a problem with acceleration, use
@@ -227,7 +227,7 @@ url="http://www.xfree86.org">.
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ark.sgml,v 3.7 1997/01/20 12:36:38 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ark.sgml,v 3.8 1997/01/24 09:32:41 dawes Exp $
 
 
 

@@ -2,7 +2,7 @@
 
 <article>
 
-<title> README for XFree86 3.2A on LynxOS
+<title>README for XFree86 3.2A on LynxOS
 <author>Thomas Mueller
 <date>Last modified on: 22 January 1997
 <toc>
@@ -25,16 +25,17 @@ and performance improvements as well as many bug fixes.  The release
 is available as source patches against the X Consortium X11R6.3 code, as
 well as binary distributions for many architectures.
 
-See the Copyright Notice in <url url="COPYRIGHT.html" name="Copyright Notice">.
+See the Copyright Notice in <htmlurl url="COPYRIGHT.html"
+name="Copyright Notice">.
 
 The sources for XFree86 are available by anonymous ftp from:
 
-<url name="ftp.XFree86.org:/pub/XFree86/current"
+<htmlurl name="ftp://ftp.XFree86.org/pub/XFree86/current"
 url="ftp://ftp.XFree86.org/pub/XFree86/current">
 
 Binaries for the 3.2A BETA release on LynxOS AT are available from:
 
-<url name="ftp.XFree86.org:/pub/XFree86/beta/binaries/LynxOS"
+<htmlurl name="ftp://ftp.XFree86.org/pub/XFree86/beta/binaries/LynxOS"
 url="ftp://ftp.XFree86.org/pub/XFree86/beta/binaries/LynxOS">
  
 The XFree86 LynxOS port was developed using `LynxOS AT 2.3.0 080695-A FCS'
@@ -118,7 +119,7 @@ packages.  As a minimal install, you'll need doc, bin, fonts lib,
 config, and one X server.
 
 If you plan to install XF86Setup you'll have to install
-<tt/X32Aprog/ as well since XF86Setup checks for the existance of
+<tt/X32Aprog/ as well since XF86Setup checks for the existence of
 a certain file name pattern which is satisfied only if you install
 the library files from <tt/X32Aprog/. This restriction will be
 fixed in future releases for LynxOS.
@@ -126,11 +127,11 @@ fixed in future releases for LynxOS.
 <sect1>Full Install
 <p>
 <enum>
-<item> You must be logged in as root to unpack the archives because
+<item>You must be logged in as root to unpack the archives because
      several executables are set-user-id.  Otherwise the server may
      abort if you unpack it as an ordinary user.
 
-<item> If you have about 80Mb free in the <tt>/usr</tt> partition create
+<item>If you have about 80Mb free in the <tt>/usr</tt> partition create
      a directory <tt>/usr/X11R6</tt> and skip to no. 3.
      Otherwise, create a directory on another partition and sym link it into
      <tt>/usr</tt>:
@@ -141,7 +142,7 @@ fixed in future releases for LynxOS.
  # ln -s /usr/local/X11R6 /usr/X11R6
 </verb></tscreen>
 
-<item> Unpack everything:
+<item>Unpack everything:
 
      If you are using bash:
 
@@ -160,7 +161,7 @@ fixed in future releases for LynxOS.
  % end
 </verb></tscreen>
 
-<item> Create a symbolic link ``<tt/X/'' that points to the server
+<item>Create a symbolic link ``<tt/X/'' that points to the server
      that matches your video card.  The <em/XF86_*/ man pages list which
      vga chip sets are supported by each server.  For example, if you
      have an ET4000 based card you will use the XF86_SVGA server:
@@ -234,10 +235,10 @@ few little adjustments to your system:
   <descrip>
   <tag>LynxOS AT 2.3 and 2.4</tag>
   <itemize>
-  <item> Use the CYGNUS GNU-C Compiler to build XFree86. With LynxOS 2.3.0 
+  <item>Use the CYGNUS GNU-C Compiler to build XFree86. With LynxOS 2.3.0 
     and 2.4.0 you must execute the shell script <tt>/CYGNUS.bash</tt> to 
     apply the necessary changes to your environment.
-  <item> Create a shell script named /lib/cpp as follows:
+  <item>Create a shell script named /lib/cpp as follows:
   <tscreen><verb>
     #!/bin/sh
     /cygnus/94q4-lynxos-x86/lib/gcc-lib/i386-lynx/2.6-94q4/cpp \
@@ -250,18 +251,18 @@ few little adjustments to your system:
   </verb></tscreen>
     to find out the correct path. Set the file mode of /lib/cpp with
   <tscreen><verb>
-        # chown root /lib/cpp
+	# chown root /lib/cpp
 	# chmod 755 /lib/cpp
   </verb></tscreen>
   </itemize>
   <tag>LynxOS AT 2.2.1</tag>
   <itemize>
-  <item> Create a shell script named /lib/cpp as follows:
+  <item>Create a shell script named /lib/cpp as follows:
   <tscreen><verb>
     #!/bin/sh
     /usr/local/lib/gcc-cpp -traditional "$@"
   </verb></tscreen>
-  <item> The loader /bin/ld of LynxOS 2.2.1 does not support the -L option
+  <item>The loader /bin/ld of LynxOS 2.2.1 does not support the -L option
     which is heavily used by X11R6 makefiles. To work around this
     problem you must install a small wrapper program which replaces
     the original /bin/ld program. Use the following steps to install
@@ -274,7 +275,7 @@ few little adjustments to your system:
       # chmod 511 /bin/ld
       # chown root /bin/ld
   </verb></tscreen>
-  <item> Modify system header files as follows:
+  <item>Modify system header files as follows:
   <descrip>
     <tag><tt>/usr/include/uio.h</tt></tag> surrounded by
      <tscreen><verb>
@@ -346,13 +347,13 @@ few little adjustments to your system:
   <tt>/usr/include/param.h</tt>:
 
 <verb>
-  Tunable					        Old	New
-  USR_NFDS	number of open files per process	 20	 64
-  NPROC		number of tasks				 50	150
-  NFILES	number of open files in system		100	250
-  NINODES	number of incore inodes			(same value as NFILES)
-  QUANTUM	clock ticks until preemption		 64      20
-  CACHEBLKS	number of cache memory blocks		202	 >= 4096
+  Tunable                                           Old     New
+  USR_NFDS      number of open files per process     20      64
+  NPROC         number of tasks                      50     150
+  NFILES        number of open files in system      100     250
+  NINODES       number of incore inodes             (same value as NFILES)
+  QUANTUM       clock ticks until preemption         64      20
+  CACHEBLKS     number of cache memory blocks       202      >= 4096
 </verb>
 
   The new values are those suggested by the LynxOS documentation for
@@ -477,9 +478,9 @@ few little adjustments to your system:
       for i in 1 3 5
       do
         ln -s /usr/X11R6/man/cat$i/*.* /usr/man/cat$i
-	cat /usr/X11R6/man/cat$i/LIST$i >> /usr/man/cat$i/LIST$i
-	sort -o /usr/man/cat$i/LIST$i /usr/man/cat$i/LIST$i
-	cat /usr/X11R6/man/cat$i/whatis$i >> /usr/man/whatis
+        cat /usr/X11R6/man/cat$i/LIST$i >> /usr/man/cat$i/LIST$i
+        sort -o /usr/man/cat$i/LIST$i /usr/man/cat$i/LIST$i
+        cat /usr/X11R6/man/cat$i/whatis$i >> /usr/man/whatis
       done
   </verb></tscreen>
 
@@ -611,7 +612,7 @@ few little adjustments to your system:
   <tt>lynx.cf</tt> but it has never been tested.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.12 1997/01/23 11:02:24 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.13 1997/01/24 09:32:11 dawes Exp $
 
 
 

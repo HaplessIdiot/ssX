@@ -21,24 +21,24 @@ See the <htmlurl url="COPYRIGHT.html" name="Copyright Notice">.
 
 The sources for XFree86 are available by anonymous ftp from:
 
-<url name="ftp.XFree86.org:/pub/XFree86/current"
+<htmlurl name="ftp://ftp.XFree86.org/pub/XFree86/current"
 url="ftp://ftp.XFree86.org/pub/XFree86/current">
 
 
 Binaries for XFree86 on FreeBSD 2.1.5 are available from:
 
-<url name="ftp.XFree86.org:/pub/XFree86/current/binaries/FreeBSD-2.1.5"
+<htmlurl name="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/FreeBSD-2.1.5"
 url="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/FreeBSD-2.1.5">
 <p>
-<url name="XFree86.cdrom.com:/pub/XFree86/current/binaries/FreeBSD-2.1.5"
+<htmlurl name="ftp://XFree86.cdrom.com/pub/XFree86/current/binaries/FreeBSD-2.1.5"
 url="ftp://XFree86.cdrom.com/pub/XFree86/current/binaries/FreeBSD-2.1.5">
 
 Binaries for XFree86 on FreeBSD 2.2-current are available from:
 
-<url name="ftp.XFree86.org:/pub/XFree86/current/binaries/FreeBSD-current"
+<htmlurl name="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/FreeBSD-current"
 url="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/FreeBSD-current">
 <p>
-<url name="XFree86.cdrom.com:/pub/XFree86/current/binaries/FreeBSD-current"
+<htmlurl name="ftp://XFree86.cdrom.com/pub/XFree86/current/binaries/FreeBSD-current"
 url="ftp://XFree86.cdrom.com/pub/XFree86/current/binaries/FreeBSD-current">
 
 Send email to <em/Rich-Murphey@Rice.edu/ or <em/XFree86@XFree86.org/
@@ -221,7 +221,7 @@ separate tar balls.
  # umask 022
 </verb></tscreen>
 
-<item> If you have 52Mb free in the <tt>/usr</tt> partition ``<tt>cd
+<item>If you have 52Mb free in the <tt>/usr</tt> partition ``<tt>cd
      /usr</tt>'' and skip to no. 4.
      Otherwise, create a directory on another partition and sym link it into
      <tt>/usr</tt>:
@@ -232,13 +232,13 @@ separate tar balls.
  # ln -s /usr/local/X11R6 /usr/X11R6
 </verb></tscreen>
 
-<item> Run the preinst.sh script
+<item>Run the preinst.sh script
 <tscreen><verb>
  # cd /usr/X11R6
  # sh preinst.sh
 </verb></tscreen>
 
-<item> Unpack everything:
+<item>Unpack everything:
 
      If you are using sh (as root usually does):
 
@@ -255,7 +255,7 @@ separate tar balls.
  % end
 </verb></tscreen>
 
-<item> Create a symbolic link ``<tt/X/'' that points to the server
+<item>Create a symbolic link ``<tt/X/'' that points to the server
      that matches your video card.  The <em/XF86_*/ man pages list which
      vga chip sets are supported by each server.  For example, if you
      have an ET4000 based card you will use the XF86_SVGA server:
@@ -368,9 +368,9 @@ requires that it be in <tt>/etc/XF86Config</tt>,
 You'll need info on your hardware:
 
 <itemize>
-<item> Your mouse type, baud rate and its <tt>/dev</tt> entry.
-<item> The video card's chipset (e.g. ET4000, S3, etc).
-<item> Your monitor's sync frequencies.
+<item>Your mouse type, baud rate and its <tt>/dev</tt> entry.
+<item>The video card's chipset (e.g. ET4000, S3, etc).
+<item>Your monitor's sync frequencies.
 </itemize>
 
 The easiest way to find which device your mouse is plugged into is to
@@ -548,17 +548,17 @@ For code that really is specific to a particular i386 BSD port, use
 <p>
 Many thanks to:
   <itemize>
-<item> <bf/Pace Willison/  for providing initial *BSD support.
-<item> <bf/Amancio Hasty/ for 386BSD kernel and S3 chipset support.
-<item> <bf/David Greenman, Nate Williams, Jordan Hubbard/ for FreeBSD
+<item><bf/Pace Willison/  for providing initial *BSD support.
+<item><bf/Amancio Hasty/ for 386BSD kernel and S3 chipset support.
+<item><bf/David Greenman, Nate Williams, Jordan Hubbard/ for FreeBSD
        kernel support.  
-<item> <bf/Rod Grimes/, <bf/Jordan Hubbard/ and <bf/Jack Velte/ for
+<item><bf/Rod Grimes/, <bf/Jordan Hubbard/ and <bf/Jack Velte/ for
        the use of Walnut Creek Cdrom's hardware. 
-<item> <bf/Orest Zborowski/, <bf/Simon Cooper/ and <bf/Dirk Hohndel/ for ideas from the Linux distribution.
+<item><bf/Orest Zborowski/, <bf/Simon Cooper/ and <bf/Dirk Hohndel/ for ideas from the Linux distribution.
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.22 1997/01/23 11:02:23 dawes Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.23 1997/01/24 09:32:07 dawes Exp $ 
 
 
 

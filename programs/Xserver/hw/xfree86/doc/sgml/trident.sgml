@@ -82,8 +82,8 @@ although only the 9440 and 9660 have been tested with the hardware cursor.
 	Enable LCD centering on Cyber 938x based chips.
 <tag>Option &dquot;tgui_mclk_66&quot;</tag>
 	Pushes the Memory Clock from its default value to 66MHz.
-	Increases graphics speed dramitically, but use entirely
-	at your own risk, as it may damage the videocard. 
+	Increases graphics speed dramatically, but use entirely
+	at your own risk, as it may damage the video card. 
 	If snow appears, disable.
 </descrip>
 </itemize>
@@ -150,7 +150,7 @@ in the <tt>XF86Config</tt> file, these lockups are overcome. But it may
 be worth checking wait states etc. on the card and in the BIOS setup.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.19 1997/01/18 06:55:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.20 1997/01/24 09:32:51 dawes Exp $
 
 
 

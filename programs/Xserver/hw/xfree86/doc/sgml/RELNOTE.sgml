@@ -127,7 +127,7 @@ new Xserver extensions: DOUBLE-BUFFER, XKEYBOARD and RECORD.
 
 What about R6.2?  X11R6.2 is the name given to a subset of X11R6.3,
 which has only the print extension and the Xlib implementation of
-vertical writing and user-defined character support in addtion to
+vertical writing and user-defined character support in addition to
 those features included in R6.1.
 <p>
 <sect> OS issues
@@ -723,7 +723,7 @@ boot time.
 
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.52 1997/01/23 11:02:27 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.53 1997/01/24 09:32:23 dawes Exp $
 </verb>
 
 </article>

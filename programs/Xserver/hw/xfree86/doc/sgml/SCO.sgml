@@ -59,21 +59,21 @@ program.<p>
 
 To install the XFree86 binaries just follow these steps.
 <enum>
-<item> Obtain the files you require.<p>   
+<item>Obtain the files you require.<p>   
       The rest of this procedure must be done as root.  If you do not run
       the extraction as root the permissions on the files will not be
       correct.  For example,  the `X' server is s-bit root and will not
       function correctly if extracted as an ordinary user.  <p>
-<item> create a directory <tt>/usr/X11R6</tt>, permissions <tt>755</tt>
+<item>create a directory <tt>/usr/X11R6</tt>, permissions <tt>755</tt>
  should do nicely.
-<item> cd <tt>/usr/X11R6</tt>
-<item> extract the archives, for example:
+<item>cd <tt>/usr/X11R6</tt>
+<item>extract the archives, for example:
 <verb>
             gunzip < X312bin.tgz | tar xvpf -
 </verb>    
-<item> if you have installed man pages see the later section on
+<item>if you have installed man pages see the later section on
        setting up man pages.
-<item> Look through <tt>/usr/X11R6/lib/X11/doc/INSTALL</tt>, 
+<item>Look through <tt>/usr/X11R6/lib/X11/doc/INSTALL</tt>, 
 	especially section 2
        on configuring and using XFree86.   This should allow you to get
        a server up and running.  Before starting the server check in
@@ -118,13 +118,13 @@ If you do not have the SCO TCP/IP package installed do not panic.
 XFree86 will work fine without TCP/IP but you will most likely have to do
 some or all of these things:
 <itemize>           
-      <item> Do not worry about errors from the X server complaining about
+      <item>Do not worry about errors from the X server complaining about
         ``/dev/socksys''.  The X server is configured to run on systems with
         and without TCP/IP.  This error is just pointing out that you do
         not have TCP/IP and that this method of connecting to the server
         has been disabled.
   
-      <item> Do worry about errors involving ``/dev/spx'' or the ``sco''
+      <item>Do worry about errors involving ``/dev/spx'' or the ``sco''
 	connection
         type.  This means something is wrong with the streams pipes that
         are used for connections on the local machine.  First be sure that
@@ -144,15 +144,15 @@ some or all of these things:
 	</verb></quote>
         is not.
      
-      <item> you may have to install streams into the kernel with
+      <item>you may have to install streams into the kernel with
         ``mkdev streams''
         Check the SCO Manuals for more information on this.
       
-      <item> you may have to configure some devices in /dev,  check in the
+      <item>you may have to configure some devices in /dev,  check in the
         "Trouble Shooting" section of this document for the entry which
         comments on ``/dev/spx'' and ``Xsco''.
         
-      <item> Your streams resources may be configured too low.  You should check
+      <item>Your streams resources may be configured too low.  You should check
         your streams parameters against the following values,  if the are
         higher then you do not need to changes them.  To check these
         values, login as root, change directory to ``/etc/conf/cf.d'' and
@@ -247,11 +247,11 @@ better optimizations, and is guaranteed to work.
 <item>SCO Open Server comes with Visual
 TCL, which is an old (and incompatible) version of TCL. If you want to
 use XF86Setup you will have to compile Tcl and Tk yourself. Both are
-supported well on SCO Open Server 5. Tcl 7.6 and Tk 4.2 are availible
+supported well on SCO Open Server 5. Tcl 7.6 and Tk 4.2 are available
 from <tt>ftp://ftp.smli.com/pub/tcl</tt>.
 
 <item>You may want to disable dynamic loading support. Several users have
-reported trouble with this. XIE and PEX5 definattely do not work. If
+reported trouble with this. XIE and PEX5 definitely do not work. If
 you want to experiment, try enabling this. Please report successes or
 failures to me.
 
@@ -263,7 +263,7 @@ this is used for direct frame buffer access.
 short of space, set <tt>ForceNormalLib</tt> to <tt>NO</tt>. Doing this
 will cause only the ELF versions of the libraries to be built.
 ``<tt>sco5.cf</tt>'' sets this to <tt>YES</tt> by default, so you must
-exlicitly set it to <tt>NO</tt> in ``<tt>xf86site.def</tt>''.
+explicitly set it to <tt>NO</tt> in ``<tt>xf86site.def</tt>''.
 All binaries are compiled in ELF mode to reduce space.
 
 </enum>
@@ -329,12 +329,12 @@ been debugged.<p>
            anything on the screen.  Try these things,  usually in the order
            given:
 	<itemize>
-                 <item>  log out of the login where you started ``X'' and then 
+                 <item>log out of the login where you started ``X'' and then 
                     change consoles.  This will cause the SCO screen
                     switching code to try to reset the card.
-                 <item>  run ``vidi v80x25'',  this command will also try to set
+                 <item>run ``vidi v80x25'',  this command will also try to set
                     your card into a viewable mode.
-                 <item>  shutdown the machine cleanly with ``shutdown'' and try
+                 <item>shutdown the machine cleanly with ``shutdown'' and try
                     again.
 	</itemize>
            When first trying to get XFree86 to run,  be sure to use a simple
@@ -358,7 +358,7 @@ been debugged.<p>
 <tag/Causes:/
 <quote>
 <enum>
-	<item> Your system does not have the correct
+	<item>Your system does not have the correct
               /etc/conf/pack.d/cn/class.h, You can confirm this by
               editing the file and looking for the string "SVGA", if it
               is not there then you should re-install this file from
@@ -395,8 +395,8 @@ been debugged.<p>
 </quote>
 <tag/Problem:/
 <enum>
-<item> Can only run a limited number of xterms.
-<item> <tt>xterm</tt> does not work but other programs like 
+<item>Can only run a limited number of xterms.
+<item><tt>xterm</tt> does not work but other programs like 
 <tt>xclock</tt> do work.
 </enum>
 
@@ -430,9 +430,9 @@ been debugged.<p>
 </enum>
 <tag/Causes:/
 <enum>
-<item> You do not have the binaries installed in the correct directory.
+<item>You do not have the binaries installed in the correct directory.
        Check that they are in <tt>/usr/X11R6</tt>
-<item> You have upgraded to a new binary distribution which has a new
+<item>You have upgraded to a new binary distribution which has a new
        version of the shared libraries which are not compatible with your
        old binaries.  To fix this you will need to re-install the old
        shared libraries or recompile your application against the new
@@ -467,9 +467,9 @@ been debugged.<p>
     All SCO unix installations appear to have the Streams pseudo tty driver
     installed, but not all the devices are present.<p>
 <enum>
-<item> there should be a <tt>/etc/conf/pack.d/sp</tt> directory,
-<item> <tt>/etc/conf/sdevice.d/sp</tt> should have a '<tt>Y</tt>' in it.
-<item> You need a file in <tt>/etc/conf/node.d</tt>
+<item>there should be a <tt>/etc/conf/pack.d/sp</tt> directory,
+<item><tt>/etc/conf/sdevice.d/sp</tt> should have a '<tt>Y</tt>' in it.
+<item>You need a file in <tt>/etc/conf/node.d</tt>
        which contains something like:
 <verb>
         clone	spx		c	sp
@@ -525,7 +525,7 @@ for providing an
 ftp site for the binary distribution.
 
 <verb>  
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.14 1996/12/23 06:46:12 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.15 1997/01/24 09:32:26 dawes Exp $
 
 
 

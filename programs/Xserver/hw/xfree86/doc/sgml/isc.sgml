@@ -16,7 +16,7 @@ Interactive Unix, also referred to as ISC.
 If you have any suggestions, comments, fixes or ideas regarding
 X11R6/XFree86 on Interactive Unix, send e-mail to
 
-<url url="mailto:michael.rohleder@stadt-frankfurt.de" 
+<htmlurl url="mailto:michael.rohleder@stadt-frankfurt.de" 
     name="michael.rohleder@stadt-frankfurt.de"><p>
 Bug Reports should be sent to<p>
 <em>XFree86@XFree86.Org</em><p>
@@ -193,7 +193,7 @@ BOOTSTRAPCFLAGS="-DISC [-DISC30 | -DISC40] -DSYSV [-Di386]"
 <sect> linear Addressing <p>
 
 <itemize>
-<item> Compiling &hellip; <p>
+<item>Compiling &hellip; <p>
 If you want to include support for linear addressing into the server binaries,
 you have to define 
 <verb>
@@ -216,7 +216,7 @@ Build and install the driver as instructed. You'll need the file
 /usr/include/sys/mmap.h for compiling the X11R6/XFree86 source tree,
 with linear addressing enabled.
 
-<item> Using &hellip; <p>
+<item>Using &hellip; <p>
 
 To use the linear address-mapping of the framebuffer you need the mmap Driver
 by Thomas Wolfram (Version 2.2.3) installed in your Kernel.
@@ -257,7 +257,7 @@ I could only test these cards against the linear addressing.
            This bug seems to be fixed since 3.1.2, and therefore the 
            workaround is not needed anymore.
 	<item>ELSA Winner 2000PRO/X Revision G<p>
-           if you expirience a Problem with this Card you could try to
+           if you experience a Problem with this Card you could try to
            use the older Chipset Driver instead "newmmio".
            <p>If you declare 
            <verb>
@@ -273,7 +273,7 @@ I could only test these cards against the linear addressing.
 <sect>XKeyboard Extension<p>
 
 <itemize>
-<item> Sample Setup &hellip; <p>
+<item>Sample Setup &hellip; <p>
 Here is a sample XKeyboard Definition to include inside the Keyboard Section
 of your XF86Config File.
 <verb>
@@ -493,7 +493,7 @@ as to all who contribute to this excellent piece of free software.
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.16 1997/01/14 22:17:47 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.17 1997/01/24 09:32:50 dawes Exp $
 
 
 

@@ -36,17 +36,13 @@
 <p>
 The sources for XFree86 are available by anonymous ftp from:
 <quote>
-	<url name="ftp.XFree86.org:/pub/XFree86/current"
+	<htmlurl name="ftp://ftp.XFree86.org/pub/XFree86/current"
 	url="ftp://ftp.XFree86.org/pub/XFree86/current">
 </quote>
 Solaris binaries for XFree86 are available for anonymous ftp from:
 <quote>
-	<url name="ftp.XFree86.org:/pub/XFree86/current/binaries/Solaris"
+	<htmlurl name="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/Solaris"
 	url="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/Solaris"><p>
-<!--
-	<url name="abode.ccd.bnl.gov:/pub/XFree86"
-	url="ftp://abode.ccd.bnl.gov/pub/XFree86">
--->
 </quote>
 <!--
 Many thanks to <bf/Jerry Whelan/ for making the space available for these 
@@ -157,7 +153,7 @@ Limitations of the virtual terminal sub-system under Solaris x86:<p>
 <sect>Notes for building XFree86 on Solaris x86<p>
 
 <enum>
-<item>	The majority of all modifications you will need to make are now in 
+<item>The majority of all modifications you will need to make are now in 
 	<tt>~xc/config/cf/xf86site.def</tt>, 
 	except one. You will need to set OSName, 
 	and OSMinorVersion correctly in <tt>~xc/config/cf/sun.cf</tt>.
@@ -185,7 +181,7 @@ Under Solaris 2.4 for x86, <tt>sun.cf</tt> needs to read
 	#define OSMinorVersion		4
 </verb>
 
-<item>	Both Gcc, and ProWorks are supported by XFree86. Gcc-2.5.8 or
+<item>Both Gcc, and ProWorks are supported by XFree86. Gcc-2.5.8 or
         gcc-2.7.2  are 
 	suggested, Gcc-2.6.0 is known not to work.  You also need to set 
 	HasGcc2 correctly in <tt>~xc/config/cf/xf86site.def</tt>.
@@ -206,12 +202,12 @@ Under Solaris 2.4 for x86, <tt>sun.cf</tt> needs to read
 
 
 
-<item>	If you are using ProWorks to compile the XFree86 distribution, you 
+<item>If you are using ProWorks to compile the XFree86 distribution, you 
 	need to modify your PATH appropriately so the ProWorks tools are 
 	available.<p>
 
 
-<item>	You <bf>MUST</bf> put <tt>/usr/ccs/bin</tt>
+<item>You <bf>MUST</bf> put <tt>/usr/ccs/bin</tt>
  	at the front of your PATH. There are known 
 	problems with some GNU replacements for the utilities found there. So 
 	the <tt>/usr/ccs/bin</tt> versions of these programs 
@@ -219,7 +215,7 @@ must be found before any
 	other possible GNU versions. (Most notably GNU '<tt/ar/' does not work 
 	during the build).<p>
 
-<item>	If you wish to use the "memory aperture" feature of the S3, and Mach32 
+<item>If you wish to use the "memory aperture" feature of the S3, and Mach32 
 	servers, you need to compile, and install the Solaris x86 aperture 
 	driver for memory mapped I/O support.  This driver is <bf>REQUIRED</bf>
 	for the I128, P9000 and Mach 64 servers.<p>
@@ -237,7 +233,7 @@ must be found before any
 <sect> Notes for running XFree86 on Solaris x86<p>
 
 <enum>
-<item>	If you have not made the Virtual Terminal devices, you will need to 
+<item>If you have not made the Virtual Terminal devices, you will need to 
 	specify the terminal device to run the Xserver on.  The correct 
 	device is vt00 so your <tt>xinit</tt> command would look like so:<p>
 <tscreen><verb>
@@ -249,7 +245,7 @@ must be found before any
 	To be able to run XF86Setup, you must at least create
 	/dev/vt01. Otherwise XF86Setup won't start.
 
-<item>	For Solaris you will probably want to set your LD_LIBRARY_PATH to 
+<item>For Solaris you will probably want to set your LD_LIBRARY_PATH to 
 	<tt>/usr/X11R6/lib:/usr/openwin/lib:/usr/dt/lib</tt>.  
 	Including <tt>/usr/X11R6/lib</tt> in your 
 	LD_LIBRARY_PATH is probably not necessary, however it doesn't hurt. :)
@@ -262,13 +258,13 @@ must be found before any
         Motif and CDE applications may require <tt>/usr/dt/lib</tt> in your
         LD_LIBRARY_PATH too.
 
-<item>	Xqueue is <bf>NOT</bf> supported under Solaris. 
+<item>Xqueue is <bf>NOT</bf> supported under Solaris. 
 	The includes necessary for 
 	Xqueue are available, however the driver does not seem to be in the 
 	kernel. (Go figure)<p>
 
 
-<item>	If you want to use xdm with Solaris, extract the files from the shar 
+<item>If you want to use xdm with Solaris, extract the files from the shar 
 	file in <tt>/usr/X11R6/lib/X11/etc/XdmConf.svr4</tt> into a temporary 
 	directory. The <tt>README</tt> file tells where 
 	the individual files need to 
@@ -281,7 +277,7 @@ must be found before any
 
 <enum>
 
-<item>	The Solaris 2.1 for x86 OpenWindows filemgr does not work against a 
+<item>The Solaris 2.1 for x86 OpenWindows filemgr does not work against a 
 	X11R5 Xserver, it probably will also not work against a X11R6 
 Xserver.  
 	Attempting to 'Drag and Drop' a file causes the filemgr to abort 
@@ -291,7 +287,7 @@ Xserver.
 
 	There is no known work around.<p>
 
-<item>  It has been reported that the aperture driver doesn't work
+<item>It has been reported that the aperture driver doesn't work
         under Solaris 2.5.1. It probably doesn't work either under
 	2.5. 
 
@@ -305,7 +301,7 @@ Xserver.
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SOLX86.sgml,v 3.10 1996/12/23 06:46:13 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SOLX86.sgml,v 3.11 1997/01/24 09:32:27 dawes Exp $
 
 
 

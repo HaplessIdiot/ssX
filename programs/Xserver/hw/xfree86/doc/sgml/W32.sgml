@@ -51,25 +51,24 @@ frequencies around 90MHz.
 
 If you have problems with the server.  Try the following:
 <itemize>
-<item>  Put Option "slow_dram" in the Device Section.
-<item>  Put Option "pci_burst_off" in the Device Section.
-<item>  Put Option "w32_interleave_off" in the Device Section.
-<item>  Take out the Hercules monochrome adapter, if you have one.  Many 
+<item>Put Option "slow_dram" in the Device Section.
+<item>Put Option "pci_burst_off" in the Device Section.
+<item>Put Option "w32_interleave_off" in the Device Section.
+<item>Take out the Hercules monochrome adapter, if you have one.  Many 
     configurations of the ET4000/W32 series do not allow one in the
     system.
-<item> Get a motherboard with its local bus running at 33 MHz.  Many, if not
+<item>Get a motherboard with its local bus running at 33 MHz.  Many, if not
     all, ET4000/W32 boards will surely behave in a funny way on a 50-MHz
     bus.  You may have to use a wait state or two, but first try without
     any.
-<item> Cold-boot your machine.  Do not run anything that messes with the
+<item>Cold-boot your machine.  Do not run anything that messes with the
     video hardware, including other X servers, before running
     <tt>XF86_W32</tt>.	
-<item> In case of an ET6000 card, try specifying chipset "et6000" 
-    in the Device Section. The card normally autoprobes from the PCI bus,
+<item>In case of an ET6000 card, try specifying chipset "et6000" 
+    in the Device Section. The card normally auto-probes from the PCI bus,
     but on some systems, another on-board VGA card, although disabled, may
     cause the ET6000 server to want to use the other card.
-<item>
-     Try XF86_SVGA.  If it works, put the following in your XF86Config:
+<item>Try XF86_SVGA.  If it works, put the following in your XF86Config:
 
 <tscreen><verb>
 Ramdac "generic"
@@ -135,18 +134,18 @@ Starting with XFree86-3.2A, the SVGA server uses the new XFree86 Acceleration
 Architecture (XAA). With this technology XF86_SVGA is at least as fast
 if not faster than the XF86_W32 with the same hardware. Additionally, it
 supports higher color depths with some cards. On the downside, some special
-RAMDACs and clockchips that are supported in XF86_W32 for W32 cards are not
+RAMDACs and clock chips that are supported in XF86_W32 for W32 cards are not
 supported in the SVGA server at this point.
 
 If the SVGA server does not give a picture with your W32 card try the
 following:
 
 <itemize>
-<item>  Put Option "slow_dram" in the Device Section.
-<item>  Put Option "pci_burst_off" in the Device Section.
-<item>  Put Option "w32_interleave_off" in the Device Section.
-<item>  Put Option "no_accel" in the Device Section.
-<item>  Cold-boot your machine. Sometimes it is even necessary to physically
+<item>Put Option "slow_dram" in the Device Section.
+<item>Put Option "pci_burst_off" in the Device Section.
+<item>Put Option "w32_interleave_off" in the Device Section.
+<item>Put Option "no_accel" in the Device Section.
+<item>Cold-boot your machine. Sometimes it is even necessary to physically
     turn of the power for the W32 chip to get in a sane state again.
     Do not run anything that messes with the video hardware, including other 
     X servers, before running <tt>XF86_SVGA</tt>.
@@ -201,7 +200,7 @@ listed below:
 <!-- moved author name to title page. -->
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.14 1997/01/20 12:36:36 dawes Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.15 1997/01/24 09:32:36 dawes Exp $ 
 
 
 

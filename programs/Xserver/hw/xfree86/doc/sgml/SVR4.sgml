@@ -22,21 +22,21 @@
 <sect>SVR4 versions on which XFree86 has been tested<p>
   XFree86 has been tested on the following versions of <bf>SVR4.0</bf>:
 <itemize>
-<item>	Microport: 2.2, 3.1, 4.1, 4.2
-<item>	Esix: 4.0.3A, 4.0.4, 4.0.4.1
-<item>	Dell: 2.1, 2.2, 2.2.1
-<item>	UHC: 2.0, 3.6
-<item>	Consensys: 1.2
-<item>	MST: 4.0.3
-<item>	AT&amp;T: 2.1, 4.0
-<item>	ISC: 4.0.3
-<item>	NCR: MP-RAS
-<item>	PANIX: 5.0
+<item>Microport: 2.2, 3.1, 4.1, 4.2
+<item>Esix: 4.0.3A, 4.0.4, 4.0.4.1
+<item>Dell: 2.1, 2.2, 2.2.1
+<item>UHC: 2.0, 3.6
+<item>Consensys: 1.2
+<item>MST: 4.0.3
+<item>AT&amp;T: 2.1, 4.0
+<item>ISC: 4.0.3
+<item>NCR: MP-RAS
+<item>PANIX: 5.0
 </itemize>
 and the following versions of <bf>SVR4.2</bf>:
 <itemize>
-<item>	Consensys
-<item>	Novell UnixWare 1.x and 2.0
+<item>Consensys
+<item>Novell UnixWare 1.x and 2.0
 </itemize>
 Basically, we believe that XFree86 binaries will run unmodified on any
 ISA, EISA, or MCA platform version version of SVR4.0 (Solaris 2.x is an
@@ -227,7 +227,7 @@ spelled out
    <tt>/etc/conf/cf.d/init.base</tt> or you will lose the changes when you next
    rebuild the kernel.<p>
 
-<item> If you want to change the number of VTs available on SVR4, just edit the
+<item>If you want to change the number of VTs available on SVR4, just edit the
    file <tt>/etc/default/workstations</tt> and change the number there.  
    The device
    nodes will be created/deleted next time you reboot.<p>
@@ -296,17 +296,17 @@ a generic problem with the X client and X11R5/6; the others are to work
 with some things that are specific to the XFree86 servers.  Here are the
 things you need to do:
 <enum>
-<item> Set and export <tt>&dollar;XMERGE</tt> in your <tt>.xinitrc</tt>
+<item>Set and export <tt>&dollar;XMERGE</tt> in your <tt>.xinitrc</tt>
 	   and/or <tt>.xsession</tt> files.
 	   In general, you should set <tt>XMERGE=vga</tt>.<p>
-<item> You MUST use the "xqueue" driver instead of the server's native
+<item>You MUST use the "xqueue" driver instead of the server's native
 	   keyboard and mouse driver, if you intend to use the "zoom"
 	   feature of the `dos' client.  Otherwise the mouse will cease to
 	   function after the first time you "zoom" (because the `dos'
 	   client uses the native driver, and the server will not be able
 	   to access the mouse after the zoom ends).  The only other
 	   alternative is to use separate mice on separate devices.<p>
-<item> You need to install the `dos' client fonts in the XFree86 font
+<item>You need to install the `dos' client fonts in the XFree86 font
 	   directories.  Locate the BDF files (search for files with names
 	   matching the pattern `*pc???.bdf').  These will likely be
 	   <tt>/usr/lib/X11/fonts/misc</tt>.  
@@ -323,7 +323,7 @@ things you need to do:
 	# Do this only if the server is already running.
 	/usr/X11R6/bin/xset fp rehash
 </verb>
-<item> The `dos' client program uses a translation table to map from
+<item>The `dos' client program uses a translation table to map from
 	   an internal key representation to the X keymap.  It is likely
 	   that the table supplied with Merge 2.2 use the mapping for
 	   SCO's server.  A correct mapping table is available in
@@ -338,7 +338,7 @@ things you need to do:
 	   It will be obvious if this new code table is needed, as the
 	   arrow keys on the keypad will fail to function in the `dos'
 	   client if the wrong table is installed.<p>
-<item> For the "zoom" feature to work correctly, you must run `dos'
+<item>For the "zoom" feature to work correctly, you must run `dos'
 	   with &dollar;DISPLAY set to "unix:N" or "host_name:N".  If you use
 	   just ":0", the client will not function properly.  `dos' does
 	   not accept a `-display' parameter.  Hence it is probably a good
@@ -419,7 +419,7 @@ workaround for this problem, and giving us permission to release the
 information.<p>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.11 1996/12/23 06:46:14 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.12 1997/01/24 09:32:28 dawes Exp $
 
 
 

@@ -1,12 +1,12 @@
 <!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN">
 
 <article>
-<title> Information for Matrox Millennium Users
+<title>Information for Matrox Millennium Users
 <author>The XFree86 Project Inc.
 <date>19 January 1997
 <toc>
 
-<sect> Supported hardware
+<sect>Supported hardware
 <p>
 The current MGA driver in the SVGA server supports the Matrox Millennium 
 (MGA2064W) with Ti3026 RAMDAC. It has been tested with 175, 220MHz, and
@@ -22,22 +22,22 @@ using the appropriate bug report sheet.
 <p>
 
 <itemize>
-<item> Basic support for the Matrox Millennium video adapter
-<item> uses linear frame buffer
-<item> it should be possible to reach resolutions up to 1920x1024
-<item> it should be possible to use pixel depths of 8, 16, 24, and 32 bits
+<item>Basic support for the Matrox Millennium video adapter
+<item>uses linear frame buffer
+<item>it should be possible to reach resolutions up to 1920x1024
+<item>it should be possible to use pixel depths of 8, 16, 24, and 32 bits
   per pixel (256 pseudo colour, "high colour", "packed true colour",
   "true colour"). 
-<item> supports VESA Display Power Management Signaling (DPMS)
-<item> supports RGB Sync-on-Green
-<item> supports DGA
-<item> has the following accelerations:
+<item>supports VESA Display Power Management Signaling (DPMS)
+<item>supports RGB Sync-on-Green
+<item>supports DGA
+<item>has the following accelerations:
 <itemize>
-  <item> lines
-  <item> most bitblts
-  <item> filled rectangles
-  <item> cached pixmaps
-  <item> many more...
+  <item>lines
+  <item>most bitblts
+  <item>filled rectangles
+  <item>cached pixmaps
+  <item>many more...
 </itemize>
 </itemize>
 
@@ -49,9 +49,9 @@ remaining bugs.
 <p>
 
 <itemize>
-<item>	more hardware acceleration (hw cursor, more primitive operations, etc)
-<item>	more chipsets and RAMDACs
-<item>	3D acceleration using Mesa
+<item>more hardware acceleration (hw cursor, more primitive operations, etc)
+<item>more chipsets and RAMDACs
+<item>3D acceleration using Mesa
 </itemize>
 
 <sect>Technical Note:
@@ -105,7 +105,7 @@ to keep up to date with the latest news, new sources, etc.
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/MGA.sgml,v 3.2 1997/01/19 12:50:43 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/MGA.sgml,v 3.3 1997/01/24 09:32:11 dawes Exp $
 </verb>
 
 </article>

@@ -33,10 +33,10 @@ There will be updated drivers in the coming XFree86 beta releases.
 <p>
 
 <itemize>
-<item> Basic support for S3 ViRGE and ViRGE/VX video adapters
-<item> uses linear frame buffer
-<item> it should be possible to reach resolutions up to 2048x2048
-<item> it should be possible to use pixel depths of 8, 15, 16, and 24 
+<item>Basic support for S3 ViRGE and ViRGE/VX video adapters
+<item>uses linear frame buffer
+<item>it should be possible to reach resolutions up to 2048x2048
+<item>it should be possible to use pixel depths of 8, 15, 16, and 24 
   (32 not yet) bits
   per pixel.
 </itemize>
@@ -45,10 +45,10 @@ There will be updated drivers in the coming XFree86 beta releases.
 <p>
 
 <itemize>
-<item>	improved support of 24, support of 32bpp
-<item>	some more hardware acceleration
-<item>	3d acceleration (once we work out how that's done)
-<item>  more chipsets and RAMDACs
+<item>improved support of 24, support of 32bpp
+<item>some more hardware acceleration
+<item>3d acceleration (once we work out how that's done)
+<item>more chipsets and RAMDACs
 </itemize>
 
 <sect>Configuration:
@@ -62,10 +62,10 @@ The "nolinear" option is unsupported.
 <p>
 
 <itemize>
-<item> Mode switching is bad!  You may corrupt your text console if you mode
-switch.  Avoid use of Ctl-Alt-+ and Ctl-Alt-'-'.
-<item> ViRGE/VX may dump core.
-<item> ViRGE/VX may lock the server if run twice with a machine reset.
+<item>Mode switching is bad!  You may corrupt your text console if you mode
+switch.  Avoid use of Ctrl-Alt-+ and Ctrl-Alt-'-'.
+<item>ViRGE/VX may dump core.
+<item>ViRGE/VX may lock the server if run twice with a machine reset.
 </itemize>
 
 <sect>Authors
@@ -84,7 +84,7 @@ and:
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3V.sgml,v 3.1 1997/01/23 11:02:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3V.sgml,v 3.2 1997/01/24 09:32:25 dawes Exp $
 </verb>
 
 </article>

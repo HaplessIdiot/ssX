@@ -220,8 +220,8 @@ Device section).
 	is likely to help with problems related to bugs in acceleration
 	functions, and perhaps high dot clocks and DRAM timing, at the cost
 	of performance (which will still be reasonable on a local bus).
-<tag>Option &dquot;fast_dram&dquot; &dquot;med_dram&dquot; \
-&dquot;slow_dram&dquot; (5424/6/8/9, 543x, 5446)
+<tag>Option &dquot;fast_dram&dquot; &dquot;med_dram&dquot; &dquot;slow_dram&dquot;
+(5424/6/8/9, 543x, 5446)
 </tag>
         These options set the internal memory clock (MCLK) register to
 	another value. The default value programmed by the BIOS is
@@ -418,7 +418,7 @@ Option &dquot;xaa_no_col_exp&dquot;
 	expansion features by XAA. Again, this might help with certain
 	drawing bugs.
 <tag>
-Option &dquot;no_strectch&dquot; (754x)
+Option &dquot;no_stretch&dquot; (754x)
 </tag>
 	Disable automatic stretching (horizontal and vertical expansion)
 	of 640x480 on a 800x600 LCD.
@@ -474,10 +474,10 @@ If you have a 5424/26/28/29 on VESA local bus, the situation is more
 complicated. There are two different types of cards w.r.t. linear
 addressing:
 <itemize>
-<item> Cards that can only map in the lower 16Mb, like cards on the ISA bus.
+<item>Cards that can only map in the lower 16Mb, like cards on the ISA bus.
   This is the case with most cards. The same
   restrictions apply (i.e. you must have less than 16Mb of memory).
-<item> Cards that connect address line A26 and always map at 64Mb + 14Mb or
+<item>Cards that connect address line A26 and always map at 64Mb + 14Mb or
   64Mb. In
   this case specify `<tt>MemBase 0x04e00000</tt>' or `<tt>MemBase
   0x04000000</tt>'. This assumes you have a VLB motherboard implementation
@@ -835,16 +835,16 @@ Some configurations for which no up-to-date testing data is available:
 
 Changes since XFree86 3.2:
 <itemize>
-<item>  Enhanced acceleration using XAA on all chips with a BitBLT
+<item>Enhanced acceleration using XAA on all chips with a BitBLT
         engine.
-<item>  Enhanced acceleration using XAA for the Laguna series (546x).
-<item>	24bpp mode on 5430 is fixed.
-<item>  Improved support for 754x, including support for LCD
+<item>Enhanced acceleration using XAA for the Laguna series (546x).
+<item>24bpp mode on 5430 is fixed.
+<item>Improved support for 754x, including support for LCD
         stretching/centering.
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.20 1997/01/22 11:06:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.21 1997/01/24 09:32:46 dawes Exp $
 
 
 

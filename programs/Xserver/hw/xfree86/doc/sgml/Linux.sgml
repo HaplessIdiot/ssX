@@ -2,18 +2,18 @@
  
 <article>
  
-<title> Information for Linux Users
-<author> Orest Zborowski, Dirk Hohndel
-<date> 20 October, 1996
+<title>Information for Linux Users
+<author>Orest Zborowski, Dirk Hohndel
+<date>20 October, 1996
 <toc>
 
-<sect> Linux versions on which XFree86 has been tested <p>
+<sect>Linux versions on which XFree86 has been tested <p>
 XFree86 has been tested with Linux version 2.0.19. It should work
 with any version since 1.0 without change. The binaries and libraries are
 based on the 5.2.18 Elf C libraries, and the 1.7.14 dynamic linker
 <tt>ld.so</tt>. 
 
-<sect> Backwards Compatibility <p>
+<sect>Backwards Compatibility <p>
 X11R6 is considered a major update from X11R5, so the shared
 libraries in XFree86 3.1 and later are not compatible with XFree86 2.1.1
 and older libraries. To continue to run X11R5 applications, you must keep
@@ -37,7 +37,7 @@ A temporary fix is including <tt>/</tt> in <tt>/etc/ld.so.config</tt>,
 better recompile XView with relative library names or get a newer
 <tt>ld.so</tt>.
 
-<sect> Installing XFree86 <p>
+<sect>Installing XFree86 <p>
 Starting with version 3.0, XFree86 is installed in <tt>/usr/X11R6</tt>. If
 you don't have enough space for both X11R5 and X11R6, you'll have to make
 space by discarding unnecessary parts of X11R5. In particular, the fonts
@@ -49,7 +49,7 @@ installation document relevant to that release. The most up-to-date
 information is kept there, while this document describes basic features
 of XFree86 3.X on Linux and how to compile the sources.
 
-<sect> Running XFree86 <p>
+<sect>Running XFree86 <p>
 XFree86 requires about 4mb of virtual memory to run, although
 having 8mb of RAM is probably the minimum comfortable configuration. A 387
 coprocessor is helpful for 386 machines, although greater gains in
@@ -136,7 +136,7 @@ be setuid root to perform console redirection, so <tt>xterm</tt> and
 <tt>xconsole</tt> must be setuid root.  As <tt>xconsole</tt> is not designed
 with running setuid root in mind, this opens a big security problem.
 
-<sect> Installing Xdm, the display manager
+<sect>Installing Xdm, the display manager
 <p>
 
 Since xdm is dynamically linked, there's no issue on
@@ -179,10 +179,10 @@ XFree86 now support the dynamic loading of drivers for external
 input devices using the <tt/XInput/ extension. Currently supported
 devices are:
 <itemize>
-<item> Joystick (<tt/xf86Jstk.so/)
-<item> Wacom tablets (Wacom IV protocol only, <tt/xf86Wacom.so/)
-<item> SummaSketch tablets (<tt/xf86Summa.so/)
-<item> Elographics touchscreen (<tt/xf86Elo.so/)
+<item>Joystick (<tt/xf86Jstk.so/)
+<item>Wacom tablets (Wacom IV protocol only, <tt/xf86Wacom.so/)
+<item>SummaSketch tablets (<tt/xf86Summa.so/)
+<item>Elographics touchscreen (<tt/xf86Elo.so/)
 </itemize>
 
 To use a specific device, add the line
@@ -256,12 +256,12 @@ details and doing all the work in creating the first set of XFree86 DLL
 libs, on which the current method (developed by Orest Zborowski
 (<it>orestz@eskimo.com</it>)) is based.
 
-<sect> Bug Notification <p>
+<sect>Bug Notification <p>
 Bug reports should be sent to <it>XFree86@XFree86.org</it> or posted
 to the <it>comp.windows.x.i386unix</it> newsgroup.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Linux.sgml,v 3.10 1996/12/23 06:45:59 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Linux.sgml,v 3.11 1997/01/24 09:32:10 dawes Exp $
 
 
 

@@ -1,8 +1,8 @@
 <!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN">
 
 <article>
-<title> Copyright</title>
-<Author> The XFree86 Project, Inc.
+<title>Copyright</title>
+<Author>The XFree86 Project, Inc.
 
 <sect>XFree86 Copyright
 <p>
@@ -175,7 +175,7 @@ are met:
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/CPYRIGHT.sgml,v 3.7 1996/12/23 06:45:51 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/CPYRIGHT.sgml,v 3.8 1997/01/24 09:32:03 dawes Exp $
 
 
 

@@ -43,20 +43,20 @@ and other sites archiving GNU source.)
 <item>You need the following:
 
     <itemize>
-    <item> X Consortium X11R6.1 distribution with fix 01 applied.
+    <item>X Consortium X11R6.1 distribution with fix 01 applied.
 
-    <item> <tt/R6.1pl1-3.2.diff.gz/, <tt/cfont32.tgz/
+    <item><tt/R6.1pl1-3.2.diff.gz/, <tt/cfont32.tgz/
 
-    <item> Optionally the X Consortium X11R6.1 contrib distribution.
+    <item>Optionally the X Consortium X11R6.1 contrib distribution.
 
-    <item> <tt/contrib-3.2.diff.gz/ (an optional patch for
+    <item><tt/contrib-3.2.diff.gz/ (an optional patch for
               some of the X Consortium's ``contrib'' distribution)
 
-    <item> If you want to only build the XFree86 X servers, you only need
+    <item>If you want to only build the XFree86 X servers, you only need
            the X32servonly.tgz file which is the ``ServersOnly''
            cut-down source distribution.
 
-    <item> The full XFree86 source tree requires about 130MB.  An additional
+    <item>The full XFree86 source tree requires about 130MB.  An additional
       130MB (more for OSs without shared libraries) is required to build
       everything.  About 55-65MB (for OSs with shared libraries) is required
       to install the full distribution.  It is possible to reduce the space
@@ -80,11 +80,11 @@ and other sites archiving GNU source.)
       A few more MB can be freed by removing the non-XFree86 directories under
  <tt>xc/programs/Xserver/hw/</tt>.
 
-    <item> It is possible to configure a cut-down source tree for building only
+    <item>It is possible to configure a cut-down source tree for building only
       the XFree86 servers.  Building from a cut-down source tree requires
       about 50-55MB of disk space.
 
-    <item> The <tt/contrib-3.2.diff.gz/ patch provides patches
+    <item>The <tt/contrib-3.2.diff.gz/ patch provides patches
     to a small part of the X Consortium's R6.1 contrib distribution.  It
     mostly covers those clients which were in the core distribution of
     X11R5 but were moved to the contrib distribution for X11R6.  To
@@ -112,7 +112,7 @@ and other sites archiving GNU source.)
 </verb></tscreen>
      </itemize>
         
-<item> If you are starting from the stock X Consortium R6.1 PL01 source
+<item>If you are starting from the stock X Consortium R6.1 PL01 source
    distribution, go to the
    directory above your <tt/xc/ directory, and run:
 
@@ -140,7 +140,7 @@ and other sites archiving GNU source.)
 </verb></tscreen>
 
 <!--
-<item> If you are starting from the XFree86 3.1.1 source distribution,
+<item>If you are starting from the XFree86 3.1.1 source distribution,
    go to the directory above your <tt/xc/ directory, and run:
 
 <tscreen><verb>
@@ -155,7 +155,7 @@ and other sites archiving GNU source.)
    patching. If you don't have backups of the originals, individual
    files for version 3.1.2 can be easily obtained from
    <url url="ftp://ftp.xfree86.org/pub/XFree86/3.1.2/untarred"
-   name="ftp.xfree86.org:/pub/XFree86/3.1.2/untarred">.
+   name="ftp://ftp.xfree86.org/pub/XFree86/3.1.2/untarred">.
 
    If you are patching a tree that you've previously used, make sure you run
    ``<tt/make clean/'' from the <tt/xc/ directory before applying the diffs.
@@ -168,7 +168,7 @@ and other sites archiving GNU source.)
 </verb></tscreen>
 -->
 
-<item> Read through <tt>config/cf/xf86site.def</tt>.  Set the various
+<item>Read through <tt>config/cf/xf86site.def</tt>.  Set the various
    parameters to suit your configuration.  If it is your first build,
    you should set <bf/BuildFonts/ to YES.
 
@@ -220,7 +220,7 @@ and other sites archiving GNU source.)
    should always be last in the list because their probe will succeed for
    any VGA card.
 
-<item> If you want to be able to format the XFree86 documentation
+<item>If you want to be able to format the XFree86 documentation
    (which is now in LinuxDoc/SGML form), you will need to get and install
    linuxdoc-sgml-1.2.tar.gz plus the patches which can be found on
    <htmlurl name="ftp://ftp.xfree86.org/pub/XFree86/3.2/Linuxdoc"
@@ -228,7 +228,7 @@ and other sites archiving GNU source.)
    in the <tt/xf86site.def/ file and uncomment the appropriate Linuxdoc
    options.
    
-<item> Before building the distribution, read through the OS-specific
+<item>Before building the distribution, read through the OS-specific
    <tt/README/ file in <tt>xc/programs/Xserver/hw/xfree86/doc</tt> that is
    relevant to you.  Once those OS-specific details have been taken
    care of, go the <tt/xc/ directory and run ``<tt/make World/'' with the
@@ -239,7 +239,7 @@ and other sites archiving GNU source.)
    run ``<tt/make -f Makefile.ini World/'' because they will usually not
    include the top level Makefile.
 
-<item> If all goes well, that will finish successfully in anything
+<item>If all goes well, that will finish successfully in anything
    from two to twelve hours depending on your system.
    You should check <tt/World.Log/ to see
    if there were any problems.  If there weren't any then you can install
@@ -261,7 +261,7 @@ and other sites archiving GNU source.)
      make install.linkkit
 </verb></tscreen>
 
-<item> To build the subset of the contrib release supported by
+<item>To build the subset of the contrib release supported by
    XFree86, make sure that you have first built and installed the core
    distribution.  Then go to the <tt/contrib/ directory and run
    ``<tt/xmkmf -a; make/''.  When that is completed, run
@@ -272,10 +272,10 @@ and other sites archiving GNU source.)
 <sect> Using and Configuring XFree86
 <p>
 <enum>
-<item> Add <tt>/usr/X11R6/bin</tt> to your <bf/PATH/ and
+<item>Add <tt>/usr/X11R6/bin</tt> to your <bf/PATH/ and
    <tt>/usr/X11R6/man</tt> to your <bf/MANPATH/.
 
-<item> Set up an <tt/XF86Config/ file.  The default locations for this
+<item>Set up an <tt/XF86Config/ file.  The default locations for this
    file are: <tt>/etc/XF86Config</tt>,
    <tt>/usr/X11R6/lib/X11/XF86Config.</tt><em/hostname/, and
    <tt>/usr/X11R6/lib/X11/XF86Config</tt>.  The recommended way to generate
@@ -287,7 +287,7 @@ and other sites archiving GNU source.)
    For details about the <tt/XF86Config/ file format, refer to the
    <em>XF86Config(4/5)</em> manual page.
    
-<item> If you use a <tt>&dollar;{HOME}/.xserverrc</tt> file with xinit, make
+<item>If you use a <tt>&dollar;{HOME}/.xserverrc</tt> file with xinit, make
    sure that the script exec's the server (e.g ``<tt>exec
    /usr/X11R6/bin/XF86_SVGA</tt>'' rather than just
    ``<tt>/usr/X11R6/bin/XF86_SVGA</tt>'').  If you don't do this, the
@@ -295,7 +295,7 @@ and other sites archiving GNU source.)
 </enum>
 -->
 
-<sect> Reconfiguring the server (source distribution)
+<sect>Reconfiguring the server (source distribution)
 <p>
 To build a different set of servers or servers with a different set of
 drivers installed:
@@ -304,11 +304,11 @@ drivers installed:
    driver source for the SVGA server should be in a subdirectory of
    <tt>xc/programs/Xserver/hw/xfree86/vga256/drivers</tt>).
 
-<item> Change the settings of the server defines (eg <bf/XF86SVGAServer/ as
+<item>Change the settings of the server defines (eg <bf/XF86SVGAServer/ as
    described above) in <tt/xf86site.def/ to specify which servers you
    wish to build.  Also, change the driver lists to suit your needs.
 
-<item> From <tt>xc/programs/Xserver</tt>, run:
+<item>From <tt>xc/programs/Xserver</tt>, run:
 <tscreen><verb>
      make Makefile
      make Makefiles
@@ -317,7 +317,7 @@ drivers installed:
 </verb></tscreen>
 </enum>
 
-<sect> Reconfiguring the server (binary distribution)
+<sect>Reconfiguring the server (binary distribution)
 <p>
   If you have installed the server Binary LinkKit, it is possible to
 reconfigure the drivers and some of the extensions in the servers.  For
@@ -325,7 +325,7 @@ details of how to do this, please refer to the <htmlurl url="LinkKit.html"
 name="README.LinkKit"> file.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.18 1996/12/23 06:45:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.19 1997/01/24 09:32:08 dawes Exp $
 
 
 

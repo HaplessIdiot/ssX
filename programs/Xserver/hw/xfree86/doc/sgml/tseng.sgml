@@ -194,7 +194,7 @@ Device section).
         is likely to help with some problems related to DRAM timing, high
         dot clocks, and bugs in accelerated functions, at the cost of
         performance (which will still be reasonable on a local or PCI bus).
-        This option aplies only to those chips where acceleration is
+        This option applies only to those chips where acceleration is
         supported (currently ET4000W32p and ET6000).
 <tag>Option &dquot;fast_dram&dquot; &dquot;slow_dram&dquot; </tag>
         These options set the DRAM speed of certain cards where it applies. 
@@ -207,7 +207,7 @@ Device section).
 
         The <tt>"fast_dram"</tt> option will cause the driver to speed up
         DRAM timings, which may also avoid screen-related problems
-        (streaking, stripes, garbage, ...). It may also increas those very
+        (streaking, stripes, garbage, ...). It may also increase those very
         same effects. Not supported on ET6000.
 <tag>
 videoram 1024 (or another value)   (all chips)
@@ -224,7 +224,7 @@ Clockchip &dquot;et6000&dquot;  (et6000)
         This enables programmable clocks, but obviously only on the et6000.
         It must be specified in the Device section. Normally the server will
         automatically use this feature when it detects an ET6000. Use it
-        only when you suspect autodetection is not working. Note that some
+        only when you suspect auto-detection is not working. Note that some
         frequencies may be unstable (resulting in a `Wavy' screen). Only
         tried and tested frequencies (like the default clocks) are
         guaranteed to be stable. If this happens, try a slightly different
@@ -246,7 +246,7 @@ Membase 0xE0000000. (or a different address) (ET4000W32p, ET6000)
         This sets the physical memory base address of the linear
         framebuffer. It must be specified in the Device section. It is
         required for non-PCI linear addressing configurations, and might be
-        useful for PCI-based systems where autodetection fails.
+        useful for PCI-based systems where auto-detection fails.
 </descrip>
 
 <sect> Mode issues <p>
@@ -284,7 +284,7 @@ supports 1024x768 at 76 Hz with a 85 MHz dot clock, an 1MB card is a poor
 match anyway.
 
 The ET4000W32i and ET4000W32p have a special feature that almost doubles
-memory bandwith (+80%) using "interleaving" between the two banks. Upgrading
+memory bandwidth (+80%) using "interleaving" between the two banks. Upgrading
 to 2MB is a real bonus on these cards.
 
 The same goes for an ET6000: when using DRAM, it can do 4-way interleaving
@@ -440,7 +440,7 @@ Occasional erroneous pixels in text, pixel dust when moving window-frame
 </tag>
         Probably related to MCLK setting that is too high (can happen with
         linear addressing even though banked mode runs OK). Most (if not
-        all) ET6000 cards are sold with the MCLK slightly overclocked for
+        all) ET6000 cards are sold with the MCLK slightly over clocked for
         performance, which may cause these problems. There is currently no
         fix for this.
 <tag>
@@ -471,7 +471,7 @@ keep an eye on forthcoming beta releases at <it>www.xfree86.org</it>.
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.12 1997/01/23 11:02:32 dawes Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.13 1997/01/24 09:32:52 dawes Exp $ 
 
 
 

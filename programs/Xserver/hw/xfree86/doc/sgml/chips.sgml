@@ -27,11 +27,11 @@ The driver has been almost completely rewritten, with many additional
 features added. These include
 
 <itemize>
-<item> Linear Addressing
-<item> 16/ 24 bits per pixel
-<item> Fully programmable clocks are supported
-<item> H/W cursor support
-<item> BitBLT acceleration of many operations
+<item>Linear Addressing
+<item>16/ 24 bits per pixel
+<item>Fully programmable clocks are supported
+<item>H/W cursor support
+<item>BitBLT acceleration of many operations
 </itemize>
 
 With the release of XFree 3.2A, the Chips and Technologies driver 
@@ -567,7 +567,7 @@ We also thank the many people on the net who have contributed by reporting
 bugs and extensively testing this server before its inclusion in XFree 3.2
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.10 1996/12/09 11:52:37 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.11 1997/01/24 09:32:44 dawes Exp $
 </verb>
 
 </article>
