@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xfree86.cf,v 1.2 94/03/31 11:37:26 gildea Exp $
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.15 1994/06/28 12:58:45 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.16 1994/07/15 06:52:25 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -281,7 +281,7 @@ XF86MLIBS  = $(XF86MINIT) $(XF86CONFIG) $(XF86COMLIB) $(XF86HWLIB) $(XF86OSLIB)
 #endif
 
 #ifndef XFree86Version
-#define XFree86Version	3003
+#define XFree86Version	3005
 #endif
 
 #ifndef XVendorString
