@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.452 2003/08/10 16:39:22 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.453 2003/08/25 06:25:06 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -372,7 +372,7 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 #   define NscDriver		/**/
 #  endif
 #  /* The via driver breaks the static build.  Remove this stuff when fixed. */
-#  if DoLoadableServer
+#  if 1 /*DoLoadableServer*/
 #   define ViaDriver		via
 #  else
 #   define ViaDriver		/**/
