@@ -3396,6 +3396,7 @@ SISDisplayVideo(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
 	 pPriv->mustwait = 1;
 	 pPriv->oldx1 = overlay.dstBox.x1; pPriv->oldx2 = overlay.dstBox.x2;
 	 pPriv->oldy1 = overlay.dstBox.y1; pPriv->oldy2 = overlay.dstBox.y2;
+
       }
 #ifdef SISMERGED
    }

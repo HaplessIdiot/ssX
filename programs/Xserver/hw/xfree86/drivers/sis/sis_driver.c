@@ -11133,6 +11133,7 @@ SiS_CheckCalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode, unsigned long VBF
          return 0xfe;
 
       if((havecustommodes) &&
+         (pSiS->LCDwidth) &&		/* = test if LCD present */
          (!(mode->type & M_T_DEFAULT)) &&
 	 (!(mode->Flags & V_INTERLACE)))
          return 0xfe;
