@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.41 2000/03/01 16:01:29 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.46 2000/11/03 18:46:15 eich Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -278,8 +278,8 @@ GenericProbe(DriverPtr drv, int flags)
 			pScrn->ValidMode     = GenericValidMode;
 			foundScreen = TRUE;
 		    }
-		    xfree(usedChips);
 		}
+		xfree(usedChips);
 	    }
 	}
     }

@@ -23,7 +23,7 @@
  * 
  * Trident accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_accel.c,v 1.14 2000/10/11 16:29:05 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_accel.c,v 1.16 2000/11/03 18:46:13 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -94,9 +94,14 @@ TridentInitializeAccelerator(ScrnInfoPtr pScrn)
     /* This forces updating the clipper */
     pTrident->Clipping = TRUE;
     CHECKCLIPPING;
-    if (pTrident->Chipset == PROVIDIA9682)
-    	pTrident->EngineOperation |= 0x100; /* Disable Clipping */
+    /*    if (pTrident->Chipset == PROVIDIA9682)*/
+    /* 
+     * Clipping seems to work on other Trident chips, too.
+     * Tested on Cyber9385 (E.E.) 11/09/00.
+     */
+    pTrident->EngineOperation |= 0x100; /* Disable Clipping */
     TGUI_OPERMODE(pTrident->EngineOperation);
+
     pTrident->PatternLocation = pScrn->displayWidth*pScrn->bitsPerPixel/8;
 }
 

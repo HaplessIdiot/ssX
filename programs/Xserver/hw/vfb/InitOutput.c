@@ -35,7 +35,7 @@ from The Open Group.
 #include "scrnintstr.h"
 #include "servermd.h"
 #define PSZ 8
-#include "cfb.h"
+#include "fb.h"
 #include "mibstore.h"
 #include "colormapst.h"
 #include "gcstruct.h"
@@ -415,9 +415,9 @@ vfbMultiDepthCreateGC(pGC)
     switch (vfbBitsPerPixel(pGC->depth))
     {
     case 1:  return mfbCreateGC (pGC);
-    case 8:  return cfbCreateGC (pGC);
-    case 16: return cfb16CreateGC (pGC);
-    case 32: return cfb32CreateGC (pGC);
+    case 8:  
+    case 16: 
+    case 32: return fbCreateGC (pGC);
     default: return FALSE;
     }
 }
@@ -436,13 +436,9 @@ vfbMultiDepthGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
 	mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
 	break;
     case 8:
-	cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
-	break;
     case 16:
-	cfb16GetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
-	break;
     case 32:
-	cfb32GetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
+	fbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
 	break;
     }
     return;
@@ -462,13 +458,9 @@ vfbMultiDepthGetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
 	mfbGetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
 	break;
     case 8:
-	cfbGetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
-	break;
     case 16:
-	cfb16GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
-	break;
     case 32:
-	cfb32GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
+	fbGetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
 	break;
     }
 }
@@ -903,6 +895,8 @@ vfbScreenInit(index, pScreen, argc, argv)
     pbits = vfbAllocateFramebufferMemory(pvfb);
     if (!pbits) return FALSE;
 
+    /*    miSetPixmapDepths ();*/
+
     switch (pvfb->bitsPerPixel)
     {
     case 1:
@@ -910,16 +904,14 @@ vfbScreenInit(index, pScreen, argc, argv)
 			    dpix, dpiy, pvfb->paddedWidth * 8);
 	break;
     case 8:
-	ret = cfbScreenInit(pScreen, pbits, pvfb->width, pvfb->height,
-			    dpix, dpiy, pvfb->paddedWidth);
-	break;
     case 16:
-	ret = cfb16ScreenInit(pScreen, pbits, pvfb->width, pvfb->height,
-			      dpix, dpiy, pvfb->paddedWidth);
-	break;
     case 32:
-	ret = cfb32ScreenInit(pScreen, pbits, pvfb->width, pvfb->height,
-			      dpix, dpiy, pvfb->paddedWidth);
+	ret = fbScreenInit(pScreen, pbits, pvfb->width, pvfb->height,
+			      dpix, dpiy, pvfb->paddedWidth,pvfb->bitsPerPixel);
+#ifdef RENDER
+	if (ret) 
+	    fbPictureInit (pScreen, 0, 0);
+#endif
 	break;
     default:
 	return FALSE;
@@ -957,7 +949,7 @@ vfbScreenInit(index, pScreen, argc, argv)
     }
     else
     {
-	ret = cfbCreateDefColormap(pScreen);
+	ret = fbCreateDefColormap(pScreen);
     }
 
     miSetZeroLineBias(pScreen, pvfb->lineBias);

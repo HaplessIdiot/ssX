@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_apm.c,v 3.5 2000/03/01 00:25:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_apm.c,v 3.6 2000/03/31 22:55:52 dawes Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -66,15 +66,7 @@ lnxPMGetEventFromOs(int fd, pmEvent *events, int num)
 {
     int i,j,n;
     apm_event_t linuxEvents[8];
-#if 0
-    if (wait) {
-	FD_ZERO( &fds );
-	FD_SET( fd, &fds );
-	ret = select( fd + 1, &fds, NULL, NULL, NULL );
-	if (ret <= 0)
-	    return 0;
-    }
-#endif
+
     if ((n = read( fd, linuxEvents, num * sizeof(apm_event_t) )) == -1)
 	return 0;
     n /= sizeof(apm_event_t);
@@ -121,13 +113,18 @@ xf86OSPMOpen(void)
 {
    int fd;    
 
+#ifdef DEBUG
+   ErrorF("APM: OSPMOpen called\n");
+#endif
    if (APMihPtr || !xf86Info.pmFlag)
        return NULL;
    
    if (access( APM_PROC, R_OK ) || ((fd = open( APM_PROC, O_RDONLY)) == -1))
        return NULL;
    close( fd );
-
+#ifdef DEBUG
+   ErrorF("APM: Opening device\n");
+#endif
    if ((fd = open( APM_DEVICE, O_RDWR )) > -1) {
        xf86PMGetEventFromOs = lnxPMGetEventFromOs;
        xf86PMConfirmEventToOs = lnxPMConfirmEventToOs;
@@ -142,6 +139,9 @@ lnxCloseAPM(void)
 {
     int fd;
     
+#ifdef DEBUG
+   ErrorF("APM: Closing device\n");
+#endif
     if (APMihPtr) {
 	fd = xf86RemoveInputHandler(APMihPtr);
 	close(fd);

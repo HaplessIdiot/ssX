@@ -256,7 +256,7 @@ miSpriteInitialize (pScreen, cursorFuncs, screenFuncs)
     miSpriteScreenPtr	pPriv;
     VisualPtr		pVisual;
 #ifdef RENDER
-    PictureScreenPtr	ps = GetPictureScreen(pScreen);
+    PictureScreenPtr	ps = GetPictureScreenIfSet(pScreen);
 #endif
     
     if (miSpriteGeneration != serverGeneration)
@@ -366,7 +366,7 @@ miSpriteCloseScreen (i, pScreen)
 {
     miSpriteScreenPtr   pScreenPriv;
 #ifdef RENDER
-    PictureScreenPtr	ps = GetPictureScreen(pScreen);
+    PictureScreenPtr	ps = GetPictureScreenIfSet(pScreen);
 #endif
 
     pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;

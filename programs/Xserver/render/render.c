@@ -225,7 +225,7 @@ ProcRenderQueryPictFormats (ClientPtr client)
 		    ++nvisual;
 	    }
 	}
-	ps = GetPictureScreen(pScreen);
+	ps = GetPictureScreenIfSet(pScreen);
 	if (ps)
 	    nformat += ps->nformats;
     }
@@ -250,7 +250,7 @@ ProcRenderQueryPictFormats (ClientPtr client)
     for (s = 0; s < screenInfo.numScreens; s++)
     {
 	pScreen = screenInfo.screens[s];
-	ps = GetPictureScreen(pScreen);
+	ps = GetPictureScreenIfSet(pScreen);
 	if (ps)
 	{
 	    for (nformat = 0, pFormat = ps->formats; 
@@ -330,7 +330,7 @@ ProcRenderQueryPictFormats (ClientPtr client)
 	    pictDepth = (xPictDepth *) pictVisual;
 	}
 	pictScreen->nDepth = ndepth;
-	ps = GetPictureScreen(pScreen);
+	ps = GetPictureScreenIfSet(pScreen);
 	if (ps)
 	    pictScreen->fallback = ps->fallback->id;
 	else

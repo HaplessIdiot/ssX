@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.47 2000/10/06 12:31:03 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.49 2000/11/03 18:46:12 eich Exp $ */
 
 #include "nv_include.h"
 
@@ -668,6 +668,81 @@ NVValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
     return (MODE_OK);
 }
 
+static xf86MonPtr
+nvDoDDC2(ScrnInfoPtr pScrn)
+{
+    NVPtr pNv = NVPTR(pScrn);
+    xf86MonPtr MonInfo = NULL;
+
+    if (!pNv->i2cInit) return NULL;
+
+    /* - DDC can use I2C bus */
+    /* Load I2C if we have the code to use it */
+    if ( xf86LoadSubModule(pScrn, "i2c") ) {
+        xf86LoaderReqSymLists(i2cSymbols,NULL);
+        if (pNv->i2cInit(pScrn)) {
+	    DEBUG(ErrorF("I2C initialized on %p\n",pNv->I2C));
+	    if ((MonInfo = xf86DoEDID_DDC2(pScrn->scrnIndex,pNv->I2C))) {  
+	        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "DDC Monitor info: %p\n",
+			   MonInfo);
+		xf86PrintEDID( MonInfo );
+		xf86DrvMsg(pScrn->scrnIndex, X_INFO, "end of DDC Monitor "
+			   "info\n\n");
+		xf86SetDDCproperties(pScrn,MonInfo);
+	    }
+	}
+    }
+    return MonInfo;
+}
+
+static xf86MonPtr
+nvDoDDC1(ScrnInfoPtr pScrn)
+{
+    NVPtr pNv = NVPTR(pScrn);
+    xf86MonPtr MonInfo = NULL;
+
+    if (!pNv->ddc1Read || !pNv->DDC1SetSpeed) return NULL;
+    if (!pNv->Primary 
+	&& (pNv->DDC1SetSpeed == vgaHWddc1SetSpeed)) return NULL;
+
+    if ((MonInfo = xf86DoEDID_DDC1(pScrn->scrnIndex, pNv->DDC1SetSpeed,
+				  pNv->ddc1Read ))) {
+        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "DDC Monitor info: %p\n",
+		   MonInfo);
+	xf86PrintEDID( MonInfo );
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "end of DDC Monitor info\n\n");
+	xf86SetDDCproperties(pScrn,MonInfo);
+    }
+    return MonInfo;
+}
+ 
+static xf86MonPtr
+nvDoDDCVBE(ScrnInfoPtr pScrn)
+{
+    NVPtr pNv = NVPTR(pScrn);
+    xf86MonPtr MonInfo = NULL;
+    vbeInfoPtr pVbe;
+
+    if (xf86LoadSubModule(pScrn, "vbe")) {
+        xf86LoaderReqSymLists(vbeSymbols,NULL);
+	pVbe = VBEInit(pNv->pInt,pNv->pEnt->index);
+	if (pVbe) {
+	    if ((MonInfo = vbeDoEDID(pVbe,NULL))) {
+	        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "DDC Monitor info: %p\n",
+ 			   MonInfo);
+ 		xf86PrintEDID( MonInfo );       
+ 		xf86DrvMsg(pScrn->scrnIndex, X_INFO, "end of DDC Monitor info\n\n");
+ 		xf86SetDDCproperties(pScrn,MonInfo);
+ 	    }
+ 	    vbeFree(pVbe);
+ 	} else 
+ 	  xf86FreeInt10(pNv->pInt);
+ 	pNv->pInt = NULL;
+     }
+     return MonInfo;
+}
+ 
+
 /* Internally used */
 static xf86MonPtr
 NVdoDDC(ScrnInfoPtr pScrn)
@@ -676,51 +751,18 @@ NVdoDDC(ScrnInfoPtr pScrn)
     NVPtr pNv;
     NVRamdacPtr NVdac;
     xf86MonPtr MonInfo = NULL;
-#if 0
-    vbeInfoPtr pVbe;
-#endif
+
     hwp = VGAHWPTR(pScrn);
     pNv = NVPTR(pScrn);
     NVdac = &pNv->Dac;
 
     /* Load DDC if we have the code to use it */
-    /* This gives us DDC1 */
-    if (xf86LoadSubModule(pScrn, "ddc")) {
-      xf86LoaderReqSymLists(ddcSymbols, NULL);
-    } else {
-      /* ddc module not found, we can do without it */
-      pNv->ddc1Read = NULL;
-      
-      /* Without DDC, we have no use for the I2C bus */
-      pNv->i2cInit = NULL;
-      return NULL;
-    }
 
-#if 0 /* for some reason vbe messes up modes */
-    if (xf86LoadSubModule(pScrn, "vbe")) {
-        xf86LoaderReqSymLists(vbeSymbols,NULL);
-	pVbe = VBEInit(pNv->pInt,pNv->pEnt->index);
-	if (pVbe) {
-	    MonInfo = xf86PrintEDID(vbeDoEDID(pVbe,NULL));
-	    vbeFree(pVbe);
-	    if (MonInfo) {
-	        xf86SetDDCproperties(pScrn,MonInfo);
-		return MonInfo;
-	    }
-	}
-    } 
-#endif
-     if (pNv->pInt)
-         xf86FreeInt10(pNv->pInt);
-     pNv->pInt = NULL;
-    if (!pNv->Primary) {
-        /* XXX Need to write an NV mode ddc1SetSpeed */
-        if (pNv->DDC1SetSpeed == vgaHWddc1SetSpeed) {
-            pNv->DDC1SetSpeed = NULL;
-            xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2,
-                           "DDC1 disabled - chip not in VGA mode\n");
-        }
-    }
+    if (!xf86LoadSubModule(pScrn, "ddc")) return NULL;
+    
+    xf86LoaderReqSymLists(ddcSymbols, NULL);
+
+    /*    if ((MonInfo = nvDoDDCVBE(pScrn))) return MonInfo;      */
 
     /* Save the current state */
     NVSave(pScrn);
@@ -729,54 +771,27 @@ NVdoDDC(ScrnInfoPtr pScrn)
     vgaHWUnlock(hwp);
     pNv->riva.LockUnlock(&pNv->riva, 0);
 
-    /* It is now safe to talk to the card */
-#if NVuseI2C
-    /* - DDC can use I2C bus */
-    /* Load I2C if we have the code to use it */
-    if (pNv->i2cInit) {
-        if ( xf86LoadSubModule(pScrn, "i2c") ) {
-            xf86LoaderReqSymLists(i2cSymbols,NULL);
-        } else {
-            /* i2c module not found, we can do without it */
-            pNv->i2cInit = NULL;
-            pNv->I2C = NULL;
-        }
-    }
-
-    /* Initialize I2C bus - used by DDC if available */
-    if (pNv->i2cInit) {
-        pNv->i2cInit(pScrn);
-#if 0
-        ErrorF("I2C initialized on %p\n",pNv->I2C);
+    if ((MonInfo = nvDoDDC2(pScrn))) return MonInfo;
+#if 0 /* disable for now - causes problems on AXP */
+    if ((MonInfo = nvDoDDC1(pScrn))) return MonInfo;
 #endif
-    }
-    /* Read and output monitor info using DDC2 over I2C bus */
-    if (pNv->I2C) {
-        MonInfo = xf86DoEDID_DDC2(pScrn->scrnIndex,pNv->I2C);
-        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "I2C Monitor info: %p\n", MonInfo);
-
-        xf86PrintEDID(MonInfo);
-        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "end of I2C Monitor info\n\n");
-    }
-    if (!MonInfo)
-#endif /* NVuseI2C */
-        /* Read and output monitor info using DDC1 */
-        if (pNv->ddc1Read && pNv->DDC1SetSpeed) {
-#if 0
-            MonInfo = xf86DoEDID_DDC1(pScrn->scrnIndex, pNv->DDC1SetSpeed,
-                                      pNv->ddc1Read );
-            xf86DrvMsg(pScrn->scrnIndex, X_INFO, "DDC Monitor info: %p\n",
-                       MonInfo);
-            xf86PrintEDID( MonInfo );
-            xf86DrvMsg(pScrn->scrnIndex, X_INFO, "end of DDC Monitor info\n\n");
-#endif
-        }
     /* Restore previous state */
     NVRestore(pScrn);
 
     xf86SetDDCproperties(pScrn, MonInfo);
 
     return MonInfo;
+}
+
+static void
+nvProbeDDC(ScrnInfoPtr pScrn, int index)
+{
+    vbeInfoPtr pVbe;
+
+    if (xf86LoadSubModule(pScrn, "vbe")) {
+        pVbe = VBEInit(NULL,index);
+        ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
+    }
 }
 
 /* Mandatory */
@@ -792,7 +807,11 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     const char *reqSym = NULL;
     const char *s;
 
-    if (flags & PROBE_DETECT) return FALSE;
+    if (flags & PROBE_DETECT) {
+        nvProbeDDC( pScrn, xf86GetEntityInfo(pScrn->entityList[0])->index );
+	return TRUE;
+    }
+
 
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NVPreInit\n"));
     /*
@@ -1611,18 +1630,22 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     /* Setup the visuals we support. */
 
-    if (pScrn->bitsPerPixel > 8) {
-        if (!miSetVisualTypes(pScrn->depth, TrueColorMask, pScrn->rgbBits,
-                              pScrn->defaultVisual))
-            return FALSE;
-    } else {
-        if (!miSetVisualTypes(pScrn->depth, 
-                              miGetDefaultVisualMask(pScrn->depth),
-                              pScrn->rgbBits, pScrn->defaultVisual))
-            return FALSE;
-        if (!miSetPixmapDepths ())
-            return FALSE;
-    }
+#ifndef NV_USE_FB
+      if (pScrn->bitsPerPixel > 8) {
+          if (!miSetVisualTypes(pScrn->depth, TrueColorMask, pScrn->rgbBits,
+                                pScrn->defaultVisual))
+              return FALSE;
+    } else 
+#endif
+    {
+          if (!miSetVisualTypes(pScrn->depth, 
+                                miGetDefaultVisualMask(pScrn->depth),
+                                pScrn->rgbBits, pScrn->defaultVisual))
+	  return FALSE;
+     }
+#ifdef NV_USE_FB
+      if (!miSetPixmapDepths ()) return FALSE;
+#endif
 
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- Visuals set up\n"));
 

@@ -1,4 +1,22 @@
 XFree86 4.0.1f (xx November 2000)
+ 958. Added messages about modes rejected on lookup (Egbert Eich).
+ 957. Attempt to fix DDC1 support on Neomagic (Egbert Eich).
+ 956. Added Block/UnblockSIGIO() to DDC1 readout code (Egbert Eich).
+ 955. Enabled virutal depth for a second head on a G400 multihead
+      (this needs to be looked at) (Egbert Eich).
+ 954. Added code to check if the PictureScreen structure was initialized
+      before referencing it (Egbert Eich).
+ 953. Modified xf86UDelay() to use Block/UnblockSIGIO and usleep()
+      instead of gettimeofday() (Egbert Eich).
+ 952. Modified xf86MatchPciInstances() to allow for chipset overrides
+      even when called with no separate vendorID (Egbert Eich).
+ 951. Changed Xvfb to use fb instead of cfb (Egbert Eich).
+ 950. Moved a misplaced xfree() in the generic driver. Now more than
+      one chipset can use this driver in a multihead setup (Egbert Eich).
+ 949. Did some fixes for the Trident driver ie. fixed a LCD modeline,
+      reset clipping register on all non 3D chips (Egbert Eich).
+ 948. Added missing parts for AXP support to lnx_video.c (Egbert Eich).
+ 947. Added bsr/bsf to x86emu (Jeff Wiedemeier).
  946. Add a dumpkeymap utility for Darwin (#4248, Eric Sunshine).
  945. Fix a Darwin build problem with mkcfm, and get xdm closer to building
       (#4247, Torrey T. Lyons).

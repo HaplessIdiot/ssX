@@ -1,4 +1,4 @@
-/* $XFree86: Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_shadow.c,v 1.1 2000/11/03 18:46:14 eich Exp $ */
 
 /*
    Copyright (c) 1999, 2000 The XFree86 Project Inc. 
@@ -255,4 +255,5 @@ TRIDENTRefreshArea32(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 	pbox++;
     }
 }
+
 

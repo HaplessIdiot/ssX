@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.37 2000/10/17 21:40:46 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.39 2000/11/03 18:46:11 eich Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -845,11 +845,11 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 
     if (xf86LoadSubModule(pScrn, "ddc")) {
         xf86LoaderReqSymLists(ddcSymbols, NULL);
-#if 1
+#if 1 /* for DDC1 testing */
 	if (!neoDoDDCVBE(pScrn))
 	  if (!neoDoDDC2(pScrn))
-	      neoDoDDC1(pScrn);
 #endif
+	      neoDoDDC1(pScrn);
     }
 
     if (!xf86SetDepthBpp(pScrn, 8, 8, 8, bppSupport ))
@@ -2647,18 +2647,11 @@ static unsigned int
 neo_ddc1Read(ScrnInfoPtr pScrn)
 {
     register vgaHWPtr hwp = VGAHWPTR(pScrn);
-#if 0
-    register unsigned int ST01reg = ((NEOPtr)pScrn->driverPrivate)->vgaIOBase 
-                                     + 0x0A;
-#endif
     register unsigned int tmp;
 
-#if 0
-    while(inb(ST01reg)&0x8){};
-    while(!(inb(ST01reg)&0x8)) {};
-#endif
+    /* This needs to be investigated: we may have to swap this around */
+    while (!(hwp->readST01(hwp)&0x8)) {};
     while (hwp->readST01(hwp)&0x8) {};
-    while (!hwp->readST01(hwp)&0x8) {};
     
     tmp = (VGArGR(0xA1) & 0x08);
     

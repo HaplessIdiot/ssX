@@ -1080,6 +1080,9 @@ readPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
 	} else
 	    romaddr = 0;
     }
+#define DEBUG
+    ErrorF("ValidBIOSBase: %x\n",newbase);
+#endif
     if (romaddr == 0) {
 	xf86Msg(X_WARNING, "xf86ReadPciBIOS: cannot locate a BIOS address\n");
 	return -1;

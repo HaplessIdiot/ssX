@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.26 2000/09/19 12:46:19 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.28 2000/11/03 18:46:14 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -716,7 +716,6 @@ TridentSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     vgaHWGetIOBase(VGAHWPTR(pScrn));
     vgaIOBase = VGAHWPTR(pScrn)->IOBase;
-
     if (x < 0) {
     	OUTW(vgaIOBase + 4, (-x)<<8 | 0x46);
 	x = 0;
@@ -780,6 +779,8 @@ TridentUseHWCursor(ScreenPtr pScreen, CursorPtr pCurs)
     
     if (pTrident->MUX && pScrn->bitsPerPixel == 8) return FALSE;
 
+    if (!pTrident->HWCursor) return FALSE;
+
     return TRUE;
 }
 
@@ -794,7 +795,7 @@ TridentHWCursorInit(ScreenPtr pScreen)
     if (memory > (pScrn->videoRam * 1024 - 4096)) return FALSE;
     infoPtr = xf86CreateCursorInfoRec();
     if(!infoPtr) return FALSE;
-
+    
     pTrident->CursorInfoRec = infoPtr;
 
     infoPtr->MaxWidth = 64;
@@ -864,7 +865,10 @@ void TridentLoadPalette(
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     int i, index;
-
+    int sig;
+#if 0
+    sig = xf86BlockSIGIO ();
+#endif
     for(i = 0; i < numColors; i++) {
 	index = indicies[i];
     	OUTB(0x3C6, 0xFF);
@@ -878,4 +882,8 @@ void TridentLoadPalette(
         OUTB(0x3c9, colors[index].blue);
 	DACDelay(hwp);
     }
+#if 0
+    xf86UnblockSIGIO (sig);
+#endif
 }
+
