@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.100 2003/01/23 20:26:10 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.101 2003/02/10 23:42:51 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -145,8 +145,8 @@ static SymTabRec NVKnownChipsets[] =
   { 0x10DE0302, "GeForce FX 5800" },
   { 0x10DE0308, "Quadro FX 2000" },
   { 0x10DE0309, "Quadro FX 1000" },
-  { 0x10DE0311, "0x0311" },
-  { 0x10DE0312, "0x0312" },
+  { 0x10DE0311, "GeForce FX 5600 Ultra" },
+  { 0x10DE0312, "GeForce FX 5600" },
   { 0x10DE0316, "0x0316" },
   { 0x10DE0317, "0x0317" },
   { 0x10DE0318, "0x0318" },
@@ -157,13 +157,16 @@ static SymTabRec NVKnownChipsets[] =
   { 0x10DE031D, "0x031D" },
   { 0x10DE031E, "0x031E" },
   { 0x10DE031F, "0x031F" },
-  { 0x10DE0321, "0x0321" },
-  { 0x10DE0322, "0x0322" },
+  { 0x10DE0321, "GeForce FX 5200 Ultra" },
+  { 0x10DE0322, "GeForce FX 5200" },
   { 0x10DE0323, "0x0323" },
-  { 0x10DE0326, "0x0326" },
+  { 0x10DE0324, "GeForce FX Go5200" },
+  { 0x10DE0325, "GeForce FX Go5250" },
   { 0x10DE032A, "0x032A" },
-  { 0x10DE032B, "0x032B" },
-  { 0x10DE032E, "0x032E" },
+  { 0x10DE032B, "Quadro FX 500" },
+  { 0x10DE032C, "0x032C" },
+  { 0x10DE032D, "0x032D" },
+  { 0x10DE032F, "0x032F" },
   {-1, NULL}
 };
 
@@ -1568,10 +1571,17 @@ NVModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     if(!(*pNv->ModeInit)(pScrn, mode))
         return FALSE;
 
-    /* Program the registers */
-    vgaHWProtect(pScrn, TRUE);
     vgaReg = &hwp->ModeReg;
     nvReg = &pNv->ModeReg;
+
+    if(pNv->riva.twoHeads) {
+        VGA_WR08(pNv->riva.PCIO, 0x03D4, 0x44);
+        VGA_WR08(pNv->riva.PCIO, 0x03D5, nvReg->crtcOwner);
+        pNv->riva.LockUnlock(&pNv->riva, 0);
+     }
+
+    /* Program the registers */
+    vgaHWProtect(pScrn, TRUE);
 
     (*pNv->Restore)(pScrn, vgaReg, nvReg, FALSE);
 
@@ -1608,6 +1618,13 @@ NVRestore(ScrnInfoPtr pScrn)
     NVRegPtr nvReg = &pNv->SavedReg;
 
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NVRestore\n"));
+
+    if(pNv->riva.twoHeads) {
+        VGA_WR08(pNv->riva.PCIO, 0x03D4, 0x44);
+        VGA_WR08(pNv->riva.PCIO, 0x03D5, nvReg->crtcOwner);
+        pNv->riva.LockUnlock(&pNv->riva, 0);
+    }
+
     /* Only restore text mode fonts/text for the primary card */
     vgaHWProtect(pScrn, TRUE);
     (*pNv->Restore)(pScrn, vgaReg, nvReg, pNv->Primary);

@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.46 2003/02/05 01:21:11 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.47 2003/02/10 23:42:51 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "compiler.h"
@@ -1442,11 +1442,6 @@ static void LoadStateExt
             break;
         case NV_ARCH_10:
         case NV_ARCH_20:
-            if(chip->twoHeads) {
-               VGA_WR08(chip->PCIO, 0x03D4, 0x44);
-               VGA_WR08(chip->PCIO, 0x03D5, state->crtcOwner);
-               chip->LockUnlock(chip, 0);
-            }
 
             LOAD_FIXED_STATE(nv10,PFIFO);
             LOAD_FIXED_STATE(nv10,PRAMIN);

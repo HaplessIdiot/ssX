@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv.man,v 1.16 2003/02/10 23:42:51 mvojkovi Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv.man,v 1.17 2003/02/11 00:00:18 mvojkovi Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH NV __drivermansuffix__ __vendorversion__
@@ -51,7 +51,7 @@ NV1A, NV1F
 NV17, NV18, NV25, NV28
 .TP 22
 .B GeForce FX, QUADRO FX
-NV30
+NV30, NV31, NV34
 .SH CONFIGURATION DETAILS
 Please refer to XF86Config(__filemansuffix__) for general configuration
 details.  This section only covers configuration details specific to this
@@ -76,7 +76,8 @@ on all OSs).  See fbdevhw(__drivermansuffix__) for further information.
 Default: off.
 .TP
 .BI "Option \*qCrtcNumber\*q \*q" integer \*q
-nForce2, Quadro4, GeForce4 and NV30 may have two video outputs.  
+nForce2, Quadro4, GeForce4, Quadro FX and GeForce FX 
+may have two video outputs.  
 The driver attempts to autodetect
 which one the monitor is connected to.  In the case that autodetection picks
 the wrong one, this option may be used to force usage of a particular output. 
@@ -84,17 +85,20 @@ The options are "0" or "1".
 Default: autodetected.
 .TP
 .BI "Option \*qFlatPanel\*q \*q" boolean \*q
-The driver usually cannot autodetect the presence of a flat panel so
-this option should be set when used with a flat panel.  With this driver
-a flat panel will only work if it was POSTed by the BIOS, that is, the
-machine must have booted to the panel.
+The driver usually cannot autodetect the presence of a digital flat panel so
+this option should be set when used with a digital flat panel.  With this 
+driver, a digital flat panel will only work if it was POSTed by the BIOS, 
+that is, the
+machine must have booted to the panel.  If you have a dual head card
+you may also need to set the option CrtcNumber described above.
 Default: off.
 .TP
 .BI "Option \*qFPDither\*q \*q" boolean \*q
-Most digital flat panels have only 6 bits per component color resolution.
+Many digital flat panels (particularly ones on laptops) have only 6 bits 
+per component color resolution.
 This option tells the driver to dither from 8 bits per component to 6 before
 the flat panel truncates it. This is only suported in depth 24 on NV11, 
-nForce2, GeForce4, Quadro4 and NV30.
+nForce2, GeForce4, Quadro4, Geforce FX and Quadro FX.
 Default: off.
 .TP
 .BI "Option \*qRotate\*q \*qCW\*q"
