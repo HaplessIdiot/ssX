@@ -1,4 +1,6 @@
-XFree86 4.4.99.14 (xx September 2004)
+XFree86 4.4.99.15 (xx September 2004)
+
+XFree86 4.4.99.14 (27 September 2004)
  190. Corrections to MIT-SHM's Xineramafication
       (Mark Vojkovich, Marc La France).
  189. Fix incorrect application of Satoshi Kimura's fix (124) to avoid
@@ -19111,7 +19113,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3320 2004/09/22 01:55:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3321 2004/09/25 18:06:21 tsi Exp $
 
 
 
