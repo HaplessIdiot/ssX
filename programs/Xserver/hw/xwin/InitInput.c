@@ -58,14 +58,14 @@ void
 ProcessInputEvents (void)
 {
 #if CYGDEBUG
-  ErrorF ("ProcessInputEvents ()\n");
+  ErrorF ("ProcessInputEvents\n");
 #endif
 
   mieqProcessInputEvents ();
   miPointerUpdate ();
 
 #if CYGDEBUG
-  ErrorF ("ProcessInputEvents () - returning\n");
+  ErrorF ("ProcessInputEvents - returning\n");
 #endif
 }
 
@@ -86,7 +86,7 @@ InitInput (int argc, char *argv[])
   DeviceIntPtr		pMouse, pKeyboard;
 
 #if CYGDEBUG
-  ErrorF ("InitInput ()\n");
+  ErrorF ("InitInput\n");
 #endif
 
   pMouse = AddInputDevice (winMouseProc, TRUE);
@@ -109,7 +109,7 @@ InitInput (int argc, char *argv[])
       
       if (g_fdMessageQueue == -1)
 	{
-	  FatalError ("InitInput () - Failed opening %s\n",
+	  FatalError ("InitInput - Failed opening %s\n",
 		      WIN_MSG_QUEUE_FNAME);
 	}
 
@@ -118,7 +118,7 @@ InitInput (int argc, char *argv[])
     }
 
 #if CYGDEBUG
-  ErrorF ("InitInput () - returning\n");
+  ErrorF ("InitInput - returning\n");
 #endif
 }
 
@@ -128,21 +128,21 @@ void
 XTestGenerateEvent (int dev_type, int keycode, int keystate,
 		    int mousex, int mousey)
 {
-  ErrorF ("XTestGenerateEvent ()\n");
+  ErrorF ("XTestGenerateEvent\n");
 }
 
 
 void
 XTestGetPointerPos (short *fmousex, short *fmousey)
 {
-  ErrorF ("XTestGetPointerPos ()\n");
+  ErrorF ("XTestGetPointerPos\n");
 }
 
 
 void
 XTestJumpPointer (int jx, int jy, int dev_type)
 {
-  ErrorF ("XTestJumpPointer ()\n");
+  ErrorF ("XTestJumpPointer\n");
 }
 #endif
 

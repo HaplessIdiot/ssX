@@ -33,6 +33,7 @@
 /* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.20 2002/04/11 08:25:17 alanh Exp $ */
 
 #include "win.h"
+#include <commctrl.h>
 
 
 /*
@@ -54,7 +55,6 @@ winWindowProc (HWND hwnd, UINT message,
   int				iScanCode;
   int				i;
 
-
   /* Watch for server regeneration */
   if (g_ulServerGeneration != s_ulServerGeneration)
     {
@@ -67,7 +67,7 @@ winWindowProc (HWND hwnd, UINT message,
       && (s_pScreenPriv = GetProp (hwnd, WIN_SCR_PROP)) != NULL)
     {
 #if CYGDEGUG
-      ErrorF ("winWindowProc () - Setting privates handle\n");
+      ErrorF ("winWindowProc - Setting privates handle\n");
 #endif
       s_pScreenInfo = s_pScreenPriv->pScreenInfo;
       s_pScreen = s_pScreenInfo->pScreen;
@@ -86,7 +86,7 @@ winWindowProc (HWND hwnd, UINT message,
     {
     case WM_CREATE:
 #if CYGDEBUG
-      ErrorF ("winWindowProc () - WM_CREATE\n");
+      ErrorF ("winWindowProc - WM_CREATE\n");
 #endif
       
       /*
@@ -110,7 +110,7 @@ winWindowProc (HWND hwnd, UINT message,
 
     case WM_PAINT:
 #if CYGDEBUG
-      ErrorF ("winWindowProc () - WM_PAINT\n");
+      ErrorF ("winWindowProc - WM_PAINT\n");
 #endif
       /* Only paint if we have privates and the server is enabled */
       if (s_pScreenPriv == NULL
@@ -132,7 +132,7 @@ winWindowProc (HWND hwnd, UINT message,
     case WM_PALETTECHANGED:
       {
 #if CYGDEBUG
-	ErrorF ("winWindowProc () WM_PALETTECHANGED\n");
+	ErrorF ("winWindowProc - WM_PALETTECHANGED\n");
 #endif
 	/* Don't process if we don't have privates or a colormap */
 	if (s_pScreenPriv == NULL || s_pScreenPriv->pcmapInstalled == NULL)
@@ -168,7 +168,7 @@ winWindowProc (HWND hwnd, UINT message,
       /* Are we tracking yet? */
       if (!s_fTracking)
 	{
-	  TRACKMOUSEEVENT	tme;
+	  TRACKMOUSEEVENT		tme;
 	  
 	  /* Setup data structure */
 	  ZeroMemory (&tme, sizeof (tme));
@@ -176,14 +176,14 @@ winWindowProc (HWND hwnd, UINT message,
 	  tme.dwFlags = TME_LEAVE;
 	  tme.hwndTrack = hwnd;
 
-	  /* Call tracking function */
-	  if (!TrackMouseEvent (&tme))
-	    ErrorF ("winWindowProc - TrackMouseEvent failed\n");
+	  /* Call the tracking function */
+	  if (!(*g_fpTrackMouseEvent) (&tme))
+	    ErrorF ("winWindowProc - _TrackMouseEvent failed\n");
 
 	  /* Flag that we are tracking now */
 	  s_fTracking = TRUE;
 	}
-      
+
       /* Hide or show the Windows mouse cursor */
       if (s_fCursor && (s_pScreenPriv->fActive || s_pScreenInfo->fLessPointer))
 	{
@@ -198,7 +198,7 @@ winWindowProc (HWND hwnd, UINT message,
 	  s_fCursor = TRUE;
 	  ShowCursor (TRUE);
 	}
-
+      
       /* Deliver absolute cursor position to X Server */
       miPointerAbsoluteCursor (GET_X_LPARAM(lParam),
 			       GET_Y_LPARAM(lParam),
@@ -214,11 +214,11 @@ winWindowProc (HWND hwnd, UINT message,
        * process this message, but it fails to mention that you
        * will give up any default functionality if you do return 0.
        */
-
+      
       /* We can't do anything without privates */
       if (s_pScreenPriv == NULL || s_pScreenInfo->fIgnoreInput)
 	break;
-
+      
       /* Non-client mouse movement, show Windows cursor */
       if (!s_fCursor)
 	{
@@ -229,10 +229,10 @@ winWindowProc (HWND hwnd, UINT message,
 
     case WM_MOUSELEAVE:
       /* Mouse has left our client area */
-      
+
       /* Flag that we are no longer tracking */
       s_fTracking = FALSE;
-      
+
       /* Show the mouse cursor, if necessary */
       if (!s_fCursor)
 	{
@@ -315,10 +315,30 @@ winWindowProc (HWND hwnd, UINT message,
       /* Store the state of all mode keys */
       winStoreModeKeyStates (s_pScreen);
 
-      /* Release any pressed modifiers */
+      /* Release any pressed keys */
       winKeybdReleaseKeys ();
       return 0;
 
+#if WIN_NEW_KEYBOARD_SUPPORT
+    case WM_SYSKEYDOWN:
+    case WM_KEYDOWN:
+    case WM_SYSKEYUP:
+    case WM_KEYUP:
+      if (s_pScreenPriv == NULL || s_pScreenInfo->fIgnoreInput)
+	break;
+
+      /* Don't process keys if we are not active */
+      if (!s_pScreenPriv->fActive)
+	return 0;
+
+      winProcessKeyEvent ((DWORD)wParam, (DWORD) lParam);
+      return 0;
+
+    case WM_DEADCHAR:
+    case WM_SYSDEADCHAR:
+      return 0;
+
+#else /* WIN_NEW_KEYBOARD_SUPPORT */
     case WM_SYSKEYDOWN:
     case WM_KEYDOWN:
       if (s_pScreenPriv == NULL || s_pScreenInfo->fIgnoreInput)
@@ -344,7 +364,7 @@ winWindowProc (HWND hwnd, UINT message,
 	   * user enters Alt + F4 and is surprised when the application
 	   * quits.
 	   */
-	  ErrorF ("winWindowProc () - Closekey hit, quitting\n");
+	  ErrorF ("winWindowProc - WM_*KEYDOWN - Closekey hit, quitting\n");
 	  
 	  /* Tell our message queue to give up */
 	  PostMessage (hwnd, WM_CLOSE, 0, 0);
@@ -390,6 +410,7 @@ winWindowProc (HWND hwnd, UINT message,
       winTranslateKey (wParam, lParam, &iScanCode);
       winSendKeyEvent (iScanCode, FALSE);
       return 0;
+#endif /* WIN_NEW_KEYBOARD_SUPPORT */
 
     case WM_HOTKEY:
       if (s_pScreenPriv == NULL)
@@ -404,7 +425,7 @@ winWindowProc (HWND hwnd, UINT message,
 	break;
 
 #if CYGDEBUG
-      ErrorF ("winWindowProc () - WM_ACTIVATE\n");
+      ErrorF ("winWindowProc - WM_ACTIVATE\n");
 #endif
       /*
        * Focus is being changed to another window.
@@ -430,14 +451,14 @@ winWindowProc (HWND hwnd, UINT message,
 	break;
 
 #if CYGDEBUG
-      ErrorF ("winWindowProc () - WM_ACTIVATEAPP\n");
+      ErrorF ("winWindowProc - WM_ACTIVATEAPP\n");
 #endif
       /* Activate or deactivate */
       s_pScreenPriv->fActive = wParam;
 
       /* Reshow the Windows mouse cursor if we are being deactivated */
       if (!s_pScreenPriv->fActive
-	       && !s_fCursor)
+	  && !s_fCursor)
 	{
 	  /* Show Windows cursor */
 	  s_fCursor = TRUE;

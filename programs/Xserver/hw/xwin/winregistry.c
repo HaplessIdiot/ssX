@@ -25,60 +25,42 @@
  *or other dealings in this Software without prior written authorization
  *from the XFree86 Project.
  *
- * Authors:	Dakshinamurthy Karra
- *		Suhaib M Siddiqi
- *		Peter Busch
- *		Harold L Hunt II
+ * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/wincursor.c,v 1.3 2002/04/11 08:25:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winmisc.c,v 1.5 2001/11/11 22:45:57 alanh Exp $ */
 
 #include "win.h"
 
-miPointerScreenFuncRec g_winPointerCursorFuncs =
+
+DWORD
+winGetRegistryDWORD (HKEY hkey, char *pszRegistryKey)
 {
-  winCursorOffScreen,
-  winCrossScreen,
-  winPointerWarpCursor
-};
+  HKEY		hkResult;
+  DWORD		dwDisposition;
 
+  RegCreateKeyEx (hkey,
+		  pszRegistryKey,
+		  0,
+		  '\0',
+		  REG_OPTION_NON_VOLATILE,
+		  KEY_READ,
+		  NULL,
+		  &hkResult,
+		  &dwDisposition);
 
-void
-winPointerWarpCursor (ScreenPtr pScreen, int x, int y)
-{
-  winScreenPriv(pScreen);
-  RECT			rcClient;
-
-  /* Only update the Windows cursor position if we are active */
-  if (pScreenPriv->hwndScreen == GetForegroundWindow ())
+  if (dwDisposition == REG_CREATED_NEW_KEY)
     {
-      /* Get the client area coordinates */
-      GetClientRect (pScreenPriv->hwndScreen, &rcClient);
-      
-      /* Translate the client area coords to screen coords */
-      MapWindowPoints (pScreenPriv->hwndScreen,
-		       HWND_DESKTOP,
-		       (LPPOINT)&rcClient,
-		       2);
-      
-      /* 
-       * Update the Windows cursor position so that we don't
-       * immediately warp back to the current position.
-       */
-      SetCursorPos (rcClient.left + x, rcClient.top + y);
+      ErrorF ("winGetRegistryDWORD - Created new key: %s\n", pszRegistryKey);
+    }
+  else if (dwDisposition == REG_OPENED_EXISTING_KEY)
+    {
+      ErrorF ("winGetRegistryDWORD - Opened existing key: %s\n",
+	      pszRegistryKey);
     }
 
-  /* Call the mi warp procedure to do the actual warping in X. */
-  miPointerWarpCursor (pScreen, x, y);
-}
+  /* Free the registry key handle */
+  RegCloseKey (hkResult);
+  hkResult = NULL;
 
-Bool
-winCursorOffScreen (ScreenPtr *ppScreen, int *x, int *y)
-{
-  return FALSE;
+  return 0;
 }
-
-void
-winCrossScreen (ScreenPtr pScreen, Bool fEntering)
-{
-}
-

@@ -56,7 +56,7 @@ winCreateBoundingWindowFullScreen (ScreenPtr pScreen)
   WNDCLASS		wc;
 
 #if CYGDEBUG
-  ErrorF ("winCreateBoundingWindowFullScreen ()\n");
+  ErrorF ("winCreateBoundingWindowFullScreen\n");
 #endif
 
   /* Setup our window class */
@@ -92,7 +92,7 @@ winCreateBoundingWindowFullScreen (ScreenPtr pScreen)
     case WIN_SERVER_SHADOW_GDI:
       /* Show the window */
       ShowWindow (*phwnd, SW_SHOWMAXIMIZED);
-      return 0;
+      break;
 
     default:
       /* Hide the window */
@@ -125,7 +125,7 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen)
   WNDCLASS		wc;
   RECT			rcClient, rcWorkArea;
   DWORD			dwWindowStyle;
-
+  
   /* Initialize window style */
   dwWindowStyle = WS_OVERLAPPED | WS_SYSMENU | WS_MINIMIZEBOX;
   
@@ -168,7 +168,7 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen)
     iHeight = rcWorkArea.bottom - rcWorkArea.top;
   
 #if CYGDEBUG
-  ErrorF ("winCreateBoundingWindowWindowed () - Adjusted width: %d "\
+  ErrorF ("winCreateBoundingWindowWindowed - Adjusted width: %d "\
 	  "height: %d\n",
 	  pScreenInfo->dwWidth, pScreenInfo->dwHeight);
 #endif
@@ -188,22 +188,22 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen)
 			    pScreenPriv);	/* ScreenPrivates */
   if (*phwnd == NULL)
     {
-      ErrorF ("winCreateBoundingWindowWindowed () CreateWindowEx () failed\n");
+      ErrorF ("winCreateBoundingWindowWindowed - CreateWindowEx () failed\n");
       return FALSE;
     }
 
 #if CYGDEBUG
-  ErrorF ("winCreateBoundingWindowWindowed () - CreateWindowEx () returned\n");
+  ErrorF ("winCreateBoundingWindowWindowed - CreateWindowEx () returned\n");
 #endif
 
   /* Get the client area coordinates */
   if (!GetClientRect (*phwnd, &rcClient))
     {
-      ErrorF ("winCreateBoundingWindowWindowed () - GetClientRect () "
+      ErrorF ("winCreateBoundingWindowWindowed - GetClientRect () "
 	      "failed\n");
       return FALSE;
     }
-  ErrorF ("winCreateBoundingWindowWindowed () - WindowClient "
+  ErrorF ("winCreateBoundingWindowWindowed - WindowClient "
 	  "w %ld h %ld r %ld l %ld b %ld t %ld\n",
 	  rcClient.right - rcClient.left,
 	  rcClient.bottom - rcClient.top,
@@ -230,14 +230,14 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen)
   ShowWindow (*phwnd, SW_SHOWNORMAL);
   if (!UpdateWindow (*phwnd))
     {
-      ErrorF ("winCreateBoundingWindowWindowed () - UpdateWindow () failed\n");
+      ErrorF ("winCreateBoundingWindowWindowed - UpdateWindow () failed\n");
       return FALSE;
     }
   
   /* Attempt to bring our window to the top of the display */
   if (!BringWindowToTop (*phwnd))
     {
-      ErrorF ("winCreateBoundingWindowWindowed () - BringWindowToTop () "
+      ErrorF ("winCreateBoundingWindowWindowed - BringWindowToTop () "
 	      "failed\n");
       return FALSE;
     }
@@ -246,7 +246,7 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen)
   if (pScreenInfo->dwEngine == WIN_SERVER_NATIVE_GDI)
     winPaintBackground (*phwnd, RGB (0x00, 0x00, 0xFF));
 
-  ErrorF ("winCreateBoundingWindowWindowed () -  Returning\n");
+  ErrorF ("winCreateBoundingWindowWindowed -  Returning\n");
 
   return TRUE;
 }

@@ -30,6 +30,10 @@ from The Open Group.
 
 #include "win.h"
 
+/*
+ * General global variables
+ */
+
 int		g_iNumScreens = 0;
 winScreenInfo	g_ScreenInfo[MAXSCREENS];
 int		g_iLastScreen = -1;
@@ -41,17 +45,52 @@ int		g_iPixmapPrivateIndex = -1;
 unsigned long	g_ulServerGeneration = 0;
 Bool		g_fInitializedDefaultScreens = FALSE;
 FILE		*g_pfLog = NULL;
+DWORD		g_dwEnginesSupported = 0;
 
-extern void OsVendorVErrorF (const char *pszFormat, va_list va_args);
+
+/*
+ * Global variables for dynamically loaded libraries and
+ * their function pointers
+ */
+
+HMODULE		g_hmodDirectDraw = NULL;
+FARPROC		g_fpDirectDrawCreate = NULL;
+FARPROC		g_fpDirectDrawCreateClipper = NULL;
+
+HMODULE		g_hmodCommonControls = NULL;
+FARPROC		g_fpTrackMouseEvent = (FARPROC) (void (*)())NoopDDA;
+
+
+/* Function prototypes */
+
+#ifdef DDXOSVERRORF
+void OsVendorVErrorF (const char *pszFormat, va_list va_args);
+#endif
+
+
+/*
+ * For the depth 24 pixmap we default to 32 bits per pixel, but
+ * we change this pixmap format later if we detect that the display
+ * is going to be running at 24 bits per pixel.
+ *
+ * FIXME: On second thought, don't DIBs only support 32 bits per pixel?
+ * DIBs are the underlying bitmap used for DirectDraw surfaces, so it
+ * seems that all pixmap formats with depth 24 would be 32 bits per pixel.
+ * Confirm whether depth 24 DIBs can have 24 bits per pixel, then remove/keep
+ * the bits per pixel adjustment and update this comment to reflect the
+ * situation.  Harold Hunt - 2002/07/02
+ */
 
 static PixmapFormatRec g_PixmapFormats[] = {
-        { 1,    1,      BITMAP_SCANLINE_PAD },
-	{ 4,    8,      BITMAP_SCANLINE_PAD },
-	{ 8,    8,      BITMAP_SCANLINE_PAD },
-	{ 15,   16,     BITMAP_SCANLINE_PAD },
-	{ 16,   16,     BITMAP_SCANLINE_PAD },
-        { 24,   24,     BITMAP_SCANLINE_PAD },
-	{ 32,	32,	BITMAP_SCANLINE_PAD }
+  { 1,    1,      BITMAP_SCANLINE_PAD },
+  { 4,    8,      BITMAP_SCANLINE_PAD },
+  { 8,    8,      BITMAP_SCANLINE_PAD },
+  { 15,   16,     BITMAP_SCANLINE_PAD },
+  { 16,   16,     BITMAP_SCANLINE_PAD },
+  { 24,   32,     BITMAP_SCANLINE_PAD },
+#ifdef RENDER
+  { 32,   32,     BITMAP_SCANLINE_PAD }
+#endif
 };
 
 const int NUMFORMATS = sizeof (g_PixmapFormats) / sizeof (g_PixmapFormats[0]);
@@ -85,7 +124,9 @@ winInitializeDefaultScreens (void)
       g_ScreenInfo[i].dwScreen = i;
       g_ScreenInfo[i].dwWidth  = dwWidth;
       g_ScreenInfo[i].dwHeight = dwHeight;
-      g_ScreenInfo[i].dwDepth  = WIN_DEFAULT_DEPTH;
+      g_ScreenInfo[i].dwBPP = WIN_DEFAULT_BPP;
+      g_ScreenInfo[i].dwClipUpdatesNBoxes = WIN_DEFAULT_CLIP_UPDATES_NBOXES;
+      g_ScreenInfo[i].fEmulatePseudo = WIN_DEFAULT_EMULATE_PSEUDO;
       g_ScreenInfo[i].dwRefreshRate = WIN_DEFAULT_REFRESH;
       g_ScreenInfo[i].pfb = NULL;
       g_ScreenInfo[i].fFullScreen = FALSE;
@@ -103,16 +144,8 @@ winInitializeDefaultScreens (void)
 
   /* Signal that the default screens have been initialized */
   g_fInitializedDefaultScreens = TRUE;
-}
 
-
-DWORD
-winBitsPerPixel (DWORD dwDepth)
-{
-  if (dwDepth == 1) return 1;
-  else if (dwDepth <= 8) return 8;
-  else if (dwDepth <= 16) return 16;
-  else return 32;
+  ErrorF ("winInitializeDefaultScreens - Returning\n");
 }
 
 
@@ -121,7 +154,7 @@ void
 ddxGiveUp()
 {
 #if CYGDEBUG
-  ErrorF ("ddxGiveUp ()\n");
+  ErrorF ("ddxGiveUp\n");
 #endif
 
   /* Close our handle to our message queue */
@@ -144,6 +177,26 @@ ddxGiveUp()
       g_pfLog = NULL;
     }
 
+  /*
+   * At this point we aren't creating any new screens, so
+   * we are guaranteed to not need the DirectDraw functions.
+   */
+  if (g_hmodDirectDraw != NULL)
+    {
+      FreeLibrary (g_hmodDirectDraw);
+      g_hmodDirectDraw = NULL;
+      g_fpDirectDrawCreate = NULL;
+      g_fpDirectDrawCreateClipper = NULL;
+    }
+
+  /* Unload our TrackMouseEvent funtion pointer */
+  if (g_hmodCommonControls != NULL)
+    {
+      FreeLibrary (g_hmodCommonControls);
+      g_hmodCommonControls = NULL;
+      g_fpTrackMouseEvent = (FARPROC) (void (*)())NoopDDA;
+    }
+  
   /* Tell Windows that we want to end the app */
   PostQuitMessage (0);
 }
@@ -154,7 +207,7 @@ void
 AbortDDX (void)
 {
 #if CYGDEBUG
-  ErrorF ("AbortDDX ()\n");
+  ErrorF ("AbortDDX\n");
 #endif
   ddxGiveUp ();
 }
@@ -202,7 +255,7 @@ ddxUseMsg (void)
 	  "\twith a DirectDraw engine.\n");
 
   ErrorF ("-emulate3buttons [timeout]\n"
-	  "\tEmulate 3 button mouse with an optional timeout in "
+	  "\tEmulate 3 button mouse with an optional timeout in\n"
 	  "milliseconds\n");
 
   ErrorF ("-engine engine_type_id\n"
@@ -222,14 +275,26 @@ ddxUseMsg (void)
   ErrorF ("-screen scr_num width height\n"
 	  "\tSet screen scr_num's width and height\n");
 
+  ErrorF ("-lesspointer\n"
+	  "\tHide the windows mouse pointer when it is over an inactive\n"
+          "\tXFree86 window.  This prevents ghost cursors appearing where\n"
+	  "\tthe Windows cursor is drawn overtop of the X cursor\n");
+
   ErrorF ("-nodecoration\n"
           "\tDo not draw a window border, title bar, etc.  Windowed\n"
 	  "\tmode only.\n");
 
-  ErrorF ("-lesspointer\n"
-	  "\tHide the windows mouse pointer when it is over an inactive "
-          "\tXFree86 window.  This prevents ghost cursors appearing where the "
-          "\tWindows cursor is drawn overtop of the X cursor\n");
+  ErrorF ("-clipupdates num_boxes\n"
+	  "\tUse a clipping region to constrain shadow update blits to\n"
+	  "\tthe updated region when num_boxes, or more, are in the\n"
+	  "\tupdated region.  Currently supported only by `-engine 1'.\n");
+
+  ErrorF ("-emulatepseudo\n"
+	  "\tCreate a depth 8 PseudoColor visual when running in\n"
+	  "\tdepths 15, 16, 24, or 32, collectively known as TrueColor\n"
+	  "\tdepths.  The PseudoColor visual does not have correct colors,\n"
+	  "\tand it may crash, but it at least allows you to run your\n"
+	  "\tapplication in TrueColor modes.\n");
 
   ErrorF ("-[no]unixkill\n"
           "\tCtrl+Alt+Backspace exits the X Server\n");
@@ -318,7 +383,7 @@ ddxProcessArgument (int argc, char *argv[], int i)
       /* Validate the specified screen number */
       if (nScreenNum < 0 || nScreenNum >= MAXSCREENS)
         {
-          ErrorF ("ddxProcessArgument - Invalid screen number %d\n",
+          ErrorF ("ddxProcessArgument - screen - Invalid screen number %d\n",
 		  nScreenNum);
           UseMsg ();
 	  return 0;
@@ -342,7 +407,7 @@ ddxProcessArgument (int argc, char *argv[], int i)
       else
 	{
 	  /* I see no height and width here */
-          ErrorF ("ddxProcessArgument () - Invalid screen width and "
+          ErrorF ("ddxProcessArgument - screen - Invalid screen width and "
 		  "height: %s\n",
 		  argv[i + 2]);
 	  return 0;
@@ -422,7 +487,7 @@ ddxProcessArgument (int argc, char *argv[], int i)
   /*
    * Look for the '-fullscreen' argument
    */
-  if (strcmp(argv[i], "-fullscreen") == 0)
+  if (strcmp (argv[i], "-fullscreen") == 0)
     {
       /* Is this parameter attached to a screen or is it global? */
       if (-1 == g_iLastScreen)
@@ -448,7 +513,7 @@ ddxProcessArgument (int argc, char *argv[], int i)
   /*
    * Look for the '-lesspointer' argument
    */
-  if (strcmp(argv[i], "-lesspointer") == 0)
+  if (strcmp (argv[i], "-lesspointer") == 0)
     {
       /* Is this parameter attached to a screen or is it global? */
       if (-1 == g_iLastScreen)
@@ -474,7 +539,7 @@ ddxProcessArgument (int argc, char *argv[], int i)
   /*
    * Look for the '-nodecoration' argument
    */
-  if (strcmp(argv[i], "-nodecoration") == 0)
+  if (strcmp (argv[i], "-nodecoration") == 0)
     {
       /* Is this parameter attached to a screen or is it global? */
       if (-1 == g_iLastScreen)
@@ -500,7 +565,7 @@ ddxProcessArgument (int argc, char *argv[], int i)
   /*
    * Look for the '-ignoreinput' argument
    */
-  if (strcmp(argv[i], "-ignoreinput") == 0)
+  if (strcmp (argv[i], "-ignoreinput") == 0)
     {
       /* Is this parameter attached to a screen or is it global? */
       if (-1 == g_iLastScreen)
@@ -526,7 +591,7 @@ ddxProcessArgument (int argc, char *argv[], int i)
   /*
    * Look for the '-emulate3buttons' argument
    */
-  if (strcmp(argv[i], "-emulate3buttons") == 0)
+  if (strcmp (argv[i], "-emulate3buttons") == 0)
     {
       int	iArgsProcessed = 1;
       int	iE3BTimeout = WIN_DEFAULT_E3B_TIME;
@@ -576,7 +641,7 @@ ddxProcessArgument (int argc, char *argv[], int i)
    */
   if (strcmp (argv[i], "-depth") == 0)
     {
-      DWORD		dwDepth = 0;
+      DWORD		dwBPP = 0;
       
       /* Display the usage message if the argument is malformed */
       if (++i >= argc)
@@ -586,7 +651,7 @@ ddxProcessArgument (int argc, char *argv[], int i)
 	}
 
       /* Grab the argument */
-      dwDepth = atoi (argv[i]);
+      dwBPP = atoi (argv[i]);
 
       /* Is this parameter attached to a screen or global? */
       if (-1 == g_iLastScreen)
@@ -596,13 +661,13 @@ ddxProcessArgument (int argc, char *argv[], int i)
 	  /* Parameter is for all screens */
 	  for (j = 0; j < MAXSCREENS; j++)
 	    {
-	      g_ScreenInfo[j].dwDepth = dwDepth;
+	      g_ScreenInfo[j].dwBPP = dwBPP;
 	    }
 	}
       else
 	{
 	  /* Parameter is for a single screen */
-	  g_ScreenInfo[g_iLastScreen].dwDepth = dwDepth;
+	  g_ScreenInfo[g_iLastScreen].dwBPP = dwBPP;
 	}
       
       /* Indicate that we have processed the argument */
@@ -648,9 +713,73 @@ ddxProcessArgument (int argc, char *argv[], int i)
     }
 
   /*
+   * Look for the '-clipupdates num_boxes' argument
+   */
+  if (strcmp (argv[i], "-clipupdates") == 0)
+    {
+      DWORD		dwNumBoxes = 0;
+      
+      /* Display the usage message if the argument is malformed */
+      if (++i >= argc)
+	{
+	  UseMsg ();
+	  return 0;
+	}
+
+      /* Grab the argument */
+      dwNumBoxes = atoi (argv[i]);
+
+      /* Is this parameter attached to a screen or global? */
+      if (-1 == g_iLastScreen)
+	{
+	  int		j;
+
+	  /* Parameter is for all screens */
+	  for (j = 0; j < MAXSCREENS; j++)
+	    {
+	      g_ScreenInfo[j].dwClipUpdatesNBoxes = dwNumBoxes;
+	    }
+	}
+      else
+	{
+	  /* Parameter is for a single screen */
+	  g_ScreenInfo[g_iLastScreen].dwClipUpdatesNBoxes = dwNumBoxes;
+	}
+      
+      /* Indicate that we have processed the argument */
+      return 2;
+    }
+
+  /*
+   * Look for the '-emulatepseudo' argument
+   */
+  if (strcmp (argv[i], "-emulatepseudo") == 0)
+    {
+      /* Is this parameter attached to a screen or is it global? */
+      if (-1 == g_iLastScreen)
+	{
+	  int			j;
+
+	  /* Parameter is for all screens */
+	  for (j = 0; j < MAXSCREENS; j++)
+	    {
+	      g_ScreenInfo[j].fEmulatePseudo = TRUE;
+	    }
+	}
+      else
+	{
+	  /* Parameter is for a single screen */
+          g_ScreenInfo[g_iLastScreen].fEmulatePseudo = TRUE;
+	}
+
+      /* Indicate that we have processed this argument */
+      return 1;
+    }
+
+  /*
    * Look for the '-nowinkill' argument
    */
-  if (strcmp(argv[i], "-nowinkill") == 0)
+  if (strcmp (argv[i], "-nowinkill") == 0)
     {
       /* Is this parameter attached to a screen or is it global? */
       if (-1 == g_iLastScreen)
@@ -676,7 +805,7 @@ ddxProcessArgument (int argc, char *argv[], int i)
   /*
    * Look for the '-winkill' argument
    */
-  if (strcmp(argv[i], "-winkill") == 0)
+  if (strcmp (argv[i], "-winkill") == 0)
     {
       /* Is this parameter attached to a screen or is it global? */
       if (-1 == g_iLastScreen)
@@ -702,7 +831,7 @@ ddxProcessArgument (int argc, char *argv[], int i)
   /*
    * Look for the '-nounixkill' argument
    */
-  if (strcmp(argv[i], "-nounixkill") == 0)
+  if (strcmp (argv[i], "-nounixkill") == 0)
     {
       /* Is this parameter attached to a screen or is it global? */
       if (-1 == g_iLastScreen)
@@ -728,7 +857,7 @@ ddxProcessArgument (int argc, char *argv[], int i)
   /*
    * Look for the '-unixkill' argument
    */
-  if (strcmp(argv[i], "-unixkill") == 0)
+  if (strcmp (argv[i], "-unixkill") == 0)
     {
       /* Is this parameter attached to a screen or is it global? */
       if (-1 == g_iLastScreen)
@@ -765,14 +894,19 @@ GetTimeInMillis (void)
 
 
 /* See Porting Layer Definition - p. 20 */
-/* We use ddxProcessArgument, so we don't need to touch argc and argv */
+/*
+ * Do any global initialization, then initialize each screen.
+ * 
+ * NOTE: We use ddxProcessArgument, so we don't need to touch argc and argv
+ */
+
 void
 InitOutput (ScreenInfo *screenInfo, int argc, char *argv[])
 {
   int		i;
 
 #if CYGDEBUG
-  ErrorF ("InitOutput ()\n");
+  ErrorF ("InitOutput\n");
 #endif
 
   /* Setup global screen info parameters */
@@ -786,6 +920,33 @@ InitOutput (ScreenInfo *screenInfo, int argc, char *argv[])
   for (i = 0; i < NUMFORMATS; i++)
     {
       screenInfo->formats[i] = g_PixmapFormats[i];
+    }
+
+  /* Load pointers to DirectDraw functions */
+  winGetDDProcAddresses ();
+  
+  /* Detect supported engines */
+  winDetectSupportedEngines ();
+
+  /* Load common controls library */
+  g_hmodCommonControls = LoadLibraryEx ("comctl32.dll", NULL, 0);
+
+  /* Load TrackMouseEvent function pointer */  
+  g_fpTrackMouseEvent = GetProcAddress (g_hmodCommonControls,
+					 "_TrackMouseEvent");
+  if (g_fpTrackMouseEvent == NULL)
+    {
+      ErrorF ("InitOutput - Could not get pointer to function\n"
+	      "\t_TrackMouseEvent in comctl32.dll.  Try installing\n"
+	      "\tInternet Explorer 3.0 or greater if you have not\n"
+	      "\talready.\n");
+
+      /* Free the library since we won't need it */
+      FreeLibrary (g_hmodCommonControls);
+      g_hmodCommonControls = NULL;
+
+      /* Set function pointer to point to no operation function */
+      g_fpTrackMouseEvent = (FARPROC) (void (*)())NoopDDA;
     }
 
   /* Initialize each screen */

@@ -1,4 +1,10 @@
 XFree86 4.2.99.2 (xx June 2002)
+ 197. Major updates to Cygwin/XFree86.
+       - fix depth 24 issues.
+       - fix the handling of the DirectDraw module.
+       - disable the use of the LAYER/RANDR extension.
+       - lots of bug fixes. 
+      (#5318, #5317, Harold L. Hunt, Alan Hourihane).
  196. When using the vesa driver and the DisplaySize option the server
       would crash with a floating point exception due to a divide by zero
       in miscreeninit() (#5298, Mike A. Harris).
@@ -14918,4 +14924,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2255 2002/07/02 02:00:01 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2256 2002/07/04 17:04:21 paulo Exp $

@@ -46,8 +46,11 @@
 /*
  * Build toggles for experimental features
  */
-#define WIN_NATIVE_GDI_SUPPORT	YES
-#define WIN_LAYER_SUPPORT	NO
+#define WIN_NATIVE_GDI_SUPPORT		YES
+#define WIN_LAYER_SUPPORT		NO
+#define WIN_NEW_KEYBOARD_SUPPORT	NO
+#define WIN_EMULATE_PSEUDO_SUPPORT	YES
+#define WIN_UPDATE_STATS		NO
 
 /* Turn debug messages on or off */
 #define CYGDEBUG		NO
@@ -61,17 +64,19 @@
 
 #define NEED_EVENTS
 
-#define WIN_DEFAULT_WIDTH	640
-#define WIN_DEFAULT_HEIGHT	480
-#define WIN_DEFAULT_DEPTH	0
-#define WIN_DEFAULT_WHITEPIXEL	255
-#define WIN_DEFAULT_BLACKPIXEL	0
-#define WIN_DEFAULT_LINEBIAS	0
-#define WIN_DEFAULT_E3B_TIME	50 /* milliseconds */
-#define WIN_DEFAULT_DPI		75
-#define WIN_DEFAULT_REFRESH	0
-#define WIN_DEFAULT_WIN_KILL    TRUE
-#define WIN_DEFAULT_UNIX_KILL   FALSE
+#define WIN_DEFAULT_WIDTH			640
+#define WIN_DEFAULT_HEIGHT			480
+#define WIN_DEFAULT_BPP				0
+#define WIN_DEFAULT_WHITEPIXEL			255
+#define WIN_DEFAULT_BLACKPIXEL			0
+#define WIN_DEFAULT_LINEBIAS			0
+#define WIN_DEFAULT_E3B_TIME			50 /* milliseconds */
+#define WIN_DEFAULT_DPI				75
+#define WIN_DEFAULT_REFRESH			0
+#define WIN_DEFAULT_WIN_KILL			TRUE
+#define WIN_DEFAULT_UNIX_KILL			FALSE
+#define WIN_DEFAULT_CLIP_UPDATES_NBOXES		0
+#define WIN_DEFAULT_EMULATE_PSEUDO		FALSE
 
 #define WIN_DIB_MAXIMUM_SIZE	0x08000000 /* 16 MB on Windows 95, 98, Me */
 #define WIN_DIB_MAXIMUM_SIZE_MB (WIN_DIB_MAXIMUM_SIZE / 8 / 1024 / 1024)
@@ -82,11 +87,17 @@
 #define WIN_NUM_PALETTE_ENTRIES	256
 
 /*
+ * Number of times to call Restore in an attempt to restore the primary surface
+ */
+#define WIN_REGAIN_SURFACE_RETRIES	1
+
+/*
  * Build a supported display depths mask by shifting one to the left
  * by the number of bits in the supported depth.
  */
-#define WIN_SUPPORTED_DEPTHS	( (1 << (32-1)) | (1 << (24-1)) \
-				| (1 << (16-1)) | (1 << (15-1)) | (1 << (8-1)))
+#define WIN_SUPPORTED_BPPS	( (1 << (32 - 1)) | (1 << (24 - 1)) \
+				| (1 << (16 - 1)) | (1 << (15 - 1)) \
+				| (1 << ( 8 - 1)))
 #define WIN_CHECK_DEPTH		YES
 
 #define WIN_E3B_OFF		-1
@@ -106,9 +117,16 @@
 #define KanaMapIndex		Mod4MapIndex
 #define ScrollLockMapIndex	Mod5MapIndex
 
+#define WIN_MOD_LALT		0x00000001
+#define WIN_MOD_RALT		0x00000002
+#define WIN_MOD_LCONTROL	0x00000004
+#define WIN_MOD_RCONTROL	0x00000008
+
 #define WIN_24BPP_MASK_RED	0x00FF0000
 #define WIN_24BPP_MASK_GREEN	0x0000FF00
 #define WIN_24BPP_MASK_BLUE	0x000000FF
+
+#define WIN_MAX_KEYS_PER_KEY	4
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -262,8 +280,9 @@ typedef Bool (*winDestroyColormapProcPtr)(ColormapPtr pColormap);
 
 typedef Bool (*winHotKeyAltTabPtr)(ScreenPtr); 
 
+
 /*
- * Privates structures
+ * Window privates
  */
 
 typedef struct
@@ -271,11 +290,21 @@ typedef struct
   DWORD			dwDummy;
 } winPrivWinRec, *winPrivWinPtr;
 
+
+/*
+ * GC (graphics context) privates
+ */
+
 typedef struct
 {
   HDC			hdc;
   HDC			hdcMem;
 } winPrivGCRec, *winPrivGCPtr;
+
+
+/*
+ * Pixmap privates
+ */
 
 typedef struct
 {
@@ -286,6 +315,11 @@ typedef struct
   BITMAPINFOHEADER	*pbmih;
 } winPrivPixmapRec, *winPrivPixmapPtr;
 
+
+/*
+ * Colormap privates
+ */
+
 typedef struct
 {
   HPALETTE		hPalette;
@@ -294,26 +328,51 @@ typedef struct
   PALETTEENTRY		peColors[WIN_NUM_PALETTE_ENTRIES];
 } winPrivCmapRec, *winPrivCmapPtr;
 
+
+#if WIN_NEW_KEYBOARD_SUPPORT
+/*
+ * Keyboard event structure
+ */
+
+typedef struct
+{
+  DWORD			dwXKeycodes[WIN_MAX_KEYS_PER_KEY];
+  DWORD			dwReleaseModifiers;
+} winKeyEventsRec, winKeyEventsPtr;
+
+#endif /* WIN_NEW_KEYBOARD_SUPPORT */
+
+
+/*
+ * Screen information structure that we need before privates are available
+ * in the server startup sequence.
+ */
+
 typedef struct
 {
   ScreenPtr		pScreen;
   DWORD			dwScreen;
   DWORD			dwWidth;
   DWORD			dwPaddedWidth;
+  /*
+   * dwStride is the number of whole pixels that occupy a scanline,
+   * including those pixels that are not displayed.  This is basically
+   * a rounding up of the width.
+   */
+  DWORD			dwStride;
   DWORD			dwHeight;
   DWORD			dwWidth_mm;
   DWORD			dwHeight_mm;
+  DWORD			dwBPP;
   DWORD			dwDepth;
   DWORD			dwRefreshRate;
-  DWORD			dwStrideBytes;
-  DWORD			dwStride;
-  DWORD			dwBPP;
   char			*pfb;
   XWDColor		*pXWDCmap;
   XWDFileHeader		*pXWDHeader;
   DWORD			dwEngine;
   DWORD			dwEnginePreferred;
-  DWORD			dwEnginesSupported;
+  DWORD			dwClipUpdatesNBoxes;
+  Bool			fEmulatePseudo;
   Bool			fFullScreen;
   Bool			fDecoration;
   Bool			fLessPointer;
@@ -323,6 +382,11 @@ typedef struct
   Bool                  fUseUnixKillKey;
   Bool			fIgnoreInput;
 } winScreenInfo, *winScreenInfoPtr;
+
+
+/*
+ * Screen privates
+ */
 
 typedef struct
 {
@@ -349,9 +413,10 @@ typedef struct
   int			window;
 
   /* Layer support */
+#if WIN_LAYER_SUPPORT
   DWORD			dwLayerKind;
-  DWORD			dwOrigDepth;
   LayerPtr		pLayer;
+#endif
 
   /* Palette management */
   ColormapPtr		pcmapInstalled;
@@ -390,11 +455,6 @@ typedef struct
 
   /* Privates used by both shadow fb DirectDraw servers */
   LPDIRECTDRAWCLIPPER	pddcPrimary;
-  HMODULE		hmodDirectDraw;
-
-  /* DirectDraw procedure pointers */
-  FARPROC				fpDirectDrawCreate;
-  FARPROC				fpDirectDrawCreateClipper;
 
   /* Engine specific functions */
   winAllocateFBProcPtr			pwinAllocateFB;
@@ -415,6 +475,11 @@ typedef struct
   winHotKeyAltTabPtr			pwinHotKeyAltTab;
 } winPrivScreenRec, *winPrivScreenPtr;
 
+
+/*
+ * Extern declares for general global variables
+ */
+
 extern winScreenInfo		g_ScreenInfo[];
 extern miPointerScreenFuncRec	g_winPointerCursorFuncs;
 extern DWORD			g_dwEvents;
@@ -425,6 +490,18 @@ extern int			g_iGCPrivateIndex;
 extern int			g_iPixmapPrivateIndex;
 extern unsigned long		g_ulServerGeneration;
 extern CARD32			g_c32LastInputEventTime;
+extern DWORD			g_dwEnginesSupported;
+
+/*
+ * Extern declares for dynamically loaded libraries and function pointers
+ */
+
+extern HMODULE			g_hmodDirectDraw;
+extern FARPROC			g_fpDirectDrawCreate;
+extern FARPROC			g_fpDirectDrawCreateClipper;
+
+extern HMODULE			g_hmodCommonControls;
+extern FARPROC			g_fpTrackMouseEvent;
 
 
 /*
@@ -517,13 +594,6 @@ extern CARD32			g_c32LastInputEventTime;
 /*
  * BEGIN DDX and DIX Function Prototypes
  */
-
-/*
- * InitOutput.c
- */
-
-DWORD
-winBitsPerPixel (DWORD dwDepth);
 
 
 /*
@@ -630,14 +700,14 @@ winCrossScreen (ScreenPtr pScreen, Bool fEntering);
  * winengine.c
  */
 
-Bool
-winDetectSupportedEngines (ScreenPtr pScreen);
+void
+winDetectSupportedEngines ();
 
 Bool
 winSetEngine (ScreenPtr pScreen);
 
 Bool
-winGetDDProcAddresses (ScreenPtr pScreen);
+winGetDDProcAddresses ();
 
 
 /*
@@ -723,8 +793,13 @@ winGetSpansNativeGDI (DrawablePtr	pDrawable,
  * winkeybd.c
  */
 
+#if WIN_NEW_KEYBOARD_SUPPORT
+winKeyEventsRec
+winTranslateKey (DWORD dwVirtualKey, DWORD dwKeyData);
+#else
 void
 winTranslateKey (WPARAM wParam, LPARAM lParam, int *piScanCode);
+#endif
 
 void
 winGetKeyMappings (KeySymsPtr pKeySyms, CARD8 *pModMap);
@@ -757,10 +832,17 @@ winKeybdReleaseKeys ();
 void
 winSendKeyEvent (DWORD dwKey, Bool fDown);
 
+#if WIN_NEW_KEYBOARD_SUPPORT
+void
+winProcessKeyEvent (DWORD dwVirtKey, DWORD dwKeyData);
+#endif
+
 
 /*
  * winlayer.c
  */
+
+#if WIN_LAYER_SUPPORT
 
 LayerPtr
 winLayerCreate (ScreenPtr pScreen);
@@ -783,7 +865,8 @@ winRandRSetConfig (ScreenPtr		pScreen,
 
 Bool
 winRandRInit (ScreenPtr pScreen);
-#endif
+#endif /* RANDR */
+#endif /* WIN_LAYER_SUPPORT */
 
 
 /*
