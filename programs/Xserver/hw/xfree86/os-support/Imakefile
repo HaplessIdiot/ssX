@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.2 94/10/12 20:43:43 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/Imakefile,v 3.5 1995/01/28 17:04:13 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/Imakefile,v 3.6 1995/03/11 14:14:50 dawes Exp $
 #include <Server.tmpl>
 
 #define IHaveSubdirs
@@ -55,6 +55,10 @@ SRCS = $(OS_SUBDIR)/?*.c misc/?*.c
 OBJS = $(OS_SUBDIR)/?*.o misc/?*.o
 
 DONES = $(OS_SUBDIR)/DONE misc/DONE
+
+#if HasParallelMake
+MakeMutex($(SUBDIRS) $(OBJS) $(DONES))
+#endif
 
 NormalDepLibraryTarget(xf86_os,$(SUBDIRS) $(DONES),$(OBJS))
 

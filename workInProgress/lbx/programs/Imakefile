@@ -4,5 +4,9 @@ XCOMM $XConsortium: Imakefile,v 1.1 94/04/13 18:06:27 rws Exp $
 
 SUBDIRS = Xserver lbxproxy
 
+#if HasParallelMake
+MakeMutex($(SUBDIRS))
+#endif
+
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))

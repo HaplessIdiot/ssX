@@ -1,5 +1,5 @@
 /* $XConsortium: ncr_driver.c,v 1.4 95/01/16 13:18:19 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ncr77c22/ncr_driver.c,v 3.5 1995/01/10 10:31:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ncr77c22/ncr_driver.c,v 3.7 1995/01/28 17:08:56 dawes Exp $ */
 /* Copyright 1992 NCR Corporation - Dayton, Ohio, USA */
 
 
@@ -97,7 +97,7 @@ vgaVideoChipRec NCR77C22 = {
   NCRSave,
   NCRRestore,
   NCRAdjust,
-  (void (*)())NoopDDA,
+  vgaHWSaveScreen,
   (void (*)())NoopDDA,
   (void (*)())NoopDDA,
 #if defined(MONOVGA) || defined(XF86VGA16)

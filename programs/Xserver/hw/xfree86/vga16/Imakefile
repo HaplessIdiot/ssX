@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.2 94/10/12 20:52:15 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/Imakefile,v 3.3 1995/03/11 14:15:41 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga16/Imakefile,v 3.4 1995/03/18 11:05:41 dawes Exp $
 #include <Server.tmpl>
 
 #define IHaveSubdirs
@@ -16,6 +16,10 @@ INCLUDES = -I../vga256/vga -I$(XF86COMSRC) -I$(XF86OSSRC) \
 	   -I$(SERVERSRC)/include -I$(INCLUDESRC)
 
 VGA16DRIVERS = XF86Vga16Drivers
+
+#if HasParallelMake
+MakeMutex($(SUBDIRS) $(OBJS) $(DONES))
+#endif
 
 #ifdef OS2Architecture
 all:: DONE

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: pvg_driver.c,v 1.5 95/01/16 13:18:21 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.15 1995/01/28 17:09:14 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.16 1995/03/04 06:19:59 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -118,7 +118,7 @@ vgaVideoChipRec PVGA1 = {
   PVGA1Save,
   PVGA1Restore,
   PVGA1Adjust,
-  (void (*)())NoopDDA,
+  vgaHWSaveScreen,
   (void (*)())NoopDDA,
   PVGA1FbInit,
   PVGA1SetRead,

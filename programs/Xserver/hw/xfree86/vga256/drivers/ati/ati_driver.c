@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.19 1995/01/22 03:07:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.20 1995/03/04 06:17:45 dawes Exp $ */
 /*
  * Copyright 1994 and 1995 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -48,9 +48,9 @@
  * ATI, Robert Wolff, David Dawes and Mark Weaver, for a Mach32 memory probe.
  * Hans Nasten, nasten@everyware.se, for debugging assistance on Mach8 boards.
  *
- * The driver is intended to support ATI VGA Wonder V3, V4, V5, PLUS, XL and
- * XL24 boards.  It will also work with Mach32 and Mach64 boards but will not
- * use their accelerated features.
+ * The driver is intended to support ATI VGA Wonder series of boards and its
+ * OEM counterpart, the VGA1024 series.  It will also work with Mach32 and
+ * Mach64 boards but will not use their accelerated features.
  *
  * The ATI x8800 chips use special registers for their extended features.
  * These registers are accessible through an index I/O port and a data I/O
@@ -66,10 +66,16 @@
  *    write:  outw(0x01CE, (data << 8) | index);
  *    read:   outb(0x01CE, index);  data = inb(0x01CF);
  *
- * Two consecutive byte-writes are NOT allowed.  Furthermore an index
- * written to 0x01CE is only usable ONCE!  Note also that the setting of ATI
- * extended registers (especially those with clock selection bits) should be
- * bracketed by a sequencer reset.
+ * Two consecutive byte-writes will not work.  Furthermore an index written to
+ * 0x01CE is usable only once.  Note also that the setting of ATI extended
+ * registers (especially those with clock selection bits) should be bracketed
+ * by a sequencer reset.
+ *
+ * The number of these extended VGA registers varies by chipset.  The 18800
+ * series have 16, the 28800 series have 32, while Mach32's and Mach64's have
+ * 64.  The last 16 on each have almost identical definitions.  Thus, the BIOS
+ * (and this driver) sets up an indexing scheme whereby the last 16 extended
+ * VGA registers are accessed at indices 0xB0 through 0xBF on all chipsets.
  *
  * Boards prior to V5 use 4 crystals.  Boards V5 and later use a clock
  * generator chip.  V3 and V4 boards differ when it comes to choosing clock
@@ -175,10 +181,6 @@
  * be used for clock selection on a V4 board.  This driver makes it
  * available only if the "undoc_clocks" option (itself undocumented :-)) is
  * specified in XF86Config.
- *
- * Also it appears that bit 0 of index 0xB9 can also be used for clock
- * selection on some boards.  It is also only available under XF86Config
- * option "undoc_clocks".
  */
 
 /*************************************************************************/
@@ -219,7 +221,7 @@ typedef struct
 
         unsigned char             a3,         a6, a7,
                                   ab, ac, ad, ae,
-                      b0, b1, b2, b3, b4, b5, b6,
+                      b0, b1, b2, b3,     b5, b6,
                       b8, b9, ba,         bd, be, bf;
 } vgaATIRec, *vgaATIPtr;
 
@@ -229,13 +231,13 @@ typedef struct
  */
 static Bool     ATIProbe();
 static char *   ATIIdent();
-static Bool     ATIClockSelect();
 static void     ATIEnterLeave();
 static Bool     ATIInit();
 static Bool     ATIValidMode();
 static void *   ATISave();
 static void     ATIRestore();
 static void     ATIAdjust();
+static void     ATISaveScreen();
 static void     ATIGetMode();
 /*
  * These are the bank select functions.  They are defined in bank.s.
@@ -270,7 +272,7 @@ vgaVideoChipRec ATI =
         ATISave,                /* Save */
         ATIRestore,             /* Restore */
         ATIAdjust,              /* Adjust */
-        (void (*)())NoopDDA,    /* SaveScreen */
+        ATISaveScreen,          /* SaveScreen */
         ATIGetMode,             /* GetMode */
         (void (*)())NoopDDA,    /* FbInit */
         ATISetRead,             /* SetRead */
@@ -384,15 +386,16 @@ static unsigned Probe_IOPorts[] =
 /*
  * Handy macros to read and write registers.
  */
-#define GetReg(Register, Index)         \
-        (                               \
-                outb(Register, Index),  \
-                inb(Register + 1)       \
+#define GetReg(Register, Index)                                 \
+        (                                                       \
+                outb(Register, Index),                          \
+                inb(Register + 1)                               \
         )
-#define PutReg(Register, Index, Register_Value) \
+#define PutReg(Register, Index, Register_Value)                 \
         outw(Register, ((Register_Value) << 8) | (Index))
-#define ATIGetExtReg(Index)             GetReg(ATIExtReg, Index)
-#define ATIPutExtReg(Index, Register_Value)     \
+#define ATIGetExtReg(Index)                                     \
+        GetReg(ATIExtReg, Index)
+#define ATIPutExtReg(Index, Register_Value)                     \
         PutReg(ATIExtReg, Index, Register_Value)
 
 static unsigned char Chip_Has_SUBSYS_CNTL = FALSE;
@@ -410,6 +413,8 @@ static unsigned char Chip_Has_SUBSYS_CNTL = FALSE;
 #define ATI_CHIP_68800LX  10    /* Mach32 */
 #define ATI_CHIP_68800AX  11    /* Mach32 */
 #define ATI_CHIP_88800    12    /* Mach64 */
+#define ATI_CHIP_88800CX  13    /* Mach64 */
+#define ATI_CHIP_88800GX  14    /* Mach64 */
 static unsigned char ATIChip = ATI_CHIP_NONE;
 static const char *ChipNames[] =
 {
@@ -425,7 +430,9 @@ static const char *ChipNames[] =
         "ATI 68800-6",
         "ATI 68800LX",
         "ATI 68800AX",
-        "ATI 88800"
+        "ATI 88800",
+        "ATI 88800CX",
+        "ATI 88800GX"
 };
 
 #define ATI_BOARD_NONE    0
@@ -434,10 +441,12 @@ static const char *ChipNames[] =
 #define ATI_BOARD_V5      3
 #define ATI_BOARD_PLUS    4
 #define ATI_BOARD_XL      5
-#define ATI_BOARD_MACH8   6
-#define ATI_BOARD_MACH32  7
-#define ATI_BOARD_MACH64  8
+#define ATI_BOARD_NONISA  6
+#define ATI_BOARD_MACH8   7
+#define ATI_BOARD_MACH32  8
+#define ATI_BOARD_MACH64  9
 static unsigned char ATIBoard = ATI_BOARD_NONE;
+static unsigned char ATIVGABoard = ATI_BOARD_NONE;
 static const char *BoardNames[] =
 {
         "Unknown",
@@ -446,6 +455,7 @@ static const char *BoardNames[] =
         "VGA Wonder V5",
         "VGA Wonder+",
         "VGA Wonder XL or XL24",
+        "VGA Wonder VLB or PCI",
         "Mach8",
         "Mach32",
         "Mach64"
@@ -490,6 +500,8 @@ static const char *ClockNames[] =
         "ATI 18818 (primary BIOS setting)",
         "ATI 18818 (alternate BIOS setting)"
 };
+
+static unsigned short int ChipType = 0, ChipClass = 0, ChipRevision = 0;
 
 /*
  * The driver will attempt to match the clocks to one of the following
@@ -590,18 +602,22 @@ ATIPre_2_1_1_Clocks_E[] =       /* Based on 18818 (alternate) */
         NULL
 };
 
-static unsigned char saved_b9_bits_0_and_1 = 0;
+static const unsigned char Clock_Maps[][16] =
+{
+        { 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15},
+        { 4,  5,  6,  7, 12, 13, 14, 15,  0,  1,  2,  3,  8,  9, 10, 11}
+};
+#define Number_Of_Clock_Maps (sizeof(Clock_Maps) / sizeof(Clock_Maps[0]))
+
+static unsigned char saved_b9_bit_1 = 0;
 
 /*
  * Because the only practical standard C library is an inadequate lowest
  * common denominator...
  */
 static void *
-findsubstring(needle, needle_length, haystack, haystack_length)
-const void * needle;
-int needle_length;
-const void * haystack;
-int haystack_length;
+findsubstring(const void * needle, const int needle_length,
+              const void * haystack, int haystack_length)
 {
         const unsigned char * haystack_pointer;
         const unsigned char * needle_pointer = needle;
@@ -629,8 +645,7 @@ int haystack_length;
  * Returns a string name for this driver or NULL.
  */
 static char *
-ATIIdent(n)
-int n;
+ATIIdent(const unsigned int n)
 {
         const char *chipsets[] = {"vgawonder"};
 
@@ -640,51 +655,62 @@ int n;
                 return ((char *)chipsets[n]);
 }
 
-#if 1   /* For now */
-/*
- * ATIV3Delay --
- *
- * A utility routine for ATIV3SetB2 below.
- */
-static void
-ATIV3Delay()
-{
-        int counter;
-        for (counter = 0;  counter < 512;  counter++)
-                /* (void) inb(GENS1(vgaIOBase)) */;
-}
+#define ATIV3Delay                                              \
+        {                                                       \
+                int counter;                                    \
+                for (counter = 0;  counter < 512;  counter++)   \
+                        /* (void) inb(GENS1(vgaIOBase)) */;     \
+        }
 
 /*
- * ATIV3SetB2 --
+ * ATIModifyExtReg --
  *
- * This is taken from ATI's programmer's reference manual which says that this
- * is needed to "ensure the proper state of the 8/16 bit ROM toggle".  I
- * suspect that a timing glitch appeared in the 18800 after its die was cast.
- * 18800-1 and later chips do not exhibit this problem.
- *
- * This routine is called for a V3 board to set extended register 0xB2.  It
- * checks to see if bit 0x40 is to be changed from a one to a zero, and, if so,
- * will ensure the miscellaneous output register is not clobbered.
+ * This routine is called to modify certain bits in an ATI extended VGA
+ * register while preserving its other bits.  The routine will not write the
+ * register if it turns out its value would not change.
  */
 static void
-ATIV3SetB2(old_b2, new_b2)
-unsigned char old_b2, new_b2;
+ATIModifyExtReg(const unsigned char Index,
+                int Current_Value,
+                const unsigned char Current_Mask,
+                unsigned char New_Value)
 {
-        if ((new_b2 ^ 0x40) & old_b2 & 0x40)
+        /* Possibly retrieve the current value */
+        if (Current_Value < 0)
+                Current_Value = ATIGetExtReg(Index);
+
+        /* Compute new value */
+        New_Value &= (unsigned char)(~Current_Mask);
+        New_Value |= Current_Value & Current_Mask;
+
+        /* Check if value will be changed */
+        if (Current_Value != New_Value)
         {
-                unsigned char misc = inb(R_GENMO);
-                unsigned char bb = ATIGetExtReg(0xBB);
-                outb(GENMO, (misc & 0xF3) | 0x04 | ((bb & 0x10) >> 1));
-                ATIPutExtReg(0xB2, old_b2 & 0xBF);
-                ATIV3Delay();
-                outb(GENMO, misc);
-                ATIV3Delay();
+                /*
+                 * The following is taken from ATI's VGA Wonder programmer's
+                 * reference manual which says that this is needed to "ensure
+                 * the proper state of the 8/16 bit ROM toggle".  I suspect a
+                 * timing glitch appeared in the 18800 after its die was cast.
+                 * 18800-1 and later chips do not exhibit this problem.
+                 */
+                if ((ATIChip == ATI_CHIP_18800) && (Index == 0xB2) &&
+                   ((New_Value ^ 0x40) & Current_Value & 0x40))
+                {
+                        unsigned char misc = inb(R_GENMO);
+                        unsigned char bb = ATIGetExtReg(0xBB);
+                        outb(GENMO, (misc & 0xF3) | 0x04 | ((bb & 0x10) >> 1));
+                        Current_Value &= (unsigned char)(~0x40);
+                        ATIPutExtReg(0xB2, Current_Value);
+                        ATIV3Delay;
+                        outb(GENMO, misc);
+                        ATIV3Delay;
+                        if (Current_Value != New_Value)
+                                ATIPutExtReg(0xB2, New_Value);
+                }
+                else
+                        ATIPutExtReg(Index, New_Value);
         }
-        ATIPutExtReg(0xB2, new_b2);
 }
-#else
-#define ATIV3SetB2(old_b2, new_b2)      ATIPutExtReg(0xB2, new_b2)
-#endif
 
 /*
  * ATIMapClock --
@@ -693,10 +719,9 @@ unsigned char old_b2, new_b2;
  * Mach32 and Mach64 boards.
  */
 static __inline__ int
-ATIMapClock(Clock)
-int Clock;
+ATIMapClock(int Clock)
 {
-        if (ATIBoard >= ATI_BOARD_MACH32)
+        if (ATIChip >= ATI_CHIP_68800)
         {
                 /* Invert the 0x04 bit */
                 Clock ^= 0x04;
@@ -717,13 +742,11 @@ int Clock;
  * masking off the other bits.
  */
 static Bool
-ATIClockSelect(no)
-int no;
+ATIClockSelect(int no)
 {
         static unsigned char saved_misc,
                 saved_b2, saved_b5, saved_b8, saved_b9, saved_be;
-        unsigned char misc, b9;
-        static unsigned char previous_b2;
+        unsigned char misc;
 
         switch(no)
         {
@@ -735,40 +758,51 @@ int no;
                         saved_misc = inb(R_GENMO);
                         saved_b5 = ATIGetExtReg(0xB5);
                         saved_b8 = ATIGetExtReg(0xB8);
-                        saved_b9 = ATIGetExtReg(0xB9);
+
+                        if (ATIChip == ATI_CHIP_18800)
+                                saved_b2 = ATIGetExtReg(0xB2);
+                        else
+                        {
+                                saved_be = ATIGetExtReg(0xBE);
+                                if ((ATIBoard != ATI_BOARD_V4) ||
+                                    (OFLG_ISSET(OPTION_UNDOC_CLKS,
+                                        &vga256InfoRec.options)))
+                                        saved_b9 = ATIGetExtReg(0xB9);
+                        }
 
                         /*
-                         * Ensure clock divider is enabled.
+                         * Ensure clock interface is properly configured.
                          */
-                        ATIPutExtReg(0xB5, (saved_b5 & 0x7F)       );
+                        ATIModifyExtReg(0xB5, saved_b5, 0x7F, 0x00);
 
-                        if (ATIBoard == ATI_BOARD_V3)
-                        {
-                                saved_b2 = ATIGetExtReg(0xB2);
-                                previous_b2 = saved_b2;
-                        }
-                        else
-                                saved_be = ATIGetExtReg(0xBE);
                         break;
+
                 case CLK_REG_RESTORE:
                         /*
                          * Here all the previously saved registers are
                          * restored.
                          */
-                        PutReg(SEQX, 0x00, 0x01);     /* Start reset */
+                        ATISaveScreen(SS_START);
 
-                        if (ATIBoard == ATI_BOARD_V3)
-                                ATIV3SetB2(previous_b2, saved_b2);
+                        if (ATIChip == ATI_CHIP_18800)
+                                ATIModifyExtReg(0xB2, -1, 0x00, saved_b2);
                         else
-                                ATIPutExtReg(0xBE, saved_be);
-                        ATIPutExtReg(0xB5, saved_b5);
-                        ATIPutExtReg(0xB9, saved_b9);
-                        ATIPutExtReg(0xB8, saved_b8);
+                        {
+                                ATIModifyExtReg(0xBE, -1, 0x00, saved_be);
+                                if ((ATIBoard != ATI_BOARD_V4) ||
+                                    (OFLG_ISSET(OPTION_UNDOC_CLKS,
+                                        &vga256InfoRec.options)))
+                                        ATIModifyExtReg(0xB9, -1, 0x00,
+                                                saved_b9);
+                        }
+                        ATIModifyExtReg(0xB5, -1, 0x00, saved_b5);
+                        ATIModifyExtReg(0xB8, -1, 0x00, saved_b8);
 
                         outb(GENMO, saved_misc);
-                        PutReg(SEQX, 0x00, 0x03);     /* End reset */
+                        ATISaveScreen(SS_FINISH);
 
                         break;
+
                 default:
                         /*
                          * Possibly, remap clock number.
@@ -776,50 +810,44 @@ int no;
                         no = ATIMapClock(no);
 
                         /*
+                         * On boards with crystals, switching to one of the
+                         * spare assignments doesn't do anything (i.e. the
+                         * previous setting remains in effect).  So, disable
+                         * their selection.
+                         */
+                        if (((no & 0x03) == 0x02) &&
+                           ((ATIChip == ATI_CHIP_18800) ||
+                            (ATIBoard == ATI_BOARD_V4)))
+                                return (FALSE);
+
+                        /*
                          * Set the generic two low-order bits of the clock
                          * select.
                          */
                         misc = (inb(R_GENMO) & 0xF3) | ((no << 2) & 0x0C);
 
-                        b9 = ATIGetExtReg(0xB9);
-
                         /*
                          * Set the high order bits.
                          */
-                        if (ATIBoard == ATI_BOARD_V3)
-                        {
-                                unsigned char new_b2 =
-                                        (previous_b2 & 0xBF) |
-                                                ((no << 4) & 0x40);
-                                ATIV3SetB2(previous_b2, new_b2);
-                                previous_b2 = new_b2;
-                        }
+                        if (ATIChip == ATI_CHIP_18800)
+                                ATIModifyExtReg(0xB2, -1, 0xBF, (no << 4));
                         else
                         {
-                                unsigned char be = ATIGetExtReg(0xBE);
-                                ATIPutExtReg(0xBE,
-                                        (be & 0xEF) | ((no << 2) & 0x10));
+                                ATIModifyExtReg(0xBE, -1, 0xEF, (no << 2));
                                 if ((ATIBoard != ATI_BOARD_V4) ||
                                     (OFLG_ISSET(OPTION_UNDOC_CLKS,
                                         &vga256InfoRec.options)))
                                 {
-                                        b9 = (b9 & 0xFD) | ((no >> 2) & 0x02);
                                         no >>= 1;
+                                        ATIModifyExtReg(0xB9, -1, 0xFD,
+                                                (no >> 1) ^ saved_b9_bit_1);
                                 }
                         }
-                        if (OFLG_ISSET(OPTION_UNDOC_CLKS,
-                                &vga256InfoRec.options))
-                        {
-                                b9 = (b9 & 0xFE) | ((no >> 3) & 0x01);
-                                b9 ^= saved_b9_bits_0_and_1;
-                                no >>= 1;
-                        }
-                        ATIPutExtReg(0xB9, b9);
 
                         /*
                          * Set clock divider bits.
                          */
-                        ATIPutExtReg(0xB8, (no << 3) & 0xC0);
+                        ATIModifyExtReg(0xB8, -1, 0x00, (no << 3) & 0xC0);
 
                         /*
                          * Must set miscellaneous output register last.
@@ -838,9 +866,8 @@ int no;
  * clock lines.  It returns a clock line number (or 0).
  */
 static int
-ATIMatchClockLine(Clock_Line, Number_Of_Clocks,
-                  Calibration_Clock_Number, Clock_Map)
-const int **Clock_Line, Number_Of_Clocks, Calibration_Clock_Number, Clock_Map;
+ATIMatchClockLine(const int **Clock_Line, const unsigned int Number_Of_Clocks,
+                  const int Calibration_Clock_Number, const int Clock_Map)
 {
         int Clock_Chip = 0, Clock_Chip_Index = 0;
         int Number_Of_Matching_Clocks = 0;
@@ -850,18 +877,17 @@ const int **Clock_Line, Number_Of_Clocks, Calibration_Clock_Number, Clock_Map;
         if (Clock_Map)
                 Clock_Chip_Index++;
 
-        for (;  Clock_Line[++Clock_Chip_Index]; )
+        for (;  Clock_Line[++Clock_Chip_Index];  )
         {
-                int Maximum_Gap = 0, Clock_Count = 0, Clock_Index;
+                int Maximum_Gap = 0, Clock_Count = 0, Clock_Index = 0;
 
-                for (Clock_Index = 0;
-                     Clock_Index < Number_Of_Clocks;
-                     Clock_Index++)
+                for (;  Clock_Index < Number_Of_Clocks;  Clock_Index++)
                 {
                         int Gap, XF86Config_Clock, Specification_Clock;
 
                         Specification_Clock =
-                         Clock_Line[Clock_Chip_Index][Clock_Index ^ Clock_Map];
+                                Clock_Line[Clock_Chip_Index]
+                                          [Clock_Maps[Clock_Map][Clock_Index]];
                         if (Specification_Clock < 0)
                                 break;
                         if (!Specification_Clock ||
@@ -918,7 +944,7 @@ ATIGetClocks()
          */
 probe_clocks:
         Number_Of_Dividers = 4;
-        if (ATIBoard <= ATI_BOARD_V4)
+        if ((ATIChip == ATI_CHIP_18800) || (ATIBoard == ATI_BOARD_V4))
         {
                 Number_Of_Documented_Clocks = 8;
                 /* Actually, any undivided clock will do */
@@ -930,12 +956,13 @@ probe_clocks:
                 Number_Of_Documented_Clocks = 16;
                 Calibration_Clock_Number = 10 /* or 11 */;
                 Calibration_Clock_Value = 75000 /* or 65000 */;
-                if (ATIBoard >= ATI_BOARD_MACH32)
+                if (ATIChip >= ATI_CHIP_68800)
                         Number_Of_Dividers = 2;
         }
         Number_Of_Undivided_Clocks = Number_Of_Documented_Clocks;
-        if (OFLG_ISSET(OPTION_UNDOC_CLKS, &vga256InfoRec.options))
-                Number_Of_Undivided_Clocks <<= 1 + (ATIBoard == ATI_BOARD_V4);
+        if ((OFLG_ISSET(OPTION_UNDOC_CLKS, &vga256InfoRec.options)) &&
+            (ATIBoard == ATI_BOARD_V4))
+                Number_Of_Undivided_Clocks <<= 1;
         Number_Of_Clocks = Number_Of_Undivided_Clocks * Number_Of_Dividers;
 
         /*
@@ -970,7 +997,7 @@ probe_clocks:
                                 Number_Of_Documented_Clocks,
                                 Calibration_Clock_Number, 0);
 
-                if (ATIBoard <= ATI_BOARD_V4)
+                if ((ATIChip == ATI_CHIP_18800) || (ATIBoard == ATI_BOARD_V4))
                 {
                         /*
                          * V3 and V4 boards don't have clock chips.
@@ -1026,7 +1053,8 @@ probe_clocks:
                         if (ATIMatchClockLine(InvalidClockLine,
                                               Number_Of_Clocks, -1, 0))
                                 vga256InfoRec.clocks = 0;
-                        else
+                        else if ((ATIChip != ATI_CHIP_18800) &&
+                                 (ATIBoard != ATI_BOARD_V4))
                         /*
                          * Check for clocks that are specified in the wrong
                          * order.  This is meant to catch those who are trying
@@ -1034,7 +1062,7 @@ probe_clocks:
                          * servers.
                          */
                         for (Clock_Map = 1;
-                             Clock_Map < Number_Of_Documented_Clocks;
+                             Clock_Map < Number_Of_Clock_Maps;
                              Clock_Map++)
                                 if (ATIMatchClockLine(ClockLine,
                                         Number_Of_Documented_Clocks,
@@ -1053,7 +1081,7 @@ probe_clocks:
                  * Ensure crystals are not matched to clock chips, and vice
                  * versa.
                  */
-                if (ATIBoard <= ATI_BOARD_V4)
+                if ((ATIChip == ATI_CHIP_18800) || (ATIBoard == ATI_BOARD_V4))
                 {
                         if (ATIClock > ATI_CLOCK_CRYSTALS)
                                 vga256InfoRec.clocks = 0;
@@ -1098,13 +1126,18 @@ probe_clocks:
              Clock_Index++)
         {
                 /*
-                 * Don't replace clocks that are either probed or documented as
-                 * zero.
+                 * Don't replace clocks that are probed, documented, or set by
+                 * the user to zero.  The exception is that we need to override
+                 * the user's value for the spare settings on a crystal-based
+                 * board.
                  */
                 Specification_Clock = ClockLine[ATIClock][Clock_Index];
                 if (Specification_Clock < 0)
                         break;
-                if ((!Specification_Clock) || (!vga256InfoRec.clock[Clock_Index]))
+                if (!vga256InfoRec.clock[Clock_Index])
+                        continue;
+                if ((!Specification_Clock) &&
+                    (ATIChip != ATI_CHIP_18800) && (ATIBoard != ATI_BOARD_V4))
                         continue;
                 vga256InfoRec.clock[Clock_Index] = Specification_Clock;
         }
@@ -1120,6 +1153,68 @@ probe_clocks:
                         vga256InfoRec.clock[Clock_Index %
                                 Number_Of_Undivided_Clocks] /
                         ((Clock_Index / Number_Of_Undivided_Clocks) + 1);
+        }
+}
+
+/*
+ * Set variables whose value is based on an 68800's CHIP_ID register.
+ */
+static void
+ATIMach32ChipID(void)
+{
+        int IO_Value = inw(CHIP_ID);
+        ChipType = IO_Value & (CHIP_CODE_0 | CHIP_CODE_1);
+        ChipClass    = (IO_Value & CHIP_CLASS) >> 10;
+        ChipRevision = (IO_Value & CHIP_REV  ) >> 12;
+        if (IO_Value == 0xFFFF)
+                IO_Value = 0;
+        switch (IO_Value & (CHIP_CODE_0 | CHIP_CODE_1))
+        {
+                case 0x0000:
+                        ATIChip = ATI_CHIP_68800_3;
+                        break;
+
+                case 0x02F7:
+                        ATIChip = ATI_CHIP_68800_6;
+                        break;
+
+                case 0x0177:
+                        ATIChip = ATI_CHIP_68800LX;
+                        break;
+
+                case 0x0017:
+                        ATIChip = ATI_CHIP_68800AX;
+                        break;
+
+                default:
+                        ATIChip = ATI_CHIP_68800;
+                        break;
+        }
+}
+
+/*
+ * Set variables whose value is based on an 88800's CONFIG_CHIP_ID register.
+ */
+static void
+ATIMach64ChipID(void)
+{
+        unsigned int IO_Value = inl(CONFIG_CHIP_ID);
+        ChipType     = (IO_Value & 0xFFFF        )      ;
+        ChipClass    = (IO_Value & CFG_CHIP_CLASS) >> 16;
+        ChipRevision = (IO_Value & CFG_CHIP_REV  ) >> 24;
+        switch (ChipType)
+        {
+                case 0x0057:
+                        ATIChip = ATI_CHIP_88800CX;
+                        break;
+
+                case 0x00D7:
+                        ATIChip = ATI_CHIP_88800GX;
+                        break;
+
+                default:
+                        ATIChip = ATI_CHIP_88800;
+                        break;
         }
 }
 
@@ -1200,8 +1295,7 @@ Test_Case[] =
  * ATIMach32videoRam routine below.
  */
 static Colour
-ATIMach32ReadPixel(X, Y)
-short X, Y;
+ATIMach32ReadPixel(const short int X, const short int Y)
 {
         Colour Pixel_Colour;
 
@@ -1235,9 +1329,8 @@ short X, Y;
  * ATIMach32videoRam routine below.
  */
 static void
-ATIMach32WritePixel(X, Y, Pixel_Colour)
-short X, Y;
-Colour Pixel_Colour;
+ATIMach32WritePixel(const short int X, const short int Y,
+                    const Colour Pixel_Colour)
 {
         /* Set up engine for pixel write */
         ATIWaitQueue(9);
@@ -1269,12 +1362,14 @@ ATIMach32videoRam(void)
                 saved_MISC_OPTIONS, saved_EXT_GE_CONFIG;
         Colour saved_Pixel[NUMBER_OF_TEST_PIXELS];
         int Case_Number, Pixel_Number;
+        unsigned short corrected_MISC_OPTIONS;
         Bool AllPixelsOK;
 
         /* Save register values to be modified */
         saved_CLOCK_SEL = inw(CLOCK_SEL);
         saved_MEM_BNDRY = inw(MEM_BNDRY);
-        saved_MISC_OPTIONS = inw(MISC_OPTIONS) & ~MEM_SIZE_ALIAS;
+        saved_MISC_OPTIONS = inw(MISC_OPTIONS);
+        corrected_MISC_OPTIONS = saved_MISC_OPTIONS & ~MEM_SIZE_ALIAS;
         saved_EXT_GE_CONFIG = inw(R_EXT_GE_CONFIG);
 
         /* Wait for enough FIFO entries */
@@ -1287,7 +1382,7 @@ ATIMach32videoRam(void)
         outw(MEM_BNDRY, saved_MEM_BNDRY & ~(MEM_PAGE_BNDRY | MEM_BNDRY_ENA));
 
         /* Prevent video memory wrap */
-        outw(MISC_OPTIONS, saved_MISC_OPTIONS | MEM_SIZE_4M);
+        outw(MISC_OPTIONS, corrected_MISC_OPTIONS | MEM_SIZE_4M);
 
         /*
          * Set up the drawing engine for a pitch of 1024 at 16 bits per pixel.
@@ -1349,8 +1444,10 @@ ATIMach32videoRam(void)
         /* Restore what was changed and correct MISC_OPTIONS register */
         ATIWaitQueue(4);
         outw(EXT_GE_CONFIG, saved_EXT_GE_CONFIG);
-        outw(MISC_OPTIONS, saved_MISC_OPTIONS |
-                Test_Case[Case_Number].Miscellaneous_Options_Setting);
+        corrected_MISC_OPTIONS |=
+                Test_Case[Case_Number].Miscellaneous_Options_Setting;
+        if (corrected_MISC_OPTIONS != saved_MISC_OPTIONS)
+                outw(MISC_OPTIONS, corrected_MISC_OPTIONS);
         outw(MEM_BNDRY, saved_MEM_BNDRY);
 
         /* Re-enable VGA passthrough */
@@ -1384,9 +1481,7 @@ ATIProbe()
         unsigned int IO_Value, IO_Value2, Index;
         int MachvideoRam = 0;
         int VGAWondervideoRam = 0;
-        unsigned char ChipType[2] = {0, 0};
-        unsigned short int ChipClass = 0, ChipRevision = 0;
-        unsigned char ATIVGABoard = ATI_BOARD_NONE;
+        unsigned char Offset = 0x80;
         const int videoRamSizes[] =
                 {0, 256, 512, 1024, 2*1024, 4*1024, 6*1024, 8*1024, 12*1024,
                  8*1024, 0};
@@ -1444,20 +1539,20 @@ ATIProbe()
         xf86EnableIOPorts(vga256InfoRec.scrnIndex);
 
         /*
-         * Determine if an 8514-compatible accelerator is present, making sure
-         * it's not in some wierd state.
+         * Save register value to be modified, just in case there is no 8514/A
+         * compatible accelerator.
          */
-        outw(SUBSYS_CNTL, GPCTRL_RESET | CHPTEST_NORMAL);
-        outw(SUBSYS_CNTL, GPCTRL_ENAB | CHPTEST_NORMAL);
+        IO_Value = inw(SUBSYS_STAT);
 
         /*
-         * Don't leave any Mach8 or Mach32 in 8514/A mode.
+         * Determine if an 8514-compatible accelerator is present, making sure
+         * it's not in some weird state.
          */
-        IO_Value = inw(CLOCK_SEL);
-        outw(CLOCK_SEL, IO_Value);
-        ProbeWaitIdleEmpty();
+        outw(SUBSYS_CNTL, GPCTRL_RESET | CHPTEST_NORMAL);
+        outw(SUBSYS_CNTL, GPCTRL_ENAB | CHPTEST_NORMAL |
+                RVBLNKFLG | RPICKFLAG | RINVALIDIO | RGPIDLE);
 
-        IO_Value = inw(ERR_TERM);
+        IO_Value2 = inw(ERR_TERM);
         outw(ERR_TERM, 0x5A5A);
         ProbeWaitIdleEmpty();
         if (inw(ERR_TERM) == 0x5A5A)
@@ -1467,14 +1562,21 @@ ATIProbe()
                 if (inw(ERR_TERM) == 0x2525)
                         ATIBoard = ATI_BOARD_MACH8;
         }
-        outw(ERR_TERM, IO_Value);
+        outw(ERR_TERM, IO_Value2);
 
         if (ATIBoard != ATI_BOARD_NONE)
         {
                 /* Some kind of 8514/A detected */
                 ATIBoard = ATI_BOARD_NONE;
 
-                IO_Value = inw(ROM_ADDR_1);
+                /*
+                 * Don't leave any Mach8 or Mach32 in 8514/A mode.
+                 */
+                IO_Value2 = inw(CLOCK_SEL);
+                outw(CLOCK_SEL, IO_Value2);
+                ProbeWaitIdleEmpty();
+
+                IO_Value2 = inw(ROM_ADDR_1);
                 outw(ROM_ADDR_1, 0x5555);
                 ProbeWaitIdleEmpty();
                 if (inw(ROM_ADDR_1) == 0x5555)
@@ -1484,7 +1586,7 @@ ATIProbe()
                         if (inw(ROM_ADDR_1) == 0x2A2A)
                                 ATIBoard = ATI_BOARD_MACH8;
                 }
-                outw(ROM_ADDR_1, IO_Value);
+                outw(ROM_ADDR_1, IO_Value2);
         }
 
         if (ATIBoard != ATI_BOARD_NONE)
@@ -1514,16 +1616,24 @@ ATIProbe()
         else
         {
                 /*
+                 * Restore register clobbered by 8514 reset attempt.
+                 */
+                outw(SUBSYS_CNTL, IO_Value);
+
+                /*
                  * Determine if a Mach64 is present, making sure it's not in
-                 * some wierd state.
+                 * some weird state.
                  */
                 IO_Value = inl(BUS_CNTL);
                 outl(BUS_CNTL, (IO_Value &
                         ~(BUS_ROM_DIS | BUS_FIFO_ERR_INT_EN |
                           BUS_HOST_ERR_INT_EN)) |
                         BUS_FIFO_ERR_INT | BUS_HOST_ERR_INT);
-                outl(GEN_TEST_CNTL, 0);
-                outl(GEN_TEST_CNTL, GEN_GUI_EN);
+                IO_Value = inl(GEN_TEST_CNTL) &
+                        (GEN_OVR_OUTPUT_EN | GEN_OVR_POLARITY | GEN_CUR_EN |
+                         GEN_BLOCK_WR_EN);
+                outl(GEN_TEST_CNTL, IO_Value);
+                outl(GEN_TEST_CNTL, IO_Value | GEN_GUI_EN);
 
                 IO_Value = inl(SCRATCH_REG0);
                 outl(SCRATCH_REG0, 0x55555555);          /* Test odd bits */
@@ -1545,27 +1655,13 @@ ATIProbe()
                                                 vga256InfoRec.scrnIndex);
                                         return (FALSE);
                                 }
-                                ATIChip = ATI_CHIP_88800;
                                 ATIBoard = ATI_BOARD_MACH64;
                                 ATIDac = (IO_Value2 & CFG_INIT_DAC_TYPE) >> 9;
                                 MachvideoRam =
                                         videoRamSizes[(inl(MEM_INFO) &
                                                 CTL_MEM_SIZE) + 2];
-                                IO_Value2 = inl(CONFIG_CHIP_ID);
-                                ChipType[0] =
-                                        (IO_Value2 & CFG_CHIP_TYPE1) >>  8;
-                                ChipType[1] =
-                                        (IO_Value2 & CFG_CHIP_TYPE0)      ;
-                                ChipClass =
-                                        (IO_Value2 & CFG_CHIP_CLASS) >> 16;
-                                ChipRevision =
-                                        (IO_Value2 & CFG_CHIP_REV  ) >> 24;
 
-                                /*
-                                 * Set up extended register addressing.
-                                 */
-                                PutReg(GRAX, 0x50, 0xCE);
-                                PutReg(GRAX, 0x51, 0x81);
+                                ATIMach64ChipID();
                         }
                 }
                 outl(SCRATCH_REG0, IO_Value);
@@ -1582,35 +1678,10 @@ ATIProbe()
                         return (FALSE);
                 }
 
-                IO_Value2 = inw(CHIP_ID);
-                switch (IO_Value2 & (CHIP_CODE_0 | CHIP_CODE_1))
-                {
-                        case 0x0000:
-                                ATIChip = ATI_CHIP_68800_3;
-                                break;
-
-                        case 0x02F7:
-                                ATIChip = ATI_CHIP_68800_6;
-                                break;
-
-                        case 0x0177:
-                                ATIChip = ATI_CHIP_68800LX;
-                                break;
-
-                        case 0x0017:
-                                ATIChip = ATI_CHIP_68800AX;
-                                break;
-
-                        default:
-                                ATIChip = ATI_CHIP_68800;
-                                break;
-                }
-
                 ATIDac = (IO_Value & DACTYPE) >> 9;
-                ChipType[0]  = ((IO_Value2 & CHIP_CODE_1) >> 5) + 0x41;
-                ChipType[1]  = ((IO_Value2 & CHIP_CODE_0)     ) + 0x41;
-                ChipClass    = ((IO_Value2 & CHIP_CLASS) >> 10);
-                ChipRevision = ((IO_Value2 & CHIP_REV) >> 12);
+
+                ATIMach32ChipID();
+
                 MachvideoRam =
                         videoRamSizes[((inw(MISC_OPTIONS) & MEM_SIZE_ALIAS) >>
                                 2) + 2];
@@ -1624,28 +1695,27 @@ ATIProbe()
 
         }
 
-        if ((ATIBoard <= ATI_BOARD_MACH8) &&
-            (Signature_Found == BIOS_Signature))
+        else if ((ATIBoard <= ATI_BOARD_MACH8) &&
+                 (Signature_Found == BIOS_Signature))
         {
                 /* This is a Mach8 or VGA Wonder board of some kind */
                 if ((BIOS_Data[0x43] >= '1') && (BIOS_Data[0x43] <= '6'))
                         ATIChip = BIOS_Data[0x43] - '0';
 
-                switch (ATIChip)
+                switch (BIOS_Data[0x43])
                 {
-                        case ATI_CHIP_18800:
+                        case '1':       /* ATI_CHIP_18800 */
+                                Offset = 0xB0;
                                 ATIVGABoard = ATI_BOARD_V3;
                                 /* Reset a few things for V3 boards */
                                 ATI.ChipSetRead = ATIV3SetRead;
                                 ATI.ChipSetWrite = ATIV3SetWrite;
                                 ATI.ChipSetReadWrite = ATIV3SetReadWrite;
                                 ATI.ChipUse2Banks = FALSE;
-#                               if !defined(MONOVGA) && !defined(XF86VGA16)
-                                        ATI.ChipRounding = 8;
-#                               endif
                                 break;
 
-                        case ATI_CHIP_18800_1:
+                        case '2':       /* ATI_CHIP_18800_1 */
+                                Offset = 0xB0;
                                 if (BIOS_Data[0x42] & 0x10)
                                         ATIVGABoard = ATI_BOARD_V5;
                                 else
@@ -1656,16 +1726,35 @@ ATIProbe()
                                 ATI.ChipSetReadWrite = ATIV4V5SetReadWrite;
                                 break;
 
-                        case ATI_CHIP_28800_2:
-                        case ATI_CHIP_28800_4:
-                        case ATI_CHIP_28800_5:
-                        case ATI_CHIP_28800_6:
+                        case '3':       /* ATI_CHIP_28800_2 */
+                        case '4':       /* ATI_CHIP_28800_4 */
+                        case '5':       /* ATI_CHIP_28800_5 */
+                        case '6':       /* ATI_CHIP_28800_6 */
+                                Offset = 0xA0;
                                 ATIVGABoard = ATI_BOARD_PLUS;
                                 if (BIOS_Data[0x44] & 0x80)
                                 {
                                         ATIVGABoard = ATI_BOARD_XL;
                                         ATIDac = ATI_DAC_SC11483;
                                 }
+                                break;
+
+                        case 'a':       /* It seems this Mach32 has suffered */
+                        case 'b':       /* a frontal lobotomy...             */
+                        case 'c':
+                                ATIVGABoard = ATI_BOARD_NONISA;
+                                ATIMach32ChipID();
+                                ProbeWaitIdleEmpty();
+                                if (inw(SUBSYS_STAT) != 0xFFFF)
+                                        Chip_Has_SUBSYS_CNTL = TRUE;
+                                break;
+
+                        case ' ':       /* A crippled Mach64? */
+                                ATIVGABoard = ATI_BOARD_NONISA;
+                                ATIMach64ChipID();
+                                break;
+
+                        default:
                                 break;
                 }
 
@@ -1676,14 +1765,16 @@ ATIProbe()
         /*
          * Set up extended register addressing.
          */
-        if ((ATIBoard < ATI_BOARD_MACH64) &&
+        if ((ATIChip < ATI_CHIP_88800) &&
             (Signature_Found == BIOS_Signature))
         {
                 /*
                  * Pick up extended register index I/O port number.
                  */
-                ATIExtReg = *((short *)(BIOS_Data + 0x10));
+                ATIExtReg = *((short *)(BIOS_Data + 0x10)) & 0x0FFF;
         }
+        PutReg(GRAX, 0x50, ATIExtReg & 0xFF);
+        PutReg(GRAX, 0x51, Offset | (ATIExtReg >> 8));
         ATI_IOPorts[0] = ATIExtReg;
         ATI_IOPorts[1] = ATIExtReg + 1;
 
@@ -1713,11 +1804,18 @@ ATIProbe()
         }
 
         ErrorF("%s graphics controller detected.\n", ChipNames[ATIChip]);
-        if (ATIBoard >= ATI_BOARD_MACH32)
-                ErrorF("Chip type %02X%02X (%.1s%.1s), class %d,"
-                       " revision %d.\n",
-                        ChipType[0], ChipType[1], ChipType + 1, ChipType,
-                        ChipClass, ChipRevision);
+        if ((ATIChip >= ATI_CHIP_68800) && (ATIChip != ATI_CHIP_68800_3))
+        {
+                ErrorF("Chip type %04X", ChipType);
+                if (!(ChipType & ~(CHIP_CODE_0 | CHIP_CODE_1)))
+                        ErrorF(" (%c%c)",
+                                ((ChipType & CHIP_CODE_1) >> 5) + 0x41,
+                                ((ChipType & CHIP_CODE_0)     ) + 0x41);
+                ErrorF(", class %d, revision %d.\n", ChipClass, ChipRevision);
+        }
+        if (ATIBoard == ATI_BOARD_NONE)
+                ErrorF("Unknown chip descriptor in BIOS:  '%.1s' (0x%02X).\n",
+                        &BIOS_Data[0x43], BIOS_Data[0x43]);
         ErrorF("%s or similar RAMDAC detected.\n", DACNames[ATIDac]);
         ErrorF("This is a %s video adapter.\n", BoardNames[ATIBoard]);
 
@@ -1725,17 +1823,14 @@ ATIProbe()
         if (ATIBoard == ATI_BOARD_MACH8)
                 ATIBoard = ATIVGABoard;
 
-        if (OFLG_ISSET(OPTION_UNDOC_CLKS, &vga256InfoRec.options))
+        if ((OFLG_ISSET(OPTION_UNDOC_CLKS, &vga256InfoRec.options)) &&
+            (ATIBoard == ATI_BOARD_V4))
         {
                 /*
-                 * Remember initial settings of undocumented clock selection
-                 * bits.
+                 * Remember initial setting of undocumented clock selection
+                 * bit.
                  */
-                saved_b9_bits_0_and_1 = ATIGetExtReg(0xB9);
-                if (ATIBoard == ATI_BOARD_V4)
-                        saved_b9_bits_0_and_1 &= 0x03;
-                else
-                        saved_b9_bits_0_and_1 &= 0x01;
+                saved_b9_bit_1 = ATIGetExtReg(0xB9) & 0x02;
         }
 
         /*
@@ -1794,33 +1889,19 @@ ATIProbe()
         else
         {
                 /*
-                 * Ensure any accelerator and VGA Wonder side agree on video
-                 * memory size.  After BIOS initialization, they won't
-                 * necessarily agree depending on whether or where the memory
-                 * boundary is configured.
+                 * After BIOS initialization, the accelerator (if any) and the
+                 * VGA won't necessarily agree on the amount of video memory,
+                 * depending on whether or where the memory boundary is
+                 * configured.  Any discrepancy will be resolved by ATIInit.
+                 *
+                 * However, it's possible that there is more video memory than
+                 * VGA Wonder can architecturally handle.  If so, spit out a
+                 * warning.
                  */
-                if (MachvideoRam != VGAWondervideoRam)
-                        if (ATIChip < ATI_CHIP_28800_2)
-                        {
-                                IO_Value &= 0xDF;
-                                if (MachvideoRam >= 512)
-                                        IO_Value |= 0x20;
-                                ATIPutExtReg(0xBB, IO_Value);
-                        }
-                        else
-                        {
-                                IO_Value &= 0xE7;
-                                if (MachvideoRam >= 1024)
-                                        IO_Value |= 0x08;
-                                else if (MachvideoRam >= 512)
-                                        IO_Value |= 0x10;
-                                ATIPutExtReg(0xB0, IO_Value);
-                        }
-
                 if (MachvideoRam < vga256InfoRec.videoRam)
-                        ErrorF("Virtual resolutions requiring more than %d kB "
-                               "of video memory might not function "
-                               "correctly.\n", MachvideoRam);
+                        ErrorF("Virtual resolutions requiring more than %d"
+                               " kB\n of video memory might not function"
+                               " correctly.\n", MachvideoRam);
         }
 
         /*
@@ -1926,8 +2007,15 @@ ATIProbe()
          * Indicate supported options.
          */
         OFLG_SET(OPTION_PROBE_CLKS, &ATI.ChipOptionFlags);
-        OFLG_SET(OPTION_UNDOC_CLKS, &ATI.ChipOptionFlags);
         OFLG_SET(OPTION_CSYNC,      &ATI.ChipOptionFlags);
+        if (ATIBoard == ATI_BOARD_V4)
+                OFLG_SET(OPTION_UNDOC_CLKS, &ATI.ChipOptionFlags);
+
+        /*
+         * Our caller doesn't necessarily get back to us.  So, remove its
+         * privileges until it does.
+         */
+        ATIEnterLeave(LEAVE);
 
         /*
          * Return success.
@@ -1945,19 +2033,17 @@ ATIProbe()
  * protected on the chipset, and locking those registers again on exit.
  */
 static void
-ATIEnterLeave(enter)
-Bool enter;
+ATIEnterLeave(const Bool enter)
 {
-        static unsigned char saved_ab,
+        static unsigned char saved_a6, saved_ab,
                 saved_b1, saved_b4, saved_b5, saved_b6,
                 saved_b8, saved_b9, saved_be;
         static unsigned short saved_clock_sel, saved_misc_options,
                 saved_mem_bndry, saved_mem_cfg;
         static unsigned int saved_config_cntl, saved_crtc_gen_cntl,
-                saved_mem_info;
+                saved_mem_info, saved_gen_test_cntl;
 
         static Bool entered = LEAVE;
-        unsigned char misc;
         unsigned int tmp;
 
         if (enter == entered)
@@ -1972,7 +2058,7 @@ Bool enter;
                 {
                         /* Save register values to be modified */
                         saved_clock_sel = inw(CLOCK_SEL);
-                        if (ATIBoard == ATI_BOARD_MACH32)
+                        if (ATIChip >= ATI_CHIP_68800)
                         {
                                 saved_misc_options = inw(MISC_OPTIONS);
                                 saved_mem_bndry = inw(MEM_BNDRY);
@@ -1981,11 +2067,12 @@ Bool enter;
 
                         /* Reset the 8514/A and disable all interrupts */
                         outw(SUBSYS_CNTL, GPCTRL_RESET | CHPTEST_NORMAL);
-                        outw(SUBSYS_CNTL, GPCTRL_ENAB | CHPTEST_NORMAL);
+                        outw(SUBSYS_CNTL, GPCTRL_ENAB | CHPTEST_NORMAL |
+                                RVBLNKFLG | RPICKFLAG | RINVALIDIO | RGPIDLE);
 
                         /* Ensure VGA is enabled */
                         outw(CLOCK_SEL, saved_clock_sel & ~DISABPASSTHRU);
-                        if (ATIBoard == ATI_BOARD_MACH32)
+                        if (ATIChip >= ATI_CHIP_68800)
                         {
                                 outw(MISC_OPTIONS, saved_misc_options &
                                         ~(DISABLE_VGA | DISABLE_DAC));
@@ -2003,7 +2090,7 @@ Bool enter;
                         /* Wait for all activity to die down */
                         ProbeWaitIdleEmpty();
                 }
-                else if (ATIBoard == ATI_BOARD_MACH64)
+                else if (ATIChip >= ATI_CHIP_88800)
                 {
                         /* Save register values to be modified */
                         saved_config_cntl = inl(CONFIG_CNTL);
@@ -2016,8 +2103,12 @@ Bool enter;
                                 ~(BUS_ROM_DIS | BUS_FIFO_ERR_INT_EN |
                                         BUS_HOST_ERR_INT_EN)) |
                                 BUS_FIFO_ERR_INT | BUS_HOST_ERR_INT);
-                        outl(GEN_TEST_CNTL, 0);
-                        outl(GEN_TEST_CNTL, GEN_GUI_EN);
+                        saved_gen_test_cntl = inl(GEN_TEST_CNTL) &
+                                (GEN_OVR_OUTPUT_EN | GEN_OVR_POLARITY |
+                                 GEN_CUR_EN | GEN_BLOCK_WR_EN);
+                        tmp = saved_gen_test_cntl & ~GEN_CUR_EN;
+                        outl(GEN_TEST_CNTL, tmp);
+                        outl(GEN_TEST_CNTL, tmp | GEN_GUI_EN);
 
                         /* Ensure VGA aperture is enabled */
                         outl(CONFIG_CNTL, saved_config_cntl &
@@ -2029,37 +2120,37 @@ Bool enter;
                                 ~(CTL_MEM_BNDRY | CTL_MEM_BNDRY_EN));
                 }
 
-                misc = inb(R_GENMO);
-                vgaIOBase = (misc & 0x01) ? ColourIOBase : MonochromeIOBase;
-
-                PutReg(SEQX, 0x00, 0x01);       /* Start synchonous reset */
-
                 /*
                  * Ensure all registers are read/write and disable all non-VGA
                  * emulations.
                  */
                 saved_b1 = ATIGetExtReg(0xB1);
-                ATIPutExtReg(0xB1, saved_b1 & 0xFC);
+                ATIModifyExtReg(0xB1, saved_b1, 0xFC, 0x00);
                 saved_b4 = ATIGetExtReg(0xB4);
-                ATIPutExtReg(0xB4, 0);
+                ATIModifyExtReg(0xB4, saved_b4, 0x00, 0x00);
                 saved_b5 = ATIGetExtReg(0xB5);
-                ATIPutExtReg(0xB5, saved_b5 & 0xBF);
+                ATIModifyExtReg(0xB5, saved_b5, 0xBF, 0x00);
                 saved_b6 = ATIGetExtReg(0xB6);
-                ATIPutExtReg(0xB6, saved_b6 & 0xDD);
+                ATIModifyExtReg(0xB6, saved_b6, 0xDD, 0x00);
                 saved_b8 = ATIGetExtReg(0xB8);
-                ATIPutExtReg(0xB8, saved_b8 & 0xC0);
+                ATIModifyExtReg(0xB8, saved_b8, 0xC0, 0x00);
                 saved_b9 = ATIGetExtReg(0xB9);
-                ATIPutExtReg(0xB9, saved_b9 & 0x7F);
+                ATIModifyExtReg(0xB9, saved_b9, 0x7F, 0x00);
                 if (ATIChip != ATI_CHIP_18800)
                 {
                         saved_be = ATIGetExtReg(0xBE);
-                        ATIPutExtReg(0xBE, (saved_be & 0xFA) | 0x01);
+                        ATIModifyExtReg(0xBE, saved_be, 0xFA, 0x01);
                         if (ATIChip >= ATI_CHIP_28800_2)
                         {
+                                saved_a6 = ATIGetExtReg(0xA6);
+                                ATIModifyExtReg(0xA6, saved_a6, 0x7F, 0x00);
                                 saved_ab = ATIGetExtReg(0xAB);
-                                ATIPutExtReg(0xAB, saved_ab & 0xE7);
+                                ATIModifyExtReg(0xAB, saved_ab, 0xE7, 0x00);
                         }
                 }
+
+                vgaIOBase = (inb(R_GENMO) & 0x01) ?
+                        ColourIOBase : MonochromeIOBase;
 
                 /*
                  * There's a bizarre interaction here.  If bit 0x80 of CRTC[17]
@@ -2114,55 +2205,46 @@ Bool enter;
                         PutReg(CRTX(vgaIOBase), 0x11,
                                 (VSyncEnd & 0x0F) | 0x20);
                 }
-
-                outb(GENMO, misc);              /* Restore GENMO */
-                PutReg(SEQX, 0x00, 0x03);       /* End synchronous reset */
         }
         else
         {
-                misc = inb(R_GENMO);            /* Save GENMO before reset */
-                PutReg(SEQX, 0x00, 0x01);       /* Start synchronous reset */
+                vgaIOBase = (inb(R_GENMO) & 0x01) ?
+                        ColourIOBase : MonochromeIOBase;
 
                 /* Protect CRTC[0-7] */
                 tmp = GetReg(CRTX(vgaIOBase), 0x11);
                 outb(CRTD(vgaIOBase), tmp | 0x80);
 
-                /* Restore protection bits in ATI extended registers */
-                tmp = ATIGetExtReg(0xB1);
-                ATIPutExtReg(0xB1, (saved_b1 & 0x03) | (tmp & 0xFC));
-                ATIPutExtReg(0xB4, (saved_b4       )               );
-                tmp = ATIGetExtReg(0xB5);
-                ATIPutExtReg(0xB5, (saved_b5 & 0x40) | (tmp & 0xBF));
-                tmp = ATIGetExtReg(0xB6);
-                ATIPutExtReg(0xB6, (saved_b6 & 0x22) | (tmp & 0xDD));
-                tmp = ATIGetExtReg(0xB8);
-                ATIPutExtReg(0xB8, (saved_b8 & 0x03) | (tmp & 0xC0));
-                tmp = ATIGetExtReg(0xB9);
-                ATIPutExtReg(0xB9, (saved_b9 & 0x80) | (tmp & 0x7F));
+                /*
+                 * Restore emulation and protection bits in ATI extended
+                 * registers.
+                 */
+                ATIModifyExtReg(0xB1, -1, 0xFC, saved_b1);
+                ATIModifyExtReg(0xB4, -1, 0x00, saved_b4);
+                ATIModifyExtReg(0xB5, -1, 0xBF, saved_b5);
+                ATIModifyExtReg(0xB6, -1, 0xDD, saved_b6);
+                ATIModifyExtReg(0xB8, -1, 0xC0, saved_b8 & 0x03);
+                ATIModifyExtReg(0xB9, -1, 0x7F, saved_b9);
                 if (ATIChip != ATI_CHIP_18800)
                 {
-                        tmp = ATIGetExtReg(0xBE);
-                        ATIPutExtReg(0xBE, (saved_be & 0x05) | (tmp & 0xFA));
+                        ATIModifyExtReg(0xBE, -1, 0xFA, saved_be);
                         if (ATIChip >= ATI_CHIP_28800_2)
                         {
-                                tmp = ATIGetExtReg(0xAB);
-                                ATIPutExtReg(0xAB,
-                                        (saved_ab & 0x18) | (tmp & 0xE7));
+                                ATIModifyExtReg(0xA6, -1, 0x7F, saved_a6);
+                                ATIModifyExtReg(0xAB, -1, 0xE7, saved_ab);
                         }
                 }
-
-                outb(GENMO, misc);              /* Restore after reset */
-                PutReg(SEQX, 0x00, 0x03);       /* End synchronous reset */
 
                 if (Chip_Has_SUBSYS_CNTL)
                 {
                         /* Reset the 8514/A and disable all interrupts */
                         outw(SUBSYS_CNTL, GPCTRL_RESET | CHPTEST_NORMAL);
-                        outw(SUBSYS_CNTL, GPCTRL_ENAB | CHPTEST_NORMAL);
+                        outw(SUBSYS_CNTL, GPCTRL_ENAB | CHPTEST_NORMAL |
+                                RVBLNKFLG | RPICKFLAG | RINVALIDIO | RGPIDLE);
 
                         /* Restore modified accelerator registers */
                         outw(CLOCK_SEL, saved_clock_sel);
-                        if (ATIBoard == ATI_BOARD_MACH32)
+                        if (ATIChip >= ATI_CHIP_68800)
                         {
                                 outw(MISC_OPTIONS, saved_misc_options);
                                 outw(MEM_BNDRY, saved_mem_bndry);
@@ -2172,16 +2254,16 @@ Bool enter;
                         /* Wait for all activity to die down */
                         ProbeWaitIdleEmpty();
                 }
-                else if (ATIBoard == ATI_BOARD_MACH64)
+                else if (ATIChip >= ATI_CHIP_88800)
                 {
                         /* Reset everything */
                         tmp = inl(BUS_CNTL);
                         outl(BUS_CNTL, (tmp &
                                 ~(BUS_ROM_DIS | BUS_FIFO_ERR_INT_EN |
                                         BUS_HOST_ERR_INT_EN)) |
-                                BUS_FIFO_ERR_INT | BUS_HOST_ERR_INT);
-                        outl(GEN_TEST_CNTL, 0);
-                        outl(GEN_TEST_CNTL, GEN_GUI_EN);
+                                 BUS_FIFO_ERR_INT | BUS_HOST_ERR_INT);
+                        outl(GEN_TEST_CNTL, saved_gen_test_cntl);
+                        outl(GEN_TEST_CNTL, saved_gen_test_cntl | GEN_GUI_EN);
 
                         /* Restore registers */
                         outl(CONFIG_CNTL, saved_config_cntl);
@@ -2204,10 +2286,9 @@ Bool enter;
  * been initialized by the Init() function, below.
  */
 static void
-ATIRestore(restore)
-vgaATIPtr restore;
+ATIRestore(vgaATIPtr restore)
 {
-        unsigned char b2;
+        unsigned char ae, b2, b8, b9, be;
 
         /*
          * Unlock registers.
@@ -2217,19 +2298,26 @@ vgaATIPtr restore;
         /*
          * Get (back) to bank 0.
          */
-        if (ATIBoard == ATI_BOARD_V3)
+        b2 = ATIGetExtReg(0xB2);
+        if (ATIChip == ATI_CHIP_18800)
         {
-                b2 = ATIGetExtReg(0xB2);
-                ATIPutExtReg(0xB2, b2 & 0xE1);
+                if (b2 & 0x1E)
+                        ATIPutExtReg(0xB2, b2 & 0xE1);
         }
         else
         {
-                ATIPutExtReg(0xB2, 0);
+                be = ATIGetExtReg(0xBE);
+                if (b2)
+                        ATIPutExtReg(0xB2, 0);
                 ATIB2Reg = 0;
-                if (ATIBoard > ATI_BOARD_V5)
+                if (ATIChip >= ATI_CHIP_28800_2)
                 {
-                        unsigned char ae = ATIGetExtReg(0xAE);
-                        ATIPutExtReg(0xAE, ae & 0xF0);
+                        ae = ATIGetExtReg(0xAE);
+                        if (ae & 0x0F)
+                        {
+                                ae &= 0xF0;
+                                ATIPutExtReg(0xAE, ae);
+                        }
                 }
         }
 
@@ -2244,62 +2332,60 @@ vgaATIPtr restore;
          *              restore clock-select bits.
          */
 
+        b8 = ATIGetExtReg(0xB8);
+        b9 = ATIGetExtReg(0xB9);
         if (restore->std.NoClock < 0)
         {
-                unsigned char b9 = ATIGetExtReg(0xB9);
-
                 /*
                  * Retrieve current setting of clock select bits.
                  */
-                restore->b8 = (restore->b8 & 0x3F) | ATIGetExtReg(0xB8);
-                if (ATIBoard == ATI_BOARD_V3)
+                restore->b8 = b8;
+                if (ATIChip == ATI_CHIP_18800)
                         restore->b2 = (restore->b2 & 0xBF) | (b2 & 0x40);
                 else
                 {
-                        restore->be = (restore->be & 0xEF) |
-                                (ATIGetExtReg(0xBE) & 0x10);
+                        restore->be = (restore->be & 0xEF) | (be & 0x10);
                         if ((ATIBoard != ATI_BOARD_V4) ||
                             (OFLG_ISSET(OPTION_UNDOC_CLKS,
                                 &vga256InfoRec.options)))
-                        {
                                 restore->b9 = (restore->b9 & 0xFD) |
                                         (b9 & 0x02);
-                        }
                 }
-                if (OFLG_ISSET(OPTION_UNDOC_CLKS, &vga256InfoRec.options))
-                        restore->b9 = (restore->b9 & 0xFE) | (b9 & 0x01);
         }
 
-        PutReg(SEQX, 0x00, 0x01);       /* Start synchronous reset */
+        ATISaveScreen(SS_START);
 
-        if (ATIBoard == ATI_BOARD_V3)
-                ATIV3SetB2(b2, restore->b2);
+        if (ATIChip == ATI_CHIP_18800)
+                ATIModifyExtReg(0xB2, b2, 0x00, restore->b2);
         else
         {
-                ATIPutExtReg(0xB2, restore->b2);
-                ATIPutExtReg(0xBE, restore->be);
-                if (ATIBoard > ATI_BOARD_V5)
+                ATIModifyExtReg(0xBE, be, 0x00, restore->be);
+                if (ATIChip >= ATI_CHIP_28800_2)
                 {
-                        ATIPutExtReg(0xBF, restore->bf);
-                        ATIPutExtReg(0xA3, restore->a3);
-                        ATIPutExtReg(0xA6, restore->a6);
-                        ATIPutExtReg(0xA7, restore->a7);
-                        ATIPutExtReg(0xAB, restore->ab);
-                        ATIPutExtReg(0xAC, restore->ac);
-                        ATIPutExtReg(0xAD, restore->ad);
-                        ATIPutExtReg(0xAE, restore->ae);
+                        ATIModifyExtReg(0xBF, -1, 0x00, restore->bf);
+                        ATIModifyExtReg(0xA3, -1, 0x00, restore->a3);
+                        ATIModifyExtReg(0xA6, -1, 0x00, restore->a6);
+                        ATIModifyExtReg(0xA7, -1, 0x00, restore->a7);
+                        ATIModifyExtReg(0xAB, -1, 0x00, restore->ab);
+                        ATIModifyExtReg(0xAC, -1, 0x00, restore->ac);
+                        ATIModifyExtReg(0xAD, -1, 0x00, restore->ad);
+                        ATIModifyExtReg(0xAE, ae, 0x00, restore->ae);
                 }
         }
-        ATIPutExtReg(0xB0, restore->b0);
-        ATIPutExtReg(0xB1, restore->b1);
-        ATIPutExtReg(0xB3, restore->b3);
-        ATIPutExtReg(0xB4, restore->b4);
-        ATIPutExtReg(0xB5, restore->b5);
-        ATIPutExtReg(0xB6, restore->b6);
-        ATIPutExtReg(0xB8, restore->b8);
-        ATIPutExtReg(0xB9, restore->b9);
-        ATIPutExtReg(0xBA, restore->ba);
-        ATIPutExtReg(0xBD, restore->bd);
+        ATIModifyExtReg(0xB0, -1, 0x00, restore->b0);
+        ATIModifyExtReg(0xB1, -1, 0x00, restore->b1);
+        ATIModifyExtReg(0xB3, -1, 0x00, restore->b3);
+        ATIModifyExtReg(0xB5, -1, 0x00, restore->b5);
+        ATIModifyExtReg(0xB6, -1, 0x00, restore->b6);
+        ATIModifyExtReg(0xB8, b8, 0x00, restore->b8);
+        ATIModifyExtReg(0xB9, b9, 0x00, restore->b9);
+        ATIModifyExtReg(0xBA, -1, 0x00, restore->ba);
+        ATIModifyExtReg(0xBD, -1, 0x00, restore->bd);
+
+#if 0
+        outb(GENMO, restore->std.MiscOutReg);
+        ATISaveScreen(SS_FINISH);
+#endif
 
         /*
          * Restore the generic VGA registers.
@@ -2315,8 +2401,7 @@ vgaATIPtr restore;
  * bits here - just read the registers.
  */
 static void *
-ATISave(save)
-vgaATIPtr save;
+ATISave(vgaATIPtr save)
 {
         unsigned char ae, b2;   /* The oddballs */
 
@@ -2329,16 +2414,29 @@ vgaATIPtr save;
          * Get back to bank zero.
          */
         b2 = ATIGetExtReg(0xB2);
-        if (ATIBoard == ATI_BOARD_V3)
-                ATIPutExtReg(0xB2, b2 & 0xE1);
+        if (ATIChip == ATI_CHIP_18800)
+        {
+                if (b2 & 0x1E)
+                {
+                        b2 &= 0xE1;
+                        ATIPutExtReg(0xB2, b2);
+                }
+        }
         else
         {
-                ATIPutExtReg(0xB2, 0);
-                ATIB2Reg = 0;
-                if (ATIBoard > ATI_BOARD_V5)
+                if (b2)
                 {
-                        ae = ATIGetExtReg(0xAE);
-                        ATIPutExtReg(0xAE, ae & 0xF0);
+                        ATIPutExtReg(0xB2, 0);
+                        b2 = 0;
+                }
+                ATIB2Reg = 0;
+                if (ATIChip >= ATI_CHIP_28800_2)
+                {
+                        if ((ae = ATIGetExtReg(0xAE)) & 0x0F)
+                        {
+                                ae &= 0xF0;
+                                ATIPutExtReg(0xAE, ae);
+                        }
                 }
         }
 
@@ -2355,17 +2453,16 @@ vgaATIPtr save;
         save->b1 = ATIGetExtReg(0xB1);
         save->b2 = b2;
         save->b3 = ATIGetExtReg(0xB3);
-        save->b4 = ATIGetExtReg(0xB4);
         save->b5 = ATIGetExtReg(0xB5);
         save->b6 = ATIGetExtReg(0xB6);
         save->b8 = ATIGetExtReg(0xB8);
         save->b9 = ATIGetExtReg(0xB9);
         save->ba = ATIGetExtReg(0xBA);
         save->bd = ATIGetExtReg(0xBD);
-        if (ATIBoard != ATI_BOARD_V3)
+        if (ATIChip != ATI_CHIP_18800)
         {
                 save->be = ATIGetExtReg(0xBE);
-                if (ATIBoard > ATI_BOARD_V5)
+                if (ATIChip >= ATI_CHIP_28800_2)
                 {
                         save->bf = ATIGetExtReg(0xBF);
                         save->a3 = ATIGetExtReg(0xA3);
@@ -2377,6 +2474,7 @@ vgaATIPtr save;
                         save->ae = ae;
                 }
         }
+
         return ((void *) save);
 }
 
@@ -2388,9 +2486,15 @@ vgaATIPtr save;
  * enable a video mode.
  */
 static Bool
-ATIInit(mode)
-DisplayModePtr mode;
+ATIInit(DisplayModePtr mode)
 {
+        int saved_mode_flags;
+
+        /*
+         * Unlock registers.
+         */
+        ATIEnterLeave(ENTER);
+
         /*
          * The VGA Wonder boards have a bit that multiplies all vertical
          * timing values by 2.  This feature is only used if it's actually
@@ -2399,7 +2503,7 @@ DisplayModePtr mode;
          * Note that this prevents the (incorrect) use of this feature with
          * interlaced modes.
          */
-        int saved_mode_flags = mode->Flags;
+        saved_mode_flags = mode->Flags;
         if (mode->VTotal > 1024)
                 mode->Flags |= V_INTERLACE;
 
@@ -2417,12 +2521,13 @@ DisplayModePtr mode;
          * Override a few things.
          */
 #       if !defined(MONOVGA) && !defined(XF86VGA16)
-                new->std.Sequencer[4] = 0x0A;
-                new->std.Graphics[5] = 0x00;
-                new->std.Attribute[16] = 0x01;
-                if (ATIBoard == ATI_BOARD_V3)
+                new->std.Sequencer[4] = 0x0A;   /* instead of 0x0E */
+                new->std.Graphics[5] = 0x00;    /* instead of 0x40 */
+                new->std.Attribute[16] = 0x01;  /* instead of 0x41 */
+                if ((ATIChip == ATI_CHIP_18800) &&
+                    (vga256InfoRec.videoRam == 256))
                         new->std.CRTC[19] = vga256InfoRec.displayWidth >> 3;
-                new->std.CRTC[23] = 0xE3;
+                new->std.CRTC[23] = 0xE3;       /* instead of 0xC3 */
 #       endif
         if (saved_mode_flags != mode->Flags)
         {
@@ -2435,58 +2540,59 @@ DisplayModePtr mode;
          * Set up ATI registers.
          */
 #       if defined(MONOVGA) || defined(XF86VGA16)
-                if (ATIBoard < ATI_BOARD_PLUS)
+                if (ATIChip <= ATI_CHIP_18800_1)
                         new->b0 = 0x00;
                 else
-                        new->b0 = (ATIGetExtReg(0xB0) & 0x98) | 0x01;
-#       else
-                if (ATIBoard < ATI_BOARD_PLUS)
                 {
-                        if (vga256InfoRec.videoRam <= 256)
-                                new->b0 = 0x26;
-                        else
-                                new->b0 = 0x30;
+                        new->b0 = 0x00;
+                        if (vga256InfoRec.videoRam > 512)
+                                new->b0 |= 0x08;
+                        else if (vga256InfoRec.videoRam > 256)
+                                new->b0 |= 0x10;
                 }
-                else
-                        new->b0 = (ATIGetExtReg(0xB0) & 0x98) | 0x21;
+#       else
+                new->b0 = 0x20;
+                if (vga256InfoRec.videoRam > 512)
+                        new->b0 |= 0x08;
+                else if (vga256InfoRec.videoRam > 256)
+                        new->b0 |= 0x10;
+                else if (ATIChip <= ATI_CHIP_18800_1)
+                        new->b0 |= 0x06;
 #       endif
         new->b1 = (ATIGetExtReg(0xB1) & 0x04)       ;
-        new->b3 = (ATIGetExtReg(0xB3) & 0x23)       ;
-        new->b4 = 0;
+        new->b3 = (ATIGetExtReg(0xB3) & 0x20)       ;
         new->b5 = 0;
 #       if defined(MONOVGA) || defined(XF86VGA16)
                 new->b6 = 0x40;
-                if (vga256InfoRec.videoRam > 256)
-                        new->b6 |= 0x01;
 #       else
-                new->b6 = 0x44;
-                if (vga256InfoRec.videoRam > 512)
-                        new->b6 |= 0x01;
+                new->b6 = 0x04;
 #       endif
+        if (vga256InfoRec.videoRam > 256)
+                new->b6 |= 0x01;
         new->b8 = (ATIGetExtReg(0xB8) & 0xC0)       ;
         new->b9 = (ATIGetExtReg(0xB9) & 0x7F)       ;
-        new->ba = (ATIGetExtReg(0xBA) & 0xC0)       ;
+        new->ba = 0;
         new->bd = (ATIGetExtReg(0xBD) & 0x02)       ;
-        if (ATIBoard == ATI_BOARD_V3)
+        if (ATIChip == ATI_CHIP_18800)
                 new->b2 = (ATIGetExtReg(0xB2) & 0xC0)       ;
         else
         {
                 new->b2 = 0;
                 new->be = (ATIGetExtReg(0xBE) & 0x30) | 0x09;
-                if (ATIBoard > ATI_BOARD_V5)
+                if (ATIChip >= ATI_CHIP_28800_2)
                 {
-                        new->bf = (ATIGetExtReg(0xBF) & 0x70)       ;
-                        new->a3 = (ATIGetExtReg(0xA3) & 0xC7)       ;
-                        new->a6 = (ATIGetExtReg(0xA6) & 0x7A) | 0x05;
+                        new->bf = (ATIGetExtReg(0xBF) & 0x50)       ;
+                        new->a3 = (ATIGetExtReg(0xA3) & 0x67)       ;
+                        new->a6 = (ATIGetExtReg(0xA6) & 0x38) | 0x04;
                         new->a7 = (ATIGetExtReg(0xA7) & 0xFE)       ;
                         new->ab = (ATIGetExtReg(0xAB) & 0xE7)       ;
-                        new->ac = (ATIGetExtReg(0xAC) & 0xBE)       ;
+                        new->ac = (ATIGetExtReg(0xAC) & 0x8E)       ;
                         new->ad = 0;
                         new->ae = (ATIGetExtReg(0xAE) & 0xF0)       ;
                 }
         }
         if (mode->Flags & V_INTERLACE)  /* Enable interlacing */
-                if (ATIBoard == ATI_BOARD_V3)
+                if (ATIChip == ATI_CHIP_18800)
                         new->b2 |= 0x01;
                 else
                         new->be |= 0x02;
@@ -2514,7 +2620,7 @@ DisplayModePtr mode;
                 /*
                  * Set ATI clock select bits.
                  */
-                if (ATIBoard == ATI_BOARD_V3)
+                if (ATIChip == ATI_CHIP_18800)
                         new->b2 = (new->b2 & 0xBF) | ((Clock << 4) & 0x40);
                 else
                 {
@@ -2523,22 +2629,31 @@ DisplayModePtr mode;
                             (OFLG_ISSET(OPTION_UNDOC_CLKS,
                                 &vga256InfoRec.options)))
                         {
-                                new->b9 = (new->b9 & 0xFD) |
-                                        ((Clock >> 2) & 0x02);
                                 Clock >>= 1;
+                                new->b9 = ((new->b9 & 0xFD) |
+                                        ((Clock >> 1) & 0x02)) ^ saved_b9_bit_1;
                         }
-                }
-                if (OFLG_ISSET(OPTION_UNDOC_CLKS, &vga256InfoRec.options))
-                {
-                        new->b9 = (new->b9 & 0xFE) | ((Clock >> 3) & 0x01);
-                        new->b9 ^= saved_b9_bits_0_and_1;
-                        Clock >>= 1;
                 }
 
                 /*
                  * Set clock divider bits.
                  */
                 new->b8 = (new->b8 & 0x3F) | ((Clock << 3) & 0xC0);
+
+                /*
+                 * Modes using the higher clock frequencies need a non-zero
+                 * Display Enable Skew.  The following number has been
+                 * empirically determined to be between 1054 and 1342
+                 * non-inclusively.
+                 */
+#               define Display_Enable_Skew_Threshold 1250
+
+                /*
+                 * Set a reasonable value for Display Enable Skew.
+                 */
+                new->std.CRTC[3] |=
+                        (vga256InfoRec.clock[mode->Clock] /
+                                Display_Enable_Skew_Threshold) & 0x60;
         }
         return (TRUE);
 }
@@ -2551,33 +2666,31 @@ DisplayModePtr mode;
  * virtual window.
  */
 static void
-ATIAdjust(x, y)
-int x, y;
+ATIAdjust(const unsigned int x, const unsigned int y)
 {
         int Base = (y * vga256InfoRec.displayWidth + x) >> 3;
-        unsigned char tmp = ATIGetExtReg(0xB0);
+
+        /*
+         * Unlock registers.
+         */
+        ATIEnterLeave(ENTER);
 
         PutReg(CRTX(vgaIOBase), 0x0C, (Base & 0x00FF00) >> 8);
         PutReg(CRTX(vgaIOBase), 0x0D, (Base &   0x00FF)     );
 
-        if (ATIBoard < ATI_BOARD_PLUS)
-                ATIPutExtReg(0xB0, (tmp & 0x3F) | ((Base & 0x030000) >> 10));
+        if (ATIChip <= ATI_CHIP_18800_1)
+                ATIModifyExtReg(0xB0, -1, 0x3F, Base >> 10);
         else
         {
-                ATIPutExtReg(0xB0, (tmp & 0xBF) | ((Base & 0x010000) >> 10));
-                tmp = ATIGetExtReg(0xA3);
-                ATIPutExtReg(0xA3, (tmp & 0xEF) | ((Base & 0x020000) >> 13));
+                ATIModifyExtReg(0xB0, -1, 0xBF, Base >> 10);
+                ATIModifyExtReg(0xA3, -1, 0xEF, Base >> 13);
 
                 /*
                  * I don't know if this also applies to Mach64's, but give it
                  * a shot...
                  */
-                if (ATIBoard >= ATI_BOARD_MACH32)
-                {
-                        tmp = ATIGetExtReg(0xAD);
-                        ATIPutExtReg(0xAD,
-                                (tmp & 0xF3) | ((Base & 0x0C0000) >> 16));
-                }
+                if (ATIChip >= ATI_CHIP_68800)
+                        ATIModifyExtReg(0xAD, -1, 0xF3, Base >> 16);
         }
 }
 
@@ -2588,14 +2701,18 @@ int x, y;
  * filled-in DisplayModeRec containing the current mode.
  */
 static void
-ATIGetMode(mode)
-DisplayModePtr mode;
+ATIGetMode(DisplayModePtr mode)
 {
         int ShiftCount = 0;
         unsigned char misc;
         unsigned char crt00, crt01, crt04, crt05, crt06, crt07, crt09,
                 crt10, crt11, crt12, crt17;
         unsigned char b1, b2, b5, b8, b9, bd, be;
+
+        /*
+         * Unlock registers.
+         */
+        ATIEnterLeave(ENTER);
 
         /*
          * First, get the needed register values.
@@ -2621,7 +2738,7 @@ DisplayModePtr mode;
         b8 = ATIGetExtReg(0xB8);
         b9 = ATIGetExtReg(0xB9);
         bd = ATIGetExtReg(0xBD);
-        if (ATIBoard == ATI_BOARD_V3)
+        if (ATIChip == ATI_CHIP_18800)
                 b2 = ATIGetExtReg(0xB2);
         else
                 be = ATIGetExtReg(0xBE);
@@ -2630,22 +2747,14 @@ DisplayModePtr mode;
          * Set clock number.
          */
         mode->Clock = (b8 & 0xC0) >> 3;                 /* Clock divider */
-        if (OFLG_ISSET(OPTION_UNDOC_CLKS, &vga256InfoRec.options))
-        {
-                b9 ^= saved_b9_bits_0_and_1;
-                mode->Clock |= (b9 & 0x01) << 2;
-                mode->Clock <<= 1;
-        }
-        if (ATIBoard == ATI_BOARD_V3)
-        {
+        if (ATIChip == ATI_CHIP_18800)
                 mode->Clock |= (b2 & 0x40) >> 4;
-        }
         else
         {
                 if ((ATIBoard != ATI_BOARD_V4) ||
                     OFLG_ISSET(OPTION_UNDOC_CLKS, &vga256InfoRec.options))
                 {
-                        mode->Clock |= (b9 & 0x02) << 1;
+                        mode->Clock |= ((b9 ^ saved_b9_bit_1) & 0x02) << 1;
                         mode->Clock <<= 1;
                 }
                 mode->Clock |= (be & 0x10) >> 2;
@@ -2715,7 +2824,7 @@ DisplayModePtr mode;
                 mode->Flags |= V_NVSYNC;
         else
                 mode->Flags |= V_PVSYNC;
-        if (ATIBoard == ATI_BOARD_V3)
+        if (ATIChip == ATI_CHIP_18800)
         {
                 if (b2 & 0x01)
                         mode->Flags |= V_INTERLACE;
@@ -2760,13 +2869,32 @@ DisplayModePtr mode;
 }
 
 /*
+ * ATISaveScreen --
+ *
+ * This performs a sequencer reset.
+ */
+static void
+ATISaveScreen(const Bool start)
+{
+        static Bool started = SS_FINISH;
+
+        if (start == started)
+                return;
+        started = start;
+
+        if (start == SS_START)                  /* Start synchronous reset */
+                PutReg(SEQX, 0x00, 0x02);
+        else                                    /* End synchronous reset */
+                PutReg(SEQX, 0x00, 0x03);
+}
+
+/*
  * ATIValidMode --
  *
  * This is only a dummy place-holder for now.
  */
 static Bool
-ATIValidMode(mode)
-DisplayModePtr mode;
+ATIValidMode(DisplayModePtr mode)
 {
         return (TRUE);
 }
