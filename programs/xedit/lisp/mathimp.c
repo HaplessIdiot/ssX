@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/mathimp.c,v 1.4 2002/03/08 04:33:18 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/mathimp.c,v 1.5 2002/04/16 17:12:05 paulo Exp $ */
 
 #ifdef __GNUC__
 #define CONST __attribute__ ((__const__))
@@ -2118,7 +2118,7 @@ static INLINE void
 add_fi_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     int fit;
-    long value, op = XFI(accum), num = XFRN(ope), den = XFRD(ope);
+    long value = 0, op = XFI(accum), num = XFRN(ope), den = XFRD(ope);
 
     fit = !fi_fi_mul_overflow(op, den);
     if (fit) {
@@ -2154,7 +2154,7 @@ static INLINE void
 sub_fi_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     int fit;
-    long value, op = XFI(accum), num = XFRN(ope), den = XFRD(ope);
+    long value = 0, op = XFI(accum), num = XFRN(ope), den = XFRD(ope);
 
     fit = !fi_fi_mul_overflow(op, den);
     if (fit) {
@@ -2528,7 +2528,7 @@ static INLINE void
 add_fr_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     int fit;
-    long value, op = XFI(ope), num = XFRN(accum), den = XFRD(accum);
+    long value = 0, op = XFI(ope), num = XFRN(accum), den = XFRD(accum);
 
     fit = !fi_fi_mul_overflow(op, den);
     if (fit) {
@@ -2561,7 +2561,7 @@ static INLINE void
 sub_fr_fi(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     int fit;
-    long value, op = XFI(ope), num = XFRN(accum), den = XFRD(accum);
+    long value = 0, op = XFI(ope), num = XFRN(accum), den = XFRD(accum);
 
     fit = !fi_fi_mul_overflow(op, den);
     if (fit) {
@@ -2667,7 +2667,7 @@ add_fr_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     int fit;
     long num1 = XFRN(accum), den1 = XFRD(accum),
-	 num2 = XFRN(ope), den2 = XFRD(ope), num, den;
+	 num2 = XFRN(ope), den2 = XFRD(ope), num = 0, den = 0;
 
     fit = !fi_fi_mul_overflow(num1, den2);
     if (fit) {
@@ -2714,7 +2714,7 @@ sub_fr_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     int fit;
     long num1 = XFRN(accum), den1 = XFRD(accum),
-	 num2 = XFRN(ope), den2 = XFRD(ope), num, den;
+	 num2 = XFRN(ope), den2 = XFRD(ope), num = 0, den = 0;
 
     fit = !fi_fi_mul_overflow(num1, den2);
     if (fit) {
@@ -2761,7 +2761,7 @@ mul_fr_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     int fit;
     long num1 = XFRN(accum), den1 = XFRD(accum),
-	 num2 = XFRN(ope), den2 = XFRD(ope), num, den;
+	 num2 = XFRN(ope), den2 = XFRD(ope), num = 0, den = 0;
 
     fit = !fi_fi_mul_overflow(num1, num2);
     if (fit) {
@@ -2801,7 +2801,7 @@ div_fr_fr(LispMac *mac, LispBuiltin *builtin, LispObj *accum, LispObj *ope)
 {
     int fit;
     long num1 = XFRN(accum), den1 = XFRD(accum),
-	 num2 = XFRN(ope), den2 = XFRD(ope), num, den;
+	 num2 = XFRN(ope), den2 = XFRD(ope), num = 0, den = 0;
 
     fit = !fi_fi_mul_overflow(num1, den2);
     if (fit) {

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.7 2002/03/08 04:33:18 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.8 2002/03/10 04:57:47 paulo Exp $ */
 
 #include "math.h"
 #include "private.h"
@@ -890,7 +890,7 @@ Lisp_Lcm(LispMac *mac, LispBuiltin *builtin)
  lcm &rest integers
  */
 {
-    LispObj *integer, *integers, *gcd, *operand;
+    LispObj *integer, *integers, *gcd = NULL, *operand;
 
     integers = ARGUMENT(0);
 
