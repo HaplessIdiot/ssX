@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/lnaatemp.h,v 1.8 2000/06/17 00:02:13 martin Exp $ */
+/* $XFree86: xc/extras/Mesa/src/lnaatemp.h,v 1.9 2000/06/21 15:12:28 tsi Exp $ */
 
 /*
  * Antialiased Line Rasterizer Template
@@ -75,7 +75,7 @@
 #ifdef INTERP_INDEX
    GLfixed fi, dfi;
 #endif
-#ifdef defined(INTERP_STUV0) || defined(INTERP_STUV1)
+#if defined(INTERP_STUV0) || defined(INTERP_STUV1)
    GLfloat invw0 = VB->Win.data[vert0][3];
    GLfloat invw1 = VB->Win.data[vert1][3];
 #endif
