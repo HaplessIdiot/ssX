@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.347 2001/02/26 18:27:56 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.348 2001/03/01 01:23:54 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -1064,7 +1064,7 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
     (defined(LinuxArchitecture) && !defined(Mc68020Architecture) && \
      !defined(PpcArchitecture)) || \
     defined(i386BsdArchitecture) || defined(LynxOSArchitecture) || \
-    defined(OS2Architecture)
+    defined(OS2Architecture) || defined(GNUMachArchitecture)
 #   define BuildScanpci		YES
 # else
 #   define BuildScanpci		NO
