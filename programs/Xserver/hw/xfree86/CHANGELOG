@@ -1,4 +1,5 @@
 XFree86 4.0.1e (3 November 2000)
+ 864. Fixed (hopefully) a Xinerama problem with BE clients (Mark Vojkovich).
  863. Modifications to GLw to allow it to build without Motif, and
       integrate it into the regular build process (#4142,
       Carlos A. M. dos Santos, David Dawes).
@@ -11423,4 +11424,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1373 2000/11/02 19:58:18 anderson Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1374 2000/11/02 20:39:09 dawes Exp $
