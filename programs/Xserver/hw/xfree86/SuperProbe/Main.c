@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.17 1996/12/23 06:31:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.19 1997/03/07 00:28:53 hohndel Exp $ */
 
 #include "Probe.h"
 #include "PatchLevel.h"
@@ -563,7 +563,7 @@ char *argv[];
         putc('\007', f);
         putc('\007', f);
         fflush(f);
-        /* sleep(5); */
+        sleep(5);
     }
 }
 
