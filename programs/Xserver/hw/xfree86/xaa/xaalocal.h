@@ -1527,6 +1527,7 @@ void XAARemoveAreaCallback(FBAreaPtr area);
 void XAAMoveOutOffscreenPixmap(PixmapPtr pPix); 
 Bool XAAInitStateWrap(ScreenPtr pScreen, XAAInfoRecPtr infoRec);
 
+#ifdef RENDER
 void
 XAAComposite (CARD8      op,
 	      PicturePtr pSrc,
@@ -1551,6 +1552,7 @@ XAAGlyphs (CARD8         op,
 	   int           nlist,
 	   GlyphListPtr  list,
 	   GlyphPtr      *glyphs);
+#endif
     
 
 extern GCOps XAAFallbackOps;
