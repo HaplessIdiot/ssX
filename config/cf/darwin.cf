@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.42 2003/11/04 02:52:53 torrey Exp $
+XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.43 2003/11/11 01:29:46 torrey Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -173,6 +173,12 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 /* flags to pass to cc when building libraries */
 #ifndef LibraryCCOptions
 # define LibraryCCOptions       DefaultCCOptions -fno-common
+#endif
+
+/* The cr implementation does not build with NEED_SCREEN_REGIONS,
+   so play it safe. */
+#ifndef ServerCCOptions
+# define ServerCCOptions        DefaultCCOptions -UNEED_SCREEN_REGIONS
 #endif
 
 #ifdef PpcDarwinArchitecture
