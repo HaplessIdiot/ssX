@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: Xinstall.sh,v 1.38 2002/02/05 21:18:53 torrey Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.39 2002/05/05 17:53:42 herrb Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -20,10 +20,19 @@
 # Fallbacks for when the bindist version can't be auto-detected.
 # These should be updated for each release.
 
-FULLPREFIX=4.2
-PATCHLEVEL=0
-VERSION=$FULLPREFIX.$PATCHLEVEL
-FULLVERSION=$FULLPREFIX.0
+SNAPSHOT=y
+
+if [ $SNAPSHOT = y ]; then
+	FULLPREFIX=XXX
+	VERSION=4.2.99.3
+	PATCHLEVEL=0
+	FULLVERSION=$VERSION
+else
+	FULLPREFIX=4.3
+	PATCHLEVEL=0
+	VERSION=$FULLPREFIX.$PATCHLEVEL
+	FULLVERSION=$FULLPREFIX.0
+fi
 SCRIPTVERSION=$VERSION
 
 # XXX Could get this (and above) version info from imake...
@@ -73,7 +82,7 @@ if [ X"$1" = "X-test" -o X"$XINST_TEST" != X ]; then
 fi
 
 RUNDIR=$ROOTDIR/usr/X11R6
-ETCDIR=$ROOTDIR/etc/X11
+ETCDIR=$ROOTDIR/etc
 VARDIR=$ROOTDIR/var
 
 OLDFILES=""
@@ -148,8 +157,13 @@ ETCFLINKS=" \
 	XftConfig \
 	"
 
+ETCFONTFILES=" \
+	fonts.conf \
+	fonts.dtd \
+	"
 
-XKBDIR="$ETCDIR/xkb"
+
+XKBDIR="$ETCDIR/X11/xkb"
 XKBDBDIR=
 
 FONTDIRS=" \
@@ -727,7 +741,13 @@ GetBindistVersion()
 		echo "Bindist version is $BINDISTVERSION"
 		BINDISTFULLPREFIX=`expr $BINDISTVERSION : '\([0-9]*\.[0-9]*\)\.'`
 		BINDISTPATCHLEVEL=`expr $BINDISTVERSION : '[0-9]*\.[0-9]*\.\([0-9]*\)'`
-		BINDISTFULLVERSION=$BINDISTFULLPREFIX.0
+		case $BINDISTPATCHLEVEL in
+		99)
+			BINDISTFULLVERSION=$BINDISTVERSION
+			;;
+		*)
+			BINDISTFULLVERSION=$BINDISTFULLPREFIX.0
+			;;
 	else
 		echo "Warning: can't detect the bindist version"
 	fi
@@ -879,10 +899,10 @@ echo ""
 echo "		Welcome to the XFree86 $SCRIPTVERSION installer"
 echo ""
 echo "You are strongly advised to backup your existing XFree86 installation"
-echo "before proceeding.  This includes the $ROOTDIR/usr/X11R6 and $ROOTDIR/etc/X11"
-echo "directories.  The installation process will overwrite existing files"
-echo "in those directories, and this may include some configuration files"
-echo "that may have been customised."
+echo "before proceeding.  This includes the $ROOTDIR/usr/X11R6, $ROOTDIR/etc/X11"
+echo "and $ROOTDIR/etc/fonts directories.  The installation process will"
+echo "overwrite existing files in those directories, and this may include"
+echo "some configuration files that may have been customised."
 echo ""
 echo "If you are installing a version different from $SCRIPTVERSION, you"
 echo "may need an updated version of this installer script."
@@ -1089,7 +1109,7 @@ if [ X"$DOUPDATE" = XYES ]; then
 	exit 0
 fi
 
-# Create $RUNDIR and $ETCDIR if they don't already exist
+# Create $RUNDIR, $ETCDIR/X11 and $ETCDIR/fonts if they don't already exist
 
 if [ ! -d $RUNDIR ]; then
 	NewRunDir=YES
@@ -1104,10 +1124,14 @@ if [ ! -d $RUNDIR/lib/X11 ]; then
 	echo "Creating $RUNDIR/lib/X11"
 	mkdir $RUNDIR/lib/X11
 fi
-if [ ! -d $ETCDIR ]; then
+if [ ! -d $ETCDIR/X11 ]; then
 	NewEtcDir=YES
-	echo "Creating $ETCDIR"
-	mkdir $ETCDIR
+	echo "Creating $ETCDIR/X11"
+	mkdir $ETCDIR/X11
+fi
+if [ ! -d $ETCDIR/fonts ]; then
+	echo "Creating $ETCDIR/fonts"
+	mkdir $ETCDIR/fonts
 fi
 
 if [ -d $RUNDIR -a -d $RUNDIR/bin -a -d $RUNDIR/lib ]; then
@@ -1165,13 +1189,13 @@ fi
 
 if [ X"$EtcDirToMove" != X -o X"$EtcFileToMove" != X ]; then
 	echo "XFree86 now installs most customisable configuration files under"
-	echo "$ETCDIR instead of under $RUNDIR/lib/X11, and has symbolic links"
+	echo "$ETCDIR/X11 instead of under $RUNDIR/lib/X11, and has symbolic links"
 	echo "under $RUNDIR/lib/X11 that point to $ETCDIR.  You currently have"
 	echo "files under the following subdirectories of $RUNDIR/lib/X11:"
 	echo ""
 	echo "$EtcDirToMove $EtcFileToMove"
 	echo ""
-	echo "Do you want to move them to $ETCDIR and create the necessary"
+	echo "Do you want to move them to $ETCDIR/X11 and create the necessary"
 	Echo "links? (y/n) [y] "
 	read response
 	case "$response" in
@@ -1185,20 +1209,20 @@ if [ X"$EtcDirToMove" != X -o X"$EtcFileToMove" != X ]; then
 	echo ""
 	if [ X"$NoSymLinks" != XYES ]; then
 		for i in $EtcDirToMove; do
-			echo "Moving $RUNDIR/lib/X11/$i to $ETCDIR/$i ..."
-			if [ ! -d $ETCDIR/$i ]; then
-				mkdir $ETCDIR/$i
+			echo "Moving $RUNDIR/lib/X11/$i to $ETCDIR/X11/$i ..."
+			if [ ! -d $ETCDIR/X11/$i ]; then
+				mkdir $ETCDIR/X11/$i
 			fi
 			$TAR -C $RUNDIR/lib/X11/$i -c -f - . | \
-				$TAR -C $ETCDIR/$i -v -x -p -U -f - && \
+				$TAR -C $ETCDIR/X11/$i -v -x -p -U -f - && \
 				rm -fr $RUNDIR/lib/X11/$i && \
-				ln -s $ETCDIR/$i $RUNDIR/lib/X11/$i
+				ln -s $ETCDIR/X11/$i $RUNDIR/lib/X11/$i
 		done
 		for i in $EtcFileToMove; do
-			echo "Moving $RUNDIR/lib/X11/$i to $ETCDIR/$i ..."
-			cp -p $RUNDIR/lib/X11/$i $ETCDIR/$i && \
+			echo "Moving $RUNDIR/lib/X11/$i to $ETCDIR/X11/$i ..."
+			cp -p $RUNDIR/lib/X11/$i $ETCDIR/X11/$i && \
 				rm -fr $RUNDIR/lib/X11/$i && \
-				ln -s $ETCDIR/$i $RUNDIR/lib/X11/$i
+				ln -s $ETCDIR/X11/$i $RUNDIR/lib/X11/$i
 		done
 	fi
 fi
@@ -1229,18 +1253,18 @@ for i in $ETCDLINKS; do
 	if [ $DoCopy = YES ]; then
 		echo "Installing the $i config files ..."
 		if [ X"$NoSymLinks" != XYES ]; then
-			if [ ! -d $ETCDIR/$i ]; then
-				mkdir $ETCDIR/$i
+			if [ ! -d $ETCDIR/X11/$i ]; then
+				mkdir $ETCDIR/X11/$i
 			fi
 			if [ ! -d $RUNDIR/lib/X11/$i ]; then
-				ln -s $ETCDIR/$i $RUNDIR/lib/X11/$i
+				ln -s $ETCDIR/X11/$i $RUNDIR/lib/X11/$i
 			fi
 		else
 			if [ ! -d $RUNDIR/lib/X11/$i ]; then
 				mkdir $RUNDIR/lib/X11/$i
 			fi
 		fi
-		$TAR -C .etctmp/$i -c -f - . | \
+		$TAR -C .etctmp/X11/$i -c -f - . | \
 			$TAR -C $RUNDIR/lib/X11/$i -v -x -p -U -f -
 	fi
 done
@@ -1262,24 +1286,43 @@ for i in $ETCFLINKS; do
 		echo "Installing the $i config file ..."
 		if [ X"$NoSymLinks" != XYES ]; then
 			if [ ! -f $RUNDIR/lib/X11/$i ]; then
-				ln -s $ETCDIR/$i $RUNDIR/lib/X11/$i
+				ln -s $ETCDIR/X11/$i $RUNDIR/lib/X11/$i
 			fi
 		fi
-		(set -x; cp -p .etctmp/$i $RUNDIR/lib/X11/$i)
+		(set -x; cp -p .etctmp/X11/$i $RUNDIR/lib/X11/$i)
 	fi
 done
 if [ X"$XKBDIR" != X ]; then
 	if [ X"$NoSymLinks" = XYES ]; then
 		XKBDIR=$RUNDIR/lib/X11/xkb/compiled
 	fi
-	if [ -d .etctmp/xkb ]; then
+	if [ -d .etctmp/X11/xkb ]; then
 		if [ ! -d $XKBDIR ]; then
 			mkdir $XKBDIR
 		fi
-		$TAR -C .etctmp/xkb -c -f - . | \
+		$TAR -C .etctmp/X11/xkb -c -f - . | \
 			$TAR -C $XKBDIR -v -x -p -U -f -
 	fi
 fi
+for i in $ETCFONTFILES; do
+	DoCopy=YES
+	if [ -f $ETCDIR/fonts/$i ]; then
+		Echo "Do you want to overwrite the $i config file? (y/n) [n] "
+		read response
+		case "$response" in
+		[yY]*)
+			: OK
+			;;
+		*)
+			DoCopy=NO
+			;;
+		esac
+	fi
+	if [ $DoCopy = YES ]; then
+		echo "Installing the $i config file ..."
+		(set -x; cp -p .etctmp/fonts/$i $ETCDIR/fonts/$i)
+	fi
+done
 rm -fr .etctmp
 
 echo ""
