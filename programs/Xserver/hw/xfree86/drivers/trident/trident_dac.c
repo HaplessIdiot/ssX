@@ -22,7 +22,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.64 2002/03/29 18:33:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.66 2002/04/04 14:05:49 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -837,7 +837,7 @@ TridentSave(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
 	CARD8 tmp;
 	INB_3CE(VertStretch);
 	INB_3CE(HorStretch);
-	if (pTrident->Chipset < CYBERBLADEXPm8) {
+	if (pTrident->Chipset < BLADEXP) {
     	    INB_3CE(BiosMode);
 	} else {
 	INB_3CE(BiosNewMode1);
