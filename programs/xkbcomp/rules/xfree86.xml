@@ -194,6 +194,12 @@
     </model>
     <model>
       <configItem>
+        <name>azonaRF2300</name>
+        <description>Azona RF2300 wireless Internet Keyboard</description>
+      </configItem>
+    </model>
+    <model>
+      <configItem>
         <name>scorpius</name>
         <description>Advance Scorpius KI</description>
         <description xml:lang="sr">Напредни Шкорпион КИ</description>
@@ -217,7 +223,6 @@
         <description>BTC 5113RF Multimedia</description>
         <description xml:lang="da">BTC 5113RF-multimedie</description>
         <description xml:lang="nl">BTC 5113RF multimedia</description>
-        <description xml:lang="ru">BTC 5113RF мультимедия</description>
         <description xml:lang="sr">BTC 5113RF мултимедијална</description>
         <description xml:lang="tr">BTC 5113RF Çokluortam</description>
         <description xml:lang="uk">BTC 5113RF мультимедія</description>
@@ -445,6 +450,12 @@
     </model>
     <model>
       <configItem>
+        <name>dtk2000</name>
+        <description>DTK2000</description>
+      </configItem>
+    </model>
+    <model>
+      <configItem>
         <name>ennyah_dkb1008</name>
         <description>Ennyah DKB-1008</description>
       </configItem>
@@ -457,6 +468,12 @@
         <description xml:lang="nl">Genius Comfy KB-16M / Genius MM toetsenbord KWD-910</description>
         <description xml:lang="sr">Genius Comfy KB-16M / Genius ММ тастатура KWD-910</description>
         <description xml:lang="zh_CN">通用 Comfy KB-16M / Genius MM 键盘 KWD-910</description>
+      </configItem>
+    </model>
+    <model>
+      <configItem>
+        <name>geniuscomfy2</name>
+        <description>Genius Comfy KB-21e-Scroll</description>
       </configItem>
     </model>
     <model>
@@ -1948,6 +1965,13 @@
           </configItem>
         </variant>
       </variantList>
+    </layout>
+    <layout>
+      <configItem>
+        <name>dz</name>
+        <description>Dzongkha / Tibetan</description>
+        <description xml:lang="ru">Дзонгкха / Тибетская</description>
+      </configItem>
     </layout>
     <layout>
       <configItem>
