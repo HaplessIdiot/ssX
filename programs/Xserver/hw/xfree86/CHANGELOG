@@ -1,4 +1,6 @@
 XFree86 4.1.99.1 (xx June 2001)
+  69. Make XDarwin ddx pass up proper right and middle mouse button numbers
+      and fix mouse button 5 (Christoph Pfisterer and Torrey T. Lyons).
   68. Restore backwards compatibility from 4.0.[2,3] to 4.1.0 for
       the i810, r128 and radeon DRI drivers (Gareth Hughes).
   67. Fix a problem when using patterns of horizontal lines with the mga
@@ -13434,4 +13436,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1819 2001/05/31 18:47:04 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1820 2001/06/01 02:10:02 dawes Exp $
