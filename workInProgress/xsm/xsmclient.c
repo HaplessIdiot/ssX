@@ -1,4 +1,5 @@
-/* $XConsortium: xsmclient.c,v 1.19 94/04/17 21:15:21 mor Exp $ */
+/* $XConsortium: xsmclient.c,v 1.20 94/05/20 12:25:42 mor Exp $ */
+/* $XFree86$ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -52,7 +53,9 @@ in this Software without prior written authorization from the X Consortium.
 #include <unistd.h>
 #endif
 #include <limits.h>
+#ifndef X_NO_SYS_PARAM
 #include <sys/param.h>
+#endif
 #ifndef PATH_MAX
 #ifdef MAXPATHLEN
 #define PATH_MAX MAXPATHLEN
@@ -459,7 +462,7 @@ static void CreateMainInterface(ad)
 #ifndef X_NOT_POSIX
 	getcwd((char *)NULL, PATH_MAX),
 #else
-	"unknown-cwd"
+	"unknown-cwd",
 #endif
         XtNfromHoriz, cwdLabel,
         XtNfromVert, quitButton,
