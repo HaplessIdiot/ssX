@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/dri/dri_util.c,v 1.3 2002/11/25 14:04:49 eich Exp $ */
+/* $XFree86: xc/lib/GL/dri/dri_util.c,v 1.4 2003/02/08 21:26:43 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -612,7 +612,8 @@ __driUtilUpdateDrawableInfo(Display *dpy, int scrn,
 
     DRM_SPINUNLOCK(&psp->pSAREA->drawable_lock, psp->drawLockID);
 
-    if (!XF86DRIGetDrawableInfo(dpy, scrn, pdp->draw,
+    if (!__driFindDrawable(psp->drawHash, pdp->draw) ||
+	!XF86DRIGetDrawableInfo(dpy, scrn, pdp->draw,
 				&pdp->index, &pdp->lastStamp,
 				&pdp->x, &pdp->y, &pdp->w, &pdp->h,
 				&pdp->numClipRects, &pdp->pClipRects,
@@ -762,8 +763,8 @@ static void driDestroyContext(Display *dpy, int scrn, void *contextPrivate)
  		psp->fullscreen = NULL;
  	    }
 	}
-	(*pcp->driScreenPriv->DriverAPI.DestroyContext)(pcp);
 	__driGarbageCollectDrawables(pcp->driScreenPriv->drawHash);
+	(*pcp->driScreenPriv->DriverAPI.DestroyContext)(pcp);
 	(void)XF86DRIDestroyContext(dpy, scrn, pcp->contextID);
 	Xfree(pcp);
     }
