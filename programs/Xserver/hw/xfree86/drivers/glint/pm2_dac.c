@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_dac.c,v 1.17 1999/11/19 13:54:37 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_dac.c,v 1.18 2000/02/12 20:45:22 dawes Exp $ */
 
 #include "Xarch.h"
 #include "xf86.h"
@@ -164,7 +164,7 @@ Permedia2Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pReg->glintRegs[PMVbEnd >> 3] = mode->CrtcVTotal - mode->CrtcVDisplay;
 
     /* The hw cursor needs /VSYNC to recognize vert retrace. We'll stick
-       both sync lines to active low here and if needed invert them
+       both sync lines to active high here and if needed invert them
        using the RAMDAC's MCR below. */
     pReg->glintRegs[PMVideoControl >> 3] =
 	(1 << 5) | (1 << 3) | 1;
