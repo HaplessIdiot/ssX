@@ -28,7 +28,24 @@
  * CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/lib/font/Type1/type1.c,v 1.5 1998/10/03 09:07:19 dawes Exp $ */
+/* Copyright (c) 1994-1999 Silicon Graphics, Inc. All Rights Reserved.
+ *
+ * The contents of this file are subject to the CID Font Code Public Licence
+ * Version 1.0 (the "License"). You may not use this file except in compliance
+ * with the Licence. You may obtain a copy of the License at Silicon Graphics,
+ * Inc., attn: Legal Services, 2011 N. Shoreline Blvd., Mountain View, CA
+ * 94043 or at http://www.sgi.com/software/opensource/cid/license.html.
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis.
+ * ALL WARRANTIES ARE DISCLAIMED, INCLUDING, WITHOUT LIMITATION, ANY IMPLIED
+ * WARRANTIES OF MERCHANTABILITY, OF FITNESS FOR A PARTICULAR PURPOSE OR OF
+ * NON-INFRINGEMENT. See the License for the specific language governing
+ * rights and limitations under the License.
+ *
+ * The Original Software is CID font code that was developed by Silicon
+ * Graphics, Inc.
+ */
+/* $XFree86: xc/lib/font/Type1/type1.c,v 1.6 1999/03/02 10:41:48 dawes Exp $ */
  
 /*********************************************************************/
 /*                                                                   */
@@ -73,7 +90,11 @@ typedef struct xobject xobject;
 #define MAXPSFAKESTACK 32  /* Max depth of fake PostScript stack (local) */
 #define MAXSTRLEN 512      /* Max length of a Type 1 string (local) */
 #define MAXLABEL 256       /* Maximum number of new hints */
+#ifdef BUILDCID
+#define MAXSTEMS 500       /* Maximum number of VSTEM and HSTEM hints */
+#else
 #define MAXSTEMS 128       /* Maximum number of VSTEM and HSTEM hints */
+#endif
 #define EPS 0.001          /* Small number for comparisons */
  
 /************************************/
@@ -144,6 +165,10 @@ struct stem {                     /* representation of a STEM hint */
 };
  
 extern struct XYspace *IDENTITY;
+
+#ifdef BUILDCID
+struct xobject *CIDChar();
+#endif
  
 static double escapementX, escapementY;
 static double sidebearingX, sidebearingY;
@@ -765,7 +790,7 @@ PSFakePush(Num)
 }
  
 /* PSFakePop: Removes a number from the top of the fake PostScript stack */
-static double 
+static double
 PSFakePop ()
 {
   if (PSFakeTop >= 0) return(PSFakeStack[PSFakeTop--]);
@@ -1099,7 +1124,14 @@ Escape(Code)
       if (Top < Num+1) Error0("DoCommand: Stack low\n");
       for (i = 0; i < Num; i++) PSFakePush(Stack[Top - i - 2]);
       Top -= Num + 2;
+#ifdef BUILDCID
+      if ((int)Stack[Top + Num + 2] > 3)
+        ClearPSFakeStack();
+      else
+        CallOtherSubr((int)Stack[Top + Num + 2]);
+#else
       CallOtherSubr((int)Stack[Top + Num + 2]);
+#endif
       break;
     case POP: /* - POP number */
       /* Removes a number from the top of the */
@@ -1147,6 +1179,7 @@ HStem(y, dy)
 /* Declares the horizontal range of a vertical stem zone */
 /* between coordinates x and x + dx */
 /* x is relative to the left sidebearing point */
+
 static void
 VStem(x, dx)
   double x, dx;
@@ -1490,7 +1523,7 @@ static double Div(num1, num2)
 /*   Calling sequence: 'idmin epX epY 3 0 callothersubr' */
 /*   Computes Flex values, and renders the Flex path,    */
 /*   and returns (leaves) ending coordinates on stack    */
-static void 
+static void
 FlxProc(c1x2, c1y2, c3x0, c3y0, c3x1, c3y1, c3x2, c3y2,
         c4x0, c4y0, c4x1, c4y1, c4x2, c4y2, epY, epX, idmin)
   double c1x2, c1y2;
@@ -1807,7 +1840,69 @@ struct xobject *Type1Char(env, S, charstrP, subrsP, osubrsP, bluesP, modeP)
       path = NULL;   /* Indicate that character could not be built */
     }
   }
- 
+
   return((struct xobject *) path);
 }
- 
+
+#ifdef BUILDCID
+struct xobject *CIDChar(env, S, charstrP, subrsP, osubrsP, bluesP, modeP)
+  char *env;
+  struct XYspace *S;
+  psobj *charstrP;
+  psobj *subrsP;
+  psobj *osubrsP;
+  struct blues_struct *bluesP;  /* FontID's ptr to the blues struct */
+  int *modeP;
+{
+  int Code;
+
+  path = NULL;
+  errflag = FALSE;
+
+  /* Make parameters available to all CID routines */
+  Environment = env;
+  CharSpace = S; /* used when creating path elements */
+  CharStringP = charstrP;
+  SubrsP = subrsP;
+  OtherSubrsP = osubrsP;
+  ModeP = modeP;
+
+  blues = bluesP;
+
+  /* compute the alignment zones */
+  ComputeAlignmentZones();
+
+  StartDecrypt();
+
+  ClearStack();
+  ClearPSFakeStack();
+  ClearCallStack();
+
+  InitStems();
+
+  currx = curry = 0;
+  escapementX = escapementY = 0;
+  sidebearingX = sidebearingY = 0;
+  accentoffsetX = accentoffsetY = 0;
+  wsoffsetX = wsoffsetY = 0;           /* No shift to preserve whitspace. */
+  wsset = 0;                           /* wsoffsetX,Y haven't been set yet. */
+
+  for (;;) {
+    if (!DoRead(&Code)) break;
+    Decode(Code);
+    if (errflag) break;
+  }
+
+  FinitStems();
+
+  /* Clean up if an error has occurred */
+  if (errflag) {
+    if (path != NULL) {
+      Destroy(path); /* Reclaim storage */
+      path = NULL;   /* Indicate that character could not be built */
+    }
+  }
+
+  return((struct xobject *) path);
+}
+#endif

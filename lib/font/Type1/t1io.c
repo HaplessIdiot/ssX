@@ -28,11 +28,28 @@
  * SOFTWARE.
  * Author: Carol H. Thompson  IBM Almaden Research Center
  */
-/* $XFree86: xc/lib/font/Type1/t1io.c,v 3.3 1998/07/25 06:56:58 dawes Exp $ */
+/* Copyright (c) 1994-1999 Silicon Graphics, Inc. All Rights Reserved.
+ *
+ * The contents of this file are subject to the CID Font Code Public Licence
+ * Version 1.0 (the "License"). You may not use this file except in compliance
+ * with the Licence. You may obtain a copy of the License at Silicon Graphics,
+ * Inc., attn: Legal Services, 2011 N. Shoreline Blvd., Mountain View, CA
+ * 94043 or at http://www.sgi.com/software/opensource/cid/license.html.
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis.
+ * ALL WARRANTIES ARE DISCLAIMED, INCLUDING, WITHOUT LIMITATION, ANY IMPLIED
+ * WARRANTIES OF MERCHANTABILITY, OF FITNESS FOR A PARTICULAR PURPOSE OR OF
+ * NON-INFRINGEMENT. See the License for the specific language governing
+ * rights and limitations under the License.
+ *
+ * The Original Software is CID font code that was developed by Silicon
+ * Graphics, Inc.
+ */
+/* $XFree86: xc/lib/font/Type1/t1io.c,v 3.4 1998/10/03 09:07:18 dawes Exp $ */
 /*******************************************************************
 *  I/O package for Type 1 font reading
 ********************************************************************/
- 
+
 #ifndef STATIC
 #define STATIC static
 #endif
@@ -67,6 +84,13 @@ F_FILE *T1Open(), *T1Eexec();
 int T1Close();
 int T1Read(), T1Getc(), T1Ungetc();
 STATIC int T1Decrypt(), T1Fill();
+
+#ifdef BUILDCID
+void resetDecrypt()
+{
+    Decrypt = 0;
+}
+#endif
  
 /* -------------------------------------------------------------- */
 /*ARGSUSED*/
@@ -204,7 +228,11 @@ F_FILE *T1eexec(f)   /* Initialization */
  
   /* If ASCII, the next 7 chars are guaranteed consecutive */
   randomP[0] = c;  /* store first non white space char */
+#ifdef BUILDCID
+  fread((pointer)(randomP+1), 1, 3, f);  /* read 3 more, for a total of 4 */
+#else
   T1Read((pointer)(randomP+1), 1, 3, f);  /* read 3 more, for a total of 4 */
+#endif
   /* store first four chars */
   for (i=0,p=randomP; i<4; i++) {  /* Check 4 valid ASCIIEncode chars */
     if (HighHexP[*p++] > LAST_HDIGIT) {  /* non-ASCII byte */
@@ -213,7 +241,11 @@ F_FILE *T1eexec(f)   /* Initialization */
     }
   }
   if (asc) {  /* ASCII form, convert first eight bytes to binary */
+#ifdef BUILDCID
+    fread((pointer)(randomP+4), 1, 4, f);  /* Need four more */
+#else
     T1Read((pointer)(randomP+4), 1, 4, f);  /* Need four more */
+#endif
     for (i=0,p=randomP; i<4; i++) {  /* Convert */
       H = HighHexP[*p++];
       randomP[i] = H | LowHexP[*p++];
@@ -225,10 +257,31 @@ F_FILE *T1eexec(f)   /* Initialization */
     r = (*p++ + r) * c1 + c2;
   }
  
+#ifdef BUILDCID
+  /* Decrypt up to, but not including, the first '%' sign */
+  if (f->b_cnt > 0) {
+      for (i = 0; i < f->b_cnt; i++)
+         if (*(f->b_ptr + i) == '%')
+             break;
+
+      if (i < f->b_cnt) {
+          if (i == 0)
+              f->b_cnt = 0;
+          else
+              f->b_cnt = T1Decrypt(f->b_ptr, i);
+      } else
+          f->b_cnt = T1Decrypt(f->b_ptr, f->b_cnt);
+  }
+#else
   /* Decrypt the remaining buffered bytes */
   f->b_cnt = T1Decrypt(f->b_ptr, f->b_cnt);
+#endif
   Decrypt = 1;
+#ifdef BUILDCID
+  return (feof(f))?NULL:f;
+#else
   return (T1Feof(f))?NULL:f;
+#endif
 } /* end eexec */
  
 /* -------------------------------------------------------------- */
@@ -282,7 +335,11 @@ STATIC int T1Decrypt(p, len)
 STATIC int T1Fill(f) /* Refill stream buffer */
   F_FILE *f;         /* Stream descriptor */
 {
+#ifdef BUILDCID
+  int rc, i;
+#else
   int rc;
+#endif
  
   rc = read(f->fd, f->b_base, F_BUFSIZ);
   /* propagate any error or eof to current file */
@@ -296,6 +353,22 @@ STATIC int T1Fill(f) /* Refill stream buffer */
     }
   }
   f->b_ptr = f->b_base;
+#ifdef BUILDCID
+  if (Decrypt) {
+      /* decrypt up to, but not including, the first % sign */
+      for (i = 0; i < rc; i++)
+         if (*(f->b_base + i) == '%')
+             break;
+      if (i < rc) {
+          if (i == 0)
+              rc = 0;
+          else
+              rc = T1Decrypt(f->b_base, i);
+      } else
+          rc = T1Decrypt(f->b_base, rc);
+  }
+#else
   if (Decrypt) rc = T1Decrypt(f->b_base, rc);
+#endif
   return rc;
 } /* end Fill */

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.138 1999/03/14 05:50:51 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.139 1999/04/11 13:10:25 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -293,6 +293,12 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.138 1999/03/14 05:50:51 dawes Exp 
  */
 
 /*
+ * To disable support for CID fonts, uncomment this.
+ *
+#define BuildCID		NO
+ */
+
+/*
  * To disable support for TrueType fonts, uncomment these.
  *
 #define BuildFreeType		NO
@@ -329,6 +335,12 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.138 1999/03/14 05:50:51 dawes Exp 
  * To not build/install the Type1 fonts, uncomment the following
  *
 #define BuildType1Fonts		NO
+ */
+
+/*
+ * To not build/install the CID fonts, uncomment the following
+ *
+#define BuildCIDFonts		NO
  */
 
 /*
