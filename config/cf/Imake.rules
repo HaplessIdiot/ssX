@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.108 2002/10/06 20:27:46 herrb Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.109 2002/10/15 02:28:30 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -3397,7 +3397,7 @@ AllTarget(module)							@@\
 									@@\
 install:: module							@@\
 	MakeDir($(DESTDIR)dest/subdir)					@@\
-	$(INSTALL) -c module $(DESTDIR)dest/subdir
+	$(INSTALL) -c $(INSTDATFLAGS) module $(DESTDIR)dest/subdir
 #endif
 
 #ifndef InstallDynamicNamedModule
@@ -3407,7 +3407,7 @@ AllTarget(module)							@@\
 									@@\
 install:: module							@@\
 	MakeDir($(DESTDIR)dest/subdir)					@@\
-	$(INSTALL) -c module $(DESTDIR)dest/subdir/instname
+	$(INSTALL) -c $(INSTDATFLAGS) module $(DESTDIR)dest/subdir/instname
 #endif
 
 #ifndef InstallObjectModule
