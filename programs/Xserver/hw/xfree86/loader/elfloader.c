@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.26 2000/09/18 03:01:17 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.28 2000/09/29 08:59:47 eich Exp $ */
 
 /*
  *
@@ -2597,6 +2597,11 @@ int		*maxalign;
 	/* .stabstr */
 	if( strcmp(ElfGetSectionName(elffile, elffile->sections[i].sh_name),
 		   ".stabstr" ) == 0 ) {
+	    continue;
+	}
+	/* .stab.* */
+	if( strncmp(ElfGetSectionName(elffile, elffile->sections[i].sh_name),
+		   ".stab.", strlen(".stab.") ) == 0 ) {
 	    continue;
 	}
 #if defined(__powerpc__) || defined(__mc68000__)

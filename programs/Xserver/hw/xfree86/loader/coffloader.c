@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coffloader.c,v 1.10 1999/01/14 13:04:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coffloader.c,v 1.11 1999/03/14 11:18:05 dawes Exp $ */
 
 /*
  *
@@ -1140,6 +1140,11 @@ COFFModulePtr	cofffile;
 	/* .stabstr */
 	if( strcmp(cofffile->sections[i].s_name,
 		   ".stabstr" ) == 0 ) {
+	    continue;
+	}
+	/* .stab.* */
+	if( strncmp(cofffile->sections[i].s_name,
+		   ".stab.", strlen(".stab.") ) == 0 ) {
 	    continue;
 	}
 	ErrorF("Not loading %s\n", cofffile->sections[i].s_name );
