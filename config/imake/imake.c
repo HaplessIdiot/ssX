@@ -1,5 +1,5 @@
 /* $XConsortium: imake.c /main/88 1995/12/08 16:33:13 gildea $ */
-/* $XFree86: xc/config/imake/imake.c,v 3.10tsi Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.11 1996/05/06 05:52:13 dawes Exp $ */
 
 /***************************************************************************
  *                                                                         *
@@ -150,6 +150,10 @@ in this Software without prior written authorization from the X Consortium.
 #include <sys/stat.h>
 #ifndef X_NOT_POSIX
 #ifdef _POSIX_SOURCE
+#ifdef SCO325
+#include <sys/procset.h>
+#include <sys/siginfo.h>
+#endif
 #include <sys/wait.h>
 #else
 #define _POSIX_SOURCE

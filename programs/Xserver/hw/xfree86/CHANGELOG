@@ -1,3 +1,42 @@
+XFree86 3.2d (9 November 1996)
+  79. Updates to SCO Open Server 5 support (Tom Angert and J Kean Johnston).
+  78. Add support for Linux C library version 6 (GLIBC), and fix some
+      prototype problems (H.J. Lu).
+  77. Add Alpha support for the mga driver (SVGA server), and generic
+      driver (Mono/VGA2 server) (Jay Estabrook).
+  76. Fix s3ReadImageBanked() with a planemask (Harald Koenig).
+  75. Add fast bitblt support for the mga driver (Radislaw Kapitan).
+  74. Allow probing of the Bt485 when an S3 968 is detected (Mark Vojkovich).
+  73. Fix an integer overflow in the S3V server when drawing long lines
+      (Harald Koenig).
+  72. Add detection of the Alliance ProMotion chips to SuperProbe
+      (patch not complete) (Joe Moss).
+  71. XAA udpates (including disabling non-TE text acceleration)
+      (Harm Hanemaayer).
+  70. Fix pixmap support in XAA (Harm Hanemaayer and Alan Hourihane).
+  69. Update the device-specific XF86Config parsing support to report
+      unknown keyword and options (Egbert Eich).
+  68. Add another check for the fb base address in the S3 server
+      (Harald Koenig).
+  67. Fix some typos in the SuperProbe Imakefile (Harald Koenig).
+  66. Update the AXP/IO Jensen support (David Mosberger).
+  65. Add code to the S3 server to recognise the ELSA 1000PRO/X
+      (Harald Koenig).
+  64. Fix an initialisation problem for Diamond ViRGE/VX cards, which
+      causes a lockup (Harald Koenig).
+  63. Add support for the STREAMS processor to the S3V server (Kevin Brosius).
+  62. Fix a problem in xf86bench.c for OS/2 (Holger Veit).
+  61. Some mga line fixes (Radek Kapitan).
+  60. Chips & Technologies driver updates (includes support for the
+      64200 and 64300 WinGine series of chips, and the 65525 and 65535
+      chips) (David Bateman and Egbert Eich).
+  59. Fix some problems with the new S3 probe code (Mark Vojkovich).
+  58. Allow xterm to output 8-bit characters in VT100 mode (Matthieu Herrb
+      and Thomas Dickey).
+  57. Add a return value to XF86DGAGetVideo() (Mark Vojkovich).
+  56. Add missing write_mem_barrier defintions (Harald Koenig).
+  55. Fix some compile problems with 3.2c.
+
 XFree86 3.2c (24 November 1996)
   54. Fix some potential buffer overflows in SuperProbe, and don't
       install it setuid root (Marc Slemko).
@@ -67,27 +106,6 @@ XFree86 3.2a (18 November 1996)
   13. Fix S3 ReadImage with a planemask (when ReadImageNoMem can't be used)
       (Harald Koenig).
   12. S3 line and text fixes (Harald Koenig).
-  11. Fix DGA colourmap problems in the W32 server.
-  10. Fix a problem with realloc usage in xrdb for some older OSs
-      (eg, SunOS 4.x) (Wolfgang Rupprecht).
-   9. Fix an xrdb malloc problem (Michael Lipp).
-   8. Fix xload problems on Solaris 2.5 (David Thompson).
-   7. Fix xload problem for most BSD OSs that was introduced in 3.2, and
-      fix some problems in the BSDI-specific code (Matthieu Herrb).
-   6. Modify the external ClockProg support to allow for programmable
-      clocks (ie, no clocks line) (Egbert Eich).
-   5. Fix W32p rev C and rev D PCI ids (Koen Gadeyne).
-   4. Fix a problem which causes a server crash on PANIX/PC98 when using
-      the XFree86-Misc extension (Takaaki Nomura).
-   3. S3 server probe cleanup (Mark Vojkovich).
-   2. Fix XF86Setup compile problem on Solaris (Robin Cutshaw).
-   1. Patches for OS/2 support (Holger Veit).
-
-XFree86 3.2 (26 October 1996)
-1079. Fix a bug in xgc that can cause a SEGV (Takaaki Nomura).
-1078. README and FreeBSD doc updates (Takaaki Nomura).
-1077. RELNOTES updates, and some updates to the preinst and postinst scripts.
-1076. Tell xf86config about the S3V server.
 1075. Fix some typos in XF86Setup.
 1074. Fix a problem with XF86Setup that shows up when there is no
       <Xroot>/bin/X link present.

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_init.c,v 3.7 1996/02/04 09:10:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_init.c,v 3.8 1996/10/03 08:39:16 dawes Exp $ */
 /*
  * Copyright 1993 by David McCullough <davidm@stallion.oz.au>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -76,7 +76,7 @@ void xf86OpenConsole()
 	 */
 	if ((VTnum != -1) && (VTnum != 0))
 	{
-	    xf86Info.vtno = VTnum - 1;
+	    wc = VTnum - 1;
 	}
 	else 
 	{

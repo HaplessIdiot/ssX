@@ -76,7 +76,7 @@ miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
     DrawablePtr pDrawable;
     int		dx, dy, xOrg, yOrg;
 {
-    int		h, dxDiv32, ibEnd;
+    int		h, dxDivPPW, ibEnd;
     unsigned long *pwLineStart;
     register unsigned long	*pw, *pwEnd;
     register unsigned long msk;
@@ -90,7 +90,7 @@ miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
     if (!pwLineStart)
 	return;
     ipt = 0;
-    dxDiv32 = dx/32;
+    dxDivPPW = dx/PPW;
 
     for(h = 0, ptThisLine.x = 0, ptThisLine.y = 0; 
 	h < dy; 
@@ -104,18 +104,18 @@ miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 	/* Process all words which are fully in the pixmap */
 	
 	fInBox = FALSE;
-	pwEnd = pwLineStart + dxDiv32;
+	pwEnd = pwLineStart + dxDivPPW;
 	while(pw  < pwEnd)
 	{
 	    w = *pw;
 	    msk = endtab[1];
-	    for(ib = 0; ib < 32; ib++)
+	    for(ib = 0; ib < PPW; ib++)
 	    {
 		if(w & msk)
 		{
 		    if(!fInBox)
 		    {
-			pt[ipt].x = ((pw - pwLineStart) << 5) + ib + xOrg;
+			pt[ipt].x = ((pw - pwLineStart) << PWSH) + ib + xOrg;
 			pt[ipt].y = h + yOrg;
 			/* start new box */
 			fInBox = TRUE;
@@ -125,7 +125,7 @@ miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 		{
 		    if(fInBox)
 		    {
-			width[ipt] = ((pw - pwLineStart) << 5) + 
+			width[ipt] = ((pw - pwLineStart) << PWSH) + 
 				     ib + xOrg - pt[ipt].x;
 			if (++ipt >= NPT)
 			{
@@ -141,7 +141,7 @@ miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 	    }
 	    pw++;
 	}
-	ibEnd = dx & 0x1F;
+	ibEnd = dx & PIM;
 	if(ibEnd)
 	{
 	    /* Process final partial word on line */
@@ -154,7 +154,7 @@ miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 		    if(!fInBox)
 		    {
 			/* start new box */
-			pt[ipt].x = ((pw - pwLineStart) << 5) + ib + xOrg;
+			pt[ipt].x = ((pw - pwLineStart) << PWSH) + ib + xOrg;
 			pt[ipt].y = h + yOrg;
 			fInBox = TRUE;
 		    }
@@ -164,7 +164,7 @@ miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 		    if(fInBox)
 		    {
 			/* end box */
-			width[ipt] = ((pw - pwLineStart) << 5) + 
+			width[ipt] = ((pw - pwLineStart) << PWSH) + 
 				     ib + xOrg - pt[ipt].x;
 			if (++ipt >= NPT)
 			{
