@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: osinit.c,v 1.48 94/04/17 20:27:05 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.5 1994/12/17 10:09:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.6 1994/12/29 10:21:59 dawes Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -196,9 +196,10 @@ OsInit()
 #endif
 }
 
-void OsCleanup()
+void
+OsCleanup()
 {
 #ifdef SERVER_LOCK
-	UnlockServer();
+    UnlockServer();
 #endif
 }
