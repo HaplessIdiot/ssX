@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.8 1997/05/12 13:28:05 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.9 1997/06/03 14:12:03 hohndel Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -69,11 +69,7 @@
 #endif
 
 #include "vga256.h"
-
-#ifndef  CT_OLD_ACCL_CODE
 #include "xf86xaa.h"
-#endif
-
 #include "ct_driver.h"
 
 /* Chips&Technologies internal specific variables */
@@ -83,6 +79,7 @@ Bool ctLinearSupport = FALSE;	 /*linear addressing enable */
 Bool ctAccelSupport = FALSE;	 /*acceleration enable */
 Bool ctHDepth = FALSE;		 /*Chip has 16/24bpp */
 Bool ctDPMSSupport = FALSE;	 /*VESA Display Power Management Signaling */
+Bool ctTMED = FALSE;             /*New STN dithering scheme */
 
 /* Frame Buffer related */
 unsigned long ctFrameBufferSize = 0;
@@ -193,10 +190,6 @@ int ctReg32MMIO[]={0x83D0,0x87D0,0x8BD0,0x8FD0,0x93D0,0x97D0,0x9BD0,0x9FD0,
 		   0xA3D0,0xA7D0,0xABD0,0xAFD0,0xB3D0};
 int ctReg32HiQV[]={0x00,0x04,0x08,0x0C,0x10,0x14,0x18,0x1C,0x20};
 int * ctMMIO;
-#ifdef  CT_OLD_ACCL_CODE
-extern GCOps cfb16TEOps1Rect, cfb16TEOps, cfb16NonTEOps1Rect, cfb16NonTEOps;
-extern GCOps cfb24TEOps1Rect, cfb24TEOps, cfb24NonTEOps1Rect, cfb24NonTEOps;
-#endif
 
 /* alu to C&T conversion for use with source data */
 int ctAluConv[] =
@@ -451,16 +444,17 @@ static int Num_CHIPS_ExtPorts32 =
 #define CT_548   7
 #define CT_550   8
 #define CT_554   9
-#define CT_4200  10
-#define CT_4300  11
+#define CT_555   10
+#define CT_4200  11
+#define CT_4300  12
 #ifdef CT45X_SUPPORT
 /* CT_451 - CT457 are not supported */
-#define CT_451   12
-#define CT_452   13
-#define CT_453   14
-#define CT_455   15
-#define CT_456   16
-#define CT_457   17
+#define CT_451   13
+#define CT_452   14
+#define CT_453   15
+#define CT_455   16
+#define CT_456   17
+#define CT_457   18
 #endif
 
 static unsigned char CHIPSchipset;
@@ -517,7 +511,7 @@ CHIPSIdent(n)
     {
 	"ct65520", "ct65525", "ct65530", "ct65535", "ct65540", 
 	"ct65545", "ct65546", "ct65548", "ct65550", "ct65554",
-	"ct64200", "ct64300",
+	"ct65555", "ct64200", "ct64300",
 #ifdef CT45X_SUPPORT
 	"ct451", "ct452", "ct453", "ct455",
 	"ct456", "ct457",
@@ -778,7 +772,7 @@ ctClockLoad(Type, Clock)
 	if (ctForceVClk1) { 
 	    write_xr(0xC4, (vclk[1] & 0xFF));
 	    write_xr(0xC5, (vclk[2] & 0xFF));
-	    write_xr(0xC5, 0x0);
+	    write_xr(0xC6, 0x0);
 	    write_xr(0xC7, (vclk[0] & 0xFF));
 	} else {
 	    write_xr(0xC8, (vclk[1] & 0xFF));
@@ -1040,6 +1034,18 @@ CHIPSProbe()
 	    ctHDepth = TRUE;
 	    ctisHiQV32 = TRUE;	       /* Use the new HiQV32 architecture */
 	    ctDPMSSupport = TRUE;
+	} else if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(CT_555))) {
+	    CHIPSchipset = CT_555;
+	    ctLinearSupport = TRUE;
+	    ctAccelSupport = TRUE;
+	    ctSupportMMIO = TRUE;
+	    ctUseMMIO = TRUE;	     /* MMIO seems to be usuable on all Buses
+				      * In fact it seems that Blitting can only
+				      * be done with MMIO */
+	    ctHDepth = TRUE;
+	    ctisHiQV32 = TRUE;	       /* Use the new HiQV32 architecture */
+	    ctDPMSSupport = TRUE;
+	    ctTMED = TRUE;           /* Flag the new STN dithering scheme */
 	} else if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(CT_4200))) {
 	  CHIPSchipset = CT_4200;
 	  ctisWINGINE = TRUE;
@@ -1088,6 +1094,11 @@ CHIPSProbe()
 	    CHIPSchipset = CT_554;
 	    ctUseMMIO = TRUE;	
 	    ctisHiQV32 = TRUE;     /* Use the new HiQV32 architecture */
+	} else if (tmp == 0xE5) {
+	    CHIPSchipset = CT_555;
+	    ctUseMMIO = TRUE;	
+	    ctisHiQV32 = TRUE;     /* Use the new HiQV32 architecture */
+	    ctTMED = TRUE;         /* Flag the new STN dithering scheme */
 	} else {
 	    ErrorF("%s %s: CHIPS: wrong chipID: %x\n",
 		   XCONFIG_PROBED, vga256InfoRec.name, tmp);
@@ -1195,6 +1206,19 @@ CHIPSProbe()
 		ctisHiQV32 = TRUE;
 		ctDPMSSupport = TRUE;
 	    }
+	    if (temp == 0xE5) {
+		CHIPSchipset = CT_555;
+		ctLinearSupport = TRUE;
+		ctAccelSupport = TRUE;
+		ctSupportMMIO = TRUE;
+		ctUseMMIO = TRUE;    /* MMIO seems to be usuable on all Buses.
+				      * In fact it seems that Blitting can only
+				      * be done with MMIO */
+		ctHDepth = TRUE;
+		ctisHiQV32 = TRUE;
+		ctDPMSSupport = TRUE;
+		ctTMED = TRUE;       /* Flag the new STN dithering scheme */
+	    }
 	    if (CHIPSchipset != 99) {
 		outb(0x3D6, 0x04);
 		temp = inb(0x03D7);
@@ -1247,13 +1271,11 @@ CHIPSProbe()
 	vga256InfoRec.DPMSSet = CHIPSDisplayPowerManagementSet;
 #endif
 
-#ifndef  CT_OLD_ACCL_CODE
     if (ctAccelSupport && 
 	!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options) &&
 	!OFLG_ISSET(OPTION_NO_BITBLT, &vga256InfoRec.options)) {
       vgaSetPitchAdjustHook(CHIPSPitchAdjust);
     }
-#endif
 
     if(ctisHiQV32)
       return ctProbeHiQV();
@@ -3191,14 +3213,12 @@ CHIPSInit655xx(mode)
 	 */
 	ctBltDataWindow = vgaLinearBase;
 
-#ifndef  CT_OLD_ACCL_CODE
 	/*
 	 * We have to fix up the XAA Blitter Data Window, because XAA
 	 * was initialised with CtBltDataWindow set to NULL
 	 */
 	xf86AccelInfoRec.CPUToScreenColorExpandBase = 
 	    (unsigned int *)ctBltDataWindow;
-#endif
     }
 
     /* common general setup */
@@ -3491,14 +3511,12 @@ CHIPSInitWINGINE(mode)
 	 */
 	ctBltDataWindow = vgaLinearBase;
 
-#ifndef  CT_OLD_ACCL_CODE
 	/*
 	 * We have to fix up the XAA Blitter Data Window, because XAA
 	 * was initialised with CtBltDataWindow set to NULL
 	 */
 	xf86AccelInfoRec.CPUToScreenColorExpandBase = 
 	    (unsigned int *)ctBltDataWindow;
-#endif
     }
 
     /* common general setup */
@@ -3778,9 +3796,18 @@ CHIPSInitHiQV32(mode)
     /* STN specific */
     if (IS_STN(ctPanelType)) {
 	new->Port_3D0[0x11] &= ~0x03;	/* FRC clear                    */
-	new->Port_3D0[0x11] |= 0x01;	/* 16 frame FRC                 */
 	new->Port_3D0[0x11] &= ~0x8C;	/* Dither clear                 */
-	new->Port_3D0[0x11] |= 0x84;	/* Dither                       */
+	if (ctTMED) {
+	  new->Port_3D0[0x73] |= 0x80;   /* Enable TMED                  */
+	  new->Port_3D0[0x73] &= 0xC8;   /* TMED 33 Shades of RB and 65 G*/
+	  if (vgaBitsPerPixel == 8)
+	     new->Port_3D0[0x73] |= 0x10;/* TMED 65 Shades of RGB */
+	  else if (vgaBitsPerPixel == 24)
+	     new->Port_3D0[0x73] |= 0x30;/* TMED 256 Shades of RGB */
+	} else {
+	  new->Port_3D0[0x11] |= 0x01;	/* 16 frame FRC                 */
+	  new->Port_3D0[0x11] |= 0x84;	/* Dither                       */
+	}
 	if (ctPanelType == DD)		/* Shift Clock Mask. Use to get */
 	    new->Port_3D0[0x12] |= 0x4;	/* rid of line in DSTN screens  */
     }
@@ -3971,7 +3998,6 @@ CHIPSFbInit()
 	    ctAvoidImageBLT = TRUE;
 	}
 	
-#ifndef CT_OLD_ACCL_CODE
 #if 0 /* Disable ping-pong buffers as no ScreenToScreenColorExpand */
 	/* Setup the ping-pong buffer for ScreenToScreen colour expansion */
 	ctColorExpandScratchAddr = ctAllocate(1024, 0x0);
@@ -4022,394 +4048,6 @@ CHIPSFbInit()
 		       XCONFIG_PROBED, vga256InfoRec.name); 
 	    }
 	}
-#else
-	if (!ctisHiQV32) {
-	    switch (vgaBitsPerPixel) {
-	    case 8:
-		vga256LowlevFuncs.doBitbltCopy = ctcfbDoBitbltCopy;
-		vga256LowlevFuncs.vgaBitblt = ctBitBlt;
-		vga256LowlevFuncs.fillRectSolidCopy = ctcfbFillRectSolid;
-
-		/* Hook special op. fills (and tiles): */
-		vga256TEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
-		vga256NonTEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
-		vga256TEOps.PolyFillRect = ctcfbPolyFillRect;
-		vga256NonTEOps.PolyFillRect = ctcfbPolyFillRect;
-
-		vga256LowlevFuncs.fillBoxSolid = ctcfbFillBoxSolid;
-		vga256TEOps1Rect.FillSpans = ctcfbFillSolidSpansGeneral;
-		vga256TEOps.FillSpans = ctcfbFillSolidSpansGeneral;
-		vga256LowlevFuncs.fillSolidSpans = ctcfbFillSolidSpansGeneral;
-	    
-		if (!OFLG_ISSET(OPTION_NO_IMAGEBLT, &vga256InfoRec.options)) {
-		    vga256LowlevFuncs.copyPlane1to8 = ctcfbCopyPlane1to8;
-		     vga256TEOps1Rect.PolyGlyphBlt = ctcfbPolyGlyphBlt;
-		     vga256TEOps.PolyGlyphBlt = ctcfbPolyGlyphBlt;
-		     vga256LowlevFuncs.teGlyphBlt8 = ctcfbImageGlyphBlt;
-		     vga256TEOps1Rect.ImageGlyphBlt = ctcfbImageGlyphBlt;
-		     vga256TEOps.ImageGlyphBlt = ctcfbImageGlyphBlt;
-		}
-
-		/* Setup the address of the tile in vram. Tile must
-		 * be aligned on a 64 bytes value. Size of the space
-		 * is 32x8xBytesPerPixel */
-		ctBLTPatternAddress = ctAllocate(256, 0x3F);
-		if (ctBLTPatternAddress == -1)
-		ErrorF("%s %s: CHIPS: Too little space for accelerated tile.\n",
-		       XCONFIG_PROBED, vga256InfoRec.name);
-
-		break;
-		
-	    case 16:
-		/* There are no corresponding structures to vga256LowlevFuncs
-		 * for 16/24bpp. Hence we have to hook to the cfb functions in
-		 * a similar way to the cirrus driver. For now I've just
-		 * implemented the most basic of blits */
-		cfb16TEOps1Rect.CopyArea = ctcfb16CopyArea;
-		cfb16TEOps.CopyArea = ctcfb16CopyArea;
-		cfb16NonTEOps1Rect.CopyArea = ctcfb16CopyArea;
-		cfb16NonTEOps.CopyArea = ctcfb16CopyArea;
-
-		cfb16TEOps1Rect.FillSpans = ctcfbFillSolidSpansGeneral;
-		cfb16TEOps.FillSpans = ctcfbFillSolidSpansGeneral;
-		cfb16NonTEOps1Rect.FillSpans = ctcfbFillSolidSpansGeneral;
-		cfb16NonTEOps.FillSpans = ctcfbFillSolidSpansGeneral;
-		cfb16TEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
-		cfb16TEOps.PolyFillRect = ctcfbPolyFillRect;
-		cfb16NonTEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
-		cfb16NonTEOps.PolyFillRect = ctcfbPolyFillRect;
-
-		if (!OFLG_ISSET(OPTION_NO_IMAGEBLT, &vga256InfoRec.options)) {
-		    cfb16TEOps1Rect.PolyGlyphBlt = ctcfbPolyGlyphBlt;
-		    cfb16TEOps.PolyGlyphBlt = ctcfbPolyGlyphBlt;
-		    cfb16TEOps1Rect.ImageGlyphBlt = ctcfbImageGlyphBlt;
-		    cfb16TEOps.ImageGlyphBlt = ctcfbImageGlyphBlt;
-		}
-
-		/* Setup the address of the tile in vram. Tile must
-		 * be aligned on a 128 bytes value. Size of the space
-		 * is 32x8xBytesPerPixel. However tiling code doesn't
-		 * seem to be called by the server. This should be
-		 * investigated */
-		ctBLTPatternAddress = ctAllocate(512, 0x7F);
-		if (ctBLTPatternAddress == -1)
-		    ErrorF("%s %s: CHIPS: Too little space for accelerated tile.\n",
-			   XCONFIG_PROBED, vga256InfoRec.name);
-		break;
-
-	    case 24:
-		/* There are no corresponding structures to vga256LowlevFuncs
-		 * for 16/24bpp. Hence we have to hook to the cfb functions in
-		 * a similar way to the cirrus driver. For now I've just 
-		 * implemented the most basic of blits */
-
-		cfb24TEOps1Rect.CopyArea = ctcfb24CopyArea;
-		cfb24TEOps.CopyArea = ctcfb24CopyArea;
-		cfb24NonTEOps1Rect.CopyArea = ctcfb24CopyArea;
-		cfb24NonTEOps.CopyArea = ctcfb24CopyArea;
-
-		cfb24TEOps1Rect.FillSpans = ctcfbFillSolidSpansGeneral;
-		cfb24TEOps.FillSpans = ctcfbFillSolidSpansGeneral;
-		cfb24NonTEOps1Rect.FillSpans = ctcfbFillSolidSpansGeneral;
-		cfb24NonTEOps.FillSpans = ctcfbFillSolidSpansGeneral;
-		cfb24TEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
-		cfb24TEOps.PolyFillRect = ctcfbPolyFillRect;
-		cfb24NonTEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
-		cfb24NonTEOps.PolyFillRect = ctcfbPolyFillRect;
-
-		if (!OFLG_ISSET(OPTION_NO_IMAGEBLT, &vga256InfoRec.options)) {
-		    cfb24TEOps1Rect.PolyGlyphBlt = ctcfbPolyGlyphBlt;
-		    cfb24TEOps.PolyGlyphBlt = ctcfbPolyGlyphBlt;
-		    cfb24TEOps1Rect.ImageGlyphBlt = ctcfbImageGlyphBlt;
-		    cfb24TEOps.ImageGlyphBlt = ctcfbImageGlyphBlt;
-		}
-
-		/* Setup the address of the tile in vram. Tile must
-		 * be aligned on a 256 bytes value. Size of the space
-		 * is 32x8xBytesPerPixel. 24bpp tile file only 
-		 * available on 65550, this is here for use later */
-		ctBLTPatternAddress = ctAllocate(768, 0xFF);
-		if (ctBLTPatternAddress == -1)
-		    ErrorF("%s %s: CHIPS: Too little space for accelerated tile.\n",
-			   XCONFIG_PROBED, vga256InfoRec.name);
-		break;
-
-	    }
-
-	    /* If direct memory access to the blitter registers is available,
-	     * then use it to do the blitting as it is faster. Many blit
-	     * operation are too slow to utilise without MMIO (eg Line
-	     * acceleration) and so are only included here. Note that vgaBase
-	     *  is not initialised at this point. So we can't set ctMMIOBase
-	     * here. It is done in CHIPSInit. */
-
-	    if (ctUseMMIO) {
-		ErrorF("%s %s: CHIPS: Memory mapped I/O selected\n",
-		    OFLG_ISSET(OPTION_MMIO, &vga256InfoRec.options) ?
-		    XCONFIG_GIVEN : XCONFIG_PROBED, vga256InfoRec.name);
-		switch (vgaBitsPerPixel) {
-		case 8:
-		    vga256LowlevFuncs.vgaBitblt = ctMMIOBitBlt;
-		    vga256LowlevFuncs.fillRectSolidCopy = ctMMIOFillRectSolid;
-		    vga256TEOps1Rect.FillSpans = ctMMIOFillSolidSpansGeneral;
-		    vga256TEOps.FillSpans = ctMMIOFillSolidSpansGeneral;
-		    vga256LowlevFuncs.fillSolidSpans = ctMMIOFillSolidSpansGeneral;
-
-		    if (!OFLG_ISSET(OPTION_NO_IMAGEBLT,
-				   &vga256InfoRec.options)) {
-			vga256TEOps1Rect.PolyGlyphBlt = ctMMIOPolyGlyphBlt;
-			vga256TEOps.PolyGlyphBlt = ctMMIOPolyGlyphBlt;
-			vga256LowlevFuncs.teGlyphBlt8 = ctMMIOImageGlyphBlt;
-			vga256TEOps1Rect.ImageGlyphBlt = ctMMIOImageGlyphBlt;
-			vga256TEOps.ImageGlyphBlt = ctMMIOImageGlyphBlt;
-		    }
-
-		    vga256TEOps1Rect.Polylines = ctMMIOLineSS;
-		    vga256NonTEOps1Rect.Polylines = ctMMIOLineSS;
-		    vga256TEOps.Polylines = ctMMIOLineSS;
-		    vga256NonTEOps.Polylines = ctMMIOLineSS;
-		    vga256TEOps1Rect.PolySegment = ctMMIOSegmentSS;
-		    vga256NonTEOps1Rect.PolySegment = ctMMIOSegmentSS;
-		    vga256TEOps.PolySegment = ctMMIOSegmentSS;
-		    vga256TEOps.PolySegment = ctMMIOSegmentSS;
-		    break;
-		case 16:
-		    cfb16TEOps1Rect.FillSpans = ctMMIOFillSolidSpansGeneral;
-		    cfb16TEOps.FillSpans = ctMMIOFillSolidSpansGeneral;
-		    cfb16NonTEOps1Rect.FillSpans = ctMMIOFillSolidSpansGeneral;
-		    cfb16NonTEOps.FillSpans = ctMMIOFillSolidSpansGeneral;
-
-		    if (!OFLG_ISSET(OPTION_NO_IMAGEBLT,
-				   &vga256InfoRec.options)) {
-			cfb16TEOps1Rect.PolyGlyphBlt = ctMMIOPolyGlyphBlt;
-			cfb16TEOps.PolyGlyphBlt = ctMMIOPolyGlyphBlt;
-			cfb16TEOps1Rect.ImageGlyphBlt = ctMMIOImageGlyphBlt;
-			cfb16TEOps.ImageGlyphBlt = ctMMIOImageGlyphBlt;
-		    }
-
-		    /* The way of hooking to these should be looked in to.
-		     * see the files ../../../../../cfb24/cfbgc.c and
-		     * ../../../../../cfb24/cfbmskbits.h. It is possible that 
-		     * this isn't always the right way to do this */
-
-		    cfb16TEOps1Rect.Polylines = ctMMIOLineSS;
-		    cfb16NonTEOps1Rect.Polylines = ctMMIOLineSS;
-		    cfb16TEOps1Rect.PolySegment = ctMMIOSegmentSS;
-		    cfb16NonTEOps1Rect.PolySegment = ctMMIOSegmentSS;
-
-		    cfb16TEOps.Polylines = ctMMIOLineSS;
-		    cfb16NonTEOps.Polylines = ctMMIOLineSS;
-		    cfb16TEOps.PolySegment = ctMMIOSegmentSS;
-		    cfb16TEOps.PolySegment = ctMMIOSegmentSS;
-		    break;
-		case 24:
-		    cfb24TEOps1Rect.FillSpans = ctMMIOFillSolidSpansGeneral;
-		    cfb24TEOps.FillSpans = ctMMIOFillSolidSpansGeneral;
-		    cfb24NonTEOps1Rect.FillSpans = ctMMIOFillSolidSpansGeneral;
-		    cfb24NonTEOps.FillSpans = ctMMIOFillSolidSpansGeneral;
-
-		    if (!OFLG_ISSET(OPTION_NO_IMAGEBLT,
-				   &vga256InfoRec.options)) {
-			cfb24TEOps1Rect.PolyGlyphBlt = ctMMIOPolyGlyphBlt;
-			cfb24TEOps.PolyGlyphBlt = ctMMIOPolyGlyphBlt;
-			cfb24TEOps1Rect.ImageGlyphBlt = ctMMIOImageGlyphBlt;
-			cfb24TEOps.ImageGlyphBlt = ctMMIOImageGlyphBlt;
-		    }
-
-		    /* The way of hooking to these should be looked in to.
-		     * see the files ../../../../../cfb24/cfbgc.c and
-		     * ../../../../../cfb24/cfbmskbits.h. It is possible that 
-		     * this isn't always the right way to do this */
-
-		    cfb24TEOps1Rect.Polylines = ctMMIOLineSS;
-		    cfb24NonTEOps1Rect.Polylines = ctMMIOLineSS;
-		    cfb24TEOps1Rect.PolySegment = ctMMIOSegmentSS;
-		    cfb24NonTEOps1Rect.PolySegment = ctMMIOSegmentSS;
-
-		    cfb24TEOps.Polylines = ctMMIOLineSS;
-		    cfb24NonTEOps.Polylines = ctMMIOLineSS;
-		    cfb24TEOps.PolySegment = ctMMIOSegmentSS;
-		    cfb24TEOps.PolySegment = ctMMIOSegmentSS;
-		    break;
-		}
-	    }
-	} else {	/* HiQV acceleration support */ 
-	    if (ctUseMMIO) {
-		ErrorF("%s %s: CHIPS: Memory mapped I/O selected\n",
-		    OFLG_ISSET(OPTION_MMIO, &vga256InfoRec.options) ?
-		    XCONFIG_GIVEN : XCONFIG_PROBED, vga256InfoRec.name);
-		switch (vgaBitsPerPixel) {
-		case 8:
-		    vga256LowlevFuncs.doBitbltCopy = ctcfbDoBitbltCopy;
-		    vga256LowlevFuncs.vgaBitblt = ctHiQVBitBlt;
-
-		    vga256LowlevFuncs.fillRectSolidCopy = ctHiQVFillRectSolid;
-
-		    vga256LowlevFuncs.fillBoxSolid = ctcfbFillBoxSolid;
-		    vga256TEOps1Rect.FillSpans = ctHiQVFillSolidSpansGeneral;
-		    vga256TEOps.FillSpans = ctHiQVFillSolidSpansGeneral;
-		    vga256LowlevFuncs.fillSolidSpans = ctHiQVFillSolidSpansGeneral;
-		    /* Setup the address of the tile in vram. Tile must
-		     * be aligned on a 64 bytes value. Size of the space
-		     * is 32x8xBytesPerPixel */
-		    ctBLTPatternAddress = ctAllocate(256, 0x3F);
-		    if (ctBLTPatternAddress == -1)
-		        ErrorF("%s %s: CHIPS: Too little space for accelerated tile.\n",
-			       XCONFIG_PROBED, vga256InfoRec.name);
-
-		    vga256TEOps1Rect.Polylines = ctHiQVLineSS;
-		    vga256NonTEOps1Rect.Polylines = ctHiQVLineSS;
-		    vga256TEOps.Polylines = ctHiQVLineSS;
-		    vga256NonTEOps.Polylines = ctHiQVLineSS;
-		    vga256TEOps1Rect.PolySegment = ctHiQVSegmentSS;
-		    vga256NonTEOps1Rect.PolySegment = ctHiQVSegmentSS;
-		    vga256TEOps.PolySegment = ctHiQVSegmentSS;
-		    vga256TEOps.PolySegment = ctHiQVSegmentSS;
-
-#if 0	/* Untested with the HiQV. Need adaptation */
-
-		    /* Hook special op. fills (and tiles): */
-		    vga256TEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
-		    vga256NonTEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
-		    vga256TEOps.PolyFillRect = ctcfbPolyFillRect;
-		    vga256NonTEOps.PolyFillRect = ctcfbPolyFillRect;
-
-		    if (!OFLG_ISSET(OPTION_NO_IMAGEBLT,
-				   &vga256InfoRec.options)) {	    
-			vga256LowlevFuncs.copyPlane1to8 = ctcfbCopyPlane1to8;
-			vga256TEOps1Rect.PolyGlyphBlt = ctHiQVPolyGlyphBlt;
-			vga256TEOps.PolyGlyphBlt = ctHiQVPolyGlyphBlt;
-			vga256LowlevFuncs.teGlyphBlt8 = ctHiQVImageGlyphBlt;
-			vga256TEOps1Rect.ImageGlyphBlt = ctHiQVImageGlyphBlt;
-			vga256TEOps.ImageGlyphBlt = ctHiQVImageGlyphBlt;
-		    }
-		    
-#endif	/* Untested with the HiQV. Need adaptation */
-		    break;
-		
-		case 16:
-		    /* There are no corresponding structures to vga256LowlevFuncs
-		     * for 16/24bpp. Hence we have to hook to the cfb functions
-		     * in a similar way to the cirrus driver. For now I've just
-		     * implemented the most basic of blits */
-		    cfb16TEOps1Rect.CopyArea = ctcfb16CopyArea;
-		    cfb16TEOps.CopyArea = ctcfb16CopyArea;
-		    cfb16NonTEOps1Rect.CopyArea = ctcfb16CopyArea;
-		    cfb16NonTEOps.CopyArea = ctcfb16CopyArea;
-
-		    cfb16TEOps1Rect.FillSpans = ctHiQVFillSolidSpansGeneral;
-		    cfb16TEOps.FillSpans = ctHiQVFillSolidSpansGeneral;
-		    cfb16NonTEOps1Rect.FillSpans = ctHiQVFillSolidSpansGeneral;
-		    cfb16NonTEOps.FillSpans = ctHiQVFillSolidSpansGeneral;
-
-		    /* Setup the address of the tile in vram. Tile must
-		     * be aligned on a 128 bytes value. Size of the space
-		     * is 32x8xBytesPerPixel. However tiling code doesn't
-		     * seem to be called by the server. This should be
-		     * investigated */
-		    ctBLTPatternAddress = ctAllocate(512, 0x7F);
-		    if (ctBLTPatternAddress == -1)
-		        ErrorF("%s %s: CHIPS: Too little space for accelerated tile.\n",
-			       XCONFIG_PROBED, vga256InfoRec.name);
-		    /* The way of hooking to these should be looked in to.
-		     * see the files ../../../../../cfb24/cfbgc.c and
-		     * ../../../../../cfb24/cfbmskbits.h. It is possible that 
-		     * this isn't always the right way to do this */
-
-		    cfb16TEOps1Rect.Polylines = ctHiQVLineSS;
-		    cfb16NonTEOps1Rect.Polylines = ctHiQVLineSS;
-		    cfb16TEOps1Rect.PolySegment = ctHiQVSegmentSS;
-		    cfb16NonTEOps1Rect.PolySegment = ctHiQVSegmentSS;
-
-		    cfb16TEOps.Polylines = ctHiQVLineSS;
-		    cfb16NonTEOps.Polylines = ctHiQVLineSS;
-		    cfb16TEOps.PolySegment = ctHiQVSegmentSS;
-		    cfb16TEOps.PolySegment = ctHiQVSegmentSS;
-
-#if 0	/* Untested with the HiQV. Need adaptation */
-		    cfb16TEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
-		    cfb16TEOps.PolyFillRect = ctcfbPolyFillRect;
-		    cfb16NonTEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
-		    cfb16NonTEOps.PolyFillRect = ctcfbPolyFillRect;
-
-		    if (!OFLG_ISSET(OPTION_NO_IMAGEBLT, 
-				   &vga256InfoRec.options)) {
-			cfb16TEOps1Rect.PolyGlyphBlt = ctHiQVPolyGlyphBlt;
-			cfb16TEOps.PolyGlyphBlt = ctHiQVPolyGlyphBlt;
-			cfb16TEOps1Rect.ImageGlyphBlt = ctHiQVImageGlyphBlt;
-			cfb16TEOps.ImageGlyphBlt = ctHiQVImageGlyphBlt;
-		    }
-		    
-#endif	/* Untested with the HiQV. Need adaptation */
-
-		    break;
-
-		case 24:
-		    /* There are no corresponding structures to vga256LowlevFuncs
-		     * for 16/24bpp. Hence we have to hook to the cfb functions
-		     * in a similar way to the cirrus driver. For now I've
-		     * just implemented the most basic of blits */
-
-		    cfb24TEOps1Rect.CopyArea = ctcfb24CopyArea;
-		    cfb24TEOps.CopyArea = ctcfb24CopyArea;
-		    cfb24NonTEOps1Rect.CopyArea = ctcfb24CopyArea;
-		    cfb24NonTEOps.CopyArea = ctcfb24CopyArea;
-
-		    cfb24TEOps1Rect.FillSpans = ctHiQVFillSolidSpansGeneral;
-		    cfb24TEOps.FillSpans = ctHiQVFillSolidSpansGeneral;
-		    cfb24NonTEOps1Rect.FillSpans = ctHiQVFillSolidSpansGeneral;
-		    cfb24NonTEOps.FillSpans = ctHiQVFillSolidSpansGeneral;
-
-		    /* Setup the address of the tile in vram. Tile must
-		     * be aligned on a 256 bytes value. Size of the space
-		     * is 32x8xBytesPerPixel. 24bpp tile file only 
-		     * available on 65550, this is here for use later */
-		    ctBLTPatternAddress = ctAllocate(768, 0xFF);
-		    if (ctBLTPatternAddress == -1)
-		        ErrorF("%s %s: CHIPS: Too little space for accelerated tile.\n",
-			       XCONFIG_PROBED, vga256InfoRec.name);
-		    break;
-
-		    /* The way of hooking to these should be looked in to.
-		     * see the files ../../../../../cfb24/cfbgc.c and
-		     * ../../../../../cfb24/cfbmskbits.h. It is possible that 
-		     * this isn't always the right way to do this */
-
-		    cfb24TEOps1Rect.Polylines = ctHiQVLineSS;
-		    cfb24NonTEOps1Rect.Polylines = ctHiQVLineSS;
-		    cfb24TEOps1Rect.PolySegment = ctHiQVSegmentSS;
-		    cfb24NonTEOps1Rect.PolySegment = ctHiQVSegmentSS;
-
-		    cfb24TEOps.Polylines = ctHiQVLineSS;
-		    cfb24NonTEOps.Polylines = ctHiQVLineSS;
-		    cfb24TEOps.PolySegment = ctHiQVSegmentSS;
-		    cfb24TEOps.PolySegment = ctHiQVSegmentSS;
-
-#if 0	/* Untested with the HiQV. Need adaptation */
-		    cfb24TEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
-		    cfb24TEOps.PolyFillRect = ctcfbPolyFillRect;
-		    cfb24NonTEOps1Rect.PolyFillRect = ctcfbPolyFillRect;
-		    cfb24NonTEOps.PolyFillRect = ctcfbPolyFillRect;
-
-		    if (!OFLG_ISSET(OPTION_NO_IMAGEBLT, 
-				   &vga256InfoRec.options)) {
-			cfb24TEOps1Rect.PolyGlyphBlt = ctHiQVPolyGlyphBlt;
-			cfb24TEOps.PolyGlyphBlt = ctHiQVPolyGlyphBlt;
-			cfb24TEOps1Rect.ImageGlyphBlt = ctHiQVImageGlyphBlt;
-			cfb24TEOps.ImageGlyphBlt = ctHiQVImageGlyphBlt;
-		    }
-		    
-#endif	/* Untested with the HiQV. Need adaptation */
-
-		}
-	    } else {
-		ErrorF("%s %s: CHIPS: Memory mapped I/O not available\n",
-		       XCONFIG_PROBED, vga256InfoRec.name);
-		ErrorF("%s %s: CHIPS: HiQV acceleration support disabled\n",
-			XCONFIG_PROBED, vga256InfoRec.name); 
-	    }
-	}
-#endif /* CT_OLD_ACCL_CODE */
     }
 
 #ifdef DEBUG
@@ -4861,7 +4499,6 @@ int PowerManagementMode;
 }
 #endif
 
-#ifndef  CT_OLD_ACCL_CODE
 /*
  * CHIPSPitchAdjust --
  *
@@ -4906,4 +4543,3 @@ CHIPSPitchAdjust()
 #endif
   return newpitch;
 }
-#endif

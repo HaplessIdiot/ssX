@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.9 1997/05/03 09:18:50 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.10 1997/06/03 14:12:23 hohndel Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -457,9 +457,9 @@ ET4000LinMem(Bool autodetect)
    * (which is required for accelerator support) uses the system's mmap()
    * call. This call requires the base address to be on a page boundary on
    * some systems. Therefor, we will _not_ ask for memory-mapped IO at the
-   * correct address (=ET4000.ChipLinearBase+0x003FFF00), and let the system
-   * also map out memory for the video frame buffer at ET4000.ChipLinearBase
-   * for ET4000.ChipLinearSize bytes. Instead, we will ask for the entire 4
+   * correct address (=TSENG.ChipLinearBase+0x003FFF00), and let the system
+   * also map out memory for the video frame buffer at TSENG.ChipLinearBase
+   * for TSENG.ChipLinearSize bytes. Instead, we will ask for the entire 4
    * MB of memory mapped all at once in one block. This also saves us from
    * having to add a hook in vga.c to do that extra step of mapping (MMIO).
    *
@@ -963,7 +963,7 @@ ET4000Probe()
 
   if (CHIP_SUPPORTS_LINEAR) {
     /* enable using option "linear" in XF86Config */
-    OFLG_SET(OPTION_LINEAR, &ET4000.ChipOptionFlags);
+    OFLG_SET(OPTION_LINEAR, &TSENG.ChipOptionFlags);
   }
   else {
     /* clear the option flag if it isn't supported */
@@ -989,9 +989,9 @@ ET4000Probe()
   switch(TsengRamdacType) {
     case ET6000_DAC:
     case ICS5341_DAC:
-       ET4000.ChipHas16bpp = TRUE;
-       ET4000.ChipHas24bpp = TRUE;
-       ET4000.ChipHas32bpp = TRUE;
+       TSENG.ChipHas16bpp = TRUE;
+       TSENG.ChipHas24bpp = TRUE;
+       TSENG.ChipHas32bpp = TRUE;
        break;
     case STG1703_DAC:
     case STG1702_DAC:
@@ -999,12 +999,12 @@ ET4000Probe()
     case ATT20C491_DAC:
     case ATT20C492_DAC:
     case ATT20C493_DAC:
-       ET4000.ChipHas16bpp = TRUE;
-       ET4000.ChipHas24bpp = TRUE;
+       TSENG.ChipHas16bpp = TRUE;
+       TSENG.ChipHas24bpp = TRUE;
        break;
     case CH8398_DAC:  /* CH8398 seems to have trouble with "hibit" (MCLK/2) clocks at 24bpp */
     case STG1700_DAC: /* STG1700 can't do packed 24bpp over a 16-bit bus */
-       ET4000.ChipHas16bpp = TRUE;
+       TSENG.ChipHas16bpp = TRUE;
        break;
   }
 
@@ -1323,7 +1323,7 @@ ET4000FbInit()
   }
 
 
-  if (!ET4000.ChipUseLinearAddressing)
+  if (!TSENG.ChipUseLinearAddressing)
   {
     if (useSpeedUp & SPEEDUP_FILLRECT)
     {

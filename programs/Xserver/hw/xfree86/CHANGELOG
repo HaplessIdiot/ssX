@@ -1,3 +1,28 @@
+XFree86 3.9d (xx June 1997)
+ 968. Fix default value for xf86bpp (David Dawes, Dirk Hohndel).
+ 967. Some cleanups to tseng driver, re-apply the STG1700 RAMDAC changes and
+      re-introduce some 1/4bpp checks (#605, Koen Gadeyne).
+ 966. Fix a few typos in tseng.sgml (#605, Koen Gadeyne).
+ 965. Automagically select the correct protocol for PS/2 mice at startup
+      with XF86Setup (#604, Dirk Hohndel).
+ 964. Fix XF86Setup to follow links that point to non-existing files (so that
+      it creates /var/X11R6/bin/X if necessary (#604, Dirk Hohndel).
+ 963. Fix XF86Setup to allow reading the right README files for cards using
+      the SVGA server (#604, Dirk Hohndel).
+ 962. Fix small problem with installing the LinkKit (#603, Geert Uytterhoeven).
+ 961. Fix 8x8 pattern cache size checking (#602, David Bateman).
+ 960. Remove old (pre-XAA) acceleration from C&T driver (#601, David Bateman).
+ 959. Two small fixes in C&T driver for "use_vclk1" option and ImageWrites
+      (#600, David Bateman).
+ 958. Add C&T 65555 detection to SuperProbe and SVGA server; treat it
+      basically like a 65550 but attempts to use the TMED features (untested)
+      (#600, David Bateman).
+ 957. Fix build problems in tseng_driver.c (#599, David Bateman).
+ 956. Fix XF86Setup build problem (#598, Takaaki Nomura).
+ 955. Fix yet another fontserver problem (#597, Kaleb Keithley).
+ 954. Remove bogus changes to xc/Imakefile (Dirk Hohndel).
+ 953. Fix incorrect define for DGA (Steve Kump).
+
 XFree86 3.9c (3 June 1997)
  952. Fix a problem with the HW cursor being drawn in the overscan area
       with the svga/s3v driver and cleanup some of the register
@@ -4826,4 +4851,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.482 1997/05/31 13:51:23 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.483 1997/06/03 14:11:12 hohndel Exp $
