@@ -1,4 +1,12 @@
 XFree86 4.2.99.902 (XX February 2003)
+ 906. Fix a crash in the "xtt" font module caused by a NULL dereference
+      when the font cache becomes full (#A.1611, Chisato Yamauchi and
+      tokeijikakenoringo).
+ 905. Update the list of DRI-supported Radeon hardware (#A.1610,
+      Knut J Bjuland).
+ 904. Fix a problem in _XEventsQueued() that causes an event reader lock
+      of another thread to be released.  This can cause a hang and keyboard
+      lockup in KDE (#5619, Ewald Snel).
  903. Fix some bugs with Xft drawing to non-Render enabled servers:
        - Drawing monochrome glyphs had an infinite loop.
        - XftGlyphSpecCore failed to render some glyphs, leading to application
@@ -16395,4 +16403,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2556 2003/02/15 20:32:08 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2557 2003/02/15 22:33:23 dawes Exp $
