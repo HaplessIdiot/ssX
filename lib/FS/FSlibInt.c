@@ -1,4 +1,5 @@
 /* $XConsortium: FSlibInt.c,v 1.16 94/04/17 20:15:21 gildea Exp $ */
+/* $XFree86$ */
 
 /*
  * Copyright 1990 Network Computing Devices;
@@ -268,19 +269,37 @@ _FSRead(svr, data, size)
     register long size;
 {
     register long bytes_read;
+#if defined(SVR4) && defined(i386)
+    int	num_failed_reads = 0;
+#endif
 
     if (size == 0)
 	return;
     ESET(0);
+    /*
+     * For SVR4 with a unix-domain connection, ETEST() after selecting
+     * readable means the server has died.  To do this here, we look for
+     * two consecutive reads returning ETEST().
+     */
     while ((bytes_read = _FSTransRead(svr->trans_conn, data, (int) size))
 	    != size) {
 
 	if (bytes_read > 0) {
 	    size -= bytes_read;
 	    data += bytes_read;
+#if defined(SVR4) && defined(i386)
+	    num_failed_reads = 0;
+#endif
 	}
 	else if (ETEST()) {
 	    _FSWaitForReadable(svr);
+#if defined(SVR4) && defined(i386)
+	    num_failed_reads++;
+	    if (num_failed_reads > 1) {
+		ESET(EPIPE);
+		(*_FSIOErrorFunction) (svr);
+	    }
+#endif
 	    ESET(0);
 	}
 #ifdef SUNSYSV
@@ -297,6 +316,10 @@ _FSRead(svr, data, size)
 	    /* If it's a system call interrupt, it's not an error. */
 	    if (!ECHECK(EINTR))
 		(*_FSIOErrorFunction) (svr);
+#if defined(SVR4) && defined(i386)
+	    else
+		num_failed_reads = 0;
+#endif
 	}
     }
 }
@@ -900,19 +923,6 @@ _FSWireToEvent(svr, re, event)
 }
 
 
-static char *
-_SysErrorMsg(n)
-    int         n;
-{
-#ifndef WIN32
-    extern char *sys_errlist[];
-    extern int  sys_nerr;
-#endif
-    char       *s = ((n >= 0 && n < sys_nerr) ? sys_errlist[n] : "unknown error");
-
-    return (s ? s : "no such error");
-}
-
 /*
  * _FSDefaultIOError - Default fatal system error reporting routine.  Called
  * when an X internal system error is encountered.
@@ -926,7 +936,7 @@ _FSDefaultIOError(svr)
 			WSAGetLastError(), strerror(WSAGetLastError()),
 #else
 
-		   errno, _SysErrorMsg(errno),
+		   errno, strerror(errno),
 #endif
 		   FSServerString(svr));
     (void) fprintf(stderr,

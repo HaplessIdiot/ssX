@@ -1,4 +1,5 @@
 /* $XConsortium: XlibInt.c,v 11.228 94/04/17 20:21:48 rws Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1985, 1986, 1987  X Consortium
@@ -191,6 +192,8 @@ _XWaitForWritable(dpy
     xcondition_t cv;		/* our reading condition variable */
 #endif
 {
+#if !defined(AMOEBA)
+
 #ifdef USE_POLL
     struct pollfd filedes;
 #else
@@ -327,6 +330,11 @@ _XWaitForWritable(dpy
 	    return;
 	}
     }
+#else  /* AMOEBA */
+    /* Should not happen under Amoeba */
+    printf("_XWaitForWritable called unexpectedly\n");
+    _XIOError(dpy);
+#endif /* AMOEBA */
 }
 
 
@@ -411,6 +419,7 @@ static int
 _XWaitForReadable(dpy)
   Display *dpy;
 {
+#if !defined(AMOEBA)
     int result;
     int fd = dpy->fd;
     struct _XConnectionInfo *ilist;  
@@ -517,6 +526,13 @@ _XWaitForReadable(dpy)
 #endif
 #endif
     return 0;
+#else  /* AMOEBA */
+    int nbytes;
+
+    /* wait max 100 msec (why?) for data to become available */
+    nbytes = _X11TransAmSelect(ConnectionNumber(dpy), 100);
+    return (nbytes > 0) ? 0 : -1;
+#endif /* AMOEBA */
 }
 
 static
@@ -2654,23 +2670,6 @@ register xEvent *event;	/* wire protocol event */
 }
 
 
-#ifndef USL_SHARELIB
-
-static char *_SysErrorMsg (n)
-    int n;
-{
-#ifndef WIN32
-    extern char *sys_errlist[];
-    extern int sys_nerr;
-#endif
-    char *s = ((n >= 0 && n < sys_nerr) ? sys_errlist[n] : "unknown error");
-
-    return (s ? s : "no such error");
-}
-
-#endif 	/* USL sharedlibs in don't define for SVR3.2 */
-
-
 /*
  * _XDefaultIOError - Default fatal system error reporting routine.  Called 
  * when an X internal system error is encountered.
@@ -2688,7 +2687,7 @@ _XDefaultIOError (dpy)
 #ifdef WIN32
 			WSAGetLastError(), strerror(WSAGetLastError()),
 #else
-			errno, _SysErrorMsg (errno),
+			errno, strerror (errno),
 #endif
 			DisplayString (dpy));
 	    (void) fprintf (stderr, 

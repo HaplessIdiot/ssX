@@ -157,11 +157,24 @@ _FSWaitForWritable(svr)
 	BITSET(w_mask, svr->fd);
 
 	do {
+#ifndef AMOEBA
 #ifdef WIN32
 	    nfound = select (0, &r_mask, &w_mask, NULL, NULL);
 #else
 	    nfound = select(svr->fd + 1, r_mask, w_mask, NULL, NULL);
 #endif
+#else /* AMOEBA */
+	    if (_FSTransAmSelect(svr->fd, 0) > 0) {
+		BITSET(r_mask, svr->fd);
+	    } else {
+		CLEARBITS(r_mask);
+	    }
+	    /* Always immediately writable because data is enqueued to be
+	     * written by separate virtual circuit threads.
+	     */
+	    nfound = 1;
+	    BITSET(w_mask, svr->fd);
+#endif /* AMOEBA */
 	    if (nfound < 0 && !ECHECK(EINTR))
 		(*_FSIOErrorFunction) (svr);
 	} while (nfound <= 0);
@@ -218,10 +231,18 @@ _FSWaitForReadable(svr)
     CLEARBITS(r_mask);
     do {
 	BITSET(r_mask, svr->fd);
+#ifndef AMOEBA
 #ifdef WIN32
 	result = select (0, &r_mask, NULL, NULL, NULL);
 #else
 	result = select(svr->fd + 1, r_mask, NULL, NULL, NULL);
+#endif
+#else
+	if ((result = _FSTransAmSelect(svr->fd, 0)) > 0) {
+	    BITSET(r_mask, svr->fd);
+	} else {
+	    CLEARBITS(r_mask);
+	}
 #endif
 	if (result == -1 && !ECHECK(EINTR))
 	    (*_FSIOErrorFunction) (svr);

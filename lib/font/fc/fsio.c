@@ -1,4 +1,5 @@
 /* $XConsortium: fsio.c,v 1.36 94/03/18 11:01:01 mor Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -41,7 +42,7 @@
 #include	<stdio.h>
 #include	<signal.h>
 #include	<sys/types.h>
-#ifndef WIN32
+#if !defined(WIN32) && !defined(AMOEBA) && !defined(_MINIX)
 #include	<sys/socket.h>
 #endif
 #include	<errno.h>
@@ -344,6 +345,9 @@ _fs_read(conn, data, size)
     unsigned long size;
 {
     long        bytes_read;
+#if defined(SVR4) && defined(i386)
+    int		num_failed_reads = 0;
+#endif
 
     if (size == 0) {
 
@@ -354,11 +358,19 @@ _fs_read(conn, data, size)
 	return 0;
     }
     ESET(0);
+    /*
+     * For SVR4 with a unix-domain connection, ETEST() after selecting
+     * readable means the server has died.  To do this here, we look for
+     * two consecutive reads returning ETEST().
+     */
     while ((bytes_read = _FontTransRead(conn->trans_conn,
 	data, (int) size)) != size) {
 	if (bytes_read > 0) {
 	    size -= bytes_read;
 	    data += bytes_read;
+#if defined(SVR4) && defined(i386)
+	    num_failed_reads = 0;
+#endif
 	} else if (ETEST()) {
 	    /* in a perfect world, this shouldn't happen */
 	    /* ... but then, its less than perfect... */
@@ -367,8 +379,19 @@ _fs_read(conn, data, size)
 		ESET(EPIPE);
 		return -1;
 	    }
+#if defined(SVR4) && defined(i386)
+	    num_failed_reads++;
+	    if (num_failed_reads > 1) {
+		_fs_connection_died(conn);
+		ESET(EPIPE);
+		return -1;
+	    }
+#endif
 	    ESET(0);
 	} else if (ECHECK(EINTR)) {
+#if defined(SVR4) && defined(i386)
+	    num_failed_reads = 0;
+#endif
 	    continue;
 	} else {		/* something bad happened */
 	    if (conn->fs_fd > 0)
@@ -476,6 +499,7 @@ int
 _fs_wait_for_readable(conn)
     FSFpePtr    conn;
 {
+#ifndef AMOEBA
     FdSet r_mask;
     FdSet e_mask;
     int         result;
@@ -505,6 +529,10 @@ _fs_wait_for_readable(conn)
     } while (result <= 0);
 
     return 0;
+#else
+    printf("fs_wait_for_readable(): fail\n");
+    return -1;
+#endif
 }
 
 int

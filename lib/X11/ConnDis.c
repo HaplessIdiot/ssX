@@ -1,4 +1,5 @@
 /* $XConsortium: ConnDis.c,v 11.121 94/04/17 20:18:53 mor Exp $ */
+/* $XFree86$ */
 /*
  
 Copyright (c) 1989  X Consortium
@@ -235,6 +236,12 @@ _X11TransConnectDisplay (display_name, fullnamep, dpynump, screenp,
 #endif
 	    pprotocol = copystring ("tcp", 3);
     }
+#else
+#if defined(AMRPCCONN)
+    if (!pprotocol) {
+            pprotocol = copystring ("amcon", 5);
+    }
+#endif
 #endif
 
 #if defined(UNIXCONN) || defined(LOCALCONN)
