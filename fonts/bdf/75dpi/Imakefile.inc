@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/fonts/bdf/75dpi/Imakefile.inc,v 1.2 2001/04/05 02:43:34 dawes Exp $
+XCOMM $XFree86: xc/fonts/bdf/75dpi/Imakefile.inc,v 1.3 2001/04/17 23:43:45 dawes Exp $
 
 
 #if BuildUCSFonts
@@ -289,7 +289,7 @@ DERIVED_8859_2_OBJS2 = \
 	FontObj(lutRS12-ISO8859-2) FontObj(lutRS14-ISO8859-2) \
 	FontObj(lutRS18-ISO8859-2) FontObj(lutRS19-ISO8859-2) \
 	FontObj(lutRS24-ISO8859-2) \
-	IontObj(UTBI__10-ISO8859-2) FontObj(UTBI__12-ISO8859-2) \
+	FontObj(UTBI__10-ISO8859-2) FontObj(UTBI__12-ISO8859-2) \
 	FontObj(UTBI__14-ISO8859-2) FontObj(UTBI__18-ISO8859-2) \
 	FontObj(UTBI__24-ISO8859-2) \
 	FontObj(UTB___10-ISO8859-2) FontObj(UTB___12-ISO8859-2) \
@@ -2461,6 +2461,13 @@ FontTarget(UTRG__12-ISO8859-10)
 FontTarget(UTRG__14-ISO8859-10)
 FontTarget(UTRG__18-ISO8859-10)
 FontTarget(UTRG__24-ISO8859-10)
+FontTarget(courB08-ISO8859-13)
+FontTarget(courB10-ISO8859-13)
+FontTarget(courB12-ISO8859-13)
+FontTarget(courB14-ISO8859-13)
+FontTarget(courB18-ISO8859-13)
+FontTarget(courB24-ISO8859-13)
+FontTarget(courBO08-ISO8859-13)
 FontTarget(courBO10-ISO8859-13)
 FontTarget(courBO12-ISO8859-13)
 FontTarget(courBO14-ISO8859-13)
