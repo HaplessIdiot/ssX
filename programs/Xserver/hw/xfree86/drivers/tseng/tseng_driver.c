@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.14.2.11 1998/07/25 10:32:22 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.30 1998/07/25 16:56:03 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -25,10 +25,6 @@
  *          ET6000 and ET4000W32 16/24/32 bpp support by Koen Gadeyne
  */
 /* $XConsortium: et4_driver.c /main/27 1996/10/28 04:48:15 kaleb $ */
-
-
-
-
 
 /*** Generic includes ***/
 
@@ -298,8 +294,10 @@ TsengFreeRec(ScrnInfoPtr pScrn)
 }
 
 static t_tseng_type
-TsengPCI2Type(TsengPtr pTseng, int ChipID)
+TsengPCI2Type(ScrnInfoPtr pScrn, int ChipID)
 {
+    TsengPtr pTseng = TsengPTR(pScrn);
+
     switch (ChipID) {
     case PCI_CHIP_ET4000_W32P_A:
 	pTseng->ChipType = TYPE_ET4000W32P;
@@ -357,10 +355,10 @@ TsengAssignFPtr(ScrnInfoPtr pScrn)
 
 /* unlock ET4000 using KEY register */
 static void
-TsengUnlock()
+TsengUnlock(void)
 {
-    int iobase = VGAHW_GET_IOBASE();
     unsigned char temp;
+    int iobase = VGAHW_GET_IOBASE();
 
     ErrorF("	TsengUnlock\n");
     outb(0x3BF, 0x03);
@@ -372,10 +370,10 @@ TsengUnlock()
 
 /* lock ET4000 using KEY register. FIXME: should restore old lock status instead */
 static void
-TsengLock()
+TsengLock(void)
 {
-    int iobase = VGAHW_GET_IOBASE();
     unsigned char temp;
+    int iobase = VGAHW_GET_IOBASE();
 
     ErrorF("	TsengLock\n");
     outb(iobase + 4, 0x11);
@@ -565,9 +563,10 @@ TsengProbe(DriverPtr drv, int flags)
 
 /* The PCI part of TsengPreInit() */
 static Bool
-TsengPreInitPCI(ScrnInfoPtr pScrn, TsengPtr pTseng)
+TsengPreInitPCI(ScrnInfoPtr pScrn)
 {
     MessageType from;
+    TsengPtr pTseng = TsengPTR(pScrn);
 
     ErrorF("	TsengPreInitPCI\n");
     /*
@@ -582,7 +581,7 @@ TsengPreInitPCI(ScrnInfoPtr pScrn, TsengPtr pTseng)
 	from = X_CONFIG;
     } else if (pScrn->device->chipID >= 0) {
 	/* chipset given as a PCI ID in the config file */
-	if (!TsengPCI2Type(pTseng, pScrn->device->chipID))
+	if (!TsengPCI2Type(pScrn, pScrn->device->chipID))
 	    return FALSE;
 	pScrn->chipset = (char *)xf86TokenToString(TsengChipsets, pTseng->ChipType);
 	from = X_CONFIG;
@@ -590,7 +589,7 @@ TsengPreInitPCI(ScrnInfoPtr pScrn, TsengPtr pTseng)
 	    pTseng->ChipType);
     } else {
 	from = X_PROBED;
-	if (!TsengPCI2Type(pTseng, pTseng->PciInfo->chipType))
+	if (!TsengPCI2Type(pScrn, pTseng->PciInfo->chipType))
 	    return FALSE;
 	pScrn->chipset = (char *)xf86TokenToString(TsengChipsets, pTseng->ChipType);
     }
@@ -714,9 +713,10 @@ ET4000DetailedProbe(t_tseng_type * chiptype, t_w32_revid * rev)
  */
 
 static void
-TsengFindNonPciBusType(ScrnInfoPtr pScrn, TsengPtr pTseng)
+TsengFindNonPciBusType(ScrnInfoPtr pScrn)
 {
     unsigned char bus;
+    TsengPtr pTseng = TsengPTR(pScrn);
 
     ErrorF("	TsengFindNonPciBusType\n");
     pTseng->Bustype = BUS_ISA;
@@ -805,10 +805,11 @@ TsengFindNonPciBusType(ScrnInfoPtr pScrn, TsengPtr pTseng)
 
 /* The TsengPreInit() part for non-PCI busses */
 static Bool
-TsengPreInitNoPCI(ScrnInfoPtr pScrn, TsengPtr pTseng)
+TsengPreInitNoPCI(ScrnInfoPtr pScrn)
 {
     MessageType from;
     t_w32_revid rev = TSENGNOREV;
+    TsengPtr pTseng = TsengPTR(pScrn);
 
     ErrorF("	TsengPreInitNoPCI\n");
     /*
@@ -843,7 +844,7 @@ TsengPreInitNoPCI(ScrnInfoPtr pScrn, TsengPtr pTseng)
 
     xf86DrvMsg(pScrn->scrnIndex, from, "Chipset: \"%s\"\n", pScrn->chipset);
 
-    TsengFindNonPciBusType(pScrn, pTseng);
+    TsengFindNonPciBusType(pScrn);
 
     return TRUE;
 }
@@ -854,18 +855,22 @@ TsengPreInitNoPCI(ScrnInfoPtr pScrn, TsengPtr pTseng)
  * 8-bank (=256k) granularity. E.g. it fails to recognize 2.25 MB of memory
  * (detects 2.5 instead). This function goes to check if the RAM is actually
  * there. MDRAM comes in multiples of 4 banks (16, 24, 32, 36, 40, 64, 72,
- * 80, ...), so checking each 64k block should be enough granularity.
+ * 80, ... 32kb-banks), so checking each 64k block should be enough granularity.
  *
  * No more than the amount of refreshed RAM is checked. Non-refreshed RAM
  * won't work anyway.
  *
- * The exact same code could be used on other Tseng chips, or even on ANY
+ * The same code could be used on other Tseng chips, or even on ANY
  * VGA board, but probably only in case of trouble.
  *
  * FIXME: this should be done using linear memory
  */
 #define VIDMEM ((volatile CARD32*)check_vgabase)
 #define SEGSIZE (64)		       /* kb */
+
+#define ET6K_SETSEG(seg) \
+	outb(0x3CB, ((seg) & 0x30) | ((seg) >> 4)); \
+	outb(0x3CD, ((seg) & 0x0f) | ((seg) << 4));
 
 static int
 et6000_check_videoram(ScrnInfoPtr pScrn, int ram)
@@ -881,11 +886,15 @@ et6000_check_videoram(ScrnInfoPtr pScrn, int ram)
     if (ram > 4096) {
 	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 	    "Detected more than 4096 kb of video RAM. Clipped to 4096kb\n");
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+	    "    (Tseng VGA chips can only use 4096kb).\n");
 	ram = 4096;
     }
     if (!vgaHWMapMem(pScrn)) {
 	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-	    "Could not map VGA memory to check for video memory. Detected amount may be wrong.\n");
+	    "Could not map VGA memory to check for video memory.\n");
+	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+	    "    Detected amount may be wrong.\n");
 	return ram;
     }
     check_vgabase = (VGAHWPTR(pScrn)->Base);
@@ -895,6 +904,10 @@ et6000_check_videoram(ScrnInfoPtr pScrn, int ram)
      * be able to access the full 4MB memory range. First, we save the
      * registers we modify, of course.
      */
+
+    /* first set the KEY, so we can access the bank select registers */
+    TsengUnlock();
+
     oldSegSel1 = inb(0x3CD);
     oldSegSel2 = inb(0x3CB);
     outb(0x3CE, 5);
@@ -919,10 +932,14 @@ et6000_check_videoram(ScrnInfoPtr pScrn, int ram)
     /*
      * count down from presumed amount of memory in SEGSIZE steps, and
      * look at each segment for real RAM.
+     *
+     * To select a segment, we cannot use ET4000W32SetReadWrite(), since
+     * that requires the ScreenPtr, which we don't have here.
      */
 
     for (segment = (ram / SEGSIZE) - 1; segment >= 0; segment--) {
-	ET4000W32SetReadWrite(NULL, segment);
+	/* select the segment */
+	ET6K_SETSEG(segment);
 
 	/* save contents of memory probing location */
 	save_vidmem = *(VIDMEM);
@@ -939,13 +956,31 @@ et6000_check_videoram(ScrnInfoPtr pScrn, int ram)
 	    *VIDMEM = save_vidmem;
 	    continue;
 	}
-	/* check if we aren't fooled by address wrapping (mirroring) */
+	/*
+	 * If we get here, the memory seems to be writable/readable
+	 * Now check if we aren't fooled by address wrapping (mirroring)
+	 */
 	fooled = FALSE;
 	for (i = segment - 1; i >= 0; i--) {
-	    ET4000W32SetReadWrite(NULL, i);
+	    /* select the segment */
+	    ET6K_SETSEG(i);
+	    outb(0x3CB, (i & 0x30) | (i >> 4));
+	    outb(0x3CD, (i & 0x0f) | (i << 4));
 	    if (*VIDMEM == 0x5555AAAA) {
-		fooled = TRUE;
-		break;
+		/*
+		 * Seems like address wrap, but there could of course be
+		 * 0x5555AAAA in here by accident, so we check with another
+		 * pattern again.
+		 */
+		ET6K_SETSEG(segment);
+		/* test with other pattern again */
+		*VIDMEM = 0xAAAA5555;
+		ET6K_SETSEG(i);
+		if (*VIDMEM == 0xAAAA5555) {
+		    /* now we're sure: this is not real memory */
+		    fooled = TRUE;
+		    break;
+		}
 	    }
 	}
 	if (!fooled) {
@@ -953,6 +988,7 @@ et6000_check_videoram(ScrnInfoPtr pScrn, int ram)
 	    break;
 	}
 	/* restore old contents again */
+	ET6K_SETSEG(segment);
 	*VIDMEM = save_vidmem;
     }
 
@@ -968,21 +1004,76 @@ et6000_check_videoram(ScrnInfoPtr pScrn, int ram)
     outb(0x3C4, 4);
     outb(0x3C5, oldSEQ4);
 
+/*    TsengLock(); */
     vgaHWUnmapMem(pScrn);
     return real_ram;
 }
 
 /*
- * TsengDetectMem --
- *      try to find amount of video memory installed.
+ * Handle amount of allowed memory: some combinations can't use all
+ * available memory. Should we still allow the user to override this?
+ *
+ * This must be called AFTER the decision has been made to use linear mode
+ * and/or acceleration, or the memory limit code won't be able to work.
  */
 
 static int
-TsengDetectMem(ScrnInfoPtr pScrn, TsengPtr pTseng)
+TsengDoMemLimit(ScrnInfoPtr pScrn, int ram, int limit, char *reason)
+{
+    if (ram > limit) {
+	xf86DrvMsg(pScrn->scrnIndex, X_WARNING, "Only %d kb of memory can be used %s.\n",
+	    limit, reason);
+	xf86DrvMsg(pScrn->scrnIndex, X_WARNING, "Reducing video memory to %d kb.\n", limit);
+	ram = limit;
+    }
+    return ram;
+}
+
+static int
+TsengLimitMem(ScrnInfoPtr pScrn, int ram)
+{
+    TsengPtr pTseng = TsengPTR(pScrn);
+
+    if (pTseng->UseLinMem && pTseng->Linmem_1meg) {
+	TsengDoMemLimit(pScrn, ram, 1024, "in linear mode on this VGA board/bus configuration");
+    }
+    if (!pTseng->NoAccel && pTseng->UseLinMem) {
+	if (Is_W32_any) {
+	    /* <= W32p_ab :
+	     *   2 MB direct access + 2*512kb via apertures MBP0 and MBP1
+	     * == W32p_cd :
+	     *   2*1MB via apertures MBP0 and MBP1
+	     */
+	    if (Is_W32p_cd)
+		TsengDoMemLimit(pScrn, ram, 2048, "in linear + accelerated mode on W32p rev c and d");
+
+	    TsengDoMemLimit(pScrn, ram, 2048 + 1024, "in linear + accelerated mode on W32/W32i/W32p");
+
+	    /* upper 516kb of 4MB linear map used for "externally mapped registers" */
+	    TsengDoMemLimit(pScrn, ram, 4096 - 516, "in linear + accelerated mode on W32/W32i/W32p");
+	}
+	if (Is_ET6K) {
+	    /* upper 8kb used for externally mapped and memory mapped registers */
+	    TsengDoMemLimit(pScrn, ram, 4096 - 8, "in linear + accelerated mode on ET6000/6100");
+	}
+    }
+    TsengDoMemLimit(pScrn, ram, 4096, "on any Tseng card");
+    return ram;
+}
+
+/*
+ * TsengDetectMem --
+ *      try to find amount of video memory installed.
+ *
+ */
+
+static int
+TsengDetectMem(ScrnInfoPtr pScrn)
 {
     unsigned char config;
     int ramtype = 0;
     int ram = 0;
+    TsengPtr pTseng = TsengPTR(pScrn);
 
     ErrorF("	TsengDetectMem\n");
     if (Is_ET6K) {
@@ -1041,11 +1132,12 @@ TsengDetectMem(ScrnInfoPtr pScrn, TsengPtr pTseng)
 }
 
 static Bool
-TsengProcessHibit(ScrnInfoPtr pScrn, TsengPtr pTseng)
+TsengProcessHibit(ScrnInfoPtr pScrn)
 {
     MessageType from = X_CONFIG;
     int hibit_mode_width;
     int iobase;
+    TsengPtr pTseng = TsengPTR(pScrn);
 
     ErrorF("	TsengProcessHibit\n");
     if (xf86IsOptionSet(TsengOptions, OPTION_HIBIT_HIGH)) {
@@ -1079,9 +1171,10 @@ TsengProcessHibit(ScrnInfoPtr pScrn, TsengPtr pTseng)
 }
 
 static Bool
-TsengProcessOptions(ScrnInfoPtr pScrn, TsengPtr pTseng)
+TsengProcessOptions(ScrnInfoPtr pScrn)
 {
     MessageType from;
+    TsengPtr pTseng = TsengPTR(pScrn);
 
     /* Collect all of the relevant option flags (fill in pScrn->options) */
     xf86CollectOptions(pScrn, NULL);
@@ -1173,9 +1266,10 @@ TsengProcessOptions(ScrnInfoPtr pScrn, TsengPtr pTseng)
 }
 
 static Bool
-TsengGetLinFbAddress(ScrnInfoPtr pScrn, TsengPtr pTseng)
+TsengGetLinFbAddress(ScrnInfoPtr pScrn)
 {
     MessageType from;
+    TsengPtr pTseng = TsengPTR(pScrn);
 
     ErrorF("	TsengGetLinFbAddress\n");
 
@@ -1339,7 +1433,7 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
     if ((i = xf86GetPciInfoForScreen(pScrn->scrnIndex, &pciList, NULL)) == 0) {
 	/* we didn't have a PCI card. Check for other busses */
 	xfree(pciList);
-	if (!TsengPreInitNoPCI(pScrn, pTseng)) {
+	if (!TsengPreInitNoPCI(pScrn)) {
 	    TsengFreeRec(pScrn);
 	    return FALSE;
 	}
@@ -1353,7 +1447,7 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
 	    return FALSE;
 	} else {
 	    pTseng->PciInfo = *pciList;
-	    if (!TsengPreInitPCI(pScrn, pTseng)) {
+	    if (!TsengPreInitPCI(pScrn)) {
 		TsengFreeRec(pScrn);
 		return FALSE;
 	    }
@@ -1363,11 +1457,11 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
     /*
      * Find RAMDAC type and fill Tsengdac struct
      */
-    Check_Tseng_Ramdac(pScrn, pTseng);
+    Check_Tseng_Ramdac(pScrn);
     tseng_init_clockscale(pTseng);
 
     /* check for clockchip */
-    if (!Tseng_check_clockchip(pScrn, pTseng)) {
+    if (!Tseng_check_clockchip(pScrn)) {
 	return FALSE;
     }
     /*
@@ -1493,17 +1587,17 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
 	/* Default to 6, because most Tseng chips/RAMDACs don't support it */
 	pScrn->rgbBits = 6;
     }
-    if (!TsengProcessOptions(pScrn, pTseng))	/* must be done _after_ we know what chip this is */
+    if (!TsengProcessOptions(pScrn))   /* must be done _after_ we know what chip this is */
 	return FALSE;
 
     if (pTseng->UseLinMem) {
-	if (!TsengGetLinFbAddress(pScrn, pTseng))
+	if (!TsengGetLinFbAddress(pScrn))
 	    return FALSE;
     }
     /* hibit processing (TsengProcessOptions() must have been called first) */
     pTseng->save_divide = 0x40;	       /* default */
     if (!Is_ET6K) {
-	if (!TsengProcessHibit(pScrn, pTseng))
+	if (!TsengProcessHibit(pScrn))
 	    return FALSE;
     }
     /*
@@ -1515,8 +1609,9 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
 	from = X_CONFIG;
     } else {
 	from = X_PROBED;
-	pScrn->videoRam = TsengDetectMem(pScrn, pTseng);
+	pScrn->videoRam = TsengDetectMem(pScrn);
     }
+    pScrn->videoRam = TsengLimitMem(pScrn, pScrn->videoRam);
     xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte\n",
 	pScrn->videoRam);
 
@@ -1556,7 +1651,7 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
 	    pTseng->MaxClock = speed;
 	from = X_CONFIG;
     } else {
-	tseng_set_dacspeed(pScrn, pTseng);
+	tseng_set_dacspeed(pScrn);
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "Max pixel clock is %d MHz\n",
 	pTseng->MaxClock / 1000);
@@ -1573,21 +1668,27 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
     clockRanges->interlaceAllowed = TRUE;
     clockRanges->doubleScanAllowed = TRUE;
 
-#ifdef TODO
+    pTseng->MClkInfo.Set = FALSE;
     /* Only set MemClk if appropriate for the ramdac */
-    if (pTseng->Dac.SetMemClk) {
-	if (pScrn->device->MemClk != 0) {
-	    pTseng->MemClk = pScrn->device->MemClk;
-	    from = X_CONFIG;
-	} else {
-	    pTseng->MemClk = pTseng->Dac.MemoryClock;
-	    from = pTseng->Dac.MemClkFrom;
+    if (pTseng->MClkInfo.Programmable) {
+	from = X_PROBED;
+	if (pScrn->device->MemClk > 0) {
+	    if ((pScrn->device->MemClk < pTseng->MClkInfo.min)
+		|| (pScrn->device->MemClk > pTseng->MClkInfo.max)) {
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		    "MCLK %d MHz out of range (=%d..%d); not changed!\n",
+		    pScrn->device->MemClk / 1000,
+		    pTseng->MClkInfo.min / 1000,
+		    pTseng->MClkInfo.max / 1000);
+	    } else {
+		pTseng->MClkInfo.MemClk = pScrn->device->MemClk;
+		pTseng->MClkInfo.Set = TRUE;
+		from = X_CONFIG;
+	    }
 	}
-	xf86DrvMsg(pScrn->scrnIndex, from, "MCLK used is %.1f MHz\n",
-	    pTseng->MemClk / 1000.0);
+	xf86DrvMsg(pScrn->scrnIndex, from, "MCLK used is %d MHz\n",
+	    pTseng->MClkInfo.MemClk / 1000);
     }
-#endif
-
     /*
      * xf86ValidateModes will check that the mode HTotal and VTotal values
      * don't exceed the chipset's limit if pScrn->maxHValue and
@@ -1897,18 +1998,10 @@ TsengEnterVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
 
-/*    TsengPtr pTseng = TsengPTR(pScrn); */
-    int iobase = VGAHWPTR(pScrn)->IOBase;
-    unsigned char temp;
-
     ErrorF("	TsengEnterVT\n");
 
     vgaHWUnlock(VGAHWPTR(pScrn));
-    outb(0x3BF, 0x03);		       /* unlock ET4000 special */
-    outb(iobase + 8, 0xA0);
-    outb(iobase + 4, 0x11);
-    temp = inb(iobase + 5);
-    outb(iobase + 5, temp & 0x7F);
+    TsengUnlock();
 
     return TsengModeInit(pScrn, pScrn->currentMode);
 }
@@ -1918,8 +2011,6 @@ TsengLeaveVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     TsengPtr pTseng = TsengPTR(pScrn);
-    int iobase = VGAHWPTR(pScrn)->IOBase;
-    unsigned char temp;
 
 #ifdef TODO
 #ifdef XFreeXDGA
@@ -1936,13 +2027,7 @@ TsengLeaveVT(int scrnIndex, int flags)
     ErrorF("	TsengLeaveVT\n");
     TsengRestore(pScrn, &(VGAHWPTR(pScrn)->SavedReg), &pTseng->SavedReg);
 
-    /* relock extended registers. TODO: shouldn't we RESTORE the lock state instead? */
-    outb(iobase + 4, 0x11);
-    temp = inb(iobase + 5);
-    outb(iobase + 5, temp | 0x80);
-    outb(iobase + 8, 0x00);
-    outb(0x3D8, 0x29);
-    outb(0x3BF, 0x01);		       /* relock ET4000 special */
+    TsengLock();
     vgaHWLock(VGAHWPTR(pScrn));
 }
 
@@ -2276,8 +2361,8 @@ TsengModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	mode->ClockIndex = 2;
 
 	/* memory clock */
-	if (Gendac_programmable_clock && (pTseng->MemClk > 0)) {
-	    commonCalcClock(pTseng->MemClk, 1, 1, 31, 1, 3, 100000, pScrn->device->dacSpeeds[0] * 2 + 1,
+	if (Gendac_programmable_clock && pTseng->MClkInfo.Set) {
+	    commonCalcClock(pTseng->MClkInfo.MemClk, 1, 1, 31, 1, 3, 100000, pScrn->device->dacSpeeds[0] * 2 + 1,
 		&(new->pll.MClkM), &(new->pll.MClkN));
 	}
     } else if (ICD2061a_programmable_clock) {
@@ -2336,17 +2421,12 @@ TsengModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		new->ExtET6K[0x46] = initial->ExtET6K[0x46] & ~0x04;
 	}
 
-	if (pTseng->MemClk > 0) {
+	if (pTseng->MClkInfo.Set) {
 	    /* according to Tseng Labs, N1 must be <= 4, and N2 should always be 1 for MClk */
-	    commonCalcClock(pTseng->MemClk, 1, 1, 4, 1, 1,
+	    commonCalcClock(pTseng->MClkInfo.MemClk, 1, 1, 4, 1, 1,
 		100000, pScrn->device->dacSpeeds[0] * 2,
 		&(new->pll.MClkM), &(new->pll.MClkN));
-	} else {
-	    /* not used right now (MClk is only adjusted when explicitly set by "set_mclk" option) */
-	    new->pll.MClkM = initial->pll.MClkM;
-	    new->pll.MClkN = initial->pll.MClkN;
 	}
-
 	/* 
 	 * Even when we don't allow setting the MClk value as described
 	 * above, we can use the FAST/MED/SLOW DRAM options to set up
@@ -2417,7 +2497,7 @@ TsengModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
      */
 
     if (pScrn->bitsPerPixel >= 8) {
-	tseng_set_ramdac_bpp(pScrn, pTseng, mode);
+	tseng_set_ramdac_bpp(pScrn, mode);
 	row_offset *= pTseng->Bytesperpixel;
     }
     /*
@@ -2761,7 +2841,7 @@ TsengRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, TsengRegPtr tsengReg)
 	    outb(0x3c9, tsengReg->pll.f2_M);	/* f2 PLL M divider */
 	    outb(0x3c9, tsengReg->pll.f2_N);	/* f2 PLL N1/N2 divider */
 
-	    if (pTseng->MemClk > 0) {
+	    if (pTseng->MClkInfo.Set) {
 		outb(0x3c7, 10);       /* index to Mclk reg */
 		outb(0x3c9, tsengReg->MClkM);	/* MClk PLL M divider */
 		outb(0x3c9, tsengReg->MClkN);	/* MClk PLL N1/N2 divider */
@@ -2833,10 +2913,20 @@ TsengRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, TsengRegPtr tsengReg)
 	outb(pTseng->IOAddress + 0x69, tsengReg->pll.f2_M);
 	outb(pTseng->IOAddress + 0x69, tsengReg->pll.f2_N);
 	/* set MClk values if needed, but don't touch them if not needed */
-	if (pTseng->MemClk > 0) {
-	    outb(pTseng->IOAddress + 0x67, 10);
-	    outb(pTseng->IOAddress + 0x69, tsengReg->pll.MClkM);
-	    outb(pTseng->IOAddress + 0x69, tsengReg->pll.MClkN);
+	if (pTseng->MClkInfo.Set) {
+	    /*
+	     * Since setting the MClk to highly illegal value results in a
+	     * total system crash, we'd better play it safe here.
+	     * N1 must be <= 4, and N2 should always be 1
+	     */
+	    if ((tsengReg->pll.MClkN & 0xf8) != 0x20) {
+		xf86Msg(X_ERROR, "Internal Error in MClk registers: MClkM=0x%x, MClkN=0x%x\n",
+		    tsengReg->pll.MClkM, tsengReg->pll.MClkN);
+	    } else {
+		outb(pTseng->IOAddress + 0x67, 10);
+		outb(pTseng->IOAddress + 0x69, tsengReg->pll.MClkM);
+		outb(pTseng->IOAddress + 0x69, tsengReg->pll.MClkN);
+	    }
 	}
 	/* restore old index register */
 	outb(pTseng->IOAddress + 0x67, tmp);
@@ -2960,50 +3050,13 @@ ET4000Probe()
 	    tseng_use_ACL = !OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options);
 	}
 
-	/*
-	 * Some combinations can't use all available memory.
-	 */
-
-#define TSENG_MEMLIMIT(m,reason) \
-    { \
-      if (pScrn->videoRam > (m)) \
-      { \
-        ErrorF("%s %s: Only %d kb of memory can be used %s.\n", \
-              XCONFIG_PROBED, vga256InfoRec.name, (m), (reason)); \
-        pScrn->videoRam = (m); \
-      } \
-    }
-
-	if (pTseng->UseLinMem && pTseng->Linmem_1meg) {
-	    TSENG_MEMLIMIT(1024, "in linear mode on this VGA board/bus configuration");
-	}
-	if (tseng_use_ACL && pTseng->UseLinMem) {
-	    if (Is_W32_any) {
-		/* <= W32p_ab :
-		 *   2 MB direct access + 2*512kb via apertures MBP0 and MBP1
-		 * == W32p_cd :
-		 *   2*1MB via apertures MBP0 and MBP1
-		 */
-		if (Is_W32p_cd)
-		    TSENG_MEMLIMIT(2048, "in linear + accelerated mode on W32p rev c and d");
-
-		TSENG_MEMLIMIT(2048 + 1024, "in linear + accelerated mode on W32/W32i/W32p");
-
-		/* upper 516kb of 4MB linear map used for "externally mapped registers" */
-		TSENG_MEMLIMIT(4096 - 516, "in linear + accelerated mode on W32/W32i/W32p");
-	    }
-	    if (Is_ET6K) {
-		/* upper 8kb used for externally mapped and memory mapped registers */
-		TSENG_MEMLIMIT(4096 - 8, "in linear + accelerated mode on ET6000/6100");
-	    }
-	}
-	TSENG_MEMLIMIT(4096, "on any Tseng card");
+	...
 
 	/* Hardware Cursor support */
 #ifdef W32_HW_CURSOR_FIXED
-	if (pTseng->ChipType >= TYPE_ET4000W32P)
+	    if (pTseng->ChipType >= TYPE_ET4000W32P)
 #else
-	if (Is_ET6K)
+	    if (Is_ET6K)
 #endif
 	{
 	    /* Set HW Cursor option valid */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaNonTEGlyph.c,v 1.1.2.4 1998/07/12 09:43:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaNonTEGlyph.c,v 1.2 1998/07/25 16:58:49 dawes Exp $ */
 
 
 #include "xaa.h"
@@ -53,11 +53,11 @@ EXPNAME(XAANonTEGlyphRenderer)(
 
 #ifdef TRIPLE_BITS
     if(wBack && ((xText != xBack) || (wBack != wText) || 
-	(infoRec->ColorExpandFillFlags & TRANSPARENCY_ONLY) ||
-	((infoRec->ColorExpandFillFlags & RGB_EQUAL) && 
+	(infoRec->CPUToScreenColorExpandFillFlags & TRANSPARENCY_ONLY) ||
+	((infoRec->CPUToScreenColorExpandFillFlags & RGB_EQUAL) && 
 	(!CHECK_RGB_EQUAL(bg))))) {
 #else
-    if(wBack && ((infoRec->ColorExpandFillFlags & TRANSPARENCY_ONLY) 
+    if(wBack && ((infoRec->CPUToScreenColorExpandFillFlags & TRANSPARENCY_ONLY) 
 	|| (xText != xBack) || (wBack != wText))) {
 #endif
     	(*infoRec->SetupForSolidFill)(pScrn, bg, rop, planemask);
@@ -75,8 +75,10 @@ EXPNAME(XAANonTEGlyphRenderer)(
     dwords = ((wText + 31) >> 5) * h;
 #endif
 
-    (*infoRec->SetupForColorExpandFill)(pScrn, fg, bg, rop, planemask);
-    (*infoRec->SubsequentColorExpandFillRect)(pScrn, xText, y, wText, h, 0);
+    (*infoRec->SetupForCPUToScreenColorExpandFill)(
+					pScrn, fg, bg, rop, planemask);
+    (*infoRec->SubsequentCPUToScreenColorExpandFill)(
+					pScrn, xText, y, wText, h, 0);
 
 #ifndef FIXEDBASE
 #ifdef TRIPLE_BITS
@@ -91,13 +93,13 @@ EXPNAME(XAANonTEGlyphRenderer)(
 	while(h--)
 	    NonTEGlyphFunc(base, glyphp, startline++, wText, skipleft);
 
-    if((infoRec->ColorExpandFillFlags & CPU_TRANSFER_PAD_QWORD) &&
+    if((infoRec->CPUToScreenColorExpandFillFlags & CPU_TRANSFER_PAD_QWORD) &&
 			(dwords & 1)) {
 	base = (CARD32*)infoRec->ColorExpandBase;
 	base[0] = 0x00000000;
     }
 
-    if(infoRec->ColorExpandFillFlags & SYNC_AFTER_COLOR_EXPAND) 
+    if(infoRec->CPUToScreenColorExpandFillFlags & SYNC_AFTER_COLOR_EXPAND) 
 	(*infoRec->Sync)(pScrn);
     else SET_SYNC_FLAG(infoRec);
 }
@@ -124,11 +126,12 @@ EXPNAME(XAANonTEGlyphRendererScanline)(
 
 #ifdef TRIPLE_BITS
     if(wBack && ((xText != xBack) || (wBack != wText) || 
-	(infoRec->ScanlineColorExpandFillFlags & TRANSPARENCY_ONLY) ||
-	((infoRec->ScanlineColorExpandFillFlags & RGB_EQUAL) && 
+	(infoRec->ScanlineCPUToScreenColorExpandFillFlags & TRANSPARENCY_ONLY) 
+	|| ((infoRec->ScanlineCPUToScreenColorExpandFillFlags & RGB_EQUAL) && 
 	(!CHECK_RGB_EQUAL(bg))))) {
 #else
-    if(wBack && ((infoRec->ScanlineColorExpandFillFlags & TRANSPARENCY_ONLY) 
+    if(wBack && 
+	((infoRec->ScanlineCPUToScreenColorExpandFillFlags & TRANSPARENCY_ONLY) 
 	|| (xText != xBack) || (wBack != wText))) {
 #endif
     	(*infoRec->SetupForSolidFill)(pScrn, bg, rop, planemask);
@@ -141,8 +144,9 @@ EXPNAME(XAANonTEGlyphRendererScanline)(
 	return;
     }
 
-    (*infoRec->SetupForScanlineColorExpandFill)(pScrn, fg, bg, rop, planemask);
-    (*infoRec->SubsequentScanlineColorExpandFillRect)(
+    (*infoRec->SetupForScanlineCPUToScreenColorExpandFill)(
+				pScrn, fg, bg, rop, planemask);
+    (*infoRec->SubsequentScanlineCPUToScreenColorExpandFill)(
 				pScrn, xText, y, wText, h, 0);
 
     while(h--) {

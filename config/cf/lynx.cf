@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.20 1998/01/24 16:56:15 hohndel Exp $
+XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.21 1998/07/25 05:57:16 dawes Exp $
 
 #ifndef OSName
 # ifdef i386Architecture
@@ -82,7 +82,7 @@ ComplexHostProgramTarget(program)
 #define HasSockets		YES
 #define HasVFork		NO
 #define HasVarDirectory		NO
-#if OSMajorVersion == 2 && OSMinorVersion4
+#if OSMajorVersion == 2 && OSMinorVersion > 4
 # define HasBSD44Sockets 	YES
 #endif
 

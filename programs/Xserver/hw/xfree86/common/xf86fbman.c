@@ -1,9 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.1.2.1 1998/06/22 13:53:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.2 1998/07/25 16:55:19 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
-#include "xf86_ansic.h"
-#include "xf86_OSproc.h"
 
 #include "X.h"
 #include "scrnintstr.h"

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.45 1997/11/22 06:50:02 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.46 1998/07/25 05:57:14 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -168,6 +168,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #ifndef OSMinorVersion
 #define OSMinorVersion          0
+#endif
+#ifndef OSTeenyVersion
+#define OSTeenyVersion		0
 #endif
 #ifndef UnalignedReferencesAllowed
 #define UnalignedReferencesAllowed NO	/* if arbitrary deref is okay */

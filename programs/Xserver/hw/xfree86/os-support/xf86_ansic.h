@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.1.2.6 1998/07/11 13:52:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.9 1998/07/25 16:56:30 dawes Exp $ */
 
 #ifndef _XF86_ANSIC_H
 #define _XF86_ANSIC_H
@@ -196,5 +196,9 @@ extern long xf86fpossize(void);
  */
 
 extern void xf86usleep(unsigned long);
+#ifndef DONT_DEFINE_WRAPPERS
+#undef usleep
+#define usleep(ul)		xf86usleep(ul)
+#endif
 
 #endif /* _XF86_ANSIC_H */

@@ -2,7 +2,7 @@ XCOMM $TOG: os2.cf /main/2 1997/08/05 08:51:25 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.23 1997/05/24 13:46:28 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.24 1997/08/12 12:01:52 hohndel Exp $
 
 #define OSName           OS/2
 #define OSVendor	 IBM
@@ -93,7 +93,7 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.23 1997/05/24 13:46:28 dawes 
 # define HasLibCrypt		NO
 #endif
 #ifndef HasShm
-# define HasShm          	NO
+# define HasShm          	YES
 #endif
 #define ConnectionFlags		-DTCPCONN -DOS2PIPECONN
 #define StdIncDir $(C_INCLUDE_PATH)

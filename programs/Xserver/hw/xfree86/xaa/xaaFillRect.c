@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillRect.c,v 1.2 1998/07/25 16:58:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillRect.c,v 1.3 1998/07/31 10:41:29 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -730,7 +730,7 @@ XAAFillCacheExpandRects(
 
     cacheWidth = pCache->w * pScrn->bitsPerPixel;
 
-    (*infoRec->SetupForScreenToScreenColorExpandCopy)(pScrn, fg, bg, rop, 
+    (*infoRec->SetupForScreenToScreenColorExpandFill)(pScrn, fg, bg, rop, 
 							planemask);
 
     while(nBox--) {
@@ -750,7 +750,7 @@ XAAFillCacheExpandRects(
 	    while(1) {
 		blit_w = cacheWidth - skipleft;
 		if(blit_w > w) blit_w = w;
-		(*infoRec->SubsequentScreenToScreenColorExpandCopy)(
+		(*infoRec->SubsequentScreenToScreenColorExpandFill)(
 			pScrn, x, y, blit_w, blit_h,
 			pCache->x, pCache->y + phaseY, skipleft);
 		w -= blit_w;

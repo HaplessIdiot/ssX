@@ -15,8 +15,10 @@ document as well.
   2.3  Solid Lines
   2.4  Dashed Lines
   2.5  Color Expand Fills
-    2.5.1 The Direct Method
-    2.5.2 The Indirect Method
+    2.5.1 Screen to Screen Color Expansion
+    2.5.2 CPU to Screen Color Expansion
+      2.5.2.1 The Direct Method
+      2.5.2.2 The Indirect Method
   2.6  8x8 Mono Pattern Fills
   2.7  8x8 Color Pattern Fills
   2.8  Image Writes
@@ -121,7 +123,7 @@ The common ones are as follows:
      This indicates that the accelerator only supports GXcopy
      for the particular primitive.  If this flag is not defined,
      it is assumed that the accelerator supports all 16 raster
-     operations (rops) for the primitive.
+     operations (rops) for that primitive.
 
    NO_PLANEMASK
 
@@ -308,7 +310,7 @@ void SubsequentSolidHorVertLine( ScrnInfoPtr pScrn,
     /*  More to come */
   
 
-2.5   Color Expansion Filled Rectangles
+2.5   Color Expansion Fills
 
     When filling a color expansion rectangle, the accelerator
     paints each pixel depending on whether or not a bit in a
@@ -321,23 +323,37 @@ void SubsequentSolidHorVertLine( ScrnInfoPtr pScrn,
     The graphics accelerator usually has access to the source 
     bitmap in one of two ways: 1) the bitmap data is sent serially
     to the accelerator by the CPU through some memory mapped aperture
-    or 2) the data must be uploaded to videomemory so the accelerator
-    can access it from there.
+    or 2) the accelerator reads the source bitmap out of offscreen
+    video memory.  Some types of primitives are better suited towards 
+    one method or the other.  Type 2 is useful for reusable patterns
+    such as stipples which can be cached in offscreen memory.  The
+    aperature method can be used for stippling but the CPU must pass
+    the data across the bus each time a stippled fill is to be performed.  
+    For expanding 1bpp client pixmaps or text strings to the screen,
+    the aperature method is usually superior because the intermediate
+    copy in offscreen memory needed by the second method would only be 
+    used once.  Unfortunately, many accelerators can only do one of these
+    methods and not both.  
 
-    XAA provides two interfaces for getting this data to the accelerator
-    - a direct and an indirect method.  With the direct method, XAA
-    will call SubsequentColorExpandFillRect() before sending all of the
-    data through the aperture.  With the indirect method, XAA will
-    call SubsequentScanlineColorExpandFillRect() and then send the bitmap
-    data scanline at a time calling SubsequentColorExpandScanline after
-    each scanline.
+    XAA provides both ScreenToScreen and CPUToScreen color expansion 
+    interfaces for doing color expansion fills.  The ScreenToScreen
+    functions can only be used with hardware that supports reading
+    of source bitmaps from offscreen video memory, and these are only
+    used for cacheable patterns such as stipples.  There are two
+    variants of the CPUToScreen routines - a direct method intended
+    for hardware that has a transfer aperature, and an indirect method
+    intended for hardware without transfer aperatures or hardware
+    with unusual transfer requirements.  Hardware that can only expand
+    bitmaps from video memory should supply ScreenToScreen routines
+    but also ScanlineCPUToScreen (indirect) routines to optimize transfers 
+    of non-cacheable data.  Hardware that can only accept source bitmaps
+    through an aperature should supply CPUToScreen (or ScanlineCPUToScreen) 
+    routines. Hardware that can do both should provide both ScreenToScreen 
+    and CPUToScreen routines.
 
-    The direct and indirect methods have separate flags fields, the
-    ColorExpandFillFlags and ScanlineColorExpandFillFlags respectively.
-    Flags specific to one method or the other are described in sections 
-    2.5.1 and 2.5.2 but for both cases the GXCOPY_ONLY, NO_PLANEMASK and 
-    RGB_EQUAL flags described in Section 2.0 are valid as well as the 
-    following:
+    For both ScreenToScreen and CPUToScreen interfaces, the GXCOPY_ONLY,
+    NO_PLANEMASK and RGB_EQUAL flags described in Section 2.0 are valid 
+    as well as the following:
 
     /* bit order requirements (one of these must be set) */
    
@@ -352,6 +368,76 @@ void SubsequentSolidHorVertLine( ScrnInfoPtr pScrn,
       This indicates that most significant bit in each byte of the source
       data corresponds to the leftmost of that block of 8 pixels.
 
+    /* transparency restrictions */
+
+    NO_TRANSPARENCY
+
+      This indicates that the accelerator cannot do a transparent expansion.
+
+    TRANSPARENCY_ONLY
+
+      This indicates that the accelerator cannot do an opaque expansion.
+      In cases where where the background needs to be filled, XAA will
+      render the primitive in two passes when using the CPUToScreen
+      interface, but will not do so with the ScreenToScreen interface 
+      since that would require caching of two patterns.  Some 
+      ScreenToScreen hardware may be able to render two passes at the
+      driver level and remove the TRANSPARENCY_ONLY restriction if
+      it can render pixels corresponding to the zero bits.
+
+
+
+2.5.1  Screen To Screen Color Expansion
+
+    The ScreenToScreenColorExpandFill routines provide an interface
+    for doing expansion blits from source patterns stored in offscreen
+    video memory.
+
+    void SetupForScreenToScreenColorExpandFill (ScrnInfoPtr pScrn,
+        			int fg, int bg, 
+				int rop, unsigned int planemask)
+
+
+    Ones in the source bitmap will correspond to the fg color.
+    Zeros in the source bitmap will correspond to the bg color
+    unless bg = -1.  In that case the pixels corresponding to the
+    zeros in the bitmap shall be left unmodified by the accelerator.
+
+
+    void SubsequentScreenToScreenColorExpandFill( ScrnInfoPtr pScrn,
+				int x, int y, int w, int h,
+				int srcx, int srcy, int skipleft )
+
+   
+    Fill a rectangle "w" x "h" at location (x,y).  Srcx and srcy indicate
+    the start of the source pattern in units of pixels.  Skipleft is the
+    number of *bits* to skip on the left edge of the source. Implementation 
+    of the skipleft is manditory.  Some hardware accepts source coordinates 
+    in units of bits which makes implementation of the skipleft trivial,
+    however, it should be noted that the skipleft assumes LSBFIRST 
+    hardware.  For MSBFIRST hardware, the driver may need to implement 
+    the skipleft by hardware clipping.
+
+
+
+2.5.2  CPU To Screen Color Expansion
+
+
+    The CPUToScreenColorExpandFill routines provide an interface for 
+    doing expansion blits from source patterns stored in system memory.
+    There are two varieties of this primitive, a CPUToScreenColorExpandFill
+    and a ScanlineCPUToScreenColorExpandFill.  With the 
+    CPUToScreenColorExpandFill method, the source data is sent serially
+    through a memory mapped aperature.  With the Scanline version, the
+    data is rendered scanline at a time into intermediate buffers with
+    a call to SubsequentColorExpandScanline following each scanline.
+
+    These two methods have separate flags fields, the
+    CPUToScreenColorExpandFillFlags and ScanlineCPUToScreenColorExpandFillFlags
+    respectively.  Flags specific to one method or the other are described 
+    in sections 2.5.2.1 and 2.5.2.2 but for both cases the bit order and
+    transparency restrictions listed at the beginning of section 2.5 are 
+    valid as well as the following:
     
     /* clipping  (optional) */
     
@@ -367,19 +453,6 @@ void SubsequentSolidHorVertLine( ScrnInfoPtr pScrn,
       This flag indicates that the accelerator can render color expansion
       rectangles even if the value of x origin is negative (off of
       the screen on the left edge).
-
-    /* transparency restrictions */
-
-    NO_TRANSPARENCY
-
-      This indicates that the accelerator cannot do a transparent expansion.
-
-    TRANSPARENCY_ONLY
-
-      This indicates that the accelerator cannot do an opaque expansion.
-      In cases where where the background needs to be filled, XAA will
-      render the primitive in two passes.
-
 
     /* misc */
 
@@ -447,7 +520,7 @@ void SubsequentSolidHorVertLine( ScrnInfoPtr pScrn,
     multiplied by three.
      
     
-void SetupForColorExpandFill(ScrnInfoPtr pScrn,
+void SetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
         		int fg, int bg,
 			int rop,
 			unsigned int planemask)
@@ -460,25 +533,25 @@ void SetupForColorExpandFill(ScrnInfoPtr pScrn,
      zeros in the bitmap shall be left unmodified by the accelerator.
 
 
-void SubsequentColorExpandRect(ScrnInfoPtr pScrn,
+void SubsequentCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 			int x, int y, int w, int h,
 			int skipleft )
 
      When this function is called, the accelerator should be setup
      to fill a rectangle of dimension "w" by "h" with origin at (x,y)
      in the fill style prescribed by the last call to 
-     SetupForColorExpandFill.  XAA will pass the data to the aperture
-     immediately after this function is called.  If the skipleft is
-     non-zero (and LEFT_EDGE_CLIPPING has been enabled), then the
-     accelerator _should_not_ render skipleft pixels on the leftmost
+     SetupForCPUToScreenColorExpandFill.  XAA will pass the data to 
+     the aperture immediately after this function is called.  If the 
+     skipleft is non-zero (and LEFT_EDGE_CLIPPING has been enabled), then 
+     the accelerator _should_not_ render skipleft pixels on the leftmost
      edge of the rectangle.  Some engines have an alignment feature
      like this built in, some others can do this using a clipping
      window.
 
      It can be arranged for XAA to call Sync() after it is through 
      calling the Subsequent function by setting SYNC_AFTER_COLOR_EXPAND 
-     in the  ColorExpandFillFlags.  This can provide the driver with an
-     oportunity to reset a clipping window if needed.
+     in the  CPUToScreenColorExpandFillFlags.  This can provide the driver 
+     with an oportunity to reset a clipping window if needed.
 
     
 2.5.2  The Indirect Method 
@@ -506,23 +579,26 @@ void SubsequentColorExpandRect(ScrnInfoPtr pScrn,
      multiplied by three.
 
 
-void SetupForScanlineColorExpandFill(ScrnInfoPtr pScrn,
+void SetupForScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
         		int fg, int bg,
 			int rop,
 			unsigned int planemask)
  
-     The fields mean the same thing as in SetupForColorExpandFill.
+     Ones in the source bitmap will correspond to the fg color.
+     Zeros in the source bitmap will correspond to the bg color
+     unless bg = -1.  In that case the pixels corresponding to the
+     zeros in the bitmap shall be left unmodified by the accelerator.
 
      
-void SubsequentScanlineColorExpandFillRect(ScrnInfoPtr pScrn,
+void SubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 			int x, int y, int w, int h,
 			int skipleft )
 
 void SubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
 
 
-    When SubsequentScanlineColorExpandFillRect is called, XAA will begin
-    transfering the source data scanline at a time, calling  
+    When SubsequentScanlineCPUToScreenColorExpandFill is called, XAA 
+    will begin transfering the source data scanline at a time, calling  
     SubsequentColorExpandScanline after each scanline.  If more than
     one buffer is available, XAA will cycle through the buffers.
     Subsequent scanlines will use the next buffer and go back to the
@@ -592,8 +668,8 @@ void SubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
     BIT_ORDER_IN_BYTE_LSBFIRST
 
       As with other color expansion routines this indicates whether the
-      most or the least significant bit of the pattern is the leftmost
-      on the screen.
+      most or the least significant bit in each byte from the pattern is 
+      the leftmost on the screen.
 
     TRANSPARENCY_ONLY
     NO_TRANSPARENCY
@@ -719,7 +795,7 @@ void SetupForMono8x8PatternFill(ScrnInfoPtr pScrn, int patx, int paty,
     following  may follow it.
 
 	SubsequentMono8x8PatternFillRect
-	SubsequentMono8x8PatternFillTrap	(not implemented yet)
+	SubsequentMono8x8PatternFillTrap
 
     The fg, bg, rop and planemask fields have the same meaning as the
     ones used for the other color expansion routines.  Patx's and paty's
@@ -980,7 +1056,7 @@ void SetupForImageWrite(ScrnInfoPtr pScrn, int rop, unsigned int planemask,
      color key and pixels with color trans_color passed through the 
      aperature should not be transfered to the screen but should be 
      skipped.  Bpp and depth indicate the bits per pixel and depth of
-     the source bitmap.  Trans_color is always -1 if the NO_TRANSPARENCY
+     the source pixmap.  Trans_color is always -1 if the NO_TRANSPARENCY
      flag is set.
 
 
@@ -1043,9 +1119,11 @@ void SubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
     When SubsequentImageWriteRect is called, XAA will begin
     transfering the source data scanline at a time, calling  
     SubsequentImageWriteScanline after each scanline.  If more than
-    one buffer is available, the first scanline will always use buffer 0.
+    one buffer is available, XAA will cycle through the buffers.
     Subsequent scanlines will use the next buffer and go back to the
-    buffer 0 again when the last buffer is reached.
+    buffer 0 again when the last buffer is reached.  The index into
+    the ScanlineImageWriteBuffers array is presented as "bufno"
+    with each SubsequentImageWriteScanline call.
 
     The skipleft field is the same as for the direct method.
 
@@ -1110,4 +1188,4 @@ void SubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/xaa/XAA.HOWTO,v 1.1.2.4 1998/07/24 11:36:43 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/xaa/XAA.HOWTO,v 1.2 1998/07/26 00:38:58 dawes Exp $

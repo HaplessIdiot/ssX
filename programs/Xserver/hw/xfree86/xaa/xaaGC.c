@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGC.c,v 1.1.2.6 1998/07/18 17:54:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGC.c,v 1.2 1998/07/25 16:58:45 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -123,7 +123,7 @@ XAAValidateGC(
     if(changes & infoRec->PolySegmentMask)
 	(*infoRec->ValidatePolySegment)(pGC, changes, pDraw); 	
 
-    if(changes & infoRec->PolyRectangle)
+    if(changes & infoRec->PolyRectangleMask)
 	(*infoRec->ValidatePolyRectangle)(pGC, changes, pDraw); 	
 
     if(changes & infoRec->PolyArcMask)

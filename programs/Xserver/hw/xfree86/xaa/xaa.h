@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.2 1998/07/25 16:58:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.3 1998/07/31 10:41:28 dawes Exp $ */
 
 #ifndef _XAA_H
 #define _XAA_H
@@ -313,15 +313,15 @@ typedef struct _XAAInfoRec {
 
 /* Color expansion */
 
-   void (*SetupForColorExpandFill)(
+   void (*SetupForCPUToScreenColorExpandFill)(
 	ScrnInfoPtr pScrn,
 	int fg, int bg,
 	int rop,
 	unsigned int planemask
    );     
-   int ColorExpandFillFlags;  
+   int CPUToScreenColorExpandFillFlags;  
 
-   void (*SubsequentColorExpandFillRect)(
+   void (*SubsequentCPUToScreenColorExpandFill)(
 	ScrnInfoPtr pScrn,
 	int x, int y, int w, int h,
 	int skipleft
@@ -333,15 +333,15 @@ typedef struct _XAAInfoRec {
 
 /* Scanline color expansion  */
 
-   void (*SetupForScanlineColorExpandFill)(
+   void (*SetupForScanlineCPUToScreenColorExpandFill)(
 	ScrnInfoPtr pScrn,
 	int fg, int bg,
 	int rop,
 	unsigned int planemask
    );  
-   int ScanlineColorExpandFillFlags;
+   int ScanlineCPUToScreenColorExpandFillFlags;
 
-   void (*SubsequentScanlineColorExpandFillRect)(
+   void (*SubsequentScanlineCPUToScreenColorExpandFill)(
 	ScrnInfoPtr pScrn,
 	int x, int y, int w, int h,
 	int skipleft
@@ -357,15 +357,15 @@ typedef struct _XAAInfoRec {
 
 /* Screen to screen color expansion */
 
-   void (*SetupForScreenToScreenColorExpandCopy) (
+   void (*SetupForScreenToScreenColorExpandFill) (
 	ScrnInfoPtr pScrn,
 	int fg, int bg,
 	int rop,
 	unsigned int planemask
    );
-   int ScreenToScreenColorExpandCopyFlags;
+   int ScreenToScreenColorExpandFillFlags;
 
-   void (*SubsequentScreenToScreenColorExpandCopy)(
+   void (*SubsequentScreenToScreenColorExpandFill)(
 	ScrnInfoPtr pScrn,
 	int x, int y, int w, int h,
 	int srcx, int srcy, int skipleft
@@ -960,7 +960,7 @@ typedef struct _XAAInfoRec {
    ValidateGCProcPtr ValidatePolylines;
    unsigned long PolySegmentMask;
    ValidateGCProcPtr ValidatePolySegment;
-   unsigned long PolyRectangle;
+   unsigned long PolyRectangleMask;
    ValidateGCProcPtr ValidatePolyRectangle;
    unsigned long PolyArcMask;
    ValidateGCProcPtr ValidatePolyArc;

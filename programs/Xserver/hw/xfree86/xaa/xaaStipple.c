@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaStipple.c,v 1.1.2.1 1998/07/24 11:36:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaStipple.c,v 1.2 1998/07/25 16:58:52 dawes Exp $ */
 
 #include "xaa.h"
 #include "xaalocal.h"
@@ -78,7 +78,8 @@ EXPNAME(XAAFillColorExpandRects)(
     } 
     StippleFunc = stipple_scanline_func[funcNo];
 
-    if((bg == -1) || !(infoRec->ColorExpandFillFlags & TRANSPARENCY_ONLY)) {
+    if((bg == -1) || 
+	!(infoRec->CPUToScreenColorExpandFillFlags & TRANSPARENCY_ONLY)) {
 	/* one pass */
     } else if((rop == GXcopy) && infoRec->FillSolidRects) {
 	/* one pass but we fill background rects first */
@@ -92,21 +93,23 @@ EXPNAME(XAAFillColorExpandRects)(
     }
 
     if(!TwoPass)
-	(*infoRec->SetupForColorExpandFill)(pScrn, fg, bg, rop, planemask);
+	(*infoRec->SetupForCPUToScreenColorExpandFill)(
+					pScrn, fg, bg, rop, planemask);
 
     while(nBox--) {
 	dwords = (pBox->x2 - pBox->x1 + 31) >> 5;
 
 SECOND_PASS:
 	if(TwoPass) {
-	    (*infoRec->SetupForColorExpandFill)(pScrn, 
+	    (*infoRec->SetupForCPUToScreenColorExpandFill)(pScrn, 
 			(FirstPass) ? bg : fg, -1, rop, planemask);
 	    StippleFunc = (FirstPass) ? FirstFunc : SecondFunc;
 	}
 
 	h = pBox->y2 - pBox->y1;
 
-        (*infoRec->SubsequentColorExpandFillRect)(pScrn, pBox->x1, pBox->y1,
+        (*infoRec->SubsequentCPUToScreenColorExpandFill)(
+			pScrn, pBox->x1, pBox->y1,
  			pBox->x2 - pBox->x1, h, 0);
 
 
@@ -143,8 +146,8 @@ SECOND_PASS:
 		}
 	   }
     
-	if((infoRec->ColorExpandFillFlags & CPU_TRANSFER_PAD_QWORD) &&
-				((dwords * h) & 0x01)) {
+	if((infoRec->CPUToScreenColorExpandFillFlags & CPU_TRANSFER_PAD_QWORD) 
+			&& ((dwords * h) & 0x01)) {
 	    base = (CARD32*)infoRec->ColorExpandBase;
 	    base[0] = 0x00000000;
     	}
@@ -159,7 +162,7 @@ SECOND_PASS:
 	pBox++;
      }
 
-    if(infoRec->ColorExpandFillFlags & SYNC_AFTER_COLOR_EXPAND) 
+    if(infoRec->CPUToScreenColorExpandFillFlags & SYNC_AFTER_COLOR_EXPAND) 
 	(*infoRec->Sync)(pScrn);
     else SET_SYNC_FLAG(infoRec);
 }
@@ -195,7 +198,8 @@ EXPNAME(XAAFillColorExpandSpans)(
     } 
     StippleFunc = stipple_scanline_func[funcNo];
 
-    if((bg == -1) || !(infoRec->ColorExpandFillFlags & TRANSPARENCY_ONLY)) {
+    if((bg == -1) || 
+	!(infoRec->CPUToScreenColorExpandFillFlags & TRANSPARENCY_ONLY)) {
 	/* one pass */
     } else if((rop == GXcopy) && infoRec->FillSolidSpans) {
 	/* one pass but we fill background rects first */
@@ -210,7 +214,8 @@ EXPNAME(XAAFillColorExpandSpans)(
     }
 
     if(!TwoPass)
-	(*infoRec->SetupForColorExpandFill)(pScrn, fg, bg, rop, planemask);
+	(*infoRec->SetupForCPUToScreenColorExpandFill)(
+				pScrn, fg, bg, rop, planemask);
 
     while(n--) {
 	dwords = (*pwidth + 31) >> 5;
@@ -224,18 +229,18 @@ EXPNAME(XAAFillColorExpandSpans)(
 
 SECOND_PASS:
 	if(TwoPass) {
-	    (*infoRec->SetupForColorExpandFill)(pScrn, 
+	    (*infoRec->SetupForCPUToScreenColorExpandFill)(pScrn, 
 			(FirstPass) ? bg : fg, -1, rop, planemask);
 	    StippleFunc = (FirstPass) ? FirstFunc : SecondFunc;
 	}
 
-        (*infoRec->SubsequentColorExpandFillRect)(pScrn, ppt->x, ppt->y,
+        (*infoRec->SubsequentCPUToScreenColorExpandFill)(pScrn, ppt->x, ppt->y,
  			*pwidth, 1, 0);
 
 	(*StippleFunc)(base, (CARD32*)srcp, srcx, stipplewidth, dwords);
     
-	if((infoRec->ColorExpandFillFlags & CPU_TRANSFER_PAD_QWORD) &&
-				(dwords & 0x01)) {
+	if((infoRec->CPUToScreenColorExpandFillFlags & CPU_TRANSFER_PAD_QWORD) 
+			&& (dwords & 0x01)) {
 	    base = (CARD32*)infoRec->ColorExpandBase;
 	    base[0] = 0x00000000;
     	}
@@ -250,7 +255,7 @@ SECOND_PASS:
 	ppt++; pwidth++;
      }
 
-    if(infoRec->ColorExpandFillFlags & SYNC_AFTER_COLOR_EXPAND) 
+    if(infoRec->CPUToScreenColorExpandFillFlags & SYNC_AFTER_COLOR_EXPAND) 
 	(*infoRec->Sync)(pScrn);
     else SET_SYNC_FLAG(infoRec);
 }
@@ -288,7 +293,7 @@ EXPNAME(XAAFillScanlineColorExpandRects)(
     StippleFunc = stipple_scanline_func[funcNo];
 
     if((bg == -1) || 
-	!(infoRec->ScanlineColorExpandFillFlags & TRANSPARENCY_ONLY)) {
+      !(infoRec->ScanlineCPUToScreenColorExpandFillFlags & TRANSPARENCY_ONLY)) {
 	/* one pass */
     } else if((rop == GXcopy) && infoRec->FillSolidRects) {
 	/* one pass but we fill background rects first */
@@ -302,21 +307,21 @@ EXPNAME(XAAFillScanlineColorExpandRects)(
     }
 
     if(!TwoPass)
-	(*infoRec->SetupForScanlineColorExpandFill)(
+	(*infoRec->SetupForScanlineCPUToScreenColorExpandFill)(
 				pScrn, fg, bg, rop, planemask);
 
     while(nBox--) {
 	dwords = (pBox->x2 - pBox->x1 + 31) >> 5;
 SECOND_PASS:
 	if(TwoPass) {
-	    (*infoRec->SetupForScanlineColorExpandFill)(pScrn, 
+	    (*infoRec->SetupForScanlineCPUToScreenColorExpandFill)(pScrn, 
 			(FirstPass) ? bg : fg, -1, rop, planemask);
 	    StippleFunc = (FirstPass) ? FirstFunc : SecondFunc;
 	}
 
 	h = pBox->y2 - pBox->y1;
 
-        (*infoRec->SubsequentScanlineColorExpandFillRect)(
+        (*infoRec->SubsequentScanlineCPUToScreenColorExpandFill)(
 		pScrn, pBox->x1, pBox->y1, pBox->x2 - pBox->x1, h, 0);
 
 
@@ -384,7 +389,7 @@ EXPNAME(XAAFillScanlineColorExpandSpans)(
     StippleFunc = stipple_scanline_func[funcNo];
 
     if((bg == -1) || 
-	!(infoRec->ScanlineColorExpandFillFlags & TRANSPARENCY_ONLY)) {
+      !(infoRec->ScanlineCPUToScreenColorExpandFillFlags & TRANSPARENCY_ONLY)) {
 	/* one pass */
     } else if((rop == GXcopy) && infoRec->FillSolidSpans) {
 	/* one pass but we fill background rects first */
@@ -399,7 +404,7 @@ EXPNAME(XAAFillScanlineColorExpandSpans)(
     }
 
     if(!TwoPass)
-	(*infoRec->SetupForScanlineColorExpandFill)(
+	(*infoRec->SetupForScanlineCPUToScreenColorExpandFill)(
 				pScrn, fg, bg, rop, planemask);
 
 
@@ -415,12 +420,12 @@ EXPNAME(XAAFillScanlineColorExpandSpans)(
 
 SECOND_PASS:
 	if(TwoPass) {
-	    (*infoRec->SetupForScanlineColorExpandFill)(pScrn, 
+	    (*infoRec->SetupForScanlineCPUToScreenColorExpandFill)(pScrn, 
 			(FirstPass) ? bg : fg, -1, rop, planemask);
 	    StippleFunc = (FirstPass) ? FirstFunc : SecondFunc;
 	}
 
-        (*infoRec->SubsequentScanlineColorExpandFillRect)(
+        (*infoRec->SubsequentScanlineCPUToScreenColorExpandFill)(
 				pScrn, ppt->x, ppt->y, *pwidth, 1, 0);
 
 	base = (CARD32*)infoRec->ScanlineColorExpandBuffers[bufferNo];

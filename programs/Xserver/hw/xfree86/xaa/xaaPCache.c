@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.2 1998/07/25 16:58:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.3 1998/07/31 10:41:31 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -1100,7 +1100,7 @@ XAAInitPixmapCache(
     infoRec->MaxCacheableStippleHeight = infoRec->MaxCacheableTileHeight;
     infoRec->MaxCacheableStippleWidth = 
 		infoRec->MaxCacheableTileWidth * pScrn->bitsPerPixel;
-    if(infoRec->ScreenToScreenColorExpandCopyFlags & TRIPLE_BITS_24BPP) 
+    if(infoRec->ScreenToScreenColorExpandFillFlags & TRIPLE_BITS_24BPP) 
 	infoRec->MaxCacheableStippleWidth /= 3;
 
     if(NumMono)  {
@@ -1621,7 +1621,7 @@ XAACacheMonoStipple(ScrnInfoPtr pScrn, PixmapPtr pPix)
    dstPtr = data = (unsigned char*)ALLOCATE_LOCAL(pad * pCache->h);
    srcPtr = (unsigned char*)pPix->devPrivate.ptr;
 
-   if(infoRec->ScreenToScreenColorExpandCopyFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
+   if(infoRec->ScreenToScreenColorExpandFillFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
 	StippleFunc = XAAStippleScanlineFuncMSBFirst[funcNo];
    else
 	StippleFunc = XAAStippleScanlineFuncLSBFirst[funcNo];

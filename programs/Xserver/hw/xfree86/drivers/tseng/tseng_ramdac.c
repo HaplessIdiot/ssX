@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_ramdac.c,v 1.11.2.4 1998/07/24 11:36:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_ramdac.c,v 1.18 1998/07/25 16:56:04 dawes Exp $ */
 
 
 
@@ -152,7 +152,7 @@ ProbeGenDAC(TsengPtr pTseng, Bool quiet)
     long clock01, clock23;
     Bool found = FALSE;
     unsigned char dbyte = 0;
-    float mclk = 0.0;
+    int mclk = 0;
     int iobase = VGAHW_GET_IOBASE();
 
     outb(iobase + 4, 0x31);
@@ -178,9 +178,10 @@ ProbeGenDAC(TsengPtr pTseng, Bool quiet)
 
     /* get MClk value */
     outb(RAMDAC_READ, 0x0a);
-    mclk = (inb(RAMDAC_RAM) + 2) * 14.31818;
+    mclk = (inb(RAMDAC_RAM) + 2) * 14318;
     dbyte = inb(RAMDAC_RAM);
-    mclk /= (((dbyte & 0x1f) + 2) * 1 << ((dbyte & 0x60) >> 5));
+    mclk /= ((dbyte & 0x1f) + 2) * (1 << ((dbyte >> 5) & 0x03));
+    pTseng->MClkInfo.MemClk = mclk;
 
     outb(iobase + 4, 0x31);
     outb(iobase + 5, saveCR31 & ~0x40);
@@ -206,15 +207,15 @@ ProbeGenDAC(TsengPtr pTseng, Bool quiet)
 	switch (dbyte & 0xf0) {
 	case 0xb0:
 	    if (!quiet) {
-		xf86Msg(X_PROBED, "Ramdac: ICS 5341 GenDAC and programmable clock (MClk = %1.2f MHz)\n",
-		    mclk);
+		xf86Msg(X_PROBED, "Ramdac: ICS 5341 GenDAC and programmable clock (MClk = %d MHz)\n",
+		    mclk/1000);
 	    }
 	    pTseng->DacInfo.DacType = ICS5341_DAC;
 	    break;
 	case 0xf0:
 	    if (!quiet) {
-		xf86Msg(X_PROBED, "Ramdac: ICS 5301 GenDAC and programmable clock (MClk = %1.2f MHz)\n",
-		    mclk);
+		xf86Msg(X_PROBED, "Ramdac: ICS 5301 GenDAC and programmable clock (MClk = %d MHz)\n",
+		    mclk/1000);
 	    }
 	    pTseng->DacInfo.DacType = ICS5301_DAC;
 	    break;
@@ -330,30 +331,15 @@ read_color(int entry, unsigned char *cmap)
     xf86IODelay();
 }
 
-static void
-check_mclk(TsengPtr pTseng, int min, int max)
-{
-    if (pTseng->MemClk <= 0)
-	return;
-#ifdef TODO
-
-    if (pTseng->MemClk < min || pTseng->MemClk > max) {
-	ErrorF("%s %s: MCLK %1.3f MHz out of range (=%1.3f..%1.3f), not changed!\n",
-	    OFLG_ISSET(XCONFIG_MEMCLOCK, &pScrn->xconfigFlag) ?
-	    XCONFIG_GIVEN : XCONFIG_PROBED, pScrn->name,
-	    pTseng->MemClk / 1000.0, min / 1000.0, max / 1000.0);
-	pTseng->MemClk = 0;
-    } else if (xf86Verbose)
-	ErrorF("%s %s: set MCLK to %1.3f MHz\n",
-	    XCONFIG_GIVEN, pScrn->name, pTseng->MemClk / 1000.0);
-#endif
-}
-
 void
-Check_Tseng_Ramdac(ScrnInfoPtr pScrn, TsengPtr pTseng)
+Check_Tseng_Ramdac(ScrnInfoPtr pScrn)
 {
     unsigned char cmap[3], save_cmap[3];
     BOOL cr_saved;
+    int mclk;
+    int temp;
+    int dbyte;
+    TsengPtr pTseng = TsengPTR(pScrn);
 
     ErrorF("	Check_Tseng_Ramdac\n");
 
@@ -373,6 +359,12 @@ Check_Tseng_Ramdac(ScrnInfoPtr pScrn, TsengPtr pTseng)
     } else {			       /* autoprobe for the RAMDAC */
 	if (Is_ET6K) {
 	    pTseng->DacInfo.DacType = ET6000_DAC;
+	    temp = inb(pTseng->IOAddress + 0x67);
+	    outb(pTseng->IOAddress + 0x67, 10);
+	    mclk = (inb(pTseng->IOAddress + 0x69) + 2) * 14318;
+	    dbyte = inb(pTseng->IOAddress + 0x69);
+	    mclk /= ((dbyte & 0x1f) + 2) * (1 << ((dbyte >> 5) & 0x03));
+	    pTseng->MClkInfo.MemClk = mclk;
 	} else if (ProbeGenDAC(pTseng, FALSE)) {
 	    /* It is. Nothing to do here */
 	} else if (ProbeSTG1703(pTseng, FALSE)) {
@@ -439,6 +431,7 @@ Check_Tseng_Ramdac(ScrnInfoPtr pScrn, TsengPtr pTseng)
     pTseng->DacInfo.NotAttCompat = FALSE;	/* default: treat as ATT compatible DAC */
     pScrn->progClock = FALSE;
     pTseng->ClockChip = -1;
+    pTseng->MClkInfo.Programmable = FALSE;
 
     /* now override defaults with appropriate values for each RAMDAC */
     switch (pTseng->DacInfo.DacType) {
@@ -456,12 +449,16 @@ Check_Tseng_Ramdac(ScrnInfoPtr pScrn, TsengPtr pTseng)
 	pScrn->progClock = TRUE;
 	pTseng->ClockChip = CLOCKCHIP_ET6000;
 	pTseng->DacInfo.NotAttCompat = TRUE;	/* avoids treatment as ATT compatible DAC */
-	check_mclk(pTseng, 80000, 110000);
+	pTseng->MClkInfo.Programmable = TRUE;
+	pTseng->MClkInfo.min = 80000;
+	pTseng->MClkInfo.max = 110000;
 	break;
     case ICS5341_DAC:
 	pScrn->progClock = TRUE;
 	pTseng->ClockChip = CLOCKCHIP_ICS5341;
-	check_mclk(pTseng, 40000, 60000);
+	pTseng->MClkInfo.Programmable = TRUE;
+	pTseng->MClkInfo.min = 40000;
+	pTseng->MClkInfo.max = 60000;
 	pTseng->DacInfo.DacPort16 = TRUE;
 	break;
     case ICS5301_DAC:
@@ -527,8 +524,10 @@ tseng_init_clockscale(TsengPtr pTseng)
 }
 
 void
-tseng_set_dacspeed(ScrnInfoPtr pScrn, TsengPtr pTseng)
+tseng_set_dacspeed(ScrnInfoPtr pScrn)
 {
+    TsengPtr pTseng = TsengPTR(pScrn);
+
     /*
      * Memory bandwidth is important in > 8bpp modes, especially on ET4000
      *
@@ -642,11 +641,12 @@ tseng_set_dacspeed(ScrnInfoPtr pScrn, TsengPtr pTseng)
 }
 
 void
-tseng_validate_mode(ScrnInfoPtr pScrn, TsengPtr pTseng, DisplayModePtr mode, Bool verbose)
+tseng_validate_mode(ScrnInfoPtr pScrn, DisplayModePtr mode, Bool verbose)
 {
     int pixel_clock;
     int data_clock;
     int hdiv = 1, hmul = 1;
+    TsengPtr pTseng = TsengPTR(pScrn);
 
     /*
      * A true weirdness is that in ET4000Init(), mode->Clock points to the
@@ -754,21 +754,21 @@ static unsigned char CMD_MU4910[] =
  * (also set VGA controller registers for pixmux and BPP)
  */
 void
-tseng_set_ramdac_bpp(ScrnInfoPtr pScrn, TsengPtr pTseng, DisplayModePtr mode)
+tseng_set_ramdac_bpp(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
-    Bool rgb555, rgb565, dac16bit;
+    Bool rgb555, dac16bit;
     unsigned char *cmd_array = NULL;
     unsigned char *cmd_dest = NULL;
     int index, dataclock;
+    TsengPtr pTseng = TsengPTR(pScrn);
     int local_bytesperpixel = pTseng->Bytesperpixel;
-    rgb rgbweight = xf86GetWeight();
 
     if (pTseng->Bytesperpixel < 1)
 	local_bytesperpixel = 1;       /* for 1 and 4bpp */
 
-    rgb555 = (rgbweight.red == 5 && rgbweight.green == 5 && rgbweight.blue == 5);
-    rgb565 = (rgbweight.red == 5 && rgbweight.green == 6 && rgbweight.blue == 5);
-
+    rgb555 = (pScrn->weight.red == 5 && pScrn->weight.green == 5
+        && pScrn->weight.blue == 5);  /* rgb565 otherwise */
+    
     /* This is not the good way to find out if we're in 8- or 16-bit RAMDAC
      * mode It should rather be passed on from the tseng_validate_mode() code.
      * Right now it'd better agree with what tseng_validate_mode() proposed.
@@ -798,7 +798,7 @@ tseng_set_ramdac_bpp(ScrnInfoPtr pScrn, TsengPtr pTseng, DisplayModePtr mode)
 	case 2:
 	    if (rgb555)
 		pTseng->ModeReg.pll.cmd_reg |= 0xA0;
-	    if (rgb565)
+	    else
 		pTseng->ModeReg.pll.cmd_reg |= 0xC0;
 	    break;
 	case 3:
@@ -832,8 +832,8 @@ tseng_set_ramdac_bpp(ScrnInfoPtr pScrn, TsengPtr pTseng, DisplayModePtr mode)
     case ET6000_DAC:
 	if (pScrn->bitsPerPixel == 16) {
 	    if (rgb555)
-		pTseng->ModeReg.ExtET6K[0x58] &= ~0x02;		/* 5-5-5 RGB mode */
-	    if (rgb565)
+		pTseng->ModeReg.ExtET6K[0x58] &= ~0x02;	/* 5-5-5 RGB mode */
+	    else
 		pTseng->ModeReg.ExtET6K[0x58] |= 0x02;	/* 5-6-5 RGB mode */
 	}
 	break;

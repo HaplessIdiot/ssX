@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillPoly.c,v 1.2 1998/07/25 16:58:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillPoly.c,v 1.3 1998/07/31 10:41:29 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -661,7 +661,7 @@ CacheExpandRectHelper (
 	while(1) {
 		blit_w = cacheWidth - skipleft;
 		if(blit_w > w) blit_w = w;
-		(*infoRec->SubsequentScreenToScreenColorExpandCopy)(
+		(*infoRec->SubsequentScreenToScreenColorExpandFill)(
 			pScrn, x, Y, blit_w, blit_h,
 			pCache->x, pCache->y + phaseY, skipleft);
 		w -= blit_w;
@@ -722,7 +722,7 @@ XAAFillPolygonCacheExpand(
 
     pCache = (*infoRec->CacheMonoStipple)(infoRec->pScrn, pGC->stipple);
 
-    (*infoRec->SetupForScreenToScreenColorExpandCopy)(
+    (*infoRec->SetupForScreenToScreenColorExpandFill)(
 			infoRec->pScrn, pGC->fgPixel,
 			(pGC->fillStyle == FillStippled) ? -1 : pGC->bgPixel, 
 			pGC->alu, pGC->planemask);

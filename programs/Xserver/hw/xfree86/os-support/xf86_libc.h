@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.24 1998/07/26 09:56:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.25 1998/07/26 13:14:29 dawes Exp $ */
 
 
 
@@ -68,15 +68,6 @@ typedef struct _xf86dirent XF86DIRENT;
 #define XF86_O_CREAT	0x0200
 
 #endif /* defined(XFree86LOADER) || defined(NEED_XF86_TYPES) */
-
-/*
- * These things are always required by drivers (but not by libc_wrapper.c),
- * even for a static server because some OSs don't provide them.
- */
-#ifndef DONT_DEFINE_WRAPPERS
-#undef usleep
-#define usleep(ul)		xf86usleep(ul)
-#endif
 
 /*
  * the rest of this file should only be included for code that is supposed

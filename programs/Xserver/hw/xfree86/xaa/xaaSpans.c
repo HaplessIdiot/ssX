@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaSpans.c,v 1.2 1998/07/25 16:58:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaSpans.c,v 1.3 1998/07/31 10:41:32 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -674,7 +674,7 @@ XAAFillCacheExpandSpans(
 
     cacheWidth = pCache->w * pScrn->bitsPerPixel;
 
-    (*infoRec->SetupForScreenToScreenColorExpandCopy)(pScrn, fg, bg, rop, 
+    (*infoRec->SetupForScreenToScreenColorExpandFill)(pScrn, fg, bg, rop, 
 							planemask);
 
      while(n--) {
@@ -689,7 +689,7 @@ XAAFillCacheExpandSpans(
 	    blit_w = cacheWidth - phaseX;
 	    if(blit_w > w) blit_w = w;
 
-	    (*infoRec->SubsequentScreenToScreenColorExpandCopy)(
+	    (*infoRec->SubsequentScreenToScreenColorExpandFill)(
 			pScrn, x, ppt->y, blit_w, 1,
 			pCache->x, pCache->y + phaseY, phaseX);
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.1.2.2 1998/07/19 13:22:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.2 1998/07/25 16:58:46 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -276,6 +276,7 @@ BAD_ALIGNMENT:
 	src = (unsigned char*)((long)(src + (dwords << 2)) & ~0x03L);
      
 	base[dwords] = *((CARD32*)src) >> shift;
+	(*infoRec->SubsequentImageWriteScanline)(pScrn, bufferNo);
     }
 
     SET_SYNC_FLAG(infoRec);

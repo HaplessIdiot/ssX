@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaBitmap.c,v 1.1.2.5 1998/07/18 17:54:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaBitmap.c,v 1.2 1998/07/25 16:58:42 dawes Exp $ */
 
 
 #include "xaa.h"
@@ -226,11 +226,13 @@ EXPNAME(XAAWriteBitmapColorExpand)(
     BitmapScanlineProcPtr secondFunc;
 
 #ifdef TRIPLE_BITS
-    if((bg != -1) && ((infoRec->ColorExpandFillFlags & TRANSPARENCY_ONLY) ||
-	((infoRec->ColorExpandFillFlags & RGB_EQUAL) && 
+    if((bg != -1) && 
+	((infoRec->CPUToScreenColorExpandFillFlags & TRANSPARENCY_ONLY) ||
+	((infoRec->CPUToScreenColorExpandFillFlags & RGB_EQUAL) && 
 	(!CHECK_RGB_EQUAL(bg))))) {
 #else
-    if((bg != -1) && (infoRec->ColorExpandFillFlags & TRANSPARENCY_ONLY)) {
+    if((bg != -1) && 
+	(infoRec->CPUToScreenColorExpandFillFlags & TRANSPARENCY_ONLY)) {
 #endif
 	if(rop == GXcopy) {
     	    (*infoRec->SetupForSolidFill)(pScrn, bg, rop, planemask);
@@ -243,8 +245,8 @@ EXPNAME(XAAWriteBitmapColorExpand)(
     if(skipleft) {
 #else
     if(skipleft && 
-	(!(infoRec->ColorExpandFillFlags & LEFT_EDGE_CLIPPING) || 
-	(!(infoRec->ColorExpandFillFlags & LEFT_EDGE_CLIPPING_NEGATIVE_X) && 
+	(!(infoRec->CPUToScreenColorExpandFillFlags & LEFT_EDGE_CLIPPING) || 
+	(!(infoRec->CPUToScreenColorExpandFillFlags & LEFT_EDGE_CLIPPING_NEGATIVE_X) && 
 		(skipleft > x)))) {
 #endif
 	firstFunc = BitmapScanline_Shifted;
@@ -266,8 +268,10 @@ EXPNAME(XAAWriteBitmapColorExpand)(
 
 SECOND_PASS:
 
-    (*infoRec->SetupForColorExpandFill)(pScrn, fg, bg, rop, planemask);
-    (*infoRec->SubsequentColorExpandFillRect)(pScrn, x, y, w, h, skipleft);
+    (*infoRec->SetupForCPUToScreenColorExpandFill)(
+					pScrn, fg, bg, rop, planemask);
+    (*infoRec->SubsequentCPUToScreenColorExpandFill)(
+					pScrn, x, y, w, h, skipleft);
 
 
 #ifndef FIXEDBASE
@@ -283,7 +287,7 @@ SECOND_PASS:
 	    srcp += srcwidth;
 	}
 
-    if((infoRec->ColorExpandFillFlags & CPU_TRANSFER_PAD_QWORD) &&
+    if((infoRec->CPUToScreenColorExpandFillFlags & CPU_TRANSFER_PAD_QWORD) &&
 				((dwords * h) & 0x01)) {
 	base = (CARD32*)infoRec->ColorExpandBase;
 	base[0] = 0x00000000;
@@ -298,7 +302,7 @@ SECOND_PASS:
 	goto SECOND_PASS;
     }
 
-    if(infoRec->ColorExpandFillFlags & SYNC_AFTER_COLOR_EXPAND) 
+    if(infoRec->CPUToScreenColorExpandFillFlags & SYNC_AFTER_COLOR_EXPAND) 
 	(*infoRec->Sync)(pScrn);
     else SET_SYNC_FLAG(infoRec);
 }
@@ -331,12 +335,12 @@ EXPNAME(XAAWriteBitmapScanlineColorExpand)(
 
 #ifdef TRIPLE_BITS
     if((bg != -1) &&
-	((infoRec->ScanlineColorExpandFillFlags & TRANSPARENCY_ONLY) ||
-	((infoRec->ScanlineColorExpandFillFlags & RGB_EQUAL) && 
+	((infoRec->ScanlineCPUToScreenColorExpandFillFlags & TRANSPARENCY_ONLY) 
+	|| ((infoRec->ScanlineCPUToScreenColorExpandFillFlags & RGB_EQUAL) && 
 	(!CHECK_RGB_EQUAL(bg))))) {
 #else
     if((bg != -1) && 
-	(infoRec->ScanlineColorExpandFillFlags & TRANSPARENCY_ONLY)) {
+	(infoRec->ScanlineCPUToScreenColorExpandFillFlags & TRANSPARENCY_ONLY)){
 #endif
 	if(rop == GXcopy) {
     	    (*infoRec->SetupForSolidFill)(pScrn, bg, rop, planemask);
@@ -349,8 +353,9 @@ EXPNAME(XAAWriteBitmapScanlineColorExpand)(
     if(skipleft) {
 #else
     if(skipleft && 
-	(!(infoRec->ScanlineColorExpandFillFlags & LEFT_EDGE_CLIPPING) || 
-	(!(infoRec->ScanlineColorExpandFillFlags &
+	(!(infoRec->ScanlineCPUToScreenColorExpandFillFlags & 
+		LEFT_EDGE_CLIPPING) || 
+	(!(infoRec->ScanlineCPUToScreenColorExpandFillFlags &
 		 LEFT_EDGE_CLIPPING_NEGATIVE_X) && (skipleft > x)))) {
 #endif
 	firstFunc = BitmapScanline_Shifted;
@@ -374,8 +379,8 @@ SECOND_PASS:
     bufferNo = 0;
     base = (CARD32*)infoRec->ScanlineColorExpandBuffers[0];
 
-    (*infoRec->SetupForScanlineColorExpandFill)(pScrn, fg, bg, rop, planemask);
-    (*infoRec->SubsequentScanlineColorExpandFillRect)(
+    (*infoRec->SetupForScanlineCPUToScreenColorExpandFill)(pScrn, fg, bg, rop, planemask);
+    (*infoRec->SubsequentScanlineCPUToScreenColorExpandFill)(
 					pScrn, x, y, w, h, skipleft);
 
     while(h--) {
