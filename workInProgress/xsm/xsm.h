@@ -1,5 +1,5 @@
 /* $XConsortium: xsm.h,v 1.5 94/04/17 21:15:20 rws Exp $ */
-/* $XFree86: xc/workInProgress/xsm/xsm.h,v 3.0 1994/06/28 12:41:23 dawes Exp $ */
+/* $XFree86: xc/workInProgress/xsm/xsm.h,v 3.1 1994/11/26 12:55:43 dawes Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -62,7 +62,7 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xos.h>
 
 /* Fix ISC brain damage.  When using gcc fdopen isn't declared in <stdio.h>. */
-#if defined(SYSV) && defined(SYSV386) && defined(__STDC__) && defined(ISC)
+#if defined(__STDC__) && defined(ISC)
 extern FILE *fdopen(int, char const *);
 #endif
 

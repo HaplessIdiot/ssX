@@ -1,5 +1,5 @@
 /* $XConsortium: daemon.c,v 1.14 94/04/17 20:03:35 gildea Exp $ */
-/* $XFree86: xc/programs/xdm/daemon.c,v 3.2 1994/06/28 12:32:31 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/daemon.c,v 3.3 1994/10/20 06:15:08 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -151,7 +151,7 @@ BecomeDaemon ()
 #endif
 	(void) close (i);
     }
-#endif /* !SYSV386 */
+#endif /* !((SYSV || SVR4) && i386) */
 #endif /* MINIX */
 #endif /* !__EMX__ */
 

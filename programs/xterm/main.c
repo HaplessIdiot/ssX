@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.222 94/04/17 20:23:28 gildea Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.5 1994/11/19 08:01:02 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.6 1994/11/26 12:50:15 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -144,7 +144,7 @@ SOFTWARE.
 #define HAS_UTMP_UT_HOST
 #endif
 
-#ifdef SYSV386
+#if defined(SYSV) && defined(i386)
 #define USE_SYSV_UTMP
 #define ATT
 #define USE_HANDSHAKE
@@ -1411,7 +1411,7 @@ char *name;
 get_pty (pty)
     int *pty;
 {
-#if defined(SYSV) && defined(SYSV386)
+#if defined(SYSV) && defined(i386)
         /*
 	  The order of this code is *important*.  On SYSV/386 we want to open
 	  a /dev/ttyp? first if at all possible.  If none are available, then
@@ -1437,14 +1437,14 @@ get_pty (pty)
 	  */
         if (pty_search(pty) == 0)
 	    return 0;
-#endif /* SYSV && SYSV386 */
+#endif /* SYSV && i386 */
 #ifdef ATT
 	if ((*pty = open ("/dev/ptmx", O_RDWR)) < 0) {
 	    return 1;
 	}
-#if defined(SVR4) || defined(SYSV386)
+#if defined(SVR4) || (defined(i386) && defined(SYSV))
 	strcpy(ttydev, ptsname(*pty));
-#if defined (SYSV) && defined(SYSV386)
+#if defined (SYSV) && defined(i386)
 	IsPts = True;
 #endif
 #endif
@@ -2039,9 +2039,9 @@ spawn ()
 #endif
 
 #ifdef USE_USG_PTYS
-#if defined(SYSV) && defined(SYSV386)
+#if defined(SYSV) && defined(i386)
                 if (IsPts) {	/* SYSV386 supports both, which did we open? */
-#endif /* SYSV && SYSV386 */
+#endif /* SYSV && i386 */
 		int ptyfd;
 
 		setpgrp();
@@ -2053,7 +2053,7 @@ spawn ()
 		if (ioctl (ptyfd, I_PUSH, "ptem") < 0) {
 		    SysError (2);
 		}
-#if !defined(SVR4) && !defined(SYSV386)
+#if !defined(SVR4) && !(defined(SYSV) && defined(i386))
 		if (!getenv("CONSEM") && ioctl (ptyfd, I_PUSH, "consem") < 0) {
 		    SysError (3);
 		}
@@ -2082,9 +2082,9 @@ spawn ()
                         ws.ws_ypixel = FullHeight(screen);
                 }
 #endif
-#if defined(SYSV) && defined(SYSV386)
+#if defined(SYSV) && defined(i386)
                 } else {	/* else pty, not pts */
-#endif /* SYSV && SYSV386 */
+#endif /* SYSV && i386 */
 #endif /* USE_USG_PTYS */
 
 #ifdef USE_HANDSHAKE		/* warning, goes for a long ways */
@@ -2190,9 +2190,9 @@ spawn ()
 			ttydev = realloc (ttydev, (unsigned) (strlen(ptr) + 1));
 			(void) strcpy(ttydev, ptr);
 		}
-#if defined(SYSV) && defined(SYSV386)
+#if defined(SYSV) && defined(i386)
                 } /* end of IsPts else clause */
-#endif /* SYSV && SYSV386 */
+#endif /* SYSV && i386 */
 
 #endif /* USE_HANDSHAKE -- from near fork */
 

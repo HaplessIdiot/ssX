@@ -1,6 +1,6 @@
 /*
  * $XConsortium: gethost.c,v 1.21 94/04/17 20:37:51 hersh Exp $
- * $XFree86$
+ * $XFree86: xc/programs/xauth/gethost.c,v 3.0 1994/06/28 12:31:41 dawes Exp $
  *
  * 
 Copyright (c) 1989  X Consortium
@@ -54,13 +54,13 @@ in this Software without prior written authorization from the X Consortium.
 #include <sys/socket.h>
 #include <netdb.h>
 #include <netinet/in.h>
-#ifdef SYSV386
-#ifndef SVR4
+#ifdef i386
+#ifdef SYSV
 #ifndef SCO
 #include <net/errno.h>
 #endif /* !SCO */
-#endif /* !SVR4 */
-#endif /* SYSV386 */
+#endif /* SYSV */
+#endif /* i386 */
 #else /* MINIX */
 #include <net/gen/netdb.h>
 #endif /* !MINIX */

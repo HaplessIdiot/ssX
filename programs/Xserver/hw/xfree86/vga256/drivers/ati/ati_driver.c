@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.11 1994/10/29 22:45:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.12 1994/11/05 23:50:55 dawes Exp $ */
 /*
  * Copyright 1994 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -160,7 +160,8 @@
  * Note that, to reduce confusion, this driver masks out the different clock
  * ordering.
  *
- * For all boards, these frequencies can be divided by 1, 2, 3 or 4.
+ * For all boards, these frequencies can be divided by 1 or 2.  For all boards,
+ * except Mach32 and Mach64, frequencies can also be divided by 3 or 4.
  *
  *      Register 1CE, index B8h
  *       Bit 7    Bit 6
@@ -193,6 +194,7 @@
  * These are XFree86-specific header files.
  */
 #include "compiler.h"
+#include "xf86Version.h"
 #include "xf86Procs.h"
 #include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
@@ -333,7 +335,7 @@ static unsigned ATI_IOPorts[] =
 {
         /* ATI VGA Wonder extended registers */
         0x01CE, 0x01CF,
-#if 0
+
         /* 8514/A registers */
         GP_STAT, SUBSYS_CNTL,
 
@@ -341,10 +343,10 @@ static unsigned ATI_IOPorts[] =
         EXT_FIFO_STATUS, CLOCK_SEL,
 
         /* Mach32 registers */
-        MEM_BNDRY, MEM_CFG, MISC_OPTIONS
+        MEM_BNDRY, MEM_CFG, MISC_OPTIONS,
 
         /* Mach64 registers */
-#endif
+        BUS_CNTL, GEN_TEST_CNTL, CONFIG_CNTL, CRTC_GEN_CNTL, MEM_INFO
 };
 #define Num_ATI_IOPorts (sizeof(ATI_IOPorts) / sizeof(ATI_IOPorts[0]))
 short ATIExtReg = 0x01CE;       /* Used by bank.s;  Must be short */
@@ -372,7 +374,8 @@ static unsigned Probe_IOPorts[] =
         DEST_X_START, DEST_X_END, DEST_Y_END, ALU_FG_FN,
 
         /* Mach64 registers */
-        SCRATCH_REG0, MEM_INFO, CONFIG_STATUS_0, CONFIG_CHIP_ID
+        SCRATCH_REG0, MEM_INFO, CONFIG_STATUS_0, CONFIG_CHIP_ID,
+        BUS_CNTL, GEN_TEST_CNTL
 };
 #define Num_Probe_IOPorts (sizeof(Probe_IOPorts) / sizeof(Probe_IOPorts[0]))
 
@@ -389,6 +392,8 @@ static unsigned Probe_IOPorts[] =
 #define ATIGetExtReg(Index)             GetReg(ATIExtReg, Index)
 #define ATIPutExtReg(Index, Register_Value)     \
         PutReg(ATIExtReg, Index, Register_Value)
+
+static unsigned char Chip_Has_SUBSYS_CNTL = FALSE;
 
 #define ATI_CHIP_NONE      0
 #define ATI_CHIP_18800     1
@@ -1021,12 +1026,10 @@ probe_clocks:
                  * Don't replace clocks that are either probed or documented as
                  * zero.
                  */
-                if (!vga256InfoRec.clock[Clock_Index])
-                        continue;
                 Specification_Clock = ClockLine[ATIClock][Clock_Index];
                 if (Specification_Clock < 0)
                         break;
-                if (!Specification_Clock)
+                if ((!Specification_Clock) || (!vga256InfoRec.clock[Clock_Index]))
                         continue;
                 vga256InfoRec.clock[Clock_Index] = Specification_Clock;
         }
@@ -1374,11 +1377,32 @@ ATIProbe()
                 outl(SCRATCH_REG0, 0xAAAAAAAA);  /* Test even bits */
                 if (inl(SCRATCH_REG0) == 0xAAAAAAAA)
                 {
-                        /* Mach64 detected */
+                        /* A Mach64 has been detected */
+                        if (OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
+                        {
+                                /* Reset Mach64 engine */
+                                IO_Value2 = inl(BUS_CNTL);
+                                outl(BUS_CNTL, (IO_Value2 &
+                                        ~(BUS_ROM_DIS | BUS_FIFO_ERR_INT_EN |
+                                                BUS_HOST_ERR_INT_EN)) |
+                                        BUS_FIFO_ERR_INT | BUS_HOST_ERR_INT);
+                                outl(GEN_TEST_CNTL, 0);
+                                outl(GEN_TEST_CNTL, GEN_GUI_EN);
+                        }
+
+                        IO_Value2 = inl(CONFIG_STATUS_0);
+                        if ((IO_Value2 & (CFG_VGA_EN | CFG_CHIP_EN)) !=
+                            (CFG_VGA_EN | CFG_CHIP_EN))
+                        {
+                                ErrorF("Mach64 detected but VGA Wonder "
+                                       "capability cannot be enabled.\n");
+                                outl(SCRATCH_REG0, IO_Value);
+                                xf86DisableIOPorts(vga256InfoRec.scrnIndex);
+                                return (FALSE);
+                        }
                         ATIChip = ATI_CHIP_88800;
                         ATIBoard = ATI_BOARD_MACH64;
-                        ATIDac =
-                                (inl(CONFIG_STATUS_0) & CFG_INIT_DAC_TYPE) >> 9;
+                        ATIDac = (IO_Value2 & CFG_INIT_DAC_TYPE) >> 9;
                         MachvideoRam =
                                 videoRamSizes[(inl(MEM_INFO) & CTL_MEM_SIZE) +
                                         2];
@@ -1415,7 +1439,25 @@ ATIProbe()
 
                 if (!(BIOS_Data[0x44] & 0x40))
                 {
-                        /* An accelerator is present */
+                        /* An 8514/A compatible accelerator detected */
+                        if (OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
+                        {
+                                /*
+                                 * Reset the 8514/A and disable all interrupts.
+                                 */
+                                outw(SUBSYS_CNTL,
+                                        GPCTRL_RESET | CHPTEST_NORMAL);
+                                outw(SUBSYS_CNTL,
+                                        GPCTRL_ENAB | CHPTEST_NORMAL);
+
+                                /*
+                                 * Don't leave any Mach8 or Mach32 in 8514/A
+                                 * mode.
+                                 */
+                                IO_Value = inw(CLOCK_SEL);
+                                outw(CLOCK_SEL, IO_Value);
+                        }
+
                         IO_Value = inw(ERR_TERM);
                         outw(ERR_TERM, 0x5A5A);
                         ProbeWaitIdleEmpty();
@@ -1450,12 +1492,12 @@ ATIProbe()
                         {
                                 /* ATI accelerator detected */
                                 outw(DESTX_DIASTP, 0xAAAA);
-                                WaitIdleEmpty();
+                                ProbeWaitIdleEmpty();
                                 if (inw(READ_SRC_X) == 0x02AA)
                                         ATIBoard = ATI_BOARD_MACH32;
 
                                 outw(DESTX_DIASTP, 0x5555);
-                                WaitIdleEmpty();
+                                ProbeWaitIdleEmpty();
                                 if (inw(READ_SRC_X) == 0x0555)
                                 {
                                         if (ATIBoard != ATI_BOARD_MACH32)
@@ -1473,6 +1515,8 @@ ATIProbe()
                                 xf86DisableIOPorts(vga256InfoRec.scrnIndex);
                                 return (FALSE);
                         }
+
+                        Chip_Has_SUBSYS_CNTL = TRUE;
 
                         if (ATIBoard == ATI_BOARD_MACH32)
                         {
@@ -1625,6 +1669,26 @@ ATIProbe()
         ErrorF("%s or similar RAMDAC detected.\n", DACNames[ATIDac]);
         ErrorF("This is a %s video adapter.\n", BoardNames[ATIBoard]);
 
+        /* The following is temporary */
+        if (ATIBoard >= ATI_BOARD_MACH8)
+        {
+                char *Version = XF86_VERSION;
+                for (  ;  *Version;  Version++)
+                        if (isalpha(*Version))
+                        {
+                                if (OFLG_ISSET(OPTION_NOACCEL,
+                                        &vga256InfoRec.options))
+                                        ErrorF("Thank you for trying option "
+                                               "\"noaccel\"!  Good luck!\n");
+                                else
+                                        ErrorF("Please try option \"noaccel\" "
+                                               "and report any problems to "
+                                               "tsi@ualberta.ca.\n");
+                                break;
+                        }
+        }
+        /* End of temporary code */
+
         /* From now on, ignore Mach8 accelerator */
         if (ATIBoard == ATI_BOARD_MACH8)
                 ATIBoard = ATIVGABoard;
@@ -1696,24 +1760,31 @@ ATIProbe()
         if (!vga256InfoRec.videoRam)
                 vga256InfoRec.videoRam = VGAWondervideoRam;
         else
-
-        /*
-         * Ensure any accelerator and VGA Wonder side agree on video memory
-         * size.  After BIOS initialization, they won't necessarily agree
-         * depending on whether or where the memory boundary is configured.
-         */
-        if (MachvideoRam > VGAWondervideoRam)
-                if (ATIBoard < ATI_BOARD_PLUS)
-                        ATIPutExtReg(0xBB, IO_Value | 0x20);
-                else
-                {
-                        IO_Value &= 0xE7;
-                        if (MachvideoRam >= 1024)
-                                IO_Value |= 0x08;
+        {
+                /*
+                 * Ensure any accelerator and VGA Wonder side agree on video
+                 * memory size.  After BIOS initialization, they won't
+                 * necessarily agree depending on whether or where the memory
+                 * boundary is configured.
+                 */
+                if (MachvideoRam > VGAWondervideoRam)
+                        if (ATIBoard < ATI_BOARD_PLUS)
+                                ATIPutExtReg(0xBB, IO_Value | 0x20);
                         else
-                                IO_Value |= 0x10;
-                        ATIPutExtReg(0xB0, IO_Value);
-                }
+                        {
+                                IO_Value &= 0xE7;
+                                if (MachvideoRam >= 1024)
+                                        IO_Value |= 0x08;
+                                else
+                                        IO_Value |= 0x10;
+                                ATIPutExtReg(0xB0, IO_Value);
+                        }
+
+                if (MachvideoRam < vga256InfoRec.videoRam)
+                        ErrorF("Virtual resolutions requiring more than %d kB "
+                               "of video memory might not function "
+                               "correctly.\n", MachvideoRam);
+        }
 
         /*
          * Set the maximum allowable dot-clock frequency (in kHz).
@@ -1820,6 +1891,7 @@ ATIProbe()
         OFLG_SET(OPTION_PROBE_CLKS, &ATI.ChipOptionFlags);
         OFLG_SET(OPTION_UNDOC_CLKS, &ATI.ChipOptionFlags);
         OFLG_SET(OPTION_CSYNC,      &ATI.ChipOptionFlags);
+        OFLG_SET(OPTION_NOACCEL,    &ATI.ChipOptionFlags);      /* Temporary */
 
         /*
          * Return success.
@@ -1843,12 +1915,13 @@ Bool enter;
         static unsigned char saved_ab,
                 saved_b1, saved_b4, saved_b5, saved_b6,
                 saved_b8, saved_b9, saved_be;
-#if 0
         static unsigned short saved_clock_sel, saved_misc_options,
                 saved_mem_bndry, saved_mem_cfg;
-#endif
+        static unsigned int saved_config_cntl, saved_crtc_gen_cntl,
+                saved_mem_info;
+
         static Bool entered = LEAVE;
-        unsigned char tmp;
+        unsigned int tmp;
 
         if (enter == entered)
                 return;
@@ -1857,38 +1930,69 @@ Bool enter;
         if (enter == ENTER)
         {
                 xf86EnableIOPorts(vga256InfoRec.scrnIndex);
-#if 0
-                if (ATIBoard == ATI_BOARD_MACH32)
+
+                if (OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
+                if (Chip_Has_SUBSYS_CNTL)
                 {
                         /* Save register values to be modified */
                         saved_clock_sel = inw(CLOCK_SEL);
-                        saved_misc_options = inw(MISC_OPTIONS);
-                        saved_mem_bndry = inw(MEM_BNDRY);
-                        saved_mem_cfg = inw(MEM_CFG);
-
-                        /* Wait for enough FIFO entries */
-                        ATIWaitQueue(4);
-
-                        /* Ensure VGA is enabled */
-                        outw(CLOCK_SEL, saved_clock_sel & ~DISABPASSTHRU);
-                        outw(MISC_OPTIONS, saved_misc_options &
-                                ~(DISABLE_VGA | DISABLE_DAC));
-
-                        /* Disable any video memory boundary */
-                        outw(MEM_BNDRY, saved_mem_bndry &
-                                ~(MEM_PAGE_BNDRY | MEM_BNDRY_ENA));
-
-                        /* Disable direct video memory aperture */
-                        outw(MEM_CFG, saved_mem_cfg &
-                                ~(MEM_APERT_SEL | MEM_APERT_PAGE | MEM_APERT_LOC));
-
-                        /* Wait for all activity to die down */
-                        WaitIdleEmpty();
+                        if (ATIBoard == ATI_BOARD_MACH32)
+                        {
+                                saved_misc_options = inw(MISC_OPTIONS);
+                                saved_mem_bndry = inw(MEM_BNDRY);
+                                saved_mem_cfg = inw(MEM_CFG);
+                        }
 
                         /* Reset the 8514/A and disable all interrupts */
                         outw(SUBSYS_CNTL, GPCTRL_RESET | CHPTEST_NORMAL);
+                        outw(SUBSYS_CNTL, GPCTRL_ENAB | CHPTEST_NORMAL);
+
+                        /* Ensure VGA is enabled */
+                        outw(CLOCK_SEL, saved_clock_sel & ~DISABPASSTHRU);
+                        if (ATIBoard == ATI_BOARD_MACH32)
+                        {
+                                outw(MISC_OPTIONS, saved_misc_options &
+                                        ~(DISABLE_VGA | DISABLE_DAC));
+
+                                /* Disable any video memory boundary */
+                                outw(MEM_BNDRY, saved_mem_bndry &
+                                        ~(MEM_PAGE_BNDRY | MEM_BNDRY_ENA));
+
+                                /* Disable direct video memory aperture */
+                                outw(MEM_CFG, saved_mem_cfg &
+                                        ~(MEM_APERT_SEL | MEM_APERT_PAGE |
+                                                MEM_APERT_LOC));
+                        }
+
+                        /* Wait for all activity to die down */
+                        WaitIdleEmpty();
                 }
-#endif
+                else if (ATIBoard == ATI_BOARD_MACH64)
+                {
+                        /* Save register values to be modified */
+                        saved_config_cntl = inl(CONFIG_CNTL);
+                        saved_crtc_gen_cntl = inl(CRTC_GEN_CNTL);
+                        saved_mem_info = inl(MEM_INFO);
+
+                        /* Reset everything */
+                        tmp = inl(BUS_CNTL);
+                        outl(BUS_CNTL, (tmp &
+                                ~(BUS_ROM_DIS | BUS_FIFO_ERR_INT_EN |
+                                        BUS_HOST_ERR_INT_EN)) |
+                                BUS_FIFO_ERR_INT | BUS_HOST_ERR_INT);
+                        outl(GEN_TEST_CNTL, 0);
+                        outl(GEN_TEST_CNTL, GEN_GUI_EN);
+
+                        /* Ensure VGA aperture is enabled */
+                        outl(CONFIG_CNTL, (saved_config_cntl &
+                                ~(CFG_MEM_AP_SIZE | CFG_VGA_DIS)) |
+                                CFG_MEM_VGA_AP_EN);
+                        outl(CRTC_GEN_CNTL,
+                                saved_crtc_gen_cntl & ~CRTC_EXT_DISP_EN);
+                        outl(MEM_INFO, saved_mem_info &
+                                ~(CTL_MEM_BNDRY | CTL_MEM_BNDRY_EN));
+                }
+
                 vgaIOBase = (inb(R_GENMO) & 0x01) ?
                         ColourIOBase : MonochromeIOBase;
 
@@ -2002,26 +2106,43 @@ Bool enter;
                                         (saved_ab & 0x18) | (tmp & 0xE7));
                         }
                 }
-#if 0
-                if (ATIBoard == ATI_BOARD_MACH32)
+
+                if (OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
+                if (Chip_Has_SUBSYS_CNTL)
                 {
-                        /* Wait for enough FIFO entries */
-                        ATIWaitQueue(4);
-
-                        /* Restore modified accelerator registers */
-                        outw(MEM_CFG, saved_mem_cfg);
-                        outw(MEM_BNDRY, saved_mem_bndry);
-                        outw(MISC_OPTIONS, saved_misc_options);
-                        outw(CLOCK_SEL, saved_clock_sel);
-
-                        /* Wait for all activity to die down */
-                        WaitIdleEmpty();
-
                         /* Reset the 8514/A and disable all interrupts */
                         outw(SUBSYS_CNTL, GPCTRL_RESET | CHPTEST_NORMAL);
                         outw(SUBSYS_CNTL, GPCTRL_ENAB | CHPTEST_NORMAL);
+
+                        /* Restore modified accelerator registers */
+                        outw(CLOCK_SEL, saved_clock_sel);
+                        if (ATIBoard == ATI_BOARD_MACH32)
+                        {
+                                outw(MISC_OPTIONS, saved_misc_options);
+                                outw(MEM_BNDRY, saved_mem_bndry);
+                                outw(MEM_CFG, saved_mem_cfg);
+                        }
+
+                        /* Wait for all activity to die down */
+                        WaitIdleEmpty();
                 }
-#endif
+                else if (ATIBoard == ATI_BOARD_MACH64)
+                {
+                        /* Reset everything */
+                        tmp = inl(BUS_CNTL);
+                        outl(BUS_CNTL, (tmp &
+                                ~(BUS_ROM_DIS | BUS_FIFO_ERR_INT_EN |
+                                        BUS_HOST_ERR_INT_EN)) |
+                                BUS_FIFO_ERR_INT | BUS_HOST_ERR_INT);
+                        outl(GEN_TEST_CNTL, 0);
+                        outl(GEN_TEST_CNTL, GEN_GUI_EN);
+
+                        /* Restore registers */
+                        outl(CONFIG_CNTL, saved_config_cntl);
+                        outl(CRTC_GEN_CNTL, saved_crtc_gen_cntl);
+                        outl(MEM_INFO, saved_mem_info);
+                }
+
                 xf86DisableIOPorts(vga256InfoRec.scrnIndex);
         }
 }
