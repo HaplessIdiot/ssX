@@ -130,6 +130,7 @@ To make a shadow directory of symbolic links, use the following steps:
 
    o use the "lndir" command to make the shadow tree:
 
+          cd build
           lndir ../xc
 
      Note that you can refer to the xc directory with an absolute path if
@@ -262,7 +263,7 @@ XFree86:
      shown do not match your system, you probably need to set them manually
      in host.def and report the problem to <XFree86@XFree86.org>.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.15 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.16 tsi Exp $
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/BUILD,v 3.27 2004/12/08 22:32:05 dawes Exp $
