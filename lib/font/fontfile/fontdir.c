@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/fontdir.c,v 3.12 1999/07/17 05:30:41 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fontdir.c,v 3.14 2001/02/16 13:24:05 eich Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -202,12 +202,49 @@ FontFileAddEntry(FontTablePtr table, FontEntryPtr prototype)
     return entry;
 }
 
+static char *
+FontNameEncoding (char *name)
+{
+    int	ndashes = 0;
+    
+    while (*name && ndashes < 13)
+    {
+	if (*name++ == '\055')
+	    ++ndashes;
+    }
+    return name;
+}
+
 static int
 FontFileNameCompare(const void* a, const void* b)
 {
     FontEntryPtr    a_name = (FontEntryPtr) a,
 		    b_name = (FontEntryPtr) b;
 
+    /*
+     * A hack -- sort names based on encoding to
+     * make iso8859-1 appear first if it's available
+     */
+    if (a_name->name.ndashes == 14 &&
+	b_name->name.ndashes == 14)
+    {
+	char	*a_encoding = FontNameEncoding (a_name->name.name);
+	char	*b_encoding = FontNameEncoding (b_name->name.name);
+	int	a_head_len = a_encoding - a_name->name.name;
+	int	b_head_len = b_encoding - b_name->name.name;
+
+	if (a_head_len == b_head_len &&
+	    !strncmp (a_name->name.name, b_name->name.name,
+		      a_head_len))
+	{
+	    if (!strcmp (a_encoding, b_encoding))
+		return 0;
+	    if (!strcmp (a_encoding, "iso8859-1"))
+		return -1;
+	    if (!strcmp (b_encoding, "iso8859-1"))
+		return 1;
+	}
+    }
     return strcmp(a_name->name.name, b_name->name.name);
 }
 
@@ -574,7 +611,7 @@ FontFileAddFontFile (FontDirectoryPtr dir, char *fontName, char *fileName)
     FontRendererPtr	    renderer;
     FontEntryPtr	    existing;
     FontScalableExtraPtr    extra;
-    FontEntryPtr	    bitmap, scalable;
+    FontEntryPtr	    bitmap = 0, scalable;
     Bool		    isscale;
 
     renderer = FontFileMatchRenderer (fileName);
