@@ -4,7 +4,7 @@
 //  Rules descriptions for XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.51 2002/12/17 04:08:16 dawes Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.52 2002/12/17 04:13:36 dawes Exp $
 
 ! model
   pc101		Generic 101-key PC
@@ -43,11 +43,16 @@
   inspiron	Laptop/notebook Dell Inspiron 8xxx
   dexxa		Dexxa Wireless Desktop Keyboard
   diamond	Diamond 9801 / 9802 series
-  ennyah-dkb1008 Ennyah DKB-1008
+  ennyah_dkb1008 Ennyah DKB-1008
   genius	Genius Comfy KB-16M / Genius MM Keyboard KWD-910
   hpi6		Hewlett-Packard Internet Keyboard
   hp2501	Hewlett-Packard SK-2501 Multimedia Keyboard
   hp2505	Hewlett-Packard SK-2505 Internet Keyboard
+  hpxe3gc	Hewlett-Packard Omnibook XE3 GC
+  hpxe3gf	Hewlett-Packard Omnibook XE3 GF
+  hpxt1000	Hewlett-Packard Omnibook XT1000
+  hpzt11xx	Hewlett-Packard Pavilion ZT11xx
+  hp500fa	Hewlett-Packard Omnibook 500 FA
   rapidaccess	IBM Rapid Access
   rapidaccess2	IBM Rapid Access II
   rapidaccess2a	IBM Rapid Access II (alternate option)
@@ -83,6 +88,7 @@
   sk7100	SK-7100
   sven		SVEN Ergonomic 2500
   symplon	Symplon PaceBook (tablet PC)
+  toshiba_s3000	Toshiba Satellite S3000
   trust		Trust Wireless Keyboard Classic
   yahoo		Yahoo! Internet Keyboard
 

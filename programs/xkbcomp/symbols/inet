@@ -1,4 +1,4 @@
- // $XFree86: xc/programs/xkbcomp/symbols/inet,v 1.18 2002/12/17 04:08:17 dawes Exp $
+ // $XFree86: xc/programs/xkbcomp/symbols/inet,v 1.19 2002/12/17 04:13:36 dawes Exp $
 
 // EAK (Easy Access, Internet, Multimedia, PDA) keyboards
 // Copyright (C) 2002 Stanislav Brabec <sbrabec@suse.cz>
@@ -492,7 +492,7 @@ xkb_symbols "diamond" {
 // Ennyah
 
 partial alphanumeric_keys
-xkb_symbols "ennyah-dkb1008" {
+xkb_symbols "ennyah_dkb1008" {
     name[Group1]= "Ennyah DKB-1008";
 
     key <I32>	{	[ XF86HomePage		]	};
@@ -593,7 +593,106 @@ xkb_symbols "hp2505" {
 };
 
 
+partial alphanumeric_keys
+xkb_symbols "hpxe3gc" {
+
+    // Describes the OneTouch buttons on HP Omnibook XE3 GC models.
+    // See http://sourceforge.net/projects/omke for details on enabling
+    // these keys
+
+    name[Group1]= "Hewlett-Packard Omnibook XE3 GC";
+    key <I73>	{	[ XF86WWW		]	};
+    key <I74>	{	[ XF86Mail		]	};
+    key <I72>	{	[ XF86Launch1		]	};
+    key <I71>	{	[ Help			]	};
+    key <I10>	{	[ XF86AudioPrev		]	};
+    key <I22>	{	[ XF86AudioPlay, XF86AudioPause	]	};
+    key <I24>	{	[ XF86AudioStop, XF86Eject	]	};
+    key <I19>	{	[ XF86AudioNext		]	};
+};
+
+partial alphanumeric_keys
+xkb_symbols "hpxe3gf" {
+
+    // Describes the OneTouch buttons on HP Omnibook XE3 GF models.
+    // See http://sourceforge.net/projects/omke for details on enabling
+    // these keys
+
+    name[Group1]= "Hewlett-Packard Omnibook XE3 GF";
+    key <I32>	{	[ XF86WWW		]	};
+    key <I6C>	{	[ XF86Mail		]	};
+    key <I74>	{	[ XF86Launch1		]	};
+    key <I73>	{	[ Help			]	};
+    key <I10>	{	[ XF86AudioPrev		]	};
+    key <I22>	{	[ XF86AudioPlay, XF86AudioPause	]	};
+    key <I24>	{	[ XF86AudioStop, XF86Eject	]	};
+    key <I19>	{	[ XF86AudioNext		]	};
+    key <I2E>	{	[ XF86AudioLowerVolume	]	};
+    key <I30>	{	[ XF86AudioRaiseVolume	]	};
+    key <I20>	{	[ XF86AudioMute		]	};
+};
+
+partial alphanumeric_keys
+xkb_symbols "hpxt1000" {
+
+    // Describes the OneTouch buttons on HP Omnibook XT1000 models.
+    // See http://sourceforge.net/projects/omke for details on enabling
+    // these keys
+
+    name[Group1]= "Hewlett-Packard Omnibook XT1000";
+    key <I6C>	{	[ XF86Mail		]	};
+    key <I74>	{	[ XF86Launch1		]	};
+    key <I32>	{	[ XF86WWW		]	};
+    key <I73>	{	[ XF86Launch2		]	};
+    key <I72>	{	[ Help			]	};
+    key <I71>	{	[ XF86Launch3		]	};
+    key <I10>	{	[ XF86AudioPrev		]	};
+    key <I19>	{	[ XF86AudioNext		]	};
+    key <I22>	{	[ XF86AudioPlay, XF86AudioPause	]	};
+    key <I24>	{	[ XF86AudioStop, XF86Eject	]	};
+    key <I2E>	{	[ XF86AudioLowerVolume	]	};
+    key <I30>	{	[ XF86AudioRaiseVolume	]	};
+    key <I20>	{	[ XF86AudioMute		]	};
+};
+
+partial alphanumeric_keys
+xkb_symbols "hpzt11xx" {
+
+    // Describes the OneTouch buttons on HP Pavilion ZT11xx models.
+    // See http://sourceforge.net/projects/omke for details on enabling
+    // these keys
+
+    name[Group1]= "Hewlett-Packard Pavilion ZT11xx";
+    key <I6C>	{	[ XF86Mail		]	};
+    key <I74>	{	[ XF86Launch1		]	};
+    key <I32>	{	[ XF86WWW		]	};
+    key <I73>	{	[ XF86Launch2		]	};
+    key <I72>	{	[ Help			]	};
+    key <I71>	{	[ XF86Launch3		]	};
+    key <I10>	{	[ XF86AudioPrev		]	};
+    key <I19>	{	[ XF86AudioNext		]	};
+    key <I22>	{	[ XF86AudioPlay, XF86AudioPause	]	};
+    key <I24>	{	[ XF86AudioStop, XF86Eject	]	};
+    key <I2E>	{	[ XF86AudioLowerVolume	]	};
+    key <I30>	{	[ XF86AudioRaiseVolume	]	};
+    key <I20>	{	[ XF86AudioMute		]	};
+};
+
+partial alphanumeric_keys
+xkb_symbols "hp500fa" {
+
+    // Describes the OneTouch buttons on HP Omnibook 500 FA models.
+    // See http://sourceforge.net/projects/omke for details on enabling
+    // these keys
+
+    name[Group1]= "Hewlett-Packard Omnibook 500 FA";
+    key <I74>	{	[ XF86Launch1		]	};
+    key <I73>	{	[ Help			]	};
+};
+
+
 // IBM
+
 
 partial alphanumeric_keys 
 xkb_symbols "rapidaccess" {
@@ -1436,6 +1535,27 @@ xkb_symbols "symplon" {
     key <I14>	{	[ XF86Support		]	};
 };
 
+// Toshiba
+
+partial alphanumeric_keys
+xkb_symbols "toshiba_s3000" {
+
+    // Describes the Special buttons on Toshiba Satellite 3000 models.
+    // See http://sourceforge.net/projects/omke for details on enabling
+    // these keys
+
+    name[Group1]= "Toshiba Satellite S3000";
+    key <I71>	{	[ XF86WWW		]	};
+    key <I73>	{	[ XF86Mail		]	};
+    key <I06>	{	[ XF86Launch1		]	};
+    key <I13>	{	[ XF86Launch2		]	};
+    key <I24>	{	[ XF86AudioStop, XF86Eject	]	};
+    key <I10>	{	[ XF86AudioPrev		]	};
+    key <I19>	{	[ XF86AudioNext		]	};
+    key <I22>	{	[ XF86AudioPlay, XF86AudioPause	]	};
+    key <I75>	{	[ XF86AudioRaiseVolume	]	};
+    key <I76>	{	[ XF86AudioLowerVolume	]	};
+};
 
 // Trust
 
