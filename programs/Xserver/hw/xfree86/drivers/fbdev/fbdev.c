@@ -249,7 +249,9 @@ FBDevProbe(DriverPtr drv, int flags)
 	TRACE("probe start");
 
 	/* For now, just bail out for PROBE_DETECT. */
-	if (flags & PROBE_DETECT)
+	if ((flags & PROBE_DETECTISA) ||
+	    (flags & PROBE_DETECTFBDEV) ||
+	    (flags & PROBE_DETECTPCI))
 		return FALSE;
 
 	pScrn0 = xf86AllocateScreen(drv, 0);
