@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/fontdir.c,v 3.14 2001/02/16 13:24:05 eich Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fontdir.c,v 3.15 2001/05/02 18:20:54 keithp Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -202,18 +202,44 @@ FontFileAddEntry(FontTablePtr table, FontEntryPtr prototype)
     return entry;
 }
 
-static char *
-FontNameEncoding (char *name)
+/*
+ * Compare two strings just like strcmp, but preserve decimal integer
+ * sorting order, i.e. "2" < "10" or "iso8859-2" < "iso8859-10" <
+ * "iso10646-1". Strings are sorted as if sequences of digits were
+ * prefixed by a length indicator (i.e., does not ignore leading zeroes).
+ *
+ * Markus Kuhn <Markus.Kuhn@cl.cam.ac.uk>
+ */
+#define Xisdigit(c) ('\060' <= (c) && (c) <= '\071')
+
+static int strcmpn(const char *s1, const char *s2)
 {
-    int	ndashes = 0;
-    
-    while (*name && ndashes < 13)
-    {
-	if (*name++ == '\055')
-	    ++ndashes;
+    int digits, predigits = 0;
+    const char *ss1, *ss2;
+
+    while (1) {
+	if (*s1 == 0 && *s2 == 0)
+	    return 0;
+	digits = Xisdigit(*s1) && Xisdigit(*s2);
+	if (digits && !predigits) {
+	    ss1 = s1;
+	    ss2 = s2;
+	    while (Xisdigit(*ss1) && Xisdigit(*ss2))
+		ss1++, ss2++;
+	    if (!Xisdigit(*ss1) && Xisdigit(*ss2))
+		return -1;
+	    if (Xisdigit(*ss1) && !Xisdigit(*ss2))
+		return 1;
+	}
+	if ((unsigned char)*s1 < (unsigned char)*s2)
+	    return -1;
+	if ((unsigned char)*s1 > (unsigned char)*s2)
+	    return 1;
+	predigits = digits;
+	s1++, s2++;
     }
-    return name;
 }
+
 
 static int
 FontFileNameCompare(const void* a, const void* b)
@@ -221,31 +247,7 @@ FontFileNameCompare(const void* a, const void* b)
     FontEntryPtr    a_name = (FontEntryPtr) a,
 		    b_name = (FontEntryPtr) b;
 
-    /*
-     * A hack -- sort names based on encoding to
-     * make iso8859-1 appear first if it's available
-     */
-    if (a_name->name.ndashes == 14 &&
-	b_name->name.ndashes == 14)
-    {
-	char	*a_encoding = FontNameEncoding (a_name->name.name);
-	char	*b_encoding = FontNameEncoding (b_name->name.name);
-	int	a_head_len = a_encoding - a_name->name.name;
-	int	b_head_len = b_encoding - b_name->name.name;
-
-	if (a_head_len == b_head_len &&
-	    !strncmp (a_name->name.name, b_name->name.name,
-		      a_head_len))
-	{
-	    if (!strcmp (a_encoding, b_encoding))
-		return 0;
-	    if (!strcmp (a_encoding, "iso8859-1"))
-		return -1;
-	    if (!strcmp (b_encoding, "iso8859-1"))
-		return 1;
-	}
-    }
-    return strcmp(a_name->name.name, b_name->name.name);
+    return strcmpn(a_name->name.name, b_name->name.name);
 }
 
 void
