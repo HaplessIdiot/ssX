@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/tdfx/Imakefile,v 1.25 2001/05/10 16:56:12 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/tdfx/Imakefile,v 1.26 2001/06/01 07:37:18 alanh Exp $
 
 #include <Threads.tmpl>
 
@@ -22,8 +22,6 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/drv/tdfx/Imakefile,v 1.25 2001/05/10 16:56:12
 #ifdef i386Architecture
 #include "../../X86/Imakefile.inc"
 #endif
-
-       DEPEND_DEFINES = -D__linux__
 
       DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES) $(MESA_ASM_DEFINES)
      INCLUDES = $(X_INCLUDES) $(MESA_INCLUDES) $(DRI_INCLUDES) \
