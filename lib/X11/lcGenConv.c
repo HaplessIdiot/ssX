@@ -1,5 +1,5 @@
-/* $XConsortium: lcGenConv.c /main/10 1995/11/18 16:08:50 kaleb $ */
-/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.3 1995/07/15 14:56:02 dawes Exp $ */
+/* $XConsortium: lcGenConv.c /main/11 1996/01/06 11:56:23 kaleb $ */
+/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.4 1996/01/05 13:11:22 dawes Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -405,12 +405,9 @@ cstombs(conv, from, from_left, to, to_left, args, num_args)
 
     csstr_len /= codeset->length;
     buf_len /= codeset->length + encoding_len;
-    if (csstr_len < buf_len)
-	buf_len = csstr_len;
-    
-    cvt_length += buf_len * (encoding_len + codeset->length);
     if (bufptr) {
-	while (buf_len--) {
+	while (buf_len-- && csstr_len--) {
+	    cvt_length += encoding_len + codeset->length;
 	    if (encoding_len) {
 		strcpy(bufptr, codeset->parse_info->encoding);
 		bufptr += encoding_len;
@@ -427,6 +424,9 @@ cstombs(conv, from, from_left, to, to_left, args, num_args)
 		    *bufptr++ = *csptr++;
 	    }
     	}
+    } else {
+	cvt_length += csstr_len * (encoding_len + codeset->length);
+	csptr += csstr_len * (codeset->length);
     }
 
     *from_left -= csptr - *((char **) from);
@@ -459,6 +459,7 @@ cstowcs(conv, from, from_left, to, to_left, args, num_args)
     unsigned long code_mask, wc_encoding;
     int num, length, wc_shift_bits;
     CodeSet codeset;
+    int cvt_length = 0;
 
     csptr = *((char **) from);
     bufptr = *((wchar_t **) to);
@@ -474,24 +475,24 @@ cstowcs(conv, from, from_left, to, to_left, args, num_args)
 
     length = codeset->length;
     csstr_len /= length;
-    if (csstr_len < buf_len)
-	buf_len = csstr_len;
     
     code_mask = ~XLC_GENERIC(lcd, wc_encode_mask);
     wc_encoding = codeset->wc_encoding;
     wc_shift_bits = XLC_GENERIC(lcd, wc_shift_bits);
 
-    *to_left -= buf_len;
-
     if (bufptr) {
-	while (buf_len--) {
+ 	while (buf_len-- && csstr_len--) {
 	    wch = (wchar_t) (*csptr++ & 0x7f);
 	    num = length - 1;
 	    while (num--)
 		wch = (wch << wc_shift_bits) | (*csptr++ & 0x7f);
 
 	    *bufptr++ = (wch & code_mask) | wc_encoding;
+	    cvt_length++;
 	}
+    } else {
+	cvt_length += csstr_len;
+	csptr += csstr_len * (codeset->length);
     }
 
     *from_left -= csptr - *((char **) from);
@@ -499,6 +500,7 @@ cstowcs(conv, from, from_left, to, to_left, args, num_args)
 
     if (bufptr)
 	*to = (XPointer) bufptr;
+    *to_left -= cvt_length;
 
     return 0;
 }

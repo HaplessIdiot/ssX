@@ -8,7 +8,7 @@ XCOMM $XConsortium: bsdLib.rules,v 1.1 94/03/29 15:34:45 gildea Exp $
 #define HasSharedLibraries YES
 #endif
 #ifndef ForceNormalLib
-#define ForceNormalLib YES
+#define ForceNormalLib NO
 #endif
 #ifndef SharedDataSeparation
 #define SharedDataSeparation NO

@@ -47,8 +47,8 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c /main/50 1995/12/07 21:21:31 kaleb $ */
-/* $XFree86: xc/programs/Xserver/dix/devices.c,v 3.1 1995/07/08 02:39:15 dawes Exp $ */
+/* $XConsortium: devices.c /main/51 1996/01/01 10:54:10 kaleb $ */
+/* $XFree86: xc/programs/Xserver/dix/devices.c,v 3.2 1996/01/05 13:17:53 dawes Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -62,6 +62,7 @@ SOFTWARE.
 #include "cursorstr.h"
 #include "dixstruct.h"
 #include "site.h"
+#define	XKB_IN_SERVER
 #ifdef XKB
 #include "XKBsrv.h"
 #endif
@@ -119,6 +120,10 @@ AddInputDevice(deviceProc, autoStart)
     dev->bell = (BellFeedbackPtr)NULL;
     dev->leds = (LedFeedbackPtr)NULL;
     dev->next = inputInfo.off_devices;
+#ifdef XKB
+    dev->xkb_devi= NULL;
+    dev->xkb_interest= NULL;
+#endif
     inputInfo.off_devices = dev;
     return &dev->public;
 }
@@ -253,6 +258,13 @@ CloseDevice(dev)
 	lnext = l->next;
 	xfree(l);
     }
+#ifdef XKB
+    if (dev->xkb_devi)
+	XkbFreeDeviceInfo(dev->xkb_devi,XkbXI_AllDeviceFeaturesMask,True);
+    while (dev->xkb_interest) {
+	XkbRemoveResourceClient((DevicePtr)dev,dev->xkb_interest->resource);
+    }
+#endif
     xfree(dev->sync.event);
     xfree(dev);
 }
@@ -969,9 +981,6 @@ ProcSetModifierMapping(client)
 		    (1<<(((unsigned int)i)/keyc->maxKeysPerModifier));
 	}
     }
-#ifdef XKB
-    if (!noXkbExtension) keyc->keymapSerial++;
-#endif
 
     if (rep.success == MappingSuccess)
         SendMappingNotify(MappingModifier, 0, 0);
@@ -1036,9 +1045,6 @@ ProcChangeKeyboardMapping(client)
     keysyms.map = (KeySym *)&stuff[1];
     if (!SetKeySymsMap(curKeySyms, &keysyms))
 	return BadAlloc;
-#ifdef XKB
-    if (!noXkbExtension) inputInfo.keyboard->key->keymapSerial++;
-#endif
 #ifdef LBX
     LbxFlushKeyboardMapTag();
 #endif

@@ -1,5 +1,5 @@
 #if 1
-XCOMM platform:  $XFree86: xc/config/cf/sco.cf,v 3.7 1995/07/12 15:27:36 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sco.cf,v 3.8 1996/01/05 13:06:41 dawes Exp $
 
 /*
  * This is the XFree86 version of sco.cf.  The new one from R6.1beta is
@@ -29,12 +29,13 @@ XCOMM platform:  $XFree86: xc/config/cf/sco.cf,v 3.7 1995/07/12 15:27:36 dawes E
  */
 # define GCC_STDC_VALUE		1
 # if !GCC_STDC_VALUE
-#  define OSDefines		-DSCO -DSCO324 -DBROKEN_FTOL -D_NO_PROTOTYPE -D_SVID \
-		-D__STDC__=1
+#  define OSDefines		-DSCO -DSCO324 -Dsco -Dsco324 -DBROKEN_FTOL \
+				-D_NO_PROTOTYPE -D_SVID -D__STDC__=1
 #  undef StandardCppDefines
 #  define StandardCppDefines	-DUNIXCPP=1 StandardDefines
 # else
-#  define OSDefines		-DSCO -DSCO324 -DBROKEN_FTOL -D_NO_PROTOTYPE -D_SVID
+#  define OSDefines		-DSCO -DSCO324 -Dsco -Dsco324 -DBROKEN_FTOL \
+				-D_NO_PROTOTYPE -D_SVID
 # endif
 # define OSVendor		(SCO Version 3.2.4)
 # ifndef HasSymLinks
@@ -43,7 +44,7 @@ XCOMM platform:  $XFree86: xc/config/cf/sco.cf,v 3.7 1995/07/12 15:27:36 dawes E
 # define	OSTeenyVersion	4
 # define CompressManCmd $(COMPRESS) -v
 #else /* ! i386Sco324Architecture */
-# define OSDefines		-DSCO -DBROKEN_FTOL -DNO_PROTOTYPE -D_SVID
+# define OSDefines		-DSCO -Dsco -DBROKEN_FTOL -DNO_PROTOTYPE -D_SVID
 # define OSVendor		(SCO Version 3.2.2)
 # ifndef HasSymLinks
 #   define HasSymLinks NO

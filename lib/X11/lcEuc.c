@@ -1,4 +1,4 @@
-/* $XConsortium: lcEuc.c /main/13 1995/11/18 16:58:49 kaleb $ */
+/* $XConsortium: lcEuc.c /main/14 1996/01/05 07:10:38 kaleb $ */
 /******************************************************************
 
         Copyright 1992, 1993 by FUJITSU LIMITED
@@ -355,6 +355,7 @@ euc_mbtocs(conv, from, from_left, to, to_left, args, num_args)
     do {
 	if(BADCHAR(min_ch, *src)) {
 	    unconv_num++;
+	    src++;
 	    break;
 	}
 	switch (charset->side) {
@@ -370,13 +371,10 @@ euc_mbtocs(conv, from, from_left, to, to_left, args, num_args)
 	    }
     } while (--length);
 
-    if (unconv_num)
-	src += charset->char_size - length;
-
     *to = dst;
     *from = src;
     *from_left -= charset->char_size;
-    *to_left -= charset->char_size;
+    *to_left -= charset->char_size - length;
 
     if (num_args > 0)
 	*((XlcCharSet *) args[0]) = charset;
@@ -835,10 +833,10 @@ euc_ctstowcs(conv, from, from_left, to, to_left, args, num_args)
     wchar_t wch;
     Ulong wc_encoding;
     CTData ctdp = ctdata;
-
-
-    if (*from_left > *to_left)
-	*from_left = *to_left;
+    Bool save_outbuf = True;
+    /* If outbufptr is NULL, doen't save output, but just counts
+       a length to hold the output */
+    if (outbufptr == NULL) save_outbuf = False;
 
     for (length = ctdata[Ascii].length; *from_left > 0; (*from_left) -= length)
     {
@@ -916,13 +914,16 @@ euc_ctstowcs(conv, from, from_left, to, to_left, args, num_args)
 	    shift_mult--;
 	} while (--clen);
 
-	*outbufptr++ = wch | wc_encoding;
+	if (save_outbuf == True)
+	    *outbufptr++ = wch | wc_encoding;
+	if (--*to_left == 0 && *from_left != length) {
+	    *to = (XPointer)outbufptr;
+	    unconv_num = *from_left;
+	    return unconv_num;
+	}
     }
 
     *to = (XPointer)outbufptr;
-
-    if ((num_conv = (int)(outbufptr - outbuf_base)) > 0)
-	(*to_left) -= num_conv;
 
     return unconv_num;
 
@@ -1001,10 +1002,13 @@ euc_wcstocts(conv, from, from_left, to, to_left, args, num_args)
 	    }
 	}
 
-	if (charset->side == XlcGR)
+	if (charset->side == XlcGR) {
 	    ct_state.GR_charset = charset;
-	else if (charset->side == XlcGL)
+	    ct_state.GL_charset = NULL;
+	} else if (charset->side == XlcGL) {
 	    ct_state.GL_charset = charset;
+	    ct_state.GR_charset = NULL;
+	}
 
 	do {
 
@@ -1028,8 +1032,13 @@ euc_wcstocts(conv, from, from_left, to, to_left, args, num_args)
 		    unconv_num++;
 		    break;
 		}
-		*ctptr++ = (char)t1;
-		*ctptr++ = (char)tmp;
+		if (charset->side == XlcGR) {
+		    *ctptr++ = (char)BIT8ON(t1);
+		    *ctptr++ = (char)BIT8ON(tmp);
+		} else {
+		    *ctptr++ = (char)BIT8OFF(t1);
+		    *ctptr++ = (char)BIT8OFF(tmp);
+		}
 	    }
 
 	    else {
@@ -1061,7 +1070,8 @@ euc_wcstocts(conv, from, from_left, to, to_left, args, num_args)
 
 #define byte1	(ctdp->length == clen)
 #define kana    (ctdp == ctdptr[Kana] && isrightside(*inbufptr))
-#define kanji   (ctdp == ctdptr[Kanji])
+/* #define kanji   (ctdp == ctdptr[Kanji]) */
+#define kanji   (strstr(ctdp->name, "JISX0208"))
 #define userdef (ctdp == ctdptr[Userdef])
 
 static int
@@ -1084,10 +1094,10 @@ euc_ctstombs(conv, from, from_left, to, to_left, args, num_args)
     unsigned int ct_seglen = 0;
     Uchar ct_type = 0;
     CTData ctdp = &ctdata[0];	/* default */
-
-
-    if (*from_left > *to_left)
-	*from_left = *to_left;
+    Bool save_outbuf = True;
+    /* If outbufptr is NULL, doen't save output, but just counts
+       a length to hold the output */
+    if (outbufptr == NULL) save_outbuf = False;
 
     for (length = ctdata[Ascii].length; *from_left > 0; (*from_left) -= length)
     {
@@ -1099,7 +1109,7 @@ euc_ctstombs(conv, from, from_left, to, to_left, args, num_args)
 		if(!strncmp(inbufptr, ctdp->ct_encoding, ctdp->ct_encoding_len))
 		{
 		    inbufptr += ctdp->ct_encoding_len;
-		    (*from_left) -= ctdp->ct_encoding_len - 1;
+		    (*from_left) -= ctdp->ct_encoding_len;
 		    if (ctdp->length) {
 			length = ctdp->length;
 			if( *from_left < length ) {
@@ -1161,18 +1171,27 @@ euc_ctstombs(conv, from, from_left, to, to_left, args, num_args)
 		    *inbufptr = BIT8ON(*inbufptr);
 		    *(inbufptr+1) = BIT8ON(*(inbufptr+1));
 		}
-		else if (kana || userdef)
-		    *outbufptr++ = ctdp->sshift;
+		else if (kana || userdef) {
+		    if (save_outbuf == True) {
+			*outbufptr++ = ctdp->sshift;
+		    }
+		    (*to_left)--;
+		}
+	    if (save_outbuf == True) {
+		*outbufptr++ = *inbufptr;
+	    }
+	    (*to_left)--;
+	    inbufptr++;
 
-	    *outbufptr++ = *inbufptr++;
-
+	    if (*to_left == 0 && *from_left != length) {
+		*to = (XPointer)outbufptr;
+		unconv_num = *from_left;
+		return unconv_num;
+	    }
 	} while (--clen);
     }
 
     *to = outbufptr;
-
-    if ((num_conv = (int)(outbufptr - outbuf_base)) > 0)
-	(*to_left) -= num_conv;
 
     return unconv_num;
 
@@ -1209,9 +1228,8 @@ euc_mbstocts(conv, from, from_left, to, to_left, args, num_args)
 
 
 /* Initial State: */
-    ct_state.GL_charset = ctdptr[Ascii];
+    ct_state.GL_charset = NULL;
     ct_state.GR_charset = NULL;
-
 
     if (*from_left > *to_left)
         *from_left = *to_left;
@@ -1279,15 +1297,19 @@ euc_mbstocts(conv, from, from_left, to, to_left, args, num_args)
 	    }
 	}
 
-	if (charset->side == XlcGR)
+	if (charset->side == XlcGR) {
 	    ct_state.GR_charset = charset;
-	else if (charset->side == XlcGL)
+	    ct_state.GL_charset = NULL;
+	} else if (charset->side == XlcGL) {
 	    ct_state.GL_charset = charset;
+	    ct_state.GR_charset = NULL;
+	}
 
 	clen = length;
+
 	do {
 	    *ctptr++ = charset == ct_state.GR_charset ?
-	      BIT8ON(*inbufptr++) : BIT8OFF(*inbufptr++);
+		BIT8ON(*inbufptr++) : BIT8OFF(*inbufptr++);
 	} while (--clen); 
     }
 
@@ -1436,7 +1458,11 @@ open_mbstocts(from_lcd, from_type, to_lcd, to_type)
 }
 
 XLCd
+#ifdef DYNAMIC_LOAD
+_XlcGenericLoader(name)
+#else
 _XlcEucLoader(name)
+#endif
     char *name;
 {
     XLCd lcd;
@@ -1446,7 +1472,7 @@ _XlcEucLoader(name)
 	return lcd;
 
 
-    if ((_XlcCompareISOLatin1(XLC_PUBLIC_PART(lcd)->codeset, "euc"))) {
+    if ((_XlcNCompareISOLatin1(XLC_PUBLIC_PART(lcd)->codeset, "euc", 3))) {
 	_XlcDestroyLC(lcd);
 	return (XLCd) NULL;
     }

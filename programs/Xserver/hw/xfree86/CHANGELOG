@@ -1,3 +1,8 @@
+XFree86 3.1.2Bc (10 January 1996)
+183. Include fix-trackers to seq-4024 (includes more a more recent XKB snap,
+     some record updates, and some config and Xlib updates).
+182. Fix sv4Lib.rules merge problem.
+
 XFree86 3.1.2Bb (6 January 1996)
 181. Merge in X11R6.1 beta.
 180. Fix problems with the ARK/ICS5342 clock programming (Leon Bottou).
