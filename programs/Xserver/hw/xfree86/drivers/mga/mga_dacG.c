@@ -2,7 +2,7 @@
  * MGA-1064, MGA-G100, MGA-G200 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.15 1999/01/17 10:54:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.16 1999/02/19 21:27:01 hohndel Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -42,7 +42,7 @@
  *
  * XXX These settings need to be checked.
  */
-#define OPTION1_MASK	0xFFFF86FF
+#define OPTION1_MASK	0xFFFFFEFF
 #define OPTION2_MASK	0xFFFFFFFF
 
 /*
@@ -283,7 +283,7 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x44;
 		pReg->DacRegs[ MGA1064_SYS_PLL_P ] = 0x18;
 #endif
-		pReg->Option  = 0x5F094E21;
+		pReg->Option  = 0x5F094F21; /* or 0x5f094e21 ? */
 		pReg->Option2 = 0x00000000;
 		break;
 	case PCI_CHIP_MGAG100:
@@ -292,13 +292,11 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x02;
 		pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x15;
 		pReg->DacRegs[ MGA1064_SYS_PLL_P ] = 0x18;
-		pReg->Option  = 0x40079121;
-		pReg->Option  = 0x400781A9;
-		pReg->Option2 = 0x00000015;
+		pReg->Option2 = 0x0000007;
 		if(pMga->HasSDRAM)
-		    pReg->Option &= ~0x00004000;
+		    pReg->Option = 0x404991a9;
 		else
-		    pReg->Option |= 0x00004000;
+		    pReg->Option = 0x4049d121;
 		break;
 	case PCI_CHIP_MGAG200:
 	case PCI_CHIP_MGAG200_PCI:
@@ -315,16 +313,18 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x06;
 		pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x24;
 		pReg->DacRegs[ MGA1064_SYS_PLL_P ] = 0x10;
-		pReg->Option  = 0x400FCC21;
 		pReg->Option2 = 0x00008000;
 #endif
 		if(pMga->HasSDRAM)
-		    pReg->Option &= ~0x00004000;
+		    pReg->Option = 0x40499121;
 		else
-		    pReg->Option |= 0x00004000;
+		    pReg->Option = 0x4049cd21;
 		break;
 	}
-	
+	/* If non-Vga card, disable BIOS and VGA I/O */
+	if( ! pMga->SavedReg.VgaEnable)
+		pReg->Option &= ~0x40000100;
+
 	if(pMga->UsePCIRetry)
 		pReg->Option &= ~0x20000000;
 	else
