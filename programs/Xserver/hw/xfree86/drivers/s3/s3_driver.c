@@ -34,7 +34,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.21 2004/09/01 23:57:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.22 2004/11/26 12:08:49 tsi Exp $ */
 
 
 #include "xf86.h"
@@ -391,7 +391,6 @@ static Bool S3PreInit(ScrnInfoPtr pScrn, int flags)
                 case 15:
                 case 16:
                 case 24:
-                case 32:
       	               /* OK */
                        break;
                 default:

@@ -1,4 +1,5 @@
 XFree86 4.4.99.18 (xx November 2004)
+ 223. The s3 driver does not, in fact, support a depth of 32 (Marc La France).
  222. Remove cfb support from s3 driver (Marc La France).
  221. Include chips/util directory in builds and fix its dRegs utility
       (Marc La France).
@@ -19173,7 +19174,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3346 2004/11/26 11:33:16 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3347 2004/11/26 12:08:48 tsi Exp $
 
 
 
