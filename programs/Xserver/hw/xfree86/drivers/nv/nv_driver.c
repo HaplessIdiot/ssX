@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.71 2001/08/07 07:04:49 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.73 2001/10/01 13:44:08 eich Exp $ */
 
 #include "nv_include.h"
 
@@ -88,29 +88,27 @@ DriverRec NV = {
 /* Supported chipsets */
 static SymTabRec NVChipsets[] = {
     { NV_CHIP_RIVA128,    "RIVA128" },
-    { NV_CHIP_TNT,        "RIVATNT" },
-    { NV_CHIP_TNT2,       "RIVATNT2" },
-    { NV_CHIP_TNT2_A,     "RIVATNT2 (A)" },
-    { NV_CHIP_TNT2_B,     "RIVATNT2 (B)" },
-    { NV_CHIP_UTNT2,      "RIVATNT2 (Ultra)" },
-    { NV_CHIP_VTNT2,      "RIVATNT2 (Vanta)" },
-    { NV_CHIP_UVTNT2,     "RIVATNT2 M64" },
-    { NV_CHIP_ITNT2,      "RIVATNT2 (Integrated)" },
+    { NV_CHIP_TNT,        "RIVA TNT" },
+    { NV_CHIP_TNT2,       "RIVA TNT2" },
+    { NV_CHIP_UTNT2,      "RIVA TNT2 Ultra" },
+    { NV_CHIP_VTNT2,      "Vanta" },
+    { NV_CHIP_UVTNT2,     "RIVA TNT2 M64" },
+    { NV_CHIP_ITNT2,      "Aladdin TNT2" },
     { NV_CHIP_GEFORCE256, "GeForce 256" },
     { NV_CHIP_GEFORCEDDR, "GeForce DDR" },
     { NV_CHIP_QUADRO,     "Quadro" },
-    { NV_CHIP_GEFORCE2GTS,  "GeForce2 GTS"},
-    { NV_CHIP_GEFORCE2GTS_1,"GeForce2 GTS (rev 1)"},
-    { NV_CHIP_GEFORCE2ULTRA,"GeForce2 ultra"},
-    { NV_CHIP_QUADRO2PRO,   "Quadro 2 Pro"},
-    { NV_CHIP_GEFORCE2MX,   "GeForce2 MX"},
-    { NV_CHIP_GEFORCE2MXDDR, "GeForce2 MX DDR"},
+    { NV_CHIP_GEFORCE2GTS,  "GeForce2 GTS/Pro"},
+    { NV_CHIP_GEFORCE2GTS_1,"GeForce2 Ti"},
+    { NV_CHIP_GEFORCE2ULTRA,"GeForce2 Ultra"},
+    { NV_CHIP_QUADRO2PRO,   "Quadro2 Pro"},
+    { NV_CHIP_GEFORCE2MX,   "GeForce2 MX/MX 400"},
+    { NV_CHIP_GEFORCE2MXDDR, "GeForce2 MX 100/200"},
     { NV_CHIP_IGEFORCE2,    "GeForce2 Integrated"},
-    { NV_CHIP_QUADRO2MXR,   "Quadro 2 MXR"},
-    { NV_CHIP_GEFORCE2GO,   "GeForce 2 Go"},
+    { NV_CHIP_QUADRO2MXR,   "Quadro2 MXR"},
+    { NV_CHIP_GEFORCE2GO,   "GeForce2 Go"},
     { NV_CHIP_GEFORCE3,     "GeForce3"},
-    { NV_CHIP_GEFORCE3_1,   "GeForce3 (rev 1)"},
-    { NV_CHIP_GEFORCE3_2,   "GeForce3 (rev 2)"},
+    { NV_CHIP_GEFORCE3_1,   "GeForce3 Ti 200"},
+    { NV_CHIP_GEFORCE3_2,   "GeForce3 Ti 500"},
     { NV_CHIP_QUADRO_DDC,   "Quadro DDC"},
     {-1,                        NULL }
 };
@@ -119,8 +117,6 @@ static PciChipsets NVPciChipsets[] = {
     { NV_CHIP_RIVA128,          NV_CHIP_RIVA128,        RES_SHARED_VGA },
     { NV_CHIP_TNT,              NV_CHIP_TNT,            RES_SHARED_VGA },
     { NV_CHIP_TNT2,             NV_CHIP_TNT2,           RES_SHARED_VGA },
-    { NV_CHIP_TNT2_A,           NV_CHIP_TNT2_A,         RES_SHARED_VGA },
-    { NV_CHIP_TNT2_B,           NV_CHIP_TNT2_B,         RES_SHARED_VGA },
     { NV_CHIP_UTNT2,            NV_CHIP_UTNT2,          RES_SHARED_VGA },
     { NV_CHIP_VTNT2,            NV_CHIP_VTNT2,          RES_SHARED_VGA },
     { NV_CHIP_UVTNT2,           NV_CHIP_UVTNT2,         RES_SHARED_VGA },
@@ -1227,8 +1223,6 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
             
         case NV_CHIP_TNT:
         case NV_CHIP_TNT2:
-        case NV_CHIP_TNT2_A:
-        case NV_CHIP_TNT2_B:
         case NV_CHIP_UTNT2:
         case NV_CHIP_VTNT2:
         case NV_CHIP_UVTNT2:
