@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.75 2004/06/14 19:42:46 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.76 2005/01/29 00:24:30 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -145,7 +145,7 @@ if [ X"$1" = "X-test" -o X"$XINST_TEST" != X ]; then
 	for i in usr etc var; do
 		if [ ! -d $TESTROOT/$i ]; then
 			echo "$TESTROOT/$i doesn't exist, creating it"
-			Mkdir $TESTROOT/$i
+			mkdir $TESTROOT/$i
 		fi
 	done
 fi
@@ -266,7 +266,7 @@ else
 	n=''
 	c='\c'
 fi
-Rm -f .echotmp
+rm -f .echotmp
 
 Echo()
 {
