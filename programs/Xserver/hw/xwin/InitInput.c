@@ -22,7 +22,7 @@
   from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitInput.c,v 1.3 2001/04/18 17:14:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitInput.c,v 1.4 2001/05/02 00:45:26 alanh Exp $ */
 
 #include "win.h"
 
@@ -47,8 +47,16 @@ LegalModifier (unsigned int uiKey, DevicePtr pDevice)
 void
 ProcessInputEvents (void)
 {
+#if CYGDEBUG
+  ErrorF ("ProcessInputEvents ()\n");
+#endif
+
   mieqProcessInputEvents ();
   miPointerUpdate ();
+
+#if CYGDEBUG
+  ErrorF ("ProcessInputEvents () - returning\n");
+#endif
 }
 
 int
@@ -90,6 +98,10 @@ InitInput (int argc, char *argv[])
       /* Add the message queue as a device to wait for in WaitForSomething */
       AddEnabledDevice (g_fdMessageQueue);
     }
+
+#if CYGDEBUG
+  ErrorF ("InitInput () - returning\n");
+#endif
 }
 
 #ifdef XTESTEXT1

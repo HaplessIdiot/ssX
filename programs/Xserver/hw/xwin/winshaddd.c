@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshaddd.c,v 1.4 2001/05/02 00:45:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshaddd.c,v 1.5 2001/05/14 16:52:33 alanh Exp $ */
 
 #include "win.h"
 
@@ -267,11 +267,12 @@ winAllocateFBShadowDD (ScreenPtr pScreen)
  */
 void
 winShadowUpdateDD (ScreenPtr pScreen, 
-		   PixmapPtr pShadow,
-		   RegionPtr damage)
+		   shadowBufPtr pBuf)
 {
   winScreenPriv(pScreen);
   winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
+  PixmapPtr		pShadow = pBuf->pPixmap;
+  RegionPtr		damage = &pBuf->damage;
   HRESULT		ddrval = DD_OK;
   RECT			rcClient, rcDest, rcSrc;
   DWORD			dwBox = REGION_NUM_RECTS (damage);
@@ -391,7 +392,8 @@ winShadowWindowDD (ScreenPtr	pScreen,
 		   CARD32	row,
 		   CARD32	offset,
 		   int		mode,
-		   CARD32	*size)
+		   CARD32	*size,
+		   void		*closure)
 {
   return winShadowSetWindowLinearDD (pScreen, row, offset, mode, size);
 }

@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshadddnl.c,v 1.4 2001/05/02 00:45:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshadddnl.c,v 1.5 2001/05/14 16:52:33 alanh Exp $ */
 
 #include "win.h"
 
@@ -305,11 +305,12 @@ winAllocateFBShadowDDNL (ScreenPtr pScreen)
  */
 void
 winShadowUpdateDDNL (ScreenPtr pScreen, 
-		     PixmapPtr pShadow,
-		     RegionPtr damage)
+		     shadowBufPtr pBuf)
 {
   winScreenPriv(pScreen);
   winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
+  PixmapPtr		pShadow = pBuf->pPixmap;
+  RegionPtr		damage = &pBuf->damage;
   HRESULT		ddrval = DD_OK;
   RECT			rcClient, rcDest, rcSrc;
   DWORD			dwBox = REGION_NUM_RECTS (damage);
@@ -359,10 +360,10 @@ winShadowUpdateDDNL (ScreenPtr pScreen,
  */
 void *
 winShadowSetWindowLinearDDNL (ScreenPtr	pScreen,
-			    CARD32	dwRow,
-			    CARD32	dwOffset,
-			    int		mode,
-			    CARD32	*pdwSize)
+			      CARD32	dwRow,
+			      CARD32	dwOffset,
+			      int	mode,
+			      CARD32	*pdwSize)
 {
   winScreenPriv(pScreen);
   winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
@@ -386,7 +387,8 @@ winShadowWindowDDNL (ScreenPtr	pScreen,
 		     CARD32	row,
 		     CARD32	offset,
 		     int	mode,
-		     CARD32	*size)
+		     CARD32	*size,
+		     void	*closure)
 {
   FatalError ("winShadowWindowProcDDNL () - Hmm... this function has never "\
 	      "been called before.  Please send a message to "\
