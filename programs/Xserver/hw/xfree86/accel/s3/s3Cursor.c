@@ -1,5 +1,6 @@
 /*
  * $XConsortium: s3Cursor.c,v 1.2 94/03/28 21:14:00 dpw Exp $
+ * $XFree86$
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -277,18 +278,24 @@ s3LoadCursor(pScr, pCurs, x, y)
    /* s3 stuff */
    WaitIdle();
 
+#ifdef DONT_USE_IMAGE_WRITE
    WaitQueue(7);
+#else
+   WaitQueue(4);
+#endif
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_L | 0);
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_T | 0);
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_R | (s3DisplayWidth-1));
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | s3ScissB);
+#ifdef DONT_USE_IMAGE_WRITE
    S3_OUTW(WRT_MASK, 0x0ff);
    S3_OUTW(FRGD_MIX, FSS_PCDATA | MIX_SRC);
    S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | 0);
+#endif
 
    WaitIdle();
+   VerticalRetraceWait();
 
-#ifndef OLD_CURS
    /*
     * This form is general enough for any valid DisplayWidth.  The only
     * assumption is that it is even.
@@ -303,6 +310,10 @@ s3LoadCursor(pScr, pCurs, x, y)
       else
          n = bytes_remaining;
 
+#ifndef DONT_USE_IMAGE_WRITE
+      (*s3ImageWriteFunc)(xpos, ypos, n, 1, (char *)(ram + ram_loc), n, 0, 0,
+			  MIX_SRC, 0xff);
+#else
       WaitQueue(5);
 
       S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | 0);
@@ -318,42 +329,13 @@ s3LoadCursor(pScr, pCurs, x, y)
       for (i = ram_loc; i < n/2 + ram_loc; i++) {
          S3_OUTW(PIX_TRANS, ram[i]);
       }
+#endif
 
       ram_loc = i;
       ypos++;
       xpos = 0;
       bytes_remaining -= n;
    }
-
-#else
-
-   /*
-    * The old version -- which requires the cursor storage to start at the
-    * beginning of a scanline.  This also assumes the cursor only occupies
-    * one scanline (ie s3DisplayWidth >= 1024)
-    */
-
-#if 0
-   S3_OUTW(WRT_MASK, 0x0ff);
-   S3_OUTW(FRGD_MIX, 0x40 | 0x7);
-   S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL + 0x7);
-#endif
-
-   WaitQueue(5);
-
-   S3_OUTW(MULTIFUNC_CNTL, 0);
-   S3_OUTW(MAJ_AXIS_PCNT, 1023);
-   S3_OUTW(CUR_X, 0);
-   S3_OUTW(CUR_Y, s3CursorStartY);
-
-   S3_OUTW(CMD, CMD_RECT | _16BIT | BYTSEQ | INC_X | INC_Y
-	 | PCDATA | DRAW | WRTDATA);
-
-   WaitQueue(8);
-   for (i = 0; i < 512; i++) {
-      S3_OUTW(PIX_TRANS, ram[i]);
-   }
-#endif
 
    UNBLOCK_CURSOR;
 
