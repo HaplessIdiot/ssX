@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.h,v 1.1 2000/02/11 17:25:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.h,v 1.2 2000/06/17 00:03:19 martin Exp $ */
 
 #ifndef _MGA_DRI_
 #define _MGA_DRI_
@@ -107,8 +107,8 @@ typedef struct {
    unsigned int exported_index;
    unsigned int exported_stamp;
    unsigned int exported_buffers;
-   unsigned int exported_nfront;
-   unsigned int exported_nback;
+   int exported_nfront;
+   int exported_nback;
    int exported_back_x, exported_front_x, exported_w;
    int exported_back_y, exported_front_y, exported_h;
    XF86DRIClipRectRec exported_boxes[MGA_NR_SAREA_CLIPRECTS];
