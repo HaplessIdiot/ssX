@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86Cursor.c,v 1.16tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86Cursor.c,v 1.17tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_ansic.h"
@@ -121,6 +121,9 @@ xf86CursorCloseScreen(int i, ScreenPtr pScreen)
 	pScreen->devPrivates[miPointerScreenIndex].ptr;
     xf86CursorScreenPtr ScreenPriv =
 	pScreen->devPrivates[xf86CursorScreenIndex].ptr;
+
+    if (ScreenPriv->isUp)
+	xf86SetCursor(pScreen, NullCursor, ScreenPriv->x, ScreenPriv->y);
 
     pScreen->CloseScreen = ScreenPriv->CloseScreen;
     pScreen->QueryBestSize = ScreenPriv->QueryBestSize;

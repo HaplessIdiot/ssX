@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.34 2002/07/29 21:06:01 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.35tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -632,6 +632,7 @@ typedef struct pci_device {
     Bool      minBasesize;
     CARD32    listed_class;
     pointer   businfo;		/* pointer to secondary's bus info structure */
+    Bool      fakeDevice;	/* Device added by system chipset support */
 } pciDevice, *pciConfigPtr;
 
 typedef enum {

@@ -1,4 +1,8 @@
 XFree86 4.2.99.903 (xx February 2003)
+ 914. Add a means by which a motherboard chipset driver can prevent the common
+      layer's check for mis-configured PCI-to-PCI bridges (Marc La France).
+ 913. Fix bug that would sometimes cause an extra hardware cursor to re-appear
+      on a secondary head after a server reset (Marc La France).
  912. Protect "cvl" references in recent changes with '#ifdef XTHREADS'
       (reported by Dan Holm).
 
@@ -16416,4 +16420,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2561 2003/02/17 23:06:08 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2562 2003/02/18 05:24:06 dawes Exp $
