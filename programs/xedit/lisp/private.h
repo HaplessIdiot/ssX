@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.29 2002/09/15 21:32:22 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.30 2002/10/06 17:11:45 paulo Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
@@ -506,5 +506,13 @@ void LispMoreProtects(LispMac*);
 /* Initialization */
 extern int LispArgList_t;
 extern LispCharInfo LispChars[256];
+
+/* This function will return if the interpreter cannot be stopped */
+extern void LispSignal(LispMac*, int);
+
+void LispDisableInterrupts(LispMac*);
+void LispEnableInterrupts(LispMac*);
+#define DISABLE_INTERRUPTS()	LispDisableInterrupts(mac)
+#define ENABLE_INTERRUPTS()	LispEnableInterrupts(mac)
 
 #endif /* Lisp_private_h */

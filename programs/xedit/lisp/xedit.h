@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/xedit.h,v 1.1 2002/09/22 07:09:07 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/xedit.h,v 1.2 2002/10/06 17:11:45 paulo Exp $ */
 
 #ifndef Lisp_xedit_h
 #define Lisp_xedit_h
@@ -68,7 +68,7 @@ LispObj *Xedit_XrmStringToQuark(LispMac*, LispBuiltin*);
 #endif /* XEDIT_LISP_PRIVATE */
 
 void LispXeditInitialize(LispMac*);
-int XeditLispExecute(LispMac*, Widget, XawTextPosition, XawTextPosition);
+void XeditLispExecute(LispMac*, Widget, XawTextPosition, XawTextPosition);
 void XeditLispSetEditMode(LispMac*, xedit_flist_item*);
 void XeditLispUnsetEditMode(LispMac*, xedit_flist_item*);
 

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp.c,v 1.12 2002/09/22 07:09:05 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp.c,v 1.13 2002/10/06 17:11:39 paulo Exp $ */
 
 #include "xedit.h"
 #include "lisp/lisp.h"
@@ -194,6 +194,5 @@ XeditDoLispEval(Widget output)
 	}
     }
 
-    if (!XeditLispExecute(lisp_handler, output, position, end))
-	Feep();
+    XeditLispExecute(lisp_handler, output, position, end);
 }
