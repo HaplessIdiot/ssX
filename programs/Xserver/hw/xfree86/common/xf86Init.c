@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.202 2003/08/24 17:43:06 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.203 2003/08/25 04:32:01 dawes Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -35,7 +35,7 @@
 #include <stdlib.h>
 
 #undef HAS_UTSNAME
-if !defined(WIN32) && !defined(__UNIXOS2__)
+#if !defined(WIN32) && !defined(__UNIXOS2__)
 #define HAS_UTSNAME 1
 #include <sys/utsname.h>
 #endif
