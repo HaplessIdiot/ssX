@@ -1,4 +1,8 @@
 XFree86 4.3.99.16 (xx November 2003)
+ 594. Build with Xplugin support by default on Panther (Torrey T. Lyons).
+ 593. On Mac OS X, allow "X -version" to work without connecting to
+      CoreGraphics (Torrey T. Lyons, reported by Benjamin Reed).
+ 592. Don't optimize away window restacks in rootless mode (John Harper).
  591. Fix problems preventing mesa-based GLX from working with Xnest, even
       though it is linked in and advertised (David Dawes).
  590. Fix typing in XDarwin Preference panel going to X11 (Torrey T. Lyons).
@@ -18187,7 +18191,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2963 2003/11/14 20:27:58 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2964 2003/11/14 22:26:00 dawes Exp $
 
 
 
