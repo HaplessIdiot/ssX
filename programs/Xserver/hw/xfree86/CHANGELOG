@@ -1,3 +1,5 @@
+3535. Make the Glint driver use the new fb module and fix correct operation
+      for 24bpp support (Alan Hourihane).
 3534. Fix for various compilation glitches (Marc La France).
 3533. Fix some Segmentation faults with NULL pointers in xf86Config.c
       (Alan Hourihane).
