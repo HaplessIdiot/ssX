@@ -1,6 +1,6 @@
 /*
 ** $XConsortium: tests.c,v 1.20 91/06/08 18:57:07 rws Exp $
-** $XFree86: xc/programs/xgc/tests.c,v 1.7 2001/07/25 15:05:23 dawes Exp $
+** $XFree86: xc/programs/xgc/tests.c,v 1.8 2002/01/07 20:38:30 dawes Exp $
 **
 */
 
@@ -77,7 +77,7 @@ timer(flag)
      elapsed time = ending time - starting time, but there are three 
      different timers and two different units of time, ack... */
 
-#ifndef __EMX__
+#if !defined(__EMX__) && !defined(QNX4)
       elapsedtime = (long) ((long)
 	((endtime.tv_sec - endusage.ru_utime.tv_sec - endusage.ru_stime.tv_sec
 	 - starttime.tv_sec + startusage.ru_utime.tv_sec
