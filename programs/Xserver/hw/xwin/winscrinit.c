@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.1 2001/04/05 20:13:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.2 2001/04/18 17:14:06 dawes Exp $ */
 
 #include "win.h"
 
@@ -293,6 +293,8 @@ winFinishScreenInitFB (int index,
 
   /* Setup a local variable to point to the framebuffer */
   pbits = pScreenInfo->pfb;
+
+  miSetPixmapDepths ();
 
   /* Initialize the fb code */
   if (!fbScreenInit (pScreen,
