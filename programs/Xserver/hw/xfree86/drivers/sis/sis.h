@@ -205,10 +205,10 @@ typedef unsigned long IOADDRESS;
 #define VB_302LV                0x08000000
 #define VB_30xLV                VB_301LV
 #define VB_30xLVX               VB_302LV
-#define VB_TRUMPION		0x10000000
-#define VB_VIDEOBRIDGE		(VB_301|VB_301B|VB_302B|VB_301LV|VB_302LV| \
-				 VB_LVDS|VB_CHRONTEL|VB_TRUMPION)
-#define VB_SISBRIDGE            (VB_301|VB_301B|VB_302B|VB_301LV|VB_302LV)
+#define VB_301C			0x10000000
+#define VB_VIDEOBRIDGE		(VB_301|VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV| \
+				 VB_LVDS|VB_CHRONTEL)
+#define VB_SISBRIDGE            (VB_301|VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV)
 #define SINGLE_MODE             0x20000000   	/* CRT1 or CRT2; determined by DISPTYPE_CRTx */
 #define VB_DISPMODE_SINGLE	SINGLE_MODE  	/* alias */
 #define MIRROR_MODE		0x40000000   	/* CRT1 + CRT2 identical (mirror mode) */

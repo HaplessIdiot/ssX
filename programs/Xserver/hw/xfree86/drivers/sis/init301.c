@@ -10157,7 +10157,7 @@ SiS_InitDDCRegs(SiS_Private *SiS_Pr, unsigned long VBFlags, int VGAEngine,
      USHORT        temp = 0, myadaptnum = adaptnum;
 
      if(adaptnum != 0) {
-        if(!(VBFlags & (VB_301|VB_301B|VB_302B))) return 0xFFFF;
+        if(!(VBFlags & (VB_301|VB_301B|VB_301C|VB_302B))) return 0xFFFF;
 	if((VBFlags & VB_30xBDH) && (adaptnum == 1)) return 0xFFFF;
      }	
      
@@ -10447,7 +10447,7 @@ SiS_SenseLCDDDC(SiS_Private *SiS_Pr, SISPtr pSiS)
    SiS_Pr->CP_HaveCustomData = FALSE;
    SiS_Pr->CP_MaxX = SiS_Pr->CP_MaxY = SiS_Pr->CP_MaxClock = 0;
 
-   if(!(pSiS->VBFlags & (VB_301|VB_301B|VB_302B))) return 0;
+   if(!(pSiS->VBFlags & (VB_301|VB_301B|VB_301C|VB_302B))) return 0;
    if(pSiS->VBFlags & VB_30xBDH) return 0;
   
    if(SiS_InitDDCRegs(SiS_Pr, pSiS->VBFlags, pSiS->VGAEngine, 1, 0, FALSE) == 0xFFFF) return 0;
@@ -10682,7 +10682,8 @@ SiS_SenseLCDDDC(SiS_Private *SiS_Pr, SISPtr pSiS)
 	          (SiS_Pr->CP_VSyncStart[i] > SiS_Pr->CP_VSyncEnd[i])  ||
 	          (SiS_Pr->CP_VSyncStart[i] > SiS_Pr->CP_VTotal[i])    ||
 	          (SiS_Pr->CP_VSyncEnd[i] > SiS_Pr->CP_VTotal[i])      ||
-	          (SiS_Pr->CP_Clock[i] > 108000)                       ||
+	          ( ((pSiS->VBFlags & VB_301C) && (SiS_Pr->CP_Clock[i] > 162000)) ||
+		    ((!(pSiS->VBFlags & VB_301C)) && (SiS_Pr->CP_Clock[i] > 108000)) ) ||
 		  (buffer[base+17] & 0x80)) {
 
 	          SiS_Pr->CP_DataValid[i] = FALSE;
@@ -10902,7 +10903,8 @@ SiS_SenseLCDDDC(SiS_Private *SiS_Pr, SISPtr pSiS)
 	       (SiS_Pr->CP_VSyncStart[i] > SiS_Pr->CP_VSyncEnd[i])  ||
 	       (SiS_Pr->CP_VSyncStart[i] > SiS_Pr->CP_VTotal[i])    ||
 	       (SiS_Pr->CP_VSyncEnd[i] > SiS_Pr->CP_VTotal[i])      ||
-	       (SiS_Pr->CP_Clock[i] > 108000)                       ||
+	       ( ((pSiS->VBFlags & VB_301C) && (SiS_Pr->CP_Clock[i] > 162000)) ||
+		 ((!(pSiS->VBFlags & VB_301C)) && (SiS_Pr->CP_Clock[i] > 108000)) ) ||
 	       (buffer[index + 17] & 0x80)) {
 
 	       SiS_Pr->CP_DataValid[i] = FALSE;
@@ -10988,7 +10990,7 @@ SiS_SenseVGA2DDC(SiS_Private *SiS_Pr, SISPtr pSiS)
    int retry;
    unsigned char buffer[256];
 
-   if(!(pSiS->VBFlags & (VB_301|VB_301B|VB_302B))) return 0;
+   if(!(pSiS->VBFlags & (VB_301|VB_301B|VB_301C|VB_302B))) return 0;
 /* if(pSiS->VBFlags & VB_30xBDH) return 0;  */
    
    if(SiS_InitDDCRegs(SiS_Pr, pSiS->VBFlags, pSiS->VGAEngine, 2, 0, FALSE) == 0xFFFF) return 0;
@@ -11421,6 +11423,14 @@ SetDelayComp(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT B
 	}
      }
 
+     if(SiS_Pr->SiS_CustomT == CUT_CLEVO10242) {
+        if(SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1024x768) {
+	   gotitfrompci = TRUE;
+	   dochiptest = FALSE;
+	   delay = 0x03;
+	}
+     }
+
      if(!gotitfrompci) {
 
         index = GetLCDPtrIndexBIOS(SiS_Pr, HwDeviceExtension, BaseAddr);
@@ -11480,7 +11490,7 @@ SetDelayComp(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT B
      }
      
   } else {							/* TV */
-  
+
      index = GetTVPtrIndex(SiS_Pr);
      
      if(IS_SIS650 && (SiS_Pr->SiS_VBType & VB_SIS301LV302LV)) {
@@ -11495,16 +11505,24 @@ SetDelayComp(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT B
 	     if(!romptr) return;
 	     delay = ROMAddr[romptr + index];
 	  } else {
-	     delay = SiS310_TVDelayCompensation_301B[index];     
-#if 0	     
+	     delay = SiS310_TVDelayCompensation_301B[index];
+#if 0
 	     if(SiS_Pr->SiS_VBType & VB_SIS302LV)
-	        delay = SiS310_TVDelayCompensation_301B[index];  
+	        delay = SiS310_TVDelayCompensation_301B[index];
 #endif		
 	  }
        } else {
-          delay = SiS310_TVDelayCompensation_651301LV[index];       
-	  if(SiS_Pr->SiS_VBType & VB_SIS302LV)
-	      delay = SiS310_TVDelayCompensation_651302LV[index];   
+          if(SiS_Pr->SiS_CustomT == CUT_COMPAQ1280) {
+	     delay = 0x02;
+	     dochiptest = FALSE;
+	  } else if(SiS_Pr->SiS_CustomT == CUT_CLEVO10242) {
+	     delay = 0x03;
+	     dochiptest = FALSE;
+	  } else {
+             delay = SiS310_TVDelayCompensation_651301LV[index];
+	     if(SiS_Pr->SiS_VBType & VB_SIS302LV)
+	        delay = SiS310_TVDelayCompensation_651302LV[index];
+	  }
        }
      } else {
        if((ROMAddr) && SiS_Pr->SiS_UseROM) {
@@ -11551,6 +11569,7 @@ SetDelayComp(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT B
         }
         SiS_SetReg1(SiS_Pr->SiS_Part1Port,0x2D,delay);
      } else {
+        delay &= 0x0f;
         SiS_SetRegANDOR(SiS_Pr->SiS_Part1Port,0x2D,0xF0,delay);
      }
   }

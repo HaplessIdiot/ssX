@@ -1044,7 +1044,7 @@ void SISSense30x(ScrnInfoPtr pScrn)
 	   testcvbs_tempbh = 0x00; testcvbs_tempbl = 0xb3;
 	   biosflag = 0;
 	}
-	if(pSiS->VBFlags & (VB_301B|VB_302B|VB_301LV|VB_302LV)) {
+	if(pSiS->VBFlags & (VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV)) {
 	   testvga2_tempbh = 0x01; testvga2_tempbl = 0x90;
 	   testsvhs_tempbh = 0x01; testsvhs_tempbl = 0x6b;
 	   testcvbs_tempbh = 0x01; testcvbs_tempbl = 0x74;
@@ -1088,7 +1088,7 @@ void SISSense30x(ScrnInfoPtr pScrn)
 	   biosflag = 0;
 	}
 	
-	if(pSiS->VBFlags & (VB_301B|VB_302B|VB_301LV|VB_302LV)) {
+	if(pSiS->VBFlags & (VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV)) {
 	   if(pSiS->sishw_ext.UseROM) {
 	      if((pSiS->Chipset == PCI_CHIP_SIS330) || (pSiS->Chipset == PCI_CHIP_SIS660)) {
 	         testvga2_tempbh = pSiS->BIOS[0xec]; testvga2_tempbl = pSiS->BIOS[0xeb];
@@ -1100,7 +1100,7 @@ void SISSense30x(ScrnInfoPtr pScrn)
 	         testcvbs_tempbh = pSiS->BIOS[0xc8]; testcvbs_tempbl = pSiS->BIOS[0xc7];
 	      }
 	   } else {
-	      if(pSiS->VBFlags & (VB_301B|VB_302B)) {
+	      if(pSiS->VBFlags & (VB_301B|VB_301C|VB_302B)) {
 	         testvga2_tempbh = 0x01; testvga2_tempbl = 0x90;
 	         testsvhs_tempbh = 0x01; testsvhs_tempbl = 0x6b;
 	         testcvbs_tempbh = 0x01; testcvbs_tempbl = 0x74;
@@ -1112,7 +1112,7 @@ void SISSense30x(ScrnInfoPtr pScrn)
 	   }
 	}
 	
-	if(pSiS->VBFlags & (VB_301|VB_301B|VB_302B)) {
+	if(pSiS->VBFlags & (VB_301|VB_301B|VB_301C|VB_302B)) {
 	   inSISIDXREG(SISPART4,0x01,myflag);
 	   if(myflag & 0x04) {
 	      testvga2_tempbh = 0x00; testvga2_tempbl = 0xfd;
@@ -1355,19 +1355,25 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
     if (temp == 1) {
         inSISIDXREG(SISPART4, 0x01, temp1);
 	temp1 &= 0xff;
-	if (temp1 >= 0xE0) {
+        if(temp1 >= 0xE0) {
 	   	pSiS->VBFlags |= VB_302LV;
 		pSiS->sishw_ext.ujVBChipID = VB_CHIP_302LV;
     		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 		                "Detected SiS302LV video bridge (ID 1; Revision 0x%x)\n",
 				temp1);
-	} else if (temp1 >= 0xD0) {
+	} else if(temp1 >= 0xD0) {
 	   	pSiS->VBFlags |= VB_301LV;
 		pSiS->sishw_ext.ujVBChipID = VB_CHIP_301LV;
     		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 		                "Detected SiS301LV video bridge (ID 1; Revision 0x%x)\n",
 				temp1);
-	} else if (temp1 >= 0xB0) {
+	} else if(temp1 >= 0xC0) {   /* guessed */
+	   	pSiS->VBFlags |= VB_301C;
+		pSiS->sishw_ext.ujVBChipID = VB_CHIP_301C;
+    		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+		                "Detected SiS301C video bridge (ID 1; Revision 0x%x)\n",
+				temp1);
+	} else if(temp1 >= 0xB0) {
 	        pSiS->VBFlags |= VB_301B;
 		pSiS->sishw_ext.ujVBChipID = VB_CHIP_301B;
 		inSISIDXREG(SISPART4, 0x23, temp2);
@@ -1390,13 +1396,13 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
 
         inSISIDXREG(SISPART4, 0x01, temp1);
 	temp1 &= 0xff;
-	if (temp1 >= 0xE0) {
+	if(temp1 >= 0xE0) {
         	pSiS->VBFlags |= VB_302LV;
 		pSiS->sishw_ext.ujVBChipID = VB_CHIP_302LV;
     		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 		                "Detected SiS302LV video bridge (ID 2; Revision 0x%x)\n",
 				temp1);
-	} else if (temp1 >= 0xD0) {
+	} else if(temp1 >= 0xD0) {
         	pSiS->VBFlags |= VB_301LV;
 		pSiS->sishw_ext.ujVBChipID = VB_CHIP_301LV;
     		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
@@ -1633,9 +1639,8 @@ void SISVGAPreInit(ScrnInfoPtr pScrn)
 	    }
 	}
 	if ((pSiS->VGAEngine == SIS_300_VGA) && (temp == 3)) {
-	    pSiS->VBFlags |= VB_TRUMPION;
 	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	               "Detected Trumpion Zurac (I/II/III) LVDS scaler\n");
+	               "Detected Trumpion Zurac (I/II/III) LVDS scaler - UNSUPPORTED\n");
 	}
 	if (temp > upperlimitlvds) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,

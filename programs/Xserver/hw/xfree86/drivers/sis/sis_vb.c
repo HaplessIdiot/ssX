@@ -151,7 +151,7 @@ void SISLCDPreInit(ScrnInfoPtr pScrn)
     if((!pSiS->DualHeadMode) || (!pSiS->SecondHead)) {
 #endif
        if((pSiS->VGAEngine == SIS_315_VGA) &&
-          (pSiS->VBFlags & (VB_301|VB_301B|VB_302B)) &&
+          (pSiS->VBFlags & (VB_301|VB_301B|VB_301C|VB_302B)) &&
           (!(pSiS->VBFlags & VB_30xBDH))) {
 
           if(pSiS->forcecrt2redetection) {
@@ -384,7 +384,7 @@ void SISCRT2PreInit(ScrnInfoPtr pScrn)
         * which is prone to be misdetected as a secondary VGA)
         */
        if(!(pSiS->nocrt2ddcdetection)) {
-          if(pSiS->VBFlags & (VB_301|VB_301B|VB_302B)) {
+          if(pSiS->VBFlags & (VB_301|VB_301B|VB_301C|VB_302B)) {
              if(!(pSiS->VBFlags & (CRT2_VGA | CRT2_LCD))) {
 	        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 	           "%s secondary VGA, sensing via DDC\n",

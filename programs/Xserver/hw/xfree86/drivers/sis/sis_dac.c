@@ -547,7 +547,7 @@ SiS300Save(ScrnInfoPtr pScrn, SISRegPtr sisReg)
         (*pSiS->SiSSaveLVDSChrontel)(pScrn, sisReg);
       if (pSiS->VBFlags & VB_301)
         (*pSiS->SiSSave2)(pScrn, sisReg);
-      if (pSiS->VBFlags & (VB_301B|VB_302B|VB_301LV|VB_302LV))
+      if (pSiS->VBFlags & (VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV))
         (*pSiS->SiSSave3)(pScrn, sisReg);
 #ifndef TWDEBUG
     }
@@ -642,7 +642,7 @@ SiS300Restore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     }
     
     /* TW: Restore VCLK and ECLK */
-    if(pSiS->VBFlags & (VB_LVDS | VB_301B)) {
+    if(pSiS->VBFlags & (VB_LVDS | VB_301B | VB_301C)) {
        outSISIDXREG(SISSR,0x31,0x20);
        outSISIDXREG(SISSR,0x2b,sisReg->sisRegs3C4[0x2b]);
        outSISIDXREG(SISSR,0x2c,sisReg->sisRegs3C4[0x2c]);
@@ -656,7 +656,7 @@ SiS300Restore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     outSISIDXREG(SISSR,0x2b,sisReg->sisRegs3C4[0x2b]);
     outSISIDXREG(SISSR,0x2c,sisReg->sisRegs3C4[0x2c]);
     outSISIDXREG(SISSR,0x2d,0x80);
-    if(pSiS->VBFlags & (VB_LVDS | VB_301B)) {
+    if(pSiS->VBFlags & (VB_LVDS | VB_301B | VB_301C)) {
        outSISIDXREG(SISSR,0x31,0x20);
        outSISIDXREG(SISSR,0x2e,sisReg->sisRegs3C4[0x2e]);
        outSISIDXREG(SISSR,0x2f,sisReg->sisRegs3C4[0x2f]);
@@ -700,7 +700,7 @@ SiS300Restore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
         (*pSiS->SiSRestoreLVDSChrontel)(pScrn, sisReg);
       if(pSiS->VBFlags & VB_301)
         (*pSiS->SiSRestore2)(pScrn, sisReg);
-      if(pSiS->VBFlags & (VB_301B|VB_302B|VB_301LV|VB_302LV))
+      if(pSiS->VBFlags & (VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV))
         (*pSiS->SiSRestore3)(pScrn, sisReg);
     }
     
@@ -779,7 +779,7 @@ SiS315Save(ScrnInfoPtr pScrn, SISRegPtr sisReg)
         (*pSiS->SiSSaveLVDSChrontel)(pScrn, sisReg);
       if (pSiS->VBFlags & VB_301)
         (*pSiS->SiSSave2)(pScrn, sisReg);
-      if (pSiS->VBFlags & (VB_301B|VB_302B|VB_301LV|VB_302LV))
+      if (pSiS->VBFlags & (VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV))
         (*pSiS->SiSSave3)(pScrn, sisReg);
 #ifndef TWDEBUG
     }
@@ -892,7 +892,7 @@ SiS315Restore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
         (*pSiS->SiSRestoreLVDSChrontel)(pScrn, sisReg);
       if(pSiS->VBFlags & VB_301)
         (*pSiS->SiSRestore2)(pScrn, sisReg);
-      if(pSiS->VBFlags & (VB_301B|VB_302B|VB_301LV|VB_302LV))
+      if(pSiS->VBFlags & (VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV))
         (*pSiS->SiSRestore3)(pScrn, sisReg);
     }
 
@@ -1621,7 +1621,8 @@ int SiSMemBandWidth(ScrnInfoPtr pScrn, BOOLEAN IsForCRT2)
 
 		    maxcrt2 = 135000;
 		    if(pSiS->VBFlags & (VB_301B|VB_302B)) maxcrt2 = 162000;
-		    if(pSiS->VBFlags & VB_30xBDH) maxcrt2 = 100000;
+		    else if(pSiS->VBFlags & VB_301C)      maxcrt2 = 162000;  /* ? */
+		    if(pSiS->VBFlags & VB_30xBDH)         maxcrt2 = 100000;
 
 		    crt2used = 0.0;
 		    crt2clock = SiSEstimateCRT2Clock(pScrn);
