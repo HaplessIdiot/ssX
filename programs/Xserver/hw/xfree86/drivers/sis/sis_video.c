@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_video.c,v 1.52tsi Exp $ */
+/* $XFree86$ */
 /* $XdotOrg$ */
 /*
  * Xv driver for SiS 300, 315 and 330 series.
@@ -4713,7 +4713,7 @@ SISWriteBlitPacket(SISPtr pSiS, CARD32 *packet)
    SiSWritePacketPart(packet[12], packet[13], packet[14], packet[15]);
    SiSWritePacketPart(packet[16], packet[17], packet[18], packet[19]);
    SiSSyncWP;
-   (void) dummybuf;
+   (void)dummybuf; /* Suppress compiler warning */
 }
 
 static int
