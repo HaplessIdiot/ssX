@@ -9,7 +9,7 @@ Matthieu Herrb
 <Date>Last modified on: 2 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.12 2000/12/02 15:27:09 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.13 2000/12/05 20:50:30 herrb Exp $
 </ident>
 
 <toc>
@@ -60,10 +60,11 @@ non-OS dependent new features in XFree86 &relvers;.
 <sect1>New OS dependent features in 4.0.2
 <p>
 <itemize>
-<item>Support for the OpenBSD ports tree 
+<item>Support for the OpenBSD ports tree, 
 <item>Preliminary support for the powerpc architecture (clients build
-and work, the server doesn't work yet)
-<item>Xdm now writes an utmp entry
+and work, the server doesn't work yet),
+<item>xdm now writes an utmp entry,
+<item>startx now creates an Xauthority magic cookie for the display. 
 </itemize>
 
 <sect1>New OS dependent features in 4.0.1
