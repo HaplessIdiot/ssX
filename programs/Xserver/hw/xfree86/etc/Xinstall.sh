@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.56 2003/10/19 02:47:20 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.57 2003/10/19 02:59:49 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -1007,6 +1007,7 @@ GetOsInfo
 
 CheckUtil sed
 CheckUtil fgrep 
+CheckUtil basename
 
 # Make OS-specific adjustments
 
