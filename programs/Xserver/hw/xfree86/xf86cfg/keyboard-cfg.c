@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/keyboard-cfg.c,v 1.10 2000/12/11 18:47:46 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/keyboard-cfg.c,v 1.11 2001/03/01 20:37:25 paulo Exp $
  */
 
 #include "xf86config.h"
@@ -176,7 +176,7 @@ KeyboardConfig(XtPointer config)
 	XtSetArg(args[0], XtNstring, keyboard->inp_identifier);
 	XtSetValues(ident_widget, args, 1);
 
-	UpdateKeyboard(False);
+	(void)UpdateKeyboard(False);
     }
     else {
 	XF86ConfInputPtr input = XF86Config->conf_input_lst;
@@ -721,7 +721,7 @@ WriteXKBConfiguration(char *filename, XkbConfigRtrnPtr conf)
     return (True);
 }
 
-void
+Bool
 UpdateKeyboard(Bool load)
 {
     static XkbRF_RulesPtr rules;
@@ -759,7 +759,7 @@ UpdateKeyboard(Bool load)
 
     if (xkb == NULL || xkb->geom == NULL) {
 	fprintf(stderr, "Couldn't get keyboard\n");
-	exit(1);
+	return (False);
     }
     if (xkb->names->geometry == 0)
 	xkb->names->geometry = xkb->geom->name;
@@ -777,6 +777,8 @@ UpdateKeyboard(Bool load)
 
     if (kbd != NULL)
 	XClearArea(XtDisplay(configp), XtWindow(kbd), 0, 0, 0, 0, True);
+
+    return (True);
 }
 
 static void
@@ -784,14 +786,18 @@ KeyboardModelCallback(Widget w, XtPointer user_data, XtPointer call_data)
 {
     Arg args[1];
     int i;
+    char *oldval = xkb_info->defs.model;
 
     for (i = 0; i < xkb_model.nelem; i++)
 	if (strcmp(XtName(w), xkb_model.name[i]) == 0)
 	    break;
-    XtSetArg(args[0], XtNlabel, xkb_model.desc[i]);
-    XtSetValues(modelb, args, 1);
     model = xkb_info->defs.model = xkb_model.name[i];
-    UpdateKeyboard(False);
+    if (!UpdateKeyboard(False))
+	model = xkb_info->defs.model = oldval;
+    else {
+	XtSetArg(args[0], XtNlabel, xkb_model.desc[i]);
+	XtSetValues(modelb, args, 1);
+    }
 }
 
 static void
@@ -799,13 +805,18 @@ KeyboardLayoutCallback(Widget w, XtPointer user_data, XtPointer call_data)
 {
     Arg args[1];
     int i;
+    char *oldval = xkb_info->defs.layout;
 
     for (i = 0; i < xkb_layout.nelem; i++)
 	if (strcmp(XtName(w), xkb_layout.name[i]) == 0)
 	    break;
-    XtSetArg(args[0], XtNlabel, xkb_layout.desc[i]);
-    XtSetValues(layoutb, args, 1);
     layout = xkb_info->defs.layout = xkb_layout.name[i];
+    if (!UpdateKeyboard(False))
+	layout = xkb_info->defs.layout = oldval;
+    else {
+	XtSetArg(args[0], XtNlabel, xkb_layout.desc[i]);
+	XtSetValues(layoutb, args, 1);
+    }
 }
 
 static void
@@ -813,17 +824,21 @@ KeyboardVariantCallback(Widget w, XtPointer user_data, XtPointer call_data)
 {
     Arg args[1];
     int i;
-    char *label;
+    char *label, *oldval = xkb_info->defs.variant;
 
     for (i = 0; i < xkb_variant.nelem; i++)
 	if (strcmp(XtName(w), xkb_variant.name[i]) == 0)
 	    break;
     variant = i < xkb_variant.nelem ? xkb_variant.name[i] : "";
-    label = i < xkb_variant.nelem ? xkb_variant.desc[i] : "";
-    XtSetArg(args[0], XtNlabel, label);
-    XtSetValues(variantb, args, 1);
-
     xkb_info->defs.variant = variant && *variant ? variant : NULL;
+
+    if (!UpdateKeyboard(False))
+	xkb_info->defs.variant = variant = oldval;
+    else {
+	label = i < xkb_variant.nelem ? xkb_variant.desc[i] : "";
+	XtSetArg(args[0], XtNlabel, label);
+	XtSetValues(variantb, args, 1);
+    }
 }
 
 static void
@@ -831,6 +846,8 @@ KeyboardOptionsCallback(Widget w, XtPointer user_data, XtPointer call_data)
 {
     Arg args[1];
     int i;
+    char *oldval = xkb_info->defs.options ?
+	XtNewString(xkb_info->defs.options) : XtNewString("");
 
     for (i = 0; i < xkb_option.nelem; i++)
 	if (strcmp(XtName(w), xkb_option.name[i]) == 0)
@@ -878,19 +895,25 @@ KeyboardOptionsCallback(Widget w, XtPointer user_data, XtPointer call_data)
 	options = XtNewString("");
     }
 
-    XtSetArg(args[0], XtNlabel, options);
-    XtSetValues(optionsb, args, 1);
-    XtSetArg(args[0], XtNtip, options);
-    XtSetValues(optionsb, args, 1);
-
     xkb_info->defs.options = *options ? options : NULL;
+    if (!UpdateKeyboard(False)) {
+	XtFree(options);
+	xkb_info->defs.options = *oldval ? oldval : NULL;
+    }
+    else {
+	XtFree(oldval);
+	XtSetArg(args[0], XtNlabel, options);
+	XtSetValues(optionsb, args, 1);
+	XtSetArg(args[0], XtNtip, options);
+	XtSetValues(optionsb, args, 1);
+    }
 }
 
 /*ARGSUSED*/
 static void
 KeyboardApplyCallback(Widget w, XtPointer user_data, XtPointer call_data)
 {
-    UpdateKeyboard(True);
+    (void)UpdateKeyboard(True);
 }
 
 void
