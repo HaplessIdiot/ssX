@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/dixstruct.h,v 3.15 2001/09/17 16:07:47 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dixstruct.h,v 3.17 2002/11/30 06:21:51 keithp Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -74,28 +74,6 @@ typedef enum {ClientStateInitial,
 	      ClientStateCheckingSecurity,
 	      ClientStateCheckedSecurity} ClientState;
 
-#ifdef XFIXES
-typedef struct _saveSet {
-    struct _Window  *windowPtr;
-    Bool	    toRoot;
-    Bool	    remap;
-} SaveSetElt;
-#define SaveSetWindow(ss)   ((ss).windowPtr)
-#define SaveSetToRoot(ss)   ((ss).toRoot)
-#define SaveSetRemap(ss)    ((ss).remap)
-#define SaveSetAssignWindow(ss,w)   ((ss).windowPtr = (w))
-#define SaveSetAssignToRoot(ss,tr)  ((ss).toRoot = (tr))
-#define SaveSetAssignRemap(ss,rm)  ((ss).remap = (rm))
-#else
-typedef struct _Window *SaveSetElt;
-#define SaveSetWindow(ss)   (ss)
-#define SaveSetToRoot(ss)   FALSE
-#define SaveSetRemap(ss)    TRUE
-#define SaveSetAssignWindow(ss,w)   ((ss) = (w))
-#define SaveSetAssignToRoot(ss,tr)
-#define SaveSetAssignRemap(ss,rm)
-#endif
-
 typedef struct _Client {
     int         index;
     Mask        clientAsMask;
@@ -113,7 +91,7 @@ typedef struct _Client {
     Drawable    lastDrawableID;
     GCPtr       lastGC;
     GContext    lastGCID;
-    SaveSetElt	*saveSet;
+    pointer    *saveSet;
     int         numSaved;
     pointer     screenPrivate[MAXSCREENS];
     int         (**requestVector) (

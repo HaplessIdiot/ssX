@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.22 2001/12/14 19:59:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.25 2002/11/30 06:21:51 keithp Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -509,13 +509,19 @@ extern void NoopDDA(
 #endif
 );
 
-int AlterSaveSetForClient(ClientPtr client,
-			  WindowPtr pWin,
-			  unsigned mode,
-			  Bool  toRoot,
-			  Bool  remap);
+extern int AlterSaveSetForClient(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    WindowPtr /*pWin*/,
+    unsigned /*mode*/
+#endif
+);
 
-void DeleteWindowFromAnySaveSet(WindowPtr pWin);
+extern void DeleteWindowFromAnySaveSet(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/
+#endif
+);
 
 extern void BlockHandler(
 #if NeedFunctionPrototypes
@@ -1091,22 +1097,5 @@ typedef struct {
     xEventPtr events;
     int count;
 } DeviceEventInfoRec;
-
-/*
- * SelectionCallback stuff
- */
-
-extern CallbackListPtr SelectionCallback;
-
-typedef enum {
-    SelectionSetOwner,
-    SelectionWindowDestroy,
-    SelectionClientClose
-} SelectionCallbackKind;
-
-typedef struct {
-    struct _Selection	    *selection;
-    SelectionCallbackKind   kind;
-} SelectionInfoRec;
 
 #endif /* DIX_H */

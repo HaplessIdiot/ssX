@@ -1,5 +1,5 @@
 XCOMM $Xorg: bsdLib.tmpl,v 1.3 2000/08/17 19:41:47 cpqbld Exp $
-XCOMM $XFree86: xc/config/cf/bsdLib.tmpl,v 3.10 2002/11/18 22:47:25 dawes Exp $
+XCOMM $XFree86: xc/config/cf/bsdLib.tmpl,v 3.11 2002/12/08 23:00:59 herrb Exp $
 
 /*
  * NetBSD/FreeBSD/OpenBSD shared library template
@@ -72,6 +72,5 @@ XMULIB = $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
 #define SharedDPSReqs	$(LDPRELIB) $(SMLIB) $(ICELIB) $(XTOOLLIB) $(XLIB)
 #define SharedDPSTKReqs	$(LDPRELIB) $(SMLIB) $(ICELIB) $(XTOOLLIB) $(DPSLIB) $(XLIB)
 #define SharedpsresReqs	$(LDPRELIB) $(SMLIB) $(ICELIB) $(XTOOLLIB) $(XLIB)
-#define SharedXfixesReqs $(LDPRELIB) $(XLIB)
 
 #endif /* UseElfFormat */

@@ -70,7 +70,7 @@ SOFTWARE.
 *                                                               *
 *****************************************************************/
 
-/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.30 2002/11/20 05:01:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.31 2002/11/30 06:21:49 keithp Exp $ */
 
 #include "misc.h"
 #include "scrnintstr.h"
@@ -3227,17 +3227,10 @@ HandleSaveSet(client)
 
     for (j=0; j<client->numSaved; j++)
     {
-	pWin = SaveSetWindow(client->saveSet[j]);
-#ifdef XFIXES
-	if (SaveSetToRoot(client->saveSet[j]))
-	    pParent = WindowTable[pWin->drawable.pScreen->myNum];
-	else
-#endif
-	{
-	    pParent = pWin->parent;
-	    while (pParent && (wClient (pParent) == client))
-		pParent = pParent->parent;
-	}
+	pWin = (WindowPtr)client->saveSet[j];
+	pParent = pWin->parent;
+	while (pParent && (wClient (pParent) == client))
+	    pParent = pParent->parent;
 	if (pParent)
 	{
 	    if (pParent != pWin->parent)
@@ -3249,15 +3242,12 @@ HandleSaveSet(client)
 		if(!pWin->realized && pWin->mapped)
 		    pWin->mapped = FALSE;
 	    }
-#ifdef XFIXES
-	    if (SaveSetRemap (client->saveSet[j]))
-#endif
-		MapWindow(pWin, client);
+	    MapWindow(pWin, client);
 	}
     }
     xfree(client->saveSet);
     client->numSaved = 0;
-    client->saveSet = (SaveSetElt *)NULL;
+    client->saveSet = (pointer *)NULL;
 }
 
 Bool
