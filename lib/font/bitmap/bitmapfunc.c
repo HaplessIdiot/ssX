@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/font/bitmap/bitmapfunc.c,v 3.10 2001/01/17 19:43:27 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bitmapfunc.c,v 3.11 2001/04/03 17:51:59 paulo Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -172,7 +172,7 @@ BitmapOpenBitmap (FontPathElementPtr fpe, FontPtr *ppFont, int flags,
 
     FontFileClose (file);
     if (ret != Successful) {
-/*	xfree(pFont);	*/	/* Danny */
+	xfree(pFont);
     } else {
 	*ppFont = pFont;
     }

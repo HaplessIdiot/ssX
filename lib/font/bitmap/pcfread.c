@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/pcfread.c,v 1.14 2001/01/17 19:43:27 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/pcfread.c,v 1.15 2001/04/03 17:52:00 paulo Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -733,7 +733,6 @@ pmfReadFont(FontPtr pFont, FontFilePtr file,
     Bool	hasBDFAccelerators;
     CharInfoPtr pci;
 
-    fprintf(stderr, "pmfReadFont\n");
     pFont->info.props = 0;
 
     if (!(tables = pcfReadTOC(file, &ntables)))
@@ -865,10 +864,6 @@ pmfReadFont(FontPtr pFont, FontFilePtr file,
 	    pFont->info.allExist = FALSE;
 	    encoding[i] = 0;
 	} else {
-		/* Danny **
-			fprintf(stderr, "pmfReadFont: i %d encoding[%d] %p\n",
-					i, SEGMENT_MAJOR(i), encoding[SEGMENT_MAJOR(i)]);
-		* */
             if(!encoding[SEGMENT_MAJOR(i)]) {
                 encoding[SEGMENT_MAJOR(i)]=
                     (CharInfoPtr*)xcalloc(BITMAP_FONT_SEGMENT_SIZE,
@@ -935,10 +930,10 @@ Bail:
     xfree(encoding);
     xfree(bitmaps);
     xfree(metrics);
-/*     xfree(pFont->info.props); */
+    xfree(pFont->info.props);
     pFont->info.props = 0;
     xfree (pFont->info.isStringProp);
     xfree(bitmapFont);
-/*    xfree(tables); */
+    xfree(tables);
     return AllocError;
 }
