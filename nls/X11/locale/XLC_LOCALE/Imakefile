@@ -1,4 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.8 94/02/10 16:53:46 rws Exp $
+XCOMM $XFree86$
 
   WCHAR32 = HasWChar32
    TBLDIR = $(XLOCALEDIR)/tbl_data
@@ -27,6 +28,7 @@ LTarget(zh)
 LTarget(zh_TW)
 LTarget(th_TH.TACTIS)
 LTarget(en_US.utf)
+LTarget(koi8-r)
 
 InstallNonExecFile(tab8859_1,$(TBLDIR))
 InstallNonExecFile(tab8859_2,$(TBLDIR))
@@ -40,3 +42,4 @@ InstallNonExecFile(tab8859_9,$(TBLDIR))
 InstallNonExecFile(jis0208,$(TBLDIR))
 InstallNonExecFile(ksc5601,$(TBLDIR))
 InstallNonExecFile(gb2312,$(TBLDIR))
+InstallNonExecFile(tabkoi8-r,$(TBLDIR))
