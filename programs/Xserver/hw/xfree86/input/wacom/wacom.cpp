@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/wacom.cpp,v 1.7 2000/12/11 20:18:57 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/wacom.cpp,v 1.8 2000/12/12 18:54:32 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH WACOM __drivermansuffix__ "Version 4.0.2"  "XFree86"
@@ -59,7 +59,7 @@ is computed to
 .B Option \fI"Mode"\fP \fI"Relative"|"Absolute"\fP
 sets the mode of the device.
 .TP 4
-.B Option \fI"TiltMode"\fP \fI"on"\fP
+.B Option \fI"Tilt"\fP \fI"on"\fP
 enables tilt report if your tablet supports it (ROM version 1.4 and above).
 If this is enabled, multiple devices at the same time will not be reported.
 .TP 4
