@@ -18,7 +18,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86: xc/include/Xos_r.h,v 1.5 1998/10/02 07:38:51 dawes Exp $ */
+/* $XFree86: xc/include/Xos_r.h,v 1.6 2000/06/17 00:27:29 dawes Exp $ */
 
 /* 
  * Various and sundry Thread-Safe functions used by X11, Motif, and CDE.
@@ -242,6 +242,42 @@ typedef struct {
   struct passwd* pwp;
   size_t len;
 } _Xgetpwparams;
+
+/* NetBSD, at least, is missing several of the unixware passwd fields. */
+   
+#if defined(__NetBSD__)
+__inline__ void _Xpw_copyPasswd(_Xgetpwparams p)
+{
+   memcpy(&(p).pws, (p).pwp, sizeof(struct passwd));
+
+   (p).pws.pw_name = (p).pwbuf;
+   (p).len = strlen((p).pwp->pw_name);
+   strcpy((p).pws.pw_name, (p).pwp->pw_name);
+
+   (p).pws.pw_passwd = (p).pws.pw_name + (p).len + 1;
+   (p).len = strlen((p).pwp->pw_passwd);
+   strcpy((p).pws.pw_passwd,(p).pwp->pw_passwd);
+
+   (p).pws.pw_class = (p).pws.pw_passwd + (p).len + 1;
+   (p).len = strlen((p).pwp->pw_class);
+   strcpy((p).pws.pw_class, (p).pwp->pw_class);
+
+   (p).pws.pw_gecos = (p).pws.pw_class + (p).len + 1;
+   (p).len = strlen((p).pwp->pw_gecos);
+   strcpy((p).pws.pw_gecos, (p).pwp->pw_gecos);
+
+   (p).pws.pw_dir = (p).pws.pw_gecos + (p).len + 1;
+   (p).len = strlen((p).pwp->pw_dir);
+   strcpy((p).pws.pw_dir, (p).pwp->pw_dir);
+
+   (p).pws.pw_shell = (p).pws.pw_dir + (p).len + 1;
+   (p).len = strlen((p).pwp->pw_shell);
+   strcpy((p).pws.pw_shell, (p).pwp->pw_shell);
+
+   (p).pwp = &(p).pws;
+}
+
+#else
 # define _Xpw_copyPasswd(p) \
    (memcpy(&(p).pws, (p).pwp, sizeof(struct passwd)), \
     ((p).pws.pw_name = (p).pwbuf), \
@@ -267,6 +303,7 @@ typedef struct {
     strcpy((p).pws.pw_shell, (p).pwp->pw_shell), \
     ((p).pwp = &(p).pws), \
     0 )
+#endif
 # define _XGetpwuid(u,p) \
 ( (_Xos_processLock), \
   (((p).pwp = getpwuid((u))) ? _Xpw_copyPasswd(p) : 0), \
@@ -374,6 +411,10 @@ typedef int _Xgetservbynameparams; /* dummy */
 #elif !defined(XOS_USE_MTSAFE_NETDBAPI) || defined(XNO_MTSAFE_NETDBAPI)
 /* UnixWare 2.0, or other systems with thread support but no _r API. */
 /* WARNING:  The h_addr_list and s_aliases values are *not* copied! */
+
+#if defined(__NetBSD__)
+#include <sys/param.h>
+#endif
 
 typedef struct {
   struct hostent hent;

@@ -2,7 +2,7 @@ XCOMM platform:  $XConsortium: NetBSD.cf /main/16 1996/10/31 14:47:14 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.83 2000/06/14 00:16:02 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.84 2000/07/07 20:06:56 tsi Exp $
 
 
 #ifndef OSName
@@ -71,6 +71,18 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 
 #define HasVarRun		YES
 #define HasVarDb		YES
+
+/* Defines for using the GNU pth thread library -- experimental */
+
+#ifdef NetBSDPth
+#define PthreadHLocation	-I/usr/local/include /* where is pthread.h? */
+#define LibPthreadLocation	-L/usr/local/lib /* where is libpthread? */
+#define HasThreadSafeAPI	NO
+#define	HasPosixThreads		YES
+#define SystemMTDefines		-D_REENTRANT PthreadHLocation
+#define ThreadsLibraries	LibPthreadLocation -Wl,-rpath,/usr/local/lib -lpthread
+#define SharedX11Reqs		ThreadsLibraries
+#endif
 
 /*
  * Compiler Features
@@ -242,7 +254,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define HasBsdMake		YES
 #define CompressAllFonts	YES
 #define GzipFontCompression	YES
-#define DefaultUserPath		/bin:/usr/bin:/usr/local/bin:$(BINDIR)
+#define DefaultUserPath		/bin:/usr/bin:/usr/pkg/bin:/usr/local/bin:$(BINDIR)
 #define DefaultSystemPath	/sbin:/usr/sbin:/bin:/usr/bin:$(BINDIR)
 
 #ifdef  InstallCmd
