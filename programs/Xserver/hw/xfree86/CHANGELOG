@@ -1,4 +1,5 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 311. Add glyph transformations to Xft (Tuomas J. Lukka)
  310. Add XftCache creation to fonts/Type1 (Keith Packard)
  309. Add Xmuu library for non-Xt/Xaw dependent applications (Jim Gettys)
  308. Add i810 and Xv support to kdrive (Pontus Lidman)
@@ -12772,4 +12773,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1649 2001/03/28 20:08:21 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1650 2001/03/30 02:15:21 keithp Exp $

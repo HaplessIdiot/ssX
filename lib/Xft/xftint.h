@@ -103,7 +103,7 @@ extern XftFontSet	*_XftFontSet;
 #define XFT_DBG_MATCHV	1024
 
 typedef enum _XftOp {
-    XftOpInteger, XftOpDouble, XftOpString, XftOpBool, XftOpNil,
+    XftOpInteger, XftOpDouble, XftOpString, XftOpMatrix, XftOpBool, XftOpNil,
     XftOpField,
     XftOpAssign, XftOpPrepend, XftOpAppend,
     XftOpQuest,
@@ -116,11 +116,12 @@ typedef enum _XftOp {
 typedef struct _XftExpr {
     XftOp   op;
     union {
-	int	ival;
-	double	dval;
-	char	*sval;
-	Bool	bval;
-	char	*field;
+	int	    ival;
+	double	    dval;
+	char	    *sval;
+	XftMatrix   *mval;
+	Bool	    bval;
+	char	    *field;
 	struct {
 	    struct _XftExpr *left, *right;
 	} tree;
@@ -380,6 +381,9 @@ XftExprCreateDouble (double d);
 
 XftExpr *
 XftExprCreateString (const char *s);
+
+XftExpr *
+XftExprCreateMatrix (const XftMatrix *m);
 
 XftExpr *
 XftExprCreateBool (Bool b);

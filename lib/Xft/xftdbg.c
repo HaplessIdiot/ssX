@@ -81,6 +81,7 @@ XftOpPrint (XftOp op)
     case XftOpInteger: printf ("Integer"); break;
     case XftOpDouble: printf ("Double"); break;
     case XftOpString: printf ("String"); break;
+    case XftOpMatrix: printf ("Matrix"); break;
     case XftOpBool: printf ("Bool"); break;
     case XftOpField: printf ("Field"); break;
     case XftOpAssign: printf ("Assign"); break;
@@ -129,6 +130,11 @@ XftExprPrint (XftExpr *expr)
     case XftOpInteger: printf ("%d", expr->u.ival); break;
     case XftOpDouble: printf ("%g", expr->u.dval); break;
     case XftOpString: printf ("\"%s\"", expr->u.sval); break;
+    case XftOpMatrix: printf ("[%g %g %g %g]",
+			      expr->u.mval->xx,
+			      expr->u.mval->xy,
+			      expr->u.mval->yx,
+			      expr->u.mval->yy);
     case XftOpBool: printf ("%s", expr->u.bval ? "true" : "false"); break;
     case XftOpField: printf ("%s", expr->u.field); break;
     case XftOpQuest:

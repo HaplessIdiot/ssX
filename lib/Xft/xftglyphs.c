@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.9 2001/01/26 20:51:16 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.10 2001/03/30 18:50:18 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -180,7 +180,7 @@ XftGlyphLoad (Display		*dpy,
 	 * Try to keep monospace fonts ink-inside
 	 * XXX transformed?
 	 */
-	if (font->spacing != XFT_PROPORTIONAL)
+	if (font->spacing != XFT_PROPORTIONAL && !font->transform)
 	{
 	    if (TRUNC(right) > font->max_advance_width)
 	    {
