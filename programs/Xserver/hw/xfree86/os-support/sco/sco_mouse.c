@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_mouse.c,v 3.3 1995/01/28 17:04:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_mouse.c,v 3.4 1996/02/04 09:10:18 dawes Exp $ */
 
 
 
@@ -56,7 +56,7 @@ xf86OsMouseOption(lt, lp)
 
 int
 xf86OsMouseProc(pPointer, what)
-     DevicePtr		 pPointer;
+     DeviceIntPtr	 pPointer;
      int		 what;
 {
   unchar		*map;
@@ -67,7 +67,7 @@ xf86OsMouseProc(pPointer, what)
   switch (what) {
     case DEVICE_INIT: 
       
-      pPointer->on = FALSE;
+      pPointer->public.on = FALSE;
 
       if (ev_init() < 0)
 	ErrorF("ev_init: Failed to initialize event driver\n");
@@ -105,7 +105,7 @@ xf86OsMouseProc(pPointer, what)
       for (i = 1; i <= buttons; i++)
 	map[i] = i;
 
-      InitPointerDeviceStruct(pPointer, 
+      InitPointerDeviceStruct((DevicePtr)pPointer, 
 			      map, 
 			      buttons,
 			      GetMotionEvents, 
@@ -120,12 +120,12 @@ xf86OsMouseProc(pPointer, what)
       AddEnabledDevice(xf86Info.mseFd);
       xf86Info.lastButtons = 0;
       xf86Info.emulateState = 0;
-      pPointer->on = TRUE;
+      pPointer->public.on = TRUE;
       break;
       
     case DEVICE_CLOSE:
     case DEVICE_OFF:
-      pPointer->on = FALSE;
+      pPointer->public.on = FALSE;
       RemoveEnabledDevice(xf86Info.mseFd);
       if (what == DEVICE_CLOSE) {
 	ev_close();

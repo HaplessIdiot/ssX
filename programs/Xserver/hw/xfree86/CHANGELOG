@@ -1,3 +1,11 @@
+XFree86 3.1.2Cf (19 February 1996)
+363. Work around an S3 968 dashed line bug (Harald Koenig).
+362. OS/2 updates, including a new OS/2 README (Holger Veit and
+     Sebastien Marineau).
+361. ISC documentation updates (Michael Rohleder).
+360. NetBSD documentation updates (Matthieu Herrb).
+359. Trident driver updates (Alan Hourihane).
+
 XFree86 3.1.2Ce (18 February 1996)
 358. PC98 documentation (X98 core team).
 357. Fix a bug in the handling of the Wacom eraser as a third button

@@ -1,5 +1,5 @@
 /* $XConsortium: ddxLoad.c /main/8 1996/02/05 06:18:40 kaleb $ */
-/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.4 1996/02/05 11:28:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.5 1996/02/09 10:17:55 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -71,7 +71,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #ifndef __EMX__
 #define	XKM_OUTPUT_DIR	"/usr/tmp/"
 #else
-#define	XKM_OUTPUT_DIR	"."
+#define	XKM_OUTPUT_DIR	"./"
 #endif
 #endif
 #endif
@@ -184,24 +184,36 @@ char	buf[PATH_MAX],keymap[PATH_MAX];;
 
     XkbEnsureSafeMapName(keymap);
     if (XkbBaseDirectory!=NULL) {
+#ifdef __EMX__
+        char *tmpbase = (char*)__XOS2RedirRoot(XkbBaseDirectory);
+        int i;
+        for (i=0; i<strlen(tmpbase); i++) if (tmpbase[i]=='/') tmpbase[i]='\\';
+	sprintf(buf,"%s\\xkbcomp -w %d -R%s -xkm - -em1 %s -emp %s -eml %s \"%s%s.xkm\"",
+		tmpbase,
+		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
+		tmpbase,
+		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,XKM_OUTPUT_DIR,keymap);
+#else
 	sprintf(buf,"%s/xkbcomp -w %d -R%s -xkm - -em1 %s -emp %s -eml %s \"%s%s.xkm\"",
 		XkbBaseDirectory,
 		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
 		XkbBaseDirectory,
 		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,XKM_OUTPUT_DIR,keymap);
+#endif
     }
     else {
 	sprintf(buf,"xkbcomp -w %d -xkm - -em1 %s -emp %s -eml %s \"%s%s.xkm\"",
 		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
 		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,XKM_OUTPUT_DIR,keymap);
     }
+
     out= popen(buf,"w");
     if (out!=NULL) {
 #ifdef DEBUG
-    if (xkbDebugFlags) {
-       ErrorF("XkbDDXCompileKeymapByNames compiling keymap:\n");
-       XkbWriteXKBKeymapForNames(stderr,names,NULL,xkb,want,need);
-    }
+	if (xkbDebugFlags) {
+	    ErrorF("XkbDDXCompileKeymapByNames compiling keymap:\n");
+	    XkbWriteXKBKeymapForNames(stderr,names,NULL,xkb,want,need);
+	}
 #endif
 	XkbWriteXKBKeymapForNames(out,names,NULL,xkb,want,need);
 	if (pclose(out)==0) {

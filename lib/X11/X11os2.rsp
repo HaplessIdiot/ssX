@@ -62,6 +62,10 @@ lcGenConv.obj lcGeneric.obj lcInit.obj lcPrTxt.obj lcPubWrap.obj lcPublic.obj+
 lcRM.obj lcSjis.obj lcStd.obj lcTxtPr.obj lcUTF.obj lcUtil.obj lcWrap.obj+
 locking.obj mbWMProps.obj mbWrap.obj omDefault.obj omGeneric.obj omImText.obj+
 omText.obj omTextEsc.obj omTextExt.obj omTextPer.obj omXChar.obj uvY.obj+
+XKB.obj XKBAlloc.obj XKBBell.obj XKBBind.obj XKBCompat.obj XKBCtrls.obj+
+XKBCvt.obj XKBExtDev.obj XKBGAlloc.obj XKBGeom.obj XKBGetByName.obj+
+XKBGetMap.obj XKBleds.obj XKBList.obj XKBMAlloc.obj XKBNames.obj+
+XKBRdBuf.obj XKBSetMap.obj XKBUse.obj XKBMisc.obj+
 wcWrap.obj x11trans.obj ximtrans.obj xyY.obj /NOL /NOD /BAT
 X11.dll
 

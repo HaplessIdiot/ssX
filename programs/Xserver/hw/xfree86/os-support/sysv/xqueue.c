@@ -1,4 +1,4 @@
-/* $XConsortium: xqueue.c,v 1.1 94/03/28 21:33:22 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/xqueue.c,v 1.1.1.2 1996/01/03 07:21:13 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  *
@@ -21,8 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-
-
+/* $XConsortium: xqueue.c /main/2 1995/11/13 06:21:54 kaleb $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -158,7 +157,7 @@ xf86XqueDisable()
 
 int
 xf86XqueMseProc(pPointer, what)
-     DevicePtr	pPointer;
+     DeviceIntPtr	pPointer;
      int        what;
 {
   unchar        map[4];
@@ -167,12 +166,12 @@ xf86XqueMseProc(pPointer, what)
     {
     case DEVICE_INIT: 
       
-      pPointer->on = FALSE;
+      pPointer->public.on = FALSE;
       
       map[1] = 1;
       map[2] = 2;
       map[3] = 3;
-      InitPointerDeviceStruct(pPointer, 
+      InitPointerDeviceStruct((DevicePtr)pPointer, 
 			      map, 
 			      3, 
 			      GetMotionEvents, 
@@ -183,12 +182,12 @@ xf86XqueMseProc(pPointer, what)
     case DEVICE_ON:
       xf86Info.lastButtons = 0;
       xf86Info.emulateState = 0;
-      pPointer->on = TRUE;
+      pPointer->public.on = TRUE;
       return(xf86XqueEnable());
       
     case DEVICE_CLOSE:
     case DEVICE_OFF:
-      pPointer->on = FALSE;
+      pPointer->public.on = FALSE;
       return(xf86XqueDisable());
     }
   
@@ -204,7 +203,7 @@ xf86XqueMseProc(pPointer, what)
 
 int
 xf86XqueKbdProc (pKeyboard, what)
-     DevicePtr pKeyboard;	/* Keyboard to manipulate */
+     DeviceIntPtr pKeyboard;	/* Keyboard to manipulate */
      int       what;	    	/* What to do to it */
 {
   KeySymsRec  keySyms;
@@ -226,9 +225,9 @@ xf86XqueKbdProc (pKeyboard, what)
      * structure and fill in various slots in the device record
      * itself which couldn't be filled in before.
      */
-    pKeyboard->on = FALSE;
+    pKeyboard->public.on = FALSE;
     
-    InitKeyboardDeviceStruct(xf86Info.pKeyboard,
+    InitKeyboardDeviceStruct((DevicePtr)xf86Info.pKeyboard,
 			     &keySyms,
 			     modMap,
 			     xf86KbdBell,
@@ -238,13 +237,13 @@ xf86XqueKbdProc (pKeyboard, what)
     break;
     
   case DEVICE_ON:
-    pKeyboard->on = TRUE;
+    pKeyboard->public.on = TRUE;
     xf86InitKBD(FALSE);
     return(xf86XqueEnable());
     
   case DEVICE_CLOSE:
   case DEVICE_OFF:
-    pKeyboard->on = FALSE;
+    pKeyboard->public.on = FALSE;
     return(xf86XqueDisable());
   }
   

@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/7 1996/02/02 14:22:24 kaleb $
 
       TESTDATA =
      DATAFILES = be bg ca cs de de_CH dk dvorak en_US es fi fr fr_CH gb \
-		 iso9995-3 it no pl pt ru se th us
+		 iso9995-3 it jp no pl pt ru se th us
        SUBDIRS = digital nec sun sony
 
 InstallMultiple($(DATAFILES),$(LIBDIR)/xkb/symbols)
