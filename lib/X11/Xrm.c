@@ -1,5 +1,5 @@
 /* $XConsortium: Xrm.c,v 1.89 95/06/08 23:20:39 gildea Exp $ */
-/* $XFree86: xc/lib/X11/Xrm.c,v 3.2 1996/03/10 11:51:41 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xrm.c,v 3.3 1996/05/10 06:55:08 dawes Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988, 1990 by Digital Equipment Corporation, Maynard
@@ -1090,10 +1090,12 @@ static void GetDatabase(db, str, filename, doall)
     register XrmQuarkList t_quarks;
     register XrmBindingList t_bindings;
 
+    int buffer_chars = BUFSIZ;
     int alloc_chars = BUFSIZ;
-    char buffer[BUFSIZ], *value_str;
-    XrmQuark quarks[LIST_SIZE];
-    XrmBinding bindings[LIST_SIZE];
+    int alloc_quarks = LIST_SIZE;
+    char *buffer, *value_str;
+    XrmQuark *quarks,*quark_max;
+    XrmBinding *bindings;
     XrmValue value;
     Bool only_pcs;
     Bool dolines;
@@ -1101,8 +1103,24 @@ static void GetDatabase(db, str, filename, doall)
     if (!db)
 	return;
 
-    if (!(value_str = Xmalloc(sizeof(char) * alloc_chars)))
+    if (!(buffer = Xmalloc(sizeof(char) * buffer_chars)))
 	return;
+    if (!(value_str = Xmalloc(sizeof(char) * alloc_chars))) {
+        Xfree(buffer);
+	return;
+    }
+    if (!(quarks = (XrmQuark*)Xmalloc(sizeof(XrmQuark) * alloc_quarks))) {
+        Xfree(buffer);
+	Xfree(value_str);
+	return;
+    }
+    if (!(bindings =
+	  (XrmBinding*)Xmalloc(sizeof(XrmBinding) * alloc_quarks))) {
+        Xfree(buffer);
+	Xfree(value_str);
+	Xfree(quarks);
+	return;
+    }
 
     (*db->methods->mbinit)(db->mbstate);
     str--;
@@ -1182,26 +1200,42 @@ static void GetDatabase(db, str, filename, doall)
 	/*
 	 * Third: loop through the LHS of the resource specification
 	 * storing characters and converting this to a Quark.
-	 *
-	 * If the number of quarks is greater than LIST_SIZE - 1.  This
-	 * function will trash your memory.
-	 *
-	 * If the length of any quark is larger than BUFSIZ this function
-	 * will also trash memory.
 	 */
 	
 	t_bindings = bindings;
 	t_quarks = quarks;
+	quark_max = t_quarks + alloc_quarks - 2;
 
 	sig = 0;
 	ptr = buffer;
-	*t_bindings = XrmBindTightly;	
+	ptr_max = ptr + buffer_chars - 2;
+	*t_bindings = XrmBindTightly;
 	for(;;) {
 	    if (!is_binding(bits)) {
 		while (!is_EOQ(bits)) {
 		    *ptr++ = c;
 		    sig = (sig << 1) + c; /* Compute the signature. */
 		    bits = next_char(c, str);
+		    if (ptr > ptr_max) {
+		        char * temp_str;
+
+			buffer_chars += BUFSIZ/10;		
+			temp_str =
+			    Xrealloc(buffer, sizeof(char) * buffer_chars);
+
+			if (!temp_str) {
+			    Xfree(buffer);
+			    Xfree(value_str);
+			    Xfree(quarks);
+			    Xfree(bindings);
+			    (*db->methods->mbfinish)(db->mbstate);
+			    return;
+			}
+
+			ptr = temp_str + (ptr - buffer); /*reset pointer.*/
+			buffer = temp_str;
+			ptr_max = buffer + buffer_chars - 2;
+		    }
 		}
 
 		*t_quarks++ = _XrmInternalStringToQuark(buffer, ptr - buffer,
@@ -1215,6 +1249,26 @@ static void GetDatabase(db, str, filename, doall)
 		    do {
 			*ptr++ = c;
 			sig = (sig << 1) + c; /* Compute the signature. */
+			if (ptr > ptr_max) {
+		            char * temp_str;
+
+			    buffer_chars += BUFSIZ/10;		
+			    temp_str =
+			        Xrealloc(buffer, sizeof(char) * buffer_chars);
+
+			    if (!temp_str) {
+			        Xfree(buffer);
+				Xfree(value_str);
+				Xfree(quarks);
+				Xfree(bindings);
+				(*db->methods->mbfinish)(db->mbstate);
+				return;
+			    }
+
+			    ptr = temp_str + (ptr - buffer); /*reset pointer.*/
+			    buffer = temp_str;
+			    ptr_max = buffer + buffer_chars - 2;
+			}
 		    } while (is_space(bits = next_char(c, str)));
 
 		    /* 
@@ -1252,6 +1306,54 @@ static void GetDatabase(db, str, filename, doall)
 	    }
 
 	    bits = next_char(c, str);
+
+	    if (ptr > ptr_max) {
+	        char * temp_str;
+
+		buffer_chars += BUFSIZ/10;		
+		temp_str =
+		    Xrealloc(buffer, sizeof(char) * buffer_chars);
+
+		if (!temp_str) {
+		    Xfree(buffer);
+		    Xfree(value_str);
+		    Xfree(quarks);
+		    Xfree(bindings);
+		    (*db->methods->mbfinish)(db->mbstate);
+		    return;
+		}
+
+		ptr = temp_str + (ptr - buffer); /*reset pointer.*/
+		buffer = temp_str;
+		ptr_max = buffer + buffer_chars - 2;
+	    }
+
+	    if (t_quarks > quark_max) {
+	        XrmQuark * temp;
+		XrmBinding * temp2;
+
+		alloc_quarks += LIST_SIZE/10;		
+		temp = (XrmQuark *)
+		    Xrealloc(quarks, sizeof(XrmQuark) * alloc_quarks);
+		temp2 = (XrmBinding *)
+		    Xrealloc(bindings, sizeof(XrmBinding) * alloc_quarks);
+
+		if (!temp || !temp2) {
+		    Xfree(buffer);
+		    Xfree(value_str);
+		    Xfree(quarks);
+		    Xfree(bindings);
+		    (*db->methods->mbfinish)(db->mbstate);
+		    return;
+		}
+
+		t_quarks = temp + (t_quarks - quarks); /*reset pointer.*/
+		quarks = temp;
+		quark_max = quarks + alloc_quarks - 2;
+		t_bindings =
+		    temp2 + (t_bindings - bindings); /*reset pointer.*/
+		bindings = temp2;
+	    }
 	}
 
 	*t_quarks = NULLQUARK;
@@ -1440,7 +1542,10 @@ static void GetDatabase(db, str, filename, doall)
 		temp_str = Xrealloc(value_str, sizeof(char) * alloc_chars);
 
 		if (!temp_str) {
+		    Xfree(buffer);
 		    Xfree(value_str);
+		    Xfree(quarks);
+		    Xfree(bindings);
 		    (*db->methods->mbfinish)(db->mbstate);
 		    return;
 		}
@@ -1465,7 +1570,10 @@ static void GetDatabase(db, str, filename, doall)
 	PutEntry(db, bindings, quarks, XrmQString, &value);
     }
 
+    Xfree(buffer);
     Xfree(value_str);
+    Xfree(quarks);
+    Xfree(bindings);
     (*db->methods->mbfinish)(db->mbstate);
 }
 

@@ -1,5 +1,4 @@
-/* $XConsortium: IntrinsicI.h /main/46 1996/09/28 16:46:29 rws $ */
-/* $XFree86: xc/lib/Xt/IntrinsicI.h,v 3.1 1995/01/12 05:56:08 dawes Exp $ */
+/* $TOG: IntrinsicI.h /main/47 1997/05/15 17:30:09 kaleb $ */
 
 /***********************************************************
 
@@ -48,6 +47,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+/* $XFree86: xc/lib/Xt/IntrinsicI.h,v 3.2 1996/12/23 06:01:19 dawes Exp $ */
 
 #ifndef _XtintrinsicI_h
 #define _XtintrinsicI_h
@@ -254,6 +254,26 @@ extern void _XtGeoTrace (
 #define CALLGEOTAT(f) 
 
 #endif /* XT_GEO_TATTLER */
+
+#ifndef XTTRACEMEMORY
+
+extern char* __XtMalloc (
+#if NeedFunctionPrototypes
+    unsigned	/* size */
+#endif
+);
+extern char* __XtCalloc (
+#if NeedFunctionPrototypes
+    unsigned	/* num */,
+    unsigned	/* size */
+#endif
+);
+
+#else
+
+#define __XtMalloc XtMalloc
+#define __XtCalloc XtCalloc
+#endif
 
 #endif /* _XtintrinsicI_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

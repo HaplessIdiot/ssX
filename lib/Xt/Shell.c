@@ -1,5 +1,4 @@
-/* $XConsortium: Shell.c /main/175 1996/09/28 16:46:51 rws $ */
-/* $XFree86: xc/lib/Xt/Shell.c,v 3.5 1996/05/13 06:37:27 dawes Exp $ */
+/* $TOG: Shell.c /main/177 1997/05/15 17:31:03 kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -33,6 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
+/* $XFree86: xc/lib/Xt/Shell.c,v 3.6 1996/12/23 06:01:23 dawes Exp $ */
 
 /*
 
@@ -1611,12 +1611,21 @@ static void EventHandler(wid, closure, event, continue_to_dispatch)
 	        }
 		return;
 
+              case MapNotify:
+                if (XtIsTopLevelShell(wid)) {
+                    ((TopLevelShellWidget)wid)->topLevel.iconic = FALSE;
+                }
+                return;
+
 	      case UnmapNotify:
 		{
 		    XtPerDisplayInput	pdi;
 		    XtDevice		device;
 		    Widget		p;
 
+                    if (XtIsTopLevelShell(wid))
+                        ((TopLevelShellWidget)wid)->topLevel.iconic = TRUE;
+  
 		    pdi = _XtGetPerDisplayInput(event->xunmap.display);
 
 		    device = &pdi->pointer;
@@ -2482,7 +2491,7 @@ static String * NewArgv(count, str)
 	nbytes++;
     }
     num = (count+1) * sizeof(String);
-    new = newarray = (String *) XtMalloc(num + nbytes);
+    new = newarray = (String *) __XtMalloc(num + nbytes);
     sptr = ((char *) new) + num;
 
     for (str = strarray; count--; str++) {
@@ -2856,7 +2865,7 @@ static String * NewStringArray(str)
 	nbytes++;
     }
     num = (num + 1) * sizeof(String);
-    new = newarray = (String *) XtMalloc(num + nbytes);
+    new = newarray = (String *) __XtMalloc(num + nbytes);
     sptr = ((char *) new) + num;
 
     for (str = strarray; *str; str++) {
@@ -2886,7 +2895,7 @@ static SmProp * CardPack(name, closure)
     unsigned char *prop = (unsigned char *) closure;
     SmProp *p;
 
-    p = (SmProp *) XtMalloc(sizeof(SmProp) + sizeof(SmPropValue));
+    p = (SmProp *) __XtMalloc(sizeof(SmProp) + sizeof(SmPropValue));
     p->vals = (SmPropValue *) (((char *) p) + sizeof(SmProp));
     p->num_vals = 1;
     p->type = SmCARD8;
@@ -2903,7 +2912,7 @@ static SmProp * ArrayPack(name, closure)
     String prop = *(String *) closure;
     SmProp *p;
 
-    p = (SmProp *) XtMalloc(sizeof(SmProp) + sizeof(SmPropValue));
+    p = (SmProp *) __XtMalloc(sizeof(SmProp) + sizeof(SmPropValue));
     p->vals = (SmPropValue *) (((char *) p) + sizeof(SmProp));
     p->num_vals = 1;
     p->type = SmARRAY8;
@@ -2925,7 +2934,7 @@ static SmProp * ListPack(name, closure)
 
     for (ptr = prop; *ptr; ptr++)
 	n++;
-    p = (SmProp*) XtMalloc(sizeof(SmProp) + (Cardinal)(n*sizeof(SmPropValue)));
+    p = (SmProp*) __XtMalloc(sizeof(SmProp) + (Cardinal)(n*sizeof(SmPropValue)));
     p->vals = (SmPropValue *) (((char *) p) + sizeof(SmProp));
     p->num_vals = n;
     p->type = SmLISTofARRAY8;
@@ -3228,7 +3237,7 @@ static XtCheckpointToken GetToken(widget, type)
     else 
 	return (XtCheckpointToken) NULL;
 
-    token = (XtCheckpointToken) XtMalloc(sizeof(XtCheckpointTokenRec));
+    token = (XtCheckpointToken) __XtMalloc(sizeof(XtCheckpointTokenRec));
     token->save_type = save->save_type;
     token->interact_style = save->interact_style;
     token->shutdown = save->shutdown;
@@ -3397,7 +3406,7 @@ static String* EditCommand(str, src1, src2)
 	count++;
 
     if (want) {
-	s = new = (String *) XtMalloc((Cardinal)(count+3) * sizeof(String*));
+	s = new = (String *) __XtMalloc((Cardinal)(count+3) * sizeof(String*));
 	*s = *sarray;		s++; sarray++;
 	*s = "-xtsessionID";	s++;
 	*s = str;		s++;
@@ -3407,7 +3416,7 @@ static String* EditCommand(str, src1, src2)
     } else {
 	if (count < 3)
 	    return NewStringArray(sarray);
-	s = new = (String *) XtMalloc((Cardinal)(count-1) * sizeof(String*));
+	s = new = (String *) __XtMalloc((Cardinal)(count-1) * sizeof(String*));
 	for (; --count >= 0; sarray++) {
 	    if (strcmp(*sarray, "-xtsessionID") == 0) {
 		sarray++;

@@ -1,5 +1,4 @@
-/* $XConsortium: Intrinsic.c /main/149 1996/09/28 16:46:19 rws $ */
-/* $XFree86: xc/lib/Xt/Intrinsic.c,v 3.6 1996/05/10 06:55:34 dawes Exp $ */
+/* $TOG: Intrinsic.c /main/150 1997/05/15 17:29:59 kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -33,6 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
+/* $XFree86: xc/lib/Xt/Intrinsic.c,v 3.7 1996/12/23 06:01:17 dawes Exp $ */
 
 /*
 
@@ -351,7 +351,7 @@ static void RealizeWidget(widget)
 
 	len_nm = widget->core.name ? strlen(widget->core.name) : 0;
 	len_cl = strlen(class_name);
-	s = XtMalloc((unsigned) (len_nm + len_cl + 2));
+	s = __XtMalloc((unsigned) (len_nm + len_cl + 2));
 	s[0] = '\0';
 	if (len_nm)
 	    strcpy(s, widget->core.name);
@@ -996,8 +996,8 @@ String XtFindFile(path, substitutions, num_substitutions, predicate)
     int len;
     Boolean firstTime = TRUE;
 
-    buf = buf1 = XtMalloc((unsigned)PATH_MAX);
-    buf2 = XtMalloc((unsigned)PATH_MAX);
+    buf = buf1 = __XtMalloc((unsigned)PATH_MAX);
+    buf2 = __XtMalloc((unsigned)PATH_MAX);
 
     if (predicate == NULL) predicate = TestFile;
 
@@ -1190,7 +1190,7 @@ static void FillInLangSubs(subs, pd)
 
     len = strlen(string) + 1;
     subs[0].substitution = string;
-    p1 = subs[1].substitution = XtMalloc((Cardinal) 3*len);
+    p1 = subs[1].substitution = __XtMalloc((Cardinal) 3*len);
     p2 = subs[2].substitution = subs[1].substitution + len;
     p3 = subs[3].substitution = subs[2].substitution + len;
 
@@ -1336,7 +1336,7 @@ String XtResolvePathname(dpy, type, filename, suffix, path, substitutions,
 	    int bytesUsed = bytesAllocd - bytesLeft;
 	    char *new;
 	    bytesAllocd +=1000;
-	    new = XtMalloc((Cardinal) bytesAllocd);
+	    new = __XtMalloc((Cardinal) bytesAllocd);
 	    strncpy( new, massagedPath, bytesUsed );
 	    ch = new + bytesUsed;
 	    if (pathMallocd)

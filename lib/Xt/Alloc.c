@@ -1,4 +1,4 @@
-/* $XConsortium: Alloc.c,v 1.54 94/04/17 20:13:36 kaleb Exp $ */
+/* $TOG: Alloc.c /main/46 1997/05/15 17:28:02 kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -75,20 +75,14 @@ in this Software without prior written authorization from the X Consortium.
 char *malloc(), *realloc(), *calloc();
 #endif
 
-#ifdef MALLOC_0_RETURNS_NULL
-#define Xmalloc(size) malloc(((size) > 0 ? (size) : 1))
-#define Xrealloc(ptr, size) realloc((ptr), ((size) > 0 ? (size) : 1))
-#define Xcalloc(nelem, elsize) calloc(((nelem) > 0 ? (nelem) : 1), (elsize))
-#else
 #define Xmalloc(size) malloc((size))
 #define Xrealloc(ptr, size) realloc((ptr), (size))
 #define Xcalloc(nelem, elsize) calloc((nelem), (elsize))
-#endif
 #define Xfree(ptr) free(ptr)
 
 #ifdef _XNEEDBCOPYFUNC
-void _XtMemmove(dst, src, length)
-    char *dst, *src;
+void _XtBcopy(src, dst, length)
+    char *src, *dst;
     int length;
 {
     if (src < dst) {
@@ -135,8 +129,16 @@ char *XtRealloc(ptr, size)
     char     *ptr;
     unsigned size;
 {
-   if (ptr == NULL) return(XtMalloc(size));
-   else if ((ptr = Xrealloc(ptr, size)) == NULL)
+   if (ptr == NULL) {
+#if MALLOC_0_RETURNS_NULL
+	if (!size) size = 1;
+#endif
+	return(XtMalloc(size));
+   } else if ((ptr = Xrealloc(ptr, size)) == NULL
+#if MALLOC_0_RETURNS_NULL
+		&& size
+#endif
+	)
 	_XtAllocError("realloc");
 
    return(ptr);
@@ -147,10 +149,6 @@ char *XtCalloc(num, size)
 {
     char *ptr;
 
-#ifdef MALLOC_0_RETURNS_NULL
-    if (!size)
-	num = size = 1;
-#endif
     if ((ptr = Xcalloc(num, size)) == NULL)
 	_XtAllocError("calloc");
 
@@ -160,7 +158,25 @@ char *XtCalloc(num, size)
 void XtFree(ptr)
     char *ptr;
 {
-   if (ptr != NULL) Xfree(ptr);
+    if (ptr != NULL) Xfree(ptr);
+}
+
+char* __XtMalloc(size)
+    unsigned size;
+{
+#ifdef MALLOC_0_RETURNS_NULL
+    if (!size) size = 1;
+#endif
+    return XtMalloc (size);
+}
+
+char* __XtCalloc(num, size)
+    unsigned num, size;
+{
+#ifdef MALLOC_0_RETURNS_NULL
+    if (!size) num = size = 1;
+#endif
+    return XtCalloc(num, size);
 }
 
 #ifndef HEAP_SEGMENT_SIZE

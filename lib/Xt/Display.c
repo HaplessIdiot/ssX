@@ -1,5 +1,4 @@
-/* $XConsortium: Display.c /main/113 1996/08/21 11:37:33 kaleb $ */
-/* $XFree86: xc/lib/Xt/Display.c,v 3.3 1996/04/15 11:56:56 dawes Exp $ */
+/* $TOG: Display.c /main/114 1997/05/15 17:28:57 kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -33,6 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
+/* $XFree86: xc/lib/Xt/Display.c,v 3.4 1996/12/23 06:01:13 dawes Exp $ */
 
 /*
 
@@ -207,7 +207,7 @@ static XtPerDisplay InitPerDisplay(dpy, app, name, classname)
     pd->pdi.keyboard.grabType = XtNoServerGrab;
     pd->pdi.pointer.grabType  = XtNoServerGrab;
     _XtAllocWWTable(pd);
-    pd->per_screen_db = (XrmDatabase *)XtCalloc(ScreenCount(dpy),
+    pd->per_screen_db = (XrmDatabase *)__XtCalloc(ScreenCount(dpy),
 						sizeof(XrmDatabase));
     pd->cmd_db = (XrmDatabase)NULL;
     pd->server_db = (XrmDatabase)NULL;
@@ -290,7 +290,7 @@ Display *XtOpenDisplay(app, displayName, applName, className,
 	    int len;
 	    displayName = XDisplayName(displayName);
 	    len = strlen (displayName);
-	    app->display_name_tried = (String) XtMalloc (len + 1);
+	    app->display_name_tried = (String) __XtMalloc (len + 1);
 	    strncpy ((char*) app->display_name_tried, displayName, len + 1);
 	    app->display_name_tried[len] = '\0';
 	}
@@ -318,7 +318,7 @@ String **argv_in_out, * fallback_resources;
  */
     
     saved_argv = (String *)
-	XtMalloc( (Cardinal)((*argc_in_out + 1) * sizeof(String)) );
+	__XtMalloc( (Cardinal)((*argc_in_out + 1) * sizeof(String)) );
 
     for (i = 0 ; i < *argc_in_out ; i++) saved_argv[i] = (*argv_in_out)[i];
     saved_argv[i] = NULL;	/* NULL terminate that sucker. */
@@ -820,7 +820,7 @@ void XtGetDisplays(app_context, dpy_return, num_dpy_return)
     int ii;
     LOCK_APP(app_context);
     *num_dpy_return = app_context->count;
-    *dpy_return = (Display**)XtMalloc(app_context->count * sizeof(Display*));
+    *dpy_return = (Display**)__XtMalloc(app_context->count * sizeof(Display*));
     for (ii = 0; ii < app_context->count; ii++)
 	*dpy_return[ii] = app_context->list[ii];
     UNLOCK_APP(app_context);

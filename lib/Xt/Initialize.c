@@ -1,5 +1,4 @@
-/* $XConsortium: Initialize.c /main/209 1996/12/04 10:22:31 lehors $ */
-/* $XFree86: xc/lib/Xt/Initialize.c,v 3.10 1996/12/23 06:01:16 dawes Exp $ */
+/* $TOG: Initialize.c /main/210 1997/05/15 17:29:50 kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -33,6 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
+/* $XFree86: xc/lib/Xt/Initialize.c,v 3.11 1996/12/24 02:22:59 dawes Exp $ */
 
 /*
 
@@ -564,7 +564,7 @@ static void _MergeOptionTables(src1, num_src1, src2, num_src2, dst, num_dst)
     enum {Check, NotSorted, IsSorted} sort_order = Check;
 
     *dst = table = (XrmOptionDescRec*)
-	XtMalloc( sizeof(XrmOptionDescRec) * (num_src1 + num_src2) );
+	__XtMalloc( sizeof(XrmOptionDescRec) * (num_src1 + num_src2) );
 
     (void) memmove(table, src1, sizeof(XrmOptionDescRec) * num_src1 );
     if (num_src2 == 0) {
@@ -673,7 +673,7 @@ XrmDatabase _XtPreparseCommandLine(urlist, num_urs, argc, argv, applName,
     String *targv;
     int targc = argc;
 
-    targv = (String *) XtMalloc(sizeof(char *) * argc);
+    targv = (String *) __XtMalloc(sizeof(char *) * argc);
     (void) memmove(targv, argv, sizeof(char *) * argc);
     _MergeOptionTables(opTable, XtNumber(opTable), urlist, num_urs,
 		       &options, &num_options);
@@ -761,7 +761,7 @@ static void ConnectionWatch (dpy, client_data, fd, opening, watch_data)
     XtAppContext app = XtDisplayToApplicationContext(dpy);
 
     if (opening) {
-	iptr = (XtInputId *) XtMalloc(sizeof(XtInputId));
+	iptr = (XtInputId *) __XtMalloc(sizeof(XtInputId));
 	*iptr = XtAppAddInput(app, fd, (XtPointer) XtInputReadMask,
 			      ProcessInternalConnection, client_data);
 	*watch_data = (XPointer) iptr;
