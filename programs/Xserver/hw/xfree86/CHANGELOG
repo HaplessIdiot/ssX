@@ -1,3 +1,11 @@
+XFree86 3.1.2Eh (14 August 1996)
+659. Update Cyrillic fonts (Andrey Chernov).
+658. Add support for the CL-GD5462 and CL-GD5464 to the cirrus driver, and
+     update documentation for recent cirrus driver changes (Corin Anderson).
+657. XF86Setup updates (Joe Moss).
+656. Fix some LynxOS-related typos in the config (Thomas Mueller).
+655. Add a man page for the DGA extension.
+
 XFree86 3.1.2Eg (14 August 1996)
 654  Update Japanese docs (Michio "Karl" Jinbo).
 653  Add XF98_GA968 server for GA-968V4/PCI(S3 968) (Michio "Karl" Jinbo).
