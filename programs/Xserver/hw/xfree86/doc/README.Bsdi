@@ -204,7 +204,7 @@
 
   You'll need info on your hardware:
 
-     o  Your mouse type, baud rate and it's /dev entry.
+     o  Your mouse type, baud rate and its /dev entry.
 
      o  The video card's chipset (e.g. ET4000, S3, etc).
 
@@ -244,7 +244,7 @@
 
   7.  Rebuilding the XFree86 Distribution
 
-  The server link kit allow you to rebuild just the X server with a
+  The server link kit allows you to rebuild just the X server with a
   minimum amount of disk space.  Just unpack it, make the appropriate
   changes to the site.def, type `./mkmf' and `make' to link the server.
   See /usr/X11R6/lib/Server/README for more info.
@@ -350,7 +350,7 @@
 
 
   $XConsortium: Bsdi.sgml,v 1.3 95/01/23 15:34:39 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.12 1995/07/17 13:52:29 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.13 1995/07/19 12:43:23 dawes Exp $
 
 
 

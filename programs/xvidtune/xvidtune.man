@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/xvidtune/xvidtune.man,v 3.5 1995/07/03 08:54:25 dawes Exp $
+.\" $XFree86: xc/programs/xvidtune/xvidtune.man,v 3.6 1995/07/12 15:43:16 dawes Exp $
 .\"
 .\" Copyright (c) 1995  Kaleb S. KEITHLEY
 .\"
@@ -61,6 +61,10 @@ used to interactively adjust existing video modes.
 It will also print the settings in a format suitable for inclusion
 in an XF86Config file.
 .PP
+Note:  The original mode settings can be restored by pressing the `R' key,
+and this can be used to restore a stable screen in situations where the
+screen becomes unreadable.
+.PP
 The available buttons are:
 .PP
 .nf
@@ -92,8 +96,9 @@ Exit the program.
 Adjust the current video mode to match the selected settings.
 .TP 10
 .B Auto
-Cause the Up/Down/Right/Left and Wider/Narrower/Shorter/Taller
-buttons to be applied immediately.  This button can be toggled.
+Cause the Up/Down/Right/Left, Wider/Narrower/Shorter/Taller, Restore,
+and the special S3 buttons to be applied immediately.
+This button can be toggled.
 .TP 10
 .B Test
 Temporarily switch to the selected settings.
@@ -113,6 +118,24 @@ Switch the Xserver to the next video mode.
 .TP 10
 .B Prev
 Switch the Xserver to the previous video mode.
+.PP
+For some S3-based cards (964 and 968) the following are also available:
+.TP 10
+.B InvertVCLK
+Change the VCLK invert/non-invert state.
+.TP 10
+.B EarlySC
+Change the Early SC state.  This affects screen wrapping.
+.PP
+.nf
+.B BlankDelay1
+.B BlankDelay2
+.fi
+.RS 10
+Set the blank delay values.  This affects screen wrapping.  Acceptable
+values are in the range 0\-7.  The values may be incremented or decremented
+with the `+' and `-' buttons, or by pressing the `+' or `-' keys in the
+text field.
 .SH OPTIONS
 \fIxvidtune\fP accepts the standard X Toolkit command line options as well
 as the following:

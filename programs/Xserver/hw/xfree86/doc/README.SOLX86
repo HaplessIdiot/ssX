@@ -214,7 +214,7 @@
 
 
 
-     3. If your are using ProWorks to compile the XFree86 distribution,
+     3. If you are using ProWorks to compile the XFree86 distribution,
         you need to modify your PATH appropriately so the ProWorks tools
         are available.
 
@@ -342,7 +342,7 @@
 
 
   $XConsortium: SOLX86.sgml,v 1.2 95/01/16 13:17:48 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SOLX86.sgml,v 3.5 1995/07/17 13:52:36 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SOLX86.sgml,v 3.6 1995/07/19 12:43:28 dawes Exp $
 
 
 

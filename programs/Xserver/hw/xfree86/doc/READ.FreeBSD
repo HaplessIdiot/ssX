@@ -143,7 +143,7 @@
 
 
         X312fsrv.tgz
-           (.3Mb) the font server and it's man page
+           (.3Mb) the font server and its man page
 
 
         X312prog.tgz
@@ -380,7 +380,7 @@
   You'll need info on your hardware:
 
 
-     o  Your mouse type, baud rate and it's /dev entry.
+     o  Your mouse type, baud rate and its /dev entry.
 
      o  The video card's chipset (e.g. ET4000, S3, etc).
 
@@ -624,7 +624,7 @@
         the Linux distribution.
 
   $XConsortium: FreeBSD.sgml,v 1.3 95/01/23 15:34:41 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.11 1995/07/17 13:52:31 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.12 1995/07/19 12:43:26 dawes Exp $
 
 
 

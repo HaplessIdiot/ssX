@@ -1,6 +1,6 @@
   Information for W32 Chipset Users
   Glenn G. Lai glenn@cs.utexas.edu
-  24 October 1994
+  July 7, 1995
 
   1.  Information for W32 Chipset Users
 
@@ -10,20 +10,23 @@
   XF86_SVGA, those not applicable to the ET4000/W32 series are silently
   ignored; e.g., the keyword "SpeedUp" is a no-op.  The server currently
   supports the w32, w32i, and w32p chips.  For a complete list, see the
-  sign-on message printed by XF86_W32.  The server supports only 8bpp
-  operation at present.
+  sign-on message printed by XF86_W32.  The server only supports 256
+  colors.
 
   Just as with XF86_SVGA, you can specify a virtual world that has a
   width that is a multiple of four.  The size of the virtual world is
   constrained by the amount of the available video RAM.  XF86_W32 can
   use more than 1 M of video RAM, but it reserves 1 K for internal use.
-  If you have 1 M, XF86_W32 will say you have 1023 K, and you get to
-  specify the virtual world as 1152x900, but not 1152x910.
+  If you have 1 M, XF86_W32 claims you have 1023 K; you get to specify
+  the virtual world as 1152x900, but not 1152x910.
 
-  The current maximum clock is set to 86 MHz, because this is what the
-  Tseng databooks say.
+  The current maximum clock is set to 86 MHz according to the Tseng
+  databooks.  For a non-interlaced 1280x1024x(256 colors) at say
+  135-MHz, you need a w32p (with its 16-bit RAMDAC bus) with a
+  multiplexing RAMDAC so that the w32p sees only (135/2 = 67.5) MHz, not
+  135 MHz.  This requires special code that is not currently provided.
 
-  If you have problems with the server.  Try the following things:
+  If you have problems with the server.  Try the following:
 
      o  Take out the Hercules monochrome adapter, if you have one.  Many
         configurations of the ET4000/W32 series do not allow one in the
@@ -33,6 +36,15 @@
         if not all, ET4000/W32 boards will surely behave in a funny way
         on a 50-MHz bus.  You may have to use a wait state or two, but
         first try without any.
+
+     o  Cold-boot your machine.  Do not run anything that messes with
+        the video hardware, including other X servers, before running
+        XF86_W32.
+
+     o  Try XF86_SVGA.  If it works, put the following in your
+        XF86Config:
+
+        Ramdac "generic"
 
   Note that the built-in power saver (for a "green" monitor) has not
   been tested.  Also do not expect it to work on a board without a
@@ -64,6 +76,7 @@
         dmm0t@rincewind.mech.virginia.edu (David Meyer)
 
         nrh@philabs.Philips.COM (Nikolaus R. Haus)
+
         jdooley@dbp.caltech.edu (James Dooley)
 
         thumper@hitchcock.eng.uiowa.edu (Timothy Paul Schlie)
@@ -89,20 +102,7 @@
 
 
   $XConsortium: W32.sgml,v 1.2 95/01/23 15:34:55 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.3 1995/01/28 16:02:47 dawes Exp $
-
-
-
-
-
-
-
-
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.5 1995/07/19 13:03:59 dawes Exp $
 
 
 
