@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.52 2002/01/29 00:23:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.53 2002/01/29 00:50:56 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -360,6 +360,8 @@ xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
     int ModePrivFlags = 0;
     ModeStatus status = MODE_NOMODE;
     Bool allowDiv2 = (strategy & LOOKUP_CLKDIV2) != 0;
+    Bool haveBuiltin;
+
     strategy &= ~LOOKUP_CLKDIV2;
 
     /* Some sanity checking */
@@ -384,6 +386,7 @@ xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
 	cp->ClockMulFactor = max(1, cp->ClockMulFactor);
     }
 
+    haveBuiltin = FALSE;
     /* Scan the mode pool for matching names */
     for (p = scrp->modePool; p != NULL; p = p->next) {
 	if (strcmp(p->name, modep->name) == 0) {
@@ -393,9 +396,13 @@ xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
 	     * Since built-in modes always come before user specified
 	     * modes it will always be found first.  
 	     */
-	    if (p->type & M_T_BUILTIN) 
-		return xf86HandleBuiltinMode(scrp, p,modep, clockRanges,
-					     allowDiv2);
+	    if (p->type & M_T_BUILTIN) {
+		haveBuiltin = TRUE;
+	    }
+
+	    if (haveBuiltin && !(p->type & M_T_BUILTIN))
+		continue;
+
 	    /* Skip over previously rejected modes */
 	    if (p->status != MODE_OK) {
 		if (!found)
@@ -406,6 +413,11 @@ xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
 	    /* Skip over previously considered modes */
 	    if (p->prev)
 		continue;
+
+	    if (p->type & M_T_BUILTIN) {
+		return xf86HandleBuiltinMode(scrp, p,modep, clockRanges,
+					     allowDiv2);
+	    }
 
 	    /* Check clock is in range */
 	    cp = xf86FindClockRangeForMode(clockRanges, p);
