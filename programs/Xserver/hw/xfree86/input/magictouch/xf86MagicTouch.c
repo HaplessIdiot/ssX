@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/input/magictouch/xf86MagicTouch.c,v 1.4 2004/04/26 22:26:11 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/input/magictouch/xf86MagicTouch.c,v 1.5 2004/04/26 22:48:21 dawes Exp $
  */
 
 #ifndef XFree86LOADER
@@ -106,6 +106,9 @@ typedef struct _MagicPrivateRec {
   Bool		click_on;
 } MagicPrivateRec, *MagicPrivatePtr;
 
+static Bool xf86MagicConvert(LocalDevicePtr local, int first, int num,
+			     int v0, int v1, int v2, int v3, int v4, int v5,
+			     int *x, int *y);
 
 /****************************************************************************
  *
@@ -190,8 +193,7 @@ xf86MagicControl(DeviceIntPtr dev,
 	LocalDevicePtr	local = (LocalDevicePtr) dev->public.devicePrivate;
 	MagicPrivatePtr	priv = (MagicPrivatePtr)(local->private);
 	unsigned char	map[] = { 0, 1 };
-	unsigned char	req[MAGIC_PACKET_SIZE], replay[MAGIC_PACKET_SIZE];
-	int            status_line;
+	unsigned char	req[MAGIC_PACKET_SIZE];
 	
 	switch (mode) {
 		case DEVICE_INIT:
@@ -278,7 +280,7 @@ xf86MagicControl(DeviceIntPtr dev,
 			DBG(2, ErrorF("MagicTouch OFF\n") );
 			dev->public.on = FALSE;
 			if (local->fd>=0)
-			   emoveEnabledDevice(local->fd);
+			   RemoveEnabledDevice(local->fd);
 				
 			SYSCALL( close(local->fd) );
 			local->fd = -1;
@@ -308,7 +310,6 @@ GetPacket(LocalDevicePtr local,  unsigned char *buffer, int *n_rx, int fd)
  	int	num_bytes;
  	int  	i;
 	Bool	ok;
-	MagicPrivatePtr  priv=(MagicPrivatePtr) local->private;
 
 	DBG(6, ErrorF("Entering GetPacket with packet_pos == %d\n", *n_rx) );
 	
@@ -434,12 +435,11 @@ xf86MagicReadInput(LocalDevicePtr	local)
 	MagicPrivatePtr	priv = (MagicPrivatePtr)(local->private);
 	int		cur_x, cur_y;
 	Bool		touch_now;
-	static int	n_coms = 0;
 	int		x, y;
 
 	if (!priv->e_presente) {
 		DBG(4,
-			ErrorF("<<%s[%d]>> ReadInput: Touch Controller non inizializzato\n")
+			ErrorF("ReadInput: Touch Controller non inizializzato\n")
 		);
 		return;
 	}
@@ -459,7 +459,7 @@ xf86MagicReadInput(LocalDevicePtr	local)
   		cur_y <<= 6;
   		cur_y |= priv->packet_buf[4];
   		
-		touch_now = priv->packet_buf[0] & MGCT_TOUCH == MGCT_TOUCH;
+		touch_now = ((priv->packet_buf[0] & MGCT_TOUCH) == MGCT_TOUCH);
 		
 		/* Se c'e' pressione sul touch inizio a calcolare la posizione
 		   e a spostare il cursore grafico */
@@ -564,7 +564,7 @@ xf86MagicConvert(LocalDevicePtr	local,
 static LocalDevicePtr
 xf86MagicAllocate(void)
 {
-	LocalDevicePtr	local = xf86AllocateInput(drv, 0);
+	LocalDevicePtr	local = xalloc(sizeof(LocalDeviceRec));
 
 	MagicPrivatePtr	priv = (MagicPrivatePtr) xalloc( sizeof(MagicPrivateRec) );
 
