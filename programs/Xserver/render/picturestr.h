@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picturestr.h,v 1.14 2001/07/18 10:15:02 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/picturestr.h,v 1.15 2001/07/19 04:42:10 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -211,6 +211,9 @@ PictureMatchFormat (ScreenPtr pScreen, int depth, CARD32 format);
     
 Bool
 PictureInit (ScreenPtr pScreen, PictFormatPtr formats, int nformats);
+
+Bool
+PictureFinishInit (void);
 
 void
 SetPictureToDefaults (PicturePtr pPicture);

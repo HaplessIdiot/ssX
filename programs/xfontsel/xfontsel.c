@@ -31,7 +31,7 @@ Author:	Ralph R. Swick, DEC/MIT Project Athena
 	one weekend in November, 1989
 Modified: Mark Leisher <mleisher@crl.nmsu.edu> to deal with UCS sample text.
 */
-/* $XFree86: xc/programs/xfontsel/xfontsel.c,v 1.3 2000/09/26 15:57:24 tsi Exp $ */
+/* $XFree86: xc/programs/xfontsel/xfontsel.c,v 1.4 2001/04/01 14:00:20 tsi Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -150,7 +150,7 @@ static XrmOptionDescRec options[] = {
 {"-scaled",	"scaledFonts",	XrmoptionNoArg,		"True"},
 };
 
-Syntax(call)
+static void Syntax(call)
     char *call;
 {
     fprintf (stderr, "usage:  %s [-options ...] -fn font\n\n", call);
@@ -225,6 +225,15 @@ static XtResource menuResources[] = {
 
 
 typedef enum {ValidateCurrentField, SkipCurrentField} ValidateAction;
+
+static void EnableAllItems(int field);
+static void EnableRemainingItems(ValidateAction current_field_action);
+static void FlushXqueue(Display *dpy);
+static void MarkInvalidFonts(Boolean *set, FieldValue *val);
+static void ScheduleWork(XtProc proc, XtPointer closure, int priority);
+static void SetCurrentFontCount(void);
+static void SetNoFonts(void);
+static void SetParsingFontCount(int count);
 
 XtAppContext appCtx;
 int numFonts;
@@ -388,8 +397,7 @@ static WorkPiece workQueue = NULL;
  * Xt knows we have (background) work to do.
  */
 
-
-ScheduleWork( proc, closure, priority )
+static void ScheduleWork( proc, closure, priority )
     XtProc proc;
     XtPointer closure;
     int priority;
@@ -871,7 +879,7 @@ void MakeFieldMenu(closure)
 }
 
 
-SetNoFonts()
+static void SetNoFonts(void)
 {
     matchingFontCount = 0;
     SetCurrentFontCount();
@@ -982,7 +990,7 @@ void AnyValue(w, closure, callData)
 }
 
 
-SetCurrentFontCount()
+static void SetCurrentFontCount(void)
 {
     char label[80];
     Arg args[1];
@@ -997,7 +1005,7 @@ SetCurrentFontCount()
 }
 
 
-SetParsingFontCount(count)
+static void SetParsingFontCount(int count)
 {
     char label[80];
     Arg args[1];
@@ -1139,7 +1147,7 @@ void SetCurrentFont(closure)
 }
 
 
-MarkInvalidFonts( set, val )
+static void MarkInvalidFonts( set, val )
     Boolean *set;
     FieldValue *val;
 {
@@ -1159,7 +1167,7 @@ MarkInvalidFonts( set, val )
 }
 
 
-EnableRemainingItems(current_field_action)
+static void EnableRemainingItems(current_field_action)
     ValidateAction current_field_action;
 {
     if (matchingFontCount == 0 || matchingFontCount == numFonts) {
@@ -1203,7 +1211,7 @@ EnableRemainingItems(current_field_action)
 }
 
 
-EnableAllItems(field)
+static void EnableAllItems(int field)
 {
     FieldValue *value = fieldValues[field]->value;
     int count;
@@ -1374,7 +1382,7 @@ void EnableMenu(closure)
 }
 
 
-FlushXqueue(dpy)
+static void FlushXqueue(dpy)
     Display *dpy;
 {
     XSync(dpy, False);

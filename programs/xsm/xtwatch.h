@@ -19,6 +19,13 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
-/* $XFree86: xc/programs/xsm/xtwatch.h,v 1.3 1999/03/07 14:23:45 dawes Exp $ */
+/* $XFree86: xc/programs/xsm/xtwatch.h,v 1.4 2001/01/17 23:46:31 dawes Exp $ */
+
+#ifndef _XTWATCH_H_
+#define _XTWATCH_H_
+
+#include <X11/Intrinsic.h>
 
 extern Status InitWatchProcs(XtAppContext appContext);
+
+#endif

@@ -7,7 +7,7 @@
  * be passed to the template file.                                         *
  *                                                                         *
  ***************************************************************************/
-/* $XFree86: xc/config/imake/imake.c,v 3.43 2001/07/19 02:22:45 tsi Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.44 2001/07/25 15:04:38 dawes Exp $ */
 
 /*
  * 
@@ -43,6 +43,8 @@ in this Software without prior written authorization from The Open Group.
  * on the Makefile.
  * Options:
  *		-D	define.  Same as cpp -D argument.
+ *		-U	undefine.  Same as cpp -U argument.
+ *		-W	warning.  Same as cpp -W argument.
  *		-I	Include directory.  Same as cpp -I argument.
  *		-T	template.  Designate a template other
  *			than Imake.tmpl
@@ -569,6 +571,8 @@ SetOpts(int argc, char **argv)
 		} else if (argv[0][1] == 'I') {
 		    AddCppArg(argv[0]);
 		} else if (argv[0][1] == 'U') {
+		    AddCppArg(argv[0]);
+		} else if (argv[0][1] == 'W') {
 		    AddCppArg(argv[0]);
 		} else if (argv[0][1] == 'f') {
 		    if (argv[0][2])

@@ -39,7 +39,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/hw/sun/sunKbd.c,v 1.4 1998/12/20 11:57:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunKbd.c,v 1.5 2001/01/17 22:36:50 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "sun.h"
@@ -714,7 +714,7 @@ int sunKbdProc (device, what)
 	 */
 	if (sunChangeKbdTranslation(pPriv->fd,TRUE) == -1)
 	    FatalError("Can't set keyboard translation\n");
-	(void) AddEnabledDevice(pPriv->fd);
+	AddEnabledDevice(pPriv->fd);
 	pKeyboard->on = TRUE;
 	break;
 

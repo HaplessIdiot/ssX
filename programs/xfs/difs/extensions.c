@@ -42,13 +42,14 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/difs/extensions.c,v 1.4 1999/03/07 11:40:52 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/difs/extensions.c,v 1.5 2001/01/17 23:45:29 dawes Exp $ */
 
 #include	"FSproto.h"
 #include	"misc.h"
 #include	"clientstr.h"
 #include	"extentst.h"
 #include	"difs.h"
+#include	"dispatch.h"
 
 #define	EXTENSION_BASE	128
 #define	EXTENSION_EVENT_BASE	64

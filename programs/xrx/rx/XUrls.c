@@ -22,9 +22,10 @@ other dealings in this Software without prior written authorization from
 The Open Group.
 
 */
-/* $XFree86: xc/programs/xrx/rx/XUrls.c,v 1.7 2001/01/17 23:46:25 dawes Exp $ */
+/* $XFree86: xc/programs/xrx/rx/XUrls.c,v 1.8 2001/07/25 15:05:29 dawes Exp $ */
 
 #include "RxI.h"
+#include "XUrls.h"
 #include <sys/utsname.h>
 #include <sys/types.h>
 #include <sys/socket.h>

@@ -44,7 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/Pcl.h,v 1.6 2001/01/17 22:36:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/Pcl.h,v 1.7 2001/01/19 17:10:50 dawes Exp $ */
 
 #ifndef _PCL_H_
 #define _PCL_H_
@@ -67,10 +67,8 @@ copyright holders.
 #include "Pclmap.h"
 #include "PclSFonts.h"
 
-#define _XP_PRINT_SERVER_
-#include "Print.h"
+#include "extensions/Print.h"
 #include "extensions/Printstr.h"
-#undef _XP_PRINT_SERVER_
 
 #include "miscstruct.h"
 #include "fontstruct.h"
@@ -86,7 +84,7 @@ typedef char *XPointer;
 #define False 0
 #include "misc.h"
 #include <Xfuncproto.h>
-#include "../Xresource.h"
+#include "Xresource.h"
 
 /******
  * externally visible variables from PclInit.c

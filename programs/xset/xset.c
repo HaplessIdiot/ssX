@@ -23,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xset/xset.c,v 3.21 2001/01/17 23:46:27 dawes Exp $ */
+/* $XFree86: xc/programs/xset/xset.c,v 3.22 2001/07/25 15:05:29 dawes Exp $ */
 /* Modified by Stephen so keyboard rate is set using XKB extensions */
 
 #include <stdio.h>
@@ -78,7 +78,11 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/XKBlib.h>
 #endif
 #ifdef FONTCACHE
+#include <X11/extensions/fontcache.h>
 #include <X11/extensions/fontcacheP.h>
+
+static Status set_font_cache(Display *, long, long, long);
+static void query_cache_status(Display *dpy);
 #endif
 
 #define ON 1
@@ -1173,6 +1177,7 @@ set_lock(Display *dpy, Bool onoff)
 }
 
 #ifdef FONTCACHE
+static Status
 set_font_cache(dpy, himark, lowmark, balance)
     Display *dpy;
     long himark;
@@ -1180,7 +1185,7 @@ set_font_cache(dpy, himark, lowmark, balance)
     long balance;
 {
     FontCacheSettings cs;
-    int status;
+    Status status;
 
     cs.himark = himark * 1024;
     cs.lowmark = lowmark * 1024;
@@ -1379,7 +1384,7 @@ return;
  *  This is the information-getting function for telling the user what the
  *  current settings and statistics are.
  */
-
+static void
 query_cache_status(dpy)
     Display *dpy;
 {
@@ -1419,8 +1424,6 @@ query_cache_status(dpy)
     } else {
 	printf("Server does not have the FontCache Extension\n");
     }
-
-    return 0;
 }
 #endif
 

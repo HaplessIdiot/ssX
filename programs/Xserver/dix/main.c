@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.34 2001/03/04 17:40:04 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.35 2001/04/28 20:42:17 torrey Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -79,9 +79,6 @@ SOFTWARE.
 #include "dixstruct.h"
 #include "gcstruct.h"
 #include "extension.h"
-#ifndef PANORAMIX
-#include "extnsionst.h"
-#endif
 #include "colormap.h"
 #include "colormapst.h"
 #include "cursorstr.h"
@@ -90,7 +87,10 @@ SOFTWARE.
 #include "servermd.h"
 #include "site.h"
 #include "dixfont.h"
-#ifndef PANORAMIX
+#ifdef PANORAMIX
+#include "panoramiXsrv.h"
+#else
+#include "extnsionst.h"
 #include "dixevents.h"		/* InitEvents() */
 #include "dispatch.h"		/* InitProcVectors() */
 #endif
@@ -98,6 +98,7 @@ SOFTWARE.
 #ifdef DPMSExtension
 #define DPMS_SERVER
 #include "dpms.h"
+#include "dpmsproc.h"
 #endif
 
 void ddxGiveUp();

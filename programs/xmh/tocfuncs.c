@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocfuncs.c,v 2.39 92/04/08 12:19:21 rws Exp $
+ * $XConsortium: tocfuncs.c /main/36 1996/02/02 14:27:42 kaleb $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -24,6 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
+/* $XFree86$ */
 
 /* tocfuncs.c -- action procedures concerning things in the toc widget. */
 
@@ -287,7 +288,7 @@ void XmhUseAsComposition(w, event, params, num_params)
 
 /* Utility: change the fate of a set of messages. */
 
-static MarkMessages(scrn, fate, skip)
+static void MarkMessages(scrn, fate, skip)
 Scrn scrn;
 FateType fate;
 int skip;
@@ -303,7 +304,7 @@ int skip;
     else
 	desttoc = NULL;
     if (desttoc == toc)
-	Feep();
+	Feep(XkbBI_MinorError,0,None);
     else {
 	mlist = TocCurMsgList(toc);
 	if (mlist->nummsgs == 0) {
@@ -936,7 +937,7 @@ void XmhOpenSequence(w, event, params, num_params)
 
 typedef enum {ADD, REMOVE, DELETE} TwiddleOperation;
 
-static TwiddleSequence(scrn, op)
+static void TwiddleSequence(scrn, op)
 Scrn scrn;
 TwiddleOperation op;
 {
@@ -949,7 +950,7 @@ TwiddleOperation op;
     if (toc == NULL || ((selectedseq = TocSelectedSequence(toc)) == NULL))
 	return;
     if (strcmp(selectedseq->name, "all") == 0) {
-	Feep();
+	Feep(XkbBI_MinorError,0,None);
 	return;
     }
     if (op == DELETE)
@@ -958,7 +959,7 @@ TwiddleOperation op;
 	mlist = CurMsgListOrCurMsg(toc);
 	if (mlist->nummsgs == 0) {
 	    FreeMsgList(mlist);
-	    Feep();
+	    Feep(XkbBI_MinorError,0,None);
 	    return;
 	}
     }

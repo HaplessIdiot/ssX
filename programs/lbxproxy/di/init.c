@@ -41,6 +41,7 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
+/* $XFree86$ */
 
 /*
  * This file is used for anything that needs to dip into Xlib structures
@@ -56,6 +57,7 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/Xlibint.h>
 #include <X11/Xutil.h>
 #include <stdio.h>
+#include "XLbx.h"
 
 /* Hook up to an X server and set up a multiplexing LBX encoded connection */
 struct _XDisplay*

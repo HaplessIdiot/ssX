@@ -47,7 +47,7 @@
  *  
  * Author:  Adobe Systems Incorporated and MIT X Consortium
  */
-/* $XFree86: xc/lib/dps/csconndi.c,v 1.7 2001/06/15 08:09:20 alanh Exp $ */
+/* $XFree86: xc/lib/dps/csconndi.c,v 1.8 2001/07/25 15:04:54 dawes Exp $ */
 
 #if defined(sun) && !defined(SVR4)
 #define memmove(t,f,c) bcopy(f,t,c)
@@ -63,6 +63,7 @@
 #include <sys/param.h>
 #include <X11/Xlibint.h>
 #include "Xlibnet.h"		/* New for R5, delete for R4 */
+#include <arpa/inet.h>
 
 #ifndef hpux	/* HP doesn't include Xauth.h :-( */
 #include <X11/Xauth.h>

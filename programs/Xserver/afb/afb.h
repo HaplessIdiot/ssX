@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afb.h,v 3.5 1999/06/27 16:17:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afb.h,v 3.6 2000/07/15 00:27:07 mvojkovi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -282,7 +282,20 @@ extern RegionPtr afbPixmapToRegion(
 
 /* afbcmap.c */
 
-extern Bool afbInitializeColormap(
+extern int afbListInstalledColormaps(
+#if NeedFunctionPrototypes
+	ScreenPtr /*pScreen*/,
+	Colormap * /*pmaps*/
+#endif
+);
+
+extern void afbInstallColormap(
+#if NeedFunctionPrototypes
+	ColormapPtr /*pmap*/
+#endif
+);
+
+extern void afbUninstallColormap(
 #if NeedFunctionPrototypes
 	ColormapPtr /*pmap*/
 #endif
@@ -297,6 +310,27 @@ extern void afbResolveColor(
 #endif
 );
 
+extern Bool afbInitializeColormap(
+#if NeedFunctionPrototypes
+	ColormapPtr /*pmap*/
+#endif
+);
+
+extern int afbExpandDirectColors(
+#if NeedFunctionPrototypes
+	ColormapPtr /*pmap*/,
+	int /*ndefs*/,
+	xColorItem * /*indefs*/,
+	xColorItem * /*outdefs*/
+#endif
+);
+
+extern Bool afbCreateDefColormap(
+#if NeedFunctionPrototypes
+	ScreenPtr /*pScreen*/
+#endif
+);
+
 extern Bool afbSetVisualTypes(
 #if NeedFunctionPrototypes
 	int /*depth*/,
@@ -305,10 +339,18 @@ extern Bool afbSetVisualTypes(
 #endif
 );
 
-extern int afbListInstalledColormaps(ScreenPtr, Colormap *);
-extern void afbInstallColormap(ColormapPtr);
-extern void afbUninstallColormap(ColormapPtr);
-extern Bool afbCreateDefColormap(ScreenPtr);
+extern Bool afbInitVisuals(
+#if NeedFunctionPrototypes
+	VisualPtr * /*visualp*/,
+	DepthPtr * /*depthp*/,
+	int * /*nvisualp*/,
+	int * /*ndepthp*/,
+	int * /*rootDepthp*/,
+	VisualID * /*defaultVisp*/,
+	unsigned long /*sizes*/,
+	int /*bitsPerRGB*/
+#endif
+);
 
 /* afbfillarc.c */
 
@@ -500,7 +542,7 @@ extern void afbGetSpans(
 );
 /* afbhrzvert.c */
 
-extern int afbHorzS(
+extern void afbHorzS(
 #if NeedFunctionPrototypes
 	PixelType * /*addrl*/,
 	int /*nlwidth*/,
@@ -513,7 +555,7 @@ extern int afbHorzS(
 #endif
 );
 
-extern int afbVertS(
+extern void afbVertS(
 #if NeedFunctionPrototypes
 	PixelType * /*addrl*/,
 	int /*nlwidth*/,
@@ -792,7 +834,7 @@ extern void afbSegmentSD(
 );
 /* afbsetsp.c */
 
-extern int afbSetScanline(
+extern void afbSetScanline(
 #if NeedFunctionPrototypes
 	int /*y*/,
 	int /*xOrigin*/,

@@ -45,7 +45,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xrm.c,v 3.15 2001/01/17 19:41:50 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xrm.c,v 3.16 2001/07/25 15:04:44 dawes Exp $ */
 
 #include	<stdio.h>
 #include	<ctype.h>
@@ -486,7 +486,11 @@ static XrmDatabase NewDatabase()
 	_XCreateMutex(&db->linfo);
 	db->table = (NTable)NULL;
 	db->mbstate = (XPointer)NULL;
+#ifdef _XP_PRINT_SERVER_
+	db->methods = NULL;
+#else
 	db->methods = _XrmInitParseInfo(&db->mbstate);
+#endif
 	if (!db->methods)
 	    db->methods = &mb_methods;
     }

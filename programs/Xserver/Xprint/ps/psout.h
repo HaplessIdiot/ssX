@@ -1,4 +1,25 @@
-/* $XConsortium: psout.h /main/2 1996/11/16 15:26:07 rws $ */
+/* $Xorg: psout.h,v 1.4 2000/08/17 19:48:11 cpqbld Exp $ */
+/*
+
+Copyright 1996, 1998  The Open Group
+
+All Rights Reserved.
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Except as contained in this notice, the name of The Open Group shall not be
+used in advertising or otherwise to promote the sale, use or other dealings
+in this Software without prior written authorization from The Open Group.
+
+*/
 /*
  * (c) Copyright 1996 Hewlett-Packard Company
  * (c) Copyright 1996 International Business Machines Corp.
@@ -32,6 +53,7 @@
  * or other dealings in this Software without prior written authorization
  * from said copyright holders.
  */
+/* $XFree86$ */
 
 /*******************************************************************
 **
@@ -43,7 +65,7 @@
 **    *
 **    *  Created By:    Roger Helmendach (Liberty Systems)
 **    *
-**    *  Copyright:     Copyright 1996 X Consortium, Inc.
+**    *  Copyright:     Copyright 1996 The Open Group, Inc.
 **    *
 **    *********************************************************
 **
@@ -123,7 +145,8 @@ typedef PsClipRec *PsClipPtr;
 
 typedef struct PsOutRec_ *PsOutPtr;
 
-extern PsOutPtr PsOut_BeginFile(FILE *fp);
+extern PsOutPtr PsOut_BeginFile(FILE *fp, int orient, int count, int plex,
+                              int res, int wd, int ht);
 extern void PsOut_EndFile(PsOutPtr self, int closeFile);
 extern void PsOut_BeginPage(PsOutPtr self, int orient, int count, int plex,
                             int res, int wd, int ht);
@@ -156,8 +179,10 @@ extern void PsOut_DrawArc(PsOutPtr self, int x, int y, int w, int h,
 extern void PsOut_Text(PsOutPtr self, int x, int y, char *text, int textl,
                        int bclr);
 
-extern void PsOut_BeginImage(PsOutPtr self, int bclr, int  fclr, int x, int y,
+extern void PsOut_BeginImage(PsOutPtr self, int bclr, int fclr, int x, int y,
                              int w, int h, int sw, int sh, int format);
+extern void PsOut_BeginImageIM(PsOutPtr self, int bclr, int fclr, int x, int y,
+                               int w, int h, int sw, int sh, int format);
 extern void PsOut_EndImage(PsOutPtr self);
 extern void PsOut_OutImageBytes(PsOutPtr self, int nBytes, char *bytes);
 

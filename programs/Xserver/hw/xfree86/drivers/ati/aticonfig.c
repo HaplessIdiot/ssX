@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonfig.c,v 1.5 2001/03/25 05:32:07 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonfig.c,v 1.6 2001/07/19 02:22:50 tsi Exp $ */
 /*
  * Copyright 2000 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -189,7 +189,7 @@ ATIProcessOptions
             xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
                 "Option \"sw_cursor\" overrides Option \"hw_cursor\".\n");
     }
-    else if (pATI->Chip <= ATI_CHIP_264CT)
+    else if (pATI->Chip < ATI_CHIP_264CT)
     {
         if (HWCursor && PublicOption[ATI_OPTION_HWCURSOR].found)
             xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,

@@ -19,10 +19,17 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
-/* $XFree86: xc/programs/xsm/lock.h,v 1.3 1999/03/07 14:23:40 dawes Exp $ */
+/* $XFree86: xc/programs/xsm/lock.h,v 1.4 2001/01/17 23:46:29 dawes Exp $ */
+
+#ifndef _LOCK_H_
+#define _LOCK_H_
+
+#include <X11/Xdefs.h>
 
 extern Status LockSession(char *session_name, Bool write_id);
 extern void UnlockSession(char* session_name);
 extern char * GetLockId(char *session_name);
 extern Bool CheckSessionLocked(char *session_name, Bool get_id, char **id_ret);
 extern void UnableToLockSession(char *session_name);
+
+#endif

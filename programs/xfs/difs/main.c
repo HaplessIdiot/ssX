@@ -42,9 +42,11 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/difs/main.c,v 3.7 2001/04/01 14:00:20 tsi Exp $ */
+/* $XFree86: xc/programs/xfs/difs/main.c,v 3.8 2001/06/25 20:40:17 paulo Exp $ */
 
 #include	<stdlib.h>
+#include	<sys/types.h>
+#include	<sys/stat.h>
 #include	"FS.h"
 #include	"FSproto.h"
 #include	"clientstr.h"

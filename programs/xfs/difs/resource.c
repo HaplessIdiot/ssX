@@ -43,7 +43,7 @@ in this Software without prior written authorization from The Open Group.
  * %W%	%G%
  *
  */
-/* $XFree86: xc/programs/xfs/difs/resource.c,v 3.4 1999/03/07 11:40:54 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/difs/resource.c,v 3.5 2001/01/17 23:45:29 dawes Exp $ */
 /*
  *      a resource is a 32 bit quantity.  the upper 12 bits are client id.
  *      client provides a 19 bit resource id. this is "hashed" by me by
@@ -66,6 +66,7 @@ in this Software without prior written authorization from The Open Group.
 #include "os.h"
 #include "fsresource.h"
 #include "clientstr.h"
+#include "dispatch.h"
 #include "globals.h"
 
 static void rebuild_table(int client);

@@ -1,4 +1,4 @@
-/* $XConsortium: Events.c,v 1.3 94/01/07 09:52:34 dpw Exp $ */
+/* $Xorg: Events.c,v 1.3 2000/08/17 19:53:28 cpqbld Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -12,6 +12,8 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
+/* $XFree86$ */
+
 #include "X.h"
 #define NEED_EVENTS
 #include "Xproto.h"
@@ -22,14 +24,14 @@ is" without express or implied warranty.
 #include "windowstr.h"
 #include "servermd.h"
 
-#define GC XlibGC
-#include "Xlib.h"
-#include "Xutil.h"
-#undef GC
+#include "mi.h"
 
+#include "Xnest.h"
+
+#include "Color.h"
 #include "Display.h"
 #include "Screen.h"
-#include "Window.h"
+#include "XNWindow.h"
 #include "Events.h"
 
 CARD32 lastEventTime = 0;
@@ -95,6 +97,7 @@ void xnestCollectEvents()
   XEvent X;
   xEvent x;
   ScreenPtr pScreen;
+  extern Window xnestParentWindow;
 
   while (XCheckIfEvent(xnestDisplay, &X, xnestNotExposurePredicate, NULL)) {
     switch (X.type) {
@@ -177,6 +180,11 @@ void xnestCollectEvents()
       }
       break;
       
+    case DestroyNotify:
+      if (xnestParentWindow != (Window) 0 &&
+	  X.xdestroywindow.window == xnestParentWindow)
+	exit (0);
+      break;
       
     default:
       ErrorF("xnest warning: unhandled event\n");

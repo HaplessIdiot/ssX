@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * XFontName.c
  *
@@ -225,6 +226,7 @@ XCompareFontName (name1, name2, fontNameAttributes)
 	return True;
 }
 
+Bool
 XCopyFontName (name1, name2, fontNameAttributes)
 	XFontName	*name1, *name2;
 	unsigned int	fontNameAttributes;

@@ -19,7 +19,10 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
-/* $XFree86: xc/programs/xsm/xsm.h,v 1.4 2001/01/17 23:46:31 dawes Exp $ */
+/* $XFree86: xc/programs/xsm/xsm.h,v 1.5 2001/07/25 15:05:30 dawes Exp $ */
+
+#ifndef _XSM_H_
+#define _XSM_H_
 
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>
@@ -207,3 +210,5 @@ extern int execute_system_command(char *s);
 #ifdef XKB
 #include <X11/extensions/XKBbells.h>
 #endif
+
+#endif /* _XSM_H_ */

@@ -19,7 +19,13 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
-/* $XFree86: xc/programs/xsm/save.h,v 1.3 1999/03/07 14:23:43 dawes Exp $ */
+/* $XFree86: xc/programs/xsm/save.h,v 1.4 2001/01/17 23:46:31 dawes Exp $ */
+
+#ifndef _SAVE_H_
+#define _SAVE_H_
+
+#include <X11/Intrinsic.h>
+#include "list.h"
 
 extern void DoSave(int saveType, int interactStyle, Bool fast);
 extern void LetClientInteract(List *cl);
@@ -38,3 +44,5 @@ extern void ShutdownSaveXtProc(Widget w, XtPointer client_data,
 extern void PopupBadSave(void);
 extern void ShutdownDontSaveXtProc(Widget w, XtPointer client_data, 
 				   XtPointer callData);
+
+#endif

@@ -3,12 +3,13 @@
  *
  * map dvi fonts to X fonts
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xditview/font.c,v 1.3 2000/12/04 21:01:01 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <ctype.h>
 #include "DviP.h"
 #include "XFontName.h"
@@ -118,7 +119,7 @@ SkipFontNameElement (n)
 # define SizePosition		8
 # define EncodingPosition	13
 
-static
+static int
 ConvertFontNameToSize (n)
 	char	*n;
 {
@@ -146,7 +147,7 @@ ConvertFontNameToEncoding (n)
 	return n;
 }
 
-static
+static void
 DisposeFontSizes (dw, fs)
     DviWidget	dw;
     DviFontSizeList	*fs;
@@ -195,7 +196,7 @@ ResetFonts (dw)
     dw->dvi.cache.font_number = -1;
 }
 
-DviFontSizeList *
+static DviFontSizeList *
 InstallFontSizes (dw, x_name, scalablep)
     DviWidget	dw;
     char	*x_name;
@@ -331,6 +332,7 @@ MapXNameToDviName (dw, x_name)
 }
 #endif
 
+void
 ParseFontMap (dw)
 	DviWidget	dw;
 {
@@ -366,6 +368,7 @@ ParseFontMap (dw)
     dw->dvi.font_map = fm;
 }
 
+void
 DestroyFontMap (font_map)
     DviFontMap	*font_map;
 {
@@ -382,6 +385,7 @@ DestroyFontMap (font_map)
 }
 
 /*ARGSUSED*/
+void
 SetFontPosition (dw, position, dvi_name, extra)
     DviWidget	dw;
     int		position;

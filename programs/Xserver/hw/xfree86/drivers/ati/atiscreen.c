@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.21 2001/05/09 03:12:03 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.22 2001/05/25 02:44:35 tsi Exp $ */
 /*
  * Copyright 1999 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -112,7 +112,7 @@ ATIScreenInit
     else
         VisualMask = miGetDefaultVisualMask(pATI->depth);
 
-    if (!miSetVisualTypes(pATI->depth, VisualMask, pScreenInfo->rgbBits,
+    if (!miSetVisualTypes(pATI->depth, VisualMask, pATI->rgbBits,
                           pScreenInfo->defaultVisual))
         return FALSE;
 
@@ -246,8 +246,7 @@ ATIScreenInit
 
 #ifdef AVOID_CPIO
 
-    if (!xf86HandleColormaps(pScreen, 256, pScreenInfo->rgbBits,
-                             ATILoadPalette, NULL,
+    if (!xf86HandleColormaps(pScreen, 256, pATI->rgbBits, ATILoadPalette, NULL,
                              CMAP_PALETTED_TRUECOLOR |
                              CMAP_LOAD_EVEN_IF_OFFSCREEN))
             return FALSE;
@@ -256,7 +255,7 @@ ATIScreenInit
 
     if (pATI->depth > 1)
         if (!xf86HandleColormaps(pScreen, (pATI->depth == 4) ? 16 : 256,
-                                 pScreenInfo->rgbBits, ATILoadPalette, NULL,
+                                 pATI->rgbBits, ATILoadPalette, NULL,
                                  CMAP_PALETTED_TRUECOLOR |
                                  CMAP_LOAD_EVEN_IF_OFFSCREEN))
             return FALSE;

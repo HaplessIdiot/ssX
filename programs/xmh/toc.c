@@ -1,5 +1,5 @@
 /* $XConsortium: toc.c,v 2.59 95/01/09 16:52:53 swick Exp $
- * $XFree86: xc/programs/xmh/toc.c,v 3.1 1995/01/27 04:55:00 dawes Exp $
+ * $XFree86: xc/programs/xmh/toc.c,v 3.2 2001/07/23 13:15:54 dawes Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -161,7 +161,6 @@ void TocInit()
     Toc toc;
     char **namelist;
     int i;
-    extern alphasort();
     numFolders = ScanDir(app_resources.mail_path, &namelist, IsDir);
     if (numFolders < 0) {
 	(void) mkdir(app_resources.mail_path, 0700);

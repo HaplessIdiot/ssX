@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.23 2001/04/01 14:00:12 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.24 2001/04/06 18:16:31 dawes Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -290,7 +290,7 @@ fbdev_open_pci(pciVideoPtr pPci, char **namep)
 		}
 		if (namep) {
 		    *namep = xnfalloc(16);
-		    xf86strncpy(*namep,fix.id,16);
+		    strncpy(*namep,fix.id,16);
 		}
 		return fd;
 	}
@@ -324,7 +324,7 @@ fbdev_open(char *dev, char** namep)
 	    } else {
 		if (namep) {
 		    *namep = xnfalloc(16);
-		    xf86strncpy(*namep,fix.id,16);
+		    strncpy(*namep,fix.id,16);
 		}
 	    }
 	}

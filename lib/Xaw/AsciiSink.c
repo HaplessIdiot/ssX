@@ -42,9 +42,10 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/AsciiSink.c,v 1.22 2000/09/26 15:56:53 tsi Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiSink.c,v 1.23 2001/01/17 19:42:24 dawes Exp $ */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 #include <X11/Xatom.h>

@@ -3,7 +3,7 @@
    Copyright (c) 1998 Go Watanabe, All rights reserved.
    Copyright (c) 1998 Takuya SHIOZAKI, All rights reserved.
    Copyright (c) 1998 X-TrueType Server Project, All rights reserved.
-  
+
 ===Notice
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
@@ -26,13 +26,98 @@
    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
    SUCH DAMAGE.
 
-   Major Release ID: X-TrueType Server Version 1.2 [Aoi MATSUBARA Release 2]
+   Major Release ID: X-TrueType Server Version 1.3 [Aoi MATSUBARA Release 3]
 
 Notice===
 */
+/* $XFree86$ */
 
 #ifndef _XTTSTRUCT_H_
 #define _XTTSTRUCT_H_
+
+#define _FONTCACHE_SERVER_
+#include "fontcache.h"
+
+
+typedef struct FreeTypeFaceOpenHints {
+    char const *fontName;
+    int ttcno;
+    char const *familyName;
+    char const *ttFontName;
+    char const *realFontName;
+    char const *charsetName;
+    Bool isProp;
+    SRefPropRecValList *refListPropRecVal;
+} FreeTypeOpenFaceHints, *FreeTypeOpenFaceHintsPtr;
+
+
+/*
+ * FreeType "Face" Information
+ *  - It contains the common datas
+ *    between each of "X" fonts having the same face of "FreeType" world.
+ */
+typedef struct FreeTypeFaceInfo {
+    /* search key */
+    char *fontName;
+    int ttcno;
+    /* information records */
+    int refCount;
+    TT_Face face;
+    TT_Face_Properties prop;  /* get by using TT_Get_FaceProperties.
+                                 This derived from TTF headers */
+    TT_Glyph glyph;           /* handle for instance of glyph */
+    TT_Glyph_Metrics metrics;
+    TT_SBit_Image* sbit;
+    int mapnum;
+    int flag;
+} FreeTypeFaceInfo, *FreeTypeFaceInfoPtr;
+
+/*
+ * X-TrueType Font Information
+ */
+typedef struct FreeTypeFont {
+    FontPtr pFont;      /* font infomation */
+    int fid;            /* faceinfo index */
+
+    TT_Instance instance;
+    TT_Instance_Metrics imetrics;
+
+    TT_Matrix matrix;   /* transration matrix for the outline vectors */
+    TT_Raster_Map map;
+    int flag;
+
+    FCCBPtr cache;
+
+    TT_CharMap  charmap;
+    CodeConverterInfo codeConverterInfo;
+
+    void (*convert)(
+#if NeedNestedPrototypes
+        struct FreeTypeFont*   /* font */,
+        unsigned char *        /* p */,
+        int size
+#endif
+    );
+
+    int spacing;
+    double scaleBBoxWidth;
+    Bool isDoubleStrike;
+    Bool isVeryLazy;
+    Bool isEmbeddedBitmap;
+    double scaleWidth;
+    double scaleBitmap;
+
+    double pixel_size;             /* to calc attributes (actual height) */
+    double pixel_width_unit_x;     /* to calc width (cosine) */
+
+} FreeTypeFont, *FreeTypeFontPtr;
+
+
+/* xttinfo.c */
+void freetype_make_standard_props(void);
+void freetype_compute_props(FontInfoPtr, FontScalablePtr,
+                            int raw_width, int raw_ascent, int raw_descent,
+                            char *, char *);
 
 #ifdef DUMP
 #define dprintf(args) fprintf args;
@@ -47,95 +132,6 @@ void DumpFontScalable(FontScalablePtr ptr);
 #define dprintf(args)
 #endif
 
-typedef struct {
-    CharInfoPtr charInfo;
-} CharInfoUnit, *CharInfoUnitPtr;
-
-typedef struct {
-    char *bitmap;
-    int bitmapsize;
-    int cur;
-} BitmapInfoUnit, *BitmapInfoUnitPtr;
-
-typedef struct {
-    CharInfoUnitPtr unit;
-    int n;          /* number of unit */
-    int index;      /* current unit's index */
-    BitmapInfoUnitPtr bunit;
-    int bn;         /* number of unix */
-} CharInfoPool, *CharInfoPoolPtr;
-
-/* xttchinfo.c */
-CharInfoPoolPtr CharInfoPool_Alloc(void);
-CharInfoPtr     CharInfoPool_Get(CharInfoPoolPtr this);
-void CharInfoPool_Set(CharInfoPoolPtr ptr, CharInfoPtr dat, int size);
-void CharInfoPool_Free(CharInfoPoolPtr this);
-
-typedef struct FreeTypeFaceOpenHints {
-    char const *fontName;
-    char const *familyName;
-    char const *ttFontName;
-    char const *realFontName;
-    char const *charsetName;
-    Bool isProp;
-    SRefPropRecValList *refListPropRecVal;
-} FreeTypeOpenFaceHints, *FreeTypeOpenFaceHintsPtr;
-
-typedef struct FreeTypeFaceInfo {
-    char *fontName;
-    int refCount;
-    TT_Face face;
-    TT_Face_Properties prop;  /* get by using TT_Get_FaceProperties.
-                                 This derived from TTF headers */
-    TT_Glyph glyph;           /* handle for instance of glyph */
-    TT_Glyph_Metrics metrics;
-    int mapnum;
-    int flag;
-    double scaleBBoxWidth;
-    double scaleWidth;
-    Bool isAutoBold;
-    int ttcno;
-} FreeTypeFaceInfo, *FreeTypeFaceInfoPtr;
-
-typedef struct FreeTypeFont {
-    FontPtr pFont;      /* font infomation */
-    int fid;            /* faceinfo index */
-
-    TT_Instance instance;
-    TT_Instance_Metrics imetrics;
-
-    TT_Matrix matrix;   /* transration matrix for the outline vectors */
-    TT_Raster_Map map;
-    int flag;
-
-    CharInfoPoolPtr pool;
-    BTreePtr btree;
-
-    TT_CharMap  charmap;
-/*  int (*codeconv)(TT_CharMap map, u_short idx); */
-    CodeConverterInfo codeConverterInfo;
-
-    void (*convert)(
-#if NeedNestedPrototypes
-        struct FreeTypeFont*   /* font */,
-        unsigned char *        /* p */,
-        int size
-#endif
-    );
-
-    int spacing;
-    Bool isVeryLazy;
-
-    double pixel_size;             /* to calc attributes (actual height) */
-    double pixel_width_unit_x;     /* to calc width (cosine) */
-
-} FreeTypeFont, *FreeTypeFontPtr;
-
-/* xttinfo.c */
-void freetype_make_standard_props(void);
-void freetype_compute_props(FontInfoPtr, FontScalablePtr, 
-                            int raw_width, int raw_ascent, int raw_descent,
-                            char *);
 
 #endif /* _XTTSTRUCT_H_ */
 

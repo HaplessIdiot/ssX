@@ -21,11 +21,11 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/Template.c,v 1.6 1999/06/06 08:48:13 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Template.c,v 1.7 2001/01/17 19:42:32 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
-#include "TemplateP.h"
+#include <X11/Xaw/TemplateP.h>
 
 /*
  * Class Methods

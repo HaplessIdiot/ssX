@@ -1,6 +1,6 @@
 /*
  * $XConsortium: util.c /main/42 1996/01/14 16:51:55 kaleb $
- * $XFree86: xc/programs/xmh/util.c,v 3.2 1996/01/05 13:22:51 dawes Exp $
+ * $XFree86: xc/programs/xmh/util.c,v 3.3 1996/01/16 15:09:28 dawes Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -283,14 +283,13 @@ char *CreateGeometry(gbits, x, y, width, height)
     return result;
 }
 
-
-FileExists(file)
+int FileExists(file)
   char *file;
 {
     return (access(file, F_OK) == 0);
 }
 
-LastModifyDate(file)
+long LastModifyDate(file)
   char *file;
 {
     struct stat buf;
@@ -298,7 +297,7 @@ LastModifyDate(file)
     return buf.st_mtime;
 }
 
-GetFileLength(file)
+int GetFileLength(file)
 char *file;
 {
     struct stat buf;

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xlcint.h,v 3.8 2001/01/17 19:41:49 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xlcint.h,v 3.9 2001/07/25 15:04:44 dawes Exp $ */
 
 /*
  * Copyright 1990, 1991 by OMRON Corporation, NTT Software Corporation,
@@ -67,6 +67,8 @@ from The Open Group.
 
 #ifndef	_XLCINT_H_
 #define	_XLCINT_H_
+
+#ifndef _XP_PRINT_SERVER_
 
 #include <X11/Xresource.h>
 #include <X11/Xutil.h>
@@ -156,6 +158,7 @@ typedef struct {
     XICCallback		draw_callback;
 } ICStatusAttributes, *ICStatusAttributesPtr;
 
+#endif /* !_XP_PRINT_SERVER_ */
 
 /*
  * Methods for Xrm parsing
@@ -205,6 +208,7 @@ typedef struct {
 } XrmMethodsRec;
 typedef const XrmMethodsRec *XrmMethods;
 
+#ifndef _XP_PRINT_SERVER_
 
 typedef struct _XLCd *XLCd; /* need forward reference */
 
@@ -1036,5 +1040,7 @@ extern XLCd _XlcDynamicLoader(
 );
 
 _XFUNCPROTOEND
+
+#endif /* !_XP_PRINT_SERVER_ */
 
 #endif	/* _XLCINT_H_ */

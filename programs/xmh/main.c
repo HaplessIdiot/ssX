@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 2.28 91/07/22 21:50:02 converse Exp $
+/* $XConsortium: main.c,v 2.30 95/01/25 14:33:57 swick Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -23,6 +23,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
+/* $XFree86$ */
 
 #define MAIN 1			/* Makes global.h actually declare vars */
 #include "xmh.h"
@@ -90,7 +91,7 @@ static void CheckMail(client_data, id)
 Boolean ExitLoop = FALSE;
 #endif
 
-main(argc, argv)
+int main(argc, argv)
 int argc;
 char **argv;
 {
@@ -141,6 +142,6 @@ char **argv;
     }
 #ifdef DEBUG_CLEANUP
     XtDestroyApplicationContext(appCtx);
-    exit(0);
 #endif    
+    exit(0);
 }

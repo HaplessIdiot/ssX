@@ -1,5 +1,5 @@
 /* $XConsortium: command.c,v 2.49 95/04/05 19:59:06 kaleb Exp $ */
-/* $XFree86: xc/programs/xmh/command.c,v 3.4 1996/10/03 08:50:27 dawes Exp $ */
+/* $XFree86: xc/programs/xmh/command.c,v 3.5 1998/12/13 07:37:52 dawes Exp $ */
 
 /*
  *			  COPYRIGHT 1987, 1989
@@ -420,7 +420,7 @@ static void FreeStatus( w, closure, call_data )
 /* Execute the given command, waiting until it's finished.  Put the output
    in the specified file path.  Returns 0 if stderr empty, -1 otherwise */
 
-DoCommand(argv, inputfile, outputfile)
+int DoCommand(argv, inputfile, outputfile)
   char **argv;			/* The command to execute, and its args. */
   char *inputfile;		/* Input file for command. */
   char *outputfile;		/* Output file for command. */

@@ -25,13 +25,16 @@
    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
    SUCH DAMAGE.
 
-   Major Release ID: X-TrueType Server Version 1.2 [Aoi MATSUBARA Release 2]
+   Major Release ID: X-TrueType Server Version 1.3 [Aoi MATSUBARA Release 3]
 
 Notice===
  */
+/* $XFree86$ */
 
 #ifndef _XTTCAP_H_
 #define _XTTCAP_H_ (1)
+
+#include <X11/Xdefs.h>
 
 /*******************************************************************
   Data Types

@@ -30,12 +30,11 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/attributes.h,v 1.3 1999/12/16 02:26:25 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/attributes.h,v 1.4 2001/01/17 22:36:28 dawes Exp $ */
 
 #ifndef _Xp_attributes_h
 #define _Xp_attributes_h 1
 
-#define _XP_PRINT_SERVER_
 #include "scrnintstr.h"
 #include "AttrValid.h"
 
@@ -126,7 +125,5 @@ int XpFinishDocData(ClientPtr client);
 Bool XpOpenTmpFile(char *mode,
 		   char **fname,
 		   FILE **stream);
-
-#undef _XP_PRINT_SERVER_
 
 #endif /* _Xp_attributes_h */

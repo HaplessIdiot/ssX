@@ -1,5 +1,5 @@
 /*
- * $XConsortium: folder.c,v 2.42 93/12/06 15:19:14 kaleb Exp $
+ * $XConsortium: folder.c,v 2.44 94/08/29 20:25:49 swick Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -24,17 +24,19 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
+/* $XFree86$ */
 
 /* folder.c -- implement buttons relating to folders and other globals. */
 
-
 #include "xmh.h"
+#include <X11/Xmu/CharSet.h>
 #include <X11/Xaw/Cardinals.h>
 #include <X11/Xatom.h>
 #include <sys/stat.h>
 #include <ctype.h>
 #include "bboxint.h"
 #include "tocintrnl.h"
+#include "actions.h"
 
 typedef struct {	/* client data structure for callbacks */
     Scrn	scrn;		/* the xmh scrn of action */
@@ -98,11 +100,13 @@ void DoClose(widget, client_data, call_data)
  *		CmdSetSequence(toc, "cur", MakeSingleMsgList(toc->curmsg));
  *	}
  */
+
 #ifdef DEBUG_CLEANUP
 	XtDestroyWidget(scrn->parent);
 	ExitLoop = TRUE;
 	return;
 #else
+	XtVaSetValues(scrn->parent, XtNjoinSession, (XtArgVal)False, NULL);
 	XtUnmapWidget(scrn->parent);
 	XtDestroyApplicationContext
 	    (XtWidgetToApplicationContext(scrn->parent));
@@ -974,6 +978,208 @@ void XmhWMProtocols(w, event, params, num_params)
 	  case STpick:
 	    DestroyScrn(scrn);
 	    break;
+	}
+    }
+}
+
+
+typedef struct _InteractMsgTokenRec {
+    Scrn			scrn;
+    XtCheckpointToken		cp_token;
+} InteractMsgTokenRec, *InteractMsgToken;
+
+static void CommitMsgChanges(w, client_data, call_data)
+    Widget	w;		/* unused */
+    XtPointer   client_data;	/* InteractMsgToken */
+    XtPointer	call_data;
+{
+    Cardinal zero = 0;
+    InteractMsgToken iToken = (InteractMsgToken) client_data;
+
+    XmhSave(iToken->scrn->parent, (XEvent*)NULL, (String*)NULL, &zero);
+
+    if (MsgChanged(iToken->scrn->msg))
+	iToken->cp_token->save_success = False;
+
+    XtSessionReturnToken(iToken->cp_token);
+    XtFree((XtPointer)iToken);
+}
+
+static void CancelMsgChanges(w, client_data, call_data)
+    Widget	w;		/* unused */
+    XtPointer   client_data;	/* InteractMsgToken */
+    XtPointer	call_data;
+{
+    InteractMsgToken iToken = (InteractMsgToken) client_data;
+
+    /* don't change any msg state now; this is only a checkpoint
+     * and the session might be continuing. */
+
+    MsgCheckPoint(iToken->scrn->msg);
+
+    XtSessionReturnToken(iToken->cp_token);
+    XtFree((XtPointer)iToken);
+}
+
+static void CommitMsgInteract(w, client_data, call_data)
+    Widget	w;		/* unused */
+    XtPointer   client_data;	/* Scrn */
+    XtPointer	call_data;	/* XtCheckpointToken */
+{
+    Scrn		scrn = (Scrn) client_data;
+    XtCheckpointToken	cpToken = (XtCheckpointToken) call_data;
+    char		str[300];
+    InteractMsgToken	iToken;
+    static XtCallbackRec yes_callbacks[] = {
+	{CommitMsgChanges,		(XtPointer) NULL},
+	{(XtCallbackProc) NULL,	(XtPointer) NULL}
+    };
+
+    static XtCallbackRec no_callbacks[] = {
+	{CancelMsgChanges,	(XtPointer) NULL},
+	{(XtCallbackProc) NULL,	(XtPointer) NULL}
+    };
+
+    if (cpToken->interact_style != SmInteractStyleAny
+	|| cpToken->cancel_shutdown) {
+	XtSessionReturnToken(cpToken);
+	return;
+    }
+
+    iToken = XtNew(InteractMsgTokenRec);
+
+    iToken->scrn = scrn;
+    iToken->cp_token = cpToken;
+
+    yes_callbacks[0].closure = no_callbacks[0].closure = (XtPointer) iToken;
+
+    (void)sprintf(str,"Save changes to message %s?", MsgName(scrn->msg));
+
+    /* %%% should add cancel button */
+    PopupConfirm(scrn->parent, str, yes_callbacks, no_callbacks);
+}
+
+
+typedef struct _InteractTocTokenRec {
+    Toc				toc;
+    XtCheckpointToken		cp_token;
+} InteractTocTokenRec, *InteractTocToken;
+
+static void CommitTocChanges(w, client_data, call_data)
+    Widget	w;		/* unused */
+    XtPointer   client_data;	/* InteractTocToken */
+    XtPointer	call_data;
+{
+    InteractTocToken iToken = (InteractTocToken) client_data;
+
+    TocCommitChanges(w, (XtPointer) iToken->toc, (XtPointer) NULL);
+
+    XtSessionReturnToken(iToken->cp_token);
+    XtFree((XtPointer)iToken);
+}
+
+static void CancelTocChanges(w, client_data, call_data)
+    Widget	w;		/* unused */
+    XtPointer   client_data;	/* InteractTocToken */
+    XtPointer	call_data;
+{
+    InteractTocToken iToken = (InteractTocToken) client_data;
+
+    /* don't change any folder or msg state now; this is only
+     * a checkpoint and the session might be continuing. */
+
+    XtSessionReturnToken(iToken->cp_token);
+    XtFree((XtPointer)iToken);
+}
+
+static void CommitTocInteract(w, client_data, call_data)
+    Widget	w;		/* unused */
+    XtPointer   client_data;	/* Toc */
+    XtPointer	call_data;	/* XtCheckpointToken */
+{
+    Toc			toc = (Toc) client_data;
+    XtCheckpointToken	cpToken = (XtCheckpointToken) call_data;
+    char		str[300];
+    Widget		tocwidget;
+    int			i;
+    InteractTocToken	iToken;
+    static XtCallbackRec yes_callbacks[] = {
+	{CommitTocChanges,		(XtPointer) NULL},
+	{(XtCallbackProc) NULL,	(XtPointer) NULL}
+    };
+
+    static XtCallbackRec no_callbacks[] = {
+	{CancelTocChanges,	(XtPointer) NULL},
+	{(XtCallbackProc) NULL,	(XtPointer) NULL}
+    };
+
+    if (cpToken->interact_style != SmInteractStyleAny
+	|| cpToken->cancel_shutdown) {
+	XtSessionReturnToken(cpToken);
+	return;
+    }
+
+    iToken = XtNew(InteractTocTokenRec);
+
+    iToken->toc = toc;
+    iToken->cp_token = cpToken;
+
+    yes_callbacks[0].closure = no_callbacks[0].closure = (XtPointer) iToken;
+
+    (void)sprintf(str,"Commit all changes to %s folder?", toc->foldername);
+
+    tocwidget = NULL;
+    for (i=0; i < toc->num_scrns; i++)
+	if (toc->scrn[i]->mapped) {
+	    tocwidget = toc->scrn[i]->tocwidget;
+	    break;
+	}
+
+    /* %%% should add cancel button */
+    PopupConfirm(tocwidget, str, yes_callbacks, no_callbacks);
+}
+
+/* Callback for Session Manager SaveYourself */
+
+/*ARGSUSED*/
+void DoSaveYourself(w, client_data, call_data)
+    Widget	w;		/* unused; s/b toplevel */
+    XtPointer	client_data;	/* unused */
+    XtPointer	call_data;	/* XtCheckpointToken */
+{
+    XtCheckpointToken cpToken = (XtCheckpointToken)call_data;
+
+    { /* confirm any uncommitted msg changes */
+	int i;
+	for (i=0 ; i<numScrns ; i++) {
+	    if (MsgChanged(scrnList[i]->msg)) {
+		if (cpToken->interact_style == SmInteractStyleAny)
+		    XtAddCallback(toplevel, XtNinteractCallback,
+				  CommitMsgInteract, (XtPointer)scrnList[i]);
+		else {
+		    Cardinal zero = 0;
+		    XmhSave(scrnList[i]->parent, (XEvent*)NULL,
+			    (String*)NULL, &zero);
+		    if (MsgChanged(scrnList[i]->msg)) {
+			MsgCheckPoint(scrnList[i]->msg);
+			cpToken->save_success = False;
+		    }
+		}
+	    }
+	}
+    }
+
+    { /* confirm any uncommitted folder changes */
+	int i;
+	for (i = 0; i < numFolders; i++) {
+	    if (TocHasChanges(folderList[i])) {
+		if (cpToken->interact_style == SmInteractStyleAny)
+		    XtAddCallback(toplevel, XtNinteractCallback,
+				  CommitTocInteract, (XtPointer)folderList[i]);
+		else
+		    TocCommitChanges(w, (XtPointer)folderList[i],
+				     (XtPointer) NULL);
+	    }
 	}
     }
 }

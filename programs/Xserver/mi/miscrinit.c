@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/mi/miscrinit.c,v 3.12 2000/08/26 00:23:19 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miscrinit.c,v 3.13 2001/01/17 22:37:07 dawes Exp $ */
 
 #include "X.h"
 #include "servermd.h"
@@ -32,6 +32,10 @@ from The Open Group.
 #include "pixmapstr.h"
 #include "dix.h"
 #include "miline.h"
+#ifdef MITSHM
+#define _XSHM_SERVER_
+#include "XShm.h"
+#endif
 
 /* We use this structure to propogate some information from miScreenInit to
  * miCreateScreenResources.  miScreenInit allocates the structure, fills it

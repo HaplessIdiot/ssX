@@ -19,6 +19,11 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
-/* $XFree86: xc/programs/xsm/mainwin.h,v 1.3 1999/03/07 14:23:41 dawes Exp $ */
+/* $XFree86: xc/programs/xsm/mainwin.h,v 1.4 2001/01/17 23:46:29 dawes Exp $ */
+
+#ifndef _MAINWIN_H_
+#define _MAINWIN_H_
 
 extern void create_main_window(void);
+
+#endif

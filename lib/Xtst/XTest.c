@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xtst/XTest.c,v 1.2 1998/12/20 11:57:12 dawes Exp $ */
+/* $XFree86: xc/lib/Xtst/XTest.c,v 1.3 2001/01/17 19:43:16 dawes Exp $ */
 
 #define NEED_REPLIES
 #include "Xlibint.h"
@@ -163,6 +163,7 @@ XTestCompareCurrentCursorWithWindow(dpy, window)
     return XTestCompareCursorWithWindow(dpy, window, XTestCurrentCursor);
 }
 
+int
 XTestFakeKeyEvent(dpy, keycode, is_press, delay)
     Display *dpy;
     unsigned int keycode;
@@ -186,6 +187,7 @@ XTestFakeKeyEvent(dpy, keycode, is_press, delay)
     return 1;
 }
 
+int
 XTestFakeButtonEvent(dpy, button, is_press, delay)
     Display *dpy;
     unsigned int button;
@@ -209,6 +211,7 @@ XTestFakeButtonEvent(dpy, button, is_press, delay)
     return 1;
 }
 
+int
 XTestFakeMotionEvent(dpy, screen, x, y, delay)
     Display *dpy;
     int screen;
@@ -238,6 +241,7 @@ XTestFakeMotionEvent(dpy, screen, x, y, delay)
     return 1;
 }
 
+int
 XTestFakeRelativeMotionEvent(dpy, dx, dy, delay)
     Display *dpy;
     int dx, dy;
@@ -307,6 +311,7 @@ send_axes(dpy, info, req, dev, first_axis, axes, n_axes)
     }
 }
 
+int
 XTestFakeDeviceKeyEvent(dpy, dev, keycode, is_press, axes, n_axes, delay)
     Display *dpy;
     XDevice *dev;
@@ -337,6 +342,7 @@ XTestFakeDeviceKeyEvent(dpy, dev, keycode, is_press, axes, n_axes, delay)
     return 1;
 }
 
+int
 XTestFakeDeviceButtonEvent(dpy, dev, button, is_press, axes, n_axes, delay)
     Display *dpy;
     XDevice *dev;
@@ -367,6 +373,7 @@ XTestFakeDeviceButtonEvent(dpy, dev, button, is_press, axes, n_axes, delay)
     return 1;
 }
 
+int
 XTestFakeProximityEvent(dpy, dev, in_prox, axes, n_axes, delay)
     Display *dpy;
     XDevice *dev;
@@ -395,6 +402,7 @@ XTestFakeProximityEvent(dpy, dev, in_prox, axes, n_axes, delay)
     return 1;
 }
 
+int
 XTestFakeDeviceMotionEvent(dpy, dev, is_relative,
 			   first_axis, axes, n_axes, delay)
     Display *dpy;
@@ -424,6 +432,7 @@ XTestFakeDeviceMotionEvent(dpy, dev, is_relative,
     return 1;
 }
 
+int
 XTestGrabControl(dpy, impervious)
     Display *dpy;
     Bool impervious;

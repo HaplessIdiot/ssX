@@ -31,7 +31,7 @@ dealings in this Software without prior written authorization from said
 copyright holders.
 */
 
-/* $XFree86: xc/programs/Xserver/Xprint/raster/Raster.c,v 1.3 1998/10/04 09:37:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/raster/Raster.c,v 1.4 2001/01/17 22:36:33 dawes Exp $ */
 
 /*******************************************************************
 **
@@ -68,10 +68,10 @@ copyright holders.
 #include "windowstr.h"
 #include "propertyst.h"
 #include "servermd.h"	/* needed for IMAGE_BUFSIZE */
+#include "mfb.h"
+#include "mi.h"
 
-#define _XP_PRINT_SERVER_
 #include "extensions/Print.h"
-#undef  _XP_PRINT_SERVER_
 #include "Raster.h"
 
 #include "attributes.h"
@@ -84,12 +84,14 @@ static Bool RasterChangeWindowAttributes(
     unsigned long   mask);
 static int StartJob(
     XpContextPtr pCon,
-    Bool sendClientData);
+    Bool sendClientData,
+    ClientPtr client);
 static int StartPage(
     XpContextPtr pCon,
     WindowPtr pWin);
 static int StartDoc(
-    XpContextPtr pCon);
+    XpContextPtr pCon,
+    XPDocumentType type);
 static int EndDoc(
     XpContextPtr pCon,
     Bool cancel);
@@ -98,8 +100,7 @@ static int EndJob(
     Bool cancel);
 static int EndPage(
     XpContextPtr pCon,
-    WindowPtr pWin,
-    Bool cancel);
+    WindowPtr pWin);
 static int DocumentData(
     XpContextPtr pCon,
     DrawablePtr pDraw,
@@ -129,10 +130,10 @@ static char *RasterGetAttributes(
 static char *RasterGetOneAttribute(XpContextPtr pCon,
 			   XPAttributes class, 
 			   char *attribute);
-static void RasterSetAttributes(XpContextPtr pCon,
+static int RasterSetAttributes(XpContextPtr pCon,
 			  XPAttributes class,
 			  char *attributes);
-static void RasterAugmentAttributes(XpContextPtr pCon,
+static int RasterAugmentAttributes(XpContextPtr pCon,
 			      XPAttributes class,
 			      char *attributes);
 static int RasterMediumDimensions(XpContextPtr pCon,
@@ -259,7 +260,8 @@ GetPropString(
 static int
 StartJob(
      XpContextPtr pCon,
-     Bool sendClientData)
+     Bool sendClientData,
+     ClientPtr client)
 {
     RasterContextPrivPtr pConPriv = (RasterContextPrivPtr)
 			 pCon->devPrivates[RasterContextPrivateIndex].ptr;
@@ -302,7 +304,8 @@ StartJob(
 
 static int 
 StartDoc(
-     XpContextPtr pCon)
+     XpContextPtr pCon,
+     XPDocumentType type)
 {
     return Success;
 }
@@ -530,7 +533,7 @@ Get_XWDColors(
     return(colors);
 }
 
-static
+static void
 _swapshort (
     register char *bp,
     register unsigned n)
@@ -546,7 +549,7 @@ _swapshort (
     }
 }
 
-static
+static void
 _swaplong (
     register char *bp,
     register unsigned n)
@@ -757,8 +760,7 @@ SendPage( XpContextPtr pCon )
 static int
 EndPage(
      XpContextPtr pCon,
-     WindowPtr pWin,
-     Bool cancel)
+     WindowPtr pWin)
 {
     RasterContextPrivPtr pConPriv = (RasterContextPrivPtr)
 			 pCon->devPrivates[RasterContextPrivateIndex].ptr;
@@ -767,9 +769,6 @@ EndPage(
 	 *pHeader = (char *)NULL, *pTrailer = (char *)NULL;
     FILE *pRasterFile = (FILE *)NULL;
 
-    if( cancel == True )
-      return Success;
-    
     if(pConPriv->pageFileName == (char *)NULL)
     {
 	/*
@@ -1153,12 +1152,12 @@ RasterInitContext(
     pFuncs->PutDocumentData = DocumentData;
     pFuncs->GetDocumentData = GetDocumentData;
     pFuncs->DestroyContext = RasterDestroyContext;
-    pFuncs->GetAttributes = (char *(*)())RasterGetAttributes;
-    pFuncs->GetOneAttribute = (char *(*)())RasterGetOneAttribute;
-    pFuncs->SetAttributes = (int(*)())RasterSetAttributes;
-    pFuncs->AugmentAttributes = (int(*)())RasterAugmentAttributes;
-    pFuncs->GetMediumDimensions = (int(*)())RasterMediumDimensions;
-    pFuncs->GetReproducibleArea = (int(*)())RasterReproducibleArea;
+    pFuncs->GetAttributes = RasterGetAttributes;
+    pFuncs->GetOneAttribute = RasterGetOneAttribute;
+    pFuncs->SetAttributes = RasterSetAttributes;
+    pFuncs->AugmentAttributes = RasterAugmentAttributes;
+    pFuncs->GetMediumDimensions = RasterMediumDimensions;
+    pFuncs->GetReproducibleArea = RasterReproducibleArea;
     
     /*
      * Set up the context privates
@@ -1293,21 +1292,21 @@ RasterGetOneAttribute(
     return XpGetOneAttribute( pContext, class, attr );
 }
 
-static void 
+static int 
 RasterSetAttributes(XpContextPtr pCon,
     XPAttributes class,
     char *attributes)
 {
-    XpSetAttributes( pCon, class, attributes );
+    return XpSetAttributes( pCon, class, attributes );
 }
 
-static void
+static int
 RasterAugmentAttributes(
      XpContextPtr pCon,
      XPAttributes class,
      char *attributes)
 {
-    XpAugmentAttributes( pCon, class, attributes );
+    return XpAugmentAttributes( pCon, class, attributes );
 }
 
 static void

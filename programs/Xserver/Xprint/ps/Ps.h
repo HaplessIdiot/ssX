@@ -70,7 +70,7 @@ in this Software without prior written authorization from The Open Group.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/Ps.h,v 1.5 1999/12/13 02:13:00 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/Ps.h,v 1.6 2001/01/17 22:36:31 dawes Exp $ */
 
 #ifndef _PS_H_
 #define _PS_H_
@@ -98,10 +98,8 @@ in this Software without prior written authorization from The Open Group.
 #include "PsDef.h"
 #include "psout.h"
 
-#define _XP_PRINT_SERVER_
-#include "Print.h"
+#include "extensions/Print.h"
 #include "extensions/Printstr.h"
-#undef _XP_PRINT_SERVER_
 
 #include "miscstruct.h"
 #include "fontstruct.h"
@@ -120,7 +118,7 @@ typedef char *XPointer;
 
 #include "misc.h"
 #include <Xfuncproto.h>
-#include "../Xresource.h"
+#include "Xresource.h"
 #include "attributes.h"
 
 /*
@@ -380,6 +378,9 @@ extern void PsPutScaledImage(DrawablePtr pDrawable, GCPtr pGC, int depth,
 extern void PsPutImage(DrawablePtr pDrawable, GCPtr pGC, int depth,
                        int x, int y, int w, int h, int leftPad, int format,
                        char *pImage);
+extern void PsPutImageMask(DrawablePtr pDrawable, GCPtr pGC, int depth,
+                           int x, int y, int w, int h, int leftPad, int format,
+                           char *pImage);
 extern RegionPtr PsCopyArea(DrawablePtr pSrc, DrawablePtr pDst, GCPtr pGC,
                             int srcx, int srcy, int width, int height,
                             int dstx, int dsty);

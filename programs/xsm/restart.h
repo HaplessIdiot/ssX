@@ -19,7 +19,12 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
-/* $XFree86: xc/programs/xsm/restart.h,v 1.3 1999/03/07 14:23:43 dawes Exp $ */
+/* $XFree86: xc/programs/xsm/restart.h,v 1.4 2001/01/17 23:46:30 dawes Exp $ */
+
+#ifndef _RESTART_H_
+#define _RESTART_H_
+
+#include "xsm.h"
 
 extern Bool CheckIsManager(char *program);
 extern void GetRestartInfo(char *restart_service_prop, char *client_host_name,
@@ -29,3 +34,5 @@ extern Status Restart(int flag);
 extern void Clone(ClientRec *client, Bool useSavedState);
 extern void StartDefaultApps(void);
 extern void StartNonSessionAwareApps(void);
+
+#endif

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrender/Xrender.h,v 1.5 2000/12/01 21:32:00 keithp Exp $
+ * $XFree86: xc/lib/Xrender/Xrender.h,v 1.7 2000/12/05 03:13:30 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -26,7 +26,7 @@
 #ifndef _XRENDER_H_
 #define _XRENDER_H_
 
-#include "render.h"
+#include <X11/extensions/render.h>
 
 #include <X11/Xfuncproto.h>
 #include <X11/Xosdefs.h>

@@ -35,10 +35,11 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86: xc/lib/dps/csfindNX.c,v 1.4 2000/05/18 23:46:12 dawes Exp $ */
+/* $XFree86: xc/lib/dps/csfindNX.c,v 1.5 2000/09/26 15:56:59 tsi Exp $ */
 
 #include <sys/param.h>				/* for MAXHOSTNAMELEN */
 #include <stdlib.h>
+#include <stdio.h>
 #include <unistd.h>		/* getuid() */
 #include <string.h>
 #include <pwd.h>

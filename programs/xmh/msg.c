@@ -1,5 +1,5 @@
 /*
- * $XConsortium: msg.c,v 2.51 93/09/20 17:52:07 hersh Exp $
+ * $XConsortium: msg.c /main/2 1996/01/14 16:51:45 kaleb $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -24,6 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
+/* $XFree86$ */
 
 /* msgs.c -- handle operations on messages. */
 
@@ -77,7 +78,7 @@ Msg msg;
 
 /* Return the user-viewable name of the given message. */
 
-static char *NameOfMsg(msg)
+char *MsgName(msg)
 Msg msg;
 {
     static char result[100];
@@ -97,7 +98,7 @@ Scrn scrn;
  	msg = scrn->msg;
 	if (msg == NULL) (void) strcpy(str, app_resources.banner);
 	else {
-	    (void) strcpy(str, NameOfMsg(msg));
+	    (void) strcpy(str, MsgName(msg));
 	    switch (msg->fate) {
 	      case Fdelete:
 		(void) strcat(str, " -> *Delete*");
@@ -221,10 +222,11 @@ Msg msg;
 /* Save any changes to a message.  Also calls the toc routine to update the
    scanline for this msg.  Returns True if saved, false otherwise. */
 
-MsgSaveChanges(msg)
+int MsgSaveChanges(msg)
 Msg msg;
 {
     int i;
+    Window w;
     if (msg->source) {
 	if (XawAsciiSave(msg->source)) {
 	    for (i=0; i < (int) msg->num_scrns; i++)
@@ -241,7 +243,8 @@ Msg msg;
 	    return False;
 	}
     }
-    Feep();
+    w= (msg->source?XtWindow(msg->source):None);
+    Feep(XkbBI_Failure,0,w);
     return False;
 }
 
@@ -300,8 +303,10 @@ static void SetScrnNewMsg(msg, scrn)
 	XawTextSetSource(scrn->viewwidget, PNullSource, (XawTextPosition) 0);
 	ResetMsgLabel(scrn);
 	EnableProperButtons(scrn);
-	if (scrn->kind != STtocAndView)
+	if (scrn->kind != STtocAndView && scrn->kind != STcomp) {
 	    StoreWindowName(scrn, progName);
+	    DestroyScrn(scrn);
+	}
     } else {
 	msg->num_scrns++;
 	msg->scrn = (Scrn *) XtRealloc((char *)msg->scrn,
@@ -314,7 +319,7 @@ static void SetScrnNewMsg(msg, scrn)
 	RedisplayMsg(scrn);
 	EnableProperButtons(scrn);
 	if (scrn->kind != STtocAndView)
-	    StoreWindowName(scrn, NameOfMsg(msg));
+	    StoreWindowName(scrn, MsgName(msg));
     }
 }
 
@@ -356,7 +361,7 @@ static int SetScrn(msg, scrn, force, confirms, cancels)
 	    char str[100];
 	    (void) sprintf(str,
 			   "Are you sure you want to remove changes to %s?",
-			   NameOfMsg(msg));
+			   MsgName(msg));
 
 	    yes_callbacks[0].callback = ConfirmedNoScrn;
 	    yes_callbacks[0].closure = (XtPointer) msg;
@@ -389,7 +394,7 @@ static int SetScrn(msg, scrn, force, confirms, cancels)
 		cb_data->scrn = scrn;
 		(void)sprintf(str,
 			      "Are you sure you want to remove changes to %s?",
-			      NameOfMsg(scrn->msg));
+			      MsgName(scrn->msg));
 		yes_callbacks[0].callback = ConfirmedWithScrn;
 		yes_callbacks[0].closure = (XtPointer) cb_data;
 		yes_callbacks[1].callback = confirms[0].callback;
@@ -668,7 +673,7 @@ Msg msg;
     FILEPTR to;
     int     p, c, l, inheader, sendwidth, sendbreakwidth;
     char   *ptr, *ptr2, **argv, str[100];
-    static sendcount = -1;
+    static int sendcount = -1;
     (void) MsgSaveChanges(msg);
     from = FOpenAndCheck(MsgFileName(msg), "r");
     sendcount = (sendcount + 1) % 10;
@@ -960,10 +965,7 @@ void XmhInsert(w, event, params, num_params)
  */
 
 Widget
-CreateFileSource(w, filename, edit)
-Widget w;
-String filename;
-Boolean edit;
+CreateFileSource(Widget w, String filename, Boolean edit)
 {
   Arg arglist[10];
   Cardinal num_args = 0;
@@ -979,4 +981,3 @@ Boolean edit;
   return(XtCreateWidget("textSource", asciiSrcObjectClass, w, 
 			arglist, num_args));
 }
-

@@ -23,13 +23,16 @@ from The Open Group.
 
 */
 
-/* $XFree86: xc/programs/bdftopcf/bdftopcf.c,v 1.2 1999/02/01 11:56:04 dawes Exp $ */
+/* $XFree86: xc/programs/bdftopcf/bdftopcf.c,v 1.3 2001/01/17 23:44:49 dawes Exp $ */
 
 #include <X11/X.h>
 #include <X11/Xproto.h>
 #include "fontmisc.h"
 #include "fontstruct.h"
 #include "fntfilio.h"
+#include "fntfil.h"
+#include "bdfint.h"
+#include "pcf.h"
 #include <stdio.h>
 #include <X11/Xos.h>
 

@@ -1,4 +1,4 @@
-/* $XConsortium: Raster.h /main/2 1996/11/16 15:26:32 rws $ */
+/* $Xorg: Raster.h,v 1.3 2000/08/17 19:48:12 cpqbld Exp $ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.
@@ -30,6 +30,8 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
+/* $XFree86$ */
+
 /*******************************************************************
 **
 **    *********************************************************
@@ -56,11 +58,9 @@ typedef char *XPointer;
 #define False 0
 #include "misc.h"
 #include <Xfuncproto.h>
-#include "../Xresource.h"
+#include "Xresource.h"
 
-#define _XP_PRINT_SERVER_
 #include "extensions/Printstr.h"
-#undef _XP_PRINT_SERVER_
 
 #define MAX_TOKEN_LEN 512
 

@@ -12,7 +12,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Keyboard.c,v 1.5 2001/03/23 01:27:09 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Keyboard.c,v 1.6 2001/03/25 05:32:15 tsi Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -52,6 +52,14 @@ extern	XkbDescPtr XkbGetKeyboard(
 	Display *		/* dpy */,
 	unsigned int		/* which */,
 	unsigned int		/* deviceSpec */
+#endif
+);
+
+extern	Status	XkbGetControls(
+#if NeedFunctionPrototypes
+	Display *		/* dpy */,
+	unsigned long		/* which */,
+	XkbDescPtr		/* desc */
 #endif
 );
 

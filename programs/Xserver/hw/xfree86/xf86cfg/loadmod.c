@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loadmod.c,v 1.5 2001/07/09 23:45:24 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loadmod.c,v 1.6 2001/07/19 02:22:52 tsi Exp $
  */
 
 #ifdef USE_MODULES
@@ -334,6 +334,8 @@ AddModuleOptions(char *name, const OptionInfoRec *option)
     ptr->next = module_options;
     module_options = ptr;
 }
+
+extern void xf86WrapperInit(void);
 
 void
 xf86cfgLoaderInit(void)

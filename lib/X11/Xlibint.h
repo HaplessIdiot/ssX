@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xlibint.h,v 3.16 2001/01/17 19:41:50 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xlibint.h,v 3.17 2001/07/25 15:04:44 dawes Exp $ */
 
 #ifndef _XLIBINT_H_
 #define _XLIBINT_H_ 1
@@ -1015,6 +1015,17 @@ extern char *_XGetAsyncReply(
     Bool	/* discard */
 #endif
 );
+extern void _XGetAsyncData(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */,
+    char *	/* data */,
+    char *	/* buf */,
+    int		/* len */,
+    int		/* skip */,
+    int		/* datalen */,
+    int		/* discardtotal */
+#endif
+);
 extern void _XFlush(
 #if NeedFunctionPrototypes
     Display*	/* dpy */
@@ -1071,6 +1082,21 @@ extern void _XDeq(
     Display*	/* dpy */,
     _XQEvent*	/* prev */,
     _XQEvent*	/* qelt */
+#endif
+);
+
+extern Bool _XUnknownWireEvent(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */,
+    XEvent*	/* re */,
+    xEvent*	/* event */
+#endif
+);
+extern Status _XUnknownNativeEvent(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */,
+    XEvent*	/* re */,
+    xEvent*	/* event */
 #endif
 );
 

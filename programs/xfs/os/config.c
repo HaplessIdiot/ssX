@@ -43,11 +43,12 @@ in this Software without prior written authorization from The Open Group.
  * $NCDXorg: @(#)config.c,v 4.6 1991/07/09 14:08:09 lemke Exp $
  *
  */
-/* $XFree86: xc/programs/xfs/os/config.c,v 3.11 2001/06/25 20:40:18 paulo Exp $ */
+/* $XFree86: xc/programs/xfs/os/config.c,v 3.12 2001/07/25 15:05:21 dawes Exp $ */
 
 #include	<stdio.h>
 #include	<stdlib.h>
 #include	<ctype.h>
+#include	<X11/Xtrans.h>
 #include	<X11/Xos.h>
 #include	"misc.h"
 #include	"configstr.h"
@@ -56,9 +57,11 @@ in this Software without prior written authorization from The Open Group.
 #include	"access.h"
 #include	"difsutils.h"
 #ifdef FONTCACHE
-#include	"fontcacheP.h"
+#include	<X11/extensions/fontcacheP.h>
 #endif
+#include	"fontutil.h"
 #include	"difs.h"
+#include	"snfstr.h"
 
 extern int portFromCmdline;
 

@@ -43,7 +43,7 @@ in this Software without prior written authorization from The Open Group.
  * $NCDXorg: @(#)os.h,v 4.2 1991/05/10 07:59:16 lemke Exp $
  *
  */
-/* $XFree86: xc/programs/xfs/include/os.h,v 3.10 2001/01/17 23:45:31 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/include/os.h,v 3.11 2001/06/25 20:40:18 paulo Exp $ */
 
 #ifndef	_OS_H_
 #define	_OS_H_
@@ -80,7 +80,7 @@ extern Bool UseSyslog;
 extern Bool CloneSelf;
 extern char ErrorFile[];
 #ifdef FONTCACHE
-#include "fontcacheP.h"
+#include <X11/extensions/fontcacheP.h>
 extern FontCacheSettings cacheSettings;
 #endif
 
