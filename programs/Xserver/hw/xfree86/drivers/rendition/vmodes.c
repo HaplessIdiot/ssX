@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vmodes.c,v 1.10 2001/05/04 19:05:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vmodes.c,v 1.12 2002/04/04 14:05:45 eich Exp $ */
 /*
  * file vmodes.c
  *
@@ -115,7 +115,7 @@
  * global data
  */
 
-struct width_to_stride_t {
+static struct width_to_stride_t {
     vu32 width8bpp;
     vu8 stride0;
     vu8 stride1;
@@ -198,7 +198,7 @@ struct V1000ClocksStr {
  * local function prototypes
  */
 
-void set_PLL(IOADDRESS iob, vu32 value);
+static void set_PLL(IOADDRESS iob, vu32 value);
 static double V1000CalcClock(double target, int *M, int *N, int *P);
 static double V2200CalcClock(double target, int *m, int *n, int *p);
 
