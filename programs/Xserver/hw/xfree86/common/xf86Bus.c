@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.5 1998/09/13 12:12:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.6 1998/09/13 13:47:20 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -316,24 +316,24 @@ xf86CheckPciSlot(int bus, int device, int func, BusResource res)
 	    return FALSE;
     }
 	/* If VGA access is requested, check if that is alreay taken */
-    switch(res) {
-    RES_SHARED_VGA:
-	if(Resources.exclusive_Vga) return FALSE;
+    switch (res) {
+    case RES_SHARED_VGA:
+	if (Resources.exclusive_Vga) return FALSE;
 	break;
-    RES_SHARED_8514:
-	if(Resources.exclusive_8514) return FALSE;
+    case RES_SHARED_8514:
+	if (Resources.exclusive_8514) return FALSE;
 	break;
-    RES_VGA:
-	if(!Resources.exclusive_Vga || Resources.exclusive_Vga_taken) 
+    case RES_VGA:
+	if (!Resources.exclusive_Vga || Resources.exclusive_Vga_taken) 
 	    return FALSE;
 	Resources.exclusive_Vga_taken = 1;
 	break;
-    RES_8514:
-	if(!Resources.exclusive_8514 || Resources.exclusive_8514_taken) 
+    case RES_8514:
+	if (!Resources.exclusive_8514 || Resources.exclusive_8514_taken) 
 	    return FALSE;
 	Resources.exclusive_8514_taken = 1;
 	break;
-    RES_MONO:
+    case RES_MONO:
 	xf86Msg(X_WARNING,"Resource Mono is not supported for PCI devices\n");
 	return FALSE;
     default:
@@ -573,22 +573,22 @@ xf86ComparePciBusString(const char *busID, int bus, int device, int func)
 Bool
 xf86CheckIsaSlot(BusResource res)
 {
-    switch(res){
-    RES_SHARED_VGA:
-    RES_SHARED_8514:
+    switch (res) {
+    case RES_SHARED_VGA:
+    case RES_SHARED_8514:
 	return FALSE;
-    RES_VGA:
-	if(!Resources.exclusive_Vga || Resources.exclusive_Vga_taken) 
+    case RES_VGA:
+	if (!Resources.exclusive_Vga || Resources.exclusive_Vga_taken) 
 	    return FALSE;
 	Resources.exclusive_Vga_taken = 1;
 	break;
-    RES_8514:
-	if(!Resources.exclusive_8514 || Resources.exclusive_8514_taken) 
+    case RES_8514:
+	if (!Resources.exclusive_8514 || Resources.exclusive_8514_taken) 
 	    return FALSE;
 	Resources.exclusive_8514_taken = 1;
 	break;
-    RES_MONO:
-	if(!Resources.exclusive_mono || Resources.exclusive_mono_taken) 
+    case RES_MONO:
+	if (!Resources.exclusive_mono || Resources.exclusive_mono_taken) 
 	    return FALSE;
 	Resources.exclusive_mono_taken = 1;
 	break;
@@ -679,7 +679,7 @@ xf86ParseIsaBusString(const char *busID)
     /*
      * The format assumed to be "isa" or "isa:"
      */
-    return(StringToBusType(busID,NULL) == BUS_ISA);
+    return (StringToBusType(busID,NULL) == BUS_ISA);
 }
 
 /*
@@ -738,7 +738,7 @@ CompBusTypeForScreen(int scrnIndex, BusType bt)
 
     for (i = 0; i < xf86NumBusSlots; i++) {
 	p = xf86BusSlots[i];
-	if(p->scrnIndex == scrnIndex && p->busType == bt)
+	if (p->scrnIndex == scrnIndex && p->busType == bt)
 	    return TRUE;
 	}
     return FALSE;
@@ -782,15 +782,13 @@ xf86FindChipsetsForScreen(int scrnIndex, DriverPtr drv, int **chipsets)
 static void
 pciIoAccessEnable(void* arg)
 {
-    pciSetBitsLong((*(PCITAG *)arg), PCI_CMD_STAT_REG,SETBITS,
-		   SETBITS);
+    pciSetBitsLong((*(PCITAG *)arg), PCI_CMD_STAT_REG, SETBITS, SETBITS);
 }
 
 static void
 pciIoAccessDisable(void* arg)
 {
-    pciSetBitsLong((*(PCITAG *)arg), PCI_CMD_STAT_REG,SETBITS,
-		   0);
+    pciSetBitsLong((*(PCITAG *)arg), PCI_CMD_STAT_REG, SETBITS, 0);
 }
 
 #undef SETBITS
@@ -798,15 +796,13 @@ pciIoAccessDisable(void* arg)
 static void
 pciIo_MemAccessEnable(void* arg)
 {
-    pciSetBitsLong((*(PCITAG *)arg), PCI_CMD_STAT_REG, SETBITS,
-		   SETBITS);
+    pciSetBitsLong((*(PCITAG *)arg), PCI_CMD_STAT_REG, SETBITS, SETBITS);
 }
 
 static void
 pciIo_MemAccessDisable(void* arg)
 {
-    pciSetBitsLong((*(PCITAG *)arg), PCI_CMD_STAT_REG,SETBITS,
-		   0);
+    pciSetBitsLong((*(PCITAG *)arg), PCI_CMD_STAT_REG, SETBITS, 0);
 }
 
 #undef SETBITS
@@ -814,15 +810,13 @@ pciIo_MemAccessDisable(void* arg)
 static void
 pciMemAccessEnable(void* arg)
 {
-    pciSetBitsLong((*(PCITAG *)arg), PCI_CMD_STAT_REG, SETBITS,
-		   SETBITS);
+    pciSetBitsLong((*(PCITAG *)arg), PCI_CMD_STAT_REG, SETBITS, SETBITS);
 }
 
 static void
 pciMemAccessDisable(void* arg)
 {
-    pciSetBitsLong((*(PCITAG *)arg), PCI_CMD_STAT_REG,SETBITS,
-		   0);
+    pciSetBitsLong((*(PCITAG *)arg), PCI_CMD_STAT_REG,SETBITS, 0);
 }
 #undef SETBITS
 
@@ -843,31 +837,33 @@ restorePciAccess(PCITAG tag, CARD32 *ptr)
      ((b) == PCI_CLASS_DISPLAY && (s) == PCI_SUBCLASS_DISPLAY_VGA))
 
 static void
-setupPciAccess()
+setupPciAccess(void)
 {
     int i = 0;
     int j = 0;
     pciConfigPtr pcp; 
     pciAccPtr pcaccp;
 
-    if (xf86PciAccInfo)
+    if (xf86PciAccInfo != NULL)
 	return;
   
-    if(xf86PciInfo == NULL)
+    if (xf86PciInfo == NULL)
 	return;
 
-    while (pcp = xf86PciInfo[i]) {
+    while ((pcp = xf86PciInfo[i]) != NULL) {
 	i++;
-	if(PCISHAREDIOCLASSES(pcp->_base_class, pcp->_sub_class)){
+	if (PCISHAREDIOCLASSES(pcp->_base_class, pcp->_sub_class)) {
 	    j++;
-	    xf86PciAccInfo = (pciAccPtr *)xnfrealloc(xf86PciAccInfo,
-						     sizeof(pciAccPtr) * (j + 1));
+	    xf86PciAccInfo =
+		(pciAccPtr *)xnfrealloc(xf86PciAccInfo,
+					sizeof(pciAccPtr) * (j + 1));
 	    xf86PciAccInfo[j] = NULL;
-	    pcaccp = xf86PciAccInfo[j - 1] = (pciAccPtr)xalloc(sizeof(pciAccRec));
+	    pcaccp = xf86PciAccInfo[j - 1] =
+		(pciAccPtr)xalloc(sizeof(pciAccRec));
 	    pcaccp->busnum = pcp->busnum; 
 	    pcaccp->devnum = pcp->devnum; 
 	    pcaccp->funcnum = pcp->funcnum;
-	    pcaccp->tag = pciTag(pcp->busnum,pcp->devnum,pcp->funcnum);
+	    pcaccp->tag = pciTag(pcp->busnum, pcp->devnum, pcp->funcnum);
 	    pcaccp->ioAccess.AccessDisable = pciIoAccessDisable;
 	    pcaccp->ioAccess.AccessEnable = pciIoAccessEnable;
 	    pcaccp->ioAccess.arg = &pcaccp->tag;
@@ -877,62 +873,59 @@ setupPciAccess()
 	    pcaccp->memAccess.AccessDisable = pciMemAccessDisable;
 	    pcaccp->memAccess.AccessEnable = pciMemAccessEnable;
 	    pcaccp->memAccess.arg = &pcaccp->tag;
-	    savePciAccess(pcaccp->tag,&pcaccp->saveio);
+	    savePciAccess(pcaccp->tag, &pcaccp->saveio);
 	}
     }
 }
 
 
 static void 
-EnterPciAccess()
+EnterPciAccess(void)
 {
     pciAccPtr paccp;
     int i = 0;
 
-    if(xf86PciAccInfo == NULL) 
+    if (xf86PciAccInfo == NULL) 
 	return;
 
-    while(paccp = xf86PciAccInfo[i])
-    {
+    while ((paccp = xf86PciAccInfo[i]) != NULL) {
 	i++;
-	savePciAccess(paccp->tag,&paccp->saveio);
-	restorePciAccess(paccp->tag,&paccp->restoreio);
+	savePciAccess(paccp->tag, &paccp->saveio);
+	restorePciAccess(paccp->tag, &paccp->restoreio);
     }
 }
 
 static void 
-LeavePciAccess()
+LeavePciAccess(void)
 {
     pciAccPtr paccp;
     int i = 0;
 
-    if(xf86PciAccInfo == NULL) 
+    if (xf86PciAccInfo == NULL) 
 	return;
 
-    while(paccp = xf86PciAccInfo[i])
-    {
+    while ((paccp = xf86PciAccInfo[i]) != NULL) {
 	i++;
-	savePciAccess(paccp->tag,&paccp->restoreio);
-	restorePciAccess(paccp->tag,&paccp->saveio);
+	savePciAccess(paccp->tag, &paccp->restoreio);
+	restorePciAccess(paccp->tag, &paccp->saveio);
     }
 }
 
 static void 
-DisablePciAccess()
+DisablePciAccess(void)
 {
     int i = 0;
     pciAccPtr paccp;
-    if(xf86PciAccInfo == NULL)
+    if (xf86PciAccInfo == NULL)
 	return;
 
-    while(paccp = xf86PciAccInfo[i])
-    {
+    while ((paccp = xf86PciAccInfo[i]) != NULL) {
 	i++;
 	pciIo_MemAccessDisable(paccp->io_memAccess.arg);
     }
 }
 static devType
-FindPciPrimaryDevice()
+FindPciPrimaryDevice(void)
 {  
     int i = 0;
     int j;
@@ -940,16 +933,17 @@ FindPciPrimaryDevice()
     pciAccPtr paccp;
     devType DevType = DEV_NONE;
   
-    if(!xf86PciInfo) return DevType;
+    if (!xf86PciInfo) return DevType;
 
-    while(pcp = xf86PciInfo[i]){
-	if(pcp->_command & PCI_CMD_IO_ENABLE){
+    while ((pcp = xf86PciInfo[i]) != NULL) { 
+	if (pcp->_command & PCI_CMD_IO_ENABLE) {
 	    j = 0;
-	    while(paccp = xf86PciAccInfo[j]){
-		if(paccp->busnum == pcp->busnum && paccp->devnum == pcp->devnum
-		   && paccp->funcnum == pcp->funcnum){
-		    if(PCISHAREDIOCLASSES(pcp->_base_class,pcp->_sub_class))
-			if(pcp->_prog_if == 0){
+	    while ((paccp = xf86PciAccInfo[j]) != NULL) {
+		if (paccp->busnum == pcp->busnum
+		    && paccp->devnum == pcp->devnum
+		    && paccp->funcnum == pcp->funcnum) {
+		    if (PCISHAREDIOCLASSES(pcp->_base_class,pcp->_sub_class))
+			if (pcp->_prog_if == 0) {
 			    primaryPciAccess = &paccp->io_memAccess;
 			    primaryPciDev.bus = pcp->busnum;
 			    primaryPciDev.dev = pcp->devnum;
@@ -978,13 +972,13 @@ FindPciPrimaryDevice()
  */
  
 Bool
-xf86IsPrimaryPci(int bus, int dev, int func)
+xf86IsPrimaryPci(pciVideoPtr pPci)
 {
     /* if invalid bus primary device is not PCI */
-    if(primaryPciDev.bus == 0x7FFF) return FALSE;
-    return (bus == primaryPciDev.bus &&
-	    dev == primaryPciDev.dev &&
-	    func == primaryPciDev.func);
+    if (primaryPciDev.bus == 0x7FFF) return FALSE;
+    return (pPci->bus == primaryPciDev.bus &&
+	    pPci->device == primaryPciDev.dev &&
+	    pPci->func == primaryPciDev.func);
 }
 
 /*
@@ -997,9 +991,9 @@ xf86IsPrimaryPci(int bus, int dev, int func)
  */ 
 
 void
-xf86AccessEnter()
+xf86AccessEnter(void)
 {
-    if(ResAccessEnter) 
+    if (ResAccessEnter) 
 	return;
     EnterPciAccess();
     ResAccessEnter = TRUE;
@@ -1011,9 +1005,9 @@ xf86AccessEnter()
  */
 
 void
-xf86AccessLeave()
+xf86AccessLeave(void)
 {
-    if(!ResAccessEnter)
+    if (!ResAccessEnter)
 	return;
     LeavePciAccess();
     ResAccessEnter = FALSE;
@@ -1025,7 +1019,7 @@ xf86AccessLeave()
  */
 
 void
-xf86AccessSetup()
+xf86AccessSetup(void)
 {
     setupPciAccess();
     ResAccessEnter = TRUE;
@@ -1071,13 +1065,12 @@ xf86AddControlledResource(ScrnInfoPtr pScreen, resType rt)
     pciAccPtr paccp;
     BusType *bt;
     BusResource *br;
-    if(pScreen->Access.pAccess)
+    if (pScreen->Access.pAccess)
 	xf86DelControlledResource(&pScreen->Access,FALSE);
     pScreen->Access.rt = rt;
     num = GetRBTypesForScreen(pScreen->scrnIndex,&bt,&br);
-    for(i = 0; i < num; i++){
-	switch(br[i])
-	{
+    for (i = 0; i < num; i++) {
+	switch (br[i]) {
 	case RES_VGA:
 	    pScreen->Access.CurrentAccess = &xf86CurrentAccessVga;
 	    pScreen->Access.pAccess = &AccessNULL;
@@ -1097,21 +1090,21 @@ xf86AddControlledResource(ScrnInfoPtr pScreen, resType rt)
 	}
 	break;
     }
-    if (i < num){
-	switch(bt[i]){
+    if (i < num) {
+	switch (bt[i]) {
 	case BUS_ISA:
 	case BUS_NONE:
 	    pScreen->Access.pAccess = &AccessNULL;
 	    RETURN;
 	case BUS_PCI:
 	    num = xf86GetPciInfoForScreen(pScreen->scrnIndex, &ppvp,NULL);
-	    for (j=0;j<num;i++){
+	    for (j = 0; j < num; j++) {
 		k = 0;
-		while(paccp = xf86PciAccInfo[j]){
-		    if(paccp->busnum == ppvp[j]->bus
+		while ((paccp = xf86PciAccInfo[k]) != NULL) {
+		    if (paccp->busnum == ppvp[j]->bus
 		       && paccp->devnum == ppvp[j]->device
 		       && paccp->funcnum == ppvp[j]->func){
-			switch(rt){
+			switch (rt) {
 			case IO:
 			    pScreen->Access.pAccess = &paccp->ioAccess;
 			    (*paccp->io_memAccess.AccessEnable)
@@ -1173,7 +1166,7 @@ xf86DelControlledResource(xf86ScrnAccessPtr pScAcc, Bool enable)
 	    else
 		if (pAcc->AccessDisable)
 		    (*pAcc->AccessDisable)(pAcc->arg);
-	switch(pScAcc->rt){
+	switch (pScAcc->rt) {
 	case IO:
 	    pScAcc->CurrentAccess->pIoAccess = NULL;
 	    break;
@@ -1183,6 +1176,8 @@ xf86DelControlledResource(xf86ScrnAccessPtr pScAcc, Bool enable)
 	case MEM_IO:
 	    pScAcc->CurrentAccess->pIoAccess =
 		pScAcc->CurrentAccess->pMemAccess = NULL;
+	    break;
+	case NONE:
 	    break;
 	}
 	pScAcc->pAccess = NULL;
@@ -1199,31 +1194,31 @@ xf86EnableAccess(xf86ScrnAccessPtr pScAcc)
 {
     register xf86AccessPtr pAcc;
     /* Screen is not under access control or currently enabled */
-    if(!pScAcc->pAccess) return;
-    switch(pScAcc->rt){
+    if (!pScAcc->pAccess) return;
+    switch (pScAcc->rt) {
     case IO:
 	pAcc = pScAcc->CurrentAccess->pIoAccess;
-	if(pScAcc->pAccess == pAcc)  return;
-	if(pAcc && pAcc->AccessDisable) 
+	if (pScAcc->pAccess == pAcc)  return;
+	if (pAcc && pAcc->AccessDisable) 
 	    (*pAcc->AccessDisable)(pAcc->arg);
-	if(pScAcc->CurrentAccess->pMemAccess == pAcc)
+	if (pScAcc->CurrentAccess->pMemAccess == pAcc)
 	    pScAcc->CurrentAccess->pMemAccess = NULL;
 	pAcc = pScAcc->pAccess;
-	if(pAcc && pAcc->AccessEnable) 
+	if (pAcc && pAcc->AccessEnable) 
 	    (*pAcc->AccessEnable)(pAcc->arg);
 	pScAcc->CurrentAccess->pIoAccess = pAcc;
 	return;
 	
     case MEM_IO:
 	pAcc = pScAcc->CurrentAccess->pIoAccess;
-	if(pScAcc->pAccess == pAcc)  return;
-	if(pAcc && pAcc->AccessDisable) 
+	if (pScAcc->pAccess == pAcc)  return;
+	if (pAcc && pAcc->AccessDisable) 
 	    (*pAcc->AccessDisable)(pAcc->arg);
 	pAcc = pScAcc->CurrentAccess->pIoAccess;
-	if(pAcc && pAcc->AccessDisable) 
+	if (pAcc && pAcc->AccessDisable) 
 	    (*pAcc->AccessDisable)(pAcc->arg);
 	pAcc = pScAcc->pAccess;
-	if(pAcc && pAcc->AccessEnable) 
+	if (pAcc && pAcc->AccessEnable) 
 	    (*pAcc->AccessEnable)(pAcc->arg);
 	pScAcc->CurrentAccess->pIoAccess = pAcc;
 	pScAcc->CurrentAccess->pMemAccess = pAcc;
@@ -1231,16 +1226,19 @@ xf86EnableAccess(xf86ScrnAccessPtr pScAcc)
 	
     case MEM:
 	pAcc = pScAcc->CurrentAccess->pMemAccess;
-	if(pScAcc->pAccess == pAcc)  return;
-	if(pAcc && pAcc->AccessDisable) 
+	if (pScAcc->pAccess == pAcc)  return;
+	if (pAcc && pAcc->AccessDisable) 
 	    (*pAcc->AccessDisable)(pAcc->arg);
-	if(pScAcc->CurrentAccess->pIoAccess == pAcc)
+	if (pScAcc->CurrentAccess->pIoAccess == pAcc)
 	    pScAcc->CurrentAccess->pIoAccess = NULL;
 	pAcc = pScAcc->pAccess;
-	if(pAcc && pAcc->AccessEnable) 
+	if (pAcc && pAcc->AccessEnable) 
 	    (*pAcc->AccessEnable)(pAcc->arg);
 	pScAcc->CurrentAccess->pMemAccess = pAcc;
 	return;
+
+    case NONE:
+	break;
     }
 }
 
@@ -1249,7 +1247,7 @@ xf86EnableAccess(xf86ScrnAccessPtr pScAcc)
  * was active when the server was started.
  */
 void
-xf86EnablePrimaryDevice()
+xf86EnablePrimaryDevice(void)
 {
     xf86EnableAccess(&xf86PrimaryAccess);
     
@@ -1260,10 +1258,12 @@ xf86EnablePrimaryDevice()
  * video devices on buses which allow this.
  */
 static void 
-xf86DisableAccess()
+xf86DisableAccess(void)
 {
     DisablePciAccess();
 }
+
+static devType CheckGenericVga();
 
 /*
  * xf86FindPrimaryDevice() - Find the display device which
@@ -1272,7 +1272,7 @@ xf86DisableAccess()
  *   if possible.
  * - fill out Resources structure
  */
-static devType CheckGenericVga();
+
 void
 xf86FindPrimaryDevice()
 {
@@ -1284,21 +1284,32 @@ xf86FindPrimaryDevice()
     /* if no VGA device is found check for primary PCI device */
     isaDevType = CheckGenericVga();
     pciDevType = FindPciPrimaryDevice();
-    if(isaDevType == DEV_VGA){  /* we prefer VGA */
+    if (isaDevType == DEV_VGA) {  /* we prefer VGA */
 	xf86Msg(X_PROBED, "Found active ISA/VL VGA device\n");
 	xf86PrimaryAccess.pAccess = &AccessNULL;
 	xf86PrimaryAccess.CurrentAccess = &xf86CurrentAccessVga;
-    } else if (pciDevType != DEV_NONE){
+	/*
+	 * Try to catch the case where a PCI device doesn't have its VGA
+	 * core disabled.  XXX How should this be handled?
+	 */
+	if (pciDevType != DEV_NONE) {
+	   xf86Msg(X_PROBED,
+		   "This is may be a misbehaving PCI device (%d:%d:%d)\n",
+		   primaryPciDev.bus, primaryPciDev.dev, primaryPciDev.func);
+	}
+    } else if (pciDevType != DEV_NONE) {
 	xf86Msg(X_PROBED, "Found active PCI device (%d:%d:%d)\n",
 		primaryPciDev.bus, primaryPciDev.dev, primaryPciDev.func);
 	xf86PrimaryAccess.pAccess = primaryPciAccess;
-	switch(pciDevType){
+	switch (pciDevType) {
 	case DEV_VGA:
 	    xf86PrimaryAccess.CurrentAccess = &xf86CurrentAccessVga;
 	    break;
 	case DEV_8514:
 	    xf86PrimaryAccess.CurrentAccess = &xf86CurrentAccess8514;
 	    xf86PrimaryAccess.rt = MEM;
+	    break;
+	case DEV_NONE:
 	    break;
 	}
     } else if (isaDevType == DEV_8514){

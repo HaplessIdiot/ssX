@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.2 1998/07/25 16:56:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.3 1998/09/13 00:51:32 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -497,9 +497,10 @@ PCITAG        pciFindNext(void);
 CARD32        pciReadLong(PCITAG tag, int offset);
 CARD16        pciReadWord(PCITAG tag, int offset);
 CARD8         pciReadByte(PCITAG tag, int offset);
-void          pciWriteLong(PCITAG, int offset, CARD32 val);
-void          pciWriteWord(PCITAG, int offset, CARD16 val);
-void          pciWriteByte(PCITAG, int offset, CARD8 val);
+void          pciWriteLong(PCITAG tag, int offset, CARD32 val);
+void          pciWriteWord(PCITAG tag, int offset, CARD16 val);
+void          pciWriteByte(PCITAG tag, int offset, CARD8 val);
+void          pciSetBitsLong(PCITAG tag, int offset, CARD32 mask, CARD32 val);
 ADDRESS       pciBusAddrToHostAddr(PCITAG tag, ADDRESS addr);
 ADDRESS       pciHostAddrToBusAddr(PCITAG tag, ADDRESS addr);
 PCITAG        pciTag(int busnum, int devnum, int funcnum);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.25 1998/08/30 04:49:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.26 1998/09/13 05:23:38 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -58,6 +58,9 @@
 
 /* Set to 1 if you want to set MCLK from XF86Config - AT YOUR OWN RISK! */
 #define MCLK_FROM_XCONFIG 0
+
+/* Only change these bits in the Option register */
+#define OPTION_MASK 0x20001000	/* pci_retry | interleave */
 
 static void MGA3026StoreColors(ScrnInfoPtr, xColorItem*, int);
 static void MGA3026SavePalette(ScrnInfoPtr, unsigned char*);
@@ -674,7 +677,8 @@ MGA3026Restore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	for (i = 0; i < 6; i++)
 		OUTREG16(0x1FDE, (mgaReg->ExtVga[i] << 8) | i);
 
-	pciWriteLong(pMga->PciTag, PCI_OPTION_REG, mgaReg->Option);
+	pciSetBitsLong(pMga->PciTag, PCI_OPTION_REG, OPTION_MASK,
+			 mgaReg->Option);
 
 	/* select pixel clock PLL as clock source */
 	outTi3026(TVP3026_CLK_SEL, 0, mgaReg->DacRegs[3]);

@@ -51,7 +51,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.37 1998/04/05 02:28:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.38 1998/07/26 02:33:09 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -1390,7 +1390,12 @@ f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
 #if NeedVarargsPrototypes
     va_list args;
 #endif
-    ErrorF("\nFatal server error:\n");
+    static beenhere = 0;
+
+    if (beenhere)
+	ErrorF("\nFatalError re-entered, aborting\n");
+    else
+	ErrorF("\nFatal server error:\n");
 #if NeedVarargsPrototypes
     va_start(args, f);
     VErrorF(f, args);
@@ -1400,12 +1405,16 @@ f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
 #endif
     ErrorF("\n");
 #ifdef DDXOSFATALERROR
-    OsVendorFatalError();
+    if (!beenhere)
+	OsVendorFatalError();
 #endif
 #ifdef ABORTONFATALERROR
     abort();
 #endif
-    AbortServer();
+    if (!beenhere)
+	AbortServer();
+    else
+	abort();
     /*NOTREACHED*/
 }
 

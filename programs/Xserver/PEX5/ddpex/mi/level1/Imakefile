@@ -1,6 +1,6 @@
 XCOMM
 XCOMM $XConsortium: Imakefile /main/10 1996/09/28 16:54:08 rws $
-XCOMM $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level1/Imakefile,v 3.7.2.1 1998/06/03 15:49:24 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level1/Imakefile,v 3.8 1998/07/25 07:36:02 dawes Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -72,9 +72,7 @@ ModuleObjectRule()
 
 SubdirLibraryRule($(OBJS))
 
-#if !PexModule
 NormalLibraryTarget(ddpex1,$(OBJS))
-#endif
 
 LintLibraryTarget(dp1, $(SRCS))
 NormalLintTarget($(SRCS))

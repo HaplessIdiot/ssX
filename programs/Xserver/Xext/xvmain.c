@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xvmain.c,v 1.3 1998/08/13 14:45:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvmain.c,v 1.4 1998/08/14 13:35:45 dawes Exp $ */
 
 /*
 ** File: 
@@ -629,6 +629,9 @@ XvdiPutVideo(
   int status;
   DrawablePtr pOldDraw;
 
+  if(!drw_w || !drw_h || !vid_w || !vid_h)
+	return BadValue;
+
   /* UPDATE TIME VARIABLES FOR USE IN EVENTS */
 
   UpdateCurrentTime();
@@ -680,6 +683,9 @@ XvdiPutStill(
 ){
   int status;
 
+  if(!drw_w || !drw_h || !vid_w || !vid_h)
+	return BadValue;
+
   /* UPDATE TIME VARIABLES FOR USE IN EVENTS */
 
   UpdateCurrentTime();
@@ -715,6 +721,9 @@ XvdiGetVideo(
 ){
   int status;
   DrawablePtr pOldDraw;
+
+  if(!drw_w || !drw_h || !vid_w || !vid_h)
+	return BadValue;
 
   /* UPDATE TIME VARIABLES FOR USE IN EVENTS */
 
@@ -766,6 +775,9 @@ XvdiGetStill(
    CARD16 drw_w, CARD16 drw_h
 ){
   int status;
+
+  if(!drw_w || !drw_h || !vid_w || !vid_h)
+	return BadValue;
 
   /* UPDATE TIME VARIABLES FOR USE IN EVENTS */
 

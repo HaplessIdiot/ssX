@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.45 1998/09/13 07:44:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.46 1998/09/13 09:10:21 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -176,14 +176,14 @@ static SymTabRec MGAChipsets[] = {
 };
 
 static PciChipsets MGAPciChipsets[] = {
-    { PCI_CHIP_MGA2064,		PCI_CHIP_MGA2064,		RES_NONE },
-    { PCI_CHIP_MGA1064,		PCI_CHIP_MGA1064,		RES_NONE },
-    { PCI_CHIP_MGA2164,		PCI_CHIP_MGA2164,		RES_NONE },
-    { PCI_CHIP_MGA2164_AGP,	PCI_CHIP_MGA2164_AGP,		RES_NONE },
-    { PCI_CHIP_MGAG100,		PCI_CHIP_MGAG100,		RES_NONE },
-    { PCI_CHIP_MGAG200,		PCI_CHIP_MGAG200,		RES_NONE },
-    { PCI_CHIP_MGAG200_PCI,	PCI_CHIP_MGAG200_PCI,		RES_NONE },
-    { -1,			-1,				RES_UNDEFINED }
+    { PCI_CHIP_MGA2064,		PCI_CHIP_MGA2064,	RES_SHARED_VGA },
+    { PCI_CHIP_MGA1064,		PCI_CHIP_MGA1064,	RES_SHARED_VGA },
+    { PCI_CHIP_MGA2164,		PCI_CHIP_MGA2164,	RES_SHARED_VGA },
+    { PCI_CHIP_MGA2164_AGP,	PCI_CHIP_MGA2164_AGP,	RES_SHARED_VGA },
+    { PCI_CHIP_MGAG100,		PCI_CHIP_MGAG100,	RES_SHARED_VGA },
+    { PCI_CHIP_MGAG200,		PCI_CHIP_MGAG200,	RES_SHARED_VGA },
+    { PCI_CHIP_MGAG200_PCI,	PCI_CHIP_MGAG200_PCI,	RES_SHARED_VGA },
+    { -1,			-1,			RES_UNDEFINED }
 };
 
 typedef enum {
@@ -463,14 +463,21 @@ MGAReadBios(ScrnInfoPtr pScrn)
 	MGAPtr pMga;
 	MGABiosInfo *pBios;
 	MGABios2Info *pBios2;
-	Bool pciBIOS;
+	Bool pciBIOS = FALSE;
 	
 	pMga = MGAPTR(pScrn);
 	pBios = &pMga->Bios;
 	pBios2 = &pMga->Bios2;
 
-	/* XXX A reasonable guess? */
-	pciBIOS = (pMga->BiosAddress > 0x100000);
+	/*
+	 * If the BIOS address was probed, it was found from the PCI config
+	 * space.  If it was given in the config file, try to guess when it
+	 * looks like it might be controlled by the PCI config space.
+	 */
+	if (pMga->BiosFrom == X_PROBED)
+	    pciBIOS = TRUE;
+	else if (pMga->BiosFrom == X_CONFIG && pMga->BiosAddress > 0x100000)
+	    pciBIOS = TRUE;
 
 #define MGADoBIOSRead(offset, buf, len) \
     (pciBIOS ? \
@@ -973,24 +980,29 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 
     if (pScrn->device->BiosBase != 0) {
 	pMga->BiosAddress = pScrn->device->BiosBase;
-	from = X_CONFIG;
+	pMga->BiosFrom = X_CONFIG;
     } else {
 	/* details: rombase sdk pp 4-15 */
 	if (pMga->PciInfo->biosBase != 0) {
 	    pMga->BiosAddress = pMga->PciInfo->biosBase & 0xffff0000;
-	    from = X_PROBED;
+	    pMga->BiosFrom = X_PROBED;
 	} else {
 	    /* Need to watch this when removing VGA depencencies */
 	    pMga->BiosAddress = 0xc0000;
-	    from = X_DEFAULT;
+	    pMga->BiosFrom = X_DEFAULT;
 	}
     }
-    xf86DrvMsg(pScrn->scrnIndex, from, "BIOS at 0x%lX\n",
+    xf86DrvMsg(pScrn->scrnIndex, pMga->BiosFrom, "BIOS at 0x%lX\n",
 	       (unsigned long)pMga->BiosAddress);
+
+    /* Memory must be enabled to read the BIOS and probe the memory amount */
+    xf86AddControlledResource(pScrn, MEM);
+    xf86EnableAccess(&pScrn->Access);
 
     /*
      * Read the BIOS data struct
      */
+
     MGAReadBios(pScrn);
 
 #ifdef DEBUG
@@ -1021,7 +1033,12 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
                pScrn->videoRam);
 	
     pMga->FbMapSize = pScrn->videoRam * 1024;
-	
+
+    /*
+     * Access control can be relinquished now.  Leave memory disabled
+     * when doing so.  It will get enabled again in ScreenInit.
+     */
+    xf86DelControlledResource(&pScrn->Access, FALSE);
 
     /*
      * fill MGAdac struct
@@ -1449,7 +1466,24 @@ MGASave(ScrnInfoPtr pScrn)
     MGAPtr pMga = MGAPTR(pScrn);
     MGARegPtr mgaReg = &pMga->SavedReg;
 
-    (*pMga->Save)(pScrn, vgaReg, mgaReg, TRUE);
+    mgaReg->VgaEnable =
+		(pciReadLong(pMga->PciTag, PCI_OPTION_REG) & 0x100) != 0;
+
+    /* Enable VGA core for primary card */
+    if (xf86IsPrimaryPci(pMga->PciInfo))
+	pciSetBitsLong(pMga->PciTag, PCI_OPTION_REG, 0x100, 0x100);
+    else
+	pciSetBitsLong(pMga->PciTag, PCI_OPTION_REG, 0x100, 0x000);
+
+    xf86AddControlledResource(pScrn, MEM);
+    xf86EnableAccess(&pScrn->Access);
+
+    /* Only save text mode fonts/text for the primary card */
+    (*pMga->Save)(pScrn, vgaReg, mgaReg, xf86IsPrimaryPci(pMga->PciInfo));
+
+    /* Disable VGA core, and leave memory access on */
+    pciSetBitsLong(pMga->PciTag, PCI_OPTION_REG, 0x100, 0x000);
+    xf86DelControlledResource(&pScrn->Access, TRUE);
 }
 
 
@@ -1504,9 +1538,23 @@ MGARestore(ScrnInfoPtr pScrn)
 
     MGAStormSync(pScrn);
 
+    /* Enable VGA core for primary card */
+    if (xf86IsPrimaryPci(pMga->PciInfo))
+	pciSetBitsLong(pMga->PciTag, PCI_OPTION_REG, 0x100, 0x100);
+
+    xf86AddControlledResource(pScrn, MEM);
+    xf86EnableAccess(&pScrn->Access);
+
+    /* Only restore text mode fonts/text for the primary card */
     vgaHWProtectMMIO(pScrn, TRUE);
-    (*pMga->Restore)(pScrn, vgaReg, mgaReg, TRUE);    
+    (*pMga->Restore)(pScrn, vgaReg, mgaReg, xf86IsPrimaryPci(pMga->PciInfo));
     vgaHWProtectMMIO(pScrn, FALSE);
+
+    xf86DelControlledResource(&pScrn->Access, FALSE);
+
+    /* Restore VgaEnable setting */
+    pciSetBitsLong(pMga->PciTag, PCI_OPTION_REG, 0x100,
+		    mgaReg->VgaEnable ? 0x100 : 0x000);
 }
 
 
@@ -1530,19 +1578,22 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     hwp = VGAHWPTR(pScrn);
 
-
     pMga = MGAPTR(pScrn);
 
     /* Map the MGA memory and MMIO areas */
     if (!MGAMapMem(pScrn))
 	return FALSE;
 
-    /* Map the VGA memory and get the VGA IO base */
-    hwp->MapSize = 0x10000;
-    if (!vgaHWMapMem(pScrn))
-	return FALSE;
+    /* Set the IO base */
     hwp->MemBase = (long)pMga->IOBase + PORT_OFFSET;
     vgaHWGetIOBaseMMIO(hwp);
+
+    /* Map the VGA memory when the primary video */
+    if (xf86IsPrimaryPci(pMga->PciInfo)) {
+	hwp->MapSize = 0x10000;
+	if (!vgaHWMapMem(pScrn))
+	    return FALSE;
+    }
 
     /* Save the current state */
     MGASave(pScrn);
@@ -1623,7 +1674,7 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	break;
     default:
 	xf86DrvMsg(scrnIndex, X_ERROR,
-		   "Internal error: invalid bpp (%d) in MGAScrnInit\n",
+		   "Internal error: invalid bpp (%d) in MGAScreenInit\n",
 		   pScrn->bitsPerPixel);
 	ret = FALSE;
 	break;

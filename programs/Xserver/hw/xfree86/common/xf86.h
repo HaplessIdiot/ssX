@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.78 1998/09/13 05:23:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.79 1998/09/13 09:10:16 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -72,6 +72,7 @@ void xf86DelControlledResource(xf86ScrnAccessPtr pScAcc, Bool enable);
 void xf86EnableAccess(xf86ScrnAccessPtr pScAcc);
 void xf86FindPrimaryDevice(void);
 void xf86EnablePrimaryDevice(void);
+Bool xf86IsPrimaryPci(pciVideoPtr pPci);
 
 /* xf86Config.c */
 
@@ -189,6 +190,7 @@ void xf86PruneDriverModes(ScrnInfoPtr scrp);
 void xf86PruneMonitorModes(MonPtr monp);
 void xf86SetCrtcForModes(ScrnInfoPtr scrp, int adjustFlags);
 void xf86PrintModes(ScrnInfoPtr scrp);
+void xf86ShowClockRanges(ScrnInfoPtr scrp, ClockRangePtr clockRanges);
 
 /* xf86Option.c */
 

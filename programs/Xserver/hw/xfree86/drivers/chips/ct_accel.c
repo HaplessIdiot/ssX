@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.25 1998/08/20 08:55:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.26 1998/08/29 05:43:06 dawes Exp $ */
 /*
  * Copyright 1996, 1997, 1998 by David Bateman <dbateman@ee.uts.edu.au>
  *   Modified 1997, 1998 by Nozomi Ytow
@@ -711,7 +711,7 @@ CTNAME(SetupForScreenToScreenCopy)(ScrnInfoPtr pScrn, int xdir, int ydir,
 	}
 	break;
     case 16:
-        if ((planemask & 0xFFF) == 0xFFFF) {
+        if ((planemask & 0xFFFF) == 0xFFFF) {
 	    ctSETROP(cAcl->CommandFlags | ChipsAluConv[rop & 0xF]);
 	} else {
 	    ctSETROP(cAcl->CommandFlags | ChipsAluConv3[rop & 0xF]);
@@ -841,7 +841,7 @@ CTNAME(SetupForCPUToScreenColorExpandFill)(ScrnInfoPtr pScrn, int fg,
 	}
 	break;
     case 16:
-        if ((planemask & 0xFFF) == 0xFFFF) {
+        if ((planemask & 0xFFFF) == 0xFFFF) {
 	    ctSETROP(ctSRCSYSTEM | ctSRCMONO | ctTOP2BOTTOM | ctLEFT2RIGHT |
 		    ChipsAluConv[rop & 0xF] | cAcl->CommandFlags);
 	} else {
@@ -944,7 +944,7 @@ CTNAME(SetupForScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 	}
 	break;
     case 16:
-        if ((planemask & 0xFFF) == 0xFFFF) {
+        if ((planemask & 0xFFFF) == 0xFFFF) {
 	    ctSETROP(ctSRCMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
 		 ChipsAluConv[rop & 0xF] | cAcl->CommandFlags);
 	} else {
@@ -1248,7 +1248,7 @@ CTNAME(SetupForImageWrite)(ScrnInfoPtr pScrn, int rop, unsigned int planemask,
 	}
 	break;
     case 16:
-        if ((planemask & 0xFFF) == 0xFFFF) {
+        if ((planemask & 0xFFFF) == 0xFFFF) {
 	    ctSETROP(cAcl->CommandFlags | ChipsAluConv[rop & 0xF]);
 	} else {
 	    ctSETROP(cAcl->CommandFlags | ChipsAluConv3[rop & 0xF]);
@@ -1416,7 +1416,7 @@ CTNAME(WritePixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 	}
 	break;
     case 16:
-        if ((planemask & 0xFFF) == 0xFFFF) {
+        if ((planemask & 0xFFFF) == 0xFFFF) {
 	    ctSETROP(cAcl->CommandFlags | ChipsAluConv[rop & 0xF]);
 	} else {
 	    ctSETROP(cAcl->CommandFlags | ChipsAluConv3[rop & 0xF]);

@@ -1,0 +1,26 @@
+XCOMM $XFree86$
+
+#define IHaveModules
+#include <Server.tmpl>
+
+#if DoLoadableServer
+MODSRC = xf86RACmodule.c
+MODOBJ = xf86RACmodule.o
+#endif
+
+SRCS = xf86RAC.c $(MODSRC)
+OBJS = xf86RAC.o $(MODOBJ)
+
+INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
+           -I$(SERVERSRC)/include -I$(XINCLUDESRC)
+
+ModuleObjectRule()
+
+LibraryModuleTarget(rac, $(OBJS))
+
+InstallLibraryModule(rac,$(MODULEDIR))
+
+DependTarget()
+
+InstallLinkKitLibrary(xf86RAC,$(LINKKITDIR)/lib)
+InstallLinkKitNonExecFile(xf86RAC.h,$(LINKKITDIR)/include)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.3 1998/08/19 07:49:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.4 1998/09/05 06:36:40 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -216,7 +216,7 @@ xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
 		    (cp->maxClock >= p->Clock) &&
 		    (cp->interlaceAllowed || !(p->Flags & V_INTERLACE)) &&
 		    (cp->doubleScanAllowed ||
-		     (!(p->Flags & V_DBLSCAN)) && (p->VScan <= 1)))
+		     ((!(p->Flags & V_DBLSCAN)) && (p->VScan <= 1))))
 		    break;
 	    }
 	    if (cp == NULL) {

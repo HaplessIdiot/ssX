@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.185 1998/09/06 04:46:52 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.186 1998/09/06 13:47:52 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -41,24 +41,35 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 #ifndef XF86Server
 #define XF86Server		YES
 #endif
+/* 1bpp module */
 #ifndef XF1Bpp
 #define XF1Bpp			YES
 #endif
+/* 4bpp module */
 #ifndef XF4Bpp
 #define XF4Bpp			YES
 #endif
+/* vgahw module */
 #ifndef XF86VgaHw
 #define XF86VgaHw		YES
 #endif
+/* XAA module */
 #ifndef XF86XAA
 #define XF86XAA			YES
 #endif
+/* ramdac module */
 #ifndef XF86Ramdac
 #define XF86Ramdac		YES
 #endif
+/* I2C module */
 #ifndef XF86I2C
 #define XF86I2C			YES
 #endif
+/* RAC (Resource Access Control) module */
+#ifndef XF86RAC
+#define XF86RAC			YES
+#endif
+
 /* Pure PCI drivers should go first */
 #ifndef XF86CardDrivers
 #define XF86CardDrivers		mga glint tga cirrus tseng trident chips vga

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.5 1998/09/13 05:23:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.6 1998/09/13 12:23:07 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1247,44 +1247,46 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
      * If a matching device section without BusID is found use it
      * unless one with matching busID is found. 
      */    
-    for(i = 0; i< allocatedInstances; i++){
+    for (i = 0; i< allocatedInstances; i++) {
 	if (!instances[i].inuse)
 	    continue;
 	pPci = instances[i].pci;
+	devBus = NULL;
+	dev = NULL;
 	for (j = 0; j < numDevs; j++) {
 	    if (devList[j]->busID && *devList[j]->busID) {
-		if(xf86ComparePciBusString(devList[j]->busID,pPci->bus,
+		if (xf86ComparePciBusString(devList[j]->busID, pPci->bus,
 					   pPci->device,
 					   pPci->func)) {
-		    if (devBus) xf86MsgVerb(X_WARNING,0,
-					    "%s: More than one matching",
-					    "Device section for instance",
-					    "(BusID: %s) found: %s\n",
-					    driverName,devList[j]->identifier,
-					    devList[j]->busID);
-		    else devBus = devList[j];
+		    if (devBus)
+			xf86MsgVerb(X_WARNING,0,
+			    "%s: More than one matching Device section for "
+			    "instance (BusID: %s) found: %s\n",
+			    driverName,devList[j]->identifier,
+			    devList[j]->busID);
+		    else
+			devBus = devList[j];
 		} 
 	    } else {
 		/* 
 		 * if device section without BusID is found 
 		 * only assign to it to the primary device.
 		 */
-		if(xf86IsPrimaryPci(pPci->bus, pPci->device,pPci->func)){
-		    xf86Msg(X_PROBED,"Assigning device section with no busID"
+		if (xf86IsPrimaryPci(pPci)) {
+		    xf86Msg(X_PROBED, "Assigning device section with no busID"
 			    " to primary device\n");
-		    if (dev || devBus) xf86MsgVerb(X_WARNING,0,
-						   "%s: More than one "
-						   "matching Device section ",
-						   "found: %s\n",
-						   driverName,
-						   devList[j]->identifier);
-		    else dev = devList[j];
+		    if (dev || devBus)
+			xf86MsgVerb(X_WARNING, 0,
+			    "%s: More than one matching Device section "
+			    "found: %s\n", devList[j]->identifier);
+		    else
+			dev = devList[j];
 		}
 	    }
 	}
-	if(devBus) dev = devBus; 
-	if(!dev) {
-	    xf86MsgVerb(X_WARNING, 0, "%s: No matching Device section  "
+	if (devBus) dev = devBus; 
+	if (!dev) {
+	    xf86MsgVerb(X_WARNING, 0, "%s: No matching Device section "
 			"for instance (BusID PCI:%i:%i:%i) found\n",
 			driverName, pPci->bus, pPci->device, pPci->func);
 	} else {
@@ -1420,10 +1422,10 @@ xf86FindPciResource(int numChipset, PciChipsets *PCIchipsets)
 
     for (c=PCIchipsets; c->numChipset>=0; c++)
     {
-	if(c->numChipset == numChipset)
+	if (c->numChipset == numChipset)
 	    break;
     }
-    return(c->Resource);
+    return (c->Resource);
 }
 
 int
@@ -1441,7 +1443,7 @@ xf86MatchIsaInstances(const char *driverName, SymTabRec *chipsets,
 
     for (i = 0; i < numDevs; i++) {
 	if (devList[i]->busID && *devList[i]->busID) {
-	    if(xf86ParseIsaBusString(devList[i]->busID)) {
+	    if (xf86ParseIsaBusString(devList[i]->busID)) {
 		if (devBus) xf86MsgVerb(X_WARNING,0,
 					"%s: More than one matching Device "
 					"section for ISA-Bus found: %s\n",
@@ -1456,8 +1458,8 @@ xf86MatchIsaInstances(const char *driverName, SymTabRec *chipsets,
 	    else dev = devList[i];
 	}
     }
-    if(devBus) dev = devBus; 
-    if(!dev) return -1;
+    if (devBus) dev = devBus; 
+    if (!dev) return -1;
 
     if (dev->chipset) {
 	for (c = chipsets; c->token >= 0; c++) {
@@ -1472,12 +1474,12 @@ xf86MatchIsaInstances(const char *driverName, SymTabRec *chipsets,
 	} else
 	    foundChip = c->token;
     } else { 
-	if(FindIsaDevice) foundChip = (*FindIsaDevice)();  /* Probe it */
+	if (FindIsaDevice) foundChip = (*FindIsaDevice)();  /* Probe it */
 	from = X_PROBED;
     }
 
     /* Check if the chip type is listed in the chipset table - for sanity */
-    if(foundChip >= 0){
+    if (foundChip >= 0){
 	for (Chips = ISAchipsets; Chips->numChipset >= 0; Chips++) {
 	    if (Chips->numChipset == foundChip) 
 		break;
@@ -1496,8 +1498,7 @@ xf86MatchIsaInstances(const char *driverName, SymTabRec *chipsets,
 	    if (c->token == foundChip)
 		break;
 	}
-	xf86Msg(from,"Chipset %s found\n",
-		c->name);
+	xf86Msg(from, "Chipset %s found\n", c->name);
     }
 
     return foundChip;
@@ -1510,10 +1511,10 @@ xf86FindIsaResource(int numChipset, IsaChipsets *ISAchipsets)
 
     for (c=ISAchipsets; c->numChipset>=0; c++)
     {
-	if(c->numChipset == numChipset)
+	if (c->numChipset == numChipset)
 	    break;
     }
-    return(c->Resource);
+    return (c->Resource);
 }
 
 /*
@@ -1738,14 +1739,14 @@ xf86LoadSubModule(ScrnInfoPtr pScrn, const char *name)
 #endif
 }
 
-void xf86Break1()
+void xf86Break1(void)
 {
 }
 
-void xf86Break2()
+void xf86Break2(void)
 {
 }
 
-void xf86Break3()
+void xf86Break3(void)
 {
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/axpPci.c,v 1.2 1998/07/25 16:56:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/axpPci.c,v 1.3 1998/09/13 05:23:48 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -127,7 +127,7 @@ axpPciCfgSetBits(PCITAG tag, int off, CARD32 mask, CARD32 bits)
     dfn = PCI_DFN_FROM_TAG(tag);
 	
     __syscall(__NR_pciconfig_read, bus, dfn, off, 4, &val);
-    val = (val & ^mask) | bits;
+    val = (val & ~mask) | (bits & mask);
     __syscall(__NR_pciconfig_write, bus, dfn, off, 4, &val);
 }
 #endif /* Linux */
