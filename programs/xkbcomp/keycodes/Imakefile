@@ -1,6 +1,7 @@
-XCOMM $XConsortium: Imakefile /main/2 1995/12/07 21:36:17 kaleb $
+XCOMM $XConsortium: Imakefile /main/4 1996/01/17 14:51:44 kaleb $
+XCOMM $XFree86$
 
-     DATAFILES = sgi sun xfree86
+     DATAFILES = sgi sun xfree86 /*digital_lk digital_pc*/ ibm
 
 all::
 
