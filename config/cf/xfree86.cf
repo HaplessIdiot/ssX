@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.126 1997/01/08 20:31:23 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.127 1997/01/12 10:38:09 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -654,9 +654,10 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
  *
  * 853286400 is Wed Jan 15 00:00:00 1997 GMT
  * 855964800 is Sat Feb 15 00:00:00 1997 GMT
+ * 866332800 is Sun Jun 15 00:00:00 1997 GMT
  */
 #ifndef XF86ServerExpiry
-#define XF86ServerExpiry 855964800
+#define XF86ServerExpiry 866332800
 #endif
 
 /*
