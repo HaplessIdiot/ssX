@@ -1,4 +1,5 @@
 XFree86 3.9.17 (31 December 1999)
+3523. Clean up bindist directories for the loader server (Robin Cutshaw).
 3522. Old-style DGA keyboard input fix (#3536, Keith Packard).
 
 XFree86 3.9.16Za (29 December 1999)
@@ -9223,4 +9224,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.920 1999/12/30 03:53:37 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.921 1999/12/31 15:14:50 robin Exp $
