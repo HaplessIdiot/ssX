@@ -1,4 +1,5 @@
 XFree86 3.9.16Za (xx December 1999)
+3518. Allow TDFX driver to build on Linux-axp (#3530, Dave Gilbert).
 3517. Fix Linux-axp compile problem (#3529, Dave Gilbert).
 3516. Jumbo Tiny-X patch with Itsy support (#3527, Keith Packard).
 3515. Turn off debug messages in font client code (#3525, Keith Packard).
@@ -9216,4 +9217,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.914 1999/12/30 03:03:00 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.915 1999/12/30 03:14:01 robin Exp $
