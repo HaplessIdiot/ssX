@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Screen.c,v 1.25 2003/08/22 03:36:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Screen.c,v 1.26 2003/08/24 17:37:08 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -506,17 +506,20 @@ xf86validateScreen (XF86ConfigPtr p)
 			screen->scrn_identifier = screen->scrn_obso_driver;
 
 		monitor = xf86findMonitor (screen->scrn_monitor_str, p->conf_monitor_lst);
-		if (!monitor)
+		if (screen->scrn_monitor_str)
 		{
-			xf86validationError (UNDEFINED_MONITOR_MSG,
-						 screen->scrn_monitor_str, screen->scrn_identifier);
-			return (FALSE);
-		}
-		else
-		{
-			screen->scrn_monitor = monitor;
-			if (!xf86validateMonitor(p, screen))
+			if (!monitor)
+			{
+				xf86validationError (UNDEFINED_MONITOR_MSG,
+						 	screen->scrn_monitor_str, screen->scrn_identifier);
 				return (FALSE);
+			}
+			else
+			{
+				screen->scrn_monitor = monitor;
+				if (!xf86validateMonitor(p, screen))
+					return (FALSE);
+			}
 		}
 
 		device = xf86findDevice (screen->scrn_device_str, p->conf_device_lst);
