@@ -1,6 +1,6 @@
-XCOMM $XFree86: xc/lib/Imakefile,v 3.79 2004/06/30 20:21:37 martin Exp $
+XCOMM $XFree86: xc/lib/Imakefile,v 3.80 2004/09/20 15:24:57 tsi Exp $
 /*
- * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
+ * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -49,6 +49,10 @@ XCOMM $XFree86: xc/lib/Imakefile,v 3.79 2004/06/30 20:21:37 martin Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags
 
+#if BuildLibraries || BuildServer || BuildClients
+XTRANSLIB = xtrans
+#endif
+
 #if BuildXaw6 && BuildLibraries
 XAW6LIBDIR = Xaw6
 #endif
@@ -61,7 +65,7 @@ XAW6LIBDIR = Xaw6
 BERKDIR = Xbsd
 #endif
 
-#if BuildXKBfilelib || BuildXKB
+#if BuildXKBfilelib
 XKBLIBDIR = xkbfile
 #endif
 
@@ -181,7 +185,7 @@ APPLELIBDIR = apple
 XF86EXTLIBS = $(XF86MISCLIBDIR) $(XF86VMLIBDIR) \
 		$(XF86DGALIBDIR) $(XF86RUSHLIBDIR)
 
-#if BuildLBX
+#if BuildLBX && (BuildLibraries || BuildServer || BuildClients)
 LBXUTILDIR = lbxutil
 #endif
 
@@ -201,7 +205,9 @@ XPRINTLIBDIR = Xp
 FONTCACHELIBDIR = Xfontcache
 #endif
 
+#if BuildServer || BuildClients || BuildLibraries
 FONTSUBDIR = font
+#endif
 
 #if BuildFontEncLib
 FONTENCSUBDIR = fontenc
@@ -253,8 +259,8 @@ LINTSUBDIRS = $(XAULIBDIR) $(XDMCPLIBDIR) $(THRSTUBLIBDIR) $(X11LIBDIR) \
              $(XTRAPLIBDIR) $(XRESLIBDIR) $(XCURSORLIBDIR) $(APPLELIBDIR) \
 	     $(DMXLIBDIR)
 
-SUBDIRS = $(BERKDIR) xtrans $(LINTSUBDIRS) $(FONTSUBDIR) $(FONTENCSUBDIR) \
-          $(FONTCACHELIBDIR)
+SUBDIRS = $(BERKDIR) $(XTRANSLIB) $(LINTSUBDIRS) $(FONTSUBDIR) \
+	  $(FONTENCSUBDIR) $(FONTCACHELIBDIR)
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
