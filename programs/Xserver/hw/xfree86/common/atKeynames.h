@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/atKeynames.h,v 3.13 2000/02/09 22:00:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/atKeynames.h,v 3.14 2000/08/11 17:27:13 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -192,5 +192,9 @@
 #define KEY_F16          /* F16                   0x71  */  113
 #define KEY_F17          /* F17                   0x72  */  114
 #define KEY_KP_DEC       /* KP_DEC                0x73  */  115
+
+/* These are for "notused" and "uknown" entries in translation maps. */
+#define KEY_NOTUSED	  0
+#define KEY_UNKNOWN	255
 
 #endif /* _ATKEYNAMES_H */
