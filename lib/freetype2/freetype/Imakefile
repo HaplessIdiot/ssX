@@ -1,9 +1,9 @@
-XCOMM $XFree86: $
+XCOMM $XFree86: xc/lib/freetype2/freetype/Imakefile,v 1.1 2001/02/08 00:55:41 keithp Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags
 
-SUBDIRS=config cache
+SUBDIRS=config cache internal
 
 FREETYPETOP = $(TOP)/extras/freetype2
 FREETYPESRC = $(FREETYPETOP)/src

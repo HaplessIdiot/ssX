@@ -9,7 +9,7 @@
 <date>17 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.57 2000/12/15 22:48:42 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.58 2000/12/17 23:01:10 dawes Exp $
 </ident>
 
 <abstract>
@@ -1039,11 +1039,13 @@ doesn't provide accurate information via DDC, you may want to add that
 information to <tt>XF86Config</tt>.
 
 <p>
-To allow a graceful transition for applications moving from core text 
-rendering to the Render extension, Xft can use either core fonts or 
-FreeType and the Render extension for text.  By default, Xft is configured 
-to support only core fonts, see the section on building FreeType support
-for the changes needed to add FreeType/Render fonts.
+
+To allow a graceful transition for applications moving from core text
+rendering to the Render extension, Xft can use either core fonts or FreeType
+and the Render extension for text.  By default, Xft is configured to support
+both core fonts and FreeType fonts using the supplied version of FreeType
+2.  See the section on FreeType support in Xft for instructions on
+configuring XFree86 to use an existing FreeType installation.
 
 <p>
 The Xft library uses a configuration file, <tt>XftConfig</tt>, which
@@ -1052,32 +1054,30 @@ provides a sophisticated font aliasing mechanism.  Documentation for that
 file is included in the Xft man page.
 
 </sect2>
-<sect2>Building FreeType support for Xft
+<sect2>FreeType support in Xft
 <p>
 
-XFree86 &relvers; includes sources for FreeType version 2.0.1, but they are
-not built and installed automatically.  As a result, Xft is configured to
-provide only core fonts by default.  
+XFree86 &relvers; includes sources for FreeType version 2.0.1, and, by
+default, they are built and installed automatically.
 
 <p>
-To build FreeType support for Xft, first FreeType must be built and
-installed, either from the sources included in XFree86 in 
-<tt>extras/freetype2</tt> or from another FreeType (version 2.0.1 or later)
-release.  Early FreeType version 2 releases used a different header file 
+
+If you prefer, you can configure XFree86 &relvers; to use an existing
+Freetype2 installation by telling XFree86 not to build the internal copy and
+indicating where that external version has been installed. Edit (or create)
+<tt>config/cf/host.def</tt> to include:
+
+<itemize>
+	<item><tt>#define BuildFreetype2Library NO</tt>
+	<item><tt>#define Freetype2Dir /usr/local</tt>
+</itemize>
+
+Note that XFree86 assumes you'll be using a release FreeType no older than
+version 2.0.1.  Early FreeType version 2 releases used a different header file 
 installation and aren't compatible with XFree86. Instructions for building and
 installing FreeType can be found in the <tt>INSTALL</tt> file included with
 the FreeType release.
 
-<p>
-Second, XFree86 needs to know the installed location for FreeType, usually
-<tt>/usr/local</tt>.  Edit (or create) <tt>config/cf/host.def</tt> to 
-include:
-<quote><p>
-	#define Freetype2Dir	/usr/local
-</quote>
-
-<p>
-Finally, build XFree86 with "make World" from the top.
 </sect2>
 
 <sect2>Application Support For Anti-Aliased Text
@@ -1103,8 +1103,8 @@ Xft instead:
 Xditview will use Xft instead of the core API by default.  X11perf 
 includes tests to measure the performance of text rendered in three ways, 
 anti-aliased, anti-aliased with sub-pixel sampling and regular chunky 
-text, but through the Render extension, a path which has not been 
-optimized within the X server yet.
+text, but through the Render extension, a path which is currently somewhat
+slower than core text.
 </sect2>
 
 <sect1>Other extensions
