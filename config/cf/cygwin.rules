@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.14 2001/08/25 07:28:33 alanh Exp $
+XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.15 2001/09/19 15:47:00 alanh Exp $
 
 /*
  * Cygwin shared library rules (DLL versions)
@@ -134,7 +134,7 @@ clean::									@@\
  */
 
 #define MakeDLL(libname,solist)						@@\
-	$(CC) -shared -Wl,--out-implib=Concat3(lib,libname,.a) -Wl,--enable-auto-image-base -Wl,--enable-auto-import --def libname.def -o Concat3(lib,libname,.dll) solist $(REQUIREDLIBS)
+	$(CC) -shared -Wl,--out-implib=Concat3(lib,libname,.a) -Wl,--enable-auto-import --def libname.def -o Concat3(lib,libname,.dll) solist $(REQUIREDLIBS)
 
 
 /*
