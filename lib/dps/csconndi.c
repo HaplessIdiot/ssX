@@ -47,7 +47,7 @@
  *  
  * Author:  Adobe Systems Incorporated and MIT X Consortium
  */
-/* $XFree86: xc/lib/dps/csconndi.c,v 1.2 2000/02/15 14:51:21 dawes Exp $ */
+/* $XFree86: xc/lib/dps/csconndi.c,v 1.3 2000/05/18 23:46:12 dawes Exp $ */
 
 #if defined(sun) && !defined(SVR4)
 #define memmove(t,f,c) bcopy(f,t,c)
@@ -417,7 +417,9 @@ DPSCAPConnect(
 #include <netinet/tcp.h>
 #endif /* NO_TCP_H */
 #else  /* apollo */
+#ifndef __CYGWIN__
 #include <netinet/tcp.h>
+#endif /* __CYGWIN__ */
 #endif /* apollo */
 #endif
 #endif /* NEED_BSDISH */

@@ -1,12 +1,36 @@
+#ifndef __CYGWIN__
 LIBRARY X11
+#else
+LIBRARY libX11
+#endif
 VERSION LIBRARY_VERSION
 EXPORTS
+#ifndef __CYGWIN__
  _Xdebug_p=_Xdebug CONSTANT
  _XCreateMutex_fn_p=_XCreateMutex_fn CONSTANT
  _XFreeMutex_fn_p=_XFreeMutex_fn CONSTANT
  _XLockMutex_fn_p=_XLockMutex_fn CONSTANT
  _XUnlockMutex_fn_p=_XUnlockMutex_fn CONSTANT
  _Xglobal_lock_p=_Xglobal_lock CONSTANT
+#else
+ _Xdebug
+ _Xsetlocale
+ _XFlush
+ _Xlcmbtowc
+ _Xlcwctomb
+ _Xlcmbstowcs
+ _Xlcwcstombs
+ _Xmbtowc
+ _Xmblen
+ _Xwctomb
+ _Xmbstowcs
+ _Xwcstombs
+ _Xwcscpy
+ _Xwcsncpy
+ _Xwcslen
+ _Xwcscmp
+ _Xwcsncmp
+#endif
  XActivateScreenSaver
  XAddConnectionWatch
  XAddExtension
@@ -599,14 +623,22 @@ EXPORTS
  _XDeqAsyncHandler
  _XEatData
  _XError
+#ifndef __CYGWIN__
  _XFlushIt
+#endif
  _XFlushGCCache
  _XFreeTemp
  _XGetAsyncData
  _XGetAsyncReply
+#ifdef __CYGWIN__
+ _XGetBitsPerPixel
+ _XGetScanlinePad
+#endif
  _XIOError
  _XInitImageFuncPtrs
+#ifndef __CYGWIN__
  _XLockDisplay
+#endif
  _XRead
  _XReadEvents
  _XReadPad
@@ -620,8 +652,10 @@ EXPORTS
  _XUnregisterFilter
  _XUnregisterInternalConnection
  _XVIDtoVisual
+#ifndef __CYGWIN__
  _Xthread_init
  _Xthread_waiter
+#endif
  XkbIgnoreExtension
  XkbOpenDisplay
  XkbQueryExtension
@@ -807,3 +841,4 @@ EXPORTS
  XkbUpdateMapFromCore
  XkbXlibControlsImplemented
 /* $TOG: X11-def.cpp /main/19 1998/06/16 16:04:58 kaleb $ */
+/* $XFree86$ */

@@ -17,6 +17,19 @@ EXPORTS
  XShapeQueryExtents
  XShapeQueryVersion
  XShapeSelectInput
+#if defined(__CYGWIN__) && defined(HAS_SHM)
+ XShmAttach
+ XShmCreateImage
+ XShmCreatePixmap
+ XShmDetach
+;XShmDestroyImage
+ XShmGetEventBase
+ XShmGetImage
+ XShmPixmapFormat
+ XShmPutImage
+ XShmQueryExtension
+ XShmQueryVersion
+#endif
  XSyncAwait
  XSyncChangeAlarm
  XSyncChangeCounter
@@ -89,6 +102,8 @@ EXPORTS
  XSecurityFreeXauth
  XSecurityGenerateAuthorization
  XSecurityRevokeAuthorization
+ XLbxQueryExtension
+ XLbxQueryVersion
  XagQueryVersion
  XagCreateAssociation
  XagCreateEmbeddedApplicationGroup
@@ -103,12 +118,14 @@ EXPORTS
  XcupGetReservedColormapEntries
  XcupQueryVersion
  XcupStoreColors
+#ifndef __CYGWIN__
  XPanoramiXQueryVersion
  XPanoramiXAllocInfo
  XPanoramiXGetScreenCount
  XPanoramiXGetScreenSize
  XPanoramiXGetState
  XPanoramiXQueryExtension
+#endif
  DPMSQueryExtension
  DPMSGetVersion
  DPMSCapable
@@ -122,3 +139,4 @@ EXPORTS
  XeviQueryVersion
  XeviGetVisualInfo
 /* $TOG: Xext-def.cpp /main/10 1998/01/04 12:31:45 kaleb $ */
+/* $XFree86$ */

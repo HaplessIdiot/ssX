@@ -33,8 +33,10 @@ EXPORTS
  XpSendOneTicket
  XpSetAttributes
  XpSetContext
+ XpSetImageResolution
  XpSetLocaleHinter
  XpStartDoc
  XpStartJob
  XpStartPage
 /* $XConsortium: Xp-def.cpp /main/1 1996/11/13 14:44:46 lehors $ */
+/* $XFree86$ */

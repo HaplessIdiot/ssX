@@ -23,7 +23,7 @@ in this Software without prior written authorization from The Open Group.
  * The X Window System is a Trademark of The Open Group.
  *
  */
-/* $XFree86: xc/include/Xos.h,v 3.27 1999/12/27 00:39:19 robin Exp $ */
+/* $XFree86: xc/include/Xos.h,v 3.28 2000/04/05 18:13:15 dawes Exp $ */
 
 /* This is a collection of things to try and minimize system dependencies
  * in a "signficant" number of source files.
@@ -121,7 +121,7 @@ extern int sys_nerr;
 /*
  * Get open(2) constants
  */
-#ifdef X_NOT_POSIX
+#if defined(X_NOT_POSIX) && !defined(__CYGWIN__)
 #include <fcntl.h>
 #if defined(USL) || defined(CRAY) || defined(MOTOROLA) || (defined(i386) && (defined(SYSV) || defined(SVR4))) || defined(__sxg__)
 #include <unistd.h>

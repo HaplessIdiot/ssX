@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/Xmd.h,v 3.4 1996/12/31 04:15:20 dawes Exp $ */
+/* $XFree86: xc/include/Xmd.h,v 3.6 2000/02/22 00:59:40 mvojkovi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -145,6 +145,7 @@ typedef unsigned char  CARD8;
 typedef CARD32		BITS32;
 typedef CARD16		BITS16;
 
+#ifndef __CYGWIN__
 #ifndef __EMX__
 typedef CARD8		BYTE;
 typedef CARD8           BOOL;
@@ -156,7 +157,14 @@ typedef CARD8           BOOL;
 #define BYTE		CARD8
 #define BOOL		CARD8
 #endif
+#endif
 
+#ifdef __CYGWIN__
+#undef BYTE
+#undef BOOL
+#define BYTE CARD8
+#define BOOL CARD8
+#endif
 
 /*
  * definitions for sign-extending bitfields on 64-bit architectures

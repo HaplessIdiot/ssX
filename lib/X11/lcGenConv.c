@@ -35,7 +35,7 @@
  *  2000  
  *  Modifier: Ivan Pascal      The XFree86 Project
  */
-/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.13 2000/02/12 02:54:12 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.14 2000/02/25 18:27:55 dawes Exp $ */
 
 /*
  * A generic locale loader for all kinds of ISO-2022 based codesets.
@@ -54,6 +54,10 @@
 
 #if !defined(X_NOT_STDC_ENV) && !defined(macII) && !defined(Lynx_22) && !defined(X_LOCALE)
 #define STDCVT
+#endif
+
+#ifdef __CYGWIN__
+int __mb_cur_max = 1;
 #endif
 
 extern void _XlcAddUtf8Converters(

@@ -4,10 +4,15 @@ XCOMM $TOG: Imakefile /main/4 1998/02/04 14:32:56 kaleb $
 
 
 
-XCOMM $XFree86: xc/lib/zlib/Imakefile,v 1.5 1999/03/28 15:32:09 dawes Exp $
+XCOMM $XFree86: xc/lib/zlib/Imakefile,v 1.6 1999/04/17 09:08:13 dawes Exp $
 
+#ifndef cygwinArchitecture
 #define DoNormalLib   YES
 #define DoSharedLib   NO
+#else
+#define DoNormalLib   NO
+#define DoSharedLib   YES
+#endif
 #define DoExtraLib    NO
 #define DoDebugLib    NO
 #define DoProfileLib  NO

@@ -5,6 +5,8 @@
  * For conditions of distribution and use, see copyright notice in zlib.h 
  */
 
+/* $XFree86$ */
+
 #ifndef _ZCONF_H
 #define _ZCONF_H
 
@@ -47,7 +49,7 @@
 #  define voidp		z_voidp
 #endif
 
-#if (defined(_WIN32) || defined(__WIN32__)) && !defined(WIN32)
+#if (defined(_WIN32) || defined(__WIN32__)) && !defined(WIN32) && !defined(__CYGWIN__)
 #  define WIN32
 #endif
 #if defined(__GNUC__) || defined(WIN32) || defined(__386__) || defined(i386) || defined(__EMX__)
