@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86vmstr.h,v 3.22 1999/03/07 08:29:28 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86vmstr.h,v 3.23 1999/03/14 11:17:38 dawes Exp $ */
 /*
 
 Copyright 1995  Kaleb S. KEITHLEY
@@ -28,7 +28,7 @@ or other dealings in this Software without prior written authorization
 from Kaleb S. KEITHLEY
 
 */
-/* $TOG: xf86vmstr.h /main/11 1998/02/09 11:23:53 kaleb $ */
+/* $Xorg: xf86vmstr.h,v 1.3 2000/08/18 04:05:46 coskrey Exp $ */
 
 /* THIS IS NOT AN X CONSORTIUM STANDARD OR AN X PROJECT TEAM SPECIFICATION */
 
