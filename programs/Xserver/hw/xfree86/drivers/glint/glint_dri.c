@@ -58,8 +58,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 static char GLINTKernelDriverName[] = "gamma";
 static char GLINTClientDriverName[] = "gamma";
 
-#define USE_LEGACY_DMA 1
-
 static int 
 GLINTDRIControlInitSingleMX(int drmSubFD, int irq)
 {
@@ -1150,8 +1148,8 @@ dumpIndex,readValue);
 	    readValue = GLINT_READ_REG(OutputFIFO);
 
 	    GLINT_SLOW_WRITE_REG(1<<10, FilterMode);
-            if (pGlint->numMXDevices > 1)
-	    	GLINT_SLOW_WRITE_REG((1<<pGlint->numMXDevices)-1,BroadcastMask);
+            if (pGlint->numMXDevices == 2)
+	    	GLINT_SLOW_WRITE_REG(3,BroadcastMask);
 	}
     }
 

@@ -1055,10 +1055,10 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	}
 	default_depth = fbdevHWGetDepth(pScrn);
 	if (!xf86SetDepthBpp(pScrn, default_depth, default_depth, default_depth,
-			     /*Support24bppFb |*/ Support32bppFb))
+			     Support24bppFb | Support32bppFb))
 		return FALSE;
     } else {
-	if (!xf86SetDepthBpp(pScrn, 8, 0, 0, /*Support24bppFb |*/ Support32bppFb 
+	if (!xf86SetDepthBpp(pScrn, 8, 0, 0, Support24bppFb | Support32bppFb 
 	 	/*| SupportConvert32to24 | PreferConvert32to24*/))
 		return FALSE;
     }
@@ -1081,6 +1081,10 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     xf86PrintDepthBpp(pScrn);
+
+    /* Get the depth24 pixmap format */
+    if (pScrn->depth == 24 && pix24bpp == 0)
+	pix24bpp = xf86GetBppFromDepth(pScrn, 24);
 
     /*
      * This must happen after pScrn->display has been set because
@@ -1173,9 +1177,9 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     } else pGlint->WriteBitmap = TRUE;
 
     /* Check whether to use the FBDev stuff and fill in the rest of pScrn */
-    from = X_CONFIG;
     if (xf86ReturnOptValBool(GLINTOptions, OPTION_FBDEV, FALSE)) {
 	pGlint->FBDev = TRUE;
+        from = X_CONFIG;
 	
 	pScrn->AdjustFrame	= fbdevHWAdjustFrame;
 	pScrn->EnterVT		= GLINTEnterVTFBDev;
@@ -1185,6 +1189,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     } else {
     	/* Only use FBDev if requested */
 	pGlint->FBDev = FALSE;
+        from = X_PROBED;
 	
 	pScrn->AdjustFrame	= GLINTAdjustFrame;
 	pScrn->EnterVT		= GLINTEnterVT;
@@ -1534,6 +1539,11 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	    break;
 	case PCI_VENDOR_3DLABS_CHIP_500TX:
 	case PCI_VENDOR_3DLABS_CHIP_MX:
+	    if (pScrn->bitsPerPixel == 24) {
+		xf86DrvMsg(pScrn->scrnIndex, from, 
+			"-depth 24 -pixmap24 not supported by this chip.\n");
+		return FALSE;
+	    }
 	    maxheight = 4096;
 	    maxwidth = 4096;
 	    pGlint->RamDacRec = RamDacCreateInfoRec();
@@ -1564,6 +1574,16 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 		return FALSE;
 	    break;
 	case PCI_VENDOR_3DLABS_CHIP_GAMMA:
+	    if (pScrn->bitsPerPixel == 24) {
+		xf86DrvMsg(pScrn->scrnIndex, from, 
+			"-depth 24 -pixmap24 not supported by this chip.\n");
+		return FALSE;
+	    }
+    	    if (pGlint->UsePCIRetry) {
+		xf86DrvMsg(pScrn->scrnIndex, from, 
+				"GAMMA in use - PCI retries disabled\n");
+		pGlint->UsePCIRetry = FALSE;
+	    }
 	    maxheight = 4096;
 	    maxwidth = 4096;
 	    pGlint->RefClock = 14318;
@@ -1850,20 +1870,14 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     /* Load bpp-specific modules */
     switch (pScrn->bitsPerPixel) {
     case 1:
-	mod = "xf1bpp";
-	break;
     case 4:
-	mod = "xf4bpp";
-	break;
     case 8:
-	mod = "cfb";
-	break;
     case 16:
-	mod = "cfb16";
+	mod = "fb";
 	break;
     case 24:
 	if (pix24bpp == 24)
-	    mod = "cfb24";
+	    mod = "fb";
 	else
 	    mod = "xf24_32bpp";
 	break;
@@ -1871,7 +1885,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	if (pScrn->overlayFlags & OVERLAY_8_32_PLANAR) {
 	    mod = "xf8_32bpp";
 	} else {
-	    mod = "cfb32";
+	    mod = "fb";
 	}
 	break;
     }
@@ -2561,35 +2575,20 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     switch (pScrn->bitsPerPixel) {
     case 1:
-	ret = xf1bppScreenInit(pScreen, FBStart,
-			pScrn->virtualX, pScrn->virtualY,
-			pScrn->xDpi, pScrn->yDpi,
-			displayWidth);
-	break;
     case 4:
-	ret = xf4bppScreenInit(pScreen, FBStart,
-			pScrn->virtualX, pScrn->virtualY,
-			pScrn->xDpi, pScrn->yDpi,
-			displayWidth);
-	break;
     case 8:
-	ret = cfbScreenInit(pScreen, FBStart,
-			pScrn->virtualX, pScrn->virtualY,
-			pScrn->xDpi, pScrn->yDpi,
-			displayWidth);
-	break;
     case 16:
-	ret = cfb16ScreenInit(pScreen, FBStart,
+	ret = fbScreenInit(pScreen, FBStart,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
-			displayWidth);
+			displayWidth, pScrn->bitsPerPixel);
 	break;
     case 24:
 	if (pix24bpp == 24)
-	    ret = cfb24ScreenInit(pScreen, FBStart,
+	    ret = fbScreenInit(pScreen, FBStart,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
-			displayWidth);
+			displayWidth, pScrn->bitsPerPixel);
 	else
 	    ret = cfb24_32ScreenInit(pScreen, FBStart,
 			pScrn->virtualX, pScrn->virtualY,
@@ -2603,10 +2602,10 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			pScrn->xDpi, pScrn->yDpi,
 			displayWidth);
 	else 
-	    ret = cfb32ScreenInit(pScreen, FBStart,
+	    ret = fbScreenInit(pScreen, FBStart,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
-			displayWidth);
+			displayWidth, pScrn->bitsPerPixel);
 	break;
     default:
 	xf86DrvMsg(scrnIndex, X_ERROR,

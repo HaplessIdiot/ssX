@@ -36,11 +36,8 @@
 
 #include "xf86PciInfo.h"
 #include "xf86Pci.h"
-#define PSZ 8
-#include "cfb.h"
-#undef PSZ
-#include "cfb16.h"
-#include "cfb32.h"
+
+#include "fb.h"
 
 #include "miline.h"
 
@@ -92,13 +89,7 @@ static void TXSetupForSolidLine(ScrnInfoPtr pScrn, int color, int rop,
 				unsigned int planemask);
 static void TXSubsequentHorVertLine(ScrnInfoPtr pScrn, int x1, int y1,
 				int len, int dir);
-static void TXSubsequentSolidBresenhamLine8bpp(ScrnInfoPtr pScrn,
-        			int x, int y, int dmaj, int dmin, int e, 
-				int len, int octant);
-static void TXSubsequentSolidBresenhamLine16bpp(ScrnInfoPtr pScrn,
-        			int x, int y, int dmaj, int dmin, int e, 
-				int len, int octant);
-static void TXSubsequentSolidBresenhamLine32bpp(ScrnInfoPtr pScrn,
+static void TXSubsequentSolidBresenhamLine(ScrnInfoPtr pScrn,
         			int x, int y, int dmaj, int dmin, int e, 
 				int len, int octant);
 static void TXPolylinesThinSolidWrapper(DrawablePtr pDraw, GCPtr pGC,
@@ -218,17 +209,8 @@ TXAccelInit(ScreenPtr pScreen)
     infoPtr->PolylinesThinSolidFlags = 0;
     infoPtr->SetupForSolidLine = TXSetupForSolidLine;
     infoPtr->SubsequentSolidHorVertLine = TXSubsequentHorVertLine;
-    switch(pScrn->bitsPerPixel) {
-	case 8:		infoPtr->SubsequentSolidBresenhamLine = 
-				TXSubsequentSolidBresenhamLine8bpp;
-			break;
-	case 16:	infoPtr->SubsequentSolidBresenhamLine = 
-				TXSubsequentSolidBresenhamLine16bpp;
-			break;
-	case 32:	infoPtr->SubsequentSolidBresenhamLine = 
-				TXSubsequentSolidBresenhamLine32bpp;
-			break;
-    }
+    infoPtr->SubsequentSolidBresenhamLine = 
+					TXSubsequentSolidBresenhamLine;
     infoPtr->PolySegmentThinSolid = TXPolySegmentThinSolidWrapper;
     infoPtr->PolylinesThinSolid = TXPolylinesThinSolidWrapper;
 
@@ -878,6 +860,7 @@ TXPolylinesThinSolidWrapper(
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
     GLINTPtr pGlint = GLINTPTR(infoRec->pScrn);
     pGlint->CurrentGC = pGC;
+    pGlint->CurrentDrawable = pDraw;
     if(infoRec->NeedToSync) (*infoRec->Sync)(infoRec->pScrn);
     XAAPolyLines(pDraw, pGC, mode, npt, pPts);
 }
@@ -892,6 +875,7 @@ TXPolySegmentThinSolidWrapper(
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
     GLINTPtr pGlint = GLINTPTR(infoRec->pScrn);
     pGlint->CurrentGC = pGC;
+    pGlint->CurrentDrawable = pDraw;
     if(infoRec->NeedToSync) (*infoRec->Sync)(infoRec->pScrn);
     XAAPolySegment(pDraw, pGC, nseg, pSeg);
 }
@@ -929,11 +913,10 @@ TXSubsequentHorVertLine(ScrnInfoPtr pScrn,int x,int y,int len,int dir)
 }
 
 static void 
-TXSubsequentSolidBresenhamLine8bpp( ScrnInfoPtr pScrn,
+TXSubsequentSolidBresenhamLine( ScrnInfoPtr pScrn,
         int x, int y, int dmaj, int dmin, int e, int len, int octant)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
-    cfbPrivGCPtr devPriv;
     int dxdom, dy;
 
     if(dmaj == dmin) {
@@ -955,87 +938,9 @@ TXSubsequentSolidBresenhamLine8bpp( ScrnInfoPtr pScrn,
 	return;
     }
 
-    devPriv = cfbGetGCPrivate(pGlint->CurrentGC);
-
-    cfbBresS(devPriv->rop, devPriv->and, devPriv->xor, 
-                (unsigned long*)pGlint->FbBase, pScrn->displayWidth >> 2, 
+    fbBres(pGlint->CurrentDrawable, pGlint->CurrentGC, 0,
                 (octant & XDECREASING) ? -1 : 1, 
                 (octant & YDECREASING) ? -1 : 1, 
                 (octant & YMAJOR) ? Y_AXIS : X_AXIS,
-                x, y, dmin + e, dmin, dmin - dmaj, len);
+                x, y, dmin + e, dmin, -dmaj, len);
 }
-
-static void 
-TXSubsequentSolidBresenhamLine16bpp( ScrnInfoPtr pScrn,
-        int x, int y, int dmaj, int dmin, int e, int len, int octant)
-{
-    GLINTPtr pGlint = GLINTPTR(pScrn);
-    cfbPrivGCPtr devPriv;
-    int dxdom, dy;
-
-    if(dmaj == dmin) {
-	GLINT_WAIT(7);
-	if(octant & YDECREASING) {
-	    dy = -1;
-	} else {
-	    dy = 1;
-	}
-
-	if(octant & XDECREASING) {
-	    dxdom = -1;
-	} else {
-	    dxdom = 1;
-	}
-
-        TXLoadCoord(pScrn, x, y, 0, len, dxdom, dy);
-	GLINT_WRITE_REG(PrimitiveLine, Render);
-	return;
-    }
-
-    devPriv = cfbGetGCPrivate(pGlint->CurrentGC);
-
-    cfb16BresS(devPriv->rop, devPriv->and, devPriv->xor, 
-                (unsigned long*)pGlint->FbBase, pScrn->displayWidth >> 1, 
-                (octant & XDECREASING) ? -1 : 1, 
-                (octant & YDECREASING) ? -1 : 1, 
-                (octant & YMAJOR) ? Y_AXIS : X_AXIS,
-                x, y, dmin + e, dmin, dmin - dmaj, len);
-}
-
-static void 
-TXSubsequentSolidBresenhamLine32bpp( ScrnInfoPtr pScrn,
-        int x, int y, int dmaj, int dmin, int e, int len, int octant)
-{
-    GLINTPtr pGlint = GLINTPTR(pScrn);
-    cfbPrivGCPtr devPriv;
-    int dxdom, dy;
-
-    if(dmaj == dmin) {
-	GLINT_WAIT(7);
-	if(octant & YDECREASING) {
-	    dy = -1;
-	} else {
-	    dy = 1;
-	}
-
-	if(octant & XDECREASING) {
-	    dxdom = -1;
-	} else {
-	    dxdom = 1;
-	}
-
-        TXLoadCoord(pScrn, x, y, 0, len, dxdom, dy);
-	GLINT_WRITE_REG(PrimitiveLine, Render);
-	return;
-    }
-
-    devPriv = cfbGetGCPrivate(pGlint->CurrentGC);
-
-    cfb32BresS(devPriv->rop, devPriv->and, devPriv->xor, 
-                (unsigned long*)pGlint->FbBase, pScrn->displayWidth, 
-                (octant & XDECREASING) ? -1 : 1, 
-                (octant & YDECREASING) ? -1 : 1, 
-                (octant & YMAJOR) ? Y_AXIS : X_AXIS,
-                x, y, dmin + e, dmin, dmin - dmaj, len);
-}
-
