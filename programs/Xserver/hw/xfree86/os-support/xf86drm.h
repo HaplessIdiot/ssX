@@ -31,7 +31,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.25 2003/07/09 02:15:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.26 2003/08/16 19:26:37 dawes Exp $ */
 
 #ifndef _XF86DRM_H_
 #define _XF86DRM_H_
@@ -378,7 +378,7 @@ do {	register unsigned int __old __asm("o0");		\
 			";;\n"						  \
 			"cmpxchg4.acq %0=%1,%3,ar.ccv"			  \
 			: "=r" (__result), "=m" (__drm_dummy_lock(lock))  \
-			: "r" (__old), "r" (new)			  \
+			: "r" ((unsigned long)__old), "r" (new)			  \
 			: "memory");					  \
 		__ret = (__result) != (__old);				  \
 	} while (0)

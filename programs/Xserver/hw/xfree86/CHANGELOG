@@ -1,4 +1,5 @@
 XFree86 4.3.99.15 (xx October 2003)
+ 531. Fix DRM_CAS on ia64 as used by the DRI (Bugzilla #778, John Dennis).
  530. Call OsCleanup() at the end of each server generation, and add an
       argument to indicate when the server is terminating.  This allows
       misc end-of-generation cleanups to be added to OsCleanup() (David Dawes).
@@ -18053,7 +18054,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2907 2003/10/28 22:38:36 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2908 2003/10/29 04:33:01 dawes Exp $
 
 
 
