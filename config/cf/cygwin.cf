@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.19 2001/06/07 11:19:52 alanh Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.20 2001/06/07 18:30:40 alanh Exp $
 
 #ifndef OSName
 #define OSName                  Cygwin
@@ -91,7 +91,7 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.19 2001/06/07 11:19:52 ala
 
 #define LnCmd                   ln -s
 #define CcCmd                   gcc
-#define CpluplusCmd		c++ -fpermissive
+#define CplusplusCmd		g++
 #define AsCmd                   as
 #define GccGasOption	        -DGCCUSESGAS
 #define AsmDefines	        -DUSE_GAS -DGCCUSESGAS

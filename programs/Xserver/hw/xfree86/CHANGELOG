@@ -1,4 +1,8 @@
 XFree86 4.1.99.1 (xx June 2001)
+  88. Fix cursor problem in server respawn's on Cygwin/XFree86 
+      (#4750, Harold Hunt).
+  87. Fix typo definition of CplusplusCmd in cygwin.cf 
+      (#4752, Alexander Gottwald).
   86. Fix makedepend for use on Cygwin/XFree86.
       Use makedepend on Cygwin/XFree86. 
       Fix SharedDepLibraryTarget so that build dependencies are correct,
@@ -13463,4 +13467,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1835 2001/06/07 14:35:08 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1836 2001/06/07 18:30:36 alanh Exp $

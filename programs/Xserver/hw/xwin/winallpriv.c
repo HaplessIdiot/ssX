@@ -28,7 +28,7 @@
  * Authors:	Keith Packard, MIT X Consortium
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winallpriv.c,v 1.3 2001/05/14 16:52:33 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winallpriv.c,v 1.4 2001/06/04 13:04:41 alanh Exp $ */
 
 #include "win.h"
 
@@ -37,6 +37,11 @@ Bool
 winAllocatePrivates (ScreenPtr pScreen)
 {
   winPrivScreenPtr	pScreenPriv;
+
+#if CYGDEBUG
+  ErrorF ("winAllocatePrivates () - g_ulSG: %d ulSG: %d\n",
+	  g_ulServerGeneration, serverGeneration);
+#endif
 
   /* We need a new slot for our privates if the screen gen has changed */
   if (g_ulServerGeneration != serverGeneration)
