@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.202 2002/01/14 18:16:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.203 2002/01/25 21:56:16 tsi Exp $ */
 
 /*
  *
@@ -597,6 +597,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86GetMotionEvents)
    SYMFUNC(xf86MotionHistoryAllocate)
    SYMFUNC(xf86FirstLocalDevice)
+   SYMFUNC(xf86eqEnqueue)
 /* The following segment merged from Metrolink tree */
    SYMFUNC(xf86XInputSetScreen)
    SYMFUNC(xf86ScaleAxis)
