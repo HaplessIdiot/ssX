@@ -1,37 +1,25 @@
+              Information for Matrox Millennium/Mystique Users
 
+                          The XFree86 Project Inc.
 
-
-
-
-
-
-
-
-               Information for Matrox Millennium/Mystique Users
-
-                           The XFree86 Project Inc.
-
-                                  16 May 1997
-
-
+                                 16 May 1997
 
 1.  Supported hardware
 
 The current MGA driver in the SVGA server supports the Matrox Millennium
-(MGA2064W) with Ti3026 RAMDAC. It has been tested with 175, 220MHz, and 250MHz
-cards with 2MB, 4MB and 8MB WRAM.  It also supports, for the first time, Matrox
-Mystique (MGA1064SG) board tested up to 135 MHz for 2 and 4 MB configs.
+(MGA2064W) with Ti3026 RAMDAC. It has been tested with 175, 220MHz, and
+250MHz cards with 2MB, 4MB and 8MB WRAM.  It also supports, for the first
+time, Matrox Mystique (MGA1064SG) board tested up to 135 MHz for 2 and 4 MB
+configs.
 
 NOTE: This driver is pretty new, and not everything works like you expect it
-to. It shouldn't crash your machine, but you may have video artifacts or miss-
-ing lines. Please report any and all problems to XFree86@Xfree86.org using the
-appropriate bug report sheet.
-
+to. It shouldn't crash your machine, but you may have video artifacts or
+missing lines. Please report any and all problems to XFree86@Xfree86.org
+using the appropriate bug report sheet.
 
 2.  Features:
 
    o Basic support for the Matrox Millennium video adapter
-
 
         o uses linear frame buffer
 
@@ -59,22 +47,9 @@ appropriate bug report sheet.
 
              o many more...
 
-
-
-Information for Matrox Millennium/Mystique Users                              1
-
-
-
-
-
-Information for Matrox Millennium/Mystique Users                              2
-
-
-
           The Millenium server is fairly well accelerated, and is one of the
-          fastest XFree86 3.3 Xservers. Future work will concentrate on fixing
-          remaining bugs.
-
+          fastest XFree86 3.3 Xservers. Future work will concentrate on fix-
+          ing remaining bugs.
 
    o Basic support for the Matrox Mystique video adapter
 
@@ -99,9 +74,8 @@ Information for Matrox Millennium/Mystique Users                              2
              o cached pixmaps
 
              o NOTE: If acceleration do not work properly, you had rather to
-               insert: Option "noaccel" line in the Device section of XF86Con-
-               fig file. It will be slower but will work better.
-
+               insert: Option "noaccel" line in the Device section of
+               XF86Config file. It will be slower but will work better.
 
 3.  Future Features (in order from highest to lowest priority)
 
@@ -113,7 +87,6 @@ Information for Matrox Millennium/Mystique Users                              2
 
    o other depths and full acceleration for Mystique board
 
-
 4.  Technical Note:
 
 This driver only supports:
@@ -124,38 +97,24 @@ This driver only supports:
 
    o the MGA Storm (MGA1064SG) chipset with integrated 170 MHz RAMDAC
 
-
-
-
-
-
-
-
-
-
-Information for Matrox Millennium/Mystique Users                              3
-
-
-
-   o We will eventually provide support for the other Matrox chipsets (once the
-     Millennium driver is at a far enough stage and more people with other
-     cards join the effort), including the Impression, Atlas, Genesis etc.
+   o We will eventually provide support for the other Matrox chipsets (once
+     the Millennium driver is at a far enough stage and more people with
+     other cards join the effort), including the Impression, Atlas, Genesis
+     etc.
 
      At the moment, however, only the Millennium and Mystique are supported.
 
-
 5.  Configuration:
 
-The server auto-detects WRAM size and RAMDAC speed. Do not bother putting these
-in your "Device" section, as they will be overridden. The TVP3026 and MGA1064SG
-have a programmable clock generator, so probing and setting clocks is unneces-
-sary as well.
+The server auto-detects WRAM size and RAMDAC speed. Do not bother putting
+these in your "Device" section, as they will be overridden. The TVP3026 and
+MGA1064SG have a programmable clock generator, so probing and setting clocks
+is unnecessary as well.
 
 The "nolinear" option is currently unsupported - do not use this
 
-The options "noaccel" or "no_bitblt" turn off BitBlt Engine and other acceler-
-ated functions.
-
+The options "noaccel" or "no_bitblt" turn off BitBlt Engine and other accel-
+erated functions.
 
 6.  Authors
 
@@ -188,145 +147,6 @@ Visit the Matrox Millennium XServer for XFree86 Home Page
 the latest news, new sources, etc.
 
      Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/MGA.sgml,v 3.7 1997/06/03 14:11:52 hohndel Exp $
-
-
-
-
-
-
-
-
-
-
-
-Information for Matrox Millennium/Mystique Users                              4
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                                   CONTENTS
-
-
-
-1. Supported hardware ....................................................... 1
-
-2. Features: ................................................................ 1
-
-3. Future Features (in order from highest to lowest priority) ............... 2
-
-4. Technical Note: .......................................................... 2
-
-5. Configuration: ........................................................... 3
-
-6. Authors .................................................................. 3
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                                       i
-
 
 
 $XFree86$

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/lnxdoc.rules,v 3.12 1998/04/19 11:10:51 dawes Exp $
+XCOMM $XFree86: xc/config/cf/lnxdoc.rules,v 3.13 1999/04/15 01:29:12 dawes Exp $
 XCOMM
 XCOMM Rules for formatting Linuxdoc-SGML documentation
 XCOMM
@@ -24,7 +24,7 @@ base.ps: sgmlfile							@@\
 	RemoveFile(base.dvi)						@@\
 	$(LINUXDOCFORMAT) -T latex sgmlfile | \				@@\
 	    $(LINUXDOCLATEX) -d > base.dvi				@@\
-	RemoveFile(base.ps)						@@\
+	RemoveFiles(base._ps base.ps)					@@\
 	$(DVIPS) $(DVIPSOPTIONS) -o base._ps base.dvi && \		@@\
 	    $(MV) base._ps $@						@@\
 	RemoveFile(base.dvi)						@@\
@@ -42,7 +42,7 @@ clean::									@@\
 AllTarget(textfile)							@@\
 									@@\
 textfile: sgmlfile							@@\
-	RemoveFile(textfile)						@@\
+	RemoveFiles(_$@ $@)						@@\
 	$(LINUXDOCFORMAT) -T nroff sgmlfile | \				@@\
 	    $(LINUXDOCROFF) | $(XFREE86IDENTFIX) > _$@ && \		@@\
 	    $(MV) _$@ $@						@@\
@@ -50,7 +50,7 @@ textfile: sgmlfile							@@\
 LinuxDocInstall(textfile,$(XFREE86DOCDIR))				@@\
 									@@\
 clean::									@@\
-	RemoveFiles(Concat(_,textfile) textfile)
+	@(file=textfile; set -x; RemoveFiles(_$$file $$file))
 #else
 #define LinuxDocSgmlToText(sgmlfile,textfile) /**/
 #endif
@@ -98,7 +98,7 @@ clean::									@@\
 AllTarget(base.ps)							@@\
 									@@\
 base.ps: sgmlfile							@@\
-	RemoveFile(base.ps)						@@\
+	RemoveFile(_$@ $@)						@@\
 	@(BASE=`basename sgmlfile .sgml`;\				@@\
 	  set -x;\							@@\
 	  RemoveFile($$BASE.ps);\					@@\
@@ -118,7 +118,7 @@ clean::									@@\
 AllTarget(textfile)							@@\
 									@@\
 textfile: sgmlfile							@@\
-	RemoveFile(textfile)						@@\
+	RemoveFiles(_$@ $@)						@@\
 	@(BASE=`basename sgmlfile .sgml`;\				@@\
 	  set -x;\							@@\
 	  RemoveFile($$BASE.latin1);\					@@\
@@ -129,7 +129,7 @@ textfile: sgmlfile							@@\
 LinuxDocInstall(textfile,$(XFREE86DOCDIR))				@@\
 									@@\
 clean::									@@\
-	RemoveFiles(Concat(_,textfile) textfile)
+	@(file=textfile; set -x; RemoveFiles(_$$file $$file))
 #else
 #define LinuxDocSgmlToText(sgmlfile,textfile) /**/
 #endif
@@ -154,14 +154,13 @@ clean::									@@\
 
 #endif /* HasSgmlFmt */
 
-
 #define LinuxDocTargetLong(sgmlfile,textfile,base)			@@\
 LinuxDocSgmlToText(sgmlfile,textfile)					@@\
 LinuxDocSgmlToHtml(sgmlfile,base)					@@\
 LinuxDocSgmlToPs(sgmlfile,base)
 
 #define LinuxDocReadmeTarget(base)					@@\
-LinuxDocTargetLong(base.sgml,README.base,base)
+LinuxDocTargetLong(base.sgml,ReadmeFile(base),base)
 
 #define LinuxDocTarget(base)						@@\
 LinuxDocTargetLong(base.sgml,base,base)

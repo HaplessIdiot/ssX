@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/lnxdoc.tmpl,v 3.7 1998/09/13 05:45:42 dawes Exp $
+XCOMM $XFree86: xc/config/cf/lnxdoc.tmpl,v 3.8 1998/12/20 11:56:22 dawes Exp $
 XCOMM
 
 #ifndef HasLinuxDoc
@@ -83,6 +83,10 @@ XCOMM
 
 #ifndef BuildSgmlDocs
 #define BuildSgmlDocs		(HasLinuxDoc || HasSgmlFmt)
+#endif
+
+#ifndef ReadmeFile
+#define ReadmeFile(base)	README.base     
 #endif
 
 

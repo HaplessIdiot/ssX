@@ -1,166 +1,129 @@
+                     Release Notes for XFree86[tm] 3.2A
 
+                          The XFree86 Project, Inc
 
+                               25 January 1997
 
-
-
-
-
-
-
-                      Release Notes for XFree86[tm] 3.2A
-
-                           The XFree86 Project, Inc
-
-                                25 January 1997
-
-
-
-                                   Abstract
+                                  Abstract
 
      This document describes the rationale and conditions of this beta
      release, what is new in the XFree86 beta version 3.2A compared with
      the current release version (3.2), and how to install this beta
      release.
 
-
-
 1.  General Information about Beta Releases
 
-This is a beta release of XFree86.  XFree86 beta releases are available to the
-public in binary form only.  Source code is available only to registered mem-
-bers of the XFree86 beta team.  The main reason for this is that XFree86 beta
-versions often contain source code from other sources (such as the X Consor-
-tium) which is not yet available for public release.  If you want to test or
-work on these releases at the source code level, you can apply for membership
-of the XFree86 beta team by sending email to XFree86@XFree86.org.
+This is a beta release of XFree86.  XFree86 beta releases are available to
+the public in binary form only.  Source code is available only to registered
+members of the XFree86 beta team.  The main reason for this is that XFree86
+beta versions often contain source code from other sources (such as the X
+Consortium) which is not yet available for public release.  If you want to
+test or work on these releases at the source code level, you can apply for
+membership of the XFree86 beta team by sending email to XFree86@XFree86.org.
 
-The X servers included in beta releases have a built-in expiry date.  The rea-
-son for this is to try to prevent them from persisting beyond the date of the
-next release, and to encourage people to test new beta releases.  The expiry
-date for 3.2A is 15 June 1997.
+The X servers included in beta releases have a built-in expiry date.  The
+reason for this is to try to prevent them from persisting beyond the date of
+the next release, and to encourage people to test new beta releases.  The
+expiry date for 3.2A is 15 June 1997.
 
 The XFree86 binary beta releases may be freely redistributed providing that
 they are not modified in any way, and providing that an unmodified version of
 this document and the BetaReport document is included with the distribution.
 
-The reasons for making this beta release publicly available are to give it the
-widest possible testing, and also to make support for new hardware available.
+The reasons for making this beta release publicly available are to give it
+the widest possible testing, and also to make support for new hardware avail-
+able.
 
-The XFree86 Project encourages people to test this beta release, and to send us
-a report.  We need both success and failure reports, and we also need people
-using already supported hardware to test these beta releases to make sure that
-we haven't broken anything while adding support for new hardware.  A template
-for the Beta test reports can be found in the file ``BetaReport'' which should
-be available from the same place you got this file.  It is also installed in
-/usr/X11R6/lib/X11/doc/.  Beta test reports should be sent to
+The XFree86 Project encourages people to test this beta release, and to send
+us a report.  We need both success and failure reports, and we also need peo-
+ple using already supported hardware to test these beta releases to make sure
+that we haven't broken anything while adding support for new hardware.  A
+template for the Beta test reports can be found in the file ``BetaReport''
+which should be available from the same place you got this file.  It is also
+installed in /usr/X11R6/lib/X11/doc/.  Beta test reports should be sent to
 report@XFree86.org.  Please do not send these reports to our usual support
 address.
 
 The XFree86 FAQ <URL:http://www.xfree86.org/FAQ> contains a section about the
-current beta version.  It includes a regularly updated list of known problems.
-If you are having problems with the current beta version, please look here
-
-
-Release Notes for XFree86[tm] 3.2A                                            1
-
-
-
-
-
-Release Notes for XFree86[tm] 3.2A                                            2
-
-
-
-first.
+current beta version.  It includes a regularly updated list of known prob-
+lems.  If you are having problems with the current beta version, please look
+here first.
 
 Note that much of the documentation provided with this release has not been
 updated and still refers to 3.2.  If in doubt, check the date shown in the
 file(s).
-
 
 2.  Who are the XFree86 Beta Releases Targeted At?
 
 The XFree86 beta releases are intended for people who are prepared to test
 software which might be unstable and which might be buggy, and report the
 results of the testing.  These beta releases are not intended for beginners,
-but for people who have a basic knowledge of the OS so that they don't require
-much support for issues like upgrading system libraries and obtaining necessary
-packages.
+but for people who have a basic knowledge of the OS so that they don't
+require much support for issues like upgrading system libraries and obtaining
+necessary packages.
 
-If you are going to test this software, you should be prepared for the follow-
-ing:
+If you are going to test this software, you should be prepared for the fol-
+lowing:
 
-   o Installation problems.  The installation procedure for beta releases gets
-     only very limited testing prior to release.  You should be prepared for
-     problems here, and you should be prepared to upgrade other components of
-     your system if it proves necessary.  You should also have facilities to
-     backup a previous installation (and preferably your entire system) so that
-     it can be restored in case of serious problems.
+   o Installation problems.  The installation procedure for beta releases
+     gets only very limited testing prior to release.  You should be prepared
+     for problems here, and you should be prepared to upgrade other compo-
+     nents of your system if it proves necessary.  You should also have
+     facilities to backup a previous installation (and preferably your entire
+     system) so that it can be restored in case of serious problems.
 
    o New bugs.  Since each beta version gets only a limited amount of pre-
      release testing, it is likely that a new version will contain new bugs.
      This is unavoidable, because any code change, be it fixing previous bugs
-     or adding new features, brings with it the chance that new bugs have been
-     introduced.  You should be prepared for the possibility that the new ver-
-     sion will have problems with your hardware.  In this situation, you should
-     first check the XFree86 FAQ <URL:http://www.xfree86.org/FAQ> to see if it
-     is a known problem (possibly with a workaround), and then report the prob-
-     lem in detail.
+     or adding new features, brings with it the chance that new bugs have
+     been introduced.  You should be prepared for the possibility that the
+     new version will have problems with your hardware.  In this situation,
+     you should first check the XFree86 FAQ <URL:http://www.xfree86.org/FAQ>
+     to see if it is a known problem (possibly with a workaround), and then
+     report the problem in detail.
 
    o Expiry date.  The XFree86 beta servers have a limited lifetime.  Before
      using one, you should be aware of this and what the implications of this
      are.  If you have objections to software that has an expiry date, you
      shouldn't use this beta software.  It is possible that when one version
-     expires you may find that the replacement version has problems, or perhaps
-     binaries of the replacement are not available for your OS.  If you depend
-     on a server for your work/school/etc, you shouldn't be relying on this
-     beta software.
-
+     expires you may find that the replacement version has problems, or per-
+     haps binaries of the replacement are not available for your OS.  If you
+     depend on a server for your work/school/etc, you shouldn't be relying on
+     this beta software.
 
 3.  XFree86 and X11R6.3
 
 XFree86 releases starting with the this 3.2A beta are based on the X Consor-
 tium's X11R6.3 (the final release from the X Consortium).
 
-R6.3 is an update to R6.1, and is intended to be compatible with R6.1 and R6 at
-the source and protocol levels.  Binaries should be upward-compatible.  X11R6.3
-includes some new Xserver extensions: SECURITY, XC-APPGROUP, XpExtension (print
+R6.3 is an update to R6.1, and is intended to be compatible with R6.1 and R6
+at the source and protocol levels.  Binaries should be upward-compatible.
+X11R6.3 includes some new Xserver extensions: SECURITY, XC-APPGROUP, XpExten-
+sion (print extension), and an updated, and standardised version of LBX.
+X11R6.3 also has new standards, including RX (X Remote Execution MIME type),
+and a proxy management protocol.  X11R6.3 includes support for gzipped fonts.
 
-
-
-
-
-
-
-
-Release Notes for XFree86[tm] 3.2A                                            3
-
-
-
-extension), and an updated, and standardised version of LBX.  X11R6.3 also has
-new standards, including RX (X Remote Execution MIME type), and a proxy manage-
-ment protocol.  X11R6.3 includes support for gzipped fonts.
-
-R6.1 is an update to R6, and is intended to be compatible with R6 at the source
-and protocol levels.  Binaries should be upward-compatible.  X11R6.1 includes
-some new Xserver extensions: DOUBLE-BUFFER, XKEYBOARD and RECORD.
+R6.1 is an update to R6, and is intended to be compatible with R6 at the
+source and protocol levels.  Binaries should be upward-compatible.  X11R6.1
+includes some new Xserver extensions: DOUBLE-BUFFER, XKEYBOARD and RECORD.
 
 What about R6.2?  X11R6.2 is the name given to a subset of X11R6.3, which has
 only the print extension and the Xlib implementation of vertical writing and
-user-defined character support in addition to those features included in R6.1.
-
+user-defined character support in addition to those features included in
+R6.1.
 
 4.  OS issues
 
-Always check the OS specific README files for special requirements or caveats.
+Always check the OS specific README files for special requirements or
+caveats.
 
 Users running Linux/Elf (on Intel platforms) should note that they will need
 ld.so-1.7.14.  This can be found at tsx-11.mit.edu:pub/linux/packages/GCC
 <URL:ftp://tsx-11.mit.edu/pub/linux/packages/GCC>.
 
-Note: Elf is now the only binary type supported for Linux OSs.  This means that
-binaries for ix86/a.out and AXP/ECOFF are not available with this release.
-
+Note: Elf is now the only binary type supported for Linux OSs.  This means
+that binaries for ix86/a.out and AXP/ECOFF are not available with this
+release.
 
 5.  New Features in 3.2A
 
@@ -175,8 +138,8 @@ binaries for ix86/a.out and AXP/ECOFF are not available with this release.
      servers yet, but this should improve in the next release.  See the
      XF86Config(4/5) and xset(1) man pages for further details.
 
-   o The LBX extension is included in all the X servers, as part of the update
-     to R6.3.
+   o The LBX extension is included in all the X servers, as part of the
+     update to R6.3.
 
    o A print-only server (Xprt) is included as part of the update to R6.3.
 
@@ -189,19 +152,6 @@ binaries for ix86/a.out and AXP/ECOFF are not available with this release.
 
    o The XF98_TGUI server includes XAA support, but there are some problems
      with this at the moment.  It can be disabled with the "noaccel" option.
-
-
-
-
-
-
-
-
-
-
-Release Notes for XFree86[tm] 3.2A                                            4
-
-
 
 5.5  Alpha (AXP) platform support
 
@@ -216,8 +166,8 @@ Release Notes for XFree86[tm] 3.2A                                            4
 
    o Various alignment problems have been fixed.
 
-   o NOTE: A recent Linux kernel version is required for most of these servers
-     (essential for the Matrox driver).
+   o NOTE: A recent Linux kernel version is required for most of these
+     servers (essential for the Matrox driver).
 
 5.6  XInput Extension
 
@@ -225,26 +175,27 @@ Release Notes for XFree86[tm] 3.2A                                            4
 
 5.7  SVGA server
 
-   o A new general graphics acceleration interface (XFree86 Acceleration Archi-
-     tecture - XAA) has been implemented.  It is used to provide relatively
-     complete acceleration, at different colour depths, for several chips in
-     the SVGA server.  Chips currently making use of this include the Matrox
-     Millennium, Tseng ET4000/W32p and ET6000, and several chips from ARK
-     Logic, Chips and Technologies, Cirrus, Trident and SiS.
+   o A new general graphics acceleration interface (XFree86 Acceleration
+     Architecture - XAA) has been implemented.  It is used to provide rela-
+     tively complete acceleration, at different colour depths, for several
+     chips in the SVGA server.  Chips currently making use of this include
+     the Matrox Millennium, Tseng ET4000/W32p and ET6000, and several chips
+     from ARK Logic, Chips and Technologies, Cirrus, Trident and SiS.
 
 5.8  S3 server
 
-   o Some further S3 968 hardware bugs for lines/text have been worked around.
+   o Some further S3 968 hardware bugs for lines/text have been worked
+     around.
 
    o Cursor/pointer pixmaps larger than 64x64 are now supported without the
      need to use the "sw_cursor" option.
 
    o Preliminary detection/support for the Trio64UV+, Trio64V2 and Aurora64V+
-     (86CM65 used in notebooks) is now included.  This support is very new and
-     hasn't had much testing, so please send us success/failure reports.
+     (86CM65 used in notebooks) is now included.  This support is very new
+     and hasn't had much testing, so please send us success/failure reports.
 
-   o Support is now included for the ELSA Winner 2000PRO/X-8.  Please refer to
-     the notes for this card in README.S3.
+   o Support is now included for the ELSA Winner 2000PRO/X-8.  Please refer
+     to the notes for this card in README.S3.
 
 5.9  S3V (ViRGE) server
 
@@ -257,24 +208,12 @@ Release Notes for XFree86[tm] 3.2A                                            4
 
    o 32bpp is not supported.
 
-
-
-
-
-
-
-
-
-Release Notes for XFree86[tm] 3.2A                                            5
-
-
-
 5.10  Mach64 server
 
    o Support for 3D Rage II based Mach64 cards is included.
 
-   o Various problems with support for some revisions of CT, VT and GT chipsets
-     have been fixed.
+   o Various problems with support for some revisions of CT, VT and GT
+     chipsets have been fixed.
 
    o It is strongly recommended that all users with CT, VT, GT and 3D Rage II
      based Mach64 cards upgrade to the 3.2A release due to the problems that
@@ -285,15 +224,15 @@ Release Notes for XFree86[tm] 3.2A                                            5
    o A bug that causes problems when running XF86Setup with cards with less
      than 2MB of video memory has been fixed.
 
-   o Minor shifts in maximum clock rate under 16 bpp, and inclusion of explicit
-     15 "bpp" setting.
+   o Minor shifts in maximum clock rate under 16 bpp, and inclusion of
+     explicit 15 "bpp" setting.
 
 5.12  W32 server
 
-   o In this version, the separate W32 server (XF86_W32) has not undergone any
-     significant changes. In fact, it is not being developed further. Instead,
-     the SVGA server (XF86_SVGA) is now the main focus of new developments. See
-     the W32 (SVGA) description.
+   o In this version, the separate W32 server (XF86_W32) has not undergone
+     any significant changes. In fact, it is not being developed further.
+     Instead, the SVGA server (XF86_SVGA) is now the main focus of new devel-
+     opments. See the W32 (SVGA) description.
 
 5.13  I128 server
 
@@ -314,26 +253,16 @@ Release Notes for XFree86[tm] 3.2A                                            5
 
 5.16  Ark driver (SVGA server)
 
-   o More complete acceleration has been implemented using XAA, including line
-     draw, fill, and text acceleration, at different colour depths.
+   o More complete acceleration has been implemented using XAA, including
+     line draw, fill, and text acceleration, at different colour depths.
 
 5.17  W32 driver (SVGA server)
 
    o The SVGA server now supports acceleration for the most recent ET4000W32
      chips. In 3.2A, the ET4000W32p chips are now fully accelerated, and the
-     W32p rev C and D also support the higher performing linear memory layout.
-     This is the basis for adding hicolor and truecolor support in the future.
-
-
-
-
-
-
-
-
-Release Notes for XFree86[tm] 3.2A                                            6
-
-
+     W32p rev C and D also support the higher performing linear memory lay-
+     out. This is the basis for adding hicolor and truecolor support in the
+     future.
 
 5.18  ET6000 driver (SVGA server)
 
@@ -342,11 +271,11 @@ Release Notes for XFree86[tm] 3.2A                                            6
 
    o On the other hand, the ET6000 driver in the SVGA server, which already
      existed in XFree 3.2 for all color depths, is now fully accelerated for
-     all those color depths. It builds upon the new XAA architecture, which is
-     the cornerstone of a new acceleration framework within the XFree86
-     servers. It is responsible for the outstanding acceleration performance of
-     this release. Of course, since this is a first release of the server using
-     this framework, be prepared for some minor problems.
+     all those color depths. It builds upon the new XAA architecture, which
+     is the cornerstone of a new acceleration framework within the XFree86
+     servers. It is responsible for the outstanding acceleration performance
+     of this release. Of course, since this is a first release of the server
+     using this framework, be prepared for some minor problems.
 
    o Many small problems which existed in the initial 3.2 release have been
      solved. Screen noise, flicker or instability at higher pixel clocks are
@@ -356,8 +285,8 @@ Release Notes for XFree86[tm] 3.2A                                            6
 
 5.19  Alliance ProMotion driver (SVGA server)
 
-   o The driver now recognises the AT24 chipset, but it is treated the same way
-     as the AP6422.
+   o The driver now recognises the AT24 chipset, but it is treated the same
+     way as the AP6422.
 
 5.20  Matrox Millennium driver (SVGA server)
 
@@ -371,8 +300,8 @@ Release Notes for XFree86[tm] 3.2A                                            6
 
 5.21  Cirrus driver (SVGA server)
 
-   o More complete acceleration for all chips with a BitBLT engine (CL-GD5426,
-     5428, 5429, 5430, 5434, 5436, 5440, 5446, 7541, 7543, and 7548).
+   o More complete acceleration for all chips with a BitBLT engine (CL-
+     GD5426, 5428, 5429, 5430, 5434, 5436, 5440, 5446, 7541, 7543, and 7548).
 
    o More complete acceleration for Laguna series chips (CL-GD546X).
 
@@ -389,18 +318,6 @@ Release Notes for XFree86[tm] 3.2A                                            6
 
    o Linear addressing is supported.
 
-
-
-
-
-
-
-
-
-Release Notes for XFree86[tm] 3.2A                                            7
-
-
-
    o Support has been added for 15/16/24bpp.
 
    o Support has been added for programmable clocks.
@@ -414,8 +331,8 @@ Release Notes for XFree86[tm] 3.2A                                            7
    o Problems relating to blank screen at start-up and text mode restoration
      with the 65550 and 65554 should now be fixed
 
-   o Acceleration support for all chips has improved due to the new XAA archi-
-     tecture.
+   o Acceleration support for all chips has improved due to the new XAA
+     architecture.
 
    o Many additional minor fixes and documentation updates (see README.chips
      for further details).
@@ -442,8 +359,8 @@ Release Notes for XFree86[tm] 3.2A                                            7
      for libXext and libICE have been bumped to 6.3.  The others remain the
      same.
 
-   o Xterm's emulation of DECUDK (DEC user-defined keys) now (correctly) inter-
-     prets shifted keys only.
+   o Xterm's emulation of DECUDK (DEC user-defined keys) now (correctly)
+     interprets shifted keys only.
 
    o VT52 emulation has been added to xterm.
 
@@ -453,19 +370,6 @@ Release Notes for XFree86[tm] 3.2A                                            7
    o Some xterm bugs have been fixed, including coloured background exposure
      while selection is active, and missing state changes in the VT100 emula-
      tion.
-
-
-
-
-
-
-
-
-
-
-Release Notes for XFree86[tm] 3.2A                                            8
-
-
 
    o Xterm's memory requirements for colour have been reduced.
 
@@ -488,17 +392,15 @@ Release Notes for XFree86[tm] 3.2A                                            8
 
    o Gzipped fonts are now supported.
 
-
 6.  Installing the XFree86 3.2A Release
 
 The XFree86 3.2A binary release is distributed as a full release, not as an
 upgrade.
 
-What follows is a list of the XFree86 3.2A components.  There may be some vari-
-ations in this for some OSs.
+What follows is a list of the XFree86 3.2A components.  There may be some
+variations in this for some OSs.
 
 The following are required for all installations:
-
 
           preinst.sh      Pre-installation script
           postinst.sh     Post-installation script
@@ -510,42 +412,26 @@ The following are required for all installations:
           X32Aset.tgz     XF86Setup utility
           X32AVG16.tgz    16 colour VGA server (XF86Setup needs this server)
 
-
 The following is required for new installations, and optional for existing
 installations:
 
-
           X32Acfg.tgz     sample config files for xinit, xdm
-
 
 NOTE: Be very careful about installing X32Acfg.tgz over an existing installa-
 tion if you have customised your xinit and/or xdm config files.  Installing
 X32Acfg.tgz will overwrite any existing files.  If you do have customised
-
-
-
-
-
-
-
-
-Release Notes for XFree86[tm] 3.2A                                            9
-
-
-
 files, there is no need to install X32Acfg.tgz.
 
-NOTE: The bitmap fonts distributed with this release are compressed using gzip
-rather than compress.  This means that you will probably want to remove the old
-versions (after backing them up).  The Xservers and font server in previous
-releases cannot read gzipped fonts, so keep a copy of the old fonts if you wish
-to run older servers.
+NOTE: The bitmap fonts distributed with this release are compressed using
+gzip rather than compress.  This means that you will probably want to remove
+the old versions (after backing them up).  The Xservers and font server in
+previous releases cannot read gzipped fonts, so keep a copy of the old fonts
+if you wish to run older servers.
 
-The following X servers are for PC/AT based hardware (i.e., typical Intel ix86
-based PCs).  Choose at least one which matches your hardware, as well as the
-VGA16 server.  The VGA16 server is required by the new configuration utility
-(XF86Setup).
-
+The following X servers are for PC/AT based hardware (i.e., typical Intel
+ix86 based PCs).  Choose at least one which matches your hardware, as well as
+the VGA16 server.  The VGA16 server is required by the new configuration
+utility (XF86Setup).
 
           X32A8514.tgz    8514/A server
           X32AAGX.tgz     AGX server
@@ -561,10 +447,7 @@ VGA16 server.  The VGA16 server is required by the new configuration utility
           X32AVG16.tgz    16 colour VGA server (XF86Setup needs this server)
           X32AW32.tgz     ET4000/W32, ET6000 server
 
-
-
 The following X servers are available for Alpha hardware:
-
 
           X32AMa64.tgz    Mach 64 server
           X32AMono.tgz    Mono server (generic driver only)
@@ -573,31 +456,9 @@ The following X servers are available for Alpha hardware:
           X32AS3V.tgz     S3 ViRGE server
           X32ASVGA.tgz    SVGA server (Matrox Millennium driver only)
 
-
 The following X servers are for PC98 hardware.  If you have a PC98 machine,
 choose one which suits your hardware.  If you don't know what a PC98 machine
 is, you don't need any of these.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Release Notes for XFree86[tm] 3.2A                                           10
-
-
 
           X32A9NS3.tgz    PC98 NEC(S3) server
           X32A9SPW.tgz    PC98 PCSKB-PowerWindow(S3) server
@@ -612,10 +473,7 @@ Release Notes for XFree86[tm] 3.2A                                           10
           X32A9WSN.tgz    PC98 WSN-A2F(cirrus) server
           X32A9TGU.tgz    PC98 TGUI server
 
-
-
 The following are optional.
-
 
           X32Af100.tgz   100dpi fonts
           X32Afcyr.tgz   Cyrillic fonts
@@ -631,40 +489,27 @@ The following are optional.
           X32Ajdoc.tgz   Documentation in Japanese (for version 3.2)
           X32Ajhtm.tgz   HTML version of the documentation in Japanese (3.2)
 
+If you already have a version of XFree86 installed, MAKE A BACKUP OF
+/usr/X11R6 BEFORE DOING ANYTHING ELSE.  The standard installation procedure
+will overwrite your existing version of XFree86.
 
-If you already have a version of XFree86 installed, MAKE A BACKUP OF /usr/X11R6
-BEFORE DOING ANYTHING ELSE.  The standard installation procedure will overwrite
-your existing version of XFree86.
-
-If you are installing from scratch, create a directory called /usr/X11R6, then
-extract the required .tgz files.  If you don't have enough space in /usr for
-this, create a directory elsewhere and create a symbolic link to it.  E.g., if
-you create a directory in /home:
+If you are installing from scratch, create a directory called /usr/X11R6,
+then extract the required .tgz files.  If you don't have enough space in /usr
+for this, create a directory elsewhere and create a symbolic link to it.
+E.g., if you create a directory in /home:
 
           mkdir /home/X11R6
           ln -s /home/X11R6 /usr
 
 The next step is to run the pre-installation script.  This script makes some
 preliminary checks of your system.  For some OSs, it may tell you to install
-new versions of some system components before proceeding with the installation.
-This script may also remove some outdated files and symbolic links from a pre-
-vious installation that could cause problems.
+new versions of some system components before proceeding with the installa-
+tion.  This script may also remove some outdated files and symbolic links
+from a previous installation that could cause problems.
 
 Copy the preinst.sh script to /var/tmp, then go to /usr/X11R6 and run it:
 
           cd /usr/X11R6
-
-
-
-
-
-
-
-
-Release Notes for XFree86[tm] 3.2A                                           11
-
-
-
           sh /var/tmp/preinst.sh
 
 The .tgz files are gzipped tar files.  To extract them, go to /usr/X11R6, and
@@ -672,19 +517,18 @@ run the following as root for each file you need:
 
           gzip -d < X32Afile.tgz | tar vxf -
 
-
-On some OSs, you might get some "Broken Pipe" messages.  Providing there are no
-other messages associated with this, they can be safely ignored.  Note: You
-should not be running X while doing this installation.  Doing so may cause the
-installation to fail, or cause your X session to crash.
+On some OSs, you might get some "Broken Pipe" messages.  Providing there are
+no other messages associated with this, they can be safely ignored.  Note:
+You should not be running X while doing this installation.  Doing so may
+cause the installation to fail, or cause your X session to crash.
 
 If you are using NetBSD or FreeBSD, a more reliable (and highly recommended)
 way of doing this is to extract the .tgz files with:
 
              gzip -d < X32Afile.tgz | tar -v -x --unlink -f -
 
-If you have GNU cpio (as Linux does) or SVR4 cpio, a more reliable (and highly
-recommended) way of doing this is to extract the .tgz files with:
+If you have GNU cpio (as Linux does) or SVR4 cpio, a more reliable (and
+highly recommended) way of doing this is to extract the .tgz files with:
 
           gzip -d < X32Afile.tgz | cpio -i -v -d -u -H ustar
 
@@ -695,166 +539,17 @@ to /var/tmp, then go to /usr/X11R6 and run it:
           sh /var/tmp/postinst.sh
 
 For OSs which use ldconfig (like Linux, FreeBSD, NetBSD and OpenBSD), you
-should either run ldconfig or reboot to complete the installation.  Some Linux
-releases don't run ldconfig automatically at reboot, so you may need to run it
-manually.  If you are using FreeBSD, NetBSD or OpenBSD, and your version of
-ldconfig supports the -m option, you can run:
+should either run ldconfig or reboot to complete the installation.  Some
+Linux releases don't run ldconfig automatically at reboot, so you may need to
+run it manually.  If you are using FreeBSD, NetBSD or OpenBSD, and your ver-
+sion of ldconfig supports the -m option, you can run:
 
           ldconfig -m /usr/X11R6/lib
-
 
 Otherwise for these OSs, check /etc/rc to see how ldconfig gets run at boot
 time.
 
      Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.63 1998/04/12 12:43:42 dawes Exp $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Release Notes for XFree86[tm] 3.2A                                           12
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                                   CONTENTS
-
-
-
-1. General Information about Beta Releases .................................. 1
-
-2. Who are the XFree86 Beta Releases Targeted At? ........................... 2
-
-3. XFree86 and X11R6.3 ...................................................... 2
-
-4. OS issues ................................................................ 3
-
-5. New Features in 3.2A ..................................................... 3
-   5.1  General ............................................................. 3
-   5.2  General X server changes ............................................ 3
-   5.3  XF86Setup ........................................................... 3
-   5.4  PC98 Support ........................................................ 3
-   5.5  Alpha (AXP) platform support ........................................ 4
-   5.6  XInput Extension .................................................... 4
-   5.7  SVGA server ......................................................... 4
-   5.8  S3 server ........................................................... 4
-   5.9  S3V (ViRGE) server .................................................. 4
-   5.10 Mach64 server ....................................................... 5
-   5.11 Mach32 server ....................................................... 5
-   5.12 W32 server .......................................................... 5
-   5.13 I128 server ......................................................... 5
-   5.14 TGA server .......................................................... 5
-   5.15 Trident driver (SVGA server) ........................................ 5
-   5.16 Ark driver (SVGA server) ............................................ 5
-   5.17 W32 driver (SVGA server) ............................................ 5
-   5.18 ET6000 driver (SVGA server) ......................................... 6
-   5.19 Alliance ProMotion driver (SVGA server) ............................. 6
-   5.20 Matrox Millennium driver (SVGA server) .............................. 6
-   5.21 Cirrus driver (SVGA server) ......................................... 6
-   5.22 SiS driver (SVGA server) ............................................ 6
-   5.23 Chips and Technologies driver (SVGA server) ......................... 7
-   5.24 ATI driver (SVGA server) ............................................ 7
-   5.25 WD90C24 driver (SVGA server) ........................................ 7
-   5.26 Hercules mono driver ................................................ 7
-   5.27 Client/Library changes .............................................. 7
-   5.28 SuperProbe .......................................................... 8
-   5.29 Fonts ............................................................... 8
-
-6. Installing the XFree86 3.2A Release ...................................... 8
-
-
-
-
-
-
-
-
-
-
-
-
-                                       i
-
 
 
 $XFree86$

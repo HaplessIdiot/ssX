@@ -1,41 +1,29 @@
+                 Information for S3 ViRGE and ViRGE/VX Users
 
+                          The XFree86 Project Inc.
 
-
-
-
-
-
-
-
-                  Information for S3 ViRGE and ViRGE/VX Users
-
-                           The XFree86 Project Inc.
-
-                                22 January 1997
-
-
+                               22 January 1997
 
 1.  Supported hardware
 
-The current XF86_S3V server supports S3 ViRGE (86C325) and S3 ViRGE/VX (86C988)
-chips.  32bpp TrueColor and External RAMDACs for ViRGE/VX are not yet sup-
-ported.  It has been tested with ViRGE cards with 2 and 4MB DRAM and with a
-220MHz ViRGE/VX card with 2MB VRAM up to 1600x1200 with 8/15/16bpp.
+The current XF86_S3V server supports S3 ViRGE (86C325) and S3 ViRGE/VX
+(86C988) chips.  32bpp TrueColor and External RAMDACs for ViRGE/VX are not
+yet supported.  It has been tested with ViRGE cards with 2 and 4MB DRAM and
+with a 220MHz ViRGE/VX card with 2MB VRAM up to 1600x1200 with 8/15/16bpp.
 
-For 3.2A, the server supports 24 bpp.  It is reported to lock video on ViRGE/VX
-chipsets when run twice, and dump core with some setups.  It appears stable on
-ViRGE chipsets.  There are known problems, but you should be able to run xterms
-and applications that support 24 bpp or Truecolor.  Known exceptions include
-xanim (reported patch fixes this), netscape, xfig, and xfishtank.  (and oth-
-ers...)
+For 3.2A, the server supports 24 bpp.  It is reported to lock video on
+ViRGE/VX chipsets when run twice, and dump core with some setups.  It appears
+stable on ViRGE chipsets.  There are known problems, but you should be able
+to run xterms and applications that support 24 bpp or Truecolor.  Known
+exceptions include xanim (reported patch fixes this), netscape, xfig, and
+xfishtank.  (and others...)
 
-NOTE: This driver is pretty new, and not everything might work like you expect
-it to. It shouldn't crash your machine, but you may have video artifacts or
-missing lines. Please report any and all problems to XFree86@Xfree86.org using
-the appropriate bug report sheet.
+NOTE: This driver is pretty new, and not everything might work like you
+expect it to. It shouldn't crash your machine, but you may have video arti-
+facts or missing lines. Please report any and all problems to
+XFree86@Xfree86.org using the appropriate bug report sheet.
 
 There will be updated drivers in the coming XFree86 beta releases.
-
 
 2.  Features:
 
@@ -48,7 +36,6 @@ There will be updated drivers in the coming XFree86 beta releases.
    o it should be possible to use pixel depths of 8, 15, 16, and 24 (32 not
      yet) bits per pixel.
 
-
 3.  Future Features (in order from highest to lowest priority)
 
    o improved support of 24, support of 32bpp
@@ -59,23 +46,11 @@ There will be updated drivers in the coming XFree86 beta releases.
 
    o more chipsets and RAMDACs
 
-
-
- Information for S3 ViRGE and ViRGE/VX Users                                  1
-
-
-
-
-
- Information for S3 ViRGE and ViRGE/VX Users                                  2
-
-
-
 4.  Configuration:
 
 The server auto-detects RAM size, RAMDAC and ClockChip. Do not bother putting
-these in your "Device" section.  The "nolinear" option is unsupported.
-
+these in your "Device" section.  The "nolinear" option is unsup-
+ported.
 
 5.  Known problems with 24 bpp:
 
@@ -85,7 +60,6 @@ these in your "Device" section.  The "nolinear" option is unsupported.
    o ViRGE/VX may dump core.
 
    o ViRGE/VX may lock the server if run twice with a machine reset.
-
 
 6.  Authors
 
@@ -102,165 +76,6 @@ and:
    o Dirk Vangestel gesteld@sh.bel.alcatel.be
 
      Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3V.sgml,v 3.3 1997/01/25 03:22:09 dawes Exp $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- Information for S3 ViRGE and ViRGE/VX Users                                  3
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                                   CONTENTS
-
-
-
-1. Supported hardware ....................................................... 1
-
-2. Features: ................................................................ 1
-
-3. Future Features (in order from highest to lowest priority) ............... 1
-
-4. Configuration: ........................................................... 2
-
-5. Known problems with 24 bpp: .............................................. 2
-
-6. Authors .................................................................. 2
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                                       i
-
 
 
 $XFree86$
