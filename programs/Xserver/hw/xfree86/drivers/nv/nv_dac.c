@@ -37,7 +37,7 @@
 |*                                                                           *|
  \***************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.38 2004/01/06 22:47:06 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.39 2004/03/13 22:07:06 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -236,6 +236,7 @@ NVDACInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     nvReg->timingH = 0;
     nvReg->timingV = 0;
+    nvReg->displayV = mode->CrtcVDisplay;
 
     return (TRUE);
 }

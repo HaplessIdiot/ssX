@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_hw.c,v 1.6 2004/03/13 22:07:06 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_hw.c,v 1.7 2004/03/15 00:19:45 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "compiler.h"
@@ -986,7 +986,7 @@ void NVLoadStateExt (
        pNv->PRAMIN[0x082B] = 0x00000000;
        pNv->PRAMIN[0x082C] = 0x00000000;
        pNv->PRAMIN[0x082D] = 0x00000000;
-       pNv->PRAMIN[0x0830] = 0x0208005F;
+       pNv->PRAMIN[0x0830] = 0x0208009F;
        pNv->PRAMIN[0x0831] = 0x00000000;
        pNv->PRAMIN[0x0832] = 0x00001200;
        pNv->PRAMIN[0x0833] = 0x00001200;
@@ -1064,7 +1064,10 @@ void NVLoadStateExt (
        pNv->PRAMIN[0x0815] = 0x00000000;
        pNv->PRAMIN[0x0816] = 0x00000000;
        pNv->PRAMIN[0x0817] = 0x00000000;
-       pNv->PRAMIN[0x0818] = 0x0100805F;
+       if(pNv->WaitVSyncPossible)
+          pNv->PRAMIN[0x0818] = 0x0100809F;
+       else
+          pNv->PRAMIN[0x0818] = 0x0100805F;
        pNv->PRAMIN[0x0819] = 0x00000000;
        pNv->PRAMIN[0x081A] = 0x12001200;
        pNv->PRAMIN[0x081B] = 0x00000000;
@@ -1072,7 +1075,7 @@ void NVLoadStateExt (
        pNv->PRAMIN[0x081D] = 0x00000002;
        pNv->PRAMIN[0x081E] = 0x00000000;
        pNv->PRAMIN[0x081F] = 0x00000000;
-       pNv->PRAMIN[0x0820] = 0x01008077;
+       pNv->PRAMIN[0x0820] = 0x01018077;
        pNv->PRAMIN[0x0821] = 0x00000000;
        pNv->PRAMIN[0x0822] = 0x12001200;
        pNv->PRAMIN[0x0823] = 0x00000000;
@@ -1105,6 +1108,7 @@ void NVLoadStateExt (
        pNv->PGRAPH[0x0084/4] = 0x72111101;
        pNv->PGRAPH[0x0088/4] = 0x11D5F071;
        pNv->PGRAPH[0x008C/4] = 0x0004FF31;
+       pNv->PGRAPH[0x008C/4] = 0x4004FF31;
 
        pNv->PGRAPH[0x0140/4] = 0x00000000;
        pNv->PGRAPH[0x0100/4] = 0xFFFFFFFF;
@@ -1113,6 +1117,7 @@ void NVLoadStateExt (
        pNv->PGRAPH[0x0720/4] = 0x00000001;
 
        pNv->PGRAPH[0x0810/4] = 0x00000000;
+       pNv->PGRAPH[0x0608/4] = 0xFFFFFFFF; 
     } else {
        pNv->PGRAPH[0x0080/4] = 0xFFFFFFFF;
        pNv->PGRAPH[0x0080/4] = 0x00000000;
@@ -1122,6 +1127,8 @@ void NVLoadStateExt (
        pNv->PGRAPH[0x0144/4] = 0x10010100;
        pNv->PGRAPH[0x0714/4] = 0xFFFFFFFF;
        pNv->PGRAPH[0x0720/4] = 0x00000001;
+       pNv->PGRAPH[0x0710/4] &= 0x0007ff00;
+       pNv->PGRAPH[0x0710/4] |= 0x00020100;
 
        if(pNv->Architecture == NV_ARCH_10) {
            pNv->PGRAPH[0x0084/4] = 0x00118700;
@@ -1137,6 +1144,7 @@ void NVLoadStateExt (
            pNv->PGRAPH[0x688/4] = pNv->FbMapSize - 1;
 
            pNv->PGRAPH[0x0810/4] = 0x00000000;
+           pNv->PGRAPH[0x0608/4] = 0xFFFFFFFF;
        } else {
            if(pNv->Architecture >= NV_ARCH_40) {
               pNv->PGRAPH[0x0084/4] = 0x401287c0;
@@ -1208,6 +1216,7 @@ void NVLoadStateExt (
            pNv->PGRAPH[0x0868/4] = pNv->FbMapSize - 1;
 
            pNv->PGRAPH[0x0B20/4] = 0x00000000;
+           pNv->PGRAPH[0x0B04/4] = 0xFFFFFFFF;
        }
     }
     pNv->PGRAPH[0x053C/4] = 0;
@@ -1268,6 +1277,8 @@ void NVLoadStateExt (
         pNv->PMC[0x1588/4] = 0;
 
         pNv->PCRTC[0x0810/4] = state->cursorConfig;
+        pNv->PCRTC[0x0830/4] = state->displayV - 3;
+        pNv->PCRTC[0x0834/4] = state->displayV - 1;
     
         if(pNv->FlatPanel) {
            if((pNv->Chipset & 0x0ff0) == 0x0110) {
