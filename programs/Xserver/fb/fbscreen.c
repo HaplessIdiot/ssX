@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbscreen.c,v 1.8 2000/02/23 20:29:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbscreen.c,v 1.9 2000/05/06 21:09:34 keithp Exp $ */
 
 #include "fb.h"
 
@@ -36,6 +36,9 @@ fbCloseScreen (int index, ScreenPtr pScreen)
     xfree (depths);
     xfree (pScreen->visuals);
     xfree (pScreen->devPrivate);
+#ifdef FB_SCREEN_PRIVATE
+    xfree (pScreen->devPrivates[fbScreenPrivateIndex].ptr);
+#endif
     return TRUE;
 }
 
