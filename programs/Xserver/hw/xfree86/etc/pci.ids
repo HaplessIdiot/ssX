@@ -1,4 +1,4 @@
-# $XFree86$
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/pci.ids,v 1.9tsi Exp $
 #
 #	List of PCI ID's
 #
@@ -1812,6 +1812,8 @@
 	108b  Visualize FXe
 	10c1  NetServer Smart IRQ Router
 	10ed  TopTools Remote Control
+	10f0  reo System Bus Adapter
+	10f1  reo I/O Controller
 	1200  82557B 10/100 NIC
 	1219  NetServer PCI Hot-Plug Controller
 	121a  NetServer SMIC Controller
@@ -1822,6 +1824,7 @@
 	122e  zx1 Local Bus Adapter
 	127c  sx1000 I/O Controller
 	1290  Auxiliary Diva Serial Port
+	12b4  zx1 QuickSilver AGP8x Local Bus Adapter
 	2910  E2910A PCIBus Exerciser
 	2925  E2925A 32 Bit, 33 MHzPCI Exerciser & Analyzer
 103e  Solliday Engineering

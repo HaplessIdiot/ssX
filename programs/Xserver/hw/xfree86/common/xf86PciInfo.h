@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.160tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.161tsi Exp $ */
 
 /*
  * Copyright (c) 1995-2003 by The XFree86 Project, Inc.
@@ -434,9 +434,12 @@
 
 /* Hewlett-Packard */
 #define PCI_CHIP_ELROY			0x1054
+#define PCI_CHIP_REO_SBA		0x10F0
+#define PCI_CHIP_REO_IOC		0x10F1
 #define PCI_CHIP_ZX1_SBA		0x1229
 #define PCI_CHIP_ZX1_IOC		0x122A
 #define PCI_CHIP_ZX1_LBA		0x122E	/* a.k.a. Mercury */
+#define PCI_CHIP_SX1K_IOC		0x127C
 #define PCI_CHIP_ZX1_AGP8		0x12B4	/* a.k.a. QuickSilver */
 
 /* SGS */
@@ -458,8 +461,6 @@
 #define PCI_CHIP_I128_T2R4		0x5348
 
 /* Sun */
-#define PCI_CHIP_EBUS			0x1000
-#define PCI_CHIP_HAPPY_MEAL		0x1001
 #define PCI_CHIP_SIMBA			0x5000
 #define PCI_CHIP_PSYCHO			0x8000
 #define PCI_CHIP_SCHIZO			0x8001
