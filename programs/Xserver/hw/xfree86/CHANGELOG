@@ -1,4 +1,5 @@
-XFree86 3.0Cd (21 July 1994)
+XFree86 3.0Cd (22 July 1994)
+136. Add dacspeed Xconfig keyword, and modify the S3 server to use it.
 135. Update contrib source to the XC's full release version.
 134. Fix pixel doubling problem on #9 GXE64 cards (Robin Cutshaw).
 133. Change '--print' to 'print-libgcc-file-name' in Linux config files
