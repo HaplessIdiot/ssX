@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.4 2001/09/21 05:08:42 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.5 2001/09/28 04:38:31 paulo Exp $ */
 
 #include "format.h"
 #include <ctype.h>
@@ -99,7 +99,7 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 		    iteration = -1;
 		    done = 1;
 		}
-		fmt = indirection[nindirection - 1];
+		fmt = indirection[(int)CAR(alist)->data.real + 1];
 		if (CAR(CAR(ilist))->data.atom[1] == '@') {
 		    /* using normal arguments */
 		    if (CAR(CAR(ilist))->data.atom[2] == ':') {
@@ -671,6 +671,9 @@ Lisp_Format(LispMac *mac, LispObj *list, char *fname)
 			}
 			else if (nfields > 1 && fields[1][0])
 			    field = 1;
+			/* don't update plural, just consume argument */
+			arg = CDR(arg);
+			++cur_arg;
 		    }
 		    else if (atsign) {
 			if (arg->type != LispCons_t)
@@ -1987,7 +1990,7 @@ format_done:
     if (stream != NIL && stream->data.stream.size >= 0) {
 	if (stream->data.stream.source.str == NULL)
 	    return (STRING(""));
-	return (STRING(stream->data.stream.source.str));
+	return (STRING((char*)stream->data.stream.source.str));
     }
 
     return (stream);

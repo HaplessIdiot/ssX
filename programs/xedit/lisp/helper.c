@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.5 2001/09/21 05:08:43 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.6 2001/09/28 04:38:31 paulo Exp $ */
 
 #include "helper.h"
 #include <ctype.h>
@@ -332,10 +332,6 @@ _LispSet(LispMac *mac, LispObj *var, LispObj *val, char *fname, int eval)
 	LispDestroy(mac, "bad name %s, at %s", name, fname);
     if (eval)
 	val = EVAL(val);
-    if (val == NIL)
-	val = LispNewNil(mac);
-    else if (val == T)
-	val = LispNewTrue(mac);
 
     return (LispSetVar(mac, name, val, 0));
 }

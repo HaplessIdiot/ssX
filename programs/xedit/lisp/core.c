@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.5 2001/09/21 05:08:42 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.6 2001/09/29 06:37:26 paulo Exp $ */
 
 #include "core.h"
 #include "helper.h"
@@ -233,23 +233,30 @@ Lisp_And(LispMac *mac, LispObj *list, char *fname)
 LispObj *
 Lisp_Append(LispMac *mac, LispObj *list, char *fname)
 {
-    LispObj *res, *obj, *cdr, *cons;
+    LispObj *res, *obj, *cdr, *cons, *frm;
 
     if (list == NIL)
 	return (NIL);
     else if (CDR(list) == NIL)
 	return (EVAL(CAR(list)));
 
+    frm = FRM;
     res = cdr = NIL;
 
     for (; list != NIL; list = CDR(list)) {
-	obj = EVAL(CAR(list));
+	if ((obj = EVAL(CAR(list))) == NIL)
+	    continue;
 	if (obj->type != LispCons_t) {
 	    if (CDR(list) != NIL)
 		LispDestroy(mac, ExpectingListAt, fname);
 	}
-	if (res == NIL)
+	if (res == NIL) {
+	    /* link res to FRM to protect from GC */
+	    GCProtect();
 	    res = cdr = CONS(CAR(obj), CDR(obj));
+	    FRM = CONS(res, FRM);
+	    GCUProtect();
+	}
 	else {
 	    if (CDR(cdr)->type == LispCons_t) {
 		cons = CDR(cdr);
@@ -265,6 +272,7 @@ Lisp_Append(LispMac *mac, LispObj *list, char *fname)
 	    cdr = CDR(cdr);
 	}
     }
+    FRM = frm;
 
     return (res);
 }

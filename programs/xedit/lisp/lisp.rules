@@ -1,3 +1,8 @@
+#ifdef DontRebuildGperfOutput
+#define GperfLispFile(dep,file,flags)					@@\
+dep.o::	file.c								@@\
+
+#else
 #define GperfLispFile(dep,file,flags)					@@\
 dep.o::	file.c								@@\
 									@@\
@@ -7,6 +12,7 @@ file.c: file.gperf							@@\
 									@@\
 depend::								@@\
 
+#endif
 
 #ifndef LispModuleTarget
 #define LispModuleTarget(module,modlist,liblist)			@@\

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/xt.c,v 1.1 2001/08/31 15:00:14 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/xt.c,v 1.4 2001/09/29 04:46:05 paulo Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -79,6 +79,7 @@ LispObj *Lisp_XtGetValues(LispMac*, LispObj*, char*);
 LispObj *Lisp_XtPopup(LispMac*, LispObj*, char*);
 LispObj *Lisp_XtPopdown(LispMac*, LispObj*, char*);
 LispObj *Lisp_XtRealizeWidget(LispMac*, LispObj*, char*);
+LispObj *Lisp_XtSetSensitive(LispMac*, LispObj*, char*);
 LispObj *Lisp_XtSetValues(LispMac*, LispObj*, char*);
 
 LispObj *_LispXtCreateWidget(LispMac*, LispObj*, char*, int);
@@ -97,6 +98,10 @@ static ResourceList *CreateResourceList(WidgetClass);
 static int qcmp_action_resource(_Xconst void*, _Xconst void*);
 static void BindResourceList(ResourceList*);
 
+static void PopdownAction(Widget, XEvent*, String*, Cardinal*);
+static void QuitAction(Widget, XEvent*, String*, Cardinal*);
+
+
 /*
  * Initialization
  */
@@ -110,7 +115,13 @@ LispModuleData xtLispModuleData = {
 static ResourceList **resource_list;
 static Cardinal num_resource_list;
 
+static Atom delete_window;
 static int xtAppContext_t, xtWidget_t, xtWidgetClass_t;
+
+static XtActionsRec actions[] = {
+    {"xt-popdown",	PopdownAction},
+    {"xt-quit",		QuitAction},
+};
 
 /*
  * Implementation
@@ -229,6 +240,8 @@ Lisp_XtAppInitialize(LispMac *mac, LispObj *list, char *fname)
 			  fname, 0);
     GCUProtect();
 
+    XtAppAddActions(appcon, actions, XtNumber(actions));
+
     list = CDR(list);
     if (list == NIL || CAR(list) == NIL)
 	resources = NULL;
@@ -263,12 +276,23 @@ Lisp_XtAppMainLoop(LispMac *mac, LispObj *list, char *fname)
 LispObj *
 Lisp_XtRealizeWidget(LispMac *mac, LispObj *list, char *fname)
 {
+    Widget widget;
+
     if (!CHECKO(CAR(list), xtWidget_t))
 	LispDestroy(mac,
 		    "cannot convert %s to Widget, at %s",
 		    LispStrObj(mac, CAR(list)), fname);
 
-    XtRealizeWidget((Widget)(CAR(list)->data.opaque.data));
+    widget = (Widget)(CAR(list)->data.opaque.data);
+    XtRealizeWidget(widget);
+
+    if (XtIsSubclass(widget, shellWidgetClass)) {
+	if (!delete_window)
+	    delete_window = XInternAtom(XtDisplay(widget),
+					"WM_DELETE_WINDOW", False);
+	(void)XSetWMProtocols(XtDisplay(widget), XtWindow(widget),
+			      &delete_window, 1);
+    }
 
     return (NIL);
 }
@@ -479,6 +503,18 @@ Lisp_XtPopdown(LispMac *mac, LispObj *list, char *fname)
     XtPopdown((Widget)(CAR(list)->data.opaque.data));
 
     return (NIL);
+}
+
+LispObj *
+Lisp_XtSetSensitive(LispMac *mac, LispObj *list, char *fname)
+{
+    if (!CHECKO(CAR(list), xtWidget_t))
+	LispDestroy(mac, "cannot convert %s to Widget, at %s",
+		    LispStrObj(mac, CAR(list)), fname);
+    XtSetSensitive((Widget)(CAR(list)->data.opaque.data),
+		   CAR(CDR(list)) != NIL);
+
+    return (CAR(CDR(list)) == NIL ? NIL : T);
 }
 
 LispObj *
@@ -736,6 +772,8 @@ CreateResourceList(WidgetClass wc)
 	XtRealloc((XtPointer)resource_list, sizeof(ResourceList*) *
 		  (num_resource_list + 1));
     resource_list[num_resource_list++] = list;
+    qsort(resource_list, num_resource_list, sizeof(ResourceList*),
+	  qcmp_action_resource_list);
     BindResourceList(list);
 
     return (list);
@@ -789,4 +827,18 @@ BindResourceList(ResourceList *list)
     if (num_cons)
 	qsort(&list->resources[num_xt], list->num_cons_resources,
 	      sizeof(ResourceInfo*), qcmp_action_resource);
+}
+
+/*ARGSUSED*/
+static void
+PopdownAction(Widget w, XEvent *event, String *params, Cardinal *num_params)
+{
+    XtPopdown(w);
+}
+
+/*ARGSUSED*/
+static void
+QuitAction(Widget w, XEvent *event, String *params, Cardinal *num_params)
+{
+    exit(0);
 }

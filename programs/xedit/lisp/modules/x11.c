@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/x11.c,v 1.1 2001/08/31 15:00:14 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/x11.c,v 1.2 2001/09/28 04:38:31 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -75,6 +75,8 @@ x11LoadModule(LispMac *mac)
     x11Screen_t = LispRegisterOpaqueType(mac, "Screen*");
     x11Window_t = LispRegisterOpaqueType(mac, "Window");
     x11GC_t = LispRegisterOpaqueType(mac, "GC");
+
+    return (1);
 }
 
 LispObj *
