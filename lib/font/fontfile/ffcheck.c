@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/ffcheck.c,v 1.5 1998/07/25 06:57:07 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/ffcheck.c,v 1.6 1998/10/03 09:07:26 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -166,7 +166,11 @@ FontFileCheckRegisterFpeFunctions ()
 #ifdef BUILD_FREETYPE
     FreeTypeRegisterFontFileFunctions();
 #endif
+
+#endif /* ifndef LOWMEMFTPT */
+
 #else
+
     {
 	int i = 0;
 	
@@ -178,7 +182,6 @@ ErrorF("%s\n",FontModuleList[i].name);
 	}
     }
 #endif
-#endif /* ifndef LOWMEMFTPT */
 
     font_file_check_type = RegisterFPEFunctions(FontFileNameCheck,
 				  FontFileInitFPE,

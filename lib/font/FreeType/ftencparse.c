@@ -19,17 +19,15 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/FreeType/ftencparse.c,v 1.1 1998/10/05 14:22:59 dawes Exp $ */
 
 /* This code is ASCII-dependent */
 
-#include <string.h>
-#include <ctype.h>
-#include <stdio.h>
 
 #include "fntfilio.h"
 #include "fntfilst.h"
 
+#include "ttconfig.h"
 #include "freetype.h"
 #include "ft.h"
 #include "ftenc.h"
@@ -203,7 +201,7 @@ retry:
     else
       return CODE_LINE;
   case KEYWORD_TOKEN:
-    if(!strcasecmp(keyword_value, "STARTENCODING")) {
+    if(!ftstrcasecmp(keyword_value, "STARTENCODING")) {
       token=gettoken(f,c,&c);
       if(token==KEYWORD_TOKEN) {
         if(endOfLine(f,c))
@@ -214,7 +212,7 @@ retry:
         skipEndOfLine(f,c);
         return ERROR_LINE;
       }
-    } else if(!strcasecmp(keyword_value, "SIZE")) {
+    } else if(!ftstrcasecmp(keyword_value, "SIZE")) {
       token=gettoken(f,c,&c);
       if(token==NUMBER_TOKEN) {
         value1=number_value;
@@ -226,7 +224,7 @@ retry:
         skipEndOfLine(f,c);
         return ERROR_LINE;
       }
-    } else if(!strcasecmp(keyword_value, "STARTMAPPING")) {
+    } else if(!ftstrcasecmp(keyword_value, "STARTMAPPING")) {
       keyword_value[0]=0;
       value1=0; value1=0;
       /* read up to three tokens, the first being a keyword */
@@ -259,7 +257,7 @@ retry:
       else {
         return STARTMAPPING_LINE;
       }
-    } else if(!strcasecmp(keyword_value, "UNDEFINE")) {
+    } else if(!ftstrcasecmp(keyword_value, "UNDEFINE")) {
       token=gettoken(f,c,&c);
       if(token!=NUMBER_TOKEN) {
         skipEndOfLine(f,c);
@@ -277,12 +275,12 @@ retry:
         } else
           return ERROR_LINE;
       }
-    } else if(!strcasecmp(keyword_value, "ENDENCODING")) {
+    } else if(!ftstrcasecmp(keyword_value, "ENDENCODING")) {
       if(endOfLine(f,c))
         return EOF_LINE;
       else
         return ERROR_LINE;
-    } else if(!strcasecmp(keyword_value, "ENDMAPPING")) {
+    } else if(!ftstrcasecmp(keyword_value, "ENDMAPPING")) {
       if(endOfLine(f,c))
         return ENDMAPPING_LINE;
       else
@@ -353,7 +351,7 @@ no_mapping:
     info->size=value1; 
     goto no_mapping;
   case STARTMAPPING_LINE:
-    if(!strcasecmp(keyword_value, "unicode")) {
+    if(!ftstrcasecmp(keyword_value, "unicode")) {
       if((alt=
           (struct ttf_encoding_alternative*)
           xalloc(sizeof(struct ttf_encoding_alternative)))
@@ -361,7 +359,7 @@ no_mapping:
         goto error;
       alt->pid = -2;
       alt->eid = 0;
-    } else if(!strcasecmp(keyword_value, "cmap")) {
+    } else if(!ftstrcasecmp(keyword_value, "cmap")) {
       if((alt=
           (struct ttf_encoding_alternative*)
           xalloc(sizeof(struct ttf_encoding_alternative)))
@@ -540,7 +538,7 @@ loadEncodingFile(char *charset, char *fontFileName)
       break;
     if(count!=2)
       break;
-    if(!strcasecmp(encoding_name, charset)) {
+    if(!ftstrcasecmp(encoding_name, charset)) {
       strcpy(buf, dir);
       strcat(buf, file_name);
       if((f=FontFileOpen(buf))==NULL) {
