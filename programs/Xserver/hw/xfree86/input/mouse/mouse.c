@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.26 2000/02/17 15:20:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.27 2000/03/03 20:36:41 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -1687,21 +1687,31 @@ MouseDoPostEvent(InputInfoPtr pInfo, int buttons, int dx, int dy)
 	    change = buttons ^ reverseBits(hitachMap, pMse->lastButtons);
 	else
 	    change = buttons ^ reverseBits(reverseMap, pMse->lastButtons);
-	if (change & 02)
-	    xf86PostButtonEvent(pInfo->dev, 0, 2, (buttons & 02), 0, 0);
+
+	/*
+	 * process button 2, 4 and above
+	 */
+	change &= ~0x05;
+	while (change) {
+	    id = ffs(change);
+	    change &= ~(1 << (id - 1));
+	    xf86PostButtonEvent(pInfo->dev, 0, id,
+				(buttons & (1 << (id - 1))), 0, 0);
+	}
 
 	/*
 	 * emulate the third button by the other two
 	 */
-	if ((id = stateTab[(buttons & 0x07) + pMse->emulateState][0]) != 0)
+	buttons &= 0x07;
+	if ((id = stateTab[buttons + pMse->emulateState][0]) != 0)
 	    xf86PostButtonEvent(pInfo->dev, 0, abs(id), (id >= 0), 0, 0);
 
-	if ((id = stateTab[(buttons & 0x07) + pMse->emulateState][1]) != 0)
+	if ((id = stateTab[buttons + pMse->emulateState][1]) != 0)
 	    xf86PostButtonEvent(pInfo->dev, 0, abs(id), (id >= 0), 0, 0);
 
-	pMse->emulateState = stateTab[(buttons & 0x07) + pMse->emulateState][2];
-	if (stateTab[(buttons & 0x07) + pMse->emulateState][0] ||
-	    stateTab[(buttons & 0x07) + pMse->emulateState][1]) {
+	pMse->emulateState = stateTab[buttons + pMse->emulateState][2];
+	if (stateTab[buttons + pMse->emulateState][0] ||
+	    stateTab[buttons + pMse->emulateState][1]) {
 	    pMse->truebuttons = truebuttons;
 	    timer = TimerSet(timer, 0, pMse->emulate3Timeout, buttonTimer,
 			     pInfo);

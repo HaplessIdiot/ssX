@@ -22,7 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.40 2000/02/27 02:45:31 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.41 2000/03/01 16:01:22 tsi Exp $ */
 
 /*  #include "compiler.h" */
 /* everybody includes these */
@@ -167,7 +167,8 @@ typedef enum {
     OPTION_RGB_BITS,
     OPTION_NOACCEL,
     OPTION_SYNC_ON_GREEN,
-    OPTION_DAC_6_BIT
+    OPTION_DAC_6_BIT,
+    OPTION_NOXAAPOLYSEGMENT
 } TGAOpts;
 
 static OptionInfoRec TGAOptions[] = {
@@ -177,7 +178,8 @@ static OptionInfoRec TGAOptions[] = {
     { OPTION_RGB_BITS,		"RGBbits",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SYNC_ON_GREEN,     "SyncOnGreen",  OPTV_BOOLEAN,   {0}, FALSE },
-    { OPTION_DAC_6_BIT,          "Dac6Bit",      OPTV_BOOLEAN,   {0}, FALSE },
+    { OPTION_DAC_6_BIT,         "Dac6Bit",      OPTV_BOOLEAN,   {0}, FALSE },
+    { OPTION_NOXAAPOLYSEGMENT,  "NoXaaPolySegment",OPTV_BOOLEAN,{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -576,6 +578,11 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "6 bit DAC enabled\n");
     }
     
+    if(xf86ReturnOptValBool(TGAOptions, OPTION_NOXAAPOLYSEGMENT, FALSE)) {
+	pTga->NoXaaPolySegment = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "XAA PolySegment() disabled\n");
+    }
+
     /* end option processing */
     
     /*

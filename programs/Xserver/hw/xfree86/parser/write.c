@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/write.c,v 1.8 1999/09/04 13:04:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/write.c,v 1.9 2000/03/04 03:25:54 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -33,9 +33,9 @@
 #include "xf86tokens.h"
 #include "Configint.h"
 
-#include <sys/wait.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <signal.h>
 #include <errno.h>
 

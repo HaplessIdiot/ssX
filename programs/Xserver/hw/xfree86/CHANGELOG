@@ -1,9 +1,28 @@
 XFree86 3.9.18Za (6 March 2000)
-3798. Rage 128 documentation update (Kevin Martin).
-3797. Fix an unresolved reference to VErrorF from the int10 module
+3948. Fix a -configure crash in the tdfx driver (David Dawes).
+3947. Fix a mouse driver bug that prevented the X server from seeing the
+      mouse button 4 and above when three button emulation is enabled
+      (#3773, Yoshihiko Sarumau, Kazutaka Yokota).
+3946. Add NO_GXCOPY to the s3virge driver's imagewrite flags, which fixes
+      a crash (#3783, Kevin Brosius).
+3945. Fix a parser build problem for Interactive Unix, and update the
+      docs (#3796, Michael Rohleder).
+3944. Fix the r128 hw cursor for big endian machines, and enable building
+      the r128 driver for PPC (#3975, Kostas Gewrgiou).
+3943. Update lnxResource.c to allow builds to succeed on PPC platforms
+      (#3795, Kostas Gewrgiou).
+3942. B&H Lucidux fonts (#3794, donated by Charles Bigelow, Kris Holmes
+      from Bigelow and Holmes Inc, with hinting donated by Berthold Horn and
+      Blenda Horn from Y&Y, Inc).
+3941. Doc update for the sis driver (#3793, R Horn).
+3940. Fix an xman build problem on LynxOS (#3792, Thomas Mueller).
+3939. Fix some 24-plane problems with the tga driver, and update the docs
+      (#3789, Martin Lucina).
+3938. Rage 128 documentation update (Kevin Martin).
+3937. Fix an unresolved reference to VErrorF from the int10 module
       (David Dawes).
-3796. Reduce some of the noise in the server startup messages (David Dawes).
-3795. Static library objects don't use THREADS_CFLAGS (#3790, Matthieu Herrb).
+3936. Reduce some of the noise in the server startup messages (David Dawes).
+3935. Static library objects don't use THREADS_CFLAGS (#3790, Matthieu Herrb).
 3934. Fix a fatal error related to shared memory pixmaps in Xinerama (#3788,
       Mark Vojkovich).
 3933. Fix IA64 build fixes (#3787, Mark Vojkovich).
@@ -33,9 +52,7 @@ XFree86 3.9.18Z (3 March 2000)
 3920. Update the wacom input driver to suppor the PL400 model and the
       stroking pen on the Intuos model (#3778, Frederic Lepied).
 3919. Xterm patch #131 (#3777, Thomas Dickey).
-3918. Fix a mouse driver bug that prevented the X server from seeing the
-      mouse button 4 and above when three button emulation is enabled
-      (#3773, Yoshihiko Sarumau, Kazutaka Yokota).
+3918. -
 3917. Add prototypes for xman, and eliminate most of the compiler warnings
       (#3772, Thomas Dickey).
 3916. Xterm patch #130 (#3771, Thomas Dickey).
@@ -9975,4 +9992,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1066 2000/03/06 13:57:38 martin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1067 2000/03/06 19:07:07 dawes Exp $

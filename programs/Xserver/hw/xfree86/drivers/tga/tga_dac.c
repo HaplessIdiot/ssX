@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_dac.c,v 1.7 1999/04/25 10:02:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_dac.c,v 1.9 1999/11/19 13:54:52 hohndel Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -136,7 +136,7 @@ DEC21030Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		(pReg->tgaRegs[0x07] << 22) |
 		(pReg->tgaRegs[0x09] << 30);
 
-    pReg->tgaRegs[0x12] = 0x05;
+    pReg->tgaRegs[0x12] = 0x01;
 
     pReg->tgaRegs[0x13] = 0x0000;
     return TRUE;
@@ -150,6 +150,7 @@ DEC21030Save(ScrnInfoPtr pScrn, TGARegPtr tgaReg)
     tgaReg->tgaRegs[0x10] = TGA_READ_REG(TGA_HORIZ_REG);
     tgaReg->tgaRegs[0x11] = TGA_READ_REG(TGA_VERT_REG);
     tgaReg->tgaRegs[0x12] = TGA_READ_REG(TGA_VALID_REG);
+    tgaReg->tgaRegs[0x13] = TGA_READ_REG(TGA_BASE_ADDR_REG);
     
     return;
 }
@@ -165,6 +166,7 @@ DEC21030Restore(ScrnInfoPtr pScrn, TGARegPtr tgaReg)
 
     TGA_WRITE_REG(tgaReg->tgaRegs[0x10], TGA_HORIZ_REG);
     TGA_WRITE_REG(tgaReg->tgaRegs[0x11], TGA_VERT_REG);
+    TGA_WRITE_REG(tgaReg->tgaRegs[0x13], TGA_BASE_ADDR_REG);
 
     TGA_WRITE_REG(tgaReg->tgaRegs[0x12], TGA_VALID_REG); /* Re-enable Video */
 
