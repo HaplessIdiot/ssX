@@ -1,4 +1,5 @@
 /* $XConsortium: mi.h,v 1.17 94/04/17 20:27:10 dpw Exp $ */
+/* $XFree86$ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -555,6 +556,12 @@ extern Bool miScreenInit(
     int /*numVisuals*/,
     VisualPtr /*visuals*/,
     miBSFuncPtr /*bsfuncs*/
+#endif
+);
+
+extern int miAllocateGCPrivateIndex(
+#if NeedFunctionPrototypes
+    void
 #endif
 );
 

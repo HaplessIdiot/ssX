@@ -1,4 +1,5 @@
 /* $XConsortium: miscrinit.c,v 5.10 94/04/17 20:27:51 dpw Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1990  X Consortium
@@ -267,4 +268,18 @@ miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
     pScreen->MarkUnrealizedWindow = miMarkUnrealizedWindow;
 
     return miScreenDevPrivateInit(pScreen, width, pbits);
+}
+
+int
+miAllocateGCPrivateIndex()
+{
+    static int privateIndex = -1;
+    static unsigned long miGeneration = 0;
+
+    if (miGeneration != serverGeneration)
+    {
+	privateIndex = AllocateGCPrivateIndex();
+	miGeneration = serverGeneration;
+    }
+    return privateIndex;
 }
