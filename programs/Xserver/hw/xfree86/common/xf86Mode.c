@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.45 2001/11/19 15:44:17 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.46 2001/11/21 20:06:32 tsi Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -14,7 +14,6 @@
 #include "mibank.h"
 #include "xf86.h"
 #include "xf86Priv.h"
-
 #include "xf86DDC.h"
 
 /*
@@ -692,11 +691,10 @@ xf86CheckModeForMonitor(DisplayModePtr mode, MonPtr monitor)
 	    /* mode->Clock in kHz, DDC in MHz */
 	    if (mon_range->max_clock < 2550 &&
 		 mode->Clock / 1000.0 > mon_range->max_clock) {
-		xf86Msg(X_INFO,
+		xf86Msg(X_WARNING,
 		   "(%s,%s) mode clock %gMHz exceeds DDC maximum %dMHz\n",
 		   mode->name, monitor->id,
 		   mode->Clock/1000.0, mon_range->max_clock);
-		return MODE_CLOCK_HIGH;
 	    }
 	}
     }

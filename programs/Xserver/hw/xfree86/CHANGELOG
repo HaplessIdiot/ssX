@@ -1,4 +1,6 @@
 XFree86 4.1.99.2 (xx November 2001)
+ 546. Downgrade DDC-related mode rejections to warnings as some monitors
+      advertise their nominal, rather than actual, tolerances (Marc La France).
  545. Add Korean localization of XDarwin front end (Kyunghwan Kim).
  544. Allow XDarwin to launch from the Finder even if there are spaces, etc.
       in the path to its application bundle (Torrey T. Lyons).
@@ -14281,4 +14283,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2070 2001/12/01 04:18:03 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2071 2001/12/04 03:36:35 torrey Exp $
