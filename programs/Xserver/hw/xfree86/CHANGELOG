@@ -1,3 +1,6 @@
+XFree86 3.1.0Bd (12 January 1995)
+189. Merge in XC public fix-06.
+
 XFree86 3.1.0Bc (11 January 1995)
 188. Added a DontZoom keyword for the XF86Config "ServerFlags" section
      to disable the mode switching key sequences.
