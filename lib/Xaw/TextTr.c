@@ -90,6 +90,8 @@ Meta<Key>Z:	scroll-one-line-down() \n\
 ~Shift Meta<Key>BackSpace:	delete-previous-word() \n\
  Shift Meta<Key>BackSpace:	backward-kill-word() \n\
 ", *_XawDefaultTextTranslations3 = "\
+Ctrl<Key>Left:	backward-word() \n\
+Ctrl<Key>Right:	forward-word() \n\
 <Key>Home:	beginning-of-file() \n\
 :<Key>KP_Home:	beginning-of-file() \n\
 <Key>End:	end-of-file() \n\

@@ -27,7 +27,7 @@
  *
  * Much code taken from X11R3 String and Disk Sources.
  */
-/* $XFree86: xc/lib/Xaw/MultiSrc.c,v 1.5 1998/06/28 11:23:47 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/MultiSrc.c,v 1.6 1998/06/28 12:32:19 dawes Exp $ */
 
 /*
 
@@ -107,7 +107,9 @@ static XtResource resources[] = {
 };
 #undef offset
 
-static XawTextPosition Scan(), Search(), ReadText();
+static XawTextPosition Scan(Widget, XawTextPosition, XawTextScanType,
+			    XawTextScanDirection, int, Bool);
+static XawTextPosition /*Scan(), */Search(), ReadText();
 static int ReplaceText();
 static MultiPiece * FindPiece(), * AllocNewPiece();
 static FILE * InitStringOrFile();
@@ -449,143 +451,153 @@ ReplaceText( w, startPos, endPos, u_text_p)
 
 /*	Function Name: Scan
  *	Description: Scans the text source for the number and type
- *                   of item specified.
+ *		     of item specified.
  *	Arguments: w - the MultiSource widget.
- *                 position - the position to start scanning.
- *                 type - type of thing to scan for.
- *                 dir - direction to scan.
- *                 count - which occurance if this thing to search for.
- *                 include - whether or not to include the character found in
- *                           the position that is returned. 
+ *		   position - the position to start scanning.
+ *		   type - type of thing to scan for.
+ *		   dir - direction to scan.
+ *		   count - which occurance if this thing to search for.
+ *		   include - whether or not to include the character found in
+ *			     the position that is returned.
  *	Returns: the position of the item found.
  *
- * Note: While there are only 'n' characters in the file there are n+1 
- *       possible cursor positions (one before the first character and
- *       one after the last character.
+ * Note: While there are only 'n' characters in the file there are n+1
+ *	 possible cursor positions (one before the first character and
+ *	 one after the last character.
  */
-
-static 
-XawTextPosition 
-Scan( w, position, type, dir, count, include )
-    Widget w;
-    XawTextPosition position;
-    XawTextScanType type;
-    XawTextScanDirection dir;
-    int count;
-    Boolean include;
+XawTextPosition
+Scan(Widget w, XawTextPosition position, XawTextScanType type,
+     XawTextScanDirection dir, int count, Bool include)
 {
-  MultiSrcObject src = (MultiSrcObject) w;
+  MultiSrcObject src = (MultiSrcObject)w;
   int inc;
-  MultiPiece * piece;
+  MultiPiece *piece;
   XawTextPosition first, first_eol_position = 0;
-  wchar_t * ptr;
+  wchar_t *ptr;
 
-  if (type == XawstAll) {	/* Optimize this common case. */
-    if (dir == XawsdRight)
-      return(src->multi_src.length);
-    return(0);			/* else. */
-  }
-
+  if (type == XawstAll)
+    {
+      if (dir == XawsdRight)
+	return (src->multi_src.length);
+      return (0);
+    }
 
   /* STEP 1: basic sanity checks */
 
   if (position > src->multi_src.length)
     position = src->multi_src.length;
 
-
-  if ( dir == XawsdRight ) {
-    if (position == src->multi_src.length)
-      return(src->multi_src.length);
-    inc = 1;
-  }
-  else {
-    if (position == 0)
-      return(0);
-    inc = -1;
-    position--;
-  }
+  if (dir == XawsdRight)
+    {
+      if (position == src->multi_src.length)
+	return (src->multi_src.length);
+      inc = 1;
+    }
+  else
+    {
+      if (position == 0)
+	return (0);
+      inc = -1;
+      position--;
+    }
 
   piece = FindPiece(src, position, &first);
 
-  if ( piece->used == 0 ) return(0); /* i.e., buffer is empty. */
+  if (piece->used == 0)
+    return (0);
 
   ptr = (position - first) + piece->text;
 
-  switch (type) {
-  case XawstEOL: 
-  case XawstParagraph: 
-  case XawstWhiteSpace: 
-    for ( ; count > 0 ; count-- ) {
-      Boolean non_space = FALSE, first_eol = TRUE;
-      /* CONSTCOND */
-      while (TRUE) {
-        wchar_t c = *ptr;
+  switch (type)
+    {
+    case XawstEOL:
+    case XawstParagraph:
+    case XawstWhiteSpace:
+      for (; count > 0 ; count--)
+	{
+	  Boolean non_space = FALSE, first_eol = TRUE;
 
-	ptr += inc;
-	position += inc;
-	
-	if (type == XawstWhiteSpace) {
-	  if (iswspace(c)) {
-	    if (non_space) 
-	      break;
-	  }
-	  else
-	    non_space = TRUE;
-	}
-	else if (type == XawstEOL) {
-          if (c == _Xaw_atowc(XawLF)) break;
-	}
-	else { /* XawstParagraph */
-	  if (first_eol) {
-            if (c == _Xaw_atowc(XawLF)) {
-	      first_eol_position = position;
-	      first_eol = FALSE;
+	  /* CONSTCOND */
+	  while (TRUE)
+	    {
+	      wchar_t c;
+
+	      if (ptr < piece->text)
+		{
+		  piece = piece->prev;
+		  if (piece == NULL)	/* Begining of text. */
+		    return (0);
+		  ptr = piece->text + piece->used - 1;
+		  c = *ptr;
+		}
+	      else if (ptr >= (piece->text + piece->used))
+		{
+		  piece = piece->next;
+		  if (piece == NULL)	/* End of text. */
+		    return (src->multi_src.length);
+		  ptr = piece->text;
+		}
+
+	      c = *ptr;
+	      ptr += inc;
+	      position += inc;
+
+	      if (type == XawstWhiteSpace)
+		{
+		  if (iswspace(c))
+		    {
+		      if (non_space)
+			break;
+		    }
+		  else
+		    non_space = TRUE;
+		}
+	      else if (type == XawstEOL)
+		{
+		  if (c == _Xaw_atowc(XawLF))
+		    break;
+		}
+	      else	/* XawstParagraph */
+		{
+		  if (first_eol)
+		    {
+		      if (c == _Xaw_atowc(XawLF))
+			{
+			  first_eol_position = position;
+			  first_eol = FALSE;
+			}
+		    }
+		  else
+		    if (c == _Xaw_atowc(XawLF))
+		      break;
+		    else if (!iswspace(c))
+		      first_eol = TRUE;
+		}
 	    }
-	  }
-	  else
-            if ( c == _Xaw_atowc(XawLF))
-              break;
-            else if ( !iswspace(c) )
-	      first_eol = TRUE;
 	}
-	      
-
-	if ( ptr < piece->text ) {
-	  piece = piece->prev;
-	  if (piece == NULL)	/* Begining of text. */
-	    return(0);
-	  ptr = piece->text + piece->used - 1;
+      if (!include)
+	{
+	  if (type == XawstParagraph)
+	    position = first_eol_position;
+	  position -= inc;
 	}
-	else if ( ptr >= (piece->text + piece->used) ) {
-	  piece = piece->next;
-	  if (piece == NULL)	/* End of text. */
-	    return(src->multi_src.length);
-	  ptr = piece->text;
-	}
-      }
+      break;
+    case XawstPositions:
+      position += count * inc;
+      break;
+    default:
+      break;
     }
-    if (!include) {
-      if ( type == XawstParagraph)
-	position = first_eol_position;
-      position -= inc;
-    }
-    break;
-  case XawstPositions: 
-    position += count * inc;
-    break;
-  case XawstAll:		/* ---- handled in special code above */
-    break;
-  }
 
-  if ( dir == XawsdLeft )
+  if (dir == XawsdLeft)
     position++;
 
   if (position >= src->multi_src.length)
-    return(src->multi_src.length);
+    return (src->multi_src.length);
   if (position < 0)
-    return(0);
+    return (0);
 
-  return(position);
+  return (position);
 }
 
 /*	Function Name: Search

@@ -118,7 +118,7 @@ typedef struct {
 
     /* private state */
     GC normgc, invgc, xorgc;
-    Pixmap insertCursorOn;
+    XawTextPosition cursor_position;
     XawTextInsertState laststate;
     short cursor_x, cursor_y;	/* Cursor Location. */
     XFontSet fontset; /* font set to draw */

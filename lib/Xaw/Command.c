@@ -524,6 +524,8 @@ Cardinal *num_args;
 
   if ( oldcbw->core.sensitive != cbw->core.sensitive && !cbw->core.sensitive) {
     /* about to become insensitive */
+    if (cbw->command.set)
+      XawCommandToggle(new);
     cbw->command.set = FALSE;
     cbw->command.highlighted = HighlightNone;
     redisplay = TRUE;
