@@ -45,7 +45,7 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/lbxproxy/di/wire.c,v 1.11 2001/08/01 00:45:00 tsi Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/wire.c,v 1.13tsi Exp $ */
 
 #include "lbx.h"
 #include <stdio.h>
@@ -1569,7 +1569,7 @@ ConnectToServer(dpy_name)
     if (snprintf (proxy_address, sizeof(proxy_address) ,"%s:%s", my_host,
 		  display) >= sizeof(proxy_address)) {
 	(void) snprintf (proxy_address, sizeof(proxy_address),
-			 "display name too long",display);
+			 "display name too long");
 	SendGetProxyAddrReply( PM_iceConn, PM_Failure, NULL, proxy_address);
 	return FALSE;
     }

@@ -48,7 +48,7 @@ in this Software without prior written authorization from The Open Group.
 /**    TORTIOUS ACTION, ARISING OUT OF OR IN  CONNECTION  WITH  THE  USE    **/
 /**    OR PERFORMANCE OF THIS SOFTWARE.                                     **/
 /*****************************************************************************/
-/* $XFree86: xc/programs/twm/util.c,v 1.10tsi Exp $ */
+/* $XFree86: xc/programs/twm/util.c,v 1.11tsi Exp $ */
 
 
 /***********************************************************************
@@ -296,7 +296,8 @@ char *name;
     if (!newname) {
 	fprintf (stderr, 
 		 "%s:  unable to allocate %ld bytes to expand filename %s/%s\n",
-		 ProgramName, HomeLen + strlen(name) + 2, Home, &name[1]);
+		 ProgramName, HomeLen + (ulong)strlen(name) + 2,
+		 Home, &name[1]);
     } else {
 	(void) sprintf (newname, "%s/%s", Home, &name[1]);
     }
@@ -448,7 +449,7 @@ InsertRGBColormap (a, maps, nmaps, replace)
 	sc = (StdCmap *) malloc (sizeof (StdCmap));
 	if (!sc) {
 	    fprintf (stderr, "%s:  unable to allocate %ld bytes for StdCmap\n",
-		     ProgramName, sizeof (StdCmap));
+		     ProgramName, (ulong)sizeof (StdCmap));
 	    return;
 	}
     }

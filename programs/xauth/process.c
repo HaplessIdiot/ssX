@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xauth/process.c,v 3.13tsi Exp $ */
+/* $XFree86: xc/programs/xauth/process.c,v 3.14tsi Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -1454,7 +1454,7 @@ do_add(char *inputfilename, int lineno, int argc, char **argv)
     if (!auth) {
 	prefix (inputfilename, lineno);
 	fprintf (stderr, "unable to allocate %ld bytes for Xauth structure\n",
-		 sizeof (Xauth));
+		 (ulong)sizeof (Xauth));
 	free (key);
 	return 1;
     }
@@ -1491,7 +1491,7 @@ do_add(char *inputfilename, int lineno, int argc, char **argv)
     if (!list) {
 	prefix (inputfilename, lineno);
 	fprintf (stderr, "unable to allocate %ld bytes for auth list\n",
-		 sizeof (AuthList));
+		 (ulong)sizeof (AuthList));
 	free (auth);
 	free (key);
 	free (auth->name);
