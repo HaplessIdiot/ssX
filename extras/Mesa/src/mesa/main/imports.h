@@ -29,7 +29,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/mesa/main/imports.h,v 1.3 2004/04/22 13:58:37 tsi Exp $ */
 
 #ifndef IMPORTS_H
 #define IMPORTS_H
@@ -222,7 +222,7 @@ extern void _ext_mesa_free_pixelbuffer( void *pb );
  *** USE_IEEE: Determine if we're using IEEE floating point
  ***/
 #if defined(__i386__) || defined(__386__) || defined(__sparc__) || \
-    defined(__s390x__) || defined(__powerpc__) || \
+    defined(__s390x__) || defined(__powerpc__) || defined(__mips__) || \
     defined(__AMD64__) || defined(__amd64__) || \
     defined(ia64) || defined(__ia64__) || \
     (defined(__alpha__) && (defined(__IEEE_FLOAT) || !defined(VMS)))
