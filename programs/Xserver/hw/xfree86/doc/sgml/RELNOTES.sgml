@@ -9,7 +9,7 @@
 <date>23 February 2003
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.76 2003/02/25 05:05:33 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.77 2003/02/25 19:31:01 dawes Exp $
 </ident>
 
 <abstract>
@@ -1083,142 +1083,17 @@ new features should be completed in a future release.
 <p>
 -->
 
-<sect1>Xaw
-<p>
-
-Two versions of the Xaw library are provided with XFree86 4.x. A version with
-bug fixes and a few binary compatible improvements and a new version with
-several new features.
-
-New features:
-
-<itemize>
-
-  <item>A <tt>displayList</tt> resource is available to all Xaw widgets. It
-	basically consists of a list of drawing commands, fully described in
-	the <tt><htmlurl name="Xaw(3)" url="Xaw.3.html"></tt> manual
-	page, that enables a integration of Xaw programs with the new
-	window/desktop managers that allows for configurable themes.
-
-  <item>Some new actions were added to all Xaw widgets, to allow more
-	configurable control of the widgets, and to allow setting resources
-	at run time.
-
-  <item>Since Xpm was integrated into XFree86, programs linked with the
-	new Xaw library	will also link with Xpm. This allows for color
-	background pixmaps, and also for shaped widgets.
-
-  <item>The text widget is the widget that will present more changes. These
-	include:
-
-	<itemize>
-
-	  <item>Block cursor.
-
-	  <item>Compile time limit of 16384 undo/redo levels (that will
-		automatically grow if the text is not saved when this mark is
-		reached).
-
-	  <item>Overwrite mode.
-
-	  <item>Text killed is inserted in a kill ring list, this text is not
-		forgotten, pressing <tt>M-y</tt> allows traversing the kill
-		ring list.
-
-	  <item>International support for latin languages is available even
-		if the <tt>international</tt> resource is not set. Users will
-		need to properly set the <it>locale</it> environment to make
-		complete use of this feature.
-
-	  <item>A better <tt>multiply</tt> interface is provided. Pressing
-		<tt>C-u,&lt;number&gt;</tt> (where number can be negative)
-		allows passing parameters for text actions.
-
-	  <item>Text can be formatted to have left, right, center or full
-		justification.
-
-	  <item>Text indentation support is also available.
-
-	</itemize>
-
-</itemize>
-
-Bug fixes:
-
-<itemize>
-
-  <item>The simple menu widget geometry management code was improved to solve
-	problems with menu entries not visible in the screen.
-
-  <item>The form widget geometry code was changed to solve problems with integer
-	round problems in the child widgets geometry when resizing the parent
-	form widget.
-
-  <item>Several bugs were fixed in the text code, while some code was rewritten
-	from scratch.
-
-</itemize>
-
-<p>
-
-<sect1>Xpm
-<p>
-
-Version 3.4k of the Xpm (X pixmap) library is now integrated into XFree86.
-
 <sect1>xedit
 <p>
 
-Xedit have been changed to use most of the new features added to the new
-version of the Xaw library, and some xedit only features were added. Emacs
-users will find that several of the emacs key bindings work with the new
-version of xedit. These include:
-
+Xedit has several new features, including:
 <itemize>
-
-  <item>File name tab completion. Including a <it>Emacs dired</it> like window,
-	that will be shown when there are more than one match, when
-	<tt>C-x,d</tt> is pressed, or when a directory name is specified.
-
-  <item>An unlimited number of files can be edited at the same time. Including
-	multiple views of the same or different files.
-
-  <item>The line number of the cursor position is always visible. It can also
-	be customized to show the column number, the position offset and the
-	current size of the file.
-
-  <item>There is an <tt>autoReplace</tt> resource, that enables automatic text
-	replacement at the time text is typed. This feature is useful to create
-	simple macros, or to correct common spelling errors.
-
-  <item>A fully featured ispell interface is also available. This interface
-	is expected to provide most of the features of the terminal interface
-	of the ispell program, with some extra features that include:
-
-	<itemize>
-
-	  <item>A compile time limit of 16 undo levels.
-
-	  <item>Terse mode switch.
-
-	  <item>Dictionary change.
-
-	  <item>The interface also checks for repeated words.
-
-	</itemize>
-
-  <item>A first tentative to add programming modes was done. Currently, there
-	is one mode:
-	<itemize>
-
-	  <item><bf>C-mode:</bf> this mode is expected to be stable, and fully
-		usable.
-	</itemize>
-
+  <item>An embeded lisp interpreter that allows easier extension of the editor.
+  <item>Several new syntax highlight modes, and indentation rules for C and Lisp.
+  <item>Flexible search/replace interface that allows regex matches.
+  <item>Please refer to <tt><htmlurl name="xedit(1)" url="xedit.1.html"></tt>
+	for more details.
 </itemize>
-
-<p>
-
 
 <!--
 <sect>Fonts and Internationalisation
