@@ -1,4 +1,4 @@
-/* $TOG: dpms.h /main/1 1997/11/12 14:36:52 kaleb $ */
+/* $TOG: dpmsstubs.c /main/3 1997/11/14 11:08:23 kaleb $ */
 /*****************************************************************
 
 Copyright (c) 1996 Digital Equipment Corporation, Maynard, Massachusetts.
@@ -27,18 +27,22 @@ Equipment Corporation.
 
 ******************************************************************/
 
-/*
- * HISTORY
- */
-/*
- * @(#)RCSfile: dpms.h,v Revision: 1.1.4.2  (DEC) Date: 1995/11/21 19:34:17
- */
+typedef int Bool;
 
+#define FALSE 0
 
-#define DPMSModeOn	0
-#define DPMSModeStandby	1
-#define DPMSModeSuspend	2
-#define DPMSModeOff	3
+Bool DPMSSupported()
+{
+    return FALSE;
+}
 
+int DPSMGet(level)
+    int *level;
+{
+    return -1;
+}
 
+void DPMSSet(level)
+{
 
+}

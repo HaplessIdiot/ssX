@@ -51,7 +51,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.32 1997/10/13 17:16:53 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.33 1997/11/16 06:42:21 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -103,6 +103,9 @@ static mutex print_lock;
 #include <stdlib.h>	/* for malloc() */
 #endif
 #endif
+
+#include <errno.h>
+extern int errno;
 
 extern char *display;
 
@@ -234,9 +237,6 @@ OsSignal(sig, handler)
 #endif
 #endif
 #endif
-
-#include <errno.h>
-extern int errno;
 
 static Bool StillLocking = FALSE;
 
@@ -573,10 +573,6 @@ void UseMsg()
 #endif
     ErrorF("-nolisten string       don't listen on protocol\n");
     ErrorF("-p #                   screen-saver pattern duration (minutes)\n");
-#ifdef PANORAMIX
-    ErrorF("+xinerama              Enable XINERAMA extension\n");
-    ErrorF("-xinerama              Disable XINERAMA extension\n");
-#endif
     ErrorF("-pn                    accept failure to listen on all ports\n");
     ErrorF("-nopn                  reject failure to listen on all ports\n");
     ErrorF("-r                     turns off auto-repeat\n");
@@ -594,6 +590,10 @@ void UseMsg()
     ErrorF("v                      video blanking for screen-saver\n");
     ErrorF("-v                     screen-saver without video blanking\n");
     ErrorF("-wm                    WhenMapped default backing-store\n");
+#ifdef PANORAMIX
+    ErrorF("+xinerama              Enable XINERAMA extension\n");
+    ErrorF("-xinerama              Disable XINERAMA extension\n");
+#endif
     ErrorF("-x string              loads named extension at init time \n");
 #ifdef AMOEBA
     ErrorF("-tcp capability        specify TCP/IP server capability\n");
@@ -857,14 +857,6 @@ char	*argv[];
 	    else
 		UseMsg();
 	}
-#ifdef PANORAMIX
-	else if ( strcmp( argv[i], "+xinerama") == 0){
-	    noPanoramiXExtension = FALSE;
-	}
-	else if ( strcmp( argv[i], "-xinerama") == 0){
-	    noPanoramiXExtension = TRUE;
-	}
-#endif
 	else if ( strcmp( argv[i], "-pn") == 0)
 	    PartialNetwork = TRUE;
 	else if ( strcmp( argv[i], "-nopn") == 0)
@@ -913,6 +905,14 @@ char	*argv[];
 	    defaultScreenSaverBlanking = DontPreferBlanking;
 	else if ( strcmp( argv[i], "-wm") == 0)
 	    defaultBackingStore = WhenMapped;
+#ifdef PANORAMIX
+	else if ( strcmp( argv[i], "+xinerama") == 0){
+	    noPanoramiXExtension = FALSE;
+	}
+	else if ( strcmp( argv[i], "-xinerama") == 0){
+	    noPanoramiXExtension = TRUE;
+	}
+#endif
 	else if ( strcmp( argv[i], "-x") == 0)
 	{
 	    if(++i >= argc)

@@ -68,7 +68,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $TOG: events.c /main/1 1997/10/29 13:27:17 kaleb $ */
+/* $TOG: events.c /main/2 1997/11/13 14:59:15 kaleb $ */
 
 #include "X.h"
 #include "misc.h"
@@ -865,6 +865,14 @@ ActivatePointerGrab(mouse, grab, time, autoGrab)
     {
 	if (grab->confineTo->drawable.pScreen != sprite.hotPhys.pScreen)
 	    sprite.hotPhys.x = sprite.hotPhys.y = 0;
+#ifdef PANORAMIX
+        if ((!noPanoramiXExtension) &&
+            ( grab->confineTo->drawable.x + grab->confineTo->drawable.width >
+              (grab->confineTo->drawable.pScreen)->width ||
+	      grab->confineTo->drawable.x < 0) )
+                ConfineCursorToWindow(grab->confineTo, FALSE, FALSE);
+        else
+#endif
 	ConfineCursorToWindow(grab->confineTo, FALSE, TRUE);
     }
     DoEnterLeaveEvents(oldWin, grab->window, NotifyGrab);
@@ -3274,23 +3282,16 @@ ProcGrabPointer(client)
 	    pPanoramiXWin = PanoramiXWinRoot;
             PANORAMIXFIND_ID(pPanoramiXWin, stuff->confineTo);
             if (pPanoramiXWin) {
-             for ( i = PanoramiXNumScreens - 1; i >=0 ; i--) {
-                  stuff->confineTo = pPanoramiXWin->info[i].id;
-	  	  confineTo = SecurityLookupWindow(stuff->confineTo, client,
+                stuff->confineTo = pPanoramiXWin->info[sprite.hotPhys.pScreen->
+myNum].id;
+	  	confineTo = SecurityLookupWindow(stuff->confineTo, client,
 						   SecurityReadAccess);
-                  if (!confineTo)
-                      return BadWindow;
-            /* find where confined windows top-left corner lies
-               and based on its coordinates choose the window
-               which is truly seen. Then check realized/empty
-               and pass this window to activate grab. */
-                  if ((confineTo->drawable.x >= 0) &&
-                     (confineTo->drawable.x <= panoramiXdataPtr[i].x))
-                     break;
-             }
-           }
-           if ((confineTo && !(confineTo->realized &&
-              REGION_NOTEMPTY(confineTo->drawable.pScreen, &confineTo->borderSize))))
+                if (!confineTo)
+                    return BadWindow;
+            }
+            if ((confineTo && !(confineTo->realized &&
+              REGION_NOTEMPTY(confineTo->drawable.pScreen, &confineTo->
+borderSize))))
               NotViewable = TRUE;
         }
     } else {

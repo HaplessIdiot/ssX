@@ -1,6 +1,6 @@
 /*
  * $XConsortium: Xos.h /main/70 1996/11/15 16:00:41 kaleb $
- * $XFree86: xc/include/Xos.h,v 3.20 1996/12/23 05:58:08 dawes Exp $
+ * $XFree86: xc/include/Xos.h,v 3.21 1997/01/18 06:51:16 dawes Exp $
  * 
  * 
 Copyright (c) 1987  X Consortium
@@ -286,6 +286,8 @@ typedef unsigned char u_char;
 
 #ifdef __EMX__
 typedef unsigned long fd_mask;
+#include <limits.h>
+#define MAX_PATH _POSIX_PATH_MAX
 #endif
 
 /* use POSIX name for signal */

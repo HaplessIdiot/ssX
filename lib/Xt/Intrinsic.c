@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Intrinsic.c,v 3.9 1997/05/31 13:51:19 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Intrinsic.c,v 3.10 1997/10/26 13:24:53 dawes Exp $ */
 
 /*
 
@@ -867,7 +867,7 @@ Boolean XtIsObject(object)
     return True;
 }
 
-#if defined(WIN32) || defined(__EMX__)
+#if defined(WIN32)
 static int access_file (path, pathbuf, len_pathbuf, pathret)
     char* path;
     char* pathbuf;
@@ -964,7 +964,7 @@ static Boolean TestFile(path)
 #ifndef VMS
     int ret = 0;
     struct stat status;
-#if defined(WIN32) || defined(__EMX__) /* || defined(OS2) */
+#if defined(WIN32)
     char buf[MAX_PATH];
     char* bufp;
     int len;
@@ -979,7 +979,7 @@ static Boolean TestFile(path)
 #else
 	    (status.st_mode & S_IFDIR) == 0);	/* not a directory */
 #endif /* X_NOT_POSIX else */
-#if defined(WIN32) || defined(__EMX__) /* || defined(OS2) */
+#if defined(WIN32)
     XtStackFree ((XtPointer)bufp, buf);
 #endif
     return ret;

@@ -1,4 +1,4 @@
-/* $TOG: lcUTF.c /main/18 1997/09/23 18:32:20 kaleb $ */
+/* $TOG: lcUTF.c /main/19 1997/11/13 18:54:51 kaleb $ */
 /******************************************************************
 
               Copyright 1993 by SunSoft, Inc.
@@ -25,7 +25,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
   Author: Hiromu Inukai (inukai@Japan.Sun.COM) SunSoft, inc.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/lcUTF.c,v 3.4 1997/10/26 13:24:48 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcUTF.c,v 3.5 1997/11/16 06:17:37 dawes Exp $ */
 #include "XlcUTF.h"
 
 static int getutfrune(
@@ -1417,7 +1417,8 @@ _XlcUtfLoader(name)
     if (lcd == (XLCd) NULL)
 	return lcd;
     
-    if ((_XlcCompareISOLatin1(XLC_PUBLIC_PART(lcd)->codeset, "utf"))) {
+    if (!XLC_PUBLIC_PART(lcd)->codeset ||
+	(_XlcCompareISOLatin1(XLC_PUBLIC_PART(lcd)->codeset, "utf"))) {
 	_XlcDestroyLC(lcd);
 	return (XLCd) NULL;
     }

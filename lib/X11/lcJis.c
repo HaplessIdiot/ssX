@@ -1,4 +1,4 @@
-/* $XConsortium: lcJis.c /main/2 1996/10/22 14:25:13 kaleb $ */
+/* $TOG: lcJis.c /main/3 1997/11/13 18:54:40 kaleb $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -28,7 +28,7 @@
 #include "XlcGeneric.h"
 #include <stdio.h>
 
-#if !defined(X_NOT_STDC_ENV) && !defined(macII)
+#if !defined(X_NOT_STDC_ENV) && !defined(macII) && !defined(X_LOCALE)
 #define STDCVT
 #endif
 
@@ -887,7 +887,8 @@ _XlcJisLoader(name)
     if (lcd == NULL)
 	return lcd;
 
-    if ((_XlcCompareISOLatin1(XLC_PUBLIC_PART(lcd)->codeset, "jis"))) {
+    if (!XLC_PUBLIC_PART(lcd)->codeset ||
+	(_XlcCompareISOLatin1(XLC_PUBLIC_PART(lcd)->codeset, "JIS7"))) {
         _XlcDestroyLC(lcd);
         return (XLCd) NULL;
     }

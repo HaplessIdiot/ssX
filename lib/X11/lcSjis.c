@@ -1,4 +1,4 @@
-/* $XConsortium: lcSjis.c /main/19 1996/10/22 14:25:17 kaleb $ */
+/* $TOG: lcSjis.c /main/20 1997/11/13 18:54:45 kaleb $ */
 /****************************************************************
 
         Copyright 1992, 1993 by FUJITSU LIMITED
@@ -489,7 +489,7 @@ sjis_mbstocs(conv, from, from_left, to, to_left, args, num_args)
 
 
 
-/* Determine the charset of the segment and convert one characater: */
+/* Determine the charset of the segment and convert one character: */
 
     tmp_args[0] = (XPointer) &charset; /* charset from sjis_mbtocs() */
     while
@@ -1535,7 +1535,8 @@ _XlcSjisLoader(name)
     if (lcd == NULL)
 	return lcd;
 
-    if ((_XlcCompareISOLatin1(XLC_PUBLIC_PART(lcd)->codeset, "sjis"))) {
+    if (!XLC_PUBLIC_PART(lcd)->codeset ||
+	(_XlcCompareISOLatin1(XLC_PUBLIC_PART(lcd)->codeset, "SJIS"))) {
 	_XlcDestroyLC(lcd);
 	return (XLCd) NULL;
     }

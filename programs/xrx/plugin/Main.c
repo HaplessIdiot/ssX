@@ -1,4 +1,4 @@
-/* $TOG: Main.c /main/12 1997/08/29 18:31:37 kaleb $ */
+/* $TOG: Main.c /main/15 1997/11/21 14:33:16 kaleb $ */
 /*
 
 Copyright (C) 1996 X Consortium
@@ -56,9 +56,7 @@ the X Consortium.
 #include <ctype.h>
 #include <stdlib.h>
 #include "RxPlugin.h"
-#include <X11/StringDefs.h>
-#include "rxLabel.h"
-#include "rxPushB.h"
+#include "X11/StringDefs.h"
 
 
 /***********************************************************************
@@ -382,16 +380,30 @@ void
 StartCB(Widget widget, XtPointer client_data, XtPointer call_data)
 {
     PluginInstance* This = (PluginInstance*) client_data;
+#if 0
     XtUnmapWidget(widget);
+#endif
     XtDestroyWidget(widget);
     StartApplication(This);
 }
+
+#if defined(linux) || defined(__osf__)
+/* deficient linker semantics */
+static WidgetClass xmLabelGadgetClass;
+static WidgetClass xmPushButtonGadgetClass;
+#else
+extern WidgetClass xmLabelGadgetClass;
+extern WidgetClass xmPushButtonGadgetClass;
+#endif
 
 void
 RxpSetStatusWidget(PluginInstance* This, PluginState state)
 {
     Arg args[5];
     int n;
+    XrmDatabase db;
+    char* return_type;
+    XrmValue return_value;
 
     if (This->status_widget) {
 	XtDestroyWidget(This->status_widget);
@@ -400,30 +412,81 @@ RxpSetStatusWidget(PluginInstance* This, PluginState state)
     if (This->plugin_widget == NULL)
 	return;
 
+    db = XtDatabase (XtDisplay (This->plugin_widget));
+
+    if (!XrmGetResource (db, "RxPlugin_BeenHere", "RxPlugin_BeenHere",
+		    &return_type, &return_value)) {
+	Widget w;
+
+	XrmPutStringResource (&db, "*Rx_Loading.labelString", "Loading...");
+	XrmPutStringResource (&db, "*Rx_Starting.labelString", "Starting...");
+	XrmPutStringResource (&db, "*Rx_Start.labelString", "Start");
+	XrmPutStringResource (&db, "RxPlugin_BeenHere", "YES");
+#if defined(linux) || defined(__osf__)
+	/*
+	   lame loader semantics mean we have to go fishing around to
+	   come up with widget class records so we can create some widgets.
+
+	   Names of widgets changed in 4.x, so look for those names too
+	   for linux (Netscape hasn't done 4.x for Digital Unix [yet]).
+
+	   If Microsoft ever does IE for Linux we'll have to figure out
+	   those names too.
+	*/
+	w = XtNameToWidget (This->toplevel_widget, "*topLeftArea.urlLabel");
+	if (w == NULL)
+	    w = XtNameToWidget (This->toplevel_widget, "*urlBar.urlLocationLabel");
+	xmLabelGadgetClass = XtClass (w);
+	w = XtNameToWidget (This->toplevel_widget, "*toolBar.abort");
+	if (w == NULL)
+	    w = XtNameToWidget (This->toplevel_widget, "*PopupMenu.openCustomUrl");
+	xmPushButtonGadgetClass = XtClass (w);
+#endif
+    }
+
     n = 0;
+    XtSetArg(args[n], "shadowThickness", 1); n++;
     XtSetArg(args[n], XtNwidth, This->width); n++;
     XtSetArg(args[n], XtNheight, This->height); n++;
     if (state == LOADING) {
 	/* create a label */
-	XtSetArg(args[n], XtNlabel, "Loading..."); n++;
+#if 0
+	XmString string = XmStringCreateSimple("Loading...");
+	XtSetArg(args[n], "labelString", string); n++;
+#endif
 	This->status_widget =
-	    XtCreateManagedWidget("plugin", rxLabelWidgetClass, 
-				  This->plugin_widget, args, n);
+	    XtCreateManagedWidget("Rx_Loading", xmLabelGadgetClass,
+		This->plugin_widget, args, n);
+#if 0
+	XmStringFree(string);
+#endif
 #ifndef NO_STARTING_STATE
     } else if (state == STARTING) {
 	/* create a label */
-	XtSetArg(args[n], XtNlabel, "Starting..."); n++;
+#if 0
+	XmString string = XmStringCreateSimple("Starting...");
+	XtSetArg(args[n], "labelString", string); n++;
+#endif
 	This->status_widget =
-	    XtCreateManagedWidget("plugin", rxLabelWidgetClass, 
-				  This->plugin_widget, args, n);
+	    XtCreateManagedWidget("Rx_Starting", xmLabelGadgetClass,
+		This->plugin_widget, args, n);
+#if 0
+	XmStringFree(string);
+#endif
 #endif
     } else if (state == WAITING) {
 	/* create a push button */
-	XtSetArg(args[n], XtNlabel, "Press to start"); n++;
+#if 0
+	XmString string = XmStringCreateSimple("Start");
+	XtSetArg(args[n], "labelString", string); n++;
+#endif
 	This->status_widget =
-	    XtCreateManagedWidget("plugin", rxPushBWidgetClass,
-				  This->plugin_widget, args, n);
-	XtAddCallback(This->status_widget, XtNcallback, StartCB, This);
+	    XtCreateManagedWidget("Rx_Start", xmPushButtonGadgetClass,
+		This->plugin_widget, args, n);
+	XtAddCallback(This->status_widget, "activateCallback", StartCB, This);
+#if 0
+	XmStringFree(string);
+#endif
     } else if (state == RUNNING) {
 	/* nothing else to be done */
     }

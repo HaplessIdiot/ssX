@@ -1,5 +1,5 @@
-XCOMM $TOG: Imakefile /main/11 1997/10/30 15:51:40 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/hw/vfb/Imakefile,v 3.11 1997/11/16 09:43:18 dawes Exp $
+XCOMM $TOG: Imakefile /main/12 1997/11/16 16:01:28 kaleb $
+XCOMM $XFree86: xc/programs/Xserver/hw/vfb/Imakefile,v 3.12 1997/11/16 10:46:17 dawes Exp $
 #include <Server.tmpl>
 
 #if HasShm
@@ -26,14 +26,19 @@ INCLUDES = -I. -I$(XBUILDINCDIR) -I$(FONTINCSRC) \
 
 DEFINES = ServerOSDefines $(SHMDEF) $(MMAPDEF)
 
-#if BuildPanoramiX
+#if BuildXinerama
 PAN_DEFINES = -DNO_PANORAMIX
 SRCSB =		panoramiXstubs.c
 OBJSB =		panoramiXstubs.o
 #endif
 
-SRCS =		$(SRCSA) $(SRCSB)
-OBJS =		$(OBJSA) $(OBJSB)
+#if BuildDPMS
+SRCSC =		dpmsstubs.c
+OBJSC =		dpmsstubs.o
+#endif
+
+SRCS =		$(SRCSA) $(SRCSB) $(SRCSC)
+OBJS =		$(OBJSA) $(OBJSB) $(OBJSC)
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(vfb,$(OBJS))
@@ -49,9 +54,14 @@ SpecialCObjectRule(InitInput,$(ICONFIGFILES),$(EXT_DEFINES))
 LinkSourceFile(miinitext.c,$(SERVERSRC)/mi)
 SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(EXT_DEFINES) $(PAN_DEFINES) -DNO_HW_ONLY_EXTS -DNO_MODULE_EXTS $(EXT_MODULE_DEFINES) -UXFree86LOADER)
 
-#if BuildPanoramiX
+#if BuildXinerama
 LinkSourceFile(panoramiXstubs.c,$(SERVERSRC)/Xext)
 SpecialCObjectRule(panoramiXstubs,$(ICONFIGFILES),$(EXT_DEFINES) $(PAN_DEFINES))
+#endif
+
+#if BuildDPMS
+LinkSourceFile(dpmsstubs.c,$(SERVERSRC)/Xext)
+SpecialCObjectRule(dpmsstubs,$(ICONFIGFILES),$(EXT_DEFINES))
 #endif
 
 InstallManPage(Xvfb,$(MANDIR))

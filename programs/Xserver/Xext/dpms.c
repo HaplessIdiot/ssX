@@ -1,3 +1,4 @@
+/* $TOG: dpms.c /main/1 1997/11/12 14:37:34 kaleb $ */
 /*****************************************************************
 
 Copyright (c) 1996 Digital Equipment Corporation, Maynard, Massachusetts.
@@ -26,13 +27,7 @@ Equipment Corporation.
 
 ******************************************************************/
 
-/*
- * HISTORY
- *
- * @(#)RCSfile: dpms.c,v Revision: 1.1.4.5  (DEC) Date: 1996/03/04 15:27:00
- */
-
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xext/dpms.c,v 3.1 1997/01/12 10:40:06 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -193,7 +188,9 @@ ProcDPMSDisable(client)
 
     REQUEST_SIZE_MATCH(xDPMSDisableReq);
 
+#ifdef DPMSExtension
     DPMSSet(DPMSModeOn);
+#endif
 
     DPMSEnabled = FALSE;
 
@@ -228,7 +225,9 @@ ProcDPMSForceLevel(client)
 	return BadValue;
     }
 
+#ifdef DPMSExtension
     DPMSSet(stuff->level);
+#endif
 
     return(client->noClientException);
 }

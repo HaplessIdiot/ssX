@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/lib/X11/XlibInt.c,v 3.9 1996/12/23 05:59:48 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlibInt.c,v 3.10 1997/10/26 13:24:45 dawes Exp $ */
 
 /*
  *	XlibInt.c - Internal support routines for the C subroutine
@@ -128,6 +128,8 @@ xthread_t (*_Xthread_self_fn)() = NULL;
 
 #ifdef __EMX__
 #define select(n,r,w,x,t) os2ClientSelect(n,r,w,x,t)
+#include <limits.h>
+#define MAX_PATH _POSIX_PATH_MAX
 #endif
 
 #ifdef MUSTCOPY
@@ -3242,8 +3244,7 @@ _XANYSET(src)
 }
 #endif
 
-#if defined(WIN32) || defined(__EMX__) /* || defined(OS2) */
-
+#if defined(WIN32)
 /*
  * These functions are intended to be used internally to Xlib only.
  * These functions will always prefix the path with a DOS drive in the
@@ -3259,6 +3260,7 @@ static int access_file (path, pathbuf, len_pathbuf, pathret)
     int len_pathbuf;
     char** pathret;
 {
+    *pathret = pathbuf;
     if (access (path, F_OK) == 0) {
 	if (strlen (path) < len_pathbuf)
 	    *pathret = pathbuf;
@@ -3346,7 +3348,7 @@ static int AccessFile (path, pathbuf, len_pathbuf, pathret)
 }
 
 int _XOpenFile(path, flags)
-    char* path;
+    _Xconst char* path;
     int flags;
 {
     char buf[MAX_PATH];
@@ -3362,8 +3364,8 @@ int _XOpenFile(path, flags)
 }
 
 void* _XFopenFile(path, mode)
-    char* path;
-    char* mode;
+    _Xconst char* path;
+    _Xconst char* mode;
 {
     char buf[MAX_PATH];
     char* bufp;
@@ -3378,7 +3380,7 @@ void* _XFopenFile(path, mode)
 }
 
 int _XAccessFile(path)
-    char* path;
+    _Xconst char* path;
 {
     char buf[MAX_PATH];
     char* bufp;

@@ -45,8 +45,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $TOG: miinitext.c /main/44 1997/10/30 15:51:48 kaleb $ */
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.25 1997/11/16 06:42:19 dawes Exp $ */
+/* $TOG: miinitext.c /main/45 1997/11/12 14:38:54 kaleb $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.26 1997/11/16 10:46:17 dawes Exp $ */
 
 #include "misc.h"
 #include "extension.h"
@@ -145,10 +145,10 @@ extern void XCMiscExtensionInit(INITARGS);
 extern void RecordExtensionInit(INITARGS);
 #endif
 #ifdef LBX
-extern void     LbxExtensionInit(INITARGS);
+extern void LbxExtensionInit(INITARGS);
 #endif
 #ifdef DBE
-extern void     DbeExtensionInit(INITARGS);
+extern void DbeExtensionInit(INITARGS);
 #endif
 #ifdef XAPPGROUP
 extern void XagExtensionInit(INITARGS);
@@ -157,22 +157,22 @@ extern void XagExtensionInit(INITARGS);
 extern void SecurityExtensionInit(INITARGS);
 #endif
 #ifdef XPRINT
-extern void	XpExtensionInit(INITARGS);
+extern void XpExtensionInit(INITARGS);
 #endif
 #ifdef TOGCUP
-extern void	XcupExtensionInit(INITARGS);
-#endif
-#ifdef XF86VIDMODE
-extern void	XFree86VidModeExtensionInit(INITARGS);
-#endif
-#ifdef XF86MISC
-extern void	XFree86MiscExtensionInit(INITARGS);
-#endif
-#ifdef XFreeXDGA
-extern void XFree86DGAExtensionInit(INITARGS);
+extern void XcupExtensionInit(INITARGS);
 #endif
 #ifdef DPMSExtension
 extern void DPMSExtensionInit(INITARGS);
+#endif
+#ifdef XF86VIDMODE
+extern void XFree86VidModeExtensionInit(INITARGS);
+#endif
+#ifdef XF86MISC
+extern void XFree86MiscExtensionInit(INITARGS);
+#endif
+#ifdef XFreeXDGA
+extern void XFree86DGAExtensionInit(INITARGS);
 #endif
 #ifdef GLXEXT
 #ifndef GLX_MODULE
@@ -240,7 +240,7 @@ InitExtensions(argc, argv)
 #ifdef XTRAP
     if (!noTestExtensions) DEC_XTRAPInit();
 #endif
-#ifdef SCREENSAVER
+#ifdef SCREENSAVER && !defined(PRINT_ONLY_SERVER)
     ScreenSaverExtensionInit ();
 #endif
 #ifdef XV
@@ -261,7 +261,7 @@ InitExtensions(argc, argv)
 #ifdef XSYNC
     SyncExtensionInit();
 #endif
-#ifdef XKB
+#ifdef XKB && !defined(PRINT_ONLY_SERVER)
     if (!noXkbExtension) XkbExtensionInit();
 #endif
 #ifdef XCMISC
@@ -288,6 +288,9 @@ InitExtensions(argc, argv)
 #ifdef TOGCUP
     XcupExtensionInit();
 #endif
+#if defined(DPMSExtension) && !defined(PRINT_ONLY_SERVER)
+    DPMSExtensionInit();
+#endif
 #if defined(XF86VIDMODE) && !defined(PRINT_ONLY_SERVER) && \
 	!defined(NO_HW_ONLY_EXTS)
     XFree86VidModeExtensionInit();
@@ -299,10 +302,6 @@ InitExtensions(argc, argv)
 #if defined(XFreeXDGA) && !defined(PRINT_ONLY_SERVER) && \
 	!defined(NO_HW_ONLY_EXTS)
     XFree86DGAExtensionInit();
-#endif
-#if defined(DPMSExtension) && !defined(PRINT_ONLY_SERVER) && \
-	!defined(NO_HW_ONLY_EXTS)
-    DPMSExtensionInit();
 #endif
 #if defined(GLXEXT) && !defined(NO_HW_ONLY_EXTS)
 #ifndef GLX_MODULE

@@ -1,5 +1,5 @@
-XCOMM $TOG: Imakefile /main/48 1997/10/29 13:25:44 kaleb $
-XCOMM $XFree86: xc/include/extensions/Imakefile,v 3.13 1997/01/12 10:39:14 dawes Exp $
+XCOMM $TOG: Imakefile /main/49 1997/11/12 14:36:45 kaleb $
+XCOMM $XFree86: xc/include/extensions/Imakefile,v 3.14 1997/11/16 06:17:32 dawes Exp $
 
 #if BuildScreenSaverLibrary
 SCREENSAVERHEADERS = saver.h saverproto.h scrnsaver.h
@@ -17,11 +17,8 @@ XF86DGAHEADERS = xf86dga.h xf86dgastr.h
 #if BuildLBX
 LBXHEADERS = lbxbuf.h lbxbufstr.h lbxdeltastr.h lbximage.h lbxopts.h lbxstr.h lbxzlib.h
 #endif
-#if BuildDPMSLibrary
-DPMSHEADERS = dpms.h dpmsstr.h
-#endif
 
-EXTRAHEADERS = $(SCREENSAVERHEADERS) $(XF86VIDMODEHEADERS) $(XF86DGAHEADERS) $(XF86MISCHEADERS) $(LBXHEADERS) $(DPMSHEADERS)
+EXTRAHEADERS = $(SCREENSAVERHEADERS) $(XF86VIDMODEHEADERS) $(XF86DGAHEADERS) $(XF86MISCHEADERS) $(LBXHEADERS)
 
 
 
@@ -39,7 +36,8 @@ HEADERS = Xext.h multibuf.h shape.h sync.h XShm.h MITMisc.h \
 	security.h securstr.h \
 	Print.h Printstr.h \
 	Xcup.h Xcupstr.h \
-	panoramiX.h panoramiXext.h panoramiXproto.h
+	panoramiX.h panoramiXext.h panoramiXproto.h \
+	dpms.h dpmsstr.h
 
 all::
 

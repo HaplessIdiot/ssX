@@ -1,5 +1,5 @@
 XCOMM platform:  $TOG: linux.cf /main/36 1997/06/16 22:21:03 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.72 1997/09/09 10:27:34 hohndel Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.73 1997/09/14 13:15:02 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -38,6 +38,27 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.72 1997/09/09 10:27:34 hohn
 #define OSTeenyVersion		DefaultOSTeenyVersion
 #endif
 
+#ifndef LinuxDistribution 
+#define LinuxDistribution	DefaultLinuxDistribution
+/*
+  Add "#define LinuxDistribution Linux<mumble>" to your site.def or host.def.
+  Currently only LinuxSuSE will be figured out automatically.
+  Valid values are (from the list at www.linux.org in Oct. '97):
+    LinuxUnknown    (0)
+    LinuxSuSE       (1)
+    LinuxCaldera    (2)
+    LinuxCraftworks (3)
+    LinuxDebian     (4)
+    LinuxInfoMagic  (5)
+    LinuxKheops     (6)
+    LinuxPro        (7)
+    LinuxRedHat     (8)
+    LinuxSlackware  (9)
+    LinuxTurbo      (10)
+    LinuxWare       (11)
+    LinuxYggdrasil  (12)
+*/
+#endif
 #ifndef LinuxCLibMajorVersion
 #define LinuxCLibMajorVersion	DefaultLinuxCLibMajorVersion
 #endif
@@ -67,6 +88,12 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define BinUtilsMajorVersion	LinuxBinUtilsMajorVersion
 #endif
 
+#if (LinuxDistribution == LinuxSuSE)
+#define LinuxLocaleDefines	/**/
+#else
+#define LinuxLocaleDefines	-DX_LOCALE
+#endif
+
 #if LinuxCLibMajorVersion >= 6
 #define LinuxSourceDefines	-D_POSIX_C_SOURCE=199309L \
 				-D_POSIX_SOURCE \
@@ -84,7 +111,7 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #endif
 #else
 #define LinuxSourceDefines	-D_POSIX_SOURCE \
-				-D_BSD_SOURCE -D_SVID_SOURCE -DX_LOCALE
+				-D_BSD_SOURCE -D_SVID_SOURCE LinuxLocaleDefines
 #define XawI18nDefines		-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
 #ifndef HasLibCrypt
 #if !defined(AlphaArchitecture)
@@ -122,6 +149,9 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #if UseElfFormat || defined(AlphaArchitecture)
 #define HasSnprintf		YES
 #define HasMkstemp		YES
+#endif
+#if (LinuxDistribution == LinuxRedHat)
+#define HasZlib			YES
 #endif
 
 #define AvoidNullMakeCommand	YES
@@ -245,6 +275,10 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define LinuxMachineDefines	-D__i386__
 #define ServerOSDefines		XFree86ServerOSDefines -DDDXTIME -DPART_NET
 #define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
+#if UseElfFormat
+#define HasPlugin		YES
+#define VendorHasX11R6_3libXext	YES	/* XC or XFree86 >= 3.3.1 */
+#endif
 #endif /* i386Architecture */
 
 #ifdef AlphaArchitecture

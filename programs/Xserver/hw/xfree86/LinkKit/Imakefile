@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/7 1996/10/25 15:35:57 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile,v 3.8 1996/12/23 06:30:43 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile,v 3.9 1997/01/12 10:41:28 dawes Exp $
 
 all:: mkmf
 
@@ -73,7 +73,7 @@ LinkKit.tmpl: Imakefile $(ICONFIGFILES)
 	LimitBoolean("BuildXF86VidModeExt", NO, BuildXF86VidModeExt) >> $@
 	LimitBoolean("BuildXF86MiscExt", NO, BuildXF86MiscExt) >> $@
 	LimitBoolean("BuildXF86DGA", NO, BuildXF86DGA) >> $@
-	LimitBoolean("BuildDPMSExt", BuildDPMSExt, BuildDPMSExt) >> $@
+	LimitBoolean("BuildDPMS", BuildDPMS, BuildDPMS) >> $@
 
 clean::
 	$(RM) LinkKit.tmpl

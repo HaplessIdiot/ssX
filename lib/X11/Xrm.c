@@ -51,7 +51,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/lib/X11/Xrm.c,v 3.6 1997/06/22 12:20:20 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xrm.c,v 3.7 1997/10/26 13:24:46 dawes Exp $ */
 
 #include	<stdio.h>
 #include	<ctype.h>
@@ -1611,7 +1611,6 @@ char * filename;
     }
     size = read (fd, filebuf, size);
 
-#if 0	/* This isn't needed now, is it? */
 #ifdef __EMX__
     { /* kill CRLF */
       int i,k;
@@ -1621,7 +1620,6 @@ char * filename;
 	}
 	filebuf[k] = 0;
     }
-#endif
 #endif
 
     if (size < 0) {

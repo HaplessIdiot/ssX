@@ -1,4 +1,4 @@
-/* $TOG: lcGenConv.c /main/16 1997/09/29 11:23:35 kaleb $ */
+/* $TOG: lcGenConv.c /main/17 1997/11/13 18:54:29 kaleb $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -31,14 +31,14 @@
  *   Modifier: Masayoshi Shimamura      FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.7 1997/05/21 15:16:59 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.8 1997/11/16 06:17:36 dawes Exp $ */
 
 
 #include "Xlibint.h"
 #include "XlcGeneric.h"
 #include <stdio.h>
 
-#if !defined(X_NOT_STDC_ENV) && !defined(macII) && !defined(Lynx_22)
+#if !defined(X_NOT_STDC_ENV) && !defined(macII) && !defined(Lynx_22) && !defined(X_LOCALE)
 #define STDCVT
 #endif
 

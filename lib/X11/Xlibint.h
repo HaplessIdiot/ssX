@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/X11/Xlibint.h,v 3.7 1996/12/23 05:59:50 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xlibint.h,v 3.8 1997/10/26 13:24:45 dawes Exp $ */
 /* $TOG: Xlibint.h /main/115 1997/08/27 12:12:10 kaleb $ */
 
 /*
@@ -1251,7 +1251,8 @@ extern int _XTextHeight16(
 #endif
 );
 
-#if defined(WIN32) || defined(__EMX__) /* || defined(OS2) */
+#if defined(WIN32)
+
 extern int _XOpenFile(
 #if NeedFunctionPrototypes
     _Xconst char*	/* path */,

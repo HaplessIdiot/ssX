@@ -105,4 +105,21 @@ EXPORTS
 	XLbxQueryExtension @ 97
 	XLbxGetEventBase @ 98
 	XLbxQueryVersion @ 99
-	
+	XcupGetReservedColormapEntries @ 100
+	XcupQueryVersion @ 101
+	XcupStoreColors @ 102
+	XPanoramiXQueryVersion @ 103
+	XPanoramiXAllocInfo @ 104
+	XPanoramiXGetScreenCount @ 105
+	XPanoramiXGetScreenSize @ 106
+	XPanoramiXGetState @ 107
+	XPanoramiXQueryExtension @ 108
+	DPMSQueryExtension @ 109
+	DPMSGetVersion @ 110
+	DPMSCapable @ 111
+	DPMSSetTimeouts @ 112
+	DPMSGetTimeouts @ 113
+	DPMSEnable @ 114
+	DPMSDisable @ 115
+	DPMSForceLevel @ 116
+	DPMSInfo @ 117

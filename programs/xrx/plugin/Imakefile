@@ -1,4 +1,4 @@
-XCOMM $TOG: Imakefile /main/36 1997/10/13 12:24:42 kaleb $
+XCOMM $TOG: Imakefile /main/38 1997/11/21 10:25:11 kaleb $
 
 XCOMM This isn't an option we must build a shared lib
 #define DoSharedLib YES
@@ -85,9 +85,6 @@ PLUGIN_INCLUDES = -I./include
 
      XMISC_SRCS = XUrls.c XAuth.c XDpyName.c Prefs.c
      XMISC_OBJS = XUrls.o XAuth.o XDpyName.o Prefs.o
-
-    WIDGET_SRCS = rxLabel.c rxPushB.c
-    WIDGET_OBJS = rxLabel.o rxPushB.o
 
            SRCS = Main.c SetWin.c PProcess.c NewNDest.c Global.c stubs.c \
 		$(PARAMS_SRCS) $(XMISC_SRCS) $(WIDGET_SRCS)

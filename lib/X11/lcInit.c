@@ -1,5 +1,4 @@
-/* $XConsortium: lcInit.c /main/4 1996/12/05 10:40:35 swick $ */
-/* $XFree86: xc/lib/X11/lcInit.c,v 3.1 1996/12/23 06:00:05 dawes Exp $ */
+/* $TOG: lcInit.c /main/5 1997/11/13 18:54:36 kaleb $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -32,16 +31,19 @@
  *   Modifier: Masayoshi Shimamura      FUJITSU LIMITED 
  *
  */
+/* $XFree86: xc/lib/X11/lcInit.c,v 3.2 1996/12/24 02:22:48 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
 
 #define USE_GENERIC_LOADER
 #define USE_DEFAULT_LOADER
-/*** #define USE_EUC_LOADER ***/
-/*** #define USE_SJIS_LOADER ***/
-/*** #define USE_JIS_LOADER ***/
-/*** #define USE_UTF_LOADER ***/
+#ifdef X_LOCALE
+# define USE_EUC_LOADER
+# define USE_SJIS_LOADER
+# define USE_JIS_LOADER
+# define USE_UTF_LOADER
+#endif
 
 extern XLCd _XlcDefaultLoader(
 #if NeedFunctionPrototypes

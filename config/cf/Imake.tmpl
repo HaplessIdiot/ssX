@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.43 1997/08/12 12:01:51 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.44 1997/11/16 06:17:23 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -47,10 +47,6 @@ XCOMM the platform-specific parameters - edit site.def to change
 
 #ifndef HasClearmake
 # define HasClearmake NO
-#endif
-
-#ifndef HasVarDirectory
-#define HasVarDirectory		YES
 #endif
 
 /*
@@ -106,6 +102,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 
 /* the following are needed before we can include Imake.rules */
 
+#ifndef HasVarDirectory
+#define HasVarDirectory		YES
+#endif
 #ifndef SystemV
 #define SystemV			NO	/* SYSV (R3) */
 #endif

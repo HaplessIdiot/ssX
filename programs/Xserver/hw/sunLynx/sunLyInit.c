@@ -1,8 +1,8 @@
-/* $XConsortium: sunLyInit.c /main/1 1996/10/31 14:20:50 kaleb $ */
+/* $TOG: sunLyInit.c /main/2 1997/11/12 14:38:36 kaleb $ */
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/sunLynx/sunLyInit.c,v 3.3 1996/12/27 06:51:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sunLynx/sunLyInit.c,v 3.4 1997/06/03 14:11:09 hohndel Exp $ */
 
 /*
  * This is sunInit.c modified for LynxOS
@@ -635,3 +635,28 @@ sunCfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width, bpp)
     return cfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width);
 }
 #endif  /* SUNMAXDEPTH */
+
+#ifdef XDPMS
+/**************************************************************
+ * DPMSSet(), DPMSGet(), DPMSSupported()
+ *
+ * stubs
+ *
+ ***************************************************************/
+
+void DPMSSet (level)
+    int level;
+{
+}
+
+int DPMSGet (level)
+    int* level;
+{
+    return -1;
+}
+
+Bool DPMSSupported ()
+{
+    return FALSE;
+}
+#endif

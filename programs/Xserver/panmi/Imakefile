@@ -46,7 +46,7 @@ LintLibraryTarget(mi,$(SRCS))
 NormalLintTarget($(SRCS))
 
 #ifndef Win32Architecture
-all:: cbrt.o
+NormalLibraryTarget(cbrt,cbrt.o)
 #endif
 
 SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(EXT_DEFINES))

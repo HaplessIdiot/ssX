@@ -1,8 +1,8 @@
-XCOMM $TOG: Imakefile /main/242 1997/11/11 08:57:43 kaleb $
+XCOMM $TOG: Imakefile /main/revisionist/2 1997/11/17 14:35:40 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.120 1997/11/16 10:46:16 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.121 1997/11/16 12:48:05 dawes Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -81,13 +81,13 @@ INSTPGMFLAGS =
         LBXDIRS = lbx
 #endif
 #if BuildDBE
-         DBEEXT = dbe/LibraryTargetName(dbe)
+         DBEEXT = dbe/ModuleLibraryTargetName(dbe)
 #endif
 #if BuildDBE || BuildDBElib
          DBEDIR = dbe
 #endif
 #if BuildRECORD
-         RECORDEXT = record/LibraryTargetName(record)
+         RECORDEXT = record/ModuleLibraryTargetName(record)
 #endif
 #if BuildRECORD || BuildRECORDlib
          RECORDDIR = record
@@ -136,14 +136,18 @@ XPDDXFBLIBS = $(MFB) $(CFB32)
       XPDDXDIR = Xprint
 #endif
 #if !BuildXprint || PrintOnlyServer
+#if BuildXinerama
+XPFBLIBS = pandix/LibraryTargetName(xpstubs)
+#else
 XPFBLIBS = dix/LibraryTargetName(xpstubs)
+#endif
 #endif
 
 #if DoLoadableServer
      EXTENSIONS = $(OTHEREXTS) 
      PEXXIEEXTS = $(PEXLIBS) $(XIEEXT)
       OTHEREXTS = Xext/LibraryTargetName(ext) $(XKBEXT) $(XINPUTEXT) \
-                  $(LBXEXT) $(DBEEXT) $(RECORDEXT) $(SITEEXTS)
+                  $(LBXEXT) $(SITEEXTS)
 #if (defined(SunArchitecture) && defined(SVR4Architecture))
           LIBDL = $(DYNLIBSYSLIB)
 #endif
@@ -195,10 +199,11 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
 #else
         SYSLIBS = $(ZLIB) MathLibrary Krb5Libraries DBMLibrary $(EXTRASYSLIBS)
 #endif
-           CBRT = mi/LibraryTargetName(cbrt)
 #if BuildXinerama
+           CBRT = panmi/LibraryTargetName(cbrt)
         STDDIRS = include pandix os panmi $(XPDDXDIR) $(EXTDIRS)
 #else
+           CBRT = mi/LibraryTargetName(cbrt)
         STDDIRS = include dix os mi $(XPDDXDIR) $(EXTDIRS)
 #endif
 
@@ -1741,10 +1746,12 @@ CFB32DIR = cfb32
 XPSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB32DIR) $(DEPDIRS)
 #if PrintOnlyServer
 #if BuildXinerama
-XPOBJS = Xprint/ddxInit.o Xprint/miinitext.o Xprint/panoramiXstubs.o
-#else
-XPOBJS = Xprint/ddxInit.o Xprint/miinitext.o
+XPPANSTUBOBJS = Xprint/panoramiXstubs.o
 #endif
+#if BuildDPMS
+XPDPMSSTUBOBJS = Xprint/dpmsstubs.o
+#endif
+XPOBJS = Xprint/ddxInit.o Xprint/miinitext.o $(XPPANSTUBOBJS) $(XPDPMSSTUBOBJS)
 XPLIBS = PreFbLibs $(XPDDXLIBS) $(XPDDXFBLIBS) PostFbLibs
 #else
 XPOBJS = Xprint/ddxInit.o
@@ -1847,10 +1854,12 @@ XVFBDDXDIR = hw
 XVFBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) $(XVFBDDXDIR) $(DEPDIRS)
 #if !defined(LynxOSArchitecture) && !defined(Win32Architecture)
 #if BuildXinerama
-XVFBOBJS = hw/vfb/stubs.o hw/vfb/miinitext.o hw/vfb/panoramiXstubs.o
-#else
-XVFBOBJS = hw/vfb/stubs.o hw/vfb/miinitext.o
+XVFBPANSTUBOBJS = hw/vfb/panoramiXstubs.o
 #endif
+#if BuildDPMS
+XVFBDPMSSTUBOBJS = hw/vfb/dpmsstubs.o
+#endif
+XVFBOBJS = hw/vfb/stubs.o hw/vfb/miinitext.o $(XVFBPANSTUBOBJS) $(XVFBDPMSSTUBOBJS)
 #else
 XVFBOBJS = dix/main.o hw/vfb/stubs.o hw/vfb/miinitext.o
 #endif

@@ -2,7 +2,7 @@
  * This script serves as a helper cmd file for imake. Install this in
  * the path just like imake itself.
  *
- * $XFree86: xc/config/imake/imakesvc.cmd,v 3.10 1997/01/05 11:49:55 dawes Exp $
+ * $XFree86: xc/config/imake/imakesvc.cmd,v 3.11 1997/07/19 05:43:00 dawes Exp $
  */
 '@echo off'
 ADDRESS CMD
@@ -170,7 +170,7 @@ SELECT
       ind = TRANSLATE(WORD(all,2),'\','/')
       frm = TRANSLATE(WORD(all,3),'\','/')
       tof = ind'\'WORD(all,4)
-      IF \(exists(ind)) THEN MKDIR ind
+      IF \(exists(ind)) THEN call SysMkDir ind
       rc = SysFileDelete(tof)
       COPY frm' 'tof
    END

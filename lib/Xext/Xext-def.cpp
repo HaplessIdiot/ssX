@@ -97,4 +97,22 @@ EXPORTS
  XagDestroyAssociation
  XagGetApplicationGroupAttributes
  XagQueryApplicationGroup
-/* $TOG: Xext-def.cpp /main/7 1997/06/08 21:07:33 kaleb $ */
+ XcupGetReservedColormapEntries
+ XcupQueryVersion
+ XcupStoreColors
+ XPanoramiXQueryVersion
+ XPanoramiXAllocInfo
+ XPanoramiXGetScreenCount
+ XPanoramiXGetScreenSize
+ XPanoramiXGetState
+ XPanoramiXQueryExtension
+ DPMSQueryExtension
+ DPMSGetVersion
+ DPMSCapable
+ DPMSSetTimeouts
+ DPMSGetTimeouts
+ DPMSEnable
+ DPMSDisable
+ DPMSForceLevel
+ DPMSInfo
+/* $TOG: Xext-def.cpp /main/8 1997/11/12 14:37:20 kaleb $ */

@@ -1,4 +1,4 @@
-/* $XConsortium: lcEuc.c /main/15 1996/10/22 14:25:03 kaleb $ */
+/* $TOG: lcEuc.c /main/16 1997/11/13 18:54:22 kaleb $ */
 /******************************************************************
 
         Copyright 1992, 1993 by FUJITSU LIMITED
@@ -1472,7 +1472,8 @@ _XlcEucLoader(name)
 	return lcd;
 
 
-    if ((_XlcNCompareISOLatin1(XLC_PUBLIC_PART(lcd)->codeset, "euc", 3))) {
+    if (!XLC_PUBLIC_PART(lcd)->codeset ||
+	(_XlcNCompareISOLatin1(XLC_PUBLIC_PART(lcd)->codeset, "euc", 3))) {
 	_XlcDestroyLC(lcd);
 	return (XLCd) NULL;
     }

@@ -1,4 +1,4 @@
-/* $TOG: lcFile.c /main/10 1997/08/27 12:13:03 kaleb $ */
+/* $TOG: lcFile.c /main/11 1997/11/13 17:32:51 kaleb $ */
 /*
  *
  * Copyright IBM Corporation 1993
@@ -23,7 +23,7 @@
  * SOFTWARE.
  *
 */
-/* $XFree86: xc/lib/X11/lcFile.c,v 3.11 1997/07/31 13:47:06 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcFile.c,v 3.12 1997/10/26 13:24:47 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -342,7 +342,8 @@ _XlcResolveLocaleName(lc_name, pub)
 
     /* 
      * pub->siname is in the format <lang>_<terr>.<codeset>, typical would
-     * be "en_US.ISO8859-1", "en_US.utf8", or "ru_RU.KOI-8"
+     * be "en_US.ISO8859-1", "en_US.utf8", "ru_RU.KOI-8", or ja_JP.SJIS,
+     * although it could be ja.SJIS too.
      */
     pub->siname = Xrealloc (pub->siname, 2 * (sinamelen + 1));
 
@@ -356,13 +357,14 @@ _XlcResolveLocaleName(lc_name, pub)
     if (dst) {
 	*dst = '\0';
 	pub->territory = ++dst;
+    } else
+	dst = &pub->siname[sinamelen + 1];
 
-	/* codeset */
-	dst = strchr (dst, '.');
-	if (dst) {
-	    *dst = '\0';
-	    pub->codeset = ++dst;
-	}
+    /* codeset */
+    dst = strchr (dst, '.');
+    if (dst) {
+	*dst = '\0';
+	pub->codeset = ++dst;
     }
 
     return (pub->siname[0] != '\0') ? 1 : 0;

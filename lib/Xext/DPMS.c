@@ -1,3 +1,4 @@
+/* $TOG: DPMS.c /main/1 1997/11/12 14:37:05 kaleb $ */
 /*****************************************************************
 
 Copyright (c) 1996 Digital Equipment Corporation, Maynard, Massachusetts.
@@ -28,8 +29,6 @@ Equipment Corporation.
 
 /*
  * HISTORY
- *
- * @(#)RCSfile: DPMS.c,v Revision: 1.1.4.2  (DEC) Date: 1995/11/21 19:34:23
  */
 
 #define NEED_REPLIES
