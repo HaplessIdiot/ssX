@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/xclock/Clock.c,v 3.16 2002/05/20 17:55:37 keithp Exp $ */
+/* $XFree86: xc/programs/xclock/Clock.c,v 3.17 2002/05/22 16:22:07 keithp Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/StringDefs.h>
@@ -985,7 +985,6 @@ clock_tic(XtPointer client_data, XtIntervalId *id)
 	    prev_len = strlen (w->clock.prev_time_string);
 	    for (i = 0; ((i < len) && (i < prev_len) && 
 	    		 (w->clock.prev_time_string[i] == time_ptr[i])); i++);
-	    strcpy (w->clock.prev_time_string+i, time_ptr+i);
 
 #ifdef XRENDER
 	    if (w->clock.render)
@@ -1034,6 +1033,7 @@ clock_tic(XtPointer client_data, XtIntervalId *id)
 		XFillRectangle (dpy, win, w->clock.EraseGC,
 		    clear_from, 0, w->core.width - clear_from, w->core.height);
 	    }
+	    strcpy (w->clock.prev_time_string+i, time_ptr+i);
 	} else {
 			/*
 			 * The second (or minute) hand is sec (or min) 
