@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.20 2000/09/19 12:46:13 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.21 2000/11/06 19:24:07 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -200,6 +200,9 @@ typedef struct {
 #endif
 #ifndef X_INFO_STRING
 #define X_INFO_STRING		"(II)"
+#endif
+#ifndef X_NOT_IMPLEMENTED_STRING
+#define X_NOT_IMPLEMENTED_STRING	"(NI)"
 #endif
 
 #endif /* _XF86PRIVSTR_H */

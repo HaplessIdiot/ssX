@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/stdResource.c,v 1.14 2000/02/08 13:13:31 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/stdResource.c,v 1.15 2000/04/23 19:27:03 tsi Exp $ */
 
 /* Standard resource information code */
 
@@ -108,10 +108,12 @@ xf86StdAccResFromOS(resPtr ret)
     RANGE(range,0xffe00000,0xffffffff,ResExcMemBlock | ResBios);
     ret = xf86AddResToList(ret, &range, -1);
 
-    /* Fallback is to claim well known ports in the 0x0 - 0x3ff range */
-    /* Possibly should claim some of them as sparse ranges */
-
-    RANGE(range,0,0x1ff,ResExcIoBlock | ResEstimated);
+    /*
+     * Fallback would be to claim well known ports in the 0x0 - 0x3ff range
+     * along with their sparse I/O aliases, but that's too imprecise.  Instead
+     * claim a bare minimum here.
+     */
+    RANGE(range, 0, 0x00ff, ResExcIoBlock);     /* For mainboard */
     ret = xf86AddResToList(ret, &range, -1);
     /* XXX add others */
     return ret;

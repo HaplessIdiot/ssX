@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.33 2000/09/26 15:57:08 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.36 2000/12/06 15:35:11 eich Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -1305,16 +1305,16 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	        q->status = MODE_OK;
 	    } else {
 		if (p->type & M_T_BUILTIN)
-		    xf86DrvMsg(scrp->scrnIndex, X_WARNING,
-			       "Built-in mode \"%s\" deleted (%s)\n", p->name,
-			       xf86ModeStatusToString(status));
+		    xf86DrvMsg(scrp->scrnIndex, X_INFO,
+			       "Not using built-in mode \"%s\" (%s)\n",
+			       p->name, xf86ModeStatusToString(status));
 		else if (p->type & M_T_DEFAULT)
-		    xf86DrvMsg(scrp->scrnIndex, X_WARNING,
-			       "Default mode \"%s\" deleted (%s)\n", p->name,
+		    xf86DrvMsg(scrp->scrnIndex, X_INFO,
+			       "Not using default mode \"%s\" (%s)\n", p->name,
 			       xf86ModeStatusToString(status));
 		else
-		    xf86DrvMsg(scrp->scrnIndex, X_WARNING,
-			       "Mode \"%s\" deleted (%s)\n", p->name,
+		    xf86DrvMsg(scrp->scrnIndex, X_INFO,
+			       "Not using mode \"%s\" (%s)\n", p->name,
 			       xf86ModeStatusToString(status));
 	    }
 	}
@@ -1401,16 +1401,16 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	status = xf86LookupMode(scrp, p, clockRanges, strategy);
 	if (status != MODE_OK) {
 		if (p->type & M_T_BUILTIN)
-		    xf86DrvMsg(scrp->scrnIndex, X_WARNING,
-			       "Built-in mode \"%s\" deleted (%s)\n", p->name,
-			       xf86ModeStatusToString(status));
+		    xf86DrvMsg(scrp->scrnIndex, X_INFO,
+			       "Not using built-in mode \"%s\" (%s)\n",
+			       p->name, xf86ModeStatusToString(status));
 		else if (p->type & M_T_DEFAULT)
-		    xf86DrvMsg(scrp->scrnIndex, X_WARNING,
-			       "Default mode \"%s\" deleted (%s)\n", p->name,
+		    xf86DrvMsg(scrp->scrnIndex, X_INFO,
+			       "Not using default mode \"%s\" (%s)\n", p->name,
 			       xf86ModeStatusToString(status));
 		else
-		    xf86DrvMsg(scrp->scrnIndex, X_WARNING,
-			       "Mode \"%s\" deleted (%s)\n", p->name,
+		    xf86DrvMsg(scrp->scrnIndex, X_INFO,
+			       "Not using mode \"%s\" (%s)\n", p->name,
 			       xf86ModeStatusToString(status));
 	}
 	if (status == MODE_ERROR) {
@@ -1493,16 +1493,16 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 
 	   if (p->status != MODE_OK) {
 	        if (p->type & M_T_BUILTIN)
-		    xf86DrvMsg(scrp->scrnIndex, X_WARNING,
-			       "Built-in mode \"%s\" deleted (%s)\n", p->name,
-			       xf86ModeStatusToString(p->status));
+		    xf86DrvMsg(scrp->scrnIndex, X_INFO,
+			       "Not using built-in mode \"%s\" (%s)\n",
+			       p->name, xf86ModeStatusToString(p->status));
 		else if (p->type & M_T_DEFAULT)
-		    xf86DrvMsg(scrp->scrnIndex, X_WARNING,
-			       "Default mode \"%s\" deleted (%s)\n", p->name,
+		    xf86DrvMsg(scrp->scrnIndex, X_INFO,
+			       "Not using default mode \"%s\" (%s)\n", p->name,
 			       xf86ModeStatusToString(p->status));
 		else
-		    xf86DrvMsg(scrp->scrnIndex, X_WARNING,
-			       "Mode \"%s\" deleted (%s)\n", p->name,
+		    xf86DrvMsg(scrp->scrnIndex, X_INFO,
+			       "Not using mode \"%s\" (%s)\n", p->name,
 			       xf86ModeStatusToString(p->status));
 
 	        goto lookupNext;
@@ -1607,17 +1607,17 @@ xf86PruneDriverModes(ScrnInfoPtr scrp)
 	if (p->status != MODE_OK) {
 #if 0
 	    if (p->type & M_T_BUILTIN)
-		xf86DrvMsg(scrp->scrnIndex, X_WARNING,
-			   "Built-in mode \"%s\" deleted (%s)\n", p->name,
+		xf86DrvMsg(scrp->scrnIndex, X_INFO,
+			   "Not using built-in mode \"%s\" (%s)\n", p->name,
 			   xf86ModeStatusToString(p->status));
 	    else if (p->type & M_T_DEFAULT)
-		    xf86DrvMsg(scrp->scrnIndex, X_WARNING,
-			       "Default mode \"%s\" deleted (%s)\n", p->name,
-			       xf86ModeStatusToString(p->status));
+		xf86DrvMsg(scrp->scrnIndex, X_INFO,
+			   "Not using default mode \"%s\" (%s)\n", p->name,
+			   xf86ModeStatusToString(p->status));
 	    else
-	      xf86DrvMsg(scrp->scrnIndex, X_WARNING,
-			 "Mode \"%s\" deleted (%s)\n", p->name,
-			 xf86ModeStatusToString(p->status));
+	        xf86DrvMsg(scrp->scrnIndex, X_INFO,
+			   "Not using mode \"%s\" (%s)\n", p->name,
+			   xf86ModeStatusToString(p->status));
 #endif
 	    xf86DeleteMode(&(scrp->modes), p);
 	}

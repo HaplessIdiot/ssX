@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.48 2000/12/09 00:18:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.49 2000/12/12 18:23:50 tsi Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -213,7 +213,7 @@ xf86AddBusDeviceToConfigure(const char *driver, BusType bus, void *busData, int 
 #	undef CardName
 
 	if (chipset < 0)
-	    chipset = (pVideo->vendor << 16) || pVideo->chipType;
+	    chipset = (pVideo->vendor << 16) | pVideo->chipType;
 	}
 	break;
     case BUS_ISA:

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.107 2000/12/08 20:13:33 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.108 2000/12/14 16:33:08 eich Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1217,6 +1217,9 @@ xf86VDrvMsgVerb(int scrnIndex, MessageType type, int verb, const char *format,
 	    break;
 	case X_INFO:
 	    s = X_INFO_STRING;
+	    break;
+	case X_NOT_IMPLEMENTED:
+	    s = X_NOT_IMPLEMENTED_STRING;
 	    break;
 	case X_NONE:
 	    s = NULL;

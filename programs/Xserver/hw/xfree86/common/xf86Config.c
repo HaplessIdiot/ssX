@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.234 2000/11/06 19:24:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.236 2000/12/06 15:35:07 eich Exp $ */
 
 
 /*
@@ -2060,6 +2060,7 @@ xf86HandleConfigFile(void)
 			   X_INFO_STRING " informational,\n"
 	       "         " X_WARNING_STRING " warning, "
 			   X_ERROR_STRING " error, "
+			   X_NOT_IMPLEMENTED_STRING " not implemented, "
 			   X_UNKNOWN_STRING " unknown.\n");
 
     /*

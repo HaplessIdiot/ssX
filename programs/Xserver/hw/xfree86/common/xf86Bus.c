@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.54 2000/10/11 22:52:52 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.56 2000/12/06 15:35:07 eich Exp $ */
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
  */
@@ -225,12 +225,13 @@ xf86IsEntityPrimary(int entityIndex)
 
     switch (pEnt->busType) {
     case BUS_PCI:
-	return (primaryBus.type == BUS_PCI &&
-		pEnt->pciBusId.bus == primaryBus.id.pci.bus &&
+	return (pEnt->pciBusId.bus == primaryBus.id.pci.bus &&
 		pEnt->pciBusId.device == primaryBus.id.pci.device &&
 		pEnt->pciBusId.func == primaryBus.id.pci.func);
     case BUS_ISA:
-	return ( primaryBus.type == BUS_ISA );
+	return TRUE;
+    case BUS_SBUS:
+	return (pEnt->sbusBusId.fbNum == primaryBus.id.sbus.fbNum);
     default:
 	return FALSE;
     }
@@ -1395,7 +1396,7 @@ xf86ResourceBrokerInit(void)
  * only deals with exclusive resources.
  */
 void
-RemoveOverlaps(resPtr target, resPtr list, Bool pow2Alignment)
+RemoveOverlaps(resPtr target, resPtr list, Bool pow2Alignment, Bool useEstimated)
 {
     resPtr pRes;
     memType size, newsize, adjust;
@@ -1406,6 +1407,8 @@ RemoveOverlaps(resPtr target, resPtr list, Bool pow2Alignment)
 		(target->res_type & ResPhysMask))
 	    && pRes->block_begin <= target->block_end
 	    && pRes->block_end >= target->block_begin) {
+	    /* Possibly ignore estimated resources */
+	    if (!useEstimated && (pRes->res_type & ResEstimated)) continue;
 	    /*
 	     * target should be a larger region than pRes.  If pRes fully
 	     * contains target, don't do anything.
@@ -2973,13 +2976,13 @@ xf86FindPrimaryDevice()
         CheckGenericGA();
     if (primaryBus.type != BUS_NONE) {
 	char *bus;
-	char *loc = xnfcalloc(1,8);
+	char *loc = xnfcalloc(1,9);
 	if (loc == NULL) return;
 
 	switch (primaryBus.type) {
 	case BUS_PCI:
 	    bus = "PCI";
-	    sprintf(loc,"%2.2x:%2.2x:%1.1x",primaryBus.id.pci.bus,
+	    sprintf(loc," %2.2x:%2.2x:%1.1x",primaryBus.id.pci.bus,
 	    primaryBus.id.pci.device,primaryBus.id.pci.func);
 	    break;
 	case BUS_ISA:
@@ -2988,14 +2991,14 @@ xf86FindPrimaryDevice()
 	    break;
 	case BUS_SBUS:
 	    bus = "SBUS";
-	    sprintf(loc,"%2.2x",primaryBus.id.sbus.fbNum);
+	    sprintf(loc," %2.2x",primaryBus.id.sbus.fbNum);
 	    break;
 	default:
 	    bus = "";
 	    loc[0] = '\0';
 	}
 	
-	xf86MsgVerb(X_INFO, 2, "Primary Device is: %s %s\n",bus,loc);
+	xf86MsgVerb(X_INFO, 2, "Primary Device is: %s%s\n",bus,loc);
 	xfree(loc);
     }
     

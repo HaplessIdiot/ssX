@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.73 2000/10/24 22:45:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.74 2000/12/13 02:44:59 tsi Exp $ */
 
 /*
  * Copyright (c) 1997-2000 by The XFree86 Project, Inc.
@@ -233,7 +233,8 @@ typedef enum {
     BUS_NONE,
     BUS_ISA,
     BUS_PCI,
-    BUS_SBUS
+    BUS_SBUS,
+    BUS_last    /* Keep last */
 } BusType;
 
 typedef struct {
@@ -438,7 +439,8 @@ typedef enum {
     X_ERROR,			/* Error message */
     X_WARNING,			/* Warning message */
     X_INFO,			/* Informational message */
-    X_NONE			/* No prefix */
+    X_NONE,			/* No prefix */
+    X_NOT_IMPLEMENTED		/* Not implemented */
 } MessageType;
 
 /* flags for depth 24 pixmap options */

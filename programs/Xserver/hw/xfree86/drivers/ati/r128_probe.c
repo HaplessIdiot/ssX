@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_probe.c,v 1.5 2000/12/02 15:30:33 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_probe.c,v 1.6 2000/12/13 02:45:00 tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -86,6 +86,8 @@ R128AvailableOptions(int chipid, int busid)
      * Return options defined in the r128 submodule which will have been
      * loaded by this point.
      */
+    if ((chipid >> 16) == PCI_VENDOR_ATI)
+	chipid -= PCI_VENDOR_ATI << 16;
     for (i = 0; R128PciChipsets[i].PCIid > 0; i++) {
 	if (chipid == R128PciChipsets[i].PCIid)
 	    return R128Options;
@@ -159,7 +161,7 @@ R128Probe(DriverPtr drv, int flags)
 	pEnt = xf86GetEntityInfo(usedChips[i]);
 
 	if (pEnt->active) {
-	    ScrnInfoPtr pScrn    = xf86AllocateScreen(drv, 0);
+	    ScrnInfoPtr pScrn = xf86AllocateScreen(drv, 0);
 
 #ifdef XFree86LOADER
 	    if (!xf86LoadSubModule(pScrn, "r128")) {
@@ -171,6 +173,7 @@ R128Probe(DriverPtr drv, int flags)
 
 	    xf86LoaderReqSymLists(R128Symbols, NULL);
 
+#ifndef ELFDEBUG
 	    /* Workaround for possible loader bug */
 #	    define R128PreInit     \
 		(xf86PreInitProc*)    LoaderSymbol("R128PreInit")
@@ -188,6 +191,7 @@ R128Probe(DriverPtr drv, int flags)
 		(xf86FreeScreenProc*) LoaderSymbol("R128FreeScreen")
 #	    define R128ValidMode   \
 		(xf86ValidModeProc*)  LoaderSymbol("R128ValidMode")
+#endif
 
 #endif
 

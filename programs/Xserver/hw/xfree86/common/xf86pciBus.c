@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.26 2000/12/06 15:35:11 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.28 2000/12/08 20:13:35 eich Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -175,11 +175,16 @@ FindPCIVideoInfo(void)
 	    if ((PCISHAREDIOCLASSES(baseclass, subclass))
 		&& (pcrp->pci_command & PCI_CMD_IO_ENABLE) &&
 		(pcrp->pci_prog_if == 0)) {
-		/* assumption: primary bus is always VGA */
+		if (primaryBus.type == BUS_NONE) {
+		    /* assumption: primary bus is always VGA */
 	            primaryBus.type = BUS_PCI;
 	            primaryBus.id.pci.bus = pcrp->busnum;
 		    primaryBus.id.pci.device = pcrp->devnum;
 		    primaryBus.id.pci.func = pcrp->funcnum;
+		} else if (primaryBus.type < BUS_last) {
+		    xf86Msg(X_NOTICE, "More than one primary device found\n");
+		    primaryBus.type ^= (BusType)(-1);
+		}
 	    }
 	    
 	    for (j = 0; j < 6; j++) {
@@ -752,7 +757,7 @@ removeOverlapsWithBridges(int busIndex, resPtr target)
 	}
     }
     
-    RemoveOverlaps(target,bridgeRes,TRUE);
+    RemoveOverlaps(target, bridgeRes, TRUE, TRUE);
     if (range.rEnd > target->block_end) {
 	correctPciSize(range.rBegin,range.rEnd - range.rBegin,
 		       target->block_end - target->block_begin,
@@ -902,9 +907,9 @@ xf86GetPciRes(resPtr *activeRes, resPtr *inactiveRes)
 	    if (ResIsEstimated(&pRes->val)) {
 		range = pRes->val;
 
-		RemoveOverlaps(pRes, *activeRes, TRUE);
-		if (xf86Info.estimateSizesAggressively > 0)
-		    RemoveOverlaps(pRes, *inactiveRes, TRUE);
+		RemoveOverlaps(pRes, *activeRes, TRUE, TRUE);
+		RemoveOverlaps(pRes, *inactiveRes, TRUE, 
+		    (xf86Info.estimateSizesAggressively > 0));
 		
 		if (range.rEnd > pRes->block_end) {
 		    correctPciSize(range.rBegin,range.rEnd - range.rBegin,
@@ -923,14 +928,16 @@ xf86GetPciRes(resPtr *activeRes, resPtr *inactiveRes)
 	xf86PrintResList(3, *activeRes);
     }
 
-    if (*inactiveRes && (xf86Info.estimateSizesAggressively > 1)) {
+    if (*inactiveRes) {
 	/* Check for overlaps */
 	for (pRes = *inactiveRes; pRes; pRes = pRes->next) {
 	    if (ResIsEstimated(&pRes->val)) {
 		range = pRes->val;
 
-		RemoveOverlaps(pRes, *activeRes, TRUE);
-		RemoveOverlaps(pRes, *inactiveRes, TRUE);
+		RemoveOverlaps(pRes, *activeRes, TRUE,
+		    (xf86Info.estimateSizesAggressively > 1));
+		RemoveOverlaps(pRes, *inactiveRes, TRUE,
+		    (xf86Info.estimateSizesAggressively > 1));
 		
 		if (range.rEnd > pRes->block_end) {
 		    correctPciSize(range.rBegin,range.rEnd - range.rBegin,
@@ -946,7 +953,7 @@ xf86GetPciRes(resPtr *activeRes, resPtr *inactiveRes)
 	    }
 	}
 	xf86MsgVerb(X_INFO, 3,
-	    "Ative PCI resource ranges after removing overlaps:\n");
+	    "Active PCI resource ranges after removing overlaps:\n");
 	xf86PrintResList(3, *inactiveRes);
     }
 }
@@ -968,7 +975,7 @@ ResourceBrokerInitPci(resPtr *osRes)
      */
 
     for (tmp = *osRes; tmp; tmp = tmp->next) 
-	RemoveOverlaps(tmp, activeRes, FALSE);
+	RemoveOverlaps(tmp, activeRes, FALSE, TRUE);
 
     xf86MsgVerb(X_INFO, 3, "OS-reported resource ranges after removing"
 		" overlaps with PCI:\n");
@@ -976,7 +983,7 @@ ResourceBrokerInitPci(resPtr *osRes)
 
     pciAvoidRes = xf86AddRangesToList(pciAvoidRes,PciAvoid,-1);
     for (tmp = pciAvoidRes; tmp; tmp = tmp->next) 
-	RemoveOverlaps(tmp, activeRes, FALSE);
+	RemoveOverlaps(tmp, activeRes, FALSE, TRUE);
     tmp = xf86DupResList(*osRes);
     pciAvoidRes = xf86JoinResLists(pciAvoidRes,tmp);
     
@@ -1424,40 +1431,54 @@ getValidBIOSBase(PCITAG tag, int *num)
     if ((*num < 0) || (*num > 5) ||
 	!pvp->memBase[*num] || (pvp->size[*num] < biosSize)) {
 	*num = -1;
+    } else {
+	P_M_RANGE(range, TAG(pvp), pvp->memBase[*num], biosSize,
+	    ResExcMemBlock);
+	if (!xf86IsSubsetOf(range, m) || ChkConflict(&range, avoid, SETUP))
+	    *num = -1;
+    }
+
+    if (*num < 0) {
 	for (n = 0;  n <= 5;  n++) {
 	    if (pvp->memBase[n] && (pvp->size[n] >= biosSize)) {
-		*num = n;
-		break;
+		/* keep bios size ! */
+		P_M_RANGE(range, TAG(pvp), pvp->memBase[*num],
+		    biosSize, ResExcMemBlock);
+		if (xf86IsSubsetOf(range, m) &&
+		    !ChkConflict(&range, avoid, SETUP)) {
+			*num = n;
+			break;
+		}
 	    }
 	}
     }
 
-    if (*num >= 0) {
-	/* then try suggested memBase */
-	/* keep bios size ! */
-	P_M_RANGE(range,TAG(pvp),pvp->memBase[*num],biosSize,ResExcMemBlock);
-	if (xf86IsSubsetOf(range,m) && !ChkConflict(&range,avoid,SETUP)) {
-	    xf86FreeResList(avoid);
-	    xf86FreeResList(m);
-	    return pvp->memBase[*num];
-	}
-    }
+    /*
+     * Return a possible window.  Note that this doesn't deal with host bridges
+     * yet.  But the fix for that belongs elsewhere.
+     */
     while (m) {
 	range = xf86GetBlock(ResExcMemBlock,
-			     PCI_SIZE(ResMem,TAG(pvp),(1 << biosSize)),
+			     PCI_SIZE(ResMem, TAG(pvp), 1 << biosSize),
 			     m->block_begin, m->block_end,
-			     PCI_SIZE(ResMem,TAG(pvp),alignment), avoid);
-	if (range.type != ResEnd)
-	    break;
+			     PCI_SIZE(ResMem, TAG(pvp), alignment), avoid);
+	if (range.type != ResEnd) {
+	    xf86FreeResList(avoid);
+	    xf86FreeResList(m);
+	    return M2B(TAG(pvp), range.rBase);
+	}
 	m = m->next;
     }
-    
+
     xf86FreeResList(avoid);
     xf86FreeResList(m);
-    xf86MsgVerb(X_INFO,5,"GetVaildBIOSBase for %x:%x:%x: BIOSbase 0x%lx\n",
-		pvp->bus,pvp->device,pvp->func, 
-		(memType)M2B(TAG(pvp),range.rBase));
-    return M2B(TAG(pvp),range.rBase);
+
+    if (*num >= 0) {
+	/* then try suggested memBase */
+	return pvp->memBase[*num];
+    }
+    
+    return 0;
 }
 
 /*
