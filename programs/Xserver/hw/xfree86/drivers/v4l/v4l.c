@@ -2,7 +2,7 @@
  *  video4linux Xv Driver 
  *  based on Michael Schimek's permedia 2 driver.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.20 2001/02/08 18:56:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.21 2001/03/04 21:57:29 mvojkovi Exp $ */
 
 #include "videodev.h"
 #include "xf86.h"
@@ -17,10 +17,7 @@
 #include "dgaproc.h"
 #include "xf86str.h"
 
-
 #include <asm/ioctl.h>		/* _IORW(xxx) #defines are here */
-
-/* XXX Lots of xalloc() calls don't check for failure. */
 
 #if 0
 # define DEBUG(x) (x)
@@ -120,6 +117,7 @@ typedef struct _PortPrivRec {
     struct video_buffer		rgb_fbuf;
     struct video_window		rgb_win;
     int                         rgbpalette;
+    int                         rgbdepth;
 
     /* attributes */
     struct video_picture	pict;
@@ -220,16 +218,21 @@ static int V4lOpenDevice(PortPrivPtr pPPriv, ScrnInfoPtr pScrn)
 	
 	switch (pScrn->bitsPerPixel) {
 	case 16:
-	    if (pScrn->weight.green == 5)
+	    if (pScrn->weight.green == 5) {
 		pPPriv->rgbpalette = VIDEO_PALETTE_RGB555;
-	    else
+		pPPriv->rgbdepth   = 16;
+	    } else {
 		pPPriv->rgbpalette = VIDEO_PALETTE_RGB565;
+		pPPriv->rgbdepth   = 16;
+	    }
 	    break;
 	case 24:
 	    pPPriv->rgbpalette = VIDEO_PALETTE_RGB24;
+	    pPPriv->rgbdepth   = 24;
 	    break;
 	case 32:
 	    pPPriv->rgbpalette = VIDEO_PALETTE_RGB32;
+	    pPPriv->rgbdepth   = 32;
 	    break;
 	}
     }
@@ -329,6 +332,7 @@ V4lPutVideo(ScrnInfoPtr pScrn,
 	if (-1 == ioctl(V4L_FD,VIDIOCGPICT,&pPPriv->pict))
 	    perror("ioctl VIDIOCGPICT");
 	pPPriv->pict.palette = VIDEO_PALETTE_YUV422;
+	pPPriv->pict.depth   = 16;
 	if (-1 == ioctl(V4L_FD,VIDIOCSPICT,&pPPriv->pict))
 	    perror("ioctl VIDIOCSPICT");
 	if (-1 == ioctl(V4L_FD,VIDIOCSWIN,&(pPPriv->yuv_win)))
@@ -418,14 +422,16 @@ V4lPutVideo(ScrnInfoPtr pScrn,
 		pPPriv->rgb_win.clipcount));
     if (0 != pPPriv->rgb_win.clipcount) {
 	pPPriv->rgb_win.clips = xalloc(pPPriv->rgb_win.clipcount*sizeof(struct video_clip));
-	memset(pPPriv->rgb_win.clips,0,pPPriv->rgb_win.clipcount*sizeof(struct video_clip));
-	pBox = REGION_RECTS(clipBoxes);
-	clip = pPPriv->rgb_win.clips;
-	for (i = 0; i < REGION_NUM_RECTS(clipBoxes); i++, pBox++, clip++) {
-	    clip->x	 = pBox->x1 - dx;
-	    clip->y      = pBox->y1 - dy;
-	    clip->width  = pBox->x2 - pBox->x1;
-	    clip->height = pBox->y2 - pBox->y1;
+	if (NULL != pPPriv->rgb_win.clips) {
+	    memset(pPPriv->rgb_win.clips,0,pPPriv->rgb_win.clipcount*sizeof(struct video_clip));
+	    pBox = REGION_RECTS(clipBoxes);
+	    clip = pPPriv->rgb_win.clips;
+	    for (i = 0; i < REGION_NUM_RECTS(clipBoxes); i++, pBox++, clip++) {
+		clip->x	 = pBox->x1 - dx;
+		clip->y      = pBox->y1 - dy;
+		clip->width  = pBox->x2 - pBox->x1;
+		clip->height = pBox->y2 - pBox->y1;
+	    }
 	}
     }
 
@@ -435,6 +441,7 @@ V4lPutVideo(ScrnInfoPtr pScrn,
     if (-1 == ioctl(V4L_FD,VIDIOCGPICT,&pPPriv->pict))
 	perror("ioctl VIDIOCGPICT");
     pPPriv->pict.palette = pPPriv->rgbpalette;
+    pPPriv->pict.depth   = pPPriv->rgbdepth;
     if (-1 == ioctl(V4L_FD,VIDIOCSPICT,&pPPriv->pict))
 	perror("ioctl VIDIOCSPICT");
     if (-1 == ioctl(V4L_FD,VIDIOCSWIN,&(pPPriv->rgb_win)))
@@ -683,17 +690,20 @@ fixname(char *str)
     return str;
 }
 
-static void
+static int
 v4l_add_enc(XF86VideoEncodingPtr enc, int i,
 	    char *norm, char *input, int width, int height, int n, int d)
 {
     enc[i].id     = i;
     enc[i].name   = xalloc(strlen(norm)+strlen(input)+2);
+    if (NULL == enc[i].name)
+	return -1;
     enc[i].width  = width;
     enc[i].height = height;
     enc[i].rate.numerator   = n;
     enc[i].rate.denominator = d;
     sprintf(enc[i].name,"%s-%s",norm,fixname(input));
+    return 0;
 }
 
 static void
@@ -709,10 +719,16 @@ V4LBuildEncodings(PortPrivPtr p, int fd, int channels)
 	
     entries = (have_bttv ? 7 : 3) * channels;
     p->enc = xalloc(sizeof(XF86VideoEncodingRec) * entries);
+    if (NULL == p->enc)
+	goto fail;
     memset(p->enc,0,sizeof(XF86VideoEncodingRec) * entries);
     p->norm = xalloc(sizeof(int) * entries);
+    if (NULL == p->norm)
+	goto fail;
     memset(p->norm,0,sizeof(int) * entries);
     p->input = xalloc(sizeof(int) * entries);
+    if (NULL == p->input)
+	goto fail;
     memset(p->input,0,sizeof(int) * entries);
 
     p->nenc = 0;
@@ -743,27 +759,48 @@ V4LBuildEncodings(PortPrivPtr p, int fd, int channels)
 	       ntsc and secam.  But there are a few more norms (pal versions
 	       with a different timings used in south america for example).
 	       The bttv driver can handle these too. */
-	    v4l_add_enc(p->enc,p->nenc,"palnc",channel.name, 640, 576, 1,50);
+	    if (0 != v4l_add_enc(p->enc,p->nenc,"palnc",channel.name,
+				 640, 576, 1,50))
+		goto fail;
 	    p->norm[p->nenc]  = 3;
 	    p->input[p->nenc] = i;
 	    p->nenc++;
 
-	    v4l_add_enc(p->enc,p->nenc,"palm",channel.name, 640, 576, 1,50);
-	    p->norm[p->nenc]  = 3;
+	    if (0 != v4l_add_enc(p->enc,p->nenc,"palm",channel.name,
+				 640, 576, 1,50))
+		goto fail;
+	    p->norm[p->nenc]  = 4;
 	    p->input[p->nenc] = i;
 	    p->nenc++;
 
-	    v4l_add_enc(p->enc, p->nenc,"paln", channel.name, 768,576, 1,50);
-	    p->norm[p->nenc]  = VIDEO_MODE_PAL;
+	    if (0 != v4l_add_enc(p->enc, p->nenc,"paln", channel.name,
+				 768,576, 1,50))
+		goto fail;
+	    p->norm[p->nenc]  = 5;
 	    p->input[p->nenc] = i;
 	    p->nenc++;
 	    
-	    v4l_add_enc(p->enc,p->nenc,"ntscjp", channel.name, 640,480, 1001,60000);
-	    p->norm[p->nenc]  = VIDEO_MODE_NTSC;
+	    if (0 != v4l_add_enc(p->enc,p->nenc,"ntscjp", channel.name,
+				 640,480, 1001,60000))
+		goto fail;
+	    p->norm[p->nenc]  = 6;
 	    p->input[p->nenc] = i;
 	    p->nenc++;
 	}
     }
+    return;
+    
+ fail:
+    if (p->input)
+	xfree(p->input);
+    p->input = NULL;
+    if (p->norm)
+	xfree(p->norm);
+    p->norm = NULL;
+    if (p->enc)
+	xfree(p->enc);
+    p->enc = NULL;
+    p->nenc = 0;
 }
 
 /* add a attribute a list */
@@ -831,11 +868,15 @@ V4LInit(ScrnInfoPtr pScrn, XF86VideoAdaptorPtr **adaptors)
 	}
 	strncpy(V4L_NAME, dev, 16);
 	V4LBuildEncodings(pPPriv,fd,pPPriv->cap.channels);
+	if (NULL == pPPriv->enc)
+	    return FALSE;
 
 #if 1
-	/* check for yuv (see if the driver accepts VIDEO_PALETTE_YUV422) */
+	/* test v4l device for yuv support:  check if the driver
+	   accepts VIDEO_PALETTE_YUV422 */
 	ioctl(fd,VIDIOCGPICT,&pPPriv->pict);
 	pPPriv->pict.palette = VIDEO_PALETTE_YUV422;
+	pPPriv->pict.depth   = 16;
 	if (0 == ioctl(fd,VIDIOCSPICT,&pPPriv->pict)) {
 	    ioctl(fd,VIDIOCGPICT,&pPPriv->pict);    
 	    if (VIDEO_PALETTE_YUV422 == pPPriv->pict.palette) {
