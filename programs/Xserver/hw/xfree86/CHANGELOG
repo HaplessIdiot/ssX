@@ -1,4 +1,9 @@
 XFree86 4.1.99.2 (xx November 2001)
+ 529. Fixes for DGA2.0 support in the radeon driver (#A.585,
+      Shyouzou Sugitani).
+ 528. Fix mkfontdir's scanning of fonts.scale files to detect a bad file
+      resulting from concatenating two fonts.scales files, and to avoid
+      buffer overruns from over-long strings (#A.563, Jonathan Kamens).
  527. Avoid i810 VT switching problems on FreeBSD (David Dawes).
  526. Fix a possible SIGFPE in the X-TrueType fonts (#A.640, Nam SungHyun).
  525. Fix -probe and -configure to not clear the screen on exit on SunOS SPARC.
@@ -14238,4 +14243,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2062 2001/11/25 15:20:51 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2063 2001/11/26 19:01:48 dawes Exp $
