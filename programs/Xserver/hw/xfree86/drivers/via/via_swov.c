@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_swov.c,v 1.7 2003/11/06 18:38:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_swov.c,v 1.8 2003/12/17 18:57:18 dawes Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -23,10 +23,6 @@
  * DEALINGS IN THE SOFTWARE.
  */
  
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "xf86.h"
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h"
