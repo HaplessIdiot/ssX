@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.3 2002/08/05 03:56:26 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.4 2002/08/25 02:48:32 paulo Exp $
 ;;
 
 ;;  Uncomment this to run the module in the stand alone command line
@@ -45,11 +45,11 @@
 ;; under clisp.
 	#|
 #-xedit
-(defun xedit::REGCOMP (pattern &key (extended t) nospec icase nosub newline)
+(defun xedit::RE-COMP (pattern &key nospec icase nosub newline)
     pattern
 )
 #-xedit
-(defun xedit::REGEXEC (regex string &key count start end notbol noteol)
+(defun xedit::RE-EXEC (regex string &key count start end notbol noteol)
     (list (cons 0 (length string)))
 )
 #-xedit
@@ -89,39 +89,37 @@
 	;;  For this sample put all keywords in a single regex, but to
 	;; be safe, a regex should not have more than 256 bytes.
 	(string-concat
+	    "\\<("
 	    "asm|auto|break|case|catch|char|class|const|continue|default|"
 	    "delete|do|double|else|enum|extern|float|for|friend|goto|if|"
 	    "inline|int|long|new|operator|private|protected|public|register|"
 	    "return|short|signed|sizeof|static|struct|switch|template|this|"
 	    "throw|try|typedef|union|unsigned|virtual|void|volatile|while"
+	    ")\\>"
 	)
 	:PROPERTY *PROP-KEYWORD*)
 
-    ;;  This rule exists just to avoid matching keywords as substrings.
-    ;;  Should be defined after the keywords rules, as will also match
-    ;; a keyword.
-    (syntoken "(_|[a-z])(_|[a-z0-9])*"
-	:ICASE T)
-
     ;;  Integers.
-    (syntoken "([0-9]+|0x[0-9a-f]+)(u|ul|ull|l|lu|llu)?"
+    (syntoken "\\<(\\d+|0x\\x+)(u|ul|ull|l|ll|lu|llu)?\\>"
 	:ICASE T
 	:PROPERTY *PROP-NUMBER*)
 
     ;;  Floating point numbers.
-    (syntoken "(([0-9]+\\.?[0-9]*)|([0-9]*\\.?[0-9]+))(e[+-]?[0-9]+)?[lf]?"
+    (syntoken "\\<(\\d+\\.?\\d*|\\d*\\.?\\d+)(e[+-]?\\d+)?[lLfF]?\\>"
 	:ICASE T
 	:PROPERTY *PROP-NUMBER*)
 
     ;;  Parentheses start rule.
-    (syntoken "\\("
+    (syntoken "("
+	:NOSPEC T
 	:PROPERTY *PROP-PUNCTUATION*
 	:BEGIN :PARENTHESES)
 
-    ;;  Keys start rule.
-    (syntoken "\\{"
+    ;;  Braces start rule.
+    (syntoken "{"
+	:NOSPEC T
 	:PROPERTY *PROP-PUNCTUATION*
-	:BEGIN :KEYS)
+	:BEGIN :BRACES)
 
     ;;  String start rule.
     (syntoken "\""
@@ -134,17 +132,19 @@
 	:CONTAINED T)
 
     ;;  Brackets start rule.
-    (syntoken "\\["
+    (syntoken "["
+	:NOSPEC T
 	:PROPERTY *PROP-PUNCTUATION*
 	:BEGIN :BRACKETS)
 
     ;;  Preprocessor start rule.
-    (syntoken "^[ 	]*#[ 	]*[a-z]+"
+    (syntoken "^\\s*#\\s*[a-z]+"
 	:BEGIN :PREPROCESSOR
 	:CONTAINED T)
 
     ;;  Comment start rule.
-    (syntoken "/\\*"
+    (syntoken "/*"
+	:NOSPEC T
 	:BEGIN :COMMENT
 	:CONTAINED T)
 
@@ -155,7 +155,7 @@
 
     ;;  Punctuation, match two at the same time if possible, but no more to
     ;; avoid matching things like /** or ///.
-    (syntoken "[/*+:;=<>,&.!%|^~?-]{1,2}"
+    (syntoken "[/*+:;=<>,&.!%|^~?-][/*+:;=<>,&.!%|^~?-]?"
 	:PROPERTY *PROP-PUNCTUATION*)
 
 
@@ -163,14 +163,16 @@
     (syntable :COMMENT *PROP-COMMENT*
 
 	;;  Match nested comments as an error.
-	(syntoken "/\\*"
+	(syntoken "/*"
+	    :NOSPEC T
 	    :PROPERTY *PROP-ERROR*)
 
 	(syntoken "XXX|TODO|FIXME"
 	    :PROPERTY *PROP-ANNOTATION*)
 
 	;;  Rule to finish a comment.
-	(syntoken "\\*/"
+	(syntoken "*/"
+	    :NOSPEC T
 	    :SWITCH -1)
     )
 
@@ -181,7 +183,7 @@
 	(syntoken "\\\\.")
 
 	;;  Match, most, printf arguments.
-	(syntoken "%%|%([+-]?[0-9]+)?(l?[deEfgiouxX]|[cdeEfgiopsuxX])"
+	(syntoken "%%|%([+-]?\\d+)?(l?[deEfgiouxX]|[cdeEfgiopsuxX])"
 	    :PROPERTY *PROP-FORMAT*)
 
 	;;  Rule to finish a string.
@@ -204,7 +206,8 @@
     (syntable :PREPROCESSOR *PROP-PREPROCESSOR*
 
 	;;  Preprocessor includes comments.
-	(syntoken "/\\*"
+	(syntoken "/*"
+	    :NOSPEC T
 	    :BEGIN :COMMENT
 	    :CONTAINED T)
 
@@ -218,7 +221,8 @@
 
     ;;  Rules for parenthesis.
     (syntable :PARENTHESES NIL
-	(syntoken "\\)"
+	(syntoken ")"
+	    :NOSPEC T
 	    :PROPERTY *PROP-PUNCTUATION*
 	    :SWITCH -1)
 
@@ -232,7 +236,8 @@
 
     ;;  Rules for brackets.
     (syntable :BRACKETS NIL
-	(syntoken "\\]"
+	(syntoken "]"
+	    :NOSPEC T
 	    :PROPERTY *PROP-PUNCTUATION*
 	    :SWITCH -1)
 
@@ -244,9 +249,10 @@
 	(synaugment :MAIN)
     )
 
-    ;;  Rules for keys.
-    (syntable :KEYS NIL
-	(syntoken "\\}"
+    ;;  Rules for braces.
+    (syntable :BRACES NIL
+	(syntoken "}"
+	    :NOSPEC T
 	    :PROPERTY *PROP-PUNCTUATION*
 	    :SWITCH -1)
 

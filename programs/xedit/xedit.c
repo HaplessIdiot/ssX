@@ -57,7 +57,8 @@ static XtActionsRec actions[] = {
 {"xedit-print-lisp-eval", XeditPrintLispEval},
 {"xedit-keyboard-reset",XeditKeyboardReset},
 #endif
-{"ispell", IspellAction}
+{"ispell", IspellAction},
+{"line-edit", LineEditAction}
 };
 
 #define DEF_HINT_INTERVAL	300	/* in seconds, 5 minutes */
@@ -71,6 +72,7 @@ Widget topwindow, textwindow, messwidget, labelwindow, filenamewindow;
 Widget scratch, hpane, vpanes[2], labels[3], texts[3], forms[3], positions[3];
 Widget options_popup, dirlabel, dirwindow;
 Boolean international;
+Boolean line_edit;
 XawTextWrapMode wrapmodes[3];
 
 extern void ResetSourceChanged(xedit_flist_item*);

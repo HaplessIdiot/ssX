@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/syntax.lsp,v 1.3 2002/08/05 03:56:25 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/syntax.lsp,v 1.4 2002/08/25 02:48:32 paulo Exp $
 ;;
 
 (provide "syntax")
@@ -215,16 +215,27 @@ is used.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Just a wrapper to make-syntoken.
-;; XXX If pattern were also a &key argument, it could be more clean
-;;     to have a constructor for the structure.
-;;     TODO: Add support for structure constructors.
+;;	TODO: Add support for structure constructors.
+;;	XXX: Note that the NOSUB only works with the xedit regex, it
+;; will still return the match offsets, but will ignore subexpressions,
+;; that is, parenthesis are used only for grouping.
+;;	TODO: Create a new version of the re-exec call that returns
+;; offsets in the format (<from> . <to>) and not
+;; ((<from0> . <to0>) ... (<fromN> . <toN>)). Only the global result
+;; is expected/used, so there is no reason to allocate more than one
+;; cons cell per call.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun SYNTOKEN (pattern &key icase property contained switch begin
-		 &aux (regex (regcomp pattern :ICASE icase)) check)
+(defun SYNTOKEN (pattern
+		 &key icase nospec property contained switch begin (nosub T)
+		 &aux
+		 (regex
+		    (re-comp pattern :ICASE icase :NOSPEC nospec :NOSUB nosub)
+		 )
+		 check)
 
     ;;  Don't allow a regex that matches the null string enter the
     ;; syntax table list.
-    (if (consp (setq check (regexec regex "" :NOTEOL T :NOTBOL T)))
+    (if (consp (setq check (re-exec regex "" :NOTEOL T :NOTBOL T)))
 #+xedit	(error "SYNTOKEN: regex matches empty string ~S" regex)
 #-xedit	()
     )
@@ -455,14 +466,14 @@ is used.
     ;; are expected to be initialized to NIL.
     (dolist (token (syntable-tokens table))
 	(when
-	    (consp (regexec (syntoken-regex token) "" :NOTEOL T))
+	    (consp (re-exec (syntoken-regex token) "" :NOTEOL T))
 	    (setf (syntable-bol table) T)
 	    (return)
 	)
     )
     (dolist (token (syntable-tokens table))
 	(when
-	    (consp (regexec (syntoken-regex token) "" :NOTBOL T))
+	    (consp (re-exec (syntoken-regex token) "" :NOTBOL T))
 	    (setf (syntable-eol table) T)
 	    (return)
 	)
@@ -756,12 +767,12 @@ is used.
 	;;  Length of the text line.
 	length
 
-	;;  A inverse cache, don't call regexec when the regex is
+	;;  A inverse cache, don't call re-exec when the regex is
 	;; already known to not match.
 	nomatch
 
 	;;  Use cache as a list of matches to avoid repetitive
-	;; unnecessary calls to regexec.
+	;; unnecessary calls to re-exec.
 	;;  cache is a list in which every element has the format:
 	;;	(token . (start . end))
 	;;  Line of text.
@@ -898,12 +909,12 @@ is used.
 		    )
 		)
 
-		;;  Not in the cache, call regexec.
+		;;  Not in the cache, call re-exec.
 		(if
 		    (consp
 			(setq
 			    match
-			    (regexec
+			    (re-exec
 				(syntoken-regex token)
 				line
 				:START	    start
@@ -1357,13 +1368,6 @@ is used.
 		    (subseq line left right)
 		)
 
-		;; XXX
-		;; XXX
-		;; IF RIGHT IS EQUAL TO LEFT XAW WILL
-		;; CRASH ALLOCATING ALL AVAILABLE MEMORY.
-		;; XXX FIXME
-		;; XXX
-		;; XXX
 		(add-entity
 		    (+ *FROM* left)
 		    (- right left)

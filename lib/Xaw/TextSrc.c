@@ -1770,6 +1770,10 @@ XawTextSourceAddEntity(Widget w, int type, int flags, XtPointer data,
     XawTextAnchor *next, *anchor = _XawTextSourceFindAnchor(w, position);
     XawTextEntity *entity, *eprev;
 
+    /* There is no support for zero length entities for now */
+    if (length == 0)
+	return (NULL);
+
     if (anchor->cache && anchor->position + anchor->cache->offset +
 	anchor->cache->length <= position)
 	eprev = entity = anchor->cache;
