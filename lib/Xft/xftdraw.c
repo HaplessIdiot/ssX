@@ -299,7 +299,7 @@ XftDrawDestroy (XftDraw	*draw)
 }
 
 Picture
-XftDrawSrcPicture (XftDraw *draw, XftColor *color)
+XftDrawSrcPicture (XftDraw *draw, _Xconst XftColor *color)
 {
     Display	    *dpy = draw->dpy;
     XftDisplayInfo  *info = _XftDisplayInfoGet (dpy, True);
@@ -375,7 +375,7 @@ XftDrawSrcPicture (XftDraw *draw, XftColor *color)
 }
 
 static int
-_XftDrawOp (XftDraw *draw, XftColor *color)
+_XftDrawOp (_Xconst XftDraw *draw, _Xconst XftColor *color)
 {
     if (draw->visual || draw->depth != 1)
 	return PictOpOver;
@@ -426,7 +426,7 @@ _XftDrawRenderPrepare (XftDraw	*draw)
 }
 
 static FcBool
-_XftDrawCorePrepare (XftDraw *draw, XftColor *color)
+_XftDrawCorePrepare (XftDraw *draw, _Xconst XftColor *color)
 {
     if (!draw->core.gc)
     {
@@ -471,15 +471,15 @@ XftDrawPicture (XftDraw *draw)
 #define NUM_LOCAL   1024
 
 void
-XftDrawGlyphs (XftDraw	*draw,
-	       XftColor	*color,
-	       XftFont	*public,
-	       int	x,
-	       int	y,
-	       FT_UInt	*glyphs,
-	       int	nglyphs)
+XftDrawGlyphs (XftDraw		*draw,
+	       _Xconst XftColor	*color,
+	       XftFont		*pub,
+	       int		x,
+	       int		y,
+	       _Xconst FT_UInt	*glyphs,
+	       int		nglyphs)
 {
-    XftFontInt	*font = (XftFontInt *) public;
+    XftFontInt	*font = (XftFontInt *) pub;
 
     if (font->format)
     {
@@ -488,24 +488,24 @@ XftDrawGlyphs (XftDraw	*draw,
 	if (_XftDrawRenderPrepare (draw) &&
 	    (src = XftDrawSrcPicture (draw, color)))
 	    XftGlyphRender (draw->dpy, _XftDrawOp (draw, color),
-			     src, public, draw->render.pict,
+			     src, pub, draw->render.pict,
 			     0, 0, x, y, glyphs, nglyphs);
     }
     else
     {
 	if (_XftDrawCorePrepare (draw, color))
-	    XftGlyphCore (draw, color, public, x, y, glyphs, nglyphs);
+	    XftGlyphCore (draw, color, pub, x, y, glyphs, nglyphs);
     }
 }
 
 void
-XftDrawString8 (XftDraw		*draw,
-		XftColor	*color,
-		XftFont		*public,
-		int		x,
-		int		y,
-		FcChar8		*string,
-		int		len)
+XftDrawString8 (XftDraw		    *draw,
+		_Xconst XftColor    *color,
+		XftFont		    *pub,
+		int		    x, 
+		int		    y,
+		_Xconst FcChar8	    *string,
+		int		    len)
 {
     FT_UInt	    *glyphs, glyphs_local[NUM_LOCAL];
     int		    i;
@@ -522,20 +522,20 @@ XftDrawString8 (XftDraw		*draw,
 	    return;
     }
     for (i = 0; i < len; i++)
-	glyphs[i] = XftCharIndex (draw->dpy, public, string[i]);
-    XftDrawGlyphs (draw, color, public, x, y, glyphs, len);
+	glyphs[i] = XftCharIndex (draw->dpy, pub, string[i]);
+    XftDrawGlyphs (draw, color, pub, x, y, glyphs, len);
     if (glyphs != glyphs_local)
 	free (glyphs);
 }
 
 void
-XftDrawString16 (XftDraw	*draw,
-		 XftColor	*color,
-		 XftFont	*public,
-		 int		x,
-		 int		y,
-		 FcChar16	*string,
-		 int		len)
+XftDrawString16 (XftDraw	    *draw,
+		 _Xconst XftColor   *color,
+		 XftFont	    *pub,
+		 int		    x,
+		 int		    y,
+		 _Xconst FcChar16   *string,
+		 int		    len)
 {
     FT_UInt	    *glyphs, glyphs_local[NUM_LOCAL];
     int		    i;
@@ -549,21 +549,21 @@ XftDrawString16 (XftDraw	*draw,
 	    return;
     }
     for (i = 0; i < len; i++)
-	glyphs[i] = XftCharIndex (draw->dpy, public, string[i]);
+	glyphs[i] = XftCharIndex (draw->dpy, pub, string[i]);
     
-    XftDrawGlyphs (draw, color, public, x, y, glyphs, len);
+    XftDrawGlyphs (draw, color, pub, x, y, glyphs, len);
     if (glyphs != glyphs_local)
 	free (glyphs);
 }
 
 void
-XftDrawString32 (XftDraw	*draw,
-		 XftColor	*color,
-		 XftFont	*public,
-		 int		x,
-		 int		y,
-		 FcChar32	*string,
-		 int		len)
+XftDrawString32 (XftDraw	    *draw,
+		 _Xconst XftColor   *color,
+		 XftFont	    *pub,
+		 int		    x,
+		 int		    y,
+		 _Xconst FcChar32   *string,
+		 int		    len)
 {
     FT_UInt	    *glyphs, glyphs_local[NUM_LOCAL];
     int		    i;
@@ -577,21 +577,21 @@ XftDrawString32 (XftDraw	*draw,
 	    return;
     }
     for (i = 0; i < len; i++)
-	glyphs[i] = XftCharIndex (draw->dpy, public, string[i]);
+	glyphs[i] = XftCharIndex (draw->dpy, pub, string[i]);
     
-    XftDrawGlyphs (draw, color, public, x, y, glyphs, len);
+    XftDrawGlyphs (draw, color, pub, x, y, glyphs, len);
     if (glyphs != glyphs_local)
 	free (glyphs);
 }
 
 void
-XftDrawStringUtf8 (XftDraw	*draw,
-		   XftColor	*color,
-		   XftFont	*public,
-		   int		x,
-		   int		y,
-		   FcChar8	*string,
-		   int		len)
+XftDrawStringUtf8 (XftDraw	    *draw,
+		   _Xconst XftColor *color,
+		   XftFont	    *pub,
+		   int		    x, 
+		   int		    y,
+		   _Xconst FcChar8  *string,
+		   int		    len)
 {
     FT_UInt	    *glyphs, *glyphs_new, glyphs_local[NUM_LOCAL];
     FcChar32	    ucs4;
@@ -619,24 +619,24 @@ XftDrawStringUtf8 (XftDraw	*draw,
 		free (glyphs);
 	    glyphs = glyphs_new;
 	}
-	glyphs[i++] = XftCharIndex (draw->dpy, public, ucs4);
+	glyphs[i++] = XftCharIndex (draw->dpy, pub, ucs4);
 	string += l;
 	len -= l;
     }
-    XftDrawGlyphs (draw, color, public, x, y, glyphs, i);
+    XftDrawGlyphs (draw, color, pub, x, y, glyphs, i);
     if (glyphs != glyphs_local)
 	free (glyphs);
 }
 
 void
-XftDrawStringUtf16 (XftDraw	*draw,
-		    XftColor	*color,
-		    XftFont	*public,
-		    int		x,
-		    int		y,
-		    FcChar8	*string,
-		    FcEndian	endian,
-		    int		len)
+XftDrawStringUtf16 (XftDraw		*draw,
+		    _Xconst XftColor	*color,
+		    XftFont		*pub,
+		    int			x,
+		    int			y,
+		    _Xconst FcChar8	*string,
+		    FcEndian		endian,
+		    int			len)
 {
     FT_UInt	    *glyphs, *glyphs_new, glyphs_local[NUM_LOCAL];
     FcChar32	    ucs4;
@@ -664,23 +664,23 @@ XftDrawStringUtf16 (XftDraw	*draw,
 		free (glyphs);
 	    glyphs = glyphs_new;
 	}
-	glyphs[i++] = XftCharIndex (draw->dpy, public, ucs4);
+	glyphs[i++] = XftCharIndex (draw->dpy, pub, ucs4);
 	string += l;
 	len -= l;
     }
-    XftDrawGlyphs (draw, color, public, x, y, glyphs, i);
+    XftDrawGlyphs (draw, color, pub, x, y, glyphs, i);
     if (glyphs != glyphs_local)
 	free (glyphs);
 }
 
 void
-XftDrawGlyphSpec (XftDraw	*draw,
-		  XftColor	*color,
-		  XftFont	*public,
-		  XftGlyphSpec	*glyphs,
-		  int		len)
+XftDrawGlyphSpec (XftDraw		*draw,
+		  _Xconst XftColor	*color,
+		  XftFont		*pub,
+		  _Xconst XftGlyphSpec	*glyphs,
+		  int			len)
 {
-    XftFontInt	*font = (XftFontInt *) public;
+    XftFontInt	*font = (XftFontInt *) pub;
 
     if (font->format)
     {
@@ -690,22 +690,22 @@ XftDrawGlyphSpec (XftDraw	*draw,
 	    (src = XftDrawSrcPicture (draw, color)))
 	{
 	    XftGlyphSpecRender (draw->dpy, _XftDrawOp (draw, color),
-				src, public, draw->render.pict,
+				src, pub, draw->render.pict,
 				0, 0, glyphs, len);
 	}
     }
     else
     {
 	if (_XftDrawCorePrepare (draw, color))
-	    XftGlyphSpecCore (draw, color, public, glyphs, len);
+	    XftGlyphSpecCore (draw, color, pub, glyphs, len);
     }
 }
 
 void
-XftDrawGlyphFontSpec (XftDraw		*draw,
-		      XftColor		*color,
-		      XftGlyphFontSpec	*glyphs,
-		      int		len)
+XftDrawGlyphFontSpec (XftDraw			*draw,
+		      _Xconst XftColor		*color,
+		      _Xconst XftGlyphFontSpec	*glyphs,
+		      int			len)
 {
     int		i;
     int		start;
@@ -738,11 +738,11 @@ XftDrawGlyphFontSpec (XftDraw		*draw,
 }
 
 void
-XftDrawCharSpec (XftDraw	*draw,
-		 XftColor	*color,
-		 XftFont	*public,
-		 XftCharSpec	*chars,
-		 int		len)
+XftDrawCharSpec (XftDraw		*draw,
+		 _Xconst XftColor	*color,
+		 XftFont		*pub,
+		 _Xconst XftCharSpec	*chars,
+		 int			len)
 {
     XftGlyphSpec    *glyphs, glyphs_local[NUM_LOCAL];
     int		    i;
@@ -757,21 +757,21 @@ XftDrawCharSpec (XftDraw	*draw,
     }
     for (i = 0; i < len; i++)
     {
-	glyphs[i].glyph = XftCharIndex(draw->dpy, public, chars[i].ucs4);
+	glyphs[i].glyph = XftCharIndex(draw->dpy, pub, chars[i].ucs4);
 	glyphs[i].x = chars[i].x;
 	glyphs[i].y = chars[i].y;
     }
 
-    XftDrawGlyphSpec (draw, color, public, glyphs, len);
+    XftDrawGlyphSpec (draw, color, pub, glyphs, len);
     if (glyphs != glyphs_local)
 	free (glyphs);
 }
 
 void
-XftDrawCharFontSpec (XftDraw		*draw,
-		     XftColor		*color,
-		     XftCharFontSpec	*chars,
-		     int		len)
+XftDrawCharFontSpec (XftDraw			*draw,
+		     _Xconst XftColor		*color,
+		     _Xconst XftCharFontSpec	*chars,
+		     int			len)
 {
     XftGlyphFontSpec	*glyphs, glyphs_local[NUM_LOCAL];
     int			i;
@@ -798,12 +798,12 @@ XftDrawCharFontSpec (XftDraw		*draw,
 }
 
 void
-XftDrawRect (XftDraw	    *draw,
-	     XftColor	    *color,
-	     int	    x, 
-	     int	    y,
-	     unsigned int   width,
-	     unsigned int   height)
+XftDrawRect (XftDraw		*draw,
+	     _Xconst XftColor	*color,
+	     int		x, 
+	     int		y,
+	     unsigned int	width,
+	     unsigned int	height)
 {
     if (_XftDrawRenderPrepare (draw))
     {

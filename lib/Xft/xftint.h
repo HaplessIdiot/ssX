@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftint.h,v 1.34 2002/06/19 20:18:00 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftint.h,v 1.36 2002/08/22 08:09:40 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -261,7 +261,7 @@ extern XftDisplayInfo	*_XftDisplayInfo;
 
 /* xftcompat.c */
 void XftFontSetDestroy (FcFontSet *s);
-FcBool XftMatrixEqual (const FcMatrix *mat1, const FcMatrix *mat2);
+FcBool XftMatrixEqual (_Xconst FcMatrix *mat1, _Xconst FcMatrix *mat2);
 void XftMatrixMultiply (FcMatrix *result, FcMatrix *a, FcMatrix *b);
 void XftMatrixRotate (FcMatrix *m, double c, double s);
 void XftMatrixScale (FcMatrix *m, double sx, double sy);
@@ -269,61 +269,61 @@ void XftMatrixShear (FcMatrix *m, double sh, double sv);
 FcPattern *XftPatternCreate (void);
 void XftValueDestroy (FcValue v);
 void XftPatternDestroy (FcPattern *p);
-FcBool XftPatternAdd (FcPattern *p, const char *object, FcValue value, FcBool append);
-FcBool XftPatternDel (FcPattern *p, const char *object);
-FcBool XftPatternAddInteger (FcPattern *p, const char *object, int i);
-FcBool XftPatternAddDouble (FcPattern *p, const char *object, double i);
-FcBool XftPatternAddMatrix (FcPattern *p, const char *object, FcMatrix *i);
-FcBool XftPatternAddString (FcPattern *p, const char *object, char *i);
-FcBool XftPatternAddBool (FcPattern *p, const char *object, FcBool i);
-FcResult XftPatternGet (FcPattern *p, const char *object, int id, FcValue *v);
-FcResult XftPatternGetInteger (FcPattern *p, const char *object, int id, int *i);
-FcResult XftPatternGetDouble (FcPattern *p, const char *object, int id, double *i);
-FcResult XftPatternGetString (FcPattern *p, const char *object, int id, char **i);
-FcResult XftPatternGetMatrix (FcPattern *p, const char *object, int id, FcMatrix **i);
-FcResult XftPatternGetBool (FcPattern *p, const char *object, int id, FcBool *i);
+FcBool XftPatternAdd (FcPattern *p, _Xconst char *object, FcValue value, FcBool append);
+FcBool XftPatternDel (FcPattern *p, _Xconst char *object);
+FcBool XftPatternAddInteger (FcPattern *p, _Xconst char *object, int i);
+FcBool XftPatternAddDouble (FcPattern *p, _Xconst char *object, double i);
+FcBool XftPatternAddMatrix (FcPattern *p, _Xconst char *object, FcMatrix *i);
+FcBool XftPatternAddString (FcPattern *p, _Xconst char *object, char *i);
+FcBool XftPatternAddBool (FcPattern *p, _Xconst char *object, FcBool i);
+FcResult XftPatternGet (FcPattern *p, _Xconst char *object, int id, FcValue *v);
+FcResult XftPatternGetInteger (FcPattern *p, _Xconst char *object, int id, int *i);
+FcResult XftPatternGetDouble (FcPattern *p, _Xconst char *object, int id, double *i);
+FcResult XftPatternGetString (FcPattern *p, _Xconst char *object, int id, char **i);
+FcResult XftPatternGetMatrix (FcPattern *p, _Xconst char *object, int id, FcMatrix **i);
+FcResult XftPatternGetBool (FcPattern *p, _Xconst char *object, int id, FcBool *i);
 FcPattern *XftPatternDuplicate (FcPattern *orig);
 FcPattern *XftPatternVaBuild (FcPattern *orig, va_list va);
 FcPattern *XftPatternBuild (FcPattern *orig, ...);
 FcBool XftNameUnparse (FcPattern *pat, char *dest, int len);
 FcBool XftGlyphExists (Display *dpy, XftFont *font, FcChar32 ucs4);
 FcObjectSet *XftObjectSetCreate (void);
-Bool XftObjectSetAdd (FcObjectSet *os, const char *object);
+Bool XftObjectSetAdd (FcObjectSet *os, _Xconst char *object);
 void XftObjectSetDestroy (FcObjectSet *os);
-FcObjectSet *XftObjectSetVaBuild (const char *first, va_list va);
-FcObjectSet *XftObjectSetBuild (const char *first, ...);
+FcObjectSet *XftObjectSetVaBuild (_Xconst char *first, va_list va);
+FcObjectSet *XftObjectSetBuild (_Xconst char *first, ...);
 FcFontSet *XftListFontSets (FcFontSet **sets, int nsets, FcPattern *p, FcObjectSet *os);
 
 /* xftcore.c */
 void
-XftRectCore (XftDraw	    *draw,
-	     XftColor	    *color,
-	     int	    x, 
-	     int	    y,
-	     unsigned int   width,
-	     unsigned int   height);
+XftRectCore (XftDraw		*draw,
+	     _Xconst XftColor	*color,
+	     int		x, 
+	     int		y,
+	     unsigned int	width,
+	     unsigned int	height);
 
 void
-XftGlyphCore (XftDraw	*draw,
-	      XftColor	*color,
-	      XftFont	*public,
-	      int	x,
-	      int	y,
-	      FT_UInt	*glyphs,
-	      int	nglyphs);
+XftGlyphCore (XftDraw		*draw,
+	      _Xconst XftColor	*color,
+	      XftFont		*public,
+	      int		x,
+	      int		y,
+	      _Xconst FT_UInt	*glyphs,
+	      int		nglyphs);
 
 void
-XftGlyphSpecCore (XftDraw	*draw,
-		  XftColor	*color,
-		  XftFont	*public,
-		  XftGlyphSpec	*glyphs,
-		  int		nglyphs);
+XftGlyphSpecCore (XftDraw		*draw,
+		  _Xconst XftColor	*color,
+		  XftFont		*public,
+		  _Xconst XftGlyphSpec	*glyphs,
+		  int			nglyphs);
 
 void
-XftGlyphFontSpecCore (XftDraw		*draw,
-		      XftColor		*color,
-		      XftGlyphFontSpec	*glyphs,
-		      int		nglyphs);
+XftGlyphFontSpecCore (XftDraw			*draw,
+		      _Xconst XftColor		*color,
+		      _Xconst XftGlyphFontSpec	*glyphs,
+		      int			nglyphs);
 
 /* xftdbg.c */
 int
