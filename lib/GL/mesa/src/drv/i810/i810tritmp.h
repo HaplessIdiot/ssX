@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810tritmp.h,v 1.4 2000/08/28 02:43:11 tsi Exp $ */
 
 static __inline void TAG(triangle)(GLcontext *ctx,
 				   GLuint e0, GLuint e1, GLuint e2,
@@ -162,7 +162,7 @@ static void TAG(points)( GLcontext *ctx, GLuint first, GLuint last )
     * ctx->Driver.ReducedPrimitiveChange() callback.  
     */
    
-   for(i=first;i<=last;i++) {
+   for(i=first;i<last;i++) {
       if(VB->ClipMask[i]==0) {
 	 if (IND & I810_TWOSIDE_BIT) {	
 	    i810Vertex tmp0 = i810VB[i];

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxddspan.c,v 1.4 2000/12/02 20:06:52 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxddspan.c,v 1.5 2000/12/02 20:29:06 alanh Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
@@ -1216,7 +1216,7 @@ typedef struct
     void *lfbPtr;
     void *lfbWrapPtr;
     FxU32 LFBStrideInElts;
-    FxU32 firstWrappedX;
+    GLint firstWrappedX;
 }
 LFBParameters;
 

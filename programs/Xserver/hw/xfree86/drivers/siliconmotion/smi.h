@@ -1,4 +1,4 @@
-/* Header:   //Mercury/Projects/archives/XFree86/4.0/smi.h-arc   1.48   10 Nov 2000 15:56:38   Frido  $ */
+/* Header:   //Mercury/Projects/archives/XFree86/4.0/smi.h-arc   1.51   29 Nov 2000 17:45:16   Frido  $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from the XFree86 Project and Silicon Motion.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi.h,v 1.1 2000/11/28 20:59:19 dawes Exp $ */
 
 #ifndef _SMI_H
 #define _SMI_H
@@ -192,6 +192,14 @@ typedef struct
 	int				ShadowWidthBytes;	/* Width of shadow buffer in bytes	  */
 	int				ShadowWidth;		/* Width of shadow buffer in pixels	  */
 	int				ShadowHeight;		/* Height of shadow buffer in pixels  */
+	CARD32			saveBufferSize;		/* #670 - FB save buffer size		  */
+	void *			pSaveBuffer;		/* #670 - FB save buffer			  */
+	CARD32			savedFBOffset;		/* #670 - Saved FBOffset value		  */
+	CARD32			savedFBReserved;	/* #670 - Saved FBReserved value	  */
+
+	/* Polylines - #671 */
+	ValidateGCProcPtr ValidatePolylines;/* Org. ValidatePolylines function	  */
+	Bool			  polyLines;		/* Our polylines patch is active	  */
 
 	void (*PointerMoved)(int index, int x, int y);
 

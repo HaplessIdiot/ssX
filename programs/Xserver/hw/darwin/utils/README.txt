@@ -1,11 +1,11 @@
 dumpkeymap - Diagnostic dump and detailed description of .keymapping files
-Version 3
+Version 4
 
 Copyright (C)1999,2000 by Eric Sunshine <sunshine@sunshineco.com>
-Eric Sunshine, November 28, 2000
+Eric Sunshine, 1 December 2000
 
 OVERVIEW
-
+========
 This package contains the diagnostic utility dumpkeymap, as well as highly
 detailed documentation describing the internal layout of the Apple/NeXT
 .keymapping file.
@@ -39,8 +39,9 @@ with the Unix `man' command:
 
     % man dumpkeymap
 
-COMPILATION
 
+COMPILATION
+===========
 MacOS/X, Darwin
 
     cc -Wall -o dumpkeymap dumpkeymap.c -framework IOKit
@@ -65,8 +66,9 @@ For example, to compile for Linux:
 
     gcc -Wall -DDUMPKEYMAP_FILE_ONLY -o dumpkeymap dumpkeymap.c
 
-INSTALLATION
 
+INSTALLATION
+============
 Install the dumpkeymap executable image in a location mentioned in the PATH
 environment variable.  Typicall locations for executable files are:
 
@@ -93,8 +95,9 @@ Typical locations for manual pages on OpenStep and NextStep are:
     /LocalLibrary/Documentation/ManPages/man1
     /LocalDeveloper/Documentation/ManPages/man1
 
-CONCLUSION
 
+CONCLUSION
+==========
 This program and its accompanying documentation were written by Eric Sunshine
 and are copyright (C)1999,2000 by Eric Sunshine <sunshine@sunshineco.com>.
 
@@ -105,4 +108,4 @@ of the NeXT .keymapping file.
 
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/darwin/utils/README.txt,v 1.1 2000/12/01 19:47:39 dawes Exp $

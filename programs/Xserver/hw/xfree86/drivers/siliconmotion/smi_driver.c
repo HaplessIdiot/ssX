@@ -1,4 +1,4 @@
-/* Header:   //Mercury/Projects/archives/XFree86/4.0/smi_driver.c-arc   1.31   27 Nov 2000 14:20:52   Frido  $ */
+/* Header:   //Mercury/Projects/archives/XFree86/4.0/smi_driver.c-arc   1.37   30 Nov 2000 16:59:58   Frido  $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from The XFree86 Project or Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.3 2000/12/01 15:28:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.4 2000/12/02 15:30:50 tsi Exp $ */
 
 #include "xf86Resources.h"
 #include "xf86RAC.h"
@@ -84,12 +84,12 @@ static void SMI_FreeScreen(int ScrnIndex, int flags);
 static void SMI_ProbeDDC(ScrnInfoPtr pScrn, int index);
 
 
-#define SILICONMOTION_NAME		"Silicon Motion"
+#define SILICONMOTION_NAME			"Silicon Motion"
 #define SILICONMOTION_DRIVER_NAME	"siliconmotion"
-#define SILICONMOTION_VERSION_NAME	"1.1.8"
+#define SILICONMOTION_VERSION_NAME	"1.1.9"
 #define SILICONMOTION_VERSION_MAJOR	1
 #define SILICONMOTION_VERSION_MINOR	1
-#define SILICONMOTION_PATCHLEVEL	8
+#define SILICONMOTION_PATCHLEVEL	9
 #define SILICONMOTION_DRIVER_VERSION	( (SILICONMOTION_VERSION_MAJOR << 24)  \
 										| (SILICONMOTION_VERSION_MINOR << 16)  \
 										| (SILICONMOTION_PATCHLEVEL)		   \
@@ -795,6 +795,11 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: UseBIOS %s.\n",
 				pSmi->useBIOS ? "enabled" : "disabled");
 	}
+	else
+	{
+		/* Default to UseBIOS enabled. */
+		pSmi->useBIOS = TRUE;
+	}
 
 	/* Find the PCI slot for this screen */
 	pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
@@ -1206,6 +1211,7 @@ static Bool
 SMI_EnterVT(int scrnIndex, int flags)
 {
 	ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+	SMIPtr pSmi = SMIPTR(pScrn);
 	Bool ret;
 
 	ENTER_PROC("SMI_EnterVT");
@@ -1214,7 +1220,33 @@ SMI_EnterVT(int scrnIndex, int flags)
 	SMI_MapMem(pScrn);
 	SMI_Save(pScrn);
 
+	/* #670 */
+	if (pSmi->shadowFB)
+	{
+		pSmi->FBOffset = pSmi->savedFBOffset;
+		pSmi->FBReserved = pSmi->savedFBReserved;
+	}
+
 	ret = SMI_ModeInit(pScrn, pScrn->currentMode);
+
+	/* #670 */
+	if (ret && pSmi->shadowFB)
+	{
+		BoxRec box;
+
+		if (pSmi->pSaveBuffer)
+		{
+			memcpy(pSmi->FBBase, pSmi->pSaveBuffer, pSmi->saveBufferSize);
+			xfree(pSmi->pSaveBuffer);
+			pSmi->pSaveBuffer = NULL;
+		}
+
+		box.x1 = 0;
+		box.y1 = 0;
+		box.x2 = pScrn->virtualY;
+		box.y2 = pScrn->virtualX;
+		SMI_RefreshArea(pScrn, 1, &box);
+	}
 
 	LEAVE_PROC("SMI_EnterVT");
 	return(ret);
@@ -1237,6 +1269,20 @@ SMI_LeaveVT(int scrnIndex, int flags)
 
 	ENTER_PROC("SMI_LeaveVT");
 
+	/* #670 */
+	if (pSmi->shadowFB)
+	{
+		pSmi->pSaveBuffer = xnfalloc(pSmi->saveBufferSize);
+		if (pSmi->pSaveBuffer)
+		{
+			memcpy(pSmi->pSaveBuffer, pSmi->FBBase, pSmi->saveBufferSize);
+		}
+
+		pSmi->savedFBOffset = pSmi->FBOffset;
+		pSmi->savedFBReserved = pSmi->FBReserved;
+	}
+
+	memset(pSmi->FBBase, 0, 256 * 1024);	/* #689 */
 	SMI_WriteMode(pScrn, vgaSavePtr, SMISavePtr);
 	SMI_UnmapMem(pScrn);
 
@@ -1366,7 +1412,7 @@ SMI_Save(ScrnInfoPtr pScrn)
 		pSmi->pInt->num = 0x10;
 		pSmi->pInt->ax = 0x0F00;
 		xf86ExecX86int10(pSmi->pInt);
-		save->mode = pSmi->pInt->ax & 0x00FF;
+		save->mode = pSmi->pInt->ax & 0x007F;
 		xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Current mode 0x%02X.\n",
 				save->mode);
 	}
@@ -1409,7 +1455,7 @@ SMI_WriteMode(ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, SMIRegPtr restore)
 	if (pSmi->useBIOS && (pSmi->pInt != NULL) && (restore->mode != 0))
 	{
 		pSmi->pInt->num = 0x10;
-		pSmi->pInt->ax = restore->mode;
+		pSmi->pInt->ax = restore->mode | 0x80;
 		xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Setting mode 0x%02X\n",
 				restore->mode);
 		xf86ExecX86int10(pSmi->pInt);
@@ -1420,10 +1466,9 @@ SMI_WriteMode(ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, SMIRegPtr restore)
 		pSmi->SR18Value = tmp;
 		outb(VGA_SEQ_DATA, tmp | 0x01);
 
-		/* Enable/disable PDR registers. */
-		tmp = VGAIN8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x21) & ~0x03;
-		VGAOUT8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x21, tmp |
-				(restore->SR21 & 0x03));
+		/* Enable DPR/VPR registers. */
+		tmp = VGAIN8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x21);
+		VGAOUT8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x21, tmp & ~0x03);
 	}
 	else
 	{
@@ -1431,9 +1476,8 @@ SMI_WriteMode(ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, SMIRegPtr restore)
 		tmp = VGAIN8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x18) & ~0x1F;
 		VGAOUT8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x18, tmp |
 				(restore->SR18 & 0x1F));
-		tmp = VGAIN8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x21) & ~0x03;
-		VGAOUT8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x21, tmp |
-				(restore->SR21 & 0x03));
+		tmp = VGAIN8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x21);
+		VGAOUT8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x21, tmp & ~0x03);
 		tmp = VGAIN8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x31) & ~0xC0;
 		VGAOUT8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x31, tmp |
 				(restore->SR31 & 0xC0));
@@ -1827,7 +1871,10 @@ SMI_ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	/* Save the chip/graphics state */
 	SMI_Save(pScrn);
 
-	/* Initialise the first mode */
+	/* Zero the frame buffer, #258 */
+	memset(pSmi->FBBase, 0, pSmi->videoRAMBytes);
+
+	/* Initialize the first mode */
 	if (!SMI_ModeInit(pScrn, pScrn->currentMode))
 	{
 		LEAVE_PROC("SMI_ScreenInit");
@@ -2038,7 +2085,8 @@ SMI_InternalScreenInit(int scrnIndex, ScreenPtr pScreen)
 							  | (pSmi->ShadowWidthBytes / bytesPerPixel);
 		}
 
-		pSmi->FBReserved -= pSmi->ShadowWidthBytes * pSmi->ShadowHeight;
+		pSmi->saveBufferSize = pSmi->ShadowWidthBytes * pSmi->ShadowHeight;
+		pSmi->FBReserved -= pSmi->saveBufferSize;
 		pSmi->FBReserved &= ~0x15;
 		WRITE_VPR(pSmi, 0x0C, (pSmi->FBOffset = pSmi->FBReserved) >> 3);
 
@@ -2471,10 +2519,6 @@ SMI_ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	/* Zero the font memory */
 	memset(new->smiFont, 0, sizeof(new->smiFont));
 
-	/* Zero the frame buffer, #258 */
-	memset(pSmi->FBBase + pSmi->FBOffset, 0,
-		   pSmi->width * pSmi->height * pSmi->Bpp);
-
 	/* Write the mode registers to hardware */
 	SMI_WriteMode(pScrn, vganew, new);
 
@@ -2540,6 +2584,11 @@ SMI_CloseScreen(int scrnIndex, ScreenPtr pScreen)
 	if (pSmi->I2C != NULL)
 	{
 		xf86DestroyI2CBusRec(pSmi->I2C, TRUE, TRUE);
+	}
+	/* #670 */
+	if (pSmi->pSaveBuffer)
+	{
+		xfree(pSmi->pSaveBuffer);
 	}
 
 	pScrn->vtSema = FALSE;
