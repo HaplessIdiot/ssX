@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.125 2004/06/25 15:33:20 tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.126 2005/02/01 02:25:05 dawes Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -80,6 +80,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 # define HasStrlcat		YES
 #endif
 #define HasSnprintf		YES
+#define HasAsprintf		YES
 #define HasBSD44Sockets 	YES
 #define Malloc0ReturnsNull	NO
 #define SetTtyGroup     	YES
