@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_video.c,v 1.10 2002/06/26 22:09:07 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_video.c,v 1.11 2002/11/26 23:41:59 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -626,10 +626,9 @@ static void NVCopyData422
   int            w
 )
 {
-    w <<= 1;
-    while(h--)
-    {
-        memcpy(dst, src, w);
+    w >>= 1;  /* pixels to DWORDS */
+    while(h--) {
+        XAAMoveDWORDS((CARD32*)dst, (CARD32*)src, w);
         src += srcPitch;
         dst += dstPitch;
     }
@@ -723,7 +722,7 @@ static int NVPutImage
     unsigned char *dst_start;
     int pitch, newSize, offset, s2offset, s3offset;
     int srcPitch, srcPitch2, dstPitch;
-    int top, left, npixels, nlines, bpp;
+    int top, left, right, bottom, npixels, nlines, bpp;
     Bool skip = FALSE;
     BoxRec dstBox;
     CARD32 tmp;
@@ -823,15 +822,27 @@ static int NVPutImage
 
     dst_start = pNv->FbStart + offset;
         
-    /* copy data */
-    top = ya >> 16;
-    left = (xa >> 16) & ~1;
-    npixels = ((((xb + 0xffff) >> 16) + 1) & ~1) - left;
+    /* We need to enlarge the copied rectangle by a pixel so the HW 
+       filtering doesn't pick up junk laying outside of the source */
+
+    left = (xa - 0x00010000) >> 16;
+    if(left < 0) left = 0;
+    top = (ya - 0x00010000) >> 16;
+    if(top < 0) top = 0;
+    right = (xb + 0x0001ffff) >> 16;
+    if(right > width) right = width;
+    bottom = (yb + 0x0001ffff) >> 16;
+    if(bottom > height) bottom = height;
+
+    left &= ~1;
+    npixels = ((right + 1) & ~1) - left;  
 
     switch(id) {
     case FOURCC_YV12:
     case FOURCC_I420:
         top &= ~1;
+        nlines = ((bottom + 1) & ~1) - top;
+
         dst_start += (left << 1) + (top * dstPitch);
         tmp = ((top >> 1) * srcPitch2) + (left >> 1);
         s2offset += tmp;
@@ -841,7 +852,6 @@ static int NVPutImage
            s2offset = s3offset;
            s3offset = tmp;
         }
-        nlines = ((((yb + 0xffff) >> 16) + 1) & ~1) - top;
         NVCopyData420(buf + (top * srcPitch) + left, buf + s2offset,
                            buf + s3offset, dst_start, srcPitch, srcPitch2,
                            dstPitch, nlines, npixels);
@@ -849,10 +859,12 @@ static int NVPutImage
     case FOURCC_UYVY:
     case FOURCC_YUY2:
     default:
+        nlines = bottom - top;
+        
         left <<= 1;
         buf += (top * srcPitch) + left;
-        nlines = ((yb + 0xffff) >> 16) - top;
         dst_start += left + (top * dstPitch);
+
         NVCopyData422(buf, dst_start, srcPitch, dstPitch, nlines, npixels);
         break;
     }
