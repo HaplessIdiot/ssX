@@ -1,4 +1,6 @@
-XFree86 3.9Af (27 March 1998)
+XFree86 3.9Af (28 March 1998)
+1634. Add 1024x600 to the identified video modes in the chips server
+      (#1617, Nozomi Ytow).
 1633. Resync xfree98 with xfree86 and resync some PC98 files with 3.3.2
       (#1616, Takaaki Nomura).
 1632. Fix micro typo in chips.sgml (#1615, David Bateman).
@@ -6057,4 +6059,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.576 1998/03/22 12:57:30 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.577 1998/03/27 23:23:00 hohndel Exp $

@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.5 1998/01/24 16:57:54 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.6 1998/03/27 23:23:39 hohndel Exp $ */
 
 /*#define DEBUG
 #define CT_HW_DEBUG */
@@ -102,7 +102,7 @@ extern void CHIPSQueryBestSize(int, unsigned short *, unsigned short *, ScreenPt
 /* ct_driver.c */
 extern void ModuleInit(pointer *, INT32 *);
 extern int ctGetHWClock(unsigned char);
-extern int ctVideoMode(int, int, int);
+extern int ctVideoMode(int, int, int, int);
 /* ct_pci.c */
 extern int ctPCIMemBase(Bool);
 extern int ctPCIChipset(void);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.20 1998/01/24 16:57:53 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.21 1998/03/20 21:06:49 hohndel Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -3572,7 +3572,7 @@ CHIPSInit655xx(mode)
 
     /* set video mode */
     new->Port_3D6[0x2B] = ctVideoMode(vgaBitsPerPixel, xf86weight.green,
-	ctLCD ? min(HDisplay, ctSize.HDisplay) : HDisplay);
+	ctLCD ? min(HDisplay, ctSize.HDisplay) : HDisplay, ctSize.VDisplay);
 
 #ifdef DEBUG
     ErrorF("VESA Mode: %Xh\n", new->Port_3D6[0x2B]);
@@ -3876,7 +3876,7 @@ CHIPSInitWINGINE(mode)
 
     /* set video mode */
     new->Port_3D6[0x2B] = ctVideoMode(vgaBitsPerPixel, xf86weight.green,
-	ctLCD ? min(HDisplay, ctSize.HDisplay) : HDisplay);
+	ctLCD ? min(HDisplay, ctSize.HDisplay) : HDisplay, ctSize.VDisplay);
  
 #ifdef DEBUG
     ErrorF("VESA Mode: %Xh\n", new->Port_3D6[0x2B]);
@@ -4148,7 +4148,7 @@ CHIPSInitHiQV32(mode)
      * software flag, and it appears to change with the mode */
     new->Port_3D6[0xE2] = ctVideoMode(vgaBitsPerPixel, xf86weight.green,
 	ctLCD ? min(mode->CrtcHDisplay, ctSize.HDisplay) :
-	mode->CrtcHDisplay);
+	mode->CrtcHDisplay, mode->CrtcVDisplay);
 #ifdef DEBUG
     ErrorF("VESA Mode: %Xh\n", new->Port_3D6[0xE2]);
 #endif
@@ -4626,17 +4626,19 @@ ctRestore(restore)
 }
 
 int
-ctVideoMode(vgaBitsPerPixel, weightGreen, displaySize)
-    int vgaBitsPerPixel, weightGreen, displaySize;
+ctVideoMode(vgaBitsPerPixel, weightGreen, displayHSize, displayVSize)
+    int vgaBitsPerPixel, weightGreen, displayHSize, displayVSize;
 {
     /*     4 bpp  8 bpp  16 bpp  18 bpp  24 bpp  32 bpp */
     /* 640  0x20   0x30    0x40    -      0x50     -    */
     /* 800  0x22   0x32    0x42    -      0x52     -    */
-    /*1024  0x24   0x34    0x44    -      0x54     -    */
+    /*1024  0x24   0x34    0x44    -      0x54     -    for 1024x768 */
+    /*1024   -     0x36    0x47    -      0x56     -    for 1024x600 */
     /*1152  0x27   0x37    0x47    -      0x57     -    */
     /*1280  0x28   0x38    0x49    -        -      -    */
     /*1600  0x2C   0x3C    0x4C   0x5D      -      -    */
     /*This value is only for BIOS.... */
+
     int videoMode = 0;
 
     switch (vgaBitsPerPixel) {
@@ -4657,12 +4659,14 @@ ctVideoMode(vgaBitsPerPixel, weightGreen, displaySize)
 	break;
     }
 
-    switch (displaySize) {
+    switch (displayHSize) {
     case 800:
 	videoMode |= 0x02;
 	break;
     case 1024:
 	videoMode |= 0x04;
+	if(displayVSize < 768)
+	  videoMode |= 0x02;
 	break;
     case 1152:
 	videoMode |= 0x07;
