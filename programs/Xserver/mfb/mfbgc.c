@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbgc.c,v 1.8 2003/02/18 21:30:01 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbgc.c,v 1.9 2003/07/16 01:38:55 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -749,7 +749,8 @@ mfbCreateGC(pGC)
 }
 
 /* some noop functions */
-void mfbPolyGlyphBltNoop(
+static void
+mfbPolyGlyphBltNoop(
     DrawablePtr pDrawable,
     GCPtr pGC,
     int x,
@@ -761,7 +762,8 @@ void mfbPolyGlyphBltNoop(
     /* this is a no-op function */
 }
 
-void mfbNoopFS(
+static void
+mfbNoopFS(
     DrawablePtr pDrawable,
     GCPtr pGC,
     int nInit,
@@ -772,7 +774,8 @@ void mfbNoopFS(
     /* this is a no-op function */
 }
 
-void mfbFillPolyNoop(
+static void
+mfbFillPolyNoop(
     DrawablePtr pDrawable,
     GCPtr pGC,
     int shape,
