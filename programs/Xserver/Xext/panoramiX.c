@@ -19,7 +19,7 @@
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.8 1999/07/04 06:38:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.9 1999/09/06 11:27:16 dawes Exp $ */
 
 #define NEED_REPLIES
 #include <stdio.h>
@@ -55,11 +55,11 @@ int 		PanoramiXPixWidth;
 int 		PanoramiXPixHeight;
 int 		PanoramiXNumScreens;
 
-PanoramiXData 	*panoramiXdataPtr;
-PanoramiXWindow *PanoramiXWinRoot;
-PanoramiXGC 	*PanoramiXGCRoot;
-PanoramiXCmap 	*PanoramiXCmapRoot;
-PanoramiXPmap 	*PanoramiXPmapRoot;
+PanoramiXData 	*panoramiXdataPtr = NULL;
+PanoramiXWindow *PanoramiXWinRoot = NULL;
+PanoramiXGC 	*PanoramiXGCRoot = NULL;
+PanoramiXCmap 	*PanoramiXCmapRoot = NULL;
+PanoramiXPmap 	*PanoramiXPmapRoot = NULL;
 
 /*
  * Free list flags added as pre-test before running through list to free ids

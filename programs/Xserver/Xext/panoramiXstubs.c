@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/panoramiXstubs.c,v 3.5 1999/06/27 16:17:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiXstubs.c,v 3.6 1999/06/27 16:56:07 dawes Exp $ */
 /*
  * HISTORY
  * Log
@@ -57,3 +57,7 @@ Bool PanoramiXGCRootFreeable = 0;
 Bool PanoramiXCmapRootFreeable = 0;
 Bool PanoramiXPmapRootFreeable = 0;
 
+void XineramaGetImageData()
+{
+	/* Not supported with Xnest */ 
+}
