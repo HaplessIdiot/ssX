@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.135 1997/02/15 11:12:26 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.136 1997/02/16 16:39:54 hohndel Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -89,6 +89,11 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 #ifndef XF86I128Server
 #define XF86I128Server		YES
 #endif
+#else
+/*
+ * if we do the loadable server, we cannot compile the Xprt server
+ */
+#define XprtServer		NO
 #endif
 #endif
 
