@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.56 1996/10/06 13:13:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.57 1996/10/16 14:39:55 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -74,6 +74,7 @@ extern int mach32Max16bppClock;
 extern Bool xf86Resetting, xf86Exiting, xf86ProbeFailed;
 unsigned short mach32MemorySize = 0;
 extern char *xf86VisualNames[];
+extern unsigned short vgaIOBase;
 
 static int mach32ValidMode(
 #if NeedFunctionPrototypes 
@@ -1258,14 +1259,12 @@ mach32AdjustFrame(x, y)
     outw(CRT_OFFSET_HI, (byte_offset >> 16) & 0xf);
     mach32RepositionCursor(savepScreen);
 
-#if 0 /* Will this work in accelerated mode? */
 #ifdef XFreeXDGA
     if (mach32InfoRec.directMode & XF86DGADirectGraphics) {
 	/* Wait until vertical retrace is in progress. */
 	while (inb(vgaIOBase + 0xA) & 0x08);
 	while (!(inb(vgaIOBase + 0xA) & 0x08));
     }
-#endif
 #endif
 }
 

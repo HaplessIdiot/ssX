@@ -1,5 +1,5 @@
 /* $XConsortium: xinit.c,v 11.61 95/01/09 21:20:29 kaleb Exp $ */
-/* $XFree86: xc/programs/xinit/xinit.c,v 3.13 1996/05/06 06:01:08 dawes Exp $ */
+/* $XFree86: xc/programs/xinit/xinit.c,v 3.14 1996/08/20 12:33:25 dawes Exp $ */
 
 /*
 
@@ -243,12 +243,12 @@ main(int argc, char **argv, char **envp)
 	envsave = envp;	/* circumvent an EMX problem */
 
 	/* Check whether the system will run at all */
-	if (_emx_rev < 43) {
+	if (_emx_rev < 50) {
 		APIRET rc;
 		HMODULE hmod;
 		char name[CCHMAXPATH];
 		char fail[9];
-		fputs ("This program requires emx.dll revision 43 (0.9b fix 05) "
+		fputs ("This program requires emx.dll revision 50 (0.9c) "
 			"or later.\n", stderr);
 		rc = DosLoadModule (fail, sizeof (fail), "emx", &hmod);
 		if (rc == 0) {

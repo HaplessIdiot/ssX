@@ -1,3 +1,29 @@
+XFree86 3.1.2Go (17 October 1996)
+1014. Add xterm-r6 entries to the xterm termcap and terminfo files.  These
+      are compatible with the standard X11R6 version of xterm.
+1013. Chips&Tech driver updates, including:  add an option to deal with
+      LCD panel size problems, add an option to use an 18bit bus for some
+      TFT laptops, allow imageblt to be disabled, support sync-on-green
+      for the 65550, improve some screen scrambling problems, add DGA
+      support, fix 24bpp acceleration problems, fix HW cursor colouring
+      problems, update docs (Egbert Eich, David Bateman, Nozomi Ytow,
+      Marc de Courville, Jens Mauer, Adam Sulmicki).
+1012. BlankDelay settings for ViRGE (non-VX) (Harald Koenig).
+1011. More S3V ROPs for planemask simulation for BLTs (not used yet)
+      (Harald Koenig).
+1010. S3V fix for some image ops (Harald Koenig).
+1009. LynxOS microSPARC updates (Thomas Mueller).
+1008. OS/2 updates (Holger Veit and Sebastien Marineau).
+1007. TGA server updates, including disallow interlace modes, parse /proc/pci
+      output to find the memory base address (Alan Hourihane).
+1006. Add a DGA flag (XF86DGADirectColormap) to control when the colourmap
+      is in the exclusive control of XF86DGAInstallColormap().  This allows
+      older DGA clients which don't use XF86DGAInstallColormap() to work
+      as before.
+1005. Fix mmap in libXxf86dga for FreeBSD 1.1.5.
+1004. Fix a typo in xf86writepci() which causes it to return without doing
+      anything (URATA Shuichiro).
+
 XFree86 3.1.2Gn (16 October 1996)
 1003. Fix a problem with the ospex Imakefile regarding the building of
       a non-shared library.
