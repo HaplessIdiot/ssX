@@ -1,5 +1,5 @@
 /* $XConsortium: get_load.c /main/37 1996/03/09 09:38:04 kaleb $ */
-/* $XFree86: xc/programs/xload/get_load.c,v 1.12 2001/08/15 16:27:53 tsi Exp $ */
+/* $XFree86: xc/programs/xload/get_load.c,v 1.13 2001/08/27 23:35:14 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -523,6 +523,43 @@ void GetLoadPoint( w, closure, call_data )
 
 #else /* not __osf__ */
 
+#ifdef __QNXNTO__
+#include <time.h>
+#include <sys/neutrino.h>
+static _Uint64t          nto_idle = 0, nto_idle_last = 0;
+static  int       nto_idle_id;
+static  struct timespec nto_now, nto_last;
+
+void
+InitLoadPoint()
+{
+  nto_idle_id = ClockId(1, 1); /* Idle thread */
+  ClockTime(nto_idle_id, NULL, &nto_idle_last);
+  clock_gettime( CLOCK_REALTIME, &nto_last);
+}
+
+/* ARGSUSED */
+void
+GetLoadPoint( w, closure, call_data )           /* QNX NTO version */
+Widget  w;              /* unused */
+caddr_t closure;      /* unused */
+caddr_t call_data;    /* pointer to (double) return value */
+{
+    double *loadavg = (double *)call_data;
+    double timediff;
+    double temp = 0.0;
+
+    ClockTime(nto_idle_id, NULL, &nto_idle);
+    clock_gettime( CLOCK_REALTIME, &nto_now);
+    timediff = 1000000000.0 * (nto_now.tv_sec - nto_last.tv_sec)
+               + (nto_now.tv_nsec - nto_last.tv_nsec);
+    temp = 1.0 - (nto_idle-nto_idle_last)/timediff;
+    *loadavg = temp >= 0 ? temp : 0;
+    nto_idle_last = nto_idle;
+    nto_last = nto_now;
+}
+#else /* not __QNXNTO__ */
+
 #ifdef __bsdi__
 #include <kvm.h>
 
@@ -573,8 +610,8 @@ void GetLoadPoint(w, closure, call_data)
 
   return;
 }
-#else /* not __bsdi__ */
 
+#else /* not __bsdi__ */
 #if defined(BSD) && (BSD >= 199306)
 
 void InitLoadPoint()
@@ -1025,6 +1062,7 @@ void GetLoadPoint( w, closure, call_data )
 }
 #endif /* BSD >= 199306 else */
 #endif /* __bsdi__ else */
+#endif /* __QNXNTO__ else */
 #endif /* __osf__ else */
 #endif /* LOADSTUB else */
 #endif /* __DARWIN__ else */

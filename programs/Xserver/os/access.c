@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.34 2001/07/25 15:05:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.35 2001/11/06 16:11:38 alanh Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -88,7 +88,7 @@ SOFTWARE.
 #endif
 
 
-#if defined(hpux) || defined(__QNXNTO__)
+#if defined(hpux)
 # include <sys/utsname.h>
 # ifdef HAS_IFREQ
 #  include <net/if.h>
@@ -450,7 +450,7 @@ DefineSelf (int fd)
 
 #else /* WINTCP */
 
-#if !defined(SIOCGIFCONF) || (defined (hpux) && ! defined (HAS_IFREQ)) || defined(__QNXNTO__)
+#if !defined(SIOCGIFCONF) || (defined (hpux) && ! defined (HAS_IFREQ))
 void
 DefineSelf (int fd)
 {

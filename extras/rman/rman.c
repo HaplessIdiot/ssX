@@ -18,7 +18,7 @@ static char rcsid[] = "Header: /home/cs/phelps/spine/rman/RCS/rman.c,v 1.144 199
      source interpretation added September 24, 1996
 	renamed PolyglotMan due to lawsuit by Rosetta, Inc. August 8, 1997
 */
-/* $XFree86: xc/extras/rman/rman.c,v 1.13 2000/12/21 18:55:27 dawes Exp $ */
+/* $XFree86: xc/extras/rman/rman.c,v 1.14 2001/10/28 03:32:25 tsi Exp $ */
 
 
 /* TO DO ****
@@ -56,7 +56,7 @@ static char rcsid[] = "Header: /home/cs/phelps/spine/rman/RCS/rman.c,v 1.144 199
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#ifdef Lynx
+#if defined(Lynx) || defined(__QNXNTO__)
 extern int optind;
 extern char *optarg;
 #endif

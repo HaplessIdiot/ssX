@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.36 2001/04/01 14:00:14 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.37 2001/04/27 19:34:00 tsi Exp $ */
 
 /*
  *
@@ -25,7 +25,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdlib.h>
-#ifdef QNX
+#ifdef __QNX__
 #include <fcntl.h>
 #else
 #include <sys/fcntl.h>

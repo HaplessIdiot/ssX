@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/session.c,v 3.30 2001/08/26 16:21:29 herrb Exp $ */
+/* $XFree86: xc/programs/xdm/session.c,v 3.31 2001/10/28 03:34:27 tsi Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -64,7 +64,7 @@ from The Open Group.
 
 static	int	runAndWait (char **args, char **environ);
 
-#if defined(CSRG_BASED) || defined(__osf__) || defined(__DARWIN__)
+#if defined(CSRG_BASED) || defined(__osf__) || defined(__DARWIN__) || defined(__QNXNTO__)
 #include <sys/types.h>
 #include <grp.h>
 #else
