@@ -1,4 +1,5 @@
 /* $XConsortium: extensions.c,v 1.1 94/12/01 20:39:01 mor Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -419,6 +420,9 @@ HandleLbxQueryExtensionReply(client, data)
     crep.major_opcode = reply->major_opcode;
     crep.first_event = reply->first_event;
     crep.first_error = reply->first_error;
+    if (client->swapped) {
+	SwapQueryExtensionReply(&crep);
+    }
     WriteToClient(client, sizeof(xQueryExtensionReply), (char *) &crep);
 
     return TRUE;

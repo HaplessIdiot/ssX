@@ -1,4 +1,7 @@
 /*
+ * $XConsortium: swaprep.c,v 1.3 94/12/01 20:53:19 mor Exp $
+ * $XFree86$
+ *
  * Copyright 1994 Network Computing Devices, Inc.
  *
  * Permission to use, copy, modify, distribute, and sell this software and
@@ -19,8 +22,7 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)swaprep.c,v 1.3 1994/03/24 17:55:13 lemke Exp $
- * $XConsortium: swaprep.c,v 1.1 94/03/27 14:27:43 dpw Exp $
+ * $NCDId: @(#)swaprep.c,v 1.5 1994/11/18 20:36:00 lemke Exp $
  */
 
 #include	<stdio.h>
@@ -37,9 +39,6 @@
 
 extern int  (*InitialVector[3]) ();
 extern int  (*ProcVector[256]) ();
-extern int  (*SwappedProcVector[256]) ();
-extern void (*EventSwapVector[128]) ();
-extern void (*ReplySwapVector[256]) ();
 
 void
 SwapConnSetup(pConnSetup, pConnSetupT)
@@ -314,6 +313,27 @@ SwapKeymapReply(rep)
 
     swaps(&rep->sequenceNumber, n);
     swapl(&rep->length, n);
+}
+
+void
+SwapGetImageReply (rep)
+    xGetImageReply *rep;
+{
+    char n;
+
+    swaps (&rep->sequenceNumber, n);
+    swapl (&rep->length, n);
+    swapl (&rep->visual, n);
+}
+
+void
+SwapQueryExtensionReply(rep)
+    xQueryExtensionReply	*rep;
+{
+    char n;
+
+    swaps (&rep->sequenceNumber, n);
+    swapl (&rep->length, n);
 }
 
 static void
