@@ -1,8 +1,11 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmSiS.c,v 1.9 2001/08/27 17:40:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmSiS.c,v 1.10 2001/12/15 00:59:12 dawes Exp $ */
 
 #ifdef XFree86Server
 # include "xf86.h"
 # include "xf86_OSproc.h"
+# define CONFIG_DRM_SIS
+# include "drm.h"
+# undef CONFIG_DRM_SIS
 # include "xf86_ansic.h"
 # define _DRM_MALLOC xalloc
 # define _DRM_FREE   xfree
@@ -32,6 +35,9 @@ extern int xf86RemoveSIGIOHandler(int fd);
 #  define _DRM_MALLOC Xmalloc
 #  define _DRM_FREE   Xfree
 # endif
+# define CONFIG_DRM_SIS
+# include "drm.h"
+# undef CONFIG_DRM_SIS
 #endif
 
 /* Not all systems have MAP_FAILED defined */
@@ -44,9 +50,6 @@ extern int xf86RemoveSIGIOHandler(int fd);
 #endif
 #include "xf86drm.h"
 #include "xf86drmSiS.h"
-#define CONFIG_DRM_SIS
-#include "drm.h"
-#undef CONFIG_DRM_SIS
 
 Bool drmSiSAgpInit(int driSubFD, int offset, int size)
 {

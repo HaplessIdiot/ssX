@@ -27,13 +27,14 @@
  * Authors: Rickard E. (Rik) Faith <faith@valinux.com>
  *	    Kevin E. Martin <martin@valinux.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.24 2001/08/18 02:51:13 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.25 2001/08/27 17:40:59 dawes Exp $
  *
  */
 
 #ifdef XFree86Server
 # include "xf86.h"
 # include "xf86_OSproc.h"
+# include "drm.h"
 # include "xf86_ansic.h"
 # define _DRM_MALLOC xalloc
 # define _DRM_FREE   xfree
@@ -66,6 +67,7 @@ extern int xf86RemoveSIGIOHandler(int fd);
 #  define _DRM_MALLOC Xmalloc
 #  define _DRM_FREE   Xfree
 # endif
+# include "drm.h"
 #endif
 
 /* No longer needed with CVS kernel modules on alpha 
@@ -81,7 +83,6 @@ extern unsigned long _bus_base(void);
 #endif
 
 #include "xf86drm.h"
-#include "drm.h"
 
 #ifndef DRM_MAJOR
 #define DRM_MAJOR 226		/* Linux */

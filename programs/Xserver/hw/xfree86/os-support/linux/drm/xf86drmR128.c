@@ -26,11 +26,12 @@
  * Author: Kevin E. Martin <martin@valinux.com>
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmR128.c,v 1.10 2001/05/23 16:03:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmR128.c,v 1.11 2001/08/27 17:40:59 dawes Exp $ */
 
 #ifdef XFree86Server
 # include "xf86.h"
 # include "xf86_OSproc.h"
+# include "drm.h"
 # include "xf86_ansic.h"
 # define _DRM_MALLOC xalloc
 # define _DRM_FREE   xfree
@@ -60,6 +61,7 @@ extern int xf86RemoveSIGIOHandler(int fd);
 #  define _DRM_MALLOC Xmalloc
 #  define _DRM_FREE   Xfree
 # endif
+# include "drm.h"
 #endif
 
 /* Not all systems have MAP_FAILED defined */
@@ -72,7 +74,6 @@ extern int xf86RemoveSIGIOHandler(int fd);
 #endif
 #include "xf86drm.h"
 #include "xf86drmR128.h"
-#include "drm.h"
 
 #define R128_BUFFER_RETRY	32
 #define R128_IDLE_RETRY		32
