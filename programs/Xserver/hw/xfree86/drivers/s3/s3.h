@@ -24,7 +24,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3.h,v 1.11 2001/07/02 10:46:04 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3.h,v 1.12 2001/08/15 11:54:27 tsi Exp $ */
 
 
 #ifndef _S3_H
@@ -104,6 +104,11 @@ typedef struct _S3Rec {
         OptionInfoPtr           Options;
         unsigned int            Flags;
         Bool                    NoAccel;
+	Bool			SWCursor;
+	Bool			SlowDRAMRefresh;
+	Bool			SlowDRAM;
+	Bool			SlowEDODRAM;
+	Bool			SlowVRAM;
 	Bool			S3NewMMIO;
 	Bool			PCIRetry;
 	Bool			ColorExpandBug;
@@ -166,10 +171,10 @@ typedef struct _S3Rec {
 
 
 #define DRIVER_NAME     "s3"
-#define DRIVER_VERSION  "0.3.4"
+#define DRIVER_VERSION  "0.3.5"
 #define VERSION_MAJOR   0
 #define VERSION_MINOR   3
-#define PATCHLEVEL      4
+#define PATCHLEVEL      5
 #define S3_VERSION     ((VERSION_MAJOR << 24) | \
                         (VERSION_MINOR << 16) | PATCHLEVEL)
 

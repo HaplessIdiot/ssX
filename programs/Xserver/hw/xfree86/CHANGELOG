@@ -1,4 +1,6 @@
 XFree86 4.1.99.2 (xx September 2001)
+ 294. S3 driver updates. Restore console for 964 with Ti3025 and Trio64, and
+      support for Aurora64V+ (#4953, Ani Joshi).
  293. Fix USB Keyboard access when no PS/2 controller present 
       (#4948, Pontus Lidman).
  292. Add i810 XvMC (Motion Compensation) driver (#4946, Matthew Sottek, Intel).
@@ -13840,4 +13842,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1956 2001/09/27 08:24:59 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1957 2001/09/27 08:28:12 alanh Exp $
