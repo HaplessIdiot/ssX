@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/xedit.lsp,v 1.8 2002/12/16 03:59:28 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/xedit.lsp,v 1.9 2003/01/16 03:50:46 paulo Exp $
 ;;
 
 (provide "xedit")
@@ -75,6 +75,8 @@
 	"XF86Config"	"xconf"	. *xconf-mode*)
     ("\\.spec$"
 	"RPM spec"	"rpm"	. *rpm-mode*)
+    ("\\<XFree86\\.\\d+\\.log$"
+	"XFree86 log"	"xlog"	. *xlog-mode*)
 ))
 
 
