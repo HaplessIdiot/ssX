@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_cursor.c,v 1.19 2003/01/17 19:54:03 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_cursor.c,v 1.20tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -411,7 +411,8 @@ Bool RADEONCursorInit(ScreenPtr pScreen)
     cursor->MaxWidth          = 64;
     cursor->MaxHeight         = 64;
     cursor->Flags             = (HARDWARE_CURSOR_TRUECOLOR_AT_8BPP
-
+				 | HARDWARE_CURSOR_SHOW_TRANSPARENT
+				 | HARDWARE_CURSOR_UPDATE_UNHIDDEN
 #if X_BYTE_ORDER == X_LITTLE_ENDIAN
 				 | HARDWARE_CURSOR_BIT_ORDER_MSBFIRST
 #endif

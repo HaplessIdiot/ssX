@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86Cursor.c,v 1.15 2002/10/31 05:39:32 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86Cursor.c,v 1.16tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_ansic.h"
@@ -136,6 +136,7 @@ xf86CursorCloseScreen(int i, ScreenPtr pScreen)
     pScrn->LeaveVT = ScreenPriv->LeaveVT;
     pScrn->SetDGAMode = ScreenPriv->SetDGAMode;
 
+    xfree(ScreenPriv->transparentData);
     xfree(ScreenPriv);
 
     return (*pScreen->CloseScreen)(i, pScreen);
@@ -354,8 +355,12 @@ xf86CursorSetCursor(ScreenPtr pScreen, CursorPtr pCurs, int x, int y)
 
     PointPriv->waitForUpdate = TRUE;
 
-    if (ScreenPriv->isUp) {		/* remove the HW cursor */
-	xf86SetCursor(pScreen, NullCursor, x, y);
+    if (ScreenPriv->isUp) {
+	/* Remove the HW cursor, or make it transparent */
+	if (infoPtr->Flags & HARDWARE_CURSOR_SHOW_TRANSPARENT)
+	    xf86SetTransparentCursor(pScreen);
+	else
+	    xf86SetCursor(pScreen, NullCursor, x, y);
 	ScreenPriv->isUp = FALSE;
     }
 

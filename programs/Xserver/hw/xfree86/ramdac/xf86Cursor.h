@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86Cursor.h,v 1.8 2002/10/31 05:39:32 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86Cursor.h,v 1.9tsi Exp $ */
 
 #ifndef _XF86CURSOR_H
 #define _XF86CURSOR_H
@@ -34,8 +34,9 @@ Bool xf86InitCursor(
 xf86CursorInfoPtr xf86CreateCursorInfoRec(void);
 void xf86DestroyCursorInfoRec(xf86CursorInfoPtr);
 
-
+/* These should be in a separate header */
 void xf86SetCursor(ScreenPtr pScreen, CursorPtr pCurs, int x, int y);
+void xf86SetTransparentCursor(ScreenPtr pScreen);
 void xf86MoveCursor(ScreenPtr pScreen, int x, int y);
 void xf86RecolorCursor(ScreenPtr pScreen, CursorPtr pCurs, Bool displayed);
 Bool xf86InitHardwareCursor(ScreenPtr pScreen, xf86CursorInfoPtr infoPtr);
