@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.26 2000/03/01 16:00:52 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.27 2000/03/05 23:47:47 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -151,8 +151,24 @@ xf86ShowClockRanges(ScrnInfoPtr scrp, ClockRangePtr clockRanges)
 	DivFactor = max(1, cp->ClockDivFactor);
 	MulFactor = max(1, cp->ClockMulFactor);
 	if (scrp->progClock) {
-	    xf86DrvMsg(scrp->scrnIndex, X_INFO, "clock range: %6.2f to %6.2f MHz\n",
-		(double)cp->minClock / 1000.0, (double)cp->maxClock / 1000);
+	    if (cp->minClock) {
+		if (cp->maxClock) {
+		    xf86DrvMsg(scrp->scrnIndex, X_INFO,
+			"Clock range: %6.2f to %6.2f MHz\n",
+			(double)cp->minClock / 1000.0,
+			(double)cp->maxClock / 1000.0);
+		} else {
+		    xf86DrvMsg(scrp->scrnIndex, X_INFO,
+			"Minimum clock: %6.2f MHz\n",
+			(double)cp->minClock / 1000.0);
+		}
+	    } else {
+		if (cp->maxClock) {
+		    xf86DrvMsg(scrp->scrnIndex, X_INFO,
+			"Maximum clock: %6.2f MHz\n",
+			(double)cp->maxClock / 1000.0);
+		}
+	    }
 	} else if (DivFactor > 1 || MulFactor > 1) {
 	    j = 0;
 	    for (i = 0; i < scrp->numClocks; i++) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.16 2000/03/07 16:31:53 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.17 2000/03/22 03:08:17 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -1622,8 +1622,8 @@ ATIPreInit
     }
 
     /*
-     * Determine maxClock.  For adapters with supported programmable clock
-     * generators, start with an absolute maximum.
+     * Determine minClock and maxClock.  For adapters with supported
+     * programmable clock generators, start with an absolute maximum.
      */
     if (pATI->ClockDescriptor.MaxN > 0)
     {
@@ -1641,6 +1641,35 @@ ATIPreInit
             Denominator *= (pScreenInfo->bitsPerPixel / 8);
 
         ATIClockRange.maxClock = (Numerator / (Denominator * 1000)) * 1000;
+
+        Numerator = pATI->ClockDescriptor.MinN * pATI->ReferenceNumerator;
+        Denominator = pATI->ClockDescriptor.MaxM * pATI->ReferenceDenominator *
+            pATI->ClockDescriptor.PostDividers[pATI->ClockDescriptor.NumD - 1];
+
+        if (pATI->ProgrammableClock == ATI_CLOCK_INTERNAL)
+            Numerator <<= 1;
+
+        ATIClockRange.minClock = (Numerator / (Denominator * 1000)) * 1000;
+
+        if (pATI->XCLKFeedbackDivider)
+        {
+            /* Possibly reduce maxClock due to memory bandwidth */
+            Numerator = pATI->XCLKFeedbackDivider * 2 *
+                pATI->ReferenceNumerator;
+            Denominator = pATI->ClockDescriptor.MinM *
+                pATI->XCLKReferenceDivider * pATI->ReferenceDenominator;
+
+            if (pScreenInfo->depth >= 8)
+                Denominator *= pScreenInfo->bitsPerPixel / 4;
+
+            i = (5 - 2) - pATI->XCLKPostDivider;
+            if (pATI->NewHW.crtc != ATI_CRTC_VGA)
+               i++;
+
+            i = (ATIDivide(Numerator, Denominator, i, -1) / 1000) * 1000;
+            if (i < ATIClockRange.maxClock)
+                ATIClockRange.maxClock = i;
+        }
     }
 
     /*
@@ -1721,9 +1750,10 @@ ATIPreInit
                 ATIClockRange.maxClock = 80000;
             break;
     }
-    xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
-        "Maximum pixel clock:  %.3f MHz.\n",
-        (double)ATIClockRange.maxClock / 1000.0);
+    if (pATI->ClockDescriptor.MaxN <= 0)
+        xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
+            "Maximum pixel clock:  %.3f MHz.\n",
+            (double)ATIClockRange.maxClock / 1000.0);
 
     /*
      * Determine available pixel clock frequencies.
