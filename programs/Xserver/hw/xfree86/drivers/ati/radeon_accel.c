@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.34 2003/07/02 17:31:29 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.35 2003/09/24 02:43:19 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -335,7 +335,7 @@ void RADEONEngineInit(ScrnInfoPtr pScrn)
 #endif
     {
 	OUTREG(RADEON_MC_FB_LOCATION, 0xffff0000);
-    	OUTREG(RADEON_MC_AGP_LOCATION, 0xfffff000);
+	OUTREG(RADEON_MC_AGP_LOCATION, 0xfffff000);
     }
 #endif
 
@@ -419,7 +419,7 @@ int RADEONCPStop(ScrnInfoPtr pScrn, RADEONInfoPtr info)
     stop.flush = 1;
     stop.idle  = 1;
 
-    ret = drmCommandWrite(info->drmFD, DRM_RADEON_CP_STOP, &stop, 
+    ret = drmCommandWrite(info->drmFD, DRM_RADEON_CP_STOP, &stop,
 			  sizeof(drmRadeonCPStop));
 
     if (ret == 0) {
@@ -429,10 +429,10 @@ int RADEONCPStop(ScrnInfoPtr pScrn, RADEONInfoPtr info)
     }
 
     stop.flush = 0;
- 
+
     i = 0;
     do {
-	ret = drmCommandWrite(info->drmFD, DRM_RADEON_CP_STOP, &stop, 
+	ret = drmCommandWrite(info->drmFD, DRM_RADEON_CP_STOP, &stop,
 			      sizeof(drmRadeonCPStop));
     } while (ret && errno == EBUSY && i++ < RADEON_IDLE_RETRY);
 

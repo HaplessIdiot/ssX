@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.29tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.30 2003/11/10 18:22:18 tsi Exp $ */
 
 #include "r128.h"
 #include "r128_reg.h"
@@ -65,7 +65,7 @@ static void R128ECP(ScrnInfoPtr pScrn, R128PortPrivPtr pPriv)
     R128InfoPtr     info      = R128PTR(pScrn);
     unsigned char   *R128MMIO = info->MMIO;
     int             dot_clock = info->ModeReg.dot_clock_freq;
-    
+
     if (dot_clock < 12500)      pPriv->ecp_div = 0;
     else if (dot_clock < 25000) pPriv->ecp_div = 1;
     else                        pPriv->ecp_div = 2;
@@ -430,7 +430,7 @@ R128DMA(
 	return FALSE;
     }
 
-    /* Copy parts of the block into buffers and fire them */ 
+    /* Copy parts of the block into buffers and fire them */
     dstpassbytes = hpass*dstPitch;
     dstPitch /= 8;
 
@@ -449,7 +449,7 @@ R128DMA(
 	} else {
 	    int count = hpass;
 	    while(count--) {
-	        memcpy(buf, src, w);
+		memcpy(buf, src, w);
 		src += srcPitch;
 		buf += w;
 	    }
