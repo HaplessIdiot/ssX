@@ -1,6 +1,6 @@
 XCOMM
 XCOMM $XConsortium: Imakefile /main/8 1996/09/28 16:55:19 rws $
-XCOMM $XFree86: xc/programs/Xserver/PEX5/ospex/Imakefile,v 3.10 1998/08/29 06:13:07 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/PEX5/ospex/Imakefile,v 3.11 1998/09/19 12:14:42 dawes Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -76,8 +76,6 @@ SpecialObjectRule(osPexFont,$(ICONFIGFILES),NullParameter)
 
 LintLibraryTarget(osp,$(SRCS))
 NormalLintTarget($(SRCS))
-
-InstallLinkKitLibrary(ospex,$(LINKKITDIR)/lib)
 
 DependTarget()
 

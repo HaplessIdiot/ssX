@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/Imakefile,v 1.16 1999/01/26 10:40:23 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/Imakefile,v 1.17 1999/02/28 11:19:37 dawes Exp $
 XCOMM
 XCOMM This is an Imakefile for the Cirrus Logic driver.  
 XCOMM
@@ -11,9 +11,6 @@ SRCS = cir_driver.c CirrusClk.c cir_xaa.c cir_hwcurs.c \
 OBJS = cir_driver.o CirrusClk.o cir_xaa.o cir_hwcurs.o \
        cir_i2c.o lg_driver.o cir_xaam.o lg_i2c.o lg_xaa.o lg_hwcurs.o
 
-#if XF86LinkKit
-INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
-#else
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
            -I$(XF86SRC)/xf4bpp -I$(XF86SRC)/xf1bpp \
            -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
@@ -22,7 +19,6 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
 	   -I$(XF86SRC)/vgahw  -I$(XF86SRC)/ddc \
 	   -I$(XF86SRC)/xf24_32bpp \
            -I$(FONTINCSRC) -I$(SERVERSRC)/include -I$(XINCLUDESRC)
-#endif
 
 #if MakeHasPosixVariableSubstitutions
 SubdirLibraryRule($(OBJS))
@@ -31,12 +27,6 @@ SubdirLibraryRule($(OBJS))
 ModuleObjectRule()
 
 ObjectModuleTarget(cirrus,$(OBJS))
-
-#if 0
-InstallLinkKitNonExecFile(cir.h,$(LINKKITDIR)/drivers/svga/cir)
-InstallLinkKitNonExecFile(cir_driver.c,$(LINKKITDIR)/drivers/svga/cir)
-InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/svga/cir)
-#endif
 
 InstallObjectModule(cirrus,$(MODULEDIR),drivers)
 

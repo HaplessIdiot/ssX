@@ -1,4 +1,5 @@
 XFree86 3.9Pj (18 April 1999)
+2745. Remove most LinkKit references.
 2744. Disable WC for the framebuffer for the Rendition V1K by default,
       because it appears to be causing lockups (Dejan Ilic).
 2743. Some fixes for the Rendition driver (Dejan Ilic).
@@ -7803,4 +7804,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.727 1999/04/15 14:39:36 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.728 1999/04/17 07:05:51 dawes Exp $

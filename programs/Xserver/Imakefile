@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/249 1997/12/11 11:18:14 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.154 1999/03/21 13:28:36 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.155 1999/04/04 08:46:05 dawes Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -620,9 +620,6 @@ SetUIDServerTarget(XFree86,$(XF86SERVERSUBDIRS),$(XF86SERVEROBJS),$(XF86SERVERLI
 #ifndef ServerToInstall
 #define ServerToInstall XFree86
 #endif
-#ifdef OS2Architecture
-InstallLinkKitNonExecFile(XFree86.def,$(LINKKITDIR))
-#endif
 #endif        /* XF86Server */
 
 
@@ -751,9 +748,6 @@ $(XNESTOBJS) $(XNESTLIBS) $(XNESTSYSLIBS):: $(XNESTDIRS)
 	@if [ -f $@ ]; then touch $@; fi
 #endif
 ServerTarget(Xnest,$(XNESTDIRS),$(XNESTOBJS) $(MIINITEXTOBJ),$(XNESTLIBS) $(LOADABLEEXTS) $(LIBCWRAPPER),$(XNESTSYSLIBS))
-#ifdef OS2Architecture
-InstallLinkKitNonExecFile(Xnest.def,$(LINKKITDIR))
-#endif
 #endif /* XnestServer */
 
 

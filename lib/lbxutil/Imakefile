@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/8 1996/11/03 19:32:12 kaleb $
 
 
 
-XCOMM $XFree86: xc/lib/lbxutil/Imakefile,v 1.4 1997/02/12 08:54:57 hohndel Exp $
+XCOMM $XFree86: xc/lib/lbxutil/Imakefile,v 1.6 1998/01/01 14:51:32 robin Exp $
 #include <Server.tmpl>
 
 #define	IHaveSubdirs
@@ -28,4 +28,3 @@ ForceSubdirs($(SUBDIRS))
 
 DependSubdirs($(SUBDIRS))
 
-InstallLinkKitLibrary(lbxutil,$(LINKKITDIR)/lib)

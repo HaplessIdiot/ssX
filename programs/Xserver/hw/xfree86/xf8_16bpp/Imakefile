@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf8_16bpp/Imakefile,v 1.1 1999/01/31 12:22:16 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -25,7 +25,5 @@ LintLibraryTarget(xf8_16bpp,$(SRCS))
 NormalLintTarget($(LINTDEFS) $(SRCS))
 
 InstallLibraryModule(xf8_16bpp,$(MODULEDIR),.)
-InstallLinkKitLibrary(xf8_16bpp,$(LINKKITDIR)/lib)
-InstallLinkKitNonExecFile(cfb8_16.h,$(LINKKITDIR)/include)
 
 DependTarget()

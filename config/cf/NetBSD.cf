@@ -2,7 +2,7 @@ XCOMM platform:  $XConsortium: NetBSD.cf /main/16 1996/10/31 14:47:14 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.71 1999/03/21 01:44:58 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.72 1999/03/21 07:34:23 dawes Exp $
 
 
 #ifndef OSName
@@ -97,7 +97,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 
 #undef CcCmd
 #define CcCmd 			gcc
-#if defined(UseInstalled) && (!defined(XF86LinkKit) || !XF86LinkKit)
+#if defined(UseInstalled)
 #define DefaultCCOptions 	/**/
 #else
 #ifdef Arm32Architecture

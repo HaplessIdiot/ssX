@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/27 1996/09/28 16:43:28 rws $
-XCOMM $XFree86: xc/lib/Xau/Imakefile,v 3.3 1996/12/23 06:00:28 dawes Exp $
+XCOMM $XFree86: xc/lib/Xau/Imakefile,v 3.4 1998/12/20 11:57:01 dawes Exp $
 #define DoNormalLib NormalLibXau
 #define DoSharedLib SharedLibXau
 #define DoExtraLib SharedLibXau
@@ -33,7 +33,5 @@ OBJS =	AuDispose.o AuFileName.o AuGetAddr.o AuGetBest.o AuLock.o \
 	AuRead.o AuUnlock.o AuWrite.o $(K5ENCOBJ)
 
 #include <Library.tmpl>
-
-InstallLinkKitLibrary(Xau,$(LINKKITDIR)/lib)
 
 DependTarget()

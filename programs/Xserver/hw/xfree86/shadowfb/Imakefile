@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/Imakefile,v 1.2 1999/01/23 09:56:15 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/shadowfb/Imakefile,v 1.1 1999/01/31 12:22:06 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -24,7 +24,5 @@ LintLibraryTarget(shadowfb,$(SRCS))
 NormalLintTarget($(LINTDEFS) $(SRCS))
 
 InstallLibraryModule(shadowfb,$(MODULEDIR),.)
-InstallLinkKitLibrary(shadowfb,$(LINKKITDIR)/lib)
-InstallLinkKitNonExecFile(shadowfb.h,$(LINKKITDIR)/include)
 
 DependTarget()

@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/43 1997/11/15 12:10:58 msr $
-XCOMM $XFree86: xc/programs/Xserver/mfb/Imakefile,v 3.11 1998/10/04 09:39:06 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/mfb/Imakefile,v 3.12 1999/01/03 03:58:57 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -100,13 +100,7 @@ ObjectFromSpecialSource(mfbtileG,mfbtile,-DMROP=0)
 
 SpecialCObjectRule(mfbpixmap,$(ICONFIGFILES),$(_NOOP_))
 
-InstallLinkKitLibrary(mfb,$(LINKKITDIR)/lib)
-InstallLinkKitNonExecFile(fastblt.h,$(LINKKITDIR)/include)
-InstallLinkKitNonExecFile(mfb.h,$(LINKKITDIR)/include)
-InstallLinkKitNonExecFile(mergerop.h,$(LINKKITDIR)/include)
-
 InstallLibraryModule(mfb,$(MODULEDIR),.)
-InstallLinkKitLibrary(mfb,$(LINKKITDIR)/lib)
 
 #ifndef OS2Architecture
 DependTarget()

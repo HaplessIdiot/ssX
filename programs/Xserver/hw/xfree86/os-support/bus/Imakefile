@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/16 1996/10/27 18:07:43 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Imakefile,v 1.4 1999/03/28 15:32:56 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Imakefile,v 1.5 1999/03/28 16:03:45 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -56,8 +56,6 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
 
 NormalLibraryObjectRule()
 SubdirLibraryRule($(OBJS))
-
-InstallLinkKitNonExecFile(Pci.h,$(LINKKITDIR)/include)
 
 DependTarget()
 

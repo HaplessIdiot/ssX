@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/loader/Imakefile,v 1.14 1998/12/13 05:32:54 dawes Exp $ */
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/loader/Imakefile,v 1.15 1999/03/06 13:12:42 dawes Exp $ */
 
 
 
@@ -50,7 +50,5 @@ NormalLibraryTarget(loader,$(OBJS))
 SpecialObjectRule(loadmod.o,loadmod.c,$(MODULEDEFINES) $(EXT_DEFINES))
 SpecialObjectRule(xf86sym.o,xf86sym.c,$(EXT_DEFINES))
 SpecialObjectRule(dixsym.o,dixsym.c,$(EXT_DEFINES))
-
-InstallLinkKitLibrary(loader,$(LINKKITDIR)/drivers)
 
 DependTarget()
