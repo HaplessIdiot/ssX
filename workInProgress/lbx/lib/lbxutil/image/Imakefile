@@ -1,0 +1,16 @@
+XCOMM $XConsortium: Imakefile,v 1.2 94/11/08 19:54:06 mor Exp $
+
+#include <Library.tmpl>
+
+SRCS = dfaxg42d.c dpackbits.c efaxg42d.c epackbits.c misc.c
+
+OBJS = dfaxg42d.o dpackbits.o efaxg42d.o epackbits.o misc.o
+
+INCLUDES = -I$(INCLUDESRC) -I$(EXTINCSRC) -I$(SERVERSRC)/include -I../../../include/extensions
+
+SubdirLibraryRule($(OBJS))
+NormalLibraryObjectRule()
+NormalLintTarget($(SRCS))
+
+DependTarget()
+
