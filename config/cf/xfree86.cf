@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.419 2002/11/20 04:32:55 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.420 2002/11/22 02:57:16 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -158,13 +158,24 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
  * Default settings for which X Servers to build.
  */
 
+/* OS.cf files may set this for OS-specific input drivers */
+#ifndef OSXInputDrivers
+#define OSXInputDrivers /**/
+#endif
+
+/* This may be set in host.def for 3rd party input drivers */
+#ifndef ExtraXInputDrivers
+#define ExtraXInputDrivers /**/
+#endif
+
 /* XInput drivers */
 #ifndef XInputDrivers
 #define XInputDrivers		mouse keyboard /* acecad */ calcomp citron \
 				digitaledge dmc dynapro elographics tek4957 \
 				microtouch mutouch penmount spaceorb summa \
 				wacom void magellan /* magictouch */ hyperpen \
-				jamstudio
+				jamstudio fpit \
+				palmax OSXInputDrivers ExtraXInputDrivers
 #endif
 
 /* <linux/input.h> support mainly for USB support */
