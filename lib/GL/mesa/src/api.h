@@ -23,7 +23,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/api.h,v 1.3 1999/06/14 14:37:11 dawes Exp $ */
 
 
 /*
@@ -65,7 +65,7 @@
 #define API_H
 
 
-#if defined(GLX_DIRECT_RENDERING) && !defined(XFree86Server)
+#if defined(GLX_DIRECT_RENDERING) && !defined(XFree86Server) && !defined(GLX_USE_DLOPEN)
 #define NEED_MESA_FUNCS_WRAPPED
 #include "mesa_api.h"
 #endif

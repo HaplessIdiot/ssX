@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.27 1999/06/14 13:37:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.29 1999/06/20 07:14:24 dawes Exp $ */
 #define DEBUG
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -2085,19 +2085,19 @@ xf86GetPciSysRes(resPtr *res, int flags)
 		if (pvp->ioBase[i]) {
 		    RANGE(range,pvp->ioBase[i],
 			  pvp->ioBase[i] + (1 << pvp->size[i]) - 1,
-			  ResExcIoBlock | ResMinimised);
+			  ResExcIoBlock | ResMinimised | ResBios);
 		    nonsysRes = xf86AddResToList(nonsysRes, &range,-1);
 		} else if (pvp->memBase[i]) {
 		    RANGE(range,pvp->memBase[i],
 			  pvp->memBase[i] + (1 << pvp->size[i]) - 1,
-			  ResExcMemBlock | ResMinimised);
+			  ResExcMemBlock | ResMinimised | ResBios);
 		    nonsysRes = xf86AddResToList(nonsysRes, &range, -1);
 		}
 	    }
 	    if (pvp->biosBase) {
 		RANGE(range, pvp->biosBase,
 		      pvp->biosBase + (1 << pvp->biosSize) - 1,
-		      ResExcMemBlock | ResMinimised);
+		      ResExcMemBlock | ResMinimised | ResBios);
 		nonsysRes = xf86AddResToList(nonsysRes, &range, -1);
 	    }
 	}
@@ -2110,8 +2110,11 @@ xf86GetPciSysRes(resPtr *res, int flags)
     
     /* XXX Needs to be updated for 64 bit mappings */
     for (pcrpp = xf86PciInfo, pcrp = *pcrpp; pcrp; pcrp = *++(pcrpp)) {
+	Bool bios = FALSE;
 	if (PCINONSYSTEMCLASSES(pcrp->pci_base_class, pcrp->pci_sub_class))
 	    continue;
+	if (PCIINFOCLASSES(pcrp->pci_base_class, pcrp->pci_sub_class))
+	    bios = TRUE;
 	/* Only process devices with type 0 headers */
 	if ((pcrp->pci_header_type & 0x7f) != 0)
 	    continue;
@@ -2122,12 +2125,12 @@ xf86GetPciSysRes(resPtr *res, int flags)
 		if (PCI_MAP_IS_IO(basep[i])) {
 		    RANGE(range,PCIGETIO(basep[i]),
 			  range.rBegin + (1 << pcrp->basesize[i]) - 1,
-			  ResExcIoBlock);
+			  ResExcIoBlock | (bios ? ResBios : 0));
 		    sysRes = xf86AddResToList(sysRes, &range, -1);
 		} else {
 		    RANGE(range,PCIGETMEMORY(basep[i]),
 			  range.rBegin + (1 << pcrp->basesize[i]) - 1,
-			  ResExcMemBlock);
+			  ResExcMemBlock | (bios ? ResBios : 0));
 		    sysRes = xf86AddResToList(sysRes, &range, -1);
 		}
 	    }
@@ -2135,7 +2138,7 @@ xf86GetPciSysRes(resPtr *res, int flags)
 	if (pcrp->pci_baserom) {
 	    RANGE(range,PCIGETROM(pcrp->pci_baserom),
 		  range.rBegin	+ (1 << pcrp->basesize[6]) - 1,
-		  ResExcIoBlock);
+		  ResExcIoBlock | (bios ? ResBios : 0));
 	    sysRes = xf86AddResToList(sysRes, &range, -1);
 	}
     }
@@ -2152,6 +2155,7 @@ xf86GetPciSysRes(resPtr *res, int flags)
 	for (pRes = sysRes; pRes; pRes = pRes->next) {
 	    resRange r = pRes->val;
 	    r.type = (r.type & ResPhysMask) | ResExclusive | ResBlock;
+	    r.type &= ~(CARD32)ResBios; /* remove for overlap checking */
 	    if ((end = ChkConflict(&r, pRes->next, SETUP)))
 		xf86MsgVerb(X_INFO, verb,
 			    "PCI %s Resource overlap for 0x%08x at 0x%08x\n",

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/print_edid.c,v 1.2 1998/12/06 06:08:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/print_edid.c,v 1.3 1999/01/31 14:07:12 dawes Exp $ */
 
 /* print_edid.c: print out all information retrieved from display device 
  * 
@@ -25,7 +25,7 @@ static void print_whitepoint(struct disp_features *);
 void
 xf86PrintEDID(xf86MonPtr m)
 {
-    if (!m) return;
+    if (!(m)) return;
     print_vendor(&m->vendor);
     print_version(&m->ver);
     print_display(&m->features);

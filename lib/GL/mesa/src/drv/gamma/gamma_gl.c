@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_gl.c,v 1.1 1999/06/14 07:31:13 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -30,7 +30,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
  *
- * $PI: xc/lib/GL/mesa/src/drv/gamma/gamma_gl.c,v 1.22 1999/06/07 02:20:05 martin Exp $
+ * $PI: xc/lib/GL/mesa/src/drv/gamma/gamma_gl.c,v 1.24 1999/06/14 21:10:43 faith Exp $
  */
 
 #ifdef GLX_DIRECT_RENDERING
@@ -380,7 +380,8 @@ void glClear(GLbitfield mask)
     /* Flush any partially filled buffers */
     FLUSH_DMA_BUFFER(gCC,gCCPriv);
 
-    DRM_SPINLOCK(&driScrnPriv->pSAREA->drawable_lock, 1);
+    DRM_SPINLOCK(&driScrnPriv->pSAREA->drawable_lock,
+		 driScrnPriv->drawLockID);
     VALIDATE_DRAWABLE_INFO_NO_LOCK(gCC,gCCPriv);
 #endif
 
@@ -574,7 +575,8 @@ void glClear(GLbitfield mask)
 #ifdef DO_VALIDATE
     PROCESS_DMA_BUFFER_TOP_HALF(gCCPriv);
 
-    DRM_SPINUNLOCK(&driScrnPriv->pSAREA->drawable_lock, 1);
+    DRM_SPINUNLOCK(&driScrnPriv->pSAREA->drawable_lock,
+		   driScrnPriv->drawLockID);
     VALIDATE_DRAWABLE_INFO_NO_LOCK_POST(gCC,gCCPriv);
 
     PROCESS_DMA_BUFFER_BOTTOM_HALF(gCCPriv);

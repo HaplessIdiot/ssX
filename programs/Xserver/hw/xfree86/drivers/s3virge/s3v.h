@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.12 1999/04/04 08:46:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.13 1999/06/12 15:37:06 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -268,6 +268,11 @@ typedef struct {
   /* above.			*/
   int			Chipset;
   int			ChipRev;
+  /* DGA2 */
+  DGAModePtr	DGAModes;
+  int			numDGAModes;
+  Bool			DGAactive;
+  int			DGAViewportStatus;
   
   /* Used by ViRGE driver, but generic -end- */
   
@@ -348,9 +353,17 @@ extern void S3VCommonCalcClock(long freq, int min_m, int min_n1, int max_n1,
 /* s3v_accel.c */
 extern Bool S3VAccelInit(ScreenPtr pScreen);
 extern Bool S3VAccelInit32(ScreenPtr pScreen);
+void S3VAccelSync(ScrnInfoPtr);
 
 /* s3v_hwcurs.c */
 extern Bool S3VHWCursorInit(ScreenPtr pScreen);
+
+/* s3v_driver.c */
+void S3VAdjustFrame(int scrnIndex, int x, int y, int flags);
+Bool S3VSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
+
+/* s3v_dga.c */
+Bool S3VDGAInit(ScreenPtr pScreen);
 
 #endif  /*_S3V_H*/
 

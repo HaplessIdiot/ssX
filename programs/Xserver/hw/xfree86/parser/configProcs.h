@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/configProcs.h,v 1.9 1999/05/30 07:18:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/configProcs.h,v 1.10 1999/06/06 15:23:04 dawes Exp $ */
 
 /* Private procs.  Public procs are in xf86Parser.h and xf86Optrec.h */
 
@@ -91,6 +91,12 @@ void xf86ValidationError(char *format, ...);
 void SetSection(char *section);
 int getStringToken(xf86ConfigSymTabRec *tab);
 /* write.c */
+/* DRI.c */
+XF86ConfBuffersPtr parseBuffers (void);
+void freeBuffersList (XF86ConfBuffersPtr ptr);
+XF86ConfDRIPtr parseDRISection (void);
+void printDRISection (FILE * cf, XF86ConfDRIPtr ptr);
+void freeDRI (XF86ConfDRIPtr ptr);
 
 /* Externally provided functions */
 void ErrorF(const char *f, ...);

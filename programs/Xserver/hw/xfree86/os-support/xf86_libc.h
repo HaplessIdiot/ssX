@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.36 1999/05/04 09:35:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.37 1999/06/14 07:31:57 dawes Exp $ */
 
 
 
@@ -61,6 +61,7 @@ typedef signed long xf86ssize_t;
 typedef unsigned long xf86dev_t;
 typedef unsigned int xf86mode_t;
 typedef unsigned int xf86uid_t;
+typedef unsigned int xf86gid_t;
 
 struct xf86stat {
     xf86dev_t st_rdev;	/* This is incomplete */
@@ -298,6 +299,7 @@ struct xf86stat {
 #define bzero(vp,ui)		xf86bzero(vp,ui)
 #define execl	        	xf86execl
 #define chmod(a,b)              xf86chmod(a,b)
+#define chown(a,b,c)            xf86chown(a,b,c)
 #define geteuid                 xf86geteuid
 #define mknod(a,b,c)            xf86mknod(a,b,c)
 #define sleep(a)                xf86sleep(a)
@@ -328,6 +330,7 @@ struct xf86stat {
 #define dev_t                   xf86dev_t
 #define mode_t                  xf86mode_t
 #define uid_t                   xf86uid_t
+#define gid_t                   xf86gid_t
 
 /*
  * There should be no need to #undef any of these.  If they are already

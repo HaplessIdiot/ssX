@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.10 1999/04/11 13:10:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.11 1999/06/20 05:23:31 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -508,4 +508,177 @@ xf86FBCloseScreen (int i, ScreenPtr pScreen)
    xfree(offman);
 
    return (*pScreen->CloseScreen) (i, pScreen);
+}
+
+
+Bool
+xf86PurgeUnlockedOffscreenAreas(ScreenPtr pScreen)
+{
+   FBManagerPtr offman;
+   FBLinkPtr pLink, tmp, pPrev = NULL;
+   RegionRec FreedRegion;
+   Bool anyUsed = FALSE;
+
+   if(!xf86FBManagerRunning(pScreen)) 
+	return FALSE;
+
+   offman = pScreen->devPrivates[xf86FBScreenIndex].ptr;
+       
+   pLink = offman->UsedAreas;
+   if(!pLink) return TRUE;  
+ 
+   while(pLink) {
+	if(pLink->area.RemoveAreaCallback) {
+	    (*pLink->area.RemoveAreaCallback)(&pLink->area);
+
+	    REGION_INIT(pScreen, &FreedRegion, &(pLink->area.box), 1); 
+	    REGION_APPEND(pScreen, offman->FreeBoxes, &FreedRegion);
+	    REGION_UNINIT(pScreen, &FreedRegion); 
+
+	    if(pPrev)
+	      pPrev->next = pLink->next;
+	    else offman->UsedAreas = pLink->next;
+
+	    tmp = pLink;
+	    pLink = pLink->next;
+  	    xfree(tmp); 
+	    offman->NumUsedAreas--;
+	    anyUsed = TRUE;
+	} else {
+	    pPrev = pLink;
+	    pLink = pLink->next;
+	}
+   }
+
+   if(anyUsed) {
+	REGION_VALIDATE(pScreen, offman->FreeBoxes, &anyUsed);
+	SendCallFreeBoxCallbacks(offman);
+   }
+
+   return TRUE;
+}
+
+
+Bool
+xf86QueryLargestOffscreenArea(
+    ScreenPtr pScreen,
+    int *width, int *height,
+    int granularity,
+    int preferences,
+    int severity
+){
+    FBManagerPtr offman;
+    RegionPtr newRegion = NULL;
+    BoxPtr pbox;
+    int nbox;
+    int x, w, h, area, oldArea;
+
+    *width = *height = oldArea = 0;
+
+    if(!xf86FBManagerRunning(pScreen)) 
+	return FALSE;
+
+    if(granularity <= 1) granularity = 0;
+
+    if((preferences < 0) || (preferences > 3))
+	return FALSE;	
+
+    offman = pScreen->devPrivates[xf86FBScreenIndex].ptr;
+
+    if(severity < 0) severity = 0;
+    if(severity > 2) severity = 2;
+
+    switch(severity) {
+    case 2:
+	if(offman->NumUsedAreas) {
+	    FBLinkPtr pLink;
+	    RegionRec tmpRegion;
+	    newRegion = REGION_CREATE(pScreen, NULL, 1);
+	    REGION_COPY(pScreen, newRegion, offman->InitialBoxes);
+	    pLink = offman->UsedAreas;
+
+	    while(pLink) {
+		if(!pLink->area.RemoveAreaCallback) {
+		    REGION_INIT(pScreen, &tmpRegion, &(pLink->area.box), 1);
+		    REGION_SUBTRACT(pScreen, newRegion, newRegion, &tmpRegion);
+		    REGION_UNINIT(pScreen, &tmpRegion);
+		}
+		pLink = pLink->next;
+	    }
+
+	    nbox = REGION_NUM_RECTS(newRegion);
+	    pbox = REGION_RECTS(newRegion);
+	    break;
+	}
+    case 1:
+	if(offman->NumUsedAreas) {
+	    FBLinkPtr pLink;
+	    RegionRec tmpRegion;
+	    newRegion = REGION_CREATE(pScreen, NULL, 1);
+	    REGION_COPY(pScreen, newRegion, offman->FreeBoxes);
+	    pLink = offman->UsedAreas;
+
+	    while(pLink) {
+		if(pLink->area.RemoveAreaCallback) {
+		    REGION_INIT(pScreen, &tmpRegion, &(pLink->area.box), 1);
+		    REGION_APPEND(pScreen, newRegion, &tmpRegion);
+		    REGION_UNINIT(pScreen, &tmpRegion);
+		}
+		pLink = pLink->next;
+	    }
+
+	    nbox = REGION_NUM_RECTS(newRegion);
+	    pbox = REGION_RECTS(newRegion);
+	    break;
+	}
+    default:
+	nbox = REGION_NUM_RECTS(offman->FreeBoxes);
+	pbox = REGION_RECTS(offman->FreeBoxes);
+	break;
+    }
+
+    while(nbox--) {
+	x = pbox->x1;
+	if(granularity) {
+	   int tmp = x % granularity;
+	   if(tmp) x += (granularity - tmp);
+        }
+
+	w = pbox->x2 - x;
+	h = pbox->y2 - pbox->y1;
+	area = w * h;
+
+	if(w > 0) {
+	    Bool gotIt = FALSE;
+	    switch(preferences) {
+	    case FAVOR_AREA_THEN_WIDTH:
+		if((area > oldArea) || ((area == oldArea) && (w > *width))) 
+		    gotIt = TRUE;
+		break;
+	    case FAVOR_AREA_THEN_HEIGHT:
+		if((area > oldArea) || ((area == oldArea) && (h > *height)))
+		    gotIt = TRUE;
+		break;
+	    case FAVOR_WIDTH_THEN_AREA:
+		if((w > *width) || ((w == *width) && (area > oldArea)))
+		    gotIt = TRUE;
+		break;
+	    case FAVOR_HEIGHT_THEN_AREA:
+		if((h > *height) || ((h == *height) && (area > oldArea)))
+		    gotIt = TRUE;
+		break;
+	    }
+	    if(gotIt) {
+		*width = w;
+		*height = h;
+		oldArea = area;
+	    }
+        }
+	pbox++;
+    }
+
+    if(newRegion)
+	REGION_DESTROY(pScreen, newRegion);
+
+    return TRUE;
 }

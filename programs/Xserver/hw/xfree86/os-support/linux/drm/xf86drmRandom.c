@@ -1,6 +1,6 @@
 /* xf86drmRandom.c -- "Minimal Standard" PRNG Implementation
  * Created: Mon Apr 19 08:28:13 1999 by faith@precisioninsight.com
- * Revised: Thu Jun  3 16:11:06 1999 by faith@precisioninsight.com
+ * Revised: Thu Jun 24 14:53:45 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All Rights Reserved.
@@ -24,8 +24,8 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmRandom.c,v 1.2 1999/06/07 13:01:42 faith Exp $
- * $XFree86$
+ * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmRandom.c,v 1.4 1999/06/24 18:54:55 faith Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmRandom.c,v 1.1 1999/06/14 07:32:02 dawes Exp $
  *
  * DESCRIPTION
  *
@@ -132,7 +132,7 @@ void *N(RandomCreate)(unsigned long seed)
     state->m        = 2147483647;
     state->check    = 1043618065; /* After 10000 iterations */
 #else
-				/* Park, Miller, & Stockmeyer, July 1993 */
+				/* Park, Miller, and Stockmeyer, July 1993 */
     state->a        = 48271;
     state->m        = 2147483647;
     state->check    = 399268537; /* After 10000 iterations */

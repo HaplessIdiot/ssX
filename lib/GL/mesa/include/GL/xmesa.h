@@ -23,7 +23,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/include/GL/xmesa.h,v 1.3 1999/06/14 14:37:10 dawes Exp $ */
 
 
 /*
@@ -141,6 +141,18 @@ typedef struct xmesa_buffer *XMesaBuffer;
 
 
 
+
+#if defined(GLX_DIRECT_RENDERING) && !defined(XFree86Server)
+/*
+ * Initialize the XMesa driver.
+ */
+extern GLboolean XMesaInitDriver( __DRIscreenPrivate *driScrnPriv );
+
+/*
+ * Reset the XMesa driver when the X server resets.
+ */
+extern void XMesaResetDriver( __DRIscreenPrivate *driScrnPriv );
+#endif
 
 /*
  * Create a new X/Mesa visual.

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/stdResource.c,v 1.5 1999/06/12 07:19:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/stdResource.c,v 1.6 1999/06/20 05:23:45 dawes Exp $ */
 
 /* Standard resource information code */
 
@@ -180,11 +180,7 @@ xf86StdInitOSPciAllocator(const pciConfigPtr *pciInfo, resPtr *sysRes,
     PciRes = xf86DupResList(pciRes);
 
     /* resources assigned by bios should be avoided */
-    res = tmp_res = xf86DupResList(pciRes);
-    while (tmp_res) {
-	tmp_res->res_type |= ResBios;
-	tmp_res = tmp_res->next;
-    }
+    res = xf86DupResList(pciRes);
     (*sysRes) = xf86JoinResLists(res,(*sysRes));
 
     return xf86FindPciBridgeInfo(pciInfo);

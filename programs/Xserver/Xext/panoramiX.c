@@ -19,7 +19,7 @@
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.5 1999/05/23 06:33:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.6 1999/05/30 02:28:03 dawes Exp $ */
 
 #define NEED_REPLIES
 #include <stdio.h>
@@ -59,6 +59,14 @@ PanoramiXWindow *PanoramiXWinRoot;
 PanoramiXGC 	*PanoramiXGCRoot;
 PanoramiXCmap 	*PanoramiXCmapRoot;
 PanoramiXPmap 	*PanoramiXPmapRoot;
+
+/*
+ * Free list flags added as pre-test before running through list to free ids
+ */
+Bool PanoramiXWinRootFreeable = FALSE;
+Bool PanoramiXGCRootFreeable = FALSE;
+Bool PanoramiXCmapRootFreeable = FALSE;
+Bool PanoramiXPmapRootFreeable = FALSE;
 
 PanoramiXEdge   panoramiXEdgePtr[MAXSCREENS];
 RegionRec   	PanoramiXScreenRegion[MAXSCREENS];
@@ -750,7 +758,6 @@ void PanoramiXConsolidate(void)
 
 	    for (k = 0; k < pScreen2->numVisuals; k++, pVisual2++) {
 		if ((pVisual->class == pVisual2->class) &&
-		    (pVisual->bitsPerRGBValue == pVisual2->bitsPerRGBValue) &&
 		    (pVisual->ColormapEntries == pVisual2->ColormapEntries) &&
 		    (pVisual->nplanes == pVisual2->nplanes) &&
 		    (pVisual->redMask == pVisual2->redMask) &&

@@ -1,6 +1,6 @@
 /* gen_bufs.c -- Buffer list handling routines -*- linux-c -*-
  * Created: Mon Apr 19 20:54:22 1999 by faith@precisioninsight.com
- * Revised: Sat May 15 15:24:47 1999 by faith@precisioninsight.com
+ * Revised: Mon Jun 14 15:31:24 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All Rights Reserved.
@@ -24,8 +24,8 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/generic/gen_bufs.c,v 1.12 1999/05/15 19:47:27 faith Exp $
- * $XFree86$
+ * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/generic/gen_bufs.c,v 1.14 1999/06/14 21:11:28 faith Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/generic/gen_bufs.c,v 1.1 1999/06/14 07:32:05 dawes Exp $
  *
  */
 
@@ -145,10 +145,11 @@ int drm_freelist_create(drm_freelist_t *bl, int count)
 	DRM_TRACE("\n");
 	atomic_set(&bl->count, 0);
 	bl->next      = NULL;
-	bl->waiting   = NULL;
+	init_waitqueue_head(&bl->waiting);
 	bl->low_mark  = 0;
 	bl->high_mark = 0;
 	atomic_set(&bl->wfh,   0);
+	++bl->initialized;
 	return 0;
 }
 
@@ -246,9 +247,9 @@ static drm_buf_t *drm_freelist_try(drm_freelist_t *bl)
 drm_buf_t *drm_freelist_get(drm_freelist_t *bl, int block)
 {
         drm_buf_t         *buf  = NULL;
-	struct wait_queue entry = { current, NULL };
+	DECLARE_WAITQUEUE(entry, current);
 
-	if (!bl) return NULL;
+	if (!bl || !bl->initialized) return NULL;
 	
 				/* Check for low water mark */
 	if (atomic_read(&bl->count) <= bl->low_mark) /* Became low */

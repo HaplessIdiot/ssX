@@ -1,5 +1,5 @@
 XCOMM $TOG: lnxLib.tmpl /main/7 1998/03/20 14:26:41 mgreess $
-XCOMM $XFree86: xc/config/cf/lnxLib.tmpl,v 3.10 1998/10/02 06:15:05 dawes Exp $
+XCOMM $XFree86: xc/config/cf/lnxLib.tmpl,v 3.11 1999/06/06 12:13:23 dawes Exp $
 
 /*
  * Linux shared library template
@@ -31,6 +31,13 @@ XMULIB = $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
 #define SharedXtstReqs	$(LDPRELIB) $(XLIB)
 #define SharedXieReqs	$(LDPRELIB) $(XLIBONLY)
 #define SharedSMReqs	$(LDPRELIB) $(ICELIB)
+
+#if GlxUseBuiltInDRIDriver
+#define ExtraSharedGLReqs /**/
+#else
+#define ExtraSharedGLReqs -ldl
+#endif
+#define SharedGLReqs	$(LDPRELIB) $(XLIB) ExtraSharedGLReqs
 
 #else	/* UseElfFormat */
 

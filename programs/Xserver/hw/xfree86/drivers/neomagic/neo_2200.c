@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_2200.c,v 1.1 1999/04/17 07:06:21 dawes Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -122,12 +122,11 @@ Neo2200AccelInit(ScreenPtr pScreen)
     /*
      * Set up the main acceleration flags.
      */
-    infoPtr->Flags = 0;
+    infoPtr->Flags |= LINEAR_FRAMEBUFFER | OFFSCREEN_PIXMAPS;
     if(nAcl->cacheEnd > nAcl->cacheStart) infoPtr->Flags = PIXMAP_CACHE;
-    
-
+#if 0
     infoPtr->PixmapCacheFlags |= DO_NOT_BLIT_STIPPLES;
-
+#endif
     /* sync */
     infoPtr->Sync = Neo2200Sync;
 

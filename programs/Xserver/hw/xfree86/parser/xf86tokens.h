@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86tokens.h,v 1.9 1999/04/27 12:05:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86tokens.h,v 1.10 1999/04/29 05:13:02 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -153,6 +153,7 @@ typedef enum {
     CARD,
     BUSID,
     TEXTCLOCKFRQ,
+    IRQ,
 
     /* Keyboard tokens */
     AUTOREPEAT,
@@ -225,7 +226,11 @@ typedef enum {
     INPUTDEVICE,
 
     /* Vendor Tokens */
-    VENDORNAME
+    VENDORNAME,
+
+    /* DRI Tokens */
+    GROUP,
+    BUFFERS
 } ParserTokens;
 
 #endif /* _xf86_tokens_h */

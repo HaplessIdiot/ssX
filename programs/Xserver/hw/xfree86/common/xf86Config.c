@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.184 1999/05/30 14:04:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.185 1999/06/12 07:18:39 dawes Exp $ */
 
 
 /*
@@ -71,6 +71,9 @@ static Bool configInput(IDevPtr inputp, XF86ConfInputPtr conf_input,
 			MessageType from);
 static Bool configDisplay(DispPtr displayp, XF86ConfDisplayPtr conf_display);
 static Bool addDefaultModes(MonPtr monitorp);
+#ifdef XF86DRI
+static Bool configDRI(XF86ConfDRIPtr drip);
+#endif
 
 /*
  * xf86GetPathElem --
@@ -1955,6 +1958,7 @@ configDevice(GDevPtr devicep, XF86ConfDevicePtr conf_device, Bool active)
     devicep->chipID = conf_device->dev_chipid;
     devicep->chipRev = conf_device->dev_chiprev;
     devicep->options = conf_device->dev_option_lst;
+    devicep->irq = conf_device->dev_irq;
 
     for (i = 0; i < MAXDACSPEEDS; i++) {
 	if (i < CONF_MAXDACSPEEDS)
@@ -1972,6 +1976,44 @@ configDevice(GDevPtr devicep, XF86ConfDevicePtr conf_device, Bool active)
 
     return TRUE;
 }
+
+#ifdef XF86DRI
+static Bool
+configDRI(XF86ConfDRIPtr drip)
+{
+    int                count = 0;
+    XF86ConfBuffersPtr bufs;
+    int                i;
+
+    xf86ConfigDRI.group      = drip ? drip->dri_group : NULL;
+    xf86ConfigDRI.mode       = drip ? drip->dri_mode  : NULL;
+    xf86ConfigDRI.bufs_count = 0;
+    xf86ConfigDRI.bufs       = NULL;
+
+    if (drip) {
+	for (bufs = drip->dri_buffers_lst; bufs; bufs = bufs->list.next)
+	    ++count;
+	
+	xf86ConfigDRI.bufs_count = count;
+	xf86ConfigDRI.bufs = xnfalloc(count * sizeof(*xf86ConfigDRI.bufs));
+	
+	for (i = 0, bufs = drip->dri_buffers_lst;
+	     i < count;
+	     i++, bufs = bufs->list.next) {
+	    
+	    xf86ConfigDRI.bufs[i].count = bufs->buf_count;
+	    xf86ConfigDRI.bufs[i].size  = bufs->buf_size;
+				/* FIXME: Flags not implemented.  These
+                                   could be used, for example, to specify a
+                                   contiguous block and/or write-combining
+                                   cache policy. */
+	    xf86ConfigDRI.bufs[i].flags = 0;
+	}
+    }
+
+    return TRUE;
+}
+#endif
 
 static Bool
 configInput(IDevPtr inputp, XF86ConfInputPtr conf_input, MessageType from)
@@ -2136,6 +2178,9 @@ xf86HandleConfigFile(void)
 #ifndef NEW_INPUT
         || !configKeyboard(xf86configptr->conf_keyboard)
         || !configPointer(xf86Info.mouseDev,xf86configptr->conf_pointer)
+#endif
+#ifdef XF86DRI
+	|| !configDRI(xf86configptr->conf_dri)
 #endif
        ) {
              ErrorF ("Problem when converting the config data structures\n");

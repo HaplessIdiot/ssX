@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.27 1999/06/12 15:37:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.28 1999/06/20 05:23:39 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -90,8 +90,8 @@ static Bool S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static Bool S3VCloseScreen(int scrnIndex, ScreenPtr pScreen);
 static Bool S3VSaveScreen(ScreenPtr pScreen, Bool unblank);
 static void S3VInitSTREAMS(ScrnInfoPtr pScrn, unsigned int *streams, DisplayModePtr mode);
-static void S3VAdjustFrame(int scrnIndex, int x, int y, int flags);
-static Bool S3VSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
+/* s3v.h - static void S3VAdjustFrame(int scrnIndex, int x, int y, int flags); */
+/* s3v.h - static Bool S3VSwitchMode(int scrnIndex, DisplayModePtr mode, int flags); */
 static void S3VLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indicies, LOCO *colors, short visualClass);
 
 #ifdef DPMSExtension
@@ -109,9 +109,9 @@ static int pix24bpp = 0;
 
 #define S3VIRGE_NAME "S3VIRGE"
 #define S3VIRGE_DRIVER_NAME "s3virge"
-#define S3VIRGE_VERSION_NAME "0.8.0"
+#define S3VIRGE_VERSION_NAME "0.9.0"
 #define S3VIRGE_VERSION_MAJOR   0
-#define S3VIRGE_VERSION_MINOR   8
+#define S3VIRGE_VERSION_MINOR   9
 #define S3VIRGE_PATCHLEVEL      0
 #define S3VIRGE_DRIVER_VERSION ((S3VIRGE_VERSION_MAJOR << 24) | \
 				(S3VIRGE_VERSION_MINOR << 16) | \
@@ -712,12 +712,21 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
     
     if (pEnt->resources) {
+	xfree(pEnt);
 	S3VFreeRec(pScrn);
 	return FALSE;
     }
     ps3v->PciInfo = xf86GetPciInfoForEntity(pEnt->index);
     xf86RegisterResources(pEnt->index,NULL,ResNone);
-    
+    xf86SetOperatingState(RES_SHARED_VGA, pEnt->index, ResUnusedOpr);
+    {
+ 	resRange vgamem[] =	{ {ResShrMemBlock,0xA0000,0xAFFFF},
+				  {ResShrMemBlock,0xB0000,0xB7FFF},
+ 				  {ResShrMemBlock,0xB8000,0xBFFFF},
+ 				  _END };
+ 	xf86SetOperatingState(vgamem, pEnt->index, ResDisableOpr);
+    }
+
     /*
      * Set the Chipset and ChipRev, allowing config file entries to
      * override.
@@ -745,7 +754,8 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     } else {
 	ps3v->ChipRev = ps3v->PciInfo->chipRev;
     }
-
+    xfree(pEnt);
+    
     /*
      * This shouldn't happen because such problems should be caught in
      * S3VProbe(), but check it just in case.
@@ -1275,7 +1285,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 	}
 	xf86LoaderReqSymLists(ramdacSymbols, NULL);
     }
-
+    
     return TRUE;
 }
 
@@ -2119,6 +2129,9 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    }
 	}
   }
+  						/* hardware cursor needs to wrap this layer */
+  S3VDGAInit(pScreen);
+
   	      				/* Initialize acceleration layer */
   if (!ps3v->NoAccel) {
     if(pScrn->bitsPerPixel == 32) {
@@ -2162,7 +2175,9 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 					/* so re-enable the screen. 	*/
   vgaHWBlankScreen(pScrn, FALSE );  
 
+#if 0
   pScrn->racMemFlags = RAC_COLORMAP | RAC_CURSOR | RAC_FB | RAC_VIEWPORT;
+#endif
   pScreen->SaveScreen = S3VSaveScreen;
 
     					/* Wrap the current CloseScreen function */
@@ -2382,13 +2397,17 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
    new->MMPR1 = 0x00;   
    new->MMPR2 = 0x0808;  
    new->MMPR3 = 0x08080810; 
-			 
-   if( ps3v->fifo_aggressive || ps3v->fifo_moderate || 
+
+   /* * Set the memory register values always, even if fifo-conservative
+    * * isn't specified.
+    * * 
+    if( ps3v->fifo_aggressive || ps3v->fifo_moderate || 
        ps3v->fifo_conservative ) {
+    */
          new->MMPR1 = 0x0200;   /* Low P. stream waits before filling */
          new->MMPR2 = 0x1808;   /* Let the FIFO refill itself */
          new->MMPR3 = 0x08081810; /* And let the GE hold the bus for a while */
-      }
+    /*  } */
 
    /* And setup here the new value for MCLK. We use the XConfig 
     * option "set_mclk", whose value gets stored in ps3v->MCLK.
@@ -2747,6 +2766,8 @@ S3VCloseScreen(int scrnIndex, ScreenPtr pScreen)
   }
   if (ps3v->AccelInfoRec)
     XAADestroyInfoRec(ps3v->AccelInfoRec);
+  if (ps3v->DGAModes)
+  	xfree(ps3v->DGAModes);
 
   pScrn->vtSema = FALSE;
 
@@ -2851,7 +2872,7 @@ S3VInitSTREAMS(ScrnInfoPtr pScrn, unsigned int *streams, DisplayModePtr mode)
  * If STREAMS is running, we program the STREAMS start addr. registers. 
  */
 
-static void
+void
 S3VAdjustFrame(int scrnIndex, int x, int y, int flags)
 {
    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
@@ -2899,7 +2920,7 @@ S3VAdjustFrame(int scrnIndex, int x, int y, int flags)
 
 
 /* Usually mandatory */
-static Bool
+Bool
 S3VSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 {
     return S3VModeInit(xf86Screens[scrnIndex], mode);

@@ -1,6 +1,6 @@
 /* drm_mem.c -- 
  * Created: Thu Feb  4 14:00:34 1999 by faith@precisioninsight.com
- * Revised: Wed May 12 07:42:32 1999 by faith@precisioninsight.com
+ * Revised: Fri Jun 18 10:27:56 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All Rights Reserved.
@@ -24,8 +24,8 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/generic/drm_mem.c,v 1.12 1999/05/12 11:54:02 faith Exp $
- * $XFree86$
+ * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/generic/drm_mem.c,v 1.15 1999/06/21 14:25:37 faith Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/generic/drm_mem.c,v 1.1 1999/06/14 07:32:04 dawes Exp $
  *
  */
 
@@ -97,7 +97,7 @@ void drm_free(void *pt, size_t size, int area)
     
     DRM_MEM_VERB(area, "free(0x%p)\n", pt);
     if (!pt) DRM_MEM_ERROR(area, "Attempt to free NULL pointer\n");
-    else     kfree(pt);
+    else     kfree_s(pt, size);
     spin_lock(&drm_mem_lock);
     drm_mem_stats[area].bytes_freed += size;
     free_count  = ++drm_mem_stats[area].free_count;
@@ -258,7 +258,7 @@ void drm_ioremapfree(void *pt, unsigned long size)
 	
     DRM_MEM_VERB(DRM_MEM_MAPPINGS, "free(0x%p)\n", pt);
     if (!pt) DRM_MEM_ERROR(DRM_MEM_MAPPINGS, "Attempt to free NULL pointer\n");
-    else     vfree(pt);
+    else     iounmap(pt);
     spin_lock(&drm_mem_lock);
     drm_mem_stats[DRM_MEM_MAPPINGS].bytes_freed += size;
     free_count  = ++drm_mem_stats[DRM_MEM_MAPPINGS].free_count;

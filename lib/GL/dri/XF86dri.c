@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/dri/XF86dri.c,v 1.1 1999/06/14 07:23:30 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -31,7 +31,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *   Kevin E. Martin <kevin@precisioninsight.com>
  *   Jens Owen <jens@precisioninsight.com>
  *
- * $PI: xc/lib/GL/dri/XF86dri.c,v 1.12 1999/04/26 21:55:10 jens Exp $
+ * $PI: xc/lib/GL/dri/XF86dri.c,v 1.14 1999/06/16 20:08:33 faith Exp $
  */
 
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
@@ -155,12 +155,9 @@ Bool XF86DRIQueryDirectRenderingCapable(dpy, screen, isCapable)
     return True;
 }
 
-Bool XF86DRIOpenConnection(dpy, screen, 
-	drmClientKeyLow, drmClientKeyHigh, hSAREA, busIdString)
+Bool XF86DRIOpenConnection(dpy, screen, hSAREA, busIdString)
     Display* dpy;
     int screen;
-    drmKeyPtr drmClientKeyLow;
-    drmKeyPtr drmClientKeyHigh;
     drmHandlePtr hSAREA;
     char **busIdString;
 {
@@ -185,8 +182,6 @@ Bool XF86DRIOpenConnection(dpy, screen,
 #ifdef LONG64
     *hSAREA |= ((drmHandle)rep.hSAREAHigh) << 32;
 #endif
-    *drmClientKeyLow  = rep.drmClientKeyLow;
-    *drmClientKeyHigh = rep.drmClientKeyHigh;
 
     if (rep.length) {
         if (!(*busIdString = (char *)Xcalloc(rep.length + 1, 1))) {
@@ -197,6 +192,27 @@ Bool XF86DRIOpenConnection(dpy, screen,
     } else {
         *busIdString = NULL;
     }
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return True;
+}
+
+Bool XF86DRIAuthConnection(dpy, screen, magic)
+    Display* dpy;
+    int screen;
+    drmMagic magic;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    xXF86DRIAuthConnectionReq *req;
+
+    XF86DRICheckExtension (dpy, info, False);
+
+    LockDisplay(dpy);
+    GetReq(XF86DRIAuthConnection, req);
+    req->reqType = info->codes->major_opcode;
+    req->driReqType = X_XF86DRIAuthConnection;
+    req->screen = screen;
+    req->magic = magic;
     UnlockDisplay(dpy);
     SyncHandle();
     return True;

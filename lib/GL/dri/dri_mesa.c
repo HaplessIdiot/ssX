@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/dri/dri_mesa.c,v 1.1 1999/06/14 07:23:31 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -30,7 +30,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
  *
- * $PI: xc/lib/GL/dri/dri_mesa.c,v 1.13 1999/06/07 02:20:04 martin Exp $
+ * $PI: xc/lib/GL/dri/dri_mesa.c,v 1.16 1999/06/16 20:08:33 faith Exp $
  */
 
 #ifdef GLX_DIRECT_RENDERING
@@ -240,9 +240,9 @@ static Bool driMesaBindContext(Display *dpy, int scrn,
     ** initialize the drawable information if has not been done before.
     */
     if (!pdp->pStamp) {
-	DRM_SPINLOCK(&psp->pSAREA->drawable_lock, 1);
+	DRM_SPINLOCK(&psp->pSAREA->drawable_lock, psp->drawLockID);
 	driMesaUpdateDrawableInfo(dpy, scrn, pdp);
-	DRM_SPINUNLOCK(&psp->pSAREA->drawable_lock, 1);
+	DRM_SPINUNLOCK(&psp->pSAREA->drawable_lock, psp->drawLockID);
     }
 
     return GL_TRUE;
@@ -271,7 +271,7 @@ void driMesaUpdateDrawableInfo(Display *dpy, int scrn,
 	Xfree(pdp->pClipRects); 
     }
 
-    DRM_SPINUNLOCK(&psp->pSAREA->drawable_lock, 1);
+    DRM_SPINUNLOCK(&psp->pSAREA->drawable_lock, psp->drawLockID);
 
     if (!XF86DRIGetDrawableInfo(dpy, scrn, pdp->draw,
 				&pdp->index, &pdp->lastStamp,
@@ -282,7 +282,7 @@ void driMesaUpdateDrawableInfo(Display *dpy, int scrn,
 	/* ERROR!!! */
     }
 
-    DRM_SPINLOCK(&psp->pSAREA->drawable_lock, 1);
+    DRM_SPINLOCK(&psp->pSAREA->drawable_lock, psp->drawLockID);
 
     pdp->pStamp = &(psp->pSAREA->drawableTable[pdp->index].stamp);
 }
@@ -463,10 +463,10 @@ static void *driMesaCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
 {
     int directCapable, i, n;
     __DRIscreenPrivate *psp;
-    drmKey hi, lo;
     XVisualInfo visTmpl, *visinfo;
     drmHandle hFB, hSAREA;
     char *BusID, *driverName;
+    drmMagic magic;
 
     if (!XF86DRIQueryDirectRenderingCapable(dpy, scrn, &directCapable)) {
 	return NULL;
@@ -483,11 +483,17 @@ static void *driMesaCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
 
     psp->myNum = scrn;
 
-    if (!XF86DRIOpenConnection(dpy, scrn, &lo, &hi,
-			       &hSAREA, &BusID)) {
+    if (!XF86DRIOpenConnection(dpy, scrn, &hSAREA, &BusID)) {
 	Xfree(psp);
 	return NULL;
     }
+
+    /*
+    ** NOT_DONE: This is used by the X server to detect when the client
+    ** has died while holding the drawable lock.  The client sets the
+    ** drawable lock to this value.
+    */
+    psp->drawLockID = 1;
 
     psp->fd = drmOpenSub(BusID);
     if (!psp->fd) {
@@ -498,7 +504,14 @@ static void *driMesaCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
     }
     Xfree(BusID); /* No longer needed */
 
-    if (drmAuth(psp->fd, hi, lo)) {
+    if (drmGetMagic(psp->fd, &magic)) {
+	(void)drmCloseSub(psp->fd);
+	Xfree(psp);
+	(void)XF86DRICloseConnection(dpy, scrn);
+	return NULL;
+    }
+
+    if (!XF86DRIAuthConnection(dpy, scrn, magic)) {
 	(void)drmCloseSub(psp->fd);
 	Xfree(psp);
 	(void)XF86DRICloseConnection(dpy, scrn);

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/dri/xf86dristr.h,v 1.1 1999/06/14 07:23:33 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -31,7 +31,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *   Kevin E. Martin <kevin@precisioninsight.com>
  *   Jens Owen <jens@precisioninsight.com>
  *
- * $PI: xc/lib/GL/dri/xf86dristr.h,v 1.8 1999/04/26 21:55:10 jens Exp $
+ * $PI: xc/lib/GL/dri/xf86dristr.h,v 1.11 1999/06/22 03:09:44 jens Exp $
  */
 
 #ifndef _XF86DRISTR_H_
@@ -41,8 +41,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #define XF86DRINAME "XFree86-DRI"
 
-#define XF86DRI_MAJOR_VERSION	0	/* current version numbers */
-#define XF86DRI_MINOR_VERSION	1
+#define XF86DRI_MAJOR_VERSION	1	/* current version numbers */
+#define XF86DRI_MINOR_VERSION	0
 #define XF86DRI_PATCH_VERSION	0
 
 typedef struct _XF86DRIQueryVersion {
@@ -105,14 +105,23 @@ typedef struct {
     BOOL	pad1;
     CARD16	sequenceNumber B16;
     CARD32	length B32;
-    CARD32	drmClientKeyLow B32;
-    CARD32	drmClientKeyHigh B32;
     CARD32	hSAREALow B32;
     CARD32	hSAREAHigh B32;
     CARD32	busIdStringLength B32;
     CARD32	pad6 B32;
+    CARD32	pad7 B32;
+    CARD32	pad8 B32;
 } xXF86DRIOpenConnectionReply;
 #define sz_xXF86DRIOpenConnectionReply	32
+
+typedef struct _XF86DRIAuthConnection {
+    CARD8	reqType;		/* always DRIReqCode */
+    CARD8	driReqType;		/* always X_DRICloseConnection */
+    CARD16	length B16;
+    CARD32	screen B32;
+    CARD32      magic B32;
+} xXF86DRIAuthConnectionReq;
+#define sz_xXF86DRIAuthConnectionReq	12
 
 typedef struct _XF86DRICloseConnection {
     CARD8	reqType;		/* always DRIReqCode */

@@ -1,6 +1,6 @@
 /* xf86drm.h -- OS-independent header for DRM user-level library interface
  * Created: Tue Jan  5 08:17:23 1999 by faith@precisioninsight.com
- * Revised: Fri Jun  4 14:34:15 1999 by faith@precisioninsight.com
+ * Revised: Thu Jun 24 14:18:55 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All Rights Reserved.
@@ -24,8 +24,8 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $PI: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.36 1999/06/07 13:01:41 faith Exp $
- * $XFree86$
+ * $PI: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.41 1999/06/24 18:37:13 faith Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.1 1999/06/14 07:31:57 dawes Exp $
  * 
  */
 
@@ -43,7 +43,7 @@ typedef unsigned int  drmSize,     *drmSizePtr;	    /* For mapped regions   */
 typedef void          *drmAddress, **drmAddressPtr; /* For mapped regions   */
 typedef unsigned int  drmContext,  *drmContextPtr;  /* GLXContext handle    */
 typedef unsigned int  drmDrawable, *drmDrawablePtr; /* Unused               */
-typedef unsigned int  drmKey,      *drmKeyPtr;      /* Hash for auth        */
+typedef unsigned int  drmMagic,    *drmMagicPtr;    /* Magic for auth       */
 
 typedef struct _drmVersion {
     int     version_major;        /* Major version                          */
@@ -266,12 +266,34 @@ typedef struct { unsigned int a[100]; } __drm_dummy_lock_t;
 	    } while (__ret);                                           \
 	} while(0)
 
+#define DRM_SPINLOCK_TAKE(spin,val)                                    \
+	do {                                                           \
+	    char __ret;                                                \
+            int  cur;                                                  \
+	    do {                                                       \
+                cur = (*spin).lock;                                    \
+		DRM_CAS(spin,cur,val,__ret);                           \
+	    } while (__ret);                                           \
+	} while(0)
+
+#define DRM_SPINLOCK_COUNT(spin,val,count,__ret)                       \
+	do {                                                           \
+            int  __i;                                                  \
+            __ret = 1;                                                 \
+            for (__i = 0; __ret && __i < count; __i++) {               \
+		DRM_CAS(spin,0,val,__ret);                             \
+		if (__ret) for (;__i < count && (spin)->lock; __i++);  \
+	    }                                                          \
+	} while(0)
+
 #define DRM_SPINUNLOCK(spin,val)                                       \
 	do {                                                           \
 	    char __ret;                                                \
-	    do {                                                       \
-		DRM_CAS(spin,val,0,__ret);                             \
-	    } while (__ret);                                           \
+            if ((*spin).lock == val) { /* else server stole lock */    \
+	        do {                                                   \
+		    DRM_CAS(spin,val,0,__ret);                         \
+	        } while (__ret);                                       \
+            }                                                          \
 	} while(0)
 
 				/* These constants MUST MATCH drm.h */
@@ -383,7 +405,6 @@ extern drmVersionPtr drmGetVersion(int fd);
 extern void          drmFreeVersion(drmVersionPtr);
 extern drmListPtr    drmGetVersionList(int fd);
 extern void          drmFreeVersionList(drmListPtr);
-extern int           drmGenerateKey(drmKeyPtr hi, drmKeyPtr lo);
 extern int           drmGetInterruptFromBusID(int fd, int busnum, int devnum,
 					      int funcnum);
 
@@ -391,15 +412,14 @@ extern int           drmGetInterruptFromBusID(int fd, int busnum, int devnum,
 /* General user-level programmer's API: X server (root) only  */
 extern int           drmCreateSub(int fd, const char *name, const char *busid);
 extern int           drmDestroySub(int fd, const char *busid);
-extern int           drmAddKey(int fd, drmKey hi, drmKey lo);
-extern int           drmDelKey(int fd, drmKey hi, drmKey lo);
+extern int           drmAuthMagic(int fd, drmMagic magic);
 extern int           drmAddMap(int fd,
 			       drmHandle offset,
 			       drmSize size,
 			       drmMapType type,
 			       drmMapFlags flags,
 			       drmHandlePtr handle);
-extern int           drmAddBufs(int fd, int count, int size);
+extern int           drmAddBufs(int fd, int count, int size, int flags);
 extern int           drmMarkBufs(int fd, double low, double high);
 extern int           drmCreateContext(int fd, drmContextPtr handle);
 extern int           drmSetContextFlags(int fd, drmContext context,
@@ -428,11 +448,11 @@ extern int           drmRemoveSIGIOHandler(int fd);
 
 /* General user-level programmer's API: authenticated client and/or X */
 extern int           drmOpenSub(const char *busid);
-extern int           drmAuth(int fd, drmKey hi, drmKey lo);
 extern int           drmCloseSub(int fd);
+extern int           drmGetMagic(int fd, drmMagicPtr magic);
 extern int           drmMap(int fd,
 			    drmHandle handle,
-			    drmSize size, /* FIXME: add type here */
+			    drmSize size,
 			    drmAddressPtr address);
 extern int           drmUnmap(drmAddress address, drmSize size);
 extern drmBufInfoPtr drmGetBufInfo(int fd);

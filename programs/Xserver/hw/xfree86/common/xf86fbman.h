@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.h,v 1.6 1998/12/06 06:08:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.h,v 1.7 1999/04/11 13:10:50 dawes Exp $ */
 
 #ifndef _XF86FBMAN_H
 #define _XF86FBMAN_H
@@ -8,11 +8,21 @@
 #include "regionstr.h"
 
 
+#define FAVOR_AREA_THEN_WIDTH		0
+#define FAVOR_AREA_THEN_HEIGHT		1
+#define FAVOR_WIDTH_THEN_AREA		2
+#define FAVOR_HEIGHT_THEN_AREA		3
+
+#define PRIORITY_LOW			0
+#define PRIORITY_NORMAL			1
+#define PRIORITY_EXTREME		2
+
+
 typedef struct _FBArea {
    ScreenPtr    pScreen;
    BoxRec   	box;
    int 		granularity;
-   void 	(*MoveAreaCallback)(struct _FBArea*);
+   void 	(*MoveAreaCallback)(struct _FBArea*, struct _FBArea*);
    void 	(*RemoveAreaCallback)(struct _FBArea*);
    DevUnion 	devPrivate;
 } FBArea, *FBAreaPtr;
@@ -23,7 +33,7 @@ typedef struct _FBLink {
 } FBLink, *FBLinkPtr;
 
 typedef void (*FreeBoxCallbackProcPtr)(ScreenPtr, RegionPtr, pointer);
-typedef void (*MoveAreaCallbackProcPtr)(FBAreaPtr);
+typedef void (*MoveAreaCallbackProcPtr)(FBAreaPtr, FBAreaPtr);
 typedef void (*RemoveAreaCallbackProcPtr)(FBAreaPtr);
 
 typedef struct {
@@ -90,6 +100,21 @@ xf86RegisterFreeBoxCallback(
     ScreenPtr pScreen,  
     FreeBoxCallbackProcPtr FreeBoxCallback,
     pointer devPriv
+);
+
+Bool
+xf86PurgeUnlockedOffscreenAreas(
+    ScreenPtr pScreen
+);
+
+
+Bool
+xf86QueryLargestOffscreenArea(
+    ScreenPtr pScreen,
+    int *width, int *height,
+    int granularity,
+    int preferences,
+    int priority
 );
 
 #endif /* _XF86FBMAN_H */

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xterm/ptydata.c,v 1.4 1999/05/30 14:41:07 dawes Exp $
+ * $XFree86: xc/programs/xterm/ptydata.c,v 1.5 1999/06/12 15:37:18 dawes Exp $
  */
 
 /************************************************************
@@ -50,6 +50,9 @@ authorization.
 #define E_TEST(err) ((err) == EWOULDBLOCK)
 #endif
 #endif
+
+#define UTF8_FLAG       0x10000000
+#define UTF8_CODE(code) ((code) | (screen->utf8_controls ? 0 : UTF8_FLAG))
 
 int getPtyData(TScreen *screen, fd_set *select_mask, PtyData *data)
 {
@@ -120,7 +123,7 @@ int getPtyData(TScreen *screen, fd_set *select_mask, PtyData *data)
 			    }
 			    screen->utf_count--;
 			    if (screen->utf_count == 0)
-				data->buf2[j++] = c = screen->utf_char;
+				data->buf2[j++] = UTF8_CODE(c = screen->utf_char);
 			}
 		    } else {
 			if (screen->utf_count > 0)
@@ -165,7 +168,9 @@ int getPtyData(TScreen *screen, fd_set *select_mask, PtyData *data)
 #if OPT_TRACE
 	    for (i = 0; i < data->cnt; i++) {
 		if (!(i%8)) TRACE(("%s", i ? "\n    " : "READ"))
-		TRACE((" %04X", data->ptr[i]))
+		TRACE((" %c%04X",
+			(UTF8_FLAG & data->ptr[i]) ? '*' : ' ',
+			data->ptr[i] & ~UTF8_FLAG))
 	    }
 	    TRACE(("\n"))
 #endif

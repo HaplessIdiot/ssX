@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.64 1999/03/28 15:32:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.65 1999/06/12 07:19:01 dawes Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -1162,6 +1162,8 @@ struct pci_vendor_device {
                             { 0x0004, "GLINT Permedia", NF },
                             { 0x0006, "GLINT MX", NF },
                             { 0x0007, "GLINT Permedia 2", NF },
+			    { 0x0008, "GLINT Gamma", NF },
+			    { 0x0009, "GLINT Permedia 2v", NF },
                             { 0x0000, (char *)NULL, NF } } } ,
         { 0x4005, "Avance", {
                             { 0x0000, (char *)NULL, NF } } },

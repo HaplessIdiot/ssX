@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.32 1999/04/25 10:02:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.33 1999/05/16 10:12:59 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -1211,6 +1211,9 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{0x7190, "82443BX Host"},
 				{0x7191, "82443BX AGP"},
 				{0x7192, "82443BX Host (no AGP)"},
+				{0x71a0, "82443GX Host"},
+				{0x71a1, "82443GX AGP"},
+				{0x71a2, "82443GX Host (no AGP)"},
 				{0x84C4, "P6"},
 				{0x84C5, "82450GX20"},
 				{PCI_CHIP_I740,		"i740"},

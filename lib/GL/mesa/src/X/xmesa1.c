@@ -126,7 +126,7 @@
  * the clear pixel value if needed.
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/X/xmesa1.c,v 1.2 1999/03/14 03:21:01 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/X/xmesa1.c,v 1.3 1999/06/14 07:31:09 dawes Exp $ */
 
 #ifndef XFree86Server
 #include <assert.h>
@@ -2221,7 +2221,7 @@ void XMesaSwapBuffers( XMesaBuffer b )
 		 ** up to date.
 		 */
 		 DRM_LIGHT_LOCK(psp->fd, &psp->pSAREA->lock, hHWContext);
-		 DRI_MESA_VALIDATE_DRAWABLE_INFO(b->display, psp->myNum, pdp);
+		 XMESA_VALIDATE_DRAWABLE_INFO(b->display, psp, pdp);
 
 		 /* Copy back image to front buffer */
 		 if (pdp->numClipRects) {
@@ -2253,15 +2253,16 @@ void XMesaSwapBuffers( XMesaBuffer b )
 			     break;
 			 case 32:
 			     for (y = pRect->y1; y < pRect->y2; y++) {
-				 s32 = (GLuint *)b->backimage->data +
-				     y*b->backimage->bytes_per_line +
-				     pRect->x1;
-				 /* This is calculated in GLbytes */
+				 /* These are calculated in GLbytes */
+				 s8 = (GLbyte *)b->backimage->data +
+				     (y - pdp->y)*b->backimage->bytes_per_line;
 				 d8 = (GLbyte *)psp->pFB + psp->fbOrigin +
-				     (pdp->y + y)*psp->fbStride;
+				     y*psp->fbStride;
+				 s32 = (GLuint *)s8;
 				 d32 = (GLuint *)d8;
-				 /* This is calculated in GLuints */
-				 d32 += pdp->x + pRect->x1;
+				 /* These are calculated in GLuints */
+				 s32 += (pRect->x1 - pdp->x);
+				 d32 += pRect->x1;
 				 memcpy(d32, s32, w<<2);
 			     }
 			     break;
@@ -2497,6 +2498,25 @@ void XMesaReset( void )
     XMesaBufferList = NULL;
     XMesa = NULL;
 }
+
+
+#if defined(GLX_DIRECT_RENDERING) && !defined(XFree86Server)
+/*
+ * Initialize the XMesa driver.
+ */
+GLboolean XMesaInitDriver( __DRIscreenPrivate *driScrnPriv )
+{
+    return GL_TRUE;
+}
+
+/*
+ * Reset the XMesa driver when the X server resets.
+ */
+void XMesaResetDriver( __DRIscreenPrivate *driScrnPriv )
+{
+}
+#endif
+
 
 
 unsigned long XMesaDitherColor( XMesaContext xmesa, GLint x, GLint y,

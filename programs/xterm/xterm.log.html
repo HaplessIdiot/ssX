@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.30 1999/06/13 13:48:00 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.31 1999/06/20 08:41:46 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_109">Patch #109 - 1999/6/23 - XFree86 3.9Pt</A>
 <LI><A HREF="#xterm_108">Patch #108 - 1999/6/19 - XFree86 3.9Ps</A>
 <LI><A HREF="#xterm_107">Patch #107 - 1999/6/12 - XFree86 3.9Pq</A>
 <LI><A HREF="#xterm_106">Patch #106 - 1999/6/9 - XFree86 3.9Pq</A>
@@ -151,6 +152,45 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_109">Patch #109 - 1999/6/23 - XFree86 3.9Pt</A></H1>
+<ul>
+	<li>correct range-check from patch #108, which resulted in not being
+	  able to select from the scrollback buffer (reported by Tim Adye
+	  &lt;T.J.Adye@rl.ac.uk&gt;)
+
+	<li>correct "no available ptys" problem with Cygwin B20.1 (patch by Tim
+	  Adye).
+
+	<li>modified install-ti rule in Makefile.in to allow override of the
+	  terminfo directory when doing a "make install", i.e., by assigning
+	  to TERMINFO_DIR (request by Zdenek Sekera &lt;zs@sgi.com&gt;).
+
+	<li>added install-full rule to Makefile.in
+
+	<li>resync mkdirs.sh and install.sh scripts against current autoconf
+
+	<li>implement $(DESTDIR) in Makefile.in, making it simple to install
+	  xterm and associated files into a directory just for packaging a
+	  binary release (suggested by CaT &lt;cat@zip.com.au&gt;).
+
+	<li>change IChar type to unsigned, rather than unsigned short, making
+	  room for a flag to keep with 16-bit characters to prevent them from
+	  being interpreted as C0 or C1 controls (reported by Thomas Wolff).
+
+	<li>correct a typo from patch #107, incorrect array name, in the
+	  filterUTF8 function (patch by Bruno Haible &lt;haible@ilog.fr&gt;)
+
+	<li>add <em>utf8controls</em> resource to specify whether xterm should
+	  interpret 16-bit characters unpacked from UTF-8 form as control
+	  characters if they happen to fall into that range.  This behavior
+	  is left unspecified by the Unicode standard (request by Thomas Wolff).
+
+	<li>modify handling of OSC to recover if application sends 16-bit
+	  characters with codes above 255.  We cannot display them as is, but
+	  translate out-of-range characters to a '?' (reported by Thomas
+	  Wolff).
+</ul>
 
 <H1><A NAME="xterm_108">Patch #108 - 1999/6/19 - XFree86 3.9Ps</A></H1>
 <ul>

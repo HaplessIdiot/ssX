@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dristruct.h,v 1.1 1999/06/14 07:31:20 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -30,7 +30,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Jens Owen <jens@precisioninsight.com>
  *
- * $PI: xc/programs/Xserver/GL/dri/dristruct.h,v 1.24 1999/06/05 05:16:09 martin Exp $
+ * $PI: xc/programs/Xserver/GL/dri/dristruct.h,v 1.26 1999/06/16 20:08:35 faith Exp $
  */
 
 #ifndef DRI_STRUCT_H
@@ -78,8 +78,6 @@ struct _DRIContextPrivRec
 typedef struct _DRIScreenPrivRec
 {
     Bool		directRenderingSupport;
-    drmKey              drmClientKeyLow;
-    drmKey              drmClientKeyHigh;
     int			drmFD;	      /* File descriptor for /dev/drm       */
     int			drmSubFD;     /* File descriptor for /dev/drm?      */
     drmHandle   	hSAREA;	      /* Handle to SAREA, for mapping       */

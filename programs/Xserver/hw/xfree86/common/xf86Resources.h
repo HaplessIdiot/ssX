@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Resources.h,v 1.3 1999/06/12 07:18:44 dawes Exp $ */
 
 #ifndef _XF86_RESOURCES_H
 
@@ -73,6 +73,7 @@
 #define _8514_SHARED    {ResShrIoSparse,0x2EC,0x3F8}
 #endif
 
+/* predefined resources */
 extern resRange resVgaExclusive[];
 extern resRange resVgaShared[];
 extern resRange resVgaUnusedExclusive[];
@@ -80,6 +81,7 @@ extern resRange resVgaUnusedShared[];
 extern resRange res8514Exclusive[];
 extern resRange res8514Shared[];
 
+/* old style names */
 #define RES_EXCLUSIVE_VGA   resVgaExclusive
 #define RES_SHARED_VGA      resVgaShared
 #define RES_EXCLUSIVE_8514  res8514Exclusive

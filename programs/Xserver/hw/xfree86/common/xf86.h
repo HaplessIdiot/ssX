@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.108 1999/06/13 05:18:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.109 1999/06/20 05:23:27 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -78,7 +78,7 @@ void xf86SetAccessFuncs(EntityInfoPtr pEnt, xf86AccessPtr p_io,
 			xf86AccessPtr p_mem, xf86AccessPtr p_io_mem,
 			xf86AccessPtr *ppAccessOld);
 Bool xf86IsEntityPrimary(int entityIndex);
-Bool xf86FixPciResource(int entityIndex, unsigned int prt, CARD32 alignment,
+Bool xf86FixPciResource(int entityIndex, unsigned int prt, memType alignment,
 			 long type);
 resPtr xf86ReallocatePciResources(int entityIndex, resPtr pRes);
 resPtr xf86SetOperatingState(resList list, int entityIndex, int mask);

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.25 1999/06/14 07:31:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.26 1999/06/27 09:20:25 dawes Exp $ */
 
 #ifndef _XF86_ANSIC_H
 #define _XF86_ANSIC_H
@@ -260,6 +260,7 @@ extern void xf86getsecs(CARD32 *, CARD32 *);
 extern int xf86execl(const char *, const char *, ...);
 extern long xf86fpossize(void);
 extern int xf86chmod(const char *, xf86mode_t);
+extern int xf86chown(const char *, xf86uid_t, xf86gid_t);
 extern xf86uid_t xf86geteuid(void);
 extern int xf86mknod(const char *, xf86mode_t, xf86dev_t);
 unsigned int xf86sleep(unsigned int seconds);

@@ -21,14 +21,28 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xinit/xinit.c,v 3.19 1999/02/25 06:01:30 dawes Exp $ */
+/* $XFree86: xc/programs/xinit/xinit.c,v 3.20 1999/03/02 10:42:24 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/Xos.h>
 #include <X11/Xmu/SysUtil.h>
 #include <stdio.h>
 #include <ctype.h>
+
+#ifdef X_POSIX_C_SOURCE
+#define _POSIX_C_SOURCE X_POSIX_C_SOURCE
 #include <signal.h>
+#undef _POSIX_C_SOURCE
+#else
+#if defined(X_NOT_POSIX) || defined(_POSIX_SOURCE)
+#include <signal.h>
+#else
+#define _POSIX_SOURCE
+#include <signal.h>
+#undef _POSIX_SOURCE
+#endif
+#endif
+
 #ifndef SYSV
 #include <sys/wait.h>
 #endif
@@ -488,9 +502,30 @@ processTimeout(int timeout, char *string)
 static int
 startServer(char *server[])
 {
-	serverpid = vfork();
+#if !defined(X_NOT_POSIX) && !defined(__EMX__)
+	sigset_t mask, old;
+#else
+	int old;
+#endif
+
+#ifndef X_NOT_POSIX
+	sigemptyset(&mask);
+	sigaddset(&mask, SIGUSR1);
+	sigprocmask(SIG_BLOCK, &mask, &old);
+#else
+	old = sigblock (sigmask (SIGUSR1));
+#endif
+	serverpid = fork(); 
+
 	switch(serverpid) {
 	case 0:
+		/* Unblock */
+#ifndef X_NOT_POSIX
+		sigprocmask(SIG_SETMASK, &old, NULL);
+#else
+		sigsetmask (old);
+#endif
+
 		/*
 		 * don't hang on read/write to control tty
 		 */
@@ -558,8 +593,16 @@ startServer(char *server[])
 		 * you can easily adjust this value.
 		 */
 		alarm (15);
-		pause ();
+
+#ifndef X_NOT_POSIX
+		sigsuspend(&old);
 		alarm (0);
+		sigprocmask(SIG_SETMASK, &old, NULL);
+#else
+		sigpause (old);
+		alarm (0);
+		sigsetmask (old);
+#endif
 
 		if (waitforserver() == 0) {
 			Error("unable to connect to X server\r\n");

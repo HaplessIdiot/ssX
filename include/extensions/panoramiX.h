@@ -19,7 +19,7 @@
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/include/extensions/panoramiX.h,v 3.5 1999/01/13 12:44:08 dawes Exp $ */
 
 /* THIS IS NOT AN X PROJECT TEAM SPECIFICATION */
 
@@ -98,11 +98,34 @@ typedef struct _PanoramiXDepth {
 #define PANORAMIXCMAP_SIZE() (sizeof(PanoramiXCmap))
 #define PANORAMIXPMAP_SIZE() (sizeof(PanoramiXPmap))
 
-#define PANORAMIXFIND_ID(a, b) \
-	for (; (a) && ((a)->info[0].id != (b)); (a) = (a)->next)
-
 #define PANORAMIXFIND_ID_BY_SCRNUM(a, b ,i) \
 	for (; (a) && ((a)->info[i].id != (b)); (a) = (a)->next)
+
+/*
+ * NEW lookup
+ * more complex - reorders list putting newly lookup up elemtn at the front
+ * (2nd place after root) of the list speeding up lookups for commonly
+ * accessed elements
+ */
+#define PANORAMIXFIND_ID(a, b) \
+{\
+  PanoramiXList *_m_original_a, *_m_tmp_previous_a = NULL;\
+  int _m_i = 0;\
+  _m_original_a = (PanoramiXList *)a;\
+  for (; (a) && ((a)->info[0].id != (b)); _m_tmp_previous_a = (a), (a) = (a)->next, _m_i++);\
+  if ((a) && (_m_tmp_previous_a) && (_m_tmp_previous_a != _m_original_a))\
+    {\
+      _m_tmp_previous_a->next = (a)->next;\
+      (a)->next = _m_original_a->next;\
+      _m_original_a->next = (a);\
+    }\
+}
+
+/* new macro - inserts elemnt b into list a (a is root of list) */
+/* FIXME: we need to use this for adding id's to lists - not to the end */
+#define PANORAMIXFIND_ADD(a, b) \
+(b)->next = (a)->next;\
+(a)->next = (b);
 
 #define PANORAMIXFIND_LAST(a,b) \
     for ((a) = (b); (a)->next; (a) = (a)->next)
@@ -147,7 +170,7 @@ typedef struct _PanoramiXDepth {
 
 #define PANORAMIX_FREE(client) \
    if (!noPanoramiXExtension) { \
-     if (PanoramiXCmapRoot) { \
+     if ((PanoramiXCmapRoot) && (PanoramiXCmapRootFreeable)) { \
         for ( pPanoramiXFreeCmap = PanoramiXCmapRoot->next, \
 	      pPanoramiXFreeCmapback = PanoramiXCmapRoot; \
 	      pPanoramiXFreeCmap;  \
@@ -155,12 +178,13 @@ typedef struct _PanoramiXDepth {
          if (pPanoramiXFreeCmap->FreeMe){ \
             pPanoramiXFreeCmapback->next = pPanoramiXFreeCmap->next; \
             Xfree(pPanoramiXFreeCmap); \
+            PanoramiXCmapRootFreeable = FALSE; \
 	 } \
 	 else \
 	    pPanoramiXFreeCmapback = pPanoramiXFreeCmap; \
 	} \
      } \
-     if (PanoramiXPmapRoot) { \
+     if ((PanoramiXPmapRoot) && (PanoramiXPmapRootFreeable)) { \
         for ( pPanoramiXFreePmap = PanoramiXPmapRoot->next, \
 	      pPanoramiXFreePmapback = PanoramiXPmapRoot; \
 	      pPanoramiXFreePmap; \
@@ -168,12 +192,13 @@ typedef struct _PanoramiXDepth {
          if (pPanoramiXFreePmap->FreeMe){ \
             pPanoramiXFreePmapback->next = pPanoramiXFreePmap->next; \
             Xfree(pPanoramiXFreePmap); \
+            PanoramiXPmapRootFreeable = FALSE; \
 	 } \
 	 else \
             pPanoramiXFreePmapback = pPanoramiXFreePmap; \
 	} \
      } \
-     if (PanoramiXWinRoot) { \
+     if ((PanoramiXWinRoot) && (PanoramiXWinRootFreeable)) { \
         for ( pPanoramiXFreeWin = PanoramiXWinRoot->next, \
 	      pPanoramiXFreeWinback = PanoramiXWinRoot; \
 	      pPanoramiXFreeWin; \
@@ -181,12 +206,13 @@ typedef struct _PanoramiXDepth {
          if (pPanoramiXFreeWin->FreeMe){ \
             pPanoramiXFreeWinback->next = pPanoramiXFreeWin->next; \
             Xfree(pPanoramiXFreeWin); \
+            PanoramiXWinRootFreeable = FALSE; \
          } \
 	 else \
             pPanoramiXFreeWinback = pPanoramiXFreeWin; \
 	} \
      } \
-     if (PanoramiXGCRoot) { \
+     if ((PanoramiXGCRoot) && (PanoramiXGCRootFreeable)) { \
         for ( pPanoramiXFreeGC = PanoramiXGCRoot->next, \
 	      pPanoramiXFreeGCback = PanoramiXGCRoot; \
 	      pPanoramiXFreeGC; \
@@ -194,6 +220,7 @@ typedef struct _PanoramiXDepth {
          if (pPanoramiXFreeGC->FreeMe){ \
             pPanoramiXFreeGCback->next = pPanoramiXFreeGC->next; \
             Xfree(pPanoramiXFreeGC); \
+            PanoramiXGCRootFreeable = FALSE; \
          } \
 	 else \
             pPanoramiXFreeGCback = pPanoramiXFreeGC; \
@@ -203,17 +230,18 @@ typedef struct _PanoramiXDepth {
 
 #define PANORAMIX_MARKFREE(FreeID,PanoramiXType) \
    if (!noPanoramiXExtension) { \
-     if ((!FoundID) && (PanoramiXCmapRoot) && (PanoramiXType == RT_COLORMAP)) { \
-        for ( pPanoramiXCmap = PanoramiXCmapRoot->next, \
-	      pPanoramiXCmapback = PanoramiXCmapRoot; \
-	      ((!FoundID) && pPanoramiXCmap && \
-	       (pPanoramiXCmap->info[0].id != FreeID)); \
-              pPanoramiXCmap = pPanoramiXCmap->next ) \
-              pPanoramiXCmapback = pPanoramiXCmap; \
-        if (pPanoramiXCmap){ \
-	    FoundID = pPanoramiXCmap->info[0].id; \
-	    pPanoramiXCmap->FreeMe = TRUE; \
-	} \
+     if ((!FoundID) && (PanoramiXGCRoot) && (PanoramiXType == RT_GC)) { \
+        for ( pPanoramiXGC = PanoramiXGCRoot->next, \
+	      pPanoramiXGCback = PanoramiXGCRoot; \
+	      ((!FoundID) && pPanoramiXGC && \
+	       (pPanoramiXGC->info[0].id != FreeID)); \
+              pPanoramiXGC = pPanoramiXGC->next ) \
+              pPanoramiXGCback = pPanoramiXGC; \
+        if (pPanoramiXGC){ \
+	    FoundID = pPanoramiXGC->info[0].id; \
+            pPanoramiXGC->FreeMe = TRUE; \
+            PanoramiXGCRootFreeable = TRUE; \
+        } \
      } \
      if ((!FoundID) && (PanoramiXPmapRoot) && (PanoramiXType == RT_PIXMAP)) { \
         for ( pPanoramiXPmap = PanoramiXPmapRoot->next, \
@@ -225,6 +253,7 @@ typedef struct _PanoramiXDepth {
         if (pPanoramiXPmap){ \
 	    FoundID = pPanoramiXPmap->info[0].id; \
             pPanoramiXPmap->FreeMe = TRUE; \
+            PanoramiXPmapRootFreeable = TRUE; \
 	} \
      } \
      if ((!FoundID) && (PanoramiXWinRoot) && (PanoramiXType == RT_WINDOW)) { \
@@ -237,19 +266,21 @@ typedef struct _PanoramiXDepth {
         if (pPanoramiXWin){ \
 	    FoundID = pPanoramiXWin->info[0].id; \
             pPanoramiXWin->FreeMe = TRUE; \
+            PanoramiXWinRootFreeable = TRUE; \
         } \
      } \
-     if ((!FoundID) && (PanoramiXGCRoot) && (PanoramiXType == RT_GC)) { \
-        for ( pPanoramiXGC = PanoramiXGCRoot->next, \
-	      pPanoramiXGCback = PanoramiXGCRoot; \
-	      ((!FoundID) && pPanoramiXGC && \
-	       (pPanoramiXGC->info[0].id != FreeID)); \
-              pPanoramiXGC = pPanoramiXGC->next ) \
-              pPanoramiXGCback = pPanoramiXGC; \
-        if (pPanoramiXGC){ \
-	    FoundID = pPanoramiXGC->info[0].id; \
-            pPanoramiXGC->FreeMe = TRUE; \
-        } \
+     if ((!FoundID) && (PanoramiXCmapRoot) && (PanoramiXType == RT_COLORMAP)) { \
+        for ( pPanoramiXCmap = PanoramiXCmapRoot->next, \
+	      pPanoramiXCmapback = PanoramiXCmapRoot; \
+	      ((!FoundID) && pPanoramiXCmap && \
+	       (pPanoramiXCmap->info[0].id != FreeID)); \
+              pPanoramiXCmap = pPanoramiXCmap->next ) \
+              pPanoramiXCmapback = pPanoramiXCmap; \
+        if (pPanoramiXCmap){ \
+	    FoundID = pPanoramiXCmap->info[0].id; \
+	    pPanoramiXCmap->FreeMe = TRUE; \
+            PanoramiXCmapRootFreeable = TRUE; \
+	} \
      } \
    }
 

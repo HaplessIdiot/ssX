@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Simple.h,v 1.5 1998/10/03 08:42:18 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Simple.h,v 1.6 1999/06/06 08:48:09 dawes Exp $ */
 
 #ifndef _Simple_h
 #define _Simple_h
@@ -66,6 +66,7 @@ SOFTWARE.
  pointerColor        Foreground         Pixel           XtDefaultForeground
  pointerColorBackground Background      Pixel           XtDefaultBackground
  sensitive	     Sensitive		Boolean		True
+ tip		     Tip		String		NULL
  width		     Width		Dimension	0
  x		     Position		Position	0
  y		     Position		Position	0
@@ -98,6 +99,9 @@ SOFTWARE.
 #ifndef XawRDisplayList
 #define XawRDisplayList "XawDisplayList"
 #endif
+
+#define XtNtip		"tip"
+#define XtCTip		"Tip"
 #endif	/* OLDXAW */
 
 typedef struct _SimpleClassRec	*SimpleWidgetClass;

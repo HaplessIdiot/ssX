@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.4 1999/06/20 15:02:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.5 1999/06/27 09:20:21 dawes Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -530,6 +530,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
     char *mod = NULL;
     int i;
     NEOPtr nPtr;
+    vgaHWPtr hwp;
     const char *reqSym = NULL;
     int bppSupport = NoDepth24Support;
     int videoRam = 896;
@@ -553,7 +554,8 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
      */
     if (!vgaHWGetHWRec(pScrn))
 	return FALSE;
-
+    hwp = VGAHWPTR(pScrn);
+    
     /* Allocate the NeoRec driverPrivate */
     if (!NEOGetRec(pScrn)) {
 	return FALSE;
@@ -610,17 +612,17 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
     }
     ErrorF("\n");
     
-    vgaHWGetIOBase(VGAHWPTR(pScrn));
-    nPtr->vgaIOBase = (unsigned int)(inb(0x3CC) & 0x01) ? 0x3D0 : 0x3B0;
+    vgaHWGetIOBase(hwp);
+    nPtr->vgaIOBase = hwp->IOBase;
+    vgaHWSetStdFuncs(hwp);
     
     /* Determine the panel type */
-    outw(GRAX, 0x2609);
-    outb(GRAX, 0x21); type = inb(GRAX+1);
-
+    VGAwGR(0x09,0x26);
+    type = VGArGR(0x21);
+    
     /* Determine panel width -- used in NeoValidMode. */
-    outb(GRAX, 0x20);
-    w = inb(GRAX+1);
-    outw(GRAX, 0x2600);
+    w = VGArGR(0x20);
+    VGAwGR(0x09,0x00);
     switch ((w & 0x18) >> 3) {
     case 0x00 :
 	nPtr->NeoPanelWidth  = 640;
@@ -651,7 +653,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	nPtr->NeoPanelHeight = 480;
 	break;
     }
-    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Panel is a %dx%dx %s %s display\n",
+    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Panel is a %dx%d %s %s display\n",
 	       nPtr->NeoPanelWidth,
 	       nPtr->NeoPanelHeight,
 	       (type & 0x02) ? "color" : "monochrome",
@@ -712,9 +714,11 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 
     if (!xf86LoadSubModule(pScrn, "ddc"))
 	return FALSE;
-      xf86LoaderReqSymLists(ddcSymbols, NULL);
+    xf86LoaderReqSymLists(ddcSymbols, NULL);
 #if 0
+    VGAwGR(0x09,0x26);
     neo_ddc1(pScrn->scrnIndex);
+    VGAwGR(0x09,0x00);
 #endif
     if (!xf86LoadSubModule(pScrn, "i2c"))
 	return FALSE;
@@ -722,7 +726,9 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
     if (!neo_I2CInit(pScrn))
 	return FALSE;
 
+    VGAwGR(0x09,0x26);
     xf86PrintEDID(xf86DoEDID_DDC2(pScrn->scrnIndex,nPtr->I2C));
+    VGAwGR(0x09,0x00);
 
     pScrn->monitor = pScrn->confScreen->monitor;
     if (!xf86SetDepthBpp(pScrn, 8, 8, 8, bppSupport ))
@@ -907,10 +913,9 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	resRange linearRes[] = { {ResExcMemBlock|ResBios,0,0},_END };
 	
 	if (!nPtr->NeoLinearAddr) {
-	    outw(GRAX, 0x2609);
-	    outb(GRAX, 0x13);
-	    addr = inb(GRAX + 1);
-	    outw(GRAX, 0x2600);
+	    VGAwGR(0x09,0x26);
+	    addr = VGArGR(0x13);
+	    VGAwGR(0x09,0x00);
 	    nPtr->NeoLinearAddr = addr << 20;
 	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 		       "base address is set at 0x%X.\n",
@@ -942,7 +947,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
     
     if (nPtr->pEnt->device->dacSpeeds[0] != 0) {
 	maxClock = nPtr->pEnt->device->dacSpeeds[0];
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Max Clock: %d kByte\n",
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Max Clock: %d kHz\n",
 		   maxClock);
     } else {
 	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Max Clock: %d kByte\n",
@@ -1391,7 +1396,7 @@ NEOScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (nPtr->NeoHWCursorInitialized)
         racflag |= RAC_CURSOR;
 
-    xf86RACInit(pScreen, racflag);
+    pScrn->racIoFlags = pScrn->racMemFlags = racflag;
 
     pScreen->SaveScreen = vgaHWSaveScreen;
 
@@ -1453,18 +1458,16 @@ NEOAdjustFrame(int scrnIndex, int x, int y, int flags)
     /*
      * These are the generic starting address registers.
      */
-    outw(nPtr->vgaIOBase + 4, (Base & 0x00FF00) | 0x0C);
-    outw(nPtr->vgaIOBase + 4, ((Base & 0x00FF) << 8) | 0x0D);
+    VGAwCR(0x0C, (Base & 0x00FF00) >> 8);
+    VGAwCR(0x0D, (Base & 0x00FF));
 
     /*
      * Make sure we don't clobber some other bits that might already
      * have been set. NOTE: NM2200 has a writable bit 3, but it shouldn't
      * be needed.
      */
-    outb(GRAX, 0x0E);
-    oldExtCRTDispAddr = inb(GRAX+1);
-    outw(GRAX,
-	 ((((Base >> 16) & 0x07) | (oldExtCRTDispAddr & 0xf8)) << 8) | 0x0E);
+    oldExtCRTDispAddr = VGArGR(0x0E);
+    VGAwGR(0x0E,(((Base >> 16) & 0x07) | (oldExtCRTDispAddr & 0xf8)));
 #if 0
     /*
      * This is a workaround for a higher level bug that causes the cursor
@@ -1576,7 +1579,7 @@ neoLock(ScrnInfoPtr pScrn)
 {
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     
-    outw(GRAX, 0x2600);      
+    VGAwGR(0x09,0x00);
     vgaHWLock(hwp);
 }
 
@@ -1586,7 +1589,7 @@ neoUnlock(ScrnInfoPtr pScrn)
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     
     vgaHWUnlock(hwp);
-    outw(GRAX, 0x2609);
+    VGAwGR(0x09,0x26);
 }
 
 static Bool
@@ -1655,19 +1658,19 @@ static void
 neoSave(ScrnInfoPtr pScrn)
 {
     vgaRegPtr VgaSave = &VGAHWPTR(pScrn)->SavedReg;
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
     NEOPtr nPtr = NEOPTR(pScrn);
     NeoRegPtr save;
     int i;
 
     save = &nPtr->NeoSavedReg;
 
-    outw(GRAX, 0x2609);
-
+    VGAwGR(0x09,0x26);
     /*
      * Whatever code is needed to get back to bank zero goes here.
      */
-    outw(GRAX, 0x0015);
-
+    VGAwGR(0x15,0x00);
+    
     /* get generic registers */
     vgaHWSave(pScrn, VgaSave, VGA_SR_ALL);
 
@@ -1676,65 +1679,61 @@ neoSave(ScrnInfoPtr pScrn)
      * into the fields of the vgaNeoRec structure goes here.
      */
 
-    outb(GRAX, 0x0A); save->GeneralLockReg           = inb(GRAX+1);
-    outb(GRAX, 0x0E); save->ExtCRTDispAddr           = inb(GRAX+1);
+    save->GeneralLockReg = VGArGR(0x0A);
+    
+    save->ExtCRTDispAddr = VGArGR(0x0E);
     if (nPtr->NeoChipset != NM2070) {
-        outb(GRAX, 0x0F); save->ExtCRTOffset         = inb(GRAX+1);
+	save->ExtCRTOffset = VGArGR(0x0F);
     }
-    outb(GRAX, 0x10); save->SysIfaceCntl1            = inb(GRAX+1);
-    outb(GRAX, 0x11); save->SysIfaceCntl2            = inb(GRAX+1);
-    outb(GRAX, 0x15); save->SingleAddrPage           = inb(GRAX+1);
-    outb(GRAX, 0x16); save->DualAddrPage             = inb(GRAX+1);
-    outb(GRAX, 0x20); save->PanelDispCntlReg1        = inb(GRAX+1);
-    outb(GRAX, 0x25); save->PanelDispCntlReg2        = inb(GRAX+1);
-    outb(GRAX, 0x30); save->PanelDispCntlReg3        = inb(GRAX+1);
-    outb(GRAX, 0x28); save->PanelVertCenterReg1      = inb(GRAX+1);
-    outb(GRAX, 0x29); save->PanelVertCenterReg2      = inb(GRAX+1);
-    outb(GRAX, 0x2a); save->PanelVertCenterReg3      = inb(GRAX+1);
+    save->SysIfaceCntl1 = VGArGR(0x10);
+    save->SysIfaceCntl2 = VGArGR(0x11);
+    save->SingleAddrPage = VGArGR(0x15);
+    save->DualAddrPage = VGArGR(0x16);
+    save->PanelDispCntlReg1 = VGArGR(0x20);
+    save->PanelDispCntlReg2 = VGArGR(0x25);
+    save->PanelDispCntlReg3 = VGArGR(0x30);
+    save->PanelVertCenterReg1 = VGArGR(0x28);
+    save->PanelVertCenterReg2 = VGArGR(0x29);
+    save->PanelVertCenterReg3 = VGArGR(0x2A);
     if (nPtr->NeoChipset != NM2070) {
-        outb(GRAX, 0x32); save->PanelVertCenterReg4  = inb(GRAX+1);
-	outb(GRAX, 0x33); save->PanelHorizCenterReg1 = inb(GRAX+1);
-	outb(GRAX, 0x34); save->PanelHorizCenterReg2 = inb(GRAX+1);
-	outb(GRAX, 0x35); save->PanelHorizCenterReg3 = inb(GRAX+1);
+        save->PanelVertCenterReg4 = VGArGR(0x32);
+	save->PanelHorizCenterReg1 = VGArGR(0x33);
+	save->PanelHorizCenterReg2 = VGArGR(0x34);
+	save->PanelHorizCenterReg3 = VGArGR(0x35);
     }
     if (nPtr->NeoChipset == NM2160) {
-        outb(GRAX, 0x36); save->PanelHorizCenterReg4 = inb(GRAX+1);
+        save->PanelHorizCenterReg4 = VGArGR(0x36);
     }
     if (nPtr->NeoChipset == NM2200) {
-	outb(GRAX, 0x36); save->PanelHorizCenterReg4 = inb(GRAX+1);
-	outb(GRAX, 0x37); save->PanelVertCenterReg5  = inb(GRAX+1);
-	outb(GRAX, 0x38); save->PanelHorizCenterReg5 = inb(GRAX+1);
+	save->PanelHorizCenterReg4 = VGArGR(0x36);
+	save->PanelVertCenterReg5  = VGArGR(0x37);
+	save->PanelHorizCenterReg5 = VGArGR(0x38);
     }
-    outb(GRAX, 0x90); save->ExtColorModeSelect       = inb(GRAX+1);
-    outb(GRAX, 0x9B); save->VCLK3NumeratorLow        = inb(GRAX+1);
+    save->ExtColorModeSelect = VGArGR(0x90);
+    save->VCLK3NumeratorLow = VGArGR(0x9B);
     if (nPtr->NeoChipset == NM2200)
-	outb(GRAX, 0x8F); save->VCLK3NumeratorHigh   = inb(GRAX+1);
-    outb(GRAX, 0x9F); save->VCLK3Denominator         = inb(GRAX+1);
+	save->VCLK3NumeratorHigh = VGArGR(0x8F);
+    save->VCLK3Denominator = VGArGR(0x9F);
 
     if (save->reg == NULL)
         save->reg = (regSavePtr)xnfcalloc(sizeof(regSaveRec), 1);
     else
         ErrorF("WARNING: Non-NULL reg in NeoSave: reg=0x%08X\n", save->reg);
 
-    outb(nPtr->vgaIOBase + 4, 0x25);
-    save->reg->CR[0x25] = inb(nPtr->vgaIOBase + 5);
-    outb(nPtr->vgaIOBase + 4, 0x2F);
-    save->reg->CR[0x2F] = inb(nPtr->vgaIOBase + 5);
+    save->reg->CR[0x25] = VGArCR(0x25);
+    save->reg->CR[0x2F] = VGArCR(0x2F);
     for (i = 0x40; i <= 0x59; i++) {
-        outb(nPtr->vgaIOBase + 4, i);
-	save->reg->CR[i] = inb(nPtr->vgaIOBase + 5);
+	save->reg->CR[i] = VGArCR(i);
     }
     for (i = 0x60; i <= 0x69; i++) {
-        outb(nPtr->vgaIOBase + 4, i);
-	save->reg->CR[i] = inb(nPtr->vgaIOBase + 5);
+	save->reg->CR[i] = VGArCR(i);
     }
     for (i = 0x70; i <= NEO_EXT_CR_MAX; i++) {
-        outb(nPtr->vgaIOBase + 4, i);
-	save->reg->CR[i] = inb(nPtr->vgaIOBase + 5);
+	save->reg->CR[i] = VGArCR(i);
     }
 
     for (i = 0x0A; i <= NEO_EXT_GR_MAX; i++) {
-        outb(GRAX, i); save->reg->GR[i] = inb(GRAX+1);
+        save->reg->GR[i] = VGArGR(i);
     }
 }
 
@@ -1749,6 +1748,7 @@ neoProgramShadowRegs(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore)
 {
     int i;
     Bool noProgramShadowRegs;
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
     NEOPtr nPtr = NEOPTR(pScrn);
     
     /*
@@ -1793,12 +1793,10 @@ neoProgramShadowRegs(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore)
     if (noProgramShadowRegs) {
 	if (nPtr->NeoSavedReg.reg){
 	    for (i = 0x40; i <= 0x59; i++) {
-		outb(nPtr->vgaIOBase + 4, i);
-		outb(nPtr->vgaIOBase + 5, nPtr->NeoSavedReg.reg->CR[i]);
+		VGAwCR(i, nPtr->NeoSavedReg.reg->CR[i]);
 	    }
 	    for (i = 0x60; i <= 0x64; i++) {
-		outb(nPtr->vgaIOBase + 4, i);
-		outb(nPtr->vgaIOBase + 5, nPtr->NeoSavedReg.reg->CR[i]);
+		VGAwCR(i, nPtr->NeoSavedReg.reg->CR[i]);
 	    } 
 	} 
     } else {
@@ -1809,93 +1807,93 @@ neoProgramShadowRegs(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore)
 	 */
 	switch (nPtr->NeoPanelWidth) {
 	case 640 :
-	    outw(nPtr->vgaIOBase + 4, 0x5F40);
-	    outw(nPtr->vgaIOBase + 4, 0x5041);
-	    outw(nPtr->vgaIOBase + 4, 0x0242);
-	    outw(nPtr->vgaIOBase + 4, 0x5543);
-	    outw(nPtr->vgaIOBase + 4, 0x8144);
-	    outw(nPtr->vgaIOBase + 4, 0x0B45);
-	    outw(nPtr->vgaIOBase + 4, 0x2E46);
-	    outw(nPtr->vgaIOBase + 4, 0xEA47);
-	    outw(nPtr->vgaIOBase + 4, 0x0C48);
-	    outw(nPtr->vgaIOBase + 4, 0xE749);
-	    outw(nPtr->vgaIOBase + 4, 0x044A);
-	    outw(nPtr->vgaIOBase + 4, 0x2D4B);
-	    outw(nPtr->vgaIOBase + 4, 0x284C);
-	    outw(nPtr->vgaIOBase + 4, 0x904D);
-	    outw(nPtr->vgaIOBase + 4, 0x2B4E);
-	    outw(nPtr->vgaIOBase + 4, 0xA04F);
+	    VGAwCR(0x40,0x5F);
+	    VGAwCR(0x41,0x50);
+	    VGAwCR(0x42,0x02);
+	    VGAwCR(0x43,0x55);
+	    VGAwCR(0x44,0x81);
+	    VGAwCR(0x45,0x0B);
+	    VGAwCR(0x46,0x2E);
+	    VGAwCR(0x47,0xEA);
+	    VGAwCR(0x48,0x0C);
+	    VGAwCR(0x49,0xE7);
+	    VGAwCR(0x4A,0x04);
+	    VGAwCR(0x4B,0x2D);
+	    VGAwCR(0x4C,0x28);
+	    VGAwCR(0x4D,0x90);
+	    VGAwCR(0x4E,0x2B);
+	    VGAwCR(0x4F,0xA0);
 	    break;
 	case 800 :
-	    outw(nPtr->vgaIOBase + 4, 0x7F40);
-	    outw(nPtr->vgaIOBase + 4, 0x6341);
-	    outw(nPtr->vgaIOBase + 4, 0x0242);
-	    outw(nPtr->vgaIOBase + 4, 0x6C43);
-	    outw(nPtr->vgaIOBase + 4, 0x1C44);
-	    outw(nPtr->vgaIOBase + 4, 0x7245);
-	    outw(nPtr->vgaIOBase + 4, 0xE046);
-	    outw(nPtr->vgaIOBase + 4, 0x5847);
-	    outw(nPtr->vgaIOBase + 4, 0x0C48);
-	    outw(nPtr->vgaIOBase + 4, 0x5749);
-	    outw(nPtr->vgaIOBase + 4, 0x734A);
-	    outw(nPtr->vgaIOBase + 4, 0x3D4B);
-	    outw(nPtr->vgaIOBase + 4, 0x314C);
-	    outw(nPtr->vgaIOBase + 4, 0x014D);
-	    outw(nPtr->vgaIOBase + 4, 0x364E);
-	    outw(nPtr->vgaIOBase + 4, 0x1E4F);
+	    VGAwCR(0x40,0x7F);
+	    VGAwCR(0x41,0x63);
+	    VGAwCR(0x42,0x02);
+	    VGAwCR(0x43,0x6C);
+	    VGAwCR(0x44,0x1C);
+	    VGAwCR(0x45,0x72);
+	    VGAwCR(0x46,0xE0);
+	    VGAwCR(0x47,0x58);
+	    VGAwCR(0x48,0x0C);
+	    VGAwCR(0x49,0x57);
+	    VGAwCR(0x4A,0x73);
+	    VGAwCR(0x4B,0x3D);
+	    VGAwCR(0x4C,0x31);
+	    VGAwCR(0x4D,0x01);
+	    VGAwCR(0x4E,0x36);
+	    VGAwCR(0x4F,0x1E);
 	    if (nPtr->NeoChipset != NM2070) {
-		outw(nPtr->vgaIOBase + 4, 0x6B50);
-		outw(nPtr->vgaIOBase + 4, 0x4F51);
-		outw(nPtr->vgaIOBase + 4, 0x0E52);
-		outw(nPtr->vgaIOBase + 4, 0x5853);
-		outw(nPtr->vgaIOBase + 4, 0x8854);
-		outw(nPtr->vgaIOBase + 4, 0x3355);
-		outw(nPtr->vgaIOBase + 4, 0x2756);
-		outw(nPtr->vgaIOBase + 4, 0x1657);
-		outw(nPtr->vgaIOBase + 4, 0x2C58);
-		outw(nPtr->vgaIOBase + 4, 0x9459);
+		VGAwCR(0x50,0x6B);
+		VGAwCR(0x51,0x4F);
+		VGAwCR(0x52,0x0E);
+		VGAwCR(0x53,0x58);
+		VGAwCR(0x54,0x88);
+		VGAwCR(0x55,0x33);
+		VGAwCR(0x56,0x27);
+		VGAwCR(0x57,0x16);
+		VGAwCR(0x58,0x2C);
+		VGAwCR(0x59,0x94);
 	    }
 	    break;
 	case 1024 :
-	    outw(nPtr->vgaIOBase + 4, 0xA340);
-	    outw(nPtr->vgaIOBase + 4, 0x7F41);
-	    outw(nPtr->vgaIOBase + 4, 0x0642);
-	    outw(nPtr->vgaIOBase + 4, 0x8543);
-	    outw(nPtr->vgaIOBase + 4, 0x9644);
-	    outw(nPtr->vgaIOBase + 4, 0x2445);
-	    outw(nPtr->vgaIOBase + 4, 0xE546);
-	    outw(nPtr->vgaIOBase + 4, 0x0247);
-	    outw(nPtr->vgaIOBase + 4, 0x0848);
-	    outw(nPtr->vgaIOBase + 4, 0xFF49);
-	    outw(nPtr->vgaIOBase + 4, 0x254A);
-	    outw(nPtr->vgaIOBase + 4, 0x4F4B);
-	    outw(nPtr->vgaIOBase + 4, 0x404C);
-	    outw(nPtr->vgaIOBase + 4, 0x004D);
-	    outw(nPtr->vgaIOBase + 4, 0x444E);
-	    outw(nPtr->vgaIOBase + 4, 0x0C4F);
-	    outw(nPtr->vgaIOBase + 4, 0x7A50);
-	    outw(nPtr->vgaIOBase + 4, 0x5651);
-	    outw(nPtr->vgaIOBase + 4, 0x0052);
-	    outw(nPtr->vgaIOBase + 4, 0x5D53);
-	    outw(nPtr->vgaIOBase + 4, 0x0E54);
-	    outw(nPtr->vgaIOBase + 4, 0x3B55);
-	    outw(nPtr->vgaIOBase + 4, 0x2B56);
-	    outw(nPtr->vgaIOBase + 4, 0x0057);
-	    outw(nPtr->vgaIOBase + 4, 0x2F58);
-	    outw(nPtr->vgaIOBase + 4, 0x1859);
-	    outw(nPtr->vgaIOBase + 4, 0x8860);
-	    outw(nPtr->vgaIOBase + 4, 0x6361);
-	    outw(nPtr->vgaIOBase + 4, 0x0B62);
-	    outw(nPtr->vgaIOBase + 4, 0x6963);
-	    outw(nPtr->vgaIOBase + 4, 0x1A64);
+	    VGAwCR(0x40,0xA3);
+	    VGAwCR(0x41,0x7F);
+	    VGAwCR(0x42,0x06);
+	    VGAwCR(0x43,0x85);
+	    VGAwCR(0x44,0x96);
+	    VGAwCR(0x45,0x24);
+	    VGAwCR(0x46,0xE5);
+	    VGAwCR(0x47,0x02);
+	    VGAwCR(0x48,0x08);
+	    VGAwCR(0x49,0xFF);
+	    VGAwCR(0x4A,0x25);
+	    VGAwCR(0x4B,0x4F);
+	    VGAwCR(0x4C,0x40);
+	    VGAwCR(0x4D,0x00);
+	    VGAwCR(0x4E,0x44);
+	    VGAwCR(0x4F,0x0C);
+	    VGAwCR(0x50,0x7A);
+	    VGAwCR(0x51,0x56);
+	    VGAwCR(0x52,0x00);
+	    VGAwCR(0x53,0x5D);
+	    VGAwCR(0x54,0x0E);
+	    VGAwCR(0x55,0x3B);
+	    VGAwCR(0x56,0x2B);
+	    VGAwCR(0x57,0x00);
+	    VGAwCR(0x58,0x2F);
+	    VGAwCR(0x59,0x18);
+	    VGAwCR(0x60,0x88);
+	    VGAwCR(0x61,0x63);
+	    VGAwCR(0x62,0x0B);
+	    VGAwCR(0x63,0x69);
+	    VGAwCR(0x64,0x1A);
 	    break;
 	case 1280:
 #ifdef NOT_DONE
-	    outw(nPtr->vgaIOBase + 4, 0x??40);
+	    VGAwCR(0x40,0x?? );
             .
 	    .
 	    .
-	    outw(nPtr->vgaIOBase + 4, 0x??64);
+	    VGAwCR(0x64,0x?? );
 	    break;
 #else
             /* Probe should prevent this case for now */
@@ -1910,19 +1908,20 @@ neoRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore,
 	     Bool restoreFonts)
 {
     NEOPtr nPtr = NEOPTR(pScrn);
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
     unsigned char temp;
     int i;
 
     vgaHWProtect(pScrn,TRUE);		/* Blank the screen */
 
-    outw(GRAX, 0x2609);
-
+    VGAwGR(0x09,0x26);
+    
     /* Init the shadow registers if necessary */
     neoProgramShadowRegs(pScrn, VgaReg, restore);
 
-    outw(GRAX, 0x0015);
+    VGAwGR(0x15,0x00);
 
-    outb(GRAX, 0x0A); outb(GRAX+1, restore->GeneralLockReg);
+    VGAwGR(0x0A,restore->GeneralLockReg);
 
     /*
      * The color mode needs to be set before calling vgaHWRestore
@@ -1931,7 +1930,7 @@ neoRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore,
      * NOTE: Make sure we don't change bits make sure we don't change
      * any reserved bits.
      */
-    outb(GRAX, 0x90); temp = inb(GRAX+1);
+    temp = VGArGR(0x90);
     switch (nPtr->NeoChipset) {
     case NM2070 :
 	temp &= 0xF0; /* Save bits 7:4 */
@@ -1946,17 +1945,15 @@ neoRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore,
 	temp |= (restore->ExtColorModeSelect & ~0x70);
 	break;
     }
-    outb(GRAX, 0x90); outb(GRAX+1, temp);
-
+    VGAwGR(0x90,temp);
+    
     /*
      * Disable horizontal and vertical graphics and text expansions so
      * that vgaHWRestore works properly.
      */
-    outb(GRAX, 0x25);
-    temp = inb(GRAX+1);
-    outb(GRAX, 0x25);
+    temp = VGArGR(0x25);
     temp &= 0x39;
-    outb(GRAX+1, temp);
+    VGAwGR(0x25, temp);
 
     /*
      * Sleep for 200ms to make sure that the two operations above have
@@ -1969,17 +1966,17 @@ neoRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore,
     vgaHWRestore(pScrn, VgaReg,
 		 VGA_SR_MODE | VGA_SR_CMAP | (restoreFonts ? VGA_SR_FONTS : 0));
 
-    outb(GRAX, 0x0E); outb(GRAX+1, restore->ExtCRTDispAddr);
-    outb(GRAX, 0x0F); outb(GRAX+1, restore->ExtCRTOffset);
-    outb(GRAX, 0x10); temp = inb(GRAX+1);
+    VGAwGR(0x0E, restore->ExtCRTDispAddr);
+    VGAwGR(0x0F, restore->ExtCRTOffset);
+    temp = VGArGR(0x10);
     temp &= 0x0F; /* Save bits 3:0 */
     temp |= (restore->SysIfaceCntl1 & ~0x0F);
-    outb(GRAX, 0x10); outb(GRAX+1, temp);
+    VGAwGR(0x10, temp);
 
-    outb(GRAX, 0x11); outb(GRAX+1, restore->SysIfaceCntl2);
-    outb(GRAX, 0x15); outb(GRAX+1, restore->SingleAddrPage);
-    outb(GRAX, 0x16); outb(GRAX+1, restore->DualAddrPage);
-    outb(GRAX, 0x20); temp = inb(GRAX+1);
+    VGAwGR(0x11, restore->SysIfaceCntl2);
+    VGAwGR(0x15, restore->SingleAddrPage);
+    VGAwGR(0x16, restore->DualAddrPage);
+    temp = VGArGR(0x20);
     switch (nPtr->NeoChipset) {
     case NM2070 :
 	temp &= 0xFC; /* Save bits 7:2 */
@@ -1997,83 +1994,77 @@ neoRestore(ScrnInfoPtr pScrn, vgaRegPtr VgaReg, NeoRegPtr restore,
 	temp |= (restore->PanelDispCntlReg1 & ~0x98);
 	break;
     }
-    outb(GRAX, 0x20); outb(GRAX+1, temp);
-    outb(GRAX, 0x25); temp = inb(GRAX+1);
+    VGAwGR(0x20, temp);
+    temp = VGArGR(0x25);
     temp &= 0x38; /* Save bits 5:3 */
     temp |= (restore->PanelDispCntlReg2 & ~0x38);
-    outb(GRAX, 0x25); outb(GRAX+1, temp);
+    VGAwGR(0x25, temp);
 
     if (nPtr->NeoChipset != NM2070) {
-	outb(GRAX, 0x30); temp = inb(GRAX+1);
+	temp = VGArGR(0x30);
 	temp &= 0xEF; /* Save bits 7:5 and bits 3:0 */
 	temp |= (restore->PanelDispCntlReg3 & ~0xEF);
-	outb(GRAX, 0x30); outb(GRAX+1, temp);
+	VGAwGR(0x30, temp);
     }
 
-    outb(GRAX, 0x28); outb(GRAX+1, restore->PanelVertCenterReg1);
-    outb(GRAX, 0x29); outb(GRAX+1, restore->PanelVertCenterReg2);
-    outb(GRAX, 0x2a); outb(GRAX+1, restore->PanelVertCenterReg3);
+    VGAwGR(0x28, restore->PanelVertCenterReg1);
+    VGAwGR(0x29, restore->PanelVertCenterReg2);
+    VGAwGR(0x2a, restore->PanelVertCenterReg3);
 
     if (nPtr->NeoChipset != NM2070) {
-	outb(GRAX, 0x32); outb(GRAX+1, restore->PanelVertCenterReg4);
-	outb(GRAX, 0x33); outb(GRAX+1, restore->PanelHorizCenterReg1);
-	outb(GRAX, 0x34); outb(GRAX+1, restore->PanelHorizCenterReg2);
-	outb(GRAX, 0x35); outb(GRAX+1, restore->PanelHorizCenterReg3);
+	VGAwGR(0x32, restore->PanelVertCenterReg4);
+	VGAwGR(0x33, restore->PanelHorizCenterReg1);
+	VGAwGR(0x34, restore->PanelHorizCenterReg2);
+	VGAwGR(0x35, restore->PanelHorizCenterReg3);
     }
 
     if (nPtr->NeoChipset == NM2160) {
-	outb(GRAX, 0x36); outb(GRAX+1, restore->PanelHorizCenterReg4);
+	VGAwGR(0x36, restore->PanelHorizCenterReg4);
     }
 
     if (nPtr->NeoChipset == NM2200) {
-        outb(GRAX, 0x36); outb(GRAX+1, restore->PanelHorizCenterReg4);
-        outb(GRAX, 0x37); outb(GRAX+1, restore->PanelVertCenterReg5);
-        outb(GRAX, 0x38); outb(GRAX+1, restore->PanelHorizCenterReg5);
+        VGAwGR(0x36, restore->PanelHorizCenterReg4);
+        VGAwGR(0x37, restore->PanelVertCenterReg5);
+        VGAwGR(0x38, restore->PanelHorizCenterReg5);
     }
 
     /* Program VCLK3 if needed. */
     if (restore->ProgramVCLK) {
-	outb(GRAX, 0x9B); outb(GRAX+1, restore->VCLK3NumeratorLow);
+	VGAwGR(0x9B, restore->VCLK3NumeratorLow);
 	if (nPtr->NeoChipset == NM2200) {
-	    outb(GRAX, 0x8F); temp = inb(GRAX+1);
+	    temp = VGArGR(0x8F);
 	    temp &= 0x0F; /* Save bits 3:0 */
 	    temp |= (restore->VCLK3NumeratorHigh & ~0x0F);
-	    outb(GRAX, 0x8F); outb(GRAX+1, temp);
+	    VGAwGR(0x8F, temp);
 	}
-	outb(GRAX, 0x9F); outb(GRAX+1, restore->VCLK3Denominator);
+	VGAwGR(0x9F, restore->VCLK3Denominator);
     }
 
     if (restore->reg) {
-	outb(nPtr->vgaIOBase + 4, 0x25);
-	outb(nPtr->vgaIOBase + 5, restore->reg->CR[0x25]);
-	outb(nPtr->vgaIOBase + 4, 0x2F);
-	outb(nPtr->vgaIOBase + 5, restore->reg->CR[0x2F]);
+	VGAwCR(0x25,restore->reg->CR[0x25]);
+	VGAwCR(0x2F,restore->reg->CR[0x2F]);
 	for (i = 0x40; i <= 0x59; i++) {
-	    outb(nPtr->vgaIOBase + 4, i);
-	    outb(nPtr->vgaIOBase + 5, restore->reg->CR[i]);
+	    VGAwCR(i, restore->reg->CR[i]);
 	}
 	for (i = 0x60; i <= 0x69; i++) {
-	    outb(nPtr->vgaIOBase + 4, i);
-	    outb(nPtr->vgaIOBase + 5, restore->reg->CR[i]);
+	    VGAwCR(i, restore->reg->CR[i]);
 	}
 	for (i = 0x70; i <= NEO_EXT_CR_MAX; i++) {
-	    outb(nPtr->vgaIOBase + 4, i);
-	    outb(nPtr->vgaIOBase + 5, restore->reg->CR[i]);
+	    VGAwCR(i, restore->reg->CR[i]);
 	}
 
 	for (i = 0x0a; i <= 0x3f; i++) {
-	    outb(GRAX, i); outb(GRAX+1, restore->reg->GR[i]);
+	    VGAwGR(i, restore->reg->GR[i]);
 	}
 	for (i = 0x90; i <= NEO_EXT_GR_MAX; i++) {
-	    outb(GRAX, i); outb(GRAX+1, restore->reg->GR[i]);
+	    VGAwGR(i, restore->reg->GR[i]);
 	}
 	xfree(restore->reg);
 	restore->reg = NULL;
     }
     /* Program vertical extension register */
     if (nPtr->NeoChipset == NM2200) {
-	outb(nPtr->vgaIOBase + 4, 0x70); 
-	outb(nPtr->vgaIOBase + 5, restore->VerticalExt);
+	VGAwCR(0x70, restore->VerticalExt);
     }
 
 
@@ -2411,6 +2402,7 @@ NeoDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 			     int flags)
 {
     NEOPtr nPtr = NEOPTR(pScrn);
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
     unsigned char SEQ01 = 0;
     unsigned char LogicPowerMgmt = 0;
     unsigned char LCD_on = 0;
@@ -2454,49 +2446,48 @@ NeoDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
     outb(0x3C5, SEQ01);
 
     /* Turn the LCD on/off */
-    outb(GRAX, 0x20);
-    LCD_on |= inb(GRAX+1) & ~0x02;
-    outb(GRAX+1, LCD_on);
+    LCD_on |= VGArGR(0x20) & ~0x02;
+    VGAwGR(0x20, LCD_on);
 
     /* Set the DPMS mode */
     LogicPowerMgmt |= 0x80;
-    outb(GRAX, 0x01);
-    LogicPowerMgmt |= inb(GRAX+1) & ~0xF0;
-    outb(GRAX+1, LogicPowerMgmt);
+    LogicPowerMgmt |= VGArGR(0x01) & ~0xF0;
+    VGAwGR(0x01,LogicPowerMgmt);
 }
 #endif
 
 static unsigned int
 neo_ddc1Read(ScrnInfoPtr pScrn)
 {
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
     register unsigned int ST01reg = ((NEOPtr)pScrn->driverPrivate)->vgaIOBase 
                                      + 0x0A;
     register unsigned int tmp;
 
     while(inb(ST01reg)&0x8){};
     while(!(inb(ST01reg)&0x8)) {}
-    outb(0x3CE,0xA1);         
-    tmp = ( inb(0x3CF) & 0x8);
-
+    tmp = (VGArGR(0xA1) & 0x08);
+    
     return (tmp);
 }
 
 static void
 neo_ddc1(int scrnIndex)
 {
+    vgaHWPtr hwp = VGAHWPTR(xf86Screens[scrnIndex]);
     unsigned int reg1, reg2, reg3;
 
     /* initialize chipset */
-    outb(0x3D4,0x21); reg1=inb(0x3D5);   
-    outb(0x3D4,0x1D); reg2=inb(0x3D5);  
-    outb(0x3CE,0x1A); reg3=inb(0x3CF);
-    outw(0x3D4,0x0021);
-    outw(0x3D4,0x011d);  /* some Voodoo */ 
-    outw(0x3CE,0x2fa1);
+    reg1 = VGArCR(0x21);
+    reg2 = VGArCR(0x1D); 
+    reg3 = VGArCR(0x1A);
+    VGAwCR(0x21,0x00);
+    VGAwCR(0x1D,0x01);  /* some Voodoo */ 
+    VGAwGR(0xA1,0x2F);
     xf86PrintEDID(xf86DoEDID_DDC1(scrnIndex,vgaHWddc1SetSpeed,neo_ddc1Read));
     /* undo initialization */
-    outw(0x3D4,(reg1 << 8) | 0x21);
-    outw(0x3D4,(reg2 << 8) | 0x1d);
+    VGAwCR(0x21,reg1);
+    VGAwCR(0x1D,reg2);
 }
 
 static void

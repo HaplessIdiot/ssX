@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/dri/xf86dri.h,v 1.1 1999/06/14 07:23:33 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -32,7 +32,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *   Jens Owen <jens@precisioninsight.com>
  *   Rickard E. Faith <faith@precisioninsight.com>
  *
- * $PI: xc/lib/GL/dri/xf86dri.h,v 1.10 1999/04/26 21:55:10 jens Exp $
+ * $PI: xc/lib/GL/dri/xf86dri.h,v 1.12 1999/06/16 20:08:34 faith Exp $
  */
 
 #ifndef _XF86DRI_H_
@@ -52,6 +52,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define X_XF86DRIDestroyDrawable		8
 #define X_XF86DRIGetDrawableInfo		9
 #define X_XF86DRIGetDeviceInfo			10
+#define X_XF86DRIAuthConnection                 11
 
 #define XF86DRINumberEvents		0
 
@@ -99,10 +100,16 @@ Bool XF86DRIOpenConnection(
 #if NeedFunctionPrototypes
     Display*		/* dpy */,
     int			/* screen */,
-    drmKeyPtr		/* drmClientKeyLow */,
-    drmKeyPtr           /* drmClientKeyHigh */,
     drmHandlePtr	/* hSAREA */,
     char**		/* busIDString */
+#endif
+);
+
+Bool XF86DRIAuthConnection(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    int			/* screen */,
+    drmMagic            /* magic */
 #endif
 );
 

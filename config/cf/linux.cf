@@ -1,5 +1,5 @@
 XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.95 1999/05/15 06:24:45 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.96 1999/06/14 07:23:25 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -163,6 +163,35 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #    endif
 #  else
 #    define BuildXF86DRI              NO
+#  endif
+#endif
+
+/* The DRM module requires kernel services that appeared in late 2.1.x
+   kernels and are known to be present in 2.2.x kernels.  Unfortunately,
+   the kernel API is a moving target and the module may break with new
+   kernel revisions.  So, we'll only build the module for kernels that are
+   known to be supported by the module. */
+#ifndef BuildXF86DRM
+#  ifdef i386Architecture
+#    if OSMajorVersion == 2
+       /* Only tested for Linux 2.2.0 through 2.2.10 */
+#      if OSMinorVersion == 2 && OSTeenyVersion <= 10
+#        define BuildXF86DRM        YES
+#      else
+         /* Only tested for Linux 2.3.0 through 2.3.8 */
+#        if OSMinorVersion == 3 && OSTeenyVersion <= 8
+#          define BuildXF86DRM      YES
+#        else
+           /* Note: add more conditions when 2.4.x and 2.5.x are released */
+#          define BuildXF86DRM      NO
+#        endif
+#      endif
+#    else
+       /* Note: add more conditions when 3.0.x and 3.1.x are released */
+#      define BuildXF86DRM          NO
+#    endif
+#  else
+#    define BuildXF86DRM            NO
 #  endif
 #endif
 

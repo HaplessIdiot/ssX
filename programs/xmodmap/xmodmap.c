@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xmodmap/xmodmap.c,v 1.3 1999/03/07 14:23:37 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -334,6 +334,6 @@ main(int argc, char *argv[])
 	print_pointer_map ();
     }
 
-    exit (status < 0 ? 1 : 0);
+    Exit (status < 0 ? 1 : 0);
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.40 1999/06/13 05:18:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.41 1999/06/20 05:23:31 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -256,6 +256,7 @@ typedef struct {
    int				chipID;
    int				chipRev;
    pointer			options;
+   int                          irq;
 } GDevRec, *GDevPtr;
 
 typedef int (*FindIsaDevProc)(GDevPtr dev);
@@ -346,6 +347,23 @@ typedef struct _serverlayoutrec {
     IDevPtr		inputs;
     pointer		options;
 } serverLayoutRec, *serverLayoutPtr;
+
+#ifdef XF86DRI
+typedef struct _confdribufferrec {
+    int                 count;
+    int                 size;
+    enum {
+	XF86DRI_WC_HINT = 0x0001 /* Placeholder: not implemented */
+    }                   flags;
+} confDRIBufferRec, *confDRIBufferPtr;
+
+typedef struct _confdrirec {
+    int                 group;
+    int                 mode;
+    int                 bufs_count;
+    confDRIBufferRec    *bufs;
+} confDRIRec, *confDRIPtr;
+#endif
     
 /* These values should be adjusted when new fields are added to ScrnInfoRec */
 #define NUM_RESERVED_INTS		16

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.235 1999/06/20 15:02:44 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.236 1999/06/21 10:06:12 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -396,8 +396,30 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #  define BuildGlxExt    YES
 #endif
 
-/* BuildXF86DRI must be set in an OS specific .cf file */	
-#ifndef BuildXF86DRI
+#ifdef BuildXF86DRI
+
+/*
+ * One and ONLY one of the GlxBuiltIn* drivers can be defined to be YES.
+ * If more than one are defined, the compilation will fail with multiply
+ * defined references of GLX and OpenGL functions.
+ */
+#  ifndef GlxBuiltInGamma
+#    define GlxBuiltInGamma        NO
+#  endif
+#  ifndef GlxBuiltInMesa
+#    define GlxBuiltInMesa         NO
+#  endif
+
+#  if GlxBuiltInGamma || GlxBuiltInMesa
+#    define GlxUseBuiltInDRIDriver YES
+#    define DRIDynLoadDefines /**/
+#  else
+#    define GlxUseBuiltInDRIDriver NO
+#    define DRIDynLoadDefines -DGLX_USE_DLOPEN
+#  endif
+
+#else
+/* BuildXF86DRI can defined to be YES only in an OS specific .cf file */
 #  define BuildXF86DRI   NO
 #endif
 
@@ -413,7 +435,7 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 
 #  if !defined(GlxStaticServerLib) && !GlxStubLib
 #    if BuildXF86DRI
-#      define DRIDefines -DXF86DRI -DGLX_DIRECT_RENDERING
+#      define DRIDefines -DXF86DRI -DGLX_DIRECT_RENDERING DRIDynLoadDefines
 #    else
 #      define DRIDefines /**/
 #    endif
@@ -485,24 +507,6 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #endif
 
 #if 0
-/*
- * Include support for these XInput devices
- */
-#ifndef WacomSupport
-#define WacomSupport		NO
-#endif
-#ifndef ElographicsSupport
-#define ElographicsSupport	NO
-#endif
-#ifndef MicroTouchSupport
-#define MicroTouchSupport	NO
-#endif
-#ifndef SummaSketchSupport
-#define SummaSketchSupport	NO
-#endif
-#ifndef AceCadSupport
-#define AceCadSupport		NO
-#endif
 #ifndef JoystickSupport
 #define JoystickSupport		NO
 #endif

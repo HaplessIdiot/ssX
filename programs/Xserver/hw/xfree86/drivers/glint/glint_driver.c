@@ -26,8 +26,8 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.43 1999/06/20 07:14:28 dawes Exp $ */
-/* $PI: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.29 1999/06/09 20:05:12 jens Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.44 1999/06/20 08:41:33 dawes Exp $ */
+/* $PI: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.35 1999/06/23 03:20:06 jens Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -1114,18 +1114,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
 	  "Secondary MMIO registers at 0x%lX\n", pGlint->SecondaryAddress);
 
-    /* Find IRQ */
-    /* FIXME NOT_DONE: This is completely
-       overridden in glint_dri.c.  We should
-       make it so that an IRQ listed in the
-       XF86Config file is used before the value
-       use the _int_line information at all,
-       since the kernel remaps this IRQ to
-       another IRQ whenever an IO-APIC is used.
-       I'll leave this line here, because this
-       is the place to get the XF86Config
-       information. */
-    pGlint->irq = -1;
+    pGlint->irq = pGlint->pEnt->device->irq;
 
     /* Register the PCI-assigned resources. */
     if (xf86RegisterResources(pGlint->pEnt->index, NULL, ResExclusive)) {
@@ -1134,7 +1123,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
     }
     if (pGlint->pEntGeometry) {
-	if (xf86RegisterResources(pGlint->pEnt->index, NULL, ResExclusive)) {
+	if (xf86RegisterResources(pGlint->pEntGeometry->index, NULL, ResExclusive)) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		       "xf86RegisterResources() found resource conflicts\n");
 	    return FALSE;
@@ -2012,7 +2001,17 @@ GLINTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    glintApSize = 0 << 10;
 	}
 
-	/* setup HW */
+	/* 
+	 * Setup HW 
+	 * 
+	 * Note: The order of discovery for the MX devices is dependent
+         * on which way the resource allocation code decides to scan the
+         * bus.  This setup assumes the first MX found owns the even
+         * scanlines.  Should the implementation change an scan the bus
+	 * in the opposite direction, then simple invert the indices for
+	 * MXPciInfo below.  If this is setup wrong, the bug will appear
+	 * as incorrect scanline interleaving when software rendering.
+         */
 	value = ( glintApSize      | 
                   postMultiply     | 
                   productEnable    | 

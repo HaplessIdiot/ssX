@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_macros.h,v 1.1 1999/06/14 07:31:16 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -30,7 +30,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
  *
- * $PI: xc/lib/GL/mesa/src/drv/gamma/gamma_macros.h,v 1.16 1999/06/07 02:20:06 martin Exp $
+ * $PI: xc/lib/GL/mesa/src/drv/gamma/gamma_macros.h,v 1.18 1999/06/14 21:10:44 faith Exp $
  */
 
 #ifndef _GAMMA_MACROS_H_
@@ -307,9 +307,9 @@ do {                                                                       \
     __DRIcontextPrivate *pcp = gcc->driContextPriv;                        \
     __DRIscreenPrivate *psp = pcp->driScreenPriv;                          \
                                                                            \
-    DRM_SPINLOCK(&psp->pSAREA->drawable_lock, 1);                          \
+    DRM_SPINLOCK(&psp->pSAREA->drawable_lock, psp->drawLockID);            \
     VALIDATE_DRAWABLE_INFO_NO_LOCK(gcc,gcp);                               \
-    DRM_SPINUNLOCK(&psp->pSAREA->drawable_lock, 1);                        \
+    DRM_SPINUNLOCK(&psp->pSAREA->drawable_lock, psp->drawLockID);          \
     VALIDATE_DRAWABLE_INFO_NO_LOCK_POST(gcc,gcp);                          \
 } while (0)
 #else

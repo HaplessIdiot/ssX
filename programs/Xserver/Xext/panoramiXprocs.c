@@ -19,7 +19,7 @@
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.11 1999/05/30 02:28:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.12 1999/06/20 07:14:10 dawes Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -163,7 +163,7 @@ int PanoramiXCreateWindow(register ClientPtr client)
     localWin->VisibilitySent = FALSE;
     PANORAMIXFIND_LAST(pPanoramiXWin, PanoramiXWinRoot);
     pPanoramiXWin->next = localWin;
-
+   
     if (stuff->class == InputOnly) {
 	/* Kludge.  DEC forgot about InputOnly windows */
 	stuff->visual = orig_visual = 0;
@@ -607,8 +607,7 @@ client,SecurityReadAccess);
     PanoramiXMapped = FALSE;
     PanoramiXVisibilityNotifySent = FALSE;
     pPanoramiXWin->VisibilitySent = FALSE;
-    pWin = (WindowPtr) SecurityLookupWindow(stuff->id, 
-client,SecurityReadAccess);
+    pWin = (WindowPtr) SecurityLookupWindow(stuff->id, client,SecurityReadAccess);
     for (pChild = pWin->firstChild; pChild; pChild = pChild->nextSib){
       pPanoramiXWin = PanoramiXWinRoot;
       PANORAMIXFIND_ID(pPanoramiXWin, pWin->drawable.id);
@@ -887,6 +886,7 @@ RC_DRAWABLE,
     localPmap->FreeMe = FALSE;
     PANORAMIXFIND_LAST(pPanoramiXPmap, PanoramiXPmapRoot);
     pPanoramiXPmap->next = localPmap;
+   
     FOR_NSCREENS_OR_ONCE(pPanoramiXWin, j) {
 	stuff->pid = localPmap->info[j].id;
 	stuff->drawable = pPanoramiXWin->info[j].id;
@@ -999,6 +999,7 @@ RC_DRAWABLE,
     localGC->FreeMe = FALSE;
     PANORAMIXFIND_LAST(pPanoramiXGC, PanoramiXGCRoot);
     pPanoramiXGC->next = localGC;
+   
     FOR_NSCREENS_OR_ONCE(pPanoramiXWin, j) {
 	stuff->gc = localGC->info[j].id;
 	stuff->drawable = pPanoramiXWin->info[j].id;
@@ -1017,7 +1018,6 @@ RC_DRAWABLE,
     }
     return (result);
 }
-
 
 int PanoramiXChangeGC(ClientPtr client)
 {
@@ -1075,7 +1075,7 @@ int PanoramiXChangeGC(ClientPtr client)
 	    PANORAMIXFIND_ID(pPanoramiXClip, clipID);
 	}
     }
-    FOR_NSCREENS_OR_ONCE(pPanoramiXGC, j) {
+   FOR_NSCREENS_OR_ONCE(pPanoramiXGC, j) {
 	stuff->gc = pPanoramiXGC->info[j].id;
 	if (pPanoramiXTile)
 	    *((CARD32 *) &stuff[1] + tile_offset) = pPanoramiXTile->info[j].id;
@@ -1086,7 +1086,10 @@ int PanoramiXChangeGC(ClientPtr client)
 	result = (* SavedProcVector[X_ChangeGC])(client);
 	BREAK_IF(result != Success);
     }
-    PANORAMIX_FREE(client);
+   if (pPanoramiXTile || pPanoramiXStip || pPanoramiXClip)
+     {
+	PANORAMIX_FREE(client);
+     }
     return (result);
 }
 
@@ -2361,7 +2364,7 @@ int PanoramiXCreateColormap(register ClientPtr client)
     localCmap->FreeMe = FALSE;
     PANORAMIXFIND_LAST(pPanoramiXCmap, PanoramiXCmapRoot);
     pPanoramiXCmap->next = localCmap;
-
+   
     /* Use Screen 0 to get the matching Visual ID */
     pWin = (WindowPtr)SecurityLookupWindow(stuff->window, client,
                                            SecurityReadAccess);
