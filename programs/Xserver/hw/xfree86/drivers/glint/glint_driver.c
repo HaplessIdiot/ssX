@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.16 1998/12/06 06:08:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.17 1998/12/13 05:32:44 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -93,11 +93,9 @@ static Bool	GLINTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 #define VERSION 4000
 #define GLINT_NAME "GLINT"
 #define GLINT_DRIVER_NAME "glint"
-/*
- * The major version is the 0xffff0000 part and the minor version is the
- * 0x0000ffff part.
- */
-#define GLINT_DRIVER_VERSION 0x00010001
+#define GLINT_MAJOR_VERSION 1
+#define GLINT_MINOR_VERSION 0
+#define GLINT_PATCHLEVEL 0
 
 /* 
  * This contains the functions needed by the server after loading the driver
@@ -221,7 +219,7 @@ static XF86ModuleVersionInfo glintVersRec =
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,
-	GLINT_DRIVER_VERSION,
+	GLINT_MAJOR_VERSION, GLINT_MINOR_VERSION, GLINT_PATCHLEVEL,
 	ABI_CLASS_VIDEODRV,			/* This is a video driver */
 	ABI_VIDEODRV_VERSION,
 	{0,0,0,0}

@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.60 1998/12/05 14:40:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.61 1998/12/13 05:32:49 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -143,11 +143,9 @@ static Bool	MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 #define VERSION 4000
 #define MGA_NAME "MGA"
 #define MGA_DRIVER_NAME "mga"
-/*
- * The major version is the 0xffff0000 part and the minor version is the
- * 0x0000ffff part.
- */
-#define MGA_DRIVER_VERSION 0x00010001
+#define MGA_MAJOR_VERSION 1
+#define MGA_MINOR_VERSION 0
+#define MGA_PATCHLEVEL 0
 
 /* 
  * This contains the functions needed by the server after loading the
@@ -290,7 +288,7 @@ static XF86ModuleVersionInfo mgaVersRec =
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,
-	MGA_DRIVER_VERSION,
+	MGA_MAJOR_VERSION, MGA_MINOR_VERSION, MGA_PATCHLEVEL,
 	ABI_CLASS_VIDEODRV,			/* This is a video driver */
 	ABI_VIDEODRV_VERSION,
 	{0,0,0,0}

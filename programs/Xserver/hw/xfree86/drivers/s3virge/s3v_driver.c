@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.4 1998/11/28 10:43:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.5 1998/11/29 10:50:29 dawes Exp $ */
 
 /*
  *
@@ -80,7 +80,7 @@ extern Bool S3VAccelInit32(ScreenPtr pScreen);
 #define S3VIRGE_VERSION_NAME "0.2"
 #define S3VIRGE_VERSION_MAJOR   0
 #define S3VIRGE_VERSION_MINOR   2
-#define S3VIRGE_DRIVER_VERSION ((S3VIRGE_VERSION_MAJOR << 16) | S3VIRGE_VERSION_MINOR)
+#define S3VIRGE_PATCHLEVEL      0
 
 /* 
  * This contains the functions needed by the server after loading the
@@ -255,7 +255,7 @@ static XF86ModuleVersionInfo S3VVersRec =
     MODINFOSTRING1,
     MODINFOSTRING2,
     XF86_VERSION_CURRENT,
-    S3VIRGE_DRIVER_VERSION,
+    S3VIRGE_VERSION_MAJOR, S3VIRGE_VERSION_MINOR, S3VIRGE_PATCHLEVEL,
     ABI_CLASS_VIDEODRV,		       /* This is a video driver */
     ABI_VIDEODRV_VERSION,
     {0, 0, 0, 0}

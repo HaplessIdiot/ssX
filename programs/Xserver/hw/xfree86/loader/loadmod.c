@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.29 1998/09/05 06:36:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.30 1998/12/13 05:32:55 dawes Exp $ */
 
 /*
  *
@@ -143,9 +143,7 @@ CheckVersion (const char *module, XF86ModuleVersionInfo *data)
 {
 	int vercode[3];
 	char verstr[4];
-	int modcode[2];
 	long ver = data->xf86version;
-	long mod = data->modversion;
 	char *abiname;
 
 	xf86Msg (X_INFO, "Module %s: vendor=\"%s\"\n",
@@ -162,14 +160,11 @@ CheckVersion (const char *module, XF86ModuleVersionInfo *data)
 	vercode[1] = ver & 0x7f;
 	ver >>= 7;
 	vercode[0] = ver;
-	modcode[1] = mod & 0xffff;
-	mod >>= 16;
-	modcode[0] = mod;
 	xf86ErrorF("\tcompiled for %d.%d", vercode[0], vercode[1]);
 	if (vercode[2] != 0)
 		xf86ErrorF(".%d", vercode[2]);
-	xf86ErrorF("%s%s, module version = %d.%d\n", verstr, verstr + 2,
-		   modcode[0], modcode[1]);
+	xf86ErrorF("%s%s, module version = %d.%d.%d\n", verstr, verstr + 2,
+		   data->majorversion, data->minorversion, data->patchlevel);
 	switch (data->abiclass)
 	{
 	case ABI_CLASS_NONE:

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/extmod/modinit.c,v 1.3 1998/10/06 06:08:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/extmod/modinit.c,v 1.4 1998/11/15 04:30:10 dawes Exp $ */
 
 /*
  *
@@ -279,7 +279,7 @@ static XF86ModuleVersionInfo VersRec =
         MODINFOSTRING1,
         MODINFOSTRING2,
         XF86_VERSION_CURRENT,
-        0x00010001,				/* 1.1 */
+        1, 0, 0,
         ABI_CLASS_EXTENSION,
         ABI_EXTENSION_VERSION,
         {0,0,0,0}

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.3 1998/08/13 14:45:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.4 1998/09/20 14:41:01 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -81,7 +81,9 @@ typedef struct {
     CARD32	_modinfo1_;	/* constant MODINFOSTRING1/2 to find */
     CARD32	_modinfo2_;	/* infoarea with a binary editor or sign tool */
     CARD32	xf86version;	/* contains XF86_VERSION_CURRENT */
-    CARD32	modversion;	/* contains a module specific version id */
+    CARD8	majorversion;	/* module-specific major version */
+    CARD8	minorversion;	/* moudle-specific minor version */
+    CARD16	patchlevel;	/* module-specific patch level */
     CARD32	abiclass;	/* ABI class that the module uses */
     CARD32	abiversion;	/* ABI version */
     CARD32	checksum[4];	/* contains a digital signature of the */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.6 1998/12/06 06:08:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.7 1998/12/13 05:32:57 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -54,7 +54,7 @@ static XF86ModuleVersionInfo xaaVersRec =
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,
-	0x00010001,			/* 1.1 */
+	1, 0, 0,
 	ABI_CLASS_VIDEODRV,		/* a video driver module */
 	ABI_VIDEODRV_VERSION,
 	{0,0,0,0}

@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.7 1998/10/11 10:20:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.8 1998/12/06 06:08:34 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -84,11 +84,9 @@ static Bool	TGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 #define VERSION 4000
 #define TGA_NAME "TGA"
 #define TGA_DRIVER_NAME "tga"
-/*
- * The major version is the 0xffff0000 part and the minor version is the
- * 0x0000ffff part.
- */
-#define TGA_DRIVER_VERSION 0x00010001
+#define TGA_MAJOR_VERSION 1
+#define TGA_MINOR_VERSION 0
+#define TGA_PATCHLEVEL 0
 
 /* 
  * This contains the functions needed by the server after loading the driver
@@ -151,7 +149,7 @@ static XF86ModuleVersionInfo tgaVersRec =
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,
-	TGA_DRIVER_VERSION,
+	TGA_MAJOR_VERSION, TGA_MINOR_VERSION, TGA_PATCHLEVEL,
 	ABI_CLASS_VIDEODRV,			/* This is a video driver */
 	ABI_VIDEODRV_VERSION,
 	{0,0,0,0}

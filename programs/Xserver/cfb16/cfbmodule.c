@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb16/cfbmodule.c,v 1.1.2.5 1998/07/04 13:32:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb16/cfbmodule.c,v 1.3 1998/07/25 09:06:38 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -47,7 +47,7 @@ static XF86ModuleVersionInfo VersRec =
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,
-	0x00010001,
+	1, 0, 0,
 	ABI_CLASS_ANSIC,		/* Only need the ansic layer */
 	ABI_ANSIC_VERSION,
 	{0,0,0,0}       /* signature, to be patched into the file by a tool */

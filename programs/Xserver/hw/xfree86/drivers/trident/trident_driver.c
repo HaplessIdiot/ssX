@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.32 1998/11/15 04:30:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.33 1998/12/06 06:08:35 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -96,11 +96,9 @@ static Bool	TRIDENTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 #define VERSION 4000
 #define TRIDENT_NAME "TRIDENT"
 #define TRIDENT_DRIVER_NAME "trident"
-/*
- * The major version is the 0xffff0000 part and the minor version is the
- * 0x0000ffff part.
- */
-#define TRIDENT_DRIVER_VERSION 0x00010001
+#define TRIDENT_MAJOR_VERSION 1
+#define TRIDENT_MINOR_VERSION 0
+#define TRIDENT_PATCHLEVEL 0
 
 /* 
  * This contains the functions needed by the server after loading the driver
@@ -397,7 +395,7 @@ static XF86ModuleVersionInfo tridentVersRec =
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,
-	TRIDENT_DRIVER_VERSION,
+	TRIDENT_MAJOR_VERSION, TRIDENT_MINOR_VERSION, TRIDENT_PATCHLEVEL,
 	ABI_CLASS_VIDEODRV,			/* This is a video driver */
 	ABI_VIDEODRV_VERSION,
 	{0,0,0,0}

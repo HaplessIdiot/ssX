@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/rac/xf86RACmodule.c,v 1.1 1998/09/19 12:15:01 dawes Exp $ */
 
 #include "xf86Module.h"
 MODULEINITPROTO(racModuleInit);
@@ -10,7 +10,7 @@ static XF86ModuleVersionInfo racVersRec =
     MODINFOSTRING1,
     MODINFOSTRING2,
     XF86_VERSION_CURRENT,
-    0x00010001,			/* 1.1 */
+    1, 0, 0,
     ABI_CLASS_VIDEODRV,		/* a video driver module */
     ABI_VIDEODRV_VERSION,
     {0,0,0,0}

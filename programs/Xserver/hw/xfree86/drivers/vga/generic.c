@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.16 1998/11/22 10:37:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.17 1998/11/29 10:50:32 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -64,7 +64,7 @@
 #define VGA_VERSION_NAME    "4.0"
 #define VGA_VERSION_MAJOR   4
 #define VGA_VERSION_MINOR   0
-#define VGA_VERSION_CURRENT ((VGA_VERSION_MAJOR << 16) | VGA_VERSION_MINOR)
+#define VGA_PATCHLEVEL	    0
 
 
 /* Forward definitions */
@@ -132,7 +132,7 @@ static XF86ModuleVersionInfo GenericVersionRec =
     MODINFOSTRING1,
     MODINFOSTRING2,
     XF86_VERSION_CURRENT,
-    VGA_VERSION_CURRENT,
+    VGA_VERSION_MAJOR, VGA_VERSION_MINOR, VGA_PATCHLEVEL,
     ABI_CLASS_VIDEODRV,
     ABI_VIDEODRV_VERSION,
     {0, 0, 0, 0}

@@ -5,7 +5,7 @@
  *      (c) 1998 Gerd Knorr <kraxel@cs.tu-berlin.de>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/i2c/xf86i2cmodule.c,v 1.1 1998/09/05 06:36:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/i2c/xf86i2cmodule.c,v 1.2 1998/10/05 13:23:14 dawes Exp $ */
 
 #include "xf86Module.h"
 
@@ -19,7 +19,7 @@ static XF86ModuleVersionInfo i2cVersRec =
         MODINFOSTRING1,
         MODINFOSTRING2,
         XF86_VERSION_CURRENT,
-        0x00010002,
+        1, 2, 0,
         ABI_CLASS_VIDEODRV,                     /* This is a ????  driver */
         ABI_VIDEODRV_VERSION,
         {0,0,0,0}
