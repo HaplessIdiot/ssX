@@ -1,4 +1,9 @@
 XFree86 4.2.99.1 (XX June 2002)
+ 174. Fix makedepend so that it can parse a unary '+' operator (#5185,
+      Mark Snitily).
+ 173. Fix a typo in Xvesa's emulation of instructions forbidden in vm86
+      mode (#5184, Juliusz Chroboczek)
+ 172. Fix a bounds check in Xlib's Region code (#5183, Owen Taylor).
  171. Fix LIBXML2LIBDIR name clash in lib/Imakefile (#5180, ISHIKAWA Mutsumi).
  170. Avoid a problem with setfontdirs when run in some locales (#5179,
       ISHIKAWA Mutsumi).
@@ -14854,4 +14859,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2238 2002/06/04 21:05:49 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2239 2002/06/04 21:55:42 dawes Exp $
