@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.62 2001/11/28 23:17:47 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.63 2001/12/30 22:27:21 herrb Exp $
 XCOMM
 
 #ifndef OSName
@@ -96,13 +96,15 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 # define HasApmKqueue		YES
 #endif
 
-/* OpenBSD 3.0 has libusb */
+/* OpenBSD 3.0 has libusb, next versions have libusbhid */
 #if OSMajorVersion >= 3 
 # define HasLibUsb		YES
-# ifndef UsbHidLib
+# ifndef HasLibUsbHid
 #  if OSMajorVersion == 3 && OsMinorVersion > 0 || OSMajorVersion > 3
+#   define HasLibUsbHid		YES
 #   define UsbHidLib 		-lusbhid
 #  else
+#   define HasLibUsbHid		NO
 #   define UsbHidLib		-lusb
 #  endif
 # endif
