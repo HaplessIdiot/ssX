@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:54:14 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.62 2003/11/16 16:35:02 herrb Exp $
+XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.63 2003/11/19 04:44:00 dawes Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
@@ -162,11 +162,9 @@ SYS_LIBRARIES1 = -lutil
 PROCTITLE_DEFINES = -DHAS_SETPROCTITLE
 #endif
 
-#undef HasSnprintf
-#define HasSnprintf NO
-
-#if HasSnprintf
-SNPRINTF_DEFINES = -DHAS_SNPRINTF
+#if !HasSnprintf
+SNPRINTFSRCS = snprintf.c
+SNPRINTFOBJS = snprintf.o
 #endif
 
 #if HasGetIfAddrs
@@ -202,13 +200,13 @@ LOCAL_LIBRARIES = $(GREETLIBS) $(XMULIB) $(XTOOLLIB) $(XLIB) $(XAUTHLIB) \
 		  netaddr.c reset.c resource.c protodpy.c policy.c \
 		  session.c socket.c streams.c util.c xdmcp.c \
 		  mitauth.c \
-		  genauth.c access.c choose.c $(PRNGCSRCS) \
+		  genauth.c access.c choose.c $(SNPRINTFSRCS) $(PRNGCSRCS) \
 		  $(XDMAUTHSRCS) $(RPCSRCS) $(KRB5SRCS) $(GREETSRCS)
           OBJS1 = auth.o daemon.o server.o dpylist.o dm.o error.o file.o \
 		  netaddr.o reset.o resource.o protodpy.o policy.o \
 		  session.o socket.o streams.o util.o xdmcp.o \
 		  mitauth.o \
-		  genauth.o access.o choose.o $(PRNGCOBJS) \
+		  genauth.o access.o choose.o $(SNPRINTFOBJS) $(PRNGCOBJS) \
 		  $(XDMAUTHOBJS) $(RPCOBJS) $(KRB5OBJS) $(GREETOBJS)
           SRCS2 = xdmshell.c
           OBJS2 = xdmshell.o
@@ -333,6 +331,10 @@ ObjectFromSpecialSource(Loginsh,Login,-DUSESHADOW)
 ObjectFromSpecialSource(sessionsh,session,-DUSESHADOW)
 #endif
 #endif /* !SharedLibXdmGreet */
+
+#if !HasSnprintf
+LinkSourceFile(snprintf.c,$(LIBSRC)/misc)
+#endif
 
 #ifdef IHaveSubdirs
 MakeSubdirs($(SUBDIRS))
