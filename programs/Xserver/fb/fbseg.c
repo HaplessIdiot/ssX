@@ -387,7 +387,7 @@ fbBresSolid24RRop (DrawablePtr  pDrawable,
     {
 	d = dst + (x1 >> FB_STIP_SHIFT);
 	x = x1 & FB_STIP_MASK;
-	rot = x % 24;
+	rot = FbFirst24Rot (x);
 	andT = FbRot24Stip(and,rot);
 	xorT = FbRot24Stip(xor,rot);
 	FbMaskStip (x, 24, leftMask, nl, rightMask);
@@ -491,7 +491,7 @@ fbBresDash24RRop (DrawablePtr	pDrawable,
 	    }
 	    d = dst + (x1 >> FB_STIP_SHIFT);
 	    x = x1 & FB_STIP_MASK;
-	    rot = x % 24;
+	    rot = FbFirst24Rot (x);
 	    andT = FbRot24Stip (andT, rot);
 	    xorT = FbRot24Stip (xorT, rot);
 	    FbMaskStip (x, 24, leftMask, nl, rightMask);

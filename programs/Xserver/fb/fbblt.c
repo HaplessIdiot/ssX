@@ -362,7 +362,7 @@ fbBlt24Line (FbBits	    *src,
     {
 	src += ((srcX + width - 1) >> FB_SHIFT) + 1;
 	dst += ((dstX + width - 1) >> FB_SHIFT) + 1;
-	rot = ((dstX + width) & FB_MASK) % 24;
+	rot = FbFirst24Rot (((dstX + width) & FB_MASK));
 	srcX = (srcX + width - 1) & FB_MASK;
 	dstX = (dstX + width - 1) & FB_MASK;
     }
@@ -372,7 +372,7 @@ fbBlt24Line (FbBits	    *src,
 	dst += dstX >> FB_SHIFT;
 	srcX &= FB_MASK;
 	dstX &= FB_MASK;
-	rot = dstX % 24;
+	rot = FbFirst24Rot (dstX);
     }
     mask = FbRot24(pm,rot);
     if (srcX == dstX)

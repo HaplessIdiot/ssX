@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbbltone.c,v 1.8 2000/04/04 19:24:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbbltone.c,v 1.9 2000/05/06 21:09:32 keithp Exp $ */
 
 #include "fb.h"
 
@@ -419,15 +419,20 @@ fbBltOne (FbStip    *src,
  * is to avoid compile-time warnings about shift overflow
  */
 
+#if BITMAP_BIT_ORDER == MSBFirst
+#define Mask24Pos(x,r) ((x)*24-(r))
+#else
 #define Mask24Pos(x,r) ((x)*24-((r) ? 24 - (r) : 0))
+#endif
+
 #define Mask24Neg(x,r)	(Mask24Pos(x,r) < 0 ? -Mask24Pos(x,r) : 0)
 #define Mask24Check(x,r)    (Mask24Pos(x,r) < 0 ? 0 : \
 			     Mask24Pos(x,r) >= FB_UNIT ? 0 : Mask24Pos(x,r))
+
 #define Mask24(x,r) (Mask24Pos(x,r) < FB_UNIT ? \
 		     (Mask24Pos(x,r) < 0 ? \
-		      FbScrLeft (FbBitsMask(0,24),Mask24Neg(x,r)) : \
-		      FbScrRight (FbBitsMask(0,24),Mask24Check(x,r))) \
-		     : 0)
+		      0xffffff >> Mask24Neg (x,r) : \
+		      0xffffff << Mask24Check(x,r)) : 0)
 
 #define SelMask24(b,n,r)	((((b) >> n) & 1) * Mask24(n,r))
 
@@ -477,7 +482,11 @@ const FbBits	fbStipple24Bits[3][1 << FbStip24Len] = {
      SelMask24(b,1,r))
 
 #define FbStip24Len	    2
+#if BITMAP_BIT_ORDER == MSBFirst
+#define FbStip24New(rot)    (1 + (rot == 0))
+#else
 #define FbStip24New(rot)    (1 + (rot == 8))
+#endif
 
 const FbBits	fbStipple24Bits[3][1 << FbStip24Len] = {
     /* rotate 0 */
@@ -493,6 +502,15 @@ const FbBits	fbStipple24Bits[3][1 << FbStip24Len] = {
 	C2_24( 0,16), C2_24 ( 1,16), C2_24 ( 2,16), C2_24 ( 3,16),
     }
 };
+#endif
+
+#if BITMAP_BIT_ORDER == LSBFirst
+#define FbMergeStip24Bits(left, right, new) (((left) >> (new)) | \
+					     (right) << (FbStip24Len - (new)))
+#else
+#define FbMergeStip24Bits(left, right, new) (((left << new) & \
+					      ((1 << FbStip24Len) - 1)) | \
+					     right)
 #endif
 
 #define fbFirstStipBits(len,stip) {\
@@ -514,15 +532,14 @@ const FbBits	fbStipple24Bits[3][1 << FbStip24Len] = {
     bits = FbStipLeft (*src++,offset); \
     remain = FB_STIP_UNIT - offset; \
     fbFirstStipBits(len,stip); \
-    stip = FbStipRight (stip, FbStip24Len - len); \
+    stip = FbMergeStip24Bits (0, stip, len); \
 }
     
 #define fbNextStipBits(rot,stip) {\
     int	    __new = FbStip24New(rot); \
     FbStip  __right; \
     fbFirstStipBits(__new, __right); \
-    stip = (FbStipLeft (stip, __new) | \
-	    FbStipRight (__right, FbStip24Len - __new)); \
+    stip = FbMergeStip24Bits (stip, __right, __new); \
     rot = FbNext24Rot (rot); \
 }
 
@@ -566,7 +583,7 @@ fbBltOne24 (FbStip	*srcLine,
     dst += dstX >> FB_SHIFT;
     srcX &= FB_STIP_MASK;
     dstX &= FB_MASK;
-    rot0 = dstX % 24;
+    rot0 = FbFirst24Rot (dstX);
     
     FbMaskBits (dstX, width, leftMask, nlMiddle, rightMask);
     
@@ -765,7 +782,7 @@ fbBltPlane (FbBits	    *src,
     {
 	int w = 24;
 
-	rot0 = srcX % 24;
+	rot0 = FbFirst24Rot (srcX);
 	if (srcX + w > FB_UNIT)
 	    w = FB_UNIT - srcX;
 	srcMaskFirst = FbRot24(pm,rot0) & FbBitsMask(srcX,w);

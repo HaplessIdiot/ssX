@@ -77,7 +77,7 @@ fbDots (FbBits	    *dstOrig,
 		int	n, rot;
 		FbStip	andT, xorT;
 		
-		rot = x % 24;
+		rot = FbFirst24Rot (x);
 		andT = FbRot24Stip(and,rot);
 		xorT = FbRot24Stip(xor,rot);
 		FbMaskStip (x, 24, leftMask, n, rightMask);
