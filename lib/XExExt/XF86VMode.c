@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/XExExt/XF86VMode.c,v 3.4 1995/06/14 09:40:01 dawes Exp $ */
+/* $XFree86: xc/lib/XExExt/XF86VMode.c,v 3.5 1995/07/02 07:43:21 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -36,6 +36,7 @@ from the Kaleb S. KEITHLEY.
 #include "xf86vmstr.h"
 #include "Xext.h"
 #include "extutil.h"
+#include <stdio.h>
 
 static XExtensionInfo _vgahelp_info_data;
 static XExtensionInfo *vgahelp_info = &_vgahelp_info_data;
@@ -138,7 +139,8 @@ Bool XF86VidModeGetModeLine(dpy, screen, dotclock, modeline)
     req->reqType = info->codes->major_opcode;
     req->vgahelpReqType = X_VGAHelpGetModeLine;
     req->screen = screen;
-    if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
+    if (!_XReply(dpy, (xReply *)&rep, 
+        (SIZEOF(xVGAHelpGetModeLineReply) - SIZEOF(xReply)) >> 2, xFalse)) {
 	UnlockDisplay(dpy);
 	SyncHandle();
 	return False;
@@ -153,6 +155,13 @@ Bool XF86VidModeGetModeLine(dpy, screen, dotclock, modeline)
     modeline->vsyncend   = rep.vsyncend;
     modeline->vtotal     = rep.vtotal;
     modeline->flags      = rep.flags;
+    modeline->privsize   = rep.privsize;
+    if (!(modeline->private = Xcalloc(rep.privsize, sizeof(CARD32)))) {
+	_XEatData(dpy, (rep.privsize) * sizeof(CARD32));
+	Xfree(modeline->private);
+	return False;
+    }
+    _XRead32(dpy, modeline->private, rep.privsize * sizeof(CARD32));
     UnlockDisplay(dpy);
     SyncHandle();
     return True;
@@ -182,6 +191,12 @@ Bool XF86VidModeModModeLine (dpy, screen, modeline)
     req->vsyncend = modeline->vsyncend;
     req->vtotal = modeline->vtotal;
     req->flags = modeline->flags;
+    req->privsize = modeline->privsize;
+    if (modeline->privsize) {
+	req->length += modeline->privsize;
+	Data32(dpy, (long *) modeline->private,
+	       modeline->privsize * sizeof(CARD32));
+    }
     UnlockDisplay(dpy);
     SyncHandle();
     return True;
