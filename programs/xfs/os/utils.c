@@ -1,5 +1,5 @@
 /* $XConsortium: utils.c,v 1.20 94/04/17 19:56:08 gildea Exp $ */
-/* $XFree86: xc/programs/xfs/os/utils.c,v 3.2 1995/11/30 13:05:54 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/utils.c,v 3.3 1996/05/06 06:01:00 dawes Exp $ */
 /*
  * misc os utilities
  */
@@ -89,6 +89,12 @@ in this Software without prior written authorization from the X Consortium.
 
 #if defined(X_NOT_POSIX) && (defined(SYSV) || defined(SVR4))
 #define SIGNALS_RESET_WHEN_CAUGHT
+#endif
+
+#ifdef X_NOT_STDC_ENV
+char *realloc();
+#else
+#include <stdlib.h>
 #endif
 
 extern char *configfilename;
@@ -398,8 +404,6 @@ FSrealloc (ptr, amount)
     register pointer ptr;
     unsigned long amount;
 {
-    char *realloc();
-
 #ifdef MEMBUG
     if (!Must_have_memory && MemoryFail &&
 	((random() % MEM_FAIL_SCALE) < MemoryFail))
