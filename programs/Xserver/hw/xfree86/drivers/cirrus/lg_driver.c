@@ -431,6 +431,8 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 	char *mod = NULL;
 	int fbPCIReg, ioPCIReg;
 	char *s;
+
+	if (flags & PROBE_DETECT) return FALSE;
 	
 #ifdef LG_DEBUG
 	ErrorF("LgPreInit\n");

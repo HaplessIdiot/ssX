@@ -577,6 +577,8 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     
     vgaHWPtr hwp;
     int vgaCRIndex, vgaCRReg, vgaIOBase;
+
+    if (flags & PROBE_DETECT) return FALSE;
     
     PVERB5("	S3VPreInit 1\n");
     	      

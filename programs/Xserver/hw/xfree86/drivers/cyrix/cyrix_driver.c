@@ -482,6 +482,8 @@ CYRIXPreInit(ScrnInfoPtr pScrn, int flags)
     char *mod = NULL;
     const char *Sym;
 
+    if (flags & PROBE_DETECT) return FALSE;
+
     /* Allocate the CYRIXRec driverPrivate */
     if (!CYRIXGetRec(pScrn)) return FALSE;
 

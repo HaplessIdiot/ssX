@@ -1456,6 +1456,8 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
     int i;
     char *mod = NULL;
 
+    if (flags & PROBE_DETECT) return FALSE;
+
     PDEBUG("	TsengPreInit\n");
     /*
      * Note: This function is only called once at server startup, and

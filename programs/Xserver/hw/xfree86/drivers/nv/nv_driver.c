@@ -711,6 +711,8 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     const char *reqSym = NULL;
     const char *s;
 
+    if (flags & PROBE_DETECT) return FALSE;
+
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NVPreInit\n"));
     /*
      * Note: This function is only called once at server startup, and

@@ -453,6 +453,7 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     vgaHWPtr          pvgaHW;
     renditionPtr      pRendition;
     
+    if (flags & PROBE_DETECT) return FALSE;
 
 #ifdef DEBUG
     ErrorF("Rendition: renditionPreInit() called\n");

@@ -458,6 +458,8 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
     char *mod = NULL;
     pointer Base;
 
+    if (flags & PROBE_DETECT) return FALSE;
+
     /*
      * Note: This function is only called once at server startup, and
      * not at the start of each server generation.  This means that

@@ -967,6 +967,8 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     char *mod = NULL;
     const char *s;
 
+    if (flags & PROBE_DETECT) return FALSE;
+
     TRACE_ENTER("GLINTPreInit");
 
     /*

@@ -474,6 +474,8 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
    int flags24;
    rgb defaultWeight = {0, 0, 0};
 
+   if (flags & PROBE_DETECT) return FALSE;
+
    if (pScrn->numEntities != 1) return FALSE;
 
    /* The vgahw module should be loaded here when needed */

@@ -461,6 +461,8 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
     GenericPtr        pGenericPriv;
     EntityInfoPtr     pEnt;
 
+    if (flags & PROBE_DETECT) return FALSE;
+
     /* Set the monitor */
     pScreenInfo->monitor = pScreenInfo->confScreen->monitor;
 
