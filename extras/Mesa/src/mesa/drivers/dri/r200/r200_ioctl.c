@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_ioctl.c,v 1.4 2002/12/17 00:32:56 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_ioctl.c,v 1.1.1.2 2004/06/10 14:23:01 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -403,7 +403,7 @@ void r200CopyBuffer( const __DRIdrawablePrivate *dPriv )
    r200ContextPtr rmesa;
    GLint nbox, i, ret;
    GLboolean   missed_target;
-   int64_t     ust;
+   int64_t ust;
 
    assert(dPriv);
    assert(dPriv->driContextPriv);
@@ -917,10 +917,10 @@ GLuint r200GartOffsetFromVirtual( r200ContextPtr rmesa, const GLvoid *pointer )
 
 
 
-void r200InitIoctlFuncs( GLcontext *ctx )
+void r200InitIoctlFuncs( struct dd_function_table *functions )
 {
-    ctx->Driver.Clear = r200Clear;
-    ctx->Driver.Finish = r200Finish;
-    ctx->Driver.Flush = r200Flush;
+    functions->Clear = r200Clear;
+    functions->Finish = r200Finish;
+    functions->Flush = r200Flush;
 }
 
