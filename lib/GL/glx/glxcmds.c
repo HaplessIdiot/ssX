@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
@@ -16,14 +17,26 @@
 ** Those portions of the Subject Software created by Silicon Graphics, Inc.
 ** are Copyright (c) 1991-9 Silicon Graphics, Inc. All Rights Reserved.
 **
-** Header: /p0/cvs/X39-3D/xc/lib/GL/glx/glxcmds.c,v 1.1 1999/02/23 07:49:20 martin Exp $
+** $SGI$
 */
+
+/*
+ * Direct rendering support added by Precision Insight, Inc.
+ *
+ * Authors:
+ *   Kevin E. Martin <kevin@precisioninsight.com>
+ *
+ * $PI: xc/lib/GL/glx/glxcmds.c,v 1.8 1999/06/10 04:39:13 martin Exp $
+ */
 
 #include "packsingle.h"
 #include "glxclient.h"
 #include <extutil.h>
 #include <Xext.h>
 #include <string.h>
+#ifdef GLX_DIRECT_RENDERING
+#include "indirect_init.h"
+#endif
 
 static const char GL_ClientExtensions[] = 
                   "GL_EXT_abgr "
@@ -40,7 +53,6 @@ static const char GLXClientExtensions[] =
 
 /*
 ** Create a new context.
-** NOTE: no direct rendering support here, or anywhere else in the library.
 */
 static
 GLXContext CreateContext(Display *dpy, XVisualInfo *vis,
@@ -51,6 +63,9 @@ GLXContext CreateContext(Display *dpy, XVisualInfo *vis,
     GLXContext gc;
     int bufSize = XMaxRequestSize(dpy) * 4;
     CARD8 opcode;
+#ifdef GLX_DIRECT_RENDERING
+    __GLXdisplayPrivate *priv;
+#endif
 
     opcode = __glXSetupForCommand(dpy);
     if (!opcode) {
@@ -120,6 +135,38 @@ GLXContext CreateContext(Display *dpy, XVisualInfo *vis,
 
 
     if (None == contextID) {
+#ifdef GLX_DIRECT_RENDERING
+	/*
+	** Create the direct rendering context, if requested and
+	** available.
+	*/
+	priv = __glXInitialize(dpy);
+	if (allowDirect && priv->driDisplay.private) {
+	    __GLXscreenConfigs *psc = &priv->screenConfigs[vis->screen];
+	    if (psc && psc->driScreen.private) {
+		void *shared = (shareList ?
+				shareList->driContext.private : NULL);
+		gc->driContext.private =
+		    (*psc->driScreen.createContext)(dpy, vis, shared,
+						    &gc->driContext);
+		if (gc->driContext.private) {
+		    gc->isDirect = GL_TRUE;
+		    gc->screen = vis->screen;
+		    gc->vid = vis->visualid;
+		}
+	    }
+	}
+
+	/*
+	** Initialize the function pointer array to use the indirect
+	** rendering routines.  If direct rendering is available for
+	** this context, then glAPI is initialized when the context is
+	** made current.
+	*/
+	if (!gc->isDirect)
+	    glInitIndirectAPI(&gc->glAPI);
+#endif
+
 	/* Send the glXCreateContext request */
 	LockDisplay(dpy);
 	GetReq(GLXCreateContext,req);
@@ -129,7 +176,7 @@ GLXContext CreateContext(Display *dpy, XVisualInfo *vis,
 	req->visual = vis->visualid;
 	req->screen = vis->screen;
 	req->shareList = shareList ? shareList->xid : None;
-	req->isDirect = GL_FALSE;
+	req->isDirect = gc->isDirect;
 	UnlockDisplay(dpy);
 	SyncHandle();
 	gc->imported = GL_FALSE;
@@ -186,6 +233,15 @@ DestroyContext(Display *dpy, GLXContext gc)
     } else {
 	/* Destroy the handle if not current to anybody */
 	__glXUnlock();
+#ifdef GLX_DIRECT_RENDERING
+	/* Destroy the direct rendering context */
+	if (gc->isDirect) {
+	    if (gc->driContext.private) {
+		(*gc->driContext.destroyContext)(dpy, gc->screen,
+						 gc->driContext.private);
+	    }
+	}
+#endif
 	__glXFreeContext(gc);
     }
 
@@ -255,6 +311,13 @@ void glXWaitGL(void)
     /* Flush any pending commands out */
     __glXFlushRenderBuffer(gc, gc->pc);
 
+#ifdef GLX_DIRECT_RENDERING
+    if (gc->isDirect) {
+	glFinish();
+	return;
+    }
+#endif
+
     /* Send the glXWaitGL request */
     LockDisplay(dpy);
     GetReq(GLXWaitGL,req);
@@ -280,6 +343,13 @@ void glXWaitX(void)
     /* Flush any pending commands out */
     __glXFlushRenderBuffer(gc, gc->pc);
 
+#ifdef GLX_DIRECT_RENDERING
+    if (gc->isDirect) {
+	XSync(dpy, False);
+	return;
+    }
+#endif
+
     /*
     ** Send the glXWaitX request.
     */
@@ -302,6 +372,12 @@ void glXUseXFont(Font font, int first, int count, int listBase)
 
     /* Flush any pending commands out */
     (void) __glXFlushRenderBuffer(gc, gc->pc);
+
+#ifdef GLX_DIRECT_RENDERING
+    if (gc->isDirect) {
+	/* NOT_DONE: This does not work yet */
+    }
+#endif
 
     /* Send the glXUseFont request */
     LockDisplay(dpy);
@@ -335,6 +411,12 @@ void glXCopyContext(Display *dpy, GLXContext source, GLXContext dest,
     if (!opcode) {
 	return;
     }
+
+#ifdef GLX_DIRECT_RENDERING
+    if (gc->isDirect) {
+	/* NOT_DONE: This does not work yet */
+    }
+#endif
 
     /*
     ** If the source is the current context, send its tag so that the context
@@ -391,6 +473,10 @@ Bool glXIsDirect(Display *dpy, GLXContext gc)
 {
     if (!gc) {
 	return GL_FALSE;
+#ifdef GLX_DIRECT_RENDERING
+    } else if (gc->isDirect) {
+	return GL_TRUE;
+#endif
     }
     return __glXIsDirect(dpy, gc->xid);
 }
@@ -449,6 +535,26 @@ void glXSwapBuffers(Display *dpy, GLXDrawable drawable)
     GLXContext gc = __glXGetCurrentContext();
     GLXContextTag tag;
     CARD8 opcode;
+#ifdef GLX_DIRECT_RENDERING
+    __GLXdisplayPrivate *priv;
+    __DRIdrawable *pdraw;
+
+    priv = __glXInitialize(dpy);
+    if (priv->driDisplay.private) {
+	__GLXscreenConfigs *psc = &priv->screenConfigs[gc->screen];
+	if (psc && psc->driScreen.private) {
+	    /*
+	    ** getDrawable returning NULL implies that the drawable is
+	    ** not bound to a direct rendering context.
+	    */
+	    pdraw = (*psc->driScreen.getDrawable)(dpy, drawable);
+	    if (pdraw) {
+		(*pdraw->swapBuffers)(dpy, pdraw->private);
+		return;
+	    }
+	}
+    }
+#endif
 
     opcode = __glXSetupForCommand(dpy);
     if (!opcode) {

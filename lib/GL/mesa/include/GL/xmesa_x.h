@@ -1,4 +1,4 @@
-
+/* $XFree86$ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -30,7 +30,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
  *
- * Header: /p0/cvs/X39-3D/xc/lib/GL/mesa/include/GL/xmesa_x.h,v 1.1 1999/02/26 08:52:29 martin Exp $
+ * $PI: xc/lib/GL/mesa/include/GL/xmesa_x.h,v 1.3 1999/03/16 07:18:20 martin Exp $
  */
 
 #ifndef _XMESA_X_H_

@@ -1,3 +1,4 @@
+XCOMM $XFree86$
 XCOMM The contents of this file are subject to the GLX Public License Version 1.0
 XCOMM (the "License"). You may not use this file except in compliance with the
 XCOMM License. You may obtain a copy of the License at Silicon Graphics, Inc.,
@@ -29,6 +30,7 @@ XCOMM 	glu \
 XCOMM 	glw
 
 SRCS = \
+	dri_glapi.c \
         clientattrib.c \
 	compsize.c \
 	eval.c \
@@ -37,6 +39,7 @@ SRCS = \
 	g_vendpriv.c \
 	glxcmds.c \
 	glxext.c \
+	indirect_init.c \
 	pixel.c \
 	pixelstore.c \
 	render2.c \
@@ -46,6 +49,7 @@ SRCS = \
 	vertarr.c
 
 OBJS = \
+	dri_glapi.o \
         clientattrib.o \
 	compsize.o \
 	eval.o \
@@ -54,6 +58,7 @@ OBJS = \
 	g_vendpriv.o \
 	glxcmds.o \
 	glxext.o \
+	indirect_init.o \
 	pixel.o \
 	pixelstore.o \
 	render2.o \
@@ -62,10 +67,16 @@ OBJS = \
 	singlepix.o \
 	vertarr.o
 
+#if BuildXF86DRI
+DEFINES = GlxDefines
+DRI_INCS = -I../dri
+#endif
+
 INCLUDES = -I$(TOP)/include \
 	   -I$(TOP)/include/extensions \
 	   -I$(TOP)/include/GL \
-	   -I$(INCLUDESRC)
+	   -I$(INCLUDESRC) \
+	   $(DRI_INCS)
 
 #include <Library.tmpl>
 

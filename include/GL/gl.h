@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+/* $XFree86$ */
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
@@ -23,7 +24,7 @@ extern "C" {
 ** Those portions of the Subject Software created by Silicon Graphics, Inc.
 ** are Copyright (c) 1991-9 Silicon Graphics, Inc. All Rights Reserved.
 ** 
-** Header: /p0/cvs/X39-3D/xc/include/GL/gl.h,v 1.2 1999/02/23 07:49:34 martin Exp $
+** $SGI$
 */
 
 typedef unsigned long GLenum;
@@ -1596,7 +1597,7 @@ extern void glDrawBuffer (GLenum mode);
 extern void glDrawElements (GLenum mode, GLsizei count, GLenum type, const GLvoid *indices);
 extern void glDrawPixels (GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels);
 extern void glEdgeFlag (GLboolean flag);
-extern void glEdgeFlagPointer (GLsizei stride, const GLboolean *pointer);
+extern void glEdgeFlagPointer (GLsizei stride, const GLvoid *pointer);
 extern void glEdgeFlagPointerEXT (GLsizei stride, GLsizei count, const GLboolean *pointer);
 extern void glEdgeFlagv (const GLboolean *flag);
 extern void glEnable (GLenum cap);

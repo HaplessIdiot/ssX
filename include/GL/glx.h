@@ -1,6 +1,7 @@
 #ifndef __GLX_glx_h__
 #define __GLX_glx_h__
 
+/* $XFree86$ */
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
@@ -19,7 +20,7 @@
 ** Those portions of the Subject Software created by Silicon Graphics, Inc.
 ** are Copyright (c) 1991-9 Silicon Graphics, Inc. All Rights Reserved.
 **
-** Header: /p0/cvs/X39-3D/xc/include/GL/glx.h,v 1.1 1999/02/26 08:08:09 martin Exp $
+** $SGI$
 */
 
 #include <X11/Xlib.h>
