@@ -36,7 +36,7 @@
 
 #define SISDRIVERVERSIONYEAR    3
 #define SISDRIVERVERSIONMONTH   11
-#define SISDRIVERVERSIONDAY     19
+#define SISDRIVERVERSIONDAY     22
 #define SISDRIVERREVISION       1
 
 #define SISDRIVERIVERSION (SISDRIVERVERSIONYEAR << 16) | (SISDRIVERVERSIONMONTH << 8) \
@@ -181,9 +181,9 @@
 #define DISPTYPE_DISP2		CRT2_ENABLE
 #define TV_NTSC                 0x00000010
 #define TV_PAL                  0x00000020
-#define TV_HIVISION             0x00000040
-#define TV_HIVISION_LV          0x00000080
-#define TV_TYPE                 (TV_NTSC | TV_PAL | TV_HIVISION | TV_HIVISION_LV)
+#define TV_HIVISION             0x00000040 /* Not supported */
+#define TV_YPBPR                0x00000080 /* Not supported */
+#define TV_TYPE                 (TV_NTSC | TV_PAL | TV_HIVISION | TV_YPBPR)
 #define TV_AVIDEO               0x00000100
 #define TV_SVIDEO               0x00000200
 #define TV_SCART                0x00000400
@@ -796,6 +796,8 @@ typedef struct {
     unsigned char       sisfblcda;
     int			sisfbscalelcd;
     unsigned long	sisfbspecialtiming;
+    BOOL		sisfb_haveemi;
+    unsigned char	sisfb_emi30,sisfb_emi31,sisfb_emi32,sisfb_emi33;
     int			NoYV12;			/* Disable Xv YV12 support (old series) */
     unsigned char       postVBCR32;
     int			newFastVram;		/* Replaces FastVram */

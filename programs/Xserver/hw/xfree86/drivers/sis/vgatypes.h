@@ -285,7 +285,10 @@ struct _SISFB_INFO {
 	int sisfb_scalelcd;
 	unsigned long sisfb_specialtiming;
 
-	char reserved[219]; 		/* for future use */
+	unsigned char sisfb_haveemi;
+	unsigned char sisfb_emi30,sisfb_emi31,sisfb_emi32,sisfb_emi33;
+
+	char reserved[214]; 		/* for future use */
 };
 #endif
 

@@ -2675,6 +2675,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     pSiS->sisfblcda = 0xff;
     pSiS->sisfbscalelcd = -1;
     pSiS->sisfbspecialtiming = CUT_NONE;
+    pSiS->sisfb_haveemi = FALSE;
     pSiS->OldMode = 0;
     pSiS->sisfbfound = FALSE;
 
@@ -2764,6 +2765,13 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 			          if(pSiS->VGAEngine == SIS_315_VGA) {
 				     pSiS->donttrustpdc = FALSE;
 				     pSiS->sisfbpdc = mysisfbinfo.sisfb_lcdpdc;
+				     if(sisfbversion >= 0x010618) {
+				        pSiS->sisfb_haveemi = mysisfbinfo.sisfb_haveemi ? TRUE : FALSE;
+					pSiS->sisfb_emi30 = mysisfbinfo.sisfb_emi30;
+					pSiS->sisfb_emi31 = mysisfbinfo.sisfb_emi31;
+					pSiS->sisfb_emi32 = mysisfbinfo.sisfb_emi32;
+					pSiS->sisfb_emi33 = mysisfbinfo.sisfb_emi33;
+				     }
 				  }
 			       }
 		            }
@@ -2872,6 +2880,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
        pSiS->SiS_Pr->SiS_CustomT = CUT_NONE;
        pSiS->SiS_Pr->CRT1UsesCustomMode = FALSE;
        pSiS->SiS_Pr->LVDSHL = -1;
+       pSiS->SiS_Pr->HaveEMI = FALSE;
     }
 
     /* Get our relocated IO registers */
@@ -4394,15 +4403,15 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 
     if(pSiS->VGAEngine == SIS_315_VGA) {
        if(pSiS->VBFlags & (VB_301LV | VB_302LV | VB_302ELV)) {
-	  /* Save the current PDC if the panel is used at the moment.
+	  /* Save the current PDC and EMI if the panel is used at the moment.
 	   * This seems by far the safest way to find out about it.
 	   */
+	  unsigned char tmp;
+	  inSISIDXREG(SISCR, 0x30, tmp);
 	  if(pSiS->sisfbpdc) {
 	     pSiS->sishw_ext.pdc = pSiS->sisfbpdc;
 	  } else {
 	     if(!(pSiS->donttrustpdc)) {
-	        unsigned char tmp;
-	        inSISIDXREG(SISCR, 0x30, tmp);
 	        if(tmp & 0x20) {
 	           inSISIDXREG(SISPART1, 0x2D, pSiS->sishw_ext.pdc);
                 } else {
@@ -4425,16 +4434,24 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	      	  "Using LCD PanelDelayCompensation %d\n",
 		  pSiS->sishw_ext.pdc);
 	  }
-       } else if(pSiS->Chipset == PCI_CHIP_SIS660) {
-          /* Since I have no idea about the required PDC on
-	   * the new chips, let the user specify one. But
-	   * we only use the lower nibble.
-	   */
-          if(pSiS->PDC != -1) {
-	     pSiS->sishw_ext.pdc = pSiS->PDC & 0x0f;
-	     xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-	      	  "Using LCD PanelDelayCompensation %d\n",
-		  pSiS->sishw_ext.pdc);
+	  if(pSiS->VBFlags & (VB_302LV | VB_302ELV)) {
+	     if((pSiS->sisfbfound) && (pSiS->sisfb_haveemi)) {
+	        pSiS->SiS_Pr->EMI_30 = pSiS->sisfb_emi30;
+	        pSiS->SiS_Pr->EMI_31 = pSiS->sisfb_emi31;
+	        pSiS->SiS_Pr->EMI_32 = pSiS->sisfb_emi32;
+	        pSiS->SiS_Pr->EMI_33 = pSiS->sisfb_emi33;
+		pSiS->SiS_Pr->HaveEMI = TRUE;
+	     } else {
+	        inSISIDXREG(SISPART4, 0x30, pSiS->SiS_Pr->EMI_30);
+		inSISIDXREG(SISPART4, 0x31, pSiS->SiS_Pr->EMI_31);
+		inSISIDXREG(SISPART4, 0x32, pSiS->SiS_Pr->EMI_32);
+		inSISIDXREG(SISPART4, 0x33, pSiS->SiS_Pr->EMI_33);
+		pSiS->SiS_Pr->HaveEMI = TRUE;
+	     }
+	     xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	     	"302LV/302ELV: EMI %02x %02x %02x %02x\n",
+		pSiS->SiS_Pr->EMI_30,pSiS->SiS_Pr->EMI_31,
+		pSiS->SiS_Pr->EMI_32,pSiS->SiS_Pr->EMI_33);
 	  }
        }
     }
@@ -10222,7 +10239,7 @@ void SiS_SetTVyscale(ScrnInfoPtr pScrn, int val)
    if(pSiSEnt) pSiSEnt->tvyscale = val;
 #endif
 
-   if(pSiS->VBFlags & (TV_HIVISION | TV_HIVISION_LV)) return;
+   if(pSiS->VBFlags & (TV_HIVISION | TV_YPBPR)) return;
 
    if(pSiS->VGAEngine == SIS_315_VGA || pSiS->VGAEngine == SIS_315_VGA) {
 

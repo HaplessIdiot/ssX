@@ -996,7 +996,7 @@ SiS_GetModeID_TV(int VGAEngine, ULONG VBFlags, int HDisplay, int VDisplay, int D
 	     else if(VDisplay == 400) ModeIndex = ModeIndex_640x400[Depth];
 	     break;
 	case 720:
-	     if(!(VBFlags & (TV_HIVISION | TV_HIVISION_LV))) {
+	     if(!(VBFlags & (TV_HIVISION | TV_YPBPR))) {
                 if(VDisplay == 480) {
 		   if((VBFlags & TV_NTSC) || (VBFlags & TV_PALM))
                       ModeIndex = ModeIndex_720x480[Depth];
@@ -1007,7 +1007,7 @@ SiS_GetModeID_TV(int VGAEngine, ULONG VBFlags, int HDisplay, int VDisplay, int D
 	     }
              break;
 	case 768:
-	     if(!(VBFlags & (TV_HIVISION | TV_HIVISION_LV))) {
+	     if(!(VBFlags & (TV_HIVISION | TV_YPBPR))) {
 	        if((VBFlags & TV_PAL) && (!(VBFlags & TV_PALM))) {
           	   if(VDisplay == 576) ModeIndex = ModeIndex_768x576[Depth];
 		}
@@ -1016,7 +1016,7 @@ SiS_GetModeID_TV(int VGAEngine, ULONG VBFlags, int HDisplay, int VDisplay, int D
 	case 800:
 	     if(VDisplay == 600) ModeIndex = ModeIndex_800x600[Depth];
 	     else if(VDisplay == 480) {
-	        if(VBFlags & (TV_HIVISION | TV_HIVISION_LV)) {
+	        if(VBFlags & (TV_HIVISION | TV_YPBPR)) {
 		    ModeIndex = ModeIndex_800x480[Depth];
 		}
 	     }
@@ -1027,13 +1027,13 @@ SiS_GetModeID_TV(int VGAEngine, ULONG VBFlags, int HDisplay, int VDisplay, int D
 		   ModeIndex = ModeIndex_1024x768[Depth];
 		}
 	     } else if(VDisplay == 576) {
-	        if(VBFlags & (TV_HIVISION | TV_HIVISION_LV)) {
+	        if(VBFlags & (TV_HIVISION | TV_YPBPR)) {
 		   ModeIndex = ModeIndex_1024x576[Depth];
 		}
 	     }
 	     break;
 	case 1280:
-	     if(VBFlags & (TV_HIVISION | TV_HIVISION_LV)) {
+	     if(VBFlags & (TV_HIVISION | TV_YPBPR)) {
 	        if(VDisplay == 720)       ModeIndex = ModeIndex_1280x720[Depth];
 		else if(VDisplay == 1024) ModeIndex = ModeIndex_1280x1024[Depth];
 	     }
@@ -1368,7 +1368,6 @@ SiSSetLVDSetc(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
    SiS_Pr->SiS_IF_DEF_LVDS = 0;
    SiS_Pr->SiS_IF_DEF_TRUMPION = 0;
    SiS_Pr->SiS_IF_DEF_CH70xx = 0;
-   SiS_Pr->SiS_IF_DEF_HiVision = 0;
    SiS_Pr->SiS_IF_DEF_DSTN = 0;
    SiS_Pr->SiS_IF_DEF_FSTN = 0;
    SiS_Pr->SiS_IF_DEF_CONEX = 0;
@@ -3626,7 +3625,7 @@ SiSSetMode(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,USHORT ModeNo)
 
    /* Get VB information (connectors, connected devices) */
    SiS_GetVBInfo(SiS_Pr, ModeNo, ModeIdIndex, HwInfo, (SiS_Pr->UseCustomMode) ? 0 : 1);
-   SiS_SetHiVision(SiS_Pr, HwInfo);
+   SiS_SetYPbPr(SiS_Pr, HwInfo);
    SiS_SetTVMode(SiS_Pr, ModeNo, ModeIdIndex, HwInfo);
    SiS_GetLCDResInfo(SiS_Pr, ModeNo, ModeIdIndex, HwInfo);
    SiS_SetLowModeTest(SiS_Pr, ModeNo, HwInfo);
@@ -3927,7 +3926,7 @@ SiSBIOSSetModeCRT2(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, ScrnInfoPtr pScrn,
       /* If this is a custom mode, we don't check the modeflag for CRT2Mode */
       SiS_GetVBInfo(SiS_Pr, ModeNo, ModeIdIndex, HwInfo, 0);
    }
-   SiS_SetHiVision(SiS_Pr, HwInfo);
+   SiS_SetYPbPr(SiS_Pr, HwInfo);
    SiS_SetTVMode(SiS_Pr, ModeNo, ModeIdIndex, HwInfo);
    SiS_GetLCDResInfo(SiS_Pr, ModeNo, ModeIdIndex, HwInfo);
    SiS_SetLowModeTest(SiS_Pr, ModeNo, HwInfo);
@@ -4071,7 +4070,7 @@ SiSBIOSSetModeCRT1(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, ScrnInfoPtr pScrn,
    /* Get VB information (connectors, connected devices) */
    /* (We don't care if the current mode is a CRT2 mode) */
    SiS_GetVBInfo(SiS_Pr, ModeNo, ModeIdIndex, HwInfo, 0);
-   SiS_SetHiVision(SiS_Pr, HwInfo);
+   SiS_SetYPbPr(SiS_Pr, HwInfo);
    SiS_SetTVMode(SiS_Pr, ModeNo, ModeIdIndex, HwInfo);
    SiS_GetLCDResInfo(SiS_Pr, ModeNo, ModeIdIndex, HwInfo);
    SiS_SetLowModeTest(SiS_Pr, ModeNo, HwInfo);
