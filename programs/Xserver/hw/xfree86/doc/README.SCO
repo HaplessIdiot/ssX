@@ -465,7 +465,37 @@
   These changes may become obsolete or invalid in a later version of
   XFree86.
 
-  10.  Relevant Documentation
+  10.  Compiling XFree86 under Open Server 5
+
+  As of GCC version 2.8.0, Open Server is supported. Configure it by
+  using the following.
+
+
+           ./configure i486-sco3.2v5.0
+
+
+
+
+  There is no reason to modify gcc in any way.  It compiles cleanly on
+  Open Server 5.
+
+  Build the system using
+
+          make World
+
+
+
+  Under Open Server 5 things are very different to previous versions of
+  SCO UNIX.
+
+     o  All programs are compiled in ELF mode to reduce size
+
+     o  Both ELF and COFF libraries are generated
+
+     o  You do not need to provide a BOOTSTAPCFLAGS line when building.
+        Open Server 5 is automatically detected.
+
+  11.  Relevant Documentation
 
   Some relevant documentation for SCO Users and Developers can be found
   in the following files.
@@ -481,7 +511,7 @@
         /usr/X11R6/lib/X11/doc/VideoModes.doc and the README files for
         particular video cards.
 
-  11.  Known Problems
+  12.  Known Problems
 
 
      o  After running the server you may see some strange characters in
@@ -495,7 +525,8 @@
      o  Shared libraries are not implemented in XFree86 3.1 yet.  This
         means the binaries use a log of disk space and a lot of memory
 
-  12.  Trouble Shooting
+
+  13.  Trouble Shooting
 
 
      Problem:
@@ -525,10 +556,9 @@
 
      Problem:
 
-
-     The server starts up,  the screen goes blank,  and I
-     never see anything else.  It appears that my machine has
-     hung.
+          The server starts up,  the screen goes blank,  and I
+          never see anything else.  It appears that my machine has
+          hung.
 
 
      Causes:
@@ -561,9 +591,10 @@
           hard code them into your XF86Config as this will take
           some strain off your monitor during XFree86 startup where
           it usually probes the various clock frequencies.  Getting
-          the ``X'' screen to appear can be a painfully slow task.
-          Be patient and read as much of the doco as you can han-
-          dle.  You will get it to work.
+
+     the ``X'' screen to appear can be a painfully slow task.
+     Be patient and read as much of the doco as you can han-
+     dle.  You will get it to work.
 
 
      Problem:
@@ -591,10 +622,9 @@
              2. You are using a server that requires special access
                 to the video memory on your card.  The only way to
                 fix this is to install the "dmmap" memory mapping
-
-           driver for SCO.  The source for this driver is
-           provided in /usr/X11R6/lib/X11/etc/dmmap.shar.  For
-           example, the ET4000W32 server will require this.
+                driver for SCO.  The source for this driver is
+                provided in /usr/X11R6/lib/X11/etc/dmmap.shar.  For
+                example, the ET4000W32 server will require this.
 
 
      Problem:
@@ -627,6 +657,7 @@
 
         1. Can only run a limited number of xterms.
 
+
         2. xterm does not work but other programs like xclock do work.
 
      Causes:
@@ -655,8 +686,6 @@
 
 
      Causes:
-
-
 
         1. You are running an original 1.3 distribution of XFree86.
            Update to the latest version (3.1 or greater).
@@ -695,11 +724,11 @@
      Causes:
 
 
-          This behaviour was observed when compiling with a
-          STDC_VALUE=0 for gcc.  mkshlib was core dumping on build-
-          ing the shared library in this case.  Using a new gcc
-          without the STDC_VALUE=0 or using a 3.2.2 mkshlib appears
-          to fix this problem.
+     This behaviour was observed when compiling with a
+     STDC_VALUE=0 for gcc.  mkshlib was core dumping on build-
+     ing the shared library in this case.  Using a new gcc
+     without the STDC_VALUE=0 or using a 3.2.2 mkshlib appears
+     to fix this problem.
 
 
      Problem:
@@ -718,19 +747,13 @@
           your application when compiling under XFree86 with gcc
           and SCO motif.
 
-
-
-
-
-
-
-         #ifdef SCO
-         void XtDisplayStringConversionWarnin(dpy, from, toType)
-             Display*  dpy;
-             String    from;
-             String    toType;
-         { XtDisplayStringConversionWarning(dpy, from, toType); }
-         #endif
+              #ifdef SCO
+              void XtDisplayStringConversionWarnin(dpy, from, toType)
+                  Display*  dpy;
+                  String    from;
+                  String    toType;
+              { XtDisplayStringConversionWarning(dpy, from, toType); }
+              #endif
 
 
 
@@ -758,36 +781,43 @@
              3. You need a file in /etc/conf/node.d which contains
                 something like:
 
-                        clone   spx             c       sp
-                        sp      X0S             c       127
-                        sp      X0R             c       126
-                        sp      X1S             c       125
-                        sp      X1R             c       124
-                        sp      X2S             c       123
-                        sp      X2R             c       122
-                        sp      X3S             c       121
-                        sp      X3R             c       120
-                        sp      X4S             c       119
-                        sp      X4R             c       118
-                        sp      X5S             c       117
-                        sp      X5R             c       116
-                        sp      X6S             c       115
-                        sp      X6R             c       114
-                        sp      X7S             c       113
-                        sp      X7R             c       112
 
 
 
-          if you don't have something like this (maybe called
-          "Xsco") then create one and that should fix your problem.
-          As far as I can tell the streams pseudo tty driver should
-          be there.
-
-          The simplest way to get the devices if you had to create
-          this file is to rebuild the kernel and the environment.
-          If you don't want to do this then:
 
 
+
+
+
+
+                   clone   spx             c       sp
+                   sp      X0S             c       127
+                   sp      X0R             c       126
+                   sp      X1S             c       125
+                   sp      X1R             c       124
+                   sp      X2S             c       123
+                   sp      X2R             c       122
+                   sp      X3S             c       121
+                   sp      X3R             c       120
+                   sp      X4S             c       119
+                   sp      X4R             c       118
+                   sp      X5S             c       117
+                   sp      X5R             c       116
+                   sp      X6S             c       115
+                   sp      X6R             c       114
+                   sp      X7S             c       113
+                   sp      X7R             c       112
+
+
+
+     if you don't have something like this (maybe called
+     "Xsco") then create one and that should fix your problem.
+     As far as I can tell the streams pseudo tty driver should
+     be there.
+
+     The simplest way to get the devices if you had to create
+     this file is to rebuild the kernel and the environment.
+     If you don't want to do this then:
 
 
              touch /etc/.new_unix
@@ -799,7 +829,7 @@
      and try it out.
 
 
-  13.  Acknowledgements
+  14.  Acknowledgements
 
   Thanks to the Core team for their previous and continuing help with
   the SCO work.  Many thanks to Stacey Campbell at SCO for all the
@@ -817,13 +847,49 @@
 
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.10 1996/02/24 05:59:11 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.11 1996/08/11 13:00:44 dawes Exp $
 
 
 
 
 
   $XConsortium: SCO.sgml /main/7 1995/11/12 20:00:04 kaleb $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
