@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.3 2001/05/26 01:25:42 keithp Exp $
+ * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.4 2001/06/03 21:52:44 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation, Inc.
  *
@@ -132,23 +132,17 @@ Bool RRScreenInit(ScreenPtr pScreen)
 {
     rrScrPrivPtr   pScrPriv;
 
-    fprintf(stderr, "RRGeneration = %d, serverGeneration = %d\n",
-	    RRGeneration, serverGeneration);
     if (RRGeneration != serverGeneration)
     {
-	if ((rrPrivIndex = AllocateScreenPrivateIndex()) < 0) {
-	  fprintf(stderr, "rrPrivIndex = %d\n", rrPrivIndex);
-	return FALSE;
-	}
-	fprintf(stderr, "rrPrivIndex = %d\n", rrPrivIndex);
+	if ((rrPrivIndex = AllocateScreenPrivateIndex()) < 0)
+	    return FALSE;
 	RRGeneration = serverGeneration;
     }
 
     pScrPriv = (rrScrPrivPtr) xalloc (sizeof (rrScrPrivRec));
     if (!pScrPriv)
-    {
 	return FALSE;
-    }
+
     SetRRScreen(pScreen, pScrPriv);
 
     /*
@@ -693,13 +687,6 @@ ProcRRSetScreenConfig (ClientPtr client)
     REQUEST_SIZE_MATCH(xRRSetScreenConfigReq);
     SECURITY_VERIFY_DRAWABLE(pDraw, stuff->drawable, client,
 			     SecurityWriteAccess);
-
-    fprintf(stderr, "got to procRRSetScreenConfig, draw = %d, time = %d, sizeseti = %d, visualseti = %d, rotation = %d\n",
-	    pDraw,
-	    stuff->timestamp,
-	    stuff->sizeID,
-	    stuff->visualGroupID,
-	    stuff->rotation);
 
     pScreen = pDraw->pScreen;
 

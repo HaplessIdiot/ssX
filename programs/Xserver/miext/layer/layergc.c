@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/miext/layer/layergc.c,v 1.1 2001/05/29 04:54:13 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -64,19 +64,11 @@ layerCreateGC (GCPtr pGC)
     layerGCPriv(pGC);
     
     /*
-     * XXX this is quite broken, initialize the GC with the
-     * first layer that looks like it might handle this depth,
-     * use kind 0 if none matches.  More thought is clearly needed
+     * XXX assume the first layer can handle all GCs
      */
     pLayKind = &pLayScr->kinds[0];
-    for (pLayer = pLayScr->pLayers; pLayer; pLayer = pLayer->pNext)
-    {
-	if (pLayer->depth == pGC->depth)
-	{
-	    pLayKind = pLayer->pKind;
-	    break;
-	}
-    }
+    if (pLayScr->pLayers)
+	pLayKind = pLayScr->pLayers->pKind;
     pLayGC->pKind = pLayKind;
     LayerUnwrap (pScreen,pLayGC->pKind,CreateGC);
     
@@ -84,7 +76,7 @@ layerCreateGC (GCPtr pGC)
 	ret = FALSE;
     LayerWrap (pScreen,pLayKind,CreateGC,layerCreateGC);
 
-    LayerWrap (pGC,pLayGC->pKind,funcs,&layerGCFuncs);
+    LayerWrap (pGC,pLayGC,funcs,&layerGCFuncs);
 
     return ret;
 }
@@ -104,31 +96,45 @@ layerValidateGC(GCPtr         pGC,
     }
     else
     {
+	/* XXX assume the first layer can handle all pixmaps */
 	layerScrPriv (pDraw->pScreen);
-	pKind = &pLayScr->kinds[LAYER_FB];
+	pKind = &pLayScr->kinds[0];
+	if (pLayScr->pLayers)
+	    pKind = pLayScr->pLayers->pKind;
     }
     
-    LayerUnwrap (pGC,pLayGC->pKind,funcs);
+    LayerUnwrap (pGC,pLayGC,funcs);
     if (pKind != pLayGC->pKind)
     {
-	if (pLayGC->pKind->UnwrapGC)
-	    (*pLayGC->pKind->UnwrapGC) (pGC);
-	if (pKind->WrapGC)
-	    (*pKind->WrapGC) (pGC);
+	/*
+	 * Clean up the previous user
+	 */
+	CreateGCProcPtr	CreateGC;
+	(*pGC->funcs->DestroyGC) (pGC);
+
 	pLayGC->pKind = pKind;
+	
+	/*
+	 * Temporarily unwrap Create GC and let
+	 * the new code setup the GC 
+	 */
+	CreateGC = pGC->pScreen->CreateGC;
+	LayerUnwrap (pGC->pScreen, pLayGC->pKind, CreateGC);
+	(*pGC->pScreen->CreateGC) (pGC);
+	LayerWrap (pGC->pScreen, pLayGC->pKind, CreateGC, CreateGC);
     }
     
     (*pGC->funcs->ValidateGC) (pGC, changes, pDraw);
-    LayerWrap(pGC,pLayGC->pKind,funcs,&layerGCFuncs);
+    LayerWrap(pGC,pLayGC,funcs,&layerGCFuncs);
 }
 
 void
 layerDestroyGC(GCPtr pGC)
 {
     layerGCPriv(pGC);
-    LayerUnwrap (pGC,pLayGC->pKind,funcs);
+    LayerUnwrap (pGC,pLayGC,funcs);
     (*pGC->funcs->DestroyGC)(pGC);
-    LayerWrap(pGC,pLayGC->pKind,funcs,&layerGCFuncs);
+    LayerWrap(pGC,pLayGC,funcs,&layerGCFuncs);
 }
 
 void
@@ -136,9 +142,9 @@ layerChangeGC (GCPtr		pGC,
 	       unsigned long	mask)
 {
     layerGCPriv(pGC);
-    LayerUnwrap (pGC,pLayGC->pKind,funcs);
+    LayerUnwrap (pGC,pLayGC,funcs);
     (*pGC->funcs->ChangeGC) (pGC, mask);
-    LayerWrap(pGC,pLayGC->pKind,funcs,&layerGCFuncs);
+    LayerWrap(pGC,pLayGC,funcs,&layerGCFuncs);
 }
 
 void
@@ -147,9 +153,9 @@ layerCopyGC (GCPtr	    pGCSrc,
 	     GCPtr	    pGCDst)
 {
     layerGCPriv(pGCDst);
-    LayerUnwrap (pGCDst,pLayGC->pKind,funcs);
+    LayerUnwrap (pGCDst,pLayGC,funcs);
     (*pGCDst->funcs->CopyGC) (pGCSrc, mask, pGCDst);
-    LayerWrap(pGCDst,pLayGC->pKind,funcs,&layerGCFuncs);
+    LayerWrap(pGCDst,pLayGC,funcs,&layerGCFuncs);
 }
 
 void
@@ -159,26 +165,26 @@ layerChangeClip (GCPtr	    pGC,
 		 int	    nrects)
 {
     layerGCPriv(pGC);
-    LayerUnwrap (pGC,pLayGC->pKind,funcs);
+    LayerUnwrap (pGC,pLayGC,funcs);
     (*pGC->funcs->ChangeClip) (pGC, type, pvalue, nrects);
-    LayerWrap(pGC,pLayGC->pKind,funcs,&layerGCFuncs);
+    LayerWrap(pGC,pLayGC,funcs,&layerGCFuncs);
 }
 
 void
 layerCopyClip(GCPtr pGCDst, GCPtr pGCSrc)
 {
     layerGCPriv(pGCDst);
-    LayerUnwrap (pGCDst,pLayGC->pKind,funcs);
+    LayerUnwrap (pGCDst,pLayGC,funcs);
     (*pGCDst->funcs->CopyClip) (pGCSrc, pGCDst);
-    LayerWrap(pGCDst,pLayGC->pKind,funcs,&layerGCFuncs);
+    LayerWrap(pGCDst,pLayGC,funcs,&layerGCFuncs);
 }
 
 void
 layerDestroyClip(GCPtr pGC)
 {
     layerGCPriv(pGC);
-    LayerUnwrap (pGC,pLayGC->pKind,funcs);
+    LayerUnwrap (pGC,pLayGC,funcs);
     (*pGC->funcs->DestroyClip) (pGC);
-    LayerWrap(pGC,pLayGC->pKind,funcs,&layerGCFuncs);
+    LayerWrap(pGC,pLayGC,funcs,&layerGCFuncs);
 }
 

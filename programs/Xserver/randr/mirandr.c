@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/randr/mirandr.c,v 1.3 2001/05/26 01:25:42 keithp Exp $
+ * $XFree86: xc/programs/Xserver/randr/mirandr.c,v 1.4 2001/06/03 21:52:44 keithp Exp $
  *
  * Copyright © 2001 Compaq Computer Corporation
  *
@@ -116,10 +116,8 @@ miRandRInit (ScreenPtr pScreen)
 {
     rrScrPrivPtr    rp;
     
-    fprintf(stderr, "got to miRandRInit\n");
     if (!RRScreenInit (pScreen))
 	return FALSE;
-    fprintf(stderr, "got back successfully from RRScreenInit\n");
     rp = rrGetScrPriv(pScreen);
     rp->rrGetInfo = miRRGetInfo;
     rp->rrSetConfig = miRRSetConfig;

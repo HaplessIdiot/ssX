@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/miext/layer/layerstr.h,v 1.1 2001/05/29 04:54:13 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -74,10 +74,6 @@ typedef struct _LayerKind {
     GlyphsProcPtr		Glyphs;
     CompositeRectsProcPtr	CompositeRects;
 
-    GCFuncs			*funcs;
-    void			(*WrapGC) (GCPtr pGC);
-    void			(*UnwrapGC) (GCPtr pGC);
-
 } LayerKindRec;
 
 #define LayerWrap(orig,lay,member,func) \
@@ -145,6 +141,7 @@ LayerWindowDone (WindowPtr pWin, LayerWinLoopPtr pLoop);
  */
 
 typedef struct _LayerGC {
+    GCFuncs	    *funcs;
     LayerKindPtr    pKind;
 } LayerGCRec;
 
