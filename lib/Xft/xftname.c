@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftname.c,v 1.3 2000/12/02 10:02:06 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftname.c,v 1.4 2000/12/03 00:45:44 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -64,7 +64,7 @@ XftNameGetType (const char *object)
     
     for (i = 0; i < NUM_OBJECT_TYPES; i++)
     {
-	if (!strcmp (object, _XftObjectTypes[i].object))
+	if (!_XftStrCmpIgnoreCase (object, _XftObjectTypes[i].object))
 	    return &_XftObjectTypes[i];
     }
     return 0;
@@ -103,7 +103,7 @@ _XftNameConstantLookup (char *string)
     int	i;
     
     for (i = 0; i < NUM_XFT_CONSTANTS; i++)
-	if (!strcmp (string, XftConstants[i].name))
+	if (!_XftStrCmpIgnoreCase (string, XftConstants[i].name))
 	    return &XftConstants[i];
     return 0;
 }
@@ -155,8 +155,6 @@ _XftNameFindNext (const char *cur, const char *delim, char *save, char *last)
     while (*cur && !strchr (delim, *cur))
     {
 	c = *cur++;
-	if (isupper (c))
-	    c = tolower (c);
 	*save++ = c;
     }
     *save = 0;

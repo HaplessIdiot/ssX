@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftxlfd.c,v 1.3 2000/12/02 10:02:06 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftxlfd.c,v 1.4 2000/12/12 00:45:18 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -141,12 +141,13 @@ XftXlfdParse (const char *xlfd_orig, Bool ignore_scalable, Bool complete)
 	    }
 	}
 	if (!style[0])
-	    strcat (style, "regular");
+	    strcat (style, "Regular");
 	
 	if (!XftPatternAddString (pat, XFT_STYLE, style))
 	    goto bail;
 	if (!XftPatternAddBool (pat, XFT_SCALABLE, pixel == 0)) goto bail;
 	if (!XftPatternAddBool (pat, XFT_CORE, True)) goto bail;
+	if (!XftPatternAddBool (pat, XFT_ANTIALIAS, False)) goto bail;
     }
     else
     {

@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/lib/Xft/xftmatch.c,v 1.2 2000/12/12 00:45:18 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -25,6 +25,7 @@
 #include <string.h>
 #include <ctype.h>
 #include "xftint.h"
+#include <stdio.h>
 
 /* #define XFT_DEBUG_MATCH */
 
@@ -44,26 +45,9 @@ _XftCompareInteger (char *object, XftValue value1, XftValue value2)
 static double
 _XftCompareString (char *object, XftValue value1, XftValue value2)
 {
-    char    *s1, *s2, c1, c2;
-
     if (value2.type != XftTypeString || value1.type != XftTypeString)
 	return -1.0;
-    s1 = value1.u.s;
-    s2 = value2.u.s;
-    for (;;) 
-    {
-	c1 = *s1++;
-	c2 = *s2++;
-	if (!c1 || !c2)
-	    break;
-	if (isupper (c1))
-	    c1 = tolower (c1);
-	if (isupper (c2))
-	    c2 = tolower (c2);
-	if (c1 != c2)
-	    break;
-    }
-    return (double) (c2 != c1);
+    return (double) _XftStrCmpIgnoreCase (value1.u.s, value2.u.s) != 0;
 }
 
 static double
@@ -143,7 +127,7 @@ _XftCompareValueList (const char    *object,
     
     for (i = 0; i < NUM_MATCHER; i++)
     {
-	if (!strcmp (_XftMatchers[i].object, object))
+	if (!_XftStrCmpIgnoreCase (_XftMatchers[i].object, object))
 	    break;
     }
     if (i == NUM_MATCHER)
@@ -207,8 +191,8 @@ _XftCompare (XftPattern *p1, XftPattern *p2, double *value, XftResult *result)
     for (i1 = 0; i1 < p1->num; i1++)
 	for (i2 = 0; i2 < p2->num; i2++)
 	{
-	    if (!strcmp (p1->elts[i1].object,
-			 p2->elts[i2].object))
+	    if (!_XftStrCmpIgnoreCase (p1->elts[i1].object,
+				       p2->elts[i2].object))
 	    {
 		if (!_XftCompareValueList (p1->elts[i1].object,
 					   p1->elts[i1].values,

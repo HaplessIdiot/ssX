@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftfont.c,v 1.4 2000/12/08 07:51:28 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftfont.c,v 1.5 2000/12/12 00:45:17 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -192,9 +192,9 @@ XftFontOpenName (Display *dpy, int screen, const char *name)
     {
 	printf ("XftFontOpenName \"%s\": ", name);
 	if (pat)
-	    printf ("Invalid name\n");
-	else
 	    XftPatternPrint (pat);
+	else
+	    printf ("Invalid name\n");
     }
 			     
     if (!pat)

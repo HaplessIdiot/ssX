@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftpat.c,v 1.3 2000/12/07 23:57:28 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftpat.c,v 1.4 2000/12/08 07:51:28 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -87,7 +87,7 @@ XftPatternFind (XftPattern *p, const char *object, Bool insert)
     /* match existing */
     for (i = 0; i < p->num; i++)
     {
-	if (!strcmp (object, p->elts[i].object))
+	if (!_XftStrCmpIgnoreCase (object, p->elts[i].object))
 	    return &p->elts[i];
     }
 
