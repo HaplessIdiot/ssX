@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.42 1999/05/03 05:58:41 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.43 1999/05/03 12:15:29 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -2102,7 +2102,7 @@ InstallEncObjs($(OBJS),dest)
 
 #ifndef InstallEncodingsDir
 #define InstallEncodingsDir(edir,fdir)					@@\
-InstallTarget(install,edir/encodings.dir,$(INSTDATFLAGS,fdir)
+InstallTarget(install,edir/encodings.dir,$(INSTDATFLAGS),fdir)
 #endif
 
 

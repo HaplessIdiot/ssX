@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/fonts/bdf/cyrillic/Imakefile,v 3.0 1995/07/22 04:13:07 dawes Exp $
+XCOMM $XFree86: xc/fonts/bdf/cyrillic/Imakefile,v 3.1 1999/05/03 12:15:32 dawes Exp $
 
 OBJS = FontObj(crox1c) FontObj(crox1cb) FontObj(crox1cbo) FontObj(crox1co) \
 	FontObj(crox1h) FontObj(crox1hb) FontObj(crox1hbo) FontObj(crox1ho) \
@@ -94,4 +94,4 @@ FontTarget(koinil2)
 
 InstallFonts($(FONTINSTDIR))
 InstallFontAliases($(FONTINSTDIR))
-InstallEncodingDir($(ENCODINGSSRC),$(FONTINSTDIR))
+InstallEncodingsDir($(ENCODINGSSRC),$(FONTINSTDIR))
