@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.96 2001/02/26 18:27:55 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.97 2001/03/18 14:50:30 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -192,6 +192,10 @@ XCOMM the platform-specific parameters - edit site.def to change
 
 #ifndef HasPerl
 #define HasPerl			YES
+#endif
+
+#ifndef HasPerl5
+#define HasPerl5		HasPerl
 #endif
 
 #ifndef PerlCmd
