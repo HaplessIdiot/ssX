@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_context.h,v 1.8 2003/11/13 04:01:04 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_context.h,v 1.9 2003/11/13 17:22:51 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -744,8 +744,8 @@ struct radeon_context {
    GLuint vbl_seq;
    GLuint vblank_flags;
 
-   u_int64_t swap_ust;
-   u_int64_t swap_missed_ust;
+   int64_t swap_ust;
+   int64_t swap_missed_ust;
 
    GLuint swap_count;
    GLuint swap_missed_count;

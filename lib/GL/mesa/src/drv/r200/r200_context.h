@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_context.h,v 1.4 2003/11/13 04:01:04 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_context.h,v 1.5 2003/11/13 17:22:50 dawes Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -838,8 +838,8 @@ struct r200_context {
    GLuint vbl_seq;
    GLuint vblank_flags;
 
-   u_int64_t swap_ust;
-   u_int64_t swap_missed_ust;
+   int64_t swap_ust;
+   int64_t swap_missed_ust;
 
    GLuint swap_count;
    GLuint swap_missed_count;
