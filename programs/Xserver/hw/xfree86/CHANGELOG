@@ -1,4 +1,7 @@
 XFree86 4.0.99.3 (xx April 2001)
+ 402. Install the XftConfig file under $(CONFDIR), with a link from the
+      usual place (based on #4569, Branden Robinson).
+ 401. Update the Debian section on linux.cf (#4568, Branden Robinson).
  400. Startx fixes/enhancements, including:
        - Fix argument processing.
        - Set XAUTHORITY.
@@ -13008,4 +13011,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1699 2001/04/19 14:13:59 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1700 2001/04/19 15:08:30 dawes Exp $

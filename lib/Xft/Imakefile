@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.11 2001/03/18 14:50:32 dawes Exp $
+XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.12 2001/03/30 18:50:18 keithp Exp $
 
 #define DoNormalLib NormalLibXft
 #define DoSharedLib SharedLibXft
@@ -70,6 +70,8 @@ InstallNonExecFile(XftConfig,$(XFTLIBDIR))
 #else
 InstallNonExecFileNoClobber(XftConfig,$(XFTLIBDIR))
 #endif
+
+LinkConfFileLong(XftConfig,XftConfig,$(XFTLIBDIR),$(CONFDIR))
 
 MANSUFFIX = $(LIBMANSUFFIX)
 InstallManPage(Xft,$(LIBMANDIR))
