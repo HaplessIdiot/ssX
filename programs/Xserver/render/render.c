@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/render.c,v 1.14 2002/02/12 07:19:41 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/render.c,v 1.15 2002/05/13 05:25:11 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -723,7 +723,10 @@ ProcRenderTriStrip (ClientPtr client)
     }
     else
 	pFormat = 0;
-    npoints = ((client->req_len << 2) - sizeof (xRenderTriStripReq)) >> 2;
+    npoints = ((client->req_len << 2) - sizeof (xRenderTriStripReq));
+    if (npoints & 4)
+	return(BadLength);
+    npoints >>= 3;
     if (npoints >= 3)
 	CompositeTriStrip (stuff->op, pSrc, pDst, pFormat,
 			   stuff->xSrc, stuff->ySrc,
@@ -765,7 +768,10 @@ ProcRenderTriFan (ClientPtr client)
     }
     else
 	pFormat = 0;
-    npoints = ((client->req_len << 2) - sizeof (xRenderTriStripReq)) >> 2;
+    npoints = ((client->req_len << 2) - sizeof (xRenderTriStripReq));
+    if (npoints & 4)
+	return(BadLength);
+    npoints >>= 3;
     if (npoints >= 3)
 	CompositeTriFan (stuff->op, pSrc, pDst, pFormat,
 			 stuff->xSrc, stuff->ySrc,
