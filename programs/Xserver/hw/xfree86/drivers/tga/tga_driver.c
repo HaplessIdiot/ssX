@@ -1278,7 +1278,7 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
       pScrn->memPhysBase = pTga->FbAddress;
       pScrn->fbOffset = 0;
 
-      n = xf86XVListGenericAdaptors(&ptr);
+      n = xf86XVListGenericAdaptors(pScrn,&ptr);
 
       if(n) {
 	xf86XVScreenInit(pScreen, ptr, n);

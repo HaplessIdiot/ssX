@@ -20,7 +20,14 @@
 #include "xaalocal.h"
 #include "dixstruct.h"
 
-#define OFF_DELAY 200  /* milliseconds */
+#define OFF_DELAY 	200  /* milliseconds */
+#define FREE_DELAY 	60000
+
+#define OFF_TIMER 	0x01
+#define FREE_TIMER	0x02
+#define CLIENT_VIDEO_ON	0x04
+
+#define TIMER_MASK      (OFF_TIMER | FREE_TIMER)
 
 #ifndef XvExtension
 void MGAInitVideo(ScreenPtr pScreen) {}
@@ -28,7 +35,7 @@ void MGAResetVideo(ScrnInfoPtr pScrn) {}
 #else
 
 static XF86VideoAdaptorPtr MGASetupImageVideoG(ScreenPtr);
-
+static void MGAInitOffscreenImages(ScreenPtr);
 static void MGAStopVideoG(ScrnInfoPtr, pointer, Bool);
 static int MGASetPortAttributeG(ScrnInfoPtr, Atom, INT32, pointer);
 static int MGAGetPortAttributeG(ScrnInfoPtr, Atom ,INT32 *, pointer);
@@ -49,49 +56,54 @@ static Atom xvBrightness, xvContrast, xvColorKey;
 void MGAInitVideo(ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-    XF86VideoAdaptorPtr *adaptors, *newAdaptors;
-    XF86VideoAdaptorPtr newAdaptor;
+    XF86VideoAdaptorPtr *adaptors;
+    XF86VideoAdaptorPtr newAdaptor = NULL;
     MGAPtr pMga = MGAPTR(pScrn);
     int num_adaptors;
-    Bool freeAdaptors = FALSE;
 	
-    num_adaptors = xf86XVListGenericAdaptors(&adaptors);
-
     if((pScrn->bitsPerPixel != 8) && !pMga->Overlay8Plus24 &&
        ((pMga->Chipset == PCI_CHIP_MGAG200) ||
         (pMga->Chipset == PCI_CHIP_MGAG200_PCI) ||
         (pMga->Chipset == PCI_CHIP_MGAG400))) 
     {
-	if((newAdaptor = MGASetupImageVideoG(pScreen))) {
+	newAdaptor = MGASetupImageVideoG(pScreen);
+	MGAInitOffscreenImages(pScreen);
+    }
 
-	   newAdaptors = xalloc((num_adaptors + 1) * 
-				   sizeof(XF86VideoAdaptorPtr*));
-	   if(newAdaptors) {
-		if(num_adaptors)
-		    memcpy(newAdaptors, adaptors, num_adaptors * 
+    num_adaptors = xf86XVListGenericAdaptors(pScrn, &adaptors);
+
+    if(newAdaptor) {
+	if(!num_adaptors) {
+	    num_adaptors = 1;
+	    adaptors = &newAdaptor;
+	} else {
+	    XF86VideoAdaptorPtr *newAdaptors;
+
+	    newAdaptors =  /* need to free this someplace */
+		xalloc((num_adaptors + 1) * sizeof(XF86VideoAdaptorPtr*));
+	    if(newAdaptors) {
+		memcpy(newAdaptors, adaptors, num_adaptors * 
 					sizeof(XF86VideoAdaptorPtr));
 		newAdaptors[num_adaptors] = newAdaptor;
 		adaptors = newAdaptors;
 		num_adaptors++;
-		freeAdaptors = TRUE;
-	   }
+	    }
 	}
     }
 
     if(num_adaptors)
         xf86XVScreenInit(pScreen, adaptors, num_adaptors);
-
-    if(freeAdaptors)
-	xfree(adaptors);
 }
 
 /* client libraries expect an encoding */
 static XF86VideoEncodingRec DummyEncoding[1] =
 {
+ {
    0,
    "XV_IMAGE",
    1024, 1024,
    {1, 1}
+ }
 };
 
 #define NUM_FORMATS_G 3
@@ -170,11 +182,17 @@ static XF86ImageRec ImagesG[NUM_IMAGES_G] =
 typedef struct {
    unsigned char brightness;
    unsigned char contrast;
-   FBAreaPtr area;
-   RegionRec clip;
-   CARD32 colorKey;
+   FBAreaPtr	area;
+   RegionRec	clip;
+   CARD32	colorKey;
+   CARD32	videoStatus;
+   Time		offTime;
+   Time		freeTime;
 } MGAPortPrivRec, *MGAPortPrivPtr;
 
+
+#define GET_PORT_PRIVATE(pScrn) \
+   (MGAPortPrivPtr)((MGAPTR(pScrn))->adaptor->pPortPrivates[0].ptr)
 
 #define outMGAdreg(reg, val) OUTREG8(RAMDAC_OFFSET + (reg), val)
 #define outMGAdac(reg, val) \
@@ -210,7 +228,6 @@ MGASetupImageVideoG(ScreenPtr pScreen)
     MGAPtr pMga = MGAPTR(pScrn);
     XF86VideoAdaptorPtr adapt;
     MGAPortPrivPtr pPriv;
-    int i;
 
     if(!(adapt = xcalloc(1, sizeof(XF86VideoAdaptorRec) +
 			    sizeof(MGAPortPrivRec) +
@@ -248,11 +265,11 @@ MGASetupImageVideoG(ScreenPtr pScreen)
     adapt->PutImage = MGAPutImageG;
     adapt->QueryImageAttributes = MGAQueryImageAttributesG;
 
+    pPriv->videoStatus = 0;
     pPriv->brightness = 0;
     pPriv->contrast = 128;
     pPriv->colorKey =  (1 << pScrn->offset.red) | (1 << pScrn->offset.green) |
- 	(((pScrn->mask.blue >> pScrn->offset.blue) - 1) << pScrn->offset.blue);
-     
+        (((pScrn->mask.blue >> pScrn->offset.blue) - 1) << pScrn->offset.blue);     
     /* gotta uninit this someplace */
     REGION_INIT(pScreen, &pPriv->clip, NullBox, 0); 
 
@@ -384,13 +401,18 @@ MGAStopVideoG(ScrnInfoPtr pScrn, pointer data, Bool exit)
   REGION_EMPTY(pScrn->pScreen, &pPriv->clip);   
 
   if(exit) {
-     OUTREG(MGAREG_BESCTL, 0);
-     pMga->timerIsOn = FALSE;
+     if(pPriv->videoStatus & CLIENT_VIDEO_ON)
+	OUTREG(MGAREG_BESCTL, 0);
+     if(pPriv->area) {
+	xf86FreeOffscreenArea(pPriv->area);
+	pPriv->area = NULL;
+     }
+     pPriv->videoStatus = 0;
   } else {
-     /* if it's being clipped delay turning off video for a short
-        while to avoid flicker */
-     pMga->timerIsOn = TRUE;
-     pMga->offTime = currentTime.milliseconds + OFF_DELAY; 
+     if(pPriv->videoStatus & CLIENT_VIDEO_ON) {
+	pPriv->videoStatus |= OFF_TIMER;
+	pPriv->offTime = currentTime.milliseconds + OFF_DELAY; 
+     }
   }
 }
 
@@ -440,7 +462,6 @@ MGAGetPortAttributeG(
   pointer data
 ){
   MGAPortPrivPtr pPriv = (MGAPortPrivPtr)data;
-  MGAPtr pMga = MGAPTR(pScrn);
 
   if(attribute == xvBrightness) {
 	*value = pPriv->brightness;
@@ -521,6 +542,108 @@ MGACopyMungedData(
 }
 
 
+static FBAreaPtr
+MGAAllocateMemory(
+   ScrnInfoPtr pScrn,
+   FBAreaPtr area,
+   int numlines
+){
+   ScreenPtr pScreen;
+   FBAreaPtr new_area;
+
+   if(area) {
+	if((area->box.y2 - area->box.y1) >= numlines) 
+	   return area;
+        
+        if(xf86ResizeOffscreenArea(area, pScrn->displayWidth, numlines))
+	   return area;
+
+	xf86FreeOffscreenArea(area);
+   }
+
+   pScreen = screenInfo.screens[pScrn->scrnIndex];
+
+   new_area = xf86AllocateOffscreenArea(pScreen, pScrn->displayWidth, 
+				numlines, 0, NULL, NULL, NULL);
+
+   if(!new_area) {
+	int max_w, max_h;
+
+	xf86QueryLargestOffscreenArea(pScreen, &max_w, &max_h, 0,
+			FAVOR_WIDTH_THEN_AREA, PRIORITY_EXTREME);
+	
+	if((max_w < pScrn->displayWidth) || (max_h < numlines))
+	   return NULL;
+
+	xf86PurgeUnlockedOffscreenAreas(pScreen);
+	new_area = xf86AllocateOffscreenArea(pScreen, pScrn->displayWidth, 
+				numlines, 0, NULL, NULL, NULL);
+   }
+
+   return new_area;
+}
+
+static void
+MGADisplayVideo(
+    ScrnInfoPtr pScrn,
+    int id,
+    int offset,
+    short width, short height,
+    int pitch, 
+    int x1, int y1, int x2, int y2,
+    BoxPtr dstBox,
+    short src_w, short src_h,
+    short drw_w, short drw_h
+){
+    MGAPtr pMga = MGAPTR(pScrn);
+    int tmp;
+
+    /* got 64 scanlines to do it in */
+    tmp = INREG(MGAREG_VCOUNT) + 64;
+    if(tmp > pScrn->currentMode->VDisplay)
+	tmp -= pScrn->currentMode->VDisplay;
+
+    switch(id) {
+    case 0x59565955:
+	OUTREG(MGAREG_BESGLOBCTL, 0x000000c3 | (tmp << 16));
+	break;
+    case 0x32595559:
+    default:
+	OUTREG(MGAREG_BESGLOBCTL, 0x00000083 | (tmp << 16));
+	break;
+    }
+
+    OUTREG(MGAREG_BESA1ORG, offset);
+
+    if(y1 & 0x00010000)
+	OUTREG(MGAREG_BESCTL, 0x00050c41);
+    else 
+	OUTREG(MGAREG_BESCTL, 0x00050c01);
+ 
+    OUTREG(MGAREG_BESHCOORD, (dstBox->x1 << 16) | (dstBox->x2 - 1));
+    OUTREG(MGAREG_BESVCOORD, (dstBox->y1 << 16) | (dstBox->y2 - 1));
+
+    OUTREG(MGAREG_BESHSRCST, x1 & 0x03fffffc);
+    OUTREG(MGAREG_BESHSRCEND, (x2 - 0x00010000) & 0x03fffffc);
+    OUTREG(MGAREG_BESHSRCLST, (width - 1) << 16);
+   
+    OUTREG(MGAREG_BESPITCH, pitch >> 1);
+
+    OUTREG(MGAREG_BESV1WGHT, y1 & 0x0000fffc);
+    OUTREG(MGAREG_BESV1SRCLST, height - 1 - (y1 >> 16));
+
+    tmp = ((src_h - 1) << 16)/drw_h;
+    if(tmp >= (32 << 16))
+	tmp = (32 << 16) - 1;
+    OUTREG(MGAREG_BESVISCAL, tmp & 0x001ffffc);
+
+    tmp = (((src_w - 1) << 16)/drw_w) << 1;
+    if(tmp >= (32 << 16))
+	tmp = (32 << 16) - 1;
+    OUTREG(MGAREG_BESHISCAL, tmp & 0x001ffffc);
+
+}
+
 static int 
 MGAPutImageG( 
   ScrnInfoPtr pScrn, 
@@ -534,14 +657,11 @@ MGAPutImageG(
   RegionPtr clipBoxes, pointer data
 ){
    MGAPortPrivPtr pPriv = (MGAPortPrivPtr)data;
-   ScreenPtr pScreen = pScrn->pScreen;
    MGAPtr pMga = MGAPTR(pScrn);
    INT32 x1, x2, y1, y2;
-   unsigned char *dst, *src;
    unsigned char *dst_start;
-   int i, j, pitch, Bpp, new_h, offset, offset2, offset3, visHeight;
-   FBAreaPtr area;
-   int srcPitch, dstPitch, srcPitch2;
+   int pitch, new_h, offset, offset2, offset3;
+   int srcPitch, srcPitch2, dstPitch;
    int top, left, npixels, nlines;
    BoxRec dstBox;
    CARD32 tmp;
@@ -570,73 +690,36 @@ MGAPutImageG(
    dstBox.y1 -= pScrn->frameY0;
    dstBox.y2 -= pScrn->frameY0;
 
-   Bpp = pScrn->bitsPerPixel >> 3;
-   pitch = Bpp * pScrn->displayWidth;
+   pitch = pScrn->bitsPerPixel * pScrn->displayWidth >> 3;
+
+   dstPitch = ((width << 1) + 15) & ~15;
+   new_h = ((dstPitch * height) + pitch - 1) / pitch;
 
    switch(id) {
    case 0x32315659:
-	dstPitch = ((width << 1) + 31) & ~31;
 	srcPitch = (width + 3) & ~3;
 	offset2 = srcPitch * height;
 	srcPitch2 = ((width >> 1) + 3) & ~3;
-	offset = srcPitch2 * (height >> 1);
-	offset3 = offset + offset2;
-	offset += offset3;
-        new_h = (offset + pitch - 1) / pitch;
+	offset3 = (srcPitch2 * (height >> 1)) + offset2;
 	break;
    case 0x59565955:
    case 0x32595559:
    default:
 	srcPitch = (width << 1);
-	dstPitch = (srcPitch + 15) & ~15;
-	offset = dstPitch * height;
-        new_h = (offset + pitch - 1) / pitch;
 	break;
    }  
 
-   area = pPriv->area;
 
-   /* Allocate offscreen memory */
-   if(!area || ((area->box.y2 - area->box.y1) < new_h)) {
-      Bool nukeMem = FALSE;
+   if(!(pPriv->area = MGAAllocateMemory(pScrn, pPriv->area, new_h)))
+	return BadAlloc;
 
-      if(!area) {
-	  if(!(area = xf86AllocateOffscreenArea(pScreen, 
-		   pScrn->displayWidth, new_h, 0, NULL, NULL, NULL)))
-	  {
-	     nukeMem = TRUE;
-	  }
-      } else {
-	  if(!xf86ResizeOffscreenArea(area, pScrn->displayWidth, new_h)) {
-	     xf86FreeOffscreenArea(area);
-	     pPriv->area = area = NULL;
-	     nukeMem = TRUE;		
-	  }
-      }
-      if(nukeMem) {
-	int max_w, max_h;
-	xf86QueryLargestOffscreenArea(pScreen, &max_w, &max_h, 0,
-			FAVOR_WIDTH_THEN_AREA, PRIORITY_EXTREME);
-
-	if((max_w < pScrn->displayWidth) || (max_h < new_h))
-	    return BadAlloc;
-
-	xf86PurgeUnlockedOffscreenAreas(pScreen);
-
-	area = xf86AllocateOffscreenArea(pScreen, 
-		   pScrn->displayWidth, new_h, 0, NULL, NULL, NULL);
-      }
-
-      pPriv->area = area;
-    }
-  
     /* copy data */
     top = y1 >> 16;
     left = (x1 >> 16) & ~1;
     npixels = ((((x2 + 0xffff) >> 16) + 1) & ~1) - left;
     left <<= 1;
 
-    offset = (area->box.y1 * pitch) + (top * dstPitch);
+    offset = (pPriv->area->box.y1 * pitch) + (top * dstPitch);
     dst_start = pMga->FbStart + offset + left;
 
     switch(id) {
@@ -668,52 +751,11 @@ MGAPutImageG(
 					REGION_RECTS(clipBoxes));
     }
 
-    /* got 64 scanlines to do it in */
-    tmp = INREG(MGAREG_VCOUNT) + 64;
-    if(tmp > pScrn->currentMode->VDisplay)
-	tmp -= pScrn->currentMode->VDisplay;
 
-    switch(id) {
-    case 0x59565955:
-	OUTREG(MGAREG_BESGLOBCTL, 0x000000c3 | (tmp << 16));
-	break;
-    case 0x32595559:
-    default:
-	OUTREG(MGAREG_BESGLOBCTL, 0x00000083 | (tmp << 16));
-	break;
-    }
+    MGADisplayVideo(pScrn, id, offset, width, height, dstPitch,
+	     x1, y1, x2, y2, &dstBox, src_w, src_h, drw_w, drw_h);
 
-    OUTREG(MGAREG_BESA1ORG, offset);
-
-    if(y1 & 0x00010000)
-	OUTREG(MGAREG_BESCTL, 0x00050c41);
-    else 
-	OUTREG(MGAREG_BESCTL, 0x00050c01);
- 
-    OUTREG(MGAREG_BESHCOORD, (dstBox.x1 << 16) | (dstBox.x2 - 1));
-    OUTREG(MGAREG_BESVCOORD, (dstBox.y1 << 16) | (dstBox.y2 - 1));
-
-    OUTREG(MGAREG_BESHSRCST, x1 & 0x03fffffc);
-    OUTREG(MGAREG_BESHSRCEND, (x2 - 0x00010000) & 0x03fffffc);
-    OUTREG(MGAREG_BESHSRCLST, (width - 1) << 16);
-   
-    OUTREG(MGAREG_BESPITCH, dstPitch >> 1);
-
-
-    OUTREG(MGAREG_BESV1WGHT, y1 & 0x0000fffc);
-    OUTREG(MGAREG_BESV1SRCLST, height - 1 - (y1 >> 16));
-
-    tmp = ((src_h - 1) << 16)/drw_h;
-    if(tmp >= (32 << 16))
-	tmp = (32 << 16) - 1;
-    OUTREG(MGAREG_BESVISCAL, tmp & 0x001ffffc);
-
-    tmp = (((src_w - 1) << 16)/drw_w) << 1;
-    if(tmp >= (32 << 16))
-	tmp = (32 << 16) - 1;
-    OUTREG(MGAREG_BESHISCAL, tmp & 0x001ffffc);
-
-    pMga->timerIsOn = FALSE;
+    pPriv->videoStatus = CLIENT_VIDEO_ON;
 
     return Success;
 }
@@ -770,6 +812,7 @@ MGABlockHandler (
     ScreenPtr   pScreen = screenInfo.screens[i];
     ScrnInfoPtr pScrn = xf86Screens[i];
     MGAPtr      pMga = MGAPTR(pScrn);
+    MGAPortPrivPtr pPriv = GET_PORT_PRIVATE(pScrn);
 
     pScreen->BlockHandler = pMga->BlockHandler;
     
@@ -777,14 +820,233 @@ MGABlockHandler (
 
     pScreen->BlockHandler = MGABlockHandler;
 
-    if(pMga->timerIsOn) {
+    if(pPriv->videoStatus & TIMER_MASK) {
 	UpdateCurrentTime();
-	if(pMga->offTime < currentTime.milliseconds) {
-	    pMga->timerIsOn = FALSE;
-	    OUTREG(MGAREG_BESCTL, 0);
-	}
+	if(pPriv->videoStatus & OFF_TIMER) {
+	    if(pPriv->offTime < currentTime.milliseconds) {
+		OUTREG(MGAREG_BESCTL, 0);
+		pPriv->videoStatus = FREE_TIMER;
+		pPriv->freeTime = currentTime.milliseconds + FREE_DELAY;
+	    }
+	} else {  /* FREE_TIMER */
+	    if(pPriv->freeTime < currentTime.milliseconds) {
+		if(pPriv->area) {
+		   xf86FreeOffscreenArea(pPriv->area);
+		   pPriv->area = NULL;
+		}
+		pPriv->videoStatus = 0;
+	    }
+        }
     }
 }
 
 
-#endif
+/****************** Offscreen stuff ***************/
+
+typedef struct {
+  FBAreaPtr area;
+  Bool isOn;
+} OffscreenPrivRec, * OffscreenPrivPtr;
+
+static int 
+MGAAllocateSurface(
+    ScrnInfoPtr pScrn,
+    int id,
+    unsigned short w, 	
+    unsigned short h,
+    XF86SurfacePtr surface
+){
+    FBAreaPtr area;
+    int pitch, fbpitch, numlines;
+    OffscreenPrivPtr pPriv;
+
+    if((w > 1024) || (h > 1024))
+	return BadAlloc;
+
+    w = (w + 1) & ~1;
+    pitch = ((w << 1) + 15) & ~15;
+    fbpitch = pScrn->bitsPerPixel * pScrn->displayWidth >> 3;
+    numlines = ((pitch * h) + fbpitch - 1) / fbpitch;
+
+    if(!(area = MGAAllocateMemory(pScrn, NULL, numlines)))
+	return BadAlloc;
+
+    surface->width = w;
+    surface->height = h;
+
+    if(!(surface->pitches = xalloc(sizeof(int))))
+	return BadAlloc;
+    if(!(surface->offsets = xalloc(sizeof(int)))) {
+	xfree(surface->pitches);
+	return BadAlloc;
+    }
+    if(!(pPriv = xalloc(sizeof(OffscreenPrivRec)))) {
+	xfree(surface->pitches);
+	xfree(surface->offsets);
+	return BadAlloc;
+    }
+
+    pPriv->area = area;
+    pPriv->isOn = FALSE;
+
+    surface->pScrn = pScrn;
+    surface->id = id;   
+    surface->pitches[0] = pitch;
+    surface->offsets[0] = area->box.y1 * fbpitch;
+    surface->devPrivate.ptr = (pointer)pPriv;
+
+    return Success;
+}
+
+static int 
+MGAStopSurface(
+    XF86SurfacePtr surface
+){
+    OffscreenPrivPtr pPriv = (OffscreenPrivPtr)surface->devPrivate.ptr;
+
+    if(pPriv->isOn) {
+	MGAPtr pMga = MGAPTR(surface->pScrn);
+	OUTREG(MGAREG_BESCTL, 0);
+	pPriv->isOn = FALSE;
+    }
+
+    return Success;
+}
+
+
+static int 
+MGAFreeSurface(
+    XF86SurfacePtr surface
+){
+    OffscreenPrivPtr pPriv = (OffscreenPrivPtr)surface->devPrivate.ptr;
+
+    if(pPriv->isOn)
+	MGAStopSurface(surface);
+    xf86FreeOffscreenArea(pPriv->area);
+    xfree(surface->pitches);
+    xfree(surface->offsets);
+    xfree(surface->devPrivate.ptr);
+
+    return Success;
+}
+
+static int
+MGAGetSurfaceAttribute(
+    XF86SurfacePtr surface,
+    Atom attribute,
+    INT32 *value
+){
+    return MGAGetPortAttributeG(surface->pScrn, attribute, value, 
+			(pointer)(GET_PORT_PRIVATE(surface->pScrn)));
+}
+
+static int
+MGASetSurfaceAttribute(
+    XF86SurfacePtr surface,
+    Atom attribute,
+    INT32 value
+){
+    return MGASetPortAttributeG(surface->pScrn, attribute, value, 
+			(pointer)(GET_PORT_PRIVATE(surface->pScrn)));
+}
+
+
+static int 
+MGADisplaySurface(
+    XF86SurfacePtr surface,
+    short src_x, short src_y, 
+    short drw_x, short drw_y,
+    short src_w, short src_h, 
+    short drw_w, short drw_h,
+    RegionPtr clipBoxes
+){
+    OffscreenPrivPtr pPriv = (OffscreenPrivPtr)surface->devPrivate.ptr;
+    ScrnInfoPtr pScrn = surface->pScrn;
+    MGAPortPrivPtr portPriv = GET_PORT_PRIVATE(pScrn);
+    INT32 x1, y1, x2, y2;
+    BoxRec dstBox;
+
+    x1 = src_x;
+    x2 = src_x + src_w;
+    y1 = src_y;
+    y2 = src_y + src_h;
+
+    dstBox.x1 = drw_x;
+    dstBox.x2 = drw_x + drw_w;
+    dstBox.y1 = drw_y;
+    dstBox.y2 = drw_y + drw_h;
+
+    MGAClipVideo(&dstBox, &x1, &x2, &y1, &y2, 
+                	REGION_EXTENTS(pScreen, clipBoxes), 
+			surface->width, surface->height);
+
+    if((x1 >= x2) || (y1 >= y2))
+	return Success;
+
+    dstBox.x1 -= pScrn->frameX0;
+    dstBox.x2 -= pScrn->frameX0;
+    dstBox.y1 -= pScrn->frameY0;
+    dstBox.y2 -= pScrn->frameY0;
+
+    XAAFillSolidRects(pScrn, portPriv->colorKey, GXcopy, ~0, 
+                                        REGION_NUM_RECTS(clipBoxes),
+                                        REGION_RECTS(clipBoxes));
+
+    MGADisplayVideo(pScrn, surface->id, surface->offsets[0], 
+	     surface->width, surface->height, surface->pitches[0],
+	     x1, y1, x2, y2, &dstBox, src_w, src_h, drw_w, drw_h);
+
+    pPriv->isOn = TRUE;
+    if(portPriv->videoStatus & CLIENT_VIDEO_ON) {
+	REGION_EMPTY(pScrn->pScreen, &portPriv->clip);   
+	UpdateCurrentTime();
+	portPriv->videoStatus = FREE_TIMER;
+	portPriv->freeTime = currentTime.milliseconds + FREE_DELAY;
+    }
+
+    return Success;
+}
+
+
+static void 
+MGAInitOffscreenImages(ScreenPtr pScreen)
+{
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    MGAPtr pMga = MGAPTR(pScrn);
+    int num = (pMga->Chipset == PCI_CHIP_MGAG400) ? 2 : 1;
+    XF86OffscreenImagePtr offscreenImages;
+
+    /* need to free this someplace */
+    if(!(offscreenImages = xalloc(num * sizeof(XF86OffscreenImageRec))))
+	return;
+
+    offscreenImages[0].image = &ImagesG[0];
+    offscreenImages[0].allocate = MGAAllocateSurface;
+    offscreenImages[0].free = MGAFreeSurface;
+    offscreenImages[0].display = MGADisplaySurface;
+    offscreenImages[0].stop = MGAStopSurface;
+    offscreenImages[0].setAttribute = MGASetSurfaceAttribute;
+    offscreenImages[0].getAttribute = MGAGetSurfaceAttribute;
+    offscreenImages[0].max_width = 1024;
+    offscreenImages[0].max_height = 1024;
+    offscreenImages[0].num_attributes = (num == 1) ? 1 : 3;
+    offscreenImages[0].attributes = AttributesG;
+
+    if(num == 2) {
+	offscreenImages[1].image = &ImagesG[2];
+	offscreenImages[1].allocate = MGAAllocateSurface;
+	offscreenImages[1].free = MGAFreeSurface;
+	offscreenImages[1].display = MGADisplaySurface;
+	offscreenImages[1].stop = MGAStopSurface;
+	offscreenImages[1].setAttribute = MGASetSurfaceAttribute;
+	offscreenImages[1].getAttribute = MGAGetSurfaceAttribute;
+	offscreenImages[1].max_width = 1024;
+	offscreenImages[1].max_height = 1024;
+	offscreenImages[1].num_attributes = 3;
+	offscreenImages[1].attributes = AttributesG;
+    }
+
+    xf86XVRegisterOffscreenImages(pScreen, offscreenImages, num);
+}
+
+#endif  /* !XvExtension */

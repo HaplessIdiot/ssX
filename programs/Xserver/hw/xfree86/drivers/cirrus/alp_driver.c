@@ -1627,7 +1627,7 @@ AlpScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		XF86VideoAdaptorPtr *ptr;
 		int n;
 
-		n = xf86XVListGenericAdaptors(&ptr);
+		n = xf86XVListGenericAdaptors(pScrn,&ptr);
 		if (n)
 			xf86XVScreenInit(pScreen, ptr, n);
 	}

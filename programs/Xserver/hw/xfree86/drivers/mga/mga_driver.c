@@ -1282,18 +1282,53 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, MGAOptions);
 
     /* Set the bits per RGB for 8bpp mode */
-    if (pScrn->depth == 8) {
-	/* XXX This is here just to test options. */
-	/* Default to 8 */
+    if (pScrn->depth == 8) 
 	pScrn->rgbBits = 8;
-#if 0
-	if (xf86GetOptValInteger(MGAOptions, OPTION_RGB_BITS,
-				 &pScrn->rgbBits)) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Bits per RGB set to %d\n",
-		       pScrn->rgbBits);
-	}
-#endif
+
+
+    /*
+     * Set the Chipset and ChipRev, allowing config file entries to
+     * override.
+     */
+    if (pMga->pEnt->device->chipset && *pMga->pEnt->device->chipset) {
+	pScrn->chipset = pMga->pEnt->device->chipset;
+        pMga->Chipset = xf86StringToToken(MGAChipsets, pScrn->chipset);
+        from = X_CONFIG;
+    } else if (pMga->pEnt->device->chipID >= 0) {
+	pMga->Chipset = pMga->pEnt->device->chipID;
+	pScrn->chipset = (char *)xf86TokenToString(MGAChipsets, pMga->Chipset);
+	from = X_CONFIG;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipID override: 0x%04X\n",
+		   pMga->Chipset);
+    } else {
+	from = X_PROBED;
+	pMga->Chipset = pMga->PciInfo->chipType;
+	pScrn->chipset = (char *)xf86TokenToString(MGAChipsets, pMga->Chipset);
     }
+    if (pMga->pEnt->device->chipRev >= 0) {
+	pMga->ChipRev = pMga->pEnt->device->chipRev;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipRev override: %d\n",
+		   pMga->ChipRev);
+    } else {
+	pMga->ChipRev = pMga->PciInfo->chipRev;
+    }
+
+    /*
+     * This shouldn't happen because such problems should be caught in
+     * MGAProbe(), but check it just in case.
+     */
+    if (pScrn->chipset == NULL) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		   "ChipID 0x%04X is not recognised\n", pMga->Chipset);
+	return FALSE;
+    }
+    if (pMga->Chipset < 0) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		   "Chipset \"%s\" is not recognised\n", pScrn->chipset);
+	return FALSE;
+    }
+
+    xf86DrvMsg(pScrn->scrnIndex, from, "Chipset: \"%s\"\n", pScrn->chipset);
 
 
     from = X_DEFAULT;
@@ -1410,51 +1445,6 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 		"Valid options are \"CW\" or \"CCW\"\n");
       }
     }
-
-
-    /*
-     * Set the Chipset and ChipRev, allowing config file entries to
-     * override.
-     */
-    if (pMga->pEnt->device->chipset && *pMga->pEnt->device->chipset) {
-	pScrn->chipset = pMga->pEnt->device->chipset;
-        pMga->Chipset = xf86StringToToken(MGAChipsets, pScrn->chipset);
-        from = X_CONFIG;
-    } else if (pMga->pEnt->device->chipID >= 0) {
-	pMga->Chipset = pMga->pEnt->device->chipID;
-	pScrn->chipset = (char *)xf86TokenToString(MGAChipsets, pMga->Chipset);
-	from = X_CONFIG;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipID override: 0x%04X\n",
-		   pMga->Chipset);
-    } else {
-	from = X_PROBED;
-	pMga->Chipset = pMga->PciInfo->chipType;
-	pScrn->chipset = (char *)xf86TokenToString(MGAChipsets, pMga->Chipset);
-    }
-    if (pMga->pEnt->device->chipRev >= 0) {
-	pMga->ChipRev = pMga->pEnt->device->chipRev;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipRev override: %d\n",
-		   pMga->ChipRev);
-    } else {
-	pMga->ChipRev = pMga->PciInfo->chipRev;
-    }
-
-    /*
-     * This shouldn't happen because such problems should be caught in
-     * MGAProbe(), but check it just in case.
-     */
-    if (pScrn->chipset == NULL) {
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		   "ChipID 0x%04X is not recognised\n", pMga->Chipset);
-	return FALSE;
-    }
-    if (pMga->Chipset < 0) {
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		   "Chipset \"%s\" is not recognised\n", pScrn->chipset);
-	return FALSE;
-    }
-
-    xf86DrvMsg(pScrn->scrnIndex, from, "Chipset: \"%s\"\n", pScrn->chipset);
 
     if(pMga->HasSDRAM) { /* don't bother checking */ }
     else if ((pMga->PciInfo->subsysCard == PCI_CARD_MILL_G200_SD) ||
