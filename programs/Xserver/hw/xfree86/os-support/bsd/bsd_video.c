@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.44 2001/09/18 20:49:39 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.45 2001/10/28 03:34:00 tsi Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -257,7 +257,6 @@ checkDevMem(Bool warn)
 	{ 
 	    xf86Msg(X_WARNING, "checkDevMem: failed to open %s (%s)\n",
 		    DEV_MEM, strerror(errno));
-	    xf86ErrorF("\tlinear framebuffer access unavailable\n");
 	} 
 	useDevMem = FALSE;
 	return;
@@ -299,10 +298,6 @@ checkDevMem(Bool warn)
 	    }
 	}
 	
-	if (warn)
-	{
-	    xf86ErrorF("\tlinear framebuffer access unavailable\n");
-	}
 	useDevMem = FALSE;
 	return;
 
