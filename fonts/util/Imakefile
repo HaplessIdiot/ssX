@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/fonts/util/Imakefile,v 1.1 2000/11/09 01:35:46 dawes Exp $
+XCOMM $XFree86: xc/fonts/util/Imakefile,v 1.2 2001/03/01 00:37:02 dawes Exp $
 
 MAPFILES = \
 	map-ISO8859-1 map-ISO8859-2 map-ISO8859-3 map-ISO8859-4 map-ISO8859-5 \
@@ -24,5 +24,5 @@ LinkFile(map-ISO8859-13,8859-13.TXT)
 LinkFile(map-ISO8859-14,8859-14.TXT)
 LinkFile(map-ISO8859-15,8859-15.TXT)
 LinkFile(map-JISX0201.1976-0,JIS0201.TXT)
-LinkFile(map-KOI8-R,KIO8-R.TXT)
+LinkFile(map-KOI8-R,KOI8-R.TXT)
 

@@ -25,7 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/drmP.h,v 1.58 1999/08/30 13:05:00 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/drmP.h,v 1.1 1999/09/25 14:37:59 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/drm/kernel/drmP.h,v 1.1 2000/06/17 00:03:28 martin Exp $
  * 
  */
 
@@ -49,11 +49,11 @@
 #include <sys/sysctl.h>
 #include <sys/select.h>
 #include <sys/bus.h>
-#if __FreeBSD_version >= 500005
+#if __FreeBSD_version >= 400005
 #include <sys/taskqueue.h>
 #endif
 
-#if __FreeBSD_version >= 500006
+#if __FreeBSD_version >= 400006
 #define DRM_AGP
 #endif
 
@@ -128,14 +128,14 @@ find_first_zero_bit(volatile u_int32_t *p, int max)
  * Fake out the module macros for versions of FreeBSD where they don't
  * exist.
  */
-#if __FreeBSD_version < 500002
+#if __FreeBSD_version < 400002
 
 #define MODULE_VERSION(a,b)		struct __hack
 #define MODULE_DEPEND(a,b,c,d,e)	struct __hack
 
 #endif
 
-#define DRM_DEBUG_CODE 2	  /* Include debugging code (if > 1, then
+#define DRM_DEBUG_CODE 0	  /* Include debugging code (if > 1, then
 				     also include looping detection. */
 #define DRM_DMA_HISTOGRAM 1	  /* Make histogram of DMA latency. */
 
@@ -340,6 +340,7 @@ typedef struct drm_freelist {
 	int		  low_mark;    /* Low water mark		   */
 	int		  high_mark;   /* High water mark		   */
 	atomic_t	  wfh;	       /* If waiting for high mark	   */
+	struct simplelock	  lock;	       /* hope this doesn't need to be linux compatible */
 } drm_freelist_t;
 
 typedef struct drm_buf_entry {
@@ -509,15 +510,15 @@ typedef struct drm_device {
 				/* Context support */
 	struct resource   *irq;		/* Interrupt used by board	   */
 	void		  *irqh;	/* Handle from bus_setup_intr      */
-	__volatile__ int  context_flag;	 /* Context swapping flag	   */
-	__volatile__ int  interrupt_flag;/* Interruption handler flag	   */
-	__volatile__ int  dma_flag;	 /* DMA dispatch flag		   */
+	__volatile__ long  context_flag; /* Context swapping flag	   */
+	__volatile__ long  interrupt_flag;/* Interruption handler flag	   */
+	__volatile__ long  dma_flag;	 /* DMA dispatch flag		   */
 	struct callout	  timer;	/* Timer for delaying ctx switch   */
 	int		  context_wait; /* Processes waiting on ctx switch */
 	int		  last_checked;	/* Last context checked for DMA	   */
 	int		  last_context;	/* Last current context		   */
 	int		  last_switch;	/* Time at last context switch  */
-#if __FreeBSD_version >= 500005
+#if __FreeBSD_version >= 400005
 	struct task	  task;
 #endif
 	struct timespec	  ctx_start;
@@ -594,7 +595,8 @@ extern int	     drm_sysctl_cleanup(drm_device_t *dev);
 
 				/* Memory management support (memory.c) */
 extern void	     drm_mem_init(void);
-extern int	     drm_mem_info SYSCTL_HANDLER_ARGS;
+#define DRM_SYSCTL_HANDLER_ARGS (SYSCTL_HANDLER_ARGS)
+extern int	     drm_mem_info DRM_SYSCTL_HANDLER_ARGS;
 extern void	     *drm_alloc(size_t size, int area);
 extern void	     *drm_realloc(void *oldpt, size_t oldsize, size_t size,
 				  int area);

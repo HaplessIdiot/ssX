@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.42 2001/01/06 20:19:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.43 2001/01/21 21:19:27 tsi Exp $ */
 
 /*
  * Authors:
@@ -35,7 +35,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /*
  * This server does not support these XFree86 4.0 features yet
- * DDC1 & DDC2 (requires I2C)
  * shadowFb (if requested or acceleration is off)
  * Overlay planes
  * DGA
@@ -121,7 +120,8 @@ typedef enum {
    OPTION_COLOR_KEY,
    OPTION_CACHE_LINES,
    OPTION_DAC_6BIT,
-   OPTION_DRI
+   OPTION_DRI,
+   OPTION_NO_DDC
 } I810Opts;
 
 static OptionInfoRec I810Options[] = {
@@ -131,6 +131,7 @@ static OptionInfoRec I810Options[] = {
    { OPTION_CACHE_LINES, "CacheLines", OPTV_INTEGER, {0}, FALSE},
    { OPTION_DAC_6BIT, "Dac6Bit", OPTV_BOOLEAN, {0}, FALSE},
    { OPTION_DRI, "DRI", OPTV_BOOLEAN, {0}, FALSE},
+   { OPTION_NO_DDC, "NoDDC", OPTV_BOOLEAN, {0}, FALSE},
    { -1, NULL, OPTV_NONE, {0}, FALSE}
 };
 
@@ -164,6 +165,13 @@ static const char *miscSymbols[] = {
 static const char *vbeSymbols[] = {
    "VBEInit",
    "vbeDoEDID",
+   "vbeFree",
+   NULL
+};
+
+static const char *ddcSymbols[] = {
+   "xf86PrintEDID",
+   "xf86SetDDCproperties",
    NULL
 };
 
@@ -293,7 +301,7 @@ i810Setup(pointer module, pointer opts, int *errmaj, int *errmin)
 			driSymbols,
 #endif
 			vbeSymbols,
-			NULL /* ddcsymbols */, 
+			ddcSymbols, 
 			NULL /* i2csymbols */, 
 			NULL /* shadowSymbols */,
 			NULL /* fbdevsymbols */, 
@@ -427,6 +435,29 @@ I810ProbeDDC(ScrnInfoPtr pScrn, int index)
     }
 }
 
+static xf86MonPtr
+I810DoDDC(ScrnInfoPtr pScrn, int index)
+{
+    vbeInfoPtr pVbe;
+    xf86MonPtr MonInfo = NULL;
+
+    /* Honour Option "noDDC" */
+    if (xf86ReturnOptValBool(I810Options, OPTION_NO_DDC, FALSE) ) {
+      return MonInfo;
+    }
+
+    if (xf86LoadSubModule(pScrn, "vbe") && (pVbe = VBEInit(NULL,index))) {
+      MonInfo = vbeDoEDID(pVbe, NULL);
+      xf86PrintEDID( MonInfo );
+      xf86SetDDCproperties(pScrn, MonInfo);
+      vbeFree(pVbe);
+    } else {
+      xf86DrvMsg(pScrn->scrnIndex, X_INFO, "this driver cannot do DDC without VBE\n");
+    }
+
+    return MonInfo;
+}
+
 /*
  * I810PreInit --
  *
@@ -545,6 +576,13 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
       ptr=xf86TokenToOptinfo(I810Options, OPTION_DAC_6BIT);
       ptr->found=FALSE;
    }
+
+   /* Get DDC info from monitor */
+   /* after xf86ProcessOptions,
+    * because it is controlled by options [no]vbe and [no]ddc
+    */
+   pScrn->monitor->DDC = I810DoDDC(pScrn, pI810->pEnt->index);
+
 
    /* We have to use PIO to probe, because we haven't mapped yet */
    I810SetPIOAccess(pI810);

@@ -1,6 +1,10 @@
 XCOMM platform:  $Xorg: osf1.cf,v 1.3 2000/08/17 19:41:48 cpqbld Exp $
 /* only tested with Digital OSF/1 */
 
+
+
+XCOMM platform:  $XFree86$
+
 #ifndef OSName
 # define OSName		DefaultOSName
 #endif
