@@ -3114,7 +3114,11 @@ UnmapWindow(pWin, fromConfigure)
 	if (!fromConfigure && pScreen->PostValidateTree)
 	    (*pScreen->PostValidateTree)(pLayerWin->parent, pWin, VTUnmap);
     }
-    if (wasRealized && !fromConfigure)
+    if (wasRealized && !fromConfigure
+#ifdef PANORAMIX
+	&& (noPanoramiXExtension || !pScreen->myNum)
+#endif
+	)
 	WindowsRestructured ();
     return(Success);
 }
