@@ -4,7 +4,7 @@ XCOMM	This file contains locale database file name
 XCOMM	The first word is the locale database file name and
 XCOMM	the second word is full locale name.
 XCOMM
-XCOMM	$XFree86: xc/nls/locale.dir,v 1.21 2001/02/09 00:02:54 dawes Exp $
+XCOMM	$XFree86: xc/nls/locale.dir,v 1.22 2001/03/06 18:03:17 dawes Exp $
 XCOMM
 #ifdef R63_COMPAT
 XCOMM These entries are in the old format (no ':')
@@ -199,6 +199,7 @@ microsoft-cp1255/XLC_LOCALE	yi_US.CP1255
 zh/XLC_LOCALE		zh_CN.eucCN
 zh/XLC_LOCALE		zh_CN.GB2312
 zh_CN.gbk/XLC_LOCALE	zh_CN.GBK
+zh_HK.big5hkscs/XLC_LOCALE	zh_HK.big5hkscs
 zh_TW.big5/XLC_LOCALE	zh_TW.big5
 zh_TW.big5/XLC_LOCALE	zh_TW.Big5
 zh_TW/XLC_LOCALE	zh_TW.eucTW
@@ -534,6 +535,7 @@ microsoft-cp1255/XLC_LOCALE:	yi_US.CP1255
 zh/XLC_LOCALE:		zh_CN.eucCN
 zh/XLC_LOCALE:		zh_CN.GB2312
 zh_CN.gbk/XLC_LOCALE:	zh_CN.GBK
+zh_HK.big5hkscs/XLC_LOCALE:	zh_HK.big5hkscs
 zh_TW.big5/XLC_LOCALE:	zh_TW.big5
 zh_TW.big5/XLC_LOCALE:	zh_TW.Big5
 zh_TW/XLC_LOCALE:	zh_TW.eucTW
