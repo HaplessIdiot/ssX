@@ -1,5 +1,5 @@
 /* $XConsortium: imakemdep.h,v 1.82 95/01/12 16:27:01 kaleb Exp $ */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.7 1994/12/17 09:33:42 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.8 1995/01/28 15:40:59 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -277,7 +277,7 @@ char *cpp_argv[ARGUMENTS] = {
 	"-D__i386__",
 # endif
 # ifdef __GNUC__
-	"-traditional"
+	"-traditional",
 # endif
 #endif
 #ifdef M4330
@@ -349,12 +349,11 @@ char *cpp_argv[ARGUMENTS] = {
 # endif
 #endif /* MOTOROLA */
 #ifdef i386
-# ifdef SVR4
 	"-Di386",
+# ifdef SVR4
 	"-DSVR4",
 # endif
 # ifdef SYSV
-	"-Di386",
 	"-DSYSV",
 #  ifdef ISC
 	"-DISC",
@@ -380,15 +379,12 @@ char *cpp_argv[ARGUMENTS] = {
 #  endif
 # endif
 # ifdef ESIX
-	"-Di386",
 	"-DESIX",
 # endif
 # ifdef ATT
-	"-Di386",
 	"-DATT",
 # endif
 # ifdef DELL
-	"-Di386",
 	"-DDELL",
 # endif
 #endif
@@ -441,7 +437,7 @@ char *cpp_argv[ARGUMENTS] = {
 	"-D__i386__",
 # endif
 # ifdef __GNUC__
-	"-traditional"
+	"-traditional",
 # endif
 #endif
 #ifdef Oki
