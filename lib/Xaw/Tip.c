@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/lib/Xaw/Tip.c,v 1.1 1999/06/27 14:07:35 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Tip.c,v 1.2 1999/06/27 16:37:11 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -529,7 +529,7 @@ ResetTip(XawTipInfo *info, Bool add_timeout)
     }
     if (info->mapped) {
 	XtRemoveGrab(XtParent((Widget)info->tip));
-	XtUnmapWidget((Widget)info->tip);
+	XUnmapWindow(XtDisplay((Widget)info->tip), XtWindow((Widget)info->tip));
 	info->mapped = False;
     }
     if (add_timeout) {
@@ -563,7 +563,7 @@ TipTimeoutCallback(XtPointer closure, XtIntervalId *id)
 	    encoding != info->tip->tip.encoding)
 	    TipLayout(info);
 	TipPosition(info);
-	XtMapWidget((Widget)info->tip);
+	XMapRaised(XtDisplay((Widget)info->tip), XtWindow((Widget)info->tip));
 	XtAddGrab(XtParent((Widget)info->tip), True, True);
 	info->mapped = True;
     }
