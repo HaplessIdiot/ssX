@@ -1138,7 +1138,8 @@ parse_vw(oc, font_set, name_list, count)
 						(sizeof(VRotateRec) * sub_num);
 		if(font_set->vrotate == (VRotate)NULL)
 		    return (-1);
-
+		memset(font_set->vrotate, 0x00, sizeof(VRotateRec) * sub_num);
+		
 		for(i = 0 ; i < sub_num ; i++) {
 		    vrotate[i].charset_name = font_set->substitute[i].name;
 		    vrotate[i].side = font_set->substitute[i].side;

@@ -177,6 +177,8 @@ static const char *xaaSymbols[] = {
     "XAAOverlayFBfuncs",
     "XAACachePlanarMonoStipple",
     "XAAScreenIndex",
+    "XAACopyROP",
+    "XAAHelpPatternROP",
     NULL
 };
 
@@ -287,7 +289,7 @@ sisSetup(pointer module, pointer opts, int *errmaj, int *errmin)
     if (!setupDone) {
         setupDone = TRUE;
         xf86AddDriver(&SIS, module, 0);
-        LoaderRefSymLists(vgahwSymbols, fbSymbols, i2cSymbols,
+        LoaderRefSymLists(vgahwSymbols, fbSymbols, i2cSymbols, xaaSymbols,
 #ifdef XF86DRI
                           drmSymbols, driSymbols,
 #endif

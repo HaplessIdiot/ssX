@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_2097.c,v 1.3 2000/09/19 12:46:17 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_2097.c,v 1.6 2000/10/02 18:42:25 eich Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -417,10 +417,15 @@ Neo2097SubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 #ifdef NEO_DO_CLIPPING
     OUTREG(NEOREG_CLIPLT, (y << 16) | (x + skipleft));
     OUTREG(NEOREG_CLIPRB, ((y + h) << 16) | (x + w));
+    WAIT_ENGINE_IDLE();
 #endif
     OUTREG(NEOREG_SRCSTARTOFF, 0);
     OUTREG(NEOREG_DSTSTARTOFF, (y<<16) | (x & 0xffff));
+#ifdef NEO_DO_CLIPPING
+    OUTREG(NEOREG_XYEXT, (h<<16) | (w & 0xffff));
+#else
     OUTREG(NEOREG_XYEXT, (1<<16) | (w & 0xffff));
+#endif
 }
 
 static void

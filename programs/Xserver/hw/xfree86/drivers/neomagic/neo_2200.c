@@ -23,7 +23,6 @@ CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
 /* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_2200.c,v 1.8 2000/09/19 12:46:17 eich Exp $ */
-
 /*
  * The original Precision Insight driver for
  * XFree86 v.3.3 has been sponsored by Red Hat.
@@ -159,9 +158,12 @@ Neo2200AccelInit(ScreenPtr pScreen)
 
 
     infoPtr->ScanlineCPUToScreenColorExpandFillFlags = ( NO_PLANEMASK |
-						  SCANLINE_PAD_DWORD |
-						 CPU_TRANSFER_PAD_DWORD |
-						 BIT_ORDER_IN_BYTE_MSBFIRST );
+#ifdef NEO_DO_CLIPPING
+							 LEFT_EDGE_CLIPPING |
+#endif
+							 SCANLINE_PAD_DWORD |
+							 CPU_TRANSFER_PAD_DWORD |
+							 BIT_ORDER_IN_BYTE_MSBFIRST );
     infoPtr->ScanlineColorExpandBuffers =
 	(unsigned char **)xnfalloc(sizeof(char*));
     infoPtr->ScanlineColorExpandBuffers[0] =
@@ -464,7 +466,10 @@ Neo2200SetupForScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 					 NEO_BC0_SRC_TRANS    |
 					 NEO_BC3_SKIP_MAPPING |
 					 NEO_BC3_DST_XY_ADDR  | 
-					 neo2200Rop[rop]);
+#ifdef NEO_DO_CLIPPING
+				         NEO_BC3_CLIP_ON      |
+#endif
+				         neo2200Rop[rop]);
 
 	WAIT_ENGINE_IDLE();
 	/*OUTREG16(NEOREG_BLTMODE, nAcl->BltModeFlags);*/
@@ -478,12 +483,14 @@ Neo2200SetupForScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 					 NEO_BC0_SRC_MONO     |
 					 NEO_BC3_SKIP_MAPPING |
 					 NEO_BC3_DST_XY_ADDR  | 
+#ifdef NEO_DO_CLIPPING
+ 				         NEO_BC3_CLIP_ON      |
+#endif
 					 neo2200Rop[rop]);
 
 	WAIT_ENGINE_IDLE();
 	/*OUTREG16(NEOREG_BLTMODE, nAcl->BltModeFlags);*/
 	OUTREG(NEOREG_BLTSTAT, nAcl->BltModeFlags << 16);
-	OUTREG(NEOREG_BLTCNTL, nAcl->tmpBltCntlFlags);
 	OUTREG(NEOREG_FGCOLOR, fg);
 	OUTREG(NEOREG_BGCOLOR, bg);
     }
@@ -498,17 +505,28 @@ Neo2200SubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 {
     NEOPtr nPtr = NEOPTR(pScrn);
     NEOACLPtr nAcl = NEOACLPTR(pScrn);
+#ifdef NEO_DO_CLIPPING
+        w = (w + 31) & ~31;
+#else
     nAcl->CPUToScreenColorExpandFill_x = x;
     nAcl->CPUToScreenColorExpandFill_y = y;
     nAcl->CPUToScreenColorExpandFill_w = w;
     nAcl->CPUToScreenColorExpandFill_h = h;
     nAcl->CPUToScreenColorExpandFill_skipleft = skipleft;
-
+#endif
     OUTREG(NEOREG_BLTCNTL, nAcl->tmpBltCntlFlags 
 	   | ((skipleft << 2) & 0x1C));
+ #ifdef NEO_DO_CLIPPING
+    OUTREG(NEOREG_CLIPLT, (y << 16) | (x + skipleft));
+    OUTREG(NEOREG_CLIPRB, ((y + h) << 16) | (x + w));
+#endif
     OUTREG(NEOREG_SRCSTARTOFF, 0);
     OUTREG(NEOREG_DSTSTARTOFF, (y<<16) | (x & 0xffff));
+#ifdef NEO_DO_CLIPPING
+    OUTREG(NEOREG_XYEXT, (h<<16) | (w & 0xffff));
+#else
     OUTREG(NEOREG_XYEXT, (1<<16) | (w & 0xffff));
+#endif
 }
 
 static void
@@ -517,6 +535,10 @@ Neo2200SubsequentColorExpandScanline(ScrnInfoPtr pScrn,	int bufno)
     NEOPtr nPtr = NEOPTR(pScrn);
     NEOACLPtr nAcl = NEOACLPTR(pScrn);
 
+#ifdef NEO_DO_CLIPPING
+    /* Should I be waiting for fifo slots to prevent retries ?
+       How do I do that on this engine ? */
+#else
     if (!(--nAcl->CPUToScreenColorExpandFill_h))
 	return;
 
@@ -528,6 +550,7 @@ Neo2200SubsequentColorExpandScanline(ScrnInfoPtr pScrn,	int bufno)
 	   | (nAcl->CPUToScreenColorExpandFill_x & 0xffff));
     OUTREG(NEOREG_XYEXT, (1<<16)
 	   | (nAcl->CPUToScreenColorExpandFill_w & 0xffff));
+#endif
 }
 
 static void

@@ -26,6 +26,8 @@
 
 #include "xf86DDC.h"
 
+#include "vbe.h"
+
 #include "xf86RAC.h"
 
 #include "nv_const.h"
