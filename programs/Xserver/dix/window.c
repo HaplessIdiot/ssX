@@ -867,6 +867,9 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
 	pWin->forcedBS = TRUE;
     }
 
+#ifdef PANORAMIX
+    if(noPanoramiXExtension || !pScreen->myNum)
+#endif
     if (SubSend(pParent))
     {
 	event.u.u.type = CreateNotify;
@@ -880,7 +883,6 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
 	event.u.createNotify.override = pWin->overrideRedirect;
 	DeliverEvents(pParent, &event, 1, NullWindow);		
     }
-
     return pWin;
 }
 
@@ -943,6 +945,9 @@ CrushTree(pWin)
 	while (1)
 	{
 	    pParent = pChild->parent;
+#ifdef PANORAMIX
+	    if(noPanoramiXExtension || !pChild->drawable.pScreen->myNum)
+#endif
 	    if (SubStrSend(pChild, pParent))
 	    {
 		event.u.u.type = DestroyNotify;
@@ -995,6 +1000,9 @@ DeleteWindow(value, wid)
     CrushTree(pWin);
 
     pParent = pWin->parent;
+#ifdef PANORAMIX
+    if(noPanoramiXExtension || !pWin->drawable.pScreen->myNum)
+#endif
     if (wid && pParent && SubStrSend(pWin, pParent))
     {
 	event.u.u.type = DestroyNotify;
@@ -1869,7 +1877,10 @@ ResizeChildrenWinSize(pWin, dx, dy, dw, dh)
 		event.u.gravity.window = pSib->drawable.id;
 		event.u.gravity.x = cwsx - wBorderWidth (pSib);
 		event.u.gravity.y = cwsy - wBorderWidth (pSib);
-		DeliverEvents (pSib, &event, 1, NullWindow);
+#ifdef PANORAMIX
+		if(noPanoramiXExtension || !pScreen->myNum)
+#endif
+		    DeliverEvents (pSib, &event, 1, NullWindow);
 		pSib->origin.x = cwsx;
 		pSib->origin.y = cwsy;
 	    }
@@ -1879,6 +1890,7 @@ ResizeChildrenWinSize(pWin, dx, dy, dw, dh)
 	SetWinSize (pSib);
 	SetBorderSize (pSib);
 	(*pScreen->PositionWindow)(pSib, pSib->drawable.x, pSib->drawable.y);
+
 	if ( (pChild = pSib->firstChild) )
 	{
 	    while (1)
@@ -2516,6 +2528,9 @@ ConfigureWindow(pWin, mask, vlist, client)
     return(Success);
 
 ActuallyDoSomething:
+#ifdef PANORAMIX
+    if(noPanoramiXExtension || !pWin->drawable.pScreen->myNum)
+#endif
     if (SubStrSend(pWin, pParent))
     {
 	event.u.u.type = ConfigureNotify;
@@ -2530,25 +2545,7 @@ ActuallyDoSomething:
 	event.u.configureNotify.height = h;
 	event.u.configureNotify.borderWidth = bw;
 	event.u.configureNotify.override = pWin->overrideRedirect;
-#ifdef PANORAMIX
-        /* In the case where a window is split between one
-           or more screen, a ConfigureNotify event will be written
-           to the client describing the section of the window
-           which is changed per screen. This causes a failure
-           in the vsw test  CH03/mvrszwdw because the test is
-           not properly written and expects 1 event and fails
-           when it reads more than 1 event when the window is 
-           split. The server is in fact doing the expected and 
-           correct behavior. -mad 10/11/96                    
-	 */
-	if (!noPanoramiXExtension) {
-	   if (!PanoramiXWindowOffScreen(pWin, w, h)) 
-	      DeliverEvents(pWin, &event, 1, NullWindow);
-	}else
-	   DeliverEvents(pWin, &event, 1, NullWindow);
-#else
 	DeliverEvents(pWin, &event, 1, NullWindow);
-#endif
     }
     if (mask & CWBorderWidth)
     {
@@ -2577,7 +2574,6 @@ ActuallyDoSomething:
 
     if (action != RESTACK_WIN)
 	CheckCursorConfinement(pWin);
-
     return(Success);
 #undef RESTACK_WIN
 #undef MOVE_WIN
@@ -2646,7 +2642,10 @@ CirculateWindow(pParent, direction, client)
     }
 
     event.u.u.type = CirculateNotify;
-    DeliverEvents(pWin, &event, 1, NullWindow);
+#ifdef PANORAMIX
+    if(noPanoramiXExtension || !pWin->drawable.pScreen->myNum)
+#endif
+	DeliverEvents(pWin, &event, 1, NullWindow);
     ReflectStackChange(pWin,
 		       (direction == RaiseLowest) ? pFirst : NullWindow,
 		       VTStack);
@@ -2704,7 +2703,14 @@ ReparentWindow(pWin, pParent, x, y, client)
     event.u.reparent.x = x;
     event.u.reparent.y = y;
     event.u.reparent.override = pWin->overrideRedirect;
-    DeliverEvents(pWin, &event, 1, pParent);
+#ifdef PANORAMIX
+    if(!noPanoramiXExtension && !pParent->parent) {
+	event.u.reparent.x += panoramiXdataPtr[0].x;
+	event.u.reparent.y += panoramiXdataPtr[0].y;
+    }
+    if(noPanoramiXExtension || !pScreen->myNum)
+#endif
+	DeliverEvents(pWin, &event, 1, pParent);
 
     /* take out of sibling chain */
 
@@ -2875,6 +2881,9 @@ MapWindow(pWin, client)
 	}
 
 	pWin->mapped = TRUE;
+#ifdef PANORAMIX
+	if(noPanoramiXExtension || !pScreen->myNum)
+#endif
 	if (SubStrSend(pWin, pParent))
 	{
 	    event.u.u.type = MapNotify;
@@ -2979,6 +2988,9 @@ MapSubwindows(pParent, client)
 	    }
     
 	    pWin->mapped = TRUE;
+#ifdef PANORAMIX
+	    if(noPanoramiXExtension || !pScreen->myNum)
+#endif
 	    if (parentNotify || StrSend(pWin))
 	    {
 		event.u.u.type = MapNotify;
@@ -3081,6 +3093,15 @@ UnrealizeTree(pWin, fromConfigure)
 	{
 	    pChild->realized = FALSE;
 	    pChild->visibility = VisibilityNotViewable;
+#ifdef PANORAMIX
+	    if(!noPanoramiXExtension && !pChild->drawable.pScreen->myNum) {
+		PanoramiXRes *win;
+		win = (PanoramiXRes*)LookupIDByType(pChild->drawable.id,
+							XRT_WINDOW);
+		if(win)
+		   win->u.win.visibility = VisibilityNotViewable;
+	    } 
+#endif
 	    (* Unrealize)(pChild);
 	    DeleteWindowFromAnyEvents(pChild, FALSE);
 	    if (pChild->viewable)
@@ -3131,6 +3152,9 @@ UnmapWindow(pWin, fromConfigure)
 
     if ((!pWin->mapped) || (!(pParent = pWin->parent)))
 	return(Success);
+#ifdef PANORAMIX
+    if(noPanoramiXExtension || !pScreen->myNum)
+#endif
     if (SubStrSend(pWin, pParent))
     {
 	event.u.u.type = UnmapNotify;
@@ -3203,6 +3227,9 @@ UnmapSubwindows(pWin)
     {
 	if (pChild->mapped)
 	{
+#ifdef PANORAMIX
+	    if(noPanoramiXExtension || !pScreen->myNum)
+#endif
 	    if (parentNotify || StrSend(pChild))
 	    {
 		event.u.u.type = UnmapNotify;
@@ -3349,7 +3376,6 @@ NotClippedByChildren(pWin)
     return(pReg);
 }
 
-
 void
 SendVisibilityNotify(pWin)
     WindowPtr pWin;
@@ -3360,61 +3386,49 @@ SendVisibilityNotify(pWin)
 #ifdef PANORAMIX
     /* This is not quite correct yet, but it's close */
     if(!noPanoramiXExtension) {
-	PanoramiXWindow *pPanoramiXWin = PanoramiXWinRoot;
+	PanoramiXRes *win;
 	WindowPtr pWin2;
 	int i, Scrnum;
 
 	Scrnum = pWin->drawable.pScreen->myNum;
 	
-	PANORAMIXFIND_ID_BY_SCRNUM(pPanoramiXWin, pWin->drawable.id, Scrnum);
-	
-	if(!pPanoramiXWin || 
-	   (pPanoramiXWin->u.win.visibility == pWin->visibility))
-		return;
+	win = PanoramiXFindIDByScrnum(XRT_WINDOW, pWin->drawable.id, Scrnum);
 
-	switch(pWin->visibility) {
+	if(!win || (win->u.win.visibility == visibility))
+	    return;
+
+	switch(visibility) {
 	case VisibilityUnobscured:
 	    for(i = 0; i < PanoramiXNumScreens; i++) {
 		if(i == Scrnum) continue;
 
-		pWin2 = (WindowPtr)LookupIDByType(pPanoramiXWin->info[i].id, 
-	       						RT_WINDOW);
+		pWin2 = (WindowPtr)LookupIDByType(win->info[i].id, RT_WINDOW);
+
+		if(pWin2->visibility == VisibilityPartiallyObscured)
+		    return;
 
 		if(!i) pWin = pWin2;
-		
-		if(pWin2->visibility == VisibilityUnobscured)
-		    return;
 	    }
 	    break;
 	case VisibilityPartiallyObscured:
-	    for(i = 0; i < PanoramiXNumScreens; i++) {
-		if(i == Scrnum) continue;
-
-		pWin2 = (WindowPtr)LookupIDByType(pPanoramiXWin->info[i].id, 
-	       						RT_WINDOW);
-		
-		if(!i) pWin = pWin2;
-
-		if(pWin2->visibility == VisibilityUnobscured)
-		    return;
-	    }
+	    if(Scrnum)
+	       pWin = (WindowPtr)LookupIDByType(win->info[0].id, RT_WINDOW);
 	    break;
 	case VisibilityFullyObscured:
 	    for(i = 0; i < PanoramiXNumScreens; i++) {
 		if(i == Scrnum) continue;
 
-		pWin2 = (WindowPtr)LookupIDByType(pPanoramiXWin->info[i].id, 
-	       						RT_WINDOW);
+		pWin2 = (WindowPtr)LookupIDByType(win->info[i].id, RT_WINDOW);
 		
-		if(!i) pWin = pWin2;
-
 		if(pWin2->visibility != VisibilityFullyObscured)
 		    return;
+
+		if(!i) pWin = pWin2;
 	    }
 	    break;
 	}
 	
-	pPanoramiXWin->u.win.visibility = visibility;
+	win->u.win.visibility = visibility;
     }
 #endif
 

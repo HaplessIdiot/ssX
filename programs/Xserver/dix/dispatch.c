@@ -64,7 +64,7 @@ SOFTWARE.
 *                                                               *
 *****************************************************************/
 
-/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.13tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.14 1999/03/14 03:21:32 dawes Exp $ */
 
 #ifdef PANORAMIX_DEBUG
 #include <stdio.h>
@@ -251,7 +251,6 @@ FlushClientCaches(id)
 	}
     }
 }
-
 #ifdef SMART_SCHEDULE
 
 #define SMART_SCHEDULE_DEFAULT_INTERVAL	20	    /* ms */
@@ -853,15 +852,10 @@ int
 ProcQueryTree(client)
     register ClientPtr client;
 {
-
     xQueryTreeReply reply;
     int numChildren = 0;
     register WindowPtr pChild, pWin, pHead;
     Window  *childIDs = (Window *)NULL;
-#ifdef PANORAMIX
-    PanoramiXWindow     *pPanoramiXWin = PanoramiXWinRoot;
-    int		j, thisScreen;
-#endif
     REQUEST(xResourceReq);
 
     REQUEST_SIZE_MATCH(xResourceReq);
@@ -876,55 +870,6 @@ ProcQueryTree(client)
 	reply.parent = pWin->parent->drawable.id;
     else
         reply.parent = (Window)None;
-#ifdef PANORAMIX
-    if ( !noPanoramiXExtension ) {
-	thisScreen = 0;
-        for (j = 0; j <= PanoramiXNumScreens - 1; j++) { 
-          if ( pWin->winSize.extents.x1 <  (panoramiXdataPtr[j].x  + panoramiXdataPtr[j].width)) {
-	     thisScreen = j;
-	     break;
-	  }
-	}
-    }
-    if ( !noPanoramiXExtension  && thisScreen ) {
-	PANORAMIXFIND_ID(pPanoramiXWin, pWin->drawable.id);   
-	IF_RETURN(!pPanoramiXWin, BadWindow);
-	pWin = (WindowPtr)SecurityLookupWindow(pPanoramiXWin->info[thisScreen].id, client,
-						SecurityReadAccess);
-	if (!pWin)
-	    return(BadWindow);
-        pHead = RealChildHead(pWin);
-        for (pChild = pWin->lastChild; pChild != pHead; pChild = pChild->prevSib)
-	     numChildren++;
-        if (numChildren)
-        {
-	  int curChild = 0;
-	  childIDs = (Window *) ALLOCATE_LOCAL(numChildren * sizeof(Window));
-	  if (!childIDs)
-	      return BadAlloc;
-	  for (pChild = pWin->lastChild; pChild != pHead; pChild = pChild->prevSib) {
-	      pPanoramiXWin = PanoramiXWinRoot;
-	      PANORAMIXFIND_ID_BY_SCRNUM(pPanoramiXWin, pChild->drawable.id, thisScreen);   
-	      IF_RETURN(!pPanoramiXWin, BadWindow);
-	      childIDs[curChild++] = pPanoramiXWin->info[0].id;
-	  }
-        } /* numChildren */  
-    }else { /* otherwise its screen 0, and nothing changes */
-      pHead = RealChildHead(pWin);
-      for (pChild = pWin->lastChild; pChild != pHead; pChild = pChild->prevSib)
-	  numChildren++;
-      if (numChildren)
-      {
-	int curChild = 0;
-
-	childIDs = (Window *) ALLOCATE_LOCAL(numChildren * sizeof(Window));
-	if (!childIDs)
-	    return BadAlloc;
-	for (pChild = pWin->lastChild; pChild != pHead; pChild = pChild->prevSib)
-	    childIDs[curChild++] = pChild->drawable.id;
-      }
-    }
-#else
     pHead = RealChildHead(pWin);
     for (pChild = pWin->lastChild; pChild != pHead; pChild = pChild->prevSib)
 	numChildren++;
@@ -938,7 +883,6 @@ ProcQueryTree(client)
 	for (pChild = pWin->lastChild; pChild != pHead; pChild = pChild->prevSib)
 	    childIDs[curChild++] = pChild->drawable.id;
     }
-#endif
     
     reply.nChildren = numChildren;
     reply.length = (numChildren * sizeof(Window)) >> 2;
@@ -2018,6 +1962,7 @@ ProcPolyFillRectangle(client)
     if (things & 4)
 	return(BadLength);
     things >>= 3;
+
     if (things)
         (*pGC->ops->PolyFillRect) (pDraw, pGC, things,
 		      (xRectangle *) &stuff[1]);
@@ -2979,9 +2924,14 @@ ProcAllocColorPlanes(client)
 	        return(retval);
 	}
 	acpr.length = length >> 2;
-	WriteReplyToClient(client, sizeof(xAllocColorPlanesReply), &acpr);
-	client->pSwapReplyFunc = (ReplySwapPtr) Swap32Write;
-	WriteSwappedDataToClient(client, length, ppixels);
+#ifdef PANORAMIX
+	if (noPanoramiXExtension)
+#endif
+	{
+	    WriteReplyToClient(client, sizeof(xAllocColorPlanesReply), &acpr);
+	    client->pSwapReplyFunc = (ReplySwapPtr) Swap32Write;
+	    WriteSwappedDataToClient(client, length, ppixels);
+	}
 	DEALLOCATE_LOCAL(ppixels);
         return (client->noClientException);        
     }
@@ -3693,16 +3643,6 @@ void
 CloseDownClient(client)
     register ClientPtr client;
 {
-#ifdef PANORAMIX
-    PanoramiXGC           *pPanoramiXFreeGC;
-    PanoramiXGC           *pPanoramiXFreeGCback = NULL;
-    PanoramiXWindow       *pPanoramiXFreeWin;
-    PanoramiXWindow       *pPanoramiXFreeWinback = NULL;
-    PanoramiXCmap         *pPanoramiXFreeCmap;
-    PanoramiXCmap         *pPanoramiXFreeCmapback = NULL;
-    PanoramiXPmap         *pPanoramiXFreePmap;
-    PanoramiXPmap         *pPanoramiXFreePmapback = NULL;
-#endif
     Bool really_close_down = client->clientGone ||
 			     client->closeDownMode == DestroyAll;
 
@@ -3776,9 +3716,6 @@ CloseDownClient(client)
 	    CallCallbacks((&ClientStateCallback), (pointer)&clientinfo);
 	} 	    
 	FreeClientResources(client);
-#ifdef PANORAMIX
-	    PANORAMIX_FREE(client);
-#endif
 	if (client->index < nextFreeClientID)
 	    nextFreeClientID = client->index;
 	clients[client->index] = NullClient;
@@ -3939,16 +3876,6 @@ NextAvailableClient(ospriv)
     register int i;
     register ClientPtr client;
     xReq data;
-#ifdef PANORAMIX
-    PanoramiXGC           *pPanoramiXFreeGC;
-    PanoramiXGC           *pPanoramiXFreeGCback = NULL;
-    PanoramiXWindow       *pPanoramiXFreeWin;
-    PanoramiXWindow       *pPanoramiXFreeWinback = NULL;
-    PanoramiXCmap         *pPanoramiXFreeCmap;
-    PanoramiXCmap         *pPanoramiXFreeCmapback = NULL;
-    PanoramiXPmap         *pPanoramiXFreePmap;
-    PanoramiXPmap         *pPanoramiXFreePmapback = NULL;
-#endif
 
     i = nextFreeClientID;
     if (i == MAXCLIENTS)
@@ -3968,9 +3895,6 @@ NextAvailableClient(ospriv)
     if (!InsertFakeRequest(client, (char *)&data, sz_xReq))
     {
 	FreeClientResources(client);
-#ifdef PANORAMIX
-	PANORAMIX_FREE(client);
-#endif
 	xfree(client);
 	return (ClientPtr)NULL;
     }
