@@ -170,9 +170,18 @@ FIFO threshold to an aggressive value for dot clocks above 65MHz.  This
 increases performance, and is probably only appropriate for the clgd5434
 chip.
 .sp
+\fBslow_dram\fP - for Cirrus chipsets.  This option sets the DRAM timings
+for slow DRAM chips.
+.sp
+\fBfast_dram\fP - for ET4000 and Cirrus chipsets.  This option sets the
+DRAM timings for fast DRAM chips.
+.sp
 \fBno_2mb_banksel\fP - for Cirrus chipsets.  This option is required for
 Cirrus cards with 2MB of videoram which is in the form of 512kx8 DRAMs
 (4 chips) rather than 256kx4 DRAMs (16 chips).
+.sp
+\fBno_bitblt\fP - for Cirrus chipsets.  This option disables use of
+hardware BitBLT.
 .ig
 intern_disp (use internal display for laptops -- WD90C2x)
 extern_disp (use external display for laptops -- WD90C2x)
@@ -232,7 +241,7 @@ Digital accelerated support is new, and may not be completely debugged.
 .SH CONTACT INFO
 \fIXFree86\fP source is available from the FTP servers 
 \fIftp.physics.su.oz.au\fP and \fIftp.x.org\fP.  Send email to
-\fIXFree86@physics.su.oz.au\fP for details.
+\fIXFree86@XFree86.org\fP for details.
 .SH AUTHORS
 .PP
 Refer to the
