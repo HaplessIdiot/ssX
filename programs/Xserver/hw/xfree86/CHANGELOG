@@ -1,3 +1,4 @@
+3978. Parser bug fix for hexadecimal numbers (Marc La France).
 3977. Fix scanpci (Marc La France).
 3976. DPMS #include fix (Marc La France).
 3975. Fix an event ordering problem in Xinerama (Mark Vojkovich).
@@ -10042,4 +10043,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1082 2000/03/14 01:51:40 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1083 2000/03/15 16:53:27 tsi Exp $
