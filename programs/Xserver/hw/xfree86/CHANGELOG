@@ -1,4 +1,7 @@
 XFree86 4.3.99.5 (xx May 2003)
+ 173. Fix a problem with savage driver when UseBIOS is off, such that the
+      performance drops dramatically. Now the performance matches or
+      exceeds that of the option UseBIOS (Alan Hourihane).
  172. Add workaround for problems that arise when in multi-layout map
       different modifier keysyms share the same key (Ivan Pascal).
  171. Fix bug that causes XGetKeyboardMapping produce incorrect map when keys
@@ -16960,7 +16963,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2692 2003/05/10 11:06:57 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2693 2003/05/15 13:34:54 pascal Exp $
 
 
 
