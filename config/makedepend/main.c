@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/main.c,v 3.28 2002/05/31 16:31:20 dawes Exp $ */
+/* $XFree86: xc/config/makedepend/main.c,v 3.29 2002/12/14 02:39:45 dawes Exp $ */
 
 #include "def.h"
 #ifdef hpux
@@ -620,6 +620,16 @@ char *getnextline(struct filepointer *filep)
 	lineno = filep->f_line;
 
 	for(bol = p--; ++p < eof; ) {
+		if(((*p == ' ') || (*p == '\t')) && (bol==p))
+		{
+			/* consume leading white-spaces for this line */
+			while(((*p == ' ')||(*p == '\t')) && ((p+1) < eof))
+			{
+				p++;
+				bol++;
+			}
+		}
+        
 		if (*p == '/' && (p+1) < eof && *(p+1) == '*') {
 			/* Consume C comments */
 			*(p++) = ' ';
