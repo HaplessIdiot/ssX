@@ -1,5 +1,5 @@
 /*
- * $XFree86: $
+ * $XFree86: xc/programs/Xserver/render/animcur.c,v 1.1 2002/11/23 02:38:15 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -59,6 +59,8 @@ typedef struct _AnimScrPriv {
 
     CloseScreenProcPtr		CloseScreen;
 
+    ScreenBlockHandlerProcPtr	BlockHandler;
+
     CursorLimitsProcPtr		CursorLimits;
     DisplayCursorProcPtr	DisplayCursor;
     RealizeCursorProcPtr	RealizeCursor;
@@ -94,9 +96,17 @@ AnimCurCloseScreen (int index, ScreenPtr pScreen)
     AnimCurScreenPtr    as = GetAnimCurScreen(pScreen);
     Bool                ret;
 
-    pScreen->CloseScreen = as->CloseScreen;
+    Unwrap(as, pScreen, CloseScreen);
+    
+    Unwrap(as, pScreen, BlockHandler);
+
+    Unwrap(as, pScreen, CursorLimits);
+    Unwrap(as, pScreen, DisplayCursor);
+    Unwrap(as, pScreen, RealizeCursor);
+    Unwrap(as, pScreen, UnrealizeCursor);
+    Unwrap(as, pScreen, RecolorCursor);
+    SetAnimCurScreen(pScreen,0);
     ret = (*pScreen->CloseScreen) (index, pScreen);
-    SetAnimCurScreen(pScreen, 0);
     xfree (as);
     if (index == 0)
 	AnimCurScreenPrivateIndex = -1;
@@ -125,35 +135,42 @@ AnimCurCursorLimits (ScreenPtr pScreen,
     Wrap (as, pScreen, CursorLimits, AnimCurCursorLimits);
 }
 
+/*
+ * This has to be a screen block handler instead of a generic
+ * block handler so that it is well ordered with respect to the DRI
+ * block handler responsible for releasing the hardware to DRI clients
+ */
+
 static void
-AnimCurBlockHandler (pointer blockData,
-		     OSTimePtr	pTimeout,
-		     pointer	pReadmask)
+AnimCurScreenBlockHandler (int screenNum,
+			   pointer blockData,
+			   pointer pTimeout,
+			   pointer pReadmask)
 {
-    ScreenPtr		pScreen = (ScreenPtr) blockData;
+    ScreenPtr	pScreen = screenInfo.screens[screenNum];
     AnimCurScreenPtr    as = GetAnimCurScreen(pScreen);
-    CARD32		now = GetTimeInMillis ();
 
-    if ((INT32) (now - as->time) >= 0)
+    if (as->pCursor)
     {
-        AnimCurPtr	ac = GetAnimCur(as->pCursor);
-	int		elt = (as->elt + 1) % ac->nelt;
-	
-	Unwrap (as, pScreen, DisplayCursor);
-	(void) (*pScreen->DisplayCursor) (pScreen, ac->elts[elt].pCursor);
-	Wrap (as, pScreen, DisplayCursor, AnimCurDisplayCursor);
-	
-        as->elt = elt;
-        as->time = now + ac->elts[elt].delay;
-    }
-    AdjustWaitForDelay (pTimeout, as->time - now);
-}
+	CARD32		now = GetTimeInMillis ();
 
-static void
-AnimCurWakeupHandler (pointer blockData,
-		      int result,
-		      pointer pReadmask)
-{
+	if ((INT32) (now - as->time) >= 0)
+	{
+	    AnimCurPtr	ac = GetAnimCur(as->pCursor);
+	    int		elt = (as->elt + 1) % ac->nelt;
+
+	    Unwrap (as, pScreen, DisplayCursor);
+	    (void) (*pScreen->DisplayCursor) (pScreen, ac->elts[elt].pCursor);
+	    Wrap (as, pScreen, DisplayCursor, AnimCurDisplayCursor);
+
+	    as->elt = elt;
+	    as->time = now + ac->elts[elt].delay;
+	}
+	AdjustWaitForDelay (pTimeout, as->time - now);
+    }
+    Unwrap (as, pScreen, BlockHandler);
+    (*pScreen->BlockHandler) (screenNum, blockData, pTimeout, pReadmask);
+    Wrap (as, pScreen, BlockHandler, AnimCurScreenBlockHandler);
 }
 
 static Bool
@@ -173,10 +190,6 @@ AnimCurDisplayCursor (ScreenPtr pScreen,
 	    ret = (*pScreen->DisplayCursor) (pScreen, ac->elts[0].pCursor);
 	    if (ret)
 	    {
-		if (!as->pCursor)
-		    RegisterBlockAndWakeupHandlers (AnimCurBlockHandler, 
-						    AnimCurWakeupHandler,
-						    pScreen);
 		as->elt = 0;
 		as->time = GetTimeInMillis () + ac->elts[0].delay;
 		as->pCursor = pCursor;
@@ -187,13 +200,7 @@ AnimCurDisplayCursor (ScreenPtr pScreen,
     }
     else
     {
-	if (as->pCursor)
-	{
-	    RemoveBlockAndWakeupHandlers (AnimCurBlockHandler,
-					  AnimCurWakeupHandler,
-					  pScreen);
-	    as->pCursor = 0;
-	}
+        as->pCursor = 0;
 	ret = (*pScreen->DisplayCursor) (pScreen, pCursor);
     }
     Wrap (as, pScreen, DisplayCursor, AnimCurDisplayCursor);
@@ -282,6 +289,8 @@ AnimCurInit (ScreenPtr pScreen)
     as->time = 0;
 
     Wrap(as, pScreen, CloseScreen, AnimCurCloseScreen);
+
+    Wrap(as, pScreen, BlockHandler, AnimCurScreenBlockHandler);
 
     Wrap(as, pScreen, CursorLimits, AnimCurCursorLimits);
     Wrap(as, pScreen, DisplayCursor, AnimCurDisplayCursor);
