@@ -34,7 +34,7 @@
  * TORTIOUS ACTIONS, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/aiptek/xf86Aiptek.h,v 1.2 2003/11/03 05:36:32 tsi Exp $ */
 
 #ifndef _AIPTEK_H_
 #define _AIPTEK_H_
@@ -43,6 +43,9 @@
 #ifdef LINUX_INPUT
 #   include <asm/types.h>
 #   include <linux/input.h>
+#   ifndef EV_MSC
+#	define EV_MSC 0x04
+#   endif
 /* keithp - a hack to avoid redefinitions of these in xf86str.h */
 #   ifdef BUS_PCI
 #       undef BUS_PCI
