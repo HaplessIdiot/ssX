@@ -20,7 +20,7 @@ card is similar to one of the described ones, chances are good it
 might work for you, too.
 
 
-        S3 801/805 ATT490 (or similar) RAMDAC 
+        S3 801/805, AT&T 20C490 (or similar) RAMDAC 
                 Orchid Farenheit 1280+ VLB
                 Actix GE32
 
@@ -37,7 +37,7 @@ might work for you, too.
 
         S3 805 VLB, S3 GENDAC (RAMDAC + clock synthesizer)
                 MIRO 10SD (available for VLB and PCI)
-                          [I'm not sure if all 10SDs use the S3 GENDAC]
+                          [it is not known whether all 10SDs use the S3 GENDAC]
 
                         8 and 15/16 bpp
 
@@ -49,6 +49,13 @@ might work for you, too.
                 Diamond Stealth 24 VLB
  
                         8 bpp only
+                        requires Option "nolinear"
+
+
+        S3 928, AT&T 20C490 RAMDAC 
+                Actix Ultra
+
+                        8 and 15/16 bpp
 
 
         S3 928, Sierra SC15025 RAMDAC, ICD2061A Clockchip
@@ -133,7 +140,7 @@ might work for you, too.
         S3 864, 20C498 RAMDAC, ICS2595 Clockchip
                 SPEA MirageP64 2MB DRAM
 
-                        8 and 16bpp
+                        8 and 15/16 bpp
 
                         ClockChip "ICS2595"
 
@@ -148,13 +155,13 @@ might work for you, too.
         S3 964, AT&T 20C505 RAMDAC, ICD2061A Clockchip
                 Miro Crystal 20SV PCI
 
-                        8, 16, 24(32) bpp
+                        8, 15/16, 24(32) bpp
 
 
         S3 964, AT&T Bt485 RAMDAC, ICD2061A Clockchip
                 Diamond Stealth 64
 
-                        8, 16, 24(32) bpp
+                        8, 15/16, 24(32) bpp
 
 
         S3 964, Ti3020 RAMDAC, ICD2061A Clockchip
@@ -236,4 +243,11 @@ SC15025-8      ==>  DacSpeed  80
 ATT20C490-80   ==>  DacSpeed  80
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.S3,v 3.3 1994/09/27 14:19:12 dawes Exp $
+Some RAMDACs (like the Ti3025) require some mode timing consideration for
+their hardware cursor to work correctly.  The Ti3025 requires that the
+mode have a back porch of at least 80 pixel-clock cycles.  A symptom of
+this not being correct is the HW cursor being chopped off when positioned
+close to the right edge of the screen.
+
+
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.S3,v 3.4 1994/09/28 16:25:07 dawes Exp $

@@ -33,7 +33,7 @@ May 1994:
        SVR4, Linux, FreeBSD and NetBSD.
     2) New configuration file format.  One of the biggest changes that you
        will notice with the new XFree86 version is that the old Xconfig
-       file has been replaced by an XF86Config file.For further details,
+       file has been replaced by an XF86Config file.  For further details,
        see the `Important Changes' section below.
     3) Support is included for the X Image Extension (XIE).
     4) A new accelerated server for boards based on the Weitek P9000
@@ -106,7 +106,7 @@ At this time, XFree86 3.1 supports the following accelerated chipsets:
     8514/A (and true clones)
     ATI Mach8, Mach32
     Cirrus CLGD5420, CLGD5422, CLGD5424, CLGD5426, CLGD5428, CLGD5429,
-           CLGD5430, CLGD5434
+           CLGD5430, CLGD5434, CLGD6205, CLGD6215, CLGD6225, CLGD6235
     S3 86C911, 86C924, 86C801, 86C805, 86C805i, 86C928, 86C864, 86C964
     Western Digital WD90C31, WD90C33
     Weitek P9000
@@ -115,7 +115,7 @@ At this time, XFree86 3.1 supports the following accelerated chipsets:
 
 The Cirrus and Western Digital accelerators are supported in the SVGA
 server; the other chipsets each have their own server.  A list of some
-cards which the accelerated servers have been tested is included in the
+cards which the accelerated servers have been tested with is included in the
 files AccelCards, Devices, and some of the chipset-specific README files.
 They may well work on other cards, but we cannot guarantee it.
   
@@ -150,7 +150,7 @@ those chipsets.
 
 The monochrome server also supports generic VGA cards, using 64k of video
 memory in a single bank, the Hercules monochrome card, the Hyundai HGC1280,
-Sigma LaserView, Visa and Apollo monochrome cards.  On the Compaq AVGA, only
+Sigma LaserView, and Apollo monochrome cards.  On the Compaq AVGA, only
 64k of video memory is supported for the monochrome server, and the GVGA has
 not been tested with more than 64k.
 
@@ -181,7 +181,7 @@ The next major change is related to the server configuration file.  The old
 Xconfig file has been replaced in XFree86 3.1 by an XF86Config file.  This
 is more than just a name change.  The new XF86Config file uses a format
 that is quite different from the old Xconfig file.  The new format is more
-structured, logical, and extendable than the old format.  We realise that
+structured, logical, and extensible than the old format.  We realise that
 the transition to this new format won't be without problems.  To help in
 this transition we have provided a program (`reconfig') to convert the old
 Xconfig format into the new XF86Config format.  This doesn't provide a
@@ -310,6 +310,8 @@ S3 accelerated code by:
        Harald Koenig <koenig@tat.physik.uni-tuebingen.de>
        Bernhard Bender <br@elsa.mhs.compuserve.com>
        Dirk Hohndel <hohndel@XFree86.org>
+       Eddy Olk <eddy@dutecae.et.tudelft.nl>
+       Steven Parker <sparker@taz.cs.utah.edu>
 Mach32 accelerated code by:
        Kevin Martin <martin@cs.unc.edu>
        Rik Faith <faith@cs.unc.edu>
@@ -329,6 +331,14 @@ Cirrus accelerated code by:
 Western Digital accelerated code by:
        Mike Tierney <floyd@pepsi.eng.umd.edu>
        Bill Conn <conn@bnr.ca>
+P9000 accelerated code by:
+       Erik Nygren <nygren@mit.edu>
+       Harry Langenbacher <harry@brain.jpl.nasa.gov>
+       Chris Mason <mason@mail.csh.rit.edu>
+AGX accelerated code by:
+       Henry Worth <henry.worth@amail.amdahl.com>
+ET4000/W32 accelerated code by:
+       Glenn Lai <glenn@cs.utexas.edu>
 
 16 color VGA server by:
        Gertjan Akkerman <akkerman@dutiba.twi.tudelft.nl>
@@ -534,4 +544,4 @@ compile-time option selections were made when building the distribution.
 
 28 September 1994
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README,v 3.2 1994/09/27 14:19:10 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README,v 3.3 1994/09/28 16:25:05 dawes Exp $
