@@ -1,4 +1,6 @@
 XFree86 4.4.99.23 (xx January 2005)
+ 298. Extend Solaris mouse detection to recognise protocol "Auto", and to
+      fall back to the kdmouse device when VUID doesn't work (David Dawes).
  297. Choose a better default videoram amount for i810 video when DRI is not
       disabled (David Dawes).
  296. Set the vmware driver fallback monitor parameters to allow modes
@@ -19331,7 +19333,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3408 2005/01/30 21:31:25 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3409 2005/01/31 01:06:03 dawes Exp $
 
 
 
