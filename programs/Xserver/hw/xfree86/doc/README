@@ -530,7 +530,7 @@ and the following mirror sites:
     x.physics.su.oz.au:/pub/XFree86          (source and binaries)
     ftp.iij.ad.jp:/pub/X/XFree86             (source and binaries)
     ftp.nectec.or.th:/pub/mirrors/XFree86    (source and binaries)
-    nctuccca.edu.tw:/X/XFree86               (source and Linux binaries)
+    ftp.edu.tw:/X/XFree86/3.1                (source and binaries)
 
 Please use the closest mirror site where possible.
 
@@ -544,4 +544,4 @@ compile-time option selections were made when building the distribution.
 
 2 October 1994
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README,v 3.5 1994/10/01 01:48:16 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README,v 3.6 1994/10/03 03:14:24 dawes Exp $

@@ -105,13 +105,15 @@ EndSection
 
 #Date: Wed, 21 Sep 1994 14:22:23 -0700 (PDT)
 #From: James Dooley <jdooley@ugcs.caltech.edu>
+#Updated Date: Date: Mon, 3 Oct 94 22:03:47 EST
+#Updated From: "Bill C. Riemers" <bcr@physics.purdue.edu>
 Section "Monitor"
     Identifier  "CrystalScan 1572FS"
     VendorName  "CrystalScan"
     ModelName   "1572FS"
-    Bandwidth   80.0
-    HorizSync   30.00-57.00
-    VertRefresh 43.00-70.04
+    Bandwidth   110
+    HorizSync   30.00-60.00
+    VertRefresh 50.00-100.00
     Mode "640x480"
         DotClock 25
         HTimings 640 664 760 800 VTimings 480 491 493 525
@@ -977,4 +979,4 @@ Section "Monitor"
     ModeLine "640x480"  28  640  664  728  792 480 484 490 505
 EndSection
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Monitors,v 3.2 1994/09/28 16:25:02 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Monitors,v 3.3 1994/10/01 01:48:14 dawes Exp $
