@@ -1,4 +1,5 @@
 XFree86 4.3.99.2 (xx March 2003)
+  64. Rage 128 Xv fix for high resolution displays (Rik Faith).
   63. PPC updates for Radeon (Michel Dänzer, Hui Yu@ATI).
   62. Radeon patch from ATI (Hui Yu@ATI).
       - IGP320/330/340 support (2D only)
@@ -16668,4 +16669,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2616 2003/04/05 18:27:00 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2617 2003/04/06 20:07:30 martin Exp $
