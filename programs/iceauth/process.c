@@ -24,7 +24,7 @@ in this Software without prior written authorization from The Open Group.
  * Modified into "iceauth"    : Ralph Mor, X Consortium
  */
 
-/* $XFree86: xc/programs/iceauth/process.c,v 3.3 2001/01/17 23:44:54 dawes Exp $ */
+/* $XFree86: xc/programs/iceauth/process.c,v 3.4 2001/07/25 15:05:13 dawes Exp $ */
 
 #include "iceauth.h"
 #include <ctype.h>
@@ -499,7 +499,7 @@ static _signal_t die (sig)
     int sig;
 {
     dieing = True;
-    exit (auth_finalize ());
+    _exit (auth_finalize ());
     /* NOTREACHED */
 #ifdef SIGNALRETURNSINT
     return -1;				/* for picky compilers */
@@ -512,7 +512,7 @@ static _signal_t catchsig (sig)
 #ifdef SYSV
     if (sig > 0) signal (sig, die);	/* re-establish signal handler */
 #endif
-    if (verbose && iceauth_modified) printf ("\r\n");
+    if (verbose && iceauth_modified) write (STDOUT_FILENO, "\r\n", 2);
     die (sig);
     /* NOTREACHED */
 #ifdef SIGNALRETURNSINT
@@ -668,8 +668,10 @@ int auth_finalize ()
     if (iceauth_modified) {
 	if (dieing) {
 	    if (verbose) {
-		printf ("Aborting changes to authority file %s\n",
-			iceauth_filename);
+		snprintf (temp_name, sizeof temp_name,
+			  "Aborting changes to authority file %s\n",
+			  iceauth_filename);
+		write(STDERR_FILENO, temp_name, strlen(temp_name));
 	    }
 	} else if (!iceauth_allowed) {
 	    fprintf (stderr, 
