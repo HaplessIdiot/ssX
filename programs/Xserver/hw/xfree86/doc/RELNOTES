@@ -732,6 +732,7 @@
   X312DMa8.tgz       Mach 8 server
   X312DMono.tgz      Mono server
   X312DP9K.tgz       P9000 server
+  X312DS3.tgz        S3 server
   X312DSVGA.tgz      SVGA server
   X312DVG16.tgz      16 colour VGA server
   X312DW32.tgz       ET4000/W32 server
@@ -764,7 +765,7 @@
        X312Df100.tgz     100dpi fonts
        X312Dfcyr.tgz     Cyrillic fonts
        X312Dfnon.tgz     Other fonts (Chinese, Japanese, Korean, Hebrew)
-       X312Dfscl.tgz     Scaled fonts (Speedo and Type1)
+       X312Dfscl.tgz     Scalable fonts (Speedo and Type1)
        X312Dfsrv.tgz     Font server and config files
        X312Dprog.tgz     X header files, config files and compile-time libs
        X312Dcfg.tgz      sample config files for xinit, xdm
@@ -789,7 +790,6 @@
 
 
 
-
           mkdir /home/X11R6
           ln -s /home/X11R6 /usr
 
@@ -808,7 +808,7 @@
   Note that there is no postinst.sh script to be run for this release.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.19 1996/02/24 10:19:20 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.20 1996/02/25 01:25:48 dawes Exp $
 
 
 

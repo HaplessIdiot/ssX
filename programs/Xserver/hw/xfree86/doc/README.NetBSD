@@ -85,7 +85,7 @@
      REQUIRED:
 
         X312Ddoc
-           READMEs and XFree86 specific man pages.
+           READMEs.
 
         X312Dbin
            all of the executable X client applications and shared libs
@@ -97,82 +97,82 @@
            data files needed at runtime
 
         X312Dcfg
-           customizable xinit, xdm, and fs runtime configuration files.
+           customizable xinit and xdm runtime configuration files.
 
         Choose at least one of the following server to match your
         hardware:
 
 
-        X312Dsvga
+        X312DSVGA
            the 8-bit pseudo-color X server for Super VGA cards
 
-        X312Dvg16
+        X312DVG16
            the 4-bit pseudo-color X server for VGA & SVGA cards.
 
-        X312Dmono
+        X312DMono
            the Monochrome X Server
 
         X312D8514
            the X server for IBM 8514/A and compatible boards
 
-        X312Dagx
+        X312DAGX
            the X server for AGX boards
 
-        X312Dmc8
+        X312DMa8
            the X server for ATI Mach8 graphics boards
 
-        X312Dmc32
+        X312DMa32
            the X server for ATI Mach32 graphics boards
 
-        X312Dmc64
+        X312DMa64
            the X server for ATI Mach64 graphics boards
 
-        X312Dp9k
+        X312DP9K
            the X server for P9000 based boards
 
-        X312Ds3
+        X312DS3
            the X server for S3 based boards
 
-        X312Dw32
+        X312DW32
            the X server for et4000w32 based boards
 
         The following servers are available for PC98 hardware from the
         directory XFree98-3.1.2D
 
 
-        X312Degc
+        X312D9EGC
            EGC
 
-        X312Dgan
-           GANB-WAP
+        X312D9GAN
+           GANB-WAP(cirrus)
 
-        X312D480
+        X312D9480
            PEGC-480
 
-        X312Dns3
+        X312D9NS3
            NEC(S3)
 
-        X312Dnkv
+        X312D9NKV
            NEC(cirrus)
 
-        X312Dlb
+        X312D9LPW
            PowerWindowLB(S3)
 
-        X312Dskb
+        X312D9SPW
            SKB-PowerWindow(S3)
 
-        X312Dwep
-           WABEP
+        X312D9WEP
+           WABEP(cirrus)
 
-        X312Dws
-           WABS
+        X312D9WBS
+           WABS(cirrus)
 
-        X312Dwsn
-           WSN-A2F
+        X312D9WSN
+           WSN-A2F(cirrus)
 
      OPTIONAL:
 
-        X312Dfs
+        X312Dfsrv
            the font server with man pages.
 
         X312Dprog
@@ -180,10 +180,27 @@
            compiling other X applications
 
         X312Dman
-           man pages except XFree86 specific ones in the doc archive
+           man pages
 
-        X312Dxfnt
-           the other fonts (100dpi, scaled, Japanese, Chinese, etc)
+        X312Df100
+           100dpi fonts
+
+        X312Dfcyr
+           Cyrillic fonts
+
+        X312Dfscl
+           Scalable fonts
+
+        X312Dfnon
+           other fonts (Japanese, Chinese, etc)
+
+
+
+        X312Dnest
+           Nested X server
+
+        X312Dvfb
+           Virtual framebuffer X server
 
   If this is your first time, then you can safely install all of the
   packages.  As a minimal install, you'll need doc, bin, fonts lib,
@@ -193,8 +210,6 @@
 
 
      1. Become ``root''.
-
-
 
      2. For each package that you want to install type:
 
@@ -243,24 +258,29 @@
         if that isn't the place):
 
 
-           cd /usr/X11R6
 
-           tar xzf X312doc.tgz
-           tar xzf X312bin.tgz
-           tar xzf X312lib.tgz
-           tar xzf X312font.tgz
-           tar xzf X312man.tgz
 
-           tar xzf X312link.tgz
-           tar xzf X312prog.tgz
-           tar xzf X312xfnt.tgz
-           tar xzf X312fs.tgz
-           tar xzf X312cfg.tgz
+
+
+      cd /usr/X11R6
+
+      tar xzf X312doc.tgz
+      tar xzf X312bin.tgz
+      tar xzf X312lib.tgz
+      tar xzf X312font.tgz
+      tar xzf X312man.tgz
+
+      tar xzf X312link.tgz
+      tar xzf X312prog.tgz
+      tar xzf X312xfnt.tgz
+      tar xzf X312fs.tgz
+      tar xzf X312cfg.tgz
 
 
 
 
      And unpack the server(s) you need:
+
 
            tar xzf X312<server>.tgz
 
@@ -308,8 +328,6 @@
 
 
 
-
-
      3. Install support for the shared libraries: add the following
         lines at the end of /etc/rc.local:
 
@@ -326,7 +344,6 @@
 
      4. Reboot your machine to take all previous modifications into
         account.
-
 
   If X was already installed on your machine and you have customized
   your xinit or xdm runtime configuration scripts, omit the config
@@ -374,7 +391,6 @@
 
 
         ttyv0  "/usr/libexec/getty Pc" pc      off secure
-
 
 
 
@@ -440,6 +456,10 @@
   Refer to the XF86Config(4/5) man page for detailed configuration
   instructions.
 
+
+
+
+
   6.  Running X
 
   8mb of memory is a recommended minimum for running X.  The server,
@@ -456,9 +476,6 @@
   To get out of X windows, type: ``exit'' in the console xterm.  You can
   customize your X by creating .xinitrc, .xserverrc, and .twmrc files in
   your home directory as described in the xinit and startx man pages.
-
-
-
 
   7.  Kernel Support for X
 
@@ -503,11 +520,17 @@
   If using pccons you get the message:
 
 
-       > Fatal server error:
-       > xf86OpenConsole: CONSOLE_X_MODE_OFF failed (Inappropriate ioctl for device)
-       > Was expecting pccons driver with X support
-       > Check your kernel's console driver configuration and /dev entries
-       >
+
+
+
+
+
+
+  > Fatal server error:
+  > xf86OpenConsole: CONSOLE_X_MODE_OFF failed (Inappropriate ioctl for device)
+  > Was expecting pccons driver with X support
+  > Check your kernel's console driver configuration and /dev entries
+  >
 
 
 
@@ -524,7 +547,6 @@
 
   The P9000, Mach64 and AGX servers require linear memory access, other
   accelerated servers can take advantage of it, but do not require it.
-
 
   There are two ways to allow XFree86 to access linear memory:
 
@@ -570,8 +592,6 @@
           have linear memory access.  Use 'option INSECURE' if you
           need more that one X server at a time.
 
-
-
   7.2.  MIT-SHM
 
   NetBSD 1.0 and later supports System V shared memory. If XFree86
@@ -587,7 +607,6 @@
         options         SYSVMSG
         options         SYSVSEM
         options         SYSVSHM
-
 
 
 
@@ -658,7 +677,7 @@
      o  if you're using syscons put:
 
 
-      #define XFree86ConsoleDefines -DSYSCONS_SUPPORT
+           #define XFree86ConsoleDefines -DSYSCONS_SUPPORT
 
 
 
@@ -701,6 +720,10 @@
        #define BuildBsdSharedLibs      NO
 
 
+
+
+
+
   8.4.  Building on NetBSD/sparc
 
   XFree86 3.1.2D also compiles on NetBSD/sparc. The Sun server patches
@@ -721,8 +744,6 @@
   Problems with this port should be reported to the port-
   sparc@NetBSD.Org mailing list or directly to me matthieu@laas.fr
   rather than to the xfree86 mailing list.
-
-
 
   9.  Building New X Clients
 
@@ -768,6 +789,7 @@
   dynamic linker. Applications that use libXmu also need libXt. If the
   client uses a standard Imakefile, this dependency will probably by
   included in the Makefile automagically -- you'll not see the problem.
+
   Otherwise, just add ``-lXt'' to your library list in the Imakefile or
   Makefile and relink.
 
@@ -788,35 +810,13 @@
         machines in preparing the FreeBSD binary release.
 
 
-
-
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.22 1996/02/24 05:59:07 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.23 1996/02/25 01:25:47 dawes Exp $
 
 
 
 
 
   $XConsortium: NetBSD.sgml /main/9 1996/01/28 08:05:37 kaleb $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.8 1996/02/12 11:12:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.9 1996/02/18 03:42:53 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV protocol.
@@ -923,6 +923,8 @@ xf86WcmProc(pWcm, what)
 	return !Success;
       }
       else {
+	  /* values are wrong. Need to patch to gather values from the device */
+	  /* at this moment or when we list devices. */
 	InitValuatorAxisStruct(pWcm,
 			       0,
 			       0, /* min val */
@@ -1016,6 +1018,22 @@ xf86WcmProc(pWcm, what)
 	      }
 	      break;    
 	  }
+	  /* Set the real values */
+	  InitValuatorAxisStruct(pWcm,
+				 0,
+				 0, /* min val */
+				 priv->wcmMaxX, /* max val */
+				 priv->wcmResolX * 1000 / 2.54); /* resolution */
+	  InitValuatorAxisStruct(pWcm,
+				 1,
+				 0, /* min val */
+				 priv->wcmMaxY, /* max val */
+				 priv->wcmResolY * 1000 / 2.54); /* resolution */
+	  InitValuatorAxisStruct(pWcm,
+				 2,
+				 - priv->wcmMaxZ / 2, /* min val */
+				 priv->wcmMaxZ / 2, /* max val */
+				 priv->wcmResolZ * 1000 / 2.54); /* resolution */
       }
       
       if (local->fd >= 0) {                

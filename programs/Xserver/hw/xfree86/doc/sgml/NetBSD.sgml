@@ -97,53 +97,58 @@ XFree86 binary distribution.
 <descrip>
 <tag/REQUIRED:/
     <descrip>
-    <tag/X312Ddoc/ READMEs and XFree86 specific man pages.
+    <tag/X312Ddoc/ READMEs.
     <tag/X312Dbin/ all of the executable X client applications and shared libs
     <tag/X312Dfnt/ the misc and 75dpi fonts
     <tag/X312Dlib/ data files needed at runtime
-    <tag/X312Dcfg/ customizable xinit, xdm, and fs runtime configuration files.
+    <tag/X312Dcfg/ customizable xinit and xdm runtime configuration files.
     </descrip>
 
     Choose at least one of the following server to match your hardware:
 
     <descrip>
-    <tag/X312Dsvga/  the 8-bit pseudo-color X server for Super VGA cards
-    <tag/X312Dvg16/ the 4-bit pseudo-color X server for VGA &amp; SVGA cards.
-    <tag/X312Dmono/  the Monochrome X Server
+    <tag/X312DSVGA/  the 8-bit pseudo-color X server for Super VGA cards
+    <tag/X312DVG16/ the 4-bit pseudo-color X server for VGA &amp; SVGA cards.
+    <tag/X312DMono/  the Monochrome X Server
     <tag/X312D8514/  the X server for IBM 8514/A and compatible boards
-    <tag/X312Dagx/   the X server for AGX boards
-    <tag/X312Dmc8/ the X server for ATI Mach8 graphics boards
-    <tag/X312Dmc32/ the X server for ATI Mach32 graphics boards
-    <tag/X312Dmc64/ the X server for ATI Mach64 graphics boards
-    <tag/X312Dp9k/	the X server for P9000 based boards
-    <tag/X312Ds3/ 	the X server for S3 based boards
-    <tag/X312Dw32/	the X server for et4000w32 based boards
+    <tag/X312DAGX/   the X server for AGX boards
+    <tag/X312DMa8/ the X server for ATI Mach8 graphics boards
+    <tag/X312DMa32/ the X server for ATI Mach32 graphics boards
+    <tag/X312DMa64/ the X server for ATI Mach64 graphics boards
+    <tag/X312DP9K/	the X server for P9000 based boards
+    <tag/X312DS3/ 	the X server for S3 based boards
+    <tag/X312DW32/	the X server for et4000w32 based boards
     </descrip>
 
     The following servers are available for PC98 hardware from the
     directory XFree98-3.1.2D
 
     <descrip>
-    <tag/X312Degc/	EGC 
-    <tag/X312Dgan/	GANB-WAP
-    <tag/X312D480/	PEGC-480 
-    <tag/X312Dns3/	NEC(S3) 
-    <tag/X312Dnkv/	NEC(cirrus)
-    <tag/X312Dlb/	PowerWindowLB(S3)
-    <tag/X312Dskb/	SKB-PowerWindow(S3)
-    <tag/X312Dwep/	WABEP
-    <tag/X312Dws/	WABS
-    <tag/X312Dwsn/	WSN-A2F
+    <tag/X312D9EGC/	EGC 
+    <tag/X312D9GAN/	GANB-WAP(cirrus)
+    <tag/X312D9480/	PEGC-480 
+    <tag/X312D9NS3/	NEC(S3) 
+    <tag/X312D9NKV/	NEC(cirrus)
+    <tag/X312D9LPW/	PowerWindowLB(S3)
+    <tag/X312D9SPW/	SKB-PowerWindow(S3)
+    <tag/X312D9WEP/	WABEP(cirrus)
+    <tag/X312D9WBS/	WABS(cirrus)
+    <tag/X312D9WSN/	WSN-A2F(cirrus)
     </descrip>
 
 <tag/OPTIONAL:/
 
     <descrip>
-    <tag/X312Dfs/ the font server with man pages.
+    <tag/X312Dfsrv/ the font server with man pages.
     <tag/X312Dprog/ the X11 header files and static libraries needed only 
 		  for compiling other X applications
-    <tag/X312Dman/ man pages except XFree86 specific ones in the doc archive
-    <tag/X312Dxfnt/ the other fonts (100dpi, scaled, Japanese, Chinese, etc)
+    <tag/X312Dman/ man pages
+    <tag/X312Df100/ 100dpi fonts
+    <tag/X312Dfcyr/ Cyrillic fonts
+    <tag/X312Dfscl/ Scalable fonts
+    <tag/X312Dfnon/ other fonts (Japanese, Chinese, etc)
+    <tag/X312Dnest/ Nested X server
+    <tag/X312Dvfb/ Virtual framebuffer X server
     </descrip>
 </descrip>
 
@@ -201,22 +206,20 @@ below.
 <tscreen><verb>
  cd /usr/X11R6
 
- tar xzf X312doc.tgz
- tar xzf X312bin.tgz
- tar xzf X312lib.tgz 
- tar xzf X312font.tgz
- tar xzf X312man.tgz
+ tar xzf X312Ddoc.tgz
+ tar xzf X312Dbin.tgz
+ tar xzf X312Dlib.tgz 
+ tar xzf X312Dfont.tgz
+ tar xzf X312Dman.tgz
 
- tar xzf X312link.tgz
- tar xzf X312prog.tgz
- tar xzf X312xfnt.tgz
- tar xzf X312fs.tgz
- tar xzf X312cfg.tgz
+ tar xzf X312Dprog.tgz
+ tar xzf X312Dfsrv.tgz
+ tar xzf X312Dcfg.tgz
 
 </verb></tscreen>
 	And unpack the server(s) you need:
 <tscreen><verb>
- tar xzf X312<server>.tgz
+ tar xzf X312D<server>.tgz
 </verb></tscreen>
 </enum>
 
@@ -705,7 +708,7 @@ and many others.
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.21 1996/02/19 09:50:40 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.23 1996/02/25 01:25:47 dawes Exp $
 
 
 
