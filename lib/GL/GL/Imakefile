@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.13 2002/02/27 21:09:32 tsi Exp $
+XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.14 2002/11/18 22:47:27 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -8,7 +8,9 @@ XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.13 2002/02/27 21:09:32 tsi Exp $
 #define DoDebugLib DebugLibGlx
 #define DoProfileLib ProfileLibGlx
 
+#ifndef ShLibBindGlobals
 #define ShlibBindGlobals YES
+#endif
 
      LIBNAME = GL
      SOREV   = $(SOGLREV)
