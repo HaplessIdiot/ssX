@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/render.c,v 1.20 2002/10/10 02:29:06 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/render.c,v 1.21 2002/11/01 00:14:20 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -402,8 +402,8 @@ ProcRenderQueryPictFormats (ClientPtr client)
 		pictForm->direct.blueMask = pFormat->direct.blueMask;
 		pictForm->direct.alpha = pFormat->direct.alpha;
 		pictForm->direct.alphaMask = pFormat->direct.alphaMask;
-		if (pFormat->pColormap)
-		    pictForm->colormap = pFormat->pColormap->mid;
+		if (pFormat->type == PictTypeIndexed && pFormat->index.pColormap)
+		    pictForm->colormap = pFormat->index.pColormap->mid;
 		else
 		    pictForm->colormap = None;
 		if (client->swapped)
@@ -510,7 +510,65 @@ ProcRenderQueryPictFormats (ClientPtr client)
 static int
 ProcRenderQueryPictIndexValues (ClientPtr client)
 {
-    return BadImplementation;
+    PictFormatPtr   pFormat;
+    int		    num;
+    int		    rlength;
+    int		    i, n;
+    REQUEST(xRenderQueryPictIndexValuesReq);
+    xRenderQueryPictIndexValuesReply *reply;
+    xIndexValue	    *values;
+
+    REQUEST_AT_LEAST_SIZE(xRenderQueryPictIndexValuesReq);
+
+    pFormat = (PictFormatPtr) SecurityLookupIDByType (client, 
+						      stuff->format,
+						      PictFormatType,
+						      SecurityReadAccess);
+
+    if (!pFormat)
+    {
+	client->errorValue = stuff->format;
+	return RenderErrBase + BadPictFormat;
+    }
+    if (pFormat->type != PictTypeIndexed)
+    {
+	client->errorValue = stuff->format;
+	return BadMatch;
+    }
+    num = pFormat->index.nvalues;
+    rlength = (sizeof (xRenderQueryPictIndexValuesReply) + 
+	       num * sizeof(xIndexValue));
+    reply = (xRenderQueryPictIndexValuesReply *) xalloc (rlength);
+    if (!reply)
+	return BadAlloc;
+
+    reply->type = X_Reply;
+    reply->sequenceNumber = client->sequence;
+    reply->length = (rlength - sizeof(xGenericReply)) >> 2;
+    reply->numIndexValues = num;
+
+    values = (xIndexValue *) (reply + 1);
+    
+    memcpy (reply + 1, pFormat->index.pValues, num * sizeof (xIndexValue));
+    
+    if (client->swapped)
+    {
+	for (i = 0; i < num; i++)
+	{
+	    swapl (&values[i].pixel, n);
+	    swaps (&values[i].red, n);
+	    swaps (&values[i].green, n);
+	    swaps (&values[i].blue, n);
+	    swaps (&values[i].alpha, n);
+	}
+	swaps (&reply->sequenceNumber, n);
+	swapl (&reply->length, n);
+	swapl (&reply->numIndexValues, n);
+    }
+
+    WriteToClient(client, rlength, (char *) reply);
+    xfree(reply);
+    return (client->noClientException);
 }
 
 static int
@@ -1729,7 +1787,11 @@ SProcRenderQueryPictFormats (ClientPtr client)
 static int
 SProcRenderQueryPictIndexValues (ClientPtr client)
 {
-    return BadImplementation;
+    register int n;
+    REQUEST(xRenderQueryPictIndexValuesReq);
+    swaps(&stuff->length, n);
+    swapl(&stuff->format, n);
+    return (*ProcRenderVector[stuff->renderReqType]) (client);
 }
 
 static int
@@ -1827,25 +1889,73 @@ SProcRenderScale (ClientPtr client)
 static int
 SProcRenderTrapezoids (ClientPtr client)
 {
-    return BadImplementation;
+    register int n;
+    int		ntraps;
+    REQUEST(xRenderTrapezoidsReq);
+
+    REQUEST_AT_LEAST_SIZE(xRenderTrapezoidsReq);
+    swaps (&stuff->length, n);
+    swapl (&stuff->src, n);
+    swapl (&stuff->dst, n);
+    swapl (&stuff->maskFormat, n);
+    swaps (&stuff->xSrc, n);
+    swaps (&stuff->ySrc, n);
+    SwapRestL(stuff);
+    return (*ProcRenderVector[stuff->renderReqType]) (client);
 }
 
 static int
 SProcRenderTriangles (ClientPtr client)
 {
-    return BadImplementation;
+    register int n;
+    int		ntraps;
+    REQUEST(xRenderTrianglesReq);
+
+    REQUEST_AT_LEAST_SIZE(xRenderTrianglesReq);
+    swaps (&stuff->length, n);
+    swapl (&stuff->src, n);
+    swapl (&stuff->dst, n);
+    swapl (&stuff->maskFormat, n);
+    swaps (&stuff->xSrc, n);
+    swaps (&stuff->ySrc, n);
+    SwapRestL(stuff);
+    return (*ProcRenderVector[stuff->renderReqType]) (client);
 }
 
 static int
 SProcRenderTriStrip (ClientPtr client)
 {
-    return BadImplementation;
+    register int n;
+    int		ntraps;
+    REQUEST(xRenderTriStripReq);
+
+    REQUEST_AT_LEAST_SIZE(xRenderTriStripReq);
+    swaps (&stuff->length, n);
+    swapl (&stuff->src, n);
+    swapl (&stuff->dst, n);
+    swapl (&stuff->maskFormat, n);
+    swaps (&stuff->xSrc, n);
+    swaps (&stuff->ySrc, n);
+    SwapRestL(stuff);
+    return (*ProcRenderVector[stuff->renderReqType]) (client);
 }
 
 static int
 SProcRenderTriFan (ClientPtr client)
 {
-    return BadImplementation;
+    register int n;
+    int		ntraps;
+    REQUEST(xRenderTriFanReq);
+
+    REQUEST_AT_LEAST_SIZE(xRenderTriFanReq);
+    swaps (&stuff->length, n);
+    swapl (&stuff->src, n);
+    swapl (&stuff->dst, n);
+    swapl (&stuff->maskFormat, n);
+    swaps (&stuff->xSrc, n);
+    swaps (&stuff->ySrc, n);
+    SwapRestL(stuff);
+    return (*ProcRenderVector[stuff->renderReqType]) (client);
 }
 
 static int

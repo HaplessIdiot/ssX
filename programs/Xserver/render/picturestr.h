@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picturestr.h,v 1.19 2002/09/29 23:39:45 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/picturestr.h,v 1.20 2002/11/01 00:14:20 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -37,15 +37,21 @@ typedef struct _DirectFormat {
     CARD16	    alpha, alphaMask;
 } DirectFormatRec;
 
+typedef struct _IndexFormat {
+    VisualPtr	    pVisual;
+    ColormapPtr	    pColormap;
+    int		    nvalues;
+    xIndexValue	    *pValues;
+    void	    *devPrivate;
+} IndexFormatRec;
+
 typedef struct _PictFormat {
     CARD32	    id;
     CARD32	    format;	    /* except bpp */
     unsigned char   type;
     unsigned char   depth;
     DirectFormatRec direct;
-    void	    *indexed;	    /* opaque indexed conversion data */
-    VisualPtr	    pVisual;	    /* for indexed formats */
-    ColormapPtr	    pColormap;
+    IndexFormatRec  index;
 } PictFormatRec;
 
 typedef struct _PictVector {

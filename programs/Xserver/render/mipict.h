@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/mipict.h,v 1.9 2002/05/13 05:25:11 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/mipict.h,v 1.12 2002/11/05 05:34:40 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -192,11 +192,6 @@ miCreateAlphaPicture (ScreenPtr	    pScreen,
 		      PictFormatPtr pPictFormat,
 		      CARD16	    width,
 		      CARD16	    height);
-
-Bool
-miBuildRenderColormap (ColormapPtr  pColormap,
-		       Pixel	    *first,
-		       Pixel	    *last);
 
 Bool
 miInitIndexed (ScreenPtr	pScreen,
