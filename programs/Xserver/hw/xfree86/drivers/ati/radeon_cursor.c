@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_cursor.c,v 1.9 2001/11/23 19:50:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_cursor.c,v 1.10 2002/04/24 16:20:39 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -99,8 +99,8 @@ static void RADEONSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
     int                xorigin    = 0;
     int                yorigin    = 0;
     int                total_y    = pScrn->frameY1 - pScrn->frameY0;
-    int                x2         = pScrn->frameX0 + x;
-    int                y2         = pScrn->frameY0 + y;
+    int                X2         = pScrn->frameX0 + x;
+    int                Y2         = pScrn->frameY0 + y;
 
     if (x < 0)                        xorigin = -x;
     if (y < 0)                        yorigin = -y;
@@ -110,53 +110,53 @@ static void RADEONSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
     if (yorigin >= cursor->MaxHeight) yorigin = cursor->MaxHeight - 1;
 
     if (info->Clone) {
-	int x0 = 0;
-	int y0 = 0;
+	int X0 = 0;
+	int Y0 = 0;
 
 	if ((info->CurCloneMode->VDisplay == pScrn->currentMode->VDisplay) &&
 	    (info->CurCloneMode->HDisplay == pScrn->currentMode->HDisplay)) {
-	    y2 = y;
-	    x2 = x;
-	    x0 = pScrn->frameX0;
-	    y0 = pScrn->frameY0;
+	    Y2 = y;
+	    X2 = x;
+	    X0 = pScrn->frameX0;
+	    Y0 = pScrn->frameY0;
 	} else {
 	    if (y < 0)
-		y2 = pScrn->frameY0;
+		Y2 = pScrn->frameY0;
 
 	    if (x < 0)
-		x2 = pScrn->frameX0;
+		X2 = pScrn->frameX0;
 
-	    if (y2 >= info->CurCloneMode->VDisplay + info->CloneFrameY0) {
-		y0 = y2 - info->CurCloneMode->VDisplay;
-		y2 = info->CurCloneMode->VDisplay - 1;
-	    } else if (y2 < info->CloneFrameY0) {
-		y0 = y2;
-		y2 = 0;
+	    if (Y2 >= info->CurCloneMode->VDisplay + info->CloneFrameY0) {
+		Y0 = Y2 - info->CurCloneMode->VDisplay;
+		Y2 = info->CurCloneMode->VDisplay - 1;
+	    } else if (Y2 < info->CloneFrameY0) {
+		Y0 = Y2;
+		Y2 = 0;
 	    } else {
-		y2 -= info->CloneFrameY0;
-		y0 = info->CloneFrameY0;
+		Y2 -= info->CloneFrameY0;
+		Y0 = info->CloneFrameY0;
 	    }
 
-	    if (x2 >= info->CurCloneMode->HDisplay + info->CloneFrameX0) {
-		x0 = x2 - info->CurCloneMode->HDisplay;
-		x2 = info->CurCloneMode->HDisplay - 1;
-	    } else if (x2 < info->CloneFrameX0) {
-		x0 = x2;
-		x2 = 0;
+	    if (X2 >= info->CurCloneMode->HDisplay + info->CloneFrameX0) {
+		X0 = X2 - info->CurCloneMode->HDisplay;
+		X2 = info->CurCloneMode->HDisplay - 1;
+	    } else if (X2 < info->CloneFrameX0) {
+		X0 = X2;
+		X2 = 0;
 	    } else {
-		x2 -= info->CloneFrameX0;
-		x0 = info->CloneFrameX0;
+		X2 -= info->CloneFrameX0;
+		X0 = info->CloneFrameX0;
 	    }
 
 	    if (info->CurCloneMode->Flags & V_DBLSCAN)
-		y2 *= 2;
+		Y2 *= 2;
 	}
 
-	if ((x0 >= 0 || y0 >= 0) &&
-	    ((info->CloneFrameX0 != x0) || (info->CloneFrameY0 != y0))) {
-	    pScrn->AdjustFrame(pScrn->scrnIndex, x0, y0, 1);
-	    info->CloneFrameX0 = x0;
-	    info->CloneFrameY0 = y0;
+	if ((X0 >= 0 || Y0 >= 0) &&
+	    ((info->CloneFrameX0 != X0) || (info->CloneFrameY0 != Y0))) {
+	    pScrn->AdjustFrame(pScrn->scrnIndex, X0, Y0, 1);
+	    info->CloneFrameX0 = X0;
+	    info->CloneFrameY0 = Y0;
 	}
     }
 
@@ -185,8 +185,8 @@ static void RADEONSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 						| (0 << 16)
 						| 0));
 	    OUTREG(RADEON_CUR2_HORZ_VERT_POSN, (RADEON_CUR2_LOCK
-						| (x2 << 16)
-						| y2));
+						| (X2 << 16)
+						| Y2));
 	    OUTREG(RADEON_CUR2_OFFSET,
 		   info->cursor_start + pScrn->fbOffset + yorigin * 16);
 	}
