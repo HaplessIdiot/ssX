@@ -1,4 +1,6 @@
 XFree86 4.1.99.2 (xx October 2001)
+ 454. Add Rage128 Pro PP detection to ati driver (#5025, Alfred Perlstein,
+      Mike Harris).
  453. Add CyberBladeXPAi1 recognition to the trident driver (#A.658, 
       Jani Jaakkola).
  452. Fix typo in PCI bus scanning that caused a hang when there was more than
@@ -14111,4 +14113,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2026 2001/11/05 09:07:31 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2027 2001/11/05 23:30:04 alanh Exp $
