@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.23 1999/06/12 07:19:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.24 1999/06/12 15:37:13 dawes Exp $ */
 
 /*
  *
@@ -707,11 +707,8 @@ vgaHWRestoreFonts(ScrnInfoPtr scrninfp, vgaRegPtr restore)
     savedIOBase = hwp->IOBase;
     hwp->IOBase = VGA_IOBASE_COLOR;
 
-    /*
-     * Force into colour mode, with memory enabled.  XXX Possibly should
-     * Force the VGA aperture to 0xA0000 too?
-     */
-    hwp->writeMiscOut(hwp, miscOut | 0x03);
+    /* Force into colour mode */
+    hwp->writeMiscOut(hwp, miscOut | 0x01);
 
     vgaHWBlankScreen(scrninfp, FALSE);
 
@@ -900,11 +897,8 @@ vgaHWSaveFonts(ScrnInfoPtr scrninfp, vgaRegPtr save)
     savedIOBase = hwp->IOBase;
     hwp->IOBase = VGA_IOBASE_COLOR;
 
-    /*
-     * Force into colour mode, with memory enabled.  XXX Possibly should
-     * Force the VGA aperture to 0xA0000 too?
-     */
-    hwp->writeMiscOut(hwp, miscOut | 0x03);
+    /* Force into colour mode */
+    hwp->writeMiscOut(hwp, miscOut | 0x01);
 
     vgaHWBlankScreen(scrninfp, FALSE);
   
