@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.11 1999/03/21 07:35:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.12 1999/03/22 13:40:00 dawes Exp $ */
 
 
 #include "apm.h"
@@ -1911,10 +1911,13 @@ ApmDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 	dpmsreg = 0;
     }
     tmp = RDXB_IOP(0xD0);
-    if (pApm->noLinear)
+    if (pApm->noLinear) {
+	tmp = RDXB_IOP(0xD0);
 	WRXB_IOP(0xD0, (tmp & 0xFC) | dpmsreg);
-    else
+    } else {
+	tmp = RDXB(0xD0);
 	WRXB(0xD0, (tmp & 0xFC) | dpmsreg);
+    }
 }
 #endif
 

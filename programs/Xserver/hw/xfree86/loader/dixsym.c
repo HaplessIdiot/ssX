@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.18 1999/03/01 02:15:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.19 1999/03/14 11:18:05 dawes Exp $ */
 
 
 /*
@@ -67,6 +67,7 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(FakeAllocColor)
   SYMFUNC(FakeFreeColor)
   SYMFUNC(FreeColors)
+  SYMFUNC(StoreColors)
   SYMFUNC(TellLostMap)
   SYMFUNC(TellGainedMap)
   SYMFUNC(QueryColors)
