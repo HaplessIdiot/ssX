@@ -1,4 +1,6 @@
 XFree86 3.1.0Cd (21 January 1995)
+237. Improve positioning of pixmap expansion and font cache areas with
+     the S3 server.
 236. Fix problem with Cirrus mono server crashing (Stephen Kump).
 235. Allow the "sw_cursor" option to work for the S3 server.
 234. Fix S3 HW cursor hot spot problem when no ViewPort entry is given in
