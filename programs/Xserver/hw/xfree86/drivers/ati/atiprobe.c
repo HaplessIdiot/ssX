@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.53 2002/10/12 01:38:07 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.55 2003/04/07 16:23:34 eich Exp $ */
 /*
  * Copyright 1997 through 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -1155,12 +1155,9 @@ ATIProbe
         {
             for (i = 0;  (pVideo = xf86PciVideoInfo[i++]);  )
             {
-                if (pVideo->vendor == PCI_VENDOR_ATI)
+                if ((pVideo->vendor == PCI_VENDOR_ATI) ||
+                    !(pPCI = pVideo->thisCard))
                     continue;
-
-                pPCI = pVideo->thisCard;
-		if (pPCI == NULL)
-		    continue;
 
                 ATIScanPCIBases(&PCIPorts, &nPCIPort,
                     &pPCI->pci_base0, pVideo->size,
@@ -1345,12 +1342,10 @@ ATIProbe
             {
                 if ((pVideo->vendor != PCI_VENDOR_ATI) ||
                     (pVideo->chipType == PCI_CHIP_MACH32) ||
-                    pVideo->size[1])
+                    pVideo->size[1] ||
+                    !(pPCI = pVideo->thisCard))
                     continue;
 
-                pPCI = pVideo->thisCard;
-		if (pPCI == NULL)
-		    continue;
                 PciReg = pciReadLong(pPCI->tag, PCI_REG_USERCONFIG);
 
                 /* Possibly fix block I/O indicator */
@@ -1388,13 +1383,10 @@ ATIProbe
 
                 /* For now, ignore Rage128's and Radeon's */
                 Chip = ATIChipID(pVideo->chipType, pVideo->chipRev);
-                if (Chip > ATI_CHIP_Mach64)
+                if ((Chip > ATI_CHIP_Mach64) ||
+                    !(pPCI = pVideo->thisCard))
                     continue;
 
-                pPCI = pVideo->thisCard;
-
-		if (pPCI == NULL)
-		    continue;
                 /*
                  * Possibly fix block I/O indicator in PCI configuration space.
                  */
