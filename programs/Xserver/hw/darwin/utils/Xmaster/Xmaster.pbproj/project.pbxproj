@@ -1,3 +1,4 @@
+// !$*UTF8*$!
 {
 	archiveVersion = 1;
 	classes = {
@@ -116,13 +117,23 @@
 				);
 			};
 		};
-		0157A382002CFAEBCE6F79C2 = {
-			isa = PBXFileReference;
-			path = XmasterHelp.html;
+		02E03CA000348209CE6F79C2 = {
+			children = (
+				02E03CA100348209CE6F79C2,
+			);
+			isa = PBXVariantGroup;
+			name = XmasterHelp.html;
+			path = "";
 			refType = 4;
 		};
-		0157A383002CFAEBCE6F79C2 = {
-			fileRef = 0157A382002CFAEBCE6F79C2;
+		02E03CA100348209CE6F79C2 = {
+			isa = PBXFileReference;
+			name = English;
+			path = English.lproj/XmasterHelp.html;
+			refType = 4;
+		};
+		02E03CA200348209CE6F79C2 = {
+			fileRef = 02E03CA000348209CE6F79C2;
 			isa = PBXBuildFile;
 			settings = {
 				INCLUDED_OSS = (
@@ -327,7 +338,7 @@
 				29B97318FDCFA39411CA2CEA,
 				089C165CFE840E0CC02AAC07,
 				0157A37D002CF6D7CE6F79C2,
-				0157A382002CFAEBCE6F79C2,
+				02E03CA000348209CE6F79C2,
 				0155E89200224F96CE6F79C2,
 			);
 			isa = PBXGroup;
@@ -456,7 +467,7 @@
 				089C165EFE840E0CC02AAC07,
 				0155E89300224F96CE6F79C2,
 				0157A37F002CF6D7CE6F79C2,
-				0157A383002CFAEBCE6F79C2,
+				02E03CA200348209CE6F79C2,
 			);
 			isa = PBXResourcesBuildPhase;
 			name = "Bundle Resources";
