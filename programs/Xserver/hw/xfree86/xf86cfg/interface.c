@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.12 2000/12/08 21:51:05 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.13 2000/12/09 02:23:26 dawes Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -61,7 +61,11 @@
 #include "stubs.h"
 
 #define randomize()		srand((unsigned)time((time_t*)NULL))
+#ifdef PROJECT_ROOT
+#define DefaultXFree86Dir	PROJECT_ROOT
+#else
 #define DefaultXFree86Dir	"/usr/X11R6"
+#endif
 
 /*
  * Prototypes
