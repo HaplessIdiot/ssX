@@ -46,7 +46,7 @@ from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * 
  */
-/* $XFree86: xc/lib/lbxutil/lbx_zlib/lbx_zlib.c,v 1.4 1998/10/03 09:07:32 dawes Exp $ */
+/* $XFree86: xc/lib/lbxutil/lbx_zlib/lbx_zlib.c,v 1.5 1998/12/20 11:57:19 dawes Exp $ */
 
 #ifdef WIN32
 #define _WILLWINSOCK_
@@ -58,7 +58,6 @@ from The Open Group.
 #ifdef X_NOT_STDC_ENV
 extern int errno;
 #endif
-#include "lbxzlib.h"
 #include <sys/types.h>
 #if !defined(WIN32) && !defined(Lynx)
 #include <sys/param.h>
@@ -66,8 +65,7 @@ extern int errno;
 #include "lbxbufstr.h"
 #include "lbx_zlib.h"
 #include "os.h"
-
-void ZlibFree();
+#include "lbxzlib.h"
 
 unsigned long stream_out_compressed;
 unsigned long stream_out_uncompressed;
@@ -91,10 +89,11 @@ struct ZlibInfo {
     struct iovec	    iovbuf[2];
 };
 
+void ZlibFree(struct ZlibInfo *comp);
+
 static int
-init_compress(priv, level)
-    struct compress_private *priv;	/* local pointer to private data */
-    int level;				/* compression level */
+init_compress(struct compress_private *priv,/* local pointer to private data */
+	      int level)	/* compression level */
 {
     priv->cp_outputcount = 0;
 
@@ -115,8 +114,7 @@ init_compress(priv, level)
 }
 
 static int
-init_decompress(priv)
-    struct compress_private *priv;	/* local pointer to private data */
+init_decompress(struct compress_private *priv)/* local pointer to private data */
 {
     priv->cp_outputcount = 0;
 
@@ -147,10 +145,8 @@ init_decompress(priv)
 
 
 static void
-do_compress (priv, flush)
-
-struct compress_private *priv;
-int flush;
+do_compress (struct compress_private *priv,
+	     int flush)
 
 {
     priv->stream.next_in = priv->cp_inputbuf;
@@ -167,9 +163,7 @@ int flush;
 
 
 static void
-do_decompress (priv)
-
-struct compress_private *priv;
+do_decompress (struct compress_private *priv)
 
 {
     priv->stream.next_in = priv->cp_inputbuf;
@@ -187,8 +181,7 @@ struct compress_private *priv;
 }
 
 static int
-GetNewPacket(comp)
-    struct ZlibInfo *comp;
+GetNewPacket(struct ZlibInfo *comp)
 {
     register struct compress_private *priv = &comp->decompress_state;
     int				     len;
@@ -218,8 +211,7 @@ GetNewPacket(comp)
 }
 
 static int
-NewPacketAvail(comp)
-    struct ZlibInfo *comp;
+NewPacketAvail(struct ZlibInfo *comp)
 {
     register struct compress_private *priv = &comp->decompress_state;
     char 			     *pkt;
@@ -231,7 +223,7 @@ NewPacketAvail(comp)
 	priv->cp_packet = NULL;
     }
 
-    if (pkt = BYTES_AVAIL(&comp->inbuf, ZLIB_PACKET_HDRLEN)) {
+    if ((pkt = BYTES_AVAIL(&comp->inbuf, ZLIB_PACKET_HDRLEN))) {
 	len = ZLIB_GET_DATALEN(pkt);
 	if (BYTES_AVAIL(&comp->inbuf, len + ZLIB_PACKET_HDRLEN))
 	    return TRUE;
@@ -241,10 +233,9 @@ NewPacketAvail(comp)
 }
 
 static int
-PlainWrite(comp, buffer, buflen)
-    struct ZlibInfo *comp;
-    unsigned char  *buffer;
-    int            buflen;
+PlainWrite(struct ZlibInfo *comp,
+	   unsigned char  *buffer,
+	   int            buflen)
 {
     int		   retval;
     int		   lenleft = buflen;
@@ -253,7 +244,7 @@ PlainWrite(comp, buffer, buflen)
 	register struct iovec *iov = comp->iovbuf;
 	while (lenleft) {
 	    int outlen, written;
-	    if (outlen = iov[1].iov_len) {
+	    if ((outlen = iov[1].iov_len)) {
 		iov[1].iov_base = (caddr_t) buffer;
 	    }
 	    else {
@@ -297,13 +288,10 @@ static struct ZlibInfo	*per_fd[MAX_FDS];
  * Initialize ZLIB compressor
  */
 void *
-ZlibInit(fd, level)
-    int fd;
-    int level;		/* compression level */
+ZlibInit(int fd,
+	 int level)		/* compression level */
 {
-    register struct compress_private *priv;
     struct ZlibInfo		     *comp;
-    int				     Hsize;
     int				     ret1, ret2;
 
     if ((comp = (struct ZlibInfo *)Xalloc(sizeof(struct ZlibInfo))) == NULL)
@@ -335,8 +323,7 @@ ZlibInit(fd, level)
 }
 
 void
-ZlibFree(comp)
-    struct ZlibInfo *comp;
+ZlibFree(struct ZlibInfo *comp)
 {
     if (!comp)
 	return;
@@ -353,7 +340,7 @@ ZlibFree(comp)
 }
 
 int
-ZlibFlush(fd)
+ZlibFlush(int fd)
 {
     struct ZlibInfo *comp = per_fd[fd];
     struct compress_private *priv = &comp->compress_state;
@@ -373,10 +360,9 @@ ZlibFlush(fd)
 }
 
 int
-ZlibStuffInput(fd,buffer,buflen)
-    int		    fd;
-    unsigned char   *buffer;
-    int		    buflen;
+ZlibStuffInput(int fd,
+	       unsigned char *buffer,
+	       int buflen)
 {
     struct ZlibInfo	    *comp = per_fd[fd];
 
@@ -386,24 +372,21 @@ ZlibStuffInput(fd,buffer,buflen)
 }
 
 void
-ZlibCompressOn(fd)
-    int fd;
+ZlibCompressOn(int fd)
 {
     per_fd[fd]->compress_off = FALSE;
 }
 
 void
-ZlibCompressOff(fd)
-    int fd;
+ZlibCompressOff(int fd)
 {
     per_fd[fd]->compress_off = TRUE;
 }
 
 int
-ZlibWriteV(fd, iov, iovcnt)
-    int		   fd;
-    struct iovec   *iov;
-    int		   iovcnt;
+ZlibWriteV(int		   fd,
+	   struct iovec   *iov,
+	   int		   iovcnt)
 {
     int	i;
     int	total = 0;
@@ -425,10 +408,9 @@ ZlibWriteV(fd, iov, iovcnt)
 }
 
 int
-ZlibWrite(fd, buffer, buflen)
-    int		   fd;
-    unsigned char  *buffer;
-    int            buflen;
+ZlibWrite(int		   fd,
+	  unsigned char  *buffer,
+	  int            buflen)
 {
     struct ZlibInfo	    *comp = per_fd[fd];
     struct compress_private *priv = &comp->compress_state;
@@ -474,10 +456,9 @@ ZlibWrite(fd, buffer, buflen)
 }
 
 int
-ZlibRead(fd, buffer, buflen)
-    int		   fd;
-    unsigned char  *buffer;
-    int		   buflen;
+ZlibRead(int		fd,
+	 unsigned char  *buffer,
+	 int		buflen)
 {
     struct ZlibInfo	    *comp = per_fd[fd];
     struct compress_private *priv = &comp->decompress_state;
@@ -550,8 +531,7 @@ ZlibRead(fd, buffer, buflen)
 }
 
 int
-ZlibInputAvail(fd)
-    int	fd;
+ZlibInputAvail(int fd)
 {
     struct ZlibInfo	    *comp = per_fd[fd];
     struct compress_private *priv = &comp->decompress_state;

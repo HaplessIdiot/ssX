@@ -36,11 +36,12 @@
  * Author:  Adobe Systems Incorporated
  */
 
+#include "pswpriv.h"
 #include "pswdict.h"
 
 PSWDict wellKnownPSNames;
 
-void InitWellKnownPSNames()
+void InitWellKnownPSNames(void)
 {
 #include "sysname_gen.c"
 }

@@ -21,11 +21,13 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
+/* $XFree86$ */
+#include "dix.h"
 
-extern int ProcInitialConnection();
-extern int ProcLbxEstablishConnection();
+extern int ProcInitialConnection(ClientPtr client);
+extern int ProcLbxEstablishConnection(ClientPtr client);
 
-int (* LbxInitialVector[3]) () =
+int (* LbxInitialVector[3]) (ClientPtr) =
 {
     0,
     ProcInitialConnection,

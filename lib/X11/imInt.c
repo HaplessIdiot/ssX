@@ -26,7 +26,7 @@ PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imInt.c,v 3.5 1998/10/21 06:11:58 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imInt.c,v 3.6 1999/05/09 10:50:33 dawes Exp $ */
 
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
@@ -183,9 +183,9 @@ _XimMakeImName(lcd)
     XLCd	   lcd;
 #endif
 {
-    char* begin;
-    char* end;
-    char* ret;
+    char* begin = NULL;
+    char* end = NULL;
+    char* ret = NULL;
     char* ximmodifier = XIMMODIFIER;
 
     if(lcd->core->modifiers != NULL && *lcd->core->modifiers != '\0') {
@@ -196,8 +196,10 @@ _XimMakeImName(lcd)
 		end++;
 	    ret = Xmalloc(end - begin + 2);
 	    if (ret != NULL) {
-		(void)strncpy(ret, begin, end - begin + 1);
-		ret[end - begin + 1] = '\0';
+		if (begin != NULL && end != NULL) {
+		    (void)strncpy(ret, begin, end - begin + 1);
+		    ret[end - begin + 1] = '\0';
+		}
 	    }
 	    return ret;
 	}

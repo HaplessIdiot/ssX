@@ -64,7 +64,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <pwd.h>
+
 #include "dpsassert.h"
+#include "cslibint.h"
 
 /* Defines for standard colormap routines */
 
@@ -89,46 +91,48 @@ typedef struct _dpyRec {
 
 static DpyRec *dpyRec = NULL;
 static DpyRec *curDpyRec;
-static DpyRec *FindDpyRec();
+static DpyRec *FindDpyRec(Display *);
 
 typedef struct {
     unsigned long *pixels;
     int npixels;
 } PixelRec;
 
-static XVisualInfo *PickCorrectVisual();
-static Status contiguous();
-static void ColorValuesFromMask();
-static long NumColors();
-static void CreateDefaultsDb();
-static void GetHomeDir();
-static void FindStaticColorCube();
-static Bool CheckCube();
-static int FindRampSize();
-static void SetRamp();
-static void GetDatabaseValues();
-static void AllocateColorCube();
-static void AllocateGrayRamp();
-static Bool AllocateColormap();
-static Bool AllocateColor();
-static Bool CubicCube();
-static void DefineProperty();
-static void FindStaticGrayRamp();
-static void ShrinkMapToFit();
-static void UseGrayDiagonal();
-static void UseGrayCorners();
-static Bool GetColorCubeFromProperty();
-static Bool GetGrayRampFromProperty();
+static Bool AllocateColor(Display *, Colormap, XColor *);
+static Bool AllocateColormap(Display *, XStandardColormap *, XVisualInfo *, int *, PixelRec *, int *, int *, unsigned long);
+static Bool CheckCube(XColor *, XColor *, XStandardColormap *);
+static Bool CubicCube(XStandardColormap *);
+static Bool GetColorCubeFromProperty(Display *, XVisualInfo *, XStandardColormap *, XStandardColormap **, int *);
+static Bool GetGrayRampFromProperty(Display *, XVisualInfo *, XStandardColormap *, XStandardColormap **, int *);
+static Status XDPSCreateStandardColormaps(Display *, Drawable, Visual *, int, int, int, int, XStandardColormap *, XStandardColormap *, Bool);
+static Status contiguous(unsigned long *, int, int *, unsigned long, int *, int *);
+static XVisualInfo *PickCorrectVisual(Display *, XVisualInfo *, int, Colormap);
+static int FindRampSize(XColor *, XColor *);
+static long NumColors(char *, char *, char *);
+static void AllocateColorCube(Display *, XVisualInfo *, XStandardColormap *, PixelRec *);
+static void AllocateGrayRamp(Display *, XVisualInfo *, XStandardColormap *, XStandardColormap *, PixelRec *);
+static void ColorValuesFromMask(unsigned long, unsigned long *, unsigned long *);
+static void CreateDefaultsDb(Display *);
+static void DefineProperty(Display *, XStandardColormap *, XVisualInfo *, XStandardColormap *, int, Atom);
+static void FindStaticColorCube(Display *, XVisualInfo *, XStandardColormap *);
+static void FindStaticGrayRamp(Display *, XVisualInfo *, XStandardColormap *, XStandardColormap *);
+static void GetDatabaseValues(Display *, XVisualInfo *, XStandardColormap *, XStandardColormap *);
+static void GetHomeDir(char *);
+static void SetRamp(XColor *, XColor *, int, int *, unsigned long *);
+static void ShrinkMapToFit(XStandardColormap *, int *, XVisualInfo *);
+static void UseGrayCorners(XStandardColormap *, XStandardColormap *);
+static void UseGrayDiagonal(XStandardColormap *, XStandardColormap *);
 
 #define SCALE 65535
 #undef ABS
 #define ABS(x) ((x) < 0 ? -(x) : (x))
 
-void XDPSGetDefaultColorMaps(dpy, screen, drawable, colorCube, grayRamp)
-    Display *dpy;
-    Screen *screen;
-    Drawable drawable;
-    XStandardColormap *colorCube, *grayRamp;
+void XDPSGetDefaultColorMaps(
+    Display *dpy,
+    Screen *screen,
+    Drawable drawable,
+    XStandardColormap *colorCube,
+    XStandardColormap *grayRamp)
 {
     Window root;
     Visual *visual;
@@ -164,20 +168,20 @@ void XDPSGetDefaultColorMaps(dpy, screen, drawable, colorCube, grayRamp)
 				       0, 0, 0, 0, colorCube, grayRamp, True);
 }
 
-Status XDPSCreateStandardColormaps(dpy, drawable, visual, reds, greens,
-				   blues, grays, colorCube, grayRamp, retain)
-    Display *dpy;
-    Drawable drawable;
-    Visual *visual;
-    int reds, greens, blues, grays;
-    XStandardColormap *colorCube, *grayRamp;
-    Bool retain;
+static Status XDPSCreateStandardColormaps(
+    Display *dpy,
+    Drawable drawable,
+    Visual *visual,
+    int reds, int greens, int blues, int grays,
+    XStandardColormap *colorCube,
+    XStandardColormap *grayRamp,
+    Bool retain)
 {
     XVisualInfo vtemp, *vinfo;
     int nvis;
     XStandardColormap *propCube = NULL, *propRamp = NULL;
     int nPropCube = 0, nPropRamp = 0;
-    Bool gotCube, gotRamp;
+    Bool gotCube = False, gotRamp;
     PixelRec pixels;
 
     if (grayRamp == NULL) return 0;
@@ -326,8 +330,7 @@ Status XDPSCreateStandardColormaps(dpy, drawable, visual, reds, greens,
     return 1;
 }
 
-static DpyRec *FindDpyRec(dpy)
-    Display *dpy;
+static DpyRec *FindDpyRec(Display *dpy)
 {
     DpyRec *d;
 
@@ -344,11 +347,11 @@ static DpyRec *FindDpyRec(dpy)
     return d;
 }
 
-static XVisualInfo *PickCorrectVisual(dpy, vlist, n, cmap)
-    Display *dpy;
-    XVisualInfo *vlist;
-    int n;
-    Colormap cmap;
+static XVisualInfo *PickCorrectVisual(
+    Display *dpy,
+    XVisualInfo *vlist,
+    int n,
+    Colormap cmap)
 {
     register int i;
     register int screen_number;
@@ -375,8 +378,8 @@ static XVisualInfo *PickCorrectVisual(dpy, vlist, n, cmap)
 	}
 	return NULL;	/* Visual does not match colormap */
     } else {
-	unsigned int maxdepth = 0;
-	XVisualInfo *v;
+	int maxdepth = 0;
+	XVisualInfo *v = 0;
 
 	for (i = 0; i < n; i++, vlist++) {
 	    if (vlist->depth > maxdepth) {
@@ -391,43 +394,43 @@ static XVisualInfo *PickCorrectVisual(dpy, vlist, n, cmap)
 /* Do some rudimentary checking of the properties to avoid obviously bad ones.
    How did they get there, anyway? */
 
-static Bool ValidCube(c, vinfo)
-    XStandardColormap *c;
-    XVisualInfo *vinfo;
+static Bool ValidCube(
+    XStandardColormap *c,
+    XVisualInfo *vinfo)
 {
-    int max = 1 << vinfo->depth;
-    int pixel;
+    unsigned long max = 1 << vinfo->depth;
+    unsigned long pixel;
 
     if (c->red_max < 1 || c->green_max < 1 || c->blue_max < 1) return False;
-    if (c->base_pixel < 0 || c->base_pixel > max) return False;
+    if (c->base_pixel > max) return False;
     pixel = (c->red_max * c->red_mult + c->green_max * c->green_mult +
 	     c->blue_max * c->blue_mult + c->base_pixel) & 0xFFFFFFFF;
-    if (pixel < 0 || pixel > max) return False;
+    if (pixel > max) return False;
 
     return True;
 }
 
-static Bool ValidRamp(c, vinfo)
-    XStandardColormap *c;
-    XVisualInfo *vinfo;
+static Bool ValidRamp(
+    XStandardColormap *c,
+    XVisualInfo *vinfo)
 {
-    int max = 1 << vinfo->depth;
-    int pixel;
+    unsigned long max = 1 << vinfo->depth;
+    unsigned long pixel;
 
     if (c->red_max < 1) return False;
-    if (c->base_pixel < 0 || c->base_pixel > max) return False;
+    if (c->base_pixel > max) return False;
     pixel = (c->red_max * c->red_mult + c->base_pixel) & 0xFFFFFFFF;
-    if (pixel < 0 || pixel > max) return False;
+    if (pixel > max) return False;
 
     return True;
 }
 
-static Bool GetColorCubeFromProperty(dpy, vinfo, colorCube, cube, ncube)
-    Display *dpy;
-    XVisualInfo *vinfo;
-    XStandardColormap *colorCube;
-    XStandardColormap **cube;
-    int *ncube;
+static Bool GetColorCubeFromProperty(
+    Display *dpy,
+    XVisualInfo *vinfo,
+    XStandardColormap *colorCube,
+    XStandardColormap **cube,
+    int *ncube)
 {
     int gotCube;
     int i;
@@ -461,12 +464,12 @@ static Bool GetColorCubeFromProperty(dpy, vinfo, colorCube, cube, ncube)
     return gotCube;
 }
 
-static Bool GetGrayRampFromProperty(dpy, vinfo, grayRamp, ramp, nramp)
-    Display *dpy;
-    XVisualInfo *vinfo;
-    XStandardColormap *grayRamp;
-    XStandardColormap **ramp;
-    int *nramp;
+static Bool GetGrayRampFromProperty(
+    Display *dpy,
+    XVisualInfo *vinfo,
+    XStandardColormap *grayRamp,
+    XStandardColormap **ramp,
+    int *nramp)
 {
     int gotRamp;
     int i;
@@ -500,17 +503,19 @@ static Bool GetGrayRampFromProperty(dpy, vinfo, grayRamp, ramp, nramp)
     return gotRamp;
 }
 
-static void GetDatabaseValues(dpy, vinfo, colorCube, grayRamp)
-    Display *dpy;
-    XVisualInfo *vinfo;
-    XStandardColormap *colorCube, *grayRamp;
+static void GetDatabaseValues(
+    Display *dpy,
+    XVisualInfo *vinfo,
+    XStandardColormap *colorCube,
+    XStandardColormap *grayRamp)
 {
     char *class, *depth;
     char namePrefix[40], classPrefix[40];
-    int max;
+    unsigned long max;
     XStandardColormap fakeCube;
 
     switch (vinfo->class) {
+	default:
         case StaticGray:  class = "StaticGray."; break;
         case GrayScale:   class = "GrayScale."; break;
         case StaticColor: class = "StaticColor."; break;
@@ -632,25 +637,20 @@ static void GetDatabaseValues(dpy, vinfo, colorCube, grayRamp)
     }
 }
 
-static Bool CubicCube(cube)
-    XStandardColormap *cube;
+static Bool CubicCube(XStandardColormap *cube)
 {
     return cube->red_max == cube->green_max && cube->red_max ==
 	    cube->blue_max;
 }
 
-static void UseGrayDiagonal(cube, ramp)
-    XStandardColormap *cube, *ramp;
+static void UseGrayDiagonal(XStandardColormap *cube, XStandardColormap *ramp)
 {
     ramp->red_max = cube->red_max;
-    ramp->red_mult = ABS(cube->red_mult) + ABS(cube->green_mult) +
-	    ABS(cube->blue_mult);
-    if (cube->red_mult < 0) ramp->red_mult *= -1;
+    ramp->red_mult = cube->red_mult + cube->green_mult + cube->blue_mult;
     ramp->base_pixel = cube->base_pixel;
 }
 
-static void UseGrayCorners(cube, ramp)
-    XStandardColormap *cube, *ramp;
+static void UseGrayCorners(XStandardColormap *cube, XStandardColormap *ramp)
 {
     ramp->red_max = 1;
     ramp->red_mult = (cube->red_max + 1) * (cube->green_max + 1) *
@@ -659,10 +659,10 @@ static void UseGrayCorners(cube, ramp)
     ramp->base_pixel = cube->base_pixel;
 }
 
-static void ColorValuesFromMask(mask, maxColor, mult)
-    unsigned long	mask;
-    unsigned long	*maxColor;
-    int			*mult;
+static void ColorValuesFromMask(
+    unsigned long	mask,
+    unsigned long	*maxColor,
+    unsigned long	*mult)
 {
     *mult = 1;
     while ((mask & 1) == 0) {
@@ -752,8 +752,7 @@ static char dpsDefaults[] = "\
 
 static XrmDatabase defaultDB = NULL;
 
-static void CreateDefaultsDb(dpy)
-    Display *dpy;
+static void CreateDefaultsDb(Display *dpy)
 {
     char home[256], *dpyDefaults;
 
@@ -773,8 +772,7 @@ static void CreateDefaultsDb(dpy)
     }
 }
 
-static void GetHomeDir(buf)
-    char *buf;
+static void GetHomeDir(char *buf)
 {
 #ifndef X_NOT_POSIX
      uid_t uid;
@@ -813,8 +811,7 @@ static void GetHomeDir(buf)
      return;
 }
 
-static long NumColors(namePrefix, classPrefix, color)
-    char *namePrefix, *classPrefix, *color;
+static long NumColors(char *namePrefix, char *classPrefix, char *color)
 {
     char name[40], class[40];
     XrmValue rtnValue;
@@ -855,10 +852,10 @@ static long NumColors(namePrefix, classPrefix, color)
    a color cube.  Check pairs of black and white cells trying to find
    a cube between them and take the first one you find. */
 
-static void FindStaticColorCube(dpy, vinfo, colorCube)
-    Display *dpy;
-    XVisualInfo *vinfo;
-    XStandardColormap *colorCube;
+static void FindStaticColorCube(
+    Display *dpy,
+    XVisualInfo *vinfo,
+    XStandardColormap *colorCube)
 {
     XColor *ramp, *black, *white, *altBlack, *altWhite;
     int i, entries;
@@ -920,11 +917,12 @@ static void FindStaticColorCube(dpy, vinfo, colorCube)
 	(((color)->green >> 8) == (g) * SMALLSCALE) && \
 	(((color)->blue >> 8) == (b) * SMALLSCALE))
 
-static Bool CheckCube(black, white, cube)
-    XColor *black, *white;
-    XStandardColormap *cube;
+static Bool CheckCube(
+    XColor *black,
+    XColor *white,
+    XStandardColormap *cube)
 {
-    int r, g, b, c, m, y, k, w;
+    int r = 0, g = 0, b = 0, c = 0, m = 0, y = 0, k, w;
     XColor *color;
     unsigned int found = 0;
     int small, middle, large;
@@ -1082,13 +1080,15 @@ static Bool CheckCube(black, white, cube)
    white and black.  If there is a color cube, also check its diagonal and
    use its corners if we need to */
 
-static void FindStaticGrayRamp(dpy, vinfo, grayRamp, colorCube)
-    Display *dpy;
-    XVisualInfo *vinfo;
-    XStandardColormap *grayRamp, *colorCube;
+static void FindStaticGrayRamp(
+    Display *dpy,
+    XVisualInfo *vinfo,
+    XStandardColormap *grayRamp,
+    XStandardColormap *colorCube)
 {
     XColor *ramp, *black, *white, *altBlack, *altWhite;
-    int i, r0, r1, r2, r3, size, entries, redMult, base;
+    int i, r0, r1, r2, r3, size, entries, redMult;
+    unsigned long base;
 
     entries = 1 << vinfo->depth;
     ramp = (XColor *) calloc(entries, sizeof(XColor));
@@ -1149,8 +1149,7 @@ static void FindStaticGrayRamp(dpy, vinfo, grayRamp, colorCube)
     free(ramp);
 }
 
-static int FindRampSize(black, white)
-    XColor *black, *white;
+static int FindRampSize(XColor *black, XColor *white)
 {
     XColor *c;
     int r;
@@ -1175,11 +1174,12 @@ static int FindRampSize(black, white)
     return size;
 }
 
-static void SetRamp(black, white, size, mult, base)
-    XColor *black, *white;
-    int size;
-    int *mult;
-    unsigned long *base;
+static void SetRamp(
+    XColor *black,
+    XColor *white,
+    int size,
+    int *mult,
+    unsigned long *base)
 {
     *base = black->pixel;
     *mult = (white - black) / size;
@@ -1187,8 +1187,7 @@ static void SetRamp(black, white, size, mult, base)
 
 #define lowbit(x) ((x) & (~(x) + 1))
 
-static int shiftdown(x)
-    register unsigned long x;
+static unsigned long shiftdown(unsigned long x)
 {
     while ((x & 1) == 00) {
 	x = x >> 1;
@@ -1196,13 +1195,14 @@ static int shiftdown(x)
     return x;
 }
 
-static void AllocateColorCube(dpy, vinfo, colorCube, pixels)
-    Display *dpy;
-    XVisualInfo *vinfo;
-    XStandardColormap *colorCube;
-    PixelRec *pixels;
+static void AllocateColorCube(
+    Display *dpy,
+    XVisualInfo *vinfo,
+    XStandardColormap *colorCube,
+    PixelRec *pixels)
 {
-    int count, first, remain, n, i;
+    int count, first, remain, n, j;
+    unsigned long i;
     Colormap cmap = colorCube->colormap;
     unsigned long delta;
     XColor color;
@@ -1254,7 +1254,7 @@ static void AllocateColorCube(dpy, vinfo, colorCube, pixels)
     color.flags = DoRed | DoGreen | DoBlue;
 
     /* Define colors */
-    for (n = 0, i = 0; i < count; ++i, n += delta) {
+    for (n = 0, j = 0; j < count; ++j, n += delta) {
 	color.pixel = n + pixels->pixels[first];
 	if (vinfo->class == PseudoColor) {
 #define calc(i, max, mult) ((((i / colorCube->mult) % \
@@ -1265,7 +1265,7 @@ static void AllocateColorCube(dpy, vinfo, colorCube, pixels)
 #undef calc
 	} else {
 	    color.red = color.green = color.blue =
-		    (i * SCALE) / colorCube->red_max;
+		    (j * SCALE) / colorCube->red_max;
 	}
 	if (!AllocateColor(dpy, cmap, &color)) {
 	    XFreeColors(dpy, cmap, pixels->pixels, count+first+remain, 0);
@@ -1278,17 +1278,18 @@ static void AllocateColorCube(dpy, vinfo, colorCube, pixels)
 
     /* Smush down unused pixels, if any */
 
-    for (i = 0; i < remain; i++) {
-	pixels->pixels[first+i] = pixels->pixels[first+count+i];
+    for (j = 0; j < remain; j++) {
+	pixels->pixels[first+j] = pixels->pixels[first+count+j];
     }
     pixels->npixels -= count;
 }
 
-static void AllocateGrayRamp(dpy, vinfo, grayRamp, colorCube, pixels)
-    Display *dpy;
-    XVisualInfo *vinfo;
-    XStandardColormap *grayRamp, *colorCube;
-    PixelRec *pixels;
+static void AllocateGrayRamp(
+    Display *dpy,
+    XVisualInfo *vinfo,
+    XStandardColormap *grayRamp,
+    XStandardColormap *colorCube,
+    PixelRec *pixels)
 {
     int count, first, remain, n, i;
     Colormap cmap = grayRamp->colormap;
@@ -1366,10 +1367,7 @@ static void AllocateGrayRamp(dpy, vinfo, grayRamp, colorCube, pixels)
     pixels->npixels -= count;
 }
 
-#ifdef __STDC__
-
-static int compare(a1, a2)
-    const void	*a1, *a2;
+static int compare(const void *a1, const void *a2)
 {
     register unsigned long *e1 = (unsigned long *) a1,
 			   *e2 = (unsigned long *) a2;
@@ -1379,27 +1377,14 @@ static int compare(a1, a2)
     return 0;
 }
 
-#else /* __STDC__ */
-
-static int compare(e1, e2)
-    register unsigned long	*e1, *e2;
-{
-    if (*e1 < *e2)	return -1;
-    if (*e1 > *e2)	return 1;
-    return 0;
-}
-
-#endif /* __STDC__ */
-
-static Bool AllocateColormap(dpy, map, vinfo, count, pixels,
-			     first, remain, delta)
-    Display *dpy;
-    XStandardColormap *map;
-    XVisualInfo *vinfo;
-    int *count;
-    PixelRec *pixels;
-    int *first, *remain;
-    unsigned long delta;
+static Bool AllocateColormap(
+    Display *dpy,
+    XStandardColormap *map,
+    XVisualInfo *vinfo,
+    int *count,
+    PixelRec *pixels,
+    int *first, int *remain,
+    unsigned long delta)
 {
     Colormap cmap = map->colormap;
     int npixels, ok, i;
@@ -1412,7 +1397,7 @@ static Bool AllocateColormap(dpy, map, vinfo, count, pixels,
 	if (ok) success = True;
 	else {
 	    int total;
-	    int top, mid;
+	    int top, mid = 0;
 
 	    /* If it's a gray ramp or direct color we need at least 2;
 	       others 8 */
@@ -1471,15 +1456,15 @@ static Bool AllocateColormap(dpy, map, vinfo, count, pixels,
     return success;
 }
 
-static Bool contiguous(pixels, npixels, ncolors, delta, first, rem)
-    unsigned long	pixels[];	/* specifies allocated pixels */
-    int			npixels;	/* specifies count of alloc'd pixels */
-    int			*ncolors;	/* specifies needed sequence length
+static Bool contiguous(
+    unsigned long	pixels[],	/* specifies allocated pixels */
+    int			npixels,	/* specifies count of alloc'd pixels */
+    int			*ncolors,	/* specifies needed sequence length
 					   If not available, returns max 
 					   available contiguous sequence */
-    unsigned long	delta;
-    int			*first;		/* returns first index of sequence */
-    int			*rem;		/* returns first index after sequence,
+    unsigned long	delta,
+    int			*first,		/* returns first index of sequence */
+    int			*rem)		/* returns first index after sequence,
 					 * or 0, if none follow */
 {
     register int i = 1;		/* walking index into the pixel array */
@@ -1512,10 +1497,10 @@ static Bool contiguous(pixels, npixels, ncolors, delta, first, rem)
     } return True;
 }
 
-static Bool AllocateColor(dpy, cmap, color, n)
-    Display *dpy;
-    Colormap cmap;
-    XColor *color;
+static Bool AllocateColor(
+    Display *dpy,
+    Colormap cmap,
+    XColor *color)
 {
     unsigned long pix = color->pixel;
     XColor request;
@@ -1544,10 +1529,10 @@ static Bool AllocateColor(dpy, cmap, color, n)
     return True;
 }
 
-static void ShrinkMapToFit(map, space, vinfo)
-    XStandardColormap *map;
-    int *space;
-    XVisualInfo *vinfo;
+static void ShrinkMapToFit(
+    XStandardColormap *map,
+    int *space,
+    XVisualInfo *vinfo)
 {
     if (map->blue_max == 0) map->red_max = *space - 1;
     else if (vinfo->class == DirectColor) {
@@ -1578,13 +1563,13 @@ static void ShrinkMapToFit(map, space, vinfo)
     }
 }
 
-static void DefineProperty(dpy, map, vinfo, prop, nProp, atom)
-    Display *dpy;
-    XStandardColormap *map;
-    XVisualInfo *vinfo;
-    XStandardColormap *prop;
-    int nProp;
-    Atom atom;
+static void DefineProperty(
+    Display *dpy,
+    XStandardColormap *map,
+    XVisualInfo *vinfo,
+    XStandardColormap *prop,
+    int nProp,
+    Atom atom)
 {
     XStandardColormap *copy;
     int i;

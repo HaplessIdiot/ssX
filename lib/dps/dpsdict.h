@@ -39,13 +39,14 @@
 #ifndef	PSWDICT_H
 #define	PSWDICT_H
 
+#include <X11/X.h>
+
 #include "publictypes.h"
 
 typedef struct _PSWDictRec *PSWDict;
 /* Opaque designator for a dictionary */
 
 typedef int PSWDictValue; /* non-negative */
-typedef char *Atom;
 
 /* PROCEDURES */
 
@@ -53,25 +54,25 @@ typedef char *Atom;
    None of the name parameters are handed off, i.e. the caller is
    responsible for managing their storage. */
 
-extern PSWDict DPSCreatePSWDict(/* integer nEntries */);
+extern PSWDict DPSCreatePSWDict(integer /* nEntries */);
 /* nEntries is a hint. Creates and returns a new dictionary */
 
-extern void DPSDestroyPSWDict(/* PSWDict dict */);
+extern void DPSDestroyPSWDict(PSWDict /* dict */);
 /* Destroys a dictionary */
 
-extern PSWDictValue DPSWDictLookup(/* PSWDict dict; char *name */);
+extern PSWDictValue DPSWDictLookup(PSWDict /* dict */, char * /* name */);
 /* -1 => not found. */
 
 extern PSWDictValue DPSWDictEnter
-  (/* PSWDict dict; char *name; PSWDictValue value; */);
+  (PSWDict /* dict */, char * /* name */, PSWDictValue /* value */);
 /*  0 => normal return (not found)
    -1 => found. If found, the old value gets replaced with the new one.
     caller must ensure continuing validity of name. */
 
-extern PSWDictValue DPSWDictRemove(/* PSWDict dict; char *name */);
+extern PSWDictValue DPSWDictRemove(PSWDict /* dict */, char * /* name */);
 /* -1 => not found. If found, value is returned. */
 
-extern Atom DPSMakeAtom(/* char *name */);
+extern Atom DPSMakeAtom(char * /* name */);
 /* name characters are copied. */
 
 #endif /* PSWDICT_H */

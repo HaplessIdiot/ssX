@@ -2,6 +2,4 @@
 }
 #endif
 
-#endif /* _NO_PROTO */
-
 #endif /* DPSOPS_H */

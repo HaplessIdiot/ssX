@@ -100,43 +100,40 @@ extern DPSCAPGlobals gCSDPS;
 
 /* === PUBLIC PROCS === */
 
-extern int CSDPSInit(/* Display *dpy, int *numberType, char **floatingName */);
+extern int CSDPSInit(Display * /* dpy */, int * /* numberType */, char ** /* floatingName */);
 
-extern XExtData **CSDPSHeadOfDpyExt(/* Display *dpy */);
+extern XExtData **CSDPSHeadOfDpyExt(Display * /* dpy */);
 
 /* === SUPPORT PROCS === */
 
-extern void DPSCAPChangeGC(/* Display *agent, GC gc, unsigned long valuemask, XGCValues *values */);
+extern void DPSCAPChangeGC(Display * /* agent */, GC /* gc */, unsigned long /* valuemask */, XGCValues * /* values */);
 
-extern DPSCAPData DPSCAPCreate(/* Display *dpy, *agent */);
+extern DPSCAPData DPSCAPCreate(Display * /* dpy */, Display * /* agent */);
 
-extern int DPSCAPDestroy(/* DPSCAPData my */);
+extern int DPSCAPDestroy(XExtData * /* extData */);
 
-extern XExtData * DPSCAPOpenAgent(/* Display *dpy, char *trueDisplayName */);
+extern XExtData * DPSCAPOpenAgent(Display * /* dpy */, char * /* trueDisplayName */);
 
-extern void DPSCAPRead(/* DPSCAPData my, char *buf, unsigned len, DPSCAPIOFlags includePad */);
+extern void DPSCAPRead(DPSCAPData /* my */, char * /* buf */, unsigned /* len */, DPSCAPIOFlags /* includePad */);
 
-extern void DPSCAPStartUp();
+extern void DPSCAPStartUp(void);
 
-extern void DPSCAPWrite(/* DPSCAPData my, char *buf, unsigned len, DPSCAPIOFlags writePad, bufMode */);
+extern void DPSCAPWrite(Display * /* my */, char * /* buf */, unsigned /* len */, DPSCAPIOFlags /* writePad */, DPSCAPIOFlags /* bufMode */);
 
 /* ext callback hooks */
 
-extern int DPSCAPCloseDisplayProc(/* Display *dpy, XExtCodes *codes */);
+extern int DPSCAPCloseDisplayProc(Display * /* dpy */, XExtCodes * /* codes */);
 
-extern int DPSCAPGrabServerProc(/* Display *dpy, XExtCodes *codes */);
+extern int DPSCAPGrabServerProc(Display * /* dpy */, XExtCodes * /* codes */);
 
-extern int DPSCAPUngrabServerProc(/* Display *dpy, XExtCodes *codes */);
+extern int DPSCAPUngrabServerProc(Display * /* dpy */, XExtCodes * /* codes */);
 
-extern void DPSCAPCloseAgent(/* Display *agent */);
+extern void DPSCAPCloseAgent(Display * /* agent */);
 
-/* === NEW HOOKS INTO XLIB === */
+extern int DPSCAPCopyGCProc(Display * /* dpy */, GC /* gc */, XExtCodes * /* codes */);
 
-#ifdef XXX
-extern int (*XESetGrabServer(/* Display *dpy, int extension, int (*proc)() */))();
+extern int DPSCAPFreeGCProc(Display * /* pdpy */, GC /* gc */, XExtCodes * /* codes */);
 
-extern int (*XESetUngrabServer(/* Display *dpy, int extension, int (*proc)() */))();
-#endif /* XXX */
+extern int DPSCAPFlushGCProc(Display * /* dpy */, GC /* gc */, XExtCodes * /* codes */);
 
 #endif /* DPSCAPCLIENT_H */
-

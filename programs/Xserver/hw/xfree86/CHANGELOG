@@ -1,4 +1,15 @@
 XFree86 4.0b (18 May 2000)
+ 200. Fix a memory allocation in lbxproxy that can cause it to crash at
+      startup (#3921, Peter Runestig).
+ 199. Fix a problem with imake's handling of DefaultGccIncludeDir (#3920,
+      Peter Runestig).
+ 198. lib/X11/imInt.c fix from the OpenMotif release notes (#3919).
+ 197. Prototype and fix almost all compiler warnings fot he dps library
+      and the related pswrap program (#3912, Thomas Dickey).
+ 196. Fix for x-tt font cache corruption (#3911, H. J. Lu).
+ 195. Ansi prototypes for the lbxusilt library and Xserver/lbx directory
+      (#3908, Matthieu Herrb).
+ 194. Fix some bugs in the cirrus lg driver (#3900, Itai Nahshon).
  193. Accelerated driver for Sun Leo/ZX cards (#3899, Jakub Jelinek).
  192. Fully accelerated driver for Sun FFB and AFB chips (#3898,
       Jakub Jelinek).
@@ -10370,4 +10381,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1157 2000/05/18 16:29:53 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1158 2000/05/18 23:21:31 dawes Exp $

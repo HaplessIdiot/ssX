@@ -35,12 +35,13 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86$ */
+/* $XFree86: xc/config/pswrap/psw.c,v 1.2 2000/05/11 18:14:08 tsi Exp $ */
 
 /***********/
 /* Imports */
 /***********/
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -52,25 +53,7 @@
 
 #include "pswdict.h"
 #include "pswpriv.h"
-
-char *psw_malloc();
-char *psw_calloc();
-
-extern FILE *header;
-extern PSWDict wellKnownPSNames;
-extern int PSWStringLength();
-extern int PSWHexStringLength();
-extern void PSWOutputStringChars();
-extern void PSWOutputHexStringChars();
-extern int outlineno;
-extern int reentrant;
-extern int maxstring;
-
-extern Token PSWToken(/* type, val */);
-
-extern int doANSI;	/* -a flag */
-extern int pad;		/* -p flag */
-extern boolean noUserNames;  	/* -n flag */
+#include "pswsemantics.h"
 
 #define DPS_HEADER_SIZE 4
 #define DPS_LONG_HEADER_SIZE 8
@@ -109,21 +92,16 @@ static int stringBytes;
 /* Utility procedures */
 
 
-static void CantHappen() {
-  int *p;
-  fprintf(stderr, "CantHappen");
-  /* now dump core with the following gross and disgusting kludge */
-  p = (int *) (-1);
-  *p = 0;
-  }
+#define CantHappen() { fprintf(stderr, "CantHappen"); abort(); }
   
-#define Assert(b)  if (!(b)) CantHappen(); else ;
+#define Assert(b)  if (!(b)) { CantHappen(); }
 
 #define SafeStrCpy(dst,src) \
 	dst = psw_malloc(strlen(src)+1) , \
 	strcpy(dst, src)
 
-static int NumArgs(args) Args args; {
+static int NumArgs(Args args)
+{
   register int n = 0;
   register Arg arg;
   register Item item;
@@ -131,22 +109,25 @@ static int NumArgs(args) Args args; {
     for (item = arg->items; item; item = item->next)
       n++;
   return n;
-  }
+}
 
-static int NumTokens(body) register Body body; {
+static int NumTokens(Body body)
+{
   register int n = 0;
   while (body) { n++; body = body->next; }
   return n;
-  }
+}
 
-static TokenList ConsToken (t, ll) Token t; TokenList ll; {
+static TokenList ConsToken (Token t, TokenList ll)
+{
   TokenList tt = (TokenList) psw_calloc(sizeof(TokenListRec), 1);
   tt->token = t;
   tt->next = ll;
   return tt;
-  }
+}
   
-static TokenList ConsNameToken (t, ll) Token t; TokenList ll; {
+static TokenList ConsNameToken (Token t, TokenList ll)
+{
   TokenList temp, tt = (TokenList) psw_calloc(sizeof(TokenListRec), 1);
   
   tt->token = t;
@@ -159,27 +140,31 @@ static TokenList ConsNameToken (t, ll) Token t; TokenList ll; {
   tt->next = temp->next;
   temp->next = tt;
   return (ll);
-  }
+}
   
-static boolean IsCharType(t) Type t; {
+static boolean IsCharType(Type t)
+{
   return (t == T_CHAR || t == T_UCHAR);
-  }
+}
   
-static boolean IsNumStrType(t) Type t; {
+static boolean IsNumStrType(Type t)
+{
 	return (t == T_NUMSTR
 			|| t == T_FLOATNUMSTR
 			|| t == T_LONGNUMSTR
 			|| t == T_SHORTNUMSTR);
 }
 
-static boolean IsPadNumStrType(t) Type t; {
+static boolean IsPadNumStrType(Type t)
+{
 	return (t == T_NUMSTR || t == T_SHORTNUMSTR);
 }
   
 /*************************/
 /* Type-code conversions */
 
-static char *TypeToText(type) Type type; {
+static char *TypeToText(Type type)
+{
   switch ((int) type) {
     case T_CONTEXT:
       return "DPSContext";
@@ -218,9 +203,10 @@ static char *TypeToText(type) Type type; {
       CantHappen();
     }
     /*NOTREACHED*/
-  }
+}
 
-static char *CTypeToDPSType(type) int type; {
+static char *CTypeToDPSType(int type)
+{
   switch (type) {
     case T_BOOLEAN:
       return("DPS_BOOL");
@@ -241,9 +227,10 @@ static char *CTypeToDPSType(type) int type; {
     default: CantHappen();
     }
     /*NOTREACHED*/
-  }
+}
 
-static char *CTypeToResultType(type) int type; {
+static char *CTypeToResultType(int type)
+{
   switch (type) {
     case T_BOOLEAN:
       return("dps_tBoolean");
@@ -279,12 +266,10 @@ static char *CTypeToResultType(type) int type; {
     default: CantHappen();
     }
     /*NOTREACHED*/
-  }
+}
 
-static void FreeTokenList(tokenList)
-  register TokenList tokenList;
+static void FreeTokenList(TokenList tokenList)
 {
-  extern int bigFile;
   register TokenList tl;
   if (bigFile)
     while (tokenList) {
@@ -298,7 +283,8 @@ static void FreeTokenList(tokenList)
 /********************************************/
 /* Support procedures that generate no code */
 
-static void SetNameTag(t) Token t; {
+static void SetNameTag(Token t)
+{
   PSWDictValue tag;
   Assert(t->type == T_NAME || t->type == T_LITNAME);
   tag = PSWDictLookup(wellKnownPSNames, (char *)(t->val));
@@ -314,7 +300,7 @@ static void SetNameTag(t) Token t; {
     t->wellKnownName = true;
     t->body.cnst = tag;
     }
-  }
+}
 
 /* If the wrap has result parameters, DPSAwaitReturnValues
    must be told when execution if the body is complete. The 
@@ -323,7 +309,8 @@ static void SetNameTag(t) Token t; {
    	0 doneTag printobject flush
    where doneTag = (last result parameter tag + 1).
 */
-static Body AppendResultFlush(body, n) Body body; int n; {
+static Body AppendResultFlush(Body body, int n)
+{
   Token t, token;
   char *ss;
 
@@ -341,13 +328,14 @@ static Body AppendResultFlush(body, n) Body body; int n; {
 
   t->next = token;
   return body;
-  }
+}
 
 
 /*****************************************/
 /* Support procedures that generate code */
 
-static void EmitArgPrototypes(stm, hdr) FILE *stm; Header hdr; {
+static void EmitArgPrototypes(FILE *stm, Header hdr)
+{
   register Arg arg;
   register Item item;
   for (arg = hdr->inArgs; arg; arg = arg->next) {
@@ -370,9 +358,21 @@ static void EmitArgPrototypes(stm, hdr) FILE *stm; Header hdr; {
       }
     fprintf(stm, "; ");
     }
-  }
+}
 
-static void EmitANSIPrototypes(stm, hdr) FILE *stm; Header hdr; {
+/* use default promotions in prototypes unless it's a pointer/array */
+static char *TypeToDefault(int type)
+{
+  char *result = TypeToText(type);
+  switch (type) {
+    case T_FLOAT: result = "double"; break;
+    case T_SHORTINT: result = "int"; break;
+  }
+  return result;
+}
+
+static void EmitANSIPrototypes(FILE *stm, Header hdr)
+{
   register Arg arg;
   register Item item;
   register char *type;
@@ -384,7 +384,10 @@ static void EmitANSIPrototypes(stm, hdr) FILE *stm; Header hdr; {
     type = TypeToText(arg->type);
     for (item = arg->items; item; item = item->next) {
       if (arg->type == T_CONTEXT) ctxName = item->name;
-      fprintf(stm, "%s%s %s%s", item->starred || item-> subscripted ? "const " : "", type, item->starred ? "*" : "", item->name);
+      fprintf(stm, "%s%s %s%s",
+	(item->starred || item-> subscripted) ? "const " : "",
+	(item->starred || item-> subscripted) ? type : TypeToDefault(arg->type),
+	item->starred ? "*" : "", item->name);
       if (item->subscripted) fprintf(stm, "[]");
       if (item->next) fprintf(stm, ", ");
       }
@@ -394,17 +397,20 @@ static void EmitANSIPrototypes(stm, hdr) FILE *stm; Header hdr; {
   for (arg = hdr->outArgs; arg; arg = arg->next) {
     type = TypeToText(arg->type);
     for (item = arg->items; item; item = item->next) {
-      fprintf(stm, "%s %s%s", type, item->starred ? "*" : "", item->name);
+      fprintf(stm, "%s %s%s",
+	(item->starred || item-> subscripted) ? type : TypeToDefault(arg->type),
+	item->starred ? "*" : "",
+	item->name);
       if (item->subscripted) fprintf(stm, "[]");
       if (item->next) fprintf(stm, ", ");
       }
     if (arg->next) fprintf(stm, ", ");
     }
-  }
+}
 
 /* Procedures for generating type declarations in the body */
 
-static void StartBinObjSeqDef() 
+static void StartBinObjSeqDef(void) 
 {
   /* start type defn of binobjseq */
   printf("  typedef struct {\n");
@@ -421,7 +427,8 @@ static void StartBinObjSeqDef()
   outlineno += 5;
 }
 
-static void EmitFieldType(t) Token t; {
+static void EmitFieldType(Token t)
+{
   if ((t->type == T_FLOAT)
   || (t->type == T_NAME && t->namedFormal
      && (!t->namedFormal->subscripted)
@@ -434,10 +441,9 @@ static void EmitFieldType(t) Token t; {
     printf("    DPSBinObjGeneric");
     }
   printf (" obj%d;\n", t->tokenIndex); outlineno++;
-  }
+}
 
-static int CheckSize(body)
-  Body body;
+static int CheckSize(Body body)
 {
   Adr nextAdr;
   register TokenList bodies = NULL;
@@ -582,15 +588,14 @@ static int CheckSize(body)
 	
 } /* CheckSize */
   
-static void BuildTypesAndAssignAddresses(body, sz, nObjs, psize)
-  Body body; Adr *sz; long int *nObjs; unsigned *psize;
+static void BuildTypesAndAssignAddresses(
+  Body body, Adr *sz, long int *nObjs, unsigned *psize)
 {
   long int objN = 0;
   Adr nextAdr;
   register TokenList bodies = NULL;
   register TokenList tl;
   boolean firstBody = true;
-  extern int yylineno;
   PSWDict wrapDict;
   int strCount = 0;
  
@@ -702,9 +707,9 @@ static void BuildTypesAndAssignAddresses(body, sz, nObjs, psize)
     free(c);
     } /* while */
     
-*psize = nextAdr.cnst;
+  *psize = nextAdr.cnst;
     
-if(nNames)
+  if(nNames)
 	writable = true; 	/* SetNameTag couldn't find the name */	
   
   if (namedInputArrays && literalStrings) {
@@ -746,7 +751,7 @@ if(nNames)
 	stringBytes += ln;
  
 	/* emit the string type as the next record field */
-	printf("    char obj%d[%d];\n", objN++, ln); outlineno++;
+	printf("    char obj%ld[%d];\n", objN++, ln); outlineno++;
     } else {
     	t->body = nextAdr;
 	t->body.cnst = loc;
@@ -787,7 +792,8 @@ if(nNames)
 
 /* Procedures for generating static declarations for local types */
 
-static void StartStatic(first) boolean first; {
+static void StartStatic(boolean first)
+{
   /* start static def for bin obj seq or for array data (aux) */
   if (first) {
     if(reentrant && writable) {
@@ -811,53 +817,55 @@ static void StartStatic(first) boolean first; {
   outlineno++;
 }
 
-static void FirstStatic(nTopObjects, sz)
-  int nTopObjects; Adr *sz; {
+static void FirstStatic(int nTopObjects, Adr *sz)
+{
   char *numFormat = "DPS_DEF_TOKENTYPE";
 
   outlineno++;
   if(large) {
 	fprintf(datafil, "    %s, 0, %d, ", numFormat, nTopObjects);
-	fprintf(datafil, "%d,\n", sz->cnst + dpsHeaderSize);
+	fprintf(datafil, "%ld,\n", sz->cnst + dpsHeaderSize);
   } else {
 	fprintf(datafil, "    %s, %d, ", numFormat, nTopObjects);
-	fprintf(datafil, "%d,\n", sz->cnst + dpsHeaderSize);
+	fprintf(datafil, "%ld,\n", sz->cnst + dpsHeaderSize);
   }
 }
 
-static void EndStatic(first) boolean first; {
+static void EndStatic(boolean first)
+{
   /* end static template defn */
   if (first)
     printf("    }; /* _dpsQ */\n");
   else
     printf("    }; /* _dpsQ1 */\n");
   outlineno++;
-  }
+}
 
 /* char that separates object attributes */
 #define ATT_SEP '|'
 
-static void EmitFieldConstructor(t) register Token t; {
+static void EmitFieldConstructor(Token t)
+{
     char *comment = NULL, *commentName = NULL;
     fprintf(datafil, "    {");
 
     switch (t->type) {
       case T_BOOLEAN:
-        fprintf(datafil, "DPS_LITERAL%cDPS_BOOL, 0, 0, %d", ATT_SEP, t->val);
+        fprintf(datafil, "DPS_LITERAL%cDPS_BOOL, 0, 0, %d", ATT_SEP, (int) t->val);
         break;
       case T_INT:
-        fprintf(datafil, "DPS_LITERAL%cDPS_INT, 0, 0, %d", ATT_SEP, t->val);
+        fprintf(datafil, "DPS_LITERAL%cDPS_INT, 0, 0, %d", ATT_SEP, (int) t->val);
         break;
       case T_FLOAT:
         fprintf(datafil, "DPS_LITERAL%cDPS_REAL, 0, 0, %s", ATT_SEP, (char *)t->val);
         break;
 
       case T_ARRAY:
-        fprintf(datafil, "DPS_LITERAL%cDPS_ARRAY, 0, %d, %d", ATT_SEP,
+        fprintf(datafil, "DPS_LITERAL%cDPS_ARRAY, 0, %d, %ld", ATT_SEP,
 	  NumTokens((Body) (t->val)), t->body.cnst);
         break;
       case T_PROC:
-        fprintf(datafil, "DPS_EXEC%cDPS_ARRAY, 0, %d, %d", ATT_SEP,
+        fprintf(datafil, "DPS_EXEC%cDPS_ARRAY, 0, %d, %ld", ATT_SEP,
 	  NumTokens((Body) (t->val)), t->body.cnst);
         break;
 
@@ -868,16 +876,16 @@ static void EmitFieldConstructor(t) register Token t; {
           if (t->type == T_STRING)
             ln = PSWStringLength((char *)t->val);
           else ln = PSWHexStringLength((char *)t->val);
-          fprintf(datafil, "DPS_LITERAL%cDPS_STRING, 0, %d, %d", ATT_SEP,
+          fprintf(datafil, "DPS_LITERAL%cDPS_STRING, 0, %d, %ld", ATT_SEP,
 	    ln, t->body.cnst);
         } else {
           Item item = t->namedFormal;
 	  if (item->subscripted && item->subscript->constant) {  
-            fprintf(datafil, "DPS_LITERAL%cDPS_STRING, 0, %d, %d",
+            fprintf(datafil, "DPS_LITERAL%cDPS_STRING, 0, %d, %ld",
 	    		    ATT_SEP,item->subscript->val, t->body.cnst);
             comment = "param[const]: ";
 	  } else {
-            fprintf(datafil, "DPS_LITERAL%cDPS_STRING, 0, 0, %d",
+            fprintf(datafil, "DPS_LITERAL%cDPS_STRING, 0, 0, %ld",
 	    						ATT_SEP,t->body.cnst);
             comment = "param ";
 	  }
@@ -888,18 +896,18 @@ static void EmitFieldConstructor(t) register Token t; {
       case T_LITNAME:
         commentName = (char *)t->val;
         if (t->wellKnownName) {
-          fprintf(datafil, "DPS_LITERAL%cDPS_NAME, 0, DPSSYSNAME, %d", ATT_SEP, t->body.cnst);
+          fprintf(datafil, "DPS_LITERAL%cDPS_NAME, 0, DPSSYSNAME, %ld", ATT_SEP, t->body.cnst);
           }
         else if (t->namedFormal == NULL) {
           int ln;
 	  if (noUserNames) {
 	      ln = PSWStringLength((char *)t->val);
-	      fprintf(datafil, "DPS_LITERAL%cDPS_NAME, 0, %d, %d", ATT_SEP, ln, t->body.cnst);
+	      fprintf(datafil, "DPS_LITERAL%cDPS_NAME, 0, %d, %ld", ATT_SEP, ln, t->body.cnst);
 	  } else
 	      fprintf(datafil, "DPS_LITERAL%cDPS_NAME, 0, 0, 0", ATT_SEP);
         }
         else {
-          fprintf(datafil, "DPS_LITERAL%cDPS_NAME, 0, 0, %d", ATT_SEP, t->body.cnst);
+          fprintf(datafil, "DPS_LITERAL%cDPS_NAME, 0, 0, %ld", ATT_SEP, t->body.cnst);
           comment = "param ";
           }
         break;
@@ -907,13 +915,13 @@ static void EmitFieldConstructor(t) register Token t; {
       case T_NAME:
         commentName = (char *)t->val;
         if (t->wellKnownName) {
-          fprintf(datafil, "DPS_EXEC%cDPS_NAME, 0, DPSSYSNAME, %d", ATT_SEP, t->body.cnst);
+          fprintf(datafil, "DPS_EXEC%cDPS_NAME, 0, DPSSYSNAME, %ld", ATT_SEP, t->body.cnst);
           }
         else if (t->namedFormal == NULL) {
           int ln;
 	  if (noUserNames) {
 	    ln = PSWStringLength((char *)t->val);
-	    fprintf(datafil, "DPS_EXEC%cDPS_NAME, 0, %d, %d", ATT_SEP,
+	    fprintf(datafil, "DPS_EXEC%cDPS_NAME, 0, %d, %ld", ATT_SEP,
 	      ln, t->body.cnst);
 	  } else
 	    fprintf(datafil, "DPS_EXEC%cDPS_NAME, 0, 0, 0", ATT_SEP);
@@ -922,12 +930,12 @@ static void EmitFieldConstructor(t) register Token t; {
           Item item = t->namedFormal;
           if (IsCharType(item->type)) {
             if (item->subscripted && t->namedFormal->subscript->constant) {
-              fprintf(datafil, "DPS_EXEC%cDPS_NAME, 0, %d, %d", ATT_SEP,
+              fprintf(datafil, "DPS_EXEC%cDPS_NAME, 0, %d, %ld", ATT_SEP,
 		t->namedFormal->subscript->val, t->body.cnst);
               comment = "param[const]: ";
               }
 	    else {
-              fprintf(datafil, "DPS_EXEC%cDPS_NAME, 0, 0, %d", ATT_SEP, t->body.cnst);
+              fprintf(datafil, "DPS_EXEC%cDPS_NAME, 0, 0, %ld", ATT_SEP, t->body.cnst);
               comment = "param ";
               }
             }
@@ -935,20 +943,20 @@ static void EmitFieldConstructor(t) register Token t; {
             if (item->subscripted) {
               if (t->namedFormal->subscript->constant) {
 		if(IsNumStrType(item->type))
-	          fprintf(datafil, "DPS_LITERAL%cDPS_STRING, 0, %d, %d",
+	          fprintf(datafil, "DPS_LITERAL%cDPS_STRING, 0, %d, %ld",
 		          ATT_SEP, t->namedFormal->subscript->val 
 		          + NUMSTR_HEADER_SIZE, t->body.cnst);
 	        else 
-		  fprintf(datafil, "DPS_LITERAL%cDPS_ARRAY, 0, %d, %d",
+		  fprintf(datafil, "DPS_LITERAL%cDPS_ARRAY, 0, %d, %ld",
 		          ATT_SEP, t->namedFormal->subscript->val, 
 			  t->body.cnst);
 	        comment = "param[const]: ";
               } else {
 		if(IsNumStrType(item->type))
-		  fprintf(datafil, "DPS_LITERAL%cDPS_STRING, 0, 0, %d",
+		  fprintf(datafil, "DPS_LITERAL%cDPS_STRING, 0, 0, %ld",
 		          ATT_SEP, t->body.cnst);
 	        else 
-		  fprintf(datafil, "DPS_LITERAL%cDPS_ARRAY, 0, 0, %d", ATT_SEP,
+		  fprintf(datafil, "DPS_LITERAL%cDPS_ARRAY, 0, 0, %ld", ATT_SEP,
 			  t->body.cnst);
 	        comment = "param[var]: ";
               }
@@ -985,10 +993,10 @@ static void EmitFieldConstructor(t) register Token t; {
       else fprintf(datafil, "},	/* %s%s */\n", comment, commentName);
     }
     outlineno++;
-  } /* EmitFieldConstructor */
+} /* EmitFieldConstructor */
 
-static void ConstructStatics(body, sz, nObjs)
-  Body body; Adr *sz; int nObjs; {
+static void ConstructStatics(Body body, Adr *sz, int nObjs)
+{
   int objN = 0;
   register TokenList strings = NULL, bodies = NULL;
   register TokenList tl;
@@ -1093,12 +1101,13 @@ static void ConstructStatics(body, sz, nObjs)
   Assert(objN  == nObjs);
   
   DestroyPSWDict(wrapDict);
-  } /* ConstructStatics */
+} /* ConstructStatics */
   
 
 /* Procedures for managing the result table */
 
-static void EmitResultTagTableDecls(outArgs) Args outArgs; {
+static void EmitResultTagTableDecls(Args outArgs)
+{
   register Arg arg;
   register Item item;
   int count = 0;
@@ -1156,14 +1165,16 @@ static void EmitResultTagTableDecls(outArgs) Args outArgs; {
   printf("\n"); outlineno++;
 }
 
-static void EmitResultTagTableAssignments(outArgs) Args outArgs; {
+static void EmitResultTagTableAssignments(Args outArgs)
+{
   printf("  DPSSetResultTable(%s, _dpsR, %d);\n",ctxName,NumArgs(outArgs));
   outlineno++;
-  }
+}
 
 /* Procedure for acquiring name tags */
 
-static void EmitNameTagAcquisition() {
+static void EmitNameTagAcquisition(void)
+{
     register TokenList n;
     int i;
     char *last_str;
@@ -1233,13 +1244,12 @@ static void EmitNameTagAcquisition() {
     }
     printf("    }\n  }\n\n");
     outlineno += 3;
-  } /* EmitNameTagAcquisition */
+} /* EmitNameTagAcquisition */
 
 
 /* Miscellaneous procedures */
 
-static void EmitLocals(sz)
-unsigned sz;
+static void EmitLocals(unsigned sz)
 {
   if(reentrant && writable) {
 	printf("  _dpsQ _dpsF;	/* local copy  */\n");
@@ -1269,7 +1279,8 @@ unsigned sz;
   }
 }
 
-static boolean AllLiterals(body) Body body; {
+static boolean AllLiterals(Body body)
+{
   Token t;
 
   for (t = body; t; t = t->next) {
@@ -1298,10 +1309,10 @@ static boolean AllLiterals(body) Body body; {
       } /* switch */
     } /* for */
   return true;
-  } /* AllLiterals */
+} /* AllLiterals */
 
-static void FlattenSomeArrays(body, inSquiggles)
-  Body body; boolean inSquiggles; {
+static void FlattenSomeArrays(Body body, boolean inSquiggles)
+{
   Token t;
   for (t = body; t; t = t->next) {
     switch (t->type) {
@@ -1354,10 +1365,10 @@ static void FlattenSomeArrays(body, inSquiggles)
         CantHappen();
       } /* switch */
     } /* for */
-  } /* FlattenSomeArrays */
+} /* FlattenSomeArrays */
 
 
-static void FixupOffsets()
+static void FixupOffsets(void)
 {
     register TokenList tl; Token t;
     register Item item;
@@ -1454,7 +1465,7 @@ static void FixupOffsets()
 		    t->tokenIndex);
 		else
 		    printf("  _dpsP[%d].val.stringVal = _dps_offset + %d;\n",
-		    t->tokenIndex,strOffset);
+		    t->tokenIndex, (int) strOffset);
 		outlineno++;
 	    }       
 	} /* literalStrings */
@@ -1467,8 +1478,7 @@ static void FixupOffsets()
 } /* FixupOffsets */
 
 
-static int EmitValueAssignments(body,item)
-Body body; Item item;
+static int EmitValueAssignments(Body body, Item item)
 {
     register Token t;
     int gotit = 0;
@@ -1550,11 +1560,10 @@ Body body; Item item;
 	} /* switch */
     } /* token */
     return (gotit);
-  } /* EmitValueAssignments */
+} /* EmitValueAssignments */
 
 
-static void EmitElementValueAssignments(body,item)
-Body body; Item item;
+static void EmitElementValueAssignments(Body body, Item item)
 {
     register Token t;
 
@@ -1594,8 +1603,7 @@ Body body; Item item;
 } /* EmitElementValueAssignments */
 
 
-static void ScanParamsAndEmitValues(body,args)
-Body body; Args args;
+static void ScanParamsAndEmitValues(Body body, Args args)
 {
     register Arg arg;	/* a list of parameters */
     register Item item;	/* a parameter */
@@ -1652,7 +1660,7 @@ Body body; Args args;
     printf("\n"); outlineno++;
 }
 
-static void EmitMappedNames()
+static void EmitMappedNames(void)
 {
 register TokenList n;
 int i=0;
@@ -1663,8 +1671,7 @@ int i=0;
     }
 }
   
-static void WriteObjSeq(sz)
-unsigned sz;
+static void WriteObjSeq(unsigned sz)
 {
   register TokenList tl;
    
@@ -1741,13 +1748,14 @@ unsigned sz;
       ctxName,stringBytes);
     outlineno++;
     }
-  }  /* WriteObjSeq */
+}  /* WriteObjSeq */
 
 
 /*************************************************************/
 /* Public procedures, called by the semantic action routines */
 
-void EmitPrototype(hdr) Header hdr; {
+void EmitPrototype(Header hdr)
+{
   /* emit procedure prototype to the output .h file, if any */
   
   fprintf(header, "\n");
@@ -1759,9 +1767,10 @@ void EmitPrototype(hdr) Header hdr; {
     fprintf(header, "*/ ");
     }
   fprintf(header, ");\n");
-  }
+}
 
-void EmitBodyHeader(hdr) Header hdr; {
+void EmitBodyHeader(Header hdr)
+{
   /* emit procedure header */
   register Arg arg;
   register Item item;
@@ -1803,7 +1812,8 @@ void EmitBodyHeader(hdr) Header hdr; {
     }
 } /* EmitBodyHeader */
 
-void EmitBody(body, hdr) Tokens body; Header hdr; {
+void EmitBody(Tokens body, Header hdr)
+{
   Args arg, outArgs = hdr->outArgs;
   Item item;
   long int nObjs;
@@ -1819,7 +1829,7 @@ void EmitBody(body, hdr) Tokens body; Header hdr; {
 
   FlattenSomeArrays(body, false);
   
-  if (large = ((NumTokens(body) > 0xff)) || CheckSize(body))
+  if ((large = (((NumTokens(body) > 0xff)) || CheckSize(body))) != 0)
   	dpsHeaderSize = DPS_LONG_HEADER_SIZE;
   else
   	dpsHeaderSize = DPS_HEADER_SIZE;
@@ -1891,12 +1901,10 @@ void EmitBody(body, hdr) Tokens body; Header hdr; {
     outlineno++;
   }
 #endif
-  } /* EmitBody */
+} /* EmitBody */
 
-static void AllocFailure()
+static void AllocFailure(void)
 {
-    extern int yylineno;
-    extern int bigFile;
     ErrIntro(yylineno);
     fprintf(stderr, "pswrap is out of storage; ");
     if (bigFile)

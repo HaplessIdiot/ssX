@@ -35,8 +35,9 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/dps/dpsXpriv.c,v 1.2 2000/02/21 18:05:35 dawes Exp $ */
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
 
@@ -108,8 +109,8 @@ static char		   *format_operands[] = {"1", "2", "3", "4"};
 
 
 
-static PRegstDPY IsRegistered (dpy)
-  register Display	*dpy;
+static PRegstDPY IsRegistered (
+  register Display	*dpy)
 {
   register PRegstDPY	rdpy;
   
@@ -120,8 +121,8 @@ static PRegstDPY IsRegistered (dpy)
 }
 
 
-void XDPSPrivZapDpy(dpy)
-  register Display *dpy;
+void XDPSPrivZapDpy(
+  register Display *dpy)
 {
   register PRegstDPY rdpy, prev = NIL;
   
@@ -139,30 +140,30 @@ void XDPSPrivZapDpy(dpy)
 
 
 /* ARGSUSED */
-static int UsuallyFalse (dpy, event, arg)
-  Display *dpy;
-  XEvent  *event;
-  char    *arg;
+static int UsuallyFalse (
+  Display *dpy,
+  XEvent  *event,
+  char    *arg)
 {
   return((event->type & 0x7F) == X_Error);
 }
 
-void XDPSForceEvents (dpy)
-  Display *dpy;
+void XDPSForceEvents (
+  Display *dpy)
 {
   XEvent event;
   
   while (XCheckIfEvent (dpy, &event, UsuallyFalse, (char *) NULL)) {
-      int (*proc)() = XSetErrorHandler(NULL);
+      int (*proc)(Display *, XErrorEvent *) = XSetErrorHandler(NULL);
       (void) XSetErrorHandler(proc);
-      if (proc != (int (*)())NULL && event.type < 256)
+      if (proc != 0 && event.type < 256)
 	      (void)(*proc)(dpy, &event.xerror);
   }
 }
 
 
-static void OutputEventHandler (event)
-  register XDPSLOutputEvent *event;
+static void OutputEventHandler (
+  register XDPSLOutputEvent *event)
 {
   PRegstDPY rdpy;
   register DPSContext ctxt;
@@ -181,8 +182,8 @@ static void OutputEventHandler (event)
 }
 
 
-static int BlockForEvent (dpy)
-    Display *dpy;
+static int BlockForEvent (
+    Display *dpy)
 {
     long readfds;
   
@@ -223,10 +224,10 @@ static int BlockForEvent (dpy)
 }
 
 
-void XDPSSetContextEncoding (ctxt, progEncoding, nameEncoding)
-  DPSContext	     ctxt; 
-  DPSProgramEncoding progEncoding; 
-  DPSNameEncoding    nameEncoding; 
+void XDPSSetContextEncoding (
+  DPSContext	     ctxt,
+  DPSProgramEncoding progEncoding,
+  DPSNameEncoding    nameEncoding) 
 {
   /* This routine should not be called if ctxt is a text context */
   
@@ -236,7 +237,7 @@ void XDPSSetContextEncoding (ctxt, progEncoding, nameEncoding)
     {
     if (ctxt->errorProc != NIL) 
       (*ctxt->errorProc) (ctxt, dps_err_encodingCheck,
-			  (char *) nameEncoding, (char *) progEncoding);
+			  nameEncoding, progEncoding);
     return;
     }
   else if (progEncoding == dps_ascii || progEncoding == dps_encodedTokens ||
@@ -266,9 +267,9 @@ void DPSDefaultTextBackstop (ctxt, buf, count)
 }
 
 /* ARGSUSED */
-void DPSInitClient(textProc, releaseProc)
-  DPSTextProc	textProc;
-  void		(*releaseProc) ();
+void DPSInitClient(
+  DPSTextProc	textProc,
+  void		(*releaseProc) (char *, char *))
 {
   DPSAssert (releaseProc != NIL);
   XDPSSetProcs ();
@@ -277,8 +278,8 @@ void DPSInitClient(textProc, releaseProc)
 }
 
 
-DPSNumFormat XDPSNumFormat (dpy)
-  Display *dpy;
+DPSNumFormat XDPSNumFormat (
+  Display *dpy)
 {
   PRegstDPY	rdpy;
   
@@ -288,19 +289,17 @@ DPSNumFormat XDPSNumFormat (dpy)
     return ((rdpy->ctxtTokenType < DPS_HI_NATIVE) ? dps_ieee : dps_native);
 }
 
-XDPSPrivContext XDPSCreatePrivContextRec (dpy, drawable, gc, x, y,
-						 eventmask, grayramp, ccube,
-						 actual, secure)
-  Display		*dpy;
-  Drawable		drawable;
-  GC			gc;
-  int			x;
-  int			y;
-  unsigned int		eventmask;
-  XStandardColormap	*grayramp;
-  XStandardColormap	*ccube;
-  int			actual;
-  int			secure;
+XDPSPrivContext XDPSCreatePrivContextRec (
+  Display		*dpy,
+  Drawable		drawable,
+  GC			gc,
+  int			x,
+  int			y,
+  unsigned int		eventmask,
+  XStandardColormap	*grayramp,
+  XStandardColormap	*ccube,
+  int			actual,
+  int			secure)
 {
   int			event_base;
   int			token_type;		/* From server. */
@@ -317,8 +316,8 @@ XDPSPrivContext XDPSCreatePrivContextRec (dpy, drawable, gc, x, y,
 	(rdpy = (PRegstDPY) calloc (sizeof (RegstDPYRec), 1)))
       {
       XDPSLSetTextEventHandler (dpy, (XDPSLEventHandler) OutputEventHandler);
-      XDPSLSetStatusEventHandler (dpy, XDPSStatusEventHandler);
-      XDPSLSetReadyEventHandler (dpy, XDPSReadyEventHandler);
+      XDPSLSetStatusEventHandler (dpy, (XDPSLEventHandler) XDPSStatusEventHandler);
+      XDPSLSetReadyEventHandler (dpy, (XDPSLEventHandler) XDPSReadyEventHandler);
       XDPSLInitDisplayFlags(dpy);
       rdpy->dpy = dpy;
       rdpy->firstEvent = event_base;
@@ -362,14 +361,13 @@ XDPSPrivContext XDPSCreatePrivContextRec (dpy, drawable, gc, x, y,
 }
 
 
-DPSNumFormat DPSCreatePrivContext (wh, ctxt, cidP, sxidP,
-					newSpace, printProc)
-  XDPSPrivContext	wh;
-  DPSContext		ctxt;
-  ContextPSID		*cidP;
-  SpaceXID		*sxidP;
-  boolean		newSpace;
-  DPSClientPrintProc	printProc;
+DPSNumFormat DPSCreatePrivContext (
+  XDPSPrivContext	wh,
+  DPSContext		ctxt,
+  ContextPSID		*cidP,
+  SpaceXID		*sxidP,
+  boolean		newSpace,
+  DPSClientPrintProc	printProc)
 {
   PRegstDPY		rdpy;
   
@@ -404,12 +402,12 @@ DPSNumFormat DPSCreatePrivContext (wh, ctxt, cidP, sxidP,
 }
 
 
-void DPSIncludePrivContext (wh, ctxt, cid, sxid, printProc)
-  XDPSPrivContext	wh;
-  DPSContext		ctxt;
-  ContextPSID		cid;
-  SpaceXID		sxid;
-  DPSClientPrintProc	printProc;
+void DPSIncludePrivContext (
+  XDPSPrivContext	wh,
+  DPSContext		ctxt,
+  ContextPSID		cid,
+  SpaceXID		sxid,
+  DPSClientPrintProc	printProc)
 {
   XDPSPrivContext	newWh;
   SpaceXID		space;
@@ -445,14 +443,13 @@ void DPSIncludePrivContext (wh, ctxt, cid, sxid, printProc)
 }
 
 /* ARGSUSED */
-void DPSSendPostScript (wh, printProc, cid,
-				    buffer, count, returnControl)
-  register XDPSPrivContext	wh;
-  DPSClientPrintProc		printProc;
-  ContextPSID			cid;
-  char				*buffer;
-  long int			count;
-  boolean			(*returnControl)();
+void DPSSendPostScript (
+  register XDPSPrivContext	wh,
+  DPSClientPrintProc		printProc,
+  ContextPSID			cid,
+  char				*buffer,
+  long int			count,
+  boolean			(*returnControl)(void))
 {
     boolean blocking = buffer == NIL;
 
@@ -466,7 +463,7 @@ void DPSSendPostScript (wh, printProc, cid,
 	    XDPSLFlush (wh->dpy);
 	    if (BlockForEvent (wh->dpy) < 0 && wh->ctxt->errorProc != NIL) {
 		(*(wh->ctxt->errorProc)) (wh->ctxt, dps_err_closedDisplay,
-					  (char *) ConnectionNumber(wh->dpy),
+					  ConnectionNumber(wh->dpy),
 					  0);
 	    }
 	}
@@ -476,54 +473,54 @@ void DPSSendPostScript (wh, printProc, cid,
 
 
 /* ARGSUSED */
-void DPSSendInterrupt (wh, cid, printProc)
-  XDPSPrivContext	wh;
-  ContextPSID		cid;
-  DPSClientPrintProc	printProc;
+void DPSSendInterrupt (
+  XDPSPrivContext	wh,
+  ContextPSID		cid,
+  DPSClientPrintProc	printProc)
 {
   XDPSLNotifyContext (wh->dpy, wh->cxid, PSINTERRUPT);
 }
 
 
 /* ARGSUSED */
-void DPSSendEOF (wh, cid, printProc)
-  XDPSPrivContext	wh;
-  ContextPSID		cid;
-  DPSClientPrintProc	printProc;
+void DPSSendEOF (
+  XDPSPrivContext	wh,
+  ContextPSID		cid,
+  DPSClientPrintProc	printProc)
 {
   XDPSLReset (wh->dpy, wh->cxid);
 }
 
 
 /* ARGSUSED */
-void DPSSendTerminate (wh, cid, printProc)
-  XDPSPrivContext	wh;
-  ContextPSID		cid;
-  DPSClientPrintProc	printProc;
+void DPSSendTerminate (
+  XDPSPrivContext	wh,
+  ContextPSID		cid,
+  DPSClientPrintProc	printProc)
 {
   XDPSLNotifyContext (wh->dpy, wh->cxid, PSKILL);
 }
 
 
-void XDPSSendUnfreeze (dpy, cxid)
-  Display    *dpy;
-  ContextXID cxid;
+void XDPSSendUnfreeze (
+  Display    *dpy,
+  ContextXID cxid)
 {
   XDPSLNotifyContext (dpy, cxid, PSUNFREEZE);
 }
 
 
 /* ARGSUSED */
-void DPSSendDestroySpace(wh, sxid, printProc)
-  XDPSPrivContext	wh;
-  SpaceXID		sxid;
-  DPSClientPrintProc	printProc;
+void DPSSendDestroySpace(
+  XDPSPrivContext	wh,
+  SpaceXID		sxid,
+  DPSClientPrintProc	printProc)
 {
   XDPSLDestroySpace (wh->dpy, sxid);
 }
 
 
-void DPSOutOfMemory ()
+void DPSOutOfMemory (void)
 {
   DPSFatalProc(NULL, "DPS Client Library Error:  Out of memory.\n");
   exit (1);

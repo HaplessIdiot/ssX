@@ -39,6 +39,8 @@
 #include <stdio.h>
 #include <ctype.h>
 
+#include "pswpriv.h"
+
 /* ErrIntro prints a standard intro for error messages;
  * change it if your system uses something else.  We have many options:
  *
@@ -57,12 +59,8 @@
 #define FMT "\"%s\", line %d: "
 #endif /* macintosh */
 
-ErrIntro(line) int line; {
-    extern char *ifile;
-    extern int reportedPSWName;
-    extern char	*currentPSWName;
-    extern int errorCount;
-
+void ErrIntro(int line)
+{
     if (! reportedPSWName && currentPSWName) {
 		reportedPSWName = 1;
 		fprintf(stderr,INTRO,currentPSWName);
@@ -72,13 +70,8 @@ ErrIntro(line) int line; {
 }
 
 
-yyerror(errmsg)
-char *errmsg;
+void yyerror(char *errmsg)
 {
-    extern char yytext[];
-    extern int yylineno;
-
     ErrIntro(yylineno);
     fprintf(stderr,"%s near text \"%s\"\n",errmsg,yytext);
 }
-

@@ -47,7 +47,7 @@
  *  
  * Author:  Adobe Systems Incorporated and MIT X Consortium
  */
-/* $XFree86: xc/lib/dps/cslibint.c,v 1.2 2000/02/18 12:18:54 tsi Exp $ */
+/* $XFree86: xc/lib/dps/cslibint.c,v 1.3 2000/02/21 18:05:34 dawes Exp $ */
 
 /*
  *	XlibInternal.c - Internal support routines for the C subroutine
@@ -61,7 +61,10 @@
 #include "Xlibnet.h"
 #include <stdio.h>
 
-static void _EatData32();
+#include "dpsassert.h"
+#include "cslibint.h"
+
+static void _EatData32 (Display *dpy, unsigned long n);
 
 /* check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
  * systems are broken and return EWOULDBLOCK when they should return EAGAIN
@@ -119,16 +122,15 @@ static xReq _dummy_request = {
  * action is taken.  This routine correctly handles incremental writes.
  * This routine may have to be reworked if int < long.
  */
-N_XFlush (dpy)
-	register Display *dpy;
+void N_XFlush (Display *dpy)
 {
 	register long size, todo;
 	register int write_stat;
 	register char *bufindex;
 	
-	if (!dpy) return 0;
+	if (!dpy) return;
 
-	if (dpy->flags & XlibDisplayIOError) return 0;
+	if (dpy->flags & XlibDisplayIOError) return;
 
 	size = todo = dpy->bufptr - dpy->buffer;
 	bufindex = dpy->bufptr = dpy->buffer;
@@ -164,15 +166,12 @@ N_XFlush (dpy)
 	    }
 	}
 	dpy->last_req = (char *)&_dummy_request;
-	return 0;
 }
 
 #ifdef NEEDFORNX
 
 int
-_XEventsQueued (dpy, mode)
-    register Display *dpy;
-    int mode;
+_XEventsQueued (Display *dpy, int mode)
 {
 	register int len;
 	int pend;
@@ -248,8 +247,7 @@ _XEventsQueued (dpy, mode)
 /* _XReadEvents - Flush the output queue,
  * then read as many events as possible (but at least 1) and enqueue them
  */
-_XReadEvents(dpy)
-	register Display *dpy;
+void _XReadEvents(Display *dpy)
 {
 	char buf[BUFSIZE];
 	long pend_not_register; /* because can't "&" a register variable */
@@ -303,10 +301,7 @@ _XReadEvents(dpy)
  * N_XRead - Read bytes from the socket taking into account incomplete
  * reads.  This routine may have to be reworked if int < long.
  */
-N_XRead (dpy, data, size)
-	register Display *dpy;
-	register char *data;
-	register long size;
+int N_XRead (Display *dpy, char *data, long size)
 {
 	register long bytes_read;
 
@@ -359,11 +354,7 @@ N_XRead (dpy, data, size)
  *            into a long (64 bits on a CRAY computer).
  * 
  */
-static _doXRead32 (dpy, data, size, packbuffer)
-        register Display *dpy;
-        register long *data;
-        register long size;
-	register char *packbuffer;
+static void _doXRead32 (Display *dpy, long *data, long size, char *packbuffer)
 {
  long *lpack,*lp;
  long mask32 = 0x00000000ffffffff;
@@ -386,10 +377,7 @@ static _doXRead32 (dpy, data, size, packbuffer)
         }
 }
 
-_XRead32 (dpy, data, len)
-    Display *dpy;
-    long *data;
-    long len;
+void _XRead32 (Display *dpy, long *data, long len)
 {
     char packbuffer[PACKBUFFERSIZE];
     unsigned nunits = PACKBUFFERSIZE >> 2;
@@ -407,11 +395,7 @@ _XRead32 (dpy, data, len)
  *            into a long (64 bits on a CRAY computer).
  *
  */
-static _doXRead16 (dpy, data, size, packbuffer)
-        register Display *dpy;
-        register short *data;
-        register long size;
-	char *packbuffer;
+static void _doXRead16 (Display *dpy, short *data, long size, char *packbuffer)
 {
 	long *lpack,*lp;
 	long mask16 = 0x000000000000ffff;
@@ -434,10 +418,7 @@ static _doXRead16 (dpy, data, size, packbuffer)
         }
 }
 
-_XRead16 (dpy, data, len)
-    Display *dpy;
-    short *data;
-    long len;
+void _XRead16 (Display *dpy, short *data, long len)
 {
     char packbuffer[PACKBUFFERSIZE];
     unsigned nunits = PACKBUFFERSIZE >> 1;
@@ -448,10 +429,7 @@ _XRead16 (dpy, data, len)
     if (len) _doXRead16 (dpy, data, len, packbuffer);
 }
 
-_XRead16Pad (dpy, data, size)
-    Display *dpy;
-    short *data;
-    long size;
+void _XRead16Pad (Display *dpy, short *data, long size)
 {
     int slop = (size & 3);
     short slopbuf[3];
@@ -469,17 +447,14 @@ _XRead16Pad (dpy, data, size)
  * reads.  If the number of bytes is not 0 mod 32, read additional pad
  * bytes. This routine may have to be reworked if int < long.
  */
-N_XReadPad (dpy, data, size)
-    	register Display *dpy;	
-	register char *data;
-	register long size;
+void N_XReadPad (Display *dpy, char *data, long size)
 {
     	register long bytes_read;
 	struct iovec iov[2];
 	char pad[3];
 
-        if (!dpy) return 0;
-	if ((dpy->flags & XlibDisplayIOError) || size == 0) return 0;
+        if (!dpy) return;
+	if ((dpy->flags & XlibDisplayIOError) || size == 0) return;
 	iov[0].iov_len = (int)size;
 	iov[0].iov_base = data;
 	/* 
@@ -525,7 +500,6 @@ N_XReadPad (dpy, data, size)
 		    _XIOError(dpy);
 		}
 	    }
-	return 0;
 }
 
 /*
@@ -533,10 +507,7 @@ N_XReadPad (dpy, data, size)
  * transmission is used, if size is not 0 mod 4, extra bytes are transmitted.
  * This routine may have to be reworked if int < long;
  */
-N_XSend (dpy, data, size)
-	register Display *dpy;
-	char *data;
-	register long size;
+void N_XSend (Display *dpy, _Xconst char *data, long size)
 {
 	struct iovec iov[3];
 	static char pad[3] = {0, 0, 0};
@@ -548,7 +519,7 @@ N_XSend (dpy, data, size)
 	long total = dpybufsize + size + padsize;
 	long todo = total;
 
-	if (dpy->flags & XlibDisplayIOError) return 0;
+	if (dpy->flags & XlibDisplayIOError) return;
 
 	/*
 	 * There are 3 pieces that may need to be written out:
@@ -594,7 +565,7 @@ N_XSend (dpy, data, size)
 	    }
 
 	    InsertIOV (dpy->buffer, dpybufsize)
-	    InsertIOV (data, size)
+	    InsertIOV ((char *)data, size)
 	    InsertIOV (pad, padsize)
     
 	    errno = 0;
@@ -622,7 +593,7 @@ N_XSend (dpy, data, size)
 
 	dpy->bufptr = dpy->buffer;
 	dpy->last_req = (char *) & _dummy_request;
-	return 0;
+	return;
 }
 
 #ifdef NEEDFORNX
@@ -631,8 +602,7 @@ N_XSend (dpy, data, size)
  * can roll his own and instatantiate it if he wants, but must
  * follow the rules.
  */
-XID _XAllocID(dpy)
-register Display *dpy;
+XID _XAllocID(Display *dpy)
 {
    XID id;
 
@@ -660,9 +630,7 @@ register Display *dpy;
  */
 
 unsigned long
-_XSetLastRequestRead(dpy, rep)
-    register Display *dpy;
-    register xGenericReply *rep;
+_XSetLastRequestRead(Display *dpy, xGenericReply *rep)
 {
     register unsigned long	newseq, lastseq;
 
@@ -700,11 +668,11 @@ _XSetLastRequestRead(dpy, rep)
  * specified rep.  Mean while we must handle error and event packets that
  * we may encounter.
  */
-Status N_XReply (dpy, rep, extra, discard)
-    register Display *dpy;
-    register xReply *rep;
-    int extra;		/* number of 32-bit words expected after the reply */
-    Bool discard;	/* should I discard data following "extra" words? */
+Status N_XReply (
+    Display *dpy,
+    xReply *rep,
+    int extra,		/* number of 32-bit words expected after the reply */
+    Bool discard)	/* should I discard data following "extra" words? */
 {
     /* Pull out the serial number now, so that (currently illegal) requests
      * generated by an error handler don't confuse us.
@@ -732,7 +700,7 @@ Status N_XReply (dpy, rep, extra, discard)
 		       _EatData32 (dpy, rep->generic.length);
 		    return (1);
 		    }
-		if (extra == rep->generic.length) {
+		if ((unsigned) extra == rep->generic.length) {
 		    /* 
 		     * Read the extra data into storage immediately following
 		     * the GenericReply structure. 
@@ -741,7 +709,7 @@ Status N_XReply (dpy, rep, extra, discard)
 			    ((long)extra) << 2);
 		    return (1);
 		    }
-		if (extra < rep->generic.length) {
+		if ((unsigned) extra < rep->generic.length) {
 		    /* Actual reply is longer than "extra" */
 		    N_XRead (dpy, (char *) (NEXTPTR(rep,xReply)),
 			    ((long)extra) << 2);
@@ -796,9 +764,7 @@ Status N_XReply (dpy, rep, extra, discard)
 /* Read and discard "n" 8-bit bytes of data */
 
 static void
-N_XEatData (dpy, n)
-    Display *dpy;
-    register unsigned long n;
+N_XEatData (Display *dpy, unsigned long n)
 {
 #define SCRATCHSIZE 2048
     char buf[SCRATCHSIZE];
@@ -814,9 +780,7 @@ N_XEatData (dpy, n)
 
 /* Read and discard "n" 32-bit words. */
 
-static void _EatData32 (dpy, n)
-    Display *dpy;
-    unsigned long n;
+static void _EatData32 (Display *dpy, unsigned long n)
 {
     N_XEatData (dpy, n << 2);
 }
@@ -828,9 +792,7 @@ static void _EatData32 (dpy, n)
  * note that no squishing of move events in V11, since there
  * is pointer motion hints....
  */
-_XEnq (dpy, event)
-	register Display *dpy;
-	register xEvent *event;
+void _XEnq (Display *dpy, xEvent *event)
 {
 	register _XQEvent *qelt;
 
@@ -866,28 +828,28 @@ _XEnq (dpy, event)
 
 /*ARGSUSED*/
 Bool
-N_XUnknownWireEvent(dpy, re, event)
-register Display *dpy;	/* pointer to display structure */
-register XEvent *re;	/* pointer to where event should be reformatted */
-register xEvent *event;	/* wire protocol event */
+N_XUnknownWireEvent(
+	Display *dpy,	/* pointer to display structure */
+	XEvent *re,	/* pointer to where event should be reformatted */
+	xEvent *event)	/* wire protocol event */
 {
         char mbuf[256];
 	
-	sprintf(mbuf, "NX: unhandled wire event %d, agent = %x", re->type, dpy);
+	sprintf(mbuf, "NX: unhandled wire event %d, agent = %lx", re->type, (long)dpy);
 	DPSWarnProc(NULL, mbuf);
 	return(False);
 }
 
 /*ARGSUSED*/
 Status
-N_XUnknownNativeEvent(dpy, re, event)
-register Display *dpy;	/* pointer to display structure */
-register XEvent *re;	/* pointer to where event should be reformatted */
-register xEvent *event;	/* wire protocol event */
+N_XUnknownNativeEvent(
+	Display *dpy,	/* pointer to display structure */
+	XEvent *re,	/* pointer to where event should be reformatted */
+	xEvent *event)	/* wire protocol event */
 {
         char mbuf[256];
 	
-	sprintf(mbuf, "NX: unhandled native event %d, agent = %x", re->type, dpy);
+	sprintf(mbuf, "NX: unhandled native event %d, agent = %lx", re->type, (long)dpy);
 	DPSWarnProc(NULL, mbuf);
 	return(0);
 }
@@ -897,10 +859,10 @@ register xEvent *event;	/* wire protocol event */
  * reformat a wire event into an XEvent structure of the right type.
  */
 Bool
-_XWireToEvent(dpy, re, event)
-register Display *dpy;	/* pointer to display structure */
-register XEvent *re;	/* pointer to where event should be reformatted */
-register xEvent *event;	/* wire protocol event */
+_XWireToEvent(
+	Display *dpy,	/* pointer to display structure */
+	XEvent *re,	/* pointer to where event should be reformatted */
+	xEvent *event)	/* wire protocol event */
 {
 
 	re->type = event->u.u.type & 0x7f;
@@ -1269,8 +1231,7 @@ register xEvent *event;	/* wire protocol event */
 
 #ifndef USL_SHARELIB
 
-static char *_SysErrorMsg (n)
-    int n;
+static char *_SysErrorMsg (int n)
 {
     extern char *sys_errlist[];
     extern int sys_nerr;
@@ -1286,8 +1247,7 @@ static char *_SysErrorMsg (n)
  * _XDefaultIOError - Default fatal system error reporting routine.  Called 
  * when an X internal system error is encountered.
  */
-_XDefaultIOError (dpy)
-	Display *dpy;
+_XDefaultIOError (Display *dpy)
 {
 	(void) fprintf (stderr, 
 	 "XIO:  fatal IO error %d (%s) on X server \"%s\"\r\n",
@@ -1305,10 +1265,7 @@ _XDefaultIOError (dpy)
 }
 
 
-static int _XPrintDefaultError (dpy, event, fp)
-    Display *dpy;
-    XErrorEvent *event;
-    FILE *fp;
+static int _XPrintDefaultError (Display *dpy, XErrorEvent *event, FILE *fp)
 {
     char buffer[BUFSIZ];
     char mesg[BUFSIZ];
@@ -1416,9 +1373,7 @@ static int _XPrintDefaultError (dpy, event, fp)
     return 1;
 }
 
-int _XDefaultError(dpy, event)
-	Display *dpy;
-	XErrorEvent *event;
+int _XDefaultError(Display *dpy, XErrorEvent *event)
 {
     if (_XPrintDefaultError (dpy, event, stderr) == 0) return 0;
     exit(1);
@@ -1426,10 +1381,7 @@ int _XDefaultError(dpy, event)
 }
 
 /*ARGSUSED*/
-Bool _XDefaultWireError(display, he, we)
-    Display     *display;
-    XErrorEvent *he;
-    xError      *we;
+Bool _XDefaultWireError(Display *display, XErrorEvent *he, xError *we)
 {
     return True;
 }
@@ -1437,9 +1389,7 @@ Bool _XDefaultWireError(display, he, we)
 /*
  * _XError - prepare to upcall user protocol error handler
  */
-int _XError (dpy, rep)
-    Display *dpy;
-    xError *rep;
+int _XError (Display *dpy, xError *rep)
 {
     /* 
      * X_Error packet encountered!  We need to unpack the error before
@@ -1467,8 +1417,7 @@ int _XError (dpy, rep)
 /*
  * _XIOError - call user connection error handler and exit
  */
-int _XIOError (dpy)
-    Display *dpy;
+int _XIOError (Display *dpy)
 {
     dpy->flags |= XlibDisplayIOError;
     if (_XIOErrorFunction != NULL)
@@ -1484,9 +1433,7 @@ int _XIOError (dpy)
  * Xlib routine for scratch space.  It is reallocated from the same place
  * each time, unless the library needs a large scratch space.
  */
-char *_XAllocScratch (dpy, nbytes)
-	register Display *dpy;
-	unsigned long nbytes;
+char *_XAllocScratch (Display *dpy, unsigned long nbytes)
 {
 	if (nbytes > dpy->scratch_length) {
 	    if (dpy->scratch_buffer) Xfree (dpy->scratch_buffer);
@@ -1500,9 +1447,7 @@ char *_XAllocScratch (dpy, nbytes)
 /*
  * Given a visual id, find the visual structure for this id on this display.
  */
-Visual *_XVIDtoVisual (dpy, id)
-	Display *dpy;
-	VisualID id;
+Visual *_XVIDtoVisual (Display *dpy, VisualID id)
 {
 	register int i, j, k;
 	register Screen *sp;
@@ -1522,20 +1467,13 @@ Visual *_XVIDtoVisual (dpy, id)
 	return (NULL);
 }
 
-#if NeedFunctionPrototypes
-XFree (void *data)
-#else
-XFree (data)
-	char *data;
-#endif
+void XFree (void *data)
 {
 	Xfree (data);
 }
 
 #ifdef _XNEEDBCOPYFUNC
-void _Xbcopy(b1, b2, length)
-    register char *b1, *b2;
-    register length;
+void _Xbcopy(char *b1, char *b2, length)
 {
     if (b1 < b2) {
 	b2 += length;
@@ -1551,10 +1489,7 @@ void _Xbcopy(b1, b2, length)
 
 #endif /* NEEDFORNX */
 
-void NXProcData (dpy, data, len)
-	Display *dpy;
-	char *data;
-	long len;
+void NXProcData (Display *dpy, char *data, long len)
 {
 	if (dpy->bufptr + (len) <= dpy->bufmax) {
 		bcopy(data, dpy->bufptr, (int)len);
@@ -1580,11 +1515,8 @@ void NXProcData (dpy, data, len)
  * "len" is the length in bytes of the data.
  */
 
-static doData16(dpy, data, len, packbuffer)
-    register Display *dpy;
-    short *data;
-    unsigned len;
-    char *packbuffer;
+static void
+doData16(Display *dpy, short *data, unsigned len, char *packbuffer)
 {
     long *lp,*lpack;
     long i, nwords,bits;
@@ -1613,10 +1545,8 @@ static doData16(dpy, data, len, packbuffer)
         Data(dpy, packbuffer, len);
 }
 
-Data16 (dpy, data, len)
-    Display *dpy;
-    short *data;
-    unsigned len;
+void
+Data16 (Display *dpy, short *data, unsigned len)
 {
     char packbuffer[PACKBUFFERSIZE];
     unsigned nunits = PACKBUFFERSIZE >> 1;
@@ -1635,11 +1565,7 @@ Data16 (dpy, data, len)
  * "len" is the length in bytes of the data.
  */
 
-static doData32 (dpy, data, len, packbuffer)
-    register Display *dpy;
-    long *data;
-    unsigned len;
-    char *packbuffer;
+static doData32 (Display *dpy, long *data, unsigned len, char *packbuffer)
 {
     long *lp,*lpack;
     long i,bits,nwords;
@@ -1666,10 +1592,7 @@ static doData32 (dpy, data, len, packbuffer)
         Data(dpy, packbuffer, len);
 }
 
-Data32 (dpy, data, len)
-    Display *dpy;
-    long *data;
-    unsigned len;
+Data32 (Display *dpy, long *data, unsigned len)
 {
     char packbuffer[PACKBUFFERSIZE];
     unsigned nunits = PACKBUFFERSIZE >> 2;
@@ -1689,7 +1612,7 @@ Data32 (dpy, data, len)
  * _XFreeQ - free the queue of events, called by XCloseDisplay
  */
 
-void _XFreeQ ()
+void _XFreeQ (void)
 {
     register _XQEvent *qelt = _qfree;
   
@@ -1719,9 +1642,7 @@ void _XFreeQ ()
 /*
  * N_XGetHostname - similar to gethostname but allows special processing.
  */
-int N_XGetHostname (buf, maxlen)
-    char *buf;
-    int maxlen;
+int N_XGetHostname (char *buf, int maxlen)
 {
     int len;
 
@@ -1747,9 +1668,7 @@ int N_XGetHostname (buf, maxlen)
  * _XScreenOfWindow - get the Screen of a given window
  */
 
-Screen *_XScreenOfWindow (dpy, w)
-    Display *dpy;
-    Window w;
+Screen *_XScreenOfWindow (Display *dpy, Window w)
 {
     register int i;
     Window root;
@@ -1773,8 +1692,8 @@ Screen *_XScreenOfWindow (dpy, w)
 /*
  * This is a macro if MSKCNT <= 4
  */
-N_XANYSET(src)
-    long	*src;
+int
+N_XANYSET(unsigned long *src)
 {
     int i;
 
@@ -1792,10 +1711,7 @@ N_XANYSET(src)
  */
 #include <sys/socket.h>
 
-int _XReadV (fd, iov, iovcnt)
-int fd;
-struct iovec *iov;
-int iovcnt;
+int _XReadV (int fd, struct iovec *iov, int iovcnt)
 {
 	struct msghdr hdr;
 
@@ -1809,10 +1725,7 @@ int iovcnt;
 	return (recvmsg (fd, &hdr, 0));
 }
 
-int _XWriteV (fd, iov, iovcnt)
-int fd;
-struct iovec *iov;
-int iovcnt;
+int _XWriteV (int fd, struct iovec *iov, int iovcnt)
 {
 	struct msghdr hdr;
 
@@ -1834,10 +1747,7 @@ int iovcnt;
  */
 #include <sys/uio.h>
 
-int _XReadV (fd, iov, iovcnt)
-int fd;
-struct iovec *iov;
-int iovcnt;
+int _XReadV (int fd, struct iovec *iov, int iovcnt)
 {
     int i, len, total;
     char *base;
@@ -1911,10 +1821,7 @@ static char workarea[MAX_WORKAREA];
 
 
 int
-_XReadV (fd, v, n)
-    int		fd;
-    struct iovec v[];
-    int		n;
+_XReadV (int fd, struct iovec v[], int n)
 {
 	int i, rc, len, size = 0;
 	char * buf = workarea;
@@ -1955,10 +1862,7 @@ _XReadV (fd, v, n)
 }
 
 int
-_XWriteV (fd, v, n)
-    int fd;
-    struct iovec v[];
-    int n;
+_XWriteV (int fd, struct iovec v[], int n)
 {
 	int i, rc, len, size = 0;
 	char * buf = workarea;

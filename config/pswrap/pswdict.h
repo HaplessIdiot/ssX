@@ -52,23 +52,25 @@ typedef char *PSWAtom;
    None of the name parameters are handed off, i.e. the caller is
    responsible for managing their storage. */
 
-extern PSWDict CreatePSWDict(/* int nEntries */);
+extern PSWDict CreatePSWDict(int /* nEntries */);
 /* nEntries is a hint. Creates and returns a new dictionary */
 
-extern void DestroyPSWDict(/* PSWDict dict */);
+extern void DestroyPSWDict(PSWDict /* dict */);
 /* Destroys a dictionary */
 
-extern PSWDictValue PSWDictLookup(/* PSWDict dict; char *name */);
+extern PSWDictValue PSWDictLookup(PSWDict /* dict */, char * /* name */);
 /* -1 => not found. */
 
 extern PSWDictValue PSWDictEnter
-  (/* PSWDict dict; char *name; PSWDictValue value; */);
+  (PSWDict /* dict */, char * /* name */, PSWDictValue /* value */);
 /*  0 => normal return (not found)
    -1 => found. If found, the old value gets replaced with the new one. */
 
-extern PSWDictValue PSWDictRemove(/* PSWDict dict; char *name */);
+extern PSWDictValue PSWDictRemove(PSWDict /* dict */, char * /* name */);
 /* -1 => not found. If found, value is returned. */
 
-extern PSWAtom MakeAtom(/* char *name */);
+extern PSWAtom MakeAtom(char * /* name */);
+
+extern PSWDict wellKnownPSNames;
 
 #endif /* PSWDICT_H */

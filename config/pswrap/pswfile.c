@@ -38,71 +38,37 @@
 
 #include <stdio.h>
 #include "pswversion.h"
+#include "pswpriv.h"
 
-extern int outlineno;		/* line number in output file */
-
-extern FILE *header;
-extern char headid[];
-extern char *ifile;
-extern char *hfile;
-extern char *ofile;
 #ifdef __MACH__
 extern char *shlibInclude;
 #endif /* __MACH__ */
 
+static int dpsops = 0;
 
-#ifdef _NO_PROTO
-#include <varargs.h>
-
-/* for debugging */
-myprintf (va_alist)
-  va_dcl
+static int EmitVersion(FILE *f, char *infname, char *outfname)
 {
-	printf(va_alist);
-}
+    dpsops = (*infname == 'd') || (*infname == 'd');
 
-#else /* _NO_PROTO */
-
-#include <stdarg.h>
-
-/* for debugging */
-myprintf (char *fmt, ...)
-{
-    va_list args;
-
-#if defined(__STDC__) || defined(AIXV3) || defined(ultrix)
-    va_start(args, fmt);
-#else
-    va_start(args);
-#endif
-
-    vprintf(fmt, args);
-    va_end(args);
-}
-
-#endif /* _NO_PROTO */
-
-static int EmitVersion(f, infname, outfname)
-    FILE *f;
-    char *infname, *outfname;
-{
-    extern char *prog;
     fprintf(f,"/* %s generated from %s\n",outfname,infname);
     fprintf(f,"   by %s %s %s\n */\n\n",PSW_OS,prog,PSW_VERSION);
     return 4;  /* number of output lines */
 }
 
-InitHFile(){
+void InitHFile(void)
+{
     (void) EmitVersion(header, ifile, hfile);
     fprintf(header,"#ifndef %s\n#define %s\n",headid,headid);
 }
 
-FinishHFile() {
+void FinishHFile(void)
+{
     fprintf(header,"\n#endif /* %s */\n",headid);
     fclose(header);
 }
 
-InitOFile() {
+void InitOFile(void)
+{
     outlineno += EmitVersion(stdout, ifile, ofile);
 #ifdef __MACH__
     if( shlibInclude ) {
@@ -113,9 +79,9 @@ InitOFile() {
     }
 #endif /* __MACH__ */
     printf("#include %s\n", FRIENDSFILE);
-    printf("#include <string.h>\n\n");
-    outlineno += 3;  /* UPDATE this if you add more prolog */
+    printf("#include <string.h>\n");
+    printf("#include \"%spsops.h\"\n\n", dpsops ? "d" : "");
+    outlineno += 4;  /* UPDATE this if you add more prolog */
     printf("#line 1 \"%s\"\n",ifile);
     outlineno++;
 }
-

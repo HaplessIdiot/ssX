@@ -56,7 +56,7 @@ SOFTWARE.
  *      socket ids aren't small nums (0 - 2^8)
  *
  *****************************************************************/
-/* $XFree86: xc/programs/lbxproxy/os/connection.c,v 1.9 1999/04/29 09:13:56 dawes Exp $ */
+/* $XFree86: xc/programs/lbxproxy/os/connection.c,v 1.11 2000/05/14 20:27:58 alanh Exp $ */
 
 #include "misc.h"
 #include <X11/Xtrans.h>
@@ -237,8 +237,8 @@ InitConnectionLimits()
     }
     MaxClients = lastfdesc;
 
-    ConnectionTranslation = (int *)xalloc(lastfdesc + 1);
-    ConnectionOutputTranslation = (int *)xalloc(lastfdesc + 1);
+    ConnectionTranslation = (int *)xalloc((lastfdesc + 1) * sizeof(int));
+    ConnectionOutputTranslation = (int *)xalloc((lastfdesc + 1) * sizeof(int));
     if (ConnectionTranslation == NULL || ConnectionOutputTranslation == NULL)
 	FatalError("failed to allocate ConnectionTranslation\n");
 }

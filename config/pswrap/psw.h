@@ -81,4 +81,14 @@ extern char *currentPSWName; /* valid between DEFINEPS and ENDPS */
 
 */
 
+/* psw.c */
+extern char *psw_malloc(int);
+extern char *psw_calloc(int, int);
+
+/* pswstring.c */
+extern int PSWStringLength(char *);
+extern int PSWHexStringLength(char *);
+extern void PSWOutputStringChars(char *);
+extern void PSWOutputHexStringChars(char *);
+
 #endif /* PSW_H */

@@ -48,9 +48,12 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #endif /* VMS */
+
+#include <DPS/XDPSlib.h>
 #include "DPS/dpsclient.h"
 #include "dpsprivate.h"
 #include "DPS/dpsXclient.h"
+#include "publictypes.h"
 
 /* typedefs */
 
@@ -82,57 +85,103 @@ extern DPSProcs XDPSrawProcs;
 extern int	XDPSQuitBlocking;
 
 
-extern XDPSPrivContext XDPSCreatePrivContextRec (/*
-  Display	    *dpy,
-  Drawable	    drawable,
-  GC		    gc,
-  int		    x,
-  int		    y,
-  unsigned int	    eventmask,
-  XStandardColormap grayramp,
-  XStandardColormap ccube,
-  int		    actual,
-  int		    secure 	L2-DPS/PROTO 9 */);
+extern XDPSPrivContext XDPSCreatePrivContextRec (
+  Display	    * /* dpy */,
+  Drawable	      /* drawable */,
+  GC		      /* gc */,
+  int		      /* x */,
+  int		      /* y */,
+  unsigned int	      /* eventmask */,
+  XStandardColormap * /* grayramp */,
+  XStandardColormap * /* ccube */,
+  int		      /* actual */,
+  int		      /* secure */);
   
   /* See if dpy supports the DPS extension.  If not, return NULL.  If so,
      it sets up a private context object that is used for creating
      contexts and spaces. */
 
+extern DPSNumFormat DPSCreatePrivContext(
+  XDPSPrivContext	/* wh */,
+  DPSContext		/* ctxt */,
+  ContextPSID *		/* cidP */,
+  SpaceXID *		/* sxidP */,
+  boolean		/* newSpace */,
+  DPSClientPrintProc	/* printProc */);
+  /* returns -1 if server can't create the context */
 
-extern DPSNumFormat XDPSNumFormat (/* Display *dpy */);
+extern void DPSIncludePrivContext(
+  XDPSPrivContext	/* wh */,
+  DPSContext		/* ctxt */,
+  ContextPSID		/* cid */,
+  SpaceXID		/* sxid */,
+  DPSClientPrintProc	/* printProc */);
+
+extern void DPSSendPostScript(
+  XDPSPrivContext	/* wh */,
+  DPSClientPrintProc	/* printProc */,
+  ContextPSID		/* cid */,
+  char			* /* buffer */,
+  long int		/* count */,
+  boolean		(* /* returnControl */)(void));
+
+extern void DPSSendInterrupt(
+  XDPSPrivContext	/* wh */,
+  ContextPSID		/* cid */,
+  DPSClientPrintProc	/* printProc */);
+
+extern void DPSSendEOF(
+  XDPSPrivContext	/* wh */,
+  ContextPSID		/* cid */,
+  DPSClientPrintProc	/* printProc */);
+
+extern void DPSSendTerminate(
+  XDPSPrivContext	/* wh */,
+  ContextPSID		/* cid */,
+  DPSClientPrintProc	/* printProc */);
+
+extern void XDPSPrivZapDpy(
+  Display *		/* dpy */);
+
+extern DPSNumFormat XDPSNumFormat (Display * /* dpy */);
 
   /* Determine the number format for server over the "dpy" connection. */
 
-extern void XDPSSetProcs ();
+extern void XDPSSetProcs (void);
 
   /* Set pointers to raw and conversion context procs. */
 
-extern void XDPSSetContextEncoding ( /*
-  DPSContext ctxt,
-  DPSProgramEncoding progEncoding,
-  DPSNameEncoding nameEncoding */);
+extern void XDPSSetContextEncoding (
+  DPSContext /* ctxt */,
+  DPSProgramEncoding /* progEncoding */,
+  DPSNameEncoding /* nameEncoding */);
   
   /* Sets context's program and name encodings to new values. */
 
-extern void XDPSStatusEventHandler (/* XDPSLStatusEvent *event */);
+extern void XDPSStatusEventHandler (XDPSLStatusEvent * /* event */);
 
   /* Is registered with Xlib and is called when a dps status event is
      received.  It determines what context the event belongs to and,
      if that context has a status event handler, calls its handler
      passing it the status type. */
 
-extern void XDPSReadyEventHandler (/* XDPSLReadyEvent *event */);
+extern void XDPSReadyEventHandler (XDPSLReadyEvent * /* event */);
 
   /* Is registered with Xlib and is called when a dps ready event is
      received.  It determines what context the event belongs to and,
      if that context has a status event handler, calls its handler
      passing it the ready data. */
 
-extern void XDPSForceEvents (/* Display *dpy */);
+extern void XDPSForceEvents (Display * /* dpy */);
 
   /* Forces processing of events that are pending over the 'dpy'
      connection.  This causes DPS events to be handled by their handlers. */
 
-extern void XDPSSendUnfreeze (/* Display *dpy, ContextXID cxid */);
+extern void XDPSSendUnfreeze (Display * /* dpy */, ContextXID /* cxid */);
+
+extern void DPSSendDestroySpace(
+		XDPSPrivContext /* wh */,
+		SpaceXID /* sxid */,
+		DPSClientPrintProc /* printProc */);
 
 #endif /* DPSXPRIVATE_H */

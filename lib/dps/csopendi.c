@@ -47,6 +47,7 @@
  * Author:  Adobe Systems Incorporated and MIT X Consortium
  */
  
+#include <stdlib.h>
 #include <stdio.h>
 #include <sys/param.h>		/* for MAXHOSTNAMELEN */
 #define NEED_EVENTS
@@ -68,10 +69,14 @@ static int lock;	/* get rid of ifdefs when locking implemented */
 
 #include <X11/X.h>
 #include <X11/Xproto.h>
+
 #include "DPSCAPClient.h"
+#include <DPS/dpsXclient.h>
 #include <DPS/dpsNXargs.h>
+#include "dpsassert.h"
 #include "dpsNXprops.h"
 #include "csfindNX.h"
+#include "csstartNX.h"
 
 #ifdef DPSLNKL
 #include "dpslnkl.inc"
@@ -93,11 +98,10 @@ static char *xauth_name = NULL;	 /* NULL means use default mechanism */
 static int xauth_datalen = 0;
 static char *xauth_data = NULL;	 /* NULL means get default data */
 
-static OutOfMemory();
+static void OutOfMemory (Display *);
+
 #ifdef XXX
-void XSetAuthorization (name, namelen, data, datalen)
-    int namelen, datalen;		/* lengths of name and data */
-    char *name, *data;			/* NULL or arbitrary array of bytes */
+void XSetAuthorization (char *name, int namelen, char *data, int datalen)
 {
     char *tmpname, *tmpdata;
 
@@ -143,9 +147,7 @@ void XSetAuthorization (name, namelen, data, datalen)
  * the newly created Display back to the caller.
  */
 XExtData * 
-DPSCAPOpenAgent(dpy, trueDisplayName)
-	register Display *dpy;
-	char *trueDisplayName;
+DPSCAPOpenAgent(Display *dpy, char *trueDisplayName)
 {
 	register Display *agent;
 	char *agentHost = (char *)NULL;
@@ -163,8 +165,6 @@ DPSCAPOpenAgent(dpy, trueDisplayName)
 	int transport, port;
 	XExtData *ext;
 	DPSCAPData my;
-	extern int _XConnectDisplay();
-	extern char *getenv();
 	char hostname[MAXHOSTNAMELEN];
 
 /*
@@ -465,11 +465,10 @@ DPSCAPOpenAgent(dpy, trueDisplayName)
 /* OutOfMemory is called if malloc fails.  XOpenDisplay returns NULL
    after this returns. */
 
-static OutOfMemory (dpy)
-    Display *dpy;
-    {
+static void OutOfMemory (Display *dpy)
+{
     DPSCAPCloseAgent(dpy);
-    }
+}
 
 #ifdef NEEDFORNX
 /* XFreeDisplayStructure frees all the storage associated with a 
@@ -482,8 +481,7 @@ static OutOfMemory (dpy)
  */
 
 static void
-_XFreeDisplayStructure(dpy)
-	register Display *dpy;
+_XFreeDisplayStructure(register Display *dpy)
 {
 	if (dpy->screens) {
 	    register int i;
@@ -558,8 +556,7 @@ _XFreeDisplayStructure(dpy)
 
 
 void
-DPSCAPCloseAgent(agent)
-    Display *agent;
+DPSCAPCloseAgent(Display *agent)
 {
     if (!agent) return;
     N_XDisconnectDisplay(agent->fd);

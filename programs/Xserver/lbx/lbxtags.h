@@ -1,7 +1,27 @@
-/* $XConsortium: lbxtags.h /main/7 1996/11/12 09:31:19 rws $ */
+/* $TOG: lbxtags.h /main/8 1998/02/09 14:33:05 kaleb $ */
+/*
+
+Copyright 1996, 1998  The Open Group
+
+All Rights Reserved.
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Except as contained in this notice, the name of The Open Group shall not be
+used in advertising or otherwise to promote the sale, use or other dealings
+in this Software without prior written authorization from The Open Group.
+
+*/
 /*
  * Copyright 1993 Network Computing Devices, Inc.
- * Copyright 1996 X Consortium, Inc.
  *
  * Permission to use, copy, modify, distribute, and sell this software and
  * its documentation for any purpose is hereby granted without fee, provided
@@ -22,6 +42,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
+/* $XFree86$ */
 
 #ifndef _LBXTAGS_H_
 #define _LBXTAGS_H_
@@ -44,52 +65,14 @@ typedef struct _tagdata {
 
 typedef struct _tagdata *TagData;
 
-extern TagData TagGetTag(
-#if NeedFunctionPrototypes
-    XID         /*tid*/
-#endif
-);
-
-extern XID  TagNewTag(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
-
-extern void TagClearProxy(
-#if NeedFunctionPrototypes
-    XID         /*tid*/,
-    int         /*pid*/
-#endif
-);
-
-extern void TagMarkProxy(
-#if NeedFunctionPrototypes
-    XID         /*tid*/,
-    int         /*pid*/
-#endif
-);
-
-extern Bool TagProxyMarked(
-#if NeedFunctionPrototypes
-    XID         /*tid*/,
-    int         /*pid*/
-#endif
-);
-
-extern void TagDeleteTag(
-#if NeedFunctionPrototypes
-    XID         /*tid*/
-#endif
-);
-
-extern XID TagSaveTag(
-#if NeedFunctionPrototypes
-    int         /*dtype*/,
-    int         /*size*/,
-    pointer     /*data*/,
-    XID*        /*global*/
-#endif
-);
+extern void TagInit ( void );
+extern XID TagNewTag ( void );
+extern void TagClearProxy ( XID tid, int pid );
+extern void TagMarkProxy ( XID tid, int pid );
+extern Bool TagProxyMarked ( XID tid, int pid );
+extern XID TagSaveTag ( int dtype, int size, pointer data, XID *global );
+extern void TagDeleteTag ( XID tid );
+extern TagData TagGetTag ( XID tid );
+extern void LbxFlushTags ( LbxProxyPtr proxy );
 
 #endif				/* _LBXTAGS_H_ */

@@ -39,12 +39,14 @@
 #ifndef DPSASSERT_H
 #define DPSASSERT_H
 
-#define DPSAssertWarn(cndtn, cntxt, mssg)\
-	if (!(cndtn)) DPSWarnProc((cntxt),(mssg))
+#include "DPS/dpsclient.h"
 
-extern void DPSWarnProc();
-extern void DPSFatalProc();
-extern void DPSCantHappen();
+#define DPSAssertWarn(cndtn, cntxt, mssg)\
+	if (!(cndtn)) DPSWarnProc((DPSContext)(cntxt),(mssg))
+
+extern void DPSWarnProc(DPSContext ctxt, char *msg);
+extern void DPSFatalProc(DPSContext ctxt, char *msg);
+extern void DPSCantHappen(void);
 
 #define DPSAssert(condition) \
   if (! (condition)) DPSCantHappen();

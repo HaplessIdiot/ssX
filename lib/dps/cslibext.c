@@ -1,9 +1,9 @@
 /*
  *  cslibext.c -- DPSCAP client Xlib extension hookup
- *		 
+ *
  * (c) Copyright 1991-1994 Adobe Systems Incorporated.
  * All rights reserved.
- * 
+ *
  * Permission to use, copy, modify, distribute, and sublicense this software
  * and its documentation for any purpose and without fee is hereby granted,
  * provided that the above copyright notices appear in all copies and that
@@ -18,7 +18,7 @@
  * PostScript system.  Proper trademark attribution to reflect Adobe's
  * ownership of the trademark shall be given whenever any such reference to
  * the Display PostScript system is made.
- * 
+ *
  * ADOBE MAKES NO REPRESENTATIONS ABOUT THE SUITABILITY OF THE SOFTWARE FOR
  * ANY PURPOSE.  IT IS PROVIDED "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY.
  * ADOBE DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
@@ -29,10 +29,10 @@
  * NEGLIGENCE, STRICT LIABILITY OR ANY OTHER ACTION ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.  ADOBE WILL NOT
  * PROVIDE ANY TRAINING OR OTHER SUPPORT FOR THE SOFTWARE.
- * 
+ *
  * Adobe, PostScript, and Display PostScript are trademarks of Adobe Systems
  * Incorporated which may be registered in certain jurisdictions
- * 
+ *
  * Author:  Adobe Systems Incorporated
  */
 
@@ -51,6 +51,9 @@
 #include "DPSCAPClient.h"
 #include "dpsassert.h"
 #include <DPS/XDPSlib.h>
+
+#include "publictypes.h"
+#include "dpsXpriv.h"
 
 /* === DEFINES === */
 
@@ -76,11 +79,21 @@ int gNXSyncGCMode = DPSNXSYNCGCMODE_DEFAULT;
 
 /* === PUBLIC PROCS === */
 
+#ifdef MAHALO
+static int
+DPSCAPFlushAfterProc(Display *agent)
+{
+    LockDisplay(agent);
+    N_XFlush(agent);
+    UnlockDisplay(agent);
+}
+#endif
+
 int
-CSDPSInit(dpy, numberType, floatingName)
-    Display *dpy;
-    int *numberType;		/* RETURN */
-    char **floatingName;	/* RETURN */
+CSDPSInit(
+    Display *dpy,
+    int *numberType,		/* RETURN */
+    char **floatingName)	/* RETURN */
 {
     register Display *agent;
     register xCAPConnReplyPrefix *p;
@@ -97,21 +110,19 @@ CSDPSInit(dpy, numberType, floatingName)
     int rest;
     Window clientWindow;
     char fullDisplayName[MAXHOSTNAMELEN+10];
-    int DPSCAPCopyGCProc(), DPSCAPFreeGCProc(), DPSCAPFlushGCProc();
-    extern char * getenv();
-    
+
     if (gCSDPS == NULL)
         DPSCAPStartUp();
-	
+
     /* To fix dps-nx #68, Motif too slow on HP */
-    if (c = getenv("DPSNXGCMODE"))
+    if ((c = getenv("DPSNXGCMODE")) != 0)
         {
 	gNXSyncGCMode = atoi(c);
 	if (gNXSyncGCMode < DPSNXSYNCGCMODE_FLUSH
 	  || gNXSyncGCMode > DPSNXSYNCGCMODE_DELAYED)
 	    gNXSyncGCMode = DPSNXSYNCGCMODE_DEFAULT;
 	}
-	
+
     /* We may have already called this routine via XDPSExtensionPresent,
        so don't do it again! */
 
@@ -120,7 +131,7 @@ CSDPSInit(dpy, numberType, floatingName)
         && agent != dpy
 	&& codes->major_opcode == DPSXOPCODEBASE)
         return(DPSCAPSUCCESS);
-    
+
     /* Try to create a window for ClientMessage communication */
 
     clientWindow = XCreateSimpleWindow(
@@ -133,7 +144,7 @@ CSDPSInit(dpy, numberType, floatingName)
       WhitePixel(dpy, DefaultScreen(dpy)));
     if (clientWindow == None)
         return(DPSCAPFAILED);
-        
+
     /* Try to open a connection to an agent */
 
     if ((extData = DPSCAPOpenAgent(dpy, fullDisplayName)) == NULL)
@@ -141,7 +152,7 @@ CSDPSInit(dpy, numberType, floatingName)
         XDestroyWindow(dpy, clientWindow);
         return(DPSCAPFAILED);
         }
-        
+
     /* DPSCAPOpenAgent only partially fills in extData, so finish it */
 
     codes = XAddExtension(dpy);
@@ -154,7 +165,7 @@ CSDPSInit(dpy, numberType, floatingName)
     my->codes = codes;
     agent = my->agent;
     /* +++ Is this all we have to do here? */
-    
+
     /* Send opening handshake */
 
     indian = 1;
@@ -174,7 +185,7 @@ CSDPSInit(dpy, numberType, floatingName)
     setup.screen = 0;
     setup.reserved = 0;
     setup.clientWindow = clientWindow;
-    
+
 #ifndef DPSLNKL
     DPSCAPWrite(agent, (char *)&setup, sizeof(xCAPConnSetupReq), dpscap_nopad,dpscap_insert);
     DPSCAPWrite(agent, fullDisplayName, setup.displayStringLength, dpscap_pad, dpscap_append);
@@ -192,7 +203,7 @@ CSDPSInit(dpy, numberType, floatingName)
 
     p = (xCAPConnReplyPrefix *)&reply.good;
     N_XRead(agent, (char *)p, (long)sizeof(xCAPConnReplyPrefix));
-skip_read:    
+skip_read:
     if (!p->success)
         {
 	char mbuf[512];
@@ -219,19 +230,19 @@ skip_read:
         XDestroyWindow(dpy, clientWindow);
         return(DPSCAPFAILED);
         }
-    
+
     /* read the rest of the fixed length reply */
     c = (char *)&reply.good.serverVersion;
     rest = sizeof(xCAPConnSuccess) - sizeof(xCAPConnReplyPrefix);
     N_XRead(agent, c, rest);
-    
+
     /* verify */
-    
+
     if (reply.good.serverVersion < DPSPROTOCOLVERSION)
         {
 	/* Fine, we downgrade the client */
 	char qbuf[256];
-	sprintf(qbuf, "NX: server version %d older than expected %d, client will downgrade", reply.good.serverVersion, DPSPROTOCOLVERSION);
+	sprintf(qbuf, "NX: server version %ld older than expected %d, client will downgrade", reply.good.serverVersion, DPSPROTOCOLVERSION);
 	DPSWarnProc(NULL, qbuf);
 	}
     my->dpscapVersion = reply.good.dpscapVersion;
@@ -250,12 +261,12 @@ skip_read:
         return(DPSCAPFAILED);
 #endif
 	}
-        
+
     if (numberType)
         *numberType = reply.good.preferredNumberFormat;
-    
+
     /* read additional data */
-    
+
     c = (char *)Xmalloc(reply.good.floatingNameLength + 1);
     N_XReadPad(agent, c, reply.good.floatingNameLength);
     c[reply.good.floatingNameLength] = 0;
@@ -265,7 +276,7 @@ skip_read:
 	Xfree(c);
 
     /* set library extension data */
-    
+
     XDPSLSetVersion(agent, reply.good.serverVersion);
     XDPSLSetVersion(dpy, reply.good.serverVersion);
     XDPSLSetShunt(dpy, agent);
@@ -284,22 +295,18 @@ skip_read:
     (void) XESetFreeGC(dpy, codes->extension, DPSCAPFreeGCProc);
     (void) XESetFlushGC(dpy, codes->extension, DPSCAPFlushGCProc);
     XDPSLSetClientMessageHandler(dpy);
-    
+
     /* Chain my data on global list */
-    
+
     my->next = gCSDPS->head;
     gCSDPS->head = my;
-    
+
 #ifdef MAHALO
     /* Set function that is called after every Xlib protocol proc */
     XDPSLSetAfterProc(dpy);
 
     /* All CSDPS protocol is auto-flushed */
-    {
-    static int DPSCAPFlushAfterProc();
-    
     (void) XSetAfterFunction(agent, DPSCAPFlushAfterProc);
-    }
 #endif /* MAHALO */
 
     /* set agent arguments, if needed */
@@ -312,8 +319,8 @@ skip_read:
 
 
 XExtData **
-CSDPSHeadOfDpyExt(dpy)
-   Display *dpy;
+CSDPSHeadOfDpyExt(
+   Display *dpy)
 {
    XEDataObject object;
 
@@ -322,9 +329,9 @@ CSDPSHeadOfDpyExt(dpy)
 }
 
 void
-XDPSSyncGCClip(dpy, gc)
-    register Display *dpy;
-    register GC gc;
+XDPSSyncGCClip(
+    register Display *dpy,
+    register GC gc)
 {
     /* The primary utility of this function is for DPS NX correctness,
        but it also helps DPS/X do less work in tracking GC changes. */
@@ -332,13 +339,13 @@ XDPSSyncGCClip(dpy, gc)
 }
 
 void
-XDPSReconcileRequests(ctxt)
-    register DPSContext ctxt;
+XDPSReconcileRequests(
+    register DPSContext ctxt)
 {
     Display *dpy;
     register ContextXID cxid;
     register DPSContext curCtxt;
-    
+
     for (curCtxt = ctxt; curCtxt; curCtxt = curCtxt->chainChild)
         {
 	cxid = XDPSXIDFromContext(&dpy, curCtxt);
@@ -349,9 +356,9 @@ XDPSReconcileRequests(ctxt)
 }
 
 Status
-XDPSNXSetAgentArg(dpy, arg, val)
-    Display *dpy;
-    int arg, val;
+XDPSNXSetAgentArg(
+    Display *dpy,
+    int arg, int val)
 {
     if (!dpy || arg >= 0 || arg < AGENTLASTARG)
         return(!Success);
@@ -361,9 +368,9 @@ XDPSNXSetAgentArg(dpy, arg, val)
 
 /* New for DPS NX 2.0 */
 void
-XDPSFlushGC(dpy, gc)
-    Display *dpy;
-    GC gc;
+XDPSFlushGC(
+    Display *dpy,
+    GC gc)
 {
     if (dpy && gc)
         XDPSLFlushGC(dpy, gc);
@@ -372,11 +379,11 @@ XDPSFlushGC(dpy, gc)
 /* === SUPPORT PROCS === */
 
 void
-DPSCAPChangeGC(agent, gc, valuemask, values)
-    register Display *agent;
-    GC gc;
-    unsigned long valuemask;
-    XGCValues *values;
+DPSCAPChangeGC(
+    register Display *agent,
+    GC gc,
+    unsigned long valuemask,
+    XGCValues *values)
 {
     register xChangeGCReq *req;
     register _XExtension *ext;
@@ -389,7 +396,7 @@ DPSCAPChangeGC(agent, gc, valuemask, values)
     /* +++ HACK!  Hide the gc->rects flag in arc_mode */
     valuemask |= GCArcMode;
     valuemask &= (1L << (GCLastBit + 1)) - 1;
-    
+
     /* Stupid macro insists on Display being called 'dpy' */
     {
     Display *dpy = agent;
@@ -414,17 +421,17 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
     /* Warning!  This code assumes that "unsigned int" is 32-bits wide */
- 
+
     unsigned int vals[32];
     register unsigned int *value = vals;
     long nvalues;
     register XGCValues *gv = values;
     register unsigned long dirty = gc->dirty;
- 
+
     /*
      * Note: The order of these tests are critical; the order must be the
      * same as the GC mask bits in the word.
-     */  
+     */
     if (dirty & GCFunction)          *value++ = gv->function;
     if (dirty & GCPlaneMask)         *value++ = gv->plane_mask;
     if (dirty & GCForeground)        *value++ = gv->foreground;
@@ -449,19 +456,19 @@ without express or implied warranty.
     if (dirty & GCDashList)          *value++ = gv->dashes;
     /* +++ HACK!  Hide gc->rects flag in GCArcMode */
     if (dirty & GCArcMode)           *value++ = gc->rects;
-    
+
     req->length += (nvalues = value - vals);
- 
+
     /*
      * note: Data is a macro that uses its arguments multiple
      * times, so "nvalues" is changed in a separate assignment
      * statement
      */
- 
+
     nvalues <<= 2;
     Data32 (agent, (long *) vals, nvalues);
     }
-      
+
     gc->dirty = oldDirty;
 
     /* ASSERT: SyncHandle called by caller */
@@ -469,11 +476,11 @@ without express or implied warranty.
 
 
 DPSCAPData
-DPSCAPCreate(dpy, agent)
-    Display *dpy, *agent;
+DPSCAPCreate(
+    Display *dpy, Display *agent)
 {
     register DPSCAPData my = (DPSCAPData)Xcalloc(1, sizeof(DPSCAPDataRec));
-    
+
     if (my == (DPSCAPData)NULL) return(NULL);
     my->dpy = dpy;
     my->agent = agent;
@@ -513,8 +520,8 @@ DPSCAPCreate(dpy, agent)
 }
 
 int
-DPSCAPDestroy(extData)
-    XExtData *extData;
+DPSCAPDestroy(
+    XExtData *extData)
 {
     register DPSCAPData my = (DPSCAPData) extData->private_data;
     register DPSCAPData n;
@@ -537,7 +544,7 @@ DPSCAPDestroy(extData)
 }
 
 void
-DPSCAPStartUp()
+DPSCAPStartUp(void)
 {
     gCSDPS = (DPSCAPGlobals)Xcalloc(1, sizeof(DPSCAPGlobalsRec));
 }
@@ -546,16 +553,16 @@ DPSCAPStartUp()
 static unsigned char padAdd[] = {0, 3, 2, 1};
 
 void
-DPSCAPWrite(agent, buf, len, writePad, bufMode)
-    register Display *agent;
-    char *buf;
-    register unsigned len;
-    register DPSCAPIOFlags writePad;
-    DPSCAPIOFlags bufMode;
+DPSCAPWrite(
+    Display *agent,
+    char *buf,
+    unsigned len,
+    DPSCAPIOFlags writePad,
+    DPSCAPIOFlags bufMode)
 {
     int pad = padAdd[len & 3];
     unsigned fullLen = (writePad == dpscap_pad) ? len + pad  : len;
-    
+
     if (agent->bufptr + fullLen > agent->bufmax)
         N_XFlush(agent);
     if (agent->max_request_size && fullLen > agent->max_request_size)
@@ -582,9 +589,9 @@ DPSCAPWrite(agent, buf, len, writePad, bufMode)
 /* === EXT CALLBACK HOOKS === */
 
 int
-DPSCAPCloseDisplayProc(dpy, codes)
-    Display *dpy;
-    XExtCodes *codes;
+DPSCAPCloseDisplayProc(
+    Display *dpy,
+    XExtCodes *codes)
 {
 #ifdef CSDPS
     fprintf(stderr, "NX: Closing agent \"%s\"\n", dpy->display_name);
@@ -603,10 +610,10 @@ DPSCAPCloseDisplayProc(dpy, codes)
 
 
 int
-DPSCAPCopyGCProc(dpy, gc, codes)
-    Display *dpy;
-    GC gc;
-    XExtCodes *codes;
+DPSCAPCopyGCProc(
+    Display *dpy,
+    GC gc,
+    XExtCodes *codes)
 {
     XGCValues values;
     DPSCAPData my;
@@ -621,7 +628,7 @@ DPSCAPCopyGCProc(dpy, gc, codes)
 
     /* We change the GC unconditionally, since friggin' XCopyGC
        clears the dirty bits of the values that are copied! */
-       
+
     DPSAssertWarn(XGetGCValues(dpy, gc, DPSGCBITS & ~(GCClipMask), &values),
 	NULL, "DPS NX: XGetGCValues returned False\n");
     values.clip_mask = gc->values.clip_mask;
@@ -636,10 +643,10 @@ DPSCAPCopyGCProc(dpy, gc, codes)
 }
 
 int
-DPSCAPFreeGCProc(pdpy, gc, codes)
-    Display *pdpy;
-    GC gc;
-    XExtCodes *codes;
+DPSCAPFreeGCProc(
+    Display *pdpy,
+    GC gc,
+    XExtCodes *codes)
 {
     register xCAPNotifyReq *req;
     DPSCAPData my;
@@ -647,21 +654,21 @@ DPSCAPFreeGCProc(pdpy, gc, codes)
     XExtData *extData = XFindOnExtensionList(
       CSDPSHeadOfDpyExt(dpy),
       codes->extension);
-    
+
     if (extData)
         my = (DPSCAPData) extData->private_data;
     else
         return(0);
-        
+
     /* Notify the agent that the client deleted a GC.  Let the
        agent figure out if it cares. */
-       
+
     /* ASSERT: called from within LockDisplay section */
-    
+
     dpy = my->agent;
     if (dpy == (Display *)NULL || dpy == pdpy)
         return(0);
-	
+
     /* May need to sync changes to GC */
     if (gNXSyncGCMode == DPSNXSYNCGCMODE_DELAYED)
         XDPSLSync(pdpy);
@@ -686,7 +693,7 @@ DPSCAPFreeGCProc(pdpy, gc, codes)
 	}
     else
         XDPSLSync(pdpy);
-    
+
     /* ASSERT: SynchHandle called by caller */
     return(1);
 }
@@ -697,16 +704,16 @@ static unsigned int gcCountFlushedDirty = 0;
 #endif /* CSDPSDEBUG */
 
 int
-DPSCAPFlushGCProc(dpy, gc, codes)
-    Display *dpy;
-    GC gc;
-    XExtCodes *codes;
+DPSCAPFlushGCProc(
+    Display *dpy,
+    GC gc,
+    XExtCodes *codes)
 {
     XGCValues values;
     DPSCAPData my;
     XExtData *extData;
     unsigned long int dirty;
-    
+
     /* When GC is created, it is flushed with no dirty bits set,
        so we have to notice that situation. */
 
@@ -746,14 +753,4 @@ DPSCAPFlushGCProc(dpy, gc, codes)
         ++gcCountFlushedClean;
 #endif /* CSDPSDEBUG */
     return(1);
-}
-
-
-static int
-DPSCAPFlushAfterProc(agent)
-    Display *agent;
-{
-    LockDisplay(agent);
-    N_XFlush(agent);
-    UnlockDisplay(agent);
 }

@@ -8,7 +8,7 @@
  * be passed to the template file.                                         *
  *                                                                         *
  ***************************************************************************/
-/* $XFree86: xc/config/imake/imake.c,v 3.32 1999/05/15 06:24:46 dawes Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.33 1999/12/27 00:39:17 robin Exp $ */
 
 /*
  * 
@@ -1150,7 +1150,7 @@ get_gcc_incdir(FILE *inFile)
     }
   }
   if (buf[0])
-    fprintf (inFile, "#define DefaultGccIncludeDir %s\n", buf);
+    fprintf (inFile, "#define DefaultGccIncludeDir \"%s\"\n", buf);
 }
 #endif
 

@@ -35,7 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86: $ */
+/* $XFree86: xc/config/pswrap/main.c,v 1.2 2000/02/18 12:18:43 tsi Exp $ */
 
 #include <stdio.h>
 
@@ -74,69 +74,20 @@ char	*shlibInclude = NULL;	/* special file to be #included at top of */
                   		/* file.  Used only when building shlibs */
 #endif /* __MACH__ */
 
-extern char *psw_malloc();
-extern void InitWellKnownPSNames();
-
-static void ScanArgs();
-static void Usage();
-static void FatalError();
-
-main(argc,argv)
-int argc; char *argv[];
+static void Usage(void)
 {
-    extern int	errorCount;	/* non-fatal errs */
-    int		retval;		/* return from yyparse */
-	
-    ScanArgs(argc, argv);
-
-    if (ifile == NULL)
-	ifile = "stdin";
-    else {
-	gotInFile = 1;
-	if (freopen(ifile,"r",stdin) == NULL)
-	    FatalError("can't open %s for input",ifile);
-    }
-    if ((string_temp = (char *) malloc((unsigned) (maxstring+1))) == 0)
-	FatalError("can't allocate %d char string; try a smaller -s value",maxstring);
-    if (ofile == NULL)
-		ofile = "stdout";
-    else {
-#ifdef __MACH__
- 		(void)unlink(ofile);
-#endif /* __MACH__ */
-    	if (freopen(ofile,"w",stdout) == NULL)
-			FatalError("can't open %s for output",ofile);
-	}
-    InitOFile();
-
-    if (hfile != NULL) {
-#ifdef __MACH__
- 		(void)unlink(hfile);
-#endif /* __MACH__ */
- 		if ((header = fopen(hfile,"w")) == NULL)
- 	    	FatalError("can't open %s for output",hfile);
-    }
-    if (header != NULL)	InitHFile();
-
-    InitWellKnownPSNames();
-
-    if ((retval = yyparse()) != 0)
-	fprintf(stderr,"%s: error in parsing %s\n",prog,ifile);
-    else if (errorCount != 0) {
-	fprintf(stderr,"%s: errors were encountered\n",prog);
-	retval = errorCount;
-    }
-
-    if (hfile != NULL) FinishHFile();
-
-    exit (retval);
+    fprintf(stderr,"Usage:  pswrap [options] [input-file]\n");
+    fprintf(stderr,"    -a              produce ANSI C procedure prototypes\n");
+    fprintf(stderr,"    -b              process a big file\n");
+    fprintf(stderr,"    -h filename     specify header filename\n");
+    fprintf(stderr,"    -o filename     specify output C filename\n");
+    fprintf(stderr,"    -r              make wraps re-entrant\n");
+    fprintf(stderr,"    -s length       set maximum string length\n");
+    exit(1);
 }
 
-static void ScanArgs(argc, argv)
-    int argc;
-    char *argv[];
+static void ScanArgs(int argc, char *argv[])
 {
-    extern int	lexdebug;	/* debug flag for lexer */
     char	*slash;		/* index of last / in hfile */
     char	*c;		/* pointer into headid for conversion */
     int 	i = 0;
@@ -147,8 +98,12 @@ static void ScanArgs(argc, argv)
 	prog = slash + 1;
     while (i < argc) {
 	if (*argv[i] != '-') {
-	    if (ifile != NULL) Usage("Only one input file can be specified.");
-	    else ifile = argv[i];
+	    if (ifile != NULL) {
+		fprintf(stderr, "%s:  Only one input file can be specified.\n", prog);
+		Usage();
+	    } else {
+		ifile = argv[i];
+	    }
 	} else {
 	    switch (*(argv[i]+1)) {
 	    case 'a':
@@ -198,7 +153,8 @@ static void ScanArgs(argc, argv)
 		pad++;
 		break;
 	    default:
-		Usage("bad option '-%c'", *(argv[i]+1));
+		fprintf(stderr, "%s:  bad option '-%c'\n", prog, *(argv[i]+1));
+		Usage();
 		break;
 	    } /* switch */
 	} /* else */
@@ -206,27 +162,59 @@ static void ScanArgs(argc, argv)
     } /* while */
 } /* ScanArgs */
 
-static void Usage(msg, arg1, arg2, arg3, arg4) 
-	char *msg;
+int main(int argc, char *argv[])
 {
-    fprintf(stderr,"%s:  ", prog);
-    fprintf(stderr, msg, arg1, arg2, arg3, arg4);
-    fprintf(stderr,"\nUsage:  pswrap [options] [input-file]\n");
-    fprintf(stderr,"    -a              produce ANSI C procedure prototypes\n");
-    fprintf(stderr,"    -b              process a big file\n");
-    fprintf(stderr,"    -h filename     specify header filename\n");
-    fprintf(stderr,"    -o filename     specify output C filename\n");
-    fprintf(stderr,"    -r              make wraps re-entrant\n");
-    fprintf(stderr,"    -s length       set maximum string length\n");
-    exit(1);
-}
+    int		retval;		/* return from yyparse */
+	
+    ScanArgs(argc, argv);
 
-/* a - d are optional args for fprintf */
-static void FatalError(msg, a, b, c, d)
-    char *msg;
-{
-    fprintf(stderr,"%s:  ", prog);
-    fprintf(stderr, msg, a, b, c, d);
-    fprintf(stderr, "\n");
-    exit(1);
-} /* FatalError */
+    if (ifile == NULL)
+	ifile = "stdin";
+    else {
+	gotInFile = 1;
+	if (freopen(ifile,"r",stdin) == NULL) {
+	    fprintf(stderr, "%s:  can't open %s for input\n", prog, ifile);
+	    exit(1);
+	}
+    }
+    if ((string_temp = (char *) malloc((unsigned) (maxstring+1))) == 0) {
+	fprintf(stderr, "%s:  can't allocate %d char string; try a smaller -s value\n", prog, maxstring);
+	exit(1);
+    }
+    if (ofile == NULL)
+		ofile = "stdout";
+    else {
+#ifdef __MACH__
+ 		(void)unlink(ofile);
+#endif /* __MACH__ */
+    	if (freopen(ofile,"w",stdout) == NULL) {
+	    fprintf(stderr, "%s:  can't open %s for output\n", prog, ofile);
+	    exit(1);
+	}
+    }
+    InitOFile();
+
+    if (hfile != NULL) {
+#ifdef __MACH__
+ 		(void)unlink(hfile);
+#endif /* __MACH__ */
+	if ((header = fopen(hfile,"w")) == NULL) {
+	    fprintf(stderr, "%s:  can't open %s for output\n", prog, hfile);
+	    exit(1);
+	}
+    }
+    if (header != NULL)	InitHFile();
+
+    InitWellKnownPSNames();
+
+    if ((retval = yyparse()) != 0)
+	fprintf(stderr,"%s: error in parsing %s\n",prog,ifile);
+    else if (errorCount != 0) {
+	fprintf(stderr,"%s: errors were encountered\n",prog);
+	retval = errorCount;
+    }
+
+    if (hfile != NULL) FinishHFile();
+
+    exit (retval);
+}

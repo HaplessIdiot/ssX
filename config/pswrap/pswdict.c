@@ -40,17 +40,17 @@
 /* Imports */
 /***********/
 
+#include <stdlib.h>
+
 #include "pswtypes.h"
 #include "pswdict.h"
+#include "psw.h"
 
 #ifdef XENVIRONMENT
 #include <X11/Xos.h>
 #else
 #include <string.h>
 #endif
-
-extern char *psw_calloc();
-extern char *psw_malloc();
 
 /********************/
 /* Types */
@@ -60,13 +60,13 @@ typedef struct _t_EntryRec {
   struct _t_EntryRec *next;
   char *name;
   PSWDictValue value;
-  } EntryRec, *Entry;
+} EntryRec, *Entry;
 
  /* The concrete definition for a dictionary */
- typedef struct _t_PSWDictRec {
+typedef struct _t_PSWDictRec {
   int nEntries;
   Entry *entries;
-  } PSWDictRec;
+} PSWDictRec;
 
 PSWDict atoms;
 
@@ -75,37 +75,40 @@ PSWDict atoms;
 /**************************/
 
 /* Creates and returns a new dictionary. nEntries is a hint. */
-PSWDict CreatePSWDict(nEntries) int nEntries; {
+PSWDict CreatePSWDict(int nEntries)
+{
   PSWDict d = (PSWDict)psw_calloc(sizeof(PSWDictRec), 1);
   d->nEntries = nEntries;
   d->entries = (Entry *)psw_calloc(sizeof(EntryRec), d->nEntries);
   return d;
-  }
+}
 
 /* Destroys a dictionary */
-void DestroyPSWDict(dict) PSWDict dict; {
+void DestroyPSWDict(PSWDict dict)
+{
   free(dict->entries);
   free(dict);
-  }
+}
 
-static int Hash(name, nEntries) char *name; int nEntries; {
+static int Hash(char *name, int nEntries)
+{
   register int val = 0;
   while (*name) val += *name++;
   if (val < 0) val = -val;
   return (val % nEntries);
-  }
+}
 
-static Entry Probe(d, x, name) PSWDict d; int x; char *name; {
+static Entry Probe(PSWDict d, int x, char *name)
+{
   register Entry e;
   for (e = (d->entries)[x]; e; e = e->next) {
     if (strcmp(name, e->name) == 0) break;
     }
   return e;
-  }
+}
 
-static Entry PrevProbe(prev, d, x, name)
-  Entry *prev; PSWDict d; int x; char *name;
-  {
+static Entry PrevProbe(Entry *prev, PSWDict d, int x, char *name)
+{
   register Entry e;
   *prev = NULL;
   for (e = (d->entries)[x]; e; e = e->next) {
@@ -113,21 +116,21 @@ static Entry PrevProbe(prev, d, x, name)
     *prev = e;
     }
   return e;
-  }
+}
 
 /* -1 => not found */
-PSWDictValue PSWDictLookup(dict, name) PSWDict dict; char *name; {
+PSWDictValue PSWDictLookup(PSWDict dict, char *name)
+{
   Entry e;
   e = Probe(dict, Hash(name, dict->nEntries), name);
   if (e == NULL) return -1;
   return e->value;
-  }
+}
 
 /*  0 => normal return (not found)
    -1 => found. If found, value is replaced. */
-PSWDictValue PSWDictEnter(dict, name, value)
-  PSWDict dict; char *name; PSWDictValue value;
-  {
+PSWDictValue PSWDictEnter(PSWDict dict, char *name, PSWDictValue value)
+{
   Entry e;
   int x = Hash(name, dict->nEntries);
   e = Probe(dict, x, name);
@@ -140,10 +143,11 @@ PSWDictValue PSWDictEnter(dict, name, value)
   e->value = value;
   e->name = MakeAtom(name);
   return 0;
-  }
+}
 
 /* -1 => not found. If found, value is returned. */
-PSWDictValue PSWDictRemove(dict, name) PSWDict dict; char *name; {
+PSWDictValue PSWDictRemove(PSWDict dict, char *name)
+{
   Entry e, prev;
   PSWDictValue value;
   int x = Hash(name, dict->nEntries);
@@ -154,9 +158,10 @@ PSWDictValue PSWDictRemove(dict, name) PSWDict dict; char *name; {
   if (prev == NULL) (dict->entries)[x] = e->next; else prev->next = e->next;
   free(e);
   return value;
-  }
+}
 
-PSWAtom MakeAtom(name) char *name; {
+PSWAtom MakeAtom(char *name)
+{
   Entry e;
   int x = Hash(name, 511);
   char *newname;
@@ -172,5 +177,4 @@ PSWAtom MakeAtom(name) char *name; {
     e->name = newname;
     }
   return e->name;
-  }
-
+}

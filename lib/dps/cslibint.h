@@ -59,6 +59,9 @@
 #ifndef _CSLIBINT_H
 #define _CSLIBINT_H
 
+#include <X11/Xlibint.h>
+#include <X11/Xutil.h>
+
 /* For SYSV, no gethostname, so fake it */
 #include <sys/param.h>
 #ifndef MAXHOSTNAMELEN
@@ -263,29 +266,30 @@
 #define Data32(dpy, data, len) NXProcData((dpy), (char *)(data), (len))
 #endif /* not WORD64 */
 
+extern int gNXSyncGCMode;
 
 /* extension hooks */
 
-extern void NXProcData();
-extern void N_XEatData();		/* swallow data from server */
-extern int N_XDisconnectDisplay();
-extern int N_XGetHostname();
-extern Status N_XUnknownNativeEvent();
-extern Bool N_XUnknownWireEvent();
+extern Bool N_XUnknownWireEvent(Display *, XEvent *, xEvent *);
+extern Status N_XReply(Display *, xReply *, int, Bool);
+extern Status N_XUnknownNativeEvent(Display *, XEvent *, xEvent *);
+extern int DPSCAPConnect( char *, char **, int *, int *, int *, char **);
+extern int N_XDisconnectDisplay(int);
+extern int N_XGetHostname (char *, int);
+extern int N_XRead(Display*, char *, long);
+extern void NXProcData (Display *, char *, long);
+extern void N_XFlush(Display *);
+extern void N_XReadPad(Display*, char *, long);
+extern void N_XSend(Display *, _Xconst char *, long);
+extern void N_XWaitForReadable(Display *);
+extern void N_XWaitForWritable(Display *);
 
-#if 0
-extern int _XFlush();
-extern int _XRead();
-extern int _XReadPad();
-extern Status _XReply();
-extern int _XSend();
-#endif
-
-extern int N_XFlush();
-extern int N_XRead();
-extern int N_XReadPad();
-extern Status N_XReply();
-extern int N_XSend();
+extern void XDPSGetDefaultColorMaps(
+    Display *dpy,
+    Screen *screen,
+    Drawable drawable,
+    XStandardColormap *colorCube,
+    XStandardColormap *grayRamp);
 
 #endif /* _CSLIBINT_H */
 

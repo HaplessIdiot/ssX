@@ -1,7 +1,27 @@
-/* $XConsortium: lbxtags.c /main/11 1996/12/15 21:26:45 rws $ */
+/* $TOG: lbxtags.c /main/13 1998/05/15 10:29:43 msr $ */
+/*
+
+Copyright 1996, 1998  The Open Group
+
+All Rights Reserved.
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Except as contained in this notice, the name of The Open Group shall not be
+used in advertising or otherwise to promote the sale, use or other dealings
+in this Software without prior written authorization from The Open Group.
+
+*/
 /*
  * Copyright 1993 Network Computing Devices, Inc.
- * Copyright 1996 X Consortium, Inc.
  *
  * Permission to use, copy, modify, distribute, and sell this software and
  * its documentation for any purpose is hereby granted without fee, provided
@@ -22,30 +42,31 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
+/* $XFree86$ */
 
 #include "X.h"
 #include "misc.h"
 #include "lbxdata.h"
 #include "resource.h"
+#include "colormapst.h"
+#include "propertyst.h"
 #include "lbxtags.h"
 #define _XLBX_SERVER_
 #include "lbxstr.h"
 #include "propertyst.h"
 
-static int  tag_free();
-
 static RESTYPE TagResType;
+
+extern int _lbx_fi_junklen;
 
 /* ARGSUSED */
 static int
-tag_free(data, id)
-    pointer     data;
-    XID         id;
+tag_free(pointer     data,
+	 XID         id)
 {
     TagData     td = (TagData) data;
     FontTagInfoPtr	ftip;
     char *t;
-    extern int	_lbx_fi_junklen;
 
     if (td->global)
 	*(td->global) = 0;
@@ -64,21 +85,21 @@ tag_free(data, id)
     return 0;
 }
 
-TagInit()
+void
+TagInit(void)
 {
     TagResType = CreateNewResourceType(tag_free);
 }
 
 XID
-TagNewTag()
+TagNewTag(void)
 {
     return FakeClientID(0);
 }
 
 void
-TagClearProxy(tid, pid)
-    XID         tid;
-    int         pid;
+TagClearProxy(XID         tid,
+	      int         pid)
 {
     TagData     td;
 
@@ -88,9 +109,8 @@ TagClearProxy(tid, pid)
 }
 
 void
-TagMarkProxy(tid, pid)
-    XID         tid;
-    int         pid;
+TagMarkProxy(XID         tid,
+	     int         pid)
 {
     TagData     td;
 
@@ -99,9 +119,8 @@ TagMarkProxy(tid, pid)
 }
 
 Bool
-TagProxyMarked(tid, pid)
-    XID         tid;
-    int         pid;
+TagProxyMarked(XID         tid,
+	       int         pid)
 {
     TagData     td;
 
@@ -110,11 +129,10 @@ TagProxyMarked(tid, pid)
 }
 
 XID
-TagSaveTag(dtype, size, data, global)
-    int         dtype;
-    int         size;
-    pointer     data;
-    XID         *global;
+TagSaveTag(int         dtype,
+	   int         size,
+	   pointer     data,
+	   XID         *global)
 {
     TagData     td;
 
@@ -138,8 +156,7 @@ TagSaveTag(dtype, size, data, global)
 }
 
 void
-TagDeleteTag(tid)
-    XID         tid;
+TagDeleteTag(XID         tid)
 {
     int		pid;
     TagData     td;
@@ -153,7 +170,7 @@ TagDeleteTag(tid)
     for (pid = 1; pid < MAX_NUM_PROXIES; pid++) {
 	if (td->sent_to_proxy[pid >> 3] & (1 << (pid & 7))) {
 	    proxy = LbxPidToProxy(pid);
-	    lbxcp = proxy->lbxClients[0];
+            lbxcp = (proxy != NULL) ? proxy->lbxClients[0] : NULL;
 	    if (lbxcp && (client = lbxcp->client))
 		LbxSendInvalidateTag(client, tid, td->data_type);
 	    td->sent_to_proxy[pid >> 3] &= ~(1 << (pid & 7));
@@ -168,8 +185,7 @@ TagDeleteTag(tid)
 }
 
 TagData
-TagGetTag(tid)
-    XID         tid;
+TagGetTag(XID         tid)
 {
     TagData     td;
 
@@ -178,10 +194,9 @@ TagGetTag(tid)
 }
 
 static void
-LbxFlushTag(value, tid, cdata)
-    pointer value;
-    XID tid;
-    pointer cdata;
+LbxFlushTag(pointer value,
+	    XID tid,
+	    pointer cdata)
 {
     TagData td = (TagData)value;
     LbxProxyPtr proxy = (LbxProxyPtr)cdata;
@@ -207,8 +222,8 @@ LbxFlushTag(value, tid, cdata)
 /*
  * clear out markers for proxies
  */
-LbxFlushTags(proxy)
-    LbxProxyPtr proxy;
+void
+LbxFlushTags(LbxProxyPtr proxy)
 {
     FindClientResourcesByType(NULL, TagResType, LbxFlushTag, (pointer)proxy);
 }

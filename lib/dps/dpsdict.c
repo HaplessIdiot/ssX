@@ -40,8 +40,9 @@
 /* Imports */
 /***********/
 
-#include "dpsdict.h"
+#include <stdlib.h>
 
+#include "dpsint.h"
 
 /********************/
 /* Types */
@@ -65,18 +66,18 @@ static PSWDict atoms;
 /* Procedure Declarations */
 /**************************/
 
-extern char *DPScalloc();
-
 /* Creates and returns a new dictionary. nEntries is a hint. */
-PSWDict DPSCreatePSWDict(nEntries) integer nEntries; {
+PSWDict DPSCreatePSWDict(integer nEntries)
+{
   PSWDict d = (PSWDict)DPScalloc(sizeof(PSWDictRec), 1);
   d->nEntries = nEntries;
   d->entries = (Entry *)DPScalloc(sizeof(EntryRec), d->nEntries);
   return d;
-  }
+}
 
 /* Destroys a dictionary */
-void DPSDestroyPSWDict(dict) PSWDict dict; {
+void DPSDestroyPSWDict(PSWDict dict)
+{
   integer links = dict->nEntries;
   Entry   next;
   Entry   prev;
@@ -94,26 +95,27 @@ void DPSDestroyPSWDict(dict) PSWDict dict; {
     }
   free(dict->entries);
   free(dict);
-  }
+}
 
-static integer Hash(name, nEntries) char *name; integer nEntries; {
+static integer Hash(char *name, integer nEntries)
+{
   register integer val = 0;
   while (*name) val += *name++;
   if (val < 0) val = -val;
   return (val % nEntries);
-  }
+}
 
-static Entry Probe(d, x, name) PSWDict d; integer x; char *name; {
+static Entry Probe(PSWDict d, integer x, char *name)
+{
   register Entry e;
   for (e = (d->entries)[x]; e != NIL; e = e->next) {
     if (strcmp(name, e->name) == 0) break;
     }
   return e;
-  }
+}
 
-static Entry PrevProbe(prev, d, x, name)
-  Entry *prev; PSWDict d; integer x; char *name;
-  {
+static Entry PrevProbe(Entry *prev, PSWDict d, integer x, char *name)
+{
   register Entry e;
   *prev = NIL;
   for (e = (d->entries)[x]; e != NIL; e = e->next) {
@@ -121,21 +123,21 @@ static Entry PrevProbe(prev, d, x, name)
     *prev = e;
     }
   return e;
-  }
+}
 
 /* -1 => not found */
-PSWDictValue DPSWDictLookup(dict, name) PSWDict dict; char *name; {
+PSWDictValue DPSWDictLookup(PSWDict dict, char *name)
+{
   Entry e;
   e = Probe(dict, Hash(name, dict->nEntries), name);
   if (e == NIL) return -1;
   return e->value;
-  }
+}
 
 /*  0 => normal return (not found)
    -1 => found. If found, value is replaced. */
-PSWDictValue DPSWDictEnter(dict, name, value)
-  PSWDict dict; char *name; PSWDictValue value;
-  {
+PSWDictValue DPSWDictEnter(PSWDict dict, char *name, PSWDictValue value)
+{
   Entry e;
   integer x = Hash(name, dict->nEntries);
   e = Probe(dict, x, name);
@@ -148,10 +150,11 @@ PSWDictValue DPSWDictEnter(dict, name, value)
   e->value = value;
   e->name = name; /* MakeAtom(name); */
   return 0;
-  }
+}
 
 /* -1 => not found. If found, value is returned. */
-PSWDictValue DPSWDictRemove(dict, name) PSWDict dict; char *name; {
+PSWDictValue DPSWDictRemove(PSWDict dict, char *name)
+{
   Entry e, prev;
   PSWDictValue value;
   integer x = Hash(name, dict->nEntries);
@@ -162,9 +165,10 @@ PSWDictValue DPSWDictRemove(dict, name) PSWDict dict; char *name; {
   if (prev == NIL) (dict->entries)[x] = e->next; else prev->next = e->next;
   free(e);
   return value;
-  }
+}
 
-Atom DPSMakeAtom(name) char *name; {
+Atom DPSMakeAtom(char *name)
+{
   Entry e;
   integer x = Hash(name, 511);
   char *newname;
@@ -179,6 +183,5 @@ Atom DPSMakeAtom(name) char *name; {
     strcpy(newname, name);
     e->name = newname;
     }
-  return e->name;
-  }
-
+  return (Atom) e->name;
+}

@@ -39,7 +39,14 @@
 #ifndef DPSINT_H
 #define DPSINT_H
 
+#include <DPS/dpsXclient.h>
+
+#include "publictypes.h"
 #include "dpsassert.h"
+
+#include "dpsprivate.h"
+#include "dpsXint.h"
+#include "dpsdict.h"
 
 typedef struct _t_ContextBufferRec {
   struct _t_ContextBufferRec *next;
@@ -78,27 +85,41 @@ extern Globals DPSglobals;
 #define globLastNameIndex DPSglobals->gglobLastNameIndex
 #define textSpace DPSglobals->gTextSpace
 
-extern void DPSclientPrintProc();
-extern void DPSinnerProcWriteData();
-extern void DPSSafeSetLastNameIndex();
-extern void DPSCheckInitClientGlobals();
-extern boolean DPSPrivateCheckWait();
-extern void DPSPrivateDestroyContext();
-extern void DPSPrivateDestroySpace();
-extern boolean DPSCheckShared();
+extern boolean DPSCheckShared(DPSPrivContext ctxt);
+extern boolean DPSKnownContext(DPSContext ctxt);
+extern boolean DPSKnownSpace(DPSSpace space);
+extern boolean DPSPrivateCheckWait(DPSContext ctxt);
+extern void DPSCheckInitClientGlobals(void);
+extern void DPSPrivateDestroyContext(DPSContext ctxt);
+extern void DPSPrivateDestroySpace(DPSSpace space);
+extern void DPSSafeSetLastNameIndex(DPSContext ctxt);
+extern void DPSclientPrintProc(DPSContext ctxt, char *buf, unsigned nch);
+extern void DPSinnerProcWriteData(DPSContext ctxt, char *buf, unsigned int count);
 
-extern void DPSDefaultPrivateHandler();
+extern void DPSDefaultPrivateHandler(
+  DPSContext ctxt,
+  DPSErrorCode errorCode,
+  long unsigned int arg1,
+  long unsigned int arg2,
+  char *prefix,
+  char *suffix);
 
-extern DPSContext DPSCreateContext();
+extern char *DPScalloc(integer e, integer n);
 
-extern void DPSInitCommonTextContextProcs();
+extern DPSContext DPSCreateContext(
+  char *wh,
+  DPSTextProc textProc,
+  DPSErrorProc errorProc,
+  DPSSpace space);
 
-extern void DPSInitCommonContextProcs();
-extern void DPSInitPrivateContextProcs();
-extern void DPSInitPrivateContextFields();
-extern void DPSInitPrivateTextContextFields();
-
-extern void DPSInitCommonSpaceProcs();
-extern void DPSInitPrivateSpaceFields();
+extern void DPSHandleBogusError(DPSContext ctxt, char *prefix, char *suffix);
+extern void DPSInitCommonContextProcs(DPSProcs p);
+extern void DPSInitCommonSpaceProcs(DPSSpaceProcs p);
+extern void DPSInitCommonTextContextProcs(DPSProcs p);
+extern void DPSInitPrivateContextFields(DPSPrivContext c, DPSPrivSpace s);
+extern void DPSInitPrivateContextProcs(DPSProcs p);
+extern void DPSInitPrivateSpaceFields(DPSPrivSpace s);
+extern void DPSInitPrivateTextContextFields(DPSPrivContext c, DPSPrivSpace s);
+extern void DPSServicePostScript(boolean (*returnControl)(void));
 
 #endif /* DPSINT_H */

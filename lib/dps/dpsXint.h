@@ -39,6 +39,9 @@
 #ifndef DPSXINT_H
 #define DPSXINT_H
 
+#include <X11/X.h>
+#include <DPS/dpsXclient.h>
+
 /* The first part of this structure is generic; the last part is
    implementation-specific. */
 
@@ -48,8 +51,8 @@ typedef struct _t_DPSPrivContextRec {
   DPSProgramEncoding programEncoding;
   DPSNameEncoding nameEncoding;
   DPSProcs procs;
-  void (*textProc)();
-  void (*errorProc)();
+  DPSTextProc textProc;
+  DPSErrorProc errorProc;
   DPSResults resultTable;
   unsigned int resultTableLength;
   struct _t_DPSContextRec *chainParent, *chainChild;
@@ -63,16 +66,16 @@ typedef struct _t_DPSPrivContextRec {
   char *buf, *outBuf, *objBuf;
   integer nBufChars, nOutBufChars, nObjBufChars;
   DPSNumFormat numFormat;
-  boolean resyncing;	/* Error has occured and waiting ResetContext */
+  boolean resyncing;	/* Error has occurred and waiting ResetContext */
   int *numstringOffsets;	/* see comment below */
 
 /* Everthing after this is XDPS-specific */
 
   boolean creator;	/* Did this app. create the context? */
   int statusFromEvent;  /* Latest status reported by an event during reset. */
-  void (*statusProc)();
+  XDPSStatusProc statusProc;
   boolean zombie;    /* To avoid DPSAwaitReturnValues */
-  void (*readyProc)();
+  XDPSReadyProc readyProc;
 } DPSPrivContextRec, *DPSPrivContext;
 
 /* The numstringOffsets field lists offsets of encoded number strings in
