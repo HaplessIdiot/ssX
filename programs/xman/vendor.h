@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xman/vendor.h,v 1.8 2001/11/01 23:35:35 dawes Exp $ */
+/* $XFree86: xc/programs/xman/vendor.h,v 1.9 2001/11/04 00:13:48 dawes Exp $ */
 
 /* Vendor-specific definitions */
 
@@ -77,7 +77,7 @@ from the X Consortium.
 #  define SYSMANPATH "/usr/catman/u_man:/usr/catman/a_man"
 #elif defined(__bsdi__)
 #  define SYSMANPATH "/usr/share/man:/usr/contrib/man:/usr/contrib/isode/man:/usr/local/man"
-#elif defined(__OpenBSD__)
+#elif defined(__OpenBSD__) || defined(__DARWIN__)
 #  define SYSMANPATH "/usr/share/man:/usr/local/man:/usr/X11R6/man"
 #elif defined(SVR4) || defined(__osf__) || (defined(BSD) && (BSD >= 199103))
 #  define SYSMANPATH "/usr/share/man"
