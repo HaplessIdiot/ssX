@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.39 2000/11/17 10:22:19 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.41 2000/12/06 15:35:29 eich Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -1066,7 +1066,7 @@ readPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
      */
     romsave = pciReadLong(Tag, PCI_MAP_ROM_REG);
     romaddr = PCIGETROM(romsave);
-    if ((newbase = getValidBIOSBase(Tag,basereg)) != romaddr) {
+    if ((newbase = getValidBIOSBase(Tag, &basereg)) != romaddr) {
 	romaddr = PCIGETROM(newbase);
 	if (romaddr != 0 && romaddr == newbase) {
 #if 1

@@ -11,7 +11,7 @@
  *    Guy DESBIEF
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.14 2000/09/22 11:12:32 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.16 2000/12/06 15:35:15 eich Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -1061,14 +1061,14 @@ AlpPreInit(ScrnInfoPtr pScrn, int flags)
 	        AlpFreeRec(pScrn);
 		return FALSE;
 	    } 
-	    LoaderReqSymbols("xf1bppScreenInit",NULL);
+	    xf86LoaderReqSymbols("xf1bppScreenInit",NULL);
 	    break;
 	case 4:  
 	    if (xf86LoadSubModule(pScrn, "xf4bpp") == NULL) {
 	        AlpFreeRec(pScrn);
 		return FALSE;
 	    } 
-	    LoaderReqSymbols("xf4bppScreenInit",NULL);	    
+	    xf86LoaderReqSymbols("xf4bppScreenInit",NULL);	    
 	    break;
 	case 8:
 	case 16:
@@ -1078,9 +1078,9 @@ AlpPreInit(ScrnInfoPtr pScrn, int flags)
 	        AlpFreeRec(pScrn);
 		return FALSE;
 	    } 
-	    LoaderReqSymbols("fbScreenInit",NULL);
+	    xf86LoaderReqSymbols("fbScreenInit",NULL);
 #ifdef RENDER
-	xf86LoaderReqSymbols("fbPictureInit", NULL);
+	    xf86LoaderReqSymbols("fbPictureInit", NULL);
 #endif
 	    break;
 	}

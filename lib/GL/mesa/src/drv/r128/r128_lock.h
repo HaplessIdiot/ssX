@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_lock.h,v 1.1 2000/06/17 00:03:06 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_lock.h,v 1.2 2000/12/04 19:21:46 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -42,7 +42,7 @@ extern void r128GetLock( r128ContextPtr r128ctx, GLuint flags );
 
 
 /* Turn DEBUG_LOCKING on to find locking conflicts (see r128_init.h) */
-#if DEBUG_LOCKING
+#ifdef DEBUG_LOCKING
 extern char *prevLockFile;
 extern int   prevLockLine;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.h,v 1.5 2000/12/01 08:56:02 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.h,v 1.6 2000/12/04 19:21:52 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -39,8 +39,6 @@
 #define _R128_H_
 
 #include "xf86str.h"
-
-#include "xf86_OSproc.h"
 
 				/* PCI support */
 #include "xf86Pci.h"
@@ -381,20 +379,20 @@ extern Bool        R128DRIFinishScreenInit(ScreenPtr pScreen);
 
 #define R128CCE_START(pScrn, info)					\
 do {									\
-    int ret = drmR128StartCCE(info->drmFD);				\
-    if (ret) {								\
+    int _ret = drmR128StartCCE(info->drmFD);				\
+    if (_ret) {								\
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,				\
-		   "%s: CCE start %d\n", __FUNCTION__, ret);		\
+		   "%s: CCE start %d\n", __FUNCTION__, _ret);		\
     }									\
     info->CCEInUse = TRUE;						\
 } while (0)
 
 #define R128CCE_STOP(pScrn, info)					\
 do {									\
-    int ret = drmR128StopCCE(info->drmFD);				\
-    if (ret) {								\
+    int _ret = drmR128StopCCE(info->drmFD);				\
+    if (_ret) {								\
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,				\
-		   "%s: CCE stop %d\n", __FUNCTION__, ret);		\
+		   "%s: CCE stop %d\n", __FUNCTION__, _ret);		\
     }									\
     info->CCEInUse = FALSE;						\
 } while (0)
@@ -402,10 +400,10 @@ do {									\
 #define R128CCE_RESET(pScrn, info)					\
 do {									\
     if (R128CCE_USE_RING_BUFFER(info->CCEMode)) {			\
-	int ret = drmR128ResetCCE(info->drmFD);				\
-	if (ret) {							\
+	int _ret = drmR128ResetCCE(info->drmFD);			\
+	if (_ret) {							\
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,			\
-		       "%s: CCE reset %d\n", __FUNCTION__, ret);	\
+		       "%s: CCE reset %d\n", __FUNCTION__, _ret);	\
 	}								\
     }									\
     info->CCEInUse = FALSE;						\
