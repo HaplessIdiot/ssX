@@ -54,7 +54,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\"
-.\" $XFree86: xc/programs/xterm/xterm.man,v 3.95 2003/09/21 17:12:49 dickey Exp $
+.\" $XFree86: xc/programs/xterm/xterm.man,v 3.96 2003/10/27 01:07:58 dickey Exp $
 .\"
 .\" updated by Thomas E. Dickey for XFree86, July 1996 - May 2003.
 .TH XTERM 1 __vendorversion__
@@ -1256,6 +1256,30 @@ Note that \fIxterm\fP has one bold font which you may set explicitly.
 It attempts to match a bold font for the other font selections
 (\fBfont1\fP through \fBfont6\fP).
 If the normal and bold fonts are distinct, this resource has no effect.
+.IP
+Although \fIxterm\fP attempts to match a bold font for other font selections,
+the font server may not cooperate.
+Since X11R6, bitmap fonts have been scaled.
+The font server claims to provide the bold font that \fIxterm\fP requests,
+but the result is not always readable.
+XFree86 provides a feature which can be used to suppressed the scaling.
+In the X server's configuration file (e.g., "/etc/X11/XFree86"), you
+can add ":unscaled" to the end of the directory specification for the
+"misc" fonts, which comprise the fixed-pitch fonts that are used by xterm.
+For example
+.RS
+	FontPath	"/usr/lib/X11/fonts/misc/"
+.RE
+.IP
+would become
+.RS
+	FontPath	"/usr/lib/X11/fonts/misc/:unscaled"
+.RE
+.IP
+Depending on your configuration, the font server may have its own configuration
+file.
+The same ":unscaled" can be added to its configuration file at the
+end of the directory specification for "misc".
 .TP 8
 .B "brokenLinuxOSC (\fPclass\fB BrokenLinuxOSC)"
 If true, \fIxterm\fP applies a workaround to ignore malformed control
