@@ -112,6 +112,8 @@ RenderExtensionInit (void)
 {
     ExtensionEntry *extEntry;
 
+    if (!PictureType)
+	return;
     extEntry = AddExtension (RENDER_NAME, 0, RenderNumberErrors,
 			     ProcRenderDispatch, SProcRenderDispatch,
 			     RenderResetProc, StandardMinorOpcode);
@@ -249,39 +251,42 @@ ProcRenderQueryPictFormats (ClientPtr client)
     {
 	pScreen = screenInfo.screens[s];
 	ps = GetPictureScreen(pScreen);
-	for (nformat = 0, pFormat = ps->formats; 
-	     nformat < ps->nformats;
-	     nformat++, pFormat++)
+	if (ps)
 	{
-	    pictForm->id = pFormat->id;
-	    pictForm->type = pFormat->type;
-	    pictForm->depth = pFormat->depth;
-	    pictForm->direct.red = pFormat->direct.red;
-	    pictForm->direct.redMask = pFormat->direct.redMask;
-	    pictForm->direct.green = pFormat->direct.green;
-	    pictForm->direct.greenMask = pFormat->direct.greenMask;
-	    pictForm->direct.blue = pFormat->direct.blue;
-	    pictForm->direct.blueMask = pFormat->direct.blueMask;
-	    pictForm->direct.alpha = pFormat->direct.alpha;
-	    pictForm->direct.alphaMask = pFormat->direct.alphaMask;
-	    if (pFormat->pColormap)
-		pictForm->colormap = pFormat->pColormap->mid;
-	    else
-		pictForm->colormap = None;
-	    if (client->swapped)
+	    for (nformat = 0, pFormat = ps->formats; 
+		 nformat < ps->nformats;
+		 nformat++, pFormat++)
 	    {
-		swapl (&pictForm->id, n);
-		swaps (&pictForm->direct.red, n);
-		swaps (&pictForm->direct.redMask, n);
-		swaps (&pictForm->direct.green, n);
-		swaps (&pictForm->direct.greenMask, n);
-		swaps (&pictForm->direct.blue, n);
-		swaps (&pictForm->direct.blueMask, n);
-		swaps (&pictForm->direct.alpha, n);
-		swaps (&pictForm->direct.alphaMask, n);
-		swapl (&pictForm->colormap, n);
+		pictForm->id = pFormat->id;
+		pictForm->type = pFormat->type;
+		pictForm->depth = pFormat->depth;
+		pictForm->direct.red = pFormat->direct.red;
+		pictForm->direct.redMask = pFormat->direct.redMask;
+		pictForm->direct.green = pFormat->direct.green;
+		pictForm->direct.greenMask = pFormat->direct.greenMask;
+		pictForm->direct.blue = pFormat->direct.blue;
+		pictForm->direct.blueMask = pFormat->direct.blueMask;
+		pictForm->direct.alpha = pFormat->direct.alpha;
+		pictForm->direct.alphaMask = pFormat->direct.alphaMask;
+		if (pFormat->pColormap)
+		    pictForm->colormap = pFormat->pColormap->mid;
+		else
+		    pictForm->colormap = None;
+		if (client->swapped)
+		{
+		    swapl (&pictForm->id, n);
+		    swaps (&pictForm->direct.red, n);
+		    swaps (&pictForm->direct.redMask, n);
+		    swaps (&pictForm->direct.green, n);
+		    swaps (&pictForm->direct.greenMask, n);
+		    swaps (&pictForm->direct.blue, n);
+		    swaps (&pictForm->direct.blueMask, n);
+		    swaps (&pictForm->direct.alpha, n);
+		    swaps (&pictForm->direct.alphaMask, n);
+		    swapl (&pictForm->colormap, n);
+		}
+		pictForm++;
 	    }
-	    pictForm++;
 	}
     }
     
