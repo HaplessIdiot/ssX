@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.12 2001/04/01 14:00:01 tsi Exp $
+ * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.13 2001/05/16 10:32:54 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -564,6 +564,7 @@ XftFreeTypeOpen (Display *dpy, XftPattern *pattern)
     else
     {
 	height = face->size->metrics.height >> 6;
+#if 0
 	extra = (height - (ascent + descent));
 	if (extra > 0)
 	{
@@ -572,6 +573,7 @@ XftFreeTypeOpen (Display *dpy, XftPattern *pattern)
 	}
 	else if (extra < 0)
 	    height = ascent + descent;
+#endif
     }
     font->ascent = ascent;
     font->descent = descent;
