@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/mathimp.c,v 1.12 2002/11/20 07:44:42 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/mathimp.c,v 1.13 2002/11/21 07:25:10 paulo Exp $ */
 
 
 /*
@@ -167,6 +167,9 @@ static LispObj *make_number_object(n_number*);
 static void fatal_error(int);
 static void fatal_object_error(LispObj*, int);
 static void fatal_builtin_object_error(LispBuiltin*, LispObj*, int);
+
+static double bi_getd(mpi*);
+static double br_getd(mpr*);
 
 /* add */
 static void add_real_object(n_real*, LispObj*);
@@ -491,6 +494,28 @@ number_init(void)
     two.data.fixnum = 2;
 }
 
+static double
+bi_getd(mpi *bignum)
+{
+    double value = mpi_getd(bignum);
+
+    if (!finite(value))
+	fatal_error(FLOATING_POINT_EXCEPTION);
+
+    return (value);
+}
+
+static double
+br_getd(mpr *bigratio)
+{
+    double value = mpr_getd(bigratio);
+
+    if (!finite(value))
+	fatal_error(FLOATING_POINT_EXCEPTION);
+
+    return (value);
+}
+
 static LispObj *
 number_pi(void)
 {
@@ -763,7 +788,7 @@ OP##_real_real(n_real *real, n_real *val)				\
 		    r##OP##_bi_bi(real, RBI(val));			\
 		    break;						\
 		case N_FLONUM:						\
-		    r##OP##_flonum(real, mpi_getd(RBI(real)), RFF(val));\
+		    r##OP##_flonum(real, bi_getd(RBI(real)), RFF(val));	\
 		    break;						\
 		case N_FIXRATIO:					\
 		    r##OP##_bi_fr(real, RFRN(val), RFRD(val));		\
@@ -779,7 +804,7 @@ OP##_real_real(n_real *real, n_real *val)				\
 		    r##OP##_flonum(real, RFF(real), (double)RFI(val));	\
 		    break;						\
 		case N_BIGNUM:						\
-		    r##OP##_flonum(real, RFF(real), mpi_getd(RBI(val)));\
+		    r##OP##_flonum(real, RFF(real), bi_getd(RBI(val)));	\
 		    break;						\
 		case N_FLONUM:						\
 		    r##OP##_flonum(real, RFF(real), RFF(val));		\
@@ -789,7 +814,7 @@ OP##_real_real(n_real *real, n_real *val)				\
 				 (double)RFRN(val) / (double)RFRD(val));\
 		    break;						\
 		case N_BIGRATIO:					\
-		    r##OP##_flonum(real, RFF(real), mpr_getd(RBR(val)));\
+		    r##OP##_flonum(real, RFF(real), br_getd(RBR(val)));	\
 		    break;						\
 	    }								\
 	    break;							\
@@ -823,7 +848,7 @@ OP##_real_real(n_real *real, n_real *val)				\
 		    r##OP##_br_bi(real, RBI(val));			\
 		    break;						\
 		case N_FLONUM:						\
-		    r##OP##_flonum(real, mpr_getd(RBR(real)), RFF(val));\
+		    r##OP##_flonum(real, br_getd(RBR(real)), RFF(val));	\
 		    break;						\
 		case N_FIXRATIO:					\
 		    r##OP##_br_fr(real, RFRN(val), RFRD(val));		\
@@ -900,7 +925,7 @@ OP##_real_object(n_real *real, LispObj *obj)				\
 		    r##OP##_bi_bi(real, OBI(obj));			\
 		    break;						\
 		case N_FLONUM:						\
-		    r##OP##_flonum(real, RFF(real), mpi_getd(OBI(obj)));\
+		    r##OP##_flonum(real, RFF(real), bi_getd(OBI(obj)));	\
 		    break;						\
 		case N_FIXRATIO:					\
 		    r##OP##_fr_bi(real, OBI(obj));			\
@@ -916,7 +941,7 @@ OP##_real_object(n_real *real, LispObj *obj)				\
 		    r##OP##_flonum(real, (double)RFI(real), ODF(obj));	\
 		    break;						\
 		case N_BIGNUM:						\
-		    r##OP##_flonum(real, mpi_getd(RBI(real)), ODF(obj));\
+		    r##OP##_flonum(real, bi_getd(RBI(real)), ODF(obj));	\
 		    break;						\
 		case N_FLONUM:						\
 		    r##OP##_flonum(real, RFF(real), ODF(obj));		\
@@ -927,7 +952,7 @@ OP##_real_object(n_real *real, LispObj *obj)				\
 				ODF(obj));				\
 		    break;						\
 		case N_BIGRATIO:					\
-		    r##OP##_flonum(real, mpr_getd(RBR(real)), ODF(obj));\
+		    r##OP##_flonum(real, br_getd(RBR(real)), ODF(obj));	\
 		    break;						\
 	    }								\
 	    break;							\
@@ -960,7 +985,7 @@ OP##_real_object(n_real *real, LispObj *obj)				\
 		    r##OP##_bi_br(real, OBR(obj));			\
 		    break;						\
 		case N_FLONUM:						\
-		    r##OP##_flonum(real, RFF(real), mpr_getd(OBR(obj)));\
+		    r##OP##_flonum(real, RFF(real), br_getd(OBR(obj)));	\
 		    break;						\
 		case N_FIXRATIO:					\
 		    r##OP##_fr_br(real, OBR(obj));			\
@@ -1062,7 +1087,7 @@ OP##_number_object(n_number *num, LispObj *obj)				\
 			break;						\
 		    case N_FLONUM:					\
 			r##OP##_flonum(NREAL(num), NRFF(num),		\
-				    mpi_getd(OBI(obj)));		\
+				       bi_getd(OBI(obj)));		\
 			break;						\
 		    case N_FIXRATIO:					\
 			r##OP##_fr_bi(NREAL(num), OBI(obj));		\
@@ -1079,7 +1104,7 @@ OP##_number_object(n_number *num, LispObj *obj)				\
 				    ODF(obj));				\
 			break;						\
 		    case N_BIGNUM:					\
-			r##OP##_flonum(NREAL(num), mpi_getd(NRBI(num)),	\
+			r##OP##_flonum(NREAL(num), bi_getd(NRBI(num)),	\
 				    ODF(obj));				\
 			break;						\
 		    case N_FLONUM:					\
@@ -1092,7 +1117,7 @@ OP##_number_object(n_number *num, LispObj *obj)				\
 				    ODF(obj));				\
 			break;						\
 		    case N_BIGRATIO:					\
-			r##OP##_flonum(NREAL(num), mpr_getd(NRBR(num)),	\
+			r##OP##_flonum(NREAL(num), br_getd(NRBR(num)),	\
 				    ODF(obj));				\
 			break;						\
 		}							\
@@ -1128,7 +1153,7 @@ OP##_number_object(n_number *num, LispObj *obj)				\
 			break;						\
 		    case N_FLONUM:					\
 			r##OP##_flonum(NREAL(num), NRFF(num),		\
-				    mpr_getd(OBR(obj)));		\
+				    br_getd(OBR(obj)));		\
 			break;						\
 		    case N_FIXRATIO:					\
 			r##OP##_fr_br(NREAL(num), OBR(obj));		\
@@ -1428,7 +1453,7 @@ rsqrt_xi(n_real *real)
 	double value;
 
 	if (RTYPE(real) == N_BIGNUM) {
-	    value = mpi_getd(RBI(real));
+	    value = bi_getd(RBI(real));
 	    RCLEAR_BI(real);
 	}
 	else
@@ -2178,7 +2203,7 @@ divide_number_object(n_number *num, LispObj *obj, int fun, int flo)
 		    ndivide_xi_xi(num, obj, fun, flo);
 		    break;
 		case N_FLONUM:
-		    ndivide_flonum(num, NRFF(num), mpi_getd(OBI(obj)),
+		    ndivide_flonum(num, NRFF(num), bi_getd(OBI(obj)),
 				   fun, flo);
 		    break;
 		case N_FIXRATIO:
@@ -2194,7 +2219,7 @@ divide_number_object(n_number *num, LispObj *obj, int fun, int flo)
 				   fun, flo);
 		    break;
 		case N_BIGNUM:
-		    ndivide_flonum(num, mpi_getd(NRBI(num)), ODF(obj),
+		    ndivide_flonum(num, bi_getd(NRBI(num)), ODF(obj),
 				   fun, flo);
 		    break;
 		case N_FLONUM:
@@ -2206,7 +2231,7 @@ divide_number_object(n_number *num, LispObj *obj, int fun, int flo)
 				   ODF(obj), fun, flo);
 		    break;
 		case N_BIGRATIO:
-		    ndivide_flonum(num, mpr_getd(NRBR(num)), ODF(obj),
+		    ndivide_flonum(num, br_getd(NRBR(num)), ODF(obj),
 				   fun, flo);
 		    break;
 	    }
@@ -2235,7 +2260,7 @@ divide_number_object(n_number *num, LispObj *obj, int fun, int flo)
 		    ndivide_xi_xr(num, obj, fun, flo);
 		    break;
 		case N_FLONUM:
-		    ndivide_flonum(num, NRFF(num), mpr_getd(OBR(obj)),
+		    ndivide_flonum(num, NRFF(num), br_getd(OBR(obj)),
 				   fun, flo);
 		    break;
 		case N_FIXRATIO:
@@ -2279,7 +2304,7 @@ cmp_real_real(n_real *op1, n_real *op2)
 		case N_BIGNUM:
 		    return (cmp_bi_bi(RBI(op1), RBI(op2)));
 		case N_FLONUM:
-		    return (cmp_flonum(mpi_getd(RBI(op1)), RFF(op2)));
+		    return (cmp_flonum(bi_getd(RBI(op1)), RFF(op2)));
 		case N_FIXRATIO:
 		    return (cmp_bi_fr(RBI(op1), RFRN(op2), RFRD(op2)));
 		case N_BIGRATIO:
@@ -2291,14 +2316,14 @@ cmp_real_real(n_real *op1, n_real *op2)
 		case N_FIXNUM:
 		    return (cmp_flonum(RFF(op1), (double)RFI(op2)));
 		case N_BIGNUM:
-		    return (cmp_flonum(RFF(op1), mpi_getd(RBI(op2))));
+		    return (cmp_flonum(RFF(op1), bi_getd(RBI(op2))));
 		case N_FLONUM:
 		    return (cmp_flonum(RFF(op1), RFF(op2)));
 		case N_FIXRATIO:
 		    return (cmp_flonum(RFF(op1),
 				       (double)RFRN(op2) / (double)RFRD(op2)));
 		case N_BIGRATIO:
-		    return (cmp_flonum(RFF(op1), mpr_getd(RBR(op2))));
+		    return (cmp_flonum(RFF(op1), br_getd(RBR(op2))));
 	    }
 	    break;
 	case N_FIXRATIO:
@@ -2324,7 +2349,7 @@ cmp_real_real(n_real *op1, n_real *op2)
 		case N_BIGNUM:
 		    return (cmp_br_bi(RBR(op1), RBI(op2)));
 		case N_FLONUM:
-		    return (cmp_flonum(mpr_getd(RBR(op1)), RFF(op2)));
+		    return (cmp_flonum(br_getd(RBR(op1)), RFF(op2)));
 		case N_FIXRATIO:
 		    return (cmp_br_fr(RBR(op1), RFRN(op2), RFRD(op2)));
 		case N_BIGRATIO:
@@ -2374,7 +2399,7 @@ cmp_real_object(n_real *op1, LispObj *op2)
 		case N_BIGNUM:
 		    return (cmp_bi_bi(RBI(op1), OBI(op2)));
 		case N_FLONUM:
-		    return (cmp_flonum(RFF(op1), mpi_getd(OBI(op2))));
+		    return (cmp_flonum(RFF(op1), bi_getd(OBI(op2))));
 		case N_FIXRATIO:
 		    return (cmp_fr_bi(RFRD(op1), RFRN(op1), OBI(op2)));
 		case N_BIGRATIO:
@@ -2386,14 +2411,14 @@ cmp_real_object(n_real *op1, LispObj *op2)
 		case N_FIXNUM:
 		    return (cmp_flonum((double)RFI(op1), ODF(op2)));
 		case N_BIGNUM:
-		    return (cmp_flonum(mpi_getd(RBI(op1)), ODF(op2)));
+		    return (cmp_flonum(bi_getd(RBI(op1)), ODF(op2)));
 		case N_FLONUM:
 		    return (cmp_flonum(RFF(op1), ODF(op2)));
 		case N_FIXRATIO:
 		    return (cmp_flonum((double)RFRN(op1) / (double)RFRD(op1),
 				       ODF(op2)));
 		case N_BIGRATIO:
-		    return (cmp_flonum(mpr_getd(RBR(op1)), ODF(op2)));
+		    return (cmp_flonum(br_getd(RBR(op1)), ODF(op2)));
 	    }
 	    break;
 	case LispRatio_t:
@@ -2419,7 +2444,7 @@ cmp_real_object(n_real *op1, LispObj *op2)
 		case N_BIGNUM:
 		    return (cmp_bi_br(RBI(op1), OBR(op2)));
 		case N_FLONUM:
-		    return (cmp_flonum(RFF(op1), mpr_getd(OBR(op2))));
+		    return (cmp_flonum(RFF(op1), br_getd(OBR(op2))));
 		case N_FIXRATIO:
 		    return (cmp_fr_br(RFRN(op1), RFRD(op1), OBR(op2)));
 		case N_BIGRATIO:
@@ -2486,7 +2511,7 @@ cmp_number_object(n_number *op1, LispObj *op2)
 		    case N_BIGNUM:
 			return (cmp_bi_bi(NRBI(op1), OBI(op2)));
 		    case N_FLONUM:
-			return (cmp_flonum(NRFF(op1), mpi_getd(OBI(op2))));
+			return (cmp_flonum(NRFF(op1), bi_getd(OBI(op2))));
 		    case N_FIXRATIO:
 			return (cmp_fr_bi(NRFRD(op1), NRFRN(op1), OBI(op2)));
 		    case N_BIGRATIO:
@@ -2498,7 +2523,7 @@ cmp_number_object(n_number *op1, LispObj *op2)
 		    case N_FIXNUM:
 			return (cmp_flonum((double)NRFI(op1), ODF(op2)));
 		    case N_BIGNUM:
-			return (cmp_flonum(mpi_getd(NRBI(op1)), ODF(op2)));
+			return (cmp_flonum(bi_getd(NRBI(op1)), ODF(op2)));
 		    case N_FLONUM:
 			return (cmp_flonum(NRFF(op1), ODF(op2)));
 		    case N_FIXRATIO:
@@ -2506,7 +2531,7 @@ cmp_number_object(n_number *op1, LispObj *op2)
 					   (double)NRFRD(op1),
 					   ODF(op2)));
 		    case N_BIGRATIO:
-			return (cmp_flonum(mpr_getd(NRBR(op1)), ODF(op2)));
+			return (cmp_flonum(br_getd(NRBR(op1)), ODF(op2)));
 		}
 		break;
 	    case LispRatio_t:
@@ -2532,7 +2557,7 @@ cmp_number_object(n_number *op1, LispObj *op2)
 		    case N_BIGNUM:
 			return (cmp_bi_br(NRBI(op1), OBR(op2)));
 		    case N_FLONUM:
-			return (cmp_flonum(NRFF(op1), mpr_getd(OBR(op2))));
+			return (cmp_flonum(NRFF(op1), br_getd(OBR(op2))));
 		    case N_FIXRATIO:
 			return (cmp_fr_br(NRFRN(op1), NRFRD(op1), OBR(op2)));
 		    case N_BIGRATIO:
@@ -2621,7 +2646,7 @@ cmp_object_object(LispObj *op1, LispObj *op2, int real)
 		    case LispBignum_t:
 			return (cmp_bi_bi(OBI(op1), OBI(op2)));
 		    case LispDFloat_t:
-			return (cmp_flonum(mpi_getd(OBI(op1)), ODF(op2)));
+			return (cmp_flonum(bi_getd(OBI(op1)), ODF(op2)));
 		    case LispRatio_t:
 			return (cmp_bi_fr(OBI(op1),
 					  OFRN(op2), OFRD(op2)));
@@ -2638,7 +2663,7 @@ cmp_object_object(LispObj *op1, LispObj *op2, int real)
 		    case LispInteger_t:
 			return (cmp_flonum(ODF(op1), (double)OII(op2)));
 		    case LispBignum_t:
-			return (cmp_flonum(ODF(op1), mpi_getd(OBI(op2))));
+			return (cmp_flonum(ODF(op1), bi_getd(OBI(op2))));
 		    case LispDFloat_t:
 			return (cmp_flonum(ODF(op1), ODF(op2)));
 			break;
@@ -2647,7 +2672,7 @@ cmp_object_object(LispObj *op1, LispObj *op2, int real)
 					   (double)OFRN(op2) /
 					   (double)OFRD(op2)));
 		    case LispBigratio_t:
-			return (cmp_flonum(ODF(op1), mpr_getd(OBR(op2))));
+			return (cmp_flonum(ODF(op1), br_getd(OBR(op2))));
 		    default:
 			break;
 		}
@@ -2682,7 +2707,7 @@ cmp_object_object(LispObj *op1, LispObj *op2, int real)
 		    case LispBignum_t:
 			return (cmp_br_bi(OBR(op1), OBI(op2)));
 		    case LispDFloat_t:
-			return (cmp_flonum(mpr_getd(OBR(op1)), ODF(op2)));
+			return (cmp_flonum(br_getd(OBR(op1)), ODF(op2)));
 		    case LispRatio_t:
 			return (cmp_br_fr(OBR(op1), OFRN(op2), OFRD(op2)));
 		    case LispBigratio_t:
@@ -3111,12 +3136,10 @@ ndivide_xi_xi(n_number *num, LispObj *div, int fun, int flo)
     clear_real(NREAL(num));
 
     if (flo) {
-	double dval = mpi_getd(quo);
+	double dval = bi_getd(quo);
 
 	mpi_clear(quo);
 	XFREE(quo);
-	if (!finite(dval))
-	    fatal_error(FLOATING_POINT_OVERFLOW);
 	NRTYPE(num) = N_FLONUM;
 	NRFF(num) = dval;
     }
@@ -3315,12 +3338,10 @@ ndivide_xi_xr(n_number *num, LispObj *div, int fun, int flo)
     clear_real(NREAL(num));
 
     if (flo) {
-	double dval = mpi_getd(quo);
+	double dval = bi_getd(quo);
 
 	mpi_clear(quo);
 	XFREE(quo);
-	if (!finite(dval))
-	    fatal_error(FLOATING_POINT_OVERFLOW);
 	NRTYPE(num) = N_FLONUM;
 	NRFF(num) = dval;
     }
@@ -3434,12 +3455,10 @@ ndivide_xr_xi(n_number *num, LispObj *div, int fun, int flo)
     clear_real(NREAL(num));
 
     if (flo) {
-	double dval = mpi_getd(quo);
+	double dval = bi_getd(quo);
 
 	mpi_clear(quo);
 	XFREE(quo);
-	if (!finite(dval))
-	    fatal_error(FLOATING_POINT_OVERFLOW);
 	NRTYPE(num) = N_FLONUM;
 	NRFF(num) = dval;
     }
@@ -3551,12 +3570,10 @@ ndivide_xr_xr(n_number *num, LispObj *div, int fun, int flo)
 
     if (NRTYPE(num) == N_BIGNUM) {
 	if (flo) {
-	    double dval = mpi_getd(bigi);
+	    double dval = bi_getd(bigi);
 
 	    mpi_clear(bigi);
 	    XFREE(bigi);
-	    if (!finite(dval))
-		fatal_error(FLOATING_POINT_OVERFLOW);
 	    NRTYPE(num) = N_FLONUM;
 	    NRFF(num) = dval;
 	}

@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/lisp.lsp,v 1.7 2002/12/20 04:32:48 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/lisp.lsp,v 1.8 2003/01/29 03:05:54 paulo Exp $
 ;;
 
 (require "syntax")
@@ -85,7 +85,7 @@
   (indtoken "^\\s*"		:indent
     :code (or *offset* (setq *offset* (+ *ind-offset* *ind-length*))))
   ;; ignore single line comments
-  (indtoken ";.*$"		nil		:nospec t)
+  (indtoken ";.*$"		nil)
   ;; multiline comments
   (indtoken "|#"		:comment	:nospec t	:begin :comment)
   ;; characters
