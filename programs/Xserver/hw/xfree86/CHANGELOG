@@ -1,4 +1,10 @@
 XFree86 4.2.99.1 (XX June 2002)
+ 161. A revised Greek xkb layout, including a three-level "extended"
+      variant, and a "polytonic" variant (#5165, Vasilis Vasaitis).
+ 160. Add support for an el_GR.UTF-8 locale, including a compose file with
+      support for polytonic Greek text (#5165, Vasilis Vasaitis).
+ 159. Add missing zh_CN XI18N_OBJS file (#5164, Yong Li).
+ 158. Make xfs chdir to "/" before fork()ing (#5162, Mike Harris).
  157. Add some reference counting for Xlib's i18n modules, preventing
       a module getting unloaded while it's still in use (#5160, Owen Taylor).
  156. Update for SCO OpenServer support (#5158, Kean Johnston).
@@ -14831,4 +14837,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2231 2002/06/03 21:22:04 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2232 2002/06/03 21:50:32 dawes Exp $
