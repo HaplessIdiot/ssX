@@ -23,6 +23,7 @@
 mkfontdir, fonts.dir, fonts.scale, fonts.alias, encodings.dir \- create an index of X font files in a directory
 .SH SYNOPSIS
 .B "mkfontdir"
+.RB [ \-r ]
 .RB [ \-p
 .IR prefix ]
 .RB [ \-e
@@ -116,6 +117,15 @@ Specify a prefix that is prepended to the encoding file path names
 when the are written to the "encodings.dir" file.  Note: the prefix is
 prepended as-is.  If a `/' is required between the prefix and the path names,
 it must be supplied explicitly as part of the prefix.
+.TP
+.B \-r
+Keep non-absolute encoding directories in their relative form when writing
+the "encodings.dir" file.  The default is to convert relative encoding
+directories to absolute directories by prepending the current directory.
+Note: the positioning of this options is important, and it only applies
+to subsequent
+.B \-e
+options.
 .TP
 .B \-\-
 End options.
