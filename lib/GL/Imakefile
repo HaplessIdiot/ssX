@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.27 2000/06/30 17:15:07 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.28 2000/06/30 19:30:16 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -290,6 +290,7 @@ SharedDepLibraryTarget($(LIBNAME),$(SOREV),$(GLXSUBDIRS) $(DONES),$(OBJS) $(THRE
 InstallSharedLibrary($(LIBNAME),$(SOREV),$(SHLIBDIR))
 #if LinkGLToUsrLib && AlternateUsrLibDir
 install::
+	MakeDir($(DESTDIR)$(SYSTEMUSRLIBDIR))
 	$(RM) $(DESTDIR)$(SYSTEMUSRLIBDIR)/lib$(LIBNAME).so
 	$(LN) $(SHLIBDIR)/lib$(LIBNAME).so $(DESTDIR)$(SYSTEMUSRLIBDIR)/lib$(LIBNAME).so
 	$(RM) $(DESTDIR)$(SYSTEMUSRLIBDIR)/lib$(LIBNAME).so.1
