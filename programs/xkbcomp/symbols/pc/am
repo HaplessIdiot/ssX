@@ -1,7 +1,7 @@
 
 // based on a keyboard map from an 'xkb/symbols/am' file
 //
-// $XFree86: xc/programs/xkbcomp/symbols/pc/am,v 1.3 2003/04/12 10:53:48 pascal Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/pc/am,v 1.4 2003/05/29 12:41:58 pascal Exp $
 
 partial default alphanumeric_keys 
 xkb_symbols "basic" {
@@ -130,9 +130,9 @@ xkb_symbols "phonetic" {
     key <AE02> {	[ 0x1000569,  0x1000539 ]	};
     key <AE03> {	[ 0x1000583,  0x1000553 ]	};
     key <AE05> {	[ 0x100057b,  0x100054b ]	};
-    key <AE06> {	[ parenright, parenleft ]	};
-    key <AE07> {	[ 0x1000587,  percent   ]	};
-    key <AE08> {	[ 0x100057c,  0x100054c ]	};
+    key <AE06> {	[ 0x1000582,  0x1000552 ]	};
+    key <AE07> {	[ 0x1000587,  0x1000587 ]	};
+    key <AE08> {	[ 0x1000580,  0x1000550 ]	};
     key <AE09> {	[ 0x1000579,  0x1000549 ]	};
     key <AE10> {	[ 0x1000573,  0x1000543 ]	};
     key <AE12> {	[ 0x100056a,  0x100053a ]	};
@@ -140,7 +140,7 @@ xkb_symbols "phonetic" {
     key <LatQ> {	[ 0x1000584,  0x1000554 ]	};
     key <LatW> {	[ 0x1000578,  0x1000548 ]	};
     key <LatE> {	[ 0x1000565,  0x1000535 ]	};
-    key <LatR> {	[ 0x1000580,  0x1000550 ]	};
+    key <LatR> {	[ 0x100057c,  0x100054c ]	};
     key <LatT> {	[ 0x100057f,  0x100054f ]	};
     key <LatY> {	[ 0x1000568,  0x1000538 ]	};
     key <LatU> {	[ 0x1000582,  0x1000552 ]	};
@@ -159,7 +159,8 @@ xkb_symbols "phonetic" {
     key <LatJ> {	[ 0x1000575,  0x1000545 ]	};
     key <LatK> {	[ 0x100056f,  0x100053f ]	};
     key <LatL> {	[ 0x100056c,  0x100053c ]	};
-    key <AC10> {	[ 0x1000589,  0x1002026 ]	};
+    key <AC10> {	[ semicolon,  0x1000589 ]	};
+    key <AC11> {	[ 0x100055b,  0x1000022 ]	};
 
     key <LatZ> {	[ 0x1000566,  0x1000536 ]	};
     key <LatX> {	[ 0x1000572,  0x1000542 ]	};
@@ -168,6 +169,6 @@ xkb_symbols "phonetic" {
     key <LatB> {	[ 0x1000562,  0x1000532 ]	};
     key <LatN> {	[ 0x1000576,  0x1000546 ]	};
     key <LatM> {	[ 0x1000574,  0x1000544 ]	};
-    key <AB10> {	[ slash    ,  0x100055e ]	};
+    key <AB10> {	[ 0x1002026,  0x100055e ]	};
 
 };
