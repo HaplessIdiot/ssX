@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.30 1999/12/13 23:38:12 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.31 1999/12/27 00:39:43 robin Exp $ */
 
 #ifndef _xf86Xinput_h
 #define _xf86Xinput_h
@@ -167,8 +167,6 @@ int xf86GetMotionEvents(DeviceIntPtr dev, xTimecoord *buff,
 void xf86XinputFinalizeInit(DeviceIntPtr dev);
 Bool xf86CheckButton(int button, int down);
 void xf86SwitchCoreDevice(LocalDevicePtr device, DeviceIntPtr core);
-void xf86AddLocalDevice(LocalDevicePtr device, pointer options);
-Bool xf86RemoveLocalDevice(LocalDevicePtr device);
 LocalDevicePtr xf86FirstLocalDevice(void);
 int xf86ScaleAxis(int Cx, int Sxhigh, int Sxlow, int Rxhigh, int Rxlow);
 void xf86XInputSetScreen(LocalDevicePtr local, int screen_number, int x, int y);
