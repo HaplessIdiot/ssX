@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.166 2000/11/14 17:32:54 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.167 2000/11/28 20:59:12 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -656,7 +656,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.166 2000/11/14 17:32:54 dawes Exp 
  * the docs that XFree86 has changed or added.
  *
 #define BuildSpecsDocs		YES
-#define SpecsDocDirs		GL Xext Xv xterm
+#define SpecsDocDirs		CTEXT GL ICCCM X11 Xext Xmu Xv i18n xterm
  */
 
 /*

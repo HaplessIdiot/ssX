@@ -4,7 +4,7 @@ XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.152 2000/12/05 21:18:32 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.153 2000/12/06 20:39:46 dawes Exp $
 
 #ifndef LinuxElfDefault
 # define LinuxElfDefault	YES
@@ -113,7 +113,7 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define DebuggableLibraries	YES
 #define ForceNormalLib		YES
 #define BuildSpecsDocs		YES
-#define SpecsDocDirs		GL Xext Xv xterm
+#define SpecsDocDirs		CTEXT GL ICCCM X11 Xext Xv i18n xterm
 /* right now glide only works on i386 */
 #ifdef i386Architecture
 #ifdef DebianMaintainer
