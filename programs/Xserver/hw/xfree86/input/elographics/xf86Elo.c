@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elographics/xf86Elo.c,v 1.6 1999/11/19 13:54:55 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elographics/xf86Elo.c,v 1.7 1999/12/13 23:38:13 robin Exp $ */
 
 /*
  *******************************************************************************
@@ -1745,7 +1745,7 @@ xf86EloInit(InputDriverPtr	drv,
 #ifdef XFree86LOADER
 static
 #endif
-InputDriverRec ELO = {
+InputDriverRec ELOGRAPHICS = {
     1,				/* driver version */
     "elographics",		/* driver name */
     NULL,			/* identify */
@@ -1761,7 +1761,7 @@ Plug(pointer	module,
      int	*errmaj,
      int	*errmin)
 {
-  xf86AddInputDriver(&ELO, module, 0);
+  xf86AddInputDriver(&ELOGRAPHICS, module, 0);
 
   return module;
 }
