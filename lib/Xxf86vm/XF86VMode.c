@@ -239,18 +239,18 @@ XF86VidModeGetModeLine(dpy, screen, dotclock, modeline)
 	    SyncHandle();
 	    return False;
 	}
-	*dotclock = rep.dotclock;
-	modeline->hdisplay   = rep.hdisplay;
-	modeline->hsyncstart = rep.hsyncstart;
-	modeline->hsyncend   = rep.hsyncend;
-	modeline->htotal     = rep.htotal;
+	*dotclock = oldrep.dotclock;
+	modeline->hdisplay   = oldrep.hdisplay;
+	modeline->hsyncstart = oldrep.hsyncstart;
+	modeline->hsyncend   = oldrep.hsyncend;
+	modeline->htotal     = oldrep.htotal;
 	modeline->hskew      = 0;
-	modeline->vdisplay   = rep.vdisplay;
-	modeline->vsyncstart = rep.vsyncstart;
-	modeline->vsyncend   = rep.vsyncend;
-	modeline->vtotal     = rep.vtotal;
-	modeline->flags      = rep.flags;
-	modeline->privsize   = rep.privsize;
+	modeline->vdisplay   = oldrep.vdisplay;
+	modeline->vsyncstart = oldrep.vsyncstart;
+	modeline->vsyncend   = oldrep.vsyncend;
+	modeline->vtotal     = oldrep.vtotal;
+	modeline->flags      = oldrep.flags;
+	modeline->privsize   = oldrep.privsize;
     } else {
 	if (!_XReply(dpy, (xReply *)&rep, 
             (SIZEOF(xXF86VidModeGetModeLineReply) - SIZEOF(xReply)) >> 2, xFalse)) {
@@ -272,13 +272,13 @@ XF86VidModeGetModeLine(dpy, screen, dotclock, modeline)
 	modeline->privsize   = rep.privsize;
     }
     
-    if (rep.privsize > 0) {
-	if (!(modeline->private = Xcalloc(rep.privsize, sizeof(INT32)))) {
-	    _XEatData(dpy, (rep.privsize) * sizeof(INT32));
+    if (modeline->privsize > 0) {
+	if (!(modeline->private = Xcalloc(modeline->privsize, sizeof(INT32)))) {
+	    _XEatData(dpy, (modeline->privsize) * sizeof(INT32));
 	    Xfree(modeline->private);
 	    return False;
 	}
-	_XRead32(dpy, modeline->private, rep.privsize * sizeof(INT32));
+	_XRead32(dpy, modeline->private, modeline->privsize * sizeof(INT32));
     } else {
 	modeline->private = NULL;
     }

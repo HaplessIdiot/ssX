@@ -240,6 +240,7 @@ typedef struct {
     unsigned char * XAAScanlineColorExpandBuffers[1];
     CARD32* ColExpLUT;
     EntityInfoPtr       pEnt;
+    memType   MMioBase;
 } TsengRec, *TsengPtr;
 
 #define TsengPTR(p) ((TsengPtr)((p)->driverPrivate))

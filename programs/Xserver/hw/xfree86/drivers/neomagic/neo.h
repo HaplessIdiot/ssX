@@ -217,7 +217,7 @@ typedef struct neoRec
     Bool onPciBurst;
     Bool progLcdRegs;
     Bool progLcdStretch;
-    Bool progLcdStrechOpt;
+    Bool progLcdStretchOpt;
     Bool overrideValidate;
     /* registers */
     NeoRegRec NeoModeReg;

@@ -58,6 +58,9 @@ static void Neo2200SetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir,
 static void Neo2200SubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int srcX,
 						int srcY, int dstX, int dstY,
 						int w, int h);
+static void Neo2200SubsequentScreenToScreenCopyBroken(ScrnInfoPtr pScrn, int srcX,
+						int srcY, int dstX, int dstY,
+						int w, int h);
 static void Neo2200SetupForSolidFillRect(ScrnInfoPtr pScrn, int color, int rop,
 				  unsigned int planemask);
 static void Neo2200SubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y,
@@ -134,8 +137,8 @@ Neo2200AccelInit(ScreenPtr pScreen)
     infoPtr->ScreenToScreenCopyFlags = (NO_TRANSPARENCY | NO_PLANEMASK);
     infoPtr->SetupForScreenToScreenCopy = 
 	Neo2200SetupForScreenToScreenCopy;
-    infoPtr->SubsequentScreenToScreenCopy = 
-	Neo2200SubsequentScreenToScreenCopy;
+    infoPtr->SubsequentScreenToScreenCopy
+	= Neo2200SubsequentScreenToScreenCopyBroken;
 
     /* solid filled rectangles */
     infoPtr->SolidFillFlags = NO_PLANEMASK;
@@ -259,7 +262,7 @@ Neo2200SetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, int ydir,
     NEOACLPtr nAcl = NEOACLPTR(pScrn);
 
     nAcl->tmpBltCntlFlags = (NEO_BC3_SKIP_MAPPING | neo2200Rop[rop]);
-
+    
     /* set blt control */
     WAIT_ENGINE_IDLE();
     /*OUTREG16(NEOREG_BLTMODE, nAcl->BltModeFlags);*/
@@ -302,6 +305,96 @@ Neo2200SubsequentScreenToScreenCopy(ScrnInfoPtr pScrn,
             ((dstY+h-1) * nAcl->Pitch) + ((dstX+w-1) 
 						 * nAcl->PixelWidth));
 	OUTREG(NEOREG_XYEXT, (h<<16) | (w & 0xffff));
+    }
+}
+
+static void
+Neo2200SubsequentScreenToScreenCopyBroken(ScrnInfoPtr pScrn,
+					  int srcX, int srcY,
+					  int dstX, int dstY,
+					  int w, int h)
+{
+    NEOPtr nPtr = NEOPTR(pScrn);
+    NEOACLPtr nAcl = NEOACLPTR(pScrn);
+
+    if ((dstY < srcY) || ((dstY == srcY) && (dstX < srcX))) {
+	if (((dstX < 64) && ((srcX + w) == pScrn->displayWidth)) ||
+	    ((dstX == 0) && (w > (pScrn->displayWidth - 64)))) {
+	    
+	    int srcX1 = srcX + 64;
+	    int dstX1 = dstX + 64;
+	    w -= 64;
+	    /* start with upper left corner */
+	    WAIT_ENGINE_IDLE();
+	    OUTREG(NEOREG_BLTCNTL, nAcl->tmpBltCntlFlags);
+	    OUTREG(NEOREG_SRCSTARTOFF,
+		   (srcY * nAcl->Pitch) + (srcX * nAcl->PixelWidth));
+	    OUTREG(NEOREG_DSTSTARTOFF,
+		   (dstY * nAcl->Pitch) + (dstX * nAcl->PixelWidth));
+	    OUTREG(NEOREG_XYEXT, (h<<16) | (64));
+	    WAIT_ENGINE_IDLE();
+	    OUTREG(NEOREG_SRCSTARTOFF,
+		   (srcY * nAcl->Pitch) + (srcX1 * nAcl->PixelWidth));
+	    OUTREG(NEOREG_DSTSTARTOFF,
+		   (dstY * nAcl->Pitch) + (dstX1 * nAcl->PixelWidth));
+	    OUTREG(NEOREG_XYEXT, (h<<16) | (w & 0xffff));
+	} else {
+	    /* start with upper left corner */
+	    WAIT_ENGINE_IDLE();
+	    OUTREG(NEOREG_BLTCNTL, nAcl->tmpBltCntlFlags);
+	    OUTREG(NEOREG_SRCSTARTOFF,
+		   (srcY * nAcl->Pitch) + (srcX * nAcl->PixelWidth));
+	    OUTREG(NEOREG_DSTSTARTOFF,
+		   (dstY * nAcl->Pitch) + (dstX * nAcl->PixelWidth));
+	    OUTREG(NEOREG_XYEXT, (h<<16) | (w & 0xffff));
+	}
+    } else {
+	if ((((dstX + w) > (pScrn->displayWidth - 64)) && (srcX == 0))
+	    || (((dstX + w) == pScrn->displayWidth)
+		&& (w > (pScrn->displayWidth - 64)))) {
+	    int srcX1, dstX1;
+	    
+	    w -= 64;
+	    srcX1 = srcX + w;
+	    dstX1 = dstX + w;
+	    /* start with lower right corner */
+#if 1
+	    WAIT_ENGINE_IDLE();
+	    OUTREG(NEOREG_BLTCNTL, (nAcl->tmpBltCntlFlags 
+				    | NEO_BC0_X_DEC
+				    | NEO_BC0_DST_Y_DEC 
+				    | NEO_BC0_SRC_Y_DEC));
+	    OUTREG(NEOREG_SRCSTARTOFF,
+		   ((srcY+h-1) * nAcl->Pitch) + ((srcX1+64-1) 
+						 * nAcl->PixelWidth));
+	    OUTREG(NEOREG_DSTSTARTOFF,
+		   ((dstY+h-1) * nAcl->Pitch) + ((dstX1+64-1) 
+						 * nAcl->PixelWidth));
+	    OUTREG(NEOREG_XYEXT, (h<<16) | (64 & 0xffff));
+#endif
+	    WAIT_ENGINE_IDLE();
+	    OUTREG(NEOREG_SRCSTARTOFF,
+		   ((srcY+h-1) * nAcl->Pitch) + ((srcX + w -1) 
+						 * nAcl->PixelWidth));
+	    OUTREG(NEOREG_DSTSTARTOFF,
+		   ((dstY+h-1) * nAcl->Pitch) + ((dstX + w -1) 
+						 * nAcl->PixelWidth));
+	    OUTREG(NEOREG_XYEXT, (h<<16) | (w & 0xffff));
+	} else {
+	    /* start with lower right corner */
+	    WAIT_ENGINE_IDLE();
+	    OUTREG(NEOREG_BLTCNTL, (nAcl->tmpBltCntlFlags 
+				    | NEO_BC0_X_DEC
+				    | NEO_BC0_DST_Y_DEC 
+				    | NEO_BC0_SRC_Y_DEC));
+	    OUTREG(NEOREG_SRCSTARTOFF,
+		   ((srcY+h-1) * nAcl->Pitch) + ((srcX+w-1) 
+						 * nAcl->PixelWidth));
+	    OUTREG(NEOREG_DSTSTARTOFF,
+		   ((dstY+h-1) * nAcl->Pitch) + ((dstX+w-1) 
+						 * nAcl->PixelWidth));
+	    OUTREG(NEOREG_XYEXT, (h<<16) | (w & 0xffff));
+	}
     }
 }
 

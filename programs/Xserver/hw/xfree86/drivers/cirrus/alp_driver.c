@@ -1760,10 +1760,12 @@ AlpCloseScreen(int scrnIndex, ScreenPtr pScreen)
 	vgaHWPtr hwp = VGAHWPTR(pScrn);
 	CirPtr pCir = CIRPTR(pScrn);
 
-	AlpRestore(pScrn);
-	vgaHWLock(hwp);
+	if(pScrn->vtSema) {
+	    AlpRestore(pScrn);
+	    vgaHWLock(hwp);
+	    CirUnmapMem(pCir, pScrn->scrnIndex);
+	}
 
-	CirUnmapMem(pCir, pScrn->scrnIndex);
 	if (pCir->AccelInfoRec)
 		XAADestroyInfoRec(pCir->AccelInfoRec);
 	pCir->AccelInfoRec = NULL;

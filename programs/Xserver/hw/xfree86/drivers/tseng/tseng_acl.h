@@ -2,9 +2,6 @@
 /* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.h,v 1.16 1998/08/29 05:43:37 dawes Exp $ */
 
 
-
-
-
 #ifndef _TSENG_ACL_H
 #define _TSENG_ACL_H
 
@@ -28,64 +25,93 @@ void tseng_recover_timeout(TsengPtr pTseng);
  * Shortcuts to Tseng memory-mapped accelerator-control registers
  */
 
-extern
-ByteP MMU_CONTROL;
+#if 0
+#endif
 
-extern
-ByteP ACL_SUSPEND_TERMINATE, ACL_OPERATION_STATE, ACL_SYNC_ENABLE, ACL_WRITE_INTERFACE_VALID,
-    ACL_INTERRUPT_MASK, ACL_INTERRUPT_STATUS, ACL_ACCELERATOR_STATUS;
+#define MMU_CONTROL(x)  MMIO_OUT8(pTseng->MMioBase, 0x13<<2, x)
+#define ACL_SUSPEND_TERMINATE(x)  MMIO_OUT8(pTseng->MMioBase, 0x30<<2, x)
+#define ACL_OPERATION_STATE(x)  MMIO_OUT8(pTseng->MMioBase, 0x31<<2, x)
+
+#define ACL_SYNC_ENABLE(x)  MMIO_OUT8(pTseng->MMioBase, 0x32<<2, x)
+    /* for ET6000, ACL_SYNC_ENABLE becomes ACL_6K_CONFIG */
+
+#define ACL_INTERRUPT_STATUS(x) \
+                        MMIO_OUT8(pTseng->MMioBase, 0x35<<2, x)
+#define ACL_INTERRUPT_MASK(x) MMIO_OUT8(pTseng->MMioBase, 0x34<<2, x)
+#define ACL_ACCELERATOR_STATUS (0x36 << 2)
+#define ACL_ACCELERATOR_STATUS_SET(x) \
+                        MMIO_OUT8(pTseng->MMioBase, ACL_ACCELERATOR_STATUS, x)
+#define ACL_WRITE_INTERFACE_VALID (0x33 << 2)
+
+    /* and this is only for the ET6000 */
+#define ACL_POWER_CONTROL(x) MMIO_OUT8(pTseng->MMioBase, 0x37<<2, x)
+
+    /* non-queued for w32p's and ET6000 */
+#define ACL_NQ_X_POSITION(x)  MMIO_OUT16(pTseng->MMioBase, 0x38<<2, x)
+#define ACL_NQ_Y_POSITION(x)  MMIO_OUT16(pTseng->MMioBase, 0x3A<<2, x)
+    /* queued for w32 and w32i */
+#define ACL_X_POSITION(x)  MMIO_OUT16(pTseng->MMioBase, 0x94<<2, x)
+#define ACL_Y_POSITION(x)  MMIO_OUT16(pTseng->MMioBase, 0x96<<2, x)
+
+#define ACL_PATTERN_ADDRESS(x)  MMIO_OUT32(pTseng->MMioBase, 0x80<<2, x)
+#define ACL_SOURCE_ADDRESS(x)  MMIO_OUT32(pTseng->MMioBase, 0x84<<2, x)
+
+#define ACL_PATTERN_Y_OFFSET(x)  MMIO_OUT16(pTseng->MMioBase, 0x88<<2, x)
+#define ACL_PATTERN_Y_OFFSET32(x)  MMIO_OUT32(pTseng->MMioBase, 0x88<<2, x)
+#define ACL_SOURCE_Y_OFFSET(x)  MMIO_OUT16(pTseng->MMioBase, 0x8A<<2, x)
+#define ACL_DESTINATION_Y_OFFSET(x)  MMIO_OUT16(pTseng->MMioBase, 0x8C<<2, x)
+
+    /* W32i */
+#define ACL_VIRTUAL_BUS_SIZE(x) MMIO_OUT8(pTseng->MMioBase, 0x8E<<2, x)
+    /* w32p */
+#define ACL_PIXEL_DEPTH(x)  MMIO_OUT8(pTseng->MMioBase, 0x8E<<2, x)
+
+    /* w32 and w32i */
+#define ACL_XY_DIRECTION(x)  MMIO_OUT8(pTseng->MMioBase, 0x8F<<2, x)
+
+#define ACL_PATTERN_WRAP(x)   MMIO_OUT8(pTseng->MMioBase, 0x90<<2, x)
+#define ACL_PATTERN_WRAP32(x)   MMIO_OUT32(pTseng->MMioBase, 0x90<<2, x)
+#define ACL_TRANSFER_DISABLE(x)  MMIO_OUT8(pTseng->MMioBase, 0x91<<2, x) /* ET6000 only */
+#define ACL_SOURCE_WRAP(x) MMIO_OUT8(pTseng->MMioBase, 0x92<<2, x)
+
+#define ACL_X_COUNT(x) MMIO_OUT16(pTseng->MMioBase, 0x98<<2, x)
+#define ACL_Y_COUNT(x) MMIO_OUT16(pTseng->MMioBase, 0x9A<<2, x)
+/* shortcut. not a real register */
+#define ACL_XY_COUNT(x) MMIO_OUT32(pTseng->MMioBase, 0x98<<2, x)
+
+#define ACL_ROUTING_CONTROL(x) MMIO_OUT8(pTseng->MMioBase, 0x9C<<2, x)
+    /* for ET6000, ACL_ROUTING_CONTROL becomes ACL_MIX_CONTROL */
+#define ACL_RELOAD_CONTROL(x) MMIO_OUT8(pTseng->MMioBase, 0x9D<<2, x)
+    /* for ET6000, ACL_RELOAD_CONTROL becomes ACL_STEPPING_INHIBIT */
+
+#define ACL_BACKGROUND_RASTER_OPERATION(x)  MMIO_OUT8(pTseng->MMioBase, 0x9E<<2, x)
+#define ACL_FOREGROUND_RASTER_OPERATION(x)  MMIO_OUT8(pTseng->MMioBase, 0x9F<<2, x)
+
+#define ACL_DESTINATION_ADDRESS(x) MMIO_OUT32(pTseng->MMioBase, 0xA0<<2, x)
+
+    /* the following is for the w32p's only */
+#define ACL_MIX_ADDRESS(x) MMIO_OUT32(pTseng->MMioBase, 0xA4<<2, x)
+
+#define ACL_MIX_Y_OFFSET(x) MMIO_OUT16(pTseng->MMioBase, 0xA8<<2, x)
+#define ACL_ERROR_TERM(x) MMIO_OUT16(pTseng->MMioBase, 0xAA<<2, x)
+#define ACL_DELTA_MINOR(x) MMIO_OUT16(pTseng->MMioBase, 0xAC<<2, x)
+#define ACL_DELTA_MINOR32(x) MMIO_OUT32(pTseng->MMioBase, 0xAC<<2, x)
+#define ACL_DELTA_MAJOR(x) MMIO_OUT16(pTseng->MMioBase, 0xAE<<2, x)
+
+    /* ET6000 only (trapezoids) */
+#define ACL_SECONDARY_EDGE(x) MMIO_OUT8(pTseng->MMioBase, 0x93<<2, x)
+#define ACL_SECONDARY_ERROR_TERM(x) MMIO_OUT16(pTseng->MMioBase, 0xB2<<2, x)
+#define ACL_SECONDARY_DELTA_MINOR(x) MMIO_OUT16(pTseng->MMioBase, 0xB4<<2, x)
+#define ACL_SECONDARY_DELTA_MINOR32(x) MMIO_OUT32(pTseng->MMioBase, 0xB4<<2, x)
+#define ACL_SECONDARY_DELTA_MAJOR(x) MMIO_OUT16(pTseng->MMioBase, 0xB6<<2, x)
 
 /* for ET6000: */
 #define ACL_6K_CONFIG ACL_SYNC_ENABLE
-
-extern
-WordP ACL_X_POSITION, ACL_Y_POSITION;
-
-extern
-WordP ACL_NQ_X_POSITION, ACL_NQ_Y_POSITION;
-
-extern
-LongP ACL_PATTERN_ADDRESS, ACL_SOURCE_ADDRESS;
-
-extern
-WordP ACL_PATTERN_Y_OFFSET, ACL_SOURCE_Y_OFFSET, ACL_DESTINATION_Y_OFFSET;
-
-extern
-ByteP ACL_VIRTUAL_BUS_SIZE,	       /* only for w32 and w32i */
-    ACL_XY_DIRECTION, ACL_PIXEL_DEPTH; /* only for w32p_rev_A and w32p_rev_B */
-
-extern
-ByteP ACL_PATTERN_WRAP, ACL_SOURCE_WRAP;
-
-extern
-WordP ACL_X_COUNT, ACL_Y_COUNT;
-extern
-LongP ACL_XY_COUNT;		       /* for combined writes to X and Y count registers */
-
-extern
-ByteP ACL_ROUTING_CONTROL, ACL_RELOAD_CONTROL, ACL_BACKGROUND_RASTER_OPERATION,
-    ACL_FOREGROUND_RASTER_OPERATION;
 
 /* for ET6000: */
 #define ACL_MIX_CONTROL ACL_ROUTING_CONTROL
 #define ACL_STEPPING_INHIBIT ACL_RELOAD_CONTROL
 
-extern
-LongP ACL_DESTINATION_ADDRESS,	       /* only for w32p_rev_A and w32p_rev_B */
-    ACL_MIX_ADDRESS;
-
-extern
-WordP ACL_MIX_Y_OFFSET, ACL_ERROR_TERM, ACL_DELTA_MINOR, ACL_DELTA_MAJOR;
-
-/* for ET6000 only */
-extern
-ByteP ACL_POWER_CONTROL;
-extern
-ByteP ACL_SECONDARY_EDGE;
-extern
-WordP ACL_SECONDARY_ERROR_TERM, ACL_SECONDARY_DELTA_MINOR, ACL_SECONDARY_DELTA_MAJOR;
-extern
-ByteP ACL_TRANSFER_DISABLE;
 
 /*
  * Some data structures for faster accelerator programming.
@@ -140,11 +166,11 @@ extern int tseng_old_dir;
 #undef WAIT_VERBOSE		       /* if defined: print out how long we waited */
 
 static __inline__ void 
-tseng_wait(TsengPtr pTseng, ByteP reg, char *name, unsigned char mask)
+tseng_wait(TsengPtr pTseng, int reg, char *name, unsigned char mask)
 {
     int cnt = MAX_WAIT_CNT;
 
-    while (*reg & mask)
+    while ((MMIO_IN32(pTseng->MMioBase,reg)) & mask)
 	if (--cnt < 0) {
 	    ErrorF("WAIT_%s: timeout.\n", name);
 	    tseng_recover_timeout(pTseng);
@@ -166,39 +192,39 @@ tseng_wait(TsengPtr pTseng, ByteP reg, char *name, unsigned char mask)
 
 #define SET_FUNCTION_BLT \
     if (Is_ET6K) \
-        *ACL_MIX_CONTROL     = 0x33; \
+        ACL_MIX_CONTROL(0x33); \
     else \
-        *ACL_ROUTING_CONTROL = 0x00;
+        ACL_ROUTING_CONTROL(0x00);
 
 #define SET_FUNCTION_BLT_TR \
-        *ACL_MIX_CONTROL     = 0x13;
+        ACL_MIX_CONTROL(0x13);
 
 #define FBADDR(pTseng, x,y) ( (y) * pTseng->line_width + MULBPP(pTseng, x) )
 
 #define SET_FG_ROP(rop) \
-    *ACL_FOREGROUND_RASTER_OPERATION = W32OpTable[rop];
+    ACL_FOREGROUND_RASTER_OPERATION(W32OpTable[rop]);
 
 #define SET_FG_ROP_PLANEMASK(rop) \
-    *ACL_FOREGROUND_RASTER_OPERATION = W32OpTable_planemask[rop];
+    ACL_FOREGROUND_RASTER_OPERATION(W32OpTable_planemask[rop]);
 
 #define SET_BG_ROP(rop) \
-    *ACL_BACKGROUND_RASTER_OPERATION = W32PatternOpTable[rop];
+    ACL_BACKGROUND_RASTER_OPERATION(W32PatternOpTable[rop]);
 
 #define SET_BG_ROP_TR(rop, bg_color) \
   if ((bg_color) == -1)    /* transparent color expansion */ \
-    *ACL_BACKGROUND_RASTER_OPERATION = 0xaa; \
+    ACL_BACKGROUND_RASTER_OPERATION(0xaa); \
   else \
-    *ACL_BACKGROUND_RASTER_OPERATION = W32PatternOpTable[rop];
+    ACL_BACKGROUND_RASTER_OPERATION(W32PatternOpTable[rop]);
 
 #define SET_DELTA(Min, Maj) \
-    *((LongP) ACL_DELTA_MINOR) = ((Maj) << 16) + (Min)
+    ACL_DELTA_MINOR32(((Maj) << 16) + (Min))
 
 #define SET_SECONDARY_DELTA(Min, Maj) \
-    *((LongP) ACL_SECONDARY_DELTA_MINOR) = ((Maj) << 16) + (Min)
+    ACL_SECONDARY_DELTA_MINOR(((Maj) << 16) + (Min))
 
 #ifdef NO_OPTIMIZE
 #define SET_XYDIR(dir) \
-      *ACL_XY_DIRECTION = (dir);
+      ACL_XY_DIRECTION(dir);
 #else
 /*
  * only changing ACL_XY_DIRECTION when it needs to be changed avoids
@@ -207,28 +233,29 @@ tseng_wait(TsengPtr pTseng, ByteP reg, char *name, unsigned char mask)
  */
 #define SET_XYDIR(dir) \
     if ((dir) != tseng_old_dir) \
-      *ACL_XY_DIRECTION = tseng_old_dir = (dir);
+      tseng_old_dir = (dir); \
+      ACL_XY_DIRECTION(tseng_old_dir);
 #endif
 
 #define SET_SECONDARY_XYDIR(dir) \
-      *ACL_SECONDARY_EDGE = (dir);
+      ACL_SECONDARY_EDGE(dir);
 
 /* Must do 0x09 (in one operation) for the W32 */
 #define START_ACL(pTseng, dst) \
-    *(ACL_DESTINATION_ADDRESS) = dst; \
-    if (Is_W32 || Is_W32i) *ACL_OPERATION_STATE = 0x09;
+    ACL_DESTINATION_ADDRESS(dst); \
+    if (Is_W32 || Is_W32i) ACL_OPERATION_STATE(0x09);
 
 /* START_ACL for the ET6000 */
 #define START_ACL_6(dst) \
-    *(ACL_DESTINATION_ADDRESS) = dst;
+    ACL_DESTINATION_ADDRESS(dst);
 
 #define START_ACL_CPU(pTseng, dst) \
     if (Is_W32 || Is_W32i) \
-      *((LongP) (MMioBase + 0x08)) = (CARD32)dst; /* writing to MMU2 will trigger accel at this address */ \
+      MMIO_OUT32(pTseng->MMioBase, 0x08<<8,(CARD32)dst); /* writing to MMU2 will trigger accel at this address */ \
     else \
-      *(ACL_DESTINATION_ADDRESS) = dst;
+      ACL_DESTINATION_ADDRESS(dst);
 
-/*    *(ACL_DESTINATION_ADDRESS) = dst;    should be enough for START_ACL_CPU */
+/*    ACL_DESTINATION_ADDRESS(dst);    should be enough for START_ACL_CPU */
 
 /***********************************************************************/
 
@@ -239,3 +266,4 @@ Bool TsengXAAInit(ScreenPtr pScreen);
 Bool TsengXAAInit_Colexp(ScrnInfoPtr pScrn);
 
 #endif
+

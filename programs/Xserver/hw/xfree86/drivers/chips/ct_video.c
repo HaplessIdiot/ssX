@@ -302,9 +302,6 @@ CHIPSSetupImageVideo(ScreenPtr pScreen)
 
     cPtr->adaptor = adapt;
 
-    cPtr->BlockHandler = pScreen->BlockHandler;
-    pScreen->BlockHandler = CHIPSBlockHandler;
-
     xvColorKey   = MAKE_ATOM("XV_COLORKEY");
 
     CHIPSResetVideo(pScrn);
@@ -425,7 +422,6 @@ CHIPSStopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit)
   unsigned char mr3c;
 
   REGION_EMPTY(pScrn->pScreen, &pPriv->clip);   
-
   CHIPSHiQVSync(pScrn);
   if(exit) {
      if(pPriv->videoStatus & CLIENT_VIDEO_ON) {
@@ -437,10 +433,13 @@ CHIPSStopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit)
 	pPriv->area = NULL;
      }
      pPriv->videoStatus = 0;
+     pScrn->pScreen->BlockHandler = cPtr->BlockHandler;
   } else {
      if(pPriv->videoStatus & CLIENT_VIDEO_ON) {
 	pPriv->videoStatus |= OFF_TIMER;
 	pPriv->offTime = currentTime.milliseconds + OFF_DELAY; 
+	cPtr->BlockHandler = pScrn->pScreen->BlockHandler;
+	pScrn->pScreen->BlockHandler = CHIPSBlockHandler;
      }
   }
 }
@@ -721,6 +720,7 @@ CHIPSDisplayVideo(
 
     tmp = cPtr->readMR(cPtr, 0x3C);
     cPtr->writeMR(cPtr, 0x3C, (tmp | 0x7));
+    CHIPSHiQVSync(pScrn);
 }
 
 static int 
@@ -744,6 +744,9 @@ CHIPSPutImage(
    int top, left, npixels, nlines;
    BoxRec dstBox;
    CARD32 tmp;
+
+   if (pScrn->pScreen->BlockHandler == CHIPSBlockHandler)
+       pScrn->pScreen->BlockHandler = cPtr->BlockHandler;
 
    if(drw_w > 16384) drw_w = 16384;
 
@@ -791,7 +794,6 @@ CHIPSPutImage(
 
    if(!(pPriv->area = CHIPSAllocateMemory(pScrn, pPriv->area, new_h)))
 	return BadAlloc;
-
    /* copy data */
    top = y1 >> 16;
    left = (x1 >> 16) & ~1;
@@ -803,7 +805,7 @@ CHIPSPutImage(
 
    switch(id) {
    case 0x32315659:		/* YV12 */
-	top &= ~1;
+       top &= ~1;
 	tmp = ((top >> 1) * srcPitch2) + (left >> 2);
 	offset2 += tmp;
 	offset3 += tmp; 
@@ -900,11 +902,11 @@ CHIPSBlockHandler (
 
     pScreen->BlockHandler = CHIPSBlockHandler;
 
-    CHIPSHiQVSync(pScrn);
     if(pPriv->videoStatus & TIMER_MASK) {
 	UpdateCurrentTime();
 	if(pPriv->videoStatus & OFF_TIMER) {
 	    if(pPriv->offTime < currentTime.milliseconds) {
+		CHIPSHiQVSync(pScrn);
 		mr3c = cPtr->readMR(cPtr, 0x3C);
 		cPtr->writeMR(cPtr, 0x3C, (mr3c & 0xFE));
 		pPriv->videoStatus = FREE_TIMER;
@@ -917,6 +919,7 @@ CHIPSBlockHandler (
 		   pPriv->area = NULL;
 		}
 		pPriv->videoStatus = 0;
+  		pScreen->BlockHandler = cPtr->BlockHandler;
 	    }
         }
     }

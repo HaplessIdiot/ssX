@@ -33,7 +33,8 @@
 xf86cfg - Graphical configuration tool for XFree86 4.0
 .SH SYNOPSIS
 .B xf86cfg
-[-xf86config \fIXF86Config\fP] [-toolkitoption ...]
+[-xf86config \fIXF86Config\fP] [-modulepath \fImoduledir\fP] 
+[-fontpath \fIfontsdir\fP] [-toolkitoption ...]
 .SH DESCRITPION
 .I Xf86cfg
 is a tool to configure \fIXFree86 4.0\fP, and can be used to either write the
@@ -48,6 +49,9 @@ customizations.
 If the \fBDISPLAY\fP environment variable is set, xf86cfg will read the
 default \fIXF86Config\fP, that may not be the same being used by the current
 server, and allow customizations.
+.PP
+To use an alternative location for modules or fonts the respective search
+paths may be specified.
 .PP
 Unless there is an \fBApply\fP button in the current xf86cfg dialog, the
 changes made will take place the next time \fIXFree86\fP is started.

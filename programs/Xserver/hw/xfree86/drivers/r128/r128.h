@@ -213,6 +213,7 @@ typedef struct {
 
     I2CBusPtr         i2c;
     XAAInfoRecPtr     accel;
+    Bool              accelOn;
     xf86CursorInfoPtr cursor;
     unsigned long     cursor_start;
     unsigned long     cursor_end;

@@ -825,8 +825,10 @@ GenericCloseScreen(int scrnIndex, ScreenPtr pScreen)
         Closed = (*pScreen->CloseScreen)(scrnIndex, pScreen);
     }
 
-    GenericLeaveGraphics(pScreenInfo);
-    pScreenInfo->vtSema = FALSE;
+    if (pScreenInfo->vtSema) {
+	GenericLeaveGraphics(pScreenInfo);
+	pScreenInfo->vtSema = FALSE;
+    }
 
     return Closed;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.31 2000/06/16 07:40:37 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.32 2000/06/20 19:40:31 eich Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -1040,6 +1040,13 @@ xf86MapPciMem(int ScreenNum, int Flags, PCITAG Tag, unsigned long Base,
 		pciWriteLong(Tag, PCI_CMD_STAT_REG, save);
 	}
 	return((pointer)base);
+}
+
+CARD32
+pciCheckForBrokenBase(PCITAG Tag,int basereg)
+{
+    pciWriteLong(Tag, PCI_MAP_REG_START + (basereg << 2), 0xffffffff);
+    return pciReadLong(Tag, PCI_MAP_REG_START + (basereg << 2));
 }
 
 static int

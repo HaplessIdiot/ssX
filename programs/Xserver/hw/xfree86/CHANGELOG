@@ -1,4 +1,33 @@
 XFree86 4.0.1a (2 August 2000)
+ 491. fixed handling of backwards compatibility in xvmode (Egbert Eich). 
+ 490. fixed changing mouse protocol with xf86misc extensions (Egbert Eich).
+ 489. added code to sanitize uninitialized PCI config space
+      base addresses (Egbert Eich).
+ 488. Changed xf86xv.c to call StopVideo(exit=TRUE) even
+      if StopVideo(exit=FALSE) has already been sent (Egbert Eich).
+ 487. fixed core dump in C&T video driver when vt switching
+      Changed C&T video driver to only register a block handler
+      when StopVideo() is called with exit = TRUE (Egbert Eich).
+ 486. Fixed Cirrus driver not segfault when termineated while
+      switched away (Egbert Eich).
+ 485. Neomagic driver: select sw cursor when screen stretching is
+      enabled (Egbert Eich).
+ 484. Neomagic driver: fixed problem with screen to screen copy
+      on 2200 chipsets (Egbert Eich).
+ 483. Neomagic driver: fixed 'white screen problem' by implementing
+      a signal save delay routine (Egbert Eich).
+ 482. r128 driver: Fixed colormap set problem when server is switched
+      away (Egbert Eich).
+ 481. r128 driver Added reinitialization of accel engine after vt switch.
+ 480. fixed a fg/bg color problem in SiS driver (Egbert Eich).
+ 479. attempt to address some problems with Cyber LCD chipsets in
+      Trident driver (Egbert Eich).
+ 478. tseng driver: Implemented correct MMIO handling (Egbert Eich). 
+ 477. tseng driver: made accel driver multi screen capable (Egbert Eich).
+ 476. fixed vgaHW driver to use forground color for readability
+      test of pallette registers. This prevents annoying flashing
+      screen on server start (Egbert Eich).
+ 475. added module/font/rgb path parameters to xf86cfg (Egbert Eich).
  474. i810 DRI updates (Jeff Hartmann).
  473. i810 driver updates (H. J. Lu).
  472. Save/restore the text mode colourmap for Solaris, to fix a blank

@@ -19,5 +19,6 @@
 void
 xf86IODelay()
 {
-	usleep(1);
+	xf86UDelay(1);
 }
+

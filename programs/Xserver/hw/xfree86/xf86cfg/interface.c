@@ -106,6 +106,9 @@ Widget toplevel, work, config, layout, layoutsme, layoutp;
 XtAppContext appcon;
 
 char *XF86Config_path = NULL;
+char *XF86Module_path = NULL;
+char *XF86Font_path = NULL;
+char *XF86RGB_path = NULL;
 char *XFree86Dir;
 Bool xf86config_set = False;
 
@@ -194,8 +197,20 @@ main(int argc, char *argv[])
 	    if (i + 1 < argc)
 		XF86Config_path = argv[i + 1];
 	    break;
+	} else if (strcmp(argv[i], "-modulepath") == 0) {
+	    if (i + 1 < argc)
+		XF86Module_path = argv[i + 1];
+	    break;
+	} else if (strcmp(argv[i], "-fontpath") == 0) {
+	    if (i + 1 < argc)
+		XF86Font_path = argv[i + 1];
+	    break;
+	} else if (strcmp(argv[i], "-rgbpath") == 0) {
+	    if (i + 1 < argc)
+		XF86RGB_path = argv[i + 1];
+	    break;
 	}
-
+    
     startedx = startx();
     if (XF86Config_path == NULL)
 	XF86Config_path = "/etc/X11/XF86Config";

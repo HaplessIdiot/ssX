@@ -1078,11 +1078,12 @@ vgaHWSaveColormap(ScrnInfoPtr scrninfp, vgaRegPtr save)
 #endif
 
     hwp->writeDacMask(hwp, 0xFF);
+
     /*
      * check if we can read the lookup table
      */
     hwp->writeDacReadAddr(hwp, 0x00);
-    for (i = 0; i < 3; i++) {
+    for (i = 0; i < 6; i++) {
 	save->DAC[i] = hwp->readDacData(hwp);
 #ifdef DEBUG
 	switch (i % 3) {
@@ -1097,15 +1098,23 @@ vgaHWSaveColormap(ScrnInfoPtr scrninfp, vgaRegPtr save)
 	}
 #endif
     }
-    hwp->writeDacWriteAddr(hwp, 0x00);
-    for (i = 0; i < 3; i++)
+
+    /*
+     * Check if we can read the palette -
+     * use foreground color to prevent flashing.
+     */
+    hwp->writeDacWriteAddr(hwp, 0x01);
+    for (i = 3; i < 6; i++)
 	hwp->writeDacData(hwp, ~save->DAC[i] & DAC_TEST_MASK);
-    hwp->writeDacReadAddr(hwp, 0x00);
-    for (i = 0; i < 3; i++) {
+    hwp->writeDacReadAddr(hwp, 0x01);
+    for (i = 3; i < 6; i++) {
 	if (hwp->readDacData(hwp) != (~save->DAC[i] & DAC_TEST_MASK))
 	    readError = TRUE;
     }
-  
+    hwp->writeDacWriteAddr(hwp, 0x01);
+    for (i = 3; i < 6; i++)
+	hwp->writeDacData(hwp, save->DAC[i]);
+
     if (readError) {
 	/*			 
 	 * save the default lookup table
@@ -1115,7 +1124,7 @@ vgaHWSaveColormap(ScrnInfoPtr scrninfp, vgaRegPtr save)
 	   "Cannot read colourmap from VGA.  Will restore with default\n");
     } else {
 	/* save the colourmap */
-	hwp->writeDacReadAddr(hwp, 0x01);
+	hwp->writeDacReadAddr(hwp, 0x02);
 	for (i = 3; i < 768; i++) {
 	    save->DAC[i] = hwp->readDacData(hwp);
 	    DACDelay(hwp);
@@ -1133,6 +1142,7 @@ vgaHWSaveColormap(ScrnInfoPtr scrninfp, vgaRegPtr save)
 #endif
 	}
     }
+
     hwp->disablePalette(hwp);
     hwp->cmapSaved = TRUE;
 #endif
