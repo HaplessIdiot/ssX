@@ -1,5 +1,5 @@
 /* $XConsortium: ppcCpArea.c,v 1.2 94/04/17 20:31:47 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcCpArea.c,v 3.0 1994/05/04 15:03:20 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -158,7 +158,7 @@ if ( ! pPriv->pCompositeClip )
 				 pbox->x1, pbox->y1,
 				 pbox->x2 - pbox->x1,
 				 pbox->y2 - pbox->y1,
-				 data + pbox->x1 + dx
+				 (unsigned char *)data + pbox->x1 + dx
 				  + ( ( pbox->y1 + dy ) * stride ),
 				 stride,
 				 pGC->alu, pGC->planemask ) ;

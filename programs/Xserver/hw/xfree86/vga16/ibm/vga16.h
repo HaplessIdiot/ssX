@@ -1,5 +1,5 @@
 /* $XConsortium: vga16.h,v 1.1 94/03/28 21:38:17 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vga16.h,v 3.0 1994/05/04 15:03:42 dawes Exp $ */
 
 /*
  * some header files need to be included here to make
@@ -637,8 +637,8 @@ void vgaDrawColorImage(
     int,
     unsigned char *,
     int,
-    int,
-    unsigned long int 
+    const int,
+    const unsigned long int 
 #endif
 );
 void vgaReadColorImage(
@@ -726,12 +726,12 @@ void vgaFillSolid(
 #if NeedFunctionPrototypes
     WindowPtr,
     unsigned long int,
-    int,
+    const int,
     unsigned long int,
     int,
+    const int,
     int,
-    int,
-    int 
+    const int 
 #endif
 );
 /* offscreen.c */
@@ -758,9 +758,9 @@ int do_rop(
 void offBitBlt(
 #if NeedFunctionPrototypes
     WindowPtr,
-    int,
-    int,
-    int,
+    const int,
+    const int,
+    const int,
     int,
     int,
     int,
@@ -778,8 +778,8 @@ void offDrawColorImage(
     int,
     unsigned char *,
     int,
-    int,
-    unsigned long int 
+    const int,
+    const unsigned long int 
 #endif
 );
 void offReadColorImage(
@@ -814,12 +814,12 @@ void offFillSolid(
 #if NeedFunctionPrototypes
     WindowPtr,
     unsigned long int,
-    int,
+    const int,
     unsigned long int,
     int,
+    const int,
     int,
-    int,
-    int 
+    const int 
 #endif
 );
 void offDrawMonoImage(
@@ -838,16 +838,16 @@ void offDrawMonoImage(
 void offFillStipple(
 #if NeedFunctionPrototypes
     WindowPtr,
-    PixmapPtr,
+    const PixmapPtr,
+    unsigned long int,
+    const int,
     unsigned long int,
     int,
-    unsigned long int,
     int,
     int,
     int,
-    int,
-    int,
-    int 
+    const int,
+    const int 
 #endif
 );
 /* mfbimggblt.c */

@@ -1,5 +1,5 @@
 /* $XConsortium: ppcBStore.c,v 1.2 94/04/17 20:31:46 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcBStore.c,v 3.0 1994/05/04 15:03:17 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -175,7 +175,7 @@ ppcRestoreAreas( pPixmap, prgnRestore, xorg, yorg, pWin )
 		 pBox->y1,
 		 pBox->x2 - pBox->x1,
 		 pBox->y2 - pBox->y1,
-		 ( (char *)pPixmap->devPrivate.ptr )
+		 ( (unsigned char *)pPixmap->devPrivate.ptr )
 		 + ( ( pBox->y1 - yorg ) * pPixmap->devKind )
 		 + ( pBox->x1 - xorg ),
 		 pPixmap->devKind,

@@ -1,5 +1,5 @@
 /* $XConsortium: offscreen.c,v 1.1 94/03/28 21:35:21 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/offscreen.c,v 3.0 1994/05/04 15:03:14 dawes Exp $ */
 /*
  * Copyright 1993 Gerrit Jan Akkerman 
  *
@@ -147,7 +147,6 @@ int y1 ;
 register int w, h ;
 {
 	int x,y,tmp1,tmp2;
-	void offFillSolid();
 
 	switch ( alu ) {
 		case GXclear:		/* 0x0 Zero 0 */
@@ -329,22 +328,21 @@ int axis, x, y ;
 int et, e1, e2 ;
 unsigned long int len ;
 {
-	void offFillSolid();
-
 if ( !( planes & VGA_ALLPLANES ) ) {
 	return ;
 } else if ( len == 1 ) {
-	offFillSolid( color, alu, planes, x, y, 1, 1 ) ;
+	offFillSolid( pWin, color, alu, planes, x, y, 1, 1 ) ;
 	return ;
 }
 
 /* Call the real workers */
 (* ( ( signdx > 0 ) ? ( axis ? fast_y_line_right : fast_x_line_right )
 		    : ( axis ? fast_y_line_left  : fast_x_line_left ) ) )
-			( et, e1, e2, len,
+			( et, e1, e2, (unsigned int)len,
 			  ( signdy > 0 ?   (BYTES_PER_LINE(pWin)<<3)
 				       : - (BYTES_PER_LINE(pWin)<<3) ),
-			  &SAVEDSCREEN( pWin, x, y ), alu, color, planes ) ;
+			  &SAVEDSCREEN( pWin, x, y ), alu,
+			  (const int)color, (const int)planes ) ;
 
 return ;
 }
@@ -461,7 +459,8 @@ unsigned long int planes;
 		return ;
 
 	DoMono( pWin, w, x, y, (const unsigned char *) data, h,
-		      w, ( ( w + 31 ) & ~31 ) >> 3, h, 0, 0, alu, planes, fg) ;
+		      w, ( ( w + 31 ) & ~31 ) >> 3, h, 0, 0, alu,
+		      (int)planes, (int)fg) ;
 
 }
 
@@ -503,6 +502,6 @@ const int xSrc, ySrc ;
 		( ( width + 31 ) & ~31 ) >> 3,
 		height,
 		xshift, yshift,
-		alu, planes, fg ) ;
+		alu, (int)planes, (int)fg ) ;
 	return ;
 }

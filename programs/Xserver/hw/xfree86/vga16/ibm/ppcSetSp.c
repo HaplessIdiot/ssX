@@ -1,5 +1,5 @@
 /* $XConsortium: ppcSetSp.c,v 1.2 94/04/17 20:31:57 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcSetSp.c,v 3.0 1994/05/04 15:03:37 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -276,8 +276,8 @@ ppcSetSpans( pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted )
 		    else
 			vgaDrawColorImage( (WindowPtr)pDrawable,
 			      xStart, ppt->y, xEnd - xStart, 1,
-			      psrc + ( xStart - ppt->x ), xEnd - xStart,
-			      alu, pm ) ;
+			      (unsigned char *)psrc + ( xStart - ppt->x ),
+			      xEnd - xStart, alu, pm ) ;
 		    if ( ppt->x + width <= pbox->x2 )
 		        break ; /* End of the line, as it were */
 		}
@@ -313,9 +313,9 @@ ppcSetSpans( pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted )
     			else	/* pDrawable->type == DRAWABLE_WINDOW */
 			    vgaDrawColorImage( (WindowPtr)pDrawable,
 				  xStart, ppt->y, xEnd - xStart, 1,
-				  psrc + ( xStart - ppt->x ), xEnd - xStart,
-					/* GJA ^ */
-				  alu, pm ) ;
+				  (unsigned char *)psrc + ( xStart - ppt->x ),
+							/* GJA ^ */
+				  xEnd - xStart, alu, pm ) ;
 		    }
 
 		}
