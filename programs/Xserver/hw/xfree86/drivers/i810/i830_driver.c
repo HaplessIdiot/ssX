@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.4 2001/10/28 03:33:33 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.5 2001/10/31 20:09:43 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -2364,7 +2364,9 @@ void
 I830BIOSLeaveVT (int scrnIndex,int flags) {
 	ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
 	vgaHWPtr hwp = VGAHWPTR (pScrn);
+#if defined(XF86DRI) || 0
 	I810Ptr pI810 = I810PTR (pScrn);
+#endif
 
 	DPRINTF (PFX,"Leave VT\n");
 
