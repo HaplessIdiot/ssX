@@ -1,6 +1,6 @@
 $XFree86: xc/programs/xedit/lisp/README,v 1.1 2001/08/31 15:00:13 paulo Exp $
 
-LAST UPDATED:	$Date: 2001/10/03 07:46:02 $
+LAST UPDATED:	$Date: 2001/10/04 04:38:41 $
 
     SUMMARY
 
@@ -172,13 +172,9 @@ pass a second parameter, for the file to be interpreted. Once the debugger
 prompt is visible, type "help" for a summary of options. To leave the debugger
 type "continue".
   Note that the debugger is still very simple, it won't work from xedit, and
-won't drop to the debugger on "fatal errors", and it is not yet possible to
-add breakpoints. Support for this and other useful features should be added
-soon. Also, the only way to call the debugger again, if you told it to
-"continue", is to make an error, so that it will change the state debugger to
-"Stepping", and from now on, its prompt will be available again when the first
-function be called.
-
+won't drop to the debugger on "fatal errors", and it only allows adding
+breakpoints to functions. Support for changing data and going to the debugger
+on fatal errors should be added soon.
 
     HELPING
 
