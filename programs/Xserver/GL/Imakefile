@@ -1,5 +1,6 @@
 
 XCOMM Header: /p0/cvs/X39-3D/xc/programs/Xserver/GL/Imakefile,v 1.9 1999/02/27 03:25:03 jens Exp $
+XCOMM $XFree86$
 
 #define IHaveModules
 #include <Server.tmpl>

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.16 1999/01/03 03:58:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.17 1999/04/11 13:11:03 dawes Exp $ */
 
 /*
  *
@@ -154,6 +154,7 @@ extern int		   nCommons;
  * this problem are:
  *	PowerMAX_OS/PPC
  * 	Linux/Alpha
+ * 	Linux/PPC
  */
 #define xf86loadermalloc(size) malloc(size)
 #define xf86loaderrealloc(ptr,size) realloc(ptr,size)
