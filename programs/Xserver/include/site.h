@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/include/site.h,v 1.6 2001/01/17 22:36:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/site.h,v 1.7 2001/12/14 19:59:56 dawes Exp $ */
 
 #ifndef SITE_H
 #define SITE_H
@@ -63,7 +63,7 @@ SOFTWARE.
  * by the vendor.
  */
 #ifndef VENDOR_RELEASE
-#define VENDOR_RELEASE	6510
+#define VENDOR_RELEASE	6600
 #endif
 
 /*

@@ -52,6 +52,10 @@ PERFORMANCE OF THIS SOFTWARE.
 #ifndef _SYNC_H_
 #define _SYNC_H_
 
+#include <X11/Xfuncproto.h>
+
+_XFUNCPROTOBEGIN
+
 #define SYNC_NAME "SYNC"
 
 #define SYNC_MAJOR_VERSION	3
@@ -243,6 +247,8 @@ extern void XSyncMinValue(
 #endif
 );
 
+_XFUNCPROTOEND
+
 /*  The _XSync macros below are for library internal use only.  They exist 
  *  so that if we have to make a fix, we can change it in this one place
  *  and have both the macro and function variants inherit the fix.
@@ -394,6 +400,8 @@ typedef struct {
  *  Prototypes
  */
 
+_XFUNCPROTOBEGIN
+
 extern Status XSyncQueryExtension(
 #if NeedFunctionPrototypes
     Display* /*dpy*/,
@@ -518,5 +526,7 @@ extern Status XSyncGetPriority(
 );
 
 #endif /* _SYNC_SERVER */
+
+_XFUNCPROTOEND
 
 #endif /* _SYNC_H_ */

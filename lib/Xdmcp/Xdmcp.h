@@ -1,4 +1,4 @@
-/* $Xorg: Xdmcp.h,v 1.6 2000/08/17 19:45:50 cpqbld Exp $ */
+/* $Xorg: Xdmcp.h,v 1.7 2001/04/13 14:43:00 steve Exp $ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *
@@ -13,12 +13,16 @@
  * without express or implied warranty.
  *
  */
-/* $XFree86: xc/lib/Xdmcp/Xdmcp.h,v 3.4 2001/01/17 19:42:44 dawes Exp $ */
+/* $XFree86: xc/lib/Xdmcp/Xdmcp.h,v 3.5 2001/07/23 13:15:42 dawes Exp $ */
 
 #ifndef _XDMCP_H_
 #define _XDMCP_H_
 
 #include <X11/Xmd.h>
+
+#include <X11/Xfuncproto.h>
+
+_XFUNCPROTOBEGIN
 
 #define XDM_PROTOCOL_VERSION	1
 #define XDM_UDP_PORT		177
@@ -164,5 +168,7 @@ extern int XdmcpReallocARRAY16 (ARRAY16Ptr array, int length);
 extern int XdmcpReallocARRAY32 (ARRAY32Ptr array, int length);
 extern int XdmcpReallocARRAY8 (ARRAY8Ptr array, int length);
 extern int XdmcpReallocARRAYofARRAY8 (ARRAYofARRAY8Ptr array, int length);
+
+_XFUNCPROTOEND
 
 #endif /* _XDMCP_H_ */

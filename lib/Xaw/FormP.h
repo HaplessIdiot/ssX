@@ -46,15 +46,19 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/FormP.h,v 1.12 2001/01/17 19:42:26 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/FormP.h,v 1.13 2001/12/14 19:54:40 dawes Exp $ */
 
 /* Form widget private definitions */
 
 #ifndef _XawFormP_h
 #define _XawFormP_h
 
+#include <X11/Xfuncproto.h>
+
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/XawInit.h>
+
+_XFUNCPROTOBEGIN
 
 #define XtREdgeType "EdgeType"
 
@@ -132,5 +136,7 @@ typedef struct _FormConstraintsPart {
 typedef struct _FormConstraintsRec {
     FormConstraintsPart	form;
 } FormConstraintsRec, *FormConstraints;
+
+_XFUNCPROTOEND
 
 #endif /* _XawFormP_h */

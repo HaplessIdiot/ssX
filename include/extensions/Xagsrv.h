@@ -87,5 +87,7 @@ extern void XagGetDeltaInfo (
 #endif
 );
 
+_XFUNCPROTOEND
+
 #endif /* _XAGSRV_H_ */
 

@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
 
-/* $XFree86: xc/include/extensions/multibufst.h,v 3.6 2001/07/25 15:04:42 dawes Exp $ */
+/* $XFree86: xc/include/extensions/multibufst.h,v 3.7 2001/12/14 19:53:28 dawes Exp $ */
 
 #ifndef _MULTIBUFST_H_
 #define _MULTIBUFST_H_
@@ -265,7 +265,11 @@ typedef struct {
     CARD16	width B16;
     CARD16	height B16;
     CARD16	borderWidth B16;  
+#if defined(__cplusplus) || defined(c_plusplus)
+    CARD16	c_class B16;
+#else
     CARD16	class B16;
+#endif
     VisualID	visual B32;
     CARD32	mask B32;
 } xMbufCreateStereoWindowReq;		/* followed by value list */

@@ -24,7 +24,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS 
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/FS/FSlib.h,v 1.5 2001/04/05 17:42:26 dawes Exp $ */
+/* $XFree86: xc/lib/FS/FSlib.h,v 1.6 2001/12/14 19:53:33 dawes Exp $ */
 
 /*
 
@@ -58,6 +58,8 @@ in this Software without prior written authorization from The Open Group.
 
 #ifndef _FSLIB_H_
 #define _FSLIB_H_
+
+#include	<X11/Xfuncproto.h>
 
 #include	<X11/fonts/FS.h>
 #include	<X11/fonts/FSproto.h>
@@ -241,6 +243,8 @@ typedef struct _FSXFontInfoHeader {
 
 /* function decls */
 
+_XFUNCPROTOBEGIN
+
 extern FSServer * FSOpenServer ( char *server );
 
 extern FSSyncHandler FSSynchronize(FSServer *, int);
@@ -304,5 +308,6 @@ extern int FSSetCatalogues ( FSServer *svr, int num, char **cats );
 extern int FSFree ( char *data );
 extern unsigned char * FSMalloc ( unsigned size );
 
+_XFUNCPROTOEND
 
 #endif				/* _FSLIB_H_ */

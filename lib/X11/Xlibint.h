@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xlibint.h,v 3.21 2001/10/28 03:32:33 tsi Exp $ */
+/* $XFree86: xc/lib/X11/Xlibint.h,v 3.22 2001/12/14 19:54:09 dawes Exp $ */
 
 #ifndef _XLIBINT_H_
 #define _XLIBINT_H_ 1
@@ -235,6 +235,10 @@ typedef struct _XSQEvent
 #include <stdlib.h>
 #include <string.h>
 
+#include <X11/Xfuncproto.h>
+
+_XFUNCPROTOBEGIN
+
 /*
  * The following definitions can be used for locking requests in multi-threaded
  * address spaces.
@@ -244,8 +248,6 @@ typedef struct _XSQEvent
  *
  * declarations for C Threads locking
  */
-
-#include <X11/Xfuncproto.h>
 
 typedef struct _LockInfoRec *LockInfoPtr;
 
@@ -923,8 +925,6 @@ typedef struct _XExten {		/* private to extension mechanism */
 } _XExtension;
 
 /* extension hooks */
-
-_XFUNCPROTOBEGIN
 
 #ifdef DataRoutineIsProcedure
 extern void Data(Display *dpy, char *data, long len);

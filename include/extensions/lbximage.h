@@ -29,6 +29,10 @@ in this Software without prior written authorization from The Open Group.
 #ifndef _LBX_IMAGE_H_
 #define _LBX_IMAGE_H_
 
+#include <X11/Xfuncproto.h>
+
+_XFUNCPROTOBEGIN
+
 typedef struct _LbxBitmapCompMethod {
 
     char *methodName;
@@ -110,7 +114,6 @@ typedef struct _LbxPixmapCompMethod {
 } LbxPixmapCompMethod;
 
 
-
 extern int LbxImageEncodePackBits (
 #if NeedFunctionPrototypes
 char *			/* inbuf */,
@@ -157,6 +160,7 @@ int			/* reverse_bits */
 #endif
 );
 
+_XFUNCPROTOEND
 
 #define LBX_IMAGE_COMPRESS_SUCCESS		0
 #define LBX_IMAGE_COMPRESS_NO_SUPPORT		1

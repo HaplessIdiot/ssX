@@ -1,5 +1,28 @@
-XFree86 4.1.99.3 (xx December 2001)
- 587. Fix Trident driver pitch values when accelerator is in use, applies
+XFree86 4.1.99.3 (19 December 2001)
+ 600. Fix a C type aliasing bug in xkbcomp (#5104, Jakub Jelinek).
+ 599. Fix a bug in Xprint's PS output code that was over-optimizing out
+      clip change requests (#5102, Chris Bare, from X11R6.6).
+ 598. Improved error handling for Xprint's -XpFile option (#5101,
+      Chris Bare, from X11R6.6).
+ 597. Add higher resolution options to the Xprint postscript printer support
+      (#5096, Chris Bare, from X11R6.6).
+ 596. BuildLoadableXlibI18n should be keyed off "SharedLibX11" rather than
+      "BuildX11Lib" (#5095, Ernie Coskrey).
+ 595. Fix a luit inconsistency between the default data used when a
+      locale is unknown and the data used by ISO 8859-1 locales (#5092,
+      Juliusz Chroboczek).
+ 594. Add eo_EO locale entries, which is what GNU libc 2.2 uses for the
+      Esperanto locale (#5091, Juliusz Chroboczek).
+ 593. Fix an Xprt page handling problem (#5090, Chris Bare, from X11R6.6).
+ 592. Update the X.Org release number from 6.5.1 to 6.6 in various
+      documents and header files (#5089, 5100, Chris Bare, from X11R6.6).
+ 591. Recognise __SVR4 as an alternative for SVR4 in Xosdefs.h (#5087,
+      Chris Bare, from X11R6.6).
+ 590. Cleanup some header files to make them more C++ friendly (#5086, 5088,
+      Chris Bare, from X11R6.6).
+ 589. Update the driver status document (#5085, Branden Robinson).
+ 588. Fix the SiS drm driver (#5084, Torsten Duwe).
+ 588. Fix Trident driver pitch values when accelerator is in use, applies
       to Image and Blade series chips (Alan Hourihane).
  586. Minor bugfix to SiS driver, restructured VT switching code 
       (Egbert Eich).
@@ -16,7 +39,7 @@ XFree86 4.1.99.3 (xx December 2001)
       ISHIKAWA Mutsumi).
  580. Use uname instead of hostname in rstart and xon scripts for portability,
       plus some other rstart and xon fixes (#5081, Chris Bare, from X11R6.6).
- 579. Some newport driver cleanups (#5080, Guido Guenther).
+ 579. Some newport driver cleanups and fixes (#5080, 5103, Guido Guenther).
  578. Fix XagNsingleScreen definition and some related side-effects (#5077,
       Chris Bare, from X11R6.6).
  577. Fix some doc typos, and remove references to the non-existent
@@ -14364,4 +14387,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2094 2001/12/19 18:55:11 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2095 2001/12/19 21:12:47 alanh Exp $

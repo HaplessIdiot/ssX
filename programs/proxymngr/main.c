@@ -25,7 +25,7 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from The Open Group.
 */
-/* $XFree86: xc/programs/proxymngr/main.c,v 1.5 2001/01/17 23:45:02 dawes Exp $ */
+/* $XFree86: xc/programs/proxymngr/main.c,v 1.6 2001/12/14 20:01:01 dawes Exp $ */
 
 #include <stdlib.h>
 #include "pmint.h"
@@ -63,7 +63,7 @@ IcePoVersionRec	PMSetupVersions[] = {{PM_MAJOR_VERSION, PM_MINOR_VERSION,
 				      PMSetupProcessMessages}};
 
 char *PM_VENDOR_STRING = "The X.Org Group";
-char *PM_VENDOR_RELEASE = "Release 6.5.1";
+char *PM_VENDOR_RELEASE = "Release 6.6";
 
 int verbose = 0;
 

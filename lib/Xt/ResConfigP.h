@@ -56,6 +56,10 @@ Corporation.
 #ifndef _RESCONFIGP_H
 #define _RESCONFIGP_H
 
+#include <X11/Xfuncproto.h>
+
+_XFUNCPROTOBEGIN
+
 /*
  * Atom names for resource configuration management customization tool.
  */
@@ -69,5 +73,7 @@ extern void _XtResourceConfigurationEH(
 	XEvent * 	/* event */
 #endif
 );
+
+_XFUNCPROTOEND
 
 #endif

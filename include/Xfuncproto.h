@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  *
  */
-/* $XFree86: xc/include/Xfuncproto.h,v 3.3 2001/07/25 15:04:42 dawes Exp $ */
+/* $XFree86: xc/include/Xfuncproto.h,v 3.4 2001/12/14 19:53:25 dawes Exp $ */
 
 /* Definitions to make function prototypes manageable */
 
@@ -60,7 +60,7 @@ in this Software without prior written authorization from The Open Group.
 #endif /* NeedFunctionPrototypes */
 
 #ifndef _XFUNCPROTOBEGIN
-#ifdef __cplusplus			/* for C++ V2.0 */
+#if defined(__cplusplus) || defined(c_plusplus) /* for C++ V2.0 */
 #define _XFUNCPROTOBEGIN extern "C" {	/* do not leave open across includes */
 #define _XFUNCPROTOEND }
 #else
