@@ -40,7 +40,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Xorg: io.c,v 1.4 2000/08/17 19:53:41 cpqbld Exp $ */
+/* $Xorg: io.c,v 1.5 2001/01/03 16:40:02 coskrey Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -48,7 +48,7 @@ SOFTWARE.
  *   InsertFakeRequest, ResetCurrentRequest
  *
  *****************************************************************/
-/* $XFree86: xc/programs/Xserver/os/io.c,v 3.29 2001/08/01 00:44:59 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/io.c,v 3.30 2001/08/23 15:26:05 alanh Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -966,8 +966,10 @@ WriteToClient (who, count, buf)
     if (oco->count + count + padBytes > oco->size)
     {
 	FD_CLR(oc->fd, &OutputPending);
-	CriticalOutputPending = FALSE;
-	NewOutputPending = FALSE;
+	if(!XFD_ANYSET(&OutputPending)) {
+	  CriticalOutputPending = FALSE;
+	  NewOutputPending = FALSE;
+	}
 	return FlushClient(who, oc, buf, count);
     }
 
