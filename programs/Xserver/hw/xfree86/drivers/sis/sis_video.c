@@ -2698,7 +2698,7 @@ set_brightness(SISPtr pSiS, CARD8 brightness)
 static __inline void
 set_contrast(SISPtr pSiS, CARD8 contrast)
 {
-    setvideoregmask(pSiS, Index_VI_Contrast_Enh_Ctrl, contrast ^ 0x07, 0x07);
+    setvideoregmask(pSiS, Index_VI_Contrast_Enh_Ctrl, contrast, 0x07);
 }
 
 /* 315 series and later only */
