@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/package.c,v 1.14 2002/11/02 22:58:09 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/package.c,v 1.15 2002/11/08 08:00:57 paulo Exp $ */
 
 #include "package.h"
 #include "private.h"
@@ -64,12 +64,12 @@ LispFindPackageFromString(char *string)
 {
     LispObj *list, *package, *nick;
 
-    for (list = PACK; CONS_P(list); list = CDR(list)) {
+    for (list = PACK; CONSP(list); list = CDR(list)) {
 	package = CAR(list);
 	if (strcmp(THESTR(package->data.package.name), string) == 0)
 	    return (package);
 	for (nick = package->data.package.nicknames;
-	     CONS_P(nick); nick = CDR(nick))
+	     CONSP(nick); nick = CDR(nick))
 	    if (strcmp(THESTR(CAR(nick)), string) == 0)
 		return (package);
     }
@@ -82,12 +82,12 @@ LispFindPackage(LispObj *name)
 {
     char *string = NULL;
 
-    if (PACKAGE_P(name))
+    if (PACKAGEP(name))
 	return (name);
 
-    if (SYMBOL_P(name))
-	string = STRPTR(name);
-    else if (STRING_P(name))
+    if (SYMBOLP(name))
+	string = ATOMID(name);
+    else if (STRINGP(name))
 	string = THESTR(name);
     else
 	LispDestroy("FIND-PACKAGE: %s is not a string or symbol", STROBJ(name));
@@ -140,7 +140,7 @@ static void
 LispDoExport(LispBuiltin *builtin,
 	     LispObj *package, LispObj *symbol, int export)
 {
-    ERROR_CHECK_SYMBOL(symbol);
+    CHECK_SYMBOL(symbol);
     if (!export) {
 	if (package == lisp__data.keyword ||
 	    symbol->data.atom->package == lisp__data.keyword)
@@ -149,21 +149,21 @@ LispDoExport(LispBuiltin *builtin,
     }
 
     if (package == PACKAGE)
-	symbol->data.atom->ext = export ? LispTrue_t : LispNil_t;
+	symbol->data.atom->ext = export ? 1 : 0;
     else {
 	int i;
 	char *string;
 	LispAtom *atom;
 	LispPackage *pack;
 
-	string = STRPTR(symbol);
+	string = ATOMID(symbol);
 	pack = package->data.package.package;
 
 	for (i = 0; i < STRTBLSZ; i++) {
 	    atom = pack->atoms[i];
 	    while (atom) {
 		if (strcmp(atom->string, string) == 0) {
-		    atom->ext = export ? LispTrue_t : LispNil_t;
+		    atom->ext = export ? 1 : 0;
 		    return;
 		}
 
@@ -180,7 +180,7 @@ LispDoExport(LispBuiltin *builtin,
 static void
 LispDoImport(LispBuiltin *builtin, LispObj *symbol)
 {
-    ERROR_CHECK_SYMBOL(symbol);
+    CHECK_SYMBOL(symbol);
     LispImportSymbol(symbol);
 }
 
@@ -198,20 +198,20 @@ LispReallyDoSymbols(LispBuiltin *builtin, int only_externs, int all_symbols)
     init = ARGUMENT(0);
 
     /* Prepare for loop */
-    ERROR_CHECK_LIST(init);
+    CHECK_CONS(init);
     variable = CAR(init);
-    ERROR_CHECK_SYMBOL(variable);
+    CHECK_SYMBOL(variable);
 
     if (!all_symbols) {
 	/* if all_symbols, a package name is not specified in the init form */
 
 	init = CDR(init);
-	if (!CONS_P(init))
+	if (!CONSP(init))
 	    LispDestroy("%s: missing package name", STRFUN(builtin));
 
 	/* Evaluate package specification */
 	package = EVAL(CAR(init));
-	if (!PACKAGE_P(package))
+	if (!PACKAGEP(package))
 	    package = LispFindPackageOrDie(builtin, package);
 
 	pack = package->data.package.package;
@@ -220,15 +220,15 @@ LispReallyDoSymbols(LispBuiltin *builtin, int only_externs, int all_symbols)
     result_form = NIL;
 
     init = CDR(init);
-    if (CONS_P(init))
+    if (CONSP(init))
 	result_form = init;
 
     /* Initialize iteration variable */
-    ERROR_CHECK_CONSTANT(variable);
+    CHECK_CONSTANT(variable);
     LispAddVar(variable, NIL);
     ++lisp__data.env.head;
 
-    for (list = PACK; CONS_P(list); list = CDR(list)) {
+    for (list = PACK; CONSP(list); list = CDR(list)) {
 	if (all_symbols) {
 	    package = CAR(list);
 	    pack = package->data.package.package;
@@ -245,7 +245,7 @@ LispReallyDoSymbols(LispBuiltin *builtin, int only_externs, int all_symbols)
 
 		if (LispDoSymbol(package, atom, only_externs, all_symbols)) {
 		    LispSetVar(variable, atom->object);
-		    for (code = body; CONS_P(code); code = CDR(code))
+		    for (code = body; CONSP(code); code = CDR(code))
 			EVAL(CAR(code));
 		}
 
@@ -258,7 +258,7 @@ LispReallyDoSymbols(LispBuiltin *builtin, int only_externs, int all_symbols)
     }
 
     /* Variable is still bound */
-    for (code = result_form; CONS_P(code); code = CDR(code))
+    for (code = result_form; CONSP(code); code = CDR(code))
 	EVAL(CAR(code));
 
     lisp__data.env.head = lisp__data.env.length = head;
@@ -331,21 +331,18 @@ Lisp_FindAllSymbols(LispBuiltin *builtin)
 
     string_or_symbol = ARGUMENT(0);
 
-    if (STRING_P(string_or_symbol))
+    if (STRINGP(string_or_symbol))
 	string = THESTR(string_or_symbol);
-    else if (SYMBOL_P(string_or_symbol))
-	string = STRPTR(string_or_symbol);
+    else if (SYMBOLP(string_or_symbol))
+	string = ATOMID(string_or_symbol);
     else
 	LispDestroy("%s: %s is not a string or symbol",
 		    STRFUN(builtin), STROBJ(string_or_symbol));
 
     result = NIL;
 
-    /* Will find at least one symbol matching string-or-symbol,
-     * the value of string-or-symbol itself :-) */
-
     /* Traverse all packages, searching for symbols matching specified string */
-    for (list = PACK; CONS_P(list); list = CDR(list)) {
+    for (list = PACK; CONSP(list); list = CDR(list)) {
 	package = CAR(list);
 	pack = package->data.package.package;
 
@@ -411,8 +408,8 @@ Lisp_Export(LispBuiltin *builtin)
 	package = PACKAGE;
 
     /* Export symbols */
-    if (CONS_P(symbols)) {
-	for (list = symbols; CONS_P(list); list = CDR(list))
+    if (CONSP(symbols)) {
+	for (list = symbols; CONSP(list); list = CDR(list))
 	    LispDoExport(builtin, package, CAR(list), 1);
     }
     else
@@ -454,8 +451,8 @@ Lisp_Import(LispBuiltin *builtin)
     }
 
     /* Export symbols */
-    if (CONS_P(symbols)) {
-	for (list = symbols; CONS_P(list); list = CDR(list))
+    if (CONSP(symbols)) {
+	for (list = symbols; CONSP(list); list = CDR(list))
 	    LispDoImport(builtin, CAR(list));
     }
     else
@@ -508,7 +505,7 @@ Lisp_Intern(LispBuiltin *builtin)
     package = ARGUMENT(1);
     string = ARGUMENT(0);
 
-    ERROR_CHECK_STRING(string);
+    CHECK_STRING(string);
     if (package != NIL)
 	package = LispFindPackageOrDie(builtin, package);
     else
@@ -572,8 +569,8 @@ Lisp_Intern(LispBuiltin *builtin)
 	symbol->data.atom->unreadable = unreadable;
 	/* If symbol being create in the keyword package, make it external */
 	if (package == lisp__data.keyword) {
-	    symbol->data.atom->ext = LispTrue_t;
-	    symbol->data.atom->constant = LispTrue_t;
+	    symbol->data.atom->ext = 1;
+	    symbol->data.atom->constant = 1;
 	}
 	RETURN(0) = NIL;
     }
@@ -624,14 +621,14 @@ Lisp_MakePackage(LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(package_name));
 
     /* Error checks done, package_name is either a symbol or string */
-    if (!STRING_P(package_name))
-	package_name = STRING(STRPTR(package_name));
+    if (!XSTRINGP(package_name))
+	package_name = STRING(ATOMID(package_name));
 
     GC_PROTECT(package_name);
 
     /* Check nicknames */
     nicks = cons = NIL;
-    for (list = nicknames; CONS_P(list); list = CDR(list)) {
+    for (list = nicknames; CONSP(list); list = CDR(list)) {
 	package = LispFindPackage(CAR(list));
 	if (package != NIL)
 	    LispDestroy("%s: nickname %s matches package %s",
@@ -639,8 +636,8 @@ Lisp_MakePackage(LispBuiltin *builtin)
 			THESTR(package->data.package.name));
 	/* Store all nicknames as strings */
 	package = CAR(list);
-	if (!STRING_P(package))
-	    package = STRING(STRPTR(package));
+	if (!XSTRINGP(package))
+	    package = STRING(ATOMID(package));
 	if (nicks == NIL) {
 	    nicks = cons = CONS(package, NIL);
 	    GC_PROTECT(nicks);
@@ -652,7 +649,7 @@ Lisp_MakePackage(LispBuiltin *builtin)
     }
 
     /* Check use list */
-    for (list = use; CONS_P(list); list = CDR(list))
+    for (list = use; CONSP(list); list = CDR(list))
 	(void)LispFindPackageOrDie(builtin, CAR(list));
 
     /* No errors, create new package */
@@ -671,7 +668,7 @@ Lisp_MakePackage(LispBuiltin *builtin)
     lisp__data.pack = package->data.package.package;
     PACKAGE = package;
 
-    for (list = use; CONS_P(list); list = CDR(list))
+    for (list = use; CONSP(list); list = CDR(list))
 	LispUsePackage(LispFindPackage(CAR(list)));
 
     /* Restore pointer to package symbol table */
@@ -763,7 +760,7 @@ Lisp_PackageUsedByList(LispBuiltin *builtin)
 
     used = cons = NIL;
 
-    for (list = PACK; CONS_P(list); list = CDR(list)) {
+    for (list = PACK; CONSP(list); list = CDR(list)) {
 	other = CAR(list);
 	if (package == other)
 	    /* Surely package uses itself */
@@ -810,8 +807,8 @@ Lisp_Unexport(LispBuiltin *builtin)
 	package = PACKAGE;
 
     /* Export symbols */
-    if (CONS_P(symbols)) {
-	for (list = symbols; CONS_P(list); list = CDR(list))
+    if (CONSP(symbols)) {
+	for (list = symbols; CONSP(list); list = CDR(list))
 	    LispDoExport(builtin, package, CAR(list), 0);
     }
     else

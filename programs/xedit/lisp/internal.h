@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.34 2002/11/02 22:58:09 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.35 2002/11/08 08:00:56 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -48,7 +48,6 @@ typedef struct _LispMac LispMac;
 
 #define RPLACA(cons, object)	(CAR(cons) = object)
 #define RPLACD(cons, object)	(CDR(cons) = object)
-#define SETVALUE(atom, object)	((atom)->property->value = object)
 
 #define	CAR(list)		((list)->data.cons.car)
 #define	CAAR(list)		((list)->data.cons.car->data.cons.car)
@@ -72,10 +71,6 @@ typedef struct _LispMac LispMac;
 	/* make a gc never released variable with a static string argument */
 #define STATIC_ATOM(string)	LispNewStaticAtom(string)
 
-#define QUOTE(quote)		LispNewQuote(quote)
-#define BACKQUOTE(bquote)	LispNewBackquote(bquote)
-#define COMMA(comma, at)	LispNewComma(comma, at)
-#define REAL(num)		LispNewReal(num)
 #define STRING(str)		LispNewString(str, strlen(str), 0)
 #define LSTRING(str, size)	LispNewString(str, size, 0)
 
@@ -84,16 +79,7 @@ typedef struct _LispMac LispMac;
 #define STRING2(str)		LispNewString(str, strlen(str), 1)
 #define LSTRING2(str, size)	LispNewString(str, size, 1)
 
-#define CHAR(c)			LispNewCharacter(c)
-#define INTEGER(i)		LispNewInteger(i)
-	/* The object returned by SMALLINT cannot be changed, is a constant */
-#define SMALLINT(i)		LispNewSmallInt(i)
-#define RATIO(n, d)		LispNewRatio(n, d)
 #define VECTOR(objects)		LispNewVector(objects)
-#define COMPLEX(r, i)		LispNewComplex(r, i)
-#define OPAQUE(data, type)	LispNewOpaque((void*)((long)data), type)
-#define KEYWORD(key)		LispNewKeyword(key)
-#define PATHNAME(p)		LispNewPathname(p)
 
 	/* STRINGSTREAM2 and LSTRINGSTREAM2 require that the
 	 * string be allocated from the LispXXX allocation functions,
@@ -112,9 +98,6 @@ typedef struct _LispMac LispMac;
 #define PIPESTREAM(file, path, flag)	\
 	LispNewPipeStream(file, path, flag)
 
-#define BIGINTEGER(i)		LispNewBigInteger(i)
-#define BIGRATIO(r)		LispNewBigRational(r)
-
 #define CHECKO(obj, typ)						\
 	((obj)->type == LispOpaque_t && 				\
 	 ((obj)->data.opaque.type == typ || (obj)->data.opaque.type == 0))
@@ -127,18 +110,11 @@ typedef struct _LispMac LispMac;
 #define	GCDisable()		++gcpro
 #define	GCEnable()		--gcpro
 
-/* pointer to string of a LispAtom_t object */
-#define	STRPTR(obj)		(obj)->data.atom->string
 
 /* pointer to something unique to all atoms with the same print representation */
-#define ATOMID(obj)		(obj)->data.atom->string
-
-/* pointer to string of a LispString_t object */
-#define THESTR(obj)		(obj)->data.string.string
-#define STRLEN(obj)		(obj)->data.string.length
+#define ATOMID(object)		(object)->data.atom->string
 
 
-#if 0		/* XXX */
 
 #define NIL_BIT			0x01
 #define FIXNUM_BIT		0x02
@@ -153,74 +129,272 @@ typedef struct _LispMac LispMac;
 #define MOST_POSITIVE_FIXNUM	((1 << (sizeof(long) * 8 - 5)) - 1)
 #define MOST_NEGATIVE_FIXNUM	(-1 << (sizeof(long) * 8 - 5))
 
+#define SCHAR(value)							\
+    ((LispObj*)(((long)(value) << BIT_COUNT) | SCHAR_MASK))
+#define SCHAR_VALUE(object)	FIXNUM_VALUE(object)
+#define SCHARP(object)							\
+    (((unsigned long)(object) & SCHAR_MASK) == SCHAR_MASK)
+#define CHECK_SCHAR(object)						\
+    if (!SCHARP(object))						\
+	LispDestroy("%s: %s is not a character",			\
+		    STRFUN(builtin), STROBJ(object))
+
+#define XOBJECT_TYPE(object)	((object)->type)
+#define OBJECT_TYPE(object)						\
+    (POINTERP(object) ? XOBJECT_TYPE(object) : (long)(object) & BIT_MASK)
+
+
+#define NIL			(LispObj*)0x00000001
+#define T			(LispObj*)0x00000011
+#define DOT			(LispObj*)0x00000021
+#define	EOLIST			(LispObj*)0x00000031	/* unmatched ')' */
+#define INVALIDP(object)						\
+    ((object) == NULL || (object) == EOLIST || (object) == DOT)
+
+
+/* cons */
+#define XCONSP(object)		((object)->type == LispCons_t)
+#define CONSP(object)		(POINTERP(object) && XCONSP(object))
+#define CHECK_CONS(object)						\
+    if (!CONSP(object))							\
+	LispDestroy("%s: %s is not of type cons",			\
+		    STRFUN(builtin), STROBJ(object))
+#define LISTP(object)		(object == NIL || CONSP(object))
+#define CHECK_LIST(object)						\
+    if (!LISTP(object))							\
+	LispDestroy("%s: %s is not a list",				\
+		    STRFUN(builtin), STROBJ(object))
+
+/* fixnum */
 #define FIXNUM(value)							\
     ((LispObj*)(((long)(value) << BIT_COUNT) | FIXNUM_MASK))
 #define FIXNUM_VALUE(object)	((long)(object) >> BIT_COUNT)
 #define FIXNUMP(object)							\
     (((unsigned long)(object) & FIXNUM_MASK) == FIXNUM_MASK)
+#define CHECK_FIXNUM(object)						\
+    if (!FIXNUMP(object))						\
+	LispDestroy("%s: %s is not a fixnum",				\
+		    STRFUN(builtin), STROBJ(object))
+#define INDEXP(object)							\
+    (FIXNUMP(object) && FIXNUM_VALUE(object) >= 0)
+#define CHECK_INDEX(object)						\
+    if (!INDEXP(object))						\
+	LispDestroy("%s: %s is not a positive fixnum",			\
+		    STRFUN(builtin), STROBJ(object))
 
-#define SHCAR(value)							\
-    ((LispObj*)(((long)(value) << BIT_COUNT) | SCHAR_MASK))
-#define SCHAR_VALUE(object)	FIXNUM_VALUE(object)
-#define SCHARP(object)							\
-    (((unsigned long)(object) & SCHAR_MASK) == SCHAR_MASK)
 
-#define OBJECT_TYPE(object)						\
-    (POINTERP(object) ? (object)->type : ((long)(object) & BIT_MASK) >> 1)
-
-#endif		/* XXX */
+/* long int integer */
+#define XINTP(object)		((object)->type == LispInteger_t)
+#define INTP(objet)		(POINTERP(object) && XINTP(object))
+#define INT_VALUE(object)	(object)->data.integer
 
 
-#define INT_P(obj)		((obj)->type == LispInteger_t)
-#define GETINT(obj)		((obj)->data.integer)
-#define SETINT(obj, value)	((obj)->data.integer = value)
+/* values that fit in a machine long int but not in a fixnum */
+#define LONGINTP(object)						\
+    (POINTERP(object) ? XINTP(object) : FIXNUMP(object))
+#define LONGINT_VALUE(object)						\
+    (POINTERP(object) ? INT_VALUE(object) : FIXNUM_VALUE(object))
+#define CHECK_LONGINT(object)						\
+    if (!LONGINTP(object))						\
+	LispDestroy("%s: %s is not a integer",				\
+		    STRFUN(builtin), STROBJ(object))
 
-#define FLOAT_P(obj)		((obj)->type == LispReal_t)
-#define RATIO_P(obj)		((obj)->type == LispRatio_t)
 
-#define BIGINT_P(obj)		((obj)->type == LispBigInteger_t)
-#define BIGRATIO_P(obj)		((obj)->type == LispBigRatio_t)
+/* bignum */
+#define XBIGNUMP(object)	((object)->type == LispBignum_t)
+#define BIGNUMP(object)		(POINTERP(object) && XBIGNUMP(object))
+#define BIGNUM(object)		LispNewBignum(object)
 
-#define FIXNUM_P(obj)							\
-	(INT_P(obj) || RATIO_P(obj) || FLOAT_P(obj))
 
-/* assumes FIXNUM_P is true */
-#define FIXNUM_VALUE(obj)						\
-	(INT_P(obj) ? (obj)->data.integer :				\
-	 FLOAT_P(obj) ? (obj)->data.real :				\
-	 (double)((obj)->data.ratio.numerator) / 			\
-	 (double)((obj)->data.ratio.denominator))
+/* generic integer */
+#define INTEGER(integer)	LispNewInteger(integer)
+#define INTEGERP(object)						\
+    (POINTERP(object) ? XINTP(object) || XBIGNUMP(object) : FIXNUMP(object))
+#define CHECK_INTEGER(object)						\
+    if (!INTEGERP(object))						\
+	LispDestroy("%s: %s is not an integer",				\
+		    STRFUN(builtin), STROBJ(object))
 
-#define INTEGER_P(obj)					\
-	(INT_P(obj) || BIGINT_P(obj))
 
-#define RATIONAL_P(obj)					\
-	(INT_P(obj) || RATIO_P(obj) ||			\
-	 BIGINT_P(obj) || BIGRATIO_P(obj))
-#define REAL_P(obj)					\
-	(FIXNUM_P(obj) || BIGINT_P(obj) ||		\
-	 BIGRATIO_P(obj))
-#define NUMBER_P(obj)					\
-	(FIXNUM_P(obj) || BIGINT_P(obj) ||		\
-	 BIGRATIO_P(obj) || COMPLEX_P(obj))
+/* ratio */
+#define XRATIOP(object)		((object)->type == LispRatio_t)
+#define RATIOP(object)		(POINTERP(object) && XRATIOP(object))
+#define RATIO(num, den)		LispNewRatio(num, den)
 
-#define INTEGRAL_P(obj)					\
-	(INT_P(obj) || (FLOAT_P(obj) &&			\
-	 (long)(obj)->data.real == (obj)->data.real))
 
-/* positive integer */
-#define INDEX_P(obj)		(INT_P(obj) && obj->data.integer >= 0)
+/* bigratio */
+#define XBIGRATIOP(object)	((object)->type == LispBigratio_t)
+#define BIGRATIOP(object)	(POINTERP(object) && XBIGRATIOP(object))
+#define BIGRATIO(ratio)		LispNewBigratio(ratio)
 
-#define SYMBOL_P(obj)		((obj)->type == LispAtom_t)
-#define STRING_P(obj)		((obj)->type == LispString_t)
-#define CHAR_P(obj)		((obj)->type == LispCharacter_t)
-#define COMPLEX_P(obj)		((obj)->type == LispComplex_t)
-#define CONS_P(obj)		((obj)->type == LispCons_t)
-#define KEYWORD_P(obj)		((obj)->data.atom->package == lisp__data.keyword)
-#define PATHNAME_P(obj)		((obj)->type == LispPathname_t)
-#define HASHTABLE_P(obj)	((obj)->type == LispHashTable_t)
 
-#define STREAM_P(obj)		((obj)->type == LispStream_t)
+/* generic rational */
+#define RATIONALP(object)						\
+    (POINTERP(object) ? XINTP(object) || XRATIOP(object) ||		\
+			XBIGNUMP(object) || XBIGRATIOP(object) :	\
+			FIXNUMP(object))
+
+
+/* double float */
+#define XDFLOATP(object)	((object)->type == LispDFloat_t)
+#define DFLOATP(object)		(POINTERP(object) && XDFLOATP(object))
+#define DFLOAT_VALUE(object)	(object)->data.dfloat
+#define CHECK_DFLOAT(object)						\
+    if (!DFLOATP(object))						\
+	LispDestroy("%s: %s is not a float number",			\
+		    STRFUN(builtin), STROBJ(object))
+#define DFLOAT(value)		LispNewDFloat(value)
+
+
+/* generic float - currently only double float supported */
+#define FLOATP(object)		DFLOATP(object)
+
+
+/* real number */
+#define REALP(object)							\
+    (POINTERP(object) ? XINTP(object) || DFLOATP(object) ||		\
+			XRATIOP(object) || XBIGNUMP(object) ||		\
+			XBIGRATIOP(object) :				\
+			FIXNUMP(object))
+#define CHECK_REAL(object)						\
+    if (!REALP(object))							\
+	LispDestroy("%s: %s is not a real number",			\
+		    STRFUN(builtin), STROBJ(object))
+
+
+/* complex */
+#define XCOMPLEXP(object)	((object)->type == LispComplex_t)
+#define COMPLEXP(object)	(POINTERP(object) && XCOMPLEXP(object))
+#define COMPLEX(real, imag)	LispNewComplex(real, imag)
+
+
+/* generic number */
+#define NUMBERP(object)							\
+    (POINTERP(object) ? XINTP(object) || DFLOATP(object) ||		\
+			XRATIOP(object) || XBIGNUMP(object) ||		\
+			XBIGRATIOP(object) || XCOMPLEXP(object) :	\
+			FIXNUMP(object))
+#define CHECK_NUMBER(object)						\
+    if (!NUMBERP(object))						\
+	LispDestroy("%s: %s is not a number",				\
+		    STRFUN(builtin), STROBJ(object))
+
+
+/* symbol */
+#define XSYMBOLP(object)	((object)->type == LispAtom_t)
+#define SYMBOLP(object)		(POINTERP(object) && XSYMBOLP(object))
+#define CHECK_SYMBOL(object)						\
+    if (!SYMBOLP(object))						\
+	LispDestroy("%s: %s is not a symbol",				\
+		    STRFUN(builtin), STROBJ(object))
+
+
+/* keyword */
+#define XKEYWORDP(object)						\
+    ((object)->data.atom->package == lisp__data.keyword)
+#define KEYWORDP(object)						\
+    (POINTERP(object) && XSYMBOLP(object) && XKEYWORDP(object))
+#define KEYWORD(string)		LispNewKeyword(string)
+#define CHECK_KEYWORD(object)						\
+    if (!KEYWORDP(object))						\
+	LispDestroy("%s: %s is not a keyword",				\
+		    STRFUN(builtin), STROBJ(object))
+#define CHECK_CONSTANT(object)						\
+    if ((object)->data.atom->constant)					\
+	LispDestroy("%s: %s is a constant",				\
+		    STRFUN(builtin), STROBJ(object))
+
+#define SETVALUE(atom, object)	((atom)->property->value = object)
+
+
+/* lambda */
+#define XLAMBDAP(object)	((object)->type == LispLambda_t)
+#define LAMBDAP(object)		(POINTERP(object) && XLAMBDAP(object))
+
+
+/* string - currently only simple 8 bit characters */
+#define XSTRINGP(object)	((object)->type == LispString_t)
+#define STRINGP(object)		(POINTERP(object) && XSTRINGP(object))
+#define THESTR(object)		(object)->data.string.string
+#define STRLEN(object)		(object)->data.string.length
+#define CHECK_STRING(object)						\
+    if (!STRINGP(object))						\
+	LispDestroy("%s: %s is not a string",				\
+		    STRFUN(builtin), STROBJ(object))
+
+
+/* array/vector */
+#define XARRAYP(object)		((object)->type == LispArray_t)
+#define ARRAYP(object)		(POINTERP(object) && XARRAYP(object))
+#define CHECK_ARRAY(object)						\
+    if (!ARRAYP(object))						\
+	LispDestroy("%s: %s is not an array",				\
+		    STRFUN(builtin), STROBJ(object))
+
+
+/* quote */
+#define XQUOTEP(object)		((object)->type == LispQuote_t)
+#define QUOTEP(object)		(POINTERP(object) && XQUOTEP(object))
+#define QUOTE(object)		LispNewQuote(object)
+
+#define XBACKQUOTEP(object)	((object)->type == LispBackquote_t)
+#define BACKQUOTEP(object)	(POINTERP(object) && XBACKQUOTEP(object))
+#define BACKQUOTE(object)	LispNewBackquote(object)
+
+#define XCOMMAP(object)		((object)->type == LispComma_t)
+#define COMMAP(object)		(POINTERP(object) && XCOMMAP(object))
+#define COMMA(object, at)	LispNewComma(object, at)
+
+
+/* package */
+#define XPACKAGEP(object)	((object)->type == LispPackage_t)
+#define PACKAGEP(object)	(POINTERP(object) && XPACKAGEP(object))
+
+
+/* pathname */
+#define XPATHNAMEP(object)	((object)->type == LispPathname_t)
+#define PATHNAMEP(object)	(POINTERP(object) && XPATHNAMEP(object))
+#define PATHNAME(object)	LispNewPathname(object)
+
+
+/* stream */
+#define XSTREAMP(object)	((object)->type == LispStream_t)
+#define STREAMP(object)		(POINTERP(object) && XSTREAMP(object))
+#define CHECK_STREAM(object)						\
+    if (!STREAMP(object))						\
+	LispDestroy("%s: %s is not a stream",				\
+		    STRFUN(builtin), STROBJ(object))
+
+
+/* hastable */
+#define XHASHTABLEP(object)	((object)->type == LispHashTable_t)
+#define HASHTABLEP(object)	(POINTERP(object) && XHASHTABLEP(object))
+#define CHECK_HASHTABLE(object)						\
+    if (!HASHTABLEP(object))						\
+	LispDestroy("%s: %s is not a hash-table",			\
+		    STRFUN(builtin), STROBJ(object))
+
+
+/* regex */
+#define XREGEXP(object)		((object)->type == LispRegex_t)
+#define REGEXP(object)		(POINTERP(object) && XREGEXP(object))
+#define CHECK_REGEX(object)						\
+    if (!REGEXP(object))						\
+	LispDestroy("%s: %s is not a regexp",				\
+		    STRFUN(builtin), STROBJ(object))
+
+
+/* bytecode */
+#define XBYTECODEP(object)	((object)->type == LispBytecode_t)
+#define BYTECODEP(object)	(POINTERP(object) && XBYTECODEP(object))
+
+
+/* opaque */
+#define XOPAQUEP(object)	((object)->type == LispOpaque_t)
+#define OPAQUEP(object)		(POINTERP(object) && XOPAQUEP(object))
+#define OPAQUE(data, type)	LispNewOpaque((void*)((long)data), type)
+
+
 
 #define SSTREAMP(str)		((str)->data.stream.source.string)
 
@@ -233,130 +407,48 @@ typedef struct _LispMac LispMac;
 #define EPSTREAMP(str)		\
 	FSTREAMP((str)->data.stream.source.program->errorp)
 
-#define PACKAGE_P(object)	((object)->type == LispPackage_t)
-#define REGEX_P(object)		((object)->type == LispRegex_t)
-
 #define LispFileno(file)	((file)->descriptor)
 
-#define STRFUN(builtin)		STRPTR(builtin->symbol)
+#define STRFUN(builtin)		ATOMID(builtin->symbol)
 #define STROBJ(obj)		LispStrObj(obj)
-
-#define CONSTANT_P(obj)					\
-    ((obj)->type < LispAtom_t || (obj->type == LispAtom_t && KEYWORD_P(obj)))
-
-/* slightly faster test, since keywords are very uncommon as eval arguments */
-#define NCONSTANT_P(obj)				\
-    ((obj)->type >= LispAtom_t)
 
 /* fetch builtin function/macro argument value
  */
-#define ARGUMENT(index)					\
+#define ARGUMENT(index)							\
 	lisp__data.stack.values[lisp__data.stack.base + (index)]
 
 #define RETURN(index)	lisp__data.returns.values[(index)]
 #define RETURN_COUNT	lisp__data.returns.count
-#define RETURN_CHECK(value)					\
-    value < MULTIPLE_VALUES_LIMIT ?				\
+#define RETURN_CHECK(value)						\
+    value < MULTIPLE_VALUES_LIMIT ?					\
 	value : MULTIPLE_VALUES_LIMIT
 
-#define GC_ENTER()						\
-    int gc__protect = lisp__data.protect.length
+#define GC_ENTER()		int gc__protect = lisp__data.protect.length
 
-#define GC_PROTECT(object)					\
-    if (lisp__data.protect.length >= lisp__data.protect.space)	\
-	LispMoreProtects();					\
+#define GC_PROTECT(object)						\
+    if (lisp__data.protect.length >= lisp__data.protect.space)		\
+	LispMoreProtects();						\
     lisp__data.protect.objects[lisp__data.protect.length++] = object
 
-#define GC_LEAVE()					\
-    lisp__data.protect.length = gc__protect
+#define GC_LEAVE()		lisp__data.protect.length = gc__protect
 
-/* Error checking, to be called from builtin functions */
-#define ERROR_CHECK_SYMBOL(object)				\
-    if (!SYMBOL_P(object))					\
-	LispDestroy("%s: %s is not a symbol",			\
-		    STRFUN(builtin), STROBJ(object))
-
-#define ERROR_CHECK_KEYWORD(object)				\
-    if (!SYMBOL_P(object) || !KEYWORD_P(object))		\
-	LispDestroy("%s: %s is not a keyword",			\
-		    STRFUN(builtin), STROBJ(object))
-
-#define ERROR_CHECK_LIST(object)				\
-    if (!CONS_P(object))					\
-	LispDestroy("%s: %s is not a list",			\
-		    STRFUN(builtin), STROBJ(object))
-
-#define ERROR_CHECK_STRING(object)				\
-    if (!STRING_P(object))					\
-	LispDestroy("%s: %s is not a string",			\
-		    STRFUN(builtin), STROBJ(object))
-
-#define ERROR_CHECK_REAL(object)				\
-    if (!REAL_P(object))					\
-	LispDestroy("%s: %s is not a real number",		\
-		    STRFUN(builtin), STROBJ(object))
-
-#define ERROR_CHECK_INTEGER(object)				\
-    if (!INTEGER_P(object))					\
-	LispDestroy("%s: %s is not an integer",			\
-		    STRFUN(builtin), STROBJ(object))
-
-/* XXX previous macros misnamed FIXNUM */
-#define ERROR_CHECK_FIXNUM(object)				\
-    if (!INT_P(object))						\
-	LispDestroy("%s: %s is not a fixnum",			\
-		    STRFUN(builtin), STROBJ(object))
-
-#define ERROR_CHECK_FLOAT(object)				\
-    if (!FLOAT_P(object))					\
-	LispDestroy("%s: %s is not a float number",		\
-		    STRFUN(builtin), STROBJ(object))
-
-#define ERROR_CHECK_NUMBER(object)				\
-    if (!NUMBER_P(object))					\
-	LispDestroy("%s: %s is not a number",			\
-		    STRFUN(builtin), STROBJ(object))
-
-#define ERROR_CHECK_CHARACTER(object)				\
-    if (!CHAR_P(object))					\
-	LispDestroy("%s: %s is not a character",		\
-		    STRFUN(builtin), STROBJ(object))
-
-#define ERROR_CHECK_INDEX(object)				\
-    if (!INDEX_P(object))					\
-	LispDestroy("%s: %s is not a positive fixnum",		\
-		    STRFUN(builtin), STROBJ(object))
-
-#define ERROR_CHECK_CONS(object)				\
-    if (!CONS_P(object))					\
-	LispDestroy("%s: %s is not of type cons",		\
-		    STRFUN(builtin), STROBJ(object))
-
-#define ERROR_CHECK_STREAM(object)				\
-    if (!STREAM_P(object))					\
-	LispDestroy("%s: %s is not a stream",			\
-		    STRFUN(builtin), STROBJ(object))
-
-/* Don't check if object is a symbol */
-#define ERROR_CHECK_CONSTANT(object)				\
-    if ((object)->data.atom->constant)				\
-	LispDestroy("%s: %s is a constant",			\
-		    STRFUN(builtin), STROBJ(object))
-
-#define ERROR_CHECK_REGEX(object)				\
-    if (!REGEX_P(object))					\
-	LispDestroy("%s: %s is not a regexp",			\
-		    STRFUN(builtin), STROBJ(object))
-
-#define ERROR_CHECK_HASHTABLE(object)				\
-    if (!HASHTABLE_P(object))					\
-	LispDestroy("%s: %s is not a hash-table",		\
-		    STRFUN(builtin), STROBJ(object))
 
 #define ERROR_CHECK_SPECIAL_FORM(atom)					\
     if (atom->property->fun.builtin->compile)				\
 	LispDestroy("%s: the special form %s cannot be redefined",	\
 		    STRFUN(builtin), atom->string)
+
+
+
+#define CONSTANTP(object)						\
+    (!POINTERP(object) ||						\
+     XOBJECT_TYPE(object) < LispAtom_t ||				\
+     (XSYMBOLP(object) && XKEYWORDP(object)))
+
+/* slightly faster test, since keywords are very uncommon as eval arguments */
+#define NCONSTANTP(object)						\
+    (OBJECT_TYPE(object) >= LispAtom_t)
+
 
 /*
  * Types
@@ -377,28 +469,26 @@ typedef struct _LispCom LispCom;
 typedef char *Atom_id;
 
 typedef enum _LispType {
-	/* simple types, self contained objects first */
-    LispNil_t,
-    LispTrue_t,
-    LispInteger_t,
-    LispReal_t,
-    LispCharacter_t,
+    /* objects encoded in the LispObj pointer */
+    LispNil_t = 1,
+    LispFixnum_t = 3,
+    LispSChar_t = 5,
+
+    /* objects that have a structure */
+    LispInteger_t = 16,
+    LispDFloat_t,
     LispString_t,
     LispRatio_t,
     LispOpaque_t,
 
-	/* non simple types, like streams, need special cleanup in gc,
-	 * but simple access for marking */
-    LispBigInteger_t,
-    LispBigRatio_t,
+    /* simple access for marking */
+    LispBignum_t,
+    LispBigratio_t,
 
-	/* self contained for GC, but not for eval */
     LispAtom_t,
 
-	/* not a simple object, but name field is either nil or an atom */
     LispLambda_t,
 
-	/* a cons of two numbers */
     LispComplex_t,
     LispCons_t,
     LispQuote_t,
@@ -447,7 +537,7 @@ struct _LispObj {
 	    long length;
 	} string;
 	long integer;
-	double real;
+	double dfloat;
 	LispObj *quote;
 	LispObj *pathname;	/* don't use quote generic name,
 				 * to avoid confusing code */
@@ -477,7 +567,7 @@ struct _LispObj {
 	    LispObj *dim;		/* dimensions of array */
 	    unsigned int rank : 8;	/* i.e. array-rank-limit => 256 */
 	    unsigned int type : 7;	/* converted to LispType, if not
-					 * Lisp{Nil,True}_t only accepts given
+					 * Lisp_Nil_t only accepts given
 					 * type in array fields */
 	    unsigned int zero : 1;	/* at least one of the dimensions
 					 * is zero */
@@ -574,9 +664,8 @@ LispObj *LispNew(LispObj*, LispObj*);
 LispObj *LispNewSymbol(LispAtom*);
 LispObj *LispNewAtom(char*, int);
 LispObj *LispNewStaticAtom(char*);
-LispObj *LispNewReal(double);
+LispObj *LispNewDFloat(double);
 LispObj *LispNewString(char*, long, int);
-LispObj *LispNewCharacter(long);
 LispObj *LispNewSmallInt(long);
 LispObj *LispNewInteger(long);
 LispObj *LispNewRatio(long, long);
@@ -591,11 +680,11 @@ LispObj *LispNewComplex(LispObj*, LispObj*);
 LispObj *LispNewOpaque(void*, int);
 LispObj *LispNewKeyword(char*);
 LispObj *LispNewPathname(LispObj*);
-LispObj *LispNewStringStream(unsigned char*, int, long, int);
+LispObj *LispNewStringStream(char*, int, long, int);
 LispObj *LispNewFileStream(LispFile*, LispObj*, int);
 LispObj *LispNewPipeStream(LispPipe*, LispObj*, int);
-LispObj *LispNewBigInteger(mpi*);
-LispObj *LispNewBigRational(mpr*);
+LispObj *LispNewBignum(mpi*);
+LispObj *LispNewBigratio(mpr*);
 
 LispAtom *LispGetAtom(char*);
 
@@ -631,7 +720,6 @@ LispObj *LispSetVariable(LispObj*, LispObj*, char*, int);
 
 int LispRegisterOpaqueType(char*);
 
-int LispPrintf(LispObj*, char*, ...);
 int LispPrintString(LispObj*, char*);
 
 void LispProtect(LispObj*, LispObj*);
@@ -644,13 +732,13 @@ void LispAddBuiltinFunction(LispBuiltin*);
 /*
  * Initialization
  */
-extern LispObj *NIL, *T, *DOT, *UNBOUND;
+extern LispObj *UNBOUND;
 extern int gcpro;
 
 extern LispObj *Okey, *Orest, *Ooptional, *Oaux, *Olambda;
 extern Atom_id Snil, St, Skey, Srest, Soptional, Saux;
 extern Atom_id Sand, Sor, Snot;
-extern Atom_id Satom, Ssymbol, Sinteger, Scharacter, Sreal, Sstring, Slist,
+extern Atom_id Satom, Ssymbol, Sinteger, Scharacter, Sstring, Slist,
 	       Scons, Svector, Sarray, Sstruct, Skeyword, Sfunction, Spathname,
 	       Srational, Sfloat, Scomplex, Sopaque, Sdefault;
 

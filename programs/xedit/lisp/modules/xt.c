@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/xt.c,v 1.16 2002/10/06 17:11:48 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/xt.c,v 1.17 2002/11/08 08:01:00 paulo Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -341,8 +341,8 @@ Lisp_XtCoerceToWidgetList(LispBuiltin *builtin)
     opaque = ARGUMENT(1);
     onumber = ARGUMENT(0);
 
-    ERROR_CHECK_INDEX(onumber);
-    num_children = GETINT(onumber);
+    CHECK_INDEX(onumber);
+    num_children = FIXNUM_VALUE(onumber);
 
     if (!CHECKO(opaque, xtWidgetList_t))
 	LispDestroy("%s: cannot convert %s to WidgetList",
@@ -391,8 +391,8 @@ Lisp_XtAddCallback(LispBuiltin *builtin)
 	LispDestroy("%s: cannot convert %s to Widget",
 		    STRFUN(builtin), STROBJ(widget));
 
-    ERROR_CHECK_STRING(callback_name);
-    if (!SYMBOL_P(callback) && callback->type != LispLambda_t)
+    CHECK_STRING(callback_name);
+    if (!SYMBOLP(callback) && callback->type != LispLambda_t)
 	LispDestroy("%s: %s cannot be used as a callback",
 		    STRFUN(builtin), STROBJ(callback));
 
@@ -438,13 +438,13 @@ Lisp_XtAppAddInput(LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(app_context));
     appcon = (XtAppContext)(app_context->data.opaque.data);
 
-    ERROR_CHECK_INDEX(fileno);
-    source = GETINT(fileno);
+    CHECK_LONGINT(fileno);
+    source = LONGINT_VALUE(fileno);
 
-    ERROR_CHECK_FIXNUM(ocondition);
-    condition = GETINT(ocondition);
+    CHECK_FIXNUM(ocondition);
+    condition = FIXNUM_VALUE(ocondition);
 
-    if (!SYMBOL_P(function) && function->type != LispLambda_t)
+    if (!SYMBOLP(function) && function->type != LispLambda_t)
 	LispDestroy("%s: %s cannot be used as a callback",
 		    STRFUN(builtin), STROBJ(function));
 
@@ -535,22 +535,19 @@ Lisp_XtAppInitialize(LispBuiltin *builtin)
     application_class = ARGUMENT(1);
     app_context_return = ARGUMENT(0);
 
-    ERROR_CHECK_SYMBOL(app_context_return);
-    ERROR_CHECK_STRING(application_class);
-
-    if (options != NIL) {
-	ERROR_CHECK_CONS(options);
-    }
+    CHECK_SYMBOL(app_context_return);
+    CHECK_STRING(application_class);
+    CHECK_LIST(options);
 
     /* check fallback resources, if given */
     if (fallback_resources != NIL) {
 	LispObj *string;
 	int count;
 
-	ERROR_CHECK_LIST(fallback_resources);
+	CHECK_CONS(fallback_resources);
 	for (string = fallback_resources, count = 0; CONS_P(string);
 	     string = CDR(string), count++)
-	    ERROR_CHECK_STRING(CAR(string));
+	    CHECK_STRING(CAR(string));
 
 	/* fallback resources was correctly specified */
 	fallback = LispMalloc(sizeof(String) * (count + 1));
@@ -641,8 +638,8 @@ Lisp_XtAppProcessEvent(LispBuiltin *builtin)
     appcon = (XtAppContext)(app_context->data.opaque.data);
     if (omask == NIL)
 	mask = XtIMAll;
-    ERROR_CHECK_FIXNUM(omask);
-    mask = GETINT(omask);
+    CHECK_FIXNUM(omask);
+    mask = FIXNUM_VALUE(omask);
 
     if (mask != (mask & XtIMAll))
 	LispDestroy("%s: %d does not fit in XtInputMask %d",
@@ -651,7 +648,7 @@ Lisp_XtAppProcessEvent(LispBuiltin *builtin)
     if (mask)
 	XtAppProcessEvent(appcon, mask);
 
-    return (omask == NIL ? INTEGER(mask) : omask);
+    return (omask == NIL ? FIXNUM(mask) : omask);
 }
 
 LispObj *
@@ -788,7 +785,7 @@ LispXtCreateWidget(LispBuiltin *builtin, int options)
     owidget_class = ARGUMENT(1);
     oname = ARGUMENT(0);
 
-    ERROR_CHECK_STRING(oname);
+    CHECK_STRING(oname);
     name = THESTR(oname);
 
     if (!CHECKO(owidget_class, xtWidgetClass_t))
@@ -801,9 +798,7 @@ LispXtCreateWidget(LispBuiltin *builtin, int options)
 		    STRFUN(builtin), STROBJ(oparent));
     parent = (Widget)(oparent->data.opaque.data);
 
-    if (arguments != NIL) {
-	ERROR_CHECK_CONS(arguments);
-    }
+    CHECK_LIST(arguments);
 
     if (options == SHELL)
 	widget = XtCreatePopupShell(name, widget_class, parent, NULL, 0);
@@ -873,7 +868,7 @@ Lisp_XtGetValues(LispBuiltin *builtin)
 	LispDestroy("%s: cannot convert %s to Widget",
 		    STRFUN(builtin), STROBJ(owidget));
     widget = (Widget)(owidget->data.opaque.data);
-    ERROR_CHECK_LIST(arguments);
+    CHECK_CONS(arguments);
 
     rlist = GetResourceList(XtClass(widget));
     plist =  XtParent(widget) ?
@@ -882,7 +877,7 @@ Lisp_XtGetValues(LispBuiltin *builtin)
     GCDisable();
     result = NIL;
     for (list = arguments; CONS_P(list); list = CDR(list)) {
-	ERROR_CHECK_STRING(CAR(list));
+	CHECK_STRING(CAR(list));
 	if ((resource = GetResourceInfo(THESTR(CAR(list)), rlist, plist))
 	     == NULL) {
 	    int i;
@@ -931,9 +926,9 @@ Lisp_XtGetValues(LispBuiltin *builtin)
 	/* special resources */
 	if (resource->qtype == qString) {
 #ifdef LONG64
-	    object = CONS(CAR(list), STRING((char*)c8));
+	    object = CONS(CAR(list), STRING(c8));
 #else
-	    object = CONS(CAR(list), STRING((char*)c4));
+	    object = CONS(CAR(list), STRING(c4));
 #endif
 	}
 	else if (resource->qtype == qCardinal || resource->qtype == qInt) {
@@ -1084,8 +1079,8 @@ Lisp_XtPopup(LispBuiltin *builtin)
     if (!CHECKO(widget, xtWidget_t))
 	LispDestroy("%s: cannot convert %s to Widget",
 		    STRFUN(builtin), STROBJ(widget));
-    ERROR_CHECK_INDEX(grab_kind);
-    kind = (XtGrabKind)GETINT(grab_kind);
+    CHECK_INDEX(grab_kind);
+    kind = (XtGrabKind)FIXNUM_VALUE(grab_kind);
     if (kind != XtGrabExclusive && kind != XtGrabNone &&
 	kind != XtGrabNonexclusive)
 	LispDestroy("%s: %d does not fit in XtGrabKind",
@@ -1176,7 +1171,7 @@ Lisp_XtSetValues(LispBuiltin *builtin)
 	LispDestroy("%s: cannot convert %s to Widget",
 		    STRFUN(builtin), STROBJ(owidget));
     widget = (Widget)(owidget->data.opaque.data);
-    ERROR_CHECK_LIST(arguments);
+    CHECK_CONS(arguments);
     resources = LispConvertResources(arguments, widget,
 				     GetResourceList(XtClass(widget)),
 				     XtParent(widget) ?
@@ -1475,15 +1470,15 @@ LispConvertResources(LispObj *list, Widget widget,
     char *fname = "XT-CONVERT-RESOURCES";
     Resources *resources = (Resources*)XtCalloc(1, sizeof(Resources));
 
-    for (; CONS_P(list); list = CDR(list)) {
-	if (!CONS_P(CAR(list))) {
+    for (; CONSP(list); list = CDR(list)) {
+	if (!CONSP(CAR(list))) {
 	    XtFree((XtPointer)resources);
 	    LispDestroy("%s: %s is not a cons", fname, STROBJ(CAR(list)));
 	}
 	arg = CAR(CAR(list));
 	val = CDR(CAR(list));
 
-	if (!STRING_P(arg)) {
+	if (!STRINGP(arg)) {
 	    XtFree((XtPointer)resources);
 	    LispDestroy("%s: %s is not a string", fname, STROBJ(arg));
 	}
@@ -1516,21 +1511,25 @@ LispConvertResources(LispObj *list, Widget widget,
 	    }
 	}
 
-	if (FIXNUM_P(val) || val->type == LispOpaque_t) {
+	if (LONGINTP(val) || DFLOATP(val) || OPAQUEP(val)) {
 	    resources->args = (Arg*)
 		XtRealloc((XtPointer)resources->args,
 			  sizeof(Arg) * (resources->num_args + 1));
-	    if (FIXNUM_P(val)) {
-		if (resource->qtype == qFloat) {
-		    float fvalue = (float)FIXNUM_VALUE(val);
+	    if (!OPAQUEP(val)) {
+		float fvalue;
 
+		if (DFLOATP(val))
+		    fvalue = DFLOAT_VALUE(val);
+		else
+		    fvalue = LONGINT_VALUE(val);
+		if (resource->qtype == qFloat) {
 		    XtSetArg(resources->args[resources->num_args],
 			     XrmQuarkToString(resource->qname), fvalue);
 		}
 		else
 		    XtSetArg(resources->args[resources->num_args],
 			     XrmQuarkToString(resource->qname),
-			     (int)FIXNUM_VALUE(val));
+			     (int)fvalue);
 	    }
 	    else
 		XtSetArg(resources->args[resources->num_args],
@@ -1566,7 +1565,7 @@ LispConvertResources(LispObj *list, Widget widget,
 	    ++resources->num_args;
 	    continue;
 	}
-	else if (!STRING_P(val)) {
+	else if (!STRINGP(val)) {
 	    XtFree((XtPointer)resources);
 	    LispDestroy("%s: resource value must be string, number or opaque, not %s",
 			fname, STROBJ(val));

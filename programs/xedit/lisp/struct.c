@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/struct.c,v 1.16 2002/09/15 21:32:23 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/struct.c,v 1.17 2002/11/08 08:00:57 paulo Exp $ */
 
 #include "struct.h"
 
@@ -64,16 +64,16 @@ Lisp_Defstruct(LispBuiltin *builtin)
     oname = ARGUMENT(0);
 
     /* get structure name */
-    if (!SYMBOL_P(oname) ||
+    if (!SYMBOLP(oname) ||
 	/* reserved name(s) */
 	ATOMID(oname) == Sarray)
 	LispDestroy("%s: %s cannot be a structure name",
 		    STRFUN(builtin), STROBJ(oname));
 
-    strname = STRPTR(oname);
+    strname = ATOMID(oname);
     length = strlen(strname);
 
-    if (CONS_P(description) && STRING_P(CAR(description))) {
+    if (CONSP(description) && STRINGP(CAR(description))) {
 	documentation = CAR(description);
 	description = CDR(description);
     }
@@ -81,33 +81,33 @@ Lisp_Defstruct(LispBuiltin *builtin)
 	documentation = NIL;
 
     /* get structure fields and default values */
-    for (list = description; CONS_P(list); list = CDR(list)) {
+    for (list = description; CONSP(list); list = CDR(list)) {
 	object = CAR(list);
 
-	if (CONS_P(object)) {
-	    if ((CONS_P(CDR(object)) && CDR(CDR(object)) != NIL) ||
-		(!CONS_P(CDR(object)) && CDR(object) != NIL))
+	if (CONSP(object)) {
+	    if ((CONSP(CDR(object)) && CDR(CDR(object)) != NIL) ||
+		(!CONSP(CDR(object)) && CDR(object) != NIL))
 	    LispDestroy("%s: bad initialization %s",
 			STRFUN(builtin), STROBJ(object));
 	    object = CAR(object);
 	}
-	if (!SYMBOL_P(object) || strcmp(STRPTR(object), "P") == 0)
+	if (!SYMBOLP(object) || strcmp(ATOMID(object), "P") == 0)
 	    /* p is invalid as a field name due to `type'-p */
 	    LispDestroy("%s: %s cannot be a field for %s",
-			STRFUN(builtin), STROBJ(object), STRPTR(oname));
+			STRFUN(builtin), STROBJ(object), ATOMID(oname));
 
 	/* check for repeated field names */
 	for (object = description; object != list; object = CDR(object)) {
 	    LispObj *left = CAR(object), *right = CAR(list);
 
-	    if (CONS_P(left))
+	    if (CONSP(left))
 		left = CAR(left);
-	    if (CONS_P(right))
+	    if (CONSP(right))
 		right = CAR(right);
 
 	    if (ATOMID(left) == ATOMID(right))
 		LispDestroy("%s: only one slot named :%s allowed",
-			    STRFUN(builtin), STRPTR(left));
+			    STRFUN(builtin), ATOMID(left));
 	}
     }
 
@@ -139,11 +139,11 @@ Lisp_Defstruct(LispBuiltin *builtin)
     if (!intern)
 	LispExportSymbol(object);
 
-    for (i = 0, list = description; CONS_P(list); i++, list = CDR(list)) {
-	if (CONS_P(CAR(list)))
-	    sname = STRPTR(CAR(CAR(list)));
+    for (i = 0, list = description; CONSP(list); i++, list = CDR(list)) {
+	if (CONSP(CAR(list)))
+	    sname = ATOMID(CAR(CAR(list)));
 	else
-	    sname = STRPTR(CAR(list));
+	    sname = ATOMID(CAR(list));
 	slength = strlen(sname);
 	if (length + slength + 2 > size) {
 	    size = length + slength + 2;
@@ -183,7 +183,7 @@ Lisp_XeditMakeStruct(LispBuiltin *builtin)
     struc = ARGUMENT(0);
 
     field = cons = NIL;
-    if (!SYMBOL_P(struc) ||
+    if (!SYMBOLP(struc) ||
 	(atom = struc->data.atom)->a_defstruct == 0 ||
 	 atom->property->structure.function != STRUCT_CONSTRUCTOR)
 	LispDestroy("%s: invalid constructor %s",
@@ -194,34 +194,34 @@ Lisp_XeditMakeStruct(LispBuiltin *builtin)
     fields = NIL;
 
     /* check for errors in argument list */
-    for (list = init, nfld = 0; CONS_P(list); list = CDR(list)) {
-	if (!KEYWORD_P(CAR(list)))
+    for (list = init, nfld = 0; CONSP(list); list = CDR(list)) {
+	if (!KEYWORDP(CAR(list)))
 	    LispDestroy("%s: %s is an invalid field for %s",
-			STRPTR(struc), STROBJ(field),
-			STRPTR(CAR(definition)));
-	if (!CONS_P(CDR(list)))
+			ATOMID(struc), STROBJ(field),
+			ATOMID(CAR(definition)));
+	if (!CONSP(CDR(list)))
 	    LispDestroy("%s: values must be provided as pairs",
-			STRPTR(struc));
+			ATOMID(struc));
 	nfld++;
 	list = CDR(list);
     }
 
     /* create structure, CAR(definition) is structure name */
-    for (list = CDR(definition); CONS_P(list); list = CDR(list)) {
+    for (list = CDR(definition); CONSP(list); list = CDR(list)) {
 	Atom_id id;
 	LispObj *defvalue = NIL;
 
 	++nfld;
 	field = CAR(list);
-	if (CONS_P(field)) {
+	if (CONSP(field)) {
 	    /* if default value provided */
-	    if (CONS_P(CDR(field)))
+	    if (CONSP(CDR(field)))
 		defvalue = CAR(CDR(field));
 	    field = CAR(field);
 	}
 	id = ATOMID(field);
 
-	for (object = init; CONS_P(object); object = CDR(object)) {
+	for (object = init; CONSP(object); object = CDR(object)) {
 	    /* field is a keyword, test above checked it */
 	    field = CAR(object);
 	    if (id == ATOMID(field)) {
@@ -234,7 +234,7 @@ Lisp_XeditMakeStruct(LispBuiltin *builtin)
 	}
 
 	/* if no initialization given */
-	if (!CONS_P(object)) {
+	if (!CONSP(object)) {
 	    /* if default value in structure definition */
 	    if (defvalue != NIL)
 		value = EVAL(defvalue);
@@ -258,21 +258,21 @@ Lisp_XeditMakeStruct(LispBuiltin *builtin)
      * it is acceptable to set a field more than once, but in that case,
      * only the first value will be used. */
     if (nfld > ncvt) {
-	for (list = init; CONS_P(list); list = CDR(list)) {
+	for (list = init; CONSP(list); list = CDR(list)) {
 	    Atom_id id = ATOMID(CAR(list));
 
-	    for (object = CDR(definition); CONS_P(object);
+	    for (object = CDR(definition); CONSP(object);
 		 object = CDR(object)) {
 		field = CAR(object);
-		if (CONS_P(field))
+		if (CONSP(field))
 		    field = CAR(field);
 		if (ATOMID(field) == id)
 		    break;
 	    }
-	    if (!CONS_P(object))
+	    if (!CONSP(object))
 		LispDestroy("%s: %s is not a field for %s",
-			    STRPTR(struc), STROBJ(CAR(list)),
-			    STRPTR(CAR(definition)));
+			    ATOMID(struc), STROBJ(CAR(list)),
+			    ATOMID(CAR(definition)));
 	    list = CDR(list);
 	}
     }
@@ -300,7 +300,7 @@ LispStructAccessOrStore(LispBuiltin *builtin, int store)
     struc = ARGUMENT(1);
     name = ARGUMENT(0);
 
-    if (!SYMBOL_P(name) ||
+    if (!SYMBOLP(name) ||
 	(atom = name->data.atom)->a_defstruct == 0 ||
 	(offset = atom->property->structure.function) < 0) {
 	LispDestroy("%s: invalid argument %s",
@@ -312,9 +312,9 @@ LispStructAccessOrStore(LispBuiltin *builtin, int store)
     definition = atom->property->structure.definition;
 
     /* check if the object is of the required type */
-    if (struc->type != LispStruct_t || struc->data.struc.def != definition)
+    if (!STRUCTP(struc) || struc->data.struc.def != definition)
 	LispDestroy("%s: %s is not a %s",
-		    STRPTR(name), STROBJ(struc), STRPTR(CAR(definition)));
+		    ATOMID(name), STROBJ(struc), ATOMID(CAR(definition)));
 
     for (list = struc->data.struc.fields; offset; list = CDR(list), offset--)
 	;
@@ -353,7 +353,7 @@ Lisp_XeditStructType(LispBuiltin *builtin)
     struc = ARGUMENT(1);
     name = ARGUMENT(0);
 
-    if (!SYMBOL_P(name) ||
+    if (!SYMBOLP(name) ||
 	(atom = name->data.atom)->a_defstruct == 0 ||
 	(atom->property->structure.function != STRUCT_CHECK))
 	LispDestroy("%s: invalid argument %s",
@@ -361,7 +361,7 @@ Lisp_XeditStructType(LispBuiltin *builtin)
     definition = atom->property->structure.definition;
 
     /* check if the object is of the required type */
-    if (struc->type == LispStruct_t && struc->data.struc.def == definition)
+    if (STRUCTP(struc) && struc->data.struc.def == definition)
 	return (T);
 
     return (NIL);

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/hash.c,v 1.1 2002/10/06 17:11:42 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/hash.c,v 1.2 2002/11/08 08:00:56 paulo Exp $ */
 
 #include "hash.h"
 
@@ -80,9 +80,9 @@ LispHashKey(LispObj *object, int function)
 	goto hash_key_done;
 
     if (function == FEQUALP) {
-	switch (object->type) {
-	    case LispCharacter_t:
-		key = (unsigned long)toupper(GETINT(object));
+	switch (OBJECT_TYPE(object)) {
+	    case LispSChar_t:
+		key = (unsigned long)toupper(SCHAR_VALUE(object));
 		goto hash_key_done;
 	    case LispString_t:
 		string = THESTR(object);
@@ -98,23 +98,26 @@ LispHashKey(LispObj *object, int function)
     }
 
     /* Function is EQL, EQUAL or EQUALP */
-    switch (object->type) {
+    switch (OBJECT_TYPE(object)) {
+	case LispFixnum_t:
+	case LispSChar_t:
+	    key = (unsigned long)FIXNUM_VALUE(object);
+	    goto hash_key_done;
 	case LispInteger_t:
-	case LispCharacter_t:
-	    key = (unsigned long)GETINT(object);
+	    key = (unsigned long)INT_VALUE(object);
 	    goto hash_key_done;
 	case LispRatio_t:
 	    key = (object->data.ratio.numerator << 16) ^
 		   object->data.ratio.denominator;
 	    goto hash_key_done;
-	case LispReal_t:
-	    key = (unsigned long)object->data.real;
+	case LispDFloat_t:
+	    key = (unsigned long)DFLOAT_VALUE(object);
 	    break;
 	case LispComplex_t:
 	    key = (LispHashKey(object->data.complex.imag, function) << 16) ^
 		   LispHashKey(object->data.complex.real, function);
 	    goto hash_key_done;
-	case LispBigInteger_t:
+	case LispBignum_t:
 	    bigi = object->data.mp.integer;
 	    length = bigi->size;
 	    if (length > 8)
@@ -123,7 +126,7 @@ LispHashKey(LispObj *object, int function)
 	    for (i = 0; i < length; i++)
 		key = (key << 8) ^ bigi->digs[i];
 	    goto hash_key_done;
-	case LispBigRatio_t:
+	case LispBigratio_t:
 	    bigi = mpr_num(object->data.mp.ratio);
 	    length = bigi->size;
 	    if (length > 4)
@@ -146,7 +149,7 @@ LispHashKey(LispObj *object, int function)
     if (function == FEQL)
 	goto hash_key_done;
 
-    switch (object->type) {
+    switch (OBJECT_TYPE(object)) {
 	case LispString_t:
 	    string = THESTR(object);
 	    length = STRLEN(object);
@@ -194,7 +197,7 @@ LispHash(LispBuiltin *builtin, int code)
     hash_table = ARGUMENT(1);
     okey = ARGUMENT(0);
 
-    ERROR_CHECK_HASHTABLE(hash_table);
+    CHECK_HASHTABLE(hash_table);
 
     /* get hash entry */
     hash = hash_table->data.hash.table;
@@ -376,7 +379,7 @@ Lisp_Clrhash(LispBuiltin *builtin)
 
     LispObj *hash_table = ARGUMENT(0);
 
-    ERROR_CHECK_HASHTABLE(hash_table);
+    CHECK_HASHTABLE(hash_table);
 
     hash = hash_table->data.hash.table;
     for (entry = hash->entries, last = entry + hash->num_entries;
@@ -408,7 +411,7 @@ Lisp_HashTableP(LispBuiltin *builtin)
 {
     LispObj *object = ARGUMENT(0);
 
-    return (object->type == LispHashTable_t ? T : NIL);
+    return (HASHTABLEP(object) ? T : NIL);
 }
 
 LispObj *
@@ -419,9 +422,9 @@ Lisp_HashTableCount(LispBuiltin *builtin)
 {
     LispObj *hash_table = ARGUMENT(0);
 
-    ERROR_CHECK_HASHTABLE(hash_table);
+    CHECK_HASHTABLE(hash_table);
 
-    return (SMALLINT(hash_table->data.hash.table->count));
+    return (FIXNUM(hash_table->data.hash.table->count));
 }
 
 LispObj *
@@ -432,9 +435,9 @@ Lisp_HashTableRehashSize(LispBuiltin *builtin)
 {
     LispObj *hash_table = ARGUMENT(0);
 
-    ERROR_CHECK_HASHTABLE(hash_table);
+    CHECK_HASHTABLE(hash_table);
 
-    return (REAL(hash_table->data.hash.table->rehash_size));
+    return (DFLOAT(hash_table->data.hash.table->rehash_size));
 }
 
 LispObj *
@@ -445,9 +448,9 @@ Lisp_HashTableRehashThreshold(LispBuiltin *builtin)
 {
     LispObj *hash_table = ARGUMENT(0);
 
-    ERROR_CHECK_HASHTABLE(hash_table);
+    CHECK_HASHTABLE(hash_table);
 
-    return (REAL(hash_table->data.hash.table->rehash_threshold));
+    return (DFLOAT(hash_table->data.hash.table->rehash_threshold));
 }
 
 LispObj *
@@ -458,9 +461,9 @@ Lisp_HashTableSize(LispBuiltin *builtin)
 {
     LispObj *hash_table = ARGUMENT(0);
 
-    ERROR_CHECK_HASHTABLE(hash_table);
+    CHECK_HASHTABLE(hash_table);
 
-    return (SMALLINT(hash_table->data.hash.table->num_entries));
+    return (FIXNUM(hash_table->data.hash.table->num_entries));
 }
 
 LispObj *
@@ -471,7 +474,7 @@ Lisp_HashTableTest(LispBuiltin *builtin)
 {
     LispObj *hash_table = ARGUMENT(0);
 
-    ERROR_CHECK_HASHTABLE(hash_table);
+    CHECK_HASHTABLE(hash_table);
 
     return (hash_table->data.hash.test);
 }
@@ -490,7 +493,7 @@ Lisp_Maphash(LispBuiltin *builtin)
     hash_table = ARGUMENT(1);
     function = ARGUMENT(0);
 
-    ERROR_CHECK_HASHTABLE(hash_table);
+    CHECK_HASHTABLE(hash_table);
 
     for (entry = hash_table->data.hash.table->entries,
 	 last = entry + hash_table->data.hash.table->num_entries;
@@ -539,43 +542,39 @@ Lisp_MakeHashTable(LispBuiltin *builtin)
 	test = Oeql;
 
     if (size != NIL) {
-	ERROR_CHECK_INDEX(size);
-	isize = GETINT(size);
+	CHECK_INDEX(size);
+	isize = FIXNUM_VALUE(size);
     }
     else
 	isize = 1;
 
     if (rehash_size != NIL) {
-	ERROR_CHECK_FLOAT(rehash_size);
-	if (rehash_size->data.real <= 1.0)
+	CHECK_DFLOAT(rehash_size);
+	if (DFLOAT_VALUE(rehash_size) <= 1.0)
 	    LispDestroy("%s: :REHASH-SIZE must a float > 1, not %s",
 			STRFUN(builtin), STROBJ(rehash_size));
-	drsize = rehash_size->data.real;
+	drsize = DFLOAT_VALUE(rehash_size);
     }
     else
 	drsize = 1.5;
 
     if (rehash_threshold != NIL) {
-	ERROR_CHECK_FLOAT(rehash_threshold);
-	if (rehash_threshold->data.real < 0.0 ||
-	    rehash_threshold->data.real > 1.0)
+	CHECK_DFLOAT(rehash_threshold);
+	if (DFLOAT_VALUE(rehash_threshold) < 0.0 ||
+	    DFLOAT_VALUE(rehash_threshold) > 1.0)
 	    LispDestroy("%s: :REHASH-THRESHOLD must a float "
 			"in the range 0.0 - 1.0, not %s",
 			STRFUN(builtin), STROBJ(rehash_threshold));
-	drthreshold = rehash_threshold->data.real;
+	drthreshold = DFLOAT_VALUE(rehash_threshold);
     }
     else
 	drthreshold = 0.75;
 
-    if (initial_contents != NIL) {
-	ERROR_CHECK_LIST(initial_contents);
-	for (xsize = 0, cons = initial_contents;
-	     CONS_P(cons);
-	     xsize++, cons = CDR(cons))
-	    ERROR_CHECK_CONS(CAR(cons));
-    }
-    else
-	xsize = 0;
+    CHECK_LIST(initial_contents);
+    for (xsize = 0, cons = initial_contents;
+	 CONSP(cons);
+	 xsize++, cons = CDR(cons))
+	CHECK_CONS(CAR(cons));
 
     if (xsize > isize)
 	isize = xsize;
@@ -606,7 +605,7 @@ Lisp_MakeHashTable(LispBuiltin *builtin)
 	unsigned long key;
 	LispHashEntry *entry;
 
-	for (cons = initial_contents; CONS_P(cons); cons = CDR(cons)) {
+	for (cons = initial_contents; CONSP(cons); cons = CDR(cons)) {
 	    key = LispHashKey(CAAR(cons), function) % isize;
 	    entry = hash_table->entries + key;
 

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/x11.c,v 1.5 2002/01/30 21:01:00 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/x11.c,v 1.8 2002/11/08 08:01:00 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -125,9 +125,12 @@ x-open-display &optional display-name
 
     display_name = ARGUMENT(0);
 
-    if (display_name == NIL)	dname = NULL;
-    else			ERROR_CHECK_STRING(display_name);
-    else			dname = THESTR(display_name);
+    if (display_name == NIL)
+	dname = NULL;
+    else {
+	CHECK_STRING(display_name);
+	dname = THESTR(display_name);
+    }
 
     return (OPAQUE(XOpenDisplay(dname), x11Display_t));
 }
@@ -224,8 +227,8 @@ Lisp_XBlackPixel(LispBuiltin *builtin)
     display = (Display*)(odisplay->data.opaque.data);
 
     if (oscreen == NIL)	screen = DefaultScreen(display);
-    else		ERROR_CHECK_INDEX(oscreen);
-    else		screen = GETINT(oscreen);
+    else		CHECK_INDEX(oscreen);
+    else		screen = FIXNUM_VALUE(oscreen);
 
     if (screen >= ScreenCount(display))
 	LispDestroy("%s: screen index %d too large, %d screens available",
@@ -271,8 +274,8 @@ Lisp_XWhitePixel(LispBuiltin *builtin)
     display = (Display*)(odisplay->data.opaque.data);
 
     if (oscreen == NIL)	screen = DefaultScreen(display);
-    else		ERROR_CHECK_FIXNUM(oscreen);
-    else		screen = GETINT(oscreen);
+    else		CHECK_FIXNUM(oscreen);
+    else		screen = FIXNUM_VALUE(oscreen);
 
     if (screen >= ScreenCount(display))
 	LispDestroy("%s: screen index %d too large, %d screens available",
@@ -318,8 +321,8 @@ Lisp_XDefaultGC(LispBuiltin *builtin)
     display = (Display*)(odisplay->data.opaque.data);
 
     if (oscreen == NIL)	screen = DefaultScreen(display);
-    else		ERROR_CHECK_FIXNUM(oscreen);
-    else		screen = GETINT(oscreen);
+    else		CHECK_FIXNUM(oscreen);
+    else		screen = FIXNUM_VALUE(oscreen);
 
     if (screen >= ScreenCount(display))
 	LispDestroy("%s: screen index %d too large, %d screens available",
@@ -381,33 +384,33 @@ Lisp_XCreateSimpleWindow(LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(oparent));
     parent = (Window)(oparent->data.opaque.data);
 
-    ERROR_CHECK_FIXNUM(ox);
-    x = GETINT(ox);
+    CHECK_FIXNUM(ox);
+    x = FIXNUM_VALUE(ox);
 
-    ERROR_CHECK_FIXNUM(oy);
-    y = GETINT(oy);
+    CHECK_FIXNUM(oy);
+    y = FIXNUM_VALUE(oy);
 
-    ERROR_CHECK_INDEX(owidth);
-    width = GETINT(owidth);
+    CHECK_INDEX(owidth);
+    width = FIXNUM_VALUE(owidth);
 
-    ERROR_CHECK_INDEX(oheight);
-    height = GETINT(oheight);
+    CHECK_INDEX(oheight);
+    height = FIXNUM_VALUE(oheight);
 
     /* check &OPTIONAL parameters */
     if (oborder_width == NIL)	border_width = 1;
-    else			ERROR_CHECK_INDEX(oborder_width);
-    else			border_width = GETINT(oborder_width);
+    else			CHECK_INDEX(oborder_width);
+    else			border_width = FIXNUM_VALUE(oborder_width);
 
     if (oborder == NIL)	border = BlackPixel(display, DefaultScreen(display));
-    else		ERROR_CHECK_FIXNUM(oborder);
-    else		border = GETINT(oborder);
+    else		CHECK_LONGINT(oborder);
+    else		border = LONGINT_VALUE(oborder);
 
     if (obackground == NIL)
 	background = WhitePixel(display, DefaultScreen(display));
     else
-	ERROR_CHECK_FIXNUM(obackground);
+	CHECK_LONGINT(obackground);
     else
-	background = GETINT(obackground);
+	background = LONGINT_VALUE(obackground);
 
     return (OPAQUE(
 	    XCreateSimpleWindow(display, parent, x, y, width, height,
@@ -532,17 +535,17 @@ Lisp_XDrawLine(LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(ogc));
     gc = (GC)(ogc->data.opaque.data);
 
-    ERROR_CHECK_FIXNUM(ox1);
-    x1 = GETINT(ox1);
+    CHECK_FIXNUM(ox1);
+    x1 = FIXNUM_VALUE(ox1);
 
-    ERROR_CHECK_FIXNUM(oy1);
-    y1 = GETINT(oy1);
+    CHECK_FIXNUM(oy1);
+    y1 = FIXNUM_VALUE(oy1);
 
-    ERROR_CHECK_FIXNUM(ox2);
-    x2 = GETINT(ox2);
+    CHECK_FIXNUM(ox2);
+    x2 = FIXNUM_VALUE(ox2);
 
-    ERROR_CHECK_FIXNUM(oy2);
-    y2 = GETINT(oy2);
+    CHECK_FIXNUM(oy2);
+    y2 = FIXNUM_VALUE(oy2);
 
     XDrawLine(display, drawable, gc, x1, y1, x2, y2);
 
@@ -569,8 +572,8 @@ Lisp_XBell(LispBuiltin *builtin)
     display = (Display*)(odisplay->data.opaque.data);
 
     if (opercent == NIL)	percent = 0;
-    else			ERROR_CHECK_FIXNUM(opercent);
-    else			percent = GETINT(opercent);
+    else			CHECK_LONGINT(opercent);
+    else			percent = LONGINT_VALUE(opercent);
 
     if (percent < -100 || percent > 100)
 	LispDestroy("%s: percent value %d out of range -100 to 100",
@@ -624,7 +627,7 @@ Lisp_XWidthOfScreen(LispBuiltin *builtin)
 	LispDestroy("%s: cannot convert %s to Screen*",
 		    STRFUN(builtin), STROBJ(screen));
 
-    return (INTEGER(WidthOfScreen((Screen*)(screen->data.opaque.data))));
+    return (FIXNUM(WidthOfScreen((Screen*)(screen->data.opaque.data))));
 }
 
 LispObj *
@@ -641,5 +644,5 @@ Lisp_XHeightOfScreen(LispBuiltin *builtin)
 	LispDestroy("%s: cannot convert %s to Screen*",
 		    STRFUN(builtin), STROBJ(screen));
 
-    return (INTEGER(HeightOfScreen((Screen*)(screen->data.opaque.data))));
+    return (FIXNUM(HeightOfScreen((Screen*)(screen->data.opaque.data))));
 }

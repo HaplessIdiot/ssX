@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/xaw.c,v 1.11 2002/10/06 17:11:47 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/xaw.c,v 1.12 2002/11/08 08:01:00 paulo Exp $ */
 
 #include <stdlib.h>
 #include <X11/Intrinsic.h>
@@ -333,7 +333,7 @@ Lisp_XawScrollbarCoerceToReal(LispBuiltin *builtin)
     floatp = (float*)(opaque->data.opaque.data);
     real = *floatp;
 
-    return (REAL(real));
+    return (DFLOAT(real));
 }
 
 LispObj *
@@ -391,7 +391,7 @@ Lisp_XawTextLastPosition(LispBuiltin *builtin)
 	LispDestroy("%s: cannot convert %s to Widget",
 		    STRFUN(builtin), STROBJ(owidget));
 
-    return (INTEGER(XawTextLastPosition((Widget)(owidget->data.opaque.data))));
+    return (FIXNUM(XawTextLastPosition((Widget)(owidget->data.opaque.data))));
 }
 
 LispObj *
@@ -408,7 +408,7 @@ Lisp_XawTextGetInsertionPoint(LispBuiltin *builtin)
 	LispDestroy("%s: cannot convert %s to Widget",
 		    STRFUN(builtin), STROBJ(owidget));
 
-    return (INTEGER(XawTextGetInsertionPoint((Widget)(owidget->data.opaque.data))));
+    return (FIXNUM(XawTextGetInsertionPoint((Widget)(owidget->data.opaque.data))));
 }
 
 LispObj *
@@ -430,8 +430,8 @@ Lisp_XawTextSetInsertionPoint(LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(owidget));
     widget = (Widget)(owidget->data.opaque.data);
 
-    ERROR_CHECK_INDEX(oposition);
-    position = (XawTextPosition)GETINT(oposition);
+    CHECK_INDEX(oposition);
+    position = (XawTextPosition)FIXNUM_VALUE(oposition);
 
     XawTextSetInsertionPoint(widget, position);
 
@@ -460,19 +460,19 @@ Lisp_XawTextReplace(LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(owidget));
     widget = (Widget)(owidget->data.opaque.data);
 
-    ERROR_CHECK_INDEX(oleft);
-    left = (XawTextPosition)GETINT(oleft);
+    CHECK_INDEX(oleft);
+    left = (XawTextPosition)FIXNUM_VALUE(oleft);
 
-    ERROR_CHECK_INDEX(oright);
-    right = (XawTextPosition)GETINT(oright);
+    CHECK_INDEX(oright);
+    right = (XawTextPosition)FIXNUM_VALUE(oright);
 
-    ERROR_CHECK_STRING(otext);
+    CHECK_STRING(otext);
     block.firstPos = 0;
     block.ptr = THESTR(otext);
     block.length = strlen(block.ptr);
     block.format = FMT8BIT;
 
-    return (INTEGER(XawTextReplace(widget, left, right, &block)));
+    return (FIXNUM(XawTextReplace(widget, left, right, &block)));
 }
 
 LispObj *
@@ -496,19 +496,19 @@ Lisp_XawTextSearch(LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(owidget));
     widget = (Widget)(owidget->data.opaque.data);
 
-    ERROR_CHECK_INDEX(odirection);
-    direction = (XawTextPosition)GETINT(odirection);
+    CHECK_INDEX(odirection);
+    direction = (XawTextPosition)FIXNUM_VALUE(odirection);
     if (direction != XawsdLeft && direction != XawsdRight)
 	LispDestroy("%s: %d does not fit in XawTextScanDirection",
 		    STRFUN(builtin), direction);
 
-    ERROR_CHECK_STRING(otext);
+    CHECK_STRING(otext);
     block.firstPos = 0;
     block.ptr = THESTR(otext);
     block.length = strlen(block.ptr);
     block.format = FMT8BIT;
 
-    return (INTEGER(XawTextSearch(widget, direction, &block)));
+    return (FIXNUM(XawTextSearch(widget, direction, &block)));
 }
 
 LispObj *
@@ -537,14 +537,14 @@ Lisp_XawListChange(LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(owidget));
     widget = (Widget)(owidget->data.opaque.data);
 
-    ERROR_CHECK_LIST(olist);
-    for (nitems = 0, object = olist; CONS_P(object);
+    CHECK_LIST(olist);
+    for (nitems = 0, object = olist; CONSP(object);
 	 ++nitems, object = CDR(object))
-	ERROR_CHECK_STRING(CAR(object));
+	CHECK_STRING(CAR(object));
 
     if (olongest != NIL) {
-	ERROR_CHECK_INDEX(olongest);
-	longest = GETINT(olongest);
+	CHECK_INDEX(olongest);
+	longest = FIXNUM_VALUE(olongest);
     }
     else
 	XtVaGetValues(widget, XtNlongest, &longest, NULL, 0);
@@ -552,7 +552,7 @@ Lisp_XawListChange(LispBuiltin *builtin)
 
     /* No errors in arguments, build string list */
     list = (String*)XtMalloc(sizeof(String) * nitems);
-    for (i = 0, object = olist; CONS_P(object); i++, object = CDR(object))
+    for (i = 0, object = olist; CONSP(object); i++, object = CDR(object))
 	list[i] = THESTR(CAR(object));
 
     /* Check if xaw-list-change was already called
@@ -602,8 +602,8 @@ Lisp_XawListHighlight(LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(owidget));
     widget = (Widget)(owidget->data.opaque.data);
 
-    ERROR_CHECK_INDEX(oindex);
-    position = GETINT(oindex);
+    CHECK_INDEX(oindex);
+    position = FIXNUM_VALUE(oindex);
 
     XawListHighlight(widget, position);
 
@@ -649,20 +649,17 @@ Lisp_XawScrollbarSetThumb(LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(owidget));
     widget = (Widget)(owidget->data.opaque.data);
 
-    if (!FIXNUM_P(otop))
-	LispDestroy("%s: %s is not a number",
-		    STRFUN(builtin), STROBJ(otop));
-    top = FIXNUM_VALUE(otop);
+    CHECK_DFLOAT(otop);
+    top = DFLOAT_VALUE(otop);
 
     if (oshown == NIL)
 	shown = 1.0;
-    else if (!FIXNUM_P(oshown))
-	LispDestroy("%s: %s is not a number",
-		    STRFUN(builtin), STROBJ(oshown));
-    else
-	shown = FIXNUM_VALUE(oshown);
+    else {
+	CHECK_DFLOAT(oshown);
+	shown = DFLOAT_VALUE(oshown);
+    }
 
     XawScrollbarSetThumb(widget, top, shown);
 
-    return (oshown == NIL ? REAL(shown) : oshown);
+    return (oshown == NIL ? DFLOAT(shown) : oshown);
 }

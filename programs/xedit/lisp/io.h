@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/io.h,v 1.3 2002/08/05 03:56:24 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/io.h,v 1.4 2002/11/08 08:00:56 paulo Exp $ */
 
 #ifndef Lisp_io_h
 #define Lisp_io_h
@@ -45,7 +45,7 @@
  * Types
  */
 struct _LispFile {
-    unsigned char *buffer;
+    char *buffer;
     int column;			/* output column number */
     int escape;			/* when set, print unquoted objects, (princ) */
     int descriptor;
@@ -61,7 +61,7 @@ struct _LispFile {
 };
 
 struct _LispString {
-    unsigned char *string;
+    char *string;
     int column;			/* output column number */
     int escape;			/* when set, print unquoted objects, (princ) */
     int fixed;			/* if set, don't try to reallocate string */

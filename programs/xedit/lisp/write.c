@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.14 2002/10/06 17:11:45 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.15 2002/11/08 08:00:57 paulo Exp $ */
 
 #include "write.h"
 #include "hash.h"
@@ -61,20 +61,22 @@ check_stream(LispObj *stream,
 	*file = Stdout;
 	*string = NULL;
     }
-    else if (!STREAM_P(stream))
-	LispDestroy("%s is not a stream", STROBJ(stream));
-    else if (check_writable && !stream->data.stream.writable)
-	LispDestroy("%s is not writable", STROBJ(stream));
-    else if (stream->data.stream.type == LispStreamString) {
-	*string = SSTREAMP(stream);
-	*file = NULL;
-    }
     else {
-	if (stream->data.stream.type == LispStreamPipe)
-	    *file = OPSTREAMP(stream);
-	else
-	    *file = stream->data.stream.source.file;
-	*string = NULL;
+	if (!STREAMP(stream))
+	    LispDestroy("%s is not a stream", STROBJ(stream));
+	if (check_writable && !stream->data.stream.writable)
+	    LispDestroy("%s is not writable", STROBJ(stream));
+	else if (stream->data.stream.type == LispStreamString) {
+	    *string = SSTREAMP(stream);
+	    *file = NULL;
+	}
+	else {
+	    if (stream->data.stream.type == LispStreamPipe)
+		*file = OPSTREAMP(stream);
+	    else
+		*file = stream->data.stream.source.file;
+	    *string = NULL;
+	}
     }
 }
 
@@ -207,22 +209,21 @@ LispDoWriteList(LispObj *stream, LispObj *object, int paren)
     if (cdr == NIL) {
 	if (paren)
 	    length += LispWriteChar(stream, '(');
-	length += LispDoWriteObject(stream, car, CONS_P(car));
+	length += LispDoWriteObject(stream, car, CONSP(car));
 	if (paren)
 	    length += LispWriteChar(stream, ')');
     }
     else {
 	if (paren)
 	    length += LispWriteChar(stream, '(');
-	length += LispDoWriteObject(stream, car, car->type == LispCons_t);
-	if (!CONS_P(cdr)) {
+	length += LispDoWriteObject(stream, car, CONSP(car));
+	if (!CONSP(cdr)) {
 	    length += LispWriteStr(stream, " . ", 3);
 	    length += LispDoWriteObject(stream, cdr, 0);
 	}
 	else {
 	    length += LispWriteChar(stream, ' ');
-	    length += LispDoWriteList(stream, cdr,
-				      !CONS_P(car) && !CONS_P(cdr));
+	    length += LispDoWriteList(stream, cdr, !CONSP(car));
 	}
 	if (paren)
 	    length += LispWriteChar(stream, ')');
@@ -238,17 +239,18 @@ LispDoWriteObject(LispObj *stream, LispObj *object, int paren)
     char stk[64];
 
 write_again:
-    switch (object->type) {
+    switch (OBJECT_TYPE(object)) {
 	case LispNil_t:
-	    if (object == DOT)
+	    if (object == NIL)
+		length += LispWriteStr(stream, Snil, 3);
+	    else if (object == T)
+		length += LispWriteChar(stream, 'T');
+	    else if (object == DOT)
 		length += LispWriteStr(stream, "#<DOT>", 6);
 	    else if (object == UNBOUND)
 		length += LispWriteStr(stream, "#<UNBOUND>", 10);
 	    else
-		length += LispWriteStr(stream, Snil, 3);
-	    break;
-	case LispTrue_t:
-	    length += LispWriteChar(stream, 'T');
+		length += LispWriteStr(stream, "#<ERROR>", 8);
 	    break;
 	case LispOpaque_t: {
 	    char *desc = LispIntToOpaqueType(object->data.opaque.type);
@@ -263,14 +265,15 @@ write_again:
 	case LispString_t:
 	    length += LispWriteString(stream, object);
 	    break;
-	case LispCharacter_t:
+	case LispSChar_t:
 	    length += LispWriteCharacter(stream, object);
 	    break;
-	case LispReal_t:
+	case LispDFloat_t:
 	    length += LispWriteFloat(stream, object);
 	    break;
+	case LispFixnum_t:
 	case LispInteger_t:
-	case LispBigInteger_t:
+	case LispBignum_t:
 	    length += LispWriteInteger(stream, object);
 	    break;
 	case LispRatio_t:
@@ -280,7 +283,7 @@ write_again:
 	    format_integer(stk, object->data.ratio.denominator, 10);
 	    length += LispWriteStr(stream, stk, strlen(stk));
 	    break;
-	case LispBigRatio_t: {
+	case LispBigratio_t: {
 	    int sz;
 	    char *ptr;
 
@@ -349,7 +352,7 @@ write_again:
 		    break;
 	    }
 	    if (object->funtype != LispLambda) {
-		char *desc = STRPTR(object->data.lambda.name);
+		char *desc = ATOMID(object->data.lambda.name);
 
 		length += LispWriteStr(stream, desc, strlen(desc));
 		length += LispWriteChar(stream, ' ');
@@ -430,8 +433,8 @@ write_again:
 	    break;
 	case LispHashTable_t:
 	    length += LispWriteStr(stream, "#<HASH-TABLE ", 13);
-	    length += LispWriteStr(stream, STRPTR(object->data.hash.test),
-				   strlen(STRPTR(object->data.hash.test)));
+	    length += LispWriteStr(stream, ATOMID(object->data.hash.test),
+				   strlen(ATOMID(object->data.hash.test)));
 	    snprintf(stk, sizeof(stk), " %g %g",
 		     object->data.hash.table->rehash_size,
 		     object->data.hash.table->rehash_threshold);
@@ -612,7 +615,7 @@ LispWriteString(LispObj *stream, LispObj *object)
 int
 LispWriteFloat(LispObj *stream, LispObj *object)
 {
-    double value = object->data.real;
+    double value = DFLOAT_VALUE(object);
 
     if (value == 0.0 || (fabs(value) < 1.0E7 && fabs(value) > 1.0E-4))
 	return (LispFormatFixedFloat(stream, object, 0, 0, NULL, 0, 0, 0));
@@ -656,7 +659,7 @@ LispWriteArray(LispObj *stream, LispObj *object)
 
 	    for (ary = object->data.array.dim, count = 1;
 		 ary != NIL; ary = CDR(ary))
-		count *= GETINT(CAR(ary));
+		count *= FIXNUM_VALUE(CAR(ary));
 	    for (ary = object->data.array.list; count > 0;
 		 ary = CDR(ary), count--) {
 		length += LispDoWriteObject(stream, CAR(ary), 1);
@@ -675,7 +678,7 @@ LispWriteArray(LispObj *stream, LispObj *object)
 	    /* fill dim */
 	    for (i = 0, ary = object->data.array.dim; ary != NIL;
 		 i++, ary = CDR(ary))
-		dims[i] = GETINT(CAR(ary));
+		dims[i] = FIXNUM_VALUE(CAR(ary));
 
 	    i = 0;
 	    ary = object->data.array.list;
@@ -720,12 +723,12 @@ LispWriteStruct(LispObj *stream, LispObj *object)
     LispObj *field = object->data.struc.fields;
 
     length = LispWriteStr(stream, "S#(", 3);
-    id = STRPTR(CAR(def));
+    id = ATOMID(CAR(def));
     length += LispWriteStr(stream, id, strlen(id));
     def = CDR(def);
     for (; def != NIL; def = CDR(def), field = CDR(field)) {
 	length += LispWriteStr(stream, " :", 2);
-	id = SYMBOL_P(CAR(def)) ? STRPTR(CAR(def)) : STRPTR(CAAR(def));
+	id = SYMBOLP(CAR(def)) ? ATOMID(CAR(def)) : ATOMID(CAAR(def));
 	length += LispWriteStr(stream, id, strlen(id));
 	length += LispWriteChar(stream, ' ');
 	length += LispDoWriteObject(stream, CAR(field), 1);
@@ -749,8 +752,8 @@ LispFormatInteger(LispObj *stream, LispObj *object, int radix,
     char stk[128], *str = stk;
     int i, length, sign, intervals;
 
-    if (INT_P(object))
-	format_integer(stk, GETINT(object), radix);
+    if (LONGINTP(object))
+	format_integer(stk, LONGINT_VALUE(object), radix);
     else {		/* BIGINT_P */
 	if (mpi_getsize(object->data.mp.integer, radix) >= sizeof(stk))
 	    str = mpi_getstr(NULL, object->data.mp.integer, radix);
@@ -1045,7 +1048,7 @@ LispFormatCharacter(LispObj *stream, LispObj *object,
 		    int atsign, int collon)
 {
     int length = 0;
-    int ch = GETINT(object);
+    int ch = SCHAR_VALUE(object);
 
     if (atsign && !collon)
 	length += LispWriteStr(stream, "#\\", 2);
@@ -1067,7 +1070,7 @@ LispFormatFixedFloat(LispObj *stream, LispObj *object,
 {
     char buffer[512], stk[64];
     int sign, exponent, length, offset, d = pd ? *pd : FLOAT_PREC;
-    double value = object->data.real;
+    double value = DFLOAT_VALUE(object);
 
     if (value == 0.0) {
 	exponent = k = 0;
@@ -1244,7 +1247,7 @@ LispDoFormatExponentialFloat(LispObj *stream, LispObj *object,
 {
     char buffer[512], stk[64];
     int sign, exponent, length, offset, d = pd ? *pd : FLOAT_PREC;
-    double value = object->data.real;
+    double value = DFLOAT_VALUE(object);
 
     if (value == 0.0) {
 	exponent = 0;
@@ -1446,7 +1449,7 @@ LispFormatGeneralFloat(LispObj *stream, LispObj *object,
 {
     char stk[64];
     int length, exponent, n, dd, ee, ww, d = pd ? *pd : FLOAT_PREC;
-    double value = object->data.real;
+    double value = DFLOAT_VALUE(object);
 
     if (value == 0.0) {
 	exponent = 0;
@@ -1494,7 +1497,7 @@ LispFormatDollarFloat(LispObj *stream, LispObj *object,
 {
     char buffer[512], stk[64];
     int sign, exponent, length, offset;
-    double value = object->data.real;
+    double value = DFLOAT_VALUE(object);
 
     if (value == 0.0) {
 	exponent = 0;

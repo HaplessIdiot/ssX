@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/psql.c,v 1.9 2002/10/06 17:11:46 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/psql.c,v 1.10 2002/11/08 08:01:00 paulo Exp $ */
 
 #include <stdlib.h>
 #include <libpq-fe.h>
@@ -261,7 +261,7 @@ Lisp_PQdb(LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(connection));
     conn = (PGconn*)(connection->data.opaque.data);
 
-     string = PQdb(conn);
+    string = PQdb(conn);
 
     return (string ? STRING(string) : NIL);
 }
@@ -305,7 +305,7 @@ Lisp_PQexec(LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(connection));
     conn = (PGconn*)(connection->data.opaque.data);
 
-    ERROR_CHECK_STRING(query);
+    CHECK_STRING(query);
     res = PQexec(conn, THESTR(query));
 
     return (res ? OPAQUE(res, PGresult_t) : NIL);
@@ -353,8 +353,8 @@ Lisp_PQfname(LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(result));
     res = (PGresult*)(result->data.opaque.data);
 
-    ERROR_CHECK_INDEX(field_number);
-    field = GETINT(field_number);
+    CHECK_INDEX(field_number);
+    field = FIXNUM_VALUE(field_number);
 
     string = PQfname(res, field);
 
@@ -381,7 +381,7 @@ Lisp_PQfnumber(LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(result));
     res = (PGresult*)(result->data.opaque.data);
 
-    ERROR_CHECK_STRING(field_name);
+    CHECK_STRING(field_name);
     number = PQfnumber(res, THESTR(field_name));
 
     return (INTEGER(number));
@@ -406,8 +406,8 @@ Lisp_PQfsize(LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(result));
     res = (PGresult*)(result->data.opaque.data);
 
-    ERROR_CHECK_INDEX(field_number);
-    field = GETINT(field_number);
+    CHECK_INDEX(field_number);
+    field = FIXNUM_VALUE(field_number);
 
     size = PQfsize(res, field);
 
@@ -431,8 +431,8 @@ Lisp_PQftype(LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(result));
     res = (PGresult*)(result->data.opaque.data);
 
-    ERROR_CHECK_INDEX(field_number);
-    field = GETINT(field_number);
+    CHECK_INDEX(field_number);
+    field = FIXNUM_VALUE(field_number);
 
     oid = PQftype(res, field);
 
@@ -459,11 +459,11 @@ Lisp_PQgetlength(LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(result));
     res = (PGresult*)(result->data.opaque.data);
 
-    ERROR_CHECK_INDEX(otupple);
-    tuple = GETINT(otupple);
+    CHECK_INDEX(otupple);
+    tuple = FIXNUM_VALUE(otupple);
 
-    ERROR_CHECK_INDEX(field_number);
-    field = GETINT(field_number);
+    CHECK_INDEX(field_number);
+    field = FIXNUM_VALUE(field_number);
 
     length = PQgetlength(res, tuple, field);
 
@@ -493,19 +493,19 @@ Lisp_PQgetvalue(LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(result));
     res = (PGresult*)(result->data.opaque.data);
 
-    ERROR_CHECK_INDEX(otupple);
-    tuple = GETINT(otupple);
+    CHECK_INDEX(otupple);
+    tuple = FIXNUM_VALUE(otupple);
 
-    ERROR_CHECK_INDEX(field_number);
-    field = GETINT(field_number);
+    CHECK_INDEX(field_number);
+    field = FIXNUM_VALUE(field_number);
 
     string = PQgetvalue(res, tuple, field);
 
     if (type != NIL) {
 	char *typestring;
 
-	ERROR_CHECK_SYMBOL(type);
-	typestring = STRPTR(type);
+	CHECK_SYMBOL(type);
+	typestring = ATOMID(type);
 
 	if (strcmp(typestring, "INT16") == 0) {
 	    integer = *(short*)string;
@@ -535,7 +535,7 @@ Lisp_PQgetvalue(LispBuiltin *builtin)
     }
 
 simple_type:
-    return (isint ? INTEGER(integer) : isreal ? REAL(real) :
+    return (isint ? INTEGER(integer) : isreal ? DFLOAT(real) :
 	    (string ? STRING(string) : NIL));
 
 polygon_type:
@@ -819,49 +819,49 @@ LispPQsetdb(LispBuiltin *builtin, int loginp)
     ohost = ARGUMENT(0);
 
     if (ohost != NIL) {
-	ERROR_CHECK_STRING(ohost);
+	CHECK_STRING(ohost);
 	host = THESTR(ohost);
     }
     else
 	host = NULL;
 
     if (oport != NIL) {
-	ERROR_CHECK_STRING(oport);
+	CHECK_STRING(oport);
 	port = THESTR(oport);
     }
     else
 	port = NULL;
 
     if (ooptions != NIL) {
-	ERROR_CHECK_STRING(ooptions);
+	CHECK_STRING(ooptions);
 	options = THESTR(ooptions);
     }
     else
 	options = NULL;
 
     if (otty != NIL) {
-	ERROR_CHECK_STRING(otty);
+	CHECK_STRING(otty);
 	tty = THESTR(otty);
     }
     else
 	tty = NULL;
 
     if (odbname != NIL) {
-	ERROR_CHECK_STRING(odbname);
+	CHECK_STRING(odbname);
 	dbname = THESTR(odbname);
     }
     else
 	dbname = NULL;
 
     if (ologin != NIL) {
-	ERROR_CHECK_STRING(ologin);
+	CHECK_STRING(ologin);
 	login = THESTR(ologin);
     }
     else
 	login = NULL;
 
     if (opassword != NIL) {
-	ERROR_CHECK_STRING(opassword);
+	CHECK_STRING(opassword);
 	password = THESTR(opassword);
     }
     else

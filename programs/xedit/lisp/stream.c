@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.13 2002/10/06 17:11:45 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.14 2002/11/08 08:00:57 paulo Exp $ */
 
 #include "read.h"
 #include "stream.h"
@@ -102,7 +102,7 @@ Lisp_Streamp(LispBuiltin *builtin)
 
     object = ARGUMENT(0);
 
-    return (STREAM_P(object) ? T : NIL);
+    return (STREAMP(object) ? T : NIL);
 }
 
 LispObj *
@@ -115,7 +115,7 @@ Lisp_InputStreamP(LispBuiltin *builtin)
 
     stream = ARGUMENT(0);
 
-    ERROR_CHECK_STREAM(stream);
+    CHECK_STREAM(stream);
 
     return (stream->data.stream.readable ? T : NIL);
 }
@@ -130,7 +130,7 @@ Lisp_OpenStreamP(LispBuiltin *builtin)
 
     stream = ARGUMENT(0);
 
-    ERROR_CHECK_STREAM(stream);
+    CHECK_STREAM(stream);
 
     return (stream->data.stream.readable || stream->data.stream.writable ?
 	    T : NIL);
@@ -146,7 +146,7 @@ Lisp_OutputStreamP(LispBuiltin *builtin)
 
     stream = ARGUMENT(0);
 
-    ERROR_CHECK_STREAM(stream);
+    CHECK_STREAM(stream);
 
     return (stream->data.stream.writable ? T : NIL);
 }
@@ -174,22 +174,22 @@ Lisp_Open(LispBuiltin *builtin)
     odirection = ARGUMENT(1);
     filename = ARGUMENT(0);
 
-    if (STRING_P(filename)) {
+    if (STRINGP(filename)) {
 	filename = APPLY1(Oparse_namestring, filename);
 	GC_PROTECT(filename);
     }
-    else if (STREAM_P(filename)) {
+    else if (STREAMP(filename)) {
 	if (filename->data.stream.type != LispStreamFile)
 	    LispDestroy("%s: only FILE-STREAM accepted, not %s",
 			STRFUN(builtin), STROBJ(filename));
 	filename = filename->data.stream.pathname;
     }
-    else if (!PATHNAME_P(filename))
+    else if (!PATHNAMEP(filename))
 	LispDestroy("%s: bad argument %s", STRFUN(builtin), STROBJ(filename));
 
     if (odirection != NIL) {
 	direction = -1;
-	if (SYMBOL_P(odirection) && KEYWORD_P(odirection)) {
+	if (KEYWORDP(odirection)) {
 	    atom = ATOMID(odirection);
 
 	    if (atom == Sprobe)
@@ -210,10 +210,10 @@ Lisp_Open(LispBuiltin *builtin)
 
     if (element_type != NIL) {
 	/* just check argument... */
-	if (SYMBOL_P(element_type) &&
+	if (SYMBOLP(element_type) &&
 	    ATOMID(element_type) == Scharacter)
 	    ;	/* do nothing */
-	else if (KEYWORD_P(element_type) &&
+	else if (KEYWORDP(element_type) &&
 	    ATOMID(element_type) == Sdefault)
 	    ;	/* do nothing */
 	else
@@ -223,7 +223,7 @@ Lisp_Open(LispBuiltin *builtin)
 
     if (if_exists != NIL) {
 	exist = -1;
-	if (SYMBOL_P(if_exists) && KEYWORD_P(if_exists)) {
+	if (KEYWORDP(if_exists)) {
 	    atom = ATOMID(if_exists);
 
 	    if (atom == Serror)
@@ -250,7 +250,7 @@ Lisp_Open(LispBuiltin *builtin)
 
     if (if_does_not_exist != NIL) {
 	noexist = -1;
-	if (SYMBOL_P(if_does_not_exist) && KEYWORD_P(if_does_not_exist)) {
+	if (KEYWORDP(if_does_not_exist)) {
 	    atom = ATOMID(if_does_not_exist);
 
 	    if (atom == Serror)
@@ -267,10 +267,10 @@ Lisp_Open(LispBuiltin *builtin)
 
     if (external_format != NIL) {
 	/* just check argument... */
-	if (SYMBOL_P(external_format) &&
+	if (SYMBOLP(external_format) &&
 	    ATOMID(external_format) == Scharacter)
 	    ;	/* do nothing */
-	else if (KEYWORD_P(external_format) &&
+	else if (KEYWORDP(external_format) &&
 	    ATOMID(external_format) == Sdefault)
 	    ;	/* do nothing */
 	else
@@ -381,7 +381,7 @@ Lisp_Close(LispBuiltin *builtin)
     oabort = ARGUMENT(1);
     stream = ARGUMENT(0);
 
-    ERROR_CHECK_STREAM(stream);
+    CHECK_STREAM(stream);
 
     if (stream->data.stream.readable || stream->data.stream.writable) {
 	stream->data.stream.readable = stream->data.stream.writable = 0;
@@ -427,7 +427,7 @@ Lisp_Listen(LispBuiltin *builtin)
     stream = ARGUMENT(0);
 
     if (stream != NIL) {
-	ERROR_CHECK_STREAM(stream);
+	CHECK_STREAM(stream);
     }
     else
 	stream = lisp__data.standard_input;
@@ -488,15 +488,13 @@ Lisp_Read(LispBuiltin *builtin)
     input_stream = ARGUMENT(0);
 
     if (input_stream != NIL) {
-	if (!STREAM_P(input_stream))
-	    LispDestroy("%s: %s is not a stream",
-			STRFUN(builtin), STROBJ(input_stream));
+	CHECK_STREAM(input_stream);
 	else if (!input_stream->data.stream.readable)
 	    LispDestroy("%s: stream %s is not readable",
 			STRFUN(builtin), STROBJ(input_stream));
 	LispPushInput(input_stream);
     }
-    else if (CONS_P(lisp__data.input_list)) {
+    else if (CONSP(lisp__data.input_list)) {
 	input_stream = STANDARD_INPUT;
 	LispPushInput(input_stream);
     }
@@ -551,8 +549,8 @@ Lisp_WriteChar(LispBuiltin *builtin)
     output_stream = ARGUMENT(1);
     character = ARGUMENT(0);
 
-    ERROR_CHECK_CHARACTER(character);
-    ch = GETINT(character);
+    CHECK_SCHAR(character);
+    ch = SCHAR_VALUE(character);
 
     LispWriteChar(output_stream, ch);
 
@@ -579,7 +577,7 @@ Lisp_ReadLine(LispBuiltin *builtin)
     if (input_stream == NIL)
 	input_stream = STANDARD_INPUT;
     else {
-	ERROR_CHECK_STREAM(input_stream);
+	CHECK_STREAM(input_stream);
     }
 
     result = eof_value;
@@ -590,7 +588,7 @@ Lisp_ReadLine(LispBuiltin *builtin)
 	LispDestroy("%s: stream %s is unreadable",
 		    STRFUN(builtin), STROBJ(input_stream));
     if (input_stream->data.stream.type == LispStreamString) {
-	unsigned char *start, *end, *ptr;
+	char *start, *end, *ptr;
 
 	if (SSTREAMP(input_stream)->input >=
 	    SSTREAMP(input_stream)->length) {
@@ -711,14 +709,14 @@ Lisp_MakeStringInputStream(LispBuiltin *builtin)
     ostring = ARGUMENT(0);
 
     start = end = 0;
-    ERROR_CHECK_STRING(ostring);
+    CHECK_STRING(ostring);
     LispCheckSequenceStartEnd(builtin, ostring, ostart, oend,
 			      &start, &end, &length);
     string = THESTR(ostring);
 
     if (end - start != length)
 	length = end - start;
-    result = LSTRINGSTREAM((unsigned char*)string + start, STREAM_READ, length);
+    result = LSTRINGSTREAM(string + start, STREAM_READ, length);
 
     return (result);
 }
@@ -735,9 +733,9 @@ Lisp_MakeStringOutputStream(LispBuiltin *builtin)
 
     if (element_type != NIL) {
 	/* just check argument... */
-	if (SYMBOL_P(element_type) && ATOMID(element_type) == Scharacter)
+	if (SYMBOLP(element_type) && ATOMID(element_type) == Scharacter)
 	    ;	/* do nothing */
-	else if (KEYWORD_P(element_type) &&
+	else if (KEYWORDP(element_type) &&
 	    ATOMID(element_type) == Sdefault)
 	    ;	/* do nothing */
 	else
@@ -745,7 +743,7 @@ Lisp_MakeStringOutputStream(LispBuiltin *builtin)
 			STRFUN(builtin), Sdefault, Scharacter, STROBJ(element_type));
     }
 
-    return (LSTRINGSTREAM((unsigned char*)"", STREAM_WRITE, 1));
+    return (LSTRINGSTREAM("", STREAM_WRITE, 1));
 }
 
 LispObj *
@@ -760,7 +758,7 @@ Lisp_GetOutputStreamString(LispBuiltin *builtin)
 
     string_output_stream = ARGUMENT(0);
 
-    if (!STREAM_P(string_output_stream) ||
+    if (!STREAMP(string_output_stream) ||
 	string_output_stream->data.stream.type != LispStreamString ||
 	string_output_stream->data.stream.readable ||
 	!string_output_stream->data.stream.writable)
@@ -804,15 +802,15 @@ Lisp_MakePipe(LispBuiltin *builtin)
     odirection = ARGUMENT(1);
     command_line = ARGUMENT(0);
 
-    if (PATHNAME_P(command_line))
+    if (PATHNAMEP(command_line))
 	command_line = CAR(command_line->data.quote);
-    else if (!STRING_P(command_line))
+    else if (!STRINGP(command_line))
 	LispDestroy("%s: %s is a bad pathname",
 		    STRFUN(builtin), STROBJ(command_line));
 
     if (odirection != NIL) {
 	direction = -1;
-	if (KEYWORD_P(odirection)) {
+	if (KEYWORDP(odirection)) {
 	    atom = ATOMID(odirection);
 
 	    if (atom == Sprobe)
@@ -833,10 +831,9 @@ Lisp_MakePipe(LispBuiltin *builtin)
 
     if (element_type != NIL) {
 	/* just check argument... */
-	if (SYMBOL_P(element_type) && ATOMID(element_type) == Scharacter)
+	if (SYMBOLP(element_type) && ATOMID(element_type) == Scharacter)
 	    ;	/* do nothing */
-	else if (KEYWORD_P(element_type) &&
-	    ATOMID(element_type) == Sdefault)
+	else if (KEYWORDP(element_type) && ATOMID(element_type) == Sdefault)
 	    ;	/* do nothing */
 	else
 	    LispDestroy("%s: only :%s and %s supported for :ELEMENT-TYPE, not %s",
@@ -845,10 +842,10 @@ Lisp_MakePipe(LispBuiltin *builtin)
 
     if (external_format != NIL) {
 	/* just check argument... */
-	if (SYMBOL_P(external_format) && ATOMID(external_format) == Scharacter)
+	if (SYMBOLP(external_format) && ATOMID(external_format) == Scharacter)
 	    ;	/* do nothing */
-	else if (KEYWORD_P(external_format) &&
-	    ATOMID(external_format) == Sdefault)
+	else if (KEYWORDP(external_format) &&
+		 ATOMID(external_format) == Sdefault)
 	    ;	/* do nothing */
 	else
 	    LispDestroy("%s: only :%s and %s supported for :EXTERNAL-FORMAT, not %s",
@@ -927,7 +924,7 @@ Lisp_PipeBroken(LispBuiltin *builtin)
 
     pipe_stream = ARGUMENT(0);
 
-    if (!STREAM_P(pipe_stream) ||
+    if (!STREAMP(pipe_stream) ||
 	pipe_stream->data.stream.type != LispStreamPipe)
 	LispDestroy("%s: %s is not a pipe stream",
 		    STRFUN(builtin), STROBJ(pipe_stream));
@@ -954,7 +951,7 @@ Lisp_PipeErrorStream(LispBuiltin *builtin)
 
     pipe_stream = ARGUMENT(0);
 
-    if (!STREAM_P(pipe_stream) ||
+    if (!STREAMP(pipe_stream) ||
 	pipe_stream->data.stream.type != LispStreamPipe)
 	LispDestroy("%s: %s is not a pipe stream",
 		    STRFUN(builtin), STROBJ(pipe_stream));
@@ -975,7 +972,7 @@ Lisp_PipeInputDescriptor(LispBuiltin *builtin)
 
     pipe_stream = ARGUMENT(0);
 
-    if (!STREAM_P(pipe_stream) ||
+    if (!STREAMP(pipe_stream) ||
 	pipe_stream->data.stream.type != LispStreamPipe)
 	LispDestroy("%s: %s is not a pipe stream",
 		    STRFUN(builtin), STROBJ(pipe_stream));
@@ -983,7 +980,7 @@ Lisp_PipeInputDescriptor(LispBuiltin *builtin)
 	LispDestroy("%s: pipe %s is unreadable",
 		    STRFUN(builtin), STROBJ(pipe_stream));
 
-    return (SMALLINT(LispFileno(IPSTREAMP(pipe_stream))));
+    return (INTEGER(LispFileno(IPSTREAMP(pipe_stream))));
 }
 
 /*
@@ -999,7 +996,7 @@ Lisp_PipeErrorDescriptor(LispBuiltin *builtin)
 
     pipe_stream = ARGUMENT(0);
 
-    if (!STREAM_P(pipe_stream) ||
+    if (!STREAMP(pipe_stream) ||
 	pipe_stream->data.stream.type != LispStreamPipe)
 	LispDestroy("%s: %s is not a pipe stream",
 		    STRFUN(builtin), STROBJ(pipe_stream));
@@ -1007,5 +1004,5 @@ Lisp_PipeErrorDescriptor(LispBuiltin *builtin)
 	LispDestroy("%s: pipe %s is closed",
 		    STRFUN(builtin), STROBJ(pipe_stream));
 
-    return (SMALLINT(LispFileno(EPSTREAMP(pipe_stream))));
+    return (INTEGER(LispFileno(EPSTREAMP(pipe_stream))));
 }

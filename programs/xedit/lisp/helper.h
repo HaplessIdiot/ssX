@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.h,v 1.11 2002/08/05 03:56:24 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.h,v 1.12 2002/11/08 08:00:56 paulo Exp $ */
 
 #ifndef Lisp_helper_h
 #define Lisp_helper_h
@@ -85,10 +85,10 @@ LispObj *LispLoadFile(LispObj*, int, int, int);
 void LispGetStringArgs(LispBuiltin*,
 			char**,	/* string1 */
 			char**,	/* string2 */
-			int*,	/* start1 */
-			int*,	/* end1 */
-			int*,	/* start2 */
-			int*);	/* end2 */
+			long*,	/* start1 */
+			long*,	/* end1 */
+			long*,	/* start2 */
+			long*);	/* end2 */
 
 /*
  string-trim character-bag string

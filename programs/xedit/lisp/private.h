@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.31 2002/11/04 04:15:53 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.32 2002/11/08 08:00:57 paulo Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
@@ -68,9 +68,6 @@
 #define BRK	lisp__data.brklist
 #define PRO	lisp__data.prolist
 #define DOC	lisp__data.doclist
-
-#define	EOLIST	(LispObj*)1	/* end-of-list ")" found in LispRun */
-#define INVALID_P(obj) ((obj) == NULL || (obj) == EOLIST || (obj) == DOT)
 
 #define SINPUT	lisp__data.input
 #define SOUTPUT	lisp__data.output
@@ -271,7 +268,7 @@ struct _LispModule {
 };
 
 typedef struct _LispUngetInfo {
-    unsigned char buffer[16];
+    char buffer[16];
     int offset;
 } LispUngetInfo;
 
@@ -398,7 +395,6 @@ struct _LispMac {
 };
 
 struct _LispCharInfo {
-    LispObj character;
     char **names;
 };
 

@@ -1,4 +1,4 @@
-$XFree86: xc/programs/xedit/lisp/README,v 1.8 2002/02/12 16:07:54 paulo Exp $
+$XFree86: xc/programs/xedit/lisp/README,v 1.10 2002/11/08 08:00:55 paulo Exp $
 
 LAST UPDATED:	$Date$
 
@@ -169,31 +169,24 @@ everything is candidate to redefinition at any time).
 	0 = N
 
 	Bytecode stream:
-	   0  NOOP
-	   1  LOAD&PUSH (0)
-	   4  NOOP
-	   5  LOADCON&PUSH [1]	    ;  (2)
-	   8  CALL 2 [2]	    ;  <
-	  12  NOOP2
-	  15  JUMPNIL 17
-	  20  NOOP
-	  21  LOADCON [0]	    ;  1
-	  24  NOOP2
-	  27  JUMP 31
-	  32  NOOP
-	  33  LOAD&PUSH (0)
-	  36  NOOP
-	  37  LOAD&PUSH (0)
-	  40  CALL 1 [1]	    ;  1-
-	  44  NOOP
-	  45  LET* [0]		    ;  N
-	  48  LETREC 1
-	  50  NOOP
-	  51  UNLET 1
-	  54  BCONS1
-	  55  CALL 1 [0]	    ;  *
-	  59  RETURN
+	   0  LOAD&PUSH (0)
+	   2  LOADCON&PUSH [1]	    ;  (2)
+	   4  CALL 2 [2]	    ;  <
+	   7  JUMPNIL 8
+	  10  LOADCON [0]	    ;  1
+	  12  NOOP
+	  13  JUMP 19
+	  16  LOAD&PUSH (0)
+	  18  LOAD&PUSH (0)
+	  20  CALL 1 [1]	    ;  1-
+	  23  LET* [0]		    ;  N
+	  25  LETREC 1
+	  27  UNLET 1
+	  29  BCONS1
+	  30  CALL 1 [0]	    ;  *
+	  33  RETURN
 	FACT
+
 
   There are several optimizations that should be done at some time, I don't
 think adding NOOP opcodes will help everywhere to make aligned memory reads
@@ -213,15 +206,6 @@ may not fit anymore in a byte.
 
   There are plenty of possibilities to make the interpreter run faster. Some
 optimizations that can make it run quite faster in certain cases are:
-  o Storing objects that fits in sizeof(void*) - 1 in place. In a 32
-    bit computer, it means that all integers in the range +- 2^23,
-    more if less than one byte is used as the "object header", can be stored
-    in the pointer itself, so, if you do a loop that iterates several
-    million times, instead of allocating and gc collecting several million
-    objects, 0 objects will be gc collected.
-    This is significantly easy to implement, but needs rewriting several
-    functions of the interpreter, as a lot of code assumes it can just
-    change an object type (as all of them have the same size currently).
   o Better object memory layout and gc. It is not very smart to traverse
     all list/vector elements to mark the objects, should only need to
     mark the first element of a list/vector.

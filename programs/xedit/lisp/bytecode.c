@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.8 2002/11/02 22:58:08 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.9 2002/11/08 08:00:55 paulo Exp $ */
 
 
 /*
@@ -389,7 +389,7 @@ Lisp_Compile(LispBuiltin *builtin)
     if (name != NIL) {
 	LispAtom *atom;
 
-	ERROR_CHECK_SYMBOL(name);
+	CHECK_SYMBOL(name);
 	atom = name->data.atom;
 	if (atom->a_builtin || atom->a_compiled)
 	    goto finished_compilation;
@@ -507,7 +507,7 @@ Lisp_Compile(LispBuiltin *builtin)
 		result = name;
 	    }
 	    if (com.warnings)
-		warnings_p = SMALLINT(com.warnings);
+		warnings_p = FIXNUM(com.warnings);
 	    goto finished_compilation;
 	}
 	else
@@ -549,7 +549,7 @@ Lisp_Disassemble(LispBuiltin *builtin)
     xbuiltin = NULL;
     name = bytecode = NULL;
 
-    switch (function->type) {
+    switch (OBJECT_TYPE(function)) {
 	case LispAtom_t:
 	    name = function;
 	    atom = function->data.atom;
@@ -589,7 +589,7 @@ Lisp_Disassemble(LispBuiltin *builtin)
 	case LispCons_t:
 	    if (CAR(function) == Olambda) {
 		function = EVAL(function);
-		if (function->type == LispLambda_t) {
+		if (OBJECT_TYPE(function) == LispLambda_t) {
 		    name = Olambda;
 		    alist = (LispArgList*)
 			function->data.lambda.name->data.opaque.data;
@@ -626,8 +626,8 @@ Lisp_Disassemble(LispBuiltin *builtin)
 	for (i = 0; i < alist->normals.num_symbols; i++) {
 	    LispWriteChar(NIL, i ? ',' : ':');
 	    LispWriteChar(NIL, ' ');
-	    LispWriteStr(NIL, STRPTR(alist->normals.symbols[i]),
-			 strlen(STRPTR(alist->normals.symbols[i])));
+	    LispWriteStr(NIL, ATOMID(alist->normals.symbols[i]),
+			 strlen(ATOMID(alist->normals.symbols[i])));
 	}
 	LispWriteChar(NIL, '\n');
 
@@ -638,8 +638,8 @@ Lisp_Disassemble(LispBuiltin *builtin)
 	for (i = 0; i < alist->optionals.num_symbols; i++) {
 	    LispWriteChar(NIL, i ? ',' : ':');
 	    LispWriteChar(NIL, ' ');
-	    LispWriteStr(NIL, STRPTR(alist->optionals.symbols[i]),
-			 strlen(STRPTR(alist->optionals.symbols[i])));
+	    LispWriteStr(NIL, ATOMID(alist->optionals.symbols[i]),
+			 strlen(ATOMID(alist->optionals.symbols[i])));
 	}
 	LispWriteChar(NIL, '\n');
 
@@ -656,8 +656,8 @@ Lisp_Disassemble(LispBuiltin *builtin)
 
 	if (alist->rest) {
 	    LispWriteStr(NIL, "Rest argument: ", 15);
-	    LispWriteStr(NIL, STRPTR(alist->rest),
-			 strlen(STRPTR(alist->rest)));
+	    LispWriteStr(NIL, ATOMID(alist->rest),
+			 strlen(ATOMID(alist->rest)));
 	    LispWriteChar(NIL, '\n');
 	}
 	else
@@ -1185,7 +1185,7 @@ LispCompileForm(LispObj *form)
     LispCom com;
     LispObj *code, **pform;
 
-    if (!CONS_P(form))
+    if (!CONSP(form))
 	/* Incorrect call or NIL */
 	return (form);
 
@@ -1199,7 +1199,7 @@ LispCompileForm(LispObj *form)
     pform = &form;
     failed = 1;
     if (setjmp(com.jmp) == 0) {
-	for (code = form; CONS_P(form); form = CDR(form)) {
+	for (code = form; CONSP(form); form = CDR(form)) {
 	    com.form = form;
 	    ComEval(&com, CAR(form));
 	}
@@ -1212,7 +1212,7 @@ LispCompileForm(LispObj *form)
 LispObj *
 LispExecuteBytecode(LispObj *object)
 {
-    if (object->type != LispBytecode_t)
+    if (!BYTECODEP(object))
 	return (EVAL(object));
 
     return (ExecuteBytecode(object->data.bytecode.bytecode->code));
@@ -1252,23 +1252,16 @@ MakeBytecodeObject(LispCom *com, LispObj *name, LispObj *plist)
     GC_PROTECT(plist);
     code = cons = prev = NIL;
     for (i = 0; i < num_constants; i++) {
-	switch (constants[i]->type) {
-	    case LispNil_t:
-	    case LispTrue_t:
-	    case LispAtom_t:
-	    case LispCharacter_t:
-		break;
-	    default:
-		if (code == NIL) {
-		    code = cons = prev = CONS(constants[i], NIL);
-		    GC_PROTECT(code);
-		}
-		else {
-		    RPLACD(cons, CONS(constants[i], NIL));
-		    prev = cons;
-		    cons = CDR(cons);
-		}
-		break;
+	if (POINTERP(constants[i]) && !XSYMBOLP(constants[i])) {
+	    if (code == NIL) {
+		code = cons = prev = CONS(constants[i], NIL);
+		GC_PROTECT(code);
+	    }
+	    else {
+		RPLACD(cons, CONS(constants[i], NIL));
+		prev = cons;
+		cons = CDR(cons);
+	    }
 	}
     }
 
@@ -1289,9 +1282,9 @@ MakeBytecodeObject(LispCom *com, LispObj *name, LispObj *plist)
     CompileFreeState(com);
     
     /* Allocate the minimum required number of cons cells to protect objects */
-    if (!CONS_P(code))
+    if (!CONSP(code))
 	code = plist;
-    else if (CONS_P(plist)) {
+    else if (CONSP(plist)) {
 	if (code == cons)
 	    RPLACD(code, plist);
 	else
@@ -1851,7 +1844,7 @@ LinkDoOptimize_0(LispCom *com, CodeBlock *block)
 				    goto remove_label;
 				case XBC_CAR:
 				    if (tree->data.object != NIL) {
-					if (!CONS_P(tree->data.object))
+					if (!CONSP(tree->data.object))
 					    LispDestroy("CAR: %s is not a list",
 						        STROBJ(
 							tree->data.object));
@@ -1862,7 +1855,7 @@ LinkDoOptimize_0(LispCom *com, CodeBlock *block)
 				    goto remove_label;
 				case XBC_CDR:
 				    if (tree->data.object != NIL) {
-					if (!CONS_P(tree->data.object))
+					if (!CONSP(tree->data.object))
 					    LispDestroy("CAR: %s is not a list",
 						        STROBJ(
 							tree->data.object));
@@ -2126,7 +2119,7 @@ LinkResolveJumps(LispCom *com, CodeBlock *block)
 
 	    case CodeTreeGo:
 		for (i = 0; i < body->tagbody.length; i++)
-		    if (XEQL(tree->data.object, body->tagbody.labels[i]) == T)
+		    if (XEQ(tree->data.object, body->tagbody.labels[i]) == T)
 			break;
 		if (i == body->tagbody.length)
 		    LispDestroy("COMPILE: no visible tag %s to GO",
@@ -2177,13 +2170,7 @@ LinkResolveJumps(LispCom *com, CodeBlock *block)
 		    tree->data.tree = tree->data.block->tail;
 		else {
 		    for (;;) {
-#if 0
-			for (ptr = tree->data.block->parent; ptr; ptr = ptr->next)
-			    if (ptr->type == CodeTreeBytecode)
-				break;
-#else
 			ptr = tree->data.block->parent->next;
-#endif
 			if (ptr) {
 			    tree->data.tree = ptr;
 			    break;
@@ -2841,6 +2828,8 @@ ExecuteBytecode(register unsigned char *stream)
     /* To control gc protected slots */
     int phead, pbase;
 
+    long fixnum = 0;
+
 #if defined(__GNUC__) && !defined(ANSI_SOURCE)
 #define ALLOW_GOTO_ADDRESS
 #endif
@@ -3020,7 +3009,7 @@ OPCODE_LABEL(XBC_T):
 OPCODE_LABEL(XBC_CAR):
 car:
 	if (reg0 != NIL) {
-	    if (!CONS_P(reg0))
+	    if (!CONSP(reg0))
 		LispDestroy("CAR: %s is not a list", STROBJ(reg0));
 	    reg0 = CAR(reg0);
 	}
@@ -3029,7 +3018,7 @@ car:
 OPCODE_LABEL(XBC_CDR):
 cdr:
 	if (reg0 != NIL) {
-	    if (!CONS_P(reg0))
+	    if (!CONSP(reg0))
 		LispDestroy("CDR: %s is not a list", STROBJ(reg0));
 	    reg0 = CDR(reg0);
 	}
@@ -3037,7 +3026,7 @@ cdr:
 
 OPCODE_LABEL(XBC_RPLACA):
 	reg1 = lisp__data.stack.values[--lisp__data.stack.length];
-	if (!CONS_P(reg1))
+	if (!CONSP(reg1))
 	    LispDestroy("RPLACA: %s is not a cons", STROBJ(reg1));
 	RPLACA(reg1, reg0);
 	reg0 = reg1;
@@ -3045,7 +3034,7 @@ OPCODE_LABEL(XBC_RPLACA):
 
 OPCODE_LABEL(XBC_RPLACD):
 	reg1 = lisp__data.stack.values[--lisp__data.stack.length];
-	if (!CONS_P(reg1))
+	if (!CONSP(reg1))
 	    LispDestroy("RPLACD: %s is not a cons", STROBJ(reg1));
 	RPLACD(reg1, reg0);
 	reg0 = reg1;
@@ -3152,29 +3141,28 @@ OPCODE_LABEL(XBC_EQUALP):
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_LENGTH):
-	reg0 = SMALLINT(LispLength(reg0));
+	reg0 = FIXNUM(LispLength(reg0));
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_LAST):
     {
-	long length, count;
+	long length;
 
 	reg1 = lisp__data.stack.values[--lisp__data.stack.length];
-	if (CONS_P(reg1)) {
+	if (CONSP(reg1)) {
 	    if (reg0 != NIL) {
-		if (!INT_P(reg0) || GETINT(reg0) < 0)
+		if (!FIXNUMP(reg0) || (fixnum = FIXNUM_VALUE(reg0)) < 0)
 		    LispDestroy("LAST: %s is not a positive fixnum",
 				STROBJ(reg0));
-		count = GETINT(reg0);
 	    }
 	    else
-		count = 1;
+		fixnum = 1;
 	    reg0 = reg1;
 	    for (reg0 = reg1, length = 0;
-		 CONS_P(reg0);
+		 CONSP(reg0);
 		 reg0 = CDR(reg0), length++)
 		;
-	    for (length -= count, reg0 = reg1; length > 0; length--)
+	    for (length -= fixnum, reg0 = reg1; length > 0; length--)
 		reg0 = CDR(reg0);
 	}
 	else
@@ -3183,17 +3171,14 @@ OPCODE_LABEL(XBC_LAST):
 
 OPCODE_LABEL(XBC_NTHCDR):
 	reg1 = lisp__data.stack.values[--lisp__data.stack.length];
-	if (!INT_P(reg1) || GETINT(reg1) < 0)
+	if (!FIXNUMP(reg1) || (fixnum = FIXNUM_VALUE(reg1)) < 0)
 	    LispDestroy("NTHCDR: %s is not a positive fixnum",
 			STROBJ(reg1));
 	if (reg0 != NIL) {
-	    long count = GETINT(reg1);
-
-	    if (!CONS_P(reg0))
-		LispDestroy("NTHCDR: %s is not a list",
-			    STROBJ(reg0));
-	    for (; count > 0; count--) {
-		if (!CONS_P(reg0))
+	    if (!CONSP(reg0))
+		LispDestroy("NTHCDR: %s is not a list", STROBJ(reg0));
+	    for (; fixnum > 0; fixnum--) {
+		if (!CONSP(reg0))
 		    break;
 		reg0 = CDR(reg0);
 	    }
@@ -3203,7 +3188,7 @@ OPCODE_LABEL(XBC_NTHCDR):
 	/* Push to builtin stack */
 OPCODE_LABEL(XBC_CAR_PUSH):
 	if (reg0 != NIL) {
-	    if (!CONS_P(reg0))
+	    if (!CONSP(reg0))
 		LispDestroy("CAR: %s is not a list", STROBJ(reg0));
 	    reg0 = CAR(reg0);
 	}
@@ -3211,7 +3196,7 @@ OPCODE_LABEL(XBC_CAR_PUSH):
 
 OPCODE_LABEL(XBC_CDR_PUSH):
 	if (reg0 != NIL) {
-	    if (!CONS_P(reg0))
+	    if (!CONSP(reg0))
 		LispDestroy("CDR: %s is not a list", STROBJ(reg0));
 	    reg0 = CDR(reg0);
 	}
@@ -3305,7 +3290,7 @@ OPCODE_LABEL(XBC_LOAD_CAR_STORE):
 	offset = *stream++;
 	reg0 = lisp__data.env.values[lisp__data.env.lex + offset];
 	if (reg0 != NIL) {
-	    if (!CONS_P(reg0))
+	    if (!CONSP(reg0))
 		LispDestroy("CAR: %s is not a list", STROBJ(reg0));
 	    reg0 = CAR(reg0);
 	    lisp__data.env.values[lisp__data.env.lex + offset] = reg0;
@@ -3316,7 +3301,7 @@ OPCODE_LABEL(XBC_LOAD_CDR_STORE):
 	offset = *stream++;
 	reg0 = lisp__data.env.values[lisp__data.env.lex + offset];
 	if (reg0 != NIL) {
-	    if (!CONS_P(reg0))
+	    if (!CONSP(reg0))
 		LispDestroy("CDR: %s is not a list", STROBJ(reg0));
 	    reg0 = CDR(reg0);
 	    lisp__data.env.values[lisp__data.env.lex + offset] = reg0;
@@ -3367,7 +3352,7 @@ OPCODE_LABEL(XBC_LOADCON_SET):
 OPCODE_LABEL(XBC_CAR_SET):
 car_set:
 	if (reg0 != NIL) {
-	    if (!CONS_P(reg0))
+	    if (!CONSP(reg0))
 		LispDestroy("CAR: %s is not a list", STROBJ(reg0));
 	    reg0 = CAR(reg0);
 	}
@@ -3376,7 +3361,7 @@ car_set:
 OPCODE_LABEL(XBC_CDR_SET):
 cdr_set:
 	if (reg0 != NIL) {
-	    if (!CONS_P(reg0))
+	    if (!CONSP(reg0))
 		LispDestroy("CDR: %s is not a list", STROBJ(reg0));
 	    reg0 = CDR(reg0);
 	}
@@ -3451,7 +3436,7 @@ OPCODE_LABEL(XBC_SETSYM):
 #define LOAD_SYMBOL_VALUE()					    \
     atom = symbols[*stream++];					    \
     if (atom->dyn) {						    \
-	if (atom->offset < lisp__data.env.head &&			    \
+	if (atom->offset < lisp__data.env.head &&		    \
 	    lisp__data.env.names[atom->offset] == atom->string)	    \
 	    reg0 = lisp__data.env.values[atom->offset];		    \
 	else {							    \
@@ -3590,15 +3575,13 @@ OPCODE_LABEL(XBC_LFINI):
 OPCODE_LABEL(XBC_STRUCT):
 	offset = *stream++;
 	reg1 = constants[*stream++];
-	if (reg0->type != LispStruct_t ||
-	    reg0->data.struc.def != reg1) {
-	    char *name = STRPTR(CAR(reg1));
+	if (!STRUCTP(reg0) || reg0->data.struc.def != reg1) {
+	    char *name = ATOMID(CAR(reg1));
 
 	    for (reg1 = CDR(reg1); offset; offset--)
 		reg1 = CDR(reg1);
 	    LispDestroy("%s-%s: %s is not a %s",
-			name, STRPTR(CAR(reg1)),
-			STROBJ(reg0), name);
+			name, ATOMID(CAR(reg1)), STROBJ(reg0), name);
 	}
 	for (reg0 = reg0->data.struc.fields; offset; offset--)
 	    reg0 = CDR(reg0);
@@ -3607,16 +3590,18 @@ OPCODE_LABEL(XBC_STRUCT):
 
 OPCODE_LABEL(XBC_STRUCTP):
 	reg1 = constants[*stream++];
-	reg0 = reg0->type == LispStruct_t &&
-	       reg0->data.struc.def == reg1 ? T : NIL;
+	reg0 = STRUCTP(reg0) && reg0->data.struc.def == reg1 ? T : NIL;
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_LETREC):
 	/* XXX could/should optimize, shouldn't need to parse
 	 * the bytecode header again */
 	lex = lisp__data.env.lex;
-	lisp__data.env.lex = lisp__data.env.length - (*stream++);
+	offset = *stream++;
+	lisp__data.env.head = lisp__data.env.length;
+	len = lisp__data.env.lex = lisp__data.env.length - offset;
 	reg0 = ExecuteBytecode(bytecode);
+	lisp__data.env.length = lisp__data.env.head = len;
 	lisp__data.env.lex = lex;
 	NEXT_OPCODE();
 
@@ -3632,15 +3617,15 @@ predicate_label:
 #endif
 
 OPCODE_LABEL(XBP_CONSP):
-	reg0 = CONS_P(reg0) ? T : NIL;
+	reg0 = CONSP(reg0) ? T : NIL;
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBP_LISTP):
-	reg0 = CONS_P(reg0) || reg0 == NIL ? T : NIL;
+	reg0 = LISTP(reg0) ? T : NIL;
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBP_NUMBERP):
-	reg0 = NUMBER_P(reg0) ? T : NIL;
+	reg0 = NUMBERP(reg0) ? T : NIL;
 	NEXT_OPCODE();
 
 #ifndef ALLOW_GOTO_ADDRESS
