@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mioverlay.c,v 3.12 2001/11/10 21:12:31 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mioverlay.c,v 3.13 2002/09/10 23:53:19 mvojkovi Exp $ */
 
 #include "X.h"
 #include "scrnintstr.h"
@@ -535,6 +535,8 @@ miOverlayComputeClips(
 		
 			tChild->pWin->drawable.serialNumber = 
 							 NEXT_SERIAL_NUMBER;
+                        if (pScreen->ClipNotify)
+                            (* pScreen->ClipNotify) (tChild->pWin, dx, dy);
 		    }
 		    if (tChild->valdata) {
 			REGION_INIT(pScreen, &tChild->valdata->borderExposed,
@@ -653,6 +655,9 @@ miOverlayComputeClips(
     }
 
     pParent->drawable.serialNumber = NEXT_SERIAL_NUMBER;
+
+    if (pScreen->ClipNotify)
+        (* pScreen->ClipNotify) (pParent, dx, dy);
 }
 
 
