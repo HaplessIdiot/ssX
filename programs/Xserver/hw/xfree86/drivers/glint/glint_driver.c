@@ -23,9 +23,10 @@
  *           Dirk Hohndel, <hohndel@suse.de>
  *	     Stefan Dirsch, <sndirsch@suse.de>
  *	     Michel Dänzer, <michdaen@iiic.ethz.ch>
+ *	     Sven Luther, <luther@dpt-info.u-strasbg.fr>
  *
- * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
- * Siemens Nixdorf Informationssysteme
+ * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
+ * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.78 2000/04/17 16:30:03 eich Exp $ */
 
@@ -147,6 +148,7 @@ DriverRec GLINT = {
 static SymTabRec GLINTChipsets[] = {
     { PCI_VENDOR_TI_CHIP_PERMEDIA2,		"ti_pm2" },
     { PCI_VENDOR_TI_CHIP_PERMEDIA,		"ti_pm" },
+    { PCI_VENDOR_3DLABS_CHIP_PERMEDIA3,		"pm3" },
     { PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V,	"pm2v" },
     { PCI_VENDOR_3DLABS_CHIP_PERMEDIA2,		"pm2" },
     { PCI_VENDOR_3DLABS_CHIP_PERMEDIA,		"pm" },
@@ -163,6 +165,7 @@ static SymTabRec GLINTChipsets[] = {
 static PciChipsets GLINTPciChipsets[] = {
     { PCI_VENDOR_TI_CHIP_PERMEDIA2,	 PCI_VENDOR_TI_CHIP_PERMEDIA2,	    RES_SHARED_VGA },
     { PCI_VENDOR_TI_CHIP_PERMEDIA,	 PCI_VENDOR_TI_CHIP_PERMEDIA,	    NULL },
+    { PCI_VENDOR_3DLABS_CHIP_PERMEDIA3, PCI_VENDOR_3DLABS_CHIP_PERMEDIA3, RES_SHARED_VGA },
     { PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V, PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V, RES_SHARED_VGA },
     { PCI_VENDOR_3DLABS_CHIP_PERMEDIA2,	 PCI_VENDOR_3DLABS_CHIP_PERMEDIA2,  RES_SHARED_VGA },
     { PCI_VENDOR_3DLABS_CHIP_PERMEDIA,	 PCI_VENDOR_3DLABS_CHIP_PERMEDIA,   NULL },
@@ -607,7 +610,10 @@ GLINTProbe(DriverPtr drv, int flags)
     Bool foundScreen = FALSE;
     char *name;   
 
+    /* 
     TRACE_ENTER("GLINTProbe");
+    */
+    TRACE_EXIT("GLINTProbe (Enter)");
 
   
     if ((numDevSections = xf86MatchDevice(GLINT_DRIVER_NAME,
@@ -742,6 +748,7 @@ GetAccelPitchValues(ScrnInfoPtr pScrn)
     switch (pGlint->Chipset) {
     case PCI_VENDOR_TI_CHIP_PERMEDIA2:
     case PCI_VENDOR_TI_CHIP_PERMEDIA:
+    case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA:
@@ -1176,6 +1183,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     xf86DrvMsg(pScrn->scrnIndex, from, "Chipset: \"%s\"\n", pScrn->chipset);
 
     if ((pGlint->Chipset == PCI_VENDOR_TI_CHIP_PERMEDIA2) ||
+	(pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA3) ||
 	(pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V) ||
 	(pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2)) {
     	if (xf86ReturnOptValBool(GLINTOptions, OPTION_BLOCK_WRITE, FALSE)) {
@@ -1273,6 +1281,16 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     	if (pGlint->pEnt->device->videoRam != 0) {
 		pScrn->videoRam = pGlint->pEnt->device->videoRam;
 		from = X_CONFIG;
+        } else if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA3) {
+		/* Need to initialize the memory timings of the second head
+		 * of the Appian Jeronimo 2000 board here.
+		 * Check this routine in pm3_dac.c if you have another board
+		 * than a J2000, as memory timings will surely change.
+		*/
+        	GLINTMapMem(pScrn);
+		Permedia3PreInit(pScrn, pGlint);
+        	GLINTUnmapMem(pScrn);
+		pScrn->videoRam = Permedia3MemorySizeDetect(pScrn);
     	} else {
 		pGlint->FbMapSize = 0; /* Need to set FbMapSize for MMIO access */
 		/* Need to access MMIO to determine videoRam */
@@ -1389,6 +1407,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 		return FALSE;
 	    }
 	    break;
+	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
 	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
 	    maxheight = 2048;
 	    maxwidth = 2048;
@@ -1587,6 +1606,22 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 			break;
 		}
 	}
+	if ( (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA3) ) {
+		switch (pScrn->bitsPerPixel) {
+		    case 8:
+			pGlint->MaxClock = 300000;
+			break;
+		    case 16:
+			pGlint->MaxClock = 300000;
+			break;
+		    case 24:
+			pGlint->MaxClock = 150000;
+			break;
+		    case 32:
+			pGlint->MaxClock = 110000;
+			break;
+		}
+	}
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "Max pixel clock is %d MHz\n",
 	       pGlint->MaxClock / 1000);
@@ -1719,6 +1754,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     case PCI_VENDOR_TI_CHIP_PERMEDIA2:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
+    case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
     case PCI_VENDOR_TI_CHIP_PERMEDIA:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA:
 	pGlint->pprod = partprodPermedia[pScrn->displayWidth >> 5];
@@ -1793,6 +1829,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     /* Load I2C if needed */
     if ((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2) ||
 	(pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V) ||
+	(pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA3) ||
 	(pGlint->Chipset == PCI_VENDOR_TI_CHIP_PERMEDIA2)) {
 	if (xf86LoadSubModule(pScrn, "i2c")) {
 	    I2CBusPtr pBus;
@@ -1892,6 +1929,7 @@ GLINTMapMem(ScrnInfoPtr pScrn)
 	    return FALSE;
     }
 
+    TRACE_EXIT("GLINTMapMem");
     return TRUE;
 }
 
@@ -1971,6 +2009,9 @@ GLINTSave(ScrnInfoPtr pScrn)
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
 	Permedia2VSave(pScrn, glintReg);
 	break;
+    case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
+	Permedia3Save(pScrn, glintReg);
+	break;
     case PCI_VENDOR_TI_CHIP_PERMEDIA:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA:
 	PermediaSave(pScrn, glintReg);
@@ -2031,6 +2072,9 @@ GLINTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
 	ret = Permedia2VInit(pScrn, mode);
 	break;
+    case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
+	ret = Permedia3Init(pScrn, mode);
+	break;
     case PCI_VENDOR_TI_CHIP_PERMEDIA:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA:
 	ret = PermediaInit(pScrn, mode);
@@ -2070,6 +2114,9 @@ GLINTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	break;
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
 	Permedia2VRestore(pScrn, glintReg);
+	break;
+    case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
+	Permedia3Restore(pScrn, glintReg);
 	break;
     case PCI_VENDOR_TI_CHIP_PERMEDIA:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA:
@@ -2231,6 +2278,10 @@ GLINTRestore(ScrnInfoPtr pScrn)
 	Permedia2VideoReset(pScrn);
 	Permedia2VRestore(pScrn, glintReg);
 	break;
+    case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
+	Permedia2VideoReset(pScrn);
+	Permedia3Restore(pScrn, glintReg);
+	break;
     case PCI_VENDOR_TI_CHIP_PERMEDIA:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA:
 	PermediaRestore(pScrn, glintReg);
@@ -2292,7 +2343,10 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     	    if (!vgaHWMapMem(pScrn))
 	   	 return FALSE;
 	}
-    	vgaHWSetMmioFuncs(hwp, pGlint->IOBaseVGA, 0);
+	/* Timing problem with PM3 & PM2V chips dont like being blasted */
+        if ((pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_PERMEDIA3) && 
+            (pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V))
+    	    vgaHWSetMmioFuncs(hwp, pGlint->IOBaseVGA, 0);
     	vgaHWGetIOBase(hwp);
     }
 
@@ -2463,6 +2517,7 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
         case PCI_VENDOR_TI_CHIP_PERMEDIA2:
         case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
         case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
+        case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
 	    Permedia2AccelInit(pScreen);
 	    break;
 	case PCI_VENDOR_TI_CHIP_PERMEDIA:
@@ -2502,6 +2557,10 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V)
 	    Permedia2vHWCursorInit(pScreen);
 	else
+	if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA3)
+	    Permedia3HWCursorInit(pScreen);
+	else
+	/* If we get here pGlint->Ramdac should have been set */
 	if ( ((pGlint->RamDac->RamDacType == (IBM526DB_RAMDAC)) ||
 	      (pGlint->RamDac->RamDacType == (IBM526_RAMDAC)) ||
 	      (pGlint->RamDac->RamDacType == (IBM640_RAMDAC))) )
@@ -2517,6 +2576,7 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	return FALSE;
 
     if ((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V) ||
+	(pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA3) || 
 	(pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2) || 
 	(pGlint->Chipset == PCI_VENDOR_TI_CHIP_PERMEDIA2)) {
     	if (!xf86HandleColormaps(pScreen, 256, pScrn->rgbBits,
@@ -2583,6 +2643,7 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
         case PCI_VENDOR_TI_CHIP_PERMEDIA2:
         case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
         case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
+        case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
 	    Permedia2VideoInit(pScreen);
     }
 
@@ -2614,6 +2675,7 @@ GLINTSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
     			case PCI_VENDOR_TI_CHIP_PERMEDIA2:
     			case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
     			case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
+    			case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
 				Permedia2InitializeEngine(pScrn);
 				break;
     			case PCI_VENDOR_TI_CHIP_PERMEDIA:
@@ -2676,6 +2738,7 @@ GLINTAdjustFrame(int scrnIndex, int x, int y, int flags)
     case PCI_VENDOR_TI_CHIP_PERMEDIA2:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
+    case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
 	GLINT_SLOW_WRITE_REG(base, PMScreenBase);
 	break;
     }
@@ -2710,6 +2773,7 @@ GLINTEnterVT(int scrnIndex, int flags)
     	case PCI_VENDOR_TI_CHIP_PERMEDIA2:
     	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
     	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
+    	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
 		Permedia2InitializeEngine(pScrn);
 		break;
     	case PCI_VENDOR_TI_CHIP_PERMEDIA:
@@ -2784,6 +2848,7 @@ GLINTCloseScreen(int scrnIndex, ScreenPtr pScreen)
         case PCI_VENDOR_TI_CHIP_PERMEDIA2:
         case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
         case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
+        case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
 	    Permedia2VideoUninit(xf86Screens[scrnIndex]);
     }
 
@@ -2854,6 +2919,7 @@ GLINTValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 	 * side appears if not aligned properly */
         switch (pGlint->Chipset) {
         case PCI_VENDOR_TI_CHIP_PERMEDIA2:
+        case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
         case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
         case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
           if (mode->HDisplay % 8) {
@@ -2908,6 +2974,7 @@ GLINTSaveScreen(ScreenPtr pScreen, int mode)
     switch (pGlint->Chipset) {
     case PCI_VENDOR_TI_CHIP_PERMEDIA2:
     case PCI_VENDOR_TI_CHIP_PERMEDIA:
+    case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
     case PCI_VENDOR_3DLABS_CHIP_PERMEDIA:

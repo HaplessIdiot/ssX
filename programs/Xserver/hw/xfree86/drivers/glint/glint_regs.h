@@ -35,6 +35,9 @@
 #define PCI_CHIP_3DLABS_PERMEDIA				0x04
 #define PCI_CHIP_3DLABS_MX					0x06
 #define PCI_CHIP_3DLABS_PERMEDIA2				0x07
+#define PCI_CHIP_3DLABS_GAMMA					0x08
+#define PCI_CHIP_3DLABS_PERMEDIA2V				0x09
+#define PCI_CHIP_3DLABS_PERMEDIA3				0x0A
 #define PCI_CHIP_TI_PERMEDIA 	  				0x3d04
 
 #define CFGRevisionId						0x08
@@ -89,6 +92,10 @@
 #define   SCLK_SEL_MASK		(3 << 10)
 #define   SCLK_SEL_MCLK_HALF	(3 << 10)
 #define ByDMAControl							0x00D8
+
+/* GLINT R3 & Permedia3 Region 0 Bypass Controls */
+#define PM3ByAperture1Mode						0x0300
+#define PM3ByAperture2Mode						0x0328
 
 /* GLINT 500TX LocalBuffer Registers */
 #define LBMemoryCtl							0x1000
@@ -191,6 +198,17 @@
 #define PMBypassWriteMask						0x1100
 #define PMFramebufferWriteMask					        0x1140
 #define PMCount								0x1180
+
+/* Permedia 3 & GLINT R3 Memory Control */
+#define PM3MemCounter							0x1000
+#define PM3MemBypassWriteMask						0x1008
+#define PM3MemScratch							0x1010
+#define PM3LocalMemCaps							0x1018
+#define PM3LocalMemTimings						0x1020
+#define PM3LocalMemControl						0x1028
+#define PM3LocalMemRefresh						0x1030
+#define PM3LocalMemPowerDown						0x1038
+#define PM3RemoteMemControl						0x1100
 
 /* Framebuffer Registers */
 #define FBMemoryCtl							0x1800
