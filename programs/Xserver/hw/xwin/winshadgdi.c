@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshadgdi.c,v 1.5 2001/05/08 08:14:09 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshadgdi.c,v 1.6 2001/05/14 16:52:33 alanh Exp $ */
 
 #include "win.h"
 
@@ -279,11 +279,12 @@ winAllocateFBShadowGDI (ScreenPtr pScreen)
 /* Blit the damaged regions of the shadow fb to the screen */
 void
 winShadowUpdateGDI (ScreenPtr pScreen, 
-		    PixmapPtr pShadow,
-		    RegionPtr damage)
+		    shadowBufPtr pBuf)
 {
   winScreenPriv(pScreen);
   winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
+  PixmapPtr		pShadow = pBuf->pPixmap;
+  RegionPtr		damage = &pBuf->damage;
   DWORD			dwBox = REGION_NUM_RECTS (damage);
   BoxPtr		pBox = REGION_RECTS (damage);
   int			x, y, w, h;
@@ -334,7 +335,8 @@ winShadowWindowGDI (ScreenPtr	pScreen,
 		    CARD32	dwRow,
 		    CARD32	dwOffset,
 		    int		mode,
-		    CARD32	*pdwSize)
+		    CARD32	*pdwSize,
+		    void	*closure)
 {
   return winShadowSetWindowLinearGDI (pScreen, dwRow, dwOffset, mode, pdwSize);
 }

@@ -1,4 +1,5 @@
 XFree86 4.1.99.1 (xx June 2001)
+  59. Fixup Cygwin/XFree86 after recent Xrandr changes (#4726, Harold Hunt).
   58. Fix ATI Radeon driver on Alpha. Seems as though the BIOS doesn't
       like Re-POSTing and memory setup gets confused. (Jay Estabrook, Jeff
       Weidemeier)
@@ -13412,4 +13413,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1814 2001/05/30 08:18:29 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1815 2001/05/31 08:37:14 alanh Exp $

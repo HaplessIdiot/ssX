@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.5 2001/05/02 08:10:15 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.6 2001/05/08 08:14:09 alanh Exp $ */
 
 #ifndef _WIN_H_
 #define _WIN_H_
@@ -182,11 +182,11 @@
 
 typedef Bool (*winAllocateFBProcPtr)(ScreenPtr);
 
-typedef void (*winShadowUpdateProcPtr)(ScreenPtr, PixmapPtr, RegionPtr);
+typedef void (*winShadowUpdateProcPtr)(ScreenPtr, shadowBufPtr);
 
 typedef void *(*winShadowWindowProcPtr)(ScreenPtr,
 					CARD32, CARD32,
-					int, CARD32*);
+					int, CARD32*, void*);
 
 typedef Bool (*winCloseScreenProcPtr)(int, ScreenPtr);
 
@@ -681,8 +681,7 @@ winAllocateFBShadowDD (ScreenPtr pScreen);
 
 void
 winShadowUpdateDD (ScreenPtr pScreen, 
-		   PixmapPtr pShadow,
-		   RegionPtr damage);
+		   shadowBufPtr pBuf);
 
 void *
 winShadowSetWindowLinearDD (ScreenPtr	pScreen,
@@ -696,7 +695,8 @@ winShadowWindowDD (ScreenPtr	pScreen,
 		   CARD32	row,
 		   CARD32	offset,
 		   int		mode,
-		   CARD32	*size);
+		   CARD32	*size,
+		   void		*closure);
 
 Bool
 winCloseScreenShadowDD (int nIndex, ScreenPtr pScreen);
@@ -725,8 +725,7 @@ winAllocateFBShadowDDNL (ScreenPtr pScreen);
 
 void
 winShadowUpdateDDNL (ScreenPtr pScreen, 
-		     PixmapPtr pShadow,
-		     RegionPtr damage);
+		     shadowBufPtr pBuf);
 
 void *
 winShadowSetWindowLinearDDNL (ScreenPtr	pScreen,
@@ -740,7 +739,8 @@ winShadowWindowDDNL (ScreenPtr	pScreen,
 		     CARD32	row,
 		     CARD32	offset,
 		     int	mode,
-		     CARD32	*size);
+		     CARD32	*size,
+		     void	*closure);
 
 Bool
 winCloseScreenShadowDDNL (int nIndex, ScreenPtr pScreen);
@@ -769,8 +769,7 @@ winAllocateFBShadowGDI (ScreenPtr pScreen);
 
 void
 winShadowUpdateGDI (ScreenPtr pScreen, 
-		    PixmapPtr pShadow,
-		    RegionPtr damage);
+		    shadowBufPtr pBuf);
 
 void *
 winShadowSetWindowLinearGDI (ScreenPtr	pScreen,
@@ -784,7 +783,8 @@ winShadowWindowGDI (ScreenPtr	pScreen,
 		    CARD32	row,
 		    CARD32	offset,
 		    int		mode,
-		    CARD32	*size);
+		    CARD32	*size,
+		    void	*closure);
 
 Bool
 winCloseScreenShadowGDI (int nIndex, ScreenPtr pScreen);

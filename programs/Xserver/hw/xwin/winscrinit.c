@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.6 2001/05/04 11:50:12 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.7 2001/05/14 16:52:33 alanh Exp $ */
 
 #include "win.h"
 
@@ -254,6 +254,10 @@ winScreenInit (int index,
       return FALSE;
     }
 
+#if CYGDEBUG
+  ErrorF ("winScreenInit () - returning\n");
+#endif
+
   return TRUE;
 }
 
@@ -319,18 +323,21 @@ winFinishScreenInitFB (int index,
       return FALSE;
     }
 
-  pScreen->GetWindowPixmap = winGetWindowPixmap;
-  pScreen->SetWindowPixmap = winSetWindowPixmap;
-
 #ifdef RENDER
   /* Render extension initialization, calls miPictureInit */
   fbPictureInit (pScreen, NULL, 0);
 #endif
 
   /* Setup the cursor routines */
+#if CYGDEBUG
+  ErrorF ("winFinishScreenInitFB () - Calling miDCInitialize ()\n");
+#endif
   miDCInitialize (pScreen, &g_winPointerCursorFuncs);
 
   /* Create a default colormap */
+#if CYGDEBUG
+  ErrorF ("winFinishScreenInitFB () - Calling fbCreateDefColormap ()\n");
+#endif
   fReturn = fbCreateDefColormap (pScreen);
   if (!fReturn)
     {
@@ -343,6 +350,9 @@ winFinishScreenInitFB (int index,
       || pScreenInfo->dwEngine == WIN_SERVER_SHADOW_DD
       || pScreenInfo->dwEngine == WIN_SERVER_SHADOW_DDNL)
     {
+#if CYGDEBUG
+  ErrorF ("winFinishScreenInitFB () - Calling shadowInit ()\n");
+#endif
       shadowInit (pScreen,
 		  pScreenPriv->pwinShadowUpdate,
 		  pScreenPriv->pwinShadowWindow);
@@ -353,6 +363,10 @@ winFinishScreenInitFB (int index,
    * process messages in our Windows message queue; specifically,
    * they process mouse and keyboard input.
    */
+#if CYGDEBUG
+  ErrorF ("winFinishScreenInitFB () - Calling "\
+	  "RegisterBlockAndWakeupHandlers ()\n");
+#endif
   RegisterBlockAndWakeupHandlers (winBlockHandler,
 				  winWakeupHandler,
 				  pScreen);
@@ -368,6 +382,10 @@ winFinishScreenInitFB (int index,
 
   /* Tell the server that we are enabled */
   pScreenPriv->fEnabled = TRUE;
+
+#if CYGDEBUG
+  ErrorF ("winFinishScreenInitFB () - returning\n");
+#endif
 
   return fReturn;
 }
