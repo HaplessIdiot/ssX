@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.18tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.19tsi Exp $ */
 /*
- * Copyright (C) 2001-2003 The XFree86 Project, Inc.
+ * Copyright (C) 2001-2005 The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -120,7 +120,7 @@ typedef struct _sparcDomainRec {
 static sparcDomainPtr xf86DomainInfo[MAX_DOMAINS];
 static int            pciNumDomains = 1;
 
-/* Variables that are assigned this must be declared volatile */
+/* Variables to which this is assigned must be declared volatile */
 #define PciReg(base, tag, off, type) \
     *(volatile type *)(pointer)((char *)(base) + \
 	(PCI_TAG_NO_DOMAIN(tag) | (off)))
@@ -564,7 +564,7 @@ newDomain:
 	 *
 	 * The PCI specs require that when a bus transaction remains unclaimed
 	 * for too long, the master entity on that bus is to cancel the
-	 * transaction it issued or passed on with a master abort.  Two
+	 * transaction it issued, or passed on, with a master abort.  Two
 	 * outcomes are possible:
 	 *
 	 * - the master abort can be treated as an error that is propogated
@@ -891,12 +891,15 @@ xf86LocatePciMemoryArea(PCITAG Tag, char **devName, unsigned int *devOffset,
  * re-routes much more.
  */
 static PCITAG simbavgaIOTag = 0, simbavgaMemTag = 0;
+static PCITAG simbadefaultIOTag = 0, simbadefaultMemTag = 0;
 static Bool simbavgaRoutingAllow = TRUE;
 
 /*
  * Scan the bus subtree rooted at 'bus' for a non-display device that might be
- * decoding the bottom 2 MB of I/O space and/or the bottom 512 MB of memory
- * space.  Reset simbavgaRoutingAllow if such a device is found.
+ * decoding any resource in the bottom 2 MB of I/O space and/or the bottom 512
+ * MB of memory space.  Reset simbavgaRoutingAllow if such a device is found.
+ * Also, if a display device is found to advertise resources in those ranges,
+ * ensure the ranges always remain forwarded by some Simba in the system.
  *
  * XXX For now, this is very conservative and should be made less so as the
  *     need arises.
@@ -905,6 +908,8 @@ static void
 simbaCheckBus(CARD16 pcicommand, int bus)
 {
     pciConfigPtr pPCI, *ppPCI = xf86scanpci(0);
+    int i;
+    CARD16 savecmd = pcicommand;
 
     while ((pPCI = *ppPCI++)) {
 	if (pPCI->busnum < bus)
@@ -913,17 +918,66 @@ simbaCheckBus(CARD16 pcicommand, int bus)
 	    break;
 
 	/* XXX Assume all devices respect PCI disablement */
-	if (!(pcicommand & pPCI->pci_command))
+	pcicommand = savecmd & pPCI->pci_command;
+	if (!pcicommand)
 	    continue;
 
-	/* XXX This doesn't deal with mis-advertised classes */
+	/* XXX This doesn't deal with mis-advertised classes ... */
 	switch (pPCI->pci_base_class) {
 	case PCI_CLASS_PREHISTORIC:
-	    if (pPCI->pci_sub_class == PCI_SUBCLASS_PREHISTORIC_VGA)
-		continue;	/* Ignore VGA */
-	    break;
+	    if ((pPCI->pci_sub_class != PCI_SUBCLASS_PREHISTORIC_VGA) ||
+		/* ... except for known cases */
+		(pPCI->pci_vendor == PCI_VENDOR_CREATIVE) ||
+		(pPCI->pci_vendor == PCI_VENDOR_ENSONIQ))
+		break;
 
 	case PCI_CLASS_DISPLAY:
+	    if (simbadefaultIOTag && simbadefaultMemTag)
+		continue;
+
+	    /* Check bases to see if VGA needs to be routed at all times */
+	    for (i = 0;  i < 7;  i++) {
+		if (!pPCI->basesize[i])
+		    continue;
+
+		if (i == 6) {
+		    if (!simbadefaultMemTag &&
+			(pcicommand & PCI_CMD_MEM_ENABLE) &&
+			PCIGETROM(pPCI->pci_baserom) &&
+			(PCIGETROM(pPCI->pci_baserom) < (1 << 29))) {
+			simbadefaultMemTag = simbavgaMemTag;
+			if (simbadefaultIOTag)
+			    break;
+		    }
+		} else if (PCI_MAP_IS_IO((&pPCI->pci_base0)[i])) {
+		    if (!simbadefaultIOTag &&
+			(pcicommand & PCI_CMD_IO_ENABLE) &&
+			PCIGETIO((&pPCI->pci_base0)[i]) &&
+			(PCIGETIO((&pPCI->pci_base0)[i]) < (1 << 21))) {
+			simbadefaultIOTag = simbavgaIOTag;
+			if (simbadefaultMemTag)
+			    break;
+		    }
+		} else {
+		    if (simbadefaultMemTag ||
+			!(pcicommand & PCI_CMD_MEM_ENABLE))
+			continue;
+
+		    /* Note:  The next basesize for 64-bit BARs is zero */
+		    if ((i < 5) &&
+			PCI_MAP_IS64BITMEM((&pPCI->pci_base0)[i]) &&
+			(&pPCI->pci_base0)[i + 1])
+			continue;
+
+		    if (PCIGETMEMORY((&pPCI->pci_base0)[i]) &&
+			(PCIGETMEMORY((&pPCI->pci_base0)[i]) < (1 < 29))) {
+			simbadefaultMemTag = simbavgaMemTag;
+			if (simbadefaultIOTag)
+			    break;
+		    }
+		}
+	    }
+
 	    continue;
 
 	case PCI_CLASS_BRIDGE:
@@ -932,7 +986,7 @@ simbaCheckBus(CARD16 pcicommand, int bus)
 	    case PCI_SUBCLASS_BRIDGE_CARDBUS:
 		/* Scan secondary bus */
 		/* XXX First check bridge routing? */
-		simbaCheckBus(pcicommand & pPCI->pci_command,
+		simbaCheckBus(pcicommand,
 		    PCI_SECONDARY_BUS_EXTRACT(pPCI->pci_pp_bus_register,
 			pPCI->tag));
 		if (!simbavgaRoutingAllow)
@@ -995,11 +1049,27 @@ simbaControlBridge(int bus, CARD16 mask, CARD16 value)
 				pPCI->busnum, pPCI->devnum, pPCI->funcnum);
 		    value |= PCI_PCI_BRIDGE_VGA_EN;
 		} else {
-		    pciWriteByte(pPCI->tag, APB_IO_ADDRESS_MAP,
-				 iomap & ~0x01);
-		    pciWriteByte(pPCI->tag, APB_MEM_ADDRESS_MAP,
-				 memmap & ~0x01);
-		    simbavgaIOTag = simbavgaMemTag = 0;
+		    if (pPCI->tag != simbadefaultIOTag) {
+			pciWriteByte(pPCI->tag, APB_IO_ADDRESS_MAP,
+				     iomap & ~0x01);
+			if ((simbavgaIOTag = simbadefaultIOTag)) {
+			    iomap = pciReadByte(simbavgaIOTag,
+						APB_IO_ADDRESS_MAP);
+			    pciWriteByte(simbavgaIOTag, APB_IO_ADDRESS_MAP,
+					 iomap | 0x01);
+			}
+		    }
+
+		    if (pPCI->tag != simbadefaultMemTag) {
+			pciWriteByte(pPCI->tag, APB_MEM_ADDRESS_MAP,
+				     memmap & ~0x01);
+			if ((simbavgaMemTag = simbadefaultMemTag)) {
+			    memmap = pciReadByte(simbavgaMemTag,
+						 APB_MEM_ADDRESS_MAP);
+			    pciWriteByte(simbavgaMemTag, APB_MEM_ADDRESS_MAP,
+					 memmap | 0x01);
+			}
+		    }
 		}
 	    }
 	} else {

@@ -1,4 +1,15 @@
 XFree86 4.5.99.1 (xx March 2005)
+  17. Refine VGA routing emulation through Sun's Simba P2P bridges
+      (Marc La France).
+  16. Tentative fix for loader server on Linux/SPARC 2.6 kernels
+      (Marc La France).
+  15. Extend mmapr & mmapw utilities on Linux to allow specification of which
+      PCI address space (I/O or memory) to mmap (Marc La France).
+  14. Given Xinerama must be explicitly requested, allow it to initialise even
+      when there's only one screen to combine (Marc La France).
+  13. Cause the server to FatalError() when Xinerama attempts to create a
+      screen whose root depth has no visuals, causing Xlib to segfault
+      (Marc La France).
   12. Clean up XFree86 server links (Marc La France).
   11. Start reworking build under xc/doc (Marc La France).
   10. Move test suite documentation from xc/doc to test/xsuite/doc
@@ -19482,7 +19493,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3481 2005/03/29 17:33:22 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3482 2005/03/29 17:43:26 tsi Exp $
 
 
 
