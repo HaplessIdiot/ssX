@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.24 1999/04/25 10:02:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.25 1999/04/25 11:34:09 dawes Exp $ */
 
 #define DEBUG
 
@@ -1194,21 +1194,10 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 static Bool
 SISMapMem(ScrnInfoPtr pScrn)
 {
-    CARD32 save = 0;
     SISPtr pSiS;
     int mmioFlags;
 
     pSiS = SISPTR(pScrn);
-
-    /*
-     * Disable memory and I/O before mapping the MMIO area.  This avoids
-     * the MMIO area being read during the mapping (which happens on
-     * some SVR4 versions), which will cause a lockup.
-     */
-
-    save = pciReadLong(pSiS->PciTag, PCI_CMD_STAT_REG);
-    pciWriteLong(pSiS->PciTag, PCI_CMD_STAT_REG,
-		 save & ~(PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE));
 
     /*
      * Map IO registers to virtual address space
@@ -1226,24 +1215,6 @@ SISMapMem(ScrnInfoPtr pScrn)
 			pSiS->PciTag, pSiS->IOAddress, 0x10000);
     if (pSiS->IOBase == NULL)
 	return FALSE;
-
-#if defined(SVR4)
-    /*
-     * For some SVR4 versions, a 32-bit read is done for the first
-     * location in each page when the page is first mapped.  If this
-     * is done while memory and I/O are enabled, the result will be
-     * a lockup, so make sure each page is mapped here while it is safe
-     * to do so.
-     */
-    {
-	CARD32 val;
-
-	val = *(volatile CARD32 *)(pSiS->IOBase+0);
-	val = *(volatile CARD32 *)(pSiS->IOBase+0x1000);
-	val = *(volatile CARD32 *)(pSiS->IOBase+0x2000);
-	val = *(volatile CARD32 *)(pSiS->IOBase+0x3000);
-    }
-#endif
 
 #ifdef __alpha__
     /*
@@ -1263,10 +1234,6 @@ SISMapMem(ScrnInfoPtr pScrn)
 				 pSiS->FbMapSize);
     if (pSiS->FbBase == NULL)
 	return FALSE;
-
-    /* Re-enable I/O and memory */
-    pciWriteLong(pSiS->PciTag, PCI_CMD_STAT_REG,
-		 save | (PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE));
 
     return TRUE;
 }

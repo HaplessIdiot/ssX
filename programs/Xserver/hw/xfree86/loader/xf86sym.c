@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.85 1999/04/25 10:02:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.86 1999/04/25 12:33:50 dawes Exp $ */
 
 /*
  *
@@ -190,6 +190,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86LinearVidMem)
    SYMFUNC(xf86MapVidMem)
    SYMFUNC(xf86UnMapVidMem)
+   SYMFUNC(xf86MapReadSideEffects)
    SYMFUNC(xf86IODelay)
    SYMFUNC(xf86SlowBcopy)
 #ifdef __alpha__

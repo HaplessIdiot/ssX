@@ -64,7 +64,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.21 1999/04/04 00:20:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.22 1999/04/18 04:08:48 dawes Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -84,6 +84,7 @@
 #define VIDMEM_FRAMEBUFFER	0x01	/* memory for framebuffer use */
 #define VIDMEM_MMIO		0x02	/* memory for I/O use */
 #define VIDMEM_SPARSE		0x04	/* sparse mapping required */
+#define VIDMEM_READSIDEEFFECT	0x08	/* reads can have side-effects */
 
 #ifdef XF86_OS_PRIVS
 extern void xf86WrapperInit(void);
@@ -115,6 +116,7 @@ _XFUNCPROTOBEGIN
 extern Bool xf86LinearVidMem(void);
 extern pointer xf86MapVidMem(int, int, unsigned long, unsigned long);
 extern void xf86UnMapVidMem(int, pointer, unsigned long);
+extern void xf86MapReadSideEffects(int, int, pointer, unsigned long);
 extern int xf86ReadBIOS(unsigned long, unsigned long, unsigned char *, int);
 extern void xf86EnableIO(void);
 extern void xf86DisableIO(void);

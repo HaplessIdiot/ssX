@@ -22,7 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.22 1999/04/18 04:08:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.23 1999/04/25 10:02:26 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -852,41 +852,13 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 static Bool
 TGAMapMem(ScrnInfoPtr pScrn)
 {
-    CARD32 save;
     TGAPtr pTga;
 
     pTga = TGAPTR(pScrn);
 
     /*
-     * Disable memory and I/O before mapping the MMIO area.  This avoids
-     * the MMIO area being read during the mapping (which happens on
-     * some SVR4 versions), which will cause a lockup.
-     */
-
-    save = pciReadLong(pTga->PciTag, PCI_CMD_STAT_REG);
-    pciWriteLong(pTga->PciTag, PCI_CMD_STAT_REG,
-		 save & ~(PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE));
-
-    /*
      * Map IO registers to virtual address space
      */ 
-#if defined(SVR4)
-    /*
-     * For some SVR4 versions, a 32-bit read is done for the first
-     * location in each page when the page is first mapped.  If this
-     * is done while memory and I/O are enabled, the result will be
-     * a lockup, so make sure each page is mapped here while it is safe
-     * to do so.
-     */
-    {
-	CARD32 val;
-
-	val = *(volatile CARD32 *)(pTga->IOBase+0);
-	val = *(volatile CARD32 *)(pTga->IOBase+0x1000);
-	val = *(volatile CARD32 *)(pTga->IOBase+0x2000);
-	val = *(volatile CARD32 *)(pTga->IOBase+0x3000);
-    }
-#endif
 
     /* TGA doesn't need a sparse memory mapping, because all register
        accesses are doublewords */
@@ -903,10 +875,6 @@ TGAMapMem(ScrnInfoPtr pScrn)
 				 pTga->FbMapSize);
     if (pTga->FbBase == NULL)
 	return FALSE;
-
-    /* Re-enable I/O and memory */
-    pciWriteLong(pTga->PciTag, PCI_CMD_STAT_REG,
-		 save | (PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE));
 
     return TRUE;
 }

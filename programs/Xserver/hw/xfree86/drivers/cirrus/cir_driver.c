@@ -9,7 +9,7 @@
  *	Guy DESBIEF
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.33 1999/03/20 08:59:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.34 1999/04/18 04:08:34 dawes Exp $ */
 
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -1202,7 +1202,6 @@ CIRPreInit(ScrnInfoPtr pScrn, int flags)
 Bool
 CIRMapMem(ScrnInfoPtr pScrn)
 {
-    CARD32 save;
     CIRPtr pCir;
     int mmioFlags;
 
@@ -1211,20 +1210,6 @@ CIRMapMem(ScrnInfoPtr pScrn)
 #endif
 
     pCir = CIRPTR(pScrn);
-
-    /*
-     * Disable memory and I/O before mapping the MMIO area.  This avoids
-     * the MMIO area being read during the mapping (which happens on
-     * some SVR4 versions), which will cause a lockup.
-     */
-
-    save = pciReadLong(pCir->PciTag, PCI_CMD_STAT_REG);
-    pciWriteLong(pCir->PciTag, PCI_CMD_STAT_REG,
-		 save & ~(PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE));
-
-#ifdef CIR_DEBUG
-    ErrorF("CIRMapMem save=0x%08x\n", save);
-#endif
 
     /*
      * Map the frame buffer.
@@ -1268,24 +1253,6 @@ CIRMapMem(ScrnInfoPtr pScrn)
     ErrorF("CIRMapMem pCir->IOBase=0x%08x\n", pCir->IOBase);
 #endif
 
-#if defined(SVR4)
-    /*
-     * For some SVR4 versions, a 32-bit read is done for the first
-     * location in each page when the page is first mapped.  If this
-     * is done while memory and I/O are enabled, the result will be
-     * a lockup, so make sure each page is mapped here while it is safe
-     * to do so.
-     */
-    if (pCir->IOBase != NULL) {
-	CARD32 val;
-
-	val = *(volatile CARD32 *)(pCir->IOBase+0);
-	val = *(volatile CARD32 *)(pCir->IOBase+0x1000);
-	val = *(volatile CARD32 *)(pCir->IOBase+0x2000);
-	val = *(volatile CARD32 *)(pCir->IOBase+0x3000);
-    }
-#endif
-
 #ifdef __alpha__
     if (pCir->IOBase != NULL) {
         /*
@@ -1300,9 +1267,6 @@ CIRMapMem(ScrnInfoPtr pScrn)
     }
 #endif /* __alpha__ */
 
-    /* Re-enable I/O and memory */
-    pciWriteLong(pCir->PciTag, PCI_CMD_STAT_REG,
-		 save | (PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE));
     return TRUE;
 }
 
