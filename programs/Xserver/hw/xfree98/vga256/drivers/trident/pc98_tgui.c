@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/trident/pc98_tgui.c,v 3.0 1996/04/15 11:33:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree98/vga256/drivers/trident/pc98_tgui.c,v 3.1 1996/08/14 14:38:34 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -39,24 +39,21 @@ extern vgaHWCursorRec vgaHWCursor;
 
 #include <unistd.h>
 
-typedef enum { PC98Unkown , PC98PCIBus , PC98CBus } PC98BusType;
-typedef enum { PC98NoExist , PC98NEC9680 , PC98NEC9320
-		 , PC98DRV9680 } PC98TGUiType;
-
-typedef struct {
-  PC98TGUiType  TGUiType;
-  PC98BusType   BusType;
-  unsigned long vramBase;
-  unsigned long mmioBase;
-  void (*crtsw)(short);
-  Bool (*chiptest)();
-} PC98TGUiTable;
+#include "pc98_tgui.h"
 
 pointer mmioBase = NULL;
 pointer pc98PvramBase = NULL;
 static int hsync31;
-void (*crtswitch)(short) = NULL;
 PC98TGUiTable *pc98TGUi;
+
+Bool BoardInit(void);
+void crtswNECGen(short);
+void crtswTGUiGen(short);
+void crtswNEC9680(short);
+void crtswNEC9320(short);
+void crtswDRV9680(short);
+Bool testTRUE();
+Bool testDRV();
 
 static unsigned char seqreg_data[ 0x05 ] = {
 	0x03, 0x31, 0x0f, 0x00, 0x0e
@@ -73,23 +70,19 @@ static unsigned char vgareg_data[ 0x20 ] = {
 	0xff, 0x4a, 0x00, 0x00, 0x00, 0x00, 0x00, 0x67, /* 18 - 1F */
 };
 
-Bool BoardInit(void);
-void crtswNECGen(short);
-void crtswTGUiGen(short);
-void crtswNEC9680(short);
-void crtswNEC9320(short);
-void crtswDRV9680(short);
-Bool testTRUE();
-Bool testDRV();
-
 static PC98TGUiTable pc98TGUiTab[]={
   {PC98NEC9680, PC98PCIBus, 0x20000000, 0x20400000
-     ,crtswNEC9680, testTRUE}
+     , 45, 0x00af, {108000, 58500, 0, 31500}
+   , crtswNEC9680, testTRUE}
   ,{PC98NEC9320, PC98PCIBus, 0xffc00000, 0xffe00000
-      ,crtswNEC9320, testTRUE}
+      , 45, 0x00af, {108000, 58500, 0, 25175}
+    , crtswNEC9320, testTRUE}
   ,{PC98DRV9680, PC98CBus,   0x00f20000, 0x00f00000
-      ,crtswDRV9680, testDRV}
-  ,{PC98NoExist, PC98Unkown, 0, 0, NULL, NULL}};
+      , 45, 0x00af, {108000, 58500, 0, 25175}
+    , crtswDRV9680, testDRV}
+  ,{PC98NoExist, PC98Unkown, 0, 0
+      , 0, 0, {0, 0, 0, 0}
+    , NULL, NULL}};
 
 Bool ChipInit(void);
 void VideoEnable(void);
@@ -150,7 +143,6 @@ Bool BoardInit(void)
 	     XCONFIG_PROBED, vga256InfoRec.name, pc98TGUi->mmioBase);
       break;
     }
-    crtswitch = pc98TGUi->crtsw;
     ChipInit();
   } else {
     FatalError("PC98: Not found Trident MMIO port\n");
@@ -287,6 +279,11 @@ Bool ChipInit(void)
 
   SetRegisters(seqreg_data,grctrl_data,vgareg_data);
   
+  CRTCwrite(0x2f,0x07);
+  CRTCwrite(0x33,0x01);
+  CRTCwrite(0x3b,0x21);
+  CRTCwrite(0x3c,0x00);
+
   sw_new();
   tmp=SEQread(0x0e);
   SEQwrite(0x0e,(tmp & 0x7f));
