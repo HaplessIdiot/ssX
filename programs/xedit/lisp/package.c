@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/package.c,v 1.18 2002/11/23 21:41:52 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/package.c,v 1.19 2002/11/26 04:06:28 paulo Exp $ */
 
 #include "package.h"
 #include "private.h"
@@ -176,17 +176,15 @@ LispDoExport(LispBuiltin *builtin,
 
 	string = ATOMID(symbol);
 	pack = package->data.package.package;
-
-	for (i = 0; i < STRTBLSZ; i++) {
-	    atom = pack->atoms[i];
-	    while (atom) {
-		if (strcmp(atom->string, string) == 0) {
-		    atom->ext = export ? 1 : 0;
-		    return;
-		}
-
-		atom = atom->next;
+	i = STRHASH(string);
+	atom = pack->atoms[i];
+	while (atom) {
+	    if (strcmp(atom->string, string) == 0) {
+		atom->ext = export ? 1 : 0;
+		return;
 	    }
+
+	    atom = atom->next;
 	}
 
 	LispDestroy("%s: the symbol %s is not available in package %s",
@@ -344,15 +342,14 @@ LispFindSymbol(LispBuiltin *builtin, int intern)
 	return (symbol);
     }
 
-    for (i = 0; i < STRTBLSZ && symbol == NULL; i++) {
-	atom = pack->atoms[i];
-	while (atom) {
-	    if (strcmp(atom->string, ptr) == 0) {
-		symbol = atom->object;
-		break;
-	    }
-	    atom = atom->next;
+    i = STRHASH(ptr);
+    atom = pack->atoms[i];
+    while (atom) {
+	if (strcmp(atom->string, ptr) == 0) {
+	    symbol = atom->object;
+	    break;
 	}
+	atom = atom->next;
     }
 
     if (symbol == NULL || symbol->data.atom->package == NULL) {
@@ -454,34 +451,31 @@ Lisp_FindAllSymbols(LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(string_or_symbol));
 
     result = NIL;
+    i = STRHASH(string);
 
     /* Traverse all packages, searching for symbols matching specified string */
     for (list = PACK; CONSP(list); list = CDR(list)) {
 	package = CAR(list);
 	pack = package->data.package.package;
 
-	for (i = 0; i < STRTBLSZ; i++) {
-	    atom = pack->atoms[i];
-	    while (atom) {
+	atom = pack->atoms[i];
+	while (atom) {
+	    if (strcmp(atom->string, string) == 0 &&
+		LispDoSymbol(package, atom, 0, 1)) {
+		/* Return only one pointer to a matching symbol */
 
-		if (LispDoSymbol(package, atom, 0, 1)) {
-		    /* Return only one pointer to a matching symbol */
-
-		    if (strcmp(atom->string, string) == 0) {
-			if (result == NIL) {
-			    result = CONS(atom->object, NIL);
-			    GC_PROTECT(result);
-			}
-			else {
-			    /* Put symbols defined first in the
-			     * beginning of the result list */
-			    RPLACD(result, CONS(CAR(result), CDR(result)));
-			    RPLACA(result, atom->object);
-			}
-		    }
+		if (result == NIL) {
+		    result = CONS(atom->object, NIL);
+		    GC_PROTECT(result);
 		}
-		atom = atom->next;
+		else {
+		    /* Put symbols defined first in the
+		     * beginning of the result list */
+		    RPLACD(result, CONS(CAR(result), CDR(result)));
+		    RPLACA(result, atom->object);
+		}
 	    }
+	    atom = atom->next;
 	}
     }
     GC_LEAVE();

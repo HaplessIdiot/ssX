@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.18 2002/11/23 08:26:50 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.19 2002/11/23 21:41:52 paulo Exp $ */
 
 #include "../xedit.h"
 #include <X11/Xaw/TextSrcP.h>	/* Needs some private definitions */
@@ -84,8 +84,10 @@ typedef struct {
  * Prototypes
  */
 static Bool ControlGPredicate(Display*, XEvent*, XPointer);
+static ssize_t WriteToStdout(int, const void*, size_t);
+static ssize_t WriteToStderr(int, const void*, size_t);
 static void XeditUpdateModeInfos(void);
-static void XeditPrint(Widget, LispObj*);
+static void XeditPrint(Widget, LispObj*, int);
 static void XeditInteractiveCallback(Widget, XtPointer, XtPointer);
 static void XeditIndentationCallback(Widget, XtPointer, XtPointer);
 static LispObj *XeditCharAt(LispBuiltin*, int);
@@ -193,12 +195,40 @@ SigalrmHandler(int signum)
 #endif
 }
 
+static ssize_t
+WriteToStdout(int fd, const void *buffer, size_t nbytes)
+{
+    XawTextBlock block;
+    XawTextPosition position;
+
+    position = XawTextGetInsertionPoint(textwindow);
+    block.firstPos = 0;
+    block.format = FMT8BIT;
+    block.length = nbytes;
+    block.ptr = (String)buffer;
+    XawTextReplace(textwindow, position, position, &block);
+    XawTextSetInsertionPoint(textwindow, position + block.length);
+
+    return ((ssize_t)nbytes);
+}
+
+static ssize_t
+WriteToStderr(int fd, const void *buffer, size_t nbytes)
+{
+    XeditPrintf((char*)buffer);
+
+    return ((ssize_t)nbytes);
+}
+
 void
 LispXeditInitialize(void)
 {
     int i;
     char *string;
     LispObj *xedit, *list, *savepackage;
+
+    LispSetFileWrite(Stdout, WriteToStdout);
+    LispSetFileWrite(Stderr, WriteToStderr);
 
     justify_modes[0]	= KEYWORD("LEFT");
     justify_modes[1]	= KEYWORD("RIGHT");
@@ -392,9 +422,9 @@ XeditLispExecute(Widget output, XawTextPosition left, XawTextPosition right)
     }
     LispUpdateResults(code, result);
     if (RETURN_COUNT >= 0) {
-	XeditPrint(output, result);
+	XeditPrint(output, result, 1);
 	for (; CONSP(returns); returns = CDR(returns))
-	    XeditPrint(output, CAR(returns));
+	    XeditPrint(output, CAR(returns), 0);
     }
 
     if (alloced)
@@ -405,12 +435,19 @@ XeditLispExecute(Widget output, XawTextPosition left, XawTextPosition right)
 }
 
 static void
-XeditPrint(Widget output, LispObj *object)
+XeditPrint(Widget output, LispObj *object, int newline)
 {
     XawTextBlock block;
     XawTextPosition position;
 
     result_string.length = result_string.output = 0;
+    if (newline) {
+	position = XawTextGetInsertionPoint(output);
+	if (position != XawTextSourceScan(XawTextGetSource(output),
+					  position, XawstEOL,
+					  XawsdLeft, 1, False))
+	    LispSputc(&result_string, '\n');
+    }
     LispWriteObject(&result_stream, object);
     LispSputc(&result_string, '\n');
 

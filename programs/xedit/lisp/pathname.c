@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/pathname.c,v 1.14 2002/11/10 16:29:06 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/pathname.c,v 1.15 2002/11/23 08:26:49 paulo Exp $ */
 
 #include <stdio.h>		/* including dirent.h first may cause problems */
 #include <dirent.h>
@@ -42,9 +42,7 @@
 /*
  * Initialization
  */
-LispObj *Oparse_namestring, *Kerror, *Kabsolute, *Krelative;
-
-Atom_id Serror, Sabsolute, Srelative, Sskip;
+LispObj *Oparse_namestring, *Kerror, *Kabsolute, *Krelative, *Kskip;
 
 /*
  * Implementation
@@ -56,12 +54,6 @@ LispPathnameInit(void)
     Oparse_namestring	= STATIC_ATOM("PARSE-NAMESTRING");
     Kabsolute		= KEYWORD("ABSOLUTE");
     Krelative		= KEYWORD("RELATIVE");
-
-    Serror		= ATOMID(Kerror);
-    Sabsolute		= ATOMID(Kabsolute);
-    Srelative		= ATOMID(Krelative);
-
-    Sskip		= GETATOMID("SKIP");
 }
 
 static int
@@ -194,11 +186,11 @@ Lisp_Directory(LispBuiltin *builtin)
 
     if (if_cannot_read != UNSPEC) {
 	if (!KEYWORDP(if_cannot_read) ||
-	    (ATOMID(if_cannot_read) != Sskip &&
-	     ATOMID(if_cannot_read) != Serror))
+	    (if_cannot_read != Kskip &&
+	     if_cannot_read != Kerror))
 	    LispDestroy("%s: bad :IF-CANNOT-READ %s",
 			STRFUN(builtin), STROBJ(if_cannot_read));
-	if (ATOMID(if_cannot_read) != Sskip)
+	if (if_cannot_read != Kskip)
 	    cannot_read = NOREAD_SKIP;
 	else
 	    cannot_read = NOREAD_ERROR;
@@ -461,46 +453,64 @@ Lisp_ParseNamestring(LispBuiltin *builtin)
     host = ARGUMENT(1);
     object = ARGUMENT(0);
 
-    if (host != UNSPEC) {
+    if (host == UNSPEC)
+	host = NIL;
+    if (defaults == UNSPEC)
+	defaults = NIL;
+
+    RETURN_COUNT = 1;
+    if (STREAMP(object)) {
+	if (object->data.stream.type == LispStreamFile)
+	    object = object->data.stream.pathname;
+	/* else just check for JUNK-ALLOWED... */
+    }
+    if (PATHNAMEP(object)) {
+	RETURN(0) = FIXNUM(0);
+	return (object);
+    }
+
+    if (host != NIL) {
 	CHECK_STRING(host);
     }
-    if (defaults != UNSPEC) {
+    if (defaults != NIL) {
 	if (!PATHNAMEP(defaults)) {
 	    defaults = APPLY1(Oparse_namestring, defaults);
 	    GC_PROTECT(defaults);
 	}
     }
 
-    if (STREAMP(object)) {
-	if (object->data.stream.type == LispStreamFile)
-	    object = object->data.stream.pathname;
-	/* else just check for JUNK-ALLOWED... */
-    }
-    else if (PATHNAMEP(object)) {
-	if (defaults == UNSPEC) {
-	    GC_LEAVE();
-
-	    return (object);
-	}
-	object = CAR(object->data.pathname);
-    }
-
     result = NIL;
     if (STRINGP(object)) {
 	LispObj *cons, *cdr;
 	char *name = THESTR(object), *ptr, *str, data[PATH_MAX + 1],
-	      string[PATH_MAX + 1], *namestr, *typestr;
-	long start, end, length, alength;
+	      string[PATH_MAX + 1], *namestr, *typestr, *send;
+	long start, end, length, alength, namelen, typelen;
 
 	LispCheckSequenceStartEnd(builtin, object, ostart, oend,
 				  &start, &end, &length);
 	alength = end - start;
 
 	if (alength > sizeof(data) - 1)
-	    alength = sizeof(data) - 1;
-	strncpy(data, name + start, alength);
+	    LispDestroy("%s: string %s too large",
+			STRFUN(builtin), STROBJ(object));
+	memcpy(data, name + start, alength);
+#ifndef KEEP_EXTRA_PATH_SEP
+	ptr = data;
+	send = ptr + alength;
+	while (ptr < send) {
+	    if (*ptr++ == PATH_SEP) {
+		for (str = ptr; str < send && *str == PATH_SEP; str++)
+		    ;
+		if (str - ptr) {
+		    memmove(ptr, str, alength - (str - data));
+		    alength -= str - ptr;
+		    send -= str - ptr;
+		}
+	    }
+	}
+#endif
 	data[alength] = '\0';
-	strcpy(string, data);
+	memcpy(string, data, alength + 1);
 
 	if (PATHNAMEP(defaults))
 	    defaults = defaults->data.pathname;
@@ -510,22 +520,22 @@ Lisp_ParseNamestring(LispBuiltin *builtin)
 	GC_PROTECT(result);
 
 	/* host */
-	if (defaults != UNSPEC)
+	if (defaults != NIL)
 	    defaults = CDR(defaults);
-	cdr = defaults == UNSPEC ? NIL : CAR(defaults);
+	cdr = defaults == NIL ? NIL : CAR(defaults);
 	RPLACD(cons, CONS(cdr, NIL));
 	cons = CDR(cons);
 
 	/* device */
-	if (defaults != UNSPEC)
+	if (defaults != NIL)
 	    defaults = CDR(defaults);
-	cdr = defaults == UNSPEC ? NIL : CAR(defaults);
+	cdr = defaults == NIL ? NIL : CAR(defaults);
 	RPLACD(cons, CONS(cdr, NIL));
 	cons = CDR(cons);
 
 	/* directory */
-	if (defaults != UNSPEC)
-	    defaults = CDR(defaults);	/* don't use defaults for directory */
+	if (defaults != NIL)
+	    defaults = CDR(defaults);
 	if (*data == PATH_SEP)
 	    cdr = CONS(Kabsolute, NIL);
 	else
@@ -534,91 +544,151 @@ Lisp_ParseNamestring(LispBuiltin *builtin)
 	cons = CDR(cons);
 	/* directory components */
 	ptr = data;
+	send = data + alength;
 	if (*ptr == PATH_SEP)
 	    ++ptr;
-	str = strchr(ptr, PATH_SEP);
-	if (str)
+	for (str = ptr; str < send; str++) {
+	    if (*str == PATH_SEP)
+		break;
+	}
+	while (str < send) {
 	    *str++ = '\0';
-	while (str) {
-	    if (strlen(ptr) > NAME_MAX)
+	    if (str - ptr > NAME_MAX)
 		LispDestroy("%s: directory name too long %s",
 			    STRFUN(builtin), ptr);
-	    RPLACD(cdr, CONS(STRING(ptr), NIL));
+	    RPLACD(cdr, CONS(LSTRING(ptr, str - ptr - 1), NIL));
 	    cdr = CDR(cdr);
-	    ptr = str;
-	    str = strchr(ptr, PATH_SEP);
-	    if (str)
-		*str++ = '\0';
+	    for (ptr = str; str < send; str++) {
+		if (*str == PATH_SEP)
+		    break;
+	    }
+	}
+	if (str - ptr > NAME_MAX)
+	    LispDestroy("%s: file name too long %s", STRFUN(builtin), ptr);
+	if (CAAR(cons) == Krelative &&
+	    defaults != NIL && CAAR(defaults) == Kabsolute) {
+	    /* defaults specify directory and pathname doesn't */
+	    char *tstring;
+	    long dlength, tlength;
+	    LispObj *dir = CDAR(defaults);
+
+	    for (dlength = 1; CONSP(dir); dir = CDR(dir))
+		dlength += STRLEN(CAR(dir)) + 1;
+	    if (alength + dlength < PATH_MAX) {
+		memmove(data + dlength, data, alength + 1);
+		memmove(string + dlength, string, alength + 1);
+		alength += dlength;
+		ptr += dlength;
+		send += dlength;
+		CAAR(cons) = Kabsolute;
+		for (dir = CDAR(defaults), cdr = CAR(cons);
+		     CONSP(dir);
+		     dir = CDR(dir)) {
+		    RPLACD(cdr, CONS(CAR(dir), CDR(cdr)));
+		    cdr = CDR(cdr);
+		}
+		dir = CDAR(defaults);
+		data[0] = string[0] = PATH_SEP;
+		for (dlength = 1; CONSP(dir); dir = CDR(dir)) {
+		    tstring = THESTR(CAR(dir));
+		    tlength = STRLEN(CAR(dir));
+		    memcpy(data + dlength, tstring, tlength);
+		    memcpy(string + dlength, tstring, tlength);
+		    dlength += tlength;
+		    data[dlength] = string[dlength] = PATH_SEP;
+		    ++dlength;
+		}
+	    }
 	}
 
-	if (strlen(ptr) > NAME_MAX)
-	    LispDestroy("%s: file name too long %s", STRFUN(builtin), ptr);
-
 	/* name */
-	if (defaults != UNSPEC)
+	if (defaults != NIL)
 	    defaults = CDR(defaults);
-	cdr = defaults == UNSPEC ? NIL : CAR(defaults);
-	str = strchr(ptr, PATH_TYPESEP);
-	if (str)
-	    *str++ = '\0';
-	if (ptr && *ptr)
-	    cdr = STRING(ptr);
-	namestr = STRINGP(cdr) ? THESTR(cdr) : "";
+	cdr = defaults == NIL ? NIL : CAR(defaults);
+	for (typelen = 0, str = ptr; str < send; str++) {
+	    if (*str == PATH_TYPESEP) {
+		typelen = 1;
+		break;
+	    }
+	}
+	if (*ptr)
+	    cdr = LSTRING(ptr, str - ptr);
+	if (STRINGP(cdr)) {
+	    namestr = THESTR(cdr);
+	    namelen = STRLEN(cdr);
+	}
+	else {
+	    namestr = "";
+	    namelen = 0;
+	}
 	RPLACD(cons, CONS(cdr, NIL));
 	cons = CDR(cons);
 
 	/* type */
-	if (defaults != UNSPEC)
+	if (defaults != NIL)
 	    defaults = CDR(defaults);
-	cdr = defaults == UNSPEC ? NIL : CAR(defaults);
-	ptr = str;
-	if (ptr && *ptr)
-	    cdr = STRING(ptr);
-	typestr = STRINGP(cdr) ? THESTR(cdr) : "";
+	cdr = defaults == NIL ? NIL : CAR(defaults);
+	ptr = str + typelen;
+	if (*ptr)
+	    cdr = LSTRING(ptr, send - ptr);
+	if (STRINGP(cdr)) {
+	    typestr = THESTR(cdr);
+	    typelen = STRLEN(cdr);
+	}
+	else {
+	    typestr = "";
+	    typelen = 0;
+	}
 	RPLACD(cons, CONS(cdr, NIL));
 	cons = CDR(cons);
 
 	/* version */
-	if (defaults != UNSPEC)
+	if (defaults != NIL)
 	    defaults = CDR(defaults);
-	cdr = defaults == UNSPEC ? NIL : CAR(defaults);
+	cdr = defaults == NIL ? NIL : CAR(defaults);
 	RPLACD(cons, CONS(cdr, NIL));
 
 	/* string representation, must be done here to use defaults */
-	ptr = strrchr(string, PATH_SEP);
-	if (ptr)
+	for (ptr = string + alength; ptr >= string; ptr--) {
+	    if (*ptr == PATH_SEP)
+		break;
+	}
+	if (ptr >= string)
 	    ++ptr;
 	else
 	    ptr = string;
 	*ptr = '\0';
 
-	length = strlen(string);
+	length = ptr - string;
 
-	alength = strlen(namestr);
+	alength = namelen;
 	if (alength) {
 	    if (length + alength + 2 > sizeof(string))
 		alength = sizeof(string) - length - 2;
-	    strncpy(string + length, namestr, alength);
+	    memcpy(string + length, namestr, alength);
 	    length += alength;
 	}
 
-	alength = strlen(typestr);
+	alength = typelen;
 	if (alength) {
 	    if (length + 2 < sizeof(string))
 		string[length++] = PATH_TYPESEP;
 	    if (length + alength + 2 > sizeof(string))
 		alength = sizeof(string) - length - 2;
-	    strncpy(string + length, typestr, alength);
+	    memcpy(string + length, typestr, alength);
 	    length += alength;
 	}
 	string[length] = '\0';
 
-	RPLACA(result,  STRING(string));
+	RPLACA(result,  LSTRING(string, length));
+	RETURN(0) = FIXNUM(end);
 
 	result = PATHNAME(result);
     }
     else if (junk_allowed == UNSPEC || junk_allowed == NIL)
 	LispDestroy("%s: bad argument %s", STRFUN(builtin), STROBJ(object));
+    else
+	RETURN(0) = NIL;
 
     GC_LEAVE();
 
@@ -654,15 +724,15 @@ Lisp_MakePathname(LispBuiltin *builtin)
     }
 
     if (directory != UNSPEC) {
-	Atom_id atom;
+	LispObj *dir;
 
 	CHECK_CONS(directory);
-	CHECK_KEYWORD(CAR(directory));
-	atom = ATOMID(CAR(directory));
-	if (atom != Sabsolute && atom != Srelative)
-	    LispDestroy("%s: bad directory type %s",
-			STRFUN(builtin), STROBJ(CAR(directory)));
-    }    
+	dir = CAR(directory);
+	CHECK_KEYWORD(dir);
+	if (dir != Kabsolute && dir != Krelative)
+	    LispDestroy("%s: directory type %s unknown",
+			STRFUN(builtin), STROBJ(dir));
+    }
 
     if (name != UNSPEC) {
 	CHECK_STRING(name);
@@ -671,7 +741,7 @@ Lisp_MakePathname(LispBuiltin *builtin)
 	CHECK_STRING(type);
     }
 
-    if (version != UNSPEC) {
+    if (version != UNSPEC && version != NIL) {
 	switch (OBJECT_TYPE(version)) {
 	    case LispFixnum_t:
 		if (FIXNUM_VALUE(version) >= 0)
@@ -687,7 +757,8 @@ Lisp_MakePathname(LispBuiltin *builtin)
 	    default:
 		break;
 	}
-	LispDestroy("%s: bad :VERSION %s", STRFUN(builtin), STROBJ(version));
+	LispDestroy("%s: %s is not a positive real number",
+		    STRFUN(builtin), STROBJ(version));
     }
 version_ok:
 
@@ -722,8 +793,8 @@ version_ok:
 
     /* string representation */
     length = 0;
-    if (directory != UNSPEC) {
-	if (ATOMID(CAR(directory)) == Sabsolute)
+    if (CONSP(directory)) {
+	if (CAR(directory) == Kabsolute)
 	    pathname[length++] = PATH_SEP;
 
 	for (cdr = CDR(directory); CONSP(cdr); cdr = CDR(cdr)) {
@@ -735,15 +806,15 @@ version_ok:
 			    STRFUN(builtin), string);
 	    if (length + alength + 2 > sizeof(pathname))
 		alength = sizeof(pathname) - length - 2;
-	    strncpy(pathname + length, string, alength);
+	    memcpy(pathname + length, string, alength);
 	    length += alength;
 	    pathname[length++] = PATH_SEP;
 	}
     }
-    if (name != UNSPEC) {
+    if (STRINGP(name)) {
 	int xlength = 0;
 
-	if (type != UNSPEC)
+	if (STRINGP(type))
 	    xlength = STRLEN(type) + 1;
 
 	string = THESTR(name);
@@ -753,29 +824,29 @@ version_ok:
 			STRFUN(builtin), string);
 	if (length + alength + 2 > sizeof(pathname))
 	    alength = sizeof(pathname) - length - 2;
-	strncpy(pathname + length, string, alength);
+	memcpy(pathname + length, string, alength);
 	length += alength;
     }
-    if (type != UNSPEC) {
+    if (STRINGP(type)) {
 	if (length + 2 < sizeof(pathname))
 	    pathname[length++] = PATH_TYPESEP;
 	string = THESTR(type);
 	alength = STRLEN(type);
 	if (length + alength + 2 > sizeof(pathname))
 	    alength = sizeof(pathname) - length - 2;
-	strncpy(pathname + length, string, alength);
+	memcpy(pathname + length, string, alength);
 	length += alength;
     }
     pathname[length] = '\0';
-    result = cons = CONS(STRING(pathname), NIL);
+    result = cons = CONS(LSTRING(pathname, length), NIL);
     GC_PROTECT(result);
 
     /* host */
-    RPLACD(cons, CONS(host, NIL));
+    RPLACD(cons, CONS(host == UNSPEC ? NIL : host, NIL));
     cons = CDR(cons);
 
     /* device */
-    RPLACD(cons, CONS(device, NIL));
+    RPLACD(cons, CONS(device == UNSPEC ? NIL : device, NIL));
     cons = CDR(cons);
 
     /* directory */
@@ -787,15 +858,15 @@ version_ok:
     cons = CDR(cons);
 
     /* name */
-    RPLACD(cons, CONS(name, NIL));
+    RPLACD(cons, CONS(name == UNSPEC ? NIL : name, NIL));
     cons = CDR(cons);
 
     /* type */
-    RPLACD(cons, CONS(type, NIL));
+    RPLACD(cons, CONS(type == UNSPEC ? NIL : type, NIL));
     cons = CDR(cons);
 
     /* version */
-    RPLACD(cons, CONS(version, NIL));
+    RPLACD(cons, CONS(version == UNSPEC ? NIL : version, NIL));
 
     GC_LEAVE();
 
@@ -885,7 +956,7 @@ Lisp_EnoughNamestring(LispBuiltin *builtin)
     defaults = ARGUMENT(1);
     pathname = ARGUMENT(0);
 
-    if (defaults != UNSPEC) {
+    if (defaults != UNSPEC && defaults != NIL) {
 	char *ppathname, *pdefaults, *pp, *pd;
 
 	if (!STRINGP(pathname)) {

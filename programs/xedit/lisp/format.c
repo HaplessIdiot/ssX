@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.26 2002/11/13 04:35:46 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.27 2002/11/21 07:25:09 paulo Exp $ */
 
 #include "io.h"
 #include "write.h"
@@ -526,14 +526,12 @@ format_ascii(LispObj *stream, LispObj *object, FmtArgs *args)
 
     if (object == NIL)
 	length = collon ? 2 : 3;	    /* () or NIL */
-    else if (SCHARP(object))
-	length = 1;
 
     /* left padding */
     if (atsign) {
 	/* if length not yet known */
-	if (object != NIL) {
-	    string = LSTRINGSTREAM("", STREAM_READ | STREAM_WRITE, 1);
+	if (object == NIL) {
+	    string = LSTRINGSTREAM("", STREAM_READ | STREAM_WRITE, 0);
 	    GC_PROTECT(string);
 	    length = LispWriteObject(string, object);
 	}
@@ -842,7 +840,7 @@ format_goto(FmtInfo *info)
 
 	    object = NIL;
 	    arguments = info->base_arguments;
-	    for (count = 0; info->total_arguments - count < num_arguments;
+	    for (count = 0; count < info->total_arguments - num_arguments;
 		count++, arguments = CDR(arguments))
 		object = CAR(arguments);
 	}
@@ -883,14 +881,14 @@ format_indirection(LispObj *stream, LispObj *format, FmtInfo *info)
 
 	int num_arguments;
 
-	/* it is valid to not have an list following string, as string may
+	/* it is valid to not have a list following string, as string may
 	 * not have format directives */
 	if (CONSP(*(indirect_info.arguments)))
 	    object = CAR(*(indirect_info.arguments));
 	else
 	    object = NIL;
 
-	if (!LISTP(object))
+	if (!LISTP(object) || !CONSP(*(info->arguments)))
 	    generic_error(&(info->args), GENERIC_BADLIST);
 
 	/* update information now */
@@ -1062,7 +1060,7 @@ format_case_conversion(LispObj *stream, FmtInfo *info)
     collon = info->args.collon;
 
     /* output to a string, before case conversion */
-    string = LSTRINGSTREAM("", STREAM_READ | STREAM_WRITE, 1);
+    string = LSTRINGSTREAM("", STREAM_READ | STREAM_WRITE, 0);
     GC_PROTECT(string);
 
     /* most information is the same */
@@ -1191,18 +1189,19 @@ format_conditional(LispObj *stream, FmtInfo *info)
 	object = CAR(arguments);
 	arguments = CDR(arguments);
 	--num_arguments;
-	/* */
+	/* no error if it isn't a number? */
 	if (FIXNUMP(object))
 	    choice = FIXNUM_VALUE(object);
-	/* if choice is out of range check if there is a default choice */
-	if (has_default && (choice < 0 || choice >= num_formats))
-	    choice = num_formats - 1;
     }
 
     /* update anything that may have changed */
     *(info->object) = object;
     *(info->arguments) = arguments;
     *(info->num_arguments) = num_arguments;
+
+    /* if choice is out of range check if there is a default choice */
+    if (has_default && (choice < 0 || choice >= num_formats))
+	choice = num_formats - 1;
 
     /* if one of the formats must be parsed */
     if (choice >= 0 && choice < num_formats) {
@@ -1509,7 +1508,7 @@ format_justify(LispObj *stream, FmtInfo *info)
 	minpad = info->args.arguments[2].value,
 	padchar = info->args.arguments[3].value;
     int i, k, total_length, length, padding, num_formats, has_default,
-	comma_width, line_width, size;
+	comma_width, line_width, size, extra;
 
     next_format = *(info->format);
 
@@ -1519,11 +1518,11 @@ format_justify(LispObj *stream, FmtInfo *info)
 
     /* initialize list of strings streams */
     if (num_formats) {
-	string = LSTRINGSTREAM("", STREAM_READ | STREAM_WRITE, 1);
+	string = LSTRINGSTREAM("", STREAM_READ | STREAM_WRITE, 0);
 	strings = cons = CONS(string, NIL);
 	GC_PROTECT(strings);
 	for (i = 1; i < num_formats; i++) {
-	    string = LSTRINGSTREAM("", STREAM_READ | STREAM_WRITE, 1);
+	    string = LSTRINGSTREAM("", STREAM_READ | STREAM_WRITE, 0);
 	    RPLACD(cons, CONS(string, NIL));
 	    cons = CDR(cons);
 	}
@@ -1592,6 +1591,7 @@ format_justify(LispObj *stream, FmtInfo *info)
 	cons = strings;
 
     /* check if padding will need to be printed */
+    extra = 0;
     padding = mincol - total_length;
     if (padding < 0)
 	k = padding = 0;
@@ -1601,7 +1601,7 @@ format_justify(LispObj *stream, FmtInfo *info)
 	if (num_fields > 1) {
 	    /* check if padding is distributed in num_fields or
 	     * num_fields - 1 steps */
-	    if ((!atsign && !collon) || (atsign ^ collon))
+	    if (!collon)
 		--num_fields;
 	}
 
@@ -1614,6 +1614,9 @@ format_justify(LispObj *stream, FmtInfo *info)
 	    k = colinc;
 	else if (colinc)
 	    k = k + (k % colinc);
+	extra = mincol - (num_fields * k + total_length);
+	if (extra < 0)
+	    extra = 0;
     }
     if (padding && k < minpad) {
 	k = minpad;
@@ -1636,7 +1639,7 @@ format_justify(LispObj *stream, FmtInfo *info)
 	}
 	/* check for centralizing text */
 	else if (k && atsign && collon) {
-	    LispWriteChars(stream, padchar, k / 2);
+	    LispWriteChars(stream, padchar, k / 2 + ((k / 2) & 1));
 	    k -= k / 2;
 	}
 	str = LispGetSstring(SSTREAMP(string), &size);
@@ -1651,7 +1654,7 @@ format_justify(LispObj *stream, FmtInfo *info)
 
 	/* if has default, need to check output length */
 	if (has_default && line_width > 0 && comma_width >= 0) {
-	    result = LSTRINGSTREAM("", STREAM_READ | STREAM_WRITE, 1);
+	    result = LSTRINGSTREAM("", STREAM_READ | STREAM_WRITE, 0);
 	    GC_PROTECT(result);
 	}
 	/* else write directly to stream */
@@ -1663,7 +1666,7 @@ format_justify(LispObj *stream, FmtInfo *info)
 	     * is separated in n-1 chunks, where n is the number of
 	     * formatted strings.
 	     */
-	for (i = padout = 0; CONSP(cons); i++, cons = CDR(cons)) {
+	for (i = padout = 0; CONSP(cons); i++, cons = CDR(cons), --extra) {
 	    string = CAR(cons);
 	    last = !CONSP(CDR(cons));
 
@@ -1675,7 +1678,7 @@ format_justify(LispObj *stream, FmtInfo *info)
 		    int spaces;
 
 		    spaces = minpad > colinc ? minpad : colinc;
-		    LispWriteChars(result, padchar, spaces);
+		    LispWriteChars(result, padchar, spaces + (extra > 0));
 		    k -= spaces;
 		}
 		str = LispGetSstring(SSTREAMP(string), &size);
@@ -1683,7 +1686,7 @@ format_justify(LispObj *stream, FmtInfo *info)
 		padout = 0;
 	    }
 	    if (!padout)
-		LispWriteChars(result, padchar, k);
+		LispWriteChars(result, padchar, k + (extra > 0));
 	    padout = k;
 	    /* if not first string, or if left padding specified */
 	    if (spaces_before) {
@@ -1691,7 +1694,7 @@ format_justify(LispObj *stream, FmtInfo *info)
 		LispWriteStr(result, str, size);
 		padout = 0;
 	    }
-	    padding -= k;	
+	    padding -= k;
 	}
 
 	if (has_default && line_width > 0 && comma_width >= 0) {
@@ -1891,7 +1894,11 @@ LispFormat(LispObj *stream, FmtInfo *info)
 		    lisp__data.env.head = lisp__data.env.length = head;
 		    break;
 		case 'S':
+		    head = lisp__data.env.length;
+		    LispAddVar(Oprint_escape, T);
+		    ++lisp__data.env.head;
 		    format_ascii(stream, object, args);
+		    lisp__data.env.head = lisp__data.env.length = head;
 		    break;
 		case 'B':
 		    format_in_radix(stream, object, 2, args);
@@ -2059,7 +2066,7 @@ Lisp_Format(LispBuiltin *builtin)
     /* check format and stream */
     CHECK_STRING(format);
     if (stream == NIL) {	/* return a string */
-	stream = LSTRINGSTREAM("", STREAM_READ | STREAM_WRITE, 1);
+	stream = LSTRINGSTREAM("", STREAM_READ | STREAM_WRITE, 0);
 	GC_PROTECT(stream);
     }
     else if (stream == T ||	/* print directly to *standard-output* */

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/io.c,v 1.11 2002/11/10 16:29:05 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/io.c,v 1.12 2002/11/20 07:44:41 paulo Exp $ */
 
 #include "io.h"
 #include <errno.h>
@@ -216,6 +216,7 @@ LispFdopen(int descriptor, int mode)
 	}
 	file->line = 1;
 	file->binary = (mode & BINARY_BIT) != 0;
+	file->io_write = write;
     }
 
     return (file);
@@ -272,11 +273,22 @@ LispFclose(LispFile *file)
     free(file);
 }
 
+io_write_fn
+LispSetFileWrite(LispFile *file, io_write_fn new_write)
+{
+    io_write_fn old_write = file->io_write;
+
+    file->io_write = new_write;
+
+    return (old_write);
+}
+
 int
 LispFflush(LispFile *file)
 {
     if (file->writable && file->length) {
-	int length = write(file->descriptor, file->buffer, file->length);
+	int length = (*file->io_write)(file->descriptor,
+				       file->buffer, file->length);
 
 	if (length > 0)
 	    file->length -= length;
@@ -364,7 +376,7 @@ LispFputc(LispFile *file, int ch)
 		LispFflush(file);
 	    file->buffer[file->length++] = c;
 	}
-	else if (write(file->descriptor, &c, 1) != 1)
+	else if ((*file->io_write)(file->descriptor, &c, 1) != 1)
 	    ch = EOF;
 
 	if (!file->binary) {
@@ -570,7 +582,8 @@ LispFwrite(LispFile *file, void *data, int size)
 
 	while (size > pagesize) {
 	    /* write multiple of pagesize */
-	    bytes = write(file->descriptor, buffer, size - (size % pagesize));
+	    bytes = (*file->io_write)(file->descriptor, buffer,
+				      size - (size % pagesize));
 	    if (bytes <= 0)
 		return (length);
 
@@ -610,7 +623,7 @@ LispFwrite(LispFile *file, void *data, int size)
 	return (length);
     }
 
-    return (write(file->descriptor, data, size));
+    return ((*file->io_write)(file->descriptor, data, size));
 }
 
 int

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.26 2002/11/23 08:26:50 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.27 2002/11/26 04:06:29 paulo Exp $ */
 
 #include "write.h"
 #include "hash.h"
@@ -36,17 +36,12 @@
 
 #define	FLOAT_PREC	17
 
-/*  In case *print-level*, *print-length* or *print-circle* is not set,
- * this value should be enough to not crash when printing circular/shared
- * lists. */
-#define MAX_PRINT_DEPTH	16384
-
 #define UPCASE		0
 #define DOWNCASE	1
 #define CAPITALIZE	2
 
 #define INCDEPTH()							\
-    if (++info->depth > MAX_PRINT_DEPTH)				\
+    if (++info->depth > MAX_STACK_DEPTH / 2)				\
 	LispDestroy("stack overflow")
 #define DECDEPTH()	--info->depth
 
@@ -82,6 +77,7 @@ typedef struct _write_info {
  */
 static void check_stream(LispObj*, LispFile**, LispString**, int);
 static void parse_double(char*, int*, double, int);
+static int float_string_inc(char*, int);
 static void format_integer(char*, long, int);
 static int LispWriteCPointer(LispObj*, void*);
 static int LispWriteCString(LispObj*, char*, long, write_info*);
@@ -1236,7 +1232,7 @@ LispWriteInteger(LispObj *stream, LispObj *object)
 static int
 LispWriteCharacter(LispObj *stream, LispObj *object, write_info *info)
 {
-    return (LispFormatCharacter(stream, object, 1, info->print_escape));
+    return (LispFormatCharacter(stream, object, !info->print_escape, 0));
 }
 
 static int
@@ -1741,13 +1737,40 @@ LispFormatCharacter(LispObj *stream, LispObj *object,
     return (length);
 }
 
+/* returns 1 if string size must grow, done inplace */
+static int
+float_string_inc(char *buffer, int offset)
+{
+    int i;
+
+    for (i = offset; i >= 0; i--) {
+	if (buffer[i] == '9')
+	    buffer[i] = '0';
+	else if (buffer[i] != '.') {
+	    ++buffer[i];
+	    break;
+	}
+    }
+    if (i < 0) {
+	int length = strlen(buffer);
+
+	/* string size must change */
+	memmove(buffer + 1, buffer, length + 1);
+	buffer[0] = '1';
+
+	return (1);
+    }
+
+    return (0);
+}
+
 int
 LispFormatFixedFloat(LispObj *stream, LispObj *object,
 		     int atsign, int w, int *pd, int k, int overflowchar,
 		     int padchar)
 {
     char buffer[512], stk[64];
-    int sign, exponent, length, offset, d = pd ? *pd : FLOAT_PREC;
+    int sign, exponent, length, offset, d = pd ? *pd : FLOAT_PREC, again;
     double value = DFLOAT_VALUE(object);
 
     if (value == 0.0) {
@@ -1811,6 +1834,7 @@ LispFormatFixedFloat(LispObj *stream, LispObj *object,
     }
     buffer[offset] = '\0';
 
+    again = 0;
 fixed_float_check_again:
     /* make sure only d digits are printed after decimal point */
     if (d > 0) {
@@ -1828,12 +1852,10 @@ fixed_float_check_again:
 	    buffer[offset] = '\0';
 
 	    /* check if need to round */
-	    if (offset > 1 && isdigit(digit) && digit >= '5') {
-		/* XXX should adjust carry here? */
-		if (isdigit(buffer[offset - 1]) &&
-		    buffer[offset - 1] < '9')
-		    buffer[offset - 1]++;
-	    }
+	    if (!again && offset > 1 && isdigit(digit) && digit >= '5' &&
+		isdigit(buffer[offset - 1]) &&
+		float_string_inc(buffer, offset - 1))
+		++offset;
 	}
 	/* check if need to add extra zero digits to fill space */
 	else if (length < d) {
@@ -1845,16 +1867,14 @@ fixed_float_check_again:
     }
     else {
 	/* no digits after decimal point */
-	int digit;
+	int digit, inc = 0;
 	char *dptr = strchr(buffer, '.') + 1;
 
 	digit = *dptr;
-	if (digit >= '5' && dptr > buffer + 2 &&
-	    isdigit(dptr[-2]) && dptr[-2] < '9')
-	    /* XXX should adjust carry here? */
-	    dptr[-2]++;
+	if (!again && digit >= '5' && dptr >= buffer + 2 && isdigit(dptr[-2]))
+	    inc = float_string_inc(buffer, dptr - buffer - 2);
 
-	offset = (dptr - buffer);
+	offset = (dptr - buffer) + inc;
 	buffer[offset] = '\0';
     }
 
@@ -1892,8 +1912,10 @@ fixed_float_check_again:
     }
 
     /* if cannot represent number in given width */
-    if (overflowchar && offset > w)
+    if (overflowchar && offset > w) {
+	again = 1;
 	goto fixed_float_overflow;
+    }
 
     length = 0;
     /* print padding if required */
@@ -2037,12 +2059,10 @@ LispDoFormatExponentialFloat(LispObj *stream, LispObj *object,
 	    offset += length;
 
 	    /* check if need to round */
-	    if (dpos > 1 && isdigit(digit) && digit >= '5') {
-		/* XXX should adjust carry here? */
-		if (isdigit(buffer[dpos - 1]) &&
-		    buffer[dpos - 1] < '9')
-		    buffer[dpos - 1]++;
-	    }
+	    if (dpos > 1 && isdigit(digit) && digit >= '5' &&
+		isdigit(buffer[dpos - 1]) &&
+		float_string_inc(buffer, dpos - 1))
+		++offset;
 	}
 	/* check if need to add extra zero digits to fill space */
 	else if (pd && currd < d) {
@@ -2069,7 +2089,7 @@ LispDoFormatExponentialFloat(LispObj *stream, LispObj *object,
     }
     else {
 	/* no digits after decimal point */
-	int digit;
+	int digit, inc = 0;
 	char *dptr = strchr(buffer, '.'),
 	     *eptr = strchr(dptr, exponentchar);
 
@@ -2080,13 +2100,12 @@ LispDoFormatExponentialFloat(LispObj *stream, LispObj *object,
 	memmove(buffer + offset, eptr, length + 1);
 	/* also copy ending nul character */
 
- 	if (digit >= '5' && dptr > buffer + 2 &&
-	    isdigit(dptr[-2]) && dptr[-2] < '9')
-	    /* XXX should adjust carry here? */
-	    dptr[-2]++;
+ 	if (digit >= '5' && dptr >= buffer + 2 &&
+	    isdigit(dptr[-2]))
+	    inc = float_string_inc(buffer, dptr - buffer - 2);
 
 	/* adjust offset to length of total string */
-	offset += length;
+	offset += length + inc;
     }
 
     if (w > 0 && offset > w) {
@@ -2156,7 +2175,7 @@ LispFormatGeneralFloat(LispObj *stream, LispObj *object,
     dd = d - n;
     if (d >= dd && dd >= 0) {
 	length = LispFormatFixedFloat(stream, object, atsign, ww,
-				      pd, 0, overflowchar, padchar);
+				      &dd, 0, overflowchar, padchar);
 
 	/* ~ee@T */
 	length += LispWriteChars(stream, padchar, ee);
@@ -2258,12 +2277,10 @@ LispFormatDollarFloat(LispObj *stream, LispObj *object,
 	    buffer[offset] = '\0';
 
 	    /* check if need to round */
-	    if (offset > 1 && isdigit(digit) && digit >= '5') {
-		/* XXX should adjust carry here? */
-		if (isdigit(buffer[offset - 1]) &&
-		    buffer[offset - 1] < '9')
-		    buffer[offset - 1]++;
-	    }
+	    if (offset > 1 && isdigit(digit) && digit >= '5' &&
+		isdigit(buffer[offset - 1]) &&
+		float_string_inc(buffer, offset - 1))
+		++offset;
 	}
 	/* check if need to add extra zero digits to fill space */
 	else if (length < d) {
@@ -2275,16 +2292,14 @@ LispFormatDollarFloat(LispObj *stream, LispObj *object,
     }
     else {
 	/* no digits after decimal point */
-	int digit;
+	int digit, inc = 0;
 	char *dptr = strchr(buffer, '.') + 1;
 
 	digit = *dptr;
-	if (digit >= '5' && dptr > buffer + 2 &&
-	    isdigit(dptr[-2]) && dptr[-2] < '9')
-	    /* XXX should adjust carry here? */
-	    dptr[-2]++;
+	if (digit >= '5' && dptr >= buffer + 2 && isdigit(dptr[-2]))
+	    inc = float_string_inc(buffer, dptr - buffer - 2);
 
-	offset = (dptr - buffer);
+	offset = (dptr - buffer) + inc;
 	buffer[offset] = '\0';
     }
 

@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/test/math.lsp,v 1.2 2002/11/20 07:44:43 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/test/math.lsp,v 1.3 2002/11/23 08:26:54 paulo Exp $
 ;;
 
 ;; basic math tests
@@ -80,7 +80,7 @@
 #-xedit	;; hack
 	    (or
 		(or
-		    (eq quotient quo)
+		    (eql quotient quo)
 		    (and
 			(floatp quotient)
 			(floatp quo)
@@ -89,7 +89,7 @@
 		    )
 		)
 		(or
-		    (eq remainder rem)
+		    (eql remainder rem)
 		    (and
 			(floatp remainder)
 			(floatp rem)

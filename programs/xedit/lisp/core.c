@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.63 2002/11/25 02:35:29 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.64 2002/11/26 04:06:27 paulo Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -1921,12 +1921,16 @@ Lisp_IgnoreErrors(LispBuiltin *builtin)
  */
 {
     LispObj *result, **presult, **pbody;
-    int jumped, *pjumped;
+    int i, jumped, *pjumped;
     LispBlock *block;
 
     /* interpreter state */
     GC_ENTER();
     int stack, lex, length;
+
+    /* memory allocation */
+    int mem_level;
+    void **mem;
 
     LispObj *body;
 
@@ -1936,6 +1940,11 @@ Lisp_IgnoreErrors(LispBuiltin *builtin)
     stack = lisp__data.stack.length;
     lex = lisp__data.env.lex;
     length = lisp__data.env.length;
+
+    /* Save memory allocation information */
+    mem_level = lisp__data.mem.level;
+    mem = LispMalloc(mem_level * sizeof(void*));
+    memcpy(mem, lisp__data.mem.mem, mem_level * sizeof(void*));
 
     ++lisp__data.ignore_errors;
     presult = &result;
@@ -1960,11 +1969,22 @@ Lisp_IgnoreErrors(LispBuiltin *builtin)
 	lisp__data.env.head = lisp__data.env.length = length;
 	GC_LEAVE();
 
+	/* Check for possible leaks due to ignoring errors */
+	for (i = 0; i < mem_level; i++) {
+	    if (lisp__data.mem.mem[i] && mem[i] != lisp__data.mem.mem[i])
+		LispFree(lisp__data.mem.mem[i]);
+	}
+	for (; i < lisp__data.mem.level; i++) {
+	    if (lisp__data.mem.mem[i])
+		LispFree(lisp__data.mem.mem[i]);
+	}
+
 	lisp__data.destroyed = 0;
 	result = NIL;
 	RETURN_COUNT = 1;
 	RETURN(0) = lisp__data.error_condition;
     }
+    LispFree(mem);
     --lisp__data.ignore_errors;
 
     return (result);

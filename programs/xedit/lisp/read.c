@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.30 2002/11/21 07:25:10 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.31 2002/11/23 08:26:50 paulo Exp $ */
 
 #include <errno.h>
 #include "read.h"
@@ -1328,16 +1328,15 @@ LispParseAtom(char *package, char *symbol, int intern, int unreadable,
 	int i;
 	LispAtom *atom;
 
-	for (i = 0; i < STRTBLSZ && object == NULL; i++) {
-	    atom = pack->atoms[i];
-	    while (atom) {
-		if (strcmp(atom->string, symbol) == 0) {
-		    object = atom->object;
-		    break;
-		}
-
-		atom = atom->next;
+	i = STRHASH(symbol);
+	atom = pack->atoms[i];
+	while (atom) {
+	    if (strcmp(atom->string, symbol) == 0) {
+		object = atom->object;
+		break;
 	    }
+
+	    atom = atom->next;
 	}
 
 	/* No object found */
