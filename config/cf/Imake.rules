@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.98 2001/08/03 22:51:01 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.99 2001/08/03 23:38:02 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -515,8 +515,14 @@ clean cleantc::								@@\
 #endif /* RemoveTargetProgram */
 
 #ifndef MakeDir
-#define MakeDir(dir) DirFailPrefix@if [ -d dir ]; then set +x; \	@@\
-		else (set -x; $(MKDIRHIER) dir); fi
+#define MakeDir(dir) DirFailPrefix@if [ -d dir ]; then \		@@\
+		set +x; \						@@\
+	else \								@@\
+		if [ -h dir ]; then \					@@\
+			(set -x; rm -f dir); \				@@\
+		fi; \							@@\
+		(set -x; $(MKDIRHIER) dir); \				@@\
+	fi
 #endif /* MakeDir */
 
 #ifndef BuildIncludesTop
