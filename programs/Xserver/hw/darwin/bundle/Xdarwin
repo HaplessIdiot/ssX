@@ -1,0 +1,4 @@
+#!/bin/sh
+cd /usr/X11R6/bin
+/usr/X11R6/bin/Xdarwin.app/Contents/MacOS/Xdarwin $@
+
