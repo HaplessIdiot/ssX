@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.23 1999/06/06 08:48:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.24 1999/06/12 07:18:38 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -388,7 +388,7 @@ xf86CheckPciSlot(int bus, int device, int func)
 }
 
 /*
- * If the slot requested is already in use, return FALSE.
+ * If the slot requested is already in use, return -1.
  * Otherwise, claim the slot for the screen requesting it.
  */
 
@@ -1524,20 +1524,23 @@ checkConflictBlock(resRange *range, resPtr pRes)
     
     switch (pRes->r_type & ResExtMask) {
     case ResBlock:
-	if (range->__begin < pRes->b_end && range->__end > pRes->b_begin)
-	    return pRes->b_end < range->__end ? pRes->b_end : range->__end;
+	if (range->__begin < pRes->block_end &&
+	    range->__end > pRes->block_begin)
+	    return pRes->block_end < range->__end ?
+					pRes->block_end : range->__end;
 	return 0;
     case ResSparse:
-	if (pRes->s_base > range->__end) return 0;
+	if (pRes->sparse_base > range->__end) return 0;
 	
-	val = (~pRes->s_mask | pRes->s_base) & getMask(range->__end);
+	val = (~pRes->sparse_mask | pRes->sparse_base) & getMask(range->__end);
 #ifdef DEBUG
 	ErrorF("base = 0x%lx, mask = 0x%lx, begin = 0x%lx, end = 0x%lx ,"
 	       "val\n 0x%lx\n",
-		pRes->s_base, pRes->s_mask, range->__begin, range->__end, val);
+		pRes->sparse_base, pRes->sparse_mask, range->__begin,
+		range->__end, val);
 #endif
 	i = sizeof(unsigned long) * 8;
-	tmp = prev = pRes->s_base;
+	tmp = prev = pRes->sparse_base;
 	
 	while (i) {
 #ifdef DEBUG
@@ -1575,15 +1578,15 @@ checkConflictSparse(resRange *range, resPtr pRes)
     
     switch (pRes->r_type & ResExtMask) {
     case ResSparse:
-	tmp = pRes->s_mask & range->__mask;
-	if ((tmp & pRes->s_base) == (tmp & range->__base))
-	    return pRes->s_mask;
+	tmp = pRes->sparse_mask & range->__mask;
+	if ((tmp & pRes->sparse_base) == (tmp & range->__base))
+	    return pRes->sparse_mask;
 	return 0;
 
     case ResBlock:
-	if (pRes->b_end < range->__base) return 0;
+	if (pRes->block_end < range->__base) return 0;
 	
-	val = (~range->__mask | range->__base) & getMask(pRes->b_end);
+	val = (~range->__mask | range->__base) & getMask(pRes->block_end);
 	i = length;
 	tmp = prev = range->__base;
 	
@@ -1592,12 +1595,12 @@ checkConflictSparse(resRange *range, resPtr pRes)
 	    ErrorF("tmp = 0x%lx\n",tmp);
 #endif
 	    tmp |= 1<< (--i) & val;
-	    if (tmp > pRes->b_end)
+	    if (tmp > pRes->block_end)
 		tmp = prev;
 	    else
 		prev = tmp;
 	}
-	if (tmp < pRes->b_begin) 
+	if (tmp < pRes->block_begin) 
 	    return 0;
 	else {
 	    /*
@@ -1605,14 +1608,14 @@ checkConflictSparse(resRange *range, resPtr pRes)
 	     * with base values = 2^n and find the smallest mask.
 	     * This might be done in a simpler way....
 	     */
-	    unsigned long mask, m_mask = 0, base = pRes->b_begin;
+	    unsigned long mask, m_mask = 0, base = pRes->block_begin;
 	    int i;	    
-	    while (base < pRes->b_end) {
+	    while (base < pRes->block_end) {
 		for (i = 1; i < length; i++)
 		    if ( base != (base & (ul_max << i))) break;
 		mask = ul_max >> (length - i);
 		do mask >>= 1;
-		while ((mask + base + 1) > pRes->b_end);
+		while ((mask + base + 1) > pRes->block_end);
 		/* m_mask and are _inverted_ sparse masks */ 
 		m_mask = mask > m_mask ? mask : m_mask;
 		base = base + mask + 1;
@@ -1866,13 +1869,14 @@ xf86PrintResList(int verb, resPtr list)
 		switch (list->r_type & ResExtMask) {
 		case ResBlock:
 		    xf86ErrorFVerb(verb, "\t[%d] %d\t0x%08x - 0x%08x (0x%x)",
-				   i, list->entityIndex, list->b_begin,
-				   list->b_end, list->b_end - list->b_begin + 1);
+				   i, list->entityIndex, list->block_begin,
+				   list->block_end,
+				   list->block_end - list->block_begin + 1);
 		    break;
 		case ResSparse:
 		    xf86ErrorFVerb(verb, "\t[%d] %d\t0x%08x - 0x%08x ",
 				   i, list->entityIndex,
-				   list->s_base,list->s_mask);
+				   list->sparse_base,list->sparse_mask);
 		    break;
 		default:
 		    list = list->next;
@@ -1943,42 +1947,45 @@ RemoveOverlaps(resPtr target, resPtr list, Bool pciAlignment)
     for (pRes = list; pRes; pRes = pRes->next) {
 	if (pRes != target
 	    && ((pRes->r_type & ResPhysMask) == (target->r_type & ResPhysMask))
-	    && pRes->b_begin <= target->b_end && pRes->b_end >= target->b_begin) {
+	    && pRes->block_begin <= target->block_end
+	    && pRes->block_end >= target->block_begin) {
 	    /*
 	     * target should be a larger region than pRes.  If pRes fully
 	     * contains target, don't do anything.
 	     */
-	    if (pRes->b_begin <= target->b_begin && pRes->b_end >= target->b_end)
+	    if (pRes->block_begin <= target->block_begin &&
+		pRes->block_end >= target->block_end)
 		continue;
 	    /*
 	     * cases where the target and pRes have the same starting address
 	     * cannot be resolved, so skip them (with a warning).
 	     */
-	    if (pRes->begin == target->begin) {
+	    if (pRes->block_begin == target->block_begin) {
 		xf86MsgVerb(X_WARNING, 3, "Unresolvable overlap at 0x%08x\n",
-			    pRes->begin);
+			    pRes->block_begin);
 		continue;
 	    }
 	    /* Otherwise, trim target to remove the overlap */
-	    if (pRes->b_begin <= target->b_end) {
-		target->b_end = pRes->b_begin - 1;
-	    } else if (!pciAlignment && pRes->b_end >= target->b_begin) {
-		target->b_begin = pRes->b_end + 1;
+	    if (pRes->block_begin <= target->block_end) {
+		target->block_end = pRes->block_begin - 1;
+	    } else if (!pciAlignment &&
+		       pRes->block_end >= target->block_begin) {
+		target->block_begin = pRes->block_end + 1;
 	    } if (pciAlignment) {
 		/*
 		 * Align to a power of two.  This requires finding the
 		 * largest power of two that is smaller than the adjusted
 		 * size.
 		 */
-		size = target->b_end - target->b_begin + 1;
+		size = target->block_end - target->block_begin + 1;
 		newsize = 1UL << (sizeof(unsigned long) * 8 - 1);
 		while (!(newsize & size))
 		    newsize >>= 1;
-		target->b_end = target->b_begin + newsize - 1;
-	    } else if (target->b_end > MEM_ALIGN) {
+		target->block_end = target->block_begin + newsize - 1;
+	    } else if (target->block_end > MEM_ALIGN) {
 		/* Align the end to MEM_ALIGN */
-		if ((adjust = (target->b_end + 1) % MEM_ALIGN))
-		    target->b_end -= adjust;
+		if ((adjust = (target->block_end + 1) % MEM_ALIGN))
+		    target->block_end -= adjust;
 	    }
 	}
     }
@@ -2087,12 +2094,12 @@ xf86GetPciSysRes(resPtr *res, int flags)
 		xf86MsgVerb(X_INFO, verb,
 			    "PCI %s Resource overlap for 0x%08x at 0x%08x\n",
 			    (pRes->r_type & ResMem)?"Memory":"Io",
-			    pRes->b_begin, end);
+			    pRes->block_begin, end);
 	    if ((end = ChkConflict(&r, nonsysRes, SETUP)))
 		xf86MsgVerb(X_INFO, verb,
 			    "PCI %s Resource overlap for 0x%08x at 0x%08x\n",
 			    (pRes->r_type & ResMem)?"Memory":"Io",
-			    pRes->b_begin, end);
+			    pRes->block_begin, end);
 	}
     }
 
@@ -2182,16 +2189,16 @@ ValidatePci(void)
 	while (pbp) {
 	    if (pbp->secondary == pvp->bus) {
 		if (pbp->pmem) {
-		    start_mp = pbp->pmem->b_begin;
-		    end_mp = pbp->pmem->b_end;
+		    start_mp = pbp->pmem->block_begin;
+		    end_mp = pbp->pmem->block_end;
 		}
 		if (pbp->mem) {
-		    start_m = pbp->mem->b_begin;
-		    end_m = pbp->mem->b_end;
+		    start_m = pbp->mem->block_begin;
+		    end_m = pbp->mem->block_end;
 		}
 		if (pbp->io) {
-		    start_io = pbp->io->b_begin;
-		    end_io = pbp->io->b_end;
+		    start_io = pbp->io->block_begin;
+		    end_io = pbp->io->block_end;
 		}
 	    }
 	    while (pbp1) {
@@ -2707,12 +2714,12 @@ xf86GetBlock(long type, unsigned long size,
     
     while (ResRange) {
 	if (type & ResRange->r_type & ResPhysMask) {
-	    if (ResRange->b_begin > window_start)
-		min = ResRange->b_begin;
+	    if (ResRange->block_begin > window_start)
+		min = ResRange->block_begin;
 	    else
 		min = window_start;
-	    if (ResRange->b_end < window_end)
-		max = ResRange->b_end;
+	    if (ResRange->block_end < window_end)
+		max = ResRange->block_end;
 	    else
 		max = window_end;
 	    min = ALIGN(min,align_mask);
@@ -3436,8 +3443,8 @@ fixPciResource(unsigned int prt, CARD32 alignment, pciVideoPtr pvp, long type)
     /* Access list holds bios resources -- remove this one */
     while ((*pAcc)) {
 	if ((((*pAcc)->r_type & type) == type)
-	    && ((*pAcc)->b_begin == (*p_base))
-	    && ((*pAcc)->b_end == (*p_base) + (1 << (*p_size)) - 1)) {
+	    && ((*pAcc)->block_begin == (*p_base))
+	    && ((*pAcc)->block_end == (*p_base) + (1 << (*p_size)) - 1)) {
 #ifdef DEBUG
 	    ErrorF("removing old resource\n");
 #endif
@@ -3457,19 +3464,19 @@ fixPciResource(unsigned int prt, CARD32 alignment, pciVideoPtr pvp, long type)
 	if (pbp->secondary == pvp->bus) {
 	    if (type & ResMem) {
 		if ((p_type & PCI_MAP_MEMORY_CACHABLE) && pbp->pmem) {
-		    start_w = pbp->pmem->b_begin;
-		    end_w = pbp->pmem->b_end;
+		    start_w = pbp->pmem->block_begin;
+		    end_w = pbp->pmem->block_end;
 		    if (pbp->mem) {
-			start_w_2nd = pbp->mem->b_begin;
-			end_w_2nd = pbp->mem->b_end;
+			start_w_2nd = pbp->mem->block_begin;
+			end_w_2nd = pbp->mem->block_end;
 		    }
 		} else if (pbp->mem) {
-		    start_w = pbp->mem->b_begin;
-		    end_w = pbp->mem->b_end;
+		    start_w = pbp->mem->block_begin;
+		    end_w = pbp->mem->block_end;
 		} 
 	    } else if (pbp->io) {
-		start_w = pbp->io->b_begin;
-		end_w = pbp->io->b_end;
+		start_w = pbp->io->block_begin;
+		end_w = pbp->io->block_end;
 	    }
 		
 	    while (pbp1) {
@@ -3556,12 +3563,12 @@ xf86ReallocatePciResources(int entityIndex, resPtr pRes)
     while (pRes) {
 	switch (pRes->r_type & ResPhysMask) {
 	case ResMem:
-	    if (pRes->b_begin == pvp->biosBase
-		&& pRes->b_end == pvp->biosBase + (1 << (pvp->biosSize)) - 1)
+	    if (pRes->block_begin == pvp->biosBase &&
+		pRes->block_end == pvp->biosBase + (1 << (pvp->biosSize)) - 1)
 		prt = pciBios;
 	    else for (i = 0 ; i < 6; i++) 
-		if (pRes->b_begin == pvp->memBase[i]
-		    && pRes->b_end
+		if (pRes->block_begin == pvp->memBase[i]
+		    && pRes->block_end
 		    == pvp->memBase[i] + (1 << (pvp->size[i])) - 1) {
 		    prt = i | pciMem;
 		    break;
@@ -3569,8 +3576,8 @@ xf86ReallocatePciResources(int entityIndex, resPtr pRes)
 	    break;
 	case ResIo:
 	    for (i = 0 ; i < 6; i++) 
-		if (pRes->b_begin == pvp->ioBase[i]
-		    && pRes->b_end
+		if (pRes->block_begin == pvp->ioBase[i]
+		    && pRes->block_end
 		    == pvp->ioBase[i] + (1 << (pvp->size[i])) - 1) {
 		    prt = i | pciIo;
 		    break;

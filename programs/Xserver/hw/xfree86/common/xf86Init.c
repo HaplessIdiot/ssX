@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.126 1999/06/06 05:14:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.127 1999/06/12 07:18:42 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -405,7 +405,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 	xf86PruneMonitorModes(xf86Screens[i]->confScreen->monitor);
     }
 
-    for (i = 0; i < xf86NumScreens; i++)
+    for (i = 0; i < xf86NumScreens; i++) {
 	xf86EnableAccess(xf86Screens[i]);
 	if (xf86Screens[i]->PreInit &&
 	    xf86Screens[i]->PreInit(xf86Screens[i], 0))

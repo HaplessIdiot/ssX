@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.15 1999/02/12 22:52:02 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.16 1999/03/28 15:32:37 dawes Exp $ */
 /*
  * Copyright 1997,1998 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -49,6 +49,8 @@ typedef struct {
     pciVideoPtr		PciInfoGeometry;
     PCITAG		PciTag;
     PCITAG		PciTagGeometry;
+    EntityInfoPtr	pEnt;
+    EntityInfoPtr	pEntGeometry;
     RamDacHelperRecPtr	RamDac;
     int			MemClock;
     int			Chipset;
@@ -159,6 +161,7 @@ unsigned char glintInIBMRGBIndReg(ScrnInfoPtr pScrn, CARD32 reg);
 void glintIBMWriteAddress(ScrnInfoPtr pScrn, CARD32 index);
 void glintIBMReadAddress(ScrnInfoPtr pScrn, CARD32 index);
 void glintIBMWriteData(ScrnInfoPtr pScrn, unsigned char data);
+Bool glintIBMHWCursorInit(ScreenPtr pScreen);
 unsigned char glintIBMReadData(ScrnInfoPtr pScrn);
 Bool glintIBM526HWCursorInit(ScreenPtr pScreen);
 Bool glintIBM640HWCursorInit(ScreenPtr pScreen);

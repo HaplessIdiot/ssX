@@ -1,7 +1,7 @@
 XFree86 3.9Pr (12 June 1999)
 2727. Increase the MAXSCREENS value from 4 to 16 (Egbert Eich).
-2726. Add support for printing out PCI-PCI bridge header information correctly
-      (Egbert Eich).
+2726. Add support to scanpci for printing out PCI-PCI bridge header
+      information correctly (Egbert Eich).
 2725. New RAC (Resource Access Control) code (Egbert Eich).
 2724. Update the Solaris/x86 version of xf86ReadBIOS() to handle BIOSs located
       at high physical addresses (David Dawes).
@@ -8137,4 +8137,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.769 1999/06/08 11:31:05 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.770 1999/06/12 07:18:32 dawes Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.36 1999/05/30 03:03:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.37 1999/06/12 07:18:45 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -484,11 +484,11 @@ typedef struct _resRec {
     resPtr	next;
 } resRec;
 
-#define s_base  val.__base
-#define s_mask  val.__mask
-#define b_begin val.__begin
-#define b_end   val.__end
-#define r_type  val.type
+#define sparse_base	val.__base
+#define sparse_mask	val.__mask
+#define block_begin	val.__begin
+#define block_end	val.__end
+#define r_type		val.type
 
 typedef struct {
     int numChipset;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.37 1999/06/06 08:48:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.38 1999/06/12 07:18:53 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -60,7 +60,6 @@ typedef struct {
     CARD32		Option;
     CARD32		Option2;
     CARD32		Option3;
-    Bool		VgaEnable;
 } MGARegRec, *MGARegPtr;
 
 typedef struct {
@@ -92,10 +91,12 @@ typedef struct {
 
 #define MGAPTR(p) ((MGAPtr)((p)->driverPrivate))
 
+#ifdef DISABLE_VGA_IO
 typedef struct mgaSave {
     pciVideoPtr pvp;
     Bool enable;
 } MgaSave, *MgaSavePtr;
+#endif
 
 typedef struct {
     EntityInfoPtr	pEnt;
