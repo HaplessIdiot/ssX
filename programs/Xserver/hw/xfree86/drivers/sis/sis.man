@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.man,v 1.8 2002/11/29 13:52:06 eich Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.man,v 1.5 2001/12/17 20:52:34 dawes Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH SIS __drivermansuffix__ __vendorversion__
@@ -30,7 +30,7 @@ driver supports PCI and AGP video cards based on the following chipsets:
 .B SiS630/730
 .B SiS315/H/PRO
 .B SiS550
-.B SiS650/651/650M/740
+.B SiS650/651/M650/661FX/M661FX/740/741
 .B SiS330 (Xabre)
 .PP
 In the following text, the following terms are used:
@@ -41,13 +41,17 @@ for SiS5597/5598, 530/620 and 6326/AGP/DVD
 .B 300 series
 for SiS300/305, 540 and 630/730
 .PP
-.B 310/325/330 series
-for SiS315/H/PRO, 550 and 650/651/650M/740, 330
+.B 315/330 series
+for SiS315/H/PRO, 550 and 650/651/M650/661FX/M661FX/740/741, 330
 .SH CONFIGURATION DETAILS
 Please refer to XF86Config(__filemansuffix__) for general configuration
 details.  This section only covers configuration details specific to this
-driver. Please note that support for the SiS330 is new and there may be
-some problems.
+driver.
+.PP
+Detailed information on all supported options can be obtained at
+http://www.winischhofer.net/linuxsisvga.shtml
+.PP
+This manpage only covers a subset of the supported options.
 .PP
 .I "1. For all supported chipsets"
 .PP
@@ -56,8 +60,7 @@ The following driver
 are supported on all chipsets:
 .TP
 .BI "Option \*qNoAccel\*q \*q" boolean \*q
-Disable or enable 2D acceleration. Please note: On chipsets with XVideo
-support, this also disables XVideo. Default: acceleration is enabled.
+Disable or enable 2D acceleration. Default: acceleration is enabled.
 .TP
 .BI "Option \*qHWCursor\*q \*q" boolean \*q
 Enable or disable the HW cursor. Default: HWCursor is on.
@@ -169,9 +172,9 @@ By experience,
 .B ADAPTIVE
 yields the best results.
 .PP
-.I "2. 300 and 310/325/330 series specific information"
+.I "2. 300 and 315/330 series specific information"
 .PP
-The 300 and 310/325/330 series very often come with a video bridge for
+The 300 and 315/330 series very often come with a video bridge for
 controlling LCD and TV output. Hereinafter, the term
 .B CRT1
 refers to the VGA output of the chip, and
@@ -184,9 +187,9 @@ which makes it possible to run the driver in dual head mode.
 The driver supports the following video bridges:
 .PP
 .B SiS301
-.B SiS301B
+.B SiS301B(-DH)
+.B SiS301C
 .B SiS301LV
-.B SiS302B
 .B SiS302LV
 .PP
 Instead of a video bridge, some machines have a
@@ -206,12 +209,18 @@ About XVideo support
 .PP
 XVideo is supported on all chipsets of both families. However, there
 are some differences in hardware features which cause limitations.
-The 300 series as well as the SiS550, 650M, 651 and 330 support two video
-overlays. The SiS315/H/PRO and 650/740 support only one such overlay.
-On chips with two overlays, one overlay is used for CRT1, the other
-for CRT2. On the other chipsets, the option
+The 300 series as well as the SiS550, M650, 651, 661FX, M661FX,
+and 741 support two video overlays. The SiS315/H/PRO and 650/740 support
+only one such overlay. On chips with two overlays, one overlay is used
+for CRT1, the other for CRT2. On the other chipsets, the option
 .B \*qXvOnCRT2\*q
 can be used to select the desired output channel.
+.PP
+About Merged Framebuffer support
+.PP
+This mode is strongly recommended over Xinerama. Please see
+http://www.winischhofer.net/linuxsisvga.shtml for detailed
+information.
 .PP
 About dual-head support
 .PP
@@ -224,7 +233,7 @@ Colordepth 8 is not supported when running in dual head mode.
 .PP
 The following driver
 .B Options
-are supported on the 300 and 310/325 series:
+are supported on the 300 and 315/330 series:
 .TP
 .BI "Option \*qNoXVideo\*q \*q" boolean \*q
 Disable XV (XVideo) extension support.
@@ -268,7 +277,7 @@ Force display type to one of:
 ,
 .B COMPOSITE
 ,
-.B SCART,
+.B SCART
 ,
 .B LCD
 ,
@@ -276,41 +285,34 @@ Force display type to one of:
 ;
 .B NONE
 will disable CRT2. The SVIDEO, COMPOSITE and SCART parameters
-can be used to force the driver to use a specific TV output
-connector (if present).
+are for SiS video bridges only and can be used to force the
+driver to use a specific TV output connector (if present).
 Default: auto detect.
 .TP
 .BI "Option \*qPanelDelayCompensation\*q \*q" integer \*q
 This option is only for machines with a 300 series chipset
-and either a SiS301B video bridge or a LVDS transmitter.
+and either a SiS301B-DH video bridge or a LVDS transmitter,
+and a 315 series chipset with a SiS30xLV bridge.
 Different LCD panels require different delay compensation
 values. In most cases, the driver can autodetect this value.
 However, due to bad BIOS design this might fail in rare
 cases. If your LCD shows small horizontal waves, set the
-parameter of this option first to
+parameter of this option on the 300 series first to
 .B 4
 ,
 .B 32
 or
 .B 24
 and if the problem persists, try using other values between
-4 and 60 in steps of 4.
-.TP
-.BI "Option \*qUseROMData\*q \*q" boolean \*q
-The driver reads some data from the BIOS ROM, especially
-LCD dependent information. If the folks at SiS some day
-decide to change the location of this data inside the
-BIOS image, the display might not be initialized correctly.
-In order to prevent this, set this option's parameter to
-.B false.
-Default: ROM data is used
+4 and 60 in steps of 4. On the 315 series, any value can
+be set.
 .TP
 .BI "Option \*qTVStandard\*q \*q" string \*q
 Force the TV standard to either
 .B PAL
 or
 .B NTSC.
-On some machines with 630, 730 or 650/740,
+On some machines with 630, 730 or the 315 series,
 .B PALM
 and
 .B PALN
@@ -319,12 +321,12 @@ are supported as well. Default: BIOS setting.
 .BI "Option \*qTVXPosOffset\*q \*q" integer \*q
 This option allows horizontal relocation the TV output.
 The range is from -32 to 32. Not supported on the Chrontel
-7019 yet.
+7019.
 .TP
 .BI "Option \*qTVYPosOffset\*q \*q" integer \*q
 This option allows vertical relocation the TV output.
 The range is from -32 to 32. Not supported on the Chrontel
-7019 yet.
+7019.
 .TP
 .BI "Option \*qCHTVOverscan\*q \*q" boolean \*q
 On machines with a Chrontel TV encoder, this can be used to
@@ -340,6 +342,10 @@ On machines with a Chrontel 7005 TV encoder, this option
 enables a super-overscan mode. This is only supported if
 the TV standard is PAL. Super overscan will produce an
 image on the TV which is larger than the viewable area.
+.PP
+The driver supports many more TV related options. Please
+see http://www.winischhofer.net/linuxsisvga.shtml for
+more information.
 .PP
 .I "3. 300 series specific information"
 .PP
@@ -362,7 +368,9 @@ amount of RAM sisfb reserved. For this purpose, the
 .PP
 exists.
 .PP
-At the moment (2002), the SiS DRI driver is not
+XFree 4.3.0 disabled SiS DRI support. Old information follows:
+.PP
+At the moment (2003), the SiS DRI driver is not
 maintained, lacks support for memory swapping and
 has a few bugs. If you intend to use DRI, I recommend
 setting the total video memory in the BIOS to 64MB
@@ -398,15 +406,11 @@ parameter for the
 .B \*qMaxXFBMem\*q
 option. The value is to be given without 'KB'.
 .SH "KNOWN BUGS"
-For some reason, PAL TV output on the SiS301LV bridge is
-only black and white. NTSC is OK, though.
-.PP
-LCD panels with a resolution of 1280x1024 do not work
-correctly.
+none.
 .SH "SEE ALSO"
 XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(__miscmansuffix__)
 .PP
-.B "http://www.winischhofer.net"
+.B "http://www.winischhofer.net/linuxsisvga.shtml"
 for more information and updates
 .SH AUTHORS
 Authors include: Alan Hourihane, Mike Chapman, Juanjo Santamarta, Mitani

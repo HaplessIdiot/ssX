@@ -3544,12 +3544,12 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	      (mycustomttable[i].pcisubsyscard == pSiS->PciInfo->subsysCard) ) {
 	     footprint = TRUE;
 	     for(j=0; j<5; j++) {
-	        if(pSiS->sishw_ext.UseROM) {
-	           if(mycustomttable[i].biosFootprintAddr[j]) {
+	        if(mycustomttable[i].biosFootprintAddr[j]) {
+		   if(pSiS->sishw_ext.UseROM) {
 	              if(pSiS->BIOS[mycustomttable[i].biosFootprintAddr[j]] !=
 		      				mycustomttable[i].biosFootprintData[j])
 		         footprint = FALSE;
-		   }
+		   } else footprint = FALSE;
 	        }
 	     }
 	     if(footprint) {

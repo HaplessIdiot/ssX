@@ -89,7 +89,14 @@ void SISCRT1PreInit(ScrnInfoPtr pScrn)
     }
 
 #ifdef SISDUALHEAD
-    if(pSiS->DualHeadMode && pSiS->SecondHead) {
+    if(pSiS->DualHeadMode) {
+        pSiS->CRT1off = 0;
+    	return;
+    }
+#endif
+
+#ifdef SISMERGED
+    if(pSiS->MergedFB) {
         pSiS->CRT1off = 0;
     	return;
     }
