@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/Imakefile,v 1.15.2.1 2003/03/04 01:31:42 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/Imakefile,v 1.15.2.2 2003/03/04 02:48:04 torrey Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -19,7 +19,8 @@ OBJS =	darwin.o \
 
 INCLUDES = -I. -I$(SERVERSRC)/mi -I$(SERVERSRC)/fb -I$(EXTINCSRC) \
            -I$(SERVERSRC)/render -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
-           -I$(SERVERSRC)/os -I$(INCLUDESRC) -I$(FONTINCSRC)
+           -I$(SERVERSRC)/os -I$(INCLUDESRC) -I$(FONTINCSRC) \
+           -I$(SERVERSRC)/hw/xfree86
 
 OSNAME = OSName
 OSVENDOR = OSVendor
