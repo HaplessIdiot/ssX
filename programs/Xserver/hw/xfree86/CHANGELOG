@@ -1,4 +1,7 @@
 XFree86 4.3.99.15 (xx October 2003)
+ 505. Declare LoadPalette, SetOverscan and DPMSSet as public functions through
+      the XFree86's ScrnInfoRec, so these functions can be wrapped.
+      (Alan Hourihane).
  504. XDarwin improvements:
        - Add complete server side support for AppleWM with xpr.
        - Allow Aqua and X11 windows to interleave when AppleWM-aware window
@@ -17953,7 +17956,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2885 2003/10/16 04:27:28 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2886 2003/10/16 23:50:01 torrey Exp $
 
 
 
