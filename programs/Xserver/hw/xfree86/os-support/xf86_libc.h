@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.20 1998/06/27 12:54:30 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.21 1998/06/28 03:53:14 dawes Exp $ */
 
 
 
@@ -57,6 +57,13 @@ typedef struct _xf86dirent XF86DIRENT;
 #define XF86_IOLBF    3
 
 #endif /* defined(XFree86LOADER) || defined(NEED_XF86_TYPES) */
+
+
+#ifndef DONT_DEFINE_WRAPPERS
+#undef usleep
+#define usleep(ul)		xf86usleep(ul)
+#endif
+
 
 #ifdef XFree86LOADER
 
@@ -190,8 +197,6 @@ typedef struct _xf86dirent XF86DIRENT;
 #define bcopy(vp,cvp,I)		xf86memmove(cvp,vp,I)
 #define ffs(i)			xf86ffs(i)
 #define strdup(ccp)		xf86strdup(ccp)
-#undef usleep
-#define usleep(ul)		xf86usleep(ul)
 #undef bzero
 #define bzero(vp,ui)		xf86bzero(vp,ui)
 #define execl	        	xf86execl
