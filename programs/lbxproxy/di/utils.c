@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/lbxproxy/di/utils.c,v 1.10 2001/01/17 23:44:56 dawes Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/utils.c,v 1.11 2001/07/25 15:05:14 dawes Exp $ */
 
 #include "lbx.h"
 #include <stdio.h>
@@ -188,7 +188,7 @@ AutoResetServer (sig)
     isItTimeToYield = TRUE;
 #ifdef GPROF
     chdir ("/tmp");
-    exit (0);
+    _exit (0);
 #endif
 #ifdef SYSV
     signal (SIGHUP, AutoResetServer);
