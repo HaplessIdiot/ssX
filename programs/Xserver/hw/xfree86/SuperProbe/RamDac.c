@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.0 1994/05/14 06:51:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.1 1994/05/31 08:03:02 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -315,6 +315,44 @@ int *RamDac;
 	return(Found);
 }
 
+static Bool S3_SC15025Check(RamDac)
+int *RamDac;
+{
+	Byte c,id[4];
+	int i;
+	Bool Found = FALSE;
+
+	/*
+	 * Sierra 15025 support - Harald Koenig
+	 *
+	 * The SC15025 has 9 indexed extended registers which can be accessed
+	 * by setting bit 0x10 in the command register. 
+	 * In extended registers 0x9-0xC an identification code is stored
+	 * should be 53 3a b1 41 
+	 */
+
+	c = getdaccomm();
+	SetComm(c | 0x10); /* enable extened data registers */
+	for (i=0; i<4; i++) {
+	   outp(0x3C7, 0x9+i); 
+	   id[i] = inp(0x3C8);
+	}
+	SetComm(c); /* restore command register */
+	dactopel();
+
+	if (id[0] == 'S' &&                  /* Sierra */
+	    ((id[1]<<8)|id[2]) == 15025) {   /* unique for the SC 15025/26 */
+	        if (id[3] != 'A') {                     /* version number */
+		   fprintf(stderr,"*** ==> New Sierra SC 15025/26 version (%x) found, please report!\n",id[3]);
+		}
+                Found = TRUE;
+		*RamDac = DAC_SIERRA24;
+		*RamDac |= DAC_6_8_PROGRAM;
+        }
+
+	return(Found);
+}
+
 static void CheckMach32(RamDac)
 int *RamDac;
 {
@@ -451,6 +489,11 @@ int *RamDac;
 		return;
 	    }
 	    if (S3_ATT498Check(RamDac))
+	    {
+		DisableIOPorts(NUMPORTS, Ports);
+		return;
+	    }
+	    if (S3_SC15025Check(RamDac))
 	    {
 		DisableIOPorts(NUMPORTS, Ports);
 		return;
@@ -853,6 +896,11 @@ int *RamDac;
 		{
 		       DisableIOPorts(NUMPORTS, Ports);
 		       return;
+		}
+		if (S3_SC15025Check(RamDac))
+		{
+		      DisableIOPorts(NUMPORTS, Ports);
+		      return;
 		}
 	}
 	dactopel();
