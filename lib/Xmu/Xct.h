@@ -141,31 +141,27 @@ typedef struct _XctRec {
 /* these are the external routines */
 _XFUNCPROTOBEGIN
 
-extern XctData XctCreate(
-#if NeedFunctionPrototypes
-    _Xconst unsigned char *	/* string */,
-    int			/* length */,
-    XctFlags		/* flags */
-#endif
+XctData XctCreate
+(
+ _Xconst unsigned char	*string,
+ int			length,
+ XctFlags		flags
 );
 
-extern XctResult XctNextItem(
-#if NeedFunctionPrototypes
-    XctData	/* data */
-#endif
+XctResult XctNextItem
+(
+ XctData		data
 );
 
-extern void XctFree(
-#if NeedFunctionPrototypes
-    XctData	/* data */
-#endif
-);
+void XctFree
+(
+ XctData		data
+ );
 
-extern void XctReset(
-#if NeedFunctionPrototypes
-    XctData	/* data */
-#endif
-);
+void XctReset
+(
+ XctData		data
+ );
 
 _XFUNCPROTOEND
 

@@ -31,11 +31,8 @@ in this Software without prior written authorization from the X Consortium.
 
 /* ARGSUSED */
 void
-XmuRegisterExternalAgent(w, data, event, cont)
-    Widget w;
-    XtPointer data;
-    XEvent *event;
-    Boolean *cont;
+XmuRegisterExternalAgent(Widget w, XtPointer data,
+			 XEvent *event, Boolean *cont)
 {
 /* 
 * This is a stub.  Writers of protocol libraries

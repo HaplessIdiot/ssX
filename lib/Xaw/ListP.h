@@ -27,8 +27,6 @@ in this Software without prior written authorization from the X Consortium.
 
 
 /* 
- * ListP.h - Private definitions for List widget
- * 
  * This is a List widget.  It allows the user to select an item in a list and
  * notifies the application through a callback function.
  *
@@ -40,12 +38,9 @@ in this Software without prior written authorization from the X Consortium.
 #ifndef _XawListP_h
 #define _XawListP_h
 
-/***********************************************************************
- *
+/*
  * List Widget Private Data
- *
- ***********************************************************************/
-
+ */
 #include <X11/Xaw/SimpleP.h>
 #include <X11/Xaw/List.h>
 
@@ -53,11 +48,12 @@ in this Software without prior written authorization from the X Consortium.
 #define OUT_OF_RANGE            -1
 #define OKAY                     0
 
-/* New fields for the List widget class record */
+/* New fields for the List widget class */
+typedef struct {
+  XtPointer extension;
+} ListClassPart;
 
-typedef struct {int foo;} ListClassPart;
-
-/* Full class record declaration */
+/* Full class record */
 typedef struct _ListClassRec {
     CoreClassPart	core_class;
     SimpleClassPart	simple_class;
@@ -66,47 +62,46 @@ typedef struct _ListClassRec {
 
 extern ListClassRec listClassRec;
 
-/* New fields for the List widget record */
+/* New fields for the List widget */
 typedef struct {
     /* resources */
     Pixel	foreground;
-    Dimension	internal_width, /* if not 3d, user sets directly. */
-        	internal_height,
-                column_space,	/* half of *_space is add on top/bot/left of*/
-                row_space;	/* each item's text bounding box. half added to longest for right */
+  Dimension internal_width;		/* if not 3d, user sets directly */
+  Dimension internal_height;
+  Dimension column_space;		/* half of *_space is add on
+					   top/bot/left of */
+  Dimension row_space;			/* each item's text bounding box
+					   half added to longest for right */
     int         default_cols;
-    Boolean     force_cols,
-                paste,
-                vertical_cols;
+  Boolean force_cols;
+  Boolean paste;
+  Boolean vertical_cols;
     int         longest;	/* in pixels */
-    int         nitems;		/* number of items in the list. */
+  int nitems;
     XFontStruct	*font;
     XFontSet 	fontset;	/* Sheeran, Omron KK, 93/03/05 */
-    String *    list;		/* for i18n, always in multibyte format */
+  String *list;				/* for i18n, always in multibyte
+					   format */
     XtCallbackList callback;
 
-    /* private state */
-    int         is_highlighted,	/* set to the item currently highlighted. */
-                highlight,	/* set to the item that should be highlighted.*/
-                col_width,	/* width of each column. */
-                row_height,	/* height of each row. */
-                nrows,		/* number of rows in the list. */
-                ncols;		/* number of columns in the list. */
-    GC		normgc,		/* a couple of GC's. */
-                revgc,
-                graygc;		/* used when inactive. */
-
-    int         freedoms;       /* flags for resizing height and width */
-
+  /* private */
+  int is_highlighted;			/* set to the item currently
+					   highlighted */
+  int highlight;			/* set to the item that should be
+					   highlighted */
+  int col_width;			/* width of each column */
+  int row_height;			/* height of each row */
+  int nrows;				/* number of rows in the list */
+  int ncols;				/* number of columns in the list */
+  GC normgc;
+  GC revgc;
+  GC graygc;
+  int freedoms;				/* flags for resizing height
+					   and width */
 } ListPart;
 
 
-/****************************************************************
- *
- * Full instance record declaration
- *
- ****************************************************************/
-
+/* Full instance record */
 typedef struct _ListRec {
     CorePart	core;
     SimplePart	simple;

@@ -51,11 +51,9 @@ SOFTWARE.
 #ifndef _XawLabel_h
 #define _XawLabel_h
 
-/***********************************************************************
- *
+/*
  * Label Widget
- *
- ***********************************************************************/
+ */
 
 #include <X11/Xaw/Simple.h>
 
@@ -70,7 +68,7 @@ SOFTWARE.
  cursor		     Cursor		Cursor		None
  cursorName	     Cursor		String		NULL
  destroyCallback     Callback		XtCallbackList	NULL
- encoding	     Encoding		unsigned char	XawTextEncoding8bit
+ encoding	     Encoding		UnsignedChar	XawTextEncoding8bit
  font		     Font		XFontStruct*	XtDefaultFont
  foreground	     Foreground		Pixel		XtDefaultForeground
  height		     Height		Dimension	text height

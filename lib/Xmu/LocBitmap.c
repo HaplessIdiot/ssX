@@ -26,7 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86: xc/lib/Xmu/LocBitmap.c,v 3.2 1998/06/28 08:59:56 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/LocBitmap.c,v 3.3 1998/06/28 12:32:30 dawes Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -67,26 +67,19 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 #endif /* PATH_MAX */
 
-static char **split_path_string();
-
+/*
+ * Prototypes
+ */
+static char **split_path_string(char*);
 
 /*
  * XmuLocateBitmapFile - read a bitmap file using the normal defaults
  */
 
-#if NeedFunctionPrototypes
-Pixmap XmuLocateBitmapFile (Screen *screen, _Xconst char *name, char *srcname,
+Pixmap
+XmuLocateBitmapFile(Screen *screen, _Xconst char *name, char *srcname,
 			    int srcnamelen, int *widthp, int *heightp, 
 			    int *xhotp, int *yhotp)
-#else
-Pixmap XmuLocateBitmapFile (screen, name, srcname, srcnamelen,
-			    widthp, heightp, xhotp, yhotp)
-    Screen *screen;
-    char *name;
-    char *srcname;			/* RETURN */
-    int srcnamelen;
-    int *widthp, *heightp, *xhotp, *yhotp;  /* RETURN */
-#endif
 {
     return XmuLocatePixmapFile (screen, name, 
 				(unsigned long) 1, (unsigned long) 0,
@@ -98,24 +91,12 @@ Pixmap XmuLocateBitmapFile (screen, name, srcname, srcnamelen,
 /*
  * version that reads pixmap data as well as bitmap data
  */
-#if NeedFunctionPrototypes
-Pixmap XmuLocatePixmapFile (Screen *screen, _Xconst char *name, 
+Pixmap
+XmuLocatePixmapFile(Screen *screen, _Xconst char *name, 
 			    unsigned long fore, unsigned long back, 
 			    unsigned int depth, 
 			    char *srcname, int srcnamelen,
 			    int *widthp, int *heightp, int *xhotp, int *yhotp)
-#else
-Pixmap XmuLocatePixmapFile (screen, name, fore, back, depth, 
-			    srcname, srcnamelen,
-			    widthp, heightp, xhotp, yhotp)
-    Screen *screen;
-    char *name;
-    unsigned long fore, back;
-    unsigned int depth;
-    char *srcname;			/* RETURN */
-    int srcnamelen;
-    int *widthp, *heightp, *xhotp, *yhotp;  /* RETURN */
-#endif
 {
     Display *dpy = DisplayOfScreen (screen);
     Window root = RootWindowOfScreen (screen);
@@ -237,8 +218,8 @@ Pixmap XmuLocatePixmapFile (screen, name, fore, back, depth,
  * split_path_string - split a colon-separated list into its constituent
  * parts; to release, free list[0] and list.
  */
-static char **split_path_string (src)
-    register char *src;
+static char **
+split_path_string(register char *src)
 {
     int nelems = 1;
     register char *dst;
@@ -271,14 +252,14 @@ static char **split_path_string (src)
 }
 
 
-void _XmuStringToBitmapInitCache (c)
-    register XmuCvtCache *c;
+void
+_XmuStringToBitmapInitCache(register XmuCvtCache *c)
 {
     c->string_to_bitmap.bitmapFilePath = NULL;
 }
 
-void _XmuStringToBitmapFreeCache (c)
-    register XmuCvtCache *c;
+void
+_XmuStringToBitmapFreeCache(register XmuCvtCache *c)
 {
     if (c->string_to_bitmap.bitmapFilePath) {
 	if (c->string_to_bitmap.bitmapFilePath[0]) 

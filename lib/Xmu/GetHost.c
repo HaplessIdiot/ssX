@@ -1,5 +1,5 @@
 /* $XConsortium: GetHost.c /main/8 1996/11/13 14:44:43 lehors $ */
-/* $XFree86: xc/lib/Xmu/GetHost.c,v 3.1 1996/12/23 06:01:00 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/GetHost.c,v 3.2 1998/06/28 12:32:29 dawes Exp $ */
 
 /*
 
@@ -52,9 +52,8 @@ in this Software without prior written authorization from the X Consortium.
 #include <sys/utsname.h>
 #endif
 
-int XmuGetHostname (buf, maxlen)
-    char *buf;
-    int maxlen;
+int
+XmuGetHostname(char *buf, int maxlen)
 {
     int len;
 #ifdef WIN32

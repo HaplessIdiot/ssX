@@ -51,29 +51,20 @@ SOFTWARE.
 
 ******************************************************************/
 
-/*
- *  GripP.h - Private definitions for Grip widget (Used by VPane Widget)
- *
- */
-
 #ifndef _XawGripP_h
 #define _XawGripP_h
 
 #include <X11/Xaw/Grip.h>
 #include <X11/Xaw/SimpleP.h>
 
-/*****************************************************************************
- *
- * Grip Widget Private Data
- *
- *****************************************************************************/
-
 #define DEFAULT_GRIP_SIZE 8
 
-/* New fields for the Grip widget class record */
-typedef struct {int empty;} GripClassPart;
+/* New fields for the Grip widget class */
+typedef struct {
+  XtPointer extension;
+} GripClassPart;
 
-/* Full Class record declaration */
+/* Full Class record */
 typedef struct _GripClassRec {
     CoreClassPart    core_class;
     SimpleClassPart  simple_class;
@@ -82,17 +73,12 @@ typedef struct _GripClassRec {
 
 extern GripClassRec gripClassRec;
 
-/* New fields for the Grip widget record */
+/* New fields for the Grip widget */
 typedef struct {
   XtCallbackList grip_action;
 } GripPart;
 
-/*****************************************************************************
- *
- * Full instance record declaration
- *
- ****************************************************************************/
-
+/* Full instance record */
 typedef struct _GripRec {
    CorePart    core;
    SimplePart  simple;
@@ -100,4 +86,3 @@ typedef struct _GripRec {
 } GripRec;
 
 #endif /* _XawGripP_h */
-

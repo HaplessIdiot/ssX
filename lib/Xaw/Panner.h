@@ -36,9 +36,9 @@ in this Software without prior written authorization from the X Consortium.
  * 
  * Panner Widget (subclass of Simple)
  * 
- * This widget is used to represent navigation in a 2d coordinate system.
+ * This widget is used to represent navigation in a 2d coordinate system
  * 
- * Parameters:
+ * Resources:
  * 
  *  Name		Class		Type		Default
  *  ----		-----		----		-------
@@ -64,7 +64,6 @@ in this Software without prior written authorization from the X Consortium.
  * 
  *****************************************************************************/
 
-					/* new instance and class names */
 #ifndef _XtStringDefs_h_
 #define XtNresize "resize"
 #define XtCResize "Resize"
@@ -99,7 +98,6 @@ in this Software without prior written authorization from the X Consortium.
 #define XtNsliderHeight "sliderHeight"
 #define XtCSliderHeight "SliderHeight"
 
-					/* external declarations */
 extern WidgetClass pannerWidgetClass;
 
 typedef struct _PannerClassRec *PannerWidgetClass;

@@ -64,7 +64,7 @@ SOFTWARE.
  border		     BorderColor	Pixel		XtDefaultForeground
  borderWidth	     BorderWidth	Dimension	1
  destroyCallback     Callback		Pointer		NULL
- foreceBars	     Boolean		Boolean		False
+ forceBars	     Boolean		Boolean		False
  height		     Height		Dimension	0
  mappedWhenManaged   MappedWhenManaged	Boolean		True
  reportCallback	     ReportCallback	Pointer		NULL
@@ -77,7 +77,6 @@ SOFTWARE.
 
 */
 
-/* fields added to Form */
 #ifndef _XtStringDefs_h_
 #define XtNforceBars "forceBars"
 #define XtNallowHoriz "allowHoriz"
@@ -93,31 +92,24 @@ typedef struct _ViewportRec  *ViewportWidget;
 
 _XFUNCPROTOBEGIN
 
-extern void XawViewportSetLocation (
-#if NeedFunctionPrototypes
-    Widget		/* gw */,
-#if NeedWidePrototypes
-    /* float */ double	/* xoff */,
-    /* float */ double	/* yoff */
+void XawViewportSetLocation
+(
+ Widget			gw,
+#ifdef notyet
+ double			xoff,
+ double			yoff
 #else
-    float		/* xoff */,
-    float		/* yoff */
+ float			xoff,
+ float			yoff
 #endif
-#endif
-);
+ );
 
-extern void XawViewportSetCoordinates (
-#if NeedFunctionPrototypes
-    Widget		/* gw */,
-#if NeedWidePrototypes
-    /* Position */ int	/* x */,
-    /* Position */ int	/* y */
-#else
-    Position		/* x */,
-    Position		/* y */
-#endif
-#endif
-);
+void XawViewportSetCoordinates
+(
+ Widget			gw,
+ int			x,
+ int			y
+ );
 
 _XFUNCPROTOEND
 

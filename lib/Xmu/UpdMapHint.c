@@ -35,10 +35,8 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
-Bool XmuUpdateMapHints (dpy, w, hints)
-    Display *dpy;
-    Window w;
-    XSizeHints *hints;
+Bool
+XmuUpdateMapHints(Display *dpy, Window w, XSizeHints *hints)
 {
     static XSizeHints *shp = NULL;
 

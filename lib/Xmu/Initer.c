@@ -41,15 +41,16 @@ struct InitializerList {
   XtAppContext * app_con_list;	/* a null terminated list of app_contexts. */
 };
   
+/*
+ * Prototypes
+ */
+static Bool AddToAppconList(XtAppContext**, XtAppContext);
+  
 static struct InitializerList * init_list = NULL;
 static Cardinal init_list_length = 0;
 
-static Boolean AddToAppconList();
-
 void
-XmuAddInitializer(func, data) 
-XmuInitializerProc func;
-XPointer data;
+XmuAddInitializer(XmuInitializerProc func, XPointer data)
 {
   init_list_length++;
   init_list = (struct InitializerList *) XtRealloc( (char *) init_list, 
@@ -62,8 +63,7 @@ XPointer data;
 }
 
 void
-XmuCallInitializers(app_con)
-XtAppContext app_con;
+XmuCallInitializers(XtAppContext app_con)
 {
   int i;
 
@@ -73,18 +73,24 @@ XtAppContext app_con;
   }
 }
 
-/*	Function Name: AddToAppconList
- *	Description: Adds an action to the application context list and
- *                   returns TRUE, if this app_con is already on the list then
- *                   it is NOT added and FALSE is returned.
- *	Arguments: app_list - a NULL terminated list of application contexts.
- *                 app_con - an application context to test.
- *	Returns: TRUE if not found, FALSE if found.
+/*
+ * Function:
+ *	AddToAppconList
+ *
+ * Parameters:
+ *	app_list - NULL terminated list of application contexts
+ *	app_con	 - application context to test
+ *
+ * Description:
+ *	  Adds an action to the application context list and
+ *	returns True, if this app_con is already on the list then
+ *	it is NOT added and False is returned.
+ *
+ * Returns:
+ *	True if not found, False if found
  */
-
-static Boolean
-AddToAppconList(app_list, app_con)
-XtAppContext **app_list, app_con;
+static Bool
+AddToAppconList(XtAppContext **app_list, XtAppContext app_con)
 {
   int i;
   XtAppContext *local_list;
@@ -94,7 +100,7 @@ XtAppContext **app_list, app_con;
   if (*app_list != NULL) {
     for ( ; *local_list != NULL ; i++, local_list++) {
       if (*local_list == app_con)
-	return(FALSE);
+	return (False);
     }
   }
 
@@ -102,6 +108,7 @@ XtAppContext **app_list, app_con;
 					  sizeof(XtAppContext *) * (i + 2) );
   (*app_list)[i++] = app_con;
   (*app_list)[i] = NULL;
-  return(TRUE);
+
+  return (True);
 }
   

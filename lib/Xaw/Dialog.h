@@ -53,18 +53,12 @@ SOFTWARE.
 
 #include <X11/Xaw/Form.h>
 
-/***********************************************************************
- *
- * Dialog Widget
- *
- ***********************************************************************/
-
-/* Parameters:
+/* Resources:
 
  Name		     Class		RepType		Default Value
  ----		     -----		-------		-------------
  background	     Background		Pixel		XtDefaultBackground
- border		     BorderColor	Pixel		XtDefaultForeground
+ borderColor	     BorderColor	Pixel		XtDefaultForeground
  borderWidth	     BorderWidth	Dimension	1
  destroyCallback     Callback		Pointer		NULL
  height		     Height		Dimension	computed at create
@@ -89,19 +83,17 @@ extern WidgetClass dialogWidgetClass;
 
 _XFUNCPROTOBEGIN
 
-extern void XawDialogAddButton(
-#if NeedFunctionPrototypes
-    Widget		/* dialog */,
-    _Xconst char*	/* name */,
-    XtCallbackProc	/* function */,
-    XtPointer		/* client_data */
-#endif
-);
+void XawDialogAddButton
+(
+ Widget			dialog,
+ _Xconst char		*name,
+ XtCallbackProc		function,
+ XtPointer		client_data
+ );
 
-extern char *XawDialogGetValueString(
-#if NeedFunctionPrototypes
-    Widget		/* w */
-#endif
+char *XawDialogGetValueString
+(
+ Widget			w
 );
 
 _XFUNCPROTOEND

@@ -72,6 +72,7 @@ SOFTWARE.
  cursorName	     Cursor		String		NULL
  depth		     Depth		int		parent's depth
  destroyCallback     Callback		XtCallbackList	NULL
+ displayList	     DisplayList	XawDisplayList*	NULL
  encoding	     Encoding		UnsignedChar	XawTextEncoding8bit
  font		     Font		XFontStruct*	XtDefaultFont
  foreground	     Foreground		Pixel		XtDefaultForeground

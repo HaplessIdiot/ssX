@@ -51,13 +51,7 @@ SOFTWARE.
 #ifndef _XawStripChart_h
 #define _XawStripChart_h
 
-/***********************************************************************
- *
- * StripChart Widget
- *
- ***********************************************************************/
-
-/* StripChart resources:
+/* Resources:
 
  Name		     Class		RepType		Default Value
  ----		     -----		-------		-------------
@@ -115,4 +109,3 @@ typedef struct _StripChartClassRec *StripChartWidgetClass;
 extern WidgetClass stripChartWidgetClass;
 
 #endif /* _XawStripChart_h */
-/* DON'T ADD STUFF AFTER THIS #endif */

@@ -31,6 +31,12 @@ in this Software without prior written authorization from the X Consortium.
 
 _XFUNCPROTOBEGIN
 
-void _XEditResCheckMessages();
+void _XEditResCheckMessages
+(
+ Widget			w,
+ XtPointer		data,
+ XEvent			*event,
+ Boolean		*cont
+);
 
 _XFUNCPROTOEND

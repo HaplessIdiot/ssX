@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xdm/session.c,v 3.13 1998/01/25 01:22:59 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/session.c,v 3.14 1998/07/11 14:06:08 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -764,7 +764,7 @@ execute (argv, environ)
 {
     /* give /dev/null as stdin */
     (void) close (0);
-    open ("/dev/null", 0);
+    open ("/dev/null", O_RDONLY);
     /* make stdout follow stderr to the log file */
     dup2 (2,1);
     execve (argv[0], argv, environ);

@@ -26,8 +26,6 @@ in this Software without prior written authorization from the X Consortium.
  */
 
 /*
- * SmeP.h - Private Header file for Sme object.
- *
  * This is the private header file for the Athena Sme object.
  * This object is intended to be used with the simple menu widget.  
  *
@@ -41,28 +39,20 @@ in this Software without prior written authorization from the X Consortium.
 #ifndef _XawSmeP_h
 #define _XawSmeP_h
 
-/***********************************************************************
- *
+/*
  * Sme Widget Private Data
- *
- ***********************************************************************/
-
+ */
 #include <X11/Xaw/Sme.h>
 
-/************************************************************
- *
- * New fields for the Sme widget class record.
- *
- ************************************************************/
-
+/* New fields for the Sme widget class */
 typedef struct _SmeClassPart {
-  void (*highlight)();
-  void (*unhighlight)();
-  void (*notify)();	
+  XtWidgetProc highlight;
+  XtWidgetProc unhighlight;
+  XtWidgetProc notify;
   XtPointer extension;
 } SmeClassPart;
 
-/* Full class record declaration */
+/* Full class record */
 typedef struct _SmeClassRec {
     RectObjClassPart    rect_class;
     SmeClassPart	sme_class;
@@ -70,35 +60,21 @@ typedef struct _SmeClassRec {
 
 extern SmeClassRec smeClassRec;
 
-/* New fields for the Sme widget record */
+/* New fields for the Sme widget */
 typedef struct {
     /* resources */
-    XtCallbackList callbacks;	/* The callback list */
+  XtCallbackList callbacks;
     Boolean     international;
-
 } SmePart;
 
-/****************************************************************
- *
- * Full instance record declaration
- *
- ****************************************************************/
-
+/* Full instance record */
 typedef struct _SmeRec {
   ObjectPart     object;
   RectObjPart    rectangle;
   SmePart	 sme;
 } SmeRec;
 
-/************************************************************
- *
- * Private declarations.
- *
- ************************************************************/
-
-typedef void (*_XawEntryVoidFunc)();
-
-#define XtInheritHighlight   ((_XawEntryVoidFunc) _XtInherit)
+#define XtInheritHighlight	((XtWidgetProc)_XtInherit)
 #define XtInheritUnhighlight XtInheritHighlight
 #define XtInheritNotify      XtInheritHighlight
 

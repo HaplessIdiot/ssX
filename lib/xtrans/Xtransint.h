@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.20 1997/07/19 05:43:05 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.21 1997/12/14 02:55:35 dawes Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -135,6 +135,9 @@ extern int  errno;		/* Internal system error number. */
 #endif
 #endif
 #ifndef OPEN_MAX
+#ifdef __GNU__
+#define OPEN_MAX (sysconf(_SC_OPEN_MAX))
+#endif
 #ifdef SVR4
 #define OPEN_MAX 256
 #else
@@ -156,12 +159,15 @@ extern int  errno;		/* Internal system error number. */
 #endif
 #endif
 #endif
-
+#ifdef __GNU__
+#define TRANS_OPEN_MAX OPEN_MAX
+#else /* !__GNU__ */
 #if OPEN_MAX > 256
 #define TRANS_OPEN_MAX 256
 #else
 #define TRANS_OPEN_MAX OPEN_MAX
 #endif
+#endif /*__GNU__*/
 
 #endif /* TRANS_OPEN_MAX */
 

@@ -51,7 +51,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/lib/Xmu/StrToCurs.c,v 1.3 1998/06/28 12:32:31 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/StrToCurs.c,v 1.4 1998/06/30 08:09:49 dawes Exp $ */
 
 #include	<X11/Intrinsic.h>
 #include	<X11/StringDefs.h>
@@ -124,11 +124,9 @@ static XtConvertArgRec screenConvertArg[] = {
 #define FONTSPECIFIER		"FONT "
 
 /*ARGSUSED*/
-void XmuCvtStringToCursor(args, num_args, fromVal, toVal)
-    XrmValuePtr args;
-    Cardinal    *num_args;
-    XrmValuePtr	fromVal;
-    XrmValuePtr	toVal;
+void
+XmuCvtStringToCursor(XrmValuePtr args, Cardinal *num_args,
+		     XrmValuePtr fromVal, XrmValuePtr toVal)
 {
     static Cursor cursor;		/* static for cvt magic */
     char *name = (char *)fromVal->addr;
@@ -304,13 +302,9 @@ void XmuCvtStringToCursor(args, num_args, fromVal, toVal)
 
 /*ARGSUSED*/
 Boolean
-XmuCvtStringToColorCursor(dpy, args, num_args, fromVal, toVal, converter_data)
-    Display     *dpy;
-    XrmValuePtr args;
-    Cardinal    *num_args;
-    XrmValuePtr	fromVal;
-    XrmValuePtr	toVal;
-    XtPointer   *converter_data;	/* unused */
+XmuCvtStringToColorCursor(Display *dpy, XrmValuePtr args, Cardinal *num_args,
+			  XrmValuePtr fromVal, XrmValuePtr toVal,
+			  XtPointer *converter_data)
 {
     Cursor cursor;
     Screen *screen;

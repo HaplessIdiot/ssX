@@ -51,30 +51,21 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* 
- * BoxP.h - Private definitions for Box widget
- * 
- */
-
 #ifndef _XawBoxP_h
 #define _XawBoxP_h
 
-/***********************************************************************
- *
+/*
  * Box Widget Private Data
- *
- ***********************************************************************/
-
+ */
 #include <X11/Xaw/Box.h>
 #include <X11/Xmu/Converters.h>
 
-#ifndef XAW_DL_DEFINED
-#define XAW_DL_DEFINED
 typedef struct _XawDL XawDisplayList;
-#endif
 
 /* New fields for the Box widget class record */
-typedef struct {int empty;} BoxClassPart;
+typedef struct {
+  XtPointer extension;
+} BoxClassPart;
 
 /* Full class record declaration */
 typedef struct _BoxClassRec {
@@ -98,13 +89,9 @@ typedef struct {
     XawDisplayList *display_list;
 } BoxPart;
 
-
-/****************************************************************
- *
+/*
  * Full instance record declaration
- *
- ****************************************************************/
-
+ */
 typedef struct _BoxRec {
     CorePart	    core;
     CompositePart   composite;

@@ -269,3 +269,243 @@ Patch 9 (#1755) 28 June 1998
     mismatches if a program access private structures (AsciiSinkP.h).
 
 
+#1776 6 July 1998
+
++ Corrected problem when moving the cursor over a non-printing character,
+  i.e. ^Q ^X
++ Does not allow anymore scrolling of the text width Ctrl+Z if the text has
+  only one line, or only one line of text.
++ Several changes in the TextWidget. I did not gratuitously break binary
+  compatability. Source compatability is only granted to programs that
+  do not access private structures. This is required because there are
+  several changes in the behaviour of the TextWidget, and if a program
+  becomes non compilable, it is because it will not work properly with
+  the changes in the text widget (please read bellow for a explanation)
++ Better cursor navigation when moving line-up or line-down over a tab:
+                cursor
+                |
+                v
+    spaces   | |#| | | |text
+    tab      |         |text
+   Move one line down:
+        before:
+    tab      |#        |text
+        now:
+    tab      |         |#ext
++ There were several problems in the Text.c:_XawTextReplace(), when deleting
+  a character and the cursor (shoud be) moved to the previous line. This
+  problem was corrected.
++ The text code was doing too much redrawing! When typping text, it would
+  redraw all the current line at each character typped, and also redraw the
+  entire window till the bottom. Now it only redraws the minimum necessary
+  (and makes a minimum of requests for the Xserver, when clearing areas),
+  most of these problems were related to Text.c:_XawTextReplace() (rewritten
+  from scratch), Text.c:_BuildLineTable() (mostly rewritten) and
+  Text.c:DisplayText() (mostly rewritten).
++ Now, when selecting text, with: button1-down, button1-move, the window will
+  be scrolled automatically, if the mouse is moved to the top or bottom of
+  the text window, making it easier to extend selections.
++ Added a set-keyboard-focus translation to the text code, and in the
+  default translation, it is called when pressing the left mouse button over
+  a text widget (so that the mouse does not need to be over the text window
+  when typping)
+
+These are the changes to Xaw that made it not fully source compatable (I'm
+open to comments, to make it source compatable, but as I said above, if
+a program does not compile anymore, it is because it is not granted it will
+work properly):
++ scrollMode set to WhenNeeded is not supported anymore. I spent several
+  hours fighting side-effects caused when a scrollbar is created or destroyed
+  'on demand', and have (after tired of long debug sessions) choosed that
+  it is not required (it saves a lot of potencial unespected conditions
+  being found by a user). I changed the 'type' of the scroll mode to Boolean,
+  so, to have a scrollbar, is enough to say: *Text.scrollVertical: True.
+  Since the type now is Boolean, Xt will print warning messages when the
+  scroll is set to 'Always', 'Never' or 'WhenNeeded'
++ automatic resize is nonsense since the text does automatic horizontal
+  scrolling. IMHO, to be useful, automatic resize should also shrink the
+  text window when needed, anyway, it's not required anymore
+
+Comments:
++ auto-fill mode does not work properly (never did)
++ wrap-mode set to line may not work properly
++ wrap-mode set to word does not work properly always (never did)
++ the multiply should be setable to a variable value; the default value
+  is 4, i.e. Ctrl+U <text+action>
+I will work on the itens listed above, and I'm also planning:
++ one level undo, for text actions
++ C style indentation and 'jumping' the cursor to show matching '(', '['
+  and '{'
++ other things that I don't remember now :)
+
+
+-- XMU --
++ Moved the code clipping code I have put in Text.c in my previous patch to
+  Xmu/Clip.c. There was a bug in the code I have put in Text.c (this is what
+  I get by cutting and pasting code under a #if 0 :(), but it was corrected.
+  The code in the new file 'Clip.c' is very useful for creating clipiing lists
+  and thus, avoiding too much server requests, or code for the same
+  functionality (poorly) repeteated in several places around the libary. This
+  code is now heavily used by the TextWidget.
+
+
+-- XEDIT -- 
++ Removed a XDefineCursor in xedit.c:main(). There are several ways to specify
+  a cursor for a program (most times inherited from the wm decoration window),
+  so, it is better to let the user choose one.
++ Before starting the main loop, now xedit sets the keyboard focus to the
+  text window if a file was loaded, or to the prompt for a file name if
+  none was especified in the command line (do not use the new xedit without
+  the new Xaw library, or you will not be able to change the keyboard focus).
++ Updated the Scrollbar configurations in Xedit.ad
+  
+
+#1788 12 July 1998
+
+-- TextWidget --
+ + Corrected problem whem moving the cursor over a non-printing character
+ + Now, does not allow scroll with ^Z when there is only one line of text
+ + Automatic resize was removed, it is not required with automatic horizontal
+   scroll, but I will look for programs that rely on it; the only program
+   affected (that I know) is xmh, because it popups dialogs of a small size,
+   and expects that the text widget (with a warning message) do a geometry  
+   request.
+ + Scroll mode set to "WhenNeeded" was removed. It generates several unespected
+   conditions when editing text, and the new feature of automatic scrolling
+   the text widget while typping is more useful.
+ + Removed a leak in TextAction.c:AutoFill(), generated by the code
+        text.ptr =  (char *)XtMalloc(sizeof(wchar_t) * 2);
+   that memory was never released, but the fix was simple, since the amount
+   of memory requested is fixed.
+ + Several optimizations in the redisplay of the text.
+ + Now, wrap mode set to word or line is expected to work, while typping text.
+ + AutoFill will only break lines in word boundaries now.
+ + Added a set-keyboard-focus action to TextAction.c, so that when pressing
+   the left button over a text widget, it will receive the keyboard focus.
+   This behaviour is the default, but can be disabled, with something like:
+        *Text.translations: #override\n<Btn1Down>: select-start()\n
+   in your .Xdefaults.
+ + Corrected several cases that would left the text widget showing incorrect
+   data. All the problems should have been fixed, but in case you find one,
+   a quick fix is:
+        *Text.backgroundPixmap: black?foreground=<some-color>
+   because it does not try to optimize the redrawing when using a background
+   pixmap, and thus, avoid several possible problems.
+
+
+-- XAW --
+ + I had added a XawStackAlloc definition to "Private.h", to avoid a XtMalloc
+   request for every character typped in TextAction.c:InsertChar(), but
+   when syncing with 3.9Aj, saw that the file "XawAlloc.h" is no longer
+   required. Please, remove XawAlloc.h from 3.9Aj.
+
+
+-- XMU --
+ + Added the file Clip.c, with clipping code, that, now is being used by
+   the text widget, but can be used by other widgets.
+
+-- xedit --
+ + Removed a XDefineCursor from xedit.c:main()
+ + I have added a XtSetKeyboardFocus in xedit.c:main(), but comented it
+   because it would make xedit unusable with previous versions of Xaw,
+   or with the Xaw replacements (Xaw3d, Xaw95 ...)
+
+Comments:
+  I wrote a lot of code to work properly with italic fonts in the text widget,
+that code made the cursor do not erase portions of the text while moving the
+it, but it was failing at some places that would need that the TextWidget,
+and not only the {Ascii,Multi}SinkObject had access to the fonts, so I
+choosed to left it to the future (and keep the sources simple, by now).
+The text widget is useable with italic fonts, but fonts with:
+        f->per_char[<char> - f->min_char_or_byte2].rbearing
+          > f->per_char[<char> - f->min_char_or_byte2].width
+or
+        f->per_char[<char> - f->min_char_or_byte2].lbearing < 0
+will not allways be displayed correctly.
+
+  I haved also added a xedit configuration file to this mail.
+
+
+#1842 27 July 1998
+
++ Fixed problem with the default macro for type conversion, where it was
+  possible to the code tell the wrong size of a string, since it was
+  returning the string size with 'strlen' but making the copy with strcpy.
++ Complete ansification of Xaw (and Xmu).
++ Corrected some problems caused due to an alteration in the text code, to 
+  make the cursor always visible when the wrap mode is 'line' or 'word'.
++ Text.c:VJump() was made a bit smarter and a problem that would cause it
+  to jump incorrectly was also corrected so that now the jumping should be
+  very smooth.
++ Corrected problem that would cause a coredump due to the
+  Text.c:_XawTextReplace() deferencing a NULL pointer. Now ctx->text.lt.info
+  is initialized when the text widget is created, solving this problem.
++ All the variables with name 'new' and 'class' where renamed to 'cnew' and
+  'cclass'. This allows even building Xaw with 'gcc -x c++'.
++ Variables shadowing other variables or functions where also renamed.
++ Static functions were changed to use wide parameters, where applicable.
++ (Almost) every time a StringTo<Type> converter is installed in the class
+  initialization of a widget, the code also installs a <Type>ToString converter
+  since now editres seens to work better.
++ Complete reestilization of the indentation. See the files Template*.{c,h}.
++ Corrected problem with the 'virtual' function Layout of the Form widget. That
+  function requires 4 parameters, but the Viewport widget (a Form subclass) was
+  calling that function with only 3 parameters; the ansification flagred that
+  error.
++ TextTr.c was modified to have only one string. I believe that that weird
+  thing was due to the inheritance of compatability with some very old and
+  probably buggy ld.
++ Xaw is expected to be binary compatable with R6.3; there are some
+  preprocessor macros that keeps binary compatability, and unless the gains
+  of breaking binary compatability show worth enough (and people think) it
+  is good that code would be made default, otherwise it will be forgotten.
++ I have also added a XFree86 copyright notice to Text.c, since there is
+  a very large amount of work in that file (and it is not yet ready).
+---------------------
+
+-------- Xmu --------
++ Complete ansification of Xmu.
++ Rework of EditresCom.c to allow editres working correctly. It was also
+  added a new feature, that allows editres finding some extra child widgets,
+  i.e. widgets that aren't a child of a subclass of composite and aren't in
+  the popup list. This modification is not enough, since it does not find
+  child widgets that don't a XtRWidget resource in the parent widget.
++ Rework of ShapeWidg.c, so that it will give the correct feeling to the
+  ellipse shape, and inversion of the oval, if shape is oval and
+  height > width. To see these changes, run a program with:
+  <prog> -xrm '*shapeStyle: ellipse'
+  and/or
+  <prog> -xrm '*shapeStyle: oval'
++ Revision of DrRndRect.c to make the widget looks 'more correct' when using:
+  <prog> -xrm '*shapeStyle: roundedRectangle'
+---------------------
+
+------ editres ------
++ Added small patch to bug in handler.c so that editres will correctly now.
+---------------------
+
+------- xedit -------
++ Changed the resources file, to avoid a problem when resizing xedit to a
+  very small size and than restoring it's size. Probably the culprit is the
+  Paned widget, but the new resource file is at least a good workaround for
+  the problem.
++ The resource file was also modified so that the default xedit size will
+  give a 80x25 rows/columns when using the default font.
+---------------------
+
+-------- xgc --------
++ Small patch to clear correctly the status text window, when pressing the
+  'Clear window' button. Note that this patch showed a bug in
+  Xaw/{Ascii,Multi}Src.c; only apply this patch with the latest Xaw, or
+  be sure that Xaw/{Ascii,Multi}Src.c:*SetValues() has something like:
+  if (old_src->ascii_src.ascii_length != src->ascii_src.ascii_length)
+      src->ascii_src.piece_size = src->ascii_src.ascii_length + 1;
+  instead of:
+  if (old_src->ascii_src.ascii_length != src->ascii_src.ascii_length)
+      src->ascii_src.piece_size = src->ascii_src.ascii_length;
+  or it will enter a infinite XtMalloc(0) loop :(
++ also fixed a possible buffer overflow while searching the source of the
+  bug described above.
+---------------------
+
+

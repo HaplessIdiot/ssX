@@ -37,10 +37,8 @@ in this Software without prior written authorization from the X Consortium.
  * XmuPrintDefaultErrorMessage - print a nice error that looks like the usual 
  * message.  Returns 1 if the caller should consider exitting else 0.
  */
-int XmuPrintDefaultErrorMessage (dpy, event, fp)
-    Display *dpy;
-    XErrorEvent *event;
-    FILE *fp;
+int
+XmuPrintDefaultErrorMessage(Display *dpy, XErrorEvent *event, FILE *fp)
 {
     char buffer[BUFSIZ];
     char mesg[BUFSIZ];
@@ -154,9 +152,8 @@ int XmuPrintDefaultErrorMessage (dpy, event, fp)
  * and XGetGeometry; print a message for everything else.  In all case, do
  * not exit.
  */
-int XmuSimpleErrorHandler (dpy, errorp)
-    Display *dpy;
-    XErrorEvent *errorp;
+int
+XmuSimpleErrorHandler(Display *dpy, XErrorEvent *errorp)
 {
     switch (errorp->request_code) {
       case X_QueryTree:

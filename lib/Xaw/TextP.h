@@ -57,17 +57,14 @@ SOFTWARE.
 #include <X11/Xaw/Text.h>
 #include <X11/Xaw/SimpleP.h>
 
-/****************************************************************
- *
- * Text widget private
- *
- ****************************************************************/
-#define MAXCUT	30000	/* Maximum number of characters that can be cut. */
+#define MAXCUT	30000	/* Maximum number of characters that can be cut */
 
-#define GETLASTPOS  XawTextSourceScan(ctx->text.source, 0, \
-				      XawstAll, XawsdRight, 1, TRUE)
+#define XawTextGetLastPosition(ctx)				\
+	XawTextSourceScan((ctx)->text.source, 0,		\
+			  XawstAll, XawsdRight, 1, True)
+#define GETLASTPOS	XawTextGetLastPosition(ctx)
 
-#define zeroPosition ((XawTextPosition) 0)
+#define zeroPosition ((XawTextPosition)0)
 
 extern XtActionsRec _XawTextActionsTable[];
 extern Cardinal _XawTextActionsTableCount;
@@ -85,7 +82,6 @@ extern Cardinal _XawTextActionsTableCount;
 #define DEFAULT_TEXT_HEIGHT ((Dimension)~0)
 
 /* displayable text management data structures */
-
 typedef struct {
   XawTextPosition position;
   Position y;
@@ -105,7 +101,7 @@ typedef struct _XawTextSelectionSalt {
     XawTextSelection	s;
     /* 
      * The element "contents" stores the CT string which is gotten in the
-     * function _XawTextSaltAwaySelection().
+   * function _XawTextSaltAwaySelection()
     */ 
     char		*contents;
     int			length;
@@ -113,27 +109,29 @@ typedef struct _XawTextSelectionSalt {
 
 /* Line Tables are n+1 long - last position displayed is in last lt entry */
 typedef struct {
-  XawTextPosition	 top;	/* Top of the displayed text.		*/
-  int			 lines;	/* How many lines in this table.	*/
+  XawTextPosition top;		/* Top of the displayed text */
+  int lines;			/* How many lines in this table */
   XawTextLineTableEntry *info;  /* A dynamic array, one entry per line  */
 } XawTextLineTable, *XawTextLineTablePtr;
-
 
 typedef struct _XawTextMargin {
   Position left, right, top, bottom;
 } XawTextMargin;
 
-#define VMargins(ctx) ( (ctx)->text.margin.top + (ctx)->text.margin.bottom )
-#define HMargins(ctx) ( (ctx)->text.margin.left + (ctx)->text.margin.right )
+typedef struct _XmuScanline XmuTextUpdate;
+
+#define VMargins(ctx)  ((ctx)->text.margin.top + (ctx)->text.margin.bottom)
+#define HMargins(ctx)  ((ctx)->text.margin.left + (ctx)->text.margin.right)
+#define RVMargins(ctx) ((ctx)->text.r_margin.top + (ctx)->text.r_margin.bottom)
+#define RHMargins(ctx) ((ctx)->text.r_margin.left + (ctx)->text.r_margin.right)
 
 #define IsPositionVisible(ctx, pos) \
-		(pos >= ctx->text.lt.info[0].position && \
+(pos >= ctx->text.lt.info[0].position && \
 		 pos < ctx->text.lt.info[ctx->text.lt.lines].position)
 
 /*
- * Search & Replace data structure.
+ * Search & Replace data structure
  */
-
 struct SearchAndReplace {
   Boolean selection_changed;	/* flag so that the selection cannot be
 				   changed out from underneath query-replace.*/
@@ -150,17 +148,12 @@ struct SearchAndReplace {
 };
     
 /* Private Text Definitions */
-
 typedef int (*ActionProc)();
 
 /* New fields for the Text widget class record */
-
-typedef struct {int empty;} TextClassPart;
-
-struct text_move {
-    int h, v;
-    struct text_move * next;
-};
+typedef struct {
+  XtPointer extension;
+} TextClassPart;
 
 /* Full class record declaration */
 typedef struct _TextClassRec {
@@ -174,123 +167,121 @@ extern TextClassRec textClassRec;
 /* New fields for the Text widget record */
 typedef struct _TextPart {
     /* resources */
-
     Widget              source, sink;
     XawTextPosition	insertPos;
     XawTextSelection	s;
-    XawTextSelectType	*sarray;	   /* Array to cycle for selections. */
+  XawTextSelectType *sarray;	     /* Array to cycle for selections */
     XawTextSelectionSalt    *salt;	     /* salted away selections */
     int			options;	     /* wordbreak, scroll, etc. */
     int			dialog_horiz_offset; /* position for popup dialog */
     int			dialog_vert_offset;  /* position for popup dialog */
     Boolean		display_caret;	     /* insertion pt visible iff T */
     Boolean             auto_fill;           /* Auto fill mode? */
-    XawTextScrollMode   scroll_vert, scroll_horiz; /*what type of scrollbars.*/
-    XawTextWrapMode     wrap;            /* The type of wrapping. */
-    XawTextResizeMode   resize;	             /* what to resize */
-    XawTextMargin       r_margin;            /* The real margins. */
-    XtCallbackList	unrealize_callbacks; /* used for scrollbars */
+#ifndef notdef
+  XawTextScrollMode scroll_vert, scroll_horiz;
+#else
+  Boolean scroll_vert, scroll_horiz; /* show vertical scrollbar? */
+#endif
+  XawTextWrapMode wrap;		     /* The type of wrapping */
+#ifndef notdef
+  XawTextResizeMode text1;
+#endif
+  XawTextMargin r_margin;	     /* The real margins */
+#ifndef notdef
+  XtPointer text2;
+#endif
     
     /* private state */
-
-    XawTextMargin       margin;            /* The current margins. */
+  XawTextMargin margin;		     /* The current margins */
     XawTextLineTable	lt;
     XawTextScanDirection extendDir;
     XawTextSelection	origSel;    /* the selection being modified */
     Time	    lasttime;	    /* timestamp of last processed action */
     Time	    time;	    /* time of last key or button action */ 
     Position	    ev_x, ev_y;	    /* x, y coords for key or button action */
-    Widget	    vbar, hbar;	    /* The scroll bars (none = NULL). */
-    struct SearchAndReplace * search;/* Search and replace structure. */
-    Widget          file_insert;    /* The file insert popup widget. */
-    XawTextPosition  *updateFrom;   /* Array of start positions for update. */
-    XawTextPosition  *updateTo;	    /* Array of end positions for update. */
-    int		    numranges;	    /* How many update ranges there are. */
-    int		    maxranges;	    /* How many ranges we have space for */
-    XawTextPosition  lastPos;	    /* Last position of source. */
+  Widget vbar, hbar;		     /* The scroll bars (none = NULL) */
+  struct SearchAndReplace *search;   /* Search and replace structure */
+  Widget file_insert;		     /* The file insert popup widget */
+#ifndef notdef
+  XmuTextUpdate *update;	     /* Position intervals to update */
+  XtPointer text3;
+  int text4;
+  int text5;
+#else
+  XmuTextUpdate *update;
+#endif
+  XawTextPosition lastPos;	     /* Last position of source */
     GC              gc;
-    Boolean	    showposition;   /* True if we need to show the position. */
-    Boolean         hasfocus;       /* TRUE if we currently have input focus.*/
+  Boolean showposition;		     /* True if we need to show the position */
+  Boolean hasfocus;		     /* TRUE if we currently have input focus*/
     Boolean	    update_disabled; /* TRUE if display updating turned off */
-    Boolean         single_char;    /* Single character replaced. */
+  Boolean clear_to_eol;		     /* Clear to eol when painting text? */
     XawTextPosition  old_insert;    /* Last insertPos for batched updates */
-    short           mult;	    /* Multiplier. */
-    struct text_move * copy_area_offsets; /* Text offset area (linked list) */
+  short mult;			     /* Multiplier */
+#ifndef notdef
+  XtPointer text6;
+#endif
 
     /* private state, shared w/Source and Sink */
     Boolean	    redisplay_needed; /* in SetValues */
     XawTextSelectionSalt    *salt2;	     /* salted away selections */
     int			from_left;	/* Cursor position */
 
+#ifndef notyet
     /* more resources */
     Boolean adjust_scrollbars;
+#endif
 } TextPart;
 
-/*************************************************************
- *
- * Resource types private to Text widget.
- *
- *************************************************************/
-
+#ifndef notyet
 #define XtNadjustScrollbars "adjustScrollbars"
 #define XtCAdjust "Adjust"
+#endif
 
-#define XtRScrollMode "ScrollMode"
 #define XtRWrapMode "WrapMode"
+#ifndef notdef
+#define XtRScrollMode		"ScrollMode"
 #define XtRResizeMode "ResizeMode"
+#endif
 
-/****************************************************************
- *
- * Full instance record declaration
- *
- ****************************************************************/
-
+/* full instance record */
 typedef struct _TextRec {
     CorePart	core;
     SimplePart	simple;
     TextPart	text;
 } TextRec;
 
-/********************************************
- *
+/*
  * Semi-private functions
  * for use by other Xaw modules only
- *
- *******************************************/
+ */
+void _XawTextBuildLineTable
+(
+ TextWidget		ctx,
+ XawTextPosition	top_pos,
+ _XtBoolean		force_rebuild
+ );
 
-extern void _XawTextBuildLineTable (
-#if NeedFunctionPrototypes
-    TextWidget /*ctx*/, 
-    XawTextPosition /*top pos*/, 
-    _XtBoolean /* force_rebuild */
-#endif
-);
+char *_XawTextGetSTRING
+(
+ TextWidget		ctx,
+ XawTextPosition	left,
+ XawTextPosition	right
+ );
 
-extern char* _XawTextGetSTRING(
-#if NeedFunctionPrototypes
-    TextWidget /*ctx*/, 
-    XawTextPosition /*left*/, 
-    XawTextPosition /*right*/
-#endif
-); 
+void _XawTextSaltAwaySelection
+(
+ TextWidget		ctx,
+ Atom			*selections,
+ int			num_atoms
+ );
 
-extern void _XawTextSaltAwaySelection(
-#if NeedFunctionPrototypes
-    TextWidget /*ctx*/, 
-    Atom* /*selections*/, 
-    int /*num_atoms*/
-#endif
-); 
-
-extern void _XawTextPosToXY(
-#if NeedFunctionPrototypes
-    Widget			/* w */,
-    XawTextPosition		/* pos */,
-    Position *			/* x */,
-    Position *			/*y */
-#endif
-);
+void _XawTextPosToXY
+(
+ Widget			w,
+ XawTextPosition	pos,
+ Position		*x,
+ Position		*y
+ );
 
 #endif /* _XawTextP_h */
-
-

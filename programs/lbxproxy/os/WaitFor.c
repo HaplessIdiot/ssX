@@ -72,9 +72,21 @@ extern int errno;
 #include "os.h"
 #include "pm.h"
 
-extern int ConnectionTranslation[];
+int
+mffs(fd_mask mask)
+{
+    int i;
 
-extern WorkQueuePtr workQueue;
+    if (!mask) return 0;
+
+    i = 1;
+    while (!(mask & 1))
+    {
+	i++;
+	mask >>= 1;
+    }
+    return i;
+}
 
 /*****************
  * WaitForSomething:
@@ -128,10 +140,10 @@ WaitForSomething(pClientsReady, poll)
 	else if (AnyClientsWriteBlocked)
 	{
 	    XFD_COPYSET(&ClientsWriteBlocked, &clientsWritable);
-	    i = Select (MAXSOCKS, &LastSelectMask, &clientsWritable, NULL, wt);
+	    i = Select (MaxClients, &LastSelectMask, &clientsWritable, NULL, wt);
 	}
 	else
-	    i = Select (MAXSOCKS, &LastSelectMask, NULL, NULL, wt);
+	    i = Select (MaxClients, &LastSelectMask, NULL, NULL, wt);
 	selecterr = errno;
 
 	if (poll && i == 0)
@@ -155,6 +167,7 @@ WaitForSomething(pClientsReady, poll)
 	}
 	else
 	{
+	    fd_set tmp_set;
 	    if (AnyClientsWriteBlocked && XFD_ANYSET (&clientsWritable))
 	    {
 		NewOutputPending = TRUE;
@@ -165,7 +178,8 @@ WaitForSomething(pClientsReady, poll)
 	    }
 
 	    XFD_ANDSET(&clientsReadable, &LastSelectMask, &AllClients); 
-	    if (LastSelectMask.fds_bits[0] & WellKnownConnections.fds_bits[0]) 
+	    XFD_ANDSET(&tmp_set, &LastSelectMask, &WellKnownConnections);
+	    if (XFD_ANYSET(&tmp_set))
 		QueueWorkProc(EstablishNewConnections, NULL,
 			      (pointer)&LastSelectMask);
 	    if (proxy_manager_fd >= 0 &&
@@ -187,11 +201,11 @@ WaitForSomething(pClientsReady, poll)
                 int	client_index; 
 
 		curclient = ffs (clientsReadable.fds_bits[i]) - 1;
-		client_index = ConnectionTranslation[curclient + (i << 5)];
+		client_index = ConnectionTranslation[curclient + (i * (sizeof(fd_mask)*8))];
 		{
 		    pClientsReady[nready++] = client_index;
 		}
-		clientsReadable.fds_bits[i] &= ~(((fd_mask)1) << curclient);
+		clientsReadable.fds_bits[i] &= ~(((fd_mask)1L) << curclient);
 	    }
 	}	
     }

@@ -64,36 +64,32 @@ typedef struct _XmuWidgetNode {
 					/* external interfaces */
 _XFUNCPROTOBEGIN
 
-extern void XmuWnInitializeNodes (
-#if NeedFunctionPrototypes
-    XmuWidgetNode *	/* nodearray */,
-    int			/* nnodes */
-#endif
-);
+void XmuWnInitializeNodes
+(
+ XmuWidgetNode		*nodearray,
+ int			nnodes
+ );
 
-extern void XmuWnFetchResources (
-#if NeedFunctionPrototypes
-    XmuWidgetNode *	/* node */,
-    Widget		/* toplevel */,
-    XmuWidgetNode *	/* topnode */
-#endif
-);
+void XmuWnFetchResources
+(
+ XmuWidgetNode		*node,
+ Widget			toplevel,
+ XmuWidgetNode		*topnode
+ );
 
-extern int XmuWnCountOwnedResources (
-#if NeedFunctionPrototypes
-    XmuWidgetNode *	/* node */,
-    XmuWidgetNode *	/* ownernode */,
-    Bool		/* constraints */
-#endif
-);
+int XmuWnCountOwnedResources
+(
+ XmuWidgetNode		*node,
+ XmuWidgetNode		*ownernode,
+ Bool			constraints
+ );
 
-extern XmuWidgetNode *XmuWnNameToNode (
-#if NeedFunctionPrototypes
-    XmuWidgetNode *	/* nodelist */,
-    int			/* nnodes */,
-    _Xconst char *	/* name */
-#endif
-);
+XmuWidgetNode *XmuWnNameToNode
+(
+ XmuWidgetNode		*nodelist,
+ int			nnodes,
+ _Xconst char		*name
+ );
 
 _XFUNCPROTOEND
 

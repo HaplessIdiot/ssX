@@ -31,11 +31,8 @@ in this Software without prior written authorization from the X Consortium.
 
 /* ARGSUSED */
 void
-XmuCvtFunctionToCallback(args, num_args, fromVal, toVal)
-    XrmValue	*args;		/* unused */
-    Cardinal	*num_args;	/* unused */
-    XrmValuePtr fromVal;
-    XrmValuePtr toVal;
+XmuCvtFunctionToCallback(XrmValue *args, Cardinal *num_args,
+			 XrmValuePtr fromVal, XrmValuePtr toVal)
 {
     static XtCallbackRec callback[2]; /* K&R: initialized to NULL */
     static XtCallbackList callback_list = callback;

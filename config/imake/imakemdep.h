@@ -25,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.27 1997/08/26 10:00:44 hohndel Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.28 1998/01/24 16:56:18 hohndel Exp $ */
 
 
 /* 
@@ -177,7 +177,11 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 
 #ifdef  MACH
+#ifdef __GNU__
+#define imake_ccflags ""
+#else
 #define imake_ccflags "-DNOSTDHDRS"
+#endif
 #endif
 
 /* this is for OS/2 under EMX. This won't work with DOS */

@@ -53,7 +53,7 @@ SOFTWARE.
  *   InsertFakeRequest, ResetCurrentRequest
  *
  *****************************************************************/
-/* $XFree86: xc/programs/Xserver/os/io.c,v 3.17 1998/08/13 14:46:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/io.c,v 3.18 1998/08/14 13:35:51 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -819,7 +819,7 @@ FlushAllOutput()
 	{
 	    index = ffs(mask) - 1;
 	    mask &= ~lowbit(mask);
-	    if ((index = ConnectionTranslation[(base << 5) + index]) == 0)
+	    if ((index = ConnectionTranslation[(base * (sizeof(fd_mask)*8)) + index]) == 0)
 		continue;
 	    client = clients[index];
 	    if (client->clientGone)

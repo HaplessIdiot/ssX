@@ -35,9 +35,8 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xlib.h>
 
 
-Screen *XmuScreenOfWindow (dpy, w)
-    Display *dpy;
-    Window w;
+Screen *
+XmuScreenOfWindow(Display *dpy, Window w)
 {
     register int i;
     Window root;

@@ -26,7 +26,7 @@ in this Software without prior written authorization from the X Consortium.
 
 _XFUNCPROTOBEGIN
 
-extern void XawInitializeWidgetSet();	/* called from ClassInit procs */
-extern void XawInitializeDefaultConverters();
+void XawInitializeWidgetSet(void);
+void XawInitializeDefaultConverters(void);
 
 _XFUNCPROTOEND

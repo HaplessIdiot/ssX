@@ -33,11 +33,13 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xaw/CommandP.h>
 #include <X11/Xaw/Repeater.h>
 
-typedef struct {			/* new fields in widget class */
-    int dummy;
+/* new fields in widget class */
+typedef struct {
+  XtPointer extension;
 } RepeaterClassPart;
 
-typedef struct _RepeaterClassRec {	/* Repeater widget class */
+/* repeater widget class */
+typedef struct _RepeaterClassRec {
     CoreClassPart core_class;
     SimpleClassPart simple_class;
     LabelClassPart label_class;
@@ -45,8 +47,8 @@ typedef struct _RepeaterClassRec {	/* Repeater widget class */
     RepeaterClassPart repeater_class;
 } RepeaterClassRec;
 
-typedef struct {			/* new fields in widget */
-    /* resources... */
+typedef struct {
+    /* resources */
     int initial_delay;			/* initialDelay/Delay */
     int repeat_delay;			/* repeatDelay/Delay */
     int minimum_delay;			/* minimumDelay/MinimumDelay */
@@ -54,7 +56,8 @@ typedef struct {			/* new fields in widget */
     Boolean flash;			/* flash/Boolean */
     XtCallbackList start_callbacks;	/* startCallback/StartCallback */
     XtCallbackList stop_callbacks;	/* stopCallback/StopCallback */
-    /* private data... */
+
+  /* private */
     int next_delay;			/* next amount for timer */
     XtIntervalId timer;			/* timer that will fire */
 } RepeaterPart;
@@ -67,14 +70,12 @@ typedef struct _RepeaterRec {
     RepeaterPart repeater;
 } RepeaterRec;
 
-#define REP_DEF_DECAY 5			/* milliseconds */
-#define REP_DEF_INITIAL_DELAY 200	/* milliseconds */
-#define REP_DEF_MINIMUM_DELAY 10	/* milliseconds */
-#define REP_DEF_REPEAT_DELAY 50		/* milliseconds */
+					/* milliseconds */
+#define REP_DEF_DECAY			5
+#define REP_DEF_INITIAL_DELAY		200
+#define REP_DEF_MINIMUM_DELAY		10
+#define REP_DEF_REPEAT_DELAY		50
 
-/*
- * external declarations
- */
 extern RepeaterClassRec repeaterClassRec;
 
 #endif /* _XawRepeaterP_h */

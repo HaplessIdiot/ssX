@@ -38,12 +38,18 @@ in this Software without prior written authorization from the X Consortium.
 
 #define lowbit(x) ((x) & (~(x) + 1))
 
-static int default_allocation();
-static void best_allocation();
-static void gray_allocation();
-static int icbrt();
-static int icbrt_with_bits();
-static int icbrt_with_guess();
+/*
+ * Prototypes
+ */
+static void best_allocation(XVisualInfo*, unsigned long*, unsigned long*,
+			    unsigned long*);
+static int default_allocation(XVisualInfo*, unsigned long*,
+			      unsigned long*, unsigned long*);
+static void gray_allocation(int, unsigned long*, unsigned long*,
+			    unsigned long*);
+static int icbrt(int);
+static int icbrt_with_bits(int, int);
+static int icbrt_with_guess(int, int);
 
 /* To determine the best allocation of reds, greens, and blues in a 
  * standard colormap, use XmuGetColormapAllocation.
@@ -57,10 +63,11 @@ static int icbrt_with_guess();
  * It is assumed that the visual is appropriate for the colormap property.
  */
 
-Status XmuGetColormapAllocation(vinfo, property, red_max, green_max, blue_max)
-    XVisualInfo		*vinfo;
-    Atom		property;
-    unsigned long	*red_max, *green_max, *blue_max;
+Status
+XmuGetColormapAllocation(XVisualInfo *vinfo, Atom property,
+			 unsigned long *red_max,
+			 unsigned long *green_max,
+			 unsigned long *blue_max)
 {
     Status 	status = 1;
 
@@ -102,9 +109,9 @@ Status XmuGetColormapAllocation(vinfo, property, red_max, green_max, blue_max)
  * Keith Packard, MIT X Consortium
  */
 
-static void gray_allocation(n, red_max, green_max, blue_max)
-    int		n;	/* the number of cells of the gray scale */
-    unsigned long *red_max, *green_max, *blue_max;
+static void
+gray_allocation(int n, unsigned long *red_max, unsigned long *green_max,
+		unsigned long *blue_max)
 {
     *red_max = (n * 30) / 100;
     *green_max = (n * 59) / 100; 
@@ -126,9 +133,9 @@ static void gray_allocation(n, red_max, green_max, blue_max)
  * Return 0 if an allocation has been determined, non-zero otherwise.
  */
 
-static int default_allocation(vinfo, red, green, blue)
-    XVisualInfo		*vinfo;
-    unsigned long	*red, *green, *blue;
+static int
+default_allocation(XVisualInfo *vinfo, unsigned long *red,
+		   unsigned long *green, unsigned long *blue)
 {
     int			ngrays;		/* number of gray cells */
 
@@ -200,9 +207,9 @@ static int default_allocation(vinfo, red, green, blue)
  * defineable colormap entries.
  */
  
-static void best_allocation(vinfo, red, green, blue)
-    XVisualInfo		*vinfo;
-    unsigned long	*red, *green, *blue;
+static void
+best_allocation(XVisualInfo *vinfo, unsigned long *red, unsigned long *green,
+		unsigned long *blue)
 {
 
     if (vinfo->class == DirectColor ||	vinfo->class == TrueColor)
@@ -268,8 +275,8 @@ static void best_allocation(vinfo, red, green, blue)
  * Stephen Gildea, MIT X Consortium, July 1991
  */
 
-static int icbrt(a)		/* integer cube root */
-    int a;
+static int
+icbrt(int a)
 {
     register int bits = 0;
     register unsigned n = a;
@@ -283,9 +290,9 @@ static int icbrt(a)		/* integer cube root */
 }
 
 
-static int icbrt_with_bits(a, bits)
-    int a;
-    int bits;			/* log 2 of a */
+static int
+icbrt_with_bits(int a, int bits)
+     /* bits - log 2 of a */
 {
     return icbrt_with_guess(a, a>>2*bits/3);
 }
@@ -304,8 +311,8 @@ int icbrt_loopcount;
  * We actually return floor(cbrt(a)) because that's what we need here, too.
  */
 
-static int icbrt_with_guess(a, guess)
-    int a, guess;
+static int
+icbrt_with_guess(int a, int guess)
 {
     register int delta;
 

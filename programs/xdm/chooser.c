@@ -1,6 +1,6 @@
 /*
  * $XConsortium: chooser.c /main/27 1996/01/25 18:45:41 kaleb $
- * $XFree86: xc/programs/xdm/chooser.c,v 3.13 1997/01/18 07:02:20 dawes Exp $
+ * $XFree86: xc/programs/xdm/chooser.c,v 3.14 1998/01/24 16:59:00 hohndel Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -140,7 +140,9 @@ in this Software without prior written authorization from the X Consortium.
 # include <sync/sema.h>
 #endif
 #ifndef MINIX
+#ifndef __GNU__
 # include <net/if.h>
+#endif /* __GNU__ */
 #endif
 #endif /* hpux */
 
@@ -608,7 +610,7 @@ RegisterHostaddr (addr, len, type)
  *  addresses on the local host.
  */
 
-#ifndef MINIX
+#if !defined(MINIX) && !defined(__GNU__)
 
 /* Handle variable length ifreq in BNR2 and later */
 #ifdef VARIABLE_IFREQ

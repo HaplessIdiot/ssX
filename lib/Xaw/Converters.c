@@ -25,15 +25,17 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Converters.c,v 3.7 1998/06/28 13:04:20 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Converters.c,v 3.8 1998/06/29 13:41:14 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
-#include <X11/Xaw/Simple.h>
 #include <X11/Xmu/CharSet.h>
 #include <X11/Xmu/SysUtil.h>
+#include <X11/Xaw/Simple.h>
 #include "Private.h"
+
+typedef struct _XawDL XawDisplayList;
 
 /*
  * Definitions
@@ -80,24 +82,37 @@
 /*
  * Prototypes
  */
+static Boolean _XawCvtAtomToString(Display*, XrmValue*, Cardinal*,
+				   XrmValue*, XrmValue*, XtPointer*);
 static Boolean _XawCvtBooleanToString(Display*, XrmValue*, Cardinal*,
 				      XrmValue*, XrmValue*, XtPointer*);
-static Boolean _XawCvtPositionToString(Display*, XrmValue*, Cardinal*,
+static Boolean _XawCvtBoolToString(Display*, XrmValue*, Cardinal*,
+				   XrmValue*, XrmValue*, XtPointer*);
+static Boolean _XawCvtCARD32ToString(Display*, XrmValue*, Cardinal*,
+				     XrmValue*, XrmValue*, XtPointer*);
+static Boolean _XawCvtCardinalToString(Display*, XrmValue*, Cardinal*,
 				       XrmValue*, XrmValue*, XtPointer*);
 static Boolean _XawCvtDimensionToString(Display*, XrmValue*, Cardinal*,
 					XrmValue*, XrmValue*, XtPointer*);
-static Boolean _XawCvtPixelToString(Display*, XrmValue*, Cardinal*,
+static Boolean _XawCvtDisplayListToString(Display*, XrmValue*, Cardinal*,
 				    XrmValue*, XrmValue*, XtPointer*);
 static Boolean _XawCvtFontStructToString(Display*, XrmValue*, Cardinal*,
 					 XrmValue*, XrmValue*, XtPointer*);
-static Boolean _XawCvtStringToDisplayList(Display*, XrmValue*, Cardinal*,
+static Boolean _XawCvtIntToString(Display*, XrmValue*, Cardinal*,
 					  XrmValue*, XrmValue*, XtPointer*);
-static Boolean _XawCvtDisplayListToString(Display*, XrmValue*, Cardinal*,
+static Boolean _XawCvtPixelToString(Display*, XrmValue*, Cardinal*,
+				    XrmValue*, XrmValue*, XtPointer*);
+static Boolean _XawCvtPixmapToString(Display*, XrmValue*, Cardinal*,
+				     XrmValue*, XrmValue*, XtPointer*);
+static Boolean _XawCvtPositionToString(Display*, XrmValue*, Cardinal*,
+				       XrmValue*, XrmValue*, XtPointer*);
+static Boolean _XawCvtStringToDisplayList(Display*, XrmValue*, Cardinal*,
 					  XrmValue*, XrmValue*, XtPointer*);
 static Boolean _XawCvtStringToPixmap(Display*, XrmValue*, Cardinal*,
 				     XrmValue*, XrmValue*, XtPointer*);
-static Boolean _XawCvtPixmapToString(Display*, XrmValue*, Cardinal*,
+static Boolean _XawCvtUnsignedCharToString(Display*, XrmValue*, Cardinal*,
 				     XrmValue*, XrmValue*, XtPointer*);
+static void TypeToStringNoArgsWarning(Display*, String);
 
 /*
  * Initialization
@@ -133,54 +148,94 @@ XawInitializeDefaultConverters(void)
 
   first_time = False;
 
-  XtSetTypeConverter(XtRBoolean, XtRString,
-		     _XawCvtBooleanToString,
-		     NULL, 0,
-		     XtCacheNone,
-		     NULL);
-  XtSetTypeConverter(XtRPosition, XtRString,
-		     _XawCvtPositionToString,
-		     NULL, 0,
-		     XtCacheNone,
-		     NULL);
-  XtSetTypeConverter(XtRDimension, XtRString,
-		     _XawCvtDimensionToString,
-		     NULL, 0,
-		     XtCacheNone,
-		     NULL);
-  XtSetTypeConverter(XtRPixel, XtRString,
-		     _XawCvtPixelToString,
-		     &PixelArgs[0], XtNumber(PixelArgs),
-		     XtCacheNone,
-		     NULL);
-  XtSetTypeConverter(XtRFontStruct, XtRString,
-		     _XawCvtFontStructToString,
-		     NULL, 0,
-		     XtCacheNone,
-		     NULL);
-  XtSetTypeConverter(XtRString, XawRDisplayList,
-		     _XawCvtStringToDisplayList,
-		     &DLArgs[0], XtNumber(DLArgs),
-		     XtCacheAll,
-		     NULL);
-  XtSetTypeConverter(XawRDisplayList, XtRString,
-		     _XawCvtDisplayListToString,
-		     NULL, 0,
-		     XtCacheNone,
-		     NULL);
-  XtSetTypeConverter(XtRString, XtRPixmap,
-		     _XawCvtStringToPixmap,
-		     &DLArgs[0], XtNumber(DLArgs),
-		     XtCacheNone,
-		     NULL);
-  XtSetTypeConverter(XtRPixmap, XtRString,
-		     _XawCvtPixmapToString,
-		     &DLArgs[0], XtNumber(DLArgs),
-		     XtCacheNone,
-		     NULL);
+  /* Replace with more apropriate converters */
+  XtSetTypeConverter(XtRCallback, XtRString, _XawCvtCARD32ToString,
+		     NULL, 0, XtCacheNone, NULL);
+  XtSetTypeConverter(XtRColormap, XtRString, _XawCvtCARD32ToString,
+		     NULL, 0, XtCacheNone, NULL);
+  XtSetTypeConverter(XtRFunction, XtRString, _XawCvtCARD32ToString,
+		     NULL, 0, XtCacheNone, NULL);
+  XtSetTypeConverter(XtRPointer, XtRString, _XawCvtCARD32ToString,
+		     NULL, 0, XtCacheNone, NULL);
+  XtSetTypeConverter(XtRScreen, XtRString, _XawCvtCARD32ToString,
+		     NULL, 0, XtCacheNone, NULL);
+  XtSetTypeConverter(XtRStringArray, XtRString, _XawCvtCARD32ToString,
+		     NULL, 0, XtCacheNone, NULL);
+  XtSetTypeConverter(XtRVisual, XtRString, _XawCvtCARD32ToString,
+		     NULL, 0, XtCacheNone, NULL);
+  XtSetTypeConverter(XtRWidget, XtRString, _XawCvtCARD32ToString,
+		     NULL, 0, XtCacheNone, NULL);
+  XtSetTypeConverter(XtRWidgetList, XtRString, _XawCvtCARD32ToString,
+		     NULL, 0, XtCacheNone, NULL);
+  XtSetTypeConverter(XtRWindow, XtRString, _XawCvtCARD32ToString,
+		     NULL, 0, XtCacheNone, NULL);
+
+  XtSetTypeConverter(XtRAtom, XtRString, _XawCvtAtomToString,
+		     NULL, 0, XtCacheNone, NULL);
+  XtSetTypeConverter(XtRBool, XtRString,  _XawCvtBoolToString,
+		     NULL, 0, XtCacheNone, NULL);
+  XtSetTypeConverter(XtRBoolean, XtRString,  _XawCvtBooleanToString,
+		     NULL, 0,  XtCacheNone, NULL);
+  XtSetTypeConverter(XtRCardinal, XtRString, _XawCvtCardinalToString,
+		     NULL, 0, XtCacheNone, NULL);
+  XtSetTypeConverter(XtRDimension, XtRString, _XawCvtDimensionToString,
+		     NULL, 0, XtCacheNone, NULL);
+  XtSetTypeConverter(XawRDisplayList, XtRString, _XawCvtDisplayListToString,
+		     NULL, 0, XtCacheNone, NULL);
+  XtSetTypeConverter(XtRFontStruct, XtRString, _XawCvtFontStructToString,
+		     NULL, 0, XtCacheNone, NULL);
+  XtSetTypeConverter(XtRInt, XtRString, _XawCvtIntToString,
+		     NULL, 0, XtCacheNone, NULL);
+  XtSetTypeConverter(XtRPixel, XtRString, _XawCvtPixelToString,
+		     &PixelArgs[0], XtNumber(PixelArgs), XtCacheNone, NULL);
+  XtSetTypeConverter(XtRPixmap, XtRString, _XawCvtPixmapToString,
+		     &DLArgs[0], XtNumber(DLArgs), XtCacheNone, NULL);
+  XtSetTypeConverter(XtRPosition, XtRString, _XawCvtPositionToString,
+		     NULL, 0, XtCacheNone,  NULL);
+  XtSetTypeConverter(XtRString, XawRDisplayList, _XawCvtStringToDisplayList,
+		     &DLArgs[0], XtNumber(DLArgs), XtCacheAll, NULL);
+  XtSetTypeConverter(XtRString, XtRPixmap, _XawCvtStringToPixmap,
+		     &DLArgs[0], XtNumber(DLArgs), XtCacheAll, NULL);
+  XtSetTypeConverter(XtRUnsignedChar, XtRString, _XawCvtUnsignedCharToString,
+		     NULL, 0, XtCacheNone, NULL);
 }
 
-/* ARGSUSED */
+void
+XawTypeToStringWarning(Display *dpy, String type)
+{
+  char fname[64];
+  String params[1];
+  Cardinal num_params;
+
+  XmuSnprintf(fname, sizeof(fname), "cvt%sToString", type);
+
+  params[0] = type;
+  num_params = 1;
+  XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+		  XtNconversionError, fname, XtCToolkitError,
+		  "Cannot convert %s to String",
+		  params, &num_params);
+}
+
+static void
+TypeToStringNoArgsWarning(Display *dpy, String type)
+{
+  char fname[64];
+  String params[1];
+  Cardinal num_params;
+
+  XmuSnprintf(fname, sizeof(fname), "cvt%sToString", type);
+
+  params[0] = type;
+  num_params = 1;
+  XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+		  XtNconversionError, fname,
+		  XtCToolkitError,
+		  "%s to String conversion needs no extra arguments",
+		  params, &num_params);
+}
+
+/*ARGSUSED*/
 static Boolean
 _XawCvtBooleanToString(Display *dpy, XrmValue *args, Cardinal *num_args,
 		       XrmValue *fromVal, XrmValue *toVal,
@@ -190,20 +245,35 @@ _XawCvtBooleanToString(Display *dpy, XrmValue *args, Cardinal *num_args,
   Cardinal size;
 
   if (*num_args != 0)
-    XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
-		    XtNwrongParameters, "cvtPositionToString",
-		    XtCToolkitError,
-		    "Boolean to String conversion needs no extra arguments",
-		    (String *)NULL, (Cardinal *)NULL);
+    TypeToStringNoArgsWarning(dpy, XtRBoolean);
 
   XmuSnprintf(buffer, sizeof(buffer), "%s",
-	      *(Boolean *)fromVal->addr ? "true" : "false");
-  size = strlen(buffer);
+	      *(Boolean *)fromVal->addr ? XtEtrue : XtEfalse);
+  size = strlen(buffer) + 1;
 
   string_done(buffer);
 }
 
-/* ARGSUSED */
+/*ARGSUSED*/
+static Boolean
+_XawCvtBoolToString(Display *dpy, XrmValue *args, Cardinal *num_args,
+		    XrmValue *fromVal, XrmValue *toVal,
+		    XtPointer *converter_data)
+{
+  static char buffer[6];
+  Cardinal size;
+
+  if (*num_args != 0)
+    TypeToStringNoArgsWarning(dpy, XtRBool);
+
+  XmuSnprintf(buffer, sizeof(buffer), "%s",
+	      *(Bool *)fromVal->addr ? XtEtrue : XtEfalse);
+  size = strlen(buffer) + 1;
+
+  string_done(buffer);
+}
+
+/*ARGSUSED*/
 static Boolean
 _XawCvtPositionToString(Display *dpy, XrmValue *args, Cardinal *num_args,
 			XrmValue *fromVal, XrmValue *toVal,
@@ -213,19 +283,15 @@ _XawCvtPositionToString(Display *dpy, XrmValue *args, Cardinal *num_args,
   Cardinal size;
 
   if (*num_args != 0)
-    XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
-		    XtNwrongParameters, "cvtPositionToString",
-		    XtCToolkitError,
-		    "Position to String conversion needs no extra arguments",
-		    (String *)NULL, (Cardinal *)NULL);
+    TypeToStringNoArgsWarning(dpy, XtRPosition);
 
   XmuSnprintf(buffer, sizeof(buffer), "%d", *(Position *)fromVal->addr);
-  size = strlen(buffer);
+  size = strlen(buffer) + 1;
 
   string_done(buffer);
 }
 
-/* ARGSUSED */
+/*ARGSUSED*/
 static Boolean
 _XawCvtDimensionToString(Display *dpy, XrmValue *args, Cardinal *num_args,
 			 XrmValue *fromVal, XrmValue *toVal,
@@ -235,19 +301,102 @@ _XawCvtDimensionToString(Display *dpy, XrmValue *args, Cardinal *num_args,
   Cardinal size;
 
   if (*num_args != 0)
-    XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
-		    XtNwrongParameters, "cvtDimensionToString",
-		    XtCToolkitError,
-		    "Dimension to String conversion needs no extra arguments",
-		    (String *)NULL, (Cardinal *)NULL);
+    TypeToStringNoArgsWarning(dpy, XtRDimension);
 
   XmuSnprintf(buffer, sizeof(buffer), "%u", *(Dimension *)fromVal->addr);
-  size = strlen(buffer);
+  size = strlen(buffer) + 1;
 
   string_done(buffer);
 }
 
-/* ARGSUSED */
+/*ARGSUSED*/
+static Boolean
+_XawCvtCARD32ToString(Display *dpy, XrmValue *args, Cardinal *num_args,
+		      XrmValue *fromVal, XrmValue *toVal,
+		      XtPointer *converter_data)
+{
+  static char buffer[9];
+  Cardinal size;
+
+  if (*num_args != 0)
+    TypeToStringNoArgsWarning(dpy, "CARD32");
+
+  XmuSnprintf(buffer, sizeof(buffer), "0x%08hx", *(int *)fromVal->addr);
+  size = strlen(buffer) + 1;
+
+  string_done(buffer);
+}
+
+/*ARGSUSED*/
+static Boolean
+_XawCvtIntToString(Display *dpy, XrmValue *args, Cardinal *num_args,
+		   XrmValue *fromVal, XrmValue *toVal,
+		   XtPointer *converter_data)
+{
+  static char buffer[12];
+  Cardinal size;
+
+  if (*num_args != 0)
+    TypeToStringNoArgsWarning(dpy, XtRInt);
+
+  XmuSnprintf(buffer, sizeof(buffer), "%d", *(int *)fromVal->addr);
+  size = strlen(buffer) + 1;
+
+  string_done(buffer);
+}
+
+/*ARGSUSED*/
+static Boolean
+_XawCvtCardinalToString(Display *dpy, XrmValue *args, Cardinal *num_args,
+			XrmValue *fromVal, XrmValue *toVal,
+			XtPointer *converter_data)
+{
+  static char buffer[11];
+  Cardinal size;
+
+  if (*num_args != 0)
+    TypeToStringNoArgsWarning(dpy, XtRCardinal);
+
+  XmuSnprintf(buffer, sizeof(buffer), "%u", *(Cardinal *)fromVal->addr);
+  size = strlen(buffer) + 1;
+
+  string_done(buffer);
+}
+
+/*ARGSUSED*/
+static Boolean
+_XawCvtAtomToString(Display *dpy, XrmValue *args, Cardinal *num_args,
+		    XrmValue *fromVal, XrmValue *toVal,
+		    XtPointer *converter_data)
+{
+  static char *buffer = NULL;
+  static char *nullatom = "NULL";
+  Cardinal size;
+  Atom atom;
+
+  if (*num_args != 0)
+    TypeToStringNoArgsWarning(dpy, XtRAtom);
+
+  if (buffer && buffer != nullatom)
+    XFree(buffer);
+
+  atom = *(Atom *)fromVal[0].addr;
+  if (atom == 0)
+    buffer = nullatom;
+  else if ((buffer = XGetAtomName(dpy, *(Atom *)fromVal[0].addr)) == NULL)
+    {
+      XawTypeToStringWarning(dpy, XtRAtom);
+      toVal->addr = NULL;
+      toVal->size = sizeof(String);
+      return (False);
+    }
+
+  size = strlen(buffer) + 1;
+
+  string_done(buffer);
+}
+
+/*ARGSUSED*/
 static Boolean
 _XawCvtPixelToString(Display *dpy, XrmValue *args, Cardinal *num_args,
 		     XrmValue *fromVal, XrmValue *toVal,
@@ -264,7 +413,7 @@ _XawCvtPixelToString(Display *dpy, XrmValue *args, Cardinal *num_args,
 		      XtNwrongParameters, "cvtPixelToString",
 		      XtCToolkitError,
 		      "Pixel to String conversion needs colormap argument",
-		      (String *)NULL, (Cardinal *)NULL);
+		      NULL, NULL);
       return (False);
     }
 
@@ -278,12 +427,12 @@ _XawCvtPixelToString(Display *dpy, XrmValue *args, Cardinal *num_args,
   XQueryColor(dpy, colormap, &color);
   XmuSnprintf(buffer, sizeof(buffer), "rgb:%04hx/%04hx/%04hx",
 	      color.red, color.green, color.blue);
-  size = strlen(buffer);
+  size = strlen(buffer) + 1;
 
   string_done(buffer);
 }
 
-/* ARGSUSED */
+/*ARGSUSED*/
 static Boolean
 _XawCvtFontStructToString(Display *dpy, XrmValue *args, Cardinal *num_args,
 			  XrmValue *fromVal, XrmValue *toVal,
@@ -295,11 +444,7 @@ _XawCvtFontStructToString(Display *dpy, XrmValue *args, Cardinal *num_args,
   unsigned long value;
 
   if (*num_args != 0)
-    XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
-		    XtNwrongParameters, "cvtFontStructToString",
-		    XtCToolkitError,
-		    "FontStruct to String conversion needs no extra arguments",
-		    (String *)NULL, (Cardinal *)NULL);
+    TypeToStringNoArgsWarning(dpy, XtRFontStruct);
 
   if ((atom = XInternAtom(dpy, "FONT", True)) == None)
     return (False);
@@ -319,17 +464,36 @@ _XawCvtFontStructToString(Display *dpy, XrmValue *args, Cardinal *num_args,
     }
 
   if (size)
+    {
+      ++size;
     string_done(buffer);
+    }
 
-  XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
-		  XtNconversionError, "cvtFontStructToString",
-		  XtCToolkitError,
-		  "Cannot convert FontStruct to String",
-		  (String *)NULL, (Cardinal *)NULL);
+  XawTypeToStringWarning(dpy, XtRFontStruct);
 
   return (False);
 }
 
+/*ARGSUSED*/
+static Boolean
+_XawCvtUnsignedCharToString(Display *dpy, XrmValue *args, Cardinal *num_args,
+			    XrmValue *fromVal, XrmValue *toVal,
+			    XtPointer *converter_data)
+{
+  static char buffer[4];
+  Cardinal size;
+
+  if (*num_args != 0)
+    TypeToStringNoArgsWarning(dpy, XtRUnsignedChar);
+
+  XmuSnprintf(buffer, sizeof(buffer), "%u",
+	      *(unsigned char *)fromVal->addr);
+  size = strlen(buffer) + 1;
+
+  string_done(buffer);
+}
+
+/*ARGSUSED*/
 static Boolean
 _XawCvtStringToDisplayList(Display *dpy, XrmValue *args, Cardinal *num_args,
 			   XrmValue *fromVal, XrmValue *toVal,
@@ -348,7 +512,7 @@ _XawCvtStringToDisplayList(Display *dpy, XrmValue *args, Cardinal *num_args,
 		      XtCToolkitError,
 		      "String to DisplayList conversion needs screen, "
 		      "colormap, and depth arguments",
-		      (String *)NULL, (Cardinal *)NULL);
+		      NULL, NULL);
       return (False);
     }
 
@@ -362,25 +526,17 @@ _XawCvtStringToDisplayList(Display *dpy, XrmValue *args, Cardinal *num_args,
 
   if (!dlist)
     {
-      String params[1];
-      Cardinal num_params = 1;
-      static XawDisplayList *sdl = NULL;
-
-      params[0] = (String)fromVal->addr;
-      XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
-		      XtNconversionError, "cvtStringToDisplayList",
-		      XtCToolkitError,
-		      "Cannot convert \"%s\" to type DisplayList",
-		      params, &num_params);
-      toVal->addr = (XtPointer)sdl;
-      toVal->size = sizeof(sdl);
+      XtDisplayStringConversionWarning(dpy, (String)fromVal->addr,
+				       XawRDisplayList);
+      toVal->addr = NULL;
+      toVal->size = sizeof(XawDisplayList*);
       return (False);
     }
 
   done(XawDisplayList*, dlist);
 }
 
-/* ARGSUSED */
+/*ARGSUSED*/
 static Boolean
 _XawCvtDisplayListToString(Display *dpy, XrmValue *args, Cardinal *num_args,
 			   XrmValue *fromVal, XrmValue *toVal,
@@ -390,19 +546,15 @@ _XawCvtDisplayListToString(Display *dpy, XrmValue *args, Cardinal *num_args,
   Cardinal size;
 
   if (*num_args != 0)
-    XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
-		    XtNwrongParameters, "cvtDisplayListToString",
-		    XtCToolkitError,
-		    "DisplayList to String conversion needs no extra "
-		    "arguments",
-		    (String *)NULL, (Cardinal *)NULL);
+    TypeToStringNoArgsWarning(dpy, XawRDisplayList);
 
   buffer = XawDisplayListString(*(XawDisplayList **)(fromVal[0].addr));
-  size = strlen(buffer);
+  size = strlen(buffer) + 1;
 
   string_done(buffer);
 }
 
+/*ARGSUSED*/
 static Boolean
 _XawCvtStringToPixmap(Display *dpy, XrmValue *args, Cardinal *num_args,
 		      XrmValue *fromVal, XrmValue *toVal,
@@ -422,7 +574,7 @@ _XawCvtStringToPixmap(Display *dpy, XrmValue *args, Cardinal *num_args,
 		      XtCToolkitError,
 		      "String to Pixmap conversion needs screen, "
 		      "colormap, and depth arguments",
-		      (String *)NULL, (Cardinal *)NULL);
+		      NULL, NULL);
       return (False);
     }
 
@@ -443,15 +595,8 @@ _XawCvtStringToPixmap(Display *dpy, XrmValue *args, Cardinal *num_args,
       xaw_pixmap = XawLoadPixmap(name, screen, colormap, depth);
       if (!xaw_pixmap)
 	{
-	  String params[1];
-	  Cardinal num_params = 1;
-
-	  params[0] = (String)fromVal->addr;
-	  XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
-			  XtNconversionError, "cvtStringToPixmap",
-			  XtCToolkitError,
-			  "Cannot convert \"%s\" to type Pixmap",
-			  params, &num_params);
+	  XtDisplayStringConversionWarning(dpy, (String)fromVal->addr,
+					   XtRPixmap);
 	  toVal->addr = (XtPointer)XtUnspecifiedPixmap;
 	  toVal->size = sizeof(Pixmap);
 	  return (False);
@@ -463,7 +608,7 @@ _XawCvtStringToPixmap(Display *dpy, XrmValue *args, Cardinal *num_args,
   done(Pixmap, pixmap);
 }
 
-/* ARGSUSED */
+/*ARGSUSED*/
 static Boolean
 _XawCvtPixmapToString(Display *dpy, XrmValue *args, Cardinal *num_args,
 		      XrmValue *fromVal, XrmValue *toVal,
@@ -484,7 +629,7 @@ _XawCvtPixmapToString(Display *dpy, XrmValue *args, Cardinal *num_args,
 		      XtCToolkitError,
 		      "Pixmap to String conversion needs screen, "
 		      "colormap, and depth arguments",
-		      (String *)NULL, (Cardinal *)NULL);
+		      NULL, NULL);
       return (False);
     }
 
@@ -513,22 +658,11 @@ _XawCvtPixmapToString(Display *dpy, XrmValue *args, Cardinal *num_args,
     }
 
   if (!buffer)
-    {
-      String params[1];
-      Cardinal num_params = 1;
+    /* Bad Pixmap or Pixmap was not loaded by XawLoadPixmap() */
+    return (_XawCvtCARD32ToString(dpy, args, num_args, fromVal, toVal,
+				  converter_data));
 
-      params[0] = (String)fromVal->addr;
-      XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
-		      XtNconversionError, "cvtPixmapToString",
-		      XtCToolkitError,
-		      "Cannot convert Pixmap to String",
-		      params, &num_params);
-      toVal->addr = (XtPointer)NULL;
-      toVal->size = sizeof(String);
-      return (False);
-    }
-
-  size = strlen(buffer);
+  size = strlen(buffer) + 1;
 
   string_done(buffer);
 }

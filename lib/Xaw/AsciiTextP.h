@@ -50,12 +50,6 @@ SOFTWARE.
 
 ******************************************************************/
 
-/***********************************************************************
- *
- * AsciiText Widget
- *
- ***********************************************************************/
-
 /*
  * AsciiText.c - Private header file for AsciiText Widget.
  *
@@ -77,7 +71,9 @@ SOFTWARE.
 #include <X11/Xaw/AsciiSrc.h>
 #include <X11/Xaw/MultiSrc.h>
 
-typedef struct {int empty;} AsciiClassPart;
+typedef struct {
+  XtPointer extension;
+} AsciiClassPart;
 
 typedef struct _AsciiTextClassRec {
     CoreClassPart	core_class;
@@ -88,7 +84,9 @@ typedef struct _AsciiTextClassRec {
 
 extern AsciiTextClassRec asciiTextClassRec;
 
-typedef struct { char foo; /* keep compiler happy. */ } AsciiPart;
+typedef struct {
+  char resource;
+} AsciiPart;
 
 typedef struct _AsciiRec {
     CorePart		core;
@@ -97,15 +95,13 @@ typedef struct _AsciiRec {
     AsciiPart		ascii;
 } AsciiRec;
 
-/************************************************************
- *
- * Ascii String Emulation widget.
- *
- ************************************************************/ 
-
+/*
+ * Ascii String Emulation widget
+ */
 #ifdef ASCII_STRING
-
-typedef struct {int empty;} AsciiStringClassPart;
+typedef struct {
+  XtPointer extension;
+} AsciiStringClassPart;
 
 typedef struct _AsciiStringClassRec {
     CoreClassPart	core_class;
@@ -117,7 +113,9 @@ typedef struct _AsciiStringClassRec {
 
 extern AsciiStringClassRec asciiStringClassRec;
 
-typedef struct { char foo; /* keep compiler happy. */ } AsciiStringPart;
+typedef struct {
+  char resource;
+} AsciiStringPart;
 
 typedef struct _AsciiStringRec {
     CorePart		core;
@@ -126,18 +124,15 @@ typedef struct _AsciiStringRec {
     AsciiPart           ascii;
     AsciiStringPart     ascii_str;
 } AsciiStringRec;
-
 #endif /* ASCII_STRING */
 
 #ifdef ASCII_DISK
-
-/************************************************************
- *
- * Ascii Disk Emulation widget.
- *
- ************************************************************/ 
-
-typedef struct {int empty;} AsciiDiskClassPart;
+/*
+ * Ascii Disk Emulation widget
+ */
+typedef struct {
+  XtPointer extension;
+} AsciiDiskClassPart;
 
 typedef struct _AsciiDiskClassRec {
     CoreClassPart	core_class;
@@ -149,7 +144,9 @@ typedef struct _AsciiDiskClassRec {
 
 extern AsciiDiskClassRec asciiDiskClassRec;
 
-typedef struct { char foo; /* keep compiler happy. */ } AsciiDiskPart;
+typedef struct {
+  char resource;
+} AsciiDiskPart;
 
 typedef struct _AsciiDiskRec {
     CorePart		core;

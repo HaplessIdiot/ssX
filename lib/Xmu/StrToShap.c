@@ -27,6 +27,7 @@ in this Software without prior written authorization from the X Consortium.
 
 */
 
+#include <string.h>
 #include <X11/Intrinsic.h>
 #include "Converters.h"
 #include "CharSet.h"
@@ -51,39 +52,71 @@ in this Software without prior written authorization from the X Consortium.
 	}
 
 
-Boolean XmuCvtStringToShapeStyle(dpy, args, num_args, from, toVal, data)
-    Display *dpy;
-    XrmValue *args;		/* unused */
-    Cardinal *num_args;		/* unused */
-    XrmValue *from;
-    XrmValue *toVal;
-    XtPointer *data;		/* unused */
+/*ARGSUSED*/
+Boolean
+XmuCvtStringToShapeStyle(Display *dpy, XrmValue *args, Cardinal *num_args,
+			 XrmValue *from, XrmValue *toVal, XtPointer *data)
 {
-    if (   XmuCompareISOLatin1((char*)from->addr, XtERectangle) == 0
-	|| XmuCompareISOLatin1((char*)from->addr, "ShapeRectangle") == 0)
-	done( int, XmuShapeRectangle );
-    if (   XmuCompareISOLatin1((char*)from->addr, XtEOval) == 0
-	|| XmuCompareISOLatin1((char*)from->addr, "ShapeOval") == 0)
-	done( int, XmuShapeOval );
-    if (   XmuCompareISOLatin1((char*)from->addr, XtEEllipse) == 0
-	|| XmuCompareISOLatin1((char*)from->addr, "ShapeEllipse") == 0)
-	done( int, XmuShapeEllipse );
-    if (   XmuCompareISOLatin1((char*)from->addr, XtERoundedRectangle) == 0
-	|| XmuCompareISOLatin1((char*)from->addr, "ShapeRoundedRectangle") == 0)
-	done( int, XmuShapeRoundedRectangle );
+  String name = (String)from->addr;
+
+  if (XmuCompareISOLatin1(name, XtERectangle) == 0)
+    done(int, XmuShapeRectangle);
+  if (XmuCompareISOLatin1(name, XtEOval) == 0)
+    done(int, XmuShapeOval);
+  if (XmuCompareISOLatin1(name, XtEEllipse) == 0)
+    done(int, XmuShapeEllipse);
+  if (XmuCompareISOLatin1(name, XtERoundedRectangle) == 0)
+    done(int, XmuShapeRoundedRectangle);
+
+  XtDisplayStringConversionWarning(dpy, name, XtRShapeStyle);
+
+  return (False);
+}
+
+/*ARGSUSED*/
+Boolean
+XmuCvtShapeStyleToString(Display *dpy, XrmValue *args, Cardinal *num_args,
+			 XrmValue *fromVal, XrmValue *toVal, XtPointer *data)
+{
+  static char *buffer;
+  Cardinal size;
+
+  switch (*(int *)fromVal->addr)
     {
-	int style = 0;
-	char ch, *p = (char*)from->addr;
-	while ((ch = *p++) != 0) {
-	    if (ch >= '0' && ch <= '9') {
-		style *= 10;
-		style += ch - '0';
+    case XmuShapeRectangle:
+      buffer = XtERectangle;
+      break;
+    case XmuShapeOval:
+      buffer = XtEOval;
+      break;
+    case XmuShapeEllipse:
+      buffer = XtEEllipse;
+      break;
+    case XmuShapeRoundedRectangle:
+      buffer = XtERoundedRectangle;
+      break;
+    default:
+      XtAppWarning(XtDisplayToApplicationContext(dpy),
+		   "Cannot convert ShapeStyle to String");
+      toVal->addr = NULL;
+      toVal->size = 0;
+
+      return (False);
 	    }
-	    else break;
+
+  size = strlen(buffer) + 1;
+  if (toVal->addr != NULL)
+    {
+      if (toVal->size <= size)
+	{
+	  toVal->size = size;
+	  return (False);
 	}
-	if (ch == '\0' && style <= XmuShapeRoundedRectangle)
-	    done( int, style );
+      strcpy((char *)toVal->addr, buffer);
     }
-    XtDisplayStringConversionWarning( dpy, (char*)from->addr, XtRShapeStyle );
-    return False;
+  else
+    toVal->addr = (XPointer)buffer;
+  toVal->size = size;
+
+  return (True);
 }

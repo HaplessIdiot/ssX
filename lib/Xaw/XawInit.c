@@ -39,14 +39,16 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xaw/XawInit.h>
 #include "Private.h"
 
-void XawInitializeWidgetSet ()
+void
+XawInitializeWidgetSet(void)
 {
-    static int firsttime = 1;
+  static Boolean firsttime = True;
 
-    if (firsttime) {
-	firsttime = 0;
+  if (firsttime)
+    {
+	firsttime = False;
 	XawPixmapsInitialize();
 	XawInitializeDefaultConverters();
-	XtInitializeWidgetClass (vendorShellWidgetClass);
+	XtInitializeWidgetClass(vendorShellWidgetClass);
     }
 }

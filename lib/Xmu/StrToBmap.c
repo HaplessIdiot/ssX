@@ -84,11 +84,9 @@ static XtConvertArgRec screenConvertArg[] = {
 
 
 /*ARGSUSED*/
-void XmuCvtStringToBitmap(args, num_args, fromVal, toVal)
-    XrmValuePtr args;
-    Cardinal    *num_args;
-    XrmValuePtr	fromVal;
-    XrmValuePtr	toVal;
+void
+XmuCvtStringToBitmap(XrmValuePtr args, Cardinal *num_args,
+		     XrmValuePtr fromVal, XrmValuePtr toVal)
 {
     static Pixmap pixmap;		/* static for cvt magic */
     char *name = (char *)fromVal->addr;

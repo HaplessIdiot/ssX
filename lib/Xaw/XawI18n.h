@@ -26,15 +26,15 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 ********************************************************/
-/* $XFree86: xc/lib/Xaw/XawI18n.h,v 3.4 1998/06/28 11:23:52 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/XawI18n.h,v 3.5 1998/06/29 13:41:17 dawes Exp $ */
 
 #ifdef HAS_WCTYPE_H
 #include <wctype.h>
 #ifndef NO_WIDEC_H
 #include <widec.h>
 #define wcslen(c) wslen(c)
-#define wcscpy(d,s) wscpy(d,s)
-#define wcsncpy(d,s,l) wsncpy(d,s,l)
+#define wcscpy(d, s)		wscpy(d, s)
+#define wcsncpy(d, s, l)	wsncpy(d, s, l)
 #endif
 #endif
 
@@ -48,7 +48,10 @@ in this Software without prior written authorization from the X Consortium.
 
 #ifdef NCR
 #define iswspace(c) _Xaw_iswspace(c)
-extern int _Xaw_iswspace(wchar_t);
+int _Xaw_iswspace
+(
+ wchar_t		c
+ );
 #endif
 
 #ifdef sony
@@ -63,40 +66,39 @@ extern int _Xaw_iswspace(wchar_t);
 #endif
 
 #ifdef USE_XWCHAR_STRING
-extern int _Xwcslen(
-#if NeedFunctionPrototypes
-    wchar_t*    /* wstr */
-#endif
-);
+int _Xwcslen
+(
+ wchar_t		*wstr
+ );
+
 #define wcslen(c) _Xwcslen(c)
 
-extern wchar_t *_Xwcscpy(
-#if NeedFunctionPrototypes
-    wchar_t*    /* wstr1 */,
-    wchar_t*    /* wstr2 */
-#endif
-);
+wchar_t *_Xwcscpy
+(
+ wchar_t		*wstr1,
+ wchar_t		*wstr2
+ );
+
 #define wcscpy(d,s) _Xwcscpy(d,s)
 
-extern wchar_t *_Xwcsncpy(
-#if NeedFunctionPrototypes
-    wchar_t*    /* wstr1 */,
-    wchar_t*    /* wstr2 */,
-    int         /* len */
-#endif
-);
-#define wcsncpy(d,s,l) _Xwcsncpy(d,s,l)
+wchar_t *_Xwcsncpy
+(
+ wchar_t		*wstr1,
+ wchar_t		*wstr2,
+ int			len
+ );
+
+#define wcsncpy(d, s, l)	_Xwcsncpy(d, s, l)
 
 #ifdef USE_XMBTOWC
-#define mbtowc(wc,s,l) _Xmbtowc(wc,s,l)
+#define mbtowc(wc, s, l)	_Xmbtowc(wc, s, l)
 #endif
 #endif
 
-extern wchar_t _Xaw_atowc (
-#if NeedFunctionPrototypes
-    unsigned char	c
-#endif
-);
+wchar_t _Xaw_atowc
+(
+ int			c
+ );
 
 #ifndef HAS_ISW_FUNCS
 #include <ctype.h>

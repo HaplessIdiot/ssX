@@ -1,0 +1,26 @@
+XCOMM $XFree86$
+
+#include <Server.tmpl>
+
+BIOS_MOD = bios_mmap
+
+SRCS = hurd_init.c hurd_video.c hurd_io.c libc_wrapper.c $(BIOS_MOD).c mapVT_noop.c \
+       VTsw_noop.c posix_tty.c
+
+OBJS = hurd_init.o hurd_video.o hurd_io.o libc_wrapper.o $(BIOS_MOD).o mapVT_noop.o \
+       VTsw_noop.o posix_tty.o
+
+INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
+           -I$(XINCLUDESRC)
+
+SubdirLibraryRule($(OBJS))
+NormalLibraryObjectRule()
+
+
+LinkSourceFile(VTsw_noop.c,../shared)
+LinkSourceFile(mapVT_noop.c,../shared)
+LinkSourceFile(posix_tty.c,../shared)
+LinkSourceFile(libc_wrapper.c,../shared)
+
+DependTarget()
+

@@ -60,6 +60,7 @@ in this Software without prior written authorization from the X Consortium.
  callback	     Callback		Pointer		NULL
  cursor		     Cursor		Cursor		None
  destroyCallback     Callback		Pointer		NULL
+ displayList	     DisplayList	XawDisplayList*	NULL
  font		     Font		XFontStruct*	XtDefaultFont
  foreground	     Foreground		Pixel		XtDefaultForeground
  height		     Height		Dimension	text height

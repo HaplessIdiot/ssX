@@ -34,21 +34,19 @@ in this Software without prior written authorization from the X Consortium.
 
 _XFUNCPROTOBEGIN
 
-extern int XmuGetHostname(
-#if NeedFunctionPrototypes
-    char*	/* buf_return */,
-    int		/* maxlen */
-#endif
+int XmuGetHostname
+(
+    char		*buf_return,
+    int			maxlen
 );
 
-extern int XmuSnprintf(
-#if NeedVarargsPrototypes
-    char*		/* str */,
-    int			/* size */,
-    char*		/* fmt */,
+int XmuSnprintf
+(
+ char			*str,
+ int			size,
+ char			*fmt,
     ...
-#endif
-);
+ );
 
 _XFUNCPROTOEND
 

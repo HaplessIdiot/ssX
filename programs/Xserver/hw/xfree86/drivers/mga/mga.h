@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.11 1998/07/25 16:55:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.12 1998/08/13 14:45:55 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -40,29 +40,34 @@
 #define MGAISBUSY() (INREG8(MGAREG_Status + 2) & 0x01)
 
 typedef struct {
-    Bool	isHwCursor;
-    int		CursorMaxWidth;
-    int 	CursorMaxHeight;
-    int		CursorFlags;
-    Bool	(*UseHWCursor)();
-    void	(*LoadCursorImage)();
-    void	(*ShowCursor)();
-    void	(*HideCursor)();
-    void	(*SetCursorPosition)();
-    void	(*SetCursorColors)();
-    long	maxPixelClock;
-    long	MemoryClock;
-    MessageType ClockFrom;
-    MessageType MemClkFrom;
-    Bool	SetMemClk;
-} MGARamdacRec, *MGARamdacPtr;
-
-typedef struct {
     unsigned char	ExtVga[6];
     unsigned char 	DacClk[6];
     unsigned char *     DacRegs;
     CARD32		DacLong;
 } MGARegRec, *MGARegPtr;
+
+typedef struct {
+    Bool	isHwCursor;
+    int		CursorMaxWidth;
+    int 	CursorMaxHeight;
+    int		CursorFlags;
+    Bool	(*UseHWCursor)(ScreenPtr, CursorPtr);
+    void	(*LoadCursorImage)(ScrnInfoPtr, unsigned char*);
+    void	(*ShowCursor)(ScrnInfoPtr);
+    void	(*HideCursor)(ScrnInfoPtr);
+    void	(*SetCursorPosition)(ScrnInfoPtr, int, int);
+    void	(*SetCursorColors)(ScrnInfoPtr, int, int);
+    long	maxPixelClock;
+    long	MemoryClock;
+    MessageType ClockFrom;
+    MessageType MemClkFrom;
+    Bool	SetMemClk;
+    void	(*PreInit)(ScrnInfoPtr);
+    void	(*Save)(ScrnInfoPtr);
+    void	(*Restore)(ScrnInfoPtr, vgaRegPtr, MGARegPtr, Bool);
+    Bool	(*Init)(ScrnInfoPtr, DisplayModePtr);
+    void	(*StoreColors)(ScrnInfoPtr, xColorItem*, int);
+} MGARamdacRec, *MGARamdacPtr;
 
 /* Card-specific driver information */
 
@@ -113,6 +118,10 @@ typedef struct {
     CARD32		BgColor;
     XAAInfoRecPtr	AccelInfoRec;
     XAACursorInfoPtr	CursorInfoRec;
+    void		(*PreInit)(ScrnInfoPtr);
+    void		(*Save)(ScrnInfoPtr);
+    void		(*Restore)(ScrnInfoPtr);
+    Bool		(*ModeInit)(ScrnInfoPtr, DisplayModePtr);
     CloseScreenProcPtr	CloseScreen;
 } MGARec, *MGAPtr;
 
@@ -127,11 +136,14 @@ extern CARD32 MGAAtypeNoBLK[16];
 
 
 /* Prototypes */
-void MGA3026RamdacInit(ScrnInfoPtr pScrn);
-void MGA3026Save(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
-		    Bool saveFonts);
+
+void MGA1064SetupChipFuncs(ScrnInfoPtr pScrn);
+void MGA2064SetupChipFuncs(ScrnInfoPtr pScrn);
+
+void MGA3026PreInit(ScrnInfoPtr pScrn);
+void MGA3026Save(ScrnInfoPtr pScrn);
 void MGA3026Restore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
-		    Bool restoreFonts);
+	Bool restoreFonts);
 Bool MGA3026Init(ScrnInfoPtr pScrn, DisplayModePtr mode);
 
 void MGA1064RamdacInit(ScrnInfoPtr pScrn);
@@ -145,6 +157,9 @@ void MGAStormSync(ScrnInfoPtr pScrn);
 void MGAStormEngineInit(ScrnInfoPtr pScrn);
 Bool MGAStormAccelInit(ScreenPtr pScreen);
 Bool MGAHWCursorInit(ScreenPtr pScreen);
+
+void MGAHandleColormaps(ScreenPtr pScreen, ScrnInfoPtr pScrn);
+void MGA3026StoreColors(ScrnInfoPtr pScrn, xColorItem* pdef, int ndef);
 
 Bool Mga8AccelInit(ScreenPtr pScreen);
 Bool Mga16AccelInit(ScreenPtr pScreen);

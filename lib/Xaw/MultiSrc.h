@@ -61,7 +61,6 @@ in this Software without prior written authorization from the X Consortium.
 #define _XawMultiSrc_h
 
 #include <X11/Xaw/TextSrc.h>
-/*Xfuncproto.h included by Intrinsic.h*/
 
 /* Resources:
 
@@ -77,23 +76,13 @@ in this Software without prior written authorization from the X Consortium.
 
 */
  
-/* Class record constants */
-
 extern WidgetClass multiSrcObjectClass;
 
 typedef struct _MultiSrcClassRec *MultiSrcObjectClass;
 typedef struct _MultiSrcRec      *MultiSrcObject;
 
-/*
- * Just to make people's lives a bit easier.
- */
-
 #define MultiSourceObjectClass MultiSrcObjectClass
 #define MultiSourceObject      MultiSrcObject
-
-/*
- * Resource Definitions.
- */
 
 #define XtCDataCompression "DataCompression"
 #define XtCPieceSize "PieceSize"
@@ -124,28 +113,22 @@ typedef struct _MultiSrcRec      *MultiSrcObject;
 
 _XFUNCPROTOBEGIN
 
+void XawMultiSourceFreeString
+(
+ Widget			w
+ );
 
-extern void XawMultiSourceFreeString(
-#if NeedFunctionPrototypes
-    Widget		/* w */
-#endif
+Bool _XawMultiSave
+(
+ Widget			w
 );
 
-extern Boolean _XawMultiSave(
-#if NeedFunctionPrototypes
-    Widget		/* w */
-#endif
-);
-
-extern Boolean _XawMultiSaveAsFile(
-#if NeedFunctionPrototypes
-    Widget		/* w */,
-    _Xconst char*	/* name */
-#endif 
-);
-
+Bool _XawMultiSaveAsFile
+(
+ Widget			w,
+ _Xconst char		*name
+ );
 
 _XFUNCPROTOEND
 
-#endif /* _XawMultiSrc_h  - Don't add anything after this line. */
-
+#endif /* _XawMultiSrc_h  */

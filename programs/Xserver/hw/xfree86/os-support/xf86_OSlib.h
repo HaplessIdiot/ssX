@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.51 1998/07/25 16:56:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.52 1998/07/26 09:56:18 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -547,6 +547,29 @@ extern capability iopcap;
 extern char* __XOS2RedirRoot(char*);
 
 #endif
+
+/**************************************************************************/
+/* GNU/Hurd
+/**************************************************************************/
+#if defined(__GNU__)
+
+#include <stdlib.h>
+#include <sys/types.h>
+#include <errno.h>
+#include <signal.h>
+#include <sys/ioctl.h>
+#include <termios.h>
+#include <sys/stat.h>
+
+#define POSIX_TTY
+
+#define OSMOUSE_ONLY
+#define MOUSE_PROTOCOL_IN_KERNEL
+
+#include <assert.h>
+
+
+#endif /* __GNU__ */
 
 /**************************************************************************/
 /* Generic                                                                */

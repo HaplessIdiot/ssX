@@ -38,12 +38,8 @@ in this Software without prior written authorization from the X Consortium.
 #define Const /**/
 #endif
 
-#if NeedFunctionPrototypes
-int XmuCursorNameToIndex (_Xconst char *name)
-#else
-int XmuCursorNameToIndex (name)
-    char *name;
-#endif
+int
+XmuCursorNameToIndex(_Xconst char *name)
 {
     static Const struct _CursorName {
 	Const char	*name;

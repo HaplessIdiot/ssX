@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.14 1998/07/25 05:57:15 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.15 1998/08/02 05:16:49 dawes Exp $
 
 #ifndef OSName
 #define OSName			DefaultOSName OSBinaryType
@@ -34,6 +34,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define HasWChar32		YES
 #define HasMkstemp		YES
 #define HasDlopen		YES
+#define DlLibrary		/**/
 
 /*
  * Compiler Features
@@ -158,10 +159,10 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #endif
 
 
-
-XCOMM Man pages need to be formatted when installed, so override the default
-XCOMM imake rules.
-
+/*
+ * Man pages need to be formatted when installed, so override the default
+ * imake rules.
+ */
 #define ManSuffix	1
 #define FileManSuffix	5
 #define ManSourcePath	$(MANPATH)/cat
@@ -182,7 +183,10 @@ install.man::                                                           @@\
 	-@if [ -f file.0 ]; \						@@\
 	then \								@@\
 	$(INSTALL) -c $(INSTMANFLAGS) file.0 $(DESTDIR)destdir/dest.0; \@@\
-	fi
+	fi								@@\
+									@@\
+clean::									@@\
+	RemoveFile(file.0)
 
 #define InstallGenManPageLong(file,destdir,dest,suffix)			@@\
 	InstallManPageLong(file,destdir,dest)
@@ -213,7 +217,6 @@ install.man:: 								@@\
 
 #define InstallGenManPageAliases(file,destdir,suffix,aliases)		@@\
 	InstallManPageAliases(file,destdir,aliases)
-
 
 
 /*

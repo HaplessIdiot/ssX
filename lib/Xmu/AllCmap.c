@@ -33,7 +33,7 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xutil.h>
 #include <X11/Xmu/StdCmap.h>
  
-static XVisualInfo *getDeepestVisual();
+static XVisualInfo *getDeepestVisual(int, XVisualInfo*, int);
 
 /*
  * To create all of the appropriate standard colormaps for every visual of
@@ -88,8 +88,8 @@ static XVisualInfo *getDeepestVisual();
  * standard colormaps are meaningful under these classes of visuals.
  */
 
-Status XmuAllStandardColormaps(dpy)
-    Display	*dpy;		/* Specifies the connection to the X server */
+Status
+XmuAllStandardColormaps(Display *dpy)
 {
     int 	nvisuals, scr;
     Status	status;
@@ -137,10 +137,8 @@ Status XmuAllStandardColormaps(dpy)
     return status;
 }
 
-static XVisualInfo *getDeepestVisual(visual_class, vinfo, nvisuals)
-    int		visual_class;	/* specifies the visual class */
-    XVisualInfo	*vinfo;		/* specifies all visuals for a screen */
-    int		nvisuals;	/* specifies number of visuals in the list */
+static XVisualInfo *
+getDeepestVisual(int visual_class, XVisualInfo *vinfo, int nvisuals)
 {
     register int	i;
     unsigned int	maxdepth = 0;

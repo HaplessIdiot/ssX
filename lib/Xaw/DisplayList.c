@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/DisplayList.c,v 3.7 1998/06/28 12:56:16 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/DisplayList.c,v 3.8 1998/06/29 13:41:14 dawes Exp $ */
 
 #include <ctype.h>
 #include <string.h>
@@ -33,8 +33,8 @@
 #include <stdlib.h>
 #include <X11/IntrinsicP.h>
 #include <X11/CoreP.h>
-#include <X11/Xmu/SysUtil.h>
 #include <X11/Xfuncs.h>
+#include <X11/Xmu/SysUtil.h>
 #include "Private.h"
 
 /*
@@ -111,7 +111,8 @@ static String xlib = "xlib";
 /*
  * Implementation
  */
-void XawRunDisplayList(Widget w, XawDisplayList *list,
+void
+XawRunDisplayList(Widget w, _XawDisplayList *list,
 		       XEvent *event, Region region)
 {
   XawDLProc *proc;
@@ -135,12 +136,14 @@ void XawRunDisplayList(Widget w, XawDisplayList *list,
 static char *
 read_token(char *src, char *dst, Cardinal size, int *status)
 {
-  int ch, i;
-  Boolean esc;
+  int ch;
+  Bool esc;
+  Cardinal i;
 
   i = 0;
   esc = False;
 
+  /*CONSTCOND*/
   while (1)
     {
       ch = *src;
@@ -199,10 +202,10 @@ read_token(char *src, char *dst, Cardinal size, int *status)
   return (src);
 }
 
-XawDisplayList *XawCreateDisplayList(String string, Screen *screen,
+_XawDisplayList *XawCreateDisplayList(String string, Screen *screen,
 				     Colormap colormap, int depth)
 {
-  XawDisplayList *dlist;
+  _XawDisplayList *dlist;
   XawDLClass *lc, *xlibc;
   XawDLData *data;
   XawDLInfo *info;
@@ -219,7 +222,7 @@ XawDisplayList *XawCreateDisplayList(String string, Screen *screen,
       xlibc = XawGetDisplayListClass(xlib);
     }
 
-  dlist = (XawDisplayList *)XtMalloc(sizeof(XawDisplayList));
+  dlist = (_XawDisplayList *)XtMalloc(sizeof(_XawDisplayList));
   dlist->procs = NULL;
   dlist->num_procs = 0;
   dlist->data = NULL;
@@ -251,6 +254,7 @@ XawDisplayList *XawCreateDisplayList(String string, Screen *screen,
 	  return (NULL);
 	}
       fp = fname;
+      /*COSTCOND*/
       while (1)
 	{
 	  fp = strchr(fp, ':');
@@ -394,7 +398,7 @@ XawDisplayList *XawCreateDisplayList(String string, Screen *screen,
 }
 
 String
-XawDisplayListString(XawDisplayList *dlist)
+XawDisplayListString(_XawDisplayList *dlist)
 {
   if (!dlist || dlist->qrep == NULLQUARK)
     return ("");
@@ -402,7 +406,7 @@ XawDisplayListString(XawDisplayList *dlist)
 }
 
 void
-XawDestroyDisplayList(XawDisplayList *dlist)
+XawDestroyDisplayList(_XawDisplayList *dlist)
 {
   Cardinal i, j;
   XawDLProc *proc;
@@ -478,10 +482,10 @@ typedef struct _XawDLArcArgs {
   int angle2;
 } XawDLArcArgs;
 
-#define X_ARG(x) (((x).denom != 0) ?					      \
+#define X_ARG(x) (Position)(((x).denom != 0) ?				      \
 		  ((float)XtWidth(w) * ((float)(x).pos / (float)(x).denom)) : \
 		  ((x).high ? XtWidth(w) - (x).pos : (x).pos))
-#define Y_ARG(x) (((x).denom != 0) ?					      \
+#define Y_ARG(x) (Position)(((x).denom != 0) ?				      \
 		  ((float)XtHeight(w) * ((float)(x).pos / (float)(x).denom)): \
 		  ((x).high ? XtHeight(w) - (x).pos : (x).pos))
 
@@ -821,6 +825,7 @@ DlFillArc(Widget w, XtPointer args, XtPointer data,
 	   arc->angle1, arc->angle2);
 }
 
+/*ARGSUSED*/
 static void
 DlMask(Widget w, XtPointer args, XtPointer data,
        XEvent *event, Region region)
@@ -907,9 +912,9 @@ static Dl_init dl_init[] =
 };
 
 void
-XawDisplayListInitialize()
+XawDisplayListInitialize(void)
 {
-  static Boolean first_time = True;
+  static Bool first_time = True;
   XawDLClass *lc;
   Cardinal i;
 
@@ -1148,7 +1153,7 @@ qcmp_dlist_info(register _Xconst void *left, register _Xconst void *right)
   return (strcmp((*(XawDLInfo **)left)->name, (*(XawDLInfo **)right)->name));
 }
 
-Boolean XawDeclareDisplayListProc(XawDLClass *lc, String name,
+Bool XawDeclareDisplayListProc(XawDLClass *lc, String name,
 				  XawDisplayListProc proc)
 {
   XawDLInfo *info;

@@ -55,52 +55,96 @@ SOFTWARE.
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
-#include <X11/Xmu/Misc.h>
-#include <X11/Xaw/XawInit.h>
-#include <X11/Xaw/CommandP.h>
-#include <X11/Xmu/Converters.h>
 #include <X11/extensions/shape.h>
+#include <X11/Xmu/Converters.h>
+#include <X11/Xmu/Misc.h>
+#include <X11/Xaw/CommandP.h>
+#include <X11/Xaw/XawInit.h>
+#include "Private.h"
 
 #define DEFAULT_HIGHLIGHT_THICKNESS 2
 #define DEFAULT_SHAPE_HIGHLIGHT 32767
 
-/****************************************************************
- *
- * Full class record constant
- *
- ****************************************************************/
+/*
+ * Class Methods
+ */
+static void XawCommandClassInitialize(void);
+static void XawCommandDestroy(Widget);
+static void XawCommandInitialize(Widget, Widget, ArgList, Cardinal*);
+static void XawCommandRealize(Widget, Mask*, XSetWindowAttributes*);
+static void XawCommandResize(Widget);
+static void XawCommandRedisplay(Widget, XEvent*, Region);
+static Boolean XawCommandSetValues(Widget, Widget, Widget, ArgList, Cardinal*);
 
-/* Private Data */
+/*
+ * Prototypes
+ */
+static GC Get_GC(CommandWidget, Pixel, Pixel);
+static void PaintCommandWidget(Widget, XEvent*, Region, Bool);
+static Region HighlightRegion(CommandWidget);
+static Bool ShapeButton(CommandWidget, Bool);
+static void XawCommandToggle(Widget);
 
+/*
+ * Actions
+ */
+static void Highlight(Widget, XEvent*, String*, Cardinal*);
+static void Notify(Widget, XEvent*, String*, Cardinal*);
+static void Reset(Widget, XEvent*, String*, Cardinal*);
+static void Set(Widget, XEvent*, String*, Cardinal*);
+static void Unhighlight(Widget, XEvent*, String*, Cardinal*);
+static void Unset(Widget, XEvent*, String*, Cardinal*);
+
+/*
+ * Initialization
+ */
 static char defaultTranslations[] =
-    "<EnterWindow>:	highlight()		\n\
-     <LeaveWindow>:	reset()			\n\
-     <Btn1Down>:	set()			\n\
-     <Btn1Up>:		notify() unset()	";
+"<Enter>:"	"highlight()\n"
+"<Leave>:"	"reset()\n"
+"<Btn1Down>:"	"set()\n"
+"<Btn1Up>:"	"notify() unset()\n"
+;
 
 #define offset(field) XtOffsetOf(CommandRec, field)
 static XtResource resources[] = { 
-   {XtNcallback, XtCCallback, XtRCallback, sizeof(XtPointer), 
-      offset(command.callbacks), XtRCallback, (XtPointer)NULL},
-   {XtNhighlightThickness, XtCThickness, XtRDimension, sizeof(Dimension),
-      offset(command.highlight_thickness), XtRImmediate,
-      (XtPointer) DEFAULT_SHAPE_HIGHLIGHT},
-   {XtNshapeStyle, XtCShapeStyle, XtRShapeStyle, sizeof(int),
-      offset(command.shape_style), XtRImmediate, (XtPointer)XawShapeRectangle},
-   {XtNcornerRoundPercent, XtCCornerRoundPercent, 
-	XtRDimension, sizeof(Dimension),
-	offset(command.corner_round), XtRImmediate, (XtPointer) 25}
+  {
+    XtNcallback,
+    XtCCallback,
+    XtRCallback,
+    sizeof(XtPointer),
+    offset(command.callbacks),
+    XtRCallback,
+    NULL
+  },
+  {
+    XtNhighlightThickness,
+    XtCThickness,
+    XtRDimension,
+    sizeof(Dimension),
+    offset(command.highlight_thickness),
+    XtRImmediate,
+    (XtPointer)DEFAULT_SHAPE_HIGHLIGHT
+  },
+  {
+    XtNshapeStyle,
+    XtCShapeStyle,
+    XtRShapeStyle,
+    sizeof(int),
+    offset(command.shape_style),
+    XtRImmediate,
+    (XtPointer)XawShapeRectangle
+  },
+  {
+    XtNcornerRoundPercent,
+    XtCCornerRoundPercent,
+    XtRDimension,
+    sizeof(Dimension),
+    offset(command.corner_round),
+    XtRImmediate,
+    (XtPointer)25
+  },
 };
 #undef offset
-
-static Boolean SetValues();
-static void Initialize(), Redisplay(), Set(), Reset(), Notify(), Unset();
-static void Highlight(), Unhighlight(), Destroy(), PaintCommandWidget();
-static void ClassInitialize();
-static Boolean ShapeButton();
-static void Realize(), Resize();
-
-static void XawCommandToggle();
 
 static XtActionsRec actionsList[] = {
   {"set",		Set},
@@ -114,29 +158,30 @@ static XtActionsRec actionsList[] = {
 #define SuperClass ((LabelWidgetClass)&labelClassRec)
 
 CommandClassRec commandClassRec = {
+  /* core */
   {
-    (WidgetClass) SuperClass,		/* superclass		  */	
+    (WidgetClass)SuperClass,		/* superclass */
     "Command",				/* class_name		  */
     sizeof(CommandRec),			/* size			  */
-    ClassInitialize,			/* class_initialize	  */
+    XawCommandClassInitialize,		/* class_initialize */
     NULL,				/* class_part_initialize  */
-    FALSE,				/* class_inited		  */
-    Initialize,				/* initialize		  */
+    False,				/* class_inited */
+    XawCommandInitialize,		/* initialize */
     NULL,				/* initialize_hook	  */
-    Realize,				/* realize		  */
+    XawCommandRealize,			/* realize */
     actionsList,			/* actions		  */
     XtNumber(actionsList),		/* num_actions		  */
     resources,				/* resources		  */
-    XtNumber(resources),		/* resource_count	  */
+    XtNumber(resources),		/* num_resources */
     NULLQUARK,				/* xrm_class		  */
-    FALSE,				/* compress_motion	  */
-    TRUE,				/* compress_exposure	  */
-    TRUE,				/* compress_enterleave    */
-    FALSE,				/* visible_interest	  */
-    Destroy,				/* destroy		  */
-    Resize,				/* resize		  */
-    Redisplay,				/* expose		  */
-    SetValues,				/* set_values		  */
+    False,				/* compress_motion */
+    True,				/* compress_exposure */
+    True,				/* compress_enterleave */
+    False,				/* visible_interest */
+    XawCommandDestroy,			/* destroy */
+    XawCommandResize,			/* resize */
+    XawCommandRedisplay,		/* expose */
+    XawCommandSetValues,		/* set_values */
     NULL,				/* set_values_hook	  */
     XtInheritSetValuesAlmost,		/* set_values_almost	  */
     NULL,				/* get_values_hook	  */
@@ -146,32 +191,29 @@ CommandClassRec commandClassRec = {
     defaultTranslations,		/* tm_table		  */
     XtInheritQueryGeometry,		/* query_geometry	  */
     XtInheritDisplayAccelerator,	/* display_accelerator	  */
-    NULL				/* extension		  */
-  },  /* CoreClass fields initialization */
+    NULL,				/* extension */
+  },
+  /* simple */
   {
-    XtInheritChangeSensitive		/* change_sensitive	*/
-  },  /* SimpleClass fields initialization */
+    XtInheritChangeSensitive,		/* change_sensitive */
+  },
+  /* label */
   {
-    0,                                     /* field not used    */
-  },  /* LabelClass fields initialization */
+    0,					/* not used */
+  },
+  /* command */
   {
-    0,                                     /* field not used    */
-  },  /* CommandClass fields initialization */
+    0,					/* not used */
+  },
 };
 
-  /* for public consumption */
-WidgetClass commandWidgetClass = (WidgetClass) &commandClassRec;
+WidgetClass commandWidgetClass = (WidgetClass)&commandClassRec;
 
-/****************************************************************
- *
- * Private Procedures
- *
- ****************************************************************/
-
+/*
+ * Implementation
+ */
 static GC 
-Get_GC(cbw, fg, bg)
-CommandWidget cbw;
-Pixel fg, bg;
+Get_GC(CommandWidget cbw, Pixel fg, Pixel bg)
 {
   XGCValues	values;
   
@@ -180,37 +222,36 @@ Pixel fg, bg;
   values.font		= cbw->label.font->fid;
   values.cap_style = CapProjecting;
   
-  if (cbw->command.highlight_thickness > 1 )
+  if (cbw->command.highlight_thickness > 1)
     values.line_width   = cbw->command.highlight_thickness;
   else 
     values.line_width   = 0;
   
-  if ( cbw->simple.international == True )
-      return XtAllocateGC((Widget)cbw, 0, 
-		 (GCForeground|GCBackground|GCLineWidth|GCCapStyle),
-		 &values, GCFont, 0 );
+  if (cbw->simple.international == True)
+    return (XtAllocateGC((Widget)cbw, 0,
+			 GCForeground | GCBackground | GCLineWidth
+			 | GCCapStyle, &values, GCFont, 0));
   else
-      return XtGetGC((Widget)cbw,
-		 (GCForeground|GCBackground|GCFont|GCLineWidth|GCCapStyle),
-		 &values);
+    return (XtGetGC((Widget)cbw,
+		    GCForeground | GCBackground | GCFont | GCLineWidth
+		    | GCCapStyle, &values));
 }
 
-
-/* ARGSUSED */
+/*ARGSUSED*/
 static void 
-Initialize(request, new, args, num_args)
-Widget request, new;
-ArgList args;			/* unused */
-Cardinal *num_args;		/* unused */
+XawCommandInitialize(Widget request, Widget cnew,
+		     ArgList args, Cardinal *num_args)
 {
-  CommandWidget cbw = (CommandWidget) new;
+  CommandWidget cbw = (CommandWidget)cnew;
   int shape_event_base, shape_error_base;
 
   if (cbw->command.shape_style != XawShapeRectangle
-      && !XShapeQueryExtension(XtDisplay(new), &shape_event_base, 
+      && !XShapeQueryExtension(XtDisplay(cnew), &shape_event_base,
 			       &shape_error_base))
       cbw->command.shape_style = XawShapeRectangle;
-  if (cbw->command.highlight_thickness == DEFAULT_SHAPE_HIGHLIGHT) {
+
+  if (cbw->command.highlight_thickness == DEFAULT_SHAPE_HIGHLIGHT)
+    {
       if (cbw->command.shape_style != XawShapeRectangle)
 	  cbw->command.highlight_thickness = 0;
       else
@@ -221,26 +262,26 @@ Cardinal *num_args;		/* unused */
 				  cbw->core.background_pixel);
   cbw->command.inverse_GC = Get_GC(cbw, cbw->core.background_pixel, 
 				   cbw->label.foreground);
-  XtReleaseGC(new, cbw->label.normal_GC);
+  XtReleaseGC(cnew, cbw->label.normal_GC);
   cbw->label.normal_GC = cbw->command.normal_GC;
 
-  cbw->command.set = FALSE;
+  cbw->command.set = False;
   cbw->command.highlighted = HighlightNone;
 }
 
 static Region 
-HighlightRegion(cbw)
-CommandWidget cbw;
+HighlightRegion(CommandWidget cbw)
 {
   static Region outerRegion = NULL, innerRegion, emptyRegion;
   XRectangle rect;
 
-  if (cbw->command.highlight_thickness == 0 ||
-      cbw->command.highlight_thickness >
-      (Dimension) ((Dimension) Min(cbw->core.width, cbw->core.height)/2))
-    return(NULL);
+  if (cbw->command.highlight_thickness == 0
+      || cbw->command.highlight_thickness
+      > Min(XtWidth(cbw), XtHeight(cbw)) / 2)
+    return (NULL);
 
-  if (outerRegion == NULL) {
+  if (outerRegion == NULL)
+    {
     /* save time by allocating scratch regions only once. */
     outerRegion = XCreateRegion();
     innerRegion = XCreateRegion();
@@ -248,25 +289,23 @@ CommandWidget cbw;
   }
 
   rect.x = rect.y = 0;
-  rect.width = cbw->core.width;
-  rect.height = cbw->core.height;
-  XUnionRectWithRegion( &rect, emptyRegion, outerRegion );
+  rect.width = XtWidth(cbw);
+  rect.height = XtHeight(cbw);
+  XUnionRectWithRegion(&rect, emptyRegion, outerRegion);
   rect.x = rect.y = cbw->command.highlight_thickness;
   rect.width -= cbw->command.highlight_thickness * 2;
   rect.height -= cbw->command.highlight_thickness * 2;
-  XUnionRectWithRegion( &rect, emptyRegion, innerRegion );
-  XSubtractRegion( outerRegion, innerRegion, outerRegion );
-  return outerRegion;
+  XUnionRectWithRegion(&rect, emptyRegion, innerRegion);
+  XSubtractRegion(outerRegion, innerRegion, outerRegion);
+
+  return (outerRegion);
 }
 
 /***************************
-*
 *  Action Procedures
-*
 ***************************/
-void
-XawCommandToggle(w)
-     Widget w;
+static void
+XawCommandToggle(Widget w)
 {
   CommandWidget xaw = (CommandWidget)w;
   Arg args[2];
@@ -280,73 +319,61 @@ XawCommandToggle(w)
   XtSetValues(w, args, num_args);
 }
 
-/* ARGSUSED */
+/*ARGSUSED*/
 static void 
-Set(w,event,params,num_params)
-Widget w;
-XEvent *event;
-String *params;		/* unused */
-Cardinal *num_params;	/* unused */
+Set(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
   CommandWidget cbw = (CommandWidget)w;
 
   if (cbw->command.set)
     return;
 
-  cbw->command.set= TRUE;
+  cbw->command.set= True;
   XawCommandToggle(w);
 }
 
-/* ARGSUSED */
+/*ARGSUSED*/
 static void
-Unset(w,event,params,num_params)
-Widget w;
-XEvent *event;
-String *params;		/* unused */
-Cardinal *num_params;
+Unset(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
   CommandWidget cbw = (CommandWidget)w;
 
   if (!cbw->command.set)
     return;
 
-  cbw->command.set = FALSE;
+  cbw->command.set = False;
   XawCommandToggle(w);
 }
 
-/* ARGSUSED */
+/*ARGSUSED*/
 static void 
-Reset(w,event,params,num_params)
-Widget w;
-XEvent *event;
-String *params;		/* unused */
-Cardinal *num_params;   /* unused */
+Reset(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
   CommandWidget cbw = (CommandWidget)w;
 
-  if (cbw->command.set) {
+  if (cbw->command.set)
+    {
     cbw->command.highlighted = HighlightNone;
     Unset(w, event, params, num_params);
-  } else
+    }
+  else
     Unhighlight(w, event, params, num_params);
 }
 
-/* ARGSUSED */
+/*ARGSUSED*/
 static void 
-Highlight(w,event,params,num_params)
-Widget w;
-XEvent *event;
-String *params;		
-Cardinal *num_params;	
+Highlight(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
   CommandWidget cbw = (CommandWidget)w;
 
-  if ( *num_params == (Cardinal) 0) 
+  if (*num_params == (Cardinal)0)
     cbw->command.highlighted = HighlightWhenUnset;
-  else {
-    if ( *num_params != (Cardinal) 1) 
+  else
+    {
+      if (*num_params != (Cardinal)1)
       XtWarning("Too many parameters passed to highlight action table.");
-    switch (params[0][0]) {
+      switch (params[0][0])
+	{
     case 'A':
     case 'a':
       cbw->command.highlighted = HighlightAlways;
@@ -358,31 +385,23 @@ Cardinal *num_params;
   }
 
   if (XtIsRealized(w))
-    PaintCommandWidget(w, event, HighlightRegion(cbw), TRUE);
+    PaintCommandWidget(w, event, HighlightRegion(cbw), True);
 }
 
-/* ARGSUSED */
+/*ARGSUSED*/
 static void 
-Unhighlight(w,event,params,num_params)
-Widget w;
-XEvent *event;
-String *params;		/* unused */
-Cardinal *num_params;	/* unused */
+Unhighlight(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
   CommandWidget cbw = (CommandWidget)w;
 
   cbw->command.highlighted = HighlightNone;
   if (XtIsRealized(w))
-    PaintCommandWidget(w, event, HighlightRegion(cbw), TRUE);
+    PaintCommandWidget(w, event, HighlightRegion(cbw), True);
 }
 
-/* ARGSUSED */
+/*ARGSUSED*/
 static void 
-Notify(w,event,params,num_params)
-Widget w;
-XEvent *event;
-String *params;		/* unused */
-Cardinal *num_params;	/* unused */
+Notify(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
   CommandWidget cbw = (CommandWidget)w; 
 
@@ -394,218 +413,199 @@ Cardinal *num_params;	/* unused */
     XtCallCallbackList(w, cbw->command.callbacks, (XtPointer) NULL);
 }
 
-/*
- * Repaint the widget window
- */
-
-/************************
-*
-*  REDISPLAY (DRAW)
-*
-************************/
-
-/* ARGSUSED */
-static void 
-Redisplay(w, event, region)
-Widget w;
-XEvent *event;
-Region region;
+static void
+XawCommandRedisplay(Widget w, XEvent *event, Region region)
 {
-  PaintCommandWidget(w, event, region, FALSE);
+  PaintCommandWidget(w, event, region, False);
 }
 
-/*	Function Name: PaintCommandWidget
- *	Description: Paints the command widget.
- *	Arguments: w - the command widget.
- *                 region - region to paint (passed to the superclass).
+/*
+ * Function:
+ *	PaintCommandWidget
+ * Parameters:
+ *	w      - command widget
+ *	region - region to paint (passed to the superclass)
  *                 change - did it change either set or highlight state?
- *	Returns: none
  */
-
 static void 
-PaintCommandWidget(w, event, region, change)
-Widget w;
-XEvent *event;
-Region region;
-Boolean change;
+PaintCommandWidget(Widget w, XEvent *event, Region region, Bool change)
 {
-  CommandWidget cbw = (CommandWidget) w;
-  Boolean very_thick;
+  CommandWidget cbw = (CommandWidget)w;
+  Bool very_thick;
   GC norm_gc, rev_gc;
    
-  very_thick = cbw->command.highlight_thickness >
-               (Dimension)((Dimension) Min(cbw->core.width, cbw->core.height)/2);
+  very_thick = cbw->command.highlight_thickness
+    > Min(XtWidth(cbw), XtHeight(cbw)) / 2;
 
-  if (cbw->command.highlight_thickness <= 0) {
+  if (cbw->command.highlight_thickness == 0)
+    {
     (*SuperClass->core_class.expose) (w, event, region);
     return;
   }
 
-/*
- * If we are set then use the same colors as if we are not highlighted. 
+  /*
+   * If we are set then use the same colors as if we are not highlighted
  */
 
-  if (cbw->command.highlighted != HighlightNone) {
+  if (cbw->command.highlighted != HighlightNone)
+    {
     norm_gc = cbw->command.inverse_GC;
     rev_gc = cbw->command.normal_GC;
   }
-  else {
+  else
+    {
     norm_gc = cbw->command.normal_GC;
     rev_gc = cbw->command.inverse_GC;
   }
 
-  if ( !( (!change && (cbw->command.highlighted == HighlightNone)) ||
-	  ((cbw->command.highlighted == HighlightWhenUnset) &&
-	   (cbw->command.set))) ) {
-    if (very_thick) {
+  if (!((!change && cbw->command.highlighted == HighlightNone)
+	|| (cbw->command.highlighted == HighlightWhenUnset
+	    && cbw->command.set)))
+    {
+      if (very_thick)
       XFillRectangle(XtDisplay(w),XtWindow(w), rev_gc,
-		     0, 0, cbw->core.width, cbw->core.height);
-    }
-    else {
+		       0, 0, XtWidth(cbw), XtHeight(cbw));
+      else
+	{
       /* wide lines are centered on the path, so indent it */
-      if (cbw->core.background_pixmap != XtUnspecifiedPixmap &&
-          rev_gc == cbw->command.inverse_GC)
+	  if (cbw->core.background_pixmap != XtUnspecifiedPixmap
+	      && rev_gc == cbw->command.inverse_GC)
 	{
 	  XClearArea(XtDisplay(w), XtWindow(w),
-		     0, 0, cbw->core.width, cbw->command.highlight_thickness,
+			 0, 0, XtWidth(cbw), cbw->command.highlight_thickness,
 		     False);
 	  XClearArea(XtDisplay(w), XtWindow(w),
 		     0, cbw->command.highlight_thickness,
 		     cbw->command.highlight_thickness,
-		     cbw->core.height - (cbw->command.highlight_thickness<<1),
+			 XtHeight(cbw) - (cbw->command.highlight_thickness<<1),
 		     False);
 	  XClearArea(XtDisplay(w), XtWindow(w),
-		     cbw->core.width - cbw->command.highlight_thickness,
+			 XtWidth(cbw) - cbw->command.highlight_thickness,
 		     cbw->command.highlight_thickness,
 		     cbw->command.highlight_thickness,
-		     cbw->core.height - (cbw->command.highlight_thickness<<1),
+			 XtHeight(cbw) - (cbw->command.highlight_thickness<<1),
 		     False);
 	  XClearArea(XtDisplay(w), XtWindow(w),
-		     0, cbw->core.height - cbw->command.highlight_thickness,
-		     cbw->core.width, cbw->command.highlight_thickness,
+			 0, XtHeight(cbw) - cbw->command.highlight_thickness,
+			 XtWidth(cbw), cbw->command.highlight_thickness,
 		     False);
 	}
-      else {
-	int offset = cbw->command.highlight_thickness/2;
+	  else
+	    {
+	      int offset = cbw->command.highlight_thickness / 2;
+
 	XDrawRectangle(XtDisplay(w),XtWindow(w), rev_gc, offset, offset, 
-		       cbw->core.width - cbw->command.highlight_thickness,
-		       cbw->core.height - cbw->command.highlight_thickness);
+			     XtWidth(cbw) - cbw->command.highlight_thickness,
+			     XtHeight(cbw) - cbw->command.highlight_thickness);
       }
     }
   }
 
-  (*SuperClass->core_class.expose) (w, event, region);
+  (*SuperClass->core_class.expose)(w, event, region);
 }
 
 static void 
-Destroy(w)
-Widget w;
+XawCommandDestroy(Widget w)
 {
-  CommandWidget cbw = (CommandWidget) w;
+  CommandWidget cbw = (CommandWidget)w;
 
-  /* so Label can release it */
-  XtReleaseGC( w, cbw->command.inverse_GC );
+  /* Label will release cbw->command.normal_GC */
+  XtReleaseGC(w, cbw->command.inverse_GC);
 }
 
-/*
- * Set specified arguments into widget
- */
-
-/* ARGSUSED */
+/*ARGSUSED*/
 static Boolean 
-SetValues (current, request, new, args, num_args)
-Widget current, request, new;
-ArgList args;
-Cardinal *num_args;
+XawCommandSetValues(Widget current, Widget request, Widget cnew,
+		    ArgList args, Cardinal *num_args)
 {
-  CommandWidget oldcbw = (CommandWidget) current;
-  CommandWidget cbw = (CommandWidget) new;
+  CommandWidget oldcbw = (CommandWidget)current;
+  CommandWidget cbw = (CommandWidget)cnew;
   Boolean redisplay = False;
 
-  if ( oldcbw->core.sensitive != cbw->core.sensitive && !cbw->core.sensitive) {
-    /* about to become insensitive */
+  if (oldcbw->core.sensitive != cbw->core.sensitive && !cbw->core.sensitive)
+    {
     if (cbw->command.set)
-      XawCommandToggle(new);
-    cbw->command.set = FALSE;
+	XawCommandToggle(cnew);
+      cbw->command.set = False;
     cbw->command.highlighted = HighlightNone;
-    redisplay = TRUE;
+      redisplay = True;
   }
   
-  if ( (oldcbw->label.foreground != cbw->label.foreground)           ||
-       (oldcbw->core.background_pixel != cbw->core.background_pixel) ||
-       (oldcbw->command.highlight_thickness != 
-                                   cbw->command.highlight_thickness) ||
-       (oldcbw->label.font != cbw->label.font) ) 
+  if (oldcbw->label.foreground != cbw->label.foreground
+      || oldcbw->core.background_pixel != cbw->core.background_pixel
+      || oldcbw->command.highlight_thickness
+      != cbw->command.highlight_thickness
+      || oldcbw->label.font != cbw->label.font)
   {
-    XtReleaseGC(new, cbw->command.inverse_GC);
+      XtReleaseGC(cnew, cbw->command.inverse_GC);
 
     cbw->command.normal_GC = Get_GC(cbw, cbw->label.foreground, 
 				    cbw->core.background_pixel);
     cbw->command.inverse_GC = Get_GC(cbw, cbw->core.background_pixel, 
 				     cbw->label.foreground);
-    XtReleaseGC(new, cbw->label.normal_GC);
+      XtReleaseGC(cnew, cbw->label.normal_GC);
     cbw->label.normal_GC = cbw->command.normal_GC;
     
     redisplay = True;
   }
 
-  if ( XtIsRealized(new)
+  if (XtIsRealized(cnew)
        && oldcbw->command.shape_style != cbw->command.shape_style
-       && !ShapeButton(cbw, TRUE))
-  {
+      && !ShapeButton(cbw, True))
       cbw->command.shape_style = oldcbw->command.shape_style;
-  }
 
   return (redisplay);
 }
 
-static void ClassInitialize()
+static void
+XawCommandClassInitialize(void)
 {
     XawInitializeWidgetSet();
-    XtSetTypeConverter( XtRString, XtRShapeStyle, XmuCvtStringToShapeStyle,
-		        (XtConvertArgList)NULL, 0, XtCacheNone, (XtDestructor)NULL );
+  XtSetTypeConverter(XtRString, XtRShapeStyle, XmuCvtStringToShapeStyle,
+		     NULL, 0, XtCacheNone, NULL);
+  XtSetTypeConverter(XtRShapeStyle, XtRString, XmuCvtShapeStyleToString,
+		     NULL, 0, XtCacheNone, NULL);
 }
 
-
-static Boolean
-ShapeButton(cbw, checkRectangular)
-CommandWidget cbw;
-Boolean checkRectangular;
+static Bool
+ShapeButton(CommandWidget cbw, Bool checkRectangular)
 {
     Dimension corner_size = 0;
 
-    if ( (cbw->command.shape_style == XawShapeRoundedRectangle) ) {
-	corner_size = (cbw->core.width < cbw->core.height) ? cbw->core.width 
-	                                                   : cbw->core.height;
-	corner_size = (int) (corner_size * cbw->command.corner_round) / 100;
+  if ((cbw->command.shape_style == XawShapeRoundedRectangle))
+    {
+      corner_size = (XtWidth(cbw) < XtHeight(cbw))
+	? XtWidth(cbw) : XtHeight(cbw);
+      corner_size = (corner_size * cbw->command.corner_round) / 100;
     }
 
-    if (checkRectangular || cbw->command.shape_style != XawShapeRectangle) {
+  if (checkRectangular || cbw->command.shape_style != XawShapeRectangle)
+    {
 	if (!XmuReshapeWidget((Widget) cbw, cbw->command.shape_style,
-			      corner_size, corner_size)) {
+			    corner_size, corner_size))
+	{
 	    cbw->command.shape_style = XawShapeRectangle;
-	    return(False);
+	  return (False);
 	}
     }
-    return(TRUE);
+
+  return (True);
 }
 
-static void Realize(w, valueMask, attributes)
-    Widget w;
-    Mask *valueMask;
-    XSetWindowAttributes *attributes;
+static void
+XawCommandRealize(Widget w, Mask *valueMask, XSetWindowAttributes *attributes)
 {
     (*commandWidgetClass->core_class.superclass->core_class.realize)
 	(w, valueMask, attributes);
 
-    ShapeButton( (CommandWidget) w, FALSE);
+  ShapeButton((CommandWidget)w, False);
 }
 
-static void Resize(w)
-    Widget w;
+static void
+XawCommandResize(Widget w)
 {
     if (XtIsRealized(w)) 
-	ShapeButton( (CommandWidget) w, FALSE);
+    ShapeButton((CommandWidget) w, False);
 
     (*commandWidgetClass->core_class.superclass->core_class.resize)(w);
 }

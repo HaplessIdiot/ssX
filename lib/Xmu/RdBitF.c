@@ -26,7 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86: xc/lib/Xmu/RdBitF.c,v 3.5 1998/06/04 16:43:09 hohndel Exp $ */
+/* $XFree86: xc/lib/Xmu/RdBitF.c,v 3.6 1998/06/28 12:32:30 dawes Exp $ */
 
 /*
  * This file contains miscellaneous utility routines and is not part of the
@@ -57,6 +57,12 @@ in this Software without prior written authorization from the X Consortium.
 
 #define MAX_SIZE 255
 
+/*
+ * Prototypes
+ */
+static void initHexTable(void);
+static int NextInt(FILE*);
+
 /* shared data for the image read/parse logic */
 static short hexTable[256];		/* conversion value */
 static Bool initialized = False;	/* easier to fill in at run time */
@@ -66,7 +72,8 @@ static Bool initialized = False;	/* easier to fill in at run time */
  *	Table index for the hex values. Initialized once, first time.
  *	Used for translation value or delimiter significance lookup.
  */
-static void initHexTable()
+static void
+initHexTable(void)
 {
     /*
      * We build the table at run time for several reasons:
@@ -99,8 +106,8 @@ static void initHexTable()
 /*
  *	read next hex value in the input stream, return -1 if EOF
  */
-static int NextInt (fstream)
-    FILE *fstream;
+static int
+NextInt(FILE *fstream)
 {
     int	ch;
     int	value = 0;
@@ -135,11 +142,9 @@ static int NextInt (fstream)
  * its arguments won't have been touched.  This routine should look as much
  * like the Xlib routine XReadBitmapfile as possible.
  */
-int XmuReadBitmapData (fstream, width, height, datap, x_hot, y_hot)
-    FILE *fstream;			/* handle on file  */
-    unsigned int *width, *height;	/* RETURNED */
-    unsigned char **datap;		/* RETURNED */
-    int *x_hot, *y_hot;			/* RETURNED */
+int
+XmuReadBitmapData(FILE *fstream, unsigned int *width, unsigned int *height,
+		  char **datap, int *x_hot, int *y_hot)
 {
     unsigned char *data = NULL;		/* working variable */
     char line[MAX_SIZE];		/* input line from file */
@@ -249,7 +254,7 @@ int XmuReadBitmapData (fstream, width, height, datap, x_hot, y_hot)
 	RETURN (BitmapFileInvalid);
     }
 
-    *datap = data;
+    *datap = (char *)data;
     data = NULL;
     *width = ww;
     *height = hh;
@@ -260,11 +265,8 @@ int XmuReadBitmapData (fstream, width, height, datap, x_hot, y_hot)
 }
 
 #if defined(WIN32)
-static int access_file (path, pathbuf, len_pathbuf, pathret)
-    char* path;
-    char* pathbuf;
-    int len_pathbuf;
-    char** pathret;
+static int
+access_file(char *path, char *pathbuf, int len_pathbuf, char **pathret)
 {
     if (access (path, F_OK) == 0) {
 	if (strlen (path) < len_pathbuf)
@@ -279,11 +281,8 @@ static int access_file (path, pathbuf, len_pathbuf, pathret)
     return 0;
 }
 
-static int AccessFile (path, pathbuf, len_pathbuf, pathret)
-    char* path;
-    char* pathbuf;
-    int len_pathbuf;
-    char** pathret;
+static int
+AccessFile(char *path, char *pathbuf, int len_pathbuf, char **pathret)
 {
 #ifndef MAX_PATH
 #define MAX_PATH 512
@@ -356,9 +355,8 @@ static int AccessFile (path, pathbuf, len_pathbuf, pathret)
     return 0;
 }
 
-FILE* fopen_file(path, mode)
-    char* path;
-    char* mode;
+FILE *
+fopen_file(char *path, char *mode)
 {
     char buf[MAX_PATH];
     char* bufp;
@@ -380,17 +378,10 @@ FILE* fopen_file(path, mode)
 #endif
 
 
-#if NeedFunctionPrototypes
-int XmuReadBitmapDataFromFile (_Xconst char *filename, unsigned int *width, 
+int
+XmuReadBitmapDataFromFile(_Xconst char *filename, unsigned int *width, 
 			       unsigned int *height, unsigned char **datap,
 			       int *x_hot, int *y_hot)
-#else
-int XmuReadBitmapDataFromFile (filename, width, height, datap, x_hot, y_hot)
-    char *filename;
-    unsigned int *width, *height;	/* RETURNED */
-    unsigned char **datap;		/* RETURNED */
-    int *x_hot, *y_hot;			/* RETURNED */
-#endif
 {
     FILE *fstream;
     int status;
@@ -401,7 +392,8 @@ int XmuReadBitmapDataFromFile (filename, width, height, datap, x_hot, y_hot)
     if ((fstream = fopen_file (filename, "r")) == NULL) {
 	return BitmapOpenFailed;
     }
-    status = XmuReadBitmapData (fstream, width, height, datap, x_hot, y_hot);
+    status = XmuReadBitmapData(fstream, width, height,
+			       (char **)datap, x_hot, y_hot);
     fclose (fstream);
     return status;
 }

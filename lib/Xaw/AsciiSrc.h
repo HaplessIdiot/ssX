@@ -62,24 +62,17 @@ in this Software without prior written authorization from the X Consortium.
 
 */
  
-/* Class record constants */
-
 extern WidgetClass asciiSrcObjectClass;
 
 typedef struct _AsciiSrcClassRec *AsciiSrcObjectClass;
 typedef struct _AsciiSrcRec      *AsciiSrcObject;
 
-/*
- * Just to make people's lives a bit easier.
- */
-
 #define AsciiSourceObjectClass AsciiSrcObjectClass
 #define AsciiSourceObject      AsciiSrcObject
 
 /*
- * Resource Definitions.
+ * Resource Definitions
  */
-
 #define XtCDataCompression "DataCompression"
 #define XtCPieceSize "PieceSize"
 #define XtCType "Type"
@@ -95,56 +88,89 @@ typedef struct _AsciiSrcRec      *AsciiSrcObject;
 #define XtEstring "string"
 #define XtEfile "file"
 
-typedef enum {XawAsciiFile, XawAsciiString} XawAsciiType;
+typedef enum {
+  XawAsciiFile,
+  XawAsciiString
+} XawAsciiType;
 
-/************************************************************
- *
+/*
  * Public routines
- *
- ************************************************************/
+ */
 
 _XFUNCPROTOBEGIN
 
-/*	Function Name: XawAsciiSourceFreeString
- *	Description: Frees the string returned by a get values call
+/*
+ * Function:
+ *	XawAsciiSourceFreeString
+ *
+ * Parameters:
+ *	w - AsciiSrc object
+ *
+ * Description:
+ *	  Frees the string returned by a get values call
  *		     on the string when the source is of type string.
- *	Arguments: w - the AsciiSrc object.
- *	Returns: none.
  */
-void XawAsciiSourceFreeString(
-    Widget		/* w */
-);
+void XawAsciiSourceFreeString
+(
+ Widget		w
+ );
 
-/*	Function Name: XawAsciiSave
- *	Description: Saves all the pieces into a file or string as required.
- *	Arguments: w - the asciiSrc Object.
- *	Returns: TRUE if the save was successful.
+/*
+ * Function:
+ *	XawAsciiSave
+ *
+ * Arguments:
+ *	w - asciiSrc Object.
+ *
+ * Description:
+ *	Saves all the pieces into a file or string as required.
+ *
+ * Returns:
+ *	True if the save was successful
  */
-Bool XawAsciiSave(
-    Widget		/* w */
-);
+Bool XawAsciiSave
+(
+ Widget		w
+ );
 
-/*	Function Name: XawAsciiSaveAsFile
- *	Description: Save the current buffer as a file.
- *	Arguments: w - the asciiSrc object.
- *		   name - name of the file to save this file into.
- *	Returns: True if the save was successful.
+/*
+ * Function:
+ *	XawAsciiSaveAsFile
+ *
+ * Parameters:
+ *	w    - asciiSrc object
+ *	name - name of the file to save this file into
+ *
+ * Description:
+ *	Save the current buffer as a file.
+ *
+ * Returns:
+ *	True if the save was successful
  */
-Bool XawAsciiSaveAsFile(
-    Widget		/* w */,
-    _Xconst char*	/* name */
-);
+Bool XawAsciiSaveAsFile
+(
+ Widget		w,
+ _Xconst char	*name
+ );
 
-/*	Function Name: XawAsciiSourceChanged
- *	Description: Returns true if the source has changed since last saved.
- *	Arguments: w - the asciiSource object.
- *	Returns: a Boolean (see description).
+/*
+ * Function:
+ *	XawAsciiSourceChanged
+ *
+ * Parameters:
+ *	w - asciiSource object
+ *
+ * Description:
+ *	Returns true if the source has changed since last saved.
+ *
+ * Returns:
+ *	a Boolean (see description)
  */
-Bool XawAsciiSourceChanged(
-    Widget		/* w */
-);
+Bool XawAsciiSourceChanged
+(
+ Widget		w
+ );
 
 _XFUNCPROTOEND
 
 #endif /* _XawAsciiSrc_h */
-

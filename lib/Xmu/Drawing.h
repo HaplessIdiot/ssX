@@ -46,126 +46,116 @@ typedef unsigned long Pixel;
 
 _XFUNCPROTOBEGIN
 
-extern void XmuDrawRoundedRectangle(
-#if NeedFunctionPrototypes
-    Display*	/* dpy */,
-    Drawable 	/* draw */,
-    GC 		/* gc */,
-    int		/* x */,
-    int		/* y */,
-    int		/* w */,
-    int		/* h */,
-    int		/* ew */,
-    int		/* eh */
-#endif
+void XmuDrawRoundedRectangle
+(
+ Display		*dpy,
+ Drawable	 	draw,
+ GC 			gc,
+ int			x,
+ int			y,
+ int			w,
+ int			h,
+ int			ew,
+ int			eh
+ );
+
+void XmuFillRoundedRectangle
+(
+ Display		*dpy,
+ Drawable 		draw,
+ GC 			gc,
+ int			x,
+ int			y,
+ int			w,
+ int			h,
+ int			ew,
+ int			eh
+ );
+
+void XmuDrawLogo
+(
+ Display		*dpy,
+ Drawable 		drawable,
+ GC			gcFore,
+ GC			gcBack,
+ int			x,
+ int			y,
+ unsigned int		width,
+ unsigned int		height
+ );
+
+Pixmap XmuCreatePixmapFromBitmap
+(
+ Display		*dpy,
+ Drawable 		d,
+ Pixmap 		bitmap,
+ unsigned int		width,
+ unsigned int		height,
+ unsigned int		depth,
+ unsigned long		fore,
+ unsigned long		back
 );
 
-extern void XmuFillRoundedRectangle(
-#if NeedFunctionPrototypes
-    Display*	/* dpy */,
-    Drawable 	/* draw */,
-    GC 		/* gc */,
-    int		/* x */,
-    int		/* y */,
-    int		/* w */,
-    int		/* h */,
-    int		/* ew */,
-    int		/* eh */
-#endif
+Pixmap XmuCreateStippledPixmap
+(
+ Screen			*screen,
+ Pixel			fore,
+ Pixel			back,
+ unsigned int		depth
+ );
+
+void XmuReleaseStippledPixmap
+(
+ Screen			*screen,
+ Pixmap 		pixmap
+ );
+
+Pixmap XmuLocateBitmapFile
+(
+ Screen			*screen,
+ _Xconst char		*name,
+ char			*srcname_return,
+ int 			srcnamelen,
+ int			*width_return,
+ int			*height_return,
+ int			*xhot_return,
+ int			*yhot_return
+ );
+
+Pixmap XmuLocatePixmapFile
+(
+ Screen			*screen,
+ _Xconst char		*name,
+ unsigned long		fore,
+ unsigned long		back,
+ unsigned int		depth,
+ char			*srcname_return,
+ int 			srcnamelen,
+ int			*width_return,
+ int			*height_return,
+ int			*xhot_return,
+ int			*yhot_return
+ );
+
+int XmuReadBitmapData
+(
+ FILE			*fstream,
+ unsigned int		*width_return,
+ unsigned int		*height_return,
+ unsigned char		**datap_return,
+ int			*xhot_return,
+ int			*yhot_return
 );
 
-extern void XmuDrawLogo(
-#if NeedFunctionPrototypes
-    Display*	/* dpy */,
-    Drawable 	/* drawable */,
-    GC		/* gcFore */,
-    GC		/* gcBack */,
-    int		/* x */,
-    int		/* y */,
-    unsigned int /* width */,
-    unsigned int /* height */
-#endif
-);
-
-extern Pixmap XmuCreatePixmapFromBitmap(
-#if NeedFunctionPrototypes
-    Display*		/* dpy */,
-    Drawable 		/* d */,
-    Pixmap 		/* bitmap */,
-    unsigned int	/* width */,
-    unsigned int	/* height */,
-    unsigned int	/* depth */,
-    unsigned long	/* fore */,
-    unsigned long	/* back */
-#endif
-);
-
-extern Pixmap XmuCreateStippledPixmap(
-#if NeedFunctionPrototypes
-    Screen*		/* screen */,
-    Pixel		/* fore */,
-    Pixel		/* back */,
-    unsigned int	/* depth */
-#endif
-);
-
-extern void XmuReleaseStippledPixmap(
-#if NeedFunctionPrototypes
-    Screen*		/* screen */,
-    Pixmap 		/* pixmap */
-#endif
-);
-
-extern Pixmap XmuLocateBitmapFile(
-#if NeedFunctionPrototypes
-    Screen*		/* screen */,
-    _Xconst char*	/* name */,
-    char*		/* srcname_return */,
-    int 		/* srcnamelen */,
-    int*		/* width_return */,
-    int*		/* height_return, */,
-    int*		/* xhot_return */,
-    int*		/* yhot_return */
-#endif
-);
-
-extern Pixmap XmuLocatePixmapFile(
-#if NeedFunctionPrototypes
-    Screen*		/* screen */,
-    _Xconst char*	/* name */,
-    unsigned long	/* fore */,
-    unsigned long	/* back */,
-    unsigned int	/* depth */,
-    char*		/* srcname_return */,
-    int 		/* srcnamelen */,
-    int*		/* width_return */,
-    int*		/* height_return, */,
-    int*		/* xhot_return */,
-    int*		/* yhot_return */
-#endif
-);
-
-extern int XmuReadBitmapData(
-#if NeedFunctionPrototypes
-    FILE*		/* fstream */,
-    unsigned int*	/* width_return */,
-    unsigned int*	/* height_return */,
-    unsigned char**	/* datap_return */,
-    int*		/* xhot_return */,
-    int*		/* yhot_return */
-#endif
-);
-
-extern int XmuReadBitmapDataFromFile(
-#if NeedFunctionPrototypes
-    _Xconst char*	/* filename */,
-    unsigned int*	/* width_return */,
-    unsigned int*	/* height_return */,
-    unsigned char**	/* datap_return */,
-    int*		/* xhot_return */,
-    int*		/* yhot_return */
-#endif
-);
+int XmuReadBitmapDataFromFile
+(
+ _Xconst char		*filename,
+ unsigned int		*width_return,
+ unsigned int		*height_return,
+ unsigned char		**datap_return,
+ int			*xhot_return,
+ int			*yhot_return
+ );
 
 _XFUNCPROTOEND
 

@@ -49,11 +49,10 @@ typedef struct _XmuCvtCache {
 
 _XFUNCPROTOBEGIN
 
-extern XmuCvtCache *_XmuCCLookupDisplay(
-#if NeedFunctionPrototypes
-    Display*	/* dpy */
-#endif
-);
+XmuCvtCache *_XmuCCLookupDisplay
+(
+ Display	*dpy
+ );
 
 _XFUNCPROTOEND
 

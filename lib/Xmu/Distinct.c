@@ -1,5 +1,5 @@
 /* $XConsortium: Distinct.c,v 1.4 94/04/17 20:15:59 gildea Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xmu/Distinct.c,v 3.0 1996/05/06 05:54:32 dawes Exp $ */
 
 /*
 
@@ -45,9 +45,7 @@ in this Software without prior written authorization from the X Consortium.
 #define MIN_DISTINGUISH	10000.0
 
 Bool
-XmuDistinguishableColors (colors, count)
-XColor	*colors;
-int	count;
+XmuDistinguishableColors(XColor	*colors, int count)
 {
     double	    deltaRed, deltaGreen, deltaBlue;
     double	    dist;
@@ -69,11 +67,8 @@ int	count;
 }
 
 Bool
-XmuDistinguishablePixels (dpy, cmap, pixels, count)
-    Display	    *dpy;
-    Colormap	    cmap;
-    unsigned long   *pixels;
-    int		    count;
+XmuDistinguishablePixels(Display *dpy, Colormap cmap,
+			 unsigned long *pixels, int  count)
 {
     XColor  *defs;
     int	    i, j;

@@ -1,5 +1,5 @@
 /* $XConsortium: fileio.c /main/5 1996/11/03 19:32:03 kaleb $ */
-/* $XFree86: xc/lib/font/fontfile/fileio.c,v 3.2 1998/06/27 12:53:41 hohndel Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fileio.c,v 3.3 1998/06/28 03:52:50 dawes Exp $ */
 
 /*
 
@@ -35,7 +35,7 @@ in this Software without prior written authorization from the X Consortium.
 #include <fntfilio.h>
 #include <X11/Xos.h>
 #ifndef O_BINARY
-#define O_BINARY 0
+#define O_BINARY O_RDONLY
 #endif
 
 FontFilePtr

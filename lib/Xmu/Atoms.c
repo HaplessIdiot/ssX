@@ -100,12 +100,8 @@ DeclareAtom(XA_USER,			"USER"			)
  ******************************************************************/
 
 
-#if NeedFunctionPrototypes
-AtomPtr XmuMakeAtom(_Xconst char *name)
-#else
-AtomPtr XmuMakeAtom(name)
-    char* name;
-#endif
+AtomPtr
+XmuMakeAtom(_Xconst char *name)
 {
     AtomPtr ptr = XtNew(struct _AtomRec);
     ptr->name = (char *) name;
@@ -113,16 +109,15 @@ AtomPtr XmuMakeAtom(name)
     return ptr;
 }
 
-char* XmuNameOfAtom(atom_ptr)
-    AtomPtr atom_ptr;
+char *
+XmuNameOfAtom(AtomPtr atom_ptr)
 {
     return atom_ptr->name;
 }
 
 
-Atom XmuInternAtom(d, atom_ptr)
-    Display *d;
-    AtomPtr atom_ptr;
+Atom
+XmuInternAtom(Display *d, AtomPtr atom_ptr)
 {
     DisplayRec* display_rec;
     for (display_rec = atom_ptr->head; display_rec != NULL;
@@ -139,20 +134,17 @@ Atom XmuInternAtom(d, atom_ptr)
 }
 
 
-char *XmuGetAtomName(d, atom)
-    Display *d;
-    Atom atom;
+char *
+XmuGetAtomName(Display *d, Atom atom)
 {
     if (atom == 0) return "(BadAtom)";
     return XGetAtomName(d, atom);
 }
 
 /* convert (names, count) to a list of atoms. Caller allocates list */
-void XmuInternStrings(d, names, count, atoms)
-    Display *d;
-    register String *names;
-    register Cardinal count;
-    register Atom *atoms;		/* return */
+void
+XmuInternStrings(Display *d, register String *names,
+		 register Cardinal count, register Atom *atoms)
 {
     (void) XInternAtoms(d, (char**)names, (int)count, FALSE, atoms);
 }

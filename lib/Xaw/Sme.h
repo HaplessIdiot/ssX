@@ -26,8 +26,6 @@ in this Software without prior written authorization from the X Consortium.
  */
 
 /*
- * Sme.h - Public Header file for Sme object.
- *
  * This is the public header file for the Athena Sme object.
  * It is intended to be used with the simple menu widget.  
  *
@@ -43,13 +41,7 @@ in this Software without prior written authorization from the X Consortium.
 
 #include <X11/RectObj.h>
 
-/****************************************************************
- *
- * Sme Object
- *
- ****************************************************************/
-
-/* Simple Menu Entry Resources:
+/* Resources:
 
  Name		     Class		RepType		Default Value
  ----		     -----		-------		-------------
@@ -58,7 +50,7 @@ in this Software without prior written authorization from the X Consortium.
  height		     Height		Dimension	0
  sensitive	     Sensitive		Boolean		True
  width		     Width		Dimension	0
- x		     Position		Position	0n
+ x		     Position		Position	0
  y		     Position		Position	0
 
 */
@@ -72,8 +64,8 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 
 
-typedef struct _SmeClassRec*	SmeObjectClass;
-typedef struct _SmeRec*	        SmeObject;
+typedef struct _SmeClassRec *SmeObjectClass;
+typedef struct _SmeRec *SmeObject;
 
 extern WidgetClass smeObjectClass;
 

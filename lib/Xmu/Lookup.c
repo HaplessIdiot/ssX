@@ -1,5 +1,5 @@
 /* $XConsortium: Lookup.c,v 1.15 95/06/08 23:20:39 gildea Exp $ */
-/* $XFree86: xc/lib/Xmu/Lookup.c,v 3.1 1996/05/06 05:54:36 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/Lookup.c,v 3.2 1996/08/13 11:26:12 dawes Exp $ */
 
 /* 
  
@@ -128,13 +128,10 @@ static unsigned char Const greek[128] =
 #define sAPL		(unsigned long)11
 #define sHebrew		(unsigned long)12
 
-int XmuLookupString (event, buffer, nbytes, keysym, status, keysymSet)
-    register XKeyEvent *event;
-    unsigned char *buffer;
-    int nbytes;
-    KeySym *keysym;
-    XComposeStatus *status;
-    unsigned long keysymSet;
+int
+XmuLookupString(register XKeyEvent *event, unsigned char *buffer, int nbytes,
+		KeySym *keysym, XComposeStatus *status,
+		unsigned long keysymSet)
 {
     int count;
     KeySym symbol;
@@ -197,123 +194,90 @@ int XmuLookupString (event, buffer, nbytes, keysym, status, keysymSet)
 }
 
 /* produces ISO 8859-1 encoding plus ASCII control */
-int XmuLookupLatin1 (event, buffer, nbytes, keysym, status)
-    register XKeyEvent *event;
-    char *buffer;
-    int nbytes;
-    KeySym *keysym;
-    XComposeStatus *status;
+int
+XmuLookupLatin1(register XKeyEvent *event, unsigned char *buffer, int nbytes,
+		KeySym *keysym, XComposeStatus *status)
 {
     return XLookupString(event, buffer, nbytes, keysym, status);
 }
 
 /* produces ISO 8859-2 encoding plus ASCII control */
-int XmuLookupLatin2 (event, buffer, nbytes, keysym, status)
-    register XKeyEvent *event;
-    char *buffer;
-    int nbytes;
-    KeySym *keysym;
-    XComposeStatus *status;
+int
+XmuLookupLatin2(register XKeyEvent *event, unsigned char *buffer, int nbytes,
+		KeySym *keysym, XComposeStatus *status)
 {
     return XmuLookupString(event, buffer, nbytes, keysym, status, sLatin2);
 }
 
 /* produces ISO 8859-3 encoding plus ASCII control */
-int XmuLookupLatin3 (event, buffer, nbytes, keysym, status)
-    register XKeyEvent *event;
-    char *buffer;
-    int nbytes;
-    KeySym *keysym;
-    XComposeStatus *status;
+int
+XmuLookupLatin3(register XKeyEvent *event, unsigned char *buffer, int nbytes,
+		KeySym *keysym, XComposeStatus *status)
 {
     return XmuLookupString(event, buffer, nbytes, keysym, status, sLatin3);
 }
 
 /* produces ISO 8859-4 encoding plus ASCII control */
-int XmuLookupLatin4 (event, buffer, nbytes, keysym, status)
-    register XKeyEvent *event;
-    char *buffer;
-    int nbytes;
-    KeySym *keysym;
-    XComposeStatus *status;
+int
+XmuLookupLatin4(register XKeyEvent *event, unsigned char *buffer, int nbytes,
+		KeySym *keysym, XComposeStatus *status)
 {
     return XmuLookupString(event, buffer, nbytes, keysym, status, sLatin4);
 }
 
 /* produces ISO 8859-1 GL plus Katakana plus ASCII control */
-int XmuLookupKana (event, buffer, nbytes, keysym, status)
-    register XKeyEvent *event;
-    char *buffer;
-    int nbytes;
-    KeySym *keysym;
-    XComposeStatus *status;
+int
+XmuLookupKana(register XKeyEvent *event, unsigned char *buffer, int nbytes,
+	      KeySym *keysym, XComposeStatus *status)
 {
     return XmuLookupString(event, buffer, nbytes, keysym, status, sKana);
 }
 
 /* produces JIS X0201-1976 (8-bit) */
-int XmuLookupJISX0201 (event, buffer, nbytes, keysym, status)
-    register XKeyEvent *event;
-    char *buffer;
-    int nbytes;
-    KeySym *keysym;
-    XComposeStatus *status;
+int
+XmuLookupJISX0201(register XKeyEvent *event, unsigned char *buffer, int nbytes,
+		  KeySym *keysym, XComposeStatus *status)
 {
     return XmuLookupString(event, buffer, nbytes, keysym, status, sX0201);
 }
 
 /* produces ISO 8859-6 encoding plus ASCII control */
-int XmuLookupArabic (event, buffer, nbytes, keysym, status)
-    register XKeyEvent *event;
-    char *buffer;
-    int nbytes;
-    KeySym *keysym;
-    XComposeStatus *status;
+int
+XmuLookupArabic(register XKeyEvent *event, unsigned char *buffer, int nbytes,
+		KeySym *keysym, XComposeStatus *status)
 {
     return XmuLookupString(event, buffer, nbytes, keysym, status, sArabic);
 }
 
 /* produces ISO/IEC 8859-5 encoding plus ASCII control */
-int XmuLookupCyrillic (event, buffer, nbytes, keysym, status)
-    register XKeyEvent *event;
-    char *buffer;
-    int nbytes;
-    KeySym *keysym;
-    XComposeStatus *status;
+int
+XmuLookupCyrillic(register XKeyEvent *event, unsigned char *buffer, int nbytes,
+		  KeySym *keysym, XComposeStatus *status)
 {
     return XmuLookupString(event, buffer, nbytes, keysym, status, sCyrillic);
 }
 
 /* produces ISO 8859-7 encoding plus ASCII control */
-int XmuLookupGreek (event, buffer, nbytes, keysym, status)
-    register XKeyEvent *event;
-    char *buffer;
-    int nbytes;
-    KeySym *keysym;
-    XComposeStatus *status;
+int
+XmuLookupGreek(register XKeyEvent *event, unsigned char *buffer, int nbytes,
+	       KeySym *keysym, XComposeStatus *status)
 {
     return XmuLookupString(event, buffer, nbytes, keysym, status, sGreek);
 }
 
 /* XXX this character set needs work */
 
-int XmuLookupAPL (event, buffer, nbytes, keysym, status)
-    register XKeyEvent *event;
-    char *buffer;
-    int nbytes;
-    KeySym *keysym;
-    XComposeStatus *status;
+int
+XmuLookupAPL(register XKeyEvent *event, unsigned char *buffer, int nbytes,
+	     KeySym *keysym, XComposeStatus *status)
 {
     return XmuLookupString(event, buffer, nbytes, keysym, status, sAPL);
 }
 
 /* produces ISO 8859-8 encoding plus ASCII control */
-int XmuLookupHebrew (event, buffer, nbytes, keysym, status)
-    register XKeyEvent *event;
-    char *buffer;
-    int nbytes;
-    KeySym *keysym;
-    XComposeStatus *status;
+int
+XmuLookupHebrew(register XKeyEvent *event, unsigned char *buffer, int nbytes,
+		KeySym *keysym, XComposeStatus *status)
 {
     return XmuLookupString(event, buffer, nbytes, keysym, status, sHebrew);
 }

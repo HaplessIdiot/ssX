@@ -39,7 +39,12 @@ in this Software without prior written authorization from the X Consortium.
 
 #define lowbit(x) ((x) & (~(x) + 1))
 
-static Status valid_args();		/* argument restrictions */
+/*
+ * Prototypes
+ */
+/* argument restrictions */
+static Status valid_args(XVisualInfo*, unsigned long, unsigned long,
+			 unsigned long, Atom);
 
 /*
  * To create any one standard colormap, use XmuStandardColormap().
@@ -56,15 +61,20 @@ static Status valid_args();		/* argument restrictions */
  * caller's responsibility.
  */
 
-XStandardColormap *XmuStandardColormap(dpy, screen, visualid, depth, property,
-				       cmap, red_max, green_max, blue_max)
-    Display		*dpy;		/* specifies X server connection */
-    int			screen; 	/* specifies display screen */
-    VisualID		visualid;	/* identifies the visual type */
-    unsigned int	depth;		/* identifies the visual type */
-    Atom		property;	/* a standard colormap property */
-    Colormap		cmap;		/* specifies colormap ID or None */
-    unsigned long	red_max, green_max, blue_max;	/* allocations */
+XStandardColormap *
+XmuStandardColormap(Display *dpy, int screen, VisualID visualid,
+		    unsigned int depth, Atom property, Colormap cmap,
+		    unsigned long red_max, unsigned long green_max,
+		    unsigned long blue_max)
+     /*
+      * dpy				- specifies X server connection
+      * screen				- specifies display screen
+      * visualid			- identifies the visual type
+      * depth				- identifies the visual type
+      * property			- a standard colormap property
+      * cmap				- specifies colormap ID or None
+      * red_max, green_max, blue_max	- allocations
+      */
 {
     XStandardColormap	*stdcmap;
     Status		status;
@@ -147,10 +157,14 @@ XStandardColormap *XmuStandardColormap(dpy, screen, visualid, depth, property,
 }
 
 /****************************************************************************/
-static Status valid_args(vinfo, red_max, green_max, blue_max, property)
-    XVisualInfo		*vinfo;		/* specifies visual */
-    unsigned long	red_max, green_max, blue_max;	/* specifies alloc */
-    Atom		property;	/* specifies property name */
+static Status
+valid_args(XVisualInfo *vinfo, unsigned long red_max, unsigned long green_max,
+	   unsigned long blue_max, Atom property)
+     /*
+      * vinfo				- specifies visual
+      * red_max, green_max, blue_max	- specifies alloc
+      * property			- specifies property name
+      */
 {
     unsigned long	ncolors;	/* number of colors requested */
 

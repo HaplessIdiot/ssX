@@ -62,6 +62,7 @@ SRCS = \
 	AllCmap.c \
 	Atoms.c \
 	ClientWin.c \
+	Clip.c \
 	CloseHook.c \
 	CmapAlloc.c \
 	CrCmap.c \
@@ -112,6 +113,7 @@ OBJS = \
 	AllCmap.o \
 	Atoms.o \
 	ClientWin.o \
+	Clip.o \
 	CloseHook.o \
 	CmapAlloc.o \
 	CrCmap.o \

@@ -31,20 +31,23 @@ in this Software without prior written authorization from the X Consortium.
 #define _XawPannerP_h
 
 #include <X11/Xaw/Panner.h>
-#include <X11/Xaw/SimpleP.h>		/* parent */
+#include <X11/Xaw/SimpleP.h>
 
-typedef struct {			/* new fields in widget class */
-    int dummy;
+/* new fields in widget class */
+typedef struct {
+    XtPointer extension;
 } PannerClassPart;
 
-typedef struct _PannerClassRec {	/* Panner widget class */
+/* Panner widget class */
+typedef struct _PannerClassRec {
     CoreClassPart core_class;
     SimpleClassPart simple_class;
     PannerClassPart panner_class;
 } PannerClassRec;
 
-typedef struct {			/* new fields in widget */
-    /* resources... */
+/* new fields in widget */
+typedef struct {
+    /* resources */
     XtCallbackList report_callbacks;	/* callback/Callback */
     Boolean allow_off;			/* allowOff/AllowOff */
     Boolean resize_to_pref;		/* resizeToPreferred/Boolean */
@@ -60,8 +63,9 @@ typedef struct {			/* new fields in widget */
     Dimension slider_width;		/* sliderWidth/SliderWidth */
     Dimension slider_height;		/* sliderHeight/SliderHeight */
     Dimension internal_border;		/* internalBorderWidth/BorderWidth */
-    String stipple_name;		/* backgroundStipple/BackgroundStipple */
-    /* private data... */
+  String stipple_name;			/* backgroundStipple/BackgroundStipple
+					 */
+  /* private */
     GC slider_gc;			/* background of slider */
     GC shadow_gc;			/* edge of slider and shadow */
     GC xor_gc;				/* for doing XOR tmp graphics */
@@ -87,18 +91,15 @@ typedef struct _PannerRec {
     PannerPart panner;
 } PannerRec;
 
-#define PANNER_HSCALE(pw,val) ((pw)->panner.haspect * ((double) (val)))
-#define PANNER_VSCALE(pw,val) ((pw)->panner.vaspect * ((double) (val)))
+#define PANNER_HSCALE(pw,val)	((pw)->panner.haspect * ((double)(val)))
+#define PANNER_VSCALE(pw,val)	((pw)->panner.vaspect * ((double)(val)))
 
 #define PANNER_DSCALE(pw,val) (Dimension)  \
-  ((((unsigned long) (val)) * (unsigned long) pw->panner.default_scale) / 100L)
-#define PANNER_DEFAULT_SCALE 8		/* percent */
+((((unsigned long)(val)) * (unsigned long)pw->panner.default_scale) / 100L)
 
+#define PANNER_DEFAULT_SCALE	8		/* percent */
 #define PANNER_OUTOFRANGE -30000
 
-/*
- * external declarations
- */
 extern PannerClassRec pannerClassRec;
 
 #endif /* _XawPannerP_h */

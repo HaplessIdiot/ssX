@@ -24,12 +24,6 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
  */
 
-/***********************************************************************
- *
- * MenuButton Widget
- *
- ***********************************************************************/
-
 /*
  * MenuButtonP.h - Private Header file for MenuButton widget.
  *
@@ -49,20 +43,13 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xaw/MenuButton.h>
 #include <X11/Xaw/CommandP.h>
 
-/************************************
- *
- *  Class structure
- *
- ***********************************/
-
-
-   /* New fields for the MenuButton widget class record */
+/* New fields for the MenuButton widget class */
 typedef struct _MenuButtonClass 
 {
-  int makes_compiler_happy;  /* not used */
+  XtPointer extension;
 } MenuButtonClassPart;
 
-   /* Full class record declaration */
+/* class record declaration */
 typedef struct _MenuButtonClassRec {
   CoreClassPart	    core_class;
   SimpleClassPart	    simple_class;
@@ -73,20 +60,13 @@ typedef struct _MenuButtonClassRec {
 
 extern MenuButtonClassRec menuButtonClassRec;
 
-/***************************************
- *
- *  Instance (widget) structure 
- *
- **************************************/
-
-    /* New fields for the MenuButton widget record */
+/* New fields for the MenuButton widget */
 typedef struct {
   /* resources */
   String menu_name;
-
 } MenuButtonPart;
 
-   /* Full widget declaration */
+/* widget declaration */
 typedef struct _MenuButtonRec {
     CorePart         core;
     SimplePart	     simple;
@@ -96,5 +76,3 @@ typedef struct _MenuButtonRec {
 } MenuButtonRec;
 
 #endif /* _XawMenuButtonP_h */
-
-

@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Actions.c,v 3.8 1998/06/28 13:04:19 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Actions.c,v 3.9 1998/06/29 13:41:12 dawes Exp $ */
 
 #include <ctype.h>
 #include <stdio.h>
@@ -64,7 +64,7 @@ typedef struct _XawEvalInfo {
   XEvent *event;
   char *cp, *lp;
   int token;
-  Boolean value;
+  Bool value;
 } XawEvalInfo;
 
 /* resources */
@@ -98,8 +98,8 @@ struct _XawActionVarList {
  */
 /* expressions */
 static int get_token(XawEvalInfo*);
-static Boolean expr(XawEvalInfo*);
-static Boolean prim(XawEvalInfo*);
+static Bool expr(XawEvalInfo*);
+static Bool prim(XawEvalInfo*);
 
 /* resources */
 static String XawConvertActionRes(XawActionResList*, Widget w, String);
@@ -142,8 +142,8 @@ static Cardinal num_variable_list;
 /*
  * Start of Boolean Expression Evaluation Implementation Code
  */
-Boolean
-XawParseBoolean(Widget w, String param, XEvent *event, Boolean *succed)
+Bool
+XawParseBoolean(Widget w, String param, XEvent *event, Bool *succed)
 {
   char *tmp = param;
   int value;
@@ -178,11 +178,11 @@ XawParseBoolean(Widget w, String param, XEvent *event, Boolean *succed)
   return (False);
 }
 
-Boolean
+Bool
 XawBooleanExpression(Widget w, String param, XEvent *event)
 {
   XawEvalInfo info;
-  Boolean retval;
+  Bool retval;
 
   if (!param)
     return (False);
@@ -222,8 +222,8 @@ get_token(XawEvalInfo *info)
 
   info->lp = info->cp;
 
-  /* eat white spaces */
-  while (1)
+  /*COSTCOND*/
+  while (1)	/* eat white spaces */
     {
       ch = *info->cp++;
       if (isspace(ch))
@@ -240,15 +240,15 @@ get_token(XawEvalInfo *info)
   /* It's a symbol name, resolve it. */
   if (ch == XAW_PRIV_VAR_PREFIX || isalnum(ch) || ch == '_' || ch == '\\')
     {
-      Boolean succed = True;
+      Bool succed = True;
 
       p = info->cp - 1;
 
       while ((ch = *info->cp) && (isalnum(ch) || ch == '_'))
 	++info->cp;
 
-      strncpy(name, p, XawMin(sizeof(name) - 1, info->cp - p));
-      name[XawMin(sizeof(name) -1, info->cp - p)] = '\0';
+      strncpy(name, p, XawMin((int)sizeof(name) - 1, info->cp - p));
+      name[XawMin((int)sizeof(name) -1, info->cp - p)] = '\0';
 
       if (name[0] == XAW_PRIV_VAR_PREFIX)
 	{
@@ -297,10 +297,10 @@ get_token(XawEvalInfo *info)
   return (info->token = ERROR);
 }
 
-static Boolean
+static Bool
 expr(XawEvalInfo *info)
 {
-  Boolean left = prim(info);
+  Bool left = prim(info);
 
   for (;;)
     switch (info->token)
@@ -323,10 +323,10 @@ expr(XawEvalInfo *info)
   /* NOTREACHED */
 }
 
-static Boolean
+static Bool
 prim(XawEvalInfo *info)
 {
-  Boolean e;
+  Bool e;
 
   switch (info->token)
     {
@@ -399,7 +399,7 @@ XawSetValuesAction(Widget w, XEvent *event,
   vlist = XawGetActionVarList(w);
 
   num_args = 0;
-  arglist = (Arg *)XtMalloc(sizeof(Arg) * (*num_params)>>1);
+  arglist = (Arg *)XtMalloc(sizeof(Arg) * ((*num_params) >> 1));
 
   for (count = 1; count < *num_params; count += 2)
     {
@@ -605,7 +605,7 @@ XawConvertActionRes(XawActionResList *list, Widget w, String name)
 
   XtGetValues(w, &arg, 1);
   to.size = sizeof(String);
-  to.addr = (XPointer)NULL;
+  to.addr = NULL;
 
   if (strcmp(XtRString, XrmQuarkToString(resource->qtype)) == 0)
     to.addr = *(char **)from.addr;
@@ -621,17 +621,17 @@ XawPrintActionErrorMsg(String action_name, Widget w,
 		       String *params, Cardinal *num_params)
 {
   char msg[1024];
-  int size, index;
+  unsigned int size, idx;
 
   size = XmuSnprintf(msg, sizeof(msg), "%s(): bad number of parameters.\n\t(",
 		     action_name, action_name);
 
-  index = 0;
-  while (index < *num_params - 1 && size < sizeof(msg))
+  idx = 0;
+  while (idx < *num_params - 1 && size < sizeof(msg))
     size += XmuSnprintf(&msg[size], sizeof(msg) - size, "%s, ",
-			params[index++]); 
+			params[idx++]);
   if (*num_params)
-    XmuSnprintf(&msg[size], sizeof(msg) - size, "%s)", params[index]);
+    XmuSnprintf(&msg[size], sizeof(msg) - size, "%s)", params[idx]);
   else
     XmuSnprintf(&msg[size], sizeof(msg) - size, ")");
   XtAppWarning(XtWidgetToApplicationContext(w), msg);
@@ -967,8 +967,7 @@ _XawCreateActionVarList(Widget w)
   if (!variable_list)
     {
       num_variable_list = 1;
-      variable_list = (XawActionVarList **)
-	XtMalloc(sizeof(XawActionVarList *));
+      variable_list = (XawActionVarList **)XtMalloc(sizeof(XawActionVarList*));
       variable_list[0] = list;
     }
   else
@@ -1001,7 +1000,7 @@ _XawFindActionVarList(Widget w)
   XawActionVarList **list;
 
   if (!num_variable_list)
-    return ((XawActionVarList *)NULL);
+    return (NULL);
 
   list = (XawActionVarList **)bsearch(w, variable_list, num_variable_list,
 				      sizeof(XawActionVarList*),
@@ -1073,7 +1072,7 @@ _XawFindActionVar(XawActionVarList *list, String name)
   return (var ? *var : NULL);
 }
 
-/* ARGSUSED */
+/*ARGSUSED*/
 static void
 _XawDestroyActionVarList(Widget w, XtPointer client_data, XtPointer call_data)
 {
@@ -1084,7 +1083,7 @@ _XawDestroyActionVarList(Widget w, XtPointer client_data, XtPointer call_data)
     if (variable_list[i] == list)
       break;
   if (i >= num_variable_list || list->widget != w
-      ||variable_list[i]->widget != w)
+      || variable_list[i]->widget != w)
     {
       XtWarning("destroy-variable-list(): Bad widget argument.");
       return;

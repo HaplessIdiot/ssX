@@ -38,12 +38,6 @@ in this Software without prior written authorization from the X Consortium.
 #ifndef _XawToggle_h
 #define _XawToggle_h
 
-/***********************************************************************
- *
- * Toggle Widget
- *
- ***********************************************************************/
-
 #include <X11/Xaw/Command.h>
 
 /* Resources:
@@ -61,6 +55,7 @@ in this Software without prior written authorization from the X Consortium.
  callback	     Callback		Pointer		NULL
  cursor		     Cursor		Cursor		None
  destroyCallback     Callback		Pointer		NULL
+ displayList	     DisplayList	XawDisplayList*	NULL
  font		     Font		XFontStructx*	XtDefaultFont
  foreground	     Foreground		Pixel		XtDefaultForeground
  height		     Height		Dimension	text height
@@ -87,10 +82,8 @@ in this Software without prior written authorization from the X Consortium.
 
 /*
  * These should be in StringDefs.h but aren't so we will define
- * them here if they are needed.
+ * them here if they are needed
  */
-
-
 #define XtCWidget "Widget"
 #define XtCState "State"
 #define XtCRadioGroup "RadioGroup"
@@ -109,68 +102,79 @@ extern WidgetClass               toggleWidgetClass;
 typedef struct _ToggleClassRec   *ToggleWidgetClass;
 typedef struct _ToggleRec        *ToggleWidget;
 
-
-/************************************************************
- * 
+/*
  * Public Functions
- *
- ************************************************************/
+ */
 
 _XFUNCPROTOBEGIN
    
-/*	Function Name: XawToggleChangeRadioGroup
- *	Description: Allows a toggle widget to change radio lists.
- *	Arguments: w - The toggle widget to change lists.
- *                 radio_group - any widget in the new list.
- *	Returns: none.
+/*
+ * Function:
+ *	XawToggleChangeRadioGroup
+ *
+ * Parameters:
+ *	w	    - toggle widget to change lists
+ *	radio_group - any widget in the new list
+ *
+ * Description:
+ *	Allows a toggle widget to change radio lists.
  */
+void XawToggleChangeRadioGroup
+(
+ Widget		w,
+ Widget		radio_group
+ );
 
-extern void XawToggleChangeRadioGroup(
-#if NeedFunctionPrototypes
-    Widget		/* w */,
-    Widget		/* radio_group */
-#endif
-);
-
-/*	Function Name: XawToggleGetCurrent
- *	Description: Returns the RadioData associated with the toggle
+/*
+ * Function:
+ *	XawToggleGetCurrent
+ *
+ * Parameters:
+ *	radio_group - any toggle widget in the toggle list
+ *
+ * Description:
+ *	  Returns the RadioData associated with the toggle
  *                   widget that is currently active in a toggle list.
- *	Arguments: radio_group - any toggle widget in the toggle list.
- *	Returns: The XtNradioData associated with the toggle widget.
+ * Returns:
+ *	The XtNradioData associated with the toggle widget
  */
 
-extern XtPointer XawToggleGetCurrent(
-#if NeedFunctionPrototypes
-    Widget		/* radio_group */
-#endif
-);
+XtPointer XawToggleGetCurrent
+(
+ Widget		radio_group
+ );
 
-/*	Function Name: XawToggleSetCurrent
- *	Description: Sets the Toggle widget associated with the
- *                   radio_data specified.
- *	Arguments: radio_group - any toggle widget in the toggle list.
- *                 radio_data - radio data of the toggle widget to set.
- *	Returns: none.
+/*
+ * Function:
+ *	XawToggleSetCurrent
+ *
+ * Parameters:
+ *	radio_group - any toggle widget in the toggle list
+ *	radio_data - radio data of the toggle widget to set
+ *
+ * Description:
+ *	Sets the Toggle widget associated with the radio_data specified.
  */
+void XawToggleSetCurrent
+(
+ Widget		radio_group,
+ XtPointer	radio_data
+ );
 
-extern void XawToggleSetCurrent(
-#if NeedFunctionPrototypes
-    Widget		/* radio_group */,
-    XtPointer		/* radio_data */
-#endif
-);
- 
-/*	Function Name: XawToggleUnsetCurrent
- *	Description: Unsets all Toggles in the radio_group specified.
- *	Arguments: radio_group - any toggle widget in the toggle list.
- *	Returns: none.
+/*
+ * Function:
+ *	XawToggleUnsetCurrent
+ *
+ * Parameters:
+ *	radio_group - any toggle widget in the toggle list
+ *
+ * Description:
+ *	Unsets all Toggles in the radio_group specified.
  */
-
-extern void XawToggleUnsetCurrent(
-#if NeedFunctionPrototypes
-    Widget		/* radio_group */
-#endif
-);
+void XawToggleUnsetCurrent
+(
+ Widget		radio_group
+ );
 
 _XFUNCPROTOEND
 

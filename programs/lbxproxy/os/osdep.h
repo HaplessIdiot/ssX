@@ -50,7 +50,7 @@ SOFTWARE.
 
 
 
-/* $XFree86: xc/programs/lbxproxy/os/osdep.h,v 1.2 1997/01/05 12:00:43 dawes Exp $ */
+/* $XFree86: xc/programs/lbxproxy/os/osdep.h,v 1.3 1997/11/16 06:42:34 dawes Exp $ */
 
 #define BOTIMEOUT 200 /* in milliseconds */
 #define BUFSIZE 4096
@@ -90,10 +90,24 @@ SOFTWARE.
 #endif
 #endif
 
+#include <X11/Xpoll.h>
+
+/*
+ * MAXSOCKS is used only for initialising MaxClients when no other method
+ * like sysconf(_SC_OPEN_MAX) is not supported.
+ */
+
 #if OPEN_MAX <= 128
 #define MAXSOCKS (OPEN_MAX - 1)
 #else
 #define MAXSOCKS 128
+#endif
+
+/* MAXSELECT is the number of fds that select() can handle */
+#define MAXSELECT (sizeof(fd_set) * NBBY)
+
+#ifndef hpux
+#define HAS_GETDTABLESIZE
 #endif
 
 #ifndef NULL
@@ -136,26 +150,30 @@ typedef struct _osComm {
     (*((OsCommPtr)((who)->osPrivate))->flushClient)(who, oc, extraBuf, extraCount)
 
 extern void FreeOsBuffers(
-#if NeedFunctionPrototypes
     OsCommPtr /*oc*/
-#endif
 );
 
 extern int StandardFlushClient(
-#if NeedFunctionPrototypes
     ClientPtr /*who*/,
     OsCommPtr /*oc*/,
     char * /*extraBuf*/,
     int /*extraCount*/
-#endif
 );
 
 extern int LbxFlushClient(
-#if NeedFunctionPrototypes
     ClientPtr /*who*/,
     OsCommPtr /*oc*/,
     char * /*extraBuf*/,
     int /*extraCount*/
-#endif
 );
+
+#include "util.h"
+
+extern int *ConnectionTranslation;
+extern int *ConnectionOutputTranslation;
+
+extern WorkQueuePtr workQueue;
+
+#define ffs mffs
+extern int mffs(fd_mask);
 

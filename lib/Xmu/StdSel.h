@@ -39,21 +39,18 @@ in this Software without prior written authorization from the X Consortium.
 
 _XFUNCPROTOBEGIN
 
-extern Boolean XmuConvertStandardSelection(
-#if NeedFunctionPrototypes
-    Widget		/* w */,
-    Time		/* time */,
-    Atom*		/* selection */,
-    Atom*		/* target */,
-    Atom*		/* type_return */,
-    XPointer *		/* value_return */,
-    unsigned long *	/* length_return */,
-    int *		/* format_return */
-#endif
-);
+Boolean XmuConvertStandardSelection
+(
+ Widget			w,
+ Time			time,
+ Atom			*selection,
+ Atom			*target,
+ Atom			*type_return,
+ XtPointer		*value_return,
+ unsigned long		*length_return,
+ int			*format_return
+ );
 
 _XFUNCPROTOEND
 
 #endif /* _XMU_SELECTION_H_ */
-
-

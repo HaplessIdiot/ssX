@@ -43,13 +43,10 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xaw/SmeP.h>
 #include <X11/ShellP.h>
 
-#ifndef XAW_DL_DEFINED
-#define XAW_DL_DEFINED
 typedef struct _XawDL XawDisplayList;
-#endif
 
 typedef struct {
-    XtPointer extension;		/* For future needs. */
+  XtPointer extension;		/* For future needs */
 } SimpleMenuClassPart;
 
 typedef struct _SimpleMenuClassRec {
@@ -63,35 +60,27 @@ typedef struct _SimpleMenuClassRec {
 extern SimpleMenuClassRec simpleMenuClassRec;
 
 typedef struct _SimpleMenuPart {
-
   /* resources */
-
-  String       label_string;	/* The string for the label or NULL. */
+  String label_string;		/* The string for the label or NULL */
   SmeObject   label;		/* If label_string is non-NULL then this is
-				   the label widget. */
-  WidgetClass  label_class;	/* Widget Class of the menu label object. */
-
-  Dimension    top_margin;	/* Top and bottom margins. */
+				   the label widget */
+  WidgetClass label_class;	/* Widget Class of the menu label object */
+  Dimension top_margin;		/* Top and bottom margins */
   Dimension    bottom_margin;
   Dimension    row_height;	/* height of each row (menu entry) */
-
-  Cursor       cursor;		/* The menu's cursor. */
+  Cursor cursor;		/* The menu's cursor */
   SmeObject popup_entry;	/* The entry to position the cursor on for
-				   when using XawPositionSimpleMenu. */
-  Boolean      menu_on_screen;	/* Force the menus to be fully on the screen.*/
-  int          backing_store;	/* What type of backing store to use. */
+				   when using XawPositionSimpleMenu */
+  Boolean menu_on_screen;	/* Force the menus to be fully on the screen*/
+  int backing_store;		/* What type of backing store to use */
 
-  /* private state */
-
-  Boolean recursive_set_values;	/* contain a possible infinite loop. */
-
+  /* private */
+  Boolean recursive_set_values;	/* contain a possible infinite loop */
   Boolean menu_width;		/* If true then force width to remain 
 				   core.width */
-  Boolean menu_height;		/* Just like menu_width, but for height. */
-
+  Boolean menu_height;		/* Just like menu_width, but for height */
   SmeObject entry_set;		/* The entry that is currently set or
-				   highlighted. */
-
+				   highlighted */
   Dimension left_margin;
   Dimension right_margin;
   XawDisplayList *display_list;
