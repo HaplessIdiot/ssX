@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.23 2001/05/18 16:03:14 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.24 2001/05/21 22:21:57 paulo Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -110,6 +110,8 @@ extern void CloseAccessXAction(Widget, XEvent*, String*, Cardinal*);
 #ifdef HAS_NCURSES
 extern void TextMode(void);
 #endif
+
+static void Usage(void);
 
 /*
  * Initialization
@@ -198,11 +200,29 @@ static XtResource appResources[] = {
       0, XtRString, "menu10"},
 };
 
-/*
-static XrmOptionDescRec optionDescList[] = {
-    {"-xf86config",  "*xf86config",  XrmoptionSepArg,  (XtPointer)"/etc/X11/XF86Config"},
-};
-*/
+static void
+Usage(void)
+{
+    fprintf(stderr,
+"Usage:\n"
+"   xf86cfg [-option ...]\n"
+"\n"
+"Options:\n"
+"   -xf86config <XF86Config>   Alternate configuration file.\n"
+"   -modulepath <module-path>  XFree86 modules location.\n"
+"   -serverpath <server-path>  X server to start (if $DISPLAY is not defined).\n"
+"   -fontpath   <font-path>    Font path for fonts.\n"
+"   -rgbpath    <rgb-path>     Where the rgb.txt file is located.\n"
+#ifdef HAS_NCURSES
+"   -textmode                  Use this option for the text only interface.\n"
+#endif
+#ifdef USE_MODULES
+"   -nomodules                 Use this option if xf86cfg is slow to start.\n"
+#endif
+);
+
+    exit(1);
+}
 
 /*
  * Implementation
@@ -254,6 +274,8 @@ main(int argc, char *argv[])
 #endif
 	else if (strcmp(argv[i], "-nomodules") == 0)
 	    nomodules = True;
+	else
+	    Usage();
     }
 
 #ifdef HAS_NCURSES
@@ -269,7 +291,6 @@ main(int argc, char *argv[])
     if (XkbConfig_path == NULL)
 	XkbConfig_path = XkbConfigDir XkbConfigFile;
     toplevel = XtAppInitialize(&appcon, "XF86Cfg",
-/*			       optionDescList, XtNumber(optionDescList),*/
 		    	       NULL, 0,
 			       &argc, argv,
 			       NULL, NULL, 0);
