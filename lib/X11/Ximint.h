@@ -30,7 +30,7 @@ PERFORMANCE OF THIS SOFTWARE.
 			       makoto@sm.sony.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/Ximint.h,v 3.11 2003/04/13 19:22:19 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Ximint.h,v 3.12 2003/04/17 02:06:31 dawes Exp $ */
 
 #ifndef _XIMINT_H
 #define _XIMINT_H
@@ -379,7 +379,7 @@ extern void _XimInitialResourceInfo(
 extern void	 _XimParseStringFile(
 #if NeedFunctionPrototypes
     FILE        *fp,
-    DefTree     **ptop
+    Xim          im
 #endif
 );
 
