@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.12 2000/04/05 18:13:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.14 2000/11/02 19:58:20 anderson Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -373,7 +373,11 @@ xf86pathIsSafe(const char *path)
 #endif
 #ifndef XF86_VERSION_MAJOR
 #ifdef XVERSION
+#if XVERSION > 40000000
+#define XF86_VERSION_MAJOR	(XVERSION / 10000000)
+#else
 #define XF86_VERSION_MAJOR	(XVERSION / 1000)
+#endif
 #else
 #define XF86_VERSION_MAJOR	4
 #endif
