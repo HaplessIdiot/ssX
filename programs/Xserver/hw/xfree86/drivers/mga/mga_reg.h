@@ -2,7 +2,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_reg.h,v 1.15 2001/03/21 17:02:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_reg.h,v 1.16 2001/04/05 17:42:33 dawes Exp $ */
 
 
 
@@ -221,10 +221,13 @@
 #define MGAREG_MISC_HIGH_PG_SEL	(0x1 << 5)
 
 /* MMIO VGA registers */
+#define MGAREG_SEQ_INDEX	0x1fc4
+#define MGAREG_SEQ_DATA		0x1fc5
 #define MGAREG_CRTC_INDEX	0x1fd4
 #define MGAREG_CRTC_DATA	0x1fd5
 #define MGAREG_CRTCEXT_INDEX	0x1fde
 #define MGAREG_CRTCEXT_DATA	0x1fdf
+
 
 
 /* MGA bits for registers PCI_OPTION_REG */
