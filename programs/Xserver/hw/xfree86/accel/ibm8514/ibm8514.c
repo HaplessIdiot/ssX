@@ -1,5 +1,5 @@
 /* $XConsortium: ibm8514.c,v 1.1 94/03/28 21:02:54 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.3 1994/07/21 13:46:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.4 1994/08/01 12:09:35 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -89,6 +89,7 @@ ScrnInfoRec ibm8514InfoRec = {
     240, 180,		/* int width, height */
     0,                  /* unsigned long  speedup */
     NULL,	       	/* DisplayModePtr modes */
+    NULL,	       	/* DisplayModePtr pModes */
     NULL,               /* char *clockprog */
     -1,			/* int textclock, 1.3 new */
     FALSE,              /* Bool bankedMono */

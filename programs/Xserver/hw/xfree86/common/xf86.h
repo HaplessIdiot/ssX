@@ -1,5 +1,5 @@
 /* $XConsortium: xf86.h,v 1.1 94/03/28 21:22:43 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.3 1994/06/19 11:05:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.4 1994/07/21 13:56:41 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -118,6 +118,7 @@ typedef struct {
   int            width, height;            /* real display dimensions */
   unsigned long  speedup;                  /* Use SpeedUp code */
   DisplayModePtr modes;
+  DisplayModePtr pModes;          /* GJA -- mode records for this screen. */
   char           *clockprog;
   int            textclock;
   Bool           bankedMono;	  /* display supports banking for mono server */

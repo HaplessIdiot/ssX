@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.2 94/03/28 21:22:51 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.5 1994/07/21 13:56:43 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.6 1994/07/24 11:49:18 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -36,7 +36,7 @@
 #include "xf86Procs.h"
 
 #ifndef SERVER_CONFIG_FILE
-#define SERVER_CONFIG_FILE "/usr/XF86/Xconfig"
+#define SERVER_CONFIG_FILE "/usr/XF86/xf86Config"
 #endif
 
 #define INIT_CONFIG
@@ -54,8 +54,6 @@ static char   *fontPath = NULL;           /* font path */
 static int    pushToken = LOCK_TOKEN;
 static LexRec val;                        /* global return value */
 
-static DisplayModePtr pModes = NULL;
-
 static int screenno = -100;      /* some little number ... */
 
 static int textClockValue = -1;
@@ -69,6 +67,7 @@ extern char *rgbPath;
 extern Bool xf86fpFlag, xf86coFlag;
 
 extern int defaultColorVisualClass;
+static int mode_fits();
 
 #define DIR_FILE	"/fonts.dir"
 
@@ -236,8 +235,17 @@ getToken(tab)
 	while (((c=configBuf[configPos++])==' ') || ( c=='\t') || ( c=='\n'));
 	if (c == '#') c = '\0'; 
       } while (!c);
-      configStart = configPos;
       
+      /* GJA -- handle '-' and ',' 
+       * Be careful: "-hsync" is a keyword.
+       */
+      if ( (c == ',') && !isalpha(configBuf[configPos]) ) {
+         configStart = configPos; return COMMA;
+      } else if ( (c == '-') && !isalpha(configBuf[configPos]) ) {
+         configStart = configPos; return DASH;
+      }
+
+      configStart = configPos;
       /*
        * Numbers are returned immediately ...
        */
@@ -261,6 +269,7 @@ getToken(tab)
 		 ((base == 16) && (((c >= 'a') && (c <= 'f')) ||
 				   ((c >= 'A') && (c <= 'F')))))
             configRBuf[i++] = c;
+          configPos--; /* GJA -- one too far */
 	  configRBuf[i] = '\0';
 	  val.num = StrToUL(configRBuf);
           val.realnum = atof(configRBuf);
@@ -311,6 +320,7 @@ getToken(tab)
       int temp = pushToken;
       pushToken = LOCK_TOKEN;
     
+      if (temp == COMMA || temp == DASH) return(temp);
       if (temp == NUMBER || temp == STRING) return(temp);
     }
   
@@ -328,6 +338,23 @@ getToken(tab)
     }
   
   return(ERROR_TOKEN);       /* Error catcher */
+}
+
+/*
+ * getToken --
+ *	Lookup a string if it is actually a token in disguise.
+ */
+static int
+getStringToken(tab)
+     SymTabRec tab[];
+{
+  int i;
+  char *s1p, *s2p;
+  
+  for ( i = 0 ; tab[i].token != -1 ; i++ ) {
+    if ( ! StrCaseCmp(tab[i].name,val.str) ) return tab[i].token;
+  }
+  return(ERROR_TOKEN);
 }
 
 /*
@@ -360,9 +387,9 @@ validateGraphicsToken(validTokens, token)
 {
   int i;
 
-  for (i = 0; GraphicsTab[i].token >= 0 && GraphicsTab[i].token != token; i++)
+  for (i = 0; ScreenTab[i].token >= 0 && ScreenTab[i].token != token; i++)
     ;
-  if (GraphicsTab[i].token < 0)
+  if (ScreenTab[i].token < 0)
     return(TRUE);        /* Not a graphics token */
 
   for (i = 0; validTokens[i] >= 0 && validTokens[i] != token; i++)
@@ -430,590 +457,6 @@ configError(msg)
   exit(-1);                 /* simple exit ... */
 }
 
-/*
- * configKeyboard --
- *      Configure all keyboard related parameters
- */
-static void
-configKeyboard()
-{
-  int token, ntoken;
-
-  xf86Info.dontZap       = FALSE;
-  xf86Info.serverNumLock = FALSE;
-  xf86Info.xleds         = 0L;
-  xf86Info.kbdDelay      = 500;
-  xf86Info.kbdRate       = 30;
-  xf86Info.vtinit        = NULL;
-  xf86Info.vtSysreq      = VT_SYSREQ_DEFAULT;
-  xf86Info.specialKeyMap = (int *)xalloc((RIGHTCTL - LEFTALT + 1) *
-                                            sizeof(int));
-  xf86Info.specialKeyMap[LEFTALT - LEFTALT] = K_META;
-  xf86Info.specialKeyMap[RIGHTALT - LEFTALT] = K_META;
-  xf86Info.specialKeyMap[SCROLLLOCK - LEFTALT] = K_COMPOSE;
-  xf86Info.specialKeyMap[RIGHTCTL - LEFTALT] = K_CONTROL;
-
-  for (;;) {
-    
-    switch (token = getToken(KeyboardTab)) {
-
-    case AUTOREPEAT:
-      if (getToken(NULL) != NUMBER) configError("Autorepeat delay expected");
-      xf86Info.kbdDelay = val.num;
-      if (getToken(NULL) != NUMBER) configError("Autorepeat rate expected");
-      xf86Info.kbdRate = val.num;
-      break;
-
-    case DONTZAP:
-      xf86Info.dontZap = TRUE;
-      break;
-
-    case SERVERNUM:
-      xf86Info.serverNumLock = TRUE;
-      break;
-
-    case XLEDS:
-      while ((token= getToken(NULL)) == NUMBER)
-	xf86Info.xleds |= 1L << (val.num-1);
-      pushToken = token;
-      break;
-
-    case VTINIT:
-      if (getToken(NULL) != STRING) configError("VTInit string expected");
-      xf86Info.vtinit = val.str;
-      if (xf86Verbose)
-        ErrorF("%s VTInit: \"%s\"\n", XCONFIG_GIVEN, val.str);
-      break;
-
-    case LEFTALT:
-    case RIGHTALT:
-    case SCROLLLOCK:
-    case RIGHTCTL:
-      ntoken = getToken(KeyMapTab);
-      if ((ntoken == EOF) || (ntoken == STRING) || (ntoken == NUMBER)) 
-	configError("KeyMap type token expected");
-      else {
-	switch(ntoken) {
-	case K_META:
-	case K_COMPOSE:
-	case K_MODESHIFT:
-	case K_MODELOCK:
-	case K_SCROLLLOCK:
-	case K_CONTROL:
-          xf86Info.specialKeyMap[token - LEFTALT] = ntoken;
-	  break;
-	default:
-	  configError("Illegal KeyMap type");
-	  break;
-	}
-      }
-      break;
-    case VTSYSREQ:
-#ifdef USE_VT_SYSREQ
-      xf86Info.vtSysreq = TRUE;
-      if (xf86Verbose && !VT_SYSREQ_DEFAULT)
-        ErrorF("%s VTSysReq enabled\n", XCONFIG_GIVEN);
-#else
-      configError("VTSysReq not supported on this OS");
-#endif
-      break;
-
-    default:
-      pushToken = token;
-      return;
-    }
-  }
-}
-
-/*
- * configMouse --
- *      Configure all mouse related parameters
- */
-static void
-configMouse()
-{
-  int token;
-
-  xf86Info.baudRate        = 1200;
-  xf86Info.oldBaudRate    = -1;
-  xf86Info.sampleRate      = 0;
-  xf86Info.emulate3Buttons = FALSE;
-  xf86Info.chordMiddle     = FALSE;
-  xf86Info.mouseFlags = 0;
-
-  for (;;) {
-
-    switch (token = getToken(MouseTab)) {
-
-    case BAUDRATE:
-      if (getToken(NULL) != NUMBER) configError("Baudrate expected");
-      if (xf86Info.mseType + MICROSOFT == LOGIMAN)
-	{
-	  /* Moan if illegal baud rate!  [CHRIS-211092] */
-	  if ((val.num != 1200) && (val.num != 9600))
-	    configError("Only 1200 or 9600 Baud are supported by MouseMan");
-	}
-      xf86Info.baudRate = val.num;
-      break;
-
-    case SAMPLERATE:
-      if (getToken(NULL) != NUMBER) configError("Sample rate expected");
-      if (xf86Info.mseType + MICROSOFT == LOGIMAN)
-	{
-	  /* Moan about illegal sample rate!  [CHRIS-211092] */
-	  configError("Selection of sample rate is not supported by MouseMan");
-	}
-      xf86Info.sampleRate = val.num;
-      break;
-
-    case EMULATE3:
-      if (xf86Info.chordMiddle)
-        configError("Can't use Emulate3Buttons with ChordMiddle");
-      xf86Info.emulate3Buttons = TRUE;
-      break;
-
-    case CHORDMIDDLE:
-      if (xf86Info.mseType + MICROSOFT == MICROSOFT ||
-          xf86Info.mseType + MICROSOFT == LOGIMAN)
-      {
-        if (xf86Info.emulate3Buttons)
-          configError("Can't use ChordMiddle with Emulate3Buttons");
-        xf86Info.chordMiddle = TRUE;
-      }
-      else
-        configError("ChordMiddle is only supported for MicroSoft and Logiman");
-      break;
-
-    case CLEARDTR:
-#ifdef CLEARDTR_SUPPORT
-      if (xf86Info.mseType + MICROSOFT == MOUSESYS)
-        xf86Info.mouseFlags |= MF_CLEAR_DTR;
-      else
-        configError("ClearDTR only supported for MouseSystems mouse");
-#else
-      configError("ClearDTR not supported on this OS");
-#endif
-      break;
-    case CLEARRTS:
-#ifdef CLEARDTR_SUPPORT
-      if (xf86Info.mseType + MICROSOFT == MOUSESYS)
-        xf86Info.mouseFlags |= MF_CLEAR_RTS;
-      else
-        configError("ClearRTS only supported for MouseSystems mouse");
-#else
-      configError("ClearRTS not supported on this OS");
-#endif
-      break;
-    default:
-      pushToken = token;
-      return;
-    }
-  }
-}
-
-/*
- * configGraphics --
- *      Set up all parameters for the graphics drivers. These may be changed
- *      by the driver during device-probe ...
- */
-
-static void
-configGraphics(scr_index)
-     int scr_index;
-{
-  int token, i;
-  DisplayModePtr pNew, pLast;
-  Bool dummy = scr_index < 0 || !xf86Screens[scr_index];
-  ScrnInfoPtr screen = NULL;
-
-  if (dummy)
-    screen = (ScrnInfoPtr)xalloc(sizeof(ScrnInfoRec));
-  else
-  {
-    screen = xf86Screens[scr_index];
-    screen->configured = TRUE;
-    screen->tmpIndex = screenno++;
-    screen->scrnIndex = scr_index;	/* scrnIndex must not be changed */
-    screen->frameX0 = -1;
-    screen->frameY0 = -1;
-    screen->virtualX = -1;
-    screen->virtualY = -1;
-    screen->defaultVisual = -1;
-    screen->chipset = NULL;
-    screen->ramdac = NULL;
-    screen->dacSpeed = 0;
-    screen->modes = NULL;
-    OFLG_ZERO(&(screen->options));
-    OFLG_ZERO(&(screen->xconfigFlag));
-    screen->videoRam = 0;
-    screen->width = 240;
-    screen->height = 180;
-    screen->speedup = SPEEDUP_DEFAULT;
-    screen->clockprog = NULL;
-    screen->bankedMono = FALSE;
-    screen->textclock = -1;
-    screen->blackColour.red = 0;
-    screen->blackColour.green = 0;
-    screen->blackColour.blue = 0;
-    screen->whiteColour.red = 0x3F;
-    screen->whiteColour.green = 0x3F;
-    screen->whiteColour.blue = 0x3F;
-  }
-  screen->clocks = 0;
-  textClockValue = -1;
-  for (;;) {
-
-    token = getToken(GraphicsTab);
-    if (!dummy && !validateGraphicsToken(screen->validTokens, token))
-    {
-      char mesg[80];
-
-      sprintf(mesg, "\"%s\" is not valid keyword for %s",
-              xf86TokenToString(GraphicsTab, token), screen->name);
-      configError(mesg);
-    }
-
-    switch (token) {
-    case STATICGRAY:
-    case GRAYSCALE:
-    case STATICCOLOR:
-    case PSEUDOCOLOR:
-    case TRUECOLOR:
-    case DIRECTCOLOR:
-      if (!dummy && screen->defaultVisual >= 0)
-        configError("Only one default visual may be specified");
-      screen->defaultVisual = token - STATICGRAY;
-      if (!dummy && xf86Verbose) {
-        char *visualname;
-        switch (token) {
-        case STATICGRAY:
-          visualname = "StaticGray";
-          break;
-        case GRAYSCALE:
-          visualname = "GrayScale";
-          break;
-        case STATICCOLOR:
-          visualname = "StaticColor";
-          break;
-        case PSEUDOCOLOR:
-          visualname = "PseudoColor";
-          break;
-        case TRUECOLOR:
-          visualname = "TrueColor";
-          break;
-        case DIRECTCOLOR:
-          visualname = "DirectColor";
-          break;
-        }
-        ErrorF("%s %s: Default visual: %s\n", XCONFIG_GIVEN, screen->name,
-               visualname);
-      }
-      
-      break;
-
-    case CHIPSET:
-      if (getToken(NULL) != STRING) configError("Chipset string expected");
-      screen->chipset = val.str;
-      OFLG_SET(XCONFIG_CHIPSET,&(screen->xconfigFlag));
-      break;
-
-    case RAMDAC:
-      if (getToken(NULL) != STRING) configError("RAMDAC string expected");
-      screen->ramdac = val.str;
-      OFLG_SET(XCONFIG_RAMDAC,&(screen->xconfigFlag));
-      break;
-
-    case DACSPEED:
-      if (getToken(NULL) != NUMBER) configError("DAC speed expected");
-      screen->dacSpeed = (int)(val.realnum * 1000.0 + 0.5);
-      OFLG_SET(XCONFIG_DACSPEED,&(screen->xconfigFlag));
-      break;
-
-    case CLOCKS:
-      OFLG_SET(XCONFIG_CLOCKS,&(screen->xconfigFlag));
-      if ((token = getToken(NULL)) == STRING)
-      {
-	 /* Only allow one Clock string */
-	 if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &(screen->clockOptions)))
-	 {
-	    configError("Only one Clock string may be specified.");
-	    break;
-	 }
-	 if (screen->clocks == 0)
-	 {
-	    i = 0;
-	    while (xf86_ClockOptionTab[i].token != -1)
-	    {
-	       if (StrCaseCmp(val.str, xf86_ClockOptionTab[i].name) == 0)
-	       {
-  		  OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &(screen->clockOptions));
-		  OFLG_SET(xf86_ClockOptionTab[i].token,
-			   &(screen->clockOptions));
-
-		  break;
-	       }
-	       i++;
-	    }
-	    if (xf86_ClockOptionTab[i].token == -1) {
-	       configError("Unknown clock string");
-	       break;
-	    }
-	 }
-	 else
-	 {
-	    configError("Clocks previously specified by value");
-	 }
-	 break;
-      }
-      if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &(screen->clockOptions)))
-      {
-	 configError("Clock previously specified as programmable");
-	 break;
-      }
-      for (i = screen->clocks; token == NUMBER && i < MAXCLOCKS; i++) {
-	screen->clock[i] = (int)(val.realnum * 1000.0 + 0.5);
-	token = getToken(NULL);
-      }
-
-      screen->clocks = i;
-      pushToken = token;
-      break;
-
-    case DISPLAYSIZE:
-      OFLG_SET(XCONFIG_DISPLAYSIZE,&(screen->xconfigFlag));
-      if (getToken(NULL) != NUMBER) configError("Display Width expected");
-      screen->width = val.num;
-      if (getToken(NULL) != NUMBER) configError("Display Height expected");
-      screen->height = val.num;
-      break;
-
-    case MODES:
-      for (pLast=NULL; (token = getToken(NULL)) == STRING; pLast = pNew)
-	{
-	  pNew = (DisplayModePtr)xalloc(sizeof(DisplayModeRec));
-	  pNew->name = val.str;
-
-	  if (pLast) 
-	    {
-	      pLast->next = pNew;
-	      pNew->prev  = pLast;
-	    }
-	  else
-	    screen->modes = pNew;
-	}
-      pNew->next = screen->modes;
-      screen->modes->prev = pLast;
-      pushToken = token;
-      break;
-
-    case SCREENNO:
-      if (getToken(NULL) != NUMBER) configError("Screen number expected");
-      screen->tmpIndex = val.num;
-      break;
-
-    case OPTION:
-      if (getToken(NULL) != STRING) configError("Option string expected");
-      i = 0;
-      while (xf86_OptionTab[i].token != -1) 
-      {
-	if (StrCaseCmp(val.str, xf86_OptionTab[i].name) == 0)
-	{
-          OFLG_SET(xf86_OptionTab[i].token, &(screen->options));
-	  break;
-	}
-	i++;
-      }
-      if (xf86_OptionTab[i].token == -1)
-        configError("Unknown option string");
-      break;
-
-    case VIDEORAM:
-      OFLG_SET(XCONFIG_VIDEORAM,&(screen->xconfigFlag));
-      if (getToken(NULL) != NUMBER) configError("Video RAM size expected");
-      screen->videoRam = val.num;
-      break;
-
-    case VIEWPORT:
-      OFLG_SET(XCONFIG_VIEWPORT,&(screen->xconfigFlag));
-      if (getToken(NULL) != NUMBER) configError("Viewport X expected");
-      screen->frameX0 = val.num;
-      if (getToken(NULL) != NUMBER) configError("Viewport Y expected");
-      screen->frameY0 = val.num;
-      break;
-
-    case VIRTUAL:
-      OFLG_SET(XCONFIG_VIRTUAL,&(screen->xconfigFlag));
-      if (getToken(NULL) != NUMBER) configError("Virtual X expected");
-      screen->virtualX = val.num;
-      if (getToken(NULL) != NUMBER) configError("Virtual Y expected");
-      screen->virtualY = val.num;
-      break;
-
-    case SPEEDUP:
-      OFLG_SET(XCONFIG_SPEEDUP,&(screen->xconfigFlag));
-      if ((token = getToken(NULL)) == STRING)
-	if (!strcmp(val.str,"all"))
-	  screen->speedup = SPEEDUP_ALL;
-	else
-	  if (!strcmp(val.str,"best"))
-	    screen->speedup = SPEEDUP_BEST;
-	  else
-	    if (!strcmp(val.str,"none"))
-	      screen->speedup = 0;
-            else
-	      configError("Unrecognised SpeedUp option");
-      else
-      {
-        pushToken = token;
-	if ((token = getToken(NULL)) == NUMBER)
-	  screen->speedup = val.num;
-	else
-	{
-	  pushToken = token;
-	  screen->speedup = SPEEDUP_ALL;
-	}
-      }
-      break;
-    case NOSPEEDUP:
-      OFLG_SET(XCONFIG_SPEEDUP,&(screen->xconfigFlag));
-      screen->speedup = 0;
-      break;
-
-    case CLOCKPROG:
-      if (getToken(NULL) != STRING) configError("ClockProg string expected");
-      if (val.str[0] != '/')
-        FatalError("Full pathname must be given for ClockProg \"%s\"\n",
-                   val.str);
-      if (access(val.str, X_OK) < 0)
-      {
-        if (access(val.str, F_OK) < 0)
-          FatalError("ClockProg \"%s\" does not exist\n", val.str);
-        else
-          FatalError("ClockProg \"%s\" is not executable\n", val.str);
-      }
-      {
-        struct stat stat_buf;
-        stat(val.str, &stat_buf);
-	if (!CHECK_TYPE(stat_buf.st_mode, S_IFREG))
-          FatalError("ClockProg \"%s\" is not a regular file\n", val.str);
-      }
-      screen->clockprog = val.str;
-      if (!dummy && xf86Verbose)
-        ErrorF("%s %s: ClockProg: \"%s\"", XCONFIG_GIVEN, screen->name,
-               screen->clockprog);
-      if (getToken(NULL) == NUMBER)
-      {
-        textClockValue = (int)(val.realnum * 1000.0 + 0.5);
-	if (!dummy && xf86Verbose)
-          ErrorF(", Text Clock: %7.3f\n", textClockValue / 1000.0);
-      }
-      else
-      {
-        pushToken = token;
-	if (!dummy && xf86Verbose)
-          ErrorF("\n");
-      }
-      break;
-
-    case BIOSBASE:
-      if (getToken(NULL) != NUMBER) configError("BIOS base address expected");
-      screen->BIOSbase = val.num;
-      if (!dummy && xf86Verbose)
-        ErrorF("%s %s: BIOS Base Address: %x\n", XCONFIG_GIVEN, screen->name,
-	       val.num);
-      break;
-
-    case MEMBASE:
-      if (getToken(NULL) != NUMBER) configError("Memory base address expected");
-      screen->MemBase = val.num;
-      if (!dummy && xf86Verbose)
-        ErrorF("%s %s: Memory Base Address: %x\n", XCONFIG_GIVEN, screen->name,
-	       val.num);
-      break;
-
-    case BLACK:
-    case WHITE:
-      {
-        unsigned char rgb[3];
-        int i, savetoken;
-        
-        savetoken = token;
-        for (i = 0; i < 3; i++)
-        {
-          if (getToken(NULL) != NUMBER) configError("RGB value expected");
-          rgb[i] = val.num & 0x3F;
-        }
-        if (savetoken == BLACK)
-        {
-          screen->blackColour.red = rgb[0];
-          screen->blackColour.green = rgb[1];
-          screen->blackColour.blue = rgb[2];
-        }
-        else
-        {
-          screen->whiteColour.red = rgb[0];
-          screen->whiteColour.green = rgb[1];
-          screen->whiteColour.blue = rgb[2];
-        }
-      }
-      break;
-
-     case IOBASE:
-       if (getToken(NULL) != NUMBER)
-         configError("Direct access register I/O base address expected");
-       screen->IObase = val.num;
-       if (!dummy && xf86Verbose)
-         ErrorF("%s %s: Direct Access Register I/O Base Address: %x\n",
-                XCONFIG_GIVEN, screen->name, val.num);
-       break;
-
-     case DACBASE:
-       if (getToken(NULL) != NUMBER)
-         configError("DAC base I/O address expected");
-       screen->DACbase = val.num;
-       if (!dummy && xf86Verbose)
-         ErrorF("%s %s: DAC Base I/O Address: %x\n",
-                XCONFIG_GIVEN, screen->name, val.num);
-       break;
-
-     case COPBASE:
-       if (getToken(NULL) != NUMBER)
-         configError("Coprocessor base memory address expected");
-       screen->COPbase = val.num;
-       if (!dummy && xf86Verbose)
-         ErrorF("%s %s: Coprocessor Base Memory Address: %x\n",
-                XCONFIG_GIVEN, screen->name, val.num);
-       break;
-
-     case POSBASE:
-       if (getToken(NULL) != NUMBER) configError("POS base address expected");
-       screen->POSbase = val.num;
-       if (!dummy && xf86Verbose)
-         ErrorF("%s %s: POS Base Address: %x\n", XCONFIG_GIVEN, screen->name,
-              val.num);
-       break;
-
-     case INSTANCE:
-       if (getToken(NULL) != NUMBER)
-         configError("Vidoe adapter instance number expected");
-       screen->instance = val.num;
-       if (!dummy && xf86Verbose)
-         ErrorF("%s %s: POS Base Address: %x\n", XCONFIG_GIVEN, screen->name,
-              val.num);
-       break;
-
-    default:
-      pushToken = token;
-      if (dummy && screen != NULL)
-      {
-        xfree(screen);
-        screen = NULL;
-      }
-      return;
-    }
-  }
-}
-
 void
 xf86DeleteMode(infoptr, dispmp)
 ScrnInfoPtr	infoptr;
@@ -1035,7 +478,7 @@ DisplayModePtr	dispmp;
 
 /*
  * findConfigFile --
- * 	Locate the Xconfig file.  Abort if not found.
+ * 	Locate the xf86Config file.  Abort if not found.
  */
 static void
 findConfigFile(filename, fp)
@@ -1053,7 +496,7 @@ findConfigFile(filename, fp)
    * First open if necessary the config file.
    * If the -xconfig flag was used, use the name supplied there.
    * If $XCONFIG is a pathname, use it as the name of the config file
-   * If $XCONFIG is set but doesn't contain a '/', append it to 'Xconfig'
+   * If $XCONFIG is set but doesn't contain a '/', append it to 'xf86Config'
    *   and search the standard places.
    * If $XCONFIG is not set, just search the standard places.
    */
@@ -1087,28 +530,28 @@ findConfigFile(filename, fp)
     }
      
     /*
-     * ~/Xconfig ...
+     * ~/xf86Config ...
      */
     if (home = getenv("HOME")) {
       strcpy(configPath,home);
-      strcat(configPath,"/Xconfig");
+      strcat(configPath,"/xf86Config");
       if (xconfig) strcat(configPath,xconfig);
       if (configFile = fopen( configPath, "r" )) break;
     }
     
     /*
-     * /etc/Xconfig
+     * /etc/xf86Config
      */
-    strcpy(configPath, "/etc/Xconfig");
+    strcpy(configPath, "/etc/xf86Config");
     if (xconfig) strcat(configPath,xconfig);
     if (configFile = fopen( configPath, "r" )) break;
     
     /*
-     * $(LIBDIR)/Xconfig.<hostname>
+     * $(LIBDIR)/xf86Config.<hostname>
      */
 
     if ((xwinhome = getenv("XWINHOME")) != NULL)
-	sprintf(configPath, "%s/lib/X11/Xconfig", xwinhome);
+	sprintf(configPath, "%s/lib/X11/xf86Config", xwinhome);
     else
 	strcpy(configPath, SERVER_CONFIG_FILE);
     if (xconfig) strcat(configPath,xconfig);
@@ -1125,10 +568,10 @@ findConfigFile(filename, fp)
     if (configFile = fopen( configPath, "r" )) break;
     
     /*
-     * $(LIBDIR)/Xconfig
+     * $(LIBDIR)/xf86Config
      */
     if (xwinhome)
-	sprintf(configPath, "%s/lib/X11/Xconfig", xwinhome);
+	sprintf(configPath, "%s/lib/X11/xf86Config", xwinhome);
     else
 	strcpy(configPath, SERVER_CONFIG_FILE);
     if (xconfig) strcat(configPath,xconfig);
@@ -1137,13 +580,16 @@ findConfigFile(filename, fp)
     FatalError("No config file found!\n");
   }
   if (xf86Verbose) {
-    ErrorF("Xconfig: %s\n", configPath);
+    ErrorF("xf86Config: %s\n", configPath);
     ErrorF("%s stands for supplied, %s stands for probed/default values\n",
        XCONFIG_GIVEN, XCONFIG_PROBED);
   }
 #undef configFile
 #undef configPath
 }
+
+static DisplayModePtr pNew, pLast;
+Bool           graphFound = FALSE;
 
 /*
  * xf86GetNearestClock --
@@ -1174,22 +620,20 @@ xf86GetNearestClock(Screen, Frequency)
  * xf86Config --
  *	Fill some internal structure with userdefined setups. Many internal
  *      Structs are initialized.  The drivers are selected and initialized.
- *	if (! vtopen), Xconfig is read, but devices are not probed.
+ *	if (! vtopen), xf86Config is read, but devices are not probed.
  *	if (vtopen), devices are probed (and modes resolved).
- *	The vtopen argument was added so that Xconfig information could be
+ *	The vtopen argument was added so that xf86Config information could be
  *	made available before the VT is opened.
  */
 void
 xf86Config (vtopen)
      int vtopen;
 {
-  int            token, scr_index;
+  int            token;
   int            i, j;
-  Bool           graphFound = FALSE;
 #if defined(SYSV) || defined(linux)
   int            xcpipe[2];
 #endif
-  static DisplayModePtr pNew, pLast;
 
  if (!vtopen)
  {
@@ -1202,7 +646,7 @@ xf86Config (vtopen)
   configBuf[0] = '\0';                    /* sanity ... */
   
   /*
-   * Read the Xconfig file with the real uid to avoid security problems
+   * Read the xf86Config file with the real uid to avoid security problems
    *
    * For SYSV we fork, and send the data back to the parent through a pipe
    */
@@ -1276,302 +720,28 @@ xf86Config (vtopen)
   xf86Info.caughtSignal = FALSE;
 
   
-  while ((token = getToken(SymTab)) != EOF)
-    
-    switch (token) {
-      
-    case SHAREDMON:
-      xf86Info.sharedMonitor = TRUE;
-      break;
-      
-    case FONTPATH:
-      OFLG_SET(XCONFIG_FONTPATH,&GenericXconfigFlag);
-      if (getToken(NULL) != STRING) configError("Font path component expected");
-      j = FALSE;
-      if (fontPath == NULL)
-	{
-	  fontPath = (char *)xalloc(1);
-	  fontPath[0] = '\0';
-	  i = strlen(val.str) + 1;
-	}
-      else
-	{
-          i = strlen(fontPath) + strlen(val.str) + 1;
-          if (fontPath[strlen(fontPath)-1] != ',') 
-	    {
-	      i++;
-	      j = TRUE;
-	    }
-	}
-      fontPath = (char *)xrealloc(fontPath,i);
-      if (j)
-        strcat(fontPath, ",");
-      strcat(fontPath, val.str);
-      xfree(val.str);
-      break;
-      
-    case RGBPATH:
-      OFLG_SET(XCONFIG_RGBPATH,&GenericXconfigFlag);
-      if (getToken(NULL) != STRING) configError("RGB path expected");
-      if (!xf86coFlag)
-        rgbPath = val.str;
-      break;
-      
-    case NOTRAPSIGNALS:
-      xf86Info.notrapSignals=TRUE;
-      break;
-      
-    case KEYBOARD:
-      xf86Info.kbdProc    = xf86KbdProc;
-#ifdef AMOEBA
-      xf86Info.kbdEvents  = NULL;
-#else
-      xf86Info.kbdEvents  = xf86KbdEvents;
-#endif
-      configKeyboard();
-      break;
-      
-      
-    case MICROSOFT:
-    case MOUSESYS:
-    case MMSERIES:
-    case LOGITECH:
-    case BUSMOUSE:
-    case LOGIMAN:	/* see xf86Io.c for details [CHRIS-211092] */
-    case PS_2:
-    case MMHITTAB:
-      if (getToken(NULL) != STRING) configError("Mouse device expected");
-#ifdef AMOEBA
-      xf86Info.mseProc    = xf86MseProc;
-      xf86Info.mseEvents  = NULL;
-#else
-      xf86Info.mseProc    = xf86MseProc;
-      xf86Info.mseEvents  = xf86MseEvents;
-#endif
-      xf86Info.mseType    = token - MICROSOFT;
-#ifdef MACH386
-      xf86Info.mseDevice  = "/dev/mouse";
-#else
-      xf86Info.mseDevice  = val.str;
-#endif
-      if (!xf86MouseSupported(xf86Info.mseType))
-      {
-        configError("Mouse type not supported by this OS");
-      }
-      configMouse();
-      if (xf86Verbose)
-      {
-        char *mouseType = "unknown";
-        Bool formatFlag = FALSE;
-        switch (token)
-        {
-        case MICROSOFT:
-          mouseType = "Microsoft";
-          break;
-        case MOUSESYS:
-          mouseType = "MouseSystems";
-          break;
-        case MMSERIES:
-          mouseType = "MMSeries";
-          break;
-        case LOGITECH:
-          mouseType = "Logitech";
-          break;
-        case BUSMOUSE:
-          mouseType = "BusMouse";
-          break;
-        case LOGIMAN:
-          mouseType = "MouseMan";
-          break;
-        case PS_2:
-          mouseType = "PS/2";
-          break;
-        case MMHITTAB:
-          mouseType = "HitachiTablet";
-          break;
-        }
-        ErrorF("%s Mouse: type: %s, device: %s", 
-           XCONFIG_GIVEN, mouseType, xf86Info.mseDevice);
-        if (token != BUSMOUSE && token != PS_2)
-        {
-          formatFlag = TRUE;
-          ErrorF(", baudrate: %d", xf86Info.baudRate);
-        }
-        if (xf86Info.sampleRate)
-        {
-          ErrorF("%ssamplerate: %d", formatFlag ? ",\n       " : ", ",
-                 xf86Info.sampleRate);
-          formatFlag = !formatFlag;
-        }
-        if (xf86Info.emulate3Buttons)
-          ErrorF("%s3 button emulation", formatFlag ? ",\n       " : ", ");
-        if (xf86Info.chordMiddle)
-          ErrorF("%sChorded middle button", formatFlag ? ",\n       " : ", ");
-        ErrorF("\n");
-      }
-      
-      break;
-      
-#ifdef XQUEUE
-    case XQUE:
-      xf86Info.kbdProc   = xf86XqueKbdProc;
-      xf86Info.kbdEvents = xf86XqueEvents;
-      xf86Info.mseProc   = xf86XqueMseProc;
-      xf86Info.mseEvents = xf86XqueEvents;
-      xf86Info.xqueSema  = 0;
-      configKeyboard();
-      configMouse();
-      if (xf86Verbose)
-        ErrorF("%s Xqueue selected for mouse and keyboard input\n",
-	       XCONFIG_GIVEN);
-      break;
-#endif
-      
-#ifdef USE_OSMOUSE
-    case OSMOUSE:
-      if (xf86Verbose)
-        ErrorF("%s OsMouse selected for mouse input\n", XCONFIG_GIVEN);
-      /*
-       *  allow an option to be passed to the OsMouse routines
-       */
-      if ((i = getToken(NULL)) != ERROR_TOKEN)
-	xf86OsMouseOption(i, (pointer) &val);
-      else
-	pushToken = i;
-      xf86Info.mseProc   = xf86OsMouseProc;
-      xf86Info.mseEvents = xf86OsMouseEvents;
-      configMouse();
-	  break;
-#endif
-      
-    case VGA256:
-    case VGA2:
-    case MONO:
-    case VGA16:
-    case ACCEL:
-      scr_index = getScreenIndex(token);
-      configGraphics(scr_index);
-      /* Check for information that must be specified in Xconfig */
-      if (scr_index >= 0 && xf86Screens[scr_index])
-      {
-        ScrnInfoPtr driver = xf86Screens[scr_index];
+  while ((token = getToken(TopLevelTab)) != EOF) {
+    if (getToken(NULL) != STRING) configError("section name string expected");
 
-        graphFound = TRUE;
-
-        if (driver->clockprog && !driver->clocks)
-        {
-          FatalError(
-            "%s: When ClockProg is specified a Clocks line is required\n",
-            driver->name);
-        }
-        if (validateGraphicsToken(driver->validTokens, MODES) && !driver->modes)
-        {
-          FatalError("%s: A Modes line must be specified in Xconfig\n",
-                     driver->name);
-        }
-        /* Find the Index of the Text Clock for the ClockProg */
-        if (driver->clockprog && textClockValue > 0)
-        {
-          driver->textclock = xf86GetNearestClock(driver, textClockValue);
-          if (abs(textClockValue - driver->clock[driver->textclock]) >
-              TOLERANCE)
-            FatalError(
-              "There is no defined dot-clock matching the text clock\n");
-          if (xf86Verbose)
-            ErrorF("%s %s: text clock = %7.3f, clock used = %7.3f\n",
-              XCONFIG_GIVEN,
-              driver->name, textClockValue / 1000.0,
-              driver->clock[driver->textclock] / 1000.0);
-        }
-        if (defaultColorVisualClass < 0)
-          defaultColorVisualClass = driver->defaultVisual;
-      }
-      break;
-
-    case MODEDB:
-      for (pLast=NULL, token = getToken(NULL);
-	   token == STRING || token == NUMBER;
-	   pLast = pNew)
-	{
-	  pNew = (DisplayModePtr)xalloc(sizeof(DisplayModeRec));
-	  if (pLast) 
-	    pLast->next = pNew;
-	  else
-	    pModes = pNew;
-	  
-	  if (token == STRING)
-	    {
-	      pNew->name = val.str;
-	      if ((token = getToken(NULL)) != NUMBER)
-		FatalError("Dotclock expected");
-	    }
-	  else if (pLast)
-	    {
-#if defined(MACH) || defined(AMOEBA)
-              pNew->name = (char *) xalloc (strlen (pLast->name) + 1);
-              strcpy (pNew->name, pLast->name);
-#else
-	      pNew->name = (char *)strdup(pLast->name);
-#endif
-	    }
-	  else
-	    FatalError("Mode name expected");
-
-          pNew->next = NULL;
-          pNew->prev = NULL;
-	  pNew->Flags = 0;
-	  pNew->Clock = (int)(val.realnum * 1000.0 + 0.5);
-	  
-	  if (getToken(NULL) == NUMBER) pNew->HDisplay = val.num;
-	  else configError("Horizontal display expected");
-	  
-	  if (getToken(NULL) == NUMBER) pNew->HSyncStart = val.num;
-	  else configError("Horizontal sync start expected");
-	  
-	  if (getToken(NULL) == NUMBER) pNew->HSyncEnd = val.num;
-	  else configError("Horizontal sync end expected");
-	  
-	  if (getToken(NULL) == NUMBER) pNew->HTotal = val.num;
-	  else configError("Horizontal total expected");
-	  
-	  
-	  if (getToken(NULL) == NUMBER) pNew->VDisplay = val.num;
-	  else configError("Vertical display expected");
-	  
-	  if (getToken(NULL) == NUMBER) pNew->VSyncStart = val.num;
-	  else configError("Vertical sync start expected");
-	  
-	  if (getToken(NULL) == NUMBER) pNew->VSyncEnd = val.num;
-	  else configError("Vertical sync end expected");
-	  
-	  if (getToken(NULL) == NUMBER) pNew->VTotal = val.num;
-	  else configError("Vertical total expected");
-
-	  while (((token=getToken(TimingTab)) != EOF) &&
-		 (token != STRING) &&
-		 (token != NUMBER))
-	    
-	    switch(token) {
-	      
-	    case INTERLACE: pNew->Flags |= V_INTERLACE;  break;
-	    case PHSYNC:    pNew->Flags |= V_PHSYNC;     break;
-	    case NHSYNC:    pNew->Flags |= V_NHSYNC;     break;
-	    case PVSYNC:    pNew->Flags |= V_PVSYNC;     break;
-	    case NVSYNC:    pNew->Flags |= V_NVSYNC;     break;
-	    case CSYNC:     pNew->Flags |= V_CSYNC;      break;
-	    default:
-	      configError("Videomode special flag expected");
-	      break;
-	    }
-	}
-      pushToken = token;
-      break;
-
-    default:
-      configError("Keyword expected");
-      break;
+    if ( StrCaseCmp(val.str, "files") == 0 ) {
+      configFilesSection();
+    } else if ( StrCaseCmp(val.str, "serverflags") == 0 ) {
+      configServerFlagsSection();
+    } else if ( StrCaseCmp(val.str, "keyboard") == 0 ) {
+      configKeyboardSection();
+    } else if ( StrCaseCmp(val.str, "pointer") == 0 ) {
+      configPointerSection();
+    } else if ( StrCaseCmp(val.str, "device") == 0 ) {
+      configDeviceSection();
+    } else if ( StrCaseCmp(val.str, "monitor") == 0 ) {
+      configMonitorSection();
+    } else if ( StrCaseCmp(val.str, "screen") == 0 ) {
+      configScreenSection();
+    } else {
+      configError("not a recognized section name");
     }
-  
+  }
+
   fclose(configFile);
   Xfree(configBuf);
   Xfree(configRBuf);
@@ -1584,7 +754,7 @@ xf86Config (vtopen)
   }
 #endif
   
-  /* Try Xconfig FontPath first */
+  /* Try xf86Config FontPath first */
   if (!xf86fpFlag)
     if (fontPath) {
       char *f = xf86ValidateFontPath(fontPath);
@@ -1630,22 +800,22 @@ xf86Config (vtopen)
       XCONFIG_PROBED, defaultFontPath);
 
   if (!xf86Info.kbdProc)
-    FatalError("You must specify a keyboard in Xconfig");
+    FatalError("You must specify a keyboard in xf86Config");
   if (!xf86Info.mseProc)
-    FatalError("You must specify a mouse in Xconfig");
+    FatalError("You must specify a mouse in xf86Config");
 
   if (!graphFound)
   {
     Bool needcomma = FALSE;
 
-    ErrorF("\nYou must provide a section in Xconfig for at least one of the\n");
+    ErrorF("\nYou must provide a section in XF86Config for at least one of the\n");
     ErrorF("following graphics drivers: ");
     for (i = 0; i < xf86MaxScreens; i++)
     {
       if (!xf86Screens[i])
       {
         ErrorF("%s%s", needcomma ? ", " : "",
-               xf86TokenToString(SymTab, xf86ScreenNames[i]));
+               xf86TokenToString(DriverTab, xf86ScreenNames[i]));
         needcomma = TRUE;
       }
     }
@@ -1680,6 +850,7 @@ xf86Config (vtopen)
 	  xf86Screens[i] = temp;
 	}
 
+#if 0
   /*
    * free up mode info...
    */
@@ -1691,9 +862,1309 @@ xf86Config (vtopen)
       pLast = pNew;
       if (pNew) pNew = pNew->next;
     }
+#endif
  }
 }
+    
+#if 0
+   /* GJA -- junk? */
+    switch (token) {
+      
+    case SHAREDMON:
+      xf86Info.sharedMonitor = TRUE;
+      break;
+#endif
+      
 
+configFilesSection()
+{
+  int            token;
+  int            i, j;
+
+  while ((token = getToken(FilesTab)) != ENDSECTION) {
+    switch (token) {
+    case FONTPATH:
+      OFLG_SET(XCONFIG_FONTPATH,&GenericXconfigFlag);
+      if (getToken(NULL) != STRING) configError("Font path component expected");
+      j = FALSE;
+      if (fontPath == NULL)
+	{
+	  fontPath = (char *)xalloc(1);
+	  fontPath[0] = '\0';
+	  i = strlen(val.str) + 1;
+	}
+      else
+	{
+          i = strlen(fontPath) + strlen(val.str) + 1;
+          if (fontPath[strlen(fontPath)-1] != ',') 
+	    {
+	      i++;
+	      j = TRUE;
+	    }
+	}
+      fontPath = (char *)xrealloc(fontPath,i);
+      if (j)
+        strcat(fontPath, ",");
+      strcat(fontPath, val.str);
+      xfree(val.str);
+      break;
+      
+    case RGBPATH:
+      OFLG_SET(XCONFIG_RGBPATH,&GenericXconfigFlag);
+      if (getToken(NULL) != STRING) configError("RGB path expected");
+      if (!xf86coFlag)
+        rgbPath = val.str;
+      break;
+    case EOF:
+      FatalError("Unexpected EOF (missing EndSection?)");
+      break; /* :-) */
+    default:
+      configError("File section keyword expected");
+      break;
+    }
+  }
+}
+
+configServerFlagsSection()
+{
+  int            token;
+  int            i, j;
+      
+  xf86Info.dontZap       = FALSE;
+
+  while ((token = getToken(ServerFlagsTab)) != ENDSECTION) {
+    switch (token) {
+    case NOTRAPSIGNALS:
+      xf86Info.notrapSignals=TRUE;
+      break;
+    case DONTZAP:
+      xf86Info.dontZap = TRUE;
+      break;
+    case EOF:
+      FatalError("Unexpected EOF (missing EndSection?)");
+      break; /* :-) */
+    default:
+      configError("Server flags section keyword expected");
+      break;
+    }
+  }
+}
+
+configKeyboardSection()
+{
+  int            token, ntoken;
+  int            i, j;
+      
+  /* Initialize defaults */
+  xf86Info.serverNumLock = FALSE;
+  xf86Info.xleds         = 0L;
+  xf86Info.kbdDelay      = 500;
+  xf86Info.kbdRate       = 30;
+  xf86Info.vtinit        = NULL;
+  xf86Info.vtSysreq      = VT_SYSREQ_DEFAULT;
+  xf86Info.specialKeyMap = (int *)xalloc((RIGHTCTL - LEFTALT + 1) *
+                                            sizeof(int));
+  xf86Info.specialKeyMap[LEFTALT - LEFTALT] = K_META;
+  xf86Info.specialKeyMap[RIGHTALT - LEFTALT] = K_META;
+  xf86Info.specialKeyMap[SCROLLLOCK - LEFTALT] = K_COMPOSE;
+  xf86Info.specialKeyMap[RIGHTCTL - LEFTALT] = K_CONTROL;
+
+  xf86Info.kbdProc    = xf86KbdProc;
+#ifdef AMOEBA
+  xf86Info.kbdEvents  = NULL;
+#else
+  xf86Info.kbdEvents  = xf86KbdEvents;
+#endif
+
+  while ((token = getToken(KeyboardTab)) != ENDSECTION) {
+    switch (token) {
+    case DEVICE:
+      if (getToken(NULL) != STRING) configError("Device name expected");
+      if ( StrCaseCmp(val.str,"standard") == 0 ) {
+        /* GJA -- don't know what to do here */
+      } else if ( StrCaseCmp(val.str,"xqueue") ) {
+#ifdef XQUEUE
+        xf86Info.kbdProc   = xf86XqueKbdProc;
+        xf86Info.kbdEvents = xf86XqueEvents;
+        xf86Info.xqueSema  = 0;
+        /* configKeyboard(); configMouse(); */
+        if (xf86Verbose)
+          ErrorF("%s Xqueue selected for mouse and keyboard input\n",
+  	         XCONFIG_GIVEN);
+#endif
+      } else {
+        configError("Not a valid device name");
+      }
+      break;
+    case AUTOREPEAT:
+      if (getToken(NULL) != NUMBER) configError("Autorepeat delay expected");
+      xf86Info.kbdDelay = val.num;
+      if (getToken(NULL) != NUMBER) configError("Autorepeat rate expected");
+      xf86Info.kbdRate = val.num;
+      break;
+    case SERVERNUM:
+      xf86Info.serverNumLock = TRUE;
+      break;
+
+    case XLEDS:
+      while ((token= getToken(NULL)) == NUMBER)
+	xf86Info.xleds |= 1L << (val.num-1);
+      pushToken = token;
+      break;
+    case LEFTALT:
+    case RIGHTALT:
+    case SCROLLLOCK:
+    case RIGHTCTL:
+      ntoken = getToken(KeyMapTab);
+      if ((ntoken == EOF) || (ntoken == STRING) || (ntoken == NUMBER)) 
+	configError("KeyMap type token expected");
+      else {
+	switch(ntoken) {
+	case K_META:
+	case K_COMPOSE:
+	case K_MODESHIFT:
+	case K_MODELOCK:
+	case K_SCROLLLOCK:
+	case K_CONTROL:
+          xf86Info.specialKeyMap[token - LEFTALT] = ntoken;
+	  break;
+	default:
+	  configError("Illegal KeyMap type");
+	  break;
+	}
+      }
+      break;
+    case VTINIT: /* GJA -- ?? */
+      if (getToken(NULL) != STRING) configError("VTInit string expected");
+      xf86Info.vtinit = val.str;
+      if (xf86Verbose)
+        ErrorF("%s VTInit: \"%s\"\n", XCONFIG_GIVEN, val.str);
+      break;
+
+    case VTSYSREQ: /* GJA -- ?? */
+#ifdef USE_VT_SYSREQ
+      xf86Info.vtSysreq = TRUE;
+      if (xf86Verbose && !VT_SYSREQ_DEFAULT)
+        ErrorF("%s VTSysReq enabled\n", XCONFIG_GIVEN);
+#else
+      configError("VTSysReq not supported on this OS");
+#endif
+      break;
+
+    case EOF:
+      FatalError("Unexpected EOF (missing EndSection?)");
+      break; /* :-) */
+
+    default:
+      configError("Keyboard section keyword expected");
+      break;
+    }
+  }
+}
+      
+configPointerSection()
+{
+  int            token;
+  int		 mtoken;
+  int            i, j;
+  char *mouseType = "unknown";
+
+  /* Set defaults */
+  xf86Info.baudRate        = 1200;
+  xf86Info.oldBaudRate     = -1;
+  xf86Info.sampleRate      = 0;
+  xf86Info.emulate3Buttons = FALSE;
+  xf86Info.chordMiddle     = FALSE;
+  xf86Info.mouseFlags = 0;
+      
+  while ((token = getToken(PointerTab)) != ENDSECTION) {
+    switch (token) {
+
+    case PROTOCOL:
+      if (getToken(NULL) != STRING) configError("Mouse name expected");
+#ifdef USE_OSMOUSE
+      if ( StrCaseCmp(val.str,"osmouse") == 0 ) {
+        if (xf86Verbose)
+          ErrorF("%s OsMouse selected for mouse input\n", XCONFIG_GIVEN);
+        /*
+         *  allow an option to be passed to the OsMouse routines
+         */
+        if ((i = getToken(NULL)) != ERROR_TOKEN)
+    	  xf86OsMouseOption(i, (pointer) &val);
+        else
+  	  pushToken = i;
+        xf86Info.mseProc   = xf86OsMouseProc;
+        xf86Info.mseEvents = xf86OsMouseEvents;
+        /* configMouse(); */
+	    break;
+      }
+#endif
+#ifdef XQUEUE
+      if ( StrCaseCmp(val.str,"xqueue") == 0 ) {
+        xf86Info.mseProc   = xf86XqueMseProc;
+        xf86Info.mseEvents = xf86XqueEvents;
+        xf86Info.xqueSema  = 0;
+        /* configKeyboard(); configMouse(); */
+        if (xf86Verbose)
+          ErrorF("%s Xqueue selected for mouse and keyboard input\n",
+	         XCONFIG_GIVEN);
+        break;
+      }
+#endif
+
+#if defined(MACH) || defined(AMOEBA)
+      mouseType = (char *) xalloc (strlen (val.str) + 1);
+      strcpy (mousetype, val.str);
+#else
+      mouseType = (char *)strdup(val.str); /* GJA -- should we free this? */
+#endif
+      mtoken = getStringToken(MouseTab); /* Which mouse? */
+#ifdef AMOEBA
+      xf86Info.mseProc    = xf86MseProc;
+      xf86Info.mseEvents  = NULL;
+#else
+      xf86Info.mseProc    = xf86MseProc;
+      xf86Info.mseEvents  = xf86MseEvents;
+#endif
+      xf86Info.mseType    = mtoken - MICROSOFT;
+#ifdef MACH386
+      xf86Info.mseDevice  = "/dev/mouse";
+#else
+      xf86Info.mseDevice  = val.str;
+#endif
+      if (!xf86MouseSupported(xf86Info.mseType))
+      {
+        configError("Mouse type not supported by this OS");
+      }
+      /* configMouse(); */
+      break;
+    case PDEVICE:
+      if (getToken(NULL) != STRING) configError("Mouse device expected");
+#ifdef MACH386
+      xf86Info.mseDevice  = "/dev/mouse";
+#else
+      xf86Info.mseDevice  = val.str;
+#endif
+      break;
+    case BAUDRATE:
+      if (getToken(NULL) != NUMBER) configError("Baudrate expected");
+      if (xf86Info.mseType + MICROSOFT == LOGIMAN)
+	{
+	  /* Moan if illegal baud rate!  [CHRIS-211092] */
+	  if ((val.num != 1200) && (val.num != 9600))
+	    configError("Only 1200 or 9600 Baud are supported by MouseMan");
+	}
+      xf86Info.baudRate = val.num;
+      break;
+
+    case SAMPLERATE:
+      if (getToken(NULL) != NUMBER) configError("Sample rate expected");
+      if (xf86Info.mseType + MICROSOFT == LOGIMAN)
+	{
+	  /* Moan about illegal sample rate!  [CHRIS-211092] */
+	  configError("Selection of sample rate is not supported by MouseMan");
+	}
+      xf86Info.sampleRate = val.num;
+      break;
+
+    case EMULATE3:
+      if (xf86Info.chordMiddle)
+        configError("Can't use Emulate3Buttons with ChordMiddle");
+      xf86Info.emulate3Buttons = TRUE;
+      break;
+
+    case CHORDMIDDLE:
+      if (xf86Info.mseType + MICROSOFT == MICROSOFT ||
+          xf86Info.mseType + MICROSOFT == LOGIMAN)
+      {
+        if (xf86Info.emulate3Buttons)
+          configError("Can't use ChordMiddle with Emulate3Buttons");
+        xf86Info.chordMiddle = TRUE;
+      }
+      else
+        configError("ChordMiddle is only supported for MicroSoft and Logiman");
+      break;
+
+    case CLEARDTR:
+#ifdef CLEARDTR_SUPPORT
+      if (xf86Info.mseType + MICROSOFT == MOUSESYS)
+        xf86Info.mouseFlags |= MF_CLEAR_DTR;
+      else
+        configError("ClearDTR only supported for MouseSystems mouse");
+#else
+      configError("ClearDTR not supported on this OS");
+#endif
+      break;
+    case CLEARRTS:
+#ifdef CLEARDTR_SUPPORT
+      if (xf86Info.mseType + MICROSOFT == MOUSESYS)
+        xf86Info.mouseFlags |= MF_CLEAR_RTS;
+      else
+        configError("ClearRTS only supported for MouseSystems mouse");
+#else
+      configError("ClearRTS not supported on this OS");
+#endif
+      break;
+    case EOF:
+      FatalError("Unexpected EOF (missing EndSection?)");
+      break; /* :-) */
+      
+    default:
+      configError("Pointer section keyword expected");
+      break;
+    }
+
+  }
+  /* Print log and make sanity checks */
+
+  if (xf86Verbose)
+  {
+    Bool formatFlag = FALSE;
+    ErrorF("%s Mouse: type: %s, device: %s", 
+       XCONFIG_GIVEN, mouseType, xf86Info.mseDevice);
+    if (token != BUSMOUSE && token != PS_2)
+    {
+      formatFlag = TRUE;
+      ErrorF(", baudrate: %d", xf86Info.baudRate);
+    }
+    if (xf86Info.sampleRate)
+    {
+      ErrorF("%ssamplerate: %d", formatFlag ? ",\n       " : ", ",
+             xf86Info.sampleRate);
+      formatFlag = !formatFlag;
+    }
+    if (xf86Info.emulate3Buttons)
+      ErrorF("%s3 button emulation", formatFlag ? ",\n       " : ", ");
+    if (xf86Info.chordMiddle)
+      ErrorF("%sChorded middle button", formatFlag ? ",\n       " : ", ");
+    ErrorF("\n");
+  }
+}
+      
+int scr_index = 0; 
+
+int n_devices = 0;
+GDevPtr device_list = NULL;
+
+configDeviceSection()
+{
+  int            token;
+  int            i, j;
+  GDevPtr devp;
+
+  /* Allocate one more device */
+  if ( device_list == NULL ) {
+    device_list = (GDevPtr)
+			xalloc(sizeof(GDevRec));
+  } else {
+    device_list = (GDevPtr)
+	xrealloc(device_list,(n_devices+1) * sizeof(GDevRec));
+  }
+  devp = &(device_list[n_devices]); /* Point to the last device */
+  n_devices++; 
+  
+  /* Pre-init the newly created device */
+  devp->chipset = NULL;
+  devp->ramdac = NULL;
+  devp->dacSpeed = 0;
+  OFLG_ZERO(&(devp->options));
+  OFLG_ZERO(&(devp->xconfigFlag));
+  devp->videoRam = 0;
+  devp->speedup = SPEEDUP_DEFAULT;
+  devp->clockprog = NULL;
+  /* GJA -- We initialize the following fields to known values.
+   * If later on we find they contain different values,
+   * they might be interesting to print.
+   */
+  devp->IObase = 0;
+  devp->DACbase = 0;
+  devp->COPbase = 0;
+  devp->POSbase = 0;
+  devp->instance = 0;
+  devp->BIOSbase = 0;
+  devp->MemBase = 0;
+
+  while ((token = getToken(DeviceTab)) != ENDSECTION) {
+    switch (token) {
+
+    case IDENTIFIER:
+      if (getToken(NULL) != STRING) configError("identifier name expected");
+      devp->identifier = val.str;
+      break;
+
+    case VENDOR:
+      if (getToken(NULL) != STRING) configError("vendor name expected");
+      devp->vendor = val.str;
+      break;
+
+    case BOARD:
+      if (getToken(NULL) != STRING) configError("board name expected");
+      devp->board = val.str;
+      break;
+
+    case CHIPSET:
+      if (getToken(NULL) != STRING) configError("Chipset string expected");
+      devp->chipset = val.str;
+      OFLG_SET(XCONFIG_CHIPSET,&(devp->xconfigFlag));
+      break;
+
+    case RAMDAC:
+      if (getToken(NULL) != STRING) configError("RAMDAC string expected");
+      devp->ramdac = val.str;
+      OFLG_SET(XCONFIG_RAMDAC,&(devp->xconfigFlag));
+      break;
+
+    case DACSPEED:
+      if (getToken(NULL) != NUMBER) configError("DAC speed expected");
+      devp->dacSpeed = (int)(val.realnum * 1000.0 + 0.5);
+      OFLG_SET(XCONFIG_DACSPEED,&(devp->xconfigFlag));
+      break;
+
+    case CLOCKS:
+      OFLG_SET(XCONFIG_CLOCKS,&(devp->xconfigFlag));
+      if ((token = getToken(NULL)) == STRING)
+      {
+	 /* Only allow one Clock string */
+	 if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &(devp->clockOptions)))
+	 {
+	    configError("Only one Clock string may be specified.");
+	    break;
+	 }
+	 if (devp->clocks == 0)
+	 {
+	    i = 0;
+	    while (xf86_ClockOptionTab[i].token != -1)
+	    {
+	       if (StrCaseCmp(val.str, xf86_ClockOptionTab[i].name) == 0)
+	       {
+  		  OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &(devp->clockOptions));
+		  OFLG_SET(xf86_ClockOptionTab[i].token,
+			   &(devp->clockOptions));
+
+		  break;
+	       }
+	       i++;
+	    }
+	    if (xf86_ClockOptionTab[i].token == -1) {
+	       configError("Unknown clock string");
+	       break;
+	    }
+	 }
+	 else
+	 {
+	    configError("Clocks previously specified by value");
+	 }
+	 break;
+      }
+      if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &(devp->clockOptions)))
+      {
+	 configError("Clock previously specified as programmable");
+	 break;
+      }
+      for (i = devp->clocks; token == NUMBER && i < MAXCLOCKS; i++) {
+	devp->clock[i] = (int)(val.realnum * 1000.0 + 0.5);
+	token = getToken(NULL);
+      }
+
+      devp->clocks = i;
+      pushToken = token;
+      break;
+
+    case OPTION:
+      if (getToken(NULL) != STRING) configError("Option string expected");
+      i = 0;
+      while (xf86_OptionTab[i].token != -1) 
+      {
+	if (StrCaseCmp(val.str, xf86_OptionTab[i].name) == 0)
+	{
+          OFLG_SET(xf86_OptionTab[i].token, &(devp->options));
+	  break;
+	}
+	i++;
+      }
+      if (xf86_OptionTab[i].token == -1)
+        configError("Unknown option string");
+      break;
+
+    case VIDEORAM:
+      OFLG_SET(XCONFIG_VIDEORAM,&(devp->xconfigFlag));
+      if (getToken(NULL) != NUMBER) configError("Video RAM size expected");
+      devp->videoRam = val.num;
+      break;
+
+    case SPEEDUP:
+      OFLG_SET(XCONFIG_SPEEDUP,&(devp->xconfigFlag));
+      if ((token = getToken(NULL)) == STRING)
+	if (!strcmp(val.str,"all"))
+	  devp->speedup = SPEEDUP_ALL;
+	else
+	  if (!strcmp(val.str,"best"))
+	    devp->speedup = SPEEDUP_BEST;
+	  else
+	    if (!strcmp(val.str,"none"))
+	      devp->speedup = 0;
+            else
+	      configError("Unrecognised SpeedUp option");
+      else
+      {
+        pushToken = token;
+	if ((token = getToken(NULL)) == NUMBER)
+	  devp->speedup = val.num;
+	else
+	{
+	  pushToken = token;
+	  devp->speedup = SPEEDUP_ALL;
+	}
+      }
+      break;
+
+    case NOSPEEDUP:
+      OFLG_SET(XCONFIG_SPEEDUP,&(devp->xconfigFlag));
+      devp->speedup = 0;
+      break;
+
+    case CLOCKPROG:
+      if (getToken(NULL) != STRING) configError("ClockProg string expected");
+      if (val.str[0] != '/')
+        FatalError("Full pathname must be given for ClockProg \"%s\"\n",
+                   val.str);
+      if (access(val.str, X_OK) < 0)
+      {
+        if (access(val.str, F_OK) < 0)
+          FatalError("ClockProg \"%s\" does not exist\n", val.str);
+        else
+          FatalError("ClockProg \"%s\" is not executable\n", val.str);
+      }
+      {
+        struct stat stat_buf;
+        stat(val.str, &stat_buf);
+	if (!CHECK_TYPE(stat_buf.st_mode, S_IFREG))
+          FatalError("ClockProg \"%s\" is not a regular file\n", val.str);
+      }
+      devp->clockprog = val.str;
+      if (getToken(NULL) == NUMBER)
+      {
+        textClockValue = (int)(val.realnum * 1000.0 + 0.5);
+      }
+      else
+      {
+        pushToken = token;
+      }
+      break;
+
+    case BIOSBASE:
+      if (getToken(NULL) != NUMBER) configError("BIOS base address expected");
+      devp->BIOSbase = val.num;
+      break;
+
+    case MEMBASE:
+      if (getToken(NULL) != NUMBER) configError("Memory base address expected");
+      devp->MemBase = val.num;
+      break;
+
+    case IOBASE:
+       if (getToken(NULL) != NUMBER)
+         configError("Direct access register I/O base address expected");
+       devp->IObase = val.num;
+       break;
+
+    case DACBASE:
+       if (getToken(NULL) != NUMBER)
+         configError("DAC base I/O address expected");
+       devp->DACbase = val.num;
+       break;
+
+    case COPBASE:
+       if (getToken(NULL) != NUMBER)
+         configError("Coprocessor base memory address expected");
+       devp->COPbase = val.num;
+       break;
+
+    case POSBASE:
+       if (getToken(NULL) != NUMBER) configError("POS base address expected");
+       devp->POSbase = val.num;
+       break;
+
+    case INSTANCE:
+       if (getToken(NULL) != NUMBER)
+         configError("Vidoe adapter instance number expected");
+       devp->instance = val.num;
+       break;
+
+    case EOF:
+      FatalError("Unexpected EOF (missing EndSection?)");
+      break; /* :-) */
+    default:
+      configError("Keyboard section keyword expected");
+      break;
+    }
+  }
+}
+
+int n_monitors = 0;
+MonPtr monitor_list = NULL;
+
+configMonitorSection()
+{
+  int            token;
+  int            i, j;
+  MonPtr monp;
+  float multiplier;
+  DisplayModePtr xf86PruneModes(); /* GJA -- make this a prototype */
+      
+  /* Allocate one more monitor */
+  if ( monitor_list == NULL ) {
+    monitor_list = (MonPtr)
+			xalloc(sizeof(MonRec));
+  } else {
+    monitor_list = (MonPtr)
+	xrealloc(monitor_list,(n_monitors+1) * sizeof(MonRec));
+  }
+  monp = &(monitor_list[n_monitors]); /* Point to the new monitor */
+  monp->Modes = 0;
+  monp->Last = 0;
+  n_monitors++; 
+  
+  while ((token = getToken(MonitorTab)) != ENDSECTION) {
+    switch (token) {
+    case IDENTIFIER:
+      if (getToken(NULL) != STRING) configError("identifier name expected");
+      monp->id = val.str;
+      break;
+    case VENDOR:
+      if (getToken(NULL) != STRING) configError("vendor name expected");
+      monp->vendor = val.str;
+      break;
+    case MODEL:
+      if (getToken(NULL) != STRING) configError("model name expected");
+      monp->model = val.str;
+      break;
+    case MODE:
+      readVerboseMode(monp);
+      break;
+    case MODELINE:
+      token = getToken(NULL);
+      pNew = (DisplayModePtr)xalloc(sizeof(DisplayModeRec));
+
+      if (monp->Last) 
+         monp->Last->next = pNew;
+      else
+        monp->Modes = pNew;
+          
+      if (token == STRING)
+        {
+          pNew->name = val.str;
+          if ((token = getToken(NULL)) != NUMBER)
+            FatalError("Dotclock expected");
+        }
+      else if (monp->Last)
+        {
+#if defined(MACH) || defined(AMOEBA)
+          pNew->name = (char *) xalloc (strlen (monp->Last->name) + 1);
+          strcpy (pNew->name, monp->Last->name);
+#else
+          pNew->name = (char *)strdup(monp->Last->name);
+#endif
+        }
+      else
+        FatalError("Mode name expected");
+
+      pNew->next = NULL;
+      pNew->prev = NULL;
+      pNew->Flags = 0;
+      pNew->Clock = (int)(val.realnum * 1000.0 + 0.5);
+      
+      if (getToken(NULL) == NUMBER) pNew->HDisplay = val.num;
+      else configError("Horizontal display expected");
+          
+      if (getToken(NULL) == NUMBER) pNew->HSyncStart = val.num;
+      else configError("Horizontal sync start expected");
+          
+      if (getToken(NULL) == NUMBER) pNew->HSyncEnd = val.num;
+      else configError("Horizontal sync end expected");
+          
+      if (getToken(NULL) == NUMBER) pNew->HTotal = val.num;
+      else configError("Horizontal total expected");
+          
+          
+      if (getToken(NULL) == NUMBER) pNew->VDisplay = val.num;
+      else configError("Vertical display expected");
+          
+      if (getToken(NULL) == NUMBER) pNew->VSyncStart = val.num;
+      else configError("Vertical sync start expected");
+          
+      if (getToken(NULL) == NUMBER) pNew->VSyncEnd = val.num;
+      else configError("Vertical sync end expected");
+          
+      if (getToken(NULL) == NUMBER) pNew->VTotal = val.num;
+      else configError("Vertical total expected");
+
+      token = getToken(TimingTab);
+      while ( (token == INTERLACE) || (token == PHSYNC) ||
+              (token == NHSYNC) || (token == PVSYNC) ||
+              (token == NVSYNC) || (token == CSYNC) )
+      {
+        switch(token) {
+              
+        case INTERLACE: pNew->Flags |= V_INTERLACE;  break;
+        case PHSYNC:    pNew->Flags |= V_PHSYNC;     break;
+        case NHSYNC:    pNew->Flags |= V_NHSYNC;     break;
+        case PVSYNC:    pNew->Flags |= V_PVSYNC;     break;
+        case NVSYNC:    pNew->Flags |= V_NVSYNC;     break;
+        case CSYNC:     pNew->Flags |= V_CSYNC;      break;
+        default:
+          configError("bug found in config reader"); break;
+        }
+        token = getToken(TimingTab);
+      }
+      pushToken = token;
+      monp->Last = pNew; /* GJA */
+      break;
+    case BANDWIDTH:
+      if ((token = getToken(NULL)) != NUMBER)
+        configError("Bandwidth number expected");
+      monp->bandwidth = val.realnum;
+      /* Handle optional scaler */
+      token = getToken(UnitTab);
+      switch ( token ) {
+      case HRZ: multiplier = 1.0e-6; break;
+      case KHZ: multiplier = 1.0e-3; break;
+      case MHZ: multiplier = 1.0; break;
+      default: multiplier = 1.0; pushToken = token;
+      }
+      monp->bandwidth *= multiplier;
+      break;
+    case HORIZSYNC:
+      if ((token = getToken(NULL)) != NUMBER)
+        configError("Horizontal sync value expected");
+      monp->hsync[monp->n_hsync].lo = val.realnum;
+      if ((token = getToken(NULL)) == DASH) {
+        if ((token = getToken(NULL)) != NUMBER)
+           configError("Upperbound for horizontal sync value expected");
+           monp->hsync[monp->n_hsync].hi = val.realnum;
+      } else {
+           pushToken = token;
+           monp->hsync[monp->n_hsync].hi = monp->hsync[monp->n_hsync].lo;
+      }
+      monp->n_hsync++;
+      while ( (token = getToken(NULL)) == COMMA ) {
+        if ( monp->n_hsync == MAX_HSYNC )
+           configError("Sorry. Too many horizontal sync intervals.");
+
+        if ((token = getToken(NULL)) != NUMBER)
+          configError("Horizontal sync value expected");
+        monp->hsync[monp->n_hsync].lo = val.realnum;
+        if ((token = getToken(NULL)) == DASH) {
+          if ((token = getToken(NULL)) != NUMBER)
+             configError("Upperbound for horizontal sync value expected");
+             monp->hsync[monp->n_hsync].hi = val.realnum;
+        } else {
+          pushToken = token;
+          monp->hsync[monp->n_hsync].hi = monp->hsync[monp->n_hsync].lo;
+        }
+        monp->n_hsync++;
+      }
+      pushToken = token;
+      /* Handle optional scaler */
+      token = getToken(UnitTab);
+      switch ( token ) {
+      case HRZ: multiplier = 1.0e-3; break;
+      case KHZ: multiplier = 1.0; break;
+      case MHZ: multiplier = 1.0e3; break;
+      default: multiplier = 1.0; pushToken = token;
+      }
+      for ( i = 0 ; i < monp->n_hsync ; i++ ) {
+         monp->hsync[i].hi *= multiplier;
+         monp->hsync[i].lo *= multiplier;
+      }
+      break;
+    case VERTREFRESH:
+      if ((token = getToken(NULL)) != NUMBER)
+        configError("Vertical refresh value expected");
+      monp->vrefresh[monp->n_vrefresh].lo = val.realnum;
+      if ((token = getToken(NULL)) == DASH) {
+        if ((token = getToken(NULL)) != NUMBER)
+           configError("Upperbound for vertical refresh value expected");
+           monp->vrefresh[monp->n_vrefresh].hi = val.realnum;
+      } else {
+           monp->vrefresh[monp->n_vrefresh].hi = monp->vrefresh[monp->n_vrefresh].lo;
+           pushToken = token;
+      }
+      monp->n_vrefresh++;
+      while ( (token = getToken(NULL)) == COMMA ) {
+        if ( monp->n_vrefresh == MAX_HSYNC )
+           configError("Sorry. Too many vertical refresh intervals.");
+
+        if ((token = getToken(NULL)) != NUMBER)
+          configError("Vetical refresh value expected");
+        monp->vrefresh[monp->n_vrefresh].lo = val.realnum;
+        if ((token = getToken(NULL)) == DASH) {
+          if ((token = getToken(NULL)) != NUMBER)
+             configError("Upperbound for vertical refresh value expected");
+             monp->vrefresh[monp->n_vrefresh].hi = val.realnum;
+        } else {
+          pushToken = token;
+          monp->vrefresh[monp->n_vrefresh].hi = monp->vrefresh[monp->n_vrefresh].lo;
+        }
+        monp->n_vrefresh++;
+      }
+      pushToken = token;
+      /* Handle optional scaler */
+      token = getToken(UnitTab);
+      switch ( token ) {
+      case HRZ: multiplier = 1.0; break;
+      case KHZ: multiplier = 1.0e3; break;
+      case MHZ: multiplier = 1.0e6; break;
+      default: multiplier = 1.0; pushToken = token;
+      }
+      for ( i = 0 ; i < monp->n_hsync ; i++ ) {
+         monp->vrefresh[i].hi *= multiplier;
+         monp->vrefresh[i].lo *= multiplier;
+      }
+      break;
+    case EOF:
+      FatalError("Unexpected EOF. Missing EndSection?");
+      break; /* :-) */
+
+    default:
+      configError("Monitor section keyword expected");
+      break;
+    }
+  }
+  /* GJA -- check the modes against the monitor specs. */
+  monp->Modes = xf86PruneModes(monp,monp->Modes);
+}
+
+readVerboseMode(monp)
+MonPtr monp;
+{
+  int            token, token2;
+  int had_dotclock = 0, had_htimings = 0, had_vtimings = 0;
+
+  pNew = (DisplayModePtr)xalloc(sizeof(DisplayModeRec));
+  pNew->next = NULL;
+  pNew->prev = NULL;
+  pNew->Flags = 0;
+  pNew->HDisplay = pNew->VDisplay = 0; /* Uninitialized */
+
+  if (monp->Last) 
+    monp->Last->next = pNew;
+  else
+    monp->Modes = pNew;
+  monp->Last = pNew;
+
+  if ( getToken(NULL) != STRING ) {
+     FatalError("Mode name expected");
+  }
+  pNew->name = val.str;
+  while ((token = getToken(ModeTab)) != ENDMODE) {
+    switch (token) {
+    case DOTCLOCK:
+      if ((token = getToken(NULL)) != NUMBER) {
+        FatalError("Dotclock expected");
+      }
+      pNew->Clock = (int)(val.realnum * 1000.0 + 0.5);
+      had_dotclock = 1;
+      break;
+    case HTIMINGS:
+      if (getToken(NULL) == NUMBER) pNew->HDisplay = val.num;
+      else configError("Horizontal display expected");
+          
+      if (getToken(NULL) == NUMBER) pNew->HSyncStart = val.num;
+      else configError("Horizontal sync start expected");
+          
+      if (getToken(NULL) == NUMBER) pNew->HSyncEnd = val.num;
+      else configError("Horizontal sync end expected");
+          
+      if (getToken(NULL) == NUMBER) pNew->HTotal = val.num;
+      else configError("Horizontal total expected");
+      had_htimings = 1;
+      break;
+    case VTIMINGS:
+      if (getToken(NULL) == NUMBER) pNew->VDisplay = val.num;
+      else configError("Vertical display expected");
+          
+      if (getToken(NULL) == NUMBER) pNew->VSyncStart = val.num;
+      else configError("Vertical sync start expected");
+          
+      if (getToken(NULL) == NUMBER) pNew->VSyncEnd = val.num;
+      else configError("Vertical sync end expected");
+          
+      if (getToken(NULL) == NUMBER) pNew->VTotal = val.num;
+      else configError("Vertical total expected");
+      had_vtimings = 1;
+      break;
+    case FLAGS:
+      token = getToken(NULL);
+      while ( token == STRING ) {
+        token2 = getStringToken(TimingTab);
+        switch(token2) {
+        case INTERLACE: pNew->Flags |= V_INTERLACE;  break;
+        case PHSYNC:    pNew->Flags |= V_PHSYNC;     break;
+        case NHSYNC:    pNew->Flags |= V_NHSYNC;     break;
+        case PVSYNC:    pNew->Flags |= V_PVSYNC;     break;
+        case NVSYNC:    pNew->Flags |= V_NVSYNC;     break;
+        case CSYNC:     pNew->Flags |= V_CSYNC;      break;
+        default:
+          configError("bug found in config reader"); break;
+        }
+        token = getToken(NULL);
+      }
+      pushToken = token;
+      break;
+    }
+  }
+  if ( !had_dotclock ) FatalError("the dotclock is missing");
+  if ( !had_htimings ) FatalError("the horizontal timings are missing");
+  if ( !had_vtimings ) FatalError("the vertical timings are missing");
+}
+
+Bool dummy;
+
+configScreenSection()
+{
+  int            i, j;
+  int driverno;
+  int had_monitor = 0, had_device = 0;
+      
+  int token;
+  DisplayModePtr pNew, pLast;
+  ScrnInfoPtr screen = NULL;
+
+  token = getToken(ScreenTab);
+  if ( token != DRIVER )
+	configError("The screen section must begin with the 'driver' line");
+
+  if (getToken(NULL) != STRING) configError("Driver name expected");
+  driverno = getStringToken(DriverTab);
+  switch ( driverno ) {
+  case VGA256: case VGA2: case MONO: case VGA16: case ACCEL:
+	break;
+  default:
+    configError("Not a recognized driver name");
+  }
+  scr_index = getScreenIndex(driverno);
+
+  dummy = scr_index < 0 || !xf86Screens[scr_index];
+  if (dummy)
+    screen = (ScrnInfoPtr)xalloc(sizeof(ScrnInfoRec));
+  else
+  {
+    screen = xf86Screens[scr_index];
+    screen->configured = TRUE;
+    screen->tmpIndex = screenno++;
+    screen->scrnIndex = scr_index;	/* scrnIndex must not be changed */
+    screen->frameX0 = -1;
+    screen->frameY0 = -1;
+    screen->virtualX = -1;
+    screen->virtualY = -1;
+    screen->defaultVisual = -1;
+    screen->modes = NULL;
+    screen->width = 240;
+    screen->height = 180;
+    screen->bankedMono = FALSE;
+    screen->textclock = -1;
+    screen->blackColour.red = 0;
+    screen->blackColour.green = 0;
+    screen->blackColour.blue = 0;
+    screen->whiteColour.red = 0x3F;
+    screen->whiteColour.green = 0x3F;
+    screen->whiteColour.blue = 0x3F;
+  }
+  screen->clocks = 0;
+  textClockValue = -1;
+
+  while ((token = getToken(ScreenTab)) != ENDSECTION) {
+    switch (token) {
+
+    case DISPLAYSIZE:
+      OFLG_SET(XCONFIG_DISPLAYSIZE,&(screen->xconfigFlag));
+      if (getToken(NULL) != NUMBER) configError("Display Width expected");
+      screen->width = val.num;
+      if (getToken(NULL) != NUMBER) configError("Display Height expected");
+      screen->height = val.num;
+      break;
+
+    case SCREENNO:
+      if (getToken(NULL) != NUMBER) configError("Screen number expected");
+      screen->tmpIndex = val.num;
+      break;
+
+    case SUBSECTION:
+      if ( (getToken(NULL) != STRING) || (strcmp(val.str, "Display") != 0 ) ) {
+        configError("You must say \"Display\" here");
+      }
+      configDisplaySubsection(screen);
+      break;
+
+    case EOF:
+      FatalError("Unexpected EOF (missing EndSection?)");
+      break; /* :-) */
+
+    case MDEVICE:
+      if (getToken(NULL) != STRING) configError("Device name expected");
+      for ( i = 0 ; i < n_devices ; i++ ) {
+        if ( strcmp(device_list[i].identifier,val.str) == 0 ) {
+          /* Copy back */
+          screen->clocks = device_list[i].clocks;
+          for ( j = 0 ; j < MAXCLOCKS ; j++ ) {
+             screen->clock[j] = device_list[i].clock[j];
+          }
+          screen->options = device_list[i].options;
+          screen->clockOptions = device_list[i].clockOptions;
+          screen->xconfigFlag = device_list[i].xconfigFlag;
+          screen->videoRam = device_list[i].videoRam;
+          screen->IObase = device_list[i].IObase;
+          screen->DACbase = device_list[i].DACbase;
+          screen->COPbase = device_list[i].COPbase;
+          screen->POSbase = device_list[i].POSbase;
+          screen->instance = device_list[i].instance;
+          screen->BIOSbase = device_list[i].BIOSbase;
+          screen->MemBase = device_list[i].MemBase;
+          break;
+        }
+      }
+      if ( i == n_devices ) { /* Exhausted the device list */
+         configError("Not a declared device");
+      }
+      had_device = 1;
+      break;
+      
+    case MONITOR:
+      if (getToken(NULL) != STRING) configError("Monitor name expected");
+      for ( i = 0 ; i < n_monitors ; i++ ) {
+        if ( strcmp(monitor_list[i].id,val.str) == 0 ) {
+          screen->pModes = monitor_list[i].Modes;
+          /* Nothing to do. */
+          break;
+        }
+      }
+      if ( i == n_monitors ) { /* Exhausted the monitor list */
+         configError("Not a declared monitor");
+      }
+      had_monitor = 1;
+      break;
+      
+    default:
+      if (!dummy && !validateGraphicsToken(screen->validTokens, token))
+      {
+        configError("Screen section keyword expected");
+      }
+      break;
+    }
+  }
+
+  if ( !had_monitor ) {
+        configError("A screen must specify a monitor");
+  }
+  if ( !had_device ) {
+        configError("A screen must specify a device");
+  }
+
+  /* Check for information that must be specified in xf86Config */
+  if (scr_index >= 0 && xf86Screens[scr_index])
+  {
+    ScrnInfoPtr driver = xf86Screens[scr_index];
+
+    graphFound = TRUE;
+
+    if (driver->clockprog && !driver->clocks)
+    {
+      FatalError(
+        "%s: When ClockProg is specified a Clocks line is required\n",
+        driver->name);
+    }
+    if (validateGraphicsToken(driver->validTokens, MODES) && !driver->modes)
+    {
+      FatalError("%s: A Modes line must be specified in xf86Config\n",
+                 driver->name);
+    }
+
+    /* Find the Index of the Text Clock for the ClockProg */
+    if (driver->clockprog && textClockValue > 0)
+    {
+      driver->textclock = xf86GetNearestClock(driver, textClockValue);
+      if (abs(textClockValue - driver->clock[driver->textclock]) >
+          TOLERANCE)
+        FatalError(
+          "There is no defined dot-clock matching the text clock\n");
+      if (xf86Verbose)
+        ErrorF("%s %s: text clock = %7.3f, clock used = %7.3f\n",
+          XCONFIG_GIVEN,
+          driver->name, textClockValue / 1000.0,
+          driver->clock[driver->textclock] / 1000.0);
+    }
+    if (defaultColorVisualClass < 0)
+      defaultColorVisualClass = driver->defaultVisual;
+  }
+
+  /* GJA --Moved these from the device code. Had to reorganize it
+   * a bit.
+   */
+#if 1
+  if (!dummy && xf86Verbose) {
+     if ( screen->IObase ) 
+         ErrorF("%s %s: Direct Access Register I/O Base Address: %x\n",
+                XCONFIG_GIVEN, screen->name, screen->IObase);
+
+     if ( screen->DACbase )
+         ErrorF("%s %s: DAC Base I/O Address: %x\n",
+                XCONFIG_GIVEN, screen->name, screen->DACbase);
+
+     if ( screen->COPbase )
+         ErrorF("%s %s: Coprocessor Base Memory Address: %x\n",
+                XCONFIG_GIVEN, screen->name, screen->COPbase);
+
+     if ( screen->POSbase )
+         ErrorF("%s %s: POS Base Address: %x\n", XCONFIG_GIVEN, screen->name,
+              screen->POSbase);
+
+    if ( screen->BIOSbase )
+        ErrorF("%s %s: BIOS Base Address: %x\n", XCONFIG_GIVEN, screen->name,
+	       screen->BIOSbase);
+
+    if ( screen->MemBase)
+        ErrorF("%s %s: Memory Base Address: %x\n", XCONFIG_GIVEN, screen->name,
+	       screen->MemBase);
+
+    /* Print clock program */
+    if ( screen->clockprog ) {
+      ErrorF("%s %s: ClockProg: \"%s\"", XCONFIG_GIVEN, screen->name,
+             screen->clockprog);
+      if ( textClockValue )
+          ErrorF(", Text Clock: %7.3f\n", textClockValue / 1000.0);
+      ErrorF("\n");
+     }
+  }
+#endif
+}
+
+configDisplaySubsection(screen)
+ScrnInfoPtr screen;
+{
+  int            token;
+  int            i, j;
+  int driver;
+      
+  while ((token = getToken(DisplayTab)) != ENDSUBSECTION) {
+    switch (token) {
+    case VIEWPORT:
+      OFLG_SET(XCONFIG_VIEWPORT,&(screen->xconfigFlag));
+      if (getToken(NULL) != NUMBER) configError("Viewport X expected");
+      screen->frameX0 = val.num;
+      if (getToken(NULL) != NUMBER) configError("Viewport Y expected");
+      screen->frameY0 = val.num;
+      break;
+
+    case VIRTUAL:
+      OFLG_SET(XCONFIG_VIRTUAL,&(screen->xconfigFlag));
+      if (getToken(NULL) != NUMBER) configError("Virtual X expected");
+      screen->virtualX = val.num;
+      if (getToken(NULL) != NUMBER) configError("Virtual Y expected");
+      screen->virtualY = val.num;
+      break;
+
+    case MODES:
+      for (pLast=NULL; (token = getToken(NULL)) == STRING; pLast = pNew)
+	{
+	  pNew = (DisplayModePtr)xalloc(sizeof(DisplayModeRec));
+	  pNew->name = val.str;
+
+	  if (pLast) 
+	    {
+	      pLast->next = pNew;
+	      pNew->prev  = pLast;
+	    }
+	  else
+	    screen->modes = pNew;
+	}
+      pNew->next = screen->modes;
+      screen->modes->prev = pLast;
+      pushToken = token;
+      break;
+
+    case DISPLAYSIZE:
+      OFLG_SET(XCONFIG_DISPLAYSIZE,&(screen->xconfigFlag));
+      if (getToken(NULL) != NUMBER) configError("Display Width expected");
+      screen->width = val.num;
+      if (getToken(NULL) != NUMBER) configError("Display Height expected");
+      screen->height = val.num;
+      break;
+
+    case BLACK:
+    case WHITE:
+      {
+        unsigned char rgb[3];
+        int i, savetoken;
+        
+        savetoken = token;
+        for (i = 0; i < 3; i++)
+        {
+          if (getToken(NULL) != NUMBER) configError("RGB value expected");
+          rgb[i] = val.num & 0x3F;
+        }
+        if (savetoken == BLACK)
+        {
+          screen->blackColour.red = rgb[0];
+          screen->blackColour.green = rgb[1];
+          screen->blackColour.blue = rgb[2];
+        }
+        else
+        {
+          screen->whiteColour.red = rgb[0];
+          screen->whiteColour.green = rgb[1];
+          screen->whiteColour.blue = rgb[2];
+        }
+      }
+
+      /* configGraphics(scr_index); */
+      break;
+
+    case VISUAL:
+      if (getToken(NULL) != STRING) configError("Visual name expected");
+      token = getStringToken(VisualTab);
+      if (!dummy && screen->defaultVisual >= 0)
+        configError("Only one default visual may be specified");
+      screen->defaultVisual = token - STATICGRAY;
+      if (!dummy && xf86Verbose) {
+        char *visualname;
+        switch (token) {
+        case STATICGRAY:
+          visualname = "StaticGray";
+          break;
+        case GRAYSCALE:
+          visualname = "GrayScale";
+          break;
+        case STATICCOLOR:
+          visualname = "StaticColor";
+          break;
+        case PSEUDOCOLOR:
+          visualname = "PseudoColor";
+          break;
+        case TRUECOLOR:
+          visualname = "TrueColor";
+          break;
+        case DIRECTCOLOR:
+          visualname = "DirectColor";
+          break;
+        default:
+          configError("unknown visual type");
+        }
+        ErrorF("%s %s: Default visual: %s\n", XCONFIG_GIVEN, screen->name,
+               visualname);
+      }
+      break;
+
+    case EOF:
+      FatalError("Unexpected EOF (missing EndSubSection)");
+      break; /* :-) */
+
+    default:
+      configError("Display subsection keyword expected");
+      break;
+    }
+  }
+}
 
 Bool 
 xf86LookupMode(target, driver)
@@ -1715,7 +2186,7 @@ xf86LookupMode(target, driver)
     first_time = FALSE;
   }
 
-  for (p = pModes; p != NULL; p = p->next)	/* scan list */
+  for (p = driver->pModes; p != NULL; p = p->next)	/* scan list */
   {
     if (!strcmp(p->name, target->name))		/* names equal ? */
     {
@@ -1828,4 +2299,122 @@ xf86VerifyOptions(allowedOptions, driver)
       else
 	ErrorF("%s %s: Option flag \"%s\" is not defined for this driver\n",
 	       XCONFIG_GIVEN, driver->name, xf86_OptionTab[j].name);
+}
+
+/* Note: (To keep me [GJA] from getting confused)
+ * We have two mode-related datastructures:
+ * 1. A doubly linked mode name list, with ends marked by self-pointers.
+ * 2. A doubly linked mode structure list.
+ * We are operating here on the second structure.
+ * Initially this is just singly linked.
+ */
+DisplayModePtr xf86PruneModes(monp,allmodes)
+MonPtr monp;			/* Monitor specification */
+DisplayModePtr allmodes;	/* List to be pruned */
+{
+	DisplayModePtr dispmp;	/* To walk the list */
+	DisplayModePtr olddispmp; /* The one being freed. */
+	DisplayModePtr remainder; /* The first one retained. */
+
+	dispmp = allmodes;
+
+	/* The first modes to be deleted require that the pointer to the
+	 * mode list is updated. Also, they have no predecessor in the list.
+	 */
+	while ( dispmp && !mode_fits(dispmp,monp) ) {
+		olddispmp = dispmp;
+		dispmp = dispmp->next;
+		xfree(olddispmp->name);
+		xfree(olddispmp);
+	}
+	/* Now we either have a mode that fits, or no mode at all */
+	if ( ! dispmp ) { /* No mode at all */
+		return NULL;
+	}
+	remainder = dispmp;
+	while ( dispmp->next ) {
+		if ( !mode_fits(dispmp->next,monp) ) {
+			olddispmp = dispmp->next;
+			dispmp->next = dispmp->next->next;
+			xfree(olddispmp->name);
+			xfree(olddispmp);
+		} else {
+			dispmp = dispmp->next;
+		}
+	}
+	return remainder; /* Return pointer to {the first / the list } */
+}
+
+/* Return 1 if the mode pointed to by dispmp agrees with all constraints
+ * we can make up for the monitor pointed to by monp.
+ * 0 otherwise.
+ */
+static int mode_fits(dispmp,monp)
+DisplayModePtr	dispmp;
+MonPtr monp;
+{
+	int i;
+	float dotclock, hsyncfreq, vrefreshrate;
+
+#if 0
+	/* max dotclock != monitor bandwidth, do exclude this check */
+	dotclock = (float)(dispmp->Clock);
+	if ( dotclock > monp->bandwidth * 1000.0 ) {
+		ErrorF("Mode %s needs %f MHz bandwidth. Deleted.\n",
+			dispmp->name, dotclock/1000.0);
+		return 0;
+	}
+#endif
+
+	hsyncfreq = (float)(dispmp->Clock) / (float)(dispmp->HTotal);
+	for ( i = 0 ; i < monp->n_hsync ; monp++ ) {
+		if ( monp->hsync[i].hi == monp->hsync[i].lo ) {
+			if ( (hsyncfreq > 0.999 * monp->hsync[i].hi) &&
+			     (hsyncfreq < 1.001 * monp->hsync[i].hi) )
+			{
+				break; /* Matches close enough. */
+			}
+		} else {
+			if ( (hsyncfreq > monp->hsync[i].lo) &&
+			     (hsyncfreq < monp->hsync[i].hi) )
+			{
+				break; /* In range. */
+			}
+		}
+	}
+	/* Now see whether we ran out of sync frequencies */
+	if ( i == monp->n_hsync ) {
+		ErrorF("Mode %s needs hsync freq of %f kHz. Deleted.\n",
+			dispmp->name, hsyncfreq);
+		return 0;
+	}
+			
+	vrefreshrate = (float)(dispmp->Clock) * 1000.0 /
+				((float)(dispmp->HTotal) *
+					(float)(dispmp->VTotal)) ;
+	if ( dispmp->Flags & V_INTERLACE ) vrefreshrate *= 2.0;
+	for ( i = 0 ; i < monp->n_vrefresh ; monp++ ) {
+		if ( monp->vrefresh[i].hi == monp->vrefresh[i].lo ) {
+			if ( (vrefreshrate > 0.999 * monp->vrefresh[i].hi) &&
+			     (vrefreshrate < 1.001 * monp->vrefresh[i].hi) )
+			{
+				break; /* Matches close enough. */
+			}
+		} else {
+			if ( (vrefreshrate > monp->vrefresh[i].lo) &&
+			     (vrefreshrate < monp->vrefresh[i].hi) )
+			{
+				break; /* In range. */
+			}
+		}
+	}
+	/* Now see whether we ran out of refresh rates */
+	if ( i == monp->n_vrefresh ) {
+		ErrorF("Mode %s needs refresh rate of %f Hz. Deleted.\n",
+			dispmp->name, vrefreshrate);
+		return 0;
+	}
+
+	/* Passed every test. */
+	return 1;
 }

@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $XConsortium: WaitFor.c,v 1.68 94/04/17 20:26:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.2 1994/06/01 09:14:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.3 1994/06/13 14:54:29 dawes Exp $ */
 
 /*****************************************************************
  * OS Dependent input routines:
@@ -88,9 +88,6 @@ extern FdSet ClientsWriteBlocked;
 extern FdSet OutputPending;
 
 extern int ConnectionTranslation[];
-#ifdef LBX
-extern int ConnectionOutputTranslation[];
-#endif
 
 extern Bool NewOutputPending;
 extern Bool AnyClientsWriteBlocked;
@@ -321,16 +318,6 @@ WaitForSomething(pClientsReady)
 
 		curclient = ffs (clientsReadable[i]) - 1;
 		client_index = ConnectionTranslation[curclient + (i << 5)];
-#ifdef LBX
-		/*
-		 * I don't know if this is the right thing to do, but it
-		 * prevents the server trying to read from client 0
-		 * the "server client". (DHD)
-		 */
-		if (!client_index)
-		    client_index =
-		         ConnectionOutputTranslation[curclient + (i << 5)];
-#endif
 #ifdef XSYNC
 		/*  We implement "strict" priorities.
 		 *  Only the highest priority client is returned to
@@ -429,11 +416,6 @@ WaitForSomething(pClientsReady)
 
 		    curclient = ffs (clientsReadable[i]) - 1;
 		    client_index = ConnectionTranslation[curclient + (i << 5)];
-#ifdef LBX
-		    if (!client_index)
-			client_index =
-			     ConnectionOutputTranslation[curclient + (i << 5)];
-#endif
 		    dbprintf(("%d has input\n", curclient));
 #ifdef XSYNC
 		    client_priority = clients[client_index]->priority;

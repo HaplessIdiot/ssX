@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.19 1994/08/20 07:33:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.20 1994/08/31 04:29:42 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -97,6 +97,7 @@ ScrnInfoRec s3InfoRec =
    240, 180,			/* int width, height */
    0,				/* unsigned long  speedup */
    NULL,			/* DisplayModePtr modes */   
+   NULL,			/* DisplayModePtr pModes */   
    NULL,			/* char           *clockprog */
    -1,			        /* int textclock */
    FALSE,			/* Bool           bankedMono */

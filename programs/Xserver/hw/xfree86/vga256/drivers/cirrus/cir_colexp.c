@@ -1,5 +1,5 @@
 /* $XConsortium: cir_colexp.c,v 1.1 94/03/28 21:48:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_colexp.c,v 3.1 1994/08/20 07:36:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_colexp.c,v 3.2 1994/08/31 04:44:18 dawes Exp $ */
 /*
  *
  * Copyright 1994 by H. Hanemaayer, Utrecht, The Netherlands
@@ -1068,7 +1068,7 @@ toy, destpitch)
 	readbase = CIRRUSREADBASE();
 	writebase = CIRRUSWRITEBASE();
 
-	chunk8_tcount = ALLOCATE_LOCAL(tbytes * sizeof(int));
+	chunk8_tcount = (int *)ALLOCATE_LOCAL(tbytes * sizeof(int));
 
 	/* Pointer to tile in read window in BY8 addressing mode. */
 	vtileaddr >>= 3;

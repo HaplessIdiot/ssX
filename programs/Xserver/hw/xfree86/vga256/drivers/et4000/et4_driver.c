@@ -1,6 +1,6 @@
 /*
  * $XConsortium: et4_driver.c,v 1.2 94/03/28 21:51:05 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.1 1994/07/24 11:56:39 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.2 1994/08/31 04:45:20 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -319,7 +319,7 @@ ET4000Probe()
       outb(0x3cb, 0x33);	/* Arbitrary value */
       newVal = inb(0x3cb);
       outb(0x3cb, origVal);
-      if (newVal != 0x33)
+      if (newVal == 0x33)
         {
           /* We have an ET4000/W32. Now determine the type. */
           outb(0x217a, 0xec);
