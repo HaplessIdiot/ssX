@@ -1,6 +1,5 @@
 STARTENCODING microsoft-cp1255
 # This file is derived from data provided by the Unicode Consortium
-# $XFree86$
 STARTMAPPING unicode 
 0x80	0x20AC	#EURO SIGN
 0x82	0x201A	#SINGLE LOW-9 QUOTATION MARK

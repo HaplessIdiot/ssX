@@ -21,7 +21,7 @@
  *
  * Author: Dave Lemke, Network Computing Devices Inc
  */
-/* $XFree86: xc/lib/font/Speedo/spfont.c,v 3.4 1998/09/06 04:46:56 dawes Exp $ */
+/* $XFree86: xc/lib/font/Speedo/spfont.c,v 3.5 1998/10/03 09:07:11 dawes Exp $ */
 
 /*
 
@@ -236,21 +236,12 @@ sp_open_font(fontname, filename, entry, vals, format, fmask, flags, spfont)
     specs_t     specs;
     int		xx8, xy8, yx8, yy8;
     double	sxmult;
-    int encoding;
 
     /* find a master (create it if necessary) */
     spmf = (SpeedoMasterFontPtr) entry->u.scalable.extra->private;
     if (!spmf)
     {
-        char *p;
-        p = entry->name.name + entry->name.length - 10;
-        if(entry->name.ndashes==14 &&
-           p>=entry->name.name && 
-           !strncmp(p, "-iso8859-2", 9))
-          encoding=2;
-        else
-          encoding=1;
-	ret = sp_open_master(filename, &spmf, encoding);
+	ret = sp_open_master(fontname, filename, &spmf);
 	if (ret != Successful)
 	    return ret;
 	entry->u.scalable.extra->private = (pointer) spmf;
@@ -458,4 +449,5 @@ SpeedoCloseFont(pfont)
     xfree(pfont->info.props);
     xfree(pfont->devPrivates);
     xfree(pfont);
+
 }

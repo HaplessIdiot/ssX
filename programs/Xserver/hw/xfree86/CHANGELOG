@@ -1,5 +1,7 @@
 XFree86 3.9Nz (31 January 1999)
-2197.
+2198. Add a common encoding support for the Speedo, Type1 and FreeType
+      font backends (#2385, Juliusz Chroboczek).
+2197. Update lib/font/FreeType to xfsft-1.0.3 (#2385, Juliusz Chroboczek).
 2196. X-TT updates for our loader (X-TT team and Nozomi Ytow).
 2195. Import X-TrueType 1.2pre-19990125 (X-TT team).
 
@@ -7175,4 +7177,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.678 1999/01/26 10:40:11 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.679 1999/01/31 02:25:06 dawes Exp $

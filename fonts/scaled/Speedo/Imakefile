@@ -8,3 +8,5 @@ MakeFontsDir(fonts.scale)
 
 InstallFonts($(FONTINSTDIR))
 InstallFontScale($(FONTINSTDIR))
+InstallEncodingLinks($(ENCODINGSDIR),$(FONTINSTDIR))
+

@@ -1,10 +1,11 @@
 XCOMM $XConsortium: Imakefile,v 1.30 93/09/04 16:17:06 rws Exp $
-XCOMM $XFree86: xc/fonts/Imakefile,v 3.0 1995/07/22 04:12:37 dawes Exp $
+XCOMM $XFree86: xc/fonts/Imakefile,v 3.1 1998/12/20 11:56:43 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
-#if BuildSpeedoFonts || BuildType1Fonts
+#if BuildSpeedoFonts || BuildType1Fonts || BuildTTFonts
 SCALEDDIR = scaled
+ENCODINGDIR = encodings
 #endif
 
 FONTDIRS = bdf $(SCALEDDIR)
@@ -13,7 +14,7 @@ FONTDIRS = bdf $(SCALEDDIR)
 PEXDIR = PEX
 #endif
 
-SUBDIRS = bdf $(SCALEDDIR) $(PEXDIR)
+SUBDIRS = $(ENCODINGDIR) bdf $(SCALEDDIR) $(PEXDIR)
 
 #if MakeLocalFontDir
 MakeDirectories(install,$(FONTDIR)/local)

@@ -27,10 +27,9 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
- 
-#define FIRSTCOL  32
+/* $XFree86$ */
  
 struct type1font {
        CharInfoPtr  pDefault;
-       CharInfoRec  glyphs[256-FIRSTCOL];
+       CharInfoRec  glyphs[256];
 };

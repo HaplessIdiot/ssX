@@ -1,9 +1,32 @@
-/* $XFree86: xc/lib/font/FreeType/ft.h,v 1.7 1998/10/05 14:22:58 dawes Exp $ */
+/*
+Copyright (c) 1997 by Mark Leisher
+Copyright (c) 1998 by Juliusz Chroboczek
 
-#undef DEBUG
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
+
+/* $XFree86: xc/lib/font/FreeType/ft.h,v 1.8 1998/10/06 06:59:32 dawes Exp $ */
+
+#undef DEBUG_TRUETYPE
 
 /* if stderr, the output will go to the errors file */
-#ifdef DEBUG
+#ifdef DEBUG_TRUETYPE
 #define MUMBLE(s) (printf((s)))
 #define MUMBLE1(s,x) (printf((s),(x)))
 #else
@@ -37,12 +60,11 @@
 
 /* Data structures used across files */
 
-struct ttf_encoding
+struct ttf_mapping
 {
   TT_CharMap cmap;
-  int nchars;
-  unsigned (*recode)(unsigned, void*); /* 0 means no supplementary coding */
-  void *client_data;
+  int size;
+  struct font_encoding_mapping *mapping;
 };
 
 /* Prototypes */
@@ -53,7 +75,7 @@ void FreeTypeRegisterFontFileFunctions(void);
 
 /* ftenc.c */
 
-int ttf_pick_cmap(char*, int, char*, TT_Face, struct ttf_encoding *);
+int ttf_pick_cmap(char*, int, char*, TT_Face, struct ttf_mapping *);
 unsigned ttf_recode(unsigned, struct ttf_encoding*);
 int ftstrcasecmp(const char *s1, const char *s2);
 

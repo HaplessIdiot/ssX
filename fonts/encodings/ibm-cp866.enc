@@ -1,6 +1,5 @@
 STARTENCODING ibm-cp866
 # This file is derived from data provided by the Unicode Consortium
-# $XFree86$
 STARTMAPPING unicode
 0x80	0x0410	#CYRILLIC CAPITAL LETTER A
 0x81	0x0411	#CYRILLIC CAPITAL LETTER BE

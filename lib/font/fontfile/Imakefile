@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/14 1996/11/03 19:58:41 kaleb $
-XCOMM $XFree86: xc/lib/font/fontfile/Imakefile,v 3.6 1998/07/25 06:57:07 dawes Exp $
+XCOMM $XFree86: xc/lib/font/fontfile/Imakefile,v 3.7 1999/01/11 05:13:17 dawes Exp $
 #include <Server.tmpl>
 
 #if DoLoadableServer
@@ -32,10 +32,12 @@ FREETYPE_DEFINES = -DBUILD_FREETYPE
 
        SRCS = dirfile.c fontdir.c fontfile.c fileio.c fontscale.c \
               defaults.c bitsource.c register.c renderers.c bufio.c \
-              decompress.c filewr.c printerfont.c ffcheck.c $(GUNZIP_SRC)
+              decompress.c filewr.c printerfont.c ffcheck.c \
+	      fontenc.c encparse.c $(GUNZIP_SRC)
        OBJS = dirfile.o fontdir.o fontfile.o fileio.o fontscale.o \
               defaults.o bitsource.o register.o renderers.o bufio.o \
-              decompress.o filewr.o printerfont.o ffcheck.o $(GUNZIP_OBJ)
+              decompress.o filewr.o printerfont.o ffcheck.o \
+              fontenc.o encparse.o $(GUNZIP_OBJ)
 
 #define DoNormalLib NormalLibFont
 #define DoSharedLib SharedLibFont

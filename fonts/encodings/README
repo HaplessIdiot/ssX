@@ -1,0 +1,168 @@
+This directory contains encoding data for encodings that are not
+hard-wired into the font system.  This is implemented for all three
+scalable backends -- Type 1, Speedo, and TrueType.
+
+
+1. Using encoding definition files
+
+In order to use a font in an encoding that the font backend does not
+know about, you need to have a `encodings.dir' file in the same
+directory as the font file used.  `encodings.dir' has the same format
+as `fonts.dir'.  Its first line specifies the number of encodings,
+while every successive line has two columns, the name of the encoding,
+and the name of the encoding file.  Every encoding name should
+agree with the encoding name defined in the encoding file.  For
+example,
+
+  3
+  mulearabic-0 mulearabic-0.enc
+  mulearabic-1 mulearabic-1.enc
+  mulearabic-2 mulearabic-2.enc
+
+Note that the name of an encoding *must* be specified in the encoding
+file's STARTENCODING or ALIAS line.  It is not enough to create an
+`encodings.dir' entry.
+
+If your platform supports it, encoding files may be compressed or
+gzipped.
+
+
+2. Encoding file format
+
+The encoding files are `free form', /i.e./ any string of whitespace is
+equivalent to a single space.  Keywords are parsed in a
+non-case-sensitive manner, meaning that `size', `SIZE', and `SiZE' all
+parse as the same keyword; on the other hand, case is significant in
+glyph names.
+
+Numbers can be written in decimal, as in `256', in hexadecimal, as in
+`0x100', or in octal, as in `0400'.
+
+Comments are introduced by a hash sign `#'.  All characters following
+the `#' are ignored, up to the end of the line.
+
+The encoding file starts with the definition of the name of the
+encoding, and eventually its alternate names (aliases):
+
+  STARTENCODING mulearabic-0
+  ALIAS arabic-0
+  ALIAS something-else
+
+The names of the encoding should be suitable for use in an XLFD font
+name, and thus contain exactly one dash `-'.
+
+It may then optionally declare the size of the encoding
+
+  SIZE 0x2B
+
+Codes equal or larger than the size are taken to be undefined.  The
+size defaults to 256 (0x100).  This means that you must declare the
+size of all 16 bit encodings.
+
+What follows is zero, one, or more mapping sections.  A mapping
+section starts with a `STARTMAPPING' line stating the target of the
+mapping.  The target may be one of:
+
+* ISO 10646 (Unicode)
+
+  STARTMAPPING unicode
+
+* a given TrueType `cmap':
+
+  STARTMAPPING cmap 3 1
+
+* PostScript glyph names
+
+  STARTMAPPING postscript
+
+Every line in a mapping section maps one code.  In Unicode and
+TrueType mappings, codes map to codes:
+
+  0x21 0x0660
+  0x22 0x0661
+  ...
+
+and codes not listed assumed to map through the identity (/i.e./ to the
+same numerical value).  In order to override this default mapping, you
+may specify a range of codes to be undefined by using an `UNDEFINE'
+line:
+
+  UNDEFINE 0x00 0x2A
+
+or, for a single code
+
+  UNDEFINE 0x1234
+
+This works because later values override earlier one.
+
+PostScript mappings are different.  Every line in a PostScript mapping
+maps a code to a glyph name
+
+  0x41 A
+  0x42 B
+  ...
+
+and codes not explicitly listed are undefined.
+
+A mapping section ends with an ENDMAPPING line
+
+  ENDMAPPING
+
+After all the mappings have been defined, the file ends with an
+ENDENCODING line
+
+  ENDENCODING
+
+Lines of the form
+
+  UNASSIGNED 0x00 0x1F
+
+or
+
+  UNASSIGNED 0x1234
+
+are ignored by the server, but may be used by supporting utilities.
+
+In order to make future extensions to the format possible, lines
+starting with an unknown keyword are ignored, as are mapping sections
+with an unknown target.
+
+
+3. Backend specific notes
+
+3.1 Type 1
+
+The Type 1 backend first searches for a mapping with a target of
+PostScript.  If one is found, it is used.  If none is found, the
+backend searches for a mapping with target Unicode, which is then
+composed with a builtin table mapping codes to glyph names.  Note that
+this table only covers part of the Unicode codepoints that have been
+assigned names by Adobe.
+
+If neither a PostScript or Unicode mapping is found, the backend
+defaults to ISO 8859-1.
+
+Specifying an encoding value of `adobe-fontspecific' disables the
+encoding mechanism.  This is useful with symbol and strangely encoded
+fonts.
+
+The Type 1 backend currently limits all encodings to 256 codes.
+
+3.2 Speedo
+
+The Speedo backend searches for a mapping with a target of Unicode,
+and uses it if found.  If none is found, the backend defaults to 
+ISO 8859-1.
+
+The Speedo backend limits all encodings to 256 codes.
+
+3.3 TrueType
+
+The TrueType backend scans the mappings in order.  Mappings with
+a target of PostScript are ignored; mappings with a TrueType or
+Unicode target are checked against all the cmaps in the file.  The
+first applicable mapping is used.
+
+
+                                        Juliusz Chroboczek
+                                        <jec@dcs.ed.ac.uk>
