@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/vga_driver.c,v 1.2 1997/03/11 11:10:51 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/vga_driver.c,v 1.3 1997/03/11 13:06:10 hohndel Exp $ */
 /*
  * Stubs driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -144,6 +144,15 @@ static DisplayModeRec Mode320x200 = {
  * the defaults in here are for the 8bpp driver. For 1/4bpp we have to 
  * change the ChipRounding
  */
+
+/*
+ * right now there still is some magic in this name, it has to match the
+ * upcase version of the directory name. Unfortunately, some OSs have VGA
+ * as a constant (Unixware comes to mind)...
+ */
+#ifdef VGA
+#undef VGA
+#endif
 vgaVideoChipRec VGA = {
 	/* 
 	 * Function pointers
