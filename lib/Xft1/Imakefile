@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Xft1/Imakefile,v 1.5 2002/03/04 21:18:20 tsi Exp $
+XCOMM $XFree86: xc/lib/Xft1/Imakefile,v 1.6 2002/03/17 23:15:17 herrb Exp $
 
 #define DoNormalLib NO
 #define DoSharedLib SharedLibXft1
@@ -6,7 +6,7 @@ XCOMM $XFree86: xc/lib/Xft1/Imakefile,v 1.5 2002/03/04 21:18:20 tsi Exp $
 #define DoDebugLib NO
 #define DoProfileLib NO
 #define HasSharedData YES
-#define LibName Xft
+#define LibName Xft1
 #define SoRev SOXFT1REV
 #define LibHeaders NO
 #define NoSoSymlink
