@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.143 2003/05/27 16:34:30 tsi Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.145 2003/06/12 14:12:24 eich Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -460,6 +460,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #ifndef HasShadowPasswd
 #define HasShadowPasswd		NO
+#endif
+#ifndef HasBasename
+#define HasBasename		YES
 #endif
 /* byte-order defaults */
 #ifndef ByteOrder
