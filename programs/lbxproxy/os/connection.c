@@ -60,7 +60,7 @@ SOFTWARE.
  *      socket ids aren't small nums (0 - 2^8)
  *
  *****************************************************************/
-/* $XFree86: xc/programs/lbxproxy/os/connection.c,v 1.16 2001/12/14 20:00:57 dawes Exp $ */
+/* $XFree86: xc/programs/lbxproxy/os/connection.c,v 1.17 2002/05/31 18:46:08 dawes Exp $ */
 
 #include "misc.h"
 #include <X11/Xtrans.h>
@@ -88,7 +88,7 @@ SOFTWARE.
 
 #if defined (TCPCONN) || defined(STREAMSCONN)
 # include <netinet/in.h>
-# if !defined(hpux) && !defined(__CYGWIN__)
+# if !defined(hpux)
 #  ifdef apollo
 #   ifndef NO_TCP_H
 #    include <netinet/tcp.h>
