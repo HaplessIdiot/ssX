@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.38 2001/12/14 19:59:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.39 2002/02/19 11:09:22 alanh Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -91,10 +91,10 @@ SOFTWARE.
 #include "servermd.h"
 #include "site.h"
 #include "dixfont.h"
+#include "extnsionst.h"
 #ifdef PANORAMIX
 #include "panoramiXsrv.h"
 #else
-#include "extnsionst.h"
 #include "dixevents.h"		/* InitEvents() */
 #include "dispatch.h"		/* InitProcVectors() */
 #endif
