@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.283tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.284 2005/01/28 16:56:43 tsi Exp $ */
 
 
 /*
@@ -6916,64 +6916,28 @@ printLayoutSummary(const serverLayoutRec *pServerLayout)
 	    continue;
 	pScreenLayout = pServerLayout->screenLayouts[i];
 	if (pScreenLayout->screen) {
-	    char *position;
-	    int len;
+	    char *position = NULL;
 	    switch (pScreenLayout->where) {
 	    case PosAbsolute:
-		len = snprintf(NULL, 0, "(%d, %d)", pScreenLayout->x,
-			       pScreenLayout->y) + 1;
-		position = xcalloc(len, 1);
-		if (position) {
-		    snprintf(position, len, "(%d, %d)", pScreenLayout->x,
-			     pScreenLayout->y);
-		}
+		xasprintf(&position, "(%d, %d)", pScreenLayout->x,
+			  pScreenLayout->y);
 		break;
 	    case PosRightOf:
-		len = snprintf(NULL, 0, "Right of \"%s\"",
-			       pScreenLayout->refname) + 1;
-		position = xcalloc(len, 1);
-		if (position) {
-		    snprintf(position, len, "Right of \"%s\"",
-			     pScreenLayout->refname);
-		}
+		xasprintf(&position, "Right of \"%s\"", pScreenLayout->refname);
 		break;
 	    case PosLeftOf:
-		len = snprintf(NULL, 0, "Left of \"%s\"",
-			       pScreenLayout->refname) + 1;
-		position = xcalloc(len, 1);
-		if (position) {
-		    snprintf(position, len, "Left of \"%s\"",
-			     pScreenLayout->refname);
-		}
+		xasprintf(&position, "Left of \"%s\"", pScreenLayout->refname);
 		break;
 	    case PosAbove:
-		len = snprintf(NULL, 0, "Above \"%s\"",
-			       pScreenLayout->refname) + 1;
-		position = xcalloc(len, 1);
-		if (position) {
-		    snprintf(position, len, "Above \"%s\"",
-			     pScreenLayout->refname);
-		}
+		xasprintf(&position,"Above \"%s\"", pScreenLayout->refname);
 		break;
 	    case PosBelow:
-		len = snprintf(NULL, 0, "Below \"%s\"",
-			       pScreenLayout->refname) + 1;
-		position = xcalloc(len, 1);
-		if (position) {
-		    snprintf(position, len, "Below \"%s\"",
-			     pScreenLayout->refname);
-		}
+		xasprintf(&position, "Below \"%s\"", pScreenLayout->refname);
 		break;
 	    case PosRelative:
-		len = snprintf(NULL, 0, "(%d, %d) relative to \"%s\"",
-			       pScreenLayout->x, pScreenLayout->y,
-			       pScreenLayout->refname) + 1;
-		position = xcalloc(len, 1);
-		if (position) {
-		    snprintf(NULL, 0, "(%d, %d) relative to \"%s\"",
-			     pScreenLayout->x, pScreenLayout->y,
-			     pScreenLayout->refname);
-		}
+		xasprintf(&position, "(%d, %d) relative to \"%s\"",
+			  pScreenLayout->x, pScreenLayout->y,
+			  pScreenLayout->refname);
 		break;
 	    default:
 		position = NULL;
@@ -6982,6 +6946,8 @@ printLayoutSummary(const serverLayoutRec *pServerLayout)
 	    xf86Msg(xf86ScreenName ? X_CMDLINE : X_DEFAULT,
 		    "|-->Screen \"%s\" (%d) %s\n", pScreenLayout->screen->id,
 		    pScreenLayout->screen->screennum, EMPTYIFNULL(position));
+	    if (position)
+		xfree(position);
 	    if (pScreenLayout->screen->device) {
 		xf86Msg(X_CONFIG, "|  |-->Device \"%s\"\n",
 			pScreenLayout->screen->device->identifier);

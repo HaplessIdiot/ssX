@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.66 2005/01/13 15:51:19 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.67 2005/01/26 05:31:49 dawes Exp $ */
 
 /*
  * Copyright 1995-1998 by Metro Link, Inc.
@@ -336,6 +336,7 @@ LOOKUP dixLookupTab[] = {
     /* utils.c */
     SYMFUNC(Xstrdup)
     SYMFUNC(XNFstrdup)
+    SYMFUNC(Xasprintf)
     SYMVAR(Must_have_memory)
     SYMFUNC(AdjustWaitForDelay)
     SYMVAR(noTestExtensions)

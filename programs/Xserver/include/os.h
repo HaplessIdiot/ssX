@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.61 2005/01/11 23:01:14 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.62 2005/01/26 21:53:32 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -143,6 +143,7 @@ typedef struct _NewClientRec *NewClientPtr;
 #define xfree(ptr) Xfree((pointer)(ptr))
 #define xstrdup(s) Xstrdup(s)
 #define xnfstrdup(s) XNFstrdup(s)
+#define xasprintf Xasprintf
 #endif
 
 #ifndef IN_MODULE
@@ -602,6 +603,10 @@ extern size_t strlcat(char *dst, const char *src, size_t size);
 extern size_t strlcpy(char *dst, const char *src, size_t size);
 #endif
 #endif
+
+/* utils.c */
+extern int Xasprintf(char **ret, const char *format, ...)
+	_printf_attribute(2,3);
 
 #undef _printf_attribute
 #if defined(printf_is_xf86printf) && !defined(printf)

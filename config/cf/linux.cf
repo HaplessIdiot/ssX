@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.232 2005/01/21 21:22:44 tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.233 2005/01/30 23:42:43 dawes Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -457,6 +457,9 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #if (UseElfFormat && LinuxCLibMajorVersion >= 6) || defined(AlphaArchitecture)
 #ifndef HasSnprintf
 #define HasSnprintf		YES
+#endif
+#ifndef HasAsprintf
+#define HasAsprintf		YES
 #endif
 #endif
 #if UseElfFormat || defined(AlphaArchitecture)
