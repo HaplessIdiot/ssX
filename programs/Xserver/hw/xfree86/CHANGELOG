@@ -1,4 +1,25 @@
 XFree86 4.0.99.2 (?? April 2001)
+ 343. New Xwin server code from the Cygwin/XFree86 project.  This version
+      is more portable across Win32 platforms.  Changes include:
+       - Use fb and shadowfb, and use the faster of GDI blitter,
+         DirectDraw blitter and DirectDraw4 blitter to update damaged
+         regions.  The video card's framebuffer is no longer mapped.
+       - Works correctly at depths > 8, but colors are not correct at depth 8.
+       - Uses the standard Win32 API messages for processing keyboard and
+         mouse input rather than using DirectInput.  This is more reliable.
+       - Improved internal structure and coding conventions.
+       - Builds completely from the XFree86 tree using gcc (the Visual C++
+         compiled xf_dx.dll is no longer used).
+       - The new server can run on machines that don't have DirectDraw/DirectX
+         installed (or installed but not operable) by falling back to the
+         GDI blitter.  The best drawing interface is determined at startup,
+         but this can be overriden with the -engine command line option.
+       - The Xrender extension is now supported.
+       - Command line option is available to run in full screen mode.
+      (#4531, 4532, 4534, Cygwin/XFree86 project including Harold L Hunt II,
+      Suhaib M Siddiqi, Dakshinamurthy Karra, Peter Busch).
+ 342. v4l driver bug fixs: catch xalloc() failures, and set the depth
+      correctly for the VIDIOCSPICT ioctl (#4530, Gerd Knorr).
  341. Add a driver for VMware virtual SVGA devices.  This is for use
       by X servers running under a VMware guest OS (#4529, VMware, Inc).
  340. Remove Cygwin-specific #ifdef in Xserver/os/Waitfor.c, which fixes
@@ -12840,4 +12861,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1665 2001/04/05 17:42:28 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1666 2001/04/05 19:29:39 dawes Exp $

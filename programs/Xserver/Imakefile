@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:47:01 cpqbld Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.215 2001/03/30 02:15:19 keithp Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.216 2001/04/01 18:50:50 torrey Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -1111,31 +1111,38 @@ ServerTarget(Xvfb,$(XVFBDIRS),$(XVFBOBJS), \
 XCOMM
 XCOMM server with DirectX framebuffer for Windows
 XCOMM
-MFBDIR   = mfb
-CFB8DIR  = cfb
-CFB16DIR = cfb16
-CFB24DIR = cfb24
-CFB32DIR = cfb32
 XWINDDXDIR = hw/xwin
-DDXDIR2 = $(XWINDDXDIR)
-XWINDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) $(XWINDDXDIR) $(DEPDIRS)
+XWIN = $(XWINDDXDIR)/LibraryTargetName(XWin)
+XWINGDI32 = /lib/libgdi32.a
+XWINDDRAW = /lib/libddraw.a
+/* XWINOLE32 = /lib/libole32.a */
+DDXDIR1 = $(XWINDDXDIR)
+XWINDIRS = $(STDDIRS) $(FB) $(SHADOW) $(XWINDDXDIR) $(DEPDIRS)
+
+XWINOBJSA = $(XWINDDXDIR)/stubs.o dix/main.o
+
 #if BuildDPMS
-XWINOBJS = hw/xwin/InitInput.o hw/xwin/InitOutput.o hw/xwin/stubs.o hw/xwin/directx.o hw/xwin/dpmsstubs.o dix/main.o
-#else
-XWINOBJS = hw/xwin/InitInput.o hw/xwin/InitOutput.o hw/xwin/stubs.o hw/xwin/directx.o dix/main.o
+XWINOBJSB = $(XWINDDXDIR)/dpmsstubs.o
 #endif
-XWIN = hw/xwin/LibraryTargetName(XWin)
-XWINLIBS = PreFbLibs $(XWIN) $(CFB) PostFbLibs $(MI) $(SURFLIB) 
-XWINSYSLIBS = $(FONTLIBS) $(LDPRELIBS) $(XLIB) $(SYSLIBS)
+
+XWINOBJS = $(XWINOBJSA) $(XWINOBJSB)
+
+XWINLIBS = PreFbLibs $(XWIN) FbPostFbLibs $(SHADOW)
+
+XWINSYSLIBS = $(FONTLIBS) $(LDPRELIBS) $(XLIB) $(SYSLIBS) \
+	$(XWINGDI32) $(XWINDDRAW)
+
 #if HasParallelMake
 MakeMutex($(XWINDIRS) $(XWINOBJS) $(XWIN) $(XWINLIBS) $(XWINSYSLIBS))
 #endif
+
 #if ForceServerRemake
 $(XWINOBJS) $(XWIN) $(XWINLIBS) $(XWINSYSLIBS):: $(XWINDIRS)
 	@if [ -f $@ ]; then touch $@; fi
 #endif
+
 ServerTarget(XWin,$(XWINDIRS),$(XWINOBJS), \
-	$(XWINLIBS) $(LOADABLEEXTS) $(LIBCWRAPPER),$(XWINSYSLIBS)) 
+	     $(XWINLIBS) $(LOADABLEEXTS) $(LIBCWRAPPER),$(XWINSYSLIBS)) 
 
 #ifndef ServerToInstall
 #define ServerToInstall XWin

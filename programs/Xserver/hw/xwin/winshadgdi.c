@@ -1,0 +1,461 @@
+/*
+ *Copyright (C) 1994-2000 The XFree86 Project, Inc. All Rights Reserved.
+ *
+ *Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ *"Software"), to deal in the Software without restriction, including
+ *without limitation the rights to use, copy, modify, merge, publish,
+ *distribute, sublicense, and/or sell copies of the Software, and to
+ *permit persons to whom the Software is furnished to do so, subject to
+ *the following conditions:
+ *
+ *The above copyright notice and this permission notice shall be
+ *included in all copies or substantial portions of the Software.
+ *
+ *THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ *EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ *MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ *NONINFRINGEMENT. IN NO EVENT SHALL THE XFREE86 PROJECT BE LIABLE FOR
+ *ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+ *CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ *WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ *Except as contained in this notice, the name of the XFree86 Project
+ *shall not be used in advertising or otherwise to promote the sale, use
+ *or other dealings in this Software without prior written authorization
+ *from the XFree86 Project.
+ *
+ * Authors:	Harold L Hunt II
+ */
+/* $XFree86$ */
+
+#include "win.h"
+
+static
+Bool
+winQueryScreenDIBFormat (ScreenPtr pScreen, BITMAPINFOHEADER *pbmih)
+{
+  winScreenPriv(pScreen);
+  HBITMAP		hbmp;
+  Bool			fReturn = TRUE;
+  
+  /* Create a memory bitmap compatible with the screen */
+  hbmp = CreateCompatibleBitmap (pScreenPriv->hdcScreen, 1, 1);
+  if (hbmp == NULL)
+    return FALSE;
+  
+  /* Initialize our bitmap info header */
+  ZeroMemory (pbmih, sizeof (BITMAPINFOHEADER) + 256 * sizeof (RGBQUAD));
+  pbmih->biSize = sizeof (BITMAPINFOHEADER);
+
+  /* Get the biBitCount */
+  fReturn = GetDIBits (pScreenPriv->hdcScreen,
+		       hbmp,
+		       0, 1,
+		       NULL,
+		       (BITMAPINFO*) pbmih,
+		       DIB_RGB_COLORS);
+
+  /* Get optimal color table, or the optimal bitfields */
+  if (fReturn)
+    fReturn = GetDIBits (pScreenPriv->hdcScreen,
+			 hbmp,
+			 0, 1,
+			 NULL,
+			 (BITMAPINFO*)pbmih,
+			 DIB_RGB_COLORS);
+
+  /* Free memory */
+  DeleteObject (hbmp);
+  
+  return fReturn;
+}
+
+static
+Bool
+winQueryRGBBitsAndMasks (ScreenPtr pScreen)
+{
+  winScreenPriv(pScreen);
+  BITMAPINFOHEADER	*pbmih = NULL;
+  Bool			fReturn = TRUE;
+  LPDWORD		pdw = NULL;
+
+  /* RGB BPP for 8 bit palletes is always 8 bits per pixel */
+  if (GetDeviceCaps (pScreenPriv->hdcScreen, RASTERCAPS) & RC_PALETTE)
+    {
+      pScreenPriv->dwBitsPerRGB = 8;
+      return TRUE;
+    }
+
+  /* 24bpp is easy */
+  if (GetDeviceCaps (pScreenPriv->hdcScreen, PLANES)
+      * GetDeviceCaps (pScreenPriv->hdcScreen, BITSPIXEL) == 24)
+    {
+      pScreenPriv->dwBitsPerRGB = 8;
+      return TRUE;
+    }
+
+  /* Allocate a bitmap header and color table */
+  pbmih = (BITMAPINFOHEADER*) xalloc (sizeof (BITMAPINFOHEADER)
+				      + 256  * sizeof (RGBQUAD));
+  if (pbmih == NULL)
+    return FALSE;
+
+  /* Get screen description */
+  if (winQueryScreenDIBFormat (pScreen, pbmih))
+    {
+      DWORD	dwRedBits, dwGreenBits, dwBlueBits;
+
+      /* Get a pointer to bitfields */
+      pdw = (DWORD*) ((CARD8*)pbmih + sizeof (BITMAPINFOHEADER));
+      
+      /* Count the number of bits in each mask */
+      dwRedBits = winCountBits (pdw[0]);
+      dwGreenBits = winCountBits (pdw[1]);
+      dwBlueBits = winCountBits (pdw[2]);
+
+      /* Find maximum bits per red, green, blue */
+      if (dwRedBits > dwGreenBits && dwRedBits > dwBlueBits)
+	pScreenPriv->dwBitsPerRGB = dwRedBits;
+      else if (dwGreenBits > dwRedBits && dwGreenBits > dwBlueBits)
+	pScreenPriv->dwBitsPerRGB = dwGreenBits;
+      else
+	pScreenPriv->dwBitsPerRGB = dwBlueBits;
+
+      /* Set screen privates masks */
+      pScreenPriv->dwRedMask = pdw[0];
+      pScreenPriv->dwGreenMask = pdw[1];
+      pScreenPriv->dwBlueMask = pdw[2];
+    }
+  else
+    {
+      fReturn = FALSE;
+    }
+
+  /* Free memory */
+  xfree (pbmih);
+
+  return fReturn;
+}
+
+/* Allocate a DIB for the shadow framebuffer GDI server */
+Bool
+winAllocateFBShadowGDI (ScreenPtr pScreen)
+{
+  winScreenPriv(pScreen);
+  winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
+  BITMAPINFOHEADER	*pbmih = NULL;
+  DIBSECTION		dibsection;
+  Bool			fReturn = TRUE;
+
+  /* Get device contexts for the screen and shadow bitmap */
+  pScreenPriv->hdcScreen = GetDC (pScreenPriv->hwndScreen);
+  pScreenPriv->hdcShadow = CreateCompatibleDC (pScreenPriv->hdcScreen);
+
+  /* Allocate bitmap info header */
+  pbmih = (BITMAPINFOHEADER*) xalloc (sizeof (BITMAPINFOHEADER)
+				      + 256 * sizeof (RGBQUAD));
+  if (pbmih == NULL)
+    return FALSE;
+
+  /* Query the screen format */
+  fReturn = winQueryScreenDIBFormat (pScreen, pbmih);
+
+  /* Describe shadow bitmap to be created */
+  pbmih->biWidth = pScreenInfo->dwWidth;
+  pbmih->biHeight = -pScreenInfo->dwHeight;
+  
+  /* Create a DI shadow bitmap with a bit pointer */
+  pScreenPriv->hbmpShadow = CreateDIBSection (pScreenPriv->hdcScreen,
+					      (BITMAPINFO *) pbmih,
+					      0,
+					      (VOID**) &pScreenInfo->pfb,
+					      NULL,
+					      0);
+  if (pScreenPriv->hbmpShadow == NULL || pScreenInfo->pfb == NULL)
+    return FALSE;
+  else
+    {
+      ErrorF ("winAllocateFBShadowGDI () - Shadow buffer allocated\n");
+    }
+
+  /* Get information about the bitmap that was allocated */
+  GetObject (pScreenPriv->hbmpShadow, sizeof (dibsection),
+	     &dibsection);
+  
+  /* Print information about bitmap allocated */
+  ErrorF ("winAllocateFBShadowGDI () - Dibsection width: %d height: %d\n",
+	  dibsection.dsBmih.biWidth, dibsection.dsBmih.biHeight);
+
+  /* Select the shadow bitmap into the shadow DC */
+  SelectObject (pScreenPriv->hdcShadow,
+		pScreenPriv->hbmpShadow);
+
+  ErrorF ("winAllocateFBShadowGDI () - Attempting a shadow blit\n");
+  BitBlt (pScreenPriv->hdcScreen,
+	  0, 0,
+	  pScreenInfo->dwWidth, pScreenInfo->dwHeight,
+	  pScreenPriv->hdcShadow,
+	  0, 0,
+	  SRCCOPY);
+  ErrorF ("winAllocateFBShadowGDI () - Shadow blit success\n");
+
+  /* Set screeninfo stride */
+  pScreenInfo->dwStrideBytes = pScreenInfo->dwPaddedWidth;
+  pScreenInfo->dwStride = (pScreenInfo->dwStrideBytes * 8)
+    / pScreenInfo->dwDepth;
+  
+  return fReturn;
+}
+
+/* Blit the damaged regions of the shadow fb to the screen */
+void
+winShadowUpdateProcGDI (ScreenPtr pScreen, 
+			PixmapPtr pShadow,
+			RegionPtr damage)
+{
+  winScreenPriv(pScreen);
+  winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
+  DWORD			dwBox = REGION_NUM_RECTS (damage);
+  BoxPtr		pBox = REGION_RECTS (damage);
+  int			x, y, w, h;
+
+  /* Return immediately if the app is not active and we are fullscreen */
+  if (!pScreenPriv->fActive && pScreenInfo->fFullScreen) return;
+
+  /* Loop through all boxes in the damaged region */
+  while (dwBox--)
+    {
+      /* Calculate x offset, y offset, width, and height for
+	 current damage box
+      */
+      x = pBox->x1;
+      y = pBox->y1;
+      w = pBox->x2 - pBox->x1;
+      h = pBox->y2 - pBox->y1;
+
+      if (!BitBlt (pScreenPriv->hdcScreen,
+		   x, y,
+		   w, h,
+		   pScreenPriv->hdcShadow,
+		   x, y,
+		   SRCCOPY))
+	{
+	  FatalError ("winShadowUpdateProc () - BitBlt failed\n");
+	}
+
+      /* Get a pointer to the next box */
+      ++pBox;
+    }
+}
+
+void *
+winShadowSetWindowLinearGDI (ScreenPtr	pScreen,
+			     CARD32	dwRow,
+			     CARD32	dwOffset,
+			     int	mode,
+			     CARD32	*pdwSize)
+{
+  winScreenPriv(pScreen);
+  winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
+
+  *pdwSize = pScreenInfo->dwPaddedWidth;
+  return (CARD8 *) pScreenInfo->pfb + dwRow * pScreenInfo->dwPaddedWidth + dwOffset;
+}
+
+void *
+winShadowWindowProcGDI (ScreenPtr	pScreen,
+			CARD32		dwRow,
+			CARD32		dwOffset,
+			int		mode,
+			CARD32		*pdwSize)
+{
+  return winShadowSetWindowLinearGDI (pScreen, dwRow, dwOffset, mode, pdwSize);
+}
+
+/* See Porting Layer Definition - p. 33 */
+/* We wrap whatever CloseScreen procedure was specified by fb;
+   a pointer to said procedure is stored in our devPrivate
+*/
+Bool
+winCloseScreenShadowGDI (int nIndex, ScreenPtr pScreen)
+{
+  winScreenPriv(pScreen);
+  winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
+  Bool			fReturn;
+
+  ErrorF ("winCloseScreenShadowGDI () - Freeing screen resources\n");
+
+  /* Flag that the screen is closed */
+  pScreenPriv->fClosed = TRUE;
+  pScreenPriv->fActive = FALSE;
+
+  /* Call the wrapped CloseScreen procedure */
+  pScreen->CloseScreen = pScreenPriv->CloseScreen;
+  fReturn = (*pScreen->CloseScreen) (nIndex, pScreen);
+
+  /* Delete the window property */
+  RemoveProp (pScreenPriv->hwndScreen, WIN_SCR_PROP);
+
+  /* Free the shadow DC; which allows the bitmap to be freed */
+  DeleteDC (pScreenPriv->hdcShadow);
+  
+  /* Free the shadow bitmap */
+  DeleteObject (pScreenPriv->hbmpShadow);
+
+  /* Free the screen DC */
+  ReleaseDC (pScreenPriv->hwndScreen, pScreenPriv->hdcScreen);
+
+  /* Redisplay the Windows cursor */
+  if (!pScreenPriv->fCursor)
+      ShowCursor (TRUE);
+
+  /* Kill our window */
+  if (pScreenPriv->hwndScreen)
+    {
+      DestroyWindow (pScreenPriv->hwndScreen);
+      pScreenPriv->hwndScreen = NULL;
+    }
+
+  /* Kill our screeninfo's pointer to the screen */
+  pScreenInfo->pScreen = NULL;
+
+  /* Invalidate the ScreenInfo's fb pointer */
+  pScreenInfo->pfb = NULL;
+
+  /* Free the screen privates for this screen */
+  xfree ((pointer) pScreenPriv);
+ 
+  return fReturn;
+}
+
+Bool
+winInitVisualsShadowGDI (ScreenPtr pScreen)
+{
+  winScreenPriv(pScreen);
+  winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
+  BITMAPINFOHEADER	*pbmih = NULL;
+  Bool			fReturn = TRUE;
+
+  /* Allocate bitmap info structure */
+  pbmih = (BITMAPINFOHEADER*) xalloc (sizeof (BITMAPINFOHEADER)
+				      + 256 * sizeof (RGBQUAD));
+  if (pbmih == NULL)
+    return FALSE;
+  
+  /* Set bits per RGB and color masks */
+  fReturn = winQueryRGBBitsAndMasks (pScreen);
+  if (!fReturn)
+    {
+      xfree (pbmih);
+      return fReturn;
+    }
+
+  ErrorF ("winInitVisualsGDI () - Masks: %08x %08x %08x bpRGB: %d\n",
+	  pScreenPriv->dwRedMask,
+	  pScreenPriv->dwGreenMask,
+	  pScreenPriv->dwBlueMask,
+	  pScreenPriv->dwBitsPerRGB);
+
+  /* Create a single visual according to the Windows screen depth */
+  switch (pScreenInfo->dwDepth)
+    {
+    case 32:
+    case 24:
+    case 16:
+    case 15:
+      if (!miSetVisualTypesAndMasks (pScreenInfo->dwDepth,
+				     TrueColorMask,
+				     pScreenPriv->dwBitsPerRGB,
+				     TrueColor,
+				     pScreenPriv->dwRedMask,
+				     pScreenPriv->dwGreenMask,
+				     pScreenPriv->dwBlueMask))
+	{
+	  FatalError ("winInitVisualsGDI () - miSetVisualTypesAndMasks failed\n");
+	}
+      break;
+
+    case 8:
+      ErrorF ("winInitVisuals () - Calling miSetVisualTypesAndMasks\n");
+      if (!miSetVisualTypesAndMasks (pScreenInfo->dwDepth,
+				     PseudoColorMask,
+				     pScreenPriv->dwBitsPerRGB,
+				     PseudoColor,
+				     pScreenPriv->dwRedMask,
+				     pScreenPriv->dwGreenMask,
+				     pScreenPriv->dwBlueMask))
+	{
+	  FatalError ("winInitVisualsGDI () - miSetVisualTypesAndMasks failed\n");
+	}
+      ErrorF ("winInitVisualsGDI () - Returned from miSetVisualTypesAndMasks\n");
+      break;
+    }
+  
+  /* Set DPI info */
+  pScreenInfo->dwDPIx = GetDeviceCaps (pScreenPriv->hdcScreen, LOGPIXELSX);
+  pScreenInfo->dwDPIy = GetDeviceCaps (pScreenPriv->hdcScreen, LOGPIXELSY);
+
+  /* Free memory */
+  xfree (pbmih);
+
+  ErrorF ("winInitVisualsGDI () - Returning\n");
+
+  return TRUE;
+}
+
+/* Adjust the video mode */
+Bool
+winAdjustVideoModeShadowGDI (ScreenPtr pScreen)
+{
+  winScreenPriv(pScreen);
+  winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
+  HDC			hdc = GetDC (NULL);
+  DWORD			dwDepth;
+  
+  /* We're in serious trouble if we can't get a DC */
+  if (hdc == NULL)
+    return FALSE;
+
+  /* Query GDI for current display depth */
+  dwDepth = GetDeviceCaps (hdc, BITSPIXEL);
+
+  /* Is GDI using a depth different than command line parameter? */
+  if (dwDepth != pScreenInfo->dwDepth)
+    {
+      /* Warn user if GDI depth is different than depth specified */
+      ErrorF ("winAdjustVideoModeShadowGDI () - Command line depth: %d, "\
+	      "using depth: %d\n", pScreenInfo->dwDepth, dwDepth);
+
+      /* We'll use GDI's depth */
+      pScreenInfo->dwDepth = dwDepth;
+    }
+  
+  /* Release our DC */
+  ReleaseDC (hdc, NULL);
+     
+  return TRUE;
+}
+
+/* Set engine specific funtions */
+Bool
+winSetEngineFunctionsShadowGDI (ScreenPtr pScreen)
+{
+  winScreenPriv(pScreen);
+  winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
+  
+  /* Set our pointers */
+  pScreenPriv->pwinAllocateFB = winAllocateFBShadowGDI;
+  pScreenPriv->pwinShadowUpdateProc = winShadowUpdateProcGDI;
+  pScreenPriv->pwinShadowWindowProc = winShadowWindowProcGDI;
+  pScreenPriv->pwinCloseScreen = winCloseScreenShadowGDI;
+  pScreenPriv->pwinInitVisuals = winInitVisualsShadowGDI;
+  pScreenPriv->pwinAdjustVideoMode = winAdjustVideoModeShadowGDI;
+  if (pScreenInfo->fFullScreen)
+    pScreenPriv->pwinCreateBoundingWindow = winCreateBoundingWindowFullScreen;
+  else
+    pScreenPriv->pwinCreateBoundingWindow = winCreateBoundingWindowWindowed;
+  pScreenPriv->pwinFinishScreenInit = winFinishScreenInitFB;
+
+  return TRUE;
+}

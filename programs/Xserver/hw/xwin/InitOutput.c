@@ -24,789 +24,457 @@ from The Open Group.
 */
 /* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.1 2000/08/10 17:40:37 dawes Exp $ */
 
-#if defined(WIN32) && !defined(__CYGWIN__)
-#include <X11/Xwinsock.h>
+#include "win.h"
+
+int              g_nNumScreens;
+winScreenInfo    g_winScreens[MAXSCREENS];
+//Bool             g_fPixmapDepths[33];
+int              g_nLastScreen = -1;
+ColormapPtr      g_cmInstalledMaps[MAXSCREENS];
+
+static PixmapFormatRec g_PixmapFormats[] = {
+        { 1,    1,      BITMAP_SCANLINE_PAD },
+        { 4,    8,      BITMAP_SCANLINE_PAD },
+        { 8,    8,      BITMAP_SCANLINE_PAD },
+        { 15,   16,     BITMAP_SCANLINE_PAD },
+        { 16,   16,     BITMAP_SCANLINE_PAD },
+        { 24,   32,     BITMAP_SCANLINE_PAD },
+	{ 32,	32,	BITMAP_SCANLINE_PAD }
+};
+const int NUMFORMATS = sizeof (g_PixmapFormats) / sizeof (g_PixmapFormats[0]);
+
+#if 0
+/* Set all pixmap flags to false, except 1 bit depth pixmaps */
+void
+winInitializePixmapDepths (void)
+{
+#if 0
+  int i;
 #endif
-#include <stdio.h>
-#include "X11/X.h"
-#define NEED_EVENTS
-#include "X11/Xproto.h"
-#include "X11/Xos.h"
-#include "scrnintstr.h"
-#include "servermd.h"
-#define PSZ 8
-#include "cfb.h"
-#include "mibstore.h"
-#include "colormapst.h"
-#include "gcstruct.h"
-#include "input.h"
-#include "mipointer.h"
-#include "picturestr.h"
-#include <sys/types.h>
-#ifdef HAS_MMAP
-#include <sys/mman.h>
-#ifndef MAP_FILE
-#define MAP_FILE 0
-#endif
-#endif /* HAS_MMAP */
-#include <sys/stat.h>
-#include <errno.h>
-#ifndef WIN32
-#include <sys/param.h>
-#endif
-#include <X11/XWDFile.h>
-#if defined(HAS_SHM) && !defined(__CYGWIN__)
-#include <sys/cygipc.h>
-#include <sys/shm.h>
-#endif /* HAS_SHM */
-#include "dix.h"
-#include "miline.h"
 
-/* 
-* modified 05/27/00 p. busch 
-* peter.busch@dfki.de
-*
-* framebuffer is now mapped via the ntux_ddx library	
-*/
+  /* We don't care what pixmaps people use, as long
+     as they are standard depths.
+  */
+  g_fPixmapDepths[1] = TRUE;
+  g_fPixmapDepths[4] = TRUE;
+  g_fPixmapDepths[8] = TRUE;
+  g_fPixmapDepths[16] = TRUE;
+  g_fPixmapDepths[24] = TRUE;
+  g_fPixmapDepths[32] = TRUE;
 
-/*
-* added - pb 
-*/
-
-/* implemented in ntux_xf.c */
-/* NOT REALLY NEEDED -- WORKS ONLY ON WINDOWS NT/2000, CAUSES PROBLEMS on WIN98/95/Me */
-//extern char	* map_dx_fb( char *adr, unsigned long size );
-
-
-
-
-extern char *display;
-
-#define WIN_DEFAULT_WIDTH  1024
-#define WIN_DEFAULT_HEIGHT 768
-#define WIN_DEFAULT_DEPTH  16
-#define WIN_DEFAULT_WHITEPIXEL 255
-#define WIN_DEFAULT_BLACKPIXEL 0
-#define WIN_DEFAULT_LINEBIAS 0
-#define XWD_WINDOW_NAME_LEN 60
-
-typedef struct
-{
-    int scrnum;
-    int width;
-    int paddedWidth;
-    int height;
-    int depth;
-    int bitsPerPixel;
-    char *pfbMemory;
-    XWDColor *pXWDCmap;
-    XWDFileHeader *pXWDHeader;
-    Pixel blackPixel;
-    Pixel whitePixel;
-	ScreenPtr pScreen ;
-    unsigned int lineBias;
-
-} winScreenInfo, *winScreenInfoPtr;
-
-static int winNumScreens;
-static winScreenInfo winScreens[MAXSCREENS];
-static Bool winPixmapDepths[33];
-static char *pfbdir = NULL;
-typedef enum { NORMAL_MEMORY_FB, SHARED_MEMORY_FB, MMAPPED_FILE_FB } fbMemType;
-static fbMemType fbmemtype = NORMAL_MEMORY_FB;
-static char needswap = 0;
-static int lastScreen = -1;
-
-#define swapcopy16(_dst, _src) \
-    if (needswap) { CARD16 _s = _src; cpswaps(_s, _dst); } \
-    else _dst = _src;
-
-#define swapcopy32(_dst, _src) \
-    if (needswap) { CARD32 _s = _src; cpswapl(_s, _dst); } \
-    else _dst = _src;
-
-
-static void
-winInitializePixmapDepths()
-{
-    int i;
-    winPixmapDepths[1] = TRUE; /* always need bitmaps */
-    for (i = 2; i <= 32; i++)
-	winPixmapDepths[i] = FALSE;
-}
-
-static Bool
-winCreateDefColormap (ScreenPtr pScreen)
-{
-    /*  
-     * these are the MS-Windows desktop colors, adjusted for X's 16-bit 
-     * color specifications.
-     */
-    static xColorItem citems[] = {
-	{   0,      0,      0,      0, 0, 0 },
-	{   1, 0x8000,      0,      0, 0, 0 },
-	{   2,      0, 0x8000,      0, 0, 0 },
-	{   3, 0x8000, 0x8000,      0, 0, 0 },
-	{   4,      0,      0, 0x8000, 0, 0 },
-	{   5, 0x8000,      0, 0x8000, 0, 0 },
-	{   6,      0, 0x8000, 0x8000, 0, 0 },
-	{   7, 0xc000, 0xc000, 0xc000, 0, 0 },
-	{   8, 0xc000, 0xdc00, 0xc000, 0, 0 },
-	{   9, 0xa600, 0xca00, 0xf000, 0, 0 },
-	{ 246, 0xff00, 0xfb00, 0xf000, 0, 0 },
-	{ 247, 0xa000, 0xa000, 0xa400, 0, 0 },
-	{ 248, 0x8000, 0x8000, 0x8000, 0, 0 },
-	{ 249, 0xff00,      0,      0, 0, 0 },
-	{ 250,      0, 0xff00,      0, 0, 0 },
-	{ 251, 0xff00, 0xff00,      0, 0, 0 },
-	{ 252,      0,      0, 0xff00, 0, 0 },
-	{ 253, 0xff00,      0, 0xff00, 0, 0 },
-	{ 254,      0, 0xff00, 0xff00, 0, 0 },
-	{ 255, 0xff00, 0xff00, 0xff00, 0, 0 }
-    };
-#define NUM_DESKTOP_COLORS sizeof citems / sizeof citems[0]
-    int i;
-    Pixel wp, bp;
-    VisualPtr	pVisual;
-    ColormapPtr	cmap;
-    unsigned short	zero = 0, ones = 0xFFFF;
-    
-    for (pVisual = pScreen->visuals;
-	 pVisual->vid != pScreen->rootVisual;
-	 pVisual++)
-	;
-
-    if (CreateColormap(pScreen->defColormap, pScreen, pVisual, &cmap,
-		       (pVisual->class & DynamicClass) ? AllocNone : AllocAll,
-		       0)
-	!= Success)
-	return FALSE;
-	if (pVisual->class == PseudoColor)
-	{
-		for (i = 0; i < NUM_DESKTOP_COLORS; i++) {
-		if (AllocColor (cmap, 
-				&citems[i].red, &citems[i].green, &citems[i].blue,
-				&citems[i].pixel, 0) != Success)
-			return FALSE;
-		}
-			pScreen->whitePixel = 255 ;
-			pScreen->blackPixel = 0 ;
-	} else {
-    	if ((AllocColor(cmap, &ones, &ones, &ones, &wp, 0) !=
-       	   	Success) ||
-    		(AllocColor(cmap, &zero, &zero, &zero, &bp, 0) !=
-       	   	Success))
-    		return FALSE;
-    	pScreen->whitePixel = wp;
-    	pScreen->blackPixel = bp;
-	}
-    (*pScreen->InstallColormap)(cmap);
-    return TRUE;
-}
-
-static void
-winInitializeDefaultScreens()
-{
-    int i;
-
-    for (i = 0; i < MAXSCREENS; i++)
+#if 0
+  for (i = 2; i <= 32; i++)
     {
-	winScreens[i].scrnum = i;
-	winScreens[i].width  = WIN_DEFAULT_WIDTH;
-	winScreens[i].height = WIN_DEFAULT_HEIGHT;
-	winScreens[i].depth  = WIN_DEFAULT_DEPTH;
-	winScreens[i].blackPixel = WIN_DEFAULT_BLACKPIXEL;
-	winScreens[i].whitePixel = WIN_DEFAULT_WHITEPIXEL;
-	winScreens[i].lineBias = WIN_DEFAULT_LINEBIAS;
-	winScreens[i].pfbMemory = NULL;
+      g_fPixmapDepths[i] = FALSE;
+
+      if (i == 16 || i == 24 || i == 32 )
+	{
+	  g_fPixmapDepths[i] = TRUE;
+	}
+      else
+	{
+	  g_fPixmapDepths[i] = FALSE;
+	}
     }
-    winNumScreens = 1;
+#endif
 }
+#endif
 
-static int
-winBitsPerPixel(depth)
-    int depth;
+void
+winInitializeDefaultScreens (void)
 {
-    if (depth == 1) return 1;
-    else if (depth <= 8) return 8;
-    else if (depth <= 16) return 16;
-	else if (depth <= 24) return 24;
-    else return 32;
+  int                   i;
+
+  for (i = 0; i < MAXSCREENS; i++)
+    {
+      g_winScreens[i].dwScreen = i;
+      g_winScreens[i].dwWidth  = WIN_DEFAULT_WIDTH;
+      g_winScreens[i].dwHeight = WIN_DEFAULT_HEIGHT;
+      g_winScreens[i].dwDepth  = WIN_DEFAULT_DEPTH;
+      g_winScreens[i].pixelBlack = WIN_DEFAULT_BLACKPIXEL;
+      g_winScreens[i].pixelWhite = WIN_DEFAULT_WHITEPIXEL;
+      g_winScreens[i].dwLineBias = WIN_DEFAULT_LINEBIAS;
+      g_winScreens[i].pfb = NULL;
+    }
+  g_nNumScreens = 1;
 }
 
+DWORD
+winBitsPerPixel (DWORD dwDepth)
+{
+  if (dwDepth == 1) return 1;
+  else if (dwDepth <= 8) return 8;
+  else if (dwDepth <= 16) return 16;
+  else if (dwDepth <= 24) return 24;
+  else return 32;
+}
+
+/* See Porting Layer Definition - p. 57 */
 void
 ddxGiveUp()
 {
-	return ;
+  ErrorF ("ddxGiveUp ()\n");
+
+  /* Tell Windows that we want to end the app */
+  PostQuitMessage (0);
+}
+
+/* See Porting Layer Definition - p. 57 */
+void
+AbortDDX (void)
+{
+  ErrorF ("AbortDDX ()\n");
+  ddxGiveUp ();
 }
 
 void
-AbortDDX()
+OsVendorInit (void)
 {
-    ddxGiveUp();
+  ErrorF ("OsVendorInit ()\n");
 }
 
+/* See Porting Layer Definition - p. 57 */
 void
-OsVendorInit()
+ddxUseMsg (void)
 {
+  ErrorF ("-screen scrn WxHxD\n"\
+	  "\tSet screen's width, height, bit depth\n");
+  ErrorF ("-pixdepths list-of-int\n"\
+	  "\tSupport given pixmap depths\n");
+  ErrorF ("-linebias n\n"\
+	  "\tAdjust thin line pixelization\n");
+  ErrorF ("-blackpixel n\n"\
+	  "\tPixel value for black\n");
+  ErrorF ("-whitepixel n\n"\
+	  "\tPixel value for white\n");
+  ErrorF ("-engine n\n"\
+	  "\tOverride the server's detected engine type:\n"\
+	  "\t\tShadow FB GDI DIB\t\t1\n"\
+	  "\t\tShadow FB DirectDraw\t\t2\n"\
+	  "\t\tShadow FB DirectDraw Nonlocking\t4\n"\
+	  "\t\tPrimary FB DirectDraw\t\t8\n");
+  ErrorF ("-fullscreen\n"
+	  "\tRun the specified server engine in fullscreen mode\n");
 }
 
-void
-ddxUseMsg()
-{
-    ErrorF("-screen scrn WxHxD     set screen's width, height, depth\n");
-    ErrorF("-pixdepths list-of-int support given pixmap depths\n");
-    ErrorF("-linebias n            adjust thin line pixelization\n");
-    ErrorF("-blackpixel n          pixel value for black\n");
-    ErrorF("-whitepixel n          pixel value for white\n");
-}
-
+/* See Porting Layer Definition - p. 57 */
 int
-ddxProcessArgument (argc, argv, i)
-    int argc;
-    char *argv[];
-    int i;
+ddxProcessArgument (int argc, char *argv[], int i)
 {
-    static Bool firstTime = TRUE;
+  static Bool		fFirstTime = TRUE;
 
-    if (firstTime)
+  /* Run some initialization procedures the first time through */
+  if (fFirstTime)
     {
-	winInitializeDefaultScreens();
-	winInitializePixmapDepths();
-        firstTime = FALSE;
+      winInitializeDefaultScreens ();
+#if 0
+      winInitializePixmapDepths ();
+#endif
+      fFirstTime = FALSE;
     }
 
-    if (strcmp (argv[i], "-screen") == 0)	/* -screen n WxHxD */
+  /*
+    Look for the '-screen n WxHxD' arugment
+  */
+  if (strcmp (argv[i], "-screen") == 0)
     {
-	int screenNum;
-	if (i + 2 >= argc) UseMsg();
-	screenNum = atoi(argv[i+1]);
-	if (screenNum < 0 || screenNum >= MAXSCREENS)
+      int		nScreenNum;
+
+      /* Display the usage message if the argument is malformed */
+      if (i + 2 >= argc)
 	{
-	    ErrorF("Invalid screen number %d\n", screenNum);
-	    UseMsg();
-	}
-	if (3 != sscanf(argv[i+2], "%dx%dx%d",
-			&winScreens[screenNum].width,
-			&winScreens[screenNum].height,
-			&winScreens[screenNum].depth))
-	{
-	    ErrorF("Invalid screen configuration %s\n", argv[i+2]);
-	    UseMsg();
+	  UseMsg ();
+	  return 0;
 	}
 
-	if (screenNum >= winNumScreens)
-	    winNumScreens = screenNum + 1;
-	lastScreen = screenNum;
-	return 3;
+      nScreenNum = atoi (argv[i+1]);
+
+      if (nScreenNum < 0 || nScreenNum >= MAXSCREENS)
+        {
+          ErrorF ("Invalid screen number %d\n", nScreenNum);
+          UseMsg ();
+	  return 0;
+        }
+      if (3 != sscanf (argv[i+2], "%dx%dx%d",
+		       (int*)&g_winScreens[nScreenNum].dwWidth,
+		       (int*)&g_winScreens[nScreenNum].dwHeight,
+		       (int*)&g_winScreens[nScreenNum].dwDepth))
+        {
+          ErrorF ("Invalid screen configuration %s\n", argv[i+2]);
+          UseMsg ();
+	  return 0;
+        }
+
+      if (nScreenNum >= g_nNumScreens)
+        g_nNumScreens = nScreenNum + 1;
+      g_nLastScreen = nScreenNum;
+      return 3;
     }
 
-    if (strcmp (argv[i], "-pixdepths") == 0)	/* -pixdepths list-of-depth */
+#if 0
+  /*
+    Look for the '-pixdepths list-of-depths' argument
+  */
+  if (strcmp (argv[i], "-pixdepths") == 0)
     {
-	int depth, ret = 1;
+      int		nDepth, nReturn = 1;
 
-	if (++i >= argc) UseMsg();
-	while ((i < argc) && (depth = atoi(argv[i++])) != 0)
+      /* Display the usage message if the argument is malformed */
+      if (++i >= argc)
 	{
-	    if (depth < 0 || depth > 32)
+	  UseMsg ();
+	  return 0;
+	}
+
+      while ((i < argc) && (nDepth = atoi (argv[i++])) != 0)
+        {
+          if (nDepth < 0 || nDepth > 32)
+            {
+              ErrorF ("Invalid pixmap depth %d\n", nDepth);
+              UseMsg ();
+	      return 0;
+            }
+          g_fPixmapDepths[nDepth] = TRUE;
+          nReturn++;
+        }
+      return nReturn;
+    }
+#endif
+
+  /*
+    Look for the '-blackpixel n' argument
+  */
+  if (strcmp (argv[i], "-blackpixel") == 0)     /* -blackpixel n */
+    {
+      Pixel		pix;
+
+      /* Display the usage message if the argument is malformed */
+      if (++i >= argc)
+	{
+	  UseMsg ();
+	  return 0;
+	}
+
+      pix = atoi (argv[i]);
+      if (-1 == g_nLastScreen)
+        {
+          int i;
+          for (i = 0; i < MAXSCREENS; i++)
+            {
+              g_winScreens[i].pixelBlack = pix;
+            }
+        }
+      else
+        {
+          g_winScreens[g_nLastScreen].pixelBlack = pix;
+        }
+      return 2;
+    }
+
+  /*
+    Look for the '-whitepixel n' argument
+  */
+  if (strcmp (argv[i], "-whitepixel") == 0)     /* -whitepixel n */
+    {
+      Pixel		pix;
+
+      /* Display the usage message if the argument is malformed */
+      if (++i >= argc)
+	{
+	  UseMsg ();
+	  return 0;
+	}
+
+      pix = atoi (argv[i]);
+      if (-1 == g_nLastScreen)
+        {
+          int i;
+          for (i = 0; i < MAXSCREENS; i++)
+            {
+              g_winScreens[i].pixelWhite = pix;
+            }
+        }
+      else
+        {
+          g_winScreens[g_nLastScreen].pixelWhite = pix;
+        }
+      return 2;
+    }
+
+  /*
+    Look for the '-linebias n' argument
+  */
+  if (strcmp (argv[i], "-linebias") == 0)
+    {
+      unsigned int	uiLinebias;
+
+      /* Display the usage message if the argument is malformed */
+      if (++i >= argc)
+	{
+	  UseMsg ();
+	  return 0;
+	}
+
+      uiLinebias = atoi (argv[i]);
+
+      if (-1 == g_nLastScreen)
+        {
+          int		i;
+
+          for (i = 0; i < MAXSCREENS; i++)
+            {
+              g_winScreens[i].dwLineBias = uiLinebias;
+            }
+        }
+      else
+        {
+          g_winScreens[g_nLastScreen].dwLineBias = uiLinebias;
+        }
+      return 2;
+    }
+
+  /*
+    Look for the '-engine n' argument
+  */
+  if (strcmp (argv[i], "-engine") == 0)
+    {
+      DWORD		dwEngine = 0;
+      CARD8		c8OnBits = 0;
+      
+      /* Display the usage message if the argument is malformed */
+      if (++i >= argc)
+	{
+	  UseMsg ();
+	  return 0;
+	}
+
+      /* Grab the argument */
+      dwEngine = atoi (argv[i]);
+
+      /* Count the one bits in the engine argument */
+      c8OnBits = winCountBits (dwEngine);
+
+      /* Argument should only have a single bit on */
+      if (c8OnBits != 1)
+	{
+	  UseMsg ();
+	  return 0;
+	}
+
+      /* Is this parameter attached to a screen or global? */
+      if (-1 == g_nLastScreen)
+	{
+	  int		i;
+
+	  /* Parameter is for all screens */
+	  for (i = 0; i < MAXSCREENS; i++)
 	    {
-		ErrorF("Invalid pixmap depth %d\n", depth);
-		UseMsg();
+	      g_winScreens[i].dwEnginePreferred = dwEngine;
 	    }
-	    winPixmapDepths[depth] = TRUE;
-	    ret++;
 	}
-	return ret;
+      else
+	{
+	  /* Parameter is for a single screen */
+	  g_winScreens[g_nLastScreen].dwEnginePreferred = dwEngine;
+	}
+      
+      /* Indicate that we have processed the argument */
+      return 2;
     }
 
-    if (strcmp (argv[i], "-blackpixel") == 0)	/* -blackpixel n */
+  /* Look for the '-fullscreen' argument */
+  if (strcmp(argv[i], "-fullscreen") == 0)
     {
-	Pixel pix;
-	if (++i >= argc) UseMsg();
-	pix = atoi(argv[i]);
-	if (-1 == lastScreen)
+      /* Is this parameter attached to a screen or is it global? */
+      if (-1 == g_nLastScreen)
 	{
-	    int i;
-	    for (i = 0; i < MAXSCREENS; i++)
+	  int			i;
+
+	  /* Parameter is for all screens */
+	  for (i = 0; i < MAXSCREENS; i++)
 	    {
-		winScreens[i].blackPixel = pix;
+	      g_winScreens[i].fFullScreen = TRUE;
 	    }
 	}
-	else
+      else
 	{
-	    winScreens[lastScreen].blackPixel = pix;
+	  /* Parameter is for a single screen */
+	  g_winScreens[g_nLastScreen].fFullScreen = TRUE;
 	}
-	return 2;
+
+      /* Indicate that we have processed this argument */
+      return 1;
     }
 
-    if (strcmp (argv[i], "-whitepixel") == 0)	/* -whitepixel n */
-    {
-	Pixel pix;
-	if (++i >= argc) UseMsg();
-	pix = atoi(argv[i]);
-	if (-1 == lastScreen)
-	{
-	    int i;
-	    for (i = 0; i < MAXSCREENS; i++)
-	    {
-		winScreens[i].whitePixel = pix;
-	    }
-	}
-	else
-	{
-	    winScreens[lastScreen].whitePixel = pix;
-	}
-	return 2;
-    }
-
-    if (strcmp (argv[i], "-linebias") == 0)	/* -linebias n */
-    {
-	unsigned int linebias;
-	if (++i >= argc) UseMsg();
-	linebias = atoi(argv[i]);
-	if (-1 == lastScreen)
-	{
-	    int i;
-	    for (i = 0; i < MAXSCREENS; i++)
-	    {
-		winScreens[i].lineBias = linebias;
-	    }
-	}
-	else
-	{
-	    winScreens[lastScreen].lineBias = linebias;
-	}
-	return 2;
-    }
-
-    if (strcmp (argv[i], "-probe") == 0)	/* -linebias n */
-    {
-		ListModes () ;
-		return 1 ;
-	}
-
-    return 0;
+  return 0;
 }
 
 #ifdef DDXTIME /* from ServerOSDefines */
 CARD32
-GetTimeInMillis()
+GetTimeInMillis (void)
 {
-    struct timeval  tp;
-
-    X_GETTIMEOFDAY(&tp);
-    return(tp.tv_sec * 1000) + (tp.tv_usec / 1000);
+  return GetTickCount ();
 }
 #endif
 
-
-static Bool
-winMultiDepthCreateGC(pGC)
-    GCPtr   pGC;
-{
-    switch (winBitsPerPixel(pGC->depth))
-    {
-    case 1:  return mfbCreateGC (pGC);
-    case 8:  return cfbCreateGC (pGC);
-    case 16: return cfb16CreateGC (pGC);
-    case 24: return cfb24CreateGC (pGC);
-    case 32: return cfb32CreateGC (pGC);
-    default: return FALSE;
-    }
-}
-
-static void
-winMultiDepthGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
-    DrawablePtr		pDrawable;	/* drawable from which to get bits */
-    int			wMax;		/* largest value of all *pwidths */
-    register DDXPointPtr ppt;		/* points to start copying from */
-    int			*pwidth;	/* list of number of bits to copy */
-    int			nspans;		/* number of scanlines to copy */
-    char		*pdstStart;	/* where to put the bits */
-{
-    switch (pDrawable->bitsPerPixel) {
-    case 1:
-	mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
-	break;
-    case 8:
-	cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
-	break;
-    case 16:
-	cfb16GetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
-	break;
-    case 24:
-	cfb24GetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
-	break;
-    case 32:
-	cfb32GetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
-	break;
-    }
-    return;
-}
-
-static void
-winMultiDepthGetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
-    DrawablePtr pDrawable;
-    int		sx, sy, w, h;
-    unsigned int format;
-    unsigned long planeMask;
-    char	*pdstLine;
-{
-    switch (pDrawable->bitsPerPixel)
-    {
-    case 1:
-	mfbGetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
-	break;
-    case 8:
-	cfbGetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
-	break;
-    case 16:
-	cfb16GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
-	break;
-    case 24:
-	cfb24GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
-	break;
-    case 32:
-	cfb32GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
-	break;
-    }
-}
-
-static ColormapPtr InstalledMaps[MAXSCREENS];
-
-static int
-winListInstalledColormaps(pScreen, pmaps)
-    ScreenPtr	pScreen;
-    Colormap	*pmaps;
-{
-    /* By the time we are processing requests, we can guarantee that there
-     * is always a colormap installed */
-    *pmaps = InstalledMaps[pScreen->myNum]->mid;
-    return (1);
-}
-
-
-static void
-winInstallColormap(pmap)
-    ColormapPtr	pmap;
-{
-    int index = pmap->pScreen->myNum;
-    ColormapPtr oldpmap = InstalledMaps[index];
-
-    if (pmap != oldpmap)
-    {
-	int entries;
-	VisualPtr pVisual;
-	Pixel *     ppix;
-	xrgb *      prgb;
-	xColorItem *defs;
-	int i;
-
-	if(oldpmap != (ColormapPtr)None)
-	    WalkTree(pmap->pScreen, TellLostMap, (char *)&oldpmap->mid);
-	/* Install pmap */
-	InstalledMaps[index] = pmap;
-	WalkTree(pmap->pScreen, TellGainedMap, (char *)&pmap->mid);
-
-	entries = pmap->pVisual->ColormapEntries;
-	pVisual = pmap->pVisual;
-
-	ppix = (Pixel *)ALLOCATE_LOCAL(entries * sizeof(Pixel));
-	prgb = (xrgb *)ALLOCATE_LOCAL(entries * sizeof(xrgb));
-	defs = (xColorItem *)ALLOCATE_LOCAL(entries * sizeof(xColorItem));
-
-	for (i = 0; i < entries; i++)  ppix[i] = i;
-	/* XXX truecolor */
-	QueryColors(pmap, entries, ppix, prgb);
-
-	for (i = 0; i < entries; i++) { /* convert xrgbs to xColorItems */
-	    defs[i].pixel = ppix[i] & 0xff; /* change pixel to index */
-	    defs[i].red = prgb[i].red;
-	    defs[i].green = prgb[i].green;
-	    defs[i].blue = prgb[i].blue;
-	    defs[i].flags =  DoRed|DoGreen|DoBlue;
-	}
-	(*pmap->pScreen->StoreColors)(pmap, entries, defs);
-
-	DEALLOCATE_LOCAL(ppix);
-	DEALLOCATE_LOCAL(prgb);
-	DEALLOCATE_LOCAL(defs);
-    }
-}
-
-static void
-winUninstallColormap(pmap)
-    ColormapPtr	pmap;
-{
-    ColormapPtr curpmap = InstalledMaps[pmap->pScreen->myNum];
-
-    if(pmap == curpmap)
-    {
-	if (pmap->mid != pmap->pScreen->defColormap)
-	{
-	    curpmap = (ColormapPtr) LookupIDByType(pmap->pScreen->defColormap,
-						   RT_COLORMAP);
-	    (*pmap->pScreen->InstallColormap)(curpmap);
-	}
-    }
-}
-
-static void
-winStoreColors(pmap, ndef, pdefs)
-    ColormapPtr pmap;
-    int         ndef;
-    xColorItem  *pdefs;
-{
-    int i;
-
-    if (pmap != InstalledMaps[pmap->pScreen->myNum]) return;
-
-    if ((pmap->pVisual->class | DynamicClass) == DirectColor)
-	return;
-
-	// TrueColor or Pseudo Color
-	if (pmap->pVisual->class == PseudoColor)
-		for (i = 0; i < ndef; i++, pdefs++)
-			DXStoreColors (pdefs->pixel, pdefs->red, pdefs->green, pdefs->blue) ;
-}
-
-static Bool
-winSaveScreen(pScreen, on)
-    ScreenPtr pScreen;
-    int on;
-{
-    return TRUE;
-}
-
-static char *
-winAllocateFramebufferMemory(pwin)
-    winScreenInfoPtr pwin;
-{
-	unsigned long	size;
-	char			*ntux_ddx_fb = NULL;
-
-
-	pwin->pfbMemory = winDXAllocateFramebufferMemory (&pwin->width,
-			&pwin->height, &pwin->depth, &pwin->paddedWidth);
-
-
-	size = pwin->width * pwin->height * ((pwin->depth + 7)/8);
-	/*
-	ntux_ddx_fb = map_dx_fb( pwin->pfbMemory, size );
-
-	if( ntux_ddx_fb )
-	{
-		pwin->pfbMemory = ntux_ddx_fb;
-		return ntux_ddx_fb;
-	}
-	*/
-	return pwin->pfbMemory ;
-}
-
-static Bool
-winCursorOffScreen (ppScreen, x, y)
-    ScreenPtr   *ppScreen;
-    int         *x, *y;
-{
-    return FALSE;
-}
-
-static void
-winCrossScreen (pScreen, entering)
-    ScreenPtr   pScreen;
-    Bool        entering;
-{
-}
-
-static miPointerScreenFuncRec winPointerCursorFuncs =
-{
-    winCursorOffScreen,
-    winCrossScreen,
-    miPointerWarpCursor
-};
-
-Bool miCreateScreenResources (ScreenPtr pScreen) ;
-
-static Bool
-winScreenInit(index, pScreen, argc, argv)
-    int index;
-    ScreenPtr pScreen;
-
-
-    int argc;
-    char ** argv;
-{
-    winScreenInfoPtr pwin = &winScreens[index];
-    int dpix = 100, dpiy = 100;
-    int ret = FALSE;
-    char *pbits;
-	unsigned long stack_ptr;
-
-    pwin->paddedWidth = PixmapBytePad(pwin->width, pwin->depth);
-    pwin->bitsPerPixel = winBitsPerPixel(pwin->depth);
-
-	fprintf( stderr, "pwin->width = %08x\n", pwin->width );
-	fprintf( stderr, "pwin->height = %08x\n", pwin->height );
-	fprintf( stderr, "pwin->paddedWidth = %08x\n", pwin->paddedWidth );
-	fprintf( stderr, "pwin->bitsPerPixel = %08x\n", pwin->bitsPerPixel );
-
-	fprintf( stderr, "calling winAllocateFramebufferMemory\n" );
-
-	 
-    pbits = winAllocateFramebufferMemory( pwin );
-
-    if (!pbits) 
-		return FALSE;
-
-
-    switch (pwin->bitsPerPixel)
-    {
-    case 1:
-	ret = mfbScreenInit(pScreen, pbits, pwin->width, pwin->height,
-			    dpix, dpiy, pwin->paddedWidth * 8);
-	break;
-    case 8:
-	fprintf( stderr, "calling cfbScreenInit( %08x, %08x, %08x, %08x, %08x, %08x, %08x )\n",
-				pScreen, pbits, pwin->width, pwin->height,
-			    dpix, dpiy, pwin->paddedWidth);
-
-	ret = cfbScreenInit(pScreen, pbits, pwin->width, pwin->height,
-			    dpix, dpiy, pwin->paddedWidth);
-	break;
-    case 16:
-	fprintf( stderr, "calling cfb16ScreenInit( %08x, %08x, %08x, %08x, %08x, %08x, %08x )\n",
-				pScreen, pbits, pwin->width, pwin->height,
-			    dpix, dpiy, pwin->paddedWidth);
-	ret = cfb16ScreenInit(pScreen, pbits, pwin->width, pwin->height,
-			      dpix, dpiy, pwin->paddedWidth);
-
-	break;
-    case 24:
-	fprintf( stderr, "calling cfb24ScreenInit( %08x, %08x, %08x, %08x, %08x, %08x, %08x )\n",
-				pScreen, pbits, pwin->width, pwin->height,
-			    dpix, dpiy, pwin->paddedWidth);
-	ret = cfb24ScreenInit(pScreen, pbits, pwin->width, pwin->height,
-			      dpix, dpiy, pwin->paddedWidth);
-	break;
-    case 32:
-	fprintf( stderr, "calling cfb32ScreenInit( %08x, %08x, %08x, %08x, %08x, %08x, %08x )\n",
-				pScreen, pbits, pwin->width, pwin->height,
-			    dpix, dpiy, pwin->paddedWidth);
-
-	ret = cfb32ScreenInit(pScreen, pbits, pwin->width, pwin->height,
-			      dpix, dpiy, pwin->paddedWidth);
-	break;
-    default:
-	return FALSE;
-    }
-
-    if (!ret) return FALSE;
-
-    pScreen->CreateGC = winMultiDepthCreateGC;
-    pScreen->GetImage = winMultiDepthGetImage;
-    pScreen->GetSpans = winMultiDepthGetSpans;
-
-    pScreen->InstallColormap = winInstallColormap;
-    pScreen->UninstallColormap = winUninstallColormap;
-    pScreen->ListInstalledColormaps = winListInstalledColormaps;
-
-    pScreen->SaveScreen = winSaveScreen;
-    pScreen->StoreColors = winStoreColors;
-
-    miDCInitialize(pScreen, &winPointerCursorFuncs);
-
-    pScreen->blackPixel = pwin->blackPixel;
-    pScreen->whitePixel = pwin->whitePixel;
-
-    if (pwin->bitsPerPixel == 1)
-    {
-	ret = mfbCreateDefColormap(pScreen);
-    }
-    else
-    {
-	ret = winCreateDefColormap(pScreen);
-    }
-
-    miSetZeroLineBias(pScreen, pwin->lineBias);
-
-	if (ret)
-	{
-		extern		winfbBlockHandler (), winfbWakeupHandler () ;
-
-		RegisterBlockAndWakeupHandlers (winfbBlockHandler, winfbWakeupHandler, NULL) ;
-	}
-	pwin->pScreen = pScreen ;
-	ErrorF ("Successful addition of Screen %p %p\n", pScreen->devPrivate, pScreen) ;
-    return ret;
-
-} /* end winScreenInit */
-
-
+/* See Porting Layer Definition - p. 20 */
+/* We use ddxProcessArgument, so we don't need to touch argc and argv */
 void
-InitOutput(screenInfo, argc, argv)
-    ScreenInfo *screenInfo;
-    int argc;
-    char **argv;
+InitOutput (ScreenInfo *screenInfo, int argc, char *argv[])
 {
-    int i;
-    int NumFormats = 0;
-    FILE *pf = stderr;
+  int		i;
 
+#if 0
+  int		iNumFormats = 0;
 
+  /* Initialize pixmap formats */
 
-    /* initialize pixmap formats */
-
-/*	cfbLoad() ;*/
-    /* must have a pixmap depth to match every screen depth */
-    for (i = 0; i < winNumScreens; i++)
+  /* Flag a pixmap depth for every screen depth that we have */
+  for (i = 0; i < g_nNumScreens; ++i)
     {
-	winPixmapDepths[winScreens[i].depth] = TRUE;
+      g_fPixmapDepths[g_winScreens[i].dwDepth] = TRUE;
     }
 
-    for (i = 1; i <= 32; i++)
+  /* Loop through all possible pixmap depths */
+  for (i = 1; i <= 32; ++i)
     {
-	if (winPixmapDepths[i])
+      /* Create a screen info format for existing pixmap depths */
+      if (g_fPixmapDepths[i])
 	{
-	    if (NumFormats >= MAXFORMATS)
-		FatalError ("MAXFORMATS is too small for this server\n");
-	    screenInfo->formats[NumFormats].depth = i;
-	    screenInfo->formats[NumFormats].bitsPerPixel = winBitsPerPixel(i);
-	    screenInfo->formats[NumFormats].scanlinePad = BITMAP_SCANLINE_PAD;
-	    NumFormats++;
+	  /* Have we exceeded the number of allowed formats? */
+	  if (iNumFormats >= MAXFORMATS)
+	    {
+	      FatalError ("MAXFORMATS is too small for this server\n");
+	    }
+
+	  /* Setup a screen info format */
+	  screenInfo->formats[iNumFormats].depth = i;
+	  screenInfo->formats[iNumFormats].bitsPerPixel = winBitsPerPixel (i);
+	  screenInfo->formats[iNumFormats].scanlinePad = BITMAP_SCANLINE_PAD;
+
+	  /* Increment the number of formats */
+	  iNumFormats++;
 	}
     }
+#endif
+  
+  /* Setup global screen info parameters */
+  screenInfo->imageByteOrder = IMAGE_BYTE_ORDER;
+  screenInfo->bitmapScanlinePad = BITMAP_SCANLINE_PAD;
+  screenInfo->bitmapScanlineUnit = BITMAP_SCANLINE_UNIT;
+  screenInfo->bitmapBitOrder = BITMAP_BIT_ORDER;
+  screenInfo->numPixmapFormats = NUMFORMATS;
 
-    screenInfo->imageByteOrder = IMAGE_BYTE_ORDER;
-    screenInfo->bitmapScanlineUnit = BITMAP_SCANLINE_UNIT;
-    screenInfo->bitmapScanlinePad = BITMAP_SCANLINE_PAD;
-    screenInfo->bitmapBitOrder = BITMAP_BIT_ORDER;
-    screenInfo->numPixmapFormats = NumFormats;
+  /* Describe how we want common pixmap formats padded */
+  for (i = 0; i < NUMFORMATS; i++)
+    screenInfo->formats[i] = g_PixmapFormats[i];
 
-    /* initialize screens */
-
-    for (i = 0; i < winNumScreens; i++)
+  /* Initialize each screen */
+  for (i = 0; i < g_nNumScreens; i++)
     {
-	if (-1 == AddScreen(winScreenInit, argc, argv))
+      if (-1 == AddScreen (winFinishScreenInitFB, argc, argv))
 	{
-	    FatalError("Couldn't add screen %d", i);
+	  FatalError ("Couldn't add screen %d", i);
 	}
     }
-
-} /* end InitOutput */
-
-void
-SwitchFramebuffer (pointer pbits)
-{
-	PixmapPtr		pmap ;
-	ScreenPtr		s = winScreens[0].pScreen ;
-
-	pmap = ((PixmapPtr) (s)->devPrivate) ;
-	/*
-	if (winScreens[0].depth == 8)
-		pmap = ((PixmapPtr) (s)->devPrivate) ;
-	else
-		pmap = ((PixmapPtr) (s)->devPrivates[0].ptr) ;
-	*/
-	ErrorF ("Switch: %p, %p\n", winScreens[0].pScreen, pmap) ;
-	pmap->devPrivate.ptr = pbits ;
 }
