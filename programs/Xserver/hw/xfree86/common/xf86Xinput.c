@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.57 2000/06/23 22:42:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.58 2000/06/24 17:04:22 dawes Exp $ */
 
 #include "Xfuncproto.h"
 #include "Xmd.h"
@@ -164,6 +164,8 @@ xf86XInputSetSendCoreEvents(LocalDevicePtr local, Bool always)
     }
 }
 
+static int xf86CoreButtonState;
+
 /***********************************************************************
  *
  * xf86CheckButton --
@@ -177,17 +179,10 @@ Bool
 xf86CheckButton(int	button,
 		int	down)
 {
-    int	state, check;
+    int	check;
+    int bit = (1 << (button - 1));
 
-    /* Synchronize dix */
-#ifdef XINPUT
-    xf86eqProcessInputEvents();
-#else
-    mieqProcessInputEvents();
-#endif
-
-    state = (inputInfo.pointer->button->state & 0x1f00) >> 8;
-    check = (state & (1 << (button - 1)));
+    check = xf86CoreButtonState & bit;
     
     DBG(5, ErrorF("xf86CheckButton "
 		  "button=%d down=%d state=%d check=%d returns ",
@@ -196,6 +191,7 @@ xf86CheckButton(int	button,
 	DBG(5, ErrorF("FALSE\n"));
 	return FALSE;
     }
+    xf86CoreButtonState ^= bit;
 
     DBG(5, ErrorF("TRUE\n"));
     return TRUE;
@@ -1277,7 +1273,9 @@ xf86PostButtonEvent(DeviceIntPtr	device,
     /* Check the core pointer button state not to send an inconsistent
      * event. This can happen with the AlwaysCore feature.
      */
-    if ((is_core || is_shared) && !xf86CheckButton(button, is_down)) {
+    if ((is_core || is_shared) && 
+	!xf86CheckButton(device->button->map[button], is_down)) 
+    {
 	return;
     }
     

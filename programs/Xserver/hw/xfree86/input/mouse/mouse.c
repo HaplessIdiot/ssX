@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.31 2000/05/31 07:15:05 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.32 2000/06/17 00:27:33 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -1447,7 +1447,7 @@ MouseProc(DeviceIntPtr device, int what)
     InputInfoPtr pInfo;
     MouseDevPtr pMse;
     unsigned char map[MSE_MAXBUTTONS + 1];
-    int i;
+    int i, blocked;
 
     pInfo = device->public.devicePrivate;
     pMse = pInfo->private;
@@ -1513,9 +1513,10 @@ MouseProc(DeviceIntPtr device, int what)
 	 * send button up events for sanity. If no button down is pending
 	 * xf86PostButtonEvent() will discard them. So we are on the safe side.
 	 */
+	blocked = xf86BlockSIGIO ();
 	for (i = 1; i <= 5; i++)
 	    xf86PostButtonEvent(device,0,i,0,0,0);
-
+	xf86UnblockSIGIO (blocked);
 	break;
 	    
     case DEVICE_OFF:
