@@ -1,6 +1,6 @@
-/* $XTermId: xterm.h,v 1.278 2004/04/28 00:03:58 tom Exp $ */
+/* $XTermId: xterm.h,v 1.280 2004/05/09 19:43:04 tom Exp $ */
 
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.98 2004/04/18 20:49:43 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.99 2004/04/28 00:41:00 dickey Exp $ */
 
 /************************************************************
 
@@ -742,6 +742,10 @@ extern void timestamp_filename(char *dst, const char *src);
 extern void xevents (void);
 extern void xt_error (String message);
 extern void xtermSetenv (char *var, char *value);
+
+#if OPT_DABBREV
+extern void HandleDabbrevExpand      PROTO_XT_ACTIONS_ARGS;
+#endif
 
 #if OPT_MAXIMIZE
 extern int QueryMaximize (TScreen *screen, unsigned *width, unsigned *height);
