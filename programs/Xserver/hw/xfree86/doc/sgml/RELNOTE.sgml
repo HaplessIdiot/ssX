@@ -2,16 +2,16 @@
 
  <article>
 
- <title>Release Notes for XFree86&tm; 3.1.2A (beta version)
+ <title>Release Notes for XFree86&tm; 3.1.2B (beta version)
  <author>The XFree86 Project, Inc
- <date>19 November 1995
+ <date>16 December 1995
 
 
 <abstract>
 
 This document describes the rationale and conditions of this beta release,
-what is new in the XFree86 beta version 3.1.2A compared with the current
-release version 3.1.2, and how to install this beta release.
+what is new in the XFree86 beta versions 3.1.2B and 3.1.2A compared with
+the current release version 3.1.2, and how to install this beta release.
 
 </abstract>
 
@@ -31,7 +31,7 @@ url="mailto:XFree86@XFree86.org">.
 
 The X servers included in beta releases have a built-in expiry date.
 The reason for this is to try to prevent them from persisting beyond the
-date of the next release.  The expiry date for 3.1.2A is 1 February 1996.
+date of the next release.  The expiry date for 3.1.2B is 1 April 1996.
 
 The XFree86 binary beta releases may be freely redistributed providing that
 they are not modified in any way, and providing that an unmodified version
@@ -51,6 +51,49 @@ this file.  It is also installed in <tt>/usr/X11R6/lib/X11/doc/</tt>.
 Beta test reports should be sent to <htmlurl name="report@XFree86.org"
 url="mailto:report@XFree86.org">.  Please do not send these reports to
 our usual support address.
+
+<sect> New Features in 3.1.2B
+<sect1> General X server changes
+<p>
+<itemize>
+  <item>ADD SOMETHING HERE ??
+</itemize>
+<sect1> Trident driver (SVGA server)
+<p>
+<itemize>
+  <item>ADD SOMETHING HERE
+</itemize>
+<sect1> ARK driver (SVGA server)
+<p>
+<itemize>
+  <item>No changes -- say something about it the ics5342 not working.
+</itemize>
+<sect1> S3 server
+<p>
+<itemize>
+  <item>ADD SOMETHING HERE
+</itemize>
+<sect1> Mach64 server
+<p>
+<itemize>
+  <item>ADD SOMETHING HERE
+</itemize>
+<sect1> ET4000/W32 server
+<p>
+<itemize>
+  <item>ADD SOMETHING HERE
+</itemize>
+<sect1> SuperProbe
+<p>
+<itemize>
+  <item>ADD SOMETHING HERE
+</itemize>
+<sect1> Client/Library changes
+<p>
+<itemize>
+  <item>ADD SOMETHING HERE ??
+</itemize>
+<p>
 
 <sect> New Features in 3.1.2A
 <sect1> General X server changes
@@ -187,70 +230,75 @@ our usual support address.
 
 <sect>Installing an XFree86 Beta Release
 <p>
-The XFree86 3.1.2A binary beta release is distributed as a upgrade to
+The XFree86 3.1.2B binary beta release is distributed as a upgrade to
 3.1.2.  It consists of the following files:
 <!--
 <quote>
 <descrip>
 <tag/BetaReport/	Beta test report template form
-<tag/X312A8514.tgz/	8514/A server
-<tag/X312AAGX.tgz/	AGX server
-<tag/X312AMa32.tgz/	Mach 32 server
-<tag/X312AMa64.tgz/	Mach 64 server
-<tag/X312AMa8.tgz/	Mach 8 server
-<tag/X312AMono.tgz/	Mono server
-<tag/X312AP9K.tgz/	P9000 server
-<tag/X312ASVGA.tgz/	SVGA server
-<tag/X312AVG16.tgz/	16 colour VGA server
-<tag/X312AW32.tgz/	ET4000/W32 server
-<tag/X312Aupd.tgz/	clients/libraries that have changed since 3.1.2
-<tag/postinst.sh/	script to run after installing the 3.1.2A binaries
+<tag/X312B8514.tgz/	8514/A server
+<tag/X312BAGX.tgz/	AGX server
+<tag/X312BMa32.tgz/	Mach 32 server
+<tag/X312BMa64.tgz/	Mach 64 server
+<tag/X312BMa8.tgz/	Mach 8 server
+<tag/X312BMono.tgz/	Mono server
+<tag/X312BP9K.tgz/	P9000 server
+<tag/X312BSVGA.tgz/	SVGA server
+<tag/X312BVG16.tgz/	16 colour VGA server
+<tag/X312BW32.tgz/	ET4000/W32 server
+<tag/X312Bupd.tgz/	clients/libraries that have changed since 3.1.2
+<tag/postinst.sh/	script to run after installing the 3.1.2B binaries
 </descrip>
 </quote>
 -->
 <quote>
 <verb>
 BetaReport	   Beta test report template form
-X312A8514.tgz	   8514/A server
-X312AAGX.tgz	   AGX server
-X312AMa32.tgz	   Mach 32 server
-X312AMa64.tgz	   Mach 64 server
-X312AMa8.tgz	   Mach 8 server
-X312AMono.tgz	   Mono server
-X312AP9K.tgz	   P9000 server
-X312ASVGA.tgz	   SVGA server
-X312AVG16.tgz	   16 colour VGA server
-X312AW32.tgz	   ET4000/W32 server
-X312Aupd.tgz	   clients/libraries that have changed since 3.1.2
-postinst.sh	   script to run after installing the 3.1.2A binaries
+X312B8514.tgz	   8514/A server
+X312BAGX.tgz	   AGX server
+X312BMa32.tgz	   Mach 32 server
+X312BMa64.tgz	   Mach 64 server
+X312BMa8.tgz	   Mach 8 server
+X312BMono.tgz	   Mono server
+X312BP9K.tgz	   P9000 server
+X312BSVGA.tgz	   SVGA server
+X312BVG16.tgz	   16 colour VGA server
+X312BW32.tgz	   ET4000/W32 server
+X312Bupd.tgz	   clients/libraries that have changed since 3.1.2
+postinst.sh	   script to run after installing the 3.1.2B binaries
 </verb>
 </quote>
 
 If you don't already have XFree86 3.1.2 installed, first install that.
-Then, you will need to get at least one of the XFree86 3.1.2A X servers
-plus the update set (<tt/X312Aupd.tgz/), the post-install script, and
+If you have already installed 3.1.2A, that's fine.
+Then, you will need to get at least one of the XFree86 3.1.2B X servers
+plus the update set (<tt/X312Bupd.tgz/), the post-install script (make
+sure you have the correct version of this script -- check that the
+<tt>BETAVERSION</tt> matches the version you are installing), and
 the BetaReport file.  It is recommended that this release be
-installed in the directory <tt>/usr/XFree86-3.1.2A</tt>.  You will need
+installed in the directory <tt>/usr/XFree86-3.1.2B</tt>.  You will need
 to be `root' to do the installation.  The following example is for
 installing the S3 and Mono servers, and it assumes that the above files
 are located in <tt>/var/tmp</tt>:
 
 <tscreen><verb>
-	mkdir /usr/XFree86-3.1.2A
-	cd /usr/XFree86-3.1.2A
-	gzip -d < /var/tmp/X312AS3.tgz | tar vxf -
-	gzip -d < /var/tmp/X312AMono.tgz | tar vxf -
-	gzip -d < /var/tmp/X312Aupd.tgz | tar vxf -
+	mkdir /usr/XFree86-3.1.2B
+	cd /usr/XFree86-3.1.2B
+	gzip -d < /var/tmp/X312BS3.tgz | tar vxf -
+	gzip -d < /var/tmp/X312BMono.tgz | tar vxf -
+	gzip -d < /var/tmp/X312Bupd.tgz | tar vxf -
 	sh /var/tmp/postinst.sh
 </verb></tscreen>
 	
 The <tt>postinst.sh</tt> script makes a backup copy of the 3.1.2 versions
 you already had installed in /usr/X11R6.  It puts the backups into the
-/usr/XFree86-3.1.2 directory.  It then links the 3.1.2A versions into
-/usr/X11R6.
+/usr/XFree86-3.1.2 directory.  It then links the 3.1.2B versions into
+/usr/X11R6.  If you had installed 3.1.2A previously according to the
+instructions, the files for that version will still be in the
+/usr/XFree86-3.1.2A directory.
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.5 1995/11/19 02:18:15 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.6 1995/11/30 13:04:42 dawes Exp $
 </verb>
 
 </article>

@@ -1,7 +1,5 @@
-/* $XConsortium: bank.s,v 1.2 94/03/29 11:03:31 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/bank.s,v 3.1 1995/03/11 14:50:27 dawes Exp $ */
 /*
- * Copyright 1992 by Alan Hourihane, Wigan, England.
+ * Copyright 1995 by Alan Hourihane, Wigan, England.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,15 +19,10 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  *
- * Author:  Alan Hourihane, alanh@logitek.co.uk, version 0.1beta
- *
- *	    David Wexelblat, dwex@goblin.org, version 0.2beta
- *		(dual banks)
- *	    David Wexelblat, version 0.3beta (back to 1 bank)
- *
- * 	    Alan Hourihane, version 1.0 (dual banks / single banks)
+ * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
 
+/* $XFree86$ */
 
 /*
  * These are here the very lowlevel VGA bankswitching routines.
@@ -39,7 +32,7 @@
 
 #include "assyntax.h"
 
-	FILE("tvga8900bank.s")
+	FILE("sisbank.s")
 	AS_BEGIN
 
 	SEG_DATA
@@ -47,37 +40,24 @@
 	SEG_TEXT
 
 	ALIGNTEXT4
-	GLOBL GLNAME(TVGA8900SetReadWrite)
-	GLOBL GLNAME(TVGA8900SetRead)
-	GLOBL GLNAME(TVGA8900SetWrite)
-GLNAME(TVGA8900SetReadWrite):
-GLNAME(TVGA8900SetRead):
-GLNAME(TVGA8900SetWrite):
-	MOV_B	(AL,AH)
-	MOV_B	(CONST(0x0E),AL)
-	XOR_B	(CONST(0x02),AH)
-	MOV_L	(CONST(0x3C4),EDX)
-	OUT_W
-	RET
-
-	ALIGNTEXT4
-	GLOBL GLNAME(TGUISetReadWrite)
-GLNAME(TGUISetReadWrite):
-	MOV_B	(AL,AH)
-	MOV_L	(CONST(0x3D8),EDX)
-	OUT_W
-	RET
-
-	ALIGNTEXT4
-GLNAME(TGUISetRead):
-	GLOBL GLNAME(TGUISetRead)
-	MOV_L	(CONST(0x3D9),EDX)
+	GLOBL GLNAME(SISSetReadWrite)
+GLNAME(SISSetReadWrite):
+	MOV_L	(CONST(0x3CB),EDX)
+	OUT_B
+	MOV_L	(CONST(0x3CD),EDX)
 	OUT_B
 	RET
 
 	ALIGNTEXT4
-GLNAME(TGUISetWrite):
-	GLOBL GLNAME(TGUISetWrite)
-	MOV_L	(CONST(0x3D8),EDX)
+	GLOBL GLNAME(SISSetRead)
+GLNAME(SISSetRead):
+	MOV_L	(CONST(0x3CB),EDX)
+	OUT_B
+	RET
+	
+	ALIGNTEXT4
+	GLOBL GLNAME(SISSetWrite)
+GLNAME(SISSetWrite):
+	MOV_L	(CONST(0x3CD),EDX)
 	OUT_B
 	RET

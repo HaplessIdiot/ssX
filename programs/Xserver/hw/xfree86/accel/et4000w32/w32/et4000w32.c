@@ -1,6 +1,6 @@
 /* $XConsortium: et4000w32.c,v 1.4 95/01/16 13:16:26 kaleb Exp $ */
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.13 1995/10/21 11:33:49 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.14 1995/12/09 11:07:01 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -255,6 +255,8 @@ ET4000W32Probe()
     OFLG_SET(OPTION_HIBIT_LOW, &ET4000W32.ChipOptionFlags);
     OFLG_SET(OPTION_PCI_BURST_ON, &ET4000W32.ChipOptionFlags);
     OFLG_SET(OPTION_PCI_BURST_OFF, &ET4000W32.ChipOptionFlags);
+    OFLG_SET(OPTION_W32_INTERLEAVE_ON, &ET4000W32.ChipOptionFlags);
+    OFLG_SET(OPTION_W32_INTERLEAVE_OFF, &ET4000W32.ChipOptionFlags);
 #ifndef MONOVGA
     OFLG_SET(OPTION_FAST_DRAM, &ET4000W32.ChipOptionFlags);
 #endif

@@ -1,5 +1,5 @@
 /* $XConsortium: mach64curs.c,v 1.2 95/01/12 20:21:21 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64curs.c,v 3.6 1995/11/12 09:51:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64curs.c,v 3.7 1995/12/07 07:24:22 dawes Exp $ */
 /*
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
@@ -67,7 +67,7 @@ static int xhot, yhot;
 static int mach64CursGeneration = -1;
 static CursorPtr mach64SaveCursors[MAXSCREENS];
 static int mach64CursYExtra;
-static int mach64CursLastEnabled;
+static int mach64CursLastEnabled = -1;
 
 static miPointerSpriteFuncRec mach64PointerSpriteFuncs = {
   mach64RealizeCursor,
@@ -164,10 +164,13 @@ mach64CursorInit(pm, pScr)
       mach64CursGeneration = serverGeneration;
   }
 
-  mach64CursorOffset = mach64InfoRec.videoRam * 1024;
-  mach64CursorMemory = (unsigned char *)mach64VideoMem + mach64CursorOffset;
+  if (mach64RamdacSubType != DAC_IBMRGB514) {
+      mach64CursorOffset = mach64InfoRec.videoRam * 1024;
+      mach64CursorMemory = (unsigned char *)mach64VideoMem +
+	  mach64CursorOffset;
+  }
 
-  mach64CursLastEnabled = 0;
+  mach64CursLastEnabled = FALSE;
   return TRUE;
 }
 
@@ -247,6 +250,8 @@ mach64LoadCursor(pScr, pCurs, x, y)
 {
   int  index = pScr->myNum;
   Mach64CursPriv *cursPriv;
+  unsigned char *data;
+  int i;
 
   if (!xf86VTSema)
       return;
@@ -255,7 +260,12 @@ mach64LoadCursor(pScr, pCurs, x, y)
       return;
 
   cursPriv = (Mach64CursPriv *)pCurs->bits->devPriv[index];
-  MemToBus(mach64CursorMemory, cursPriv->data, MACH64_CURSBYTES);
+  data = (unsigned char *)cursPriv->data;
+  if (mach64RamdacSubType == DAC_IBMRGB514)
+      for (i = 0; i < 1024; i++)
+	  mach64P_RGB514Index(0x100 + i, data[i]);
+  else
+      MemToBus(mach64CursorMemory, cursPriv->data, MACH64_CURSBYTES);
   mach64CursYExtra = cursPriv->yExtra;
 
   mach64MoveCursor(0, x, y);
@@ -288,7 +298,7 @@ mach64RepositionCursor(pScr)
     
     if(pScr && mach64SaveCursors[pScr->myNum]) {
 	miPointerPosition(&x, &y);
-	mach64CursLastEnabled = 0;
+	mach64CursLastEnabled = FALSE;
 	mach64MoveCursor(pScr, x, y);
     }
 }
@@ -315,6 +325,34 @@ mach64MoveCursor(pScr, x, y)
 
     if (!xf86VTSema)
 	return;
+
+    if (mach64RamdacSubType == DAC_IBMRGB514)
+    {
+	x -= mach64InfoRec.frameX0;
+	y -= mach64InfoRec.frameY0;
+
+	if (x <= mach64InfoRec.frameX1 - mach64InfoRec.frameX0 &&
+	    y <= mach64InfoRec.frameY1 - mach64InfoRec.frameY0)
+	{
+	    mach64P_RGB514Index(0x31, x & 0xff);
+	    mach64P_RGB514Index(0x32, x >> 8);
+	    mach64P_RGB514Index(0x33, y & 0xff);
+	    mach64P_RGB514Index(0x34, y >> 8);
+	    mach64P_RGB514Index(0x35, xhot);
+	    mach64P_RGB514Index(0x36, yhot);
+	    if (!mach64CursLastEnabled)
+		mach64P_RGB514Index(0x30, 0x06);
+	    mach64CursLastEnabled = TRUE;
+	}
+	else if (mach64CursLastEnabled)
+	{
+	    mach64P_RGB514Index(0x30, 0x00);
+	    mach64CursLastEnabled = FALSE;
+	}
+
+	WaitIdleEmpty();
+	return;
+    }
 
     x -= xhot + (mach64InfoRec.frameX0 & ~0x07);
     y -= yhot + mach64InfoRec.frameY0;
@@ -459,6 +497,14 @@ mach64RecolorCursor(pScr, pCurs, displayed)
 
 	/* Return DAC register set to palette registers */
 	outb(ioDAC_CNTL, 0);
+    } else if (mach64Ramdac == DAC_IBMRGB514) {
+	mach64P_RGB514Index(0x40, maskColor.red);
+	mach64P_RGB514Index(0x41, maskColor.green);
+	mach64P_RGB514Index(0x42, maskColor.blue);
+
+	mach64P_RGB514Index(0x43, sourceColor.red);
+	mach64P_RGB514Index(0x44, sourceColor.green);
+	mach64P_RGB514Index(0x45, sourceColor.blue);
     } else {
 	regw(CUR_CLR0, ((maskColor.red << 24) | (maskColor.green << 16) |
 			(maskColor.blue << 8) | maskColor.pixel));
@@ -517,9 +563,14 @@ mach64QueryBestSize(class, pwidth, pheight, pScr)
 void
 mach64CursorOff()
 {
-    WaitIdleEmpty();
-    regw(GEN_TEST_CNTL, regr(GEN_TEST_CNTL) & (~HWCURSOR_ENABLE));
-    mach64CursLastEnabled = 0;
+    if (mach64CursLastEnabled != -1) {
+	WaitIdleEmpty();
+	if (mach64RamdacSubType == DAC_IBMRGB514)
+	    mach64P_RGB514Index(0x30, 0x00);
+	else
+	    regw(GEN_TEST_CNTL, regr(GEN_TEST_CNTL) & (~HWCURSOR_ENABLE));
+	mach64CursLastEnabled = FALSE;
+    }
 }
 
 void

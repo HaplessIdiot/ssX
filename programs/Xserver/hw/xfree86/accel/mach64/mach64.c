@@ -1,5 +1,5 @@
 /* $XConsortium: mach64.c,v 1.4 95/01/23 15:33:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.26 1995/12/07 07:24:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.27 1995/12/09 11:07:20 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -184,7 +184,7 @@ static unsigned Mach64_IOPorts[] = {
         0x3B4, 0x3B5, 0x3BA, 0x3C0, 0x3C1, 0x3C2, 0x3C4, 0x3C5, 0x3C6, 0x3C7, 
 	0x3C8, 0x3C9, 0x3CA, 0x3CB, 0x3CC, 0x3CE, 0x3CF, 0x3D4, 0x3D5, 0x3DA,
 	/* ATI VGA Registers */
-	ATIEXT, ATIEXT+1,
+	sioATIEXT, sioATIEXT+1,
 	/* Mach64 Registers */
 	0x400,	/* This is enough to ensure access to all registers */
 };
@@ -208,6 +208,7 @@ unsigned ioDAC_CNTL;
 unsigned ioGEN_TEST_CNTL;
 unsigned ioCLOCK_CNTL;   
 unsigned ioCRTC_GEN_CNTL;
+unsigned ATIExtReg;
 
 /*
  * ATI Hardware Probe
@@ -237,6 +238,8 @@ typedef struct ATIInformationBlock {
    int  RefFreq;
    int  RefDivider;
    int  NAdj;
+   int  VRAMMemClk;
+   int  MemClk;
    int  CXClk;
    int  ChipType;
    int  ChipRev;
@@ -252,7 +255,7 @@ typedef struct ATIPCIInformation {
    
 SymTabRec mach64RamdacTableNames[] = {
     { DAC_INTERNAL, "internal" },
-    { DAC_IBM514, "ibm514" },
+    { DAC_IBMRGB514, "ibm_rgb514" },
     { DAC_ATI68875, "ati68875" },
     { DAC_ATI68875, "tlc34075" },
     { DAC_TVP3026_A, "tvp3026" },
@@ -281,7 +284,7 @@ SymTabRec mach64RamdacTableNames[] = {
 
 SymTabRec mach64RamdacTable[] = {
     { DAC_INTERNAL, "Internal" },
-    { DAC_IBM514, "IBM514" },
+    { DAC_IBMRGB514, "IBM-RGB514" },
     { DAC_ATI68875, "ATI-68875/TLC34075" },
     { DAC_TVP3026_A, "TVP3026" },
     { DAC_BT476, "Bt476/Bt478/INMOS176/INMOS178" },
@@ -319,7 +322,7 @@ char *mach64ClockTypeTable[] = {
     "CH8398",
     "ATI-Mach64CT",
     "AT&T20C408",
-    "IBM514",
+    "IBM-RGB514",
   };  
 
 #define NUM_CLOCK_TYPES (sizeof(mach64ClockTypeTable) / sizeof(char *))
@@ -329,6 +332,7 @@ int	mach64RamdacSubType;
 int	mach64BusType;
 int	mach64MemType;
 int	mach64ChipType;
+int	mach64ChipRev;
 int	mach64ClockType;
 int	mach64Clocks[MACH64_NUM_CLOCKS];
 mach64FreqRec mach64FreqTable[MACH64_NUM_FREQS];
@@ -339,6 +343,8 @@ int	mach64RefFreq;
 int	mach64RefDivider;
 int	mach64NAdj;
 int	mach64CXClk;
+int	mach64MemClk;
+int	mach64VRAMMemClk;
 
 
 static ATIInformationBlock *GetATIInformationBlock()
@@ -427,7 +433,6 @@ static ATIInformationBlock *GetATIInformationBlock()
 	info.Mem_Type = (tmp & CFG_MEM_TYPE) >> 3;
 	info.DAC_Type = (tmp & CFG_INIT_DAC_TYPE) >> 9;
 	info.DAC_SubType = inb(ioSCRATCH_REG1+1) & 0xf0 | info.DAC_Type;
-
    } else {
 	info.Mem_Type = tmp & CFG_MEM_TYPE_CT;
 	info.DAC_Type = DAC_INTERNAL;
@@ -470,6 +475,8 @@ static ATIInformationBlock *GetATIInformationBlock()
    info.RefFreq = sbios_data[(Freq_Table_Ptr >> 1) + 4];
    info.RefDivider = sbios_data[(Freq_Table_Ptr >> 1) + 5];
    info.NAdj = sbios_data[(Freq_Table_Ptr >> 1) + 6];
+   info.VRAMMemClk = sbios_data[(Freq_Table_Ptr >> 1) + 9];
+   info.MemClk = bios_data[Freq_Table_Ptr + 22];
    info.CXClk = bios_data[Freq_Table_Ptr + 6];
 
    CDepth_Table_Ptr = sbios_data[(Freq_Table_Ptr >> 1) - 3];
@@ -630,7 +637,7 @@ InitIOAddresses(base, block)
 	ioCONFIG_CHIP_ID = base + CONFIG_CHIP_ID;
 	ioCONFIG_CNTL    = base + CONFIG_CNTL;
 	ioSCRATCH_REG0   = base + SCRATCH_REG0;
-	ioSCRATCH_REG0   = base + SCRATCH_REG0;
+	ioSCRATCH_REG1   = base + SCRATCH_REG1;
 	ioCONFIG_STAT0   = base + CONFIG_STAT0;
 	ioMEM_CNTL       = base + MEM_CNTL;
 	ioDAC_REGS       = base + DAC_REGS;
@@ -638,11 +645,12 @@ InitIOAddresses(base, block)
 	ioGEN_TEST_CNTL  = base + GEN_TEST_CNTL;
 	ioCLOCK_CNTL     = base + CLOCK_CNTL;
 	ioCRTC_GEN_CNTL  = base + CRTC_GEN_CNTL;
+	ATIExtReg        = bioATIEXT;
     } else {
 	ioCONFIG_CHIP_ID = base + (sioCONFIG_CHIP_ID << 10);
 	ioCONFIG_CNTL    = base + (sioCONFIG_CNTL << 10);
 	ioSCRATCH_REG0   = base + (sioSCRATCH_REG0 << 10);
-	ioSCRATCH_REG0   = base + (sioSCRATCH_REG0 << 10);
+	ioSCRATCH_REG1   = base + (sioSCRATCH_REG1 << 10);
 	ioCONFIG_STAT0   = base + (sioCONFIG_STAT0 << 10);
 	ioMEM_CNTL       = base + (sioMEM_CNTL << 10);
 	ioDAC_REGS       = base + (sioDAC_REGS << 10);
@@ -650,6 +658,7 @@ InitIOAddresses(base, block)
 	ioGEN_TEST_CNTL  = base + (sioGEN_TEST_CNTL << 10);
 	ioCLOCK_CNTL     = base + (sioCLOCK_CNTL << 10);
 	ioCRTC_GEN_CNTL  = base + (sioCRTC_GEN_CNTL << 10);
+	ATIExtReg        = sioATIEXT;
     }
 }
 
@@ -669,6 +678,7 @@ mach64Probe()
     OFlagSet              validOptions;
     int                   tx, ty;
     Bool                  clock_type_probed = TRUE;
+    int                   new = -1;
 
     /* Do the general PCI probe first */
     pciInfo = GetATIPCIInformation();
@@ -700,6 +710,24 @@ mach64Probe()
 	mach64ChipType = info->ChipType;
     }
 
+    if (pciInfo) {
+	if (pciInfo->ChipRev != info->ChipRev) {
+	    ErrorF("PCI and CHIP_CONFIG don't agree on ChipRev, using PCI"
+		   " value\n");
+	}
+	mach64ChipRev = pciInfo->ChipRev;
+    } else {
+	mach64ChipRev = info->ChipRev;
+    }
+
+    if (!pciInfo) {
+	ErrorF("%s %s: %s rev %d, Aperture @ 0x%08x,"
+		" %s I/O @ 0x%04x\n", XCONFIG_PROBED, mach64InfoRec.name,
+		xf86TokenToString(mach64ChipTable, mach64ChipType),
+		mach64ChipRev, (inw(ioCONFIG_CNTL) & 0x3FF0) << 18,
+		"Sparse", 0x2EC);
+    }
+
 #ifdef DEBUG
     if (mach64ChipType == MACH64_CT || mach64ChipType == MACH64_ET)
 	mach64PrintCTPLL();
@@ -717,9 +745,19 @@ mach64Probe()
 
     /* Check for known contradictions */
     if (info->Clock_Type == CLK_CH8398 && info->DAC_SubType != DAC_CH8398)
-	info->DAC_SubType = DAC_CH8398;
-    if (info->Clock_Type != CLK_IBM514 && info->DAC_SubType == DAC_IBM514)
-	info->Clock_Type = CLK_IBM514;
+	new = DAC_CH8398;
+    if (info->Clock_Type == CLK_STG1703 && info->DAC_SubType != DAC_STG1703)
+	new = DAC_STG1703;
+    if (info->Clock_Type == CLK_ATT20C408 && info->DAC_SubType != DAC_ATT20C408)
+	new = DAC_ATT20C408;
+    if (new >= 0) {
+	ErrorF("%s %s: Autodetected RAMDAC %s contradicts the Clock type\n",
+	       XCONFIG_PROBED, mach64InfoRec.name,
+	       xf86TokenToString(mach64RamdacTable, info->DAC_SubType));
+	ErrorF("\tSetting probed RAMDAC to %s\n",
+	       xf86TokenToString(mach64RamdacTable, new));
+	info->DAC_SubType = new;
+    }
 
     switch (info->DAC_SubType) {
     case DAC_ATI68860:
@@ -730,6 +768,7 @@ mach64Probe()
     case DAC_STG1703:
     case DAC_ATT20C408:
     case DAC_INTERNAL:
+    case DAC_IBMRGB514:
 	break;
     default:
 	if (xf86bpp != 8) {
@@ -820,17 +859,22 @@ mach64Probe()
 	else
 	    mach64InfoRec.maxClock = 80000;
 	break;
+    case DAC_IBMRGB514:
+	mach64InfoRec.maxClock = 220000;
+	break;
     default:
 	mach64InfoRec.maxClock = mach64MaxClock;
 	break;
     }
 
     OFLG_ZERO(&validOptions);
+    OFLG_SET(OPTION_HW_CURSOR, &validOptions);
     OFLG_SET(OPTION_SW_CURSOR, &validOptions);
     OFLG_SET(OPTION_CSYNC, &validOptions);
     if (info->DAC_SubType != DAC_CH8398) {
 	OFLG_SET(OPTION_DAC_8_BIT, &validOptions);
     }
+    OFLG_SET(OPTION_DAC_6_BIT, &validOptions);
     OFLG_SET(OPTION_OVERRIDE_BIOS, &validOptions);
     OFLG_SET(OPTION_NO_BLOCK_WRITE, &validOptions);
     OFLG_SET(OPTION_BLOCK_WRITE, &validOptions);
@@ -873,15 +917,33 @@ mach64Probe()
 	}
     }
 
+    if (mach64InfoRec.ramdac) {
+	mach64RamdacSubType =
+	    xf86StringToToken(mach64RamdacTableNames, mach64InfoRec.ramdac);
+	mach64Ramdac = mach64RamdacSubType & 0x0f;
+	if (mach64RamdacSubType < 0) {
+	    ErrorF("%s %s: Unknown RAMDAC type \"%s\"\n", XCONFIG_GIVEN,
+		   mach64InfoRec.name, mach64InfoRec.ramdac);
+	    xf86DisableIOPorts(mach64InfoRec.scrnIndex);
+	    return(FALSE);
+	}
+    } else {
+	mach64Ramdac = info->DAC_Type;
+	mach64RamdacSubType = info->DAC_SubType;
+    }
+
     mach64MemType = info->Mem_Type;
-    mach64Ramdac = info->DAC_Type;
-    mach64RamdacSubType = info->DAC_SubType;
     mach64MinFreq = info->MinFreq;
     mach64MaxFreq = info->MaxFreq;
     mach64RefFreq = info->RefFreq;
     mach64RefDivider = info->RefDivider;
     mach64NAdj = info->NAdj;
-    mach64CXClk = info->CXClk;
+    mach64VRAMMemClk = info->VRAMMemClk;
+    mach64MemClk = info->MemClk;
+    if (mach64RamdacSubType == DAC_IBMRGB514)
+	mach64CXClk = 7;  /* Use IBM RGB514 PLL */
+    else
+	mach64CXClk = info->CXClk;
 
 #ifdef DEBUG
     ErrorF("MinFreq = %d, MaxFreq = %d, RefFreq = %d, RefDivider = %d\n",
@@ -896,18 +958,6 @@ mach64Probe()
 	mach64FreqTable[i] = info->Freq_Table[i];
     for (i = 0; i < MACH64_NUM_FREQS; i++)
 	mach64FreqTable2[i] = info->Freq_Table2[i];
-
-    if (mach64InfoRec.ramdac) {
-	mach64RamdacSubType =
-	    xf86StringToToken(mach64RamdacTableNames, mach64InfoRec.ramdac);
-	mach64Ramdac = mach64RamdacSubType & 0x0f;
-	if (mach64RamdacSubType < 0) {
-	    ErrorF("%s %s: Unknown RAMDAC type \"%s\"\n", XCONFIG_GIVEN,
-		   mach64InfoRec.name, mach64InfoRec.ramdac);
-	    xf86DisableIOPorts(mach64InfoRec.scrnIndex);
-	    return(FALSE);
-	}
-    }
 
     if (OFLG_ISSET(OPTION_NO_PROGRAM_CLOCKS, &mach64InfoRec.options)) {
 	if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &mach64InfoRec.clockOptions)) {
@@ -947,6 +997,8 @@ mach64Probe()
 	    mach64ClockType = CLK_CH8398;
 	else if (OFLG_ISSET(CLOCK_OPTION_ATT409, &mach64InfoRec.clockOptions))
 	    mach64ClockType = CLK_ATT20C408;
+	else if (OFLG_ISSET(CLOCK_OPTION_IBMRGB, &mach64InfoRec.clockOptions))
+	    mach64ClockType = CLK_IBMRGB514;
 	else {
 	    ErrorF("Unrecognized clock chip type\n");
 	    xf86DisableIOPorts(mach64InfoRec.scrnIndex);
@@ -962,7 +1014,9 @@ mach64Probe()
 	       (clock_type_probed ? XCONFIG_PROBED : XCONFIG_GIVEN),
 	       mach64InfoRec.name,
 	       (mach64ClockType < NUM_CLOCK_TYPES ?
-		mach64ClockTypeTable[mach64ClockType] : "Unknown"));
+		(mach64RamdacSubType == DAC_IBMRGB514 ?
+		 mach64ClockTypeTable[CLK_IBMRGB514] :
+		 mach64ClockTypeTable[mach64ClockType]) : "Unknown"));
 	if (!OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &mach64InfoRec.clockOptions) ||
 	    OFLG_ISSET(OPTION_NO_PROGRAM_CLOCKS, &mach64InfoRec.options)) {
 	    ErrorF("%s ",(OFLG_ISSET(XCONFIG_CLOCKS,&mach64InfoRec.xconfigFlag) &&
@@ -1140,13 +1194,27 @@ mach64Probe()
     available_ram = mach64InfoRec.videoRam * 1024;
 
     sw_cursor_supplied = OFLG_ISSET(OPTION_SW_CURSOR, &mach64InfoRec.options);
+    if (sw_cursor_supplied &&
+	OFLG_ISSET(OPTION_HW_CURSOR, &mach64InfoRec.options)) {
+	ErrorF("Cannot use hardware and software cursors simultaneously.\n");
+	xf86DisableIOPorts(mach64InfoRec.scrnIndex);
+	return(FALSE);
+    }
 
-    if (!sw_cursor_supplied) 
+    if (!sw_cursor_supplied && mach64RamdacSubType != DAC_IBMRGB514)
     {
 	if (available_ram - (mach64VirtX * mach64VirtY) >= MACH64_CURSBYTES)
 	{
 	    available_ram -= (MACH64_CURSBYTES + 1023) & ~1023;
 	    mach64InfoRec.videoRam -= (MACH64_CURSBYTES + 1023) / 1024;
+	}
+	else if (OFLG_ISSET(OPTION_HW_CURSOR, &mach64InfoRec.options))
+	{
+	    ErrorF("Not enough memory to use the hardware cursor.\n");
+	    ErrorF("  Decreasing the virtual Y resolution by 1 will allow\n");
+	    ErrorF("  you to use the hardware cursor.\n");
+	    xf86DisableIOPorts(mach64InfoRec.scrnIndex);
+	    return(FALSE);
 	}
 	else
 	{
@@ -1156,8 +1224,10 @@ mach64Probe()
 	    ErrorF("  you to use the hardware cursor.\n");
 	}
     }
-    ErrorF("%s %s: Using %s cursor\n", sw_cursor_supplied ? XCONFIG_GIVEN :
-	   XCONFIG_PROBED, mach64InfoRec.name,
+    ErrorF("%s %s: Using %s cursor\n", 
+	   (sw_cursor_supplied ||
+	    OFLG_ISSET(OPTION_HW_CURSOR, &mach64InfoRec.options))
+	   ? XCONFIG_GIVEN : XCONFIG_PROBED, mach64InfoRec.name,
 	   OFLG_ISSET(OPTION_SW_CURSOR, &mach64InfoRec.options) ?
 	   "software" : "hardware");
 
@@ -1180,7 +1250,7 @@ mach64Probe()
 	    if (pciInfo && pciInfo->ApertureBase)
 		mach64ApertureAddr = pciInfo->ApertureBase;
 	    else
-		mach64ApertureAddr = inw(ioCONFIG_CNTL) & 0x3FF0 << 22;
+		mach64ApertureAddr = (inw(ioCONFIG_CNTL) & 0x3FF0) << 18;
 	}
 	/* Last-resort defaults */
 	if (mach64ApertureAddr == 0) {
@@ -1190,13 +1260,12 @@ mach64Probe()
 		mach64ApertureAddr = 0x04000000;  /* for VLB */
 	}
 
-	if (mach64MemorySize <= MEM_SIZE_4M &&
-	    (mach64ChipType == MACH64_GX || mach64ChipType == MACH64_CX ||
-	      mach64BusType != PCI)) {
+	if (mach64BusType == ISA) {
 	    mach64ApertureSize = MEM_SIZE_4M;
-	    if (xf86Verbose)
+	    if (xf86Verbose) {
 	        ErrorF("%s %s: Using 4 MB aperture @ 0x%08x\n", XCONFIG_PROBED,
 		       mach64InfoRec.name, mach64ApertureAddr);
+	    }
 	} else {
 	    mach64ApertureSize = MEM_SIZE_8M;
 	    if (xf86Verbose) {
@@ -1229,16 +1298,17 @@ mach64Probe()
 	}
     }
 
-    mach64DAC8Bit = (OFLG_ISSET(OPTION_DAC_8_BIT, &mach64InfoRec.options) &&
-		     (mach64InfoRec.bitsPerPixel == 8) &&
-		     (mach64RamdacSubType != DAC_CH8398))
-		    || (mach64InfoRec.bitsPerPixel == 16)
-		    || (mach64InfoRec.bitsPerPixel == 32);
+    mach64DAC8Bit = ((!OFLG_ISSET(OPTION_DAC_6_BIT, &mach64InfoRec.options) &&
+		      (mach64InfoRec.bitsPerPixel == 8) &&
+		      (mach64RamdacSubType != DAC_CH8398)) ||
+		     (mach64InfoRec.bitsPerPixel == 16) ||
+		     (mach64InfoRec.bitsPerPixel == 32));
 
     if (xf86Verbose) {
 	if (mach64InfoRec.bitsPerPixel == 8) {
 	    ErrorF("%s %s: Using %d bits per RGB value\n",
-	           (info->DAC_Type == DAC_ATI68860)
+		   (OFLG_ISSET(OPTION_DAC_6_BIT, &mach64InfoRec.options) ||
+		    OFLG_ISSET(OPTION_DAC_8_BIT, &mach64InfoRec.options))
 	           ? XCONFIG_GIVEN : XCONFIG_PROBED,
 	           mach64InfoRec.name,
 	           mach64DAC8Bit ?  8 : 6);
@@ -1428,7 +1498,8 @@ mach64EnterLeaveVT(enter, screen_idx)
 	    mach64CacheInit(mach64VirtX, mach64VirtY);
 	    mach64FontCache8Init(mach64VirtX, mach64VirtY);
 
-	    mach64RestoreCursor(pScreen);
+	    if (!OFLG_ISSET(OPTION_SW_CURSOR, &mach64InfoRec.options))
+		mach64RestoreCursor(pScreen);
 	    mach64AdjustFrame(pScr->frameX0, pScr->frameY0);
 
 	    WaitIdleEmpty(); /* Make sure that all commands have finished */
@@ -1508,7 +1579,8 @@ mach64EnterLeaveVT(enter, screen_idx)
             }
 	}
 
-	mach64CursorOff();
+	if (!OFLG_ISSET(OPTION_SW_CURSOR, &mach64InfoRec.options))
+	    mach64CursorOff();
 	mach64SaveLUT(mach64savedLUT);
 	LUTissaved = TRUE;
 	if (!xf86Resetting) {
@@ -1548,7 +1620,8 @@ mach64CloseScreen(screen_idx, pScreen)
 	    (savepScreen->DestroyPixmap)(ppix);
 	    ppix = NULL;
     }
-    mach64ClearSavedCursor(screen_idx);
+    if (!OFLG_ISSET(OPTION_SW_CURSOR, &mach64InfoRec.options))
+	mach64ClearSavedCursor(screen_idx);
 
     switch (mach64InfoRec.bitsPerPixel) {
     case 8:
@@ -1676,12 +1749,16 @@ mach64SaveScreen (pScreen, on)
 	}
 
 	if (on) {
-	    if (mach64HWCursorSave != -1) {
-		mach64SetRamdac(mach64CRTCRegs.color_depth, TRUE,
-				mach64CRTCRegs.dot_clock);
-		regwb(GEN_TEST_CNTL, mach64HWCursorSave);
-		mach64HWCursorSave = -1;
-	    }
+	    mach64SetRamdac(mach64CRTCRegs.color_depth, TRUE,
+			    mach64CRTCRegs.dot_clock);
+	    if (!OFLG_ISSET(OPTION_SW_CURSOR, &mach64InfoRec.options))
+		if (mach64HWCursorSave != -1) {
+		    if (mach64RamdacSubType == DAC_IBMRGB514)
+			mach64P_RGB514Index(0x30, mach64HWCursorSave);
+		    else
+			regwb(GEN_TEST_CNTL, mach64HWCursorSave);
+		    mach64HWCursorSave = -1;
+		}
 	    mach64RestoreColor0(pScreen);
 	    if (mach64RamdacSubType != DAC_ATI68875)
 		outb(ioDAC_REGS+2, 0xff);
@@ -1694,8 +1771,16 @@ mach64SaveScreen (pScreen, on)
 
 	    mach64SetRamdac(CRTC_PIX_WIDTH_8BPP, TRUE,
 			    mach64CRTCRegs.dot_clock);
-	    mach64HWCursorSave = regrb(GEN_TEST_CNTL);
-	    regwb(GEN_TEST_CNTL, mach64HWCursorSave & ~HWCURSOR_ENABLE);
+	    if (!OFLG_ISSET(OPTION_SW_CURSOR, &mach64InfoRec.options)) {
+		if (mach64RamdacSubType == DAC_IBMRGB514) {
+		    mach64HWCursorSave = mach64R_RGB514Index(0x30);
+		    mach64P_RGB514Index(0x30, 0x00);
+		} else {
+		    mach64HWCursorSave = regrb(GEN_TEST_CNTL);
+		    regwb(GEN_TEST_CNTL,
+			  mach64HWCursorSave & ~HWCURSOR_ENABLE);
+		}
+	    }
 
 	    if (mach64RamdacSubType != DAC_ATI68875)
 		outb(ioDAC_REGS+2, 0x00);
@@ -1734,11 +1819,14 @@ mach64AdjustFrame(x, y)
 {
     int byte_offset = ((x + y*mach64VirtX) *
                         (mach64InfoRec.bitsPerPixel / 8)) >> 3;
-    mach64CursorOff();
+
+    if (!OFLG_ISSET(OPTION_SW_CURSOR, &mach64InfoRec.options))
+	mach64CursorOff();
 
     regw(CRTC_OFF_PITCH, (regr(CRTC_OFF_PITCH) & 0xfff00000) | byte_offset);
 
-    mach64RepositionCursor(savepScreen);
+    if (!OFLG_ISSET(OPTION_SW_CURSOR, &mach64InfoRec.options))
+	mach64RepositionCursor(savepScreen);
 }
 
 /*

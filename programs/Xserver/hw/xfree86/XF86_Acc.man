@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_Acc.man,v 1.8 95/01/23 15:33:27 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.40 1995/12/02 05:03:54 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.41 1995/12/09 11:06:21 dawes Exp $
 .TH XF86_Accel 1 "Version 3.1.2"  "XFree86"
 .SH NAME
 XF86_Accel - accelerated X Window System servers for
@@ -287,8 +287,8 @@ XF86Config file are ignored unless the "no_bios_clocks" option is given
 .B ClockChip \fI"clockchip-type"\fP
 For boards with programmable clock chips (except with the 
 P9000 and AGX servers), the name of the clock chip is given.  
-The only supported value for the W32 server
-is \fB"ics5341"\fP.
+The only supported values for the W32 server
+are \fB"ics5341"\fP and \fB"stg1703"\fP.
 Possible values for the S3 server
 include \fB"icd2061a"\fP, \fB"ics9161a"\fP, \fB"dcs2834"\fP, \fB"sc11412"\fP,
 \fB"s3gendac"\fP, \fB"s3_sdac"\fP, \fB"ti3025"\fP, \fB"ti3026"\fP,
@@ -365,7 +365,8 @@ This must be specified if the server fails to detect it.
 if the server fails to detect it.
 .sp
 \fBstg1703\fP - (S3,W32) Card has an STG1703 RAMDAC.  This must be specified
-if the server fails to detect it.
+if the server fails to detect it. Using the W32 server you MUST explicitly 
+set the STG1703 as ClockChip to be able to use the programming capabilities.
 .sp
 \fBs3gendac\fP - (S3) Card has an S3 86C708 GENDAC.
 This RAMDAC does not support 8 bit per RGB mode (don't specify
@@ -624,6 +625,13 @@ behind with burst disabled.
 \fBpci_burst_off\fP - (W32) Turns off the PCI burst for the W32p chipset.
 Use this if your picture looks distorted and your mouse leaves trails
 behind with burst enabled.
+.sp
+\fBw32_interleave_on\fP - (W32) Turns on the memory interleave for the 
+W32i and W32p chipset.  Try this if your server runs stable with it.
+.sp
+\fBw32_interleave_off\fP - (W32) Turns off the memory interleave for the
+W32i and W32p chipset.  Try this if your picture looks distorted or you
+don't get a picture at all.
 .sp
 \fBno_block_write\fP - (Mach64) Disables the block write mode on
 certain types of VRAM Mach64 cards.  If noise or shadows appear on the

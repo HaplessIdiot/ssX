@@ -1,5 +1,5 @@
 /* $XConsortium: regmach64.h,v 1.2 95/01/16 13:16:36 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/regmach64.h,v 3.5 1995/12/02 01:35:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/regmach64.h,v 3.6 1995/12/07 07:24:25 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -32,21 +32,8 @@
 
 #include "compiler.h"
 
-#if 0
 /* NON-GUI IO MAPPED Registers */
 
-#define ioCONFIG_CHIP_ID	0x6eec
-#define ioCONFIG_CNTL		0x6aec
-#define ioSCRATCH_REG0		0x42ec
-#define ioSCRATCH_REG1		0x46ec
-#define ioCONFIG_STAT0		0x72ec
-#define ioMEM_CNTL		0x52ec
-#define ioDAC_REGS              0x5eec
-#define ioDAC_CNTL              0x62ec
-#define ioGEN_TEST_CNTL 	0x66ec
-#define ioCLOCK_CNTL	 	0x4aec
-#define ioCRTC_GEN_CNTL 	0x1eec
-#else
 extern unsigned ioCONFIG_CHIP_ID;
 extern unsigned ioCONFIG_CNTL;
 extern unsigned ioSCRATCH_REG0;
@@ -58,7 +45,6 @@ extern unsigned ioDAC_CNTL;
 extern unsigned ioGEN_TEST_CNTL;
 extern unsigned ioCLOCK_CNTL;
 extern unsigned ioCRTC_GEN_CNTL;
-#endif
 
 /* NON-GUI sparse IO register offsets */
 
@@ -279,6 +265,7 @@ extern unsigned ioCRTC_GEN_CNTL;
 #define BUS_HOST_ERR_ACK        0x00800000
 
 /* GEN_TEST_CNTL register constants */
+#define GEN_OVR_OUTPUT_EN       0x20
 #define HWCURSOR_ENABLE         0x80
 #define GUI_ENGINE_ENABLE       0x100
 #define BLOCK_WRITE_ENABLE      0x200
@@ -351,7 +338,7 @@ extern unsigned ioCRTC_GEN_CNTL;
 #define EnhancedVRAMx16ssr	6
 
 #define DAC_INTERNAL		0x00
-#define DAC_IBM514		0x01
+#define DAC_IBMRGB514		0x01
 #define DAC_ATI68875		0x02
 #define DAC_TVP3026_A		0x72
 #define DAC_BT476		0x03
@@ -378,7 +365,7 @@ extern unsigned ioCRTC_GEN_CNTL;
 #define CLK_CH8398		3
 #define CLK_MACH64CT		4
 #define CLK_ATT20C408		5
-#define CLK_IBM514		6
+#define CLK_IBMRGB514		6
 
 /* MEM_CNTL register constants */
 #define MEM_SIZE_ALIAS		0x00000007
@@ -564,7 +551,9 @@ extern unsigned ioCRTC_GEN_CNTL;
 #define SCISSOR_BOTTOM_FLAG         0x80
 
 /* ATI VGA Extended Regsiters */
-#define ATIEXT		0x1ce
+#define sioATIEXT	0x1ce
+#define bioATIEXT	0x3ce
+extern unsigned ATIExtReg;
 #define ATI2E		0xae
 #define ATI32		0xb2
 #define ATI36		0xb6

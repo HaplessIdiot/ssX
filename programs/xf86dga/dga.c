@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xf86dga/dga.c,v 3.0 1995/12/02 05:07:33 dawes Exp $ */
+/* $XFree86: xc/programs/xf86dga/dga.c,v 3.1 1995/12/09 11:09:13 dawes Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/Shell.h>
@@ -129,6 +129,10 @@ main(int argc, char *argv[])
    XF86DGASetViewPort(dis, DefaultScreen(dis), 0, 0);
 
    banks = (ram * 1024)/bank;
+#ifdef ISC
+   fprintf(stderr, "%x ram:%x, addr %x, banks %d\n", True,
+	   ram, addr, banks);
+#endif
    while (1) {
       XMotionEvent *mevent = (XMotionEvent *) &event;
       XButtonEvent *bevent = (XButtonEvent *) &event;
@@ -146,6 +150,10 @@ main(int argc, char *argv[])
          for (i = 0; i < banks; i++) {
 		XF86DGASetVidPage(dis, DefaultScreen(dis), i);
 		memset(addr, buf[0], bank);
+#ifdef ISC
+   fprintf(stderr, "XF86DGASetVidPage(dis, DefaultScreen(dis), %d);\n",i);
+   fprintf(stderr, "memset(addr:%x, buf[0]:%d, bank:%d);\n",addr,buf[0],bank);
+#endif
 	 }
 	 break;
        case KeyRelease:

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_HWlib.h,v 1.5 95/01/23 15:34:11 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.15 1995/10/21 11:43:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.16 1995/12/02 05:05:33 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -152,6 +152,13 @@ extern int S3gendacSetClock(
 );
 
 extern int ET4000gendacSetClock( 
+#if NeedFunctionPrototypes
+        long,
+        int
+#endif
+);     
+
+extern int ET4000stg1703SetClock( 
 #if NeedFunctionPrototypes
         long,
         int

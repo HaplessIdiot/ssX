@@ -1,5 +1,5 @@
 /* $XConsortium: mach64util.c,v 1.1 94/12/14 15:04:34 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64util.c,v 3.0 1994/11/26 12:43:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64util.c,v 3.1 1995/01/28 15:53:41 dawes Exp $ */
 /*
  * Copyright 1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -28,15 +28,14 @@
 #include "input.h"
 #include "regmach64.h"
 
-extern unsigned int mach64MemRegOffset;
-extern pointer mach64VideoMem;
+extern pointer mach64MemReg;
 
 __inline__ void regw(unsigned int regindex, unsigned long regdata)
 {
     unsigned long appaddr;
 
     /* calculate aperture address */
-    appaddr = (unsigned long)mach64VideoMem + mach64MemRegOffset + regindex;
+    appaddr = (unsigned long)mach64MemReg + regindex;
 
     *(int *)appaddr = regdata;
 }
@@ -46,7 +45,7 @@ __inline__ unsigned long regr(unsigned int regindex)
     unsigned long appaddr;
 
     /* calculate aperture address */
-    appaddr = (unsigned long)mach64VideoMem + mach64MemRegOffset + regindex;
+    appaddr = (unsigned long)mach64MemReg + regindex;
 
     return (*(int *)appaddr);
 }
@@ -56,7 +55,7 @@ __inline__ void regwb(unsigned int regindex, unsigned char regdata)
     unsigned long appaddr;
 
     /* calculate aperture address */
-    appaddr = (unsigned long)mach64VideoMem + mach64MemRegOffset + regindex;
+    appaddr = (unsigned long)mach64MemReg + regindex;
 
     *(char *)appaddr = regdata;
 }
@@ -66,7 +65,7 @@ __inline__ unsigned char regrb(unsigned int regindex)
     unsigned long appaddr;
 
     /* calculate aperture address */
-    appaddr = (unsigned long)mach64VideoMem + mach64MemRegOffset + regindex;
+    appaddr = (unsigned long)mach64MemReg + regindex;
 
     return (*(char *)appaddr);
 }

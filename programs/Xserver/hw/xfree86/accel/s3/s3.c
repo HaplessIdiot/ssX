@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.9 95/04/07 19:28:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.106 1995/12/02 05:05:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.107 1995/12/09 11:07:32 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -3802,11 +3802,9 @@ STG1703ClockSelect(freq)
    return(result);
 }
 
-#ifdef XFreeXDGA
 static Bool
 s3ValidMode(mode)
      DisplayModePtr mode;
 {
    return(TRUE);
 }
-#endif

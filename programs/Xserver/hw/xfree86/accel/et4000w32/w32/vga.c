@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.6 95/01/23 15:33:48 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.21 1995/12/02 05:04:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.22 1995/12/09 11:07:03 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -311,6 +311,7 @@ vgaProbe()
                                 break;
             case GENDAC_DAC:
             case ICS5341_DAC:
+            case STG1703_DAC:
                                 vga256InfoRec.dacSpeed = 135000;
                                 break;
             default:
@@ -337,6 +338,16 @@ vgaProbe()
           {
             ErrorF("%s %s: Using W32p programmable clock chip ICS5341\n",
                    OFLG_ISSET(CLOCK_OPTION_ICS5341, &vga256InfoRec.clockOptions) ?
+                   XCONFIG_GIVEN : XCONFIG_PROBED, vga256InfoRec.name);
+            pixMuxPossible = TRUE;
+            nonMuxMaxClock = MAX_W32_CLOCK;  /* or 75000 ? */ 
+            pixMuxMinClock = 67500;
+            pixMuxMinWidth = 1024;   /* seems to be this way: 1024x768 is wrong with pixmux -- something to do with byte/word/dword modes */
+          } 
+          else if (OFLG_ISSET(CLOCK_OPTION_STG1703, &vga256InfoRec.clockOptions))
+          {
+            ErrorF("%s %s: Using W32p programmable clock chip STG1703\n",
+                   OFLG_ISSET(CLOCK_OPTION_STG1703, &vga256InfoRec.clockOptions) ?
                    XCONFIG_GIVEN : XCONFIG_PROBED, vga256InfoRec.name);
             pixMuxPossible = TRUE;
             nonMuxMaxClock = MAX_W32_CLOCK;  /* or 75000 ? */ 
@@ -504,6 +515,7 @@ vgaProbe()
           do {
              switch(W32RamdacType) {
              case ICS5341_DAC:
+             case STG1703_DAC:
                 /*
                  * This one depend on pixel multiplexing for 8bpp.
                  */

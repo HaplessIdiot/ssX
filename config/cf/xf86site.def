@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.53 1995/11/30 12:48:22 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.54 1995/12/07 07:14:25 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -105,14 +105,15 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.53 1995/11/30 12:48:22 dawes Exp $
 /*
  * VGA16 server:
  *
-#define XF86Vga16Drivers	et4000 ncr77c22 ati tvga8900 oak cl64xx generic
+#define XF86Vga16Drivers	et4000 ncr77c22 ati tvga8900 oak cl64xx \
+				sis generic 
  */
 
 /*
  * VGA2 driver in Mono server:
  *
 #define XF86Vga2Drivers		et4000 et3000 pvga1 gvga ati tvga8900 cirrus \
-				ncr77c22 compaq oak cl64xx generic
+				ncr77c22 compaq oak cl64xx sis generic
  */
 
 /*

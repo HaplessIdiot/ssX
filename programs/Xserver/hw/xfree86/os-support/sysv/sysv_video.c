@@ -1,5 +1,5 @@
 /* $XConsortium: sysv_video.c,v 1.2 95/03/01 16:11:01 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_video.c,v 3.2 1995/04/09 13:52:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_video.c,v 3.3 1995/07/08 10:30:06 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -51,6 +51,13 @@ struct kd_memloc MapDSC[MAXSCREENS][NUM_REGIONS];
 pointer AllocAddress[MAXSCREENS][NUM_REGIONS];
 #ifndef SVR4
 static int mmapFd = -2;
+#endif
+/* inserted for DGA support Tue Dec  5 21:33:00 MET 1995 mr */
+#if defined(SVR4) || defined(HAS_SVR3_MMAPDRV)
+static struct xf86memMap {
+  int offset;
+  int memSize;
+} xf86memMaps[MAXSCREENS];
 #endif
 
 Bool xf86LinearVidMem()
@@ -144,6 +151,9 @@ unsigned long Size;
 
 	    /* Next time we want the same address! */
 	    MapDSC[ScreenNum][Region].vaddr    = (char *)base;
+/* inserted for DGA support Tue Dec  5 21:33:00 MET 1995 mr */
+	    xf86memMaps[ScreenNum].offset = (int) Base;
+	    xf86memMaps[ScreenNum].memSize = Size;
 	    return((pointer)base);
 	}
 #endif
@@ -155,9 +165,23 @@ unsigned long Size;
 	    /* NOTREACHED */
 	}
 #endif /* SVR4 */
+	xf86memMaps[ScreenNum].offset = (int) Base;
+	xf86memMaps[ScreenNum].memSize = Size;
 	return((pointer)base);
 }
 
+/* inserted for DGA support Tue Dec  5 21:33:00 MET 1995 mr */
+#if defined(SVR4) || defined(HAS_SVR3_MMAPDRV)
+void xf86GetVidMemData(ScreenNum, Base, Size)
+int ScreenNum;
+int *Base;
+int *Size;
+{
+   *Base = xf86memMaps[ScreenNum].offset;
+   *Size = xf86memMaps[ScreenNum].memSize;
+}
+
+#endif
 /* ARGSUSED */
 void xf86UnMapVidMem(ScreenNum, Region, Base, Size)
 int ScreenNum;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/STG1703clk.c,v 3.2 1995/07/08 02:08:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/STG1703clk.c,v 3.3 1995/07/12 15:37:25 dawes Exp $ */
 /*
  * Copyright 1995 The XFree86 Project, Inc
  *
@@ -32,6 +32,64 @@ extern int vgaIOBase;
 #define FREQ_MAX            135000
 #define STG1703_REF_FREQ     14318
 
+#if NeedFunctionPrototypes
+void
+STG1703magic(int onoff)
+#else
+void
+STG1703magic(onoff)
+int onoff;
+#endif
+{
+	unsigned char daccom;
+
+	xf86dactopel();
+	daccom = xf86getdaccomm();
+	if(onoff)
+		xf86setdaccomm(daccom | 0x10);
+	else
+		xf86setdaccomm(daccom & 0xEF);
+	xf86dactocomm();
+	inb(PIXEL_COMMAND);
+	return;
+}
+
+#if NeedFunctionPrototypes
+unsigned char
+STG1703getIndex(unsigned int i)
+#else
+unsigned char
+STG1703getIndex(i)
+unsigned int i;
+#endif
+{
+	unsigned char tmp;
+
+	STG1703magic(1);				/* set the index */
+	outb(PIXEL_COMMAND,  (i & 0xff));
+	outb(PIXEL_COMMAND, ((i & 0xff00) >> 8));
+
+	tmp = inb(PIXEL_COMMAND);
+	return(tmp);
+}
+
+#if NeedFunctionPrototypes
+void
+STG1703setIndex(unsigned int i, unsigned char val)
+#else
+void
+STG1703setIndex(i,val)
+unsigned int i;
+unsigned char val;
+#endif
+{
+	STG1703magic(1);				/* set the index */
+	outb(PIXEL_COMMAND,  (i & 0xff));
+	outb(PIXEL_COMMAND, ((i & 0xff00) >> 8));
+
+	outb(PIXEL_COMMAND,val);
+	return;
+}
 
 #if NeedFunctionPrototypes
 static void 
@@ -78,17 +136,34 @@ int clk;
    outb(vgaCRData, oldCR55);
 }
 
-
 #if NeedFunctionPrototypes
-void STG1703SetClock(long freq, int clk)
+static void 
+et4000ProgramSTG1703Clock(unsigned int program_word, int clk)
 #else
-void
-STG1703SetClock(freq, clk)
-long freq;
+static void et4000ProgramSTG1703Clock(program_word, clk)
+unsigned int program_word;
 int clk;
 #endif
 {
-   unsigned int program_word;
+   unsigned char tmp, oldCR31;
+   int vgaCRAddr, vgaCRData;
+
+   STG1703setIndex( (clk << 1) + 0x20, (program_word & 0xff) );
+   outb(INDEXED_REG, (program_word & 0xff00) >> 8);
+   
+   usleep(10000);
+}
+
+
+#if NeedFunctionPrototypes
+void STG1703CalcProgramWord(long freq, unsigned int * program_word)
+#else
+void
+STG1703CalcProgramWord(freq, program_word)
+long freq;
+unsugned int *program_word;
+#endif
+{
    unsigned int temp, tempB;
    unsigned short tempA, remainder, preRemainder, divider;
 
@@ -126,7 +201,7 @@ int clk;
       tempA++;
    } while (tempA <= (MIN_N1 << 1));
 
-   program_word = divider;
+   *program_word = divider;
 
    /*
     * M  = (program_word & 0x7F) >> 8
@@ -134,6 +209,43 @@ int clk;
     * N2 = (program_word & 0x60) >> 5
     */
 
-   s3ProgramSTG1703Clock(program_word, clk);
    return;
 }
+
+#if NeedFunctionPrototypes
+void STG1703SetClock(long freq, int clk)
+#else
+void
+STG1703SetClock(freq, clk)
+long freq;
+int clk;
+#endif
+{
+   unsigned int program_word;
+
+   /*
+    * calculate the values
+    */
+   STG1703CalcProgramWord(freq,&program_word);
+   s3ProgramSTG1703Clock(program_word, clk);
+}
+
+#if NeedFunctionPrototypes
+void ET4000stg1703SetClock(long freq, int clk)
+#else
+void
+ET4000stg1703SetClock(freq, clk)
+long freq;
+int clk;
+#endif
+{
+   unsigned int program_word;
+
+   /*
+    * calculate the values
+    */
+printf("set clock %d to %ld\n", clk,freq);
+   STG1703CalcProgramWord(freq,&program_word);
+   et4000ProgramSTG1703Clock(program_word, clk);
+}
+

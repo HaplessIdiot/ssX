@@ -1,5 +1,5 @@
 /* $XConsortium: ativga.c,v 1.1 94/12/14 15:04:34 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/ativga.c,v 3.2 1995/05/27 03:04:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/ativga.c,v 3.3 1995/12/07 07:24:18 dawes Exp $ */
 /***************************************************************************
  * Start of VGA font saving and restoration code.
  * Created: Sun Jun 27 12:50:09 1993 by faith@cs.unc.edu
@@ -65,7 +65,6 @@ pointer        vgaNewVideoState = NULL;
 
 #define save   ((SaveBlock *)vgaNewVideoState)
 
-static short   ATIExtReg = 0x1ce;
 int            vgaIOBase;
 int            vgaInterlaceType = VGA_DIVIDE_VERT;
 

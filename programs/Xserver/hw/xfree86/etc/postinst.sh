@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/postinst.sh,v 3.0 1995/11/19 01:24:55 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/postinst.sh,v 3.1 1995/11/19 02:09:12 dawes Exp $
 #
 # postinst.sh
 #
@@ -15,7 +15,7 @@
 #
 
 ORIGVERSION=3.1.2
-BETAVERSION=3.1.2A
+BETAVERSION=3.1.2B
 NEWDIR=/usr/XFree86-$BETAVERSION
 RUNDIR=/usr/X11R6
 SAVEDIR=/usr/XFree86-$ORIGVERSION

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86.h,v 1.5 95/01/16 13:16:56 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.25 1995/12/02 05:05:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.26 1995/12/09 11:07:42 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -112,18 +112,18 @@ typedef struct {
   Bool           (* Init)();
   Bool           (* ValidMode)();
   void           (* EnterLeaveVT)(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
     int,
     int
 #endif
 );
   void           (* EnterLeaveMonitor)(
-#if NeedVarargsPrototypes
+#if NeedNestedPrototypes
     int
 #endif
 );
   void           (* EnterLeaveCursor)(
-#if NeedVarargsPrototypes
+#if NeedNestedPrototypes
     int
 #endif
 );
@@ -177,7 +177,7 @@ typedef struct {
 #ifdef XFreeXDGA
   int            directMode;
   void           (*setBank)(
-#if NeedVarargsPrototypes
+#if NeedNestedPrototypes
     int
 #endif
   );

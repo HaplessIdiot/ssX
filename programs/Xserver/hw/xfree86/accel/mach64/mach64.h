@@ -1,5 +1,5 @@
 /* $XConsortium: mach64.h,v 1.2 95/01/16 13:16:32 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.h,v 3.7 1995/11/12 09:51:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.h,v 3.8 1995/12/07 07:24:21 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -71,6 +71,7 @@ extern int mach64RamdacSubType;
 extern int mach64BusType;
 extern int mach64MemType;
 extern int mach64ChipType;
+extern int mach64ChipRev;
 extern int mach64ClockType;
 extern int mach64Clocks[MACH64_NUM_CLOCKS];
 extern int mach64MinFreq;
@@ -79,6 +80,8 @@ extern int mach64RefFreq;
 extern int mach64RefDivider;
 extern int mach64NAdj;
 extern int mach64CXClk;
+extern int mach64MemClk;
+extern int mach64VRAMMemClk;
 
 extern unsigned int mach64MemorySize;
 extern unsigned int mach64ApertureSize;
@@ -302,6 +305,17 @@ void mach64InitEnvironment(
 void mach64InitAperture(
 #if NeedFunctionPrototypes
     int screen_idx
+#endif
+);
+void mach64P_RGB514Index(
+#if NeedFunctionPrototypes
+    int index,
+    int data
+#endif
+);
+unsigned char mach64R_RGB514Index(
+#if NeedFunctionPrototypes
+    int index
 #endif
 );
 void mach64SetRamdac(

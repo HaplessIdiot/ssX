@@ -30,18 +30,19 @@ If you have 1 M, <tt>XF86_W32</tt> claims
 you have 1023 K; you get to specify the virtual world as 1152x900,
 but not 1152x910.
 
-The current maximum clock is set to 86 MHz according to the Tseng
+For most cards the maximum clock is set to 86 MHz according to the Tseng
 databooks.  For a non-interlaced 1280x1024x(256 colors) at say
 135-MHz, you need a w32p (with its 16-bit RAMDAC bus) with a
 multiplexing RAMDAC so that the w32p sees only (135/2 = 67.5) MHz,
 not 135 MHz.  This requires special code only provided for
-cards using the ICS5341 GENDAC. This code seems to work fine for most
-people, except for a small band of frequencies around 90MHz.
-Similar code is being developed for the STG1703 RAMDAC.
+cards using the ICS5341 GENDAC or the STG1703. This code seems to work 
+fine for most people, except, with the ICS5341, for a small band of 
+frequencies around 90MHz.
 
 If you have problems with the server.  Try the following:
 <itemize>
 <item>  Put Option "pci_burst_off" in the Device Section.
+<item>  Put Option "w32_interleave_off" in the Device Section.
 <item>  Take out the Hercules monochrome adapter, if you have one.  Many 
     configurations of the ET4000/W32 series do not allow one in the
     system.
@@ -82,9 +83,17 @@ about 100MHz that don't work. This are usually is just a few MHz wide, higher
 clocks as well as lower clocks work just fine. I'm working on it. (DHH)
 
 <sect> Using XF86_W32 on a board with an STG1703 GENDAC <p>
-Only preliminary support for this chips is implemented. The server is still
-limited to 86MHz and cannot program the STG1703 clock chip. More support will
-be added soon (DHH).
+Even though the STG1703 provides a set of standard clocks that can be found
+with the normal clock probing procedure, it is mandatory to put a
+<tscreen><verb>
+ClockChip  "stg1703"
+</verb></tscreen>
+line into the Device Section to be able to use the programmable clocks that
+the STG1703 can produce. You can also add a
+<tscreen><verb>
+Ramdac     "stg1703"
+</verb></tscreen>
+line, but the RAMDAC should be auto-probed correctly. 
 
 <sect> Acknowledgments <p>
 Jerry J. Shekhel (<it>jerry@msi.com</it>) gave me (GGL) the 1-M Mirage
@@ -132,7 +141,7 @@ listed below:
 
 <verb>
 $XConsortium: W32.sgml,v 1.2 95/01/23 15:34:55 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.7 1995/11/16 11:05:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.8 1995/12/09 11:07:52 dawes Exp $
 </verb>
 
 </article>

@@ -781,6 +781,31 @@ Section "Monitor"
   ModeLine "1280x1024" 110   1280 1328 1512 1712 1024 1025 1028 1054
 EndSection
 
+#Date: Fri, 6 Oct 1995 15:55:25 -0600
+#From: kop@acm.org (Karl O. Pinc)
+Section "Monitor"
+    Identifier  "Samtron SC 428-TX"
+    VendorName  "Samtron"
+    ModelName   "SC 428-TX"
+    HorizSync   31.5, 35.2, 35.5, 37.8, 48
+    VertRefresh 56, 60, 70, 43.5, 72
+    Mode "640x480"
+        DotClock        25.175
+        HTimings        640 664 760 800
+        VTimings        480 491 493 525
+    EndMode
+#    Mode "1064x759"
+#        DotClock        65.028
+#        Htimings  1064     1096         1328  1360
+#        Vtimings   759      762          768   797
+#    EndMode
+#    Mode "1064x650"
+#        DotClock        65.028
+#        Htimings  1064     1120         1352  1360
+#        Vtimings   650      653          659   683
+#    EndMode
+EndSection
+
 #Date: Mon, 23 Jan 1995 09:50:44 -0800
 #From: "Leonard N. Zubkoff" <lnz@dandelion.com>
 Section "Monitor"
@@ -1046,5 +1071,5 @@ Section "Monitor"
     ModeLine "640x480"  28  640  664  728  792 480 484 490 505
 EndSection
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Monitors,v 3.10 1995/07/13 14:14:42 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Monitors,v 3.11 1995/11/02 00:28:33 dawes Exp $
 # $XConsortium: Monitors,v 1.7 95/01/27 15:58:08 kaleb Exp $

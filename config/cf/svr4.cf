@@ -1,5 +1,5 @@
 XCOMM $XConsortium: svr4.cf,v 1.14 95/06/30 18:21:43 kaleb Exp $
-XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.16 1995/07/12 15:27:37 dawes Exp $
+XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.17 1995/09/22 07:06:35 dawes Exp $
 /*
  * A default OS name
  */
@@ -98,6 +98,9 @@ XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.16 1995/07/12 15:27:37 dawes Exp $
 
 #ifdef i386Architecture
 #ifndef SunArchitecture
+#ifndef BuildXF86DGA
+#define BuildXF86DGA		YES
+#endif
 #if (OSMinorVersion > 2) || ((OSMinorVersion == 2) && (OSTeenyVersion >= 2))
 #ifndef StandardDefines
 #define StandardDefines		-DSVR4 -DSVR42MP -Di386

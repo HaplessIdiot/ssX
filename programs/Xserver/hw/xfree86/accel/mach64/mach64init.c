@@ -1,5 +1,5 @@
 /* $XConsortium: mach64init.c,v 1.3 95/01/16 13:16:33 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.8 1995/12/02 01:35:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.9 1995/12/07 07:24:23 dawes Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -48,7 +48,11 @@ static int old_clock_sel;
 
 static Bool mach64Inited = FALSE;
 
+static Bool isMuxMode = FALSE;
+
 pointer mach64VideoMem = NULL;
+pointer mach64MemRegMap = NULL;
+pointer mach64MemReg = NULL;
 unsigned int mach64MemRegOffset;
 
 static char old_ATI2E, old_ATI32, old_ATI36;
@@ -70,11 +74,12 @@ static unsigned long old_CRTC_V_TOTAL_DISP;
 
 static int oldClockFreq;
 
-static char old_ATI68860[4];
-static char old_ATI68875[3];
-static char old_CH8398;
-static char old_STG170X[4];
-static char old_ATT20C408;
+static unsigned char old_ATI68860[4];
+static unsigned char old_ATI68875[3];
+static unsigned char old_CH8398;
+static unsigned char old_STG170X[4];
+static unsigned char old_ATT20C408;
+static unsigned char old_IBMRGB514[0x100];
 
 
 /*
@@ -85,23 +90,45 @@ void mach64CalcCRTCRegs(crtcRegs, mode)
      mach64CRTCRegPtr crtcRegs;
      DisplayModePtr mode;
 {
-    int VRAMshift, RAMType, MHz, Res;
     int i;
+    int pixel_delay;
 
-    crtcRegs->h_total_disp =
-	(((mode->CrtcHDisplay >> 3) - 1) << 16) |
-	    ((mode->CrtcHTotal >> 3) - 1);
-    crtcRegs->h_sync_strt_wid =
-	(((mode->CrtcHSyncEnd - mode->CrtcHSyncStart) >> 3) << 16) |
-	    ((mode->CrtcHSyncStart >> 3) - 1);
+    if (mode->CrtcHTotal > 2048) {
+	isMuxMode = TRUE;
 
-    if ((crtcRegs->h_sync_strt_wid >> 16) > 0x1f) {
-	ErrorF("%s %s: Horizontal Sync width (%d) in mode \"%s\"\n",
-	       XCONFIG_PROBED, mach64InfoRec.name,
-	       crtcRegs->h_sync_strt_wid >> 16,
-	       mode->name);
-	ErrorF("\tshortened to 248 pixels\n");
-	crtcRegs->h_sync_strt_wid &= 0x001fffff;
+	crtcRegs->h_total_disp =
+	    (((mode->CrtcHDisplay >> 4) - 1) << 16) |
+		((mode->CrtcHTotal >> 4) - 1);
+	crtcRegs->h_sync_strt_wid =
+	    (((mode->CrtcHSyncEnd - mode->CrtcHSyncStart) >> 4) << 16) |
+		((mode->CrtcHSyncStart >> 4) - 1);
+
+	if ((crtcRegs->h_sync_strt_wid >> 16) > 0x1f) {
+	    ErrorF("%s %s: Horizontal Sync width (%d) in mode \"%s\"\n",
+		   XCONFIG_PROBED, mach64InfoRec.name,
+		   crtcRegs->h_sync_strt_wid >> 16,
+		   mode->name);
+	    ErrorF("\tshortened to 248 pixels\n");
+	    crtcRegs->h_sync_strt_wid &= 0x001fffff;
+	}
+    } else {
+	isMuxMode = FALSE;
+
+	crtcRegs->h_total_disp =
+	    (((mode->CrtcHDisplay >> 3) - 1) << 16) |
+		((mode->CrtcHTotal >> 3) - 1);
+	crtcRegs->h_sync_strt_wid =
+	    (((mode->CrtcHSyncEnd - mode->CrtcHSyncStart) >> 3) << 16) |
+		((mode->CrtcHSyncStart >> 3) - 1);
+
+	if ((crtcRegs->h_sync_strt_wid >> 16) > 0x1f) {
+	    ErrorF("%s %s: Horizontal Sync width (%d) in mode \"%s\"\n",
+		   XCONFIG_PROBED, mach64InfoRec.name,
+		   crtcRegs->h_sync_strt_wid >> 16,
+		   mode->name);
+	    ErrorF("\tshortened to 248 pixels\n");
+	    crtcRegs->h_sync_strt_wid &= 0x001fffff;
+	}
     }
 
     if (mode->Flags & V_NHSYNC)
@@ -238,6 +265,32 @@ void mach64CalcCRTCRegs(crtcRegs, mode)
 	    break;
 	}
     }
+
+    /* Set the pixel delay */
+    pixel_delay = 0;
+
+    switch (mach64RamdacSubType) {
+    case DAC_IBMRGB514:
+	switch (crtcRegs->color_depth) {
+	case CRTC_PIX_WIDTH_8BPP:
+	    pixel_delay = 4;
+	    break;
+	case CRTC_PIX_WIDTH_15BPP:
+	case CRTC_PIX_WIDTH_16BPP:
+	    pixel_delay = 2;
+	    break;
+	case CRTC_PIX_WIDTH_32BPP:
+	    pixel_delay = 1;
+	    break;
+	}
+	break;
+    default:
+	break;
+    }
+
+    crtcRegs->h_sync_strt_wid = 
+	((crtcRegs->h_sync_strt_wid & 0xffffff00) |
+	 ((crtcRegs->h_sync_strt_wid & 0xff) + pixel_delay));
 
     crtcRegs->fifo_v1 =	mach64FIFOdepth(crtcRegs->color_depth,
 					crtcRegs->dot_clock, mode->HDisplay);
@@ -543,7 +596,7 @@ void mach64ProgramICS2595(clkCntl, MHz100)
 
     usleep(1000); /* delay for 1 ms */
 
-    inb(ioDAC_REGS); /* Clear DAC Counter */
+    (void)inb(ioDAC_REGS); /* Clear DAC Counter */
     outb(ioCRTC_GEN_CNTL+3, old_crtc_ext_disp);
     outb(ioCLOCK_CNTL, old_clock_cntl | CLOCK_STROBE);
 }
@@ -695,7 +748,7 @@ void mach64ProgramClk8398(clkCntl, MHz100)
     temp = inb(ioDAC_CNTL);
     outb(ioDAC_CNTL, (temp & ~DAC_EXT_SEL_RS2) | DAC_EXT_SEL_RS3);
 
-    inb(ioDAC_REGS); /* Clear DAC Counter */
+    (void)inb(ioDAC_REGS); /* Clear DAC Counter */
     outb(ioCRTC_GEN_CNTL+3, old_crtc_ext_disp);
 }
 
@@ -797,7 +850,7 @@ void mach64ProgramClk408(clkCntl, MHz100)
     outb(ioDAC_REGS, tmpB);
     outb(ioDAC_REGS+2, tmpA);
 
-    inb(ioDAC_REGS); /* Clear DAC Counter */
+    (void)inb(ioDAC_REGS); /* Clear DAC Counter */
     outb(ioCRTC_GEN_CNTL+3, old_crtc_ext_disp);
 }
 
@@ -810,7 +863,9 @@ void mach64ProgramClkMach64CT(clkCntl, MHz100)
     int MHz100;
 {
     char old_crtc_ext_disp;
+#ifdef DEBUG
     extern void mach64PrintCTPLL();
+#endif
     int M, N, P, Q, R;
     int mhz100 = MHz100;
     unsigned char tmp1, tmp2;
@@ -863,11 +918,120 @@ void mach64ProgramClkMach64CT(clkCntl, MHz100)
 	 (tmp2 & ~(0x03 << (2 * clkCntl))) | (P << (2 * clkCntl)));
     outb(ioCLOCK_CNTL + 1, (PLL_VCLK_CNTL << 2) | PLL_WR_EN);
     outb(ioCLOCK_CNTL + 2, tmp1 & ~0x04);
+
     usleep(5000);
+
+    (void)inb(ioDAC_REGS); /* Clear DAC Counter */
     outb(ioCRTC_GEN_CNTL+3, old_crtc_ext_disp);
-    outb(ioCLOCK_CNTL, clkCntl);
 
     return;
+}
+
+/* 
+ * mach64P_RGB514Index --
+ * 
+ */
+void mach64P_RGB514Index(index, data)
+    int index;
+    int data;
+{
+    int temp;
+
+    WaitQueue(7);
+    temp = inb(ioDAC_CNTL);
+    outb(ioDAC_CNTL, (temp & ~DAC_EXT_SEL_RS3) | DAC_EXT_SEL_RS2);
+
+    outb(ioDAC_REGS, index & 0xff);
+    outb(ioDAC_REGS+1, index >> 8);
+    outb(ioDAC_REGS+2, data & 0xff);
+
+    temp = inb(ioDAC_CNTL);
+    outb(ioDAC_CNTL, (temp & ~(DAC_EXT_SEL_RS3 | DAC_EXT_SEL_RS2)));
+}
+
+/* 
+ * mach64R_RGB514Index --
+ * 
+ */
+unsigned char mach64R_RGB514Index(index)
+    int index;
+{
+    int temp;
+    unsigned char retval;
+
+    WaitQueue(7);
+    temp = inb(ioDAC_CNTL);
+    outb(ioDAC_CNTL, (temp & ~DAC_EXT_SEL_RS3) | DAC_EXT_SEL_RS2);
+
+    outb(ioDAC_REGS, index & 0xff);
+    outb(ioDAC_REGS+1, index >> 8);
+    retval = inb(ioDAC_REGS+2);
+
+    temp = inb(ioDAC_CNTL);
+    outb(ioDAC_CNTL, (temp & ~(DAC_EXT_SEL_RS3 | DAC_EXT_SEL_RS2)));
+
+    return retval;
+}
+
+/*
+ * mach64ProgramClkRGB514 --
+ *
+ */
+void mach64ProgramClkRGB514(clkCntl, MHz100)
+    int clkCntl;
+    int MHz100;
+{
+    char old_crtc_ext_disp;
+    unsigned int program_word;
+    unsigned short mhz100 = MHz100;
+    float target, ref_freq;
+    unsigned char m, n, p;
+    float actual, save_freq, error, temp = 0xffff;
+
+    old_crtc_ext_disp = inb(ioCRTC_GEN_CNTL+3);
+    outb(ioCRTC_GEN_CNTL+3, old_crtc_ext_disp | (CRTC_EXT_DISP_EN >> 24));
+
+#define RGB514_MIN_FREQ 1600
+#define RGB514_MAX_FREQ 22000
+#define RGB514_MAX_N    0x1f
+#define RGB514_MAX_M    0x3f
+
+    /* Calculate program word */
+    if (mhz100 < RGB514_MIN_FREQ) mhz100 = RGB514_MIN_FREQ;
+    if (mhz100 > RGB514_MAX_FREQ) mhz100 = RGB514_MAX_FREQ;
+
+    target = (float)mhz100 / 100;
+    ref_freq = 14.318;
+
+    if (target < 32) p = 0;
+    else if (target < 64) p = 1;
+    else if (target < 128) p = 2;
+    else p = 3;
+
+    for (m = 0; m <= RGB514_MAX_M; m++) {
+	for (n = 2; n <= RGB514_MAX_N; n++) {
+	    actual = (float)(ref_freq * (m+65)) / (n * (1 << (3-p)));
+	    error = target - actual;
+
+	    if (error < 0) error = -error;
+	    if (error < temp) {
+		save_freq = actual;
+		temp = error;
+		program_word = ((((m & 0x3f) | ((p & 3) << 6)) << 8) |
+				(n & 0x1f));
+	    }
+	}
+    }
+
+    /* Program clock */
+    clkCntl = (clkCntl << 1) + 0x20;
+    mach64P_RGB514Index(clkCntl, program_word >> 8);
+
+    clkCntl++;
+    mach64P_RGB514Index(clkCntl, program_word & 0xff);
+
+    (void)inb(ioDAC_REGS); /* Clear DAC Counter */
+    outb(ioCRTC_GEN_CNTL+3, old_crtc_ext_disp);
 }
 
 /*
@@ -894,6 +1058,9 @@ void mach64ProgramClk(clkCntl, MHz100)
     case CLK_ATT20C408:
 	mach64ProgramClk408(clkCntl, MHz100);
 	break;
+    case CLK_IBMRGB514:
+	mach64ProgramClkRGB514(clkCntl, MHz100);
+	break;
     default:
 	ErrorF("mach64ProgramClk: ClockType %d not currently supported.\n",
 	       mach64ClockType);
@@ -909,6 +1076,7 @@ void mach64SetCRTCRegs(crtcRegs)
      mach64CRTCRegPtr crtcRegs;
 {
     int crtcGenCntl;
+    unsigned long depth = crtcRegs->color_depth;
 
     /* Now initialize the display controller part of the Mach64.
      * The CRTC registers are passed in from the calling routine.
@@ -919,7 +1087,7 @@ void mach64SetCRTCRegs(crtcRegs)
     regw(CRTC_GEN_CNTL, crtcGenCntl & ~CRTC_EXT_EN);
 
     /* Check to see if we need to program the clock chip */
-    if (mach64ClockType != 0 &&
+    if (mach64ClockType != 0 && mach64Ramdac != DAC_IBMRGB514 &&
 	((mach64Ramdac == DAC_ATI68860 && crtcRegs->clock_cntl & 0x30) ||
 	 (crtcRegs->clock_cntl == mach64CXClk) ||
 	 (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &mach64InfoRec.clockOptions) &&
@@ -928,6 +1096,20 @@ void mach64SetCRTCRegs(crtcRegs)
 	    mach64ProgramClk(mach64CXClk, crtcRegs->dot_clock >> 1);
 	else
 	    mach64ProgramClk(mach64CXClk, crtcRegs->dot_clock);
+	crtcRegs->clock_cntl = mach64CXClk;
+    }
+
+    if (mach64RamdacSubType == DAC_IBMRGB514) {
+#if 0
+	if (mach64VRAMMemClk > 5017 &&
+	    crtcRegs->color_depth == CRTC_PIX_WIDTH_8BPP &&
+	    crtcRegs->dot_clock <= 2800)
+	    mach64ProgramICS2595(mach64MemClk, 4700);
+	else
+	    mach64ProgramICS2595(mach64MemClk, mach64VRAMMemClk);
+#endif
+
+	mach64ProgramClkRGB514(mach64CXClk, crtcRegs->dot_clock);
 	crtcRegs->clock_cntl = mach64CXClk;
     }
 
@@ -949,15 +1131,25 @@ void mach64SetCRTCRegs(crtcRegs)
     regw(OVR_WID_TOP_BOTTOM, 0);
 
     /* Set the width of the display */
-    regw(CRTC_OFF_PITCH, (mach64VirtX >> 3) << 22);
+    if (isMuxMode)
+	regw(CRTC_OFF_PITCH, (mach64VirtX >> 4) << 22);
+    else
+	regw(CRTC_OFF_PITCH, (mach64VirtX >> 3) << 22);
     regw(DST_OFF_PITCH, (mach64VirtX >> 3) << 22);
     regw(SRC_OFF_PITCH, (mach64VirtX >> 3) << 22);
+
+    if (isMuxMode) {
+	if (depth == CRTC_PIX_WIDTH_8BPP)
+	    depth = CRTC_PIX_WIDTH_16BPP;
+	else
+	    depth = CRTC_PIX_WIDTH_32BPP;
+    }
 
     /* Display control register -- this one turns on the display */
     regw(CRTC_GEN_CNTL,
 	 (crtcGenCntl & 0xff0000ff &
 	  ~(CRTC_PIX_BY_2_EN | CRTC_DBL_SCAN_EN | CRTC_INTERLACE_EN)) |
-	 crtcRegs->color_depth |
+	 depth |
 	 (crtcRegs->crtc_gen_cntl & ~CRTC_PIX_BY_2_EN) |
 	 (crtcRegs->fifo_v1 << 16) |
 	 CRTC_EXT_DISP_EN | CRTC_EXT_EN);
@@ -1066,29 +1258,58 @@ void mach64ResetEngine()
     regw(GEN_TEST_CNTL, temp & ~GUI_ENGINE_ENABLE);
 
     if (mach64ChipType == MACH64_GX)
-	switch (mach64MemType) {
-	case DRAMx4:
-	case DRAMx16:
-	case GraphicsDRAMx16:
-	case EnhancedVRAMx16ssr:
-	    if (OFLG_ISSET(OPTION_BLOCK_WRITE, &mach64InfoRec.options))
-		regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE |
-				    BLOCK_WRITE_ENABLE);
-	    else
+	if (mach64ChipRev < 3) {
+	    switch (mach64MemType) {
+	    case DRAMx4:
+	    case DRAMx16:
+	    case GraphicsDRAMx16:
+	    case EnhancedVRAMx16ssr:
+		if (OFLG_ISSET(OPTION_BLOCK_WRITE, &mach64InfoRec.options))
+		    regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE |
+			 BLOCK_WRITE_ENABLE);
+		else
+		    regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE);
+		break;
+	    case VRAMx16:
+	    case VRAMx16ssr:
+	    case EnhancedVRAMx16:
+		if (OFLG_ISSET(OPTION_NO_BLOCK_WRITE, &mach64InfoRec.options))
+		    regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE);
+		else
+		    regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE |
+			 BLOCK_WRITE_ENABLE);
+		break;
+	    default:
 		regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE);
-	    break;
-	case VRAMx16:
-	case VRAMx16ssr:
-	case EnhancedVRAMx16:
-	    if (OFLG_ISSET(OPTION_NO_BLOCK_WRITE, &mach64InfoRec.options))
+		ErrorF("mach64ResetEngine: Unknown Memory Type (%d)\n",
+		       mach64MemType);
+	    }
+	} else {
+	    switch (mach64MemType) {
+	    case DRAMx4:
+	    case DRAMx16:
+	    case GraphicsDRAMx16:
+		if (OFLG_ISSET(OPTION_BLOCK_WRITE, &mach64InfoRec.options))
+		    regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE |
+			 BLOCK_WRITE_ENABLE);
+		else
+		    regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE);
+		break;
+	    case VRAMx16:
+	    case VRAMx16ssr:
+	    case EnhancedVRAMx16:
+	    case EnhancedVRAMx16ssr:
+		if (OFLG_ISSET(OPTION_NO_BLOCK_WRITE, &mach64InfoRec.options))
+		    regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE);
+		else
+		    regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE |
+			 BLOCK_WRITE_ENABLE);
+		break;
+	    default:
 		regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE);
-	    else
-		regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE |
-				    BLOCK_WRITE_ENABLE);
-	    break;
-	default:
-	    regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE);
-	    ErrorF("mach64ResetEngine: Unknown Memory Type (%d)\n", mach64MemType);
+		ErrorF("mach64ResetEngine: Unknown Memory Type (%d)\n",
+		       mach64MemType);
+	    }
 	}
     else
 	regw(GEN_TEST_CNTL, temp | GUI_ENGINE_ENABLE);
@@ -1173,44 +1394,60 @@ void mach64InitEnvironment()
 void mach64InitAperture(screen_idx)
     int screen_idx;
 {
-    int i, apsize, apaddr;
+    int i;
+    unsigned int apaddr;
+    unsigned int regpage, regoffset;
+    int memsize;
 
     if (!mach64VideoMem) {
 	old_CONFIG_CNTL = inw(ioCONFIG_CNTL);
     }
 
-#if 0
-    if (mach64InfoRec.MemBase != 0)
-	apaddr = (mach64InfoRec.MemBase & 0xffc00000);
-    else if (mach64ApertureAddr != 0)
-	apaddr = mach64ApertureAddr & 0xffc00000);
-    else if (mach64BusType == PCI)
-	apaddr = 0x7c000000;
-    else
-	apaddr = 0x04000000;  /* for VLB board */
-#else
     apaddr = mach64ApertureAddr;
-#endif
 
     if (mach64ApertureSize == MEM_SIZE_4M) {
-	apsize = 4 * 1024 * 1024;
 	mach64MemRegOffset = 0x3ffc00;
 	outw(ioCONFIG_CNTL, ((apaddr/(4*1024*1024)) << 4) | 1);
     } else {
-	apsize = 8 * 1024 * 1024;
 	mach64MemRegOffset = 0x7ffc00;
 	outw(ioCONFIG_CNTL, ((apaddr/(4*1024*1024)) << 4) | 2);
     }
 
+    switch(mach64MemorySize) {
+    case MEM_SIZE_512K:
+	memsize = 512 * 1024;
+	break;
+    case MEM_SIZE_1M:
+	memsize = 1024 * 1024;
+	break;
+    case MEM_SIZE_2M:
+	memsize = 2 * 1024 * 1024;
+	break;
+    case MEM_SIZE_4M:
+	memsize = 4 * 1024 * 1024;
+	break;
+    case MEM_SIZE_6M:
+	memsize = 6 * 1024 * 1024;
+	break;
+    case MEM_SIZE_8M:
+	memsize = 8 * 1024 * 1024;
+	break;
+    }
+
+    regpage = mach64MemRegOffset & ~0x0fff;
+    regoffset = mach64MemRegOffset - regpage;
+
+    if (!mach64MemRegMap) {
+	mach64MemRegMap = xf86MapVidMem(screen_idx, EXTENDED_REGION,
+					(pointer)(apaddr + regpage),
+					0x1000);
+	mach64MemReg = (pointer)((unsigned long)mach64MemRegMap + regoffset);
+    }
+
+
     if (!mach64VideoMem) {
 	mach64VideoMem = xf86MapVidMem(screen_idx, LINEAR_REGION, 
-				       (pointer)apaddr, apsize);
-#if 0
-	if (xf86Verbose) {
-	    ErrorF("%s %s: Aperture mapped to 0x%x\n",
-		   XCONFIG_PROBED, mach64InfoRec.name, apaddr);
-	}
-#endif
+				       (pointer)apaddr, memsize);
     }
 }
 
@@ -1683,6 +1920,82 @@ int mach64ProgramInternal(colorDepth, dotClock)
 	    outb(ioDAC_REGS + 1, temp);
 	    outb(ioDAC_REGS + 1, temp);
 	}
+	break;
+    }
+
+    return muxMode;
+}
+
+/* 
+ * mach64ProgramIBMRGB514 --
+ * 
+ */
+int mach64ProgramIBMRGB514(colorDepth, AccelMode)
+    int colorDepth;
+    int AccelMode;
+{
+    char old_crtc_ext_disp;
+    int muxMode = FALSE;
+    int temp;
+
+    temp = inb(ioGEN_TEST_CNTL);
+    outb(ioGEN_TEST_CNTL, temp | GEN_OVR_OUTPUT_EN);
+
+    mach64P_RGB514Index(0x90, 0x00);
+
+    if (colorDepth == CRTC_PIX_WIDTH_24BPP ||
+	colorDepth == CRTC_PIX_WIDTH_32BPP)
+	mach64P_RGB514Index(0x04, 0x02);
+    else
+	mach64P_RGB514Index(0x04, 0x00);
+
+    mach64P_RGB514Index(0x05, 0x00);
+
+    if (!AccelMode) {
+	mach64P_RGB514Index(0x90, 0x03);
+	temp = mach64R_RGB514Index(0x30);
+	temp &= ~0x03;
+	mach64P_RGB514Index(0x30, temp);
+	mach64P_RGB514Index(0x71, 0x40);
+	mach64P_RGB514Index(0x02, 0x00);
+	mach64P_RGB514Index(0x71, 0x00);
+	mach64P_RGB514Index(0x0a, 0x03);
+	return FALSE;
+    }
+
+    mach64P_RGB514Index(0x02, 0x01);
+
+    switch (colorDepth) {
+    case CRTC_PIX_WIDTH_8BPP:
+	if (mach64DAC8Bit)
+	    mach64P_RGB514Index(0x71, 0x45);
+	else
+	    mach64P_RGB514Index(0x71, 0x41);
+	mach64P_RGB514Index(0x0a, 0x03);
+	break;
+    case CRTC_PIX_WIDTH_15BPP:
+	mach64P_RGB514Index(0x71, 0x45);
+	mach64P_RGB514Index(0x0a, 0x04);
+	mach64P_RGB514Index(0x0c, 0xc0);
+	break;
+    case CRTC_PIX_WIDTH_16BPP:
+	mach64P_RGB514Index(0x71, 0x45);
+	mach64P_RGB514Index(0x0a, 0x04);
+	mach64P_RGB514Index(0x0c, 0xc2);
+	break;
+    case CRTC_PIX_WIDTH_24BPP:
+    case CRTC_PIX_WIDTH_32BPP:
+	mach64P_RGB514Index(0x71, 0x45);
+	mach64P_RGB514Index(0x0a, 0x06);
+	mach64P_RGB514Index(0x0e, 0x03);
+	break;
+    }
+
+    temp = inb(ioCRTC_GEN_CNTL);
+    if (temp & CRTC_INTERLACE_EN) {
+	temp = mach64R_RGB514Index(0x71);
+	temp |= 0x20;
+	mach64P_RGB514Index(0x71, temp);
     }
 
     return muxMode;
@@ -1702,16 +2015,13 @@ void mach64SetRamdac(colorDepth, AccelMode, dotClock)
     muxMode = FALSE;
 
     WaitIdleEmpty();
-    if (AccelMode) {
-	temp = regrb(CRTC_GEN_CNTL) & ~CRTC_PIX_BY_2_EN;
-	regwb(CRTC_GEN_CNTL, temp);
+    if (AccelMode)
 	regwb(CRTC_GEN_CNTL+3, ((CRTC_EXT_DISP_EN | CRTC_EXT_EN) >> 24));
-    } else {
+    else
 	regwb(CRTC_GEN_CNTL+3, 0);
-    }
 
-    temp = regrb(CRTC_GEN_CNTL+3);
-    regwb(CRTC_GEN_CNTL+3, temp | (CRTC_EXT_DISP_EN >> 24));
+    temp = inb(ioCRTC_GEN_CNTL+3);
+    outb(ioCRTC_GEN_CNTL+3, temp | (CRTC_EXT_DISP_EN >> 24));
 
     switch(mach64RamdacSubType) {
     case DAC_ATI68860:
@@ -1733,6 +2043,9 @@ void mach64SetRamdac(colorDepth, AccelMode, dotClock)
 	break;
     case DAC_INTERNAL:
 	muxMode = mach64ProgramInternal(colorDepth, dotClock);
+	break;
+    case DAC_IBMRGB514:
+	muxMode = mach64ProgramIBMRGB514(colorDepth, dotClock);
 	break;
 #ifdef NOT_YET_SUPPORTED
     case DAC_STG1700:
@@ -1757,12 +2070,14 @@ void mach64SetRamdac(colorDepth, AccelMode, dotClock)
     }
 
     (void)inb(ioDAC_REGS);
-    regwb(CRTC_GEN_CNTL+3, temp);
+    outb(ioCRTC_GEN_CNTL+3, temp);
 
-    temp = regrb(CRTC_GEN_CNTL) & ~CRTC_PIX_BY_2_EN;
-    if (muxMode)
-	temp |= CRTC_PIX_BY_2_EN;
-    regwb(CRTC_GEN_CNTL, temp);
+    if (AccelMode && mach64Ramdac != DAC_INTERNAL) {
+	temp = regrb(CRTC_GEN_CNTL) & ~CRTC_PIX_BY_2_EN;
+	if (muxMode || isMuxMode)
+	    temp |= CRTC_PIX_BY_2_EN;
+	regwb(CRTC_GEN_CNTL, temp);
+    }
 }
 
 /*
@@ -1773,6 +2088,7 @@ void mach64InitDisplay(screen_idx)
      int screen_idx;
 {
     int temp;
+    char old_crtc_ext_disp;
 
     if (mach64Inited)
 	return;
@@ -1783,13 +2099,15 @@ void mach64InitDisplay(screen_idx)
 
     mach64SaveVGAInfo(screen_idx);
 
+    WaitIdleEmpty();
+
     if (mach64ChipType != MACH64_CT && mach64ChipType != MACH64_ET) {
-	outb(ATIEXT, ATI2E); old_ATI2E = inb(ATIEXT+1);
-	outb(ATIEXT, ATI32); old_ATI32 = inb(ATIEXT+1);
-	outb(ATIEXT, ATI36); old_ATI36 = inb(ATIEXT+1);
-	outb(VGAGRA, GRA06); old_GRA06 = inb(VGAGRA+1);
-	outb(VGASEQ, SEQ02); old_SEQ02 = inb(VGASEQ+1);
-	outb(VGASEQ, SEQ04); old_SEQ04 = inb(VGASEQ+1);
+	outb(ATIExtReg, ATI2E); old_ATI2E = inb(ATIExtReg+1);
+	outb(ATIExtReg, ATI32); old_ATI32 = inb(ATIExtReg+1);
+	outb(ATIExtReg, ATI36); old_ATI36 = inb(ATIExtReg+1);
+	outb(VGAGRA, GRA06);    old_GRA06 = inb(VGAGRA+1);
+	outb(VGASEQ, SEQ02);    old_SEQ02 = inb(VGASEQ+1);
+	outb(VGASEQ, SEQ04);    old_SEQ04 = inb(VGASEQ+1);
     } else {
 	old_CRTC_H_SYNC_STRT_WID = regr(CRTC_H_SYNC_STRT_WID);
 	old_CRTC_H_TOTAL_DISP = regr(CRTC_H_TOTAL_DISP);
@@ -1797,9 +2115,9 @@ void mach64InitDisplay(screen_idx)
 	old_CRTC_V_TOTAL_DISP = regr(CRTC_V_TOTAL_DISP);
     }
 
-    old_DAC_MASK = inb(ioDAC_REGS+2);
-
     WaitIdleEmpty();
+
+    old_DAC_MASK = inb(ioDAC_REGS+2);
 
     switch (mach64RamdacSubType) {
     case DAC_ATI68860:
@@ -1864,6 +2182,20 @@ void mach64InitDisplay(screen_idx)
 	mach64DACRead4();
 	old_ATT20C408 = inb(ioDAC_REGS+2);
 	break;
+    case DAC_IBMRGB514:
+	old_crtc_ext_disp = inb(ioCRTC_GEN_CNTL+3);
+	outb(ioCRTC_GEN_CNTL+3, old_crtc_ext_disp | (CRTC_EXT_DISP_EN >> 24));
+
+	for (temp = 0; temp < 0x100; temp++) {
+	    old_IBMRGB514[temp] = mach64R_RGB514Index(temp);
+#ifdef DEBUG
+	    ErrorF("IBM-RGB514[0x%02x] = 0x%02x\n", temp, old_IBMRGB514[temp]);
+#endif
+	}
+
+	(void)inb(ioDAC_REGS); /* Clear DAC Counter */
+	outb(ioCRTC_GEN_CNTL+3, old_crtc_ext_disp);
+	break;
     default:
 	break;
     }
@@ -1875,10 +2207,10 @@ void mach64InitDisplay(screen_idx)
 #endif
     }
 
-
+    WaitQueue(7);
     old_BUS_CNTL = regr(BUS_CNTL);
     old_MEM_CNTL = regr(MEM_CNTL);
-    old_CRTC_GEN_CNTL = inl(ioCRTC_GEN_CNTL);
+    old_CRTC_GEN_CNTL = regr(CRTC_GEN_CNTL);
 
 #ifdef DEBUG
     ErrorF("BUS_CNTL was 0x%08x, MEM_CNTL was 0x%08x\n", old_BUS_CNTL,
@@ -1914,6 +2246,7 @@ void mach64InitDisplay(screen_idx)
     if (mach64InfoRec.bitsPerPixel == 8)
         mach64InitLUT();
 
+    WaitQueue(2);
     old_DAC_CNTL = inl(ioDAC_CNTL);
     if (mach64DAC8Bit)
 	outl(ioDAC_CNTL, old_DAC_CNTL | DAC_8BIT_EN);
@@ -1930,6 +2263,7 @@ void mach64InitDisplay(screen_idx)
 void mach64CleanUp()
 {
     int temp;
+    char old_crtc_ext_disp;
 
     if (!mach64Inited)
 	return;
@@ -1941,6 +2275,7 @@ void mach64CleanUp()
 
     mach64SetRamdac(CRTC_PIX_WIDTH_8BPP, FALSE, 5035);
 
+    WaitIdleEmpty();
     switch (mach64RamdacSubType) {
     case DAC_ATI68860:
     case DAC_ATI68880:
@@ -2009,6 +2344,16 @@ void mach64CleanUp()
 	mach64DACRead4();
 	outb(ioDAC_REGS+2, old_ATT20C408);
 	break;
+    case DAC_IBMRGB514:
+	old_crtc_ext_disp = inb(ioCRTC_GEN_CNTL+3);
+	outb(ioCRTC_GEN_CNTL+3, old_crtc_ext_disp | (CRTC_EXT_DISP_EN >> 24));
+
+	for (temp = 0; temp < 0x100; temp++)
+	    mach64P_RGB514Index(temp, old_IBMRGB514[temp]);
+
+	(void)inb(ioDAC_REGS); /* Clear DAC Counter */
+	outb(ioCRTC_GEN_CNTL+3, old_crtc_ext_disp);
+	break;
     default:
 	break;
     }
@@ -2018,23 +2363,8 @@ void mach64CleanUp()
 	LUTInited = FALSE;
     }
 
-    if (mach64ChipType != MACH64_CT && mach64ChipType != MACH64_ET) {
-	/* Reset the VGA registers */
-	WaitQueue(6);
-	outw(ATIEXT, ATI2E | old_ATI2E << 8);
-	outw(ATIEXT, ATI32 | old_ATI32 << 8);
-	outw(ATIEXT, ATI36 | old_ATI36 << 8);
-	outw(VGAGRA, GRA06 | old_GRA06 << 8);
-	outw(VGASEQ, SEQ02 | old_SEQ02 << 8);
-	outw(VGASEQ, SEQ04 | old_SEQ04 << 8);
-    } else {
-	regw(CRTC_H_SYNC_STRT_WID, old_CRTC_H_SYNC_STRT_WID);
-	regw(CRTC_H_TOTAL_DISP, old_CRTC_H_TOTAL_DISP);
-	regw(CRTC_V_SYNC_STRT_WID, old_CRTC_V_SYNC_STRT_WID);
-	regw(CRTC_V_TOTAL_DISP, old_CRTC_V_TOTAL_DISP);
-    }
+    WaitIdleEmpty();
 
-    WaitQueue(8);
     outb(ioDAC_REGS+2, old_DAC_MASK);
     outl(ioDAC_CNTL, old_DAC_CNTL);
 
@@ -2049,6 +2379,22 @@ void mach64CleanUp()
     regw(CRTC_GEN_CNTL, old_CRTC_GEN_CNTL);
 
     mach64CursorOff();
+
+    WaitIdleEmpty();
+    if (mach64ChipType != MACH64_CT && mach64ChipType != MACH64_ET) {
+	/* Reset the VGA registers */
+	outw(ATIExtReg, ATI2E | old_ATI2E << 8);
+	outw(ATIExtReg, ATI32 | old_ATI32 << 8);
+	outw(ATIExtReg, ATI36 | old_ATI36 << 8);
+	outw(VGAGRA, GRA06 | old_GRA06 << 8);
+	outw(VGASEQ, SEQ02 | old_SEQ02 << 8);
+	outw(VGASEQ, SEQ04 | old_SEQ04 << 8);
+    } else {
+	regw(CRTC_H_SYNC_STRT_WID, old_CRTC_H_SYNC_STRT_WID);
+	regw(CRTC_H_TOTAL_DISP, old_CRTC_H_TOTAL_DISP);
+	regw(CRTC_V_SYNC_STRT_WID, old_CRTC_V_SYNC_STRT_WID);
+	regw(CRTC_V_TOTAL_DISP, old_CRTC_V_TOTAL_DISP);
+    }
 
     mach64RestoreVGAInfo();
 

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.0 1995/12/07 07:24:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.1 1995/12/09 11:07:08 dawes Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -454,10 +454,10 @@ i128Probe()
 #endif
    i128mem.rbase_g = (unsigned long *)xf86MapVidMem(0, 4,
 			(pointer)(i128pci.base4 & 0xFFFF0000), 64 * 1024);
-   i128mem.rbase_w = i128mem.rbase_g +  8 * 1024;
-   i128mem.rbase_a = i128mem.rbase_g + 16 * 1024;
-   i128mem.rbase_b = i128mem.rbase_g + 24 * 1024;
-   i128mem.rbase_i = i128mem.rbase_g + 32 * 1024;
+   i128mem.rbase_w = i128mem.rbase_g + ( 8 * 1024)/4;
+   i128mem.rbase_a = i128mem.rbase_g + (16 * 1024)/4;
+   i128mem.rbase_b = i128mem.rbase_g + (24 * 1024)/4;
+   i128mem.rbase_i = i128mem.rbase_g + (32 * 1024)/4;
    i128mem.rbase_g_b = (unsigned char *)i128mem.rbase_g;
 
    if (i128pci.devicevendor == I128_DEVICE_ID1) {
@@ -700,6 +700,16 @@ int freq;
    i128mem.rbase_g_b[DATA_TI] = n;
    i128mem.rbase_g_b[DATA_TI] = m;
    i128mem.rbase_g_b[DATA_TI] = p | TI_PLL_ENABLE;
+
+#ifdef NOTYET
+   /*
+    * Program the MCLK to 57MHz
+    */
+   i128mem.rbase_g_b[INDEX_TI] = TI_MCLK_PLL_DATA;
+   i128mem.rbase_g_b[DATA_TI] = 0x05;
+   i128mem.rbase_g_b[DATA_TI] = 0x05;
+   i128mem.rbase_g_b[DATA_TI] = 0x05;
+#endif
 
    switch (i128InfoRec.bitsPerPixel) {
 	case 8:

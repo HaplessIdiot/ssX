@@ -1,5 +1,5 @@
 /* $XConsortium: xf86vmode.c /main/2 1995/11/14 18:18:39 kaleb $ */
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.12 1995/12/02 05:03:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.13 1995/12/09 11:05:56 dawes Exp $ */
 
 /*
 
@@ -435,7 +435,8 @@ ProcVGAHelpModModeLine(client)
 	    return BadValue;
     }
     if (mptr->PrivSize && mptr->Private) {
-	modetmp.Private = ALLOCATE_LOCAL(mptr->PrivSize * sizeof(INT32));
+	modetmp.Private =
+		(INT32 *)ALLOCATE_LOCAL(mptr->PrivSize * sizeof(INT32));
 	if (stuff->privsize)
 	    memcpy(modetmp.Private, &stuff[1], mptr->PrivSize * sizeof(INT32));
 	else

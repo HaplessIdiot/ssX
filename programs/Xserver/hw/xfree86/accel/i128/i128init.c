@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128init.c,v 3.0 1995/12/07 07:24:07 dawes Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -31,6 +31,7 @@
 
 typedef struct {
 unsigned long i128_base_g[0x60/4];	/* base g registers                  */
+unsigned long i128_base_w[0x28/4];	/* base w registers                  */
 unsigned char Ti302X[0x40];		/* Ti302[05] registers               */
 unsigned char Ti3025[9];		/* Ti3025 N,M,P for PCLK, MCLK, LCLK */
 } i128Registers;
@@ -74,6 +75,15 @@ saveI128state()
 	iR.i128_base_g[CRT_ZOOM] = i128mem.rbase_g[CRT_ZOOM]; /*  0x0054  */
 	iR.i128_base_g[CRT_1CON] = i128mem.rbase_g[CRT_1CON]; /*  0x0058  */
 	iR.i128_base_g[CRT_2CON] = i128mem.rbase_g[CRT_2CON]; /*  0x005C  */
+
+	iR.i128_base_w[MW0_CTRL] = i128mem.rbase_w[MW0_CTRL]; /*  0x0000  */
+	iR.i128_base_w[MW0_SZ]   = i128mem.rbase_w[MW0_SZ];   /*  0x0008  */
+	iR.i128_base_w[MW0_PGE]  = i128mem.rbase_w[MW0_PGE];  /*  0x000C  */
+	iR.i128_base_w[MW0_ORG]  = i128mem.rbase_w[MW0_ORG];  /*  0x0010  */
+	iR.i128_base_w[MW0_MSRC] = i128mem.rbase_w[MW0_MSRC]; /*  0x0018  */
+	iR.i128_base_w[MW0_WKEY] = i128mem.rbase_w[MW0_WKEY]; /*  0x001C  */
+	iR.i128_base_w[MW0_KDAT] = i128mem.rbase_w[MW0_KDAT]; /*  0x0020  */
+	iR.i128_base_w[MW0_MASK] = i128mem.rbase_w[MW0_MASK]; /*  0x0024  */
 
 	i128mem.rbase_g_b[INDEX_TI] = TI_CURS_CONTROL;
 	iR.Ti302X[TI_CURS_CONTROL] = i128mem.rbase_g_b[DATA_TI];
@@ -234,6 +244,15 @@ restoreI128state()
 	i128mem.rbase_g_b[INDEX_TI] = TI_MCLK_DCLK_CONTROL;
 	i128mem.rbase_g_b[DATA_TI] = iR.Ti302X[TI_MCLK_DCLK_CONTROL];
 
+	i128mem.rbase_w[MW0_CTRL] = iR.i128_base_w[MW0_CTRL]; /*  0x0000  */
+	i128mem.rbase_w[MW0_SZ]   = iR.i128_base_w[MW0_SZ];   /*  0x0008  */
+	i128mem.rbase_w[MW0_PGE]  = iR.i128_base_w[MW0_PGE];  /*  0x000C  */
+	i128mem.rbase_w[MW0_ORG]  = iR.i128_base_w[MW0_ORG];  /*  0x0010  */
+	i128mem.rbase_w[MW0_MSRC] = iR.i128_base_w[MW0_MSRC]; /*  0x0018  */
+	i128mem.rbase_w[MW0_WKEY] = iR.i128_base_w[MW0_WKEY]; /*  0x001C  */
+	i128mem.rbase_w[MW0_KDAT] = iR.i128_base_w[MW0_KDAT]; /*  0x0020  */
+	i128mem.rbase_w[MW0_MASK] = iR.i128_base_w[MW0_MASK]; /*  0x0024  */
+
 	i128mem.rbase_g[INDEX_TI/4] = iR.i128_base_g[INDEX_TI/4]; /* 0x0018 */
 	i128mem.rbase_g[DATA_TI/4]  = iR.i128_base_g[DATA_TI/4];  /* 0x001C */
 	i128mem.rbase_g[INT_VCNT] = iR.i128_base_g[INT_VCNT]; /*  0x0020  */
@@ -292,7 +311,6 @@ i128Init(mode)
 	i128mem.rbase_g[INT_VCNT] = 0x00;
 	i128mem.rbase_g[INT_HCNT] = 0x00;
 	i128mem.rbase_g[DB_ADR] = 0x00;
-	/*i128mem.rbase_g[DB_PTCH] = mode->HDisplay * pitch_multiplier;*/
 	i128mem.rbase_g[DB_PTCH] = i128DisplayWidth * pitch_multiplier;
 	i128mem.rbase_g[CRT_HAC] = mode->HDisplay/4;
 	i128mem.rbase_g[CRT_HBL] = (mode->HTotal - mode->HDisplay)/4;
@@ -305,6 +323,20 @@ i128Init(mode)
 	i128mem.rbase_g[CRT_BORD] = 0x00;
 	i128mem.rbase_g[CRT_1CON] = 0x00000070;
 	i128mem.rbase_g[CRT_2CON] = 0x01040101;
+
+	i128mem.rbase_w[MW0_CTRL] = 0x00000000;
+	if (i128InfoRec.videoRam == 2048)
+		i128mem.rbase_w[MW0_SZ]   = 0x00000009;
+	else if (i128InfoRec.videoRam == 8192)
+		i128mem.rbase_w[MW0_SZ]   = 0x0000000B;
+	else
+		i128mem.rbase_w[MW0_SZ]   = 0x0000000A;  /* default to 4MB */
+	i128mem.rbase_w[MW0_PGE]  = 0x00000000;
+	i128mem.rbase_w[MW0_ORG]  = 0x00000000;
+	i128mem.rbase_w[MW0_MSRC] = 0x00000000;
+	i128mem.rbase_w[MW0_WKEY] = 0x00000000;
+	i128mem.rbase_w[MW0_KDAT] = 0x00000000;
+	i128mem.rbase_w[MW0_MASK] = 0xFFFFFFFF;
 
 	i128ProgramTi3025(mode->SynthClock);
 
