@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.240 2001/03/05 20:18:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.241 2001/03/28 17:58:39 dawes Exp $ */
 
 
 /*
@@ -454,6 +454,7 @@ GenerateDriverlist(char * dirname, char * drivernames)
         const char *subdirs[] = {NULL, NULL};
         static const char *patlist[] = {"(.*)_drv\\.so", "(.*)_drv\\.o", NULL};
         char **dlist, **clist, **dcp, **ccp;
+	int size;
 
         subdirs[0] = dirname;
 
@@ -468,13 +469,16 @@ GenerateDriverlist(char * dirname, char * drivernames)
 
         /* The resulting list cannot be longer than the module list */
         for (dcp = dlist, count = 0;  *dcp++;  count++);
-        driverlist = (char **)xnfalloc((count + 1) * sizeof(char *));
+        driverlist = (char **)xnfalloc((size = count + 1) * sizeof(char *));
 
         /* First, add modules not in compiled-in list */
         for (count = 0, dcp = dlist;  *dcp;  dcp++) {
             for (ccp = clist;  ;  ccp++) {
                 if (!*ccp) {
                     driverlist[count++] = *dcp;
+		    if (count >= size)
+			driverlist = (char**)
+			    xnfrealloc(driverlist, ++size * sizeof(char*));
                     break;
                 }
                 if (!strcmp(*ccp, *dcp))
@@ -487,6 +491,9 @@ GenerateDriverlist(char * dirname, char * drivernames)
             for (dcp = dlist;  *dcp;  dcp++) {
                 if (!strcmp(*ccp, *dcp)) {
                     driverlist[count++] = *ccp;
+		    if (count >= size)
+			driverlist = (char**)
+			    xnfrealloc(driverlist, ++size * sizeof(char*));
                     break;
                 }
             }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.150 2001/04/05 17:42:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.151 2001/05/15 18:22:21 paulo Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -311,8 +311,11 @@ int  xf86RegisterRootWindowProperty(int ScrnIndex, Atom	property, Atom type,
 				    int format, unsigned long len,
 				    pointer value);
 Bool xf86IsUnblank(int mode);
+
+#ifdef XFree86LOADER
 void xf86AddModuleInfo(ModuleInfoPtr info, pointer module);
 void xf86DeleteModuleInfo(int idx);
+#endif
 
 /* xf86Debug.c */
 #ifdef BUILDDEBUG
