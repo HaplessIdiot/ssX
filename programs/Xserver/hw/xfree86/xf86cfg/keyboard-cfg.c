@@ -134,22 +134,24 @@ KeyboardConfig(XtPointer config)
 	    xkb_infos[num_xkb_infos++] = xkb_info;
 
 	    xkb_info->conf = keyboard;
+	    bzero((char*)&(xkb_info->defs), sizeof(XkbRF_VarDefsRec));
 	    while (timeout > 0) {
 		xkb_info->xkb =
 		    XkbGetKeyboard(XtDisplay(configp),
 				   XkbGBN_AllComponentsMask, XkbUseCoreKbd);
-		if (xkb_info->xkb == NULL || xkb_info->xkb->geom == NULL)
-		    sleep(timeout -= 1);
+		if (xkb_info->xkb == NULL) {
+		    timeout -= 1;
+		    sleep(1);
+		}		    
 		else
 		    break;
 	    }
 	    if (timeout <= 0) {
 		fprintf(stderr, "Couldn't get keyboard\n");
 	    }
-	    if (xkb_info->xkb->names->geometry == 0)
+	    if (xkb_info->xkb && xkb_info->xkb->names && xkb_info->xkb->geom &&
+		xkb_info->xkb->names->geometry == 0)
 		xkb_info->xkb->names->geometry = xkb_info->xkb->geom->name;
-
-	    bzero((char*)&(xkb_info->defs), sizeof(XkbRF_VarDefsRec));
 	}
 
 	/* check for removed devices */
@@ -450,11 +452,12 @@ InitializeKeyboard(void)
     xkb_infos = (XkbInfo**)XtCalloc(1, sizeof(XkbInfo*));
     num_xkb_infos = 1;
     xkb_infos[0] = xkb_info;
+    bzero((char*)&(xkb_info->defs), sizeof(XkbRF_VarDefsRec));
 
     while (timeout > 0) {
 	xkb_info->xkb =
 	    XkbGetKeyboard(DPY, XkbGBN_AllComponentsMask, XkbUseCoreKbd);
-	if (xkb_info->xkb == NULL || xkb_info->xkb->geom == NULL) {
+	if (xkb_info->xkb == NULL) {
 	    timeout -= 1;
 	    sleep(1);
 	}
@@ -467,8 +470,6 @@ InitializeKeyboard(void)
     if (xkb_info->xkb && xkb_info->xkb->names && xkb_info->xkb->geom &&
 	xkb_info->xkb->names->geometry == 0)
 	xkb_info->xkb->names->geometry = xkb_info->xkb->geom->name;
-
-    bzero((char*)&(xkb_info->defs), sizeof(XkbRF_VarDefsRec));
 
     /* Load configuration */
     XmuSnprintf(name, sizeof(name), "%s%s", XkbConfigDir, XkbConfigFile);
@@ -564,6 +565,17 @@ InitializeKeyboard(void)
 	xkb_info->defs.options = option->opt_val;
     else
 	xkb_info->defs.options = NULL;
+
+    if (xkb_info->xkb == NULL) {
+	/* Try again */
+	XkbComponentNamesRec comps;
+
+	bzero((char*)&comps, sizeof(XkbComponentNamesRec));
+	XkbRF_GetComponents(xkb_rules->list, &(xkb_info->defs), &comps);
+
+	xkb_info->xkb = XkbGetKeyboardByName(DPY, XkbUseCoreKbd, &comps,
+					     XkbGBN_AllComponentsMask, 0, 0);
+    }
 }
 
 static XF86XkbRulesDescInfo *
@@ -856,8 +868,9 @@ UpdateKeyboard(Bool load)
 	fprintf(stderr, "Couldn't get keyboard\n");
 	return (False);
     }
-    if (xkb->names->geometry == 0)
-	xkb->names->geometry = xkb->geom->name;
+    if (xkb_info->xkb && xkb_info->xkb->names && xkb_info->xkb->geom &&
+	xkb_info->xkb->names->geometry == 0)
+	xkb_info->xkb->names->geometry = xkb_info->xkb->geom->name;
 
     XkbFreeKeyboard(xkb_info->xkb, 0, False);
 
