@@ -51,6 +51,7 @@ typedef enum {
     OPTION_FORCE_CRT2TYPE,
     OPTION_SHADOW_FB,
     OPTION_DRI,
+    OPTION_AGP_SIZE,
     OPTION_ROTATE,
     OPTION_NOXVIDEO,
     OPTION_VESA,
@@ -154,6 +155,7 @@ static const OptionInfoRec SISOptions[] = {
     { OPTION_FORCE_CRT2TYPE,    	"ForceCRT2Type",          OPTV_ANYSTR,    {0}, FALSE },
     { OPTION_SHADOW_FB,         	"ShadowFB",               OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_DRI,         		"DRI",               	  OPTV_BOOLEAN,   {0}, FALSE },
+    { OPTION_AGP_SIZE,			"AGPSize",      	  OPTV_INTEGER,   {0}, FALSE },
     { OPTION_ROTATE,            	"Rotate",                 OPTV_ANYSTR,    {0}, FALSE },
     { OPTION_NOXVIDEO,          	"NoXvideo",               OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_VESA,			"Vesa",		          OPTV_BOOLEAN,   {0}, FALSE },
@@ -287,6 +289,7 @@ SiSOptions(ScrnInfoPtr pScrn)
     pSiS->Rotate = FALSE;
     pSiS->ShadowFB = FALSE;
     pSiS->loadDRI = TRUE;
+    pSiS->agpWantedPages = AGP_PAGES;
     pSiS->VESA = -1;
     pSiS->NoXvideo = FALSE;
     pSiS->maxxfbmem = 0;
@@ -1482,6 +1485,7 @@ SiSOptions(ScrnInfoPtr pScrn)
        }
     }
 
+#ifdef XF86DRI
     /* DRI */
     from = X_DEFAULT;
     if(xf86GetOptValBool(pSiS->Options, OPTION_DRI, &pSiS->loadDRI)) {
@@ -1489,6 +1493,19 @@ SiSOptions(ScrnInfoPtr pScrn)
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "DRI %s\n",
        pSiS->loadDRI ? enabledstr : disabledstr);
+
+    /* AGPSize */
+    {
+       int vali;
+       if(xf86GetOptValInteger(pSiS->Options, OPTION_AGP_SIZE, &vali)) {
+	  if((vali >= 8) && (vali <= 512)) {
+	     pSiS->agpWantedPages = (vali * 1024 * 1024) / AGP_PAGE_SIZE;
+	  } else {
+	     xf86DrvMsg(pScrn->scrnIndex, X_WARNING, ilrangestr, "AGPSize", 8, 512);
+	  }
+       }
+    }
+#endif
 
    /* NoXVideo
     * Set this to TRUE to disable Xv hardware video acceleration

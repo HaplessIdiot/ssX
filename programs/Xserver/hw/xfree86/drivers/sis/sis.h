@@ -36,7 +36,7 @@
 
 #define SISDRIVERVERSIONYEAR    3
 #define SISDRIVERVERSIONMONTH   11
-#define SISDRIVERVERSIONDAY     6
+#define SISDRIVERVERSIONDAY     7
 #define SISDRIVERREVISION       1
 
 #define SISDRIVERIVERSION (SISDRIVERVERSIONYEAR << 16) | (SISDRIVERVERSIONMONTH << 8) \
@@ -354,6 +354,16 @@ typedef unsigned char UChar;
 #define SiS_CF2_TVPALN     0x40
 #define SiS_CF2_CRT1LCDA   0x80
 
+/* AGP stuff for DRI */
+#define AGP_PAGE_SIZE 4096
+#define AGP_PAGES     2048	 /* Default: 2048 pages @ 4096 = 8MB */
+/* 300 */
+#define AGP_CMDBUF_PAGES 256
+#define AGP_CMDBUF_SIZE (AGP_PAGE_SIZE * AGP_CMDBUF_PAGES)
+/* 315/330 */
+#define AGP_VTXBUF_PAGES 512
+#define AGP_VTXBUF_SIZE (AGP_PAGE_SIZE * AGP_VTXBUF_PAGES)
+
 /* For backup of register contents */
 typedef struct {
     unsigned char sisRegs3C4[0x50];
@@ -403,6 +413,8 @@ typedef struct {
     unsigned long	agpAddr;
     unsigned char 	*agpBase;
     unsigned int 	agpSize;
+    unsigned int        agpWantedSize;
+    unsigned int        agpWantedPages;
     unsigned long	agpCmdBufAddr;  /* 300 series */
     unsigned char 	*agpCmdBufBase;
     unsigned int 	agpCmdBufSize;
@@ -635,6 +647,8 @@ typedef struct {
     unsigned long	agpAddr;
     unsigned char 	*agpBase;
     unsigned int 	agpSize;
+    unsigned int        agpWantedSize;
+    unsigned int        agpWantedPages;
     unsigned long	agpCmdBufAddr;  /* 300 series */
     unsigned char 	*agpCmdBufBase;
     unsigned int 	agpCmdBufSize;
