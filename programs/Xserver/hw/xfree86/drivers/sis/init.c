@@ -680,57 +680,57 @@ SiSInitPtr(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 /*********************************************/
 
 void
-SiS_SetReg(USHORT port, USHORT index, USHORT data)
+SiS_SetReg(SISIOADDRESS port, USHORT index, USHORT data)
 {
    OutPortByte(port,index);
    OutPortByte(port + 1,data);
 }
 
 void
-SiS_SetRegByte(USHORT port, USHORT data)
+SiS_SetRegByte(SISIOADDRESS port, USHORT data)
 {
    OutPortByte(port,data);
 }
 
 void
-SiS_SetRegShort(USHORT port, USHORT data)
+SiS_SetRegShort(SISIOADDRESS port, USHORT data)
 {
    OutPortWord(port,data);
 }
 
 void
-SiS_SetRegLong(USHORT port, ULONG data)
+SiS_SetRegLong(SISIOADDRESS port, ULONG data)
 {
    OutPortLong(port,data);
 }
 
 UCHAR
-SiS_GetReg(USHORT port, USHORT index)
+SiS_GetReg(SISIOADDRESS port, USHORT index)
 {
    OutPortByte(port,index);
    return(InPortByte(port + 1));
 }
 
 UCHAR
-SiS_GetRegByte(USHORT port)
+SiS_GetRegByte(SISIOADDRESS port)
 {
    return(InPortByte(port));
 }
 
 USHORT
-SiS_GetRegShort(USHORT port)
+SiS_GetRegShort(SISIOADDRESS port)
 {
    return(InPortWord(port));
 }
 
 ULONG
-SiS_GetRegLong(USHORT port)
+SiS_GetRegLong(SISIOADDRESS port)
 {
    return(InPortLong(port));
 }
 
 void
-SiS_SetRegANDOR(USHORT Port,USHORT Index,USHORT DataAND,USHORT DataOR)
+SiS_SetRegANDOR(SISIOADDRESS Port,USHORT Index,USHORT DataAND,USHORT DataOR)
 {
   USHORT temp;
 
@@ -740,7 +740,7 @@ SiS_SetRegANDOR(USHORT Port,USHORT Index,USHORT DataAND,USHORT DataOR)
 }
 
 void
-SiS_SetRegAND(USHORT Port,USHORT Index,USHORT DataAND)
+SiS_SetRegAND(SISIOADDRESS Port,USHORT Index,USHORT DataAND)
 {
   USHORT temp;
 
@@ -750,7 +750,7 @@ SiS_SetRegAND(USHORT Port,USHORT Index,USHORT DataAND)
 }
 
 void
-SiS_SetRegOR(USHORT Port,USHORT Index,USHORT DataOR)
+SiS_SetRegOR(SISIOADDRESS Port,USHORT Index,USHORT DataOR)
 {
   USHORT temp;
 
@@ -781,7 +781,7 @@ SiS_DisplayOff(SiS_Private *SiS_Pr)
 /*********************************************/
 
 void
-SiSRegInit(SiS_Private *SiS_Pr, USHORT BaseAddr)
+SiSRegInit(SiS_Private *SiS_Pr, SISIOADDRESS BaseAddr)
 {
    SiS_Pr->SiS_P3c4 = BaseAddr + 0x14;
    SiS_Pr->SiS_P3d4 = BaseAddr + 0x24;
@@ -2675,7 +2675,7 @@ SiS_ClearDAC(SiS_Private *SiS_Pr, ULONG port)
 #endif
 
 static void
-SiS_WriteDAC(SiS_Private *SiS_Pr, USHORT DACData, USHORT shiftflag,
+SiS_WriteDAC(SiS_Private *SiS_Pr, SISIOADDRESS DACData, USHORT shiftflag,
              USHORT dl, USHORT ah, USHORT al, USHORT dh)
 {
   USHORT temp,bh,bl;
@@ -2713,7 +2713,8 @@ SiS_LoadDAC(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,
    USHORT data,data2;
    USHORT time,i,j,k,m,n,o;
    USHORT si,di,bx,dl,al,ah,dh;
-   USHORT DACAddr, DACData, shiftflag;
+   USHORT shiftflag;
+   SISIOADDRESS DACAddr, DACData;
    const USHORT *table = NULL;
 
    if(ModeNo <= 0x13) {
@@ -3002,7 +3003,7 @@ SiSSetMode(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,USHORT ModeNo)
    ULONG   temp;
    USHORT  ModeIdIndex,KeepLockReg;
    UCHAR  *ROMAddr  = HwInfo->pjVirtualRomBase;
-   USHORT  BaseAddr = (USHORT)HwInfo->ulIOAddress;
+   SISIOADDRESS BaseAddr = HwInfo->ulIOAddress;
    unsigned char backupreg=0, tempr1, tempr2;
 
 #ifndef LINUX_XF86
@@ -3253,7 +3254,7 @@ SiSBIOSSetModeCRT2(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, ScrnInfoPtr pScrn,
    ULONG   temp;
    USHORT  ModeIdIndex;
    UCHAR  *ROMAddr  = HwInfo->pjVirtualRomBase;
-   USHORT  BaseAddr = (USHORT)HwInfo->ulIOAddress;
+   SISIOADDRESS BaseAddr = HwInfo->ulIOAddress;
    UShort  ModeNo   = 0;
    SISPtr  pSiS     = SISPTR(pScrn);
    SISEntPtr pSiSEnt = pSiS->entityPrivate;
@@ -3456,7 +3457,7 @@ SiSBIOSSetModeCRT1(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, ScrnInfoPtr pScrn,
    SISPtr  pSiS = SISPTR(pScrn);
    SISEntPtr pSiSEnt = pSiS->entityPrivate;
    USHORT  ModeIdIndex, ModeNo=0;
-   USHORT  BaseAddr = (USHORT)HwInfo->ulIOAddress;
+   SISIOADDRESS BaseAddr = HwInfo->ulIOAddress;
    unsigned char backupreg=0, backupcr30, backupcr31, backupcr38;
    BOOLEAN backupcustom;
 

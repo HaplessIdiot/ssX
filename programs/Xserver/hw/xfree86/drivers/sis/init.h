@@ -2471,20 +2471,20 @@ static const SiS_PlasmaTables SiS_PlasmaTable[] = {
    { 0x0000 }
 };
 
-void 	SiS_SetReg(USHORT port, USHORT index, USHORT data);
-void 	SiS_SetRegByte(USHORT port, USHORT data);
-void  	SiS_SetRegShort(USHORT port, USHORT data);
-void	SiS_SetRegLong(USHORT port, ULONG data);
-UCHAR	SiS_GetReg(USHORT port, USHORT index);
-UCHAR 	SiS_GetRegByte(USHORT port);
-USHORT	SiS_GetRegShort(USHORT port);
-ULONG	SiS_GetRegLong(USHORT port);
-void	SiS_SetRegANDOR(USHORT Port,USHORT Index,USHORT DataAND,USHORT DataOR);
-void 	SiS_SetRegAND(USHORT Port,USHORT Index,USHORT DataAND);
-void	SiS_SetRegOR(USHORT Port,USHORT Index,USHORT DataOR);
+void 	SiS_SetReg(SISIOADDRESS port, USHORT index, USHORT data);
+void 	SiS_SetRegByte(SISIOADDRESS port, USHORT data);
+void  	SiS_SetRegShort(SISIOADDRESS port, USHORT data);
+void	SiS_SetRegLong(SISIOADDRESS port, ULONG data);
+UCHAR	SiS_GetReg(SISIOADDRESS port, USHORT index);
+UCHAR 	SiS_GetRegByte(SISIOADDRESS port);
+USHORT	SiS_GetRegShort(SISIOADDRESS port);
+ULONG	SiS_GetRegLong(SISIOADDRESS port);
+void	SiS_SetRegANDOR(SISIOADDRESS Port,USHORT Index,USHORT DataAND,USHORT DataOR);
+void 	SiS_SetRegAND(SISIOADDRESS Port,USHORT Index,USHORT DataAND);
+void	SiS_SetRegOR(SISIOADDRESS Port,USHORT Index,USHORT DataOR);
 void	SiS_DisplayOn(SiS_Private *SiS_Pr);
 void	SiS_DisplayOff(SiS_Private *SiS_Pr);
-void	SiSRegInit(SiS_Private *SiS_Pr, USHORT BaseAddr);
+void	SiSRegInit(SiS_Private *SiS_Pr, SISIOADDRESS BaseAddr);
 void	SiSSetLVDSetc(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo);
 void	SiS_SetEnableDstn(SiS_Private *SiS_Pr, int enable);
 void	SiS_SetEnableFstn(SiS_Private *SiS_Pr, int enable);

@@ -9499,7 +9499,7 @@ SiS_ChrontelDoSomething1(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 /*      MAIN: SET CRT2 REGISTER GROUP        */
 /*********************************************/
 
-BOOL
+BOOLEAN
 SiS_SetCRT2Group(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, USHORT ModeNo)
 {
 #ifdef SIS300

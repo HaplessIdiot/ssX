@@ -60,6 +60,7 @@
 #include "xaa.h"
 #include "vgaHW.h"
 #include "vbe.h"
+
 #include "osdef.h"
 #include "vgatypes.h"
 #include "vstruct.h"
@@ -76,10 +77,6 @@
 #include "dri.h"
 #include "GL/glxint.h"
 #include "sis_dri.h"
-#endif
-
-#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,2,0,0,0)
-typedef unsigned long IOADDRESS;
 #endif
 
 #if 1
@@ -523,7 +520,7 @@ typedef struct {
 #ifdef __alpha__
     unsigned char *     IOBaseDense;    /* MMIO for Alpha platform */
 #endif
-    CARD16              RelIO;          /* Relocated IO Ports baseaddress */
+    SISIOADDRESS        RelIO;          /* Relocated IO Ports baseaddress */
     unsigned char *     BIOS;
     int                 MemClock;
     int                 BusWidth;

@@ -2549,8 +2549,8 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     /* Get our relocated IO registers */
-    pSiS->RelIO = (pSiS->PciInfo->ioBase[2] & 0xFFFC) + pSiS->IODBase;
-    pSiS->sishw_ext.ulIOAddress = pSiS->RelIO + 0x30;
+    pSiS->RelIO = (SISIOADDRESS)((pSiS->PciInfo->ioBase[2] & 0xFFFC) + pSiS->IODBase);
+    pSiS->sishw_ext.ulIOAddress = (SISIOADDRESS)(pSiS->RelIO + 0x30);
     xf86DrvMsg(pScrn->scrnIndex, from, "Relocated IO registers at 0x%lX\n",
            (unsigned long)pSiS->RelIO);
 
