@@ -1,5 +1,5 @@
 XCOMM $TOG: Imake.cf /main/28 1997/06/25 08:31:36 barstow $
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.40 1998/06/27 12:53:22 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.41 1998/08/16 10:24:01 dawes Exp $
 /*
  * To add support for another platform:
  * 
@@ -660,6 +660,10 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.40 1998/06/27 12:53:22 hohndel Exp $
 #endif	/* i386 */
 #undef i386
 #endif /* MACH */
+
+#ifdef unix
+#undef unix
+#endif
 
 #ifdef emxos2
 #define MacroIncludeFile <os2.cf>

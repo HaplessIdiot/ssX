@@ -54,7 +54,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.5.2.2 1998/07/05 14:35:56 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.6 1998/07/25 06:56:58 dawes Exp $ */
 
 /*
 
@@ -127,7 +127,7 @@ static void fillrun();
  
  
 extern psfont *FontP;
-extern psobj *ISOLatin1EncArrayP;
+extern psobj *ISOLatin1EncArrayP, *ISOLatin2EncArrayP;
 
 extern unsigned long *Xalloc();
 static void fill();
@@ -252,12 +252,18 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
        sxmult = hypot(vals->pixel_matrix[0], vals->pixel_matrix[1]);
        if (sxmult > EPS) sxmult = 1000.0 / sxmult;
 
-       p = entry->name.name + entry->name.length - 19;
        if (entry->name.ndashes == 14 &&
-	   p >= entry->name.name &&
+	   (p=entry->name.name + entry->name.length - 19) 
+             >= entry->name.name &&
 	   !strcmp (p, "-adobe-fontspecific"))
        {
 	   fontencoding = FontP->fontInfoP[ENCODING].value.data.arrayP;
+       } else if(entry->name.ndashes == 14 &&
+                 (p=entry->name.name + entry->name.length - 10) 
+                   >= entry->name.name &&
+                 !strcmp(p, "-iso8859-2"))
+       {
+	   fontencoding = ISOLatin2EncArrayP;
        }
 
        if (!fontencoding)

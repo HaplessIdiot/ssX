@@ -50,7 +50,7 @@ SOFTWARE.
 
 
 
-/* $XFree86: xc/programs/lbxproxy/os/osdep.h,v 1.3 1997/11/16 06:42:34 dawes Exp $ */
+/* $XFree86: xc/programs/lbxproxy/os/osdep.h,v 1.4 1998/08/16 10:25:53 dawes Exp $ */
 
 #define BOTIMEOUT 200 /* in milliseconds */
 #define BUFSIZE 4096
@@ -106,7 +106,7 @@ SOFTWARE.
 /* MAXSELECT is the number of fds that select() can handle */
 #define MAXSELECT (sizeof(fd_set) * NBBY)
 
-#ifndef hpux
+#if !defined(hpux) && !defined(SVR4) && !defined(SYSV)
 #define HAS_GETDTABLESIZE
 #endif
 
