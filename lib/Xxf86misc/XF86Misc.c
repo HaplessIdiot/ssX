@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86misc/XF86Misc.c,v 3.6 1998/06/27 12:53:25 hohndel Exp $ */
+/* $XFree86: xc/lib/Xxf86misc/XF86Misc.c,v 3.7 1998/06/28 03:52:34 dawes Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -228,3 +228,28 @@ Bool XF86MiscSetKbdSettings(dpy, kbdinfo)
     return True;
 }
 
+int XF86MiscSetGrabKeysState(dpy, enable)
+    Display* dpy;
+    Bool enable;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    xXF86MiscSetGrabKeysStateReply rep;
+    xXF86MiscSetGrabKeysStateReq *req;
+
+    XF86MiscCheckExtension (dpy, info, False);
+
+    LockDisplay(dpy);
+    GetReq(XF86MiscSetGrabKeysState, req);
+    req->reqType = info->codes->major_opcode;
+    req->xf86miscReqType = X_XF86MiscSetGrabKeysState;
+    req->enable = enable;
+    if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return 0;
+    }
+
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return rep.status;
+}
