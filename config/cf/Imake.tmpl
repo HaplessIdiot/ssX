@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.145 2003/06/12 14:12:24 eich Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.146 2003/09/21 10:54:13 herrb Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -286,6 +286,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 
 #ifndef HasGroff
 #define HasGroff NO
+#endif
+#ifndef HasGroffHtml
+#define HasGroffHtml NO
 #endif
 
 #ifndef HasCookieMaker
@@ -1441,7 +1444,7 @@ TCLIBDIR = TclLibDir
 #define NroffCmd nroff
 #endif
 #ifndef HTMLroffCmd
-#if HasGroff
+#if HasGroff && HasGroffHtml
 #define HTMLroffCmd groff -Thtml
 #endif
 #endif
