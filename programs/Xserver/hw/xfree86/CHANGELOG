@@ -1,4 +1,6 @@
 XFree86 4.0.1d (?? ?????? 2000)
+ 572. Reinstate non-MMIO-only version of ATI driver for Alpha architecture
+      (Marc La France).
  571. Fix input event queueuing for 64-bit platforms (Marc La France).
  570. IA-64 changes resulting from a source cross-check with Alpha support
       for 64-bit dependencies (Marc La France).
@@ -11092,4 +11094,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1288 2000/08/30 19:28:57 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1289 2000/08/31 19:03:56 tsi Exp $
