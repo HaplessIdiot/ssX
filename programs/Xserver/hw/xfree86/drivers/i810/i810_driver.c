@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.26 2000/09/04 19:48:38 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.27 2000/09/08 22:43:05 mvojkovi Exp $ */
 
 /*
  * Authors:
@@ -1677,6 +1677,32 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 
    I810DGAInit(pScreen);
 
+#ifdef XF86DRI
+   if (!pI810->directRenderingEnabled) {
+      pI810->DoneFrontAlloc = FALSE;
+      if (!I810AllocateGARTMemory( pScrn ))
+         return FALSE;
+      I810AllocateFront(pScrn);
+   }
+#endif
+
+   if (!xf86InitFBManager(pScreen, &(pI810->FbMemBox))) {
+      xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+                 "Failed to init memory manager\n");
+      return FALSE;
+   }
+
+   if (!xf86ReturnOptValBool(I810Options, OPTION_NOACCEL, FALSE)) {
+      if (pI810->LpRing.mem.Size != 0) {
+         I810SetRingRegs( pScrn );
+
+         if (!I810AccelInit(pScreen)) {
+            xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+                       "Hardware acceleration initialization failed\n");
+         }
+      }
+   }
+
    miInitializeBackingStore(pScreen);
    xf86SetBackingStore(pScreen);
 
@@ -1704,47 +1730,6 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 #ifdef DPMSExtension
    xf86DPMSInit(pScreen, I810DisplayPowerManagementSet, 0);
 #endif
-
-
-
-#ifdef XvExtension
-   {
-      XF86VideoAdaptorPtr *ptr;
-      int n;
-    
-      n = xf86XVListGenericAdaptors(pScrn, &ptr);
-      if (n) {
-	 xf86XVScreenInit(pScreen, ptr, n);
-      }
-   }
-#endif
-
-#ifdef XF86DRI
-   if (!pI810->directRenderingEnabled) {
-      pI810->DoneFrontAlloc = FALSE;
-      if (!I810AllocateGARTMemory( pScrn )) 
-	 return FALSE;
-      I810AllocateFront(pScrn);
-   }
-#endif
-
-   
-   if (!xf86InitFBManager(pScreen, &(pI810->FbMemBox))) {
-      xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
-		 "Failed to init memory manager\n");
-      return FALSE;
-   }
-
-   if (!xf86ReturnOptValBool(I810Options, OPTION_NOACCEL, FALSE)) {     
-      if (pI810->LpRing.mem.Size != 0) {
-	 I810SetRingRegs( pScrn );
-	 
-	 if (!I810AccelInit(pScreen)) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		       "Hardware acceleration initialization failed\n");  
-	 }
-      }
-   }
 
    if (!xf86ReturnOptValBool(I810Options, OPTION_SW_CURSOR, FALSE)) {
       if (!I810CursorInit(pScreen)) {
