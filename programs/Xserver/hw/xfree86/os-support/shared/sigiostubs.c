@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sigio.c,v 1.3 1999/10/13 22:33:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sigiostubs.c,v 1.1 1999/10/14 01:59:35 dawes Exp $ */
 
 #ifdef XFree86Server
 # include "X.h"
@@ -44,3 +44,11 @@ xf86AssertBlockedSIGIO (char *where)
 {
 }
 #endif
+
+/* XXX This is a quick hack for the benefit of xf86SetSilkenMouse() */
+Bool
+xf86SIGIOSupported ()
+{
+    return FALSE;
+}
+
