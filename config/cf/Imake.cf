@@ -17,7 +17,7 @@ XCOMM $Xorg: Imake.cf,v 1.4 2000/08/17 19:41:45 cpqbld Exp $
  *
  *     4.  Create a .cf file with the name given by MacroFile.
  */
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.82 2003/06/12 14:12:24 eich Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.83 2003/07/07 15:34:20 eich Exp $
 
 #if defined(__APPLE__)
 # undef __APPLE__
@@ -71,7 +71,7 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.82 2003/06/12 14:12:24 eich Exp $
 # define UltrixArchitecture
 #endif /* ultrix */
 
-#if defined(vax) && !defined(UltrixArchitecture)
+#if defined(vax) && !defined(UltrixArchitecture) && !defined(__OpenBSD__)
 # define MacroIncludeFile <bsd.cf>
 # define MacroFile bsd.cf
 # undef vax
@@ -117,7 +117,7 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.82 2003/06/12 14:12:24 eich Exp $
 #  endif
 #  undef sparc
 # endif
-# ifdef mips
+# if defined(__mips__) || defined(mips)
 #   define MipsArchitecture
 #   ifdef arc
 #     define ArcArchitecture
@@ -134,7 +134,7 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.82 2003/06/12 14:12:24 eich Exp $
 #   undef __alpha__
 #   undef alpha
 # endif
-# ifdef mc68020
+# if defined(__mc68020__) || defined(mc68020)
 #  define Mc68020Architecture
 #  if defined(amiga)
 #   define AmigaArchitecture
@@ -164,6 +164,17 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.82 2003/06/12 14:12:24 eich Exp $
 #  undef __macppc__
 #  undef macppc
 # endif
+# ifdef __vax__
+#  undef vax
+#  undef __vax__
+#  define VaxArchitecture
+# endif
+# ifdef __hppa__
+#  ifndef HPArchitecture
+#   define HPArchitecture
+#  endif
+#  undef __hppa__
+# endif /* __hppa__ */
 #endif /* OpenBSD */
 
 #ifdef __NetBSD__
