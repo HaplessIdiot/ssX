@@ -54,7 +54,10 @@
 /* Set to 1 if you want to set MCLK from XF86Config - AT YOUR OWN RISK! */
 #define MCLK_FROM_XCONFIG 0
 
-/* Only change these bits in the Option register */
+/*
+ * Only change these bits in the Option register.  Make sure that the
+ * vgaioen bit is never in this mask because it is controlled elsewhere
+ */
 #define OPTION_MASK 0x20001000	/* pci_retry | interleave */
 
 static void MGA3026StoreColors(ScrnInfoPtr, xColorItem*, int);
@@ -669,7 +672,7 @@ MGA3026Restore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 		OUTREG16(0x1FDE, (mgaReg->ExtVga[i] << 8) | i);
 
 	pciSetBitsLong(pMga->PciTag, PCI_OPTION_REG, OPTION_MASK,
-			 mgaReg->Option);
+		       mgaReg->Option);
 
 	/* select pixel clock PLL as clock source */
 	outTi3026(TVP3026_CLK_SEL, 0, mgaReg->DacRegs[3]);
