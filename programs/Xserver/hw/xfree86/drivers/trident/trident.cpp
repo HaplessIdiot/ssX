@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.cpp,v 1.7 2000/12/08 12:00:52 alanh Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.cpp,v 1.8 2000/12/11 20:18:37 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH TRIDENT __drivermansuffix__ "Version 4.0.2"  "XFree86"
@@ -62,6 +62,11 @@ Enable or disable PCI retries.  Default: off.
 .BI "Option \*qCyberShadow\*q \*q" boolean \*q
 For Cyber chipsets only, turn off shadow registers. If you only see
 a partial display - this may be the option for you. Default: on.
+.TP
+.BI "Option \*qCyberStretch\*q \*q" boolean \*q
+For Cyber chipsets only, turn on stretching. When the resolution is lower
+than the LCD's screen, this option will stretch the graphics mode to
+fill the entire LCD. Default: off.
 .TP
 .BI "Option \*qShadowFB\*q \*q" boolean \*q
 Enable or disable use of the shadow framebuffer layer.  See
