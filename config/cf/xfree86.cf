@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xfree86.cf,v 1.9 95/01/25 16:42:40 kaleb Exp $
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.69 1995/09/22 07:06:38 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.70 1995/10/21 11:26:02 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -61,6 +61,10 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.69 1995/09/22 07:06:38 dawes Exp $
 # define XF86W32Server		NO
 #endif
 
+#ifndef XF86I128Server
+# define XF86I128Server		NO
+#endif
+
 #if XF86S3Server
 # define XF86S3Dir		s3
 #else
@@ -109,11 +113,17 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.69 1995/09/22 07:06:38 dawes Exp $
 # define XF86W32Dir		/**/
 #endif
 
+#if XF86I128Server
+# define XF86I128Dir		i128
+#else
+# define XF86I128Dir		/**/
+#endif
+
 #undef XF86AccelServerDirs
-#define XF86AccelServerDirs   XF86S3Dir XF86I8514Dir XF86Mach8Dir XF86Mach32Dir XF86Mach64Dir XF86P9000Dir XF86AGXDir XF86W32Dir
+#define XF86AccelServerDirs   XF86S3Dir XF86I8514Dir XF86Mach8Dir XF86Mach32Dir XF86Mach64Dir XF86P9000Dir XF86AGXDir XF86W32Dir XF86I128Dir
 
 #undef XF86AccelServer
-#if XF86S3Server || XF86I8514Server || XF86Mach8Server || XF86Mach32Server || XF86Mach64Server || XF86P9000Server || XF86AGXServer || XF86W32Server
+#if XF86S3Server || XF86I8514Server || XF86Mach8Server || XF86Mach32Server || XF86Mach64Server || XF86P9000Server || XF86AGXServer || XF86W32Server || XF86I128Server
 # define XF86AccelServer	YES
 #else
 # define XF86AccelServer	NO
@@ -237,10 +247,6 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.69 1995/09/22 07:06:38 dawes Exp $
 
 #ifndef CompressAllFonts
 #define CompressAllFonts	YES
-#endif
-
-#ifndef InstallXcmsTxt
-#define InstallXcmsTxt		YES
 #endif
 
 #ifndef StripInstalledPrograms
@@ -400,7 +406,7 @@ XFREE86JAPANESEDOCDIR = $(XFREE86DOCDIR)/Japanese
 #endif
 
 #ifndef XFree86Version
-#define XFree86Version	3121
+#define XFree86Version	3122
 #endif
 
 #ifndef XVendorString

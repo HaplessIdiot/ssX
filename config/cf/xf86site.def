@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.51 1995/11/12 09:44:16 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.52 1995/11/16 11:02:23 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -48,7 +48,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.51 1995/11/12 09:44:16 dawes Exp $
  */
 
 /*
- * To use the internal Xserver malloc, set this to YES
+ * To disable the internal Xserver malloc, set this to NO
  *
 #define UseInternalMalloc	YES
  */
@@ -72,6 +72,9 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.51 1995/11/12 09:44:16 dawes Exp $
 #define XF86P9000Server		YES
 #define XF86AGXServer		YES
 #define XF86W32Server		YES
+/*
+#define XF86I128Server		YES
+*/
 
 #define XnestServer             YES
 
@@ -86,7 +89,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.51 1995/11/12 09:44:16 dawes Exp $
  * To build Xvfb, uncomment this.
  *
 #define XVirtualFramebufferServer	YES
-*/
+ */
 
 
 /*

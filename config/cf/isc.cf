@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/isc.cf,v 3.5 1995/06/18 13:48:21 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/isc.cf,v 3.6 1995/09/22 07:06:29 dawes Exp $
 
 #ifndef HasGcc2
 #define HasGcc2			YES
@@ -54,9 +54,9 @@ XCOMM platform:  $XFree86: xc/config/cf/isc.cf,v 3.5 1995/06/18 13:48:21 dawes E
 
 #ifndef ExtraLibraries
 # if UseGnuMalloc
-#  define ExtraLibraries SocketLibraries LocalLibraries MallocLibrary -lc_s PosixLibraries
+#  define ExtraLibraries SocketLibraries LocalLibraries MallocLibrary PosixLibraries
 # else
-#  define ExtraLibraries SocketLibraries LocalLibraries -lc_s PosixLibraries
+#  define ExtraLibraries SocketLibraries LocalLibraries PosixLibraries
 # endif
 #endif
 
