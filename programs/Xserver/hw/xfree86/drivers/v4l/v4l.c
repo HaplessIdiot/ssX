@@ -2,7 +2,7 @@
  *  video4linux Xv Driver 
  *  based on Michael Schimek's permedia 2 driver.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.25 2001/05/04 19:05:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.26 2001/06/15 21:23:06 dawes Exp $ */
 
 #include "videodev.h"
 #include "xf86.h"
@@ -857,6 +857,7 @@ V4LInit(ScrnInfoPtr pScrn, XF86VideoAdaptorPtr **adaptors)
 	if (!pPPriv)
 	    return FALSE;
 	memset(pPPriv,0,sizeof(PortPrivRec));
+	pPPriv->nr = d;
 
 	/* check device */
 	if (-1 == ioctl(fd,VIDIOCGCAP,&pPPriv->cap) ||
