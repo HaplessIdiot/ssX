@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.c,v 1.6 2001/05/28 21:35:26 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.c,v 1.7 2001/07/06 02:04:10 paulo Exp $
  */
 
 #include "config.h"
@@ -54,7 +54,7 @@ static Bool EnumDatabase(XrmDatabase, XrmBindingList, XrmQuarkList,
 extern void CheckChipsets(xf86cfgModuleOptions*, int*);
 
 static jmp_buf jmp;
-static int signal_catched, error_level;
+static int signal_caught, error_level;
 char *loaderPath, **loaderList, **ploaderList;
 extern XrmDatabase options_xrm;
 extern int noverify;
@@ -91,14 +91,14 @@ sig_handler(int sig)
 	    break;
     }
 
-    if (signal_catched == 1) {
+    if (signal_caught == 1) {
 	printf("  ERROR I am dead.\n");
 	exit(1);
     }
-    else if (signal_catched == 2)
+    else if (signal_caught == 2)
 	abort();
-    ++signal_catched;
-    printf("  ERROR SIG%s catched!\n", str);
+    ++signal_caught;
+    printf("  ERROR SIG%s caught!\n", str);
     error_level += 50;
     longjmp(jmp, 1);
     /*NOTREACHED*/
@@ -172,7 +172,7 @@ LoaderInitializeOptions(void)
 			int ok;
 
 			error_level = 0;
-			signal_catched = 0;
+			signal_caught = 0;
 			signal(SIGTRAP, sig_handler);
 			signal(SIGBUS, sig_handler);
 			signal(SIGSEGV, sig_handler);
@@ -251,7 +251,7 @@ LoaderInitializeOptions(void)
 
 		    printf("  SUMMARY ");
 		    if (error_level < 3)
-			printf("Driver seens good, or is cheating.");
+			printf("Driver seems good, or is cheating.");
 		    else if (error_level < 5)
 			printf("Driver needs some work.");
 		    else if (error_level < 10)
