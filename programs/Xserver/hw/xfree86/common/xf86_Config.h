@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Config.h,v 1.1 94/03/28 21:23:53 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.2 1994/06/15 15:42:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.3 1994/06/19 11:05:36 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -226,6 +226,7 @@ static SymTabRec MouseTab[] = {
 #define POSBASE     29
 #define INSTANCE    30
 #define RAMDAC      31
+#define DACSPEED    32
 
 
 #ifdef INIT_CONFIG
@@ -259,6 +260,7 @@ static SymTabRec GraphicsTab[] = {
   { POSBASE,    "posbase" },
   { INSTANCE,   "instance" },
   { RAMDAC,     "ramdac" },
+  { DACSPEED,   "dacspeed" },
 
   { -1,         "" },
 };
@@ -301,6 +303,7 @@ static SymTabRec TimingTab[] = {
 #define XCONFIG_NOMEMACCESS     10      /* set if forced on */
 #define XCONFIG_INSTANCE        11      /* Xconfig or default */
 #define XCONFIG_RAMDAC          12      /* Xconfig or default */
+#define XCONFIG_DACSPEED        13      /* Xconfig or default */
 
 #define XCONFIG_GIVEN		"(**)"
 #define XCONFIG_PROBED		"(--)"

@@ -1,5 +1,5 @@
 /* $XConsortium: XF86_S3.c,v 1.1 94/03/28 21:22:05 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_S3.c,v 3.3 1994/06/28 12:29:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_S3.c,v 3.4 1994/07/19 11:52:37 dawes Exp $ */
 #include "X.h"
 #include "os.h"
 
@@ -89,6 +89,7 @@ int s3ValidTokens[] =
   BIOSBASE,
   MEMBASE,
   RAMDAC,
+  DACSPEED,
   -1
 };
 

@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.8 1994/07/19 06:57:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.9 1994/07/19 11:52:14 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -599,7 +599,8 @@ s3Init(mode)
 
       if (pixel_multiplexing) { /* x64:pixmux */
 	 tmp = xf86getdaccomm();
-	 xf86setdaccomm( (tmp&0x0f) | 0x20 );  /* set mode 2, pixel multiplexing on */
+	 xf86setdaccomm( (tmp&0x0f) | 0x20 );  /* set mode 2,
+						  pixel multiplexing on */
 
 	 outb(vgaCRIndex, 0x33);
 	 tmp = inb(vgaCRReg);
@@ -607,7 +608,11 @@ s3Init(mode)
 	 
 	 if (S3_x64_SERIES(s3ChipId)) {
 	    outb(vgaCRIndex, 0x67);
-	    outb(vgaCRReg, 0x11 );  /* set Mode 8: Two 8-bit color, 1 VCLK/2 pixels */
+	    if (OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options))
+	       outb(vgaCRReg, 0x10 );
+	    else
+	       outb(vgaCRReg, 0x11 );  /* set Mode 8: Two 8-bit color,
+					  1 VCLK/2 pixels */
 	    outb(vgaCRIndex, 0x6d);
 	    outb(vgaCRReg, 2 );     /* delay -BLANK pulse by 2 DCLKs */
 	 }

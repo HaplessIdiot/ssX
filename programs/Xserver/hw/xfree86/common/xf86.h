@@ -1,5 +1,5 @@
 /* $XConsortium: xf86.h,v 1.1 94/03/28 21:22:43 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.2 1994/06/15 15:42:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.3 1994/06/19 11:05:30 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -108,6 +108,7 @@ typedef struct {
   OFlagSet	 xconfigFlag;
   char           *chipset;
   char           *ramdac;
+  int            dacSpeed;
   int            clocks;
   int            clock[MAXCLOCKS];
   int            maxClock;

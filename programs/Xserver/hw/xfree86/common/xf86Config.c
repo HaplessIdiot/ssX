@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.2 94/03/28 21:22:51 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.3 1994/06/19 11:05:32 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.4 1994/06/26 13:09:17 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -640,6 +640,7 @@ configGraphics(scr_index)
     screen->defaultVisual = -1;
     screen->chipset = NULL;
     screen->ramdac = NULL;
+    screen->dacSpeed = 0;
     screen->modes = NULL;
     OFLG_ZERO(&(screen->options));
     OFLG_ZERO(&(screen->xconfigFlag));
@@ -719,6 +720,12 @@ configGraphics(scr_index)
       if (getToken(NULL) != STRING) configError("RAMDAC string expected");
       screen->ramdac = val.str;
       OFLG_SET(XCONFIG_RAMDAC,&(screen->xconfigFlag));
+      break;
+
+    case DACSPEED:
+      if (getToken(NULL) != NUMBER) configError("DAC speed expected");
+      screen->dacSpeed = (int)(val.realnum * 1000.0 + 0.5);
+      OFLG_SET(XCONFIG_DACSPEED,&(screen->xconfigFlag));
       break;
 
     case CLOCKS:

@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.11 1994/07/19 06:57:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.12 1994/07/19 11:52:09 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -86,6 +86,7 @@ ScrnInfoRec s3InfoRec =
    {0, },              		/* OFlagSet xconfigFlag */
    NULL,			/* char *chipset */
    NULL,			/* char *ramdac */
+   0,				/* int dacSpeed */
    0,				/* int clocks */
    {0,},			/* int clock[MAXCLOCKS] */
    0,				/* int maxClock */
@@ -366,13 +367,13 @@ s3Probe()
    OFLG_SET(OPTION_ATT490_1, &validOptions);
    OFLG_SET(OPTION_SC15025, &validOptions);
    OFLG_SET(OPTION_ATT498, &validOptions);
+   OFLG_SET(OPTION_TI3020_FAST, &validOptions);
 #endif
    OFLG_SET(OPTION_BT485_CURS, &validOptions);
    OFLG_SET(OPTION_SHOWCACHE, &validOptions);
    OFLG_SET(OPTION_FB_DEBUG, &validOptions);
    OFLG_SET(OPTION_TI3020_CURS, &validOptions);
    OFLG_SET(OPTION_NO_TI3020_CURS, &validOptions);
-   OFLG_SET(OPTION_TI3020_FAST, &validOptions);
    OFLG_SET(OPTION_DAC_8_BIT, &validOptions);
    OFLG_SET(OPTION_FAST_DRAM, &validOptions);
    OFLG_SET(OPTION_MED_DRAM, &validOptions);
@@ -719,9 +720,41 @@ s3Probe()
       }
    }
 
-   ErrorF("%s %s: Ramdac type: %s\n",
-	  OFLG_ISSET(XCONFIG_RAMDAC, &s3InfoRec.xconfigFlag) ?
-	  XCONFIG_GIVEN : XCONFIG_PROBED, s3InfoRec.name, s3InfoRec.ramdac);
+   if (xf86Verbose) {
+      ErrorF("%s %s: Ramdac type: %s\n",
+	     OFLG_ISSET(XCONFIG_RAMDAC, &s3InfoRec.xconfigFlag) ?
+	     XCONFIG_GIVEN : XCONFIG_PROBED, s3InfoRec.name, s3InfoRec.ramdac);
+   }
+
+   /* Now check/set the DAC speed */
+   /* XXXX Are these reasonable defaults? */
+   if (s3InfoRec.dacSpeed <= 0) {
+      switch (s3RamdacType) {
+      case NORMAL_DAC:
+      case ATT20C490_DAC:
+      case SC15025_DAC:
+	 s3InfoRec.dacSpeed = 110000;
+	 break;
+      case BT485_DAC:
+      case ATT20C505_DAC:
+      case ATT20C498_DAC:
+	 s3InfoRec.dacSpeed = 135000;
+	 break;
+      case TI3020_DAC:
+         if (OFLG_ISSET(OPTION_ELSA_W2000PRO, &s3InfoRec.options))
+	    s3InfoRec.dacSpeed = 170000;
+	 else
+	    s3InfoRec.dacSpeed = 135000;
+	 break;
+      }
+   }
+   
+   if (xf86Verbose) {
+      ErrorF("%s %s: Ramdac speed: %d\n",
+	     OFLG_ISSET(XCONFIG_DACSPEED, &s3InfoRec.xconfigFlag) ?
+	     XCONFIG_GIVEN : XCONFIG_PROBED, s3InfoRec.name,
+	     s3InfoRec.dacSpeed / 1000);
+   }
 #endif
 
    /* Now handle the various ramdac cursor options */
@@ -768,8 +801,39 @@ s3Probe()
         OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options)))
       s3ATT498PixMux = TRUE;
 
+#ifdef USE_XCONFIG_RAMDAC
+   /* Set dot clock limit based on RAMDAC type/speed and pixmux usage */
+   switch (s3RamdacType) {
+   case BT485_DAC:
+   case ATT20C505_DAC:
+      if (s3Bt485PixMux)
+	 s3InfoRec.maxClock = s3InfoRec.dacSpeed;
+      else
+	 s3InfoRec.maxClock = 85000;
+      break;
+   case ATT20C498_DAC:
+      if (s3ATT498PixMux)
+	 s3InfoRec.maxClock = s3InfoRec.dacSpeed;
+      else {
+	 if (s3InfoRec.dacSpeed >= 135000)
+	    s3InfoRec.maxClock = 110000;
+	 else
+	    s3InfoRec.maxClock = 80000;
+      }
+      break;
+   case TI3020_DAC:
+      s3InfoRec.maxClock = s3InfoRec.dacSpeed;
+      break;
+   default:
+      /* For DACs we don't have special code for, keep this as a limit */
+      s3InfoRec.maxClock = s3MaxClock;
+   }
+   /* Check that maxClock is not higher than dacSpeed */
+   if (s3InfoRec.maxClock > s3InfoRec.dacSpeed)
+      s3InfoRec.maxClock = s3InfoRec.dacSpeed;
+#else
    /* Set clock limit */
-   switch(s3RamdacType) {
+   switch (s3RamdacType) {
    case BT485_DAC:
    case ATT20C505_DAC:
       if (s3Bt485PixMux)
@@ -795,6 +859,7 @@ s3Probe()
    default:
       s3InfoRec.maxClock = s3MaxClock;
    }
+#endif
 
    /* Set the pix-mux description based on the ramdac type */
    if (DAC_IS_TI3020) {
