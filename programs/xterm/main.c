@@ -91,7 +91,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.144 2002/01/05 22:05:03 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.145 2002/01/07 18:35:41 dawes Exp $ */
 
 
 /* main.c */
@@ -105,8 +105,16 @@ SOFTWARE.
 #include <X11/Xlocale.h>
 
 #if OPT_TOOLBAR
+
+#if defined(HAVE_LIB_XAW)
 #include <X11/Xaw/Form.h>
+#elif defined(HAVE_LIB_XAW3D)
+#include <X11/Xaw3d/Form.h>
+#elif defined(HAVE_LIB_NEXTAW)
+#include <X11/neXtaw/Form.h>
 #endif
+
+#endif /* OPT_TOOLBAR */
 
 #include <pwd.h>
 #include <ctype.h>
@@ -2943,12 +2951,14 @@ spawn (void)
 #ifdef USE_ISPTS_FLAG
 		if (IsPts) {	/* SYSV386 supports both, which did we open? */
 #endif
-		int ptyfd;
+		int ptyfd = 0;
+		char *pty_name = 0;
 
 		setpgrp();
 		grantpt (screen->respond);
 		unlockpt (screen->respond);
-		if ((ptyfd = open (ptsname(screen->respond), O_RDWR)) < 0) {
+		if ((pty_name = ptsname(screen->respond)) == 0
+		 || (ptyfd = open (pty_name, O_RDWR)) < 0) {
 		    SysError (1);
 		}
 #ifdef I_PUSH
