@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.193 2002/12/03 18:17:40 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.194 2003/01/26 16:40:41 eich Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -1189,7 +1189,7 @@ OsVendorFatalError()
 	 "the full server output, not just the last messages.\n");
   if (xf86LogFile && xf86LogFileWasOpened)
     ErrorF("This can be found in the log file \"%s\".\n", xf86LogFile);
-  ErrorF("Please report problems to %s.\n",BUILDERADDR);
+  ErrorF("Please report problems to %s.\n", BUILDERADDR);
   ErrorF("\n");
 }
 
@@ -1634,7 +1634,7 @@ xf86PrintBanner()
     "way.  Bugs may be reported to XFree86@XFree86.Org and patches submitted\n"
     "to fixes@XFree86.Org.  Before reporting bugs in pre-release versions,\n"
     "please check the latest version in the XFree86 CVS repository\n"
-    "(http://www.XFree86.Org/cvs)\n");
+    "(http://www.XFree86.Org/cvs).\n");
 #endif
   ErrorF("\nXFree86 Version %d.%d.%d", XF86_VERSION_MAJOR, XF86_VERSION_MINOR,
 					XF86_VERSION_PATCH);
@@ -1650,17 +1650,29 @@ xf86PrintBanner()
 #ifdef XF86_CUSTOM_VERSION
   ErrorF(" (%s)", XF86_CUSTOM_VERSION);
 #endif
-  ErrorF(" / X Window System\n");
-  ErrorF("(protocol Version %d, revision %d, vendor release %d)\n",
-         X_PROTOCOL, X_PROTOCOL_REVISION, VENDOR_RELEASE );
-  ErrorF("Release Date: %s\n", XF86_DATE);
-  ErrorF("\tIf the server is older than 6-12 months, or if your card is\n"
-	 "\tnewer than the above date, look for a newer version before\n"
-	 "\treporting problems.  (See http://www.XFree86.Org/)\n");
+  ErrorF("\nRelease Date: %s\n", XF86_DATE);
+  ErrorF("X Protocol Version %d, Revision %d, %s\n",
+         X_PROTOCOL, X_PROTOCOL_REVISION, XORG_RELEASE );
   ErrorF("Build Operating System:%s%s\n", OSNAME, OSVENDOR);
+#ifdef BUILD_DATE
+  {
+    struct tm t;
+    char buf[100];
+
+    bzero(&t, sizeof(t));
+    bzero(buf, sizeof(buf));
+    t.tm_mday = BUILD_DATE % 100;
+    t.tm_mon = (BUILD_DATE / 100) % 100 - 1;
+    t.tm_year = BUILD_DATE / 10000 - 1900;
+    if (strftime(buf, sizeof(buf), "%d %B %Y", &t))
+       ErrorF("Build Date: %s\n", buf);
+  }
+#endif
 #if defined(BUILDERSTRING)
   ErrorF("%s \n",BUILDERSTRING);
 #endif
+  ErrorF("\tBefore reporting problems, check http://www.XFree86.Org/\n"
+	 "\tto make sure that you have the latest version.\n");
 #ifdef XFree86LOADER
   ErrorF("Module Loader present\n");
 #endif
