@@ -45,15 +45,15 @@ used.  One need not and should not specify a RAMDAC, clockchip or allow
 the setup program to probe for clocks. The driver will auto-detect the   
 amount of video ram present.
 
-The following Section "Device" options are supported by the MGA driver:
+The following Section "Device" options are supported by the I128 driver:
 <itemize>
-<item>Option "dac_8_bit"
+<item>Option "Dac6Bit"
 <p>
-Will enable 8-bit DAC support.
-<item>Option "no_accel"
+Will enable 6-bit DAC support.
+<item>Option "NoAccel"
 <p>
 Will disable all hardware acceleration.
-<item>Option "sync_on_green"
+<item>Option "SyncOnGreen"
 <p>
 Will enable syncing on green for sync-on-green monitors (these are typically
 fixed frequency workstation monitors).
@@ -72,6 +72,13 @@ Silicon Graphics Flat Panel display.
 <item>Modeline "800x512d08"   54.375   800 800 840 848 512 512 514 515 HSkew 1 DoubleScan +Hsync +Vsync
 </itemize>
 
+<p>
+<itemize>
+<item>These lines are required for use with the SGI Multilink Adapter and the SiliconGraphics Flat Panel display.
+<item>Modeline "1600x1024g" 108.0  1600 1616 1656 1704 1024 1027 1030 1056 -Hsync -Vsync
+<item>Option "OverridePolarity" "1"
+</itemize>
+
 <sect>Author(s)
 <p>
 
@@ -84,7 +91,7 @@ and special help from:
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/I128.sgml,v 1.2 1999/08/23 06:18:32 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/I128.sgml,v 1.3 1999/08/28 10:43:32 dawes Exp $
 </verb>
 
 </article>
