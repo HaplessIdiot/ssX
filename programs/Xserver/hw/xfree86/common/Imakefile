@@ -1,5 +1,11 @@
-XCOMM $XConsortium: Imakefile,v 1.5 95/01/26 15:36:06 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.22 1995/12/26 08:35:54 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.23 1995/12/31 12:00:32 dawes Exp $
+
+
+
+
+
+XCOMM $XConsortium: Imakefile /main/12 1995/12/02 08:52:06 kaleb $
+
 #include <Server.tmpl>
 
 #ifdef i386MachArchitecture
@@ -14,6 +20,11 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.22 1995/12/2
         KBD = xf86Kbd
 #  endif
 # endif
+#endif
+
+#if BuildXKB
+     XKBDDXSRC = xf86XKB.c
+     XKBDDXOBJ = xf86XKB.o
 #endif
 
   XCONFIGSRC = xf86Config
@@ -46,6 +57,7 @@ SERVERSRCS = \
 	XF86_Mach32.c \
 	XF86_Mach64.c \
 	XF86_P9000.c \
+	$(XKBDDXSRC) \
 	XF86_AGX.c \
 	XF86_W32.c \
 	XF86_I128.c
@@ -55,6 +67,7 @@ SRCS =	\
 	xf86IniExt.c \
 	xf86MIniExt.c \
 	xf86Cursor.c \
+	$(XKBDDXOBJ) \
 	xf86Events.c \
 	xf86Init.c \
 	xf86Init_m.c \
