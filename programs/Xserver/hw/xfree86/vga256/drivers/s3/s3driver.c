@@ -278,6 +278,8 @@ char * S3Ident(int n)
 
 void S3EnterLeave(Bool enter)
 {
+   unsigned char tmp;
+
 #ifdef S3_DEBUG
    ErrorF("In S3EnterLeave(%s)\n", enter ? "ENTER" : "LEAVE");
 #endif
@@ -307,7 +309,8 @@ void S3EnterLeave(Bool enter)
 
       /* Unprotect CRTC[0-7] */
       outb(vgaCRIndex, 0x11); 
-      outb(vgaCRReg, inb(vgaCRReg) & 0x7F);
+      tmp = inb(vgaCRReg) & 0x7F;
+      outb(vgaCRReg, tmp);
 
       /* needed for virtual console switchback since SVGA server
 	doesn't reinit but restores */
@@ -334,7 +337,8 @@ void S3EnterLeave(Bool enter)
 
 	/* Protect CRTC[0-7] */
 	outb(vgaIOBase + 4, 0x11); 
-	outb(vgaIOBase + 5, (inb(vgaIOBase + 5) & 0x7F) | 0x80);
+	tmp = (inb(vgaIOBase + 5) & 0x7F) | 0x80;
+	outb(vgaIOBase + 5, tmp);
 
         /* I suppose I should probably lock the S3 here (MArk) */
 	
@@ -373,6 +377,7 @@ void S3EnterLeave(Bool enter)
 void 	S3Adjust(int x, int y)
 {
    int   Base, origBase;
+   unsigned char tmp;
       
    if (OFLG_ISSET(OPTION_SHOWCACHE, &vga256InfoRec.options)) {
          if(y) y += 512;
@@ -436,7 +441,8 @@ void 	S3Adjust(int x, int y)
    s3Port51 |= ((Base & 0x0c0000) >> 18);
    outb(vgaCRIndex, 0x51);
    /* Don't override current bank selection */
-   outb(vgaCRReg, (inb(vgaCRReg) & ~0x03) | (s3Port51 & 0x03));
+   tmp = (inb(vgaCRReg) & ~0x03) | (s3Port51 & 0x03);
+   outb(vgaCRReg, tmp);
 
    outw(vgaCRIndex, (Base & 0x00FF00) | 0x0C);
    outw(vgaCRIndex, ((Base & 0x00FF) << 8) | 0x0D);

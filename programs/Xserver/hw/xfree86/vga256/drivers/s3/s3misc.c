@@ -590,12 +590,16 @@ void S3Lock(void)
 
 void S3BankZero()
 {
+   unsigned char tmp;
+
    outb(vgaCRIndex, 0x35);		
-   outb(vgaCRReg, inb(vgaCRReg) & 0xf0);
+   tmp = inb(vgaCRReg) & 0xf0;
+   outb(vgaCRReg, tmp);
    /* but wait, there's more! */
    if(S3_801_928_SERIES(s3ChipId)) {
 	outb(vgaCRIndex, 0x51);
-	outb(vgaCRReg, inb(vgaCRReg) & 0xf3);
+	tmp = inb(vgaCRReg) & 0xf3;
+	outb(vgaCRReg, tmp);
    }
 }
 

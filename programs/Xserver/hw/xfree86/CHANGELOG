@@ -1,4 +1,16 @@
 XFree86 3.2Ae (16 February 1997)
+ 450. Add -showunresolved flag to server.
+ 449. Add sourceAddress option to xdm (#41, Christos Zoulas).
+ 448. Fix cfb8line (#40, Jeff Anton).
+ 447. Turn pixmap cache in SVGA/S3 server back on and switch over to XAA for
+      lines and segments (#39, Mark Vojkovich).
+ 446. Fix COFF header file (#38, Stuart Anderson).
+ 445. Better XKB russian keyboard support (#36, Andrey A. Chernov).
+ 444. Fix an X11R6.3 problem with SCO 5 build (#35, Alan Hourihane).
+ 443. Fixes for Trio64V2 (#35, Tom Angert, Harald Koenig, Xavier Ducoin).
+ 442. avoid nested asm calls which cause compile errors on PANIX(SVR4) (#31,
+      Takaaki Nomura).
+ 441. Resync LinkKit (#26, Takaaki Nomura).
  440. Fix some build problems when not using the new loader code
       (on FreeBSD) (David Dawes).
  439. Stop S3 and S3V server from overwriting CR11 (#30, Harald Koenig).

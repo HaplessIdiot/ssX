@@ -1,5 +1,5 @@
 /* $XConsortium: xdmcp.c,v 1.15 94/09/19 20:16:38 converse Exp $ */
-/* $XFree86: xc/programs/xdm/xdmcp.c,v 3.3 1996/10/06 13:18:58 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/xdmcp.c,v 3.4 1997/01/18 07:02:25 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -466,9 +466,11 @@ broadcast_respond (from, fromlen, length)
 /* computes an X display name */
 
 static char *
-NetworkAddressToName(connectionType, connectionAddress, displayNumber)
+NetworkAddressToName(connectionType, connectionAddress, originalAddress, 
+		     displayNumber)
     CARD16	connectionType;
     ARRAY8Ptr   connectionAddress;
+    struct sockaddr   *originalAddress;
     CARD16	displayNumber;
 {
     switch (connectionType)
@@ -479,10 +481,25 @@ NetworkAddressToName(connectionType, connectionAddress, displayNumber)
 	    struct hostent	*hostent;
 	    char		*name;
 	    char		*localhost, *localHostname();
+	    extern int		 sourceAddress;
+	    int			 multiHomed = 0;
 
 	    data = connectionAddress->data;
 	    hostent = gethostbyaddr ((char *)data,
 				     connectionAddress->length, AF_INET);
+	    if (sourceAddress && hostent) {
+#if defined(__SVR4) && defined(__sun)
+		/*
+		 * make sure we get the resolver's version of gethostbyname
+		 * otherwise we may not get all the addresses!
+		 */
+		hostent = (struct hostent *) res_gethostbyname(hostent->h_name);
+#else
+		hostent = gethostbyname(hostent->h_name);
+#endif
+		if (hostent)
+			multiHomed = hostent->h_addr_list[1] != NULL;
+	    }
 
 	    localhost = localHostname ();
 
@@ -490,7 +507,8 @@ NetworkAddressToName(connectionType, connectionAddress, displayNumber)
 	     * protect against bogus host names 
 	     */
 	    if (hostent && hostent->h_name && hostent->h_name[0]
-			&& (hostent->h_name[0] != '.'))
+			&& (hostent->h_name[0] != '.') 
+			&& !multiHomed)
 	    {
 		if (!strcmp (localhost, hostent->h_name))
 		{
@@ -530,6 +548,9 @@ NetworkAddressToName(connectionType, connectionAddress, displayNumber)
 	    {
 		if (!getString (name, 25))
 		    return 0;
+		if (multiHomed)
+		    data = (CARD8 *) &((struct sockaddr_in *)originalAddress)->
+				sin_addr.s_addr;
 		sprintf(name, "%d.%d.%d.%d:%d",
 			data[0], data[1], data[2], data[3], displayNumber);
 	    }
@@ -978,6 +999,7 @@ manage (from, fromlen, length)
 	{
 	    name = NetworkAddressToName (pdpy->connectionType,
 					 &pdpy->connectionAddress,
+					 from,
 					 pdpy->displayNumber);
 	    Debug ("Computed display name: %s\n", name);
 	    if (!name)

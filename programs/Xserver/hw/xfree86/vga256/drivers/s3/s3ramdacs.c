@@ -1571,7 +1571,8 @@ static int ATT409_498_Init(DisplayModePtr mode)
 
 	 if ( ! DAC_IS_ATT20C409 ) {
 	    outb(vgaCRIndex, 0x33);	/* set VCLK = -DCLK */
-	    outb(vgaCRReg, inb(vgaCRReg) | 0x08 );
+	    tmp = inb(vgaCRReg) | 0x08;
+	    outb(vgaCRReg, tmp);
 	 }
 	 
 	 if (S3_x64_SERIES(s3ChipId) || S3_805_I_SERIES(s3ChipId)) {
@@ -1591,7 +1592,8 @@ static int ATT409_498_Init(DisplayModePtr mode)
 	 }
       } else { /* !s3PixelMultiplexing */
 	 outb(vgaCRIndex, 0x33);
-	 outb(vgaCRReg, inb(vgaCRReg) &  ~0x08 );
+	 tmp = inb(vgaCRReg) & ~0x08;
+	 outb(vgaCRReg, tmp);
 
 	 tmp = xf86getdaccomm() & 0x0f;
 
@@ -1986,7 +1988,7 @@ static void STG17xx_Save(vgaS3Ptr save)
 
 static int STG17xx_Init(DisplayModePtr mode)
 {
-      unsigned char blank;
+      unsigned char blank, tmp;
       int daccomm;
 
       if (s3DAC8Bit) 
@@ -2020,7 +2022,8 @@ static int STG17xx_Init(DisplayModePtr mode)
          xf86dactopel();
 
 	 outb(vgaCRIndex, 0x33);
-	 outb(vgaCRReg, inb(vgaCRReg) | 0x08 );
+	 tmp = inb(vgaCRReg) | 0x08;
+	 outb(vgaCRReg, tmp);
 	 
 	 if (S3_x64_SERIES(s3ChipId) || S3_805_I_SERIES(s3ChipId)) {
 	    outb(vgaCRIndex, 0x67);
@@ -2036,7 +2039,8 @@ static int STG17xx_Init(DisplayModePtr mode)
       else 
       { /* !s3PixelMultiplexing */
 	 outb(vgaCRIndex, 0x33);
-	 outb(vgaCRReg, inb(vgaCRReg) &  ~0x08 );
+	 tmp = inb(vgaCRReg) & ~0x08;
+	 outb(vgaCRReg, tmp);
 
 	 if (S3_x64_SERIES(s3ChipId) || S3_805_I_SERIES(s3ChipId)) {
 	    int invert_vclk = 0;
@@ -2333,7 +2337,7 @@ static int S3_SDAC_Init(DisplayModePtr mode)
       int pixmux = 0;           /* SDAC command and CR67 */
       int blank_delay = 0;      /* CR6D */
       int invert_vclk = 0;      /* CR66 bit 0 */
-      unsigned char blank;
+      unsigned char blank, tmp;
 
       outb(0x3C4, 1);
       blank = inb(0x3C5);
@@ -2370,7 +2374,8 @@ static int S3_SDAC_Init(DisplayModePtr mode)
       }
 
       outb(vgaCRIndex, 0x55);
-      outb(vgaCRReg, inb(vgaCRReg) | 1);
+      tmp = inb(vgaCRReg) | 1;
+      outb(vgaCRReg, tmp);
 
       outb(vgaCRIndex, 0x67);
       outb(vgaCRReg, pixmux | invert_vclk);    /* set S3 mux mode */
@@ -2380,7 +2385,8 @@ static int S3_SDAC_Init(DisplayModePtr mode)
       outb(vgaCRReg, blank_delay);             /* set blank delay */
 
       outb(vgaCRIndex, 0x55);
-      outb(vgaCRReg, inb(vgaCRReg) & ~1);
+      tmp = inb(vgaCRReg) & ~1;
+      outb(vgaCRReg, tmp);
 
       outb(0x3C4, 1);
       outb(0x3C5, blank);        /* unblank the screen */
@@ -2391,7 +2397,7 @@ static int S3_SDAC_Init(DisplayModePtr mode)
 static int S3_GENDAC_Init(DisplayModePtr mode)
 {
       int daccomm = 0;           /* GENDAC command */
-      unsigned char blank;
+      unsigned char blank, tmp;
 
       outb(0x3C4, 1);
       blank = inb(0x3C5);
@@ -2414,12 +2420,14 @@ static int S3_GENDAC_Init(DisplayModePtr mode)
       }
 
       outb(vgaCRIndex, 0x55);
-      outb(vgaCRReg, inb(vgaCRReg) | 1);
+      tmp = inb(vgaCRReg) | 1;
+      outb(vgaCRReg, tmp);
 
       outb(0x3c6, daccomm);                     /* set GENDAC mux mode */
 
       outb(vgaCRIndex, 0x55);
-      outb(vgaCRReg, inb(vgaCRReg) & ~1);
+      tmp = inb(vgaCRReg) & ~1;
+      outb(vgaCRReg, tmp);
 
       outb(0x3C4, 1);
       outb(0x3C5, blank);        /* unblank the screen */
@@ -2611,7 +2619,7 @@ static int S3_TRIO_Init(DisplayModePtr mode)
       int pixmux = 0;           /* SDAC command and CR67 */
       int invert_vclk = 0;      /* CR66 bit 0 */
       int sr8, sr15, sr18, cr33;
-      unsigned char blank;
+      unsigned char blank, tmp;
       
       outb(0x3C4, 1);
       blank = inb(0x3C5);
@@ -2622,7 +2630,8 @@ static int S3_TRIO_Init(DisplayModePtr mode)
       outb(0x3c5, 0x06);
 
       outb(0x3c4, 0x0d);        /* fix for VideoLogic GrafixStar cards: */
-      outb(0x3c5, inb(0x3c5) & ~1);
+      tmp = inb(0x3c5) & ~1;
+      outb(0x3c5, tmp);
 
       outb(0x3c4, 0x15);
       sr15 = inb(0x3c5) & ~0x10;  /* XXXX ~0x40 and SynthClock /= 2 in s3.c 
@@ -3027,7 +3036,8 @@ static int TI3030_3026_Init(DisplayModePtr mode)
           * set the serial access mode 256 words control
           */
          outb(vgaCRIndex, 0x58);
-         outb(vgaCRReg, (inb(vgaCRReg) & 0xbf) | s3SAM256);
+	 tmp = (inb(vgaCRReg) & 0xbf) | s3SAM256;
+         outb(vgaCRReg, tmp);
 
 	 if (xf86bpp == 24) {                        /* packed 24bpp */
 	    s3OutTi3026IndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_3026T_888_P8);
@@ -3110,7 +3120,8 @@ static int TI3030_3026_Init(DisplayModePtr mode)
 	 if (DAC_IS_TI3030) {
 	    /* set s3 reg53 to parallel addressing by or'ing 0x20     */
 	    outb(vgaCRIndex, 0x53);
-	    outb(vgaCRReg, inb(vgaCRReg) | 0x20);
+	    tmp = inb(vgaCRReg) | 0x20;
+	    outb(vgaCRReg, tmp);
 	 }
       } else {
          outb(vgaCRIndex, 0x53);
@@ -3123,7 +3134,8 @@ static int TI3030_3026_Init(DisplayModePtr mode)
 	    outb(vgaCRReg, tmp & ~0x20);
          /* set s3 reg55 to non-external serial by and'ing 0xF7         */
          outb(vgaCRIndex, 0x55);
-         outb(vgaCRReg, inb(vgaCRReg) & 0xF7);
+	 tmp = inb(vgaCRReg) & 0xF7;
+         outb(vgaCRReg, tmp);
 
          /* set mux control 1 and 2 to provide pseudocolor VGA          */
          s3OutTi3026IndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_PSEUDO_COLOR);
@@ -3513,7 +3525,8 @@ static int IBMRGB52x_Init(DisplayModePtr mode)
           * set the serial access mode 256 words control
           */
          outb(vgaCRIndex, 0x58);
-         outb(vgaCRReg, (inb(vgaCRReg) & 0xbf) | s3SAM256);
+	 tmp = (inb(vgaCRReg) & 0xbf) | s3SAM256;
+         outb(vgaCRReg, tmp);
 
 	 outb(vgaCRIndex, 0x67);
 	 if (s3Bpp == 4)
@@ -3535,11 +3548,13 @@ static int IBMRGB52x_Init(DisplayModePtr mode)
       } else {
          /* set s3 reg53 to non-parallel addressing by and'ing 0xDF     */
          outb(vgaCRIndex, 0x53);
-         outb(vgaCRReg, inb(vgaCRReg) & 0xDF);
+	 tmp = inb(vgaCRReg) & 0xDF;
+         outb(vgaCRReg, tmp);
 
          /* set s3 reg55 to non-external serial by and'ing 0xF7         */
          outb(vgaCRIndex, 0x55);
-         outb(vgaCRReg, inb(vgaCRReg) & 0xF7);
+	 tmp = inb(vgaCRReg) & 0xF7;
+         outb(vgaCRReg, tmp);
 
          /* provide pseudocolor VGA          */
          s3OutIBMRGBIndReg(IBMRGB_misc2, 0, 0);
