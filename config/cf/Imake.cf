@@ -17,7 +17,7 @@ XCOMM $Xorg: Imake.cf,v 1.4 2000/08/17 19:41:45 cpqbld Exp $
  *
  *     4.  Create a .cf file with the name given by MacroFile.
  */
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.77 2002/07/14 17:08:15 alanh Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.78 2002/08/06 13:32:08 herrb Exp $
 
 #if defined(__APPLE__)
 # undef __APPLE__
@@ -129,9 +129,10 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.77 2002/07/14 17:08:15 alanh Exp $
 #   endif
 #   undef mips
 # endif
-# ifdef __alpha__
+# if defined(__alpha__) || defined(alpha)
 #   define AlphaArchitecture
 #   undef __alpha__
+#   undef alpha
 # endif
 # ifdef mc68020
 #  define Mc68020Architecture
@@ -160,6 +161,8 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.77 2002/07/14 17:08:15 alanh Exp $
 # ifdef __powerpc__
 #  define PpcArchitecture
 #  undef __powerpc__
+#  undef __macppc__
+#  undef macppc
 # endif
 #endif /* OpenBSD */
 
