@@ -1,4 +1,5 @@
 /* $XConsortium: mach8gtimg.c,v 1.1 94/03/28 21:11:35 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -43,7 +44,7 @@ mach8GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
      int         sx, sy, w, h;
      unsigned int format;
      unsigned long planeMask;
-     pointer     pdstLine;
+     char     *pdstLine;
 {
    int width;
 
