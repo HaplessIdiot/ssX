@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: main.h,v 1.5 91/02/06 16:00:15 gildea Exp $
- *	$XFree86: xc/programs/xterm/main.h,v 3.1 1996/01/10 05:51:41 dawes Exp $
+ *	$XFree86: xc/programs/xterm/main.h,v 3.3 2000/10/05 18:06:36 keithp Exp $
  */
 
 /*
@@ -26,10 +26,11 @@
  * SOFTWARE.
  */
 
-#define	DEFCLASS		"XTerm"
-#define	DEFFONT			"fixed"
-#define DEFWIDEFONT		NULL    /* grab one which is 2x as wide */
-#define	DEFBOLDFONT		NULL 	/* no bold font uses overstriking */
-#define	DEFBORDER		2
+#define DEFCLASS		"XTerm"
+#define DEFFONT			"fixed"
+#define DEFWIDEFONT		NULL	/* grab one which is 2x as wide */
+#define DEFWIDEBOLDFONT		NULL
+#define DEFBOLDFONT		NULL	/* no bold font uses overstriking */
+#define DEFBORDER		2
 #define DEFFACENAME		NULL
 #define DEFFACESIZE		14

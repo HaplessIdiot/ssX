@@ -1,4 +1,4 @@
--- $XFree86: xc/programs/xterm/unicode/README,v 1.2 2000/06/13 02:28:44 dawes Exp $
+-- $XFree86: xc/programs/xterm/unicode/README,v 1.3 2000/08/25 21:51:18 dawes Exp $
 -- Thomas E. Dickey
 
 These are some scripts and datafiles used for generating tables used in the
@@ -13,7 +13,7 @@ It is a large file (~460kb), so it is not included in this distribution.
 
 convmap.pl is used to generate ../keysym2ucs.c, e.g.,
 
-	./convmap.plp >../keysym2ucs.c
+	./convmap.pl >../keysym2ucs.c
 
 keysym.map is input data for convmap.pl
 

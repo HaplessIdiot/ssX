@@ -1,5 +1,5 @@
 /* $XConsortium: menu.c /main/66 1996/12/01 23:46:59 swick $ */
-/* $XFree86: xc/programs/xterm/menu.c,v 3.36 2000/08/25 21:51:12 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/menu.c,v 3.37 2000/09/22 10:42:07 alanh Exp $ */
 /*
 
 Copyright 1999-2000 by Thomas E. Dickey
@@ -1193,7 +1193,7 @@ static void do_vtfont (
 
     for (i = 0; i < NMENUFONTS; i++) {
 	if (strcmp (entryname, fontMenuEntries[i].name) == 0) {
-	    SetVTFont (i, True, VT_FONTSET(NULL, NULL, NULL));
+	    SetVTFont (i, True, VT_FONTSET(NULL, NULL, NULL, NULL));
 	    return;
 	}
     }
