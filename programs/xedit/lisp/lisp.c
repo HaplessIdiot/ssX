@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.21 2001/10/18 03:15:22 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.23 2001/10/20 00:19:34 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -3388,7 +3388,7 @@ LispBegin(int argc, char *argv[])
 
     pagesize = getpagesize();
     segsize = pagesize / sizeof(LispObj);
-    bzero(mac, sizeof(LispMac));
+    bzero((char*)mac, sizeof(LispMac));
     MOD = ENV = GLB = LEX = COD = FRM = DBG = BRK = PRO = NIL;
     LispAllocSeg(mac);
 
