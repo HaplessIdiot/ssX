@@ -1,0 +1,69 @@
+#define DoNormalLib NormalLibLibxml2
+#define DoSharedLib SharedLibLibxml2
+#define DoExtraLib SharedLibLibxml2
+#define DoDebugLib DebugLibLibxml2
+#define DoProfileLib ProfileLibLibxml2
+#define HasSharedData YES
+#define LibName xml2
+#define SoRev SOLIBXML2REV
+#define LibHeaders NO
+
+#include <Threads.tmpl>
+
+LIBXML2TOP = $(TOP)/extras/libxml2
+LIBXML2SRC = $(LIBXML2TOP)
+LIBXML2INC = $(LIBXML2TOP)/include
+
+INCLUDES = -I$(LIBXML2INC) -I$(LIBXML2TOP) -I.
+
+SRCS = SAX.c entities.c encoding.c error.c parserInternals.c  \
+       parser.c tree.c hash.c list.c xmlIO.c xmlmemory.c uri.c  \
+       valid.c xlink.c HTMLparser.c HTMLtree.c debugXML.c xpath.c  \
+       xpointer.c xinclude.c nanohttp.c nanoftp.c DOCBparser.c \
+       catalog.c globals.c threads.c triostr.c trio.c
+
+
+OBJS = SAX.o entities.o encoding.o error.o parserInternals.o  \
+       parser.o tree.o hash.o list.o xmlIO.o xmlmemory.o uri.o  \
+       valid.o xlink.o HTMLparser.o HTMLtree.o debugXML.o xpath.o  \
+       xpointer.o xinclude.o nanohttp.o nanoftp.o DOCBparser.o \
+       catalog.o globals.o threads.o triostr.o trio.o
+
+#include <Library.tmpl>
+
+#if DoSharedLib && SharedDataSeparation
+SpecialCObjectRule(sharedlib,NullParameter,$(SHLIBDEF))
+#endif
+
+DependTarget()
+
+DependSubdirs($(SUBDIRS))
+
+LinkSourceFile(SAX.c,$(LIBXML2SRC))
+LinkSourceFile(entities.c,$(LIBXML2SRC))
+LinkSourceFile(encoding.c,$(LIBXML2SRC))
+LinkSourceFile(error.c,$(LIBXML2SRC))
+LinkSourceFile(parserInternals.c,$(LIBXML2SRC))
+LinkSourceFile(parser.c,$(LIBXML2SRC))
+LinkSourceFile(tree.c,$(LIBXML2SRC))
+LinkSourceFile(hash.c,$(LIBXML2SRC))
+LinkSourceFile(list.c,$(LIBXML2SRC))
+LinkSourceFile(xmlIO.c,$(LIBXML2SRC))
+LinkSourceFile(xmlmemory.c,$(LIBXML2SRC))
+LinkSourceFile(uri.c,$(LIBXML2SRC))
+LinkSourceFile(valid.c,$(LIBXML2SRC))
+LinkSourceFile(xlink.c,$(LIBXML2SRC))
+LinkSourceFile(HTMLparser.c,$(LIBXML2SRC))
+LinkSourceFile(HTMLtree.c,$(LIBXML2SRC))
+LinkSourceFile(debugXML.c,$(LIBXML2SRC))
+LinkSourceFile(xpath.c ,$(LIBXML2SRC))
+LinkSourceFile(xpointer.c,$(LIBXML2SRC))
+LinkSourceFile(xinclude.c,$(LIBXML2SRC))
+LinkSourceFile(nanohttp.c,$(LIBXML2SRC))
+LinkSourceFile(nanoftp.c,$(LIBXML2SRC))
+LinkSourceFile(DOCBparser.c,$(LIBXML2SRC))
+LinkSourceFile(catalog.c,$(LIBXML2SRC))
+LinkSourceFile(globals.c,$(LIBXML2SRC))
+LinkSourceFile(threads.c,$(LIBXML2SRC))
+LinkSourceFile(triostr.c,$(LIBXML2SRC))
+LinkSourceFile(trio.c,$(LIBXML2SRC))
