@@ -23,12 +23,12 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.156 2002/05/13 17:44:03 keithp Exp $
  * InstallAppDefaults		(class)
  * InstallAppDefaultsLong	(file,class)
  * MakeFontsDir			(deplist)
- * MakeXftCache			(deplist)
+ * MakeFcCache			(deplist)
  * MakeFonts			()
  * InstallFontObjs		(objs,dest)
  * InstallFonts			(dest)
  * InstallFontAliases		(dest)
- * InstallXftCache		(dest)
+ * InstallFcCache		(dest)
  * FontSrc			(basename)
  * FontBaseObj			(basename)
  * InstallFontScale		(dest)
@@ -1503,7 +1503,6 @@ XCOMM X Window System make variables; these need to be coordinated with rules
             FONTC = $(BINDIR)/bdftopcf
         MKFONTDIR = $(BINDIR)/mkfontdir
           FCCACHE = $(BINDIR)/fc-cache
-         XFTCACHE = $(BINDIR)/xftcache
       MKHTMLINDEX = $(BINDIR)/mkhtmlindex
           UCS2ANY = $(BINDIR)/ucs2any.pl
       BDFTRUNCATE = $(BINDIR)/bdftruncate.pl
@@ -1514,7 +1513,6 @@ XCOMM X Window System make variables; these need to be coordinated with rules
             FONTC = $(CLIENTENVSETUP) $(PRELOADFONTSETUP) $(XBUILDBINDIR)/bdftopcf
         MKFONTDIR = $(CLIENTENVSETUP) $(PRELOADFONTSETUP) $(XBUILDBINDIR)/mkfontdir
           FCCACHE = set -x; $(CLIENTENVSETUP) $(PRELOADXFTSETUP) FONTCONFIG_PATH=$(FONTCONFIGLIBSRC) $(XBUILDBINDIR)/fc-cache
-         XFTCACHE = $(CLIENTENVSETUP) $(PRELOADXFTSETUP) XFT_CONFIG=$(XFT1LIBSRC)/XftConfig $(XBUILDBINDIR)/xftcache
 # elif UseInstalledOnCrossCompile
         MKFONTDIR = $(BINDIR)/mkfontdir
             FONTC = $(BINDIR)/bdftopcf
@@ -3148,13 +3146,13 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #endif /* InstallAppDefaultsLong */
 
 /*
- * MakeXftCache - generate rules to build XftCache database
+ * MakeFcCache - generate rules to build fontconfig cache database
  */
 
 #if defined UseFreetype2 && !CrossCompiling
 
-# ifndef MakeXftCache
-#  define MakeXftCache(deplist)						@@\
+# ifndef MakeFcCache
+#  define MakeFcCache(deplist)						@@\
 all:: fonts.cache							@@\
 									@@\
 fonts.cache: deplist							@@\
@@ -3162,21 +3160,21 @@ fonts.cache: deplist							@@\
 									@@\
 clean::									@@\
 	RemoveFile(fonts.cache)
-# endif /* MakeXftCache */
+# endif /* MakeFcCache */
 
-# ifndef InstallXftCache
-#  define InstallXftCache(dest)						@@\
+# ifndef InstallFcCache
+#  define InstallFcCache(dest)						@@\
 InstallTarget(install,fonts.cache,$(INSTDATFLAGS),dest)
-# endif /* InstallXftCache */
+# endif /* InstallFcCache */
 
 #else
 
-#ifndef MakeXftCache
-#define MakeXftCache(deplist)
+#ifndef MakeFcCache
+#define MakeFcCache(deplist)
 #endif
 
-#ifndef InstallXftCache
-#define InstallXftCache(dest)
+#ifndef InstallFcCache
+#define InstallFcCache(dest)
 #endif
 
 #endif

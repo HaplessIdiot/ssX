@@ -32,14 +32,14 @@ FONTINSTDIR = $(FONTDIR)/Type1
 
 MakeFontsDir(fonts.scale)
 #if UseFreetype2
-MakeXftCache($(FONTS))
+MakeFcCache($(FONTS))
 #endif
 
 InstallFonts($(FONTINSTDIR))
 InstallFontScale($(FONTINSTDIR))
 InstallEncodingsDir($(ENCODINGSSRC),$(FONTINSTDIR))
 #if UseFreetype2
-InstallXftCache($(FONTINSTDIR))
+InstallFcCache($(FONTINSTDIR))
 #endif
 
 #ifdef IHaveSubdirs
