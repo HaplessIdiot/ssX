@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.9 1994/11/26 12:46:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.10 1994/12/29 10:20:20 dawes Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -299,6 +299,12 @@ Bool
 monoProbe()
 {
     static int            i;
+
+    if (monoInfoRec.depth != 1) {
+	ErrorF("\n%s %s: Unsupported bpp for Mono server (%d)\n",
+	       XCONFIG_GIVEN, monoInfoRec.name, monoInfoRec.depth);
+	return(FALSE);
+    }
 
     for (i=0; monoDrivers[i]; i++) {
 	/* Probe every driver */
