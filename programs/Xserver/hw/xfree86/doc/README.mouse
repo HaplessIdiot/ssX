@@ -6,7 +6,7 @@
 
 1.  Introduction
 
-This document describes mouse support in XFree86 4.4.99.902.
+This document describes mouse support in XFree86 4.4.99.903.
 
 Mouse configuration has often been a mysterious task for novice users.  How-
 ever, once you learn the basics, it is straightforward to write the mouse

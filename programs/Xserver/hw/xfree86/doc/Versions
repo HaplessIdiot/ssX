@@ -34,7 +34,7 @@ update releases typically consist of source code patches plus binary updates
 that may be layered on top of the previous release.
 
 XFree86 is currently in the feature freeze period for version 4.5.0.  The
-current release candidate is 4.4.99.902 (4.5.0 RC1).
+current release candidate is 4.4.99.903 (4.5.0 RC1).
 
 Aside from releases, snapshots of the development trunk are tagged in the CVS
 repository at regular intervals, normally every two weeks.  Each snapshot has
