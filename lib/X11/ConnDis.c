@@ -1,5 +1,5 @@
 /* $XConsortium: ConnDis.c,v 11.126 95/04/25 14:47:17 mor Exp $ */
-/* $XFree86: xc/lib/X11/ConnDis.c,v 3.8 1995/07/08 10:23:52 dawes Exp $ */
+/* $XFree86: xc/lib/X11/ConnDis.c,v 3.9 1996/01/05 13:11:01 dawes Exp $ */
 /*
  
 Copyright (c) 1989  X Consortium
@@ -238,10 +238,10 @@ _X11TransConnectDisplay (display_name, fullnamep, dpynump, screenp,
      * is "unix", then choose BSD UNIX domain sockets (if configured).
      */
 
-#if defined(TCPCONN) || defined(UNIXCONN) || defined(LOCALCONN) || defined(MNX_TCPCONN)
+#if defined(TCPCONN) || defined(UNIXCONN) || defined(LOCALCONN) || defined(MNX_TCPCONN) || defined(OS2PIPECONN)
     if (!pprotocol) {
 	if (!phostname)
-#if defined(UNIXCONN) || defined(LOCALCONN)
+#if defined(UNIXCONN) || defined(LOCALCONN) || defined(OS2PIPECONN)
 	    pprotocol = copystring ("local", 5);
 	else
 #endif
@@ -255,7 +255,7 @@ _X11TransConnectDisplay (display_name, fullnamep, dpynump, screenp,
 #endif
 #endif
 
-#if defined(UNIXCONN) || defined(LOCALCONN)
+#if defined(UNIXCONN) || defined(LOCALCONN) || defined(OS2PIPECONN)
     /*
      * Now that the defaults have been established, see if we have any 
      * special names that we have to override:

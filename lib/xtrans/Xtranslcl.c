@@ -1,5 +1,5 @@
 /* $XConsortium: Xtranslcl.c /main/26 1996/02/06 14:12:08 mor $ */
-/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.16 1996/01/24 21:59:11 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.17 1996/02/09 10:16:03 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -156,7 +156,7 @@ char		*peer_sun_path;
 
     if ((sunaddr = (struct sockaddr_un *) xalloc (ciptr->addrlen)) == NULL)
     {
-	PRMSG(1,"TRANS(FillAddrInfo)() failed to allocate memory for addr\n",
+	PRMSG(1,"FillAddrInfo: failed to allocate memory for addr\n",
 									0,0,0);
 	return 0;
     }
@@ -176,7 +176,7 @@ char		*peer_sun_path;
 	ciptr->peeraddrlen)) == NULL)
     {
 	PRMSG(1,
-	   "TRANS(FillAddrInfo)() failed to allocate memory for peer addr\n",
+	   "FillAddrInfo: failed to allocate memory for peer addr\n",
 									0,0,0);
 	xfree ((char *) sunaddr);
 	ciptr->addr = NULL;
@@ -281,10 +281,10 @@ char		*port;
     char		buf[20]; /* MAX_PATH_LEN?? */
     PFV			savef;
 
-    PRMSG(2,"TRANS(PTSOpenClient)(%s)\n", port, 0,0 );
+    PRMSG(2,"PTSOpenClient(%s)\n", port, 0,0 );
 
 #if !defined(PTSNODENAME)
-    PRMSG(1,"Protocol is not supported by a pts connection\n", 0,0,0);
+    PRMSG(1,"PTSOpenClient: Protocol is not supported by a pts connection\n", 0,0,0);
     return -1;
 #else
     if (port && *port ) {
@@ -303,7 +303,7 @@ char		*port;
      */
 
     if ((server = open (server_path, O_RDWR)) < 0) {
-	PRMSG(1,"TRANS(PTSOpenClient)() failed to open %s\n", server_path, 0,0);
+	PRMSG(1,"PTSOpenClient: failed to open %s\n", server_path, 0,0);
 	return -1;
     }
 
@@ -313,7 +313,7 @@ char		*port;
      */
 
     if ((fd = open("/dev/ptmx", O_RDWR)) < 0) {
-	PRMSG(1,"TRANS(PTSOpenClient)() failed to open /dev/ptmx\n", 0,0,0);
+	PRMSG(1,"PTSOpenClient: failed to open /dev/ptmx\n", 0,0,0);
 	return -1;
     }
 
@@ -323,7 +323,7 @@ char		*port;
     slave = ptsname(fd); /* get name */
 
     if( slave == NULL ) {
-	PRMSG(1,"TRANS(PTSOpenClient)() failed to get ptsname()\n", 0,0,0);
+	PRMSG(1,"PTSOpenClient: failed to get ptsname()\n", 0,0,0);
 	close(fd);
 	close(server);
 	return -1;
@@ -354,7 +354,7 @@ char		*port;
     if (chmod(slave, 0666) < 0) {
 	close(fd);
 	close(server);
-	PRMSG(1,"Cannot chmod %s\n", slave, 0,0);
+	PRMSG(1,"PTSOpenClient: Cannot chmod %s\n", slave, 0,0);
 	return(-1);
     }
 
@@ -382,7 +382,7 @@ char		*port;
 
     if (ret != 1) {
 	PRMSG(1,
-	"TRANS(PTSOpenClient)() failed to get acknoledgement from server\n",
+	"PTSOpenClient: failed to get acknoledgement from server\n",
 									0,0,0);
 	(void) close(fd);
 	fd = -1;
@@ -394,7 +394,7 @@ char		*port;
 
     if (TRANS(FillAddrInfo) (ciptr, slave, server_path) == 0)
     {
-	PRMSG(1,"TRANS(PTSOpenClient)() failed to fill in addr info\n",
+	PRMSG(1,"PTSOpenClient: failed to fill in addr info\n",
 								0,0,0);
 	close(fd);
 	return -1;
@@ -420,10 +420,10 @@ char		*port;
     int fd, server;
     char server_path[64], *slave;
 
-    PRMSG(2,"TRANS(PTSOpenServer)(%s)\n", port, 0,0 );
+    PRMSG(2,"PTSOpenServer(%s)\n", port, 0,0 );
 
 #if !defined(PTSNODENAME)
-    PRMSG(1,"Protocol is not supported by a pts connection\n", 0,0,0);
+    PRMSG(1,"PTSOpenServer: Protocol is not supported by a pts connection\n", 0,0,0);
     return -1;
 #else
     if (port && *port ) {
@@ -446,8 +446,8 @@ char		*port;
 	 * prevent clients from trying to connect to the in-use PTS (which
 	 * is often in use by something other than another server).
 	 */
-	PRMSG(1, "A server is already running on port %s\n", port, 0,0 );
-	PRMSG(1, "Remove %s if this is incorrect.\n", server_path, 0,0 );
+	PRMSG(1, "PTSOpenServer: A server is already running on port %s\n", port, 0,0 );
+	PRMSG(1, "PTSOpenServer: Remove %s if this is incorrect.\n", server_path, 0,0 );
 	close(fd);
 	return(-1);
 #else
@@ -459,7 +459,7 @@ char		*port;
     unlink(server_path);
 
     if( (fd=open(DEV_PTMX, O_RDWR)) < 0) {
-	PRMSG(1, "Unable to open %s\n", DEV_PTMX, 0,0 );
+	PRMSG(1, "PTSOpenServer: Unable to open %s\n", DEV_PTMX, 0,0 );
 	return(-1);
     }
 
@@ -467,25 +467,25 @@ char		*port;
     unlockpt(fd);
 
     if( (slave=ptsname(fd)) == NULL) {
-	PRMSG(1, "Unable to get slave device name\n", 0,0,0 );
+	PRMSG(1, "PTSOpenServer: Unable to get slave device name\n", 0,0,0 );
 	close(fd);
 	return(-1);
     }
 
     if( link(slave,server_path) < 0 ) {
-	PRMSG(1, "Unable to link %s to %s\n", slave, server_path,0 );
+	PRMSG(1, "PTSOpenServer: Unable to link %s to %s\n", slave, server_path,0 );
 	close(fd);
 	return(-1);
     }
 
     if( chmod(server_path, 0666) < 0 ) {
-	PRMSG(1, "Unable to chmod %s to 0666\n", server_path,0,0 );
+	PRMSG(1, "PTSOpenServer: Unable to chmod %s to 0666\n", server_path,0,0 );
 	close(fd);
 	return(-1);
     }
 
     if( (server=open(server_path, O_RDWR)) < 0 ) {
-	PRMSG(1, "Unable to open server device %s\n", server_path,0,0 );
+	PRMSG(1, "PTSOpenServer: Unable to open server device %s\n", server_path,0,0 );
 	close(fd);
 	return(-1);
     }
@@ -498,7 +498,7 @@ char		*port;
 
     if (TRANS(FillAddrInfo) (ciptr, server_path, server_path) == 0)
     {
-	PRMSG(1,"TRANS(PTSOpenServer)() failed to fill in addr info\n",
+	PRMSG(1,"PTSOpenServer: failed to fill in addr info\n",
 								0,0,0);
 	close(fd);
 	return -1;
@@ -523,16 +523,16 @@ int		*status;
     char		buf[256];
     struct sockaddr_un	*sunaddr;
 
-    PRMSG(2,"TRANS(PTSAccept)(%x->%d)\n",ciptr,ciptr->fd,0);
+    PRMSG(2,"PTSAccept(%x->%d)\n",ciptr,ciptr->fd,0);
 
     if( (in=read(ciptr->fd,&length,1)) <= 0 ){
 	if( !in ) {
 		PRMSG(2,
-		"TRANS(PTSAccept)() Incoming connection closed\n",0,0,0);
+		"PTSAccept: Incoming connection closed\n",0,0,0);
 		}
 	else {
 		PRMSG(1,
-	"TRANS(PTSAccept)() Error reading incoming connection. errno=%d \n",
+	"PTSAccept: Error reading incoming connection. errno=%d \n",
 								errno,0,0);
 		}
 	*status = TRANS_ACCEPT_MISC_ERROR;
@@ -542,11 +542,11 @@ int		*status;
     if( (in=read(ciptr->fd,buf,length)) <= 0 ){
 	if( !in ) {
 		PRMSG(2,
-		"TRANS(PTSAccept)() Incoming connection closed\n",0,0,0);
+		"PTSAccept: Incoming connection closed\n",0,0,0);
 		}
 	else {
 		PRMSG(1,
-"TRANS(PTSAccept)() Error reading device name for new connection. errno=%d \n",
+"PTSAccept: Error reading device name for new connection. errno=%d \n",
 								errno,0,0);
 		}
 	*status = TRANS_ACCEPT_MISC_ERROR;
@@ -556,7 +556,7 @@ int		*status;
     buf[length] = '\0';
 
     if( (newfd=open(buf,O_RDWR)) < 0 ) {
-	PRMSG(1, "TRANS(PTSAccept)() Failed to open %s\n",buf,0,0);
+	PRMSG(1, "PTSAccept: Failed to open %s\n",buf,0,0);
 	*status = TRANS_ACCEPT_MISC_ERROR;
 	return -1;
     }
@@ -569,7 +569,7 @@ int		*status;
 
     newciptr->addrlen=ciptr->addrlen;
     if( (newciptr->addr=(char *)xalloc(newciptr->addrlen)) == NULL ) {
-	PRMSG(1,"TRANS(PTSAccept)() failed to allocate memory for peer addr\n",
+	PRMSG(1,"PTSAccept: failed to allocate memory for peer addr\n",
 									0,0,0);
 	close(newfd);
 	*status = TRANS_ACCEPT_BAD_MALLOC;
@@ -580,7 +580,7 @@ int		*status;
 
     newciptr->peeraddrlen=sizeof(struct sockaddr_un);
     if( (sunaddr=(struct sockaddr_un *)xalloc(newciptr->peeraddrlen)) == NULL ) {
-	PRMSG(1,"TRANS(PTSAccept)() failed to allocate memory for peer addr\n",
+	PRMSG(1,"PTSAccept: failed to allocate memory for peer addr\n",
 									0,0,0);
 	xfree(newciptr->addr);
 	close(newfd);
@@ -622,10 +622,10 @@ char		*port;
     struct stat		filestat;
     extern int		isastream();
 
-    PRMSG(2,"TRANS(NAMEDOpenClient)(%s)\n", port, 0,0 );
+    PRMSG(2,"NAMEDOpenClient(%s)\n", port, 0,0 );
 
 #if !defined(NAMEDNODENAME)
-    PRMSG(1,"Protocol is not supported by a NAMED connection\n", 0,0,0);
+    PRMSG(1,"NAMEDOpenClient: Protocol is not supported by a NAMED connection\n", 0,0,0);
     return -1;
 #else
     if ( port && *port ) {
@@ -639,23 +639,23 @@ char		*port;
     }
 
     if (stat(server_path, &filestat) < 0 ) {
-	PRMSG(1,"No device %s for NAMED connection\n", server_path, 0,0 );
+	PRMSG(1,"NAMEDOpenClient: No device %s for NAMED connection\n", server_path, 0,0 );
 	return -1;
     }
 
     if ((filestat.st_mode & S_IFMT) != S_IFIFO) {
-	PRMSG(1,"Device %s is not a FIFO\n", server_path, 0,0 );
+	PRMSG(1,"NAMEDOpenClient: Device %s is not a FIFO\n", server_path, 0,0 );
 	/* Is this really a failure? */
 	return -1;
     }
 
     if ((fd = open(server_path, O_RDWR)) < 0) {
-	PRMSG(1,"Cannot open %s for NAMED connection\n", server_path, 0,0 );
+	PRMSG(1,"NAMEDOpenClient: Cannot open %s for NAMED connection\n", server_path, 0,0 );
 	return -1;
     }
 
     if (isastream(fd) <= 0) {
-	PRMSG(1,"%s is not a streams device\n", server_path, 0,0 );
+	PRMSG(1,"NAMEDOpenClient: %s is not a streams device\n", server_path, 0,0 );
 	(void) close(fd);
 	return -1;
     }
@@ -666,7 +666,7 @@ char		*port;
 
     if (TRANS(FillAddrInfo) (ciptr, server_path, server_path) == 0)
     {
-	PRMSG(1,"TRANS(NAMEDOpenClient)() failed to fill in addr info\n",
+	PRMSG(1,"NAMEDOpenClient: failed to fill in addr info\n",
 								0,0,0);
 	close(fd);
 	return -1;
@@ -693,10 +693,10 @@ char		*port;
     char		server_path[64];
     struct stat		sbuf;
 
-    PRMSG(2,"TRANS(NAMEDOpenServer)(%s)\n", port, 0,0 );
+    PRMSG(2,"NAMEDOpenServer(%s)\n", port, 0,0 );
 
 #if !defined(NAMEDNODENAME)
-    PRMSG(1,"Protocol is not supported by a NAMED connection\n", 0,0,0);
+    PRMSG(1,"NAMEDOpenServer: Protocol is not supported by a NAMED connection\n", 0,0,0);
     return -1;
 #else
     if ( port && *port ) {
@@ -715,34 +715,34 @@ char		*port;
     if(stat(server_path, &sbuf) != 0) {
 	if (errno == ENOENT) {
 	    if ((fd = creat(server_path, (mode_t)0666)) == -1) {
-		PRMSG(1, "Can't open %s\n", server_path, 0,0 );
+		PRMSG(1, "NAMEDOpenServer: Can't open %s\n", server_path, 0,0 );
 		return(-1);
 	    }
 	    close(fd);
 	    if (chmod(server_path, (mode_t)0666) < 0) {
-		PRMSG(1, "Can't open %s\n", server_path, 0,0 );
+		PRMSG(1, "NAMEDOpenServer: Can't open %s\n", server_path, 0,0 );
 		return(-1);
 	    }
 	} else {
-	    PRMSG(1, "stat on %s failed\n", server_path, 0,0 );
+	    PRMSG(1, "NAMEDOpenServer: stat on %s failed\n", server_path, 0,0 );
 	    return(-1);
 	}
     }
 
     if( pipe(pipefd) != 0) {
-	PRMSG(1, "pipe() failed, errno=%d\n",errno, 0,0 );
+	PRMSG(1, "NAMEDOpenServer: pipe() failed, errno=%d\n",errno, 0,0 );
 	return(-1);
     }
 
     if( ioctl(pipefd[0], I_PUSH, "connld") != 0) {
-	PRMSG(1, "ioctl(I_PUSH,\"connld\") failed, errno=%d\n",errno, 0,0 );
+	PRMSG(1, "NAMEDOpenServer: ioctl(I_PUSH,\"connld\") failed, errno=%d\n",errno, 0,0 );
 	close(pipefd[0]);
 	close(pipefd[1]);
 	return(-1);
     }
 
     if( fattach(pipefd[0], server_path) != 0) {
-	PRMSG(1, "fattach(%s) failed, errno=%d\n", server_path,errno, 0 );
+	PRMSG(1, "NAMEDOpenServer: fattach(%s) failed, errno=%d\n", server_path,errno, 0 );
 	close(pipefd[0]);
 	close(pipefd[1]);
 	return(-1);
@@ -754,7 +754,7 @@ char		*port;
 
     if (TRANS(FillAddrInfo) (ciptr, server_path, server_path) == 0)
     {
-	PRMSG(1,"TRANS(NAMEDOpenServer)() failed to fill in addr info\n",
+	PRMSG(1,"NAMEDOpenServer: failed to fill in addr info\n",
 								0,0,0);
 	close(fd);
 	return -1;
@@ -775,10 +775,10 @@ int		*status;
 {
     struct strrecvfd str;
 
-    PRMSG(2,"TRANS(NAMEDAccept)(%x->%d)\n", ciptr, ciptr->fd, 0 );
+    PRMSG(2,"NAMEDAccept(%x->%d)\n", ciptr, ciptr->fd, 0 );
 
     if( ioctl(ciptr->fd, I_RECVFD, &str ) < 0 ) {
-	PRMSG(1, "ioctl(I_RECVFD) failed, errno=%d\n", errno, 0,0 );
+	PRMSG(1, "NAMEDAccept: ioctl(I_RECVFD) failed, errno=%d\n", errno, 0,0 );
 	*status = TRANS_ACCEPT_MISC_ERROR;
 	return(-1);
     }
@@ -790,7 +790,7 @@ int		*status;
     newciptr->addrlen=ciptr->addrlen;
     if( (newciptr->addr=(char *)xalloc(newciptr->addrlen)) == NULL ) {
 	PRMSG(1,
-	      "TRANS(NAMEDAccept)() failed to allocate memory for peer addr\n",
+	      "NAMEDAccept: failed to allocate memory for peer addr\n",
 									0,0,0);
 	close(str.fd);
 	*status = TRANS_ACCEPT_BAD_MALLOC;
@@ -802,7 +802,7 @@ int		*status;
     newciptr->peeraddrlen=newciptr->addrlen;
     if( (newciptr->peeraddr=(char *)xalloc(newciptr->peeraddrlen)) == NULL ) {
 	PRMSG(1,
-	"TRANS(NAMEDAccept)() failed to allocate memory for peer addr\n",
+	"NAMEDAccept: failed to allocate memory for peer addr\n",
 									0,0,0);
 	xfree(newciptr->addr);
 	close(str.fd);
@@ -901,10 +901,10 @@ char		*port;
     mode_t 	spmode;
     struct stat 	filestat;
     
-    PRMSG(2,"TRANS(ISCOpenClient)(%s)\n", port, 0,0 );
+    PRMSG(2,"ISCOpenClient(%s)\n", port, 0,0 );
     
 #if !defined(ISCDEVNODENAME)
-    PRMSG(1,"Protocol is not supported by a ISC connection\n", 0,0,0);
+    PRMSG(1,"ISCOpenClient: Protocol is not supported by a ISC connection\n", 0,0,0);
     return -1;
 #else
     (void) sprintf(server_path, ISCTMPNODENAME, port);
@@ -913,7 +913,7 @@ char		*port;
     fd = fds = server = -1;
 
     if (stat(DEV_SPX, &filestat) == -1) {
-	PRMSG(1, "stat(%s) failed, errno=%d\n", DEV_SPX, errno, 0 );
+	PRMSG(1, "ISCOpenClient: stat(%s) failed, errno=%d\n", DEV_SPX, errno, 0 );
 	return(-1);
     }
 
@@ -922,7 +922,7 @@ char		*port;
     if (stat(server_path, &filestat) != -1) {
 	if ((filestat.st_mode & S_IFMT) == spmode) {
 	    if ((server = open(server_path, O_RDWR)) < 0) {
-		PRMSG(1,"TRANS(ISCOpenClient): failed to open %s\n",
+		PRMSG(1,"ISCOpenClient: failed to open %s\n",
 		      server_path, 0,0 );
 	    }
 	}
@@ -933,7 +933,7 @@ char		*port;
 	if (stat(server_dev_path, &filestat) != -1) {
 	    if ((filestat.st_mode & S_IFMT) == spmode) {
 		if ((server = open(server_dev_path, O_RDWR)) < 0) {
-		    PRMSG(1,"TRANS(ISCOpenClient): failed to open %s\n",
+		    PRMSG(1,"ISCOpenClient: failed to open %s\n",
 			  server_dev_path, 0,0 );
 		}
 	    }
@@ -941,7 +941,7 @@ char		*port;
     }
     
     if (server < 0) {
-	PRMSG(1,"TRANS(ISCOpenClient): can't open either device %s or %s\n",
+	PRMSG(1,"ISCOpenClient: can't open either device %s or %s\n",
 	      server_path, server_dev_path, 0 );
 	return -1;
     }
@@ -949,7 +949,7 @@ char		*port;
     if ((fds = open(DEV_SPX, O_RDWR)) < 0 ||
 	(fd  = open(DEV_SPX, O_RDWR)) < 0) {
 	/* Failed to open all of the devices */
-	PRMSG(1,"TRANS(ISCOpenClient): can't open %s\n", DEV_SPX, 0,0 );
+	PRMSG(1,"ISCOpenClient: can't open %s\n", DEV_SPX, 0,0 );
 	(void) close(server);
 	if (fds != -1)
 	    (void) close(fds);
@@ -972,7 +972,7 @@ char		*port;
     
     if (ioctl(fds, I_FDINSERT, &buf) < 0 ||
 	ioctl(server, I_SENDFD, fds) < 0) {
-	PRMSG(1,"TRANS(ISCOpenClient): ioctl(I_FDINSERT or I_SENDFD) failed\n",
+	PRMSG(1,"ISCOpenClient: ioctl(I_FDINSERT or I_SENDFD) failed\n",
 								0,0,0 );
 	(void) close(server);
 	(void) close(fds);
@@ -986,7 +986,7 @@ char		*port;
     
     if (TRANS(FillAddrInfo) (ciptr, server_path, server_path) == 0)
     {
-	PRMSG(1,"TRANS(ISCOpenClient)() failed to fill in addr info\n",
+	PRMSG(1,"ISCOpenClient: failed to fill in addr info\n",
 								0,0,0);
 	close(fd);
 	return -1;
@@ -1012,10 +1012,10 @@ char		*port;
     int	fd = -1,fds = -1;
     char	server_path[64],server_unix_path[64];
     
-    PRMSG(2,"TRANS(ISCOpenServer)(%s)\n", port, 0,0 );
+    PRMSG(2,"ISCOpenServer(%s)\n", port, 0,0 );
     
 #if !defined(ISCDEVNODENAME)
-    PRMSG(1,"Protocol is not supported by a ISC connection\n", 0,0,0);
+    PRMSG(1,"ISCOpenServer: Protocol is not supported by a ISC connection\n", 0,0,0);
     return -1;
 #else
     (void) sprintf(server_path, ISCDEVNODENAME, port);
@@ -1030,13 +1030,13 @@ char		*port;
     
     if( ((fds=open(DEV_SPX, O_RDWR)) < 0) ||
        ((fd =open(DEV_SPX, O_RDWR)) < 0)) {
-	PRMSG(1,"TRANS(ISCOpenServer): failed to open %s\n", DEV_SPX, 0,0 );
+	PRMSG(1,"ISCOpenServer: failed to open %s\n", DEV_SPX, 0,0 );
 	return -1;
     }
     
     if( (connect_spipe(fds, fd) < 0) ||
        (named_spipe(fds, server_path) < 0)) {
-	PRMSG(1,"TRANS(ISCOpenServer): failed connect pipes\n", 0,0,0 );
+	PRMSG(1,"ISCOpenServer: failed connect pipes\n", 0,0,0 );
 	close(fd);
 	close(fds);
 	return -1;
@@ -1057,7 +1057,7 @@ char		*port;
 #ifdef SVR4
     /* we prefer symbolic links because hard links can't cross file systems */
     if( symlink(server_path, server_unix_path) < 0 )
-	PRMSG(1,"TRANS(ISCOpenServer): failed to link %s to %s\n",
+	PRMSG(1,"ISCOpenServer: failed to link %s to %s\n",
 	      server_path, server_unix_path, 0 );
     /*
      * Don't make this failure fatal since the listener 
@@ -1072,7 +1072,7 @@ char		*port;
 #ifdef ISC40
       if( symlink(server_path, server_unix_path) < 0 )
 #endif
-	PRMSG(1,"TRANS(ISCOpenServer): failed to link %s to %s\n",
+	PRMSG(1,"ISCOpenServer: failed to link %s to %s\n",
 	      server_path, server_unix_path, 0 );
     /*
      * Don't make this failure fatal since the listener 
@@ -1087,7 +1087,7 @@ char		*port;
     
     if (TRANS(FillAddrInfo) (ciptr, server_path, server_path) == 0)
     {
-	PRMSG(1,"TRANS(ISCOpenServer)() failed to fill in addr info\n",
+	PRMSG(1,"ISCOpenServer: failed to fill in addr info\n",
 								0,0,0);
 	close(fd);
 	return -1;
@@ -1108,11 +1108,11 @@ int		*status;
 {
     struct strrecvfd str;
     
-    PRMSG(2,"TRANS(ISCAccept)(%d)\n", ciptr->fd, 0,0 );
+    PRMSG(2,"ISCAccept(%d)\n", ciptr->fd, 0,0 );
     
     while (ioctl(ciptr->fd, I_RECVFD, &str) < 0) {
 	if (errno != EAGAIN) {
-	    PRMSG(1,"TRANS(ISCAccept): Can't read fildes", 0,0,0 );
+	    PRMSG(1,"ISCAccept: Can't read fildes", 0,0,0 );
 	    *status = TRANS_ACCEPT_MISC_ERROR;
 	    return(-1);
 	}
@@ -1125,7 +1125,7 @@ int		*status;
     newciptr->addrlen=ciptr->addrlen;
     if( (newciptr->addr=(char *)xalloc(newciptr->addrlen)) == NULL ) {
 	PRMSG(1,
-	      "TRANS(ISCAccept)() failed to allocate memory for peer addr\n",
+	      "ISCAccept: failed to allocate memory for peer addr\n",
 	      0,0,0);
 	close(str.fd);
 	*status = TRANS_ACCEPT_BAD_MALLOC;
@@ -1137,7 +1137,7 @@ int		*status;
     newciptr->peeraddrlen=newciptr->addrlen;
     if( (newciptr->peeraddr=(char *)xalloc(newciptr->peeraddrlen)) == NULL ) {
 	PRMSG(1,
-	      "TRANS(ISCAccept)() failed to allocate memory for peer addr\n",
+	      "ISCAccept: failed to allocate memory for peer addr\n",
 	      0,0,0);
 	xfree(newciptr->addr);
 	close(str.fd);
@@ -1176,21 +1176,21 @@ char		*port;
     long		temp;
     extern int	getmsg(), putmsg();
     
-    PRMSG(2,"TRANS(SCOOpenClient)(%s)\n", port, 0,0 );
+    PRMSG(2,"SCOOpenClient(%s)\n", port, 0,0 );
     
 #if !defined(SCORNODENAME)
-    PRMSG(1,"Protocol is not supported by a SCO connection\n", 0,0,0);
+    PRMSG(1,"SCOOpenClient: Protocol is not supported by a SCO connection\n", 0,0,0);
     return -1;
 #else
     (void) sprintf(server_path, SCORNODENAME, port);
     
     if ((server = open(server_path, O_RDWR)) < 0) {
-	PRMSG(1,"TRANS(SCOOpenClient) failed to open %s\n", server_path, 0,0 );
+	PRMSG(1,"SCOOpenClient: failed to open %s\n", server_path, 0,0 );
 	return -1;
     }
     
     if ((fd = open(DEV_SPX, O_RDWR)) < 0) {
-	PRMSG(1,"TRANS(SCOOpenClient) failed to open %s\n", DEV_SPX, 0,0 );
+	PRMSG(1,"SCOOpenClient: failed to open %s\n", DEV_SPX, 0,0 );
 	close(server);
 	return -1;
     }
@@ -1210,7 +1210,7 @@ char		*port;
     (void) signal(SIGALRM, savef);
     
     if (ret < 0) {
-	PRMSG(1,"TRANS(SCOOpenClient) error from getmsg\n", 0,0,0 );
+	PRMSG(1,"SCOOpenClient: error from getmsg\n", 0,0,0 );
 	close(fd);
 	close(server);
 	return -1;
@@ -1231,7 +1231,7 @@ char		*port;
     
     if (TRANS(FillAddrInfo) (ciptr, server_path, server_path) == 0)
     {
-	PRMSG(1,"TRANS(SCOOpenClient)() failed to fill addr info\n",
+	PRMSG(1,"SCOOpenClient: failed to fill addr info\n",
 	      0,0,0);
 	close(fd);
 	return -1;
@@ -1259,10 +1259,10 @@ char		*port;
     int	fdr = -1;
     int	fds = -1;
     
-    PRMSG(2,"TRANS(SCOOpenServer)(%s)\n", port, 0,0 );
+    PRMSG(2,"SCOOpenServer(%s)\n", port, 0,0 );
     
 #if !defined(SCORNODENAME)
-    PRMSG(1,"Protocol is not supported by a SCO connection\n", 0,0,0);
+    PRMSG(1,"SCOOpenServer: Protocol is not supported by a SCO connection\n", 0,0,0);
     return -1;
 #else
     (void) sprintf(serverR_path, SCORNODENAME, port);
@@ -1273,16 +1273,16 @@ char		*port;
     
     if ((fds = open(DEV_SPX, O_RDWR)) < 0 ||
 	(fdr = open(DEV_SPX, O_RDWR)) < 0 ) {
-	PRMSG(2,"TRANS(SCOOpenServer) failed to open %s\n", DEV_SPX, 0,0 );
+	PRMSG(2,"SCOOpenServer: failed to open %s\n", DEV_SPX, 0,0 );
 	return -1;
     }
     
     if (connect_spipe(fds, fdr) != -1 &&
 	named_spipe(fds, serverS_path) != -1 &&
 	named_spipe(fdr, serverR_path) != -1) {
-	PRMSG(2,"TRANS(SCOOpenServer) connect pipes\n", 0,0,0 );
+	PRMSG(2,"SCOOpenServer: connect pipes\n", 0,0,0 );
 	} else {
-	PRMSG(2,"TRANS(SCOOpenServer) failed to connect pipes\n", 0,0,0 );
+	PRMSG(2,"SCOOpenServer: failed to connect pipes\n", 0,0,0 );
 	close(fds);
 	close(fdr);
 	return -1;
@@ -1294,7 +1294,7 @@ char		*port;
     
     if (TRANS(FillAddrInfo) (ciptr, serverS_path, serverR_path) == 0)
     {
-	PRMSG(1,"TRANS(SCOOpenServer)() failed to fill in addr info\n",
+	PRMSG(1,"SCOOpenServer: failed to fill in addr info\n",
 	      0,0,0);
 	close(fds);
 	close(fdr);
@@ -1317,22 +1317,22 @@ int		*status;
     char	c;
     int	fd;
     
-    PRMSG(2,"TRANS(SCOAccept)(%d)\n", ciptr->fd, 0,0 );
+    PRMSG(2,"SCOAccept(%d)\n", ciptr->fd, 0,0 );
     
     if (read(ciptr->fd, &c, 1) < 0) {
-	PRMSG(1,"TRANS(SCOAccept): can't read from client",0,0,0);
+	PRMSG(1,"SCOAccept: can't read from client",0,0,0);
 	*status = TRANS_ACCEPT_MISC_ERROR;
 	return(-1);
     }
     
     if( (fd = open(DEV_SPX, O_RDWR)) < 0 ) {
-	PRMSG(1,"TRANS(SCOAccept)(): can't open \"%s\"",DEV_SPX, 0,0 );
+	PRMSG(1,"SCOAccept: can't open \"%s\"",DEV_SPX, 0,0 );
 	*status = TRANS_ACCEPT_MISC_ERROR;
 	return(-1);
     }
     
     if (connect_spipe(ciptr->fd, fd) < 0) {
-	PRMSG(1,"TRANS(SCOAccept)(): can't connect pipes", 0,0,0 );
+	PRMSG(1,"SCOAccept: can't connect pipes", 0,0,0 );
 	(void) close(fd);
 	*status = TRANS_ACCEPT_MISC_ERROR;
 	return(-1);
@@ -1345,7 +1345,7 @@ int		*status;
     newciptr->addrlen=ciptr->addrlen;
     if( (newciptr->addr=(char *)xalloc(newciptr->addrlen)) == NULL ) {
 	PRMSG(1,
-	      "TRANS(SCOAccept)() failed to allocate memory for peer addr\n",
+	      "SCOAccept: failed to allocate memory for peer addr\n",
 	      0,0,0);
 	close(fd);
 	*status = TRANS_ACCEPT_BAD_MALLOC;
@@ -1357,7 +1357,7 @@ int		*status;
     newciptr->peeraddrlen=newciptr->addrlen;
     if( (newciptr->peeraddr=(char *)xalloc(newciptr->peeraddrlen)) == NULL ) {
 	PRMSG(1,
-	      "TRANS(SCOAccept)() failed to allocate memory for peer addr\n",
+	      "SCOAccept: failed to allocate memory for peer addr\n",
 	      0,0,0);
 	xfree(newciptr->addr);
 	close(fd);
@@ -1387,10 +1387,10 @@ char		*port;
 {
     char server_path[64];
 
-    PRMSG(2,"TRANS(PTSReopenServer)(%d,%s)\n", fd, port, 0 );
+    PRMSG(2,"PTSReopenServer(%d,%s)\n", fd, port, 0 );
 
 #if !defined(PTSNODENAME)
-    PRMSG(1,"Protocol is not supported by a pts connection\n", 0,0,0);
+    PRMSG(1,"PTSReopenServer: Protocol is not supported by a pts connection\n", 0,0,0);
     return 0;
 #else
     if (port && *port ) {
@@ -1405,7 +1405,7 @@ char		*port;
 
     if (TRANS(FillAddrInfo) (ciptr, server_path, server_path) == 0)
     {
-	PRMSG(1,"TRANS(PTSReopenServer)() failed to fill in addr info\n",
+	PRMSG(1,"PTSReopenServer: failed to fill in addr info\n",
 								0,0,0);
 	return 0;
     }
@@ -1426,10 +1426,10 @@ char		*port;
 {
     char server_path[64];
 
-    PRMSG(2,"TRANS(NAMEDReopenServer)(%s)\n", port, 0,0 );
+    PRMSG(2,"NAMEDReopenServer(%s)\n", port, 0,0 );
 
 #if !defined(NAMEDNODENAME)
-    PRMSG(1,"Protocol is not supported by a NAMED connection\n", 0,0,0);
+    PRMSG(1,"NAMEDReopenServer: Protocol is not supported by a NAMED connection\n", 0,0,0);
     return 0;
 #else
     if ( port && *port ) {
@@ -1444,7 +1444,7 @@ char		*port;
 
     if (TRANS(FillAddrInfo) (ciptr, server_path, server_path) == 0)
     {
-	PRMSG(1,"TRANS(NAMEDReopenServer)() failed to fill in addr info\n",
+	PRMSG(1,"NAMEDReopenServer: failed to fill in addr info\n",
 								0,0,0);
 	return 0;
     }
@@ -1465,10 +1465,10 @@ char		*port;
 {
     char server_path[64],server_unix_path[64];
     
-    PRMSG(2,"TRANS(ISCReopenServer)(%s)\n", port, 0,0 );
+    PRMSG(2,"ISCReopenServer(%s)\n", port, 0,0 );
     
 #if !defined(ISCDEVNODENAME)
-    PRMSG(1,"Protocol is not supported by a ISC connection\n", 0,0,0);
+    PRMSG(1,"ISCReopenServer: Protocol is not supported by a ISC connection\n", 0,0,0);
     return 0;
 #else
     (void) sprintf(server_path, ISCDEVNODENAME, port);
@@ -1476,7 +1476,7 @@ char		*port;
 
     if (TRANS(FillAddrInfo) (ciptr, server_path, server_path) == 0)
     {
-	PRMSG(1,"TRANS(ISCReopenServer)() failed to fill in addr info\n",
+	PRMSG(1,"ISCReopenServer: failed to fill in addr info\n",
 								0,0,0);
 	return 0;
     }
@@ -1498,10 +1498,10 @@ char		*port;
     char		serverR_path[64];
     char		serverS_path[64];
     
-    PRMSG(2,"TRANS(SCOReopenServer)(%s)\n", port, 0,0 );
+    PRMSG(2,"SCOReopenServer(%s)\n", port, 0,0 );
     
 #if !defined(SCORNODENAME)
-    PRMSG(1,"Protocol is not supported by a SCO connection\n", 0,0,0);
+    PRMSG(1,"SCOReopenServer: Protocol is not supported by a SCO connection\n", 0,0,0);
     return 0;
 #else
     (void) sprintf(serverR_path, SCORNODENAME, port);
@@ -1509,7 +1509,7 @@ char		*port;
     
     if (TRANS(FillAddrInfo) (ciptr, serverS_path, serverR_path) == 0)
     {
-	PRMSG(1,"TRANS(SCOReopenServer)() failed to fill in addr info\n",
+	PRMSG(1,"SCOReopenServer: failed to fill in addr info\n",
 	      0,0,0);
 	return 0;
     }
@@ -1752,7 +1752,7 @@ TRANS(LocalInitTransports)(protocol)
 char *protocol;
 
 {
-    PRMSG(3,"TRANS(LocalInitTransports)(%s)\n", protocol, 0,0 );
+    PRMSG(3,"LocalInitTransports(%s)\n", protocol, 0,0 );
     
     if( strcmp(protocol,"local") && strcmp(protocol,"LOCAL") )
     {
@@ -1774,7 +1774,7 @@ static void
 TRANS(LocalEndTransports)()
 
 {
-    PRMSG(3,"TRANS(LocalEndTransports)()\n", 0,0,0 );
+    PRMSG(3,"LocalEndTransports()\n", 0,0,0 );
     xfree(freeXLOCAL);
 }
 
@@ -1786,7 +1786,7 @@ TRANS(LocalGetNextTransport)()
     char	*typetocheck;
 #define TYPEBUFSIZE	32
     char	typebuf[TYPEBUFSIZE];
-    PRMSG(3,"TRANS(LocalGetNextTransport)()\n", 0,0,0 );
+    PRMSG(3,"LocalGetNextTransport()\n", 0,0,0 );
     
     while(1)
     {
@@ -1874,7 +1874,7 @@ char *port;
     XtransConnInfo ciptr;
     int index;
 
-    PRMSG(3,"TRANS(LocalOpenClient)()\n", 0,0,0 );
+    PRMSG(3,"LocalOpenClient()\n", 0,0,0 );
     
     /*
      * Make sure 'host' is really local.  If not, we return failure.
@@ -1887,7 +1887,7 @@ char *port;
     if (strcmp (host, "unix") != 0 && !HostReallyLocal (host))
     {
 	PRMSG (1,
-	   "TRANS(LocalOpenClient): Cannot connect to non-local host %s\n",
+	   "LocalOpenClient: Cannot connect to non-local host %s\n",
 	       host, 0, 0);
 	return NULL;
     }
@@ -1907,7 +1907,7 @@ char *port;
     
     if( (ciptr=(XtransConnInfo)xcalloc(1,sizeof(struct _XtransConnInfo))) == NULL )
     {
-	PRMSG(1,"TRANS(LocalOpenClient)() calloc(1,%d) failed\n",
+	PRMSG(1,"LocalOpenClient: calloc(1,%d) failed\n",
 	      sizeof(struct _XtransConnInfo),0,0 );
 	return NULL;
     }
@@ -1931,12 +1931,12 @@ char *port;
 	case XTRANS_OPEN_COTS_SERVER:
 	case XTRANS_OPEN_CLTS_SERVER:
 	    PRMSG(1,
-		  "TRANS(LocalOpenClient): Should not be opening a server with this function\n",
+		  "LocalOpenClient: Should not be opening a server with this function\n",
 		  0,0,0);
 	    break;
 	default:
 	    PRMSG(1,
-		  "TRANS(LocalOpenClient): Unknown Open type %d\n",
+		  "LocalOpenClient: Unknown Open type %d\n",
 		  type, 0,0 );
 	}
 	if( ciptr->fd >= 0 )
@@ -1974,7 +1974,7 @@ char *port;
     int	i,fd = -1;
     XtransConnInfo ciptr;
     
-    PRMSG(2,"TRANS(LocalOpenServer)(%d,%s,%s)\n", type, protocol, port);
+    PRMSG(2,"LocalOpenServer(%d,%s,%s)\n", type, protocol, port);
     
 #if defined(X11_t)
     /*
@@ -1987,7 +1987,7 @@ char *port;
     
     if( (ciptr=(XtransConnInfo)xcalloc(1,sizeof(struct _XtransConnInfo))) == NULL )
     {
-	PRMSG(1,"TRANS(LocalOpenServer)() calloc(1,%d) failed\n",
+	PRMSG(1,"LocalOpenServer: calloc(1,%d) failed\n",
 	      sizeof(struct _XtransConnInfo),0,0 );
 	return NULL;
     }
@@ -2001,7 +2001,7 @@ char *port;
 	case XTRANS_OPEN_COTS_CLIENT:
 	case XTRANS_OPEN_CLTS_CLIENT:
 	    PRMSG(1,
-		  "TRANS(LocalOpenServer): Should not be opening a client with this function\n",
+		  "LocalOpenServer: Should not be opening a client with this function\n",
 		  0,0,0);
 	    break;
 	case XTRANS_OPEN_COTS_SERVER:
@@ -2011,7 +2011,7 @@ char *port;
 	    ciptr->fd=LOCALtrans2devtab[i].devcltsopenserver(ciptr,port);
 	    break;
 	default:
-	    PRMSG(1,"TRANS(LocalOpenServer): Unknown Open type %d\n",
+	    PRMSG(1,"LocalOpenServer: Unknown Open type %d\n",
 		  type ,0,0);
 	}
 	if( ciptr->fd >= 0 ) {
@@ -2043,11 +2043,11 @@ char *port;
     XtransConnInfo ciptr;
     int stat;
     
-    PRMSG(2,"TRANS(LocalReopenServer)(%d,%d,%d)\n", type, index, fd);
+    PRMSG(2,"LocalReopenServer(%d,%d,%d)\n", type, index, fd);
     
     if( (ciptr=(XtransConnInfo)xcalloc(1,sizeof(struct _XtransConnInfo))) == NULL )
     {
-	PRMSG(1,"TRANS(LocalReopenServer)() calloc(1,%d) failed\n",
+	PRMSG(1,"LocalReopenServer: calloc(1,%d) failed\n",
 	      sizeof(struct _XtransConnInfo),0,0 );
 	return NULL;
     }
@@ -2063,7 +2063,7 @@ char *port;
 	stat = LOCALtrans2devtab[index].devcltsreopenserver(ciptr,fd,port);
 	break;
     default:
-	PRMSG(1,"TRANS(LocalReopenServer): Unknown Open type %d\n",
+	PRMSG(1,"LocalReopenServer: Unknown Open type %d\n",
 	  type ,0,0);
     }
 
@@ -2097,7 +2097,7 @@ char *host;
 char *port;
 
 {
-    PRMSG(2,"TRANS(LocalOpenCOTSClient)(%s,%s,%s)\n",protocol,host,port);
+    PRMSG(2,"LocalOpenCOTSClient(%s,%s,%s)\n",protocol,host,port);
     
     return TRANS(LocalOpenClient)(XTRANS_OPEN_COTS_CLIENT, protocol, host, port);
 }
@@ -2120,7 +2120,7 @@ char *port;
     int found = 0;
     char typebuf[TYPEBUFSIZE];
 
-    PRMSG(2,"TRANS(LocalOpenCOTSServer)(%s,%s,%s)\n",protocol,host,port);
+    PRMSG(2,"LocalOpenCOTSServer(%s,%s,%s)\n",protocol,host,port);
 
     /* Check if this local type is in the XLOCAL list */
     TRANS(LocalInitTransports)("local");
@@ -2142,7 +2142,7 @@ char *port;
     TRANS(LocalEndTransports)();
     
     if (!found) {
-	PRMSG(3,"TRANS(LocalOpenCOTSServer) disabling %s\n",thistrans->TransName,0,0);
+	PRMSG(3,"LocalOpenCOTSServer: disabling %s\n",thistrans->TransName,0,0);
 	thistrans->flags |= TRANS_DISABLED;
 	return NULL;
     }
@@ -2164,7 +2164,7 @@ char *host;
 char *port;
 
 {
-    PRMSG(2,"TRANS(LocalOpenCLTSClient)(%s,%s,%s)\n",protocol,host,port);
+    PRMSG(2,"LocalOpenCLTSClient(%s,%s,%s)\n",protocol,host,port);
     
     return TRANS(LocalOpenClient)(XTRANS_OPEN_CLTS_CLIENT, protocol, host, port);
 }
@@ -2183,7 +2183,7 @@ char *host;
 char *port;
 
 {
-    PRMSG(2,"TRANS(LocalOpenCLTSServer)(%s,%s,%s)\n",protocol,host,port);
+    PRMSG(2,"LocalOpenCLTSServer(%s,%s,%s)\n",protocol,host,port);
     
     return TRANS(LocalOpenServer)(XTRANS_OPEN_CLTS_SERVER, protocol, host, port);
 }
@@ -2203,7 +2203,7 @@ char	   *port;
 {
     int index;
 
-    PRMSG(2,"TRANS(LocalReopenCOTSServer)(%d,%s)\n", fd, port, 0);
+    PRMSG(2,"LocalReopenCOTSServer(%d,%s)\n", fd, port, 0);
     
     for(index=1;index<NUMTRANSPORTS;index++)
     {
@@ -2231,7 +2231,7 @@ char	   *port;
 {
     int index;
 
-    PRMSG(2,"TRANS(LocalReopenCLTSServer)(%d,%s)\n", fd, port, 0);
+    PRMSG(2,"LocalReopenCLTSServer(%d,%s)\n", fd, port, 0);
     
     for(index=1;index<NUMTRANSPORTS;index++)
     {
@@ -2261,7 +2261,7 @@ int option;
 int arg;
 
 {
-    PRMSG(2,"TRANS(LocalSetOption)(%d,%d,%d)\n",ciptr->fd,option,arg);
+    PRMSG(2,"LocalSetOption(%d,%d,%d)\n",ciptr->fd,option,arg);
     
     return -1;
 }
@@ -2276,7 +2276,7 @@ XtransConnInfo ciptr;
 char *port;
 
 {
-    PRMSG(2,"TRANS(LocalCreateListener)(%x->%d,%s)\n",ciptr,ciptr->fd,port);
+    PRMSG(2,"LocalCreateListener(%x->%d,%s)\n",ciptr,ciptr->fd,port);
     
     return 0;
 }
@@ -2291,13 +2291,13 @@ int	       *status;
     XtransConnInfo	newciptr;
     LOCALtrans2dev	*transptr;
     
-    PRMSG(2,"TRANS(LocalAccept)(%x->%d)\n", ciptr, ciptr->fd,0);
+    PRMSG(2,"LocalAccept(%x->%d)\n", ciptr, ciptr->fd,0);
     
     transptr=(LOCALtrans2dev *)ciptr->priv;
     
     if( (newciptr=(XtransConnInfo)xcalloc(1,sizeof(struct _XtransConnInfo)))==NULL )
     {
-	PRMSG(1,"TRANS(LocalAccept)() calloc(1,%d) failed\n",
+	PRMSG(1,"LocalAccept: calloc(1,%d) failed\n",
 	      sizeof(struct _XtransConnInfo),0,0 );
 	*status = TRANS_ACCEPT_BAD_MALLOC;
 	return NULL;
@@ -2332,7 +2332,7 @@ char *host;
 char *port;
 
 {
-    PRMSG(2,"TRANS(LocalConnect)(%x->%d,%s)\n", ciptr, ciptr->fd, port);
+    PRMSG(2,"LocalConnect(%x->%d,%s)\n", ciptr, ciptr->fd, port);
     
     return 0;
 }
@@ -2347,7 +2347,7 @@ XtransConnInfo ciptr;
 BytesReadable_t *pend;
 
 {
-    PRMSG(2,"TRANS(LocalBytesReadable)(%x->%d,%x)\n", ciptr, ciptr->fd, pend);
+    PRMSG(2,"LocalBytesReadable(%x->%d,%x)\n", ciptr, ciptr->fd, pend);
     
 #if defined(SCO) || defined(sco) || defined(ISC)
     return ioctl(ciptr->fd, I_NREAD, (char *)pend);
@@ -2364,7 +2364,7 @@ char *buf;
 int size;
 
 {
-    PRMSG(2,"TRANS(LocalRead)(%d,%x,%d)\n", ciptr->fd, buf, size );
+    PRMSG(2,"LocalRead(%d,%x,%d)\n", ciptr->fd, buf, size );
     
     return read(ciptr->fd,buf,size);
 }
@@ -2377,7 +2377,7 @@ char *buf;
 int size;
 
 {
-    PRMSG(2,"TRANS(LocalWrite)(%d,%x,%d)\n", ciptr->fd, buf, size );
+    PRMSG(2,"LocalWrite(%d,%x,%d)\n", ciptr->fd, buf, size );
     
     return write(ciptr->fd,buf,size);
 }
@@ -2390,7 +2390,7 @@ struct iovec 	*buf;
 int 		size;
 
 {
-    PRMSG(2,"TRANS(LocalReadv)(%d,%x,%d)\n", ciptr->fd, buf, size );
+    PRMSG(2,"LocalReadv(%d,%x,%d)\n", ciptr->fd, buf, size );
     
     return READV(ciptr,buf,size);
 }
@@ -2403,7 +2403,7 @@ struct iovec 	*buf;
 int 		size;
 
 {
-    PRMSG(2,"TRANS(LocalWritev)(%d,%x,%d)\n", ciptr->fd, buf, size );
+    PRMSG(2,"LocalWritev(%d,%x,%d)\n", ciptr->fd, buf, size );
     
     return WRITEV(ciptr,buf,size);
 }
@@ -2414,7 +2414,7 @@ TRANS(LocalDisconnect)(ciptr)
 XtransConnInfo ciptr;
 
 {
-    PRMSG(2,"TRANS(LocalDisconnect)(%x->%d)\n", ciptr, ciptr->fd, 0);
+    PRMSG(2,"LocalDisconnect(%x->%d)\n", ciptr, ciptr->fd, 0);
     
     return 0;
 }
@@ -2429,7 +2429,7 @@ XtransConnInfo ciptr;
     char    path[200]; /* > sizeof sun_path +1 */
     int	ret;
     
-    PRMSG(2,"TRANS(LocalClose)(%x->%d)\n", ciptr, ciptr->fd ,0);
+    PRMSG(2,"LocalClose(%x->%d)\n", ciptr, ciptr->fd ,0);
     
     ret=close(ciptr->fd);
     
@@ -2454,7 +2454,7 @@ XtransConnInfo ciptr;
 {
     int ret;
 
-    PRMSG(2,"TRANS(LocalCloseForCloning)(%x->%d)\n", ciptr, ciptr->fd ,0);
+    PRMSG(2,"LocalCloseForCloning(%x->%d)\n", ciptr, ciptr->fd ,0);
     
     /* Don't unlink path */
 

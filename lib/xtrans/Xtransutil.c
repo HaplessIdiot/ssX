@@ -1,5 +1,5 @@
 /* $XConsortium: Xtransutil.c /main/29 1996/01/12 15:08:56 kaleb $ */
-/* $XFree86: xc/lib/xtrans/Xtransutil.c,v 3.6 1996/01/05 13:14:39 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransutil.c,v 3.7 1996/01/13 12:21:14 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -94,7 +94,7 @@ int	*addrlenp;
 Xtransaddr	**addrp;
 {
 
-    PRMSG(2,"TRANS(ConvertAddress)(%d,%d,%x)\n",*familyp,*addrlenp,*addrp);
+    PRMSG(2,"ConvertAddress(%d,%d,%x)\n",*familyp,*addrlenp,*addrp);
 
     switch( *familyp )
     {
@@ -151,13 +151,13 @@ Xtransaddr	**addrp;
     }
 #endif /* defined(DNETCONN) */
 
-#if defined(UNIXCONN) || defined(LOCALCONN)
+#if defined(UNIXCONN) || defined(LOCALCONN) || defined(OS2PIPECONN)
     case AF_UNIX:
     {
 	*familyp=FamilyLocal;
 	break;
     }
-#endif /* defined(UNIXCONN) || defined(LOCALCONN) */
+#endif /* defined(UNIXCONN) || defined(LOCALCONN) || defined(OS2PIPECONN)*/
 
 #if defined(AMRPCCONN)
     case AF_AMOEBA:
@@ -175,7 +175,7 @@ Xtransaddr	**addrp;
 #endif
 
     default:
-	PRMSG(1,"TRANS(ConvertFamily) Unknown family type %d\n",
+	PRMSG(1,"ConvertAddress: Unknown family type %d\n",
 	      *familyp, 0,0 );
 	return -1;
     }
@@ -244,7 +244,7 @@ XtransConnInfo  ciptr;
 
     switch (family)
     {
-#if defined(UNIXCONN) || defined(STREAMSCONN) || defined(LOCALCONN)
+#if defined(UNIXCONN) || defined(STREAMSCONN) || defined(LOCALCONN) || defined(OS2PIPECONN)
     case AF_UNIX:
     {
 	struct sockaddr_un *saddr = (struct sockaddr_un *) addr;
@@ -254,7 +254,8 @@ XtransConnInfo  ciptr;
 	    hostnamebuf, saddr->sun_path);
 	break;
     }
-#endif /* defined(UNIXCONN) || defined(STREAMSCONN) || defined(LOCALCONN) */
+#endif /* defined(UNIXCONN) || defined(STREAMSCONN) || defined(LOCALCONN) || defined(OS2PIPECONN)
+*/
 
 #if defined(TCPCONN) || defined(STREAMSCONN) || defined(MNX_TCPCONN)
     case AF_INET:
@@ -331,14 +332,15 @@ XtransConnInfo  ciptr;
     switch (family)
     {
     case AF_UNSPEC:
-#if defined(UNIXCONN) || defined(STREAMSCONN) || defined(LOCALCONN)
+#if defined(UNIXCONN) || defined(STREAMSCONN) || defined(LOCALCONN) || defined(OS2PIPECONN)
     case AF_UNIX:
     {
 	if (gethostname (addrbuf, sizeof (addrbuf)) == 0)
 	    addr = addrbuf;
 	break;
     }
-#endif /* defined(UNIXCONN) || defined(STREAMSCONN) || defined(LOCALCONN) */
+#endif /* defined(UNIXCONN) || defined(STREAMSCONN) || defined(LOCALCONN) || defined(OS2PIPECONN)
+*/
 
 #if defined(TCPCONN) || defined(STREAMSCONN) || defined(MNX_TCPCONN)
     case AF_INET:
@@ -475,7 +477,7 @@ TRANS(WSAStartup) ()
 {
     static WSADATA wsadata;
 
-    PRMSG (2,"TRANS(WSAStartup)()\n", 0, 0, 0);
+    PRMSG (2,"WSAStartup()\n", 0, 0, 0);
 
     if (!wsadata.wVersion && WSAStartup(MAKEWORD(1,1), &wsadata))
         return 1;

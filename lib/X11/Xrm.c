@@ -1,5 +1,5 @@
 /* $XConsortium: Xrm.c,v 1.89 95/06/08 23:20:39 gildea Exp $ */
-/* $XFree86: xc/lib/X11/Xrm.c,v 3.1 1995/06/14 07:07:15 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xrm.c,v 3.2 1996/03/10 11:51:41 dawes Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988, 1990 by Digital Equipment Corporation, Maynard
@@ -1554,6 +1554,16 @@ char * filename;
     }
 
     size = ReadFile(fd, filebuf, size);
+#ifdef __EMX__
+    { /* kill CRLF */
+      int i,k;
+      for (i=k=0; i<size; i++)
+	if (filebuf[i] != 0x0d) {
+	   filebuf[k++] = filebuf[i];
+	}
+	filebuf[k] = 0;
+    }
+#endif
     if (size < 0) {
 	CloseFile(fd);
 	Xfree(filebuf);

@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: io.c /main/r61_main/1 1996/01/31 19:26:44 dpw $ */
-/* $XFree86: xc/programs/Xserver/os/io.c,v 3.10 1996/01/05 13:20:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/io.c,v 3.11 1996/02/04 09:17:29 dawes Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -81,6 +81,7 @@ CallbackListPtr       FlushCallback;
 /* check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
  * systems are broken and return EWOULDBLOCK when they should return EAGAIN
  */
+#ifndef __EMX__
 #if defined(EAGAIN) && defined(EWOULDBLOCK)
 #define ETEST(err) (err == EAGAIN || err == EWOULDBLOCK)
 #else
@@ -89,6 +90,9 @@ CallbackListPtr       FlushCallback;
 #else
 #define ETEST(err) (err == EWOULDBLOCK)
 #endif
+#endif
+#else /* __EMX__  Writing to full pipes may return ENOSPC */
+#define ETEST(err) (err == EAGAIN || err == EWOULDBLOCK || err == ENOSPC)
 #endif
 
 extern fd_set ClientsWithInput, IgnoredClientsWithInput, AllClients;

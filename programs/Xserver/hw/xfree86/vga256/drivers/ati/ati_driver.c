@@ -1,5 +1,5 @@
 /* $XConsortium: ati_driver.c /main/9 1996/01/12 12:16:31 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.29tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.30tsi Exp $ */
 /*
  * Copyright 1994 through 1996 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -4024,14 +4024,27 @@ ATIInit(DisplayModePtr mode)
                                 else if (vga256InfoRec.videoRam > 256)
                                         new->b0 |= 0x10U;
                         }
+                        else
+                        {
+                                if (vga256InfoRec.videoRam > 256)
+                                        new->b0 |= 0x08U;
+                        }
 #               else
                         new->b0 = 0x20U;
-                        if (vga256InfoRec.videoRam > 512)
-                                new->b0 |= 0x08U;
-                        else if (vga256InfoRec.videoRam > 256)
-                                new->b0 |= 0x10U;
-                        else if (ATIChip <= ATI_CHIP_18800_1)
-                                new->b0 |= 0x06U;
+                        if (ATIChip >= ATI_CHIP_28800_2)
+                        {
+                                if (vga256InfoRec.videoRam > 512)
+                                        new->b0 |= 0x08U;
+                                else if (vga256InfoRec.videoRam > 256)
+                                        new->b0 |= 0x10U;
+                        }
+                        else
+                        {
+                                if (vga256InfoRec.videoRam > 256)
+                                        new->b0 |= 0x18U;
+                                else
+                                        new->b0 |= 0x06U;
+                        }
 #               endif
                 new->b1 = (ATIGetExtReg(0xB1U) & 0x04U)       ;
                 new->b3 = (ATIGetExtReg(0xB3U) & 0x20U)       ;
@@ -4041,7 +4054,8 @@ ATIInit(DisplayModePtr mode)
 #               else
                         new->b6 = 0x04U;
 #               endif
-                if (vga256InfoRec.videoRam > 256)
+                if ((ATIChip >= ATI_CHIP_28800_2) &&
+                    (vga256InfoRec.videoRam > 256))
                         new->b6 |= 0x01U;
                 new->b8 = (ATIGetExtReg(0xB8U) & 0xC0U)       ;
                 new->b9 = (ATIGetExtReg(0xB9U) & 0x7FU)       ;
@@ -4081,8 +4095,10 @@ ATIInit(DisplayModePtr mode)
                 if (mode->Flags & V_NCSYNC)
                         new->bd |= 0x09U;       /* Invert csynch polarity */
 
-                /* Set up horizontal display enable skew */
-                if ((ATIChip <= ATI_CHIP_28800_6) && !(mode->Flags & V_HSKEW))
+                /* Set up default horizontal display enable skew */
+                if ((ATIChip >= ATI_CHIP_28800_2) &&
+                    (ATIChip <= ATI_CHIP_28800_6) &&
+                    !(mode->Flags & V_HSKEW))
                 {
                         /*
                          * Modes using the higher clock frequencies need a

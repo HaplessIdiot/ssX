@@ -1,5 +1,5 @@
 /* $XConsortium: connection.c /main/141 1995/12/08 14:09:46 kaleb $ */
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.19 1996/01/24 22:04:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.20 1996/04/15 11:34:52 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -90,6 +90,11 @@ extern int errno;
 #include <sys/nbio.h>
 
 #define select(n,r,w,x,t) nbio_select(n,r,w,x,t)
+#endif
+
+#ifdef __EMX__
+#define select(n,r,w,x,t) os2PseudoSelect(n,r,w,x,t)
+extern __const__ int _nfiles;
 #endif
 
 #if defined(TCPCONN) || defined(STREAMSCONN)
@@ -267,6 +272,7 @@ CreateWellKnownSockets()
 #ifdef XNO_SYSCONF      /* should only be on FreeBSD 1.x and NetBSD 0.x */
 #undef _SC_OPEN_MAX
 #endif
+#ifndef __EMX__
 #ifdef _SC_OPEN_MAX
     lastfdesc = sysconf(_SC_OPEN_MAX) - 1;
 #else
@@ -275,6 +281,9 @@ CreateWellKnownSockets()
 #else
     lastfdesc = getdtablesize() - 1;
 #endif
+#endif
+#else
+    lastfdesc = _nfiles - 1;
 #endif
 
     if (lastfdesc > MAXSOCKS)
@@ -428,7 +437,7 @@ AuthAudit (client, letin, saddr, len, proto_n, auth_proto)
 	switch (saddr->sa_family)
 	{
 	case AF_UNSPEC:
-#if defined(UNIXCONN) || defined(LOCALCONN)
+#if defined(UNIXCONN) || defined(LOCALCONN) || defined(OS2PIPECONN)
 	case AF_UNIX:
 #endif
 	    strcpy(addr, "local host");

@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c /main/239 1995/12/10 17:21:49 gildea $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.33 1996/05/06 06:01:26 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.34 1996/05/06 13:07:31 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -166,6 +166,9 @@ static Bool IsPts = False;
 #endif
 
 #ifdef linux
+#ifdef __alpha__
+#define USE_TERMIOS
+#endif
 #define USE_SYSV_TERMIO
 #define USE_SYSV_PGRP
 #define USE_SYSV_UTMP
@@ -1157,7 +1160,9 @@ char **argv;
 
 #if defined(USE_TERMIOS) || defined(USE_POSIX_TERMIOS) /* { */
 	d_tio.c_cc[VSUSP] = CSUSP;
+#if !defined(linux)||!defined(__alpha__)
 	d_tio.c_cc[VDSUSP] = CDSUSP;
+#endif
 	d_tio.c_cc[VREPRINT] = CRPRNT;
 	d_tio.c_cc[VDISCARD] = CFLUSH;
 	d_tio.c_cc[VWERASE] = CWERASE;
@@ -1312,7 +1317,9 @@ char **argv;
 #endif	/* } TIOCSLTC */
 #if defined(USE_TERMIOS) || defined(USE_POSIX_TERMIOS) /* { */
 	d_tio.c_cc[VSUSP] = CSUSP;
+#if !defined(linux)||!defined(__alpha__)
 	d_tio.c_cc[VDSUSP] = '\000';
+#endif
 	d_tio.c_cc[VREPRINT] = '\377';
 	d_tio.c_cc[VDISCARD] = '\377';
 	d_tio.c_cc[VWERASE] = '\377';

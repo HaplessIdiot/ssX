@@ -1,5 +1,5 @@
 /* $XConsortium: RdBitF.c,v 1.10 94/04/17 20:16:13 kaleb Exp $ */
-/* $XFree86: xc/lib/Xmu/RdBitF.c,v 3.0 1994/10/20 06:05:52 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/RdBitF.c,v 3.1 1996/05/06 05:54:37 dawes Exp $ */
 
 /*
 
@@ -156,6 +156,7 @@ int XmuReadBitmapData (fstream, width, height, datap, x_hot, y_hot)
     int hx = -1;			/* x hotspot */
     int hy = -1;			/* y hotspot */
 
+#undef  Xmalloc /* see MALLOC_0_RETURNS_NULL in Xlibint.h */
 #define Xmalloc(size) malloc(size)
 
     /* first time initialization */
