@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.1 2000/11/02 16:55:40 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.2 2000/11/09 03:24:36 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, 
  *                VA Linux Systems Inc., Fremont, California.
@@ -31,6 +31,7 @@
  * Authors:
  *   Kevin E. Martin <martin@valinux.com>
  *   Rickard E. Faith <faith@valinux.com>
+ *   Alan Hourihane <ahourihane@valinux.com>
  *
  */
 

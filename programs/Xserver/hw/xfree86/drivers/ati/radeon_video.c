@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.1 2000/11/02 16:55:47 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.2 2000/11/09 03:24:37 martin Exp $ */
 /*
  * Copyright 2000 Stuart R. Anderson and Metro Link, Inc.
  *
@@ -42,6 +42,7 @@
  *   should be brought forward.
  *
  *   RADEON ALERT !
+ *   Alan Hourihane <ahourihane@valinux.com>
  *   This is an extremely quick port to the Radeon, it hasn't been tested
  *   thoroughly, although it appears to work.
  */
