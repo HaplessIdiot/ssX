@@ -50,7 +50,7 @@ January 1995:
     <item> Support for BSD/OS 2.0.
     <item> Support for Linux/ELF.
     <item> Workarounds for some NumLock problems.
-    <item> Cyrillic fonts (using KIO8-R encoding) from Cronyx Ltd.
+    <item> Cyrillic fonts (using KOI8-R encoding) from Cronyx Ltd.
     
 </enum>
 Plus a lots of other small items.  Refer to the CHANGELOG file in the
@@ -790,6 +790,9 @@ and the following mirror sites:
 <item>   <url url="ftp://XFree86.cdrom.com/pub/XFree86" 
 	name="XFree86.cdrom.com:/pub/XFree86">
 	(source and binaries)
+<item>   <url url="ftp://ftp.rge.com/pub/XFree86" 
+	name="ftp.rge.com:/pub/XFree86">
+	(source and binaries)
 <item>   <url url="ftp://ftp.iastate.edu/pub/XFree86/XFree86-3.1.2" 
 	name="ftp.iastate.edu:/pub/XFree86/XFree86-3.1.2">
 	(source patches and NetBSD binaries)<newline>
@@ -912,7 +915,7 @@ compile-time option selections were made when building the distribution.
 
 <verb>
 $XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.28 1995/07/30 04:15:54 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.29 1995/08/01 12:08:00 dawes Exp $
 </verb>
 
 </article>
