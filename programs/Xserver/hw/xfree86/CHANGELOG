@@ -1,3 +1,9 @@
+
+3525. Point and arc acceleration improvements for the NVIDIA driver 
+      (Mark Vojkovich).
+3524. MGA acceleration modifications to prevent pci retries during
+      color expansions (Mark Vojkovich).
+
 XFree86 3.9.17 (31 December 1999)
 3523. Clean up bindist directories for the loader server (Robin Cutshaw).
 3522. Old-style DGA keyboard input fix (#3536, Keith Packard).
