@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.12 1995/01/10 10:27:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/mono/mono.c,v 3.13 1995/03/19 10:18:56 dawes Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -128,7 +128,7 @@ ScrnInfoRec monoInfoRec = {
   NULL,			/* MonPtr monitor */
   NULL,			/* char *clockprog */
   -1,			/* int textclock */
-  FALSE,		/* Bool bankedMono */
+  TRUE,			/* Bool bankedMono */
   "MONO",		/* char *name */
   {0, },		/* xrgb blackColour */
   {0, },		/* xrgb whiteColour */
@@ -420,7 +420,10 @@ monoScreenInit (index, pScreen, argc, argv)
 	    mapSize = monoMapSize;
 	monoBase = (unsigned char *)xf86MapVidMem(index, VGA_REGION /* ?? */,
 						 (pointer)monoMapBase, mapSize);
-	monoVirtBase = (unsigned char *)MONOBASE;
+	if (monoInfoRec.bankedMono)
+	    monoVirtBase = (unsigned char *)MONOBASE;
+	else
+	    monoVirtBase = (unsigned char *)monoBase;
 	monoBankABottom = (unsigned char *)((unsigned long)monoBankABottom
 			  + (unsigned long)monoBase);
 	monoBankATop    = (unsigned char *)((unsigned long)monoBankATop

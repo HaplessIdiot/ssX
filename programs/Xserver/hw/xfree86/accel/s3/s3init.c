@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.6 95/01/23 15:34:00 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.59 1995/04/09 13:46:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.60 1995/04/10 12:00:12 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -1230,7 +1230,8 @@ s3Init(mode)
 	 /* x64:pixmux */
 	 /* pixmux with 16/32 bpp not possible for 864 ==> only 8bit mode  */
          pixmux = 0x10;         /* two 8bit pixels per clock */
-         invert_vclk = 1;
+	 if (!S3_866_SERIES(s3ChipId) && !S3_868_SERIES(s3ChipId))
+	    invert_vclk = 1;
          blank_delay = 2;
       }
       else

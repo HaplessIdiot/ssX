@@ -33,8 +33,8 @@ Binaries for NetBSD 1.0 are available from:
 <url name="ftp.XFree86.org:/pub/XFree86/current/binaries/NetBSD"
 url="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/NetBSD">
 <p>
-<url name="ftp.laas.fr:/pub/NetBSD/XFree86-3.1.1"
-url="ftp://ftp.laas.fr/pub/NetBSD/XFree86-3.1.1">
+<url name="ftp.laas.fr:/pub/ii/NetBSD/XFree86-3.1.1"
+url="ftp://ftp.laas.fr/pub/ii/NetBSD/XFree86-3.1.1">
 <p>
 <url name="ftp.iastate.edu:/pub/XFree86/XFree86-3.1.1"
 url="ftp://ftp.iastate.edu/pub/XFree86/XFree86-3.1.1">
@@ -286,6 +286,12 @@ If you've been running a previous version of XFree86, you can get the
 video card and monitor information from your previous <tt/Xconfig/
 file. Don't forget to update the font and RGB paths.
 
+<sect1> Configuring a PS/2 mouse for XFree86 on NetBSD
+
+<p>
+The NetBSD pms mouse driver handles PS/2 style mice as
+Busmouse. Specify the protocol `busmouse' in the mouse section of your
+<tt/XF86Config/ file if you're using a PS/2 mouse.
 
 <sect> Running X
 
@@ -619,7 +625,7 @@ and many others.
 
 <verb>
 $XConsortium: NetBSD.sgml,v 1.4 95/01/27 16:14:26 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.10 1995/01/28 16:01:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.11 1995/02/04 04:50:43 dawes Exp $
 </verb>
 
 </article>

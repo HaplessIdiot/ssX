@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.6 95/01/23 15:35:11 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.33 1995/01/28 17:08:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.34 1995/04/09 14:14:26 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -742,6 +742,10 @@ cirrusProbe()
 	          cirrusChipRevision = 0x01;
 	          cirrusClockLimit[CLGD5434] = 135100;
 	       }
+	       else
+	       if (partstatus == 0x8E)
+	       	  /* Intermediate revision, supports 135 MHz VCLK. */
+	          cirrusClockLimit[CLGD5434] = 135100;
 	       cirrusChip = CLGD5434;
 	       break;
 

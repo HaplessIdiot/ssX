@@ -1,5 +1,5 @@
 /* $XConsortium: cir_solid.c,v 1.2 95/01/26 15:38:28 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_solid.c,v 3.3 1995/01/28 16:12:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_solid.c,v 3.4 1995/04/09 14:14:38 dawes Exp $ */
 
 /*
 
@@ -283,7 +283,7 @@ fSorted)
     SETROP(cirrus_rop[pGC->alu]);
     SETDESTPITCH(pitch);
     SETHEIGHT(1);
-    SetColorsAndBlitMode(pGC->fgPixel,
+    SetColorsAndBlitMode(pGC->fgPixel, pGC->fgPixel,
         FORWARDS | PATTERNCOPY | COLOREXPAND);
 
     while (n--) {

@@ -1,5 +1,5 @@
 /* $XConsortium: s3ELSA.c,v 1.2 94/11/21 22:50:12 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.c,v 3.5 1994/09/14 10:40:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.c,v 3.6 1995/01/28 15:55:42 dawes Exp $ */
 /* 
  * s3ELSA.c 
  * 
@@ -40,6 +40,7 @@ elsa_board_types_t elsa_board_types[] = {
    ELSA_WINNER_2000VL,	"ELSA Winner 2000VL",	0,
    ELSA_WINNER_2000PCI,	"ELSA Winner 2000PCI",	0,
    ELSA_WINNER_1000PRO,	"ELSA Winner 1000PRO",	0,
+   ELSA_WINNER_1000AVI,	"ELSA Winner 1000AVI",	0,
    ELSA_WINNER_2000PRO,	"ELSA Winner 2000PRO",	0,
    0, 0, 0
 };

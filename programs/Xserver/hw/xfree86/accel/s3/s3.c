@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.8 95/01/25 00:44:45 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.75 1995/04/09 13:46:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.76 1995/04/10 12:00:02 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -682,6 +682,7 @@ s3Probe()
 
       do {
 	 switch (card_id) {
+	 case ELSA_WINNER_1000AVI:
 	 case ELSA_WINNER_1000PRO:
 	    /* This option isn't required at the moment */
 	    OFLG_SET(OPTION_ELSA_W1000PRO,  &s3InfoRec.options);
@@ -715,34 +716,33 @@ s3Probe()
 
    if (xf86Verbose) {
       if (S3_x64_SERIES(s3ChipId)) {
-	if (S3_864_SERIES(s3ChipId)) {
-	    ErrorF("%s %s: chipset:   864 rev. %x\n",
-                   XCONFIG_PROBED, s3InfoRec.name, s3ChipRev);
-	 } else if (S3_968_SERIES(s3ChipId)) {
-	    ErrorF("%s %s: chipset:   968 rev. %x\n",
-                   XCONFIG_PROBED, s3InfoRec.name, s3ChipRev);
-	 } else if (S3_964_SERIES(s3ChipId)) {
-	    ErrorF("%s %s: chipset:   964 rev. %x\n",
-                   XCONFIG_PROBED, s3InfoRec.name, s3ChipRev);
+	 char *chipname = "unknown";
+
+	 if (S3_868_SERIES(s3ChipId)) {
+	    chipname = "868";
 	 } else if (S3_866_SERIES(s3ChipId)) {
-	    ErrorF("%s %s: chipset:   866 rev. %x\n",
-                   XCONFIG_PROBED, s3InfoRec.name, s3ChipRev);
-	 } else if (S3_868_SERIES(s3ChipId)) {
-	    ErrorF("%s %s: chipset:   868 rev. %x\n",
-                   XCONFIG_PROBED, s3InfoRec.name, s3ChipRev);
+	    chipname = "866";
+	 } else if (S3_864_SERIES(s3ChipId)) {
+	    chipname = "864";
+	 } else if (S3_968_SERIES(s3ChipId)) {
+	    chipname = "968";
+	 } else if (S3_964_SERIES(s3ChipId)) {
+	    chipname = "964";
 	 } else if (S3_TRIO32_SERIES(s3ChipId)) {
-	    ErrorF("%s %s: chipset:   Trio32 rev. %x\n",
-                   XCONFIG_PROBED, s3InfoRec.name, s3ChipRev);
+	    chipname = "Trio32";
 	 } else if (S3_TRIO64_SERIES(s3ChipId)) {
-	    ErrorF("%s %s: chipset:   Trio64 rev. %x\n",
-                   XCONFIG_PROBED, s3InfoRec.name, s3ChipRev);
+	    chipname = "Trio64";
 	 }
+	 ErrorF("%s %s: chipset:   %s rev. %x\n",
+                XCONFIG_PROBED, s3InfoRec.name, chipname, s3ChipRev);
+#if 0
 	 if (S3_866_SERIES(s3ChipId) || S3_868_SERIES(s3ChipId) ||
 	     S3_968_SERIES(s3ChipId)) {
 	    ErrorF("%s %s: Support for this chipset is untested.\n%s\n",
 		   XCONFIG_PROBED, s3InfoRec.name,
 		   "\tPlease report success or failure to XFree86@XFree86.org");
 	 }
+#endif
       } else if (S3_801_928_SERIES(s3ChipId)) {
 	 if (S3_801_SERIES(s3ChipId)) {
             if (S3_805_I_SERIES(s3ChipId)) {
@@ -1557,6 +1557,10 @@ s3Probe()
 	    nonMuxMaxClock = 95000; /* 864 DCLK limit */
 	    pixMuxMinClock = 67500;
 	 }
+	 else if (S3_866_SERIES(s3ChipId) || S3_868_SERIES(s3ChipId)) {
+	    nonMuxMaxClock = 100000;
+	    pixMuxMinClock =  67500;
+	 }
 	 else if (S3_805_I_SERIES(s3ChipId)) {
 	    nonMuxMaxClock = 90000;  /* XXXX just a guess, who has 805i docs? */
 	    pixMuxMinClock = 67500;
@@ -1976,8 +1980,16 @@ s3Probe()
    if (maxRawClock > 0 && s3InfoRec.maxClock > maxRawClock)
       s3InfoRec.maxClock = maxRawClock;
 
+   /* check DCLK limit of 100MHz for 866/868 */
+   if (S3_866_SERIES(s3ChipId) || S3_868_SERIES(s3ChipId)) {
+      if (((s3Bpp==1 && !pixMuxPossible) || s3Bpp==2) 
+	  && s3InfoRec.maxClock > 100000)
+	 s3InfoRec.maxClock = 100000;
+      else if (s3Bpp>2 && s3InfoRec.maxClock > 50000)
+	 s3InfoRec.maxClock = 50000;  
+   }
    /* check DCLK limit of 95MHz for 864 */
-   if (S3_864_SERIES(s3ChipId)) {
+   else if (S3_864_SERIES(s3ChipId)) {
       if (((s3Bpp==1 && !pixMuxPossible) || s3Bpp==2) 
 	  && s3InfoRec.maxClock > 95000)
 	 s3InfoRec.maxClock = 95000;

@@ -1,5 +1,5 @@
 /* $XConsortium: regs3.h,v 1.3 94/12/27 11:29:42 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.12 1995/01/28 17:01:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.13 1995/04/09 13:45:52 dawes Exp $ */
 /*
  * regs3.h
  * 
@@ -84,6 +84,9 @@
 #define S3_964_SERIES(chip)     ((chip&0xf0)==0xd0)
 #define S3_866_SERIES(chip)     ((chip&0xfff0)==0x80e0)
 #define S3_868_SERIES(chip)     ((chip&0xfff0)==0x90e0)
+#define S3_86x_SERIES(chip)	((chip&0xf0)==0xc0 || (chip&0xeff0)==0x80e0)
+#undef S3_864_SERIES
+#define S3_864_SERIES(chip)	S3_86x_SERIES(chip)
 #define S3_968_SERIES(chip)     ((chip&0xfff0)==0xf0e0)
 #undef S3_964_SERIES
 #define S3_964_SERIES(chip)     (((chip&0xf0)==0xd0) || S3_968_SERIES(chip))

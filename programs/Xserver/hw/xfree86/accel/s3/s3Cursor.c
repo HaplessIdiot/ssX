@@ -1,6 +1,6 @@
 /*
  * $XConsortium: s3Cursor.c,v 1.5 95/01/23 15:33:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.16 1995/04/09 13:46:11 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.17 1995/04/10 12:00:06 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -248,7 +248,7 @@ s3RealizeCursor(pScr, pCurs)
 	    ((char *)&source)[0] = s3SwapBits[((unsigned char *)&source)[0]];
 	    ((char *)&source)[1] = s3SwapBits[((unsigned char *)&source)[1]];
 
-	    if (j < MAX_CURS / 8) {
+	    if (j < MAX_CURS / 8) { /* j < MAX_CURS / 16 implies this */
 	       *ram++ = ~mask;
 	       *ram++ = source & mask;
 	    }
@@ -256,6 +256,10 @@ s3RealizeCursor(pScr, pCurs)
 	    *ram++ = 0xffff;
 	    *ram++ = 0x0;
 	 }
+      }
+      if (j < wsrc / 2) {
+	 pServMsk += (wsrc/2 - j);
+	 pServSrc += (wsrc/2 - j);
       }
    }
    return TRUE;
@@ -294,6 +298,9 @@ s3LoadCursor(pScr, pCurs, x, y)
       return;
 
    UNLOCK_SYS_REGS;
+
+   /* Wait for vertical retrace */
+   VerticalRetraceWait();
 
    /* turn cursor off */
    outb(vgaCRIndex, 0x45);
@@ -691,8 +698,10 @@ s3QueryBestSize(class, pwidth, pheight, pScreen)
    if (*pwidth > 0) {
       switch (class) {
          case CursorShape:
-	    *pwidth = 64;
-	    *pheight = 64;
+	    if (*pwidth > 64)
+	       *pwidth = 64;
+	    if (*pheight > 64)
+	       *pheight = 64;
 	    break;
          default:
 	    mfbQueryBestSize(class, pwidth, pheight, pScreen);
