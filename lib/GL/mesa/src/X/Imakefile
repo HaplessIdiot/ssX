@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/X/Imakefile,v 1.1 1999/06/14 07:31:08 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/X/Imakefile,v 1.2 1999/06/27 14:07:27 dawes Exp $
 XCOMM $PI: xc/lib/GL/mesa/src/X/Imakefile,v 1.4 1999/06/21 05:13:55 martin Exp $
 
 #define DoNormalLib NormalLibGlx
@@ -6,6 +6,12 @@ XCOMM $PI: xc/lib/GL/mesa/src/X/Imakefile,v 1.4 1999/06/21 05:13:55 martin Exp $
 #define DoExtraLib SharedLibGlx
 #define DoDebugLib DebugLibGlx
 #define DoProfileLib ProfileLibGlx
+
+LinkSourceFile(xmesa1.c, ../../../../../extras/Mesa/src/X)
+LinkSourceFile(xmesa2.c, ../../../../../extras/Mesa/src/X)
+LinkSourceFile(xmesa3.c, ../../../../../extras/Mesa/src/X)
+LinkSourceFile(xmesa4.c, ../../../../../extras/Mesa/src/X)
+
 
 #if Malloc0ReturnsNull
 ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
@@ -18,12 +24,18 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 		-I$(XF86OSSRC) -I$(SERVERSRC)/GL/dri
 #endif
 
+LinkSourceFile(xmesa1.c, ../../../../../extras/Mesa/src/X)
+LinkSourceFile(xmesa2.c, ../../../../../extras/Mesa/src/X)
+LinkSourceFile(xmesa3.c, ../../../../../extras/Mesa/src/X)
+LinkSourceFile(xmesa4.c, ../../../../../extras/Mesa/src/X)
+LinkSourceFile(xmesaP.h, ../../../../../extras/Mesa/src/X)
+
 MESA_INCLUDES = -I. -I.. -I../../include
 
       DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES)
      INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC) $(MESA_INCLUDES) $(DRI_INCLUDES)
-         SRCS = xmesa1.c xmesa2.c xmesa3.c xmesa4.c
-         OBJS = xmesa1.o xmesa2.o xmesa3.o xmesa4.o
+         SRCS = xmesa1.c xmesa2.c xmesa3.c xmesa4.c xdri.c
+         OBJS = xmesa1.o xmesa2.o xmesa3.o xmesa4.o xdri.o
 
 #if !GlxUseBuiltInDRIDriver
 #undef DoNormalLib NormalLibGlx

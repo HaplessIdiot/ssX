@@ -25,7 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/dma.c,v 1.7 1999/09/16 16:56:18 faith Exp $
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/dma.c,v 1.1 1999/09/25 14:37:58 dawes Exp $
  *
  */
 
@@ -176,6 +176,7 @@ void drm_reclaim_buffers(drm_device_t *dev, pid_t pid)
 	drm_device_dma_t *dma = dev->dma;
 	int		 i;
 
+	if (!dma) return;
 	for (i = 0; i < dma->buf_count; i++) {
 		if (dma->buflist[i]->pid == pid) {
 			switch (dma->buflist[i]->list) {

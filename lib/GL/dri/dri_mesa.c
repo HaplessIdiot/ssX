@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/dri/dri_mesa.c,v 1.2 1999/06/27 14:07:22 dawes Exp $ */
+/* $XFree86: xc/lib/GL/dri/dri_mesa.c,v 1.3 1999/09/25 14:36:37 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -232,9 +232,6 @@ static Bool driMesaBindContext(Display *dpy, int scrn,
     gc->glAPI = psp->glAPI;
     pdp->refcount++;
 
-    /* Bind Mesa's drawable to Mesa's context */
-    (*psp->XMesaAPI.MakeCurrent)(pcp->xm_ctx, pdp->xm_buf);
-
     /*
     ** Now that we have a context associated with this drawable, we can
     ** initialize the drawable information if has not been done before.
@@ -244,6 +241,9 @@ static Bool driMesaBindContext(Display *dpy, int scrn,
 	driMesaUpdateDrawableInfo(dpy, scrn, pdp);
 	DRM_SPINUNLOCK(&psp->pSAREA->drawable_lock, psp->drawLockID);
     }
+
+    /* Bind Mesa's drawable to Mesa's context */
+    (*psp->XMesaAPI.MakeCurrent)(pcp->xm_ctx, pdp->xm_buf);
 
     return GL_TRUE;
 }

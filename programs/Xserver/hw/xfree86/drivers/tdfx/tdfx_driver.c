@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.3 1999/10/13 04:21:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.6 1999/12/03 19:17:36 eich Exp $ */
 
 /*
  * Authors:
@@ -104,6 +104,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "xf86xv.h"
 #include "Xv.h"
+
+#ifdef XF86DRI
+#include "dri.h"
+#endif
 
 /* Required Functions: */
 
@@ -249,6 +253,7 @@ static const char *ramdacSymbols[] = {
 static const char *drmSymbols[] = {
     "drmAddBufs",
     "drmAddMap",
+    "drmAvailable",
     "drmCtlAddCommand",
     "drmCtlInstHandler",
     "drmGetInterruptFromBusID",
@@ -267,6 +272,10 @@ static const char *driSymbols[] = {
     "DRIScreenInit",
     "DRIDestroyInfoRec",
     "DRICreateInfoRec",
+    "DRILock",
+    "DRIUnlock",
+    "DRIGetSAREAPrivate",
+    "DRIGetContext",
     "GlxSetVisualConfigs",
     NULL
 };
@@ -603,6 +612,7 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags) {
       return FALSE;
   }
 
+  pScrn->rgbBits=8;
   if (!xf86SetDefaultVisual(pScrn, -1)) {
     return FALSE;
   } else {
@@ -1306,7 +1316,17 @@ TDFXModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     mode->CrtcHSkew=hskew;
   }    
 
+#ifdef XF86DRI
+  if (pTDFX->directRenderingEnabled) {
+    DRILock(screenInfo.screens[pScrn->scrnIndex]);
+    TDFXSwapContextPrivate(screenInfo.screens[pScrn->scrnIndex]);
+  }
+#endif
   DoRestore(pScrn, &hwp->ModeReg, &pTDFX->ModeReg, FALSE);
+#ifdef XF86DRI
+  if (pTDFX->directRenderingEnabled)
+    DRIUnlock(screenInfo.screens[pScrn->scrnIndex]);
+#endif
 
   return TRUE;
 }
@@ -1433,6 +1453,8 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
    * InitGLXVisuals call back.
    */
   pTDFX->directRenderingEnabled = TDFXDRIScreenInit(pScreen);
+  /* Force the initialization of the context */
+  TDFXLostContext(pScreen);
 #endif
 
   switch (pScrn->bitsPerPixel) {
@@ -1545,6 +1567,7 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
     }
     if (pTDFX->directRenderingEnabled) {
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "direct rendering enabled\n");
+	TDFXSetLFBConfig(pTDFX);
     } else {
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "direct rendering disabled\n");
     }
@@ -1599,9 +1622,20 @@ TDFXAdjustFrame(int scrnIndex, int x, int y, int flags) {
 static Bool
 TDFXEnterVT(int scrnIndex, int flags) {
   ScrnInfoPtr pScrn;
+#ifdef XF86DRI
+  ScreenPtr pScreen;
+  TDFXPtr pTDFX;
+#endif
 
   TDFXTRACE("TDFXEnterVT start\n");
   pScrn = xf86Screens[scrnIndex];
+#ifdef XF86DRI
+  pTDFX = TDFXPTR(pScrn);
+  if (pTDFX->directRenderingEnabled) {
+    pScreen = screenInfo.screens[scrnIndex];
+    DRIUnlock(pScreen);
+  }
+#endif
   if (!TDFXModeInit(pScrn, pScrn->currentMode)) return FALSE;
   TDFXAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
   return TRUE;
@@ -1611,12 +1645,23 @@ static void
 TDFXLeaveVT(int scrnIndex, int flags) {
   ScrnInfoPtr pScrn;
   vgaHWPtr hwp;
+#ifdef XF86DRI
+  ScreenPtr pScreen;
+  TDFXPtr pTDFX;
+#endif
 
   TDFXTRACE("TDFXLeaveVT start\n");
   pScrn = xf86Screens[scrnIndex];
   hwp=VGAHWPTR(pScrn);
   TDFXRestore(pScrn);
   vgaHWLock(hwp);
+#ifdef XF86DRI
+  pTDFX = TDFXPTR(pScrn);
+  if (pTDFX->directRenderingEnabled) {
+    pScreen = screenInfo.screens[scrnIndex];
+    DRILock(pScreen);
+  }
+#endif
 }
 
 static Bool
@@ -1634,6 +1679,7 @@ TDFXCloseScreen(int scrnIndex, ScreenPtr pScreen)
 #ifdef XF86DRI
     if (pTDFX->directRenderingEnabled) {
 	TDFXDRICloseScreen(pScreen);
+	pTDFX->directRenderingEnabled=FALSE;
     }
 #endif
 

@@ -1,4 +1,8 @@
 XFree86 3.9.16f (xx December 1999)
+3377. DRI megapatch.  This moves mesa to xc/extras, updates Mesa to
+      version 3.2, adds full support and fifo code for 3dfx hardware,
+      and updates the device driver to work with Linux 2.3 kernels
+      (#3463, Daryll Strauss).
 3376. Fix dynamic loading on the alpha platform (#3459, Hannes Reinecke).
 3375. Add Xinerama option to the serverlayout section of the config file
       (#3458, Joe Moss).
@@ -9154,4 +9158,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.872 1999/12/13 23:52:51 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.873 1999/12/13 23:56:34 robin Exp $

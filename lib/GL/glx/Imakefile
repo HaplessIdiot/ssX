@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/lib/GL/glx/Imakefile,v 1.2 1999/06/14 07:23:34 dawes Exp $
 XCOMM The contents of this file are subject to the GLX Public License Version 1.0
 XCOMM (the "License"). You may not use this file except in compliance with the
 XCOMM License. You may obtain a copy of the License at Silicon Graphics, Inc.,
@@ -46,7 +46,8 @@ SRCS = \
 	renderpix.c \
 	single2.c \
 	singlepix.c \
-	vertarr.c
+	vertarr.c \
+        xfont.c
 
 OBJS = \
 	dri_glapi.o \
@@ -65,7 +66,8 @@ OBJS = \
 	renderpix.o \
 	single2.o \
 	singlepix.o \
-	vertarr.o
+	vertarr.o \
+        xfont.o
 
 #if BuildXF86DRI
 DEFINES = GlxDefines

@@ -1,6 +1,6 @@
 /* xf86drm.c -- User-level interface to DRM device
  * Created: Tue Jan  5 08:16:21 1999 by faith@precisioninsight.com
- * Revised: Wed Aug  4 07:54:23 1999 by faith@precisioninsight.com
+ * Revised: Mon Dec  6 11:34:13 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All Rights Reserved.
@@ -25,7 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.43 1999/08/04 18:14:43 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.4 1999/09/25 14:37:49 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.5 1999/10/13 22:33:07 dawes Exp $
  * 
  */
 
@@ -148,7 +148,7 @@ static int drm_open(const char *file)
 
 int drmAvailable(void)
 {
-    if (!access("/proc/video/0", R_OK)) return 1;
+    if (!access("/proc/graphics/0", R_OK)) return 1;
     return 0;
 }
 
@@ -172,6 +172,28 @@ static int drmOpenDevice(const char *path, long dev,
     chown(path, user, group);
     chmod(path, mode);
     return drm_open(path);
+}
+
+static int drmOpenByBusid(const char *busid)
+{
+    int    i;
+    char   dev_name[64];
+    char   *buf;
+    int    fd;
+
+    for (i = 0; i < 8; i++) {
+	sprintf(dev_name, "/dev/graphics/card%d", i);
+	if ((fd = drm_open(dev_name)) >= 0) {
+	    buf = drmGetBusid(fd);
+	    if (buf && !strcmp(buf, busid)) {
+	      drmFreeBusid(buf);
+	      return fd;
+	    }
+	    if (buf) drmFreeBusid(buf);
+	    close(fd);
+	}
+    }
+    return -1;
 }
 
 static int drmOpenByName(const char *name)
@@ -202,19 +224,19 @@ static int drmOpenByName(const char *name)
 	if (dirmode & S_IRGRP) dirmode |= S_IXGRP;
 	if (dirmode & S_IROTH) dirmode |= S_IXOTH;
 	dirmode &= ~(S_IWGRP | S_IWOTH);
-	mkdir("/dev/video", 0);
-	chown("/dev/video", user, group);
-	chmod("/dev/video", dirmode);
+	mkdir("/dev/graphics", 0);
+	chown("/dev/graphics", user, group);
+	chmod("/dev/graphics", dirmode);
     }
 
     for (i = 0; i < 8; i++) {
-	sprintf(proc_name, "/proc/video/%d/name", i);
-	sprintf(dev_name, "/dev/video/card%d", i);
+	sprintf(proc_name, "/proc/graphics/%d/name", i);
+	sprintf(dev_name, "/dev/graphics/card%d", i);
 	if ((fd = open(proc_name, 0, 0)) >= 0) {
 	    retcode = read(fd, buf, sizeof(buf)-1);
 	    close(fd);
 	    if (retcode) {
-		buf[sizeof(buf)-1] = '\0';
+		buf[retcode-1] = '\0';
 		for (driver = pt = buf; *pt && *pt != ' '; ++pt)
 		    ;
 		if (*pt) {	/* Device is next */
@@ -222,10 +244,12 @@ static int drmOpenByName(const char *name)
 		    if (!strcmp(driver, name)) { /* Match */
 			for (devstring = ++pt; *pt && *pt != ' '; ++pt)
 			    ;
-			if (!*pt) {	/* No busid */
-			    dev = strtol(devstring, NULL, 0);
-			    return drmOpenDevice(dev_name, dev,
-						 mode, user, group);
+			if (*pt) { /* Found busid */
+			  return drmOpenByBusid(++pt);
+			} else {	/* No busid */
+			  dev = strtol(devstring, NULL, 0);
+			  return drmOpenDevice(dev_name, dev,
+					       mode, user, group);
 			}
 		    }
 		}
@@ -235,28 +259,8 @@ static int drmOpenByName(const char *name)
     return -1;
 }
 
-static int drmOpenByBusid(const char *busid)
-{
-    int    i;
-    char   dev_name[64];
-    char   *buf;
-    int    fd;
-
-    for (i = 0; i < 8; i++) {
-	sprintf(dev_name, "/dev/video/card%d", i);
-	if ((fd = drm_open(dev_name)) >= 0) {
-	    buf = drmGetBusid(fd);
-	    if (buf && !strcmp(buf, busid)) return fd;
-	    if (buf) drmFreeBusid(buf);
-	    close(fd);
-	}
-    }
-    return -1;
-}
-
-
 /* drmOpen looks up the specified name and busid, and opens the device
-   found.  The entry in /dev/video is created if necessary (and if root).
+   found.  The entry in /dev/graphics is created if necessary (and if root).
    A file descriptor is returned.  On error, the return value is
    negative. */
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.h,v 1.2 1999/06/27 14:07:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.h,v 1.3 1999/09/25 14:36:41 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -75,13 +75,17 @@ typedef struct {
     Bool	(*CreateContext)(ScreenPtr pScreen,
 				 VisualPtr visual,
 				 drmContext hHWContext,
-				 void* pVisualConfigPriv);
+				 void* pVisualConfigPriv,
+				 DRIContextType context);
+    void        (*DestroyContext)(ScreenPtr pScreen,
+				  drmContext hHWContext,
+                                  DRIContextType context);
     void	(*SwapContext)(ScreenPtr pScreen,
 			       DRISyncType syncType,
 			       DRIContextType readContextType,
-			       void** readContextStore,
+			       void* readContextStore,
 			       DRIContextType writeContextType,
-			       void** writeContextStore);
+			       void* writeContextStore);
     void	(*InitBuffers)(WindowPtr pWin,
 			       RegionPtr prgn,
 			       CARD32 index);
@@ -192,7 +196,7 @@ void DRISwapContext(
     int drmFD,
     void *oldctx,
     void *newctx);
-void** DRIGetContextStore(DRIContextPrivPtr context);
+void* DRIGetContextStore(DRIContextPrivPtr context);
 void DRIPaintWindow(
     WindowPtr pWin,
     RegionPtr prgn,
@@ -215,7 +219,9 @@ void DRIClipNotify(
     int dy);
 CARD32 DRIGetDrawableIndex(
     WindowPtr pWin);
-
+void DRILock(ScreenPtr pScreen);
+void DRIUnlock(ScreenPtr pScreen);
+void *DRIGetSAREAPrivate(ScreenPtr pScreen);
 DRIContextPrivPtr
 DRICreateContextPriv(ScreenPtr pScreen,
 		     drmContextPtr pHWContext,

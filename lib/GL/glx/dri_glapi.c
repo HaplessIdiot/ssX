@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/glx/dri_glapi.c,v 1.1 1999/06/14 07:23:35 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -746,6 +746,7 @@ void glGetPolygonStipple(GLubyte *mask)
 const GLubyte *glGetString(GLenum name)
 {
     __DRI_GET_CONTEXT(gc);
+    if (!gc->glAPI.GetString) return 0;
     return (*gc->glAPI.GetString)(name);
 }
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.8 1999/06/27 14:07:20 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.9 1999/07/10 07:24:35 dawes Exp $
 XCOMM $PI: xc/lib/GL/Imakefile,v 1.11 1999/06/14 21:10:34 faith Exp $
 
 #define IHaveSubdirs
@@ -51,12 +51,31 @@ DependSubdirs($(SUBDIRS))
     DRVDOBJS = mesa/src/drv/gamma/debugger/?*.o
     DRVPOBJS = mesa/src/drv/gamma/profiled/?*.o
     DRVDONES = mesa/src/drv/gamma/DONE
+#elif GlxBuiltInTdfx
+    TDFXOBJS = mesa/src/drv/tdfx/?*.o
+   TDFXUOBJS = mesa/src/drv/tdfx/unshared/?*.o
+   TDFXDOBJS = mesa/src/drv/tdfx/debugger/?*.o
+   TDFXPOBJS = mesa/src/drv/tdfx/profiled/?*.o
+   TDFXDONES = mesa/src/drv/tdfx/DONE
+    MESAOBJS = mesa/src/?*.o mesa/src/X86/?*.o
+   MESAUOBJS = mesa/src/unshared/?*.o mesa/src/X86/unshared/?*.o
+   MESADOBJS = mesa/src/debugger/?*.o mesa/src/X86/debugger/?*.o
+   MESAPOBJS = mesa/src/profiled/?*.o mesa/src/X86/profiled/?*.o
+   MESADONES = mesa/src/DONE mesa/src/X86/DONE
+     DRVOBJS = $(TDFXOBJS) $(MESAOBJS)
+    DRVUOBJS = $(TDFXUOBJS) $(MESAUOBJS)
+    DRVDOBJS = $(TDFXDOBJS) $(MESADOBJS)
+    DRVPOBJS = $(TDFXPOBJS) $(MESAPOBJS)
+    DRVDONES = $(TDFXDONES) $(MESADONES)
+REQUIREDLIBS += -lglide3x
 #elif GlxBuiltInMesa
+#ifndef GlxDriverUsesMesa
      DRVOBJS = mesa/src/?*.o mesa/src/X/?*.o
     DRVUOBJS = mesa/src/unshared/?*.o mesa/src/X/unshared/?*.o
     DRVDOBJS = mesa/src/debugger/?*.o mesa/src/X/debugger/?*.o
     DRVPOBJS = mesa/src/profiled/?*.o mesa/src/X/profiled/?*.o
     DRVDONES = mesa/src/DONE mesa/src/X/DONE
+#endif
 #endif
 #endif
 #endif
