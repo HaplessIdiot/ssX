@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_state_init.c,v 1.1 2002/10/30 12:51:57 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_state_init.c,v 1.2 2002/12/16 16:18:58 dawes Exp $ */
 /*
  * Copyright 2000, 2001 VA Linux Systems Inc., Fremont, California.
  *
@@ -380,11 +380,7 @@ void radeonInitState( radeonContextPtr rmesa )
       RADEON_TEX1_W_ROUTING_USE_Q1);
 
 
-   rmesa->hw.lin.cmd[LIN_RE_LINE_PATTERN] =
-      ((0x0000 & RADEON_LINE_PATTERN_MASK) |
-       (0 << RADEON_LINE_REPEAT_COUNT_SHIFT) |
-       (0 << RADEON_LINE_PATTERN_START_SHIFT) |
-       RADEON_LINE_PATTERN_LITTLE_BIT_ORDER);
+   rmesa->hw.lin.cmd[LIN_RE_LINE_PATTERN] = ((1 << 16) | 0xffff);
 
    rmesa->hw.lin.cmd[LIN_RE_LINE_STATE] = 
       ((0 << RADEON_LINE_CURRENT_PTR_SHIFT) |
