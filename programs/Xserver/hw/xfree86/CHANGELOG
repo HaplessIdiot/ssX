@@ -1,4 +1,12 @@
 XFree86 4.3.99.12 (xx August 2003)
+ 427. Fixes and updates for XKB keyboard maps:
+      - Add 'Romanian keymap for German keyboard' and 'Romanian keymap with
+        access to German umlauts' (Manfred Pohler).
+      - Update xfree86.dtd file (Sergey V. Oudaltsov).
+      - Add an XkbOption that makes a keyboard map without special keysyms
+        on Ctrl+Alt+smth for those who use such combinations for another
+        purposes (Ivan Pascal).
+ 426. Reverse patch #423 because it causes compile problems (Ivan Pascal).
  425. Disable the bytecode interpreter by default in FreeType 1, bringing it
       into line with the default for FreeType 2.  Document how to enable
       it in xf86site.def for those with no legal impediment to doing so
@@ -17677,7 +17685,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2845 2003/09/06 14:08:44 pascal Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2846 2003/09/06 23:38:06 dawes Exp $
 
 
 
