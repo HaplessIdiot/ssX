@@ -22,7 +22,7 @@
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
-.\" $XFree86: xc/programs/Xserver/Xserver.man,v 3.23 2003/04/14 20:37:17 herrb Exp $
+.\" $XFree86: xc/programs/Xserver/Xserver.man,v 3.24 2003/05/29 21:48:06 herrb Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH XSERVER 1 __xorgversion__
@@ -263,6 +263,25 @@ There is currently no way to change this from a client.
 .B nologo
 turns off the X Window System logo display in the screen-saver.
 There is currently no way to change this from a client.
+.TP 8
+.B \-render 
+.BR default | mono | gray | color
+sets the color allocation policy that will be used by the render extension.
+.RS 8
+.TP 8
+.I default
+selects the default policy defined for the display depth of the X
+server. 
+.TP 8
+.I mono
+don't use any color cell. 
+.TP 8
+.I gray 
+use a gray map of 13 color cells for the X render extension.
+.TP 8
+.I color
+use a color cube of at most 4*4*4 colors (that is 64 color cells).
+.RE
 .SH XDMCP OPTIONS
 X servers that support XDMCP have the following options.
 See the \fIX Display Manager Control Protocol\fP specification for more
