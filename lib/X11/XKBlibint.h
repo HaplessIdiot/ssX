@@ -1,5 +1,4 @@
-/* $XConsortium: XKBlibint.h /main/12 1996/12/27 15:12:48 kaleb $ */
-/* $XFree86: xc/lib/X11/XKBlibint.h,v 3.1 1996/12/28 08:09:36 dawes Exp $ */
+/* $TOG: XKBlibint.h /main/15 1997/06/10 06:53:27 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -25,6 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
+/* $XFree86: xc/lib/X11/XKBlibint.h,v 3.2 1997/03/10 10:10:08 hohndel Exp $ */
 
 #ifndef _XKBLIBINT_H_
 #define	_XKBLIBINT_H_
@@ -345,6 +345,7 @@ extern char	*_XkbGetCharset(
     void
 #endif
 );
+
 extern int	 _XkbGetConverters(
 #if NeedFunctionPrototypes
     char *		/* encoding_name */,

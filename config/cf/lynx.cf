@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.14 1997/04/17 08:16:37 hohndel Exp $
+XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.15 1997/06/03 14:11:03 hohndel Exp $
 
 #ifdef i386Architecture
 # define OSName			LynxOS AT
@@ -119,7 +119,7 @@ XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.14 1997/04/17 08:16:37 hohnd
 #endif
 #define PreProcessCmd		CcCmd -E
 #if HasGcc2
-# define PostIncDir		`CcCmd --print-libgcc-file-name | sed 's/libgcc.a/include/'`
+# define PostIncDir		DefaultGccIncludeDir
 #endif
 #define LdCombineFlags		-r
 #if HasGcc2

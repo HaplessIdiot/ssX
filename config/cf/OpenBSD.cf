@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.9 1997/05/24 13:46:26 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.10 1997/05/25 14:41:14 dawes Exp $
 
 #ifndef OSName
 #define OSName			DefaultOSName OSBinaryType
@@ -59,7 +59,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define CppCmd          	/usr/libexec/cpp
 #define StandardCppDefines	-traditional
 #define PreProcessCmd   	CppCmd
-#define PreIncDir /usr/lib/gcc-lib/i386-unknown-openbsd1.2/2.7.2.1/include
+#define PreIncDir		DefaultGccIncludeDir
 
 #undef CcCmd
 #define CcCmd 			gcc

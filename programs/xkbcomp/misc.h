@@ -1,4 +1,4 @@
-/* $XConsortium: misc.h,v 1.2 94/04/08 15:28:36 erik Exp $ */
+/* $TOG: misc.h /main/5 1997/06/10 06:54:04 kaleb $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -28,24 +28,93 @@
 #ifndef MISC_H
 #define MISC_H 1
 
-extern char *	SIMatchText(
+typedef	struct	_CommonInfo {
+    unsigned short		defined;
+    unsigned char		fileID;
+    unsigned char		merge;
+    struct _CommonInfo *	next;
+} CommonInfo;
+
+_XFUNCPROTOBEGIN
+
+extern Bool	UseNewField(
 #if NeedFunctionPrototypes
-    unsigned	/* type */,
-    unsigned	/* format */
+    unsigned		/* field */,
+    CommonInfo * 	/* oldDefs */,
+    CommonInfo *	/* newDefs */,
+    unsigned *		/* pCollide */
 #endif
 );
 
-extern char *	actionTypeText(
+extern Bool	MergeNewField(
 #if NeedFunctionPrototypes
-    unsigned	/* type */,
-    unsigned	/* format */
+    unsigned		/* field */,
+    CommonInfo * 	/* oldDefs */,
+    CommonInfo *	/* newDefs */,
+    unsigned *		/* pCollide */
 #endif
 );
 
-
-extern char *	DirectoryForInclude(
+extern XPointer ClearCommonInfo(
 #if NeedFunctionPrototypes
-    unsigned	/* type */
+    CommonInfo *	/* cmn */
+#endif
+);
+
+extern XPointer AddCommonInfo(
+#if NeedFunctionPrototypes
+    CommonInfo *	/* old */,
+    CommonInfo *	/* new */
+#endif
+);
+
+extern int	ReportNotArray(
+#if NeedFunctionPrototypes
+    char *	/* type */,
+    char *	/* field */,
+    char *	/* name */
+#endif
+);
+
+extern int	ReportShouldBeArray(
+#if NeedFunctionPrototypes
+    char *	/* type */,
+    char *	/* field */,
+    char *	/* name */
+#endif
+);
+
+extern int	ReportBadType(
+#if NeedFunctionPrototypes
+    char *	/* type */,
+    char *	/* field */,
+    char *	/* name */,
+    char *	/* wanted */
+#endif
+);
+
+extern int	ReportBadIndexType(
+#if NeedFunctionPrototypes
+    char *	/* type */,
+    char *	/* field */,
+    char *	/* name */,
+    char *	/* wanted */
+#endif
+);
+
+extern int	ReportBadField(
+#if NeedFunctionPrototypes
+    char *	/* type */,
+    char *	/* field */,
+    char *	/* name */
+#endif
+);
+
+extern int	ReportMultipleDefs(
+#if NeedFunctionPrototypes
+    char *	/* type */,
+    char *	/* field */,
+    char *	/* which */
 #endif
 );
 
@@ -57,5 +126,32 @@ extern Bool	ProcessIncludeFile(
     unsigned *		/* merge_rtrn */
 #endif
 );
+
+extern Status	ComputeKbdDefaults(
+#if NeedFunctionPrototypes
+    XkbDescPtr		/* xkb */
+#endif
+);
+
+extern Bool FindNamedKey(
+#if NeedFunctionPrototypes
+    XkbDescPtr		/* xkb */,
+    unsigned long	/* name */,
+    unsigned int *	/* kc_rtrn */,
+    Bool		/* use_aliases */,
+    Bool		/* create */,
+    int			/* start_from */
+#endif
+);
+
+extern Bool FindKeyNameForAlias(
+#if NeedFunctionPrototypes
+    XkbDescPtr		/* xkb */,
+    unsigned long	/* lname */,
+    unsigned long *	/* real_name */
+#endif
+);
+
+_XFUNCPROTOEND
 
 #endif /* MISC_H */
