@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/dm.h,v 3.18 2000/06/07 22:03:16 tsi Exp $ */
+/* $XFree86: xc/programs/xdm/dm.h,v 3.19 2000/06/14 00:16:14 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -276,7 +276,7 @@ struct greet_info {
 };
 
 /* setgroups is not covered by POSIX, arg type varies */
-#if defined(SYSV) || defined(SVR4) || defined(__osf__) || defined(linux)
+#if defined(SYSV) || defined(SVR4) || defined(__osf__) || defined(linux) || defined(__GNU__)
 #define GID_T gid_t
 #else
 #define GID_T int

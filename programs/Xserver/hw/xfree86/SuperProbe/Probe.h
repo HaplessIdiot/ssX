@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.73 2000/02/22 01:00:15 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.74 2000/08/23 22:10:10 tsi Exp $ */
 
 /*
  * Includes
@@ -44,7 +44,7 @@
 #include <stdlib.h>
 #endif	/* MACH386 */
 #include <ctype.h>
-#if defined(SYSV) || defined(SVR4) || defined(linux) || defined(__QNX__) || defined(__QNXNTO__)
+#if defined(SYSV) || defined(SVR4) || defined(linux) || defined(__QNX__) || defined(__QNXNTO__) || defined(__GNU__)
 #if defined(__ia64__) || defined(ia64)
 #include <sys/io.h>
 #include <asm/io.h>

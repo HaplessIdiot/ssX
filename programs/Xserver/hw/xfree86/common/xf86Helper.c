@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.98 2000/10/30 23:02:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.100 2000/11/03 18:46:06 eich Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -31,7 +31,8 @@
 #include "xf86Bus.h"
 
 /* For xf86GetClocks */
-#if defined(CSRG_BASED) || defined(MACH386)
+#if defined(CSRG_BASED) || defined(MACH386) || defined(__GNU__)
+#define HAS_SETPRIORITY
 #include <sys/resource.h>
 #endif
 
@@ -2085,7 +2086,7 @@ xf86SetPriority(Bool up)
     static int saved_nice;
 
     if (up) {
-#if defined(CSRG_BASED) || defined(MACH386)
+#ifdef HAS_SETPRIORITY
 	saved_nice = getpriority(PRIO_PROCESS, 0);
 	setpriority(PRIO_PROCESS, 0, -20);
 #endif
@@ -2094,7 +2095,7 @@ xf86SetPriority(Bool up)
 	nice(-20 - saved_nice);
 #endif
     } else {
-#if defined(CSRG_BASED) || defined(MACH386)
+#ifdef HAS_SETPRIORITY
 	setpriority(PRIO_PROCESS, 0, saved_nice);
 #endif
 #if defined(SYSV) || defined(SVR4) || defined(linux)

@@ -64,10 +64,14 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.45 2000/08/23 20:05:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.46 2000/08/23 21:06:21 dawes Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
+
+#ifdef XF86_OS_PRIVS
+#include "xf86Pci.h"
+#endif
 
 /*
  * The actual prototypes have been pulled into this seperate file so
@@ -257,6 +261,7 @@ resPtr xf86PciBusAccWindowsFromOS(void);
 resPtr xf86IsaBusAccWindowsFromOS(void);
 resPtr xf86AccResFromOS(resPtr ret);
 #endif /* NEED_OS_RAC_PROTOS */
+
 Bool xf86GetPciSizeFromOS(PCITAG tag, int index, int* bits);
 
 #endif /* XF86_OS_PRIVS */

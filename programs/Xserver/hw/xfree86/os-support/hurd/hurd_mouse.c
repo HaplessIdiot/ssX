@@ -20,7 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/hurd_mouse.c,v 1.6 1999/05/29 14:41:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/hurd_mouse.c,v 1.7 2000/02/10 22:33:44 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -168,7 +168,7 @@ OsMouseReadInput(InputInfoPtr pInfo)
     pBuf = (unsigned char *)eventList;
     n = 0;
     while ((c = XisbRead(pMse->buffer)) >= 0 && n < sizeof(eventList))
-	pBuf[n] = (unsigned char)c;
+	pBuf[n++] = (unsigned char)c;
 
     if (n == 0)
 	return;
@@ -289,7 +289,7 @@ xf86OSMouseInit(int flags)
     p->BuiltinNames = BuiltinNames;
     p->DefaultProtocol = DefaultProtocol;
     p->CheckProtocol = CheckProtocol;
-    p->PreInit = OSMousePreInit;
+    p->PreInit = OsMousePreInit;
     return p;
 }
 

@@ -1,4 +1,5 @@
 XFree86 4.0.1f (xx November 2000)
+ 935. Update GNU/Hurd support (#A.188, Marcus Brinkmann).
  934. Initial port of the ark driver to 4.x (#4242, Ani Joshi).
  933. Wacom input driver update, including support for 38400 link speed
       and fix wrong advertisement of min/max values (#4241, Frederic Lepied).
@@ -11543,4 +11544,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1391 2000/11/14 16:54:46 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1392 2000/11/14 17:32:55 dawes Exp $

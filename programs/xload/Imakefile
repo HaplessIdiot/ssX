@@ -1,9 +1,9 @@
 XCOMM $XConsortium: Imakefile /main/30 1996/03/09 09:37:57 kaleb $
-XCOMM $XFree86: xc/programs/xload/Imakefile,v 1.3 2000/06/15 20:50:05 dawes Exp $
+XCOMM $XFree86: xc/programs/xload/Imakefile,v 1.4 2000/10/24 18:07:52 dawes Exp $
         DEPLIBS = XawClientDepLibs
 LOCAL_LIBRARIES = XawClientLibs
 
-#ifdef i386MachArchitecture
+#if defined(i386MachArchitecture) && !defined(GNUMachArchitecture)
   SYS_LIBRARIES = -lsys
 #elif defined(SGIArchitecture) && !defined(MipsN32Architecture)
   SYS_LIBRARIES = -lmld

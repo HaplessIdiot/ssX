@@ -8,7 +8,7 @@
  * be passed to the template file.                                         *
  *                                                                         *
  ***************************************************************************/
-/* $XFree86: xc/config/imake/imake.c,v 3.36 2000/07/07 20:06:57 tsi Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.37 2000/10/24 18:07:35 dawes Exp $ */
 
 /*
  * 
@@ -262,7 +262,7 @@ extern int	errno;
 #  define SYS_NMLN 257
 # endif
 #endif
-#ifdef linux
+#if defined(linux) || defined(__GNU__)
 #include <limits.h>
 #include <stdio.h>
 #endif
@@ -1152,7 +1152,7 @@ static void
 get_gcc_incdir(FILE *inFile)
 {
   static char* gcc_path[] = {
-#if defined(linux) || defined(__OpenBSD__)
+#if defined(linux) || defined(__OpenBSD__) || defined (__GNU__)
     "/usr/bin/cc",	/* for Linux PostIncDir */
 #endif
     "/usr/local/bin/gcc",

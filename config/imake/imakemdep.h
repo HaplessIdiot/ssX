@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.43 2000/09/19 12:46:04 eich Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.44 2000/11/02 02:51:08 dawes Exp $ */
 
 
 /* 
@@ -171,12 +171,8 @@ in this Software without prior written authorization from The Open Group.
 #define imake_ccflags "-DSVR4"
 #endif
 
-#ifdef  MACH
-#ifdef __GNU__
-#define imake_ccflags ""
-#else
+#if defined(MACH) && !defined(__GNU__)
 #define imake_ccflags "-DNOSTDHDRS"
-#endif
 #endif
 
 /* this is for OS/2 under EMX. This won't work with DOS */
@@ -291,7 +287,7 @@ in this Software without prior written authorization from The Open Group.
 #if defined(__sgi) && defined(__ANSI_CPP__)
 #define USE_CC_E
 #endif
-#ifdef  MACH
+#if defined(MACH) && !defined(__GNU__)
 #define USE_CC_E
 #endif
 #ifdef __minix_vmd
@@ -304,9 +300,6 @@ in this Software without prior written authorization from The Open Group.
 #ifdef __CYGWIN__
 #define USE_CC_E
 #define DEFAULT_CC "gcc"
-#endif
-#if defined(__GNU__)
-#define USE_CC_E
 #endif
 #if defined (__QNX__)
 #define DEFAULT_CPP "/usr/X11R6/bin/cpp"
@@ -732,6 +725,10 @@ char *cpp_argv[ARGUMENTS] = {
 # define DEFAULT_OS_MINOR_REV	"r %*d.%[0-9]"
 # define DEFAULT_OS_TEENY_REV	"r %*d.%*d.%[0-9]"
 # define DEFAULT_OS_NAME	"srm %[^\n]"
+#elif defined(__GNU__)
+# define DEFAULT_OS_MAJOR_REV	"r %[0-9]"
+# define DEFAULT_OS_MINOR_REV	"r %*d.%[0-9]"
+# define DEFAULT_OS_NAME	"srm %[^\n]"
 #elif defined(ISC)
 /* ISC all Versions ? */
 /* uname -r returns "x.y", e.g. "3.2" ,uname -v returns "x" e.g. "2" */
@@ -1051,6 +1048,9 @@ struct symtab	predefs[] = {
 #endif
 #ifdef __NetBSD__
 	{"__NetBSD__", "1"},
+#endif
+#ifdef __GNU__
+	{"__GNU__", "1"},
 #endif
 #ifdef __ELF__
 	{"__ELF__", "1"},

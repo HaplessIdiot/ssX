@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/util.c,v 3.13 2000/05/31 07:15:12 eich Exp $ */
+/* $XFree86: xc/programs/xdm/util.c,v 3.14 2000/08/10 17:40:41 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -51,7 +51,7 @@ from The Open Group.
 #undef _POSIX_SOURCE
 #endif
 #endif
-#if defined(__osf__) || defined(linux) || defined(MINIX) || defined(__QNXNTO__)
+#if defined(__osf__) || defined(linux) || defined(MINIX) || defined(__QNXNTO__) || defined(__GNU__)
 #define setpgrp setpgid
 #endif
 
@@ -239,7 +239,7 @@ CleanUpChild (void)
 #ifdef CSRG_BASED
 	setsid();
 #else
-#if defined(SYSV) || defined(SVR4) || defined(__GNU__) || defined(__CYGWIN__)
+#if defined(SYSV) || defined(SVR4) || defined(__CYGWIN__)
 #if !(defined(SVR4) && defined(i386)) || defined(SCO325) || defined(__GNU__)
 	setpgrp ();
 #endif

@@ -45,7 +45,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.64 2000/08/23 21:06:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.65 2000/09/29 22:09:06 dawes Exp $ */
 #ifdef __CYGWIN__
 #include <stdlib.h>
 #include <signal.h>
@@ -155,7 +155,7 @@ extern int SelectWaitTime;
 #ifdef MEMBUG
 #define MEM_FAIL_SCALE 100000
 long Memory_fail = 0;
-#ifdef linux
+#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>  /* for random() */
 #endif
 #endif
