@@ -1,0 +1,14 @@
+#include <Server.tmpl>
+
+SRCS = glxstub.c
+
+OBJS = glxstub.o
+
+NormalLibraryObjectRule()
+NormalLibraryTarget(serverGl,$(OBJS))
+LintLibraryTarget(serverGl,$(SRCS))
+NormalLintTarget($(SRCS))
+
+InstallLinkKitLibrary(serverGl,$(LINKKITDIR)/lib)
+
+DependTarget()
