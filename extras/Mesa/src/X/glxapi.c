@@ -1,9 +1,8 @@
-
 /*
  * Mesa 3-D graphics library
- * Version:  4.0.2
+ * Version:  4.0.4
  * 
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -988,6 +987,49 @@ Bool glXSet3DfxModeMESA(int mode)
 
 
 
+/*** GLX_NV_vertex_array_range ***/
+
+void *
+glXAllocateMemoryNV( GLsizei size,
+                     GLfloat readFrequency,
+                     GLfloat writeFrequency,
+                     GLfloat priority )
+{
+   struct _glxapi_table *t;
+   Display *dpy = glXGetCurrentDisplay();
+   GET_DISPATCH(dpy, t);
+   if (!t)
+      return NULL;
+   return (t->AllocateMemoryNV)(size, readFrequency, writeFrequency, priority);
+}
+
+
+void 
+glXFreeMemoryNV( GLvoid *pointer )
+{
+   struct _glxapi_table *t;
+   Display *dpy = glXGetCurrentDisplay();
+   GET_DISPATCH(dpy, t);
+   if (!t)
+      return;
+   (t->FreeMemoryNV)(pointer);
+}
+
+
+/*** GLX_MESA_agp_offset */
+
+GLuint
+glXGetAGPOffsetMESA( const GLvoid *pointer )
+{
+   struct _glxapi_table *t;
+   Display *dpy = glXGetCurrentDisplay();
+   GET_DISPATCH(dpy, t);
+   if (!t)
+      return ~0;
+   return (t->GetAGPOffsetMESA)(pointer);
+}
+
+
 /**********************************************************************/
 /* GLX API management functions                                       */
 /**********************************************************************/
@@ -1196,6 +1238,10 @@ static struct name_address_pair GLX_functions[] = {
 
    /*** GLX_ARB_get_proc_address ***/
    { "glXGetProcAddressARB", (GLvoid *) glXGetProcAddressARB },
+
+   /*** GLX AGP memory allocation ***/
+   { "glXAllocateMemoryNV", (GLvoid *) glXAllocateMemoryNV },
+   { "glXFreeMemoryNV", (GLvoid *) glXFreeMemoryNV },
 
    { NULL, NULL }   /* end of list */
 };

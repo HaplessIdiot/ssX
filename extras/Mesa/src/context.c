@@ -1,4 +1,4 @@
-/* $Id: context.c,v 1.15 2002/09/09 21:51:59 dawes Exp $ */
+/* $Id: context.c,v 1.16 2002/10/29 18:19:38 alanh Exp $ */
 
 /*
  * Mesa 3-D graphics library
@@ -1094,7 +1094,6 @@ init_attrib_groups( GLcontext *ctx )
    ctx->Point.MinSize = 0.0;
    ctx->Point.MaxSize = ctx->Const.MaxPointSize;
    ctx->Point.Threshold = 1.0;
-   ctx->Point.SpriteMode = GL_FALSE; /* GL_MESA_sprite_point */
 
    /* Polygon group */
    ctx->Polygon.CullFlag = GL_FALSE;
@@ -1580,36 +1579,6 @@ _mesa_initialize_context( GLcontext *ctx,
       ctx->DepthMaxF = (GLfloat) ctx->DepthMax;
    }
    ctx->MRD = 1.0;  /* Minimum resolvable depth value, for polygon offset */
-
-
-#if defined(MESA_TRACE)
-   ctx->TraceCtx = (trace_context_t *) CALLOC( sizeof(trace_context_t) );
-#if 0
-   /* Brian: do you want to have CreateContext fail here,
-       or should we just trap in NewTrace (currently done)? */
-   if (!(ctx->TraceCtx)) {
-      free_shared_state(ctx, ctx->Shared);
-      FREE( ctx->Exec );
-      FREE( ctx->Save );
-      return GL_FALSE;
-   }
-#endif
-   trInitContext(ctx->TraceCtx);
-
-   ctx->TraceDispatch = (struct _glapi_table *)
-                        CALLOC(dispatchSize * sizeof(void*));
-#if 0
-   if (!(ctx->TraceCtx)) {
-      free_shared_state(ctx, ctx->Shared);
-      FREE( ctx->Exec );
-      FREE( ctx->Save );
-      FREE( ctx->TraceCtx );
-      return GL_FALSE;
-   }
-#endif
-   trInitDispatch(ctx->TraceDispatch);
-#endif
-
 
    if (getenv("MESA_DEBUG"))
       add_debug_flags(getenv("MESA_DEBUG"));

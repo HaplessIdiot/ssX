@@ -1,4 +1,3 @@
-
 /*
  * Mesa 3-D graphics library
  * Version:  4.0.3
@@ -22,7 +21,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/X86/common_x86_asm.S,v 1.12 2002/09/09 21:30:02 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/X86/common_x86_asm.S,v 1.13 2002/09/09 21:52:14 dawes Exp $ */
 
 /*
  * Check extended CPU capabilities.  Now justs returns the raw CPUID
@@ -77,6 +76,7 @@ GLOBL GLNAME( _mesa_identify_x86_cpu_features )
 GLNAME( _mesa_identify_x86_cpu_features ):
 
 	PUSH_L	( EBX )
+	PUSH_L	( ESI )
 
 	/* Test for the CPUID command.  If the ID Flag bit in EFLAGS
 	 * (bit 21) is writable, the CPUID command is present.
@@ -172,6 +172,7 @@ LLBL(cpuid_failed):
 
 LLBL (cpuid_done):
 
+	POP_L	( ESI )
 	POP_L	( EBX )
 	RET
 

@@ -1,4 +1,4 @@
-/* $Id: realglx.h,v 1.5 2002/02/22 19:28:22 dawes Exp $ */
+/* $Id: realglx.h,v 1.6 2002/10/29 18:19:41 alanh Exp $ */
 
 /*
  * Mesa 3-D graphics library
@@ -311,5 +311,22 @@ extern void
 _real_glXCopySubBufferMESA( Display *dpy, GLXDrawable drawable,
                             int x, int y, int width, int height );
 #endif
+
+
+#ifdef GLX_NV_vertex_array_range
+extern void *
+_real_glXAllocateMemoryNV( GLsizei size, GLfloat readFrequency,
+                           GLfloat writeFrequency, GLfloat priority );
+
+
+extern void
+_real_glXFreeMemoryNV( GLvoid *pointer );
+#endif
+
+#ifdef GLX_MESA_agp_offset
+extern GLuint
+_real_glXGetAGPOffsetMESA( const GLvoid *pointer );
+#endif
+
 
 #endif /* REALGLX_H */

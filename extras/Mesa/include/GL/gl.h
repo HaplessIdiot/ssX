@@ -1,4 +1,3 @@
-
 /*
  * Mesa 3-D graphics library
  * Version:  4.0.4
@@ -61,6 +60,10 @@
 #  define GLAPI extern
 #  define GLAPIENTRY
 #endif /* WIN32 / CYGWIN bracket */
+
+#if (defined(__BEOS__) && defined(__POWERPC__)) || defined(__QUICKDRAW__)
+#  define PRAGMA_EXPORT_SUPPORTED		1
+#endif
 
 #if defined(_WIN32) && !defined(_WINGDI_) && !defined(_GNU_H_WINDOWS32_DEFINES) && !defined(OPENSTEP) && !defined(__CYGWIN__)
 #include <gl/mesa_wgl.h>
@@ -2517,21 +2520,50 @@ GLAPI void GLAPIENTRY glTracePointerRangeMESA( const GLvoid* first, const GLvoid
 #endif /* GL_MESA_packed_depth_stencil */
 
 
-/*
- * ??. GL_MESA_sprite_point
- */
-#ifndef GL_MESA_sprite_point
-#define GL_MESA_sprite_point 1
 
-#define GL_SPRITE_POINT_MESA 0x8757  /* XXX not finalized! */
+#ifndef GL_MESA_ycbcr_texture
+#define GL_MESA_ycbcr_texture 1
 
-#endif
+#define GL_YCBCR_MESA				0x8757
+#define GL_UNSIGNED_SHORT_8_8_MESA		0x85BA /* same as Apple */
+#define GL_UNSIGNED_SHORT_8_8_REV_MESA		0x85BB /* same as Apple */
+
+#endif /* GL_MESA_texture_ycbcr */
+
+
+
+#ifndef GL_MESA_pack_invert
+#define GL_MESA_pack_invert 1
+
+#define GL_PACK_INVERT_MESA                     0x8758
+
+#endif /* GL_MESA_pack_invert */
+
+
+
+#ifndef GL_APPLE_client_storage
+#define GL_APPLE_client_storage 1
+
+#define GL_UNPACK_CLIENT_STORAGE_APPLE          0x85B2
+
+#endif /* GL_APPLE_client_storage */
+
+
+
+#ifndef GL_APPLE_ycbcr_422
+#define GL_APPLE_ycbcr_422 1
+
+#define GL_YCBCR_422_APPLE			0x85B9
+#define GL_UNSIGNED_SHORT_8_8_APPLE		0x85BA
+#define GL_UNSIGNED_SHORT_8_8_REV_APPLE		0x85BB
+
+#endif /* GL_APPLE_ycbcr_422 */
 
 
 /**********************************************************************
  * Begin system-specific stuff
  */
-#if defined(__BEOS__) || defined(__QUICKDRAW__)
+#if defined(PRAGMA_EXPORT_SUPPORTED)
 #pragma export off
 #endif
 
