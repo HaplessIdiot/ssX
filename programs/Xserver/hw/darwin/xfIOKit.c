@@ -8,7 +8,7 @@
  * Significantly rewritten for XFree86 4.0.1 by Torrey Lyons
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.c,v 1.12 2001/12/23 02:26:04 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKit.c,v 1.13 2002/01/08 05:05:46 torrey Exp $ */
 
 #define NDEBUG 1
 
@@ -358,6 +358,16 @@ static Bool SetupFBandHID(
                                                    &fbInfo );
     if (kr != KERN_SUCCESS)
         return FALSE;
+
+    // FIXME: 1x1 IOFramebuffers are sometimes used to indicate video
+    // outputs without a monitor connected to them. Since IOKit Xinerama
+    // does not really work, this often causes problems on PowerBooks.
+    // For now we explicitly check and ignore these screens.
+    if (fbInfo.activeWidth <= 1 || fbInfo.activeHeight <= 1) {
+        ErrorF("Discarding screen %i:\n", index);
+        ErrorF("Invalid width or height.\n");
+        return FALSE;
+    }
 
     kr = IOConnectMapMemory( dfb->fbService, kIOFBCursorMemory,
                              mach_task_self(), (vm_address_t *) &cshmem,
