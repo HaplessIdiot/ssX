@@ -1,6 +1,6 @@
 .\" Use eqn, tbl, and -ms
 .\" $Xorg: xdmcp.ms,v 1.3 2000/08/17 19:42:20 cpqbld Exp $
-.\" $XFree86$
+.\" $XFree86: xc/doc/specs/XDMCP/xdmcp.ms,v 1.2 2003/07/09 15:27:26 tsi Exp $
 .EQ
 delim @@
 define oc % "\\fR{\\fP" %
@@ -17,7 +17,7 @@ define cc % "\\fR}\\fP" %
 .ce 7
 \s+2\fBX Display Manager Control Protocol\fP\s-2
 
-\s+1\fBVersion 1.1
+\s+1\fBVersion 1.1 DRAFT
 
 X.Org Standard
 
@@ -1694,9 +1694,10 @@ Protocol Encoding
 When XDMCP is implemented on top of the Internet User Datagram Protocol (UDP),
 port number 177 is to be used. When using UDP over IPv4, Broadcast Query 
 packets are sent via UDP broadcast.  When using UDP over IPv6, Broadcast Query
-packets are sent via multicast, either to the officially registered XDMCP
-multicast address of (TBD) or to a locally assigned multicast address.
-The version number in all packets will be 1.
+packets are sent via multicast, either to an address in the IANA registered 
+XDMCP multicast address range of FF0\fIX\fP:0:0:0:0:0:0:12B 
+(where the \fIX\fP is replaced by a valid scope id) or to a locally assigned 
+multicast address. The version number in all packets will be 1.
 Packet opcodes are 16-bit integers.
 .RS
 .TS
