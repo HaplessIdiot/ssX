@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86$/
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_local.h,v 1.2 2000/02/09 17:10:26 dawes Exp */
 
 #ifndef __NV_LOCAL_H__
 #define __NV_LOCAL_H__
