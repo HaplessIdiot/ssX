@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.55 2004/04/03 22:26:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.56tsi Exp $ */
 /*
  * Copyright 1997-2004 by The XFree86 Project, Inc
  * All rights reserved.
@@ -250,9 +250,9 @@ extern int xf86sprintf(char*,const char*,...);
 extern int xf86snprintf(char*,xf86size_t,const char*,...);
 extern double xf86sqrt(double);
 #if defined(HAVE_VSSCANF) || !defined(NEED_XF86_PROTOTYPES)
-extern int xf86sscanf(char*,const char*,...);
+extern int xf86sscanf(const char*,const char*,...);
 #else
-extern int xf86sscanf(/*char*,const char*,char *,char *,char *,char *,
+extern int xf86sscanf(/*const char*,const char*,char *,char *,char *,char *,
 			char *,char *,char *,char *,char *,char * */);
 #endif
 extern char* xf86strcat(char*,const char*);

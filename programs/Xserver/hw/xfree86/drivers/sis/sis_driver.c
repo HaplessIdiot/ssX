@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.192tsi Exp $ */
 /* $XdotOrg$ */
 /*
  * SiS driver main code
@@ -290,10 +290,12 @@ static const char *driSymbols[] = {
     NULL
 };
 
+#ifdef XFree86LOADER
 static const char *driRefSymbols[] = {
     "DRICreatePCIBusID",  /* not REQUIRED */
     NULL
 };
+#endif
 #endif
 
 #ifdef XFree86LOADER

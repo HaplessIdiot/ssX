@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/fbdev/fbdev.c,v 1.32 2002/11/05 05:28:05 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/fbdev/fbdev.c,v 1.1tsi Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -695,6 +695,7 @@ fbdevEnable (ScreenPtr pScreen)
 Bool
 fbdevDPMS (ScreenPtr pScreen, int mode)
 {
+#if defined(FBIOPUT_POWERMODE) || defined(FBIOBLANK)
     KdScreenPriv(pScreen);
     FbdevPriv	*priv = pScreenPriv->card->driver;
     static int oldmode = -1;
@@ -714,6 +715,7 @@ fbdevDPMS (ScreenPtr pScreen, int mode)
 	oldmode = mode;
 	return TRUE;
     }
+#endif
 #endif
     return FALSE;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/glxcmds.c,v 1.1 2004/06/30 20:21:44 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/glxcmds.c,v 1.2tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -112,8 +112,8 @@ static int CreateContext(__GLXclientState *cl,
     int from_screen = screen;
     int to_screen = screen;
     DMXScreenInfo *dmxScreen;
-    VisualID be_vid;
-    GLXFBConfigID be_fbconfigId;
+    VisualID be_vid = 0;
+    GLXFBConfigID be_fbconfigId = 0;
     int num_be_screens;
     Display *dpy;
     
@@ -378,7 +378,6 @@ int __glXCreateContext(__GLXclientState *cl, GLbyte *pc)
 
     return( CreateContext(cl, req->context,req->visual, None,
 	                  req->screen, req->shareList, req->isDirect) );
-
 }
 
 int __glXCreateNewContext(__GLXclientState *cl, GLbyte *pc)
@@ -387,7 +386,6 @@ int __glXCreateNewContext(__GLXclientState *cl, GLbyte *pc)
 
     return( CreateContext(cl, req->context,None, req->fbconfig,
 	                  req->screen, req->shareList, req->isDirect) );
-
 }
 
 int __glXCreateContextWithConfigSGIX(__GLXclientState *cl, GLbyte *pc)
@@ -396,7 +394,6 @@ int __glXCreateContextWithConfigSGIX(__GLXclientState *cl, GLbyte *pc)
 
     return( CreateContext(cl, req->context, None, req->fbconfig,
 	                  req->screen, req->shareList, req->isDirect) );
-
 }
 
 int __glXQueryMaxSwapBarriersSGIX(__GLXclientState *cl, GLbyte *pc)
@@ -1278,7 +1275,7 @@ static int MakeCurrent(__GLXclientState *cl,
     if (client->swapped) {
 	__glXSwapMakeCurrentReply(client, &new_reply);
     } else {
-	WriteToClient(client, sz_xGLXMakeContextCurrentReply, (char *)&new_reply);
+	WriteToClient(client, sz_xGLXMakeCurrentReadSGIReply, (char *)&new_reply);
     }
 
     return Success;
@@ -1634,7 +1631,7 @@ static int CreateGLXPixmap(__GLXclientState *cl,
     ScreenPtr pScreen;
     VisualPtr pVisual;
     __GLXpixmap *pGlxPixmap;
-    __GLXscreenInfo *pGlxScreen;
+    __GLXscreenInfo *pGlxScreen = NULL;
     __GLXvisualConfig *pGlxVisual;
     __GLXFBConfig *pFBConfig;
     int i;
@@ -1658,7 +1655,7 @@ static int CreateGLXPixmap(__GLXclientState *cl,
 	return BadMatch;
     }
 
-    if (fbconfigId == NULL && visual == NULL) {
+    if (fbconfigId == None && visual == None) {
 	  return BadValue;
     }
 
@@ -2345,7 +2342,6 @@ int __glXVendorPrivate(__GLXclientState *cl, GLbyte *pc)
 
     cl->client->errorValue = req->vendorCode;
     return __glXUnsupportedPrivateRequest;
-
 }
 
 int __glXVendorPrivateWithReply(__GLXclientState *cl, GLbyte *pc)
@@ -2416,7 +2412,6 @@ int __glXVendorPrivateWithReply(__GLXclientState *cl, GLbyte *pc)
 	  cl->client->errorValue = req->vendorCode;
 	  return __glXUnsupportedPrivateRequest;
     }
-
 }
 
 int __glXQueryExtensionsString(__GLXclientState *cl, GLbyte *pc)
@@ -2859,7 +2854,7 @@ int __glXGetFBConfigs(__GLXclientState *cl, GLbyte *pc)
 	buf[p++] = pFBConfig->visualSelectGroup;
 
 	if (client->swapped) {
-	    __GLX_DECLARE_SWAP_VARIABLES;
+	    __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
 	    __GLX_SWAP_INT_ARRAY((int *)buf, 2*numAttribs);
 	}
 	WriteToClient(client, 2*numAttribs * __GLX_SIZE_CARD32, (char *)buf);
@@ -3213,7 +3208,6 @@ int __glXCreatePbuffer(__GLXclientState *cl, GLbyte *pc)
     }
 
     return Success;
-
 }
 
 int __glXDestroyPbuffer(__GLXclientState *cl, GLbyte *pc)
@@ -3277,10 +3271,10 @@ int __glXGetDrawableAttributes(__GLXclientState *cl, GLbyte *pc)
    GLXDrawable be_drawable = 0;
    DrawablePtr pDraw = NULL;
    Display *dpy;
-   int screen;
+   int screen = 0;
    DMXScreenInfo *dmxScreen;
    CARD32 *attribs = NULL;
-   int attribs_size;
+   int attribs_size = 0;
 #ifdef PANORAMIX
     PanoramiXRes *pXinDraw = NULL;
 #endif
@@ -3439,12 +3433,10 @@ int __glXChangeDrawableAttributes(__GLXclientState *cl, GLbyte *pc)
    GLXDrawable be_drawable = 0;
    DrawablePtr pDraw = NULL;
    Display *dpy;
-   int screen;
+   int screen = 0;
    DMXScreenInfo *dmxScreen;
-   char *attrbuf;
 #ifdef PANORAMIX
-    PanoramiXRes *pXinDraw = NULL;
-    PanoramiXRes *pXinReadDraw = NULL;
+   PanoramiXRes *pXinDraw = NULL;
 #endif
 
    if (drawId != None) {

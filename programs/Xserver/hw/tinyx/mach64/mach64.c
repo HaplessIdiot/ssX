@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/mach64/mach64.c,v 1.1 2004/06/02 22:43:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/mach64/mach64.c,v 1.2tsi Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -69,7 +69,11 @@
 
 #include "mach64.h"
 #define inline __inline__
+#ifdef __GLIBC__
 #include <sys/io.h>
+#else
+#include <asm/io.h>
+#endif
 
 static Bool
 mach64CardInit (KdCardInfo *card)

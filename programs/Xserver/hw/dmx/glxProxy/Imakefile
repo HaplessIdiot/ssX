@@ -1,20 +1,9 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/glx/Imakefile,v 1.9 2001/04/28 13:55:36 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/Imakefile,v 1.1tsi Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
 
 #include <dmx.cf>
-
-#if HasGcc3 && HasGnuMake
-XCOMM This makes the glxProxy subdirectory much less noisy, with respect
-XCOMM to warngings.  The code is automatically generated, so we just want
-XCOMM to shut the compiler up at this point.  However, some of the suppressed 
-XCOMM warnings may point to real errors, so they should be investigated at
-XCOMM some time in the future.
-CFLAGS += -Wno-unused -Wno-implicit -Wno-uninitialized \
-	  -Wno-redundant-decls -Wno-sign-compare -Wno-strict-prototypes \
-	  -Wno-float-equal -Wno-missing-declarations -Wno-missing-prototypes
-#endif
 
          SRCS = g_disptab.c glxcmds.c glxext.c glxutil.c g_renderswap.c \
                 render2swap.c renderpixswap.c global.c glxcmdsswap.c \
@@ -31,7 +20,7 @@ CFLAGS += -Wno-unused -Wno-implicit -Wno-uninitialized \
                 -I$(EXTINCSRC) -I$(FONTINCSRC) -I$(MESASRCDIR)/include \
                 -I$(XF86SRC) -I$(XF86OSSRC) -I$(SERVERSRC)/GL/include \
                 -I$(SERVERSRC)/hw/dmx -I$(SERVERSRC)/Xext \
-                -I$(SERVERSRC)/render
+                -I$(SERVERSRC)/render -I$(SERVERSRC)/GL/glx
 
 XCOMM If you add "-DDEBUG" in DEFINES, then make sure you also
 XCOMM add DEBUG to the define in ../mesa/src/X/xf86glx.c

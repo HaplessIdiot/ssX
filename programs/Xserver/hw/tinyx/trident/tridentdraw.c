@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/trident/tridentdraw.c,v 1.11 2001/09/14 19:24:11 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/trident/tridentdraw.c,v 1.1tsi Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -82,6 +82,7 @@
 #include	"migc.h"
 #include	"miline.h"
 #include	"picturestr.h"
+#include	"mipict.h"
 
 CARD8 tridentRop[16] = {
     /* GXclear      */      0x00,         /* 0 */
@@ -130,8 +131,7 @@ tridentPrepareSolid (DrawablePtr    pDrawable,
 	return FALSE;
     else
     {
-	KdScreenPriv(pDrawable->pScreen);
-	tridentCardInfo(pScreenPriv);
+	SetupTrident(pDrawable->pScreen);
 	cop = tridentc->cop;
 	
 	tridentFillPix(pDrawable->bitsPerPixel,fg);
@@ -164,8 +164,7 @@ tridentPrepareCopy (DrawablePtr	pSrcDrawable,
     
     if ((pm & depthMask) == depthMask)
     {
-	KdScreenPriv(pDstDrawable->pScreen);
-	tridentCardInfo(pScreenPriv);
+	SetupTrident(pDstDrawable->pScreen);
 	cop = tridentc->cop;
 	_tridentInit(cop,tridentc);
 	cop->multi = COP_MULTI_PATTERN;
@@ -225,17 +224,18 @@ tridentComposite (CARD8      op,
 		  CARD16     height)
 {
     SetupTrident (pDst->pDrawable->pScreen);
+    Cop		*cop = tridentc->cop;
     tridentScreenInfo(pScreenPriv);
     RegionRec	region;
     int		n;
     BoxPtr	pbox;
     CARD32	rgb;
-    CARD8	*msk, *mskLine;
-    FbBits	*mskBits;
-    FbStride	mskStride;
+    CARD8	*msk, *mskLine = NULL;
+    FbBits	*mskBits = NULL;
+    FbStride	mskStride = 0;
     int		mskBpp;
-    int		mskXoff, mskYoff;
-    CARD32	*src, *srcLine;
+    int		mskXoff = 0, mskYoff = 0;
+    CARD32	*src, *srcLine = NULL;
     CARD32	*off, *offLine;
     FbBits	*srcBits;
     FbStride	srcStride;
@@ -243,13 +243,10 @@ tridentComposite (CARD8      op,
     FbStride	offStride;
     int		srcBpp;
     int		x_msk, y_msk, x_src, y_src, x_dst, y_dst;
-    int		x2;
-    int		w, h, w_this, h_this, w_remain;
-    CARD32	*off_screen;
+    int		w, h, h_this, w_remain;
     int		off_size = tridents->off_screen_size >> 2;
-    int		off_width, off_height;
+    int		off_height;
     int		stride = pScreenPriv->screen->fb[0].pixelStride;
-    int		mskExtra;
     CARD32	off_screen_offset = tridents->off_screen - tridents->screen;
     int		mode;
     
@@ -453,9 +450,9 @@ KaaScreenPrivRec    tridentKaa = {
 Bool
 tridentDrawInit (ScreenPtr pScreen)
 {
-    SetupTrident(pScreen);
+    KdScreenPriv(pScreen);
     tridentScreenInfo(pScreenPriv);
-    PictureScreenPtr    ps = GetPictureScreen(pScreen);
+    PictureScreenPtr ps = GetPictureScreen(pScreen);
     
     if (!kaaDrawInit (pScreen, &tridentKaa))
 	return FALSE;
@@ -470,17 +467,16 @@ void
 tridentDrawEnable (ScreenPtr pScreen)
 {
     SetupTrident(pScreen);
+    Cop	    *cop = tridentc->cop;
     CARD32  cmd;
-    CARD32  base;
     CARD16  stride;
     CARD32  format;
-    CARD32  alpha;
     int	    tries;
-    int	    nwrite;
     
     stride = pScreenPriv->screen->fb[0].pixelStride;
     switch (pScreenPriv->screen->fb[0].bitsPerPixel) {
     case 8:
+    default:	/* Muffle compiler */
 	format = COP_DEPTH_8;
 	break;
     case 16:
@@ -535,6 +531,7 @@ void
 tridentDrawSync (ScreenPtr pScreen)
 {
     SetupTrident(pScreen);
+    Cop *cop = tridentc->cop;
     
     _tridentWaitIdleEmpty(cop);
 }

@@ -19,11 +19,12 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/fbdev/fbdev.h,v 1.12 2002/10/03 22:08:53 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/fbdev/fbdev.h,v 1.1tsi Exp $ */
 
 #ifndef _FBDEV_H_
 #define _FBDEV_H_
 #include <stdio.h>
+#include <sys/types.h>
 #include <linux/fb.h>
 #include <unistd.h>
 #include <sys/mman.h>

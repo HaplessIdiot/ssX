@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.103tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.104tsi Exp $ */
 /*
  * Copyright 1997-2003 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -396,10 +396,10 @@ xf86bzero(void* s, unsigned int n)
   
 #ifdef HAVE_VSSCANF
 int
-xf86sscanf(char *s, const char *format, ...)
+xf86sscanf(const char *s, const char *format, ...)
 #else
 int
-xf86sscanf(char *s, const char *format, char *a0, char *a1, char *a2,
+xf86sscanf(const char *s, const char *format, char *a0, char *a1, char *a2,
 	   char *a3, char *a4, char *a5, char *a6, char *a7, char *a8,
 	   char *a9) /* limit of ten args */
 #endif

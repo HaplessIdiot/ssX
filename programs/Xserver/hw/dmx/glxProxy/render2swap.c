@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/glx/render2swap.c,v 1.5 2001/03/21 16:29:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/render2swap.c,v 1.1tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -75,7 +75,7 @@ void __glXDispSwap_Map1f(GLbyte *pc)
     GLfloat u1, u2, *points;
     GLenum target;
     GLint compsize;
-    __GLX_DECLARE_SWAP_VARIABLES;
+    __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
 
     __GLX_SWAP_INT(pc + 0);
     __GLX_SWAP_INT(pc + 12);
@@ -96,7 +96,6 @@ void __glXDispSwap_Map1f(GLbyte *pc)
 	compsize = order * k;
     }
     __GLX_SWAP_FLOAT_ARRAY(points, compsize);
-
 }
 
 void __glXDispSwap_Map2f(GLbyte *pc)
@@ -105,7 +104,7 @@ void __glXDispSwap_Map2f(GLbyte *pc)
     GLfloat u1, u2, v1, v2, *points;
     GLenum target;
     GLint compsize;
-    __GLX_DECLARE_SWAP_VARIABLES;
+    __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
 
     __GLX_SWAP_INT(pc + 0);
     __GLX_SWAP_INT(pc + 12);
@@ -135,7 +134,6 @@ void __glXDispSwap_Map2f(GLbyte *pc)
 	compsize = uorder * vorder * k;
     }
     __GLX_SWAP_FLOAT_ARRAY(points, compsize);
-
 }
 
 void __glXDispSwap_Map1d(GLbyte *pc)
@@ -143,7 +141,7 @@ void __glXDispSwap_Map1d(GLbyte *pc)
     GLint order, k, compsize;
     GLenum target;
     GLdouble u1, u2, *points;
-    __GLX_DECLARE_SWAP_VARIABLES;
+    __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
 
     __GLX_SWAP_DOUBLE(pc + 0);
     __GLX_SWAP_DOUBLE(pc + 8);
@@ -185,7 +183,7 @@ void __glXDispSwap_Map2d(GLbyte *pc)
     GLdouble u1, u2, v1, v2, *points;
     GLint uorder, vorder, ustride, vstride, k, compsize;
     GLenum target;
-    __GLX_DECLARE_SWAP_VARIABLES;
+    __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
 
     __GLX_SWAP_DOUBLE(pc + 0);
     __GLX_SWAP_DOUBLE(pc + 8);
@@ -234,7 +232,7 @@ void __glXDispSwap_CallLists(GLbyte *pc)
 {
     GLenum type;
     GLsizei n;
-    __GLX_DECLARE_SWAP_VARIABLES;
+    __GLX_DECLARE_SWAP_ARRAY_VARIABLES;
 
     __GLX_SWAP_INT(pc + 4);
     __GLX_SWAP_INT(pc + 0);
@@ -260,9 +258,9 @@ void __glXDispSwap_CallLists(GLbyte *pc)
 	__GLX_SWAP_FLOAT_ARRAY(pc+8, n);
 	break;
     }
-
 }
 
+#ifdef UNUSED
 static void swapArray(GLint numVals, GLenum datatype,
                       GLint stride, GLint numVertexes, GLbyte *pc)
 {
@@ -316,6 +314,7 @@ static void swapArray(GLint numVals, GLenum datatype,
 	return;
     }
 }
+#endif
 
 void __glXDispSwap_DrawArrays(GLbyte *pc)
 {
@@ -338,7 +337,6 @@ void __glXDispSwap_DrawArrays(GLbyte *pc)
 	__GLX_SWAP_INT(&compHeader[i].component);
 
     }
-
 }
 
 void __glXDispSwap_DrawArraysEXT(GLbyte *pc)
