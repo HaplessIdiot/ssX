@@ -865,8 +865,7 @@ xtermComputeFontInfo(TScreen * screen,
 
 #ifdef XRENDERFONT
     Display *dpy = screen->display;
-    if (!screen->renderFont && term->misc.face_name &&
-	XRenderFindVisualFormat(dpy, DefaultVisual(dpy, DefaultScreen(dpy)))) {
+    if (!screen->renderFont && term->misc.face_name) {
 	XftPattern *pat, *match;
 	XftResult result;
 
