@@ -160,6 +160,9 @@
 
           ARG_MAX            max length of an arg list
 
+          SHMMAX             max size of shared memory segment(in
+          bytes)
+
 
      3. Choose which mouse driver you will use.  For SVR4 the best
         choice depends on which version you are using.  If you have a
@@ -192,9 +195,8 @@
         EVENT_TIME from 80 to 30 in sas.h.  A couple of details which
         aren't spelled out in the SAS README are:
 
+
         - An example of the line you should add to /etc/ap/chan.ap is:
-
-
 
               MAJOR    0       255     ldterm ttcompat
 
@@ -259,9 +261,9 @@
   In addition to the notes for SVR4.0, you need to be aware of a few
   problems with SVR4.2.  Basically, the base SVR4.2 code has broken
   Unix-domain sockets in such a way that making local connections via
+
   UNIXCONN does not work properly (this bug is known to exist on
   Consensys SVR4.2 and Novell UnixWare).  The manifestation of this bug
-
   is that windows remain on the screen after the client program exits,
   until you move the mouse into the window, or otherwise cause the
   server to try to write to the client.
@@ -323,8 +325,6 @@
                 /usr/X11R6/bin/mkfontdir
                 # Do this only if the server is already running.
                 /usr/X11R6/bin/xset fp rehash
-
-
 
 
 
@@ -415,7 +415,7 @@
   information.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.8 1996/09/29 13:36:41 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.9 1996/10/03 08:34:53 dawes Exp $
 
 
 

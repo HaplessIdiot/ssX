@@ -71,11 +71,17 @@
 
         o  To include the X Image Extension: set BuildXIE to YES.
 
-        o  To include the Low Bandwidth X extension: set BuildLBX to
-           YES.
+        o  To exclude the Double Buffer Extension: set BuildDBE to NO.
+
+        o  To exclude the Record Extension: set BuildRECORD to NO.
 
         o  To include the Screen Saver extension: set
            BuildScreenSaverExt to YES.
+
+        o  Although it is possible to disable other extensions through
+           this mechanism, doing so is not recommended because savings
+           in server size are not appreciable, or the resulting server
+           might even be crippled in some way.
 
         o  If you are building more than one Xserver, uncomment the
            ServerToInstall line and set it to the name of the Xserver
@@ -118,13 +124,73 @@
         extensions are included, start the Xserver and run `xdpyinfo'.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LinkKit.sgml,v 3.8 1996/02/04 09:08:10 dawes Exp $
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LinkKit.sgml,v 3.9 1996/10/03 08:34:47 dawes Exp $
   $XConsortium: LinkKit.sgml /main/4 1995/11/12 19:59:36 kaleb $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

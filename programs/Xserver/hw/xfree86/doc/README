@@ -189,7 +189,7 @@
 
         o  NetBSD 1.0, 1.1, 1.2
 
-        o  OpenBSD 1.2
+        o  OpenBSD 2.0
 
         o  FreeBSD 1.1.5.1, 2.0, 2.0.5
 
@@ -204,7 +204,9 @@
 
         o  Minix-386
 
-        o  LynxOS AT 2.2.1, 2.3
+        o  LynxOS AT 2.2.1, 2.3.0, 2.4.0
+
+        o  LynxOS microSPARC 2.4.0
 
 
      PC98:
@@ -258,6 +260,7 @@
   well work on other cards, but we cannot guarantee it.
 
   In addition, the following SVGA chipsets are supported:
+
 
      Tseng
         ET3000, ET4000AX, ET4000/W32, ET6000
@@ -324,6 +327,7 @@
   The monochrome server also supports generic VGA cards, using 64k of
   video memory in a single bank, the Hercules monochrome card, the
   Hyundai HGC1280, Sigma LaserView, Visa and Apollo monochrome cards.
+
   On the Compaq AVGA, only 64k of video memory is supported for the
   monochrome server, and the GVGA has not been tested with more than
   64k.
@@ -389,6 +393,7 @@
 
   Additional documentation is available in the XFree86(1),
   XF86Config(4/5), XF86_SVGA(1), XF86_Mono(1), XF86_VGA16(1),
+
   XF86_Accel(1) and xvidtune(1) manual pages.  In addition, several
   README files and tutorial documents are provided.  These are available
   in /usr/X11R6/lib/X11/doc in the binary distributions, and in
@@ -454,11 +459,10 @@
 
      o  Jeffrey Hsu <hsu@soda.berkeley.edu>
 
+
      o  Glenn Lai <glenn@cs.utexas.edu>
 
      o  Ted Lemon <mellon@ncd.com>
-
-
 
      o  Rich Murphey <rich@XFree86.org>
 
@@ -521,10 +525,10 @@
 
      OSF/1 support by:
 
+
         o  Marc Evans <Marc@XFree86.org>
 
      BSD/OS support by:
-
 
         o  Hans Nasten <nasten@everyware.se>,
 
@@ -540,7 +544,7 @@
 
         o  Michael Rohleder <michael.rohleder@stadt-frankfurt.de>
 
-     LynxOS AT support by:
+     LynxOS support by:
 
         o  Thomas Mueller <tm@systrix.de>
 
@@ -586,11 +590,11 @@
 
         o  Jun Sakuma <i931361@jks.is.tsukuba.ac.jp>,
 
+
+
         o  Shuichi Ueno <uenos@ppp.bekkoame.or.jp>,
 
         o  Ishida Kazuo <ishidakz@obp.cl.nec.co.jp>,
-
-
 
         o  Takaaki Nomura <tnomura@sfc.keio.ac.jp>,
 
@@ -652,11 +656,11 @@
 
         o  Mike Bernson <mike@mbsun.mlb.org>,
 
+
+
         o  Mark Weaver <Mark_Weaver@brown.edu>,
 
         o  Craig Groeschel <craig@metrolink.com>
-
-
 
         o  Bryan Feir <jenora@istar.ca>
 
@@ -719,10 +723,10 @@
 
         o  Jorge Delgado <ernar@dit.upm.es>,
 
+
      16 color VGA server by:
 
         o  Gertjan Akkerman <akkerman@dutiba.twi.tudelft.nl>
-
 
      2 color VGA and non-VGA mono servers by:
 
@@ -784,11 +788,11 @@
 
         o  Harm Hanemaayer <hhanemaa@cs.ruu.nl>
 
+
+
         o  Leon Bottou <bottou@laforia.ibp.fr>
 
      AL2101 SVGA driver by:
-
-
 
         o  Paolo Severini <lendl@dist.dist.unige.it>
 
@@ -850,11 +854,11 @@
 
      o  David Dawes <dawes@XFree86.org>
 
+
+
      o  Marc Evans <marc@XFree86.org>
 
      o  Dirk Hohndel <hohndel@XFree86.org>
-
-
 
      o  Rich Murphey <rich@XFree86.org>
 
@@ -916,12 +920,13 @@
 
      o  Jon Tombs, Director
 
+
+
      o  David Wexelblat, Director
 
   Email to <BOD@XFree86.org> reaches the board of directors.
 
   Our bylaws have been crafted in such a way to ensure that XFree86 is
-
   and always will be a free software project.  There is no personal
   financial benefit to any member of the Core Team or any other XFree86
   participant.  All assets of the corporation remain with the
@@ -981,12 +986,13 @@
 
      o  Digital Equipment Corporation <http://www.digital.com/>
 
+
+
      o  Elsa GmbH <http://www.elsa.de/>, Aachen, Germany
 
      o  Genoa Systems Corporation
 
      o  Hercules Computer Technology, Inc. <http://www.hercules.com/>
-
 
      o  Ralf Hockens
 
@@ -1047,12 +1053,12 @@
 
      o  Xtreme s.a.s. <http://www.xfree86.org/xtreme>, Livorno, Italy
 
+
   The XFree86 Project, Inc, welcomes the additional contribution of
   funding and/or equipment.  Such contributions should be tax-
   deductible; we will know for certain when the lawyers get finished
   with the papers.  For more information, contact The XFree86 Project,
   Inc, at <BOD@XFree86.org>
-
 
   10.  Source and binary archive sites
 
@@ -1113,12 +1119,12 @@
         +  ftp://ftp.calvacom.fr/pub/unix/X/XFree86 (source and
            binaries)
 
+
         +  ftp://ftp.ibp.fr/pub/X11/XFree86/XFree86-3.1.2 (source and
            binaries)
 
         +  ftp://ftp.laas.fr/pub/ii/NetBSD/XFree86-3.1.2 (NetBSD
            binaries only)
-
 
         +  ftp://ftp.pvv.unit.no/pub/XFree86 (source and binaries)
 
@@ -1153,19 +1159,13 @@
   building the distribution.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.56 1996/09/29 13:36:40 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.58 1996/10/06 13:16:46 dawes Exp $
 
 
 
 
 
   $XConsortium: README.sgml /main/15 1996/01/30 15:13:03 kaleb $
-
-
-
-
-
-
 
 
 

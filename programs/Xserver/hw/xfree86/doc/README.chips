@@ -105,7 +105,7 @@
         Note that many ct655xx chips only allow up to 1Mb of videoram,
         and the amount should be correctly detected.
 
-          Option "nolinear" (Chips 65530 and later)
+     Option "nolinear" (Chips 65530 and later)
         By default linear addressing is used on all ct655xx chips.
         However this might be broken in some implementations. It is
         possible to turn the linear addressing off with this option.
@@ -454,7 +454,7 @@
      o  David Bateman
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.5 1996/09/29 13:36:42 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.6 1996/10/03 08:34:54 dawes Exp $
 
 
 

@@ -1,6 +1,6 @@
-  README for XFree86 3.1.2G on LynxOS
+  README for XFree86 3.2 on LynxOS
   Thomas Mueller
-  Last modified on: 2 September 1996
+  Last modified on: 30 September 1996
 
   1.  What and Where is XFree86?
 
@@ -18,20 +18,20 @@
   ftp.XFree86.org:/pub/XFree86/current
   <ftp://ftp.XFree86.org/pub/XFree86/current>
 
-  Binaries for the 3.1.2G beta release on LynxOS AT are available from:
+  Binaries for the 3.2 release on LynxOS AT are available from:
 
-  ftp.XFree86.org:/pub/XFree86/beta/LynxOS-AT
-  <ftp://ftp.XFree86.org/pub/XFree86/beta/LynxOS-AT>
+  ftp.XFree86.org:/pub/XFree86/current/LynxOS
+  <ftp://ftp.XFree86.org/pub/XFree86/current/LynxOS>
 
   The XFree86 LynxOS port was developed using `LynxOS AT 2.3.0 080695-A
   FCS' and later `LynxOS AT 2.4.0 042696'. XFree86 versions later than
   3.1.2 have not been tested on LynxOS versions earlier than 2.3.0. The
   binaries are built on `LynxOS AT 2.4.0 042696'.
 
-  XFree86 supports LynxOS on the AT, the microSPARC and the PowerPC
-  platform. X servers are currently available only on the AT platform.
-  Refer to section ``Building on microSPARC and PowerPC'' for details on
-  XFree86 on the non-AT platforms.
+  XFree86 supports LynxOS on the AT, on the microSPARC and on the
+  PowerPC platform. X servers are currently available on the AT and
+  microSPARC platform. Refer to section ``Building on microSPARC and
+  PowerPC'' for details on XFree86 on the non-AT platforms.
 
   Send email to tm@systrix.de (Thomas Mueller) or XFree86@XFree86.org if
   you have comments or suggestions about this file and we'll revise it.
@@ -234,8 +234,8 @@
   unpack it separately and merge in your customizations.
 
   The fscl and f100 archives are optional and can be omitted if you are
-  short on space.  The optional link archive (not included in 3.1.2G
-  beta) allows you to reconfigure and customize a X server binary.
+  short on space.  The optional link archive (not included in beta
+  releases) allows you to reconfigure and customize a X server binary.
 
   The optional prog archive is needed only for writing or compiling X
   applications. Before building programs check wether
@@ -705,20 +705,86 @@
 
   7.  Building on microSPARC and PowerPC
 
-  XFree86 3.1.2G also compiles on LynxOS microSPARC and on LynxOS PPC
-  although currently there are no working X servers. Before you start
-  the build you must create a symbolic link from the CYGNUS gcc to a
-  file named cc somewhere in a directory included in your PATH
-  environment variable.
+  XFree86 3.2 also compiles on LynxOS microSPARC and on LynxOS PPC. On
+  the microSPARC there is X server support for the colour frame buffers
+  CG3 and CG6 while on the PPC there is no X server available at this
+  time. Before you start the build you must create a symbolic link from
+  the CYGNUS gcc to a file named cc somewhere in a directory included in
+  your PATH environment variable.
+
+  7.1.  Console driver patch for microSPARC
+
+  Before building on the microSPARC you should install the patch for the
+  console driver supplied in
+  xc/programs/Xserver/hw/sunLynx/patch.Console.  The patch fixes minor
+  problems in the original LynxOS driver and adds functionalities to
+  detect the keyboard type and control the key click.  To create a
+  backup of the original driver and install the patch issue the commands
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.7 1996/09/14 13:10:24 dawes Exp $
+
+
+   # cd /
+   # tar cf /sys/drivers/console.tar /sys/drivers/console
+   # patch -p -E < xc/programs/Xserver/hw/sunLynx/patch.Console
+   # cd /sys/drivers/console
+   # make install
+   # cd /sys/lynx.os
+   # make install
+   # reboot -a
+
+
+
+
+  If you opt not to install the patch you must edit xc/config/cf/lynx.cf
+  and change the definition of SparcConsoleDefines
+
+       from
+
+              #define SparcConsoleDefines    -DPATCHED_CONSOLE
+
+
+
+       to
+
+              #define SparcConsoleDefines    /* -DPATCHED_CONSOLE */
+
+
+
+
+
+  7.2.  Known Bug of the microSPARC server
+
+  On the first start of the X server on the microSPARC you will notice
+  that the pointer follows mouse movements with a certain delay
+  (especially if you're moving the mouse real fast). You will also
+  notice that moving windows with certain window managers (eg mwm) is
+  not working correctly.  These effects should go away on the next
+  server start.
+
+  The server for monochrome cards builds properly if you enable it in
+  lynx.cf but it has never been tested.
+
+
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.8 1996/10/03 08:34:48 dawes Exp $
 
 
 
 
 
   $XConsortium: LynxOS.sgml /main/4 1995/12/29 15:58:36 kaleb $
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
