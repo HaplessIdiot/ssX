@@ -5196,10 +5196,10 @@ SiS_DisableBridge(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USH
 
 		if(!(SiS_IsDualEdge(SiS_Pr,HwDeviceExtension, BaseAddr))) {
 			SiS_Chrontel701xBLOff(SiS_Pr);
-			SiS_Chrontel701xOff(SiS_Pr);
+			SiS_Chrontel701xOff(SiS_Pr,HwDeviceExtension);
 		} else if(SiS_IsVAMode(SiS_Pr,HwDeviceExtension, BaseAddr)) {
 			SiS_Chrontel701xBLOff(SiS_Pr);
-			SiS_Chrontel701xOff(SiS_Pr);
+			SiS_Chrontel701xOff(SiS_Pr,HwDeviceExtension);
 		}
 
 		if(HwDeviceExtension->jChipType != SIS_740) {
@@ -5231,6 +5231,10 @@ SiS_DisableBridge(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USH
 		SiS_SetRegOR(SiS_Pr->SiS_Part1Port,0x00,0x80);
 	} else if(!(SiS_IsVAMode(SiS_Pr,HwDeviceExtension, BaseAddr))) {
 		SiS_SetRegOR(SiS_Pr->SiS_Part1Port,0x00,0x80);
+	}
+
+	if(HwDeviceExtension->jChipType == SIS_740) {
+	   SiS_SetRegAND(SiS_Pr->SiS_Part1Port,0x2e,0x7f);
 	}
 
 	SiS_SetRegAND(SiS_Pr->SiS_P3c4,0x32,0xDF);
@@ -9170,17 +9174,24 @@ SiS_Chrontel701xOn(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,US
 }
 
 void
-SiS_Chrontel701xOff(SiS_Private *SiS_Pr)
+SiS_Chrontel701xOff(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension)
 {
   USHORT temp;
 
+  /* TW: Complete power down of LVDS */
   if(SiS_Pr->SiS_IF_DEF_CH70xx == 2) {
+     if(HwDeviceExtension->jChipType == SIS_740) {
+        SiS_LongDelay(SiS_Pr,1);
+	SiS_GenericDelay(SiS_Pr,0x16ff);
+	SiS_SetCH701x(SiS_Pr,0xac76);
+	SiS_SetCH701x(SiS_Pr,0x0066);
+     } else {
         SiS_LongDelay(SiS_Pr,2);
-	/* TW: Complete power down of LVDS */
 	temp = SiS_GetCH701x(SiS_Pr,0x76);
 	temp &= 0xfc;
 	SiS_SetCH701x(SiS_Pr,(temp << 8) | 0x76);
 	SiS_SetCH701x(SiS_Pr,0x0066);
+     }
   }
 }
 
@@ -9256,7 +9267,7 @@ SiS_ChrontelDoSomething4(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtens
 
      if(HwDeviceExtension->jChipType == SIS_740) {
 
-        if(!(SiS_WeHaveBacklightCtrl(SiS_Pr,HwDeviceExtension, BaseAddr))) {
+        if(SiS_WeHaveBacklightCtrl(SiS_Pr,HwDeviceExtension, BaseAddr)) {
            SiS_ChrontelDoSomething5(SiS_Pr);
         }
 
