@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.25.2.2 1998/06/09 14:40:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.32 1998/07/25 16:54:55 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -71,12 +71,12 @@ extern void outl(unsigned short, unsigned int);
 extern unsigned int inb(unsigned short);
 extern unsigned int inw(unsigned short);
 extern unsigned int inl(unsigned short);
-extern unsigned long ldq_u(void *);
-extern unsigned long ldl_u(void *);
-extern unsigned short ldw_u(void *);
-extern void stl_u(unsigned long, void *);
-extern void stq_u(unsigned long, void *);
-extern void stw_u(unsigned short, void *);
+extern unsigned long ldq_u(unsigned long *);
+extern unsigned long ldl_u(unsigned int *);
+extern unsigned short ldw_u(unsigned short *);
+extern void stq_u(unsigned long, unsigned long *);
+extern void stl_u(unsigned long, unsigned int *);
+extern void stw_u(unsigned short, unsigned sort *);
 extern void mem_barrier(void);
 extern void write_mem_barrier(void);
 extern void stl_brx(unsigned long, volatile unsigned char *, int);
@@ -101,45 +101,45 @@ extern int testinx(unsigned short, unsigned char);
 /* note that the appropriate setup via "ioperm" needs to be done */
 /*  *before* any inx/outx is done. */
 
+extern void _outb(char val, unsigned short port);
 static __inline__ void
 outb(unsigned short port, unsigned char val)
 {
-    extern void _outb(char val, unsigned short port);
     _outb(val, port);
 }
 
+extern void _outw(short val, unsigned short port);
 static __inline__ void
 outw(unsigned short port, unsigned short val)
 {
-    extern void _outw(short val, unsigned short port);
     _outw(val, port);
 }
 
+extern void _outl(int val, unsigned short port);
 static __inline__ void
 outl(unsigned short port, unsigned int val)
 {
-    extern void _outl(int val, unsigned short port);
     _outl(val, port);
 }
 
+extern unsigned int _inb(unsigned short port);
 static __inline__ unsigned int
 inb(unsigned short port)
 {
-  extern unsigned int _inb(unsigned short port);
   return _inb(port);
 }
 
+extern unsigned int _inw(unsigned short port);
 static __inline__ unsigned int
 inw(unsigned short port)
 {
-  extern unsigned int _inw(unsigned short port);
   return _inw(port);
 }
 
+extern unsigned int _inl(unsigned short port);
 static __inline__ unsigned int
 inl(unsigned short port)
 {
-  extern unsigned int _inl(unsigned short port);
   return _inl(port);
 }
 
