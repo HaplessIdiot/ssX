@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.40 1999/09/25 14:37:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.42 1999/12/03 19:17:38 eich Exp $ */
 
 
 
@@ -547,7 +547,7 @@ struct xf86stat {
 /*
  * XXX Basic I/O functions BAD,BAD,BAD!
  */
-#define open(a,b,c)		xf86open(a,b,c)
+#define open			xf86open
 #define close(a)		xf86close(a)
 #define lseek(a,b,c)		xf86lseek(a,b,c)
 #define ioctl(a,b,c)		xf86ioctl(a,b,c)

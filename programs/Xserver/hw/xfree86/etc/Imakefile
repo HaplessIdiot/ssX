@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/24 1996/10/28 04:24:12 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.27 1999/04/03 09:34:54 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.28 1999/04/29 09:13:46 dawes Exp $
 #include <Server.tmpl>
 
 #if SystemV
@@ -29,9 +29,8 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.27 1999/04/03 0
 #endif
 
 #ifdef LynxOSArchitecture
-#undef Lynx
  CONFIGFILES = pty.cfg
-   MISCFILES = BM-Lynx.shar 
+   MISCFILES = MTRR-Lynx.shar 
 #endif
 
 /* Are these really needed? */
@@ -120,10 +119,6 @@ InstallNamedProg(svr3_rem_pch,svr3_patch_rem,$(LIBDIR)/etc)
 #if SystemV4 && !defined(SunArchitecture)
 InstallNamedProg(svr4_patch,svr4_patch,$(LIBDIR)/etc)
 InstallNamedProg(svr4_rem_pch,svr4_patch_rem,$(LIBDIR)/etc)
-#endif
-#if defined(LynxOSArchitecture) && (OSMajorVersion == 2 && OSMinorVersion < 3)
-NormalProgramTarget(ld-wrapper,ld-wrapper.o,NullParameter,NullParameter,NullParameter)
-InstallProgram(ld-wrapper,$(LIBDIR)/etc)
 #endif
 
 #if !BuildServersOnly

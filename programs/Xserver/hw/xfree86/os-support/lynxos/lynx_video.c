@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_video.c,v 3.12 1999/04/29 12:24:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_video.c,v 3.13 1999/05/03 12:16:07 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -34,6 +34,17 @@
 
 #if defined(__powerpc__)
 #include <machine/absolute.h>
+#endif
+
+#ifdef HAS_MTRR_SUPPORT
+#include <sys/memrange.h>
+#define X_MTRR_ID "XFree86"
+
+static pointer setWC(int, unsigned long, unsigned long, Bool, MessageType);
+static void undoWC(int, pointer);
+static Bool cleanMTRR(void);
+static int devMemFd = -1;
+#define MTRR_DEVICE	"/dev/mtrr"
 #endif
 
 /***************************************************************************/
@@ -183,6 +194,12 @@ xf86OSInitVidMem(VidMemInfoPtr pVidMem)
   pVidMem->unmapMemSparse = 0;
   pVidMem->setWC = 0;
   pVidMem->undoWC = 0;
+#ifdef HAS_MTRR_SUPPORT
+  if (cleanMTRR()) {
+	pVidMem->setWC = setWC;
+	pVidMem->undoWC = undoWC;
+  }
+#endif
   pVidMem->initialised = TRUE;
 }
 
@@ -260,4 +277,367 @@ ppcPciIoMap(int bus)
 }
 
 #endif
+
+
+#ifdef HAS_MTRR_SUPPORT
+/* memory range (MTRR) support for LynxOS (taken from BSD MTRR support) */
+
+/* #define DEBUG	/* */
+
+/*
+ * This code is experimental.  Some parts may be overkill, and other parts
+ * may be incomplete.
+ */
+
+/*
+ * getAllRanges returns the full list of memory ranges with attributes set.
+ */
+
+static struct mem_range_desc *
+getAllRanges(int *nmr)
+{
+	struct mem_range_desc *mrd;
+	struct mem_range_op mro;
+
+	/*
+	 * Find how many ranges there are.  If this fails, then the kernel
+	 * probably doesn't have MTRR support.
+	 */
+	mro.mo_arg[0] = 0;
+	if (ioctl(devMemFd, MEMRANGE_GET, &mro))
+		return NULL;
+	*nmr = mro.mo_arg[0];
+	mrd = xnfalloc(*nmr * sizeof(struct mem_range_desc));
+	mro.mo_arg[0] = *nmr;
+	mro.mo_desc = mrd;
+	if (ioctl(devMemFd, MEMRANGE_GET, &mro)) {
+		xfree(mrd);
+		return NULL;
+	}
+	return mrd;
+}
+
+/*
+ * cleanMTRR removes any memory attribute that may be left by a previous
+ * X server.  Normally there won't be any, but this takes care of the
+ * case where a server crashed without being able finish cleaning up.
+ */
+
+static Bool
+cleanMTRR()
+{
+	struct mem_range_desc *mrd;
+	struct mem_range_op mro;
+	int nmr, i;
+
+	/* This shouldn't happen */
+	if (devMemFd < 0) {
+		if ((devMemFd = open(MTRR_DEVICE, O_RDONLY)) < 0) {
+perror("open MTRR");
+			return FALSE;
+		}
+	}
+
+	if (!(mrd = getAllRanges(&nmr)))
+		return FALSE;
+
+	for (i = 0; i < nmr; i++) {
+		if (strcmp(mrd[i].mr_owner, X_MTRR_ID) == 0 &&
+		    (mrd[i].mr_flags & MDF_ACTIVE)) {
+#ifdef DEBUG
+			ErrorF("Clean for (0x%lx,0x%lx)\n",
+				(unsigned long)mrd[i].mr_base,
+				(unsigned long)mrd[i].mr_len);
+#endif
+			if (mrd[i].mr_flags & MDF_FIXACTIVE) {
+				mro.mo_arg[0] = MEMRANGE_SET_UPDATE;
+				mrd[i].mr_flags = MDF_UNCACHEABLE;
+			} else {
+				mro.mo_arg[0] = MEMRANGE_SET_REMOVE;
+			}
+			mro.mo_desc = mrd + i;
+			ioctl(devMemFd, MEMRANGE_SET, &mro);
+		}
+	}
+#ifdef DEBUG
+	sleep(10);
+#endif
+	xfree(mrd);
+	return TRUE;
+}
+
+typedef struct x_RangeRec {
+	struct mem_range_desc	mrd;
+	Bool			wasWC;
+	struct x_RangeRec *	next;
+} RangeRec, *RangePtr;
+
+static void
+freeRangeList(RangePtr range)
+{
+	RangePtr rp;
+
+	while (range) {
+		rp = range;
+		range = rp->next;
+		xfree(rp);
+	}
+}
+
+static RangePtr
+dupRangeList(RangePtr list)
+{
+	RangePtr new = NULL, rp, p;
+
+	rp = list;
+	while (rp) {
+		p = xnfalloc(sizeof(RangeRec));
+		*p = *rp;
+		p->next = new;
+		new = p;
+		rp = rp->next;
+	}
+	return new;
+}
+
+static RangePtr
+sortRangeList(RangePtr list)
+{
+	RangePtr rp1, rp2, copy, sorted = NULL, minp, prev, minprev;
+	unsigned long minBase;
+
+	/* Sort by base address */
+	rp1 = copy = dupRangeList(list);
+	while (rp1) {
+		minBase = rp1->mrd.mr_base;
+		minp = rp1;
+		minprev = NULL;
+		prev = rp1;
+		rp2 = rp1->next;
+		while (rp2) {
+			if (rp2->mrd.mr_base < minBase) {
+				minBase = rp2->mrd.mr_base;
+				minp = rp2;
+				minprev = prev;
+			}
+			prev = rp2;
+			rp2 = rp2->next;
+		}
+		if (minprev) {
+			minprev->next = minp->next;
+			rp1 = copy;
+		} else {
+			rp1 = minp->next;
+		}
+		minp->next = sorted;
+		sorted = minp;
+	}
+	return sorted;
+}
+
+/*
+ * findRanges returns a list of ranges that overlap the specified range.
+ */
+
+static void
+findRanges(unsigned long base, unsigned long size, RangePtr *ucp, RangePtr *wcp)
+{
+	struct mem_range_desc *mrd;
+	int nmr, i;
+	RangePtr rp, *p;
+	
+	if (!(mrd = getAllRanges(&nmr)))
+		return;
+
+	for (i = 0; i < nmr; i++) {
+		if ((mrd[i].mr_flags & MDF_ACTIVE) &&
+		    mrd[i].mr_base < base + size &&
+		    mrd[i].mr_base + mrd[i].mr_len > base) {
+			if (mrd[i].mr_flags & MDF_WRITECOMBINE)
+				p = wcp;
+			else if (mrd[i].mr_flags & MDF_UNCACHEABLE)
+				p = ucp;
+			else
+				continue;
+			rp = xnfalloc(sizeof(RangeRec));
+			rp->mrd = mrd[i];
+			rp->next = *p;
+			*p = rp;
+		}
+	}
+	xfree(mrd);
+}
+
+/*
+ * This checks if the existing overlapping ranges fully cover the requested
+ * range.  Is this overkill?
+ */
+
+static Bool
+fullCoverage(unsigned long base, unsigned long size, RangePtr overlap)
+{
+	RangePtr rp1, sorted = NULL;
+	unsigned long end;
+
+	sorted = sortRangeList(overlap);
+	/* Look for gaps */
+	rp1 = sorted;
+	end = base + size;
+	while (rp1) {
+		if (rp1->mrd.mr_base > base) {
+			freeRangeList(sorted);
+			return FALSE;
+		} else {
+			base = rp1->mrd.mr_base + rp1->mrd.mr_len;
+		}
+		if (base >= end) {
+			freeRangeList(sorted);
+			return TRUE;
+		}
+		rp1 = rp1->next;
+	}
+	freeRangeList(sorted);
+	return FALSE;
+}
+
+static pointer
+addWC(int screenNum, unsigned long base, unsigned long size, MessageType from)
+{
+	RangePtr uc = NULL, wc = NULL, retlist = NULL;
+	struct mem_range_desc mrd;
+	struct mem_range_op mro;
+
+	findRanges(base, size, &uc, &wc);
+
+	/* See of the full range is already WC */
+	if (!uc && fullCoverage(base, size, wc)) {
+		xf86DrvMsg(screenNum, from, 
+		   "Write-combining range (0x%lx,0x%lx) was already set\n",
+		    base, size);
+		return NULL;
+	}
+
+	/* Otherwise, try to add the new range */
+	mrd.mr_base = base;
+	mrd.mr_len = size;
+	strcpy(mrd.mr_owner, X_MTRR_ID);
+	mrd.mr_flags = MDF_WRITECOMBINE;
+	mro.mo_desc = &mrd;
+	mro.mo_arg[0] = MEMRANGE_SET_UPDATE;
+	if (ioctl(devMemFd, MEMRANGE_SET, &mro)) {
+		xf86DrvMsg(screenNum, X_WARNING,
+			   "Failed to set write-combining range "
+			   "(0x%lx,0x%lx)\n", base, size);
+		return NULL;
+	} else {
+		xf86DrvMsg(screenNum, from,
+			   "Write-combining range (0x%lx,0x%lx)\n", base, size);
+		retlist = xnfalloc(sizeof(RangeRec));
+		retlist->mrd = mrd;
+		retlist->wasWC = FALSE;
+		retlist->next = NULL;
+		return retlist;
+	}
+}
+
+static pointer
+delWC(int screenNum, unsigned long base, unsigned long size, MessageType from)
+{
+	RangePtr uc = NULL, wc = NULL, retlist = NULL;
+	struct mem_range_desc mrd;
+	struct mem_range_op mro;
+
+	findRanges(base, size, &uc, &wc);
+
+	/*
+	 * See of the full range is already not WC, or if there is full
+	 * coverage from UC ranges.
+	 */
+	if (!wc || fullCoverage(base, size, uc)) {
+		xf86DrvMsg(screenNum, from, 
+		   "Write-combining range (0x%lx,0x%lx) was already clear\n",
+		    base, size);
+		return NULL;
+	}
+
+	/* Otherwise, try to add the new range */
+	mrd.mr_base = base;
+	mrd.mr_len = size;
+	strcpy(mrd.mr_owner, X_MTRR_ID);
+	mrd.mr_flags = MDF_UNCACHEABLE;
+	mro.mo_desc = &mrd;
+	mro.mo_arg[0] = MEMRANGE_SET_UPDATE;
+	if (ioctl(devMemFd, MEMRANGE_SET, &mro)) {
+		xf86DrvMsg(screenNum, X_WARNING,
+			   "Failed to remove write-combining range "
+			   "(0x%lx,0x%lx)\n", base, size);
+		/* XXX Should then remove all of the overlapping WC ranges */
+		return NULL;
+	} else {
+		xf86DrvMsg(screenNum, from,
+			   "Removed Write-combining range (0x%lx,0x%lx)\n",
+			   base, size);
+		retlist = xnfalloc(sizeof(RangeRec));
+		retlist->mrd = mrd;
+		retlist->wasWC = TRUE;
+		retlist->next = NULL;
+		return retlist;
+	}
+}
+
+static pointer
+setWC(int screenNum, unsigned long base, unsigned long size, Bool enable,
+	MessageType from)
+{
+	if (enable)
+		return addWC(screenNum, base, size, from);
+	else
+		return delWC(screenNum, base, size, from);
+}
+
+static void
+undoWC(int screenNum, pointer list)
+{
+	RangePtr rp;
+	struct mem_range_op mro;
+	Bool failed;
+
+	rp = list;
+	while (rp) {
+#ifdef DEBUG
+		ErrorF("Undo for (0x%lx,0x%lx), %d\n",
+			(unsigned long)rp->mrd.mr_base,
+			(unsigned long)rp->mrd.mr_len, rp->wasWC);
+#endif
+		failed = FALSE;
+		if (rp->wasWC) {
+			mro.mo_arg[0] = MEMRANGE_SET_UPDATE;
+			rp->mrd.mr_flags = MDF_WRITECOMBINE;
+			strcpy(rp->mrd.mr_owner, "unknown");
+		} else {
+			mro.mo_arg[0] = MEMRANGE_SET_REMOVE;
+		}
+		mro.mo_desc = &rp->mrd;
+
+		if (ioctl(devMemFd, MEMRANGE_SET, &mro)) {
+			if (!rp->wasWC) {
+				mro.mo_arg[0] = MEMRANGE_SET_UPDATE;
+				rp->mrd.mr_flags = MDF_UNCACHEABLE;
+				strcpy(rp->mrd.mr_owner, "unknown");
+				if (ioctl(devMemFd, MEMRANGE_SET, &mro))
+					failed = TRUE;
+			} else
+				failed = TRUE;
+		}
+		if (failed) {
+			xf86DrvMsg(screenNum, X_WARNING,
+				"Failed to restore MTRR range (0x%lx,0x%lx)\n",
+				(unsigned long)rp->mrd.mr_base,
+				(unsigned long)rp->mrd.mr_len);
+		}
+		rp = rp->next;
+	}
+}
+
+#endif /* HAS_MTRR_SUPPORT */
 

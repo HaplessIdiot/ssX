@@ -1,7 +1,10 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/Imakefile,v 3.13 1999/09/04 13:04:45 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/Imakefile,v 3.16 1999/12/03 19:17:44 eich Exp $
 #include <Server.tmpl>
 
 #if !defined(PpcArchitecture)
+#if HasMTRRSupport
+MTRRDEFINES = -DHAS_MTRR_SUPPORT
+#endif
 IOPERM_SRCS=ioperm_noop.c
 IOPERM_OBJS=ioperm_noop.o
 #endif
@@ -29,7 +32,7 @@ INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
 
 RESDEFINES = -DUSESTDRES
 
-DEFINES = $(RESDEFINES)
+DEFINES = $(RESDEFINES) $(MTRRDEFINES)
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
