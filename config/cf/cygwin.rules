@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.21 2002/10/02 10:47:47 alanh Exp $
+XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.22 2002/10/17 08:18:17 alanh Exp $
 
 /*
  * Cygwin shared library rules (DLL versions)
@@ -240,7 +240,7 @@ step::                                                                  @@\
 
 #define InstallSharedLibrary(libname,rev,dest)                          @@\
 InstallTarget(install,ImportLibraryName(libname,rev),$(INSTLIBFLAGS),$(USRLIBDIR)) @@\
-InstallTarget(install,SharedLibraryName(libname,rev),$(INSTLIBFLAGS),$(BINDIR)) @@\
+InstallTarget(install,SharedLibraryName(libname,rev),$(INSTBINFLAGS),$(BINDIR)) @@\
 InstallLink(install,ImportLibraryName(libname,rev),ShortImportLibraryName(libname,rev),$(USRLIBDIR))    
 
 
