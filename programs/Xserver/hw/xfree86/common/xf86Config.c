@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.274 2003/09/09 03:20:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.275 2003/10/07 22:00:51 herrb Exp $ */
 
 
 /*
@@ -44,6 +44,8 @@
  *      Egbert Eich <eich@XFree86.Org>
  *      ... and others
  */
+
+/* $DHD: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 1.16 2003/09/20 01:36:56 dawes Exp $ */
 
 #ifdef XF86DRI
 #include <sys/types.h>
@@ -1356,12 +1358,27 @@ configInputKbd(IDevPtr inputp)
   return TRUE;
 }
 
+/*
+ * Locate the core input devices.  These can be specified/located in
+ * the following ways, in order of priority:
+ *
+ *  1. The InputDevices named by the -pointer and -keyboard command line
+ *     options.
+ *  2. The "CorePointer" and "CoreKeyboard" InputDevices referred to by
+ *     the active ServerLayout.
+ *  3. The first InputDevices marked as "CorePointer" and "CoreKeyboard".
+ *  4. The first InputDevices that use the 'mouse' and 'keyboard' or 'kbd'
+ *     drivers.
+ *  5. Default devices with an empty (default) configuration.  These defaults
+ *     will reference the 'mouse' and 'keyboard' drivers.
+ */
+
 static Bool
 checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
 {
-    Bool havePointer = FALSE, haveKeyboard = FALSE;
+    IDevPtr corePointer = NULL, coreKeyboard = NULL;
     Bool foundPointer = FALSE, foundKeyboard = FALSE;
-    Bool defaultPointer = FALSE, defaultKeyboard = FALSE;
+    const char *pointerMsg = NULL, *keyboardMsg = NULL;
     IDevPtr indp;
     IDevRec Pointer, Keyboard;
     XF86ConfInputPtr confInput;
@@ -1369,130 +1386,267 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
     int count = 0;
     MessageType from = X_DEFAULT;
 
-    /* Check if a core pointer or core keyboard is needed. */
+    /*
+     * First check if a core pointer or core keyboard have been specified
+     * in the active ServerLayout.  If more than one is specified for either,
+     * remove the core attribute from the later ones.
+     */
     for (indp = servlayoutp->inputs; indp->identifier; indp++) {
-	if ((indp->commonOptions &&
-	     xf86FindOption(indp->commonOptions, "CorePointer")) ||
-	    (indp->extraOptions &&
-	     xf86FindOption(indp->extraOptions, "CorePointer"))) {
-	    havePointer = TRUE;
+	pointer opt1 = NULL, opt2 = NULL;
+	if (indp->commonOptions &&
+	    xf86CheckBoolOption(indp->commonOptions, "CorePointer", FALSE)) {
+	    opt1 = indp->commonOptions;
 	}
-	if ((indp->commonOptions &&
-	     xf86FindOption(indp->commonOptions, "CoreKeyboard")) ||
-	    (indp->extraOptions &&
-	     xf86FindOption(indp->extraOptions, "CoreKeyboard"))) {
-	    haveKeyboard = TRUE;
+	if (indp->extraOptions &&
+	    xf86CheckBoolOption(indp->extraOptions, "CorePointer", FALSE)) {
+	    opt2 = indp->extraOptions;
+	}
+	if (opt1 || opt2) {
+	    if (!corePointer) {
+		corePointer = indp;
+	    } else {
+		if (opt1)
+		    xf86ReplaceBoolOption(opt1, "CorePointer", FALSE);
+		if (opt2)
+		    xf86ReplaceBoolOption(opt2, "CorePointer", FALSE);
+		xf86Msg(X_WARNING, "Duplicate core pointer devices.  "
+			"Removing core pointer attribute from \"%s\"\n",
+			indp->identifier);
+	    }
+	}
+	opt1 = opt2 = NULL;
+	if (indp->commonOptions &&
+	    xf86CheckBoolOption(indp->commonOptions, "CoreKeyboard", FALSE)) {
+	    opt1 = indp->commonOptions;
+	}
+	if (indp->extraOptions &&
+	    xf86CheckBoolOption(indp->extraOptions, "CoreKeyboard", FALSE)) {
+	    opt2 = indp->extraOptions;
+	}
+	if (opt1 || opt2) {
+	    if (!coreKeyboard) {
+		coreKeyboard = indp;
+	    } else {
+		if (opt1)
+		    xf86ReplaceBoolOption(opt1, "CoreKeyboard", FALSE);
+		if (opt2)
+		    xf86ReplaceBoolOption(opt2, "CoreKeyboard", FALSE);
+		xf86Msg(X_WARNING, "Duplicate core keyboard devices.  "
+			"Removing core keyboard attribute from \"%s\"\n",
+			indp->identifier);
+	    }
 	}
 	count++;
     }
-    if (!havePointer) {
-	if (xf86PointerName) {
-	    confInput = xf86findInput(xf86PointerName,
-				      xf86configptr->conf_input_lst);
-	    if (!confInput) {
-		xf86Msg(X_ERROR, "No InputDevice section called \"%s\"\n",
-			xf86PointerName);
-		return FALSE;
-	    }
-	    from = X_CMDLINE;
-	} else {
-	    from = X_DEFAULT;
-	    confInput = xf86findInput(CONF_IMPLICIT_POINTER,
-				      xf86configptr->conf_input_lst);
-	    if (!confInput && implicitLayout) {
-		confInput = xf86findInputByDriver("mouse",
-						xf86configptr->conf_input_lst);
-	    }
-	    /*
-	     * If no core pointer config section found, create a
-	     * default one.
-	     */
-	    if (!confInput) {
-		bzero(&defPtr, sizeof(defPtr));
-		defPtr.inp_identifier = "<default pointer>";
-		defPtr.inp_driver = "mouse";
-		confInput = &defPtr;
-		defaultPointer = TRUE;
+
+    confInput = NULL;
+
+    /* 1. Check for the -pointer command line option. */
+    if (xf86PointerName) {
+	confInput = xf86findInput(xf86PointerName,
+				  xf86configptr->conf_input_lst);
+	if (!confInput) {
+	    xf86Msg(X_ERROR, "No InputDevice section called \"%s\"\n",
+		    xf86PointerName);
+	    return FALSE;
+	}
+	from = X_CMDLINE;
+	/*
+	 * If one was already specified in the ServerLayout, it needs to be
+	 * removed.
+	 */
+	if (corePointer) {
+	    for (indp = servlayoutp->inputs; indp->identifier; indp++)
+		if (indp == corePointer)
+		    break;
+	    for (; indp->identifier; indp++)
+		indp[0] = indp[1];
+	    count--;
+	}
+	corePointer = NULL;
+	foundPointer = TRUE;
+    }
+
+    /* 2. ServerLayout-specified core pointer. */
+    if (corePointer) {
+	foundPointer = TRUE;
+	from = X_CONFIG;
+    }
+
+    /* 3. First core pointer device. */
+    if (!foundPointer) {
+	XF86ConfInputPtr p;
+
+	for (p = xf86configptr->conf_input_lst; p; p = p->list.next) {
+	    if (p->inp_option_lst &&
+		xf86CheckBoolOption(p->inp_option_lst, "CorePointer", FALSE)) {
+		confInput = p;
+		foundPointer = TRUE;
+		from = X_DEFAULT;
+		pointerMsg = "first core pointer device";
+		break;
 	    }
 	}
-	if (confInput)
-	    foundPointer = configInput(&Pointer, confInput, from);
     }
-    if (!haveKeyboard) {
-	if (xf86KeyboardName) {
-	    confInput = xf86findInput(xf86KeyboardName,
-				      xf86configptr->conf_input_lst);
-	    if (!confInput) {
-		xf86Msg(X_ERROR, "No InputDevice section called \"%s\"\n",
-			xf86KeyboardName);
-		return FALSE;
-	    }
-	    from = X_CMDLINE;
-	} else {
-	    from = X_DEFAULT;
-	    confInput = xf86findInput(CONF_IMPLICIT_KEYBOARD,
-				      xf86configptr->conf_input_lst);
-	    if (!confInput && implicitLayout) {
-		confInput = xf86findInputByDriver("keyboard",
-						xf86configptr->conf_input_lst);
-	    }
-	    /*
-	     * If no core keyboard config section found, create a
-	     * default one.
-	     */
-	    if (!confInput) {
-		bzero(&defKbd, sizeof(defPtr));
-		defKbd.inp_identifier = "<default keyboard>";
-		defKbd.inp_driver = "keyboard";
-		confInput = &defKbd;
-		defaultKeyboard = TRUE;
-	    }
+
+    /* 4. First pointer with 'mouse' as the driver. */
+    if (!foundPointer) {
+	confInput = xf86findInput(CONF_IMPLICIT_POINTER,
+				  xf86configptr->conf_input_lst);
+	if (!confInput) {
+	    confInput = xf86findInputByDriver("mouse",
+					      xf86configptr->conf_input_lst);
 	}
-	if (confInput)
-	    foundKeyboard = configInput(&Keyboard, confInput, from);
+	if (confInput) {
+	    foundPointer = TRUE;
+	    from = X_DEFAULT;
+	    pointerMsg = "first mouse device";
+	}
     }
-    if (foundPointer) {
-	count++;
-	indp = xnfrealloc(servlayoutp->inputs, (count + 1) * sizeof(IDevRec));
-	indp[count - 1] = Pointer;
-	indp[count - 1].extraOptions = xf86addNewOption(NULL, "CorePointer", NULL);
-	indp[count].identifier = NULL;
-	servlayoutp->inputs = indp;
-    } else if (!havePointer) {
-	/* This should never happen. */
+
+    /* 5. Built-in default. */
+    if (!foundPointer) {
+	bzero(&defPtr, sizeof(defPtr));
+	defPtr.inp_identifier = "<default pointer>";
+	defPtr.inp_driver = "mouse";
+	confInput = &defPtr;
+	foundPointer = TRUE;
+	from = X_DEFAULT;
+	pointerMsg = "default mouse configuration";
+    }
+
+    /* Add the core pointer device to the layout, and set it to Core. */
+    if (foundPointer && confInput) {
+	foundPointer = configInput(&Pointer, confInput, from);
+        if (foundPointer) {
+	    count++;
+	    indp = xnfrealloc(servlayoutp->inputs,
+			      (count + 1) * sizeof(IDevRec));
+	    indp[count - 1] = Pointer;
+	    indp[count - 1].extraOptions =
+				xf86addNewOption(NULL, "CorePointer", NULL);
+	    indp[count].identifier = NULL;
+	    servlayoutp->inputs = indp;
+	}
+    }
+
+    if (!foundPointer) {
+	/* This shouldn't happen. */
 	xf86Msg(X_ERROR, "Cannot locate a core pointer device.\n");
 	return FALSE;
     }
-    if (defaultPointer) {
-	if (implicitLayout)
-	    xf86Msg(X_WARNING, "Unable to find a core pointer device in the"
-		    " config file.\n");
-	else
-	    xf86Msg(X_WARNING, "No core pointer device specified in the"
-		    " config file.\n");
-	xf86ErrorF("\tUsing a default core pointer configuration.\n");
+
+    confInput = NULL;
+
+    /* 1. Check for the -keyboard command line option. */
+    if (xf86KeyboardName) {
+	confInput = xf86findInput(xf86KeyboardName,
+				  xf86configptr->conf_input_lst);
+	if (!confInput) {
+	    xf86Msg(X_ERROR, "No InputDevice section called \"%s\"\n",
+		    xf86KeyboardName);
+	    return FALSE;
+	}
+	from = X_CMDLINE;
+	/*
+	 * If one was already specified in the ServerLayout, it needs to be
+	 * removed.
+	 */
+	if (coreKeyboard) {
+	    for (indp = servlayoutp->inputs; indp->identifier; indp++)
+		if (indp == coreKeyboard)
+		    break;
+	    for (; indp->identifier; indp++)
+		indp[0] = indp[1];
+	    count--;
+	}
+	coreKeyboard = NULL;
+	foundKeyboard = TRUE;
     }
 
-    if (foundKeyboard) {
-	count++;
-	indp = xnfrealloc(servlayoutp->inputs, (count + 1) * sizeof(IDevRec));
-	indp[count - 1] = Keyboard;
-	indp[count - 1].extraOptions = xf86addNewOption(NULL, "CoreKeyboard", NULL);
-	indp[count].identifier = NULL;
-	servlayoutp->inputs = indp;
-    } else if (!haveKeyboard) {
-	/* This should never happen. */
-	xf86Msg(X_ERROR, "Cannot locate a core keyboard device\n");
+    /* 2. ServerLayout-specified core keyboard. */
+    if (coreKeyboard) {
+	foundKeyboard = TRUE;
+	from = X_CONFIG;
+    }
+
+    /* 3. First core keyboard device. */
+    if (!foundKeyboard) {
+	XF86ConfInputPtr p;
+
+	for (p = xf86configptr->conf_input_lst; p; p = p->list.next) {
+	    if (p->inp_option_lst &&
+		xf86CheckBoolOption(p->inp_option_lst, "CoreKeyboard", FALSE)) {
+		confInput = p;
+		foundKeyboard = TRUE;
+		from = X_DEFAULT;
+		keyboardMsg = "first core keyboard device";
+		break;
+	    }
+	}
+    }
+
+    /* 4. First keyboard with 'keyboard' or 'kbd' as the driver. */
+    if (!foundKeyboard) {
+	confInput = xf86findInput(CONF_IMPLICIT_KEYBOARD,
+				  xf86configptr->conf_input_lst);
+	if (!confInput) {
+	    confInput = xf86findInputByDriver("keyboard",
+					      xf86configptr->conf_input_lst);
+	}
+	if (!confInput) {
+	    confInput = xf86findInputByDriver("kbd",
+					      xf86configptr->conf_input_lst);
+	}
+	if (confInput) {
+	    foundKeyboard = TRUE;
+	    from = X_DEFAULT;
+	    pointerMsg = "first keyboard device";
+	}
+    }
+
+    /* 5. Built-in default. */
+    if (!foundKeyboard) {
+	bzero(&defKbd, sizeof(defKbd));
+	defKbd.inp_identifier = "<default keyboard>";
+	defKbd.inp_driver = "keyboard";
+	confInput = &defKbd;
+	foundKeyboard = TRUE;
+	keyboardMsg = "default keyboard configuration";
+	from = X_DEFAULT;
+    }
+
+    /* Add the core keyboard device to the layout, and set it to Core. */
+    if (foundKeyboard && confInput) {
+	foundKeyboard = configInput(&Keyboard, confInput, from);
+        if (foundKeyboard) {
+	    count++;
+	    indp = xnfrealloc(servlayoutp->inputs,
+			      (count + 1) * sizeof(IDevRec));
+	    indp[count - 1] = Keyboard;
+	    indp[count - 1].extraOptions =
+				xf86addNewOption(NULL, "CoreKeyboard", NULL);
+	    indp[count].identifier = NULL;
+	    servlayoutp->inputs = indp;
+	}
+    }
+
+    if (!foundKeyboard) {
+	/* This shouldn't happen. */
+	xf86Msg(X_ERROR, "Cannot locate a core keyboard device.\n");
 	return FALSE;
     }
-    if (defaultKeyboard) {
-	if (implicitLayout)
-	    xf86Msg(X_WARNING, "Unable to find a core keyboard device in the"
-		    " config file\n");
-	else
-	    xf86Msg(X_WARNING, "No core keyboard device specified in the"
-		    " config file\n");
-	xf86ErrorF("\tUsing a default core keyboard configuration\n");
+
+    if (pointerMsg) {
+	xf86Msg(X_WARNING, "The core pointer device wasn't specified "
+		"explicitly in the layout.\n"
+		"\tUsing the %s.\n", pointerMsg);
+    }
+
+    if (keyboardMsg) {
+	xf86Msg(X_WARNING, "The core keyboard device wasn't specified "
+		"explicitly in the layout.\n"
+		"\tUsing the %s.\n", keyboardMsg);
     }
 
     return TRUE;
@@ -1868,6 +2022,16 @@ configScreen(confScreenPtr screenp, XF86ConfScreenPtr conf_screen, int scrnum,
 
 	bzero(&defMon, sizeof(defMon));
 	defMon.mon_identifier = "<default monitor>";
+	/*
+	 * TARGET_REFRESH_RATE may be defined to effectively limit the
+	 * default resolution to the largest that has a "good" refresh
+	 * rate.
+	 */
+#ifdef TARGET_REFRESH_RATE
+	defMon.mon_option_lst = xf86ReplaceRealOption(defMon.mon_option_lst,
+						      "TargetRefresh",
+						      TARGET_REFRESH_RATE);
+#endif
 	if (!configMonitor(screenp->monitor, &defMon))
 	    return FALSE;
 	defaultMonitor = TRUE;
@@ -2247,7 +2411,7 @@ configInput(IDevPtr inputp, XF86ConfInputPtr conf_input, MessageType from)
 
     return TRUE;
 }
-	
+
 static Bool
 modeIsPresent(char * modename,MonPtr monitorp)
 {
@@ -2305,35 +2469,38 @@ addDefaultModes(MonPtr monitorp)
 /*
  * load the config file and fill the global data structure
  */
-Bool
-xf86HandleConfigFile(void)
+ConfigStatus
+xf86HandleConfigFile(Bool autoconfig)
 {
     const char *filename;
     char *searchpath;
     MessageType from = X_DEFAULT;
 
-    if (getuid() == 0)
-	searchpath = ROOT_CONFIGPATH;
-    else
-	searchpath = USER_CONFIGPATH;
+    if (!autoconfig) {
+	if (getuid() == 0)
+	    searchpath = ROOT_CONFIGPATH;
+	else
+	    searchpath = USER_CONFIGPATH;
 
-    if (xf86ConfigFile)
-	from = X_CMDLINE;
-
-    filename = xf86openConfigFile(searchpath, xf86ConfigFile, PROJECTROOT);
-    if (filename) {
-	xf86MsgVerb(from, 0, "Using config file: \"%s\"\n", filename);
-	xf86ConfigFile = xnfstrdup(filename);
-    } else {
-	xf86Msg(X_ERROR, "Unable to locate/open config file");
 	if (xf86ConfigFile)
-	    xf86ErrorFVerb(0, ": \"%s\"", xf86ConfigFile);
-	xf86ErrorFVerb(0, "\n");
-	return FALSE;
+	    from = X_CMDLINE;
+
+	filename = xf86openConfigFile(searchpath, xf86ConfigFile, PROJECTROOT);
+	if (filename) {
+	    xf86MsgVerb(from, 0, "Using config file: \"%s\"\n", filename);
+	    xf86ConfigFile = xnfstrdup(filename);
+	} else {
+	    xf86Msg(X_ERROR, "Unable to locate/open config file");
+	    if (xf86ConfigFile)
+		xf86ErrorFVerb(0, ": \"%s\"", xf86ConfigFile);
+	    xf86ErrorFVerb(0, "\n");
+	    return CONFIG_NOFILE;
+	}
     }
+     
     if ((xf86configptr = xf86readConfigFile ()) == NULL) {
 	xf86Msg(X_ERROR, "Problem parsing the config file\n");
-	return FALSE;
+	return CONFIG_PARSE_ERROR;
     }
     xf86closeConfigFile ();
 
@@ -2358,7 +2525,7 @@ xf86HandleConfigFile(void)
 	if (!configImpliedLayout(&xf86ConfigLayout,
 				 xf86configptr->conf_screen_lst)) {
             xf86Msg(X_ERROR, "Unable to determine the screen layout\n");
-	    return FALSE;
+	    return CONFIG_PARSE_ERROR;
 	}
     } else {
 	if (xf86configptr->conf_flags != NULL) {
@@ -2370,13 +2537,13 @@ xf86HandleConfigFile(void)
 	  if (!configLayout(&xf86ConfigLayout, xf86configptr->conf_layout_lst,
 			  dfltlayout)) {
 	    xf86Msg(X_ERROR, "Unable to determine the screen layout\n");
-	    return FALSE;
+	    return CONFIG_PARSE_ERROR;
 	  }
 	} else {
 	  if (!configLayout(&xf86ConfigLayout, xf86configptr->conf_layout_lst,
 			  NULL)) {
 	    xf86Msg(X_ERROR, "Unable to determine the screen layout\n");
-	    return FALSE;
+	    return CONFIG_PARSE_ERROR;
 	  }
 	}
     }
@@ -2391,7 +2558,7 @@ xf86HandleConfigFile(void)
 #endif
        ) {
              ErrorF ("Problem when converting the config data structures\n");
-             return FALSE;
+             return CONFIG_PARSE_ERROR;
     }
 
     /*
@@ -2415,7 +2582,7 @@ xf86HandleConfigFile(void)
     if (xf86AllowMouseOpenFail)
 	xf86Info.allowMouseOpenFail = TRUE;
 
-    return TRUE;
+    return CONFIG_OK;
 }
 
 

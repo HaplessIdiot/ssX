@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.h,v 1.5 2000/02/24 05:36:50 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.h,v 1.6 2003/08/24 17:36:51 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2000 by The XFree86 Project, Inc.
@@ -37,6 +37,12 @@
 extern XF86ConfigPtr xf86configptr;
 #endif
 
+typedef enum _ConfigStatus {
+    CONFIG_OK = 0,
+    CONFIG_PARSE_ERROR,
+    CONFIG_NOFILE
+} ConfigStatus;
+
 /*
  * prototypes
  */
@@ -46,6 +52,8 @@ char ** xf86DriverlistFromCompile(void);
 char ** xf86InputDriverlistFromConfig(void);
 char ** xf86InputDriverlistFromCompile(void);
 Bool xf86BuiltinInputDriver(const char *);
-Bool xf86HandleConfigFile(void);
+ConfigStatus xf86HandleConfigFile(Bool);
+
+Bool xf86AutoConfig(void);
 
 #endif /* _xf86_config_h */

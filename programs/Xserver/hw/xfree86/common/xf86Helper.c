@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.133 2003/09/09 03:20:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.134 2003/09/24 02:43:17 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
@@ -481,6 +481,39 @@ xf86SetDepthBpp(ScrnInfoPtr scrp, int depth, int dummy, int fbbpp,
 	if (scrp->confScreen->defaultdepth > 0) {
 	    scrp->depth = scrp->confScreen->defaultdepth;
 	    scrp->depthFrom = X_CONFIG;
+	}
+
+	if (scrp->confScreen->defaultfbbpp <= 0 &&
+	    scrp->confScreen->defaultdepth <= 0) {
+	    /*
+	     * Check for DefaultDepth and DefaultFbBpp options in the
+	     * Device sections.
+	     */
+	    int i;
+	    GDevPtr device;
+	    Bool found = FALSE;
+
+	    for (i = 0; i < scrp->numEntities; i++) {
+		device = xf86GetDevFromEntity(scrp->entityList[i],
+					      scrp->entityInstanceList[i]);
+		if (device && device->options) {
+		    if (xf86FindOption(device->options, "DefaultDepth")) {
+			scrp->depth = xf86SetIntOption(device->options,
+						       "DefaultDepth", -1);
+			scrp->depthFrom = X_CONFIG;
+			found = TRUE;
+		    }
+		    if (xf86FindOption(device->options, "DefaultFbBpp")) {
+			scrp->bitsPerPixel = xf86SetIntOption(device->options,
+							      "DefaultFbBpp",
+							      -1);
+			scrp->bitsPerPixelFrom = X_CONFIG;
+			found = TRUE;
+		    }
+		}
+		if (found)
+		    break;
+	    }
 	}
     }
 

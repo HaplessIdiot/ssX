@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.27 2003/08/22 02:39:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.28 2003/08/24 17:37:08 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -92,6 +92,8 @@
 static int StringToToken (char *, xf86ConfigSymTabRec *);
 
 static FILE *configFile = NULL;
+static const char **builtinConfig = NULL;
+static int builtinIndex = 0;
 static int configStart = 0;		/* start of the current token */
 static int configPos = 0;		/* current readers position */
 static int configLineNo = 0;	/* linenumber */
@@ -187,7 +189,19 @@ xf86getToken (xf86ConfigSymTabRec * tab)
 again:
 		if (!c)
 		{
-			if (fgets (configBuf, CONFIG_BUF_LEN - 1, configFile) == NULL)
+			char *ret;
+			if (configFile)
+				ret = fgets (configBuf, CONFIG_BUF_LEN - 1, configFile);
+			else {
+				if (builtinConfig[builtinIndex] == NULL)
+					ret = NULL;
+				else {
+					ret = strncpy(configBuf, builtinConfig[builtinIndex],
+							CONFIG_BUF_LEN);
+					builtinIndex++;
+				}
+			}
+			if (ret == NULL)
 			{
 				return (pushToken = EOF_TOKEN);
 			}
@@ -729,8 +743,24 @@ xf86closeConfigFile (void)
 	xf86conffree (configBuf);
 	configBuf = NULL;
 
-	fclose (configFile);
-	configFile = NULL;
+	if (configFile) {
+		fclose (configFile);
+		configFile = NULL;
+	} else {
+		builtinConfig = NULL;
+		builtinIndex = 0;
+	}
+}
+
+void
+xf86setBuiltinConfig(const char *config[])
+{
+	builtinConfig = config;
+	configPath = xf86configStrdup("<builtin configuration>");
+	configBuf = xf86confmalloc (CONFIG_BUF_LEN);
+	configRBuf = xf86confmalloc (CONFIG_BUF_LEN);
+	configBuf[0] = '\0';		/* sanity ... */
+
 }
 
 void

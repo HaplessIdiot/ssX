@@ -1,4 +1,4 @@
-/* $XFree86: xf86Configure.c,v 3.78 2003/01/18 07:27:13 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.79 2003/10/07 22:00:51 herrb Exp $ */
 /*
  * Copyright 2000-2002 by Alan Hourihane, Flint Mountain, North Wales.
  *
@@ -870,7 +870,7 @@ DoConfigure()
     xf86DoConfigurePass1 = FALSE;
     /* Try to get DDC information filled in */
     xf86ConfigFile = filename;
-    if (!xf86HandleConfigFile()) {
+    if (xf86HandleConfigFile(FALSE) != CONFIG_OK) {
 	goto bail;
     }
 

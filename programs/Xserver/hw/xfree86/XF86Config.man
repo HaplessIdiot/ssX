@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.20 2003/09/14 16:04:17 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.21 2003/09/24 20:04:46 herrb Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH XF86Config __filemansuffix__ __vendorversion__
@@ -688,8 +688,8 @@ The config file may have multiple
 .B InputDevice
 sections.  There will normally be at least two: one for the core (primary)
 keyboard, and one of the core pointer.  If either of these two is missing,
-a default configuration for the missing ones will be used.  Currently these
-may not work as expected on all platforms.
+a default configuration for the missing ones will be used.  Currently the
+default configuration may not work as expected on all platforms.
 .PP
 .B InputDevice
 sections have the following format:
@@ -726,12 +726,24 @@ section.  An
 .B InputDevice
 section is considered active if it is referenced by an active
 .B ServerLayout
-section, or if it is referenced by the
+section, if it is referenced by the
 .B \-keyboard
 or
 .B \-pointer
-command line options.
+command line options, or if it is selected implicitly as the core pointer
+or keyboard device in the absence of such explicit references.
 The most commonly used input drivers are "keyboard" and "mouse".
+.PP
+In the absence of an explicitly specified core input device, the first
+.B InputDevice
+marked as
+.B CorePointer
+(or
+.BR CoreKeyboard )
+is used.  If there is no match there, the first
+.B InputDevice
+that uses the "mouse" (or "keyboard" or "kbd") driver is used.  The final
+fallback is to use built-in default configurations.
 .PP
 .B InputDevice
 sections recognise some driver-independent
@@ -1747,9 +1759,11 @@ relative to the origin of another screen.
 .BI "InputDevice  \*q" idev-id "\*q \*q" option \*q " ..."
 One of these entries should be given for each input device being used in
 a session.  Normally at least two are required, one each for the core
-pointer and keyboard devices.  If either of those is missing, default
-core pointer and core keyboard configurations are used.  Currently these
-may not work as expected on all platforms.  The
+pointer and keyboard devices.  If either of those is missing, suitable
+.B InputDevice
+entries are searched for using the method described above in the
+.B INPUTDEVICE
+section.  The
 .I idev-id
 field is mandatory, and specifies the name of the
 .B InputDevice

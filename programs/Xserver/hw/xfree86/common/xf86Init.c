@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.206 2003/09/09 03:20:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.207 2003/09/24 03:16:52 dawes Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -237,6 +237,46 @@ xf86CreateRootWindow(WindowPtr pWin)
  *      collecting the pixmap formats.
  */
 
+static void
+PostConfigInit(void)
+{
+    /*
+     * Install signal handler for unexpected signals
+     */
+    xf86Info.caughtSignal=FALSE;
+    if (!xf86Info.notrapSignals) {
+       signal(SIGSEGV,xf86SigHandler);
+       signal(SIGILL,xf86SigHandler);
+#ifdef SIGEMT
+       signal(SIGEMT,xf86SigHandler);
+#endif
+       signal(SIGFPE,xf86SigHandler);
+#ifdef SIGBUS
+       signal(SIGBUS,xf86SigHandler);
+#endif
+#ifdef SIGSYS
+       signal(SIGSYS,xf86SigHandler);
+#endif
+#ifdef SIGXCPU
+       signal(SIGXCPU,xf86SigHandler);
+#endif
+#ifdef SIGXFSZ
+       signal(SIGXFSZ,xf86SigHandler);
+#endif
+#ifdef MEMDEBUG
+       signal(SIGUSR2,xf86SigMemDebug);
+#endif
+    }
+
+    xf86OSPMClose = xf86OSPMOpen();
+    
+    /* Run an external VT Init program if specified in the config file */
+    xf86RunVtInit();
+
+    /* Do this after XF86Config is read (it's normally in OsInit()) */
+    OsInitColors();
+}
+
 void
 InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 {
@@ -250,6 +290,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
   Pix24Flags		 screenpix24, pix24;
   MessageType		 pix24From = X_DEFAULT;
   Bool			 pix24Fail = FALSE;
+  Bool			 autoconfig = FALSE;
   
 #ifdef __UNIXOS2__
   os2ServerVideoAccess();  /* See if we have access to the screen before doing anything */
@@ -292,51 +333,20 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 
     /* Read and parse the config file */
     if (!xf86DoProbe && !xf86DoConfigure) {
-      if (!xf86HandleConfigFile()) {
-	xf86Msg(X_ERROR, "Error from xf86HandleConfigFile()\n");
+      switch (xf86HandleConfigFile(FALSE)) {
+      case CONFIG_OK:
+	break;
+      case CONFIG_PARSE_ERROR:
+	xf86Msg(X_ERROR, "Error parsing the config file\n");
 	return;
+      case CONFIG_NOFILE:
+	autoconfig = TRUE;
+	break;
       }
     }
 
-    /*
-     * Install signal handler for unexpected signals
-     */
-    xf86Info.caughtSignal=FALSE;
-    if (!xf86Info.notrapSignals) {
-       signal(SIGSEGV,xf86SigHandler);
-       signal(SIGILL,xf86SigHandler);
-#ifdef SIGEMT
-       signal(SIGEMT,xf86SigHandler);
-#endif
-       signal(SIGFPE,xf86SigHandler);
-#ifdef SIGBUS
-       signal(SIGBUS,xf86SigHandler);
-#endif
-#ifdef SIGSYS
-       signal(SIGSYS,xf86SigHandler);
-#endif
-#ifdef SIGXCPU
-       signal(SIGXCPU,xf86SigHandler);
-#endif
-#ifdef SIGXFSZ
-       signal(SIGXFSZ,xf86SigHandler);
-#endif
-#ifdef MEMDEBUG
-       signal(SIGUSR2,xf86SigMemDebug);
-#endif
-    }
-
-    xf86OpenConsole();
-    xf86OSPMClose = xf86OSPMOpen();
-    
-    /* Run an external VT Init program if specified in the config file */
-    xf86RunVtInit();
-
-    /* Do this after XF86Config is read (it's normally in OsInit()) */
-    OsInitColors();
-
-    /* Enable full I/O access */
-    xf86EnableIO();
+    if (!autoconfig)
+	PostConfigInit();
 
 #ifdef XFree86LOADER
     /* Initialise the loader */
@@ -384,6 +394,11 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
     
 #endif
 
+    xf86OpenConsole();
+
+    /* Enable full I/O access */
+    xf86EnableIO();
+
     /* Do a general bus probe.  This will be a PCI probe for x86 platforms */
     xf86BusProbe();
 
@@ -392,6 +407,14 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 
     if (xf86DoConfigure)
 	DoConfigure();
+
+    if (autoconfig) {
+	if (!xf86AutoConfig()) {
+	    xf86Msg(X_ERROR, "Auto configuration failed\n");
+	    return;
+	}
+	PostConfigInit();
+    }
 
     /* Initialise the resource broker */
     xf86ResourceBrokerInit();
