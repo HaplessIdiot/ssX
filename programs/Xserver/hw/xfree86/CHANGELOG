@@ -1,4 +1,6 @@
-
+XFree86 4.0.99.2 (?? February 2001)
+ 207. Fix a problem with xvinfo's listing of image formats
+      (Giridhar Pemmasani).
  206. Fix bug in XkbSetNamedDeviceIndicator (XkbSetNamedIndicator). This
       function can be used both for change state of specified indicator
       (on/off) and for change description (and so behavior) of indicator.
@@ -12572,4 +12574,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1588 2001/02/20 05:30:46 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1589 2001/02/20 16:43:12 paulo Exp $
