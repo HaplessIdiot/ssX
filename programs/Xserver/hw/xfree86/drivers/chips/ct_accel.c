@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.36 2001/05/09 19:57:04 dbateman Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.37 2001/07/25 15:05:06 dawes Exp $ */
 /*
  * Copyright 1996, 1997, 1998 by David Bateman <dbateman@ee.uts.edu.au>
  *   Modified 1997, 1998 by Nozomi Ytow
@@ -1487,10 +1487,6 @@ MoveDWORDS(register CARD32* dest, register CARD32* src, register int dwords )
      }
 }
 
-#ifndef __GNUC__
-#define __inline__ /**/
-#endif
- 
 static __inline__ void 
 MoveDataFromCPU(unsigned char *src, unsigned char *dest, int srcwidth,
 	 int window, int h, int dwords)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.85 2001/08/06 20:51:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.86 2001/11/01 23:35:32 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -30,6 +30,26 @@
 #endif
 
 #define _COMPILER_H
+
+/* Allow drivers to use the GCC-supported __inline__ and/or __inline. */
+#ifndef __inline__
+# if defined(__GNUC__)
+   /* gcc has __inline__ */
+# elif defined(__HIGHC__)
+#  define __inline__ _Inline
+# else
+#  define __inline__ /**/
+# endif
+#endif /* __inline__ */
+#ifndef __inline
+# if defined(__GNUC__)
+   /* gcc has __inline */
+# elif defined(__HIGHC__)
+#  define __inline _Inline
+# else
+#  define __inline /**/
+# endif
+#endif /* __inline */
 
 #if defined(IODEBUG) && defined(__GNUC__)
 #define outb RealOutb
@@ -1496,14 +1516,6 @@ extern void outl(unsigned port, unsigned val);
  * Port manipulation convenience functions
  *-----------------------------------------------------------------------
  */
-
-#ifndef __GNUC__
-#ifdef __HIGHC__
-#define __inline__ _Inline
-#else
-#define __inline__ /**/
-#endif
-#endif
 
 /*
  * rdinx - read the indexed byte port 'port', index 'ind', and return its value
