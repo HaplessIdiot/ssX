@@ -29,30 +29,47 @@ series.
    o Xterm enhancements and fixes.
 
    o DPS support hooks have been added.
+     Display Postscript support is being maintained outside of the
+     server tree due to licensing issues.  A web page for DPS resources
+     under XFree86 will be available shortly.
 
    o DRI enhancements including Mesa update to version 3.2, full support
      and fifo code for 3dfx hardware, and device driver updates for
      Linux 2.3 kernels.
 
-   o Add Riva TNT2 M64 support to nv_driver.
-
-   o Significant enhancements to Xv.
+   o Significant enhancements to Xv including support for XvImages
+     (YUV XImages).
 
    o Add initial VESA VBE support including initialization and DDC.
 
    o Several PCI enhancements.
 
-   o "SilkenMouse" enhancement for smoother mouse movement.
+   o "SilkenMouse" (asynchronous pointer handling) for smoother mouse movement.
 
    o Add GeForce/Quadro support to the NVIDIA driver.
 
-   o Int10 support for Linux.
+   o Int10 "soft-booting" support for Linux.
 
    o Resource allocation infrastructure added.
 
+   o Syntax of the layout section has changed to make multi-head
+     configuration easier.
+
+   o Some Xinerama bug fixes.
+
+   o The DGA 2.0 interface is mostly finalized and includes some
+     preliminary documentation.
+
+   o ViRGE MX Melco BIOS support has been added.
+
+   o Keyboard AutoRepeat now works correctly on Linux.  This means
+     that the AutoRepeat keyword in XF86Config is now obeyed; you may be
+     more comfortable using "250 30" rather than the default setting of
+     "500 5".
+
 2.  Summary of new features in 3.9.16 compared with 3.9.15.
 
-   o The "apm" driver has been updated.  See the APM section (section 2.11.1,
+   o The "apm" driver has been updated.  See the APM section (section 3.12.1,
      page 1) below.
 
    o A driver for NVIDIA chipsets is now included.  The driver is called
@@ -219,7 +236,15 @@ The main changes are:
                    Driver      "mouse"
                    Option      "Protocol"   "PS/2"
                    Option      "Device"     "/dev/mouse"
+		   SampleRate  80
                EndSection
+
+     Note: Additional sample rates have been added for some mice.
+           Matching the mouse sampling rate with the vertical refresh
+           rate can yield very noticeable improvements in smoothness of
+           pointer event driven operations such as window moves and
+           scrolling.
+
 
    o The Monitor section is mostly unchanged.  The main difference is that a
      set of VESA modes is defined internally in the server, and so for most
@@ -257,12 +282,15 @@ The main changes are:
                Section "ServerLayout"
                    Identifier  "Layout 1"
                    Screen      "MGA 1"
-                   Screen      "MGA 2"
+                   Screen      "MGA 2" RightOf "MGA 1"
                    InputDevice "Keyboard 1" "CoreKeyboard"
                    InputDevice "Mouse 1"    "CorePointer"
                    InputDevice "Mouse 2"    "SendCoreEvents"
                    Option      "BlankTime"  "5"
                EndSection
+
+     See the document xc/programs/Xserver/hw/xfree86/doc/DESIGN for a
+     more detailed explanation of the new ServerLayout section syntax.
 
 The config file search patch has been extended, with the directories /etc/X11
 and /usr/X11R6/etc being added.
@@ -421,9 +449,6 @@ we expect it to be improved further in future snapshots.
 
 Known problems:
 
-   o The Xinerama layout doesn't match the layout specified in the config
-     file's ServerLayout section.
-
    o It appears that there are still some bugs that cause unexpected
      behaviour from time to time.
 
@@ -434,9 +459,11 @@ Known problems:
 
 3.7  DGA version 2
 
-The DGA extension has been reworked.  The version present in this snapshot is
-preliminary, not documented, not implemented by many drivers, and subject to
-further change without notice.  Compatibility with version 1.0 is provided.
+DGA 2.0 is nearly completed but still not implemented by all drivers.
+Preliminary documentation for the client libraries can be found in the
+xc/programs/Xserver/hw/xfree86/DGA document.  Some degree of backwards
+compatibility with version 1.0 is provided.
+
 
 3.8  DDC
 
@@ -446,7 +473,7 @@ video card (or on some cases the computer directly) about itself; particu-
 larly the supported screen resolutions and refresh rates.
 
 Partial or complete DDC support is available in the following hardware mod-
-ules (this list needs to be verified):
+ules:
 
    o APM
 
@@ -508,7 +535,16 @@ ated rendering for the GMX2000 and 3dfx voodoo graphics cards.  Future
 releases will support much broader implementations of hardware accelerated
 direct rendering on a wide range of 3D capable graphics devices.
 
-3.10  Other extensions
+3.10  X-Video Extension (Xv)
+   
+An XvQueryPortAttributes function has been added as well as
+support for XvImages.  XvImages are XImages in alternate color spaces
+such as YUV and can be passed to the server through shared memory
+segments.  This allows clients to display YUV data with high quality 
+hardware scaling and filtering.   XvImages are only supported
+by the Matrox G200/G400 cards at the moment.
+
+3.11  Other extensions
 
 The XFree86-Misc extension has not been fully ported to the new server archi-
 tecture yet.  This should be completed in a future snapshot.
@@ -521,7 +557,7 @@ The new xgamma utility makes use of this feature.  Compatibility with the
 3.3.x version of the extension is provided.  The missing parts of this exten-
 sion and some new features should be completed in a future snapshot.
 
-3.11  Drivers
+3.12  Drivers
 
 XFree86 3.9.17 includes the following drivers:
 
@@ -550,7 +586,7 @@ XFree86 3.9.17 includes the following drivers:
                     |vga         | Generic VGA          |
                     +------------+----------------------+
 
-3.11.1  APM
+3.12.1  APM
 
 The driver apm is for Alliance AT3D/AT25 based boards.  The driver is still
 in development. I hope to be able to correct the errors I find.  The Rush
@@ -558,11 +594,11 @@ extension should be ready for the next snapshot; I can do better memory man-
 agement, but I'll need time. If someone can help me, feel free to drop an
 email to <grenie@lami.univ-evry.fr>
 
-3.11.2  Chips & Technologies
+3.12.2  Chips & Technologies
 
 Information about the C&T driver can be found in README.chips.
 
-3.11.3  s3virge
+3.12.3  s3virge
 
 The s3virge driver is a port of the 3.3.3.1 SVGA S3 ViRGE driver.  As such it
 should be as stable and functional as previous XFree86 releases.  There are a
@@ -583,15 +619,13 @@ Outstanding items not implemented or fully tested:
 
    o DGA support is implemented, but preliminary and untested.
 
-   o ViRGE MX Melco BIOS support has not been ported yet.
-
-3.11.4  TGA
+3.12.4  TGA
 
 The TGA driver is now accelerated and supports both 8 and 32 plane frame-
 buffers.  It is known to work under Linux/Alpha.  Please see the
 README.DECtga file for further information.
 
-3.11.5  Matrox
+3.12.5  Matrox
 
 The MGA driver supports the same range or hardware as XFree86 3.3.4, but has
 a number of enhancements including multi-head support and support for over-
@@ -605,20 +639,26 @@ feature.  By default, the color key for the overlays is 255, but this can be
 changed with the "ColorKey" option to work around problems in specific pro-
 grams.  Valid values for the key are 2-255.
 
-Option "OverclockMem" will raise the memory clock on the G200.  Matrox
-doesn't recommend deviating from the BIOS defaults but we find that some
-hardware shows static during graphics operations in high resolutions/depths
-when run at the regular clocks so this option is needed for some cards (it
-also improves performance).  Beware, some hardware experiences difficultly
-restoring the console when this option is used.
+This release contains performance enhancements for the G400 and particularly
+for the G400 MAX.  It also includes XvImage support for G200/G400 chips and
+improved memory autodetection support.
 
 Further information can be found in the mga man page.
 
-3.11.6  ATI
+3.12.6  ATI
 
 Information about the ATI driver can be found in README.ati <URL:ati.html>.
 The current version is not accelerated.  Acceleration support is planned for
 a future snapshot.
+
+3.12.7  NVIDIA
+
+The "nv" driver supports all Riva TNT accelerators as well as the
+new GeForce and Quadro accelerators.  3.9.17 adds DGA 2.0 support
+and performance improvements as well as resolving some rendering
+correctness issues.
+ 
+Further information can be found in the nv man page.
 
 4.  X libraries and clients
 
@@ -887,4 +927,4 @@ tion 3.2, page 1) section.
      Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.18 1999/08/31 08:39:09 dawes Exp $
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/RELNOTES,v 3.70 1999/08/31 08:42:05 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/RELNOTES,v 3.71 1999/12/31 22:30:27 robin Exp $
