@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/xtest.c,v 3.1 1996/05/06 05:55:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xtest.c,v 3.2 1998/10/04 09:36:52 dawes Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -44,6 +44,9 @@ from The Open Group.
 #define EXTENSION_EVENT_BASE	64
 #include "extinit.h"		/* LookupDeviceIntRec */
 #endif /* XINPUT */
+#ifdef EXTMODULE
+#include "xf86_ansic.h"
+#endif
 
 static unsigned char XTestReqCode;
 

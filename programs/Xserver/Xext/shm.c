@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.10 1998/10/04 09:36:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.11 1999/01/17 10:53:47 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -50,6 +50,9 @@ in this Software without prior written authorization from The Open Group.
 #define _XSHM_SERVER_
 #include "shmstr.h"
 #include "Xfuncproto.h"
+#ifdef EXTMODULE
+#include "xf86_ansic.h"
+#endif
 
 typedef struct _ShmDesc {
     struct _ShmDesc *next;

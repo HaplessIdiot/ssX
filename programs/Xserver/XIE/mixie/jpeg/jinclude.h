@@ -66,7 +66,7 @@ terms and conditions:
 	Gary Rogers, AGE Logic, Inc., January 1994
 
 ****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/mixie/jpeg/jinclude.h,v 1.3 1998/08/02 07:54:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/jpeg/jinclude.h,v 1.4 1998/10/04 09:36:22 dawes Exp $ */
 
 /*
  * jinclude.h
@@ -86,11 +86,10 @@ terms and conditions:
 
 #define _XIEC_MEMORY	/* for XieMalloc and XieFree, used in jmemsys.c */
 #define XIE_SUPPORTED
-#if 0
-#include <X11/Xos.h>
-#endif
 #ifndef XFree86LOADER
 #include <stdio.h>
+#else
+#include "xf86_ansic.h"
 #endif
 #include "misc.h" /* for pointer ;*/
 

@@ -42,6 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
+/* $XFree86$ */
 /*
  * this file contains the element handling procedures for
  * the execute structure element.  It is stored in PEX format
@@ -52,6 +53,7 @@ SOFTWARE.
 #include "miStruct.h"
 #include "miStrMacro.h"
 #include "pexUtils.h"
+#include "pexos.h"
 
 
 extern ocTableType ParseOCTable[];

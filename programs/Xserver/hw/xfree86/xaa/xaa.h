@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.16 1999/01/03 08:06:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.17 1999/01/23 09:56:10 dawes Exp $ */
 
 #ifndef _XAA_H
 #define _XAA_H
@@ -15,7 +15,7 @@
 21           LINE_PATTERN_MSBFIRST_MSBJUSTIFIED
 20           LINE_PATTERN_MSBFIRST_LSBJUSTIFIED
 19           LINE_PATTERN_POWER_OF_2_ONLY
-18           HARDWARE_CLIP_LINE
+18                         .
 17                         .
 16                         .
 ---------               -------
@@ -32,6 +32,20 @@
 17                         .
 16                         .
 ---------               -------
+
+   ****  clipping flags ****
+
+---------               --------
+23                         .
+22           HARDWARE_CLIP_SCREEN_TO_SCREEN_COLOR_EXPAND
+21           HARDWARE_CLIP_SCREEN_TO_SCREEN_COPY
+20           HARDWARE_CLIP_MONO_8x8_FILL
+19           HARDWARE_CLIP_COLOR_8x8_FILL    
+18           HARDWARE_CLIP_SOLID_FILL
+17           HARDWARE_CLIP_DASHED_LINE
+16           HARDWARE_CLIP_SOLID_LINE
+---------               -------
+
 
    ****  hardware pattern flags ****
 
@@ -146,7 +160,18 @@
 #define LINE_PATTERN_MSBFIRST_MSBJUSTIFIED	0x00200000
 #define LINE_PATTERN_MSBFIRST_LSBJUSTIFIED	0x00100000
 #define LINE_PATTERN_POWER_OF_2_ONLY 		0x00080000
-#define HARDWARE_CLIP_LINE			0x00040000
+
+/* clipping flags */
+#define HARDWARE_CLIP_SCREEN_TO_SCREEN_COLOR_EXPAND	0x00400000
+#define HARDWARE_CLIP_SCREEN_TO_SCREEN_COPY		0x00200000
+#define HARDWARE_CLIP_MONO_8x8_FILL			0x00100000
+#define HARDWARE_CLIP_COLOR_8x8_FILL			0x00080000
+#define HARDWARE_CLIP_SOLID_FILL			0x00040000
+#define HARDWARE_CLIP_DASHED_LINE			0x00020000
+#define HARDWARE_CLIP_SOLID_LINE			0x00010000
+
+#define HARDWARE_CLIP_LINE				0x00000000
+
 
 /* image write flags */
 #define CONVERT_32BPP_TO_24BPP			0x00010000
@@ -315,7 +340,9 @@ typedef struct _XAAInfoRec {
 	ScrnInfoPtr pScrn,
 	int left, int top, int right, int bottom
    );
-   int ClippingRectangleFlags;
+   int ClippingFlags;
+
+   void (*DisableClipping)(ScrnInfoPtr pScrn);
 
 /* 8x8 mono pattern fills */
    void (*SetupForMono8x8PatternFill)(

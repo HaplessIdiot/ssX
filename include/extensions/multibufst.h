@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
 
-/* $XFree86: xc/include/extensions/multibufst.h,v 3.2 1997/06/08 15:31:44 dawes Exp $ */
+/* $XFree86: xc/include/extensions/multibufst.h,v 3.3 1998/10/02 07:39:16 dawes Exp $ */
 
 #ifndef _MULTIBUFST_H_
 #define _MULTIBUFST_H_
@@ -31,8 +31,7 @@ in this Software without prior written authorization from The Open Group.
 
 #include "multibuf.h"
 #ifdef _MULTIBUF_SERVER_
-#include "input.h"
-#include "scrnintstr.h"
+#include "inputstr.h"
 #endif
 
 #if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)

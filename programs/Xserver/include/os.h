@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.23 1998/12/06 06:08:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.24 1999/01/13 08:31:09 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -72,6 +72,7 @@ typedef pointer	FID;
 typedef struct _FontPathRec *FontPathPtr;
 typedef struct _NewClientRec *NewClientPtr;
 
+#ifndef xalloc
 #define xnfalloc(size) XNFalloc((unsigned long)(size))
 #define xnfcalloc(_num, _size) XNFcalloc((unsigned long)(_num)*(unsigned long)(_size))
 #define xnfrealloc(ptr, size) XNFrealloc((pointer)(ptr), (unsigned long)(size))
@@ -81,6 +82,7 @@ typedef struct _NewClientRec *NewClientPtr;
 #define xrealloc(ptr, size) Xrealloc((pointer)(ptr), (unsigned long)(size))
 #define xfree(ptr) Xfree((pointer)(ptr))
 #define xstrdup(s) Xstrdup(s)
+#endif
 
 #ifndef IN_MODULE
 #ifdef SCO

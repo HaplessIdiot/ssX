@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/lib/Xpm/Imakefile,v 1.1 1999/01/11 14:40:02 dawes Exp $
 
 /* This is a simplified version of the standard Xpm Imakefile */
 
@@ -64,10 +64,6 @@ HEADERS = xpm.h
        LINTLIBS = $(LINTXTOLL) $(LINTXLIB) 
 
 #include <Library.tmpl>
-
-LintLibraryTarget(Xpm,$(SRCS))
-InstallLintLibrary(Xpm,$(LINTLIBDIR))
-NormalLintTarget($(SRCS))
 
 LinkSourceFile(data.c,$(XPMLIBDIR))
 LinkSourceFile(create.c,$(XPMLIBDIR))

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.15 1998/10/04 09:38:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.16 1998/12/06 06:08:46 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -97,14 +97,15 @@ extern unsigned long serverGeneration;
 #define MAXFORMATS	8
 #define MAXVISUALS_PER_SCREEN 50
 
-#if NeedFunctionPrototypes
-typedef void *pointer;
-#else
-typedef unsigned char *pointer;
+#ifndef _XTYPEDEF_POINTER
+#define _XTYPEDEF_POINTER
+typedef void *pointer;		/* Also in fontmisc.h */
 #endif
-#if !defined(Bool)
-typedef int Bool;
+#ifndef _XTYPEDEF_BOOL
+#define _XTYPEDEF_BOOL
+typedef int Bool;		/* Also in fontmisc.h */
 #endif
+
 typedef unsigned long PIXEL;
 typedef unsigned long ATOM;
 
@@ -132,7 +133,9 @@ typedef struct _CallbackList *CallbackListPtr; /* also in dix.h */
 typedef struct _xReq *xReqPtr;
 
 #include "os.h" 	/* for ALLOCATE_LOCAL and DEALLOCATE_LOCAL */
+#ifndef IN_MODULE
 #include <X11/Xfuncs.h> /* for bcopy, bzero, and bcmp */
+#endif
 
 #define NullBox ((BoxPtr)0)
 #define MILLI_PER_MIN (1000 * 60)
@@ -186,6 +189,14 @@ typedef struct _xReq *xReqPtr;
 
 /* XXX Not for modules */
 #include <limits.h>
+#if !defined(MAXSHORT) || !defined(MINSHORT) || \
+    !defined(MAXINT) || !defined(MININT)
+/*
+ * Some implementations #define these through <math.h>, so preclude
+ * #include'ing it later.
+ */
+#include <math.h>
+#endif
 #undef MAXSHORT
 #define MAXSHORT SHRT_MAX
 #undef MINSHORT

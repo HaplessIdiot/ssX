@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/mbuf.c,v 3.4 1998/10/04 09:36:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/mbuf.c,v 3.5 1998/12/20 11:57:24 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -37,9 +37,6 @@ in this Software without prior written authorization from The Open Group.
 #include "resource.h"
 #include "opaque.h"
 #define _MULTIBUF_SERVER_	/* don't want Xlib structures */
-#include "regionstr.h"
-#include "gcstruct.h"
-#include "inputstr.h"
 #include "multibufst.h"
 #if !defined(WIN32) && !defined(MINIX) && !defined(Lynx)
 #include <sys/time.h>
@@ -64,66 +61,6 @@ extern PanoramiXWindow *PanoramiXWinRoot;
 extern PanoramiXPmap   *PanoramiXPmapRoot;
 extern PanoramiXData   *panoramiXdataPtr;
 #endif
-
-/* The _Multibuffer and _Multibuffers structures below refer to each other,
- * so we need this forward declaration
- */
-
-typedef struct _Multibuffers	*MultibuffersPtr;
-
-/*
- * per-Multibuffer data
- */
- 
-typedef struct _Multibuffer {
-    MultibuffersPtr pMultibuffers;  /* associated window data */
-    Mask	    eventMask;	    /* MultibufferClobberNotifyMask|ExposureMask|MultibufferUpdateNotifyMask */
-    Mask	    otherEventMask; /* mask of all other clients event masks */
-    OtherClients    *otherClients;  /* other clients that want events */
-    int		    number;	    /* index of this buffer into array */
-    int		    side;	    /* always Mono */
-    int		    clobber;	    /* Unclobbered, PartiallyClobbered, FullClobbered */
-    PixmapPtr	    pPixmap;	    /* associated pixmap */
-} MultibufferRec, *MultibufferPtr;
-
-/*
- * per-window data
- */
-
-typedef struct _Multibuffers {
-    WindowPtr	pWindow;		/* associated window */
-    int		numMultibuffer;		/* count of buffers */
-    int		refcnt;			/* ref count for delete */
-    int		displayedMultibuffer;	/* currently active buffer */
-    int		updateAction;		/* Undefined, Background, Untouched, Copied */
-    int		updateHint;		/* Frequent, Intermittent, Static */
-    int		windowMode;		/* always Mono */
-
-    TimeStamp	lastUpdate;		/* time of last update */
-
-    unsigned short	width, height;	/* last known window size */
-    short		x, y;		/* for static gravity */
-
-    MultibufferPtr	buffers;        /* array of numMultibuffer buffers */
-} MultibuffersRec;
-
-/*
- * per-screen data
- */
-typedef struct _MultibufferScreen {
-    Bool	(*PositionWindow)();
-} MultibufferScreenRec, *MultibufferScreenPtr;
-
-/*
- * per display-image-buffers request data.
- */
-
-typedef struct _DisplayRequest {
-    struct _DisplayRequest	*next;
-    TimeStamp			activateTime;
-    ClientPtr			pClient;
-    XID				id;
-} DisplayRequestRec, *DisplayRequestPtr;
 
 static unsigned char	MultibufferReqCode;
 static int		MultibufferEventBase;

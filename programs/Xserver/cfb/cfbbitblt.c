@@ -2,7 +2,7 @@
  * cfb copy area
  */
 
-/* $XFree86: xc/programs/Xserver/cfb/cfbbitblt.c,v 1.3 1998/10/04 09:37:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbbitblt.c,v 1.4 1998/12/20 11:57:29 dawes Exp $ */
 
 /*
 
@@ -37,6 +37,7 @@ Author: Keith Packard
 #include	"scrnintstr.h"
 #include	"pixmapstr.h"
 #include	"regionstr.h"
+#include	"mi.h"
 #include	"cfb.h"
 #include	"cfbmskbits.h"
 #include	"cfb8bit.h"

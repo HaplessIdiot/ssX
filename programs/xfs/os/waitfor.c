@@ -46,7 +46,7 @@ in this Software without prior written authorization from The Open Group.
  * $NCDId: @(#)waitfor.c,v 4.5 1991/06/24 11:59:20 lemke Exp $
  *
  */
-/* $XFree86: xc/programs/xfs/os/waitfor.c,v 3.6 1998/10/04 09:41:15 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/waitfor.c,v 3.7 1998/10/25 07:12:35 dawes Exp $ */
 
 #include	<X11/Xos.h>	/* strings, time, etc */
 
@@ -160,7 +160,7 @@ WaitForSomething(int *pClientsReady)
 	}
 	selecterr = errno;
 
-	WakeupHandler(i, (pointer) &LastSelectMask);
+	WakeupHandler(i, (unsigned long *) &LastSelectMask);
 	if (i <= 0) {		/* error or timeout */
 	    FD_ZERO(&clientsWriteable);
 	    if (i < 0) {

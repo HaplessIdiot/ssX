@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/include/extensions/XKBsrv.h,v 3.14 1998/08/02 09:27:00 dawes Exp $ */
+/* $XFree86: xc/include/extensions/XKBsrv.h,v 3.15 1999/01/13 08:30:45 dawes Exp $ */
 
 #ifndef _XKBSRV_H_
 #define	_XKBSRV_H_
@@ -70,6 +70,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include <X11/extensions/XKBstr.h>
 #include <X11/extensions/XKBproto.h>
+#include "inputstr.h"
 
 typedef struct _XkbInterest {
 	DeviceIntPtr		dev;

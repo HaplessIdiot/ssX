@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.10 1999/01/14 13:05:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.11 1999/01/23 09:56:11 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -403,7 +403,7 @@ XAAPutImage(
     if(!w || !h) return;
 
     if(((format == ZPixmap) && infoRec->WritePixmap &&
-	     ((pDraw->bitsPerPixel == bpp) |
+	     ((pDraw->bitsPerPixel == bpp) ||
 		((pDraw->bitsPerPixel == 24) &&  (bpp == 32) &&
 		(infoRec->WritePixmapFlags & CONVERT_32BPP_TO_24BPP))) &&
 	     CHECK_ROP(pGC,infoRec->WritePixmapFlags) &&

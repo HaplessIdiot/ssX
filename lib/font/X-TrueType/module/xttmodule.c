@@ -60,7 +60,6 @@ static char const * const releaseID =
  * XFree86 Project.
  */
 
-#include "X.h"
 #include "misc.h"
 
 #include "fontmod.h"

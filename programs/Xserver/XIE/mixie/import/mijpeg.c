@@ -68,7 +68,7 @@ terms and conditions:
 	Ben Fahy -- AGE Logic, Inc. Oct, 1993
 
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/mixie/import/mijpeg.c,v 3.3 1998/10/04 09:36:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/import/mijpeg.c,v 3.4 1998/10/05 13:22:36 dawes Exp $ */
 
 #define _XIEC_MIPHOTO
 #define _XIEC_IPHOTO
@@ -98,10 +98,10 @@ terms and conditions:
 #ifndef XIE
 #define XIE
 #endif
-#include <jpeg.h>
 
 #include <error.h>
 #include <macro.h>
+#include <jpeg.h>
 #include <photomap.h>
 #include <element.h>
 #include <texstr.h>

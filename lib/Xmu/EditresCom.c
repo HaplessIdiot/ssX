@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/EditresCom.c,v 1.8 1998/10/03 09:06:27 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/EditresCom.c,v 1.9 1998/11/01 07:57:47 dawes Exp $ */
 
 /*
  * Author:  Chris D. Peterson, Dave Sternlicht, MIT X Consortium
@@ -2158,7 +2158,7 @@ _XEditresGetStringValues(Widget w, Arg *warg, int numargs)
    */
   if (strcmp(XtRString, res->resource_type) == 0)
     {
-      if (value == NULL)
+      if (value == 0)
 	string = "(null)";
       else
 	string = (char *)value;

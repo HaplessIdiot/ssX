@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
 
-/* $XFree86: xc/include/extensions/multibuf.h,v 3.0 1996/05/06 05:52:38 dawes Exp $ */
+/* $XFree86: xc/include/extensions/multibuf.h,v 3.1 1998/10/02 07:39:16 dawes Exp $ */
 
 #ifndef _MULTIBUF_H_
 #define _MULTIBUF_H_
@@ -291,6 +291,8 @@ extern void XmbufClearBufferArea(
 _XFUNCPROTOEND
 
 #else
+
+#include "scrnintstr.h"
 
 typedef Bool	(* mbInitFunc)();
 

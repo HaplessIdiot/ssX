@@ -32,7 +32,7 @@ DependTarget()
 
 #if DoLoadableServer
 #define IHaveSubdirs
-#define PassCDebugFlags
+#define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 SUBDIRS = module
 #endif
 

@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  * *
  * Author:  Ralph Swick, DEC/Project Athena
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xclipboard/xcutsel.c,v 1.2 1998/12/20 11:58:13 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -128,7 +128,8 @@ static Boolean ConvertSelection(w, selection, target,
 	Atom* std_targets;
 	unsigned long std_length;
 	XmuConvertStandardSelection(w, req->time, selection, target, type,
-				   (XPointer*)&std_targets, &std_length, format);
+				    (XtPointer*)&std_targets, &std_length,
+				    format);
 	*value = XtMalloc(sizeof(Atom)*(std_length + 4));
 	targetP = *(Atom**)value;
 	*length = std_length + 4;
@@ -184,7 +185,7 @@ static Boolean ConvertSelection(w, selection, target,
     }
 #endif /* notdef */
     if (XmuConvertStandardSelection(w, req->time, selection, target, type,
-				    (XPointer *)value, length, format))
+				    value, length, format))
 	return True;
 
     /* else */

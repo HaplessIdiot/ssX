@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_regs.h,v 1.2 1999/01/24 03:13:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_regs.h,v 1.3 1999/01/26 10:40:31 dawes Exp $ */
 
 /* 3C4 */
 #define BankReg 0x06
@@ -42,14 +42,19 @@
 #define LinearAdd0 0x20
 #define LinearAdd1 0x21
 #define GraphEng 0x27
+#define MemClock0 0x28
+#define MemClock1 0x29
 #define XR2A 0x2A
 #define XR2B 0x2B
 #define TurboQueueBase 0x2C
+#define FBSize 0x2F
 #define ExtMiscCont5 0x34
 #define ExtMiscCont9 0x3C
 
 /* 3x4 */
 #define Offset 0x13
+
+#define read_xr(num,var) do {outb(0x3c4, num);var=inb(0x3c5);} while (0)
 
 /* Definitions for the SIS engine communication. */
 

@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.22 1997/09/14 13:15:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.23 1998/08/29 05:44:11 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -149,7 +149,7 @@ char 	cmd[PATH_MAX],file[PATH_MAX],xkm_output_dir[PATH_MAX],*map,*outFile;
 #ifndef __EMX__
 	sprintf(cmd,"%s/xkbcomp -w %d -R%s -xkm %s%s -em1 %s -emp %s -eml %s keymap/%s %s%s.xkm",
 		XkbBaseDirectory,
-		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
+		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:(int)xkbDebugFlags)),
 		XkbBaseDirectory,(map?"-m ":""),(map?map:""),
 		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,file,
 		xkm_output_dir,outFile);
@@ -157,7 +157,7 @@ char 	cmd[PATH_MAX],file[PATH_MAX],xkm_output_dir[PATH_MAX],*map,*outFile;
 	for (i=0; i<strlen(tmpbase); i++) if (tmpbase[i]=='/') tmpbase[i]='\\';
 	sprintf(cmd,"%s\\xkbcomp -w %d -R%s -xkm %s%s -em1 %s -emp %s -eml %s keymap/%s %s%s.xkm",
 		tmpbase,
-		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
+		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:(int)xkbDebugFlags)),
 		tmpbase,(map?"-m ":""),(map?map:""),
 		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,file,
 		xkm_output_dir,outFile);
@@ -177,7 +177,7 @@ char 	cmd[PATH_MAX],file[PATH_MAX],xkm_output_dir[PATH_MAX],*map,*outFile;
 	    return False;
 	}
 	sprintf(cmd,"xkbcomp -w %d -xkm %s%s -em1 %s -emp %s -eml %s keymap/%s %s%s.xkm",
-		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
+		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:(int)xkbDebugFlags)),
 		(map?"-m ":""),(map?map:""),
 		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,file,
 		xkm_output_dir,outFile);
@@ -266,7 +266,7 @@ int i;
 	sprintf(buf,
 	   "%s/xkbcomp -w %d -R%s -xkm - -em1 %s -emp %s -eml %s \"%s%s.xkm\"",
 		XkbBaseDirectory,
-		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
+		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:(int)xkbDebugFlags)),
 		XkbBaseDirectory,
 		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,
 		xkm_output_dir,keymap);
@@ -275,7 +275,7 @@ int i;
 	sprintf(buf,
 	  "%s\\xkbcomp -w %d -R%s -xkm - -em1 %s -emp %s -eml %s \"%s%s.xkm\"",
 		tmpbase,
-		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
+		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:(int)xkbDebugFlags)),
 		tmpbase,
 		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,
 		xkm_output_dir,keymap);
@@ -284,7 +284,7 @@ int i;
 	sprintf(buf,
       "%s/xkbcomp -w %d -R%s -xkm - -em1 %s -emp %s -eml %s \"%s%s.xkm\" < %s",
 		XkbBaseDirectory,
-		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
+		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:(int)xkbDebugFlags)),
 		XkbBaseDirectory,
 		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,
 		xkm_output_dir,keymap,tmpname);
@@ -304,13 +304,13 @@ int i;
 #ifndef WIN32
 	sprintf(buf,
 		"xkbcomp -w %d -xkm - -em1 %s -emp %s -eml %s \"%s%s.xkm\"",
-		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
+		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:(int)xkbDebugFlags)),
 		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,
 		xkm_output_dir,keymap);
 #else
 	sprintf(buf,
 	      "xkbcomp -w %d -xkm - -em1 %s -emp %s -eml %s \"%s%s.xkm\" < %s",
-		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
+		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:(int)xkbDebugFlags)),
 		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,
 		xkm_output_dir,keymap,tmpname);
 #endif

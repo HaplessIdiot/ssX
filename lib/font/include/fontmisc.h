@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/include/fontmisc.h,v 3.4 1998/10/03 09:07:30 dawes Exp $ */
+/* $XFree86: xc/lib/font/include/fontmisc.h,v 3.5 1998/10/25 07:11:22 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -48,8 +48,20 @@ extern int close();
 
 #endif /* FONTMODULE */
 
-typedef unsigned char	*pointer;
-typedef int		Bool;
+#if 0
+#include "basictypes.h"
+#else
+
+#ifndef _XTYPEDEF_POINTER
+#define _XTYPEDEF_POINTER
+typedef void		*pointer;	/* Also in Xserver/include/misc.h */
+#endif
+#ifndef _XTYPEDEF_BOOL
+#define _XTYPEDEF_BOOL
+typedef int		Bool;		/* Also in Xserver/include/misc.h */
+#endif
+
+#endif
 
 #ifndef X_PROTOCOL
 #ifndef _XSERVER64
@@ -78,13 +90,15 @@ typedef CARD32 Atom;
 
 extern char	    *NameForAtom ();
 
-extern pointer Xalloc(unsigned);
-extern pointer Xrealloc(pointer, unsigned);
+extern pointer Xalloc(unsigned long);
+extern pointer Xrealloc(pointer, unsigned long);
 extern void Xfree(pointer);
 
+#ifndef xalloc
 #define xalloc(n)   Xalloc ((unsigned) n)
 #define xfree(p)    Xfree ((pointer) p)
 #define xrealloc(p,n)	Xrealloc ((pointer)p,n)
+#endif
 #define lowbit(x) ((x) & (~(x) + 1))
 
 #define assert(x)	((void)0)

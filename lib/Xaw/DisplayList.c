@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/DisplayList.c,v 3.8 1998/06/29 13:41:14 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/DisplayList.c,v 3.9 1998/08/16 10:24:13 dawes Exp $ */
 
 #include <ctype.h>
 #include <string.h>
@@ -226,7 +226,7 @@ _XawDisplayList *XawCreateDisplayList(String string, Screen *screen,
   dlist->procs = NULL;
   dlist->num_procs = 0;
   dlist->data = NULL;
-  dlist->num_data = NULL;
+  dlist->num_data = 0;
   dlist->screen = screen;
   dlist->colormap = colormap;
   dlist->depth = depth;

@@ -79,11 +79,10 @@ Notice===
 #else
 /* for New Designed XFree86 */
 
+# include <X11/X.h>
 # include <X11/Xmd.h>
 # include <X11/Xfuncproto.h>
-# ifndef Bool
-#   define Bool int
-# endif
+# include "fontmisc.h"
 # include "xf86_ansic.h"
 
 #endif
@@ -95,9 +94,12 @@ Notice===
   Macros
  */
 
+#if 0
 #ifndef Bool
 #define Bool int
 #endif /* Bool */
+#endif
+
 #ifndef True
 #define True (-1)
 #endif /* True */

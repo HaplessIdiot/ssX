@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.15 1998/12/13 05:32:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.16 1999/01/23 09:56:11 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -103,7 +103,6 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     Bool HaveSolidHorVertLine = FALSE;
     Bool HaveDashedTwoPointLine = FALSE;
     Bool HaveDashedBresenhamLine = FALSE;
-    Bool HaveClipper = FALSE;
     Bool HaveImageWriteRect = FALSE;
     Bool HaveScanlineImageWriteRect = FALSE;
     Bool HaveScreenToScreenColorExpandFill = FALSE;
@@ -127,8 +126,8 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 
     /************** Low Level *************/
 
-    if(infoRec->SetClippingRectangle)
-	HaveClipper = TRUE;
+    if(!infoRec->SetClippingRectangle || !infoRec->DisableClipping)
+	infoRec->ClippingFlags = 0;
 
     /**** CopyArea ****/
 
@@ -160,8 +159,6 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 		infoRec->SolidBresenhamLineErrorTermBits = 
 			~((1 << infoRec->SolidBresenhamLineErrorTermBits) - 1);
 	}
-
-	if(!HaveClipper) infoRec->SolidLineFlags &= ~HARDWARE_CLIP_LINE;
 
 	if(infoRec->SubsequentSolidHorVertLine &&
 		!xf86IsOptionSet(XAAOptions, XAAOPT_SOLID_HORVERT_LINE))
@@ -249,7 +246,6 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 		infoRec->DashedBresenhamLineErrorTermBits = 
 			~((1 << infoRec->DashedBresenhamLineErrorTermBits) - 1);
 	}
-	if(!HaveClipper) infoRec->DashedLineFlags &= ~HARDWARE_CLIP_LINE;
     }
 
     /**** 8x8 Color Pattern Filled Rects ****/
@@ -1101,7 +1097,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 
     if(HaveSolidHorVertLine && 
       (HaveSolidBresenhamLine || (HaveSolidTwoPointLine && 
-			(infoRec->SolidLineFlags & HARDWARE_CLIP_LINE)))){
+		(infoRec->ClippingFlags & HARDWARE_CLIP_SOLID_LINE)))){
 	if(!infoRec->PolylinesThinSolid) {
 	   infoRec->PolylinesThinSolid = XAAPolyLines;
 	   infoRec->PolylinesThinSolidFlags = infoRec->SolidLineFlags;
@@ -1113,7 +1109,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     }
 
     if(HaveDashedBresenhamLine || (HaveDashedTwoPointLine && 
-			(infoRec->DashedLineFlags & HARDWARE_CLIP_LINE))){
+		(infoRec->ClippingFlags & HARDWARE_CLIP_DASHED_LINE))){
 	if(!infoRec->PolylinesThinDashed) {
 	   infoRec->PolylinesThinDashed = XAAPolyLinesDashed;
 	   infoRec->PolylinesThinDashedFlags = infoRec->DashedLineFlags;

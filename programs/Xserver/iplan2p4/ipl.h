@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/iplan2p4/ipl.h,v 3.2 1998/03/20 21:08:07 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/iplan2p4/ipl.h,v 3.3 1998/04/05 16:42:25 robin Exp $ */
 /* $XConsortium: ipl.h,v 5.37 94/04/17 20:28:38 dpw Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
@@ -1405,15 +1405,6 @@ extern void iplZeroPolyArcSS8Xor(
     xArc * /*parcs*/
 #endif
 );
-
-/*
- * This is the only completely portable way to
- * compute this info
- */
-
-#define BitsPerPixel(d) (\
-    (1 << PixmapWidthPaddingInfo[d].padBytesLog2) * 8 / \
-    (PixmapWidthPaddingInfo[d].padRoundUp+1))
 
 /* Common macros for extracting drawing information */
 

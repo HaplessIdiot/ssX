@@ -5,7 +5,7 @@ XCOMM X-TrueType Server - TrueType rasterizer for X
 
 /*
 #if DoLoadableServer
-#define PassCDebugFlags
+#define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 FONTMODULEDEF = -DFONTMODULE
 #endif
 */

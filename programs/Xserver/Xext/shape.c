@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/shape.c,v 3.6 1998/07/25 08:48:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shape.c,v 3.7 1998/10/04 09:36:47 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -39,6 +39,9 @@ in this Software without prior written authorization from The Open Group.
 #include "shapestr.h"
 #include "regionstr.h"
 #include "gcstruct.h"
+#ifdef EXTMODULE
+#include "xf86_ansic.h"
+#endif
 
 typedef	RegionPtr (*CreateDftPtr)(
 #if NeedNestedPrototypes

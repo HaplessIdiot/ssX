@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaDashLine.c,v 1.1 1998/09/05 06:37:03 dawes Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -129,7 +129,7 @@ XAAPolyLinesDashed(
 		break;
 	    } else if (oc1 & oc2) { /* completely clipped */
 		pbox++;
-	    } else if (infoRec->DashedLineFlags & HARDWARE_CLIP_LINE) {
+	    } else if (infoRec->ClippingFlags & HARDWARE_CLIP_DASHED_LINE) {
 		(*infoRec->SetClippingRectangle)(infoRec->pScrn,
 			pbox->x1, pbox->y1, pbox->x2 - 1, pbox->y2 - 1);
 
@@ -149,6 +149,7 @@ XAAPolyLinesDashed(
 				OMIT_LAST, PatternOffset
 			);
 		}
+		(*infoRec->DisableClipping)(infoRec->pScrn);
 		pbox++;
 	    } else {
 		int new_x1 = x1, new_y1 = y1, new_x2 = x2, new_y2 = y2;

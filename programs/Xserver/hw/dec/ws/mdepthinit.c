@@ -23,7 +23,7 @@ from The Open Group.
 
 */
 
-/* $XFree86: xc/programs/Xserver/hw/dec/ws/mdepthinit.c,v 1.3 1998/06/27 12:53:49 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dec/ws/mdepthinit.c,v 1.4 1998/10/04 09:38:22 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -40,10 +40,6 @@ from The Open Group.
 #include "mibstore.h"
 
 extern int defaultColorVisualClass;
-
-#define BitsPerPixel(d) (\
-    (1 << PixmapWidthPaddingInfo[d].padBytesLog2) * 8 / \
-    (PixmapWidthPaddingInfo[d].padRoundUp+1))
 
 #ifndef SINGLEDEPTH
 

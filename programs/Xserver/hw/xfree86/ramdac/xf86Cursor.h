@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86Cursor.h,v 1.1 1998/08/29 05:44:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86Cursor.h,v 1.2 1998/08/29 14:34:41 dawes Exp $ */
 
 #ifndef _XF86CURSOR_H
 #define _XF86CURSOR_H
@@ -68,6 +68,6 @@ extern int xf86CursorScreenIndex;
 #define HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_64	0x00000100
 #define HARDWARE_CURSOR_TRUECOLOR_AT_8BPP		0x00000200
 #define HARDWARE_CURSOR_BIT_ORDER_MSBFIRST		0x00000400
-
+#define HARDWARE_CURSOR_NIBBLE_SWAPPED			0x00000800
 
 #endif /* _XF86CURSOR_H */

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.85 1999/01/03 03:58:26 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.86 1999/01/24 03:13:51 dawes Exp $
 
 
 
@@ -127,7 +127,7 @@ OFILES = \
    INCLUDES =	-I. -I$(XF86OSSRC) -I$(XF86OSSRC)/bus -I$(SERVERSRC)/mfb \
 		-I$(SERVERSRC)/mi -I$(SERVERSRC)/include -I$(SERVERSRC)/os \
 		-I$(XINCLUDESRC) -I$(SERVERSRC)/Xext -I$(EXTINCSRC) \
-		-I$(SERVERSRC)/Xi \
+		-I$(SERVERSRC)/Xi -I$(XF86SRC)/ddc -I$(XF86SRC)/i2c \
 		-I$(FONTLIBSRC)/include -I$(XF86PARSERSRC) \
 		-I$(XF86SRC)/loader $(VGAINCLUDES) -I$(XF86SRC)/rac
 

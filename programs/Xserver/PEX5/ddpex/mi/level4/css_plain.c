@@ -42,6 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
+/* $XFree86$ */
 /*
  * this file contains the element handling procedures for elements
  * which are stored in the format they are received.  This includes
@@ -51,6 +52,7 @@ SOFTWARE.
 
 #include "ddpex.h"
 #include "miStrMacro.h"
+#include "pexos.h"
 
 
 extern ocTableType ParseOCTable[];

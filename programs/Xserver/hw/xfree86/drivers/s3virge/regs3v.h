@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/regs3v.h,v 1.1 1998/11/22 10:37:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/regs3v.h,v 1.2 1998/11/29 10:50:28 dawes Exp $ */
 /*
  * regs3v.h
  *
@@ -105,8 +105,8 @@
 				    || S3_ViRGE_VX_SERIES(chip))
 #endif
 
-
-
+#if 0
+/* take these from ../../common/xf86PciInfo.h instead */
 /* PCI data */
 #define PCI_S3_VENDOR_ID	0x5333
 #define PCI_ViRGE		0x5631
@@ -115,17 +115,27 @@
 #define PCI_ViRGE_GX2 		0x8A10
 #define PCI_ViRGE_MX		0x8C01
 #define PCI_ViRGE_MXP 		0x8C03
+#endif
 
 /* Chip tags */
+#if 1
+#define PCI_S3_VENDOR_ID	PCI_VENDOR_S3
+#define S3_UNKNOWN		 0
+#define S3_ViRGE		 PCI_CHIP_VIRGE
+#define S3_ViRGE_VX		 PCI_CHIP_VIRGE_VX
+#define S3_ViRGE_DXGX	 PCI_CHIP_VIRGE_DXGX
+#define S3_ViRGE_GX2	 PCI_CHIP_VIRGE_GX2
+#define S3_ViRGE_MX		 PCI_CHIP_VIRGE_MX
+#define S3_ViRGE_MXP	 PCI_CHIP_VIRGE_MXP
+#else
 #define S3_UNKNOWN		 0
 #define S3_ViRGE		 1
 #define S3_ViRGE_VX		 2
-#define S3_ViRGE_DXGX		 3
-#define S3_ViRGE_GX2		 4
+#define S3_ViRGE_DXGX	 3
+#define S3_ViRGE_GX2	 4
 #define S3_ViRGE_MX		 5
-#define S3_ViRGE_MXP		 6
-
-
+#define S3_ViRGE_MXP	 6
+#endif
 
 #if 0
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.9 1999/01/03 03:58:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.10 1999/01/14 13:04:56 dawes Exp $ */
 
 /*
  *
@@ -23,14 +23,6 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#if defined(Lynx)
-#define MAXINT	32000
-#else
-#include <limits.h>
-#undef MAXINT
-#define MAXINT INT_MAX
-#endif
-
 #include "os.h"
 #include "Xos.h"
 #ifndef X_NOT_STDC_ENV
@@ -42,6 +34,14 @@ extern void free();
 #include "sym.h"
 #include "loader.h"
 #include "hash.h"
+
+#if defined(Lynx)
+#define MAXINT	32000
+#else
+#include <limits.h>
+#undef MAXINT
+#define MAXINT INT_MAX
+#endif
 
 /* Prototypes for static functions. */
 static unsigned int hashFunc(const char *);

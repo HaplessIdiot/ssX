@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.5 1998/12/20 13:16:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.6 1999/01/26 10:40:19 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -65,7 +65,7 @@ typedef struct _MouseDevRec {
 } MouseDevRec, *MouseDevPtr;
 
 #ifndef XINPUT
-#define MOUSE_DEV(dev) (MouseDevPtr) XI_PRIVATE(dev)
+#define MOUSE_DEV(dev) (MouseDevPtr) (dev)->public.devicePrivate
 #endif
 
 /* Mouse device private record */

@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.6 1998/10/05 13:22:01 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.7 1999/01/31 04:59:22 dawes Exp $ */
 
 #include "fntfilst.h"
 #include "FSproto.h"
@@ -836,17 +836,17 @@ FreeTypeLoadGlyph(FontScalablePtr vals, FontInfoPtr info,
 
     /*  Munge happily with bit and byte order */
     if(bmfmt->bit==LSBFirst)
-      BitOrderInvert(tgp->bits, ht*bpr);
+      BitOrderInvert((unsigned char *)(tgp->bits), ht*bpr);
     
     if(bmfmt->byte!=bmfmt->bit)
       switch(bmfmt->scan) {
       case 1:
         break;
       case 2:
-        TwoByteSwap(tgp->bits, ht*bpr);
+        TwoByteSwap((unsigned char *)(tgp->bits), ht*bpr);
         break;
       case 4:
-        FourByteSwap(tgp->bits, ht*bpr);
+        FourByteSwap((unsigned char *)(tgp->bits), ht*bpr);
         break;
       case 8:                   /* no util function for 64 bits! */
         {

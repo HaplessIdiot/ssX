@@ -25,6 +25,7 @@ document as well.
     2.8.1 The Direct Method
     2.8.2 The Indirect Method
   2.9  Image Reads
+  2.10 Clipping
 3)  The Pixmap Cache
 4)  Offscreen Pixmaps
 
@@ -295,20 +296,7 @@ void SubsequentSolidFillTrap(ScrnInfoPtr pScrn, int y, int h,
 
     The flags field associated with Solid Lines is SolidLineFlags and 
     the GXCOPY_ONLY, ROP_NEEDS_SOURCE, NO_PLANEMASK and RGB_EQUAL flags as
-    described in Section 2.0 are valid restrictions.  Additionally, the
-    following flag is valid:
-
-      HARDWARE_CLIP_LINE
-
-	If this flag is set, the SetClippingRectangle function will 
-	be called before calling the TwoPoint or Bresenham line
-	functions whenever the line needs to be clipped.  Hardware
-	clipping is not necessary for the Bresenham interface since
-	clipping can be done by modifying the Bresenham parameters,
-	and XAA will do this automatically.  TwoPoint lines, however,
-	will have limited usage if hardware clipping is not supported.
-	If a SetClippingRectangle function was not provided, this flag
-	will be ignored.  
+    described in Section 2.0 are valid restrictions.  
 
     Some line engines have line biases hardcoded to comply with
     Microsoft line biasing rules.  A tell-tale sign of this is the
@@ -321,16 +309,6 @@ void SubsequentSolidFillTrap(ScrnInfoPtr pScrn, int y, int h,
     match the hardware lines.   This is in the generic flags field
     rather than the SolidLineFlags since this flag applies to all
     software zero-width lines on the screen and not just the solid ones.
-
-
-void SetClippingRectangle ( ScrnInfoPtr pScrn,
-        		int left, int top, int right, int bottom)
-
-    Specifies the clipping rectangle to be used for the next and only
-    the next primitive.  The driver may need to keep track of when this
-    function is called so that it can reset the clipping rectangle
-    after the next primitive is rendered.  At the moment, this function
-    is only used for clipping of lines.
 
 
 void SetupForSolidLine(ScrnInfoPtr pScrn, 
@@ -369,7 +347,7 @@ void SubsequentSolidTwoPointLine(ScrnInfoPtr pScrn,
     any vertex in the 16-bit signed coordinate system is valid, your
     line engine is expected to handle 16-bit values if you have hardware
     line clipping enabled.  If your engine cannot handle 16-bit values,
-    do not set the HARDWARE_CLIP_LINE flag.
+    you should not use hardware line clipping.
 
 
 void SubsequentSolidBresenhamLine(ScrnInfoPtr pScrn,
@@ -429,10 +407,6 @@ SolidBresenhamLineErrorTermBits
     the GXCOPY_ONLY, ROP_NEEDS_SOURCE, NO_PLANEMASK and RGB_EQUAL flags as
     described in Section 2.0 are valid restrictions.  Additionally, the
     following flags are valid:
-
-      HARDWARE_CLIP_LINE
-	
-	This is the same as for the solid lines.
 
       NO_TRANSPARENCY
 
@@ -1361,6 +1335,37 @@ void SubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
 
 	/* More to come */
 
+
+2.10 Clipping
+
+    XAA supports hardware clipping rectangles.  To use clipping
+    in this way it is expected that the graphics accelerator can
+    clip primitives with verticies anywhere in the 16 bit signed 
+    coordinate system. 
+
+void SetClippingRectangle ( ScrnInfoPtr pScrn,
+        		int left, int top, int right, int bottom)
+
+void DisableClipping (ScrnInfoPtr pScrn)
+
+    When SetClippingRectangle is called, all hardware rendering
+    following it should be clipped to the rectangle specified
+    until DisableClipping is called.
+
+    The ClippingFlags field indicates which operations this sort
+    of Set/Disable pairing can be used with.  Any of the following
+    flags may be OR'd together.
+
+	HARDWARE_CLIP_SCREEN_TO_SCREEN_COLOR_EXPAND
+	HARDWARE_CLIP_SCREEN_TO_SCREEN_COPY
+	HARDWARE_CLIP_MONO_8x8_FILL
+	HARDWARE_CLIP_COLOR_8x8_FILL
+	HARDWARE_CLIP_SOLID_FILL
+	HARDWARE_CLIP_DASHED_LINE
+	HARDWARE_CLIP_SOLID_LINE
+
+
+
 3)  XAA PIXMAP CACHE
 
    /* NOTE:  XAA has no knowledge of framebuffer particulars so until
@@ -1422,4 +1427,4 @@ void SubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
    also set.
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/xaa/XAA.HOWTO,v 1.7 1998/09/06 12:56:52 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/xaa/XAA.HOWTO,v 1.8 1998/12/06 06:08:38 dawes Exp $

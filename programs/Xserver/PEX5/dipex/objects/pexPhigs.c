@@ -41,6 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+/* $XFree86$ */
 
 
 /*++
@@ -74,6 +75,7 @@ SOFTWARE.
 #include "pex_site.h"
 #include "ddpex4.h"
 #include "pexLookup.h"
+#include "pexos.h"
 
 
 extern LUTAddWksXref();

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.11 1999/01/11 05:13:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.12 1999/01/23 09:55:46 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -137,6 +137,8 @@
 #define PCI_CHIP_SG86C201	0x0001
 #define PCI_CHIP_SG86C202	0x0002
 #define PCI_CHIP_SG86C205	0x0205
+#define PCI_CHIP_SG86C215	0x0215
+#define PCI_CHIP_SG86C225	0x0225
 #define PCI_CHIP_SIS5597	0x0200
 #define PCI_CHIP_SIS6326	0x6326
 
@@ -337,6 +339,8 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_SG86C201,	"SG86C201"},
 				{PCI_CHIP_SG86C202,	"SG86C202"},
 				{PCI_CHIP_SG86C205,	"SG86C205"},
+				{PCI_CHIP_SG86C215,	"SG86C215"},
+				{PCI_CHIP_SG86C225,	"SG86C225"},
 				{PCI_CHIP_SIS5597,	"SIS5597"},
 				{PCI_CHIP_SIS6326,	"SIS6326"},
 				{0x0000,		NULL}}},

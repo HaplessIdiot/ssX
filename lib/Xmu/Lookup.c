@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/Lookup.c,v 3.3 1998/08/16 10:25:15 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/Lookup.c,v 3.4 1998/10/03 09:06:31 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -193,7 +193,7 @@ int
 XmuLookupLatin1(register XKeyEvent *event, unsigned char *buffer, int nbytes,
 		KeySym *keysym, XComposeStatus *status)
 {
-    return XLookupString(event, buffer, nbytes, keysym, status);
+    return XLookupString(event, (char *)buffer, nbytes, keysym, status);
 }
 
 /* produces ISO 8859-2 encoding plus ASCII control */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.30 1999/01/24 13:32:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.31 1999/01/26 05:54:14 dawes Exp $ */
 
 
 
@@ -18,9 +18,9 @@
  */
 
 #ifndef	XF86_LIBC_H
+#define XF86_LIBC_H 1
 
-#define XF86_LIBC_H
-
+#include "Xfuncs.h"
 
 /*
  * The first set of definitions are required both for modules and
@@ -229,7 +229,7 @@ typedef struct _xf86dirent XF86DIRENT;
 /* Some X headers defined this away too */
 #undef assert
 #define assert(a)		((void)0)
-
+#undef HUGE_VAL
 #define HUGE_VAL		xf86HUGE_VAL;
 
 #define hypot(x,y)		xf86hypot(x,y)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.11 1999/01/24 13:32:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.12 1999/01/26 05:53:58 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -22,6 +22,9 @@
 
 #include "misc.h"
 #include "xf86Version.h"
+#ifndef NULL
+#define NULL 0
+#endif
 
 typedef enum {
     LD_RESOLV_IFDONE		= 0,	/* only check if no more

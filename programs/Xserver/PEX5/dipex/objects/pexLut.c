@@ -43,6 +43,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
+/* $XFree86$ */
 
 
 /*++
@@ -65,6 +66,7 @@ SOFTWARE.
 #include "dipex.h"
 #include "pex_site.h"
 #include "pexLookup.h"
+#include "pexos.h"
 
 
 #define	VALID_TABLETYPE(type)	((type > 0) && (type <= PEXMaxTableType))

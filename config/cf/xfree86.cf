@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.198 1999/01/23 09:55:33 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.199 1999/01/31 02:24:37 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -58,9 +58,17 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #ifndef XF8_32Bpp
 #define XF8_32Bpp		YES
 #endif
+/* 8/16bpp dual fb module */
+#ifndef XF8_16Bpp
+#define XF8_16Bpp		YES
+#endif
 /* 24/32bpp conversion module */
 #ifndef XF24_32Bpp
 #define XF24_32Bpp		YES
+#endif
+/* shadow fb module */
+#ifndef XFShadowFB
+#define XFShadowFB		YES
 #endif
 /* vgahw module */
 #ifndef XF86VgaHw

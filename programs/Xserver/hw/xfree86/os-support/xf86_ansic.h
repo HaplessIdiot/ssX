@@ -22,11 +22,14 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.13 1998/12/05 14:40:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.14 1999/01/24 13:32:39 dawes Exp $ */
 
 #ifndef _XF86_ANSIC_H
 #define _XF86_ANSIC_H
 
+#ifndef FONTMODULE
+#include "misc.h"
+#endif
 #include "xf86_libc.h"
 
 /*

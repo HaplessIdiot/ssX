@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaCpyArea.c,v 1.7 1999/01/03 03:58:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaCpyArea.c,v 1.8 1999/01/23 09:56:10 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -42,7 +42,7 @@ XAACopyArea(
 		XAADoBitBlt, 0L));
 	} else {
 	    if(infoRec->WritePixmap &&
-	     ((pDstDrawable->bitsPerPixel == pSrcDrawable->bitsPerPixel) |
+	     ((pDstDrawable->bitsPerPixel == pSrcDrawable->bitsPerPixel) ||
 		((pDstDrawable->bitsPerPixel == 24) &&  
 		(pSrcDrawable->bitsPerPixel == 32) &&
 		(infoRec->WritePixmapFlags & CONVERT_32BPP_TO_24BPP))) &&

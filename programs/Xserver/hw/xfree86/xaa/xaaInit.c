@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.12 1999/01/23 09:56:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.13 1999/01/26 05:54:19 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -353,10 +353,10 @@ XAARestoreAreas (
 
     if(pScrn->vtSema && infoRec->WritePixmap &&
 	!(infoRec->WritePixmapFlags & NO_GXCOPY) &&
-	((pWin->drawable.bitsPerPixel == pPixmap->drawable.bitsPerPixel) |
+	((pWin->drawable.bitsPerPixel == pPixmap->drawable.bitsPerPixel) ||
 		((pWin->drawable.bitsPerPixel == 24) &&  
-		(pPixmap->drawable.bitsPerPixel == 32) &&
-		(infoRec->WritePixmapFlags & CONVERT_32BPP_TO_24BPP)))) {
+		 (pPixmap->drawable.bitsPerPixel == 32) &&
+		 (infoRec->WritePixmapFlags & CONVERT_32BPP_TO_24BPP)))) {
 	BoxPtr pbox = REGION_RECTS(prgnRestore);
 	int nboxes = REGION_NUM_RECTS(prgnRestore);
 	int Bpp =  pPixmap->drawable.bitsPerPixel >> 3;
@@ -400,8 +400,8 @@ XAACreatePixmap(ScreenPtr pScreen, int w, int h, int depth)
     int size = w * h;
     
     if((infoRec->Flags & OFFSCREEN_PIXMAPS) && pScrn->vtSema &&
-	(depth != 1) && ((BitsPerPixel(depth) == pScrn->bitsPerPixel) | 
-		!(infoRec->Flags & OVERLAY_8_32))&& 
+	(depth != 1) && ((BitsPerPixel(depth) == pScrn->bitsPerPixel) || 
+		!(infoRec->Flags & OVERLAY_8_32)) && 
 	(size >= MIN_OFFPIX_SIZE)){
 
 	PixmapPtr pScreenPix;

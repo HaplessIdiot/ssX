@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaSpans.c,v 1.7 1998/12/13 05:32:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaSpans.c,v 1.8 1998/12/20 11:57:52 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -42,6 +42,7 @@ XAAFillSpans(
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
     int type = 0;
     ClipAndRenderSpansFunc function;
+    Bool fastClip = FALSE;
 
     if((nInit <= 0) || !pGC->planemask)
         return;
@@ -71,24 +72,37 @@ XAAFillSpans(
     switch(type) {
     case DO_SOLID:
 	function = XAARenderSolidSpans;	
+	if(infoRec->ClippingFlags & HARDWARE_CLIP_SOLID_FILL) 
+		fastClip = TRUE; 
 	break;	
     case DO_COLOR_8x8:
 	function = XAARenderColor8x8Spans;	
+	if(infoRec->ClippingFlags & HARDWARE_CLIP_COLOR_8x8_FILL) 
+		fastClip = TRUE; 
 	break;	
     case DO_MONO_8x8:
 	function = XAARenderMono8x8Spans;	
+	if(infoRec->ClippingFlags & HARDWARE_CLIP_MONO_8x8_FILL) 
+		fastClip = TRUE; 
 	break;	
     case DO_CACHE_BLT:
 	function = XAARenderCacheBltSpans;	
+	if(infoRec->ClippingFlags & HARDWARE_CLIP_SCREEN_TO_SCREEN_COPY)
+		fastClip = TRUE; 
 	break;	
     case DO_COLOR_EXPAND:
 	function = XAARenderColorExpandSpans;	
 	break;	
     case DO_CACHE_EXPAND:
 	function = XAARenderCacheExpandSpans;	
+	if(infoRec->ClippingFlags & 
+			HARDWARE_CLIP_SCREEN_TO_SCREEN_COLOR_EXPAND) 
+		fastClip = TRUE; 
 	break;	
     case DO_PIXMAP_COPY:
 	function = XAARenderPixmapCopySpans;	
+	if(infoRec->ClippingFlags & HARDWARE_CLIP_SCREEN_TO_SCREEN_COPY)
+		fastClip = TRUE; 
 	break;	
     case DO_IMAGE_WRITE:
     default:
@@ -97,7 +111,19 @@ XAAFillSpans(
 	return;
     }
 
-    XAAClipAndRenderSpans(pGC, pptInit, pwidthInit, nInit, fSorted,
+
+    if((nInit < 10) || (REGION_NUM_RECTS(pGC->pCompositeClip) != 1))
+	fastClip = FALSE;
+
+    if(fastClip) {
+	BoxPtr extents = &pGC->pCompositeClip->extents;
+	(*infoRec->SetClippingRectangle)(infoRec->pScrn,
+		extents->x1, extents->y1, extents->x2, extents->y2);
+	(*function)(pGC, nInit, pptInit, pwidthInit, fSorted, 
+					pDraw->x, pDraw->y);
+	(*infoRec->DisableClipping)(infoRec->pScrn);
+    } else
+	XAAClipAndRenderSpans(pGC, pptInit, pwidthInit, nInit, fSorted,
 					function, pDraw->x, pDraw->y);
 }
 

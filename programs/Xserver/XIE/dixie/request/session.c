@@ -66,7 +66,7 @@ terms and conditions:
 	Dean Verheiden -- AGE Logic, Inc  March, 1993
 
 *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/dixie/request/session.c,v 3.10 1998/10/04 09:35:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/request/session.c,v 3.11 1998/10/25 07:11:42 dawes Exp $ */
 
 #define _XIEC_SESSION
 
@@ -133,16 +133,16 @@ void XieInit(void)
   /* Initialize XIE Resources */
   RC_XIE	= CreateNewResourceClass();
 #if XIE_FULL
-  RT_COLORLIST	= RC_XIE | CreateNewResourceType(DeleteColorList);
+  RT_COLORLIST	= RC_XIE | CreateNewResourceType((DeleteType)DeleteColorList);
 #endif
-  RT_LUT	= RC_XIE | CreateNewResourceType(DeleteLUT);
-  RT_PHOTOFLO	= RC_XIE | CreateNewResourceType(DeletePhotoflo);
-  RT_PHOTOMAP	= RC_XIE | CreateNewResourceType(DeletePhotomap);
-  RT_PHOTOSPACE	= RC_XIE | CreateNewResourceType(DeletePhotospace);
+  RT_LUT	= RC_XIE | CreateNewResourceType((DeleteType)DeleteLUT);
+  RT_PHOTOFLO	= RC_XIE | CreateNewResourceType((DeleteType)DeletePhotoflo);
+  RT_PHOTOMAP	= RC_XIE | CreateNewResourceType((DeleteType)DeletePhotomap);
+  RT_PHOTOSPACE	= RC_XIE | CreateNewResourceType((DeleteType)DeletePhotospace);
 #if XIE_FULL
-  RT_ROI	= RC_XIE | CreateNewResourceType(DeleteROI);
+  RT_ROI	= RC_XIE | CreateNewResourceType((DeleteType)DeleteROI);
 #endif
-  RT_XIE_CLIENT	= RC_XIE | CreateNewResourceType(DeleteXieClient);
+  RT_XIE_CLIENT	= RC_XIE | CreateNewResourceType((DeleteType)DeleteXieClient);
   
   
   extEntry = AddExtension(xieExtName, 		/* extension name   */
@@ -240,7 +240,9 @@ int ProcQueryImageExtension(ClientPtr client)
   reply.majorVersion = xieMajorVersion;
   
   if (stuff->majorVersion != xieMajorVersion || 
+#if xieEarliestMinorVersion > 0
       stuff->minorVersion < xieEarliestMinorVersion ||
+#endif
       stuff->minorVersion > xieLatestMinorVersion) 
     reply.minorVersion = xieMinorVersion;
   else 

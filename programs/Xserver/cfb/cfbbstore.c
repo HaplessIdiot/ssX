@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbbstore.c,v 1.3 1999/01/26 12:17:56 dawes Exp $ */
 /*-
  * cfbbstore.c --
  *	Functions required by the backing-store implementation in MI.
@@ -74,7 +74,7 @@ cfbSaveAreas(pPixmap, prgnSave, xorg, yorg, pWin)
 	pBox++;
     }
 
-    pScrPix = (*pScreen->GetScreenPixmap)(pScreen);
+    pScrPix = (*pScreen->GetWindowPixmap)(pWin);
 
 
     cfbDoBitbltCopy((DrawablePtr) pScrPix, (DrawablePtr)pPixmap,
@@ -132,7 +132,7 @@ cfbRestoreAreas(pPixmap, prgnRestore, xorg, yorg, pWin)
 	pBox++;
     }
 
-    pScrPix = (*pScreen->GetScreenPixmap)(pScreen);
+    pScrPix = (*pScreen->GetWindowPixmap)(pWin);
 
     cfbDoBitbltCopy((DrawablePtr)pPixmap, (DrawablePtr) pScrPix,
 		    GXcopy, prgnRestore, pPtsInit, ~0L);

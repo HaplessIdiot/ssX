@@ -1,9 +1,9 @@
 XCOMM X-TrueType Server - TrueType rasterizer for X
 
 #define IHaveSubdirs
+#define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
 #if DoLoadableServer
-#define PassCDebugFlags
 MODULE_SUBDIRS = module
 #endif
 

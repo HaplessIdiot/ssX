@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaLine.c,v 1.1 1998/08/19 07:49:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaLine.c,v 1.2 1998/09/27 04:43:45 dawes Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -210,7 +210,7 @@ XAAPolyLines(
 		    break;
 		} else if (oc1 & oc2) { /* completely clipped */
 		    pbox++;
-		} else if (infoRec->SolidLineFlags & HARDWARE_CLIP_LINE) {
+		} else if (infoRec->ClippingFlags & HARDWARE_CLIP_SOLID_LINE) {
 		    (*infoRec->SetClippingRectangle)(infoRec->pScrn,
 			pbox->x1, pbox->y1, pbox->x2 - 1, pbox->y2 - 1);
 
@@ -230,6 +230,7 @@ XAAPolyLines(
 				OMIT_LAST
 			);
 		    }
+		    (*infoRec->DisableClipping)(infoRec->pScrn);
 		    pbox++;
 		} else {
 		    int new_x1 = x1, new_y1 = y1, new_x2 = x2, new_y2 = y2;

@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/StripChart.c,v 1.3 1998/08/20 13:59:13 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/StripChart.c,v 1.4 1998/10/03 08:42:22 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -341,7 +341,7 @@ draw_it(XtPointer client_data, XtIntervalId *id)
    w->strip_chart.valuedata[w->strip_chart.interval] = value;
   if (XtIsRealized((Widget)w))
     {
-      int y = (int)((XtHeight(w) - XtHeight(w) * value)
+      int y = (int)(XtHeight(w) - XtHeight(w) * value
 		    / w->strip_chart.scale);
 
        XFillRectangle(XtDisplay(w), XtWindow(w), w->strip_chart.fgGC,
@@ -416,7 +416,7 @@ repaint_window(StripChartWidget w, int left, int width)
       /* Draw data point lines */
       for (i = left; i < width; i++)
 	{
-	  int y = (XtHeight(w) - (XtHeight(w) * w->strip_chart.valuedata[i]))
+	  int y = XtHeight(w) - (XtHeight(w) * w->strip_chart.valuedata[i])
 	    / w->strip_chart.scale;
 
 	    XFillRectangle(dpy, win, w->strip_chart.fgGC, 

@@ -45,7 +45,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/snfread.c,v 1.2 1998/07/25 06:57:05 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/snfread.c,v 1.3 1998/10/03 09:07:22 dawes Exp $ */
 
 #ifndef FONTMODULE
 #include <ctype.h>
@@ -313,23 +313,23 @@ snfReadFont(pFont, file, bit, byte, glyph, scan)
      * read the glyphs
      */
 
-    if (FontFileRead(file, (char *) bitmaps, bitmapsSize) != bitmapsSize) {
+    if (FontFileRead(file, bitmaps, bitmapsSize) != bitmapsSize) {
 	xfree(bitmaps);
 	xfree(fontspace);
 	return BadFontName;
     }
 
     if (def_bit != bit)
-	BitOrderInvert(bitmaps, bitmapsSize);
+	BitOrderInvert((unsigned char *)bitmaps, bitmapsSize);
     if ((def_byte == def_bit) != (bit == byte)) {
 	switch (bit == byte ? def_scan : scan) {
 	case 1:
 	    break;
 	case 2:
-	    TwoByteSwap(bitmaps, bitmapsSize);
+	    TwoByteSwap((unsigned char *)bitmaps, bitmapsSize);
 	    break;
 	case 4:
-	    FourByteSwap(bitmaps, bitmapsSize);
+	    FourByteSwap((unsigned char *)bitmaps, bitmapsSize);
 	    break;
 	}
     }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/extmod/modinit.c,v 1.7 1999/01/17 12:29:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/extmod/modinit.c,v 1.8 1999/01/26 05:53:48 dawes Exp $ */
 
 /*
  *
@@ -24,9 +24,6 @@
  */
 
 #ifdef XFree86LOADER
-#include "X.h"
-#include "Xlib.h"
-#include "misc.h"
 #include "xf86_ansic.h"
 
 #include "xf86Module.h"
@@ -45,9 +42,6 @@ extern void ShapeExtensionInit(INITARGS);
 #ifdef MULTIBUFFER
 extern void MultibufferExtensionInit(INITARGS);
 #define _MULTIBUF_SERVER_	/* don't want Xlib structures */
-#include "regionstr.h"
-#include "gcstruct.h"
-#include "inputstr.h"
 #include "multibufst.h"
 #endif
 
@@ -117,11 +111,13 @@ extern void XAntiExtensionInit(INITARGS);
 
 #ifdef TOGCUP
 extern void XcupExtensionInit(INITARGS);
+#define _XCUP_SERVER_
 #include "Xcupstr.h"
 #endif
 
 #ifdef EVI
 extern void EVIExtensionInit(INITARGS);
+#define _XEVI_SERVER_
 #include "XEVIstr.h"
 #endif
 

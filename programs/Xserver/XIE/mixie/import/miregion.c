@@ -117,7 +117,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/mixie/import/miregion.c,v 3.3 1998/10/04 09:36:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/import/miregion.c,v 3.4 1998/10/05 13:22:37 dawes Exp $ */
 
 #define _XIEC_MIREGION
 
@@ -143,6 +143,7 @@ SOFTWARE.
 
 extern Bool Must_have_memory;
 
+#undef assert
 #define assert(expr)
 
 #define good(reg) assert(miXieValidRegion(reg))
