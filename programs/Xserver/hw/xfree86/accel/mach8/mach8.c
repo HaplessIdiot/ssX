@@ -1,5 +1,5 @@
 /* $XConsortium: mach8.c,v 1.1 94/03/28 21:09:56 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.6 1994/09/03 02:51:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.7 1994/09/04 10:46:22 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -416,6 +416,10 @@ mach8Probe()
 
     maxX = maxY = -1;
     pMode = mach8InfoRec.modes;
+    if (pMode == NULL) {
+        ErrorF("No modes supplied in XF86Config\n");
+        return(FALSE);
+    }
     pEnd = NULL;
     tx = mach8InfoRec.virtualX;
     ty = mach8InfoRec.virtualY;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.5 1994/08/31 04:44:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.6 1994/09/07 15:55:05 dawes Exp $ */
 /*
  * Copyright 1994 by Marc Aurele La France (TSI @ UQV), tsi@gpu.srv.ualberta.ca
  *
@@ -284,6 +284,8 @@ vgaVideoChipRec ATI =
 	0,			/* Linear fb size */
 	FALSE,			/* Support 16bpp */
 	FALSE,			/* Support 32bpp */
+	NULL,			/* List of builtin modes */
+	1,			/* Clock scaling factor */
 };
 
 /*

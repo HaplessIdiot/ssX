@@ -1,5 +1,5 @@
 /* $XConsortium: mach32line.c,v 1.2 94/04/17 20:30:48 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32line.c,v 3.0 1994/05/08 05:19:37 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -72,7 +72,6 @@ mach32Line1Rect by Craig E. Groeschel (craig@adikia.sccsi.com),
 
 #include "cfb.h"
 #include "cfbmskbits.h"
-#include "regmach32.h"
 #include "mach32.h"
 
 void

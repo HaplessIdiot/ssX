@@ -1,5 +1,5 @@
 /* $XConsortium: mach32dline.c,v 1.2 94/04/17 20:30:43 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32dline.c,v 3.1 1994/06/01 03:18:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32dline.c,v 3.2 1994/07/15 06:58:07 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -72,7 +72,6 @@ Modified for the mach32 by Mike Bernson    (mike@mbsun.mlb.org)
 #include "misc.h"
 #include "xf86.h"
 #include "mach32.h"
-#include "regmach32.h"
 
 #define NextDash {\
     dashIndexTmp++; \

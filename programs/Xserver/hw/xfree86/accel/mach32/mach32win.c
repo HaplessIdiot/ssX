@@ -1,5 +1,5 @@
 /* $XConsortium: mach32win.c,v 1.2 94/04/17 20:30:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32win.c,v 3.1 1994/05/08 06:21:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32win.c,v 3.2 1994/07/15 06:58:20 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -68,7 +68,6 @@ Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
 #include "cfbmskbits.h"
 
 #include "mach32.h"
-#include "regmach32.h"
 
 void 
 mach32CopyWindow(pWin, ptOldOrg, prgnSrc)

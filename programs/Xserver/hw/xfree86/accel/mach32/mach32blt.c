@@ -1,5 +1,5 @@
 /* $XConsortium: mach32blt.c,v 1.2 94/04/17 20:30:42 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32blt.c,v 3.2 1994/06/06 06:44:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32blt.c,v 3.3 1994/07/15 06:58:04 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -61,7 +61,6 @@ Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
 #include	"cfb8bit.h"
 #include	"fastblt.h"
 
-#include	"regmach32.h"
 #include	"mach32.h"
 
 extern RegionPtr cfbBitBlt();

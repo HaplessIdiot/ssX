@@ -1,5 +1,5 @@
 /* $XConsortium: mach32gc.c,v 1.2 94/04/17 20:30:46 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32gc.c,v 3.2 1994/08/01 12:10:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32gc.c,v 3.3 1994/08/31 04:21:47 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -85,7 +85,6 @@ Modified for 16 bpp and VTSema-dependent validation by
 #include "xf86text.h"
 
 #include "mach32.h"
-#include "regmach32.h"
 
 static unsigned long PMask;
 

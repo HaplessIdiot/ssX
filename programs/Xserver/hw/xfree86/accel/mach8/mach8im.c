@@ -1,5 +1,5 @@
 /* $XConsortium: mach8im.c,v 1.1 94/03/28 21:11:41 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8im.c,v 3.1 1994/09/07 16:19:21 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -414,6 +414,7 @@ mach8FontOpStipple(x, y, w, h, psrc, pwidth, id )
     int			w;
     int			h;
     unsigned char	*psrc;
+    int			pwidth;
     Pixel		id;
 {
 

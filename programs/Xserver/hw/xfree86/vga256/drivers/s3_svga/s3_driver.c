@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3_svga/s3_driver.c,v 3.5 1994/09/07 15:55:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3_svga/s3_driver.c,v 3.6 1994/09/08 14:29:27 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -108,6 +108,8 @@ vgaVideoChipRec S3_SVGA =
    0,
    FALSE,
    FALSE,
+   NULL,
+   1,
 };
 
 #define new ((vgaS3Ptr)vgaNewVideoState)

@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.23 1994/09/07 15:51:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.24 1994/09/08 14:26:43 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -199,10 +199,8 @@ int s3CursorStartX, s3CursorStartY, s3CursorLines;
 int s3RamdacType = UNKNOWN_DAC;
 Bool s3UsingPixMux = FALSE;
 Bool s3Bt485PixMux = FALSE;
-Bool s3ClockDouble = FALSE;
 Bool s3ATT498PixMux = FALSE;
-
-static int pixelClock[MAXCLOCKS] = {0, };
+static int maxRawClock = 0;
 
 /*
  * s3PrintIdent -- print identification message
@@ -587,7 +585,8 @@ s3Probe()
 	 s3InfoRec.depth = 16;
       }
       else {
-	 ErrorF("Invalid color weighting (only 555 and 565 are valid)\n");
+	 ErrorF("Invalid color weighting %1d%1d%1d (only 555 and 565 are valid)\n",
+		xf86weight.red,xf86weight.green,xf86weight.blue);
 	 return(FALSE);
       }
       s3InfoRec.bitsPerPixel = 16;
@@ -834,6 +833,8 @@ s3Probe()
 	     XCONFIG_GIVEN : XCONFIG_PROBED, s3InfoRec.name, s3InfoRec.ramdac);
    }
 
+   /* XXXX Add checks here for depth support by ramdac/chipset combination */
+
    /* Now check/set the DAC speed */
    /* XXXX Are these reasonable defaults? */
    if (s3InfoRec.dacSpeed <= 0) {
@@ -843,9 +844,7 @@ s3Probe()
 	 s3InfoRec.dacSpeed = 110000;
 	 break;
       case SC15025_DAC:
-	 s3InfoRec.dacSpeed = 110000 / s3Bpp;
-	 if (s3Bpp == 2 /* and using both clock edges !!! */ ) 
-	    s3InfoRec.dacSpeed = 65000;
+	 s3InfoRec.dacSpeed = 110000;
 	 break;
       case BT485_DAC:
       case ATT20C505_DAC:
@@ -887,7 +886,7 @@ s3Probe()
 
    if (DAC_IS_TI3020_SERIES) {
       if (OFLG_ISSET(OPTION_NO_TI3020_CURS, &s3InfoRec.options)) {
-         ErrorF("%s %s: Use of Ti3020 cursor disabled in Xconfig\n",
+         ErrorF("%s %s: Use of Ti3020 cursor disabled in XF86Config\n",
 	        XCONFIG_GIVEN, s3InfoRec.name);
 	 OFLG_CLR(OPTION_TI3020_CURS, &s3InfoRec.options);
       } else {
@@ -904,6 +903,8 @@ s3Probe()
       }
    }
 
+   /* Check when pixmux is supported */
+
    if (DAC_IS_BT485_SERIES &&
        (
 	OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options) ||
@@ -917,39 +918,6 @@ s3Probe()
         OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options)))
       if (xf86bpp <= 8) s3ATT498PixMux = TRUE;
 
-   /* Set dot clock limit based on RAMDAC type/speed and pixmux usage */
-   switch (s3RamdacType) {
-   case BT485_DAC:
-   case ATT20C505_DAC:
-      if (s3Bt485PixMux)
-	 s3InfoRec.maxClock = s3InfoRec.dacSpeed;
-      else
-	 s3InfoRec.maxClock = 85000;
-      break;
-   case ATT20C498_DAC:
-   case STG1700_DAC:
-   case S3_SDAC_DAC:
-      if (s3ATT498PixMux)
-	 s3InfoRec.maxClock = s3InfoRec.dacSpeed;
-      else {
-	 if (s3InfoRec.dacSpeed >= 135000)
-	    s3InfoRec.maxClock = 110000;
-	 else
-	    s3InfoRec.maxClock = 80000;
-      }
-      break;
-   case TI3020_DAC:
-   case TI3025_DAC:
-      s3InfoRec.maxClock = s3InfoRec.dacSpeed;
-      break;
-   default:
-      /* For DACs we don't have special code for, keep this as a limit */
-      s3InfoRec.maxClock = s3MaxClock;
-   }
-   /* Check that maxClock is not higher than dacSpeed */
-   if (s3InfoRec.maxClock > s3InfoRec.dacSpeed)
-      s3InfoRec.maxClock = s3InfoRec.dacSpeed;
-
    /* Set the pix-mux description based on the ramdac type */
    if (DAC_IS_TI3020_SERIES) {
       pixMuxPossible = TRUE;
@@ -957,8 +925,9 @@ s3Probe()
       allowPixMuxSwitching = FALSE;
       nonMuxMaxClock = 70000;
       if (OFLG_ISSET(OPTION_ELSA_W2000PRO, &s3InfoRec.options) ||
-          (OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options) && DAC_IS_TI3025)) {
-         nonMuxMaxClock = 0;  /* 964 kann only be in pixmux mode when */
+          (OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options) &&
+	   DAC_IS_TI3025)) {
+         nonMuxMaxClock = 0;  /* 964 can only be in pixmux mode when */
          pixMuxMinWidth = 0;  /* working in enhanced mode */  
       }
    } else if (s3ATT498PixMux) {
@@ -1008,6 +977,8 @@ s3Probe()
 
    if (DAC_IS_TI3025) {
       s3ClockSelectFunc = ti3025ClockSelect;
+      OFLG_SET(CLOCK_OPTION_TI3025, &s3InfoRec.clockOptions);
+      OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
       if (xf86Verbose)
 	 ErrorF("%s %s: Using TI 3025 programmable clock\n",
 		XCONFIG_GIVEN, s3InfoRec.name);
@@ -1040,6 +1011,118 @@ s3Probe()
          vgaGetClocks(numClocks, s3ClockSelectFunc);
    }
 
+   /*
+    * Set the maximum raw clock for programmable clock chips.
+    * Setting maxRawClock to 0 means no clock-chip limit imposed.
+    */
+   if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions)) {
+      if (OFLG_ISSET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions)) {
+	 maxRawClock = 120000;
+      } else if (OFLG_ISSET(CLOCK_OPTION_SC11412, &s3InfoRec.clockOptions)) {
+	 switch (s3RamdacType) {
+	 case BT485_DAC:
+	    maxRawClock = 67500;
+	    break;
+	 case ATT20C505_DAC:
+	    maxRawClock = 90000;
+	    break;
+	 default:
+	    maxRawClock = 100000;
+	    break;
+	 }
+      } else if (OFLG_ISSET(CLOCK_OPTION_S3GENDAC, &s3InfoRec.clockOptions)) {
+	 maxRawClock = s3InfoRec.dacSpeed;
+      } else if (OFLG_ISSET(CLOCK_OPTION_TI3025, &s3InfoRec.clockOptions)) {
+	 maxRawClock = s3InfoRec.dacSpeed;
+      } else {
+	 /* Shouldn't get here */
+	 maxRawClock = 0;
+      }
+   } else {
+      maxRawClock = 0;
+   }
+
+   /*
+    * Set pixel clock limit based on RAMDAC type/speed/bpp and pixmux usage.
+    * Also scale maxRawClock so that it can be compared with a pixel clock,
+    * and re-adjust the pixel clock limit if required.
+    */
+
+   switch (s3RamdacType) {
+   case BT485_DAC:
+   case ATT20C505_DAC:
+      if (s3Bt485PixMux)
+	 s3InfoRec.maxClock = s3InfoRec.dacSpeed;
+      else
+	 s3InfoRec.maxClock = 85000;
+      break;
+      /* XXXX What happens for 16bpp and 32bpp?? */
+      /* XXXX Include scaling of maxRawClock for 16bpp and 32bpp */
+   case ATT20C498_DAC:
+   case STG1700_DAC:
+   case S3_SDAC_DAC:
+      if (s3ATT498PixMux)
+	 s3InfoRec.maxClock = s3InfoRec.dacSpeed;
+      else {
+	 if (s3InfoRec.dacSpeed >= 135000) /* 20C498 -13, -15, -17 */
+	    s3InfoRec.maxClock = 110000;
+	 else				   /* 20C498 -11 */
+	    s3InfoRec.maxClock = 80000;
+	 /* Halve it for 32bpp */
+	 if (s3Bpp == 4)
+	    s3InfoRec.maxClock /= 2;
+	    maxRawClock /= 2;
+      }
+      break;
+   case TI3020_DAC:
+   case TI3025_DAC:
+      s3InfoRec.maxClock = s3InfoRec.dacSpeed;
+      break;
+      /* XXXX What happens for 16bpp and 32bpp?? */
+      /* XXXX Include scaling of maxRawClock for 16bpp and 32bpp */
+   case ATT20C490_DAC:
+      s3InfoRec.maxClock = s3InfoRec.dacSpeed;
+      /* Halve it for 16bpp (32bpp not supported) */
+      if (s3Bpp > 1)
+	 s3InfoRec.maxClock /= 2;
+	 maxRawClock /= 2;
+      break;
+   case SC15025_DAC:
+      {
+	 int doubleEdgeLimit;
+	 if (s3InfoRec.dacSpeed >= 125000)	/* -125 */
+	    doubleEdgeLimit = 85000;
+	 else if (s3InfoRec.dacSpeed >= 110000)	/* -110 */
+	    doubleEdgeLimit = 65000;
+	 else					/* -80, -66 */
+	    doubleEdgeLimit = 50000;
+	 switch (s3Bpp) {
+	 case 1:
+	    s3InfoRec.maxClock = s3InfoRec.dacSpeed;
+	    break;
+	 case 2:
+	    s3InfoRec.maxClock = doubleEdgeLimit;
+	    maxRawClock /= 2;
+	    break;
+	 case 4:
+	    s3InfoRec.maxClock = doubleEdgeLimit / 2;
+	    maxRawClock /= 4;
+	    break;
+	 }
+      }
+      break;
+   default:
+      /* For DACs we don't have special code for, keep this as a limit */
+      s3InfoRec.maxClock = s3MaxClock;
+   }
+   /* Check that maxClock is not higher than dacSpeed */
+   if (s3InfoRec.maxClock > s3InfoRec.dacSpeed)
+      s3InfoRec.maxClock = s3InfoRec.dacSpeed;
+
+   /* Check if this exceeds the clock chip's limit */
+   if (maxRawClock > 0 && s3InfoRec.maxClock > maxRawClock)
+      s3InfoRec.maxClock = maxRawClock;
+
    if (xf86Verbose) {
       if (! OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions)) {
 	 for (j = 0; j < s3InfoRec.clocks; j++) {
@@ -1060,57 +1143,64 @@ s3Probe()
    if (pixMuxPossible && s3InfoRec.videoRam > nonMuxMaxMemory)
       pixMuxNeeded = TRUE;
 
-   /* Adjust the clocks in the mode list clock according to Bpp and ramdac */
-   for (pMode = s3InfoRec.pModes; pMode != NULL; pMode = pMode->next) {
-      switch(s3RamdacType) {
-      case NORMAL_DAC:
-	 /* only suports 8bpp -- nothing to do */
-	 break;
-      case BT485_DAC:
-      case ATT20C505_DAC:
-	 /* insert code */
-	 break;
-      case TI3020_DAC:
-	 /* insert code */
-	 break;
-      case TI3025_DAC:
-	 /* insert code */
-	 break;
-      case ATT20C498_DAC:
-	 /* insert code */
-	 break;
-      case ATT20C490_DAC:
-	 pMode->Clock *= s3Bpp;
-	 break;
-      case SC15025_DAC:
-	 /* insert code */
-	 break;
-      case STG1700_DAC:
-	 /* insert code */
-	 break;
-      case S3_SDAC_DAC:
-	 /* insert code */
-	 break;
-      }
-   }
-	 
-   /* Fill pixelClock with the actual pixel clock values available */
+   /* Adjust s3InfoRec.clock[] when not using a programable clock chip */
+
    if (!OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions)) {
-      for (i = 0; i < s3InfoRec.clocks; i++) {
-	 switch (s3RamdacType) {
+      Bool clocksChanged = FALSE;
+
+      for (j = 0; j < s3InfoRec.clocks; j++) {
+	 switch(s3RamdacType) {
 	 case NORMAL_DAC:
-	    pixelClock[i] = s3InfoRec.clock[i];
+	    /* only suports 8bpp -- nothing to do */
+	    break;
+	 case BT485_DAC:
+	 case ATT20C505_DAC:
+	    /* XXXX What happens here for 16bpp/32bpp ? */
+	    break;
+	 case TI3020_DAC:
+	 case TI3025_DAC:
+	    /* XXXX What happens here for 16bpp/32bpp ? */
+	    break;
+	 case ATT20C498_DAC:
+	 case STG1700_DAC:	/* XXXX should this be here? */
+	 case S3_SDAC_DAC:	/* XXXX should this be here? */
+	    switch (s3Bpp) {
+	    case 1:
+	       /*
+	        * This one depend on pixel multiplexing for 8bpp.
+	        * Although existing code implies it depends on ramdac
+	        * clock doubling instead (are the two tied together?)
+	        * Hopefully no 498s are used with non-programable clocks
+	        */
+	       break;
+	    case 2:
+	       /* No change for 16bpp */
+	       break;
+	    case 4:
+	       s3InfoRec.clock[j] /= 2;
+	       clocksChanged = TRUE;
+	       break;
+	    }
 	    break;
 	 case ATT20C490_DAC:
-	    pixelClock[i] = s3InfoRec.clock[i] / s3Bpp;
+	    if (s3Bpp > 1) {
+	       s3InfoRec.clock[j] /= s3Bpp;
+	       clocksChanged = TRUE;
+	    }
 	    break;
-	 /* Fill in for other Ramdac types */
+	 case SC15025_DAC:
+	    /* This assumes double edge clocking */
+	    if (s3Bpp > 1) {
+	       s3InfoRec.clock[j] /= s3Bpp;
+	       clocksChanged = TRUE;
+	    }
+	    break;
 	 default:
-	    pixelClock[i] = s3InfoRec.clock[i];
+	    /* Do nothing */
 	    break;
 	 }
       }
-      if (xf86Verbose && s3Bpp != 1 && pixelClock[0] != s3InfoRec.clock[0]) {
+      if (xf86Verbose && clocksChanged) {
 	 ErrorF("%s %s: Effective pixel clocks available for depth %d:\n",
 		XCONFIG_PROBED, s3InfoRec.name, s3InfoRec.depth);
 	 for (j = 0; j < s3InfoRec.clocks; j++) {
@@ -1119,15 +1209,22 @@ s3Probe()
 		  ErrorF("\n");
                ErrorF("%s %s: pixel clocks:", XCONFIG_PROBED, s3InfoRec.name);
 	    }
-	    ErrorF(" %6.2f", (double)pixelClock[j] / 1000.0);
+	    ErrorF(" %6.2f", (double)s3InfoRec.clock[j] / 1000.0);
          }
          ErrorF("\n");
       }
    }
 
+   /* At this point, the s3InfoRec.clock[] values are pixel clocks */
+
    tx = s3InfoRec.virtualX;
    ty = s3InfoRec.virtualY;
    pMode = s3InfoRec.modes;
+   if (pMode == NULL) {
+      ErrorF("No modes supplied in XF86Config\n");
+      xf86DisableIOPorts(s3InfoRec.scrnIndex);
+      return (FALSE);
+   }
    pEnd = NULL;
    do {
       DisplayModePtr pModeSv;
@@ -1213,14 +1310,14 @@ s3Probe()
 	    ErrorF("cannot be used for modes of width less than %d.\n",
 		   pixMuxMinWidth);
 	    ErrorF("Adjust the Modes and/or VideoRam and Virtual lines in\n");
-	    ErrorF("your Xconfig to meet these requirements\n");
+	    ErrorF("your XF86Config to meet these requirements\n");
 	 } else {
 	    ErrorF("Modes with a dot-clock above %dMHz require the RAMDAC to\n",
 		   nonMuxMaxClock / 1000);
 	    ErrorF("operate in pixel multiplex mode, but pixel multiplexing\n");
 	    ErrorF("cannot be used for modes with width less than %d.\n",
 		   pixMuxMinWidth);
-	    ErrorF("Adjust the Modes line in your Xconfig to meet these ");
+	    ErrorF("Adjust the Modes line in your XF86Config to meet these ");
 	    ErrorF("requirements.\n");
 	 }
       }
@@ -1232,13 +1329,13 @@ s3Probe()
 	    ErrorF("cannot be used for interlaced modes.\n",
 		   pixMuxMinWidth);
 	    ErrorF("Adjust the Modes and/or VideoRam and Virtual lines in\n");
-	    ErrorF("your Xconfig to meet these requirements\n");
+	    ErrorF("your XF86Config to meet these requirements\n");
 	 } else {
 	    ErrorF("Modes with a dot-clock above %dMHz require the RAMDAC to\n",
 		   nonMuxMaxClock / 1000);
 	    ErrorF("operate in pixel multiplex mode, but pixel multiplexing\n");
 	    ErrorF("cannot be used for interlaced modes.\n");
-	    ErrorF("Adjust the Modes line in your Xconfig to meet these ");
+	    ErrorF("Adjust the Modes line in your XF86Config to meet these ");
 	    ErrorF("requirements.\n");
 	 }
       }
@@ -1270,6 +1367,89 @@ s3Probe()
       } while (pMode != pEnd);
    }
 
+   /*
+    * For programmable clocks, fill in the SynthClock value
+    * and set V_DBLCLK as required for each mode
+    */
+
+   if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions)) {
+      /* First just copy the pixel values */
+      pEnd = pMode = s3InfoRec.modes;
+      do {
+	 pMode->SynthClock = s3InfoRec.clock[pMode->Clock];
+	 pMode = pMode->next;
+      } while (pMode != pEnd);
+      /* Now make adjustments */
+      pEnd = pMode = s3InfoRec.modes;
+      do {
+	 switch(s3RamdacType) {
+	 case NORMAL_DAC:
+	    /* only suports 8bpp -- nothing to do */
+	    break;
+	 case BT485_DAC:
+	    if (pMode->SynthClock > 67500) {
+	       pMode->SynthClock /= 2;
+	       pMode->Flags |= V_DBLCLK;
+	    }
+	    /* XXXX What happens here for 16bpp/32bpp ? */
+	    break;
+	 case ATT20C505_DAC:
+	    if (pMode->SynthClock > 90000) {
+	       pMode->SynthClock /= 2;
+	       pMode->Flags |= V_DBLCLK;
+	    }
+	    /* XXXX What happens here for 16bpp/32bpp ? */
+	    break;
+	 case TI3020_DAC:
+	 case TI3025_DAC:
+	    if (pMode->SynthClock > 100000) {
+	       pMode->SynthClock /= 2;
+	       pMode->Flags |= V_DBLCLK;
+	    }
+	    /* XXXX What happens here for 16bpp/32bpp ? */
+	    break;
+	 case ATT20C498_DAC:
+	 case STG1700_DAC:	/* XXXX should this be here? */
+	 case S3_SDAC_DAC:	/* XXXX should this be here? */
+	    switch (s3Bpp) {
+	    case 1:
+	       /*
+	        * This one depend on pixel multiplexing for 8bpp.
+	        * Although existing code implies it depends on ramdac
+	        * clock doubling instead (are the two tied together?)
+	        * We'll act based on clock doubling changeover at 67500
+	        */
+	       if (pMode->SynthClock > 67500) {
+		  pMode->SynthClock /= 2;
+		  pMode->Flags |= V_DBLCLK;
+	       }
+	       break;
+	    case 2:
+	       /* No change for 16bpp */
+	       break;
+	    case 4:
+	       pMode->SynthClock *= 2;
+	       break;
+	    }
+	    break;
+	 case ATT20C490_DAC:
+	    if (s3Bpp > 1) {
+	       pMode->SynthClock *= s3Bpp;
+	    }
+	    break;
+	 case SC15025_DAC:
+	    /* This assumes double edge clocking */
+	    if (s3Bpp > 1) {
+	       pMode->SynthClock *= s3Bpp;
+	    }
+	    break;
+	 default:
+	    /* Do nothing */
+	    break;
+	 }
+	 pMode = pMode->next;
+      } while (pMode != pEnd);
+   }
    if (DAC_IS_BT485_SERIES || DAC_IS_TI3020_SERIES) {
       if (OFLG_ISSET(OPTION_DAC_8_BIT, &s3InfoRec.options))
 	 s3DAC8Bit = TRUE;
@@ -1516,109 +1696,20 @@ LegendClockSelect(no)
 }
 
 static Bool
-icd2061ClockSelect(no)
-     int   no;
+icd2061ClockSelect(freq)
+     int   freq;
 {
-   long  freq;
    Bool result = TRUE;
 
-#define MAX_SC11412_FREQ  (DAC_IS_BT485_SERIES ? \
-			   ((s3RamdacType == ATT20C505_DAC) ? 90000 : 67500) : \
-			   100000)
-
    UNLOCK_SYS_REGS;
-   switch(no)
+   switch(freq)
    {
    case CLK_REG_SAVE:
    case CLK_REG_RESTORE:
-      result = s3ClockSelect(no);
+      result = s3ClockSelect(freq);
       break;
    default:
-#if 0
-      if (no < 2 
-	  && !(s3Bpp > 1 && DAC_IS_SC15025)
-	  && !(s3Bpp > 2 && (DAC_IS_ATT498 || DAC_IS_STG1700))
-	  ) {
-         result = s3ClockSelect(no);
-      } else 
-#endif
       {
-	 if (no >= s3InfoRec.clocks) {
-	    ErrorF("%s: Clock number too high (%d)\n", s3InfoRec.name, no);
-	    result = FALSE;
-	    break;
-	 }
-	 /* Start with freq in kHz */
-	 freq = s3InfoRec.clock[no];
-	 /* Check if clock frequency is within range */
-	 if (
-	     !OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) &&
-	     OFLG_ISSET(CLOCK_OPTION_SC11412, &s3InfoRec.clockOptions) &&
-	     freq > MAX_SC11412_FREQ) {
-	    /* SC11412 limit as there is no clockdoubling yet */
-	    ErrorF("%s %s: Specified dot clock (%.3f) too high for SC11412",
-		   XCONFIG_PROBED, s3InfoRec.name, freq / 1000.0);
-	    ErrorF("\tUsing %.3fMHz\n", MAX_SC11412_FREQ / 1000.0);
-	    freq = MAX_SC11412_FREQ;
-	 }
-	 if (freq > s3InfoRec.maxClock) {
-	    ErrorF("%s %s: Specified dot clock (%.3f) too high for RAMDAC.",
-		   XCONFIG_PROBED, s3InfoRec.name, freq / 1000.0);
-	    ErrorF("\tUsing %.3fMHz\n", s3InfoRec.maxClock / 1000.0);
-	    freq = s3InfoRec.maxClock;
-	 }
-	 if (DAC_IS_BT485_SERIES &&
-	     (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) ||
-	      !OFLG_ISSET(CLOCK_OPTION_SC11412, &s3InfoRec.clockOptions))) {
-	    if (freq > ((s3RamdacType == ATT20C505_DAC) ? 90000 : 67500)) {
-	       s3ClockDouble = TRUE;
-	       freq /= 2;
-	    } else {
-	       s3ClockDouble = FALSE;
-	    }
-	 } else if (DAC_IS_TI3020) {
-	    if (freq > 100000) {
-	       s3ClockDouble = TRUE;
-	       /* Use Ti3020/25 clock doubler */
-	       freq /= 2;
-	    } else {
-	       s3ClockDouble = FALSE;
-	       /* No doubler */
-	    }
-	 } else if (s3ATT498PixMux) {
-	    if (freq > 67500) {
-	       s3ClockDouble = TRUE;
-	       /* Use ATT498 pixel multiplexing */
-               freq /= 2;
-	    } else {
-	       s3ClockDouble = FALSE;
-	       /* No doubler */
-	    }
-	 } else if ((DAC_IS_ATT498 || DAC_IS_STG1700) && s3Bpp > 2) {
-	    int maxfreq = 55000;
-	    
-	    if (freq > maxfreq) {
-	       ErrorF("%s %s: Specified dot clock (%.2f) too high for ICD2061A/ATT498/STG1700 in %dbpp mode",
-		      XCONFIG_PROBED, s3InfoRec.name, freq / 1000.0, 8*s3Bpp);
-	       ErrorF("\tUsing %.2fMHz\n", maxfreq / 1000.0);
-	       freq = maxfreq;
-	    }
-	    freq *= 2;
-	 } else if (DAC_IS_SC15025 && s3Bpp > 1) {
-	    int maxfreq;
-	    if (s3Bpp == 2) 
-	       maxfreq = 120000;  /* ICD2061A limit */
-	    else 
-	       maxfreq = 110000;   /* SC15025 limit */
-	    
-	    if (freq > maxfreq/s3Bpp) {
-	       ErrorF("%s %s: Specified dot clock (%.2f) too high for ICD2061A/SC15025 in %dbpp mode",
-		      XCONFIG_PROBED, s3InfoRec.name, freq / 1000.0, 8*s3Bpp);
-	       ErrorF("\tUsing %.2fMHz\n", maxfreq/s3Bpp / 1000.0);
-	       freq = maxfreq/s3Bpp;
-	    }
-	    freq *= s3Bpp;
-	 }
 	 /* Convert freq to Hz */
 	 freq *= 1000;
 	 /* Use the "Alt" version always since it is more reliable */
@@ -1648,38 +1739,22 @@ icd2061ClockSelect(no)
 /* The GENDAC code also works for the SDAC */
 
 static Bool
-s3GendacClockSelect(no)
-     int   no;
+s3GendacClockSelect(freq)
+     int   freq;
 
 {
    Bool result = TRUE;
-   int freq;
  
    UNLOCK_SYS_REGS;
    
-   switch(no)
+   switch(freq)
    {
    case CLK_REG_SAVE:
    case CLK_REG_RESTORE:
-      result = s3ClockSelect(no);
+      result = s3ClockSelect(freq);
       break;
    default:
-      if (no < 2) {
-         result = s3ClockSelect(no);
-      } else {
-	 if (no >= s3InfoRec.clocks) {
-	    ErrorF("%s: Clock number too high (%d)\n", s3InfoRec.name, no);
-	    result = FALSE;
-	    break;
-	 }
-	 /* Start with freq in kHz */
-	 freq = s3InfoRec.clock[no];
-	 /* Check if clock frequency is within range */
-	 if (freq > s3InfoRec.dacSpeed) {
-	    ErrorF("%s %s: Specified dot clock (%.3f) too high for S3 Gendac/SDAC",
-		   XCONFIG_PROBED, s3InfoRec.name, freq / 1000.0);
-	    freq = s3InfoRec.dacSpeed;
-	 }
+      {
 	 (void) S3gendacSetClock(freq, 2); /* can't fail */
 	 outb(vgaCRIndex, 0x42);/* select the clock */
 	 outb(vgaCRReg, 0x02);
@@ -1692,49 +1767,29 @@ s3GendacClockSelect(no)
 
 
 static Bool
-ti3025ClockSelect(no)
-     int   no;
+ti3025ClockSelect(freq)
+     int   freq;
 
 {
    Bool result = TRUE;
-   int freq;
  
    UNLOCK_SYS_REGS;
    
-   switch(no)
+   switch(freq)
    {
    case CLK_REG_SAVE:
    case CLK_REG_RESTORE:
-      result = s3ClockSelect(no);
+      result = s3ClockSelect(freq);
       break;
    default:
-      if (no < 2) {
-         result = s3ClockSelect(no);
-      } else {
-	 if (no >= s3InfoRec.clocks) {
-	    ErrorF("%s: Clock number too high (%d)\n", s3InfoRec.name, no);
-	    result = FALSE;
-	    break;
-	 }
-	 /* Start with freq in kHz */
-	 freq = s3InfoRec.clock[no];
+      {
 	 /* Check if clock frequency is within range */
+	 /* XXXX Check this elsewhere */
 	 if (freq < 20000) {
 	    ErrorF("%s %s: Specified dot clock (%.3f) too low for TI 3025",
 		   XCONFIG_PROBED, s3InfoRec.name, freq / 1000.0);
 	    result = FALSE;
 	    break;
-	 }
-	 if (freq > s3InfoRec.dacSpeed) {
-	    ErrorF("%s %s: Specified dot clock (%.3f) too high for TI 3025",
-		   XCONFIG_PROBED, s3InfoRec.name, freq / 1000.0);
-	    freq = s3InfoRec.dacSpeed;
-	 }
-	 if (freq > 100000) {
-	       s3ClockDouble = TRUE;
-	       freq /= 2;
-	 } else {
-	    s3ClockDouble = FALSE;
 	 }
 	 (void) Ti3025SetClock(freq, 2); /* can't fail */
 	 outb(vgaCRIndex, 0x42);/* select the clock */

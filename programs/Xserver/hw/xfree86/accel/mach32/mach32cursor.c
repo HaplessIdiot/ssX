@@ -1,5 +1,6 @@
 /*
  * $XConsortium: mach32cursor.c,v 1.2 94/03/28 21:07:20 dpw Exp $
+ * $XFree86$
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -44,7 +45,6 @@
 #include "xf86_Option.h"
 #include "xf86_OSlib.h"
 #include "mach32.h"
-#include "regmach32.h"
 
 unsigned char *mach32CursorMemory;
 unsigned int  mach32CursorOffset;

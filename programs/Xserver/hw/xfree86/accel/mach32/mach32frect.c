@@ -1,5 +1,5 @@
 /* $XConsortium: mach32frect.c,v 1.2 94/04/17 20:30:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32frect.c,v 3.3 1994/08/31 04:21:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32frect.c,v 3.4 1994/09/04 10:52:15 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -68,7 +68,6 @@ mach8pcach.c 94-07-12, Hans Nasten ( nasten@everyware.se ).
 #include "mergerop.h"
 
 #include "mach32.h"
-#include "regmach32.h"
 
 #define NUM_STACK_RECTS	1024
 

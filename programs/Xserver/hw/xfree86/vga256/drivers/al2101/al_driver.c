@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/al2101/al_driver.c,v 3.2 1994/08/31 04:43:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/al2101/al_driver.c,v 3.3 1994/09/07 15:55:01 dawes Exp $ */
 /*
  * Copyright 1994 by Paolo Severini, Italy.
  *
@@ -87,6 +87,8 @@ vgaVideoChipRec AL2101 = {
   0,
   FALSE,
   FALSE,
+  NULL,
+  1,
 };
 
 

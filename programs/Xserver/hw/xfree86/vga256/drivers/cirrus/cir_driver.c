@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.1 94/03/28 21:48:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.9 1994/09/04 10:50:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.10 1994/09/07 15:55:12 dawes Exp $ */
 /*
  * Header: /usr/local/src/Xaccel/cirrus/RCS/driver.c,v 1.6 1993/04/04 17:57:44 bill Exp
  *
@@ -210,6 +210,8 @@ vgaVideoChipRec CIRRUS = {
   0x100000,			/* ChipLinearSize */
   TRUE,				/* ChipHas16bpp */
   TRUE,				/* ChipHas32bpp */
+  NULL,				/* ChipBuiltinModes */
+  1,				/* ChipClockScaleFactor */
 };
 
 /*

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.2 94/03/28 21:22:51 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.11 1994/09/08 14:27:21 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.12 1994/09/08 14:38:05 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -444,7 +444,7 @@ validateGraphicsToken(validTokens, token)
   for (i = 0; ScreenTab[i].token >= 0 && ScreenTab[i].token != token; i++)
     ;
   if (ScreenTab[i].token < 0)
-    return(TRUE);        /* Not a graphics token */
+    return(FALSE);        /* Not a graphics token */
 
   for (i = 0; validTokens[i] >= 0 && validTokens[i] != token; i++)
     ;
@@ -540,8 +540,8 @@ findConfigFile(filename, fp)
       char *filename;
       FILE **fp;
 {
-  char           *home;
-  char           *xconfig;
+  char           *home = NULL;
+  char           *xconfig = NULL;
   char	         *xwinhome = NULL;
 
 #define configFile (*fp)
@@ -550,10 +550,10 @@ findConfigFile(filename, fp)
   /*
    * First open if necessary the config file.
    * If the -xf86config flag was used, use the name supplied there (root only).
-   * If $XCONFIG is a pathname, use it as the name of the config file (root)
-   * If $XCONFIG is set but doesn't contain a '/', append it to 'XF86Config'
+   * If $XF86CONFIG is a pathname, use it as the name of the config file (root)
+   * If $XF86CONFIG is set but doesn't contain a '/', append it to 'XF86Config'
    *   and search the standard places (root only).
-   * If $XCONFIG is not set, just search the standard places.
+   * If $XF86CONFIG is not set, just search the standard places.
    */
   while (!configFile) {
     
@@ -1009,6 +1009,7 @@ configKeyboardSection()
   xf86Info.xleds         = 0L;
   xf86Info.kbdDelay      = 500;
   xf86Info.kbdRate       = 30;
+  xf86Info.kbdProc       = (int (*)())NULL;
   xf86Info.vtinit        = NULL;
   xf86Info.vtSysreq      = VT_SYSREQ_DEFAULT;
   xf86Info.specialKeyMap = (int *)xalloc((RIGHTCTL - LEFTALT + 1) *
@@ -1106,6 +1107,10 @@ configKeyboardSection()
       break;
     }
   }
+  if (xf86Info.kbdProc == (int (*)())NULL)
+  {
+    configError("No keyboard device given");
+  }
 }
       
 static void
@@ -1122,7 +1127,10 @@ configPointerSection()
   xf86Info.sampleRate      = 0;
   xf86Info.emulate3Buttons = FALSE;
   xf86Info.chordMiddle     = FALSE;
-  xf86Info.mouseFlags = 0;
+  xf86Info.mouseFlags      = 0;
+  xf86Info.mseProc         = (int (*)())NULL;
+  xf86Info.mseDevice       = NULL;
+  xf86Info.mseType         = -1;
       
   while ((token = getToken(PointerTab)) != ENDSECTION) {
     switch (token) {
@@ -1261,7 +1269,21 @@ configPointerSection()
   }
   /* Print log and make sanity checks */
 
-  if (xf86Verbose)
+  if (xf86Info.mseProc == (int (*)())NULL)
+  {
+    configError("No mouse protocol given");
+  }
+  
+  /*
+   * if mseProc is set and mseType isn't, then using Xqueue or OSmouse.
+   * Otherwise, a mouse device is required.
+   */
+  if (xf86Info.mseType >= 0 && !xf86Info.mseDevice)
+  {
+    configError("No mouse device given");
+  }
+
+  if (xf86Verbose && xf86Info.mseType >= 0)
   {
     Bool formatFlag = FALSE;
     ErrorF("%s Mouse: type: %s, device: %s", 
@@ -1375,6 +1397,7 @@ configDeviceSection()
        }
        if (devp->clocks == 0)
        {
+          if (getToken(NULL) != STRING) configError("Option string expected");
 	  i = 0;
 	  while (xf86_ClockOptionTab[i].token != -1)
 	  {
@@ -2129,7 +2152,7 @@ configScreenSection()
       /* Now copy the info across to the screen rec */
       dispp = dispList + dispIndex;
       if (dispp->depth > 0) screen->depth = dispp->depth;
-      screen->weight = dispp->weight;
+      if (dispp->weight.red > 0) screen->weight = dispp->weight;
       screen->frameX0 = dispp->frameX0;
       screen->frameY0 = dispp->frameY0;
       screen->virtualX = dispp->virtualX;
@@ -2403,8 +2426,8 @@ xf86LookupMode(target, driver)
 
   if (first_time)
   {
-    ErrorF("%s %s: Maximum allowed dot-clock: %dMHz\n", XCONFIG_PROBED,
-	   driver->name, driver->maxClock / 1000);
+    ErrorF("%s %s: Maximum allowed dot-clock: %1.3f MHz\n", XCONFIG_PROBED,
+	   driver->name, driver->maxClock / 1000.0);
     first_time = FALSE;
   }
 
@@ -2493,7 +2516,7 @@ xf86LookupMode(target, driver)
     ErrorF("%s %s: There is no mode definition named \"%s\"\n",
 	   XCONFIG_PROBED, driver->name, target->name);
   else if (clock_too_high)
-    ErrorF("%s %s: Clock for mode \"%s\" %s\n\tLimit is %7.3f (MHz)\n",
+    ErrorF("%s %s: Clock for mode \"%s\" %s\n\tLimit is %7.3f MHz\n",
            XCONFIG_PROBED, driver->name, target->name,
            "is too high for the configured hardware.",
            driver->maxClock / 1000.0);

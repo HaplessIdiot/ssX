@@ -1,5 +1,5 @@
 /* $XConsortium: mach32fcach.c,v 1.1 94/03/28 21:07:38 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32fcach.c,v 3.4 1994/09/04 10:52:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32fcach.c,v 3.5 1994/09/07 15:49:13 dawes Exp $ */
 /*
  * Copyright 1992, 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -40,7 +40,6 @@
 #include	"fontstruct.h"
 #include	"dixfontstr.h"
 #include	"mach32.h"
-#include	"regmach32.h"
 #include        "xf86bcache.h"
 #include	"xf86fcache.h"
 #include	"xf86text.h"
@@ -207,7 +206,7 @@ Domach32CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 	       outw(CUR_Y, (short)block->y);	       
 
 	       /*
-		* Is thre readmask altered
+		* Is the readmask altered
 		*/
 	       if (mach32cachereadmask[block->id] != pmsk) {
 		  pmsk = mach32cachereadmask[block->id];

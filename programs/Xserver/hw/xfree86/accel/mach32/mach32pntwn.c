@@ -1,5 +1,5 @@
 /* $XConsortium: mach32pntwn.c,v 1.2 94/04/17 20:30:49 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32pntwn.c,v 3.0 1994/05/08 05:19:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32pntwn.c,v 3.1 1994/07/15 06:58:17 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -66,7 +66,6 @@ OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "cfb16.h"
 #include "cfbmskbits.h"
 #include "mach32.h"
-#include "regmach32.h"
 
 extern void miPaintWindow();
 

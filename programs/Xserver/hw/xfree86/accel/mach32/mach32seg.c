@@ -1,5 +1,5 @@
 /* $XConsortium: mach32seg.c,v 1.2 94/04/17 20:30:50 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32seg.c,v 3.0 1994/05/08 05:19:45 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -69,7 +69,6 @@ Modified for the Mach32 by Kevin E. Maritn (martin@cs.unc.edu)
 
 #include "cfb.h"
 #include "cfbmskbits.h"
-#include "regmach32.h"
 #include "mach32.h"
 
 void

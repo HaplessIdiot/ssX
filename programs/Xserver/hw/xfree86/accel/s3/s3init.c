@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.18 1994/09/07 15:51:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.19 1994/09/08 14:26:51 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -105,8 +105,6 @@ extern unsigned char s3Port40;
 extern unsigned char s3Port59;
 extern unsigned char s3Port5A;
 extern unsigned char s3Port31;
-
-extern Bool s3ClockDouble;
 
 void
 s3CleanUp(void)
@@ -537,7 +535,7 @@ s3Init(mode)
 		      s3InfoRec.clock[mode->Clock] > 60000 ? 1 : 0 ;
    else if (S3_964_SERIES(s3ChipId) && DAC_IS_BT485_SERIES)
       /* Stealth64 and Miro Crystal 20SV */
-      pixMuxShift =  s3ClockDouble ? 1 : 0;
+      pixMuxShift =  mode->Flags & V_DBLCLK ? 1 : 0;
    else if (S3_928_SERIES(s3ChipId) && DAC_IS_SC15025)
       pixMuxShift = -(s3Bpp>>1);  /* for 16/32 bpp */
    else if (S3_864_SERIES(s3ChipId) || S3_805_I_SERIES(s3ChipId))
@@ -637,7 +635,10 @@ s3Init(mode)
       new->MiscOutReg = (new->MiscOutReg & 0xF3) | (tmp & 0x0C);
    } else {
       /* XXXX Should we really do something about the return value? */
-      (void) (s3ClockSelectFunc) (mode->Clock);
+      if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions))
+	 (void) (s3ClockSelectFunc)(mode->SynthClock);
+      else
+         (void) (s3ClockSelectFunc)(mode->Clock);
    }
 
    /*
@@ -714,12 +715,8 @@ s3Init(mode)
 	 }
 	 break;
       case 32:
-#if 0  /* 3 bytes/pixel */
-	 comm = 0x60;  /* repack mode 2 (3 byte RGB) using only rising clock edges */
-#else  /* 4 bytes/pixel */
 	 comm = 0x40;  /* repack mode 3a using both clock edges */
 	 prr = 1;
-#endif
 	 break;
       default:
 	 ;
@@ -1028,7 +1025,7 @@ s3Init(mode)
 
 	 if (S3_964_SERIES(s3ChipId) && DAC_IS_BT485_SERIES) {
 	    /* Stealth 64 and Miro Crystal 20SV */
-	    if (s3ClockDouble) {
+	    if (mode->Flags & V_DBLCLK) {
 	       /* Set VCLK = DCLCK/2 */
 	       /* And set up a 32 bit interleaved bus */
 	       outb(vgaCRIndex, 0x66);
@@ -1114,13 +1111,13 @@ s3Init(mode)
       s3OutBtReg(BT_COMMAND_REG_0, 0x00, 0x01 |
 		 (s3DAC8Bit ? 0x02 : 0) | (s3DACSyncOnGreen ? 0x08 : 0x00));
 #ifdef CLOCKDEBUG
-      if (s3ClockDouble) {
+      if (mode->Flags & V_DBLCLK) {
 	 ErrorF("Setting clock doubler in s3Init(), freq = %.3f\n",
 		s3InfoRec.clock[mode->Clock] / 1000.0);
       }
 #endif
       /* Use Bt485 clock doubler - Bit 3 of Command Reg 3 */
-      s3OutBtRegCom3(0xF7, (s3ClockDouble ? 0x08 : 0x00));
+      s3OutBtRegCom3(0xF7, (mode->Flags & V_DBLCLK ? 0x08 : 0x00));
       s3OutBtReg(BT_COMMAND_REG_0, 0xFE, 0x00); /* wake up    */
       outb(0x3C4, 1);
       outb(0x3C5, tmp2); /* unblank the screen */
@@ -1143,7 +1140,7 @@ s3Init(mode)
 
       if (DAC_IS_TI3020) {
 	 /* the 3025 clock programming code sets the input clock select */
-         if (s3ClockDouble)
+         if (mode->Flags & V_DBLCLK)
 	    s3OutTiIndReg(TI_INPUT_CLOCK_SELECT, 0x00, TI_ICLK_CLK1_DOUBLE);
          else
 	    s3OutTiIndReg(TI_INPUT_CLOCK_SELECT, 0x00, TI_ICLK_CLK1);

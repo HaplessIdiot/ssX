@@ -1,5 +1,5 @@
 /* $XConsortium: mach32init.c,v 1.1 94/03/28 21:08:34 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32init.c,v 3.0 1994/05/08 05:19:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32init.c,v 3.1 1994/05/08 06:21:35 dawes Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -32,7 +32,6 @@
 #include "xf86_OSlib.h"
 #include "mach32.h"
 #include "ativga.h"
-#include "regmach32.h"
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 

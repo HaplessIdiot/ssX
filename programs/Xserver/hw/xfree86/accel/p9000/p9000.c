@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.12 1994/09/07 15:50:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.13 1994/09/08 14:26:19 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -133,10 +133,11 @@ p9000VendorRec *p9000VendorPtr = NULL;  /* The probed vendor */
 
 /* A list of vendors to be probed */
 static p9000VendorRec *p9000VendorList[] = {
-  &(p9000ViperVlbVendor),
 #ifdef P9000_VPRPCI_SUP
+  /* The Viper PCI must come before the Viper VLB */
   &(p9000ViperPciVendor),
 #endif
+  &(p9000ViperVlbVendor),
 #ifdef P9000_ORCHID_SUP
   &(p9000OrchidVendor),
 #endif
@@ -156,7 +157,7 @@ volatile pointer p9000VideoMem;
 
 unsigned p9000BytesPerPixel;  /* The number of bytes per pixel */
 
-/* Options that may be specified to Xconfig */
+/* Options that may be specified to XF86Config */
 Bool p9000SWCursor = FALSE;         /* Use a software cursor */
 Bool p9000DACSyncOnGreen = FALSE;   /* Enables syncing on green */
 Bool p9000DAC8Bit = TRUE;           /* Use 8 bits for cmap entry (the
@@ -247,7 +248,7 @@ p9000Probe()
 	  }
 	if (curvendor >= Num_p9000_Vendors)
 	  {
-	    ErrorF("%s %s: Chipset specified in Xconfig (%s) is not recognized!\n",
+	    ErrorF("%s %s: Chipset specified in XF86Config (%s) is not recognized!\n",
 		   XCONFIG_GIVEN, p9000InfoRec.name, p9000InfoRec.chipset);
 	    return(FALSE);
 	  }
@@ -264,7 +265,7 @@ p9000Probe()
 	  }
 	if (curvendor >= Num_p9000_Vendors)
 	  {
-	    ErrorF("%s %s: Autodetection of chipset failed.  Specify explicitly in Xconfig.\n", XCONFIG_PROBED, p9000InfoRec.name);
+	    ErrorF("%s %s: Autodetection of chipset failed.  Specify explicitly in XF86Config.\n", XCONFIG_PROBED, p9000InfoRec.name);
 	    return(FALSE);
 	  }
       }
@@ -281,13 +282,13 @@ p9000Probe()
     
     if (!p9000InfoRec.clocks)
       {
-	ErrorF("%s %s: Autodetection of clocks is not supported.\n\tExplicitly specify in Xconfig file on a Clocks line.\n", XCONFIG_PROBED, p9000InfoRec.name);
+	ErrorF("%s %s: Autodetection of clocks is not supported.\n\tExplicitly specify in XF86Config file on a Clocks line.\n", XCONFIG_PROBED, p9000InfoRec.name);
 	return(FALSE);
       }
     
     if (!p9000InfoRec.videoRam)
       {
-	ErrorF("%s %s: Autodetection of video RAM is not yet supported.\n\tExplicitly specify VideoRAM in Xconfig file.\n", XCONFIG_PROBED, p9000InfoRec.name);
+	ErrorF("%s %s: Autodetection of video RAM is not yet supported.\n\tExplicitly specify VideoRAM in XF86Config file.\n", XCONFIG_PROBED, p9000InfoRec.name);
 	return(FALSE);	
       }
     memavail = p9000InfoRec.videoRam*1024;
@@ -368,6 +369,11 @@ p9000Probe()
      * Any invalid modes are removed from the mode ring.
      */
     pMode = pEnd = p9000InfoRec.modes;
+    if (pMode == NULL)
+      {
+	ErrorF("No modes supplied in XF86Config\n");
+	return(FALSE);
+      }
     do
       {
 	xf86LookupMode(pMode, &p9000InfoRec);

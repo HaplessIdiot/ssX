@@ -1,6 +1,6 @@
 /*
  * $XConsortium: et4_driver.c,v 1.2 94/03/28 21:51:05 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.3 1994/09/03 02:52:59 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.4 1994/09/07 15:55:25 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -123,6 +123,8 @@ vgaVideoChipRec ET4000 = {
   0,
   FALSE,
   FALSE,
+  NULL,
+  1,
 };
 
 #define new ((vgaET4000Ptr)vgaNewVideoState)

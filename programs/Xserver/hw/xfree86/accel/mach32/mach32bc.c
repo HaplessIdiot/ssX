@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32bc.c,v 3.1 1994/09/04 10:52:07 dawes Exp $$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32bc.c,v 3.2 1994/09/07 15:49:12 dawes Exp $$ */
 /*
  * Copyright 1993 by Jon Tombs. Oxford University
  * 
@@ -41,10 +41,8 @@
 #include        "xf86bcache.h"
 
 #include	"mach32.h"
-#include	"regmach32.h"
 
-
-extern unsigned short *mach32cachemask;
+extern unsigned short mach32cachemask[];
 extern unsigned short *mach32cachereadmask;
 
 /*

@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/generic/gen_driver.c,v 3.2 1994/08/31 04:45:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/generic/gen_driver.c,v 3.3 1994/09/07 15:55:28 dawes Exp $ */
 /*
- * Copyright 1993 by David Wexelblat <dwex@goblin.org>
+ * Stubs driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -75,6 +75,24 @@ static void *   GenericSave();
 static void     GenericRestore();
 static void     GenericAdjust();
 
+static DisplayModeRec Mode320x200 = {
+	&Mode320x200,
+	&Mode320x200,
+	"320x200",
+	0,	/* Clock index */
+	320,
+	344,
+	376,
+	400,
+	200,
+	204,
+	206,
+	225,
+	0,
+	0,
+};
+	
+
 vgaVideoChipRec GENERIC = {
 	/* 
 	 * Function pointers
@@ -108,6 +126,8 @@ vgaVideoChipRec GENERIC = {
 	0,
 	FALSE,
 	FALSE,
+	&Mode320x200,
+	1,
 };
 
 /* These are the fixed 100% VGA compatible CRTC register values used. */
@@ -303,7 +323,7 @@ GenericAdjust(x, y)
 int x, y;
 {
 	/* This isn't used. The best you would get is about 320x204 */
-	/* (if it works at all). */
+	/* (which doesn't work). */
 
 	/* In standard VGA 320x200x256 (chain-4), the start address */
 	/* is in pixel units. */

@@ -1,5 +1,5 @@
 /* $XConsortium: mach32im.c,v 1.1 94/03/28 21:08:22 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32im.c,v 3.1 1994/08/31 04:21:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32im.c,v 3.2 1994/09/07 15:49:15 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -36,7 +36,6 @@
 #include "xf86.h"
 #include "xf86_HWlib.h"
 #include "mach32.h"
-#include "regmach32.h"
 #include "mach32im.h"
 
 #define	mach32BankSize  (64 * 1024)
@@ -727,152 +726,135 @@ mach32ImageFillNoMem(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 }
 
 void
-mach32ImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, 
-		   fgPixel, bgPixel, alu, planemask, opaque)
+#if NeedFunctionPrototypes
+mach32ImageStipple(int x, int y, int w, int h, unsigned char *psrc,
+		   int pwidth, int pw, int ph, int pox, int poy,
+		   Pixel fgPixel, Pixel bgPixel, short alu, Pixel planemask,
+		   int opaque)
+#else
+mach32ImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
+		  fgPixel, bgPixel, alu, planemask, opaque)
     int			x;
     int			y;
     int			w;
     int			h;
     unsigned char	*psrc;
+    int			pw, ph, pox, poy;
     int			pwidth;
-    int			pw;
-    int			ph;
-    int			pox;
-    int			poy;
     Pixel		fgPixel;
     Pixel		bgPixel;
     short		alu;
     Pixel		planemask;
     int			opaque;
+#endif
 {
-    int 		i;
-    unsigned char	*pline;
-    int			x1, x2, y1, y2, width;
-    unsigned char	*newsrc = NULL, *newline;
+    int			srcx, srch, dstw;
+    unsigned short	*ptmp;
+
 
     if (alu == MIX_DST || w == 0 || h == 0)
 	return;
 
-    x1 = x & ~0x7;
-    x2 = (x+w+7) & ~0x7;
-    y1 = y;
-    y2 = y+h;
-
-    width = x2 - x1;
-
-    if (pw <= 8) {
-	newsrc = (unsigned char *)ALLOCATE_LOCAL(2*ph*sizeof(char));
-	if (!newsrc) {
-	    return;
-	}
-
-	while (pw <= 8) {
-	    pline = psrc;
-	    newline = newsrc;
-	    for (i = 0; i < ph; i++) {
-		newline[0] = (pline[0] & (0xff >> (8-pw))) | pline[0] << pw;
-		if (pw > 4)
-		    newline[1] = pline[0] >> (8-pw);
-
-		pline += pwidth;
-		newline += 2;
-	    }
-	    pw *= 2;
-	    pwidth = 2;
-	    psrc = newsrc;
-	}
-    }
-
-    WaitQueue(3);
+    WaitQueue(13);
     outw(EXT_SCISSOR_L, x);
-    outw(EXT_SCISSOR_R, x+w-1);
+    outw(EXT_SCISSOR_R, (x+w-1));
+    outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPPC | COLCMPOP_F);
+    outw(MULTIFUNC_CNTL, MIN_AXIS_PCNT | h-1);
     outw(WRT_MASK, planemask);
-
-    WaitQueue(6);
     outw(FRGD_MIX, FSS_FRGDCOL | alu);
-    if (opaque) {
+    if( opaque ) {
 	outw(BKGD_MIX, BSS_BKGDCOL | alu);
 	outw(BKGD_COLOR, (short)bgPixel);
-    } else {
-	outw(BKGD_MIX, BSS_BKGDCOL | MIX_DST);
     }
-
+    else
+	 outw(BKGD_MIX, BSS_BKGDCOL | MIX_DST);
     outw(FRGD_COLOR, (short)fgPixel);
-    outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPPC | COLCMPOP_F);
-    outw(MAJ_AXIS_PCNT, (short)(width-1));
+    w += (x & 3);			/* Adjust for nibble mode. */
+    x &= ~3;
+    outw(MAJ_AXIS_PCNT, (short)(((w + 7) & ~7)-1));
+    outw(CUR_X, (short)x);
+    outw(CUR_Y, (short)y);
+    outw(CMD, CMD_RECT | PCDATA | _16BIT | INC_Y | INC_X |
+	      YMAJAXIS | DRAW | PLANAR | WRTDATA);
+    modulus(x - pox, pw, x);
+    modulus(y - poy, ph, y);
+    WaitQueue(16);
+    /*
+     * When the source bitmap is properly aligned, max 16 pixels wide
+     * and nonrepeating, use this faster loop instead.
+     * This speeds up all copying to the font cache.
+     */
+    if( (x & 7) == 0 && w <= 16 && x+w <= pw && y+h <= ph ) {
+	unsigned short pix;
+	unsigned char *pnt;
 
-  {
-    int xpix, ypix, j;
-    int clobits, lobits, chibits, hibits, pw8;
-    unsigned char *pline;
+	pnt = (unsigned char *)(psrc + pwidth * y + (x >> 3));
+	while( h-- > 0 ) {
+	    pix = *((unsigned short *)(pnt));
+	    outw( PIX_TRANS, mach32stipple_tab[ pix & 0xff ] );
+	    if( w > 8 )
+		outw( PIX_TRANS, mach32stipple_tab[ ( pix >> 8 ) & 0xff ] );
 
-    modulus(x1-pox,pw,xpix);
-    clobits = xpix % 8;
-    lobits = 8 - clobits;
-    xpix /= 8;
-
-    hibits = pw % 8;
-    chibits = 8 - hibits;
-    pw8 = pw / 8;
-
-    modulus(y1-poy,ph,ypix);
-    pline = psrc + (pwidth * ypix);
-
-    for (j = y1; j < y2; j++) {
-	unsigned long getbuf;
-        int i, bitlft, pix;
-
-	WaitQueue(3);
-	outw(CUR_X, (short)x1);
-	outw(CUR_Y, (short)j);
-	outw(CMD, CMD_LINE | PCDATA | _16BIT | LINETYPE
-			    | DRAW | PLANAR | WRTDATA); 
-
-	if (pw8 == xpix) {
-	    bitlft = hibits - clobits;
-	    getbuf = (SWPBIT (xpix) & ~MSKBIT (chibits)) >> chibits;
-	    pix = 0;
-	} else {
-	    bitlft = lobits;
-	    getbuf = SWPBIT (xpix) & MSKBIT (lobits);
-	    pix = xpix + 1;
+	    pnt += pwidth;
 	}
-
-	for (i = 0; i < width; i += 16) {
-	    while (bitlft < 16) {
-		if (pix >= pw8) {
-		    if (hibits > 0) {
-			getbuf = (getbuf << hibits)
-			       | ((SWPBIT(pix) & ~MSKBIT(chibits)) >> chibits);
-			bitlft += hibits;
-		    }
-		    pix = 0;
-		}
-		getbuf = (getbuf << 8) | SWPBIT(pix++);
-		bitlft += 8;
-	    }
-	    bitlft -= 16;
-	    outw(PIX_TRANS, (((getbuf >> bitlft) & 0xf000) >> 3) | (((getbuf >> bitlft) & 0xf00) >> 7));
-	    outw(PIX_TRANS, (((getbuf >> bitlft) & 0xf0) << 5) | (((getbuf >> bitlft) & 0xf) << 1));
-	}
-
-	if ((++ypix) == ph) {
-	    ypix  = 0;
-	    pline = psrc;
-	} else
-	    pline += pwidth;
     }
-  }
-
+    else {
+	while( h > 0 ) {
+	    srch = ( y+h > ph ? ph - y : h );
+	    while( srch > 0 ) {
+		dstw = w;
+		srcx = x;
+		ptmp = (unsigned short *)(psrc + pwidth * y);
+		while( dstw > 0 ) {
+		    int np, x2;
+		    unsigned short *pnt, pix;
+		    /*
+		     * Assemble 16 bits and feed them to the draw engine.
+		     */
+		    np = pw - srcx;		/* No. pixels left in bitmap.*/
+		    pnt =(unsigned short *)
+				       ((unsigned char *)(ptmp) + (srcx >> 3));
+		    x2 = srcx & 7;		/* Offset within byte. */
+		    if( np >= 16 ) {
+			pix = (unsigned short)(*((unsigned int *)(pnt)) >> x2);
+		    }
+		    else if( pw >= 16 ) {
+			pix = (unsigned short)((*((unsigned int *)(pnt)) >> x2)
+						 & MSKBIT(np)) | (*ptmp << np);
+		    }
+		    else if( pw >= 8 ) {
+			pix = ((*pnt >> x2) & MSKBIT(np)) | (*ptmp << np)
+						      | (*pnt << (np+pw));
+		    }
+		    else {
+			pix = (*ptmp >> x2) & MSKBIT(np);
+			while( np < 16 && np < dstw ) {
+			    pix |= *ptmp << np;
+			    np += pw;
+			}
+		    }
+		    outw( PIX_TRANS, mach32stipple_tab[ pix & 0xff ] );
+		    if( dstw > 8 )
+			outw( PIX_TRANS,
+			      mach32stipple_tab[ ( pix >> 8 ) & 0xff ] );
+		    srcx += 16;
+		    if( srcx >= pw )
+			srcx -= pw;
+		    dstw -= 16;
+		}
+		y++;
+		h--;
+		srch--;
+	    }
+	    y = 0;
+	}
+    }
     WaitQueue(5);
     outw(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
     outw(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
     outw(EXT_SCISSOR_L, 0);
     outw(EXT_SCISSOR_R, mach32MaxX);
     outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
-
-    if (newsrc)
-	DEALLOCATE_LOCAL(newsrc);
 }
 
 #if NeedFunctionPrototypes
@@ -913,9 +895,8 @@ mach32FontOpStipple(x, y, w, h, psrc, pwidth, id)
     int			pwidth;
     Pixel		id;
 {
-    extern unsigned short *mach32cachemask;
+    extern unsigned short mach32cachemask[];
 
     mach32ImageStipple(x, y, w, h, psrc, pwidth, w, h, x, y,
-		       ~0, 0, mach32alu[GXcopy], mach32cachemask[id], 1);
+		       ~0, 0, mach32alu[GXcopy], (Pixel)mach32cachemask[id], 1);
 }
-

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.c,v 3.1 1994/09/04 10:47:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.c,v 3.3 1994/09/08 14:26:45 dawes Exp $ */
 /* 
  * s3ELSA.c 
  * 
@@ -190,7 +190,7 @@ static int calc_crc16(int ndata, unsigned short *data)
 
 static int check_ELSA_bios(int BIOSbase)
 {
-   unsigned char bios[BIOS_BSIZE], *match = " ELSA GmbH";
+   unsigned char bios[BIOS_BSIZE], *match = (unsigned char *)" ELSA GmbH";
    int i,l;
    
    if (xf86ReadBIOS(BIOSbase, 0, bios, BIOS_BSIZE) != BIOS_BSIZE)
@@ -199,7 +199,7 @@ static int check_ELSA_bios(int BIOSbase)
    if ((bios[0] != 0x55) || (bios[1] != 0xaa))
       return -2;
 
-   l = strlen(match);
+   l = strlen((char *)match);
    for (i=0; i<BIOS_BSIZE-l; i++) 
       if (bios[i] == match[0] && !memcmp(&bios[i],match,l))
 	 return 1;
@@ -312,7 +312,6 @@ int s3DetectELSA(int BIOSbase, char **pcard, char **pserno,
    unsigned long serno;
 
    if (check_ELSA_bios(BIOSbase>0 ? BIOSbase : BIOS_BASE) <= 0) {
-      ErrorF("can't find ELSA bios at address %x\n",BIOSbase);
       return -1;
    }
 

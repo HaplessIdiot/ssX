@@ -1,5 +1,5 @@
 /* $XConsortium: mach32.c,v 1.1 94/03/28 21:06:42 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.14 1994/09/04 10:46:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.15 1994/09/07 15:49:09 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -563,6 +563,11 @@ mach32Probe()
     tx = mach32InfoRec.virtualX;
     ty = mach32InfoRec.virtualY;
     pMode = mach32InfoRec.modes;
+    if (pMode == NULL) {
+	ErrorF("No modes supplied in XF86Config\n");
+	xf86DisableIOPorts(mach32InfoRec.scrnIndex);
+	return(FALSE);
+    }
     pEnd = (DisplayModePtr)NULL;
     do {
 	  DisplayModePtr pModeSv;

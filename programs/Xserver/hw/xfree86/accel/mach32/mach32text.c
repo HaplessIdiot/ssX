@@ -1,5 +1,5 @@
 /* $XConsortium: mach32text.c,v 1.1 94/03/28 21:09:31 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32text.c,v 3.3 1994/09/04 10:52:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32text.c,v 3.4 1994/09/07 15:49:18 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -39,7 +39,6 @@
 #include	"dixfontstr.h"
 #include	"mi.h"
 #include	"mach32.h"
-#include	"regmach32.h"
 
 extern unsigned short mach32stipple_tab[];
 

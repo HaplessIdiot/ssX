@@ -1,5 +1,5 @@
 /* $XConsortium: t89_driver.c,v 1.1 94/03/28 21:53:18 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.1 1994/08/31 04:48:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.2 1994/09/07 15:55:51 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -114,6 +114,8 @@ vgaVideoChipRec TVGA8900 = {
   0,
   FALSE,
   FALSE,
+  NULL,
+  1,
 };
 
 #define new ((vgaTVGA8900Ptr)vgaNewVideoState)
@@ -475,6 +477,13 @@ TVGA8900Probe()
 	vga256InfoRec.chipset = TVGA8900Ident(TVGAchipset);
 	vga256InfoRec.bankedMono = TRUE;
 
+#ifndef MONOVGA
+	/* For 512k in 256 colour, the pixel clock is half the raw clock */
+	if (vga256InfoRec.videoRam != 1024)
+	{
+		TVGA8900.ChipClockScaleFactor = 2;
+	}
+#endif
 	/* Initialize option flags allowed for this driver */
 	if ((TVGAchipset == TVGA8900B) || (TVGAchipset == TVGA8900C))
 	{

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Option.h,v 1.1 94/03/28 21:24:25 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.10 1994/08/31 04:33:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.11 1994/09/07 15:51:56 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -133,6 +133,7 @@ typedef struct {
 #define CLOCK_OPTION_ICD2061ASL	 2 /* use slow ICD 2061A programable clocks */
 #define CLOCK_OPTION_SC11412     3 /* use SC11412 programmable clocks */
 #define CLOCK_OPTION_S3GENDAC    4 /* use S3 Gendac programmable clocks */
+#define CLOCK_OPTION_TI3025      5 /* use TI3025 programmable clocks */
 
 /*
  * Table to map option strings to tokens.
@@ -226,6 +227,7 @@ OptFlagRec xf86_ClockOptionTab [] = {
   { "sc11412", 		CLOCK_OPTION_SC11412 },   /* Sierra SC11412 */
   { "s3gendac",		CLOCK_OPTION_S3GENDAC },  /* S3 gendac */
   { "s3_sdac",		CLOCK_OPTION_S3GENDAC },  /* S3 SDAC */
+  { "ti3025",		CLOCK_OPTION_TI3025 },    /* TI3025 */
   { "",			-1 },
 };
 

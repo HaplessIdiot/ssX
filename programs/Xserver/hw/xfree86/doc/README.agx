@@ -39,7 +39,8 @@
      a) The accelerated line routines don't match lines written
         by the mi/cfb routines. This is noticable when switching between
         virtual consoles while running routines that draw and erase 
-        lines. 
+        lines. Seems to have been reduced if not eliminated after
+        some fixes to the mi/cfb code.
 
      b) The AGX-016 adds support for additional virtual width's,
         the current server does not support these.
@@ -52,8 +53,7 @@
 
      a) Address the above known problems.
 
-     b) Complete support for the Graphite Pros's "BIG", 84-pin, RAMDAC.
-        currently only the 85Mhz "small", 44-pin, RAMDAC is supported 
+     b) Complete support for the Graphite Pro's "BIG", 84-pin, RAMDAC.
         (the 2MB version of the Graphite Pro has both RAMDAC's, 
         the 1Mb only the "small").
 
@@ -62,24 +62,20 @@
         setup code and then finding a lot of time to debug and test
         the numerous permutations.
 
-     d) The current server is still heavily dependent on cfb.banked
-        routines. Cleaning this up is necessary not only for better
-        performance, but to support other than 8bpp. 
+     d) Support other pixel depths.                          
 
-     e) Support 16bpp, 4bpp, and 1bpp (and possibly 24bpp).
-
-     f) General performance improvements taking advantage of AGX/XGA
+     e) General performance improvements taking advantage of AGX/XGA
         features like mask-based fills for polygon and arc fills.  
         General macro-optimizations, many routines are Q&D adaptions
         of existing routines from other servers. 
 
-     g) Implement more HW probing, this will be difficult as it
+     f) Implement more HW probing, this will be difficult as it
         appears some (all?) vendors don't implement the VESA VXE
         POS registers, although the AGX chip does support it. 
         There are a few rev/vendor registers in the AGX chip
         but they are not documented.
 
-     h) Micro-optimizations, in particularly reducing overhead for
+     g) Micro-optimizations, in particularly reducing overhead for
         common, simple, cases that don't require full generality. 
         Improving concurrency between the cpu and graphics engine,
         which is currently limited by the use of the cfb.banked 
@@ -89,7 +85,7 @@
 
 5) XConfig
     
-      Options Currently Supported:
+      Options and Keywords Currently Supported:
 
          RAMDAC -
 
@@ -99,45 +95,48 @@
            damage them.
 
 
-(tested)    "normal_dac"      -  normal vga style RAMDAC (6-bit DAC),
+            "normal_dac"      -  normal vga style RAMDAC (6-bit DAC),
                                  default if none specified.
 
-(tested)    "bt481"           -  bt481 RAMDAC  (supports 8-bit DAC)
-(tested)    "bt482"           -  bt482 RAMDAC  (supports 8-bit DAC)
+            "bt481"           -  bt481 RAMDAC  (supports 8-bit DAC)
+            "bt482"           -  bt482 RAMDAC  (supports 8-bit DAC)
                                  The Hercules Graphite HG210 uses 
                                  the BT481 or BT482, the only 
                                  difference between these two is the
                                  BT482's HW cursor (not yet supported).
                                  The BT481/2 are limited to 85Mhz.
 
-(tested)    "SC15025"         -  Sierra SC15025 and SC15021 RAMDACi
+            "SC15025"         -  Sierra SC15025 and SC15021 RAMDACi
                                  (supports 8-bit DAC). The SC15025 is
-                                 limited to 110Mhz, and the SC150021
-                                 135Mhz. Check RAMDAC's actual rating. 
+                                 limited to 125Mhz, and the SC150021
+                                 135Mhz. Check RAMDAC's actual rating,
+                                 many SC15025 used in AGX based boards
+                                 are only rated to 110Mhz (printed in
+                                 dark ink below the part number).
+ 
 
-(tested)    "herc_dual_dac"   -  Herc. Graphite Pro RAMDAC probe.
+            "herc_dual_dac"   -  Herc. Graphite Pro RAMDAC probe.
                                  If the 84-pin Big-RAMDAC is installed
                                  (2MB models), will use the Big RAMDAC,
                                  but only clocks-doubled, pixel-
                                  multiplexed modes (higher clock values
-                                 only!). In the future lower clocks and
-                                 resolutions will be supported by switching
-                                 to the Small 44-pin RAMDAC. Clocks differ 
-                                 significantly for this RAMDAC, and a     
+                                 only!). Lower clocks and resolutions 
+                                 are supported by switching to the 
+                                 Small 44-pin RAMDAC. Clocks differ 
+                                 significantly for this option, and a     
                                  clock probe should be run with this option
                                  specified if you are going to use it 
                                  (see additional notes in the clock 
-                                 section, only a few clocks are currently 
-                                 usable). 
+                                 section).
 
                                  Not supported by the HG210 Graphite.
 
-(tested)    "herc_small_dac"  -  Herc. Graphite Pro RAMDAC probe.
+            "herc_small_dac"  -  Herc. Graphite Pro RAMDAC probe.
                                  Forces use of only the samll RAMDAC.
 
                                  Not supported by the HG210 Graphite.
 
-(tested)    "dac_8_bit"       -  Sets supported RAMDAC's to 8-bit DAC mode
+            "dac_8_bit"       -  Sets supported RAMDAC's to 8-bit DAC mode
                                  (all but normal_dac).
 
             "sync_on_green"   -  Composite sync on green for DAC's that 
@@ -152,12 +151,14 @@
            stickers over the chip, in general, if it's a VLB board
            it's probably an AGX-015 and is it's an ISA board it may
            be an AGX-014. The Hercules Graphite Power Pro and Spider 
-           Black Widow plus use the AGX-016 chipset.
+           Black Widow plus use the AGX-016 chipset. In general, 
+           specifing a lower rev in the AGX-0{14,15,16} series does 
+           not seem to causes problems (except lower performance
+           from the AGX-014 non-accelerated line drawing).
 
-           Note: Only an AGX-015 has had much testing, the 
-           AGX-014 and AGX-016 are very similiar and have a high
-           likelyhood of working. Some limited testing has been
-           done on the AGX-016 based Spider BW+.  
+           Note: Only the AGX-016, AGX-015, and AGX-014 have had
+           any testing. Most of the development has been with
+           an AGX-015 based 2MB Hercules Graphite VL PRO (HG-720).
 
            The limited documentation I have for the AGX-010 is that 
            is is a full clone of the XGA architecture (I assume XGA-1). 
@@ -252,32 +253,64 @@
           probe is running.
 
           Once clocks are known they can be entered into XF86Config,
-          then subsequent runs won't probe clocks and will be quicker 
+          subsequent runs won't probe clocks and will be much quicker 
           to startup. For the clock probe it is recommended that the 
-          X server be run with the -probeonly option. The ramdac option 
+          X server be run with the -probeonly option. The RAMDAC option 
           you're going to use should also be specified, as this may 
           affect the results in some cases.
 
-          For the AGX-014 and later AGX chips, the first 16 clocks
-          will be the values generated by the external clock chip.
+          For the 2MB Hercules Graphites with the "herc-dual-dac"
+          selected, the probe will generate an additional 16 clocks 
+          with values double the corresponding values from the first set. 
+          Unusable values will be zero-ed out, currently all of the first 16, 
+          and most of the second. Clocks from the first set will be 
+          used with the 44-pin RAMDAC (BT481 or BT482) and the doubled
+          clocks from the second set by the 84-pin RAMDAC (BT485 or
+          AT&T20C505. For Example:
 
-          For the dual-RAMDAC 2MB Hercules Graphites, the probe will
-          generate an additional 16 clocks with values double the 
-          corresponding values from the first set. Unusable values 
-          will be zero-ed out, currently all of the first 16, and 
-          most of the second.  
+            The AGX-015 2MB Herclues Graphite VL Pro with an 
+            ICS1494M 9251-516 clock chip has probed clock values of:
+
+               25.18  28.80  32.70  36.00  40.00  45.00  50.40  64.70
+               70.10  76.10  80.60  86.30  90.40  95.90 100.70 109.40
+
+            Actual values according to Hercules are:
+
+               25.175 28.322 32.512 36.000 40.00 44.90 50.35 65.00
+               70.00  75.00  80.00  85.00  90.00 95.00 100.0 108.0
+
+            These are the values to be used in the clock statement
+            if specifing the "normal", "bt481", or "herc_small_dac"
+            RAMDAC in your XF86Config. 
+
+            BUT, if using the "herc_dual_dac" RAMDAC, and with an 
+            AT&T20C505-13 84-pin RAMDAC the clocks should be (approx):
+
+              25.18  28.32  32.51  36.00  40.00  45.00  50.35  65.00
+              70.00  75.00  80.00  85.00   0.00   0.00   0.00   0.00
+              0.00   0.00   0.00   0.00   0.00  90.00  100.7  130.0
+              0.00   0.00   0.00   0.00   0.00   0.00   0.00   0.00
+
+            If equipped with a BT485-135 RAMDAC the clock statement 
+            should be (approx):
+
+              25.18  28.32  32.51  36.00  40.00  45.00  50.35  65.00
+              70.00  75.00   0.00  85.00   0.00   0.00   0.00   0.00
+              0.00   0.00   0.00   72.00  80.00  90.00  100.7  130.0
+              0.00   0.00   0.00   0.00   0.00   0.00   0.00   0.00
 
           Clock probing assumes that the first clock is 25.175Mhz and
-          uses that to derive the rest. A warning is displayed  if the
-          second is not about 28.322Mhz. If this warning appears, you
-          should not use the probed clock values.
+          uses that to derive the rest. A warning is displayed if the
+          second is not near 28.322Mhz. If this warning appears, you
+          should not use the probed clock values without additional
+          verification from other sources.
 
-          In the case of the AGX-014 an later, only the external 
+          In the case of the AGX-014 and later AGX's, only the external 
           clock select lines are used, this means the clock values
           correspond to the values of the video board's clock chip.
 
           For the AGX-010, the first 8 clocks use the standard XGA 
-          internal clock selects and the second 8 are bases on some 
+          internal clock selects and the second 8 are based on some 
           AGX extensions. For the XGA-1 only 8 clocks are available.
 
           The maximum pixel clock generally allowed is 85Mhz, but
@@ -291,9 +324,9 @@
        Modes:
 
          One difference I've noted from the Mach8 is that the AGX's
-         CRTC doesn't like the start of the horz sync to be equal to 
-         horz blank start (vert sync may have the same problem, I 
-         need to test some more). Interlaced and +/-sync flags are
+         CRTC doesn't like the start of the horizontal sync to be 
+         equal to horz blank start (vert sync may have the same problem, 
+         I need to test some more). Interlaced and +/-sync flags are
          supported but have had little testing.
  
 
@@ -309,7 +342,7 @@
          If you know of any vendors still producing XGA clones for the
          ISA, VESA, or even PCI bus, let me know. Some bits of crude POS
          probe code exist, but have proved useless for AGX based
-         boards, so is currently disabled. 
+         boards and are currently disabled. 
 
          To attempt using an XGA compatible you will need to specify 
          at least the XGA instance number (typically 0 for chips 
@@ -347,4 +380,4 @@
            
           
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.agx,v 3.5 1994/08/20 07:35:18 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.agx,v 3.6 1994/09/07 15:52:43 dawes Exp $

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: mach32curs.c,v 1.2 94/03/28 21:07:13 dpw Exp $
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32curs.c,v 3.0 1994/05/08 05:19:18 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -52,7 +52,6 @@
 #include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #include "mach32.h"
-#include "regmach32.h"
 
 typedef struct _Mach32CursPriv {
     unsigned short data[MACH32_CURSBYTES/2]; /* cursor definition */

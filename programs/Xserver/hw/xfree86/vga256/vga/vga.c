@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.1 94/03/28 21:55:24 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.14 1994/09/07 15:56:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.15 1994/09/07 16:30:28 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -401,12 +401,6 @@ vgaProbe()
 	needmem /= (vgaBitsPerPixel / 8);
 #endif /* XF86VGA16 */
 #endif /* MONOVGA */
-#if 0
-	for (j=0; j < vga256InfoRec.clocks; j++)
-	  for (k=j+1; k < vga256InfoRec.clocks; k++)
-	    if (vga256InfoRec.clock[j] == vga256InfoRec.clock[k])
-	      vga256InfoRec.clock[k] = 0;
-#endif
 
         if (xf86Verbose)
         {
@@ -448,6 +442,24 @@ vgaProbe()
 	  }
 	  ErrorF("\n");
         }
+
+	/* Scale raw clocks to give pixel clocks if driver requires it */
+	if (Drivers[i]->ChipClockScaleFactor > 1) {
+	  for (j = 0; j < vga256InfoRec.clocks; j++)
+	    vga256InfoRec.clock[j] /= Drivers[i]->ChipClockScaleFactor;
+	  vga256InfoRec.maxClock /= Drivers[i]->ChipClockScaleFactor;
+	  if (xf86Verbose) {
+	    ErrorF("%s %s: Effective pixel clocks available:\n",
+		   XCONFIG_PROBED, vga256InfoRec.name);
+	    for (j=0; j < vga256InfoRec.clocks; j++)
+	    {
+	      if ((j % 8) == 0)
+	        ErrorF("\n%s %s: clocks:", XCONFIG_PROBED, vga256InfoRec.name);
+	      ErrorF(" %6.2f", (double)vga256InfoRec.clock[j]/1000.0);
+	    }
+	    ErrorF("\n");
+	  }
+	}
 
 #if !defined(MONOVGA) && !defined(XF86VGA16)
         /*
@@ -531,57 +543,78 @@ vgaProbe()
 #endif
 
         maxX = maxY = -1;
-	pMode = vga256InfoRec.modes;
-	pEnd = (DisplayModePtr) NULL;
-	tx = vga256InfoRec.virtualX;
-	ty = vga256InfoRec.virtualY;
-	do {
-	  DisplayModePtr pModeSv;
+        if (Drivers[i]->ChipBuiltinModes) {
+          pEnd = pMode = vga256InfoRec.modes = Drivers[i]->ChipBuiltinModes;
+          ErrorF("%s %s: Using builtin driver modes:\n", XCONFIG_PROBED,
+                 vga256InfoRec.name);
+	  do {
+            ErrorF("%s %s: Builtin Mode: %s\n", XCONFIG_PROBED,
+                   vga256InfoRec.name, pMode->name);
+	    if (pMode->HDisplay > maxX)
+	    {
+	      maxX = pMode->HDisplay;
+	      pmaxX = pMode;
+	    }
+	    if (pMode->VDisplay > maxY)
+	    {
+	      maxY = pMode->VDisplay;
+	      pmaxY = pMode;
+	    }
+            pMode = pMode->next;
+          } while (pMode != pEnd);
+        } else if (vga256InfoRec.modes == NULL) {
+          ErrorF("No modes supplied in XF86Config\n");
+	  vgaEnterLeaveFunc(LEAVE);
+	  return(FALSE);
+        } else {
+	  pMode = vga256InfoRec.modes;
+	  pEnd = (DisplayModePtr) NULL;
+	  do {
+	    DisplayModePtr pModeSv;
 
-	  /*
-	   * xf86LookupMode returns FALSE if it ran into an invalid
-	   * parameter
-	   */
-	  if(xf86LookupMode(pMode, &vga256InfoRec) == FALSE) {
-		pModeSv = pMode->next;
-		xf86DeleteMode(&vga256InfoRec, pMode);
-		pMode = pModeSv; 
-	  } else if (pMode->HDisplay * pMode->VDisplay > needmem) {
-		pModeSv=pMode->next;
-		ErrorF("Insufficient video memory for all resolutions\n");
-		xf86DeleteMode(&vga256InfoRec, pMode);
-		pMode = pModeSv;
-	  } else if (((tx > 0) && (pMode->HDisplay > tx)) || 
-		     ((ty > 0) && (pMode->VDisplay > ty))) {
-		pModeSv=pMode->next;
-		ErrorF("Resolution %dx%d too large for virtual %dx%d\n",
-			pMode->HDisplay, pMode->VDisplay, tx, ty);
-		xf86DeleteMode(&vga256InfoRec, pMode);
-		pMode = pModeSv;
-	  } else {
-		/*
-		 * Successfully looked up this mode.  If pEnd isn't 
-		 * initialized, set it to this mode.
-		 */
-		if(pEnd == (DisplayModePtr) NULL)
-			pEnd = pMode;
+	    /*
+	     * xf86LookupMode returns FALSE if it ran into an invalid
+	     * parameter
+	     */
+	    if(xf86LookupMode(pMode, &vga256InfoRec) == FALSE) {
+	      pModeSv = pMode->next;
+	      xf86DeleteMode(&vga256InfoRec, pMode);
+	      pMode = pModeSv; 
+	    } else if (pMode->HDisplay * pMode->VDisplay > needmem) {
+	      pModeSv=pMode->next;
+	      ErrorF("Insufficient video memory for all resolutions\n");
+	      xf86DeleteMode(&vga256InfoRec, pMode);
+	      pMode = pModeSv;
+	    } else if (((tx > 0) && (pMode->HDisplay > tx)) || 
+		       ((ty > 0) && (pMode->VDisplay > ty))) {
+	      pModeSv=pMode->next;
+	      ErrorF("Resolution %dx%d too large for virtual %dx%d\n",
+		     pMode->HDisplay, pMode->VDisplay, tx, ty);
+	      xf86DeleteMode(&vga256InfoRec, pMode);
+	      pMode = pModeSv;
+	    } else {
+	      /*
+	       * Successfully looked up this mode.  If pEnd isn't 
+	       * initialized, set it to this mode.
+	       */
+	      if (pEnd == (DisplayModePtr) NULL)
+		pEnd = pMode;
 
-		if (pMode->HDisplay > maxX)
-		{
-			maxX = pMode->HDisplay;
-			pmaxX = pMode;
-		}
-		if (pMode->VDisplay > maxY)
-		{
-			maxY = pMode->VDisplay;
-			pmaxY = pMode;
-		}
+	      if (pMode->HDisplay > maxX)
+	      {
+		maxX = pMode->HDisplay;
+		pmaxX = pMode;
+	      }
+	      if (pMode->VDisplay > maxY)
+	      {
+		maxY = pMode->VDisplay;
+		pmaxY = pMode;
+	      }
 
-		pMode = pMode->next;
-	  }
-	}
-	while (pMode != pEnd);
-
+	      pMode = pMode->next;
+	    }
+	  } while (pMode != pEnd);
+        }
 	tx = vga256InfoRec.virtualX;
 	ty = vga256InfoRec.virtualY;
 

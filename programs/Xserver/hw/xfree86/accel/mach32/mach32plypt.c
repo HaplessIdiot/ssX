@@ -1,5 +1,5 @@
 /* $XConsortium: mach32plypt.c,v 1.2 94/04/17 20:30:49 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32plypt.c,v 3.0 1994/05/08 05:19:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32plypt.c,v 3.1 1994/07/15 06:58:16 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -55,7 +55,6 @@ Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
 #include "cfb.h"
 #include "cfb16.h"
 #include "cfbmskbits.h"
-#include "regmach32.h"
 #include "mach32.h"
 
 #define isClipped(c,ul,lr)  ((((c) - (ul)) | ((lr) - (c))) & ClipMask)

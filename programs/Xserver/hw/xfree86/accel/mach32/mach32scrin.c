@@ -1,5 +1,5 @@
 /* $XConsortium: mach32scrin.c,v 1.2 94/04/17 20:30:50 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32scrin.c,v 3.1 1994/06/18 16:23:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32scrin.c,v 3.2 1994/07/15 06:58:18 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -60,7 +60,6 @@ Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
 #include "cfbmskbits.h"
 #include "mibstore.h"
 #include "mach32.h"
-#include "regmach32.h"
 
 extern RegionPtr mfbPixmapToRegion();
 extern Bool cfbAllocatePrivates();
