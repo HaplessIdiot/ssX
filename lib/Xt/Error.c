@@ -1,4 +1,4 @@
-/* $TOG: Error.c /main/38 1997/05/15 17:29:05 kaleb $ */
+/* $TOG: Error.c /main/39 1997/05/30 11:41:07 root $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Error.c,v 3.3 1996/12/26 03:41:22 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Error.c,v 3.4 1997/05/17 12:52:09 dawes Exp $ */
 
 /*
 
@@ -253,6 +253,10 @@ static void DefaultMsg (name,type,class,defaultp,params,num_params,error,fn)
     else if ((getuid () != geteuid ()) || getuid() == 0) {
 	if ((error && errorHandler == _XtDefaultError) ||
 	    (!error && warningHandler == _XtDefaultWarning)) {
+	    /*
+	     * if it's just going to go to stderr anyway, then we'll 
+	     * fprintf to stderr ourselves and skip the insecure sprintf.
+	     */
 	    int i = *num_params;
 	    String par[10];
 	    if (i > 10) i = 10;
@@ -266,53 +270,60 @@ static void DefaultMsg (name,type,class,defaultp,params,num_params,error,fn)
 			    par[5], par[6], par[7], par[8], par[9]);
 	    (void) fprintf (stderr, "%c", '\n');
 	    if (i != *num_params)
-		XtWarning( "some arguments in previous message were lost" );
+		(*fn) ( "Some arguments in previous message were lost" );
+	    else if (error) exit (1);
 	} else {
-	    (*fn)(buffer);
-	    (*fn)("This program is an suid root program or is being run\n\
-by the root user; the full text of the error or warning message cannot\n\
-be safely formatted in this environment. You may get a more descriptive\n\
-message by running the program as a non-root user or by removing the\n\
-suid bit on the executable.");
+	    /*
+	     * can't tell what it might do, so we'll play it safe
+	     */
+	    XtWarning ("\
+This program is an suid-root program or is being run by the root user.\n\
+The full text of the error or warning message cannot be safely formatted\n\
+in this environment. You may get a more descriptive message by running the\n\
+program as a non-root user or by removing the suid bit on the executable.");
+	    (*fn)(buffer); /* if *fn is an ErrorHandler it should exit */
 	}
     } else
 #endif
     {
+	/*
+	 * If you have snprintf the worst thing that could happen is you'd
+	 * lose some information. Without snprintf you're probably going to 
+	 * scramble your heap and perhaps SEGV -- sooner or later.
+	 * If it hurts when you go like this then don't go like this! :-)
+	 */
 	int i = *num_params;
 	String par[10];
 	if (i > 10) i = 10;
 	(void) memmove((char*)par, (char*)params, i * sizeof(String) );
 	bzero( &par[i], (10-i) * sizeof(String) );
+	if (i != *num_params)
+	    XtWarning( "Some arguments in following message were lost" );
 	/* 
-	 * resist any temptation you might have to make message
+	 * resist any temptation you might have to make `message' a
 	 * local buffer on the stack. Doing so is a security hole 
 	 * in programs executing as root. Error and Warning
 	 * messages shouldn't be called frequently enough for this
 	 * to be a performance issue.
 	 */
 	if ((message = __XtMalloc (BIGBUF))) {
-	    /* 
-	     * it may be desireable to initialize  the last few bytes of 
-	     * message ... 
-	     */
 #ifndef USE_SNPRINTF
+	    message[BIGBUF-1] = 0;
 	    (void) sprintf (message, buffer, 
 #else
 	    (void) snprintf (message, BIGBUF, buffer,
 #endif
 			    par[0], par[1], par[2], par[3], par[4], 
 			    par[5], par[6], par[7], par[8], par[9]);
-	    /* 
-	     * ... and check their value after the sprintf. If they've 
-	     * been altered then it might be wise to exit now, while 
-	     * you can still do it gracefully.
-	     */
+#ifndef USE_SNPRINTF
+	    if (message[BIGBUF-1] != '\0')
+		XtWarning ("Possible heap corruption in Xt{Error,Warning}MsgHandler");
+#endif
 	    (*fn)(message);
 	    XtFree(message);
 	} else
+	    XtWarning ("Memory allocation failed, arguments in the following message were lost");
 	    (*fn)(buffer);
-	if (i != *num_params)
-	    XtWarning( "some arguments in previous message were lost" );
     }
 }
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c /main/2 1996/12/30 14:56:02 kaleb $
+ * $TOG: Xrm.c /main/3 1997/05/30 15:23:06 kaleb $
  */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
@@ -57,7 +57,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/Xrm.c,v 1.2 1996/12/30 13:58:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/Xrm.c,v 1.3 1996/12/31 07:05:27 dawes Exp $ */
 
 #include	<stdio.h>
 #include	<ctype.h>
@@ -1064,8 +1064,18 @@ void XrmQPutStringResource(pdb, bindings, quarks, str)
  * Chris Peterson, MIT X Consortium		5/17/90.
  */
 
-#define LIST_SIZE 101
-#define BUFFER_SIZE 100
+/* 
+ * Xlib spec says max 100 quarks in a lookup, will stop and return if
+ * return if any single production's lhs has more than 100 components.
+ */
+#define QLIST_SIZE 100
+
+/* 
+ * This should be big enough to handle things like the XKeysymDB or biggish
+ * ~/.Xdefaults or app-defaults files. Anything bigger will be allocated on
+ * the heap.
+ */
+#define DEF_BUFF_SIZE 8192
 
 static void GetIncludeFile();
 
@@ -1075,19 +1085,21 @@ static void GetDatabase(db, str, filename, doall)
     char *filename;
     Bool doall;
 {
+    char *rhs;
+    char *lhs, lhs_s[DEF_BUFF_SIZE];
+    XrmQuark quarks[QLIST_SIZE + 1];	/* allow for a terminal NullQuark */
+    XrmBinding bindings[QLIST_SIZE + 1];
+
     register char *ptr;
     register XrmBits bits = 0;
     register char c;
-    int len;
     register Signature sig;
     register char *ptr_max;
-    register XrmQuarkList t_quarks;
+    register int num_quarks;
     register XrmBindingList t_bindings;
 
-    int alloc_chars = BUFSIZ;
-    char buffer[BUFSIZ], *value_str;
-    XrmQuark quarks[LIST_SIZE];
-    XrmBinding bindings[LIST_SIZE];
+    int len, alloc_chars;
+    unsigned long str_len;
     XrmValue value;
     Bool only_pcs;
     Bool dolines;
@@ -1095,8 +1107,32 @@ static void GetDatabase(db, str, filename, doall)
     if (!db)
 	return;
 
-    if (!(value_str = (char *)xalloc(sizeof(char) * alloc_chars)))
+     /*
+      * if strlen (str) < DEF_BUFF_SIZE allocate buffers on the stack for
+      * speed otherwise malloc the buffer. From a buffer overflow standpoint
+      * we can be sure that neither: a) a component on the lhs, or b) a
+      * value on the rhs, will be longer than the overall length of str,
+      * i.e. strlen(str).
+      *
+      * This should give good performance when parsing "*foo: bar" type
+      * databases as might be passed with -xrm command line options; but
+      * with larger databases, e.g. .Xdefaults, app-defaults, or KeysymDB
+      * files, the size of the buffers will be overly large. One way
+      * around this would be to double-parse each production with a resulting
+      * performance hit. In any event we can be assured that a lhs component
+      * name or a rhs value won't be longer than str itself.
+      */
+
+    str_len = strlen (str);
+    if (DEF_BUFF_SIZE > str_len) lhs = lhs_s;
+    else if ((lhs = (char*) xalloc (str_len)) == NULL)
 	return;
+
+    alloc_chars = DEF_BUFF_SIZE < str_len ? str_len : DEF_BUFF_SIZE;
+    if ((rhs = (char*) xalloc (alloc_chars)) == NULL) {
+	if (lhs != lhs_s) Xfree (lhs);
+	return;
+    }
 
     (*db->methods->mbinit)(db->mbstate);
     str--;
@@ -1176,19 +1212,13 @@ static void GetDatabase(db, str, filename, doall)
 	/*
 	 * Third: loop through the LHS of the resource specification
 	 * storing characters and converting this to a Quark.
-	 *
-	 * If the number of quarks is greater than LIST_SIZE - 1.  This
-	 * function will trash your memory.
-	 *
-	 * If the length of any quark is larger than BUFSIZ this function
-	 * will also trash memory.
 	 */
 	
+	num_quarks = 0;
 	t_bindings = bindings;
-	t_quarks = quarks;
 
 	sig = 0;
-	ptr = buffer;
+	ptr = lhs;
 	*t_bindings = XrmBindTightly;	
 	for(;;) {
 	    if (!is_binding(bits)) {
@@ -1198,8 +1228,15 @@ static void GetDatabase(db, str, filename, doall)
 		    bits = next_char(c, str);
 		}
 
-		*t_quarks++ = _XrmInternalStringToQuark(buffer, ptr - buffer,
-							sig, False);
+		quarks[num_quarks++] = 
+			_XrmInternalStringToQuark(lhs, ptr - lhs, sig, False);
+
+		if (num_quarks > QLIST_SIZE) {
+		    Xfree(rhs);
+		    if (lhs != lhs_s) Xfree (lhs);
+		    (*db->methods->mbfinish)(db->mbstate);
+		    return;
+		}
 
 		if (is_separator(bits))  {
 		    if (!is_space(bits))
@@ -1218,7 +1255,7 @@ static void GetDatabase(db, str, filename, doall)
 
 		    if (is_separator(bits))
 			break;
-		    t_quarks--;
+		    num_quarks--;
 		    continue;
 		}
 
@@ -1228,7 +1265,7 @@ static void GetDatabase(db, str, filename, doall)
 		    *(++t_bindings) = XrmBindLoosely;
 
 		sig = 0;
-		ptr = buffer;
+		ptr = lhs;
 	    }
 	    else {
 		/*
@@ -1248,7 +1285,7 @@ static void GetDatabase(db, str, filename, doall)
 	    bits = next_char(c, str);
 	}
 
-	*t_quarks = NULLQUARK;
+	quarks[num_quarks] = NULLQUARK;
 
 	/*
 	 * Make sure that there is a ':' in this line.
@@ -1304,7 +1341,7 @@ static void GetDatabase(db, str, filename, doall)
 	 * Fifth: Process the right hand side.
 	 */
 
-	ptr = value_str;
+	ptr = rhs;
 	ptr_max = ptr + alloc_chars - 4;
 	only_pcs = True;
 	len = 1;
@@ -1428,17 +1465,18 @@ static void GetDatabase(db, str, filename, doall)
 		char * temp_str;
 
 		alloc_chars += BUFSIZ/10;		
-		temp_str = (char *)xrealloc(value_str, sizeof(char) * alloc_chars);
+		temp_str = (char *)xrealloc(rhs, sizeof(char) * alloc_chars);
 
 		if (!temp_str) {
-		    xfree(value_str);
+		    xfree(rhs);
+		    if (lhs != lhs_s) xfree(lhs);
 		    (*db->methods->mbfinish)(db->mbstate);
 		    return;
 		}
 
-		ptr = temp_str + (ptr - value_str); /* reset pointer. */
-		value_str = temp_str;
-		ptr_max = value_str + alloc_chars - 4;
+		ptr = temp_str + (ptr - rhs); /* reset pointer. */
+		rhs = temp_str;
+		ptr_max = rhs + alloc_chars - 4;
 	    }
 	}
 
@@ -1450,13 +1488,14 @@ static void GetDatabase(db, str, filename, doall)
 	*ptr++ = '\0';
 
 	/* Store it in database */
-	value.size = ptr - value_str;
-	value.addr = (XPointer) value_str;
+	value.size = ptr - rhs;
+	value.addr = (XPointer) rhs;
 	
 	PutEntry(db, bindings, quarks, XrmQString, &value);
     }
 
-    xfree(value_str);
+    if (lhs != lhs_s) xfree (lhs);
+    xfree(rhs);
     (*db->methods->mbfinish)(db->mbstate);
 }
 

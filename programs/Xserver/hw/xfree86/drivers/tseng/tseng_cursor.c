@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_cursor.c,v 1.4 1997/04/08 10:13:30 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_cursor.c,v 1.5 1997/04/14 07:05:28 hohndel Exp $ */
 
 /*
  * Hardware cursor handling. Adapted mainly from apm/apm_cursor.c
@@ -75,15 +75,16 @@ Bool TsengCursorInit(pm, pScr)
 	char *pm;
 	ScreenPtr pScr;
 {
-	tsengCursorHotX = 0;
-	tsengCursorHotY = 0;
-	tsengCursorOriginX = 0;
-	tsengCursorOriginY = 0;
-
-	if (tsengCursorGeneration != serverGeneration)
+	if (tsengCursorGeneration != serverGeneration) {
 		if (!(miPointerInitialize(pScr, &tsengPointerSpriteFuncs,
 		&xf86PointerScreenFuncs, FALSE)))
 			return FALSE;
+
+		tsengCursorHotX = 0;
+		tsengCursorHotY = 0;
+		tsengCursorOriginX = 0;
+		tsengCursorOriginY = 0;
+	}
 
 	tsengCursorGeneration = serverGeneration;
 

@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nvcursor.c,v 1.2 1997/03/23 09:01:42 hohndel Exp $ */
 /*
  * Copyright 1996-1997  David J. McKay
  *
@@ -86,15 +86,13 @@ Bool NVCursorInit(char *pm,ScreenPtr pScr)
 {
   unsigned char power;
 
-  NVCursorHotX = 0;
-  NVCursorHotY = 0;
-
-
   if(NVCursorGeneration != serverGeneration) {
     if(!(miPointerInitialize(pScr, &NVPointerSpriteFuncs,
 			     &xf86PointerScreenFuncs, FALSE))) {
       return FALSE;
     }
+    NVCursorHotX = 0;
+    NVCursorHotY = 0;
     pScr->RecolorCursor = NVRecolorCursor;
     NVCursorGeneration = serverGeneration;
   }

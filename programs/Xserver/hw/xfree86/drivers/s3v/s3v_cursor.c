@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_cursor.c,v 1.1 1997/05/03 09:18:35 dawes Exp $ */
 
 /*
  *
@@ -93,14 +93,13 @@ S3VCursorInit(pm, pScr)
      char *pm;
      ScreenPtr pScr;
 {
-
-   s3vHotX = 0;
-   s3vHotY = 0;
-
    if (s3vCursGeneration != serverGeneration) {
       if (!(miPointerInitialize(pScr, &s3vPointerSpriteFuncs,
 	   &xf86PointerScreenFuncs, FALSE)))
                return FALSE;
+
+      s3vHotX = 0;
+      s3vHotY = 0;
       pScr->RecolorCursor = S3VRecolorCursor;
       s3vCursGeneration = serverGeneration;
    }

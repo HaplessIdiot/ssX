@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_cursor.c,v 1.1 1997/03/06 23:15:22 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_cursor.c,v 1.2 1997/04/13 13:57:11 hohndel Exp $ */
 /*
  *
  * Copyright 1993-94 by Simon P. Cooper, New Brunswick, New Jersey, USA.
@@ -75,14 +75,14 @@ cirrusCursorInit(pm, pScr)
      char *pm;
      ScreenPtr pScr;
 {
-  cirrusCur.hotX = 0;
-  cirrusCur.hotY = 0;
-
   if (cirrusCursGeneration != serverGeneration)
     {
       if (!(miPointerInitialize(pScr, &cirrusPointerSpriteFuncs,
 				&xf86PointerScreenFuncs, FALSE)))
 	return FALSE;
+
+      cirrusCur.hotX = 0;
+      cirrusCur.hotY = 0;
       pScr->RecolorCursor = cirrusRecolorCursor;
       cirrusCursGeneration = serverGeneration;
     }

@@ -1,4 +1,4 @@
-/* $XConsortium: XpNotifyPdm.c /main/3 1996/11/16 15:21:41 rws $ */
+/* $TOG: XpNotifyPdm.c /main/4 1997/05/28 11:41:41 kaleb $ */
 /******************************************************************************
  ******************************************************************************
  **
@@ -48,7 +48,6 @@
 #include "X11/Xatom.h"
 #include "X11/Xauth.h"
 #include <stdlib.h>
-#include <locale.h>
 #include <X11/Xos.h>
 
 /*

@@ -1,4 +1,28 @@
 XFree86 3.9c (xx May 1997)
+ 869. Fix Xrm buffer overflow in Xprint ddx (#591, Kaleb Keithley).
+ 868. Fix for incorrect handling of negative values in cfb (#586, Harald
+      Koenig).
+ 867. Fix for fontserver accessing NULL pointer (#587, Arthur Barstow).
+ 866. A better fix for change 862 (#590, Kaleb Keithley).
+ 865. Fix the incorrect resetting of the HW cursor hotx/hoty values at
+      VT switch in most servers/drivers that support HW cursor
+      (based on #582, OEyvind Aabling, #588, Dejan Ilic).
+ 864. Fix for Xlib/Xt buffer overflows which can be triggered by long
+      $LANG and related environment variables (#576, Alex Belits).
+ 863. Cards db updates (#583, Dirk Hohndel, Harald Koenig).
+ 862. Fix for NULL dereference in XtOpenApplication/XtAppInitialize.
+      This also makes these functions behave as documented (ie, exit
+      when the display open fails).
+ 861. Some man page updates.
+ 860. Refine change 856 to take into account that some forms of 8x8
+      pattern fill only need one scanline in the XAA pixmap cache
+      (#581, David Bateman).
+ 859. Remove some unneeded <locale.h> includes in libXp and XKB (libX11)
+      (#579, 580, Kaleb Keithley).
+ 858. Fix a problem that can cause xfs to crash after running for a while
+      (#578, Arthur Barstow).
+ 857. Fix a problem with xfs that meant it could be killed by interrupting
+      one of its clients (#575, Arthur Barstow).
  856. Disable 8x8 pattern fill when less than 8 scanlines are available
       in the XAA pixmap cache (#566, David Bateman).
  855. Fix some sgml problems in fbdev.sgml (#564, Matthieu Herrb).
@@ -4679,4 +4703,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.480 1997/05/27 06:30:52 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.481 1997/05/28 13:24:19 dawes Exp $

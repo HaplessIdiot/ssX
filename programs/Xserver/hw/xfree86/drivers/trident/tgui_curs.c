@@ -26,7 +26,7 @@
  * accel/s3/s3Cursor.c, and ark/ark_cursor.c
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_curs.c,v 1.1 1997/03/06 23:17:02 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tgui_curs.c,v 1.2 1997/05/03 11:31:43 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -97,14 +97,13 @@ Bool TridentCursorInit(pm, pScr)
 	char *pm;
 	ScreenPtr pScr;
 {
-	TridentCursorHotX = 0;
-	TridentCursorHotY = 0;
-
 	if (TridentCursorGeneration != serverGeneration) {
 		if (!(miPointerInitialize(pScr, &TridentPointerSpriteFuncs,
 		&xf86PointerScreenFuncs, FALSE)))
 			return FALSE;
 
+		TridentCursorHotX = 0;
+		TridentCursorHotY = 0;
 		pScr->RecolorCursor = TridentRecolorCursor;
 		TridentCursorGeneration = serverGeneration;
 	}
