@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/234 1996/12/27 16:16:06 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.97 1997/02/24 17:43:31 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.98 1997/02/25 14:18:54 hohndel Exp $
 /*
  * Server Master Makefile
  */
@@ -33,7 +33,7 @@ INSTPGMFLAGS =
 #define CFB24Libs PreFbLibs $(CFB24) PostFbLibs
 #define CFB32Libs PreFbLibs $(CFB32) PostFbLibs
 
-#if BuildPexExt && !DoLoadableServer
+#if BuildPexExt
          PEXLIBS = PEX5/dipex/dispatch/ModuleLibraryTargetName(didipex) \
                    PEX5/dipex/swap/ModuleLibraryTargetName(diswapex) \
                    PEX5/dipex/objects/ModuleLibraryTargetName(diobpex) \
@@ -50,13 +50,11 @@ INSTPGMFLAGS =
       XINPUTEXT = Xi/LibraryTargetName(xinput)
           XIDIR = Xi
 #endif
-#if !DoLoadableServer
 #if BuildXIE 
       XIEEXT = XIE/dixie/ModuleLibraryTargetName(dixie) XIE/mixie/ModuleLibraryTargetName(mixie)
 #endif
 #if BuildXIE || BuildXIElib
       XIEDIR = XIE
-#endif
 #endif
 #if BuildXKB
       XKBEXT = xkb/LibraryTargetName(xkb)
@@ -128,6 +126,7 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
 
 #if DoLoadableServer
      EXTENSIONS = $(OTHEREXTS) 
+     PEXXIEEXTS = $(PEXLIBS) $(XIEEXT)
       OTHEREXTS = Xext/LibraryTargetName(ext) $(XKBEXT) $(XINPUTEXT) \
                   $(LBXEXT) $(DBEEXT) $(RECORDEXT) $(SITEEXTS)
 #else
@@ -1586,7 +1585,7 @@ $(XPOBJS) $(XPLIBS) $(XPSYSLIBS):: $(XPSUBDIRS)
 	@if [ -f $@ ]; then touch $@; fi
 #endif
 #if DoLoadableServer
-ServerTarget(Xprt,$(XPSUBDIRS),$(XPOBJS),$(XPLIBS) $(XF86OSLIB) $(XF86OSDOBJ),$(XPSYSLIBS))
+ServerTarget(Xprt,$(XPSUBDIRS),$(XPOBJS),$(XPLIBS) $(PEXXIEEXTS) $(XF86OSLIB) $(XF86OSDOBJ),$(XPSYSLIBS))
 #else
 ServerTarget(Xprt,$(XPSUBDIRS),$(XPOBJS),$(XPLIBS),$(XPSYSLIBS))
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/gvga/gvg_driver.c,v 3.18 1997/02/16 12:13:44 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/gvga/gvg_driver.c,v 3.19 1997/02/25 14:22:26 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -110,6 +110,7 @@ vgaVideoChipRec GVGA = {
 
 #define new ((vgaGVGAPtr)vgaNewVideoState)
 
+#ifdef XFree86LOADER
 /*
  * this function returns the vgaVideoChipPtr for this driver
  *
@@ -139,6 +140,7 @@ ModuleInit(data,magic)
 
     return;
 }
+#endif /* XFree86LOADER */
 
 
 /*

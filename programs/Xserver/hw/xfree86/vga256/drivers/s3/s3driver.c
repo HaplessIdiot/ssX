@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3/s3driver.c,v 1.5 1997/02/25 14:22:57 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3/s3driver.c,v 1.6 1997/02/27 13:59:47 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -217,6 +217,7 @@ short s3alu[16] =
    MIX_1
 };
 
+#ifdef XFree86LOADER
 /*
  * this function returns the vgaVideoChipPtr for this driver
  *
@@ -246,6 +247,7 @@ ModuleInit(data,magic)
 
     return;
 }
+#endif /* XFree86LOADER */
 
 /*
  *  s3Probe --

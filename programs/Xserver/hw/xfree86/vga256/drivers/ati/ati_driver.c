@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.46 1997/02/25 14:21:42 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.47 1997/02/27 13:59:08 hohndel Exp $ */
 /*
  * Copyright 1994 through 1996 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -545,6 +545,7 @@ static unsigned char ATIVGAOffset = 0x80U;    /* Index offset for ATIVGAPort */
 #define ATIPutExtReg(_Index, _Value)                            \
         PutReg(ATIVGAPort, _Index, _Value)
 
+#ifdef XFree86LOADER
 /*
  * this function returns the vgaVideoChipPtr for this driver
  *
@@ -574,6 +575,7 @@ ModuleInit(data,magic)
 
     return;
 }
+#endif /* XFree86LOADER */
 
 static void
 ATIAccessMach64PLLReg(const unsigned char Index, const Bool Write)

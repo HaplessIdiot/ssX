@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et3000/et3_driver.c,v 3.22 1997/02/16 12:13:36 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et3000/et3_driver.c,v 3.23 1997/02/25 14:22:13 hohndel Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -119,6 +119,7 @@ static unsigned ET3000_ExtPorts[] = {0x3B8, 0x3BF, 0x3CD, 0x3D8};
 static int Num_ET3000_ExtPorts = 
 	(sizeof(ET3000_ExtPorts)/sizeof(ET3000_ExtPorts[0]));
 
+#ifdef XFree86LOADER
 /*
  * this function returns the vgaVideoChipPtr for this driver
  *
@@ -148,6 +149,7 @@ ModuleInit(data,magic)
 
     return;
 }
+#endif /* XFree86LOADER */
 
 /*
  * ET3000ClockSelect --

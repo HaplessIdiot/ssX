@@ -1,5 +1,5 @@
 /* $XConsortium: dipexExt.c,v 5.11 94/04/17 20:36:04 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/dipexExt.c,v 3.7 1997/02/24 17:45:35 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/dipexExt.c,v 3.8 1997/02/25 14:19:08 hohndel Exp $ */
 
 /***********************************************************
 
@@ -363,7 +363,7 @@ unsigned long server_version;
  */
 
 void
-ModuleInit(data,magic)
+libpex5ModuleInit(data,magic)
     pointer	* data;
     INT32	* magic;
 {
