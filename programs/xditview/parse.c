@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xditview/parse.c,v 1.3 2000/12/04 21:01:01 dawes Exp $ */
+/* $XFree86: xc/programs/xditview/parse.c,v 1.4 2001/08/01 00:45:03 tsi Exp $ */
 
 /*
  * parse.c
@@ -50,12 +50,10 @@ static void PutCharacters(DviWidget dw, unsigned char *src, int len);
 static void push_env(DviWidget dw);
 static void pop_env(DviWidget dw);
 
-extern char *GetWord(), *GetLine ();
-
 #define HorizontalMove(dw, delta)	((dw)->dvi.state->x += (delta))
 
 #ifdef USE_XFT
-int
+static int
 charWidth (DviWidget dw, XftFont *font, char c)
 {
     XGlyphInfo	extents;
@@ -145,7 +143,7 @@ ParseInput(dw)
 			    }
 			    prevFont = -1;
 	    	    	    if (c == -1) {
-			    	for (i = 1; map = QueryFontMap (dw, i); i++)
+			    	for (i = 1; (map = QueryFontMap (dw, i)); i++)
 				    if (map->special)
 				    	if ((c = DviCharIndex (map, Buffer)) != -1) {
 					    prevFont = dw->dvi.state->font_number;
@@ -238,7 +236,7 @@ ParseInput(dw)
 			return dw->dvi.current_page;
 		default:
 			GetLine (dw, Buffer, BUFSIZ);
-			fprintf (stderr, "Unknown command %c%s\n", Buffer);
+			fprintf (stderr, "Unknown command %s\n", Buffer);
 			break;
 		}
 	}
@@ -277,8 +275,7 @@ pop_env(dw)
 }
 
 static void
-InitTypesetter (dw)
-	DviWidget	dw;
+InitTypesetter (DviWidget dw)
 {
 	while (dw->dvi.state)
 		pop_env (dw);
@@ -288,8 +285,7 @@ InitTypesetter (dw)
 }
 
 static void
-SetFont (dw)
-    DviWidget	dw;
+SetFont (DviWidget dw)
 {
     dw->dvi.cache.font_size = dw->dvi.state->font_size;
     dw->dvi.cache.font_number = dw->dvi.state->font_number;

@@ -1,5 +1,5 @@
 /* $XConsortium: get_load.c /main/37 1996/03/09 09:38:04 kaleb $ */
-/* $XFree86: xc/programs/xload/get_load.c,v 1.11 2001/08/01 00:45:05 tsi Exp $ */
+/* $XFree86: xc/programs/xload/get_load.c,v 1.12 2001/08/15 16:27:53 tsi Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -43,6 +43,7 @@ from the X Consortium.
 #include <X11/Intrinsic.h>
 #include <X11/Xlocale.h>
 #include <stdio.h>
+#include "xload.h"
 
 #if !defined(DGUX)
 #ifdef att
@@ -151,7 +152,6 @@ struct lavnum {
 #ifdef X_NOT_POSIX
 extern long lseek();
 #endif
-extern void exit();
 
 static void xload_error(
 #if NeedFunctionPrototypes
@@ -202,8 +202,8 @@ void InitLoadPoint()				/* Apollo version */
 /* ARGSUSED */
 void GetLoadPoint( w, closure, call_data ) 	/* Apollo version */
      Widget	w;		/* unused */
-     caddr_t	closure;	/* unused */
-     caddr_t	call_data;	/* pointer to (double) return value */
+     XtPointer	closure;	/* unused */
+     XtPointer	call_data;	/* pointer to (double) return value */
 {
      time_$clock_t  timeNow;
      double         temp;
@@ -246,7 +246,7 @@ struct nlist namelist[] = {
 static int kmem;
 static struct var v;
 static struct proc *p;
-static caddr_t first_buf, last_buf;
+static XtPointer first_buf, last_buf;
 
 void InitLoadPoint()				/* SYSV386 version */
 {
@@ -270,15 +270,15 @@ void InitLoadPoint()				/* SYSV386 version */
     if ((p=(struct proc *)malloc(v.v_proc*sizeof(*p))) == NULL)
 	xload_error("cannot allocat space for", PROC_NAME);
 	  
-    first_buf = (caddr_t) namelist[2].n_value;
+    first_buf = (XtPointer) namelist[2].n_value;
     last_buf  = first_buf + v.v_buf * sizeof(struct buf);
 }
 	
 /* ARGSUSED */
 void GetLoadPoint( w, closure, call_data )	/* SYSV386 version */
 Widget	w;		/* unused */
-caddr_t	closure;	/* unused */
-caddr_t	call_data;	/* pointer to (double) return value */
+XtPointer	closure;	/* unused */
+XtPointer	call_data;	/* pointer to (double) return value */
 {
     double *loadavg = (double *)call_data;
     static double avenrun = 0.0;
@@ -362,8 +362,8 @@ void InitLoadPoint()
 
 void GetLoadPoint( w, closure, call_data )
      Widget   w;              /* unused */
-     caddr_t  closure;        /* unused */
-     caddr_t  call_data;      /* pointer to (double) return value */
+     XtPointer  closure;        /* unused */
+     XtPointer  call_data;      /* pointer to (double) return value */
 {
       static int fd = -1;
       int n;
@@ -425,8 +425,8 @@ void InitLoadPoint()
 /* ARGSUSED */
 void GetLoadPoint( w, closure, call_data )
      Widget	w;		/* unused */
-     caddr_t	closure;	/* unused */
-     caddr_t	call_data;	/* pointer to (double) return value */
+     XtPointer	closure;	/* unused */
+     XtPointer	call_data;	/* pointer to (double) return value */
 {
   host_t host;
   struct processor_set_basic_info info;
@@ -462,8 +462,8 @@ void InitLoadPoint()
 /* ARGSUSED */
 void GetLoadPoint( w, closure, call_data )
     Widget	w;		/* unused */
-    caddr_t	closure;	/* unused */
-    caddr_t	call_data;	/* pointer to (double) return value */
+    XtPointer	closure;	/* unused */
+    XtPointer	call_data;	/* pointer to (double) return value */
 {
     double *loadavg = (double *)call_data;
 
@@ -491,8 +491,8 @@ void InitLoadPoint()
 /* ARGSUSED */
 void GetLoadPoint( w, closure, call_data )
      Widget	w;		/* unused */
-     caddr_t	closure;	/* unused */
-     caddr_t	call_data;	/* pointer to (double) return value */
+     XtPointer	closure;	/* unused */
+     XtPointer	call_data;	/* pointer to (double) return value */
 {
 	*(double *)call_data = 1.0;
 }
@@ -508,8 +508,8 @@ void InitLoadPoint()
 /*ARGSUSED*/
 void GetLoadPoint( w, closure, call_data )
      Widget   w;              /* unused */
-     caddr_t  closure;        /* unused */
-     caddr_t  call_data;      /* pointer to (double) return value */
+     XtPointer  closure;        /* unused */
+     XtPointer  call_data;      /* pointer to (double) return value */
 {
     double *loadavg = (double *)call_data;
     struct tbl_loadavg load_data;
@@ -559,8 +559,8 @@ void InitLoadPoint()
 
 void GetLoadPoint(w, closure, call_data)
      Widget w;          /* unused */
-     caddr_t closure;   /* unused */
-     caddr_t call_data; /* ptr to (double) return value */
+     XtPointer closure;   /* unused */
+     XtPointer call_data; /* ptr to (double) return value */
 {
   double *loadavg = (double *)call_data;
   fixpt_t t;
@@ -583,8 +583,8 @@ void InitLoadPoint()
 
 void GetLoadPoint(w, closure, call_data)
      Widget w;          /* unused */
-     caddr_t closure;   /* unused */
-     caddr_t call_data; /* ptr to (double) return value */
+     XtPointer closure;   /* unused */
+     XtPointer call_data; /* ptr to (double) return value */
 {
   double *loadavg = (double *)call_data;
 
@@ -865,8 +865,8 @@ void InitLoadPoint()
 /* ARGSUSED */
 void GetLoadPoint( w, closure, call_data )
      Widget	w;		/* unused */
-     caddr_t	closure;	/* unused */
-     caddr_t	call_data;	/* pointer to (double) return value */
+     XtPointer	closure;	/* unused */
+     XtPointer	call_data;	/* pointer to (double) return value */
 {
   	double *loadavg = (double *)call_data;
 
@@ -1070,8 +1070,8 @@ void InitLoadPoint()
 
 void GetLoadPoint(w, closure, call_data)
      Widget w;          /* unused */
-     caddr_t closure;   /* unused */
-     caddr_t call_data; /* ptr to (double) return value */
+     XtPointer closure;   /* unused */
+     XtPointer call_data; /* ptr to (double) return value */
 {
   double *loadavg = (double *)call_data;
 

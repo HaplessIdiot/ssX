@@ -1,6 +1,6 @@
 /*
  * $XConsortium: draw.c,v 1.8 94/04/17 20:43:35 gildea Exp $
- * $XFree86: xc/programs/xditview/draw.c,v 1.3 2001/07/25 15:05:18 dawes Exp $
+ * $XFree86: xc/programs/xditview/draw.c,v 1.4 2001/08/01 00:45:03 tsi Exp $
  *
 Copyright (c) 1991  X Consortium
 
@@ -162,13 +162,14 @@ FlushCharCache (dw)
     dw->dvi.cache.start_y = dw->dvi.cache.y = yx;
 }
 
+#if 0
 void
-ClearPage (dw)
-    DviWidget	dw;
+ClearPage (DviWidget dw)
 {
     if (dw->dvi.display_enable)
 	XClearWindow (XtDisplay (dw), XtWindow (dw));
 }
+#endif
 
 void
 SetGCForDraw (dw)
@@ -230,8 +231,7 @@ DrawEllipse (dw, a, b)
 /*	Convert angle in degrees to 64ths of a degree */
 
 static int
-ConvertAngle(theta)
-int theta;
+ConvertAngle(int theta)
 {
     return(theta * 64);
 }
@@ -311,8 +311,7 @@ DrawArc (dw, x0, y0, x1, y1)
 /* copy next non-blank string from p to temp, update p */
 
 static char *
-getstr(p, temp)
-char *p, *temp;
+getstr(char *p, char *temp)
 {
     while (*p == ' ' || *p == '\t' || *p == '\n')
 	p++;

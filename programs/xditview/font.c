@@ -3,7 +3,7 @@
  *
  * map dvi fonts to X fonts
  */
-/* $XFree86: xc/programs/xditview/font.c,v 1.3 2000/12/04 21:01:01 dawes Exp $ */
+/* $XFree86: xc/programs/xditview/font.c,v 1.4 2001/08/01 00:45:03 tsi Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/IntrinsicP.h>
@@ -15,8 +15,7 @@
 #include "XFontName.h"
 
 static char *
-savestr (s)
-	char	*s;
+savestr (char *s)
 {
 	char	*n;
 
@@ -29,9 +28,7 @@ savestr (s)
 }
 
 static DviFontList *
-LookupFontByPosition (dw, position)
-	DviWidget	dw;
-	int		position;
+LookupFontByPosition (DviWidget dw, int position)
 {
 	DviFontList	*f;
 
@@ -42,10 +39,7 @@ LookupFontByPosition (dw, position)
 }
 
 static DviFontSizeList *
-LookupFontSizeBySize (dw, f, size)
-    DviWidget	dw;
-    DviFontList	*f;
-    int		size;
+LookupFontSizeBySize (DviWidget dw, DviFontList *f, int size)
 {
     DviFontSizeList *fs, *best = 0;
     int		    bestdist;
@@ -107,8 +101,7 @@ LookupFontSizeBySize (dw, f, size)
 }
 
 static char *
-SkipFontNameElement (n)
-	char	*n;
+SkipFontNameElement (char *n)
 {
 	while (*n != '-')
 		if (!*++n)
@@ -119,9 +112,9 @@ SkipFontNameElement (n)
 # define SizePosition		8
 # define EncodingPosition	13
 
+#ifndef USE_XFT
 static int
-ConvertFontNameToSize (n)
-	char	*n;
+ConvertFontNameToSize (char *n)
 {
 	int	i, size;
 
@@ -133,10 +126,10 @@ ConvertFontNameToSize (n)
 	size = atoi (n);
 	return size/10;
 }
+#endif
 
 static char *
-ConvertFontNameToEncoding (n)
-	char	*n;
+ConvertFontNameToEncoding (char *n)
 {
         int i;
 	for (i = 0; i < EncodingPosition; i++) {
@@ -148,9 +141,7 @@ ConvertFontNameToEncoding (n)
 }
 
 static void
-DisposeFontSizes (dw, fs)
-    DviWidget	dw;
-    DviFontSizeList	*fs;
+DisposeFontSizes (DviWidget dw, DviFontSizeList *fs)
 {
     DviFontSizeList	*next;
 
@@ -172,8 +163,7 @@ DisposeFontSizes (dw, fs)
 }
 
 void
-ResetFonts (dw)
-    DviWidget	dw;
+ResetFonts (DviWidget dw)
 {
     DviFontList	*f;
     
@@ -197,18 +187,18 @@ ResetFonts (dw)
 }
 
 static DviFontSizeList *
-InstallFontSizes (dw, x_name, scalablep)
-    DviWidget	dw;
-    char	*x_name;
-    Boolean	*scalablep;
+InstallFontSizes (DviWidget dw, char *x_name, Boolean *scalablep)
 {
+#ifndef USE_XFT
     char	    fontNameString[2048];
     char	    **fonts;
     int		    i, count;
     int		    size;
-    DviFontSizeList *sizes, *new;
+    DviFontSizeList *new;
     XFontName	    fontName;
     unsigned int    fontNameAttributes;
+#endif
+    DviFontSizeList *sizes;
 
     sizes = 0;
 #ifdef USE_XFT
@@ -250,11 +240,7 @@ InstallFontSizes (dw, x_name, scalablep)
 }
 
 static DviFontList *
-InstallFont (dw, position, dvi_name, x_name)
-	DviWidget	dw;
-	int		position;
-	char		*dvi_name;
-	char		*x_name;
+InstallFont (DviWidget dw, int position, char *dvi_name, char *x_name)
 {
     DviFontList	*f;
     char		*encoding;
@@ -299,9 +285,7 @@ InstallFont (dw, position, dvi_name, x_name)
 }
 
 static char *
-MapDviNameToXName (dw, dvi_name)
-	DviWidget	dw;
-	char		*dvi_name;
+MapDviNameToXName (DviWidget dw, char *dvi_name)
 {
     DviFontMap	*fm;
     
