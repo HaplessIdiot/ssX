@@ -1,20 +1,23 @@
 XCOMM $XConsortium: Imakefile,v 1.7 94/04/13 18:07:51 rws Exp $
-XCOMM $XFree86: xc/workInProgress/lbx/programs/lbxproxy/Imakefile,v 3.3 1995/05/27 03:24:53 dawes Exp $
+XCOMM $XFree86: xc/workInProgress/lbx/programs/lbxproxy/Imakefile,v 3.4 1995/06/02 10:42:00 dawes Exp $
 
 #include <Server.tmpl>
 #define       IHaveSubdirs
 
 SUBDIRS = di os
 LBXLIBS = di/libdilbx.a os/libos.a ../../lib/lbxutil/liblbxutil.a
-#ifndef i386IscArchitecture
-#ifndef LynxOSArchitecture
-OTHERLIBS = $(LBXXEXTLIB) $(XLIB) $(XAULIB) $(XDMCPLIB)
-#else
-OTHERLIBS = $(LBXXEXTLIB) $(XLIB) $(XAULIB) $(XDMCPLIB) -lbsd
+
+#ifdef LynxOSArchitecture
+SPECIALLIBS = -lbsd
 #endif
-#else
-OTHERLIBS = $(LBXXEXTLIB) $(XLIB) $(XAULIB) $(XDMCPLIB) -linet
+#ifdef i386IscArchitecture
+SPECIALLIBS = -linet
 #endif
+#ifdef i386ScoArchitecture
+SPECIALLIBS = $(LDLIBS)
+#endif
+
+OTHERLIBS = $(LBXXEXTLIB) $(XLIB) $(XAULIB) $(XDMCPLIB) $(SPECIALLIBS)
 
 #if HasParallelMake
 MakeMutex($(SUBDIRS) $(LBXLIBS))

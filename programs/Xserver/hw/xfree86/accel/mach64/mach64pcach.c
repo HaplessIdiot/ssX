@@ -1,5 +1,5 @@
 /* $XConsortium: mach64pcach.c,v 1.2 95/01/16 13:16:35 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64pcach.c,v 3.4 1995/01/28 15:53:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64pcach.c,v 3.5tsi Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -105,7 +105,7 @@
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 
-extern Bool xf86Verbose;
+extern int xf86Verbose;
 
 unsigned char reverseByteOrder[0x100] = {
         0x00, 0x80, 0x40, 0xc0, 0x20, 0xa0, 0x60, 0xe0,

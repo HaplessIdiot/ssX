@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/xf86pci.c,v 3.1 1995/06/14 07:47:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/xf86pci.c,v 3.2 1995/06/24 10:28:52 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -58,7 +58,14 @@
 #define GCCUSESGAS
 #endif
 #if defined(SCO)
-#include <sys/console.h>
+#  include <sys/console.h>
+#  include <sys/param.h>
+#  include <sys/immu.h>
+#  include <sys/region.h>
+#  include <sys/proc.h>
+#  include <sys/tss.h>
+#  include <sys/sysi86.h>
+#  include <sys/v86.h>
 #endif
 
 

@@ -1,5 +1,5 @@
 /* $XConsortium: s3im.c,v 1.6 95/01/06 20:57:19 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.12 1995/01/02 04:52:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.14tsi Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -59,7 +59,7 @@ extern int   s3BankSize;
 extern unsigned char s3Port51;
 extern unsigned char s3Port40;
 extern unsigned char s3Port54;
-extern Bool xf86Verbose;
+extern int xf86Verbose;
 extern Bool s3LinearAperture;
 
 static void s3ImageRead (

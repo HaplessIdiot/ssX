@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
 XCOMM $XConsortium: Imake.tmpl,v 1.224.1.1 95/06/19 17:51:01 gildea Exp $
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.16 1995/07/07 15:30:32 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.17tsi Exp $
 XCOMM
 
 /*
@@ -136,6 +136,10 @@ XCOMM the platform-specific parameters - edit site.def to change
 
 #ifndef HasLargeTmp
 #define HasLargeTmp		NO	/* be paranoid */
+#endif
+
+#ifndef HasLdRunPath
+#define HasLdRunPath		NO
 #endif
 
 #ifndef HasBSD44Sockets

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86.h,v 1.5 95/01/16 13:16:56 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.20 1995/07/02 07:52:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.21tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -318,7 +318,7 @@ int xf86CheckMode(
     ScrnInfoPtr scrp,
     DisplayModePtr dispmp,
     MonPtr monp,
-    Bool verbose
+    int verbose
 #endif
 );
 

@@ -1,5 +1,5 @@
 /* $XConsortium: p9000.c,v 1.6 95/01/16 13:16:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.29 1995/07/02 07:48:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.30tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -63,7 +63,7 @@
 #include "xf86_Config.h"
 
 extern int p9000MaxClock;
-extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed, xf86Verbose;
+extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed;
 extern char *xf86VisualNames[];
 
 extern int defaultColorVisualClass;

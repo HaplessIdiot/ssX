@@ -50,7 +50,7 @@
 
      12.
         16bpp and 32bpp support for more S3 boards (refer to README.S3
-        (S3.html) for details).
+        <S3.html> for details).
 
      13.
         Support for ISC's SVR3 (only tested for 3.x and 4.x).
@@ -820,32 +820,32 @@
   quality free software for the betterment of the Internet community as
   a whole.
 
-     o  UUNET Communications Services, Inc. (http://www.uu.net/)
+     o  UUNET Communications Services, Inc. <http://www.uu.net/>
 
   UUNET Communications Services, Inc, deserves special mention.  This
   organization stepped forward and contributed the entire 1994 X Consor-
   tium membership fee on a moment's notice.  This single act ensured
   XFree86's involvement in X11R6.
 
-     o  AIB Software Corporation (ftp://ftp.uu.net/vendor/AIB/), Dulles,
+     o  AIB Software Corporation <ftp://ftp.uu.net/vendor/AIB/>, Dulles,
         VA
 
      o  Roland Alder, Armin Fessler, Patrick Seemann, Martin Wunderli
 
      o  American Micro Group
 
-     o  AT&T Global Information Services (http://www.ncr.com/) (formerly
+     o  AT&T Global Information Services <http://www.ncr.com/> (formerly
         NCR)
 
      o  Andrew Burgess
 
-     o  Berkeley Software Design, Inc (http://www.bsdi.com/), Falls
+     o  Berkeley Software Design, Inc <http://www.bsdi.com/>, Falls
         Church, VA
 
-     o  The Destek Group, Inc. (http://www.destek.net/Destek/), Pelham,
+     o  The Destek Group, Inc. <http://www.destek.net/Destek/>, Pelham,
         NH (formerly Synergytics)
 
-     o  Digital Equipment Corporation (http://www.digital.com/)
+     o  Digital Equipment Corporation <http://www.digital.com/>
 
      o  Elsa GmbH, Aachen, Germany
 
@@ -853,12 +853,12 @@
 
      o  Frank & Paige McCormick
 
-     o  InfoMagic (http://www.infomagic.com/), Flagstaff, AZ
+     o  InfoMagic <http://www.infomagic.com/>, Flagstaff, AZ
 
 
      o  LunetIX Softfair, Berlin, Germany
 
-     o  Morse Telecommunications (http://www.morse.net), Long Beach, NY
+     o  Morse Telecommunications <http://www.morse.net>, Long Beach, NY
 
      o  MIRO Computer Products AG, Braunschweig, Germany
 
@@ -890,9 +890,9 @@
 
      o  Unifix Software GmbH, Braunschweig, Germany
 
-     o  Vixie Enterprises (http://www.vix.com/), La Honda, CA
+     o  Vixie Enterprises <http://www.vix.com/>, La Honda, CA
 
-     o  Walnut Creek CDROM (http://www.cdrom.com/), Concord, CA
+     o  Walnut Creek CDROM <http://www.cdrom.com/>, Concord, CA
 
      o  Xtreme s.a.s., Livorno, Italy
 
@@ -912,82 +912,82 @@
 
 
      o  ftp.XFree86.org:/pub/XFree86/current
-        (ftp://ftp.XFree86.org/pub/XFree86/current)
+        <ftp://ftp.XFree86.org/pub/XFree86/current>
 
   and the following mirror sites:
 
      o  North America:
 
         +  ftp.bsdi.com:/contrib/X11/XFree86
-           (ftp://ftp.bsdi.com/contrib/X11/XFree86) (source and BSD/386
+           <ftp://ftp.bsdi.com/contrib/X11/XFree86> (source and BSD/386
            binaries)
 
         +  XFree86.cdrom.com:/pub/XFree86
-           (ftp://XFree86.cdrom.com/pub/XFree86) (source and binaries)
+           <ftp://XFree86.cdrom.com/pub/XFree86> (source and binaries)
 
         +  ftp.iastate.edu:/pub/XFree86/XFree86-3.1.1
-           (ftp://ftp.iastate.edu/pub/XFree86/XFree86-3.1.1) (source
+           <ftp://ftp.iastate.edu/pub/XFree86/XFree86-3.1.1> (source
            patches and NetBSD binaries)
 
            (Also via AFS:
            /afs/iastate.edu/public/ftp/pub/XFree86/XFree86-3.1.1)
 
         +  tsx-11.mit.edu:/pub/linux/packages/X11/XFree86-3.1.1
-           (ftp://tsx-11.mit.edu/pub/linux/packages/X11/XFree86-3.1.1)
+           <ftp://tsx-11.mit.edu/pub/linux/packages/X11/XFree86-3.1.1>
            (Linux binaries and source)
 
         +  ref.tfs.com:/pub/mirrors/XFree86
-           (ftp://ref.tfs.com/pub/mirrors/XFree86) (source patches and
+           <ftp://ref.tfs.com/pub/mirrors/XFree86> (source patches and
            FreeBSD binaries)
 
         +  ftp.eecs.umich.edu:/BSD/XFree86/current
-           (ftp://ftp.eecs.umich.edu/BSD/XFree86/current) (source and
+           <ftp://ftp.eecs.umich.edu/BSD/XFree86/current> (source and
            binaries)
 
         +  sunsite.unc.edu:/pub/X11/XFree86
-           (ftp://sunsite.unc.edu/pub/X11/XFree86) (source patches and
+           <ftp://sunsite.unc.edu/pub/X11/XFree86> (source patches and
            binaries)
 
         +  abode.ccd.bnl.gov:/pub/XFree86
-           (ftp://abode.ccd.bnl.gov/pub/XFree86) (Solaris, SVR4, SCO
+           <ftp://abode.ccd.bnl.gov/pub/XFree86> (Solaris, SVR4, SCO
            binaries)
 
 
      o  Europe:
 
-        +  fvkma.tu-graz.ac.at:/pub/X11/XFree86/3.1.1 (ftp://fvkma.tu-
-           graz.ac.at/pub/XFree86/3.1.1) (source and binaries)
+        +  fvkma.tu-graz.ac.at:/pub/X11/XFree86/3.1.1 <ftp://fvkma.tu-
+           graz.ac.at/pub/XFree86/3.1.1> (source and binaries)
 
         +  ftp.switch.ch:/mirror/XFree86
-           (ftp://ftp.switch.ch/mirror/XFree86) (source and binaries)
+           <ftp://ftp.switch.ch/mirror/XFree86> (source and binaries)
 
         +  ftp.fee.vutbr.cz:/pub/XFree86
-           (ftp://ftp.fee.vutbr.cz/pub/XFree86) (source and binaries)
+           <ftp://ftp.fee.vutbr.cz/pub/XFree86> (source and binaries)
 
-        +  ftp.gwdg.de:/pub/xfree86 (ftp://ftp.gwdg.de/pub/xfree86)
+        +  ftp.gwdg.de:/pub/xfree86 <ftp://ftp.gwdg.de/pub/xfree86>
            (source and binaries)
 
         +  ftp.uni-erlangen.de:/pub/Linux/MIRROR.xfree86/3.1.1
-           (ftp://ftp.uni-erlangen.de/pub/Linux/MIRROR.xfree86/3.1.1)
+           <ftp://ftp.uni-erlangen.de/pub/Linux/MIRROR.xfree86/3.1.1>
            (source patches and Linux binaries)
 
-        +  ftp.uni-stuttgart.de:/pub/X11/Xfree86/3.1.1 (ftp://ftp.uni-
-           stuttgart.de/pub/X11/Xfree86/3.1.1) (source and binaries)
+        +  ftp.uni-stuttgart.de:/pub/X11/Xfree86/3.1.1 <ftp://ftp.uni-
+           stuttgart.de/pub/X11/Xfree86/3.1.1> (source and binaries)
 
         +  ftp.funet.fi:/pub/X11/XFree86/3.1.1
-           (ftp://ftp.funet.fi/pub/X11/XFree86/3.1.1) (source and
+           <ftp://ftp.funet.fi/pub/X11/XFree86/3.1.1> (source and
            binaries)
 
         +  anasgard.calvacom.fr:/pub/unix/X/XFree86
-           (ftp://anasgard.calvacom.fr/pub/unix/X/XFree86) (source and
+           <ftp://anasgard.calvacom.fr/pub/unix/X/XFree86> (source and
            binaries)
 
         +  ftp.laas.fr:/pub/netbsd/XFree86-3.1.1
-           (ftp://ftp.laas.fr/pub/NetBSD/XFree86-3.1.1) (NetBSD binaries
+           <ftp://ftp.laas.fr/pub/NetBSD/XFree86-3.1.1> (NetBSD binaries
            only)
 
         +  ftp.unipi.it:/pub/mirrors/XFree86-3.1.1
-           (ftp://ftp.unipi.it/pub/mirrors/XFree86-3.1.1) (source and
+           <ftp://ftp.unipi.it/pub/mirrors/XFree86-3.1.1> (source and
            binaries)
 
 
@@ -996,18 +996,18 @@
      o  Asia/Australia:
 
         +  x.physics.usyd.edu.au:/pub/XFree86/3.1.1
-           (ftp://x.physics.usyd.edu.au/pub/XFree86/3.1.1) (source and
+           <ftp://x.physics.usyd.edu.au/pub/XFree86/3.1.1> (source and
            binaries)
 
         +  ftp.hk.super.net:/mirror/XFree86
-           (ftp://ftp.hk.super.net/mirror/XFree86) (source and binaries)
+           <ftp://ftp.hk.super.net/mirror/XFree86> (source and binaries)
 
         +  ftp.nectec.or.th:/pub/mirrors/XFree86
-           (ftp://ftp.nectec.or.th/pub/mirrors/XFree86) (source patches
+           <ftp://ftp.nectec.or.th/pub/mirrors/XFree86> (source patches
            and binaries)
 
         +  ftp.edu.tw:/X/XFree86/3.1.1
-           (ftp://ftp.edu.tw/X/XFree86/3.1.1) (source and binaries)
+           <ftp://ftp.edu.tw/X/XFree86/3.1.1> (source and binaries)
 
 
 

@@ -1,5 +1,5 @@
 /* $XConsortium: p9000orchid.c,v 1.2 94/11/21 22:38:44 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000orchid.c,v 3.2 1994/09/07 15:50:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000orchid.c,v 3.3tsi Exp $ */
 /*
  * Copyright 1994, Erik Nygren (nygren@mit.edu)
  *
@@ -43,7 +43,7 @@ static unsigned int p9000OrchidSaveVidSelect; /* Stored value of Video Select
 					 * register (Output Command Register)*/
 static unsigned p9000OrchidInited = FALSE;/* Has the Orchid been initialized */
 
-extern Bool xf86Verbose;
+extern int xf86Verbose;
 extern int p9000MaxClock;
 
 /* Prototypes */

@@ -1,6 +1,6 @@
 
 /* $XConsortium: s3misc.c,v 1.6 95/01/23 15:34:03 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.27 1995/07/02 07:49:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.28tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -70,7 +70,8 @@ extern unsigned char s3Port5A;
 extern unsigned char s3Port31;
 extern Bool s3PowerSaver;
 
-extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed, xf86Verbose;
+extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed;
+extern int xf86Verbose;
 
 static Bool AlreadyInited = FALSE;
 static Bool s3ModeSwitched = FALSE;

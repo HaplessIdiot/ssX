@@ -1,5 +1,5 @@
 /* $XConsortium: agx.c,v 1.7 95/01/23 15:33:37 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.36 1995/07/03 08:41:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.37tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -64,7 +64,7 @@
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 
-extern Bool xf86Verbose, xf86Resetting, xf86Exiting, xf86ProbeFailed;
+extern Bool xf86Resetting, xf86Exiting, xf86ProbeFailed;
 extern Bool miDCInitialize();
 extern void SetTimeSinceLastInputEvent();
 

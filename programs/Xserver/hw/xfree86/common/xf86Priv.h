@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Priv.h,v 1.5 95/01/16 13:17:01 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.7 1995/01/28 17:03:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.8 1995/03/18 10:59:41 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -142,7 +142,7 @@ extern ScrnInfoPtr xf86Screens[];
 extern int xf86ScreenNames[];
 
 extern char xf86ConfigFile[];
-extern Bool xf86Verbose;
+extern int xf86Verbose;
 extern Bool xf86ProbeOnly;
 extern unsigned short xf86MouseCflags[];
 extern Bool xf86SupportedMouseTypes[];

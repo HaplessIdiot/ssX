@@ -1,5 +1,5 @@
 /* $XConsortium: mach8fcach.c,v 1.2 94/10/12 20:01:59 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8fcach.c,v 3.2 1994/09/07 15:50:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8fcach.c,v 3.4tsi Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -44,7 +44,7 @@
 
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
-extern Bool xf86Verbose;
+extern int xf86Verbose;
 
 #define ALIGNMENT 8
 #define N_PLANES 8

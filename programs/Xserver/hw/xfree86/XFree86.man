@@ -1,5 +1,5 @@
 .\" $XConsortium: XFree86.man,v 1.6 95/01/23 15:33:32 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.12 1995/07/03 08:41:23 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.13tsi Exp $
 .TH XFree86 1 "Version 3.1.2"  "XFree86"
 .SH NAME
 XFree86 - X11R6 for UNIX on x86 platforms
@@ -162,7 +162,7 @@ Not all servers support this.
 Print out a list of screen drivers configured in the server.
 .TP 8
 .B \-verbose
-Maximise information printed at startup (this is the default).
+Maximise information printed at startup (more than the default).
 .TP 8
 .B \-xf86config \fIfile\fP
 Read the server configuration from \fIfile\fP.  This option is only available

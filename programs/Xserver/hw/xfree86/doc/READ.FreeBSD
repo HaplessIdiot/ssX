@@ -11,21 +11,21 @@
   is available as source patches against the X Consortium X11R6 code, as
   well as binary distributions for many architectures.
 
-  See the Copyright Notice (COPYRIGHT.html).
+  See the Copyright Notice <COPYRIGHT.html>.
 
   The sources for XFree86 are available by anonymous ftp from:
 
   ftp.XFree86.org:/pub/XFree86/current
-  (ftp://ftp.XFree86.org/pub/XFree86/current)
+  <ftp://ftp.XFree86.org/pub/XFree86/current>
 
 
   Binaries for XFree86 on FreeBSD are available from:
 
   ftp.XFree86.org:/pub/XFree86/current/binaries/FreeBSD-2.0
-  (ftp://ftp.XFree86.org/pub/XFree86/current/binaries/FreeBSD-2.0)
+  <ftp://ftp.XFree86.org/pub/XFree86/current/binaries/FreeBSD-2.0>
 
   XFree86.cdrom.com:/pub/XFree86/current/binaries/FreeBSD-2.0
-  (ftp://XFree86.cdrom.com/pub/XFree86/current/binaries/FreeBSD-2.0)
+  <ftp://XFree86.cdrom.com/pub/XFree86/current/binaries/FreeBSD-2.0>
 
   Send email to Rich-Murphey@Rice.edu or XFree86@XFree86.org if you have
   comments or suggestions about this file and we'll revise it.
@@ -346,7 +346,7 @@
   specific hardware you have.
 
   XFree86 3.1 uses a new configuration file format. Consult the
-  XF86Config man page and the general INSTALL (INSTALL.html) file for
+  XF86Config man page and the general INSTALL <INSTALL.html> file for
   instructions.
 
   If you have a Xconfig file for XFree86 2.x, use reconfig to translate
@@ -439,7 +439,7 @@
 
   For a general description of BSD kernel configuration get
   smm.02.config.ps.Z
-  (ftp://gatekeeper.dec.com/pub/BSD/manuals/smm.02.config.ps.Z).  It is
+  <ftp://gatekeeper.dec.com/pub/BSD/manuals/smm.02.config.ps.Z>.  It is
   a ready-to-print postscript copy of the kernel configuration chapter
   from the system maintainers manual.
 
@@ -480,10 +480,10 @@
   versions 1.0.2 and above.  It can also be ftp-ed from:
 
   FreeBSD.cdrom.com:/pub/FreeBSD/FreeBSD-1.1/ports/util/pcvt
-  (ftp://FreeBSD.cdrom.com/pub/FreeBSD/FreeBSD-1.1/ports/util/pcvt)
+  <ftp://FreeBSD.cdrom.com/pub/FreeBSD/FreeBSD-1.1/ports/util/pcvt>
 
   Refer to the README.FreeBSD
-  (ftp://FreeBSD.cdrom.com/pub/FreeBSD/FreeBSD-1.1/ports/util/pcvt/README.FreeBSD)
+  <ftp://FreeBSD.cdrom.com/pub/FreeBSD/FreeBSD-1.1/ports/util/pcvt/README.FreeBSD>
   file there for complete installation instructions.
 
   The XFree86 servers include support for the MIT-SHM extension.  The
@@ -514,7 +514,7 @@
   The server link kit allows you to build an X server using a minimum
   amount of disk space.  Just unpack it, make the appropriate changes to
   site.def, type ``./mkmf' and ``make'' to link the server.  See
-  README.LinkKit (LinkKit.html) for more info.
+  README.LinkKit <LinkKit.html> for more info.
 
   The source tree takes about 114Mb before compiling and an additional
   100Mb after ``make World''.  You should configure the distribution by

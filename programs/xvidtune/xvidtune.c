@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.12 1995/07/02 07:57:00 dawes Exp $ */
+/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.13 1995/07/03 08:54:20 dawes Exp $ */
 
 /*
 
@@ -33,6 +33,7 @@ from Kaleb S. KEITHLEY.
 #include <X11/Intrinsic.h>
 #include <X11/Shell.h>
 #include <X11/StringDefs.h>
+#include <X11/Xatom.h>
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Scrollbar.h>
 #include <X11/Xaw/Label.h>
@@ -40,8 +41,11 @@ from Kaleb S. KEITHLEY.
 #include <X11/Xaw/AsciiText.h>
 #include <X11/Xaw/Box.h>
 #include <X11/Xaw/Toggle.h>
+#include <X11/Xmu/StdSel.h>
 #include <X11/extensions/xf86vmode.h>
+#include <ctype.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <signal.h>
 
 int MajorVersion, MinorVersion;
@@ -130,6 +134,8 @@ static Widget testing_popup;
 static Widget Top;
 static Widget auto_apply_toggle;
 
+static char modebuf[160];
+
 static void UpdateSyncRates();
 
 static void CleanUp(dpy)
@@ -144,7 +150,7 @@ static void CatchSig(signal)
     int signal;
 {
     CleanUp(XtDisplay(Top));
-    exit(2);
+    exit(3);
 }
 
 static Bool GetModeLine (dpy, scrn)
@@ -247,7 +253,7 @@ static void QuitCB (w, client, call)
 #endif
 }
 
-popdownInvalid(w, client, call)
+static void popdownInvalid(w, client, call)
     Widget w;
     XtPointer client, call;
 {
@@ -259,8 +265,10 @@ static void ApplyCB (w, client, call)
     XtPointer client, call;
 {
     XF86VidModeModeLine mode_line;
+#if 0
     char* string;
     int i;
+#endif
 
     mode_line.hdisplay = AppRes.field[HDisplay].val;
     mode_line.hsyncstart = AppRes.field[HSyncStart].val;
@@ -405,13 +413,38 @@ static void TestCB (w, client, call)
     ApplyCB (w, client, call);
 }
 
+static Boolean ConvertSelection(w, selection, target, type, value, length, format)
+    Widget w;
+    Atom *selection, *target, *type;
+    XtPointer *value;
+    unsigned long *length;
+    int *format;
+{
+    if (XmuConvertStandardSelection(w, CurrentTime, selection, target, type,
+                                    (XPointer *) value, length, format))
+        return True;
+
+    if (*target == XA_STRING) {
+        *type = XA_STRING;
+        *value = modebuf;
+        *length = strlen(*value);
+        *format = 8;
+        return True;
+    }
+    return False;
+}
+
 static void ShowCB(w, client, call)
     Widget w;
     XtPointer client, call;
 {
-    printf("\"%dx%d\"\t%.2f\t%d %d %d %d\t%d %d %d %d",
-	   AppRes.field[HDisplay].val, AppRes.field[VDisplay].val,
-	   (float)dot_clock/1000.0,
+    Time time;
+    char tmpbuf[16];
+
+    sprintf(tmpbuf, "\"%dx%d\"",
+	   AppRes.field[HDisplay].val, AppRes.field[VDisplay].val);
+    sprintf(modebuf, "%-11s   %6.2f   %4d %4d %4d %4d   %4d %4d %4d %4d",
+	   tmpbuf, (float)dot_clock/1000.0,
 	   AppRes.field[HDisplay].val,
 	   AppRes.field[HSyncStart].val,
 	   AppRes.field[HSyncEnd].val,
@@ -421,18 +454,19 @@ static void ShowCB(w, client, call)
 	   AppRes.field[VSyncEnd].val,
 	   AppRes.field[VTotal].val);
     /* Print out the flags (if any) */
-    if (mode_flags & V_PHSYNC) printf(" +hsync");
-    if (mode_flags & V_NHSYNC) printf(" -hsync");
-    if (mode_flags & V_PVSYNC) printf(" +vsync");
-    if (mode_flags & V_NVSYNC) printf(" -vsync");
-    if (mode_flags & V_INTERLACE) printf(" interlace");
-    if (mode_flags & V_CSYNC) printf(" composite");
-    if (mode_flags & V_PCSYNC) printf(" +csync");
-    if (mode_flags & V_PCSYNC) printf(" -csync");
-    if (mode_flags & V_DBLSCAN) printf(" doublescan");
-    printf("\n");
+    if (mode_flags & V_PHSYNC)    strcat(modebuf, " +hsync");
+    if (mode_flags & V_NHSYNC)    strcat(modebuf, " -hsync");
+    if (mode_flags & V_PVSYNC)    strcat(modebuf, " +vsync");
+    if (mode_flags & V_NVSYNC)    strcat(modebuf, " -vsync");
+    if (mode_flags & V_INTERLACE) strcat(modebuf, " interlace");
+    if (mode_flags & V_CSYNC)     strcat(modebuf, " composite");
+    if (mode_flags & V_PCSYNC)    strcat(modebuf, " +csync");
+    if (mode_flags & V_PCSYNC)    strcat(modebuf, " -csync");
+    if (mode_flags & V_DBLSCAN)   strcat(modebuf, " doublescan");
+    printf("%s\n", modebuf);
+    time = XtLastTimestampProcessed(XtDisplay(w));
+    XtOwnSelection(w, XA_PRIMARY, time, ConvertSelection, NULL, NULL);
 }
-
 
 static void AdjustCB(w, client, call)
     Widget w;
@@ -599,7 +633,6 @@ static void FlagsEditCB (w, client, call)
     XtVaGetValues (w, XtNstring, &string, NULL);
     len = strlen (string);
     if (len > 4) {
-	XawTextBlock text;
 	char buf[5];
 
 	XBell (XtDisplay(XtParent(w)), 100);
@@ -804,7 +837,6 @@ static void CreateHierarchy(top)
     Widget form, forms[14];
     Widget wids[8];
     Widget boxW,messageW, popdownW, w;   
-    XawTextBlock text;
     XtTranslations trans;
     int i;
     int x, y;
@@ -1042,6 +1074,19 @@ static void QuitAction (w, e, vector, count)
 	QuitCB(w, NULL, NULL);
 }
 
+static void usage()
+{
+    fprintf(stderr, "Usage: xvidtune [option]\n");
+    fprintf(stderr, "    where option is one of:\n");
+    fprintf(stderr, "        -next                             Switch to next video mode\n");
+    fprintf(stderr, "        -prev                             Switch to previous video mode\n");
+    fprintf(stderr, "        -unlock                           Enable mode switch hot-keys\n");
+    fprintf(stderr, "        -query                            Print current monitor sync info\n");
+    fprintf(stderr, "                                             and power-saver settings\n");
+    fprintf(stderr, "        -saver <suspendtime> [<offtime>]  Set power-saver settings\n");
+    exit(1);
+}
+
 int main (argc, argv)
     int argc;
     char** argv;
@@ -1063,15 +1108,19 @@ int main (argc, argv)
 		NULL, 0);
 
     if (!AppRes.ad_installed) {
-	(void) printf ("%s\n", "Please install the program before using");
-	return 0;
+	fprintf(stderr, "Please install the program before using\n");
+	return 3;
     }
 
-    if (!XF86VidModeQueryVersion(XtDisplay (top), &MajorVersion, &MinorVersion))
-	return 0;
+    if (!XF86VidModeQueryVersion(XtDisplay (top), &MajorVersion, &MinorVersion)) {
+	fprintf(stderr, "Unable to query video extension version\n");
+	return 2;
+    }
 
-    if (!XF86VidModeQueryExtension(XtDisplay (top), &EventBase, &ErrorBase))
-	return 0;
+    if (!XF86VidModeQueryExtension(XtDisplay (top), &EventBase, &ErrorBase)) {
+	fprintf(stderr, "Unable to query video extension information\n");
+	return 2;
+    }
 
     /* Fail if the extension version in the server is too old */
     if (MajorVersion < MINMAJOR || MinorVersion < MINMINOR) {
@@ -1080,28 +1129,13 @@ int main (argc, argv)
 		" (%d.%d)\n", MajorVersion, MinorVersion);
 	fprintf(stderr, "Minimum required version is %d.%d\n",
 		MINMAJOR, MINMINOR);
-	exit(1);
+	exit(2);
     }
  
     /* This should probably be done differently */
     if (argc > 1) {
 	int i = 0;
-	if (!strcmp(argv[1], "-next"))
-	    i = 1;
-	else if (!strcmp(argv[1], "-prev"))
-	    i = -1;
-	else if (!strcmp(argv[1], "-unlock")) {
-	    CleanUp(XtDisplay (top));
-	    XSync(XtDisplay (top), True);
-	    return 0;
-	} else if (!strcmp(argv[1], "-query")) {
-	    if (MinorVersion > 2) {
-		XF86VidModeGetSaver(XtDisplay (top),
-				    DefaultScreen (XtDisplay (top)),
-				    &suspendTime, &offTime);
-	    }
-	    query = TRUE;
-	} else if (!strcmp(argv[1], "-saver")) {
+	if ((argc == 3 || argc == 4) && !strcmp(argv[1], "-saver")) {
 	    if (MinorVersion < 3) {
 		fprintf(stderr,
 		    "Xserver is running an old XFree86-VidModeExtension"
@@ -1109,11 +1143,7 @@ int main (argc, argv)
 		fprintf(stderr,
 		    "Minimum required version for -saver is %d.%d\n",
 		    MINMAJOR, 3);
-		exit(1);
-	    }
-	    if (argc == 2) {
-		fprintf(stderr, "Usage: -saver suspendtime [offtime]\n");
-		return 1;
+		exit(2);
 	    }
 	    XF86VidModeGetSaver(XtDisplay (top),
 				DefaultScreen (XtDisplay (top)),
@@ -1132,6 +1162,25 @@ int main (argc, argv)
 	    XSync(XtDisplay (top), True);
 	    return 0;
 	}
+	if (argc != 2)
+		usage();
+	if (!strcmp(argv[1], "-next"))
+	    i = 1;
+	else if (!strcmp(argv[1], "-prev"))
+	    i = -1;
+	else if (!strcmp(argv[1], "-unlock")) {
+	    CleanUp(XtDisplay (top));
+	    XSync(XtDisplay (top), True);
+	    return 0;
+	} else if (!strcmp(argv[1], "-query")) {
+	    if (MinorVersion > 2) {
+		XF86VidModeGetSaver(XtDisplay (top),
+				    DefaultScreen (XtDisplay (top)),
+				    &suspendTime, &offTime);
+	    }
+	    query = TRUE;
+	} else
+		usage();
 	if (i != 0) {
 	    XF86VidModeSwitchMode(XtDisplay (top),
 				  DefaultScreen (XtDisplay (top)), i);
@@ -1139,8 +1188,10 @@ int main (argc, argv)
 	    return 0;
 	}
     }
-    if (!GetMonitor(XtDisplay (top), DefaultScreen (XtDisplay (top))))
-	return 0;
+    if (!GetMonitor(XtDisplay (top), DefaultScreen (XtDisplay (top)))) {
+	fprintf(stderr, "Unable to query monitor info\n");
+	return 2;
+    }
 
     if (query) {
 	if (MinorVersion > 2)
@@ -1150,8 +1201,10 @@ int main (argc, argv)
     }
 
     if (!XF86VidModeLockModeSwitch(XtDisplay (top),
-				   DefaultScreen (XtDisplay (top)), TRUE))
-	return 0;
+				   DefaultScreen (XtDisplay (top)), TRUE)) {
+	fprintf(stderr, "Failed to disable mode-switch hot-keys\n");
+	return 2;
+    }
 
     signal(SIGINT, CatchSig);
     signal(SIGQUIT, CatchSig);
@@ -1159,8 +1212,9 @@ int main (argc, argv)
     signal(SIGHUP, CatchSig);
 
     if (!GetModeLine(XtDisplay (top), DefaultScreen (XtDisplay (top)))) {
+	fprintf(stderr, "Unable to get mode info\n");
 	CleanUp(XtDisplay (top));
-	return 0;
+	return 2;
     }
 
     xtErrorfunc = XSetErrorHandler(vidmodeError); 

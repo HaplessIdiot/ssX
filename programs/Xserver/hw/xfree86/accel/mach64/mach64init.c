@@ -1,5 +1,5 @@
 /* $XConsortium: mach64init.c,v 1.3 95/01/16 13:16:33 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.4 1995/03/06 14:47:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.5tsi Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -34,7 +34,7 @@
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 
-extern Bool xf86Verbose;
+extern int xf86Verbose;
 
 static LUTENTRY oldlut[256];
 static Bool LUTInited = FALSE;

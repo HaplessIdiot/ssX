@@ -1,5 +1,5 @@
 /* $XConsortium: mach32.c,v 1.5 95/01/16 13:16:29 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.38 1995/07/02 07:47:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.39tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -63,7 +63,7 @@ extern int defaultColorVisualClass;
 extern int mach32MaxClock;
 extern int mach32MaxTlc34075Clock;
 extern int mach32Max16bppClock;
-extern Bool xf86Verbose, xf86Resetting, xf86Exiting, xf86ProbeFailed;
+extern Bool xf86Resetting, xf86Exiting, xf86ProbeFailed;
 unsigned short mach32MemorySize = 0;
 extern char *xf86VisualNames[];
 

@@ -25,7 +25,7 @@ dealings in this Software without prior written authorization from
 Pascal Haible.
 */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.0 1995/07/07 15:46:10 dawes Exp $ */
 
 #if defined(__STDC__) || defined(AMOEBA)
 #ifndef NOSTDHDRS
@@ -172,7 +172,7 @@ static unsigned long *free_lists[MAX_SMALL/SIZE_STEPS];
  * systems that support it should define HAS_MMAP_ANON
  * and include the appropriate header files for
  * mmap(), munmap(), PROT_READ, PROT_WRITE, MAP_ANON, MAP_PRIVATE and
- * PAGE_SIZE
+ * PAGE_SIZE or _SC_PAGESIZE.
  *
  * systems that don't support MAP_ANON fall through to the 2 fold behaviour
  */
@@ -186,18 +186,45 @@ static unsigned long *free_lists[MAX_SMALL/SIZE_STEPS];
 
 #if defined(CSRG_BASED)
 #define HAS_MMAP_ANON
+#define HAS_GETPAGESIZE
 #include <sys/types.h>
 #include <sys/mman.h>
-#include <machine/param.h>	/* PAGE_SIZE */
 #endif /* CSRG_BASED */
 
+#if defined(SVR4)
+#define MMAP_DEV_ZERO
+#include <sys/types.h>
+#include <sys/mman.h>
+#include <unistd.h>
+#endif /* SVR4 */
+
+#if defined(sun) && !defined(SVR4)
+#define MMAP_DEV_ZERO
+#define HAS_GETPAGESIZE
+#include <sys/types.h>
+#include <sys/mman.h>
+#endif /* sun && !SVR4 */
+
+#ifdef XNO_SYSCONF
+#undef _SC_PAGESIZE
+#endif
+
 #ifdef INTERNAL_MALLOC
+
+#ifdef MMAP_DEV_ZERO
+static int devzerofd = -1;
+#endif
+extern int errno;
+
 unsigned long *
 Xalloc (amount)
     unsigned long amount;
 {
     register unsigned long *ptr;
     int indx;
+#if defined(HAS_MMAP_ANON) || defined (MMAP_DEV_ZERO)
+    static int pagesize = 0;
+#endif
 
     /* zero size requested */
     if (amount == 0) {
@@ -206,8 +233,7 @@ Xalloc (amount)
     /* negative size (or size > 2GB) - what do we do? */
     if ((long)amount < 0) {
 	/* Diagnostic */
- 	fprintf(stderr, "Xalloc(<0) ignored..\n");
-	fflush(stderr);
+ 	ErrorF("warning: Xalloc(<0) ignored..\n");
 	return (unsigned long *)NULL;
     }
 
@@ -261,8 +287,19 @@ Xalloc (amount)
 		/* already has size (and evtl. magic) filled in */
 		return ptr;
 	}
-#ifdef HAS_MMAP_ANON
+#if defined(HAS_MMAP_ANON) || defined(MMAP_DEV_ZERO)
     } else if (amount >= MIN_LARGE) {
+	if (!pagesize) {
+#ifdef _SC_PAGESIZE
+	    pagesize = sysconf(_SC_PAGESIZE);
+#else
+#ifdef HAS_GETPAGESIZE
+	    pagesize = getpagesize();
+#else
+	    pagesize = PAGE_SIZE;
+#endif
+#endif
+	}
 	/* mmapped malloc */
 	/* round up amount */
 	amount += SIZE_HEADER;
@@ -270,15 +307,27 @@ Xalloc (amount)
 	amount += SIZE_TAIL;
 #endif /* SIZE_TAIL */
 	/* round up brutto amount to a multiple of the page size */
-	amount = (amount + PAGE_SIZE-1) & ~(PAGE_SIZE-1);
+	amount = (amount + pagesize-1) & ~(pagesize-1);
+#ifdef MMAP_DEV_ZERO
+	ptr = (unsigned long *)mmap((caddr_t)0,
+					(size_t)amount,
+					PROT_READ | PROT_WRITE,
+					MAP_PRIVATE,
+					devzerofd,
+					(off_t)0);
+#else
 	ptr = (unsigned long *)mmap((caddr_t)0,
 					(size_t)amount,
 					PROT_READ | PROT_WRITE,
 					MAP_ANON | MAP_PRIVATE,
 					-1,
 					(off_t)0);
+#endif
 	if (-1!=(long)ptr) {
-		ptr[0] = amount;
+		ptr[0] = amount - SIZE_HEADER;
+#ifdef SIZE_TAIL
+		ptr[0] -= SIZE_TAIL;
+#endif
 #ifdef DEBUG
 		ptr[1] = MAGIC;
 #endif /* DEBUG */
@@ -287,7 +336,7 @@ Xalloc (amount)
 #endif /* SIZE_TAIL */
 		return (unsigned long *)((char *)ptr+SIZE_HEADER);
 	} /* else fall through to 'Out of memory' */
-#endif /* HAS_MMAP_ANON */
+#endif /* HAS_MMAP_ANON || MMAP_DEV_ZERO */
     } else {
 	/* 'normal' malloc() */
 #ifdef SIZE_TAIL
@@ -330,8 +379,7 @@ XNFalloc (amount)
     /* negative size (or size > 2GB) - what do we do? */
     if ((long)amount < 0) {
 	/* Diagnostic */
-	fprintf(stderr, "XNFalloc(<0) ignored..\n");
-	fflush(stderr);
+	ErrorF("warning: XNFalloc(<0) ignored..\n");
 	return (unsigned long *)NULL;
     }
     ptr = Xalloc(amount);
@@ -353,7 +401,11 @@ Xcalloc (amount)
     unsigned long   *ret;
 
     ret = Xalloc (amount);
-    if (ret)
+    if (ret
+#if defined(HAS_MMAP_ANON) || defined(MMAP_DEV_ZERO)
+        && (amount < MIN_LARGE)
+#endif
+       )
 	bzero ((char *) ret, (int) amount);
     return ret;
 }
@@ -378,8 +430,7 @@ Xrealloc (ptr, amount)
     /* negative size (or size > 2GB) - what do we do? */
     if ((long)amount < 0) {
 	/* Diagnostic */
-	fprintf(stderr, "Xrealloc(<0) ignored..\n");
-	fflush(stderr);
+	ErrorF("warning: Xrealloc(<0) ignored..\n");
 	if (ptr)
 		Xfree(ptr);	/* ?? */
 	return (unsigned long *)NULL;
@@ -391,15 +442,14 @@ Xrealloc (ptr, amount)
 	old_size = ((unsigned long *)ptr)[-2];
 #ifdef DEBUG
 	if (MAGIC != ((unsigned long *)ptr)[-1]) {
-		fprintf(stderr, "Xrealloc(): header corrupt :-(\n");
-		fflush(stderr);
+		ErrorF("Xrealloc(): header corrupt :-(\n");
 		return (unsigned long *)NULL;
 	}
 #endif /* DEBUG */
 	/* copy min(old size, new size) */
 	memcpy((char *)new_ptr, (char *)ptr, (amount < old_size ? amount : old_size));
     }
-    /* if (ptr) */
+    if (ptr)
 	Xfree(ptr);
     if (new_ptr)
         return new_ptr;
@@ -445,8 +495,7 @@ Xfree(ptr)
 #ifdef DEBUG
     if (MAGIC != pheader[1]) {
 	/* Diagnostic */
-	fprintf(stderr, "Xfree(): Header corrupt :-(\n");
-	fflush(stderr);
+	ErrorF("Xfree(): Header corrupt :-(\n");
 	return;
     }
 #endif /* DEBUG */
@@ -457,8 +506,7 @@ Xfree(ptr)
 #ifdef SIZE_TAIL
 	if (MAGIC2 != *(unsigned long *)((char *)ptr + size)) {
 		/* Diagnostic */
-		fprintf(stderr, "Xfree(): Tail corrupt for small block (adr=0x%x, val=0x%x)\n",(char *)ptr + size,*(unsigned long *)((char *)ptr + size));
-		fflush(stderr);
+		ErrorF("Xfree(): Tail corrupt for small block (adr=0x%x, val=0x%x)\n",(char *)ptr + size,*(unsigned long *)((char *)ptr + size));
 		return;
 	}
 #endif /* SIZE_TAIL */
@@ -469,24 +517,24 @@ Xfree(ptr)
 	*(unsigned long **)(ptr) = free_lists[indx];
 	free_lists[indx] = (unsigned long *)ptr;
 	return;
-#ifdef HAS_MMAP_ANON
+#if defined(HAS_MMAP_ANON) || defined(MMAP_DEV_ZERO)
     } else if (size >= MIN_LARGE) {
 #ifdef SIZE_TAIL
-	if (MAGIC2 != ((unsigned long *)((char *)pheader + size))[-1]) {
+	if (MAGIC2 != ((unsigned long *)((char *)ptr + size))[0]) {
 		/* Diagnostic */
-		fprintf(stderr, "Xfree(): Tail corrupt for big block (adr=0x%x, val=0x%x)\n",(char *)pheader+size-sizeof(long),((unsigned long *)((char *)pheader + size))[-1]);
-		fflush(stderr);
+		ErrorF("Xfree(): Tail corrupt for big block (adr=0x%x, val=0x%x)\n",(char *)ptr+size,((unsigned long *)((char *)ptr + size))[0]);
 		return;
 	}
+	size += SIZE_TAIL;
 #endif /* SIZE_TAIL */
+	size += SIZE_HEADER;
 	munmap((caddr_t)pheader, (size_t)size);
 #endif /* HAS_MMAP_ANON */
     } else {
 #ifdef SIZE_TAIL
 	if (MAGIC2 != *(unsigned long *)((char *)ptr + size)) {
 		/* Diagnostic */
-		fprintf(stderr, "Xfree(): Tail corrupt for medium block (adr=0x%x, val=0x%x)\n",(char *)ptr + size,*(unsigned long *)((char *)ptr + size));
-		fflush(stderr);
+		ErrorF("Xfree(): Tail corrupt for medium block (adr=0x%x, val=0x%x)\n",(char *)ptr + size,*(unsigned long *)((char *)ptr + size));
 		return;
 	}
 #endif /* SIZE_TAIL */
@@ -500,7 +548,20 @@ Xfree(ptr)
 void
 OsInitAllocator ()
 {
+    static Bool beenhere = FALSE;
+
+    if (beenhere)
+	return;
+    beenhere = TRUE;
+
     /* set up linked lists of free blocks */
     bzero ((char *) free_lists, MAX_SMALL/SIZE_STEPS*sizeof(unsigned long *));
+#ifdef MMAP_DEV_ZERO
+    if (devzerofd < 0) {
+	if ((devzerofd = open("/dev/zero", O_RDWR, 0)) < 0)
+	    FatalError("OsInitAllocator: Cannot open /dev/zero (errno=%d)\n",
+			errno);
+    }
+#endif
 }
 #endif

@@ -1,5 +1,5 @@
 /* $XConsortium: s3fcach.c,v 1.4 95/01/23 15:33:59 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.13 1995/01/21 13:04:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.15tsi Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -52,7 +52,7 @@
 static unsigned long s3FontAge;
 #define NEXT_FONT_AGE  ++s3FontAge
 
-extern Bool xf86Verbose;
+extern int xf86Verbose;
 
 #define ALIGNMENT 8
 #define MAX_PIXMAP_WIDTH 64

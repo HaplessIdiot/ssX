@@ -12,25 +12,25 @@
   is available as source patches against the X Consortium X11R6 code, as
   well as binary distributions for many architectures.
 
-  See the Copyright Notice (COPYRIGHT.html).
+  See the Copyright Notice <COPYRIGHT.html>.
 
   The sources for XFree86 are available by anonymous ftp from:
 
   ftp.XFree86.org:/pub/XFree86/current
-  (ftp://ftp.XFree86.org/pub/XFree86/current)
+  <ftp://ftp.XFree86.org/pub/XFree86/current>
 
   Binaries for NetBSD 1.0 are available from:
 
   ftp.XFree86.org:/pub/XFree86/current/binaries/NetBSD
-  (ftp://ftp.XFree86.org/pub/XFree86/current/binaries/NetBSD)
+  <ftp://ftp.XFree86.org/pub/XFree86/current/binaries/NetBSD>
 
   ftp.laas.fr:/pub/ii/NetBSD/XFree86-3.1.1
-  (ftp://ftp.laas.fr/pub/ii/NetBSD/XFree86-3.1.1)
+  <ftp://ftp.laas.fr/pub/ii/NetBSD/XFree86-3.1.1>
 
   ftp.iastate.edu:/pub/XFree86/XFree86-3.1.1
-  (ftp://ftp.iastate.edu/pub/XFree86/XFree86-3.1.1)
+  <ftp://ftp.iastate.edu/pub/XFree86/XFree86-3.1.1>
 
-  ftp.eecs.umich.edu:/BSD/XFree86 (ftp://ftp.eecs.umich.edu/BSD/XFree86)
+  ftp.eecs.umich.edu:/BSD/XFree86 <ftp://ftp.eecs.umich.edu/BSD/XFree86>
 
   If you're still running NetBSD 0.9, you'll have to build it from the
   source.  If you've done it and want to share your binaries, please let
@@ -524,7 +524,7 @@
   changes to the site.def, type ``./mkmf'' and ``make'' to link the
   server.  See /usr/X11R6/lib/Server/README for more info.
 
-  See INSTALL (INSTALL.html) for instructions on unbundling and building
+  See INSTALL <INSTALL.html> for instructions on unbundling and building
   the source distribution.
   You should configure the distribution by editing
   xc/config/cf/xf86site.def  before compiling.  To compile the sources,
@@ -612,7 +612,7 @@
         XsunMono).
 
      o  Look at other applicable options in the INSTALL document
-        (INSTALL.html).
+        <INSTALL.html>.
 
   Problems with this port should be reported to the port-
   sparc@NetBSD.Org mailing list or directly to me matthieu@laas.fr

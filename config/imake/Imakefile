@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.6 94/03/29 16:21:51 matt Exp $
-XCOMM $XFree86: xc/config/imake/Imakefile,v 3.1 1994/10/20 06:00:34 dawes Exp $
+XCOMM $XFree86: xc/config/imake/Imakefile,v 3.2tsi Exp $
 
 DEPLIBS = 
 
@@ -22,14 +22,13 @@ SimpleHostProgramTarget(imake)
 #else
 SimpleProgramTarget(imake)
 #endif
+InstallLinkKitNamedProg(imake,imake,$(LINKKITDIR)/config/imake)
 #else /* OS2Architecture */
 all::
 
+InstallNamedProg(imakesvc.cmd,imakesvc.cmd,$(BINDIR))
+InstallLinkKitNamedProg(imakesvc.cmd,imakesvc.cmd,$(LINKKITDIR)/config/imake)
 #endif
 
 clean::
 	RemoveFile(ProgramTargetName(ccimake))
-
-#ifdef OS2Architecture
-InstallNamedProg(imakesvc.cmd,imakesvc.cmd,$(BINDIR))
-#endif

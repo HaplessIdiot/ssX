@@ -1,3 +1,16 @@
+XFree86 3.1.1Cd (12 July 1995)
+204. Allow for three verbosity levels for Xserver messages: -quite, default,
+     and -verbose (Marc Aurele La France).
+203. Make the LinkKit self-contained.  Apart from Xnest, it no longer
+     depends on the config files, headers, and utility programs being
+     installed (Marc Aurele La France).
+202. Updates to xvidtune.  The Show button now also sets the primary
+     selection, better usage/error messages and exit codes, man page
+     updates (Joe Moss).
+201. Updates for SCO -- mostly for lbx (David McCullough).
+200. Fix a cause for some S3 lockups (Harald Koenig).
+199. Updates/fixes and SVR4 support for new malloc code.
+
 XFree86 3.1.1Cc (8 July 1995)
 198. Merge in final form of XC fix-12.
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/STG1703clk.c,v 3.1 1995/07/07 15:39:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/STG1703clk.c,v 3.2 1995/07/08 02:08:36 dawes Exp $ */
 /*
  * Copyright 1995 The XFree86 Project, Inc
  *
@@ -129,9 +129,9 @@ int clk;
    program_word = divider;
 
    /*
-    * M  = program_word >> 8
+    * M  = (program_word & 0x7F) >> 8
     * N1 = program_word & 0x1F
-    * N2 = (program_word & 0xFF) >> 5
+    * N2 = (program_word & 0x60) >> 5
     */
 
    s3ProgramSTG1703Clock(program_word, clk);

@@ -1,5 +1,5 @@
 /* $XConsortium: agxBCach.c,v 1.3 95/01/05 20:29:54 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBCach.c,v 3.12 1995/07/01 10:47:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBCach.c,v 3.13tsi Exp $ */
 /*
  * Copyright 1993 by Jon Tombs. Oxford University
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -50,7 +50,7 @@ extern unsigned long agxFontAge;
 static bitMapRowPtr headBitRow = NULL;   /* top of linked list of cache rows */
 CacheFont8Ptr       agxHeadFont = NULL;  /* top of list of fonts in cache */
 
-extern Bool xf86Verbose;
+extern int xf86Verbose;
 
 #ifdef DEBUG_FCACHE
 static void showcache();

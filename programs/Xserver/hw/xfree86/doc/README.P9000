@@ -202,7 +202,7 @@
   memBase.  These values may be obtained by running the scanpci program
   available via anonymous ftp from
   ftp.xfree86.org:/pub/XFree86/3.1.1/ScanPCI
-  (ftp://ftp.xfree86.org/pub/XFree86/3.1.1/ScanPCI) Part of the output
+  <ftp://ftp.xfree86.org/pub/XFree86/3.1.1/ScanPCI> Part of the output
   of this program will look like:
 
   pci slot at 0xce00, vendor 0x100e device 0x9001

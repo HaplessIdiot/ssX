@@ -8,7 +8,7 @@
   ET4000/W32.  At this time, the accelerated features of the ET4000/W32
   are not supported; the chipset is treated as a standard ET4000.  For
   details about the accelerated ET4000/W32 server, refer to README.W32
-  (W32.html).
+  <W32.html>.
 
 
   2.  Clock selection problems with some ET4000 boards

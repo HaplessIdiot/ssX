@@ -1,5 +1,5 @@
 /* $XConsortium: agxInit.c,v 1.7 95/01/23 15:33:43 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.21 1995/07/01 10:48:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.22tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -62,7 +62,7 @@
 #include <sys/resource.h>
 #endif
 
-extern Bool xf86Verbose, xf86Resetting, xf86Exiting, xf86ProbeFailed;
+extern Bool xf86Resetting, xf86Exiting, xf86ProbeFailed;
 
 extern ScrnInfoRec agxInfoRec;
 

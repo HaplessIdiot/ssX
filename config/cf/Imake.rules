@@ -1,7 +1,7 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
 XCOMM rules:  $XConsortium: Imake.rules,v 1.197.1.1 95/06/19 18:01:48 gildea Exp $
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.15 1995/06/14 05:15:47 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.16tsi Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1050,6 +1050,17 @@ step:: list								@@\
 		(set -x; $(INSTALL) $(INSTALLFLAGS) flags $$i $(DESTDIR)dest); \	@@\
 	done
 #endif /* InstallMultipleDestFlags */
+
+
+/*
+ * InstallLinkKitMultipleDestFlags - rule for installing server Link Kit files.
+ *                         (only used for XFree86). This is a no-op
+ *                         rule so that Imakefiles on non-XFree86 systems
+ *                         continue to build Makefiles correctly.
+ */
+#ifndef InstallLinkKitMultipleDestFlags
+#define InstallLinkKitMultipleDestFlags(list,dest,flags)
+#endif
 
 
 /*

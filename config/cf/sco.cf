@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/sco.cf,v 3.5 1994/08/31 03:19:47 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sco.cf,v 3.6 1994/12/17 09:32:47 dawes Exp $
 
 /*****************************************************************************
  *	            Defaults for SCO-specfic parameters                          *
@@ -69,8 +69,11 @@ XCOMM platform:  $XFree86: xc/config/cf/sco.cf,v 3.5 1994/08/31 03:19:47 dawes E
 
 #define Malloc0ReturnsNull		YES
 #define RemoveDSDENroffMacros   NO
-#define CompressManPages        YES
 #define ServerExtraSysLibs		$(CBRT) -lm
+
+#ifndef CompressManPages
+#define CompressManPages        YES
+#endif
 
 /*
  *	The user should override this in their

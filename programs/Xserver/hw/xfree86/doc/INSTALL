@@ -141,7 +141,7 @@
      rename them, and restore the standard versions before patching. If
      you don't have backups of the originals, individual files can be
      easily obtained from ftp.x.org:/pub/R6untarred
-     (ftp://ftp.x.org/pub/R6untarred).
+     <ftp://ftp.x.org/pub/R6untarred>.
 
      If you are patching a tree that you've previously used, make sure
      you run ``make clean'' from the xc directory before applying the
@@ -172,7 +172,7 @@
      you don't have backups of the originals, individual files for ver-
      sion 3.1.2 can be easily obtained from
      ftp.xfree86.org:/pub/XFree86/3.1.2/untarred
-     (ftp://ftp.xfree86.org/pub/XFree86/3.1.2/untarred).
+     <ftp://ftp.xfree86.org/pub/XFree86/3.1.2/untarred>.
 
      If you are patching a tree that you've previously used, make sure
      you run ``make clean'' from the xc directory before applying the
@@ -250,7 +250,7 @@
         (which is now in LinuxDoc/SGML form), you will need to get and
         install linuxdoc-sgml-1.1.tar.gz plus the patches which can be
         found on ftp.xfree86.org:/pub/XFree86/3.1.2/Linuxdoc
-        (ftp://ftp.xfree86.org/pub/XFree86/3.1.2/Linuxdoc).  Check in
+        <ftp://ftp.xfree86.org/pub/XFree86/3.1.2/Linuxdoc>.  Check in
         the xf86site.def file and uncomment the appropriate Linuxdoc
         options.
 
@@ -352,7 +352,7 @@
   If you have installed the server Binary LinkKit, it is possible to
   reconfigure the drivers and some of the extensions in the servers.
   For details of how to do this, please refer to the README.LinkKit
-  (LinkKit.html) file.
+  <LinkKit.html> file.
 
   $XConsortium: INSTALL.sgml,v 1.4 95/01/27 16:14:24 kaleb Exp $
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.11 1995/07/07 15:40:13 dawes Exp $

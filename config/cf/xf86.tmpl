@@ -1,13 +1,21 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.0tsi Exp $
 
 #if XF86LinkKit
+    TOP_INCLUDES = TopIncludes
    IMAKE_DEFINES = -DXF86LinkKit=1
+#ifdef UseInstalled
        IMAKE_CMD = $(IMAKE) -DUseInstalled -I$(TOP) -I$(IRULESRC) \
 		   $(IMAKE_DEFINES)
-
+#else
+       IMAKE_CMD = $(IMAKE) -I$(TOP) -I$(IRULESRC) $(IMAKE_DEFINES)
+#endif
 
 #undef ImakeSubCmdHelper
+#ifdef UseInstalled
 #define ImakeSubCmdHelper $(IMAKE) -DUseInstalled -I$$imaketop \
 			  -I$(IRULESRC) $(IMAKE_DEFINES)
-
+#else
+#define ImakeSubCmdHelper $$imakeprefix$(IMAKE) -I$$imaketop \
+			  -I$$imakeprefix$(IRULESRC) $(IMAKE_DEFINES)
+#endif
 #endif

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Init.c,v 1.8 95/01/16 13:17:00 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.19 1995/07/02 07:52:10 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.20tsi Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -47,7 +47,7 @@ Bool xf86Exiting = FALSE;
 Bool xf86Resetting = FALSE;
 Bool xf86ProbeFailed = TRUE;
 Bool xf86ScreensOpen = FALSE;
-Bool xf86Verbose = TRUE;
+int xf86Verbose = 1;
 Bool xf86fpFlag = FALSE;
 Bool xf86coFlag = FALSE;
 Bool xf86sFlag = FALSE;
@@ -444,17 +444,16 @@ ddxProcessArgument (argc, argv, i)
   if (!strcmp(argv[i],"-probeonly"))
   {
     xf86ProbeOnly = TRUE;
-    xf86Verbose = TRUE;
     return 1;
   }
   if (!strcmp(argv[i],"-verbose"))
   {
-    xf86Verbose = TRUE;
+    xf86Verbose = 2;
     return 1;
   }
   if (!strcmp(argv[i],"-quiet"))
   {
-    xf86Verbose = FALSE;
+    xf86Verbose = 0;
     return 1;
   }
   if (!strcmp(argv[i],"+vgahelp"))

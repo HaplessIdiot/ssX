@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.23 1995/06/02 10:48:45 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.24tsi Exp $
 /*
  * Server Makefile for LinkKit
  */
@@ -350,7 +350,7 @@ XNESTOBJS = miinitext.o
 XNESTDIRS =
 XNEST = lib/libxnest.a
 XNESTLIBS = $(DIX) $(OS) $(FONT) $(XNEST) $(MI) $(EXTENSIONS)
-XNESTSYSLIBS = $(LDPRELIB) $(XLIB) $(XNEST) $(SYSLIBS)
+XNESTSYSLIBS = ClientLibDir $(XLIB) $(XNEST) $(SYSLIBS)
 ServerTarget(Xnest,$(XNESTDIRS),$(XNESTOBJS),$(XNESTLIBS),$(XNESTSYSLIBS))
 #endif /* XnestServer */
 

@@ -1,5 +1,5 @@
 /* $XConsortium: mach64fcach.c,v 1.1 94/12/14 15:04:34 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64fcach.c,v 3.1 1995/01/28 15:53:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64fcach.c,v 3.2tsi Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -43,7 +43,7 @@
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 
-extern Bool xf86Verbose;
+extern int xf86Verbose;
 
 #define MAX_FONTS      	16	/* For static structure */
 #define FC_MAX_WIDTH	24

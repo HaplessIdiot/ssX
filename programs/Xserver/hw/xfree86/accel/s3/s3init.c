@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.6 95/01/23 15:34:00 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.68 1995/07/03 08:48:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.69 1995/07/07 16:03:37 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -2048,8 +2048,17 @@ s3Init(mode)
       else
 	 s3OutIBMRGBIndReg(IBMRGB_misc2, 0, 0x43);
 
+#if 0  /* this will lock up the S3 chip & PC sometimes */
       outb(vgaCRIndex, 0x22); /* don't know why it's important    */
       outb(vgaCRReg, 0xff);   /* to set a "read only" register ?? */
+#else
+      outb(vgaCRIndex, 0x22);
+      tmp = inb(vgaCRReg);
+      if (s3Bpp == 1)
+	 outb(vgaCRReg, tmp | 8);
+      else 
+	 outb(vgaCRReg, tmp & ~8);
+#endif
 
       outb(vgaCRIndex, 0x65);
       outb(vgaCRReg, 0);

@@ -1,5 +1,5 @@
 /* $XConsortium: mach64.c,v 1.4 95/01/23 15:33:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.19 1995/07/03 08:46:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.20tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -62,7 +62,7 @@
 
 extern int defaultColorVisualClass;
 extern int mach64MaxClock;
-extern Bool xf86Verbose, xf86Resetting, xf86Exiting, xf86ProbeFailed;
+extern Bool xf86Resetting, xf86Exiting, xf86ProbeFailed;
 extern void mach64QueryBestSize();
 extern void mach64WarpCursor();
 extern void mach64RepositionCursor();

@@ -69,7 +69,7 @@ FontFileFreeEntry (entry)
 	extra = entry->u.scalable.extra;
 	for (i = 0; i < extra->numScaled; i++)
 	    if (extra->scaled[i].vals.ranges)
-		free (extra->scaled[i].vals.ranges);
+		xfree (extra->scaled[i].vals.ranges);
 	xfree (extra->scaled);
 	xfree (extra);
 	break;

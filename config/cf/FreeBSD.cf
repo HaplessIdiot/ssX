@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: FreeBSD.cf,v 1.5 95/04/07 19:42:53 kaleb Exp $
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.29 1995/06/24 10:21:09 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.30 1995/07/08 10:21:33 dawes Exp $
 
 #define OSName            FreeBSD 2.0.5
 #define OSVendor          /**/
@@ -35,6 +35,8 @@ XCOMM operating system:  OSName
 #define NeedNestedPrototypes	YES
 #define NeedVarargsPrototypes	YES
 #define NeedWidePrototypes	NO
+
+#define MkdirHierCmd		mkdir -p
 
 #define CcCmd			cc
 #define CppCmd			/usr/libexec/cpp

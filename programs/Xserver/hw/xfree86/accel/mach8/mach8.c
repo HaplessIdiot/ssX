@@ -1,5 +1,5 @@
 /* $XConsortium: mach8.c,v 1.7 95/01/16 13:16:36 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.21 1995/07/02 07:48:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.22tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -61,7 +61,7 @@
 #include "xf86_Config.h"
 
 extern int mach8MaxClock;
-extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed, xf86Verbose;
+extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed;
 
 static Bool mach8ValidMode(
 #if NeedFunctionPrototypes 

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.32 94/04/09 21:46:51 rws Exp $
-XCOMM $XFree86: xc/config/cf/Imakefile,v 3.6 1995/07/05 12:25:49 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imakefile,v 3.7tsi Exp $
 
 #ifdef LocalConfigFiles
 LOCALFILES = LocalConfigFiles
@@ -102,12 +102,22 @@ INSTFILES = $(RULEFILES) $(TMPLFILES) $(DEFFILES) $(CFFILES) $(LOCALFILES)
 all::
 
 InstallMultipleDestFlags(install,$(INSTFILES),$(CONFIGDIR),$(INSTDATFLAGS))
+InstallLinkKitMultipleDestFlags($(INSTFILES),$(LINKKITDIR)/config/cf,$(INSTDATFLAGS))
 
 #ifdef InstallEmptyHostDef
 install::
 	@(TMP=/tmp/tmp.$$$$; \
 	RemoveFile($${TMP}); \
 	echo "" > $${TMP}; \
-	$(INSTALL) $(INSTALLFLAGS) $(INSTDATFLAGS) $${TMP} $(DESTDIR)$(CONFIGDIR)/host.def; \
+	$(INSTALL) $(INSTALLFLAGS) $(INSTDATFLAGS) $${TMP} \
+		$(DESTDIR)$(CONFIGDIR)/host.def; \
+	RemoveFile($${TMP}))
+
+install.linkkit::
+	@(TMP=/tmp/tmp.$$$$; \
+	RemoveFile($${TMP}); \
+	echo "" > $${TMP}; \
+	$(INSTALL) $(INSTALLFLAGS) $(INSTDATFLAGS) $${TMP} \
+		$(DESTDIR)$(LINKKITDIR)/config/cf/host.def; \
 	RemoveFile($${TMP}))
 #endif

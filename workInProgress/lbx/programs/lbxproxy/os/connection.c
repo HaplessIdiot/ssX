@@ -1,5 +1,5 @@
 /* $XConsortium: connection.c,v 1.7 95/04/05 17:30:54 kaleb Exp $ */
-/* $XFree86: xc/workInProgress/lbx/programs/lbxproxy/os/connection.c,v 3.7 1995/06/20 14:45:43 dawes Exp $ */
+/* $XFree86: xc/workInProgress/lbx/programs/lbxproxy/os/connection.c,v 3.8 1995/06/27 04:06:13 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -130,7 +130,9 @@ extern int errno;
 /*
  * sites should be careful to have separate /tmp directories for diskless nodes
  */
+#ifndef SCO
 #include <sys/un.h>
+#endif
 #include <sys/stat.h>
 static int unixDomainConnection = -1;
 #endif
@@ -165,6 +167,15 @@ extern int read(), close();
 #define X_UNIX_DIR	"/tmp/.X11-unix"
 #define X_UNIX_PATH	"/tmp/.X11-unix/X"
 #endif
+#endif
+
+#ifdef SCO
+#ifndef S_IFSOCK
+#define X_SOCK_MODE S_IFIFO
+#endif
+#endif
+#ifndef X_SOCK_MODE
+#define X_SOCK_MODE S_IFSOCK
 #endif
 
 extern char *display;		/* The display number */
@@ -604,14 +615,14 @@ reset_unix_local()
 	strcpy(path, X_UNIX_DEVPATH);
 	strcat(path, display);
 	if ((stat(path, &statb) == -1) ||
-	    (statb.st_mode & S_IFMT) != S_IFSOCK)
+	    (statb.st_mode & S_IFMT) != X_SOCK_MODE)
 	  need_reset = 1;
 
 	if (useSlashTmpForUNIX) {
 	    strcpy(path, X_UNIX_PATH);
 	    strcat(path, display);
 	    if ((stat(path, &statb) == -1) ||
-		(statb.st_mode & S_IFMT) != S_IFSOCK)
+		(statb.st_mode & S_IFMT) != X_SOCK_MODE)
 	      need_reset = 1;
 	}
 
@@ -742,7 +753,7 @@ open_isc_local()
 	 * At this point, most SVR4 versions will fail on this, so leave out the
 	 * warning
 	 */
-	Error("open_isc_local(): can't open \"%s\"",DEV_SPX);
+	ErrorF("open_isc_local(): can't open \"%s\"", DEV_SPX);
 	return(-1);
 #endif
 #endif
@@ -832,7 +843,7 @@ open_sco_local()
 	 * At this point, most SVR4 versions will fail on this, so
 	 * leave out the warning
 	 */
-	Error("open_sco_local(): can't open \"%s\"",DEV_SPX);
+	ErrorF("open_sco_local(): can't open \"%s\"", DEV_SPX);
 	return(-1);
 #endif
 #endif
@@ -1414,7 +1425,7 @@ ResetWellKnownSockets ()
 	struct stat	statb;
 
 	if (stat (unsock.sun_path, &statb) == -1 ||
-	    (statb.st_mode & S_IFMT) != S_IFSOCK)
+	    (statb.st_mode & S_IFMT) != X_SOCK_MODE)
 	{
 	    ErrorF ("Unix domain socket %s trashed, recreating\n",
 	    	unsock.sun_path);
@@ -1674,7 +1685,11 @@ EstablishNewConnections(clientUnused, closure)
 	    ioctl(newconn, FIONBIO, &arg);
 	}
 #else
+#ifdef FNDELAY
 	fcntl (newconn, F_SETFL, FNDELAY);
+#else
+	fcntl (newconn, F_SETFL, O_NDELAY);
+#endif
 #endif
 #endif
 #endif
@@ -2080,6 +2095,40 @@ PayAttentionToClientsAgain()
 	ListenToAllClients();
     }
     reallyGrabbed = FALSE;
+}
+
+#endif
+
+#ifdef SCO
+/*
+ * emulate writev as SCO doesn't have it
+ */
+
+int writev(fd, iov, iovcnt)
+    int			 fd;
+    struct iovec 	*iov;
+    int 		 iovcnt;
+
+{
+    int i, len, total;
+    char *base;
+
+    for (i = 0, total = 0;  i < iovcnt;  i++, iov++) {
+	len = iov->iov_len;
+	base = iov->iov_base;
+	while (len > 0) {
+	    register int nbytes;
+	    nbytes = write(fd, base, len);
+	    if (nbytes < 0 && total == 0)
+		return -1;
+	    if (nbytes <= 0)
+		return total;
+	    len   -= nbytes;
+	    total += nbytes;
+	    base  += nbytes;
+	}
+    }
+    return total;
 }
 
 #endif

@@ -1,5 +1,5 @@
 /* $XConsortium: mach32init.c,v 1.4 95/01/06 20:57:03 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32init.c,v 3.6 1994/12/25 12:23:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32init.c,v 3.8tsi Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -35,7 +35,7 @@
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 
-extern Bool xf86Verbose;
+extern int xf86Verbose;
 extern int  mach32MaxClock;
 
 static LUTENTRY oldlut[256];

@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.9 95/04/07 19:28:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.89 1995/07/07 15:39:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.90tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -224,7 +224,8 @@ pointer vgaBaseLow = NULL;
 pointer vgaBaseHigh = NULL;
 pointer s3VideoMem = NULL;
 
-extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed, xf86Verbose;
+extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed;
+extern int  xf86Verbose;
 
 int s3ScissB;
 unsigned char s3SwapBits[256];

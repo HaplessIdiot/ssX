@@ -1,5 +1,5 @@
 /* $XConsortium: mach32fcach.c,v 1.2 94/10/12 19:59:09 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32fcach.c,v 3.8 1995/01/28 16:58:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32fcach.c,v 3.9tsi Exp $ */
 /*
  * Copyright 1992, 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -50,7 +50,7 @@
 static unsigned long mach32FontAge;
 #define NEXT_FONT_AGE  ++mach32FontAge
 
-extern Bool xf86Verbose;
+extern int xf86Verbose;
 
 #define ALIGNMENT 8
 #define PIXMAP_WIDTH 64

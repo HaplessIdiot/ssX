@@ -15,16 +15,16 @@
   The sources for XFree86 are available by anonymous ftp from:
 
        ftp.XFree86.org:/pub/XFree86/current
-       (ftp://ftp.XFree86.org/pub/XFree86/current)
+       <ftp://ftp.XFree86.org/pub/XFree86/current>
 
 
   Solaris binaries for XFree86 are available for anonymous ftp from:
 
        ftp.XFree86.org:/pub/XFree86/current/binaries/Solaris
-       (ftp://ftp.XFree86.org/pub/XFree86/current/binaries/Solaris)
+       <ftp://ftp.XFree86.org/pub/XFree86/current/binaries/Solaris>
 
        abode.ccd.bnl.gov:/pub/XFree86
-       (ftp://abode.ccd.bnl.gov/pub/XFree86)
+       <ftp://abode.ccd.bnl.gov/pub/XFree86>
 
 
   Many thanks to Jerry Whelan for making the space available for these
