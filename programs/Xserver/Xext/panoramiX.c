@@ -23,7 +23,7 @@ shall not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from Digital
 Equipment Corporation.
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.33 2003/03/23 04:56:02 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.34 2003/06/25 19:17:13 mvojkovi Exp $ */
 
 #define NEED_REPLIES
 #include <stdio.h>
@@ -50,6 +50,7 @@ Equipment Corporation.
 #ifdef RENDER
 #include "picturestr.h"
 #endif
+#include "modinit.h"
 
 
 static unsigned char PanoramiXReqCode = 0;
@@ -80,56 +81,23 @@ unsigned long XRT_GC;
 unsigned long XRT_COLORMAP;
 
 
-int (* SavedProcVector[256]) ();
+int (* SavedProcVector[256]) (ClientPtr client);
 ScreenInfo *GlobalScrInfo;
 
-static int panoramiXGeneration;
-static int ProcPanoramiXDispatch(); 
 /*
  *	Function prototypes
  */
 
+static int panoramiXGeneration;
+static int ProcPanoramiXDispatch(ClientPtr client); 
+
 static void PanoramiXResetProc(ExtensionEntry*);
 
 /*
- *	External references for data variables
+ *	External references for functions and data variables
  */
 
-extern int SProcPanoramiXDispatch();
-extern char *ConnectionInfo;
-extern int connBlockScreenStart;
-extern xConnSetupPrefix connSetupPrefix;
-
-/*
- *	Server dispatcher function replacements
- */
-
-int PanoramiXCreateWindow(), 	PanoramiXChangeWindowAttributes();
-int PanoramiXDestroyWindow(),	PanoramiXDestroySubwindows();
-int PanoramiXChangeSaveSet(), 	PanoramiXReparentWindow();
-int PanoramiXMapWindow(), 	PanoramiXMapSubwindows();
-int PanoramiXUnmapWindow(), 	PanoramiXUnmapSubwindows();
-int PanoramiXConfigureWindow(), PanoramiXCirculateWindow();
-int PanoramiXGetGeometry(),	PanoramiXTranslateCoords();	
-int PanoramiXCreatePixmap(), 	PanoramiXFreePixmap();
-int PanoramiXCreateGC(), 	PanoramiXChangeGC();
-int PanoramiXCopyGC(),		PanoramiXCopyColormapAndFree();
-int PanoramiXSetDashes(), 	PanoramiXSetClipRectangles();
-int PanoramiXFreeGC(), 		PanoramiXClearToBackground();
-int PanoramiXCopyArea(),	PanoramiXCopyPlane();
-int PanoramiXPolyPoint(),	PanoramiXPolyLine();
-int PanoramiXPolySegment(),	PanoramiXPolyRectangle();
-int PanoramiXPolyArc(),		PanoramiXFillPoly();
-int PanoramiXPolyFillArc(),	PanoramiXPolyFillRectangle();
-int PanoramiXPutImage(), 	PanoramiXGetImage();
-int PanoramiXPolyText8(),	PanoramiXPolyText16();	
-int PanoramiXImageText8(),	PanoramiXImageText16();
-int PanoramiXCreateColormap(),	PanoramiXFreeColormap();
-int PanoramiXInstallColormap(),	PanoramiXUninstallColormap();
-int PanoramiXAllocColor(),	PanoramiXAllocNamedColor();
-int PanoramiXAllocColorCells(),	PanoramiXStoreNamedColor();
-int PanoramiXFreeColors(), 	PanoramiXStoreColors();
-int PanoramiXAllocColorPlanes();
+#include "panoramiXh.h"
 
 static int PanoramiXGCIndex = -1;
 static int PanoramiXScreenIndex = -1;

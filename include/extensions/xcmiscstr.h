@@ -24,6 +24,10 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
+/* $XFree86$ */
+
+#ifndef _XCMISCSTR_H_
+#define _XCMISCSTR_H_
 
 #define X_XCMiscGetVersion	0
 #define X_XCMiscGetXIDRange	1
@@ -105,3 +109,4 @@ typedef struct {
 } xXCMiscGetXIDListReply;
 #define sz_xXCMiscGetXIDListReply 32
 
+#endif /* _XCMISCSTR_H_ */

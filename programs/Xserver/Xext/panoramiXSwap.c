@@ -23,7 +23,7 @@ shall not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from Digital
 Equipment Corporation.
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiXSwap.c,v 3.7 2001/01/17 22:13:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiXSwap.c,v 3.8 2001/08/23 13:01:36 alanh Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -47,7 +47,7 @@ Equipment Corporation.
 #include "panoramiXproto.h"
 #include "panoramiXsrv.h"
 #include "globals.h"
-
+#include "panoramiXh.h"
 
 /*
  *	External references for data variables
@@ -56,19 +56,12 @@ Equipment Corporation.
 extern char *ConnectionInfo;
 extern int connBlockScreenStart;
 
-#if NeedFunctionPrototypes
-#define PROC_EXTERN(pfunc)      extern int pfunc(ClientPtr)
-#else
-#define PROC_EXTERN(pfunc)      extern int pfunc()
-#endif     
-
 PROC_EXTERN(ProcPanoramiXQueryVersion);
 PROC_EXTERN(ProcPanoramiXGetState);
 PROC_EXTERN(ProcPanoramiXGetScreenCount);
 PROC_EXTERN(ProcPanoramiXGetScreenSize);
 
 PROC_EXTERN(ProcXineramaIsActive);
-PROC_EXTERN(ProcXineramaQueryScreens);
 
 static int
 SProcPanoramiXQueryVersion (ClientPtr client)

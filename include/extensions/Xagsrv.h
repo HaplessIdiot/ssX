@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/include/extensions/Xagsrv.h,v 1.4 2001/12/20 19:25:43 tsi Exp $ */
 /*
 Copyright 1996, 1998  The Open Group
 
@@ -32,12 +32,6 @@ from The Open Group.
 #include <X11/Xfuncproto.h>
 
 _XFUNCPROTOBEGIN
-
-extern void XagExtensionInit(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
 
 extern void XagConnectionInfo(
 #if NeedFunctionPrototypes

@@ -23,7 +23,7 @@
  * SOFTWARE.
  *
 */
-/* $XFree86: xc/lib/X11/lcFile.c,v 3.31 2003/03/11 23:26:58 herrb Exp $ */
+/* $XFree86: xc/lib/X11/lcFile.c,v 3.32 2003/03/25 04:18:09 dawes Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -31,6 +31,11 @@
 #include "Xlibint.h"
 #include "XlcPubI.h"
 #include <X11/Xos.h>
+#if 0
+#include <unistd.h>  /* in theory delivers getresuid/gid prototypes,
+		      * in practice only the Linux syscall wrapper is there. */
+#endif
+
 
 /************************************************************************/
 

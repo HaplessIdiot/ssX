@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.59tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.60 2003/07/09 15:27:35 tsi Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -734,7 +734,12 @@ ClientAuthorized(ClientPtr client,
 static ClientPtr
 #ifdef LBX
 AllocNewConnection (XtransConnInfo trans_conn, int fd, CARD32 conn_time, 
-    int (*Flush)(), void (*Close)(), LbxProxyPtr proxy)
+    int (*Flush)(
+        ClientPtr /*who*/, OsCommPtr /*oc*/,
+        char */*extraBuf*/, int /*extraCount*/),
+    void (*Close)(
+        ClientPtr /*client*/),
+    LbxProxyPtr proxy)
 #else
 AllocNewConnection (XtransConnInfo trans_conn, int fd, CARD32 conn_time)
 #endif

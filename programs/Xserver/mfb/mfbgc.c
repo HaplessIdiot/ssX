@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbgc.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbgc.c,v 1.8 2003/02/18 21:30:01 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -656,7 +656,12 @@ struct commonOps {
     int		    rrop;
     int		    terminalFont;
     GCOps	    *ops;
-    void	    (*fillArea)();
+    void	    (*fillArea)(
+	DrawablePtr /*pDraw*/,
+    	int /*nbox*/,
+    	BoxPtr /*pbox*/,
+    	int /*alu*/,
+    	PixmapPtr /*nop*/);
 };
 
 static struct commonOps mfbCommonOps[] = {
@@ -677,8 +682,8 @@ static struct commonOps mfbCommonOps[] = {
 #define numberCommonOps	(sizeof (mfbCommonOps) / sizeof (mfbCommonOps[0]))
 
 static GCOps *
-matchCommon (pGC)
-    GCPtr   pGC;
+matchCommon (
+    GCPtr   pGC)
 {
     int	i;
     struct commonOps	*cop;
@@ -742,6 +747,42 @@ mfbCreateGC(pGC)
     pPriv->FillArea = mfbSolidInvertArea;
     return TRUE;
 }
+
+/* some noop functions */
+void mfbPolyGlyphBltNoop(
+    DrawablePtr pDrawable,
+    GCPtr pGC,
+    int x,
+    int y,
+    unsigned int nglyph,
+    CharInfoPtr * ppci,
+    pointer pglyphBase)
+{
+    /* this is a no-op function */
+}
+
+void mfbNoopFS(
+    DrawablePtr pDrawable,
+    GCPtr pGC,
+    int nInit,
+    DDXPointPtr pptInit,
+    int * pwidthInit,
+    int fSorted)
+{
+    /* this is a no-op function */
+}
+
+void mfbFillPolyNoop(
+    DrawablePtr pDrawable,
+    GCPtr pGC,
+    int shape,
+    int mode,
+    int count,
+    DDXPointPtr ptsIn)
+{
+    /* this is a no-op function */
+}
+
 
 /* Clipping conventions
 	if the drawable is a window
@@ -1107,7 +1148,7 @@ mfbValidateGC(pGC, changes, pDrawable)
 		else if (rrop == RROP_INVERT)
 		    pGC->ops->PolyGlyphBlt = mfbPolyGlyphBltInvert;
 		else
-		    pGC->ops->PolyGlyphBlt = (void (*)())NoopDDA;
+		    pGC->ops->PolyGlyphBlt = mfbPolyGlyphBltNoop;
 	    }
 	    else
 	    {
@@ -1144,8 +1185,8 @@ mfbValidateGC(pGC, changes, pDrawable)
 		pGC->ops->FillPolygon = mfbFillPolyInvert;
 		break;
 	      case RROP_NOP:
-		pGC->ops->FillSpans = (void (*)())NoopDDA;
-		pGC->ops->FillPolygon = (void (*)())NoopDDA;
+		pGC->ops->FillSpans = mfbNoopFS;
+		pGC->ops->FillPolygon = mfbFillPolyNoop;
 		break;
 	    }
 	}
@@ -1174,7 +1215,7 @@ mfbValidateGC(pGC, changes, pDrawable)
 		pGC->ops->FillSpans = mfbInvertStippleFS;
 		break;
 	      case RROP_NOP:
-		pGC->ops->FillSpans = (void (*)())NoopDDA;
+		pGC->ops->FillSpans = mfbNoopFS;
 		break;
 	    }
 	}

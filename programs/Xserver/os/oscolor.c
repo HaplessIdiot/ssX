@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/oscolor.c,v 3.8 2002/05/31 18:46:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/oscolor.c,v 3.9 2003/04/27 21:31:09 herrb Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -70,7 +70,10 @@ DBM *rgb_dbm = (DBM *)NULL;
 int rgb_dbm = 0;
 #endif
 
-extern void CopyISOLatin1Lowered();
+extern void CopyISOLatin1Lowered(
+    unsigned char * /*dest*/,
+    unsigned char * /*source*/,
+    int /*length*/);
 
 int
 OsInitColors(void)
@@ -160,7 +163,10 @@ typedef struct _dbEntry {
 } dbEntry;
 
 
-extern void CopyISOLatin1Lowered();
+extern void CopyISOLatin1Lowered(
+    unsigned char * /*dest*/,
+    unsigned char * /*source*/,
+    int /*length*/);
 
 static dbEntryPtr hashTab[HASHSIZE];
 

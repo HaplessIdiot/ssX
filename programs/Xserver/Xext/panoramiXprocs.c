@@ -26,7 +26,7 @@ Equipment Corporation.
 
 /* Massively rewritten by Mark Vojkovich <markv@valinux.com> */
 
-/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.33 2002/04/10 21:38:53 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.34 2003/03/23 04:56:02 mvojkovi Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -46,6 +46,7 @@ Equipment Corporation.
 #include "panoramiX.h"
 #include "panoramiXsrv.h"
 #include "resource.h"
+#include "panoramiXh.h"
 
 #define XINERAMA_IMAGE_BUFSIZE (256*1024)
 #define INPUTONLY_LEGAL_MASK (CWWinGravity | CWEventMask | \
@@ -55,11 +56,16 @@ extern ScreenInfo *GlobalScrInfo;
 extern char *ConnectionInfo;
 extern int connBlockScreenStart;
 
-extern int (* SavedProcVector[256]) ();
-extern void (* EventSwapVector[128]) ();
-extern void Swap32Write(), SLHostsExtend(), SQColorsExtend(), 
+extern int (* SavedProcVector[256]) (ClientPtr client);
+#if 0
+extern void (* EventSwapVector[128]) (fsError *, fsError *);
+
+extern void Swap32Write();
+extern void SLHostsExtend();
+extern void SQColorsExtend();
 WriteSConnectionInfo();
 extern void WriteSConnSetupPrefix();
+#endif
 
 /* Various of the DIX function interfaces were not designed to allow
  * the client->errorValue to be set on BadValue and other errors.

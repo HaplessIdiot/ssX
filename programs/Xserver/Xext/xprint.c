@@ -64,7 +64,7 @@ copyright holders.
 **    *********************************************************
 **
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xprint.c,v 1.12 2001/10/28 03:32:51 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xprint.c,v 1.13 2001/11/23 19:21:31 dawes Exp $ */
 
 #define _XP_PRINT_SERVER_
 #include "X.h"
@@ -83,6 +83,7 @@ copyright holders.
 #include "Printstr.h"
 #include "../Xprint/DiPrint.h"
 #include "../Xprint/attributes.h"
+#include "modinit.h"
 
 static void XpResetProc(ExtensionEntry *);
 
@@ -282,7 +283,7 @@ static CARD32 allEvents = XPPrintMask | XPAttributeMask;
  */
 
 void
-XpExtensionInit(void)
+XpExtensionInit(INITARGS)
 {
     ExtensionEntry *extEntry;
     int i;

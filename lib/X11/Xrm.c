@@ -49,7 +49,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xrm.c,v 3.20 2002/05/31 18:45:42 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xrm.c,v 3.21 2003/04/13 19:22:20 dawes Exp $ */
 
 #include	<stdio.h>
 #include	<ctype.h>
@@ -62,6 +62,7 @@ from The Open Group.
 #include 	"XrmI.h"
 #include	<X11/Xos.h>
 #include "Xresinternal.h"
+#include "Xresource.h"
 
 /*
 
@@ -333,6 +334,7 @@ void XrmInitialize(void)
     XrmQANY = XrmPermStringToQuark("?");
 }
 
+#ifndef _XP_PRINT_SERVER_
 XrmDatabase XrmGetDatabase(
     Display *display)
 {
@@ -351,6 +353,7 @@ void XrmSetDatabase(
     display->db = database;
     UnlockDisplay(display);
 }
+#endif /* !_XP_PRINT_SERVER_ */
 
 #if NeedFunctionPrototypes
 void XrmStringToQuarkList(

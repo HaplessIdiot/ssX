@@ -45,12 +45,13 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+/* $XFree86$ */
 
 #ifndef PIXMAPSTRUCT_H
 #define PIXMAPSTRUCT_H
 #include "pixmap.h"
 #include "screenint.h"
-#include "miscstruct.h"
+#include "regionstr.h"
 
 typedef struct _Drawable {
     unsigned char	type;	/* DRAWABLE_<type> */

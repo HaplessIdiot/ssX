@@ -21,6 +21,8 @@ DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
 OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ********************************************************/
+/* $XFree86$ */
+
 #include "X.h"
 #include "Xproto.h"
 #include "dixstruct.h"
@@ -76,6 +78,7 @@ static int sampleGetVisualInfo(
     *n_info_rn = sz_evi;
     return Success;
 }
+
 static void sampleFreeVisualInfo(
     xExtendedVisualInfo *evi,
     VisualID32 *conflict)
@@ -85,13 +88,15 @@ static void sampleFreeVisualInfo(
     if (conflict)
     	xfree(conflict);
 }
-EviPrivPtr eviDDXInit()
+
+EviPrivPtr eviDDXInit(void)
 {
     static EviPrivRec eviPriv;
     eviPriv.getVisualInfo = sampleGetVisualInfo;
     eviPriv.freeVisualInfo = sampleFreeVisualInfo;
     return &eviPriv;
 }
-void eviDDXReset()
+
+void eviDDXReset(void)
 {
 }

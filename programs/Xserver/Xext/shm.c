@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.36 2002/04/03 19:51:11 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.37 2003/03/23 04:56:02 mvojkovi Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -28,6 +28,8 @@ in this Software without prior written authorization from The Open Group.
 /* THIS IS NOT AN X CONSORTIUM STANDARD OR AN X PROJECT TEAM SPECIFICATION */
 
 /* $Xorg: shm.c,v 1.4 2001/02/09 02:04:33 xorgcvs Exp $ */
+
+#define SHM
 
 #include <sys/types.h>
 #ifndef Lynx
@@ -64,6 +66,8 @@ in this Software without prior written authorization from The Open Group.
 #include "panoramiX.h"
 #include "panoramiXsrv.h"
 #endif
+
+#include "modinit.h"
 
 typedef struct _ShmDesc {
     struct _ShmDesc *next;
@@ -192,7 +196,7 @@ static Bool CheckForShmSyscall()
 #endif
     
 void
-ShmExtensionInit()
+ShmExtensionInit(INITARGS)
 {
     ExtensionEntry *extEntry;
     int i;
@@ -270,17 +274,17 @@ ExtensionEntry	*extEntry;
 }
 
 void
-ShmRegisterFuncs(pScreen, funcs)
-    ScreenPtr pScreen;
-    ShmFuncsPtr funcs;
+ShmRegisterFuncs(
+    ScreenPtr pScreen,
+    ShmFuncsPtr funcs)
 {
     shmFuncs[pScreen->myNum] = funcs;
 }
 
 void
-ShmSetPixmapFormat(pScreen, format)
-    ScreenPtr pScreen;
-    int format;
+ShmSetPixmapFormat(
+    ScreenPtr pScreen,
+    int format)
 {
     shmPixFormat[pScreen->myNum] = format;
 }
@@ -707,8 +711,8 @@ ProcPanoramiXShmGetImage(ClientPtr client)
 }
 
 static int
-ProcPanoramiXShmCreatePixmap(client)
-    register ClientPtr client;
+ProcPanoramiXShmCreatePixmap(
+    register ClientPtr client)
 {
     ScreenPtr pScreen = NULL;
     PixmapPtr pMap = NULL;

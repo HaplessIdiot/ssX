@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xvdisp.c,v 1.25 2001/11/18 23:55:48 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvdisp.c,v 1.26 2003/03/23 04:56:02 mvojkovi Exp $ */
 
 /*
 ** File: 
@@ -69,6 +69,8 @@ SOFTWARE.
 #ifdef EXTMODULE
 #include "xf86_ansic.h"
 #endif
+
+#include "xvdisp.h"
 
 #ifdef PANORAMIX
 #include "panoramiX.h"
@@ -1207,7 +1209,7 @@ ProcXvShmPutImage(ClientPtr client)
 #endif
 
 #ifdef XvMCExtension
-XvImagePtr XvMCFindXvImage(XvPortPtr pPort, CARD32 id);
+#include "xvmc.h"
 #endif
 
 static int 

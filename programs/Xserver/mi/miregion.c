@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miregion.c,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miregion.c,v 1.9 2003/04/23 21:51:53 tsi Exp $ */
 /***********************************************************
 
 Copyright 1987, 1988, 1989, 1998  The Open Group
@@ -70,7 +70,6 @@ SOFTWARE.
 *                                                               *
 *****************************************************************/
 
-#include "miscstruct.h"
 #include "regionstr.h"
 #include "Xprotostr.h"
 #include "gc.h"

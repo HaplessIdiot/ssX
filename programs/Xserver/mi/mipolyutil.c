@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mipolyutil.c,v 1.8 2001/01/17 22:37:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mipolyutil.c,v 1.9 2001/12/14 20:00:26 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $Xorg: mipolyutil.c,v 1.4 2001/02/09 02:05:21 xorgcvs Exp $ */
-#include "miscstruct.h"
+#include "regionstr.h"
 #include "gc.h"
 #include "miscanfill.h"
 #include "mipoly.h"

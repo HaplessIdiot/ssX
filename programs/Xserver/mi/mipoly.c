@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -60,7 +61,7 @@ SOFTWARE.
 #include "gcstruct.h"
 #include "pixmapstr.h"
 #include "mi.h"
-#include "miscstruct.h"
+#include "regionstr.h"
 
 
 void

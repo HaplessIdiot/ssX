@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/shape.c,v 3.15 2001/08/23 13:01:36 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shape.c,v 3.16 2001/12/14 19:58:50 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -46,6 +46,7 @@ in this Software without prior written authorization from The Open Group.
 #ifdef EXTMODULE
 #include "xf86_ansic.h"
 #endif
+#include "modinit.h"
 
 typedef	RegionPtr (*CreateDftPtr)(
 #if NeedNestedPrototypes
@@ -164,7 +165,7 @@ typedef struct _ShapeEvent {
  ****************/
 
 void
-ShapeExtensionInit()
+ShapeExtensionInit(INITARGS)
 {
     ExtensionEntry *extEntry;
 
@@ -390,8 +391,8 @@ ProcShapeRectangles (client)
 
 #ifdef PANORAMIX
 static int
-ProcPanoramiXShapeRectangles (client)
-    register ClientPtr client;
+ProcPanoramiXShapeRectangles(
+    register ClientPtr client)
 {
     REQUEST(xShapeRectanglesReq);
     PanoramiXRes	*win;
@@ -479,8 +480,8 @@ ProcShapeMask (client)
 
 #ifdef PANORAMIX
 static int
-ProcPanoramiXShapeMask (client)
-    register ClientPtr client;
+ProcPanoramiXShapeMask(
+    register ClientPtr client)
 {
     REQUEST(xShapeMaskReq);
     PanoramiXRes	*win, *pmap;
@@ -594,8 +595,8 @@ ProcShapeCombine (client)
 
 #ifdef PANORAMIX
 static int
-ProcPanoramiXShapeCombine (client)
-    register ClientPtr client;
+ProcPanoramiXShapeCombine(
+    register ClientPtr client)
 {
     REQUEST(xShapeCombineReq);
     PanoramiXRes	*win, *win2;
@@ -663,8 +664,8 @@ ProcShapeOffset (client)
 
 #ifdef PANORAMIX
 static int
-ProcPanoramiXShapeOffset (client)
-    register ClientPtr client;
+ProcPanoramiXShapeOffset(
+    register ClientPtr client)
 {
     REQUEST(xShapeOffsetReq);
     PanoramiXRes *win;

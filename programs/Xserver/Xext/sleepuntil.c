@@ -25,7 +25,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/Xserver/Xext/sleepuntil.c,v 3.4 2001/08/23 13:01:36 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/sleepuntil.c,v 3.5 2001/12/14 19:58:51 dawes Exp $ */
 
 /* dixsleep.c - implement millisecond timeouts for X clients */
 
@@ -89,7 +89,9 @@ int
 ClientSleepUntil (client, revive, notifyFunc, closure)
     ClientPtr	client;
     TimeStamp	*revive;
-    void	(*notifyFunc)();
+    void	(*notifyFunc)(
+        ClientPtr /* client */,
+        pointer   /* closure */);
     pointer	closure;
 {
     SertafiedPtr	pRequest, pReq, pPrev;

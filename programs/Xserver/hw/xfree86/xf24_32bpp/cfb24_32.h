@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf24_32bpp/cfb24_32.h,v 1.3 1999/03/02 10:42:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf24_32bpp/cfb24_32.h,v 1.5 2000/04/01 00:17:19 mvojkovi Exp $ */
 
 #ifndef _CFB24_32_H
 #define _CFB24_32_H
@@ -40,8 +40,7 @@ cfbDoBitblt24To32(
     int rop,
     RegionPtr prgnDst, 
     DDXPointPtr pptSrc,
-    unsigned long planemask,
-    unsigned long bitPlane
+    unsigned long planemask
 );
 
 void 
@@ -51,8 +50,7 @@ cfbDoBitblt32To24(
     int rop,
     RegionPtr prgnDst, 
     DDXPointPtr pptSrc,
-    unsigned long planemask,
-    unsigned long bitPlane
+    unsigned long planemask
 );
 
 void 
@@ -62,8 +60,7 @@ cfb24_32DoBitblt24To24GXcopy(
     int rop,
     RegionPtr prgnDst, 
     DDXPointPtr pptSrc,
-    unsigned long pm,
-    unsigned long bitPlane
+    unsigned long pm
 );
 
 void

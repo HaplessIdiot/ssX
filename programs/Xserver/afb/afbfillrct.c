@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbfillrct.c,v 3.0 1996/08/18 01:45:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbfillrct.c,v 3.1 1998/03/20 21:04:54 hohndel Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -54,7 +54,6 @@ SOFTWARE.
 #include "pixmapstr.h"
 #include "gcstruct.h"
 #include "windowstr.h"
-#include "miscstruct.h"
 #include "regionstr.h"
 #include "scrnintstr.h"
 

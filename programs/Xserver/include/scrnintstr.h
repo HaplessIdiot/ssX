@@ -45,13 +45,13 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/include/scrnintstr.h,v 1.11 2003/04/23 21:51:53 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/include/scrnintstr.h,v 1.12 2003/04/27 21:31:05 herrb Exp $ */
 
 #ifndef SCREENINTSTRUCT_H
 #define SCREENINTSTRUCT_H
 
 #include "screenint.h"
-#include "miscstruct.h"
+#include "regionstr.h"
 #include "bstore.h"
 #include "colormap.h"
 #include "cursor.h"

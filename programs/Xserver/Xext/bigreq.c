@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/bigreq.c,v 3.4 2001/01/17 22:13:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/bigreq.c,v 3.6 2003/07/04 16:24:24 eich Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -36,6 +36,8 @@ from The Open Group.
 #include "dixstruct.h"
 #include "extnsionst.h"
 #include "bigreqstr.h"
+#include "opaque.h"
+#include "modinit.h"
 
 static unsigned char XBigReqCode;
 
@@ -48,7 +50,7 @@ static void BigReqResetProc(
 static DISPATCH_PROC(ProcBigReqDispatch);
 
 void
-BigReqExtensionInit()
+BigReqExtensionInit(INITARGS)
 {
     ExtensionEntry *extEntry;
 
@@ -73,7 +75,6 @@ ProcBigReqDispatch (client)
     REQUEST(xBigReqEnableReq);
     xBigReqEnableReply rep;
     register int n;
-    extern long maxBigRequestSize;
 
     if (client->swapped) {
 	swaps(&stuff->length, n);

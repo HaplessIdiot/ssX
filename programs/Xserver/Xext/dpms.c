@@ -33,7 +33,7 @@ Equipment Corporation.
  * @(#)RCSfile: dpms.c,v Revision: 1.1.4.5  (DEC) Date: 1996/03/04 15:27:00
  */
 
-/* $XFree86: xc/programs/Xserver/Xext/dpms.c,v 3.8 2001/01/17 22:13:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/dpms.c,v 3.9 2001/10/28 03:32:50 tsi Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -46,6 +46,7 @@ Equipment Corporation.
 #include "dpms.h"
 #include "dpmsstr.h"
 #include "dpmsproc.h"
+#include "modinit.h"
 
 static unsigned char DPMSCode;
 static DISPATCH_PROC(ProcDPMSDispatch);
@@ -69,7 +70,7 @@ static DISPATCH_PROC(SProcDPMSCapable);
 static void DPMSResetProc(ExtensionEntry* extEntry);
 
 void
-DPMSExtensionInit()
+DPMSExtensionInit(INITARGS)
 {
     ExtensionEntry *extEntry;
     

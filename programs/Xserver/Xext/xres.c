@@ -1,7 +1,7 @@
 /*
    Copyright (c) 2002  XFree86 Inc
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xext/xres.c,v 1.5 2002/07/01 02:25:55 tsi Exp $ */
 
 #define NEED_EVENTS
 #define NEED_REPLIES
@@ -14,6 +14,7 @@
 #include "swaprep.h"
 #include "XResproto.h"
 #include "pixmapstr.h"
+#include "modinit.h"
 
 extern RESTYPE lastResourceType;
 extern RESTYPE TypeMask;
@@ -314,7 +315,7 @@ SProcResDispatch (ClientPtr client)
 }
 
 void
-ResExtensionInit(void)
+ResExtensionInit(INITARGS)
 {
     ExtensionEntry *extEntry;
 

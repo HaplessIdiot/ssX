@@ -1,6 +1,5 @@
 /*
  * $XConsortium: saver.c,v 1.12 94/04/17 20:59:36 dpw Exp $
- * $XFree86: xc/programs/Xserver/Xext/saver.c,v 3.4 2001/08/23 13:01:36 alanh Exp $
  *
 Copyright (c) 1992  X Consortium
 
@@ -27,6 +26,8 @@ in this Software without prior written authorization from the X Consortium.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
+
+/* $XFree86: xc/programs/Xserver/Xext/saver.c,v 3.5 2003/03/23 04:56:02 mvojkovi Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -56,6 +57,8 @@ in this Software without prior written authorization from the X Consortium.
 #else
 #include <stdio.h>
 #endif
+
+#include "modinit.h"
 
 static unsigned char ScreenSaverReqCode = 0;
 static int ScreenSaverEventBase = 0;
@@ -247,7 +250,7 @@ static int ScreenPrivateIndex;
  ****************/
 
 void
-ScreenSaverExtensionInit()
+ScreenSaverExtensionInit(INITARGS)
 {
     ExtensionEntry *extEntry;
     int		    i;

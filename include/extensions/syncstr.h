@@ -48,6 +48,10 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
+/* $XFree86$ */
+
+#ifndef _SYNCSTR_H_
+#define _SYNCSTR_H_
 
 #include "sync.h"
 
@@ -477,8 +481,13 @@ extern pointer SyncCreateSystemCounter(
     CARD64  	/* inital_value */,
     CARD64  	/* resolution */,
     SyncCounterType /* change characterization */,
-    void        (* /*QueryValue*/ ) (), /* XXX prototype */
-    void        (* /*BracketValues*/) ()
+    void        (* /*QueryValue*/ ) (
+        pointer /* pCounter */,
+        CARD64 * /* pValue_return */), /* XXX prototype */
+    void        (* /*BracketValues*/) (
+        pointer /* pCounter */, 
+        CARD64 * /* pbracket_less */,
+        CARD64 * /* pbracket_greater */)
 #endif
 );
 
@@ -494,6 +503,8 @@ extern void SyncDestroySystemCounter(
     pointer pCounter
 #endif
 );
-extern void InitServertime();
+extern void InitServertime(void);
 
 #endif /* _SYNC_SERVER */
+
+#endif /* _SYNCSTR_H_ */

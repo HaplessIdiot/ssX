@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf24_32bpp/cfbwindow.c,v 1.1 1999/01/23 09:56:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf24_32bpp/cfbwindow.c,v 1.2 1999/02/28 11:19:50 dawes Exp $ */
 
 #include "X.h"
 #include "windowstr.h"
@@ -118,7 +118,7 @@ cfb24_32CopyWindow(
     }
 
     cfb24_32DoBitblt24To24GXcopy((DrawablePtr)pwinRoot, (DrawablePtr)pwinRoot,
-		GXcopy, &rgnDst, pptSrc, ~0L, 0);
+		GXcopy, &rgnDst, pptSrc, ~0L);
     DEALLOCATE_LOCAL(pptSrc);
     REGION_UNINIT(pWin->drawable.pScreen, &rgnDst);
 }

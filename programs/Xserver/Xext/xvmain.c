@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xvmain.c,v 1.12 2001/08/06 20:51:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvmain.c,v 1.13 2001/08/23 13:01:36 alanh Exp $ */
 
 /*
 ** File: 
@@ -101,7 +101,7 @@ SOFTWARE.
 #ifdef PANORAMIX
 #include "panoramiX.h"
 #include "panoramiXsrv.h"
-extern void XineramifyXv(void);
+#include "xvdisp.h"
 #endif
 
 int  XvScreenIndex = -1;

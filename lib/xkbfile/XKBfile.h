@@ -533,6 +533,11 @@ extern	Bool	XkbWriteXKBKeymapForNames(
 #endif
 );
 
+extern	Status	XkbMergeFile(
+    XkbDescPtr			/* xkb */,
+    XkbFileInfo *		/* finfo */
+);
+
 /***====================================================================***/
 
 extern Bool	XkmProbe(

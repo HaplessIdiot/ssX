@@ -45,10 +45,12 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/include/regionstr.h,v 1.8 2003/04/23 21:51:53 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/include/regionstr.h,v 1.9 2003/04/27 21:31:04 herrb Exp $ */
 
 #ifndef REGIONSTRUCT_H
 #define REGIONSTRUCT_H
+
+typedef struct _Region RegionRec, *RegionPtr;
 
 #include "miscstruct.h"
 
@@ -70,10 +72,10 @@ typedef struct _RegData {
 /*  BoxRec	rects[size];   in memory but not explicitly declared */
 } RegDataRec, *RegDataPtr;
 
-typedef struct _Region {
+struct _Region {
     BoxRec 	extents;
     RegDataPtr	data;
-} RegionRec, *RegionPtr;
+};
 
 extern BoxRec miEmptyBox;
 extern RegDataRec miEmptyData;

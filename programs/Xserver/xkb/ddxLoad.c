@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.29 2002/04/04 14:05:57 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.30 2002/05/31 18:46:06 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -40,6 +40,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define	XKBSRV_NEED_FILE_FUNCS
 #include "XKBsrv.h"
 #include "XI.h"
+#include "xkb.h"
 
 #if defined(CSRG_BASED) || defined(linux) || defined(__sgi) || defined(AIXV3) || defined(__osf__) || defined(__GNU__)
 #include <paths.h>
@@ -71,8 +72,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define	POST_ERROR_MSG2 "\"End of messages from xkbcomp\""
 
 static void
-OutputDirectory (outdir)
-    char* outdir;
+OutputDirectory(
+    char* outdir)
 {
 #ifndef WIN32
     if (getuid() == 0) {

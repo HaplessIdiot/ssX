@@ -47,14 +47,14 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $XFree86: xc/programs/Xserver/include/gcstruct.h,v 1.6 2001/12/14 19:59:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/gcstruct.h,v 1.7 2003/04/27 21:31:04 herrb Exp $ */
 
 #ifndef GCSTRUCT_H
 #define GCSTRUCT_H
 
 #include "gc.h"
 
-#include "miscstruct.h"
+#include "regionstr.h"
 #include "region.h"
 #include "pixmap.h"
 #include "screenint.h"

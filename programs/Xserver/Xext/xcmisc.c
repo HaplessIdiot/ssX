@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/xcmisc.c,v 3.4 2001/01/17 22:13:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xcmisc.c,v 3.5 2001/12/14 19:58:51 dawes Exp $ */
 
 #define NEED_EVENTS
 #define NEED_REPLIES
@@ -38,6 +38,7 @@ from The Open Group.
 #include "extnsionst.h"
 #include "swaprep.h"
 #include "xcmiscstr.h"
+#include "modinit.h"
 
 static unsigned char XCMiscCode;
 
@@ -57,7 +58,7 @@ static DISPATCH_PROC(SProcXCMiscGetXIDList);
 static DISPATCH_PROC(SProcXCMiscGetXIDRange);
 
 void
-XCMiscExtensionInit()
+XCMiscExtensionInit(INITARGS)
 {
     ExtensionEntry *extEntry;
 

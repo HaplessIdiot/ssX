@@ -44,7 +44,7 @@ copyright holders.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/attributes.c,v 1.17 2001/12/19 21:55:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/attributes.c,v 1.18 2002/05/31 18:45:53 dawes Exp $ */
 
 #include <X11/Xproto.h>
 #include <string.h>
@@ -61,6 +61,9 @@ copyright holders.
 #include <X11/extensions/Printstr.h>
 
 #include "attributes.h"
+
+#include "Xlib.h"
+#include "Xresource.h"
 #include "Xrm.c"
 
 static XrmDatabase CopyDb(XrmDatabase inDb);

@@ -50,7 +50,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/sync.c,v 3.10 2001/08/23 13:01:36 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/sync.c,v 3.11 2001/12/14 19:58:51 dawes Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -75,6 +75,8 @@ PERFORMANCE OF THIS SOFTWARE.
 #include <sys/time.h>
 #endif
 #endif
+
+#include "modinit.h"
 
 /*
  * Local Global Variables
@@ -1098,8 +1100,13 @@ SyncCreateSystemCounter(name, initial, resolution, counterType,
     CARD64          initial;
     CARD64          resolution;
     SyncCounterType counterType;
-    void            (*QueryValue) ();
-    void            (*BracketValues) ();
+    void            (*QueryValue) (
+        pointer /* pCounter */, 
+        CARD64 * /* pValue_return */);
+    void            (*BracketValues) (
+        pointer /* pCounter */,
+        CARD64 * /* pbracket_less */,
+        CARD64 * /* pbracket_greater */);
 {
     SyncCounter    *pCounter;
 
@@ -2399,7 +2406,7 @@ SyncResetProc(extEntry)
  * ** Initialise the extension.
  */
 void 
-SyncExtensionInit()
+SyncExtensionInit(INITARGS)
 {
     ExtensionEntry *extEntry;
 

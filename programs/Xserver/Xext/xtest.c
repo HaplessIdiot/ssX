@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/xtest.c,v 3.7 2001/12/14 19:58:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xtest.c,v 3.8 2003/07/11 18:09:03 tsi Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -52,6 +52,8 @@ from The Open Group.
 #ifdef EXTMODULE
 #include "xf86_ansic.h"
 #endif
+
+#include "modinit.h"
 
 static unsigned char XTestReqCode;
 
@@ -88,7 +90,7 @@ static DISPATCH_PROC(SProcXTestGetVersion);
 static DISPATCH_PROC(SProcXTestGrabControl);
 
 void
-XTestExtensionInit()
+XTestExtensionInit(INITARGS)
 {
     ExtensionEntry *extEntry;
 

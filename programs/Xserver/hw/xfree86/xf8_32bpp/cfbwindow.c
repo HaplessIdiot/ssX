@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfbwindow.c,v 1.6 2000/02/29 00:17:16 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfbwindow.c,v 1.7 2003/02/17 16:08:30 dawes Exp $ */
 
 
 #include "X.h"
@@ -92,10 +92,10 @@ cfb8_32CopyWindow(pWin, ptOldOrg, prgnSrc)
 
     if(doUnderlay)
 	cfbDoBitblt24To24GXcopy((DrawablePtr)pwinRoot, (DrawablePtr)pwinRoot,
-			GXcopy, &rgnDst, pptSrc, ~0, 0);
+			GXcopy, &rgnDst, pptSrc, ~0);
     else
 	cfbDoBitblt8To8GXcopy((DrawablePtr)pwinRoot, (DrawablePtr)pwinRoot,
-			GXcopy, &rgnDst, pptSrc, ~0, 0);
+			GXcopy, &rgnDst, pptSrc, ~0);
 
     DEALLOCATE_LOCAL(pptSrc);
     REGION_UNINIT(pScreen, &rgnDst);

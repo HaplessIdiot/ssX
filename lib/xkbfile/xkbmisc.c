@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/lib/xkbfile/xkbmisc.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/lib/xkbfile/xkbmisc.c,v 1.5 2003/03/26 20:43:53 tsi Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -55,6 +55,7 @@
 #define XKBSRV_NEED_FILE_FUNCS	1
 #include "XKBsrv.h"
 #include <X11/extensions/XKBgeom.h>
+#include "xkb.h"
 
 #endif
 

@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbSwap.c,v 3.1 2001/01/17 22:37:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbSwap.c,v 3.2 2001/08/23 14:33:26 alanh Exp $ */
 
 #include "stdio.h"
 #include "X.h"
@@ -36,6 +36,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "XKBsrv.h"
 #include "XKBstr.h"
 #include "extnsionst.h"
+#include "xkb.h"
 
 #if NeedFunctionPrototypes
 #define	PROC_EXTERN(pfunc)	extern int pfunc(ClientPtr)

@@ -1,4 +1,4 @@
-/* $XConsortium: PclFonts.c /main/1 1996/09/28 17:01:09 rws $ */
+/* $Xorg: PclFonts.c,v 1.3 2000/08/17 19:48:08 cpqbld Exp $ */
 /*******************************************************************
 **
 **    *********************************************************
@@ -13,6 +13,7 @@
 **    *********************************************************
 ** 
 ********************************************************************/
+/* $XFree86$ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.
@@ -45,7 +46,7 @@ dealings in this Software without prior written authorization from said
 copyright holders.
 */
 
-#include "miscstruct.h"
+#include "regionstr.h"
 #include "fontstruct.h"
 #include "dixfontstr.h"
 #include "scrnintstr.h"

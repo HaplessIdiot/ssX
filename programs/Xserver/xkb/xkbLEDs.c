@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbLEDs.c,v 3.5 2001/09/26 19:26:16 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbLEDs.c,v 3.6 2001/11/23 19:21:36 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -37,6 +37,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include "XI.h"
 #include "XKBsrv.h"
+#include "xkb.h"
 
 /***====================================================================***/
 

@@ -44,7 +44,7 @@
  *		querying routine.
  *
  */
-/* $XFree86: xc/lib/X11/HVCMxV.c,v 1.3 2001/01/17 19:41:37 dawes Exp $ */
+/* $XFree86: xc/lib/X11/HVCMxV.c,v 1.4 2003/04/13 19:22:16 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xcmsint.h"
@@ -168,6 +168,7 @@ XcmsTekHVCQueryMaxV(ccc, hue, chroma, pColor_return)
 	tmp.spec.TekHVC.C = max_vc.spec.TekHVC.C;
 	tmp.spec.TekHVC.V = max_vc.spec.TekHVC.V;
 	lastChroma = -1.0;
+	lastValue = -1.0;
 	nMaxCount = MAXBISECTCOUNT;
 	rFactor = 1.0;
 

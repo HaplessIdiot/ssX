@@ -21,13 +21,17 @@ DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
 OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ********************************************************/
+/* $XFree86$ */
+
 #ifndef EVI_STRUCT_H
 #define EVI_STRUCT_H
+
 /*
  ******************************************************************************
  ** Per-ddx data
  ******************************************************************************
  */
+
 typedef int (*GetVisualInfoProc)(
 #if NeedNestedPrototypes
 	VisualID32*,
@@ -38,6 +42,7 @@ typedef int (*GetVisualInfoProc)(
 	int*
 #endif
 );
+
 typedef void (*FreeVisualInfoProc)(
 #if NeedNestedPrototypes
     xExtendedVisualInfo*,
@@ -48,6 +53,8 @@ typedef struct _EviPrivRec {
     GetVisualInfoProc getVisualInfo;
     FreeVisualInfoProc freeVisualInfo;
 } EviPrivRec, *EviPrivPtr;
-extern EviPrivPtr eviDDXInit();
-extern void eviDDXReset();
+
+extern EviPrivPtr eviDDXInit(void);
+extern void eviDDXReset(void);
+
 #endif /* EVI_STRUCT_H */

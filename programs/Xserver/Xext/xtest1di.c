@@ -52,7 +52,7 @@ Telephone and Telegraph Company or of the Regents of the
 University of California.
 
 */
-/* $XFree86: xc/programs/Xserver/Xext/xtest1di.c,v 3.2 2001/01/17 22:13:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xtest1di.c,v 3.3 2001/12/14 19:58:52 dawes Exp $ */
 
 /*****************************************************************************
  * include files
@@ -72,6 +72,7 @@ University of California.
 #include "opaque.h"
 #define  XTestSERVER_SIDE
 #include "xtestext1.h"
+#include "modinit.h"
 
 #include "xtest1dd.h"
 
@@ -186,7 +187,7 @@ static int	XTestCurrentClientGone(
  *	(other than the core errors).
  */
 void
-XTestExtension1Init()
+XTestExtension1Init(INITARGS)
 {
 	/*
 	 * holds the pointer to the extension entry structure

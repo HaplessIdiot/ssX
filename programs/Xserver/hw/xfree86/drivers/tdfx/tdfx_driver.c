@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.95 2003/06/30 16:52:57 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.96 2003/07/07 15:34:26 eich Exp $ */
 
 /*
  * Authors:
@@ -88,7 +88,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "tdfx.h"
 
-#include "miscstruct.h"
+#include "regionstr.h"
 #include "dixstruct.h"
 
 #include "xf86xv.h"
