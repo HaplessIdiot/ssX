@@ -1,4 +1,5 @@
 XFree86 4.4.99.3 (xx March 2004)
+  54. Fix xfs log file opening with -user nobody option (Matthieu Herrb).
   53. Add missing `make all` rule in sdk/Imakefile (Bugzilla #1323).
   52. Fix XDarwin's launch of X clients by double clicking in the Finder when
       there is a space in the path (Torrey T. Lyons).
@@ -18787,7 +18788,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3202 2004/04/01 00:17:03 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3203 2004/04/02 15:58:58 tsi Exp $
 
 
 
