@@ -1,4 +1,5 @@
 XFree86 4.1.99.1 (xx June 2001)
+ 101. Fix bogus handling of BUS_CNTL Mach64 register (Marc La France).
  100. Fix a typo in xc/programs/bitmap/Bitmap.h (#4757, Suhaib Siddiqi).
   99. Add Cygwin/XFree86 manpage and minor tweaks (#4756, Harold Hunt).
   98. Ensure PCI master aborts are allowed to complete normally on non-root
@@ -13492,4 +13493,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1846 2001/06/12 04:27:10 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1847 2001/06/12 09:45:51 alanh Exp $
