@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.61tsi Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.62 2002/11/19 15:25:30 tsi Exp $ */
 
 
 /* 
@@ -307,7 +307,7 @@ in this Software without prior written authorization from The Open Group.
 #define DEFAULT_CPP "/usr/X11R6/bin/cpp"
 #endif
 #endif
-#if defined(__GNUC__) && !defined(DEFAULT_CC)
+#if defined(__GNUC__) && !defined(DEFAULT_CC) && !defined(SVR4)
 #define DEFAULT_CC "gcc"
 #define USE_CC_E
 #endif
