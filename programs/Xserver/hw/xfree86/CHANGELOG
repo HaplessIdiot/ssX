@@ -1,4 +1,7 @@
 XFree86 4.1.99.2 (xx September 2001)
+ 271. SECURITY: fix glyph clipping for large origin (Keith Packard).
+      Reported to be remotly exploitable through konqueror or netscape 
+      by Georgi Guninski.
  270. Fix setting of memPhysBase in a few drivers (#4937, Gerd Knorr).
  269. Finish merging freetype-2-0-4 into trunk by resolving conflicts. This
       also fixes a syntax error on Darwin caused by an out of date version of
@@ -13797,4 +13800,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1938 2001/09/14 01:05:13 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1939 2001/09/14 13:53:57 alanh Exp $
