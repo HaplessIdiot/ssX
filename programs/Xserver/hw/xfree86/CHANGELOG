@@ -1,4 +1,6 @@
 XFree86 4.1.99.2 (xx November 2001)
+ 487. Fix building and loading of I18N modules by Xlib on NetBSD and OpenBSD
+      (#5049, Matthieu Herrb).
  486. Fix duplicate loader symbols (#5048, Vladimir Dergachev).
  485. Fix problems with clipping in fb when the clip list contains negative
       coordinates (Gregory Parker).
@@ -14168,4 +14170,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2046 2001/11/17 06:28:11 torrey Exp $
+$XFree86: CHANGELOG,v 3.2047 2001/11/17 16:05:57 dawes Exp $

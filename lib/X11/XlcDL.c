@@ -123,6 +123,29 @@ int argsize;
     return argc;
 }
 
+static char *
+strdup_and_prefix(char *symbol)
+{
+	size_t n;
+	char *result;
+
+	n = strlen(symbol) + 1;
+#ifndef __ELF__
+	n++;			/* add space for _ */
+#endif
+	if ((result = malloc(n)) == NULL) 
+		return NULL;
+#ifndef __ELF__
+	result[0] = '_';
+#endif
+	memcpy(result
+#ifndef __ELF__
+		+1
+#endif
+		, symbol, n);
+	return result;
+}
+
 static void
 resolve_object(path, lc_name)
 char *path;
@@ -178,13 +201,13 @@ Limit the length of path to prevent stack buffer corruption.
 	    xi18n_objects_list[lc_count].type = XIM_OBJECT;
 	  }
 	  xi18n_objects_list[lc_count].dl_name = strdup(args[1]);
-	  xi18n_objects_list[lc_count].open = strdup(args[2]);
+	  xi18n_objects_list[lc_count].open = strdup_and_prefix(args[2]);
 	  xi18n_objects_list[lc_count].dl_release = XI18N_DLREL;
 	  xi18n_objects_list[lc_count].locale_name = strdup(lc_name);
 	  xi18n_objects_list[lc_count].dl_module = (void*)NULL;
 	  if (n == 5) {
-	    xi18n_objects_list[lc_count].im_register = strdup(args[3]);
-	    xi18n_objects_list[lc_count].im_unregister = strdup(args[4]);
+	    xi18n_objects_list[lc_count].im_register = strdup_and_prefix(args[3]);
+	    xi18n_objects_list[lc_count].im_unregister = strdup_and_prefix(args[4]);
 	  } else {
 	    xi18n_objects_list[lc_count].im_register = NULL;
 	    xi18n_objects_list[lc_count].im_unregister = NULL;

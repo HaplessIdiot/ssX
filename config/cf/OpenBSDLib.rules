@@ -7,7 +7,7 @@ XCOMM $OpenBSD: OpenBSDLib.rules,v 1.1 2000/10/09 20:43:58 matthieu Exp $
  * OpenBSD shared library rules
  */
 
-XCOMM $XFree86$
+XCOMM $XFree86: xc/config/cf/OpenBSDLib.rules,v 1.1 2000/11/06 19:24:00 dawes Exp $
 
 #ifndef UseElfFormat
 #define UseElfFormat NO
@@ -160,3 +160,21 @@ module: modlist								@@\
 clean::									@@\
 	RemoveFile(module)
 #endif /* DynamicModuleTarget */
+
+/*
+ * Rule used to build Xlib i18n sub-modules
+ */
+#ifndef Xi18nLibraryTarget
+#define	Xi18nLibraryTarget(libname)		@@\
+all:: libname.so.$(SOXI18NREV)			@@\
+libname.so.$(SOXI18NREV): $(OBJS)		@@\
+	$(RM) $@~				@@\
+	(cd .; T=`echo $@ | sed 's/\.[^\.]*$$//'`; $(CC) -o ./$@~ $(SHLIBLDFLAGS) $(OBJS) $(REQUIREDLIBS) $(EXTRA_SHLIBLDFLAGS); $(RM) $$T && $(LN) $@ $$T) @@\
+	$(RM) $@				@@\
+	$(MV) $@~ $@				@@\
+install:: libname.so.$(SOXI18NREV)		@@\
+	@if [ -d $(DESTDIR)$(XLOCALEDIR)/$(POSTLOCALE) ]; then set +x; \ @@\
+	else (set -x; $(MKDIRHIER) $(DESTDIR)$(XLOCALEDIR)/$(POSTLOCALE)); fi @@\
+	$(RM) $(DESTDIR)$(XLOCALEDIR)/$(POSTLOCALE)/libname.so.$(SOXI18NREV)	@@\
+	$(INSTALL) $(INSTALLFLAGS) $(INSTLIBFLAGS) libname.so.$(SOXI18NREV) $(DESTDIR)$(XLOCALEDIR)/$(POSTLOCALE)
+#endif
