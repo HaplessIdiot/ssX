@@ -62,6 +62,11 @@ XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.5 2001/01/20 21:08:55 herrb Exp $
 #endif
 #endif
 
+/* flags to pass to cc when building libraries */
+#ifndef LibraryCCOptions
+# define LibraryCCOptions       DefaultCCOptions -fno-common
+#endif
+
 /* A lot of xfree86 code needs __powerpc__ to avoid doing outport asm.
  *
  * __DARWIN__ will be used for platform specific #ifdefs that can't
@@ -112,6 +117,10 @@ XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.5 2001/01/20 21:08:55 herrb Exp $
 # define BuildGLULibrary        NO
 #endif
 
+#define BuildLibPathVar         DYLD_LIBRARY_PATH
+
+/* include rules to build shared libraries */
+#include <darwinLib.rules>
 
 /* include all the xfree rules */
 /* I haven't tracked down why this is needed, but it is... */
