@@ -3,12 +3,12 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:54:42 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/programs/xkbcomp/symbols/Imakefile,v 3.33 2001/01/17 23:45:57 dawes Exp $
+XCOMM $XFree86: xc/programs/xkbcomp/symbols/Imakefile,v 3.34 2001/01/21 21:19:41 tsi Exp $
 
 #define IHaveSubdirs
 
       TESTDATA = 
-     DATAFILES = am az be bg br ca ca_enhanced cs cs_qwerty czsk ctrl \
+     DATAFILES = am az be bg br by ca ca_enhanced cs cs_qwerty czsk ctrl \
 		 de de_CH dk dvorak ee en_US es fi fr fr_CH \
 		 gb gr group hu hu_US il il_phonetic iso9995-3 inet is it jp \
 		 keypad lock lt lt_std lt_p mk no pc104 \
