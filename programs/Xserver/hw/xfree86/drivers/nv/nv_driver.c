@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.63 2001/03/28 01:17:43 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.64 2001/05/04 19:05:42 dawes Exp $ */
 
 #include "nv_include.h"
 
@@ -294,7 +294,8 @@ typedef enum {
     OPTION_SHADOW_FB,
     OPTION_FBDEV,
     OPTION_ROTATE,
-    OPTION_VIDEO_KEY
+    OPTION_VIDEO_KEY,
+    OPTION_FLAT_PANEL
 } NVOpts;
 
 
@@ -307,6 +308,7 @@ static const OptionInfoRec NVOptions[] = {
     { OPTION_FBDEV,             "UseFBDev",     OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_ROTATE,		"Rotate",	OPTV_ANYSTR,	{0}, FALSE },
     { OPTION_VIDEO_KEY,		"VideoKey",	OPTV_INTEGER,	{0}, FALSE },
+    { OPTION_FLAT_PANEL,	"FlatPanel",	OPTV_BOOLEAN,	{0}, FALSE },
     { -1,                       NULL,           OPTV_NONE,      {0}, FALSE }
 };
 
@@ -1125,6 +1127,10 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
         (((pScrn->mask.blue >> pScrn->offset.blue) - 1) << pScrn->offset.blue); 
     }
 
+    if (xf86ReturnOptValBool(pNv->Options, OPTION_FLAT_PANEL, FALSE)) {
+	pNv->FlatPanel = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "using flat panel\n");
+    }
     
     if (pNv->pEnt->device->MemBase != 0) {
 	/* Require that the config file value matches one of the PCI values. */
@@ -1820,8 +1826,7 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	Must follow initialization of the default colormap */
     if(!xf86HandleColormaps(pScreen, 256, 8,
 	(pNv->FBDev ? fbdevHWLoadPalette : NVdac->LoadPalette), 
-	NULL, CMAP_RELOAD_ON_MODE_SWITCH | 
-  	((pNv->riva.Architecture != NV_ARCH_03) ? CMAP_PALETTED_TRUECOLOR : 0)))
+	NULL, CMAP_RELOAD_ON_MODE_SWITCH | CMAP_PALETTED_TRUECOLOR))
 	return FALSE;
 
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- Palette loaded\n"));
