@@ -30,13 +30,15 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winpfbdd.c,v 1.11 2001/10/22 15:21:11 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winpfbdd.c,v 1.12 2001/11/01 12:19:41 alanh Exp $ */
 
 #include "win.h"
+
 
 /*
  * Create a DirectDraw primary surface 
  */
+
 Bool
 winAllocateFBPrimaryDD (ScreenPtr pScreen)
 {
@@ -206,11 +208,13 @@ winAllocateFBPrimaryDD (ScreenPtr pScreen)
   return TRUE;
 }
 
+
 /*
  * Call the wrapped CloseScreen function.
  * 
  * Free our resources and private structures.
  */
+
 Bool
 winCloseScreenPrimaryDD (int nIndex, ScreenPtr pScreen)
 {
@@ -278,6 +282,7 @@ winCloseScreenPrimaryDD (int nIndex, ScreenPtr pScreen)
   return fReturn;
 }
 
+
 /*
  * Tell mi what sort of visuals we need.
  * 
@@ -285,6 +290,7 @@ winCloseScreenPrimaryDD (int nIndex, ScreenPtr pScreen)
  * handle one format at a time, I believe.  You may want
  * to verify that last sentence.
  */
+
 Bool
 winInitVisualsPrimaryDD (ScreenPtr pScreen)
 {
@@ -417,6 +423,13 @@ winAdjustVideoModePrimaryDD (ScreenPtr pScreen)
   return TRUE;
 }
 
+
+/*
+ * We need to blit our offscreen fb to
+ * the screen when we are activated, and we need to point
+ * the fb code back to the primary surface memory.
+ */
+
 Bool
 winActivateAppPrimaryDD (ScreenPtr pScreen)
 {
@@ -425,78 +438,179 @@ winActivateAppPrimaryDD (ScreenPtr pScreen)
   RECT			rcSrc, rcClient;
   HRESULT		ddrval = DD_OK;
 
-  /*
-   * We need to blit our offscreen fb to
-   * the screen when we are activated, and we need to point
-   * the fb code back to the primary surface memory.
-   */
-  if (pScreenPriv != NULL
-      && pScreenPriv->pddsPrimary != NULL
-      && pScreenPriv->pddsOffscreen != NULL
-      && pScreenPriv->fActive)
+  /* Check for errors */
+  if (pScreenPriv == NULL
+      || pScreenPriv->pddsPrimary == NULL
+      || pScreenPriv->pddsOffscreen == NULL)
+    return FALSE;
+
+  /* Check for do-nothing */
+  if (!pScreenPriv->fActive)
+    return TRUE;
+  
+  /* We are activating */
+  ddrval = IDirectDrawSurface2_IsLost (pScreenPriv->pddsOffscreen);
+  if (ddrval == DD_OK)
     {
-      /* We are activating */
-      ddrval = IDirectDrawSurface2_IsLost (pScreenPriv->pddsOffscreen);
-      if (ddrval == DD_OK)
-	{
-	  IDirectDrawSurface2_Unlock (pScreenPriv->pddsOffscreen,
-				      NULL);
-	  /*
-	   * We don't check for an error from Unlock, because it
-	   * doesn't matter if the Unlock failed.
-	   */
-	}
-	      
-      /* Restore both surfaces, just cause I like it that way */
-      IDirectDrawSurface2_Restore (pScreenPriv->pddsOffscreen);
-      IDirectDrawSurface2_Restore (pScreenPriv->pddsPrimary);
-			      
-      /* Get client area in screen coords */
-      GetClientRect (pScreenPriv->hwndScreen, &rcClient);
-      MapWindowPoints (pScreenPriv->hwndScreen,
-		       HWND_DESKTOP,
-		       (LPPOINT)&rcClient, 2);
-	      
-      /* Setup a source rectangle */
-      rcSrc.left = 0;
-      rcSrc.top = 0;
-      rcSrc.right = pScreenInfo->dwWidth;
-      rcSrc.bottom = pScreenInfo->dwHeight;
-
-      ddrval = IDirectDrawSurface2_Blt (pScreenPriv->pddsPrimary,
-					&rcClient,
-					pScreenPriv->pddsOffscreen,
-					&rcSrc,
-					DDBLT_WAIT,
-					NULL);
-      if (FAILED (ddrval))
-	FatalError ("winWindowProc () - Failed blitting offscreen "\
-		    "surface to primary surface %08x\n", ddrval);
-
-      /* Lock the primary surface */
-      ddrval = IDirectDrawSurface2_Lock (pScreenPriv->pddsPrimary,
-					 &rcClient,
-					 pScreenPriv->pddsdPrimary,
-					 DDLOCK_WAIT,
-					 NULL);
-      if (ddrval != DD_OK
-	  || pScreenPriv->pddsdPrimary->lpSurface == NULL)
-	FatalError ("winWindowProc () - Could not lock "\
-		    "primary surface\n");
-
-      /* Notify FB of the new memory pointer */
-      winUpdateFBPointer (pScreen,
-			  pScreenPriv->pddsdPrimary->lpSurface);
-
+      IDirectDrawSurface2_Unlock (pScreenPriv->pddsOffscreen,
+				  NULL);
       /*
-       * Register the Alt-Tab combo as a hotkey so we can copy
-       * the primary framebuffer before the display mode changes
+       * We don't check for an error from Unlock, because it
+       * doesn't matter if the Unlock failed.
        */
-      RegisterHotKey (pScreenPriv->hwndScreen, 1, MOD_ALT, 9);
     }
+
+  /* Restore both surfaces, just cause I like it that way */
+  IDirectDrawSurface2_Restore (pScreenPriv->pddsOffscreen);
+  IDirectDrawSurface2_Restore (pScreenPriv->pddsPrimary);
+			      
+  /* Get client area in screen coords */
+  GetClientRect (pScreenPriv->hwndScreen, &rcClient);
+  MapWindowPoints (pScreenPriv->hwndScreen,
+		   HWND_DESKTOP,
+		   (LPPOINT)&rcClient, 2);
+
+  /* Setup a source rectangle */
+  rcSrc.left = 0;
+  rcSrc.top = 0;
+  rcSrc.right = pScreenInfo->dwWidth;
+  rcSrc.bottom = pScreenInfo->dwHeight;
+
+  ddrval = IDirectDrawSurface2_Blt (pScreenPriv->pddsPrimary,
+				    &rcClient,
+				    pScreenPriv->pddsOffscreen,
+				    &rcSrc,
+				    DDBLT_WAIT,
+				    NULL);
+  if (ddrval != DD_OK)
+    FatalError ("winActivateAppPrimaryDD () - Failed blitting offscreen "
+		"surface to primary surface %08x\n", ddrval);
+  
+  /* Lock the primary surface */
+  ddrval = IDirectDrawSurface2_Lock (pScreenPriv->pddsPrimary,
+				     &rcClient,
+				     pScreenPriv->pddsdPrimary,
+				     DDLOCK_WAIT,
+				     NULL);
+  if (ddrval != DD_OK
+      || pScreenPriv->pddsdPrimary->lpSurface == NULL)
+    FatalError ("winActivateAppPrimaryDD () - Could not lock "
+		"primary surface\n");
+
+  /* Notify FB of the new memory pointer */
+  winUpdateFBPointer (pScreen,
+		      pScreenPriv->pddsdPrimary->lpSurface);
+
+  /*
+   * Register the Alt-Tab combo as a hotkey so we can copy
+   * the primary framebuffer before the display mode changes
+   */
+  RegisterHotKey (pScreenPriv->hwndScreen, 1, MOD_ALT, 9);
 
   return TRUE;
 }
+
+
+/*
+ * Handle the Alt+Tab hotkey.
+ *
+ * We need to save the primary fb to an offscreen fb when
+ * we get deactivated, and point the fb code at the offscreen
+ * fb for the duration of the deactivation.
+ */
+
+Bool
+winHotKeyAltTabPrimaryDD (ScreenPtr pScreen)
+{
+  winScreenPriv(pScreen);
+  winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
+  RECT			rcClient, rcSrc;
+  HRESULT		ddrval = DD_OK;
+
+  ErrorF ("\nwinHotKeyAltTabPrimaryDD ()\n\n");
+
+  /* Alt+Tab was pressed, we will lose focus very soon */
+  pScreenPriv->fActive = FALSE;
+  
+  /* Check for error conditions */
+  if (pScreenPriv->pddsPrimary == NULL
+      || pScreenPriv->pddsOffscreen == NULL)
+    return FALSE;
+
+  /* Get client area in screen coords */
+  GetClientRect (pScreenPriv->hwndScreen, &rcClient);
+  MapWindowPoints (pScreenPriv->hwndScreen,
+		   HWND_DESKTOP,
+		   (LPPOINT)&rcClient, 2);
+
+  /* Did we loose the primary surface? */
+  ddrval = IDirectDrawSurface2_IsLost (pScreenPriv->pddsPrimary);
+  if (ddrval == DD_OK)
+    {
+      ddrval = IDirectDrawSurface2_Unlock (pScreenPriv->pddsPrimary,
+					   NULL);
+      if (FAILED (ddrval))
+	FatalError ("winHotKeyAltTabPrimaryDD () - Failed unlocking primary "\
+		    "surface\n");
+    }
+
+  /* Setup a source rectangle */
+  rcSrc.left = 0;
+  rcSrc.top = 0;
+  rcSrc.right = pScreenInfo->dwWidth;
+  rcSrc.bottom = pScreenInfo->dwHeight;
+
+      /* Blit the primary surface to the offscreen surface */
+  ddrval = IDirectDrawSurface2_Blt (pScreenPriv->pddsOffscreen,
+				    NULL, /* should be rcDest */
+				    pScreenPriv->pddsPrimary,
+				    NULL,
+				    DDBLT_WAIT,
+				    NULL);
+  if (ddrval == DDERR_SURFACELOST)
+    {
+      IDirectDrawSurface2_Restore (pScreenPriv->pddsOffscreen);  
+      IDirectDrawSurface2_Restore (pScreenPriv->pddsPrimary);
+		  		  
+      /* Blit the primary surface to the offscreen surface */
+      ddrval = IDirectDrawSurface2_Blt (pScreenPriv->pddsOffscreen,
+					NULL,
+					pScreenPriv->pddsPrimary,
+					NULL,
+					DDBLT_WAIT,
+					NULL);
+      if (FAILED (ddrval))
+	FatalError ("winHotKeyAltTabPrimaryDD () - Failed blitting primary "
+		    "surface to offscreen surface: %08x\n",
+		    ddrval);
+    }
+  else
+    {
+      FatalError ("winHotKeyAltTabPrimaryDD() - Unknown error from "
+		  "Blt: %08dx\n", ddrval);
+    }
+
+  /* Lock the offscreen surface */
+  ddrval = IDirectDrawSurface2_Lock (pScreenPriv->pddsOffscreen,
+				     NULL,
+				     pScreenPriv->pddsdOffscreen,
+				     DDLOCK_WAIT,
+				     NULL);
+  if (ddrval != DD_OK
+      || pScreenPriv->pddsdPrimary->lpSurface == NULL)
+    FatalError ("winHotKeyAltTabPrimaryDD () - Could not lock "\
+		"offscreen surface\n");
+
+  /* Notify FB of the new memory pointer */
+  winUpdateFBPointer (pScreen,
+		      pScreenPriv->pddsdOffscreen->lpSurface);
+
+  /* Unregister our hotkey */
+  UnregisterHotKey (pScreenPriv->hwndScreen, 1);
+
+  return TRUE;
+}
+
 
 /* Set engine specific functions */
 Bool
@@ -520,6 +634,7 @@ winSetEngineFunctionsPrimaryDD (ScreenPtr pScreen)
   pScreenPriv->pwinBltExposedRegions
     = (winBltExposedRegionsProcPtr) (void (*)())NoopDDA;
   pScreenPriv->pwinActivateApp = winActivateAppPrimaryDD;
+  pScreenPriv->pwinHotKeyAltTab = winHotKeyAltTabPrimaryDD;
 
   return TRUE;
 }

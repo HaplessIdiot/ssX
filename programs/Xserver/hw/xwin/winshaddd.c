@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshaddd.c,v 1.16 2001/10/22 15:21:12 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshaddd.c,v 1.17 2001/11/01 12:19:42 alanh Exp $ */
 
 #include "win.h"
 
@@ -1055,6 +1055,7 @@ winSetEngineFunctionsShadowDD (ScreenPtr pScreen)
   pScreenPriv->pwinStoreColors = winStoreColorsShadowDD;
   pScreenPriv->pwinCreateColormap = winCreateColormapShadowDD;
   pScreenPriv->pwinDestroyColormap = winDestroyColormapShadowDD;
+  pScreenPriv->pwinHotKeyAltTab = (winHotKeyAltTabPtr) (void (*)())NoopDDA;
 
   return TRUE;
 }

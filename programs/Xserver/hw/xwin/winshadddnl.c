@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshadddnl.c,v 1.17 2001/10/22 15:21:12 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshadddnl.c,v 1.18 2001/11/01 12:19:42 alanh Exp $ */
 
 #include "win.h"
 
@@ -973,6 +973,7 @@ winSetEngineFunctionsShadowDDNL (ScreenPtr pScreen)
   pScreenPriv->pwinStoreColors = winStoreColorsShadowDDNL;
   pScreenPriv->pwinCreateColormap = winCreateColormapShadowDDNL;
   pScreenPriv->pwinDestroyColormap = winDestroyColormapShadowDDNL;
+  pScreenPriv->pwinHotKeyAltTab = (winHotKeyAltTabPtr) (void (*)())NoopDDA;
 
   return TRUE;
 }

@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winnativegdi.c,v 1.7 2001/10/29 21:10:24 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winnativegdi.c,v 1.8 2001/11/01 12:19:40 alanh Exp $ */
 
 #include "win.h"
 
@@ -454,6 +454,7 @@ winSetEngineFunctionsNativeGDI (ScreenPtr pScreen)
   pScreenPriv->pwinStoreColors = winStoreColorsNativeGDI;
   pScreenPriv->pwinCreateColormap = winCreateColormapNativeGDI;
   pScreenPriv->pwinDestroyColormap = winDestroyColormapNativeGDI;
+  pScreenPriv->pwinHotKeyAltTab = (winHotKeyAltTabPtr) (void (*)())NoopDDA;
 
   return TRUE;
 }
