@@ -77,6 +77,7 @@ typedef struct _XftDisplayInfo {
     XftPattern		    *defaults;
     XftFontSet		    *coreFonts;
     Bool		    hasRender;
+    struct _XftFtGlyphSet   *glyphSets;
 } XftDisplayInfo;
 
 extern XftFontSet	*_XftGlobalFontSet;
@@ -324,6 +325,9 @@ void
 XftSubstPrint (XftSubst *subst);
 
 /* xftdpy.c */
+XftDisplayInfo *
+_XftDisplayInfoGet (Display *dpy);
+
 int
 XftDefaultParseBool (char *v);
 

@@ -49,7 +49,7 @@ _XftCloseDisplay (Display *dpy, XExtCodes *codes)
     return 0;
 }
 
-static XftDisplayInfo *
+XftDisplayInfo *
 _XftDisplayInfoGet (Display *dpy)
 {
     XftDisplayInfo  *info, **prev;
@@ -82,6 +82,7 @@ _XftDisplayInfoGet (Display *dpy)
     info->defaults = 0;
     info->coreFonts = 0;
     info->hasRender = XRenderFindVisualFormat (dpy, DefaultVisual (dpy, DefaultScreen (dpy))) != 0;
+    info->glyphSets = 0;
     if (_XftFontDebug () & XFT_DBG_RENDER)
     {
 	Visual		    *visual = DefaultVisual (dpy, DefaultScreen (dpy));
