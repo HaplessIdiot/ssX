@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.7 1999/10/13 04:21:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.8 1999/10/13 14:27:29 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -123,7 +123,6 @@ static const char *fbSymbols[]={
     "cfbScreenInit",
     "cfb16ScreenInit",
     "cfb32ScreenInit",
-    "renditionOptions",
     NULL
 };
 
@@ -201,7 +200,7 @@ renditionSetup(pointer Module, pointer Options, int *ErrorMajor,
 
 #endif
 
-static OptionInfoRec renditionOptions[]={
+OptionInfoRec renditionOptions[]={
     { OPTION_FBWC,      "FramebufferWC", OPTV_BOOLEAN, {0}, FALSE },
     { OPTION_SW_CURSOR, "SW_Cursor", OPTV_BOOLEAN, {0}, FALSE },
     { OPTION_NOACCEL,   "NoAccel",  OPTV_BOOLEAN, {0}, FALSE },
