@@ -1,7 +1,7 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.cpp,v 1.4 2000/06/14 02:13:10 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.cpp,v 1.5 2000/09/17 19:44:29 mvojkovi Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
-.TH I810 __drivermansuffix__ "Version 4.0.1"  "XFree86"
+.TH I810 __drivermansuffix__ "Version 4.0.2"  "XFree86"
 .SH NAME
 i810 \- Intel i810 video driver
 .SH SYNOPSIS

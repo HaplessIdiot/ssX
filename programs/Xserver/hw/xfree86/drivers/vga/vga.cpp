@@ -1,7 +1,7 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/vga.cpp,v 1.5 2000/03/21 19:57:21 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/vga.cpp,v 1.6 2000/06/14 02:13:16 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
-.TH VGA __drivermansuffix__ "Version 4.0.1"  "XFree86"
+.TH VGA __drivermansuffix__ "Version 4.0.2"  "XFree86"
 .SH NAME
 vga \- Generic VGA video driver
 .SH SYNOPSIS

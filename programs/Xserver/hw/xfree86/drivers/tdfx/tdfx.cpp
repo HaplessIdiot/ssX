@@ -1,7 +1,7 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.cpp,v 1.4 2000/06/14 02:13:15 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.cpp,v 1.5 2000/12/01 14:28:59 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
-.TH TDFX __drivermansuffix__ "Version 4.0.1"  "XFree86"
+.TH TDFX __drivermansuffix__ "Version 4.0.2"  "XFree86"
 .SH NAME
 tdfx \- 3Dfx video driver
 .SH SYNOPSIS

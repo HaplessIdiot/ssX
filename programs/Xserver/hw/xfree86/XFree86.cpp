@@ -1,5 +1,5 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.cpp,v 1.1 2000/03/07 01:37:42 dawes Exp $ 
-.TH XFree86 1 "Version 4.0"  "XFree86"
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.cpp,v 1.2 2000/06/15 20:50:02 dawes Exp $ 
+.TH XFree86 1 "Version 4.0.2"  "XFree86"
 .SH NAME
 XFree86 - X11R6 X server
 .SH SYNOPSIS

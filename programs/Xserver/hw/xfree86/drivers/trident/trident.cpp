@@ -1,7 +1,7 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.cpp,v 1.6 2000/12/08 09:05:16 alanh Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.cpp,v 1.7 2000/12/08 12:00:52 alanh Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
-.TH TRIDENT __drivermansuffix__ "Version 4.0.1"  "XFree86"
+.TH TRIDENT __drivermansuffix__ "Version 4.0.2"  "XFree86"
 .SH NAME
 trident \- Trident video driver
 .SH SYNOPSIS

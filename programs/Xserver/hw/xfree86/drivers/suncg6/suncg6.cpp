@@ -1,7 +1,7 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg6/suncg6.cpp,v 1.1 2000/05/23 04:47:43 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg6/suncg6.cpp,v 1.2 2000/06/14 02:13:14 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
-.TH SUNCG6 __drivermansuffix__ "Version 4.0.1"  "XFree86"
+.TH SUNCG6 __drivermansuffix__ "Version 4.0.2"  "XFree86"
 .SH NAME
 suncg6 \- GX/Turbo GX video driver
 .SH SYNOPSIS

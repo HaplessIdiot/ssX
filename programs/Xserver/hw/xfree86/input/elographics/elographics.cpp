@@ -1,7 +1,7 @@
-.\" $XFree86$
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/input/elographics/elographics.cpp,v 1.2 2000/06/14 02:13:17 dawes Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
-.TH ELOGRAPHICS __drivermansuffix__ "Version 4.0.1"  "XFree86"
+.TH ELOGRAPHICS __drivermansuffix__ "Version 4.0.2"  "XFree86"
 .SH NAME
 elographics \- Elographics input driver
 .SH SYNOPSIS
@@ -34,7 +34,7 @@ section only covers configuration details specific to this driver.
 .PP
 Config details...
 .SH "SEE ALSO"
-XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(1).
+XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(__miscmansuffix__).
 .SH AUTHORS
 Authors include...
  Patrick Lecoanet

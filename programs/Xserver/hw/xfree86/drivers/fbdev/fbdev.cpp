@@ -1,7 +1,7 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.cpp,v 1.7 2000/03/21 19:57:13 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.cpp,v 1.8 2000/06/14 02:13:09 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
-.TH FBDEV __drivermansuffix__ "Version 4.0.1"  "XFree86"
+.TH FBDEV __drivermansuffix__ "Version 4.0.2"  "XFree86"
 .SH NAME
 fbdev \- video driver for framebuffer device
 .SH SYNOPSIS

@@ -1,7 +1,7 @@
-.\" $XFree86: $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128.cpp,v 1.1 2000/10/04 23:34:58 robin Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
-.TH I128 __drivermansuffix__ "Version 4.0.1"  "XFree86"
+.TH I128 __drivermansuffix__ "Version 4.0.2"  "XFree86"
 .SH NAME
 i128 \- Number 9 I128 video driver
 .SH SYNOPSIS
