@@ -1,4 +1,6 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 227. Fix border garbage for the G400 second head by backing out #4205
+      (David Dawes).
  227. Fix a typo in fonts/util/Imakefile (#4499, Juliusz Chroboczek).
  226. Add a document describing the DPS code included in the tree, and
       pointers to web resources (#4498, Juliusz Chroboczek).
@@ -12633,4 +12635,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1599 2001/03/01 01:23:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1600 2001/03/02 02:45:34 dawes Exp $
