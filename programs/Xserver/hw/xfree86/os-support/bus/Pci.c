@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.30 2000/06/14 17:03:22 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.31 2000/06/16 07:40:37 eich Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -242,11 +242,11 @@ pciInit()
 #endif
 
 	ARCH_PCI_INIT();
-#if defined(ARCH_PCI_OS_INIT)
 	if (!pciNumBuses)
+#if defined(ARCH_PCI_OS_INIT)
 	    ARCH_PCI_OS_INIT();
 #else
-	xf86Msg(X_ERROR,"No OS PCI support available\n");
+	    xf86Msg(X_ERROR,"No OS PCI support available\n");
 #endif
 }
 
@@ -735,8 +735,6 @@ ErrorF("pciGenFindNext: pciDeviceTag = 0x%lx, devid = 0x%lx\n", pciDeviceTag, de
 
     if (speculativeProbe && (pciNumBuses <= pciBusNum))
 	pciNumBuses = pciBusNum + 1;
-    ErrorF("pciNumBuses: %i pciBusNum: %i speculative: %s \n",
-	   pciNumBuses,pciBusNum,speculativeProbe?"yes":"no");
     
     speculativeProbe = FALSE;
     
