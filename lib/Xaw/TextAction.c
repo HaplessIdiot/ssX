@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.35 2000/12/07 20:26:12 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.36 2001/01/17 19:42:34 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -3110,6 +3110,8 @@ InsertChar(Widget w, XEvent *event, String *p, Cardinal *n)
 	FD_ZERO(&fds);
 	FD_SET(ConnectionNumber(XtDisplay(w)), &fds);
 	(void)select(FD_SETSIZE, &fds, NULL, NULL, &tmval);
+	if (tmval.tv_usec != 500000)
+	    usleep(40000);
 
 	StartAction(ctx, NULL);
 #ifndef OLDXAW
@@ -3342,8 +3344,9 @@ Numeric(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	    return;
 	}
 	else {
-	    mult = mult * 10 + params[0][0] - '0';
-	    ctx->text.mult = ctx->text.mult * 10 + params[0][0] - '0';
+	    mult = mult * 10 + (params[0][0] - '0') * (mult < 0 ? -1 : 1);
+	    ctx->text.mult = ctx->text.mult * 10 + (params[0][0] - '0') *
+			     (mult < 0 ? -1 : 1);
 	}
 	if (mult != ctx->text.mult || mult >= 32767) {	/* checks for overflow */
 	    XBell(XtDisplay(w), 0);
