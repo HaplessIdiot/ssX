@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftrender.c,v 1.2 2000/11/29 17:40:37 dawes Exp $
+ * $XFree86: xc/lib/Xft/xftrender.c,v 1.3 2000/12/01 21:32:02 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -105,7 +105,7 @@ XftRenderExtents8 (Display	    *dpy,
 {
     unsigned long   missing[XFT_NMISSING];
     int		    nmissing;
-    unsigned char   *s;
+    unsigned char   *s, c;
     int		    l;
     XGlyphInfo	    *gi;
     int		    x, y;
@@ -118,7 +118,16 @@ XftRenderExtents8 (Display	    *dpy,
     if (nmissing)
 	XftGlyphLoad (dpy, font, missing, nmissing);
     
-    if (!len)
+    gi = 0;
+    while (len)
+    {
+	c = *string++;
+	len--;
+	gi = c < font->nrealized ? font->realized[c] : 0;
+	if (gi)
+	    break;
+    }
+    if (len == 0 && !gi)
     {
 	extents->width = 0;
 	extents->height = 0;
@@ -128,14 +137,15 @@ XftRenderExtents8 (Display	    *dpy,
 	extents->xOff = 0;
 	return;
     }
-    len--;
-    gi = font->realized[*string++];
     *extents = *gi;
     x = gi->xOff;
     y = gi->yOff;
     while (len--)
     {
-	gi = font->realized[*string++];
+	c = *string++;
+	gi = c < font->nrealized ? font->realized[c] : 0;
+	if (!gi)
+	    continue;
 	if (gi->x + x < extents->x)
 	    extents->x = gi->x + x;
 	if (gi->y + y < extents->y)
@@ -160,7 +170,7 @@ XftRenderExtents16 (Display	    *dpy,
 {
     unsigned long   missing[XFT_NMISSING];
     int		    nmissing;
-    unsigned short  *s;
+    unsigned short  *s, c;
     int		    l;
     XGlyphInfo	    *gi;
     int		    x, y;
@@ -173,7 +183,16 @@ XftRenderExtents16 (Display	    *dpy,
     if (nmissing)
 	XftGlyphLoad (dpy, font, missing, nmissing);
     
-    if (!len)
+    gi = 0;
+    while (len)
+    {
+	c = *string++;
+	len--;
+	gi = c < font->nrealized ? font->realized[c] : 0;
+	if (gi)
+	    break;
+    }
+    if (len == 0 && !gi)
     {
 	extents->width = 0;
 	extents->height = 0;
@@ -183,14 +202,15 @@ XftRenderExtents16 (Display	    *dpy,
 	extents->xOff = 0;
 	return;
     }
-    len--;
-    gi = font->realized[*string++];
     *extents = *gi;
     x = gi->xOff;
     y = gi->yOff;
     while (len--)
     {
-	gi = font->realized[*string++];
+	c = *string++;
+	gi = c < font->nrealized ? font->realized[c] : 0;
+	if (!gi)
+	    continue;
 	if (gi->x + x < extents->x)
 	    extents->x = gi->x + x;
 	if (gi->y + y < extents->y)
@@ -215,7 +235,7 @@ XftRenderExtents32 (Display	    *dpy,
 {
     unsigned long   missing[XFT_NMISSING];
     int		    nmissing;
-    unsigned int    *s;
+    unsigned int    *s, c;
     int		    l;
     XGlyphInfo	    *gi;
     int		    x, y;
@@ -228,7 +248,16 @@ XftRenderExtents32 (Display	    *dpy,
     if (nmissing)
 	XftGlyphLoad (dpy, font, missing, nmissing);
     
-    if (!len)
+    gi = 0;
+    while (len)
+    {
+	c = *string++;
+	len--;
+	gi = c < font->nrealized ? font->realized[c] : 0;
+	if (gi)
+	    break;
+    }
+    if (len == 0 && !gi)
     {
 	extents->width = 0;
 	extents->height = 0;
@@ -238,14 +267,15 @@ XftRenderExtents32 (Display	    *dpy,
 	extents->xOff = 0;
 	return;
     }
-    len--;
-    gi = font->realized[*string++];
     *extents = *gi;
     x = gi->xOff;
     y = gi->yOff;
     while (len--)
     {
-	gi = font->realized[*string++];
+	c = *string++;
+	gi = c < font->nrealized ? font->realized[c] : 0;
+	if (!gi)
+	    continue;
 	if (gi->x + x < extents->x)
 	    extents->x = gi->x + x;
 	if (gi->y + y < extents->y)

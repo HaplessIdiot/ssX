@@ -29,6 +29,7 @@
 #include "windowstr.h"
 #include "mi.h"
 #include "picturestr.h"
+#include "mipict.h"
 
 void
 miGlyphExtents (int		nlist,
@@ -95,19 +96,17 @@ miGlyphs (CARD8		op,
 	  GlyphListPtr	list,
 	  GlyphPtr	*glyphs)
 {
-    PixmapPtr	pPixmap;
+    PixmapPtr	pPixmap = 0;
     PicturePtr	pPicture;
-    PixmapPtr   pMaskPixmap;
+    PixmapPtr   pMaskPixmap = 0;
     PicturePtr  pMask;
     ScreenPtr   pScreen = pDst->pDrawable->pScreen;
-    PictureScreenPtr	ps = GetPictureScreen(pDst->pDrawable->pScreen);
-    int		width, height;
+    int		width = 0, height = 0;
     int		x, y;
     int		xDst = list->xOff, yDst = list->yOff;
     int		n;
     GlyphPtr	glyph;
     int		error;
-    CARD8	opTemp = op;
     BoxRec	extents;
     CARD32	component_alpha;
     

@@ -28,6 +28,7 @@
 #include "windowstr.h"
 #include "mi.h"
 #include "picturestr.h"
+#include "mipict.h"
 
 int
 miCreatePicture (PicturePtr pPicture)
@@ -120,7 +121,6 @@ miValidatePicture (PicturePtr pPicture,
 		   Mask       mask)
 {
     DrawablePtr	    pDrawable = pPicture->pDrawable;
-    ScreenPtr       pScreen = pDrawable->pScreen;
 
     if ((mask & (GCClipXOrigin|GCClipYOrigin|GCClipMask|GCSubwindowMode)) ||
 	(pDrawable->serialNumber != (pPicture->serialNumber & DRAWABLE_SERIAL_BITS)))
@@ -314,11 +314,8 @@ miComputeCompositeRegion (RegionPtr	pRegion,
 			  CARD16	width,
 			  CARD16	height)
 {
-    DrawablePtr	pDstDraw = pDst->pDrawable;
-    ScreenPtr	pScreen = pDstDraw->pScreen;    
     BoxRec	dstBox;
     RegionPtr	pDstClip = pDst->pCompositeClip;
-    int		x2, y2;
 
     miInitBox (&dstBox, xDst, yDst, width, height);
     REGION_INIT (pScreen, pRegion, &dstBox, 1);

@@ -28,6 +28,10 @@
 
 #include "render.h"
 
+#include <X11/Xfuncproto.h>
+#include <X11/Xosdefs.h>
+#include <X11/Xutil.h>
+
 typedef struct {
     short   red;
     short   redMask;
@@ -120,6 +124,8 @@ typedef struct _XGlyphInfo {
     short	    yOff;
 } XGlyphInfo;
 
+_XFUNCPROTOBEGIN
+
 Bool XRenderQueryExtension (Display *dpy, int *event_basep, int *error_basep);
 
 Status XRenderQueryVersion (Display *dpy,
@@ -149,6 +155,19 @@ XRenderChangePicture (Display                   *dpy,
 		      Picture			picture,
 		      unsigned long             valuemask,
 		      XRenderPictureAttributes  *attributes);
+
+void
+XRenderSetPictureClipRectangles (Display	*dpy,
+				 Picture	picture,
+				 int		xOrigin,
+				 int		yOrigin,
+				 XRectangle	*rects,
+				 int		n);
+
+void
+XRenderSetPictureClipRegion (Display	    *dpy,
+			     Picture	    picture,
+			     Region	    r);
 
 void
 XRenderFreePicture (Display                   *dpy,
@@ -252,5 +271,7 @@ XRenderFillRectangles (Display	    *dpy,
 		       XRenderColor *color,
 		       XRectangle   *rectangles,
 		       int	    n_rects);
+
+_XFUNCPROTOEND
 
 #endif /* _XRENDER_H_ */

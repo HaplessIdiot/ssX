@@ -28,6 +28,7 @@
 #include "windowstr.h"
 #include "mi.h"
 #include "picturestr.h"
+#include "mipict.h"
 
 void
 miCompositeRects (CARD8		op,
@@ -37,7 +38,6 @@ miCompositeRects (CARD8		op,
 		  xRectangle    *rects)
 {
     ScreenPtr		pScreen = pDst->pDrawable->pScreen;
-    PictureScreenPtr	ps = GetPictureScreen(pDst->pDrawable->pScreen);
     CARD32		pixel;
     GCPtr		pGC;
     XID			tmpval[3];
