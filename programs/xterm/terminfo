@@ -1,5 +1,5 @@
 # $XConsortium: terminfo,v 1.11 94/10/13 21:24:31 gildea Exp $
-# $XFree86: xc/programs/xterm/terminfo,v 3.24 1998/06/04 16:44:02 hohndel Exp $
+# $XFree86: xc/programs/xterm/terminfo,v 3.25 1998/07/04 14:48:29 robin Exp $
 #
 # XFree86 updates/notes/new entries (including xterm-8bit, xterm-16color)
 # - Thomas E. Dickey <dickey@clark.net>
@@ -367,7 +367,7 @@ xterm-8bit|xterm terminal emulator with 8-bit controls (X Window System),
 	kcuf1=\217C,
 	kcuu1=\217A,
 	kdch1=\2333~,
-	kend=\2174~,
+	kend=\2334~,
 	kent=\217M,
 	kf1=\23311~,
 	kf10=\23321~,
@@ -390,7 +390,7 @@ xterm-8bit|xterm terminal emulator with 8-bit controls (X Window System),
 	kf8=\23319~,
 	kf9=\23320~,
 	kfnd=\2331~,
-	khome=\2171~,
+	khome=\2331~,
 	kich1=\2332~,
 	kmous=\233M,
 	knp=\2336~,

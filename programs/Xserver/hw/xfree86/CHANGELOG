@@ -1,4 +1,8 @@
 XFree86 3.9Ak (11 July 1998)
+1702. xterm patches 81 and 82.  Fix Linux/Alpha build problems,
+      utmp handling on Solaris, some terminfo nits, and improve
+      cursor colour (#1794, 1797, Thomas Dickey).
+1701. Fix CloseScreen() related problems (#1793, Marc La France).
 1700. Close some sockets that xdm was leaving open when running new
       sessions (#1704, Matthieu Herrb).
 1699. Fix usleep problems with static servers on SVR4.
@@ -6191,4 +6195,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.600 1998/07/04 14:48:17 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.601 1998/07/11 14:06:05 dawes Exp $

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: util.c /main/33 1996/12/01 23:47:10 swick $
- *	$XFree86: xc/programs/xterm/util.c,v 3.28 1998/06/04 16:44:03 hohndel Exp $
+ *	$XFree86: xc/programs/xterm/util.c,v 3.29 1998/07/04 14:48:30 robin Exp $
  */
 
 /*
@@ -1195,8 +1195,6 @@ ChangeColors(XtermWidget tw, ScrnColors *pNew)
 }
 
 /***====================================================================***/
-
-#define EXCHANGE(a,b,tmp) tmp = a; a = b; b = tmp;
 
 void
 ReverseVideo (XtermWidget termw)

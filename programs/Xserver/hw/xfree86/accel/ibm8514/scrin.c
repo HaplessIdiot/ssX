@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/scrin.c,v 3.5 1996/12/23 06:38:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/scrin.c,v 3.6 1998/04/05 16:42:13 robin Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -182,6 +182,7 @@ ibm8514ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 			8, NUMDEPTHS, depths,
 			visuals[i].vid, NUMVISUALS, visuals))
 	return FALSE;
+    pScreen->CloseScreen = cfbCloseScreen;
     pScreen->BackingStoreFuncs = ibm8514BSFuncRec;
     miInitializeBackingStore(pScreen);
     pScreen->GetScreenPixmap = cfbGetScreenPixmap;
