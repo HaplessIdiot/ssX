@@ -22,6 +22,8 @@ other dealings in this Software without prior written authorization from
 The Open Group.
 
 */
+/* $XFree86$ */
+
 /*
  * This file is really split into two major parts where GetUrl is implemented
  * in two completely different ways.
