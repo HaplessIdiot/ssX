@@ -835,8 +835,8 @@ XAAInitPixmapCache(
 	next = List128->next;
 	while(Num128 > max) {
 	   List128->next = ListPartial;	ListPartial = List128;
-	   List128 = next;
-	   next = List128->next;
+	   if((List128 = next))
+		next = List128->next;
 	   NumPartial++; Num128--;
 	}
     }
