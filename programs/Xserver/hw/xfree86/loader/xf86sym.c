@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.143 2000/05/31 07:15:07 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.144 2000/06/07 22:03:11 tsi Exp $ */
 
 /*
  *
@@ -502,6 +502,8 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86XVListGenericAdaptors)
    SYMFUNC(xf86XVRegisterOffscreenImages)
    SYMFUNC(xf86XVQueryOffscreenImages)
+   SYMFUNC(xf86XVAllocateVideoAdaptorRec)
+   SYMFUNC(xf86XVFreeVideoAdaptorRec)
 
    /* xf86VidMode.c */
    SYMFUNC(VidModeExtensionInit)
