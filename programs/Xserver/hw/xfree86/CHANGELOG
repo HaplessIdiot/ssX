@@ -1,3 +1,6 @@
+XFree86 4.0.1h (xx November 2000)
+1024. Add detection for CyberBlade/Ai1 Socket A chipsets (Alan Hourihane).
+
 XFree86 4.0.1g (29 November 2000)
 1023. Fix small bug in lcGeneric.c (#4301, Ivan Pascal).
 1022. Rewrite Xft library for Render extension/core text and font management
@@ -11698,4 +11701,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1419 2000/11/29 08:39:17 keithp Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1420 2000/11/29 18:12:27 dawes Exp $

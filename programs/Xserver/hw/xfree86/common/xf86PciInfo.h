@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.78 2000/11/28 17:25:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.79 2000/11/29 09:16:17 alanh Exp $ */
 /*
  * PCI Probe
  *
@@ -324,6 +324,8 @@
 #define PCI_CHIP_8420		0x8420
 #define PCI_CHIP_8500		0x8500
 #define PCI_CHIP_8520		0x8520
+#define PCI_CHIP_8600		0x8600
+#define PCI_CHIP_8620		0x8620
 #define PCI_CHIP_9320		0x9320
 #define PCI_CHIP_9388		0x9388
 #define PCI_CHIP_9397		0x9397
@@ -905,6 +907,8 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_8420,		"CyberBlade/DSTN/i7",0},
 				{PCI_CHIP_8500,		"CyberBlade/i1",0},
 				{PCI_CHIP_8520,		"CyberBlade/DSTN/i1",0},
+				{PCI_CHIP_8600,		"CyberBlade/Ai1",0},
+				{PCI_CHIP_8620,		"CyberBlade/DSTN/Ai1",0},
 				{0x0000,		NULL,0}}},
 #ifdef VENDOR_INCLUDE_NONVIDEO
      {PCI_VENDOR_ALI, {
