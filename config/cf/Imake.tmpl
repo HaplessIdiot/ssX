@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.124 2002/07/07 20:11:51 herrb Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.125 2002/07/14 17:08:15 alanh Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -45,6 +45,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 #include <site.def>
 #undef BeforeVendorCF
 
+#if defined(HasGcc3) && !defined(HasGcc2)
+# define HasGcc2 HasGcc3
+#endif
 #if defined(HasGcc2) && !defined(HasGcc)
 # define HasGcc HasGcc2
 #endif
@@ -973,8 +976,11 @@ TCLIBDIR = TclLibDir
 #ifndef BootstrapCFlags
 #define BootstrapCFlags /**/
 #endif
+#ifndef HasGcc3
+#define HasGcc3 NO
+#endif
 #ifndef HasGcc2
-#define HasGcc2 NO
+#define HasGcc2 HasGcc3
 #endif
 #ifndef HasGcc
 #define HasGcc HasGcc2
