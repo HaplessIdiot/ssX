@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.h,v 1.6 2001/03/25 05:32:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.h,v 1.7 2001/05/04 19:05:32 dawes Exp $ */
 /*
  * Copyright 1999 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -52,7 +52,7 @@ typedef enum
 } ATIPublicOptionType;
 
 extern const OptionInfoRec   ATIPublicOptions[];
-extern const unsigned long ATIPublicOptionSize;
+extern const unsigned long   ATIPublicOptionSize;
 
 extern const OptionInfoRec * ATIAvailableOptions FunctionPrototype((int, int));
 

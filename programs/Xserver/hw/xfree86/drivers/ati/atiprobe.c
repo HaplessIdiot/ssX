@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.43 2001/04/16 15:02:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.44 2001/04/19 14:14:05 tsi Exp $ */
 /*
  * Copyright 1997 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -1334,6 +1334,8 @@ ATIProbe
         if (nATIGDev)
         {
 
+#ifndef AVOID_NON_PCI
+
 #ifdef AVOID_CPIO
 
             /* PCI sparse I/O adapters can still be used through MMIO */
@@ -1416,6 +1418,8 @@ ATIProbe
 #endif /* AVOID_CPIO */
 
             }
+
+#endif /* AVOID_NON_PCI */
 
 #ifndef AVOID_CPIO
 
@@ -1720,10 +1724,13 @@ ATIProbe
                     case ATI_CHIP_RAGE128PROVR:
                     case ATI_CHIP_RAGE128MOBILITY3:
                     case ATI_CHIP_RAGE128MOBILITY4:
+                    case ATI_CHIP_RAGE128ULTRA:
                         DoRage128 = TRUE;
                         continue;
 
                     case ATI_CHIP_RADEON:
+                    case ATI_CHIP_RADEONVE:
+                    case ATI_CHIP_RADEONMOBILITY:
                         DoRadeon = TRUE;
                         continue;
 

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.45 2001/03/03 22:53:02 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.46 2001/04/10 16:08:03 dawes Exp $ */
 
 #ifndef _XF86_ANSIC_H
 #define _XF86_ANSIC_H
@@ -303,7 +303,7 @@ unsigned int xf86sleep(unsigned int seconds);
 extern int xf86shmget(xf86key_t key, int size, int xf86shmflg);
 extern char * xf86shmat(int id, char *addr, int xf86shmflg);
 extern int xf86shmdt(char *addr);
-extern int xf86shmctl(int id, int xf86cmd, pointer *buf);
+extern int xf86shmctl(int id, int xf86cmd, pointer buf);
 extern int xf86setjmp(xf86jmp_buf env);
 extern void xf86longjmp(xf86jmp_buf env, int val);
 

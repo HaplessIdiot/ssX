@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.72 2001/02/12 01:34:53 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.74 2001/05/15 10:19:42 eich Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -1886,7 +1886,7 @@ xf86shmdt(char *addr)
  * for now only implement the rmid command.
  */
 int
-xf86shmctl(int id, int xf86cmd, pointer *buf)
+xf86shmctl(int id, int xf86cmd, pointer buf)
 {
     int cmd;
 
@@ -1916,7 +1916,7 @@ xf86shmat(int id, char *addr, int xf86shmflg)
 }
 
 int
-xf86shmctl(int id, int xf86cmd, pointer *buf)
+xf86shmctl(int id, int xf86cmd, pointer buf)
 {
     return -1;
 }
