@@ -170,6 +170,7 @@
 #include "compiler.h"
 #include "xf86.h"
 #include "xf86Priv.h"
+#define XF86_OS_PRIVS
 #include "xf86_OSproc.h"
 #include "Pci.h"
 
@@ -489,6 +490,12 @@ pciGetBaseSize(PCITAG tag, int index, Bool destructive, Bool *min)
   if (!pciInitialized)
     pciInit();
 
+  if (xf86GetPciSizeFromOS(tag, index, &bits)) {
+      if (min)
+	  *min = TRUE;
+      return bits;
+  }
+  
   if (min)
     *min = destructive;
 
@@ -535,7 +542,8 @@ pciGetBaseSize(PCITAG tag, int index, Bool destructive, Bool *min)
 	bits++;
 	mask2 >>= 1;
       }
-      return bits;
+      if (bits > 32)
+	  return bits;
     }
   }
   if (index < 6)
@@ -937,7 +945,8 @@ ErrorF("xf86scanpci: tag = 0x%lx\n", tag);
 	    /* Get base address sizes for type 0 headers */
 	    if ((devp->pci_header_type & 0x7f) == 0)
 		for (i = 0; i < 7; i++)
-		    devp->basesize[i] = pciGetBaseSize(tag, i, FALSE, NULL);
+		    devp->basesize[i] = pciGetBaseSize(tag, i, FALSE, 
+						       &devp->minBasesize);
 
 #ifdef OLD_FORMAT
 	    xf86MsgVerb(X_INFO, 2, "PCI: BusID 0x%02x,0x%02x,0x%1x "

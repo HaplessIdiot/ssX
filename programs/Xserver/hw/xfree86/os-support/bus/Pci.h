@@ -214,7 +214,6 @@ extern int    pciFuncNum;
 extern PCITAG pciDeviceTag;
 
 extern pciBusInfo_t  *pciBusInfo[];
-extern int            pciNumBuses;
 
 extern pciBusFuncs_t pciNOOPFuncs;
 

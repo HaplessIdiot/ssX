@@ -56,9 +56,6 @@ typedef struct {
     CARD32		IOAddress;
     CARD32		FbAddress;
     unsigned char *     IOBase;
-#ifdef __alpha__
-    unsigned char *     IOBaseDense;
-#endif
     unsigned char *	FbBase;
     CARD32		IOAccelAddress;
     unsigned char * 	IOAccel;

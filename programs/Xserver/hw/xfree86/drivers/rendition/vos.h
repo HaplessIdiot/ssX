@@ -46,6 +46,7 @@
 #define v_write_memory8(base, offset, data)  MMIO_OUT8(base, offset, data)
 
 /* the rest of it */
+
 void v_enableio(void);
 void v_disableio(void);
 vu8 *v_mapmemory(vu8 *membase, vu32 size);

@@ -12,11 +12,11 @@ MOUSEOBJ = bsdi_mouse.o
 
 SRCS = bsdi_init.c bsdi_video.c bsdi_io.c bios_devmem.c \
        mapVT_noop.c VTsw_noop.c std_kbdEv.c posix_tty.c $(MOUSESRC) \
-       libc_wrapper.c stdResource.c sigiostubs.c
+       libc_wrapper.c stdResource.c stdPci.c sigiostubs.c
 
 OBJS = bsdi_init.o bsdi_video.o bsdi_io.o bios_devmem.o \
        mapVT_noop.o VTsw_noop.o std_kbdEv.o posix_tty.o $(MOUSEOBJ) \
-       libc_wrapper.o stdResource.o sigiostubs.o
+       libc_wrapper.o stdResource.o stdPci.o sigiostubs.o
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC) -I$(EXTINCSRC)
@@ -35,6 +35,7 @@ LinkSourceFile(std_kbdEv.c,../shared)
 LinkSourceFile(posix_tty.c,../shared)
 LinkSourceFile(libc_wrapper.c,../shared)
 LinkSourceFile(stdResource.c,../shared)
+LinkSourceFile(stdPci.c,../shared)
 LinkSourceFile(sigiostubs.c,../shared)
 
 DependTarget()

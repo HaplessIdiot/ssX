@@ -14,15 +14,9 @@
 
 #include "cir.h"
 
-#ifndef __alpha__
-#define minb(p) (*(volatile CARD8 *)(hwp->MMIOBase + hwp->MMIOOffset + (p)))
+#define minb(p) MMIO_IN8(hwp->MMIOBase, hwp->MMIOOffset + (p))
 #define moutb(p,v) \
-	(*(volatile CARD8 *)(hwp->MMIOBase + hwp->MMIOOffset + (p)) = (v))
-#else
-#define minb(p) xf86ReadSparse8(hwp->MMIOBase, hwp->MMIOOffset + (p))
-#define moutb(p,v) \
-	xf86WriteSparse8((v), hwp->MMIOBase, hwp->MMIOOffset + (p))
-#endif
+	MMIO_OUT8(hwp->MMIOBase, hwp->MMIOOffset + (p),(v))
 
 static void CIRSync(ScrnInfoPtr pScrn)
 {

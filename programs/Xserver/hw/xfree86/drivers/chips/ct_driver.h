@@ -29,6 +29,7 @@
 #define _CT_DRIVER_H_
 
 #include "xaa.h"
+#include "vbe.h"
 #include "xaalocal.h"		/* XAA internals as we replace some of XAA */
 #include "xf86Cursor.h"
 #include "xf86i2c.h"
@@ -134,9 +135,10 @@ typedef struct {
 #define DR(x) cPtr->Regs32[x]	/* For CT655xx naming scheme  */
 #define MR(x) cPtr->Regs32[x]	/* CT655xx MMIO naming scheme */
 #define BR(x) cPtr->Regs32[x]	/* For HiQV naming scheme     */
-#define MMIOmeml(x) *(unsigned int *)(cPtr->MMIOBase + (x))
-#define MMIOmemw(x) *(unsigned short *)(cPtr->MMIOBase + (x))
-
+#define MMIOmeml(x) *(CARD32 *)(cPtr->MMIOBase + (x))
+#if 0
+#define MMIOmemw(x) *(CARD16 *)(cPtr->MMIOBase + (x))
+#endif
 /* Monitor or flat panel type flags */
 #define ChipsCRT	0x0010
 #define ChipsLCD	0x1000
@@ -223,14 +225,6 @@ typedef void (*chipsWriteFRPtr)(CHIPSPtr cPtr, CARD8 index, CARD8 value);
 typedef CARD8 (*chipsReadMRPtr)(CHIPSPtr cPtr, CARD8 index);
 typedef void (*chipsWriteMRPtr)(CHIPSPtr cPtr, CARD8 index, CARD8 value);
 
-/* C&T functions to access VGA Input status registers 0 and 1 */
-typedef CARD8 (*chipsReadST00Ptr)(CHIPSPtr cPtr);
-typedef CARD8 (*chipsReadST01Ptr)(CHIPSPtr cPtr);
-
-/* C&T functions to access the VGA feature control register */
-typedef CARD8 (*chipsReadFCRPtr)(CHIPSPtr cPtr);
-typedef void  (*chipsWriteFCRPtr)(CHIPSPtr cPtr, CARD8 value);
-
 /* The privates of the C&T driver */
 #define CHIPSPTR(p)	((CHIPSPtr)((p)->driverPrivate))
 
@@ -244,6 +238,7 @@ typedef struct _CHIPSRec {
     unsigned int	IOBase;
     unsigned char *	FbBase;
     unsigned char *	MMIOBase;
+    unsigned char *	MMIOBaseVGA;
     long		FbMapSize;
     unsigned char *	ShadowPtr;
     int			ShadowPitch;
@@ -294,16 +289,13 @@ typedef struct _CHIPSRec {
 #endif
     unsigned char       ddc_mask;
     I2CBusPtr           I2C;
+    vbeInfoPtr          pVbe;
     chipsReadXRPtr	readXR;
     chipsWriteXRPtr	writeXR;
     chipsReadFRPtr	readFR;
     chipsWriteFRPtr	writeFR;
     chipsReadMRPtr	readMR;
     chipsWriteMRPtr	writeMR;
-    chipsReadFCRPtr	readFCR;
-    chipsWriteFCRPtr	writeFCR;
-    chipsReadST00Ptr	readST00;
-    chipsReadST01Ptr	readST01;
 } CHIPSRec;
 
 typedef struct _CHIPSi2c {

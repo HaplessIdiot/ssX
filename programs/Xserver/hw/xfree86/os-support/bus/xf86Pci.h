@@ -287,7 +287,7 @@
 #define PCI_MAP_MEMORY_ATTR_MASK	0x0000000e
 #define PCI_MAP_MEMORY_ADDRESS_MASK     0xfffffff0
 
-#define PCI_MAP_IO_ATTR_MASK		0x00000000
+#define PCI_MAP_IO_ATTR_MASK		0x00000003
 
 #define PCI_MAP_IS_IO(b) ((b) & PCI_MAP_IO)
 #define PCI_MAP_IS_MEM(b) (!PCI_MAP_IS_IO(b))
@@ -296,7 +296,7 @@
 	(((b) & PCI_MAP_MEMORY_TYPE_MASK) == PCI_MAP_MEMORY_TYPE_64BIT)
 
 #define PCIGETMEMORY(b) ((b) & PCI_MAP_MEMORY_ADDRESS_MASK)
-
+#define PCIGETMEMORY64HIGH(b)  *((CARD32*)&b + 1)
 #define PCI_MAP_IO_ADDRESS_MASK         0xfffffffc
 
 #define PCIGETIO(b) ((b) & PCI_MAP_IO_ADDRESS_MASK)
@@ -459,10 +459,12 @@ typedef struct pci_cfg_regs {
     } bc;
     union {	/* Offset 0x28 - 0x2b */
 	CARD32 rsvd1;
+        CARD32 pftch_umem_base;
 	CARD32 cardbus_cis_ptr;
-    } c_cis;
+    } um_c_cis;
     union { 	/* Offset 0x2c - 0x2f */
 	CARD32 subsys_card_vendor;
+        CARD32 pftch_umem_limit;
 	CARD32 rsvd2;
 	struct {
 #if X_BYTE_ORDER == X_BIG_ENDIAN		
@@ -473,8 +475,19 @@ typedef struct pci_cfg_regs {
 	    CARD16 subsys_card;
 #endif	    
 	} ssys;
-    } ssys_id;
-    CARD32 baserom;	/* Offset 0x30 - 0x33 */
+    } um_ssys_id;
+    union {             /* Offset 0x30 - 0x33 */
+        CARD32 baserom;	
+        struct {
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+	    CARD16 io_ulimit;
+	    CARD16 io_ubase;
+#else
+	    CARD16 io_ubase;
+	    CARD16 io_ulimit;
+#endif
+	} b_u_io;
+    } uio_rom;
     CARD32 rsvd3;	/* Offset 0x34 - 0x37 */
     CARD32 rsvd4;	/* Offset 0x38 - 0x3b */
     union {	/* Offset 0x3c - 0x3f */
@@ -531,6 +544,7 @@ typedef struct pci_device {
     int       funcnum;
     pciCfgSpc cfgspc;
     int       basesize[7];	/* number of bits in base addr allocations */
+    Bool      minBasesize;
 } pciDevice, *pciConfigPtr;
 
 typedef enum {
@@ -561,11 +575,11 @@ typedef enum {
 #define pci_base3		      cfgspc.regs.bc.dv.dv_base3
 #define pci_base4		      cfgspc.regs.bc.dv.dv_base4
 #define pci_base5		      cfgspc.regs.bc.dv.dv_base5
-#define pci_cardbus_cis_ptr	      cfgspc.regs.c_cis.cardbus_cis_ptr
-#define pci_subsys_card_vendor	      cfgspc.regs.ssys_id.subsys_card_vendor
-#define pci_subsys_vendor	      cfgspc.regs.ssys_id.ssys.subsys_vendor
-#define pci_subsys_card		      cfgspc.regs.ssys_id.ssys.subsys_card
-#define pci_baserom		      cfgspc.regs.baserom
+#define pci_cardbus_cis_ptr	      cfgspc.regs.umem_c_cis.cardbus_cis_ptr
+#define pci_subsys_card_vendor	      cfgspc.regs.um_ssys_id.subsys_card_vendor
+#define pci_subsys_vendor	      cfgspc.regs.um_ssys_id.ssys.subsys_vendor
+#define pci_subsys_card		      cfgspc.regs.um_ssys_id.ssys.subsys_card
+#define pci_baserom		      cfgspc.regs.uio_rom.baserom
 #define pci_primary_bus_number	      cfgspc.regs.bc.bg.primary_bus_number
 #define pci_secondary_bus_number      cfgspc.regs.bc.bg.secondary_bus_number
 #define pci_subordinate_bus_number    cfgspc.regs.bc.bg.subordinate_bus_number
@@ -577,8 +591,12 @@ typedef enum {
 #define pci_mem_limit		      cfgspc.regs.bc.bg.mem_limit
 #define pci_prefetch_mem_base	      cfgspc.regs.bc.bg.prefetch_mem_base
 #define pci_prefetch_mem_limit	      cfgspc.regs.bc.bg.prefetch_mem_limit
-#define pci_rsvd1		      cfgspc.regs.c_cis.rsvd1;
-#define pci_rsvd2		      cfgspc.regs.ssys_id.rsvd2;
+#define pci_rsvd1		      cfgspc.regs.um_c_cis.rsvd1
+#define pci_rsvd2		      cfgspc.regs.um_ssys_id.rsvd2
+#define pci_prefetch_upper_mem_base   cfgspc.regs.um_c_cis.pftch_umem_base
+#define pci_prefetch_upper_mem_limit  cfgspc.regs.um_ssys_id.pftch_umem_limit
+#define pci_upper_io_base             cfgspc.regs.uio_rom.b_u_io.io_ubase
+#define pci_upper_io_limit            cfgspc.regs.uio_rom.b_u_io.io_ulimit
 #define pci_int_line		      cfgspc.regs.bm.mmii.mmii.int_line
 #define pci_int_pin		      cfgspc.regs.bm.mmii.mmii.int_pin
 #define pci_min_gnt		      cfgspc.regs.bm.mmii.mmii.min_gnt

@@ -154,6 +154,15 @@ static void V4lQueryBestSize(ScrnInfoPtr pScrn, Bool motion,
 
 static int V4lOpenDevice(PortPrivPtr pPPriv, ScrnInfoPtr pScrn)
 {
+
+#if 0
+    /* I don't know if this is needed or not. Alan Cox says no. EE */
+    if (!xf86NoSharedMem(pScrn->scrnIndex)) {
+	xf86Msg(X_ERROR,"Screen %i cannot grant access to fb\n",
+		pScrn->scrnIndex);
+	return 1;
+    }
+#endif
     pPPriv->useCount++;
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2,
 			"Xv/open: refcount=%d\n",pPPriv->useCount));
@@ -249,7 +258,8 @@ V4lPutVideo(ScrnInfoPtr pScrn,
     /* Open a file handle to the device */
 
     if (!pPPriv->VideoOn) {
-	V4lOpenDevice(pPPriv, pScrn);
+	if (V4lOpenDevice(pPPriv, pScrn))
+	    return BadAccess;
 	pPPriv->VideoOn = 1;
     }
 
@@ -324,7 +334,8 @@ V4lSetPortAttribute(ScrnInfoPtr pScrn,
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "Xv/SPA %d, %d\n",
 	attribute, value));
 
-    V4lOpenDevice(pPPriv, pScrn);
+    if (V4lOpenDevice(pPPriv, pScrn))
+	return BadAccess;
 
     if (-1 == pPPriv->fd) {
 	ret = Success /* FIXME: EBUSY/ENODEV ?? */;
@@ -383,7 +394,8 @@ V4lGetPortAttribute(ScrnInfoPtr pScrn,
     PortPrivPtr pPPriv = (PortPrivPtr) data;
     int ret = Success;
 
-    V4lOpenDevice(pPPriv, pScrn);
+    if (V4lOpenDevice(pPPriv, pScrn))
+	return BadAccess;
 
     if (-1 == pPPriv->fd) {
 	ret = Success /* FIXME: EBUSY/ENODEV ?? */;

@@ -77,9 +77,6 @@ extern void _outl(int val, unsigned short port);
 extern unsigned int _inb(unsigned short port);
 extern unsigned int _inw(unsigned short port);
 extern unsigned int _inl(unsigned short port);
-
-extern void xf86WriteSparse16(int, pointer, unsigned long);
-   
 extern void* __divl(long, long);
 extern void* __reml(long, long);
 extern void* __divlu(long, long);
@@ -241,6 +238,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86ComparePciBusString)
    SYMFUNC(xf86ParseIsaBusString)
    SYMFUNC(xf86EnableAccess)
+   SYMFUNC(xf86SetCurrentAccess)
    SYMFUNC(xf86IsPrimaryPci)
    SYMFUNC(xf86IsPrimaryIsa)
    SYMFUNC(xf86CheckPciGAType)
@@ -852,6 +850,10 @@ LOOKUP xfree86LookupTab[] = {
    SYMVAR(xf86PixmapIndex)
    SYMVAR(xf86Screens)
    SYMVAR(byte_reversed)
+   /* debugging variables */
+   SYMVAR(xf86DummyVar1)
+   SYMVAR(xf86DummyVar2)
+   SYMVAR(xf86DummyVar3)
 
    /* variables for PCI devices and cards from xf86Bus.c */
    SYMVAR(xf86PCICardInfo)
@@ -861,6 +863,8 @@ LOOKUP xfree86LookupTab[] = {
    /* predefined resource lists from xf86Bus.h */
    SYMVAR(resVgaExclusive)
    SYMVAR(resVgaShared)
+   SYMVAR(resVgaMemShared)
+   SYMVAR(resVgaIoShared)
    SYMVAR(resVgaUnusedExclusive)
    SYMVAR(resVgaUnusedShared)
    SYMVAR(resVgaSparseExclusive)

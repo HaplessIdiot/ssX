@@ -1220,31 +1220,12 @@ SISMapMem(ScrnInfoPtr pScrn)
     /*
      * Map IO registers to virtual address space
      */ 
-#if !defined(__alpha__)
     mmioFlags = VIDMEM_MMIO;
-#else
-    /*
-     * For Alpha, we need to map SPARSE memory, since we need
-     * byte/short access.
-     */
-    mmioFlags = VIDMEM_MMIO | VIDMEM_SPARSE;
-#endif
+
     pSiS->IOBase = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, 
 			pSiS->PciTag, pSiS->IOAddress, 0x10000);
     if (pSiS->IOBase == NULL)
 	return FALSE;
-
-#ifdef __alpha__
-    /*
-     * for Alpha, we need to map DENSE memory as well, for
-     * setting CPUToScreenColorExpandBase.
-     */
-    pSiS->IOBaseDense = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
-		pSiS->PciTag, pSiS->IOAddress, 0x10000);
-
-    if (pSiS->IOBaseDense == NULL)
-	return FALSE;
-#endif /* __alpha__ */
 
     pSiS->FbBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
 				 pSiS->PciTag,
@@ -1273,11 +1254,6 @@ SISUnmapMem(ScrnInfoPtr pScrn)
      */ 
     xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pSiS->IOBase, 0x10000);
     pSiS->IOBase = NULL;
-
-#ifdef __alpha__
-    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pSiS->IOBaseDense, 0x10000);
-    pSiS->IOBaseDense = NULL;
-#endif /* __alpha__ */
 
     xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pSiS->FbBase, pSiS->FbMapSize);
     pSiS->FbBase = NULL;

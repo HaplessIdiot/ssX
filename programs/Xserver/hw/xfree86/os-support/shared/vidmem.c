@@ -134,10 +134,14 @@ checkMtrrOption(VidMapPtr vp)
 pointer
 xf86MapVidMem(int ScreenNum, int Flags, unsigned long Base, unsigned long Size)
 {
-	pointer vbase;
+	pointer vbase = NULL;
 	VidMapPtr vp;
 	MappingPtr mp;
 
+	if (((Flags & VIDMEM_FRAMEBUFFER) &&
+	     (Flags & (VIDMEM_MMIO | VIDMEM_MMIO_32BIT))))
+	    FatalError("Mapping memory with more than one type");
+	    
 	if (!vidMemInfo.initialised) {
 		memset(&vidMemInfo, 0, sizeof(VidMemInfo));
 		xf86OSInitVidMem(&vidMemInfo);
@@ -145,12 +149,19 @@ xf86MapVidMem(int ScreenNum, int Flags, unsigned long Base, unsigned long Size)
 	if (!vidMemInfo.initialised || !vidMemInfo.mapMem)
 		return NULL;
 
-	if (((Flags & VIDMEM_SPARSE) ||
-	     ((Flags & VIDMEM_MMIO) && !(Flags & VIDMEM_MMIO_32BIT))) &&
-	    vidMemInfo.mapMemSparse)
+	/*
+	 * non-32bit vidmem is always assumed to be SPARSE.
+	 * It doesn't affect systems where we don't have to
+	 * map sparsely.
+	 */
+	if ((Flags & VIDMEM_MMIO) && !(Flags & VIDMEM_MMIO_32BIT))
+	    Flags |= VIDMEM_SPARSE;
+
+	if ((Flags & VIDMEM_SPARSE) && vidMemInfo.mapMemSparse)
 		vbase = vidMemInfo.mapMemSparse(ScreenNum, Base, Size);
 	else
 		vbase = vidMemInfo.mapMem(ScreenNum, Base, Size);
+
 	if (!vbase || vbase == (pointer)-1)
 		return NULL;
 
@@ -168,7 +179,7 @@ xf86MapVidMem(int ScreenNum, int Flags, unsigned long Base, unsigned long Size)
 	checkMtrrOption(vp);
 
 	if (vp->mtrrEnabled && vidMemInfo.setWC) {
-		if (Flags & VIDMEM_MMIO)
+		if (Flags & (VIDMEM_MMIO | VIDMEM_MMIO_32BIT))
 			mp->mtrrInfo =
 				vidMemInfo.setWC(ScreenNum, Base, Size, FALSE,
 						 vp->mtrrFrom);

@@ -97,7 +97,7 @@ axpPciInit()
 CARD32
 axpPciCfgRead(PCITAG tag, int off)
 {
-	int bus, dfn, len;
+	int bus, dfn;
 	CARD32 val = 0xffffffff;
 
 	bus = PCI_BUS_FROM_TAG(tag);
@@ -110,7 +110,7 @@ axpPciCfgRead(PCITAG tag, int off)
 void
 axpPciCfgWrite(PCITAG tag, int off, CARD32 val)
 {
-	int bus, dfn, len;
+	int bus, dfn;
 
 	bus = PCI_BUS_FROM_TAG(tag);
 	dfn = PCI_DFN_FROM_TAG(tag);
@@ -121,7 +121,7 @@ axpPciCfgWrite(PCITAG tag, int off, CARD32 val)
 void
 axpPciCfgSetBits(PCITAG tag, int off, CARD32 mask, CARD32 bits)
 {
-    int bus, dfn, len;
+    int bus, dfn;
     CARD32 val = 0xffffffff;
 
     bus = PCI_BUS_FROM_TAG(tag);

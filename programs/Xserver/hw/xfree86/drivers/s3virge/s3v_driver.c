@@ -739,13 +739,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     ps3v->PciInfo = xf86GetPciInfoForEntity(pEnt->index);
     xf86RegisterResources(pEnt->index,NULL,ResNone);
     xf86SetOperatingState(RES_SHARED_VGA, pEnt->index, ResUnusedOpr);
-    {
- 	resRange vgamem[] =	{ {ResShrMemBlock,0xA0000,0xAFFFF},
-				  {ResShrMemBlock,0xB0000,0xB7FFF},
- 				  {ResShrMemBlock,0xB8000,0xBFFFF},
- 				  _END };
- 	xf86SetOperatingState(vgamem, pEnt->index, ResDisableOpr);
-    }
+    xf86SetOperatingState(resVgaMemShared, pEnt->index, ResDisableOpr);
 
     /*
      * Set the Chipset and ChipRev, allowing config file entries to
@@ -815,11 +809,11 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 
    /* Next go on to detect amount of installed ram */
 
-   VGAOUT8(vgaCRIndex, 0x36);              /* for register CR36 (CONFG_REG1), */
-   config1 = VGAIN8(vgaCRReg);              /* get amount of vram installed */
+   VGAOUT8(vgaCRIndex, 0x36);           /* for register CR36 (CONFG_REG1),*/
+   config1 = VGAIN8(vgaCRReg);          /* get amount of vram installed   */
 
-   VGAOUT8(vgaCRIndex, 0x37);              /* for register CR37 (CONFG_REG2), */
-   config2 = VGAIN8(vgaCRReg);             /* get amount of off-screen ram  */
+   VGAOUT8(vgaCRIndex, 0x37);           /* for register CR37 (CONFG_REG2),*/
+   config2 = VGAIN8(vgaCRReg);          /* get amount of off-screen ram   */
 
    if (xf86LoadSubModule(pScrn, "ddc")) {
        xf86LoaderReqSymLists(ddcSymbols, NULL);
@@ -1372,7 +1366,6 @@ S3VSave (ScrnInfoPtr pScrn)
   vgaRegPtr vgaSavePtr = &hwp->SavedReg;
   S3VPtr ps3v = S3VPTR(pScrn);
   S3VRegPtr save = &ps3v->SavedReg;
-/*    void *s3vMmioMem = ps3v->MapBase; */
   int vgaCRIndex, vgaCRReg, vgaIOBase;
   vgaIOBase = hwp->IOBase;
   vgaCRIndex = 0;
@@ -1565,7 +1558,6 @@ static void
 S3VSaveSTREAMS(ScrnInfoPtr pScrn, unsigned int *streams)
 {
   S3VPtr ps3v = S3VPTR(pScrn);
-/*    void *s3vMmioMem = ps3v->MapBase; */
 
    streams[0] = INREG(PSTREAM_CONTROL_REG);
    streams[1] = INREG(COL_CHROMA_KEY_CONTROL_REG);
@@ -1611,7 +1603,6 @@ S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
   
   vgaHWPtr hwp = VGAHWPTR(pScrn);
   S3VPtr ps3v = S3VPTR(pScrn);
-/*    void *s3vMmioMem = ps3v->MapBase; */
   int vgaCRIndex, vgaCRReg, vgaIOBase;
   vgaIOBase = hwp->IOBase;
   vgaCRIndex = vgaIOBase + 4;
@@ -1851,7 +1842,6 @@ static void
 S3VRestoreSTREAMS(ScrnInfoPtr pScrn, unsigned int *streams)
 {
   S3VPtr ps3v = S3VPTR(pScrn);
-/*    void *s3vMmioMem = ps3v->MapBase; */
 
 
 /* For now, set most regs to their default values for 24bpp 
@@ -1898,7 +1888,6 @@ S3VDisableSTREAMS(ScrnInfoPtr pScrn)
 unsigned char tmp;
   vgaHWPtr hwp = VGAHWPTR(pScrn);
   S3VPtr ps3v = S3VPTR(pScrn);
-/*    void *s3vMmioMem = ps3v->MapBase; */
   int vgaCRIndex, vgaCRReg, vgaIOBase;
   vgaIOBase = hwp->IOBase;
   vgaCRIndex = vgaIOBase + 4;
@@ -1961,19 +1950,10 @@ S3VMapMem(ScrnInfoPtr pScrn)
 			S3_NEWMMIO_REGSIZE);
 
   ps3v->MapBaseDense = xf86MapPciMem(pScrn->scrnIndex,
-			VIDMEM_MMIO | VIDMEM_MMIO_32BIT,
+			VIDMEM_MMIO_32BIT,
 			ps3v->PciTag,
 			ps3v->PciInfo->memBase[0] + S3_NEWMMIO_REGBASE,
 			0x8000);
-
-  /* XXX Should handle this differently */
-#ifdef __alpha__
-  /* XXX the shift of 5 isn't correct for JENSEN */
-  ps3v->IOBase = ps3v->MapBase + (S3V_MMIO_REGSIZE << 5);
-#else
-  /* IOBase starts at PCI registers */
-  ps3v->IOBase = ps3v->MapBase + S3V_MMIO_REGSIZE;
-#endif
 
   if( !ps3v->MapBase ) {
     xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
@@ -2897,7 +2877,6 @@ S3VAdjustFrame(int scrnIndex, int x, int y, int flags)
    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
    vgaHWPtr hwp = VGAHWPTR(pScrn);
    S3VPtr ps3v = S3VPTR(pScrn);
-/*     void *s3vMmioMem = ps3v->MapBase; */
    int Base;
    int vgaCRIndex, vgaCRReg, vgaIOBase;
    vgaIOBase = hwp->IOBase;

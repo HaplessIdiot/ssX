@@ -154,37 +154,6 @@ chipsStdReadMR(CHIPSPtr cPtr, CARD8 index)
     return inb(CHIPS_MR_DATA);
 }
 
-static CARD8
-chipsStdReadFCR(CHIPSPtr cPtr)
-{
-    return inb(VGA_FEATURE_R);
-}
-
-static void
-chipsStdWriteFCR(CHIPSPtr cPtr, CARD8 value)
-{
-    if (cPtr->IOBase == VGA_IOBASE_MONO) {
-    	outb(CHIPS_MONO_STAT_1, value);
-    } else {
-    	outb(CHIPS_COLOR_STAT_1, value);
-    }
-}
-
-static CARD8
-chipsStdReadST00(CHIPSPtr cPtr)
-{
-    return inb(CHIPS_STAT_0);
-}
-
-static CARD8
-chipsStdReadST01(CHIPSPtr cPtr)
-{
-    if (cPtr->IOBase == VGA_IOBASE_MONO)
-	return inb(CHIPS_MONO_STAT_1);
-    else
-	return inb(CHIPS_COLOR_STAT_1);
-}
-
 void
 CHIPSSetStdExtFuncs(CHIPSPtr cPtr)
 {
@@ -194,23 +163,14 @@ CHIPSSetStdExtFuncs(CHIPSPtr cPtr)
     cPtr->readMR		= chipsStdReadMR;
     cPtr->writeXR		= chipsStdWriteXR;
     cPtr->readXR		= chipsStdReadXR;
-    cPtr->writeFCR		= chipsStdWriteFCR;
-    cPtr->readFCR		= chipsStdReadFCR;
-    cPtr->readST00		= chipsStdReadST00;
-    cPtr->readST01		= chipsStdReadST01;
 }
 
 /*
  * MMIO Access to the C&T extension registers
  */
 
-#ifndef __alpha__
-#define chipsminb(p) *(volatile CARD8 *)(cPtr->MMIOBase + (p))
-#define chipsmoutb(p,v) *(volatile CARD8 *)(cPtr->MMIOBase + (p)) = (v)
-#else
-#define chipsminb(p) xf86ReadSparse8(cPtr->MMIOBase, (p))
-#define chipsmoutb(p,v) xf86WriteSparse8((v), cPtr->MMIOBase, (p))
-#endif
+#define chipsminb(p) MMIO_IN8(cPtr->MMIOBase, (p))
+#define chipsmoutb(p,v) MMIO_OUT8(cPtr->MMIOBase, (p),(v))
 
 static void
 chipsMmioWriteXR(CHIPSPtr cPtr, CARD8 index, CARD8 value)
@@ -254,37 +214,6 @@ chipsMmioReadMR(CHIPSPtr cPtr, CARD8 index)
     return chipsminb(CHIPS_MMIO_MR_DATA);
 }
 
-static CARD8
-chipsMmioReadFCR(CHIPSPtr cPtr)
-{
-    return chipsminb(CHIPS_MMIO_FEATURE_R);
-}
-
-static void
-chipsMmioWriteFCR(CHIPSPtr cPtr, CARD8 value)
-{
-    if (cPtr->IOBase == VGA_IOBASE_MONO) {
-    	chipsmoutb(CHIPS_MMIO_MONO_STAT_1, value);
-    } else {
-    	chipsmoutb(CHIPS_MMIO_COLOR_STAT_1, value);
-    }
-}
-
-static CARD8
-chipsMmioReadST00(CHIPSPtr cPtr)
-{
-    return chipsminb(CHIPS_MMIO_STAT_0);
-}
-
-static CARD8
-chipsMmioReadST01(CHIPSPtr cPtr)
-{
-    if (cPtr->IOBase == VGA_IOBASE_MONO)
-	return chipsminb(CHIPS_MMIO_MONO_STAT_1);
-    else
-	return chipsminb(CHIPS_MMIO_COLOR_STAT_1);
-}
-
 void
 CHIPSSetMmioExtFuncs(CHIPSPtr cPtr)
 {
@@ -294,23 +223,14 @@ CHIPSSetMmioExtFuncs(CHIPSPtr cPtr)
     cPtr->readMR		= chipsMmioReadMR;
     cPtr->writeXR		= chipsMmioWriteXR;
     cPtr->readXR		= chipsMmioReadXR;
-    cPtr->writeFCR		= chipsMmioWriteFCR;
-    cPtr->readFCR		= chipsMmioReadFCR;
-    cPtr->readST00		= chipsMmioReadST00;
-    cPtr->readST01		= chipsMmioReadST01;
 }
 
 /*
  * MMIO versions of the VGA register access functions.
  */
 
-#ifndef __alpha__
-#define minb(p) *(volatile CARD8 *)(hwp->MMIOBase + (p))
-#define moutb(p,v) *(volatile CARD8 *)(hwp->MMIOBase + (p)) = (v)
-#else
-#define minb(p) xf86ReadSparse8(hwp->MMIOBase, (p))
-#define moutb(p,v) xf86WriteSparse8((v), hwp->MMIOBase, (p))
-#endif
+#define minb(p) MMIO_IN8(hwp->MMIOBase, (p))
+#define moutb(p,v) MMIO_OUT8(hwp->MMIOBase, (p),(v))
 
 static void
 chipsMmioWriteCrtc(vgaHWPtr hwp, CARD8 index, CARD8 value)
@@ -474,6 +394,37 @@ chipsMmioReadDacData(vgaHWPtr hwp)
     return minb(CHIPS_MMIO_DAC_DATA);
 }
 
+static CARD8
+chipsMmioReadST00(vgaHWPtr hwp)
+{
+    return minb(CHIPS_MMIO_STAT_0);
+}
+
+static CARD8
+chipsMmioReadST01(vgaHWPtr hwp)
+{
+    if (hwp->IOBase == VGA_IOBASE_MONO)
+	return minb(CHIPS_MMIO_MONO_STAT_1);
+    else
+	return minb(CHIPS_MMIO_COLOR_STAT_1);
+}
+
+static CARD8  
+chipsMmioReadFCR(vgaHWPtr hwp)
+{
+    return minb(CHIPS_MMIO_FEATURE_R);
+}
+
+static void
+chipsMmioWriteFCR(vgaHWPtr hwp, CARD8 value)
+{
+    if (hwp->IOBase == VGA_IOBASE_MONO) {
+    	moutb(CHIPS_MMIO_MONO_STAT_1, value);
+    } else {
+    	moutb(CHIPS_MMIO_COLOR_STAT_1, value);
+    }
+}
+
 void
 CHIPSHWSetMmioFuncs(ScrnInfoPtr pScrn, CARD8 *base, int offset)
 {
@@ -497,6 +448,14 @@ CHIPSHWSetMmioFuncs(ScrnInfoPtr pScrn, CARD8 *base, int offset)
     hwp->writeDacReadAddr	= chipsMmioWriteDacReadAddr;
     hwp->writeDacData		= chipsMmioWriteDacData;
     hwp->readDacData		= chipsMmioReadDacData;
+    hwp->readST00               = chipsMmioReadST00;
+    hwp->readST01               = chipsMmioReadST01;
+    hwp->readFCR               = chipsMmioReadFCR;
+    hwp->writeFCR              = chipsMmioWriteFCR;
     hwp->MMIOBase		= base;
     hwp->MMIOOffset		= offset;
 }
+
+
+
+

@@ -135,7 +135,10 @@ typedef struct _vgaHWRec {
     vgaHWReadIndexProcPtr	readCrtc;
     vgaHWWriteIndexProcPtr	writeGr;
     vgaHWReadIndexProcPtr	readGr;
+    vgaHWReadProcPtr            readST00;
     vgaHWReadProcPtr            readST01;
+    vgaHWReadProcPtr            readFCR;
+    vgaHWWriteProcPtr           writeFCR;
     vgaHWWriteIndexProcPtr	writeAttr;
     vgaHWReadIndexProcPtr	readAttr;
     vgaHWWriteIndexProcPtr	writeSeq;

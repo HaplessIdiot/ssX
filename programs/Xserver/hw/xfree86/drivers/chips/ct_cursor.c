@@ -80,7 +80,8 @@ CHIPSShowCursor(ScrnInfoPtr pScrn)
 	    outw(DR(0x8), 0x21);
 	} else {
 	    HW_DEBUG(DR(8));
-	    MMIOmemw(MR(8)) = 0x21;
+	    /*  Used to be: MMIOmemw(MR(8)) = 0x21; */
+	    MMIOmeml(MR(8)) = 0x21;
 	}
     }
     cPtr->HWCursorShown = TRUE;
@@ -104,7 +105,8 @@ CHIPSHideCursor(ScrnInfoPtr pScrn)
 	    outw(DR(0x8), 0x20);
 	} else {
 	    HW_DEBUG(DR(0x8));
-	    MMIOmemw(DR(0x8)) = 0x20;
+	    /* Used to be: MMIOmemw(DR(0x8)) = 0x20; */
+	    MMIOmeml(DR(0x8)) = 0x20;
 	}
     }
     cPtr->HWCursorShown = FALSE;

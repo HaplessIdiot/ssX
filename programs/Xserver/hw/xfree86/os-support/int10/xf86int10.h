@@ -1,8 +1,16 @@
 /* $XFree86$ */
 
+/*
+ *                   XFree86 int10 module
+ *   execute BIOS int 10h calls in x86 real mode environment
+ *                 Copyright 1999 Egbert Eich
+ */
 
 #ifndef _XF86INT10_H
 #define _XF86INT10_H
+
+#define SEG_ADDR(x) ((x>>4) & 0xF000)
+#define SEG_OFF(x) (x & 0xFFFF)
 
 /* int10 info structure */
 typedef  struct  {
@@ -18,6 +26,7 @@ typedef  struct  {
     int dx;
     int si;
     int di;
+    int es;
     int flags;
     } xf86Int10InfoRec, *xf86Int10InfoPtr;
 
@@ -35,21 +44,12 @@ xf86Int10InfoPtr xf86InitInt10(int entityIndex);
 void xf86FreeInt10(xf86Int10InfoPtr pInt);
 void * xf86Int10AllocPages(xf86Int10InfoPtr pInt,int num, int *off);
 void xf86Int10FreePages(xf86Int10InfoPtr pInt, void *pbase, int num);
+pointer xf86int10Addr(xf86Int10InfoPtr pInt, CARD32 addr);
 
 /* x86 executor related functions */
 void xf86ExecX86int10(xf86Int10InfoPtr pInt);
 
-
 #ifdef _INT10_PRIVATE
-
-#ifndef PRINT_PORT
-#define p_inb inb
-#define p_inw inw
-#define p_inl inl
-#define p_outb outb
-#define p_outw outw
-#define p_outl outl
-#endif
 
 #define I_S_DEFAULT_INT_VECT 0xFF065
 #define SYS_SIZE 0x100000
@@ -78,6 +78,13 @@ void xf86ExecX86int10(xf86Int10InfoPtr pInt);
 #define MEM_WW(name,addr,val) name->mem->ww(name,addr,val)
 #define MEM_WL(name,addr,val) name->mem->wl(name,addr,val)
 
+typedef struct {
+    CARD8 save_msr;
+    CARD8 save_pos102;
+    CARD8 save_vse;
+    CARD8 save_46e8;
+} legacyVGARec, *legacyVGAPtr;
+
 /* OS dependent functions */
 void MapCurrentInt10(xf86Int10InfoPtr pInt);
 /* x86 executor related functions */
@@ -98,6 +105,8 @@ void dump_code(xf86Int10InfoPtr pInt);
 void dump_registers(xf86Int10InfoPtr pInt);
 void stack_trace(xf86Int10InfoPtr pInt);
 xf86Int10InfoPtr getInt10Rec(int entityIndex);
+void LockLegacyVGA(int screenIndex, legacyVGAPtr vga);
+void UnlockLegacyVGA(int screenIndex, legacyVGAPtr vga);
 int port_rep_inb(xf86Int10InfoPtr pInt,
 		 CARD16 port, CARD32 base, int d_f, CARD32 count);
 int port_rep_inw(xf86Int10InfoPtr pInt,
@@ -110,14 +119,31 @@ int port_rep_outw(xf86Int10InfoPtr pInt,
 		  CARD16 port, CARD32 base, int d_f, CARD32 count);
 int port_rep_outl(xf86Int10InfoPtr pInt,
 		  CARD16 port, CARD32 base, int d_f, CARD32 count);
-#ifdef PRINT_PORT
-CARD8 p_inb(CARD16 port);
-CARD16 p_inw(CARD16 port);
-CARD32 p_inl(CARD16 port);
-void p_outb(CARD16 port, CARD8 val);
-void p_outw(CARD16 port, CARD16 val);
-void p_outl(CARD16 port, CARD32 val);
+CARD8 bios_checksum(CARD8 *start, int size);
+
+CARD8 x_inb(CARD16 port);
+CARD16 x_inw(CARD16 port);
+void x_outb(CARD16 port, CARD8 val);
+void x_outw(CARD16 port, CARD16 val);
+CARD32 x_inl(CARD16 port);
+void x_outl(CARD16 port, CARD32 val);
+
+#if defined(PRINT_PORT) || !defined(_PC)
+# define p_inb x_inb
+# define p_inw x_inw
+# define p_outb x_outb
+# define p_outw x_outw
+# define p_inl x_inl
+# define p_outl x_outl
+#else 
+# define p_inb inb
+# define p_inw inw
+# define p_outb outb
+# define p_outw outw
+# define p_inl inl
+# define p_outl outl
 #endif
+
 CARD8 Mem_rb(int addr);
 CARD16 Mem_rw(int addr);
 CARD32 Mem_rl(int addr);
@@ -129,7 +155,8 @@ void Mem_wl(int addr,CARD32 val);
 void setup_int_vect(xf86Int10InfoPtr pInt);
 int setup_system_bios(unsigned long base_addr);
 void reset_int_vect(xf86Int10InfoPtr pInt);
-Bool int10skip(ScrnInfoPtr pScrn);
+void set_return_trap(xf86Int10InfoPtr pInt);
+Bool int10skip(ScrnInfoPtr pScrn, int entityIndex);
 #ifdef DEBUG
 void dprint(unsigned long start, unsigned long size);
 #endif

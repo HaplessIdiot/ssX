@@ -1,5 +1,10 @@
 /* $XFree86$ */
 
+/*
+ *                   XFree86 int10 module
+ *   execute BIOS int 10h calls in x86 real mode environment
+ *                 Copyright 1999 Egbert Eich
+ */
 #include "xf86Pci.h"
 #include "xf86.h"
 #include "xf86str.h"
@@ -16,6 +21,7 @@ mapPciRom(xf86Int10InfoPtr pInt, unsigned char * address)
     unsigned char *mem, *ptr;
     unsigned char *scratch = NULL;
     int length = 0;
+
     pciVideoPtr pvp = xf86GetPciInfoForEntity(pInt->entityIndex);
     
     if (pvp == NULL)
@@ -28,7 +34,7 @@ mapPciRom(xf86Int10InfoPtr pInt, unsigned char * address)
 	xfree(mem);
 	return 0;
     }
-    
+
     while ( *ptr == 0x55 && *(ptr+1) == 0xAA) {
 	unsigned short data_off = *(ptr+0x18) | (*(ptr+0x19)<< 8);
 	unsigned char *data = ptr + data_off;
@@ -79,7 +85,9 @@ mapPciRom(xf86Int10InfoPtr pInt, unsigned char * address)
 	memcpy(address, scratch, length);
 	xfree(scratch);
     }
-    
+#ifdef PRINT_PCI
+    dprint(address,0x20);
+#endif
     return length;
 }
 

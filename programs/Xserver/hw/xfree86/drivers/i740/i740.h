@@ -58,10 +58,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 typedef struct _I740Rec *I740Ptr;
 
 typedef void (*I740WriteIndexedByteFunc)(I740Ptr pI740, int addr, 
-					 char index, char value);
+					 unsigned char index, char value);
 typedef char (*I740ReadIndexedByteFunc)(I740Ptr pI740, int addr, 
-					char index);
-typedef void (*I740WriteByteFunc)(I740Ptr pI740, int addr, char value);
+					unsigned char index);
+typedef void (*I740WriteByteFunc)(I740Ptr pI740, int addr, unsigned char value);
 typedef char (*I740ReadByteFunc)(I740Ptr pI740, int addr);
 
 typedef struct {
@@ -123,15 +123,8 @@ extern Bool I740AccelInit(ScreenPtr pScreen);
 void I740SetPIOAccess(I740Ptr pI740);
 void I740SetMMIOAccess(I740Ptr pI740);
 
-#ifndef __alpha__
-#define minb(p) *(volatile CARD8 *)(pI740->MMIOBase + (p))
-#define moutb(p,v) \
-	*(volatile CARD8 *)(pI740->MMIOBase + (p)) = (v)
-#else
-#define minb(p) xf86ReadSparse8(pI740->MMIOBase, (p))
-#define moutb(p,v) \
-	xf86WriteSparse8((v), pI740->MMIOBase, (p))
-#endif
+#define minb(p) MMIO_IN8(pI740->MMIOBase, (p))
+#define moutb(p,v) MMIO_OUT8(pI740->MMIOBase, (p),(v))
 
 #endif
   

@@ -1247,15 +1247,13 @@ CIRMapMem(ScrnInfoPtr pScrn)
         pCir->IOBase = NULL; /* Until we are ready to use MMIO */
     }
     else {
-#if !defined(__alpha__)
-	mmioFlags = VIDMEM_MMIO;
-#else
         /*
-         * For Alpha, we need to map SPARSE memory, since we need
-         * byte/short access.
+         * For Alpha, we need to map SPARSE memory, 
+         * byte/short access. Common-level will
+	 * automatically use sparse mapping for
+	 * MMIO
          */
-	mmioFlags = VIDMEM_MMIO | VIDMEM_SPARSE;
-#endif
+	mmioFlags = VIDMEM_MMIO;
         pCir->IOBase = xf86MapPciMem(pScrn->scrnIndex, mmioFlags,
                                      pCir->PciTag,
 				     pCir->IOAddress, 0x4000);
@@ -1266,23 +1264,6 @@ CIRMapMem(ScrnInfoPtr pScrn)
 #ifdef CIR_DEBUG
     ErrorF("CIRMapMem pCir->IOBase=0x%08x\n", pCir->IOBase);
 #endif
-
-#ifdef __alpha__
-    if (pCir->IOAddress == 0) {
-        pCir->IOBaseDense = NULL;
-    }
-    else {
-        /*
-         * for Alpha, we need to map DENSE memory as well, for
-         * setting CPUToScreenColorExpandBase.
-         */
-        pCir->IOBaseDense = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
-					    pCir->PciTag, pCir->IOAddress,
-					    0x4000);
-        if (pCir->IOBaseDense == NULL)
-	    return FALSE;
-    }
-#endif /* __alpha__ */
 
     return TRUE;
 }
@@ -1310,13 +1291,6 @@ CIRUnmapMem(ScrnInfoPtr pScrn)
         xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pCir->IOBase, 0x4000);
         pCir->IOBase = NULL;
     }
-
-#ifdef __alpha__
-    if(pCir->IOBaseDense != NULL) {
-        xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pCir->IOBaseDense, 0x4000);
-        pCir->IOBaseDense = NULL;
-    }
-#endif /* __alpha__ */
 
     xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pCir->FbBase, pCir->FbMapSize);
     pCir->FbBase = NULL;

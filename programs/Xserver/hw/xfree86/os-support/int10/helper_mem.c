@@ -1,5 +1,9 @@
 /* $XFree86$ */
-
+/*
+ *                   XFree86 int10 module
+ *   execute BIOS int 10h calls in x86 real mode environment
+ *                 Copyright 1999 Egbert Eich
+ */
 #include "xf86.h"
 #include "xf86str.h"
 #include "compiler.h"
@@ -31,9 +35,16 @@ dprint(unsigned long start, unsigned long size)
     char *c = (char *)start;
 
     for (j = 0; j < (size >> 4); j++) {
+	char *d = c;
 	ErrorF("\n0x%lx:  ",(unsigned long)c);
 	for (i = 0; i<16; i++) 
-	    ErrorF("%x ",(unsigned char) (*(c++)));
+	    ErrorF("%2.2x ",(unsigned char) (*(c++)));
+	c = d;
+	for (i = 0; i<16; i++) {
+	    ErrorF("%c",((((CARD8)(*c)) > 32) && (((CARD8)(*c)) < 128)) ?
+		   (unsigned char) (*(c)): '.');
+	    c++;
+	}
     }
     ErrorF("\n");
 }
@@ -89,7 +100,7 @@ setup_int_vect(xf86Int10InfoPtr pInt)
 }
 
 int
-setup_system_bios(unsigned long base_addr)
+setup_system_bios(memType base_addr)
 {
     char *date = "06/01/99";
     char *eisa_ident = "PCI/ISA";
@@ -103,9 +114,9 @@ setup_system_bios(unsigned long base_addr)
     memset((void *)(base),0xf4,0x10000);
 
     /* set bios date */
-    strcpy((char *)(base + 0xFFF5),date);
+    strcpy((((char *)base) + 0xFFF5),date);
     /* set up eisa ident string */
-    strcpy((char *)(base + 0xFFD9),eisa_ident);
+    strcpy((((char *)base) + 0xFFD9),eisa_ident);
     /* write system model id for IBM-AT */
     *(((unsigned char *)base) + 0xFFFE) = 0xfc;
 
@@ -121,6 +132,11 @@ reset_int_vect(xf86Int10InfoPtr pInt)
     MEM_WW(pInt,((0x42<<2)+2),0xf000);
     MEM_WW(pInt,(0x6D<<2),0xf065);
     MEM_WW(pInt,((0x6D<<2)+2),0xf000);
+ }
+
+void
+set_return_trap(xf86Int10InfoPtr pInt)
+{   
     /*
      * here we also set the exit condition:
      * we return when we encounter 'hlt' (^=0xf4) this
@@ -130,12 +146,17 @@ reset_int_vect(xf86Int10InfoPtr pInt)
 }
 
 Bool
-int10skip(ScrnInfoPtr pScrn)
+int10skip(ScrnInfoPtr pScrn, int entityIndex)
 {
     Bool noint10 = FALSE;
+    EntityInfoPtr pEnt = xf86GetEntityInfo(entityIndex);
     
-    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, INT10Options);
-    xf86GetOptValBool(INT10Options, OPT_NOINT10, &noint10);
+    if (pEnt->device && pEnt->device->options) {
+	xf86ProcessOptions(pScrn->scrnIndex, pEnt->device->options,
+			   INT10Options);
+	xf86GetOptValBool(INT10Options, OPT_NOINT10, &noint10);
+    }
+    xfree(pEnt);
 
     return noint10;
 }

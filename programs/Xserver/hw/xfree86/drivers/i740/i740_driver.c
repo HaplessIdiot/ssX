@@ -807,11 +807,7 @@ I740MapMem(ScrnInfoPtr pScrn)
 
   pI740 = I740PTR(pScrn);
 
-#if !defined(__alpha__)
   mmioFlags = VIDMEM_MMIO | VIDMEM_READSIDEEFFECT;
-#else
-  mmioFlags = VIDMEM_MMIO | VIDMEM_READSIDEEFFECT | VIDMEM_SPARSE;
-#endif
 
   pI740->MMIOBase = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, 
 				      pI740->PciTag, 

@@ -576,7 +576,7 @@ static Bool
 GLINTProbe(DriverPtr drv, int flags)
 {
     int i;
-    ScrnInfoPtr pScrn, pScrn0;
+    ScrnInfoPtr pScrn0;
     pciVideoPtr pPci, *checkusedPci;
     PCITAG deltatag = 0, chiptag = 0;
     GDevPtr *devSections = NULL;
@@ -637,148 +637,173 @@ GLINTProbe(DriverPtr drv, int flags)
 	 */
 
     	pScrn0 = xf86AllocateScreen(drv, 0);
+	
     	pScrn0->name = GLINT_NAME;
 
     	if (xf86LoadSubModule(pScrn0, "fbdevhw")) {
-		xf86LoaderReqSymLists(fbdevHWSymbols, NULL);
+	    xf86LoaderReqSymLists(fbdevHWSymbols, NULL);
 	
-		for (i = 0; i < numDevSections; i++) {
-			dev = xf86FindOptionValue(devSections[i]->options,"fbdev");
-			if (devSections[i]->busID) {
-				xf86ParsePciBusString(devSections[i]->busID,&bus,&device,&func);
-				if (!xf86CheckPciSlot(bus,device,func))
-					continue;
-			}
-			if (fbdevHWProbe(NULL,dev)) {
-				fbdevHWInit(pScrn0, NULL, dev);
+	    for (i = 0; i < numDevSections; i++) {
+		dev = xf86FindOptionValue(devSections[i]->options,"fbdev");
+		if (devSections[i]->busID) {
+		    xf86ParsePciBusString(devSections[i]->busID,&bus,&device,&func);
+		    if (!xf86CheckPciSlot(bus,device,func))
+			continue;
+		}
+		if (fbdevHWProbe(NULL,dev)) {
+		    ScrnInfoPtr pScrn;
+		    fbdevHWInit(pScrn0, NULL, dev);
 			
 				/* Check for pm2fb */
-				if (strcmp(fbdevHWGetName(pScrn0),"Permedia2")) continue;
+		    if (strcmp(fbdevHWGetName(pScrn0),"Permedia2")) continue;
 
-				if (flags & PROBE_DETECT)
-					return TRUE;
-				foundScreen = FBDev = TRUE;
-				pScrn = xf86AllocateScreen(drv, 0);
-				xf86LoadSubModule(pScrn, "fbdevhw");
-				xf86LoaderReqSymLists(fbdevHWSymbols, NULL);
+		    if (flags & PROBE_DETECT)
+			return TRUE;
+		    foundScreen = FBDev = TRUE;
+		    pScrn = xf86AllocateScreen(drv, 0);
+		    xf86LoadSubModule(pScrn, "fbdevhw");
+		    xf86LoaderReqSymLists(fbdevHWSymbols, NULL);
 
-				xf86DrvMsg(pScrn0->scrnIndex, X_INFO,
-					"%s successfully probed\n", dev ? dev : "default framebuffer device");
-				if (devSections[i]->busID) {
-					/* XXX what about when there's no busID set? */
-					int entity;
+		    xf86DrvMsg(pScrn0->scrnIndex, X_INFO,
+			       "%s successfully probed\n", dev ? dev : "default framebuffer device");
+		    if (devSections[i]->busID) {
+			/* XXX what about when there's no busID set? */
+			int entity;
 
-					xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-						"claimed PCI slot %d:%d:%d\n",bus,device,func);
-					entity = xf86ClaimPciSlot(bus,device,func,drv,
-							  0,devSections[i],
-							  TRUE);
-					xf86ConfigActivePciEntity(pScrn,entity,
-							  NULL,RES_SHARED_VGA,
-							  NULL,NULL,NULL,NULL);
-				} else {
-					/* XXX This is a quick hack */
-					int entity;
+			xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+				   "claimed PCI slot %d:%d:%d\n",bus,device,func);
+			entity = xf86ClaimPciSlot(bus,device,func,drv,
+						  0,devSections[i],
+						  TRUE);
+			xf86ConfigActivePciEntity(pScrn,entity,
+						  NULL,RES_SHARED_VGA,
+						  NULL,NULL,NULL,NULL);
+		    } else {
+			/* XXX This is a quick hack */
+			int entity;
 
-					entity = xf86ClaimIsaSlot(drv, 0,
-							  devSections[i], TRUE);
-					xf86ConfigActiveIsaEntity(pScrn,entity,
-							  NULL,RES_SHARED_VGA,
-							  NULL,NULL,NULL,NULL);
-				}
-			}
+			entity = xf86ClaimIsaSlot(drv, 0,
+						  devSections[i], TRUE);
+			xf86ConfigActiveIsaEntity(pScrn,entity,
+						  NULL,RES_SHARED_VGA,
+						  NULL,NULL,NULL,NULL);
+		    }
+		    /* Fill in what we can of the ScrnInfoRec */
+		    pScrn->driverVersion = VERSION;
+		    pScrn->driverName	 = GLINT_DRIVER_NAME;
+		    pScrn->name		 = GLINT_NAME;
+		    pScrn->Probe	 = GLINTProbe;
+		    pScrn->PreInit	 = GLINTPreInit;
+		    pScrn->ScreenInit	 = GLINTScreenInit;
+		    pScrn->SwitchMode	 = GLINTSwitchMode;
+		    pScrn->FreeScreen	 = GLINTFreeScreen;
 		}
+	    }
     	}
-
+	
     	xf86DeleteScreen(pScrn0->scrnIndex,0);
     	xfree(devSections);
 	
     } else {
 
-    numUsed = xf86MatchPciInstances(GLINT_NAME, 0,
-		   GLINTChipsets, GLINTPciChipsets, devSections,
-		   numDevSections, drv, &usedChips);
-    if (devSections)
-	xfree(devSections);
-    devSections = NULL;
-    if (numUsed <= 0)
-	return FALSE;
-    if (flags & PROBE_DETECT)
-	return TRUE;
-    foundScreen = TRUE;
+	numUsed = xf86MatchPciInstances(GLINT_NAME, 0,
+					GLINTChipsets, GLINTPciChipsets, devSections,
+					numDevSections, drv, &usedChips);
+	if (devSections)
+	    xfree(devSections);
+	devSections = NULL;
+	if (numUsed <= 0)
+	    return FALSE;
+	if (flags & PROBE_DETECT)
+	    return TRUE;
+	foundScreen = TRUE;
 
-    for (i = 0; i < numUsed; i++) {
-	ScrnInfoPtr pScrn;
+	for (i = 0; i < numUsed; i++) {
+	    ScrnInfoPtr pScrn;
 	
-	/* Allocate a ScrnInfoRec and claim the slot */
-	pScrn = xf86AllocateScreen(drv, 0);
-	ErrorF("used chips: %i\n",usedChips[i]);
-	
-	xf86ConfigActivePciEntity(pScrn, usedChips[i], GLINTPciChipsets, NULL,
-				  NULL, NULL, NULL, NULL);
+	    /* Allocate a ScrnInfoRec and claim the slot */
+	    pScrn = xf86AllocateScreen(drv, 0);
+	    ErrorF("used chips: %i\n",usedChips[i]);
 
-	pPci = xf86GetPciInfoForEntity(usedChips[i]);
-	glintbase = pPci->memBase[0];
-	chiptag = pciTag(pPci->bus, pPci->device, pPci->func);
+	    xf86ConfigActivePciEntity(pScrn, usedChips[i], GLINTPciChipsets, NULL,
+				      NULL, NULL, NULL, NULL);
+
+	    pPci = xf86GetPciInfoForEntity(usedChips[i]);
+	    glintbase = pPci->memBase[0];
+	    chiptag = pciTag(pPci->bus, pPci->device, pPci->func);
 	
-	/* Need to claim Glint Delta for PERMEDIA & 500TX */
-	/* and for the moment we claim all other chips on the same */
-	/* bus/device number */
-	if ( (pPci->chipType == PCI_CHIP_500TX) ||
-	     (pPci->chipType == PCI_CHIP_MX) ||
-	     (pPci->chipType == PCI_CHIP_GAMMA) ||
-	     (pPci->chipType == PCI_CHIP_PERMEDIA) ) {
-	    
-	    while (*checkusedPci != NULL) {
-		int gIndex;
-		/* make sure we claim all but our source device */
-		if ((pPci->bus == (*checkusedPci)->bus && 
-		     pPci->device == (*checkusedPci)->device) &&
-		    pPci->func != (*checkusedPci)->func) {
+	    /* Need to claim Glint Delta for PERMEDIA & 500TX */
+	    /* and for the moment we claim all other chips on the same */
+	    /* bus/device number */
+	    if ( (pPci->chipType == PCI_CHIP_500TX) ||
+		 (pPci->chipType == PCI_CHIP_MX) ||
+		 (pPci->chipType == PCI_CHIP_GAMMA) ||
+		 (pPci->chipType == PCI_CHIP_PERMEDIA) ) {
+
+		while (*checkusedPci != NULL) {
+		    int gIndex;
+		    /* make sure we claim all but our source device */
+		    if ((pPci->bus == (*checkusedPci)->bus && 
+			 pPci->device == (*checkusedPci)->device) &&
+			pPci->func != (*checkusedPci)->func) {
 		    
-		    /* Find that Delta chip, and give us the tag value */
-		    if ( (((*checkusedPci)->vendor == PCI_VENDOR_TI) || 
-			  ((*checkusedPci)->vendor == PCI_VENDOR_3DLABS)) &&
-			 (((*checkusedPci)->chipType == PCI_CHIP_DELTA) ||
-			  ((*checkusedPci)->chipType == PCI_CHIP_MX)) ) {
-			if ((*checkusedPci)->chipType == PCI_CHIP_DELTA) {
-			    deltabase = (*checkusedPci)->memBase[0];
-			    delta_pci_base = &((*checkusedPci)->memBase[0]);
-			    deltatag = pciTag((*checkusedPci)->bus, 
-					      (*checkusedPci)->device, 
-					      (*checkusedPci)->func);
-			}
-			gIndex = xf86ClaimPciSlot((*checkusedPci)->bus, 
+			/* Find that Delta chip, and give us the tag value */
+			if ( (((*checkusedPci)->vendor == PCI_VENDOR_TI) || 
+			      ((*checkusedPci)->vendor == PCI_VENDOR_3DLABS)) &&
+			     (((*checkusedPci)->chipType == PCI_CHIP_DELTA) ||
+			      ((*checkusedPci)->chipType == PCI_CHIP_MX)) ) {
+			    if ((*checkusedPci)->chipType == PCI_CHIP_DELTA) {
+				deltabase = (*checkusedPci)->memBase[0];
+				delta_pci_base = &((*checkusedPci)->memBase[0]);
+				deltatag = pciTag((*checkusedPci)->bus, 
 						  (*checkusedPci)->device, 
-						  (*checkusedPci)->func, drv,
-						  (*checkusedPci)->chipType,
-						  NULL, TRUE);
-			if (gIndex == -1) {
+						  (*checkusedPci)->func);
+			    }
+
+			    gIndex = xf86ClaimPciSlot((*checkusedPci)->bus, 
+						      (*checkusedPci)->device, 
+						      (*checkusedPci)->func, drv,
+						      (*checkusedPci)->chipType,
+						      NULL, TRUE);
+
+			    if (gIndex == -1) {
 				/* This can't happen */
-			    FatalError("someone claimed the free slot!\n");
-			}
-			xf86ConfigActivePciEntity(pScrn, gIndex,
-						  NULL, NULL, NULL, NULL,
-						  NULL, NULL);
-		    } else {
-			int eIndex;
-			/* Claim other entities on the same card */
-			eIndex = xf86ClaimPciSlot((*checkusedPci)->bus, 
-						  (*checkusedPci)->device, 
-						  (*checkusedPci)->func,
-						  drv, -1 /* XXX */,
-						  NULL, FALSE);
-			if (eIndex == -1) {
+				FatalError("someone claimed the free slot!\n");
+			    }
+			    xf86ConfigActivePciEntity(pScrn, gIndex,
+						      NULL, NULL, NULL, NULL,
+						      NULL, NULL);
+			} else {
+			    int eIndex;
+
+			    /* Claim other entities on the same card */
+			    eIndex = xf86ClaimPciSlot((*checkusedPci)->bus, 
+						      (*checkusedPci)->device, 
+						      (*checkusedPci)->func,
+						      drv, -1 /* XXX */,
+						      NULL, FALSE);
+
+			    if (eIndex == -1) {
 				/* This can't happen */
-			    FatalError("someone claimed the free slot!\n");
+				FatalError("someone claimed the free slot!\n");
+			    }
 			}
 		    }
+		    checkusedPci++;
 		}
-		checkusedPci++;
 	    }
+	    /* Fill in what we can of the ScrnInfoRec */
+	    pScrn->driverVersion = VERSION;
+	    pScrn->driverName	 = GLINT_DRIVER_NAME;
+	    pScrn->name		 = GLINT_NAME;
+	    pScrn->Probe	 = GLINTProbe;
+	    pScrn->PreInit	 = GLINTPreInit;
+	    pScrn->ScreenInit	 = GLINTScreenInit;
+	    pScrn->SwitchMode	 = GLINTSwitchMode;
+	    pScrn->FreeScreen	 = GLINTFreeScreen;
+
 	}
-	}
-	
+
 /* XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX */
 /* NEED TO MOVE THIS OUT OF THE PROBE CODE */
 /* XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX */
@@ -808,11 +833,11 @@ GLINTProbe(DriverPtr drv, int flags)
 		     *
 		     * to be able to do that we need to enable IO
 		     */
- 		    if (pPci->chipType == PCI_CHIP_PERMEDIA) {
-		    	glintbase3 = pciReadLong(chiptag, 0x20); /* base4 */
-         	    } else {
-		    	glintbase3 = pciReadLong(chiptag, 0x1c); /* base3 */
- 		    }
+		    if (pPci->chipType == PCI_CHIP_PERMEDIA) {
+			glintbase3 = pciReadLong(chiptag, 0x20); /* base4 */
+		    } else {
+			glintbase3 = pciReadLong(chiptag, 0x1c); /* base3 */
+		    }
 		    if ((glintbase & 0x20000) ^ (glintbase3 & 0x20000)) {
 			/*
 			 * oops, still different; we know that base3 is at least
@@ -846,29 +871,19 @@ GLINTProbe(DriverPtr drv, int flags)
 		}
 	    }
 	    if (bugbase)
-		xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+		xf86DrvMsg(-1, X_INFO, 
 			   "Glint Delta BUG, fixing.....old = 0x%x, new = 0x%x\n", 
 			   bugbase, glintbase3);
-	} 
+	}
+
 	/*
 	 * ok, now let's forget about the Delta, in case we found one
 	 */
 	deltatag = deltabase = 0;
     }
 
-    if (foundScreen) {
-	/* Fill in what we can of the ScrnInfoRec */
-	pScrn->driverVersion = VERSION;
-	pScrn->driverName	 = GLINT_DRIVER_NAME;
-	pScrn->name		 = GLINT_NAME;
-	pScrn->Probe	 = GLINTProbe;
-	pScrn->PreInit	 = GLINTPreInit;
-	pScrn->ScreenInit	 = GLINTScreenInit;
-	pScrn->SwitchMode	 = GLINTSwitchMode;
-	pScrn->FreeScreen	 = GLINTFreeScreen;
-    }
-
     if (usedChips) xfree(usedChips);
+
     TRACE_EXIT("GLINTProbe");
     return foundScreen;
 }
@@ -1017,9 +1032,12 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     /*
      * VGA isn't used, so mark it so.  XXX Should check if any VGA resources
      * are decoded or not, and if not, change them from Unused to Disabled.
+     * Mem resources seem to be disabled. This is importand to avoid conflicts
+     * with DGA
      */
-    xf86SetOperatingState(RES_SHARED_VGA, pGlint->pEnt->index, ResUnusedOpr);
-
+    xf86SetOperatingState(resVgaMemShared, pGlint->pEnt->index, ResDisableOpr);
+    xf86SetOperatingState(resVgaIoShared, pGlint->pEnt->index, ResUnusedOpr);
+    
     /* Operations for which memory access is required. */
     pScrn->racMemFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
     pScrn->racIoFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
@@ -1943,6 +1961,12 @@ GLINTMapMem(ScrnInfoPtr pScrn)
     	pGlint->IOBase = fbdevHWMapMMIO(pScrn);
     	if (pGlint->IOBase == NULL)
 		return FALSE;
+	/*
+	 * This does not work on Alphas ! They need VGA MMIO space
+	 * mapped in a special way as they cannot access it byte
+	 * or wordwise.
+	 */
+	pGlint->IOBaseVGA = pGlint->IOBase + GLINT_VGA_MMIO_OFF;
 	
 	TRACE_EXIT("GLINTMapMem");
 	return TRUE;
@@ -1950,14 +1974,20 @@ GLINTMapMem(ScrnInfoPtr pScrn)
     
     /*
      * Map IO registers to virtual address space
+     * We always map VGA IO registers - even if we don't need them
      */ 
-    if (pGlint->PciTagGeometry)
-	pGlint->IOBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO, 
+    if (pGlint->PciTagGeometry) {
+	pGlint->IOBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO_32BIT, 
 		pGlint->PciTagGeometry, pGlint->IOAddress, 0x20000);
-    else
-	pGlint->IOBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO, 
-		pGlint->PciTag, pGlint->IOAddress, 0x20000);
-
+	pGlint->IOBaseVGA = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO, 
+		pGlint->PciTagGeometry, pGlint->IOAddress + GLINT_VGA_MMIO_OFF,
+	        0x2000);
+    } else {
+	pGlint->IOBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO_32BIT, 
+	       pGlint->PciTag, pGlint->IOAddress, 0x20000);
+	pGlint->IOBaseVGA = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO, 
+	       pGlint->PciTag, pGlint->IOAddress + GLINT_VGA_MMIO_OFF, 0x2000);
+    }
     if ( (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_GAMMA) &&
 	     (pGlint->numMXDevices == 2) ) {
 	pGlint->SecondaryAddress = pGlint->IOAddress;
@@ -2060,9 +2090,14 @@ GLINTUnmapMem(ScrnInfoPtr pScrn)
     xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pGlint->IOBase, 0x20000);
     pGlint->IOBase = NULL;
 
+    if (pGlint->IOBaseVGA != NULL)
+	xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pGlint->IOBaseVGA, 0x2000);
+    pGlint->IOBaseVGA = NULL;
+
     if (pGlint->FbBase != NULL)
     	xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pGlint->FbBase, pGlint->FbMapSize);
     pGlint->FbBase = NULL;
+
     return TRUE;
 }
 
@@ -2416,7 +2451,7 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     	    if (!vgaHWMapMem(pScrn))
 	   	 return FALSE;
 	}
-    	vgaHWSetMmioFuncs(hwp, pGlint->IOBase, 0x6000);
+    	vgaHWSetMmioFuncs(hwp, pGlint->IOBaseVGA, 0);
     	vgaHWGetIOBase(hwp);
     }
 
@@ -2794,8 +2829,10 @@ GLINTAdjustFrame(int scrnIndex, int x, int y, int flags)
     pScrn = xf86Screens[scrnIndex];
     pGlint = GLINTPTR(pScrn);
     
-    if (pGlint->FBDev)
-    	return fbdevHWAdjustFrame(scrnIndex, x, y, flags);
+    if (pGlint->FBDev) {
+    	fbdevHWAdjustFrame(scrnIndex, x, y, flags);
+	return;
+    }
     
     if (pGlint->VGAcore) {
     	vgaHWPtr hwp;

@@ -43,6 +43,8 @@
 # include <fcntl.h>
 # include <sys/time.h>
 # include <errno.h>
+# include <stdio.h>
+# include <string.h>
 #endif
 
 /*
@@ -118,13 +120,23 @@ xf86InstallSIGIOHandler(int fd, void (*f)(int, void *), void *closure)
 		xf86SigIOMaxFd = fd + 1;
 	    FD_SET (fd, &xf86SigIOMask);
 	    if (fcntl(fd, F_SETOWN, getpid()) == -1) {
+#ifdef XFree86Server
 		xf86Msg(X_WARNING, "fcntl(%d, F_SETOWN): %s\n", 
 			fd, strerror(errno));
+#else
+		fprintf(stderr,"fcntl(%d, F_SETOWN): %s\n", 
+			fd, strerror(errno));
+#endif
 		return 0;
 	    }
 	    if (fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_ASYNC) == -1) {
+#ifdef XFree86Server
 		xf86Msg(X_WARNING, "fcntl(%d, O_ASYNC): %s\n", 
 			fd, strerror(errno));
+#else
+		fprintf(stderr,"fcntl(%d, O_ASYNC): %s\n", 
+			fd, strerror(errno));
+#endif
 		return 0;
 	    }
 	    return 1;
@@ -223,7 +235,7 @@ xf86AssertBlockedSIGIO (char *where)
 /* XXX This is a quick hack for the benefit of xf86SetSilkenMouse() */
 
 int
-xf86SIGIOSupported ()
+xf86SIGIOSupported (void)
 {
     return 1;
 }

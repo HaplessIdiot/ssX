@@ -1,22 +1,15 @@
-/* $XFree86$ */
-/*
- *                   XFree86 int10 module
- *   execute BIOS int 10h calls in x86 real mode environment
- *                 Copyright 1999 Egbert Eich
- */
 #include "xf86.h"
 #include "xf86str.h"
-#include "xf86Pci.h"
-#include "xf86int10.h"
+#include "vbe.h"
 
 
 #ifdef XFree86LOADER
 
-static MODULESETUPPROTO(int10Setup);
+static MODULESETUPPROTO(vbeSetup);
 
-static XF86ModuleVersionInfo int10VersRec =
+static XF86ModuleVersionInfo vbeVersRec =
 {
-    "int10",
+    "vbe",
     MODULEVENDORSTRING,
     MODINFOSTRING1,
     MODINFOSTRING2,
@@ -28,10 +21,10 @@ static XF86ModuleVersionInfo int10VersRec =
     {0,0,0,0}
 };
 
-XF86ModuleData int10ModuleData = { &int10VersRec, int10Setup, NULL };
+XF86ModuleData vbeModuleData = { &vbeVersRec, vbeSetup, NULL };
 
 static pointer
-int10Setup(pointer module, pointer opts, int *errmaj, int *errmin)
+vbeSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 {
     static Bool setupDone = FALSE;
     

@@ -76,6 +76,8 @@ EXP_FORCE_DEFINES = -DSHOW_BETA_MESSAGE -DEXPIRE_SERVER
 
 SRCS =	\
 	xf86Bus.c \
+	xf86isaBus.c \
+	xf86pciBus.c \
 	xf86IniExt.c \
 	xf86Config.c \
 	xf86Cursor.c \
@@ -105,6 +107,8 @@ SRCS =	\
 
 OBJS = \
 	xf86Bus.o \
+	xf86isaBus.o \
+	xf86pciBus.o \
 	xf86Config.o \
 	xf86Cursor.o \
 	xf86DGA.o \
