@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.5 1999/11/02 16:16:39 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.6 2000/02/18 12:19:37 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -239,6 +239,9 @@ ATIScreenInit
     if (pATI->OptionShadowFB &&
         !ShadowFBInit(pScreen, ATIRefreshArea))
         return FALSE;
+
+    /* Initialise DPMS support */
+    (void)xf86DPMSInit(pScreen, ATISetDPMSMode, 0);
 
     /* Set pScreen->SaveScreen and wrap CloseScreen vector */
     pScreen->SaveScreen = ATISaveScreen;

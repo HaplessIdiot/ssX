@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ati.c,v 1.8 2000/01/27 01:01:03 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ati.c,v 1.9 2000/02/18 12:19:10 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -58,6 +58,7 @@
  * Christian Lupien <lupien@physics.utoronto.ca>
  * Precision Insight Incorporated
  * Mark Vojkovich, mvojkovich@valinux.com
+ * Huw D M Davies, h.davies1@physics.ox.ac.uk
  *
  * ... and, many, many others from around the world.
  *

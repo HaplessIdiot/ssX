@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.15 2000/03/07 16:13:34 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.16 2000/03/07 16:31:53 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -341,12 +341,12 @@ ATIPreInit
     EntityInfoPtr   pEntity;
     resPtr          pResources;
     Bool            AllowCRT = TRUE;
-    CARD32          IOValue1, IOValue2;
+    CARD32          IOValue1, IOValue2 = 0;
     int             i, j, AcceleratorVideoRAM = 0, VGAVideoRAM = 0;
     int             Numerator, Denominator;
     resRange        Resources[2] = {{0, 0, 0}, _END};
     ClockRange      ATIClockRange = {NULL, 0, 80000, 0, TRUE, TRUE, 1, 1, 0};
-    int             minPitch, maxPitch = 0xFFU, pitchInc;
+    int             minPitch, maxPitch = 0xFFU, pitchInc, maxHeight = 0;
     LookupModeFlags Strategy = LOOKUP_CLOSEST_CLOCK;
 
     if (flags & PROBE_DETECT)
@@ -533,11 +533,9 @@ ATIPreInit
                     pATI->VideoRAM = (IOValue1 - 7) * 2048;
             }
 
-            IOValue1 = inl(pATI->CPIO_DAC_CNTL);
-            pATI->DAC = GetBits(IOValue1, DAC_TYPE);
+            pATI->DAC = GetBits(inl(pATI->CPIO_DAC_CNTL), DAC_TYPE);
 
             IOValue1 = inl(ATIIOPort(CONFIG_STATUS64_0));
-            IOValue2 = inl(ATIIOPort(SCRATCH_REG1));
             if (pATI->Chip >= ATI_CHIP_264CT)
             {
                 pATI->MemoryType = GetBits(IOValue1, CFG_MEM_TYPE_T);
@@ -550,6 +548,7 @@ ATIPreInit
                     pATI->CPIO_HORZ_STRETCHING = ATIIOPort(HORZ_STRETCHING);
                     pATI->CPIO_VERT_STRETCHING = ATIIOPort(VERT_STRETCHING);
                     pATI->CPIO_LCD_GEN_CTRL = ATIIOPort(LCD_GEN_CTRL);
+                    pATI->CPIO_POWER_MANAGEMENT = ATIIOPort(POWER_MANAGEMENT);
 
                     IOValue2 = inl(pATI->CPIO_LCD_GEN_CTRL);
                 }
@@ -600,7 +599,8 @@ ATIPreInit
 
                 /* Factor in what the BIOS says the DAC is */
                 pATI->DAC = ATI_DAC(pATI->DAC,
-                    GetBits(IOValue2, BIOS_INIT_DAC_SUBTYPE));
+                    GetBits(inl(ATIIOPort(SCRATCH_REG1)),
+                        BIOS_INIT_DAC_SUBTYPE));
             }
 
             /*
@@ -810,6 +810,7 @@ ATIPreInit
                             i += j;
                             goto NextBIOSByte;
                         }
+
                     /* ... verify panel width ... */
                     if ((pATI->LCDHorizontal > 8) &&
                         (pATI->LCDHorizontal <=
@@ -845,7 +846,7 @@ ATIPreInit
 
             if (LCDPanelInfo > 0)
             {
-                CARD8 ClockMask, PostMask, xpDiv, maxpDiv, pDiv;
+                CARD8 ClockMask, PostMask;
 
                 pATI->LCDPanelID = BIOSByte(LCDPanelInfo);
                 pATI->LCDHorizontal = BIOSWord(LCDPanelInfo + 0x19U);
@@ -864,10 +865,9 @@ ATIPreInit
                  */
                 ClockMask = PLL_VCLK0_XDIV << i;
                 PostMask = PLL_VCLK0_POST_DIV << (i * 2);
-                xpDiv = GetBits(ATIGetMach64PLLReg(PLL_XCLK_CNTL), ClockMask);
-                maxpDiv = MaxBits(PLL_VCLK0_POST_DIV) + 1;
-                pDiv = GetBits(ATIGetMach64PLLReg(PLL_VCLK_POST_DIV), PostMask);
-                j = (xpDiv * maxpDiv) | pDiv;
+                j = GetBits(ATIGetMach64PLLReg(PLL_XCLK_CNTL), ClockMask);
+                j *= MaxBits(PLL_VCLK0_POST_DIV) + 1;
+                j |= GetBits(ATIGetMach64PLLReg(PLL_VCLK_POST_DIV), PostMask);
 
                 /* Calculate clock of mode on entry */
                 Numerator = ATIGetMach64PLLReg(PLL_VCLK0_FB_DIV + i) *
@@ -1137,6 +1137,9 @@ ATIPreInit
         ATILock(pATI);
         return FALSE;
     }
+
+    pATI->XModifier =
+        pScreenInfo->bitsPerPixel / UnitOf(pScreenInfo->bitsPerPixel);
 
     /*
      * Determine which CRT controller to use for video modes.
@@ -1751,20 +1754,6 @@ ATIPreInit
     if (pScreenInfo->depth >= 8)
         pitchInc *= pScreenInfo->bitsPerPixel;
 
-    /*
-     * For SGRAM & WRAM adapters, the display engine limits the pitch to
-     * multiples of 64 bytes.
-     */
-    if (pATI->OptionAccel && (pATI->Chip >= ATI_CHIP_264CT) &&
-        ((pATI->Chip >= ATI_CHIP_264VTB) ||
-         (pATI->MemoryType >= MEM_264_SGRAM)))
-    {
-        if (pScreenInfo->bitsPerPixel == 24)
-            pitchInc = 64 * 24;
-        else
-            pitchInc = 64 * 8;
-    }
-
     switch (pATI->NewHW.crtc)
     {
         case ATI_CRTC_VGA:
@@ -1837,6 +1826,31 @@ ATIPreInit
 
     maxPitch *= minPitch;
 
+    if (pATI->OptionAccel)
+    {
+        /*
+         * Set engine restrictions on coordinate space.  Use maxPitch for the
+         * horizontal and maxHeight for the vertical.
+         */
+        if (maxPitch > 4095)
+            maxPitch = 4095;
+        maxHeight = 16383;
+
+        /*
+         * For SGRAM & WRAM adapters, the display engine limits the pitch to
+         * multiples of 64 bytes.
+         */
+        if ((pATI->Chip >= ATI_CHIP_264CT) &&
+            ((pATI->Chip >= ATI_CHIP_264VTB) ||
+             (pATI->MemoryType >= MEM_264_SGRAM)))
+        {
+            if (pScreenInfo->bitsPerPixel == 24)
+                pitchInc = 64 * 24;
+            else
+                pitchInc = 64 * 8;
+        }
+    }
+
     if (!pATI->OptionCRT && pATI->LCDPanelID >= 0)
     {
         /*
@@ -1849,7 +1863,7 @@ ATIPreInit
 
     i = xf86ValidateModes(pScreenInfo,
             pScreenInfo->monitor->Modes, pScreenInfo->display->modes,
-            &ATIClockRange, NULL, minPitch, maxPitch, pitchInc, 0, 0,
+            &ATIClockRange, NULL, minPitch, maxPitch, pitchInc, 0, maxHeight,
             pScreenInfo->display->virtualX, pScreenInfo->display->virtualY,
             pATI->ApertureSize, Strategy);
     if (i <= 0)

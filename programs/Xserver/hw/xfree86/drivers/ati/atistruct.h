@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.11 2000/02/18 12:19:40 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.12 2000/03/03 04:47:13 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -129,8 +129,8 @@ typedef struct _ATIRec
      * Chip-related definitions.
      */
     CARD8 Chip, Coprocessor;
-    CARD16 ChipType, ChipClass, ChipRevision, ChipRev;
-    CARD16 ChipVersion, ChipFoundry;
+    CARD16 ChipType;
+    CARD8 ChipClass, ChipRevision, ChipRev, ChipVersion, ChipFoundry;
     CARD8 ChipHasSUBSYS_CNTL;
 
     /*
@@ -164,7 +164,8 @@ typedef struct _ATIRec
            CPIO_MEM_VGA_WP_SEL, CPIO_MEM_VGA_RP_SEL,
            CPIO_DAC_REGS, CPIO_DAC_CNTL,
            CPIO_HORZ_STRETCHING, CPIO_VERT_STRETCHING,
-           CPIO_GEN_TEST_CNTL, CPIO_LCD_GEN_CTRL, CPIO_CONFIG_CNTL;
+           CPIO_GEN_TEST_CNTL, CPIO_LCD_GEN_CTRL,
+           CPIO_POWER_MANAGEMENT, CPIO_CONFIG_CNTL;
 
     /*
      * DAC-related definitions.
@@ -215,7 +216,7 @@ typedef struct _ATIRec
      */
     XAAInfoRecPtr pXAAInfo;
     int nAvailableFIFOEntries, nFIFOEntries;
-    CARD8 EngineIsBusy, EngineIsLocked, PitchModifier;
+    CARD8 EngineIsBusy, EngineIsLocked, XModifier;
     CARD32 dst_cntl;    /* For SetupFor/Subsequent communication */
 
     /*

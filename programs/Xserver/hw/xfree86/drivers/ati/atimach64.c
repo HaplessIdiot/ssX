@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.11 2000/03/01 16:00:58 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.12 2000/03/03 04:47:13 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -48,6 +48,9 @@
 #include "atichip.h"
 #include "atiio.h"
 #include "atimach64.h"
+
+#define DPMS_SERVER
+#include "extensions/dpms.h"
 
 /*
  * Only 32-bit MMIO is needed here.
@@ -165,6 +168,8 @@ ATIMach64PreInit
     ATIHWPtr    pATIHW
 )
 {
+    int tmp;
+
     if (pScreenInfo->depth <= 4)
         pATIHW->crtc_off_pitch =
             SetBits(pScreenInfo->displayWidth >> 4, CRTC_PITCH);
@@ -219,10 +224,6 @@ ATIMach64PreInit
     /* Draw engine setup */
     if (pATI->OptionAccel)
     {
-        /* Don't treat 24bpp as a special case */
-        pATI->PitchModifier =
-            pScreenInfo->bitsPerPixel / UnitOf(pScreenInfo->bitsPerPixel);
-
         /*
          * When possible, max out command FIFO size.
          */
@@ -231,7 +232,7 @@ ATIMach64PreInit
 
         /* Initialise destination registers */
         pATIHW->dst_off_pitch =
-            SetBits((pScreenInfo->displayWidth * pATI->PitchModifier) >> 3,
+            SetBits((pScreenInfo->displayWidth * pATI->XModifier) >> 3,
                 DST_PITCH);
         pATIHW->dst_cntl = DST_X_DIR | DST_Y_DIR | DST_LAST_PEL;
 
@@ -242,11 +243,12 @@ ATIMach64PreInit
         pATIHW->src_cntl = SRC_LINE_X_DIR;
 
         /* Initialise scissor, allowing for offscreen areas */
-        pATIHW->sc_right =
-            (pScreenInfo->displayWidth * pATI->PitchModifier) - 1;
-        pATIHW->sc_bottom =
-            (pScreenInfo->videoRam * 1024 * 8 / pScreenInfo->displayWidth /
-             pScreenInfo->bitsPerPixel) - 1;
+        pATIHW->sc_right = (pScreenInfo->displayWidth * pATI->XModifier) - 1;
+        tmp = (pScreenInfo->videoRam * (1024 * 8) /
+            pScreenInfo->displayWidth / pScreenInfo->bitsPerPixel) - 1;
+        if (tmp > 16383)
+            tmp = 16383;
+        pATIHW->sc_bottom = tmp;
 
         /* Initialise data path */
         pATIHW->dp_frgd_clr = (CARD32)(-1);
@@ -356,7 +358,7 @@ ATIMach64Save
 
         /* Save FIFO size */
         if (pATI->Chip >= ATI_CHIP_264VT4)
-            pATIHW->gui_cntl = inm(GUI_STAT);
+            pATIHW->gui_cntl = inm(GUI_CNTL);
 
         /* Save destination registers */
         pATIHW->dst_off_pitch = inm(DST_OFF_PITCH);
@@ -726,16 +728,103 @@ ATIMach64SaveScreen
     {
         case SCREEN_SAVER_OFF:
         case SCREEN_SAVER_FORCER:
-            outl(pATI->CPIO_CRTC_GEN_CNTL, crtc_gen_cntl | CRTC_EN);
+            outl(pATI->CPIO_CRTC_GEN_CNTL, crtc_gen_cntl & ~CRTC_DISPLAY_DIS);
             break;
 
         case SCREEN_SAVER_ON:
         case SCREEN_SAVER_CYCLE:
-            outl(pATI->CPIO_CRTC_GEN_CNTL, crtc_gen_cntl & ~CRTC_EN);
+            outl(pATI->CPIO_CRTC_GEN_CNTL, crtc_gen_cntl | CRTC_DISPLAY_DIS);
             break;
 
         default:
             break;
+    }
+}
+
+/*
+ * ATIMach64SetDPMSMode --
+ *
+ * This function sets a Mach64's VESA Display Power Management Signaling mode.
+ */
+void
+ATIMach64SetDPMSMode
+(
+    ATIPtr pATI,
+    int    DPMSMode
+)
+{
+    CARD32 crtc_gen_cntl =
+        inl(pATI->CPIO_CRTC_GEN_CNTL) & ~(CRTC_HSYNC_DIS | CRTC_VSYNC_DIS);
+
+    switch (DPMSMode)
+    {
+        case DPMSModeOn:        /* HSync on, VSync on */
+            break;
+
+        case DPMSModeStandby:   /* HSync off, VSync on */
+            crtc_gen_cntl |= CRTC_HSYNC_DIS;
+            break;
+
+        case DPMSModeSuspend:   /* HSync on, VSync off */
+            crtc_gen_cntl |= CRTC_VSYNC_DIS;
+            break;
+
+        case DPMSModeOff:       /* HSync off, VSync off */
+            crtc_gen_cntl |= CRTC_HSYNC_DIS | CRTC_VSYNC_DIS;
+            break;
+
+        default:                /* Muffle compiler */
+            return;
+    }
+
+    outl(pATI->CPIO_CRTC_GEN_CNTL, crtc_gen_cntl);
+
+    if ((pATI->LCDPanelID >= 0) && !pATI->OptionCRT)
+    {
+        CARD32 lcd_index = 0, power_management;
+
+        if (pATI->Chip == ATI_CHIP_264LT)
+            power_management = inl(pATI->CPIO_POWER_MANAGEMENT);
+        else /* if ((pATI->Chip == ATI_CHIP_264LTPRO) ||
+                    (pATI->Chip == ATI_CHIP_264XL) ||
+                    (pATI->Chip == ATI_CHIP_MOBILITY)) */
+        {
+            lcd_index = inl(pATI->CPIO_LCD_INDEX);
+            power_management = ATIGetLTProLCDReg(LCD_POWER_MANAGEMENT);
+        }
+
+        power_management &= ~(STANDBY_NOW | SUSPEND_NOW);
+
+        switch (DPMSMode)
+        {
+            case DPMSModeOn:
+                break;
+
+            case DPMSModeStandby:
+                power_management |= STANDBY_NOW;
+                break;
+
+            case DPMSModeSuspend:
+                power_management |= SUSPEND_NOW;
+                break;
+
+            case DPMSModeOff:
+                power_management |= STANDBY_NOW | SUSPEND_NOW;  /* ? */
+                break;
+
+            default:            /* Muffle compiler */
+                return;
+        }
+
+        if (pATI->Chip == ATI_CHIP_264LT)
+            outl(POWER_MANAGEMENT, power_management);
+        else /* if ((pATI->Chip == ATI_CHIP_264LTPRO) ||
+                    (pATI->Chip == ATI_CHIP_264XL) ||
+                    (pATI->Chip == ATI_CHIP_MOBILITY)) */
+        {
+            ATIPutLTProLCDReg(LCD_POWER_MANAGEMENT, power_management);
+            outl(pATI->CPIO_LCD_INDEX, lcd_index);
+        }
     }
 }
 
@@ -789,7 +878,7 @@ ATIMach64SetupForScreenToScreenCopy
     if (xdir > 0)
         pATI->dst_cntl |= DST_X_DIR;
 
-    if (pATI->PitchModifier == 1)
+    if (pATI->XModifier == 1)
     {
         ATIMach64WaitForFIFO(4);
         outm(DST_CNTL, pATI->dst_cntl);
@@ -825,9 +914,9 @@ ATIMach64SubsequentScreenToScreenCopy
 {
     ATIPtr pATI = ATIPTR(pScreenInfo);
 
-    xSrc *= pATI->PitchModifier;
-    xDst *= pATI->PitchModifier;
-    w    *= pATI->PitchModifier;
+    xSrc *= pATI->XModifier;
+    xDst *= pATI->XModifier;
+    w    *= pATI->XModifier;
 
     if (!(pATI->dst_cntl & DST_X_DIR))
     {
@@ -841,7 +930,7 @@ ATIMach64SubsequentScreenToScreenCopy
         yDst += h - 1;
     }
 
-    if (pATI->PitchModifier == 1)
+    if (pATI->XModifier == 1)
         ATIMach64WaitForFIFO(4);
     else
     {
@@ -871,7 +960,7 @@ ATIMach64SetupForSolidFill
 {
     ATIPtr pATI = ATIPTR(pScreenInfo);
 
-    if (pATI->PitchModifier != 1)
+    if (pATI->XModifier != 1)
         ATIMach64WaitForFIFO(4);
     else
     {
@@ -903,12 +992,12 @@ ATIMach64SubsequentSolidFillRect
 {
     ATIPtr pATI = ATIPTR(pScreenInfo);
 
-    if (pATI->PitchModifier == 1)
+    if (pATI->XModifier == 1)
        ATIMach64WaitForFIFO(2);
     else
     {
-        x *= pATI->PitchModifier;
-        w *= pATI->PitchModifier;
+        x *= pATI->XModifier;
+        w *= pATI->XModifier;
 
         ATIMach64WaitForFIFO(3);
         outm(DST_CNTL, pATI->NewHW.dst_cntl | DST_24_ROT_EN |
@@ -937,8 +1026,8 @@ ATIMach64SetClippingRectangle
     ATIPtr pATI = ATIPTR(pScreenInfo);
 
     ATIMach64WaitForFIFO(2);
-    outm(SC_LEFT_RIGHT, SetWord(((right + 1) * pATI->PitchModifier) - 1, 1) |
-        SetWord(left * pATI->PitchModifier, 0));
+    outm(SC_LEFT_RIGHT, SetWord(((right + 1) * pATI->XModifier) - 1, 1) |
+        SetWord(left * pATI->XModifier, 0));
     outm(SC_TOP_BOTTOM, SetWord(bottom, 1) | SetWord(top, 0));
 }
 
@@ -979,7 +1068,7 @@ ATIMach64AccelInit
 )
 {
     /* This doesn't seem quite right... */
-    if (pATI->PitchModifier == 1)
+    if (pATI->XModifier == 1)
     {
         pXAAInfo->Flags = PIXMAP_CACHE | OFFSCREEN_PIXMAPS;
         if (!pATI->BankInfo.BankSize)

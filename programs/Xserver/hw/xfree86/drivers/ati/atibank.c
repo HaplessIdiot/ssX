@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibank.c,v 1.4 1999/08/01 07:57:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibank.c,v 1.5 2000/02/18 12:19:13 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -197,7 +197,7 @@ ATIx8800SetRead
     unsigned int iBank
 )
 {
-    (void) ATIV4V5SetRead(pScreen, iBank);
+    (void)ATIV4V5SetRead(pScreen, iBank);
     ATIModifyExtReg(ATIPTR(XF86SCRNINFO(pScreen)), 0xAEU, -1, (CARD8)(~0x0CU),
         SetBits(GetBits(iBank, 0x30U), 0x0CU));
     return 0;
@@ -215,7 +215,7 @@ ATIx8800SetWrite
     unsigned int iBank
 )
 {
-    (void) ATIV4V5SetWrite(pScreen, iBank);
+    (void)ATIV4V5SetWrite(pScreen, iBank);
     ATIModifyExtReg(ATIPTR(XF86SCRNINFO(pScreen)), 0xAEU, -1, (CARD8)(~0x03U),
         SetBits(GetBits(iBank, 0x30U), 0x03U));
     return 0;

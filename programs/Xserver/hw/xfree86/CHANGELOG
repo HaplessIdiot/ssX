@@ -1,4 +1,10 @@
 XFree86 4.0a (xx March 2000)
+  32. ATI driver changes:  Implement Mach64 engine restriction on virtual
+      resolution;  Add DPMS support;  More DSP calculation fixes;  Fix text
+      mode restoration bug;  Fix Mach64 screen blanking;  Don't probe for
+      previously claimed VGA compatibles;  Fix device section matching for
+      Mach64 controllers made by UMC foundry;  Miscellaneous cleanups
+      (Marc La France).
   31. Add GLINT 300SX support to the glint driver (Alan Hourihane).
   30. Remove the unused GLINT Delta code (for now) to re-implement as
       a chipset (like the gamma) from the glint driver (Alan Hourihane).
@@ -10084,4 +10090,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1094 2000/03/20 16:38:24 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1097 2000/03/21 21:46:25 alanh Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiregs.h,v 1.7 1999/10/13 04:21:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiregs.h,v 1.8 2000/02/18 12:19:35 tsi Exp $ */
 /*
  * Copyright 1994 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -1246,15 +1246,9 @@
 #define DST_X			BlockIOTag(0x41u)
 #define DST_Y			BlockIOTag(0x42u)
 #define DST_Y_X			BlockIOTag(0x43u)
-#define DST_y				0x00007ffful
-#define DST_Y_LSB			0x00008000ul	/* GTPro */
-#define DST_x				0x7fff0000ul
-#define DST_Y_SECONDARY_LSB		0x80000000ul	/* GTPro */
 #define DST_WIDTH		BlockIOTag(0x44u)
 #define DST_HEIGHT		BlockIOTag(0x45u)
 #define DST_HEIGHT_WIDTH	BlockIOTag(0x46u)
-#define DST_height			0x0000fffful
-#define DST_width			0xffff0000ul
 #define DST_X_WIDTH		BlockIOTag(0x47u)
 #define DST_BRES_LNTH		BlockIOTag(0x48u)
 #define DST_BRES_ERR		BlockIOTag(0x49u)
@@ -1308,31 +1302,15 @@
 #define SRC_X			BlockIOTag(0x61u)
 #define SRC_Y			BlockIOTag(0x62u)
 #define SRC_Y_X			BlockIOTag(0x63u)
-#define SRC_y				0x00007ffful
-/*	?				0x00008000ul */
-#define SRC_x				0x3fff0000ul
-/*	?				0xc0000000ul */
 #define SRC_WIDTH1		BlockIOTag(0x64u)
 #define SRC_HEIGHT1		BlockIOTag(0x65u)
 #define SRC_HEIGHT1_WIDTH1	BlockIOTag(0x66u)
-#define SRC_height1			0x00007ffful
-/*	?				0x00008000ul */
-#define SRC_width1			0x3fff0000ul
-/*	?				0xc0000000ul */
 #define SRC_X_START		BlockIOTag(0x67u)
 #define SRC_Y_START		BlockIOTag(0x68u)
 #define SRC_Y_X_START		BlockIOTag(0x69u)
-#define SRC_y_start			0x00007ffful
-/*	?				0x00008000ul */
-#define SRC_x_start			0x3fff0000ul
-/*	?				0xc0000000ul */
 #define SRC_WIDTH2		BlockIOTag(0x6au)
 #define SRC_HEIGHT2		BlockIOTag(0x6bu)
 #define SRC_HEIGHT2_WIDTH2	BlockIOTag(0x6cu)
-#define SRC_height2			0x00007ffful
-/*	?				0x00008000ul */
-#define SRC_width2			0x3fff0000ul
-/*	?				0xc0000000ul */
 #define SRC_CNTL		BlockIOTag(0x6du)
 #define SRC_PATT_EN			0x00000001ul
 #define SRC_PATT_ROT_EN			0x00000002ul
@@ -1426,17 +1404,9 @@
 #define SC_LEFT			BlockIOTag(0xa8u)
 #define SC_RIGHT		BlockIOTag(0xa9u)
 #define SC_LEFT_RIGHT		BlockIOTag(0xaau)
-#define SC_left				0x00003ffful
-/*	?				0x0000c000ul */
-#define SC_right			0x3fff0000ul
-/*	?				0xc0000000ul */
 #define SC_TOP			BlockIOTag(0xabu)
 #define SC_BOTTOM		BlockIOTag(0xacu)
 #define SC_TOP_BOTTOM		BlockIOTag(0xadu)
-#define SC_top				0x00007ffful
-/*	?				0x00008000ul */
-#define SC_bottom			0x7fff0000ul
-/*	?				0x80000000ul */
 #define USR1_DST_OFF_PITCH	BlockIOTag(0xaeu)	/* LTPro */
 #define USR2_DST_OFF_PITCH	BlockIOTag(0xafu)	/* LTPro */
 #define DP_BKGD_CLR		BlockIOTag(0xb0u)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.c,v 1.8 1999/11/02 16:16:40 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.c,v 1.9 2000/02/18 12:19:43 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -21,12 +21,16 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "ati.h"
 #include "atiadapter.h"
 #include "atichip.h"
 #include "atiio.h"
 #include "atimono.h"
 #include "ativga.h"
 #include "xf86.h"
+
+#define DPMS_SERVER
+#include "extensions/dpms.h"
 
 /*
  * ATIVGAPreInit --
@@ -443,4 +447,53 @@ ATIVGASaveScreen
         default:
             break;
     }
+}
+
+/*
+ * ATIVGASetDPMSMode --
+ *
+ * This function sets a VGA's VESA Display Power Management Signaling mode.
+ */
+void
+ATIVGASetDPMSMode
+(
+    ATIPtr pATI,
+    int    DPMSMode
+)
+{
+    CARD8 seq1, crt17;
+
+    switch (DPMSMode)
+    {
+        case DPMSModeOn:        /* HSync on, VSync on */
+            seq1 = 0x00U;
+            crt17 = 0x80U;
+            break;
+
+        case DPMSModeStandby:   /* HSync off, VSync on -- unsupported */
+            seq1 = 0x20U;
+            crt17 = 0x80U;
+            break;
+
+        case DPMSModeSuspend:   /* HSync on, VSync off -- unsupported */
+            seq1 = 0x20U;
+            crt17 = 0x80U;
+            break;
+
+        case DPMSModeOff:       /* HSync off, VSync off */
+            seq1 = 0x20U;
+            crt17 = 0x00U;
+            break;
+
+        default:                /* Muffle compiler */
+            return;
+    }
+
+    PutReg(SEQX, 0x00U, 0x01U); /* Start synchonous reset */
+    seq1 |= GetReg(SEQX, 0x01U) & ~0x20U;
+    PutReg(SEQX, 0x01U, seq1);
+    crt17 |= GetReg(CRTX(pATI->CPIO_VGABase), 0x17U) & ~0x80U;
+    usleep(10000);
+    PutReg(CRTX(pATI->CPIO_VGABase), 0x17U, crt17);
+    PutReg(SEQX, 0x01U, 0x03U); /* End synchonous reset */
 }
