@@ -1,4 +1,12 @@
 XFree86 4.2.99.902 (XX February 2003)
+ 888. Cure cursor artifacts by setting HARDWARE_CURSOR_SHOW_TRANSPARENT and
+      HARDWARE_CURSOR_UPDATE_UNHIDDEN in the r128 and radeon drivers.  The
+      wait-for-VSync nonsense the Radeon's currently do can, and should, be
+      ripped out later.  (Marc La France).
+ 887. Extend HARDWARE_CURSOR_SHOW_TRANSPARENT to make hardware cursors
+      transparent, rather than disabling them, when a switch to a software
+      cursor is needed.  This removes recently introduced cursor artifacts
+      in the atimisc driver.  (Marc La France).
  886. Cancel repeat for switch screen XKB actions, which fixes a VT
       switching problem that has just become visible (Ivan Pascal).
  885. Added reinitialization of screen layout after RandR size change
@@ -16353,4 +16361,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2548 2003/02/13 10:49:36 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2549 2003/02/13 15:36:43 dawes Exp $

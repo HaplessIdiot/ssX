@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86HWCurs.c,v 1.10 2001/05/18 20:22:31 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86HWCurs.c,v 1.11tsi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -151,6 +151,27 @@ xf86SetCursor(ScreenPtr pScreen, CursorPtr pCurs, int x, int y)
 }
 
 void
+xf86SetTransparentCursor(ScreenPtr pScreen)
+{
+    xf86CursorScreenPtr ScreenPriv =
+	pScreen->devPrivates[xf86CursorScreenIndex].ptr;
+    xf86CursorInfoPtr infoPtr = ScreenPriv->CursorInfoPtr;
+
+    if (!ScreenPriv->transparentData)
+	ScreenPriv->transparentData =
+	    (*infoPtr->RealizeCursor)(infoPtr, NullCursor);
+
+    if (!(infoPtr->Flags & HARDWARE_CURSOR_UPDATE_UNHIDDEN))
+	(*infoPtr->HideCursor)(infoPtr->pScrn);
+
+    if (ScreenPriv->transparentData)
+	(*infoPtr->LoadCursorImage)(infoPtr->pScrn,
+				    ScreenPriv->transparentData);
+
+    (*infoPtr->ShowCursor)(infoPtr->pScrn);
+}
+
+void
 xf86MoveCursor(ScreenPtr pScreen, int x, int y)
 {
     xf86CursorScreenPtr ScreenPriv =
@@ -217,6 +238,16 @@ RealizeCursorInterleave0(xf86CursorInfoPtr infoPtr, CursorPtr pCurs)
 
     if (!(mem = xcalloc(1, size)))
 	return NULL;
+
+    if (pCurs == NullCursor) {
+	if (infoPtr->Flags & HARDWARE_CURSOR_INVERT_MASK) {
+	    DstM = (SCANLINE*)mem;
+	    if (!(infoPtr->Flags & HARDWARE_CURSOR_SWAP_SOURCE_AND_MASK))
+		DstM += words;
+	    (void)memset(DstM, -1, words * sizeof(SCANLINE));
+	}
+	return mem;
+    }
 
     /* SrcPitch == the number of scanlines wide the cursor image is */
     SrcPitch = (pCurs->bits->width + (BITMAP_SCANLINE_PAD - 1)) >>
