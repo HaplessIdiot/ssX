@@ -1,4 +1,8 @@
 XFree86 4.4.99.8 (xx June 2004)
+ 139. Fixes and updates for XKB keymaps:
+    - Replace Latvian keymap with new one (Bugzilla #1415, Dmitry Golubev).
+    - Add geometry description for two variants of ABNT2 keyboard
+      (Bugzilla #1387, busmanus).
  138. SiS driver update 2004-06-20
     - Fix some modes for 1400x1050 and 1600x1200 panels
     - Fixes for 661/741/760 (BIOS data layout related)
@@ -19011,7 +19015,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3282 2004/06/21 00:47:14 twini Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3283 2004/06/21 00:54:17 twini Exp $
 
 
 
