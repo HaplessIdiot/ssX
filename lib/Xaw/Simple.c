@@ -48,6 +48,8 @@ SOFTWARE.
 
 ******************************************************************/
 
+/* $XFree86: xc/lib/Xaw/Simple.c,v 1.1.1.1.12.2 1998/05/18 14:08:41 dawes Exp $ */
+
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -65,6 +67,8 @@ static XtActionsRec actions[] = {
   {"declare",    XawDeclareAction},
   {"call-proc",  XawCallProcAction},
 };
+
+#include "XawAlloc.h"
 
 #define offset(field) XtOffsetOf(SimpleRec, simple.field)
 
@@ -160,11 +164,17 @@ static void ClassPartInitialize(class)
 
     if (c->simple_class.change_sensitive == NULL) {
 	char buf[BUFSIZ];
+	char *pbuf;
+	char *msg1 = " Widget: The Simple Widget class method 'change_sensitive' is undefined.\nA function must be defined or inherited.";
+	int len;
 
-	(void) sprintf(buf,
-		"%s Widget: The Simple Widget class method 'change_sensitive' is undefined.\nA function must be defined or inherited.",
-		c->core_class.class_name);
-	XtWarning(buf);
+	len = strlen(msg1) + strlen(c->core_class.class_name) + 1;
+	pbuf = XtStackAlloc(len, buf);
+	if (pbuf != NULL) {
+	    sprintf(pbuf, "%s%s", c->core_class.class_name, msg1);
+	    XtWarning(pbuf);
+	    XtStackFree(pbuf, buf);
+	}
 	c->simple_class.change_sensitive = ChangeSensitive;
     }
 

@@ -1,4 +1,4 @@
-/* $XConsortium: FontNames.c,v 11.27 94/04/17 20:19:24 rws Exp $ */
+/* $XConsortium: FontNames.c /main/12 1996/10/22 14:18:43 kaleb $ */
 /*
 
 Copyright (c) 1986  X Consortium
@@ -25,6 +25,8 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
+
+/* $XFree86: xc/lib/X11/FontNames.c,v 1.1.1.2.2.2 1998/05/18 14:08:38 dawes Exp $ */
 
 #define NEED_REPLIES
 #include "Xlibint.h"
@@ -60,7 +62,11 @@ int *actualCount;	/* RETURN */
     _XSend (dpy, pattern, nbytes);
     /* use _XSend instead of Data, since following _XReply will flush buffer */
 
-    (void) _XReply (dpy, (xReply *)&rep, 0, xFalse);
+    if (!_XReply (dpy, (xReply *)&rep, 0, xFalse)) {
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return (char **) NULL;
+    }
 
     if (rep.nFonts) {
 	flist = (char **)Xmalloc ((unsigned)rep.nFonts * sizeof(char *));
@@ -109,4 +115,5 @@ char **list;
 		Xfree (list[0]-1);
 		Xfree ((char *)list);
 	}
+	return 1;
 }

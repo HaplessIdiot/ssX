@@ -1,4 +1,4 @@
-/* $XConsortium: FSWrap.c,v 11.12 94/04/17 20:19:17 rws Exp $ */
+/* $XConsortium: FSWrap.c /main/14 1996/09/28 16:33:40 rws $ */
 
 /*
  * Copyright 1991 by the Open Software Foundation
@@ -58,6 +58,8 @@ from the X Consortium.
 
 */
 
+/* $XFree86: xc/lib/X11/FSWrap.c,v 1.1.1.3.2.2 1998/05/18 14:08:38 dawes Exp $ */
+
 #include "Xlibint.h"
 #include "Xlcint.h"
 #include <ctype.h>
@@ -89,7 +91,7 @@ _XParseBaseFontNameList(str, num)
     }
     strcpy(ptr, str);
 
-    while (1) {
+    while (*num < sizeof(plist) / sizeof(plist[0])) {
 	char	*back;
 
 	plist[*num] = ptr;
@@ -241,21 +243,21 @@ XLocaleOfFontSet(font_set)
 extern Bool XContextDependentDrawing(font_set)
     XFontSet        font_set;
 {
-    return font_set->core.context_dependent;
+    return font_set->core.om->core.context_dependent;
 }
 
 Bool
 XDirectionalDependentDrawing(font_set)
     XFontSet        font_set;
 {
-    return font_set->core.directional_dependent;
+    return font_set->core.om->core.directional_dependent;
 }
 
 Bool
 XContextualDrawing(font_set)
     XFontSet        font_set;
 {
-    return font_set->core.contextual_drawing;
+    return font_set->core.om->core.contextual_drawing;
 }
 
 XFontSetExtents *
