@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.71 2003/11/06 18:38:13 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.72 2004/02/13 23:58:45 dawes Exp $ */
 
 /*
  * Copyright 1995-1998 by Metro Link, Inc.
@@ -792,7 +792,7 @@ static void
 AppendSymbol(symlist * list, const char *sym)
 {
     list->list = xnfrealloc(list->list, (list->num + 1) * sizeof(char **));
-    list->list[list->num] = sym;
+    list->list[list->num] = xnfstrdup(sym);
     list->num++;
 }
 
