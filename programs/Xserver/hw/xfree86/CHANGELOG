@@ -1,7 +1,7 @@
 XFree86 4.3.99.15 (xx October 2003)
  542. Fix buglets detected by SGI compiler in neomagic, sis and tseng drivers
       (Marc La France).
- 541. Fix I/O alignment in mga driver (Marc La France).
+ 541. Fix I/O alignment in mga and via drivers (Marc La France).
  540. Improve xkbcomp's key types auto-recognition (Ivan Pascal).
  539. Add support for multi-threaded direct GLX rendering with AppleDRI
       (John Harper).
@@ -18072,7 +18072,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2919 2003/10/31 15:06:21 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2920 2003/10/31 15:46:53 tsi Exp $
 
 
 
