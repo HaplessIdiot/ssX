@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************************/
-/* $XFree86: xc/programs/x11perf/do_traps.c,v 1.6 2002/05/13 05:27:37 keithp Exp $ */
+/* $XFree86: xc/programs/x11perf/do_traps.c,v 1.7 2002/05/13 06:23:35 keithp Exp $ */
 
 #include "x11perf.h"
 #include "bitmaps.h"
@@ -138,7 +138,7 @@ InitFixedTrapezoids(XParms xp, Parms p, int reps)
     aadraw = XftDrawCreate (xp->d, xp->w, 
 			    DefaultVisual (xp->d, DefaultScreen (xp->d)), 
 			    DefaultColormap (xp->d, DefaultScreen (xp->d)));
-    if (!strcmp (p->font, "add"))
+    if (p->font && !strcmp (p->font, "add"))
     {
 	XRenderPictFormat   templ;
 	templ.type = PictTypeDirect;
