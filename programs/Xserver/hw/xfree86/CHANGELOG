@@ -1,4 +1,7 @@
 XFree86 4.2.99.902 (17 February 2003)
+ 910. SCO doc update (#5624, J. Kean Johnston).
+ 909. Fix X11.tmpl so that Fontconfig works correctly if an OS.cf file
+      sets HasFontconfig, and do this in sco5.cf (#5624, J. Kean Johnston).
  908. Move the vbe module from xfree86/os-support/ to xfree86/ (David Dawes).
  907. Some changes to the os-support kbd driver layer's calling conventions
       to provide more flexibility (#A.1615, Zephaniah E. Hull).
@@ -16406,4 +16409,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2558 2003/02/17 04:06:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2559 2003/02/17 17:03:36 dawes Exp $
