@@ -1,5 +1,5 @@
 /*
- * $Id: fbbstore.c,v 1.1 1999/11/19 13:53:42 hohndel Exp $
+ * Id: fbbstore.c,v 1.1 1999/11/02 03:54:45 keithp Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/fb/fbbstore.c,v 1.1 1999/11/19 13:53:42 hohndel Exp $ */
 
 #include "fb.h"
 

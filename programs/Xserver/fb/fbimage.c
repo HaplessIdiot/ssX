@@ -1,5 +1,5 @@
 /*
- * $Id: fbimage.c,v 1.4 2000/02/14 19:20:29 dawes Exp $
+ * Id: fbimage.c,v 1.1 1999/11/02 03:54:45 keithp Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbimage.c,v 1.3 2000/01/21 01:11:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbimage.c,v 1.4 2000/02/14 19:20:29 dawes Exp $ */
 
 #include "fb.h"
 #ifdef XFree86LOADER

@@ -1,10 +1,10 @@
 #
-# $Id: README,v 1.1 1999/01/24 03:21:52 dawes Exp $
+# Id: README,v 1.18 1999/08/19 16:30:24 mleisher Exp $
 #
 
 #
-# Copyright 1996, 1997, 1998 Computing Research Labs, New Mexico State
-# University
+# Copyright 1996, 1997, 1998, 1999 Computing Research Labs,
+# New Mexico State University
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -25,7 +25,7 @@
 # THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-This is version 2.2 of a program to convert TrueType fonts to BDF fonts using
+This is version 2.7 of a program to convert TrueType fonts to BDF fonts using
 the FreeType renderer.
 
 BDF fonts can be edited using the XmBDFEditor which is available from (replace
@@ -37,7 +37,6 @@ the <version> with the most current version number):
   [Binaries: Linux/Pentium, Solaris, SunOS]
   ftp://crl.nmsu.edu/CLR/multiling/General/xmbdfed-<version>-ELF.tar.gz
   ftp://crl.nmsu.edu/CLR/multiling/General/xmbdfed-<version>-SOLARIS.tar.gz
-  ftp://crl.nmsu.edu/CLR/multiling/General/xmbdfed-<version>-SUNOS.tar.gz
 
 COMPILING ttf2bdf
 -----------------
@@ -101,8 +100,58 @@ Thanks go to the following people:
   Roman Czyborra <czyborra@cs.tu-berlin.de> for pointing out the need for a
   change from UNICODE-2.0 to ISO10646-1 in the font XLFD name.
 
+  Mike Blazer <blazer@mail.nevalink.ru> for pointing out the include changes
+  needed to compile on Windows.
+
+  Solofo Ramangalahy <solofo@mpi-sb.mpg.de> for contributing the ISO8859.1 and
+  ISO8859.3 mapping tables.
+
+  Antoine Leca <Antoine.Leca@renault.fr> for suggesting the exchange of
+  columns in the mapping table to better fit the mapping table format used by
+  many.
+
+  Robert Brady <rwb197@ecs.soton.ac.uk> for pointing out a problem with the
+  length of _XFREE86_GLYPH_RANGES properties and an Exceed font compiler.
+
 CHANGES
 -------
+Version 2.7
+===========
+  1. Swapped all the columns in the mapping files.
+
+  2. Changed the mapping table loader to index on the second column instead of
+     the first.
+
+  3. Reduced the line length of _XFREE86_GLYPH_RANGES properties to 256
+     instead of 512.
+
+Version 2.6
+===========
+  1. Changed the includes to deal with compilation on Windows.
+
+  2. Added some new mapping tables.
+
+Version 2.5
+===========
+  1. Updated the copyright dates.
+
+  2. Fixed an incorrect parameter for Traditional C compilers.
+
+  3. Added generation of the _XFREE86_GLYPH_RANGES properties.
+
+Version 2.4
+===========
+  1. Change all CRLF's, CR's, or LF's in copyright strings to double spaces.
+
+  2. Changed it so gcc 2.8.1 likes the return type of main() again.
+
+Version 2.3
+===========
+  1. Changed Makefile.in a bit to make installation more consistent.
+
+  2. Changed the lower limit for the vertical and horizontal resolutions to be
+     10dpi instead of 50dpi.
+
 Version 2.2
 ===========
   1. Added missing documentation in the manual page.

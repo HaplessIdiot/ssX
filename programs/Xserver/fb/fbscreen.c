@@ -1,5 +1,5 @@
 /*
- * $Id: fbscreen.c,v 1.7 2000/02/14 19:20:30 dawes Exp $
+ * Id: fbscreen.c,v 1.1 1999/11/02 03:54:45 keithp Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbscreen.c,v 1.6 2000/01/21 15:06:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbscreen.c,v 1.7 2000/02/14 19:20:30 dawes Exp $ */
 
 #include "fb.h"
 

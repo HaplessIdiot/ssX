@@ -1,5 +1,5 @@
 /*
- * $Id: file.c,v 1.3 1999/12/30 02:29:49 robin Exp $
+ * Id: file.c,v 1.2 1999/11/02 06:16:47 keithp Exp $
  *
  * Copyright 1999 SuSE, Inc.
  *
@@ -22,7 +22,7 @@
  *
  * Author:  Keith Packard, SuSE, Inc.
  */
-/* $XFree86: xc/lib/font/builtins/file.c,v 1.2 1999/11/19 14:59:11 hohndel Exp $ */
+/* $XFree86: xc/lib/font/builtins/file.c,v 1.3 1999/12/30 02:29:49 robin Exp $ */
 
 #include "builtin.h"
 

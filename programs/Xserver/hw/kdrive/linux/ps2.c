@@ -1,5 +1,5 @@
 /*
- * $Id: ps2.c,v 1.1 1999/12/30 03:03:10 robin Exp $
+ * Id: ps2.c,v 1.1 1999/11/02 03:54:46 keithp Exp $
  *
  * Copyright © 1999 Keith Packard
  *

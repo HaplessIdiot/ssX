@@ -1,5 +1,5 @@
 /*
- * $Id: vxkbd.c,v 1.1 1999/12/30 03:03:21 robin Exp $
+ * Id: vxkbd.c,v 1.1 1999/11/24 08:35:24 keithp Exp $
  *
  * Copyright © 1999 Network Computing Devices, Inc.  All rights reserved.
  *

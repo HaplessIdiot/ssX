@@ -24,7 +24,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$Id: fontcache.h,v 1.1 2000/02/13 06:15:27 dawes Exp $
+ *	Id: fontcache.h,v 1.12 1999/01/09 06:24:30 akiyama Exp $
  */
 
 #ifndef _FONTCACHE_H_

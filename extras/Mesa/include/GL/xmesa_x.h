@@ -30,7 +30,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
  *
- * $Header: /vol1/history/xf86/xc/extras/Mesa/include/GL/xmesa_x.h,v 1.1 2000/02/08 17:16:54 dawes Exp $
  */
 
 #ifndef _XMESA_X_H_

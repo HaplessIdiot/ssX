@@ -45,7 +45,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.54 1999/12/08 21:34:10 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.55 1999/12/27 00:39:58 robin Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -121,8 +121,8 @@ extern int errno;
 Bool CoreDump;
 Bool noTestExtensions;
 
-Bool noPanoramiXExtension = TRUE;
 #ifdef PANORAMIX
+Bool noPanoramiXExtension = TRUE;
 Bool PanoramiXVisibilityNotifySent = FALSE;
 Bool PanoramiXMapped = FALSE;
 Bool PanoramiXWindowExposureSent = FALSE;

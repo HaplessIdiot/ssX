@@ -1,5 +1,5 @@
 /*
- * $Id: fbcopy.c,v 1.3 2000/02/14 19:20:28 dawes Exp $
+ * Id: fbcopy.c,v 1.1 1999/11/02 03:54:45 keithp Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbcopy.c,v 1.2 2000/01/21 01:11:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbcopy.c,v 1.3 2000/02/14 19:20:28 dawes Exp $ */
 
 #include "fb.h"
 

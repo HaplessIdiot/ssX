@@ -1,5 +1,5 @@
 /*
- * $Id: fbglyph.c,v 1.6 2000/02/18 16:23:13 dawes Exp $
+ * Id: fbglyph.c,v 1.1 1999/11/02 03:54:45 keithp Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbglyph.c,v 1.5 2000/02/17 14:16:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbglyph.c,v 1.6 2000/02/18 16:23:13 dawes Exp $ */
 
 #include "fb.h"
 #include	"fontstruct.h"

@@ -1,5 +1,5 @@
 /*
- * $Id: fbbits.h,v 1.6 2000/02/14 19:20:27 dawes Exp $
+ * Id: fbbits.h,v 1.1 1999/11/02 03:54:45 keithp Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbbits.h,v 1.5 2000/01/29 18:58:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbbits.h,v 1.6 2000/02/14 19:20:27 dawes Exp $ */
 
 /*
  * This file defines functions for drawing some primitives using

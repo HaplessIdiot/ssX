@@ -1,5 +1,3 @@
-/* $Id: xfont.c,v 1.2 2000/02/08 17:18:34 dawes Exp $ */
-
 /*
  * Mesa 3-D graphics library
  * Version:  3.1

@@ -1,5 +1,5 @@
 /*
- * $Id: fbsetsp.c,v 1.2 2000/02/14 19:20:31 dawes Exp $
+ * Id: fbsetsp.c,v 1.1 1999/11/02 03:54:45 keithp Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbsetsp.c,v 1.1 1999/11/19 13:53:46 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbsetsp.c,v 1.2 2000/02/14 19:20:31 dawes Exp $ */
 
 #include "fb.h"
 

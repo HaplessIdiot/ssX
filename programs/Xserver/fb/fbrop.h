@@ -1,5 +1,5 @@
 /*
- * $Id: fbrop.h,v 1.3 2000/02/14 19:20:30 dawes Exp $
+ * Id: fbrop.h,v 1.1 1999/11/02 03:54:45 keithp Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbrop.h,v 1.2 2000/01/21 15:06:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbrop.h,v 1.3 2000/02/14 19:20:30 dawes Exp $ */
 
 #ifndef _FBROP_H_
 #define _FBROP_H_

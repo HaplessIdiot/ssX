@@ -1,4 +1,4 @@
-.\" $Id: pswrap.man,v 1.1 2000/02/13 00:12:32 dawes Exp $
+.\" Id: pswrap.man,v 6.1 1994/05/18 23:21:11 asente Exp $
 .na
 .nh
 .TH  PSWRAP  1 "4 Apr 1994" "Adobe Systems"

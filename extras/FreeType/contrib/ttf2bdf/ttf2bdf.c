@@ -1,6 +1,6 @@
 /*
- * Copyright 1996, 1997, 1998 Computing Research Labs, New Mexico State
- * University
+ * Copyright 1996, 1997, 1998, 1999 Computing Research Labs,
+ * New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -22,16 +22,22 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: ttf2bdf.c,v 1.1 1999/01/24 03:21:52 dawes Exp $";
+static char rcsid[] __attribute__ ((unused)) = "Id: ttf2bdf.c,v 1.25 1999/10/21 16:31:54 mleisher Exp $";
 #else
-static char rcsid[] = "$Id: ttf2bdf.c,v 1.1 1999/01/24 03:21:52 dawes Exp $";
+static char rcsid[] = "Id: ttf2bdf.c,v 1.25 1999/10/21 16:31:54 mleisher Exp $";
 #endif
 #endif
 
 #include <stdio.h>
+
+#ifdef WIN32
+#include <windows.h>
+#else
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
+#endif
+
+#include <string.h>
 
 #include "freetype.h"
 
@@ -49,7 +55,7 @@ static char rcsid[] = "$Id: ttf2bdf.c,v 1.1 1999/01/24 03:21:52 dawes Exp $";
 /*
  * The version of ttf2bdf.
  */
-#define TTF2BDF_VERSION "2.2"
+#define TTF2BDF_VERSION "2.8"
 
 /*
  * Set the default values used to generate a BDF font.
@@ -328,12 +334,12 @@ ttf_get_english_name(char *name, int nameID, int dash)
 #else
 ttf_get_english_name(name, nameID, dash)
 char *name;
-int nameID, dash_to_space;
+int nameID, dash;
 #endif
 {
     TT_UShort slen;
     int i, j, encid, nrec;
-    short nrPlatformID, nrEncodingID, nrLanguageID, nrNameID;
+    unsigned short nrPlatformID, nrEncodingID, nrLanguageID, nrNameID;
     char *s;
 
     nrec = TT_Get_Name_Count(face);
@@ -365,7 +371,12 @@ int nameID, dash_to_space;
             for (i = 1; s != 0 && i < slen; i += 2) {
                 if (dash)
                   *name++ = (s[i] == '-' || s[i] == ' ') ? dash : s[i];
-                else
+                else if (s[i] == '\r' || s[i] == '\n') {
+                    if (s[i] == '\r' && i + 2 < slen && s[i + 2] == '\n')
+                      i += 2;
+                    *name++ = ' ';
+                    *name++ = ' ';
+                } else
                   *name++ = s[i];
             }
             *name = 0;
@@ -396,7 +407,12 @@ int nameID, dash_to_space;
         for (i = 1; s != 0 && i < slen; i += 2) {
             if (dash)
               *name++ = (s[i] == '-' || s[i] == ' ') ? dash : s[i];
-            else
+            else if (s[i] == '\r' || s[i] == '\n') {
+                if (s[i] == '\r' && i + 2 < slen && s[i + 2] == '\n')
+                  i += 2;
+                *name++ = ' ';
+                *name++ = ' ';
+            } else
               *name++ = s[i];
         }
         *name = 0;
@@ -746,8 +762,8 @@ char *iname, *oname;
           continue;
 
         /*
-         * Determine the DWIDTH (device width, or advance width in TT
-         * terms) and the SWIDTH (scalable width) values.
+         * Determine the DWIDTH (device width, or advance width in TT terms)
+         * and the SWIDTH (scalable width) values.
          */
         dwidth = metrics.advance >> 6;
         dw = (double) dwidth;
@@ -943,7 +959,7 @@ char *iname, *oname;
     /*
      * Print the properties.
      */
-    fprintf(out, "STARTPROPERTIES 19\n");
+    fprintf(out, "STARTPROPERTIES %hd\n", 19);
 
     /*
      * Print the font properties from the XLFD name.
@@ -1054,7 +1070,7 @@ char *iname, *oname;
 #endif
 {
     TT_Long i;
-    TT_Short p, e;
+    TT_UShort p, e;
 
     /*
      * Get the requested cmap.
@@ -1219,7 +1235,7 @@ int eval;
     exit(eval);
 }
 
-void
+int
 #ifdef __STDC__
 main(int argc, char *argv[])
 #else
@@ -1418,15 +1434,15 @@ char *argv[];
     }
 
     /*
-     * Arbitrarily limit the resolutions to a minimum of 50dpi and a maximum
+     * Arbitrarily limit the resolutions to a minimum of 10dpi and a maximum
      * of 1200dpi.
      */
-    if (hres < 50 || hres > 1200) {
+    if (hres < 10 || hres > 1200) {
         fprintf(stderr, "%s: invalid horizontal resolution '%ddpi'.\n",
                 prog, hres);
         exit(1);
     }
-    if (vres < 50 || vres > 1200) {
+    if (vres < 10 || vres > 1200) {
         fprintf(stderr, "%s: invalid vertical resolution '%ddpi'.\n",
                 prog, vres);
         exit(1);
@@ -1560,4 +1576,6 @@ char *argv[];
     (void) TT_Done_FreeType(engine);
 
     exit(res);
+
+    return 0;
 }

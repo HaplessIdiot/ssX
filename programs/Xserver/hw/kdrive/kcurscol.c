@@ -1,5 +1,5 @@
 /*
- * $Id: kcurscol.c,v 1.1 1999/12/30 03:03:05 robin Exp $
+ * Id: kcurscol.c,v 1.3 1999/12/21 03:51:56 keithp Exp $
  *
  * Copyright © 1999 Keith Packard
  *

@@ -1,6 +1,6 @@
 /*
- * Copyright 1996, 1997, 1998 Computing Research Labs, New Mexico State
- * University
+ * Copyright 1996, 1997, 1998, 1999 Computing Research Labs,
+ * New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -22,16 +22,21 @@
  */
 #ifndef lint
 #ifdef __GNUC__
-static char rcsid[] __attribute__ ((unused)) = "$Id: remap.c,v 1.1 1999/01/24 03:21:52 dawes Exp $";
+static char rcsid[] __attribute__ ((unused)) = "Id: remap.c,v 1.9 1999/06/16 16:13:11 mleisher Exp $";
 #else
-static char rcsid[] = "$Id: remap.c,v 1.1 1999/01/24 03:21:52 dawes Exp $";
+static char rcsid[] = "Id: remap.c,v 1.9 1999/06/16 16:13:11 mleisher Exp $";
 #endif
 #endif
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
+
+#ifdef WIN32
+#include <windows.h>
+#else
+#include <stdlib.h>
 #include <unistd.h>
+#endif
 
 /*
  * Structure for managing simple lists in place.
@@ -562,10 +567,11 @@ void *client_data;
     }
 
     /*
-     * Get the left hand value.  Always assume the values are in hex.
+     * Get the second field value as the key (the Unicode value).  Always
+     * assume the values are in hex.
      */
-    key = my_atous(list.field[0], 0, 16);
-    val = my_atous(list.field[1], 0, 16);
+    key = my_atous(list.field[1], 0, 16);
+    val = my_atous(list.field[0], 0, 16);
 
     trie_insert(key, val);
 

@@ -1,5 +1,5 @@
 /*
- * $Id: fb.h,v 1.11 2000/02/18 16:23:12 dawes Exp $
+ * Id: fb.h,v 1.1 1999/11/02 03:54:45 keithp Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fb.h,v 1.10 2000/02/17 14:16:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fb.h,v 1.11 2000/02/18 16:23:12 dawes Exp $ */
 
 #ifndef _FB_H_
 #define _FB_H_

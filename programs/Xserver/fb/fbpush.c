@@ -1,5 +1,5 @@
 /*
- * $Id: fbpush.c,v 1.3 2000/02/14 19:20:30 dawes Exp $
+ * Id: fbpush.c,v 1.1 1999/11/02 03:54:45 keithp Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbpush.c,v 1.2 1999/11/19 14:59:16 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbpush.c,v 1.3 2000/02/14 19:20:30 dawes Exp $ */
 
 #include "fb.h"
 

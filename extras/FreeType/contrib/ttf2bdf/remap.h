@@ -1,6 +1,6 @@
 /*
- * Copyright 1996, 1997, 1998 Computing Research Labs, New Mexico State
- * University
+ * Copyright 1996, 1997, 1998, 1999 Computing Research Labs,
+ * New Mexico State University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -25,7 +25,7 @@
 #define _h_remap
 
 /*
- * $Id: remap.h,v 1.1 1999/01/24 03:21:52 dawes Exp $
+ * Id: remap.h,v 1.4 1999/05/03 17:07:04 mleisher Exp $
  */
 
 #ifdef __cplusplus

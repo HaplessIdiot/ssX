@@ -25,7 +25,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$Id: fontcache.h,v 1.1 2000/02/13 06:15:21 dawes Exp $
+ *	Id: fontcache.h,v 1.6 1999/01/31 12:41:32 akiyama Exp $
  */
 
 /* THIS IS NOT AN X CONSORTIUM STANDARD */

@@ -2,7 +2,7 @@ STARTFONT 2.1
 COMMENT Donated by T.Maebashi <maebashi@mcs.meitetsu.co.jp>
 COMMENT Adapted and extended for ISO 10646-1 by Markus Kuhn <mkuhn@acm.org>
 COMMENT This font was scaled down from a 14x14 source font
-COMMENT $Id: 12x13ja.bdf,v 1.3 1999/12/26 17:44:48 robin Exp $
+COMMENT Id: 12x13ja.bdf,v 1.21 1999-12-13 10:50:31+00 mgk25 Exp mgk25 $
 FONT -Misc-Fixed-Medium-R-Normal-ja-13-120-75-75-C-120-ISO10646-1
 SIZE 12 75 75
 FONTBOUNDINGBOX 12 13 0 -2

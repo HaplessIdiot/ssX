@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.in,v 1.1 1999/01/24 03:21:52 dawes Exp $
+# Id: Makefile.in,v 1.4 1998/12/06 18:50:22 mleisher Exp $
 #
 
 #
@@ -26,6 +26,7 @@
 #
 
 RM = @RM@
+MKINSTALLDIRS = ../../mkinstalldirs
 
 CC = @CC@
 CFLAGS = @XX_CFLAGS@ @CFLAGS@
@@ -62,8 +63,7 @@ distclean: clean
 	$(CC) $(CFLAGS) $(INCS) -c $< -o $@
 
 install: ttf2bdf
-	@if [ ! -d $(bindir) ] ; then \
-          mkdir $(bindir); fi
+	@$(MKINSTALLDIRS) $(bindir) $(mandir)/man1
 	@cp ttf2bdf $(bindir)/ttf2bdf
 	@cp ttf2bdf.man $(mandir)/man1/ttf2bdf.1
 

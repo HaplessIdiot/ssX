@@ -3,7 +3,7 @@ COMMENT AUTOMATICALLY GENERATED FILE. DO NOT EDIT!
 COMMENT Generated with 'ucs2any.pl ../6x13.bdf ../map-KOI8-R KOI8-R'
 COMMENT from an ISO10646-1 encoded source BDF font.
 COMMENT ucs2any.pl by Markus Kuhn <mkuhn@acm.org>, 1999.
-COMMENT $Id: 6x13-KOI8-R.bdf,v 1.1 1999/12/26 17:46:10 robin Exp $
+COMMENT Id: 6x13.bdf,v 1.103 1999-12-14 19:47:10+00 mgk25 Exp mgk25 $
 COMMENT Send bug reports to Markus Kuhn <mkuhn@acm.org>
 FONT -Misc-Fixed-Medium-R-SemiCondensed--13-120-75-75-C-60-KOI8-R
 SIZE 12 75 75

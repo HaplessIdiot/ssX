@@ -1,5 +1,5 @@
 /*
- * $Id: fbbits.c,v 1.5 2000/02/17 14:16:22 dawes Exp $
+ * Id: fbbits.c,v 1.1 1999/11/02 03:54:45 keithp Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbbits.c,v 1.4 2000/02/14 19:20:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbbits.c,v 1.5 2000/02/17 14:16:22 dawes Exp $ */
 
 #include "fb.h"
 #include "miline.h"
