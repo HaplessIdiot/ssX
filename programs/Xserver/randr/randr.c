@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.17 2002/11/28 18:21:12 keithp Exp $
+ * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.18 2002/11/28 18:22:05 keithp Exp $
  *
  * Copyright © 2000, Compaq Computer Corporation, 
  * Copyright © 2002, Hewlett Packard, Inc.
@@ -699,7 +699,6 @@ ProcRRSetScreenConfig (ClientPtr client)
 	has_rate = FALSE;
     }
     
-    REQUEST_SIZE_MATCH(xRRSetScreenConfigReq);
     SECURITY_VERIFY_DRAWABLE(pDraw, stuff->drawable, client,
 			     SecurityWriteAccess);
 
@@ -1044,6 +1043,16 @@ SProcRRSetScreenConfig (ClientPtr client)
     register int n;
     REQUEST(xRRSetScreenConfigReq);
 
+    if (RRClientKnowsRates (client))
+    {
+	REQUEST_SIZE_MATCH (xRRSetScreenConfigReq);
+	swaps (&stuff->rate, n);
+    }
+    else
+    {
+	REQUEST_SIZE_MATCH (xRR1_0SetScreenConfigReq);
+    }
+    
     swaps(&stuff->length, n);
     swapl(&stuff->drawable, n);
     swapl(&stuff->timestamp, n);
