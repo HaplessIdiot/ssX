@@ -223,13 +223,9 @@ Lisp_XBlackPixel(LispMac *mac, LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(odisplay));
     display = (Display*)(odisplay->data.opaque.data);
 
-    if (oscreen == NIL)
-	screen = DefaultScreen(display);
-    else if (!INT_P(oscreen) || !INDEX(oscreen))
-	LispDestroy(mac, "%s: %s is not a positive integer",
-		    STRFUN(builtin), STROBJ(oscreen));
-    else
-	screen = oscreen->data.integer;
+    if (oscreen == NIL)	screen = DefaultScreen(display);
+    else		ERROR_CHECK_INDEX(oscreen);
+    else		screen = oscreen->data.integer;
 
     if (screen >= ScreenCount(display))
 	LispDestroy(mac, "%s: screen index %d too large, %d screens available",

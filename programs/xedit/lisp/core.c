@@ -717,12 +717,13 @@ Lisp_Defsetf(LispMac *mac, LispBuiltin *builtin)
 LispObj *
 Lisp_Defvar(LispMac *mac, LispBuiltin *builtin)
 /*
- defvar name &optional initial-value documentation
+ defvar name &optional (initial-value nil bound) documentation
  */
 {
-    LispObj *name, *initial_value, *documentation;
+    LispObj *name, *initial_value, *bound, *documentation;
 
-    documentation = ARGUMENT(2);
+    documentation = ARGUMENT(3);
+    bound = ARGUMENT(2);
     initial_value = ARGUMENT(1);
     name = ARGUMENT(0);
     MACRO_ARGUMENT3();
@@ -732,7 +733,8 @@ Lisp_Defvar(LispMac *mac, LispBuiltin *builtin)
 	ERROR_CHECK_STRING(documentation);
     }
 
-    LispProclaimSpecial(mac, name, EVAL(initial_value), documentation);
+    LispProclaimSpecial(mac, name, bound == T ? EVAL(initial_value) : NULL,
+			documentation);
 
     return (name);
 }

@@ -258,7 +258,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispMacro, Lisp_Defstruct, "defstruct name &rest description"},
     {LispMacro, Lisp_Defun, "defun name lambda-list &rest body"},
     {LispMacro, Lisp_Defsetf, "defsetf function lambda-list &rest body"},
-    {LispMacro, Lisp_Defvar, "defvar name &optional initial-value documentation"},
+    {LispMacro, Lisp_Defvar, "defvar name &optional (initial-value nil bound) documentation"},
     {LispFunction, Lisp_Denominator, "denominator rational"},
     {LispFunction, Lisp_DigitCharP, "digit-char-p character &optional (radix 10)"},
     {LispFunction, Lisp_Directory, "directory pathname &key all if-cannot-read"},
@@ -2715,20 +2715,33 @@ LispGetVar(LispMac *mac, LispObj *atom)
 {
     LispAtom *name;
     int i, base;
-
-    for (base = mac->env.lex, i = mac->env.head - 1; i >= base; i--)
-	if (mac->env.names[i] == atom)
-	    return (mac->env.values[i]);
+    Atom_id id;
 
     name = atom->data.atom;
+    if (name->constant && name->package == mac->keyword)
+	return (atom);
+
+    id = name->string;
+
+    for (base = mac->env.lex, i = mac->env.head - 1; i >= base; i--)
+	if (ATOMID(mac->env.names[i]) == id)
+	    return (mac->env.values[i]);
 
     if (name->dyn) {
 	for (i = mac->dyn.length - 1; i >= 0; i--)
-	    if (mac->dyn.names[i] == atom)
+	    if (ATOMID(mac->dyn.names[i]) == id)
 		return (mac->dyn.values[i]);
+
+	if (name->a_object) {
+	    /* Check for a symbol defined as special, but not yet bound */
+	    if (name->property->value == UNBOUND)
+		return (NULL);
+
+	    return (name->property->value);
+	}
     }
 
-    return (name->property->value);
+    return (name->a_object ? name->property->value : NULL);
 }
 
 /* Same code as LispDoGetVar, but returns the address of the pointer to
@@ -2738,17 +2751,30 @@ LispGetVarAddr(LispMac *mac, LispObj *atom)
 {
     LispAtom *name;
     int i, base;
-
-    for (base = mac->env.lex, i = mac->env.head - 1; i >= base; i--)
-	if (mac->env.names[i] == atom)
-	    return (&(mac->env.values[i]));
+    Atom_id id;
 
     name = atom->data.atom;
+    if (name->constant && name->package == mac->keyword)
+	return (&atom);
+
+    id = name->string;
+
+    for (base = mac->env.lex, i = mac->env.head - 1; i >= base; i--)
+	if (ATOMID(mac->env.names[i]) == id)
+	    return (&(mac->env.values[i]));
 
     if (name->dyn) {
 	for (i = mac->dyn.length - 1; i >= 0; i--)
-	    if (mac->dyn.names[i] == atom)
+	    if (ATOMID(mac->dyn.names[i]) == id)
 		return (&(mac->dyn.values[i]));
+
+	if (name->a_object) {
+	    /* Check for a symbol defined as special, but not yet bound */
+	    if (name->property->value == UNBOUND)
+		return (NULL);
+
+	    return (name->property->value);
+	}
     }
 
     return (name->a_object ? &(name->property->value) : NULL);
@@ -2762,30 +2788,29 @@ LispUnsetVar(LispMac *mac, LispObj *atom)
 {
     int i;
     LispAtom *name = atom->data.atom;
-    /* XXX no type checking for maximal speed,
-     * if got here, atom must be an ATOM */
+    LispPackage *pack = name->package->data.package.package;
 
     LispRemDocumentation(mac, atom, LispDocVariable);
 
     if (!name->dyn) {
-	for (i = mac->pack->glb.length - 1; i > 0; i--)
-	    if (mac->pack->glb.pairs[i] == atom) {
+	for (i = pack->glb.length - 1; i > 0; i--)
+	    if (pack->glb.pairs[i] == atom) {
 		LispRemAtomObjectProperty(mac, name);
-		--mac->pack->glb.length;
-		if (i < mac->pack->glb.length)
-		    memmove(mac->pack->glb.pairs + i, mac->pack->glb.pairs + i + 1,
-			    sizeof(LispObj*) * (mac->pack->glb.length - i));
+		--pack->glb.length;
+		if (i < pack->glb.length)
+		    memmove(pack->glb.pairs + i, pack->glb.pairs + i + 1,
+			    sizeof(LispObj*) * (pack->glb.length - i));
 		return;
 	    }
     }
     else {
-	for (i = mac->pack->spc.length - 1; i > 0; i--)
-	    if (mac->pack->spc.pairs[i] == atom) {
+	for (i = pack->spc.length - 1; i > 0; i--)
+	    if (pack->spc.pairs[i] == atom) {
 		LispRemAtomObjectProperty(mac, name);
-		--mac->pack->spc.length;
-		if (i < mac->pack->spc.length)
-		    memmove(mac->pack->spc.pairs + i, mac->pack->spc.pairs + i + 1,
-			    sizeof(LispObj*) * (mac->pack->spc.length - i));
+		--pack->spc.length;
+		if (i < pack->spc.length)
+		    memmove(pack->spc.pairs + i, pack->spc.pairs + i + 1,
+			    sizeof(LispObj*) * (pack->spc.length - i));
 		/* unset hint about dynamically binded variable */
 		name->dyn = 0;
 		return;
@@ -2825,16 +2850,18 @@ LispSetVar(LispMac *mac, LispObj *atom, LispObj *obj)
     LispPackage *pack;
     LispAtom *name;
     int i, base;
-
-    for (base = mac->env.lex, i = mac->env.head - 1; i >= base; i--)
-	if (mac->env.names[i] == atom)
-	    return (mac->env.values[i] = obj);
+    Atom_id id;
 
     name = atom->data.atom;
+    id = name->string;
+
+    for (base = mac->env.lex, i = mac->env.head - 1; i >= base; i--)
+	if (ATOMID(mac->env.names[i]) == id)
+	    return (mac->env.values[i] = obj);
 
     if (name->dyn) {
 	for (i = mac->dyn.length - 1; i >= 0; i--)
-	    if (mac->dyn.names[i] == atom)
+	    if (ATOMID(mac->dyn.names[i]) == id)
 		return (mac->dyn.values[i] = obj);
 
 	if (name->watch) {
@@ -2870,10 +2897,13 @@ LispSetVar(LispMac *mac, LispObj *atom, LispObj *obj)
 void
 LispProclaimSpecial(LispMac *mac, LispObj *atom, LispObj *value, LispObj *doc)
 {
-    int i, dyn, glb = 0;
-    LispAtom *name = atom->data.atom;
-    LispPackage *pack = name->package->data.package.package;
+    int i, dyn, glb;
+    LispAtom *name;
+    LispPackage *pack;
 
+    glb = 0;
+    name = atom->data.atom;
+    pack = name->package->data.package.package;
     dyn = name->dyn;
 
     if (!dyn) {
@@ -4143,12 +4173,13 @@ LispMachine(LispMac *mac)
 {
     LispObj *cod, *obj;
 
+    mac->sigint = signal(SIGINT, LispAbortSignal);
+    mac->sigfpe = signal(SIGFPE, LispFPESignal);
+    global_mac = mac;
+
     LispTopLevel(mac);
     /*CONSTCOND*/
     while (1) {
-	mac->sigint = signal(SIGINT, LispAbortSignal);
-	mac->sigfpe = signal(SIGFPE, LispFPESignal);
-	global_mac = mac;
 	if (sigsetjmp(mac->jmp, 1) == 0) {
 	    mac->running = 1;
 	    if (mac->interactive && mac->prompt) {
@@ -4172,18 +4203,17 @@ LispMachine(LispMac *mac)
 			LispWriteChar(mac, NIL, '\n');
 		}
 	    }
-	    signal(SIGINT, mac->sigint);
-	    signal(SIGFPE, mac->sigfpe);
-	    global_mac = NULL;
 	    LispTopLevel(mac);
 	    if (mac->eof)
 		break;
 	    continue;
 	}
-	signal(SIGINT, mac->sigint);
-	signal(SIGFPE, mac->sigfpe);
-	global_mac = NULL;
     }
+
+    signal(SIGINT, mac->sigint);
+    signal(SIGFPE, mac->sigfpe);
+    global_mac = NULL;
+
     mac->running = 0;
 }
 
@@ -4265,6 +4295,11 @@ LispBegin(int argc, char *argv[])
     /* Initialize memory management */
     mac->mem.mem = (void**)calloc(mac->mem.mem_size = 16, sizeof(void*));
     mac->mem.mem_level = 0;
+
+    /* Allow LispGetVar to check ATOMID() of unbound symbols */
+    UNBOUND->data.atom = (LispAtom*)LispCalloc(mac, 1, sizeof(LispAtom));
+    LispMused(mac, UNBOUND->data.atom);
+    noproperty.value = UNBOUND;
 
     if (Stdin == NULL)
 	Stdin = LispFdopen(0, FILE_READ);

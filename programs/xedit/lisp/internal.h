@@ -218,19 +218,19 @@
  * avoid name clashes
 */
 #define MACRO_ARGUMENT1()				\
-	mac->env.names[mac->env.base] = NIL
+	mac->env.names[mac->env.base] = UNBOUND
 #define MACRO_ARGUMENT2()				\
 	mac->env.names[mac->env.base] =			\
-	    mac->env.names[mac->env.base + 1] = NIL
+	    mac->env.names[mac->env.base + 1] = UNBOUND
 #define MACRO_ARGUMENT3()				\
 	mac->env.names[mac->env.base] =			\
 	  mac->env.names[mac->env.base + 1] =		\
-	    mac->env.names[mac->env.base + 2] = NIL
+	    mac->env.names[mac->env.base + 2] = UNBOUND
 #define MACRO_ARGUMENT4()				\
 	mac->env.names[mac->env.base] =			\
 	  mac->env.names[mac->env.base + 1] =		\
 	    mac->env.names[mac->env.base + 2] =		\
-		mac->env.names[mac->env.base + 3] = NIL
+		mac->env.names[mac->env.base + 3] = UNBOUND
 #define MACRO_ARGUMENTS(count)				\
     {							\
 	int i = (count) + mac->env.base;		\
