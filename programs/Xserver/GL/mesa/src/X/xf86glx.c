@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/mesa/src/X/xf86glx.c,v 1.16 2002/10/30 12:52:04 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/mesa/src/X/xf86glx.c,v 1.17 2002/11/19 14:39:51 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -124,13 +124,11 @@ static XMesaVisual find_mesa_visual(int screen, VisualID vid)
 
     for (i = 0; i < pMScr->num_vis; i++) {
 	if (pMScr->glx_vis[i].vid == vid) {
+	    xm_vis = pMScr->xm_vis[i];
 	    break;
 	}
     }
 
-    if (i < pMScr->num_vis) {
-	xm_vis = pMScr->xm_vis[i];
-    }
     return xm_vis;
 }
 
