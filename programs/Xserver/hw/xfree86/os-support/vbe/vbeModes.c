@@ -27,7 +27,7 @@
  *
  * Authors: David Dawes <dawes@xfree86.org>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbeModes.c,v 1.3 2002/09/18 18:52:34 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbeModes.c,v 1.4 2002/10/16 17:51:01 dawes Exp $
  */
 
 #include "xf86.h"
@@ -134,12 +134,14 @@ CheckMode(ScrnInfoPtr pScrn, vbeInfoPtr pVbe, VbeInfoBlock *vbe, int id,
 	return NULL;
 
     /* Does the mode match the depth/bpp? */
+    /* Some BIOS's set BitsPerPixel to 15 instead of 16 for 15/16 */
     if (VBE_MODE_USABLE(mode, flags) &&
 	((pScrn->bitsPerPixel == 1 && !VBE_MODE_COLOR(mode)) ||
 	 (mode->BitsPerPixel > 8 &&
 	  (mode->RedMaskSize + mode->GreenMaskSize +
 	   mode->BlueMaskSize) == pScrn->depth &&
 	  mode->BitsPerPixel == pScrn->bitsPerPixel) ||
+	 (mode->BitsPerPixel == 15 && pScrn->depth == 15) ||
 	 (mode->BitsPerPixel <= 8 &&
 	  mode->BitsPerPixel == pScrn->bitsPerPixel))) {
 	modeOK = TRUE;
