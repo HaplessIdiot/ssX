@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_mouse.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_mouse.c,v 1.4 2005/01/05 18:25:08 tsi Exp $ */
 
 /*
- * Copyright 1999 by The XFree86 Project, Inc.
+ * Copyright 1999-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -71,15 +71,18 @@ DefaultProtocol(void)
 #define DEFAULT_MOUSE_DEV		"/dev/mouse"
 #define DEFAULT_PS2_DEV			"/dev/psaux"
 #define DEFAULT_GPM_DATA_DEV		"/dev/gpmdata"
-#define DEFAULT_GPM_CTL_DEV		"/dev/gpmdata"
+#define DEFAULT_GPM_CTL_DEV		"/dev/gpmctl"
+#define DEFAULT_INPUT_MICE_DEV		"/dev/input/mice"
 #ifdef __sparc__
 #define DEFAULT_SUNMOUSE_DEV		"/dev/sunmouse"
 #endif
+#define DEFAULT_INPUT_MOUSE_PREFIX	"/dev/input/mouse"
 
 static const char *mouseDevs[] = {
 	DEFAULT_MOUSE_DEV,
 	DEFAULT_PS2_DEV,
 	DEFAULT_GPM_DATA_DEV,
+	DEFAULT_INPUT_MICE_DEV,
 #ifdef __sparc__
 	DEFAULT_SUNMOUSE_DEV,
 #endif
@@ -185,6 +188,8 @@ GuessProtocol(InputInfoPtr pInfo, int flags)
 
     if (strcmp(realdev, DEFAULT_PS2_DEV) == 0)
 	proto = MOUSE_PROTO_PS2;
+    else if (strcmp(realdev, DEFAULT_INPUT_MICE_DEV) == 0)
+	proto = MOUSE_PROTO_PS2;
     else if (strcmp(realdev, DEFAULT_GPM_DATA_DEV) == 0)
 	proto = MOUSE_PROTO_MSC;
     else if (strcmp(realdev, DEFAULT_GPM_CTL_DEV) == 0)
@@ -193,6 +198,9 @@ GuessProtocol(InputInfoPtr pInfo, int flags)
     else if (strcmp(realdev, DEFAULT_SUNMOUSE_DEV) == 0)
 	proto = MOUSE_PROTO_MSC;
 #endif
+    else if (strncmp(realdev, DEFAULT_INPUT_MOUSE_PREFIX,
+		     strlen(DEFAULT_INPUT_MOUSE_PREFIX)) == 0)
+	proto = MOUSE_PROTO_PS2;
     xfree(realdev);
     /*
      * If the protocol can't be guessed from the device name,
