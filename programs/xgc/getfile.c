@@ -2,7 +2,7 @@
 ** getfilename.c
 **
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xgc/getfile.c,v 1.3 2000/02/17 14:00:35 dawes Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
@@ -15,21 +15,18 @@
 
 #include "xgc.h"
 
-extern XStuff X;
-extern Widget topform;
 
 static Widget popupshell = NULL;	/* popup dialog box */
 Widget filename_text_widget;	/* Widget containing the name of
 				   the file the user has selected */
-extern XtAppContext appcontext;
 
-static void kill_popup_shell();
+static void kill_popup_shell(void);
 
 void
-get_filename(success,failure) 
-     void (*success)();		/* what function to call when a filename is
+get_filename(
+     void (*success)(void),	/* what function to call when a filename is
 				   chosen */
-     void (*failure)();		/* what function to call when the user
+     void (*failure)(void))	/* what function to call when the user
 				   cancels */
 {
   static Widget popupform;	/* form inside shell */
@@ -153,7 +150,7 @@ get_filename(success,failure)
 */
 
 static void
-kill_popup_shell()
+kill_popup_shell(void)
 {
   XtPopdown(popupshell);
 }
