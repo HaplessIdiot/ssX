@@ -1,3 +1,10 @@
+XFree86 3.1.2F (27 August 1996)
+721. Update the QuickStart guide with details about using XF86Setup (Joe Moss).
+720. Some XF86Setup updates (Joe Moss).
+719. Avoid a possible malloc/free problem in the xtrans TLI code (Joe Moss).
+718. Some Linux a.out lib updates for libX11, libXt (Harald Koenig).
+717. Fix 32bpp S3 newmmio problem (Harald Koenig).
+
 XFree86 3.1.2Eo (26 August 1996)
 716. Disable 24bpp packed mode in S3 server because it doesn't work properly
      yet (Harald Koenig).

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/newmmio.h,v 3.1 1996/08/23 11:02:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/newmmio.h,v 3.2 1996/08/24 12:51:47 dawes Exp $ */
 /***************************************************************************
  * 
  * typedefs and macros for old and new MMIO mode, Trio64V+ and 868/968
@@ -216,18 +216,18 @@ typedef struct {
 #define SET_PIX_CNTL(val)	((mmtr)s3VideoMem)->pk_enh_regs.regs.pix_mult = (val) | (MULT_MISC2 << 16)
 #define SET_MIN_AXIS_PCNT(min)	((mmtr)s3VideoMem)->enh_regs.regs.r_reg_data = (min) & 0xffff
 #define SET_MAJ_AXIS_PCNT(maj)	((mmtr)s3VideoMem)->enh_regs.regs.mj_ax_pcnt = (maj)
-#define SET_CURPT(c_x, c_y)	((mmtr)s3VideoMem)->pk_enh_regs.regs.cur_point = (c_y) | ((c_x) << 16)
+#define SET_CURPT(c_x, c_y)	((mmtr)s3VideoMem)->pk_enh_regs.regs.cur_point = ((c_y)&0xffff) | ((c_x) << 16)
 #define SET_CUR_X(c_x)		((mmtr)s3VideoMem)->enh_regs.regs.cur_x = (c_x)
 #define SET_CUR_Y(c_y)		((mmtr)s3VideoMem)->cur_y = (c_y)
-#define SET_DESTSTP(x,y)	((mmtr)s3VideoMem)->pk_enh_regs.regs.dest_stp = (y) | ((x) << 16)
-#define SET_AXIS_PCNT(maj, min)	((mmtr)s3VideoMem)->pk_enh_regs.regs.axis_pcnt = (min) | ((maj) << 16)
+#define SET_DESTSTP(x,y)	((mmtr)s3VideoMem)->pk_enh_regs.regs.dest_stp = ((y)&0xffff) | ((x) << 16)
+#define SET_AXIS_PCNT(maj, min)	((mmtr)s3VideoMem)->pk_enh_regs.regs.axis_pcnt = ((min)&0xffff) | ((maj) << 16)
 #define SET_CMD(c_d) 		{ mem_barrier(); ((mmtr)s3VideoMem)->pk_enh_regs.regs.command = (c_d); }
 #define SET_ERR_TERM(e)		((mmtr)s3VideoMem)->pk_enh_regs.regs.err_term = (e)
 #define SET_SCISSORS(x1,y1,x2,y2) {\
-				((mmtr)s3VideoMem)->pk_enh_regs.regs.sciss_topleft  = (y1) | ((x1) << 16);\
-				((mmtr)s3VideoMem)->pk_enh_regs.regs.sciss_botright = (y2) | ((x2) << 16);\
+				((mmtr)s3VideoMem)->pk_enh_regs.regs.sciss_topleft  = ((y1)&0xffff) | ((x1) << 16);\
+				((mmtr)s3VideoMem)->pk_enh_regs.regs.sciss_botright = ((y2)&0xffff) | ((x2) << 16);\
 				}
-#define SET_SCISSORS_RB(x,y)	((mmtr)s3VideoMem)->pk_enh_regs.regs.sciss_botright = (y) | ((x) << 16)
+#define SET_SCISSORS_RB(x,y)	((mmtr)s3VideoMem)->pk_enh_regs.regs.sciss_botright = ((y)&0xffff) | ((x) << 16)
 #define SET_MULT_MISC(val)	((mmtr)s3VideoMem)->pk_enh_regs.regs.mult_misc = (val)
 
 /*

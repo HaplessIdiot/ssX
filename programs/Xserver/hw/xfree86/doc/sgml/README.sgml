@@ -771,7 +771,7 @@ XFree86 Project has been provided from its proceeds.
   <item>  <url url="http://www.delix.de/"
 	name="Delix Computer GmbH">, Stuttgart, Germany
   <item>  <url url="http://www.destek.net/Destek/"  
-	name="The Destek Group, Inc.">, Pelham, NH (formerly Synergytics)
+	name="The Destek Group, Inc.">, Nashua, NH (formerly Synergytics)
   <item>  <url url="http://www.diamondmm.com/"  
 	name="Diamond Multimedia Systems, Inc.">
   <item>  <url url="http://www.digital.com/"  
@@ -979,7 +979,7 @@ file that describes what files you need to take from the archive, and which
 compile-time option selections were made when building the distribution.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.50 1996/08/13 11:30:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.51 1996/08/16 12:30:43 dawes Exp $
 
 
 

@@ -1,5 +1,5 @@
 /* $XConsortium: Xtranstli.c /main/26 1995/12/13 18:07:13 kaleb $ */
-/* $XFree86: xc/lib/xtrans/Xtranstli.c,v 3.1 1996/01/05 13:14:38 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranstli.c,v 3.2 1996/05/10 06:55:54 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -775,6 +775,11 @@ struct t_bind	*req;
     ciptr->addrlen=ret->addr.len;
     memcpy(ciptr->addr,ret->addr.buf,ret->addr.len);
     
+#if 0
+    /*
+     * There is an indication that this might be trying to free a pointer
+     * that hasn't been allocated.
+     */
     t_free((char *)req,T_BIND);
     t_free((char *)ret, T_BIND);
     
@@ -1173,7 +1178,7 @@ char		*port;
 	 xalloc(sizeof(struct sockaddr_un))) == NULL )
     {
 	PRMSG(1,
-	      "TLICreateListener: failed to allocate a sockaddr_un\n",
+	      "TLITLIConnect: failed to allocate a sockaddr_un\n",
 	      0,0,0 );
 	t_free((char *)sndcall,T_CALL);
 	return TRANS_CONNECT_FAILED;

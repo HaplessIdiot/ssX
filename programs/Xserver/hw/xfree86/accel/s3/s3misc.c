@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.48 1996/08/23 11:03:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.49 1996/08/24 12:51:57 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -124,7 +124,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
    
    /* for clips */
    s3ScissB = ((s3InfoRec.videoRam * 1024) / s3BppDisplayWidth) - 1;
-   s3ScissR = s3BppDisplayWidth - 1;
+   s3ScissR = s3DisplayWidth - 1;
 
  /*
   * Initialize the screen, saving the original state for Save/Restore

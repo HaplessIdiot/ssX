@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.25 1996/08/24 12:51:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.26 1996/08/26 10:48:54 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -1140,7 +1140,7 @@ s3RealImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
     SET_PIX_CNTL(MIXSEL_EXPPC | COLCMPOP_F);
     SET_AXIS_PCNT((short) (w - 1), (short)(h-1));
     SET_CURPT((short) x, (short) y);
-	WaitIdle();
+    WaitIdle();
     SET_CMD(CMD_RECT | PCDATA | _16BIT | INC_Y | INC_X |
 	     DRAW | PLANAR | WRTDATA | BYTSEQ);
     modulus(x - pox, pw, x);

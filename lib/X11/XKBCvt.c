@@ -1,5 +1,5 @@
 /* $XConsortium: XKBCvt.c /main/22 1996/03/01 14:29:37 kaleb $ */
-/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.8 1996/05/13 07:23:37 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.9 1996/08/13 11:25:36 dawes Exp $ */
 /*
 
 Copyright (c) 1988, 1989  X Consortium
@@ -453,7 +453,7 @@ __XkbDefaultToUpper(sym)
     return upper;
 }
 
-int _XkbKSToKoi8 (priv, keysym, buffer, nbytes, status)
+static int _XkbKSToKoi8 (priv, keysym, buffer, nbytes, status)
     XPointer priv;
     KeySym keysym;
     char *buffer;

@@ -129,9 +129,8 @@ It is expected that it will reappear in some form in a future release.
 	<verb>
 	Chipset "NewMMio"
 	</verb>
-	This driver has one known problem in 32bpp mode with a virtual
-	screen size of 1152x864 (1024x768 seems to work fine).  If you
-	see any other problems, please let us know.  It is possible to
+	If you see any problems with the new driver, please let us know.
+	It is possible to
 	disable this new driver and use the old one by specifying:
 	<verb>
 	Chipset "mmio_928"
@@ -162,7 +161,8 @@ It is expected that it will reappear in some form in a future release.
 <sect1> Trident driver (SVGA server)
 <p>
 <itemize>
-  <item>Some problems introduced in 3.1.2E have been fixed.
+  <item>Some problems introduced in 3.1.2E have been fixed.  Refer to the
+	README.trident file for details of new options that may be required.
 </itemize>
 <sect1> SiS driver (SVGA server)
 <p>
@@ -1098,7 +1098,7 @@ instructions, the files for that version will still be in the
 -->
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.34 1996/08/24 12:52:17 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.35 1996/08/26 14:08:45 dawes Exp $
 </verb>
 
 </article>
