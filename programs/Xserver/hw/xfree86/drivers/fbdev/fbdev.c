@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.21 2000/04/17 16:30:03 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.22 2000/06/13 02:28:33 dawes Exp $ */
 
 /*
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
@@ -56,6 +56,7 @@ static Bool	FBDevScreenInit(int Index, ScreenPtr pScreen, int argc,
 				char **argv);
 static Bool	FBDevCloseScreen(int scrnIndex, ScreenPtr pScreen);
 static Bool	FBDevSaveScreen(ScreenPtr pScreen, int mode);
+static void	FBDevDPMSSet(ScrnInfoPtr pScrn, int mode, int flags);
 
 /* -------------------------------------------------------------------- */
 
@@ -740,6 +741,10 @@ FBDevScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	if(!xf86HandleColormaps(pScreen, 256, 8, fbdevHWLoadPalette, NULL, flags))
 		return FALSE;
 
+#ifdef DPMSExtension
+	xf86DPMSInit(pScreen, FBDevDPMSSet, 0);
+#endif
+
 	pScreen->SaveScreen = FBDevSaveScreen;
 
 	/* Wrap the current CloseScreen function */
@@ -778,3 +783,12 @@ FBDevCloseScreen(int scrnIndex, ScreenPtr pScreen)
 	pScreen->CloseScreen = fPtr->CloseScreen;
 	return (*pScreen->CloseScreen)(scrnIndex, pScreen);
 }
+
+
+#ifdef DPMSExtension
+static void
+FBDevDPMSSet(ScrnInfoPtr pScrn, int mode, int flags)
+{
+	fbdevHWDPMSSet(pScrn, mode, flags);
+}
+#endif

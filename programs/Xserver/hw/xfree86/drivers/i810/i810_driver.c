@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.16 2000/08/01 19:03:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.17 2000/08/03 02:30:25 dawes Exp $ */
 
 /*
  * Authors:
@@ -1136,6 +1136,7 @@ DoRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, I810RegPtr i810Reg,
 
    temp = INREG8( PIXPIPE_CONFIG_1 );
    temp &= ~DISPLAY_COLOR_MODE;
+   temp &= 0xEF; /* Restore the CRT control bit */
    temp |= i810Reg->PixelPipeCfg1;
    OUTREG8( PIXPIPE_CONFIG_1, temp );
    
