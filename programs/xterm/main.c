@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.225.1.1 95/01/13 21:13:04 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.11 1995/01/22 03:08:58 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.12 1995/01/28 16:17:44 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -257,7 +257,6 @@ static Bool IsPts = False;
 #else /* } !MINIX { */
 #ifndef linux
 #include <sgtty.h>
-#endif
 #include <sys/resource.h>
 #define HAS_UTMP_UT_HOST
 #define HAS_BSD_GROUPS
@@ -265,6 +264,7 @@ static Bool IsPts = False;
 #define USE_SYSV_UTMP
 #define setpgrp setpgid
 #endif
+#endif /* !linux */
 #endif /* } MINIX */
 #endif	/* } !SYSV */
 
