@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_cursor.c,v 1.22 2003/11/03 17:02:53 twini Exp $ */
 /*
  * SiS hardware cursor handling
  *
@@ -48,7 +48,6 @@
 
 extern void    SISWaitRetraceCRT1(ScrnInfoPtr pScrn);
 extern void    SISWaitRetraceCRT2(ScrnInfoPtr pScrn);
-extern Bool    InRegion(int x, int y, region r);
 
 /* Helper function for Xabre to convert mono image to ARGB */
 /* The Xabre's cursor engine for CRT2 is buggy and can't

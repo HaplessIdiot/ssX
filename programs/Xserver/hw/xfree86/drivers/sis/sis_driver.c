@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.166 2003/12/16 17:59:08 twini Exp $ */
 /*
  * Copyright 2001, 2002, 2003 by Thomas Winischhofer, Vienna, Austria.
  *
@@ -7393,7 +7393,7 @@ SISSetStartAddressCRT2(SISPtr pSiS, unsigned long base)
 }
 
 #ifdef SISMERGED
-Bool
+static Bool
 InRegion(int x, int y, region r)
 {
     return (r.x0 <= x) && (x <= r.x1) && (r.y0 <= y) && (y <= r.y1);
