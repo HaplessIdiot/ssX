@@ -27,7 +27,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xset/xset.c,v 3.30tsi Exp $ */
+/* $XFree86: xc/programs/xset/xset.c,v 3.31 2003/05/27 22:27:09 tsi Exp $ */
 /* Modified by Stephen so keyboard rate is set using XKB extensions */
 
 #include <stdio.h>
@@ -487,15 +487,15 @@ for (i = 1; i < argc; ) {
 	  }
 	  arg = argv[i];
 	  if (*arg >= '0' && *arg <= '9') {
-	      sscanf(arg, "%hd", &standby_timeout);
+	      sscanf(arg, "%hu", &standby_timeout);
 	      i++;
 	      arg = argv[i];
 	      if ((arg)&&(*arg >= '0' && *arg <= '9')) {
-		  sscanf(arg, "%hd", &suspend_timeout);
+		  sscanf(arg, "%hu", &suspend_timeout);
 		  i++;
 		  arg = argv[i];
 		  if ((arg)&&(*arg >= '0' && *arg <= '9')) {
-		      sscanf(arg, "%hd", &off_timeout);
+		      sscanf(arg, "%hu", &off_timeout);
 		      i++;
 		      arg = argv[i];
 		  }

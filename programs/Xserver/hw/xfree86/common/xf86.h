@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.170 2003/08/24 17:36:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.171 2003/08/24 19:58:03 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
@@ -226,6 +226,11 @@ void xf86ProcessActionEvent(ActionEvent action, void *arg);
 
 /* xf86Helper.c */
 
+#ifdef printf
+#define printf_defined
+#undef printf
+#endif
+
 void xf86AddDriver(DriverPtr driver, pointer module, int flags);
 void xf86DeleteDriver(int drvIndex);
 ScrnInfoPtr xf86AllocateScreen(DriverPtr drv, int flags);
@@ -244,12 +249,14 @@ void xf86EnableDisableFBAccess(int scrnIndex, Bool enable);
 void xf86VDrvMsgVerb(int scrnIndex, MessageType type, int verb,
 		     const char *format, va_list args);
 void xf86DrvMsgVerb(int scrnIndex, MessageType type, int verb,
-		    const char *format, ...);
-void xf86DrvMsg(int scrnIndex, MessageType type, const char *format, ...);
-void xf86MsgVerb(MessageType type, int verb, const char *format, ...);
-void xf86Msg(MessageType type, const char *format, ...);
-void xf86ErrorFVerb(int verb, const char *format, ...);
-void xf86ErrorF(const char *format, ...);
+		    const char *format, ...) _printf_attribute(4,5);
+void xf86DrvMsg(int scrnIndex, MessageType type, const char *format, ...)
+		_printf_attribute(3,4);
+void xf86MsgVerb(MessageType type, int verb, const char *format, ...)
+		_printf_attribute(3,4);
+void xf86Msg(MessageType type, const char *format, ...) _printf_attribute(2,3);
+void xf86ErrorFVerb(int verb, const char *format, ...) _printf_attribute(2,3);
+void xf86ErrorF(const char *format, ...) _printf_attribute(1,2);
 const char *xf86TokenToString(SymTabPtr table, int token);
 int xf86StringToToken(SymTabPtr table, const char *string);
 void xf86ShowClocks(ScrnInfoPtr scrp, MessageType from);
@@ -355,6 +362,11 @@ Bool xf86IsUnblank(int mode);
 #ifdef XFree86LOADER
 void xf86AddModuleInfo(ModuleInfoPtr info, pointer module);
 void xf86DeleteModuleInfo(int idx);
+#endif
+
+#ifdef printf_defined
+#define printf xf86printf
+#undef printf_defined
 #endif
 
 /* xf86Debug.c */

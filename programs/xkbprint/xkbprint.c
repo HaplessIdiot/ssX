@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbprint/xkbprint.c,v 3.9tsi Exp $ */
+/* $XFree86: xc/programs/xkbprint/xkbprint.c,v 3.10 2003/05/27 22:27:07 tsi Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -388,7 +388,9 @@ register int i;
 		warningLevel= 0;
 	    }
 	    else {
-		sscanf(argv[++i],"%i",&warningLevel);
+		int itmp;
+		if (sscanf(argv[++i],"%i",&itmp))
+		    warningLevel = itmp;
 	    }
 	}
 	else {

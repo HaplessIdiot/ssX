@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.65 2003/03/14 13:46:05 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.67 2003/06/25 18:27:07 eich Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -454,7 +454,7 @@ mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size, int flags)
     close(fd);
     if (base == MAP_FAILED) {
         FatalError("xf86MapVidMem: Could not mmap framebuffer"
-		   " (0x%08x,0x%x) (%s)\n", Base, Size,
+		   " (0x%08lx,0x%lx) (%s)\n", Base, Size,
 		   strerror(errno));
     }
 #ifdef DEBUG

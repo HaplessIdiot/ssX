@@ -34,7 +34,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.17 2003/08/23 16:09:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.18 2003/08/25 18:44:36 eich Exp $ */
 
 
 #include "xf86.h"
@@ -547,10 +547,10 @@ static Bool S3PreInit(ScrnInfoPtr pScrn, int flags)
 	if (pS3->S3NewMMIO)
 		pS3->IOAddress = pS3->FBAddress + S3_NEWMMIO_REGBASE;
 
-	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Framebuffer @ 0x%x\n",
+	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Framebuffer @ 0x%lx\n",
 		   pS3->FBAddress);
 	if (pS3->S3NewMMIO)
-		xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "MMIO @ 0x%x\n",
+		xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "MMIO @ 0x%lx\n",
 			   pS3->IOAddress);
 
 	pS3->PCIRetry = FALSE;		/* not supported yet */

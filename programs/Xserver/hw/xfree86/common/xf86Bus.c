@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.76 2003/02/21 17:19:34 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.77 2003/08/24 17:36:49 dawes Exp $ */
 /*
  * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
  *
@@ -1304,14 +1304,14 @@ xf86PrintResList(int verb, resPtr list)
 		switch (list->res_type & ResExtMask) {
 		case ResBlock:
 		    xf86ErrorFVerb(verb,
-				   "\t[%d] %d\t%d\t0x%08lx - 0x%08lx (0x%lx)",
+				   "\t[%d] %d\t%ld\t0x%08lx - 0x%08lx (0x%lx)",
 				   i, list->entityIndex,
 				   (list->res_type & ResDomain) >> 24,
 				   list->block_begin, list->block_end,
 				   list->block_end - list->block_begin + 1);
 		    break;
 		case ResSparse:
-		    xf86ErrorFVerb(verb, "\t[%d] %d\t%d\t0x%08lx - 0x%08lx ",
+		    xf86ErrorFVerb(verb, "\t[%d] %d\t%ld\t0x%08lx - 0x%08lx ",
 				   i, list->entityIndex,
 				   (list->res_type & ResDomain) >> 24,
 				   list->sparse_base,list->sparse_mask);
@@ -2158,7 +2158,7 @@ static void
 resError(resList list)
 {
     FatalError("A driver tried to allocate the %s %sresource at \n"
-	       "0x%x:0x%x which conflicted with another resource. Send the\n"
+	       "0x%lx:0x%lx which conflicted with another resource. Send the\n"
 	       "output of the server to %s. Please \n"
 	       "specify your computer hardware as closely as possible.\n",
 	       ResIsBlock(list)?"Block":"Sparse",

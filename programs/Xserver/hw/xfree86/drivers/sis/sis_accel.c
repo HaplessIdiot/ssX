@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_accel.c,v 1.22 2001/10/28 03:33:48 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_accel.c,v 1.29 2003/06/26 22:35:17 twini Exp $ */
 /*
  * 2D acceleration for SiS5597/5598 and 6326
  *
@@ -214,7 +214,7 @@ SiSAccelInit(ScreenPtr pScreen)
     if(AvailFBArea.y2 < pScrn->currentMode->VDisplay) {
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 	 	"Not enough video RAM for accelerator. At least "
-		"%dKB needed, %dKB available\n",
+		"%dKB needed, %ldKB available\n",
 		((((pScrn->displayWidth * pScrn->bitsPerPixel/8)   /* TW: +8 for make it sure */
 		     * pScrn->currentMode->VDisplay) + reservedFbSize) / 1024) + 8,
 		pSiS->maxxfbmem/1024);

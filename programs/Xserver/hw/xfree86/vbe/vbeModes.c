@@ -27,7 +27,7 @@
  *
  * Authors: David Dawes <dawes@xfree86.org>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbeModes.c,v 1.6 2002/11/02 01:38:25 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbeModes.c,v 1.1 2003/02/17 17:06:45 dawes Exp $
  */
 
 #include "xf86.h"
@@ -193,7 +193,7 @@ CheckMode(ScrnInfoPtr pScrn, vbeInfoPtr pVbe, VbeInfoBlock *vbe, int id,
     xf86ErrorFVerb(DEBUG_VERB,
 	    "	WinBSegment: 0x%x\n", mode->WinBSegment);
     xf86ErrorFVerb(DEBUG_VERB,
-	    "	WinFuncPtr: 0x%x\n", mode->WinFuncPtr);
+	    "	WinFuncPtr: 0x%lx\n", (unsigned long)mode->WinFuncPtr);
     xf86ErrorFVerb(DEBUG_VERB,
 	    "	BytesPerScanline: %d\n", mode->BytesPerScanline);
     xf86ErrorFVerb(DEBUG_VERB,
@@ -236,7 +236,8 @@ CheckMode(ScrnInfoPtr pScrn, vbeInfoPtr pVbe, VbeInfoBlock *vbe, int id,
 	    "	DirectColorModeInfo: %d\n", mode->DirectColorModeInfo);
     if (major >= 2) {
 	xf86ErrorFVerb(DEBUG_VERB,
-		"	PhysBasePtr: 0x%x\n", mode->PhysBasePtr);
+		"	PhysBasePtr: 0x%lx\n",
+		(unsigned long)mode->PhysBasePtr);
 	if (major >= 3) {
 	    xf86ErrorFVerb(DEBUG_VERB,
 		    "	LinBytesPerScanLine: %d\n", mode->LinBytesPerScanLine);
@@ -261,7 +262,7 @@ CheckMode(ScrnInfoPtr pScrn, vbeInfoPtr pVbe, VbeInfoBlock *vbe, int id,
 	    xf86ErrorFVerb(DEBUG_VERB,
 		    "	LinRsvdFieldPosition: %d\n", mode->LinRsvdFieldPosition);
 	    xf86ErrorFVerb(DEBUG_VERB,
-		    "	MaxPixelClock: %d\n", mode->MaxPixelClock);
+		    "	MaxPixelClock: %ld\n", mode->MaxPixelClock);
 	}
     }
 

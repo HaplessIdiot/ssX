@@ -49,7 +49,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.91 2003/08/27 19:57:21 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.92 2003/09/09 03:20:41 dawes Exp $ */
 
 #ifdef __CYGWIN__
 #include <stdlib.h>
@@ -262,7 +262,7 @@ LockServer(void)
 						strlen(LOCK_TMP_PREFIX);
   len += strlen(tmppath) + strlen(display) + strlen(LOCK_SUFFIX) + 1;
   if (len > sizeof(LockFile))
-    FatalError("Display name `%s' is too long\n");
+    FatalError("Display name `%s' is too long\n", display);
   (void)sprintf(tmp, "%s" LOCK_TMP_PREFIX "%s" LOCK_SUFFIX, tmppath, display);
   (void)sprintf(LockFile, "%s" LOCK_PREFIX "%s" LOCK_SUFFIX, tmppath, display);
 

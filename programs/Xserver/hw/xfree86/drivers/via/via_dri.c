@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_dri.c,v 1.3 2003/08/27 15:16:08 tsi Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -136,11 +136,11 @@ static Bool VIADRIAgpInit(ScreenPtr pScreen, VIAPtr pVia)
 	(drmAddressPtr)&agpaddr);
 
     xf86DrvMsg(pScreen->myNum, X_INFO, 
-                "[drm] agpBase = 0x%08lx\n", pVia->agpBase);
+                "[drm] agpBase = %p\n", pVia->agpBase);
     xf86DrvMsg(pScreen->myNum, X_INFO, 
                 "[drm] agpAddr = 0x%08lx\n", pVia->agpAddr);
     xf86DrvMsg(pScreen->myNum, X_INFO, 
-                "[drm] agpSize = 0x%08lx\n", pVia->agpSize);
+                "[drm] agpSize = 0x%08x\n", pVia->agpSize);
     xf86DrvMsg(pScreen->myNum, X_INFO, 
                 "[drm] agp physical addr = 0x%08lx\n", agp_phys);
     
@@ -176,8 +176,8 @@ static Bool VIADRIFBInit(ScreenPtr pScreen, VIAPtr pVia)
 	    return FALSE;
 	} else {
 	    xf86DrvMsg(pScreen->myNum, X_INFO,
-		       "[drm] FBFreeStart= 0x%08lx FBFreeEnd= 0x%08lx "
-		       "FBSize= 0x%08lx\n",
+		       "[drm] FBFreeStart= 0x%08x FBFreeEnd= 0x%08x "
+		       "FBSize= 0x%08x\n",
 		       pVia->FBFreeStart, pVia->FBFreeEnd, FBSize);
 	    return TRUE;	
 	}   

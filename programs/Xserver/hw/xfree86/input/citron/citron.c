@@ -1,4 +1,4 @@
-/* $Id: citron.c,v 1.9 2003/06/27 21:48:04 alanh Exp $
+/* $Id: citron.c,v 1.10 2003/09/24 02:43:31 dawes Exp $
  * Copyright (c) 1998  Metro Link Incorporated
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/citron/citron.c,v 1.8 2003/06/24 16:09:40 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/citron/citron.c,v 1.9 2003/06/27 21:48:04 alanh Exp $ */
 
 /*
  * Based, in part, on code with the following copyright notice:
@@ -596,8 +596,8 @@ xf86CitronPrint (int nr, LedCtrl *ctrl)
 {
 	DBG(8, ErrorF("%s------------------------------------------\n", CI_INFO));
 	DBG(8, ErrorF("%sxf86CitronFeedback%d(dev, ctrl)\n", CI_INFO, nr));
-	DBG(8, ErrorF("%s  ctrl->led_values.......:%d [0x%08lX]\n", CI_INFO, ctrl->led_values, ctrl->led_values));
-	DBG(8, ErrorF("%s  ctrl->led_mask.........:%d [0x%08lX]\n", CI_INFO, ctrl->led_mask, ctrl->led_mask));
+	DBG(8, ErrorF("%s  ctrl->led_values.......:%ld [0x%08lX]\n", CI_INFO, ctrl->led_values, ctrl->led_values));
+	DBG(8, ErrorF("%s  ctrl->led_mask.........:%ld [0x%08lX]\n", CI_INFO, ctrl->led_mask, ctrl->led_mask));
 	DBG(8, ErrorF("%s  ctrl->id...............:%d\n", CI_INFO, ctrl->id));
 }
 
@@ -652,9 +652,9 @@ xf86CitronFeedback0 (DeviceIntPtr dev, LedCtrl *ctrl)
 		}
 	}
 
-	DBG(DDS, ErrorF("%s 1 led_values = %08x\n", CI_INFO, ctrl->led_values));
+	DBG(DDS, ErrorF("%s 1 led_values = %08lx\n", CI_INFO, ctrl->led_values));
 	ctrl->led_values = (unsigned long)GetTimeInMillis();
-	DBG(DDS, ErrorF("%s 2 led_values = %08x\n", CI_INFO, ctrl->led_values));
+	DBG(DDS, ErrorF("%s 2 led_values = %08lx\n", CI_INFO, ctrl->led_values));
 
 }
 
@@ -713,7 +713,7 @@ cit_StartTimer(cit_PrivatePtr priv, int nr)
 {
 	priv->timer_ptr[nr] = TimerSet(priv->timer_ptr[nr], 0, priv->timer_val1[nr],
 			 priv->timer_callback[nr], (pointer)priv);
-	DBG(5, ErrorF ("%scit_StartTimer[%d] called PTR=%08x\n", CI_INFO, nr, priv->timer_ptr));
+	DBG(5, ErrorF ("%scit_StartTimer[%d] called PTR=%p\n", CI_INFO, nr, priv->timer_ptr));
 }
 
 
@@ -724,7 +724,7 @@ static void
 cit_CloseTimer(cit_PrivatePtr priv, int nr)
 {
 
-	DBG(5, ErrorF ("%scit_CloseTimer[%d] called PTR=%08x\n", CI_INFO, nr, priv->timer_ptr));
+	DBG(5, ErrorF ("%scit_CloseTimer[%d] called PTR=%p\n", CI_INFO, nr, priv->timer_ptr));
 	if(priv->timer_ptr[nr])
 	{
 		TimerFree(priv->timer_ptr[nr]);
@@ -745,7 +745,7 @@ cit_SuperVisionTimer(OsTimerPtr timer, CARD32 now, pointer arg)
 	cit_PrivatePtr priv = (cit_PrivatePtr) arg;
     int	sigstate;
 
-	DBG(5, ErrorF ("%scit_SuperVisionTimer called %d\n", CI_INFO, GetTimeInMillis()));
+	DBG(5, ErrorF ("%scit_SuperVisionTimer called %ld\n", CI_INFO, GetTimeInMillis()));
 
     sigstate = xf86BlockSIGIO ();
 	
@@ -2524,7 +2524,7 @@ static Bool cit_GetUserString(cit_PrivatePtr priv, char *ustr_name, char *ustr_c
 	else
 	{
 		DBG(5, ErrorF("%s cit_GetUserString: %s != %s\n", CI_ERROR,
-						(C_GETUSERSTRING & CMD_REP_CONV), ustr_name, &priv->packet[1]));
+						 ustr_name, &priv->packet[1]));
 		return (!Success);
 	}
 

@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/common.h,v 1.7 2003/06/18 13:14:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/common.h,v 1.8 2003/09/21 01:20:19 dawes Exp $ */
 
 /*
  * Authors:
@@ -115,7 +115,8 @@ extern void I830DPRINTF_stub(const char *filename, int line,
 
 #define OUT_RING(n) do {						\
    if (I810_DEBUG & DEBUG_VERBOSE_RING)					\
-      ErrorF( "OUT_RING %x: %x, (mask %x)\n", outring, n, ringmask);	\
+      ErrorF( "OUT_RING %lx: %x, (mask %x)\n",				\
+		(unsigned long)(outring), (unsigned int)(n), ringmask);	\
    *(volatile unsigned int *)(virt + outring) = n;			\
    outring += 4;							\
    outring &= ringmask;							\
@@ -231,21 +232,24 @@ extern void I830DPRINTF_stub(const char *filename, int line,
 #define OUTREG8(addr, val) do {						\
    *(volatile CARD8 *)(RecPtr->MMIOBase  + (addr)) = (val);		\
    if (I810_DEBUG&DEBUG_VERBOSE_OUTREG) {				\
-      ErrorF("OUTREG8(0x%x, 0x%x) in %s\n", addr, val, FUNCTION_NAME);	\
+      ErrorF("OUTREG8(0x%lx, 0x%lx) in %s\n", (unsigned long)(addr),	\
+		(unsigned long)(val), FUNCTION_NAME);			\
    }									\
 } while (0)
 
 #define OUTREG16(addr, val) do {					\
    *(volatile CARD16 *)(RecPtr->MMIOBase + (addr)) = (val);		\
    if (I810_DEBUG&DEBUG_VERBOSE_OUTREG) {				\
-      ErrorF("OUTREG16(0x%x, 0x%x) in %s\n", addr, val, FUNCTION_NAME);	\
+      ErrorF("OUTREG16(0x%lx, 0x%lx) in %s\n", (unsigned long)(addr),	\
+		(unsigned long)(val), FUNCTION_NAME);			\
    }									\
 } while (0)
 
 #define OUTREG(addr, val) do {						\
    *(volatile CARD32 *)(RecPtr->MMIOBase + (addr)) = (val);		\
    if (I810_DEBUG&DEBUG_VERBOSE_OUTREG) {				\
-      ErrorF("OUTREG(0x%x, 0x%x) in %s\n", addr, val, FUNCTION_NAME);	\
+      ErrorF("OUTREG(0x%lx, 0x%lx) in %s\n", (unsigned long)(addr),	\
+		(unsigned long)(val), FUNCTION_NAME);			\
    }									\
 } while (0)
 

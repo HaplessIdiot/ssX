@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xprop/xprop.c,v 1.13 2003/03/26 20:44:00 tsi Exp $ */
+/* $XFree86: xc/programs/xprop/xprop.c,v 1.14 2003/04/05 18:18:57 dawes Exp $ */
 
 
 #include <X11/Xlib.h>
@@ -219,7 +219,7 @@ Scan_Long (const char *string, long *value)
 }
 
 static const char *
-Scan_Octal (const char *string, long *value)
+Scan_Octal (const char *string, unsigned long *value)
 {
     if (sscanf(string, "%lo", value)!=1)
 	Fatal_Error("Bad octal number: %s.", string);
@@ -899,7 +899,7 @@ static const char *
 Handle_Backslash (const char *dformat)
 {
     char c;
-    long i;
+    unsigned long i;
 
     if (!(c = *(dformat++)))
 	return dformat;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.132 2003/08/24 17:36:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.133 2003/09/09 03:20:36 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
@@ -788,15 +788,17 @@ xf86SetWeight(ScrnInfoPtr scrp, rgb weight, rgb mask)
 
     if (scrp->weight.red)
 	xf86DrvMsg(scrp->scrnIndex, weightFrom, "RGB weight %d%d%d\n",
-		   scrp->weight.red, scrp->weight.green, scrp->weight.blue);
+		   (int)scrp->weight.red, (int)scrp->weight.green,
+		   (int)scrp->weight.blue);
 
     if (scrp->depth > MAX_PSEUDO_DEPTH &&
 	(scrp->depth != scrp->weight.red + scrp->weight.green +
 			scrp->weight.blue)) {
 	xf86DrvMsg(scrp->scrnIndex, X_ERROR,
 		   "Weight given (%d%d%d) is inconsistent with the "
-		   "depth (%d)\n", scrp->weight.red, scrp->weight.green,
-		   scrp->weight.blue, scrp->depth);
+		   "depth (%d)\n",
+		   (int)scrp->weight.red, (int)scrp->weight.green,
+		   (int)scrp->weight.blue, scrp->depth);
 	return FALSE;
     }
     if (scrp->depth > MAX_PSEUDO_DEPTH && scrp->weight.red) {
@@ -1771,7 +1773,7 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
 		    if (dev || devBus)
 			xf86MsgVerb(X_WARNING, 0,
 			    "%s: More than one matching Device section "
-			    "found: %s\n", devList[j]->identifier);
+			    "found: %s\n", driverName, devList[j]->identifier);
 		    else
 			dev = devList[j];
 		}

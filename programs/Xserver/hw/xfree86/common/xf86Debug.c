@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Debug.c,v 1.5 2003/03/25 04:18:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Debug.c,v 1.6 2003/08/24 17:36:52 dawes Exp $ */
 
 /*
  * Copyright (c) 2000-2003 by The XFree86 Project, Inc.
@@ -185,7 +185,7 @@ xf86SPTimestamp(xf86TsPtr* timestamp, char *str)
 	else
 	    diff =  ((*timestamp)->sec - ts.tv_sec) * 1000
 		+(- ts.tv_usec + (*timestamp)->usec) / 1000;
-	ErrorF("%s Elapsed: %i\n",str,diff);
+	ErrorF("%s Elapsed: %li\n",str,diff);
     } else {
 	*timestamp = xnfalloc(sizeof(xf86TsRec));
 	gettimeofday((struct timeval*)*timestamp,NULL);

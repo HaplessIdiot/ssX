@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/xkbcomp.c,v 3.18tsi Exp $ */
+/* $XFree86: xc/programs/xkbcomp/xkbcomp.c,v 3.19 2003/05/27 22:27:07 tsi Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -196,6 +196,7 @@ register int i,tmp;
 	xkblist= True;
     }
     for (i=1;i<argc;i++) {
+	int itmp;
 	if ((argv[i][0]!='-')||(uStringEqual(argv[i],"-"))) {
 	    if (!xkblist) {
 		if (inputFile==NULL)
@@ -233,7 +234,8 @@ register int i,tmp;
 		debugFlags= 1;
 	    }
 	    else {
-		sscanf(argv[++i],"%i",&debugFlags);
+		if (sscanf(argv[++i],"%i",&itmp) == 1)
+		    debugFlags = itmp;
 	    }
 	    INFO1("Setting debug flags to %d\n",debugFlags);
 	}
@@ -389,10 +391,12 @@ register int i,tmp;
 	}
 	else if (strncmp(argv[i],"-p",2)==0) {
 	    if (isdigit(argv[i][2])) {
-		sscanf(&argv[i][2],"%i",&dirsToStrip);
+		if (sscanf(&argv[i][2],"%i",&itmp) == 1)
+		    dirsToStrip = itmp;
 	    }
 	    else if ((i<(argc-1))&&(isdigit(argv[i+1][0]))) {
-		sscanf(argv[++i],"%i",&dirsToStrip);
+		if (sscanf(argv[++i],"%i",&itmp) == 1)
+		    dirsToStrip = itmp;
 	    }
 	    else {
 		dirsToStrip= 0;
@@ -440,12 +444,14 @@ register int i,tmp;
 	}
 	else if (strncmp(argv[i],"-w",2)==0) {
 	    if ((i>=(argc-1))||(!isdigit(argv[i+1][0]))) {
+		warningLevel = 0;
 		if (isdigit(argv[i][1]))
-		     sscanf(&argv[i][1],"%i",&warningLevel);
-		else warningLevel= 0;
+		     if (sscanf(&argv[i][1],"%i",&itmp) == 1)
+			warningLevel = itmp;
 	    }
 	    else {
-		sscanf(argv[++i],"%i",&warningLevel);
+		if (sscanf(argv[++i],"%i",&itmp) == 1)
+		    warningLevel = itmp;
 	    }
 	}
 	else if ((strcmp(argv[i],"-xkb")==0)&&(!xkblist)) {

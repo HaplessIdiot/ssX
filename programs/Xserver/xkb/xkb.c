@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkb.c,v 3.18 2002/12/20 20:18:35 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkb.c,v 3.19 2003/07/16 01:39:07 dawes Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -188,8 +188,9 @@ ProcXkbUseExtension(client)
 	client->vMinor= stuff->wantedMinor;
     }
     else if (xkbDebugFlags&0x1) {
-	ErrorF("Rejecting client %d (0x%x) (wants %d.%02d, have %d.%02d)\n",
-					client->index, client->clientAsMask,
+	ErrorF("Rejecting client %d (0x%lx) (wants %d.%02d, have %d.%02d)\n",
+					client->index,
+					(long)client->clientAsMask,
 					stuff->wantedMajor,stuff->wantedMinor,
 					XkbMajorVersion,XkbMinorVersion);
     }
@@ -4657,7 +4658,8 @@ xkbDoodadWireDesc *	doodadWire;
 		wire= XkbWriteCountedString(wire,doodad->logo.logo_name,swap);
 		break;
 	    default:
-		ErrorF("Unknown doodad type %d in XkbWriteGeomDoodads\n");
+		ErrorF("Unknown doodad type %d in XkbWriteGeomDoodads\n",
+			doodad->any.type);
 		ErrorF("Ignored\n");
 		break;
 	}
@@ -6776,16 +6778,16 @@ xkbSetDebuggingFlagsReply 	rep;
     newCtrls=  xkbDebugCtrls&(~stuff->affectCtrls);
     newCtrls|= (stuff->ctrls&stuff->affectCtrls);
     if (xkbDebugFlags || newFlags || stuff->msgLength) {
-	ErrorF("XkbDebug: Setting debug flags to 0x%x\n",newFlags);
+	ErrorF("XkbDebug: Setting debug flags to 0x%lx\n",(long)newFlags);
 	if (newCtrls!=xkbDebugCtrls)
-	    ErrorF("XkbDebug: Setting debug controls to 0x%x\n",newCtrls);
+	    ErrorF("XkbDebug: Setting debug controls to 0x%lx\n",(long)newCtrls);
     }
     extraLength= (stuff->length<<2)-sz_xkbSetDebuggingFlagsReq;
     if (stuff->msgLength>0) {
 	char *msg;
 	if (extraLength<XkbPaddedSize(stuff->msgLength)) {
-	    ErrorF("XkbDebug: msgLength= %d, length= %d (should be %d)\n",
-			stuff->msgLength,extraLength,
+	    ErrorF("XkbDebug: msgLength= %d, length= %ld (should be %d)\n",
+			stuff->msgLength,(long)extraLength,
 			XkbPaddedSize(stuff->msgLength));
 	    return BadLength;
 	}

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.78 2003/07/19 15:59:21 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.79 2003/08/23 15:02:54 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -703,7 +703,7 @@ static Bool R128GetPLLParameters(ScrnInfoPtr pScrn)
 #endif /* __powerpc__ */
 
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	       "PLL parameters: rf=%d rd=%d min=%d max=%d; xclk=%d\n",
+	       "PLL parameters: rf=%d rd=%d min=%ld max=%ld; xclk=%d\n",
 	       pll->reference_freq,
 	       pll->reference_div,
 	       pll->min_pll_freq,
@@ -846,7 +846,7 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
     pScrn->memPhysBase = info->LinearAddr;
     if (dev->MemBase) {
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		   "Linear address override, using 0x%08x instead of 0x%08x\n",
+		   "Linear address override, using 0x%08lx instead of 0x%08lx\n",
 		   dev->MemBase,
 		   info->LinearAddr);
 	info->LinearAddr = dev->MemBase;
@@ -864,7 +864,7 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
     info->MMIOAddr   = info->PciInfo->memBase[2] & 0xffffff00;
     if (dev->IOBase) {
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		   "MMIO address override, using 0x%08x instead of 0x%08x\n",
+		   "MMIO address override, using 0x%08lx instead of 0x%08lx\n",
 		   dev->IOBase,
 		   info->MMIOAddr);
 	info->MMIOAddr = dev->IOBase;
@@ -881,7 +881,7 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
     info->BIOSAddr    = info->PciInfo->biosBase & 0xfffe0000;
     if (dev->BiosBase) {
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		   "BIOS address override, using 0x%08x instead of 0x%08x\n",
+		   "BIOS address override, using 0x%08lx instead of 0x%08lx\n",
 		   dev->BiosBase,
 		   info->BIOSAddr);
 	info->BIOSAddr = dev->BiosBase;
@@ -2377,7 +2377,7 @@ Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    int width, height;
 
 	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		       "Using hardware cursor (scanline %d)\n",
+		       "Using hardware cursor (scanline %ld)\n",
 		       info->cursor_start / pScrn->displayWidth);
 	    if (xf86QueryLargestOffscreenArea(pScreen, &width, &height,
 					      0, 0, 0)) {
@@ -3393,7 +3393,7 @@ int R128ValidMode(int scrnIndex, DisplayModePtr mode,
 		       "Mode rejected for FP %ix%i [pclk: %.1f] "
 		       "(not listed in VBIOS)\n",
 		       mode->CrtcHDisplay, mode->CrtcVDisplay,
-		       mode->Clock / 1000);
+		       (float)mode->Clock / 1000);
 	return MODE_NOMODE;
     }
 

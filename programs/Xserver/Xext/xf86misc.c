@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.37 2002/11/20 04:04:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.38 2003/04/03 16:15:47 dawes Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -356,11 +356,11 @@ ProcXF86MiscSetMouseSettings(client)
     
     if (xf86GetVerbosity() > 1) {
 	ErrorF("SetMouseSettings - type: %d brate: %d srate: %d chdmid: %d\n",
-		stuff->mousetype, stuff->baudrate,
-		stuff->samplerate, stuff->chordmiddle);
-	ErrorF("                   em3but: %d em3tim: %d res: %d flags: %d\n",
-		stuff->emulate3buttons, stuff->emulate3timeout,
-		stuff->resolution, stuff->flags);
+		(int)stuff->mousetype, (int)stuff->baudrate,
+		(int)stuff->samplerate, stuff->chordmiddle);
+	ErrorF("                   em3but: %d em3tim: %d res: %d flags: %ld\n",
+		stuff->emulate3buttons, (int)stuff->emulate3timeout,
+		(int)stuff->resolution, (unsigned long)stuff->flags);
     }
 
     
@@ -429,8 +429,8 @@ ProcXF86MiscSetKbdSettings(client)
 
     if (xf86GetVerbosity() > 1)
 	ErrorF("SetKbdSettings - type: %d rate: %d delay: %d snumlk: %d\n",
-		stuff->kbdtype, stuff->rate,
-		stuff->delay, stuff->servnumlock);
+		(int)stuff->kbdtype, (int)stuff->rate,
+		(int)stuff->delay, stuff->servnumlock);
 
     if ((kbd = MiscExtCreateStruct(MISC_KEYBOARD)) == (pointer) 0)
 	return BadAlloc;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.36 2003/09/03 15:32:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.37 2003/09/21 01:20:19 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -1093,7 +1093,7 @@ static void
 SetBIOSMemSize(ScrnInfoPtr pScrn, int newSize)
 {
    I830Ptr pI830 = I830PTR(pScrn);
-   CARD32 swf1;
+   unsigned long swf1;
    Bool mapped;
 
    DPRINTF(PFX, "SetBIOSMemSize: %d kB\n", newSize / 1024);
@@ -1109,7 +1109,7 @@ SetBIOSMemSize(ScrnInfoPtr pScrn, int newSize)
 #endif
 
    if ((IS_I830(pI830) || IS_845G(pI830)) && pI830->useSWF1) {
-      CARD32 newSWF1;
+      unsigned long newSWF1;
 
       /* Need MMIO access here. */
       mapped = (pI830->MMIOBase != NULL);
@@ -1122,10 +1122,10 @@ SetBIOSMemSize(ScrnInfoPtr pScrn, int newSize)
 	 newSWF1 = 8;
 
       swf1 = INREG(SWF1);
-      xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Before: SWF1 is 0x%08x\n", swf1);
+      xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Before: SWF1 is 0x%08lx\n", swf1);
       swf1 &= ~0x0f;
       swf1 |= (newSWF1 & 0x0f);
-      xf86DrvMsg(pScrn->scrnIndex, X_INFO, "After: SWF1 is 0x%08x\n", swf1);
+      xf86DrvMsg(pScrn->scrnIndex, X_INFO, "After: SWF1 is 0x%08lx\n", swf1);
       OUTREG(SWF1, swf1);
       if (!mapped)
 	 I830UnmapMMIO(pScrn);
@@ -1455,7 +1455,7 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
    /* Sanity check: compare with what the BIOS thinks. */
    if (pI830->vbeInfo->TotalMemory != pI830->StolenMemory.Size / 1024 / 64) {
       xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		 "Detected stolen memory (%d kB) doesn't match what the BIOS"
+		 "Detected stolen memory (%ld kB) doesn't match what the BIOS"
 		 " reports (%d kB)\n",
 		 ROUND_DOWN_TO(pI830->StolenMemory.Size / 1024, 64),
 		 pI830->vbeInfo->TotalMemory * 64);
@@ -1605,7 +1605,7 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
 
 	    pI830->BIOSMemorySize = KB(pI830->vbeInfo->TotalMemory * 64);
 	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-		       "BIOS now sees %d kB VideoRAM\n",
+		       "BIOS now sees %ld kB VideoRAM\n",
 		       pI830->BIOSMemorySize / 1024);
 	 } else {
 	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
@@ -1615,7 +1615,7 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
       }
    }
 
-   xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Pre-allocated VideoRAM: %d kByte\n",
+   xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Pre-allocated VideoRAM: %ld kByte\n",
 	      pI830->StolenMemory.Size / 1024);
    xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte\n", pScrn->videoRam);
    pI830->TotalVideoRam = KB(pScrn->videoRam);
@@ -1920,7 +1920,7 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
 		  xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 			     "Allocation with DRI tiling enabled would "
 			     "exceed the\n"
-			     "\tmemory aperture size (%d kB) by %d kB.\n"
+			     "\tmemory aperture size (%ld kB) by %ld kB.\n"
 			     "\tReduce VideoRam amount to avoid this!\n",
 			     pI830->FbMapSize / 1024,
 			     -pI830->MemoryAperture.Size / 1024);
@@ -1959,7 +1959,7 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
 		  xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 			     "Allocation with DRI enabled would "
 			     "exceed the\n"
-			     "\tmemory aperture size (%d kB) by %d kB.\n"
+			     "\tmemory aperture size (%ld kB) by %ld kB.\n"
 			     "\tReduce VideoRam amount to avoid this!\n",
 			     pI830->FbMapSize / 1024,
 			     -pI830->MemoryAperture.Size / 1024);
@@ -2068,26 +2068,26 @@ CheckInheritedState(ScrnInfoPtr pScrn)
    /* Check first for page table errors */
    temp = INREG(PGE_ERR);
    if (temp != 0) {
-      xf86DrvMsg(pScrn->scrnIndex, X_WARNING, "PGTBL_ER is 0x%08x\n", temp);
+      xf86DrvMsg(pScrn->scrnIndex, X_WARNING, "PGTBL_ER is 0x%08lx\n", temp);
       errors++;
    }
    temp = INREG(PGETBL_CTL);
    if (!(temp & 1)) {
       xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		 "PGTBL_CTL (0x%08x) indicates GTT is disabled\n", temp);
+		 "PGTBL_CTL (0x%08lx) indicates GTT is disabled\n", temp);
       errors++;
    }
    temp = INREG(LP_RING + RING_LEN);
    if (temp & 1) {
       xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		 "PRB0_CTL (0x%08x) indicates ring buffer enabled\n", temp);
+		 "PRB0_CTL (0x%08lx) indicates ring buffer enabled\n", temp);
       errors++;
    }
    head = INREG(LP_RING + RING_HEAD);
    tail = INREG(LP_RING + RING_TAIL);
    if ((tail & I830_TAIL_MASK) != (head & I830_HEAD_MASK)) {
       xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		 "PRB0_HEAD (0x%08x) and PRB0_TAIL (0x%08x) indicate "
+		 "PRB0_HEAD (0x%08lx) and PRB0_TAIL (0x%08lx) indicate "
 		 "ring buffer not flushed\n", head, tail);
       errors++;
    }
@@ -2172,7 +2172,7 @@ SetRingRegs(ScrnInfoPtr pScrn)
    if ((pI830->LpRing.mem.Start & I830_RING_START_MASK) !=
        pI830->LpRing.mem.Start) {
       xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		 "I830SetRingRegs: Ring buffer start (%x) violates its "
+		 "I830SetRingRegs: Ring buffer start (%lx) violates its "
 		 "mask (%x)\n", pI830->LpRing.mem.Start, I830_RING_START_MASK);
    }
    /* Don't care about the old value.  Reserved bits must be zero anyway. */
@@ -2182,7 +2182,7 @@ SetRingRegs(ScrnInfoPtr pScrn)
    if (((pI830->LpRing.mem.Size - 4096) & I830_RING_NR_PAGES) !=
        pI830->LpRing.mem.Size - 4096) {
       xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		 "I830SetRingRegs: Ring buffer size - 4096 (%x) violates its "
+		 "I830SetRingRegs: Ring buffer size - 4096 (%lx) violates its "
 		 "mask (%x)\n", pI830->LpRing.mem.Size - 4096,
 		 I830_RING_NR_PAGES);
    }
@@ -2551,10 +2551,10 @@ I830VESASetMode(ScrnInfoPtr pScrn, DisplayModePtr pMode)
     * Print out the PIPEACONF and PIPEBCONF registers.
     */
    temp = INREG(PIPEACONF);
-   xf86DrvMsg(pScrn->scrnIndex, X_INFO, "PIPEACONF is 0x%08x\n", temp);
+   xf86DrvMsg(pScrn->scrnIndex, X_INFO, "PIPEACONF is 0x%08lx\n", temp);
    if (IS_MOBILE(pI830)) {
       temp = INREG(PIPEBCONF);
-      xf86DrvMsg(pScrn->scrnIndex, X_INFO, "PIPEBCONF is 0x%08x\n", temp);
+      xf86DrvMsg(pScrn->scrnIndex, X_INFO, "PIPEBCONF is 0x%08lx\n", temp);
    }
 
 #if PRINT_MODE_INFO
@@ -2599,7 +2599,7 @@ I830VESASetMode(ScrnInfoPtr pScrn, DisplayModePtr pMode)
       if (temp / pI830->cpp != pScrn->displayWidth) {
 	 xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 		    "Correcting plane %c stride (%d -> %d)\n", PIPE_NAME(i),
-		    temp / pI830->cpp, pScrn->displayWidth);
+		    (int)(temp / pI830->cpp), pScrn->displayWidth);
 	 OUTREG(stridereg, pScrn->displayWidth * pI830->cpp);
 	 /* Trigger update */
 	 temp = INREG(basereg);

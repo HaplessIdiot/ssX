@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.33tsi Exp $ */
+/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.34 2003/05/27 22:27:13 tsi Exp $ */
 
 /*
 
@@ -294,7 +294,7 @@ ApplyCB (Widget w, XtPointer client, XtPointer call)
 {
     XF86VidModeModeLine mode_line;
     INT32 S3private[4];
-    int i;
+    unsigned int i;
     char* string;
     Boolean state;
 
@@ -558,7 +558,7 @@ ShowCB(Widget w, XtPointer client, XtPointer call)
     time = XtLastTimestampProcessed(XtDisplay(w));
     XtOwnSelection(w, XA_PRIMARY, time, ConvertSelection, NULL, NULL);
     if (S3Specials) {
-	int i;
+	unsigned int i;
 	Boolean state;
 	char *string;
 

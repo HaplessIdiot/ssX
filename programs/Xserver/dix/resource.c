@@ -72,7 +72,7 @@ SOFTWARE.
  *      1, and an otherwise arbitrary ID in the low 22 bits, we can create a
  *      resource "owned" by the client.
  */
-/* $XFree86: xc/programs/Xserver/dix/resource.c,v 3.11 2002/02/19 11:09:22 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/resource.c,v 3.12 2002/03/06 21:13:38 mvojkovi Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -427,8 +427,8 @@ AddResource(id, type, value)
     rrec = &clientTable[client];
     if (!rrec->buckets)
     {
-	ErrorF("AddResource(%x, %x, %x), client=%d \n",
-		id, type, (unsigned long)value, client);
+	ErrorF("AddResource(%lx, %lx, %lx), client=%d \n",
+		(unsigned long)id, type, (unsigned long)value, client);
         FatalError("client not in use\n");
     }
     if ((rrec->elements >= 4*rrec->buckets) &&
@@ -546,7 +546,8 @@ FreeResource(id, skipDeleteFuncType)
 	}
     }
     if (!gotOne)
-	FatalError("Freeing resource id=%X which isn't there", id);
+	FatalError("Freeing resource id=%lX which isn't there",
+		   (unsigned long)id);
 }
 
 

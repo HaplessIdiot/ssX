@@ -24,7 +24,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_Trio64DAC.c,v 1.4 2001/10/28 03:33:44 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_Trio64DAC.c,v 1.6 2003/07/04 16:24:28 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -180,7 +180,7 @@ S3TrioCalcClock(long freq, int min_m, int min_n1, int max_n1, int min_n2,
 		ffreq = ffreq_min / (1<<max_n2);
 	}
 	if (ffreq > ffreq_max / (1<<min_n2)) {
-		ErrorF("invalid frequency %1.3F Mhz [freq <= %1.3f Mhz]\n",
+		ErrorF("invalid frequency %1.3f Mhz [freq <= %1.3f Mhz]\n",
 			ffreq*BASE_FREQ, ffreq_max*BASE_FREQ/(1<<min_n2));
 		ffreq = ffreq_max / (1<<min_n2);
 	}

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vloaduc.c,v 1.11 2000/03/31 20:13:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vloaduc.c,v 1.12 2000/04/07 03:57:51 tsi Exp $ */
 /*
  * includes
  */
@@ -183,12 +183,14 @@ loadSegment2board(ScrnInfoPtr pScreenInfo, int fd, Elf32_Phdr *phdr)
 
   data=(vu8 *)xalloc(size);
   if (NULL == data){
-	ErrorF("RENDITION: GlobalAllocPtr couldn't allocate %x bytes", size);
+	ErrorF("RENDITION: GlobalAllocPtr couldn't allocate %lx bytes",
+		(unsigned long)size);
 	return;
   }
 
   if (read(fd, data, size) != size){
-	ErrorF("RENDITION: verite_readfile Failure, couldn't read %x bytes ", size);
+	ErrorF("RENDITION: verite_readfile Failure, couldn't read %lx bytes ",
+		(unsigned long)size);
 	return;
   }
 

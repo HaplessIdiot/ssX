@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/oscolor.c,v 3.9 2003/04/27 21:31:09 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/os/oscolor.c,v 3.10 2003/07/16 01:39:03 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -179,7 +179,7 @@ lookup(char *name, int len, Bool create)
   char         *str = name;
 
   if (!(name = (char*)ALLOCATE_LOCAL(len +1))) return NULL;
-  CopyISOLatin1Lowered(name, str, len);
+  CopyISOLatin1Lowered((unsigned char *)name, (unsigned char *)str, len);
   name[len] = '\0';
 
   for(str = name; *str; str++) {

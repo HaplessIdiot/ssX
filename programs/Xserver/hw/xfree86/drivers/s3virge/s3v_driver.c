@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.89 2003/08/23 15:03:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.90 2003/08/23 16:09:19 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -1017,7 +1017,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
   vgaCRReg = vgaIOBase + 5;
 
     xf86ErrorFVerb(VERBLEV, 
-	"	S3VPreInit vgaCRIndex=%x, vgaIOBase=%x, MMIOBase=%x\n", 
+	"	S3VPreInit vgaCRIndex=%x, vgaIOBase=%x, MMIOBase=%p\n", 
 	vgaCRIndex, vgaIOBase, hwp->MMIOBase );
 
 
@@ -1903,7 +1903,7 @@ S3VSave (ScrnInfoPtr pScrn)
        { 
 
       xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, VERBLEV,
-         "MMPR regs: %08x %08x %08x %08x\n",
+         "MMPR regs: %08lx %08lx %08lx %08lx\n",
 	     INREG(FIFO_CONTROL_REG), 
 	     INREG(MIU_CONTROL_REG), 
 	     INREG(STREAMS_TIMEOUT_REG), 

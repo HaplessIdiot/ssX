@@ -30,7 +30,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * Copyright 2002 Shigehiro Nomura
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.68 2003/04/23 21:51:40 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.69 2003/08/23 15:03:03 dawes Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -1195,7 +1195,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	/* XXX Check this matches a PCI base address */
 	nPtr->NeoLinearAddr = nPtr->pEnt->device->MemBase;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-		   "FB base address is set at 0x%X.\n",
+		   "FB base address is set at 0x%lX.\n",
 		   nPtr->NeoLinearAddr);
     } else {
 	nPtr->NeoLinearAddr = 0;
@@ -1207,7 +1207,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	/* XXX Check this matches a PCI base address */
 	nPtr->NeoMMIOAddr = nPtr->pEnt->device->IOBase;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-		   "MMIO base address is set at 0x%X.\n",
+		   "MMIO base address is set at 0x%lX.\n",
 		   nPtr->NeoMMIOAddr);
     } else {
 	nPtr->NeoMMIOAddr = 0;
@@ -1217,7 +1217,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	if (!nPtr->NeoLinearAddr) {
 	    nPtr->NeoLinearAddr = nPtr->PciInfo->memBase[0];
 	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-		       "FB base address is set at 0x%X.\n",
+		       "FB base address is set at 0x%lX.\n",
 		       nPtr->NeoLinearAddr);
 	}
 	if (!nPtr->NeoMMIOAddr && !nPtr->noMMIO) {
@@ -1240,11 +1240,11 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 		break;
 	    }
 	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-		       "MMIO base address is set at 0x%X.\n",
+		       "MMIO base address is set at 0x%lX.\n",
 		       nPtr->NeoMMIOAddr);
 	    if (nPtr->NeoMMIOAddr2 != 0){
 	        xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-		           "MMIO base address2 is set at 0x%X.\n",
+		           "MMIO base address2 is set at 0x%lX.\n",
 		           nPtr->NeoMMIOAddr2);
 	    }
 	}
@@ -1262,13 +1262,13 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	    VGAwGR(0x09,0x00);
 	    nPtr->NeoLinearAddr = addr << 20;
 	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-		       "FB base address is set at 0x%X.\n",
+		       "FB base address is set at 0x%lX.\n",
 		       nPtr->NeoLinearAddr);
 	}
 	if (!nPtr->NeoMMIOAddr && !nPtr->noMMIO) {
 	    nPtr->NeoMMIOAddr = nPtr->NeoLinearAddr + 0x100000;
 	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-		       "MMIO base address is set at 0x%X.\n",
+		       "MMIO base address is set at 0x%lX.\n",
 		       nPtr->NeoMMIOAddr);
 	}
 	linearRes[0].rBegin = nPtr->NeoLinearAddr;
@@ -2148,7 +2148,7 @@ neoSave(ScrnInfoPtr pScrn)
         save->reg = (regSavePtr)xnfcalloc(sizeof(regSaveRec), 1);
     else
         xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		   "Non-NULL reg in NeoSave: reg=0x%08X\n", save->reg);
+		   "Non-NULL reg in NeoSave: reg=%p\n", save->reg);
 
     save->reg->CR[0x23] = VGArCR(0x23);
     save->reg->CR[0x25] = VGArCR(0x25);
@@ -2914,7 +2914,7 @@ neoModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
      */
     if (NeoNew->reg) {
 	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		   "Non-NULL reg in NeoInit: reg=0x%08X\n", NeoNew->reg);
+		   "Non-NULL reg in NeoInit: reg=%p\n", NeoNew->reg);
 	xfree(NeoNew->reg);
 	NeoNew->reg = NULL;
     }

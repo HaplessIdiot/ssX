@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.23 2001/11/30 12:12:00 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.60 2003/09/09 10:29:01 twini Exp $ */
 /*
  * Main global data and definitions
  *
@@ -736,7 +736,7 @@ typedef struct {
     BOOL		Primary;		/* Display adapter is primary */
     xf86Int10InfoPtr    pInt;			/* Our int10 */
     int                 oldChipset;		/* Type of old chipset */
-    CARD32              RealVideoRam;		/* 6326 can only address 4MB, but TQ can be above */
+    int                 RealVideoRam;		/* 6326 can only address 4MB, but TQ can be above */
     CARD32              CmdQueLenMask;		/* Mask of queue length in MMIO register */
     CARD32              CmdQueLenFix;           /* Fix value to subtract from QueLen (530/620) */
     CARD32              CmdQueMaxLen;           /* (6326/5597/5598) Amount of cmds the queue can hold */

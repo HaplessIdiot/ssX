@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.83 2002/12/01 02:11:17 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.125 2003/09/09 13:33:50 twini Exp $ */
 /*
  * Copyright 2001, 2002, 2003 by Thomas Winischhofer, Vienna, Austria.
  *
@@ -2474,7 +2474,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 		         /* Basically, we can't trust the pdc register if sisfb is loaded */
 		         pSiS->donttrustpdc = TRUE;
 		         xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-		         	"sisfb: memory heap starts at %dKB\n", pSiS->sisfbMem);
+		         	"sisfb: memory heap starts at %dKB\n", (int)pSiS->sisfbMem);
 		         xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 		      		"sisfb: using video mode 0x%02x\n", mysisfbinfo.fbvidmode);
 		   	 pSiS->OldMode = mysisfbinfo.fbvidmode;
@@ -2766,8 +2766,8 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	   if(ret) {
 	      xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 	      	"RGB Weight %d%d%d at depth %d not supported by hardware\n",
-		pScrn->weight.red, pScrn->weight.green,
-		pScrn->weight.blue, pScrn->depth);
+		(int)pScrn->weight.red, (int)pScrn->weight.green,
+		(int)pScrn->weight.blue, pScrn->depth);
 #ifdef SISDUALHEAD
 	      if(pSiSEnt) pSiSEnt->ErrorAfterFirst = TRUE;
 #endif
@@ -2926,7 +2926,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 			} else {
 			   if((pSiS->sishw_ext.jChipType != SIS_740) && (pSiS->sishw_ext.jChipType != SIS_760)) {
 			      xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-			   	"Ignoring BIOS for SiS %s at %p\n", sis_sig[i], segstart);
+			   	"Ignoring BIOS for SiS %s at 0x%lx\n", sis_sig[i], segstart);
 			   }
 			}
                     }
@@ -2946,7 +2946,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
                 pSiS->sishw_ext.pjVirtualRomBase = pSiS->BIOS;
 		romptr = pSiS->BIOS[0x16] | (pSiS->BIOS[0x17] << 8);
 		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-			"Video BIOS version \"%7s\" found at %p\n",
+			"Video BIOS version \"%7s\" found at 0x%lx\n",
 			&pSiS->BIOS[romptr], segstart);
              }
           }
@@ -3331,7 +3331,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     }
     else pSiS->maxxfbmem = pSiS->availMem;
 
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Using %dK of framebuffer memory\n",
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Using %ldK of framebuffer memory\n",
     	pSiS->maxxfbmem / 1024);
 
     /* Find out about sub-classes of some chipsets and check
@@ -4079,7 +4079,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	    pSiSEnt->slaveFbAddress  = pSiS->FbAddress + pSiS->maxxfbmem;
 	    pSiSEnt->slaveFbSize     = pSiS->maxxfbmem;
 	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	    		"%dKB video RAM at 0x%lx available for master head (CRT2)\n",
+	    		"%ldKB video RAM at 0x%lx available for master head (CRT2)\n",
 	    		pSiS->maxxfbmem/1024, pSiS->FbAddress);
 	} else {
 	    /* ===== Second head (always CRT1) ===== */
@@ -4090,7 +4090,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	    /* Initialize dhmOffset */
 	    pSiS->dhmOffset = pSiS->availMem - pSiS->maxxfbmem;
 	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	    		"%dKB video RAM at 0x%lx available for slave head (CRT1)\n",
+	    		"%ldKB video RAM at 0x%lx available for slave head (CRT1)\n",
 	    		pSiS->maxxfbmem/1024,  pSiS->FbAddress);
 	}
     } else
@@ -4516,7 +4516,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 
        if(memreq > pSiS->maxxfbmem) {
           xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-       		"Virtual screen too big for memory; %dK needed, %dK available\n",
+       		"Virtual screen too big for memory; %ldK needed, %ldK available\n",
 		memreq/1024, pSiS->maxxfbmem/1024);
 #ifdef SISDUALHEAD
           if(pSiSEnt) pSiSEnt->ErrorAfterFirst = TRUE;
@@ -7995,7 +7995,7 @@ void SiSPreSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
        inSISIDXREG(SISCR, 0x79, usScratchCR79);
     }
 
-    xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3, "VBFlags=0x%x\n", pSiS->VBFlags);
+    xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3, "VBFlags=0x%lx\n", pSiS->VBFlags);
 
     xf86DrvMsgVerb(pScrn->scrnIndex, X_PROBED, 3, 
 	   "Before: CR30=0x%02x, CR31=0x%02x, CR32=0x%02x, CR33=0x%02x, CR%02x=0x%02x\n",
@@ -11342,7 +11342,7 @@ sisSaveUnlockExtRegisterLock(SISPtr pSiS, unsigned char *reg1, unsigned char *re
 	  int i;
 #endif
           xf86DrvMsg(pSiS->pScrn->scrnIndex, X_ERROR,
-               "Failed to unlock sr registers (%p, %x, 0x%02x; %d)\n",
+               "Failed to unlock sr registers (%p, %x, 0x%02x; %ld)\n",
 	       pSiS, pSiS->RelIO, val, mylockcalls);
 #ifdef TWDEBUG
           for(i = 0; i <= 0x3f; i++) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.79tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.80 2003/08/29 20:49:03 tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -782,7 +782,7 @@ pciGenFindNext(void)
 		    (sub_class != PCI_SUBCLASS_BRIDGE_CARDBUS))
 		    xf86Msg(X_WARNING,
 			    "pciGenFindNext:  primary bus mismatch on PCI"
-			    " bridge 0x%08x (0x%02x, 0x%02x)\n",
+			    " bridge 0x%08lx (0x%02x, 0x%02x)\n",
 			    pciDeviceTag, pciBusNum, pri_bus);
 		pri_bus = pciBusNum;
 	    }
@@ -1137,7 +1137,7 @@ xf86MapPciMem(int ScreenNum, int Flags, PCITAG Tag, ADDRESS Base,
 	base = xf86MapDomainMemory(ScreenNum, Flags, Tag, hostbase, Size);
 	if (!base)	{
 		FatalError("xf86MapPciMem: Could not mmap PCI memory "
-			   "[base=0x%x,hostbase=0x%x,size=%x] (%s)\n",
+			   "[base=0x%lx,hostbase=0x%lx,size=%lx] (%s)\n",
 			   Base, hostbase, Size, strerror(errno));
 	}
 	/*
@@ -1187,8 +1187,8 @@ handlePciBIOS(PCITAG Tag, int basereg,
 	    savebase = pciReadLong(Tag, PCI_MAP_REG_START+(b_reg<<2));
 	    xf86MsgVerb(X_INFO,5,"xf86ReadPciBios: modifying membase[%i]"
 			" for device %i:%i:%i\n", basereg,
-			PCI_BUS_FROM_TAG(Tag), PCI_DEV_FROM_TAG(Tag),
-			PCI_FUNC_FROM_TAG(Tag));
+			(int)PCI_BUS_FROM_TAG(Tag), (int)PCI_DEV_FROM_TAG(Tag),
+			(int)PCI_FUNC_FROM_TAG(Tag));
 	    pciWriteLong(Tag, PCI_MAP_REG_START + (b_reg << 2),
 			 (CARD32)~0);
 	}
@@ -1297,7 +1297,7 @@ readPciBios(PCITAG Tag, CARD8* tmp, ADDRESS hostbase, pointer args)
     }
     if ((rd->Offset) > (image_length)) {
       xf86Msg(X_WARNING,"xf86ReadPciBios: requesting data past "
-	      "end of BIOS %i > %i\n",(rd->Offset) , (image_length));
+	      "end of BIOS %li > %i\n",(rd->Offset) , (image_length));
     } else {
       if ((rd->Offset + rd->Len) > (image_length)) {
 	rd->Len = (image_length) - rd->Offset;

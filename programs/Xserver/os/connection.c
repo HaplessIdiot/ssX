@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.61 2003/07/16 01:39:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.62 2003/07/24 13:50:25 eich Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -534,7 +534,7 @@ AuthAudit (ClientPtr client, Bool letin,
     else
 	AuditF("client %d rejected from %s\n", client->index, addr);
     if (proto_n)
-	AuditF("  Auth name: %.*s ID: %d\n", proto_n, auth_proto, auth_id);
+	AuditF("  Auth name: %.*s ID: %d\n", (int)proto_n, auth_proto, auth_id);
 }
 
 XID

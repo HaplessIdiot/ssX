@@ -28,7 +28,7 @@
  *  This is source code modified by FUJITSU LIMITED under the Joint
  *  Development Agreement for the CDE/Motif PST.
  */
-/* $XFree86: xc/lib/X11/lcGeneric.c,v 3.18 2003/04/13 19:22:21 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcGeneric.c,v 3.19 2003/05/27 16:55:27 tsi Exp $ */
 
 #include <stdio.h>
 #include "Xlibint.h"
@@ -868,7 +868,7 @@ load_generic(
         /* For VW/UDC */
         /***** 3.4.2 byteM (1 <= M <= length)*****/
         for (M=1; M-1  < codeset->length; M++) {
-            long start,end;
+            unsigned long start,end;
             ByteInfo tmpb;
 
             sprintf(name,"%s.%s%d",cs,"byte",M);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_context.c,v 1.7 2003/02/08 21:26:45 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_context.c,v 1.8 2003/05/06 23:52:08 daenzer Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -718,7 +718,7 @@ radeonMakeCurrent( __DRIcontextPrivate *driContextPriv,
 
    } else {
       if (RADEON_DEBUG & DEBUG_DRI)
-	 fprintf(stderr, "%s ctx %p\n", __FUNCTION__, NULL);
+	 fprintf(stderr, "%s ctx %p\n", __FUNCTION__, (void *)NULL);
       _mesa_make_current( 0, 0 );
    }
 

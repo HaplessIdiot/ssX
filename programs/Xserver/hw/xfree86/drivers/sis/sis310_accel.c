@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis310_accel.c,v 0.1 2002/04/17 12:12:00 tw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis310_accel.c,v 1.20 2003/09/02 18:28:35 twini Exp $ */
 /*
  * 2D Acceleration for SiS 315 and Xabre series
  * (315/550/650/740/M650/651/652/M652/330/660/M660/760/M760)
@@ -450,7 +450,7 @@ SiS315AccelInit(ScreenPtr pScreen)
 	if(Avail.y2 < pScrn->currentMode->VDisplay) {
 	   xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		"Not enough video RAM for accelerator. At least "
-		"%dKB needed, %dKB available\n",
+		"%dKB needed, %ldKB available\n",
 		((((pScrn->displayWidth * pScrn->bitsPerPixel/8)   /* +8 for make it sure */
 		     * pScrn->currentMode->VDisplay) + reservedFbSize) / 1024) + 8,
 		pSiS->maxxfbmem/1024);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.56 2003/02/22 06:00:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.57 2003/08/24 17:37:03 dawes Exp $ */
 /*
  * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
  *
@@ -409,11 +409,11 @@ typedef int xf86jmp_buf[1024];
 #undef ungetc
 #define ungetc(i,FP)		xf86ungetc(i,FP)
 #undef vfprinf
-#define vfprintf		xf86vfprintf
+#define vfprintf(p,f,a)		xf86vfprintf(p,f,a)
 #undef vsnprintf
-#define vsnprintf		xf86vsnprintf
+#define vsnprintf(s,n,f,a)	xf86vsnprintf(s,n,f,a)
 #undef vsprintf
-#define vsprintf		xf86vsprintf
+#define vsprintf(s,f,a)		xf86vsprintf(s,f,a)
 /* XXX Disable assert as if NDEBUG was defined */
 /* Some X headers defined this away too */
 #undef assert

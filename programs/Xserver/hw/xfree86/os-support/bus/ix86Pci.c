@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ix86Pci.c,v 1.23tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ix86Pci.c,v 1.24 2003/08/29 20:49:03 tsi Exp $ */
 /*
  * ix86Pci.c - x86 PCI driver
  *
@@ -345,8 +345,9 @@ void ix86PciSelectCfgmech(void)
 
 		xf86MsgVerb(X_INFO, 2, "PCI: Config type is 1\n");
 		xf86MsgVerb(X_INFO, 3,
-			"PCI: stages = 0x%02x, oldVal1 = 0x%08x, mode1Res1"
-			" = 0x%08x\n", stages, oldVal1, mode1Res1);
+			"PCI: stages = 0x%02x, oldVal1 = 0x%08lx, mode1Res1"
+			" = 0x%08lx\n", stages, (unsigned long)oldVal1,
+			(unsigned long)mode1Res1);
 		return;
 	    }
 
@@ -399,9 +400,10 @@ void ix86PciSelectCfgmech(void)
 
 		xf86MsgVerb(X_INFO, 2, "PCI: Config type is 1\n");
 		xf86MsgVerb(X_INFO, 3,
-			"PCI: stages = 0x%02x, oldVal1 = 0x%08x,\n"
-			"\tmode1Res1 = 0x%08x, mode1Res2 = 0x%08x\n",
-			stages, oldVal1, mode1Res1, mode1Res2);
+			"PCI: stages = 0x%02x, oldVal1 = 0x%08lx,\n"
+			"\tmode1Res1 = 0x%08lx, mode1Res2 = 0x%08lx\n",
+			stages, (unsigned long)oldVal1,
+			(unsigned long)mode1Res1, (unsigned long)mode1Res2);
 		return;
 	    }
 
@@ -415,9 +417,10 @@ void ix86PciSelectCfgmech(void)
       }
 
       xf86MsgVerb(X_INFO, 3, "PCI: Standard check for type 1 failed.\n");
-      xf86MsgVerb(X_INFO, 3, "PCI: stages = 0x%02x, oldVal1 = 0x%08x,\n"
-	       "\tmode1Res1 = 0x%08x, mode1Res2 = 0x%08x\n",
-	       stages, oldVal1, mode1Res1, mode1Res2);
+      xf86MsgVerb(X_INFO, 3, "PCI: stages = 0x%02x, oldVal1 = 0x%08lx,\n"
+	       "\tmode1Res1 = 0x%08lx, mode1Res2 = 0x%08lx\n",
+	       stages, (unsigned long)oldVal1, (unsigned long)mode1Res1,
+	       (unsigned long)mode1Res2);
 
       /* Try config type 2 */
       oldVal2 = inb(PCI_CFGMECH2_ENABLE_REG);

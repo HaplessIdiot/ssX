@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.33 2003/04/06 20:07:33 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.34 2003/07/02 17:31:29 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -499,7 +499,7 @@ drmBufPtr RADEONCPGetBuffer(ScrnInfoPtr pScrn)
 	    buf->used = 0;
 	    if (RADEON_VERBOSE) {
 		xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-			   "   GetBuffer returning %d %08x\n",
+			   "   GetBuffer returning %d %p\n",
 			   buf->idx, buf->address);
 	    }
 	    return buf;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.54 2002/12/22 00:46:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.55 2003/04/03 16:38:50 dawes Exp $ */
 
 /*
 
@@ -467,14 +467,14 @@ ProcXF86VidModeGetModeLine(ClientPtr client)
     rep.flags = VidModeGetModeValue(mode, VIDMODE_FLAGS);
 
     if (xf86GetVerbosity() > 1) {
-	ErrorF("GetModeLine - scrn: %d clock: %d\n",
-	       stuff->screen, rep.dotclock);
+	ErrorF("GetModeLine - scrn: %d clock: %ld\n",
+	       stuff->screen, (unsigned long)rep.dotclock);
 	ErrorF("GetModeLine - hdsp: %d hbeg: %d hend: %d httl: %d\n",
 	       rep.hdisplay, rep.hsyncstart,
 	       rep.hsyncend, rep.htotal);
-	ErrorF("              vdsp: %d vbeg: %d vend: %d vttl: %d flags: %d\n",
+	ErrorF("              vdsp: %d vbeg: %d vend: %d vttl: %d flags: %ld\n",
 	       rep.vdisplay, rep.vsyncstart, rep.vsyncend,
-	       rep.vtotal, rep.flags);
+	       rep.vtotal, (unsigned long)rep.flags);
     }
     
     /*
@@ -675,22 +675,23 @@ ProcXF86VidModeAddModeLine(ClientPtr client)
 	stuff->after_flags = oldstuff->after_flags;
     }
     if (xf86GetVerbosity() > 1) {
-	ErrorF("AddModeLine - scrn: %d clock: %d\n",
-		stuff->screen, stuff->dotclock);
+	ErrorF("AddModeLine - scrn: %d clock: %ld\n",
+		(int)stuff->screen, (unsigned long)stuff->dotclock);
 	ErrorF("AddModeLine - hdsp: %d hbeg: %d hend: %d httl: %d\n",
 		stuff->hdisplay, stuff->hsyncstart,
 		stuff->hsyncend, stuff->htotal);
-	ErrorF("              vdsp: %d vbeg: %d vend: %d vttl: %d flags: %d\n",
+	ErrorF("              vdsp: %d vbeg: %d vend: %d vttl: %d flags: %ld\n",
 		stuff->vdisplay, stuff->vsyncstart, stuff->vsyncend,
-		stuff->vtotal, stuff->flags);
-	ErrorF("      after - scrn: %d clock: %d\n",
-		stuff->screen, stuff->after_dotclock);
+		stuff->vtotal, (unsigned long)stuff->flags);
+	ErrorF("      after - scrn: %d clock: %ld\n",
+		(int)stuff->screen, (unsigned long)stuff->after_dotclock);
 	ErrorF("              hdsp: %d hbeg: %d hend: %d httl: %d\n",
 		stuff->after_hdisplay, stuff->after_hsyncstart,
 		stuff->after_hsyncend, stuff->after_htotal);
-	ErrorF("              vdsp: %d vbeg: %d vend: %d vttl: %d flags: %d\n",
+	ErrorF("              vdsp: %d vbeg: %d vend: %d vttl: %d flags: %ld\n",
 		stuff->after_vdisplay, stuff->after_vsyncstart,
-		stuff->after_vsyncend, stuff->after_vtotal, stuff->after_flags);
+		stuff->after_vsyncend, stuff->after_vtotal,
+		(unsigned long)stuff->after_flags);
     }
 
     if (ver < 2) {
@@ -822,14 +823,14 @@ ProcXF86VidModeDeleteModeLine(ClientPtr client)
 	stuff->privsize = oldstuff->privsize;
     }
     if (xf86GetVerbosity() > 1) {
-	ErrorF("DeleteModeLine - scrn: %d clock: %d\n",
-		stuff->screen, stuff->dotclock, stuff->dotclock);
+	ErrorF("DeleteModeLine - scrn: %d clock: %ld\n",
+		(int)stuff->screen, (unsigned long)stuff->dotclock);
 	ErrorF("                 hdsp: %d hbeg: %d hend: %d httl: %d\n",
 		stuff->hdisplay, stuff->hsyncstart,
 		stuff->hsyncend, stuff->htotal);
-	ErrorF("                 vdsp: %d vbeg: %d vend: %d vttl: %d flags: %d\n",
+	ErrorF("                 vdsp: %d vbeg: %d vend: %d vttl: %d flags: %ld\n",
 		stuff->vdisplay, stuff->vsyncstart, stuff->vsyncend,
-		stuff->vtotal, stuff->flags);
+		stuff->vtotal, (unsigned long)stuff->flags);
     }
 
     if (ver < 2) {
@@ -841,8 +842,11 @@ ProcXF86VidModeDeleteModeLine(ClientPtr client)
     }
     if (len != stuff->privsize) {
 	if (xf86GetVerbosity() > 1) {
-	    ErrorF("req_len = %d, sizeof(Req) = %d, privsize = %d, len = %d, length = %d\n",
-		    client->req_len, sizeof(xXF86VidModeDeleteModeLineReq)>>2, stuff->privsize, len, stuff->length);
+	    ErrorF("req_len = %ld, sizeof(Req) = %d, privsize = %ld, "
+		   "len = %d, length = %d\n",
+		    (unsigned long)client->req_len,
+		    sizeof(xXF86VidModeDeleteModeLineReq)>>2,
+		    (unsigned long)stuff->privsize, len, stuff->length);
 	}
 	return BadLength;
     }
@@ -936,11 +940,11 @@ ProcXF86VidModeModModeLine(ClientPtr client)
     }
     if (xf86GetVerbosity() > 1) {
 	ErrorF("ModModeLine - scrn: %d hdsp: %d hbeg: %d hend: %d httl: %d\n",
-		stuff->screen, stuff->hdisplay, stuff->hsyncstart,
+		(int)stuff->screen, stuff->hdisplay, stuff->hsyncstart,
 		stuff->hsyncend, stuff->htotal);
-	ErrorF("              vdsp: %d vbeg: %d vend: %d vttl: %d flags: %d\n",
+	ErrorF("              vdsp: %d vbeg: %d vend: %d vttl: %d flags: %ld\n",
 		stuff->vdisplay, stuff->vsyncstart, stuff->vsyncend,
-		stuff->vtotal, stuff->flags);
+		stuff->vtotal, (unsigned long)stuff->flags);
     }
 
     if (ver < 2) {
@@ -1061,14 +1065,14 @@ ProcXF86VidModeValidateModeLine(ClientPtr client)
 	stuff->privsize = oldstuff->privsize;
     }
     if (xf86GetVerbosity() > 1) {
-	ErrorF("ValidateModeLine - scrn: %d clock: %d\n",
-		stuff->screen, stuff->dotclock);
+	ErrorF("ValidateModeLine - scrn: %d clock: %ld\n",
+		(int)stuff->screen, (unsigned long)stuff->dotclock);
 	ErrorF("                   hdsp: %d hbeg: %d hend: %d httl: %d\n",
 		stuff->hdisplay, stuff->hsyncstart,
 		stuff->hsyncend, stuff->htotal);
-	ErrorF("                   vdsp: %d vbeg: %d vend: %d vttl: %d flags: %d\n",
+	ErrorF("                   vdsp: %d vbeg: %d vend: %d vttl: %d flags: %ld\n",
 		stuff->vdisplay, stuff->vsyncstart, stuff->vsyncend,
-		stuff->vtotal, stuff->flags);
+		stuff->vtotal, (unsigned long)stuff->flags);
     }
 
     if (ver < 2) {
@@ -1195,14 +1199,14 @@ ProcXF86VidModeSwitchToMode(ClientPtr client)
 	stuff->privsize = oldstuff->privsize;
     }
     if (xf86GetVerbosity() > 1) {
-	ErrorF("SwitchToMode - scrn: %d clock: %d\n",
-		stuff->screen, stuff->dotclock);
+	ErrorF("SwitchToMode - scrn: %d clock: %ld\n",
+		(int)stuff->screen, (unsigned long)stuff->dotclock);
 	ErrorF("               hdsp: %d hbeg: %d hend: %d httl: %d\n",
 		stuff->hdisplay, stuff->hsyncstart,
 		stuff->hsyncend, stuff->htotal);
-	ErrorF("               vdsp: %d vbeg: %d vend: %d vttl: %d flags: %d\n",
+	ErrorF("               vdsp: %d vbeg: %d vend: %d vttl: %d flags: %ld\n",
 		stuff->vdisplay, stuff->vsyncstart, stuff->vsyncend,
-		stuff->vtotal, stuff->flags);
+		stuff->vtotal, (unsigned long)stuff->flags);
     }
 
     if (ver < 2) {

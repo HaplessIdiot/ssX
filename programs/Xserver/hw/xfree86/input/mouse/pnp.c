@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/pnp.c,v 1.18 2003/06/12 14:12:33 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/pnp.c,v 1.19 2003/08/04 10:32:30 eich Exp $ */
 /*
  * Copyright 1998 by Kazutaka YOKOTA <yokota@zodiac.mech.utsunomiya-u.ac.jp>
  *
@@ -478,7 +478,7 @@ pnpparse(InputInfoPtr pInfo, pnpid_t *id, char *buf, int len)
     /* checksum exists if there are any optional fields */
     if ((id->nserial > 0) || (id->nclass > 0)
 	|| (id->ncompat > 0) || (id->ndescription > 0)) {
-	xf86MsgVerb(X_INFO, 4, "PnP checksum: 0x%02X\n", pInfo->name, sum);
+	xf86MsgVerb(X_INFO, 4, "%s: PnP checksum: 0x%02X\n", pInfo->name, sum);
         sprintf(s, "%02X", sum & 0x0ff);
         if (strncmp(s, &buf[len - 3], 2) != 0) {
 #if 0

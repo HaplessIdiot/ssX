@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_video.c,v 1.13tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_video.c,v 1.15 2003/06/18 16:17:40 eich Exp $ */
 
 #include "Xv.h"
 #include "dix.h"
@@ -298,10 +298,10 @@ unsigned int GetBlendForFourCC( int id )
 
 void myOUTREG( SavagePtr psav, unsigned long offset, unsigned long value )
 {
-    ErrorF( "MMIO %04x, was %08x, want %08x,", 
+    ErrorF( "MMIO %04lx, was %08lx, want %08lx,", 
 	offset, MMIO_IN32( psav->MapBase, offset ), value );
     MMIO_OUT32( psav->MapBase, offset, value );
-    ErrorF( " now %08x\n", MMIO_IN32( psav->MapBase, offset ) );
+    ErrorF( " now %08lx\n", MMIO_IN32( psav->MapBase, offset ) );
 }
 
 void SavageInitStreamsOld(ScrnInfoPtr pScrn)
@@ -451,7 +451,7 @@ void SavageStreamsOn(ScrnInfoPtr pScrn, int id)
 	VGAOUT16( vgaCRIndex, (jStreamsControl << 8) | EXT_MISC_CTRL2 );
 
 	psav->blendBase = GetBlendForFourCC( id ) << 9;
-	xf86ErrorFVerb(XVTRACE+1,"Format %4.4s, blend is %08x\n", &id, psav->blendBase );
+	xf86ErrorFVerb(XVTRACE+1,"Format %4.4s, blend is %08x\n", (char *)&id, psav->blendBase );
 	OUTREG( BLEND_CONTROL, psav->blendBase | 0x08 );
 
 	/* These values specify brightness, contrast, saturation and hue. */
@@ -705,7 +705,7 @@ void SavageSetColorOld( ScrnInfoPtr pScrn )
     SavagePortPrivPtr pPriv = psav->adaptor->pPortPrivates[0].ptr;
 
     xf86ErrorFVerb(XVTRACE, "bright %d, contrast %d, saturation %d, hue %d\n",
-	pPriv->brightness, pPriv->contrast, pPriv->saturation, pPriv->hue );
+	pPriv->brightness, (int)pPriv->contrast, (int)pPriv->saturation, pPriv->hue );
 
     if( 
 	(psav->videoFourCC == FOURCC_RV15) ||
@@ -747,7 +747,7 @@ void SavageSetColorNew( ScrnInfoPtr pScrn )
     unsigned long assembly;
 
     xf86ErrorFVerb(XVTRACE, "bright %d, contrast %d, saturation %d, hue %d\n",
-	pPriv->brightness, pPriv->contrast, pPriv->saturation, pPriv->hue );
+	pPriv->brightness, (int)pPriv->contrast, (int)pPriv->saturation, pPriv->hue );
 
     if( psav->videoFourCC == FOURCC_Y211 )
 	k = 1.0;	/* YUV */
@@ -775,20 +775,20 @@ void SavageSetColorNew( ScrnInfoPtr pScrn )
     k2 = (int)(dk2+0.5) & 0x1ff;
     k3 = (int)(dk3+0.5) & 0x1ff;
     assembly = (k3<<18) | (k2<<9) | k1;
-    xf86ErrorFVerb(XVTRACE+1, "CC1 = %08x  ", assembly );
+    xf86ErrorFVerb(XVTRACE+1, "CC1 = %08lx  ", assembly );
     OUTREG( SEC_STREAM_COLOR_CONVERT1, assembly );
 
     k4 = (int)(dk4+0.5) & 0x1ff;
     k5 = (int)(dk5+0.5) & 0x1ff;
     k6 = (int)(dk6+0.5) & 0x1ff;
     assembly = (k6<<18) | (k5<<9) | k4;
-    xf86ErrorFVerb(XVTRACE+1, "CC2 = %08x  ", assembly );
+    xf86ErrorFVerb(XVTRACE+1, "CC2 = %08lx  ", assembly );
     OUTREG( SEC_STREAM_COLOR_CONVERT2, assembly );
 
     k7 = (int)(dk7+0.5) & 0x1ff;
     kb = (int)(dkb+0.5) & 0xffff;
     assembly = (kb<<9) | k7;
-    xf86ErrorFVerb(XVTRACE+1, "CC3 = %08x\n", assembly );
+    xf86ErrorFVerb(XVTRACE+1, "CC3 = %08lx\n", assembly );
     OUTREG( SEC_STREAM_COLOR_CONVERT3, assembly );
 }
 

@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.181 2003/08/23 16:09:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.182 2003/09/05 22:07:28 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -2153,8 +2153,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	default:
 	    pScrn->videoRam = 1024;
 	    xf86DrvMsg(pScrn->scrnIndex, from, 
-			"Unable to determine VideoRam, defaulting to 1MB\n",
-				pScrn->videoRam);
+			"Unable to determine VideoRam, defaulting to 1MB\n");
 	    break;
 	}
       }

@@ -11,7 +11,7 @@
  *    Guy DESBIEF
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.31 2003/08/23 15:02:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.32 2003/08/23 16:09:16 dawes Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -361,7 +361,7 @@ AlpCountRam(ScrnInfoPtr pScrn)
 	pCir->chip.alp->sr0f = hwp->readSeq(hwp, 0x0F);
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "Memory Config reg 1 is 0x%02X\n",
-	       pCir->chip.alp->sr0f);
+	       (unsigned int)pCir->chip.alp->sr0f);
     
     switch (pCir->Chipset) {
     case PCI_CHIP_GD5430:
@@ -404,7 +404,7 @@ AlpCountRam(ScrnInfoPtr pScrn)
 	    pCir->chip.alp->sr17 = hwp->readSeq(hwp, 0x17);
 	}
 	xf86DrvMsg(pScrn->scrnIndex, from, "Memory Config reg 2 is 0x%02X\n",
-		   pCir->chip.alp->sr17);
+		   (unsigned int)pCir->chip.alp->sr17);
 	
 	if ((pCir->chip.alp->sr0f & 0x18) == 0x18) {
 	    if (pCir->chip.alp->sr0f & 0x80) {
@@ -430,7 +430,7 @@ AlpCountRam(ScrnInfoPtr pScrn)
 	    pCir->chip.alp->sr17 = hwp->readSeq(hwp, 0x17);
 	}
 	xf86DrvMsg(pScrn->scrnIndex, from, "Memory Config reg 2 is 0x%02X\n",
-		   pCir->chip.alp->sr17);
+		   (unsigned int)pCir->chip.alp->sr17);
 	videoram = 1024;
 	if ((pCir->chip.alp->sr0f & 0x18) == 0x18) {	/* 2 or 4 MB */
 	    videoram = 2048;

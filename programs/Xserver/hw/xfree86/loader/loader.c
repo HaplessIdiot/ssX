@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.65 2003/08/24 17:37:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.66 2003/09/23 17:55:41 dawes Exp $ */
 
 /*
  * Copyright 1995-1998 by Metro Link, Inc.
@@ -334,19 +334,19 @@ LoaderInit(void)
 #endif 
 
     xf86MsgVerb(X_INFO, 2, "Module ABI versions:\n");
-    xf86ErrorFVerb(2, "\t%s: %d.%d\n", ABI_CLASS_ANSIC,
+    xf86ErrorFVerb(2, "\t%s: %ld.%ld\n", ABI_CLASS_ANSIC,
 			GET_ABI_MAJOR(LoaderVersionInfo.ansicVersion),
 			GET_ABI_MINOR(LoaderVersionInfo.ansicVersion));
-    xf86ErrorFVerb(2, "\t%s: %d.%d\n", ABI_CLASS_VIDEODRV,
+    xf86ErrorFVerb(2, "\t%s: %ld.%ld\n", ABI_CLASS_VIDEODRV,
 			GET_ABI_MAJOR(LoaderVersionInfo.videodrvVersion),
 			GET_ABI_MINOR(LoaderVersionInfo.videodrvVersion));
-    xf86ErrorFVerb(2, "\t%s : %d.%d\n", ABI_CLASS_XINPUT,
+    xf86ErrorFVerb(2, "\t%s : %ld.%ld\n", ABI_CLASS_XINPUT,
 			GET_ABI_MAJOR(LoaderVersionInfo.xinputVersion),
 			GET_ABI_MINOR(LoaderVersionInfo.xinputVersion));
-    xf86ErrorFVerb(2, "\t%s : %d.%d\n", ABI_CLASS_EXTENSION,
+    xf86ErrorFVerb(2, "\t%s : %ld.%ld\n", ABI_CLASS_EXTENSION,
 			GET_ABI_MAJOR(LoaderVersionInfo.extensionVersion),
 			GET_ABI_MINOR(LoaderVersionInfo.extensionVersion));
-    xf86ErrorFVerb(2, "\t%s : %d.%d\n", ABI_CLASS_FONT,
+    xf86ErrorFVerb(2, "\t%s : %ld.%ld\n", ABI_CLASS_FONT,
 			GET_ABI_MAJOR(LoaderVersionInfo.fontVersion),
 			GET_ABI_MINOR(LoaderVersionInfo.fontVersion));
 
@@ -1051,7 +1051,7 @@ ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP **ppLookup)
 	    strcat(longname,":");
 	    i = read(arfd, longname+modnamesize+1, modnamesize);
 	    if (i != modnamesize) {
-		ErrorF("Bad archive member %d\n", hdr.ar_name);
+		ErrorF("Bad archive member %s\n", hdr.ar_name);
 		xf86loaderfree(longname);
 		offsetbias = 0;
 		return NULL;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.48 2003/09/09 23:53:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.49 2003/09/13 21:33:10 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -50,6 +50,7 @@ SOFTWARE.
 
 #ifndef OS_H
 #define OS_H
+
 #include "misc.h"
 #define ALLOCATE_LOCAL_FALLBACK(_size) Xalloc((unsigned long)(_size))
 #define DEALLOCATE_LOCAL_FALLBACK(_ptr) Xfree((pointer)(_ptr))
@@ -486,32 +487,53 @@ typedef enum {
     X_UNKNOWN = -1		/* unknown -- this must always be last */
 } MessageType;
 
+/* XXX Need to check which GCC versions have the format(printf) attribute. */
+#if defined(__GNUC__) && \
+    ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ > 4)))
+#define _printf_attribute(a,b) __attribute((format(printf,a,b)))
+#else
+#define _printf_attribute(a,b) /**/
+#endif
+
+#ifdef printf
+#define printf_defined
+#undef printf
+#endif
+
 extern const char *LogInit(const char *fname, const char *backup);
 extern void LogClose(void);
 extern Bool LogSetParameter(LogParameter param, int value);
 extern void LogVWrite(int verb, const char *f, va_list args);
-extern void LogWrite(int verb, const char *f, ...);
+extern void LogWrite(int verb, const char *f, ...) _printf_attribute(2,3);
 extern void LogVMessageVerb(MessageType type, int verb, const char *format,
 			    va_list args);
 extern void LogMessageVerb(MessageType type, int verb, const char *format,
-			   ...);
-extern void LogMessage(MessageType type, const char *format, ...);
+			   ...) _printf_attribute(3,4);
+extern void LogMessage(MessageType type, const char *format, ...)
+			_printf_attribute(2,3);
 extern char *AuditPrefix(const char *f);
-extern void AuditF(const char *f, ...);
-extern void FatalError(const char *f, ...)
+extern void AuditF(const char *f, ...) _printf_attribute(1,2);
+extern void FatalError(const char *f, ...) _printf_attribute(1,2)
 #if defined(__GNUC__) && \
     ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ > 4)))
 __attribute((noreturn))
 #endif
 ;
+
 extern void VErrorF(const char *f, va_list args);
-extern void ErrorF(const char *f, ...);
+extern void ErrorF(const char *f, ...) _printf_attribute(1,2);
 extern void Error(char *str);
 extern void LogPrintMarkers(void);
 
 #if defined(NEED_SNPRINTF) && !defined(IN_MODULE)
-extern int snprintf(char *str, size_t size, const char *format, ...);
+extern int snprintf(char *str, size_t size, const char *format, ...)
+	_printf_attribute(2,3);
 extern int vsnprintf(char *str, size_t size, const char *format, va_list ap);
+#endif
+
+#ifdef printf_defined
+#define printf xf86printf
+#undef printf_defined
 #endif
 
 #endif /* OS_H */

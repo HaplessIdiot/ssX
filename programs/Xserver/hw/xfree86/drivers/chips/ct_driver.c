@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.127 2003/08/23 15:02:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.128 2003/08/23 16:09:15 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -1558,7 +1558,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		   "Enabling linear addressing\n");
 	xf86DrvMsg(pScrn->scrnIndex, from,
-		   "base address is set at 0x%X.\n", cPtr->FbAddress);
+		   "base address is set at 0x%lX.\n", cPtr->FbAddress);
 	cPtr->IOAddress = cPtr->FbAddress + 0x400000L;
     } else
 	xf86DrvMsg(pScrn->scrnIndex, from,
@@ -2619,7 +2619,7 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		   "Enabling linear addressing\n");
 	xf86DrvMsg(pScrn->scrnIndex, from,
-		   "base address is set at 0x%X.\n", cPtr->FbAddress);
+		   "base address is set at 0x%lX.\n", cPtr->FbAddress);
 	if (xf86ReturnOptValBool(cPtr->Options, OPTION_MMIO, FALSE) &&
 	    (cPtr->Flags & ChipsMMIOSupport)) {
 	    cPtr->UseMMIO = TRUE;
@@ -3107,7 +3107,7 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 		   "Enabling linear addressing\n");
 	xf86DrvMsg(pScrn->scrnIndex, from,
-		   "base address is set at 0x%X.\n", cPtr->FbAddress);
+		   "base address is set at 0x%lX.\n", cPtr->FbAddress);
 	if (xf86ReturnOptValBool(cPtr->Options, OPTION_MMIO, FALSE) &&
 	    (cPtr->Flags & ChipsMMIOSupport)) {
 	    cPtr->UseMMIO = TRUE;

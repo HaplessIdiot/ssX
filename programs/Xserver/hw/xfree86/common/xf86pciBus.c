@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.74 2003/08/24 17:36:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.75 2003/08/29 21:07:47 tsi Exp $ */
 /*
  * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
  *
@@ -477,7 +477,7 @@ FindPCIVideoInfo(void)
 		    memdone = TRUE;
 		} else
 		    xf86ErrorF(", ");
-		xf86ErrorF("0x%08x/%d", info->memBase[i], info->size[i]);
+		xf86ErrorF("0x%08lx/%d", info->memBase[i], info->size[i]);
 	    }
 	}
 	for (i = 0; i < 6; i++) {
@@ -488,12 +488,12 @@ FindPCIVideoInfo(void)
 		    iodone = TRUE;
 		} else
 		    xf86ErrorF(", ");
-		xf86ErrorF("0x%04x/%d", info->ioBase[i], info->size[i]);
+		xf86ErrorF("0x%04lx/%d", info->ioBase[i], info->size[i]);
 	    }
 	}
 	if (info->biosBase &&
 	    (info->biosBase < (memType)(-1 << info->biosSize)))
-	    xf86ErrorF(", BIOS @ 0x%08x/%d", info->biosBase, info->biosSize);
+	    xf86ErrorF(", BIOS @ 0x%08lx/%d", info->biosBase, info->biosSize);
 	xf86ErrorF("\n");
     }
 }
@@ -932,7 +932,7 @@ removeOverlapsWithBridges(int busIndex, resPtr target)
 		       target->block_end - target->block_begin,
 		       target->res_type);
 	xf86MsgVerb(X_INFO, 3,
-	    "PCI %s resource overlap reduced 0x%08x from 0x%08x to 0x%08x\n",
+	    "PCI %s resource overlap reduced 0x%08lx from 0x%08lx to 0x%08lx\n",
 	    ((target->res_type & ResPhysMask) == ResMem) ?  "Memory" : "I/O",
 	    range.rBegin, range.rEnd, target->block_end);
     }
@@ -1123,8 +1123,8 @@ xf86GetPciRes(resPtr *activeRes, resPtr *inactiveRes)
 				   pRes->block_end - pRes->block_begin,
 				   pRes->res_type);
 		    xf86MsgVerb(X_INFO, 3,
-				"PCI %s resource overlap reduced 0x%08x"
-				" from 0x%08x to 0x%08x\n",
+				"PCI %s resource overlap reduced 0x%08lx"
+				" from 0x%08lx to 0x%08lx\n",
 				((pRes->res_type & ResPhysMask) == ResMem) ?
 				 "Memory" : "I/O",
 				range.rBegin, range.rEnd, pRes->block_end);
@@ -1152,8 +1152,8 @@ xf86GetPciRes(resPtr *activeRes, resPtr *inactiveRes)
 				   pRes->block_end - pRes->block_begin,
 				   pRes->res_type);
 		    xf86MsgVerb(X_INFO, 3,
-				"PCI %s resource overlap reduced 0x%08x"
-				" from 0x%08x to 0x%08x\n",
+				"PCI %s resource overlap reduced 0x%08lx"
+				" from 0x%08lx to 0x%08lx\n",
 				((pRes->res_type & ResPhysMask) == ResMem) ?
 				 "Memory" : "I/O",
 				range.rBegin, range.rEnd, pRes->block_end);

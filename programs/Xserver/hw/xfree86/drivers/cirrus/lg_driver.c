@@ -13,7 +13,7 @@
  *	David Dawes, Andrew E. Mileski, Leonard N. Zubkoff,
  *	Guy DESBIEF, Itai Nahshon.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.44 2003/04/23 21:51:35 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.45 2003/08/23 15:02:57 dawes Exp $ */
 
 #define EXPERIMENTAL
 
@@ -1282,7 +1282,7 @@ LgRestore(ScrnInfoPtr pScrn)
 	LgRegPtr lgReg;
 
 #ifdef LG_DEBUG
-	ErrorF("LgRestore  pScrn = 0x%08X\n", pScrn);
+	ErrorF("LgRestore  pScrn = %p\n", pScrn);
 #endif
 
 	pCir = CIRPTR(pScrn);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/IBM561ramdac.c,v 1.2 2000/10/23 21:16:50 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/IBM561ramdac.c,v 1.3 2001/02/15 11:03:58 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -111,8 +111,8 @@ IBM561ReadReg(ScrnInfoPtr pScrn, CARD32 reg)
   ret = TGA2_READ_RAMDAC_REG(REGS_ADDR);
 
 #if 1
-  xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "IBM561ReadReg: reg 0x%x data 0x%x\n",
-             reg, ret);
+  xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "IBM561ReadReg: reg 0x%lx data 0x%x\n",
+             (unsigned long)reg, ret);
 #endif
   return (ret);
 }
@@ -139,8 +139,8 @@ IBM561WriteReg(ScrnInfoPtr pScrn, CARD32 reg,
 #endif
 
 #if 1
-  xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "IBM561WriteReg: reg 0x%x data 0x%x\n",
-             reg, tmp | data);
+  xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "IBM561WriteReg: reg 0x%lx data 0x%x\n",
+             (unsigned long)reg, tmp | data);
 #endif
 
   TGA2_WRITE_RAMDAC_REG(reg, LO_ADDR);

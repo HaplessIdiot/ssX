@@ -35,7 +35,7 @@
  * TORTIOUS ACTIONS, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/hyperpen/xf86HyperPen.c,v 1.5 2001/12/26 21:51:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/hyperpen/xf86HyperPen.c,v 1.7 2003/06/23 17:35:48 eich Exp $ */
 
 #include <xf86Version.h>
 
@@ -1219,7 +1219,7 @@ xf86HypProc(DeviceIntPtr pHyp, int what)
 
     switch (what) {
 	case DEVICE_INIT:
-	    DBG(1, ErrorF("xf86HypProc pHyp=0x%x what=INIT\n", pHyp));
+	    DBG(1, ErrorF("xf86HypProc pHyp=%p what=INIT\n", pHyp));
 
 	    nbaxes = 3;			/* X, Y, Z */
 	    nbbuttons = (priv->flags & STYLUS_FLAG)? 3 : 4;
@@ -1268,7 +1268,7 @@ xf86HypProc(DeviceIntPtr pHyp, int what)
 	    break;
 
 	case DEVICE_ON:
-	    DBG(1, ErrorF("xf86HypProc pHyp=0x%x what=ON\n", pHyp));
+	    DBG(1, ErrorF("xf86HypProc pHyp=%p what=ON\n", pHyp));
 
 	    if ((local->fd < 0) && (!xf86HypOpenDevice(pHyp))) {
 		return !Success;
@@ -1282,7 +1282,7 @@ xf86HypProc(DeviceIntPtr pHyp, int what)
 	    break;
 
 	case DEVICE_OFF:
-	    DBG(1, ErrorF("xf86HypProc  pHyp=0x%x what=%s\n", pHyp,
+	    DBG(1, ErrorF("xf86HypProc  pHyp=%p what=%s\n", pHyp,
 		   (what == DEVICE_CLOSE) ? "CLOSE" : "OFF"));
 	    if (local->fd >= 0)
 #ifdef XFREE86_V4
@@ -1294,7 +1294,7 @@ xf86HypProc(DeviceIntPtr pHyp, int what)
 	    break;
 
 	case DEVICE_CLOSE:
-	    DBG(1, ErrorF("xf86HypProc  pHyp=0x%x what=%s\n", pHyp,
+	    DBG(1, ErrorF("xf86HypProc  pHyp=%p what=%s\n", pHyp,
 		   (what == DEVICE_CLOSE) ? "CLOSE" : "OFF"));
 	    SYSCALL(close(local->fd));
 	    local->fd = -1;
@@ -1305,7 +1305,7 @@ xf86HypProc(DeviceIntPtr pHyp, int what)
 	    return !Success;
 	    break;
     }
-    DBG(2, ErrorF("END   xf86HypProc Success what=%d dev=0x%x priv=0x%x\n",
+    DBG(2, ErrorF("END   xf86HypProc Success what=%d dev=%p priv=%p\n",
 	   what, pHyp, priv));
     return Success;
 }
@@ -1353,7 +1353,7 @@ xf86HypSwitchMode(ClientPtr client, DeviceIntPtr dev, int mode)
     HyperPenDevicePtr	priv = (HyperPenDevicePtr)(local->private);
     char		newmode;
 
-    DBG(3, ErrorF("xf86HypSwitchMode dev=0x%x mode=%d\n", dev, mode));
+    DBG(3, ErrorF("xf86HypSwitchMode dev=%p mode=%d\n", dev, mode));
 
     switch(mode) {
 	case Absolute:
@@ -1367,7 +1367,7 @@ xf86HypSwitchMode(ClientPtr client, DeviceIntPtr dev, int mode)
 	    break;
 
 	default:
-	    DBG(1, ErrorF("xf86HypSwitchMode dev=0x%x invalid mode=%d\n",
+	    DBG(1, ErrorF("xf86HypSwitchMode dev=%p invalid mode=%d\n",
 		   dev, mode));
 	    return BadMatch;
     }

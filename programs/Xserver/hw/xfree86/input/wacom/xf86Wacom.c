@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.33 2003/04/03 22:20:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.34 2003/04/28 16:27:21 eich Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV and Wacom V protocols.
@@ -893,7 +893,7 @@ xf86WcmSendEvents(LocalDevicePtr	local,
 	    if (common->wcmProtocolLevel == 4 && buttons) {
 		int	macro = z / 2;
 
-		DBG(6, ErrorF("macro=%d buttons=%d wacom_map[%d]=%x\n",
+		DBG(6, ErrorF("macro=%d buttons=%d wacom_map[%d]=%lx\n",
 			      macro, buttons, macro, wacom_map[macro]));
 
 		/* First available Keycode begins at 8 => macro+7 */
@@ -1647,7 +1647,7 @@ xf86WcmReadInput(LocalDevicePtr         local)
 	    }
 	} /* protocol 5 */
     } /* next data */
-    DBG(7, ErrorF("xf86WcmReadInput END   local=0x%x priv=0x%x index=%d\n",
+    DBG(7, ErrorF("xf86WcmReadInput END   local=%p priv=%p index=%d\n",
 		  local, priv, common->wcmIndex));
 }
 
@@ -1698,7 +1698,7 @@ xf86WcmReadUSBInput(LocalDevicePtr         local)
 	
     SYSCALL(len = read(local->fd, eventbuf, sizeof(eventbuf)));
 
-    DBG(10, ErrorF("xf86WcmReadUSBInput read %d events\n", len));
+    DBG(10, ErrorF("xf86WcmReadUSBInput read %d events\n", (int)len));
     
     if (len <= 0) {
 	ErrorF("Error reading wacom device : %s\n", strerror(errno));
@@ -2075,7 +2075,7 @@ xf86WcmReadISDV4Input(LocalDevicePtr         local)
 	    }
 	} /* full packet */
     } /* next data */
-    DBG(7, ErrorF("xf86WcmReadInput END   local=0x%x priv=0x%x index=%d\n",
+    DBG(7, ErrorF("xf86WcmReadInput END   local=%p priv=%p index=%d\n",
 		  local, priv, common->wcmIndex));
 }
 
@@ -2878,7 +2878,7 @@ xf86WcmProc(DeviceIntPtr       pWcm,
     LocalDevicePtr        local = (LocalDevicePtr)pWcm->public.devicePrivate;
     WacomDevicePtr        priv = (WacomDevicePtr)PRIVATE(pWcm);
   
-    DBG(2, ErrorF("BEGIN xf86WcmProc dev=0x%x priv=0x%x type=%s flags=%d what=%d\n",
+    DBG(2, ErrorF("BEGIN xf86WcmProc dev=%p priv=%p type=%s flags=%d what=%d\n",
 		  pWcm, priv, (DEVICE_ID(priv->flags) == STYLUS_ID) ? "stylus" :
 		  (DEVICE_ID(priv->flags) == CURSOR_ID) ? "cursor" : "eraser",
 		  priv->flags, what));
@@ -2886,7 +2886,7 @@ xf86WcmProc(DeviceIntPtr       pWcm,
     switch (what)
 	{
 	case DEVICE_INIT: 
-	    DBG(1, ErrorF("xf86WcmProc pWcm=0x%x what=INIT\n", pWcm));
+	    DBG(1, ErrorF("xf86WcmProc pWcm=%p what=INIT\n", pWcm));
       
 	    nbaxes = 6;		/* X, Y, Pressure, Tilt-X, Tilt-Y, Wheel */
 	    
@@ -2952,16 +2952,16 @@ xf86WcmProc(DeviceIntPtr       pWcm,
 	    if (!xf86WcmOpenDevice(pWcm))
 	    {
 		/* PL tablet sometime can not open successfully the first time */
-                DBG(1, ErrorF("xf86WcmProc try to open pWcm=0x%x again\n", pWcm));
+                DBG(1, ErrorF("xf86WcmProc try to open pWcm=%p again\n", pWcm));
 		if (!xf86WcmOpenDevice(pWcm)) {
-                    DBG(1, ErrorF("xf86WcmProc pWcm=0x%x what=INIT FALSE\n", pWcm));
+                    DBG(1, ErrorF("xf86WcmProc pWcm=%p what=INIT FALSE\n", pWcm));
 		    return !Success;
 		}
 	    }
 	    break; 
       
 	case DEVICE_ON:
-	    DBG(1, ErrorF("xf86WcmProc pWcm=0x%x what=ON\n", pWcm));
+	    DBG(1, ErrorF("xf86WcmProc pWcm=%p what=ON\n", pWcm));
 
 	    if ((local->fd < 0) && (!xf86WcmOpenDevice(pWcm))) {
 		pWcm->inited = FALSE;
@@ -2973,7 +2973,7 @@ xf86WcmProc(DeviceIntPtr       pWcm,
       
 	case DEVICE_OFF:
 	case DEVICE_CLOSE:
-	    DBG(1, ErrorF("xf86WcmProc  pWcm=0x%x what=%s\n", pWcm,
+	    DBG(1, ErrorF("xf86WcmProc  pWcm=%p what=%s\n", pWcm,
 			  (what == DEVICE_CLOSE) ? "CLOSE" : "OFF"));
 	    if (local->fd >= 0) {
 		xf86RemoveEnabledDevice(local);
@@ -2987,7 +2987,7 @@ xf86WcmProc(DeviceIntPtr       pWcm,
 	    return !Success;
 	    break;
 	}
-    DBG(2, ErrorF("END   xf86WcmProc Success what=%d dev=0x%x priv=0x%x\n",
+    DBG(2, ErrorF("END   xf86WcmProc Success what=%d dev=%p priv=%p\n",
 		  what, pWcm, priv));
     return Success;
 }
@@ -3039,7 +3039,7 @@ xf86WcmSwitchMode(ClientPtr	client,
     LocalDevicePtr        local = (LocalDevicePtr)dev->public.devicePrivate;
     WacomDevicePtr        priv = (WacomDevicePtr)local->private;
 
-    DBG(3, ErrorF("xf86WcmSwitchMode dev=0x%x mode=%d\n", dev, mode));
+    DBG(3, ErrorF("xf86WcmSwitchMode dev=%p mode=%d\n", dev, mode));
   
     if (mode == Absolute) {
 	priv->flags = priv->flags | ABSOLUTE_FLAG;
@@ -3049,7 +3049,7 @@ xf86WcmSwitchMode(ClientPtr	client,
 	    priv->flags = priv->flags & ~ABSOLUTE_FLAG; 
 	}
 	else {
-	    DBG(1, ErrorF("xf86WcmSwitchMode dev=0x%x invalid mode=%d\n", dev,
+	    DBG(1, ErrorF("xf86WcmSwitchMode dev=%p invalid mode=%d\n", dev,
 			  mode));
 	    return BadMatch;
 	}
@@ -3418,7 +3418,7 @@ xf86WcmInit(InputDriverPtr	drv,
     common->wcmSuppress = xf86SetIntOption(local->options, "Suppress", common->wcmSuppress);
     if (common->wcmSuppress > MAX_SUPPRESS || common->wcmSuppress < DEFAULT_SUPPRESS) 
 	common->wcmSuppress = DEFAULT_SUPPRESS;
-    xf86Msg(X_CONFIG, "WACOM: suppress value is %d\n", XCONFIG_GIVEN,
+    xf86Msg(X_CONFIG, "WACOM: suppress value is %d\n",
 		common->wcmSuppress);      
     
     if (xf86SetBoolOption(local->options, "Tilt", (common->wcmFlags & TILT_FLAG))) {
