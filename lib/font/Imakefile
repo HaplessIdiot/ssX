@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:46:24 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/lib/font/Imakefile,v 3.36tsi Exp $
+XCOMM $XFree86: xc/lib/font/Imakefile,v 3.37 2003/10/24 16:21:12 tsi Exp $
 
 #include <Server.tmpl>
 
@@ -71,13 +71,6 @@ FREETYPEPROFILEOBJS = FreeType/profiled/?*.o
 #endif
 #if BuildXTrueType
             XTTDIRS = X-TrueType
-#if XTTInLibXFont
-      XTTSHAREDOBJS = X-TrueType/?*.o
-      XTTSTATICOBJS = X-TrueType/$(STATIC_OBJSDIR)?*.o
-       XTTDEBUGOBJS = X-TrueType/debugger/?*.o
-     XTTPROFILEOBJS = X-TrueType/profiled/?*.o
-           XTTDONES = X-TrueType/DONE
-#endif
 #endif
 #if BuildBuiltinFonts
         BUILTINDIRS = builtins
@@ -102,26 +95,26 @@ FONTCACHEPROFILEOBJS = fontcache/profiled/?*.o
 		 util $(STUBDIRS)
    SHARED_OBJS = bitmap/?*.o fontfile/?*.o fc/?*.o $(FONTCACHESHAREDOBJS) \
 		 $(SPEEDOSHAREDOBJS) $(TYPE1SHAREDOBJS) \
-		 $(FREETYPESHAREDOBJS) $(XTTSHAREDOBJS) \
+		 $(FREETYPESHAREDOBJS) \
 		 $(BUILTINSHAREDOBJS) util/?*.o
    STATIC_OBJS = bitmap/$(STATIC_OBJSDIR)?*.o fontfile/$(STATIC_OBJSDIR)?*.o \
 		 fc/$(STATIC_OBJSDIR)?*.o $(FONTCACHESTATICOBJS) \
 		 $(SPEEDOSTATICOBJS) $(TYPE1STATICOBJS) \
-		 $(FREETYPESTATICOBJS) $(XTTSTATICOBJS) \
+		 $(FREETYPESTATICOBJS) \
 		 $(BUILTINSTATICOBJS) util/$(STATIC_OBJSDIR)?*.o
     DEBUG_OBJS = bitmap/debugger/?*.o fontfile/debugger/?*.o fc/debugger/?*.o \
 		 $(FONTCACHEDEBUGOBJS) \
 		 $(SPEEDODEBUGOBJS) $(TYPE1DEBUGOBJS) \
-		 $(FREETYPEDEBUGOBJS) $(XTTDEBUGOBJS) \
+		 $(FREETYPEDEBUGOBJS) \
 		 $(BUILTINDEBUGOBJS) util/debugger/?*.o
   PROFILE_OBJS = bitmap/profiled/?*.o fontfile/profiled/?*.o fc/profiled/?*.o \
 		 $(FONTCACHEPROFILEOBJS) \
 		 $(SPEEDOPROFILEOBJS) $(TYPE1PROFILEOBJS) \
-		 $(FREETYPEPROFILEOBJS) $(XTTPROFILEOBJS) \
+		 $(FREETYPEPROFILEOBJS) \
 		 $(BUILTINPROFILEOBJS) util/profiled/?*.o
          DONES = bitmap/DONE fontfile/DONE fc/DONE $(FONTCACHEDONES) \
 		 $(SPEEDODONES) $(TYPE1DONES) \
-		 $(FREETYPEDONES) $(XTTDONES) \
+		 $(FREETYPEDONES) \
 		 $(BUILTINDONES) util/DONE
 
 #if BuildServer && DoLoadableServer
