@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dga.c,v 1.2 2000/02/08 17:19:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dga.c,v 1.3 2000/06/17 00:03:25 martin Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -6,6 +6,7 @@
 #include "dgaproc.h"
 
 #include "tdfx.h"
+#include "vgaHW.h"
 
 static Bool TDFX_OpenFramebuffer(ScrnInfoPtr, char **, unsigned char **, 
 				 int *, int *, int *);
@@ -31,13 +32,7 @@ DGAFunctionRec TDFX_DGAFuncs = {
   TDFX_BlitTransRect
 };
 
-/*
-We should allow you to change the depth, but the accel driver isn't
-ready to handle that yet. Also, we are currently taking the default
-visual and using it for the visual reported by DGA. It would be
-relatively easy to at least give DirectColor and TrueColor visuals
-instead of just the default
-*/
+
 Bool
 TDFXDGAInit(ScreenPtr pScreen)
 {
@@ -46,21 +41,18 @@ TDFXDGAInit(ScreenPtr pScreen)
   DisplayModePtr pMode, firstMode;
   DGAModePtr modes=0, newmodes=0, currentMode;
   int num=0;
-  Bool oneMore;
 
   pTDFX = TDFXPTR(pScrn);
   pMode = firstMode = pScrn->modes;
 
   while (pMode) {
     newmodes = xrealloc(modes, (num+1)*sizeof(DGAModeRec));
-    oneMore = FALSE;
+
     if (!newmodes) {
       xfree(modes);
       return FALSE;
     }
     modes = newmodes;
-
-SECOND_PASS:
 
     currentMode = modes+num;
     num++;
@@ -81,37 +73,21 @@ SECOND_PASS:
     currentMode->visualClass = pScrn->defaultVisual;
     currentMode->viewportWidth = pMode->HDisplay;
     currentMode->viewportHeight = pMode->VDisplay;
-    currentMode->xViewportStep = (3 - pTDFX->cpp);
+    currentMode->xViewportStep = 1;
     currentMode->yViewportStep = 1;
     currentMode->viewportFlags = DGA_FLIP_RETRACE;
     currentMode->offset = pTDFX->fbOffset;
     currentMode->address = pTDFX->FbBase;
-
-    if (oneMore) { /* first one is narrow width */
-      currentMode->bytesPerScanline = ((pMode->HDisplay * pTDFX->cpp) + 3) & ~3L;
-      currentMode->imageWidth = pMode->HDisplay;
-      currentMode->imageHeight =  pScrn->virtualY;
-      currentMode->pixmapWidth = currentMode->imageWidth;
-      currentMode->pixmapHeight = currentMode->imageHeight;
-      currentMode->maxViewportX = currentMode->imageWidth - 
-	currentMode->viewportWidth;
-      /* this might need to get clamped to some maximum */
-      currentMode->maxViewportY = currentMode->imageHeight -
-	currentMode->viewportHeight;
-      oneMore = FALSE;
-      goto SECOND_PASS;
-    } else {
-      currentMode->bytesPerScanline = ((pScrn->displayWidth * pTDFX->cpp) + 3) & ~3L;
-      currentMode->imageWidth = pScrn->displayWidth;
-      currentMode->imageHeight =  pScrn->virtualY;
-      currentMode->pixmapWidth = currentMode->imageWidth;
-      currentMode->pixmapHeight = currentMode->imageHeight;
-      currentMode->maxViewportX = currentMode->imageWidth - 
-	currentMode->viewportWidth;
-      /* this might need to get clamped to some maximum */
-      currentMode->maxViewportY = currentMode->imageHeight -
-	currentMode->viewportHeight;
-    }	    
+    currentMode->bytesPerScanline = ((pScrn->displayWidth*pTDFX->cpp)+3) & ~3L;
+    currentMode->imageWidth = pScrn->displayWidth;
+    currentMode->imageHeight =  pTDFX->pixmapCacheLinesMax;
+    currentMode->pixmapWidth = currentMode->imageWidth;
+    currentMode->pixmapHeight = currentMode->imageHeight;
+    currentMode->maxViewportX = currentMode->imageWidth - 
+                                currentMode->viewportWidth;
+    /* this might need to get clamped to some maximum */
+    currentMode->maxViewportY = currentMode->imageHeight -
+                                currentMode->viewportHeight;
     
     pMode = pMode->next;
     if (pMode == firstMode) break;
@@ -125,24 +101,23 @@ SECOND_PASS:
 static Bool
 TDFX_SetMode(ScrnInfoPtr pScrn, DGAModePtr pMode)
 {
-   static int OldDisplayWidth[MAXSCREENS];
+   static DisplayModePtr OldModes[MAXSCREENS];
    int index = pScrn->pScreen->myNum;
 
    TDFXPtr pTDFX = TDFXPTR(pScrn);
 
    if (!pMode) { /* restore the original mode */
      /* put the ScreenParameters back */
-     pScrn->displayWidth = OldDisplayWidth[index];
-     TDFXSwitchMode(index, pScrn->currentMode, 0);
-     pTDFX->DGAactive = FALSE;
+     if(pTDFX->DGAactive) {
+	TDFXSwitchMode(index, OldModes[index], 0);
+	TDFXAdjustFrame(pScrn->pScreen->myNum, 0, 0, 0);
+	pTDFX->DGAactive = FALSE;
+     }
    } else {
      if (!pTDFX->DGAactive) {  /* save the old parameters */
-       OldDisplayWidth[index] = pScrn->displayWidth;
-       
-       pTDFX->DGAactive = TRUE;
+        OldModes[index] = pScrn->currentMode;
+        pTDFX->DGAactive = TRUE;
      }
-
-     pScrn->displayWidth = pMode->bytesPerScanline / pTDFX->cpp;
 
      TDFXSwitchMode(index, pMode->mode, 0);
    }
@@ -162,9 +137,15 @@ static void
 TDFX_SetViewport(ScrnInfoPtr pScrn, int x, int y, int flags)
 {
    TDFXPtr pTDFX = TDFXPTR(pScrn);
+   vgaHWPtr hwp = VGAHWPTR(pScrn);
 
    TDFXAdjustFrame(pScrn->pScreen->myNum, x, y, flags);
-   pTDFX->DGAViewportStatus = 0;  /* TDFXAdjustFrame loops until finished */
+
+   /* fixme */
+   while(hwp->readST01(hwp) & 0x08);
+   while(!(hwp->readST01(hwp) & 0x08));
+
+   pTDFX->DGAViewportStatus = 0;  
 }
 
 static void 

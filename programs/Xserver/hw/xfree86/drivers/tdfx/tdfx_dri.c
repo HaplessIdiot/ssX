@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.13 2000/12/01 14:28:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.14 2000/12/07 20:26:23 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -31,6 +31,8 @@ static Bool TDFXDRICloseFullScreen(ScreenPtr pScreen);
 static void TDFXDRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 index);
 static void TDFXDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg, 
 			       RegionPtr prgnSrc, CARD32 index);
+static void TDFXDRITransitionTo2d(ScreenPtr pScreen);
+static void TDFXDRITransitionTo3d(ScreenPtr pScreen);
 
 static Bool
 TDFXInitVisualConfigs(ScreenPtr pScreen)
@@ -375,6 +377,8 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
   pDRIInfo->MoveBuffers = TDFXDRIMoveBuffers;
   pDRIInfo->OpenFullScreen = TDFXDRIOpenFullScreen;
   pDRIInfo->CloseFullScreen = TDFXDRICloseFullScreen;
+  pDRIInfo->TransitionTo2d = TDFXDRITransitionTo2d;
+  pDRIInfo->TransitionTo3d = TDFXDRITransitionTo3d;
   pDRIInfo->bufferRequests = DRI_ALL_WINDOWS;
 
   if (!DRIScreenInit(pScreen, pDRIInfo, &pTDFX->drmSubFD)) {
@@ -704,3 +708,33 @@ TDFXDRICloseFullScreen(ScreenPtr pScreen)
   return TRUE;
 }
 
+static void
+TDFXDRITransitionTo2d(ScreenPtr pScreen)
+{
+  ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+  TDFXPtr pTDFX = TDFXPTR(pScrn);
+
+  xf86FreeOffscreenArea(pTDFX->reservedArea); 
+}
+
+
+static void
+TDFXDRITransitionTo3d(ScreenPtr pScreen)
+{
+  ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+  TDFXPtr pTDFX = TDFXPTR(pScrn);
+  FBAreaPtr pArea;
+
+  if(pTDFX->videoScratch) 
+	xf86FreeOffscreenLinear(pTDFX->videoScratch);
+
+  xf86PurgeUnlockedOffscreenAreas(pScreen);
+  
+  pArea = xf86AllocateOffscreenArea(pScreen, pScrn->displayWidth,
+				    pTDFX->pixmapCacheLinesMin,
+				    pScrn->displayWidth, NULL, NULL, NULL);
+  pTDFX->reservedArea = xf86AllocateOffscreenArea(pScreen, pScrn->displayWidth,
+			pTDFX->pixmapCacheLinesMax - pTDFX->pixmapCacheLinesMin,
+			pScrn->displayWidth, NULL, NULL, NULL);
+  xf86FreeOffscreenArea(pArea);
+}
