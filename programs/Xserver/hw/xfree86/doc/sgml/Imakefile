@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/16 1996/10/28 05:13:04 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.52 2000/01/25 01:06:46 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.53 2000/02/22 20:22:29 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -18,7 +18,7 @@ SGMLDEPENDS = defs.ent
 #if 0
 LinuxDocReadmeTarget(Bsdi)
 #endif
-LinuxDocReadmeTarget(DGux)
+LinuxDocReadmeTarget(DGUX)
 LinuxDocReadmeTarget(FreeBSD)
 LinuxDocReadmeTarget(NetBSD)
 LinuxDocReadmeTarget(OpenBSD)
