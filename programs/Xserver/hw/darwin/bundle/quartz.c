@@ -5,7 +5,7 @@
  * By Gregory Robert Parker
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.18 2001/09/23 06:10:55 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.19 2001/10/07 18:47:49 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "quartz.h"
@@ -418,7 +418,9 @@ void QuartzInitOutput(void)
         generation = serverGeneration;
     }
 
-    QuartzAudioInit();
+    if (serverGeneration == 0) {
+        QuartzAudioInit();
+    }
 
     if (quartzRootless) {
         ErrorF("Display mode: Rootless Quartz\n");

@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.38 2001/09/29 04:48:53 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.39 2001/10/14 03:02:18 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -111,6 +111,12 @@ DarwinPrintBanner()
 #if XF86_VERSION_SNAP > 0
   ErrorF(".%d", XF86_VERSION_SNAP);
 #endif
+
+#if XF86_VERSION_SNAP >= 900
+  ErrorF(" (%d.%d.0 RC %d)", XF86_VERSION_MAJOR, XF86_VERSION_MINOR + 1,
+				XF86_VERSION_SNAP - 900);
+#endif
+
 #ifdef XF86_CUSTOM_VERSION
   ErrorF(" (%s)", XF86_CUSTOM_VERSION);
 #endif
@@ -159,6 +165,9 @@ static Bool DarwinAddScreen(
     VisualPtr   visual;
     ColormapPtr pmap;
     DarwinFramebufferPtr dfb;
+
+    // reset index of found screens for each server generation
+    if (index == 0) foundIndex = 0;
 
     // allocate space for private per screen storage
     dfb = xalloc(sizeof(DarwinFramebufferRec));
@@ -909,13 +918,11 @@ void ProcessInputEvents(void)
  */
 void InitInput( int argc, char **argv )
 {
-    if (serverGeneration == 1) {
-        darwinPointer = AddInputDevice(DarwinMouseProc, TRUE);
-        RegisterPointerDevice( darwinPointer );
+    darwinPointer = AddInputDevice(DarwinMouseProc, TRUE);
+    RegisterPointerDevice( darwinPointer );
 
-        darwinKeyboard = AddInputDevice(DarwinKeybdProc, TRUE);
-        RegisterKeyboardDevice( darwinKeyboard );
-    }
+    darwinKeyboard = AddInputDevice(DarwinKeybdProc, TRUE);
+    RegisterKeyboardDevice( darwinKeyboard );
 }
 
 /*
@@ -1018,7 +1025,9 @@ void OsVendorFatalError( void )
  */
 void OsVendorInit(void)
 {
-    DarwinPrintBanner();
+    if (serverGeneration == 1) {
+        DarwinPrintBanner();
+    }
 
     // Find the full path to the keymapping file.
     if ( darwinKeymapFile ) {
