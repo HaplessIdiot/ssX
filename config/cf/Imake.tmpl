@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.113 2001/11/03 23:03:00 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.114 2001/11/08 02:09:06 tsi Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -1117,7 +1117,10 @@ TCLIBDIR = TclLibDir
 #define RmCmd rm -f
 #endif
 
-/* Module cross-compile stuff */
+/*
+ * Module cross-compile stuff.  By default they are defined to be exactly the
+ * same as the non-module versions.
+ */
 #ifndef ModuleCcCmd
 #define ModuleCcCmd CcCmd
 #endif
@@ -1125,7 +1128,7 @@ TCLIBDIR = TclLibDir
 #define ModuleCppCmd CppCmd
 #endif
 #ifndef ModuleCFlags
-#define ModuleCFlags $(CDEBUGFLAGS) $(CCOPTIONS) $(THREADS_CFLAGS) $(ALLDEFINES)
+#define ModuleCFlags $(CFLAGS)
 #endif
 #ifndef ModuleAsCmd
 #define ModuleAsCmd AsCmd

@@ -7,7 +7,7 @@
  * be passed to the template file.                                         *
  *                                                                         *
  ***************************************************************************/
-/* $XFree86: xc/config/imake/imake.c,v 3.45 2001/08/01 00:44:33 tsi Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.46tsi Exp $ */
 
 /*
  * 
@@ -1146,6 +1146,9 @@ get_gcc_version(FILE *inFile)
 #endif
    fprintf (inFile, "#define GccMajorVersion %d\n", __GNUC__);
    fprintf (inFile, "#define GccMinorVersion %d\n", __GNUC_MINOR__);
+#if defined(HAS_MERGE_CONSTANTS)
+   fprintf (inFile, "#define HasGccMergeConstants %d\n", HAS_MERGE_CONSTANTS);
+#endif
 }
 #endif
 
