@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.57 2002/08/27 22:07:07 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.59 2002/09/16 18:06:12 eich Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -979,7 +979,7 @@ xf86scanpci(int flags)
 	}
 
 	devp->listed_class = 0;
-	
+
 #ifdef OLD_FORMAT
 	xf86MsgVerb(X_INFO, 2, "PCI: BusID 0x%.2x,0x%02x,0x%1x "
 		    "ID 0x%04x,0x%04x Rev 0x%02x Class 0x%02x,0x%02x\n",
