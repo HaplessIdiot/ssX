@@ -25,7 +25,7 @@
  * this work is sponsored by Appian Graphics.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.7 2000/10/17 09:07:05 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.8 2000/10/26 13:41:32 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -194,9 +194,7 @@ Permedia3PreInit(ScrnInfoPtr pScrn)
     	unsigned char m,n,p;
     	unsigned long clockused;
         xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	    "Appian Jeronimo 2000 board detected and initialized.\n\t"
-	    "subsysVendor = 0x%04x, subsysCard = 0x%04x.\n",
-	    pGlint->PciInfo->subsysVendor, pGlint->PciInfo->subsysCard);
+	    "Appian Jeronimo 2000 board detected and initialized.\n");
 
 	/* Memory timings for the Appian J2000 board.
 	 * This is needed for the second head which is left unitilialized
@@ -231,11 +229,6 @@ Permedia3PreInit(ScrnInfoPtr pScrn)
 	    PM3RD_SClkControl_SOURCE_PCLK |
 	    PM3RD_SClkControl_ENABLE);
     }
-    else xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	"Unknown Glint Permedia3 board detected.\n\t"
-	"subsysVendor = 0x%04x, subsysCard = 0x%04x.\n\t"
-	"Let's hope that it is correctly initialized by the bios.\n",
-	pGlint->PciInfo->subsysVendor, pGlint->PciInfo->subsysCard);
     TRACE_EXIT("Permedia3PreInit");
 }
 
@@ -301,16 +294,28 @@ Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    break;
 	case 16:
 	    pReg->glintRegs[PM3ByAperture1Mode >> 3] =
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+		PM3ByApertureMode_BYTESWAP_BADC |
+#endif
 		PM3ByApertureMode_PIXELSIZE_16BIT;
 	    pReg->glintRegs[PM3ByAperture2Mode >> 3] =
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+		PM3ByApertureMode_BYTESWAP_BADC |
+#endif
 		PM3ByApertureMode_PIXELSIZE_16BIT;
     	    pReg->glintRegs[PMVideoControl >> 3] =
 		1 | (1 << 3) | (1 << 5) | (1 << 19);
 	    break;
 	case 32:
 	    pReg->glintRegs[PM3ByAperture1Mode >> 3] =
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+		PM3ByApertureMode_BYTESWAP_DCBA |
+#endif
 		PM3ByApertureMode_PIXELSIZE_32BIT;
 	    pReg->glintRegs[PM3ByAperture2Mode >> 3] =
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+		PM3ByApertureMode_BYTESWAP_DCBA |
+#endif
 		PM3ByApertureMode_PIXELSIZE_32BIT;
     	    pReg->glintRegs[PMVideoControl >> 3] =
 		1 | (1 << 3) | (1 << 5) | (2 << 19);

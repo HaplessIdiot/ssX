@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2v_dac.c,v 1.16 2000/07/11 14:19:58 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2v_dac.c,v 1.17 2000/09/11 16:58:56 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -106,6 +106,40 @@ PM2VDAC_CalculateClock
     }
 
     return(actualclock);
+}
+
+void
+Permedia2VPreInit(ScrnInfoPtr pScrn)
+{
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+
+    if ((pGlint->PciInfo->subsysVendor == 0x1097) &&
+	(pGlint->PciInfo->subsysCard == 0x3db3)) {
+
+	/* Appian Jeronimo Pro 4x8mb (pm2v version) */
+	/* BIOS doesn't initialize the secondary heads, so we need to */
+
+        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+	    "Appian Jeronimo Pro 4x8mb board detected and initialized.\n");
+
+	/* disable MCLK */
+	Permedia2vOutIndReg(pScrn, PM2VDACRDMClkControl, 0x00, 0); 
+
+	/* boot new mclk values */
+	Permedia2vOutIndReg(pScrn, PM2VDACRDMClkPreScale, 0x00, 0x09);
+	Permedia2vOutIndReg(pScrn, PM2VDACRDMClkFeedbackScale, 0x00, 0x58);
+	Permedia2vOutIndReg(pScrn, PM2VDACRDMClkPostScale, 0x00, 0x01);
+
+	/* re-enable MCLK */
+	Permedia2vOutIndReg(pScrn, PM2VDACRDMClkControl, 0x00, 1); 
+
+	/* spin until locked MCLK */
+        while ( (Permedia2vInIndReg(pScrn, PM2VDACRDMClkControl) & 0x2) == 0);
+
+	/* Now re-boot the SGRAM's */
+	GLINT_SLOW_WRITE_REG(0xe6002021,PMMemConfig);
+    	GLINT_SLOW_WRITE_REG(0x00000020,PMBootAddress);
+    }
 }
 
 Bool
@@ -438,6 +472,9 @@ Permedia2vHWCursorInit(ScreenPtr pScreen)
     infoPtr->MaxWidth = 64;
     infoPtr->MaxHeight = 64;
     infoPtr->Flags = HARDWARE_CURSOR_TRUECOLOR_AT_8BPP |
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+		HARDWARE_CURSOR_BIT_ORDER_MSBFIRST |
+#endif
 		HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_1;
     infoPtr->SetCursorColors = Permedia2vSetCursorColors;
     infoPtr->SetCursorPosition = Permedia2vSetCursorPosition;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.20 2000/09/11 16:58:56 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.21 2000/09/19 14:12:32 alanh Exp $ */
 
 /*
  * glint register file 
@@ -323,6 +323,10 @@
 #define PM2VDACRDDClk1PreScale						0x204
 #define PM2VDACRDDClk1FeedbackScale					0x205
 #define PM2VDACRDDClk1PostScale						0x206
+#define PM2VDACRDMClkControl						0x20D
+#define PM2VDACRDMClkPreScale						0x20E
+#define PM2VDACRDMClkFeedbackScale					0x20F
+#define PM2VDACRDMClkPostScale						0x210
 #define PM2VDACRDCursorPalette						0x303
 #define PM2VDACRDCursorPattern						0x400
 #define PM2VDACIndexRegLow						0x4020
