@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/XvMClib.h,v 1.3 2001/04/01 13:59:59 tsi Exp $ */
+/* $XFree86: xc/include/extensions/XvMClib.h,v 1.4 2001/06/11 23:21:00 mvojkovi Exp $ */
 
 #ifndef _XVMCLIB_H_
 #define _XVMCLIB_H_
@@ -217,6 +217,29 @@ Status XvMCSetIntraDCPrecision(
    Display *display,
    XvMCContext *context,
    int prec
+);
+
+XvAttribute *
+XvMCQueryAttributes (
+    Display *display,
+    XvMCContext *context,
+    int *number
+);
+
+Status
+XvMCSetAttribute (
+    Display *display,
+    XvMCContext *context, 
+    Atom attribute, 
+    int value
+);
+
+Status
+XvMCGetAttribute (
+    Display *display,
+    XvMCContext *context, 
+    Atom attribute, 
+    int *value
 );
 
 _XFUNCPROTOEND
