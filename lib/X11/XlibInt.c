@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XlibInt.c,v 3.36tsi Exp $ */
+/* $XFree86: xc/lib/X11/XlibInt.c,v 3.37 2003/05/23 14:38:27 tsi Exp $ */
 
 /*
  *	XlibInt.c - Internal support routines for the C subroutine
@@ -860,7 +860,7 @@ _XEventsQueued(
 
 	STARTITERATE(rep,xReply,buf.buf,len > 0) {
 	    if (rep->generic.type == X_Reply) {
-                int tmp;
+                int tmp = len;
 		RESETITERPTR(rep,xReply,
 			     _XAsyncReply (dpy, rep,
 					   ITERPTR(rep), &tmp, True));
