@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/18 1996/01/16 16:08:36 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.33 1996/03/16 12:46:08 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.34 1996/05/06 05:57:30 dawes Exp $
 
 
 
@@ -35,18 +35,24 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.33 1996/03/1
 #if BuildXInputExt
  XF86_XINPUT_SRC = xf86Xinput.c
  XF86_XINPUT_OBJ = xf86Xinput.o
+# if JoystickSupport
+      JOYSTICK_SRC = xf86Jstk.c
+# endif
+# if WacomSupport
+         WACOM_SRC = xf86Wacom.c
+# endif
+# if ElographicsSupport
+   ELOGRAPHICS_SRC = xf86Elo.c
+# endif
 # if ! BuildDynamicLoading
     XINPUT_DEVICES = JoystickDefines WacomDefines ElographicsDefines
 #  if JoystickSupport
-      JOYSTICK_SRC = xf86Jstk.c
       JOYSTICK_OBJ = xf86Jstk.o
 #  endif
 #  if WacomSupport
-         WACOM_SRC = xf86Wacom.c
          WACOM_OBJ = xf86Wacom.o
 #  endif
 #  if ElographicsSupport
-   ELOGRAPHICS_SRC = xf86Elo.c
    ELOGRAPHICS_OBJ = xf86Elo.o
 #  endif
 # else
