@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c /main/191 1996/01/23 11:34:26 kaleb $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.27 1996/06/10 09:18:49 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.28 1996/06/29 09:10:52 dawes Exp $
  */
 
 /*
@@ -966,6 +966,21 @@ static void VTparse()
 			parsestate = groundtable;
 			break;
 
+		 case CASE_VPA:
+			if((row = param[0]) < 1)
+				row = 1;
+			CursorSet(screen, row-1, screen->cur_col, term->flags);
+			parsestate = groundtable;
+			break;
+
+		 case CASE_HPA:
+			/* HPA | CHA */
+			if((col = param[0]) < 1)
+				col = 1;
+			CursorSet(screen, screen->cur_row, col-1, term->flags);
+			parsestate = groundtable;
+			break;
+
 		 case CASE_HP_BUGGY_LL:
 			/* Some HP-UX applications have the bug that they
 			   assume ESC F goes to the lower left corner of
@@ -1119,6 +1134,19 @@ static void VTparse()
 					break;
 				 case 7:
 					term->flags |= INVERSE;
+					break;
+				 case 22:
+					term->flags &= ~BOLD;
+					break;
+				 case 24:
+					term->flags &= ~UNDERLINE;
+					break;
+				 case 25:
+					/* Blink, really */
+					term->flags &= ~BOLD;
+					break;
+				 case 27:
+					term->flags &= ~INVERSE;
 					break;
 				 case 30:
 				 case 31:

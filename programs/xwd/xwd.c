@@ -1,5 +1,5 @@
 /* $XConsortium: xwd.c /main/64 1996/01/14 16:53:13 kaleb $ */
-/* $XFree86: xc/programs/xwd/xwd.c,v 3.0 1996/06/10 09:20:36 dawes Exp $ */
+/* $XFree86: xc/programs/xwd/xwd.c,v 3.1 1996/06/29 09:11:00 dawes Exp $ */
 
 /*
 
@@ -73,6 +73,9 @@ in this Software without prior written authorization from the X Consortium.
 
 #ifdef X_NOT_STDC_ENV
 extern int errno;
+char *calloc();
+#else
+#include <stdlib.h>
 #endif
 
 #include <X11/Xlib.h>
@@ -220,12 +223,6 @@ main(argc, argv)
     }
     exit(0);
 }
-
-#ifdef X_NOT_STDC_ENV
-char *calloc();
-#else
-#include <stdlib.h>
-#endif
 
 static int
 Get24bitDirectColors(colors)

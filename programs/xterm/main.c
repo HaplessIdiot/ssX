@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c /main/239 1995/12/10 17:21:49 gildea $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.37 1996/05/12 13:03:03 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.38 1996/06/10 09:18:51 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -2923,6 +2923,7 @@ spawn ()
 		(void) setutent ();
 		/* set up entry to search for */
 		ptyname = ttydev;
+		bzero(&utmp, sizeof(utmp));
 #ifndef __sgi
 		if (PTYCHARLEN >= (int)strlen(ptyname))
 		    ptynameptr = ptyname;
@@ -2941,7 +2942,7 @@ spawn ()
 
 		/* set up the new entry */
 		utmp.ut_type = USER_PROCESS;
-#ifndef linux
+#if !defined(linux) && !defined(SVR4)
 		utmp.ut_exit.e_exit = 2;
 #endif
 		(void) strncpy(utmp.ut_user,

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: VTPrsTbl.c,v 1.10 95/06/09 22:17:06 gildea Exp $
- *	$XFree86: xc/programs/xterm/VTPrsTbl.c,v 3.2 1995/09/23 07:09:24 dawes Exp $
+ *	$XFree86: xc/programs/xterm/VTPrsTbl.c,v 3.3 1995/12/02 05:07:43 dawes Exp $
  */
 
 /*
@@ -454,7 +454,7 @@ CASE_CUF,
 CASE_CUB,
 CASE_GROUND_STATE,
 CASE_GROUND_STATE,
-CASE_GROUND_STATE,
+CASE_HPA,
 /*	H		I		J		K	*/
 CASE_CUP,
 CASE_GROUND_STATE,
@@ -491,14 +491,14 @@ CASE_GROUND_STATE,
 CASE_GROUND_STATE,
 CASE_DA1,
 /*	d		e		f		g	*/
-CASE_GROUND_STATE,
+CASE_VPA,
 CASE_GROUND_STATE,
 CASE_CUP,
 CASE_TBC,
 /*	h		i		j		k	*/
 CASE_SET,
 CASE_GROUND_STATE,
-CASE_GROUND_STATE,
+CASE_HPA,
 CASE_GROUND_STATE,
 /*	l		m		n		o	*/
 CASE_RST,
