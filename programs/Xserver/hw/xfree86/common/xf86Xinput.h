@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.25 1999/05/30 02:28:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.26 1999/06/06 05:14:10 dawes Exp $ */
 
 #ifndef _xf86Xinput_h
 #define _xf86Xinput_h
@@ -40,7 +40,7 @@
 #endif
 
 /* Input device flags */
-#define XI86_NO_OPEN_ON_INIT    0x01 /* open the device only when needed */
+#define XI86_OPEN_ON_INIT       0x01 /* open the device at startup time */
 #define XI86_CONFIGURED         0x02 /* the device has been configured */
 #define XI86_ALWAYS_CORE	0x04 /* device always controls the pointer */
 /* the device sends Xinput and core pointer events */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.46 1999/06/06 08:48:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.47 1999/06/12 07:18:41 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -370,6 +370,16 @@ xf86SetDepthBpp(ScrnInfoPtr scrp, int depth, int dummy, int fbbpp,
     scrp->bitsPerPixelFrom = X_DEFAULT;
     scrp->depthFrom = X_DEFAULT;
 
+#if BITMAP_SCANLINE_UNIT == 64
+    /*
+     * For platforms with 64-bit scanlines, modify the driver's depth24flags
+     * to remove preferences for packed 24bpp modes, which are not currently
+     * supported on these platforms.
+     */
+    depth24flags &= ~(SupportConvert32to24 | SupportConvert32to24 |
+		      PreferConvert24to32 | PreferConvert32to24)
+#endif
+     
     if (xf86FbBpp > 0) {
 	scrp->bitsPerPixel = xf86FbBpp;
 	scrp->bitsPerPixelFrom = X_CMDLINE;

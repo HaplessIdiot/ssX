@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.8 1999/05/15 12:10:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.9 1999/06/12 16:10:51 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -1722,7 +1722,7 @@ xvipcHandshake(PortPrivPtr pPPriv, int op, Bool block)
 }
 
 static void
-Permedia2ReadInput(LocalDevicePtr unused)
+Permedia2ReadInput(int fd, pointer unused)
 {
     xvipcHandshake(NULL, OP_EVENT, FALSE);
 }
@@ -1746,10 +1746,11 @@ AdaptorPrivUninit(AdaptorPrivPtr pAPriv)
     xfree(pAPriv);
 }
 
+/* XXX This code appears to assume single head? */
+
 static Bool
 xvipcOpen(char *name, ScrnInfoPtr pScrn)
 {
-#ifdef XINPUT			/* XXX FIX ME! */
     const char *osname;
 
     if (xvipc_fd >= 0)
@@ -1786,20 +1787,10 @@ xvipcOpen(char *name, ScrnInfoPtr pScrn)
 	    break;
 	}
 
-	/* FIXME */
-
-#ifndef NEW_INPUT
-	xvipc_local = xcalloc(1, sizeof(LocalDeviceRec));
-	xvipc_local->type_name = "Permedia 2 kernel backbone";
-	xvipc_local->flags = XI86_NO_OPEN_ON_INIT;
-	xvipc_local->read_input = Permedia2ReadInput;
-	xvipc_local->fd = xvipc_fd;
-	xf86AddLocalDevice(xvipc_local, NULL);
-	xvipc_local->flags &= ~XI86_CONFIGURED; /* Don't xf86ActivateDevice us */
-	AddEnabledDevice(xvipc_fd);
+	/* XXX This device should probably be closed when VT switched away. */
+	xf86AddInputHandler(xvipc_fd, Permedia2ReadInput, NULL);
 
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Xv driver connected to %s\n", name);
-#endif
 
 	return TRUE;
     }
@@ -1813,7 +1804,6 @@ xvipcOpen(char *name, ScrnInfoPtr pScrn)
 	       "Cannot connect to Permedia 2 kernel driver. "
 	       "Note that using both drivers at the same time "
 	       "will cause problems.\n");
-#endif /* XINPUT */
     return FALSE;
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.106 1999/06/12 07:18:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.107 1999/06/12 17:30:16 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -112,6 +112,10 @@ Bool DGAInit(ScreenPtr pScreen, DGAFunctionPtr funcs, DGAModePtr modes,
 /* xf86Events.c */
 
 void SetTimeSinceLastInputEvent(void);
+pointer xf86AddInputHandler(int fd, InputHandlerProc proc, pointer data);
+void xf86RemoveInputHandler(pointer handler);
+void xf86DisableInputHandler(pointer handler);
+void xf86EnableInputHandler(pointer handler);
 
 /* xf86Helper.c */
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.96 1999/06/12 07:19:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.97 1999/06/12 15:37:12 dawes Exp $ */
 
 /*
  *
@@ -262,6 +262,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86EnterServerState)
    SYMFUNC(xf86GetBlock)
    SYMFUNC(xf86GetSparse)
+   SYMFUNC(xf86ReallocatePciResources)
    
    /* xf86Cursor.c  XXX not all of these should be exported */
    SYMFUNC(xf86LockZoom)
@@ -297,6 +298,10 @@ LOOKUP xfree86LookupTab[] = {
 
    /* xf86Events.c */
    SYMFUNC(SetTimeSinceLastInputEvent)
+   SYMFUNC(xf86AddInputHandler)
+   SYMFUNC(xf86RemoveInputHandler)
+   SYMFUNC(xf86DisableInputHandler)
+   SYMFUNC(xf86EnableInputHandler)
 
    /* xf86Helper.c */
    SYMFUNC(xf86AddDriver)

@@ -22,17 +22,21 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.50 1999/06/12 07:18:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.51 1999/06/12 15:37:04 dawes Exp $ */
 
 #include "Xfuncproto.h"
 #include "Xmd.h"
+#ifdef XINPUT
 #include "XI.h"
 #include "XIproto.h"
+#endif
 #include "xf86.h"
 #include "Xpoll.h"
 #include "xf86Priv.h"
 #include "xf86Xinput.h"
+#ifdef XINPUT
 #include "XIstubs.h"
+#endif
 #include "mipointer.h"
 #include "xf86InPriv.h"
 
@@ -131,6 +135,7 @@ xf86SendDragEvents(DeviceIntPtr	device)
     else
 	return (TRUE);
 }
+
 int
 xf86IsCoreKeyboard(DeviceIntPtr	device)
 {
@@ -175,41 +180,6 @@ xf86CheckButton(int	button,
 
 /***********************************************************************
  *
- * ReadInput --
- *	Wakeup handler to catch input and dispatch it to our
- *	input routines if necessary.
- *
- ***********************************************************************
- */
-static void
-ReadInput(pointer	block_data,
-	  int		select_status,
-	  pointer	read_mask)
-{
-  LocalDevicePtr	local_dev = xf86FirstLocalDevice();
-  fd_set*		LastSelectMask = (fd_set*) read_mask;
-  fd_set		devices_with_input;
-
-  if (select_status < 1)
-    return;
-
-  XFD_ANDSET(&devices_with_input, LastSelectMask, &EnabledDevices);
-  if (!XFD_ANYSET(&devices_with_input))
-    return;
-
-  while(local_dev) {
-    if (local_dev->read_input &&
-	(local_dev->fd >= 0) &&
-        (FD_ISSET(local_dev->fd, ((fd_set *) read_mask)) != 0)) {
-      (*local_dev->read_input)(local_dev);
-      break;
-    }
-    local_dev = local_dev->next;
-  }
-}
-
-/***********************************************************************
- *
  * xf86ProcessCommonOptions --
  * 
  *	Process global options.
@@ -248,11 +218,6 @@ xf86ProcessCommonOptions(LocalDevicePtr local,
 	xf86Msg(X_CONFIG, "%s: has a history of %d motions\n", local->name,
 		local->history_size);
     }
-    
-#ifndef NEW_INPUT
-    /* Save the options for latter use. Serial line setup for example. */
-    local->options = list;
-#endif
 }
 
 /***********************************************************************
@@ -296,9 +261,9 @@ xf86ActivateDevice(LocalDevicePtr local)
     if (local->flags & XI86_CONFIGURED) {
 	int	open_on_init;
 	
-	open_on_init = !(local->flags & XI86_NO_OPEN_ON_INIT) ||
-	    (local->flags &
-	     (XI86_ALWAYS_CORE | XI86_CORE_POINTER | XI86_CORE_KEYBOARD));
+	open_on_init = local->flags &
+		(XI86_OPEN_ON_INIT |
+		 XI86_ALWAYS_CORE | XI86_CORE_POINTER | XI86_CORE_KEYBOARD);
 	
 	dev = AddInputDevice(local->device_control,
 			     open_on_init);
@@ -329,6 +294,7 @@ xf86ActivateDevice(LocalDevicePtr local)
     }
 }
 
+#if 0
 /***********************************************************************
  *
  * InitExtInput --
@@ -359,8 +325,10 @@ InitExtInput()
 	local = local->next;
     }
 }
+#endif
 
 
+#ifdef XINPUT
 /***********************************************************************
  *
  * Caller:	ProcXOpenDevice
@@ -643,6 +611,7 @@ ChangeDeviceControl (ClientPtr client, DeviceIntPtr dev, xDeviceCtl *control)
       return (*local->control_proc)(local, control);
   }
 }
+#endif
 
 /*
  * adapted from mieq.c to support extended events
@@ -1465,6 +1434,7 @@ xf86GetMotionEvents(DeviceIntPtr	dev,
     }
     return num;
 }
+
 LocalDevicePtr
 xf86FirstLocalDevice()
 {

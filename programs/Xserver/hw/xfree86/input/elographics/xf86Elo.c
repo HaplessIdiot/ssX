@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elographics/xf86Elo.c,v 1.2 1999/05/15 12:10:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elographics/xf86Elo.c,v 1.3 1999/06/05 15:55:25 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -1434,7 +1434,7 @@ xf86EloAllocate(void)
   priv->packet_buf_p = 0;
 
   local->name = XI_TOUCHSCREEN;
-  local->flags = XI86_NO_OPEN_ON_INIT;
+  local->flags = 0;
 #ifndef XFREE86_V4
 #if !defined(sun) || defined(i386)
   local->device_config = xf86EloConfig;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.71 1999/05/30 07:18:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.72 1999/06/12 07:18:40 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -138,6 +138,20 @@ extern void xf86XqueRequest(void);
 #endif
 
 static void xf86VTSwitch(void);
+
+/*
+ * Allow arbitrary drivers or other XFree86 code to register with our main
+ * Wakeup handler.
+ */
+typedef struct x_IHRec {
+    int			fd;
+    InputHandlerProc	ihproc;
+    pointer		data;
+    Bool		enabled;
+    struct x_IHRec *	next;
+} IHRec, *IHPtr;
+
+static IHPtr InputHandlers = NULL;
 
 #ifndef NEW_INPUT
 static CARD32 buttonTimer(OsTimerPtr timer, CARD32 now, pointer arg);
@@ -1252,6 +1266,17 @@ xf86Wakeup(pointer blockData, int err, pointer pReadmask)
 
 #endif  /* __EMX__ */
 
+    {
+	IHPtr ih;
+
+	for (ih = InputHandlers; ih; ih = ih->next) {
+	    if (ih->enabled && ih->fd >= 0 && ih->ihproc &&
+		(FD_ISSET(ih->fd, ((fd_set *)pReadmask)) != 0)) {
+		ih->ihproc(ih->fd, ih->data);
+	    }
+	}
+    }
+	    
 #ifndef NEW_INPUT
 #if defined(XQUEUE) && !defined(XQUEUE_ASYNC)
   /* This could be done more cleanly */
@@ -1295,6 +1320,7 @@ xf86VTSwitch()
 #ifdef NEW_INPUT
   InputInfoPtr pInfo;
 #endif
+  IHPtr ih;
 
 #ifdef DEBUG
   ErrorF("xf86VTSwitch()\n");
@@ -1336,6 +1362,8 @@ xf86VTSwitch()
     }
 #endif /* NEW_INPUT */
 #endif /* !__EMX__ */
+    for (ih = InputHandlers; ih; ih = ih->next)
+      xf86DisableInputHandler(ih);
     xf86AccessLeaveState(); /* We need this here, otherwise */
     xf86AccessLeave();      /* console won't be restored    */
 
@@ -1374,6 +1402,8 @@ xf86VTSwitch()
       }
 #endif /* NEW_INPUT */
 #endif /* !__EMX__ */
+    for (ih = InputHandlers; ih; ih = ih->next)
+      xf86EnableInputHandler(ih);
 
     } else {
 	for (i = 0; i < xf86NumScreens; i++) {
@@ -1418,7 +1448,89 @@ xf86VTSwitch()
     }
 #endif /* NEW_INPUT */
 #endif /* !__EMX__ */
+    for (ih = InputHandlers; ih; ih = ih->next)
+      xf86EnableInputHandler(ih);
   }
+}
+
+
+/* Input handler registration */
+
+pointer
+xf86AddInputHandler(int fd, InputHandlerProc proc, pointer data)
+{
+    IHPtr ih;
+
+    if (fd < 0 || !proc)
+	return NULL;
+
+    ih = xcalloc(sizeof(*ih), 1);
+    if (!ih)
+	return NULL;
+
+    ih->fd = fd;
+    ih->ihproc = proc;
+    ih->data = data;
+    ih->enabled = TRUE;
+
+    ih->next = InputHandlers;
+    InputHandlers = ih;
+
+    AddEnabledDevice(fd);
+
+    return ih;
+}
+
+void
+xf86RemoveInputHandler(pointer handler)
+{
+    IHPtr ih, p;
+
+    if (!handler)
+	return;
+
+    ih = handler;
+    if (ih->fd >= 0)
+	RemoveEnabledDevice(ih->fd);
+
+    if (ih == InputHandlers)
+	InputHandlers = ih->next;
+    else {
+	p = InputHandlers;
+	while (p && p->next != ih)
+	    p = p->next;
+	if (ih)
+	    p->next = ih->next;
+    }
+    xfree(ih);
+}
+
+void
+xf86DisableInputHandler(pointer handler)
+{
+    IHPtr ih;
+
+    if (!handler)
+	return;
+
+    ih = handler;
+    ih->enabled = FALSE;
+    if (ih->fd >= 0)
+	RemoveEnabledDevice(ih->fd);
+}
+
+void
+xf86EnableInputHandler(pointer handler)
+{
+    IHPtr ih;
+
+    if (!handler)
+	return;
+
+    ih = handler;
+    ih->enabled = TRUE;
+    if (ih->fd >= 0)
+	AddEnabledDevice(ih->fd);
 }
 
 #ifdef XTESTEXT1

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.24 1999/06/12 07:18:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.25 1999/06/12 14:15:30 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -2483,6 +2483,7 @@ xf86PostProbe(void)
 
     /* don't compare against ResInit - remove it from clone.*/
     acc = tmp = xf86DupResList(Acc);
+    pprev_next = &acc;
     while (tmp) {
 	if (tmp->r_type & ResInit) {
 	    (*pprev_next) = tmp->next;

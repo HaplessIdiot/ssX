@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.38 1999/06/12 14:15:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.39 1999/06/12 17:30:18 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -769,16 +769,13 @@ typedef enum {
     LOOKUP_CLKDIV2		= 0x0100 /* Allow half clocks */
 } LookupModeFlags;
 
-/* flags for indicating depth 24 support */
-typedef enum {
-    NoDepth24Support		= 0x00,
-    Support24bppFb		= 0x01,	/* 24bpp framebuffer supported */
-    Support32bppFb		= 0x02,	/* 32bpp framebuffer supported */
-    SupportConvert24to32	= 0x04,	/* Can convert 24bpp pixmap to 32bpp */
-    SupportConvert32to24	= 0x08,	/* Can convert 32bpp pixmap to 24bpp */
-    PreferConvert24to32		= 0x10, /* prefer 24bpp pixmap to 32bpp conv */
-    PreferConvert32to24		= 0x20	/* prefer 32bpp pixmap to 24bpp conv */
-} Depth24Flags;
+#define NoDepth24Support	0x00
+#define Support24bppFb		0x01	/* 24bpp framebuffer supported */
+#define Support32bppFb		0x02	/* 32bpp framebuffer supported */
+#define SupportConvert24to32	0x04	/* Can convert 24bpp pixmap to 32bpp */
+#define SupportConvert32to24	0x08	/* Can convert 32bpp pixmap to 24bpp */
+#define PreferConvert24to32	0x10	/* prefer 24bpp pixmap to 32bpp conv */
+#define PreferConvert32to24	0x20	/* prefer 32bpp pixmap to 24bpp conv */
 
 #ifndef NEW_INPUT
 /*
@@ -815,6 +812,9 @@ typedef enum {
 
 /* For DPMS */
 typedef void (*DPMSSetProcPtr)(ScrnInfoPtr, int, int);
+
+/* Input handler proc */
+typedef void (*InputHandlerProc)(int fd, pointer data);
 
 /* These are used by xf86GetClocks */
 #define CLK_REG_SAVE		-1

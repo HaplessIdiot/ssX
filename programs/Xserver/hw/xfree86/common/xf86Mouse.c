@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mouse.c,v 1.12 1999/04/11 13:10:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mouse.c,v 1.13 1999/05/07 02:56:14 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -1238,7 +1238,7 @@ xf86MouseAllocate()
 
     local->name = "MOUSE";
     local->type_name = XI_MOUSE;
-    local->flags = XI86_NO_OPEN_ON_INIT|XI86_SEND_DRAG_EVENTS;
+    local->flags = XI86_SEND_DRAG_EVENTS;
     local->device_control = xf86MouseProc;
     local->read_input = xf86MouseReadInput;
     local->motion_history_proc = xf86GetMotionEvents;
