@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrandr/Xrandr.c,v 1.2 2001/05/26 01:25:42 keithp Exp $
+ * $XFree86: xc/lib/Xrandr/Xrandr.c,v 1.3 2001/06/03 21:52:44 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation, Inc.
  *
@@ -23,10 +23,14 @@
  * Author:  Jim Gettys, Compaq Computer Corporation, Inc.
  */
 #include <stdio.h>
+#include <X11/Xlib.h>
 #include "Xrandrint.h"
 
 XExtensionInfo XRRExtensionInfo;
 char XRRExtensionName[] = RANDR_NAME;
+
+static Bool     XRRWireToEvent(Display *dpy, XEvent *event, xEvent *wire);
+static Status   XRREventToWire(Display *dpy, XEvent *event, xEvent *wire);
 
 static int
 XRRCloseDisplay (Display *dpy, XExtCodes *codes);
@@ -39,11 +43,75 @@ static /* const */ XExtensionHooks rr_extension_hooks = {
     NULL,				/* create_font */
     NULL,				/* free_font */
     XRRCloseDisplay,			/* close_display */
-    NULL,				/* wire_to_event */
-    NULL,				/* event_to_wire */
+    XRRWireToEvent,			/* wire_to_event */
+    XRREventToWire,			/* event_to_wire */
     NULL,				/* error */
     NULL,				/* error_string */
 };
+
+static Bool XRRWireToEvent(Display *dpy, XEvent *event, xEvent *wire)
+{
+    XExtDisplayInfo *info = XRRFindDisplay(dpy);
+    XRRScreenChangeNotifyEvent *aevent;
+    xRRScreenChangeNotifyEvent *awire;
+
+    RRCheckExtension(dpy, info, False);
+
+    switch ((wire->u.u.type & 0x7F) - info->codes->first_event)
+    {
+      case RRScreenChangeNotify:
+	awire = (xRRScreenChangeNotifyEvent *) wire;
+	aevent = (XRRScreenChangeNotifyEvent *) event;
+	aevent->type = awire->type & 0x7F;
+	aevent->serial = _XSetLastRequestRead(dpy,
+					      (xGenericReply *) wire);
+	aevent->send_event = (awire->type & 0x80) != 0;
+	aevent->display = dpy;
+	aevent->timestamp = awire->timestamp;
+	aevent->config_timestamp = awire->configTimestamp;
+	aevent->root = awire->root;
+	aevent->size_index = awire->sizeIndex;
+	aevent->rotation = awire->rotation;
+	aevent->new.width = awire->new.widthInPixels;
+	aevent->new.height = awire->new.heightInPixels;
+	aevent->new.mwidth = awire->new.widthInMillimeters;
+	aevent->new.mheight = awire->new.heightInMillimeters;
+	aevent->new.group = awire->new.visualGroup;
+	return True;
+    }
+
+    return False;
+}
+
+static Status XRREventToWire(Display *dpy, XEvent *event, xEvent *wire)
+{
+    XExtDisplayInfo *info = XRRFindDisplay(dpy);
+    XRRScreenChangeNotifyEvent *aevent;
+    xRRScreenChangeNotifyEvent *awire;
+
+    RRCheckExtension(dpy, info, False);
+
+    switch ((event->type & 0x7F) - info->codes->first_event)
+    {
+      case RRScreenChangeNotify:
+	awire = (xRRScreenChangeNotifyEvent *) wire;
+	aevent = (XRRScreenChangeNotifyEvent *) event;
+	awire->type = aevent->type | (aevent->send_event ? 0x80 : 0);
+	awire->sequenceNumber = aevent->serial & 0xFFFF;
+	awire->timestamp = aevent->timestamp;
+	awire->configTimestamp = aevent->config_timestamp;
+	awire->root = aevent->root;
+	awire->sizeIndex = aevent->size_index;
+	awire->rotation = aevent->rotation;
+	awire->new.widthInPixels = aevent->new.width;
+	awire->new.heightInPixels = aevent->new.height;
+	awire->new.widthInMillimeters = aevent->new.mwidth;
+	awire->new.heightInMillimeters = aevent->new.mheight;
+	awire->new.visualGroup = aevent->new.group;
+	return True;
+    }
+    return False;
+}
 
 XExtDisplayInfo *
 XRRFindDisplay (Display *dpy)
@@ -55,7 +123,7 @@ XRRFindDisplay (Display *dpy)
 	dpyinfo = XextAddDisplay (&XRRExtensionInfo, dpy, 
 				  XRRExtensionName,
 				  &rr_extension_hooks,
-				  0, 0);
+				  RRNumberEvents, 0);
     return dpyinfo;
 }
 
@@ -73,6 +141,56 @@ XRRCloseDisplay (Display *dpy, XExtCodes *codes)
  *			    RandR public interfaces                         *
  *                                                                          *
  ****************************************************************************/
+int XRRVisualToDepth(Display *dpy, Visual *visual) 
+{
+  int s;
+  for (s = 0; s < ScreenCount(dpy); s++) {
+    Screen *sp = ScreenOfDisplay(dpy, s);
+    int d;
+    for (d = 0; d < sp->ndepths; d++) {
+      int v;
+      for (v = 0; v < sp->depths[s].nvisuals; v++) {
+	if ( &sp->depths[s].visuals[v] == visual ) return d;
+      }
+    }
+  }
+  return -1; /* should not ever happen */
+}
+
+Visual *XRRVisualIDToVisual(Display *dpy, int screen, VisualID id)
+{
+  int d, v;
+  Screen *sp = ScreenOfDisplay(dpy, screen);
+  for (d = 0; d < sp->ndepths; d++) {
+    for (v = 0; v < sp->depths[d].nvisuals; v++) {
+      if ( sp->depths[d].visuals[v].visualid == id ) 
+	return (&sp->depths[d].visuals[v]);
+    }
+  }
+  return NULL;
+}
+
+Rotation XRRRotations(XRRScreenConfiguration *config, Rotation *current_rotation)
+{
+  *current_rotation = config->current_rotation;
+  return config->rotations;
+}
+
+XRRScreenSize *XRRSizes(XRRScreenConfiguration *config, int *nsizes)
+{
+   *nsizes = config->nsizes;
+  return config->sizes;
+}
+
+int XRRRootToScreen(Display *dpy, Window root)
+{
+  int snum;
+  for (snum = 0; snum < ScreenCount(dpy); snum++) {
+    if (RootWindow(dpy, snum) == root) return snum;
+  }
+  return -1;
+}
+
 
 Bool XRRQueryExtension (Display *dpy, int *event_basep, int *error_basep)
 {
@@ -116,18 +234,25 @@ Status XRRQueryVersion (Display *dpy,
     return 1;
 }
 
-Time XRRGetScreenInfo (Display		*dpy,
-		       Window		win,
-		       XRRScreenSize	**sizes,
-		       int		*nsize)
+XRRScreenConfiguration *XRRGetScreenInfo (Display *dpy, Window window)
 {
     XExtDisplayInfo *info = XRRFindDisplay(dpy);
     xRRGetScreenInfoReply   rep;
     xRRGetScreenInfoReq	    *req;
-    int			    nbytes;
-    int			    n;
+    int			    nbytes, rbytes;
+    int			    i, j;
+    int			    nvisuals, ngroups;
+    int			    snum;
     xScreenSizes	    *psize;
     char		    *data;
+    struct _XRRScreenConfiguration  *scp;
+    XRRVisualGroup	    *vgp;
+    XRRGroupOfVisualGroup   *gvgp;
+    XRRVisualGroup	    **gp;
+    XRRScreenSize	    *ssp;
+    Visual		    **vgpp;
+    CARD32		    *data32;
+    CARD16		    *data16;
 
     RRCheckExtension (dpy, info, 0);
 
@@ -135,12 +260,12 @@ Time XRRGetScreenInfo (Display		*dpy,
     GetReq (RRGetScreenInfo, req);
     req->reqType = info->codes->major_opcode;
     req->randrReqType = X_RRGetScreenInfo;
-    req->window = win;
+    req->window = window;
     if (!_XReply (dpy, (xReply *) &rep, 0, xFalse))
     {
 	UnlockDisplay (dpy);
 	SyncHandle ();
-	return CurrentTime;
+	return NULL;
     }
     nbytes = (long) rep.length << 2;
     data = (char *) Xmalloc ((unsigned) nbytes);
@@ -149,41 +274,155 @@ Time XRRGetScreenInfo (Display		*dpy,
 	_XEatData (dpy, (unsigned long) nbytes);
 	UnlockDisplay (dpy);
 	SyncHandle ();
-	return CurrentTime;
+	return NULL;
     }
     _XReadPad (dpy, data, nbytes);
     UnlockDisplay (dpy);
     SyncHandle ();
-    *sizes = Xmalloc (rep.nSizes * sizeof (XRRScreenSize));
-    if (!*sizes)
-    {
-	*nsize = 0;
-	return CurrentTime;
-    }
-    *nsize = rep.nSizes;
+
+    /* 
+     * first we must compute how much space to allocate for 
+     * randr library's use; we'll allocate the structures in a single
+     * allocation, on cleanlyness grounds.
+     */
+
+    /* pick up in the protocol buffer after the protocol size information */
     psize = (xScreenSizes *) data;
-    for (n = 0; n < rep.nSizes; n++)
-    {
-	(*sizes)[n].width = psize[n].widthInPixels;
-	(*sizes)[n].height = psize[n].heightInPixels;
-	(*sizes)[n].mwidth = psize[n].widthInMillimeters;
-	(*sizes)[n].mheight = psize[n].heightInMillimeters;
-	(*sizes)[n].set = 0;
+    data32 = (CARD32 *) &psize[rep.nSizes];
+    vgp = (XRRVisualGroup *) ssp;	/* visual groups after size structures */
+    /* and groups of visual groups structures after the array of visual groups */
+    gvgp = (XRRGroupOfVisualGroup *) &vgp[rep.nVisualGroups];
+
+    /*
+     * first we count up the number of groups
+     */
+    nvisuals = 0;
+    for (i = 0; i < rep.nVisualGroups; i++) {
+      j = *data32;
+      data32 += j + 1;
+      nvisuals += j;
     }
-    return (rep.configTimestamp);
+
+    /*
+     * Next comes the groups of visual groups
+     */
+
+    data16 = (CARD16 *) data32;
+    /*
+     * We count up the number of groups
+     */
+    ngroups = 0;
+    for (i = 0; i < rep.nGroupsOfVisualGroups; i++) {
+      j = *data16;
+      data16 += j + 1;
+      ngroups += j;
+    }
+
+    rbytes = sizeof (XRRScreenConfiguration) +
+      (rep.nVisualGroups * sizeof (XRRVisualGroup)) +
+      (rep.nGroupsOfVisualGroups * sizeof (XRRGroupOfVisualGroup)) +
+      (rep.nSizes * sizeof (XRRScreenSize)) +
+      (nvisuals * sizeof (Visual *)) +
+      (ngroups * sizeof (XRRGroupOfVisualGroup *));
+
+    scp = (struct _XRRScreenConfiguration *) Xmalloc(rbytes);
+    if (scp == NULL) return NULL;
+
+
+    ssp = (XRRScreenSize *)(scp + 1);
+    vgp = (XRRVisualGroup *) (&ssp[rep.nSizes]);
+    gvgp = (XRRGroupOfVisualGroup *) (&vgp[rep.nVisualGroups]);
+    vgpp = (Visual **) (&gvgp[rep.nGroupsOfVisualGroups]);
+    gp = (XRRVisualGroup **) (&vgpp[ngroups]);
+    /* set up the screen configuration structure */
+    scp->screen = ScreenOfDisplay (dpy, (snum = XRRRootToScreen(dpy, rep.root)));
+
+    scp->visual_group = vgp;
+    scp->groups_of_visual_groups = gvgp;
+    scp->sizes = ssp;
+    scp->rotations = rep.setOfRotations;
+    scp->current_size = rep.sizeID;
+    scp->current_visual_group = rep.visualGroupID;
+    scp->current_rotation = rep.rotation;
+    scp->timestamp = rep.timestamp;
+    scp->config_timestamp = rep.configTimestamp;
+    scp->nsizes = rep.nSizes;
+
+    /*
+     * Time to unpack the data from the server.
+     */
+
+    /*
+     * First comes the size information
+     */
+    psize = (xScreenSizes *) data;
+    for (i = 0; i < rep.nSizes; i++)  {
+        ssp[i].width = psize[i].widthInPixels;
+	ssp[i].height = psize[i].heightInPixels;
+	ssp[i].mwidth = psize[i].widthInMillimeters;
+	ssp[i].mheight = psize[i].heightInMillimeters;
+	ssp[i].group = psize[i].visualGroup;
+    }
+    /*
+     * Next comes the visual groups
+     */
+
+    data32 = (CARD32 *) &psize[i];
+
+    for (i = 0; i < rep.nVisualGroups; i++) {
+      vgp[i].visuals = vgpp;
+      vgp[i].nvisuals = (int) *data32++;
+      for (j = 0; j < vgp->nvisuals; j++) {
+	*vgpp = XRRVisualIDToVisual(dpy, snum, (VisualID) *data32++);
+	vgpp += 1;
+      }
+    }
+
+
+    data16 = (CARD16 *) data32;
+
+    for (i = 0; i < rep.nGroupsOfVisualGroups; i++) {
+      gvgp[i].groups = gp;
+      gvgp[i].ngroups = (int) *data16++;
+      for (j = 0; j < gvgp[i].ngroups; j++) {
+  	  gvgp[i].groups[j] = &vgp[*data16++];
+	  gp += 1;
+      }
+    }
+
+    return (XRRScreenConfiguration *)(scp);
 }
     
-void XRRFreeScreenInfo (XRRScreenSize	*sizes)
+void XRRFreeScreenInfo (XRRScreenConfiguration *config)
 {
+    Xfree (config);
 }
 
-Time XRRSetScreenConfig (Display *dpy,
-			 Drawable draw,
-			 SizeID size_id,
-			 VisualGroupID visual_group_id,
-			 Rotation rotation,
-			 Time timestamp,
-			 Time configTimestamp) /* returns new timestamp */
+void XRRScreenChangeSelectInput (Display *dpy, Window window, Bool enable)
+{
+    XExtDisplayInfo *info = XRRFindDisplay (dpy);
+    xRRScreenChangeSelectInputReq  *req;
+
+    RRSimpleCheckExtension (dpy, info);
+
+    LockDisplay (dpy);
+    GetReq (RRScreenChangeSelectInput, req);
+    req->reqType = info->codes->major_opcode;
+    req->randrReqType = X_RRScreenChangeSelectInput;
+    req->window = window;
+    req->enable = xFalse;
+    if (enable) req->enable = xTrue;
+    UnlockDisplay (dpy);
+    SyncHandle ();
+    return;
+}
+
+Status XRRSetScreenConfig (Display *dpy,
+			   XRRScreenConfiguration *config,
+			   Drawable draw,
+			   int size_index,
+			   int visual_group_index,
+			   Rotation rotation, Time timestamp)
 {
     XExtDisplayInfo *info = XRRFindDisplay (dpy);
     xRRSetScreenConfigReply rep;
@@ -196,14 +435,23 @@ Time XRRSetScreenConfig (Display *dpy,
     req->reqType = info->codes->major_opcode;
     req->randrReqType = X_RRSetScreenConfig;
     req->drawable = draw;
-    req->sizeID = size_id;
-    req->visualGroupID = visual_group_id;
+    req->sizeID = size_index;
+    req->visualGroupID = visual_group_index;
     req->rotation = rotation;
     req->timestamp = timestamp;
-    req->configTimestamp = configTimestamp;
-    if (!_XReply (dpy, (xReply *) &rep, 0, xTrue)) 
-      rep.newTimestamp = CurrentTime;
+    req->configTimestamp = config->config_timestamp;
+    (void) _XReply (dpy, (xReply *) &rep, 0, xTrue);
+
+    if (rep.success == xTrue) {
+      /* if we succeed, set our view of reality to what we set it to */
+      config->config_timestamp = rep.newConfigTimestamp;
+      config->timestamp = rep.newTimestamp;
+      config->screen = ScreenOfDisplay (dpy, XRRRootToScreen(dpy, rep.root));
+      config->current_size = size_index;
+      config->current_rotation = rotation;
+      config->current_visual_group = visual_group_index;
+    }
     UnlockDisplay (dpy);
     SyncHandle ();
-    return(rep.newConfigTimestamp);
+    return(rep.success);
 }

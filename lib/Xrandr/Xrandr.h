@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrandr/Xrandr.h,v 1.2 2001/05/26 01:25:42 keithp Exp $
+ * $XFree86: xc/lib/Xrandr/Xrandr.h,v 1.3 2001/06/03 21:52:44 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation, Inc.
  *
@@ -26,24 +26,44 @@
 #ifndef _XRANDR_H_
 #define _XRANDR_H_
 
-#include <X11/Xmd.h>
-#include <X11/extensions/randr.h>
+#include "randr.h"
 
 typedef struct {
-    int	    nvisual;
+    int	    nvisuals;
     Visual  **visuals;
-} XRRVisualSet;
+} XRRVisualGroup;
 
 typedef struct {
-    int		    nset;
-    XRRVisualSet    **sets;
-} XRRSetOfVisualSet;
+    int		    ngroups;
+    XRRVisualGroup **groups;
+} XRRGroupOfVisualGroup;
     
 typedef struct {
-    int			width, height;
-    int			mwidth, mheight;
-    XRRSetOfVisualSet	*set;
+    int	width, height;
+    int	mwidth, mheight;
+    int	group;
 } XRRScreenSize;
+
+/*
+ *  Events
+ */
+
+typedef struct {
+    int type;			/* event base */
+    unsigned long serial;	/* # of last request processed by server */
+    Bool send_event;		/* true if this came from a SendEvent request */
+    Display *display;		/* Display the event was read from */
+    Time timestamp;
+    Time config_timestamp;
+    Window root;
+    SizeID size_index;
+    Rotation rotation;
+    XRRScreenSize new;
+} XRRScreenChangeNotifyEvent;
+
+
+/* internal representation is private to the library */
+typedef struct _XRRScreenConfiguration XRRScreenConfiguration;	
 
 Bool XRRQueryExtension (Display *dpy, int *event_basep, int *error_basep);
 
@@ -51,20 +71,31 @@ Status XRRQueryVersion (Display *dpy,
 			    int     *major_versionp,
 			    int     *minor_versionp);
 
-Time XRRGetScreenInfo (Display		*dpy,
-		       Window		win,
-		       XRRScreenSize	**sizes,
-		       int		*nsize);
+XRRScreenConfiguration *XRRGetScreenInfo (Display *dpy,
+					  Drawable draw);
     
-void XRRFreeScreenInfo (XRRScreenSize	*sizes);
+void XRRFreeScreenInfo (XRRScreenConfiguration	*config);
 
-Time XRRSetScreenConfig (Display *dpy,
-			 Drawable draw,
-			 SizeID size_id,
-			 VisualGroupID visual_group_id,
-			 Rotation rotation,
-			 Time timestamp,
-			 Time configTimestamp); /* returns new timestamp */
+Status XRRSetScreenConfig (Display *dpy, 
+			   XRRScreenConfiguration *config,
+			   Drawable draw,
+			   int size_index,
+			   int visual_group_index,
+			   Rotation rotation,
+			   Time timestamp);
 
+XRRScreenSize *XRRSizes(XRRScreenConfiguration *config, int *nsizes);
+
+void XRRScreenChangeSelectInput (Display *dpy, Window window, Bool enable);
+
+Visual *XRRVisualIDToVisual(Display *dpy, int screen, VisualID id);
+
+int XRRVisualToDepth(Display *dpy, Visual *visual);
+
+Rotation XRRRotations(XRRScreenConfiguration *config, Rotation *current_rotation);
+
+Time XRRTimes (XRRScreenConfiguration *config, Time *config_timestamp);
+
+int XRRRootToScreen(Display *dpy, Window root);
 
 #endif /* _XRANDR_H_ */

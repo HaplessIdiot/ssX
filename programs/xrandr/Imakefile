@@ -1,8 +1,8 @@
-XCOMM $XFree86: $
+XCOMM $XFree86: xc/programs/xrandr/Imakefile,v 1.1 2001/05/26 01:27:00 keithp Exp $
 
 DEFINES=$(RANDRDEFINES)
 DEPLIBS=$(DEPXRANDRLIB) $(DEPXLIB)
-LOCAL_LIBRARIES=$(XRANDRLIB) $(XLIB)
+LOCAL_LIBRARIES=-L../../exports/lib $(XRANDRLIB)_d $(XLIB)_d
 
 SRCS=xrandr.c
 OBJS=xrandr.o

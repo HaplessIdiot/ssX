@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/lib/Xrandr/Xrandrint.h,v 1.1 2001/05/23 03:29:44 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation, Inc.
  *
@@ -33,6 +33,7 @@
 #include "Xext.h"			/* in ../include */
 #include "extutil.h"			/* in ../include */
 #include "Xrandr.h"
+#include "randr.h"
 #include "randrproto.h"
 
 extern XExtensionInfo XrandrExtensionInfo;
@@ -46,5 +47,21 @@ extern char XrandrExtensionName[];
 
 XExtDisplayInfo *
 XRRFindDisplay (Display *dpy);
+
+/* deliberately opaque internal data structure; can be extended, 
+   but not reordered */
+struct _XRRScreenConfiguration {
+  Screen *screen;	/* the root window in GetScreenInfo */
+  XRRVisualGroup *visual_group;
+  XRRGroupOfVisualGroup *groups_of_visual_groups;
+  XRRScreenSize *sizes;
+  Rotation rotations;
+  Rotation current_rotation;
+  int nsizes;
+  int current_size;
+  int current_visual_group;
+  Time timestamp;
+  Time config_timestamp;
+};
 
 #endif /* _XRANDRINT_H_ */
