@@ -1,5 +1,5 @@
 XCOMM $DHD: xc/programs/Xserver/hw/xfree86/getconfig/Imakefile,v 1.4 2003/10/03 21:32:46 dawes Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/getconfig/Imakefile,v 1.1 2003/10/08 14:58:29 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/getconfig/Imakefile,v 1.2 2003/10/30 16:58:19 tsi Exp $
 
 /*
  * Link these to the BuildModule directory.  This is useful for in-tree
@@ -28,4 +28,7 @@ InstallNamedProg(getconfig.pl,getconfig.pl,$(BINDIR))
 
 InstallNonExecFile(xfree86.cfg,$(LIBDIR)/getconfig)
 InstallNonExecFile(cfg.sample,$(LIBDIR)/getconfig)
+
+InstallManPage(getconfig,$(MANDIR))
+InstallGenManPageLong(cfg,$(FILEMANDIR),getconfig,$(FILEMANSUFFIX))
 
