@@ -1,5 +1,6 @@
 /*
  *	$XConsortium: input.c,v 1.18 94/05/14 15:53:34 gildea Exp $
+ *	$XFree86$
  */
 
 /*
