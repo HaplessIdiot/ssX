@@ -4,7 +4,7 @@
  *
  *
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/ali_driver.c,v 3.20 1997/02/25 14:21:28 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/ali_driver.c,v 3.21 1997/02/28 08:19:09 hohndel Exp $
  */
 
 #include "X.h"
@@ -215,7 +215,7 @@ ModuleInit(data,magic)
 
     return;
 }
-#ifdef XFree86LOADER
+#endif /* XFree86LOADER */
 
 /*
  * ALIIdent() - 
