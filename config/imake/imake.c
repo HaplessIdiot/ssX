@@ -8,7 +8,7 @@
  * be passed to the template file.                                         *
  *                                                                         *
  ***************************************************************************/
-/* $XFree86: xc/config/imake/imake.c,v 3.30tsi Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.31 1999/03/14 03:20:33 dawes Exp $ */
 
 /*
  * 
@@ -929,6 +929,7 @@ get_distrib(FILE *inFile)
 
   static char* yast = "/sbin/YaST";
   static char* redhat = "/etc/redhat-release";
+  static char* debian = "/etc/debian_version";
 
   fprintf (inFile, "%s\n", "#define LinuxUnknown    0");
   fprintf (inFile, "%s\n", "#define LinuxSuSE       1");
@@ -952,6 +953,13 @@ get_distrib(FILE *inFile)
   if (lstat (redhat, &sb) == 0) {
     fprintf (inFile, "%s\n", "#define DefaultLinuxDistribution LinuxRedHat");
     fprintf (inFile, "%s\n", "#define DefaultLinuxDistName RedHat");
+    return;
+  }
+  if (lstat (debian, &sb) == 0) {
+    fprintf (inFile, "%s\n", "#define DefaultLinuxDistribution LinuxDebian");
+    fprintf (inFile, "%s\n", "#define DefaultLinuxDistName Debian");
+    /* You could also try to get the version of the Debian distrib by looking
+     * at the content of /etc/debian_version */
     return;
   }
   /* what's the definitive way to tell what any particular distribution is? */

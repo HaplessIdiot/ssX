@@ -1,4 +1,16 @@
 XFree86 3.9Pn (16 May 1999)
+2833. Xterm patch #102 (#2778, Thomas Dickey).
+2832. Fix some spelling errors in Xlib.h (#2775, Itai Nahshon).
+2831. Add auto-detection of Debian to imake (#2774, Sven Luther).
+2830. SiS driver updates, including turning on solid line acceleration,
+      remove GXCOPY_ONLY for Mono8x8 patterns, change mmio pointers to
+      volatile to avoid optimization problems, use xaarop.h, fix offscreen
+      memory init to avoid exceeding the accelerator's address range
+      (#2772, Alan Hourihane).
+2829. Fix build problems with the v4l driver on some systems (based on #2771,
+      Gerd Knorr, and a suggestion from David Woodhouse).
+2828. Xterm patch #101 (#2770, Thomas Dickey).
+2827. Fix some more Xinerarma bugs (#2766, 2768, Mark Vojkovich).
 2830. Fix the use of va_lists in the logging code (David Dawes).
 
 XFree86 3.9Pm (9 May 1999)
@@ -6,7 +18,7 @@ XFree86 3.9Pm (9 May 1999)
       Matt Grossman).
 2828. Fix a problem that can show up when a module is unloaded while another
       module has unaccounted for references to its symbols (Egbert Eich).
-2827. Fix some more Xinerarma bugs (#2766, Mark Vojkovich).
+2827. -
 2826. Finish DGA event support (#2765, Mark Vojkovich).
 2825. Xaw updates (including compatibility updates and a man page), xedit
       and editres updates (#2764, Paulo Cesar Pereira de Andrade).
@@ -7963,4 +7975,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.745 1999/05/09 10:51:50 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.746 1999/05/14 14:11:10 dawes Exp $

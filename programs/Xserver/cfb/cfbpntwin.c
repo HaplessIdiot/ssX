@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/cfb/cfbpntwin.c,v 3.0 1996/06/29 09:05:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbpntwin.c,v 3.1 1998/10/04 09:37:48 dawes Exp $ */
 
 #include "X.h"
 
@@ -54,6 +54,11 @@ SOFTWARE.
 #include "cfbmskbits.h"
 #include "mi.h"
 
+#ifdef PANORAMIX
+#include "panoramiX.h"
+#include "panoramiXsrv.h"
+#endif
+
 void
 cfbPaintWindow(pWin, pRegion, what)
     WindowPtr	pWin;
@@ -64,6 +69,7 @@ cfbPaintWindow(pWin, pRegion, what)
     WindowPtr	pBgWin;
 
     pPrivWin = cfbGetWindowPrivate(pWin);
+
 
     switch (what) {
     case PW_BACKGROUND:
@@ -87,11 +93,22 @@ cfbPaintWindow(pWin, pRegion, what)
 	    }
 	    else
 	    {
+		int xorg = pWin->drawable.x;
+		int yorg = pWin->drawable.y;
+#ifdef PANORAMIX
+		if(!noPanoramiXExtension) {
+		    int index = pWin->drawable.pScreen->myNum;
+		    if(WindowTable[index] == pWin) {
+			xorg -= panoramiXdataPtr[index].x;
+			yorg -= panoramiXdataPtr[index].y;
+		    }
+		}
+#endif
 		cfbFillBoxTileOdd ((DrawablePtr)pWin,
 				   (int)REGION_NUM_RECTS(pRegion),
 				   REGION_RECTS(pRegion),
 				   pWin->background.pixmap,
-				   (int) pWin->drawable.x, (int) pWin->drawable.y);
+				   xorg, yorg);
 	    }
 	    break;
 	case BackgroundPixel:
@@ -119,16 +136,30 @@ cfbPaintWindow(pWin, pRegion, what)
 	}
 	else
 	{
+	    int xorg, yorg;
+
 	    for (pBgWin = pWin;
 		 pBgWin->backgroundState == ParentRelative;
 		 pBgWin = pBgWin->parent);
+
+	    xorg = pBgWin->drawable.x;
+	    yorg = pBgWin->drawable.y;
+
+#ifdef PANORAMIX
+	    if(!noPanoramiXExtension) {
+		int index = pWin->drawable.pScreen->myNum;
+		if(WindowTable[index] == pBgWin) {
+		    xorg -= panoramiXdataPtr[index].x;
+		    yorg -= panoramiXdataPtr[index].y;
+		}
+	    }
+#endif
 
 	    cfbFillBoxTileOdd ((DrawablePtr)pWin,
 			       (int)REGION_NUM_RECTS(pRegion),
 			       REGION_RECTS(pRegion),
 			       pWin->border.pixmap,
-			       (int) pBgWin->drawable.x,
- 			       (int) pBgWin->drawable.y);
+			       xorg, yorg);
 	}
 	break;
     }

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: misc.c /main/112 1996/11/29 10:34:07 swick $
- *	$XFree86: xc/programs/xterm/misc.c,v 3.36 1999/04/11 13:11:33 dawes Exp $
+ *	$XFree86: xc/programs/xterm/misc.c,v 3.37 1999/04/29 09:14:05 dawes Exp $
  */
 
 /*
@@ -78,7 +78,7 @@
 #include <fontutils.h>
 #include <xcharmouse.h>
 
-#if XtSpecificationRelease < 6
+#if (XtSpecificationRelease < 6)
 #ifndef X_GETTIMEOFDAY
 #define X_GETTIMEOFDAY(t) gettimeofday(t,(struct timezone *)0)
 #endif
