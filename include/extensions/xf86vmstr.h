@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86vmstr.h,v 3.3 1995/06/14 09:39:26 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86vmstr.h,v 3.4 1995/07/02 07:42:28 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -147,7 +147,7 @@ typedef struct {
     CARD8	modelLength;
     CARD8	nhsync;
     CARD8	nvsync;
-    CARD32	bandwidth;
+    CARD32	bandwidth B32;
     CARD32	pad2 B32;
     CARD32	pad3 B32;
     CARD32	pad4 B32;
@@ -160,8 +160,8 @@ typedef struct {
     BOOL	pad1;
     CARD16	sequenceNumber B16;
     CARD32	length B32;
-    CARD32	suspendTime;
-    CARD32	offTime;
+    CARD32	suspendTime B32;
+    CARD32	offTime B32;
     CARD32	pad2 B32;
     CARD32	pad3 B32;
     CARD32	pad4 B32;

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Init.c,v 1.8 95/01/16 13:17:00 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.18 1995/06/08 06:27:11 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.19 1995/07/02 07:52:10 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -479,7 +479,7 @@ ddxProcessArgument (argc, argv, i)
     return 0;
   }
   /* Notice the -s flag, but allow it to pass to the dix layer */
-  if (!strcmp(argv[i], "-co"))
+  if (!strcmp(argv[i], "-s"))
   {
     xf86sFlag = TRUE;
     return 0;
