@@ -1,4 +1,6 @@
 XFree86 4.2.99.3 (xx November 2002)
+ 577. When the mode on server entry is found to be using composite sync on a
+      Mach64 variant, turn on the "compositesync" option (Marc La France).
  576. Plug SIGIO hole while the server is switching back into its VT
       (reported by Michel Lespinasse).
  575. Use shadowfb in XDarwin fullscreen Quartz mode (Torrey T. Lyons).
@@ -15679,4 +15681,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2424 2002/12/05 01:07:37 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2425 2002/12/05 18:29:19 tsi Exp $

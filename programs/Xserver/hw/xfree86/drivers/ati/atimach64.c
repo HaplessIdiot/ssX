@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.47 2002/02/14 22:08:02 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.48tsi Exp $ */
 /*
  * Copyright 1997 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -109,6 +109,13 @@ ATIMach64PreInit
 
     {
         pATIHW->crtc_off_pitch = SetBits(pATI->displayWidth >> 3, CRTC_PITCH);
+    }
+
+    if ((pATI->LockData.crtc_gen_cntl & CRTC_CSYNC_EN) && !pATI->OptionCSync)
+    {
+        xf86DrvMsg(pScreenInfo->scrnIndex, X_NOTICE,
+            "Using composite sync to match input timing.\n");
+        pATI->OptionCSync = TRUE;
     }
 
     pATIHW->bus_cntl = bus_cntl = inr(BUS_CNTL);
