@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128accel.c,v 3.14 1998/04/07 18:30:15 robin Exp $ */
 
 /*
  * Copyright 1997-1998 by Robin Cutshaw <robin@XFree86.Org>
@@ -49,6 +49,7 @@ static volatile CARD32 *eng_cur;
 static volatile i128dlpu *i128dl1p,  *i128dl2p;
 static CARD32 i128dl1o, i128dl2o;
 static CARD32 i128blitdir, i128cmd, i128rop, i128clptl, i128clpbr;
+static CARD32 i128DashPattern, i128pctrlsize;
 static i128dlpu dlpb[256];
 
 /* pre-shift rops and just or in as needed */
@@ -159,6 +160,7 @@ i128BitBlit(int x1, int y1, int x2, int y2, int w, int h)
 	eng_cur[XY1_DST] = (x2<<16) | y2;				MB;
 }
 
+
 void
 i128SetupForScreenToScreenCopy(int xdir, int ydir, int rop, unsigned planemask,
 	int transparency_color)
@@ -190,11 +192,13 @@ i128SetupForScreenToScreenCopy(int xdir, int ydir, int rop, unsigned planemask,
 	eng_cur[CMD] = i128cmd;
 }
 
+
 void
 i128SubsequentScreenToScreenCopy(int x1, int y1, int x2, int y2, int w, int h)
 {
 	i128BitBlit(x1, y1, x2, y2, w, h);
 }
+
 
 void
 i128SetupForFillRectSolid(int color, int rop, unsigned planemask)
@@ -236,6 +240,7 @@ ErrorF("SFFRS color 0x%x rop 0x%x (i128rop 0x%x) pmask 0x%x\n", color, rop, i128
 	eng_cur[CMD] = i128cmd;
 }
 
+
 void
 i128SubsequentFillRectSolid(int x, int y, int w, int h)
 {
@@ -244,6 +249,7 @@ ErrorF("SFRS %d,%d %d,%d\n", x, y, w, h);
 #endif
 	i128BitBlit(0, 0, x, y, w, h);
 }
+
 
 void
 i128SubsequentTwoPointLine(int x1, int y1, int x2, int y2, int bias)
@@ -267,6 +273,89 @@ ErrorF("STPL i128rop 0x%x  %d,%d %d,%d   clip %d,%d %d,%d\n", i128rop, x1, y1, x
 	eng_cur[XY1_DST] = (x2<<16) | y2;				MB;
 
 }
+
+#if 0
+static int sdlprint;
+#endif
+
+void
+i128SetupForDashedLine(int fg, int bg, int rop, unsigned planemask, int size)
+{
+	ENG_PIPELINE_READY();
+#if 0
+ErrorF("SFDL fg 0x%x bg 0x%x rop 0x%x(0x%x) pm 0x%x sz %d ", fg, bg, rop, i128alu[rop]>>8, planemask, size);
+{ int i;
+for (i=31; i>=0; i--) ErrorF("%d", (i128DashPattern>>i)&1);
+ErrorF("\n");
+sdlprint = 1;
+}
+#endif
+
+	if (planemask == -1)
+		eng_cur[MASK] = -1;
+	else switch (xf86bpp) {
+		case 8:
+			eng_cur[MASK] = planemask |
+					(planemask<<8) |
+					(planemask<<16) |
+					(planemask<<24);
+			break;
+		case 16:
+			eng_cur[MASK] = planemask | (planemask<<16);
+			break;
+		case 24:
+		case 32:
+		default:
+			eng_cur[MASK] = planemask;
+			break;
+	}
+	i128DashPattern =
+			(byte_reversed[i128DashPattern&0xFF]<<24) |
+			(byte_reversed[(i128DashPattern>>8)&0xFF]<<16) |
+			(byte_reversed[(i128DashPattern>>16)&0xFF]<<8) |
+			 byte_reversed[(i128DashPattern>>24)&0xFF];
+
+	eng_cur[FORE] = fg;
+	if (bg != -1)
+		eng_cur[BACK] = bg;
+	i128pctrlsize = size & 0x1f;
+	eng_cur[LPAT] = i128DashPattern;
+
+	i128clptl = eng_cur[CLPTL] = 0x00000000;
+	i128clpbr = eng_cur[CLPBR] = (4095<<16) | 2047 ;
+
+	i128rop = i128alu[rop];
+	i128cmd =
+		(CP_PRST<<24) | (CC_CLPRECI<<21) |
+		(bg == -1 ? (CS_TRNSP<<16) : (CS_SOLID<<16)) |
+		i128rop |
+		CO_LINE;
+}
+
+
+void
+i128SubsequentDashedTwoPointLine(int x1, int y1, int x2, int y2,
+				 int bias, int offset)
+{
+	ENG_PIPELINE_READY();
+#if 0
+if (sdlprint)
+ErrorF("SDTPL %d,%d %d,%d   bias 0x%x offset 0x%x pctrl 0x%08x\n", x1, y1, x2, y2, bias, offset, i128pctrlsize | ((offset&0x1f)<<8));
+sdlprint = 0;
+#endif
+
+	eng_cur[CMD] =
+			((bias&0x0100) ? (CP_NLST<<24) : 0) |
+			i128cmd;
+
+	eng_cur[CLPTL] = i128clptl;
+	eng_cur[CLPBR] = i128clpbr;
+
+	eng_cur[PCTRL] = i128pctrlsize | ((offset&0x1f)<<8);
+	eng_cur[XY0_SRC] = (x1<<16) | y1;				MB;
+	eng_cur[XY1_DST] = (x2<<16) | y2;				MB;
+}
+
 
 void
 i128SetClippingRectangle(int x1, int y1, int x2, int y2)
@@ -535,6 +624,7 @@ i128AccelInit()
 	xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS |
 				 HARDWARE_CLIP_LINE |
 				 USE_TWO_POINT_LINE |
+				 LINE_PATTERN_MSBFIRST_MSBJUSTIFIED |
 				 TWO_POINT_LINE_NOT_LAST |
 				 PIXMAP_CACHE
 #ifdef DELAYED_SYNC
@@ -563,6 +653,14 @@ i128AccelInit()
 
 	xf86AccelInfoRec.SubsequentTwoPointLine =
 		i128SubsequentTwoPointLine;
+
+	xf86AccelInfoRec.SetupForDashedLine =
+		i128SetupForDashedLine;
+	xf86AccelInfoRec.SubsequentDashedTwoPointLine =
+		i128SubsequentDashedTwoPointLine;
+	xf86AccelInfoRec.LinePatternBuffer =
+		(void *)&i128DashPattern;
+	xf86AccelInfoRec.LinePatternMaxLength = 32;
 
 	xf86AccelInfoRec.SetClippingRectangle =
 		i128SetClippingRectangle;
