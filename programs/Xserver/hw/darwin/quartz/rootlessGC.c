@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessGC.c,v 1.1 2002/03/28 02:21:19 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessGC.c,v 1.2 2002/07/15 19:58:31 torrey Exp $ */
 
 #include "mi.h"
 #include "scrnintstr.h"
@@ -43,6 +43,7 @@
 #include <fcntl.h>
 
 #include "rootlessCommon.h"
+#include "aqua.h"
 
 
 // GC functions
