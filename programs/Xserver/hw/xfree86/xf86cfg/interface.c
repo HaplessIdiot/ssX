@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.24 2001/05/21 22:21:57 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.25 2001/06/22 23:22:20 paulo Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -168,7 +168,7 @@ static XtActionsRec actions[] = {
     {"options-cancel", OptionsCancelAction},
     {"error-cancel", ErrorCancelAction},
     {"quit-cancel", QuitCancelAction},
-    {"addmode-cancel", CancelForceAddModeAction},
+    {"addmode-cancel", CancelAddModeAction},
     {"accessx-close", CloseAccessXAction},
     {"testmode-cancel", CancelTestModeAction},
     {"help-close", HelpCancelAction},
