@@ -153,12 +153,12 @@ m<Key>I:	no-op(r)
 
 *search.translations: #override \
 <Create>:get-values(my, $w, width, $h, height)\
-	set-values(1, minWidth, $w, minHeight, $h, maxHeight, $h)
+	set-values(1, minWidth, $w, minHeight, $h, maxHeight, $h, allowShellResize, False)
 
 *insertFile.title:			Insert File
 *insertFile.translations: #override \
 <Create>:get-values(my, $w, width, $h, height)\
-	set-values(1, minWidth, $w, minHeight, $h, maxHeight, $h)
+	set-values(1, minWidth, $w, minHeight, $h, maxHeight, $h, allowShellResize, False)
 
 *baseTranslations: #override \
 <Ctrl>X,<Ctrl>C:quit()\n\
