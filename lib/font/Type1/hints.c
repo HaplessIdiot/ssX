@@ -39,13 +39,13 @@ W. Pryor, Jr.
 The included files are:
 */
  
+#include "os.h" 
 #include "objects.h"
 #include "spaces.h"
 #include "paths.h"
 #include "regions.h"
 #include "hints.h"
 
-#include "os.h" 
 /*
 :h3.Functions Provided to the TYPE1IMAGER User
  

@@ -48,11 +48,11 @@ assembly language, unlike C, will have 64-bit multiply products and
 The included files are:
 */
  
+#include "os.h"
 #include "objects.h"
 #include "spaces.h"
 #include "arith.h"
 
-#include "os.h"
  
 /*
 :h3.

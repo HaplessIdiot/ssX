@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.32 1999/07/18 03:26:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.33 1999/08/21 13:48:39 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -269,6 +269,13 @@ static const char *ramdacSymbols[] = {
     NULL
 };
 
+static const char *ddcSymbols[] = {
+    "xf86PrintEDID",
+    "xf86DoEDID_DDC1",
+    "xf86DoEDID_DDC2",
+    NULL
+};
+
 
 #ifdef XFree86LOADER
 
@@ -278,13 +285,6 @@ static const char *cfbSymbols[] = {
     "cfb24ScreenInit",
     "cfb24_32ScreenInit",
     "cfb32ScreenInit",
-    NULL
-};
-
-static const char *ddcSymbols[] = {
-    "xf86PrintEDID",
-    "xf86DoEDID_DDC1",
-    "xf86DoEDID_DDC2",
     NULL
 };
 

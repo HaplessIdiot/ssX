@@ -26,7 +26,7 @@
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/lib/font/Type1/spaces.c,v 3.4 1998/12/20 11:57:14 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/spaces.c,v 3.5 1999/08/21 13:47:47 dawes Exp $ */
  /* SPACES   CWEB         V0021 ********                             */
 /*
 :h1 id=spaces.SPACES Module - Handles Coordinate Spaces
@@ -46,6 +46,7 @@ This module is responsible for handling the TYPE1IMAGER "XYspace" object.
 #else
 #include "X11/Xos.h"
 #endif
+#include "os.h"
 #include "objects.h"
 #include "spaces.h"
 #include "paths.h"
@@ -53,7 +54,6 @@ This module is responsible for handling the TYPE1IMAGER "XYspace" object.
 #include "fonts.h"
 #include "arith.h"
 #include "trig.h"
-#include "os.h"
 
 static void FindFfcn ( double cx, double cy, 
 			      convertFunc *fcnP );
