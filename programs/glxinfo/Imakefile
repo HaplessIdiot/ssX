@@ -1,12 +1,8 @@
 XCOMM $XConsortium: Imakefile /main/7 1995/12/04 15:10:00 dpw $
-XCOMM $XFree86: xc/programs/glxinfo/Imakefile,v 1.1 2000/09/22 11:35:46 alanh Exp $
+XCOMM $XFree86: xc/programs/glxinfo/Imakefile,v 1.2 2001/03/02 23:01:33 dawes Exp $
 #include <Threads.tmpl>
-        DEPLIBS = $(DEPXTESTLIB) $(DEPXIELIB) $(DEPXLIB) $(DEPXKBFILELIB) $(DEPXF86LIBS) $(DEPXILIB)
-#ifndef OS2Architecture
-LOCAL_LIBRARIES = $(GLXLIB) $(XLIB) 
-#else
-LOCAL_LIBRARIES = $(GLXLIB) $(XLIB)
-#endif
+        DEPLIBS = $(DEPGLULIB) $(DEPGLXLIB) $(DEPXLIB)
+LOCAL_LIBRARIES = $(GLULIB) $(GLXLIB) $(XLIB) 
   SYS_LIBRARIES = MathLibrary
 
 
