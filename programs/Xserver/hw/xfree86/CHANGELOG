@@ -1,4 +1,5 @@
 XFree86 4.3.99.5 (xx May 2003)
+ 174. Restore VGA driver's checking for depths 1, 4 & 8 (Marc La France).
  173. Fix a problem with savage driver when UseBIOS is off, such that the
       performance drops dramatically. Now the performance matches or
       exceeds that of the option UseBIOS (Alan Hourihane).
@@ -16963,7 +16964,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2693 2003/05/15 13:34:54 pascal Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2694 2003/05/16 14:44:14 alanh Exp $
 
 
 
