@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.35 1998/12/13 05:32:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.36 1998/12/29 13:00:49 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -504,7 +504,7 @@ MGA3026Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	
 	/* Allocate the DacRegs space if not done already */
 	if (pReg->DacRegs == NULL) {
-		pReg->DacRegs = (unsigned char *)xnfcalloc(DACREGSIZE, 1);
+		pReg->DacRegs = xnfcalloc(DACREGSIZE, 1);
 	}
 	for (i = 0; i < DACREGSIZE; i++) {
 	    pReg->DacRegs[i] = initDAC[i]; 
@@ -758,7 +758,7 @@ MGA3026Save(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	
 	/* Allocate the DacRegs space if not done already */
 	if (mgaReg->DacRegs == NULL) {
-		mgaReg->DacRegs = (unsigned char *)xnfcalloc(DACREGSIZE, 1);
+		mgaReg->DacRegs = xnfcalloc(DACREGSIZE, 1);
 	}
 
 	/*

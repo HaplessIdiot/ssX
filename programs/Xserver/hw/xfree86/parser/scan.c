@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.2 1998/07/25 16:57:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.3 1998/11/22 10:37:37 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -229,7 +229,7 @@ xf86GetToken (xf86ConfigSymTabRec * tab)
 			while ((c != '\"') && (c != '\n') && (c != '\r') && (c != '\0'));
 #endif
 			configRBuf[i] = '\0';
-			val.str = (char *) xf86confmalloc (strlen (configRBuf) + 1);
+			val.str = xf86confmalloc (strlen (configRBuf) + 1);
 			strcpy (val.str, configRBuf);	/* private copy ! */
 			return (STRING);
 		}
@@ -352,7 +352,7 @@ xf86OpenConfigFile (char *filename)
 		/* 
 		 * First check if the -xf86config option was used.
 		 */
-		configPaths[pcount] = (char *) xf86confmalloc (PATH_MAX);
+		configPaths[pcount] = xf86confmalloc (PATH_MAX);
 		if (xf86ConfigFile[0])
 		{
 			strcpy (configPaths[pcount], xf86ConfigFile);
@@ -388,7 +388,7 @@ xf86OpenConfigFile (char *filename)
 		 */
 		if (getuid () == 0 && (home = getenv ("HOME")) != NULL)
 		{
-			configPaths[++pcount] = (char *) xf86confmalloc (PATH_MAX);
+			configPaths[++pcount] = xf86confmalloc (PATH_MAX);
 			strcpy (configPaths[pcount], home);
 			strcat (configPaths[pcount], "/" XCONFIGFILE);
 			if (xconfig)
@@ -400,7 +400,7 @@ xf86OpenConfigFile (char *filename)
 		/* 
 		 * /etc/XF86Config
 		 */
-		configPaths[++pcount] = (char *) xf86confmalloc (PATH_MAX);
+		configPaths[++pcount] = xf86confmalloc (PATH_MAX);
 		strcpy (configPaths[pcount], "/etc/" XCONFIGFILE);
 		if (xconfig)
 			strcat (configPaths[pcount], xconfig);
@@ -411,7 +411,7 @@ xf86OpenConfigFile (char *filename)
 		 * $(XCONFIGDIR)/XF86Config.<hostname>
 		 */
 
-		configPaths[++pcount] = (char *) xf86confmalloc (PATH_MAX);
+		configPaths[++pcount] = xf86confmalloc (PATH_MAX);
 		if (getuid () == 0 && (xwinhome = getenv ("XWINHOME")) != NULL)
 			sprintf (configPaths[pcount], "%s/lib/X11/" XCONFIGFILE, xwinhome);
 		else
@@ -436,7 +436,7 @@ xf86OpenConfigFile (char *filename)
 		/* 
 		 * $(XCONFIGDIR)/XF86Config
 		 */
-		configPaths[++pcount] = (char *) xf86confmalloc (PATH_MAX);
+		configPaths[++pcount] = xf86confmalloc (PATH_MAX);
 #ifndef __EMX__
 		if (getuid () == 0 && xwinhome)
 			sprintf (configPaths[pcount], "%s/lib/X11/" XCONFIGFILE, xwinhome);
@@ -461,9 +461,9 @@ xf86OpenConfigFile (char *filename)
 
 		return 0;
 	}
-	configBuf = (char *) xf86confmalloc (CONFIG_BUF_LEN);
-	configRBuf = (char *) xf86confmalloc (CONFIG_BUF_LEN);
-	configPath = (char *) xf86confmalloc (PATH_MAX);
+	configBuf = xf86confmalloc (CONFIG_BUF_LEN);
+	configRBuf = xf86confmalloc (CONFIG_BUF_LEN);
+	configPath = xf86confmalloc (PATH_MAX);
 
 	strcpy (configPath, configPaths[pcount]);
 

@@ -6,7 +6,7 @@
  *      (c) 1998 Gerd Knorr <kraxel@cs.tu-berlin.de>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/i2c/xf86i2c.c,v 1.2 1998/10/05 13:23:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/i2c/xf86i2c.c,v 1.3 1998/12/29 13:00:51 dawes Exp $ */
 
 #if 1
 #include "misc.h"
@@ -578,7 +578,7 @@ xf86I2CWriteVec(I2CDevPtr d, I2CByte *vec, int nValues)
 I2CDevPtr
 xf86CreateI2CDevRec(void) 
 {
-    return (I2CDevPtr) xcalloc(1, sizeof(I2CDevRec));
+    return xcalloc(1, sizeof(I2CDevRec));
 }
 
 void

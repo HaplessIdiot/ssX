@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.14 1998/08/19 07:49:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.15 1998/09/20 14:41:05 dawes Exp $ */
 
 /*
  *
@@ -231,7 +231,7 @@ Elf_Rela	*rel;
 {
     ELFRelocPtr	reloc;
 
-    if ((reloc = (ELFRelocPtr) xf86loadermalloc(sizeof(ELFRelocRec))) == NULL) {
+    if ((reloc = xf86loadermalloc(sizeof(ELFRelocRec))) == NULL) {
 	ErrorF( "ElfDelayRelocation() Unable to allocate memory!!!!\n" );
 	return 0;
     }
@@ -258,7 +258,7 @@ Elf_Sym	*sym;
 {
     ELFCommonPtr common;
 
-    if ((common = (ELFCommonPtr) xf86loadermalloc(sizeof(ELFCommonRec))) == NULL) {
+    if ((common = xf86loadermalloc(sizeof(ELFCommonRec))) == NULL) {
 	ErrorF( "ElfAddCOMMON() Unable to allocate memory!!!!\n" );
 	return 0;
     }
@@ -292,20 +292,20 @@ ELFModulePtr	elffile;
 	     numsyms, size );
 #endif
 
-    if((lookup = (LOOKUP *) xf86loadermalloc((numsyms+1)*sizeof(LOOKUP))) == NULL) {
+    if((lookup = xf86loadermalloc((numsyms+1)*sizeof(LOOKUP))) == NULL) {
 	ErrorF( "ElfCreateCOMMON() Unable to allocate memory!!!!\n" );
 	return 0;
     }
 
     elffile->comsize=size;
-    if((elffile->common = (unsigned char *) xf86loadercalloc(1,size)) == NULL) {
+    if((elffile->common = xf86loadercalloc(1,size)) == NULL) {
 	ErrorF( "ElfCreateCOMMON() Unable to allocate memory!!!!\n" );
 	return 0;
     }
 
     if (DebuggerPresent)
     {
-	ldrCommons = (LDRCommonPtr)xf86loadermalloc(numsyms*sizeof(LDRCommon));
+	ldrCommons = xf86loadermalloc(numsyms*sizeof(LDRCommon));
 	nCommons = numsyms;
     }
     /* Traverse the common list and create a lookup table with all the
@@ -418,7 +418,7 @@ int index;
     if( symname == NULL )
 	return NULL;
    
-    name=(char *) xf86loadermalloc(strlen(symname)+1);
+    name=xf86loadermalloc(strlen(symname)+1);
     if (!name)
 	FatalError("ELFGetSymbolName: Out of memory\n");
 
@@ -623,7 +623,7 @@ Elf_Rela	*rel;
 	return;
     }
 
-    if ((gotent = (ELFGotPtr) xf86loadermalloc(sizeof(ELFGotRec))) == NULL) {
+    if ((gotent = xf86loadermalloc(sizeof(ELFGotRec))) == NULL) {
 	ErrorF( "ElfAddGOT() Unable to allocate memory!!!!\n" );
 	return;
     }
@@ -1401,7 +1401,7 @@ ELFModulePtr	elffile;
     sect=&(elffile->sections[elffile->symndx]);
     numsyms=sect->sh_size/sect->sh_entsize;
 
-    if ((lookup = (LOOKUP *) xf86loadermalloc((numsyms+1)*sizeof(LOOKUP))) == NULL)
+    if ((lookup = xf86loadermalloc((numsyms+1)*sizeof(LOOKUP))) == NULL)
 	return 0;
 
     for(i=0,l=0; i<numsyms; i++)
@@ -1577,7 +1577,7 @@ ELFDEBUG(".data1 starts at %lx\n", elffile->data1 );
 	if( strcmp(ElfGetSectionName(elffile, elffile->sections[i].sh_name),
 		   ".bss" ) == 0 ) {
 	    if( SecSize(i) )
-		elffile->bss = (unsigned char *) xf86loadercalloc(1, SecSize(i));
+		elffile->bss = xf86loadercalloc(1, SecSize(i));
 	    else
 		elffile->bss=NULL;
 	    elffile->saddr[i]=elffile->bss;
@@ -1836,7 +1836,7 @@ LOOKUP **ppLookup;
     ldrCommons = 0;
     nCommons = 0;
 
-    if ((elffile = (ELFModulePtr) xf86loadercalloc(1, sizeof(ELFModuleRec))) == NULL) {
+    if ((elffile = xf86loadercalloc(1, sizeof(ELFModuleRec))) == NULL) {
 	ErrorF( "Unable to allocate ELFModuleRec\n" );
 	return NULL;
     }
@@ -1868,10 +1868,9 @@ LOOKUP **ppLookup;
     header->e_shnum++;
     elffile->numsh=header->e_shnum;
     elffile->secsize=(header->e_shentsize*header->e_shnum);
-    elffile->sections=(Elf_Shdr *)xf86loaderrealloc(elffile->sections,elffile->secsize);
+    elffile->sections=xf86loaderrealloc(elffile->sections,elffile->secsize);
 #endif
-    elffile->saddr=(unsigned char **) xf86loadercalloc(elffile->numsh,
-					      sizeof(unsigned char *));
+    elffile->saddr=xf86loadercalloc(elffile->numsh, sizeof(unsigned char *));
 
 #if defined(__alpha__)
     /*
@@ -1954,8 +1953,7 @@ LOOKUP **ppLookup;
 
     /* Record info for gdb - if we can't allocate the loader record fail
        silently (the user will find out soon enough that there's no VM left */
-    if ((elfmod = 
-	 (LDRModulePtr) xf86loadercalloc(1, sizeof(LDRModuleRec))) != NULL) {
+    if ((elfmod = xf86loadercalloc(1, sizeof(LDRModuleRec))) != NULL) {
 	elfmod->name = strdup(modrec->name);
 	elfmod->namelen = strlen(modrec->name);
 	elfmod->version = 1;

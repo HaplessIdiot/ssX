@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/edid.c,v 1.1 1998/11/28 10:43:04 dawes Exp $ */
 
 /* edid.c:  retrieve EDID record from raw DDC1 data stream: data 
  * is contained in an array of unsigned int each unsigned int 
@@ -29,7 +29,7 @@ GetEDID_DDC1(unsigned int *s_ptr)
     if (s_start==-1) return NULL;
     s_end = s_ptr + NUM;
     s_pos = s_ptr + s_start;
-    d_block=(unsigned char *) xalloc(EDID1_LEN);
+    d_block=xalloc(EDID1_LEN);
     if (!d_block) return NULL;
     d_pos = d_block;
     for (i=0;i<EDID1_LEN;i++) {
@@ -109,7 +109,7 @@ resort(unsigned char *s_block)
     unsigned char tmp;
 
     s_end = s_block + EDID1_LEN;
-    d_new = (unsigned char *)xalloc(EDID1_LEN);
+    d_new = xalloc(EDID1_LEN);
     if (!d_new) return NULL;
     d_end = d_new + EDID1_LEN;
 

@@ -48,7 +48,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/microtouch/microtouch.c,v 1.1 1998/12/05 14:40:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/microtouch/microtouch.c,v 1.2 1998/12/13 10:33:48 dawes Exp $ */
 
 #define _microtouch_C_
 /*****************************************************************************
@@ -148,8 +148,8 @@ SetupProc(	pointer module,
 			int *errmaj,
 			int *errmin )
 {
-	LocalDevicePtr local = (LocalDevicePtr) xcalloc (1, sizeof (LocalDeviceRec));
-	MuTPrivatePtr priv = (MuTPrivatePtr) xcalloc (1, sizeof (MuTPrivateRec));
+	LocalDevicePtr local = xcalloc (1, sizeof (LocalDeviceRec));
+	MuTPrivatePtr priv = xcalloc (1, sizeof (MuTPrivateRec));
 	pointer	defaults,
 			merged;
 	char *s;

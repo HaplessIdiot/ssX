@@ -20,7 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Summa.c,v 3.13 1998/07/25 16:55:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/summa/xf86Summa.c,v 1.1 1998/12/05 14:40:21 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -1001,8 +1001,8 @@ xf86SumSwitchMode(ClientPtr client, DeviceIntPtr dev, int mode)
 static LocalDevicePtr
 xf86SumAllocate()
 {
-    LocalDevicePtr	local = (LocalDevicePtr)xalloc(sizeof(LocalDeviceRec));
-    SummaDevicePtr	priv = (SummaDevicePtr)xalloc(sizeof(SummaDeviceRec));
+    LocalDevicePtr	local = xalloc(sizeof(LocalDeviceRec));
+    SummaDevicePtr	priv = xalloc(sizeof(SummaDeviceRec));
 #if defined (sun) && !defined(i386)
     char		*dev_name = getenv("SUMMASKETCH_DEV");
 #endif
@@ -1028,7 +1028,7 @@ xf86SumAllocate()
 
 #if defined(sun) && !defined(i386)
     if (def_name) {
-	priv->sumDevice = (char *)xalloc(strlen(dev_name) + 1);
+	priv->sumDevice = xalloc(strlen(dev_name) + 1);
 	strcpy(priv->sumDevice, device_name);
 	ErrorF("xf86SumOpen port changed to '%s'\n", priv->sumDevice);
     } else {

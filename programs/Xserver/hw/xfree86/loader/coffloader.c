@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coffloader.c,v 1.8 1998/07/25 16:56:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coffloader.c,v 1.9 1998/09/20 14:41:04 dawes Exp $ */
 
 /*
  *
@@ -161,7 +161,7 @@ RELOC		*rel;
 {
     COFFRelocPtr reloc;
 
-    if ((reloc = (COFFRelocPtr) xf86loadermalloc(sizeof(COFFRelocRec))) == NULL) {
+    if ((reloc = xf86loadermalloc(sizeof(COFFRelocRec))) == NULL) {
 	ErrorF( "COFFDelayRelocation() Unable to allocate memory!!!!\n" );
 	return 0;
     }
@@ -185,7 +185,7 @@ int index;
 {
     COFFCommonPtr common;
 
-    if ((common = (COFFCommonPtr) xf86loadermalloc(sizeof(COFFCommonRec))) == NULL) {
+    if ((common = xf86loadermalloc(sizeof(COFFCommonRec))) == NULL) {
 	ErrorF( "COFFAddCOMMON() Unable to allocate memory!!!!\n" );
 	return 0;
     }
@@ -226,13 +226,13 @@ COFFModulePtr	cofffile;
 	       numsyms, size );
 #endif
 
-    if ((lookup = (LOOKUP *) xf86loadermalloc((numsyms+1)*sizeof(LOOKUP))) == NULL) {
+    if ((lookup = xf86loadermalloc((numsyms+1)*sizeof(LOOKUP))) == NULL) {
         ErrorF( "COFFCreateCOMMON() Unable to allocate memory!!!!\n" );
         return NULL;
     }
 
     cofffile->comsize=size;
-    if ((cofffile->common = (unsigned char *) xf86loadercalloc(1,size)) == NULL) {
+    if ((cofffile->common = xf86loadercalloc(1,size)) == NULL) {
         ErrorF( "COFFCreateCOMMON() Unable to allocate memory!!!!\n" );
         return NULL;
     }
@@ -280,7 +280,7 @@ int		index;
     COFFDEBUG("COFFGetSymbolName(%x,%x) %x",cofffile, index, sym->n_zeroes );
 #endif
 
-    name = (char *) xf86loadermalloc(sym->n_zeroes ? SYMNMLEN + 1
+    name = xf86loadermalloc(sym->n_zeroes ? SYMNMLEN + 1
 	   : strlen((const char *)&cofffile->strtab[(int)sym->n_offset-4]) + 1);
     if (!name)
 	FatalError("COFFGetSymbolName: Out of memory\n");
@@ -856,7 +856,7 @@ COFFModulePtr	cofffile;
     cofffile->symtab=(SYMENT *)_LoaderFileToMem(cofffile->fd,cofffile->header->f_symptr,
 						(numsyms*SYMESZ),"symbols");
 
-    if ((lookup = (LOOKUP *) xf86loadermalloc((numsyms+1)*sizeof(LOOKUP))) == NULL)
+    if ((lookup = xf86loadermalloc((numsyms+1)*sizeof(LOOKUP))) == NULL)
 	return NULL;
 
     for(i=0,l=0; i<numsyms; i++)
@@ -1115,7 +1115,7 @@ COFFModulePtr	cofffile;
 	if( strcmp(cofffile->sections[i].s_name,
 		   ".bss" ) == 0 ) {
 	    if( SecSize(i) )
-		cofffile->bss=(unsigned char *) xf86loadercalloc(1,SecSize(i));
+		cofffile->bss=xf86loadercalloc(1,SecSize(i));
 	    else
 		cofffile->bss=NULL;
 	    cofffile->saddr[i]=cofffile->bss;
@@ -1165,7 +1165,7 @@ LOOKUP **ppLookup;
     COFFDEBUG("COFFLoadModule(%s,%x,%x)\n",modrec->name,modrec->handle,cofffd);
 #endif
 
-    if ((cofffile = (COFFModulePtr) xf86loadercalloc(1,sizeof(COFFModuleRec))) == NULL) {
+    if ((cofffile = xf86loadercalloc(1,sizeof(COFFModuleRec))) == NULL) {
 	ErrorF( "Unable to allocate COFFModuleRec\n" );
 	return NULL;
     }
@@ -1194,10 +1194,8 @@ LOOKUP **ppLookup;
     cofffile->secsize=(header->f_nscns*SCNHSZ);
     cofffile->sections=(SCNHDR *)_LoaderFileToMem(cofffd,FILHSZ+header->f_opthdr,
 						  cofffile->secsize, "sections");
-    cofffile->saddr=(unsigned char **) xf86loadercalloc(cofffile->numsh,
-					       sizeof(unsigned char *));
-    cofffile->reladdr=(unsigned char **) xf86loadercalloc(cofffile->numsh,
-						 sizeof(unsigned char *));
+    cofffile->saddr=xf86loadercalloc(cofffile->numsh, sizeof(unsigned char *));
+    cofffile->reladdr=xf86loadercalloc(cofffile->numsh, sizeof(unsigned char *));
 
 /*
  * Load the optional header if we need it ?????

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.22 1998/07/25 16:55:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/joystick/xf86Jstk.c,v 1.1 1998/12/05 14:40:17 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -541,8 +541,8 @@ xf86JstkProc(pJstk, what)
 static LocalDevicePtr
 xf86JstkAllocate()
 {
-  LocalDevicePtr        local = (LocalDevicePtr) xalloc(sizeof(LocalDeviceRec));
-  JoystickDevPtr        priv = (JoystickDevPtr) xalloc(sizeof(JoystickDevRec));
+  LocalDevicePtr        local = xalloc(sizeof(LocalDeviceRec));
+  JoystickDevPtr        priv = xalloc(sizeof(JoystickDevRec));
   
   local->name = "JOYSTICK";
   local->flags = XI86_NO_OPEN_ON_INIT;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.32 1998/10/04 12:59:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.33 1998/12/05 14:40:26 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -384,7 +384,7 @@ xf86fopen(const char* fn, const char* mode)
 	xf86errno = xf86GetErrno();
 	if (!f) return 0;
 
-	fp = (XF86FILE_priv*)xalloc(sizeof(XF86FILE_priv));
+	fp = xalloc(sizeof(XF86FILE_priv));
 	fp->magic = XF86FILE_magic;
 	fp->filehnd = f;
 	fp->fileno = fileno(f);
@@ -643,7 +643,7 @@ xf86strerror(int n)
 
 /* required for portable fgetpos/fsetpos,
  * use as
- *	XF86fpos_t* pos = (XF86fpos_t*)xalloc(xf86fpossize());
+ *	XF86fpos_t* pos = xalloc(xf86fpossize());
  */
 long
 xf86fpossize()
@@ -832,7 +832,7 @@ xf86tmpfile(void)
 	xf86errno = xf86GetErrno();
 	if (!f) return 0;
 
-	fp = (XF86FILE_priv*)xalloc(sizeof(XF86FILE_priv));
+	fp = xalloc(sizeof(XF86FILE_priv));
 	fp->magic = XF86FILE_magic;
 	fp->filehnd = f;
 	fp->fileno = fileno(f);
@@ -1012,9 +1012,9 @@ xf86setexternclock(pathname, clock_arg, clock_index)
 	return FALSE;
 
     /* Largest value is 1000.000 (1GHz) */
-    clockarg = (char *)xalloc(10);
+    clockarg = xalloc(10);
     /* Largest value is MAXCLOCKS (currently 128) */
-    clockindex = (char *)xalloc(5);
+    clockindex = xalloc(5);
     sprintf(clockarg, "%.3f", clock_arg / 1000.0);
     sprintf(clockindex, "%d", clock_index);
     ret = xf86execl(pathname, progname, clockarg, clockindex);
@@ -1067,10 +1067,10 @@ XF86DIR*	xf86opendir(const char *name)
 	if (!dirp)
 		return (XF86DIR*)0;
 
-	dp = (XF86DIR_priv*)xalloc(sizeof(XF86DIR_priv));
+	dp = xalloc(sizeof(XF86DIR_priv));
 	dp->magic = XF86DIR_magic; /* This time I have this, Dirk! :-) */
 	dp->dir = dirp;
-	dp->dirent = (XF86DIRENT*)xalloc(sizeof(struct _xf86dirent));
+	dp->dirent = xalloc(sizeof(struct _xf86dirent));
 
 	return (XF86DIR*)dp;
 }
@@ -1387,7 +1387,7 @@ xf86toupper(int c)
 void*
 xf86calloc(INT32 sz,INT32 n)
 {
-	return xalloc(sz*n);
+	return xcalloc(sz, n);
 }
 
 void

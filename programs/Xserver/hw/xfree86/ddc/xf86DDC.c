@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.2 1998/12/06 06:08:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.3 1998/12/13 10:33:37 dawes Exp $ */
 
 /* xf86DDC.c 
  * 
@@ -241,7 +241,7 @@ FetchEDID_DDC1(register ScrnInfoPtr pScrn,
     int count = NUM;
     unsigned int *ptr, *xp;
 
-    ptr=xp=(unsigned int *)xalloc(sizeof(int)*NUM); 
+    ptr=xp=xalloc(sizeof(int)*NUM); 
 
     if (!ptr)  return NULL;
     do {
@@ -269,8 +269,7 @@ VDIFRead(int scrnIndex, I2CBusPtr pBus, int start)
     if (Buffer == NULL)
 	return NULL;
     ErrorF("number of 64 bit blocks: %i\n",Buffer[0]);
-    v_buffer = v_bufferp =
-	(unsigned char *) xalloc(sizeof(unsigned char) * 64 * num);
+    v_buffer = v_bufferp = xalloc(sizeof(unsigned char) * 64 * num);
     for (i = 0; i < num; i++) {
 	Buffer = DDCRead_DDC2(scrnIndex, pBus,start,64);
 	if (Buffer == NULL) {
@@ -310,7 +309,7 @@ DDCRead_DDC2(int scrnIndex, I2CBusPtr pBus, int start, int len)
 	W_Buffer[0] = start & 0xFF;
 	W_Buffer[1] = (start & 0xFF00) >> 8;
     }
-    R_Buffer = (unsigned char *)xcalloc(1,sizeof(unsigned char) 
+    R_Buffer = xcalloc(1,sizeof(unsigned char) 
 					* (len));
     for (i=0; i<RETRIES; i++) {
 	if (xf86I2CWriteRead(dev, W_Buffer,w_bytes, R_Buffer,len) 

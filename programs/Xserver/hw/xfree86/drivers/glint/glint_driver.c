@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.19 1998/12/20 11:57:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.20 1999/01/13 08:31:05 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -685,14 +685,14 @@ GetAccelPitchValues(ScrnInfoPtr pScrn)
     for (i = 0; linep[i] != 0; i++) {
 	if (linep[i] != -1) {
 	    n++;
-	    linePitches = (int *)xnfrealloc(linePitches, n * sizeof(int));
+	    linePitches = xnfrealloc(linePitches, n * sizeof(int));
 	    linePitches[n - 1] = i << 5;
 	}
     }
 
     /* Mark the end of the list */
     if (n > 0) {
-	linePitches = (int *)xnfrealloc(linePitches, (n + 1) * sizeof(int));
+	linePitches = xnfrealloc(linePitches, (n + 1) * sizeof(int));
 	linePitches[n] = 0;
     }
 
@@ -1195,7 +1195,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
      * Setup the ClockRanges, which describe what clock ranges are available,
      * and what sort of modes they can be used for.
      */
-    clockRanges = (ClockRangePtr)xnfalloc(sizeof(ClockRange));
+    clockRanges = xnfalloc(sizeof(ClockRange));
     clockRanges->next = NULL;
     clockRanges->minClock = pGlint->MinClock;
     clockRanges->maxClock = pGlint->MaxClock;

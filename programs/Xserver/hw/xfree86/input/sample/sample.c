@@ -24,7 +24,7 @@
  * in this Software without prior written authorization from Metro Link.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/sample/sample.c,v 1.1 1998/12/05 14:40:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/sample/sample.c,v 1.2 1998/12/13 10:33:49 dawes Exp $ */
 
 #define _SAMPLE_C_
 /*****************************************************************************
@@ -126,8 +126,8 @@ SetupProc(	pointer module,
 			int *errmaj,
 			int *errmin )
 {
-	LocalDevicePtr local = (LocalDevicePtr) xcalloc (1, sizeof (LocalDeviceRec));
-	SAMPLEPrivatePtr priv = (SAMPLEPrivatePtr) xcalloc (1, sizeof (SAMPLEPrivateRec));
+	LocalDevicePtr local = xcalloc (1, sizeof (LocalDeviceRec));
+	SAMPLEPrivatePtr priv = xcalloc (1, sizeof (SAMPLEPrivateRec));
 	pointer	defaults,
 			merged;
 	char *s;

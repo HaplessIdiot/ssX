@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/interpret_vdif.c,v 1.1 1998/11/28 10:43:05 dawes Exp $ */
 
 #include "vdif.h"
 static xf86VdifLimitsPtr* get_limits(CARD8 *c);
@@ -26,7 +26,7 @@ InterpretVdif(CARD8 *c)
     for ( i = 12; i < p->FileLength; i++) 
 	l += c[i];
     if ( l != p->Checksum) return NULL;
-    vdif = (xf86vdifPtr) xalloc(sizeof(xf86vdif));  
+    vdif = xalloc(sizeof(xf86vdif));  
     vdif->vdif = p;
     vdif->limits = get_limits(c);
     vdif->timings = get_timings(c);
@@ -44,7 +44,7 @@ get_limits(CARD8 *c)
     xf86VdifLimitsPtr p;
 
     num = ((xf86VdifPtr)c)->NumberOperationalLimits;
-    pp = (xf86VdifLimitsPtr *)xalloc(sizeof(xf86VdifLimitsPtr) * (num+1));
+    pp = xalloc(sizeof(xf86VdifLimitsPtr) * (num+1));
     p = VDIF_OPERATIONAL_LIMITS(((xf86VdifPtr)c));
     j = 0;
     for ( i = 0; i<num; i++) {
@@ -64,7 +64,7 @@ get_gamma(CARD8 *c)
     xf86VdifGammaPtr p;
 
     num = ((xf86VdifPtr)c)->NumberOptions;
-    pp = (xf86VdifGammaPtr *)xalloc(sizeof(xf86VdifGammaPtr) * (num+1));
+    pp = xalloc(sizeof(xf86VdifGammaPtr) * (num+1));
     p = (xf86VdifGammaPtr)VDIF_OPTIONS(((xf86VdifPtr)c));
     j = 0;
     for ( i = 0; i<num; i++)
@@ -94,7 +94,7 @@ get_timings(CARD8 *c)
 	    num_limits += lp->NumberPreadjustedTimings;
 	VDIF_NEXT_OPERATIONAL_LIMITS(lp);
     }
-    pp = (xf86VdifTimingPtr *)xalloc(sizeof(xf86VdifTimingPtr) 
+    pp = xalloc(sizeof(xf86VdifTimingPtr) 
 				      * (num_limits+1));
     j = 0;
     lp = VDIF_OPERATIONAL_LIMITS(((xf86VdifPtr) c));

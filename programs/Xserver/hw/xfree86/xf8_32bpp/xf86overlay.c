@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/xf86overlay.c,v 1.1 1999/01/03 03:58:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/xf86overlay.c,v 1.2 1999/01/11 12:09:40 dawes Exp $ */
 
 /*
    Copyright (C) 1998.  The XFree86 Project Inc.
@@ -274,7 +274,7 @@ xf86Overlay8Plus32Init (ScreenPtr pScreen)
 						sizeof(OverlayPixmapRec)))
 	return FALSE;
 
-    if (!(pScreenPriv = (OverlayScreenPtr)xalloc(sizeof(OverlayScreenRec))))
+    if (!(pScreenPriv = xalloc(sizeof(OverlayScreenRec))))
 	return FALSE;
 
     pScreen->devPrivates[OverlayScreenIndex].ptr = (pointer)pScreenPriv;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Files.c,v 1.1.2.1 1997/07/21 10:17:43 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Files.c,v 1.2 1998/07/25 16:57:11 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -76,7 +76,7 @@ parseFilesSection (void)
 			str = prependRoot (val.str);
 			if (ptr->file_fontpath == NULL)
 			{
-				ptr->file_fontpath = (char *) xf86confmalloc (1);
+				ptr->file_fontpath = xf86confmalloc (1);
 				ptr->file_fontpath[0] = '\0';
 				i = strlen (str) + 1;
 			}
@@ -89,7 +89,7 @@ parseFilesSection (void)
 					j = TRUE;
 				}
 			}
-			ptr->file_fontpath = (char *)
+			ptr->file_fontpath =
 				xf86confrealloc (ptr->file_fontpath, i);
 			if (j)
 				strcat (ptr->file_fontpath, ",");
@@ -109,7 +109,7 @@ parseFilesSection (void)
 			str = prependRoot (val.str);
 			if (ptr->file_modulepath == NULL)
 			{
-				ptr->file_modulepath = (char *) xf86confmalloc (1);
+				ptr->file_modulepath = xf86confmalloc (1);
 				ptr->file_modulepath[0] = '\0';
 				k = strlen (str) + 1;
 			}
@@ -122,7 +122,7 @@ parseFilesSection (void)
 					l = TRUE;
 				}
 			}
-			ptr->file_modulepath = (char *) xf86confrealloc (ptr->file_modulepath, k);
+			ptr->file_modulepath = xf86confrealloc (ptr->file_modulepath, k);
 			if (l)
 				strcat (ptr->file_modulepath, ",");
 

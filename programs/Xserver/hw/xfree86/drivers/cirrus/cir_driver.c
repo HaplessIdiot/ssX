@@ -9,7 +9,7 @@
  *	Guy DESBIEF
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.26 1998/12/06 06:08:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.27 1998/12/13 10:33:39 dawes Exp $ */
 
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -551,13 +551,13 @@ GetAccelPitchValues(ScrnInfoPtr pScrn)
     for (i = 0; accelWidths[i] != 0; i++) {
 	if (accelWidths[i] % pCir->Rounding == 0) {
 	    n++;
-	    linePitches = (int *)xnfrealloc(linePitches, n * sizeof(int));
+	    linePitches = xnfrealloc(linePitches, n * sizeof(int));
 	    linePitches[n - 1] = accelWidths[i];
 	}
     }
     /* Mark the end of the list */
     if (n > 0) {
-	linePitches = (int *)xnfrealloc(linePitches, (n + 1) * sizeof(int));
+	linePitches = xnfrealloc(linePitches, (n + 1) * sizeof(int));
 	linePitches[n] = 0;
     }
     return linePitches;
@@ -920,7 +920,7 @@ CIRPreInit(ScrnInfoPtr pScrn, int flags)
      * Setup the ClockRanges, which describe what clock ranges are available,
      * and what sort of modes they can be used for.
      */
-    clockRanges = (ClockRangePtr)xnfalloc(sizeof(ClockRange));
+    clockRanges = xnfalloc(sizeof(ClockRange));
     clockRanges->next = NULL;
     clockRanges->minClock = pCir->MinClock;
     clockRanges->maxClock = pCir->MaxClock;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_mouse.c,v 3.9.2.3 1998/06/05 16:23:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_mouse.c,v 3.10 1998/07/25 16:56:58 dawes Exp $ */
 
 
 
@@ -97,7 +97,7 @@ xf86OsMouseProc(DeviceIntPtr pPointer, int what)
 	     buttons);
 #endif
 
-      map = (unchar *) xalloc(buttons + 1);
+      map = xalloc(buttons + 1);
       if (map == (unchar *) NULL)
 	FatalError("Failed to allocate OsMouse map structure\n");
 

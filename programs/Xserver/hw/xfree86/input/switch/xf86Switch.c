@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Switch.c,v 3.4 1998/07/25 16:55:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/switch/xf86Switch.c,v 1.1 1998/12/05 14:40:21 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -251,8 +251,8 @@ xf86SwtProc(DeviceIntPtr pSwt, int what)
 static LocalDevicePtr
 xf86SwtAllocate()
 {
-  LocalDevicePtr        local = (LocalDevicePtr) xalloc(sizeof(LocalDeviceRec));
-  SwitchDevPtr		priv = (SwitchDevPtr) xalloc(sizeof(SwitchDevRec));
+  LocalDevicePtr        local = xalloc(sizeof(LocalDeviceRec));
+  SwitchDevPtr		priv = xalloc(sizeof(SwitchDevRec));
   
   local->name = "SWITCH";
   local->flags = 0;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.25 1998/08/29 05:43:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.26 1998/09/05 06:36:54 dawes Exp $ */
 
 
 
@@ -300,7 +300,7 @@ TsengXAAInit(ScreenPtr pScreen)
 	 * definition of bit 4)
 	 *
 	 */
-	pTseng->BresenhamTable = (unsigned char *) xnfalloc(8);
+	pTseng->BresenhamTable = xnfalloc(8);
 	if (pTseng->BresenhamTable == NULL) {
 	    xf86Msg(X_ERROR, "Could not malloc Bresenham Table.\n");
 	    return FALSE;

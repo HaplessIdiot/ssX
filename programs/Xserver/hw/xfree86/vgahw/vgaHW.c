@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.14 1998/11/29 13:49:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.15 1999/01/11 12:09:39 dawes Exp $ */
 
 /*
  *
@@ -913,7 +913,7 @@ vgaHWSaveFonts(ScrnInfoPtr scrninfp, vgaRegPtr save)
     hwp->writeAttr(hwp, 0x10, 0x01);	/* graphics mode */
 
 #ifdef SAVE_FONT1
-    if (hwp->FontInfo1 || (hwp->FontInfo1 = (pointer)xalloc(FONT_AMOUNT))) {
+    if (hwp->FontInfo1 || (hwp->FontInfo1 = xalloc(FONT_AMOUNT))) {
 	hwp->writeSeq(hwp, 0x02, 0x04);	/* write to plane 2 */
 	hwp->writeSeq(hwp, 0x04, 0x06);	/* enable plane graphics */
 	hwp->writeGr(hwp, 0x04, 0x02);	/* read plane 2 */
@@ -923,7 +923,7 @@ vgaHWSaveFonts(ScrnInfoPtr scrninfp, vgaRegPtr save)
     }
 #endif /* SAVE_FONT1 */
 #ifdef SAVE_FONT2
-    if (hwp->FontInfo2 || (hwp->FontInfo2 = (pointer)xalloc(FONT_AMOUNT))) {
+    if (hwp->FontInfo2 || (hwp->FontInfo2 = xalloc(FONT_AMOUNT))) {
 	hwp->writeSeq(hwp, 0x02, 0x08);	/* write to plane 3 */
 	hwp->writeSeq(hwp, 0x04, 0x06);	/* enable plane graphics */
 	hwp->writeGr(hwp, 0x04, 0x03);	/* read plane 3 */
@@ -933,7 +933,7 @@ vgaHWSaveFonts(ScrnInfoPtr scrninfp, vgaRegPtr save)
     }
 #endif /* SAVE_FONT2 */
 #ifdef SAVE_TEXT
-    if (hwp->TextInfo || (hwp->TextInfo = (pointer)xalloc(2 * TEXT_AMOUNT))) {
+    if (hwp->TextInfo || (hwp->TextInfo = xalloc(2 * TEXT_AMOUNT))) {
 	hwp->writeSeq(hwp, 0x02, 0x01);	/* write to plane 0 */
 	hwp->writeSeq(hwp, 0x04, 0x06);	/* enable plane graphics */
 	hwp->writeGr(hwp, 0x04, 0x00);	/* read plane 0 */

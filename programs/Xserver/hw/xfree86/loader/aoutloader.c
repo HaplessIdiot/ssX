@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.12 1998/07/25 16:56:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.13 1998/09/20 14:41:03 dawes Exp $ */
 
 /*
  *
@@ -144,7 +144,7 @@ AOUTDelayRelocation(AOUTModulePtr aoutfile, int type,
 {
     AOUTRelocPtr reloc;
 
-    if ((reloc = (AOUTRelocPtr) xf86loadermalloc(sizeof(AOUTRelocRec))) == NULL) {
+    if ((reloc = xf86loadermalloc(sizeof(AOUTRelocRec))) == NULL) {
 	ErrorF("AOUTDelayRelocation() Unable to allocate memory\n");
 	return NULL;
     }
@@ -169,7 +169,7 @@ AOUTAddCommon(struct AOUT_nlist *sym, int index)
 {
     AOUTCommonPtr common;
 
-    if ((common = (AOUTCommonPtr) xf86loadermalloc(sizeof (AOUTCommonRec))) == NULL) {
+    if ((common = xf86loadermalloc(sizeof (AOUTCommonRec))) == NULL) {
 	ErrorF( "AOUTAddCommon() Unable to allocate memory\n" );
 	return 0;
     }
@@ -207,13 +207,13 @@ AOUTCreateCommon(AOUTModulePtr aoutfile)
 	      numsyms, size );
 #endif
     
-    if ((lookup = (LOOKUP *) xf86loadermalloc((numsyms+1)*sizeof(LOOKUP))) == NULL) {
+    if ((lookup = xf86loadermalloc((numsyms+1)*sizeof(LOOKUP))) == NULL) {
         ErrorF( "AOUTCreateCommon() Unable to allocate memory\n" );
         return NULL;
     }
     
     aoutfile->comsize = size;
-    if ((aoutfile->common = (unsigned char *)xf86loadercalloc(1,size)) == NULL) {
+    if ((aoutfile->common = xf86loadercalloc(1,size)) == NULL) {
         ErrorF( "AOUTCreateCommon() Unable to allocate memory\n" );
         return NULL;
     }
@@ -260,7 +260,7 @@ AOUTGetSymbolName(AOUTModulePtr aoutfile, struct AOUT_nlist *sym)
     char *symname = AOUTGetString(aoutfile,sym->n_un.n_strx);
     char *name;
 
-    name=(char *) xf86loadermalloc(strlen(symname)+1);
+    name=xf86loadermalloc(strlen(symname)+1);
     if (!name)
 	FatalError("AOUTGetSymbolName: Out of memory\n");
 
@@ -505,7 +505,7 @@ AOUT_GetSymbols(AOUTModulePtr aoutfile)
 						      header->a_syms,
 						      "symbols");
     nsyms = header->a_syms/sizeof(AOUT_nlist);
-    lookup = (LOOKUP *)xf86loadermalloc(nsyms * sizeof(LOOKUP));
+    lookup = xf86loadermalloc(nsyms * sizeof(LOOKUP));
     if (lookup == NULL) {
 	ErrorF("AOUT_GetSymbols(): can't allocate memory\n");
 	return NULL;
@@ -632,7 +632,7 @@ AOUTLoadModule(loaderPtr modrec,
     AOUTDEBUG("AOUTLoadModule(%s, %d, %d)\n",
 	      modrec->name, modrec->handle, aoutfd);
 #endif
-    if ((aoutfile=(AOUTModulePtr)xf86loadercalloc(1,sizeof(AOUTModuleRec))) == NULL ) {
+    if ((aoutfile=xf86loadercalloc(1,sizeof(AOUTModuleRec))) == NULL ) {
 	ErrorF( "Unable to allocate AOUTModuleRec\n" );
 	return NULL;
     }
@@ -672,7 +672,7 @@ AOUTLoadModule(loaderPtr modrec,
     }
     /* bss */
     if (header->a_bss != 0) {
-	aoutfile->bss = (unsigned char *) xf86loadercalloc(1, header->a_bss);
+	aoutfile->bss = xf86loadercalloc(1, header->a_bss);
 	aoutfile->bsssize = header->a_bss;
     } else {
 	aoutfile->bss = NULL;

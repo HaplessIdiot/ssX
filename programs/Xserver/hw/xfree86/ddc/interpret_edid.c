@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/interpret_edid.c,v 1.1 1998/11/28 10:43:04 dawes Exp $ */
 
 /* interpret_edid.c: interpret a primary EDID block
  * 
@@ -30,7 +30,7 @@ InterpretEDID(Uchar *block)
     xf86MonPtr m;
 
     if (!block) return NULL;
-    if (! (m = (xf86MonPtr)xnfcalloc(sizeof(xf86Monitor),1))) return NULL;
+    if (! (m = xnfcalloc(sizeof(xf86Monitor),1))) return NULL;
     get_vendor_section(SECTION(VENDOR_SECTION,block),&m->vendor);
     get_version_section(SECTION(VERSION_SECTION,block),&m->ver);
     get_display_section(SECTION(DISPLAY_SECTION,block),&m->features);

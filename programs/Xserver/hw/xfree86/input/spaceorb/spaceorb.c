@@ -24,7 +24,7 @@
  * in this Software without prior written authorization from Metro Link.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/spaceorb/spaceorb.c,v 1.1 1998/12/05 14:40:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/spaceorb/spaceorb.c,v 1.2 1998/12/13 10:33:49 dawes Exp $ */
 
 #define _SPACEORB_C_
 /*****************************************************************************
@@ -122,9 +122,9 @@ SetupProc(	pointer module,
 			int *errmin )
 {
 	LocalDevicePtr local =
-		(LocalDevicePtr) xcalloc (1, sizeof (LocalDeviceRec));
+		xcalloc (1, sizeof (LocalDeviceRec));
 	SPACEORBPrivatePtr priv =
-		(SPACEORBPrivatePtr) xcalloc (1, sizeof (SPACEORBPrivateRec));
+		xcalloc (1, sizeof (SPACEORBPrivateRec));
 	pointer	defaults,
 			merged;
 

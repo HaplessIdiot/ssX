@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.37 1999/01/11 05:13:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.38 1999/01/13 08:31:06 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -665,13 +665,13 @@ GetAccelPitchValues(ScrnInfoPtr pScrn)
 	
     for (i = 0; i < 4; i++) {
 	n++;
-	linePitches = (int *)xnfrealloc(linePitches, n * sizeof(int));
+	linePitches = xnfrealloc(linePitches, n * sizeof(int));
 	linePitches[n - 1] = lines[i];
     }
 
     /* Mark the end of the list */
     if (n > 0) {
-	linePitches = (int *)xnfrealloc(linePitches, (n + 1) * sizeof(int));
+	linePitches = xnfrealloc(linePitches, (n + 1) * sizeof(int));
 	linePitches[n] = 0;
     }
     return linePitches;
@@ -1203,7 +1203,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
      * Setup the ClockRanges, which describe what clock ranges are available,
      * and what sort of modes they can be used for.
      */
-    clockRanges = (ClockRangePtr)xnfalloc(sizeof(ClockRange));
+    clockRanges = xnfalloc(sizeof(ClockRange));
     clockRanges->next = NULL;
     clockRanges->minClock = pTrident->MinClock;
     clockRanges->maxClock = pTrident->MaxClock;
@@ -1715,7 +1715,7 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	miBankInfoPtr pBankInfo;
 
 	/* Setup the vga banking variables */
-	pBankInfo = (miBankInfoPtr)xnfcalloc(sizeof(miBankInfoRec),1);
+	pBankInfo = xnfcalloc(sizeof(miBankInfoRec),1);
 	if (pBankInfo == NULL)
 	    return FALSE;
 	

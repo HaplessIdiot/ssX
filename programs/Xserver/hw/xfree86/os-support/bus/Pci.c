@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.4 1998/09/13 05:23:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.5 1998/09/19 12:14:58 dawes Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -21,13 +21,13 @@
  * 	pciTag()       - Return tag for a given PCI bus, device, & function
  * 	pciBusAddrToHostAddr() - Convert a PCI address to a host address
  * 	pciHostAddrToBusAddr() - Convert a host address to a PCI address
+ *      pciGetBaseSize - Returns the number of bits in a PCI base addr mapping
  *      xf86MapPciMem() - Like xf86MapVidMem() expect function expects
  *                        a PCI address and PCITAG (identifies PCI domain)
- *
- * For compatibility with older drivers, the following functions are
- * also provided
+ *      xf86MapPciMemSparse - Like xf86MapPciMem() but for xf86MapVidMemSparse
+ *      xf86ReadPciBIOS() - Like xf86ReadBIOS, except that it handles PCI/host
+ *                          address translation and BIOS decode enabling.
  *	xf86scanpci()  - Return info about all PCI devices
- *      xf86writepci() - Write to a devices PCI cfg space
  * 
  * The actual PCI backend driver is selected by the pciInit() function
  * (see below)  using either compile time definitions, run-time checks,
@@ -220,8 +220,6 @@ static pciConfigPtr pci_locked_devp[MAX_PCI_DEVICES + 1] = {NULL, };
  */
 PCITAG     (*pciFindFirstFP)(void) = pciGenFindFirst;
 PCITAG     (*pciFindNextFP)(void) = pciGenFindNext;
-
-#define INCLUDE_OLD_PCI_FUNCS
 
 /*
  * pciInit - choose correct platform/OS specific PCI init routine
@@ -421,6 +419,98 @@ pciHostAddrToBusAddr(PCITAG tag, ADDRESS addr)
 	  return(addr);
 }
 
+int
+pciGetBaseSize(PCITAG tag, int index, Bool destructive)
+{
+  int offset;
+  CARD32 addr1;
+  CARD32 addr2;
+  CARD32 mask1;
+  CARD32 mask2;
+  int bits = 0;
+ 
+  /*
+   * Eventually a function for this should be added to pciBusFuncs_t, but for
+   * now we'll just use a simple method based on the alignment of the already
+   * allocated address.
+   */
+
+  /*
+   * silently ignore bogus index values.  Valid values are 0-6.  0-5 are
+   * 6 base address registers, and 6 is the ROM base address register.
+   */
+  if (index < 0 || index > 6)
+    return 0;
+
+  if (!pciInitialized)
+    pciInit();
+
+  /* Get the PCI offset */
+  if (index == 6) 
+    offset = PCI_MAP_ROM_REG;
+  else
+    offset = PCI_MAP_REG_START + (index << 2);
+
+  addr1 = pciReadLong(tag, offset);
+  /*
+   * Check if this is the second part of a 64 bit address.
+   * XXX need to check how endianness affects 64 bit addresses.
+   */
+  if (index > 0 && index < 6) {
+    addr2 = pciReadLong(tag, offset - 4);
+    if (PCI_MAP_IS_MEM(addr2) && PCI_MAP_IS64BITMEM(addr2))
+      return 0;
+  }
+
+  if (destructive) {
+    pciWriteLong(tag, offset, 0xffffffff);
+    mask1 = pciReadLong(tag, offset);
+    pciWriteLong(tag, offset, addr1);
+  } else {
+    mask1 = addr1;
+  }
+
+  /* Check if this is the first part of a 64 bit address. */
+  if (index < 5 && PCI_MAP_IS_MEM(mask1) && PCI_MAP_IS64BITMEM(mask1)) {
+    if (PCIGETMEMORY(mask1) == 0) {
+      addr2 = pciReadLong(tag, offset + 4);
+      if (destructive) {
+	pciWriteLong(tag, offset + 4, 0xffffffff);
+	mask2 = pciReadLong(tag, offset + 4);
+	pciWriteLong(tag, offset + 4, addr2);
+      } else {
+	mask2 = addr2;
+      }
+      if (mask2 == 0)
+	return 0;
+      bits = 32;
+      while ((mask2 & 1) == 0) {
+	bits++;
+	mask2 >>= 1;
+      }
+      return bits;
+    }
+  }
+  if (index < 6)
+    if (PCI_MAP_IS_MEM(mask1))
+      mask1 = PCIGETMEMORY(mask1);
+    else
+      mask1 = PCIGETIO(mask1);
+  else
+    mask1 = PCIGETROM(mask1);
+  if (mask1 == 0)
+    return 0;
+  bits = 0;
+  while ((mask1 & 1) == 0) {
+    bits++;
+    mask1 >>= 1;
+  }
+  /* I/O maps can be no larger than 8 bits */
+  if (PCI_MAP_IS_IO(addr1) && bits > 8)
+    bits = 8;
+  return bits;
+}
+
 PCITAG
 pciTag(int busnum, int devnum, int funcnum)
 {
@@ -587,7 +677,7 @@ ErrorF("pciGenFindNext: pri_bus %d sec_bus %d\n", pri_bus, sec_bus);
 		     */
 		    if (!pciBusInfo[sec_bus]) {
 			    pciBusInfo[sec_bus] =
-				(pciBusInfo_t *)xnfalloc(sizeof(pciBusInfo_t));
+				xnfalloc(sizeof(pciBusInfo_t));
 
 		    }
 
@@ -744,9 +834,6 @@ pciAddrNOOP(PCITAG tag, ADDRESS addr)
 	return(addr);
 }
 
-
-#if defined(INCLUDE_OLD_PCI_FUNCS)
-
 pciConfigPtr *
 xf86scanpci(int flags)
 {
@@ -766,11 +853,14 @@ xf86scanpci(int flags)
 #ifdef DEBUGPCI
 ErrorF("xf86scanpci: tag = 0x%lx\n", tag);
 #endif
+#ifndef OLD_FORMAT
+    xf86MsgVerb(X_INFO, 2, "PCI: PCI scan (all values are in hex)\n");
+#endif
     while (idx < MAX_PCI_DEVICES && tag != PCI_NOT_FOUND) {
 	    pciConfigPtr devp;
 	    int          i;
 	    
-	    devp = (pciConfigPtr)xalloc(sizeof(pciDevice));
+	    devp = xalloc(sizeof(pciDevice));
 	    if (!devp) {
 		    xf86Msg(X_ERROR,
 			"xf86scanpci: Out of memory after %d devices!!\n",
@@ -788,12 +878,25 @@ ErrorF("xf86scanpci: tag = 0x%lx\n", tag);
 	    for (i = 0; i < 17; i++)  /* PCI hdr plus 1st dev spec dword */
 		    devp->cfgspc.dwords[i] =
 				pciReadLong(tag, i * sizeof(CARD32));
+	    for (i = 0; i < 7; i++)
+		devp->basesize[i] = pciGetBaseSize(tag, i, FALSE);
 
+#ifdef OLD_FORMAT
 	    xf86MsgVerb(X_INFO, 2, "PCI: BusID 0x%02x,0x%02x,0x%1x "
 			"ID 0x%04x,0x%04x Rev 0x%02x Class 0x%02x,0x%02x\n",
 			devp->busnum, devp->devnum, devp->funcnum,
 			devp->_vendor, devp->_device, devp->_rev_id,
 			devp->_base_class, devp->_sub_class);
+#else
+	    xf86MsgVerb(X_INFO, 2, "PCI: %02x:%02x:%1x: chip %04x,%04x"
+			" card %04x,%04x rev %02x class %02x,%02x,%02x"
+			" hdr %02x\n",
+			devp->busnum, devp->devnum, devp->funcnum,
+			devp->_vendor, devp->_device, devp->_subsys_vendor,
+			devp->_subsys_card, devp->_rev_id,
+			devp->_base_class, devp->_sub_class, devp->_prog_if,
+			devp->_header_type);
+#endif
 
 	    pci_devp[idx++] = devp;
 	    tag = pciFindNext();
@@ -801,32 +904,12 @@ ErrorF("xf86scanpci: tag = 0x%lx\n", tag);
 ErrorF("xf86scanpci: tag = pciFindNext = 0x%lx\n", tag);
 #endif
     }
+#ifndef OLD_FORMAT
+    xf86MsgVerb(X_INFO, 2, "PCI: End of PCI scan\n");
+#endif
 
     return pci_devp;
 }
-
-#if 0
-void
-xf86writepci(int scrnIndex, int bus, int dev, int func, int reg,
-	     CARD32 mask, CARD32 value)
-{
-    PCITAG tag;
-    CARD32 data;
-
-    pciInit();
-
-    tag = pciTag(bus, dev, func);
-    data = (pciReadLong(tag, reg) & ~mask) | (value & mask);
-    pciWriteLong(tag, reg, data);
-
-    xf86ErrorFVerb(2,
-	"PCI: xf86writepci: Tag=0x%08x [b=0x%02x,d=0x%02x,f=0x%1x] "
-	"Reg=0x%02x Mask=0x%08x Val=0x%08x\n",
-	tag, bus, dev, func, reg, mask, value);
-}
-#endif
-
-#endif /* INCLUDE_OLD_PCI_FUNCS */
 
 #if defined(INCLUDE_XF86_MAP_PCI_MEM)
 

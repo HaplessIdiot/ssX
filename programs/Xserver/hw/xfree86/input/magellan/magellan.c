@@ -24,7 +24,7 @@
  * in this Software without prior written authorization from Metro Link.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/magellan/magellan.c,v 1.1 1998/12/05 14:40:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/magellan/magellan.c,v 1.2 1998/12/13 10:33:48 dawes Exp $ */
 
 #define _MAGELLAN_C_
 /*****************************************************************************
@@ -122,8 +122,8 @@ SetupProc(	pointer module,
 			int *errmaj,
 			int *errmin )
 {
-	LocalDevicePtr local = (LocalDevicePtr) xcalloc (1, sizeof (LocalDeviceRec));
-	MagellanPrivatePtr priv = (MagellanPrivatePtr) xcalloc (1, sizeof (MagellanPrivateRec));
+	LocalDevicePtr local = xcalloc (1, sizeof (LocalDeviceRec));
+	MagellanPrivatePtr priv = xcalloc (1, sizeof (MagellanPrivateRec));
 	pointer	defaults,
 			merged;
 

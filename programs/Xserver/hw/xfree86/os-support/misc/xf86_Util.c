@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/xf86_Util.c,v 3.5.2.3 1998/06/05 16:23:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/xf86_Util.c,v 3.6 1998/07/25 16:56:51 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -45,7 +45,7 @@ debug_alloca(char *file, int line, int size)
 {
 	char *ptr;
 
-	ptr = (char *)Xalloc(size);
+	ptr = Xalloc(size);
 	ErrorF("Alloc: %s line %d; ptr = 0x%x, length = %d\n", file, line,
 	       ptr, size);
 	return ptr;
