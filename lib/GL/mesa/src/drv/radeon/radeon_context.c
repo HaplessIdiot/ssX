@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_context.c,v 1.9 2003/09/24 02:43:12 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_context.c,v 1.10 2003/09/28 20:15:27 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -486,12 +486,12 @@ void radeonDestroyContext( __DRIcontextPrivate *driContextPriv )
           */
          int i;
 
-	 assert( is_empty_list( & rmesa->swapped ) );
-
          for ( i = 0 ; i < rmesa->nr_heaps ; i++ ) {
 	    driDestroyTextureHeap( rmesa->texture_heaps[ i ] );
 	    rmesa->texture_heaps[ i ] = NULL;
          }
+
+	 assert( is_empty_list( & rmesa->swapped ) );
       }
 
       FREE( rmesa );

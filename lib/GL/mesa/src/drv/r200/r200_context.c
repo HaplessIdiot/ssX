@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_context.c,v 1.3 2003/05/06 23:52:08 daenzer Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_context.c,v 1.4 2003/09/28 20:15:23 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -491,12 +491,12 @@ void r200DestroyContext( __DRIcontextPrivate *driContextPriv )
           */
          int i;
 
-	 assert( is_empty_list( & rmesa->swapped ) );
-
          for ( i = 0 ; i < rmesa->nr_heaps ; i++ ) {
 	    driDestroyTextureHeap( rmesa->texture_heaps[ i ] );
 	    rmesa->texture_heaps[ i ] = NULL;
          }
+
+	 assert( is_empty_list( & rmesa->swapped ) );
       }
 
       FREE( rmesa );

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_context.c,v 1.8 2002/10/30 12:51:38 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_context.c,v 1.9 2003/09/28 20:15:19 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -269,12 +269,12 @@ void r128DestroyContext( __DRIcontextPrivate *driContextPriv  )
           */
          int i;
 
-	 assert( is_empty_list( & rmesa->swapped ) );
-
          for ( i = 0 ; i < rmesa->nr_heaps ; i++ ) {
 	    driDestroyTextureHeap( rmesa->texture_heaps[ i ] );
 	    rmesa->texture_heaps[ i ] = NULL;
          }
+
+	 assert( is_empty_list( & rmesa->swapped ) );
       }
 
       FREE( rmesa );

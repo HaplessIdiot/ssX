@@ -24,7 +24,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810context.c,v 1.3 2002/10/30 12:51:33 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810context.c,v 1.4 2003/09/28 20:15:11 alanh Exp $ */
 
 /*
  * Authors:
@@ -317,12 +317,12 @@ i810DestroyContext(__DRIcontextPrivate *driContextPriv)
           */
          int i;
 
-	 assert( is_empty_list( & imesa->swapped ) );
-
          for ( i = 0 ; i < imesa->nr_heaps ; i++ ) {
 	    driDestroyTextureHeap( imesa->texture_heaps[ i ] );
 	    imesa->texture_heaps[ i ] = NULL;
          }
+
+	 assert( is_empty_list( & imesa->swapped ) );
       }
 
       Xfree(imesa);
