@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.19 2002/04/15 09:22:33 alanh Exp $
+XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.20 2002/10/01 14:31:36 alanh Exp $
 
 /*
  * Cygwin shared library rules (DLL versions)
@@ -337,8 +337,7 @@ clean::									@@\
 	RemoveFile(ProgramTargetName(program))
 
 
-#if 0
-/* Maybe this only needs enabling when CrossCompiling ??? */
+#if CrossCompiling
 /*
  * ComplexProgramTarget_1 - Imake.rules doesn't wrap the program names
  * with ProgramTargetName(), so we need this rule for Cygwin.
