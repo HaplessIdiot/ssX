@@ -24,7 +24,7 @@
  *
  */
 
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.1 2000/10/04 23:34:59 robin Exp $ */
 
 
 /* All drivers should typically include these */
@@ -263,10 +263,10 @@ static SymTabRec I128Chipsets[] = {
 };
 
 static PciChipsets I128PciChipsets[] = {
-    { PCI_CHIP_I128,		PCI_CHIP_I128,		RES_SHARED_VGA },
-    { PCI_CHIP_I128_2,		PCI_CHIP_I128_2,	RES_SHARED_VGA },
-    { PCI_CHIP_I128_T2R,	PCI_CHIP_I128_T2R,	RES_SHARED_VGA },
-    { PCI_CHIP_I128_T2R4,	PCI_CHIP_I128_T2R4,	RES_SHARED_VGA },
+    { PCI_CHIP_I128,		PCI_CHIP_I128,		NULL },
+    { PCI_CHIP_I128_2,		PCI_CHIP_I128_2,	NULL },
+    { PCI_CHIP_I128_T2R,	PCI_CHIP_I128_T2R,	NULL },
+    { PCI_CHIP_I128_T2R4,	PCI_CHIP_I128_T2R4,	NULL },
     { -1,			-1,			RES_UNDEFINED }
 };
 
