@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.54 2003/06/12 14:12:38 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.55 2003/08/13 19:05:58 alanh Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -153,7 +153,7 @@ SOFTWARE.
 
 #endif /* __arm32__ */
 
-#if defined (__hppa__)
+#if defined (hpux)
 
 #define IMAGE_BYTE_ORDER	MSBFirst
 #define BITMAP_BIT_ORDER	MSBFirst
@@ -165,7 +165,7 @@ SOFTWARE.
 #define LARGE_INSTRUCTION_CACHE
 #define PLENTIFUL_REGISTERS
 
-#endif /* __hppa__ */
+#endif /* hpux */
 
 #if defined(__powerpc__)
 
