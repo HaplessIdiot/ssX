@@ -8,7 +8,7 @@
  * be passed to the template file.                                         *
  *                                                                         *
  ***************************************************************************/
-/* $XFree86: xc/config/imake/imake.c,v 3.27 1998/10/02 06:15:16 dawes Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.28 1998/10/05 13:21:46 dawes Exp $ */
 
 /*
  * 
@@ -920,15 +920,18 @@ get_distrib(FILE *inFile)
 
   if (lstat (yast, &sb) == 0) {
     fprintf (inFile, "%s\n", "#define DefaultLinuxDistribution LinuxSuSE");
+    fprintf (inFile, "%s\n", "#define DefaultLinuxDistName SuSE");
     return;
   }
   if (lstat (redhat, &sb) == 0) {
     fprintf (inFile, "%s\n", "#define DefaultLinuxDistribution LinuxRedHat");
+    fprintf (inFile, "%s\n", "#define DefaultLinuxDistName RedHat");
     return;
   }
   /* what's the definitive way to tell what any particular distribution is? */
 
   fprintf (inFile, "%s\n", "#define DefaultLinuxDistribution LinuxUnknown");
+  fprintf (inFile, "%s\n", "#define DefaultLinuxDistName Unknown");
   /* would like to know what version of the distribution it is */
 }
 
