@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                         Last modified 17 July 1999
+                       Last modified 27 September 1999
 
 NOTE: This is a DRAFT document, and the interfaces described here are subject
 to change without notice.
@@ -2393,7 +2393,16 @@ use the colormap layer, a driver calls the xf86HandleColormaps() function.
                is resetting the hardware during mode switches
                and corrupting or erasing the hardware palette.
 
-          The colormap layer always reloads the palette after VT
+          CMAP_LOAD_EVEN_IF_OFFSCREEN
+
+               reload the colormap even if the screen is
+               switched out of the server's VC.  The palette
+               is not reloaded when the screen is switched
+               back in, nor after mode switches.  This is use-
+               ful when the driver needs to keep track of
+               palette changes.
+
+          The colormap layer normally reloads the palette after VT
           enters so it is not necessary for the driver to save and
           restore the palette when switching VTs.  The driver must,
           however, still save the initial palette during server
@@ -2836,6 +2845,15 @@ The XF86VideoAdaptorRec:
                This flag is meant for showing all the contents
                of the [root] window, if the administrator has
                no hesitations regarding security.
+
+          VIDEO_OVERLAID_STILLS
+
+               Implementing PutStill for hardware that does
+               video as an overlay can be awkward since it's
+               unclear how long to leave the video up for.
+               When this flag is set, StopVideo will be called
+               whenever the destination gets clipped or moved
+               so that the still can be left up until then.
 
      name
 
@@ -5912,7 +5930,7 @@ eScreen() function.
          ZZZFreeRec(xf86Screens[scrnIndex]);
      }
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.9 1999/07/18 03:26:51 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.11 1999/09/27 06:29:32 dawes Exp $
 
 
 $XFree86$

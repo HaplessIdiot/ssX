@@ -2,7 +2,7 @@
 
                             Marc Aurele La France
 
-                                 1999 July 8
+                              1999 September 8
 
                                   Abstract
 
@@ -74,7 +74,8 @@ sent:
         Mach64 series:  88800GX-C, 88800GX-D, 88800GX-E, 88800GX-F, 88800CX,
                         264CT, 264ET, 264VT, 264GT (3D Rage), 264VT-B, 264VT3,
                         264VT4, 264GT-B (3D Rage II), 3D Rage IIc, 3D Rage Pro,
-                        3D Rage LT, 3D Rage LT Pro, 3D Rage XL, 3D Rage XC
+                        3D Rage LT, 3D Rage LT Pro, 3D Rage XL, 3D Rage XC,
+                        3D Rage Mobility
 
 The driver also supports 32K, 64K and 16M-colour modes on the 264xT and 3D
 Rage series of adapters using the accelerator CRTC (but not the VGA CRTC).
@@ -366,14 +367,39 @@ clocks, the second of which will be assumed to be 28.322MHz.  You can include
 up to four clock frequencies in your XF86Config to specify the actual values
 used by the adapter.  Any more will be ignored.
 
-5.7  Option ``nolinear''
+5.7  Option ``crt_screen''
+
+This specification is only effective when the driver detects that the
+adapter's BIOS has initialized both the digital flat panel and CRT inter-
+faces.  In such a situation, the driver will normally drive the panel and
+disable the CRT.  This specification causes the driver to disable the digital
+flat panel and display the screen image on the CRT instead.
+
+5.8  Option ``nolinear''
 
 By default, the driver will enable a linear video memory aperture for
 256-colour and higher depth modes if it is also using a Mach64 accelerator
 CRTC or an integrated Mach64 graphics chip.  This option disables this linear
 aperture.
 
-5.8  MemBase address
+5.9  Option ``shadowfb''
+
+If this option is enabled, the driver will cause the CPU to do each drawing
+operation first into a shadow frame buffer in system virtual memory and then
+copy the result into video memory.  If this option is not active, the CPU
+will draw directly into video memory.  Enabling this option is beneficial for
+those systems where reading from video memory is, on average, slower than the
+corresponding read/modify/write operation in system virtual memory.  This is
+normally the case for PCI or AGP adapters, and, so, this option is enabled by
+default.  For other bus types, the default behaviour is to disable this
+option.
+
+Note that, due to various limitations, this option is forcibly disabled when
+a linear video memory aperture is not enabled, or when the frame buffer depth
+is less than 8.  The use of video acceleration, when implemented in a future
+driver release, will also disable frame buffer shadowing.
+
+5.10  MemBase address
 
 This specification is only effective for non-PCI Mach64 adapters, and is used
 to override the CPU address at which the adapter will map its video memory.
@@ -404,11 +430,6 @@ driver.  They include:
      A system conflict with APM.  This problem is Linux-specific.  There is a
      bug in kernels 2.0.31 or earlier that prevents proper APM operation.
      Upgrade to a more recent kernel or disable APM support.
-
-     The TV port on some Mach64 adapters needs to be disabled using an ATI
-     utility that might or might not be supplied with the adapter.  This
-     problem is still under investigation.  The only known workaround is to
-     ensure no cable is connected to the adapter's TV connector on bootup.
 
    o When using a Mach64's accelerator CRTC, the virtual resolution must be
      less than 8192 pixels wide.  The VGA CRTC further limits the virtual
@@ -542,7 +563,7 @@ tional colour depths, and so on.  This is the version found in XFree86 3.3.2,
 Version 5 is an almost complete restructuring of version 4 to fit in the new
 driver API of XFree86 4.0.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.25 1999/08/21 13:48:29 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.27 1999/09/27 06:29:33 dawes Exp $
 
 
 $XFree86$
