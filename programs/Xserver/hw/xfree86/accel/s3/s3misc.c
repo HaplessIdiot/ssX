@@ -1,5 +1,5 @@
 /* $XConsortium: s3misc.c,v 1.6 95/01/23 15:34:03 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.37 1996/01/16 15:03:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.38 1996/01/24 22:01:26 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -974,10 +974,12 @@ s3AdjustFrame(int x, int y)
       Base &= ~a;
    }
 
+#if 0
    /* wait for vertical retrace */
    while ((inb(vgaIOBase + 0x0A) & 0x08) == 0x00) ;
    while ((inb(vgaIOBase + 0x0A) & 0x08) == 0x08) ;
    while ((inb(vgaIOBase + 0x0A) & 0x08) == 0x00) ;
+#endif
 
    outb(vgaCRIndex, 0x31);
    outb(vgaCRReg, ((Base & 0x030000) >> 12) | s3Port31);

@@ -1,5 +1,5 @@
 /* $XConsortium: t89_driver.c,v 1.4 95/01/16 13:18:25 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.24 1996/01/14 13:41:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.25 1996/01/16 15:04:54 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -104,6 +104,7 @@ typedef struct {
 	unsigned char MiscExtFunc;	/* For Misc. Ext. Functions     */
 	unsigned char GraphEngReg;	/* For Graphic Engine Control   */
 	unsigned char PCIReg;		/* For PCI Bursts		*/
+	unsigned char VLBusReg;		/* For VL Bus stuff		*/
 	unsigned char AddColReg;	/* For Address/Colour Register  */
 	unsigned char CommandReg;	/* For DAC Command Register     */
 	unsigned char TRDReg;		/* For DAC Setup 		*/
@@ -1241,6 +1242,33 @@ TVGA8900Restore(restore)
 				((restore->CursorRegs[i]) << 8) | 0x40 | i);
 	}
 
+#ifndef MONOVGA
+	if ( (tridentDACtype == TKD8001) && (TVGAchipset != TVGA8900D) )
+			outb(0x3C7, restore->TRDReg); 
+#endif
+
+	/*
+	 * Now restore generic VGA Registers
+	 */
+	vgaHWRestore((vgaHWPtr)restore);
+
+#ifndef MONOVGA
+	/* Do the DAC */
+	if (tridentDACtype != -1)
+	{
+		inb(0x3C8);
+		inb(0x3C6); inb(0x3C6); inb(0x3C6); inb(0x3C6);
+		outb(0x3C6, restore->CommandReg);
+		inb(0x3C8);
+	}
+#endif
+	if (tridentTGUIProgrammableClocks)
+	{
+		outb(0x3C2, restore->VCLK_O);
+		outb(0x43C8, restore->VCLK_A);
+		outb(0x43C9, restore->VCLK_B);
+	}
+
 	if (tridentIsTGUI)
 	{
 		/*
@@ -1275,36 +1303,10 @@ TVGA8900Restore(restore)
 			outw(vgaIOBase + 4, ((restore->GraphEngReg) << 8) | 0x36);
 #endif
 			outw(vgaIOBase + 4, ((restore->PCIReg) << 8) | 0x39);
+			outw(vgaIOBase + 4, ((restore->VLBusReg) << 8) | 0x2A);
 			outw(0x3CE, ((restore->MiscIntContReg) << 8) | 0x2F);
 		}
 #endif
-	}
-
-#ifndef MONOVGA
-	if ( (tridentDACtype == TKD8001) && (TVGAchipset != TVGA8900D) )
-			outb(0x3C7, restore->TRDReg); 
-#endif
-
-	/*
-	 * Now restore generic VGA Registers
-	 */
-	vgaHWRestore((vgaHWPtr)restore);
-
-#ifndef MONOVGA
-	/* Do the DAC */
-	if (tridentDACtype != -1)
-	{
-		inb(0x3C8);
-		inb(0x3C6); inb(0x3C6); inb(0x3C6); inb(0x3C6);
-		outb(0x3C6, restore->CommandReg);
-		inb(0x3C8);
-	}
-#endif
-	if (tridentTGUIProgrammableClocks)
-	{
-		outb(0x3C2, restore->VCLK_O);
-		outb(0x43C8, restore->VCLK_A);
-		outb(0x43C9, restore->VCLK_B);
 	}
 
 	outw(0x3C4, ((restore->NewMode1 ^ 0x02) << 8) | 0x0E);
@@ -1454,6 +1456,8 @@ TVGA8900Save(save)
 #endif
 			outb(vgaIOBase + 4, 0x39);
 			save->PCIReg = inb(vgaIOBase + 5);
+			outb(vgaIOBase + 4, 0x2A);
+			save->VLBusReg = inb(vgaIOBase + 5);
 			outb(0x3CE, 0x2F);
 			save->MiscIntContReg = inb(0x3CF);
 		}
@@ -1655,6 +1659,10 @@ TVGA8900Init(mode)
 						&vga256InfoRec.options))
 				new->PCIReg = inb(vgaIOBase + 5) & 0xF9;
 		}
+		outb(vgaIOBase + 4, 0x2A);
+		new->VLBusReg = inb(vgaIOBase + 5);
+		if (tridentBusType != ISA)
+			new->VLBusReg |= 0x40;	/* Enable 32bit transfer */
 #ifndef MONOVGA
 #if 0
 		if (OFLG_ISSET(OPTION_MMIO, &vga256InfoRec.options))

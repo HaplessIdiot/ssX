@@ -47,8 +47,8 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c /main/183 1996/01/23 05:44:08 dpw $ */
-/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.3 1996/01/05 13:17:58 dawes Exp $ */
+/* $XConsortium: events.c /main/184 1996/01/24 15:55:47 dpw $ */
+/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.4 1996/01/24 22:00:12 dawes Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -571,8 +571,18 @@ EnqueueEvent(xE, device, count)
     if (DeviceEventCallback)
     {
 	DeviceEventInfoRec eventinfo;
+	/*  The RECORD spec says that the root window field of motion events
+	 *  must be valid.  At this point, it hasn't been filled in yet, so
+	 *  we do it here.  The long expression below is necessary to get
+	 *  the current root window; the apparently reasonable alternative
+	 *  GetCurrentRootWindow()->drawable.id doesn't give you the right
+	 *  answer on the first motion event after a screen change because
+	 *  the data that GetCurrentRootWindow relies on hasn't been
+	 *  updated yet.
+	 */
 	if (xE->u.u.type == MotionNotify)
-	    xE->u.keyButtonPointer.root = GetCurrentRootWindow()->drawable.id;
+	    xE->u.keyButtonPointer.root =
+		WindowTable[sprite.hotPhys.pScreen->myNum]->drawable.id;
 	eventinfo.events = xE;
 	eventinfo.count = count;
 	CallCallbacks(&DeviceEventCallback, (pointer)&eventinfo);
@@ -2070,9 +2080,10 @@ ProcessPointerEvent (xE, mouse, count)
 	if (DeviceEventCallback)
 	{
 	    DeviceEventInfoRec eventinfo;
+	    /* see comment in EnqueueEvents regarding the next three lines */
 	    if (xE->u.u.type == MotionNotify)
 		xE->u.keyButtonPointer.root =
-		    GetCurrentRootWindow()->drawable.id;
+		    WindowTable[sprite.hotPhys.pScreen->myNum]->drawable.id;
 	    eventinfo.events = xE;
 	    eventinfo.count = count;
 	    CallCallbacks(&DeviceEventCallback, (pointer)&eventinfo);

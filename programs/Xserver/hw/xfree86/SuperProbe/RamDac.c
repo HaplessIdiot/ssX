@@ -30,7 +30,7 @@
  */
 
 /* $XConsortium: RamDac.c,v 1.4 95/01/12 19:19:44 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.12 1995/11/16 11:04:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.13 1995/12/09 11:06:38 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -889,6 +889,16 @@ int *RamDac;
 		DisableIOPorts(NUMPORTS, Ports);
 		return;
 	    }
+	}
+	else if ( (SVGA_VENDOR(Chipset) == V_TRIDENT) && 
+		   (Chipset >= CHIP_TVGA9000I) )
+	{
+		if (Chipset <= CHIP_TVGA9440)
+			*RamDac = DAC_TKD8001;
+		else
+			*RamDac = DAC_TGUIDAC;
+	    	DisableIOPorts(NUMPORTS, Ports);
+	    	return;
 	}
 
 	/*

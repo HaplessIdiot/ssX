@@ -1,4 +1,7 @@
-XFree86 3.1.2Bm (25 January 1996)
+XFree86 3.1.2Bm (26 January 1996)
+276. Remove (for now) the vertical retrace wait in the S3 SetViewPort.
+275. Updates TGUI support for SuperProbe (Alan Hourihane).
+274. TGUI driver updates (Alan Hourihane).
 273. Major updates to OS/2 support (Holger Veit).
 272. Update xdpyinfo for the latest XFree86-Misc changes, and update xset
      to allow the keyboard repeat parameters to be changed (Joe Moss).
@@ -10,7 +13,7 @@ XFree86 3.1.2Bm (25 January 1996)
 268. Update Imakefiles under hw/xfree98 (X98 core team).
 267. Fix for make dependency problem with BSD make and the XFree86 drivers
      subdirectories (Matthieu Herrb).
-266. X Consortium fix-trackers to seq-4074 (mostly XKB and doc updates).
+266. X Consortium fix-trackers to seq-4084 (mostly XKB and doc updates).
 265. Allow the XInput debug level to be set from the XF86Config
      (Frederic Lepied).
 

@@ -1,7 +1,12 @@
-XCOMM platform:  $XConsortium: ncr.cf /main/24 1995/11/28 10:20:57 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/ncr.cf,v 3.13 1995/06/17 12:06:47 dawes Exp $
+XCOMM platform:  $XConsortium: ncr.cf /main/26 1996/01/22 17:43:35 gildea $
+XCOMM platform:  $XFree86: xc/config/cf/ncr.cf,v 3.14 1996/01/05 13:06:39 dawes Exp $
+
+#ifndef OSName
 #define OSName			Unix System V Release 4/MP-RAS
+#endif
+#ifndef OSVendor
 #define OSVendor		NCR
+#endif
 XCOMM operating system:  OSName
 
 #define BootstrapCFlags		-DNCR

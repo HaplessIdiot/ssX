@@ -1,5 +1,5 @@
-XCOMM platform:  $XConsortium: bsdi.cf /main/20 1996/01/11 17:33:12 gildea $
-XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.20 1996/01/05 13:06:33 dawes Exp $
+XCOMM platform:  $XConsortium: bsdi.cf /main/21 1996/01/22 17:36:20 gildea $
+XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.21 1996/01/13 12:17:53 dawes Exp $
 
 #ifndef OSName
 #define OSName            BSD/OS 2.0
@@ -21,7 +21,6 @@ XCOMM operating system:  OSName
 XCOMM BSD/OS 2.0 comes with gcc 2.6.3 installed as gcc2 and gcc.
 XCOMM gcc 1.42 is installed as cc.
 XCOMM BSD/386 1.1 comes with gcc 2.5.8 installed as gcc2.
-XCOMM gcc 1.42 is installed as cc and gcc.
 XCOMM BSD/386 1.0 comes with gcc 1.40 as the only compiler.
 XCOMM The default is to use gcc2 on release 2.0 and 1.1 and gcc1 on 1.0
 XCOMM The defaults can be altered by defining "HasGcc2" as YES or NO in

@@ -26,7 +26,7 @@
  */
 
 /* $XConsortium: Probe.h,v 1.5 95/01/16 13:16:20 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.22 1995/11/16 11:04:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.23 1995/11/30 13:03:15 dawes Exp $ */
 
 /*
  * Includes
@@ -313,8 +313,10 @@ extern Chip_Descriptor I128_Descriptor;
 #define DAC_STG1703	37	/* STG 1703 15/16/24-bit DAC w/pixel-mux w/dual PLL */
 #define DAC_ATT409	38	/* AT&T 20C409 15/16/24-bit DAC */
 #define DAC_ATT499	39	/* AT&T 20C499 15/16/24-bit DAC */
+#define DAC_TKD8001	40	/* Trident TKD8001 15/16/24-bit DAC */
+#define DAC_TGUIDAC	41	/* Trident TGUIDAC 15/16/24-bit DAC */
 
-#define DAC_MAX		DAC_ATT499	/* UPDATE THIS! */
+#define DAC_MAX		DAC_TGUIDAC	/* UPDATE THIS! */
 
 #define DAC_6_8_PROGRAM	0x40	/* RAMDAC programmable for 6/8-bit tables */
 #define DAC_8BIT	0x80	/* RAMDAC with 8-bit wide lookup tables */
@@ -509,9 +511,10 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_TVGA9320	SVGA_TYPE(V_TRIDENT,11)	/* Trident LCD9320	*/
 #define CHIP_TVGA9400CX	SVGA_TYPE(V_TRIDENT,12)	/* Trident 9400CXi	*/
 #define CHIP_TVGA9420	SVGA_TYPE(V_TRIDENT,13)	/* Trident GUI9420	*/
-#define CHIP_TVGA9440	SVGA_TYPE(V_TRIDENT,14)	/* Trident GUI9440AGi	*/
-#define CHIP_TVGA9660	SVGA_TYPE(V_TRIDENT,15)	/* Trident GUI9660	*/
-#define CHIP_TVGA9420D	SVGA_TYPE(V_TRIDENT,16)	/* Trident GUI9420DGi	*/
+#define CHIP_TVGA9420D	SVGA_TYPE(V_TRIDENT,14) /* Trident GUI9420DGi	*/
+#define CHIP_TVGA9440	SVGA_TYPE(V_TRIDENT,15)	/* Trident GUI9440AGi	*/
+#define CHIP_TVGA9660	SVGA_TYPE(V_TRIDENT,16)	/* Trident GUI9660	*/
+#define CHIP_TVGA9680	SVGA_TYPE(V_TRIDENT,17) /* Trident GUI9680	*/
 #define CHIP_TSENG_UNK	SVGA_TYPE(V_TSENG,0)	/* Tseng unknown	*/
 #define CHIP_ET3000	SVGA_TYPE(V_TSENG,1)	/* Tseng ET3000		*/
 #define CHIP_ET4000	SVGA_TYPE(V_TSENG,2)	/* Tseng ET4000		*/

@@ -1,11 +1,17 @@
-XCOMM platform:  $XConsortium: fujitsu.cf,v 1.5 95/06/19 02:56:37 gildea Exp $
+XCOMM platform:  $XConsortium: fujitsu.cf /main/6 1996/01/22 17:36:40 gildea $
 
 #ifdef SparcArchitecture
 
+#ifndef OSName
 #define OSName             FUJITSU UXP/DS V10L20
+#endif
 XCOMM operating system:    OSName
+#ifndef OSMajorVersion
 #define OSMajorVersion     10
+#endif
+#ifndef OSMinorVersion
 #define OSMinorVersion     20
+#endif
 
 #define BootstrapCFlags    -D__uxp__
 #define StandardDefines    -D__uxp__ -DSVR4 -DANSICPP
@@ -25,10 +31,16 @@ XCOMM operating system:    OSName
 #endif
 
 #ifdef mc68000Architecture
+#ifndef OSName
 #define OSName             FUJITSU SX/G E17
+#endif
 XCOMM operating system:    OSName
+#ifndef OSMajorVersion
 #define OSMajorVersion     17
+#endif
+#ifndef OSMinorVersion
 #define OSMinorVersion     10
+#endif
 
 #define BootstrapCFlags    -D__sxg__
 #define StandardDefines    -D__sxg__ -DSYSV -DUSG -DNOSTDHDRS -I/usr/xwin/include

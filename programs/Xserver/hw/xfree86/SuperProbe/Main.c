@@ -26,7 +26,7 @@
  */
 
 /* $XConsortium: Main.c,v 1.4 95/01/06 20:56:41 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.6 1995/01/28 15:47:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.7 1996/01/24 22:00:30 dawes Exp $ */
 
 #include "Probe.h"
 #include "PatchLevel.h"
@@ -521,6 +521,8 @@ char *argv[];
     printf("Holger.Veit@gmd.de.\n");
     printf("If necessary, they will be forwarded to the author of the program.\n\n");
 #endif
+    printf("Before submitting a report, please make sure that you have the\n");
+    printf("latest version of SuperProbe (see http://www.xfree86.org/FAQ).\n\n");
 {
     FILE *f;
 

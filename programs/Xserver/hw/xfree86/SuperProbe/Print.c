@@ -26,7 +26,7 @@
  */
 
 /* $XConsortium: Print.c,v 1.5 95/01/16 13:16:19 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.23 1995/11/16 11:04:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.24 1995/11/30 13:03:14 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -113,8 +113,9 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "Trident 8900B", "Trident 8900C", "Trident 8900CL/8900D",
 		  "Trident 9000", "Trident 9000i",
 		  "Trident LCD9100B", "Trident 9200CXr", "Trident LCD9320", 
-		  "Trident 9400CXi", "Trident GUI 9420", "Trident GUI 9440AGi",
-		  "Trident GUI 9660", "Trident GUI 9420DGi"},
+		  "Trident 9400CXi", "Trident GUI 9420", "Trident GUI 9420DGi",
+                  "Trident GUI 9440AGi", "Trident GUI 9660", 
+                  "Trident GUI 9680"},
 /* Tseng */	{ "Tseng (chipset unknown)",
 		  "Tseng ET3000", "Tseng ET4000", 
 		  "Tseng ET4000/W32", "Tseng ET4000/W32i", 
@@ -203,6 +204,8 @@ struct RamDac_Name RamDac_Names[] =
 	{ "STG1703", "STG1703 15/16/24-bit DAC w/pixel-mux,clock" },
 	{ "20C409", "AT&T 20C409 15/16/24-bit DAC" },
 	{ "20C499", "AT&T 20C499 15/16/24-bit DAC" },
+	{ "TKD8001", "Trident Built-In 15/16/24-bit DAC" },
+	{ "TGUIDAC", "Trident Built-In 15/16/24-bit DAC" },
 };
 
 static CONST char *CoProc_Names[NUM_CP_TYPES][CHPS_PER_CPTYPE] = 

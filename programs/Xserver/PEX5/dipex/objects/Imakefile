@@ -1,6 +1,6 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.11 94/12/11 12:22:07 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/PEX5/dipex/objects/Imakefile,v 3.3 1996/01/05 13:16:40 dawes Exp $
+XCOMM $XConsortium: Imakefile /main/12 1996/01/24 16:32:03 kaleb $
+XCOMM $XFree86: xc/programs/Xserver/PEX5/dipex/objects/Imakefile,v 3.4 1996/01/24 22:00:00 dawes Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -52,7 +52,7 @@ XCOMM	pexTM.c pexAccBuf.c
 
 OBJS =  pexRndr.o pexFont.o pexLut.o pexNs.o pexStr.o \
 	pexPhigs.o pexInfo.o pexSc.o pexPick.o pexPc.o pexRndrPick.o
-XCOMM	pexTM.c pexAccBuf.o
+XCOMM	pexTM.o pexAccBuf.o
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(diobpex,$(OBJS))

@@ -1,5 +1,5 @@
-XCOMM platform:  $XConsortium: sun.cf /main/149 1996/01/14 16:42:01 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.23 1996/01/05 13:06:44 dawes Exp $
+XCOMM platform:  $XConsortium: sun.cf /main/150 1996/01/22 16:50:08 gildea $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.24 1996/01/16 15:00:03 dawes Exp $
 
 #ifdef SVR4Architecture
 #ifdef i386Architecture
@@ -163,6 +163,7 @@ XCOMM operating system:  OSName
 #define XkbServerDefines  -DXKB_ALWAYS_USES_SOFT_REPEAT
 
 #if OSMajorVersion > 4
+#define BootstrapCFlags	  /* none needed */
 #ifndef XawI18nDefines
 #define XawI18nDefines    -DHAS_WCTYPE_H -DHAS_ISW_FUNCS
 #endif

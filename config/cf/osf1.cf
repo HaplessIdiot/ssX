@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: osf1.cf /main/67 1995/12/01 17:35:50 kaleb $
+XCOMM platform:  $XConsortium: osf1.cf /main/68 1996/01/22 17:37:35 gildea $
 /* only tested with Digital OSF/1 */
 
 #ifdef AlphaArchitecture
@@ -13,10 +13,16 @@ XCOMM operating system:  OSName
 #define OSMinorVersion		2
 #endif
 #else
+#ifndef OSName
 #define OSName			OSF/1 1.0
+#endif
 XCOMM operating system:  OSName
+#ifndef OSMajorVersion
 #define OSMajorVersion		1
+#endif
+#ifndef OSMinorVersion
 #define OSMinorVersion		0
+#endif
 #endif
 
 #define HasPutenv		YES
