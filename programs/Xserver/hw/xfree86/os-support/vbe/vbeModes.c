@@ -27,7 +27,7 @@
  *
  * Authors: David Dawes <dawes@xfree86.org>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbeModes.c,v 1.4 2002/10/16 17:51:01 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbeModes.c,v 1.5 2002/11/01 22:11:49 dawes Exp $
  */
 
 #include "xf86.h"
@@ -305,26 +305,62 @@ VBEGetModePool(ScrnInfoPtr pScrn, vbeInfoPtr pVbe, VbeInfoBlock *vbe,
 	    int id = vbe->VideoModePtr[i++];
 
 	    if ((pMode = CheckMode(pScrn, pVbe, vbe, id, modeTypes)) != NULL) {
-		if (p == NULL) {
-		    modePool = pMode;
-		} else {
-		    p->next = pMode;
+		ModeStatus status = MODE_OK;
+
+		/* Check the mode against a specified virtual size (if any) */
+		if (pScrn->display->virtualX > 0 &&
+		    pMode->HDisplay > pScrn->display->virtualX) {
+		    status = MODE_VIRTUAL_X;
 		}
-		pMode->prev = NULL;
-		p = pMode;
+		if (pScrn->display->virtualY > 0 &&
+		    pMode->VDisplay > pScrn->display->virtualY) {
+		    status = MODE_VIRTUAL_Y;
+		}
+		if (status != MODE_OK) {
+		     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+				"Not using mode \"%dx%d\" (%s)\n",
+				pMode->HDisplay, pMode->VDisplay,
+				xf86ModeStatusToString(status));
+		} else {
+		    if (p == NULL) {
+			modePool = pMode;
+		    } else {
+			p->next = pMode;
+		    }
+		    pMode->prev = NULL;
+		    p = pMode;
+		}
 	    }
 	}
     }
     if (modeTypes & V_MODETYPE_VGA) {
 	for (i = 0; i < 0x7F; i++) {
 	    if ((pMode = CheckMode(pScrn, pVbe, vbe, i, modeTypes)) != NULL) {
-		if (p == NULL) {
-		    modePool = pMode;
-		} else {
-		    p->next = pMode;
+		ModeStatus status = MODE_OK;
+
+		/* Check the mode against a specified virtual size (if any) */
+		if (pScrn->display->virtualX > 0 &&
+		    pMode->HDisplay > pScrn->display->virtualX) {
+		    status = MODE_VIRTUAL_X;
 		}
-		pMode->prev = NULL;
-		p = pMode;
+		if (pScrn->display->virtualY > 0 &&
+		    pMode->VDisplay > pScrn->display->virtualY) {
+		    status = MODE_VIRTUAL_Y;
+		}
+		if (status != MODE_OK) {
+		     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+				"Not using mode \"%dx%d\" (%s)\n",
+				pMode->HDisplay, pMode->VDisplay,
+				xf86ModeStatusToString(status));
+		} else {
+		    if (p == NULL) {
+			modePool = pMode;
+		    } else {
+			p->next = pMode;
+		    }
+		    pMode->prev = NULL;
+		    p = pMode;
+		}
 	    }
 	}
     }
