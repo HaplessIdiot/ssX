@@ -2,7 +2,7 @@
  * MGA-1064, MGA-G100, MGA-G200, MGA-G400 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.43 2001/02/13 19:19:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.44 2001/04/05 17:42:32 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1013,7 +1013,9 @@ MGAGRamdacInit(ScrnInfoPtr pScrn)
     MGAdac->ShowCursor             = MGAGShowCursor;
     MGAdac->UseHWCursor            = MGAGUseHWCursor;
     MGAdac->CursorFlags            =
+#if X_BYTE_ORDER == X_LITTLE_ENDIAN
     				HARDWARE_CURSOR_BIT_ORDER_MSBFIRST |
+#endif
     				HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_64 |
     				HARDWARE_CURSOR_TRUECOLOR_AT_8BPP;
 

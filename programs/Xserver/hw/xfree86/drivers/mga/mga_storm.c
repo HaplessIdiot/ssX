@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.85 2001/02/27 23:05:00 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.86 2001/03/21 17:02:24 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -264,7 +264,7 @@ AllocateLinear (
 static int
 GetPowerOfTwo(int w)
 {
-    int Pof2;
+    int Pof2 = 0;
     int i = 12;
 
     while(--i) {
@@ -677,13 +677,14 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 				HARDWARE_CLIP_SOLID_FILL  |
 				HARDWARE_CLIP_MONO_8x8_FILL;
 
+#if X_BYTE_ORDER == X_LITTLE_ENDIAN
     /* dashed lines */
     infoPtr->DashedLineFlags = LINE_PATTERN_MSBFIRST_LSBJUSTIFIED;
     infoPtr->SetupForDashedLine = MGANAME(SetupForDashedLine);
     infoPtr->SubsequentDashedTwoPointLine =
 		MGANAME(SubsequentDashedTwoPointLine);
     infoPtr->DashPatternMaxLength = 128;
-
+#endif
 
     /* 8x8 mono patterns */
     infoPtr->Mono8x8PatternFillFlags = HARDWARE_PATTERN_PROGRAMMED_BITS |
@@ -700,7 +701,11 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
     infoPtr->ScanlineCPUToScreenColorExpandFillFlags =
 					CPU_TRANSFER_PAD_DWORD |
 					SCANLINE_PAD_DWORD |
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+					BIT_ORDER_IN_BYTE_MSBFIRST |
+#else
 					BIT_ORDER_IN_BYTE_LSBFIRST |
+#endif
 					LEFT_EDGE_CLIPPING |
 					LEFT_EDGE_CLIPPING_NEGATIVE_X;
 
@@ -1002,7 +1007,7 @@ MGANAME(RestoreAccelState)(ScrnInfoPtr pScrn)
    SET_FOREGROUND(tmp);
    OUTREG(MGAREG_SRCORG, pMga->realSrcOrg);
    OUTREG(MGAREG_DSTORG, pMga->DstOrg);
-   OUTREG(MGAREG_OPMODE, MGAOPM_DMA_BLIT);
+   OUTREG(MGAREG_OPMODE, MGAOPM_DMA_BLIT | 0x10000);
    OUTREG(MGAREG_CXBNDRY, 0xFFFF0000); /* (maxX << 16) | minX */
    OUTREG(MGAREG_YTOP, 0x00000000);    /* minPixelPointer */
    OUTREG(MGAREG_YBOT, 0x007FFFFF);    /* maxPixelPointer */
@@ -1078,12 +1083,15 @@ MGAStormEngineInit(ScrnInfoPtr pScrn)
     long maccess = 0;
     MGAPtr pMga = MGAPTR(pScrn);
     MGAFBLayout *pLayout = &pMga->CurrentLayout;
+    CARD32 opmode;
 
     CHECK_DMA_QUIESCENT(pMga, pScrn);
 
     if ((pMga->Chipset == PCI_CHIP_MGAG100)
 	|| (pMga->Chipset == PCI_CHIP_MGAG100_PCI))
     	maccess = 1 << 14;
+
+    opmode = INREG(MGAREG_OPMODE);
 
     switch( pLayout->bitsPerPixel )
     {
@@ -1096,16 +1104,19 @@ MGAStormEngineInit(ScrnInfoPtr pScrn)
 	   maccess |= (1 << 31);
 	Mga16InitSolidFillRectFuncs(pMga);
 	pMga->RestoreAccelState = Mga16RestoreAccelState;
+	opmode |= 10000;
         break;
     case 24:
         maccess |= 3;
 	Mga24InitSolidFillRectFuncs(pMga);
 	pMga->RestoreAccelState = Mga24RestoreAccelState;
         break;
+	opmode |= 20000;
     case 32:
         maccess |= 2;
 	Mga32InitSolidFillRectFuncs(pMga);
 	pMga->RestoreAccelState = Mga32RestoreAccelState;
+	opmode |= 20000;
         break;
     }
 
@@ -1134,7 +1145,7 @@ MGAStormEngineInit(ScrnInfoPtr pScrn)
     OUTREG(MGAREG_FCOL, pMga->FgColor);
     pMga->BgColor = 0;
     OUTREG(MGAREG_BCOL, pMga->BgColor);
-    OUTREG(MGAREG_OPMODE, MGAOPM_DMA_BLIT);
+    OUTREG(MGAREG_OPMODE, MGAOPM_DMA_BLIT | opmode);
 
     /* put clipping in a known state */
     OUTREG(MGAREG_CXBNDRY, 0xFFFF0000);	/* (maxX << 16) | minX */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_accel.c,v 1.3 2000/07/26 01:52:19 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_accel.c,v 1.4 2000/08/01 20:05:43 dawes Exp $ */
 
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
@@ -45,6 +45,7 @@ static void IMSTTSync(ScrnInfoPtr pScrn)
 
 	while(INREG(IMSTT_SSTATUS) & 0x80);
 	while(INREG(IMSTT_SSTATUS) & 0x40);
+	
 	return;
 }
 
@@ -55,11 +56,18 @@ static void IMSTTSetupForSolidFill(ScrnInfoPtr pScrn, int color,
 	IMSTTPtr iptr = IMSTTPTR(pScrn);
 	IMSTTMMIO_VARS();
 
-	OUTREG(IMSTT_DP_OCTL, iptr->ll);
-	OUTREG(IMSTT_SP, iptr->ll);
-	OUTREG(IMSTT_BI, 0xffffffff);
-	OUTREG(IMSTT_MBC, 0xffffffff);
-	OUTREG(IMSTT_CLR, color);
+	switch (pScrn->depth) {
+		case 8:
+			iptr->color = color | (color << 8) | (color << 16) | (color << 24);
+			break;
+		case 15:
+		case 16:
+			iptr->color = color | (color << 8) | (color << 16);
+			break;
+		default:
+			iptr->color = color;
+			break;
+	}
 }
 
 
@@ -69,13 +77,28 @@ static void IMSTTSubsequentSolidFillRect(ScrnInfoPtr pScrn,
 	IMSTTPtr iptr = IMSTTPTR(pScrn);
 	IMSTTMMIO_VARS();
 
-	OUTREG(IMSTT_DSA, y * iptr->ll + x * (pScrn->bitsPerPixel >> 3));
-	OUTREG(IMSTT_S1SA, y * iptr->ll + x * (pScrn->bitsPerPixel >> 3));
-	OUTREG(IMSTT_CNT, ((h - 1) << 16) | (w * (pScrn->bitsPerPixel >> 3) - 1));
+	x *= (pScrn->bitsPerPixel >> 3);
+	y *= iptr->ll;
+	w *= (pScrn->bitsPerPixel >> 3);
+	h--;
+	w--;
+
+	while(INREG(IMSTT_SSTATUS) & 0x80);
+	OUTREG(IMSTT_DSA, x + y);
+	OUTREG(IMSTT_CNT, (h << 16) | w);
+	OUTREG(IMSTT_DP_OCTL, iptr->ll);
+	OUTREG(IMSTT_SP, iptr->ll);
+	OUTREG(IMSTT_BI, 0xffffffff);
+	OUTREG(IMSTT_MBC, 0xffffffff);
+	OUTREG(IMSTT_CLR, iptr->color);
+
 	if (iptr->rev == 2)
 		OUTREG(IMSTT_BLTCTL, 0x200000);
 	else
 		OUTREG(IMSTT_BLTCTL, 0x840);
+
+	while(INREG(IMSTT_SSTATUS) & 0x80);
+	while(INREG(IMSTT_SSTATUS) & 0x40);
 }
 
 
@@ -88,17 +111,20 @@ static void IMSTTSetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir,
 	unsigned long sp, dp, ll, cnt;
 
 	iptr->bltctl = 0x05;
+
+	ll = pScrn->displayWidth * (pScrn->bitsPerPixel >> 3);
 	ll = iptr->ll;
+
 	sp = ll << 16;
 
-	if (xdir > 0) {
+	if (xdir < 0) {
 		iptr->bltctl |= 0x80;
 		iptr->cnt = 1;
 	} else {
 		iptr->cnt = 0;
 	}
 
-	if (ydir > 0) {
+	if (ydir < 0) {
 		sp |= -(ll) & 0xffff;
 		dp = -(ll) & 0xffff;
 		iptr->ydir = 1;
@@ -110,6 +136,7 @@ static void IMSTTSetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir,
 
 	iptr->sp = sp;
 	iptr->dp = dp;
+	iptr->ll = ll;
 }
 
 
@@ -122,6 +149,9 @@ static void IMSTTSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn,
 	IMSTTMMIO_VARS();
 	unsigned long cnt;
 
+	x1 *= (pScrn->bitsPerPixel >> 3);
+	x2 *= (pScrn->bitsPerPixel >> 3);
+	w *= (pScrn->bitsPerPixel >> 3);
 	w--;
 	h--;
 	cnt = h << 16;
@@ -145,6 +175,8 @@ static void IMSTTSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn,
 	OUTREG(IMSTT_CNT, cnt);
 	OUTREG(IMSTT_DP_OCTL, iptr->dp);
 	OUTREG(IMSTT_BLTCTL, iptr->bltctl);
+	while(INREG(IMSTT_SSTATUS) & 0x80);
+	while(INREG(IMSTT_SSTATUS) & 0x40);
 }
 
 
@@ -160,14 +192,28 @@ Bool IMSTTAccelInit(ScreenPtr pScreen)
 
 	iptr->ll = pScrn->displayWidth * (pScrn->bitsPerPixel >> 3);
 
-	iptr->screen_width = iptr->pitch = iptr->ll;
+	switch (pScrn->bitsPerPixel) {
+		case 16:
+			iptr->screen_width = iptr->pitch >> 1;
+			break;
+		case 24:
+		case 32:
+			iptr->screen_width = iptr->pitch >> 2;
+			break;
+		default:
+			iptr->screen_width = iptr->pitch = iptr->ll;
+			break;
+	}
 
 	xaaptr->Flags = (PIXMAP_CACHE | OFFSCREEN_PIXMAPS | LINEAR_FRAMEBUFFER);
 
 	xaaptr->Sync = IMSTTSync;
 
-	xaaptr->SetupForSolidFill = IMSTTSetupForSolidFill;
-	xaaptr->SubsequentSolidFillRect = IMSTTSubsequentSolidFillRect;
+	if (pScrn->bitsPerPixel == 8) {
+		/* FIXME fills are broken > 8bpp, iptr->color needs to be setup right */
+		xaaptr->SetupForSolidFill = IMSTTSetupForSolidFill;
+		xaaptr->SubsequentSolidFillRect = IMSTTSubsequentSolidFillRect;
+	}
 
 	xaaptr->ScreenToScreenCopyFlags = NO_TRANSPARENCY;
 	xaaptr->SetupForScreenToScreenCopy = IMSTTSetupForScreenToScreenCopy;

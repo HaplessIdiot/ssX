@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.46 2001/02/27 23:05:01 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.48 2001/03/08 17:12:15 eich Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -472,21 +472,46 @@ unmapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 /***************************************************************************/
 
 #if defined(__powerpc__)
-/* FIXME: init this... */
-volatile unsigned char *ioBase = MAP_FAILED;
+volatile unsigned char *ioBase = NULL;
+
+#ifndef __NR_pciconfig_iobase
+#define __NR_pciconfig_iobase	200
+#endif
 
 #endif
 
 void
 xf86EnableIO(void)
 {
+#if defined(__powerpc__)
+	int fd;
+	unsigned int ioBase_phys;
+#endif
+
 	if (ExtendedEnabled)
 		return;
 
-#if !defined(__mc68000__) && !defined(__powerpc__) && !defined(__sparc__) && !defined(__mips__)
+#if defined(__powerpc__)
+	ioBase_phys = syscall(__NR_pciconfig_iobase, 2, 0, 0);
+
+	fd = open("/dev/mem", O_RDWR);
+	if (ioBase == NULL) {
+		ioBase = (volatile unsigned char *)mmap(0, 0x20000,
+				PROT_READ|PROT_WRITE, MAP_SHARED, fd,
+				ioBase_phys);
+/* Should this be fatal or just a warning? */
+#if 0
+		if (ioBase == MAP_FAILED) {
+			FatalError(
+			    "xf86EnableIOPorts: Failed to map iobase (%s)\n",
+			    strerror(errno));
+		}
+#endif
+	}
+	close(fd);
+#elif !defined(__mc68000__) && !defined(__sparc__) && !defined(__mips__)
 	if (ioperm(0, 1024, 1) || iopl(3))
-		FatalError("%s: Failed to set IOPL for I/O\n",
-			   "xf86EnableIOPorts");
+		FatalError("xf86EnableIOPorts: Failed to set IOPL for I/O\n");
 #endif
 	ExtendedEnabled = TRUE;
 
@@ -498,8 +523,10 @@ xf86DisableIO(void)
 {
 	if (!ExtendedEnabled)
 		return;
-
-#if !defined(__mc68000__) && !defined(__powerpc__) && !defined(__sparc__) && !defined(__mips__)
+#if defined(__powerpc__)
+	munmap(ioBase, 0x20000);
+	ioBase = NULL;
+#elif !defined(__mc68000__) && !defined(__sparc__) && !defined(__mips__)
 	iopl(0);
 	ioperm(0, 1024, 0);
 #endif

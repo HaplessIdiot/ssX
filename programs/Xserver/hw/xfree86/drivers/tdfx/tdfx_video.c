@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_video.c,v 1.8 2000/12/20 21:41:06 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_video.c,v 1.9 2001/01/25 02:20:34 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "tdfx.h"
@@ -436,12 +436,23 @@ TDFXCopyData(
   int h,
   int w
 ){
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    w >>= 1;
+    while(h--) {
+      int i;
+      for (i=0; i<w; i++)
+       ((unsigned long *)dst)[i]=BE_WSWAP32(((unsigned long *)src)[i]);
+       src += srcPitch;
+       dst += dstPitch;
+    }
+#else
     w <<= 1;
     while(h--) {
 	memcpy(dst, src, w);
 	src += srcPitch;
 	dst += dstPitch;
     }
+#endif
 }
 
 static void
@@ -467,15 +478,20 @@ TDFXCopyMungedData(
 	s1 = src1;  s2 = src2;  s3 = src3;
 	i = w;
 	while(i > 4) {
-	   dst[0] = s1[0] | (s1[1] << 16) | (s3[0] << 8) | (s2[0] << 24);
-	   dst[1] = s1[2] | (s1[3] << 16) | (s3[1] << 8) | (s2[1] << 24);
-	   dst[2] = s1[4] | (s1[5] << 16) | (s3[2] << 8) | (s2[2] << 24);
-	   dst[3] = s1[6] | (s1[7] << 16) | (s3[3] << 8) | (s2[3] << 24);
+           dst[0] = BE_WSWAP32(s1[0] | (s1[1] << 16) | (s3[0] << 8) |
+			(s2[0] << 24));
+           dst[1] = BE_WSWAP32(s1[2] | (s1[3] << 16) | (s3[1] << 8) |
+			(s2[1] << 24));
+           dst[2] = BE_WSWAP32(s1[4] | (s1[5] << 16) | (s3[2] << 8) |
+			(s2[2] << 24));
+           dst[3] = BE_WSWAP32(s1[6] | (s1[7] << 16) | (s3[3] << 8) |
+			(s2[3] << 24));
 	   dst += 4; s2 += 4; s3 += 4; s1 += 8;
 	   i -= 4;
 	}
 	while(i--) {
-	   dst[0] = s1[0] | (s1[1] << 16) | (s3[0] << 8) | (s2[0] << 24);
+	   dst[0] = BE_WSWAP32(s1[0] | (s1[1] << 16) | (s3[0] << 8) |
+				(s2[0] << 24));
 	   dst++; s2++; s3++;
 	   s1 += 2;
 	}

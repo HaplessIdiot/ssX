@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfxdefs.h,v 1.10 2000/12/20 01:30:47 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfxdefs.h,v 1.11 2001/03/21 17:02:26 dawes Exp $ */
 /*
    Voodoo Banshee driver version 1.0.1
 
@@ -197,6 +197,7 @@
 
 /* 3D Registers */
 #define SST_3D_OFFSET           	0x200000
+#define SST_3D_LFBMODE               	SST_3D_OFFSET+0x114
 #define SST_3D_COMMAND 			SST_3D_OFFSET+0x120
 #define SST_3D_SLICTRL 			SST_3D_OFFSET+0x20C
 #define SST_3D_AACTRL			SST_3D_OFFSET+0x210

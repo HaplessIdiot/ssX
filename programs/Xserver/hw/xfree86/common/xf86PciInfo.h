@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.92 2001/03/28 17:58:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.93 2001/04/05 19:29:42 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -499,6 +499,10 @@
 
 /* NVIDIA & SGS */
 #define PCI_CHIP_RIVA128	0x0018
+
+/* IMS */
+#define PCI_CHIP_IMSTT128	0x9128
+#define PCI_CHIP_IMSTT3D	0x9135
 
 /* Alliance Semiconductor */
 #define PCI_CHIP_AP6410		0x3210
@@ -1247,10 +1251,14 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_GEFORCE3_2,	"GeForce3 (rev 2)",0},
 				{PCI_CHIP_GEFORCE3_3,	"GeForce3 (rev 3)",0},
 				{0x0000,		NULL,0}}},
-#ifdef VENDOR_INCLUDE_NONVIDEO
     {PCI_VENDOR_IMS, {
+				{PCI_CHIP_IMSTT128,	"TwinTurbo 128", 0},
+				{PCI_CHIP_IMSTT3D,	"TwinTurbo 3D", 0},
+#ifdef VENDOR_INCLUDE_NONVIDEO
                                 {0x8849, "8849",0 },
+#endif
 				{0x0000,		NULL,0}}},
+#ifdef VENDOR_INCLUDE_NONVIDEO
     {PCI_VENDOR_TEKRAM, {
                                 {0x690C, "DC690C",0 },
 				{0x0000,		NULL,0}}},

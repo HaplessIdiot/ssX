@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_accel.c,v 1.16 2000/12/01 14:28:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_accel.c,v 1.18 2001/03/21 17:02:26 dawes Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -57,6 +57,7 @@ static void TDFXSetupForDashedLine(ScrnInfoPtr pScrn, int fg, int bg, int rop,
 static void TDFXSubsequentDashedTwoPointLine(ScrnInfoPtr pScrn, int x1, int y1,
                                              int x2, int y2, int flags,
                                              int phase);
+#ifdef ENABLE_SS_COLOR_EXPAND_FILL
 static void TDFXSetupForScreenToScreenColorExpandFill(ScrnInfoPtr pScrn,
                                                       int fg, int bg, int rop,
                                                       unsigned int planemask);
@@ -64,6 +65,7 @@ static void TDFXSubsequentScreenToScreenColorExpandFill(ScrnInfoPtr pScrn,
                                                         int x, int y, int w,
                                                         int h, int srcx,
                                                         int srcy, int offset);
+#endif
 static void TDFXSetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
                                                    int fg, int bg, int rop,
                                                    unsigned int planemask);
@@ -72,8 +74,6 @@ static void TDFXSubsequentCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
                                                      int w, int h,
                                                      int skipleft);
 static void TDFXSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno);
-
-void TDFXSelectBuffer(TDFXPtr pTDFX, int which);
 
 void
 TDFXNeedSync(ScrnInfoPtr pScrn) {
@@ -162,6 +162,17 @@ TDFXSelectBuffer(TDFXPtr pTDFX, int which) {
 void
 TDFXSetLFBConfig(TDFXPtr pTDFX) {
   if (pTDFX->ChipType<=PCI_CHIP_VOODOO3) {
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    unsigned int lfbmode;  
+    lfbmode=TDFXReadLongMMIO(pTDFX, SST_3D_LFBMODE);
+
+    lfbmode&=~BIT(12); /* 0 bit 12 is byte swizzle */
+    lfbmode|=BIT(11); /* 1 bit 11 is word swizzle */
+    lfbmode&=~BIT(10); /* 0 bit 10  ARGB or ABGR */
+    lfbmode&=~BIT(9); /* 0 bit 9 if bit10 = 0:  ARGB else ABGR */
+
+    TDFXWriteLongMMIO(pTDFX, SST_3D_LFBMODE, lfbmode);
+#endif
     TDFXWriteLongMMIO(pTDFX, LFBMEMORYCONFIG, (pTDFX->backOffset>>12) |
 		      SST_RAW_LFB_ADDR_STRIDE_4K | 
 		      ((pTDFX->stride+127)/128)<<SST_RAW_LFB_TILE_STRIDE_SHIFT);
@@ -251,7 +262,10 @@ TDFXAccelInit(ScreenPtr pScreen)
     TDFXSubsequentCPUToScreenColorExpandFill;
   infoPtr->SubsequentColorExpandScanline =
     TDFXSubsequentColorExpandScanline;
-  infoPtr->ScanlineCPUToScreenColorExpandFillFlags = commonFlags |
+  infoPtr->ScanlineCPUToScreenColorExpandFillFlags = NO_PLANEMASK |
+#if X_BYTE_ORDER == X_LITTLE_ENDIAN
+    BIT_ORDER_IN_BYTE_MSBFIRST |
+#endif
     CPU_TRANSFER_PAD_DWORD | SCANLINE_PAD_DWORD |
     LEFT_EDGE_CLIPPING; /* | LEFT_EDGE_CLIPPING_NEGATIVE_X; */
 
@@ -263,7 +277,7 @@ TDFXAccelInit(ScreenPtr pScreen)
     HARDWARE_PATTERN_PROGRAMMED_ORIGIN |
     HARDWARE_PATTERN_SCREEN_ORIGIN;
 
-#if 0
+#ifdef ENABLE_SS_COLOR_EXPAND_FILL
   /* This causes us to fail compliance */
   /* I suspect 1bpp pixmaps are getting written to cache incorrectly */
   infoPtr->SetupForScreenToScreenColorExpandFill =
@@ -652,8 +666,13 @@ TDFXNonTEGlyphRenderer(ScrnInfoPtr pScrn, int x, int y, int n,
 		(pbox->x1&0x1FFF));
   TDFXWriteLong(pTDFX, SST_2D_CLIP1MAX, ((pbox->y2&0x1FFF)<<16) |
 		(pbox->x2&0x1FFF));
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+  TDFXWriteLong(pTDFX, SST_2D_SRCFORMAT, SST_2D_PIXFMT_1BPP |
+		SST_2D_SOURCE_PACKING_DWORD | BIT(20));
+#else
   TDFXWriteLong(pTDFX, SST_2D_SRCFORMAT, SST_2D_PIXFMT_1BPP |
 		SST_2D_SOURCE_PACKING_DWORD);
+#endif
   pTDFX->sst2DSrcFmtShadow = SST_2D_PIXFMT_1BPP | SST_2D_SOURCE_PACKING_DWORD;
   TDFXWriteLong(pTDFX, SST_2D_SRCXY, 0);
   TDFXWriteLong(pTDFX, SST_2D_COLORFORE, fg);
@@ -683,7 +702,11 @@ TDFXNonTEGlyphRenderer(ScrnInfoPtr pScrn, int x, int y, int n,
       TDFXMakeRoom(pTDFX, i);
       DECLARE_LAUNCH(i, 0);
       for (j=0; j<i; j++) {
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+	TDFXWriteLong(pTDFX, SST_2D_LAUNCH, *glyph_data);
+#else
 	TDFXWriteLong(pTDFX, SST_2D_LAUNCH, XAAReverseBitOrder(*glyph_data));
+#endif
 	glyph_data++;
       }
       ndwords -= i;
@@ -697,9 +720,21 @@ TDFXSetupForDashedLine(ScrnInfoPtr pScrn, int fg, int bg, int rop,
 		       unsigned char *pattern)
 {
   TDFXPtr pTDFX;
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+  unsigned int pat = *(unsigned int *)pattern;
+#endif
 
   TDFXTRACEACCEL("TDFXSetupForDashedLine\n");
   pTDFX=TDFXPTR(pScrn);
+
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+  pat=((pat & 0xAAAAAAAA) >> 1) | ((pat & 0x55555555) << 1);
+  pat=((pat & 0xCCCCCCCC) >> 2) | ((pat & 0x33333333) << 2);
+  pat=((pat & 0xF0F0F0F0) >> 4) | ((pat & 0x0F0F0F0F) << 4);
+  pat=((pat & 0xFF00FF00) >> 8) | ((pat & 0x00FF00FF) << 8);
+  pat=((pat & 0xFFFF0000) >> 16) | ((pat & 0x0000FFFF) << 16);
+#endif
+
   TDFXClearState(pScrn);
 
   pTDFX->Cmd = (TDFXROPCvt[rop]<<24) | SST_2D_STIPPLE_LINE;
@@ -710,7 +745,11 @@ TDFXSetupForDashedLine(ScrnInfoPtr pScrn, int fg, int bg, int rop,
 
   TDFXMakeRoom(pTDFX, 3);
   DECLARE(SSTCP_COLORFORE|SSTCP_COLORBACK|SSTCP_LINESTIPPLE);
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+  TDFXWriteLong(pTDFX, SST_2D_LINESTIPPLE, pat);
+#else
   TDFXWriteLong(pTDFX, SST_2D_LINESTIPPLE, *(int *)pattern);
+#endif
   TDFXWriteLong(pTDFX, SST_2D_COLORBACK, bg);
   TDFXWriteLong(pTDFX, SST_2D_COLORFORE, fg);
 }
@@ -735,6 +774,7 @@ TDFXSubsequentDashedTwoPointLine(ScrnInfoPtr pScrn, int x1, int y1,
   TDFXSubsequentSolidTwoPointLine(pScrn, x1, y1, x2, y2, flags);
 }
 
+#ifdef ENABLE_SS_COLOR_EXPAND_FILL
 static void
 TDFXSetupForScreenToScreenColorExpandFill(ScrnInfoPtr pScrn, int fg, int bg,
                                           int rop, unsigned int planemask)
@@ -800,6 +840,7 @@ TDFXSubsequentScreenToScreenColorExpandFill(ScrnInfoPtr pScrn, int x, int y,
 
   pTDFX->prevBlitDest.y1=y;
 }
+#endif
 
 static void
 TDFXSetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, int fg, int bg,
@@ -854,7 +895,12 @@ TDFXSubsequentCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, int x, int y,
   pTDFX->sst2DDstFmtShadow = fmt;
   TDFXWriteLong(pTDFX, SST_2D_CLIP1MIN, ((y&0x1FFF)<<16)|(x&0x1FFF));
   TDFXWriteLong(pTDFX, SST_2D_CLIP1MAX, (((y+h)&0x1FFF)<<16)|((x+w)&0x1FFF));
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+  /* bit 20 byte swizzle */
+  TDFXWriteLong(pTDFX, SST_2D_SRCFORMAT, (((w+31)/32)*4) & 0x3FFF | BIT(20));
+#else
   TDFXWriteLong(pTDFX, SST_2D_SRCFORMAT, (((w+31)/32)*4) & 0x3FFF);
+#endif
   pTDFX->sst2DSrcFmtShadow = (((w+31)/32)*4) & 0x3FFF;
   TDFXWriteLong(pTDFX, SST_2D_SRCXY, skipleft&0x1F);
   TDFXWriteLong(pTDFX, SST_2D_DSTSIZE, ((w-skipleft)&0x1FFF)|((h&0x1FFF)<<16));

@@ -5,7 +5,7 @@
 
    Copyright: 1998,1999
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.19 2001/03/03 22:41:34 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.20 2001/03/21 17:02:25 dawes Exp $ */
 
 #ifndef _TDFX_H_
 #define _TDFX_H_
@@ -71,7 +71,7 @@ extern void FillPrivateDRI(TDFXPtr pTDFX, TDFXDRIPtr pTDFXDRI);
 #ifdef TRACECURS
 #define TDFXTRACECURS ErrorF
 #else
-#define TDFXTRACECURS if(0) (unsigned long)
+#define TDFXTRACECURS if(0) ErrorF
 #endif
 
 #ifdef TRACEREG
@@ -99,12 +99,17 @@ typedef int (*TDFXReadChipWordFunc)(TDFXPtr pTDFX, int chip,
 				    int addr);
 typedef void (*TDFXSyncFunc)(ScrnInfoPtr pScrn);
 typedef void (*TDFXBufferFunc)(TDFXPtr pTDFX, int which);
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+typedef void (*TDFXWriteFifoFunc)(TDFXPtr pTDFX, int val);
+#endif
+
 
 typedef struct {
   unsigned int vidcfg;
   unsigned int vidpll;
   unsigned int dacmode;
   unsigned int vgainit0;
+  unsigned int miscinit0;
   unsigned int screensize;
   unsigned int stride;
   unsigned int cursloc;
@@ -176,6 +181,9 @@ typedef struct _TDFXRec {
   TDFXWriteChipWordFunc writeChipLong;
   TDFXReadChipWordFunc readChipLong;
   TDFXSyncFunc sync;
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+  TDFXWriteFifoFunc writeFifo;
+#endif
   int syncDone;
   int scanlineWidth;
   unsigned char *scanlineColorExpandBuffers[2];
@@ -253,9 +261,11 @@ extern void TDFXSetPIOAccess(TDFXPtr pTDFX);
 extern void TDFXSetMMIOAccess(TDFXPtr pTDFX);
 extern void TDFXWriteLongMMIO(TDFXPtr pTDFX, int addr, int val);
 extern int TDFXReadLongMMIO(TDFXPtr pTDFX, int addr);
+extern void TDFXWriteChipLongMMIO(TDFXPtr pTDFX, int chip, int addr, int val);
 
 extern void TDFXNeedSync(ScrnInfoPtr pScrn);
 extern void TDFXCheckSync(ScrnInfoPtr pScrn);
+extern void TDFXFirstSync(ScrnInfoPtr pScrn);
 
 extern void TDFXSetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, 
 					   int ydir, int rop,
