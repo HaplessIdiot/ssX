@@ -256,7 +256,7 @@ static XF86ModuleVersionInfo lgVersRec =
 	LG_MAJOR_VERSION, LG_MINOR_VERSION, LG_PATCHLEVEL,
 	ABI_CLASS_VIDEODRV,			/* This is a video driver */
 	ABI_VIDEODRV_VERSION,
-	MOD_CLASS_VIDEODRV,
+	MOD_CLASS_NONE,
 	{0,0,0,0}
 };
 
