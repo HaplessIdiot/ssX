@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.24 2001/10/29 21:10:23 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.25 2001/11/11 22:45:57 alanh Exp $ */
 
 #ifndef _WIN_H_
 #define _WIN_H_
@@ -220,6 +220,9 @@ if (fDebugProcMsg) \
 #else
 #define DEBUGPROC_MSG
 #endif
+
+/* We use xor this macro for detecting toggle key state changes */
+#define WIN_XOR(a,b) ((!(a) && (b)) || ((a) && !(b)))
 
 
 /*

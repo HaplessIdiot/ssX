@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winkeybd.c,v 1.6 2001/09/26 13:00:34 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winkeybd.c,v 1.7 2001/11/11 22:45:57 alanh Exp $ */
 
 
 #include "win.h"
@@ -54,17 +54,11 @@ winTranslateKey (WPARAM wParam, LPARAM lParam, int *piScanCode)
 
   /* Branch on special extended, special non-extended, or normal key */
   if ((HIWORD (lParam) & KF_EXTENDED) && iKeyFixupEx)
-    {
-      *piScanCode = iKeyFixupEx;
-    }
+    *piScanCode = iKeyFixupEx;
   else if (iKeyFixup)
-    {
-      *piScanCode = iKeyFixup;
-    }
+    *piScanCode = iKeyFixup;
   else
-    {
-      *piScanCode = LOBYTE (HIWORD (lParam));
-    }
+    *piScanCode = LOBYTE (HIWORD (lParam));
 }
 
 
@@ -81,9 +75,7 @@ winGetKeyMappings (KeySymsPtr pKeySyms, CARD8 *pModMap)
 
   /* MAP_LENGTH is defined in Xserver/include/input.h to be 256 */
   for (i = 0; i < MAP_LENGTH; i++)
-    {
-      pModMap[i] = NoSymbol;  /* make sure it is restored */
-    }
+    pModMap[i] = NoSymbol;  /* make sure it is restored */
 
   /* Loop through all valid entries in the key symbol table */
   for (i = MIN_KEYCODE;
@@ -132,7 +124,7 @@ winGetKeyMappings (KeySymsPtr pKeySyms, CARD8 *pModMap)
 	}
     }
 
-  pKeySyms->map        = (KeySym*)map;
+  pKeySyms->map        = (KeySym *) map;
   pKeySyms->mapWidth   = GLYPHS_PER_KEY;
   pKeySyms->minKeyCode = MIN_KEYCODE;
   pKeySyms->maxKeyCode = MAX_KEYCODE;
@@ -274,34 +266,41 @@ void
 winRestoreModeKeyStates (ScreenPtr pScreen)
 {
   winScreenPriv(pScreen);
+  DWORD			dwKeyState;
+
+  /* 
+   * NOTE: The C XOR operator, ^, will not work here because it is
+   * a bitwise operator, not a logical operator.  C does not
+   * have a logical XOR operator, so we use a macro instead.
+   */
 
   /* Has the key state changed? */
-  if ((pScreenPriv->dwModeKeyStates & NumLockMask) 
-      ^ (GetKeyState (VK_NUMLOCK) & 0x0001))
+  dwKeyState = GetKeyState (VK_NUMLOCK) & 0x0001;
+  if (WIN_XOR (pScreenPriv->dwModeKeyStates & NumLockMask, dwKeyState))
     {
       winSendKeyEvent (KEY_NumLock, TRUE);
       winSendKeyEvent (KEY_NumLock, FALSE);
     }
-    
+
   /* Has the key state changed? */
-  if ((pScreenPriv->dwModeKeyStates & LockMask)
-      ^ (GetKeyState (VK_CAPITAL) & 0x0001))
+  dwKeyState = GetKeyState (VK_CAPITAL) & 0x0001;
+  if (WIN_XOR (pScreenPriv->dwModeKeyStates & LockMask, dwKeyState))
     {
       winSendKeyEvent (KEY_CapsLock, TRUE);
       winSendKeyEvent (KEY_CapsLock, FALSE);
     }
 
   /* Has the key state changed? */
-  if ((pScreenPriv->dwModeKeyStates & ScrollLockMask)
-      ^ (GetKeyState (VK_SCROLL) & 0x0001))
+  dwKeyState = GetKeyState (VK_SCROLL) & 0x0001;
+  if (WIN_XOR (pScreenPriv->dwModeKeyStates & ScrollLockMask, dwKeyState))
     {
       winSendKeyEvent (KEY_ScrollLock, TRUE);
       winSendKeyEvent (KEY_ScrollLock, FALSE);
     }
 
   /* Has the key state changed? */
-  if ((pScreenPriv->dwModeKeyStates & KanaMask)
-      ^ (GetKeyState (VK_KANA) & 0x0001))
+  dwKeyState = GetKeyState (VK_KANA) & 0x0001;
+  if (WIN_XOR (pScreenPriv->dwModeKeyStates & KanaMask, dwKeyState))
     {
       winSendKeyEvent (KEY_HKTG, TRUE);
       winSendKeyEvent (KEY_HKTG, FALSE);

@@ -30,9 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.16 2001/10/22 15:21:12 alanh Exp $ */
-
-#include "Xatom.h"
+/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.17 2001/11/11 22:45:57 alanh Exp $ */
 
 #include "win.h"
 
@@ -316,23 +314,22 @@ winWindowProc (HWND hwnd, UINT message,
 	break;
       return winMouseWheel (pScreen, GET_WHEEL_DELTA_WPARAM(wParam));
 
-#if 0
-      /* 
-       * FIXME: It may be better to move some of the WM_ACTIVATE/WM_ACTIVATEAPP
-       * functionality here.
-       */
     case WM_SETFOCUS:
-      break;
-#endif
+      if (pScreenPriv == NULL || pScreenInfo->fIgnoreInput)
+	break;
+
+      /* Restore the state of all mode keys */
+      winRestoreModeKeyStates (pScreen);
+      return 0;
 
     case WM_KILLFOCUS:
       if (pScreenPriv == NULL || pScreenInfo->fIgnoreInput)
 	break;
 
-#if CYGDEBUG      
-      ErrorF ("winWindowProc () - WM_KILLFOCUS hwnd %08x\n", hwnd);
-#endif
+      /* Store the state of all mode keys */
+      winStoreModeKeyStates (pScreen);
 
+      /* Release any pressed modifiers */
       winKeybdReleaseModifierKeys ();
       return 0;
 
@@ -432,22 +429,10 @@ winWindowProc (HWND hwnd, UINT message,
       /* Clear any lingering wheel delta */
       pScreenPriv->iDeltaZ = 0;
 
-      /* Activating or deactivating? */
-      if (LOWORD (wParam) == WA_ACTIVE || LOWORD (wParam) == WA_CLICKACTIVE)
-	{
-	  /* Restore the state of all mode keys */
-	  winRestoreModeKeyStates (pScreen);
-
-	  /* Have we changed input screens? */
-	  if (pScreenPriv->fEnabled && pScreen != miPointerCurrentScreen ())
-	    miPointerSetNewScreen (pScreenInfo->dwScreen, 0, 0);
-	}
-      else
-	{
-	  /* Deactivating */
-	  /* Store the state of all mode keys */
-	  winStoreModeKeyStates (pScreen);
-	}
+      /* Have we changed X screens? */
+      if ((LOWORD (wParam) == WA_ACTIVE || LOWORD (wParam) == WA_CLICKACTIVE)
+	  && pScreenPriv->fEnabled && pScreen != miPointerCurrentScreen ())
+	miPointerSetNewScreen (pScreenInfo->dwScreen, 0, 0);
 
       /* Are we activating or deactivating? */
       if (hwndLastMouse != NULL && hwndLastMouse != hwnd)
