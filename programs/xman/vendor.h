@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xman/vendor.h,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/xman/vendor.h,v 1.12 2003/03/26 20:43:59 tsi Exp $ */
 
 /* Vendor-specific definitions */
 
@@ -188,6 +188,8 @@ from the X Consortium.
 #  define FORMAT	"nroff -mandoc"
 # elif defined(linux)
 #  define FORMAT	"GROFF_NO_SGR= groff -Tlatin1 -mandoc"
+# elif defined(__DARWIN__)
+#  define FORMAT	"nroff -man"
 # else
 #  define FORMAT	"groff -man"
 # endif
