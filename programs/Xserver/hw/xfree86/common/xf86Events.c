@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.106 2001/03/07 19:53:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.107 2001/03/08 00:40:42 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -857,7 +857,13 @@ special:
      * normal, non-keypad keys
      */
     if (scanCode < KEY_KP_7 || scanCode > KEY_KP_Decimal) {
-#if !defined(CSRG_BASED) && !defined(MACH386) && !defined(MINIX) && !defined(__OSF__) && !defined(__GNU__)
+#if !defined(CSRG_BASED) && \
+    !defined(MACH386) && \
+    !defined(MINIX) && \
+    !defined(__OSF__) && \
+    !defined(__GNU__) && \
+    !defined(__CYGWIN__) && \
+     defined(KB_84)
       /*
        * magic ALT_L key on AT84 keyboards for multilingual support
        */
