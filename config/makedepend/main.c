@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/main.c,v 3.25 2001/12/19 15:15:47 tsi Exp $ */
+/* $XFree86: xc/config/makedepend/main.c,v 3.26 2001/12/19 22:21:52 tsi Exp $ */
 
 #include "def.h"
 #ifdef hpux
@@ -561,24 +561,24 @@ char *getnextline(struct filepointer *filep)
 	for(bol = p--; ++p < eof; ) {
 		if (*p == '/' && (p+1) < eof && *(p+1) == '*') {
 			/* Consume C comments */
-			*p++ = ' ';
-			*p++ = ' ';
+			*(p++) = ' ';
+			*(p++) = ' ';
 			while (p < eof && *p) {
 				if (*p == '*' && (p+1) < eof && *(p+1) == '/') {
 					*(p++) = ' ';
 					*(p++) = ' ';
 					break;
 				}
-				else if (*p == '\n')
+				if (*p == '\n')
 					lineno++;
-				*p++ = ' ';
+				*(p++) = ' ';
 			}
 			--p;
 		}
 		else if (*p == '/' && (p+1) < eof && *(p+1) == '/') {
 			/* Consume C++ comments */
-			*p++ = ' ';
-			*p++ = ' ';
+			*(p++) = ' ';
+			*(p++) = ' ';
 			while (p < eof && *p) {
 				if (*p == '\\' && (p+1) < eof &&
 				    *(p+1) == '\n') {
@@ -594,11 +594,8 @@ char *getnextline(struct filepointer *filep)
 					*(p++) = ' ';
 					lineno++;
 				}
-				else if (*p == '\n') {
-					*(p++) = ' ';
-					lineno++;
-					break;
-				}
+				else if (*p == '\n')
+					break;	/* to process end of line */
 				*(p++) = ' ';
 			}
 			--p;
@@ -623,7 +620,7 @@ char *getnextline(struct filepointer *filep)
 			if (*bol == '#') {
 				char *cp;
 
-				*p++ = '\0';
+				*(p++) = '\0';
 				/* punt lines with just # (yacc generated) */
 				for (cp = bol+1; 
 				     *cp && (*cp == ' ' || *cp == '\t'); cp++);
