@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/ramdac.c,v 3.2 1994/11/19 07:52:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/ramdac.c,v 3.3 1994/11/30 20:39:46 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -405,7 +405,7 @@ static read_cr()
 
 
 int RamdacShift;
-int RamdacMask;
+extern int vgaRamdacMask;
 static saved_cr;
 static cr_saved;
 static rmr;
@@ -414,7 +414,7 @@ static check_ramdac()
     unsigned char cmap[3], save_cmap[3];
 
     RamdacShift = 10;
-    RamdacMask = 0x3f;
+    vgaRamdacMask = 0x3f;
 
     rmr = inb(RMR);
     saved_cr = read_cr();
@@ -449,7 +449,7 @@ static check_ramdac()
 	{
 	    ErrorF("Ramdac:  ATT20C490\n");
 	    RamdacShift = 8;
-	    RamdacMask = 0xff;
+	    vgaRamdacMask = 0xff;
 	}
 	else
 	    ErrorF("Ramdac:  ATT20C493\n");
@@ -467,7 +467,7 @@ static check_ramdac()
 	{
 	    ErrorF("Ramdac:  ATT20C491\n");
 	    RamdacShift = 8;
-	    RamdacMask = 0xff;
+	    vgaRamdacMask = 0xff;
 	}
 	else
 	    ErrorF("Ramdac:  ATT20C492\n");

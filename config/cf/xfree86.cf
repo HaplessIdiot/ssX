@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xfree86.cf,v 1.2 94/03/31 11:37:26 gildea Exp $
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.36 1994/12/25 12:12:29 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.37 1994/12/26 01:04:49 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -217,7 +217,7 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.36 1994/12/25 12:12:29 dawes Exp $
 #endif
 
 #ifndef XFree86ServerOSDefines
-#define XFree86ServerOSDefines	-DDDXOSINIT -DXFREE86
+#define XFree86ServerOSDefines	-DDDXOSINIT -DXFREE86 -DSERVER_LOCK
 #endif
 
 #ifndef XFree86ConsoleDefines

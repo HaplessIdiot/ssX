@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.20 1994/11/30 20:37:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.21 1994/12/25 12:19:10 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -115,6 +115,7 @@ ScrnInfoRec agxInfoRec = {
     1,                  /* int instance     */
     0,                  /* int s3Madjust    */
     0,                  /* int s3Nadjust    */
+    0,                  /* int s3MClk    */
 };
 
 int vgaInterlaceType = VGA_NO_DIVIDE_VERT;
