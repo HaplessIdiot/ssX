@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftint.h,v 1.19 2000/12/22 05:05:16 tsi Exp $
+ * $XFree86: xc/lib/Xft/xftint.h,v 1.20 2001/01/02 02:46:51 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -93,6 +93,8 @@ extern XftFontSet	*_XftFontSet;
 #define XFT_DBG_GLYPHV	64
 #define XFT_DBG_CACHE	128
 #define XFT_DBG_CACHEV	256
+#define XFT_DBG_MATCH	512
+#define XFT_DBG_MATCHV	1024
 
 typedef enum _XftOp {
     XftOpInteger, XftOpDouble, XftOpString, XftOpBool, XftOpNil,

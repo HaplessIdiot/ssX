@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.7 2000/12/20 00:20:49 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.8 2000/12/22 02:25:41 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -70,19 +70,32 @@ XftGlyphLoad (Display		*dpy,
     int		    height;
     int		    i;
     int		    left, right, top, bottom;
-    int		    mul = 1;
+    int		    hmul = 1;
+    int		    vmul = 1;
     FT_Bitmap	    ftbit;
     FT_Matrix	    matrix;
 
     if (!XftFreeTypeSetFace (font->face, font->size, font->charmap))
 	return ;
 
-    if (font->antialias && font->rgba)
+    if (font->antialias)
     {
-	matrix.xx = 0x30000L;
-	matrix.yy = 0x10000L;
-	matrix.xy = matrix.yx = 0;
-	mul = 3;
+	switch (font->rgba) {
+	case XFT_RGBA_RGB:
+	case XFT_RGBA_BGR:
+	    matrix.xx = 0x30000L;
+	    matrix.yy = 0x10000L;
+	    matrix.xy = matrix.yx = 0;
+	    hmul = 3;
+	    break;
+	case XFT_RGBA_VRGB:
+	case XFT_RGBA_VBGR:
+	    matrix.xx = 0x10000L;
+	    matrix.yy = 0x30000L;
+	    matrix.xy = matrix.yx = 0;
+	    vmul = 3;
+	    break;
+	}
     }
     while (nglyph--)
     {
@@ -143,11 +156,11 @@ XftGlyphLoad (Display		*dpy,
 	if ( glyph->format == ft_glyph_format_outline )
 	{
 	    if (font->antialias)
-		pitch = (width * mul + 3) & ~3;
+		pitch = (width * hmul + 3) & ~3;
 	    else
 		pitch = ((width + 31) & ~31) >> 3;
 	    
-	    size = pitch * height;
+	    size = pitch * height * vmul;
 	    
 	    if (size > bufSize)
 	    {
@@ -160,8 +173,8 @@ XftGlyphLoad (Display		*dpy,
 	    }
 	    memset (bufBitmap, 0, size);
 
-	    ftbit.width      = width * mul;
-	    ftbit.rows       = height;
+	    ftbit.width      = width * hmul;
+	    ftbit.rows       = height * vmul;
 	    ftbit.pitch      = pitch;
 	    if (font->antialias)
 		ftbit.pixel_mode = ft_pixel_mode_grays;
@@ -170,10 +183,10 @@ XftGlyphLoad (Display		*dpy,
 	    
 	    ftbit.buffer     = bufBitmap;
 	    
-	    if (font->antialias && font->rgba)
+	    if (font->antialias && font->rgba != XFT_RGBA_NONE)
 		FT_Outline_Transform (&glyph->outline, &matrix);
 
-	    FT_Outline_Translate ( &glyph->outline, -left*mul, -bottom );
+	    FT_Outline_Translate ( &glyph->outline, -left*hmul, -bottom*vmul );
 
 	    FT_Outline_Get_Bitmap( _XftFTlibrary, &glyph->outline, &ftbit );
 	    i = size;
@@ -210,7 +223,7 @@ XftGlyphLoad (Display		*dpy,
 		    unsigned char	*line;
 
 		    line = bufBitmap;
-		    for (y = 0; y < height; y++)
+		    for (y = 0; y < height * vmul; y++)
 		    {
 			if (font->antialias) 
 			{
@@ -245,10 +258,15 @@ XftGlyphLoad (Display		*dpy,
 	gi->x = -TRUNC(left);
 	gi->y = TRUNC(top);
 	if (font->spacing != XFT_PROPORTIONAL)
+	{
 	    gi->xOff = font->max_advance_width;
+	    gi->yOff = 0;
+	}
 	else
-	    gi->xOff = TRUNC(ROUND(glyph->metrics.horiAdvance));
-	gi->yOff = 0;
+	{
+	    gi->xOff = TRUNC(ROUND(glyph->advance.x));
+	    gi->yOff = TRUNC(ROUND(glyph->advance.y));
+	}
 	g = charcode;
 
 	if (font->antialias && font->rgba != XFT_RGBA_NONE)
@@ -259,18 +277,24 @@ XftGlyphLoad (Display		*dpy,
 	    unsigned int    red, green, blue;
 	    int		    rf, gf, bf;
 	    int		    s;
+	    int		    o, os;
 	    
 	    widthrgba = width;
 	    pitchrgba = (widthrgba * 4 + 3) & ~3;
 	    sizergba = pitchrgba * height;
 
+	    os = 1;
 	    switch (font->rgba) {
+	    case XFT_RGBA_VRGB:
+		os = pitch;
 	    case XFT_RGBA_RGB:
 	    default:
 		rf = 0;
 		gf = 1;
 		bf = 2;
 		break;
+	    case XFT_RGBA_VBGR:
+		os = pitch;
 	    case XFT_RGBA_BGR:
 		bf = 0;
 		gf = 1;
@@ -293,21 +317,23 @@ XftGlyphLoad (Display		*dpy,
 	    {
 		in = in_line;
 		out = (unsigned int *) out_line;
-		in_line += pitch;
+		in_line += pitch * vmul;
 		out_line += pitchrgba;
-		for (x = 0; x < width * mul; x += 3)
+		for (x = 0; x < width * hmul; x += hmul)
 		{
 		    red = green = blue = 0;
+		    o = 0;
 		    for (s = 0; s < 3; s++)
 		    {
-			red += filters[rf][s]*in[x+s];
-			green += filters[gf][s]*in[x+s];
-			blue += filters[bf][s]*in[x+s];
+			red += filters[rf][s]*in[x+o];
+			green += filters[gf][s]*in[x+o];
+			blue += filters[bf][s]*in[x+o];
+			o += os;
 		    }
 		    red = red / 65536;
 		    green = green / 65536;
 		    blue = blue / 65536;
-		    out[x/3] = (green << 24) | (red << 16) | (green << 8) | blue;
+		    *out++ = (green << 24) | (red << 16) | (green << 8) | blue;
 		}
 	    }
 	    

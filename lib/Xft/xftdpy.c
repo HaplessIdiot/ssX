@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftdpy.c,v 1.4 2000/12/17 08:30:45 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftdpy.c,v 1.5 2000/12/20 00:20:48 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -410,8 +410,8 @@ XftDefaultSubstitute (Display *dpy, int screen, XftPattern *pattern)
 	}
 	scale = XftDefaultGetDouble (dpy, XFT_SCALE, screen, 1.0);
 	size *= scale;
-	pixels = DisplayHeight (dpy, DefaultScreen (dpy));
-	mm = DisplayHeightMM (dpy, DefaultScreen (dpy));
+	pixels = DisplayHeight (dpy, screen);
+	mm = DisplayHeightMM (dpy, screen);
 	size = size / 72.0;
 	size = size * 25.4;
 	size = size * pixels / mm;

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/Xft.h,v 1.15 2000/12/20 00:28:43 keithp Exp $
+ * $XFree86: xc/lib/Xft/Xft.h,v 1.16 2001/01/02 02:46:50 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -80,6 +80,8 @@ typedef unsigned int	XftChar32;
 #define XFT_RGBA_NONE	    0
 #define XFT_RGBA_RGB	    1
 #define XFT_RGBA_BGR	    2
+#define XFT_RGBA_VRGB	    3
+#define XFT_RGBA_VBGR	    4
 
 typedef enum _XftType {
     XftTypeVoid, 
