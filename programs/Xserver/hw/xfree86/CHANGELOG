@@ -1,4 +1,6 @@
 XFree86 4.3.99.17 (xx November 2003)
+ 631. Fix a server crash that can happen when loading some CID fonts
+      (Bugzilla #906, David Dawes).
  630. Restructured version of the wacom driver, with support for TwinView,
       fixed bugs and added filters (Bugzilla #537, Ping Cheng).
  629. Fix libfontenc link failure on OS/2 (Bugzilla #921, Frank Giessler).
@@ -18278,7 +18280,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2999 2003/11/29 01:51:31 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3000 2003/11/29 02:57:46 dawes Exp $
 
 
 
