@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.25 2001/06/06 18:17:38 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.26 2001/06/06 18:45:59 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -77,6 +77,10 @@ BASEDIST=" \
 	Xdoc.tgz \
 	Xfnts.tgz \
 	Xfenc.tgz \
+	"
+
+UPDDIST=" \
+	Xupd.tgz \
 	"
 
 UPDATEDIST=" \
@@ -229,6 +233,8 @@ Description()
 		echo "a.out compatibility libraries";;
 	Xquartz*)
 		echo "Mac OS X Quartz compatible X server";;
+	Xupd.tgz)
+		echo "Post-release updates";;
 	*)
 		echo "unknown";;
 	esac
@@ -1224,6 +1230,22 @@ if [ X"$XKBDIR" != X -a X"$XKBDIR" != X"$RUNDIR/lib/X11/xkb/compiled" -a \
 	rm -fr $RUNDIR/lib/X11/xkb/compiled
 	ln -s $XKBDBDIR $RUNDIR/lib/X11/xkb/compiled
 fi
+
+echo "Checking for post-release updates ..."
+for i in $UPDDIST; do
+	if [ -f $i ]; then
+		Echo "Do you want to install update $i (`Description $i`)? (y/n) [y] "
+		read response
+		case "$response" in
+		[nN]*)
+			: skip this one
+			;;
+		*)
+			(cd $RUNDIR; $EXTRACT $WDIR/$i)
+			;;
+		esac
+	fi
+done
 
 echo "Checking for optional components to install ..."
 for i in $OPTDIST $EXTRAOPTDIST; do
