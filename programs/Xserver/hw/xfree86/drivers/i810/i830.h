@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830.h,v 1.1 2002/09/11 00:29:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830.h,v 1.2 2002/09/12 04:08:25 dawes Exp $ */
 
 /*
  * Authors:
@@ -274,6 +274,10 @@ typedef struct _I830Rec {
 
 #define I830PTR(p) ((I830Ptr)((p)->driverPrivate))
 #define I830REGPTR(p) (&(I830PTR(p)->ModeReg))
+
+#define I830_SELECT_FRONT	0
+#define I830_SELECT_BACK	1
+#define I830_SELECT_DEPTH	2
 
 /* I830 specific functions */
 extern int I830WaitLpRing(ScrnInfoPtr pScrn, int n, int timeout_millis);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_dri.c,v 1.3 2002/01/09 00:37:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_dri.c,v 1.4 2002/09/11 00:29:32 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -863,7 +863,7 @@ I830DRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 index)
 
    I830SetupForSolidFill(pScrn, 0, GXcopy, -1);
    while (nbox--) {
-      I830SelectBuffer(pScrn, I830_BACK);
+      I830SelectBuffer(pScrn, I830_SELECT_BACK);
       I830SubsequentSolidFillRect(pScrn, pbox->x1, pbox->y1,
 				  pbox->x2 - pbox->x1, pbox->y2 - pbox->y1);
       pbox++;
@@ -874,7 +874,7 @@ I830DRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 index)
    pbox = REGION_RECTS(prgn);
    nbox = REGION_NUM_RECTS(prgn);
 
-   I830SelectBuffer(pScrn, I830_DEPTH);
+   I830SelectBuffer(pScrn, I830_SELECT_DEPTH);
 
    switch (pScrn->bitsPerPixel) {
    case 16:
@@ -891,7 +891,7 @@ I830DRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 index)
       pbox++;
    }
 
-   I830SelectBuffer(pScrn, I830_FRONT);
+   I830SelectBuffer(pScrn, I830_SELECT_FRONT);
    pI830->AccelInfoRec->NeedToSync = TRUE;
 }
 
@@ -1032,12 +1032,12 @@ I830DRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
 	 ErrorF("MoveBuffers %d,%d %dx%d dx: %d dy: %d\n",
 		x1, y1, w, h, dx, dy);
 
-      I830SelectBuffer(pScrn, I830_BACK);
+      I830SelectBuffer(pScrn, I830_SELECT_BACK);
       I830SubsequentScreenToScreenCopy(pScrn, x1, y1, destx, desty, w, h);
-      I830SelectBuffer(pScrn, I830_DEPTH);
+      I830SelectBuffer(pScrn, I830_SELECT_DEPTH);
       I830SubsequentScreenToScreenCopy(pScrn, x1, y1, destx, desty, w, h);
    }
-   I830SelectBuffer(pScrn, I830_FRONT);
+   I830SelectBuffer(pScrn, I830_SELECT_FRONT);
    I830EmitFlush(pScrn);
 
    if (pboxNew2) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.26 2002/02/22 21:45:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.27 2002/09/11 00:29:32 dawes Exp $ */
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
  *
@@ -1097,7 +1097,7 @@ I810DRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 index)
 
    I810SetupForSolidFill(pScrn, 0, GXcopy, -1);
    while (nbox--) {
-      I810SelectBuffer(pScrn, I810_BACK);
+      I810SelectBuffer(pScrn, I810_SELECT_BACK);
       I810SubsequentSolidFillRect(pScrn, pbox->x1, pbox->y1,
 				  pbox->x2 - pbox->x1, pbox->y2 - pbox->y1);
       pbox++;
@@ -1107,14 +1107,14 @@ I810DRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 index)
     */
    pbox = REGION_RECTS(prgn);
    nbox = REGION_NUM_RECTS(prgn);
-   I810SelectBuffer(pScrn, I810_DEPTH);
+   I810SelectBuffer(pScrn, I810_SELECT_DEPTH);
    I810SetupForSolidFill(pScrn, 0xffff, GXcopy, -1);
    while (nbox--) {
       I810SubsequentSolidFillRect(pScrn, pbox->x1, pbox->y1,
 				  pbox->x2 - pbox->x1, pbox->y2 - pbox->y1);
       pbox++;
    }
-   I810SelectBuffer(pScrn, I810_FRONT);
+   I810SelectBuffer(pScrn, I810_SELECT_FRONT);
    pI810->AccelInfoRec->NeedToSync = TRUE;
 }
 
@@ -1257,12 +1257,12 @@ I810DRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
 	 ErrorF("MoveBuffers %d,%d %dx%d dx: %d dy: %d\n",
 		x1, y1, w, h, dx, dy);
 
-      I810SelectBuffer(pScrn, I810_BACK);
+      I810SelectBuffer(pScrn, I810_SELECT_BACK);
       I810SubsequentScreenToScreenCopy(pScrn, x1, y1, destx, desty, w, h);
-      I810SelectBuffer(pScrn, I810_DEPTH);
+      I810SelectBuffer(pScrn, I810_SELECT_DEPTH);
       I810SubsequentScreenToScreenCopy(pScrn, x1, y1, destx, desty, w, h);
    }
-   I810SelectBuffer(pScrn, I810_FRONT);
+   I810SelectBuffer(pScrn, I810_SELECT_FRONT);
    I810EmitFlush(pScrn);
 
    if (pboxNew2) {

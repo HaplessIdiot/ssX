@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.h,v 1.6 2001/10/04 18:28:21 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.h,v 1.7 2002/09/11 00:29:32 dawes Exp $ */
 
 #ifndef _I810_DRI_
 #define _I810_DRI_
@@ -12,11 +12,6 @@
 #define I810_CTX_SETUP_SIZE	20
 #define I810_DEST_SETUP_SIZE	10
 #define I810_TEX_SETUP_SIZE	8
-#endif
-#ifndef I810_FRONT
-#define I810_FRONT		0x1
-#define I810_BACK		0x2
-#define I810_DEPTH		0x4
 #endif
 #endif
 

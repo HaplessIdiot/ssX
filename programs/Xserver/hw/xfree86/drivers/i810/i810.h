@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.31 2002/05/10 12:50:05 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.32 2002/09/11 00:29:31 dawes Exp $ */
 
 /*
  * Authors:
@@ -253,6 +253,10 @@ typedef struct _I810Rec {
 } I810Rec;
 
 #define I810PTR(p) ((I810Ptr)((p)->driverPrivate))
+
+#define I810_SELECT_FRONT	0
+#define I810_SELECT_BACK	1
+#define I810_SELECT_DEPTH	2
 
 extern Bool I810DRIScreenInit(ScreenPtr pScreen);
 extern void I810DRICloseScreen(ScreenPtr pScreen);

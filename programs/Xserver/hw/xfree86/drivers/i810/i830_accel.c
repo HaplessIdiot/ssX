@@ -32,7 +32,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_accel.c,v 1.12 2001/10/04 18:28:21 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_accel.c,v 1.1 2002/09/11 00:29:32 dawes Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -214,15 +214,15 @@ I830SelectBuffer(ScrnInfoPtr pScrn, int buffer)
 
    switch (buffer) {
 #ifdef XF86DRI
-   case I830_BACK:
+   case I830_SELECT_BACK:
       pI830->bufferOffset = pI830->BackBuffer.Start;
       break;
-   case I830_DEPTH:
+   case I830_SELECT_DEPTH:
       pI830->bufferOffset = pI830->DepthBuffer.Start;
       break;
 #endif
    default:
-   case I830_FRONT:
+   case I830_SELECT_FRONT:
       pI830->bufferOffset = pI830->FrontBuffer.Start;
       break;
    }
@@ -411,7 +411,7 @@ I830AccelInit(ScreenPtr pScreen)
 #endif
    }
 
-   I830SelectBuffer(pScrn, I830_FRONT);
+   I830SelectBuffer(pScrn, I830_SELECT_FRONT);
 
    return XAAInit(pScreen, infoPtr);
 }
