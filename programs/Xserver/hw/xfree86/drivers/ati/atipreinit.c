@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.71tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.72 2003/12/13 22:25:20 tsi Exp $ */
 /*
  * Copyright 1999 through 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -2217,8 +2217,9 @@ ATIPreInit
 
             /* If the mode on entry wasn't stretched, adjust timings */
             if (!(pATIHW->horz_stretching & HORZ_STRETCH_EN) &&
-                ((HDisplay = pATI->LCDHorizontal - HDisplay) > 0))
+                (pATI->LCDHorizontal > HDisplay))
             {
+                HDisplay = pATI->LCDHorizontal - HDisplay;
                 if (pATI->LCDHSyncStart >= HDisplay)
                     pATI->LCDHSyncStart -= HDisplay;
                 else
@@ -2230,8 +2231,9 @@ ATIPreInit
             }
 
             if (!(pATIHW->vert_stretching & VERT_STRETCH_EN) &&
-                ((VDisplay = pATI->LCDVertical - VDisplay) > 0))
+                (pATI->LCDVertical > VDisplay))
             {
+                VDisplay = pATI->LCDVertical - VDisplay;
                 if (pATI->LCDVSyncStart >= VDisplay)
                     pATI->LCDVSyncStart -= VDisplay;
                 else
