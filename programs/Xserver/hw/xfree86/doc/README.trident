@@ -49,8 +49,7 @@
         MemBase "0x???????"
            This option may be used to specify the start address of the
            linear frame buffer. By default for VLBus/EISA cards it is at
-           62MB for 2MB cards and 63MB for 1MB cards. For the 8900CL/D,
-           it is at 14MB for 2MB cards and 15MB for 1MB cards.
+           60MB.  For the 8900CL/D, it is at 15MB.
 
         Option "fast_dram"
            45ns DRAM
@@ -63,6 +62,7 @@
 
         Option "hw_cursor"
            Turn on hardware cursor (NOTE: it is off by default)
+
 
         Option "pci_burst_on"
            Turn on PCI burst mode (NOTE: it is off by default)
@@ -143,7 +143,7 @@
   be worth checking wait states etc. on the card and in the BIOS setup.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.9 1996/02/18 03:43:06 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.10 1996/02/20 14:34:35 dawes Exp $
 
 
 
