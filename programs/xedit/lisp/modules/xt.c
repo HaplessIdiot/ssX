@@ -94,6 +94,7 @@ LispObj *Lisp_XtUnmanageChild(LispMac*, LispBuiltin*);
 LispObj *Lisp_XtSetMappedWhenManaged(LispMac*, LispBuiltin*);
 LispObj *Lisp_XtMapWidget(LispMac*, LispBuiltin*);
 LispObj *Lisp_XtName(LispMac*, LispBuiltin*);
+LispObj *Lisp_XtParent(LispMac*, LispBuiltin*);
 LispObj *Lisp_XtUnmapWidget(LispMac*, LispBuiltin*);
 LispObj *Lisp_XtPopup(LispMac*, LispBuiltin*);
 LispObj *Lisp_XtPopdown(LispMac*, LispBuiltin*);
@@ -162,6 +163,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_XtMapWidget, "xt-map-widget widget"},
     {LispFunction, Lisp_XtUnmapWidget, "xt-unmap-widget widget"},
     {LispFunction, Lisp_XtSetMappedWhenManaged, "xt-set-mapped-when-managed widget map-when-managed"},
+    {LispFunction, Lisp_XtParent, "xt-parent widget"},
     {LispFunction, Lisp_XtPopup, "xt-popup widget grab-kind"},
     {LispFunction, Lisp_XtPopdown, "xt-popdown widget"},
     {LispFunction, Lisp_XtIsRealized, "xt-is-realized widget"},
@@ -1407,6 +1409,23 @@ Lisp_XtName(LispMac *mac, LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(widget));
 
     return (STRING(XtName((Widget)(widget->data.opaque.data))));
+}
+
+LispObj *
+Lisp_XtParent(LispMac *mac, LispBuiltin *builtin)
+/*
+ xt-parent widget
+ */
+{
+    LispObj *widget;
+
+    widget = ARGUMENT(0);
+
+    if (!CHECKO(widget, xtWidget_t))
+	LispDestroy(mac, "%s: cannot convert %s to Widget",
+		    STRFUN(builtin), STROBJ(widget));
+
+    return (OPAQUE(XtParent((Widget)widget->data.opaque.data), xtWidget_t));
 }
 
 LispObj *

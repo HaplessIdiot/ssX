@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.47 2002/04/25 22:00:30 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.48 2002/05/16 15:43:29 tsi Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -400,6 +400,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Replace, "replace sequence1 sequence2 &key start1 end1 start2 end2 &aux (length1 (length sequence1)) (length2 (length sequence2))"},
     {LispFunction, Lisp_ReadFromString, "read-from-string string &optional eof-error-p eof-value &key start end preserve-whitespace", 1},
     {LispFunction, Lisp_Require, "require module &optional pathname"},
+    {LispFunction, Lisp_Remove, "remove item sequence &key from-end test test-not start end count key"},
     {LispFunction, Lisp_Cdr, "rest list"},
     {LispMacro, Lisp_Return, "return &optional result"},
     {LispMacro, Lisp_ReturnFrom, "return-from name &optional result"},
@@ -2798,7 +2799,7 @@ LispGetVarAddr(LispMac *mac, LispObj *atom)
 	    if (name->property->value == UNBOUND)
 		return (NULL);
 
-	    return (name->property->value);
+	    return (&(name->property->value));
 	}
     }
 
