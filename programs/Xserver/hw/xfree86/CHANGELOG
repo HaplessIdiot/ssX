@@ -1,4 +1,5 @@
 XFree86 4.0a (xx March 2000)
+  44. Xineramification of XvImage support (Mark Vojkovich).
   43. By default, cache writes to selected Mach64 MMIO registers and allow this
       cache to be disabled (Marc La France).
   42. Add detection of Rage128 Mobility to ATI driver (Marc La France).
