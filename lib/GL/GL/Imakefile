@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.18 2003/06/30 01:45:10 torrey Exp $
+XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.19tsi Exp $
 
 #include <Threads.tmpl>
 
@@ -200,14 +200,18 @@ OTHERREQUIREDLIBS = \
 	-framework ApplicationServices -framework CoreFoundation
 #endif
 
+#if BuildXF86DRI
+VMODEREQUIREDLIBS = $(LDPRELIBS) $(XXF86VMLIB)
+#endif
+
 /*
  * Note: DRIDIRS is empty for !BuildXF86DRI, and DRVSUBDIRS is empty
  * for no built-in drivers.
  */
 
-REQUIREDLIBS = $(BASEREQUIREDLIBS) $(OTHERREQUIREDLIBS) -lXxf86vm
+REQUIREDLIBS = $(BASEREQUIREDLIBS) $(OTHERREQUIREDLIBS) $(VMODEREQUIREDLIBS)
 
-        OBJS = $(GLXOBJS) $(DRIOBJS) $(DRVOBJS) 
+        OBJS = $(GLXOBJS) $(DRIOBJS) $(DRVOBJS)
 #if HasSharedLibraries && !SharedLibGlxWithoutPIC
        UOBJS = $(GLXUOBJS) $(DRIUOBJS) $(DRVUOBJS)
 #else
