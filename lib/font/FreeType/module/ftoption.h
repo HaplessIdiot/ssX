@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/font/FreeType/ftoption.h,v 1.6 2003/06/08 15:41:13 herrb Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftoption.h,v 1.7 2003/06/10 15:48:45 dawes Exp $ */
 /***************************************************************************/
 /*                                                                         */
 /*  ftoption.h                                                             */
