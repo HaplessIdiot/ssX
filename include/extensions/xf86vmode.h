@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.27 1999/03/14 11:17:37 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.28 2001/01/17 17:53:23 dawes Exp $ */
 /*
 
 Copyright 1995  Kaleb S. KEITHLEY
@@ -56,6 +56,9 @@ from Kaleb S. KEITHLEY
 #define X_XF86VidModeSetClientVersion	14
 #define X_XF86VidModeSetGamma		15
 #define X_XF86VidModeGetGamma		16
+#define X_XF86VidModeGetGammaRamp	17
+#define X_XF86VidModeSetGammaRamp	18
+#define X_XF86VidModeGetGammaRampSize	19
 
 #define CLKFLAG_PROGRAMABLE		1
 
@@ -277,6 +280,31 @@ Bool XF86VidModeSetGamma(
     int				/* screen */,
     XF86VidModeGamma*		/* Gamma */
 );
+
+Bool XF86VidModeSetGammaRamp(
+    Display*                    /* dpy */,
+    int                         /* screen */,
+    int				/* size */, 
+    unsigned short*             /* red array */,
+    unsigned short*             /* green array */,
+    unsigned short*             /* blue array */
+);
+
+Bool XF86VidModeGetGammaRamp(
+    Display*                    /* dpy */,
+    int                         /* screen */,
+    int                         /* size */,
+    unsigned short*             /* red array */,
+    unsigned short*             /* green array */,
+    unsigned short*             /* blue array */
+);
+
+Bool XF86VidModeSetGammaRampSize(
+    Display*                    /* dpy */,
+    int                         /* screen */,
+    int*                        /* size */
+);
+
 
 _XFUNCPROTOEND
 
