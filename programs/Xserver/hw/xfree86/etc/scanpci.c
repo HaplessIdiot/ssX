@@ -407,6 +407,7 @@ extern void disable_os_io();
 #define MAX_DEV_PER_VENDOR_CFG2 16
 #define MAX_PCI_DEVICES         64
 #define NF ((void (*)())NULL)
+#define PCI_MULTIFUNC_DEV	0x80
 #if defined(__alpha__)
 #define PCI_ID_REG              0x00
 #define PCI_CMD_STAT_REG        0x04
@@ -680,6 +681,8 @@ struct pci_vendor_device {
                             { 0x0000, (char *)NULL, NF } } },
         { 0x3D3D, "3Dlabs", {
                             { 0x0001, "GLINT 300SX", NF },
+                            { 0x0002, "GLINT 500TX", NF },
+                            { 0x0003, "GLINT Delta", NF },
 			    { 0x0000, (char *)NULL, NF } } } ,
         { 0x4005, "Avance", {
                             { 0x0000, (char *)NULL, NF } } },
@@ -761,6 +764,7 @@ main(int argc, unsigned char *argv[])
     unsigned int idx;
     struct pci_config_reg pcr;
     int ch, verbose;
+    int func;
 
     if (argc > 2) {
 	printf("Usage: %s [-v] \n", argv[0]);
@@ -829,9 +833,11 @@ main(int argc, unsigned char *argv[])
 
         for (pcr._cardnum = 0x0; pcr._cardnum < MAX_DEV_PER_VENDOR_CFG1;
 		pcr._cardnum += 0x1) {
+	  func = 0;
+	  do { /* loop over the different functions, if present */
 #if !defined(__alpha__)
 	    config_cmd = PCI_EN | (pcr._pcibuses[pcr._pcibusidx]<<16) |
-                                  (pcr._cardnum<<11);
+                                  (pcr._cardnum<<11) | (func<<8);
 
             outl(PCI_MODE1_ADDRESS_REG, config_cmd);         /* ioreg 0 */
             pcr._device_vendor = inl(PCI_MODE1_DATA_REG);
@@ -841,11 +847,11 @@ main(int argc, unsigned char *argv[])
 #endif
 
             if ((pcr._vendor == 0xFFFF) || (pcr._device == 0xFFFF))
-                continue;   /* nothing there */
+                break;   /* nothing there */
 
-	    printf("\npci bus 0x%x cardnum 0x%02x, vendor 0x%04x device 0x%04x\n",
-	        pcr._pcibuses[pcr._pcibusidx], pcr._cardnum, pcr._vendor,
-                pcr._device);
+	    printf("\npci bus 0x%x cardnum 0x%02x function 0x%04x: vendor 0x%04x device 0x%04x\n",
+	        pcr._pcibuses[pcr._pcibusidx], pcr._cardnum, func,
+		pcr._vendor, pcr._device);
 
 #if !defined(__alpha__)
             outl(PCI_MODE1_ADDRESS_REG, config_cmd | 0x04);
@@ -913,11 +919,18 @@ main(int argc, unsigned char *argv[])
 		default:
 			break;
 	    }
+	    if((func==0) && ((pcr._header_type & PCI_MULTIFUNC_DEV) == 0)) {
+	        /* not a multi function device */
+		func = 8;
+	    } else {
+	        func++;
+	    }
 
 	    if (idx++ >= MAX_PCI_DEVICES)
 	        continue;
 
 	    identify_card(&pcr, verbose);
+	  } while( func < 8 );
         }
     } while (++pcr._pcibusidx < pcr._pcinumbus);
 

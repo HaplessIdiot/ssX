@@ -1,0 +1,36 @@
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/Imakefile,v 3.10 1997/02/27 13:59:33 hohndel Exp $
+XCOMM
+XCOMM This is an Imakefile for the GLINT driver.  
+XCOMM
+
+#define IHaveModules
+#include <Server.tmpl>
+
+SRCS = glintdriver.c 
+OBJS = glintdriver.o
+
+#if XF86LinkKit
+INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
+#else
+INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
+           -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
+           -I$(SERVERSRC)/cfb -I$(XF86SRC)/vga256/vga -I$(XF86SRC)/xaa \
+           -I$(FONTINCSRC) -I$(SERVERSRC)/include -I$(XINCLUDESRC)
+#endif
+
+#if MakeHasPosixVariableSubstitutions
+SubdirLibraryRule($(OBJS))
+#endif
+NormalLibraryObjectRule()
+NormalAsmObjectRule()
+NormalRelocatableTarget(glint_drv, $(OBJS))
+
+InstallLinkKitNonExecFile(glint.h,$(LINKKITDIR)/drivers/glint)
+InstallLinkKitNonExecFile(glintdriver.c,$(LINKKITDIR)/drivers/glint)
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/mga)
+
+#if DoLoadableServer
+InstallDynamicModule(glint_drv.o,$(MODULEDIR))
+#endif
+
+DependTarget()

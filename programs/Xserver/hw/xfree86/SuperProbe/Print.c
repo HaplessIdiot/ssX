@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.46 1997/01/18 06:53:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.48 1997/02/16 10:27:07 hohndel Exp $ */
 
 #include "Probe.h"
 
@@ -267,6 +267,9 @@ static CONST char *CoProc_Names[NUM_CP_TYPES][CHPS_PER_CPTYPE] =
 /* XGA */	{ "" },
 /* Mach64 */	{ "ATI Mach64" },
 /* Number9 */	{ "Number Nine Imagine I128" },
+/* GLINT */	{ "","GLINT 300SX","GLINT 500TX","GLINT 300SX & 500TX",
+		  "GLINT Delta","GLINT Delta & 300SX","GLINT Delta & 500TX",
+		  "GLINT Delta & 300SX & 500TX" },
 };
 
 void Print_SVGA_Name(Chipset)

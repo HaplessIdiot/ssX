@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.c,v 3.15 1996/12/09 11:52:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.c,v 3.16 1996/12/23 06:44:26 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -43,7 +43,7 @@
 
 static pciConfigPtr pci_devp[MAX_PCI_DEVICES + 1] = {NULL, };
 
-#ifdef USE_OLD_PCI_CODE
+#ifdef USE_OLD_PCI_CODE /* { */
 pciConfigPtr *
 xf86scanpci(scrnIndex)
 int scrnIndex;
@@ -94,10 +94,11 @@ int scrnIndex;
         tmplong2 = inl(PCI_MODE1_ADDRESS_REG);
         outl(PCI_MODE1_ADDRESS_REG, tmplong1);  
 #if 0
-        if (tmplong2 == PCI_EN) {
+        if (tmplong2 == PCI_EN) 
 #else
-        if (tmplong2 & PCI_EN) {
+        if (tmplong2 & PCI_EN) 
 #endif
+        {
 	    pcr._configtype = 1;
 #ifdef DEBUGPCI
             printf("PCI says configuration type 1\n");
@@ -433,7 +434,7 @@ xf86cleanpci()
     pci_devp[0] = (pciConfigPtr)NULL;
 }
 
-#else
+#else /* USE_OLD_PCI_CODE */	/* } { */
 
 /* New PCI code */
 
@@ -1018,4 +1019,4 @@ xf86cleanpci()
     pci_devp[0] = (pciConfigPtr)NULL;
 }
 
-#endif
+#endif /* USE_OLD_PCI_CODE */	/* } */

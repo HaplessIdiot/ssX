@@ -1,3 +1,4 @@
+/* $XFree86: $ */
 #include "X.h"
 #include "os.h"
 

@@ -37,7 +37,7 @@
  *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.32 1997/02/28 08:21:39 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.33 1997/03/03 10:20:08 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -266,8 +266,8 @@ vgaVideoChipRec MGA = {
  */
 void
 ModuleInit(data,magic)
-    int  * data;
-    int  * magic;
+    pointer  * data;
+    INT32    * magic;
 {
     extern vgaVideoChipRec MGA;
     static int cnt = 0;
@@ -275,11 +275,11 @@ ModuleInit(data,magic)
     switch(cnt++)
     {
     case 0:
-	* data = (int) &MGA;
+	* data = (pointer) &MGA;
 	* magic= MAGIC_ADD_VIDEO_CHIP_REC;
 	break;
     case 1:
-        * data = (int) "libvga256.a";
+        * data = (pointer) "libvga256.a";
 	* magic= MAGIC_LOAD;
 	break;
     default:

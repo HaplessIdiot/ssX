@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.17 1996/12/09 11:51:16 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PCI.h,v 3.19 1997/02/16 10:27:06 hohndel Exp $ */ 
 /*
  * PCI Probe
  *
@@ -167,10 +167,12 @@ struct pci_config_reg {
     unsigned short _configtype;   /* config type found                   */
     unsigned short _ioaddr;       /* config type 1 - private I/O addr    */
     unsigned long _cardnum;       /* config type 2 - private card number */
+    unsigned short _funcnum;	  /* private function number */
 };
 
 #define PCI_EN 0x80000000
 #define MAX_PCI_DEVICES 64
+#define PCI_MULTIFUNC_DEV 0x80
 
 /* Registers */
 #define PCI_REG_USERCONFIG 0x40
@@ -182,6 +184,7 @@ struct pci_config_reg {
 /* Sub Classes */
 #define PCI_SUBCLASS_PREHISTORIC_VGA	0x01
 #define PCI_SUBCLASS_DISPLAY_VGA	0x00
+#define PCI_SUBCLASS_DISPLAY_OTHER	0x80
 
 /* PCI Configuration address */
 #define	PCI_MODE1_ADDRESS_REG		0xCF8
@@ -312,6 +315,9 @@ void xf86writepci(
 
 /* 3Dlabs */
 #define PCI_CHIP_3DLABS_300SX      0x0001
+#define PCI_CHIP_3DLABS_500TX      0x0002
+#define PCI_CHIP_3DLABS_DELTA      0x0003
+#define PCI_CHIP_3DLABS_PERMEDIA   0x0004
 
 /* Increase this as required */
 #define MAX_DEV_PER_VENDOR 16

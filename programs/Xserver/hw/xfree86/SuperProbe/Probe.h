@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.45 1997/01/18 06:53:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.47 1997/02/16 10:27:08 hohndel Exp $ */
 
 /*
  * Includes
@@ -116,6 +116,8 @@ int OpenVideo __STDCARGS((void));
 void CloseVideo __STDCARGS((void));
 Byte *MapVGA __STDCARGS((void));
 void UnMapVGA __STDCARGS((Byte *));
+Byte *MapMem __STDCARGS((unsigned long, unsigned long));
+void UnMapMem __STDCARGS((Byte *, unsigned long));
 int ReadBIOS __STDCARGS((const unsigned, Byte *, const int));
 int EnableIOPorts __STDCARGS((const int, const Word *));
 int DisableIOPorts __STDCARGS((const int, const Word *));
@@ -191,6 +193,7 @@ Bool Probe_ARK __STDCARGS((int *));
 Bool Probe_8514 __STDCARGS((int *));
 Bool Probe_ATIMach __STDCARGS((int *));
 Bool Probe_I128 __STDCARGS((int *));
+Bool Probe_GLINT __STDCARGS((int *));
 
 /*
  * Print functions
@@ -246,6 +249,7 @@ extern Chip_Descriptor ARK_Descriptor;
 extern Chip_Descriptor IBM8514_Descriptor;
 extern Chip_Descriptor ATIMach_Descriptor;
 extern Chip_Descriptor I128_Descriptor;
+extern Chip_Descriptor GLINT_Descriptor;
 
 /*
  * Useful macros
@@ -633,9 +637,10 @@ extern struct RamDac_Name RamDac_Names[];
 #define C_XGA		1
 #define C_MACH64	2
 #define C_I128		3
+#define C_GLINT		4
 
-#define NUM_CP_TYPES	4
-#define CHPS_PER_CPTYPE	6
+#define NUM_CP_TYPES	5
+#define CHPS_PER_CPTYPE	8
 
 #define CHIP_8514	COPROC_TYPE(C_8514,0)	/* 8514/A or true clone */
 #define CHIP_MACH8	COPROC_TYPE(C_8514,1)	/* ATI Mach8		*/
@@ -645,6 +650,10 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_MACH64	COPROC_TYPE(C_MACH64,0)	/* ATI Mach64		*/
 
 #define CHIP_I128	COPROC_TYPE(C_I128,0)	/* Number9 Imagine I128 */
+
+#define CHIP_300SX	COPROC_TYPE(C_GLINT,1)	/* 3DLabs GLINT 300SX	*/
+#define CHIP_500TX	COPROC_TYPE(C_GLINT,2)	/* 3DLabs GLINT 500TX	*/
+#define CHIP_DELTA	COPROC_TYPE(C_GLINT,4)	/* 3DLabs GLINT DELTA	*/
 
 /*
  * Useful macros

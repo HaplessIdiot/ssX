@@ -84,6 +84,7 @@ static Chip_Descriptor *CoProc_Descriptors[] = {
     &ATIMach_Descriptor,
     &IBM8514_Descriptor,	/* Make this the last 8514-type entry */
     &I128_Descriptor,
+    &GLINT_Descriptor,
     NULL
 };
 
@@ -562,7 +563,7 @@ char *argv[];
         putc('\007', f);
         putc('\007', f);
         fflush(f);
-        sleep(5);
+        /* sleep(5); */
     }
 }
 
@@ -878,7 +879,20 @@ char *argv[];
 	    Print_CoProc_Name(CoProc);
 	    if (MemCoProc > -1)
 	    {
-		printf("\t\tMemory:  %d Kbytes\n", MemCoProc);
+		if (MemCoProc > 0x00010000)
+		{
+		    /*
+		     * for some copros we store the local buffer in
+		     * the high order 16bits
+		     */
+		    
+		    printf("\t\tMemory:  %d Kbytes Framebuffer, %d Kbytes Localbuffer\n", 
+			MemCoProc & 0xffff, (MemCoProc & 0xffff0000)>>16);
+		}
+		else
+		{
+		    printf("\t\tMemory:  %d Kbytes\n", MemCoProc);
+		}
 	    }
 	}
     }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Minix.c,v 3.3 1996/02/04 08:56:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Minix.c,v 3.4 1996/12/23 06:31:24 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by Philip Homburg <philip@cs.vu.nl>
  *
@@ -111,6 +111,13 @@ Byte *MapVGA()
         return((Byte *)0);
 }
 
+Byte *MapMem(adress,size)
+	unsigned long address;
+	unsigned long size;
+{
+	return((Byte*)0);
+}
+
 /*
  * UnMapVGA --
  *
@@ -120,6 +127,13 @@ void UnMapVGA(base)
 Byte *base;
 {
         return;
+}
+
+void UnMapMem(base,size)
+	Byte *base;
+	unsigned long size;
+{
+	return;
 }
 
 /*

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.121 1997/03/03 15:55:18 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.122 1997/03/04 10:38:53 hohndel Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -63,6 +63,8 @@ extern char *getenv();
 #include <vga.h>
 extern void * videoDrivers[];
 int xf86xaaloaded = FALSE;
+int xf86issvgatype = FALSE;
+int xf86ismonotype = FALSE;
 #endif
 #else
 #define xf86memset(a,b,c) memset(a,b,c)
@@ -2464,6 +2466,7 @@ static CONFIG_RETURN_TYPE
 configDynamicModuleSection()
 {
     int		token;
+    int		seendfltbpp = FALSE;
     ScrnInfoRec *(*ptr)();
     int (*ptrInt)();
  
@@ -2498,6 +2501,23 @@ configDynamicModuleSection()
 	    }
 	    break;
 
+	/*
+	 * we should move DefaultColorDepth into the Modules Section
+	 */
+	case DEFBPP:
+	    if (xf86GetToken(NULL) != NUMBER) 
+	        xf86ConfigError("Default color depth expected");
+	    if( xf86bpp == -1 ) {
+	    	/*
+		 * if this isn't -1 it was given on the command line
+		 * which should override this setting
+		 */
+		xf86bpp = val.num;
+		seendfltbpp = TRUE;
+		ErrorF("%s XF86: Setting default color depth: %dbpp\n",
+			XCONFIG_GIVEN, xf86bpp);
+	    }
+	    break;
 	case EOF:
 	    FatalError("Unexpected EOF. Missing EndSection?");
 	    break; /* :-) */
@@ -2511,14 +2531,116 @@ configDynamicModuleSection()
     LoaderResolveSymbols();
     LoaderFixups();
 
-    ptr=(ScrnInfoRec *(*)())LoaderSymbol("ServerInit");
-    if (ptr == NULL) {
-	FatalError("Can't find ServerInit entry\n");
-    } else {
-	xf86Screens[0]=(ptr)();
-	xf86ScreenNames [0]=
-		StringToToken (xf86Screens[0]->name, DriverTab);
+    /*
+     * at this point we know which depth this server will be running in.
+     * it was either given on the command line, or set in the Module Section, 
+     * or it defaults to 8
+     * sounds like a perfect place to load the corresponding cfb routines,
+     * doesn't it?
+     */
+    if( ! seendfltbpp )
+	ErrorF("%s XF86: color depth: %dbpp\n", 
+		xf86bpp == -1 ? XCONFIG_PROBED : XCONFIG_GIVEN, 
+		xf86bpp == -1 ? (xf86ismonotype ? 1 : 8) : xf86bpp);
+    if( xf86bpp < 1 ) 
+    	xf86bpp = (xf86ismonotype ? 1 : 8);
+    switch( xf86bpp )
+    {
+    case 1:
+    	    if( xf86issvgatype )
+		LoadModule("libvga2.a", modulePath);
+	    if( xf86ismonotype )
+		LoadModule("libmono.a", modulePath);
+    	    break;
+    case 4:
+    	    if( xf86issvgatype )
+		LoadModule("libvga16.a", modulePath);
+    	    break;
+    case 8:
+    	    if( xf86issvgatype )
+		LoadModule("libvga256.a", modulePath);
+	    LoadModule("libmfb.a", modulePath);
+	    LoadModule("libcfb.a", modulePath);
+	    if( xf86xaaloaded )
+	        LoadModule("xaavga256.o", modulePath);
+	    break;
+    case 15:
+    case 16:
+    	    if( xf86issvgatype )
+		LoadModule("libvga256.a", modulePath);
+	    LoadModule("libmfb.a", modulePath);
+	    LoadModule("libcfb.a", modulePath);
+	    LoadModule("libcfb16.a", modulePath);
+	    if( xf86xaaloaded )
+	    {
+	        LoadModule("xaavga256.o", modulePath);
+	        LoadModule("xaa16.o", modulePath);
+	    }
+	    break;
+    case 24:
+    	    if( xf86issvgatype )
+		LoadModule("libvga256.a", modulePath);
+	    LoadModule("libmfb.a", modulePath);
+	    LoadModule("libcfb.a", modulePath);
+	    LoadModule("libcfb24.a", modulePath);
+	    if( xf86xaaloaded )
+	    {
+	        LoadModule("xaavga256.o", modulePath);
+	        LoadModule("xaa24.o", modulePath);
+	    }
+	    break;
+    case 32:
+    	    if( xf86issvgatype )
+		LoadModule("libvga256.a", modulePath);
+	    LoadModule("libmfb.a", modulePath);
+	    LoadModule("libcfb.a", modulePath);
+	    LoadModule("libcfb32.a", modulePath);
+	    if( xf86xaaloaded )
+	    {
+	        LoadModule("xaavga256.o", modulePath);
+	        LoadModule("xaa32.o", modulePath);
+	    }
+	    break;
+    default:
+        FatalError("color depth of %d currently not supported by loader\n",
+		xf86bpp);
     }
+    /* Before checking for unresolved, call LoaderFixups() again, to make
+     * sure that any special symbols are properly fixed-up 
+     */ 
+     LoaderFixups();
+
+    /*
+     * at this point all symbols should be resolvable, except for 
+     * those which are not needed for the current color depth.
+     * We check for unresolved, and issue a fatal error and stop 
+     * right here. LoaderCheckForUnresolved() will ignore all color-depth
+     * functions not needed for the current color depth. For now, we just 
+     * issue a warning while we are working on this code
+     */
+    if( LoaderCheckUnresolved( xf86bpp ) )
+    {
+        /*
+	 * leave as a warning for now
+	 */
+
+	ErrorF("Warning: Some symbols couldn't be resolved!\n");
+
+    }
+
+    /*
+     * now that this is checked we should hook in the current color depth
+     * pointers
+     */
+
+    ptr=(ScrnInfoRec *(*)())LoaderSymbol("ServerInit");
+    if (ptr != NULL) {
+	xf86Screens[0]=(ptr)();
+    } else {
+	FatalError("Can't find ServerInit entry\n");
+    }
+    xf86ScreenNames [0]=
+	StringToToken (xf86Screens[0]->name, DriverTab);
 #endif
 
 #ifdef NEED_RETURN_VALUE
@@ -2708,10 +2830,18 @@ configScreenSection()
   while ((token = xf86GetToken(ScreenTab)) != ENDSECTION) {
     switch (token) {
 
+    /*
+     * we should move DefaultColorDepth into the Modules Section
+     */
     case DEFBPP:
       if (xf86GetToken(NULL) != NUMBER) 
         xf86ConfigError("Default color depth expected");
+#if 0
       screen->depth = val.num;
+#else
+      ErrorF("The DefaultColorDepth keyword has been moved to the");
+      ErrorF("Section \"Module\".");
+#endif
       break;
 
     case SCREENNO:
@@ -2990,91 +3120,6 @@ configScreenSection()
 #endif
     }
   
-#ifdef XFree86LOADER
-    /*
-     * at this point we know which depth this server will be running in.
-     * sounds like a perfect place to load the corresponding cfb routines,
-     * doesn't it?
-     */
-    ErrorF("%s %s: color depth: %dbpp\n",
-                   XCONFIG_GIVEN, screen->name, screen->depth);
-    switch( screen->depth )
-    {
-    case 1:
-    	    break;
-    case 4:
-	    /* right now this doesn't work */
-    	    break;
-    case 8:
-	    LoadModule("libmfb.a", modulePath);
-	    LoadModule("libcfb.a", modulePath);
-	    if( xf86xaaloaded )
-	        LoadModule("xaavga256.o", modulePath);
-	    break;
-    case 15:
-    case 16:
-	    LoadModule("libmfb.a", modulePath);
-	    LoadModule("libcfb.a", modulePath);
-	    LoadModule("libcfb16.a", modulePath);
-	    if( xf86xaaloaded )
-	    {
-	        LoadModule("xaavga256.o", modulePath);
-	        LoadModule("xaa16.o", modulePath);
-	    }
-	    break;
-    case 24:
-	    LoadModule("libmfb.a", modulePath);
-	    LoadModule("libcfb.a", modulePath);
-	    LoadModule("libcfb24.a", modulePath);
-	    if( xf86xaaloaded )
-	    {
-	        LoadModule("xaavga256.o", modulePath);
-	        LoadModule("xaa24.o", modulePath);
-	    }
-	    break;
-    case 32:
-	    LoadModule("libmfb.a", modulePath);
-	    LoadModule("libcfb.a", modulePath);
-	    LoadModule("libcfb32.a", modulePath);
-	    if( xf86xaaloaded )
-	    {
-	        LoadModule("xaavga256.o", modulePath);
-	        LoadModule("xaa32.o", modulePath);
-	    }
-	    break;
-    default:
-        FatalError("color depth of %d currently not supported by loader\n",
-		screen->depth);
-    }
-    /* Before checking for unresolved, call LoaderFixups() again, to make
-     * sure that any special symbols are properly fixed-up 
-     */ 
-     LoaderFixups();
-
-    /*
-     * at this point all symbols should be resolvable, except for 
-     * those which are not needed for the current color depth.
-     * We check for unresolved, and issue a fatal error and stop 
-     * right here. LoaderCheckForUnresolved() will ignore all color-depth
-     * functions not needed for the current color depth. For now, we just 
-     * issue a warning while we are working on this code
-     */
-    if( LoaderCheckUnresolved( screen->depth ) )
-    {
-        /*
-	 * leave as a warning for now
-	 */
-
-	ErrorF("Warning: Some symbols couldn't be resolved!\n");
-
-    }
-
-    /*
-     * now that this is checked we should hook in the current color depth
-     * pointers
-     */
-
-#endif /* XFree86LOADER */
 
     /* Maybe these should be FatalError() instead? */
     if ( !had_monitor ) {

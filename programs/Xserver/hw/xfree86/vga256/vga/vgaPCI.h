@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.21 1996/12/09 11:54:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.22 1996/12/23 06:59:33 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -115,6 +115,9 @@
 
 /* 3Dlabs */
 #define PCI_CHIP_300SX		0x0001
+#define PCI_CHIP_500TX		0x0002
+#define PCI_CHIP_DELTA		0x0003
+#define PCI_CHIP_PERMEDIA	0x0004
 
 /* S3 */
 #define PCI_CHIP_VIRGE		0x5631
@@ -259,6 +262,9 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{0x0000,		NULL}}},
     {PCI_VENDOR_3DLABS, "3Dlabs", {
 				{PCI_CHIP_300SX,	"GLINT 300SX"},
+				{PCI_CHIP_500TX,	"GLINT 500TX"},
+				{PCI_CHIP_DELTA,	"GLINT Delta"},
+				{PCI_CHIP_PERMEDIA,	"GLINT Permedia"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_S3,	"S3",	{
 				{PCI_CHIP_VIRGE,	"ViRGE"},

@@ -1,5 +1,5 @@
 /* $XConsortium: vgabppscrin.c,v 1.2 95/06/19 19:33:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.11 1997/02/16 12:14:15 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86scrin.c,v 3.13 1997/02/25 16:05:08 hohndel Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -74,6 +74,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include "gcstruct.h"
 #include "xf86.h"
+#include "xf86Version.h"
 #include "xf86Priv.h"	/* for xf86weight */
 #include "vga.h"
 
@@ -85,18 +86,28 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #ifdef VGA256
 #define vgabppScreenInit xf86XAAScreenInitvga256
+#define xaaVersRec xaavga256VersRec
+#define xaaname "xaavga256"
 #else
 #if PSZ == 8
 #define vgabppScreenInit xf86XAAScreenInit8bpp
+#define xaaVersRec xaa8VersRec
+#define xaaname "xaa8"
 #endif
 #if PSZ == 16
 #define vgabppScreenInit xf86XAAScreenInit16bpp
+#define xaaVersRec xaa16VersRec
+#define xaaname "xaa16"
 #endif
 #if PSZ == 24
 #define vgabppScreenInit xf86XAAScreenInit24bpp
+#define xaaVersRec xaa24VersRec
+#define xaaname "xaa24"
 #endif
 #if PSZ == 32
 #define vgabppScreenInit xf86XAAScreenInit32bpp
+#define xaaVersRec xaa32VersRec
+#define xaaname "xaa32"
 #endif
 #endif
 
@@ -296,6 +307,17 @@ vgabppScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 }
 
 #ifdef XFree86LOADER
+XF86ModuleVersionInfo xaaVersRec =
+{
+	xaaname,
+	"The XFree86 Project",
+	MODINFOSTRING1,
+	MODINFOSTRING2,
+	XF86_VERSION_CURRENT,
+	0x00010001,
+	{0,0,0,0}
+};
+
 /*
  * this is the module init code when the color depth specific parts of
  * XAA are loaded at runtime
@@ -309,7 +331,12 @@ ModuleInit( data, magic )
 
     switch(cnt++)
     {
+    /* MAGIC_VERSION must be first in ModuleInit */
     case 0:
+    	* data = (pointer) &xaaVersRec;
+	* magic= MAGIC_VERSION;
+	break;
+    case 1:
     	* magic = MAGIC_CCD_XAA_SCREEN_INIT;
 	* data  = (pointer) &vgabppScreenInit;
 	break;

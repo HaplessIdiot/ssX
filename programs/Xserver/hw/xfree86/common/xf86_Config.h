@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.60 1997/03/03 10:18:51 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.61 1997/03/04 10:39:06 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -310,7 +310,8 @@ static SymTabRec ScreenTab[] = {
   { SUSPENDTIME,"suspendtime" },
   { OFFTIME,	"offtime" },
   { SUBSECTION,	"subsection" },
-  { DEFBPP,	"defaultcolordepth" },
+  { DEFBPP,	"defaultcolordepth" }, /* disabled, but still here to	*/
+  				       /* avoid syntax errors		*/
   { -1,		"" },
 };
 #endif /* INIT_CONFIG */
@@ -353,6 +354,7 @@ extern SymTabRec TimingTab[];
 SymTabRec ModuleTab[] = {
   { ENDSECTION,	"endsection"},
   { LOAD,	"load"},
+  { DEFBPP,	"defaultcolordepth" },
   { -1,		"" },
 };
 #endif  /* defined(INIT_CONFIG) */

@@ -193,6 +193,10 @@ typedef struct {
   int ChipLinearBase;		    /* Physical base address of the linear
   				       framebuffer */
   int ChipLinearSize;		    /* Size of the linear framebuffer */
+  Bool ChipHas1bpp;		    /* Driver supports Mono */
+  Bool ChipHas4bpp;		    /* Driver supports 16 colours */
+  Bool ChipHas8bpp;		    /* Driver supports 8bpp */
+  Bool ChipHas15bpp;		    /* Driver supports 15bpp */
   Bool ChipHas16bpp;		    /* Driver supports 16bpp */
   Bool ChipHas24bpp;		    /* Driver supports 24bpp */
   Bool ChipHas32bpp;		    /* Driver supports 32bpp */
@@ -350,13 +354,9 @@ typedef struct {
 
 #define OVERSCAN 0x11		/* Index of OverScan register */
 
-#ifdef MONOVGA
 #define BIT_PLANE 3		/* Which plane we write to in mono mode */
-#else
 #define BITS_PER_GUN 6
 #define COLORMAP_SIZE 256
-
-#endif
 
 #define DACDelay \
 	{ \
@@ -364,6 +364,7 @@ typedef struct {
 		temp = inb(vgaIOBase + 0x0A); \
 	}
 
+#ifndef XFree86LOADER
 #ifdef MONOVGA
 #define vga256InfoRec vga2InfoRec
 #endif
@@ -382,6 +383,7 @@ typedef struct {
 #endif
 #ifdef AGX_SERVER
 #define vga256InfoRec agxInfoRec
+#endif
 #endif
 extern ScrnInfoRec vga256InfoRec;
 

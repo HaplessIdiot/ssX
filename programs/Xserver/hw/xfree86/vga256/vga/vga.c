@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.78 1997/02/27 13:59:55 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.79 1997/03/04 10:42:50 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -163,6 +163,14 @@ ScrnInfoRec vga256InfoRec = {
   NULL,			/* char *clockprog */
   -1,                   /* int textclock */
   FALSE,		/* Bool bankedMono */
+#if XFree86LOADER
+	/*
+	 * the loader now has all drivers in one binary, so
+	 * the distinction in different Screen sections doesn't
+	 * seem to make much sense anymore
+	 */
+  "SVGA",		/* char *name */
+#else
 #ifdef MONOVGA
   "VGA2",		/* char *name */
 #else
@@ -170,6 +178,7 @@ ScrnInfoRec vga256InfoRec = {
   "VGA16",		/* char *name */
 #else
   "SVGA",		/* char *name */
+#endif
 #endif
 #endif
   {0, 0, 0},		/* xrgb blackColour */ 
@@ -277,7 +286,7 @@ ModuleInit(data,magic)
 
     switch(cnt++)
     {
-#ifndef XF86VGA16
+#if !defined(XF86VGA16) && !defined(MONOVGA)
     case 0:
       * data = (int) "libxaa.a";
       * magic= MAGIC_LOAD;

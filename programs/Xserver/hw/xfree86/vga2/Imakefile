@@ -15,7 +15,11 @@ MFBDIR = mfb.banked
 MFBDIR = mfb
 #endif
 
+#if DoLoadableServer
+SUBDIRS = vga $(MFBDIR) misc
+#else
 SUBDIRS = vga $(MFBDIR) misc drivers
+#endif
 
 SRCS = vga/?*.c $(MFBDIR)/?*.c
 
@@ -36,7 +40,10 @@ MakeMutex($(SUBDIRS) $(OBJS) $(DONES))
 $(DONES): $(SUBDIRS)
 #endif
 
+#if ! DoLoadableServer
 ConfigTargetNoDepend(vga2Conf,$(ICONFIGFILES),confvga2.SHsuf,$(VGA2DRIVERS))
+#endif
+
 #ifdef OS2Architecture
 all:: DONE
 	cp $(OBJS) .
@@ -52,5 +59,9 @@ ForceSubdirs($(SUBDIRS))
 
 InstallLinkKitLibrary(vga2,$(LINKKITDIR)/drivers)
 InstallLinkKitNonExecFile(confvga2.SHsuf,$(LINKKITDIR))
+
+#if DoLoadableServer
+InstallDynamicModule(LibraryTargetName(vga2),$(MODULEDIR))
+#endif
 
 DependSubdirs($(SUBDIRS))

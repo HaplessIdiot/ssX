@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Linux.c,v 3.9 1996/12/23 06:31:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Linux.c,v 3.10 1996/12/26 06:59:51 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by Orest Zborowski <orestz@eskimo.com>
  *
@@ -176,6 +176,13 @@ void CloseVideo()
  */
 Byte *MapVGA()
 {
+	return( MapMem(0xA0000,0x10000) );
+}
+
+Byte *MapMem(address, size)
+	unsigned long address;
+	unsigned long size;
+{
 	int fd;
 	Byte *base;
 
@@ -191,8 +198,8 @@ Byte *MapVGA()
 		fprintf(stderr, "%s: Failed to open /dev/mem\n", MyName);
 		return((Byte *)0);
 	}
-	base = (Byte *)mmap((caddr_t)0, 0x10000, PROT_READ|PROT_WRITE,
-			    MAP_SHARED, fd, (off_t)0xA0000 + BUS_BASE);
+	base = (Byte *)mmap((caddr_t)0, size, PROT_READ|PROT_WRITE,
+			    MAP_SHARED, fd, (off_t)address + BUS_BASE);
 	close(fd);
 	if ((long)base == -1)
 	{
@@ -208,7 +215,15 @@ Byte *MapVGA()
  * Unmap the VGA memory window.
  */
 void UnMapVGA(base)
-Byte *base;
+	Byte *base;
+{
+	UnMapMem(base,0x10000);
+	return;
+}
+
+void UnMapMem(base,size)
+	Byte *base;
+	unsigned long size;
 {
 	munmap((caddr_t)base, 0x10000);
 	return;

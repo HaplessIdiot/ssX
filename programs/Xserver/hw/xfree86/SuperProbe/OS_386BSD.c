@@ -286,6 +286,13 @@ Byte *MapVGA()
 	return(base);
 }
 
+Byte *MapMem(adress,size)
+	unsigned long address;
+	unsigned long size;
+{
+	return((Byte*)0);
+}
+
 /*
  * UnMapVGA --
  *
@@ -295,6 +302,13 @@ void UnMapVGA(base)
 Byte *base;
 {
 	munmap((caddr_t)base, 0x10000);
+}
+
+void UnMapMem(base,size)
+	Byte *base;
+	unsigned long size;
+{
+	return;
 }
 
 /*

@@ -1,6 +1,12 @@
 XFree86 3.2Ak ( 4 March 1997)
- 545. Make Mono drivers loadable and clean up some of XF86_LOADER (#119,
-      H.J. Lu).
+ 547. Change the way dynamic loading of vga2. vga16, vga256 modules is done
+      (just one module per driver for all color depths) (# 123, Alan Hourihane).
+ 546. Add support for 3DLabs GLINT chipsets to scanpci and SuperProbe
+      (Dirk Hohndel).
+
+XFree86 3.2Ak ( 4 March 1997)
+ 545. Make Mono drivers loadable and clean up some of XF86_LOADER; this
+      change replaces some of the things done in change 537 (#119, H.J. Lu).
  544. Fix char alignement in COFF loader as well (#120, Thomas Mueller).
  543. Fix short alignement in COFF loader and add missing entry to SYMENT
       (#118, Michael Rohleder).
@@ -4110,3 +4116,18 @@ XFree86 3.0a (28 April 1994)
   1. Fold in client/lib OS support not picked up by the XC.
 
 XFree86 3.0 (26 April 1994)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+$XFree86: $

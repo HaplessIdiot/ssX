@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_LynxOS.c,v 3.3 1996/12/23 06:31:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_LynxOS.c,v 3.4 1997/01/18 06:53:38 dawes Exp $ */
 /*
  * Copyright 1993 by Thomas Mueller
  *
@@ -80,11 +80,18 @@ void CloseVideo()
  */
 Byte *MapVGA()
 {
+	return(MapMem(0xa0000,0x10000));
+}
+
+Byte *MapMem(address,size)
+	unsigned long address;
+	unsigned long size;
+{
 #define SMEM_NAME	"SuperProbe-VGA"
 	Byte *base;
 
-	base = (Byte *) smem_create(SMEM_NAME, (char *)0xA0000,
-		 0x10000, SM_READ|SM_WRITE);
+	base = (Byte *) smem_create(SMEM_NAME, (char *)address,
+		 size, SM_READ|SM_WRITE);
 	if ((long)base == -1)
 	{
                 fprintf(stderr, "%s: Failed to mmap framebuffer\n", MyName);
@@ -100,6 +107,14 @@ Byte *MapVGA()
  */
 void UnMapVGA(base)
 Byte *base;
+{
+	UnMapMem(base,0x10000);
+	return;
+}
+
+void UnMapMem(base,size)
+	Byte *base;
+	unsigned long size;
 {
 	smem_create(NULL, (char *)base, 0, SM_DETACH);
 	smem_remove(SMEM_NAME);

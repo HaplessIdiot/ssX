@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.142 1997/03/03 10:17:32 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.143 1997/03/04 10:37:35 hohndel Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -394,6 +394,23 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 /*
  * Driver list for several of the X Servers.
  */
+#ifdef XF86LoaderServer
+#ifndef XF86CardDrivers
+# ifdef AlphaArchitecture
+#  define XF86CardDrivers	trident
+# else
+#  define XF86CardDrivers	nv tseng et3000 wd gvga ati sis trident \
+				cirrus ncr mga oak al2101 ali \
+				cl64xx video7 chips ark mx realtek apm s3 \
+				apollo hercules hgc1280 sigma \
+				vga
+# endif
+# define XF86SvgaDrivers	/* */
+# define XF86Vga16Drivers	/* */
+# define XF86Vga2Drivers	/* */
+# define XF86MonoDrivers	/* */
+#endif
+#else
 #ifndef XF86SvgaDrivers
 # ifdef AlphaArchitecture
 #  define XF86SvgaDrivers	mga tvga8900
@@ -427,12 +444,13 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 # endif
 #endif
 
-#ifndef XF86Vga2Banked
-# define XF86Vga2Banked		YES
-#endif
-
 #ifndef XF86MonoDrivers
 # define XF86MonoDrivers	hgc1280 sigma apollo hercules
+#endif
+#endif /* XF86LoaderServer */
+
+#ifndef XF86Vga2Banked
+# define XF86Vga2Banked		YES
 #endif
 
 /* This doesn't do everything (yet) */
@@ -866,11 +884,14 @@ XF98LINKKITDIR = LinkKitDir
  XF86CONFIGSRC = $(XF86SRC)
      XF86HWSRC = $(XF86SRC)/lib86
      XF86OSSRC = $(XF86SRC)/lib86
+#if DoLoadableServer
      DRIVERSRC = $(XF86SRC)/drivers
+#else
   VGADRIVERSRC = $(XF86SRC)/drivers/vga256
 VGA16DRIVERSRC = $(XF86SRC)/drivers/vga16
  VGA2DRIVERSRC = $(XF86SRC)/drivers/vga2
  MONODRIVERSRC = $(XF86SRC)/drivers/mono
+#endif
    S3DRIVERSRC = $(XF86SRC)/drivers/s3
   S3VDRIVERSRC = $(XF86SRC)/drivers/s3_virge
 
@@ -905,10 +926,14 @@ XF98GA968DRIVERSRC = $(XF98SRC)/drivers98/s3ga968
  XF86CONFIGSRC = $(XF86COMSRC)
      XF86HWSRC = $(XF86SRC)/common_hw
      XF86OSSRC = $(XF86SRC)/os-support
+#if DoLoadableServer
+     DRIVERSRC = $(XF86SRC)/drivers
+#else
   VGADRIVERSRC = $(XF86SRC)/vga256/drivers
 VGA16DRIVERSRC = $(XF86SRC)/vga16/drivers
  VGA2DRIVERSRC = $(XF86SRC)/vga2/drivers
  MONODRIVERSRC = $(XF86SRC)/mono/drivers
+#endif
    S3DRIVERSRC = $(XF86SRC)/accel/s3/drivers
   S3VDRIVERSRC = $(XF86SRC)/accel/s3_virge/drivers
 

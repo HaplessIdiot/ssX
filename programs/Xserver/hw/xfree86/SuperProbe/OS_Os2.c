@@ -27,7 +27,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Os2.c,v 3.5 1996/10/17 15:16:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Os2.c,v 3.6 1996/12/23 06:31:25 dawes Exp $ */
 
 
 #include "Probe.h"
@@ -171,6 +171,13 @@ Byte *MapVGA()
 	}
 }
 
+Byte *MapMem(adress,size)
+	unsigned long address;
+	unsigned long size;
+{
+	return((Byte*)0);
+}
+
 /*
  * UnMapVGA --
  *
@@ -180,6 +187,13 @@ void UnMapVGA(base)
 Byte *base;
 {
 	UnmapPhys(videoAddr,videoSize);
+}
+
+void UnMapMem(base,size)
+	Byte *base;
+	unsigned long size;
+{
+	return;
 }
 
 /*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.52 1997/02/25 14:20:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.53 1997/02/27 13:58:25 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -300,6 +300,8 @@ extern int *xf86ccdScreenPrivateIndex;
 extern void (*xf86ccdDoBitblt)();
 extern int  (*xf86ccdXAAScreenInit)();
 extern int xf86xaaloaded;
+extern int xf86issvgatype;
+extern int xf86ismonotype;
 
 /* flags for xf86LookupMode */
 #define LOOKUP_DEFAULT		0	/* Use default mode lookup method */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/S3.c,v 3.15 1996/12/23 06:31:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/S3.c,v 3.16 1997/02/16 10:27:09 hohndel Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -97,7 +97,7 @@ int *Chipset;
 				Ports[1] = CRTC_REG;
 				EnableIOPorts(NUMPORTS, Ports);
 				cr38 = rdinx(CRTC_IDX, 0x38);
-				cr39 = rdinx(CRTC_IDX, 0x38);
+				cr39 = rdinx(CRTC_IDX, 0x39);
 				wrinx(CRTC_IDX, 0x38, 0x48);
 				wrinx(CRTC_IDX, 0x39, 0xa0);
 				cr42 = rdinx(CRTC_IDX, 0x42);
@@ -117,8 +117,8 @@ int *Chipset;
 				}				      
 
 				wrinx(CRTC_IDX, 0x42, cr42);
-				wrinx(CRTC_IDX, 0x38, cr38);
 				wrinx(CRTC_IDX, 0x39, cr39);
+				wrinx(CRTC_IDX, 0x38, cr38);
 				DisableIOPorts(NUMPORTS, Ports);
 				xf86scanpci();
 
@@ -126,6 +126,11 @@ int *Chipset;
 			case PCI_CHIP_ViRGE:
 			        PCIProbed = TRUE;
 				*Chipset = CHIP_S3_ViRGE;
+				/*
+				 * the ViRGE is used as VGA part for
+				 * the GLINT
+				 */
+				S3_Descriptor.check_coproc = TRUE;
 				break;
 			case PCI_CHIP_ViRGE_VX:
 			        PCIProbed = TRUE;

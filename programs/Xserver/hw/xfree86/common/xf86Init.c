@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.68 1997/02/25 14:21:02 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.69 1997/02/27 13:58:32 hohndel Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -378,19 +378,22 @@ InitOutput(pScreenInfo, argc, argv)
       if (!xf86Info.sharedMonitor) (xf86Screens[i]->EnterLeaveMonitor)(ENTER);
     }
 #ifdef XFree86LOADER
-    if( pScreenInfo->screens[0]->rootDepth < 8 )
+    if( pScreenInfo->screens[0] ) 
     {
-        pScreenInfo->bitmapScanlineUnit = 8;
-        pScreenInfo->bitmapBitOrder = MSBFirst;
-    }
-    else
-    {
-        pScreenInfo->bitmapScanlineUnit = 32;
-        pScreenInfo->bitmapBitOrder = LSBFirst;
-    }
-    if( xf86bpp == -1 )
-    {
-        xf86bpp = pScreenInfo->screens[0]->rootDepth;
+	if( pScreenInfo->screens[0]->rootDepth < 8 )
+	{
+		pScreenInfo->bitmapScanlineUnit = 8;
+		pScreenInfo->bitmapBitOrder = MSBFirst;
+	}
+	else
+	{
+		pScreenInfo->bitmapScanlineUnit = 32;
+		pScreenInfo->bitmapBitOrder = LSBFirst;
+	}
+	if( xf86bpp == -1 )
+	{
+	    xf86bpp = pScreenInfo->screens[0]->rootDepth;
+	}
     }
 #endif
 
