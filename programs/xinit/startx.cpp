@@ -11,7 +11,7 @@ XCOMM and pop a clock and serveral xterms.
 XCOMM
 XCOMM Site administrators are STRONGLY urged to write nicer versions.
 XCOMM
-XCOMM $XFree86: xc/programs/xinit/startx.cpp,v 3.10 2001/11/02 15:49:59 dawes Exp $
+XCOMM $XFree86: xc/programs/xinit/startx.cpp,v 3.11 2001/11/02 17:19:28 alanh Exp $
 
 #ifdef SCO
 
@@ -84,10 +84,18 @@ while [ x"$1" != x ]; do
     case "$1" in
     # '' required to prevent cpp from treating "/*" as a C comment.
     /''*|\./''*)
-	if [ "$whoseargs" = "client" -a x"$clientargs" = x ]; then
-	    client="$1"
-	elif [ x"$serverargs" = x ]; then
-	    server="$1"
+	if [ "$whoseargs" = "client" ]; then
+	    if [ x"$clientargs" = x ]; then
+		client="$1"
+	    else
+		clientargs="$clientargs $1"
+	    fi
+	else
+	    if [ x"$serverargs" = x ]; then
+		server="$1"
+	    else
+		serverargs="$serverargs $1"
+	    fi
 	fi
 	;;
     --)
