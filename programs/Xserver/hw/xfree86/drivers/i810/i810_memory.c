@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_memory.c,v 1.8 2000/06/17 00:03:18 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_memory.c,v 1.9 2000/06/20 05:08:46 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -187,6 +187,11 @@ int I810AllocateGARTMemory( ScrnInfoPtr pScrn )
     * system memory from which to upload the cursor.  We get this from 
     * the agpgart module using a special memory type.
     */
+
+   /* 4k for the cursor is excessive, I'm going to steal 3k for
+    * overlay registers later
+    */
+
    alloc.pg_count = 1;
    alloc.type = 2;
 
@@ -211,6 +216,14 @@ int I810AllocateGARTMemory( ScrnInfoPtr pScrn )
       }
    }
 
+   /* Overlay register buffer -- Just like the cursor, the i810 needs a
+    * physical address in system memory from which to upload the overlay
+    * registers.
+    */
+   if (pI810->CursorStart != 0) {
+        pI810->OverlayPhysical = pI810->CursorPhysical + 1024;
+        pI810->OverlayStart = pI810->CursorStart + 1024;
+   }
 
 
    return TRUE;

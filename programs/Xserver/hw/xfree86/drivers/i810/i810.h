@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.9 2000/06/22 17:44:03 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.10 2000/07/26 01:52:19 tsi Exp $ */
 
 /*
  * Authors:
@@ -43,6 +43,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "i810_reg.h"
 #include "xaa.h"
 #include "xf86Cursor.h"
+#include "xf86xv.h"
 
 #ifdef XF86DRI
 #include "xf86drm.h"
@@ -125,6 +126,10 @@ typedef struct {
 
    unsigned int Fence[8];
 
+   unsigned short OverlayActiveStart;
+   unsigned short OverlayActiveEnd;
+
+
 } I810RegRec, *I810RegPtr;
 
 typedef struct _I810Rec {
@@ -143,7 +148,8 @@ typedef struct _I810Rec {
    I810MemRange TexMem;
    I810MemRange Scratch;
    I810MemRange BufferMem;
-
+   I810MemRange OverlayBuf;
+ 
 
    int auxPitch;
    int auxPitchBits;
@@ -151,6 +157,9 @@ typedef struct _I810Rec {
    int CursorOffset;
    int CursorPhysical;
    int CursorStart;
+   int OverlayPhysical;
+   int OverlayStart;
+
 
    DGAModePtr DGAModes;
    int numDGAModes;
@@ -185,7 +194,8 @@ typedef struct _I810Rec {
    XAAInfoRecPtr AccelInfoRec;
    xf86CursorInfoPtr CursorInfoRec;
    CloseScreenProcPtr CloseScreen;
-
+   ScreenBlockHandlerProcPtr BlockHandler;
+ 
    I810WriteIndexedByteFunc writeControl;
    I810ReadIndexedByteFunc readControl;
    I810WriteByteFunc writeStandard;
@@ -208,8 +218,11 @@ typedef struct _I810Rec {
    Bool agpAcquired;
    drmHandle buffer_map;
    drmHandle ring_map;
+   drmHandle overlay_map;
 #endif
    Bool agpAcquired2d;
+
+   XF86VideoAdaptorPtr adaptor;
 } I810Rec;
 
 #define I810PTR(p) ((I810Ptr)((p)->driverPrivate))

@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.14 2000/06/22 10:40:49 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.15 2000/06/22 17:44:04 alanh Exp $ */
 
 /*
  * Authors:
@@ -1101,6 +1101,10 @@ DoRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, I810RegPtr i810Reg,
    pI810->writeControl(pI810, GRX, ADDRESS_MAPPING, temp);
 
 
+   /* Setting the OVRACT Register for video overlay*/
+   OUTREG(0x6001C, (i810Reg->OverlayActiveEnd << 16) | i810Reg->OverlayActiveStart);
+
+
 
 
    /* Turn on DRAM Refresh */
@@ -1342,6 +1346,8 @@ I810SetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
    else
       i810Reg->PixelPipeCfg0 = DAC_8_BIT;
 
+   /* Do not delay CRT Blank: needed for video overlay */
+   i810Reg->PixelPipeCfg1 |= 0x10;
 
    /* Turn on Extended VGA Interpretation */
    i810Reg->IOControl = EXTENDED_CRTC_CNTL;
@@ -1361,6 +1367,20 @@ I810SetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
    i810Reg->ExtVertBlankStart = mode->CrtcVBlankStart >> 8;
    i810Reg->ExtHorizTotal = ((mode->CrtcHTotal >> 3) - 5) >> 8;
    i810Reg->ExtHorizBlank = (((mode->CrtcHBlankEnd >> 3) - 1) & 0x40) >> 6;
+
+   /*
+    * The following workaround is needed to get video overlay working
+    * at 1024x768 display resolution.
+    */
+   if ((mode->CrtcVDisplay == 768) && (i810Reg->ExtVertBlankStart == 3))
+   {
+       i810Reg->ExtVertBlankStart = 2;
+   }
+
+   /* OVRACT Register */
+  i810Reg->OverlayActiveStart = mode->CrtcHTotal - 32;
+  i810Reg->OverlayActiveEnd = mode->CrtcHDisplay - 32;
+
 
    /* Turn on interlaced mode if necessary */
    if (mode->Flags & V_INTERLACE)
@@ -1754,6 +1774,8 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 		    "Hardware cursor initialization failed\n");
       }
    }
+
+   I810InitVideo(pScreen);
 
 #ifdef XF86DRI
    if (pI810->LpRing.mem.Start == 0) {
