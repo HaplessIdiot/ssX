@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.231tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.232tsi Exp $ */
 
 /*
  *
@@ -667,49 +667,6 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86STimestamp)
 #endif
    
-#if 0 /* we want to move the hw stuff in a module */
-   SYMFUNC(xf86dactopel)
-   SYMFUNC(xf86dactocomm)
-   SYMFUNC(xf86getdaccomm)
-   SYMFUNC(xf86setdaccomm)
-   SYMFUNC(xf86setdaccommbit)
-   SYMFUNC(xf86clrdaccommbit)
-   SYMFUNC(s3IBMRGB_Probe)
-   SYMFUNC(s3IBMRGB_Init)
-   SYMFUNC(s3InIBMRGBIndReg)
-   SYMFUNC(Ti3025SetClock)
-   SYMFUNC(Ti3026SetClock)
-   SYMFUNC(Ti3030SetClock)
-   SYMFUNC(AltICD2061SetClock)
-   SYMFUNC(SC11412SetClock)
-   SYMFUNC(ICS2595SetClock)
-   SYMFUNC(Att409SetClock)
-   SYMFUNC(Chrontel8391SetClock)
-   SYMFUNC(IBMRGBSetClock)
-   SYMFUNC(ICS5342SetClock)
-   SYMFUNC(S3TrioSetClock)
-   SYMFUNC(S3Trio64V2SetClock)
-   SYMFUNC(S3gendacSetClock)
-   SYMFUNC(STG1703SetClock)
-   SYMFUNC(ET6000SetClock)
-   SYMFUNC(S3AuroraSetClock)
-   SYMFUNC(commonCalcClock)
-   SYMFUNC(xf86writepci)
-   SYMFUNC(dacOutTi3026IndReg)
-   SYMFUNC(dacInTi3026IndReg)
-   SYMFUNC(s3OutIBMRGBIndReg)
-   SYMFUNC(CirrusFindClock)
-   SYMFUNC(CirrusSetClock)
-   SYMFUNC(STG1703getIndex)
-   SYMFUNC(STG1703setIndex)
-   SYMFUNC(STG1703magic)
-   SYMFUNC(gendacMNToClock)
-   SYMFUNC(Et4000AltICD2061SetClock)
-   SYMFUNC(ET4000stg1703SetClock)
-   SYMFUNC(ET4000gendacSetClock)
-
-#endif
-   
    SYMFUNC(pciFindFirst)
    SYMFUNC(pciFindNext)
    SYMFUNC(pciWriteByte)
@@ -725,8 +682,6 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86MapPciMem)
    SYMFUNC(xf86scanpci)
    SYMFUNC(xf86ReadPciBIOS)
-   SYMFUNC(AllocatePixmapPrivateIndex)
-   SYMFUNC(AllocatePixmapPrivate)
 
    /* Loader functions */
    SYMFUNC(LoaderDefaultFunc)
