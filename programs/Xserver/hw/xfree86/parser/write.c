@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/write.c,v 1.10 2000/03/06 22:59:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/write.c,v 1.11 2000/10/20 14:59:03 alanh Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -89,6 +89,8 @@ doWriteConfigFile (const char *filename, XF86ConfigPtr cptr)
 	xf86printInputSection (cf, cptr->conf_input_lst);
 
 	xf86printVideoAdaptorSection (cf, cptr->conf_videoadaptor_lst);
+
+	xf86printModesSection (cf, cptr->conf_modes_lst);
 
 	xf86printMonitorSection (cf, cptr->conf_monitor_lst);
 

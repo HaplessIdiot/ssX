@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.164 2000/10/24 18:07:34 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.165 2000/11/02 16:48:05 tsi Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -255,7 +255,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.164 2000/10/24 18:07:34 dawes Exp 
 				neomagic i740 tdfx \
 				cirrus tseng trident chips apm \
 				GlideDriver fbdev i128 \
-				ati AgpGartDrivers DevelDrivers cyrix \
+				ati AgpGartDrivers DevelDrivers ark cyrix \
 				vesa vga XF86OSCardDrivers XF86ExtraCardDrivers
  */
 

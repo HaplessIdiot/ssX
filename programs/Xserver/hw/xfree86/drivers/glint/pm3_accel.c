@@ -26,7 +26,7 @@
  * 
  * Permedia 3 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.4 2000/10/17 09:07:04 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.5 2000/10/26 17:57:56 dawes Exp $ */
 
 #include "Xarch.h"
 #include "xf86.h"
@@ -47,6 +47,7 @@
 #include "xaalocal.h"		/* For replacements */
 
 #define DEBUG 0
+#define USE_DIRECT_FIFO_WRITES 1
 
 #if DEBUG
 # define TRACE_ENTER(str)       ErrorF("pm3_accel: " str " %d\n",pScrn->scrnIndex)
@@ -89,22 +90,21 @@ static void Permedia3SetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 				int fg, int bg, int rop,unsigned int planemask);
 static void Permedia3SubsequentCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, 
 				int x, int y, int w, int h, int skipleft);
+/* Direct Fifo Bitmap Writes */
+static void Permedia3WriteBitmap(ScrnInfoPtr pScrn, int x, int y, int w, int h, 
+				unsigned char *src, int srcwidth, int skipleft, 
+				int fg, int bg, int rop,unsigned int planemask);
 /* Images Writes */
 static void Permedia3SetupForImageWrite(ScrnInfoPtr pScrn, int rop,
 				unsigned int planemask, int trans_color,
 				int bpp, int depth);
 static void Permedia3SubsequentImageWriteRect(ScrnInfoPtr pScrn, 
 				int x, int y, int w, int h, int skipleft);
-
-#define MAX_FIFO_ENTRIES 256
-
-/* Mirror stipple pattern horizontally */
-#if X_BYTE_ORDER == X_BIG_ENDIAN
-# define STIPPLE_SWAP	1<<18
-#else
-# define STIPPLE_SWAP	0
-#endif
-
+/* Direct Fifo Pixmap Writes */
+static void Permedia3WritePixmap(ScrnInfoPtr pScrn, int x, int y, int w, int h,
+				unsigned char *src, int srcwidth, int rop,
+				unsigned int planemask, int transparency_color,
+				int bpp, int depth);
 
 void
 Permedia3InitializeEngine(ScrnInfoPtr pScrn)
@@ -240,28 +240,26 @@ Permedia3InitializeEngine(ScrnInfoPtr pScrn)
 	PM3FBSourceReadMode_ReadEnable,
 	PM3FBSourceReadMode);
     TRACE("Permedia3InitializeEngine : SourceRead");
-#if X_BYTE_ORDER == X_BIG_ENDIAN
-    pGlint->RasterizerSwap = 1;
-#else
-    pGlint->RasterizerSwap = 0;
-#endif
     switch (pScrn->bitsPerPixel) {
 	case 8:
 	    GLINT_SLOW_WRITE_REG(0x2, PixelSize);
 #if X_BYTE_ORDER == X_BIG_ENDIAN
-	    pGlint->RasterizerSwap |= 3<<15;	/* Swap host data */
+	    pGlint->RasterizerSwap = 3<<15;	/* Swap host data */
 #endif
 	    break;
 	case 16:
 	    GLINT_SLOW_WRITE_REG(0x1, PixelSize);
 #if X_BYTE_ORDER == X_BIG_ENDIAN
-	    pGlint->RasterizerSwap |= 2<<15;	/* Swap host data */
+	    pGlint->RasterizerSwap = 2<<15;	/* Swap host data */
 #endif
 	    break;
 	case 32:
 	    GLINT_SLOW_WRITE_REG(0x0, PixelSize);
 	    break;
     }
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    GLINT_SLOW_WRITE_REG(1 | pGlint->RasterizerSwap, RasterizerMode);
+#endif
     TRACE("Permedia3InitializeEngine : PixelSize");
     Permedia3Sync(pScrn);
 
@@ -409,9 +407,17 @@ Permedia3AccelInit(ScreenPtr pScreen)
     infoPtr->SubsequentMono8x8PatternFillRect = 
 	Permedia3SubsequentMono8x8PatternFillRect;
 
+#if USE_DIRECT_FIFO_WRITES
+    /* Direct Fifo Bitmap Writes */
+    infoPtr->WriteBitmapFlags = 0;
+    infoPtr->WriteBitmap = Permedia3WriteBitmap;
+#endif
+
     /* Color Expand Fills */
     infoPtr->CPUToScreenColorExpandFillFlags =
+	/*
 	SYNC_AFTER_COLOR_EXPAND |
+	*/
 	LEFT_EDGE_CLIPPING |
 	BIT_ORDER_IN_BYTE_LSBFIRST |
 	CPU_TRANSFER_BASE_FIXED |
@@ -423,21 +429,31 @@ Permedia3AccelInit(ScreenPtr pScreen)
     infoPtr->SubsequentCPUToScreenColorExpandFill = 
 	    Permedia3SubsequentCPUToScreenColorExpandFill;
 
+#if USE_DIRECT_FIFO_WRITES
+    /* Direct Fifo Images Writes */
+    infoPtr->WritePixmapFlags = 0;
+    infoPtr->WritePixmap = Permedia3WritePixmap;
+#else
     /* Images Writes */
     infoPtr->ImageWriteFlags = 
 	NO_GXCOPY |
+	/*
 	SYNC_AFTER_IMAGE_WRITE |
+	*/
 	LEFT_EDGE_CLIPPING |
+	LEFT_EDGE_CLIPPING_NEGATIVE_X |
 	BIT_ORDER_IN_BYTE_LSBFIRST |
 	CPU_TRANSFER_BASE_FIXED |
 	CPU_TRANSFER_PAD_DWORD;
     infoPtr->ImageWriteBase = pGlint->IOBase + PM3FBSourceData;
-    infoPtr->ImageWriteRange = 8;
+    infoPtr->ImageWriteRange = 4;
     infoPtr->SetupForImageWrite =
 	    Permedia3SetupForImageWrite;
     infoPtr->SubsequentImageWriteRect =
 	    Permedia3SubsequentImageWriteRect;
-    
+#endif
+
+    /* Available Framebuffer Area for XAA. */
     AvailFBArea.x1 = 0;
     AvailFBArea.y1 = 0;
     AvailFBArea.x2 = pScrn->displayWidth;
@@ -634,6 +650,10 @@ Permedia3SetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
 	pGlint->PM3_Config2D |= PM3Config2D_UserScissorEnable;
     */
     pGlint->PM3_AreaStippleMode = 1;
+/* Mirror stipple pattern horizontally */
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    pGlint->PM3_AreaStippleMode |= (1<<18);
+#endif
     pGlint->PM3_AreaStippleMode |= (2<<1);
     pGlint->PM3_AreaStippleMode |= (2<<4);
     if (bg != -1) {
@@ -729,6 +749,73 @@ static void Permedia3SubsequentCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
     TRACE_EXIT("Permedia3SubsequentCPUToScreenColorExpandFill");
 }
 
+/* Direct Fifo BItmap Writes */
+
+/* Be carefull, if we use the gamma, the fifo is only 32 entries deep. */
+#define BitmapWriteRange 120
+#define BitmapWriteBase_Fixed ((CARD32 *)(pGlint->IOBase + BitMaskPattern))
+#define BitmapWriteBase ((CARD32 *)(pGlint->IOBase + OutputFIFO + 4))
+
+static void
+Permedia3WriteBitmap(ScrnInfoPtr pScrn,
+    int x, int y, int w, int h,
+    unsigned char *src,
+    int srcwidth, int skipleft,
+    int fg, int bg, int rop,
+    unsigned int planemask
+)
+{
+    int dwords;
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+    TRACE_ENTER("Permedia3WriteBitmap");
+
+    w += skipleft;
+    x -= skipleft;
+    dwords = (w + 31) >>5;
+
+    /* width of the stuff to copy in 32 bit words */
+    Permedia3SetupForCPUToScreenColorExpandFill(pScrn, fg, bg, rop, planemask);
+    Permedia3SubsequentCPUToScreenColorExpandFill(pScrn, x, y, w, h, skipleft);
+
+    if (dwords > BitmapWriteRange) {
+	while(h--) {
+	    XAAMoveDWORDS_FixedBase(BitmapWriteBase_Fixed,
+		(CARD32*)src, dwords);
+	    src += srcwidth;
+	}
+    } else {
+	/* the src is exatcly as wide as the target rectangle. We copy all
+	 * of it, so no need to separate stuff by scanline */
+	if(srcwidth == (dwords << 5)) {
+	    /* decrement contains the number of lines that can be
+	     * put in the fifo */
+ 	    int decrement = BitmapWriteRange/dwords;
+
+	    while(h > decrement) {
+		GLINT_WAIT(dwords * decrement);
+       		GLINT_WRITE_REG((((dwords * decrement)-1) << 16) | 0xd,
+		    OutputFIFO);
+		XAAMoveDWORDS(BitmapWriteBase, (CARD32*)src, dwords * decrement);
+		src += (srcwidth * decrement);
+		h -= decrement;
+	    }
+	    if(h) {
+		GLINT_WAIT(dwords * h);
+       		GLINT_WRITE_REG((((dwords * h)-1) << 16) | 0xd, OutputFIFO);
+		XAAMoveDWORDS(BitmapWriteBase, (CARD32*)src, dwords * h);
+	    }
+	} else {
+	    while(h--) {
+		GLINT_WAIT(dwords);
+       		GLINT_WRITE_REG(((dwords-1) << 16) | 0xd, OutputFIFO);
+		XAAMoveDWORDS(BitmapWriteBase, (CARD32*)src, dwords);
+		src += srcwidth;
+	    }
+	}
+    }
+    TRACE_EXIT("Permedia3WriteBitmap");
+}
+
 /* Images Writes */
 static void Permedia3SetupForImageWrite(ScrnInfoPtr pScrn, int rop,
 	unsigned int planemask, int trans_color, int bpp, int depth)
@@ -770,3 +857,83 @@ static void Permedia3SubsequentImageWriteRect(ScrnInfoPtr pScrn,
     TRACE_EXIT("Permedia3SubsequentImageWrite");
 }
 
+/* Direct Fifo Images Writes */
+
+/* Be carefull, if we use the gamma, the fifo is only 32 entries deep. */
+#define ImageWriteRange 120
+#define ImageWriteBase_Fixed ((CARD32 *)(pGlint->IOBase + PM3FBSourceData))
+#define ImageWriteBase ((CARD32 *)(pGlint->IOBase + OutputFIFO + 4))
+static void
+Permedia3WritePixmap(
+    ScrnInfoPtr pScrn,
+    int x, int y, int w, int h,
+    unsigned char *src,
+    int srcwidth,
+    int rop,
+    unsigned int planemask,
+    int trans,
+    int bpp, int depth
+)
+{
+    int dwords;
+    int skipleft = (long)src & 0x03L;
+    int Bpp = bpp >> 3;
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+    TRACE_ENTER("Permedia3WritePixmap");
+
+    if (skipleft) {
+	/* Skipleft is either
+	 *   - 0, 1, 2 or 3 in 8 bpp
+	 *   - 0 or 1 in 16 bpp
+	 *   - 0 in 32 bpp
+	 */
+	skipleft /= Bpp;
+
+	x -= skipleft;	     
+	w += skipleft;
+	
+	src = (unsigned char*)((long)src & ~0x03L);     
+    }
+    Permedia3SetupForImageWrite(pScrn, rop, planemask, trans, bpp, depth);
+    Permedia3SubsequentImageWriteRect(pScrn, x, y, w, h, skipleft);
+
+    /* width of the stuff to copy in 32 bit words */
+    dwords = ((w * Bpp) + 3) >> 2;
+
+    if (dwords > ImageWriteRange) {
+	while(h--) {
+	    XAAMoveDWORDS_FixedBase(ImageWriteBase_Fixed, (CARD32*)src, dwords);
+	    src += srcwidth;
+	}
+    } else {
+	/* the src is exatcly as wide as the target rectangle. We copy all
+	 * of it, so no need to separate stuff by scanline */
+	if(srcwidth == (dwords << 2)) {
+	    /* decrement contains the number of lines that can be
+	     * put in the fifo */
+ 	    int decrement = ImageWriteRange/dwords;
+
+	    while(h > decrement) {
+		GLINT_WAIT(dwords * decrement);
+       		GLINT_WRITE_REG((((dwords * decrement)-1) << 16) | 0x155,
+		    OutputFIFO);
+		XAAMoveDWORDS(ImageWriteBase, (CARD32*)src, dwords * decrement);
+		src += (srcwidth * decrement);
+		h -= decrement;
+	    }
+	    if(h) {
+		GLINT_WAIT(dwords * h);
+       		GLINT_WRITE_REG((((dwords * h)-1) << 16) | 0x155, OutputFIFO);
+		XAAMoveDWORDS(ImageWriteBase, (CARD32*)src, dwords * h);
+	    }
+	} else {
+	    while(h--) {
+		GLINT_WAIT(dwords);
+       		GLINT_WRITE_REG(((dwords-1) << 16) | 0x155, OutputFIFO);
+		XAAMoveDWORDS(ImageWriteBase, (CARD32*)src, dwords);
+		src += srcwidth;
+	    }
+	}
+    }
+    TRACE_EXIT("Permedia3WritePixmap");
+}

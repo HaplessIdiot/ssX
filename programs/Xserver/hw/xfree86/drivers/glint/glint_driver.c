@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.97 2000/09/25 19:06:09 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.98 2000/10/17 09:07:04 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -179,10 +179,12 @@ typedef enum {
     OPTION_OVERLAY,
     OPTION_SHADOW_FB,
     OPTION_FBDEV,
-    OPTION_NOWRITEBITMAP
+    OPTION_NOWRITEBITMAP,
+    OPTION_PM3_USE_GAMMA
 } GLINTOpts;
 
 static OptionInfoRec GLINTOptions[] = {
+    { OPTION_PM3_USE_GAMMA,	"UseGamma",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SW_CURSOR,		"SWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_HW_CURSOR,		"HWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_PCI_RETRY,		"PciRetry",	OPTV_BOOLEAN,	{0}, FALSE },
@@ -1205,6 +1207,57 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 
     xf86DrvMsg(pScrn->scrnIndex, from, "Chipset: \"%s\"\n", pScrn->chipset);
 
+    /* SVEN : Claim a Gamma chip if available. */
+    if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA3) {
+	int eIndex = -1;
+	from = X_DEFAULT;
+	pGlint->PM3_UseGamma = FALSE;
+	if (xf86ReturnOptValBool(GLINTOptions, OPTION_PM3_USE_GAMMA, FALSE)) {
+	    from = X_CONFIG;
+	    pGlint->PM3_UseGamma = TRUE;
+	} 
+	xf86DrvMsg(pScrn->scrnIndex, from, "%s to use Gamma with Permedia 3.\n",
+		(pGlint->PM3_UseGamma ? "Trying" : "Not trying"));
+	if (pGlint->PM3_UseGamma) {
+	    pciVideoPtr *checkusedPci;
+	    checkusedPci = xf86GetPciVideoInfo();
+	    while (*checkusedPci != NULL) {
+		/* Is there a free gamma on the same device ? */
+		if (((*checkusedPci)->chipType == PCI_CHIP_GAMMA) &&
+		  (((*checkusedPci)->bus == pGlint->PciInfo->bus)) &&
+		  (((*checkusedPci)->device == pGlint->PciInfo->device)))
+		    if ((eIndex = xf86ClaimPciSlot((*checkusedPci)->bus, 
+			(*checkusedPci)->device, 
+			(*checkusedPci)->func,
+			pScrn->drv, -1,
+			NULL, FALSE)) != -1) break;
+	    }
+	    checkusedPci++;
+	}
+	if (eIndex == -1) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+		"No free Gamma chip was found.\n");
+	    pGlint->PM3_UseGamma = FALSE;
+	} else {
+	    unsigned int r;
+	    /* Add the Gamma to the screen info structure. */
+	    xf86AddEntityToScreen(pScrn,eIndex);
+            pGlint->PM3_GammaPciInfo =
+		xf86GetPciInfoForEntity(eIndex);
+	    pGlint->PM3_GammaPciTag = pciTag(
+		pGlint->PM3_GammaPciInfo->bus,
+		pGlint->PM3_GammaPciInfo->device,
+		pGlint->PM3_GammaPciInfo->func);
+	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+		"Gamma Claimed at BusID PCI:%d:%d:%d.\n",
+		pGlint->PM3_GammaPciInfo->bus,
+		pGlint->PM3_GammaPciInfo->device,
+		pGlint->PM3_GammaPciInfo->func);
+	    /* Let's dump the Gamma registers, at least some of them ... */
+	    pGlint->PM3_GammaIOAddress =
+		pGlint->PM3_GammaPciInfo->memBase[0] & 0xFFFFC000;
+	}
+    }
     if ((pGlint->Chipset == PCI_VENDOR_TI_CHIP_PERMEDIA2) ||
 	(pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA3) ||
 	(pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V) ||
@@ -1261,6 +1314,11 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	 */
 	pGlint->IOAddress = pGlint->pEnt->device->IOBase;
 	from = X_CONFIG;
+#if 0 /* This freezes the box, why ? */
+    } else if ((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA3) &&
+	pGlint->PM3_UseGamma) {
+	pGlint->IOAddress = pGlint->PM3_GammaPciInfo->memBase[0] & 0xFFFFC000;
+#endif
     } else {
 	pGlint->IOAddress = pGlint->PciInfo->memBase[0] & 0xFFFFC000;
     }
@@ -2036,6 +2094,7 @@ GLINTUnmapMem(ScrnInfoPtr pScrn)
     	xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pGlint->FbBase, pGlint->FbMapSize);
     pGlint->FbBase = NULL;
 
+    TRACE_EXIT("GLINTUnmapMem");
     return TRUE;
 }
 
@@ -2308,7 +2367,6 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 	/* Timing problem with PM3 & PM2V chips dont like being blasted */
 	/* This solves the dual head problem but trahses the console font. */
-
 	if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA3) {
 	    /* Graphics Index VGA register don't work in mmio mode
 	     * for the Permedia3 chip, it thrashes the console font. 
@@ -2743,9 +2801,6 @@ GLINTEnterVT(int scrnIndex, int flags)
 	Permedia2VideoEnterVT(pScrn);
     }
 
-    if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA3)
-	pGlint->PM3_VideoControl = GLINT_READ_REG(PMVideoControl);
-
     if (!pGlint->NoAccel) {
     	switch (pGlint->Chipset) {
     	case PCI_VENDOR_TI_CHIP_PERMEDIA2:
@@ -2797,12 +2852,6 @@ GLINTLeaveVT(int scrnIndex, int flags)
     GLINTRestore(pScrn);
     if (pGlint->VGAcore)
     	vgaHWLock(VGAHWPTR(pScrn));
-    
-    if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA3)
-	GLINT_SLOW_WRITE_REG(0, PMVideoControl);
-	/* Don't know why the follwong is wrong, should be ok ?
-	GLINT_SLOW_WRITE_REG(pGlint->PM3_VideoControl, PMVideoControl);
-	*/
 
     if (xf86IsPc98())
        outb(0xfac, 0x00);
@@ -2839,9 +2888,9 @@ GLINTCloseScreen(int scrnIndex, ScreenPtr pScreen)
 
     if (pScrn->vtSema) {
 	if(pGlint->CursorInfoRec)
-    		pGlint->CursorInfoRec->HideCursor(pScrn);
+    	    pGlint->CursorInfoRec->HideCursor(pScrn);
 	if (pGlint->FBDev)
-		fbdevHWRestore(pScrn);
+	    fbdevHWRestore(pScrn);
 	else {	
             GLINTRestore(pScrn);
 	    if (pGlint->VGAcore)
