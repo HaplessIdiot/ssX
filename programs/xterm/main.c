@@ -91,7 +91,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.187 2005/01/14 01:50:03 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.188tsi Exp $ */
 
 /* main.c */
 
@@ -2688,8 +2688,8 @@ set_owner(char *device, uid_t uid, gid_t gid, mode_t mode)
     if (chown(device, uid, gid) < 0) {
 	if (errno != ENOENT
 	    && getuid() == 0) {
-	    fprintf(stderr, "Cannot chown %s to %d,%d: %s\n",
-		    device, uid, gid, strerror(errno));
+	    fprintf(stderr, "Cannot chown %s to %ld,%ld: %s\n",
+		    device, (long)uid, (long)gid, strerror(errno));
 	}
     }
     chmod(device, mode);
