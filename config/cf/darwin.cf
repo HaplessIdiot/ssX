@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.5 2001/01/20 21:08:55 herrb Exp $
+XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.7 2001/03/13 02:36:12 torrey Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -122,6 +122,16 @@ XCOMM $XFree86: xc/config/cf/darwin.cf,v 1.5 2001/01/20 21:08:55 herrb Exp $
 /* include rules to build shared libraries */
 #include <darwinLib.rules>
 
+/*
+ * OpenBSD specific Imake Config files
+ */
+#ifndef LocalConfigFiles
+#define LocalConfigFiles \
+	darwinLib.rules \
+	darwinLib.tmpl
+#endif
+
 /* include all the xfree rules */
 /* I haven't tracked down why this is needed, but it is... */
 #include <xfree86.cf>
+
