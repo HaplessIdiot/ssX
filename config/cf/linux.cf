@@ -4,10 +4,10 @@ XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.142 2000/11/13 23:30:38 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.143 2000/11/14 23:58:30 dawes Exp $
 
 #ifndef LinuxElfDefault
-# define LinuxElfDefault		YES
+# define LinuxElfDefault	YES
 #endif
 
 #ifndef UseElfFormat
@@ -43,7 +43,7 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.142 2000/11/13 23:30:38 daw
 # define OSTeenyVersion		DefaultOSTeenyVersion
 #endif
 
-#ifndef LinuxDistribution 
+#ifndef LinuxDistribution
 # define LinuxDistribution	DefaultLinuxDistribution
 /*
   Add "#define LinuxDistribution Linux<mumble>" to your site.def or host.def.
@@ -86,6 +86,53 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 XCOMM libc:	(LinuxCLibMajorVersion./**/LinuxCLibMinorVersion./**/LinuxCLibTeenyVersion)
 XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 
+#if LinuxDistribution == LinuxDebian
+#define XFree86Devel	YES
+#define HasTk			YES
+#define TkLibDir		/usr/lib
+#define TkIncDir		/usr/include
+#define TkLibName		tk8.3
+#define XF86SetupUsesStaticTk	NO
+#define HasTcl			YES
+#define TclLibDir		/usr/lib
+#define TclIncDir		/usr/include
+#define TclLibName		tcl8.3
+#define XF86SetupUsesStaticTcl	NO
+#define XInputDrivers mouse dynapro elo2300 elographics magellan microtouch \
+	mutouch spaceorb wacom void
+/* un-comment this when it is un-broken */
+/* #define JoystickSupport YES */
+#define InstallXinitConfig	YES
+#define InstallXdmConfig	YES
+#define InstallFSConfig		YES
+#define HasXdmAuth		YES
+#define DebuggableLibraries	YES
+#define ForceNormalLib		YES
+#define BuildSpecsDocs		YES
+#define SpecsDocDirs		GL Xext Xv xterm
+/* right now glide only works on i386 */
+#ifdef i386Architecture
+# define HasGlide2		YES
+# define Glide2IncDir		/usr/include/glide
+# define HasGlide3		YES
+# define Glide3IncDir		/usr/include/glide3
+#endif
+#define XAppLoadDir		EtcX11Directory/app-defaults
+#define XFileSearchPathDefault	Concat4(EtcX11Directory/%L/%T/%N%C,%S:EtcX11Directory/%l/%T/%N%C,%S:EtcX11Directory/%T/%N%C,%S:EtcX11Directory/%L/%T/%N%S:EtcX11Directory/%l/%T/%N%S:EtcX11Directory/%T/%N%S):Concat4($(LIBDIR)/%L/%T/%N%C,%S:$(LIBDIR)/%l/%T/%N%C,%S:$(LIBDIR)/%T/%N%C,%S:$(LIBDIR)/%L/%T/%N%S:$(LIBDIR)/%l/%T/%N%S:$(LIBDIR)/%T/%N%S)
+#define BuilderEMailAddr	"submit@bugs.debian.org"
+#define SharedLibXdmGreet	YES
+#define LinkGLToUsrInclude	NO
+#define LinkGLToUsrLib		NO
+#define SharedLibFont		NO
+#define SharedLibXft		NO
+#define SharedLibXrender	NO
+#define HasZlib			YES
+#define SharedLibGlu		YES
+#define NormalLibGlu		YES
+#define BuildRman		NO
+#define BuildHtmlManPages	NO
+#endif
+
 /*
  * The Linux BinUtils major version.  25 => 2.5.x, which is what is included
  * with Slackware 3.0
@@ -103,9 +150,7 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 # define LinuxLocaleDefines	-DX_LOCALE
 #endif
 
-#if LinuxDistribution == LinuxDebian
-# define LinuxAdditionalIncludes	-I/usr/src/linux/include
-#else
+#ifndef  LinuxAdditionalIncludes
 # define LinuxAdditionalIncludes	/**/
 #endif
 
@@ -150,7 +195,7 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #ifndef HasMTRRSupport
 # ifdef i386Architecture
 /* There is no certain way to know if <asm/mtrr.h> is available,
-   but it made it into kernel 2.2, so... */ 
+   but it made it into kernel 2.2, so... */
 #  if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 2)
 #   define HasMTRRSupport	YES
 #  else
@@ -163,9 +208,9 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 
 #ifndef XF86INT10_BUILD
 # ifdef i386Architecture
-#  define XF86INT10_BUILD X86VM
+#  define XF86INT10_BUILD	X86VM
 # else
-#  define XF86INT10_BUILD X86EMU_GENERIC
+#  define XF86INT10_BUILD	X86EMU_GENERIC
 # endif
 #endif
 
@@ -174,16 +219,18 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #ifndef BuildXF86DRI
 #  if defined(i386Architecture) || defined(ia64Architecture)
 #    if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 2)
-#      define BuildXF86DRI            YES
+#      define BuildXF86DRI	YES
 #    else
-#      define BuildXF86DRI            NO
+#      define BuildXF86DRI	NO
 #    endif
 #  elif defined(SparcArchitecture)
-#    define BuildXF86DRI              YES
+#    define BuildXF86DRI	YES
 #  elif defined(AlphaArchitecture)
-#    define BuildXF86DRI              YES
+#    define BuildXF86DRI	YES
+#  elif defined(PpcArchitecture)
+#    define BuildXF86DRI	YES
 #  else
-#    define BuildXF86DRI              NO
+#    define BuildXF86DRI	NO
 #  endif
 #endif
 
@@ -197,22 +244,22 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #    if OSMajorVersion == 2
        /* Only tested for Linux 2.2.0 through 2.2.12 */
 #      if OSMinorVersion == 2 && OSTeenyVersion <= 12
-#        define BuildXF86DRM        YES
+#        define BuildXF86DRM	YES
 #      else
          /* Only tested for Linux 2.3.0 through 2.3.18 */
 #        if OSMinorVersion == 3 && OSTeenyVersion <= 18
-#          define BuildXF86DRM      YES
+#          define BuildXF86DRM	YES
 #        else
            /* Note: add more conditions when 2.4.x and 2.5.x are released */
-#          define BuildXF86DRM      NO
+#          define BuildXF86DRM	NO
 #        endif
 #      endif
 #    else
        /* Note: add more conditions when 3.0.x and 3.1.x are released */
-#      define BuildXF86DRM          NO
+#      define BuildXF86DRM	NO
 #    endif
 #  else
-#    define BuildXF86DRM            NO
+#    define BuildXF86DRM	NO
 #  endif
 #endif
 
@@ -220,9 +267,9 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #  if defined(i386Architecture) || defined(ia64Architecture)
      /* The AGPGART header file is included in os-support/linux, which
         allows all drivers that depend on AGP to build properly. */
-#    define HasAgpGart              YES
+#    define HasAgpGart	YES
 #  else
-#    define HasAgpGart              NO
+#    define HasAgpGart	NO
 #  endif
 #endif
 
@@ -316,10 +363,10 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 # if UseElfFormat
 #  ifdef MipsArchitecture
 #   ifndef AsCmd
-#     define AsCmd              gcc -c -x assembler-with-cpp
+#     define AsCmd		gcc -c -x assembler-with-cpp
 #   endif
 #   ifndef DoLoadableServer
-#     define DoLoadableServer NO
+#     define DoLoadableServer	NO
 #   endif
 #  endif /* MipsArchitecure */
 #  ifndef CcCmd
@@ -365,7 +412,7 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #  endif /* AlphaArchitecture */
 #  ifdef ia64Architecture
 #   define CcCmd                 gcc
-#   define CplusplusCmd          g++ 
+#   define CplusplusCmd          g++
 #   define AsCmd                 as
 #   define LdCmd                 ld
 #   define AsmDefines            -DUSE_GAS -U__ELF__
@@ -395,11 +442,11 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #   define CplusplusCmd		c++ -b alpha-linux
 #  endif /* AlphaArchitecture */
 #  ifdef ia64Architecture
-#   define CcCmd                 gcc
-#   define CplusplusCmd          g++ 
-#   define AsCmd                 as
-#   define LdCmd                 ld
-#   define AsmDefines            -D__ELF__
+#   define CcCmd		gcc
+#   define CplusplusCmd		g++
+#   define AsCmd		as
+#   define LdCmd		ld
+#   define AsmDefines		-D__ELF__
 #  endif /* ia64Architecture */
 #  ifdef i386Architecture
 #   define CcCmd		gcc -b i486-linux
@@ -451,22 +498,23 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 # define XF86OSCardDrivers	v4l
 #endif
 
+#if UseElfFormat
+# define HasPlugin			YES
+# define VendorHasX11R6_3libXext	YES	/* XC or XFree86 >= 3.3.1 */
+#endif
+
 #ifdef i386Architecture
 # define OptimizedCDebugFlags	DefaultGcc2i386Opt
 # define LinuxMachineDefines	-D__i386__
-# define ServerOSDefines		XFree86ServerOSDefines -DDDXTIME -DPART_NET
+# define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DPART_NET
 # define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
-# if UseElfFormat
-#  define HasPlugin		YES
-#  define VendorHasX11R6_3libXext	YES	/* XC or XFree86 >= 3.3.1 */
-# endif
 #endif /* i386Architecture */
 
 #ifdef s390Architecture
-#define OptimizedCDebugFlags    -O2
-#define LinuxMachineDefines     -D__s390__
-#define ServerOSDefines         XFree86ServerOSDefines -DDDXTIME -DPART_NET
-#define ServerExtraDefines      -DGCCUSESGAS XFree86ServerDefines
+#define OptimizedCDebugFlags	-O2
+#define LinuxMachineDefines	-D__s390__
+#define ServerOSDefines		XFree86ServerOSDefines -DDDXTIME -DPART_NET
+#define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
 #endif /* s390Architecture */
 
 #ifdef AlphaArchitecture
@@ -490,12 +538,8 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #ifdef ia64Architecture
 # define OptimizedCDebugFlags  -O2
 # define LinuxMachineDefines   -D__ia64__
-# define ServerOSDefines       XFree86ServerOSDefines -DDDXTIME -DPART_NET
-# define ServerExtraDefines    -DGCCUSESGAS XFree86ServerDefines -D_XSERVER64
-#if UseElfFormat
-#define HasPlugin              YES
-#define VendorHasX11R6_3libXext        YES     /* XC or XFree86 >= 3.3.1 */
-#endif
+# define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DPART_NET
+# define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines -D_XSERVER64
 #endif /* ia64Architecture */
 
 #ifdef Mc68020Architecture
@@ -533,7 +577,7 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 # define LinuxMachineDefines	-D__mips__
 # define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DPART_NET
 # define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
-#endif 
+#endif
 
 #ifndef StandardDefines
 # define StandardDefines	-Dlinux LinuxMachineDefines LinuxSourceDefines
@@ -583,7 +627,7 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #endif
 
 #ifndef LinkGLToUsrLib
-# define LinkGLToUsrLib	YES
+# define LinkGLToUsrLib		YES
 #endif
 # ifndef LinkGLToUsrInclude
 # define LinkGLToUsrInclude	YES
@@ -601,7 +645,7 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define TtClientDepLibs $(DEPTTLIB) $(DEPXTOOLLIB) $(DEPXLIB)
 
 #ifdef S390Architecture
-# define HasXServer             NO
+# define HasXServer	NO
 #endif
 
 #include <lnxLib.rules>

@@ -1,5 +1,7 @@
 # $XConsortium: Xaccess,v 1.5 91/08/26 11:52:51 rws Exp $
 #
+# $XFree86$
+#
 # Access control file for XDMCP connections
 #
 # To control Direct and Broadcast access:
@@ -37,7 +39,7 @@
 # right hand sides can match.
 #
 
-*					#any host can get a login window
+#*					#any host can get a login window
 
 #
 # To hardwire a specific terminal to a specific host, you can
@@ -55,7 +57,7 @@
 # so this may not work in all environments.
 #
 
-*		CHOOSER BROADCAST	#any indirect host can get a chooser
+#*		CHOOSER BROADCAST	#any indirect host can get a chooser
 
 #
 # If you'd prefer to configure the set of hosts each terminal sees,

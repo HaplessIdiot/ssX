@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.75 2000/10/23 21:16:45 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.76 2000/11/02 22:15:46 robin Exp $ */
 /*
  * PCI Probe
  *
@@ -1202,7 +1202,7 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_QUADRO2MXR,	"GeForce2 MXR",0},
 				{PCI_CHIP_GEFORCE2GTS,	"GeForce2 GTS",0},
 				{PCI_CHIP_GEFORCE2GTS_1,"GeForce2 GTS (rev 1)",0},
-				{PCI_CHIP_GEFORCE2ULTRA,"GeForce2 ultra",0},
+				{PCI_CHIP_GEFORCE2ULTRA,"GeForce2 Ultra",0},
 				{PCI_CHIP_QUADRO2PRO,	"Quadro 2 Pro",0},
 				{0x0000,		NULL,0}}},
 #ifdef VENDOR_INCLUDE_NONVIDEO

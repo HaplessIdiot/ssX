@@ -1,10 +1,17 @@
 ! $XConsortium: Xresources /main/8 1996/11/11 09:24:46 swick $
-! $XFree86$
+! $XFree86: xc/programs/xdm/config/Xres.cpp,v 1.1 1999/03/14 03:22:24 dawes Exp $
 #define BS \ /* cpp can be trickier than m4 */
 #define NLBS \n\ /* don't remove these comments */
 xlogin*login.translations: #override BS
 	Ctrl<Key>R: abort-display()NLBS
 	<Key>F1: set-session-argument(failsafe) finish-field()NLBS
+	<Key>Delete: delete-character()NLBS
+	<Key>Left: move-backward-character()NLBS
+	<Key>Right: move-forward-character()NLBS
+	<Key>Home: move-to-begining()NLBS
+	<Key>End: move-to-end()NLBS\
+	Ctrl<Key>KP_Enter: set-session-argument(failsafe) finish-field()NLBS
+	Key>KP_Enter: set-session-argument() finish-field()NLBS
 	Ctrl<Key>Return: set-session-argument(failsafe) finish-field()NLBS
 	<Key>Return: set-session-argument() finish-field()
 #ifndef XPM
@@ -76,6 +83,6 @@ Chooser*geometry:		700x500+300+200
 Chooser*allowShellResize:	false
 Chooser*viewport.forceBars:	true
 Chooser*label.font:		*-new century schoolbook-bold-i-normal-*-240-*
-Chooser*label.label:		XDMCP Host Menu  from CLIENTHOST
+Chooser*label.label:		XDMCP Host Menu from CLIENTHOST
 Chooser*list.font:		-*-*-medium-r-normal-*-*-230-*-*-c-*-iso8859-1
 Chooser*Command.font:		*-new century schoolbook-bold-r-normal-*-180-*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.28 2000/02/12 03:39:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.29 2000/06/16 01:50:19 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -256,6 +256,7 @@ main(argc, argv, envp)
     char	*envp[];
 {
     int		i, j, k, error;
+    char	*xauthfile;
     HWEventQueueType	alwaysCheckForInput[2];
 
     /* Notice if we're restarted.  Probably this is because we jumped through
@@ -279,6 +280,10 @@ main(argc, argv, envp)
     argcGlobal = argc;
     argvGlobal = argv;
     display = "0";
+    /* prep X authority file from environment; this can be overriden by a
+     * command line option */
+    xauthfile = getenv("XAUTHORITY");
+    if (xauthfile) InitAuthorization (xauthfile);
     ProcessCommandLine(argc, argv);
 
     alwaysCheckForInput[0] = 0;
@@ -286,7 +291,7 @@ main(argc, argv, envp)
     while(1)
     {
 	serverGeneration++;
-        ScreenSaverTime = defaultScreenSaverTime;
+	ScreenSaverTime = defaultScreenSaverTime;
 	ScreenSaverInterval = defaultScreenSaverInterval;
 	ScreenSaverBlanking = defaultScreenSaverBlanking;
 	ScreenSaverAllowExposures = defaultScreenSaverAllowExposures;
