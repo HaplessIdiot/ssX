@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.61 1998/12/13 05:32:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.62 1998/12/13 10:33:41 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -84,6 +84,7 @@
 #include "cfb16.h"
 #include "cfb24.h"
 #include "cfb32.h"
+#include "cfb8_32.h"
 
 /* These need to be checked */
 #if 0
@@ -99,7 +100,6 @@
 #include "mga_macros.h"
 
 #include "xaa.h"
-#include "xf86_8plus24.h"
 #include "xf86cmap.h"
 
 
@@ -946,17 +946,18 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     }
     if (xf86IsOptionSet(MGAOptions, OPTION_8_PLUS_24)) {
 	if(pScrn->bitsPerPixel == 32) {
-	    /* move the depth 8 format before the depth 24 */
-	    int num = pScrn->numFormats;
-	    pScrn->formats[num].depth = pScrn->formats[num - 1].depth;
-	    pScrn->formats[num].bitsPerPixel =
-				 pScrn->formats[num - 1].bitsPerPixel;
-	    pScrn->formats[num].scanlinePad = 
-				pScrn->formats[num - 1].scanlinePad;
-	    pScrn->formats[num - 1].depth = 8;
-	    pScrn->formats[num - 1].bitsPerPixel = 32;
-	    pScrn->formats[num - 1].scanlinePad = BITMAP_SCANLINE_PAD;
-	    pScrn->numFormats++;
+#if 1
+            int num = pScrn->numFormats;
+            pScrn->formats[num].depth = pScrn->formats[num - 1].depth;
+            pScrn->formats[num].bitsPerPixel =
+                                 pScrn->formats[num - 1].bitsPerPixel;
+            pScrn->formats[num].scanlinePad = 
+                                pScrn->formats[num - 1].scanlinePad;
+            pScrn->formats[num - 1].depth = 8;
+            pScrn->formats[num - 1].bitsPerPixel = 8;
+            pScrn->formats[num - 1].scanlinePad = BITMAP_SCANLINE_PAD;
+            pScrn->numFormats++;
+#endif
 	    pMga->Overlay8Plus24 = TRUE;
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
 				"PseudoColor overlay enabled\n");
@@ -1759,16 +1760,10 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     /* All MGA support DirectColor and can do overlays in 32bpp */
     if(pMga->Overlay8Plus24 && (pScrn->bitsPerPixel == 32)) {
-	/* We force the defaultVisual here just to get things to
-	   work.  This should a user settable option with PseudoColor
-	   the default.  Both work fine but applications like a
-	   PseudoColor root better */
-	pScrn->defaultVisual = PseudoColor;
 	if (!miSetVisualTypes(8, PseudoColorMask | GrayScaleMask,
-			      pScrn->rgbBits, pScrn->defaultVisual))
+			      pScrn->rgbBits, PseudoColor))
 		return FALSE;
-	if (!miSetVisualTypes(24, TrueColorMask, 
-				pScrn->rgbBits, pScrn->defaultVisual))
+	if (!miSetVisualTypes(24, TrueColorMask, pScrn->rgbBits, TrueColor))
 		return FALSE;
     } else {
 	if (!miSetVisualTypes(pScrn->depth,
@@ -1803,7 +1798,13 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			pScrn->displayWidth);
 	break;
     case 32:
-	ret = cfb32ScreenInit(pScreen, pMga->FbStart,
+	if(pMga->Overlay8Plus24)
+	    ret = cfb8_32ScreenInit(pScreen, pMga->FbStart,
+			pScrn->virtualX, pScrn->virtualY,
+			pScrn->xDpi, pScrn->yDpi,
+			pScrn->displayWidth, TRANSPARENCY_KEY);
+	else 
+	    ret = cfb32ScreenInit(pScreen, pMga->FbStart,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			pScrn->displayWidth);
@@ -1840,10 +1841,10 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	MGAStormAccelInit(pScreen);
 
     miInitializeBackingStore(pScreen);
+    xf86SetBackingStore(pScreen);
 
     if(pMga->Overlay8Plus24) {
-	if(!xf86Overlay8Plus24Init(pScreen, TRANSPARENCY_KEY, KEY_COLOR, FALSE, 
-		 pMga->NoAccel ? NULL : &XAAOverlayFBfuncs))
+	if(!xf86Overlay8Plus32Init(pScreen))
 	    return FALSE;
     }
 

@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.34 1998/12/13 10:33:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.35 1998/12/29 13:00:50 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -919,6 +919,23 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     outb(vgaIOBase + 4, InterfaceSel);
 
     switch (pTrident->Chipset) {
+	case PCI_CHIP_9440:
+	    pTrident->HWCursor = FALSE;
+	    chipset = "TGUI9440";
+	    pTrident->Chipset = TGUI9440AGi;
+	    ramtype = "Standard DRAM";
+	    if (pTrident->UsePCIRetry)
+	    	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry not supported, disabling\n");
+	    pTrident->UsePCIRetry = FALSE; /* Not Supported */
+	    break;
+	case PCI_CHIP_9320:
+	    chipset = "Cyber9320";
+	    pTrident->Chipset = CYBER9320;
+	    ramtype = "Standard DRAM";
+	    if (pTrident->UsePCIRetry)
+	    	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry not supported, disabling\n");
+	    pTrident->UsePCIRetry = FALSE; /* Not Supported */
+	    break;
 	case PCI_CHIP_9660:
     	    if ((inb(vgaIOBase + 5) & 0x0C) == 0x04)
 		ramtype = "EDO Ram";
@@ -1499,7 +1516,7 @@ TRIDENTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     vgaReg = &hwp->ModeReg;
     tridentReg = &pTrident->ModeReg;
 
-    vgaHWRestore(pScrn, vgaReg, VGA_SR_MODE /*| VGA_SR_CMAP*/);
+    vgaHWRestore(pScrn, vgaReg, VGA_SR_MODE | VGA_SR_CMAP);
 
     TridentRestore(pScrn, tridentReg);
 
@@ -1723,6 +1740,7 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     }
 
     miInitializeBackingStore(pScreen);
+    xf86SetBackingStore(pScreen);
 
     /* Initialise cursor functions */
     miDCInitialize (pScreen, xf86GetPointerScreenFuncs());
@@ -1734,8 +1752,7 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (!miCreateDefColormap(pScreen))
 	return FALSE;
 
-    if (!RamDacHandleColormaps(pScreen, 256, pScrn->rgbBits,
-	CMAP_RELOAD_ON_MODE_SWITCH | CMAP_PALETTED_TRUECOLOR))
+    if (!vgaHWHandleColormaps(pScreen))
 	return FALSE;
 
 #ifdef DPMSExtension

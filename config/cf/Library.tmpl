@@ -19,7 +19,7 @@ XCOMM $TOG: Library.tmpl /main/44 1997/04/28 11:47:53 kaleb $
 
 
 
-XCOMM $XFree86: xc/config/cf/Library.tmpl,v 3.6 1997/06/11 12:24:17 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Library.tmpl,v 3.7 1998/12/20 11:56:17 dawes Exp $
 
 #ifndef LibraryCplusplusOptions
 # if DoSharedLib && defined(SharedLibraryCplusplusOptions)
@@ -159,6 +159,10 @@ LIB_MT_DEFINES = LibraryMTDefines
 
 #ifndef DoExtraLib
 #define DoExtraLib NO
+#endif
+
+#ifndef LibInstallBuild
+#define LibInstallBuild NO
 #endif
 
 #if DoExtraLib && defined(ExtraLibRules)
@@ -345,7 +349,7 @@ MakeStringsDependency
 LibraryObjectRule()
 
 # undef _LinkBuildLibrary
-# if !defined(LibInstall) || LibInstall
+# if !defined(LibInstall) || LibInstall || LibInstallBuild
 #  define _LinkBuildLibrary(lib) LinkBuildLibrary(lib)
 # else
 #  define _LinkBuildLibrary(lib) $(_NULLCMD_)

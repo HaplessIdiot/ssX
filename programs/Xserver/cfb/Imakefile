@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/71 1997/11/17 10:00:11 msr $
-XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile,v 3.17 1998/07/25 09:06:36 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile,v 3.18 1998/10/04 09:37:33 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -255,7 +255,7 @@ stipsprcte32.o: stipsprcte32.s
 #endif
 #endif
 
-InstallLibraryModule($(CFBNAME),$(MODULEDIR))
+InstallLibraryModule($(CFBNAME),$(MODULEDIR),.)
 
 InstallLinkKitLibrary($(CFBNAME),$(LINKKITDIR)/lib)
 

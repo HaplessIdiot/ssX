@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgamodule.c,v 1.2 1998/07/25 16:59:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgamodule.c,v 1.3 1998/12/13 10:33:52 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -57,7 +57,8 @@ static pointer
 xf4bppSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 {
     /* This module requires xf1bpp for bitmap support */
-    return LoadSubModule(module, "xf1bpp", NULL, NULL, errmaj, errmin);
+    return LoadSubModule(module, "xf1bpp", NULL, NULL, NULL, NULL,
+			 errmaj, errmin);
 }
 
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.30 1998/12/13 05:32:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.31 1998/12/13 10:33:50 dawes Exp $ */
 
 /*
  *
@@ -23,6 +23,8 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+/* This file is best viewed with tab stops set to 4 spaces */
+
 #include "os.h"
 /* For stat() and related stuff */
 #define NO_OSLIB_PROTOTYPES
@@ -39,6 +41,11 @@
 #include "xf86Xinput.h"
 #include "loader.h"
 #include "xf86Optrec.h"
+
+#include <sys/types.h>
+#include <regex.h>
+#include <dirent.h>
+#include <limits.h>
 
 extern int check_unresolved_sema;
 
@@ -57,10 +64,16 @@ typedef Bool (*GlxInitVisualsType) (
 GlxInitVisualsType GlxInitVisualsPtr;
 #endif
 
+typedef struct _pattern {
+	const char *	pattern;
+	regex_t			rex;
+} PatternRec, *PatternPtr;
+
 /* Prototypes for static functions */
-static char *FindModule (const char *, const char *);
+static char *FindModule (const char *, const char *, const char **, PatternPtr);
 static void CheckVersion (const char *, XF86ModuleVersionInfo *);
 static void UnloadModuleOrDriver (ModuleDescPtr mod);
+static char *LoaderGetCanonicalName(const char *, PatternPtr);
 
 ModuleVersions LoaderVersionInfo = {
 	XF86_VERSION_CURRENT,
@@ -79,6 +92,388 @@ LoaderFixups (void)
 
 	LoaderResolveSymbols ();
 }
+
+static void
+FreeStringList(char **paths)
+{
+	char **p;
+
+	if (!paths)
+		return;
+
+	for (p = paths; *p; p++)
+		xfree(*p);
+
+	xfree(paths);
+}
+
+/*
+ * Convert a comma-separated path into a NULL-terminated array of path
+ * elements, rejecting any that are not full absolute paths, and appending
+ * a '/' when it isn't already present.
+ */
+static char **
+InitPathList(const char *path)
+{
+	char *fullpath = NULL;
+	char *elem = NULL;
+	char **list = NULL, **save = NULL;
+	int len;
+	int addslash;
+	int n = 0;
+
+	fullpath = xstrdup(path);
+	if (!fullpath)
+		return NULL;
+	elem = strtok(fullpath, ",");
+	while (elem) {
+		/* Only allow fully specified paths */
+#ifndef __EMX__
+		if (*elem == '/')
+#else
+		if (*elem == '/' || (strlen(elem) > 2 && isalpha(elem[0]) &&
+							  elem[1] == ':' && elem[2] == '/'))
+#endif
+		{
+			len = strlen(elem);
+			addslash = (elem[len - 1] != '/');
+			if (addslash)
+				len++;
+			save = list;
+			list = xrealloc(list, (n + 2) * sizeof(char *));
+			if (!list) {
+				if (save) {
+					save[n] = NULL;
+					FreeStringList(save);
+				}
+				xfree(fullpath);
+				return NULL;
+			}
+			list[n] = xalloc(len + 1);
+			if (!list[n]) {
+				FreeStringList(list);
+				xfree(fullpath);
+				return NULL;
+			}
+			strcpy(list[n], elem);
+			if (addslash) {
+				list[n][len - 1] = '/';
+				list[n][len] = '\0';
+			}
+			n++;
+		}
+		elem = strtok(NULL, ",");
+	}
+	list[n] = NULL;
+	return list;
+}
+
+#ifndef OLD_FINDMODULE
+
+/* Standard set of module subdirectories to search, in order of preference */
+static const char *stdSubdirs[] =
+{
+	"",
+	"drivers/",
+	"input/",
+	"extensions/",
+	"fonts/",
+	"internal/",
+	NULL
+};
+
+/*
+ * Standard set of module name patterns to check, in order of preference
+ * These are regular expressions (suitable for use with POSIX regex(3)).
+ */
+static PatternRec stdPatterns[] = {
+	{ "^lib(.*)\\.so$", },
+	{ "^lib(.*)\\.a$", },
+	{ "(.*)_drv\\.so$", },
+	{ "(.*)_drv\\.o$", },
+	{ "(.*)\\.so$", },
+	{ "(.*)\\.a$", },
+	{ "(.*)\\.o$", },
+	{ NULL, }
+};
+
+static PatternPtr
+InitPatterns(const char **patternlist)
+{
+	char errmsg[80];
+	int i, e;
+	PatternPtr patterns = NULL;
+	PatternPtr p = NULL;
+	static int firstTime = 1;
+	const char **s;
+
+	if (firstTime) {
+		/* precompile stdPatterns */
+		firstTime = 0;
+		for (p = stdPatterns; p->pattern; p++)
+			if ((e = regcomp(&p->rex, p->pattern, REG_EXTENDED)) != 0) {
+				regerror(e, &p->rex, errmsg, sizeof(errmsg));
+				FatalError("InitPatterns: regcomp error for `%s': %s\n",
+							p->pattern, errmsg);
+			}
+	}
+
+	if (patternlist) {
+		for (i = 0, s = patternlist; *s; i++, s++)
+			if (*s == DEFAULT_LIST)
+				i += sizeof(stdPatterns) / sizeof(stdPatterns[0]) - 1 - 1;
+		patterns = xalloc((i + 1) * sizeof(PatternRec));
+		if (!patterns) {
+			return NULL;
+		}
+		for (i = 0, s = patternlist; *s; i++, s++)
+			if (*s != DEFAULT_LIST) {
+				p = patterns + i;
+				p->pattern = *s;
+				if ((e = regcomp(&p->rex, p->pattern, REG_EXTENDED)) != 0) {
+					regerror(e, &p->rex, errmsg, sizeof(errmsg));
+					ErrorF("InitPatterns: regcomp error for `%s': %s\n",
+							p->pattern, errmsg);
+					i--;
+				}
+			} else {
+				for (p = stdPatterns; p->pattern; p++, i++)
+					patterns[i] = *p;
+				if (p != stdPatterns)
+					i--;
+			}
+		patterns[i].pattern = NULL;
+	} else
+		patterns = stdPatterns;
+	return patterns;
+}
+
+static void
+FreePatterns(PatternPtr patterns)
+{
+	if (patterns && patterns != stdPatterns)
+		xfree(patterns);
+}
+
+static const char **
+InitSubdirs(const char **subdirlist)
+{
+	int i, j;
+	const char **subdirs = NULL;
+	const char **s;
+
+	if (subdirlist) {
+		/* Count number of entries */
+		for (i = 0, s = subdirlist; *s; i++, s++)
+			if (*s == DEFAULT_LIST)
+				i += sizeof(stdSubdirs) / sizeof(stdSubdirs[0]) - 1 - 1;
+		subdirs = xalloc((i + 1) * sizeof(char *));
+		if (!subdirs)
+			return NULL;
+		for (i = 0, s = subdirlist; *s; i++, s++)
+			if (*s != DEFAULT_LIST)
+				subdirs[i] = *s;
+			else {
+				for (j = 0; stdSubdirs[j]; j++, i++)
+					subdirs[i] = stdSubdirs[j];
+				if (j)
+					i--;
+			}
+		subdirs[i] = NULL;
+	} else
+		subdirs = stdSubdirs;
+	return subdirs;
+}
+
+static void
+FreeSubdirs(const char **subdirs)
+{
+	if (subdirs && subdirs != stdSubdirs)
+		xfree(subdirs);
+}
+
+static char *
+FindModule (const char *module, const char *dir, const char **subdirlist,
+			PatternPtr patterns)
+{
+	char buf[PATH_MAX + 1];
+	char *dirpath = NULL;
+	char *name = NULL;
+	struct stat stat_buf;
+	int len, dirlen;
+	char *fp;
+	DIR *d;
+	const char **subdirs = NULL;
+	PatternPtr p = NULL;
+	const char **s;
+	struct dirent *dp;
+	regmatch_t match[2];
+
+	subdirs = InitSubdirs(subdirlist);
+	if (!subdirs)
+		return NULL;
+
+#ifndef __EMX__
+	dirpath = (char *)dir;
+#else
+	dirpath = xalloc(strlen(dir) + 10);
+	strcpy(dirpath, (char *) __XOS2RedirRoot (dir));
+#endif
+	if (strlen(dirpath) > PATH_MAX)
+		return NULL;
+
+	for (s = subdirs; *s; s++) {
+		if ((dirlen = strlen(dir) + strlen(*s)) > PATH_MAX)
+			continue;
+		strcpy(buf, dirpath);
+		strcat(buf, *s);
+		fp = buf + dirlen;
+		if (stat(buf, &stat_buf) == 0 && S_ISDIR(stat_buf.st_mode) &&
+			(d = opendir(buf))) {
+			if (buf[dirlen - 1] != '/') {
+				buf[dirlen++] = '/';
+				fp++;
+			}
+			while ((dp = readdir(d))) {
+				if (dirlen + strlen(dp->d_name) + 1 > PATH_MAX)
+					continue;
+				strcpy(fp, dp->d_name);
+				if (!(stat(buf, &stat_buf) == 0 && S_ISREG(stat_buf.st_mode)))
+					continue;
+				for (p = patterns; p->pattern; p++) {
+					if (regexec(&p->rex, dp->d_name, 2, match, 0) == 0 &&
+						match[1].rm_so != -1) {
+						len = match[1].rm_eo - match[1].rm_so;
+						if (len == strlen(module) &&
+							strncmp(module, dp->d_name + match[1].rm_so, len) == 0) {
+							name = buf;
+							break;
+						}
+					}
+				}
+				if (name)
+					break;
+			}
+			closedir(d);
+			if (name)
+				break;
+		}
+	}
+	FreeSubdirs(subdirs);
+	if (dirpath != dir)
+		xfree(dirpath);
+
+	if (name) {
+		return xstrdup(name);
+	}
+	return NULL;
+}
+
+char **
+LoaderListDirs(const char *path, const char **subdirlist,
+				const char **patternlist)
+{
+	char buf[PATH_MAX + 1];
+	char **pathlist;
+	char **elem;
+	const char **subdirs;
+	const char **s;
+	PatternPtr patterns;
+	PatternPtr p;
+	DIR *d;
+	struct dirent *dp;
+	regmatch_t match[2];
+	struct stat stat_buf;
+	int len, dirlen;
+	char *fp;
+	char **listing = NULL;
+	char **save;
+	int n = 0;
+
+	if (!path)
+		return NULL;
+
+	if (!(pathlist = InitPathList(path)))
+		return NULL;
+	if (!(subdirs = InitSubdirs(subdirlist))) {
+		FreeStringList(pathlist);
+		return NULL;
+	}
+	if (!(patterns = InitPatterns(patternlist))) {
+		FreeStringList(pathlist);
+		FreeSubdirs(subdirs);
+		return NULL;
+	}
+
+	for (elem = pathlist; *elem; elem++) {
+		for (s = subdirs; *s; s++) {
+			if ((dirlen = strlen(*elem) + strlen(*s)) > PATH_MAX)
+				continue;
+			strcpy(buf, *elem);
+			strcat(buf, *s);
+			fp = buf + dirlen;
+			if (stat(buf, &stat_buf) == 0 && S_ISDIR(stat_buf.st_mode) &&
+				(d = opendir(buf))) {
+				if (buf[dirlen - 1] != '/') {
+					buf[dirlen++] = '/';
+					fp++;
+				}
+				while ((dp = readdir(d))) {
+					if (dirlen + strlen(dp->d_name) > PATH_MAX)
+						continue;
+					strcpy(fp, dp->d_name);
+					if (!(stat(buf, &stat_buf) == 0 &&
+						  S_ISREG(stat_buf.st_mode)))
+						continue;
+					for (p = patterns; p->pattern; p++) {
+						if (regexec(&p->rex, dp->d_name, 2, match, 0) == 0 &&
+							match[1].rm_so != -1) {
+							len = match[1].rm_eo - match[1].rm_so;
+							save = listing;
+							listing = xrealloc(listing,
+											   (n + 2) * sizeof(char *));
+							if (!listing) {
+								if (save) {
+									save[n] = NULL;
+									FreeStringList(save);
+								}
+								FreeStringList(pathlist);
+								FreeSubdirs(subdirs);
+								FreePatterns(patterns);
+								return NULL;
+							}
+							listing[n] = xalloc(len + 1);
+							if (!listing[n]) {
+								FreeStringList(listing);
+								FreeStringList(pathlist);
+								FreeSubdirs(subdirs);
+								FreePatterns(patterns);
+								return NULL;
+							}
+							strncpy(listing[n], dp->d_name + match[1].rm_so,
+									len);
+							listing[n][len] = '\0';
+							n++;
+							break;
+						}
+					}
+				}
+				closedir(d);
+			}
+		}
+	}
+	if (listing)
+		listing[n] = NULL;
+	return listing;
+}
+
+void
+LoaderFreeDirList(char **list)
+{
+	FreeStringList(list);
+}
+
+#else
 
 static char *subdirs[] =
 {
@@ -104,9 +499,8 @@ static char *suffixes[] =
 };
 
 static char *
-FindModule (module, dir)
-const char *module;
-const char *dir;
+FindModule (const char *module, const char *dir, const char **subdirlist,
+			const char **patternlist)
 {
 	char *buf;
 	int d, p, s;
@@ -137,6 +531,7 @@ const char *dir;
 	xfree (buf);
 	return (NULL);
 }
+#endif
 
 static void
 CheckVersion (const char *module, XF86ModuleVersionInfo *data)
@@ -231,6 +626,7 @@ CheckVersion (const char *module, XF86ModuleVersionInfo *data)
 
 ModuleDescPtr
 LoadSubModule(ModuleDescPtr parent, const char *module, const char *path,
+	      const char **subdirlist, const char **patternlist,
 	      pointer options, int *errmaj, int *errmin)
 {
 	ModuleDescPtr submod;
@@ -240,7 +636,8 @@ LoadSubModule(ModuleDescPtr parent, const char *module, const char *path,
 	if (path == NULL)
 		path = parent->path;
 
-	submod = LoadModule (module, path, options, errmaj, errmin);
+	submod = LoadModule (module, path, subdirlist, patternlist, options,
+						 errmaj, errmin);
 	if (submod)
 		parent->child = AddSibling (parent->child, submod);
 	return submod;
@@ -288,6 +685,7 @@ DuplicateModule(ModuleDescPtr mod)
 	if (LoaderHandleOpen(mod->handle) == -1)
 		return NULL;
 
+	ret->filename = xstrdup(mod->filename);
 	ret->identifier = mod->identifier;
 	ret->client_id = mod->client_id;
 	ret->in_use = mod->in_use;
@@ -302,36 +700,77 @@ DuplicateModule(ModuleDescPtr mod)
 	return ret;
 }
 
+/*
+ * LoadModule: load a module
+ *
+ * module      	The module name.  Normally this is not a filename but the
+ *              module's "canonical name.  A full pathname is, however,
+ *              also accepted.
+ * path         A comma separated list of module directories.  This argument
+ *              is mandatory.
+ * subdirlist   A NULL terminated list of subdirectories to search.  When
+ *              NULL, the default "stdSubdirs" list is used.  The default
+ *              list is also substituted for entries with value DEFAULT_LIST.
+ * patternlist  A NULL terminated list of regular expressions used to find
+ *              module filenames.  Each regex should contain exactly one
+ *              subexpression that corresponds to the canonical module name.
+ *              When NULL, the default "stdPatterns" list is used.  The
+ *              default list ia slo substituted for entries with value
+ *              DEFAULT_LIST.
+ * options      A NULL terminated list of Options that are passed to the
+ *              module's SetupProc function.
+ * errmaj       Major error return.
+ * errmin       Minor error return.
+ *
+ */
+
 ModuleDescPtr
-LoadModule (const char *module, const char *path, pointer options,
-	    int *errmaj, int *errmin)
+LoadModule (const char *module, const char *path, const char **subdirlist,
+			const char **patternlist, pointer options,
+			int *errmaj, int *errmin)
 {
 	ModuleInitProc initfunc = NULL;
-	char *dir_elem = NULL;
+	char **pathlist = NULL;
 	char *found = NULL;
-	char *keep = NULL;
 	char *name = NULL;
-	char *path_elem = NULL;
+	char **path_elem = NULL;
 	char *p = NULL;
 	ModuleDescPtr ret = NULL;
 	int wasLoaded = 0;
+	PatternPtr patterns = NULL;
+	int noncanonical = 0;
+	char *m = NULL;
 
-	xf86MsgVerb(X_INFO, 3, "LoadModule: \"%s\"\n", module);
+	xf86MsgVerb(X_INFO, 3, "LoadModule: \"%s\"", module);
 
-	name = LoaderGetCanonicalName(module);
+	if (!path)
+		goto LoadModule_fail;
+
+	patterns = InitPatterns(patternlist);
+	name = LoaderGetCanonicalName(module, patterns);
+	noncanonical = (name && strcmp(module, name) != 0);
+	if (noncanonical)
+	{
+		xf86ErrorFVerb(3, " (%s)\n", name);
+		xf86MsgVerb(X_WARNING, 1,
+					"LoadModule: given non-canonical module name \"%s\"\n",
+					module);
+		m = name;
+	}
+	else
+	{
+		xf86ErrorFVerb(3, "\n");
+		m = (char *)module;
+	}
 	if (!name)
 		goto LoadModule_fail;
-	ret = NewModuleDesc (module);
+	ret = NewModuleDesc (name);
 	if (!ret)
 		goto LoadModule_fail;
-	keep = dir_elem = (char *) xcalloc (1, strlen (path) + 2);
-	if (!keep)
+
+	pathlist = InitPathList(path);
+	if (!pathlist)
 		goto LoadModule_fail;
-	path_elem = (char *) xcalloc (1, strlen (path) + 2);
-	if (!path_elem)
-		goto LoadModule_fail;
-	*dir_elem = ',';
-	strcpy (dir_elem + 1, path);
 
 	/* 
 	 * if the module name is not a full pathname, we need to
@@ -339,34 +778,26 @@ LoadModule (const char *module, const char *path, pointer options,
 	 */
 #ifndef __EMX__
 	if (module[0] == '/')
-		found = (char *) module;
+		found = xstrdup(module);
 #else
 	/* accept a drive name here */
 	if (isalpha (module[0]) && module[1] == ':' && module[2] == '/')
-		found = (char *) module;
+		found = xstrdup(module);
 #endif
-	dir_elem = strtok (dir_elem, ",");
-	while ((!found) && (dir_elem != NULL))
+	path_elem = pathlist;
+	while (!found && *path_elem != NULL)
 	{
-		/* 
-		 * only allow fully specified path 
+		found = FindModule (m, *path_elem, NULL, patterns);
+		path_elem++;
+		/*
+		 * When the module name isn't the canonical name, search for the
+		 * former if no match was found for the latter.
 		 */
-#ifndef __EMX__
-		if (*dir_elem == '/')
-#else
-		if (*dir_elem == '/' ||
-		(isalpha (dir_elem[0]) && dir_elem[1] == ':' && dir_elem[2] == '/'))
-#endif
+		if (!*path_elem && m == name)
 		{
-			strcpy (path_elem, dir_elem);
-			if (dir_elem[strlen (dir_elem) - 1] != '/')
-			{
-				path_elem[strlen (dir_elem)] = '/';
-				path_elem[strlen (dir_elem) + 1] = '\0';
-			}
-			found = FindModule (module, path_elem);
+			path_elem = pathlist;
+			m = (char *)module;
 		}
-		dir_elem = strtok (NULL, ",");
 	}
 
 	/* 
@@ -378,10 +809,11 @@ LoadModule (const char *module, const char *path, pointer options,
 				module);
 		goto LoadModule_fail;
 	}
-	ret->handle = LoaderOpen (found, 0, errmaj, errmin, &wasLoaded);
+	ret->handle = LoaderOpen (found, name, 0, errmaj, errmin, &wasLoaded);
 	if (ret->handle < 0)
 		goto LoadModule_fail;
 
+	ret->filename = xstrdup(found);
 	/* 
 	 * now check if there's the special function
 	 * <modulename>ModuleInit
@@ -455,11 +887,11 @@ LoadModule (const char *module, const char *path, pointer options,
 	ret = NULL;
 
   LoadModule_exit:
+	FreeStringList(pathlist);
+	FreePatterns(patterns);
 	TestFree (found);
 	TestFree (name);
 	TestFree (p);
-	TestFree (path_elem);
-	TestFree (keep);
 	return ret;
 }
 
@@ -467,7 +899,7 @@ ModuleDescPtr
 LoadDriver (const char *module, const char *path, int handle, pointer options,
 	    int *errmaj, int *errmin)
 {
-return LoadModule (module, path, options, errmaj, errmin);
+return LoadModule (module, path, NULL, NULL, options, errmaj, errmin);
 }
 
 void
@@ -485,15 +917,10 @@ UnloadDriver (ModuleDescPtr mod)
 static void
 UnloadModuleOrDriver (ModuleDescPtr mod)
 {
-    char *n;
-
     if (mod == NULL || mod->name == NULL)
 	return;
 
-    if ((n = LoaderGetCanonicalName(mod->name)) == NULL)
-	return;	/* XXX */
-
-    xf86MsgVerb(X_INFO, 3, "UnloadModule: \"%s\"\n", n);
+    xf86MsgVerb(X_INFO, 3, "UnloadModule: \"%s\"\n", mod->name);
 
     if ((mod->TearDownProc) && (mod->TearDownData))
         mod->TearDownProc (mod->TearDownData);
@@ -504,7 +931,7 @@ UnloadModuleOrDriver (ModuleDescPtr mod)
     if (mod->sib)
         UnloadModuleOrDriver (mod->sib);
     TestFree (mod->name);
-    TestFree (n);
+	TestFree (mod->filename);
     xfree (mod);
 }
 
@@ -542,6 +969,7 @@ NewModuleDesc (const char *name)
 		mdp->sib = NULL;
 		mdp->demand_next = NULL;
 		mdp->name = xstrdup (name);
+		mdp->filename = NULL;
 		mdp->identifier = NULL;
 		mdp->client_id = 0;
 		mdp->in_use = 0;
@@ -610,11 +1038,14 @@ LoaderErrorMsg(const char *name, const char *modname, int errmaj, int errmin)
 
 
 /* Given a module path or file name, return the module's canonical name */
-char *
-LoaderGetCanonicalName(const char *modname)
+static char *
+LoaderGetCanonicalName(const char *modname, PatternPtr patterns)
 {
 	char *str;
-	const char *s, *e;
+	const char *s;
+	int len;
+	PatternPtr p;
+	regmatch_t match[2];
 
 	/* Strip off any leading path */
 	s = strrchr(modname, '/');
@@ -623,24 +1054,19 @@ LoaderGetCanonicalName(const char *modname)
 	else
 		s++;
 
-	/* Strip off a leading "lib" */
-	if (strncmp(s, "lib", 3) == 0)
-		s += 3;
-    
-	/* Strip off a file suffix */
-	e = strrchr(s, '.');
-	if (e == NULL)
-		e = s + strlen(s);
+	/* Find the first regex that is matched */
+	for (p = patterns; p->pattern; p++)
+		if (regexec(&p->rex, s, 2, match, 0) == 0 &&
+			match[1].rm_so != -1) {
+			len = match[1].rm_eo - match[1].rm_so;
+			str = xalloc(len + 1);
+			if (!str)
+				return NULL;
+			strncpy(str, s + match[1].rm_so, len);
+			str[len] = '\0';
+			return str;
+		}
 
-	/* Strip off a trailing "_drv" */
-	if (e - s > 4 && strncmp(e - 4, "_drv", 4) == 0)
-		e -= 4;
-
-	str = (char *)xalloc(e - s + 1);
-	if (str == NULL)
-		return NULL;
-
-	strncpy(str, s, e - s);
-	str[e - s] = '\0';
-	return str;
+	/* If there is no match, return the whole name minus the leading path */
+	return xstrdup(s);
 }

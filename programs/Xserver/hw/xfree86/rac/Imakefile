@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/rac/Imakefile,v 1.1 1998/09/19 12:15:00 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/rac/Imakefile,v 1.2 1998/10/05 13:23:15 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -18,7 +18,7 @@ ModuleObjectRule()
 
 LibraryModuleTarget(rac, $(OBJS))
 
-InstallLibraryModule(rac,$(MODULEDIR))
+InstallLibraryModule(rac,$(MODULEDIR),.)
 
 DependTarget()
 

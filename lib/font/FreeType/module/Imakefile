@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/font/FreeType/module/Imakefile,v 1.1 1998/09/06 07:31:59 dawes Exp $
+XCOMM $XFree86: xc/lib/font/FreeType/module/Imakefile,v 1.2 1998/10/06 06:59:33 dawes Exp $
 
 XCOMM Imakefile created for the Freetype TrueType renderer.
 XCOMM Mark Leisher <mleisher@crl.nmsu.edu>
@@ -36,7 +36,7 @@ LinkSourceFile(ftutil.c,..)
 
 ModuleObjectRule()
 LibraryModuleTarget(freetype,$(OBJS))
-InstallLibraryModule(freetype,$(MODULEDIR))
+InstallLibraryModule(freetype,$(MODULEDIR),fonts)
 
 DependTarget()
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.37 1998/12/06 06:08:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.38 1998/12/13 05:32:50 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -171,8 +171,10 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 			LINEAR_FRAMEBUFFER |
 			MICROSOFT_ZERO_LINE_BIAS;
 
-    if(pMga->Overlay8Plus24)
+    if(pMga->Overlay8Plus24) {
 	infoPtr->FullPlanemask = ~0;
+	infoPtr->Flags |= OVERLAY_8_32;
+    }
 
     /* sync */
     infoPtr->Sync = MGAStormSync;

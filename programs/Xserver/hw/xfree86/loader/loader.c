@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.26 1998/09/26 08:34:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.27 1998/10/25 07:12:11 dawes Exp $ */
 
 /*
  *
@@ -472,6 +472,33 @@ _LoaderHandleToName(int handle)
 }
 
 /*
+ * _LoaderHandleToCanonicalName() will return the cname of the first module
+ * with a given handle. This requires getting the last module on the LIFO with
+ * the given handle.
+ */
+char *
+_LoaderHandleToCanonicalName(int handle)
+{
+  loaderPtr item=listHead;
+  loaderPtr lastitem=NULL;
+
+  if ( handle < 0 ) {
+	return "(built-in)";
+  }
+  while(item) {
+	if( item->handle == handle ) {
+		lastitem=item;
+	}
+	item=item->next;
+  }
+
+  if( lastitem )
+    return lastitem->cname;
+
+  return NULL;
+}
+
+/*
  * _LoaderModuleToName() will return the name of the first module with a
  * given handle. This requires getting the last module on the LIFO with
  * the given handle.
@@ -485,16 +512,16 @@ _LoaderModuleToName(int module)
 
   if ( module < 0 ) {
 	return "(built-in)";
-	}
+  }
   while(item) {
 	if( item->module == module ) {
 	    if( strchr(item->name,':') == NULL )
 		aritem=item;
 	    else
 		lastitem=item;
-	    }
-	item=item->next;
 	}
+	item=item->next;
+  }
 
   if( aritem )
     return aritem->name;
@@ -519,9 +546,9 @@ _LoaderAddressToSection(const unsigned long address, const char **module,
 	if( (*section=item->funcs->AddressToSection(item->private, address)) != NULL ) {
 		*module=_LoaderModuleToName(item->module);
 		return 1;
-		}
+	}
 	item=item->next;
- 	}
+  }
 
   return 0;
 }
@@ -809,6 +836,8 @@ ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP **ppLookup)
 
 	tmp->handle = modrec->handle;
 	tmp->module = moduleseq++;
+	tmp->cname = xf86loadermalloc(strlen(modrec->cname) + 1);
+	strcpy(tmp->cname, modrec->cname);
 	tmp->funcs=&funcs[modtype];
 	if (longname == NULL) {
 	    modnamesize=strlen(hdr.ar_name);
@@ -883,8 +912,8 @@ _LoaderGetRelocations(void *mod)
  */
 
 int
-LoaderOpen(const char *module, int handle, int *errmaj, int *errmin,
-	   int *wasLoaded)
+LoaderOpen(const char *module, const char *cname, int handle,
+	   int *errmaj, int *errmin, int *wasLoaded)
 {
     loaderPtr tmp ;
     int new_handle, modtype ;
@@ -959,6 +988,8 @@ LoaderOpen(const char *module, int handle, int *errmaj, int *errmin,
     tmp=_LoaderListPush();
     tmp->name = (char *) xf86loadermalloc(strlen(module) + 1);
     strcpy(tmp->name, module);
+    tmp->cname = (char *) xf86loadermalloc(strlen(cname) + 1);
+    strcpy(tmp->cname, cname);
     tmp->handle = new_handle;
     tmp->module = moduleseq++;
     tmp->funcs=&funcs[modtype];
@@ -1081,6 +1112,7 @@ LoaderUnload(int handle)
 	}
 	tmp->funcs->LoaderUnload(tmp->private);
 	xf86loaderfree(tmp->name);
+	xf86loaderfree(tmp->cname);
 	xf86loaderfree(tmp);
   }
   

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.14 1998/08/19 07:49:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.15 1998/09/20 14:41:06 dawes Exp $ */
 
 /*
  *
@@ -189,6 +189,7 @@ typedef struct _loader {
 				   this module when it is unloaded */
 	int	module;		/* Unique id to identify compilation units */
 	char	*name;
+	char	*cname;
 	void	*private;	/* format specific data */
 	loader_funcs	*funcs;	/* funcs for operating on this module */
 	loaderPtr next;
@@ -213,7 +214,6 @@ void LoaderDuplicateSymbol(const char *, const int);
 void LoaderFixups(void);
 void LoaderResolve(void);
 int LoaderResolveSymbols(void);
-char *LoaderHandleToName(int);
 int _LoaderHandleUnresolved(char *, char *);
 void LoaderHashAdd(itemPtr);
 itemPtr LoaderHashDelete(const char *);
@@ -222,11 +222,10 @@ void LoaderHashTraverse(void *, int (*)(void *, itemPtr));
 void LoaderPrintAddress(const char *);
 void LoaderPrintItem(itemPtr);
 void LoaderPrintSymbol(unsigned long);
-char *LoaderGetCanonicalName(const char *);
 void LoaderDumpSymbols(void);
 char *_LoaderModuleToName(int);
 int _LoaderAddressToSection(const unsigned long, const char **, const char **);
-int LoaderOpen(const char *, int, int *, int *, int *);
+int LoaderOpen(const char *, const char *, int, int *, int *, int *);
 int LoaderHandleOpen(int);
 
 /*
@@ -245,6 +244,7 @@ LoaderRelocPtr _LoaderGetRelocations(void *);
  * object to name lookup routines
  */
 char * _LoaderHandleToName(int handle);
+char * _LoaderHandleToCanonicalName(int handle);
 
 /*
  * Entry points for the different loader types

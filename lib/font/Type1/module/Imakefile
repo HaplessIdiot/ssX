@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/font/Type1/module/Imakefile,v 1.1.2.1 1998/07/05 14:36:00 dawes Exp $
+XCOMM $XFree86: xc/lib/font/Type1/module/Imakefile,v 1.2 1998/07/25 06:57:02 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -73,6 +73,6 @@ LinkSourceFile(util.c,..)
 
 ModuleObjectRule()
 LibraryModuleTarget(type1,$(OBJS))
-InstallLibraryModule(type1,$(MODULEDIR))
+InstallLibraryModule(type1,$(MODULEDIR),fonts)
 
 DependTarget()

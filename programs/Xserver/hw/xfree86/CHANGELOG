@@ -1,3 +1,33 @@
+XFree86 3.9Ns (3 January 1999)
+2125. Allow backing store to be controlled with a pre-screen config file
+      option (#2357, Mark Vojkovich).
+2124. Fix XAA so that the offscreen pixmaps are compatible with backing store
+      (#2354, Mark Vojkovich).
+2123. Fix a bug in XAA's stipple to 8x8 pattern reduction code (#2352,
+      Mark Vojkovich).
+2122. 8+32 overlay support for XAA (#2352, 2356, Mark Vojkovich).
+2121. Add TGUI9440 and Cyber9320 support to the trident driver (#2348,
+      Alan Hourihane).
+2120. Fix a typo in xkbcomp/symbols/sun/Imakefile (#2337, Matthieu Herrb).
+2119. Mga driver updates for the new 8+32 overlay support (#2332, 2353,
+      Mark Vojkovich).
+2118. New 8+32 overlay support (#2331, 2351, 2358, Mark Vojkovich).
+2117. Fix a bug in the xterm man page (#2333, Thomas Dickey).
+2116. Remove the -fno-strength-reduce option for OpenBSD and NetBSD (#2328,
+      Matthieu Herrb).
+2115. Import regex for systems that don't have a Posix regex.
+2114. Add a LoaderListDir() function that can be used to list the available
+      modules.
+2113. Modify LoadModule and LoadSubmodule to accept optional subdir and
+      pattern lists, and use regular expressions for the module matching
+      instead of prefix/suffix lists.
+2112. Add a "revpath" utility to xc/config/util to help in dealing with
+      imake's use of relative paths.  If this proves to be useful, it could
+      be used more widely in imake's rules.
+2111. Install some classes of modules into subdirectories of the "modules"
+      directory.  The imake module install rules have been updated
+      accordingly.
+
 XFree86 3.9Nr (20 December 1998)
 2110. Add support for the wscons console driver for NetBSD-current (#2326,
       Matthieu Herrb).
@@ -7004,4 +7034,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.653 1998/12/20 11:57:36 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.654 1998/12/20 13:16:31 dawes Exp $

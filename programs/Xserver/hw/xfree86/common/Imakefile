@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.83 1998/11/22 10:37:11 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.84 1998/12/05 14:40:04 dawes Exp $
 
 
 
@@ -88,7 +88,6 @@ SRCS =	\
 	xf86Option.c \
 	xf86fbman.c \
 	xf86xv.c \
-	xf86_8plus24.c\
 	xf86cmap.c\
 	$(KBD).c \
 	$(XF86_XINPUT_SRC) \
@@ -113,7 +112,6 @@ OBJS = \
 	xf86Option.o \
 	xf86fbman.o \
 	xf86xv.o \
-	xf86_8plus24.o\
 	xf86cmap.o\
 	$(XF86_XINPUT_OBJ) \
 	$(XKBDDXOBJ) \
@@ -178,7 +176,6 @@ InstallLinkKitNonExecFile(xf86Ldext.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(compiler.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(xf86fbman.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(xf86xv.h,$(LINKKITDIR)/include)
-InstallLinkKitNonExecFile(xf86_8plus24.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(xf86cmap.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(XF86_LOADER.c,$(LINKKITDIR))
 

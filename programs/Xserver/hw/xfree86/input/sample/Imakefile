@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/input/sample/Imakefile,v 1.1 1998/12/05 14:40:19 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/input/sample/Imakefile,v 1.2 1998/12/13 05:32:53 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -19,6 +19,6 @@ ModuleObjectRule()
 
 ObjectModuleTarget($(DRIVER),$(OBJS))
 
-InstallObjectModule($(DRIVER),$(MODULEDIR))
+InstallObjectModule($(DRIVER),$(MODULEDIR),input)
 
 DependTarget()
