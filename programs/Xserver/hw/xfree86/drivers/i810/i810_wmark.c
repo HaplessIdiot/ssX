@@ -31,6 +31,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *   Keith Whitwell <keithw@precisioninsight.com>
  */
 
+#include "xf86.h"
 #include "i810.h"
 
 struct wm_info {
@@ -295,8 +296,9 @@ unsigned int I810CalcWatermark( ScrnInfoPtr pScrn, double freq, Bool dcache )
    if (i == nr)
       i--;
 
-   ErrorF("%s %s: chose watermark 0x%x: (tab.freq %.1f)\n",
-	  XCONFIG_PROBED, NAME, tab[i].wm, tab[i].freq);
+   xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		"chose watermark 0x%x: (tab.freq %.1f)\n",
+		tab[i].wm, tab[i].freq);
 
    /* None of these values (sourced from intel) have watermarks for
     * the dcache memory.  Fake it for now by using the same watermark

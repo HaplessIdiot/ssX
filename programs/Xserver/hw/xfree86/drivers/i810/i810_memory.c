@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_memory.c,v 1.13 2000/08/15 16:05:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_memory.c,v 1.14 2000/08/25 13:42:37 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -121,7 +121,7 @@ int I810AllocateGARTMemory( ScrnInfoPtr pScrn )
       pI810->DcacheKey = key;
       if (!xf86BindGARTMemory(pScrn->scrnIndex, key, tom)) {
 	 xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
-		    "GART: allocation of %d bytes for DCACHE failed\n", size);
+		    "Allocation of %d bytes for DCACHE failed\n", size);
 	 pI810->DcacheKey = -1;
       }	else {
 	 pI810->DcacheMem.Start = tom;
@@ -130,6 +130,9 @@ int I810AllocateGARTMemory( ScrnInfoPtr pScrn )
 	 tom = pI810->DcacheMem.End;
       }
    } else {
+      xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+		 "No physical memory available for %d bytes of DCACHE\n",
+		 size);
       pI810->DcacheKey = -1;
    }
 
@@ -147,14 +150,14 @@ int I810AllocateGARTMemory( ScrnInfoPtr pScrn )
    if ((key = xf86AllocateGARTMemory(pScrn->scrnIndex, size, 2,
 				     &physical)) == -1) {
       xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
-		    "No physical memory available for mouse\n");
+		    "No physical memory available for HW cursor\n");
       pI810->HwcursKey = -1;
    } else {
       pI810->HwcursOffset= tom;
       pI810->HwcursKey = key;
       if (!xf86BindGARTMemory(pScrn->scrnIndex, key, tom)) {
 	 xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
-		    "GART: allocation of %d bytes for HW cursor failed\n", 
+		    "Allocation of %d bytes for HW cursor failed\n", 
 		    size);
 	 pI810->HwcursKey = -1;
       }	else {
