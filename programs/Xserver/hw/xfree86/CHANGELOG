@@ -1,4 +1,6 @@
 XFree86 4.4.99.4 (xx April 2004)
+  82. Cap potential infinite loop in nsc driver (Marc La France).
+  81. Stopgap for console switch hangs with some Radeon models (Marc La France).
   80. Fix build on Mac OS X following Mesa 6 merge (Torrey T. Lyons).
   79. Fix GLX multithreaded bug (DRI Project).
   78. Xterm patch #186 (Thomas Dickey).
@@ -18868,7 +18870,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3230 2004/04/19 21:04:19 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3231 2004/04/21 04:59:39 torrey Exp $
 
 
 
