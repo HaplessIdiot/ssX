@@ -1,4 +1,4 @@
-/* $XConsortium: attributes.c /main/5 1996/11/24 16:45:53 rws $ */
+/* $XConsortium: attributes.c /main/6 1996/12/30 14:56:11 kaleb $ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.
@@ -44,7 +44,7 @@ copyright holders.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/attributes.c,v 1.2 1996/12/26 01:38:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/attributes.c,v 1.3 1996/12/30 13:58:55 dawes Exp $ */
 
 #include <Xproto.h>
 #include <string.h>

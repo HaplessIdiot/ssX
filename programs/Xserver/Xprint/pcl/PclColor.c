@@ -1,4 +1,4 @@
-/* $XConsortium: PclColor.c /main/2 1996/12/11 15:27:00 lehors $ */
+/* $XConsortium: PclColor.c /main/4 1996/12/30 16:36:57 kaleb $ */
 /*******************************************************************
 **
 **    *********************************************************
@@ -45,7 +45,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclColor.c,v 1.3 1996/12/26 01:38:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclColor.c,v 1.4 1996/12/30 13:59:01 dawes Exp $ */
 
 #include <stdio.h>
 #include <string.h>
@@ -685,26 +685,6 @@ void PclLookUp(
       }
     return;
 }
-
-/* -*-C-*-
-*******************************************************************************
-*
-* File:         xpmap.c
-* Description:  3d color mapper for Xp contributed PCL driver.
-* Author:       Andrew Fitzhugh
-* Created:      Fri Feb 16 11:41:08 1996
-* Modified:     Fri Feb 16 16:03:40 1996 (AEF) fitz@hplaef.hpl.hp.com
-* Language:     C
-* Package:      N/A
-* Status:       Experimental (Do Not Distribute)
-*
-* (C) Copyright 1996, Hewlett-Packard Laboratories, all rights reserved.
-*
-*******************************************************************************
-*/
-
-/* Compile with "cc -Ae -o xpmap xpmap.c" */
-
 
 unsigned char *PclReadMap(char *name, int *dim)
 {

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c /main/1 1996/09/28 16:59:17 rws $
+ * $XConsortium: Xrm.c /main/2 1996/12/30 14:56:02 kaleb $
  */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
@@ -57,7 +57,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xprint/Xrm.c,v 1.2 1996/12/30 13:58:54 dawes Exp $ */
 
 #include	<stdio.h>
 #include	<ctype.h>

@@ -1,4 +1,4 @@
-/* $XConsortium: Util.c /main/2 1996/11/16 15:23:41 rws $ */
+/* $XConsortium: Util.c /main/3 1996/12/30 14:55:57 kaleb $ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.
@@ -30,7 +30,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/Util.c,v 1.3 1996/12/28 08:11:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/Util.c,v 1.4 1996/12/30 13:58:52 dawes Exp $ */
 
 /* To get the tempnam() prototype in <stdio.h> */
 #if defined(linux) && defined(__STRICT_ANSI__)

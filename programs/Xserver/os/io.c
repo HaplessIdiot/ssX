@@ -45,8 +45,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c /main/71 1996/12/18 16:29:46 lehors $ */
-/* $XFree86: xc/programs/Xserver/os/io.c,v 3.12 1996/05/10 07:02:14 dawes Exp $ */
+/* $XConsortium: io.c /main/72 1996/12/27 15:40:56 rws $ */
+/* $XFree86: xc/programs/Xserver/os/io.c,v 3.13 1996/12/23 07:09:57 dawes Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -1000,7 +1000,11 @@ FlushAllOutput()
 	    if (client->clientGone)
 		continue;
 	    oc = (OsCommPtr)client->osPrivate;
-	    if (FD_ISSET(oc->fd, &ClientsWithInput))
+	    if (
+#ifdef LBX
+		!oc->proxy &&
+#endif
+		FD_ISSET(oc->fd, &ClientsWithInput))
 	    {
 		FD_SET(oc->fd, &OutputPending); /* set the bit again */
 		NewOutputPending = TRUE;
@@ -1020,7 +1024,11 @@ FlushAllOutput()
 	    if (client->clientGone)
 		continue;
 	    oc = (OsCommPtr)client->osPrivate;
-	    if (FD_ISSET(oc->fd, &ClientsWithInput))
+	    if (
+#ifdef LBX
+		!oc->proxy &&
+#endif
+		FD_ISSET(oc->fd, &ClientsWithInput))
 	    {
 		FD_SET(oc->fd, &newOutputPending); /* set the bit again */
 		NewOutputPending = TRUE;

@@ -5,10 +5,10 @@
   1.  Supported chipsets
 
   The Tseng chipsets supported by XFree86 are ET3000, ET4000, ET4000/W32
-  and ET6000. At this time, the accelerated features of the ET4000/W32
-  and ET6000 are not supported by the SVGA driver; the chipset is
-  treated as a standard ET4000. For details about the accelerated
-  ET4000/W32 and ET6000 server, refer to README.W32 <W32.html>.
+  and ET6000. Accelerated features of the ET4000/W32p and ET6000 are
+  supported by the SVGA driver. For details about the separate
+  accelerated 8bpp ET4000/W32 and ET6000 server, refer to README.W32
+  <W32.html>.
 
   2.  ET4000 driver features
 
@@ -21,15 +21,31 @@
   server supports all possible color depths in the SVGA server: 8bpp,
   16bpp (both at 5-5-5 and 5-6-5 color resolutions), 24bpp and 32 bpp.
 
+  4.  features common to ET6000 and ET4000W32p
+
+  The features listed below are only functional on ET4000W32p and ET6000
+  cards, and thus not on ET4000W32i, ET4000W32, ET4000AX and ET4000.
+
   Linear memory mode (as opposed to the default, banked memory layout)
-  is supported. It is even required for 16/24/32 bpp modes. Put the
-  following in the SVGA section of your XF86Config:
+  is supported. It is required for 16/24/32 bpp modes. It does not
+  currently work when acceleration is enabled on ET4000W32 chips. Put
+  the following in the SVGA section of your XF86Config:
 
     Option "linear"
 
 
 
-  4.  Clock selection problems with some ET4000 boards
+  Acceleration is supported and is enabled on ET6000 and ET4000W32p by
+  default, and accelerates all color depths on the ET6000. The
+  ET4000W32p driver currently works only in "banked" (= non-linear)
+  memory mode when acceleration is enabled. Acceleration can be disabled
+  on all cards by adding the following to your XF86Config:
+
+    Option "noaccel"
+
+
+
+  5.  Clock selection problems with some ET4000 boards
 
   XFree86 has some problems getting the clock selection right with some
   ET4000 boards when the server is started from a high-resolution text
@@ -62,13 +78,11 @@
   is printed, put the following in the SVGA, VGA16 and VGA2 sections of
   your XF86Config:
 
-
-
     Option "hibit_high"
 
 
 
-  5.  Text mode restore problems
+  6.  Text mode restore problems
 
   In XFree86 1.3, an option flag ``force_bits'' was provided as an
   experiment to attempt to alleviate text-restoration problems that some
@@ -77,27 +91,13 @@
   restoration problems are alleviated in XFree86 2.0.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.8 1996/12/23 06:46:29 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.9 1996/12/31 05:01:00 dawes Exp $
 
 
 
 
 
   $XConsortium: tseng.sgml /main/6 1996/10/27 11:06:09 kaleb $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

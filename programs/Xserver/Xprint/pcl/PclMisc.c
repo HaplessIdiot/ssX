@@ -1,4 +1,4 @@
-/* $XConsortium: PclMisc.c /main/2 1996/11/06 06:54:35 kaleb $ */
+/* $XConsortium: PclMisc.c /main/3 1996/12/30 14:56:58 kaleb $ */
 /*******************************************************************
 **
 **    *********************************************************
@@ -44,7 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclMisc.c,v 1.2 1996/12/30 13:59:05 dawes Exp $ */
 
 #include "Xos.h"	/* for SIGCLD on pre-POSIX systems */
 #include <stdio.h>

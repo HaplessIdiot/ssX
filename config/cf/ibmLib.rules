@@ -1,4 +1,4 @@
-XCOMM $XConsortium: ibmLib.rules /main/13 1996/09/28 16:10:43 rws $
+XCOMM $XConsortium: ibmLib.rules /main/15 1996/12/30 16:06:05 kaleb $
 
 /*
  * AIX shared library rules
@@ -179,8 +179,8 @@ AllTarget(Concat(lib,libname.a))					@@\
 Concat(lib,libname.a):  solist $(UNSHAREDOBJS) $(EXTRALIBRARYDEPS)	@@\
 	RemoveFiles($@~ shr.o shr4.o)					@@\
 	(cd down; $(AR) up/$@~ solist)					@@\
-	MakeExportList(libname,libname.inp)				@@\
-	$(LD) -o shr.o $@~ -H512 -T512 -bM\:SRE -bE\:libname.inp -bnoentry $(REQUIREDLIBS) BaseShLibReqs $(LDPOSTLIBS)	@@\
+	MakeExportList(libname,libname.imp)				@@\
+	$(LD) -o shr.o $@~ -H512 -T512 -bM\:SRE -bE\:libname.imp -bnoentry $(REQUIREDLIBS) BaseShLibReqs $(LDPOSTLIBS)	@@\
 	$(LN) shr.o shr4.o						@@\
 	RemoveFile($@~)							@@\
 	case ,$(SHR4OBJLIBS), in *,libname,*) shr4obj=shr4.o;; esac &&\	@@\
@@ -188,8 +188,7 @@ Concat(lib,libname.a):  solist $(UNSHAREDOBJS) $(EXTRALIBRARYDEPS)	@@\
 	RemoveFile($@)							@@\
 	$(MV) $@~ $@							@@\
 	LinkBuildLibrary($@)						@@\
-	RemoveFile($(BUILDLIBDIR)/libname.imp)				@@\
-	cd $(BUILDLIBDIR); $(LN) $(BUILDINCTOP)/$(CURRENT_DIR)/libname.inp libname.imp @@\
+	LinkBuildLibrary(libname.imp)					@@\
 									@@\
 clean::									@@\
 	$(RM) Concat(lib,libname.a)

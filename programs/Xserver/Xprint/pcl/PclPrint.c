@@ -1,4 +1,4 @@
-/* $XConsortium: PclPrint.c /main/2 1996/11/16 15:26:56 rws $ */
+/* $XConsortium: PclPrint.c /main/4 1996/12/30 16:37:15 kaleb $ */
 /*******************************************************************
 **
 **    *********************************************************
@@ -43,7 +43,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclPrint.c,v 1.2 1996/12/25 04:01:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclPrint.c,v 1.3 1996/12/30 13:59:07 dawes Exp $ */
 
 #include <stdio.h>
 #include <string.h>

@@ -1,4 +1,4 @@
-/* $XConsortium: PsLine.c /main/2 1996/11/16 15:25:15 rws $ */
+/* $XConsortium: PsLine.c /main/3 1996/12/30 14:57:39 kaleb $ */
 /*
  * (c) Copyright 1996 Hewlett-Packard Company
  * (c) Copyright 1996 International Business Machines Corp.
@@ -48,7 +48,7 @@
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/PsLine.c,v 1.2 1996/12/30 13:59:17 dawes Exp $ */
 
 #include "Ps.h"
 #include "gcstruct.h"

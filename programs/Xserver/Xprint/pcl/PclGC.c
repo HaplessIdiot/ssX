@@ -1,4 +1,4 @@
-/* $XConsortium: PclGC.c /main/1 1996/09/28 17:01:16 rws $ */
+/* $XConsortium: PclGC.c /main/2 1996/12/30 14:56:42 kaleb $ */
 /*******************************************************************
 **
 **    *********************************************************
@@ -44,7 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclGC.c,v 1.2 1996/12/30 13:59:02 dawes Exp $ */
 
 #include "gcstruct.h"
 
@@ -353,9 +353,6 @@ PclUpdateDrawableGC( pGC, pDrawable, outFile )
     if( !PclGetDrawablePrivateStuff( pDrawable, &dGC, &valid, outFile ) )
       return FALSE;
 
-    cPriv = ( PclGetContextFromWindow( (WindowPtr)pDrawable ) )
-      ->devPrivates[PclContextPrivateIndex].ptr;
-
     pCon = PclGetContextFromWindow( (WindowPtr)pDrawable );
     cPriv = pCon->devPrivates[PclContextPrivateIndex].ptr;
 
@@ -442,7 +439,7 @@ PclUpdateDrawableGC( pGC, pDrawable, outFile )
 #endif /* XP_PCL_COLOR */
       }
     
-/*    
+#if 0
     if( changeMask & GCFunction )
       {
 	  int rop = -1;
@@ -503,70 +500,7 @@ PclUpdateDrawableGC( pGC, pDrawable, outFile )
 	    {
 		sprintf( t, "MC1,%d;", rop );
 		SEND_PCL( *outFile, t );
-/*
-    if( changeMask & GCFunction )
-      {
-	  int rop;
-	  char t[10];
-	  
-	  switch( pGC->alu )
-	    {
-	      case GXClear:
-		rop = 0;
-		break;
-	      case GXAnd:
-		rop = 136;
-		break;
-	      case GXandReverse:
-		rop = 68;
-		break;
-	      case GXcopy:
-		rop = 204;
-		break;
-	      case GXandInverted:
-		rop = 34;
-		break;
-	      case GXnoop:
-		rop = 170;
-		break;
-	      case GXxor:
-		rop = 238;
-		break;
-	      case GXor:
-		rop = 238;
-		break;
-	      case GXnor:
-		rop = 17;
-		break;
-	      case GXequiv:
-		rop = 153;
-		break;
-	      case GXinvert:
-		rop = 85;
-		break;
-	      case GXorReverse:
-		rop = 221;
-		break;
-	      case GXcopyInverted:
-		rop = 51;
-		break;
-	      case GXorInverted:
-		rop = 187;
-		break;
-	      case GXnand:
-		rop = 119;
-		break;
-	      case GXset:
-		rop = 1;
-		break;
-	    }
-	  if( rop != -1 )
-	    {
-		sprintf( t, "MC1,%d;", rop );
-		SEND_PCL( *outFile, t );
-	    }
-      }
-*/
+#endif
 
     if( changeMask & GCForeground )
       switch( pGC->fgPixel )

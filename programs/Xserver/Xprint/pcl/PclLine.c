@@ -1,4 +1,4 @@
-/* $XConsortium: PclLine.c /main/1 1996/09/28 17:01:36 rws $ */
+/* $XConsortium: PclLine.c /main/2 1996/12/30 14:56:54 kaleb $ */
 /*******************************************************************
 **
 **    *********************************************************
@@ -44,7 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclLine.c,v 1.2 1996/12/30 13:59:04 dawes Exp $ */
 
 #include "Pcl.h"
 #include "gcstruct.h"

@@ -1,4 +1,4 @@
-/* $XConsortium: PsPrint.c /main/2 1996/11/16 15:25:40 rws $ */
+/* $XConsortium: PsPrint.c /main/4 1996/12/30 16:38:45 kaleb $ */
 /*
  * (c) Copyright 1996 Hewlett-Packard Company
  * (c) Copyright 1996 International Business Machines Corp.
@@ -48,7 +48,7 @@
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/PsPrint.c,v 1.2 1996/12/25 04:02:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/PsPrint.c,v 1.3 1996/12/30 13:59:21 dawes Exp $ */
 
 #include <stdio.h>
 #include <string.h>

@@ -1,4 +1,4 @@
-/* $XConsortium: PsMisc.c /main/3 1996/11/16 15:25:20 rws $ */
+/* $XConsortium: PsMisc.c /main/4 1996/12/30 14:57:44 kaleb $ */
 /*
  * (c) Copyright 1996 Hewlett-Packard Company
  * (c) Copyright 1996 International Business Machines Corp.
@@ -48,7 +48,7 @@
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/PsMisc.c,v 1.2 1996/12/30 13:59:18 dawes Exp $ */
 
 #include "Xos.h"	/* for SIGCLD on pre-POSIX systems */
 #include <stdio.h>
