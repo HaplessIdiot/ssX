@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.49 2001/05/19 00:26:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.50 2001/05/23 20:13:23 dawes Exp $ */
 
 /*
  * Authors:
@@ -154,6 +154,7 @@ static const char *vgahwSymbols[] = {
 
 static const char *fbSymbols[] = {
    "fbScreenInit",
+   "fbPictureInit",
    NULL
 };
 
@@ -177,12 +178,13 @@ static const char *ddcSymbols[] = {
 
 static const char *xaaSymbols[] = {
    "XAADestroyInfoRec",
-   "XAACreateInfoRec",
-   "XAAInit",
-   "XAAStippleScanlineFuncLSBFirst",
-   "XAAOverlayFBfuncs",
    "XAACachePlanarMonoStipple",
+   "XAACreateInfoRec",
+   "XAAFillSolidRects"
+   "XAAInit",
+   "XAAOverlayFBfuncs",
    "XAAScreenIndex",
+   "XAAStippleScanlineFuncLSBFirst",
    NULL
 };
 
@@ -447,6 +449,7 @@ I810DoDDC(ScrnInfoPtr pScrn, int index)
     }
 
     if (xf86LoadSubModule(pScrn, "vbe") && (pVbe = VBEInit(NULL,index))) {
+      xf86LoaderReqSymLists(vbeSymbols, NULL);
       MonInfo = vbeDoEDID(pVbe, NULL);
       xf86PrintEDID( MonInfo );
       xf86SetDDCproperties(pScrn, MonInfo);
@@ -801,13 +804,14 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
       I810FreeRec(pScrn);
       return FALSE;
    }
-   xf86LoaderReqSymbols("fbScreenInit", NULL);
+   xf86LoaderReqSymLists(fbSymbols, NULL);
 
    if (!xf86ReturnOptValBool(pI810->Options, OPTION_NOACCEL, FALSE)) {
       if (!xf86LoadSubModule(pScrn, "xaa")) {
 	 I810FreeRec(pScrn);
 	 return FALSE;
       }
+      xf86LoaderReqSymLists(xaaSymbols, NULL);
    }
 
    if (!xf86ReturnOptValBool(pI810->Options, OPTION_SW_CURSOR, FALSE)) {
