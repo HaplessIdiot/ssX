@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_OSlib.h,v 1.1 94/03/28 21:27:06 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.0 1994/04/29 14:08:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.1 1994/05/06 08:41:52 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@physics.su.oz.au>
@@ -322,7 +322,7 @@ extern int errno;
 /**************************************************************************/
 /* Minix                                                                  */
 /**************************************************************************/
-#if defined(_MINIX)
+#if defined(MINIX)
 # include <sys/ioctl.h>
 # include <signal.h>
 
@@ -330,7 +330,6 @@ extern int errno;
 # define termio termios
 
 # include <errno.h>
-extern int errno;
 
 # include <assert.h>
 # include <limits.h>
@@ -339,7 +338,7 @@ extern int errno;
 
 # include <sys/stat.h>
 
-#endif /* _MINIX */
+#endif /* MINIX */
 
 /**************************************************************************/
 /* Amoeba                                                                 */

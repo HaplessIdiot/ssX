@@ -54,6 +54,7 @@ in this Software without prior written authorization from the X Consortium.
 /***********************************************************************
  *
  * $XConsortium: twm.c,v 1.130 94/04/17 20:38:23 kaleb Exp $
+ * $XFree86$
  *
  * twm - "Tom's Window Manager"
  *
@@ -231,12 +232,32 @@ main(argc, argv, environ)
 	exit (1);
     }
 
+#ifdef MINIX
+    { int flags;
+    	if ((flags= fcntl(ConnectionNumber(dpy), F_GETFD)) == -1)
+    	{
+		fprintf (stderr, 
+		 "%s:  unable to mark display connection as close-on-exec\n",
+			 ProgramName);
+		exit (1);
+    	}
+	if (fcntl(ConnectionNumber(dpy), F_SETFD,
+					flags | FD_CLOEXEC) == -1)
+	{
+	    fprintf (stderr, 
+		"%s:  unable to mark display connection as close-on-exec\n",
+			 ProgramName);
+	    exit (1);
+	}
+    }
+#else
     if (fcntl(ConnectionNumber(dpy), F_SETFD, 1) == -1) {
 	fprintf (stderr, 
 		 "%s:  unable to mark display connection as close-on-exec\n",
 		 ProgramName);
 	exit (1);
     }
+#endif
 
     HasShape = XShapeQueryExtension (dpy, &ShapeEventBase, &ShapeErrorBase);
     HasSync = XSyncQueryExtension(dpy,  &SyncEventBase, &SyncErrorBase);

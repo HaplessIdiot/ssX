@@ -1,5 +1,5 @@
 /* $XConsortium: connection.c,v 1.187 94/04/17 20:26:56 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.0 1994/04/28 12:42:39 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -67,12 +67,16 @@ SOFTWARE.
 #include "X.h"
 #include "Xproto.h"
 #include <X11/Xtrans.h>
+#ifndef X_NO_SYS_PARAM
 #include <sys/param.h>
+#endif
 #include <errno.h>
 #ifdef X_NOT_STDC_ENV
 extern int errno;
 #endif
+#ifndef MINIX
 #include <sys/socket.h>
+#endif
 
 #include <signal.h>
 #include <setjmp.h>
@@ -84,6 +88,12 @@ extern int errno;
 
 #ifdef AIXV3
 #include <sys/ioctl.h>
+#endif
+
+#ifdef MINIX
+#include <sys/nbio.h>
+
+#define select(n,r,w,x,t) nbio_select(n,r,w,x,t)
 #endif
 
 #if defined(TCPCONN) || defined(STREAMSCONN)
@@ -407,7 +417,7 @@ AuthAudit (client, letin, saddr, len, proto_n, auth_proto)
 #endif
 	    strcpy(addr, "local host");
 	    break;
-#if defined(TCPCONN) || defined(STREAMSCONN)
+#if defined(TCPCONN) || defined(STREAMSCONN) || defined(MNX_TCPCONN)
 	case AF_INET:
 	    sprintf(addr, "IP %s port %d",
 		    inet_ntoa(((struct sockaddr_in *) saddr)->sin_addr),

@@ -1,4 +1,5 @@
 /* $XConsortium: connection.c,v 1.29 94/04/17 19:56:05 mor Exp $ */
+/* $XFree86$ */
 /*
  * handles connections
  */
@@ -73,9 +74,11 @@ in this Software without prior written authorization from the X Consortium.
 #include	"misc.h"
 #include	<stdio.h>
 #include	<errno.h>
+#ifndef MINIX
 #include	<sys/param.h>
 #include	<sys/socket.h>
 #include	<sys/uio.h>
+#endif
 #include	<signal.h>
 
 #include	"FS.h"

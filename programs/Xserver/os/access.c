@@ -1,5 +1,5 @@
 /* $XConsortium: access.c,v 1.73 94/04/17 20:26:53 rws Exp $ */
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.0 1994/04/28 12:42:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.1 1994/05/04 15:05:54 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -56,7 +56,7 @@ SOFTWARE.
 #include "misc.h"
 #include "site.h"
 #include <errno.h>
-#if !defined(AMOEBA) && !defined(_MINIX)
+#if !defined(AMOEBA) && !defined(MINIX)
 #ifdef ESIX
 #include <lan/socket.h>
 #else
@@ -81,7 +81,7 @@ SOFTWARE.
 #include <server/ip/gen/socket.h>
 #undef port
 #endif
-#endif /* AMOEBA || _MINIX */
+#endif /* AMOEBA || MINIX */
 #include <ctype.h>
 
 #if defined(TCPCONN) || defined(STREAMSCONN) || defined(ISC)
@@ -92,14 +92,14 @@ SOFTWARE.
 #include <netdnet/dnetdb.h>
 #endif
 
-#if !defined(AMOEBA) && !defined(_MINIX)
+#if !defined(AMOEBA)
 #ifdef hpux
 # include <sys/utsname.h>
 # ifdef HAS_IFREQ
 #  include <net/if.h>
 # endif
 #else
-#if defined(SVR4) ||  (defined(SYSV) && defined(i386))
+#if defined(SVR4) ||  (defined(SYSV) && defined(i386)) || defined(MINIX)
 # include <sys/utsname.h>
 #endif
 #if defined(SYSV) &&  defined(i386)
@@ -112,10 +112,12 @@ SOFTWARE.
 #ifdef ESIX
 # include <lan/if.h>
 #else
+#ifndef MINIX
 # include <net/if.h>
 #endif
+#endif
 #endif /* hpux */
-#endif /* !AMOEBA && !_MINIX */
+#endif /* !AMOEBA */
 
 #ifdef SVR4
 #include <sys/sockio.h>
@@ -125,13 +127,18 @@ SOFTWARE.
 #ifdef ESIX
 #include <lan/netdb.h>
 #else
-#if !defined(AMOEBA) && !defined(_MINIX)
+#if !defined(AMOEBA) && !defined(MINIX)
 #include <netdb.h>
 #else
 #ifdef AMOEBA
 #include <server/ip/gen/netdb.h>
 #endif
-#endif /* AMOEBA || _MINIX */
+#ifdef MINIX
+#include <net/hton.h>
+#include <net/gen/netdb.h>
+#define INADDR_BROADCAST 0xFFFFFFFF
+#endif
+#endif /* AMOEBA || MINIX */
 #endif /* ESIX */
 
 #include "dixstruct.h"
@@ -432,7 +439,7 @@ void
 DefineSelf (fd)
     int fd;
 {
-#if !defined(TCPCONN) && !defined(STREAMSCONN) && !defined(UNIXCONN)
+#if !defined(TCPCONN) && !defined(STREAMSCONN) && !defined(UNIXCONN) && !defined(MNX_TCPCONN)
     return;
 #else
     register int n;
@@ -500,8 +507,8 @@ DefineSelf (fd)
 		    XdmcpRegisterBroadcastAddress ((struct sockaddr_in *)
 						   &broad_addr);
 		}
-	    }
 #endif /* XDMCP */
+	    }
 	}
     }
     /*
@@ -522,7 +529,7 @@ DefineSelf (fd)
 	    selfhosts = host;
 	}
     }
-#endif /* !TCPCONN && !UNIXCONN */
+#endif /* !TCPCONN && !STREAMSCONN && !UNIXCONN && !MNX_TCPCONN */
 }
 
 #else
@@ -753,7 +760,7 @@ ResetHosts (display)
 #ifndef AMOEBA
     union {
         struct sockaddr	sa;
-#if defined(TCPCONN) || defined(STREAMSCONN)
+#if defined(TCPCONN) || defined(STREAMSCONN) || defined(MNX_TCPCONN)
         struct sockaddr_in in;
 #endif /* TCPCONN || STREAMSCONN */
 #ifdef DNETCONN
@@ -801,7 +808,7 @@ ResetHosts (display)
 	    family = FamilyLocalHost;
 	    NewHost(family, "", 0);
 	}
-#if defined(TCPCONN) || defined(STREAMSCONN)
+#if defined(TCPCONN) || defined(STREAMSCONN) || defined(MNX_TCPCONN)
 	else if (!strncmp("inet:", lhostname, 5))
 	{
 	    family = FamilyInternet;
@@ -873,7 +880,7 @@ ResetHosts (display)
 	}
 	else
 #endif /* SECURE_RPC */
-#if defined(TCPCONN) || defined(STREAMSCONN)
+#if defined(TCPCONN) || defined(STREAMSCONN) || defined(MNX_TCPCONN)
 	{
     	    /* host name */
     	    if (family == FamilyInternet && (hp = gethostbyname (hostname)) ||
@@ -1139,9 +1146,9 @@ CheckAddr (family, pAddr, length)
 
     switch (family)
     {
-#if defined(TCPCONN) || defined(STREAMSCONN) || defined(AMTCPCONN)
+#if defined(TCPCONN) || defined(STREAMSCONN) || defined(AMTCPCONN) || defined(MNX_TCPCONN)
       case FamilyInternet:
-#if !defined(AMOEBA) && !defined(_MINIX)
+#if !defined(AMOEBA)
 	if (length == sizeof (struct in_addr))
 #else
 	if (length == sizeof(ipaddr_t))
@@ -1241,7 +1248,7 @@ ConvertAddr (saddr, len, addr)
     case AF_UNIX:
 #endif
         return FamilyLocal;
-#if defined(TCPCONN) || defined(STREAMSCONN)
+#if defined(TCPCONN) || defined(STREAMSCONN) || defined(MNX_TCPCONN)
     case AF_INET:
         *len = sizeof (struct in_addr);
         *addr = (pointer) &(((struct sockaddr_in *) saddr)->sin_addr);

@@ -54,7 +54,7 @@ in this Software without prior written authorization from the X Consortium.
 /***********************************************************************
  *
  * $XConsortium: lex.l,v 1.68 94/04/17 20:38:14 rws Exp $
- * $XFree86$
+ * $XFree86: xc/programs/twm/lex.l,v 3.0 1994/04/28 12:44:21 dawes Exp $
  *
  * .twmrc lex file
  *
@@ -63,14 +63,16 @@ in this Software without prior written authorization from the X Consortium.
  ***********************************************************************/
 
 /* #include <stdio.h> */		/* lex already includes stdio.h */
+#ifndef MINIX
 #include <sys/param.h>
+#endif
 #include "gram.h"
 #include "parse.h"
 extern char *ProgramName;
 
 extern int ParseError;
 
-#if (BSD >= 199103) || ((defined(AMOEBA) || defined(_MINIX)) && defined(yywrap)) || defined(linux)
+#if (BSD >= 199103) || ((defined(AMOEBA) || defined(MINIX)) && defined(yywrap)) || defined(linux)
 int yylineno;
 #undef YY_INPUT
 #define YY_INPUT(buf,result,size) ((result) = doinput((buf),(size)))

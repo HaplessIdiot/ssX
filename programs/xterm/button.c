@@ -1,4 +1,5 @@
 /* $XConsortium: button.c,v 1.69 94/04/02 12:41:50 gildea Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  *
@@ -32,6 +33,10 @@ button.c	Handles button events in the terminal emulator.
 #include "ptyx.h"		/* Xlib headers included here. */
 #include <X11/Xatom.h>
 #include <stdio.h>
+
+#ifdef MINIX
+#include <X11/Xos.h>
+#endif
 
 #include <X11/Xmu/Atoms.h>
 #include <X11/Xmu/StdSel.h>

@@ -1,5 +1,5 @@
 /* $XConsortium: events.c,v 1.11 94/04/17 20:39:17 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xieperf/events.c,v 3.0 1994/04/28 12:45:38 dawes Exp $ */
 /**** module events.c ****/
 /******************************************************************************
 
@@ -93,6 +93,11 @@ extern Time_t time ();
 #undef Status
 #define Status int
 #undef BOOL
+#endif
+
+#ifdef MINIX
+#include <sys/nbio.h>
+#define select(n,r,w,x,t) nbio_select(n,r,w,x,t)
 #endif
 
 static XieExtensionInfo *xieInfo=NULL;
