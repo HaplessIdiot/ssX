@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_accel.c,v 1.1 1998/11/01 12:36:00 dawes Exp $ */
 
 /*
  *
@@ -48,32 +48,9 @@
 #define COMPMACROS3X
 #include "s3v.h"
 #undef COMPMACROS3X
-
-/************************/
-
-
-#if 0
-#include <math.h>
-#include "vga256.h"
-#include "xf86.h"
-#include "vga.h"
-#include "xf86xaa.h"
-#include "xf86_ansic.h"
-#include "regs3v.h"
-#include "s3v_driver.h"
+		 	/* Includes regs3v.h internally */
 #include "s3v_rop.h"
 
-extern S3VPRIV s3vPriv;
-
-
-/**************************************************/
-/* these need to go into private for 4.0 */
-
-
-/* Globals used in driver */
-extern pointer s3vMmioMem;
-
-#endif
 
 int s3vAccelCmd = 0;
 static int s3vDummyTransferArea;
@@ -98,141 +75,180 @@ static unsigned int s3vCached_RWIDTH_HEIGHT;
 /* Temporary to see if caching works */
 static int s3vCacheHit = 0, s3vCacheMiss = 0;
 
-#if 0					   
 
 /**************************************************/
 
 
 
 
-/* Forward declaration of fucntions used in the driver */
-static void S3VAccelSync(void);
-static void S3VSetClippingRectangle(int, int, int, int);
-static void S3VSetupForScreenToScreenCopy(int, int, int, unsigned, int);
-static void S3VSubsequentScreenToScreenCopy(int, int, int, int, int, int);
-static void S3VSetupForScreenToScreenCopy32(int, int, int, unsigned, int);
-static void S3VSubsequentScreenToScreenCopy32(int, int, int, int, int, int);
-static void S3VSetupForFillRectSolid(int, int, unsigned);
-static void S3VSubsequentFillRectSolid(int, int, int, int);
-static void S3VSetupForFillRectSolid32(int, int, unsigned);
-static void S3VSubsequentFillRectSolid32(int, int, int, int);
-static void S3VSetupForCPUToScreenColorExpand(int, int, int, unsigned);
-static void S3VSubsequentCPUToScreenColorExpand(int, int, int, int, int);
+/* Forward declaration of functions used in the driver */
+Bool S3VAccelInit(ScreenPtr pScreen);
+Bool S3VAccelInit32(ScreenPtr pScreen);
+static void S3VAccelSync(ScrnInfoPtr pScrn);
+static void S3VSetupForScreenToScreenCopy(ScrnInfoPtr, int, int, int, unsigned, int);
+static void S3VSubsequentScreenToScreenCopy(ScrnInfoPtr, int, int, int, int, int, int);
+static void S3VSetupForScreenToScreenCopy32(ScrnInfoPtr, int, int, int, unsigned, int);
+static void S3VSubsequentScreenToScreenCopy32(ScrnInfoPtr, int, int, int, int, int, int);
+static void S3VSetupForSolidFill(ScrnInfoPtr, int, int, unsigned);
+static void S3VSubsequentSolidFillRect(ScrnInfoPtr, int, int, int, int);
+static void S3VSetupForSolidFill32(ScrnInfoPtr, int, int, unsigned);
+static void S3VSubsequentSolidFillRect32(ScrnInfoPtr, int, int, int, int);
+static void S3VSetupForCPUToScreenColorExpand(ScrnInfoPtr, int, int, int, unsigned);
+static void S3VSubsequentCPUToScreenColorExpand(ScrnInfoPtr, int, int, int, int, int);
+
+static void S3VSetupForFill8x8Pattern(ScrnInfoPtr, int, int, int, unsigned, int);
+static void S3VSubsequentFill8x8Pattern(ScrnInfoPtr, int, int, int, int, int, int);
+static void S3VSetClippingRectangle(ScrnInfoPtr, int, int, int, int);
+#if 0					   
 static void S3VSetupFor8x8PatternColorExpand(int, int, int, int, int, unsigned);
 static void S3VSubsequent8x8PatternColorExpand(int, int, int, int, int, int);
-static void S3VSetupForFill8x8Pattern(int, int, int, unsigned, int);
-static void S3VSubsequentFill8x8Pattern(int, int, int, int, int, int);
 static void S3VSubsequentTwoPointLine(int, int, int, int, int);
-static void S3VSubsequentFillTrapezoidSolid(int, int, int, int, int, int, int, int, int, int);
-static void S3VWriteImageTransferArea(int, unsigned);
-
+#endif
+static void S3VSubsequentFillTrapezoidSolid(ScrnInfoPtr, int, int, int, int, int, int, int, int, int, int);
+static void S3VWriteImageTransferArea(void *, int, unsigned);
+static void S3VSetupForImageWrite(ScrnInfoPtr pScrn, int rop, unsigned int planemask, int transparency_color, int bpp, int depth);
+static void S3VSubsequentImageWriteRect(ScrnInfoPtr pScrn, int x, int y, int w, int h, int skipleft);
 
 
 /* Acceleration init function, sets up pointers to our accelerated functions */
 
-void 
-S3VAccelInit() 
+Bool 
+S3VAccelInit(ScreenPtr pScreen)
 {
+    XAAInfoRecPtr infoPtr;
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    BoxRec AvailFBArea;
+    COMPVARS;
 
+    ps3v->AccelInfoRec = infoPtr = XAACreateInfoRec();
+    if(!infoPtr) return FALSE;
+    
 /* Set-up our GE command primitive */
     
     s3vAccelCmd = 0;
     s3vAccelCmd |= DRAW ;
-    if (vgaBitsPerPixel == 8) {
-      s3vPriv.PlaneMask = 0xff;
+    if (pScrn->bitsPerPixel == 8) {
+      ps3v->PlaneMask = 0xff;
       s3vAccelCmd |= DST_8BPP;
-      s3vPriv.bltbug_width1 = 51;
-      s3vPriv.bltbug_width2 = 64;
+      ps3v->bltbug_width1 = 51;
+      ps3v->bltbug_width2 = 64;
       }
-    else if (vgaBitsPerPixel == 16) {
-      s3vPriv.PlaneMask = 0xffff;
+    else if (pScrn->bitsPerPixel == 16) {
+      ps3v->PlaneMask = 0xffff;
       s3vAccelCmd |= DST_16BPP;
-      s3vPriv.bltbug_width1 = 26;
-      s3vPriv.bltbug_width2 = 32;
+      ps3v->bltbug_width1 = 26;
+      ps3v->bltbug_width2 = 32;
       }
-    else if (vgaBitsPerPixel == 24) {
-      s3vPriv.PlaneMask = 0xffffff;
+    else if (pScrn->bitsPerPixel == 24) {
+      ps3v->PlaneMask = 0xffffff;
       s3vAccelCmd |= DST_24BPP;
-      s3vPriv.bltbug_width1 = 16;
-      s3vPriv.bltbug_width2 = 22;
+      ps3v->bltbug_width1 = 16;
+      ps3v->bltbug_width2 = 22;
       }
 
-
+  
     /* General acceleration flags */
-
-    xf86AccelInfoRec.Flags = PIXMAP_CACHE |
+    
+    infoPtr->Flags = PIXMAP_CACHE;
+    
+    /*
+    infoPtr->Flags = PIXMAP_CACHE |
          BACKGROUND_OPERATIONS |
          COP_FRAMEBUFFER_CONCURRENCY | 
          NO_SYNC_AFTER_CPU_COLOR_EXPAND |
          DELAYED_SYNC ; 
+     */
 
-    xf86AccelInfoRec.PatternFlags = HARDWARE_PATTERN_MONO_TRANSPARENCY |
+  #if 0	  /* Not ported to 3.9N yet. */
+    infoPtr->PatternFlags = HARDWARE_PATTERN_MONO_TRANSPARENCY |
          HARDWARE_PATTERN_BIT_ORDER_MSBFIRST |  
          HARDWARE_PATTERN_PROGRAMMED_BITS |
          HARDWARE_PATTERN_SCREEN_ORIGIN;
-
-     xf86AccelInfoRec.Sync = S3VAccelSync;
+	 
+  #endif
+   
+    infoPtr->Sync = S3VAccelSync;
 
 
     /* ScreenToScreen copies */
-
-    xf86AccelInfoRec.SetupForScreenToScreenCopy =
+    
+    infoPtr->SetupForScreenToScreenCopy =
         S3VSetupForScreenToScreenCopy;
-    xf86AccelInfoRec.SubsequentScreenToScreenCopy =
+    infoPtr->SubsequentScreenToScreenCopy =
         S3VSubsequentScreenToScreenCopy;
-    xf86GCInfoRec.CopyAreaFlags = NO_TRANSPARENCY; 
+    infoPtr->ScreenToScreenCopyFlags = NO_TRANSPARENCY;
 
+    /* Filled rectangles & Trapezoids */
 
-    /* Filled rectangles */
-
-    xf86AccelInfoRec.SetupForFillRectSolid = 
-        S3VSetupForFillRectSolid;
-    xf86AccelInfoRec.SubsequentFillRectSolid = 
-        S3VSubsequentFillRectSolid;
+    infoPtr->SetupForSolidFill = 
+        S3VSetupForSolidFill;
+    infoPtr->SubsequentSolidFillRect = 
+        S3VSubsequentSolidFillRect;
+    infoPtr->SolidFillFlags = 0;
+    infoPtr->SubsequentSolidFillTrap = 
+        S3VSubsequentFillTrapezoidSolid;
+	
+ #if 0   /* Not ported to 3.9N yet. */
+    /*
     xf86GCInfoRec.PolyFillRectSolidFlags = 0;  
 
-    xf86AccelInfoRec.ColorExpandFlags = SCANLINE_PAD_DWORD |
+    infoPtr->ColorExpandFlags = SCANLINE_PAD_DWORD |
 					CPU_TRANSFER_PAD_DWORD | 
 					VIDEO_SOURCE_GRANULARITY_PIXEL |
 					BIT_ORDER_IN_BYTE_MSBFIRST |
 					LEFT_EDGE_CLIPPING;
+     */
+    infoPtr->CPUToScreenColorExpandFillFlags = SCANLINE_PAD_DWORD |
+					CPU_TRANSFER_PAD_DWORD | 
+					BIT_ORDER_IN_BYTE_MSBFIRST |
+					LEFT_EDGE_CLIPPING;
 
-    xf86AccelInfoRec.SetupForCPUToScreenColorExpand =
+    infoPtr->SetupForCPUToScreenColorExpandFill =
              S3VSetupForCPUToScreenColorExpand;
-    xf86AccelInfoRec.SubsequentCPUToScreenColorExpand =
+    infoPtr->SubsequentCPUToScreenColorExpandFill =
              S3VSubsequentCPUToScreenColorExpand;
-    xf86AccelInfoRec.CPUToScreenColorExpandBase = 
+    infoPtr->ColorExpandBase = 
              (void *) &IMG_TRANS;
-    xf86AccelInfoRec.CPUToScreenColorExpandRange = 32768;
-
- 
+    infoPtr->ColorExpandRange = 32768;
+    /*
+    infoPtr->CPUToScreenColorExpandBase = 
+             (void *) &IMG_TRANS;
+    infoPtr->CPUToScreenColorExpandRange = 32768;
+     */
+  #endif
+  
+  #if 0  /* Not ported to 3.9N yet. */
     /* These are the 8x8 pattern fills using color expansion */
 
-    xf86AccelInfoRec.SetupFor8x8PatternColorExpand = 
+    infoPtr->SetupFor8x8PatternColorExpand = 
             S3VSetupFor8x8PatternColorExpand;
-    xf86AccelInfoRec.Subsequent8x8PatternColorExpand = 
+    infoPtr->Subsequent8x8PatternColorExpand = 
             S3VSubsequent8x8PatternColorExpand;  
-
-
+	    
+  #endif
     /* These are the 8x8 color pattern fills */
-
-    xf86AccelInfoRec.SetupForFill8x8Pattern = 
+    infoPtr->Color8x8PatternFillFlags = HARDWARE_PATTERN_SCREEN_ORIGIN;
+    infoPtr->SetupForColor8x8PatternFill = 
             S3VSetupForFill8x8Pattern;
-    xf86AccelInfoRec.SubsequentFill8x8Pattern = 
+    infoPtr->SubsequentColor8x8PatternFillRect = 
             S3VSubsequentFill8x8Pattern; 
-
+    /*
+    infoPtr->SetupForFill8x8Pattern = 
+            S3VSetupForFill8x8Pattern;
+    infoPtr->SubsequentFill8x8Pattern = 
+            S3VSubsequentFill8x8Pattern; 
+     */
+  #if 0  /* Not ported to 3.9N yet. */
 
     /* These are the accelerated line functions */
     /* They are only semi-functionnal and do not work fully yet */
 
-/*    xf86AccelInfoRec.SubsequentTwoPointLine = 
+/*    infoPtr->SubsequentTwoPointLine = 
             S3VSubsequentTwoPointLine;
-    xf86AccelInfoRec.SetClippingRectangle = 
+    infoPtr->SetClippingRectangle = 
             S3VSetClippingRectangle;   */
-    xf86AccelInfoRec.SubsequentFillTrapezoidSolid = 
-            S3VSubsequentFillTrapezoidSolid;
-
-
+	    
+	    
     /*
      * Finally, we set up the video memory space available to the pixmap
      * cache. In this case, all memory from the end of the virtual screen
@@ -240,20 +256,45 @@ S3VAccelInit()
      * enabled the PIXMAP_CACHE flag, then these lines can be omitted.
      */
 
-     xf86InitPixmapCache(&vga256InfoRec, vga256InfoRec.virtualY *
-        vga256InfoRec.displayWidth * vga256InfoRec.bitsPerPixel / 8,
-        vga256InfoRec.videoRam * 1024 -1024);
+     xf86InitPixmapCache(&vga256InfoRec, pScrn->virtualY *
+        pScrn->displayWidth * pScrn->bitsPerPixel / 8,
+        pScrn->videoRam * 1024 -1024);
 
+  #endif
+
+  #if 0
+     /* written for 3.9N, but still broken. */  				      
+     infoPtr->ImageWriteFlags = NO_TRANSPARENCY | SYNC_AFTER_IMAGE_WRITE;
+     infoPtr->ImageWriteBase = (unsigned char *) &IMG_TRANS;
+     infoPtr->ImageWriteRange = S3V_MMIO_REGSIZE;
+     infoPtr->SetupForImageWrite = S3VSetupForImageWrite;
+     infoPtr->SubsequentImageWriteRect = S3VSubsequentImageWriteRect;
+  #endif
+  
      /* And these are screen parameters used to setup the GE */
 
-     s3vPriv.Width = vga256InfoRec.displayWidth;
-     s3vPriv.Bpp = vgaBitsPerPixel / 8;
-     s3vPriv.Bpl = s3vPriv.Width * s3vPriv.Bpp;
-     s3vPriv.ScissB = (vga256InfoRec.videoRam * 1024 - 1024) / s3vPriv.Bpl;
-     if (s3vPriv.ScissB > 2047)
-         s3vPriv.ScissB = 2047;
+     ps3v->Width = pScrn->displayWidth;
+     					/* Bytes per pixel */
+     ps3v->Bpp = pScrn->bitsPerPixel / 8;
+     					/* Bytes per line */
+     ps3v->Bpl = ps3v->Width * ps3v->Bpp;
+     ps3v->ScissB = (pScrn->videoRam * 1024 - 1024) / ps3v->Bpl;
+     if (ps3v->ScissB > 2047)
+         ps3v->ScissB = 2047;
+  
 
+     AvailFBArea.x1 = 0;
+     AvailFBArea.y1 = 0;
+     AvailFBArea.x2 = pScrn->displayWidth;
+     AvailFBArea.y2 = (pScrn->videoRam * 1024) /
+	(pScrn->displayWidth * ps3v->Bpp);
 
+     xf86InitFBManager(pScreen, &AvailFBArea);		       
+     
+		      		/* Reset the GE prior to use */
+     S3VGEReset(pScrn);
+    
+     return (XAAInit(pScreen, infoPtr));
 } 
 
 
@@ -261,72 +302,93 @@ S3VAccelInit()
  * support CopyArea and FillRectSolid, using the graphics engine in 16bpp mode.
  */
 
-void 
-S3VAccelInit32() 
+Bool 
+S3VAccelInit32(ScreenPtr pScreen) 
 {
+    XAAInfoRecPtr infoPtr;
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    S3VPtr ps3v = S3VPTR(pScrn);
+    BoxRec AvailFBArea;
+
+    ps3v->AccelInfoRec = infoPtr = XAACreateInfoRec();
+    if(!infoPtr) return FALSE;
 
 /* Set-up our GE command primitive */
     
     s3vAccelCmd = 0;
     s3vAccelCmd |= DRAW ;
-    s3vPriv.PlaneMask = 0xffff;
+    ps3v->PlaneMask = 0xffff;
     s3vAccelCmd |= DST_16BPP;
-    s3vPriv.bltbug_width1 = 26;
-    s3vPriv.bltbug_width2 = 32;
-
-    xf86AccelInfoRec.Flags = PIXMAP_CACHE |
+    ps3v->bltbug_width1 = 26;
+    ps3v->bltbug_width2 = 32;
+ #if 0
+    infoPtr->Flags = PIXMAP_CACHE |
          COP_FRAMEBUFFER_CONCURRENCY |
          BACKGROUND_OPERATIONS; 
+ #endif
+    infoPtr->Sync = S3VAccelSync;
 
-    xf86AccelInfoRec.Sync = S3VAccelSync;
-
-
+ #if 0
     /* ScreenToScreen copies */
 
-    xf86AccelInfoRec.SetupForScreenToScreenCopy =
+    infoPtr->SetupForScreenToScreenCopy =
         S3VSetupForScreenToScreenCopy32;
-    xf86AccelInfoRec.SubsequentScreenToScreenCopy =
+    infoPtr->SubsequentScreenToScreenCopy =
         S3VSubsequentScreenToScreenCopy32;
     xf86GCInfoRec.CopyAreaFlags = NO_TRANSPARENCY | NO_PLANEMASK; 
 
     /* Filled rectangles */
 
-    xf86AccelInfoRec.SetupForFillRectSolid = 
-        S3VSetupForFillRectSolid32;
-    xf86AccelInfoRec.SubsequentFillRectSolid = 
-        S3VSubsequentFillRectSolid32;
+    infoPtr->SetupForSolidFill = 
+        S3VSetupForSolidFill32;
+    infoPtr->SubsequentSolidFillRect = 
+        S3VSubsequentSolidFillRect32;
     xf86GCInfoRec.PolyFillRectSolidFlags = NO_PLANEMASK;  
 
 
     /* Init pixmap cache */
 
-    xf86InitPixmapCache(&vga256InfoRec, vga256InfoRec.virtualY *
-       vga256InfoRec.displayWidth * vga256InfoRec.bitsPerPixel / 8,
-       vga256InfoRec.videoRam * 1024 -1024);
+    xf86InitPixmapCache(&vga256InfoRec, pScrn->virtualY *
+       pScrn->displayWidth * pScrn->bitsPerPixel / 8,
+       pScrn->videoRam * 1024 -1024);
 
     /* And these are screen parameters used to setup the GE. Remember, 
      * we use 16bpp mode for the 32bpp Ops.
      */
-    s3vPriv.Width = vga256InfoRec.displayWidth ;
-    s3vPriv.Bpp = vgaBitsPerPixel / 8;
-    s3vPriv.Bpl = s3vPriv.Width * s3vPriv.Bpp;
-    s3vPriv.ScissB = (vga256InfoRec.videoRam * 1024 - 1024) / s3vPriv.Bpl;
-    if (s3vPriv.ScissB > 2047)
-        s3vPriv.ScissB = 2047;
+    ps3v->Width = pScrn->displayWidth ;
+    ps3v->Bpp = pScrn->bitsPerPixel / 8;
+    ps3v->Bpl = ps3v->Width * ps3v->Bpp;
+    ps3v->ScissB = (pScrn->videoRam * 1024 - 1024) / ps3v->Bpl;
+    if (ps3v->ScissB > 2047)
+        ps3v->ScissB = 2047;
+ #endif
+    
+    AvailFBArea.x1 = 0;
+    AvailFBArea.y1 = 0;
+    AvailFBArea.x2 = pScrn->displayWidth;
+    AvailFBArea.y2 = (pScrn->videoRam * 1024) /
+	(pScrn->displayWidth * ps3v->Bpp);
 
+    xf86InitFBManager(pScreen, &AvailFBArea);
+
+		      		/* Reset the GE prior to use */
+    S3VGEReset(pScrn);
+    
+    return (XAAInit(pScreen, infoPtr));
 }
 
 
 /* The sync function for the GE */
 void
-S3VAccelSync()
+S3VAccelSync(ScrnInfoPtr pScrn)
 {
-
+    COMPVARS;  	  
+	
     WaitCommandEmpty(); 
     WaitIdleEmpty(); 
-    CACHE_SETB_CLIP_L_R(0, s3vPriv.Width);
-    CACHE_SETB_CLIP_T_B(0, s3vPriv.ScissB);
-
+    CACHE_SETB_CLIP_L_R(0, ps3v->Width);
+    CACHE_SETB_CLIP_T_B(0, ps3v->ScissB);
+    
 /* Workaround for possible bug when pattern fills follow lines */
     if(s3vSyncForLineBug){
         CACHE_SETB_CMD_SET(s3vAccelCmd | CMD_BITBLT | ROP_D | CMD_AUTOEXEC);
@@ -336,9 +398,11 @@ S3VAccelSync()
         WaitIdleEmpty(); 
         s3vSyncForLineBug = FALSE;
         } 
+	
+     return;
 }
 
-#endif
+
 
 /* This next function performs a reset of the graphics engine and 
  * fills in some GE registers with default values.                  
@@ -347,20 +411,18 @@ S3VAccelSync()
 /*static*/ void
 S3VGEReset(ScrnInfoPtr pScrn)
 {
-unsigned char tmp;
-  /*S3VPtr ps3v = S3VPTR(pScrn);*/
-COMPVARS;  	  
-/*cep*/
+    unsigned char tmp;
+    COMPVARS;  	  
 
     if(ps3v->Chipset == S3_ViRGE_VX){
-        outb(vgaCRIndex, 0x63);
+        OUTREG8(vgaCRIndex, 0x63);
         }
     else {
-        outb(vgaCRIndex, 0x66);
+        OUTREG8(vgaCRIndex, 0x66);
         }
-    tmp = inb(vgaCRReg);
-    outb(vgaCRReg, tmp | 0x02);
-    outb(vgaCRReg, tmp & ~0x02);
+    tmp = INREG8(vgaCRReg);
+    OUTREG8(vgaCRReg, tmp | 0x02);
+    OUTREG8(vgaCRReg, tmp & ~0x02);
     usleep(10000);
 
     xf86ErrorFVerb(VERBLEV, "	S3VGEReset sub_stat=%x \n", 
@@ -373,7 +435,7 @@ COMPVARS;
     SETB_SRC_BASE(0);
     SETB_DEST_BASE(0);   
 
-    /* Now write some default rgisters and reset cached values */
+    /* Now write some default registers and reset cached values */
     s3vCached_CLIP_LR = -1;
     s3vCached_CLIP_TB = -1;
     CACHE_SETB_CLIP_L_R(0, ps3v->Width);
@@ -388,13 +450,11 @@ COMPVARS;
     s3vCached_PAT_BGCLR = -1;
     s3vCached_CMD_SET = -1;
 
-#ifdef DEBUG
-    ErrorF("ViRGE register cache hits: %d misses: %d\n",s3vCacheHit, s3vCacheMiss);    
-#endif
+    xf86ErrorFVerb(VERBLEV,"ViRGE register cache hits: %d misses: %d\n",s3vCacheHit, s3vCacheMiss);    
+    
     s3vCacheHit = 0; s3vCacheMiss = 0;
 }
 
-#if 0
 
 /* These are the ScreenToScreen bitblt functions. We support all ROPs, all
  * directions, and a planemask by adjusting the ROP and using the mono pattern
@@ -402,17 +462,19 @@ COMPVARS;
  */
 
 void 
-S3VSetupForScreenToScreenCopy(xdir, ydir, rop, planemask,
-transparency_color)
+S3VSetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, int ydir, 
+	int rop, unsigned planemask, int transparency_color)
+    /*	
     int xdir, ydir;
     int rop;
     unsigned planemask;
     int transparency_color;
+    */
 {
-
     int cmd = s3vAccelCmd;
+    COMPVARS;
  
-    if((planemask & s3vPriv.PlaneMask) != s3vPriv.PlaneMask) {     
+    if((planemask & ps3v->PlaneMask) != ps3v->PlaneMask) {     
         cmd |= (CMD_AUTOEXEC | s3vAlu_pat[rop] | CMD_BITBLT | 
             MIX_MONO_PATT);
         }
@@ -424,32 +486,37 @@ transparency_color)
     s3vSavedCmd = cmd;
    
     WaitQueue(4);
-    CACHE_SETB_PAT_FG_CLR(planemask & s3vPriv.PlaneMask);
+    CACHE_SETB_PAT_FG_CLR(planemask & ps3v->PlaneMask);
     CACHE_SETB_CMD_SET(cmd);
     CACHE_SETB_MONO_PAT0(~0);
     CACHE_SETB_MONO_PAT1(~0);   
+    
 }
 
 void 
-S3VSubsequentScreenToScreenCopy(x1, y1, x2, y2, w, h)
+S3VSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1, 
+	int x2, int y2, int w, int h)
+/*
 int x1, y1, x2, y2, w, h;
+ */
 {
     int new_width;
+    COMPVARS;
 
     if(S3VROPHasDst(s3vSavedCmd)) {
-        new_width = S3VCheckBltWidth(w);  /* Check for blit bug */
+        new_width = S3VCheckBltWidth(ps3v, w);  /* Check for blit bug */
         WaitQueue(5);
         if(new_width != w) {
             CACHE_SETB_CMD_SET(s3vSavedCmd | CMD_HWCLIP);
             CACHE_SETB_CLIP_L_R(x2, x2 + w -1); 
             }
         else 
-            CACHE_SETB_CLIP_L_R(0, s3vPriv.Width); 
+            CACHE_SETB_CLIP_L_R(0, ps3v->Width); 
         }
     else {
         new_width = w;
         WaitQueue(4);
-        CACHE_SETB_CLIP_L_R(0, s3vPriv.Width); 
+        CACHE_SETB_CLIP_L_R(0, ps3v->Width); 
         }
                                   
     SETB_RWIDTH_HEIGHT(new_width - 1, h);
@@ -457,7 +524,17 @@ int x1, y1, x2, y2, w, h;
         (s3vSavedCmd & CMD_YP) ? y1 : (y1 + h - 1));
     SETB_RDEST_XY( (s3vSavedCmd & CMD_XP) ? x2 : (x2 + new_width - 1),
         (s3vSavedCmd & CMD_YP) ? y2 : (y2 + h - 1));
-
+    
+	/*
+    xf86ErrorFVerb(VERBLEV, 
+	"	S3VSubScrScrCopy width=%x, src=%x, dest=%x\n",
+		(new_width-1)<<16 | h,
+		((s3vSavedCmd & CMD_XP) ? x1 : (x1 + new_width -1))<< 16 |
+        	((s3vSavedCmd & CMD_YP) ? y1 : (y1 + h - 1)),
+		((s3vSavedCmd & CMD_XP) ? x2 : (x2 + new_width - 1)) <<16 |
+        	((s3vSavedCmd & CMD_YP) ? y2 : (y2 + h - 1))
+		 );
+	 */
 }
 
 
@@ -466,15 +543,17 @@ int x1, y1, x2, y2, w, h;
  */
 
 void 
-S3VSetupForScreenToScreenCopy32(xdir, ydir, rop, planemask,
-transparency_color)
+S3VSetupForScreenToScreenCopy32(ScrnInfoPtr pScrn, int xdir, int ydir, 
+	int rop, unsigned planemask, int transparency_color)
+    /*
     int xdir, ydir;
     int rop;
     unsigned planemask;
     int transparency_color;
+     */
 {
-
     int cmd = s3vAccelCmd;
+    COMPVARS;
  
     cmd |= (CMD_AUTOEXEC | s3vAlu[rop] | CMD_BITBLT);
 
@@ -488,9 +567,13 @@ transparency_color)
 }
 
 void 
-S3VSubsequentScreenToScreenCopy32(x1, y1, x2, y2, w, h)
+S3VSubsequentScreenToScreenCopy32(ScrnInfoPtr pScrn, int x1, int y1, 
+	int x2, int y2, int w, int h)
+/*
 int x1, y1, x2, y2, w, h;
+ */
 {
+    COMPVARS;
 
     WaitQueue(3);
     SETB_RWIDTH_HEIGHT(w * 2 - 1, h);
@@ -516,14 +599,18 @@ int x1, y1, x2, y2, w, h;
  */ 
 
 void 
-S3VSetupForFillRectSolid(color, rop, planemask)
+S3VSetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop, 
+	unsigned planemask)
+/*
 int color, rop;
 unsigned planemask;
+ */
 {
-int cmd = s3vAccelCmd;
+    int cmd = s3vAccelCmd;
+    COMPVARS;
 
     cmd |= (CMD_AUTOEXEC | CMD_BITBLT | MIX_MONO_PATT | CMD_XP | CMD_YP);
-    if((planemask & s3vPriv.PlaneMask) == s3vPriv.PlaneMask){
+    if((planemask & ps3v->PlaneMask) == ps3v->PlaneMask){
         cmd |= s3vAlu_sp[rop];
         s3vSavedCmd = NO_MONO_FILL;
         }
@@ -536,11 +623,11 @@ int cmd = s3vAccelCmd;
             s3vSavedCmd = NO_MONO_FILL;
 
         WaitQueue(1);
-        if(vgaBitsPerPixel == 8) 
-            SETB_SRC_FG_CLR((planemask & s3vPriv.PlaneMask) |
-                        ((planemask & s3vPriv.PlaneMask)<< 8));
+        if(pScrn->bitsPerPixel == 8) 
+            SETB_SRC_FG_CLR((planemask & ps3v->PlaneMask) |
+                        ((planemask & ps3v->PlaneMask)<< 8));
         else  
-            SETB_SRC_FG_CLR(planemask & s3vPriv.PlaneMask);
+            SETB_SRC_FG_CLR(planemask & ps3v->PlaneMask);
         } 
 
     s3vSavedRectCmdForLine = cmd;
@@ -554,10 +641,13 @@ int cmd = s3vAccelCmd;
     
     
 void 
-S3VSubsequentFillRectSolid(x, y, w, h)
+S3VSubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y, int w, int h)
+/*
 int x, y, w, h;
+ */
 {
     int dwords_to_transfer, new_width;
+    COMPVARS;
 
     if(s3vSavedCmd != NEED_MONO_FILL) {  /* Easy case, no planemask */
 
@@ -566,7 +656,7 @@ int x, y, w, h;
         SETB_RDEST_XY(x, y);
         }
     else {                               /* Use mono fill for planemask */
-        new_width = S3VCheckLSPN(w, 1);  /* Check for blit bug */
+        new_width = S3VCheckLSPN(ps3v, w, 1);  /* Check for blit bug */
         WaitQueue(4);
         if(new_width != w) {
             CACHE_SETB_CMD_SET(s3vSavedRectCmdForLine | CMD_HWCLIP);
@@ -574,11 +664,11 @@ int x, y, w, h;
             w = new_width;
             }
         else 
-            CACHE_SETB_CLIP_L_R(0, s3vPriv.Width); 
+            CACHE_SETB_CLIP_L_R(0, ps3v->Width); 
         dwords_to_transfer = ((w + 31) / 32) * h;
         SETB_RWIDTH_HEIGHT(w - 1, h);
         SETB_RDEST_XY(x, y);
-        S3VWriteImageTransferArea (dwords_to_transfer, 0xffffffff);  
+        S3VWriteImageTransferArea (s3vMmioMem, dwords_to_transfer, 0xffffffff);  
         }
 
 }
@@ -589,11 +679,15 @@ int x, y, w, h;
  */
 
 void 
-S3VSetupForFillRectSolid32(color, rop, planemask)
+S3VSetupForSolidFill32(ScrnInfoPtr pScrn, int color, int rop, 
+	unsigned planemask)
+/*
 int color, rop;
 unsigned planemask;
+ */
 {
-int cmd = s3vAccelCmd;
+    int cmd = s3vAccelCmd;
+    COMPVARS;
 
     cmd |= (CMD_AUTOEXEC | CMD_BITBLT | MIX_MONO_PATT | CMD_XP | CMD_YP);
     cmd |= s3vAlu_sp[rop];
@@ -607,9 +701,13 @@ int cmd = s3vAccelCmd;
 }
 
 void 
-S3VSubsequentFillRectSolid32(x, y, w, h)
+S3VSubsequentSolidFillRect32(ScrnInfoPtr pScrn, int x, int y, int w, int h)
+/*
 int x, y, w, h;
+ */
 {
+    COMPVARS;
+    
     WaitQueue(2);
     SETB_RWIDTH_HEIGHT((w * 2) - 1, h);
     SETB_RDEST_XY(x * 2, y);
@@ -627,13 +725,17 @@ int x, y, w, h;
  */
 
 void
-S3VSetupForCPUToScreenColorExpand(bg, fg, rop, planemask)
+S3VSetupForCPUToScreenColorExpand(ScrnInfoPtr pScrn, int bg, 
+	int fg, int rop, unsigned planemask)
+/*
 int bg, fg, rop;
 unsigned planemask;
+ */
 {
     int cmd = s3vAccelCmd;
+    COMPVARS;
 
-    if((planemask & s3vPriv.PlaneMask) != s3vPriv.PlaneMask) {
+    if((planemask & ps3v->PlaneMask) != ps3v->PlaneMask) {
         cmd |= s3vAlu_pat[rop];
         }
     else {
@@ -646,18 +748,18 @@ unsigned planemask;
     if (bg == -1) cmd |= MIX_MONO_TRANSP;    /* transparency */
     
     if(S3VROPHasSrc(cmd)) {
-       xf86AccelInfoRec.CPUToScreenColorExpandBase = 
+       ps3v->AccelInfoRec->ColorExpandBase = 
              (void *) &IMG_TRANS;
-       xf86AccelInfoRec.ColorExpandFlags &= (~CPU_TRANSFER_BASE_FIXED); 
+       ps3v->AccelInfoRec->CPUToScreenColorExpandFillFlags &= (~CPU_TRANSFER_BASE_FIXED); 
        }
     else {    /* Fix for XAA bug */
-       xf86AccelInfoRec.CPUToScreenColorExpandBase = 
+       ps3v->AccelInfoRec->ColorExpandBase = 
              (void *) &s3vDummyTransferArea;
-       xf86AccelInfoRec.ColorExpandFlags |= CPU_TRANSFER_BASE_FIXED; 
+       ps3v->AccelInfoRec->CPUToScreenColorExpandFillFlags |= CPU_TRANSFER_BASE_FIXED; 
        }
 
     WaitQueue(3);
-    if(vgaBitsPerPixel == 8) {
+    if(pScrn->bitsPerPixel == 8) {
         SETB_SRC_FG_CLR(fg | (fg << 8));
         if(bg != -1) SETB_SRC_BG_CLR(bg | (bg << 8));
         }
@@ -665,30 +767,35 @@ unsigned planemask;
         SETB_SRC_FG_CLR(fg);
         if(bg != -1) SETB_SRC_BG_CLR(bg);
         }
-    if((planemask & s3vPriv.PlaneMask) != s3vPriv.PlaneMask) {
+    if((planemask & ps3v->PlaneMask) != ps3v->PlaneMask) {
         WaitQueue(4);
         CACHE_SETB_MONO_PAT0(~0);
         CACHE_SETB_MONO_PAT1(~0);   
-        CACHE_SETB_PAT_FG_CLR(planemask & s3vPriv.PlaneMask);
+        CACHE_SETB_PAT_FG_CLR(planemask & ps3v->PlaneMask);
         }
     CACHE_SETB_CMD_SET(cmd);
 
 }
 
 void
-S3VSubsequentCPUToScreenColorExpand(x, y, w, h, skipleft)
+S3VSubsequentCPUToScreenColorExpand(ScrnInfoPtr pScrn, int x, int y, 
+	int w, int h, int skipleft)
+/*
 int x, y, w, h, skipleft;
+ */
 {
+    COMPVARS;
 
     WaitQueue(3);
     if(skipleft != 0)  
-        CACHE_SETB_CLIP_L_R(x + skipleft, s3vPriv.Width); 
+        CACHE_SETB_CLIP_L_R(x + skipleft, ps3v->Width); 
     else
-        CACHE_SETB_CLIP_L_R(0, s3vPriv.Width); 
+        CACHE_SETB_CLIP_L_R(0, ps3v->Width); 
     SETB_RWIDTH_HEIGHT(w - 1, h);
     SETB_RDEST_XY(x, y);   
 }
 
+#if 0
 
 /* These functions provide 8x8 mono pattern fills. 
  *
@@ -721,7 +828,7 @@ unsigned planemask;
     cmd |= ( CMD_AUTOEXEC | CMD_BITBLT | MIX_MONO_PATT | CMD_XP | CMD_YP );
 
     if (bg != -1) {
-        if((planemask & s3vPriv.PlaneMask) == s3vPriv.PlaneMask){
+        if((planemask & ps3v->PlaneMask) == ps3v->PlaneMask){
             cmd |= s3vAlu_sp[rop];
             s3vSavedCmd = NO_MONO_FILL;
             }
@@ -734,11 +841,11 @@ unsigned planemask;
                 s3vSavedCmd = NO_MONO_FILL;
 
             WaitQueue(1);
-            if(vgaBitsPerPixel == 8) 
-                SETB_SRC_FG_CLR((planemask & s3vPriv.PlaneMask) |
-                            ((planemask & s3vPriv.PlaneMask)<< 8));
+            if(pScrn->bitsPerPixel == 8) 
+                SETB_SRC_FG_CLR((planemask & ps3v->PlaneMask) |
+                            ((planemask & ps3v->PlaneMask)<< 8));
             else  
-                SETB_SRC_FG_CLR(planemask & s3vPriv.PlaneMask);
+                SETB_SRC_FG_CLR(planemask & ps3v->PlaneMask);
             }
         }
     else {
@@ -760,9 +867,9 @@ unsigned planemask;
         CACHE_SETB_PAT_BG_CLR(bg);
         }
     else {
-        CACHE_SETB_PAT_FG_CLR(planemask & s3vPriv.PlaneMask);
+        CACHE_SETB_PAT_FG_CLR(planemask & ps3v->PlaneMask);
         CACHE_SETB_PAT_BG_CLR(0);
-        if(vgaBitsPerPixel == 8) 
+        if(pScrn->bitsPerPixel == 8) 
             SETB_SRC_FG_CLR(fg | (fg << 8));
         else  
             SETB_SRC_FG_CLR(fg);
@@ -786,7 +893,7 @@ int x, y, w, h;
         }
 
     else {                               /* Transparent case or planemask*/ 
-        new_width = S3VCheckLSPN(w, 1);  /* Check for blit bugs*/
+        new_width = S3VCheckLSPN(ps3v, w, 1);  /* Check for blit bugs*/
                                   
         dwords_to_transfer = h * ((new_width + 31) / 32) ;
 
@@ -795,13 +902,14 @@ int x, y, w, h;
         if (new_width != w) 
              CACHE_SETB_CLIP_L_R(x, x + w -1); 
         else {
-             CACHE_SETB_CLIP_L_R(0, s3vPriv.Width);
+             CACHE_SETB_CLIP_L_R(0, ps3v->Width);
              }
         SETB_RDEST_XY(x, y);
-        S3VWriteImageTransferArea (dwords_to_transfer, 0xffffffff);
+        S3VWriteImageTransferArea (s3vMmioMem, dwords_to_transfer, 0xffffffff);
         }  
 }
 
+#endif
 
 /* These functions implement fills using color 8x8 patterns.
  * The patterns are stored in video memory, but the virge wants
@@ -812,27 +920,39 @@ int x, y, w, h;
  */
 
 void 
-S3VSetupForFill8x8Pattern(patternx, patterny, rop, planemask, trans_col)
+S3VSetupForFill8x8Pattern(ScrnInfoPtr pScrn, int patternx, int patterny, 
+	int rop, unsigned planemask, int trans_col)
+/*
 int patternx, patterny;
 int rop; 
 unsigned planemask;
 int trans_col;
+ */
 {
     int *pattern_addr, *color_regs;
     int num_bytes;
     int cmd = s3vAccelCmd;
+    COMPVARS;
 
-    pattern_addr = (int *) (xf86AccelInfoRec.FramebufferBase + 
-                           patternx * vgaBitsPerPixel / 8 +
-                           patterny * s3vPriv.Bpl);
+    pattern_addr = (int *) (ps3v->FBBase + 
+                           patternx * pScrn->bitsPerPixel / 8 +
+                           patterny * ps3v->Bpl);
+    /*
+    pattern_addr = (int *) (ps3v->AccelInfoRec->FramebufferBase + 
+                           patternx * pScrn->bitsPerPixel / 8 +
+                           patterny * ps3v->Bpl);
+     */
     color_regs = (int *) &COLOR_PATTERN;
 
 
     /* Now we transfer to color regs */
-    num_bytes = 64 * vgaBitsPerPixel / 8;
+    num_bytes = 64 * pScrn->bitsPerPixel / 8;
+    /*
     BusToMem(color_regs, pattern_addr, num_bytes);   
+     */
+    memcpy(color_regs, pattern_addr, num_bytes);
 
-    if((planemask & s3vPriv.PlaneMask) == s3vPriv.PlaneMask){ 
+    if((planemask & ps3v->PlaneMask) == ps3v->PlaneMask){ 
         cmd |= s3vAlu_sp[rop];
         s3vSavedCmd = NO_MONO_FILL;
         }
@@ -845,11 +965,11 @@ int trans_col;
             s3vSavedCmd = NO_MONO_FILL;
 
         WaitQueue(1);
-        if(vgaBitsPerPixel == 8) 
-            SETB_SRC_FG_CLR((planemask & s3vPriv.PlaneMask) |
-                        ((planemask & s3vPriv.PlaneMask)<< 8));
+        if(pScrn->bitsPerPixel == 8) 
+            SETB_SRC_FG_CLR((planemask & ps3v->PlaneMask) |
+                        ((planemask & ps3v->PlaneMask)<< 8));
         else  
-            SETB_SRC_FG_CLR(planemask & s3vPriv.PlaneMask);
+            SETB_SRC_FG_CLR(planemask & ps3v->PlaneMask);
         } 
 
     cmd |= (CMD_AUTOEXEC | CMD_BITBLT | MIX_COLOR_PATT | CMD_XP | CMD_YP); 
@@ -861,12 +981,16 @@ int trans_col;
 
 
 
-void S3VSubsequentFill8x8Pattern(patternx, patterny, x, y, w, h)
+void S3VSubsequentFill8x8Pattern(ScrnInfoPtr pScrn, 
+	int patternx, int patterny, int x, int y, int w, int h)
+/*
 int patternx, patterny;
 int x, y, w, h;
+ */
 {
     int dwords_to_transfer;
     int new_width;
+    COMPVARS;
 
     if(s3vSavedCmd != NEED_MONO_FILL){   /* No planemask */
         WaitQueue(2);
@@ -874,22 +998,23 @@ int x, y, w, h;
         SETB_RDEST_XY(x, y);
         }
     else {                               /* We have a planemask */ 
-        new_width = S3VCheckLSPN(w, 1);  /* Check for blit bugs */                                  
+        new_width = S3VCheckLSPN(ps3v, w, 1);  /* Check for blit bugs */                                  
         dwords_to_transfer = h * ((new_width + 31) / 32) ;
 
         WaitQueue(3);
         if (new_width != w)
              CACHE_SETB_CLIP_L_R(x, x + w -1); 
         else {
-             CACHE_SETB_CLIP_L_R(0, s3vPriv.Width); 
+             CACHE_SETB_CLIP_L_R(0, ps3v->Width); 
              }
         SETB_RWIDTH_HEIGHT(new_width - 1, h);
         SETB_RDEST_XY(x, y);
-        S3VWriteImageTransferArea (dwords_to_transfer, 0xffffffff);
+        S3VWriteImageTransferArea (s3vMmioMem, dwords_to_transfer, 0xffffffff);
         }  
 }
 
 
+#if 0
 
 void S3VSubsequentTwoPointLine(x1, y1, x2, y2, bias)
 int x1, x2, y1, y2, bias;
@@ -958,8 +1083,8 @@ int x1, x2, y1, y2, bias;
 
     if(s3vLineHWClipSet) {
         WaitQueue(2);
-        CACHE_SETB_CLIP_L_R(0, s3vPriv.Width); 
-        CACHE_SETB_CLIP_T_B(0, s3vPriv.ScissB); 
+        CACHE_SETB_CLIP_L_R(0, ps3v->Width); 
+        CACHE_SETB_CLIP_T_B(0, ps3v->ScissB); 
         s3vLineHWClipSet = FALSE;
         }
   
@@ -969,16 +1094,24 @@ int x1, x2, y1, y2, bias;
  
 }
 
+#endif
+
+
+
 
 static void
-S3VSetClippingRectangle(x1, y1, x2, y2)
-int x1, y1, x2, y2;
+S3VSetClippingRectangle(ScrnInfoPtr pScrn, int x1, int y1, int w, int h)
 {
+    COMPVARS;
+    
     WaitQueue(2);
-    CACHE_SETB_CLIP_L_R(x1, x1 + x2); 
-    CACHE_SETB_CLIP_T_B(y1, y1+ y2);   
+    CACHE_SETB_CLIP_L_R(x1, x1 + w-1); 
+    CACHE_SETB_CLIP_T_B(y1, y1+ h-1);   
     s3vLineHWClipSet = TRUE;
 }
+
+
+
 
 
 /* Trapezoid solid fills. XAA passes the coordinates of the top start
@@ -992,14 +1125,18 @@ int x1, y1, x2, y2;
  */
 
 void
-S3VSubsequentFillTrapezoidSolid(y, h, left, dxl, dyl, el, right, dxr, dyr, er)
-int y, h, left, dxl, dyl, el, right, dxr, dyr, er;
+S3VSubsequentFillTrapezoidSolid(
+	ScrnInfoPtr pScrn, 
+	int y, int h, 
+	int left, int dxl, int dyl, int el, 
+	int right, int dxr, int dyr, int er)
 {
-int l_xdelta, r_xdelta;
-double lendx, rendx, dl_delta, dr_delta;
-int lbias, rbias;
-unsigned int cmd = s3vAccelCmd;
-double l_sgn = -1.0, r_sgn = -1.0;
+    int l_xdelta, r_xdelta;
+    double lendx, rendx, dl_delta, dr_delta;
+    int lbias, rbias;
+    unsigned int cmd = s3vAccelCmd;
+    double l_sgn = -1.0, r_sgn = -1.0;
+    COMPVARS;
 
     cmd |= (CMD_POLYFILL | CMD_AUTOEXEC | MIX_MONO_PATT) ;
     cmd |= (s3vSavedRectCmdForLine & (0xff << 17));
@@ -1056,13 +1193,15 @@ double l_sgn = -1.0, r_sgn = -1.0;
  */
 
 void
-S3VWriteImageTransferArea (dwords, value)
+S3VWriteImageTransferArea (void *s3vMmioMem, int dwords, unsigned value)
+/*
 int dwords;
 unsigned value;
+ */
 {
-int i, j;
-int blocks, left_to_do;
-unsigned int *image_transfer;
+    int i, j;
+    int blocks, left_to_do;
+    unsigned int *image_transfer;
  
 
     blocks = dwords / 8192;
@@ -1082,6 +1221,109 @@ unsigned int *image_transfer;
 }
 
 
-#endif
+
+
+/* These are the ImageWrite functions,
+/* These are the ScreenToScreen bitblt functions. We support all ROPs, all
+ * directions, and a planemask by adjusting the ROP and using the mono pattern
+ * registers. There is no support for transparency. 
+ */
+
+    /*	
+void 
+S3VSetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, int ydir, 
+	int rop, unsigned planemask, int transparency_color)
+    int xdir, ydir;
+    int rop;
+    unsigned planemask;
+    int transparency_color;
+    */
+    
+void
+S3VSetupForImageWrite(ScrnInfoPtr pScrn, int rop, unsigned int planemask,
+	int transparency_color, int bpp, int depth)
+{
+    int cmd = s3vAccelCmd;
+    COMPVARS;
+ 
+    if((planemask & ps3v->PlaneMask) != ps3v->PlaneMask) {     
+        cmd |= (CMD_AUTOEXEC | s3vAlu_pat[rop] | CMD_BITBLT | 
+        	MIX_MONO_PATT | MIX_CPUDATA | CMD_ITA_DWORD | CMD_HWCLIP |
+		CMD_XP | CMD_YP );
+        }
+    else {
+        cmd |= (CMD_AUTOEXEC | s3vAlu[rop] | CMD_BITBLT | MIX_CPUDATA |
+		CMD_ITA_DWORD | CMD_HWCLIP | CMD_XP | CMD_YP );
+        }
+    /*
+    if(xdir == 1) cmd |= CMD_XP;
+    if(ydir == 1) cmd |= CMD_YP;
+    */
+    s3vSavedCmd = cmd;
+   
+    WaitQueue(4);
+    CACHE_SETB_PAT_FG_CLR(planemask & ps3v->PlaneMask);
+    CACHE_SETB_CMD_SET(cmd);
+    CACHE_SETB_MONO_PAT0(~0);
+    CACHE_SETB_MONO_PAT1(~0);   
+    
+}
+
+
+
+/*
+void 
+S3VSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1, 
+	int x2, int y2, int w, int h)
+int x1, y1, x2, y2, w, h;
+ */
+ 
+void
+S3VSubsequentImageWriteRect(ScrnInfoPtr pScrn, 
+	int x, int y, int w, int h, int skipleft)
+{
+    int new_width;
+    COMPVARS;
+    
+   #if 0
+    if(S3VROPHasDst(s3vSavedCmd)) {
+        new_width = S3VCheckBltWidth(ps3v, w);  /* Check for blit bug */
+        WaitQueue(5);
+        if(new_width != w) {
+            CACHE_SETB_CMD_SET(s3vSavedCmd | CMD_HWCLIP);
+            CACHE_SETB_CLIP_L_R(x, x + w -1); 
+            }
+        else 
+            CACHE_SETB_CLIP_L_R(0, ps3v->Width); 
+        }
+    else {
+        new_width = w;
+        WaitQueue(4);
+        CACHE_SETB_CLIP_L_R(0, ps3v->Width); 
+        }
+   #else
+    S3VSetClippingRectangle(pScrn, x, y, w, h );
+    WaitQueue(3);
+   #endif
+                                  
+    SETB_RWIDTH_HEIGHT(new_width - 1, h);
+    /*
+    SETB_RSRC_XY( (s3vSavedCmd & CMD_XP) ? x1 : (x1 + new_width -1), 
+        (s3vSavedCmd & CMD_YP) ? y1 : (y1 + h - 1));
+	*/
+    SETB_RDEST_XY( x, y );
+    
+	/*
+    xf86ErrorFVerb(VERBLEV, 
+	"	S3VSubScrScrCopy width=%x, src=%x, dest=%x\n",
+		(new_width-1)<<16 | h,
+		((s3vSavedCmd & CMD_XP) ? x1 : (x1 + new_width -1))<< 16 |
+        	((s3vSavedCmd & CMD_YP) ? y1 : (y1 + h - 1)),
+		((s3vSavedCmd & CMD_XP) ? x2 : (x2 + new_width - 1)) <<16 |
+        	((s3vSavedCmd & CMD_YP) ? y2 : (y2 + h - 1))
+		 );
+	 */
+}
+
 
 /*EOF*/

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.81 1998/11/01 12:35:48 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.82 1998/11/15 04:30:18 dawes Exp $
 
 
 
@@ -140,7 +140,6 @@ XINPUT_DEV_OBJS = \
 SRCS =	\
 	xf86Bus.c \
 	xf86IniExt.c \
-	xf86Cmap.c \
 	xf86Config.c \
 	xf86Cursor.c \
 	xf86DGA.c \
@@ -167,7 +166,6 @@ SRCS =	\
 
 OBJS = \
 	xf86Bus.o \
-	xf86Cmap.o \
 	xf86Config.o \
 	xf86Cursor.o \
 	xf86DGA.o \

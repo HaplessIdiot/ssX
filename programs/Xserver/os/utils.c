@@ -45,7 +45,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.40 1998/10/04 09:39:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.41 1998/11/01 07:57:47 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -1631,7 +1631,7 @@ Pclose(iop)
     fclose(iop);
 
     for (last = NULL, cur = pidlist; cur; last = cur, cur = cur->next)
-	if (cur->fp = iop)
+	if (cur->fp == iop)
 	    break;
     if (cur == NULL)
 	return -1;

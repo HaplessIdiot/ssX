@@ -27,7 +27,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/cfb/cfbcmap.c,v 3.7 1998/07/25 09:06:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbcmap.c,v 3.8 1998/10/04 09:37:38 dawes Exp $ */
 
 
 #include "X.h"
@@ -50,61 +50,27 @@ extern Bool GlxInitVisuals(
 );
 #endif
 
-#ifdef	STATIC_COLOR
-
-static ColormapPtr InstalledMaps[MAXSCREENS];
-
 int
 cfbListInstalledColormaps(pScreen, pmaps)
     ScreenPtr	pScreen;
     Colormap	*pmaps;
 {
-    /* By the time we are processing requests, we can guarantee that there
-     * is always a colormap installed */
-    *pmaps = InstalledMaps[pScreen->myNum]->mid;
-    return (1);
+    return miListInstalledColormaps(pScreen, pmaps);
 }
-
 
 void
 cfbInstallColormap(pmap)
     ColormapPtr	pmap;
 {
-    int index = pmap->pScreen->myNum;
-    ColormapPtr oldpmap = InstalledMaps[index];
-
-    if(pmap != oldpmap)
-    {
-	/* Uninstall pInstalledMap. No hardware changes required, just
-	 * notify all interested parties. */
-	if(oldpmap != (ColormapPtr)None)
-	    WalkTree(pmap->pScreen, TellLostMap, (char *)&oldpmap->mid);
-	/* Install pmap */
-	InstalledMaps[index] = pmap;
-	WalkTree(pmap->pScreen, TellGainedMap, (char *)&pmap->mid);
-
-    }
+    miInstallColormap(pmap);
 }
 
 void
 cfbUninstallColormap(pmap)
     ColormapPtr	pmap;
 {
-    int index = pmap->pScreen->myNum;
-    ColormapPtr curpmap = InstalledMaps[index];
-
-    if(pmap == curpmap)
-    {
-	if (pmap->mid != pmap->pScreen->defColormap)
-	{
-	    curpmap = (ColormapPtr) LookupIDByType(pmap->pScreen->defColormap,
-						   RT_COLORMAP);
-	    (*pmap->pScreen->InstallColormap)(curpmap);
-	}
-    }
+    miUninstallColormap(pmap);
 }
-
-#endif
 
 void
 cfbResolveColor(pred, pgreen, pblue, pVisual)

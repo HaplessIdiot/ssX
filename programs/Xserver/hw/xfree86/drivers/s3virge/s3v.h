@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.1 1998/11/01 12:36:00 dawes Exp $ */
 
 #ifndef _S3V_H
 #define _S3V_H
@@ -22,25 +22,10 @@
 /* Drivers that need to access the PCI config space directly need this */
 #include "xf86Pci.h"
 
-#if 0
-/* VGA HW includes.  Most of s3v uses MMIO, but if PIO_VGA is defined then */
-/* a file gets PIO instead. Presently, only s3v_pio.c uses this. */
-#ifdef _S3V_PIO_VGA
-#include "vgaHW.h"
-#else
-#include "vgaHWmmio.h"
-#endif
-#endif
-
-/* Disappeared since 3.9Nc... */
-/* #include "vgaHWmmio.h" */
-/* So I try to solve it (almost) as the MGA driver ( drivers/mga.h )*/
-/* Maybe the debug code is a good idea... {KF}*/
-
 #include "vgaHW.h"
 
-#ifndef VGAHWMMIO_H
-#define VGAHWMMIO_H
+#ifndef _S3V_VGAHWMMIO_H
+#define _S3V_VGAHWMMIO_H
 #define INREG8(addr) *(volatile CARD8 *)(hwp->MMIOBase + hwp->MMIOOffset + (addr))
 #define INREG16(addr) *(volatile CARD16 *)(hwp->MMIOBase + hwp->MMIOOffset + (addr))
 #define INREG(addr) *(volatile CARD32 *)(hwp->MMIOBase + hwp->MMIOOffset + (addr))
@@ -73,13 +58,8 @@
 #include "cfb24.h"
 #include "cfb32.h"
 
-#if 0
 /* Drivers using the XAA interface ... */
 #include "xaa.h"
-#include "xaalocal.h"
-#include "xf86Cursor.h"
-#include "xf86fbman.h"
-#endif
 
 
 /*********************************************/
@@ -88,6 +68,8 @@
 /* Some S3 ViRGE structs */
 #include "newmmio.h"
 
+/* More ViRGE defines */
+#include "regs3v.h"
 
 /*********************************************/
 
@@ -140,6 +122,9 @@ typedef struct {
     					/* Compatibility variables */
     int vgaCRIndex, vgaCRReg;
     int Width, Bpp,Bpl, ScissB;   
+    					/* XAA */
+    unsigned PlaneMask;
+    int bltbug_width1, bltbug_width2;
     					/* Flag used by MapMem/UnMapMem */
 					/* to determine if matched pair */
 					/* is called */
@@ -162,6 +147,8 @@ typedef struct {
     unsigned char *	FBStart;
     				     	/* Saved CR53 value */
     unsigned char	EnableMmioCR53;
+    					/* Extended reg unlock storage */
+    unsigned char	CR38,CR39,CR40;
     					/* Flag indicating if vgaHWMapMem was */
 					/* used successfully for this screen */
     Bool		PrimaryVidMapped;
@@ -172,18 +159,41 @@ typedef struct {
     int			maxClock;
     int			HorizScaleFactor;
     Bool		bankedMono;
-    Bool		NoPCIRetry;
-    					/* No Acceleration enabled? */
-    Bool		NoAccel;
     					/* Memory Clock */
     int 		MCLK;
+    					/* ViRGE options -start- */
+					
+    					/* Enable PCI burst mode for reads? */
+    Bool 		pci_burst_on;
+    					/* Diasable PCI retries */
+    Bool		NoPCIRetry;
+    					/* Adjust fifo for acceleration? */
+    Bool 		fifo_conservative;
+    Bool 		fifo_moderate;
+    Bool 		fifo_aggressive;
+    					/* Set memory options */
+    Bool 		slow_edodram;
+    Bool 		fast_dram;
+    Bool 		fpm_vram;
+    					/* Disable Acceleration */
+    Bool		NoAccel;
+    					/* Adjust memory ras precharge */ 
+					/* timing */
+    Bool 		early_ras_precharge;
+    Bool 		late_ras_precharge;
+    					/* ViRGE options -end- */
     /* ViRGE specifics -end- */
     
     /* Used by ViRGE driver, but generic */
     
     CloseScreenProcPtr	CloseScreen;
+    					/* XAA info Rec */
+    XAAInfoRecPtr 	AccelInfoRec;
     
     /* Used by ViRGE driver, but generic -end- */
+    
+    
+    
     
     /* we'll put variables that we want to access _fast_ at the beginning (just a hunch) */
     unsigned char cache_SegSelL, cache_SegSelH;  /* for tseng_bank.c */
@@ -257,14 +267,14 @@ typedef struct {
 #define S3VPTR(p) ((S3VPtr)((p)->driverPrivate))
       
 
-#define S3V_DEBUG
+/* #define S3V_DEBUG */
 		 
 #ifdef S3V_DEBUG
 #define PVERB5(arg) ErrorF(arg)
 #define VERBLEV	1
 #else
-#define PVERB5(arg) xf86ErrorFVerb(5, arg)
-#define VERBLEV	5
+#define PVERB5(arg) xf86ErrorFVerb(2, arg)
+#define VERBLEV	2
 #endif
 
 
@@ -333,7 +343,7 @@ typedef struct {
 } while (0)
 #endif
 
-
+#if 0
 
 /* Wait until GP is idle and queue is empty */
 #define	WaitIdleEmpty()  do { mem_barrier(); while ((IN_SUBSYS_STAT() & 0x3f00) != 0x3000); } while (0)
@@ -344,8 +354,101 @@ typedef struct {
 /* Wait until Command FIFO is empty */
 #define WaitCommandEmpty()       do { mem_barrier(); while (!(((((mmtr)s3vMmioMem)->subsys_regs.regs.adv_func_cntl)) & 0x200)); } while (0)
 
+#endif
 
 /*********************************************************/
+
+
+/* Various defines which are used to pass flags between the Setup and 
+ * Subsequent functions. 
+ */
+
+#define NO_MONO_FILL      0x00
+#define NEED_MONO_FILL    0x01
+#define MONO_TRANSPARENCY 0x02
+
+
+/* This function was taken from accel/s3v.h. It adjusts the width
+ * of transfers for mono images to works around some bugs.
+ */
+
+static __inline__ int S3VCheckLSPN(S3VPtr ps3v, int w, int dir)
+{
+   int lspn = (w * ps3v->Bpp) & 63;  /* scanline width in bytes modulo 64*/
+
+   if (ps3v->Bpp == 1) {
+      if (lspn <= 8*1)
+	 w += 16;
+      else if (lspn <= 16*1)
+	 w += 8;
+   } else if (ps3v->Bpp == 2) {
+      if (lspn <= 4*2)
+	 w += 8;
+      else if (lspn <= 8*2)
+	 w += 4;
+   } else {  /* ps3v->Bpp == 3 */
+      if (lspn <= 3*3) 
+	 w += 6;
+      else if (lspn <= 6*3)
+	 w += 3;
+   }
+   if (dir && w >= ps3v->bltbug_width1 && w <= ps3v->bltbug_width2) {
+      w = ps3v->bltbug_width2 + 1;
+   }
+
+   return w;
+}
+
+/* And this adjusts color bitblts widths to work around GE bugs */
+
+static __inline__ int S3VCheckBltWidth(S3VPtr ps3v, int w)
+{
+   if (w >= ps3v->bltbug_width1 && w <= ps3v->bltbug_width2) {
+      w = ps3v->bltbug_width2 + 1;
+   }
+   return w;
+}
+
+/* This next function determines if the Source operand is present in the
+ * given ROP. The rule is that both the lower and upper nibble of the rop
+ * have to be neither 0x00, 0x05, 0x0a or 0x0f. If a CPU-Screen blit is done
+ * with a ROP which does not contain the source, the virge will hang when
+ * data is written to the image transfer area. 
+ */
+
+static __inline__ Bool S3VROPHasSrc(int shifted_rop)
+{
+    int rop = (shifted_rop & (0xff << 17)) >> 17;
+
+    if ((((rop & 0x0f) == 0x0a) | ((rop & 0x0f) == 0x0f) 
+        | ((rop & 0x0f) == 0x05) | ((rop & 0x0f) == 0x00)) &
+       (((rop & 0xf0) == 0xa0) | ((rop & 0xf0) == 0xf0) 
+        | ((rop & 0xf0) == 0x50) | ((rop & 0xf0) == 0x00)))
+            return FALSE;
+    else 
+            return TRUE;
+}
+
+/* This next function determines if the Destination operand is present in the
+ * given ROP. The rule is that both the lower and upper nibble of the rop
+ * have to be neither 0x00, 0x03, 0x0c or 0x0f. 
+ */
+
+static __inline__ Bool S3VROPHasDst(int shifted_rop)
+{
+    int rop = (shifted_rop & (0xff << 17)) >> 17;
+
+    if ((((rop & 0x0f) == 0x0c) | ((rop & 0x0f) == 0x0f) 
+        | ((rop & 0x0f) == 0x03) | ((rop & 0x0f) == 0x00)) &
+       (((rop & 0xf0) == 0xc0) | ((rop & 0xf0) == 0xf0) 
+        | ((rop & 0xf0) == 0x30) | ((rop & 0xf0) == 0x00)))
+            return FALSE;
+    else 
+            return TRUE;
+}
+
+
+
 
 #endif  /*_S3V_H*/
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.8 1998/10/05 13:23:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.9 1998/11/01 12:35:49 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -131,6 +131,11 @@ typedef struct { CARD32 red, green, blue; } rgb;
 
 typedef struct { float red, green, blue; } Gamma;
 
+/* The permitted gamma range is 1 / GAMMA_MAX <= g <= GAMMA_MAX */
+#define GAMMA_MAX	10.0
+#define GAMMA_MIN	(1.0 / GAMMA_MAX)
+#define GAMMA_ZERO	(GAMMA_MIN / 100.0)
+
 typedef struct {
     char *		id;
     char *		vendor;
@@ -141,7 +146,7 @@ typedef struct {
     range		vrefresh[MAX_VREFRESH];
     DisplayModePtr	Modes;		/* Start of the monitor's mode list */
     DisplayModePtr	Last;		/* End of the monitor's mode list */
-    Gamma		gamma;
+    Gamma		gamma;		/* Gamma of the monitor */
     int			widthmm;
     int			heightmm;
     pointer		options;
@@ -374,7 +379,7 @@ typedef struct _ScrnInfoRec {
     rgb			mask;			/* rgb masks */
     rgb			offset;			/* rgb offsets */
     int			rgbBits;		/* Number of bits in r/g/b */
-    Gamma		gamma;			/* Gamma correction */
+    Gamma		gamma;			/* Gamma of the monitor */
     int			defaultVisual;		/* default visual class */
     int			maxHValue;		/* max horizontal timing */
     int			maxVValue;		/* max vertical timing  value */

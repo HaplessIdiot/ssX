@@ -28,7 +28,7 @@
  * 
  * Permedia accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm_accel.c,v 1.6 1998/10/04 14:35:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm_accel.c,v 1.7 1998/10/05 13:23:09 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -36,6 +36,11 @@
 
 #include "xf86PciInfo.h"
 #include "xf86Pci.h"
+#define PSZ 8
+#include "cfb.h"
+#undef PSZ
+#include "cfb16.h"
+#include "cfb32.h"
 
 #include "glint_regs.h"
 #include "glint.h"
@@ -48,9 +53,17 @@ static void PermediaSetupForFillRectSolid(ScrnInfoPtr pScrn, int color, int rop,
 				unsigned int planemask);
 static void PermediaSubsequentFillRectSolid(ScrnInfoPtr pScrn, int x, int y,
 				int w, int h);
-static void PermediaSetupForSolidLine(ScrnInfoPtr pScrn, int color, int rop,
-				unsigned int planemask);
-static void PermediaSubsequentSolidBresenhamLine( ScrnInfoPtr pScrn,
+static void PermediaSetupForSolidLine(ScrnInfoPtr pScrn, int color,
+				int rop, unsigned int planemask);
+static void PermediaSubsequentHorVertLine(ScrnInfoPtr pScrn, int x, int y, 
+				int len, int dir);
+static void PermediaSubsequentSolidBresenhamLine8bpp(ScrnInfoPtr pScrn,
+        			int x, int y, int dmaj, int dmin, int e, 
+				int len, int octant);
+static void PermediaSubsequentSolidBresenhamLine16bpp(ScrnInfoPtr pScrn,
+        			int x, int y, int dmaj, int dmin, int e, 
+				int len, int octant);
+static void PermediaSubsequentSolidBresenhamLine32bpp(ScrnInfoPtr pScrn,
         			int x, int y, int dmaj, int dmin, int e, 
 				int len, int octant);
 static void PermediaSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, 
@@ -104,6 +117,10 @@ static void PermediaSubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn,int patte
 				   int w, int h);
 static void PermediaLoadCoord(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 				int a, int d);
+static void PermediaPolylinesThinSolidWrapper(DrawablePtr pDraw, GCPtr pGC,
+   				int mode, int npt, DDXPointPtr pPts);
+static void PermediaPolySegmentThinSolidWrapper(DrawablePtr pDraw, GCPtr pGC,
+ 				int nseg, xSegment *pSeg);
 
 #define MAX_FIFO_ENTRIES 1023
 
@@ -193,16 +210,31 @@ PermediaAccelInit(ScreenPtr pScreen)
 
     PermediaInitializeEngine(pScrn);
 
-    infoPtr->Flags = PIXMAP_CACHE /*| MICROSOFT_ZERO_LINE_BIAS*/;
+    infoPtr->Flags = PIXMAP_CACHE;
  
     infoPtr->Sync = PermediaSync;
 
+    infoPtr->SolidFillFlags = 0;
     infoPtr->SetupForSolidFill = PermediaSetupForFillRectSolid;
     infoPtr->SubsequentSolidFillRect = PermediaSubsequentFillRectSolid;
-#if 0
+    infoPtr->SolidLineFlags = 0;
+    infoPtr->PolySegmentThinSolidFlags = 0;
+    infoPtr->PolylinesThinSolidFlags = 0;
     infoPtr->SetupForSolidLine = PermediaSetupForSolidLine;
-    infoPtr->SubsequentSolidBresenhamLine = PermediaSubsequentSolidBresenhamLine;
-#endif
+    infoPtr->SubsequentSolidHorVertLine = PermediaSubsequentHorVertLine;
+    switch(pScrn->bitsPerPixel) {
+	case 8:		infoPtr->SubsequentSolidBresenhamLine = 
+				PermediaSubsequentSolidBresenhamLine8bpp;
+			break;
+	case 16:	infoPtr->SubsequentSolidBresenhamLine = 
+				PermediaSubsequentSolidBresenhamLine16bpp;
+			break;
+	case 32:	infoPtr->SubsequentSolidBresenhamLine = 
+				PermediaSubsequentSolidBresenhamLine32bpp;
+			break;
+    }
+    infoPtr->PolySegmentThinSolid = PermediaPolySegmentThinSolidWrapper;
+    infoPtr->PolylinesThinSolid = PermediaPolylinesThinSolidWrapper;
   
     infoPtr->ScreenToScreenCopyFlags = NO_TRANSPARENCY |
 				       ONLY_LEFT_TO_RIGHT_BITBLT; 
@@ -386,80 +418,6 @@ PermediaSetClippingRectangle(
     pGlint->ClippingOn = TRUE;
 }
 
-static void 
-PermediaSetupForSolidLine(
-	ScrnInfoPtr pScrn, 
-	int color, int rop, 
-	unsigned int planemask
-){
-    GLINTPtr pGlint = GLINTPTR(pScrn);
-
-    CHECKCLIPPING;
-    GLINT_WAIT(6);
-    DO_PLANEMASK(planemask);
-    GLINT_WRITE_REG(0, RasterizerMode);
-    GLINT_WRITE_REG(color, GLINTColor);
-    GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);
-    if (rop == GXcopy) {
-  	GLINT_WRITE_REG(pGlint->pprod, FBReadMode);
-    } else {
-  	GLINT_WRITE_REG(pGlint->pprod | FBRM_DstEnable, FBReadMode);
-    }
-    LOADROP(rop);
-}
-
-static void 
-PermediaSubsequentSolidBresenhamLine( ScrnInfoPtr pScrn,
-        int x, int y, int dmaj, int dmin, int e, int len, int octant)
-{
-    GLINTPtr pGlint = GLINTPTR(pScrn);
-   int dy, dxdom, startxdom, starty;
-   double min_off = 0.0;
-
-#if 0
-   dmaj >>= 1;  
-   dmin >>= 1;
-#endif
-   x <<= 16;
-   y <<= 16;
-
-   /* translate the error term into a minor axis offset  
-	in units of 1/(2^16) of a pixel. */
-   if(dmaj != -e)
-      min_off = (((double)e/(double)dmaj) + 1.0) * 0.5 * 65536.0;
-
-   if(octant & YMAJOR) {
-	if(octant & YDECREASING)
-	  dy = -1 << 16;  
-	else
-	  dy = 1 << 16;
-        
-        if(octant & XDECREASING)
-            dxdom = (-dmin << 16)/dmaj;
-	else
-            dxdom = (dmin << 16)/dmaj;
-	/* We have to shift up one, as bit 0 isn't used for precision */
-	startxdom = x | (((int)min_off<<1) & 0xFFFE); 	
-	starty = y;
-   } else {
-        if(octant & XDECREASING)
-          dxdom = -1 << 16;  
-        else
-          dxdom = 1 << 16;
-
-	if(octant & YDECREASING)
-            dy = (-dmin << 16)/dmaj;
-	else
-            dy = (dmin << 16)/dmaj;
-        startxdom = x;
-	/* We have to shift up one, as bit 0 isn't used for precision */
-	starty = y | (((int)min_off<<1) & 0xFFFE);
-   }
-
-   PermediaLoadCoord(pScrn, startxdom, starty, pGlint->startxsub, len, dxdom, dy);
-   GLINT_WRITE_REG(PrimitiveLine, Render);
-}
-
 static void
 PermediaSetupForScreenToScreenCopy(
 	ScrnInfoPtr pScrn, 
@@ -592,6 +550,8 @@ PermediaSetupForMono8x8PatternFill(
 	unsigned int planemask)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
+  if (bg == -1) pGlint->FrameBufferReadMode = -1;
+	else	pGlint->FrameBufferReadMode = 0;
   pGlint->ForeGroundColor = fg;
   pGlint->BackGroundColor = bg;
   REPLICATE(pGlint->ForeGroundColor);
@@ -631,7 +591,7 @@ PermediaSubsequentMono8x8PatternFillRect(
     GLINTPtr pGlint = GLINTPTR(pScrn);
     GLINT_WAIT(6);
     PermediaLoadCoord(pScrn, x<<16, y<<16, (x+w)<<16, h, 0, 1<<16);
-    if (pGlint->BackGroundColor != -1) {
+    if (pGlint->FrameBufferReadMode != -1) {
    	GLINT_WRITE_REG(1<<20|patternx<<7|patterny<<12|UNIT_ENABLE, 
 							AreaStippleMode);
   	GLINT_WRITE_REG(AreaStippleEnable | TextureEnable | PrimitiveTrapezoid, 
@@ -829,20 +789,17 @@ PermediaSubsequentCPUToScreenColorExpandFill(
     GLINTPtr pGlint = GLINTPTR(pScrn);
     int dwords = ((w + 31) >> 5) * h;
 
-    if (skipleft)
-	PermediaSetClippingRectangle(pScrn,x+skipleft, y, x+w, y+h);
-    else
-	CHECKCLIPPING;
+    PermediaSetClippingRectangle(pScrn,x+skipleft, y, x+w, y+h);
+
+    PermediaLoadCoord(pScrn, x<<16, y<<16, (x+w)<<16, h, 0, 1<<16);
 
     if ((pGlint->ROP == GXcopy) && (pGlint->BackGroundColor != -1)) {
-        PermediaLoadCoord(pScrn, x<<16, y<<16, (x+w)<<16, h, 0, 1<<16);
         GLINT_WRITE_REG(PrimitiveTrapezoid | FastFillEnable, Render);
 	REPLICATE(pGlint->ForeGroundColor);
 	GLINT_WRITE_REG(pGlint->ForeGroundColor, FBBlockColor);
     }
 	
     GLINT_WAIT(6);
-    PermediaLoadCoord(pScrn, x<<16, y<<16, (x+w)<<16, h, 0, 1<<16);
     GLINT_WRITE_REG(PrimitiveTrapezoid | pGlint->FrameBufferReadMode | 
 							SyncOnBitMask, Render);
     GLINT_WRITE_REG((dwords - 1)<<16 | 0x0D, OutputFIFO);
@@ -1477,3 +1434,178 @@ PermediaWritePixmap32bpp(
 
     SET_SYNC_FLAG(infoRec);
 }
+
+static void 
+PermediaPolylinesThinSolidWrapper(
+   DrawablePtr     pDraw,
+   GCPtr           pGC,
+   int             mode,
+   int             npt,
+   DDXPointPtr     pPts
+){
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+    GLINTPtr pGlint = GLINTPTR(infoRec->pScrn);
+    pGlint->CurrentGC = pGC;
+    if(infoRec->NeedToSync) (*infoRec->Sync)(infoRec->pScrn);
+    XAAPolyLines(pDraw, pGC, mode, npt, pPts);
+}
+
+static void 
+PermediaPolySegmentThinSolidWrapper(
+   DrawablePtr     pDraw,
+   GCPtr           pGC,
+   int             nseg,
+   xSegment        *pSeg
+){
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+    GLINTPtr pGlint = GLINTPTR(infoRec->pScrn);
+    pGlint->CurrentGC = pGC;
+    if(infoRec->NeedToSync) (*infoRec->Sync)(infoRec->pScrn);
+    XAAPolySegment(pDraw, pGC, nseg, pSeg);
+}
+
+static void
+PermediaSetupForSolidLine(ScrnInfoPtr pScrn, int color,
+					 int rop, unsigned int planemask)
+{
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+
+    CHECKCLIPPING;
+    GLINT_WAIT(5);
+    DO_PLANEMASK(planemask);
+    GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);
+    GLINT_WRITE_REG(color, GLINTColor);
+    if (rop == GXcopy) {
+  	GLINT_WRITE_REG(pGlint->pprod, FBReadMode);
+    } else {
+  	GLINT_WRITE_REG(pGlint->pprod | FBRM_DstEnable, FBReadMode);
+    }
+    LOADROP(rop);
+}
+
+static void
+PermediaSubsequentHorVertLine(ScrnInfoPtr pScrn,int x,int y,int len,int dir)
+{
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+  
+    GLINT_WAIT(6);
+    if (dir == DEGREES_0) {
+        PermediaLoadCoord(pScrn, x<<16, y<<16, 0, len, 1<<16, 0);
+    } else {
+        PermediaLoadCoord(pScrn, x<<16, y<<16, 0, len, 0, 1<<16);
+    }
+
+    GLINT_WRITE_REG(PrimitiveLine, Render);
+}
+
+static void 
+PermediaSubsequentSolidBresenhamLine8bpp( ScrnInfoPtr pScrn,
+        int x, int y, int dmaj, int dmin, int e, int len, int octant)
+{
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+    cfbPrivGCPtr devPriv;
+    int dxdom, dy;
+
+    if(dmaj == dmin) {
+	GLINT_WAIT(6);
+	if(octant & YDECREASING) {
+	    dy = -1<<16;
+	} else {
+	    dy = 1<<16;
+	}
+
+	if(octant & XDECREASING) {
+	    dxdom = -1<<16;
+	} else {
+	    dxdom = 1<<16;
+	}
+
+        PermediaLoadCoord(pScrn, x<<16, y<<16, 0, len, dxdom, dy);
+	GLINT_WRITE_REG(PrimitiveLine, Render);
+	return;
+    }
+
+    devPriv = cfbGetGCPrivate(pGlint->CurrentGC);
+
+    cfbBresS(devPriv->rop, devPriv->and, devPriv->xor, 
+                (unsigned long*)pGlint->FbBase, pScrn->displayWidth >> 2, 
+                (octant & XDECREASING) ? -1 : 1, 
+                (octant & YDECREASING) ? -1 : 1, 
+                (octant & YMAJOR) ? Y_AXIS : X_AXIS,
+                x, y, dmin + e, dmin, dmin - dmaj, len);
+}
+
+static void 
+PermediaSubsequentSolidBresenhamLine16bpp( ScrnInfoPtr pScrn,
+        int x, int y, int dmaj, int dmin, int e, int len, int octant)
+{
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+    cfbPrivGCPtr devPriv;
+    int dxdom, dy;
+
+    if(dmaj == dmin) {
+	GLINT_WAIT(6);
+	if(octant & YDECREASING) {
+	    dy = -1<<16;
+	} else {
+	    dy = 1<<16;
+	}
+
+	if(octant & XDECREASING) {
+	    dxdom = -1<<16;
+	} else {
+	    dxdom = 1<<16;
+	}
+
+        PermediaLoadCoord(pScrn, x<<16, y<<16, 0, len, dxdom, dy);
+	GLINT_WRITE_REG(PrimitiveLine, Render);
+	return;
+    }
+
+    devPriv = cfb16GetGCPrivate(pGlint->CurrentGC);
+
+    cfb16BresS(devPriv->rop, devPriv->and, devPriv->xor, 
+                (unsigned long*)pGlint->FbBase, pScrn->displayWidth >> 1, 
+                (octant & XDECREASING) ? -1 : 1, 
+                (octant & YDECREASING) ? -1 : 1, 
+                (octant & YMAJOR) ? Y_AXIS : X_AXIS,
+                x, y, dmin + e, dmin, dmin - dmaj, len);
+}
+
+static void 
+PermediaSubsequentSolidBresenhamLine32bpp( ScrnInfoPtr pScrn,
+        int x, int y, int dmaj, int dmin, int e, int len, int octant)
+{
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+    cfbPrivGCPtr devPriv;
+    int dxdom, dy;
+
+    if(dmaj == dmin) {
+	GLINT_WAIT(6);
+	if(octant & YDECREASING) {
+	    dy = -1<<16;
+	} else {
+	    dy = 1<<16;
+	}
+
+	if(octant & XDECREASING) {
+	    dxdom = -1<<16;
+	} else {
+	    dxdom = 1<<16;
+	}
+
+        PermediaLoadCoord(pScrn, x<<16, y<<16, 0, len, dxdom, dy);
+	GLINT_WRITE_REG(PrimitiveLine, Render);
+	return;
+    }
+
+    devPriv = cfb32GetGCPrivate(pGlint->CurrentGC);
+
+    cfb32BresS(devPriv->rop, devPriv->and, devPriv->xor, 
+                (unsigned long*)pGlint->FbBase, pScrn->displayWidth, 
+                (octant & XDECREASING) ? -1 : 1, 
+                (octant & YDECREASING) ? -1 : 1, 
+                (octant & YMAJOR) ? Y_AXIS : X_AXIS,
+                x, y, dmin + e, dmin, dmin - dmaj, len);
+}
+

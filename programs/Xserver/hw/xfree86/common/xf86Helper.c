@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.9 1998/10/05 13:23:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.10 1998/11/15 10:22:37 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -644,8 +644,11 @@ xf86SetDefaultVisual(ScrnInfoPtr scrp, int visual)
     }
 }
 
-#define TEST_GAMMA(g) (g).red > 0.01 || (g).green > 0.01 || (g).blue > 0.01
-#define SET_GAMMA(g) (g) > 0.01 ? 1.0 / (g) : 1.0
+#define TEST_GAMMA(g) \
+	(g).red > GAMMA_ZERO || (g).green > GAMMA_ZERO || (g).blue > GAMMA_ZERO
+
+#define SET_GAMMA(g) \
+	(g) > GAMMA_ZERO ? (g) : 1.0
 
 Bool
 xf86SetGamma(ScrnInfoPtr scrp, Gamma gamma)
@@ -673,8 +676,7 @@ xf86SetGamma(ScrnInfoPtr scrp, Gamma gamma)
     }
     xf86DrvMsg(scrp->scrnIndex, from,
 	       "Using gamma correction (%.1f, %.1f, %.1f)\n",
-	       1.0 / scrp->gamma.red, 1.0 / scrp->gamma.green,
-	       1.0 / scrp->gamma.blue);
+	       scrp->gamma.red, scrp->gamma.green, scrp->gamma.blue);
 
     return TRUE;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaCpyPlane.c,v 1.1.2.4 1998/07/19 13:22:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaCpyPlane.c,v 1.2 1998/07/25 16:58:42 dawes Exp $ */
 
 /*
    A CopyPlane function that handles bitmap->screen copies and
@@ -26,6 +26,12 @@
 static void XAACopyPlane1toNColorExpand(DrawablePtr pSrc, DrawablePtr pDst,
 					GCPtr pGC, RegionPtr rgnDst,
 					DDXPointPtr pptSrc);
+static void XAACopyPlaneNtoNColorExpand(DrawablePtr pSrc, DrawablePtr pDst,
+					GCPtr pGC, RegionPtr rgnDst,
+					DDXPointPtr pptSrc);
+
+
+static TmpBitPlane; 
 
 RegionPtr
 XAACopyPlaneColorExpansion(
@@ -35,14 +41,19 @@ XAACopyPlaneColorExpansion(
     int	srcx, int srcy,
     int	width, int height,
     int	dstx, int dsty,
-    unsigned long bitPlane )
-{
-    if((pSrc->bitsPerPixel == 1) && (bitPlane == 1) &&
-	(pDst->type == DRAWABLE_WINDOW) &&
-	(pSrc->type != DRAWABLE_WINDOW)) {
+    unsigned long bitPlane 
+){
+    if((pDst->type == DRAWABLE_WINDOW) && (pSrc->type != DRAWABLE_WINDOW)) {
+	if(pSrc->bitsPerPixel == 1) {
 	   return(XAABitBlt(pSrc, pDst, pGC, srcx, srcy,
 			width, height, dstx, dsty, 
 			XAACopyPlane1toNColorExpand, bitPlane));
+	} else if(bitPlane < (1 << pDst->depth)){
+	   TmpBitPlane = bitPlane;
+	   return(XAABitBlt(pSrc, pDst, pGC, srcx, srcy,
+			width, height, dstx, dsty, 
+			XAACopyPlaneNtoNColorExpand, bitPlane));
+	}
     }
 
     return (XAAFallbackOps.CopyPlane(pSrc, pDst, pGC, srcx, srcy, 
@@ -74,6 +85,70 @@ XAACopyPlane1toNColorExpand(
     }
 }
 
+
+static void 
+XAACopyPlaneNtoNColorExpand(
+    DrawablePtr   pSrc, 
+    DrawablePtr	  pDst,
+    GCPtr	  pGC,
+    RegionPtr     rgnDst,
+    DDXPointPtr   pptSrc 
+){
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+    BoxPtr pbox = REGION_RECTS(rgnDst);
+    int numrects = REGION_NUM_RECTS(rgnDst);
+    unsigned char *src = ((PixmapPtr)pSrc)->devPrivate.ptr;
+    unsigned char *data, *srcPtr, *dataPtr;
+    int srcwidth = ((PixmapPtr)pSrc)->devKind; 
+    int pitch, width, height, h, i, index, offset;
+    int Bpp = pSrc->bitsPerPixel >> 3;
+    unsigned int mask = TmpBitPlane;
+
+    if(TmpBitPlane < 8) {
+	offset = 0;
+    } else if(TmpBitPlane < 16) {
+	offset = 1;
+	mask >>= 8;
+    } else if(TmpBitPlane < 24) {
+	offset = 2;
+	mask >>= 16;
+    } else {
+	offset = 3;
+	mask >>= 24;
+    }
+    
+    while(numrects--) {	
+	width = pbox->x2 - pbox->x1;
+	h = height = pbox->y2 - pbox->y1;
+        pitch = ((width + 31) >> 5) << 2;
+
+	if(!(data = ALLOCATE_LOCAL(height * pitch)))
+	   goto ALLOC_FAILED;
+
+        bzero(data, height * pitch);
+
+	dataPtr = data;
+	srcPtr = (pbox->y1 * srcwidth) + src + (pbox->x1 * Bpp) + offset;
+	while(h--) {
+	    for(i = index = 0; i < width; i++, index += Bpp) {
+	       if(mask & srcPtr[index])
+		  dataPtr[i >> 3] |= (1 << (i & 7));
+	    }
+	    dataPtr += pitch;
+	    srcPtr += srcwidth;
+	}
+
+	(*infoRec->WriteBitmap)(infoRec->pScrn, 
+		pbox->x1, pbox->y1, width, height, data, pitch, 0, 
+		pGC->fgPixel, pGC->bgPixel, pGC->alu, pGC->planemask);
+	
+	DEALLOCATE_LOCAL(data);
+
+ALLOC_FAILED:
+
+	pbox++; pptSrc++;
+    }
+}
 
 void
 XAAPushPixelsSolidColorExpansion(

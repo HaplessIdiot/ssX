@@ -23,7 +23,7 @@
  *
  * Generic RAMDAC access to colormaps.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86RamDacCmap.c,v 1.1.2.4 1998/07/19 13:22:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86RamDacCmap.c,v 1.2 1998/07/25 16:57:20 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -54,7 +54,7 @@ RamDacListInstalledColormaps(ScreenPtr pScreen, Colormap *pmaps)
   /* By the time we are processing requests, we can guarantee that there
    * is always a colormap installed */
   
-  *pmaps = InstalledMaps[pScreen->myNum]->mid;
+  *pmaps = miInstalledMaps[pScreen->myNum]->mid;
   return(1);
 }
 
@@ -64,14 +64,14 @@ RamDacGetInstalledColormaps(ScreenPtr pScreen, ColormapPtr *pmaps)
   /* By the time we are processing requests, we can guarantee that there
    * is always a colormap installed */
   
-  *pmaps = InstalledMaps[pScreen->myNum];
+  *pmaps = miInstalledMaps[pScreen->myNum];
   return(1);
 }
 
 static int
 RamDacCheckColorMap(ColormapPtr pmap)
 {
-  return (pmap != InstalledMaps[pmap->pScreen->myNum]);
+  return (pmap != miInstalledMaps[pmap->pScreen->myNum]);
 }
 
 
@@ -141,7 +141,7 @@ RamDacStoreColors(ColormapPtr pmap, int ndef, xColorItem *pdefs)
 void
 RamDacInstallColormap(ColormapPtr pmap)
 {
-  ColormapPtr oldmap = InstalledMaps[pmap->pScreen->myNum];
+  ColormapPtr oldmap = miInstalledMaps[pmap->pScreen->myNum];
   int         entries;
   Pixel *     ppix;
   xrgb *      prgb;
@@ -166,7 +166,7 @@ RamDacInstallColormap(ColormapPtr pmap)
   if ( oldmap != NOMAPYET)
     WalkTree( pmap->pScreen, TellLostMap, &oldmap->mid);
 
-  InstalledMaps[pmap->pScreen->myNum] = pmap;
+  miInstalledMaps[pmap->pScreen->myNum] = pmap;
 
   for ( i=0; i<entries; i++) ppix[i] = i;
 
@@ -196,13 +196,13 @@ RamDacUninstallColormap(ColormapPtr pmap)
 
   ColormapPtr defColormap;
   
-  if ( pmap != InstalledMaps[pmap->pScreen->myNum] )
+  if ( pmap != miInstalledMaps[pmap->pScreen->myNum] )
     return;
 
   defColormap = (ColormapPtr) LookupIDByType( pmap->pScreen->defColormap,
 					      RT_COLORMAP);
 
-  if (defColormap == InstalledMaps[pmap->pScreen->myNum])
+  if (defColormap == miInstalledMaps[pmap->pScreen->myNum])
     return;
 
   (*pmap->pScreen->InstallColormap) (defColormap);

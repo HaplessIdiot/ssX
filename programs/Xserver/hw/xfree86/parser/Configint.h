@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Configint.h,v 1.1.2.8 1998/05/30 15:19:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Configint.h,v 1.2 1998/07/25 16:57:11 dawes Exp $ */
 /*
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -150,6 +150,6 @@ else\
 #define UNDEFINED_DRIVER_MSG \
 "Device section \"%s\" must have a Driver line."
 #define INVALID_GAMMA_MSG \
-"gamma correction value(s) expected\n either one value or three r/g/b values with 0.1 <= gamma <= 10."
+"gamma correction value(s) expected\n either one value or three r/g/b values."
 
 #endif /* _Configint_h_ */

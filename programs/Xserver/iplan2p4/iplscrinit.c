@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/iplan2p4/iplscrinit.c,v 3.1 1998/04/05 16:42:26 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/iplan2p4/iplscrinit.c,v 3.2 1998/06/27 12:55:03 hohndel Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -111,12 +111,10 @@ iplSetupScreen(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->CreateGC = iplCreateGC;
     pScreen->CreateColormap = iplInitializeColormap;
     pScreen->DestroyColormap = (void (*)())NoopDDA;
-#ifdef	STATIC_COLOR
     pScreen->InstallColormap = iplInstallColormap;
     pScreen->UninstallColormap = iplUninstallColormap;
     pScreen->ListInstalledColormaps = iplListInstalledColormaps;
     pScreen->StoreColors = (void (*)())NoopDDA;
-#endif
     pScreen->ResolveColor = iplResolveColor;
     pScreen->BitmapToRegion = mfbPixmapToRegion;
 

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.c,v 1.1 1998/11/15 04:30:19 dawes Exp $ */
 
 #ifndef XFree86LOADER
 #ifdef _XOPEN_SOURCE
@@ -39,13 +39,18 @@
 
 #ifdef XFreeXDGA
 /* need to fix this up for DGA */
-#define LOAD_PALETTE(pmap, index) ((pmap == InstalledMaps[index]) && \
+#define LOAD_PALETTE(pmap, index) ((pmap == miInstalledMaps[index]) && \
  				xf86Screens[index]->vtSema) 
 #else
-#define LOAD_PALETTE(pmap, index) ((pmap == InstalledMaps[index]) && \
+#define LOAD_PALETTE(pmap, index) ((pmap == miInstalledMaps[index]) && \
  				xf86Screens[index]->vtSema) 
 #endif
 
+
+typedef struct _CMapLink {
+  ColormapPtr		cmap;
+  struct _CMapLink	*next;
+} CMapLink, *CMapLinkPtr;
 
 typedef struct {
   ScrnInfoPtr			pScrn;
@@ -62,6 +67,7 @@ typedef struct {
   int				gammaElements;
   LOCO				*gamma;
   int				*PreAllocIndicies;
+  CMapLinkPtr			maps;
   unsigned int			flags;
 } CMapScreenRec, *CMapScreenPtr;
 
@@ -152,6 +158,7 @@ Bool xf86HandleColormaps(
     pScreenPriv->gammaElements = elements;
     pScreenPriv->gamma = gamma;
     pScreenPriv->PreAllocIndicies = indicies;
+    pScreenPriv->maps = NULL;
     pScreenPriv->flags = flags;
 
     pScreenPriv->EnterVT = pScrn->EnterVT;
@@ -177,6 +184,8 @@ Bool xf86HandleColormaps(
 	xfree(pScreenPriv);
 	return FALSE;
     }
+    /* Force the initial map to be loaded */
+    miInstalledMaps[pScreen->myNum] = NULL;
     CMapInstallColormap(pDefMap);
     return TRUE;
 }
@@ -220,6 +229,7 @@ CMapAllocateColormapPrivate(ColormapPtr pmap)
     CMapScreenPtr pScreenPriv = 
         (CMapScreenPtr) pmap->pScreen->devPrivates[CMapScreenIndex].ptr;
     CMapColormapPtr pColPriv;
+    CMapLinkPtr pLink;
     int numColors;
     LOCO *colors;
 
@@ -242,39 +252,69 @@ CMapAllocateColormapPrivate(ColormapPtr pmap)
     pColPriv->colors = colors;
     pColPriv->recalculate = TRUE;
 
+    /* add map to list */
+    pLink = (CMapLinkPtr)xalloc(sizeof(CMapLink));
+    if(pLink) {
+	pLink->cmap = pmap;
+	pLink->next = pScreenPriv->maps;
+	pScreenPriv->maps = pLink;
+    }
+
     return TRUE;
 }
 
 static Bool 
 CMapCreateColormap (ColormapPtr pmap)
 {
+    ScreenPtr pScreen = pmap->pScreen;
     CMapScreenPtr pScreenPriv = 
-        (CMapScreenPtr) pmap->pScreen->devPrivates[CMapScreenIndex].ptr;
+        (CMapScreenPtr)pScreen->devPrivates[CMapScreenIndex].ptr;
+    Bool ret = FALSE;
 
-    if(!(*pScreenPriv->CreateColormap)(pmap)) 
-	return FALSE;
+    pScreen->CreateColormap = pScreenPriv->CreateColormap;
+    if((*pScreen->CreateColormap)(pmap)) { 
+	if(CMapAllocateColormapPrivate(pmap)) 
+	   ret = TRUE;
+    }
+    pScreen->CreateColormap = CMapCreateColormap;
 
-    if(!CMapAllocateColormapPrivate(pmap))
-	return FALSE;
-
-    return TRUE;
+    return ret;
 }
 
 static void
 CMapDestroyColormap (ColormapPtr cmap)
 {
+    ScreenPtr pScreen = cmap->pScreen;
     CMapScreenPtr pScreenPriv = 
-        (CMapScreenPtr) cmap->pScreen->devPrivates[CMapScreenIndex].ptr;
+        (CMapScreenPtr) pScreen->devPrivates[CMapScreenIndex].ptr;
     CMapColormapPtr pColPriv = 
 	(CMapColormapPtr) cmap->devPrivates[CMapColormapIndex].ptr;
+    CMapLinkPtr prevLink = NULL, pLink = pScreenPriv->maps;
 
     if(pColPriv) {
 	if(pColPriv->colors) xfree(pColPriv->colors);
 	xfree(pColPriv);
     }
    
-    if(pScreenPriv->DestroyColormap)
-	(*pScreenPriv->DestroyColormap)(cmap);
+    /* remove map from list */
+    while(pLink) {
+	if(pLink->cmap == cmap) {
+	   if(prevLink)
+		prevLink->next = pLink->next;
+	   else
+		pScreenPriv->maps = pLink->next;
+	   xfree(pLink);
+	   break;
+	}
+	prevLink = pLink;
+	pLink = pLink->next;
+    }
+
+    if(pScreenPriv->DestroyColormap) {
+    	pScreen->DestroyColormap = pScreenPriv->DestroyColormap;
+	(*pScreen->DestroyColormap)(cmap);
+    	pScreen->DestroyColormap = CMapDestroyColormap;
+    }
 }
 
 
@@ -292,6 +332,7 @@ CMapStoreColors(
     int 	*indicies = pScreenPriv->PreAllocIndicies;
     int		num = ndef;
 
+    /* At the moment this isn't necessary since there's nobody below us */
     pScreen->StoreColors = pScreenPriv->StoreColors;
     (*pScreen->StoreColors)(pmap, ndef, pdefs); 
     pScreen->StoreColors = CMapStoreColors;
@@ -363,14 +404,14 @@ CMapInstallColormap(ColormapPtr pmap)
     int		  index = pScreen->myNum;
     CMapScreenPtr pScreenPriv = 
         (CMapScreenPtr) pScreen->devPrivates[CMapScreenIndex].ptr;
+    Bool	  load;
+
+    if (pmap == miInstalledMaps[index])
+	return;
 
     pScreen->InstallColormap = pScreenPriv->InstallColormap;
     (*pScreen->InstallColormap)(pmap);
     pScreen->InstallColormap = CMapInstallColormap;
-
-    if (pmap == InstalledMaps[index]) return;
-
-    InstalledMaps[index] = pmap;
 
     if(!(pScreenPriv->flags & CMAP_PALETTED_TRUECOLOR) &&
 	(pmap->pVisual->class == TrueColor) &&
@@ -392,8 +433,8 @@ CMapEnterVT(int index, int flags)
         (CMapScreenPtr) pScreen->devPrivates[CMapScreenIndex].ptr;
 
     if((*pScreenPriv->EnterVT)(index, flags)) {
-	if(InstalledMaps[index])
-	    CMapReinstallMap(InstalledMaps[index]);
+	if(miInstalledMaps[index])
+	    CMapReinstallMap(miInstalledMaps[index]);
 	return TRUE;
     }
     return FALSE;
@@ -408,8 +449,8 @@ CMapSwitchMode(int index, DisplayModePtr mode, int flags)
         (CMapScreenPtr) pScreen->devPrivates[CMapScreenIndex].ptr;
 
     if((*pScreenPriv->SwitchMode)(index, mode, flags)) {
-	if(InstalledMaps[index])
-	    CMapReinstallMap(InstalledMaps[index]);
+	if(miInstalledMaps[index])
+	    CMapReinstallMap(miInstalledMaps[index]);
 	return TRUE;
     }
     return FALSE;
@@ -436,6 +477,8 @@ CMapReinstallMap(ColormapPtr pmap)
     else
 	(*pScreenPriv->LoadPalette)(pScreenPriv->pScrn, cmapPriv->numColors,
  			indicies, cmapPriv->colors, pmap->pVisual->class);
+
+    cmapPriv->recalculate = FALSE;
 }
 
 
@@ -481,8 +524,6 @@ CMapRefreshColors(ColormapPtr pmap, int defs, int* indicies)
 		colors[i].blue  = gamma[i * maxValue / blues].blue;
 	    break;
 	}
-	/* fall through */
-    case StaticColor:
 	for(i = 0; i < numColors; i++) {
 	    colors[i].red   = gamma[((i >> pVisual->offsetRed) & reds) * 
 					maxValue / reds].red;
@@ -492,6 +533,7 @@ CMapRefreshColors(ColormapPtr pmap, int defs, int* indicies)
 					maxValue / blues].blue;
 	}
 	break;
+    case StaticColor:
     case PseudoColor:
     case GrayScale:
 	for(i = 0; i < defs; i++) { 
@@ -553,7 +595,6 @@ CMapRefreshColors(ColormapPtr pmap, int defs, int* indicies)
 	(*pScreenPriv->LoadPalette)(pScreenPriv->pScrn, defs, indicies,
  					colors, pmap->pVisual->class);
 
-    pColPriv->recalculate = FALSE;
 }
 
 
@@ -571,19 +612,65 @@ ComputeGamma(CMapScreenPtr priv)
 	    priv->gamma[i].red = i;
 	else
 	    priv->gamma[i].red = (CARD16)(pow((double)i/(double)elements,
-			RedGamma) * (double)elements + 0.5);
+			1.0 / RedGamma) * (double)elements + 0.5);
 
 	if(GreenGamma == 1.0)  
 	    priv->gamma[i].green = i;
 	else
 	    priv->gamma[i].green = (CARD16)(pow((double)i/(double)elements,
-			GreenGamma) * (double)elements + 0.5);
+			1.0 / GreenGamma) * (double)elements + 0.5);
 
 	if(BlueGamma == 1.0)  
 	    priv->gamma[i].blue = i;
 	else
 	    priv->gamma[i].blue = (CARD16)(pow((double)i/(double)elements,
-			 BlueGamma) * (double)elements + 0.5);
+			1.0 / BlueGamma) * (double)elements + 0.5);
     }
 }
+
+
+int
+xf86ChangeGamma(
+   ScreenPtr pScreen,
+   Gamma gamma
+){
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    CMapColormapPtr pColPriv;
+    CMapScreenPtr pScreenPriv;
+    CMapLinkPtr pLink;
+        
+    /* Is this sufficient checking ? */
+    if(CMapScreenIndex == -1)
+	return BadImplementation;
+
+    pScreenPriv = (CMapScreenPtr)pScreen->devPrivates[CMapScreenIndex].ptr;
+    if(!pScreenPriv)
+	return BadImplementation;
+ 
+    if (gamma.red < GAMMA_MIN || gamma.red > GAMMA_MAX ||
+	gamma.green < GAMMA_MIN || gamma.green > GAMMA_MAX ||
+	gamma.blue < GAMMA_MIN || gamma.blue > GAMMA_MAX)
+	return BadValue;
+
+    pScrn->gamma.red = gamma.red;
+    pScrn->gamma.green = gamma.green;
+    pScrn->gamma.blue = gamma.blue;
+
+    ComputeGamma(pScreenPriv);
+
+    /* mark all colormaps on this screen */
+    pLink = pScreenPriv->maps;
+    while(pLink) {
+    	pColPriv = 
+	 (CMapColormapPtr) pLink->cmap->devPrivates[CMapColormapIndex].ptr;
+	pColPriv->recalculate = TRUE;
+	pLink = pLink->next;
+    }
+
+    if(miInstalledMaps[pScreen->myNum] && pScrn->vtSema)
+	CMapReinstallMap(miInstalledMaps[pScreen->myNum]);
+
+    return Success;
+} 
+
 

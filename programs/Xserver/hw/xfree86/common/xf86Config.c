@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.151 1998/09/05 06:36:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.152 1998/10/05 13:23:00 dawes Exp $ */
 
 
 /*
@@ -271,8 +271,7 @@ xf86DriverlistFromConfig()
 /*
  * xf86ConfigError --
  *      Print a READABLE ErrorMessage!!!  All information that is 
- *      interesting is printed.  Even a pointer to the erroneous place is
- *      printed.  Maybe our e-mail will be less :-)
+ *      available is printed.
  */
 static void
 xf86ConfigError(char *msg, ...)
@@ -1107,7 +1106,8 @@ configLayout(screenLayoutPtr *layoutp, XF86ConfLayoutPtr conf_layout)
     count = 0;
     while( adjp ) {
         (*layoutp)[count].screen=(confScreenPtr)xnfalloc(sizeof(confScreenRec));
-        configScreen((*layoutp)[count].screen, adjp->adj_screen, X_CONFIG);
+	if (!configScreen((*layoutp)[count].screen, adjp->adj_screen, X_CONFIG))
+	    return FALSE;
         count++;
         adjp = (XF86ConfAdjacencyPtr)adjp->list.next;
     }
@@ -1152,8 +1152,7 @@ configImpliedLayout(screenLayoutPtr *layoutp, XF86ConfScreenPtr conf_screen)
     *layoutp = (screenLayoutPtr)xnfalloc(2 * sizeof(screenLayoutRec));
     (*layoutp)[0].screen=(confScreenPtr)xnfalloc(sizeof(confScreenRec));
     (*layoutp)[1].screen=NULL;
-    configScreen((*layoutp)[0].screen, conf_screen, from);
-    return TRUE;
+    return configScreen((*layoutp)[0].screen, conf_screen, from);
 }
 
 static Bool
@@ -1172,7 +1171,8 @@ configScreen(confScreenPtr screenp, XF86ConfScreenPtr conf_screen,
     screenp->defaultbpp = conf_screen->scrn_defaultbpp;
     screenp->defaultfbbpp = conf_screen->scrn_defaultfbbpp;
     screenp->monitor    = (MonPtr)xnfalloc(sizeof(MonRec));
-    configMonitor(screenp->monitor,conf_screen->scrn_monitor);
+    if (!configMonitor(screenp->monitor,conf_screen->scrn_monitor))
+	return FALSE;
     screenp->device     = (GDevPtr)xnfalloc(sizeof(GDevRec));
     configDevice(screenp->device,conf_screen->scrn_device);
     screenp->device->myScreenSection = screenp;
@@ -1205,6 +1205,7 @@ configMonitor(MonPtr monitorp, XF86ConfMonitorPtr conf_monitor)
     DisplayModePtr mode,last = NULL;
     XF86ConfModeLinePtr cmodep;
     Gamma zeros = {0.0, 0.0, 0.0};
+    float badgamma = 0.0;
     
     xf86Msg(X_CONFIG, "|   |-->Monitor \"%s\"\n",
 	    conf_monitor->mon_identifier);
@@ -1272,13 +1273,33 @@ configMonitor(MonPtr monitorp, XF86ConfMonitorPtr conf_monitor)
     last->next = NULL;
     monitorp->Last = last;
 
-    if (conf_monitor->mon_gamma_red > 0.01)
+    if (conf_monitor->mon_gamma_red > GAMMA_ZERO)
 	monitorp->gamma.red = conf_monitor->mon_gamma_red;
-    if (conf_monitor->mon_gamma_green > 0.01)
+    if (conf_monitor->mon_gamma_green > GAMMA_ZERO)
 	monitorp->gamma.green = conf_monitor->mon_gamma_green;
-    if (conf_monitor->mon_gamma_blue > 0.01)
-	monitorp->gamma.red = conf_monitor->mon_gamma_blue;
+    if (conf_monitor->mon_gamma_blue > GAMMA_ZERO)
+	monitorp->gamma.blue = conf_monitor->mon_gamma_blue;
     
+    /* Check that the gamma values are within range */
+    if (monitorp->gamma.red > GAMMA_ZERO &&
+	(monitorp->gamma.red < GAMMA_MIN ||
+	 monitorp->gamma.red > GAMMA_MAX)) {
+	badgamma = monitorp->gamma.red;
+    } else if (monitorp->gamma.green > GAMMA_ZERO &&
+	(monitorp->gamma.green < GAMMA_MIN ||
+	 monitorp->gamma.green > GAMMA_MAX)) {
+	badgamma = monitorp->gamma.green;
+    } else if (monitorp->gamma.blue > GAMMA_ZERO &&
+	(monitorp->gamma.blue < GAMMA_MIN ||
+	 monitorp->gamma.blue > GAMMA_MAX)) {
+	badgamma = monitorp->gamma.blue;
+    }
+    if (badgamma > GAMMA_MIN) {
+	xf86ConfigError("Gamma value %.f is out of range (%.2f - %.1f)\n",
+			badgamma, GAMMA_MIN, GAMMA_MAX);
+	    return FALSE;
+    }
+
     return TRUE;
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.81 1998/09/26 08:34:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.82 1998/10/05 13:22:59 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -23,7 +23,6 @@
 extern int xf86ScreenIndex;		/* Index into pScreen.devPrivates */
 extern int xf86PixmapIndex;
 extern ScrnInfoPtr *xf86Screens;	/* List of pointers to ScrnInfoRecs */
-extern ColormapPtr InstalledMaps[MAXSCREENS];
 extern const unsigned char byte_reversed[256];
 
 #define XF86SCRNINFO(p) ((ScrnInfoPtr)((p)->devPrivates[xf86ScreenIndex].ptr))

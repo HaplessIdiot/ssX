@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.h,v 1.1 1998/11/15 04:30:19 dawes Exp $ */
 
 #ifndef _XF86CMAP_H
 #define _XF86CMAP_H
@@ -22,6 +22,12 @@ Bool xf86HandleColormaps(
     int sigRGBbits,
     LoadPaletteFuncPtr loadPalette,
     unsigned int flags
+);
+
+int
+xf86ChangeGamma(
+   ScreenPtr pScreen,
+   Gamma gamma
 );
 
 #endif /* _XF86CMAP_H */

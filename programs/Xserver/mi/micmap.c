@@ -27,7 +27,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/mi/micmap.c,v 1.4 1998/10/04 09:39:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/micmap.c,v 1.5 1998/10/06 07:26:37 dawes Exp $ */
 
 /*
  * This is based on cfbcmap.c.  The functions here are useful independently
@@ -42,6 +42,53 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "colormapst.h"
 #include "resource.h"
 #include "micmap.h"
+
+ColormapPtr miInstalledMaps[MAXSCREENS];
+
+int
+miListInstalledColormaps(ScreenPtr pScreen, Colormap *pmaps)
+{
+    /* By the time we are processing requests, we can guarantee that there
+     * is always a colormap installed */
+    *pmaps = miInstalledMaps[pScreen->myNum]->mid;
+    return (1);
+}
+
+void
+miInstallColormap(ColormapPtr pmap)
+{
+    int index = pmap->pScreen->myNum;
+    ColormapPtr oldpmap = miInstalledMaps[index];
+
+    if(pmap != oldpmap)
+    {
+	/* Uninstall pInstalledMap. No hardware changes required, just
+	 * notify all interested parties. */
+	if(oldpmap != (ColormapPtr)None)
+	    WalkTree(pmap->pScreen, TellLostMap, (char *)&oldpmap->mid);
+	/* Install pmap */
+	miInstalledMaps[index] = pmap;
+	WalkTree(pmap->pScreen, TellGainedMap, (char *)&pmap->mid);
+
+    }
+}
+
+void
+miUninstallColormap(ColormapPtr pmap)
+{
+    int index = pmap->pScreen->myNum;
+    ColormapPtr curpmap = miInstalledMaps[index];
+
+    if(pmap == curpmap)
+    {
+	if (pmap->mid != pmap->pScreen->defColormap)
+	{
+	    curpmap = (ColormapPtr) LookupIDByType(pmap->pScreen->defColormap,
+						   RT_COLORMAP);
+	    (*pmap->pScreen->InstallColormap)(curpmap);
+	}
+    }
+}
 
 void
 miResolveColor(unsigned short *pred, unsigned short *pgreen,
@@ -404,7 +451,7 @@ miInitVisuals(VisualPtr *visualp, DepthPtr *depthp, int *nvisualp,
 		int *ndepthp, int *rootDepthp, VisualID *defaultVisp,
 		unsigned long sizes, int bitsPerRGB, int preferredVis)
 {
-    int		i, j, k;
+    int		i, j = 0, k;
     VisualPtr	visual;
     DepthPtr	depth;
     VisualID	*vid;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.81 1998/09/20 14:41:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.82 1998/10/05 13:23:02 dawes Exp $ */
 
 /*
  * Copyright 1991-1998 by The XFree86 Project, Inc.
@@ -73,10 +73,12 @@ extern void os2ServerVideoAccess();
 
 char xf86ConfigFile[PATH_MAX + 1] = {0,};
 
+#ifdef XFree86LOADER
 static char *baseModules[] = {
 	"bitmap",
 	NULL
 };
+#endif
 
 /*
  * InitOutput --
@@ -884,8 +886,9 @@ ddxProcessArgument(int argc, char **argv, int i)
     if (++i >= argc)
       return 0;
     if (sscanf(argv[i], "%lf", &gamma) == 1) {
-       if (gamma < 0.1 || gamma > 10) {
-	  ErrorF("gamma out of range, only  0.1 < gamma_value < 10  is valid\n");
+       if (gamma < GAMMA_MIN || gamma > GAMMA_MAX) {
+	  ErrorF("gamma out of range, only  %.2f <= gamma_value <= %.1f"
+		 " is valid\n", GAMMA_MIN, GAMMA_MAX);
 	  return 0;
        }
        if (!strcmp(argv[i-1], "-gamma"))

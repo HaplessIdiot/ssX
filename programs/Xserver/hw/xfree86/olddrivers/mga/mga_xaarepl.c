@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_xaarepl.c,v 1.4 1998/01/11 03:36:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/olddrivers/mga/mga_xaarepl.c,v 1.1 1998/07/25 16:56:29 dawes Exp $ */
 
 
 #define PSZ 8
@@ -71,8 +71,8 @@ void MGAWriteBitmap(x, y, w, h, src, srcwidth, srcx, srcy,
             if(newmax >= h) { /* do byte alignment to avoid the split */
                 skipleft = srcx;
                 maxlines = newmax;
-            } else srcp = (unsigned char*)((int)srcp & ~0x03);
-        } else srcp = (unsigned char*)((int)srcp & ~0x03);
+            } else srcp = (unsigned char*)((long)srcp & ~0x03);
+        } else srcp = (unsigned char*)((long)srcp & ~0x03);
     } else {
         skipleft = srcx; 
         maxlines = MAX_BLIT_PIXELS / (w + skipleft);

@@ -63,18 +63,25 @@ extern void commonCalcClock(long freq, int min_m, int min_n1, int max_n1, int mi
 		long freq_min, long freq_max,
 		unsigned char * mdiv, unsigned char * ndiv);
 
+/*
+ * in s3v_accel.c
+ */
+extern Bool S3VAccelInit(ScreenPtr pScreen);
+extern Bool S3VAccelInit32(ScreenPtr pScreen);
+
 
 #define VERSION 4000
 #define S3VIRGE_NAME "S3VIRGE"
 #define S3VIRGE_DRIVER_NAME "s3virge"
-				/* Version 1.0 */
+				/* Version 0.1 */
 				/* upper word is Major, lower is minor */
-#define S3VIRGE_DRIVER_VERSION 0x00010000
+				/* 0000 0001 == 0.1 */
+#define S3VIRGE_DRIVER_VERSION 0x00000001
 
 /* 
  * This contains the functions needed by the server after loading the
  * driver module.  It must be supplied, and gets added the driver list by
- * the Module Setup function in the dynamic case.  In the static case a
+ * the Module Setup funtion in the dynamic case.  In the static case a
  * reference to this is compiled in, and this requires that the name of
  * this DriverRec be an upper-case version of the driver name.
  */
@@ -92,13 +99,18 @@ DriverRec S3VIRGE =
 
 /* Supported chipsets */
 static SymTabRec S3VChipsets[] = {
-
-  { PCI_ViRGE,		"ViRGE (86C325)" },
-  { PCI_ViRGE_VX,	"ViRGE VX (86C988)" },
-  { PCI_ViRGE_DXGX,	"ViRGE DX (86C375) or GX (86C385)" },
-  { PCI_ViRGE_GX2,	"ViRGE GX2 (86C357)" },
-  { PCI_ViRGE_MX,	"ViRGE MX (86C260)" },
-  /* { PCI_ViRGE_MX+,	"ViRGE MX (86C280)" },  not yet, check 3.3.3 for PCI id */
+				  	/* base (86C325) */
+  { PCI_ViRGE,		"ViRGE" },
+  					/* VX (86C988) */
+  { PCI_ViRGE_VX,	"ViRGE/VX" },
+  					/* DX (86C375) GX (86C385) */
+  { PCI_ViRGE_DXGX,	"ViRGE/DX/GX" },
+  					/* GX2 (86C357) */
+  { PCI_ViRGE_GX2,	"ViRGE/GX2" },
+  					/* MX (86C260) */
+  { PCI_ViRGE_MX,	"ViRGE/MX" },
+  					/* MX+ (86C280) */
+  /* { PCI_ViRGE_MX+,	"ViRGE/ MX+" },  not yet, check 3.3.3 for PCI id */
   {-1,			NULL }
 };
 
@@ -122,29 +134,88 @@ typedef enum {
    OPTION_FIFO_AGGRESSIVE, 	
    OPTION_PCI_RETRY, 		
    OPTION_NOACCEL, 		
+ /*
    OPTION_HW_CURSOR, 		
+   */
    OPTION_EARLY_RAS_PRECHARGE, 	
    OPTION_LATE_RAS_PRECHARGE
 } S3VOpts;
 
 static OptionInfoRec S3VOptions[] =
-{     					 /* Still need names and values */
-   { OPTION_SLOW_EDODRAM, 	},
-   { OPTION_FAST_DRAM, 		},
-   { OPTION_FPM_VRAM, 		},
-   { OPTION_PCI_BURST_ON, 	},
-   { OPTION_FIFO_CONSERV, 	},
-   { OPTION_FIFO_MODERATE, 	},
-   { OPTION_FIFO_AGGRESSIVE, 	},
-   { OPTION_PCI_RETRY, 		},
-   { OPTION_NOACCEL, 		},
+{  
+   { OPTION_SLOW_EDODRAM, 	"slow_edodram",	OPTV_BOOLEAN,	{0}, FALSE },
+ /* not yet ...
+   { OPTION_FAST_DRAM, 		"fast_dram",	OPTV_BOOLEAN,	{0}, FALSE },
+  */ 
+   { OPTION_FPM_VRAM, 		"fpm_vram",	OPTV_BOOLEAN,	{0}, FALSE },
+   { OPTION_PCI_BURST_ON, 	"pci_burst_on",	OPTV_BOOLEAN,	{0}, FALSE },
+   { OPTION_FIFO_CONSERV, 	"fifo_conservative", OPTV_BOOLEAN, {0}, FALSE },
+   { OPTION_FIFO_MODERATE, 	"fifo_moderate", OPTV_BOOLEAN, 	{0}, FALSE },
+   { OPTION_FIFO_AGGRESSIVE, 	"fifo_aggressive", OPTV_BOOLEAN, {0}, FALSE },
+   { OPTION_PCI_RETRY, 		"pci_retry",	OPTV_BOOLEAN,	{0}, FALSE  },
+   { OPTION_NOACCEL, 		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE  },
+ /*
    { OPTION_HW_CURSOR, 		},
-   { OPTION_EARLY_RAS_PRECHARGE, 	},
-   { OPTION_LATE_RAS_PRECHARGE, 	},
-   
+  */ 
+   { OPTION_EARLY_RAS_PRECHARGE, "early_ras_precharge",	OPTV_BOOLEAN, {0}, FALSE },
+   { OPTION_LATE_RAS_PRECHARGE, "late_ras_precharge", OPTV_BOOLEAN, {0}, FALSE },
    {-1, NULL, OPTV_NONE,
 	{0}, FALSE}
+};
 
+
+/*
+ * Lists of symbols that may/may not be required by this driver.
+ * This allows the loader to know which ones to issue warnings for.
+ */
+
+static const char *vgahwSymbols[] = {
+    "vgaHWGetHWRec",
+    "vgaHWSetMmioFuncs",
+    "vgaHWGetIOBase",
+    "vgaHWSave",
+    "vgaHWProtect",
+    "vgaHWRestore",
+    "vgaHWMapMem",
+    "vgaHWUnmapMem",
+    "vgaHWInit",
+    "vgaHWSaveScreen",
+    "vgaHWLock",
+   /* not used by ViRGE (at the moment :( ) */
+   /*
+    "vgaHWUnlock",
+    "vgaHWFreeHWRec",
+    */
+    NULL
+};
+
+static const char *cfbSymbols[] = {
+    "cfbScreenInit",
+    "cfb16ScreenInit",
+    "cfb24ScreenInit",
+    "cfb32ScreenInit",
+    NULL
+};
+
+static const char *xaaSymbols[] = {
+    "XAADestroyInfoRec",
+    "XAACreateInfoRec",
+    "XAAInit",
+   /*
+    "XAAStippleScanlineFuncLSBFirst",
+    "XAAOverlayFBfuncs",
+    */
+    NULL
+};
+
+static const char *ramdacSymbols[] = {
+   /* so far, none */
+   /*
+    "xf86InitCursor",
+    "xf86CreateCursorInfoRec",
+    "xf86DestroyCursorInfoRec",
+    */
+    NULL
 };
 
 
@@ -195,6 +266,13 @@ s3virgeSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 * by calling LoadSubModule().
 	 */
 
+	/*
+	 * Tell the loader about symbols from other modules that this module
+	 * might refer to.
+	 */
+	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols,
+			  ramdacSymbols, NULL);
+			  
 	/*
 	 * The return value must be non-NULL on success even though there
 	 * is no TearDownProc.
@@ -382,6 +460,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     int i;
     ClockRangePtr clockRanges;
     char *mod = NULL;
+    const char *reqSym = NULL;
 
     unsigned char config1, config2, m, n, n1, n2, cr66;
     int mclk;
@@ -410,7 +489,9 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     
     if (!xf86LoadSubModule(pScrn, "vgahw"))
 	return FALSE;
-
+	   
+    xf86LoaderReqSymLists(vgahwSymbols, NULL);
+	
     /*
      * Allocate a vgaHWRec
      */
@@ -507,22 +588,82 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
       pScrn->rgbBits = 6;
     }
     
-#if 0  /* editme - ignore options for now */    
-
     /* Process the options */
-    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, MGAOptions);
+    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, S3VOptions);
 
-    /* Set the bits per RGB for 8bpp mode */
-    if (pScrn->depth == 8) {
-	/* XXX This is here just to test options. */
-	/* Default to 8 */
-	pScrn->rgbBits = 8;
-	if (xf86GetOptValInteger(MGAOptions, OPTION_RGB_BITS,
-				 &pScrn->rgbBits)) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Bits per RGB set to %d\n",
-		       pScrn->rgbBits);
+
+    if (xf86IsOptionSet(S3VOptions, OPTION_PCI_BURST_ON)) {
+	ps3v->pci_burst_on = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: pci_burst_on - PCI burst read enabled\n");
+    } else
+   	ps3v->pci_burst_on = FALSE;
+					/* default */
+    ps3v->NoPCIRetry = 1;
+   					/* Set option */
+    if (xf86IsOptionSet(S3VOptions, OPTION_PCI_RETRY))
+      if (xf86IsOptionSet(S3VOptions, OPTION_PCI_BURST_ON)) {
+      	ps3v->NoPCIRetry = 0;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: pci_retry\n");
 	}
-    }
+      else {
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "\"pci_retry\" option requires \"pci_burst_on\".\n");
+	}
+
+    if (xf86IsOptionSet(S3VOptions, OPTION_FIFO_CONSERV)) {
+	ps3v->fifo_conservative = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: fifo_conservative set\n");
+    } else
+   	ps3v->fifo_conservative = FALSE;
+
+    if (xf86IsOptionSet(S3VOptions, OPTION_FIFO_MODERATE)) {
+	ps3v->fifo_moderate = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: fifo_moderate set\n");
+    } else
+   	ps3v->fifo_moderate = FALSE;
+
+    if (xf86IsOptionSet(S3VOptions, OPTION_FIFO_AGGRESSIVE)) {
+	ps3v->fifo_aggressive = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: fifo_aggressive set\n");
+    } else
+   	ps3v->fifo_aggressive = FALSE;
+
+    if (xf86IsOptionSet(S3VOptions, OPTION_SLOW_EDODRAM)) {
+	ps3v->slow_edodram = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: slow_edodram set\n");
+    } else
+   	ps3v->slow_edodram = FALSE;
+
+    if (xf86IsOptionSet(S3VOptions, OPTION_FAST_DRAM)) {
+	ps3v->fast_dram = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: fast_dram set\n");
+    } else
+   	ps3v->fast_dram = FALSE;
+
+    if (xf86IsOptionSet(S3VOptions, OPTION_FPM_VRAM)) {
+	ps3v->fpm_vram = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: fpm_vram set\n");
+    } else
+   	ps3v->fpm_vram = FALSE;
+
+    if (xf86IsOptionSet(S3VOptions, OPTION_NOACCEL)) {
+	ps3v->NoAccel = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: NoAccel - Acceleration disabled\n");
+    } else
+   	ps3v->NoAccel = FALSE;
+
+    if (xf86IsOptionSet(S3VOptions, OPTION_EARLY_RAS_PRECHARGE)) {
+	ps3v->early_ras_precharge = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: early_ras_precharge set\n");
+    } else
+   	ps3v->early_ras_precharge = FALSE;
+
+    if (xf86IsOptionSet(S3VOptions, OPTION_LATE_RAS_PRECHARGE)) {
+	ps3v->late_ras_precharge = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: late_ras_precharge set\n");
+    } else
+   	ps3v->late_ras_precharge = FALSE;
+	       
+#if 0
     from = X_DEFAULT;
     pMga->HWCursor = FALSE;
     if (xf86GetOptValBool(MGAOptions, OPTION_HW_CURSOR, &pMga->HWCursor)) {
@@ -741,10 +882,10 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 
       if (ps3v->MemOffScreen)
 	 xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-	    	": videoram:  %dk (plus %dk off-screen)\n",
+	    	"videoram:  %dk (plus %dk off-screen)\n",
                 ps3v->videoRamKbytes, ps3v->MemOffScreen);
       else
-	 xf86DrvMsg(pScrn->scrnIndex, X_PROBED, ": videoram:  %dk\n",
+	 xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "videoram:  %dk\n",
                 ps3v->videoRamKbytes);
    } else {
    					/* Note: if ram is not probed then */
@@ -752,7 +893,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 					/* should we? can do it here... */
 					
 					
-      xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, ": videoram:  %dk\n",
+      xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "videoram:  %dk\n",
               	ps3v->videoRamKbytes);
    }
 
@@ -855,10 +996,9 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
    n1 = n & 0x1f;
    n2 = (n>>5) & 0x03;
    mclk = ((1431818 * (m+2)) / (n1+2) / (1 << n2) + 50) / 100;
-   xf86DrvMsg(pScrn->scrnIndex, X_PROBED, ": Detected current MCLK value of %1.3f MHz\n",
+   xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Detected current MCLK value of %1.3f MHz\n",
 	     mclk / 1000.0);
 
-/*cep*/
   S3VDisableMmio(pScrn);
   
   xf86UnMapVidMem(pScrn->scrnIndex, (pointer)ps3v->IOBase, S3V_MMIO_REGSIZE);
@@ -923,8 +1063,6 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
    OFLG_SET(OPTION_LATE_RAS_PRECHARGE, &S3V.ChipOptionFlags);
 #endif
 
-   ps3v->NoPCIRetry = 1;
-   
 #if 0
    /* delete me */
    S3V.ChipLinearBase = vga256InfoRec.MemBase;
@@ -1082,30 +1220,36 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     switch (pScrn->bitsPerPixel) {
     case 8:
 	mod = "cfb";
+	reqSym = "cfbScreenInit";
 	break;
     case 16:
 	mod = "cfb16";
+	reqSym = "cfb16ScreenInit";
 	break;
     case 24:
 	mod = "cfb24";
+	reqSym = "cfb24ScreenInit";
 	break;
     case 32:
 	mod = "cfb32";
+	reqSym = "cfb32ScreenInit";
 	break;
     }
     if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
 	S3VFreeRec(pScrn);
 	return FALSE;
-    }
-	     
-    ps3v->NoAccel = TRUE;
+    }	       
     
+    xf86LoaderReqSymbols(reqSym, NULL);
+	     
     /* Load XAA if needed */
-    if (!ps3v->NoAccel /*|| pMga->HWCursor*/ )
+    if (!ps3v->NoAccel /*|| pMga->HWCursor*/ ) {
 	if (!xf86LoadSubModule(pScrn, "xaa")) {
 	    S3VFreeRec(pScrn);
 	    return FALSE;
 	}
+	xf86LoaderReqSymLists(xaaSymbols, NULL);
+    }
 
     return TRUE;
 }
@@ -1560,11 +1704,6 @@ S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
 
    /* Now write out CR67 in full, possibly starting STREAMS */
 
-    /*cep*/
-    xf86ErrorFVerb(VERBLEV, "	S3VWriteMode sub_stat=%x \n", 
-   	IN_SUBSYS_STAT()
-	);
-   
    VerticalRetraceWait();
    OUTREG8(vgaCRIndex, 0x67);    
    OUTREG8(vgaCRReg, 0x50);   /* For possible bug on VX?! */          
@@ -1662,7 +1801,7 @@ S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
       ErrorF("\n\nViRGE driver: done restoring mode, dumping CR registers:\n\n");
       S3VPrintRegs(pScrn);
    }
-
+   
    vgaHWProtect(pScrn, FALSE);
    return;
 
@@ -1805,7 +1944,6 @@ S3VMapMem(ScrnInfoPtr pScrn)
     ps3v->PrimaryVidMapped = TRUE;
   }
   
-  
   return TRUE;
 }
 
@@ -1943,8 +2081,6 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
   xf86SetBlackWhitePixels(pScreen);
 
   /* Handle color map setup */
-  /* Init Accel ? */
-    
 					/* Both xf4bpp & cfb */
 					/* ViRGE only uses cfb so far */
   if (pScrn->pixmapBPP == 8) {
@@ -1964,7 +2100,16 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    }
 	}
   }
-  
+  	      				/* Initialize acceleration layer */
+  if (!ps3v->NoAccel) {
+    if(pScrn->bitsPerPixel == 32) {
+      if (!S3VAccelInit32(pScreen))
+        return FALSE;
+    } else 
+      if (!S3VAccelInit(pScreen))
+        return FALSE;
+  }
+	
   miInitializeBackingStore(pScreen);
 
     					/* Initialise cursor functions */
@@ -2038,22 +2183,18 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
    if(!vgaHWInit (pScrn, mode))
       return FALSE;
       
-  #if 0
    /* Now we fill in the rest of the stuff we need for the virge */
    /* Start with MMIO, linear addr. regs */
 
    OUTREG8(vgaCRIndex, 0x3a);
    tmp = INREG8(vgaCRReg);
-   if(!OFLG_ISSET(OPTION_PCI_BURST_ON, &vga256InfoRec.options)) 
-      new->CR3A = tmp | 0x95;      /* ENH 256, no PCI burst! */
-   else 
-  #endif
-  #if 1		/* part of above if(), else... cep */
+   if(ps3v->pci_burst_on)
       new->CR3A = (tmp & 0x7f) | 0x15; /* ENH 256, PCI burst */
-
+   else 
+      new->CR3A = tmp | 0x95;      /* ENH 256, no PCI burst! */
+	   
    new->CR53 = 0x08;     /* Enables MMIO */
    new->CR31 = 0x8c;     /* Dis. 64k window, en. ENH maps */    
-  #endif       
 
    /* Enables S3D graphic engine and PCI disconnects */
    if(ps3v->Chipset == S3_ViRGE_VX){
@@ -2077,12 +2218,11 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
       } 
    if(ps3v->Chipset == S3_ViRGE_VX)
       new->CR58 |= 0x40;
-  #if 0
-   if (OFLG_ISSET(OPTION_EARLY_RAS_PRECHARGE, &vga256InfoRec.options))
+   if (ps3v->early_ras_precharge)
       new->CR58 |= 0x80;
-   if (OFLG_ISSET(OPTION_LATE_RAS_PRECHARGE, &vga256InfoRec.options))
+   if (ps3v->late_ras_precharge)
       new->CR58 &= 0x7f;
-  #endif
+      
   /* ** On PCI bus, no need to reprogram the linear window base address */
   
   /* Now do clock PLL programming. Use the s3gendac function to get m,n */
@@ -2113,16 +2253,15 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
    new->MMPR1 = 0x00;   
    new->MMPR2 = 0x0808;  
    new->MMPR3 = 0x08080810; 
-
-  #if 0
-   if (OFLG_ISSET(OPTION_FIFO_AGGRESSIVE, &vga256InfoRec.options) || 
-      OFLG_ISSET(OPTION_FIFO_MODERATE, &vga256InfoRec.options) ||
-      OFLG_ISSET(OPTION_FIFO_CONSERV, &vga256InfoRec.options)) {
+			 
+   if( ps3v->fifo_aggressive || ps3v->fifo_moderate || 
+       ps3v->fifo_conservative ) {
          new->MMPR1 = 0x0200;   /* Low P. stream waits before filling */
          new->MMPR2 = 0x1808;   /* Let the FIFO refill itself */
          new->MMPR3 = 0x08081810; /* And let the GE hold the bus for a while */
       }
 
+  #if 0
    /* And setup here the new value for MCLK. We use the XConfig 
     * option "set_mclk", whose value gets stored in vga256InfoRec.s3MClk.
     * I'm not sure what the maximum "permitted" value should be, probably
@@ -2199,21 +2338,19 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	135000, 270000, &new->SR13, &new->SR12);
       }
 
-  #if 0
    /* Now adjust the value of the FIFO based upon options specified */
-   if(OFLG_ISSET(OPTION_FIFO_MODERATE, &vga256InfoRec.options)) {
-      if(vgaBitsPerPixel < 24)
+   if( ps3v->fifo_moderate ) {
+      if(pScrn->bitsPerPixel < 24)
          new->MMPR0 -= 0x8000;
       else 
          new->MMPR0 -= 0x4000;
       }
-   else if(OFLG_ISSET(OPTION_FIFO_AGGRESSIVE, &vga256InfoRec.options)) {
-      if(vgaBitsPerPixel < 24)
+   else if( ps3v->fifo_aggressive ) {
+      if(pScrn->bitsPerPixel < 24)
          new->MMPR0 -= 0xc000;
       else 
          new->MMPR0 -= 0x6000;
       }
-  #endif
 	     
    /* If we have an interlace mode, set the interlace bit. Note that mode
     * vertical timings are already adjusted by the standard VGA code 
@@ -2278,27 +2415,28 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	 
 
    /* Now we handle various XConfig memory options and others */
-  #if 0
+   
    /* option "slow_edodram" sets EDO to 2 cycle mode on ViRGE */
-   if (s3vPriv.chip == S3_ViRGE) {
+   if (ps3v->Chipset == S3_ViRGE) {
       OUTREG8(vgaCRIndex, 0x36);
       new->CR36 = INREG8(vgaCRReg);
-      if(OFLG_ISSET(OPTION_SLOW_EDODRAM, &vga256InfoRec.options)) 
+      if( ps3v->slow_edodram )
          new->CR36 = (new->CR36 & 0xf3) | 0x08;
       else  
          new->CR36 &= 0xf3;
       }
    
    /* Option "fpm_vram" for ViRGE_VX sets memory in fast page mode */
-   if (s3vPriv.chip == S3_ViRGE_VX) {
+   if (ps3v->Chipset == S3_ViRGE_VX) {
       OUTREG8(vgaCRIndex, 0x36);
       new->CR36 = INREG8(vgaCRReg);
-      if(OFLG_ISSET(OPTION_FPM_VRAM, &vga256InfoRec.options)) 
+      if( ps3v->fpm_vram )
          new->CR36 |=  0x0c;
       else 
          new->CR36 &= ~0x0c;
       }
-
+      
+  #if 0
    if (mode->Private) {
       if (mode->Private[0] & (1 << S3_INVERT_VCLK)) {
 	 if (mode->Private[S3_INVERT_VCLK])
@@ -2366,9 +2504,9 @@ S3VCloseScreen(int scrnIndex, ScreenPtr pScreen)
   S3VWriteMode(pScrn, vgaSavePtr, S3VSavePtr);
   vgaHWLock(hwp);
   S3VUnmapMem(pScrn);
+  if (ps3v->AccelInfoRec)
+    XAADestroyInfoRec(ps3v->AccelInfoRec);
   #if 0  /* from MGA */
-    if (pMga->AccelInfoRec)
-	XAADestroyInfoRec(pMga->AccelInfoRec);
     if (pMga->CursorInfoRec)
     	xf86DestroyCursorInfoRec(pMga->CursorInfoRec);
   #endif

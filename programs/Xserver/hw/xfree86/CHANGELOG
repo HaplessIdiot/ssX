@@ -1,3 +1,53 @@
+XFree86 3.9Nn (22 November 1998)
+1993. Set the valid gamma range as macros rather than having it hard coded
+      in various places.
+1992. Always refer to and store the gamma values as those of the monitor,
+      not of the correction.  This means that the values stored in the
+      ScrnInfoRec are now the same as those entered in the config file and
+      on the command line.
+1991. Fix the colormap layer's handling of static colormaps (#2255,
+      Mark Vojkovich).
+1990. Add XAA acceleration for pixmap->window N deep planar copies (#2254,
+      Mark Vojkovich).
+1989. Add an xf86ChangeGamma() function to the colormap layer (#2253,
+      Mark Vojkovich).
+1988. Have NameCompare() check for NULL pointers (#2252, Rik Faith).
+1987. Port Mark Vojkovich's accelerated line code form Permedia 2 to TX
+      and Permedia 1 chips (#2249, Alan Hourihane).
+1986. Fix mono 8x8 pattern problem for Permedia 1 (#2249, Alan Hourihane).
+1985. Fix glint crash in CloseScreen, and set rgbBits to 8 by default
+      (#2249, Alan Hourihane).
+1984. Fix glint CRTC setting alignment when using 24bpp (#2249,
+      Alan Hourihane).
+1983. Give all cfb private indices unique names so that cfb's for multiple
+      depths can be loaded on the same screen (#2248, 2250, 2251,
+      Mark Vojkovich).
+1982. xterm patch #89, including the completion of double-sized character
+      support (#2247, Thomas Dickey).
+1981. Fix an MGA dashed line clipping bug (#2246, Mark Vojkovich).
+1980. S3virge driver updates, including som acceleration, reinstatement of
+      config options and chip ID changes (#2245, Kevin Brosius).
+1979. Fix some RAC-related problems with the glint driver (#2244,
+      Alan Hourihane).
+1978. Fix some 64-bit problems in some unused driver code (for reference)
+      (#2242, Matti Aarnio).
+1977. Fix a 64-bit alignment problem in cfb8line.c (#2242, Matti Aarnio).
+1976. Fix a typo in Pclose() (#2242, Matti Aarnio).
+1975. Update some Linux-related Imake.cf settings (#2242, Matti Aarnio).
+1974. Update the Alpha unaligned access inlines in compiler.h, based on
+      similar code in the Linux kernel (#2240, Matti Aarnio).
+1973. Cirrus 546x memory interleaving (#2235, Corin Anderson).
+1972. XAA and HW cursor support for the Cirrus 546x series (#2235,
+      Corin Anderson).
+1971. Fix a cirrus 546x clock setting problem that was introduced in 3.9Nm
+      and add a few more predefined dot clocks (#2234, #2235, Corin Anderson).
+1970. Move the generic one-installed-colormap colormap handling functions
+      into micmap.c, remove the use of STATIC_COLOR, update other fb
+      layers to use the micmap functions where appropriate and ensure
+      that they initialise InstallColormap, UninstallColormap, StoreColors
+      and ListInstalledColormaps in their ScreenInit functions.  Also move
+      the global InstalledColormaps array into micmap.c.
+
 XFree86 3.9Nm (15 November 1998)
 1969. libXv fix (#2233, Michael Schimek).
 1968. Add support for building clients on NetBSD/vax 1.3H (#2231,
@@ -6749,4 +6799,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.642 1998/11/15 04:30:11 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.643 1998/11/15 10:22:33 dawes Exp $

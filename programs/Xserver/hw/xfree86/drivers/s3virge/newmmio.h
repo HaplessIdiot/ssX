@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/newmmio.h,v 1.1 1998/11/01 12:35:59 dawes Exp $ */
 
 /* Copied over from accel/s3_virge */
 
@@ -25,7 +25,7 @@
 #define S3V_MMIO_REGSIZE	   0x8000  /* 32KB */
 
 
-#include <Xmd.h>
+/* #include <Xmd.h> */
 
 
 #define int16	CARD16
@@ -394,8 +394,8 @@ typedef struct {
 #define SET_SUBSYS_CRTL(val) 	do { write_mem_barrier(); ((((mmtr)s3vMmioMem)->subsys_regs.regs.subsystem_csr)) = (val); write_mem_barrier(); } while (0)
 
 
-#define SET_DAC_W_INDEX(index)  outb(DAC_W_INDEX, index)
-#define SET_DAC_DATA(val) 	outb(DAC_DATA,val)
+#define SET_DAC_W_INDEX(index)  OUTREG8(DAC_W_INDEX, index)
+#define SET_DAC_DATA(val) 	OUTREG8(DAC_DATA,val)
 
 #define IMG_TRANS		(((mmtr)s3vMmioMem)->img)
 #define SET_PIXTRANS(a,v)	IMG_TRANS[a] = (v)
@@ -573,4 +573,4 @@ typedef struct {
 
 
 
-#define DBGOUT(p) /* outb(0x3bc,p) */
+#define DBGOUT(p) /* OUTREG8(0x3bc,p) */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.42 1997/04/08 10:11:16 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.43 1997/07/29 12:07:45 hohndel Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -350,7 +350,7 @@ s3ImageReadBanked (x, y, w, h, psrc, pwidth, px, py, planemask)
 	 l_planemask = (l_planemask << (s3Bpp<<3)) | planemask;
 #ifdef __alpha__
       if (s3Bpp == 3)
-	 l_planemask |= (1<<(24*(sizeof(long)/3))) - 1;
+	 l_planemask |= (1L << (24*(sizeof(long)/3))) - 1;
 #endif
       planemask |= ~s3BppPMask;
    }
@@ -751,7 +751,7 @@ s3ImageRead (x, y, w, h, psrc, pwidth, px, py, planemask)
 	 l_planemask = (l_planemask << (s3Bpp<<3)) | planemask;
 #ifdef __alpha__
       if (s3Bpp == 3)
-	 l_planemask |= (1<<(24*(sizeof(long)/3))) - 1;
+	 l_planemask |= (1L << (24*(sizeof(long)/3))) - 1;
 #endif
       planemask |= ~s3BppPMask;
    }

@@ -29,7 +29,7 @@
  * 
  * Permedia 2 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_accel.c,v 1.6 1998/09/19 12:14:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_accel.c,v 1.7 1998/11/15 04:30:27 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -628,7 +628,7 @@ Permedia2SubsequentSolidBresenhamLine16bpp( ScrnInfoPtr pScrn,
 	return;
     }
 
-    devPriv = cfbGetGCPrivate(pGlint->CurrentGC);
+    devPriv = cfb16GetGCPrivate(pGlint->CurrentGC);
 
     cfb16BresS(devPriv->rop, devPriv->and, devPriv->xor, 
                 (unsigned long*)pGlint->FbBase, pScrn->displayWidth >> 1, 
@@ -666,7 +666,7 @@ Permedia2SubsequentSolidBresenhamLine32bpp( ScrnInfoPtr pScrn,
 	return;
     }
 
-    devPriv = cfbGetGCPrivate(pGlint->CurrentGC);
+    devPriv = cfb32GetGCPrivate(pGlint->CurrentGC);
 
     cfb32BresS(devPriv->rop, devPriv->and, devPriv->xor, 
                 (unsigned long*)pGlint->FbBase, pScrn->displayWidth, 
