@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/ffb/Imakefile.inc,v 1.4tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/ffb/Imakefile.inc,v 1.5 2003/05/27 16:34:32 tsi Exp $
 
 #ifndef MesaDrvSrcDir
 #define MesaDrvSrcDir $(GLXLIBSRC)/mesa/src/drv
@@ -63,6 +63,21 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src \
 		$(MESADRVFFBBUILDDIR)ffb_tris.o \
 		$(MESADRVFFBBUILDDIR)ffb_vb.o \
 		$(MESADRVFFBBUILDDIR)ffb_xmesa.o
+
+   FFBEOBJS   = $(MESADRVFFBBUILDDIR)$(EXTRASUBDIR)/ffb_bitmap.o \
+		$(MESADRVFFBBUILDDIR)$(EXTRASUBDIR)/ffb_clear.o \
+		$(MESADRVFFBBUILDDIR)$(EXTRASUBDIR)/ffb_dd.o \
+		$(MESADRVFFBBUILDDIR)$(EXTRASUBDIR)/ffb_depth.o \
+		/* $(MESADRVFFBBUILDDIR)$(EXTRASUBDIR)/ffb_fog.o */ \
+		$(MESADRVFFBBUILDDIR)$(EXTRASUBDIR)/ffb_lines.o \
+		$(MESADRVFFBBUILDDIR)$(EXTRASUBDIR)/ffb_points.o \
+		$(MESADRVFFBBUILDDIR)$(EXTRASUBDIR)/ffb_span.o \
+		$(MESADRVFFBBUILDDIR)$(EXTRASUBDIR)/ffb_state.o \
+		$(MESADRVFFBBUILDDIR)$(EXTRASUBDIR)/ffb_stencil.o \
+		$(MESADRVFFBBUILDDIR)$(EXTRASUBDIR)/ffb_tex.o \
+		$(MESADRVFFBBUILDDIR)$(EXTRASUBDIR)/ffb_tris.o \
+		$(MESADRVFFBBUILDDIR)$(EXTRASUBDIR)/ffb_vb.o \
+		$(MESADRVFFBBUILDDIR)$(EXTRASUBDIR)/ffb_xmesa.o
 
    FFBUOBJS   = $(MESADRVFFBBUILDDIR)unshared/ffb_bitmap.o \
 		$(MESADRVFFBBUILDDIR)unshared/ffb_clear.o \

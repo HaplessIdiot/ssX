@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/SPARC/Imakefile,v 1.3 2002/11/22 22:55:58 tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/SPARC/Imakefile,v 1.4 2004/03/18 07:06:23 dawes Exp $
 
 /*
  * Need both shared and unshared Mesa objects in the following cases:
@@ -13,7 +13,7 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/SPARC/Imakefile,v 1.3 2002/11/22 22:55:58 tsi
 #if BuildOSMesaLib || (BuildXF86DRI && (GlxDriverUsesMesa || GlxBuiltInXMesa))
 #define DoNormalLib (NormalLibGlx || SharedLibGlxWithoutPIC)
 #define DoSharedLib (SharedLibGlx && !SharedLibGlxWithoutPIC)
-#define DoExtraLib SharedLibGlx
+#define DoExtraLib ExtraLibGlx
 #define DoDebugLib DebugLibGlx
 #define DoProfileLib ProfileLibGlx
 #else
@@ -50,8 +50,10 @@ STD_CPP_DEFINES = StandardDefines $(PROJECT_DEFINES)
 AllTarget($(OBJS))
 NormalLintTarget($(SRCS))
 
+#if 0
 ObjectFromAsmSource(xform, NullParameter)
 ObjectFromAsmSource(clip, NullParameter)
 ObjectFromAsmSource(norm, NullParameter)
+#endif
 
 DependTarget()

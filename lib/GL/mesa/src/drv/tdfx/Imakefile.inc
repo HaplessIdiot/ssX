@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/tdfx/Imakefile.inc,v 1.4tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/tdfx/Imakefile.inc,v 1.5 2003/05/27 16:34:34 tsi Exp $
 
 #ifndef MesaDrvSrcDir
 #define MesaDrvSrcDir $(GLXLIBSRC)/mesa/src/drv
@@ -61,6 +61,20 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src \
 		$(MESADRVTDFXBUILDDIR)tdfx_texstate.o \
 		$(MESADRVTDFXBUILDDIR)tdfx_tris.o \
 		$(MESADRVTDFXBUILDDIR)tdfx_vb.o
+
+     TDFXEOBJS = $(MESADRVTDFXBUILDDIR)$(EXTRASUBDIR)/tdfx_context.o \
+		$(MESADRVTDFXBUILDDIR)$(EXTRASUBDIR)/tdfx_dd.o \
+		$(MESADRVTDFXBUILDDIR)$(EXTRASUBDIR)/tdfx_lock.o \
+		$(MESADRVTDFXBUILDDIR)$(EXTRASUBDIR)/tdfx_pixels.o \
+		$(MESADRVTDFXBUILDDIR)$(EXTRASUBDIR)/tdfx_render.o \
+		$(MESADRVTDFXBUILDDIR)$(EXTRASUBDIR)/tdfx_screen.o \
+		$(MESADRVTDFXBUILDDIR)$(EXTRASUBDIR)/tdfx_span.o \
+		$(MESADRVTDFXBUILDDIR)$(EXTRASUBDIR)/tdfx_state.o \
+		$(MESADRVTDFXBUILDDIR)$(EXTRASUBDIR)/tdfx_tex.o \
+		$(MESADRVTDFXBUILDDIR)$(EXTRASUBDIR)/tdfx_texman.o \
+		$(MESADRVTDFXBUILDDIR)$(EXTRASUBDIR)/tdfx_texstate.o \
+		$(MESADRVTDFXBUILDDIR)$(EXTRASUBDIR)/tdfx_tris.o \
+		$(MESADRVTDFXBUILDDIR)$(EXTRASUBDIR)/tdfx_vb.o
 
      TDFXUOBJS = $(MESADRVTDFXBUILDDIR)unshared/tdfx_context.o \
 		$(MESADRVTDFXBUILDDIR)unshared/tdfx_dd.o \

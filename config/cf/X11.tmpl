@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.251 2004/03/18 07:06:19 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.252 2004/03/25 03:36:21 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1689,6 +1689,9 @@ XCOMM X Window System make variables; these need to be coordinated with rules
 #ifndef SharedLibX11
 #define SharedLibX11 HasSharedLibraries
 #endif
+#ifndef ExtraLibX11
+#define ExtraLibX11 SharedLibX11
+#endif
 #ifndef NormalLibX11
 #define NormalLibX11 (!SharedLibX11 | ForceNormalLib)
 #endif
@@ -1715,6 +1718,9 @@ ProjectUnsharedLibReferences(XONLY,X11,$(XLIBSRC),XBuildLibDir)
 #ifndef SharedLibXThrStub
 #define SharedLibXThrStub	YES
 #endif
+#ifndef ExtraLibXThrStub
+#define ExtraLibXThrStub	SharedLibXThrStub
+#endif
 #ifndef NormalLibXThrStub
 #define NormalLibXThrStub	NO
 #endif
@@ -1736,6 +1742,8 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #else
 #undef  SharedLibXThrStub
 #define SharedLibXThrStub	NO
+#undef  ExtraLibXThrStub
+#define ExtraLibXThrStub	NO
 #undef  NormalLibXThrStub
 #define NormalLibXThrStub	NO
 #undef  DebugLibXThrStub
@@ -1747,6 +1755,9 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #if BuildScreenSaverLibrary
 #ifndef SharedLibXss
 #define SharedLibXss	HasSharedLibraries
+#endif
+#ifndef ExtraLibXss
+#define ExtraLibXss	SharedLibXss
 #endif
 #ifndef NormalLibXss
 #define NormalLibXss	(!SharedLibXss || ForceNormalLib)
@@ -1760,6 +1771,8 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #else
 #undef  SharedLibXss
 #define SharedLibXss	NO
+#undef  ExtraLibXss
+#define ExtraLibXss	NO
 #undef  NormalLibXss
 #define NormalLibXss	NO
 #undef  DebugLibXss
@@ -1771,6 +1784,9 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #if BuildXF86MiscLibrary
 #ifndef SharedLibXxf86misc
 #define SharedLibXxf86misc	HasSharedLibraries
+#endif
+#ifndef ExtraLibXxf86misc
+#define ExtraLibXxf86misc	SharedLibXxf86misc
 #endif
 #ifndef NormalLibXxf86misc
 #define NormalLibXxf86misc	(!SharedLibXxf86misc || ForceNormalLib)
@@ -1784,6 +1800,8 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #else
 #undef  SharedLibXxf86misc
 #define SharedLibXxf86misc	NO
+#undef  ExtraLibXxf86misc
+#define ExtraLibXxf86misc	NO
 #undef  NormalLibXxf86misc
 #define NormalLibXxf86misc	NO
 #undef  DebugLibXxf86misc
@@ -1795,6 +1813,9 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #if BuildXF86VidModeLibrary
 #ifndef SharedLibXxf86vm
 #define SharedLibXxf86vm	HasSharedLibraries
+#endif
+#ifndef ExtraLibXxf86vm
+#define ExtraLibXxf86vm		SharedLibXxf86vm
 #endif
 #ifndef NormalLibXxf86vm
 #define NormalLibXxf86vm	(!SharedLibXxf86vm || ForceNormalLib)
@@ -1808,6 +1829,8 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #else
 #undef  SharedLibXxf86vm
 #define SharedLibXxf86vm	NO
+#undef  ExtraLibXxf86vm
+#define ExtraLibXxf86vm	NO
 #undef  NormalLibXxf86vm
 #define NormalLibXxf86vm	NO
 #undef  DebugLibXxf86vm
@@ -1819,6 +1842,9 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #if BuildXF86DGALibrary
 #ifndef SharedLibXxf86dga
 #define SharedLibXxf86dga	HasSharedLibraries
+#endif
+#ifndef ExtraLibXxf86dga
+#define ExtraLibXxf86dga	SharedLibXxf86dga
 #endif
 #ifndef NormalLibXxf86dga
 #define NormalLibXxf86dga	(!SharedLibXxf86dga || ForceNormalLib)
@@ -1832,6 +1858,8 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #else
 #undef  SharedLibXxf86dga
 #define SharedLibXxf86dga	NO
+#undef  ExtraLibXxf86dga
+#define ExtraLibXxf86dga	NO
 #undef  NormalLibXxf86dga
 #define NormalLibXxf86dga	NO
 #undef  DebugLibXxf86dga
@@ -1843,6 +1871,9 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #if BuildXF86RushLibrary
 #ifndef SharedLibXxf86rush
 #define SharedLibXxf86rush	HasSharedLibraries
+#endif
+#ifndef ExtraLibXxf86rush
+#define ExtraLibXxf86rush	SharedLibXxf86rush
 #endif
 #ifndef NormalLibXxf86rush
 #define NormalLibXxf86rush	(!SharedLibXxf86rush || ForceNormalLib)
@@ -1856,6 +1887,8 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #else
 #undef  SharedLibXxf86rush
 #define SharedLibXxf86rush	NO
+#undef  ExtraLibXxf86rush
+#define ExtraLibXxf86rush	NO
 #undef  NormalLibXxf86rush
 #define NormalLibXxf86rush	NO
 #undef  DebugLibXxf86rush
@@ -1867,6 +1900,9 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #if BuildXvLibrary
 #ifndef SharedLibXv
 #define SharedLibXv		HasSharedLibraries
+#endif
+#ifndef ExtraLibXv
+#define ExtraLibXv		SharedLibXv
 #endif
 #ifndef NormalLibXv
 #define NormalLibXv		(!SharedLibXv || ForceNormalLib)
@@ -1880,6 +1916,8 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #else
 #undef  SharedLibXv
 #define SharedLibXv		NO
+#undef  ExtraLibXv
+#define ExtraLibXv		NO
 #undef  NormalLibXv
 #define NormalLibXv		NO
 #undef  DebugLibXv
@@ -1891,6 +1929,9 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #if BuildXvMCLibrary
 #ifndef SharedLibXvMC
 #define SharedLibXvMC		HasSharedLibraries
+#endif
+#ifndef ExtraLibXvMC
+#define ExtraLibXvMC		SharedLibXvMC
 #endif
 #ifndef NormalLibXvMC
 #define NormalLibXvMC		(!SharedLibXvMC || ForceNormalLib)
@@ -1904,6 +1945,8 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #else
 #undef  SharedLibXvMC
 #define SharedLibXvMC		NO
+#undef  ExtraLibXvMC
+#define ExtraLibXvMC		NO
 #undef  NormalLibXvMC
 #define NormalLibXvMC		NO
 #undef  DebugLibXvMC
@@ -1915,6 +1958,9 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #if BuildXineramaLibrary
 #ifndef SharedLibXinerama
 #define SharedLibXinerama	HasSharedLibraries
+#endif
+#ifndef ExtraLibXinerama
+#define ExtraLibXinerama	SharedLibXinerama
 #endif
 #ifndef NormalLibXinerama
 #define NormalLibXinerama	(!SharedLibXinerama || ForceNormalLib)
@@ -1928,6 +1974,8 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #else
 #undef  SharedLibXinerama
 #define SharedLibXinerama	NO
+#undef  ExtraLibXinerama
+#define ExtraLibXinerama	NO
 #undef  NormalLibXinerama
 #define NormalLibXinerama	NO
 #undef  DebugLibXinerama
@@ -1938,20 +1986,25 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 
 #if BuildXResLibrary
 #ifndef SharedLibXRes
-#define SharedLibXRes           HasSharedLibraries
+#define SharedLibXRes		HasSharedLibraries
+#endif
+#ifndef ExtraLibXRes
+#define ExtraLibXRes		SharedLibXRes
 #endif
 #ifndef NormalLibXRes
-#define NormalLibXRes           (!SharedLibXRes || ForceNormalLib)
+#define NormalLibXRes		(!SharedLibXRes || ForceNormalLib)
 #endif
 #ifndef DebugLibXRes
-#define DebugLibXRes            NO
+#define DebugLibXRes		NO
 #endif
 #ifndef ProfileLibXRes
-#define ProfileLibXRes          NO
+#define ProfileLibXRes		NO
 #endif
 #else
 #undef  SharedLibXRes
 #define SharedLibXRes		NO
+#undef  ExtraLibXRes
+#define ExtraLibXRes		NO
 #undef  NormalLibXRes
 #define NormalLibXRes		NO
 #undef  DebugLibXRes
@@ -1963,6 +2016,9 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #if BuildDPSLibrary
 #ifndef SharedLibDps
 #define SharedLibDps		HasSharedLibraries
+#endif
+#ifndef ExtraLibDps
+#define ExtraLibDps		SharedLibDps
 #endif
 #ifndef NormalLibDps
 #define NormalLibDps		(!SharedLibDps || ForceNormalLib)
@@ -1976,6 +2032,8 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #else
 #undef  SharedLibDps
 #define SharedLibDps		NO
+#undef  ExtraLibDps
+#define ExtraLibDps		NO
 #undef  NormalLibDps
 #define NormalLibDps		NO
 #undef  DebugLibDps
@@ -1987,6 +2045,9 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #if BuildDPSTkLibrary
 #ifndef SharedLibDpsTk
 #define SharedLibDpsTk		HasSharedLibraries
+#endif
+#ifndef ExtraLibDpsTk
+#define ExtraLibDpsTk		SharedLibDpsTk
 #endif
 #ifndef NormalLibDpsTk
 #define NormalLibDpsTk		(!SharedLibDpsTk || ForceNormalLib)
@@ -2000,6 +2061,8 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #else
 #undef  SharedLibDpsTk
 #define SharedLibDpsTk		NO
+#undef  ExtraLibDpsTk
+#define ExtraLibDpsTk		NO
 #undef  NormalLibDpsTk
 #define NormalLibDpsTk		NO
 #undef  DebugLibDpsTk
@@ -2011,6 +2074,9 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #if BuildPSResLibrary
 #ifndef SharedLibPSRes
 #define SharedLibPSRes		HasSharedLibraries
+#endif
+#ifndef ExtraLibPSRes
+#define ExtraLibPSRes		SharedLibPSRes
 #endif
 #ifndef NormalLibPSRes
 #define NormalLibPSRes		(!SharedLibPSRes || ForceNormalLib)
@@ -2024,6 +2090,8 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #else
 #undef  SharedLibPSRes
 #define SharedLibPSRes		NO
+#undef  ExtraLibPSRes
+#define ExtraLibPSRes		NO
 #undef  NormalLibPSRes
 #define NormalLibPSRes		NO
 #undef  DebugLibPSRes
@@ -2035,6 +2103,9 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #if BuildRenderLibrary
 #ifndef SharedLibXrender
 #define SharedLibXrender	HasSharedLibraries
+#endif
+#ifndef ExtraLibXrender
+#define ExtraLibXrender		SharedLibXrender
 #endif
 #ifndef NormalLibXrender
 #define NormalLibXrender	(!SharedLibXrender || ForceNormalLib)
@@ -2048,6 +2119,8 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #else
 #undef  SharedLibXrender
 #define SharedLibXrender	NO
+#undef  ExtraLibXrender
+#define ExtraLibXrender		NO
 #undef  NormalLibXrender
 #define NormalLibXrender	NO
 #undef  DebugLibXrender
@@ -2059,6 +2132,9 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #if BuildRandRLibrary
 #ifndef SharedLibXrandr
 #define SharedLibXrandr		HasSharedLibraries
+#endif
+#ifndef ExtraLibXrandr
+#define ExtraLibXrandr		SharedLibXrandr
 #endif
 #ifndef NormalLibXrandr
 #define NormalLibXrandr		(!SharedLibXrandr || ForceNormalLib)
@@ -2072,6 +2148,8 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #else
 #undef  SharedLibXrandr
 #define SharedLibXrandr		NO
+#undef  ExtraLibXrandr
+#define ExtraLibXrandr		NO
 #undef  NormalLibXrandr
 #define NormalLibXrandr		NO
 #undef  DebugLibXrandr
@@ -2083,6 +2161,9 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #if BuildXcursorLibrary
 #ifndef SharedLibXcursor
 #define SharedLibXcursor	HasSharedLibraries
+#endif
+#ifndef ExtraLibXcursor
+#define ExtraLibXcursor		SharedLibXcursor
 #endif
 #ifndef NormalLibXcursor
 #define NormalLibXcursor	(!SharedLibXcursor || ForceNormalLib)
@@ -2096,6 +2177,8 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #else
 #undef  SharedLibXcursor
 #define SharedLibXcursor	NO
+#undef  ExtraLibXcursor
+#define ExtraLibXcursor		NO
 #undef  NormalLibXcursor
 #define NormalLibXcursor	NO
 #undef  DebugLibXcursor
@@ -2107,6 +2190,9 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #if BuildAppleWMLibrary
 #ifndef SharedLibAppleWM
 #define SharedLibAppleWM	HasSharedLibraries
+#endif
+#ifndef ExtraLibAppleWM
+#define ExtraLibAppleWM		SharedLibAppleWM
 #endif
 #ifndef NormalLibAppleWM
 #define NormalLibAppleWM	(!SharedLibAppleWM || ForceNormalLib)
@@ -2120,6 +2206,8 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #else
 #undef  SharedLibAppleWM
 #define SharedLibAppleWM	NO
+#undef  ExtraLibAppleWM
+#define ExtraLibAppleWM		NO
 #undef  NormalLibAppleWM
 #define NormalLibAppleWM	NO
 #undef  DebugLibAppleWM
@@ -2131,6 +2219,9 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #if BuildWindowsWMLibrary
 #ifndef SharedLibWindowsWM
 #define SharedLibWindowsWM	HasSharedLibraries
+#endif
+#ifndef ExtraLibWindowsWM
+#define ExtraLibWindowsWM	SharedLibWindowsWM
 #endif
 #ifndef NormalLibWindowsWM
 #define NormalLibWindowsWM	(!SharedLibWindowsWM || ForceNormalLib)
@@ -2144,6 +2235,8 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #else
 #undef  SharedLibWindowsWM
 #define SharedLibWindowsWM	NO
+#undef  ExtraLibWindowsWM
+#define ExtraLibWindowsWM	NO
 #undef  NormalLibWindowsWM
 #define NormalLibWindowsWM	NO
 #undef  DebugLibWindowsWM
@@ -2155,6 +2248,9 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #if BuildGLULibrary
 #ifndef SharedLibGlu
 #define SharedLibGlu		HasSharedLibraries
+#endif
+#ifndef ExtraLibGlu
+#define ExtraLibGlu		SharedLibGlu
 #endif
 #ifndef NormalLibGlu
 #define NormalLibGlu		(!SharedLibX11 | ForceNormalLib)
@@ -2168,6 +2264,8 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #else
 #undef  SharedLibGlu
 #define SharedLibGlu		NO
+#undef  ExtraLibGlu
+#define ExtraLibGlu		NO
 #undef  NormalLibGlu
 #define NormalLibGlu		NO
 #undef  DebugLibGlu
@@ -2179,6 +2277,9 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #if BuildGLXLibrary
 #ifndef SharedLibGlx
 #define SharedLibGlx		HasSharedLibraries
+#endif
+#ifndef ExtraLibGlx
+#define ExtraLibGlx		SharedLibGlx
 #endif
 #ifndef NormalLibGlx
 #define NormalLibGlx		(!SharedLibX11 | ForceNormalLib)
@@ -2214,6 +2315,8 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #else
 #undef  SharedLibGlx
 #define SharedLibGlx		NO
+#undef  ExtraLibGlx
+#define ExtraLibGlx		NO
 #undef  NormalLibGlx
 #define NormalLibGlx		NO
 #undef  DebugLibGlx
@@ -2228,6 +2331,9 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #if BuildGLwLibrary
 #ifndef SharedLibGLw
 #define SharedLibGLw		HasSharedLibraries && HasWeakSymbols
+#endif
+#ifndef ExtraLibGLw
+#define ExtraLibGLw		SharedLibGLw
 #endif
 #ifndef NormalLibGLw
 #define NormalLibGLw		(!SharedLibGLw || ForceNormalLib)
@@ -2245,6 +2351,8 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #else
 #undef  SharedLibGLw
 #define SharedLibGLw		NO
+#undef  ExtraLibGLw
+#define ExtraLibGLw		NO
 #undef  NormalLibGLw
 #define NormalLibGLw		NO
 #undef  DebugLibGLw
@@ -2255,6 +2363,9 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 
 #ifndef SharedLibXext
 #define SharedLibXext HasSharedLibraries
+#endif
+#ifndef ExtraLibXext
+#define ExtraLibXext SharedLibXext
 #endif
 #ifndef NormalLibXext
 #define NormalLibXext (!SharedLibXext | ForceNormalLib)
@@ -2485,6 +2596,9 @@ ProjectUnsharedLibReferences(WINDOWSWM,WindowsWM,$(WINDOWSWMLIBSRC),XBuildLibDir
 # ifndef SharedLibXfontcache
 #  define SharedLibXfontcache	HasSharedLibraries
 # endif
+# ifndef ExtraLibXfontcache
+#  define ExtraLibXfontcache	SharedLibXfontcache
+# endif
 # ifndef NormalLibXfontcache
 #  define NormalLibXfontcache	(!SharedLibXfontcache || ForceNormalLib)
 # endif
@@ -2507,6 +2621,9 @@ ProjectUnsharedLibReferences(XFONTCACHE,Xfontcache,$(XFONTCACHELIBSRC),XBuildLib
 
 #ifndef SharedLibXau
 #define SharedLibXau		NO
+#endif
+#ifndef ExtraLibXau
+#define ExtraLibXau		SharedLibXau
 #endif
 #ifndef NormalLibXau
 #define NormalLibXau (!SharedLibXau | ForceNormalLib)
@@ -2534,6 +2651,9 @@ ProjectUnsharedLibReferences(XAUTH,Xau,$(XAUTHSRC),$(USRLIBDIR))
 #ifndef SharedLibXdmcp
 #define SharedLibXdmcp		NO
 #endif
+#ifndef ExtraLibXdmcp
+#define ExtraLibXdmcp		SharedLibXdmcp
+#endif
 #ifndef NormalLibXdmcp
 #define NormalLibXdmcp (!SharedLibXdmcp | ForceNormalLib)
 #endif
@@ -2560,6 +2680,9 @@ ProjectUnsharedLibReferences(XDMCP,Xdmcp,$(XDMCPLIBSRC),$(USRLIBDIR))
 #ifndef SharedLibXmu
 #define SharedLibXmu HasSharedLibraries
 #endif
+#ifndef ExtraLibXmu
+#define ExtraLibXmu SharedLibXmu
+#endif
 #ifndef NormalLibXmu
 #define NormalLibXmu (!SharedLibXmu | ForceNormalLib)
 #endif
@@ -2581,6 +2704,9 @@ ProjectUnsharedLibReferences(XMU,Xmu,$(XMUSRC),XBuildLibDir)
 
 #ifndef SharedLibXmuu
 #define SharedLibXmuu HasSharedLibraries
+#endif
+#ifndef ExtraLibXmuu
+#define ExtraLibXmuu SharedLibXmuu
 #endif
 #ifndef NormalLibXmuu
 #define NormalLibXmuu		(!SharedLibXmuu | ForceNormalLib)
@@ -2604,6 +2730,9 @@ ProjectUnsharedLibReferences(XMUU,Xmuu,$(XMUUSRC),XBuildLibDir)
 #ifndef SharedOldX
 #define SharedOldX HasSharedLibraries
 #endif
+#ifndef ExtraOldX
+#define ExtraOldX SharedOldX
+#endif
 #ifndef NormalOldX
 #define NormalOldX (!SharedOldX | ForceNormalLib)
 #endif
@@ -2626,6 +2755,9 @@ ProjectUnsharedLibReferences(OLDX,oldX,$(OLDXLIBSRC),XBuildLibDir)
 #ifndef SharedLibXp
 #define SharedLibXp HasSharedLibraries
 #endif
+#ifndef ExtraLibXp
+#define ExtraLibXp SharedLibXp
+#endif
 #ifndef NormalLibXp
 #define NormalLibXp (!SharedLibXp | ForceNormalLib)
 #endif
@@ -2647,6 +2779,9 @@ ProjectUnsharedLibReferences(XP,Xp,$(XPLIBSRC),XBuildLibDir)
 
 #ifndef SharedLibXt
 #define SharedLibXt HasSharedLibraries
+#endif
+#ifndef ExtraLibXt
+#define ExtraLibXt SharedLibXt
 #endif
 #ifndef NormalLibXt
 #define NormalLibXt (!SharedLibXt | ForceNormalLib)
@@ -2673,6 +2808,9 @@ ProjectUnsharedLibReferences(XTOOLONLY,Xt,$(TOOLKITSRC),XBuildLibDir)
 #ifndef SharedLibXa
 #define SharedLibXa	(HasSharedLibraries & HasCplusplus)
 #endif
+#ifndef ExtraLibXa
+#define ExtraLibXa	SharedLibXa
+#endif
 #ifndef NormalLibXa
 /* #define NormalLibXa	((!SharedLibXa | ForceNormalLib) & HasCplusplus) */
 #define NormalLibXa	YES /* needed for current tests, will correct later */
@@ -2695,6 +2833,9 @@ UnsharedLibReferences(XA,Xa,$(XALIBSRC))
 
 #ifndef SharedLibXaw
 #define SharedLibXaw HasSharedLibraries
+#endif
+#ifndef ExtraLibXaw
+#define ExtraLibXaw SharedLibXaw
 #endif
 #ifndef NormalLibXaw
 #define NormalLibXaw (!SharedLibXaw | ForceNormalLib)
@@ -2723,6 +2864,9 @@ ProjectUnsharedLibReferences(XAW,Xaw,$(AWIDGETSRC),XBuildLibDir)
 #ifndef SharedLibXaw6
 #define SharedLibXaw6 HasSharedLibraries
 #endif
+#ifndef ExtraLibXaw6
+#define ExtraLibXaw6 SharedLibXaw6
+#endif
 #ifndef NormalLibXaw6
 #define NormalLibXaw6		NO
 #endif
@@ -2746,6 +2890,9 @@ ProjectUnsharedLibReferences(XAW6,Xaw,$(AWIDGET6SRC),XBuildLibDir)
 #ifndef SharedLibXi
 #define SharedLibXi HasSharedLibraries
 #endif
+#ifndef ExtraLibXi
+#define ExtraLibXi SharedLibXi
+#endif
 #ifndef NormalLibXi
 #define NormalLibXi (!SharedLibXi | ForceNormalLib)
 #endif
@@ -2767,6 +2914,9 @@ ProjectUnsharedLibReferences(XI,Xi,$(XILIBSRC),XBuildLibDir)
 
 #ifndef SharedLibXtst
 #define SharedLibXtst HasSharedLibraries
+#endif
+#ifndef ExtraLibXtst
+#define ExtraLibXtst SharedLibXtst
 #endif
 #ifndef NormalLibXtst
 #define NormalLibXtst (!SharedLibXtst | ForceNormalLib)
@@ -2792,6 +2942,9 @@ ProjectUnsharedLibReferences(XBSD,Xbsd,$(LIBSRC)/Xbsd,XBuildLibDir)
 #ifndef SharedLibICE
 #define SharedLibICE HasSharedLibraries
 #endif
+#ifndef ExtraLibICE
+#define ExtraLibICE SharedLibICE
+#endif
 #ifndef NormalLibICE
 #define NormalLibICE (!SharedLibICE | ForceNormalLib)
 #endif
@@ -2813,6 +2966,9 @@ ProjectUnsharedLibReferences(ICE,ICE,$(ICESRC),XBuildLibDir)
 
 #ifndef SharedLibSM
 #define SharedLibSM HasSharedLibraries
+#endif
+#ifndef ExtraLibSM
+#define ExtraLibSM SharedLibSM
 #endif
 #ifndef NormalLibSM
 #define NormalLibSM (!SharedLibSM | ForceNormalLib)
@@ -2836,6 +2992,9 @@ ProjectUnsharedLibReferences(SM,SM,$(SMSRC),XBuildLibDir)
 #ifndef SharedLibXkey
 #define SharedLibXkey HasSharedLibraries
 #endif
+#ifndef ExtraLibXkey
+#define ExtraLibXkey SharedLibXkey
+#endif
 #ifndef NormalLibXkey
 #define NormalLibXkey (!SharedLibXkey | ForceNormalLib)
 #endif
@@ -2858,6 +3017,9 @@ ProjectUnsharedLibReferences(XKEY,Xkey,$(XKEYSRC),XBuildLibDir)
 #ifndef SharedLibFS
 #define SharedLibFS		HasSharedLibraries
 #endif
+#ifndef ExtraLibFS
+#define ExtraLibFS		SharedLibFS
+#endif
 #ifndef NormalLibFS
 #define NormalLibFS (!SharedLibFS | ForceNormalLib)
 #endif
@@ -2879,6 +3041,9 @@ ProjectUnsharedLibReferences(FS,FS,$(FSLIBSRC),XBuildLibDir)
 
 #ifndef SharedLibFont
 #define SharedLibFont HasSharedLibraries
+#endif
+#ifndef ExtraLibFont
+#define ExtraLibFont SharedLibFont
 #endif
 #ifndef NormalLibFont
 #define NormalLibFont (!SharedLibFont | ForceNormalLib | XserverStaticFontLib)
@@ -2910,6 +3075,9 @@ ProjectUnsharedLibReferences(FONTSTUB,fntstubs,$(FONTSUBLIBSRC),XBuildLibDir)
 #ifndef SharedLibFontEnc
 #define SharedLibFontEnc	HasSharedLibraries
 #endif
+#ifndef ExtraLibFontEnc
+#define ExtraLibFontEnc		SharedLibFontEnc
+#endif
 #ifndef NormalLibFontEnc
 #define NormalLibFontEnc (!SharedLibFontEnc | ForceNormalLib)
 #endif
@@ -2931,6 +3099,9 @@ ProjectUnsharedLibReferences(XFONTENC,fontenc,$(FONTENCLIBSRC),XBuildLibDir)
 
 #ifndef SharedLibXpm
 #define SharedLibXpm HasSharedLibraries
+#endif
+#ifndef ExtraLibXpm
+#define ExtraLibXpm SharedLibXpm
 #endif
 #ifndef NormalLibXpm
 #define NormalLibXpm (!SharedLibXpm | ForceNormalLib)
@@ -2957,6 +3128,9 @@ ProjectUnsharedLibReferences(XPM,Xpm,$(XPMLIBSRC),XBuildLibDir)
 
 #ifndef SharedLibFreetype2
 #define SharedLibFreetype2 HasSharedLibraries
+#endif
+#ifndef ExtraLibFreetype2
+#define ExtraLibFreetype2 SharedLibFreetype2
 #endif
 #ifndef NormalLibFreetype2
 #define NormalLibFreetype2 (!SharedLibFreetype2 | ForceNormalLib)
@@ -3069,6 +3243,9 @@ FREETYPE2DEFINES = -DFREETYPE2
 #ifndef SharedLibExpat
 #define SharedLibExpat HasSharedLibraries
 #endif
+#ifndef ExtraLibExpat
+#define ExtraLibExpat SharedLibExpat
+#endif
 #ifndef NormalLibExpat
 #define NormalLibExpat (!SharedLibExpat | ForceNormalLib)
 #endif
@@ -3174,6 +3351,9 @@ EXPATDEFINES = -DEXPAT
 #ifndef SharedLibXft1
 #define SharedLibXft1 HasSharedLibraries
 #endif
+#ifndef ExtraLibXft1
+#define ExtraLibXft1 SharedLibXft1
+#endif
 #ifndef NormalLibXft1
 #define NormalLibXft1		NO
 #endif
@@ -3211,6 +3391,9 @@ ProjectUnsharedLibReferences(XFT1,Xft,$(XFT1LIBSRC),XBuildLibDir)
 #ifndef SharedLibXft
 #define SharedLibXft HasSharedLibraries
 #endif
+#ifndef ExtraLibXft
+#define ExtraLibXft SharedLibXft
+#endif
 #ifndef NormalLibXft
 #define NormalLibXft (!SharedLibXft | ForceNormalLib)
 #endif
@@ -3243,6 +3426,9 @@ ProjectUnsharedLibReferences(XFT,Xft,$(XFTLIBSRC),XBuildLibDir)
 
 #ifndef SharedLibFontconfig
 #define SharedLibFontconfig HasSharedLibraries
+#endif
+#ifndef ExtraLibFontconfig
+#define ExtraLibFontconfig SharedLibFontconfig
 #endif
 #ifndef NormalLibFontconfig
 #define NormalLibFontconfig (!SharedLibFontconfig | ForceNormalLib)
@@ -3435,6 +3621,9 @@ LIBPNGLIB = -L$(LIBPNGLIBDIR) -lpng
 # ifndef SharedLibxkbfile
 #  define SharedLibxkbfile	HasSharedLibraries
 # endif
+# ifndef ExtraLibxkbfile
+#  define ExtraLibxkbfile	SharedLibxkbfile
+# endif
 # ifndef NormalLibxkbfile
 #  define NormalLibxkbfile	(!SharedLibxkbfile | ForceNormalLib)
 # endif
@@ -3507,6 +3696,9 @@ ProjectUnsharedLibReferences(XKBFILE,xkbfile,$(XKBFILELIBSRC),XBuildLibDir)
 # ifndef SharedLibxkbui
 #  define SharedLibxkbui	HasSharedLibraries
 # endif
+# ifndef ExtraLibxkbui
+#  define ExtraLibxkbui		SharedLibxkbui
+# endif
 # ifndef NormalLibxkbui
 #  define NormalLibxkbui	(!SharedLibxkbui || ForceNormalLib)
 # endif
@@ -3556,6 +3748,9 @@ ProjectUnsharedLibReferences(XKBUI,xkbui,$(XKBUILIBSRC),XBuildLibDir)
 
 #ifndef SharedLibXTrap
 #define SharedLibXTrap HasSharedLibraries
+#endif
+#ifndef ExtraLibXTrap
+#define ExtraLibXTrap SharedLibXTrap
 #endif
 #ifndef NormalLibXTrap
 #define NormalLibXTrap (!SharedLibXTrap | ForceNormalLib)

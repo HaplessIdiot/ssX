@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/tnl_dd/Imakefile.inc,v 1.1tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/tnl_dd/Imakefile.inc,v 1.2 2002/11/14 21:01:18 tsi Exp $
 
 #ifndef MesaTnlDdBuildDir
 #define MesaTnlDdBuildDir $(GLXLIBSRC)/mesa/src/tnl_dd/
@@ -19,6 +19,10 @@ LinkSourceFile(t_dd_vb.c, $(MESASRCDIR)/src/tnl_dd)
  MESA_TNL_DD_OBJS = $(MESATNLDDBUILDDIR)t_array_api.o \
 		    $(MESATNLDDBUILDDIR)t_dd.o \
 		    $(MESATNLDDBUILDDIR)t_dd_vb.o
+
+MESA_TNL_DD_EOBJS = $(MESATNLDDBUILDDIR)$(EXTRASUBDIR)/t_array_api.o \
+		    $(MESATNLDDBUILDDIR)$(EXTRASUBDIR)/t_dd.o \
+		    $(MESATNLDDBUILDDIR)$(EXTRASUBDIR)/t_dd_vb.o
 
 #if defined(DoSharedLib) && DoSharedLib
 MESA_TNL_DD_UOBJS = $(MESATNLDDBUILDDIR)unshared/t_array_api.o \

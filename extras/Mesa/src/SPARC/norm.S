@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/SPARC/norm.S,v 1.3 2003/12/02 20:27:34 dawes Exp $ */
 
 #include "sparc_matrix.h"
 
@@ -7,6 +7,11 @@
 #define SPARC_64BIT_ADDR
 #endif
 
+#ifdef SVR4
+        /* Solaris requires this for 64-bit. */
+        .register %g2, #scratch
+        .register %g3, #scratch
+#endif
 
 	.text
 

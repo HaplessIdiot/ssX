@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/common/Imakefile.inc,v 1.3 2003/05/27 16:34:32 tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/common/Imakefile.inc,v 1.4 2003/09/28 20:15:07 alanh Exp $
 
 #ifndef MesaDrvSrcDir
 #define MesaDrvSrcDir $(GLXLIBSRC)/mesa/src/drv
@@ -43,6 +43,12 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src \
 		$(MESADRVCOMMONBUILDDIR)utils.o \
 		$(MESADRVCOMMONBUILDDIR)vblank.o \
 		$(MESADRVCOMMONBUILDDIR)texmem.o
+
+   COMMONEOBJS = $(MESADRVCOMMONBUILDDIR)$(EXTRASUBDIR)/hwlog.o \
+		$(MESADRVCOMMONBUILDDIR)$(EXTRASUBDIR)/mm.o \
+		$(MESADRVCOMMONBUILDDIR)$(EXTRASUBDIR)/utils.o \
+		$(MESADRVCOMMONBUILDDIR)$(EXTRASUBDIR)/vblank.o \
+		$(MESADRVCOMMONBUILDDIR)$(EXTRASUBDIR)/texmem.o
 
    COMMONUOBJS = $(MESADRVCOMMONBUILDDIR)unshared/hwlog.o \
 		$(MESADRVCOMMONBUILDDIR)unshared/mm.o \

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/freetype2/Imakefile,v 1.19 2003/11/21 02:33:22 dawes Exp $
+XCOMM $XFree86: xc/lib/freetype2/Imakefile,v 1.20 2003/12/11 21:07:41 dawes Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags
@@ -6,7 +6,7 @@ XCOMM $XFree86: xc/lib/freetype2/Imakefile,v 1.19 2003/11/21 02:33:22 dawes Exp 
 
 #define DoNormalLib NormalLibFreetype2
 #define DoSharedLib SharedLibFreetype2
-#define DoExtraLib SharedLibFreetype2
+#define DoExtraLib ExtraLibFreetype2
 #define DoDebugLib DebugLibFreetype2
 #define DoProfileLib ProfileLibFreetype2
 #define HasSharedData YES

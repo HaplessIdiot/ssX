@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/X86/Imakefile,v 1.27 2003/09/28 20:15:06 alanh Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/X86/Imakefile,v 1.28 2004/03/18 07:06:23 dawes Exp $
 
 /*
  * Need both shared and unshared Mesa objects in the following cases:
@@ -13,7 +13,7 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/X86/Imakefile,v 1.27 2003/09/28 20:15:06 alan
 #if BuildOSMesaLib || (BuildXF86DRI && (GlxDriverUsesMesa || GlxBuiltInXMesa || BuildOSMesaLib))
 #define DoNormalLib (NormalLibGlx || SharedLibGlxWithoutPIC)
 #define DoSharedLib (SharedLibGlx && !SharedLibGlxWithoutPIC)
-#define DoExtraLib SharedLibGlx
+#define DoExtraLib ExtraLibGlx
 #define DoDebugLib DebugLibGlx
 #define DoProfileLib ProfileLibGlx
 #else
@@ -49,33 +49,6 @@ STD_CPP_DEFINES = StandardDefines $(PROJECT_DEFINES)
 
 AllTarget($(OBJS))
 NormalLintTarget($(SRCS))
-
-ObjectFromAsmSource(common_x86_asm, NullParameter)
-
-ObjectFromAsmSource(x86_cliptest, NullParameter)
-ObjectFromAsmSource(x86_xform2, NullParameter)
-ObjectFromAsmSource(x86_xform3, NullParameter)
-ObjectFromAsmSource(x86_xform4, NullParameter)
-
-#if MesaUseMMX
-ObjectFromAsmSource(mmx_blend, NullParameter)
-#endif
-
-#if MesaUse3DNow
-ObjectFromAsmSource(3dnow_normal, NullParameter)
-ObjectFromAsmSource(3dnow_xform1, NullParameter)
-ObjectFromAsmSource(3dnow_xform2, NullParameter)
-ObjectFromAsmSource(3dnow_xform3, NullParameter)
-ObjectFromAsmSource(3dnow_xform4, NullParameter)
-#endif
-
-#if MesaUseSSE
-ObjectFromAsmSource(sse_normal, NullParameter)
-ObjectFromAsmSource(sse_xform1, NullParameter)
-ObjectFromAsmSource(sse_xform2, NullParameter)
-ObjectFromAsmSource(sse_xform3, NullParameter)
-ObjectFromAsmSource(sse_xform4, NullParameter)
-#endif
 
 LinkSourceFile(gen_matypes.c, $(MESASRCDIR)/src/X86)
 
