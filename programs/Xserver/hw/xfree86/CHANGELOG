@@ -1,4 +1,7 @@
 XFree86 4.0.1h (xx December 2000)
+1038. Change Xft interface (again) to use new XftColor datatype for
+      colors instead of XRenderColor.  xterm and x11perf updated to match.
+      (Keith Packard)
 1037. Fix an i810 init problem that resulted in the fallback to 2D failing
       for one case where there's insufficient memory to enable the DRI
       (David Dawes, from VA's 7.0.1).
@@ -11735,4 +11738,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1423 2000/11/30 23:30:02 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1424 2000/12/01 00:24:31 dawes Exp $

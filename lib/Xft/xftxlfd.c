@@ -47,7 +47,7 @@ static XftSymbolic XftXlfdSlants[] = {
 #define NUM_XLFD_SLANTS    (sizeof XftXlfdSlants/sizeof XftXlfdSlants[0])
 
 XftPattern *
-XftXlfdParse (const char *xlfd_orig, Bool ignore_scalable)
+XftXlfdParse (const char *xlfd_orig, Bool ignore_scalable, Bool complete)
 {
     XftPattern	*pat;
     const char	*xlfd = xlfd_orig;
@@ -96,9 +96,14 @@ XftXlfdParse (const char *xlfd_orig, Bool ignore_scalable)
 	return 0;
 
     if (!XftPatternAddString (pat, XFT_XLFD, xlfd_orig)) goto bail;
-    if (!XftPatternAddBool (pat, XFT_CORE, True)) goto bail;
-    if (!XftPatternAddString (pat, XFT_FOUNDRY, _XftSplitStr (foundry, save))) goto bail;
-    if (!XftPatternAddString (pat, XFT_FAMILY, _XftSplitStr (family, save))) goto bail;
+    
+    _XftSplitStr (foundry, save);
+    if (save[0] && strcmp (save, "*") != 0)
+	if (!XftPatternAddString (pat, XFT_FOUNDRY, save)) goto bail;
+    
+    _XftSplitStr (family, save);
+    if (save[0] && strcmp (save, "*") != 0)
+	if (!XftPatternAddString (pat, XFT_FAMILY, save)) goto bail;
     
     weight_value = _XftMatchSymbolic (XftXlfdWeights, NUM_XLFD_WEIGHTS,
 				      _XftSplitStr (weight_name, save),
@@ -112,36 +117,46 @@ XftXlfdParse (const char *xlfd_orig, Bool ignore_scalable)
     if (!XftPatternAddInteger (pat, XFT_SLANT, slant_value)) 
 	goto bail;
     
-    /*
-     * Build a style name
-     */
-    style[0] = '\0';
-    switch (weight_value) {
-    case XFT_WEIGHT_LIGHT: strcat (style, "light"); break;
-    case XFT_WEIGHT_DEMIBOLD: strcat (style, "demibold"); break;
-    case XFT_WEIGHT_BOLD: strcat (style, "bold"); break;
-    case XFT_WEIGHT_BLACK: strcat (style, "black"); break;
-    }
-    if (slant_value != XFT_SLANT_ROMAN) {
-	if (style[0])
-	    strcat (style, " ");
-	switch (slant_value) {
-	case XFT_SLANT_ITALIC: strcat (style, "italic"); break;
-	case XFT_SLANT_OBLIQUE: strcat (style, "oblique"); break;
+    if (complete)
+    {
+	/*
+	 * Build a style name
+	 */
+	style[0] = '\0';
+	switch (weight_value) {
+	case XFT_WEIGHT_LIGHT: strcat (style, "light"); break;
+	case XFT_WEIGHT_DEMIBOLD: strcat (style, "demibold"); break;
+	case XFT_WEIGHT_BOLD: strcat (style, "bold"); break;
+	case XFT_WEIGHT_BLACK: strcat (style, "black"); break;
 	}
+	if (slant_value != XFT_SLANT_ROMAN) {
+	    if (style[0])
+		strcat (style, " ");
+	    switch (slant_value) {
+	    case XFT_SLANT_ITALIC: strcat (style, "italic"); break;
+	    case XFT_SLANT_OBLIQUE: strcat (style, "oblique"); break;
+	    }
+	}
+	if (!style[0])
+	    strcat (style, "regular");
+	
+	if (!XftPatternAddString (pat, XFT_STYLE, style))
+	    goto bail;
+	if (!XftPatternAddBool (pat, XFT_SCALABLE, pixel == 0)) goto bail;
+	if (!XftPatternAddBool (pat, XFT_CORE, True)) goto bail;
     }
-    if (!style[0])
-	strcat (style, "regular");
+    else
+    {
+	if (point > 0)
+	    if (!XftPatternAddDouble (pat, XFT_SIZE, ((double) point) / 10.0)) goto bail;
+    }
     
-    if (!XftPatternAddString (pat, XFT_STYLE, style))
-	goto bail;
-    
-    if (pixel)
+    if (pixel > 0)
 	if (!XftPatternAddDouble (pat, XFT_PIXEL_SIZE, (double) pixel)) goto bail;
     
-    if (!XftPatternAddBool (pat, XFT_SCALABLE, pixel == 0)) goto bail;
-
-    if (!XftPatternAddString (pat, XFT_ENCODING, _XftDownStr (registry, save))) goto bail;
+    _XftDownStr (registry, save);
+    if (registry[0] && !strchr (registry, '*'))
+	if (!XftPatternAddString (pat, XFT_ENCODING, save)) goto bail;
 
     free (save);
     return pat;
@@ -169,15 +184,14 @@ XftCoreAddFonts (XftFontSet *set, Display *dpy, Bool ignore_scalable)
     ret = True;
     for (i = 0; ret && i < num; i++)
     {
-	font = XftXlfdParse (xlfds[i], ignore_scalable);
+	font = XftXlfdParse (xlfds[i], ignore_scalable, True);
 	if (font)
 	{
-#if 0
-	    printf ("xlfd %s ", xlfds[i]);
-	    XftPatternPrint (font);
-#endif
 	    if (!XftFontSetAdd (set, font))
+	    {
+		XftPatternDestroy (font);
 		ret = False;
+	    }
 	}
     }
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.5 2000/11/30 06:59:45 keithp Exp $
+XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.6 2000/11/30 18:58:57 keithp Exp $
 
 #define DoNormalLib NormalLibXft
 #define DoSharedLib SharedLibXft
@@ -33,15 +33,15 @@ REQUIREDLIBS=$(LDPRELIBS) $(XRENDERLIB) $(XLIB) $(FREETYPE2LIB)
 
 HEADERS = Xft.h XftFreetype.h
 
-   SRCS = xftcfg.c xftcore.c xftdbg.c xftdir.c xftdpy.c xftdraw.c \
-	  xftextent.c xftfont.c xftfreetype.c xftfs.c xftglyphs.c \
-	  xftgram.c xftinit.c xftlex.c xftlist.c xftmatch.c xftname.c \
-	  xftpat.c xftrender.c xftstr.c xftxlfd.c
-	  
-   OBJS = xftcfg.o xftcore.o xftdbg.o xftdir.o xftdpy.o xftdraw.o \
-	  xftextent.o xftfont.o xftfreetype.o xftfs.o xftglyphs.o \
-	  xftgram.o xftinit.o xftlex.o xftlist.o xftmatch.o xftname.o \
-	  xftpat.o xftrender.o xftstr.o xftxlfd.o
+   SRCS = xftcfg.c xftcolor.c xftcore.c xftdbg.c xftdir.c xftdpy.c \
+          xftdraw.c xftextent.c xftfont.c xftfreetype.c xftfs.c \
+          xftglyphs.c xftgram.c xftinit.c xftlex.c xftlist.c xftmatch.c \
+          xftname.c xftpat.c xftrender.c xftstr.c xftxlfd.c
+  
+   OBJS = xftcfg.o xftcolor.o xftcore.o xftdbg.o xftdir.o xftdpy.o \
+          xftdraw.o  xftextent.o xftfont.o xftfreetype.o xftfs.o \
+          xftglyphs.o xftgram.o xftinit.o xftlex.o xftlist.o xftmatch.o \
+          xftname.o xftpat.o xftrender.o xftstr.o xftxlfd.o
 
 #include <Library.tmpl>
 

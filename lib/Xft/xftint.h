@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftint.h,v 1.4 2000/11/30 06:59:45 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftint.h,v 1.5 2000/11/30 23:30:00 dawes Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -38,8 +38,6 @@ typedef struct _XftSymbolic {
     int		value;
 } XftSymbolic;
 
-#define CACHE_SIZE  3
-
 struct _XftDraw {
     Display	    *dpy;
     Drawable	    drawable;
@@ -49,25 +47,14 @@ struct _XftDraw {
     Bool	    render_set;
     Bool	    render_able;
     struct {
-	Picture	    pict;
-	Pixmap	    fg_pix;
-	Picture	    fg_pict;
+	Picture		pict;
+	Pixmap		fg_pix;
+	Picture		fg_pict;
 	XRenderColor	fg_color;
     } render;
     struct {
-	GC	    draw_gc;
-	union {
-	    struct {
-		unsigned long   pixel;
-		XRenderColor	color;
-		int		use;
-	    } cache[CACHE_SIZE];
-	    struct {
-		short	red_shift, red_len;
-		short	green_shift, green_len;
-		short	blue_shift, blue_len;
-	    } truecolor;
-	} u;
+	GC		draw_gc;
+	unsigned long	fg;
     } core;
 };
 
@@ -229,14 +216,14 @@ XftDisplayGetFontSet (Display *dpy);
 
 /* xftdraw.c */
 Bool
-XftDrawRenderPrepare (XftDraw	    *draw,
-		      XRenderColor  *color,
-		      XftFont	    *font);
+XftDrawRenderPrepare (XftDraw	*draw,
+		      XftColor	*color,
+		      XftFont	*font);
 
 Bool
-XftDrawCorePrepare (XftDraw	    *draw,
-		    XRenderColor    *color,
-		    XftFont	    *font);
+XftDrawCorePrepare (XftDraw	*draw,
+		    XftColor	*color,
+		    XftFont	*font);
 
 /* xftextent.c */
 /* xftfont.c */

@@ -1375,13 +1375,12 @@ recolor_cursor (
 #endif
 
 #ifdef XRENDERFONT
-static XRenderColor *
+static XftColor *
 getColor(Pixel pixel)
 {
 #define CACHE_SIZE  4
     static struct {
-	Pixel		pixel;
-	XRenderColor	color;
+	XftColor	color;
 	int		use;
     } cache[CACHE_SIZE];
     static int	    use;
@@ -1395,7 +1394,7 @@ getColor(Pixel pixel)
     {
 	if (cache[i].use)
 	{
-	    if (cache[i].pixel == pixel) 
+	    if (cache[i].color.pixel == pixel) 
 	    {
 		cache[i].use = ++use;
 		return &cache[i].color;
@@ -1410,11 +1409,11 @@ getColor(Pixel pixel)
     i = oldest;
     color.pixel = pixel;
     XQueryColor (term->screen.display, term->core.colormap, &color);
-    cache[i].color.red = color.red;
-    cache[i].color.green = color.green;
-    cache[i].color.blue = color.blue;
-    cache[i].color.alpha = 0xffff;
-    cache[i].pixel = pixel;
+    cache[i].color.color.red = color.red;
+    cache[i].color.color.green = color.green;
+    cache[i].color.color.blue = color.blue;
+    cache[i].color.color.alpha = 0xffff;
+    cache[i].color.pixel = pixel;
     cache[i].use = ++use;
     return &cache[i].color;
 }

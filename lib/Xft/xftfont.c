@@ -165,6 +165,29 @@ XftFontOpenName (Display *dpy, int screen, const char *name)
     return font;
 }
 
+XftFont *
+XftFontOpenXlfd (Display *dpy, int screen, const char *xlfd)
+{
+    XftPattern	    *pat;
+    XftPattern	    *match;
+    XftResult	    result;
+    XftFont   *font;
+
+    pat = XftXlfdParse (xlfd, False, False);
+    if (!pat)
+	return 0;
+    match = XftFontMatch (dpy, screen, pat, &result);
+    XftPatternDestroy (pat);
+    if (!match)
+	return 0;
+    
+    font = XftFontOpenPattern (dpy, match);
+    if (!font)
+	XftPatternDestroy (match);
+    
+    return font;
+}
+
 void
 XftFontClose (Display *dpy, XftFont *font)
 {
