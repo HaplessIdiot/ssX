@@ -302,6 +302,10 @@ Modified terminfo/termcap entries:
 
    o Experimental support added for GNU/KFreeBSD and GNU/KNetBSD systems.
 
+   o SCO OpenServer support updates.  XFree86 4.4 now works on Release 5.0.7
+     with Maintenance Pack 1, or on prior releases through Release 5.0.4.
+     Please consult the README.SCO file for details.
+
 A more complete list of changes can be found in the CHANGELOG that is part of
 the XFree86 source tree.  It can also be viewed online at our CVSweb server
 <URL:http://cvsweb.xfree86.org/cvsweb/xc/pro-
@@ -745,7 +749,123 @@ as well as in the License document.  For further information, please contact
 <design@bigelowandholmes.com> or <info@urwpp.de>, or consult the URW++ web
 site <URL:http://www.urwpp.de>.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.89 dawes Exp $
+5.  Credits
+
+THIS IS A SAMPLE/DRAFT OF HOW A CREDITS SECTION IN THE XFREE86 RELEASE NOTES
+MIGHT LOOK
+
+This section lists the credits for the XFree86 4.3.99.902 release.  For a
+more detailed breakdown, refer to the CHANGELOG file in the XFree86 source
+tree, the cvs-commit archives <URL:http://www.mail-archive.com/cvs-com-
+mit@xfree86.org/maillist.html>, or the 'cvs log' information for individual
+source files.
+
+      New Features, Enhancements and Updates:
+
+                  IPv6 support:
+                        Alan Coopersmith, Marc Aurele La France, Matthieu
+                        Herrb, David H. Dawes.
+
+                  NVIDIA 'nv' driver rewrite:
+                        Mark Vojkovich.
+
+                  SiS driver enhancements:
+                        Thomas Winischhofer.
+
+                  New VIA video driver:
+                        VIA, Alan Cox, Luc Verhaegen.
+
+                  Intel 'i810' driver fixes and stability improvements:
+                        Egbert Eich, David H. Dawes, Christian Zietz
+
+                  Improved and more flexible Compose system:
+                        Ivan Pascal.
+
+                  Automatic configuration for the XFree86 server:
+                        David H. Dawes.
+
+                  Reworked FreeType font backend module:
+                        Chisato Yamauchi and the After X-TT Project.
+
+                  Xterm fixes, maintenance and enhancements:
+                        Thomas E. Dickey.
+
+                  Mac OS X enhancements:
+                        Torrey T. Lyons, John Harper.
+
+                  GNU/Hurd updates and preliminary GNU/KFreeBSD and GNU/KNetBSD
+                             support:" Robert Millan.
+
+                  SCO support updates:
+                        Kean Johnston.
+
+      Integration:
+
+                  General Integration of Submissions:
+                        Egbert Eich, David H. Dawes, Ivan Pascal, Alan Houri-
+                        hane, Matthieu Herrb.
+
+                  DRI Integration:
+                        Alan Hourihane.
+
+      Release Engineering:
+            David H. Dawes.
+
+      Patches and other submissions (in alphabetical order):
+            Roi a Torkilsheyggi, Dave Airlie, Andrew Aitchison, Marco Antonio
+            Alvarez, Alexandr Andreev, Jack Angel, Eric Anholt, Ani, Juuso
+            Åberg, Sergey Babkin, Alexey Baj, Uberto Barbini, Matthew W. S.
+            Bell, Vano Beridze, Hiroyuki Bessho, Andrew Bevitt, Martin
+            Birgmeier, Jakub Bogusz, Le Hong Boi, Paul Bolle, Charl Botha,
+            Stanislav Brabec, Eric Branlund, Rob Braun, Peter Breitenlohner,
+            Michael Breuer, Kevin Brosius, Frederick Bruckman, Oswald Budden-
+            hagen, Nilgün Belma Bugüner, Ping Cheng, Juliusz Chroboczek, Fred
+            Clift, Alan Coopersmith, Martin Costabel, Alan Cox, Michel
+            Dänzer, David Dawes, Leif Delgass, Richard Dengler, John Dennis,
+            Thomas Dickey, Randy Dunlap, Chris Edgington, Paul Eggert, Paul
+            Elliott, Emmanuel, Visanu Euarchukiati, Mike Fabian, Rik Faith,
+            Brian Feldman, Wu Jian Feng, Kevin P. Fleming, Jose Fonseca,
+            Hugues Fournier, Miguel Freitas, Quentin Garnier, Børre Gaup,
+            Frank Giessler, Wolfram Gloger, Alexander Gottwald, Guido Guen-
+            ther, Ralf Habacker, Bruno Haible, Lindsay Haigh, John Harper,
+            Mike Harris, Bryan W. Headley, John Heasley, Matthieu Herrb,
+            Jonathan Hough, Alan Hourihane, Joel Ray Holveck, Harold L Hunt
+            II, Ricardo Y. Igarashi, Mutsumi ISHIKAWA , Tsuyoshi ITO, Kean
+            Johnston, Nicolas JOLY, Phil Jones, Roman Kagan, Theppitak
+            Karoonboonyanan, Etsushi Kato, Koike Kazuhiko, Aidan Kehoe, Juer-
+            gen Keil, Andreas Kies, Thomas Klausner, Egmont Koblinger, Vlatko
+            Kosturjak, Kusanagi Kouichi, Peter Kunzmann, Nick Kurshev,
+            Mashrab Kuvatov, Marc La France, maxim, Nolan Leake, Michel
+            Lespinasse, Noah Levitt, Dave Love, H.J. Lu, Lubos Lunak, Sven
+            Luther, Torrey T. Lyons, Calum Mackay, Roland Mainz, Kevin Mar-
+            tin, Michal Maruska, Kensuke Matsuzaki, Stephen McCamant, Ferris
+            McCormick, Nicholas Miell, Robert Millan, Hisashi MIYASHITA,
+            Patrik Montgomery, Joe Moss, Josselin Mouette, Frank Murphy,
+            Reiko Nakajima, Dan Nelson, Bastien Nocera, Alexandre Oliva,
+            Hideki ONO, Peter Osterlund, Sergey V. Oudaltsov, Séamus Ó Cia-
+            rdhuáin, Bob Paauwe, Paul Pacheco, Tom Pala, Ivan Pascal, T. M.
+            Pederson, Earle F. Philhower III, Nils Philippsen, Manfred
+            Pohler, Alexander Pohoyda, Arnaud Quette, Jim Radford, Dale Rahn,
+            Lucas Correia Villa Real, René Rebe, Sebastian Rittau, Tim
+            Roberts, Alastair M. Robinson, Branden Robinson, Daniel Rock, Ian
+            Romanick, Bernhard Rosenkraenzer, Måns Rullgård, Andriy Rysin,
+            Supphachoke Santiwichaya, Pablo Saratxaga, Matthias Scheler, Jens
+            Schweikhardt, Danilo Segan, Shantonu Sen, Stas Sergeev, JungShik
+            Shin, Jungshik Shin, Nikola Smolenski, Paul Stewart, Alexander
+            Stohr, Alan Strohm, Will Styles, James Su, Mike Sulivan, Ville
+            Syrjala, Slava Sysoltsev, Akira TAGOH, Toshimitsu Tanaka, Akira
+            Taniguchi, Owen Taylor, Neil Terry, Adam Tlalka, Linus Torvalds,
+            Christian Tosta, Warren Turkal, Stephen J. Turnbull, Ted Unangst,
+            Mike Urban, Simon Vallet, Thuraiappah Vaseeharan, Luc Verhaegen,
+            Michail Vidiassov, Sebastiano Vigna, Mark Vojkovich, Stephane
+            Voltz, Boris Weissman, Keith Whitwell, Thomas Winischhofer, Kim
+            Woelders, Roy Wood, Jason L. Wright, Joerg Wunsch, Chisato
+            Yamauchi, Hui Yu.
+
+      Webmaster:
+            Georgina O. Economou
+
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.92 dawes Exp $
 
 
 $XFree86: $

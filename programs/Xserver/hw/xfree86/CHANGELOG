@@ -1,4 +1,8 @@
 XFree86 4.3.99.903 (xx December 2003)
+ 723. Create fonts.scale and fonts.dir files in the target directories at
+      'make install' time.  This fixes several problems where some font
+      entries get left out (David Dawes).
+ 722. Add the Bitstream Vera fonts (Bitstream, Inc and The Gnome Project).
  721. Xterm patches #183, #184 (Thomas Dickey).
  720. Build fix for the Chips driver on Linux/arm (#6011, Michel Dänzer and
       Othmar Pasteka).
@@ -18460,7 +18464,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3069 2003/12/31 06:14:32 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3070 2003/12/31 17:12:21 dickey Exp $
 
 
 
