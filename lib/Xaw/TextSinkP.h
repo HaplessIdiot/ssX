@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextSinkP.h,v 1.8 1999/08/15 13:00:37 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSinkP.h,v 1.9 1999/08/28 09:00:28 dawes Exp $ */
 
 #ifndef _XawTextSinkP_h
 #define _XawTextSinkP_h
@@ -118,7 +118,7 @@ typedef struct _XawTextPaintStruct XawTextPaintStruct;
 struct _XawTextPaintStruct {
     XawTextPaintStruct *next;
     int x, y, width;
-    unsigned char *text;	/* formatted text */
+    char *text;			/* formatted text */
     Cardinal length;		/* length of text */
     XawTextProperty *property;
     int max_ascent, max_descent;
