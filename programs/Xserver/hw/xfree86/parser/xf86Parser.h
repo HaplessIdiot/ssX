@@ -44,6 +44,7 @@ typedef struct
 	char *file_rgbpath;
 	char *file_modulepath;
 	char *file_fontpath;
+	char *file_comment;
 }
 XF86ConfFilesRec, *XF86ConfFilesPtr;
 
@@ -172,6 +173,7 @@ typedef struct
 	float mon_gamma_blue;
 	XF86OptionPtr mon_option_lst;
 	XF86ConfModesLinkPtr mon_modes_sect_lst;
+	char *mon_comment;
 }
 XF86ConfMonitorRec, *XF86ConfMonitorPtr;
 
@@ -202,6 +204,7 @@ typedef struct
 	int dev_chiprev;
 	int dev_irq;
 	XF86OptionPtr dev_option_lst;
+	char *dev_comment;
 }
 XF86ConfDeviceRec, *XF86ConfDevicePtr;
 
@@ -227,6 +230,7 @@ typedef struct
 	parser_rgb disp_white;
 	XF86ModePtr disp_mode_lst;
 	XF86OptionPtr disp_option_lst;
+	char *disp_comment;
 }
 XF86ConfDisplayRec, *XF86ConfDisplayPtr;
 
@@ -259,6 +263,7 @@ typedef struct
 	XF86ConfAdaptorLinkPtr scrn_adaptor_lst;
 	XF86ConfDisplayPtr scrn_display_lst;
 	XF86OptionPtr scrn_option_lst;
+	char *scrn_comment;
 }
 XF86ConfScreenRec, *XF86ConfScreenPtr;
 
@@ -268,6 +273,7 @@ typedef struct
 	char *inp_identifier;
 	char *inp_driver;
 	XF86OptionPtr inp_option_lst;
+	char *inp_comment;
 }
 XF86ConfInputRec, *XF86ConfInputPtr;
 
@@ -326,6 +332,7 @@ typedef struct
 	XF86ConfInactivePtr lay_inactive_lst;
 	XF86ConfInputrefPtr lay_input_lst;
 	XF86OptionPtr lay_option_lst;
+	char *lay_comment;
 }
 XF86ConfLayoutRec, *XF86ConfLayoutPtr;
 
@@ -334,6 +341,7 @@ typedef struct
 	GenericListRec list;
 	char *vnd_identifier;
 	XF86OptionPtr vnd_option_lst;
+	char *vnd_comment;
 }
 XF86ConfVendorRec, *XF86ConfVendorPtr;
 

@@ -37,6 +37,7 @@ extern LexRec val;
 
 static xf86ConfigSymTabRec MonitorTab[] =
 {
+	{COMMENT, "###"},
 	{ENDSECTION, "endsection"},
 	{IDENTIFIER, "identifier"},
 	{VENDOR, "vendorname"},
@@ -375,6 +376,11 @@ parseMonitorSection (void)
 	{
 		switch (token)
 		{
+		case COMMENT:
+			if (xf86GetToken (NULL) != STRING)
+				Error (QUOTE_MSG, "###");
+			ptr->mon_comment = val.str;
+			break;
 		case IDENTIFIER:
 			if (xf86GetToken (NULL) != STRING)
 				Error (QUOTE_MSG, "Identifier");
@@ -628,6 +634,8 @@ printMonitorSection (FILE * cf, XF86ConfMonitorPtr ptr)
 	while (ptr)
 	{
 		fprintf (cf, "Section \"Monitor\"\n");
+		if (ptr->mon_comment)
+			fprintf (cf, "\t###          \"%s\"\n", ptr->mon_comment);
 		if (ptr->mon_identifier)
 			fprintf (cf, "\tIdentifier   \"%s\"\n", ptr->mon_identifier);
 		if (ptr->mon_vendor)

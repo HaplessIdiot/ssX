@@ -38,6 +38,7 @@ extern LexRec val;
 
 static xf86ConfigSymTabRec LayoutTab[] =
 {
+	{COMMENT, "###"},
 	{ENDSECTION, "endsection"},
 	{SCREEN, "screen"},
 	{IDENTIFIER, "identifier"},
@@ -69,6 +70,11 @@ parseLayoutSection (void)
 	{
 		switch (token)
 		{
+		case COMMENT:
+			if (xf86GetToken (NULL) != STRING)
+				Error (QUOTE_MSG, "###");
+			ptr->lay_comment = val.str;
+			break;
 		case IDENTIFIER:
 			if (xf86GetToken (NULL) != STRING)
 				Error (QUOTE_MSG, "Identifier");
@@ -268,6 +274,8 @@ printLayoutSection (FILE * cf, XF86ConfLayoutPtr ptr)
 	while (ptr)
 	{
 		fprintf (cf, "Section \"ServerLayout\"\n");
+		if (ptr->lay_comment)
+			fprintf (cf, "\t###            \"%s\"\n", ptr->lay_comment);
 		if (ptr->lay_identifier)
 			fprintf (cf, "\tIdentifier     \"%s\"\n", ptr->lay_identifier);
 

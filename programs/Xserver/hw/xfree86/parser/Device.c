@@ -38,6 +38,7 @@ extern LexRec val;
 static
 xf86ConfigSymTabRec DeviceTab[] =
 {
+	{COMMENT, "###"},
 	{ENDSECTION, "endsection"},
 	{IDENTIFIER, "identifier"},
 	{VENDOR, "vendorname"},
@@ -78,6 +79,11 @@ parseDeviceSection (void)
 	{
 		switch (token)
 		{
+		case COMMENT:
+			if (xf86GetToken (NULL) != STRING)
+				Error (QUOTE_MSG, "###");
+			ptr->dev_comment = val.str;
+			break;
 		case IDENTIFIER:
 			if (xf86GetToken (NULL) != STRING)
 				Error (QUOTE_MSG, "Identifier");
@@ -247,6 +253,8 @@ printDeviceSection (FILE * cf, XF86ConfDevicePtr ptr)
 	while (ptr)
 	{
 		fprintf (cf, "Section \"Device\"\n");
+		if (ptr->dev_comment)
+			fprintf (cf, "\t###         \"%s\"\n", ptr->dev_comment);
 		if (ptr->dev_identifier)
 			fprintf (cf, "\tIdentifier  \"%s\"\n", ptr->dev_identifier);
 		if (ptr->dev_driver)

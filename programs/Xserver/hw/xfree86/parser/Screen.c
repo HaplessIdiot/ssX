@@ -37,6 +37,7 @@ extern LexRec val;
 
 static xf86ConfigSymTabRec DisplayTab[] =
 {
+	{COMMENT, "###"},
 	{ENDSUBSECTION, "endsubsection"},
 	{MODES, "modes"},
 	{VIEWPORT, "viewport"},
@@ -62,6 +63,11 @@ parseDisplaySubSection (void)
 	{
 		switch (token)
 		{
+		case COMMENT:
+			if (xf86GetToken (NULL) != STRING)
+				Error (QUOTE_MSG, "###");
+			ptr->disp_comment = val.str;
+			break;
 		case VIEWPORT:
 			if (xf86GetToken (NULL) != NUMBER)
 				Error (VIEWPORT_MSG, NULL);
@@ -183,6 +189,7 @@ parseDisplaySubSection (void)
 
 static xf86ConfigSymTabRec ScreenTab[] =
 {
+	{COMMENT, "###"},
 	{ENDSECTION, "endsection"},
 	{IDENTIFIER, "identifier"},
         {OBSDRIVER, "driver"},
@@ -212,6 +219,11 @@ parseScreenSection (void)
 	{
 		switch (token)
 		{
+		case COMMENT:
+			if (xf86GetToken (NULL) != STRING)
+				Error (QUOTE_MSG, "###");
+			ptr->scrn_comment = val.str;
+			break;
 		case IDENTIFIER:
 			if (xf86GetToken (NULL) != STRING)
 				Error (QUOTE_MSG, "Identifier");
@@ -335,6 +347,8 @@ printScreenSection (FILE * cf, XF86ConfScreenPtr ptr)
 	while (ptr)
 	{
 		fprintf (cf, "Section \"Screen\"\n");
+		if (ptr->scrn_comment)
+			fprintf (cf, "\t###        \"%s\"\n", ptr->scrn_comment);
 		if (ptr->scrn_identifier)
 			fprintf (cf, "\tIdentifier \"%s\"\n", ptr->scrn_identifier);
 		if (ptr->scrn_obso_driver)
@@ -366,6 +380,9 @@ printScreenSection (FILE * cf, XF86ConfScreenPtr ptr)
 		for (dptr = ptr->scrn_display_lst; dptr; dptr = dptr->list.next)
 		{
 			fprintf (cf, "\tSubSection \"Display\"\n");
+			if (dptr->disp_comment)
+				fprintf (cf, "\t\t###        %d %d\n",
+						 dptr->disp_comment);
 			if (dptr->disp_frameX0 != 0 || dptr->disp_frameY0 != 0)
 			{
 				fprintf (cf, "\t\tViewport   %d %d\n",

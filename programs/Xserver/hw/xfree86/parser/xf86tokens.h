@@ -58,6 +58,7 @@ typedef enum {
     DASH,
     COMMA,
     OPTION,
+    COMMENT,
 
     /* Frequency units */
     HRZ,

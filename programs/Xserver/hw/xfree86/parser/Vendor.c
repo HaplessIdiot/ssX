@@ -37,6 +37,7 @@ extern LexRec val;
 
 static xf86ConfigSymTabRec VendorTab[] =
 {
+	{COMMENT, "###"},
 	{ENDSECTION, "endsection"},
 	{IDENTIFIER, "identifier"},
 	{OPTION, "option"},
@@ -55,6 +56,11 @@ parseVendorSection (void)
 	{
 		switch (token)
 		{
+		case COMMENT:
+			if (xf86GetToken (NULL) != STRING)
+				Error (QUOTE_MSG, "###");
+			ptr->vnd_comment = val.str;
+			break;
 		case IDENTIFIER:
 			if (xf86GetToken (NULL) != STRING)
 				Error (QUOTE_MSG, "Identifier");
@@ -110,6 +116,8 @@ printVendorSection (FILE * cf, XF86ConfVendorPtr ptr)
 	while (ptr)
 	{
 		fprintf (cf, "Section \"Vendor\"\n");
+		if (ptr->vnd_comment)
+			fprintf (cf, "\t###            \"%s\"\n", ptr->vnd_comment);
 		if (ptr->vnd_identifier)
 			fprintf (cf, "\tIdentifier     \"%s\"\n", ptr->vnd_identifier);
 

@@ -38,6 +38,7 @@ extern LexRec val;
 
 static xf86ConfigSymTabRec ServerFlagsTab[] =
 {
+	{COMMENT, "###"},
 	{ENDSECTION, "endsection"},
 	{NOTRAPSIGNALS, "notrapsignals"},
 	{DONTZAP, "dontzap"},
@@ -70,6 +71,10 @@ parseFlagsSection (void)
 		int tokentype;
 		switch (token)
 		{
+		case COMMENT:
+		    if ((token = xf86GetToken (NULL)) != STRING)
+				Error (QUOTE_MSG, "###");
+		    break;
 			/* 
 			 * these old keywords are turned into standard generic options.
 			 * we fall through here on purpose
@@ -173,6 +178,8 @@ printServerFlagsSection (FILE * f, XF86ConfFlagsPtr flags)
 		return;
 	p = flags->flg_option_lst;
 	fprintf (f, "Section \"ServerFlags\"\n");
+	if (p->opt_comment)
+	    fprintf (f, "\t###    \"%s\" \n", p->opt_comment);
 	while (p)
 	{
 		if (p->opt_val)
