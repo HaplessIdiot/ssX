@@ -1,4 +1,6 @@
 XFree86 4.3.99.17 (xx November 2003)
+ 621. Fix a key truncation problem with 'xauth add' (Bugzilla 903,
+      David Dawes).
  620. With AppleDRI, don't use APPLE_fence as a replacement for NV_fence
       calls (John Harper).
  619. Fix intermittent XDarwin crash when quitting (Torrey T. Lyons).
@@ -18254,7 +18256,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2990 2003/11/24 05:38:59 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2991 2003/11/25 00:23:04 torrey Exp $
 
 
 
