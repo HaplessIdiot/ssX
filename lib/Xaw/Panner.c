@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-/* $XFree86: xc/lib/Xaw/Panner.c,v 3.5 1999/06/06 08:48:02 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Panner.c,v 3.6 2001/01/17 19:42:28 dawes Exp $ */
 
 #include <ctype.h>
 #include <math.h>
@@ -516,9 +516,9 @@ rescale(PannerWidget pw)
     if (XtHeight(pw) <= vpad)
 	vpad = 0;
 
-    pw->panner.haspect = ((double)XtWidth(pw) - hpad)
+    pw->panner.haspect = ((double)XtWidth(pw) - hpad + .5)
 			 / (double)pw->panner.canvas_width;
-    pw->panner.vaspect = ((double)XtHeight(pw) - vpad)
+    pw->panner.vaspect = ((double)XtHeight(pw) - vpad + .5)
 			 / (double)pw->panner.canvas_height;
     scale_knob(pw, True, True);
 }
