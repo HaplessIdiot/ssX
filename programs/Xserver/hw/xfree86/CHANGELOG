@@ -1,4 +1,6 @@
 XFree86 3.9.17c (27 January 2000)
+3598. Add a XXXAvailableOptions to DriverRec which allows passing available
+      options back to the -configure option.
 3597. Avoid PCI-PCI bridges with an unexpected header type, which avoids
       an infinite loop that can show up in the PCI bus enumeration code
       (Egbert Eich).
