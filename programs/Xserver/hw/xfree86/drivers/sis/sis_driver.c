@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.71 2001/12/21 15:44:40 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.72 2002/01/04 20:56:57 tsi Exp $ */
 
 #include "fb.h"
 #include "xf1bpp.h"
@@ -795,7 +795,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
         }
     }
 
-    /* We use a programamble clock */
+    /* We use a programmable clock */
     pScrn->progClock = TRUE;
 
     /* Set the bits per RGB for 8bpp mode */

@@ -13,7 +13,7 @@
  *	David Dawes, Andrew E. Mileski, Leonard N. Zubkoff,
  *	Guy DESBIEF, Itai Nahshon.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.39 2001/06/15 21:22:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.40 2001/08/07 07:04:45 keithp Exp $ */
 
 #define EXPERIMENTAL
 
@@ -720,7 +720,7 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 	    pCir->HWCursor = FALSE;
 	}
 	
-	/* We use a programamble clock */
+	/* We use a programmable clock */
 	pScrn->progClock = TRUE;
 
 	/* XXX Set HW cursor use */

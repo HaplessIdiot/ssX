@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from The XFree86 Project or Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.18 2001/11/30 12:11:59 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.19 2001/12/20 21:35:38 eich Exp $ */
 
 #include "xf86Resources.h"
 #include "xf86RAC.h"
@@ -627,7 +627,7 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 		return(FALSE);
 	}
 
-	/* We use a programamble clock */
+	/* We use a programmable clock */
 	pScrn->progClock = TRUE;
 
 	/* Collect all of the relevant option flags (fill in pScrn->options) */

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.87 2001/10/01 13:44:11 eich Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.88 2001/10/28 03:33:52 tsi Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1811,7 +1811,7 @@ TsengPreInit(ScrnInfoPtr pScrn, int flags)
 	pScrn->display->virtualX,
 	pScrn->display->virtualY,
 	pTseng->FbMapSize,
-	LOOKUP_BEST_REFRESH);	       /* LOOKUP_CLOSEST_CLOCK | LOOKUP_CLKDIV2 when no programable clock ? */
+	LOOKUP_BEST_REFRESH);	       /* LOOKUP_CLOSEST_CLOCK | LOOKUP_CLKDIV2 when no programmable clock ? */
 
     if (i == -1) {
 	TsengFreeRec(pScrn);

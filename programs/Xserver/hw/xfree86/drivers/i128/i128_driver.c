@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.23 2001/06/15 21:22:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.24 2001/09/03 03:21:54 robin Exp $ */
 
 
 /* All drivers should typically include these */
@@ -627,7 +627,7 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
 
     bytesPerPixel = pScrn->bitsPerPixel / 8;
 
-    /* We use a programamble clock */
+    /* We use a programmable clock */
     pScrn->progClock = TRUE;
 
     /* Collect all of the relevant option flags (fill in pScrn->options) */

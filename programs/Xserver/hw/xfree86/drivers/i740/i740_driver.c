@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.32 2001/06/30 21:54:02 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.34 2001/10/01 13:44:06 eich Exp $ */
 
 /*
  * Authors:
@@ -568,7 +568,7 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
     }
   }
 
-  /* We use a programamble clock */
+  /* We use a programmable clock */
   pScrn->progClock = TRUE;
 
   hwp = VGAHWPTR(pScrn);
