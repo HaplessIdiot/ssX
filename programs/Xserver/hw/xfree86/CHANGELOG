@@ -1,4 +1,5 @@
 XFree86 4.5.99.1 (xx March 2005)
+  12. Clean up XFree86 server links (Marc La France).
   11. Start reworking build under xc/doc (Marc La France).
   10. Move test suite documentation from xc/doc to test/xsuite/doc
       (Marc La France).
@@ -19481,7 +19482,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3480 2005/03/29 16:11:53 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3481 2005/03/29 17:33:22 tsi Exp $
 
 
 
