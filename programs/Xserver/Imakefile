@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.4 2001/03/14 18:42:02 pookie Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.256 2002/02/22 21:45:07 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.257 2002/02/25 00:45:40 dawes Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -238,19 +238,19 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
 #else 
             MFB = mfb/LibraryTargetName(mfb)
              FB = fb/LibraryTargetName(fb)
-            CFB = cfb/LibraryTargetName(cfb) \
-		  cfb16/LibraryTargetName(cfb16) \
+            CFB = cfb16/LibraryTargetName(cfb16) \
 		  cfb24/LibraryTargetName(cfb24) \
-		  cfb32/LibraryTargetName(cfb32)
+		  cfb32/LibraryTargetName(cfb32) \
+		  cfb/LibraryTargetName(cfb)
            CFB8 = cfb/LibraryTargetName(cfb)
-           CFB4 = cfb/LibraryTargetName(cfb) \
-		  cfb4/LibraryTargetName(cfb4)
-          CFB16 = cfb/LibraryTargetName(cfb) \
-		  cfb16/LibraryTargetName(cfb16)
-          CFB24 = cfb/LibraryTargetName(cfb) \
-		  cfb24/LibraryTargetName(cfb24)
-          CFB32 = cfb/LibraryTargetName(cfb) \
-		  cfb32/LibraryTargetName(cfb32)
+           CFB4 = cfb4/LibraryTargetName(cfb4) \
+		  cfb/LibraryTargetName(cfb)
+          CFB16 = cfb16/LibraryTargetName(cfb16) \
+		  cfb/LibraryTargetName(cfb)
+          CFB24 = cfb24/LibraryTargetName(cfb24) \
+		  cfb/LibraryTargetName(cfb)
+          CFB32 = cfb32/LibraryTargetName(cfb32) \
+		  cfb/LibraryTargetName(cfb)
          SHADOW = miext/shadow/LibraryTargetName(shadow)
           LAYER = miext/layer/LibraryTargetName(layer) 
 #endif
