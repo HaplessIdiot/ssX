@@ -1,5 +1,5 @@
 /*
- * $XFree86: $
+ * $XFree86: xc/programs/Xserver/render/miindex.c,v 1.1 2001/07/18 10:15:02 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -34,15 +34,16 @@
 #include "mipict.h"
 #include "colormapst.h"
 
-void
+Bool
 miBuildRenderColormap (ColormapPtr  pColormap,
-		       int	    first,
-		       int	    num)
+		       int	    num,
+		       Pixel	    *first,
+		       Pixel	    *last)
 {
     int		cube, ramp;
     int		r, g, b;
-    xColorItem	defs[MI_MAX_INDEXED];
-    int		n;
+    unsigned short  red, green, blue;
+    Pixel	pix;
     
     cube = 0;
     if ((pColormap->pVisual->class | DynamicClass) == PseudoColor)
@@ -53,29 +54,35 @@ miBuildRenderColormap (ColormapPtr  pColormap,
     }
     if (cube == 1)
 	cube = 0;
-    n = 0;
     ramp = num - (cube * cube * cube);
+    *first = MI_MAX_INDEXED;
+    *last = 0;
     for (r = 0; r < cube; r++)
 	for (g = 0; g < cube; g++)
 	    for (b = 0; b < cube; b++)
 	    {
-		defs[n].pixel = first + n;
-		defs[n].flags = DoRed|DoGreen|DoBlue;
-		defs[n].red = r * 65535 / (cube - 1);
-		defs[n].green = g * 65535 / (cube - 1);
-		defs[n].blue = b * 65535 / (cube - 1);
-		n++;
+		red = r * 65535 / (cube - 1);
+		green = g * 65535 / (cube - 1);
+		blue = b * 65535 / (cube - 1);
+		if (AllocColor (pColormap, &red, &green, &blue, &pix, 0) != Success)
+		    return FALSE;
+		if (pix < *first)
+		    *first = pix;
+		if (pix > *last)
+		    *last = pix;
 	    }
     for (g = 0; g < ramp; g++)
     {
-	defs[n].pixel = first + n;
-	defs[n].flags = DoRed|DoGreen|DoBlue;
-	defs[n].red = 
-	defs[n].green = 
-	defs[n].blue = g * 65535 / (ramp - 1);
-	n++;
+	red = 
+	green = 
+	blue = g * 65535 / (ramp - 1);
+	if (AllocColor (pColormap, &red, &green, &blue, &pix, 0) != Success)
+	    return FALSE;
+	if (pix < *first)
+	    *first = pix;
+	if (pix > *last)
+	    *last = pix;
     }
-    StoreColors (pColormap, num, defs);
 }
 
 /* 0 <= red, green, blue < 32 */
@@ -141,7 +148,8 @@ miInitIndexed (ScreenPtr	pScreen,
 	       PictFormatPtr	pFormat)
 {
     miIndexedPtr    pIndexed;
-    int		    first, num;
+    int		    num;
+    Pixel	    first, last;
     Pixel	    pix[MI_MAX_INDEXED];
     xrgb	    rgb[MI_MAX_INDEXED];
     Pixel	    p, r, g, b;
@@ -151,23 +159,23 @@ miInitIndexed (ScreenPtr	pScreen,
     pIndexed = xalloc (sizeof (miIndexedRec));
     if (!pIndexed)
 	return FALSE;
-    first = 0;
     num = pFormat->pVisual->ColormapEntries;
+    first = 0;
+    last = num - 1;
     if (pFormat->pVisual->class & DynamicClass)
     {
 	if (pFormat->pVisual->vid == pScreen->rootVisual)
 	{
-	    num = num * 2 / 3;
-	    pix[0] = num;
-	    if (AllocColorCells (0, pFormat->pColormap, num, 0, TRUE,
-				 pix, 0) != Success)
-	    {
-		xfree (pIndexed);
-		return FALSE;
-	    }
-	    first = pix[0];
+	    if (num > 100)
+		num = num - 10;
+	    else
+		num = num / 2;
 	}
-	miBuildRenderColormap (pFormat->pColormap, first, num);
+	if (!miBuildRenderColormap (pFormat->pColormap, num, &first, &last))
+	{
+	    xfree (pIndexed);
+	    return FALSE;
+	}
     }
     /*
      * Build mapping from pixel value to ARGB
@@ -189,7 +197,7 @@ miInitIndexed (ScreenPtr	pScreen,
     case GrayScale:
 	pIndexed->color = FALSE;
 	for (r = 0; r < 32768; r++)
-	    pIndexed->ent[r] = FindBestGray (pIndexed, first, num, r);
+	    pIndexed->ent[r] = FindBestGray (pIndexed, first, last-first+1, r);
 	break;
     case PseudoColor:
 	pIndexed->color = TRUE;
@@ -198,7 +206,7 @@ miInitIndexed (ScreenPtr	pScreen,
 	    for (g = 0; g < 32; g++)
 		for (b = 0; b < 32; b++)
 		{
-		    pIndexed->ent[p] = FindBestColor (pIndexed, first, num, r, g, b);
+		    pIndexed->ent[p] = FindBestColor (pIndexed, first, last-first+1, r, g, b);
 		    p++;
 		}
 	break;
@@ -215,6 +223,27 @@ miCloseIndexed (ScreenPtr	pScreen,
     {
 	xfree (pFormat->indexed);
 	pFormat->indexed = 0;
+    }
+}
+
+void
+miUpdateIndexed (ScreenPtr	pScreen,
+		 PictFormatPtr	pFormat,
+		 int		ndef,
+		 xColorItem	*pdef)
+{
+    miIndexedPtr pIndexed = pFormat->indexed;
+
+    if (pIndexed)
+    {
+	while (ndef--)
+	{
+	    pIndexed->rgba[pdef->pixel] = (0xff000000 |
+					   ((pdef->red   & 0xff00) << 8) |
+					   ((pdef->green & 0xff00)     ) |
+					   ((pdef->blue  & 0xff00) >> 8));
+	    pdef++;
+	}
     }
 }
 

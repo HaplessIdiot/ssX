@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/mipict.c,v 1.8 2001/06/08 19:36:34 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/mipict.c,v 1.9 2001/07/18 10:15:02 keithp Exp $
  *
  * Copyright © 1999 Keith Packard
  *
@@ -491,5 +491,6 @@ miPictureInit (ScreenPtr pScreen, PictFormatPtr formats, int nformats)
     ps->ValidatePicture = miValidatePicture;
     ps->InitIndexed = miInitIndexed;
     ps->CloseIndexed = miCloseIndexed;
+    ps->UpdateIndexed = miUpdateIndexed;
     return TRUE;
 }

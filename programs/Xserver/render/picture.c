@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picture.c,v 1.14 2001/07/18 10:15:02 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/picture.c,v 1.15 2001/07/19 03:01:39 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -82,6 +82,34 @@ PictureCloseScreen (int index, ScreenPtr pScreen)
     xfree (ps->formats);
     xfree (ps);
     return ret;
+}
+
+void
+PictureStoreColors (ColormapPtr pColormap, int ndef, xColorItem *pdef)
+{
+    ScreenPtr		pScreen = pColormap->pScreen;
+    PictureScreenPtr    ps = GetPictureScreen(pScreen);
+
+    pScreen->StoreColors = ps->StoreColors;
+    (*pScreen->StoreColors) (pColormap, ndef, pdef);
+    ps->StoreColors = pScreen->StoreColors;
+    pScreen->StoreColors = PictureStoreColors;
+
+    if (pColormap->class == PseudoColor || pColormap->class == GrayScale)
+    {
+	PictFormatPtr	format = ps->formats;
+	int		nformats = ps->nformats;
+
+	while (nformats--)
+	{
+	    if (format->pColormap == pColormap)
+	    {
+		(*ps->UpdateIndexed) (pScreen, format, ndef, pdef);
+		break;
+	    }
+	    format++;
+	}
+    }
 }
 
 static int
@@ -306,14 +334,9 @@ PictureInitIndexedFormats (ScreenPtr pScreen)
 								 RT_COLORMAP);
 	    else
 	    {
-		int alloc;
-		if (format->pVisual->class & DynamicClass)
-		    alloc = AllocAll;
-		else
-		    alloc = AllocNone;
 		if (CreateColormap (FakeClientID (0), pScreen,
 				    format->pVisual,
-				    &format->pColormap, alloc,
+				    &format->pColormap, AllocNone,
 				    0) != Success)
 		{
 		    return FALSE;
@@ -499,8 +522,10 @@ PictureInit (ScreenPtr pScreen, PictFormatPtr formats, int nformats)
     
     ps->CloseScreen = pScreen->CloseScreen;
     ps->DestroyWindow = pScreen->DestroyWindow;
+    ps->StoreColors = pScreen->StoreColors;
     pScreen->DestroyWindow = PictureDestroyWindow;
     pScreen->CloseScreen = PictureCloseScreen;
+    pScreen->StoreColors = PictureStoreColors;
 
     return TRUE;
 }

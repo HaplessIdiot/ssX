@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/mipict.h,v 1.6 2001/07/18 10:15:02 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/mipict.h,v 1.7 2001/07/19 03:01:39 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -153,5 +153,11 @@ miInitIndexed (ScreenPtr	pScreen,
 void
 miCloseIndexed (ScreenPtr	pScreen,
 		PictFormatPtr	pFormat);
+
+void
+miUpdateIndexed (ScreenPtr	pScreen,
+		 PictFormatPtr	pFormat,
+		 int		ndef,
+		 xColorItem	*pdef);
 
 #endif /* _MIPICT_H_ */
