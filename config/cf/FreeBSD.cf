@@ -2,7 +2,7 @@ XCOMM platform:  $Xorg: FreeBSD.cf,v 1.3 2000/08/17 19:41:45 cpqbld Exp $
 XCOMM
 XCOMM
 XCOMM
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.134 2003/10/02 13:29:35 eich Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.135 2003/10/11 10:07:10 herrb Exp $
 
 #ifndef UseElfFormat
 #define UseElfFormat		DefaultToElfFormat
@@ -46,6 +46,9 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define HasNdbm			YES
 #define HasPutenv		YES
 #define HasSnprintf		YES
+#if OSMajorVersion == 3 && OSMinorVersion >= 3 || OSMajorVersion > 3
+# define HasStrlcat		YES
+#endif
 #define HasBSD44Sockets 	YES
 #define HasDlopen		YES
 #if ((OSRelVersion >= 410002) && OSRelVersion < 500000) || (OSRelVersion >= 500012)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.98 2003/10/07 23:14:55 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.99 2003/10/10 20:55:10 herrb Exp $ */
 /*
  * Copyright 1997-2003 by The XFree86 Project, Inc.
  *
@@ -252,6 +252,18 @@ xf86size_t
 xf86strlen(const char* s)
 {
 	return (xf86size_t)strlen(s);
+}
+
+char*
+xf86strlcat(char *dest, const char *src, xf86size_t size)
+{
+	return(strlcat(dest, src, size));
+}
+
+char*
+xf86strlcpy(char *dest, const char *src, xf86size_t size)
+{
+	return strlcpy(dest, src, size);
 }
 
 char*

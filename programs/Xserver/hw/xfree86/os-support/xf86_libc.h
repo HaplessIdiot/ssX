@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.58 2003/09/24 02:43:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.59 2003/10/02 13:30:04 eich Exp $ */
 /*
  * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
  *
@@ -376,6 +376,10 @@ typedef int xf86jmp_buf[1024];
 #define strcspn(ccp1,ccp2)	xf86strcspn(ccp1,ccp2)
 #undef strerror
 #define strerror(i)		xf86strerror(i)
+#undef strlcat
+#define strlcat(cp,ccp,I)	xf86strlcat(cp,ccp,I)
+#undef strlcpy
+#define strlcpy(cp,ccp,I)	xf86strlcpy(cp,ccp,I)
 #undef strlen
 #define strlen(ccp)		xf86strlen(ccp)
 #undef strncmp

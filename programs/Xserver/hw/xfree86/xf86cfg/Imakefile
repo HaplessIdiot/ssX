@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/Imakefile,v 1.22tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/Imakefile,v 1.23 2003/03/04 16:25:10 tsi Exp $
 
 XCOMM CDEBUGFLAGS=-g -Wall -ansi -pedantic
 
@@ -10,6 +10,11 @@ LDOBJS	= libc_wrapper.o loader.o loadmod.o
 #if HasNCurses
 TEXTSRC	= text-mode.c
 TEXTOBJ	= text-mode.o
+#endif
+
+#if !HasStrlcat
+STRLSRCS = strlcat.c strlcpy.c
+STRLOBJS = strlcat.o strlcpy.o
 #endif
 
 SRCS	=\
@@ -28,6 +33,7 @@ SRCS	=\
 	screen-cfg.c\
 	screen.c\
 	startx.c\
+	$(STRLSRCS)\
 	stubs.c\
 	$(TEXTSRC)\
 	vidmode.c\
@@ -49,6 +55,7 @@ OBJS	=\
 	screen-cfg.o\
 	screen.o\
 	startx.o\
+	$(STRLOBJS)\
 	stubs.o\
 	$(TEXTOBJ)\
 	vidmode.o\
@@ -126,6 +133,11 @@ NormalLibraryObjectRule()
 #if DoLoadableServer
 LinkSourceFile(libc_wrapper.c, $(XF86OSSRC)/shared)
 SpecialCObjectRule(libc_wrapper,NullParameter,$(WRAPPERDEFINES) $(EXT_DEFINES))
+#endif
+
+#if !HasStrlcat
+LinkSourceFile(strlcat.c,$(LIBSRC)/misc)
+LinkSourceFile(strlcpy.c,$(LIBSRC)/misc)
 #endif
 
 DependTarget()
