@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/mi/miwideline.c,v 1.9 2001/08/06 20:51:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miwideline.c,v 1.10 2001/10/28 03:34:15 tsi Exp $ */
 
 /* Author:  Keith Packard, MIT X Consortium */
 
@@ -479,8 +479,10 @@ miLineJoin (
     int		    lw = pGC->lineWidth;
 
     if (lw == 1 && !spanData) {
-	/* Lines going in the same direction have no join */
-	if (pLeft->dx >= 0 == pRight->dx <= 0)
+	/* See if one of the lines will draw the joining pixel */
+	if (pLeft->dx > 0 || (pLeft->dx == 0 && pLeft->dy > 0))
+	    return;
+	if (pRight->dx > 0 || (pRight->dx == 0 && pRight->dy > 0))
 	    return;
 	if (joinStyle != JoinRound) {
     	    denom = - pLeft->dx * (double)pRight->dy + pRight->dx * (double)pLeft->dy;
