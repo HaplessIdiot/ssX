@@ -1,11 +1,11 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $TOG: X11.tmpl /main/308 1998/06/16 15:14:24 msr $
+XCOMM $Xorg: X11.tmpl,v 1.6 2000/08/17 19:41:46 cpqbld Exp $
 XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.94 2001/01/15 20:56:14 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.95 2001/01/15 22:17:47 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -495,7 +495,7 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #define XMalloc0ReturnsNullDefines Malloc0ReturnsNullDefines
 #endif
 #ifndef XtMalloc0ReturnsNullDefines
-#define XtMalloc0ReturnsNullDefines Malloc0ReturnsNullDefines
+#define XtMalloc0ReturnsNullDefines Malloc0ReturnsNullDefines -DXTMALLOC_BC
 #endif
 #endif
 #ifndef ExtensionOSDefines
