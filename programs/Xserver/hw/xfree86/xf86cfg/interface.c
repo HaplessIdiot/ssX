@@ -101,7 +101,7 @@ void PopdownErrorCallback(Widget, XtPointer, XtPointer);
 static void ErrorCancelAction(Widget, XEvent*, String*, Cardinal*);
 static void QuitCancelAction(Widget, XEvent*, String*, Cardinal*);
 static void HelpCallback(Widget, XtPointer, XtPointer);
-static void UpdateMenuDeviceList(int);
+void UpdateMenuDeviceList(int);
 
 extern void AccessXConfigureStart(void);
 extern void AccessXConfigureEnd(void);
@@ -116,7 +116,7 @@ static void Usage(void);
 /*
  * Initialization
  */
-Widget toplevel, work, config, layout, layoutsme, layoutp;
+Widget toplevel, work, config, layout, layoutsme, layoutp, topMenu;
 XtAppContext appcon;
 
 Pixmap menuPixmap;
@@ -141,7 +141,7 @@ int  noverify = False;
 xf86cfgComputer computer;
 xf86cfgDevice cpu_device;
 Cursor no_cursor;
-static Widget device, menu, layoutm, popup, commands;
+static Widget device, layoutm, popup, commands;
 static int xpos, ypos;
 int sxpos, sypos;
 static char no_cursor_data[] = { 0,0,0,0, 0,0,0,0 };
@@ -151,11 +151,7 @@ static Bool config_set = False;
 static Widget mouseSme, mouseMenu, keyboardSme, keyboardMenu,
        cardSme, cardMenu, monitorSme, monitorMenu;
 
-#define CONFIG_LAYOUT	0
-#define CONFIG_SCREEN	1
-#define CONFIG_MODELINE	2
-#define CONFIG_ACCESSX	3
-static int config_mode = CONFIG_LAYOUT;
+int config_mode = CONFIG_LAYOUT;
 
 static XtActionsRec actions[] = {
     {"filter-card", CardFilterAction},
@@ -222,7 +218,7 @@ Usage(void)
 #endif
 #ifdef USE_MODULES
 "   -nomodules                 Use this option if xf86cfg is slow to start.\n"
-"   -verbose <number>          Verbosity used in the loader (default 0).\n"
+"   -verbose <number>          Verbosity used in the loader (default 1).\n"
 #endif
 "   -noverify                  Do not verify modules/options integrity.\n"
 );
@@ -252,7 +248,7 @@ main(int argc, char *argv[])
     chdir(XFree86Dir);
 
 #ifdef USE_MODULES
-    xf86Verbose = 0;
+    xf86Verbose = 1;
 #endif
 
     for (i = 1; i < argc; i++) {
@@ -332,12 +328,12 @@ main(int argc, char *argv[])
 				 toplevel, NULL, 0);
     hpane = XtVaCreateManagedWidget("hpane", panedWidgetClass, pane,
 				    XtNorientation, XtorientHorizontal, NULL, 0);
-    menu = XtCreateManagedWidget("topM", menuButtonWidgetClass,
+    topMenu = XtCreateManagedWidget("topM", menuButtonWidgetClass,
 				 hpane, NULL, 0);
     expert = XtCreateManagedWidget("expert", commandWidgetClass, hpane, NULL, 0);
     XtAddCallback(expert, XtNcallback, ExpertCallback, NULL);
     popup = XtCreatePopupShell("menu", simpleMenuWidgetClass,
-			       menu, NULL, 0);
+			       topMenu, NULL, 0);
     sme = XtCreateManagedWidget("layout", smeBSBObjectClass,
 				popup, NULL, 0);
     XtAddCallback(sme, XtNcallback, SetConfigModeCallback,
@@ -441,7 +437,7 @@ main(int argc, char *argv[])
     XtRealizeWidget(layopt);
 
     XtRealizeWidget(toplevel);
-    XtRealizeWidget(menu);
+    XtRealizeWidget(topMenu);
 
     pixmap = XCreateBitmapFromData(XtDisplay(toplevel), XtWindow(toplevel),
 				   no_cursor_data, 8, 8);
@@ -611,7 +607,7 @@ AskConfig(void)
     else {
 	Arg args[2];
 	Cardinal num_args = 0;
-	char *l, *label, *str = "";
+	char *l, *label = NULL, *str = "";
 
 	XtSetArg(args[0], XtNlabel, &l);
 	XtGetValues(dialog, args, 1);
@@ -784,23 +780,25 @@ InitializeDevices(void)
     keyboard_y = work->core.height - DEFAULT_KEYBOARD_HEIGHT;
 
     while (input != NULL) {
-	if (strcasecmp(input->inp_driver, "mouse") == 0) {
-	    device = AddDevice(MOUSE, (XtPointer)input, mouse_x, mouse_y);
-	    SetTip(device);
-	    if ((mouse_x += DEFAULT_MOUSE_WIDTH) > work->core.width) {
-		if ((mouse_y -= DEFAULT_MOUSE_HEIGHT) < (work->core.height >> 1))
-		    mouse_y = work->core.height >> 1;
-		mouse_x = work->core.width - (work->core.width >> 2);
+	if (input->inp_driver) {
+	    if (strcasecmp(input->inp_driver, "mouse") == 0) {
+		device = AddDevice(MOUSE, (XtPointer)input, mouse_x, mouse_y);
+		SetTip(device);
+		if ((mouse_x += DEFAULT_MOUSE_WIDTH) > work->core.width) {
+		    if ((mouse_y -= DEFAULT_MOUSE_HEIGHT) < (work->core.height >> 1))
+			mouse_y = work->core.height >> 1;
+		    mouse_x = work->core.width - (work->core.width >> 2);
+		}
 	    }
-	}
-	else if (strcasecmp(input->inp_driver, "keyboard") == 0) {
-	    device = AddDevice(KEYBOARD, (XtPointer)input, keyboard_x, keyboard_y);
-	    SetTip(device);
-	    if ((keyboard_x += DEFAULT_KEYBOARD_WIDTH) >
-		work->core.width - (work->core.width >> 2))  {
-		if ((keyboard_y -= DEFAULT_KEYBOARD_HEIGHT) < (work->core.height >> 1))
-		    keyboard_y = work->core.height >> 1;
-		keyboard_x = 6;
+	    else if (strcasecmp(input->inp_driver, "keyboard") == 0) {
+		device = AddDevice(KEYBOARD, (XtPointer)input, keyboard_x, keyboard_y);
+		SetTip(device);
+		if ((keyboard_x += DEFAULT_KEYBOARD_WIDTH) >
+		    work->core.width - (work->core.width >> 2))  {
+		    if ((keyboard_y -= DEFAULT_KEYBOARD_HEIGHT) < (work->core.height >> 1))
+			keyboard_y = work->core.height >> 1;
+		    keyboard_x = 6;
+		}
 	    }
 	}
 	input = (XF86ConfInputPtr)(input->list.next);
@@ -1229,10 +1227,10 @@ RemoveLayoutCallback(Widget w, XtPointer user_data, XtPointer call_data)
 void
 SetTip(xf86cfgDevice *device)
 {
-    XF86OptionPtr option;
+    XF86OptionPtr option = NULL;
     char *tip, buffer[4096];
     Arg args[1];
-    int len;
+    int len = 0;
 
     XtSetArg(args[0], XtNtip, &tip);
     XtGetValues(device->widget, args, 1);
@@ -1460,7 +1458,7 @@ void
 OptionsCallback(Widget w, XtPointer user_data, XtPointer call_data)
 {
     int i;
-    XF86OptionPtr *options;
+    XF86OptionPtr *options = NULL;
 #ifdef USE_MODULES
     xf86cfgModuleOptions *drv_opts = NULL;
 #endif
@@ -1773,7 +1771,7 @@ RemoveDeviceCallback(Widget w, XtPointer user_data, XtPointer call_data)
     }
 }
 
-static void
+void
 UpdateMenuDeviceList(int type)
 {
     Widget sme = NULL, menu = NULL;
@@ -2163,7 +2161,7 @@ SetConfigModeCallback(Widget w, XtPointer user_data, XtPointer call_data)
     XtSetArg(args[0], XtNlabel, &ptr);
     XtGetValues(w, args, 1);
     XtSetArg(args[0], XtNlabel, ptr);
-    XtSetValues(menu, args, 1);
+    XtSetValues(topMenu, args, 1);
 
     if (config_mode == CONFIG_LAYOUT) {
 	XtSetArg(args[0], XtNheight, &height);
