@@ -23,7 +23,6 @@
  * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/X86/assyntax.h,v 1.12 2002/09/09 21:30:02 dawes Exp $ */
 
 /*
  * assyntax.h

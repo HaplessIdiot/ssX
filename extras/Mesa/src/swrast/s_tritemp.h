@@ -21,7 +21,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/swrast/s_tritemp.h,v 1.5 2002/12/16 16:18:40 dawes Exp $ */
+
 
 /*
  * Triangle Rasterizer Template
