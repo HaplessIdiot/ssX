@@ -1,5 +1,5 @@
 /* $XConsortium: cfb.h,v 5.37 94/04/17 20:28:38 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.1 1996/11/24 10:24:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.2 1996/12/31 04:16:29 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -332,7 +332,17 @@ extern RegionPtr cfbBitBlt(
     int /*height*/,
     int /*dstx*/,
     int /*dsty*/,
-    void (* /*doBitBlt*/)(),
+    void (* /*doBitBlt*/)(
+#if NeedNestedPrototypes
+	DrawablePtr /*pSrc*/,
+	DrawablePtr /*pDst*/,
+	int /*alu*/,
+	RegionPtr /*prgnDst*/,
+	DDXPointPtr /*pptSrc*/,
+	unsigned long /*planemask*/,
+	unsigned long /*bitPlane*/
+#endif
+	),
     unsigned long /*bitPlane*/
 #endif
 );
