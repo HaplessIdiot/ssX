@@ -1,5 +1,5 @@
 /* $XConsortium: Xtrans.c,v 1.31 95/03/28 19:49:02 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.10 1995/07/07 15:32:57 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.11 1996/05/10 06:55:43 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -721,7 +721,7 @@ int		arg;
 	    break;
 	case 1: /* Set to non-blocking mode */
 
-#if defined(O_NONBLOCK) && (!defined(SCO) && !defined(ultrix) && !defined(hpux) && !defined(AIXV3) && !defined(uniosu) && !defined(__EMX__))
+#if defined(O_NONBLOCK) && (!defined(SCO) && !defined(SCO325) && !defined(ultrix) && !defined(hpux) && !defined(AIXV3) && !defined(uniosu) && !defined(__EMX__))
 	    ret = fcntl (fd, F_SETFL, O_NONBLOCK);
 #else
 #ifdef FIOSNBIO
@@ -1328,7 +1328,7 @@ int 		iovcnt;
 
 #endif /* CRAY */
 
-#if (defined(SYSV) && defined(i386)) || defined(WIN32) || defined(__sxg__) || defined(SCO) || defined(__EMX__)
+#if (defined(SYSV) && defined(i386)) || defined(WIN32) || defined(__sxg__) || (defined(SCO) && !defined(SCO325)) || defined(__EMX__)
 
 /*
  * emulate readv
@@ -1364,7 +1364,7 @@ int 		iovcnt;
 
 #endif /* SYSV && i386 || WIN32 || __sxg__ || SCO */
 
-#if defined(WIN32) || defined(__sxg__) || defined(SCO) || defined(__EMX__)
+#if defined(WIN32) || defined(__sxg__) || (defined(SCO) && !defined(SCO325)) || defined(__EMX__)
 
 /*
  * emulate writev

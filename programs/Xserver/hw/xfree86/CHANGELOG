@@ -1,3 +1,43 @@
+XFree86 3.1.2Fa (31 August 1996)
+744. Fix xterm's handling of SGR 22, 24 and 25 in combination with colorUL
+     and colorBD resources.  Also noted & fixed reset of colored
+     underline/bold with SGR 0 (Thomas E. Dickey).
+743. Fix a typo in the xterm termcap (Thomas E. Dickey).
+742. Don't allow the "fb_debug" option when newmmio is used (Harald Koenig).
+741. Make sure s3Port59/s3Port5A are initialised before s3Init() is called
+     (Harald Koenig).
+740. Force 64MB alignment of linear FB, even when MemBase is given in
+     the config file (Harald Koenig).
+739. Disable newmmio when "nolinear" is specified, or when linear memory
+     mapping isn't available (Harald Koenig).
+738. Fix C&T driver printing out a line in its probe in cases where a
+     C&T chip hasn't been detected.
+737. Driver for the Alliance ProMotion 6422 (Alliance Semiconductor, and
+     Kent Hamilton).
+736. Make the Ark SVGA driver detect the ARK2000MT, and treat it as an
+     ARK2000PV.
+735. Updates for SCO OpenServer 5 support (J. Kean Johnston).
+734. Fix for a buffer overflow problem in XOpenDislpay (libX11)
+     (X Consortium, Kaleb Keithley).
+733. Some imake/config updates (Dirk Hohndel).
+732. Add a '-nolock' server command line option to disable the X server
+     locking (Roger Wolff).
+731. Scanpci updates: Check general pci-pci bridges, add some more
+     vendor and device IDs, and add a '-f' flag to print out the full
+     information -- otherwise just print the vendor/device name
+     (Mihoko Tanaka).
+730. Updates for ISC (Michael Rohleder).
+729. Fix typo in XF86Setup/mouse.tcl (Thomas Mueller).
+728. Fix malloc problem in TLI xtrans code (Joe Moss).
+727. Fix some WaitQueue problems with the S3 server (Naofumi Honda,
+     Takaaki Nomura, Harald Koenig).
+726. Fix for display problem with Trio64V+ at 16bpp (Harald Koenig).
+725. Fix clock limit arrays for Cirrus 754x chip (Corin Anderson).
+724. Add a "DefaultColorDepth" keyword for the Screen section of the
+     XF86Config (Dirk Hohndel).
+723. Fix problem using non-linear mode with TGUI chips (Alan Hourihane).
+722. Turn off PCI burst write by default for TGUI chips.
+
 XFree86 3.1.2F (27 August 1996)
 721. Update the QuickStart guide with details about using XF86Setup (Joe Moss).
 720. Some XF86Setup updates (Joe Moss).

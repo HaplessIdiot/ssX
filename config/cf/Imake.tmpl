@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
 XCOMM $XConsortium: Imake.tmpl /main/r61_main/3 1996/02/02 18:57:32 gildea $
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.24 1996/06/29 09:01:57 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.25 1996/08/26 06:19:51 dawes Exp $
 XCOMM
 
 /*
@@ -401,6 +401,14 @@ XCOMM the platform-specific parameters - edit site.def to change
 #define AlternateUsrLibDir YES
 #endif
 #endif
+#ifndef VarLibDir
+#ifdef ProjectVar
+#define VarLibDir Concat(ProjectVar,/lib)
+#else
+#define VarLibDir /var/lib
+#endif
+#endif
+
 #ifndef ShLibDir
 #define ShLibDir UsrLibDir
 #endif
@@ -951,6 +959,7 @@ XCOMM the platform-specific parameters - edit site.def to change
 
           INCROOT = IncRoot		/* base of where to put header files */
         USRLIBDIR = UsrLibDir		/* nonshared libraries */
+        VARLIBDIR = VarLibDir		/* xdm runtime files */
          SHLIBDIR = ShLibDir            /* shared libraries */
        LINTLIBDIR = LintlibDir		/* lint libraries */
           MANPATH = ManPath		/* top of manual page tree */
