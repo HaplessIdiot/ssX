@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vboard.c,v 1.13 2001/06/30 22:41:48 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vboard.c,v 1.15 2002/04/04 14:05:45 eich Exp $ */
 /*
  * includes
  */
@@ -20,7 +20,7 @@
 #include "cscode.h"
 
 /* Global imported during compile-time */
-char MICROCODE_DIR [PATH_MAX] = MODULEDIR;
+static char MICROCODE_DIR [PATH_MAX] = MODULEDIR;
 
 /*
  * local function prototypes

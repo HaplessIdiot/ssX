@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vramdac.c,v 1.16tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vramdac.c,v 1.17 2002/10/09 16:38:19 tsi Exp $ */
 /*
  * includes
  */
@@ -97,13 +97,11 @@ static vu8 Bt485_read_masked(IOADDRESS port, vu8 reg, vu8 mask);
 static vu8 Bt485_read_cmd3_masked(IOADDRESS port, vu8 mask);
 #endif
 
-
-
 /*
- * global data
+ * local data
  */
 
-int Cursor_size=0;
+static int Cursor_size=0;
 
 
 
