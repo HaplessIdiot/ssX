@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.51 2002/05/24 01:08:59 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.53 2002/07/08 03:54:01 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -74,6 +74,7 @@
 #include "math.h"
 #include "package.h"
 #include "pathname.h"
+#include "regex.h"
 #include "require.h"
 #include "stream.h"
 #include "struct.h"
@@ -94,6 +95,8 @@ typedef struct {
  */
 /* run a builtin or user defined function/macro */
 static LispObj *LispFuncall(LispMac*, LispObj*, LispObj*, int);
+
+static void Lisp__GC(LispMac*, LispObj*, LispObj*);
 
 #ifdef __GNUC__
 /* inline version of LispEval */
@@ -232,8 +235,11 @@ static LispBuiltin lispbuiltins[] = {
     {LispMacro, Lisp_And, "and &rest args"},
     {LispFunction, Lisp_Aref, "aref array &rest subscripts"},
     {LispFunction, Lisp_Assoc, "assoc item list &key test test-not key"},
+    {LispFunction, Lisp_AssocIf, "assoc-if predicate list &key key"},
+    {LispFunction, Lisp_AssocIfNot, "assoc-if-not predicate list &key key"},
     {LispFunction, Lisp_Atom, "atom object"},
     {LispMacro, Lisp_Block, "block name &rest body"},
+    {LispFunction, Lisp_Boundp, "boundp symbol"},
     {LispFunction, Lisp_Butlast, "butlast list &optional (count 1) &aux (length (length list))"},
     {LispFunction, Lisp_Car, "car list"},
     {LispMacro, Lisp_Case, "case keyform &rest body"},
@@ -415,12 +421,14 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Reverse, "reverse sequence"},
     {LispFunction, Lisp_Rplaca, "rplaca place value"},
     {LispFunction, Lisp_Rplacd, "rplacd place value"},
+    {LispFunction, Lisp_Search, "search sequence1 sequence2 &key from-end test test-not key start1 start2 end1 end2"},
     {LispFunction, Lisp_Set, "set symbol value"},
     {LispFunction, Lisp_SetDifference, "set-difference list1 list2 &key test test-not key"},
     {LispFunction, Lisp_SetExclusiveOr, "set-exclusive-or list1 list2 &key test test-not key"},
     {LispMacro, Lisp_Setf, "setf &rest form"},
     {LispMacro, Lisp_SetQ, "setq &rest form"},
     {LispFunction, Lisp_Sleep, "sleep seconds"},
+    {LispFunction, Lisp_Sort, "sort sequence predicate &key key"},
     {LispFunction, Lisp_Sqrt, "sqrt number"},
     {LispFunction, Lisp_Elt, "svref sequence index &aux (length (length sequence))"},
     {LispFunction, Lisp_Streamp, "streamp object"},
@@ -487,6 +495,9 @@ static LispBuiltin extbuiltins[] = {
     {LispFunction, Lisp_PipeErrorStream, "pipe-error-stream pipe-stream"},
     {LispFunction, Lisp_PipeInputDescriptor, "pipe-input-descriptor pipe-stream"},
     {LispFunction, Lisp_PipeErrorDescriptor, "pipe-error-descriptor pipe-stream"},
+    {LispFunction, Lisp_Regcomp, "regcomp pattern &key (extended t) nospec icase nosub newline"},
+    {LispFunction, Lisp_Regexec, "regexec regex string &key count start end notbol noteol"},
+    {LispFunction, Lisp_Regexp, "regexp object"},
     {LispFunction, Lisp_Setenv, "setenv name value &optional overwrite"},
     {LispFunction, Lisp_Unsetenv, "unsetenv name"},
     {LispMacro, Lisp_Until, "until test &rest body"},
@@ -701,6 +712,18 @@ LispTopLevel(LispMac *mac)
 void
 LispGC(LispMac *mac, LispObj *car, LispObj *cdr)
 {
+    if (gcpro)
+	return;
+
+    objseg.nfree = 0;
+    objseg.freeobj = NIL;
+
+    Lisp__GC(mac, car, cdr);
+}
+
+void
+Lisp__GC(LispMac *mac, LispObj *car, LispObj *cdr)
+{
     LispObj *entry, *last, **pentry, **eentry;
     unsigned i, j;
     LispAtom *atom;
@@ -806,10 +829,6 @@ LispGC(LispMac *mac, LispObj *car, LispObj *cdr)
     LispMark(car);
     LispMark(cdr);
 
-    /* this actually only need to be done when directly calling LispGC */
-    objseg.nfree = 0;
-    objseg.freeobj = NIL;
-
     for (j = 0; j < objseg.nsegs; j++) {
 	for (entry = objseg.objects[j], last = entry + segsize;
 	     entry < last; entry++) {
@@ -863,6 +882,10 @@ LispGC(LispMac *mac, LispObj *car, LispObj *cdr)
 			if (entry->data.lambda.name->type == LispOpaque_t)
 			    LispFreeArgList(mac, (LispArgList*)
 				entry->data.lambda.name->data.opaque.data);
+			break;
+		    case LispRegex_t:
+			regfree(entry->data.regex.regex);
+			free(entry->data.regex.regex);
 			break;
 		    default:
 			break;
@@ -1926,6 +1949,9 @@ mark_again:
 		goto mark_again;
 	    }
 	    break;
+	case LispRegex_t:
+	    obj->data.regex.pattern->mark = LispTrue_t;
+	    break;
 	default:
 	    break;
     }
@@ -1998,6 +2024,9 @@ immutable_again:
 		obj = obj->data.stream.source.program->errorp;
 		goto immutable_again;
 	    }
+	    break;
+	case LispRegex_t:
+	    obj->data.regex.pattern->prot = LispTrue_t;
 	    break;
 	default:
 	    break;
@@ -2072,6 +2101,9 @@ mutable_again:
 		goto mutable_again;
 	    }
 	    break;
+	case LispRegex_t:
+	    obj->data.regex.pattern->prot = LispNil_t;
+	    break;
 	default:
 	    break;
     }
@@ -2109,7 +2141,7 @@ LispNew(LispMac *mac, LispObj *car, LispObj *cdr)
     if (objseg.freeobj == NIL) {
 	int cellcount;
 
-	LispGC(mac, car, cdr);
+	Lisp__GC(mac, car, cdr);
 	mac->gc.average = (objseg.nfree + mac->gc.average) >> 1;
 	if (mac->gc.average < minfree) {
 	    if (mac->gc.expandbits < 6)
@@ -2552,7 +2584,7 @@ LispNewBigRational(LispMac *mac, mpr *r)
 LispObj *
 LispNewPackage(LispMac *mac, LispObj *name, LispObj *nicknames)
 {
-    LispObj *package = LispNew(mac, NIL, nicknames);
+    LispObj *package = LispNew(mac, name, nicknames);
     LispPackage *pack = LispCalloc(mac, 1, sizeof(LispPackage));
 
     package->type = LispPackage_t;
@@ -3340,7 +3372,8 @@ LispEvalBackquoteObject(LispMac *mac, LispObj *argument, int list, int quote)
 
     else if (argument->type == LispQuote_t &&
 	     (argument->data.quote->type == LispComma_t ||
-	      argument->data.quote->type == LispBackquote_t)) {
+	      argument->data.quote->type == LispBackquote_t ||
+	      CONS_P(argument->data.quote))) {
 	/* ensures `',sym to be the same as `(quote ,sym) */
 	object = argument->data.quote;
 
@@ -4036,6 +4069,33 @@ LispApply(LispMac *mac, LispObj *function, LispObj *arguments)
     return (LispFuncall(mac, function, arguments, 0));
 }
 
+LispObj *
+LispApply1(LispMac *mac, LispObj *function, LispObj *argument)
+{
+    LispObj arguments;
+
+    arguments.type = LispCons_t;
+    arguments.data.cons.car = argument;
+    arguments.data.cons.cdr = NIL;
+
+    return (LispFuncall(mac, function, &arguments, 0));
+}
+
+LispObj *
+LispApply2(LispMac *mac, LispObj *function,
+	   LispObj *argument1, LispObj *argument2)
+{
+    LispObj arguments, cdr;
+
+    arguments.type = cdr.type = LispCons_t;
+    arguments.data.cons.car = argument1;
+    arguments.data.cons.cdr = &cdr;
+    cdr.data.cons.car = argument2;
+    cdr.data.cons.cdr = NIL;
+
+    return (LispFuncall(mac, function, &arguments, 0));
+}
+
 static LispObj *
 LispRunFunMac(LispMac *mac, LispObj *name, LispObj *code, int macro)
 {
@@ -4304,23 +4364,24 @@ LispExecute(LispMac *mac, char *str)
     string.input = 0;
 
     LispPushInput(mac, &stream);
-    if (running || sigsetjmp(mac->jmp, 1) == 0) {
-	if (!running)
-	    mac->running = 1;
+    if (!running) {
+	mac->running = 1;
+	if (sigsetjmp(mac->jmp, 1) != 0)
+	    return (NULL);
+    }
 
-	/*CONSTCOND*/
-	while (1) {
-	    if ((obj = LispRead(mac)) != NULL) {
-		if (obj == EOLIST)
-		    LispDestroy(mac, "EXECUTE: object cannot start with #\\)");
-		else if (obj == DOT)
-		    LispDestroy(mac, "dot allowed only on lists");
-		mac->protect.objects[length] = obj;
-		result = EVAL(obj);
-	    }
-	    if (mac->eof)
-		break;
+    /*CONSTCOND*/
+    while (1) {
+	if ((obj = LispRead(mac)) != NULL) {
+	    if (obj == EOLIST)
+		LispDestroy(mac, "EXECUTE: object cannot start with #\\)");
+	    else if (obj == DOT)
+		LispDestroy(mac, "dot allowed only on lists");
+	    mac->protect.objects[length] = obj;
+	    result = EVAL(obj);
 	}
+	if (mac->eof)
+	    break;
     }
     LispPopInput(mac, &stream);
 
@@ -4332,7 +4393,7 @@ LispExecute(LispMac *mac, char *str)
 }
 
 LispMac *
-LispBegin(int argc, char *argv[])
+LispBegin(void)
 {
     int i;
     char results[4];
@@ -4485,43 +4546,8 @@ LispBegin(int argc, char *argv[])
     mac->nunget = 1;
 
     object = ATOM2("*STANDARD-INPUT*");
-    if (argc > 1) {
-	int ch;
-	LispFile *input = NULL;
-
-	i = 1;
-	if (strcmp(argv[1], "-d") == 0) {
-	    mac->debugging = 1;
-	    mac->debug_level = -1;
-	    ++i;
-	}
-	if (i < argc && (input = LispFopen(argv[i], FILE_READ)) == NULL) {
-	    LispMessage(mac, "Cannot open %s.", argv[i]);
-	    exit(1);
-	}
-	if (input) {
-	    SINPUT = STANDARDSTREAM(input, object, STREAM_READ);
-	    /* ignore first line if starts with #! */
-	    ch = LispGet(mac);
-	    if (ch != '#')
-		LispUnget(mac, ch);
-	    else if ((ch = LispGet(mac)) == '!') {
-		for (;;) {
-		    ch = LispGet(mac);
-		    if (ch == '\n' || ch == EOF)
-			break;
-		}
-	    }
-	    else {
-		LispUnget(mac, ch);
-		LispUnget(mac, '#');
-	    }
-	}
-    }
-    if (!SINPUT) {
-	SINPUT = STANDARDSTREAM(Stdin, object, STREAM_READ);
-	mac->interactive = 1;
-    }
+    SINPUT = STANDARDSTREAM(Stdin, object, STREAM_READ);
+    mac->interactive = 1;
     LispProclaimSpecial(mac, object, mac->input = SINPUT, NIL);
     LispExportSymbol(mac, object);
 
@@ -4554,6 +4580,7 @@ LispBegin(int argc, char *argv[])
     LispMathInit(mac);
     LispPathnameInit(mac);
     LispStreamInit(mac);
+    LispRegexInit(mac);
 
     mac->prompt = "> ";
 
@@ -4582,6 +4609,9 @@ LispBegin(int argc, char *argv[])
     /* Add LISP builtin functions */
     for (i = 0; i < sizeof(lispbuiltins) / sizeof(lispbuiltins[0]); i++)
 	LispAddBuiltinFunction(mac, &lispbuiltins[i]);
+
+    /* Add LISP functions. File should be renamed to lisp.lsp */
+    EXECUTE("(require \"fun\")");
 
     /* Create EXT package */
     PACKAGE = ext = LispNewPackage(mac, STRING("EXT"), NIL);

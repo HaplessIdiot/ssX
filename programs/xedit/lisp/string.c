@@ -605,6 +605,19 @@ Lisp_String(LispMac *mac, LispBuiltin *builtin)
     return (LispStringCoerce(mac, builtin, object));
 }
 
+LispObj *
+Lisp_Stringp(LispMac *mac, LispBuiltin *builtin)
+/*
+ stringp object
+ */
+{
+    LispObj *object;
+
+    object = ARGUMENT(0);
+
+    return (STRING_P(object) ? T : NIL);
+}
+
 /* XXX preserve-whitespace is being ignored */
 LispObj *
 Lisp_ReadFromString(LispMac *mac, LispBuiltin *builtin)

@@ -49,6 +49,9 @@ extern void unsetenv(const char *name);
 #define	REMOVE		1
 #define	SUBSTITUTE	2
 
+#define ASSOC		1
+#define MEMBER		2
+
 #define	IF		1
 #define	IFNOT		2
 
@@ -57,10 +60,11 @@ extern void unsetenv(const char *name);
 #define SETDIFFERENCE	3
 #define SETEXCLUSIVEOR	4
 #define SUBSETP		5
-LispObj *LispMember(LispMac*, LispBuiltin*, int);
+LispObj *LispAssocOrMember(LispMac*, LispBuiltin*, int, int);
 LispObj *LispRemoveOrSubstitute(LispMac*, LispBuiltin*, int, int);
 LispObj *LispListSet(LispMac*, LispBuiltin*, int);
 extern LispObj *LispRunSetf(LispMac*, LispArgList*, LispObj*, LispObj*, LispObj*);
+static LispObj *LispMergeSort(LispMac*, LispObj*, LispObj*, LispObj*);
 
 /*
  * Initialization
@@ -205,34 +209,136 @@ Lisp_Aref(LispMac *mac, LispBuiltin *builtin)
     return (CAR(array));
 }
 
-/* XXX the &KEY parameters are being ignored */
+LispObj *
+LispAssocOrMember(LispMac *mac, LispBuiltin *builtin,
+		  int function, int comparison)
+/*
+ assoc item list &key test test-not key
+ assoc-if predicate list &key key
+ assoc-if-not predicate list &key key
+ member item list &key test test-not key
+ member-if predicate list &key key
+ member-if-not predicate list &key key
+ */
+{
+    GC_ENTER();
+    LispObj *karguments, *predicate, *arguments, *expect, *result, *compare;
+
+    LispObj *item, *list, *test, *test_not, *key;
+
+    if (comparison == NONE) {
+	key = ARGUMENT(4);
+	test_not = ARGUMENT(3);
+	test = ARGUMENT(2);
+	list = ARGUMENT(1);
+	item = ARGUMENT(0);
+	predicate = NIL;
+    }
+    else {
+	key = ARGUMENT(2);
+	list = ARGUMENT(1);
+	predicate = ARGUMENT(0);
+	test = test_not = item = NIL;
+    }
+
+    if (list == NIL)
+	return (NIL);
+    else
+	ERROR_CHECK_LIST(list);
+
+    /* Cannot specify both :test and :test-not */
+    if (test != NIL && test_not != NIL)
+	LispDestroy(mac, "%s: specify either :TEST or :TEST-NOT",
+		    STRFUN(builtin));
+
+    /* Resolve compare function, and expected result of comparison */
+    if (comparison == NONE) {
+	arguments = CONS(item, CONS(NIL, NIL));
+	if (test_not == NIL) {
+	    if (test == NIL)
+		predicate = Oeql;
+	    else
+		predicate = test;
+	    expect = T;
+	}
+	else {
+	    predicate = test_not;
+	    expect = NIL;
+	}
+    }
+    else {
+	arguments = CONS(NIL, NIL);
+	expect = comparison == IFNOT ? NIL : T;
+    }
+    GC_PROTECT(arguments);
+
+    /* Allocate list for arguments to key lambda, if required */
+    if (key != NIL) {
+	karguments = CONS(NIL, NIL);
+	GC_PROTECT(karguments);
+    }
+    else
+	karguments = NULL;
+
+    result = NIL;
+    for (; CONS_P(list); list = CDR(list)) {
+	compare = CAR(list);
+	if (function == ASSOC) {
+	    if (!CONS_P(compare))
+		continue;
+	    compare = CAR(compare);
+	}
+	if (karguments != NULL) {
+	    CAR(karguments) = compare;
+	    if (comparison == NONE)
+		CADR(arguments) = APPLY(key, karguments);
+	    else
+		CAR(arguments) = APPLY(key, karguments);
+	}
+	else {
+	    if (comparison == NONE)
+		CADR(arguments) = compare;
+	    else
+		CAR(arguments) = compare;
+	}
+	if (APPLY(predicate, arguments) == expect) {
+	    result = list;
+	    if (function == ASSOC)
+		result = CAR(result);
+	    break;
+	}
+    }
+
+    GC_LEAVE();
+
+    return (result);
+}
+
 LispObj *
 Lisp_Assoc(LispMac *mac, LispBuiltin *builtin)
 /*
  assoc item list &key test test-not key
  */
 {
-    LispObj *cmp;
-    LispObj *item, *list, *test, *test_not, *key;
+    return (LispAssocOrMember(mac, builtin, ASSOC, NONE));
+}
 
-    key = ARGUMENT(4);
-    test_not = ARGUMENT(3);
-    test = ARGUMENT(2);
-    list = ARGUMENT(1);
-    item = ARGUMENT(0);
+LispObj *
+Lisp_AssocIf(LispMac *mac, LispBuiltin *builtin)
+/*
+ assoc-if predicate list &key key
+ */
+{
+    return (LispAssocOrMember(mac, builtin, ASSOC, IF));
+}
 
-    if (list == NIL)
-	return (NIL);
-
-    for (; CONS_P(list); list = CDR(list)) {
-	if (!CONS_P(cmp = CAR(list)))
-	    LispDestroy(mac, "%s: %s is a bad argument",
-			STRFUN(builtin), STROBJ(list));
-	if (XEQUAL(item, CAR(cmp)) == T)
-	    return (cmp);
-    }
-
-    return (NIL);
+LispObj *
+Lisp_AssocIfNot(LispMac *mac, LispBuiltin *builtin)
+/*
+ assoc-if-not predicate list &key key
+ */
+{
+    return (LispAssocOrMember(mac, builtin, ASSOC, IFNOT));
 }
 
 LispObj *
@@ -361,6 +467,26 @@ Lisp_Block(LispMac *mac, LispBuiltin *builtin)
 	*pres = mac->block.block_ret;
 
     return (res);
+}
+
+LispObj *
+Lisp_Boundp(LispMac *mac, LispBuiltin *builtin)
+/*
+ boundp symbol
+ */
+{
+    LispAtom *atom;
+
+    LispObj *symbol = ARGUMENT(0);
+
+    ERROR_CHECK_SYMBOL(symbol);
+
+    atom = symbol->data.atom;
+    if (atom->package == mac->keyword ||
+	(atom->a_object && atom->property->value != UNBOUND))
+	return (T);
+
+    return (NIL);
 }
 
 LispObj *
@@ -974,7 +1100,6 @@ Lisp_Error(LispMac *mac, LispBuiltin *builtin)
 
     arguments = ARGUMENT(1);
     control_string = ARGUMENT(0);
-    MACRO_ARGUMENT2();
 
     arglist = CONS(NIL, CONS(control_string, arguments));
     GC_PROTECT(arglist);
@@ -1301,13 +1426,11 @@ Lisp_Let(LispMac *mac, LispBuiltin *builtin)
  */
 {
     GC_ENTER();
-    LispObj *init, *body, *pair, *result, *list, *cons;
+    LispObj *init, *body, *pair, *result, *list, *cons = NIL;
 
     body = ARGUMENT(1);
     init = ARGUMENT(0);
     MACRO_ARGUMENT2();
-
-    cons = NIL;	/* fix gcc warning */
 
     if (init != NIL) {
 	ERROR_CHECK_LIST(init);
@@ -2137,109 +2260,12 @@ maplist_done:
 }
 
 LispObj *
-LispMember(LispMac *mac, LispBuiltin *builtin, int comparison)
-/*
- member item list &key test test-not key
- member-if predicate list &key key
- member-if-not predicate list &key key
- */
-{
-    GC_ENTER();
-    LispObj *karguments, *predicate, *arguments, *expect, *result;
-
-    LispObj *item, *list, *test, *test_not, *key;
-
-    if (comparison == NONE) {
-	key = ARGUMENT(4);
-	test_not = ARGUMENT(3);
-	test = ARGUMENT(2);
-	list = ARGUMENT(1);
-	item = ARGUMENT(0);
-	predicate = NIL;
-    }
-    else {
-	key = ARGUMENT(2);
-	list = ARGUMENT(1);
-	predicate = ARGUMENT(0);
-	test = test_not = item = NIL;
-    }
-
-    if (list == NIL)
-	return (NIL);
-    else
-	ERROR_CHECK_LIST(list);
-
-    /* Cannot specify both :test and :test-not */
-    if (test != NIL && test_not != NIL)
-	LispDestroy(mac, "%s: specify either :TEST or :TEST-NOT",
-		    STRFUN(builtin));
-
-    /* Initialize */
-    result = NIL;
-    karguments = NULL;
-
-    /* Resolve compare function, and expected result of comparison */
-    if (comparison == NONE) {
-	arguments = CONS(item, CONS(NIL, NIL));
-	if (test_not == NIL) {
-	    if (test == NIL)
-		predicate = Oeql;
-	    else
-		predicate = test;
-	    expect = T;
-	}
-	else {
-	    predicate = test_not;
-	    expect = NIL;
-	}
-    }
-    else {
-	arguments = CONS(NIL, NIL);
-	expect = comparison == IFNOT ? NIL : T;
-    }
-    GC_PROTECT(arguments);
-
-    /* Allocate list for arguments to key lambda, if required */
-    if (key != NIL) {
-	karguments = CONS(NIL, NIL);
-	GC_PROTECT(karguments);
-    }
-
-    /* Loop on list, comparing every element with item,
-     * or result of applying key to it */
-    for (; CONS_P(list); list = CDR(list)) {
-	if (karguments != NULL) {
-	    CAR(karguments) = CAR(list);
-	    if (comparison == NONE)
-		CADR(arguments) = APPLY(key, karguments);
-	    else
-		CAR(arguments) = APPLY(key, karguments);
-	}
-	else {
-	    if (comparison == NONE)
-		CADR(arguments) = CAR(list);
-	    else
-		CAR(arguments) = CAR(list);
-	}
-	if (APPLY(predicate, arguments) == expect) {
-	    result = list;
-	    break;
-	}
-    }
-
-    GC_LEAVE();
-
-    return (result);
-}
-
-
-LispObj *
 Lisp_Member(LispMac *mac, LispBuiltin *builtin)
 /*
  member item list &key test test-not key
  */
 {
-    return (LispMember(mac, builtin, NONE));
+    return (LispAssocOrMember(mac, builtin, MEMBER, NONE));
 }
 
 LispObj *
@@ -2248,7 +2274,7 @@ Lisp_MemberIf(LispMac *mac, LispBuiltin *builtin)
  member-if predicate list &key key
  */
 {
-    return (LispMember(mac, builtin, IF));
+    return (LispAssocOrMember(mac, builtin, MEMBER, IF));
 }
 
 LispObj *
@@ -2257,7 +2283,7 @@ Lisp_MemberIfNot(LispMac *mac, LispBuiltin *builtin)
  member-if-not predicate list &key key
  */
 {
-    return (LispMember(mac, builtin, IFNOT));
+    return (LispAssocOrMember(mac, builtin, MEMBER, IFNOT));
 }
 
 LispObj *
@@ -2483,7 +2509,7 @@ Lisp_Proclaim(LispMac *mac, LispBuiltin *builtin)
 
     ERROR_CHECK_LIST(declaration);
     else {
-	LispObj *arguments = CAR(declaration), *object = CAR(arguments);
+	LispObj *arguments = declaration, *object = CAR(arguments);
 	char *operation;
 
 	if (!SYMBOL_P(object))
@@ -3493,6 +3519,242 @@ Lisp_Rplacd(LispMac *mac, LispBuiltin *builtin)
     return (place);
 }
 
+LispObj *
+Lisp_Search(LispMac *mac, LispBuiltin *builtin)
+/*
+ search sequence1 sequence2 &key from-end test test-not key start1 start2 end1 end2
+ */
+{
+    GC_ENTER();
+    int istring;
+    long start1, start2, end1, end2, length1, length2, offset = -1;
+    char *string1 = NULL, *string2 = NULL;
+    LispObj cleft, cright, karg1, karg2;
+    LispObj *list1 = NIL, *list2 = NIL;
+    LispObj *arguments, *kargs1, *kargs2, *lambda, *value, *expect;
+
+    LispObj *sequence1, *sequence2, *from_end, *test, *test_not,
+	    *key, *ostart1, *ostart2, *oend1, *oend2;
+
+    oend2 = ARGUMENT(9);
+    oend1 = ARGUMENT(8);
+    ostart2 = ARGUMENT(7);
+    ostart1 = ARGUMENT(6);
+    key = ARGUMENT(5);
+    test_not = ARGUMENT(4);
+    test = ARGUMENT(3);
+    from_end = ARGUMENT(2);
+    sequence2 = ARGUMENT(1);
+    sequence1 = ARGUMENT(0);
+
+    LispCheckSequenceStartEnd(mac, builtin, sequence1, ostart1, oend1,
+			      &start1, &end1, &length1);
+    LispCheckSequenceStartEnd(mac, builtin, sequence2, ostart2, oend2,
+			      &start2, &end2, &length2);
+
+    /* Check if both arguments are or aren't strings */
+    if (STRING_P(sequence1) ^ STRING_P(sequence2))
+	return (NIL);
+
+    /* Cannot specify both :test and :test-not */
+    if (test != NIL && test_not != NIL)
+	LispDestroy(mac, "%s: specify either :TEST or :TEST-NOT",
+		    STRFUN(builtin));
+
+    /* Check for special conditions */
+    if (start1 == end1)
+	return (INTEGER(end2));
+    else if (start2 == end2)
+	return (start1 == end1 ? INTEGER(start2) : NIL);
+
+    /* Allocate argument list to comparison function */
+    arguments = CONS(NIL, CONS(NIL, NIL));
+    GC_PROTECT(arguments);
+
+    /* Resolve comparison function, and expected result of comparison */
+    if (test_not == NIL) {
+	if (test == NIL)
+	    lambda = Oeql;
+	else
+	    lambda = test;
+	expect = T;
+    }
+    else {
+	lambda = test_not;
+	expect = NIL;
+    }
+
+    if (key != NIL) {
+	kargs1 = CONS(NIL, NIL);
+	GC_PROTECT(kargs1);
+	kargs2 = CONS(NIL, NIL);
+	GC_PROTECT(kargs2);
+    }
+    else
+	kargs1 = kargs2 = NULL;
+
+    /* Searching a substring? */
+    istring = STRING_P(sequence1);
+
+    if (istring) {
+	string1 = THESTR(sequence1);
+	string2 = THESTR(sequence2);
+	cleft.type = cright.type = LispCharacter_t;
+
+	/* If no :KEY predicate */
+	if (kargs1 == NULL) {
+	    CAR(arguments) = &cleft;
+	    CADR(arguments) = &cright;
+	}
+	else {
+	    karg1.type = karg2.type = LispCharacter_t;
+	    CAR(kargs1) = &karg1;
+	    CAR(kargs2) = &karg2;
+	}
+    }
+    else {
+	list1 = sequence1;
+	list2 = sequence2;
+	if (!CONS_P(list1))
+	    list1 = list1->data.array.list;
+	if (!CONS_P(list2))
+	    list2 = list2->data.array.list;
+    }
+
+    length1 = end1 - start1;
+    length2 = end2 - start2;
+
+    if (from_end == NIL) {
+	LispObj *slist1;
+	long cstart1, cstart2;
+
+	slist1 = list1;
+	cstart2 = start2;
+	while (cstart2 < end2) {
+	    list1 = slist1;
+	    cstart1 = start1;
+	    while (cstart1 < end1) {
+		/* Apply :key predicate if required */
+		if (kargs1 != NULL) {
+		    if (istring)
+			karg1.data.integer = string1[cstart1];
+		    else
+			CAR(kargs1) = CAR(list1);
+		    CAR(arguments) = APPLY(key, kargs1);
+		    if (istring)
+			karg2.data.integer = string2[cstart2];
+		    else
+			CAR(kargs2) = CAR(list2);
+		    CADR(arguments) = APPLY(key, kargs2);
+		}
+		else if (istring) {
+		    cleft.data.integer = string1[cstart1];
+		    cright.data.integer = string2[cstart2];
+		}
+		else {
+		    CAR(arguments) = CAR(list1);
+		    CADR(arguments) = CAR(list2);
+		}
+
+		/* Compare elements */
+		value = APPLY(lambda, arguments);
+		if (value != expect)
+		    break;
+
+		/* Update offsets/sequence pointers */
+		++cstart1;
+		++cstart2;
+		if (!istring) {
+		    list1 = CDR(list1);
+		    list2 = CDR(list2);
+		}
+	    }
+
+	    /* If all elements matched */
+	    if (cstart1 == end1) {
+		offset = cstart2 - length1;
+		break;
+	    }
+
+	    /* Update offset/sequence2 pointer */
+	    ++cstart2;
+	    if (!istring)
+		list2 = CDR(list2);
+	}
+    }
+    else {
+	LispObj **plist1 = NULL, **plist2 = NULL;
+	long i, coff1, coff2;
+
+	/* Allocate vector of list elements to search backwards */
+	if (!istring) {
+	    plist1 = LispMalloc(mac, sizeof(LispObj*) * length1);
+	    plist2 = LispMalloc(mac, sizeof(LispObj*) * length2);
+	    for (i = 0, coff1 = start1; coff1 < end1;
+		 i++, coff1++, list1 = CDR(list1))
+		plist1[i] = CAR(list1);
+	    for (i = 0, coff2 = start2; coff2 < end2;
+		 i++, coff2++, list2 = CDR(list2))
+		plist2[i] = CAR(list2);
+	}
+
+	coff2 = end2 - 1;
+	while (coff2 >= start2) {
+	    coff1 = end1 - 1;
+	    while (coff1 >= start1) {
+		/* Apply :key predicate if required */
+		if (kargs1 != NULL) {
+		    if (istring)
+			karg1.data.integer = string1[coff1];
+		    else
+			CAR(kargs1) = plist1[coff1 - start1];
+		    CAR(arguments) = APPLY(key, kargs1);
+		    if (istring)
+			karg2.data.integer = string2[coff2];
+		    else
+			CAR(kargs2) = plist2[coff2 - start2];
+		    CADR(arguments) = APPLY(key, kargs2);
+		}
+		else if (istring) {
+		    cleft.data.integer = string1[coff1];
+		    cright.data.integer = string2[coff2];
+		}
+		else {
+		    CAR(arguments) = plist1[coff1 - start1];
+		    CADR(arguments) = plist2[coff2 - start2];
+		}
+
+		/* Compare elements */
+		value = APPLY(lambda, arguments);
+		if (value != expect)
+		    break;
+
+		/* Update offsets */
+		--coff1;
+		--coff2;
+	    }
+
+	    /* If all elements matched */
+	    if (coff1 == start1 - 1) {
+		offset = coff2 + 1;
+		break;
+	    }
+
+	    /* Update offset */
+	    --coff2;
+	}
+
+	if (!istring) {
+	    LispFree(mac, plist1);
+	    LispFree(mac, plist2);
+	}
+    }
+
+    GC_LEAVE();
+
+    return (offset == -1 ? NIL : INTEGER(offset));
+}
+
 /*
  * ext::getenv
  */
@@ -3711,17 +3973,169 @@ Lisp_Sleep(LispMac *mac, LispBuiltin *builtin)
     return (NIL);
 }
 
-LispObj *
-Lisp_Stringp(LispMac *mac, LispBuiltin *builtin)
 /*
- stringp object
+ *   This function is called recursively, but the contents of "list2" are
+ * kept gc protected until it returns to LispSort. This is required partly
+ * because the "gc protection logic" protects an object, not the contents
+ * of the c pointer.
+ *   I tested using bubble-sort and heap-sort algorithms (to just switch
+ * "car" contents), and while those give correct results, those algorithms
+ * won't generate a stable result.
+ *  Since a work copy is being made, it could instead allocate a vector
+ * of objects and sort the vector, but then, for strings it would just
+ * need to allocate even more memory.
+ */
+static LispObj *
+LispMergeSort(LispMac *mac, LispObj *list, LispObj *predicate, LispObj *key)
+{
+    int protect;
+    LispObj *list1, *list2, *left, *right, *result, *cons;
+
+    /* Check if list length is larger than 1 */
+    if (!CONS_P(list) || !CONS_P(CDR(list)))
+	return (list);
+
+    list1 = list2 = list;
+    while (CONS_P(list = CDR(list)) && CONS_P(list = CDR(list)))
+	list2 = CDR(list2);
+    cons = list2;
+    list2 = CDR(list2);
+    CDR(cons) = NIL;
+
+    protect = 0;
+    mac->protect.objects[mac->protect.length++] = list2;
+    if (key != NIL) {
+	mac->protect.objects[mac->protect.length++] = NIL;
+	mac->protect.objects[mac->protect.length++] = NIL;
+	protect = mac->protect.length - 2;
+    }
+    list1 = LispMergeSort(mac, list1, predicate, key);
+    list2 = LispMergeSort(mac, list2, predicate, key);
+
+    left = CAR(list1);
+    right = CAR(list2);
+    if (key != NIL) {
+	left = APPLY1(key, left);
+	mac->protect.objects[protect] = left;
+	right = APPLY1(key, right);
+	mac->protect.objects[protect + 1] = right;
+    }
+
+    result = NIL;
+    for (;;) {
+	if (APPLY2(predicate, left, right) == NIL &&
+	    APPLY2(predicate, right, left) != NIL) {
+	    /* right is "smaller" */
+	    if (result == NIL)
+		result = list2;
+	    else
+		CDR(cons) = list2;
+	    cons = list2;
+	    list2 = CDR(list2);
+	    if (!CONS_P(list2)) {
+		CDR(cons) = list1;
+		break;
+	    }
+	    right = CAR(list2);
+	    if (key != NIL) {
+		right = APPLY1(key, right);
+		mac->protect.objects[protect + 1] = right;
+	    }
+	}
+	else {
+	    /* left is "smaller" */
+	    if (result == NIL)
+		result = list1;
+	    else
+		CDR(cons) = list1;
+	    cons = list1;
+	    list1 = CDR(list1);
+	    if (!CONS_P(list1)) {
+		CDR(cons) = list2;
+		break;
+	    }
+	    left = CAR(list1);
+	    if (key != NIL) {
+		left = APPLY1(key, left);
+		mac->protect.objects[protect] = left;
+	    }
+	}
+    }
+
+    if (key != NIL) {
+	mac->protect.objects[protect] = NIL;
+	mac->protect.objects[protect + 1] = NIL;
+    }
+
+    return (result);
+}
+
+LispObj *
+Lisp_Sort(LispMac *mac, LispBuiltin *builtin)
+/*
+ sort sequence predicate &key key
  */
 {
-    LispObj *object;
+    GC_ENTER();
+    int istring;
+    long length;
+    char *string;
 
-    object = ARGUMENT(0);
+    LispObj *list, *work, *cons;
 
-    return (STRING_P(object) ? T : NIL);
+    LispObj *sequence, *predicate, *key;
+
+    key = ARGUMENT(2);
+    predicate = ARGUMENT(1);
+    sequence = ARGUMENT(0);
+
+    length = LispLength(mac, sequence);
+    if (length < 2)
+	return (sequence);
+
+    list = sequence;
+    istring = STRING_P(sequence);
+    if (istring) {
+	/* Convert string to list */
+	string = THESTR(sequence);
+	work = cons = CONS(CHAR(string[0]), NIL);
+	GC_PROTECT(work);
+	for (++string; *string; ++string) {
+	    CDR(cons) = CONS(CHAR(*string), NIL);
+	    cons = CDR(cons);
+	}
+    }
+    else {
+	/* Make a work copy of sequence */
+	LispObj *ptr;
+
+	if (!CONS_P(list))
+	    list = list->data.array.list;
+	ptr = list;
+	work = cons = CONS(CAR(ptr), NIL);
+	GC_PROTECT(work);
+	for (ptr = CDR(ptr); CONS_P(ptr); ptr = CDR(ptr)) {
+	    CDR(cons) = CONS(CAR(ptr), NIL);
+	    cons = CDR(cons);
+	}
+    }
+
+    work = LispMergeSort(mac, work, predicate, key);
+
+    if (istring) {
+	/* Convert list to string */
+	string = THESTR(sequence);
+	for (; CONS_P(work); ++string, work = CDR(work))
+	    *string = CAR(work)->data.integer;
+    }
+    else {
+	for (; CONS_P(work); work = CDR(work), list = CDR(list))
+	    CAR(list) = CAR(work);
+    }
+
+    GC_LEAVE();
+
+    return (sequence);
 }
 
 LispObj *

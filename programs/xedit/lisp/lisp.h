@@ -34,7 +34,7 @@
 
 typedef struct _LispMac LispMac;
 
-LispMac *LispBegin(int argc, char *argv[]);
+LispMac *LispBegin(void);
 void LispEnd(LispMac*);
 void *LispExecute(LispMac*, char*);
 void LispMachine(LispMac*);

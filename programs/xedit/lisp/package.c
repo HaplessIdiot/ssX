@@ -323,11 +323,12 @@ Lisp_FindAllSymbols(LispMac *mac, LispBuiltin *builtin)
  find-all-symbols string-or-symbol
  */
 {
+    GC_ENTER();
     char *string = NULL;
     LispAtom *atom;
     LispPackage *pack;
     LispObj *list, *package, *result;
-    int i, protect = mac->protect.length;
+    int i;
 
     LispObj *string_or_symbol;
 
@@ -345,8 +346,6 @@ Lisp_FindAllSymbols(LispMac *mac, LispBuiltin *builtin)
 
     /* Will find at least one symbol matching string-or-symbol,
      * the value of string-or-symbol itself :-) */
-    if (protect + 1 >= mac->protect.space)
-	LispMoreProtects(mac);
 
     /* Traverse all packages, searching for symbols matching specified string */
     for (list = PACK; CONS_P(list); list = CDR(list)) {
@@ -363,7 +362,7 @@ Lisp_FindAllSymbols(LispMac *mac, LispBuiltin *builtin)
 		    if (strcmp(atom->string, string) == 0) {
 			if (result == NIL) {
 			    result = CONS(atom->object, NIL);
-			    mac->protect.objects[mac->protect.length++] = result;
+			    GC_PROTECT(result);
 			}
 			else {
 			    /* Put symbols defined first in the
@@ -377,6 +376,7 @@ Lisp_FindAllSymbols(LispMac *mac, LispBuiltin *builtin)
 	    }
 	}
     }
+    GC_LEAVE();
 
     return (result);
 }
@@ -612,7 +612,7 @@ Lisp_MakePackage(LispMac *mac, LispBuiltin *builtin)
  make-package package-name &key nicknames (use '(lisp ext))
  */
 {
-    int protect;
+    GC_ENTER();
     LispObj *list, *package, *nicks, *cons, *savepackage;
 
     LispObj *package_name, *nicknames, *use;
@@ -620,10 +620,6 @@ Lisp_MakePackage(LispMac *mac, LispBuiltin *builtin)
     use = ARGUMENT(2);
     nicknames = ARGUMENT(1);
     package_name = ARGUMENT(0);
-
-    protect = mac->protect.length;
-    if (protect + 2 >= mac->protect.space)	
-	LispMoreProtects(mac);
 
     /* Check if package already exists */
     package = LispFindPackage(mac, package_name);
@@ -635,7 +631,7 @@ Lisp_MakePackage(LispMac *mac, LispBuiltin *builtin)
     if (!STRING_P(package_name))
 	package_name = STRING(STRPTR(package_name));
 
-    mac->protect.objects[mac->protect.length++] = package_name;
+    GC_PROTECT(package_name);
 
     /* Check nicknames */
     nicks = cons = NIL;
@@ -651,7 +647,7 @@ Lisp_MakePackage(LispMac *mac, LispBuiltin *builtin)
 	    package = STRING(STRPTR(package));
 	if (nicks == NIL) {
 	    nicks = cons = CONS(package, NIL);
-	    mac->protect.objects[mac->protect.length++] = nicks;
+	    GC_PROTECT(nicks);
 	}
 	else {
 	    CDR(cons) = CONS(package, NIL);
@@ -670,7 +666,7 @@ Lisp_MakePackage(LispMac *mac, LispBuiltin *builtin)
     PACK = CONS(package, PACK);
 
     /* No need for gc protection anymore */
-    mac->protect.length = protect;
+    GC_LEAVE();
 
     /* Import symbols from use list */
     savepackage = PACKAGE;
@@ -734,17 +730,16 @@ Lisp_PackageUseList(LispMac *mac, LispBuiltin *builtin)
     pack = package->data.package.package;
 
     if (pack->use.length) {
-	int i = pack->use.length - 1, protect = mac->protect.length;
+	GC_ENTER();
+	int i = pack->use.length - 1;
 
 	use = cons = CONS(pack->use.pairs[i], NIL);
-	if (protect + 1 >= mac->protect.space)
-	    LispMoreProtects(mac);
-	mac->protect.objects[mac->protect.length++] = use;
+	GC_PROTECT(use);
 	for (--i; i >= 0; i--) {
 	    CDR(cons) = CONS(pack->use.pairs[i], NIL);
 	    cons = CDR(cons);
 	}
-	mac->protect.length = protect;
+	GC_LEAVE();
     }
 
     return (use);
@@ -756,7 +751,8 @@ Lisp_PackageUsedByList(LispMac *mac, LispBuiltin *builtin)
  package-used-by-list package
  */
 {
-    int i, protect;
+    GC_ENTER();
+    int i;
     LispPackage *pack;
     LispObj *package, *other, *used, *cons, *list;
 
@@ -765,10 +761,6 @@ Lisp_PackageUsedByList(LispMac *mac, LispBuiltin *builtin)
     package = LispFindPackageOrDie(mac, builtin, package);
 
     used = cons = NIL;
-
-    protect = mac->protect.length;
-    if (protect + 1 >= mac->protect.space)
-	LispMoreProtects(mac);
 
     for (list = PACK; CONS_P(list); list = CDR(list)) {
 	other = CAR(list);
@@ -782,7 +774,7 @@ Lisp_PackageUsedByList(LispMac *mac, LispBuiltin *builtin)
 	    if (pack->use.pairs[i] == package) {
 		if (used == NIL) {
 		    used = cons = CONS(other, NIL);
-		    mac->protect.objects[mac->protect.length++] = used;
+		    GC_PROTECT(used);
 		}
 		else {
 		    CDR(cons) = CONS(other, NIL);
@@ -792,7 +784,7 @@ Lisp_PackageUsedByList(LispMac *mac, LispBuiltin *builtin)
 	}
     }
 
-    mac->protect.length = protect;
+    GC_LEAVE();
 
     return (used);
 }

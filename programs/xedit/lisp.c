@@ -444,10 +444,9 @@ XeditCheckLispChild(void)
 static void
 XeditRunLisp(void)
 {
-    LispMac *mac = LispBegin(0, NULL);
+    LispMac *mac = LispBegin();
 
     LispSetPrompt(mac, NULL);
-    LispExecute(mac, "(require \"fun\")\n");
     LispMachine(mac);
 
     LispEnd(mac);

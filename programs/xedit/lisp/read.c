@@ -278,8 +278,9 @@ LispSkipWhiteSpace(LispMac *mac)
 static LispObj *
 LispReadList(LispMac *mac)
 {
+    GC_ENTER();
     LispObj *result, *cons, *object;
-    int dot = 0, protect = mac->protect.length;
+    int dot = 0;
 
     /* check for () */
     object = LispRead(mac);
@@ -295,9 +296,7 @@ LispReadList(LispMac *mac)
     result = cons = CONS(object, NIL);
 
     /* make sure GC will not release data being read */
-    if (mac->protect.length + 1 >= mac->protect.space)
-	LispMoreProtects(mac);
-    mac->protect.objects[mac->protect.length++] = result;
+    GC_PROTECT(result);
 
     while ((object = LispRead(mac)) != EOLIST) {
 	if (object == NULL)
@@ -307,7 +306,8 @@ LispReadList(LispMac *mac)
 	    if (dot) {
 		if (!mac->discard)
 		    LispDestroy(mac, "READ: more than one . in list");
-		mac->protect.length = protect;
+		GC_LEAVE();
+
 		return (NIL);
 	    }
 	    dot = 1;
@@ -318,7 +318,7 @@ LispReadList(LispMac *mac)
 		if (++dot > 2) {
 		    if (!mac->discard)
 			LispDestroy(mac, "READ: more than one object after . in list");
-		    mac->protect.length = protect;
+		    GC_LEAVE();
 
 		    return (NIL);
 		}
@@ -335,12 +335,12 @@ LispReadList(LispMac *mac)
     if (dot == 1) {
 	if (!mac->discard)
 	    LispDestroy(mac, "READ: illegal end of dotted list");
-	mac->protect.length = protect;
+	GC_LEAVE();
 
 	return (NIL);
     }
 
-    mac->protect.length = protect;
+    GC_LEAVE();
 
     return (result);
 }
@@ -1073,8 +1073,8 @@ LispReadEval(LispMac *mac)
 static LispObj *
 LispReadComplex(LispMac *mac)
 {
-    LispObj *number, *function, *arguments = LispRead(mac);
-    int protect = mac->protect.length;
+    GC_ENTER();
+    LispObj *number, *arguments = LispRead(mac);
 
     /* form read */
     if (mac->discard)
@@ -1083,12 +1083,9 @@ LispReadComplex(LispMac *mac)
     if (INVALID_P(arguments) || !CONS_P(arguments))
 	LispDestroy(mac, "READ: invalid complex-number specification");
 
-    if (mac->protect.length + 1 >= mac->protect.space)
-	LispMoreProtects(mac);
-    mac->protect.objects[mac->protect.length++] = arguments;
-    function = Ocomplex;
-    number = APPLY(function, arguments);
-    mac->protect.length = protect;
+    GC_PROTECT(arguments);
+    number = APPLY(Ocomplex, arguments);
+    GC_LEAVE();
 
     return (number);
 }
@@ -1096,9 +1093,8 @@ LispReadComplex(LispMac *mac)
 static LispObj *
 LispReadPathname(LispMac *mac)
 {
-    LispObj *function, *arguments;
+    GC_ENTER();
     LispObj *path = LispRead(mac);
-    int protect = mac->protect.length;
 
     /* form read */
     if (mac->discard)
@@ -1107,13 +1103,9 @@ LispReadPathname(LispMac *mac)
     if (INVALID_P(path))
 	LispDestroy(mac, "READ: invalid pathname specification");
 
-    function = Oparse_namestring;
-    if (mac->protect.length + 1 >= mac->protect.space)
-	LispMoreProtects(mac);
-    arguments = CONS(path, NIL);
-    mac->protect.objects[mac->protect.length++] = arguments;
-    path = APPLY(function, arguments);
-    mac->protect.length = protect;
+    GC_PROTECT(path);
+    path = APPLY1(Oparse_namestring, path);
+    GC_LEAVE();
 
     return (path);
 }
@@ -1121,10 +1113,10 @@ LispReadPathname(LispMac *mac)
 static LispObj *
 LispReadStruct(LispMac *mac)
 {
+    GC_ENTER();
     int len;
     char stk[128], *str;
-    int protect = mac->protect.length;
-    LispObj *struc, *function, *arguments = LispRead(mac);
+    LispObj *struc, *arguments = LispRead(mac);
 
     /* form read */
     if (mac->discard)
@@ -1133,9 +1125,7 @@ LispReadStruct(LispMac *mac)
     if (INVALID_P(arguments) || !CONS_P(arguments) || !SYMBOL_P(CAR(arguments)))
 	LispDestroy(mac, "READ: invalid structure specification");
 
-    if (mac->protect.length + 1 >= mac->protect.space)
-	LispMoreProtects(mac);
-    mac->protect.objects[mac->protect.length++] = arguments;
+    GC_PROTECT(arguments);
 
     len = strlen(STRPTR(CAR(arguments)));
 	   /* MAKE- */
@@ -1147,9 +1137,8 @@ LispReadStruct(LispMac *mac)
     CAR(arguments) = ATOM(str);
     if (str != stk)
 	LispFree(mac, str);
-    function = Omake_struct;
-    struc = APPLY(function, arguments);
-    mac->protect.length = protect;
+    struc = APPLY(Omake_struct, arguments);
+    GC_LEAVE();
 
     return (struc);
 }
@@ -1157,10 +1146,10 @@ LispReadStruct(LispMac *mac)
 static LispObj *
 LispReadArray(LispMac *mac, long dimensions)
 {
+    GC_ENTER();
     long count;
-    LispObj *function, *arguments, *initial, *dim, *cons;
+    LispObj *arguments, *initial, *dim, *cons;
     LispObj *data = LispRead(mac);
-    int protect = mac->protect.length;
 
     /* form read */
     if (mac->discard)
@@ -1186,24 +1175,21 @@ LispReadArray(LispMac *mac, long dimensions)
 
 	    for (length = 1, obj = data; CONS_P(obj); obj = CDR(obj), length++)
 		;
+	    GCProtect();
 	    CDR(cons) = CONS(INTEGER(length), NIL);
 	    cons = CDR(cons);
+	    GCUProtect();
 	}
     }
     else
 	dim = NIL;
 
-    function = Omake_array;
-
-    protect = mac->protect.length;
-    if (mac->protect.length + 2 >= mac->protect.space)
-	LispMoreProtects(mac);
-    mac->protect.objects[mac->protect.length++] = dim;
+    GC_PROTECT(dim);
     arguments = CONS(dim, CONS(initial, CONS(data, NIL)));
-    mac->protect.objects[mac->protect.length++] = arguments;
+    GC_PROTECT(arguments);
 
-    data = APPLY(function, arguments);
-    mac->protect.length = protect;
+    data = APPLY(Omake_array, arguments);
+    GC_LEAVE();
 
     return (data);
 }

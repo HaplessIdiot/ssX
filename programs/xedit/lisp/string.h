@@ -58,6 +58,7 @@ LispObj *Lisp_IntChar(LispMac*, LispBuiltin*);		  /* int-char */
 LispObj *Lisp_ParseInteger(LispMac*, LispBuiltin*);	  /* parse-integer */
 LispObj *Lisp_ReadFromString(LispMac*, LispBuiltin*);	  /* read-from-string */
 LispObj *Lisp_String(LispMac*, LispBuiltin*);		  /* string */
+LispObj *Lisp_Stringp(LispMac*, LispBuiltin*);		  /* stringp */
 LispObj *Lisp_StringTrim(LispMac*, LispBuiltin*);	  /* string-trim */
 LispObj *Lisp_StringLeftTrim(LispMac*, LispBuiltin*);	  /* string-left-trim */
 LispObj *Lisp_StringRightTrim(LispMac*, LispBuiltin*);	  /* string-right-trim */
