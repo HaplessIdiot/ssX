@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/xclock/Clock.c,v 3.20 2002/06/14 22:41:04 keithp Exp $ */
+/* $XFree86: xc/programs/xclock/Clock.c,v 3.22 2002/08/28 04:32:24 keithp Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/StringDefs.h>
@@ -111,6 +111,8 @@ static XtResource resources[] = {
         offset(analog), XtRImmediate, (XtPointer) TRUE},
     {XtNbrief, XtCBoolean, XtRBoolean, sizeof(Boolean),
         offset(brief), XtRImmediate, (XtPointer) FALSE},
+    {XtNstrftime, XtCString, XtRString, sizeof(String),
+        offset(strftime), XtRString, ""},
     {XtNchime, XtCBoolean, XtRBoolean, sizeof(Boolean),
 	offset(chime), XtRImmediate, (XtPointer) FALSE },
     {XtNpadding, XtCMargin, XtRInt, sizeof(int),
@@ -425,8 +427,21 @@ TimeString (ClockWidget w, struct tm *tm)
       tsec = time(NULL);
       sprintf (utime, "%10lu seconds since Epoch", (unsigned long)tsec);
       return utime;
+   } else if (*w->clock.strftime) {
+     /*Note: this code is probably excessively paranoid 
+       about buffer overflow.  The extra size 10 padding
+       is also meant as a further guard against programmer 
+       error, although it is a little controversial*/
+     static char ctime[STRFTIME_BUFF_SIZE+10];
+     ctime[0] = ctime[STRFTIME_BUFF_SIZE] = '\0';
+     strftime (ctime, STRFTIME_BUFF_SIZE-1,w->clock.strftime, tm);
+     ctime[STRFTIME_BUFF_SIZE-1] = '\0';
+     return ctime;
    }
+
+
    return asctime (tm);
+
 }
 
 /* ARGSUSED */

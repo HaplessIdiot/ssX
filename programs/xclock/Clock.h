@@ -49,7 +49,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/xclock/Clock.h,v 1.8 2002/05/17 23:55:29 keithp Exp $ */
+/* $XFree86: xc/programs/xclock/Clock.h,v 1.10 2002/06/14 22:34:57 keithp Exp $ */
 
 #ifndef _XawClock_h
 #define _XawClock_h
@@ -99,6 +99,10 @@ SOFTWARE.
 
 		/* Boolean: only hour/minute if TRUE */
 #define XtNbrief  "brief"
+
+                /* String: will be used as format arg to 
+                   "strftime" if not empty string */
+#define XtNstrftime "strftime"
 
 		/* Boolean: show seconds since Epoch if TRUE */
 #define XtNutime  "utime"
