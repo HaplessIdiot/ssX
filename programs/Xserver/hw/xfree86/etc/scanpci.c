@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.59 1998/11/15 04:30:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.61 1999/01/21 06:55:15 hohndel Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -65,9 +65,6 @@
 #include <stdio.h>
 #include <sys/types.h>
 #if defined(SVR4) && !defined(DGUX)
-#if defined(sun)
-#define __EXTENSIONS__
-#endif
 #include <sys/proc.h>
 #include <sys/tss.h>
 #if defined(NCR)
@@ -82,7 +79,15 @@
 #else
 #include <sys/seg.h>
 #endif
-#include <sys/v86.h>
+#if defined(sun) && defined (i386) && defined (SVR4)	/* Solaris? */
+# if !defined(V86SC_IOPL)				/* Solaris 7? */
+#include <sys/v86.h>					/* Nope */
+# else
+/* Do nothing what so ever */				/* Yup */
+#endif /* V86SC_IOPL */
+#else 
+#  include <sys/v86.h>					/* Not solaris */
+#endif /* sun/i386/svr4 */
 #endif
 #if defined(__FreeBSD__) || defined(__386BSD__)
 #include <sys/file.h>

@@ -1,10 +1,18 @@
-XFree86 3.9Nz (31 January 1999)
+XFree86 3.9Nz (1 February 1999)
+2225. Add "ShadowFB" to the mga driver for experimenting with the shadowfb
+      layer (#2439, Mark Vojkovich).
+2224. Some cleanups/fixes for Solaris 7 (#2437, David Holland).
+2223. Ansify (and remove gcc warnings from) the following clients: appres,
+      bdftopcf, beforelight, bitmap and editres (#2436, Matthieu Herrb).
+2222. Eliminate cpp-related warnings about the "unix" symbol on NetBSD-current
+      (#2434, Matthieu Herrb).
 2221. Fix a bug in Xaw's StripChart widget that shows up with xload
       (#2433, Matthieu Herrb).
 2220. Some initial code for supporting other SiS cards in the SiS driver
       (#2420, Juanjo Santamarta).
 2219. Allow static Xvfb to compile (#2432, Marc La France).
-2218. Fix ddc and chips Imakefiles (#2432, Marc La France).
+2218. Fix ddc and chips Imakefiles (#2432, Marc La France,
+      #2435, Matthieu Herrb).
 2217. Remove redundant BitsPerPixel macro definitions (#2432, Marc La France).
 2216. Remove some redundant rules from Xpm's Imakefile (#2432, Marc La France).
 2215. Fix some compiler warnings (#2432, Marc La France).
@@ -15,7 +23,7 @@ XFree86 3.9Nz (31 January 1999)
 2211. Add a new "shadowfb" layer that maintains a virtual framebuffer in
       system memory and tells the driver what parts of the videoram
       framebuffer need updating.  This allows the use of write-only videoram
-      framebuffers (#2431, Mark Vojkovich).
+      framebuffers (#2431, 2438, Mark Vojkovich).
 2210. Fix some compilation problems on Alpha platforms caused by some
       inlines in complier.h being declared as extern instead of static
       (2430, Matt Grossman).
@@ -7218,4 +7226,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.680 1999/01/31 04:59:34 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.681 1999/01/31 12:21:44 dawes Exp $

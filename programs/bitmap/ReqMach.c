@@ -1,15 +1,9 @@
-/* $XConsortium: ReqMach.c,v 1.14 94/04/17 20:23:45 hersh Exp $ */
+/* $TOG: ReqMach.c /main/15 1998/02/09 13:41:25 kaleb $ */
 /*
 
-Copyright (c) 1989  X Consortium
+Copyright 1989, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -17,17 +11,18 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
+/* $XFree86$ */
 
 /*
  * Author:  Davor Matic, MIT X Consortium
@@ -59,8 +54,8 @@ extern Boolean DEBUG;
  * Searches for a request record of a request specified by its name.
  * Returns a pointer to the record or NULL if the request was not found.
  */
-BWRequestRec *FindRequest(name)
-    BWRequest name;
+static BWRequestRec *
+FindRequest(BWRequest name)
 {
     int i;
 
@@ -75,12 +70,9 @@ BWRequestRec *FindRequest(name)
  * Adds a request to the request stack and does proper initializations.
  * Returns TRUE if the request was found and FALSE otherwise.
  */
-Boolean BWAddRequest(w, name, trap, call_data, call_data_size)
-    Widget    w;
-    BWRequest name;
-    Boolean   trap;
-    XtPointer call_data;
-    Cardinal  call_data_size;
+Boolean 
+BWAddRequest(Widget w, BWRequest name, Boolean trap, 
+	     XtPointer call_data, Cardinal call_data_size)
 {
     BitmapWidget BW = (BitmapWidget) w;
     BWRequestRec *request;
@@ -116,9 +108,8 @@ Boolean BWAddRequest(w, name, trap, call_data, call_data_size)
  * Engages the request designated by the current parameter.
  * Returnes TRUE if the request has an engage function and FALSE otherwise.
  */
-Boolean Engage(BW, current)
-    BitmapWidget BW;
-    Cardinal current;
+static Boolean 
+Engage(BitmapWidget BW, Cardinal current)
 {
     BW->bitmap.current = current;
     
@@ -138,15 +129,15 @@ Boolean Engage(BW, current)
 	return False;
 }
 
-Boolean BWTerminateRequest();
-Boolean BWRemoveRequest();
+/* Boolean BWTerminateRequest();
+   Boolean BWRemoveRequest(); */
 
 /*
  * Scans down the request stack removing all requests untill it finds 
  * one to be trapped.
  */
-void TrappingLoop(BW)
-    BitmapWidget BW;
+static void 
+TrappingLoop(BitmapWidget BW)
 {
 
     if (DEBUG)
@@ -169,9 +160,8 @@ void TrappingLoop(BW)
  * Terimantes the current request and continues with next request if con = TRUE
  * Returnes TRUE if there is any number of requests left on the stack.
  */
-Boolean BWTerminateRequest(w, cont)
-    Widget w;
-    Boolean cont;
+Boolean 
+BWTerminateRequest(Widget w, Boolean cont)
 {
     BitmapWidget BW = (BitmapWidget) w;
     
@@ -182,8 +172,7 @@ Boolean BWTerminateRequest(w, cont)
 	    (*BW->bitmap.request_stack[BW->bitmap.current].request->terminate)
 		(w,
 		 BW->bitmap.request_stack[BW->bitmap.current].status,
-		 BW->bitmap.request_stack[BW->bitmap.current].request->terminate_client_data,
-		 BW->bitmap.request_stack[BW->bitmap.current].call_data);
+		 BW->bitmap.request_stack[BW->bitmap.current].request->terminate_client_data);
 	
 	if (cont) {
 	    if (BW->bitmap.current == BW->bitmap.cardinal)
@@ -205,8 +194,8 @@ Boolean BWTerminateRequest(w, cont)
 /*
  * Simple interface to BWTerminateRequest that takes only a widget.
  */
-void BWAbort(w)
-    Widget w;
+void 
+BWAbort(Widget w)
 {
     BWTerminateRequest(w, True);
 }
@@ -216,8 +205,8 @@ void BWAbort(w)
  * it will terminate it.
  * Returns TRUE if the number of requests left on the stack != 0.
  */
-Boolean BWRemoveRequest(w)
-    Widget w;
+Boolean 
+BWRemoveRequest(Widget w)
 {
     BitmapWidget BW = (BitmapWidget) w;
     
@@ -231,8 +220,7 @@ Boolean BWRemoveRequest(w)
 	    (*BW->bitmap.request_stack[BW->bitmap.cardinal].request->remove)
 		(w,
 		 BW->bitmap.request_stack[BW->bitmap.cardinal].status,
-		 BW->bitmap.request_stack[BW->bitmap.cardinal].request->remove_client_data,
-		 BW->bitmap.request_stack[BW->bitmap.cardinal].call_data);
+		 BW->bitmap.request_stack[BW->bitmap.cardinal].request->remove_client_data);
 	
 	XtFree(BW->bitmap.request_stack[BW->bitmap.cardinal].status);
 	XtFree(BW->bitmap.request_stack[BW->bitmap.cardinal].call_data);
@@ -246,9 +234,9 @@ Boolean BWRemoveRequest(w)
 	return False;
 }
 
-void BWRemoveAllRequests(w)
-    Widget w;
-{				/* SUPPRESS 530 */
+void 
+BWRemoveAllRequests(Widget w)
+{
     while (BWRemoveRequest(w)) {/* removes all requests from the stack */}
 }
 
@@ -256,12 +244,9 @@ void BWRemoveAllRequests(w)
  * Adds the request to the stack and performs engaging ritual.
  * Returns TRUE if the request was found, FALSE otherwise.
  */
-Boolean BWEngageRequest(w, name, trap, call_data, call_data_size)
-    Widget w;
-    BWRequest name;
-    Boolean trap;
-    XtPointer call_data;
-    Cardinal call_data_size;
+Boolean 
+BWEngageRequest(Widget w, BWRequest name, Boolean trap, 
+		XtPointer call_data, Cardinal call_data_size)
 {
     BitmapWidget BW = (BitmapWidget) w;
     

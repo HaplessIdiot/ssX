@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.11 1999/01/17 10:53:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.12 1999/01/31 12:21:38 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -547,7 +547,7 @@ ProcShmPutImage(client)
 	    tmpptr = tmpImage;
 	    for (i = 0; i < stuff->totalHeight*stuff->depth;
 		 stuffptr += lineBytesProto,tmpptr += lineBytes, i++) 
-	        bcopy(stuffptr,tmpptr,lineBytesProto);
+	        memmove(tmpptr,stuffptr,lineBytesProto);
 	}
 	else 
 	{
@@ -556,7 +556,7 @@ ProcShmPutImage(client)
 		 tmpptr=tmpImage;
 		 i < stuff->totalHeight;
 		 stuffptr += lengthProto,tmpptr += length, i++) 
-	        bcopy(stuffptr,tmpptr,lengthProto);
+	        memmove(tmpptr,stuffptr,lengthProto);
 	}
     }
     /* handle 64-bit case where stuff is not 64-bit aligned 
@@ -567,8 +567,7 @@ ProcShmPutImage(client)
         if(!(tmpImage = (char *) ALLOCATE_LOCAL(length*stuff->totalHeight)))
             return (BadAlloc);
 	tmpAlloced = 1;
-	bcopy((char *)(shmdesc->addr+stuff->offset),
-	      tmpImage,
+	memmove(tmpImage,(char *)(shmdesc->addr+stuff->offset),
 	      length*stuff->totalHeight);
     }
     else
@@ -764,7 +763,7 @@ ProcShmGetImage(client)
 		 i < stuff->height;
 		 bufPtr += widthBytesLine,protoPtr += widthBytesLineProto, 
 		 i++)
-		bcopy(bufPtr,protoPtr,widthBytesLineProto);
+		memmove(protoPtr,bufPtr,widthBytesLineProto);
 	}
 	else 
 	{
@@ -815,7 +814,7 @@ ProcShmGetImage(client)
 		    
 		    /* for 64-bit server, convert image to pad to 32 bits */
 		    bzero(shmdesc->addr+length, widthBytesLine);
-		    bcopy(tmpImage, shmdesc->addr+length, widthBytesLineProto);
+		    memmove(shmdesc->addr+length, tmpImage, widthBytesLineProto);
 		    /* increment length */
 		    length += lenPerProto;
 		}

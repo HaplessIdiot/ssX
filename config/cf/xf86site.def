@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.133 1998/12/13 05:32:27 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.134 1998/12/20 11:56:26 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -431,13 +431,6 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.133 1998/12/13 05:32:27 dawes Exp 
  * defaults files from being over-written.
  *
 #define InstallAppDefFiles	NO
- */
-
-/*
- * If you are running Solaris x86, and have the aperture driver installed,
- * uncomment this.
- *
-#define HasSolx86ApertureDriver	YES
  */
 
 /*

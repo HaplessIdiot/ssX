@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/dm.c,v 3.7 1998/10/10 15:25:32 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/dm.c,v 3.8 1998/10/25 07:12:15 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -48,6 +48,9 @@ from The Open Group.
 #include <signal.h>
 #undef _POSIX_SOURCE
 #endif
+#endif
+#ifdef __NetBSD__
+#include <sys/param.h>
 #endif
 
 #ifndef sigmask

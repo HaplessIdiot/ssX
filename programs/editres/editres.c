@@ -19,7 +19,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
-/* $XFree86: xc/programs/editres/editres.c,v 1.2 1998/12/20 11:58:05 dawes Exp $ */
+/* $XFree86: xc/programs/editres/editres.c,v 1.3 1998/12/20 13:16:39 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -46,7 +46,7 @@ char *global_effective_toolkit = "xt";
 
 int global_error_code;
 unsigned long global_serial_num;
-int (*global_old_error_handler)();
+int (*global_old_error_handler)(Display *, XErrorEvent *);
 
 Boolean global_resource_box_up = FALSE;
 TreeInfo *global_tree_info = NULL;
@@ -57,14 +57,8 @@ Widget global_paned = NULL;		/* named after toolkit */
 Widget global_toplevel;
 AppResources global_resources;
 
-/*
- * external function definitions.
- */
 
-extern void InternAtoms(), SetMessage(), BuildWidgetTree();
-extern void SetApplicationActions();
-
-static void Syntax();
+static void Syntax ( XtAppContext app_con, char *call );
 
 String fallback_resources[] = { 
     NULL,
@@ -130,6 +124,7 @@ char **argv;
 			    XtWindow(global_toplevel),
                             &wm_delete_window, 1);
     XtAppMainLoop(app_con);
+    exit(0);
 }
 
 /*	Function Name: Syntax

@@ -26,7 +26,7 @@ in this Software without prior written authorization from the X Consortium.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/beforelight/b4light.c,v 3.2 1994/08/01 13:21:00 dawes Exp $ */
+/* $XFree86: xc/programs/beforelight/b4light.c,v 3.3 1998/12/20 11:58:04 dawes Exp $ */
 
 #include <X11/Xatom.h>
 #include <X11/Intrinsic.h>
@@ -36,14 +36,19 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xaw/Cardinals.h>
 #include <X11/extensions/scrnsaver.h>
 #include <X11/Xcms.h>
+#include <stdlib.h>
+#include <time.h>
 
-static void quit ();
+#ifdef NOTDEF
+static void quit (Widget w, XEvent *event, 
+		  String *params, Cardinal *num_params);
 
 static XtActionsRec beforedark_actions[] = {
     { "quit",	quit },
 };
 
 static Atom wm_delete_window;
+#endif
 
 static int  ss_event, ss_error;
 
@@ -83,7 +88,7 @@ static unsigned long	pixels[NUM_COLORS];
 static int  cur_pen = 0;
 
 static void
-AllocateColors ()
+AllocateColors (void)
 {
     double	angle;
     double	step;
@@ -107,7 +112,7 @@ AllocateColors ()
 
 
 static void
-StepPen ()
+StepPen (void)
 {
     XSetForeground (display, gc, pixels[cur_pen]);
     cur_pen++;
@@ -116,10 +121,7 @@ StepPen ()
 }
 
 static void
-DrawPoints (draw, gc, p, n)
-    Drawable	draw;
-    GC		gc;
-    XPoint	*p;
+DrawPoints (Drawable draw, GC gc, XPoint *p, int n)
 {
     XPoint  xp[MAX_POINTS + 1];
     int	    i;
@@ -144,9 +146,7 @@ DrawPoints (draw, gc, p, n)
 }
 
 static void
-Draw (p, n)
-    Moving  *p;
-    int	    n;
+Draw (Moving *p, int n)
 {
     XPoint  xp[MAX_POINTS];
     int	    i;
@@ -168,9 +168,7 @@ Draw (p, n)
 }
 
 static void
-Erase (p, n)
-    XPoint  *p;
-    int	    n;
+Erase (XPoint *p, int n)
 {
     if (filled) {
 	XSetForeground (display, erase_gc, black_pixel ^ old_pixels[history_tail]);
@@ -184,14 +182,13 @@ Erase (p, n)
 #define STEP_MAX    32
 
 static int
-RandomStep ()
+RandomStep (void)
 {
     return (rand () % STEP_MAX) + 1;
 }
 
-static
-StepMoving (m)
-    Moving  *m;
+static void
+StepMoving (Moving *m)
 {
     int	maxx, maxy;
 
@@ -218,7 +215,7 @@ StepMoving (m)
 }
 
 static void
-StepPoints ()
+StepPoints (void)
 {
     int	i;
 
@@ -238,15 +235,14 @@ StepPoints ()
     }
 }
 
-StartPoints ()
+static void
+StartPoints (void)
 {
     history_head = history_tail = 0;
 }
 
 static void
-Timeout (closure, id)
-    XtPointer	    closure;
-    XtIntervalId    *id;
+Timeout (XtPointer closure, XtIntervalId *id)
 {
     if (screen_saved)
     {
@@ -255,7 +251,8 @@ Timeout (closure, id)
     }
 }
 
-StartSaver ()
+static void 
+StartSaver (void)
 {
     if (screen_saved)
 	return;
@@ -265,26 +262,24 @@ StartSaver ()
     interval = XtAppAddTimeOut (app_con, 50, Timeout, NULL);
 }
 
-StopSaver ()
+static void
+StopSaver (void)
 {
     if (!screen_saved)
 	return;
     screen_saved = False;
 }
 
-int ignoreError (display, error)
-    Display *display;
-    XErrorEvent	*error;
+static int 
+ignoreError (Display *display, XErrorEvent *error)
 {
+    return 0;
 }
 
-int main(argc, argv)
-    int argc;
-    char **argv;
+int 
+main(int argc, char *argv[])
 {
     Widget toplevel;
-    Arg arg;
-    Pixmap icon_pixmap = None;
     XEvent  event;
     XScreenSaverNotifyEvent *sevent;
     XSetWindowAttributes    attr;
@@ -403,11 +398,9 @@ int main(argc, argv)
     }
 }
 
-static void quit (w, event, params, num_params)
-    Widget w;
-    XEvent *event;
-    String *params;
-    Cardinal *num_params;
+#ifdef NOTDEF
+static void 
+quit (Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
     if (event->type == ClientMessage &&
 	event->xclient.data.l[0] != wm_delete_window) {
@@ -417,3 +410,4 @@ static void quit (w, event, params, num_params)
     XCloseDisplay (XtDisplay(w));
     exit (0);
 }
+#endif

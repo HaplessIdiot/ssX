@@ -1,15 +1,9 @@
-/* $XConsortium: Dialog.c,v 1.11 94/04/17 20:23:42 converse Exp $ */
+/* $TOG: Dialog.c /main/12 1998/02/09 13:40:47 kaleb $ */
 /*
 
-Copyright (c) 1989  X Consortium
+Copyright 1989, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -17,17 +11,18 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
+/* $XFree86$ */
 
 /*
  * Author:  Davor Matic, MIT X Consortium
@@ -45,7 +40,9 @@ from the X Consortium.
 #define min(x, y)                     (((x) < (y)) ? (x) : (y))
 #define max(x, y)                     (((x) > (y)) ? (x) : (y))
 
-static void SetDialogButton();
+
+static void SetDialogButton(Widget w, XEvent *event, 
+			    String *argv, Cardinal *argc);
 
 static XtActionsRec actions_table[] = {
   {"set-dialog-button", SetDialogButton},
@@ -64,9 +61,8 @@ static DialogButton dialog_buttons[] = {
 static unsigned long selected;
 
 /* ARGSUSED */
-static void SetSelected(w, clientData, callData) /* ARGSUSED */
-     Widget w;
-     XtPointer clientData, callData;
+static void 
+SetSelected(Widget w, XtPointer clientData, XtPointer callData) /* ARGSUSED */
 {
     String name = (String)clientData;
     int i;
@@ -77,11 +73,11 @@ static void SetSelected(w, clientData, callData) /* ARGSUSED */
 }
 
 /* ARGSUSED */
-static void SetDialogButton(w, event, argv, argc)
-     Widget w;         /* not used */
-     XEvent *event;    /* not used */
-     String *argv;
-     Cardinal *argc;  
+static void 
+SetDialogButton(Widget w,	/* not used */
+		XEvent *event,	/* not used */
+		String *argv, 
+		Cardinal *argc)
 {
   char button_name[80];
   XtPointer dummy = NULL;
@@ -95,10 +91,8 @@ static void SetDialogButton(w, event, argv, argc)
 
 static Boolean firstTime = True;
 
-Dialog CreateDialog(top_widget, name, options)
-     Widget top_widget;
-     String name;
-     unsigned long options;
+Dialog 
+CreateDialog(Widget top_widget, String name, unsigned long options)
 {
     int i;
     Dialog popup;
@@ -130,9 +124,8 @@ Dialog CreateDialog(top_widget, name, options)
 	return NULL;
 }
 
-void PopdownDialog(popup, answer)
-    Dialog popup;
-    String *answer;
+void 
+PopdownDialog(Dialog popup, String *answer)
 {
     if (answer)
 	*answer = XawDialogGetValueString(popup->dialog_widget);
@@ -140,10 +133,9 @@ void PopdownDialog(popup, answer)
     XtPopdown(popup->shell_widget);
 }
 
-unsigned long PopupDialog(popup, message, suggestion, answer, grab)
-    Dialog popup;
-    String message, suggestion, *answer;
-    XtGrabKind grab;
+unsigned long 
+PopupDialog(Dialog popup, String message, String suggestion, 
+	    String *answer, XtGrabKind grab)
 {
   Position popup_x, popup_y, top_x, top_y;
   Dimension popup_width, popup_height, top_width, top_height, border_width;

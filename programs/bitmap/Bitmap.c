@@ -1,15 +1,9 @@
-/* $XConsortium: Bitmap.c,v 1.47 94/04/17 20:23:39 rws Exp $ */
+/* $TOG: Bitmap.c /main/48 1998/02/09 13:40:15 kaleb $ */
 /*
 
-Copyright (c) 1989  X Consortium
+Copyright 1989, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -17,17 +11,18 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
+/* $XFree86$ */
 
 /*
  * Author:  Davor Matic, MIT X Consortium
@@ -42,6 +37,7 @@ from the X Consortium.
 #include <X11/Xfuncs.h>
 #include <X11/Xos.h>
 #include "BitmapP.h"
+#include "Bitmap.h"
     
 #include <stdio.h>
 #include <math.h>
@@ -122,54 +118,32 @@ static XtResource resources[] = {
 };
 #undef Offset
 
-void BWDebug();
-void BWChangeNotify();
-void BWSetChanged();
-void BWAbort();
-void BWUp();
-void BWDown();
-void BWLeft();
-void BWRight();
-void BWFold();
-void BWFlipHoriz();
-void BWFlipVert();
-void BWRotateRight();
-void BWRotateLeft();
-void BWSet();
-void BWClear();
-void BWInvert();
-void BWUndo();
-void BWRedraw();
-void BWTMark();
-void BWTMarkAll();
-void BWTUnmark();
-void BWTPaste();
 
 static XtActionsRec actions[] =
 {
-{"mark",               BWTMark},
-{"mark-all",           BWTMarkAll},
-{"unmark",             BWTUnmark},
-{"paste",              BWTPaste},
-{"bw-debug",           BWDebug},
-{"abort",              BWAbort},
-{"store-to-buffer",    BWStoreToBuffer},
-{"change-notify",      BWChangeNotify},
-{"set-changed",        BWSetChanged},
-{"up",                 BWUp},
-{"down",               BWDown},
-{"left",               BWLeft},
-{"right",              BWRight},
-{"fold",               BWFold},
-{"flip-horiz",         BWFlipHoriz},
-{"flip-vert",          BWFlipVert},
-{"rotate-right",       BWRotateRight},
-{"rotate-left",        BWRotateLeft},
-{"set",                BWSet},
-{"clear",              BWClear},
-{"invert",             BWInvert},
-{"undo",               BWUndo},
-{"redraw",             BWRedraw},
+{"mark",               (XtActionProc)BWTMark},
+{"mark-all",           (XtActionProc)BWTMarkAll},
+{"unmark",             (XtActionProc)BWTUnmark},
+{"paste",              (XtActionProc)BWTPaste},
+{"bw-debug",           (XtActionProc)BWDebug},
+{"abort",              (XtActionProc)BWAbort},
+{"store-to-buffer",    (XtActionProc)BWStoreToBuffer},
+{"change-notify",      (XtActionProc)BWChangeNotify},
+{"set-changed",        (XtActionProc)BWSetChanged},
+{"up",                 (XtActionProc)BWUp},
+{"down",               (XtActionProc)BWDown},
+{"left",               (XtActionProc)BWLeft},
+{"right",              (XtActionProc)BWRight},
+{"fold",               (XtActionProc)BWFold},
+{"flip-horiz",         (XtActionProc)BWFlipHoriz},
+{"flip-vert",          (XtActionProc)BWFlipVert},
+{"rotate-right",       (XtActionProc)BWRotateRight},
+{"rotate-left",        (XtActionProc)BWRotateLeft},
+{"set",                (XtActionProc)BWSet},
+{"clear",              (XtActionProc)BWClear},
+{"invert",             (XtActionProc)BWInvert},
+{"undo",               (XtActionProc)BWUndo},
+{"redraw",             (XtActionProc)BWRedraw},
 };
 
 static char translations1[] =
@@ -260,12 +234,85 @@ Atom targets[] = {
 
 #include "Requests.h"
 
-static void ClassInitialize();
-static void Initialize();
-static void Redisplay();
-static void Resize();
-static void Destroy();
-static Boolean SetValues();
+
+static BWRequestRec requests[] = 
+{
+{MarkRequest, sizeof(BWStatus),
+     TwoPointsEngage, (XtPointer) BWDrawRectangle,
+     TwoPointsTerminateTimed, (XtPointer) BWSelect,
+     NULL, (XtPointer) NULL},
+{RestoreRequest, sizeof(BWStatus),
+     OnePointEngage, (XtPointer) BWDragStored,
+     OnePointTerminate, (XtPointer) BWRestore,
+     NULL, (XtPointer) NULL},
+{ImmediateCopyRequest, sizeof(BWStatus),
+     OnePointEngage, (XtPointer) BWDragMarked,
+     OnePointTerminate, (XtPointer) BWCopy,
+     NULL, (XtPointer) NULL},
+{ImmediateMoveRequest, sizeof(BWStatus),
+     OnePointEngage, (XtPointer) BWDragMarked,
+     OnePointTerminate, (XtPointer) BWMove,
+     NULL, (XtPointer) NULL},
+{CopyRequest, sizeof(BWStatus),
+     DragOnePointEngage, (XtPointer) Paste,
+     DragOnePointTerminate, (XtPointer) ImmediateCopyRequest,
+     Interface, (XtPointer) BWUnmark},
+{MoveRequest, sizeof(BWStatus),
+     DragOnePointEngage, (XtPointer) Paste,
+     DragOnePointTerminate, (XtPointer) ImmediateMoveRequest,
+     Interface, (XtPointer) BWUnmark},
+{PointRequest, sizeof(BWStatus),
+     DragOnePointEngage, (XtPointer) BWDrawPoint,
+     DragOnePointTerminate, (XtPointer) BWDrawPoint,
+     NULL, (XtPointer) NULL},
+{CurveRequest, sizeof(BWStatus),
+     DragTwoPointsEngage, (XtPointer) BWBlindLine,
+     DragTwoPointsTerminate, (XtPointer) BWBlindLine,
+     NULL, (XtPointer) NULL},
+{LineRequest, sizeof(BWStatus), 
+     TwoPointsEngage, (XtPointer) BWDrawLine, 
+     TwoPointsTerminate, (XtPointer) BWDrawLine,
+     NULL, (XtPointer) NULL},
+{RectangleRequest, sizeof(BWStatus), 
+     TwoPointsEngage, (XtPointer) BWDrawRectangle,
+     TwoPointsTerminate, (XtPointer) BWDrawRectangle,
+     NULL, (XtPointer) NULL},
+{FilledRectangleRequest, sizeof(BWStatus), 
+     TwoPointsEngage, (XtPointer) BWDrawRectangle,
+     TwoPointsTerminate, (XtPointer) BWDrawFilledRectangle,
+     NULL, (XtPointer) NULL},
+{CircleRequest, sizeof(BWStatus), 
+     TwoPointsEngage, (XtPointer) BWDrawCircle,
+     TwoPointsTerminate, (XtPointer) BWDrawCircle,
+     NULL, (XtPointer) NULL},
+{FilledCircleRequest, sizeof(BWStatus), 
+     TwoPointsEngage, (XtPointer) BWDrawCircle, 
+     TwoPointsTerminate, (XtPointer) BWDrawFilledCircle,
+     NULL, (XtPointer) NULL},
+{FloodFillRequest, sizeof(BWStatus),
+     OnePointEngage, (XtPointer) NULL,
+     OnePointTerminate, (XtPointer) BWFloodFill,
+     NULL, (XtPointer) NULL},
+{HotSpotRequest, sizeof(BWStatus),
+     OnePointEngage, (XtPointer) BWDrawHotSpot,
+     OnePointTerminate, (XtPointer) BWDrawHotSpot,
+     NULL, (XtPointer) NULL},
+{ZoomInRequest, sizeof(BWStatus),
+     TwoPointsEngage, (XtPointer) BWDrawRectangle,
+     TwoPointsTerminate, (XtPointer) BWZoomIn,
+     NULL, (XtPointer) NULL},
+};
+
+static void ClassInitialize(void);
+static void Initialize(Widget wrequest, Widget wnew, 
+		       ArgList argv, Cardinal *argc);
+static void Redisplay(Widget w, XEvent *event, Region region);
+static void Resize(Widget w);
+static void Destroy(Widget w);
+static void Refresh(BitmapWidget BW, Position x, Position y, 
+		    Dimension width, Dimension height);
+static Boolean SetValues(Widget old, Widget request, Widget new,
+			 ArgList args, Cardinal *num_args);
  
 BitmapClassRec bitmapClassRec = {
 {   /* core fields */
@@ -317,25 +364,22 @@ WidgetClass bitmapWidgetClass = (WidgetClass) &bitmapClassRec;
     
 /* ARGSUSED */
 
-void BWDebug(w, event, params, num_params)
-    Widget w;
-    XEvent *event;
-    String *params;
-    Cardinal *num_params;
+void 
+BWDebug(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
     DEBUG ^= True;
 }
 
-Pixmap BWGetPixmap(w) 
-    Widget w;
+Pixmap 
+BWGetPixmap(Widget w) 
 {
     BitmapWidget BW = (BitmapWidget) w;
  
     return GetPixmap(BW, BW->bitmap.zoom.image);
 }
 
-Pixmap BWGetUnzoomedPixmap(w)
-    Widget w;
+Pixmap 
+BWGetUnzoomedPixmap(Widget w)
 {
     BitmapWidget BW = (BitmapWidget) w;
     GC gc;
@@ -380,13 +424,9 @@ Pixmap BWGetUnzoomedPixmap(w)
     return(pix);
 }
 
-XImage *CreateBitmapImage();
 
-XImage *ConvertToBitmapImage();
-
-XImage *GetImage(BW, pixmap)
-    BitmapWidget BW;
-    Pixmap pixmap;
+XImage *
+GetImage(BitmapWidget BW, Pixmap pixmap)
 {
     Window root;
     int x, y;
@@ -404,10 +444,9 @@ XImage *GetImage(BW, pixmap)
     return image;
 }
 
-XImage *CreateBitmapImage(BW, data, width, height)
-    BitmapWidget BW;
-    char *data;
-    Dimension width, height;
+XImage *
+CreateBitmapImage(BitmapWidget BW, char *data, 
+		  Dimension width, Dimension height)
 {
     XImage *image = XCreateImage(XtDisplay(BW),
 				 DefaultVisual(XtDisplay(BW), 
@@ -431,8 +470,8 @@ XImage *CreateBitmapImage(BW, data, width, height)
     return image;
 }
 
-void DestroyBitmapImage(image)
-    XImage **image;
+void 
+DestroyBitmapImage(XImage **image)
 {
     /*XDestroyImage(*image);*/
     if (image) {
@@ -445,83 +484,75 @@ void DestroyBitmapImage(image)
     }
 }
 
-XImage *BWGetImage(w, event, params, num_params)
-    Widget w;
-    XEvent *event;
-    String *params;
-    Cardinal *num_params;
+#if 0
+XImage *
+BWGetImage(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
     BitmapWidget BW = (BitmapWidget) w;
 
     return BW->bitmap.image;
 }
+#endif
 
-void BWChangeNotify(w, event, params, num_params)
-    Widget w;
-    XEvent *event;
-    String *params;
-    Cardinal *num_params;
+void 
+BWChangeNotify(Widget w)
 {
     BitmapWidget BW = (BitmapWidget) w;
 
     if (BW->bitmap.notify)
-	(*BW->bitmap.notify)(w, event, params, num_params);
+	(*BW->bitmap.notify)(w, NULL, NULL, NULL);
 }
 
-void BWNotify(w, proc)		/* ARGSUSED */
-     Widget   w;
-     void   (*proc)();
+void 
+BWNotify(Widget w, XtActionProc proc)
 {
     BitmapWidget BW = (BitmapWidget) w;
 
     BW->bitmap.notify = proc;
 }
 
-void BWSetChanged(w, event, params, num_params)
-    Widget w;
-    XEvent *event;
-    String *params;
-    Cardinal *num_params;
+void 
+BWSetChanged(Widget w)
 {
     BitmapWidget BW = (BitmapWidget) w;
 	
     BW->bitmap.changed = True;
 }
 
-Boolean BWQueryChanged(w)
-    Widget w;
+Boolean 
+BWQueryChanged(Widget w)
 {
     BitmapWidget BW = (BitmapWidget) w;
 	
     return BW->bitmap.changed;
 }
 
-void BWClearChanged(w)
-    Widget w;
+void 
+BWClearChanged(Widget w)
 {
     BitmapWidget BW = (BitmapWidget) w;
     
     BW->bitmap.changed = False;
 }
 
-Boolean BWQueryStored(w)
-    Widget w;
+Boolean 
+BWQueryStored(Widget w)
 {
     BitmapWidget BW = (BitmapWidget) w;
     
     return (BW->bitmap.storage != NULL);
 }
 
-Boolean BWQueryStippled(w)
-    Widget w;
+Boolean 
+BWQueryStippled(Widget w)
 {
     BitmapWidget BW = (BitmapWidget) w;
 
     return BW->bitmap.stippled;
 }
 
-void RedrawStippled(BW)
-     BitmapWidget(BW);
+static void 
+RedrawStippled(BitmapWidget BW)
 {
   XExposeEvent event;
   
@@ -543,8 +574,8 @@ void RedrawStippled(BW)
   BW->bitmap.stipple_change_expose_event = False;
 }
 
-void BWSwitchStippled(w)
-    Widget w;
+void 
+BWSwitchStippled(Widget w)
 {
     BitmapWidget BW = (BitmapWidget) w;
 
@@ -557,27 +588,25 @@ void BWSwitchStippled(w)
     RedrawStippled(BW);    
 }
 
-void BWSelect(w, from_x, from_y, to_x, to_y, btime)
-    Widget w;
-    Position from_x, from_y,
-	     to_x, to_y;
-    Time btime;
+void 
+BWSelect(Widget w, Position from_x, Position from_y, 
+	 Position to_x, Position to_y, Time btime)
 {
     BWMark(w, from_x, from_y, to_x, to_y);
 
     BWGrabSelection(w, btime);
 }
 
-Boolean BWQueryAxes(w)
-    Widget w;
+Boolean 
+BWQueryAxes(Widget w)
 {
     BitmapWidget BW = (BitmapWidget) w;
 
     return BW->bitmap.axes;
 }
 
-void BWSwitchAxes(w)
-     Widget w;
+void 
+BWSwitchAxes(Widget w)
 {
     BitmapWidget BW = (BitmapWidget) w;
 
@@ -585,9 +614,8 @@ void BWSwitchAxes(w)
     BWHighlightAxes(w);
 }
 
-void BWAxes(w, _switch)
-    Widget w;
-    Boolean _switch;
+void 
+BWAxes(Widget w, Boolean _switch)
 {
     BitmapWidget BW = (BitmapWidget) w;
     
@@ -595,8 +623,8 @@ void BWAxes(w, _switch)
 	BWSwitchAxes(w);
 }
 
-void BWRedrawAxes(w)
-    Widget w;
+void 
+BWRedrawAxes(Widget w)
 {
     BitmapWidget BW = (BitmapWidget) w;
     
@@ -604,21 +632,20 @@ void BWRedrawAxes(w)
 	BWHighlightAxes(w);
 }
 
-void BWPutImage(w, display, drawable, gc, x, y)
-     BitmapWidget w;
-     Display     *display;
-     Drawable     drawable;
-     GC           gc;
-     Position     x, y;
+#if 0
+void 
+BWPutImage(BitmapWidget w, Display *display, Drawable drawable, GC gc, 
+	   Position x, Position y)
 {
     BitmapWidget BW = (BitmapWidget) w;
 
   XPutImage(display, drawable, gc, BW->bitmap.image,
 	    0, 0, x, y, BW->bitmap.image->width, BW->bitmap.image->height);
 }
+#endif
 
-String StripFilename(filename)
-    String filename;
+static String 
+StripFilename(String filename)
 {
     char *begin = strrchr(filename, '/');
     char *end, *result;
@@ -637,12 +664,10 @@ String StripFilename(filename)
 	return (NULL);
 }
 
-int XmuWriteBitmapDataToFile (filename, basename, 
-			      width, height, datap, x_hot, y_hot)
-    String filename, basename;
-    int width, height;
-    char *datap;
-    int x_hot, y_hot;
+static int 
+XmuWriteBitmapDataToFile(String filename, String basename, 
+			 int width, int height, char *datap, 
+			 int x_hot, int y_hot)
 {
     FILE *file;
     int i, data_length;
@@ -689,13 +714,13 @@ int XmuWriteBitmapDataToFile (filename, basename,
  */
 
 				/* ARGSUSED */
-static void CvtStringToButtonFunction(args, num_args, from_val, to_val)
-    XrmValuePtr args;		/* not used */
-    Cardinal    *num_args;      /* not used */
-    XrmValuePtr from_val;
-    XrmValuePtr to_val;
+static void 
+CvtStringToButtonFunction(XrmValuePtr args, /* not used */
+			  Cardinal *num_args, /* not used */
+			  XrmValuePtr from_val, 
+			  XrmValuePtr to_val)
 {
-  static button_function;
+  static int button_function;
   char lower_name[80];
  
   XmuCopyISOLatin1Lowered (lower_name, (char*)from_val->addr);
@@ -728,9 +753,8 @@ static void CvtStringToButtonFunction(args, num_args, from_val, to_val)
   
 }
 
-void Refresh();
-
-static void ClassInitialize()
+static void 
+ClassInitialize(void)
 {
   char *tm_table = XtMalloc(strlen(translations1) + strlen(translations2) + 1);
   strcpy(tm_table, translations1);
@@ -743,8 +767,8 @@ static void ClassInitialize()
   DEBUG = False;
 }
 
-static void SetSizeFromSizeResource(bw)
-     BitmapWidget bw;
+static void 
+SetSizeFromSizeResource(BitmapWidget bw)
 {
   if (BWParseSize(bw->bitmap.size, 
 		  &bw->bitmap.width,
@@ -757,13 +781,10 @@ static void SetSizeFromSizeResource(bw)
   }
 }
 
-void TransferImageData();
 
 /* ARGSUSED */
-static void Initialize(wrequest, wnew, argv, argc)
-    Widget wrequest, wnew;
-    ArgList argv;
-    Cardinal *argc;
+static void 
+Initialize(Widget wrequest, Widget wnew, ArgList argv, Cardinal *argc)
 {
     BitmapWidget new = (BitmapWidget) wnew;
 
@@ -917,14 +938,13 @@ static void Initialize(wrequest, wnew, argv, argc)
 	  new->bitmap.basename = XtNewString(new->bitmap.basename);
     }
 
-    Resize(new);
+    Resize((Widget)new);
 }
 
 
 /* returns False if the format is wrong */
-Boolean BWParseSize(size, width, height)
-     String size;
-     Dimension *width, *height;
+Boolean 
+BWParseSize(String size, Dimension *width, Dimension *height)
 {
   int x, y;
   unsigned int w, h;
@@ -942,16 +962,16 @@ Boolean BWParseSize(size, width, height)
 }
 
 
-Boolean BWQueryMarked(w)
-    Widget w;
+Boolean 
+BWQueryMarked(Widget w)
 {
     BitmapWidget BW = (BitmapWidget) w;
 
     return QuerySet(BW->bitmap.mark.from_x, BW->bitmap.mark.from_y);
 }
 
-void FixMark(BW)
-    BitmapWidget BW;
+static void 
+FixMark(BitmapWidget BW)
 {
     if (QuerySet(BW->bitmap.mark.from_x, BW->bitmap.mark.from_y)) {
 	BW->bitmap.mark.from_x = min(BW->bitmap.mark.from_x, 
@@ -973,9 +993,8 @@ void FixMark(BW)
 }
 
 /* ARGSUSED */
-int BWStoreFile(w, filename, basename)
-    Widget w;
-    String filename, *basename;
+int 
+BWStoreFile(Widget w, String filename, String *basename)
 {
     BitmapWidget BW = (BitmapWidget) w;
     int status;
@@ -999,8 +1018,8 @@ int BWStoreFile(w, filename, basename)
     return status;
 }
 
-String BWUnparseStatus(w)
-    Widget w;
+String 
+BWUnparseStatus(Widget w)
 {
     BitmapWidget BW = (BitmapWidget) w;
     
@@ -1013,9 +1032,8 @@ String BWUnparseStatus(w)
     return BW->bitmap.status;
 }
 
-void BWChangeFilename(w, str)
-    Widget w;
-    String str;
+void 
+BWChangeFilename(Widget w, String str)
 {
   BitmapWidget BW = (BitmapWidget) w;
   
@@ -1025,9 +1043,8 @@ void BWChangeFilename(w, str)
   }
 }
 
-void BWChangeBasename(w, str)
-    Widget w;
-    String str;
+void 
+BWChangeBasename(Widget w, String str)
 {
   BitmapWidget BW = (BitmapWidget) w;
   
@@ -1038,9 +1055,8 @@ void BWChangeBasename(w, str)
 }
 
 
-int BWReadFile(w, filename, basename) /* ARGSUSED */
-    Widget w;
-    String filename, basename;
+int 
+BWReadFile(Widget w, String filename, String basename) /* ARGSUSED */
 {
     BitmapWidget BW = (BitmapWidget) w;
     int status;
@@ -1085,7 +1101,7 @@ int BWReadFile(w, filename, basename) /* ARGSUSED */
 
 	BWUnmark(w);
 	
-	Resize(BW);
+	Resize((Widget)BW);
 
 	if (BW->core.visible) {
 	    XClearArea(XtDisplay(BW), XtWindow(BW),
@@ -1102,9 +1118,9 @@ int BWReadFile(w, filename, basename) /* ARGSUSED */
     return status;
 }
 
-void BWSetImage(w, image)
-    Widget w;
-    XImage *image;
+#if 0
+void 
+BWSetImage(Widget w, XImage *image)
 {
     BitmapWidget BW = (BitmapWidget) w;
     XImage *buffer;
@@ -1125,7 +1141,7 @@ void BWSetImage(w, image)
     BW->bitmap.width = image->width;
     BW->bitmap.height = image->height;
     
-    Resize(BW);
+    Resize((Widget)BW);
     
     if (BW->core.visible) {
 	XClearArea(XtDisplay(BW), XtWindow(BW),
@@ -1134,10 +1150,10 @@ void BWSetImage(w, image)
 		   True);    
     }
 }
+#endif
 
-int BWWriteFile(w, filename, basename)
-    Widget w;
-    String filename, basename;
+int 
+BWWriteFile(Widget w, String filename, String basename)
 {
     BitmapWidget BW = (BitmapWidget) w;
     char *data;
@@ -1200,9 +1216,8 @@ int BWWriteFile(w, filename, basename)
     return status;
 }
 
-String BWGetFilename(w, str)
-    Widget w;
-    String *str;
+String 
+BWGetFilename(Widget w, String *str)
 {
     BitmapWidget BW = (BitmapWidget) w;
     
@@ -1211,9 +1226,8 @@ String BWGetFilename(w, str)
     return *str;
 }
 
-String BWGetFilepath(w, str)
-    Widget w;
-    String *str;
+String 
+BWGetFilepath(Widget w, String *str)
 {
     BitmapWidget BW = (BitmapWidget) w;
     String end;
@@ -1230,9 +1244,8 @@ String BWGetFilepath(w, str)
 }
 
 
-String BWGetBasename(w, str)
-    Widget w;
-    String *str;
+String 
+BWGetBasename(Widget w, String *str)
 {
     BitmapWidget BW = (BitmapWidget) w;
     
@@ -1241,15 +1254,15 @@ String BWGetBasename(w, str)
     return *str;
 }
 
-void FixHotSpot(BW)
-    BitmapWidget BW;
+static void 
+FixHotSpot(BitmapWidget BW)
 {
     if (!QueryInBitmap(BW, BW->bitmap.hot.x, BW->bitmap.hot.y))
 	BW->bitmap.hot.x = BW->bitmap.hot.y = NotSet;
 }
 
-void ZoomOut(BW)
-    BitmapWidget BW;
+static void 
+ZoomOut(BitmapWidget BW)
 {
     CopyImageData(BW->bitmap.image, BW->bitmap.zoom.image, 
 		  0, 0, 
@@ -1282,15 +1295,15 @@ void ZoomOut(BW)
     BW->bitmap.zooming = False;
 }    
 
-void BWZoomOut(w)
-    Widget w;
+void 
+BWZoomOut(Widget w)
 {
     BitmapWidget BW = (BitmapWidget) w;
     
     if (BW->bitmap.zooming) {
 	ZoomOut(BW);
 	
-	Resize(BW);
+	Resize((Widget)BW);
 	if (BW->core.visible)
 	    XClearArea(XtDisplay(BW), XtWindow(BW),
 		       0, 0, 
@@ -1299,10 +1312,9 @@ void BWZoomOut(w)
     }
 }
 
-void BWZoomIn();
 
-void BWZoomMarked(w)
-    Widget w;
+void 
+BWZoomMarked(Widget w)
 {
     BitmapWidget BW = (BitmapWidget) w;
 
@@ -1311,10 +1323,10 @@ void BWZoomMarked(w)
 	     BW->bitmap.mark.to_x,   BW->bitmap.mark.to_y);
 }
 
-void BWZoomIn(w, from_x, from_y, to_x, to_y)
-    Widget w;
-    Position from_x, from_y,
-	     to_x, to_y;
+void 
+BWZoomIn(Widget w, 
+	 Position from_x, Position from_y, 
+	 Position to_x, Position to_y)
 {
     BitmapWidget BW = (BitmapWidget) w;
     XImage *image, *buffer;    
@@ -1368,7 +1380,7 @@ void BWZoomIn(w, from_x, from_y, to_x, to_y)
 
     FixHotSpot(BW);
 
-    Resize(BW);
+    Resize((Widget)BW);
     if (BW->core.visible)
 	XClearArea(XtDisplay(BW), XtWindow(BW),
 		   0, 0, 
@@ -1376,11 +1388,9 @@ void BWZoomIn(w, from_x, from_y, to_x, to_y)
 		   True);
 }
 
-XImage *ScaleBitmapImage();
 
-void BWRescale(w, width, height)
-    Widget w;
-    Dimension width, height;
+void 
+BWRescale(Widget w, Dimension width, Dimension height)
 {
     BitmapWidget BW = (BitmapWidget) w;
     XImage *image, *buffer;
@@ -1411,7 +1421,7 @@ void BWRescale(w, width, height)
     FixHotSpot(BW);
     FixMark(BW);
 
-    Resize(BW);
+    Resize((Widget)BW);
     if (BW->core.visible)
 	XClearArea(XtDisplay(BW), XtWindow(BW),
 		   0, 0, 
@@ -1419,8 +1429,8 @@ void BWRescale(w, width, height)
 		   True);
 }
 
-Boolean BWQueryZooming(w)
-    Widget w;
+Boolean 
+BWQueryZooming(Widget w)
 {
     BitmapWidget BW = (BitmapWidget) w;
 
@@ -1428,9 +1438,8 @@ Boolean BWQueryZooming(w)
 }
 
 
-static void ResizeGrid(BW, width, height)
-     BitmapWidget BW;
-     Dimension width, height;
+static void 
+ResizeGrid(BitmapWidget BW, Dimension width, Dimension height)
 {
   XImage *image, *buffer;
   char *image_data, *buffer_data;
@@ -1459,15 +1468,14 @@ static void ResizeGrid(BW, width, height)
   FixMark(BW);
 }
 
-void BWResize(w, width, height)
-    Widget w;
-    Dimension width, height;
+void 
+BWResize(Widget w, Dimension width, Dimension height)
 {
     BitmapWidget BW = (BitmapWidget) w;
 
     ResizeGrid(BW, width, height);
 
-    Resize(BW);
+    Resize((Widget)BW);
     if (BW->core.visible)
 	XClearArea(XtDisplay(BW), XtWindow(BW),
 		   0, 0, 
@@ -1475,8 +1483,8 @@ void BWResize(w, width, height)
 		   True);
 }
 
-static void Destroy(w)
-    Widget w;
+static void 
+Destroy(Widget w)
 {
     BitmapWidget BW = (BitmapWidget) w;
 
@@ -1491,8 +1499,8 @@ static void Destroy(w)
 }
 
 
-static void Resize(w)
-    Widget w;
+static void 
+Resize(Widget w)
 {
     BitmapWidget BW = (BitmapWidget) w;
 
@@ -1524,10 +1532,8 @@ static void Resize(w)
 }
 
 /* ARGSUSED */
-static void Redisplay(w, event, region)
-     Widget       w;
-     XEvent      *event;
-     Region       region;
+static void 
+Redisplay(Widget w, XEvent *event, Region region)
 {
      BitmapWidget BW = (BitmapWidget) w;
 
@@ -1540,10 +1546,8 @@ static void Redisplay(w, event, region)
 	      event->xexpose.width, event->xexpose.height);
 }
 
-void BWClip(w, x, y, width, height)
-    Widget  w;
-    Position x, y;
-    Dimension width, height;
+void 
+BWClip(Widget w, Position x, Position y, Dimension width, Dimension height)
 {
     Position      from_x, from_y,
                   to_x, to_y;
@@ -1587,8 +1591,8 @@ void BWClip(w, x, y, width, height)
 		       Unsorted);
 }
 
-void BWUnclip(w)
-    Widget w;
+void 
+BWUnclip(Widget w)
 {
     BitmapWidget BW = (BitmapWidget) w;
     XRectangle rectangle;
@@ -1619,10 +1623,9 @@ void BWUnclip(w)
 		       Unsorted);
 }
 
-void Refresh(BW, x, y, width, height)
-    BitmapWidget BW;
-    Position     x, y;
-    Dimension    width, height;
+static void 
+Refresh(BitmapWidget BW, Position x, Position y, 
+	Dimension width, Dimension height)
 {
     XRectangle rectangle;
 
@@ -1662,16 +1665,16 @@ void Refresh(BW, x, y, width, height)
     BWUnclip((Widget) BW);
 }
 
-Boolean BWQueryGrid(w)
-    Widget w;
+Boolean 
+BWQueryGrid(Widget w)
 {
     BitmapWidget BW = (BitmapWidget) w;
 
     return BW->bitmap.grid;
 }
 
-void BWSwitchGrid(w)
-    Widget w;
+void 
+BWSwitchGrid(Widget w)
 {
     BitmapWidget BW = (BitmapWidget) w;
     BW->bitmap.grid ^= TRUE;
@@ -1680,9 +1683,8 @@ void BWSwitchGrid(w)
 	       BW->bitmap.image->width - 1, BW->bitmap.image->height - 1);
 }
 
-void BWGrid(w, _switch)
-    Widget w;
-    Boolean _switch;
+void 
+BWGrid(Widget w, Boolean _switch)
 {
     BitmapWidget BW = (BitmapWidget) w;
     
@@ -1690,16 +1692,16 @@ void BWGrid(w, _switch)
 	BWSwitchGrid(w);
 }
 
-Boolean BWQueryDashed(w)
-    Widget w;
+Boolean 
+BWQueryDashed(Widget w)
 {
     BitmapWidget BW = (BitmapWidget) w;
 
     return (BW->bitmap.dashed);
 }
 
-void BWSwitchDashed(w)
-    Widget w;
+void 
+BWSwitchDashed(Widget w)
 {
     BitmapWidget BW = (BitmapWidget) w;
     XRectangle rectangle;
@@ -1738,9 +1740,8 @@ void BWSwitchDashed(w)
     BWRedrawGrid(w, 0, 0, BW->bitmap.width - 1, BW->bitmap.height - 1);
 }
 
-void BWDashed(w, _switch)
-    Widget w;
-    Boolean _switch;
+void 
+BWDashed(Widget w, Boolean _switch)
 {
     BitmapWidget BW = (BitmapWidget) w;
     
@@ -1748,10 +1749,9 @@ void BWDashed(w, _switch)
 	BWSwitchDashed(w);
 }
 
-static Boolean SetValues(old, request, new, args, num_args) /* ARGSUSED */
-     Widget old, request, new;
-     ArgList args;
-     Cardinal *num_args;
+static Boolean 
+SetValues(Widget old, Widget request, Widget new, 
+	  ArgList args, Cardinal *num_args) /* ARGSUSED */
 {
   BitmapWidget oldbw = (BitmapWidget) old;
   BitmapWidget newbw = (BitmapWidget) new;
@@ -1776,23 +1776,25 @@ static Boolean SetValues(old, request, new, args, num_args) /* ARGSUSED */
     resize = True;
 
   if (NE(bitmap.filename) || NE(bitmap.basename)  || NE(bitmap.size))
-    BWChangeNotify(old, NULL, NULL, NULL);
+    BWChangeNotify(old);
 
-  if (NE(bitmap.filename))
+  if (NE(bitmap.filename)) {
     if (newbw->bitmap.filename) {
       XtFree(oldbw->bitmap.filename);
       newbw->bitmap.filename = XtNewString(newbw->bitmap.filename);
     }
     else 
       newbw->bitmap.filename = oldbw->bitmap.filename;
+  }
 
-  if (NE(bitmap.basename))
+  if (NE(bitmap.basename)) {
     if (newbw->bitmap.basename) {
       XtFree(oldbw->bitmap.basename);
       newbw->bitmap.basename = XtNewString(newbw->bitmap.basename);
     }
     else 
       newbw->bitmap.basename = oldbw->bitmap.basename;
+  }
   
   if (NE(bitmap.size)) {
     Dimension width, height;
@@ -1857,29 +1859,29 @@ static Boolean SetValues(old, request, new, args, num_args) /* ARGSUSED */
     RedrawStippled(newbw);
   }
   
-  if (resize) Resize(newbw);
+  if (resize) Resize((Widget)newbw);
 
     return (redisplay || resize);
 
 #undef NE
 }
 
-Boolean BWQueryProportional(w)
-    Widget w;
+Boolean 
+BWQueryProportional(Widget w)
 {
     BitmapWidget BW = (BitmapWidget) w;
 
     return (BW->bitmap.proportional);
 }
 
-void BWSwitchProportional(w)
-    Widget w;
+void 
+BWSwitchProportional(Widget w)
 {
     BitmapWidget BW = (BitmapWidget) w;
 
     BW->bitmap.proportional ^= True;
 
-    Resize(BW);
+    Resize((Widget)BW);
     if (BW->core.visible)
 	XClearArea(XtDisplay(BW), XtWindow(BW),
 		   0, 0, 
@@ -1887,22 +1889,19 @@ void BWSwitchProportional(w)
 		   True);
 }
 
-void BWProportional(w, _switch)
-    Widget w;
-    Boolean _switch;
+#if 0
+void 
+BWProportional(Widget w, Boolean _switch)
 {
     BitmapWidget BW = (BitmapWidget) w;
 
     if (BW->bitmap.proportional != _switch)
 	BWSwitchProportional(w);
 }
+#endif
 
-
-void BWTPaste(w, event, params, num_params)
-    Widget  w;
-    XEvent *event;
-    String *params;
-    Cardinal *num_params;
+void 
+BWTPaste(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
     BitmapWidget BW = (BitmapWidget) w;
 
@@ -1916,14 +1915,11 @@ void BWTPaste(w, event, params, num_params)
     
     OnePointHandler(w,
 	       (BWStatus*) BW->bitmap.request_stack[BW->bitmap.current].status,
-	       event);
+	       event, NULL);
 }
 
-void BWTMark(w, event, params, num_params)
-    Widget  w;
-    XEvent *event;
-    String *params;
-    Cardinal *num_params;
+void 
+BWTMark(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
     BitmapWidget BW = (BitmapWidget) w;
 
@@ -1931,26 +1927,20 @@ void BWTMark(w, event, params, num_params)
 		    (char *)&(event->xbutton.state), sizeof(int));
     TwoPointsHandler(w,
             (BWStatus*) BW->bitmap.request_stack[BW->bitmap.current].status,
-	     event);
+	     event, NULL);
 
 }
 
-void BWTMarkAll(w, event, params, num_params)
-    Widget w;
-    XEvent *event;
-    String *params;
-    Cardinal *num_params;
+void 
+BWTMarkAll(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
     BWMarkAll(w);
 
     BWGrabSelection(w, event->xkey.time);
 }
 
-void BWTUnmark(w, event, params, num_params)
-    Widget w;
-    XEvent *event;
-    String *params;
-    Cardinal *num_params;
+void 
+BWTUnmark(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
     BWUnmark(w);
 }

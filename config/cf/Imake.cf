@@ -17,7 +17,7 @@ XCOMM $TOG: Imake.cf /main/30 1998/04/28 13:55:25 barstow $
  *
  *     4.  Create a .cf file with the name given by MacroFile.
  */
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.46 1998/11/22 10:36:56 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.47 1998/12/13 07:37:35 dawes Exp $
 
 #if defined(clipper) || defined(__clipper__)
 # undef clipper
@@ -687,8 +687,12 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.46 1998/11/22 10:36:56 dawes Exp $
 #undef i386
 #endif /* MACH */
 
+/* On NetBSD, `unix' is not defined, and cpp emits a warning every time
+ * it sees a test using the `unix' symbol */
+#if !defined(NetBSDArchitecture) || (defined(NetBSDArchitecture) && DefaultOSMajorVersion == 1 && DefaultOSMinorVersion <= 3)
 #ifdef unix
 #undef unix
+#endif
 #endif
 
 #ifdef emxos2

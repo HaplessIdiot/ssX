@@ -1,15 +1,9 @@
-/* $XConsortium: CutPaste.c,v 1.9 94/04/17 20:23:41 rws Exp $ */
+/* $TOG: CutPaste.c /main/10 1998/02/09 13:40:39 kaleb $ */
 /*
 
-Copyright (c) 1989  X Consortium
+Copyright 1989, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -17,17 +11,18 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
+/* $XFree86$ */
 
 /*
  * Author:  Davor Matic, MIT X Consortium
@@ -55,12 +50,9 @@ extern Boolean DEBUG;
  *****************************************************************************/
 
 /* ARGSUSED */
-Boolean ConvertSelection(w, selection, target, type, val_ret, length, format)
-    Widget w;
-    Atom *selection, *target, *type;
-    XtPointer *val_ret;
-    unsigned long *length;
-    int *format;
+static Boolean 
+ConvertSelection(Widget w, Atom *selection, Atom *target, Atom *type, 
+		 XtPointer *val_ret, unsigned long *length, int *format)
 {
     XPointer *value = (XPointer *)val_ret;
     BitmapWidget BW = (BitmapWidget) w;
@@ -113,9 +105,8 @@ Boolean ConvertSelection(w, selection, target, type, val_ret, length, format)
 }
 
 /* ARGSUSED */
-void LoseSelection(w, selection)
-    Widget w;
-    Atom *selection;
+static void 
+LoseSelection(Widget w, Atom selection)
 {
     BitmapWidget BW = (BitmapWidget) w;
 
@@ -127,9 +118,8 @@ void LoseSelection(w, selection)
 }
 
 /* ARGSUSED */
-void SelectionDone(w, selection, target)
-    Widget w;
-    Atom *selection, *target;
+static void 
+SelectionDone(Widget w, Atom *selection, Atom *target)
 {
 /*  Done Automatically ?!?
 
@@ -141,30 +131,24 @@ void SelectionDone(w, selection, target)
 */
 }
 
-void BWGrabSelection(w, btime)
-    Widget w;
-    Time btime;
+void 
+BWGrabSelection(Widget w, Time btime)
 {
     BitmapWidget BW = (BitmapWidget) w;
 
     BW->bitmap.selection.own = XtOwnSelection(w, XA_PRIMARY, btime,
 					      ConvertSelection, 
-					      LoseSelection, 
+					      (XtLoseSelectionProc)LoseSelection, 
 					      SelectionDone);
 	if (DEBUG && BW->bitmap.selection.own)
 	    fprintf(stderr, "Own the selection\n");
 }
 
-XImage *GetImage();
 
 /* ARGSUSED */
-void SelectionCallback(w, cldat, selection, type, val, length, format)
-    Widget w;
-    XtPointer cldat;
-    Atom *selection, *type;
-    XtPointer val;
-    unsigned long *length;
-    int *format;
+static void 
+SelectionCallback(Widget w, XtPointer cldat, Atom *selection, Atom *type, 
+		  XtPointer val, unsigned long *length, int *format)
 {
     XPointer value = (XPointer)val;
     BitmapWidget BW = (BitmapWidget) w;
@@ -188,10 +172,8 @@ void SelectionCallback(w, cldat, selection, type, val, length, format)
     BW->bitmap.selection.limbo = FALSE;
 }
 
-void BWRequestSelection(w, btime, wait)
-    Widget w;
-    Time btime;
-    Boolean wait;
+void 
+BWRequestSelection(Widget w, Time btime, Boolean wait)
 {
   BitmapWidget BW = (BitmapWidget) w;
   
@@ -214,9 +196,8 @@ void BWRequestSelection(w, btime, wait)
 
 /* ARGSUSED */
 /* Returns true if there is a transferable selection */
-Boolean BWQuerySelection(w, btime)
-    Widget w;
-    Time btime;
+Boolean 
+BWQuerySelection(Widget w, Time btime)
 {
 /* To be written.  XA_TARGETS to be used.  So far undefined ?!? */
 

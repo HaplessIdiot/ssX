@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/63 1997/11/24 16:48:40 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/Xext/Imakefile,v 3.23 1998/10/04 09:36:43 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xext/Imakefile,v 3.24 1998/11/15 04:30:09 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -96,6 +96,9 @@ XF86MISCOBJS = xf86misc.o
 	      $(APPGROUPOBJS) xprint.o $(CUPOBJS) $(PNRXOBJS) $(DPMSOBJS) \
 	      $(EVIOBJS) $(XVOBJS) $(XANTIOBJS)
 
+      SOBJS = $(SHMOBJS) $(APPGROUPOBJS) $(SECURITYOBJS) xprint.o \
+	      xtest.o xtest1di.o xtest1dd.o sleepuntil.o $(PNRXOBJS)
+
 XF86INCLUDES = -I$(XF86COMSRC)
     INCLUDES = -I. -I../include -I$(XINCLUDESRC) -I$(EXTINCSRC) \
 		$(PNRXINCLUDES) $(XF86INCLUDES) -I$(FONTINCSRC)
@@ -106,6 +109,10 @@ NormalLibraryObjectRule()
 NormalLibraryTarget(ext,$(OBJS))
 LintLibraryTarget(ext,$(SRCS))
 NormalLintTarget($(SRCS))
+
+#if DoLoadableServer
+NormalLibraryTarget(exts,$(SOBJS))
+#endif
 
 #if BuildXCSecurity
 SpecialCObjectRule(security,$(ICONFIGFILES),$(POLICYFILEDEF))

@@ -1,7 +1,7 @@
 /*
  * Copyright 1999 by The XFree86 Project, Inc.
  */
-/* $XFree86$ */
+/* $XFree86: xc/config/util/revpath.c,v 1.1 1999/01/03 03:58:13 dawes Exp $ */
 
 /*
  * Reverse a pathname.  It returns a relative path that can be used to undo
@@ -14,6 +14,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 int
 main(int argc, char *argv[])

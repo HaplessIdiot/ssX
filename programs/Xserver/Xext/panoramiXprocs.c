@@ -19,7 +19,7 @@
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.5 1998/12/13 05:32:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.6 1999/01/13 08:30:49 dawes Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -2388,7 +2388,7 @@ int PanoramiXGetImage(register ClientPtr client)
 				- (pDraw->y + linesDone - panoramiXdataPtr[j].y));
 		PartPtr = srcParts.buf;
 		for (k = (srcParts.y2 - srcParts.y1); k; k--) {
-		    bcopy(PartPtr, BufPtr, srcParts.width);
+		    memmove(BufPtr, PartPtr, srcParts.width);
 		    BufPtr += widthBytesLine;
 		    PartPtr += srcParts.ByteWidth;
 		}
@@ -2467,7 +2467,7 @@ int PanoramiXGetImage(register ClientPtr client)
 		    	      bufPtr += widthBytesLine,
 			      protoPtr += widthBytesLineProto, 
 			      i++)
-		    	    bcopy(bufPtr, protoPtr, widthBytesLineProto);
+		    	    memmove(protoPtr, bufPtr, widthBytesLineProto);
 
 		        /*
 			 *	Note: NOT a call to WriteSwappedDataToClient,

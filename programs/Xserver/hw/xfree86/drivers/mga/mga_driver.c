@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.72 1999/01/31 12:21:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.73 1999/01/31 13:45:19 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -102,6 +102,7 @@
 
 #include "xaa.h"
 #include "xf86cmap.h"
+#include "shadowfb.h"
 
 
 /*
@@ -197,7 +198,8 @@ typedef enum {
     OPTION_NOACCEL,
     OPTION_SHOWCACHE,
     OPTION_8_PLUS_24,
-    OPTION_MGA_SDRAM
+    OPTION_MGA_SDRAM,
+    OPTION_SHADOW_FB
 } MGAOpts;
 
 static OptionInfoRec MGAOptions[] = {
@@ -210,6 +212,7 @@ static OptionInfoRec MGAOptions[] = {
     { OPTION_SHOWCACHE,		"ShowCache",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_8_PLUS_24,		"8Plus24",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_MGA_SDRAM,		"MGASDRAM",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_SHADOW_FB,		"ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -288,6 +291,11 @@ static const char *i2cSymbols[] = {
     NULL
 };
 
+static const char *shadowSymbols[] = {
+    "ShadowFBInit",
+    NULL
+};
+
 #ifdef XFree86LOADER
 
 static MODULESETUPPROTO(mgaSetup);
@@ -330,7 +338,7 @@ mgaSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 */
 	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols, 
 			  xf8_32bppSymbols, ramdacSymbols,
-			  ddcSymbols, i2cSymbols, NULL);
+			  ddcSymbols, i2cSymbols, shadowSymbols, NULL);
 
 	/*
 	 * The return value must be non-NULL on success even though there
@@ -1037,6 +1045,12 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 		"Option \"8Plus24\" is not supported in this configuration\n");
 	}
     } 
+    if (xf86IsOptionSet(MGAOptions, OPTION_SHADOW_FB)) {
+	pMga->ShadowFB = TRUE;
+	pMga->NoAccel = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+		"Using \"Shadow Framebuffer\" - acceleration disabled\n");
+    }
 
     /* Find the PCI slot for this screen */
     /*
@@ -1521,6 +1535,15 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86LoaderReqSymLists(ramdacSymbols, NULL);
     }
 
+    /* Load ramdac if needed */
+    if (pMga->ShadowFB) {
+	if (!xf86LoadSubModule(pScrn, "shadowfb")) {
+	    MGAFreeRec(pScrn);
+	    return FALSE;
+	}
+	xf86LoaderReqSymLists(shadowSymbols, NULL);
+    }
+
     /* Load DDC if we have the code to use it */
     /* This gives us DDC1 */
     if (pMga->ddc1Read || pMga->i2cInit) {
@@ -1793,6 +1816,33 @@ MGARestore(ScrnInfoPtr pScrn)
 }
 
 
+static void
+MGARefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
+{
+    MGAPtr pMga = MGAPTR(pScrn);
+    int width, height, Bpp, FBPitch;
+    unsigned char *src, *dst;
+   
+    Bpp = pScrn->bitsPerPixel >> 3;
+    FBPitch = pScrn->displayWidth * Bpp;
+
+    while(num--) {
+	width = (pbox->x2 - pbox->x1) * Bpp;
+	height = pbox->y2 - pbox->y1;
+	src = pMga->ShadowPtr + (pbox->y1 * pMga->ShadowPitch) + 
+						(pbox->x1 * Bpp);
+	dst = pMga->FbStart + (pbox->y1 * FBPitch) + (pbox->x1 * Bpp);
+
+	while(height--) {
+	    memcpy(dst, src, width);
+	    dst += FBPitch;
+	    src += pMga->ShadowPitch;
+	}
+	
+	pbox++;
+    }
+} 
+
 /* Mandatory */
 
 /* This gets called at the start of each server generation */
@@ -1806,6 +1856,7 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     MGARamdacPtr MGAdac;
     int ret;
     VisualPtr visual;
+    unsigned char *FBStart;
 
     /* 
      * First get the ScrnInfoRec
@@ -1881,39 +1932,49 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      * pScreen fields.
      */
 
+    if(pMga->ShadowFB) {
+	pMga->ShadowPitch = 
+		((pScrn->virtualX * pScrn->bitsPerPixel >> 3) + 3) & ~3L;
+	pMga->ShadowPtr = xalloc(pMga->ShadowPitch * pScrn->virtualY);
+	FBStart = pMga->ShadowPtr;
+    } else {
+	pMga->ShadowPtr = NULL;
+	FBStart = pMga->FbStart;
+    }
+
     switch (pScrn->bitsPerPixel) {
     case 8:
-	ret = cfbScreenInit(pScreen, pMga->FbStart,
+	ret = cfbScreenInit(pScreen, FBStart,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			pScrn->displayWidth);
 	break;
     case 16:
-	ret = cfb16ScreenInit(pScreen, pMga->FbStart,
+	ret = cfb16ScreenInit(pScreen, FBStart,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			pScrn->displayWidth);
 	break;
     case 24:
 	if (pix24bpp == 24)
-	    ret = cfb24ScreenInit(pScreen, pMga->FbStart,
+	    ret = cfb24ScreenInit(pScreen, FBStart,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			pScrn->displayWidth);
 	else
-	    ret = cfb24_32ScreenInit(pScreen, pMga->FbStart,
+	    ret = cfb24_32ScreenInit(pScreen, FBStart,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			pScrn->displayWidth);
 	break;
     case 32:
 	if(pMga->Overlay8Plus24)
-	    ret = cfb8_32ScreenInit(pScreen, pMga->FbStart,
+	    ret = cfb8_32ScreenInit(pScreen, FBStart,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			pScrn->displayWidth, TRANSPARENCY_KEY);
 	else 
-	    ret = cfb32ScreenInit(pScreen, pMga->FbStart,
+	    ret = cfb32ScreenInit(pScreen, FBStart,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			pScrn->displayWidth);
@@ -1968,6 +2029,9 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
 		"Hardware cursor initialization failed\n");
     }
+
+    if(pMga->ShadowFB)
+	ShadowFBInit(pScreen, MGARefreshArea);
 
     /* Initialise default colourmap */
     if (!miCreateDefColormap(pScreen))
@@ -2118,6 +2182,8 @@ MGACloseScreen(int scrnIndex, ScreenPtr pScreen)
 	XAADestroyInfoRec(pMga->AccelInfoRec);
     if (pMga->CursorInfoRec)
     	xf86DestroyCursorInfoRec(pMga->CursorInfoRec);
+    if (pMga->ShadowPtr)
+	xfree(pMga->ShadowPtr);
     pScrn->vtSema = FALSE;
 
     pScreen->CloseScreen = pMga->CloseScreen;
