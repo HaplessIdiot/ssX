@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.51 2002/01/21 18:49:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.52 2002/01/25 21:55:56 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -82,7 +82,6 @@
 #include "cfb16.h"
 #include "cfb24.h"
 #include "cfb32.h"
-#include "cfb24_32.h"
 #endif
 
 				/* colormap initialization */
@@ -220,7 +219,6 @@ static const char *cfbSymbols[] = {
     "cfb16ScreenInit",
     "cfb24ScreenInit",
     "cfb32ScreenInit",
-    "cfb24_32ScreenInit",
     NULL
 };
 #endif
