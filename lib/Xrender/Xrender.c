@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrender/Xrender.c,v 1.5 2001/07/06 20:46:35 keithp Exp $
+ * $XFree86: xc/lib/Xrender/Xrender.c,v 1.6 2001/09/05 20:13:42 mvojkovi Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -185,7 +185,7 @@ XRenderQueryFormats (Display *dpy)
 	       rep.numVisuals * sizeof (xPictVisual));
     xData = (void *) Xmalloc (rlength);
     
-    if (!xri)
+    if (!xri || !xData)
     {
 	if (xri) Xfree (xri);
 	if (xData) Xfree (xData);
