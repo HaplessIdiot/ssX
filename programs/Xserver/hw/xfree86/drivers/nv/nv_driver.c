@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.103 2003/03/18 22:23:30 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.104 2003/03/19 18:02:49 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -84,6 +84,7 @@ static SymTabRec NVKnownChipsets[] =
   { 0x12D20018, "RIVA 128" },
   { 0x10DE0020, "RIVA TNT" },
   { 0x10DE0028, "RIVA TNT2" },
+  { 0x10DE002A, "Unknown TNT2" },
   { 0x10DE002C, "Vanta" },
   { 0x10DE0029, "RIVA TNT2 Ultra" },
   { 0x10DE002D, "RIVA TNT2 Model 64" },
