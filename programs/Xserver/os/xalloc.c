@@ -25,7 +25,7 @@ dealings in this Software without prior written authorization from
 Pascal Haible.
 */
 
-/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.20 1998/12/13 07:37:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.21 1998/12/20 11:58:01 dawes Exp $ */
 
 /* Only used if INTERNAL_MALLOC is defined
  * - otherwise xalloc() in utils.c is used
@@ -188,9 +188,11 @@ extern Bool Must_have_memory;
 
 #ifdef __alpha__
 #define MAGIC			0x1404196414071968
+#define MAGIC_FREE              0x1506196615061966
 #define MAGIC2			0x2515207525182079
 #else
 #define MAGIC			0x14071968
+#define MAGIC_FREE              0x15061966
 #define MAGIC2			0x25182079
 #endif
 
@@ -291,6 +293,13 @@ extern int errno;
 #endif
 #endif
 
+/*
+ * empty trap function for gdb. Breakpoint here
+ * to find who tries to free a free area
+ */
+void XfreeTrap(void)
+{
+}
 
 void *
 Xalloc (unsigned long amount)
@@ -344,7 +353,7 @@ Xalloc (unsigned long amount)
 				p1 = p2;
 				p1[-2] = amount;
 #ifdef XALLOC_DEBUG
-				p1[-1] = MAGIC;
+				p1[-1] = MAGIC_FREE;
 #endif /* XALLOC_DEBUG */
 #ifdef SIZE_TAIL
 				*(unsigned long *)((unsigned char *)p1 + amount) = MAGIC2;
@@ -359,12 +368,16 @@ Xalloc (unsigned long amount)
 			/* take the fist one */
 			ptr = (unsigned long *)((char *)ptr + SIZE_HEADER);
 			LOG_ALLOC("Xalloc-S", amount, ptr);
+			ptr[-1] = MAGIC;
 			return (void *)ptr;
 		} /* else fall through to 'Out of memory' */
 	} else {
 		/* take that piece of mem out of the list */
 		free_lists[indx] = *((unsigned long **)ptr);
 		/* already has size (and evtl. magic) filled in */
+#ifdef XALLOC_DEBUG
+		ptr[-1] = MAGIC;
+#endif /* XALLOC_DEBUG */
 		LOG_ALLOC("Xalloc-S", amount, ptr);
 		return (void *)ptr;
 	}
@@ -539,6 +552,19 @@ Xrealloc (pointer ptr, unsigned long amount)
 	old_size = ((unsigned long *)ptr)[-2];
 #ifdef XALLOC_DEBUG
 	if (MAGIC != ((unsigned long *)ptr)[-1]) {
+	    if (MAGIC_FREE == ((unsigned long *)ptr)[-1]) {
+#ifdef FATALERRORS
+		XfreeTrap();
+		FatalError("Xalloc error: range already freed in Xrealloc() :-(\n");
+#else
+		ErrorF("Xalloc error: range already freed in Xrealloc() :-(\a\n");
+		sleep(5);
+		XfreeTrap();
+#endif
+		LOG_REALLOC("Xalloc error: ranged already freed in Xrealloc() :-(",
+			ptr, amount, 0);
+		return NULL;
+	    }
 #ifdef FATALERRORS
 		FatalError("Xalloc error: header corrupt in Xrealloc() :-(\n");
 #else
@@ -598,6 +624,19 @@ Xfree(pointer ptr)
 #ifdef XALLOC_DEBUG
     if (MAGIC != pheader[1]) {
 	/* Diagnostic */
+	if (MAGIC_FREE == pheader[1]) {
+#ifdef FATALERRORS
+	    XfreeTrap();
+	    FatalError("Xalloc error: range already freed in Xrealloc() :-(\n");
+#else
+	    ErrorF("Xalloc error: range already freed in Xrealloc() :-(\a\n");
+	    sleep(5);
+	    XfreeTrap();
+#endif
+	    LOG_REALLOC("Xalloc error: ranged already freed in Xrealloc() :-(",
+			ptr, amount, 0);
+	    return;
+	}
 #ifdef FATALERRORS
 	FatalError("Xalloc error: Header corrupt in Xfree() :-(\n");
 #else
@@ -630,7 +669,9 @@ Xfree(pointer ptr)
 #ifdef XFREE_ERASES
 	memset(ptr,0xF0,size);
 #endif /* XFREE_ERASES */
-
+#ifdef XALLOC_DEBUG
+	pheader[1] = MAGIC_FREE;
+#endif
 	/* put this small block at the head of the list */
 	indx = (size-1) / SIZE_STEPS;
 	*(unsigned long **)(ptr) = free_lists[indx];
@@ -683,6 +724,9 @@ Xfree(pointer ptr)
 #ifdef XFREE_ERASES
 	memset(pheader,0xF0,size+SIZE_HEADER);
 #endif /* XFREE_ERASES */
+#ifdef XALLOC_DEBUG
+	pheader[1] = MAGIC_FREE;
+#endif
 
 	LOG_FREE("Xfree", ptr);
 	free((char *)pheader);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.h,v 1.4 1998/10/05 13:22:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.h,v 1.5 1999/06/12 07:18:38 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -61,11 +61,18 @@ typedef struct {
     CARD32       biosBase;
 } pciSave, *pciSavePtr;
 
+typedef void (*SetBitsProcPtr)(PCITAG, int, CARD32, CARD32);
+
+typedef struct {
+    PCITAG tag;
+    SetBitsProcPtr func;
+} pciArg;
+
 typedef struct pci_io {
     int    busnum;
     int    devnum;
     int    funcnum;
-    PCITAG tag;
+    pciArg arg;
     xf86AccessRec ioAccess;
     xf86AccessRec io_memAccess;
     xf86AccessRec memAccess;
@@ -99,6 +106,7 @@ typedef struct x_BusAccRec {
 	    int bus;
 	    PCITAG acc;
 	    pciBridgeSave save;
+	    void (*func)(PCITAG,int,CARD32,CARD32);
 	} pci;
     } busdep;
 } BusAccRec, *BusAccPtr;

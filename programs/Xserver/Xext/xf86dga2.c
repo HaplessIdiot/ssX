@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/Xext/xf86dga2.c,v 1.7 1999/05/09 15:17:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86dga2.c,v 1.8 1999/05/16 13:24:51 dawes Exp $ */
 
 
 #define NEED_REPLIES
@@ -47,6 +47,7 @@ static DISPATCH_PROC(ProcXDGACopyTransparentArea);
 static DISPATCH_PROC(ProcXDGAGetViewportStatus);
 static DISPATCH_PROC(ProcXDGAFlush);
 static DISPATCH_PROC(ProcXDGASetClientVersion);
+static DISPATCH_PROC(ProcXDGAChangePixmapMode);
 
 
 extern DISPATCH_PROC(ProcXF86DGADispatch);
@@ -550,6 +551,26 @@ ProcXDGASetClientVersion(ClientPtr client)
 }
 
 static int
+ProcXDGAChangePixmapMode(ClientPtr client)
+{
+    REQUEST(xXDGAChangePixmapModeReq);
+
+    if (stuff->screen > screenInfo.numScreens)
+        return BadValue;
+
+    if(DGAClients[stuff->screen] != client)
+        return DGAErrorBase + XF86DGADirectNotActivated;
+
+    REQUEST_SIZE_MATCH(xXDGAChangePixmapModeReq);
+
+    if(!DGAChangePixmapMode(stuff->screen, stuff->x, stuff->y, stuff->flags))
+	return BadMatch;
+
+    return (client->noClientException);
+}
+
+
+static int
 SProcXDGADispatch (ClientPtr client)
 {
    return DGAErrorBase + XF86DGAClientNotLocal;
@@ -599,6 +620,8 @@ ProcXDGADispatch (ClientPtr client)
 	return ProcXDGAFlush(client);
     case X_XDGASetClientVersion:
 	return ProcXDGASetClientVersion(client);
+    case X_XDGAChangePixmapMode:
+	return ProcXDGAChangePixmapMode(client);
     default:
 	return BadRequest;
     }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.1 1999/06/14 07:31:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.2 1999/06/27 14:08:04 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -58,12 +58,117 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 static char GLINTKernelDriverName[] = "generic";
 static char GLINTClientDriverName[] = "gamma";
 
+#define USE_LEGACY_DMA 1
 
 static int 
-GLINTDRIControlInit(int drmSubFD, int irq)
+GLINTDRIControlInitSingleMX(int drmSubFD, int irq)
 {
-#define USE_LEGACY_DMA 1
     
+    int retcode;
+    static int dma_dispatch[] = {
+#if USE_LEGACY_DMA
+	DRM_I_WRITE_R(    DMAAddress, DRM_T_ADDRESS, 0, DRM_V_NONE,   0),
+	DRM_I_WHILE_IMM_R(GCommandStatus,   4, DRM_C_NE),
+#if 0
+	DRM_I_WHILE_IMM_R(DMACount,         0, DRM_C_NE),
+#endif
+	DRM_I_WRITE_R(    DMACount,   DRM_T_LENGTH,  0, DRM_V_RSHIFT, 2)
+#else
+#define GDMAAddressTag 0x530
+#define GDMACountTag   0x531
+	DRM_I_WHILE_IMM_R(InFIFOSpace, 2, DRM_C_LT),
+	DRM_I_WRITE_IMM_R(OutputFIFO,  GDMAAddressTag),
+	DRM_I_WRITE_R(    OutputFIFO,  DRM_T_ADDRESS, 0, DRM_V_NONE,   0),
+	DRM_I_WRITE_IMM_R(OutputFIFO,  GDMACountTag),   
+	DRM_I_WRITE_R(    OutputFIFO,  DRM_T_LENGTH,  0, DRM_V_RSHIFT, 2)
+	
+#endif
+    };
+    static int dma_quiescent[] = {
+	DRM_I_WHILE_IMM_R(DMACount,         0, DRM_C_NE),             /*  0 */
+	DRM_I_WHILE_IMM_R(InFIFOSpace,      3, DRM_C_LT),             /*  1 */
+	DRM_I_WRITE_IMM_R(FilterMode,       1<<10),                   /*  2 */
+	DRM_I_WRITE_IMM_R(GLINTSync,        0),                       /*  3 */
+				/* Read from first MX */
+	DRM_I_WHILE_IMM_R(OutFIFOWords,     0, DRM_C_EQ),             /*  4 */
+	DRM_I_IF_IMM_R(   OutputFIFO,  GLINTSyncTag, DRM_C_EQ, 7),    /*  5 */
+	DRM_I_GOTO(5),		                                      /*  6 */
+	DRM_I_RETURN(0)                                               /*  7 */
+    };
+    static int dma_ready[] = {
+	DRM_I_WHILE_IMM_R(DMACount, 0, DRM_C_NE)
+    };
+    static int dma_is_ready[] = {
+				/* Return  */
+	DRM_I_IF_IMM_R(   DMACount, 0, DRM_C_NE, 2),/* DMA in progress    0 */
+	DRM_I_RETURN(1),                                              /*  1 */
+	DRM_I_RETURN(0)                                               /*  2 */
+    };
+    static int dma_service[] = {
+#if 0
+				/* 0xc350 is 0.1S */
+	DRM_I_WRITE_IMM_R(GDelayTimer, 0xc350),     /* 0.1S */        /*  0 */
+#else
+	DRM_I_WRITE_IMM_R(GDelayTimer, 0xc350/2),  /* 0.05S */        /*  0 */
+#endif
+	DRM_I_WRITE_IMM_R(GCommandIntFlags, USE_LEGACY_DMA ? 8 : 9 ), /*  1 */
+	DRM_I_WRITE_IMM_R(GIntFlags, 0x2001),                         /*  2 */
+	DRM_I_IF_IMM_R(DMACount, 0, DRM_C_NE,  7), /* DMA in progress     3 */
+	DRM_I_DO(DRM_F_CLEAR),                                        /*  4 */
+	DRM_I_DO(DRM_F_DMA),   /*    DMA */                           /*  5 */
+	DRM_I_RETURN(0),                                              /*  6 */
+#if 0
+	DRM_I_WRITE_IMM_R(GDelayTimer, 0xc350/4), /* 0.025S */        /*  7 */
+#endif
+    };
+    static int dma_pre_inst[] = {
+	DRM_I_WRITE_IMM_R(GCommandMode,      USE_LEGACY_DMA ? 0x0000 : 0x0001),
+	DRM_I_WRITE_IMM_R(GDMAControl,       0x0000)
+    };
+    static int dma_post_inst[] = {
+	DRM_I_WRITE_IMM_R(GIntEnable,        0x2001),
+	DRM_I_WRITE_IMM_R(GCommandIntEnable, USE_LEGACY_DMA ? 0x0008 : 0x0009),
+	DRM_I_WRITE_IMM_R(GDelayTimer,       0x3d090)
+    };
+    static int dma_pre_uninst[] = {
+	DRM_I_WRITE_IMM_R(GDelayTimer,       0x0000),
+	DRM_I_WRITE_IMM_R(GCommandIntEnable, 0x0000),
+	DRM_I_WRITE_IMM_R(GIntEnable,        0x0000)
+    };
+
+
+#define DRM_COUNT(x) ((sizeof(x)/sizeof(x[0]))/DRM_INST_LENGTH)
+    
+    struct {
+	int        *inst;
+	int        count;
+	drmCtlDesc desc;
+    } *pt, dma_control_routines[] = {
+	{ dma_dispatch,   DRM_COUNT(dma_dispatch),   DRM_DMA_DISPATCH  },
+	{ dma_quiescent,  DRM_COUNT(dma_quiescent),  DRM_DMA_QUIESCENT },
+	{ dma_ready,      DRM_COUNT(dma_ready),      DRM_DMA_READY     },
+	{ dma_is_ready,   DRM_COUNT(dma_is_ready),   DRM_DMA_IS_READY  },
+	{ dma_service,    DRM_COUNT(dma_service),    DRM_IH_SERVICE    },
+	{ dma_pre_inst,   DRM_COUNT(dma_pre_inst),   DRM_IH_PRE_INST   },
+	{ dma_post_inst,  DRM_COUNT(dma_post_inst),  DRM_IH_POST_INST  },
+	{ dma_pre_uninst, DRM_COUNT(dma_pre_uninst), DRM_IH_PRE_UNINST },
+	{ NULL, 0 }
+    };
+    
+    for (pt = dma_control_routines; pt->count; pt++) {
+	if ((retcode = drmCtlAddCommand(drmSubFD,
+					pt->desc, pt->count, pt->inst))) {
+	    return 1;
+	}
+    }
+
+    if ((retcode = drmCtlInstHandler(drmSubFD, irq))) return 1;
+    return 0;
+}
+
+static int 
+GLINTDRIControlInitDualMX(int drmSubFD, int irq)
+{
     int retcode;
     static int dma_dispatch[] = {
 #if USE_LEGACY_DMA
@@ -411,6 +516,7 @@ GLINTInitVisualConfigs(ScreenPtr pScreen)
                           LBRF_FrameCountPos24 |
                           LBRF_GIDWidth4       |
                           LBRF_GIDPos32         ), LBWriteFormat);
+    if (pGlint->numMXDevices == 2) {
     GLINT_SECONDARY_SLOW_WRITE_REG(
 			 (LBRF_DepthWidth16    | 
                           LBRF_StencilWidth8   |
@@ -427,6 +533,7 @@ GLINTInitVisualConfigs(ScreenPtr pScreen)
                           LBRF_FrameCountPos24 |
                           LBRF_GIDWidth4       |
                           LBRF_GIDPos32         ), LBWriteFormat);
+    }
 
     return TRUE;
 }
@@ -448,11 +555,9 @@ GLINTDRIScreenInit(ScreenPtr pScreen)
     if (!LoaderSymbol("drmAvailable"))        return FALSE;
 #endif
 
-    /* currently the glint driver only supports direct rendering on the GMX2K */
-    if ( (pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_GAMMA) ||
-             (pGlint->numMXDevices != 2) ) {
-	return FALSE;
-    }
+    if (pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_GAMMA) return FALSE;
+
+    if (pGlint->numMXDevices > 2) return FALSE;
 
     pDRIInfo = DRICreateInfoRec();
     if(pDRIInfo == NULL)
@@ -657,14 +762,28 @@ GLINTDRIScreenInit(ScreenPtr pScreen)
 						->thisCard)->funcnum);
     }
     
-    if (pGlint->irq <= 0
-	|| GLINTDRIControlInit(pGlint->drmSubFD, pGlint->irq)) {
-	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+    if (pGlint->numMXDevices == 2) {
+    	if ( (pGlint->irq <= 0) || 
+	      GLINTDRIControlInitDualMX(pGlint->drmSubFD, pGlint->irq) ) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 		   "[drm] cannot initialize dma with IRQ %d\n",
 		   pGlint->irq);
-	DRICloseScreen(pScreen);
-	return FALSE;
+	    DRICloseScreen(pScreen);
+	    return FALSE;
+	}
     }
+
+    if (pGlint->numMXDevices == 1) {
+    	if ( (pGlint->irq <= 0) || 
+	      GLINTDRIControlInitSingleMX(pGlint->drmSubFD, pGlint->irq) ) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		   "[drm] cannot initialize dma with IRQ %d\n",
+		   pGlint->irq);
+	    DRICloseScreen(pScreen);
+	    return FALSE;
+	}
+    }
+
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 	       "[drm] dma control initialized, using IRQ %d\n",
 	       pGlint->irq);
@@ -884,6 +1003,8 @@ GLINTDRISwapContext(
 	pRC->MX1.CFBBlockColorL           = GLINT_READ_REG(FBBlockColorL);
 	pRC->MX1.CFilterMode              = GLINT_READ_REG(FilterMode);
 	pRC->MX1.CStatisticMode           = GLINT_READ_REG(StatisticMode);
+
+        if (pGlint->numMXDevices == 2) {
 	pRC->MX1.CBroadcastMask           = GLINT_READ_REG(BroadcastMask);
 
 	pRC->MX2.CStartXDom               = GLINT_SECONDARY_READ_REG(StartXDom);
@@ -945,6 +1066,7 @@ GLINTDRISwapContext(
 	pRC->MX2.CFBBlockColorL           = GLINT_SECONDARY_READ_REG(FBBlockColorL);
 	pRC->MX2.CFilterMode              = GLINT_SECONDARY_READ_REG(FilterMode);
 	pRC->MX2.CStatisticMode           = GLINT_SECONDARY_READ_REG(StatisticMode);
+	}
 
 	if (readContextType == DRI_3D_CONTEXT) {
 	    /* save the 3D portion of the old context */
@@ -1071,6 +1193,7 @@ GLINTDRISwapContext(
 	    pRC->MX1.CKdBStart                = GLINT_READ_REG(KdBStart);
 	    pRC->MX1.CdKdBdx                  = GLINT_READ_REG(dKdBdx);
 	    pRC->MX1.CdKdBdyDom               = GLINT_READ_REG(dKdBdyDom);
+            if (pGlint->numMXDevices == 2) {
 	    pRC->MX2.CSStart                  = GLINT_SECONDARY_READ_REG(SStart);
 	    pRC->MX2.CdSdx                    = GLINT_SECONDARY_READ_REG(dSdx);
 	    pRC->MX2.CdSdyDom                 = GLINT_SECONDARY_READ_REG(dSdyDom);
@@ -1192,10 +1315,12 @@ GLINTDRISwapContext(
 	    pRC->MX2.CKdBStart                = GLINT_SECONDARY_READ_REG(KdBStart);
 	    pRC->MX2.CdKdBdx                  = GLINT_SECONDARY_READ_REG(dKdBdx);
 	    pRC->MX2.CdKdBdyDom               = GLINT_SECONDARY_READ_REG(dKdBdyDom);
+	    }
 
 	    /* send gamma the context dump command */
 	    GLINT_WAIT(3);
-	    GLINT_WRITE_REG(1, BroadcastMask);
+            if (pGlint->numMXDevices > 1)
+	    	GLINT_WRITE_REG(1, BroadcastMask);
 	    GLINT_WRITE_REG(3<<14, FilterMode);  /* context bits on gamma */
 	    GLINT_WRITE_REG(GLINT_GAMMA_CONTEXT_MASK, ContextDump);
 
@@ -1227,7 +1352,8 @@ dumpIndex,readValue);
 	    readValue = GLINT_READ_REG(OutputFIFO);
 
 	    GLINT_SLOW_WRITE_REG(1<<10, FilterMode);
-	    GLINT_SLOW_WRITE_REG(3, BroadcastMask);
+            if (pGlint->numMXDevices > 1)
+	    	GLINT_SLOW_WRITE_REG((1<<pGlint->numMXDevices)-1,BroadcastMask);
 	}
     }
 
@@ -1238,7 +1364,8 @@ dumpIndex,readValue);
 
 	    /* send context restore command */
 	    GLINT_WAIT(1);
-	    GLINT_WRITE_REG(1, BroadcastMask);
+            if (pGlint->numMXDevices > 1)
+	    	GLINT_WRITE_REG(1, BroadcastMask);
 
 	    GLINT_WAIT(3);
 	    GLINT_WRITE_REG(ContextRestore_tag, OutputFIFO);
@@ -1260,7 +1387,8 @@ dumpIndex,pWC->Gamma[dumpIndex]);
 	    XAASync(pScreen, TRUE);
 
 	    /* finally the MX portions */
-	    GLINT_SLOW_WRITE_REG(1, BroadcastMask);
+            if (pGlint->numMXDevices > 1)
+	    	GLINT_SLOW_WRITE_REG(1, BroadcastMask);
 	    GLINT_SLOW_WRITE_REG(pWC->MX1.CSStart,                  SStart);
 	    GLINT_SLOW_WRITE_REG(pWC->MX1.CdSdx,                    dSdx);
 	    GLINT_SLOW_WRITE_REG(pWC->MX1.CdSdyDom,                 dSdyDom);
@@ -1383,6 +1511,7 @@ dumpIndex,pWC->Gamma[dumpIndex]);
 	    GLINT_SLOW_WRITE_REG(pWC->MX1.CdKdBdx,                  dKdBdx);
 	    GLINT_SLOW_WRITE_REG(pWC->MX1.CdKdBdyDom,               dKdBdyDom);
 
+            if (pGlint->numMXDevices == 2) {
 	    GLINT_SLOW_WRITE_REG(2, BroadcastMask);
 	    GLINT_SLOW_WRITE_REG(pWC->MX2.CSStart,                  SStart);
 	    GLINT_SLOW_WRITE_REG(pWC->MX2.CdSdx,                    dSdx);
@@ -1505,12 +1634,14 @@ dumpIndex,pWC->Gamma[dumpIndex]);
 	    GLINT_SLOW_WRITE_REG(pWC->MX2.CKdBStart,                KdBStart);
 	    GLINT_SLOW_WRITE_REG(pWC->MX2.CdKdBdx,                  dKdBdx);
 	    GLINT_SLOW_WRITE_REG(pWC->MX2.CdKdBdyDom,               dKdBdyDom);
+	    }
 	}
 
 	/* restore the 2D portion of the new context */
 
 	/* Restore MX1's registers */
-	GLINT_SLOW_WRITE_REG(1, BroadcastMask);
+        if (pGlint->numMXDevices > 1)
+	    GLINT_SLOW_WRITE_REG(1, BroadcastMask);
 	GLINT_SLOW_WRITE_REG(pWC->MX1.CStartXDom,               StartXDom);
 	GLINT_SLOW_WRITE_REG(pWC->MX1.CdXDom,                   dXDom);
 	GLINT_SLOW_WRITE_REG(pWC->MX1.CStartXSub,               StartXSub);
@@ -1572,6 +1703,7 @@ dumpIndex,pWC->Gamma[dumpIndex]);
 	GLINT_SLOW_WRITE_REG(pWC->MX1.CStatisticMode,           StatisticMode);
 
 	/* Restore MX2's registers */
+        if (pGlint->numMXDevices == 2) {
 	GLINT_SLOW_WRITE_REG(2, BroadcastMask);
 	GLINT_SLOW_WRITE_REG(pWC->MX2.CStartXDom,               StartXDom);
 	GLINT_SLOW_WRITE_REG(pWC->MX2.CdXDom,                   dXDom);
@@ -1635,6 +1767,7 @@ dumpIndex,pWC->Gamma[dumpIndex]);
 
 	/* Restore the "real" broadcast mask last */
 	GLINT_SLOW_WRITE_REG(pWC->MX1.CBroadcastMask,           BroadcastMask);
+	}
     }
 }
 
@@ -1658,8 +1791,12 @@ GLINTDRIInitBuffers(
     GLINT_WRITE_REG(0, FBWriteMode);
     GLINT_WRITE_REG(0, LBWindowBase);
     GLINT_WRITE_REG(1, LBWriteMode);
+    if (pGlint->numMXDevices == 2) {
     GLINT_WRITE_REG( pGlint->pprod     | 
 		     LBRM_ScanlineInt2   , LBReadMode);
+    } else {
+    GLINT_WRITE_REG( pGlint->pprod       , LBReadMode);
+    }
     GLINT_WRITE_REG(0, LBDepth);
     GLINT_WRITE_REG(0, LBStencil);
     GLINT_WRITE_REG( GWIN_UnitEnable        |
@@ -1699,7 +1836,6 @@ GLINTDRIMoveBuffers(
 {
     ScreenPtr pScreen = pParent->drawable.pScreen;
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-    GLINTPtr pGlint = GLINTPTR(pScrn);
     int dx, dy;
     WindowPtr pChild;
     RegionRec rgnSubWindow, rgnTranslateSrc;

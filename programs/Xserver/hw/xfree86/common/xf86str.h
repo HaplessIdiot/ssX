@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.41 1999/06/20 05:23:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.42 1999/06/27 14:07:57 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -348,7 +348,6 @@ typedef struct _serverlayoutrec {
     pointer		options;
 } serverLayoutRec, *serverLayoutPtr;
 
-#ifdef XF86DRI
 typedef struct _confdribufferrec {
     int                 count;
     int                 size;
@@ -363,7 +362,6 @@ typedef struct _confdrirec {
     int                 bufs_count;
     confDRIBufferRec    *bufs;
 } confDRIRec, *confDRIPtr;
-#endif
     
 /* These values should be adjusted when new fields are added to ScrnInfoRec */
 #define NUM_RESERVED_INTS		16
@@ -525,12 +523,6 @@ typedef struct {
     int PCIid;
     resRange *resList;
 } PciChipsets;
-
-#define pciPhysMask 0xF0
-#define pciMem      0x10
-#define pciIo       0x20
-#define pciBios     0x30
-#define pciRegMask  0x0F
 
 /* Entity properties */
 typedef void (*EntityProc)(int entityIndex,pointer private);

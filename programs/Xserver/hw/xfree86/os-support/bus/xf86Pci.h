@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.17 1999/06/12 07:19:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.18 1999/06/13 07:11:06 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -532,6 +532,12 @@ typedef struct pci_device {
     int       basesize[7];	/* number of bits in base addr allocations */
 } pciDevice, *pciConfigPtr;
 
+typedef enum {
+    WRITE,
+    READ,
+    SET_BITS
+} pciFunc;
+
 #define pci_device_vendor	      cfgspc.regs.dv_id.device_vendor
 #define pci_vendor		      cfgspc.regs.dv_id.dv.vendor
 #define pci_device		      cfgspc.regs.dv_id.dv.device
@@ -596,6 +602,7 @@ void          pciWriteWord(PCITAG tag, int offset, CARD16 val);
 void          pciWriteByte(PCITAG tag, int offset, CARD8 val);
 void          pciSetBitsLong(PCITAG tag, int offset, CARD32 mask, CARD32 val);
 void          pciSetBitsByte(PCITAG tag, int offset, CARD8 mask, CARD8 val);
+pointer       pciLongFunc(PCITAG tag, pciFunc func);
 ADDRESS       pciBusAddrToHostAddr(PCITAG tag, ADDRESS addr);
 ADDRESS       pciHostAddrToBusAddr(PCITAG tag, ADDRESS addr);
 PCITAG        pciTag(int busnum, int devnum, int funcnum);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.17 1999/06/12 14:15:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.18 1999/06/14 07:31:52 dawes Exp $ */
 /*
  * Copyright 1997,1998 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -48,10 +48,10 @@
 #define GLINT_MAX_MX_DEVICES 2
 
 typedef struct {
-	unsigned long glintRegs[0x2000];
-	unsigned long glintSecondRegs[0x2000];
-	unsigned long DacRegs[0x100];  /* used by internal DACs */
-	unsigned char cmap[0x300];
+	CARD32 glintRegs[0x2000];
+	CARD32 glintSecondRegs[0x2000];
+	CARD32 DacRegs[0x100];  /* used by internal DACs */
+	CARD8 cmap[0x300];
 } GLINTRegRec, *GLINTRegPtr;
 
 #define GLINTPTR(p)	((GLINTPtr)((p)->driverPrivate))
@@ -128,7 +128,7 @@ typedef struct {
     CloseScreenProcPtr	CloseScreen;
     GCPtr		CurrentGC;
     I2CBusPtr		DDCBus, VSBus;
-    unsigned char *	XAAScanlineColorExpandBuffers[1];
+    CARD8*		XAAScanlineColorExpandBuffers[2];
 #ifdef XF86DRI
     Bool		directRenderingEnabled;
     DRIInfoPtr		pDRIInfo;
@@ -239,14 +239,14 @@ unsigned char Permedia2vInIndReg(ScrnInfoPtr pScrn, CARD32);
 
 extern int partprodPermedia[];
 
-extern Bool GLINTDRIScreenInit(ScreenPtr pScreen);
-extern Bool GLINTDRIFinishScreenInit(ScreenPtr pScreen);
-extern void GLINTDRICloseScreen(ScreenPtr pScreen);
-extern Bool GLINTInitGLXVisuals(ScreenPtr pScreen);
-extern void GLINTDRIWakeupHandler(ScreenPtr pScreen);
-extern void GLINTDRIBlockHandler(ScreenPtr pScreen);
-extern void GLINTDRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 index);
-extern void GLINTDRIMoveBuffers(WindowPtr pWin, DDXPointRec ptOldOrg, 
+Bool GLINTDRIScreenInit(ScreenPtr pScreen);
+Bool GLINTDRIFinishScreenInit(ScreenPtr pScreen);
+void GLINTDRICloseScreen(ScreenPtr pScreen);
+Bool GLINTInitGLXVisuals(ScreenPtr pScreen);
+void GLINTDRIWakeupHandler(ScreenPtr pScreen);
+void GLINTDRIBlockHandler(ScreenPtr pScreen);
+void GLINTDRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 index);
+void GLINTDRIMoveBuffers(WindowPtr pWin, DDXPointRec ptOldOrg, 
 		RegionPtr prgnSrc, CARD32 index);
 
 void GLINT_VERB_WRITE_REG(GLINTPtr, CARD32 v, int r, char *file, int line);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.12 1999/06/20 08:41:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.13 1999/06/21 10:06:20 dawes Exp $ */
 
 /*
  * glint register file 
@@ -1161,18 +1161,17 @@ do{								\
 #define GLINT_MASK_WRITE_REG(v,m,r)				\
 	GLINT_WRITE_REG((GLINT_READ_REG(r)&(m))|(v),r)
 
-#define DACDelay(x) do {                                        \
+#define GLINTDACDelay(x) do {                                   \
         int delay = x;                                          \
         unsigned char tmp;                                      \
 	while(delay--){tmp = GLINT_READ_REG(InFIFOSpace);};     \
 	} while(0)
-	
         
 #define GLINT_SLOW_WRITE_REG(v,r)				\
 do{								\
-        DACDelay(5);                                            \
+	GLINTDACDelay(5);					\
         GLINT_WRITE_REG(v,r);					\
-        DACDelay(5);                                            \
+	GLINTDACDelay(5);					\
 }while(0)
 
 #define GLINT_SECONDARY_WRITE_REG(v,r)                          	\

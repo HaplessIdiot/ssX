@@ -27,7 +27,7 @@
  * Modified version of tx_dac.c to support Dual MX rasterizers by 
  *   Jens Owen <jens@precisioninsight.com>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/dualmx_dac.c,v 1.7 1999/02/12 22:52:06 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/dualmx_dac.c,v 1.1 1999/06/14 07:31:52 dawes Exp $ */
 /* $PI: xc/programs/Xserver/hw/xfree86/drivers/glint/dualmx_dac.c,v 1.13 1999/06/09 20:05:12 jens Exp $ */
 
 #include "xf86.h"
@@ -41,7 +41,7 @@
 #include "glint_regs.h"
 #include "glint.h"
 
-#if DEBUG
+#ifdef DEBUG
 #define DUMP(name,field) do {                                             \
     value = GLINT_READ_REG(field);                                        \
     xf86DrvMsg(pScrn->scrnIndex, X_INFO, "\t\t%s(primary): 0x%lX\n", name, value); \

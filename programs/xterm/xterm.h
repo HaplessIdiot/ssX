@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.41 1999/05/30 14:41:09 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.42 1999/06/13 13:48:00 dawes Exp $ */
 
 /************************************************************
 
@@ -269,6 +269,7 @@ extern int XStrCmp (char *s1, char *s2);
 extern int xerror (Display *d, XErrorEvent *ev);
 extern int xioerror (Display *dpy);
 extern void Bell (int which, int percent);
+extern void ChangeXprop (char *name);
 extern void Changename (char *name);
 extern void Changetitle (char *name);
 extern void Cleanup (int code);

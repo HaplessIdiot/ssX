@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ix86Pci.c,v 1.5 1998/09/27 04:43:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ix86Pci.c,v 1.6 1999/01/26 10:40:37 dawes Exp $ */
 /*
  * ix86Pci.c - x86 PCI driver
  *
@@ -122,16 +122,6 @@
 #define inl(port) _inl(port)
 #endif
 
-typedef union {
-    CARD32 cfg1;
-    struct {
-	CARD8  enable;
-	CARD8  forward;
-	CARD16 port;
-    } cfg2;
-    CARD32 tag;
-} pciTagRec;
-
 #define	PCI_CFGMECH2_ENABLE_REG		0xCF8
 #ifdef PC98
 #define	PCI_CFGMECH2_FORWARD_REG	0xCF9
@@ -141,12 +131,24 @@ typedef union {
 
 #define PCI_CFGMECH2_MAXDEV	16
 
+#define PCI_ADDR_FROM_TAG_CFG1(tag,reg) (PCI_EN | tag | (reg & 0xfc))
+#define PCI_FORWARD_FROM_TAG(tag)       PCI_BUS_FROM_TAG(tag)
+#define PCI_ENABLE_FROM_TAG(tag)        (0xf0 | (((tag) & 0x00000700) >> 7))
+#define PCI_ADDR_FROM_TAG_CFG2(tag,reg) (0xc000 | (((tag) & 0x0000f800) >> 3) \
+                                        | (reg & 0xfc))
+
 /*
  * Intel x86 platform specific PCI access functions
  */
-CARD32 ix86PciReadLong(PCITAG tag, int off);
-void ix86PciWriteLong(PCITAG, int off, CARD32 val);
-void ix86PciSetBitsLong(PCITAG, int off, CARD32 mask, CARD32 val);
+CARD32 ix86PciReadLongSetup(PCITAG tag, int off);
+void ix86PciWriteLongSetup(PCITAG, int off, CARD32 val);
+void ix86PciSetBitsLongSetup(PCITAG, int off, CARD32 mask, CARD32 val);
+CARD32 ix86PciReadLongCFG1(PCITAG tag, int off);
+void ix86PciWriteLongCFG1(PCITAG, int off, CARD32 val);
+void ix86PciSetBitsLongCFG1(PCITAG, int off, CARD32 mask, CARD32 val);
+CARD32 ix86PciReadLongCFG2(PCITAG tag, int off);
+void ix86PciWriteLongCFG2(PCITAG, int off, CARD32 val);
+void ix86PciSetBitsLongCFG2(PCITAG, int off, CARD32 mask, CARD32 val);
 
 pciBusInfo_t ix86Pci0 = {
 /* configMech  */	  PCI_CFG_MECH_UNKNOWN, /* Set by ix86PciInit() */
@@ -156,9 +158,9 @@ pciBusInfo_t ix86Pci0 = {
 /* ppc_io_base */	  0,
 /* ppc_io_size */	  0,		  
 /* funcs       */	  {
-	                    ix86PciReadLong,
-			    ix86PciWriteLong,
-			    ix86PciSetBitsLong,
+	                    ix86PciReadLongSetup,
+			    ix86PciWriteLongSetup,
+			    ix86PciSetBitsLongSetup,
 			    pciAddrNOOP,
 			    pciAddrNOOP
 		          },
@@ -172,7 +174,7 @@ ix86PciBusCheck(void)
 
     for (device = 0; device < ix86Pci0.numDevices; device++) {
 	CARD32 id;
-	id = ix86PciReadLong(PCI_MAKE_TAG(0, device, 0), 0);
+	id = (*ix86Pci0.funcs.pciReadLong)(PCI_MAKE_TAG(0, device, 0), 0);
 	if (id && id != 0xffffffff) {
 	    return TRUE;
 	}
@@ -229,7 +231,10 @@ void ix86PciSelectCfgmech(void)
 
 	ix86Pci0.configMech = PCI_CFG_MECH_1;
 	ix86Pci0.numDevices = PCI_CFGMECH1_MAXDEV;
-
+	ix86Pci0.funcs.pciReadLong = ix86PciReadLongCFG1;
+	ix86Pci0.funcs.pciWriteLong = ix86PciWriteLongCFG1;
+	ix86Pci0.funcs.pciSetBitsLong = ix86PciSetBitsLongCFG1;
+	
 	outl(PCI_CFGMECH1_ADDRESS_REG, PCI_EN);
 
 #if 0
@@ -350,6 +355,9 @@ void ix86PciSelectCfgmech(void)
       if ((oldVal2 & 0xf0) == 0) {
 	ix86Pci0.configMech = PCI_CFG_MECH_2;
 	ix86Pci0.numDevices = PCI_CFGMECH2_MAXDEV;
+	ix86Pci0.funcs.pciReadLong = ix86PciReadLongCFG2;
+	ix86Pci0.funcs.pciWriteLong = ix86PciWriteLongCFG2;
+	ix86Pci0.funcs.pciSetBitsLong = ix86PciSetBitsLongCFG2;
 
 	outb(PCI_CFGMECH2_ENABLE_REG, 0x0e);
 	mode2Res1 = inb(PCI_CFGMECH2_ENABLE_REG);
@@ -379,6 +387,9 @@ void ix86PciSelectCfgmech(void)
 	xf86MsgVerb(X_INFO, 2, "PCI: Config type is 2\n");
 	ix86Pci0.configMech = PCI_CFG_MECH_2;
 	ix86Pci0.numDevices = PCI_CFGMECH2_MAXDEV;
+	ix86Pci0.funcs.pciReadLong = ix86PciReadLongCFG2;
+	ix86Pci0.funcs.pciWriteLong = ix86PciWriteLongCFG2;
+	ix86Pci0.funcs.pciSetBitsLong = ix86PciSetBitsLongCFG2;
 	return;
       }
 
@@ -390,6 +401,9 @@ void ix86PciSelectCfgmech(void)
 	xf86MsgVerb(X_INFO, 2, "PCI: Config type is 1\n");
 	ix86Pci0.configMech = PCI_CFG_MECH_1;
 	ix86Pci0.numDevices = PCI_CFGMECH1_MAXDEV;
+	ix86Pci0.funcs.pciReadLong = ix86PciReadLongCFG1;
+	ix86Pci0.funcs.pciWriteLong = ix86PciWriteLongCFG1;
+	ix86Pci0.funcs.pciSetBitsLong = ix86PciSetBitsLongCFG1;
 	return;
       }
       break; /* } */
@@ -400,6 +414,9 @@ void ix86PciSelectCfgmech(void)
 
       ix86Pci0.configMech = PCI_CFG_MECH_1;
       ix86Pci0.numDevices = PCI_CFGMECH1_MAXDEV;
+      ix86Pci0.funcs.pciReadLong = ix86PciReadLongCFG1;
+      ix86Pci0.funcs.pciWriteLong = ix86PciWriteLongCFG1;
+      ix86Pci0.funcs.pciSetBitsLong = ix86PciSetBitsLongCFG1;
       return;
 
     case PCIForceConfig2:
@@ -408,6 +425,9 @@ void ix86PciSelectCfgmech(void)
 
       ix86Pci0.configMech = PCI_CFG_MECH_2;
       ix86Pci0.numDevices = PCI_CFGMECH2_MAXDEV;
+      ix86Pci0.funcs.pciReadLong = ix86PciReadLongCFG2;
+      ix86Pci0.funcs.pciWriteLong = ix86PciWriteLongCFG2;
+      ix86Pci0.funcs.pciSetBitsLong = ix86PciSetBitsLongCFG2;
       return;
 
     }
@@ -416,6 +436,7 @@ void ix86PciSelectCfgmech(void)
     xf86MsgVerb(X_INFO, 2, "PCI: No PCI bus found\n");
 }
 
+#if 0
 static pciTagRec
 ix86PcibusTag(CARD8 bus, CARD8 cardnum, CARD8 func)
 {
@@ -442,42 +463,52 @@ ix86PcibusTag(CARD8 bus, CARD8 cardnum, CARD8 func)
     
     return tag;
 }
-
+#endif
 CARD32
-ix86PciReadLong(PCITAG Tag, int reg)
+ix86PciReadLongSetup(PCITAG Tag, int reg)
 {
-    pciTagRec tag;
+    ix86PciSelectCfgmech();
+    return (*ix86Pci0.funcs.pciReadLong)(Tag,reg);
+}
+    
+CARD32
+ix86PciReadLongCFG1(PCITAG Tag, int reg)
+{
     CARD32    addr, data = 0;
-    int       bus, dev, func;
 
 #ifdef DEBUGPCI
 ErrorF("ix86PciReadLong 0x%lx, %d\n", Tag, reg);
 #endif
 
-    ix86PciSelectCfgmech();
+    addr = PCI_ADDR_FROM_TAG_CFG1(Tag,reg);
+    outl(PCI_CFGMECH1_ADDRESS_REG, addr);
+    data = inl(PCI_CFGMECH1_DATA_REG);
+    outl(PCI_CFGMECH1_ADDRESS_REG, 0);
 
-    bus  = PCI_BUS_FROM_TAG(Tag);
-    dev  = PCI_DEV_FROM_TAG(Tag);
-    func = PCI_FUNC_FROM_TAG(Tag);
+#ifdef DEBUGPCI
+ErrorF("ix86PciReadLong 0x%lx\n", data);
+#endif
 
-    tag = ix86PcibusTag(bus,dev,func);
+    return data;
+}
 
-    switch (ix86Pci0.configMech) {
-    case PCI_CFG_MECH_1:
-	addr = tag.cfg1 | (reg & 0xfc);
-	outl(PCI_CFGMECH1_ADDRESS_REG, addr);
-	data = inl(PCI_CFGMECH1_DATA_REG);
-	outl(PCI_CFGMECH1_ADDRESS_REG, 0);
-	break;
-    case PCI_CFG_MECH_2:
-	addr = tag.cfg2.port | (reg & 0xfc);
-	outb(PCI_CFGMECH2_ENABLE_REG, tag.cfg2.enable);
-	outb(PCI_CFGMECH2_FORWARD_REG, tag.cfg2.forward);
-	data = inl((CARD16)addr);
-	outb(PCI_CFGMECH2_ENABLE_REG, 0);
-	outb(PCI_CFGMECH2_FORWARD_REG, 0);
-	break;
-    }
+CARD32
+ix86PciReadLongCFG2(PCITAG Tag, int reg)
+{
+    CARD32    addr, data = 0;
+    CARD8     forward, enable;
+#ifdef DEBUGPCI
+ErrorF("ix86PciReadLong 0x%lx, %d\n", Tag, reg);
+#endif
+    forward  = PCI_FORWARD_FROM_TAG(Tag);
+    enable   = PCI_ENABLE_FROM_TAG(Tag);
+    addr     = PCI_ADDR_FROM_TAG_CFG2(Tag,reg);
+
+    outb(PCI_CFGMECH2_ENABLE_REG, enable);
+    outb(PCI_CFGMECH2_FORWARD_REG, forward);
+    data = inl((CARD16)addr);
+    outb(PCI_CFGMECH2_ENABLE_REG, 0);
+    outb(PCI_CFGMECH2_FORWARD_REG, 0);
 
 #ifdef DEBUGPCI
 ErrorF("ix86PciReadLong 0x%lx\n", data);
@@ -487,78 +518,87 @@ ErrorF("ix86PciReadLong 0x%lx\n", data);
 }
 
 void
-ix86PciWriteLong(PCITAG Tag, int reg, CARD32 data)
+ix86PciWriteLongSetup(PCITAG Tag, int reg, CARD32 data)
 {
-    pciTagRec tag;
-    CARD32    addr;
-    int       bus, dev, func;
-
     ix86PciSelectCfgmech();
-
-    bus  = PCI_BUS_FROM_TAG(Tag);
-    dev  = PCI_DEV_FROM_TAG(Tag);
-    func = PCI_FUNC_FROM_TAG(Tag);
-
-    tag = ix86PcibusTag(bus,dev,func);
-    
-    switch (ix86Pci0.configMech) {
-    case PCI_CFG_MECH_1:
-	addr = tag.cfg1 | (reg & 0xfc);
-	outl(PCI_CFGMECH1_ADDRESS_REG, addr);
-	outl(PCI_CFGMECH1_DATA_REG, data);
-	outl(PCI_CFGMECH1_ADDRESS_REG, 0);
-	break;
-    case PCI_CFG_MECH_2:
-	addr = tag.cfg2.port | (reg & 0xfc);
-	outb(PCI_CFGMECH2_ENABLE_REG, tag.cfg2.enable);
-	outb(PCI_CFGMECH2_FORWARD_REG, tag.cfg2.forward);
-	outl((CARD16)addr, data);
-	outb(PCI_CFGMECH2_ENABLE_REG, 0);
-	outb(PCI_CFGMECH2_FORWARD_REG, 0);
-	break;
-    }
+    (*ix86Pci0.funcs.pciWriteLong)(Tag,reg,data);
 }
 
 void
-ix86PciSetBitsLong(PCITAG Tag, int reg, CARD32 mask, CARD32 val)
+ix86PciWriteLongCFG1(PCITAG Tag, int reg, CARD32 data)
 {
-    pciTagRec tag;
+    CARD32    addr;
+
+    addr = PCI_ADDR_FROM_TAG_CFG1(Tag,reg);
+    outl(PCI_CFGMECH1_ADDRESS_REG, addr);
+    outl(PCI_CFGMECH1_DATA_REG, data);
+    outl(PCI_CFGMECH1_ADDRESS_REG, 0);
+}
+
+void
+ix86PciWriteLongCFG2(PCITAG Tag, int reg, CARD32 data)
+{
+    CARD32    addr;
+    CARD8 forward, enable;
+    
+    forward  = PCI_FORWARD_FROM_TAG(Tag);
+    enable   = PCI_ENABLE_FROM_TAG(Tag);
+    addr     = PCI_ADDR_FROM_TAG_CFG2(Tag,reg);
+    
+    outb(PCI_CFGMECH2_ENABLE_REG, enable);
+    outb(PCI_CFGMECH2_FORWARD_REG, forward);
+    outl((CARD16)addr, data);
+    outb(PCI_CFGMECH2_ENABLE_REG, 0);
+    outb(PCI_CFGMECH2_FORWARD_REG, 0);
+}
+
+void
+ix86PciSetBitsLongSetup(PCITAG Tag, int reg, CARD32 mask, CARD32 val)
+{
+    ix86PciSelectCfgmech();
+    (*ix86Pci0.funcs.pciSetBitsLong)(Tag,reg,mask,val);
+}
+
+void
+ix86PciSetBitsLongCFG1(PCITAG Tag, int reg, CARD32 mask, CARD32 val)
+{
     CARD32    addr, data = 0;
-    int       bus, dev, func;
 
 #ifdef DEBUGPCI
     ErrorF("ix86PciSetBitsLong 0x%lx, %d\n", Tag, reg);
 #endif
 
-    ix86PciSelectCfgmech();
-
-    bus  = PCI_BUS_FROM_TAG(Tag);
-    dev  = PCI_DEV_FROM_TAG(Tag);
-    func = PCI_FUNC_FROM_TAG(Tag);
-
-    tag = ix86PcibusTag(bus,dev,func);
-
-    switch (ix86Pci0.configMech) {
-	case PCI_CFG_MECH_1:
-	    addr = tag.cfg1 | (reg & 0xfc);
-	    outl(PCI_CFGMECH1_ADDRESS_REG, addr);
-	    data = inl(PCI_CFGMECH1_DATA_REG);
-	    data = (data & ~mask) | (val & mask);
-	    outl(PCI_CFGMECH1_DATA_REG, data);
-	    outl(PCI_CFGMECH1_ADDRESS_REG, 0);
-	    break;
-	case PCI_CFG_MECH_2:
-	    addr = tag.cfg2.port | (reg & 0xfc);
-	    outb(PCI_CFGMECH2_ENABLE_REG, tag.cfg2.enable);
-	    outb(PCI_CFGMECH2_FORWARD_REG, tag.cfg2.forward);
-	    data = inl((CARD16)addr);
-	    data = (data & ~mask) | (val & mask);
-	    outl((CARD16)addr, data);
-	    outb(PCI_CFGMECH2_ENABLE_REG, 0);
-	    outb(PCI_CFGMECH2_FORWARD_REG, 0);
-	    break;
-    }
+    addr = PCI_ADDR_FROM_TAG_CFG1(Tag,reg);
+    outl(PCI_CFGMECH1_ADDRESS_REG, addr);
+    data = inl(PCI_CFGMECH1_DATA_REG);
+    data = (data & ~mask) | (val & mask);
+    outl(PCI_CFGMECH1_DATA_REG, data);
+    outl(PCI_CFGMECH1_ADDRESS_REG, 0);
 }
+
+void
+ix86PciSetBitsLongCFG2(PCITAG Tag, int reg, CARD32 mask, CARD32 val)
+{
+    CARD32    addr, data = 0;
+    CARD8 enable, forward;
+
+#ifdef DEBUGPCI
+    ErrorF("ix86PciSetBitsLong 0x%lx, %d\n", Tag, reg);
+#endif
+
+    forward  = PCI_FORWARD_FROM_TAG(Tag);
+    enable   = PCI_ENABLE_FROM_TAG(Tag);
+    addr     = PCI_ADDR_FROM_TAG_CFG2(Tag,reg);
+
+    outb(PCI_CFGMECH2_ENABLE_REG, enable);
+    outb(PCI_CFGMECH2_FORWARD_REG, forward);
+    data = inl((CARD16)addr);
+    data = (data & ~mask) | (val & mask);
+    outl((CARD16)addr, data);
+    outb(PCI_CFGMECH2_ENABLE_REG, 0);
+    outb(PCI_CFGMECH2_FORWARD_REG, 0);
+}
+
 void
 ix86PciInit()
 {

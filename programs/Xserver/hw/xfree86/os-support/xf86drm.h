@@ -25,7 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * $PI: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.41 1999/06/24 18:37:13 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.1 1999/06/14 07:31:57 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.2 1999/06/27 14:08:17 dawes Exp $
  * 
  */
 
@@ -164,7 +164,7 @@ typedef struct _drmBufMap {
 } drmBufMap, *drmBufMapPtr;
 
 typedef struct _drmLock {
-    __volatile__ unsigned int lock;
+    volatile unsigned int lock;
     char                      padding[60];
     /* This is big enough for most current (and future?) architectures: 
        DEC Alpha:              32 bytes

@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_dac.c,v 1.14 1999/06/20 05:23:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_dac.c,v 1.15 1999/06/20 08:41:34 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -285,10 +285,12 @@ Permedia2Save(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     glintReg->glintRegs[VClkCtl >> 3] = GLINT_READ_REG(VClkCtl);
     glintReg->glintRegs[ChipConfig >> 3] = GLINT_READ_REG(ChipConfig);
 
-    Permedia2ReadAddress(pScrn, 0x00);
     
-    for (i=0;i<768;i++)
+    for (i=0;i<768;i++) {
+    	Permedia2ReadAddress(pScrn, i);
 	glintReg->cmap[i] = Permedia2ReadData(pScrn);
+    }
+
     glintReg->DacRegs[PM2DACIndexColorKeyOverlay] = 
 				Permedia2InIndReg(pScrn, PM2DACIndexColorKeyOverlay);
     glintReg->DacRegs[PM2DACIndexColorKeyControl] = 
@@ -380,9 +382,10 @@ Permedia2Restore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     Permedia2OutIndReg(pScrn, PM2DACIndexClockAP, 0x00, 
 					glintReg->DacRegs[PM2DACIndexClockAP]);
 
-    Permedia2WriteAddress(pScrn, 0x00);
-    for (i=0;i<768;i++)
+    for (i=0;i<768;i++) {
+    	Permedia2WriteAddress(pScrn, i);
         Permedia2WriteData(pScrn, glintReg->cmap[i]);
+    }
 
     if (pGlint->MemClock) {
         Permedia2OutIndReg(pScrn, PM2DACIndexMemClockM, 0x00, 

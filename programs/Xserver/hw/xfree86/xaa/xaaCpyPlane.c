@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaCpyPlane.c,v 1.6 1999/01/14 13:05:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaCpyPlane.c,v 1.7 1999/05/30 03:03:30 dawes Exp $ */
 
 /*
    A CopyPlane function that handles bitmap->screen copies and
@@ -14,6 +14,7 @@
 #include "xf86.h"
 #include "xf86_ansic.h"
 #include "xf86_OSproc.h"
+#include "servermd.h"
 
 #include "X.h"
 #include "scrnintstr.h"
@@ -120,7 +121,7 @@ XAACopyPlaneNtoNColorExpand(
     while(numrects--) {	
 	width = pbox->x2 - pbox->x1;
 	h = height = pbox->y2 - pbox->y1;
-        pitch = ((width + 31) >> 5) << 2;
+	pitch = BitmapBytePad(width);
 
 	if(!(data = ALLOCATE_LOCAL(height * pitch)))
 	   goto ALLOC_FAILED;

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.57 1999/06/06 08:47:42 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.58 1999/06/13 13:46:43 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1832,6 +1832,16 @@ LintLibReferences(varname,libname,libsource)
 	$(CC) -c $(CFLAGS) options $*.c
 #endif
 
+/*
+ * CompileCToAsm - compile C file to assembler
+ */
+#ifndef CompileCToAsm
+#define CompileCToAsm(options) RemoveFile($@)				@@\
+	ClearmakeOSName \
+	$(CC) -S $(CFLAGS) options $*.c
+#endif
+
+
 #ifndef ObjectCplusplusCompile
 #define ObjectCplusplusCompile(options) RemoveFile($@)			@@\
 	ClearmakeOSName \
@@ -1977,6 +1987,9 @@ SpecialObjectRule(basename.Osuf,basename.c depends,options)		@@\
 									@@\
 basename.i: basename.c depends						@@\
 	CPPOnlyCompile(basename.c,options)				@@\
+									@@\
+basename.s: basename.c depends						@@\
+	CompileCToAsm(options)						@@\
 									@@\
 CenterLoadTarget(debug_src,basename.c,NullParameter,$(ALLDEFINES) options)
 #endif /* SpecialCObjectRule */

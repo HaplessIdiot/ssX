@@ -1,4 +1,38 @@
+XFree86 3.9Pv (4 July 1999)
+2816. Add some imake rules to allow easy compilation of .c files to assembler.
+2815. Use SpecialCObjectRule() in favour of SpecialObjectRule().
+2814. Fix lots of 64-bit problems in XAA (#2967, Mark Vojkovich).
+2813. Add a new DGA request to allow switching the DGA pixmap from one the
+      size of the framebuffer to one the size of the viewport that you
+      can move around (#2966, Mark Vojkovich).
+2812. Make sure that all Xinerama heads have the same root window depth,
+      and don't advertise backing store or save unders as being available
+      unless it's available on all heads (#2965, Mark Vojkovich).
+2811. Some Xaw and xedit updates (#2964, Paulo Cesar Pereira de Andrade).
+2810. Some DRI updates (#2962, Rik Faith).
+2809. Fix a double-free problem in the mouse driver (#2959, Egbert Eich).
+2808. Add some debugging code to xalloc.c to detect and allow trapping of
+      double xfree() calls (#2954, Egbert Eich).
+2807. Add Single GLINT MX support for Direct Rendering, which now allows
+      ELSA Gloria XXL to take part in this (#2592, 2955, 2957, 2958,
+      Alan Hourihane and #2960, Rik Faith).
+2806. Add ScanlineCPU function to the glint driver for PM2 when pci
+      retries aren't used (#2952, Alan Hourihane).
+2805. Use mediumraw keyboard mode for LinuxPPC (#2946, Gerd Knorr).
+2806. Xterm patch #110 (#2943, Thomas Dickey).
+2803. Add CyberBlade/i7 (Socket 7), CyberBlade/i7 DSTN (Laptop Socket 7) and
+      CyberBlade/i1 (Slot 1) support to the trident driver (#2940,
+      Alan Hourihane).
+2802. Some new PCI ids for Cyberblades and Via MVP4 (#2939, Alan Hourihane).
+2801. Replace `__volatile__' in xf86drm.h with `volatile' (#2938,
+      Takaaki Nomura).
+2800. Fix a problem with the umask not being reset in some cases in the
+      xtrans code (#2936, Bill Nottingham).
+2799. Improve the latency associated with writing to the PCI config space,
+      which is important for RAC to work efficiently (Egbert Eich).
+
 XFree86 3.9Pu (27 June 1999)
+2798. Xterm patch #109 (#2920, Thomas Dickey).
 2797. Xaw and xedit updates (#2932, 2933, Paulo Cesar Pereira de Andrade).
 2796. Make the "fifo_conservative" memory settings default for the s3virge
       accelerator (#2931, Kevin Brosius).
@@ -8273,4 +8307,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.785 1999/06/27 14:07:42 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.786 1999/06/27 17:00:59 dawes Exp $

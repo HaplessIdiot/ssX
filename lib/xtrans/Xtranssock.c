@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.40 1999/03/28 15:32:08 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.41 1999/06/20 08:41:23 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -930,6 +930,7 @@ TRANS(SocketUNIXCreateListener) (XtransConnInfo ciptr, char *port)
     if (trans_mkdir(UNIX_DIR, mode) == -1) {
 	PRMSG (1, "SocketUNIXCreateListener: mkdir(%s) failed, errno = %d\n",
 	       UNIX_DIR, errno, 0);
+	(void) umask (oldUmask);
 	return TRANS_CREATE_LISTENER_FAILED;
     }
 #endif
@@ -960,6 +961,7 @@ TRANS(SocketUNIXCreateListener) (XtransConnInfo ciptr, char *port)
 	PRMSG (1,
     "SocketUNIXCreateListener: ...SocketCreateListener() failed\n",
 	    0, 0, 0);
+	(void) umask (oldUmask);
 	return status;
     }
 
@@ -977,6 +979,7 @@ TRANS(SocketUNIXCreateListener) (XtransConnInfo ciptr, char *port)
         PRMSG (1,
         "SocketUNIXCreateListener: Can't allocate space for the addr\n",
 	    0, 0, 0);
+	(void) umask (oldUmask);
         return TRANS_CREATE_LISTENER_FAILED;
     }
 
@@ -1024,6 +1027,7 @@ TRANS(SocketUNIXResetListener) (XtransConnInfo ciptr)
         if (trans_mkdir(UNIX_DIR, mode) == -1) {
             PRMSG (1, "SocketUNIXResetListener: mkdir(%s) failed, errno = %d\n",
 	    UNIX_DIR, errno, 0);
+	    (void) umask (oldUmask);
 	    return TRANS_RESET_FAILURE;
         }
 #endif
@@ -1034,6 +1038,7 @@ TRANS(SocketUNIXResetListener) (XtransConnInfo ciptr)
 	if ((ciptr->fd = socket (AF_UNIX, SOCK_STREAM, 0)) < 0)
 	{
 	    TRANS(FreeConnInfo) (ciptr);
+	    (void) umask (oldUmask);
 	    return TRANS_RESET_FAILURE;
 	}
 
@@ -1048,6 +1053,8 @@ TRANS(SocketUNIXResetListener) (XtransConnInfo ciptr)
 	{
 	    close (ciptr->fd);
 	    TRANS(FreeConnInfo) (ciptr);
+	    (void) umask (oldUmask);
+	    (void) umask (oldUmask);
 	    return TRANS_RESET_FAILURE;
 	}
 

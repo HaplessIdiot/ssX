@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.14 1999/03/21 07:35:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.15 1999/05/30 03:03:32 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -445,7 +445,7 @@ XAAPutImage(
 	pbox = pClipBoxes;
 
 	if(format == XYBitmap) {
-	    srcwidth = ((leftPad + w + 31) >> 5) << 2;
+	    srcwidth = BitmapBytePad(leftPad + w);
 	    while(nboxes--) {
 		srcx = pbox->x1 - TheRect.x + leftPad;
 		srcy = pbox->y1 - TheRect.y;
@@ -459,7 +459,7 @@ XAAPutImage(
 	    }
         } else if(format == ZPixmap) {
 	    int Bpp = bpp >> 3;
-	    srcwidth = (((leftPad + w) * Bpp) + 3) & ~0x00000003;
+	    srcwidth = PixmapBytePad(leftPad + w, depth);
 	    while(nboxes--) {
 		srcx = pbox->x1 - TheRect.x + leftPad;
 		srcy = pbox->y1 - TheRect.y;
@@ -477,7 +477,7 @@ XAAPutImage(
 	    unsigned long i, mask;
 	    BoxPtr pntBox;
 	    
-	    srcwidth = ((leftPad + w + 31) >> 5) << 2;
+	    srcwidth = BitmapBytePad(w + leftPad);
 	    increment = h * srcwidth;
  	    i = 1 << (depth - 1);
 	    mask = ~0;

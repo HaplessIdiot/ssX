@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.236 1999/06/21 10:06:12 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.237 1999/06/27 14:07:17 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -426,9 +426,13 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 /*
  * This enables building DRI support into video drivers, which can be done
  * even on platforms that don't have functional DRI support.
+ *
+ * Defining BuildXF86DRIDriverSupport to YES will not work until we have a
+ * separate set of defines set up for building driver-only support for the
+ * DRI.
  */
 #ifndef BuildXF86DRIDriverSupport
-#define BuildXF86DRIDriverSupport (DoLoadableServer || BuildXF86DRI)
+#define BuildXF86DRIDriverSupport NO
 #endif
 
 #if BuildGlxExt

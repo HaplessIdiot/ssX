@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.100 1999/06/20 05:23:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.101 1999/06/27 14:08:15 dawes Exp $ */
 
 /*
  *
@@ -847,9 +847,7 @@ LOOKUP xfree86LookupTab[] = {
 #endif
 
    /* Globals from xf86Globals.c and xf86Priv.h */
-#ifdef XF86DRI
    SYMVAR(xf86ConfigDRI)
-#endif
 
   { 0, 0 },
 

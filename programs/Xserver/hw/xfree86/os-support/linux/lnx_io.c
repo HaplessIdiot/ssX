@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_io.c,v 3.6 1999/05/07 02:56:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_io.c,v 3.7 1999/05/22 08:40:13 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Dawes <dawes@xfree86.org>
@@ -82,7 +82,11 @@ xf86KbdOn()
 {
 	struct termios nTty;
 
+#ifdef __powerpc__
+	ioctl(xf86Info.consoleFd, KDSKBMODE, K_MEDIUMRAW);
+#else
 	ioctl(xf86Info.consoleFd, KDSKBMODE, K_RAW);
+#endif
 	nTty = kbdtty;
 	nTty.c_iflag = (IGNPAR | IGNBRK) & (~PARMRK) & (~ISTRIP);
 	nTty.c_oflag = 0;

@@ -19,7 +19,7 @@
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.6 1999/05/30 02:28:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.7 1999/06/27 14:07:39 dawes Exp $ */
 
 #define NEED_REPLIES
 #include <stdio.h>
@@ -601,6 +601,8 @@ extern
 Bool PanoramiXCreateConnectionBlock(void)
 {
     int i, j, length;
+    Bool disableBackingStore = FALSE;
+    Bool disableSaveUnders = FALSE;
     int old_width, old_height;
     int width_mult, height_mult;
     xWindowRoot *root;
@@ -608,6 +610,7 @@ Bool PanoramiXCreateConnectionBlock(void)
     xVisualType *visual;
     xDepth *depth;
     VisualPtr pVisual;
+    ScreenPtr pScreen;
 
     /*
      *	Do normal CreateConnectionBlock but faking it for only one screen
@@ -616,6 +619,28 @@ Bool PanoramiXCreateConnectionBlock(void)
     if(!PanoramiXNumDepths) {
 	ErrorF("PanoramiX error: Incompatible screens. No common visuals\n");
 	return FALSE;
+    }
+
+    for(i = 1; i < screenInfo.numScreens; i++) {
+	pScreen = screenInfo.screens[i];
+	if(pScreen->rootDepth != screenInfo.screens[0]->rootDepth) {
+	    ErrorF("PanoramiX error: Incompatible screens. Root window depths differ\n");
+	    return FALSE;
+	}
+	if(pScreen->backingStoreSupport != screenInfo.screens[0]->backingStoreSupport)
+	     disableBackingStore = TRUE;
+	if(pScreen->saveUnderSupport != screenInfo.screens[0]->saveUnderSupport)
+	     disableSaveUnders = TRUE;
+    }
+
+    if(disableBackingStore || disableSaveUnders) {
+    	for(i = 0; i < screenInfo.numScreens; i++) {
+	    pScreen = screenInfo.screens[i];
+	    if(disableBackingStore)
+		pScreen->backingStoreSupport = NotUseful;
+	    if(disableSaveUnders)
+		pScreen->saveUnderSupport = NotUseful;
+	}
     }
 
     i = screenInfo.numScreens;

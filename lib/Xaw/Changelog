@@ -1243,7 +1243,7 @@ xedit.c:
  + Updated xedit.man.
 
 
-# 26 Jun 1999
+#2932 26 Jun 1999
 -- Xaw --
  + Added a new tip resource to the SimpleWidget. This may also be seen as
    a test of the binary compatibility issues. Besides of being a new feature,
@@ -1261,5 +1261,15 @@ xedit.c:
  + Fixes xedit.man to avoid problems with accented characters.
 
 
+# 3 Jul 1999
+-- Xaw --
+ + Fix for problem found in the search/replace dialog when using splitted
+   windows in xedit.
+ + Added initialization for the display_list field of the Tree widget.
 
-$XFree86: xc/lib/Xaw/Changelog,v 3.26 1999/06/20 08:40:58 dawes Exp $
+-- xedit --
+ + Fixed some problems in the undo code of ispell interface.
+
+
+
+$XFree86: xc/lib/Xaw/Changelog,v 3.27 1999/06/27 14:07:32 dawes Exp $

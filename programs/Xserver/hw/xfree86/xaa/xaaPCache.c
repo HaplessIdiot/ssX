@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.18 1999/04/11 13:11:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.19 1999/06/20 08:41:39 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -1531,8 +1531,8 @@ XAACacheMonoStipple(ScrnInfoPtr pScrn, PixmapPtr pPix)
         else    	funcNo = 0;
    } else 		funcNo = 2;
 
-   dwords = ((pCache->w * bpp) + 31) >> 5;
-   pad = dwords << 2;
+   pad = BitmapBytePad(pCache->w * bpp);
+   dwords = pad >> 2;
    dstPtr = data = (unsigned char*)ALLOCATE_LOCAL(pad * pCache->h);
    srcPtr = (unsigned char*)pPix->devPrivate.ptr;
 
@@ -1541,6 +1541,7 @@ XAACacheMonoStipple(ScrnInfoPtr pScrn, PixmapPtr pPix)
    else
 	StippleFunc = XAAStippleScanlineFuncLSBFirst[funcNo];
 
+   /* don't bother generating more than we'll ever use */
    max = ((pScrn->displayWidth + w - 1) + 31) >> 5;
    if(dwords > max)
 	dwords = max;
@@ -1855,9 +1856,6 @@ XAAWriteBitmapToCacheLinear(
    DoChangeGC(pGC, GCForeground | GCBackground, gcvals, 0);
    ValidateGC((DrawablePtr)pDstPix, pGC);
 
-   /* We assume that there is no leftPad.  I think that's true.
-       For now anyhow.  */
-
    (*pGC->ops->PutImage)((DrawablePtr)pDstPix, pGC, 1, x, y, w, h, 0,
 						XYBitmap, (pointer)src);
 
@@ -1936,17 +1934,7 @@ XAAWriteMono8x8PatternToCache(
    
    pCache->offsets = pCachePriv->MonoOffsets;
 
-   switch(Bpp) {
-   case 1:
-   case 3: pad = (pCache->w + 3) & ~0x03; break;
-   case 2: pad = (pCache->w + 1) & ~0x01; break;
-   case 4: pad = pCache->w;               break;
-   default: ErrorF("Bad depth %i in XAAWriteMono8x8PatternToCache\n",
-						pScrn->bitsPerPixel);
-	    return;
-   } 
-   
-   pad *= Bpp;
+   pad = BitmapBytePad(pCache->w * pScrn->bitsPerPixel);
 
    data = (unsigned char*)ALLOCATE_LOCAL(pad * pCache->h);
    if(!data) return;
@@ -1992,7 +1980,7 @@ XAAWriteColor8x8PatternToCache(
 
    if(pixPriv->flags & REDUCIBLE_TO_2_COLOR) {
 	CARD32* ptr;
-	pad = ((pCache->w + 31) >> 5) << 2;
+	pad = BitmapBytePad(pCache->w);
 	data = (unsigned char*)ALLOCATE_LOCAL(pad * pCache->h);
 	if(!data) return;
 
@@ -2025,7 +2013,7 @@ XAAWriteColor8x8PatternToCache(
    Bpp = pScrn->bitsPerPixel >> 3;
    h = min(8,pPix->drawable.height);
    w = min(8,pPix->drawable.width);
-   pad = ((pCache->w * Bpp) + 3) & ~0x03;
+   pad = BitmapBytePad(pCache->w * pScrn->bitsPerPixel);
 
    data = (unsigned char*)ALLOCATE_LOCAL(pad * pCache->h);
    if(!data) return;

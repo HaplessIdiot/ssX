@@ -1,7 +1,7 @@
 /*
    Copyright (c) 1999  XFree86 Inc
 */
-/* $XFree86: xc/include/extensions/xf86dga.h,v 3.13 1999/06/20 05:23:20 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86dga.h,v 3.14 1999/06/20 08:40:55 dawes Exp $ */
 
 #ifndef _XF86DGA_H_
 #define _XF86DGA_H_
@@ -28,6 +28,7 @@
 #define X_XDGAOpenFramebuffer		22
 #define X_XDGACloseFramebuffer		23
 #define X_XDGASetClientVersion		24
+#define X_XDGAChangePixmapMode		25
 
 
 #define XDGAConcurrentAcces	0x00000001
@@ -45,6 +46,9 @@
 #define XDGANeedRoot		0x00000001
 
 #define XF86DGANumberEvents		7
+
+#define XDGAPixmapModeLarge		0
+#define XDGAPixmapModeSmall		1
 
 #define XF86DGAClientNotLocal		0
 #define XF86DGANoDirectVideoMode	1
@@ -232,6 +236,14 @@ void XDGAFlush(
 
 Bool XDGASetClientVersion(
     Display	*dpy
+);
+
+void XDGAChangePixmapMode(
+    Display 	*dpy,
+    int		screen,
+    int		x,
+    int		y,
+    int		mode
 );
 
 

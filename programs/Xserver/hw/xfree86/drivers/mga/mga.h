@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.41 1999/06/14 06:06:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.42 1999/06/20 08:41:35 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -181,6 +181,7 @@ typedef struct {
     I2CBusPtr		I2C;
     Bool		FBDev;
     int			colorKey;
+    int			fifoCount;
 } MGARec, *MGAPtr;
 
 extern CARD32 MGAAtype[16];

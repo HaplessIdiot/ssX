@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.15 1999/06/12 07:19:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.16 1999/06/13 07:11:06 dawes Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -19,6 +19,7 @@
  * 	pciWriteByte() - Write an 8 bit value to a PCI devices cfg space
  *	pciSetBitsLong() - Write a 32 bit value against a mask
  *      pciSetBitsByte() - Write an 8 bit value against a mask
+ *      pciLongFunc() - Return pointer to the requested low level function
  * 	pciTag()       - Return tag for a given PCI bus, device, & function
  * 	pciBusAddrToHostAddr() - Convert a PCI address to a host address
  * 	pciHostAddrToBusAddr() - Convert a host address to a PCI address
@@ -381,7 +382,6 @@ pciSetBitsLong(PCITAG tag, int offset, CARD32 mask, CARD32 val)
     if (bus < pciNumBuses && pciBusInfo[bus] &&
 	pciBusInfo[bus]->funcs.pciReadLong) {
 	(*pciBusInfo[bus]->funcs.pciSetBitsLong)(tag, offset, mask, val);
-
     }
 }
 
@@ -396,6 +396,28 @@ pciSetBitsByte(PCITAG tag, int offset, CARD8 mask, CARD8 val)
   tmp_mask = mask << shift;
   tmp_val = val << shift;
   pciSetBitsLong(tag, aligned_offset, tmp_mask, tmp_val);
+}
+
+pointer
+pciLongFunc(PCITAG tag, pciFunc func)
+{
+    int bus = PCI_BUS_FROM_TAG(tag);
+
+    if (!pciInitialized)
+	pciInit();
+
+    if (bus > pciNumBuses || !pciBusInfo[bus] ||
+	!pciBusInfo[bus]->funcs.pciReadLong) return NULL;
+	
+    switch (func) {
+    case WRITE:
+	return 	(void *)pciBusInfo[bus]->funcs.pciWriteLong;
+    case READ:
+	return 	(void *)pciBusInfo[bus]->funcs.pciReadLong;
+    case SET_BITS:
+	return 	(void *)pciBusInfo[bus]->funcs.pciSetBitsLong;
+    }
+    return NULL;
 }
 
 ADDRESS

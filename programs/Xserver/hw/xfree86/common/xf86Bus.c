@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.29 1999/06/20 07:14:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.30 1999/06/27 14:07:53 dawes Exp $ */
 #define DEBUG
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -483,7 +483,7 @@ xf86ClaimPciSlot(int bus, int device, int func, DriverPtr drvp,
 	p->inUse = FALSE;
 	/* Here we initialize the access structure */
 	p->access = xnfcalloc(1,sizeof(EntityAccessRec));
-	while (*ppaccp) {
+	while (ppaccp && *ppaccp) {
 	    if ((*ppaccp)->busnum == bus
 		&& (*ppaccp)->devnum == device
 		&& (*ppaccp)->funcnum == func) {
@@ -494,7 +494,7 @@ xf86ClaimPciSlot(int bus, int device, int func, DriverPtr drvp,
 	    ppaccp++;
 	}
 	/* This should not happen ! */
-	if (!*ppaccp) {
+	if (!ppaccp || !*ppaccp) {
 	    p->access->fallback = &AccessNULL;
 	    p->access->pAccess = &AccessNULL;
 	}
@@ -723,18 +723,19 @@ static void
 pciIoAccessEnable(void* arg)
 {
 #ifdef DEBUG
-ErrorF("pciIoAccessEnable: 0x%05lx\n", *(PCITAG *)arg);
+    ErrorF("pciIoAccessEnable: 0x%05lx\n", *(PCITAG *)arg);
 #endif
-    pciSetBitsLong((*(PCITAG *)arg), PCI_CMD_STAT_REG, SETBITS, SETBITS);
+    ((pciArg*)arg)->func(((pciArg*)arg)->tag, PCI_CMD_STAT_REG,
+			 SETBITS, SETBITS);
 }
 
 static void
 pciIoAccessDisable(void* arg)
 {
 #ifdef DEBUG
-ErrorF("pciIoAccessDisable: 0x%05lx\n", *(PCITAG *)arg);
+    ErrorF("pciIoAccessDisable: 0x%05lx\n", *(PCITAG *)arg);
 #endif
-    pciSetBitsLong((*(PCITAG *)arg), PCI_CMD_STAT_REG, SETBITS, 0);
+    ((pciArg*)arg)->func(((pciArg*)arg)->tag, PCI_CMD_STAT_REG, SETBITS, 0);
 }
 
 #undef SETBITS
@@ -743,18 +744,19 @@ static void
 pciIo_MemAccessEnable(void* arg)
 {
 #ifdef DEBUG
-ErrorF("pciIo_MemAccessEnable: 0x%05lx\n", *(PCITAG *)arg);
+    ErrorF("pciIo_MemAccessEnable: 0x%05lx\n", *(PCITAG *)arg);
 #endif
-    pciSetBitsLong((*(PCITAG *)arg), PCI_CMD_STAT_REG, SETBITS, SETBITS);
+    ((pciArg*)arg)->func(((pciArg*)arg)->tag, PCI_CMD_STAT_REG,
+			 SETBITS, SETBITS);
 }
 
 static void
 pciIo_MemAccessDisable(void* arg)
 {
 #ifdef DEBUG
-ErrorF("pciIo_MemAccessDisable: 0x%05lx\n", *(PCITAG *)arg);
+    ErrorF("pciIo_MemAccessDisable: 0x%05lx\n", *(PCITAG *)arg);
 #endif
-    pciSetBitsLong((*(PCITAG *)arg), PCI_CMD_STAT_REG, SETBITS, 0);
+    ((pciArg*)arg)->func(((pciArg*)arg)->tag, PCI_CMD_STAT_REG, SETBITS, 0);
 }
 
 #undef SETBITS
@@ -763,18 +765,19 @@ static void
 pciMemAccessEnable(void* arg)
 {
 #ifdef DEBUG
-ErrorF("pciMemAccessEnable: 0x%05lx\n", *(PCITAG *)arg);
+    ErrorF("pciMemAccessEnable: 0x%05lx\n", *(PCITAG *)arg);
 #endif
-    pciSetBitsLong((*(PCITAG *)arg), PCI_CMD_STAT_REG, SETBITS, SETBITS);
+    ((pciArg*)arg)->func(((pciArg*)arg)->tag, PCI_CMD_STAT_REG,
+			 SETBITS, SETBITS);
 }
 
 static void
 pciMemAccessDisable(void* arg)
 {
 #ifdef DEBUG
-ErrorF("pciMemAccessDisable: 0x%05lx\n", *(PCITAG *)arg);
+    ErrorF("pciMemAccessDisable: 0x%05lx\n", *(PCITAG *)arg);
 #endif
-    pciSetBitsLong((*(PCITAG *)arg), PCI_CMD_STAT_REG,SETBITS, 0);
+    ((pciArg*)arg)->func(((pciArg*)arg)->tag, PCI_CMD_STAT_REG,SETBITS, 0);
 }
 #undef SETBITS
 
@@ -784,19 +787,14 @@ ErrorF("pciMemAccessDisable: 0x%05lx\n", *(PCITAG *)arg);
 static void
 pciBusAccessEnable(BusAccPtr ptr)
 {
-#if 0
-    pciSetBitsByte(ptr->busdep.pci.acc,PCI_PCI_BRIDGE_CONTROL_REG,SETBITS,SETBITS);
-#endif
-    pciSetBitsLong(ptr->busdep.pci.acc,PCI_PCI_BRDG_CTRL_BASE,SETBITS,SETBITS);
+    ptr->busdep.pci.func(ptr->busdep.pci.acc,PCI_PCI_BRDG_CTRL_BASE,
+			 SETBITS,SETBITS);
 }
 
 static void
 pciBusAccessDisable(BusAccPtr ptr)
 {
-#if 0
-    pciSetBitsByte(ptr->busdep.pci.acc,PCI_PCI_BRIDGE_CONTROL_REG,SETBITS,0);
-#endif
-    pciSetBitsLong(ptr->busdep.pci.acc,PCI_PCI_BRDG_CTRL_BASE,SETBITS,0);
+    ptr->busdep.pci.func(ptr->busdep.pci.acc,PCI_PCI_BRDG_CTRL_BASE,SETBITS,0);
 }
 #undef SETBITS
 #undef SHIFT_BITS
@@ -903,17 +901,19 @@ initPciState(void)
 	    pcaccp->busnum = pvp->bus; 
  	    pcaccp->devnum = pvp->device; 
  	    pcaccp->funcnum = pvp->func;
- 	    pcaccp->tag = pciTag(pvp->bus, pvp->device, pvp->func);
+ 	    pcaccp->arg.tag = pciTag(pvp->bus, pvp->device, pvp->func);
+ 	    pcaccp->arg.func =
+			(SetBitsProcPtr)pciLongFunc(pcaccp->arg.tag,SET_BITS);
   	    pcaccp->ioAccess.AccessDisable = pciIoAccessDisable;
   	    pcaccp->ioAccess.AccessEnable = pciIoAccessEnable;
-  	    pcaccp->ioAccess.arg = &pcaccp->tag;
+  	    pcaccp->ioAccess.arg = &pcaccp->arg;
 	    pcaccp->io_memAccess.AccessDisable = pciIo_MemAccessDisable;
 	    pcaccp->io_memAccess.AccessEnable = pciIo_MemAccessEnable;
-	    pcaccp->io_memAccess.arg = &pcaccp->tag;
+	    pcaccp->io_memAccess.arg = &pcaccp->arg;
 	    pcaccp->memAccess.AccessDisable = pciMemAccessDisable;
 	    pcaccp->memAccess.AccessEnable = pciMemAccessEnable;
-	    pcaccp->memAccess.arg = &pcaccp->tag;
- 	    savePciState(pcaccp->tag, &pcaccp->save);
+	    pcaccp->memAccess.arg = &pcaccp->arg;
+ 	    savePciState(pcaccp->arg.tag, &pcaccp->save);
 	}
     }
 }
@@ -977,6 +977,8 @@ initPciBusState(void)
 	    pbap->enable_f = pciBusAccessEnable;
 	    pbap->disable_f = pciBusAccessDisable;
 	    pbap->busdep.pci.acc = pciTag(pbp->brbus,pbp->brdev,pbp->brfunc);
+	    pbap->busdep.pci.func =
+		(SetBitsProcPtr)pciLongFunc(pbap->busdep.pci.acc,SET_BITS);
 	    savePciBusState(pbap);
 	    break;
 	case PCI_SUBCLASS_BRIDGE_ISA:
@@ -1032,8 +1034,8 @@ PciStateEnter(void)
 
     while ((paccp = xf86PciAccInfo[i]) != NULL) {
 	i++;
-	savePciState(paccp->tag, &paccp->save);
-	restorePciState(paccp->tag, &paccp->restore);
+	savePciState(paccp->arg.tag, &paccp->save);
+	restorePciState(paccp->arg.tag, &paccp->restore);
     }
 }
 
@@ -1060,8 +1062,8 @@ PciStateLeave(void)
 
     while ((paccp = xf86PciAccInfo[i]) != NULL) {
 	i++;
-	savePciState(paccp->tag, &paccp->restore);
-	restorePciState(paccp->tag, &paccp->save);
+	savePciState(paccp->arg.tag, &paccp->restore);
+	restorePciState(paccp->arg.tag, &paccp->save);
     }
 }
 
@@ -2200,7 +2202,7 @@ xf86GetPciSysRes(resPtr *res, int flags)
     }
 }
 
-static Bool fixPciResource(unsigned int prt, memType alignment,
+static Bool fixPciResource(int prt, memType alignment,
 			   pciVideoPtr pvp, long type);
 
 static void
@@ -2337,7 +2339,7 @@ ValidatePci(void)
 #ifdef DEBUG
 		sleep(2);
 #endif
-		fixPciResource(pciIo | i, 0, pvp, range.type);
+		fixPciResource(i, 0, pvp, range.type);
 	    } else if (pvp->memBase[i]) {
 		RANGE(range,pvp->memBase[i],
 		      pvp->memBase[i] + (1 << pvp->size[i]) - 1,
@@ -2360,7 +2362,7 @@ ValidatePci(void)
 #ifdef DEBUG
 		sleep(2);
 #endif
-		fixPciResource(pciMem | i, 0, pvp, range.type);
+		fixPciResource(i, 0, pvp, range.type);
 	    }
 	    xf86FreeResList(own);
 	}
@@ -2382,7 +2384,7 @@ ValidatePci(void)
 #ifdef DEBUG
 	    sleep(2);
 #endif
-	    fixPciResource(pciBios, 0, pvp, range.type);
+	    fixPciResource(6, 0, pvp, range.type);
 	}
 	xf86FreeResList(avoid);
 	xf86FreeResList(Sys);
@@ -3518,7 +3520,7 @@ xf86IsEntityPrimary(int entityIndex)
 }
 
 static Bool
-fixPciResource(unsigned int prt, memType alignment, pciVideoPtr pvp, long type)
+fixPciResource(int prt, memType alignment, pciVideoPtr pvp, long type)
 {
     int  res_n;
     memType *p_base;
@@ -3538,24 +3540,23 @@ fixPciResource(unsigned int prt, memType alignment, pciVideoPtr pvp, long type)
 
     type &= ResAccMask;
     if (!type) type = ResShared;
-    switch (prt & pciPhysMask) {
-    case pciMem:
-	type |= ResMem;
-	res_n = prt & pciRegMask;
-	p_base = &(pvp->memBase[res_n]);
-	p_size = &(pvp->size[res_n]);
-	p_type = pvp->type[res_n];
-	end_w = end_w_2nd = PCI_MEMBASE_LENGTH_TYPE(p_type);
-	break;
-    case pciIo:
-	type |= ResIo;
-	res_n = prt & pciRegMask;
-	p_base = &(pvp->ioBase[res_n]);
-	p_size = &(pvp->size[res_n]);
-	p_type = pvp->type[res_n];
-	end_w = ~(CARD16)0;
-	break;
-    case pciBios:
+    if (prt < 6) {
+	if (pvp->memBase[prt]) {
+	    type |= ResMem;
+	    res_n = prt;
+	    p_base = &(pvp->memBase[res_n]);
+	    p_size = &(pvp->size[res_n]);
+	    p_type = pvp->type[res_n];
+	    end_w = end_w_2nd = PCI_MEMBASE_LENGTH_TYPE(p_type);
+	} else if (pvp->ioBase[prt]){
+	    type |= ResIo;
+	    res_n = prt;
+	    p_base = &(pvp->ioBase[res_n]);
+	    p_size = &(pvp->size[res_n]);
+	    p_type = pvp->type[res_n];
+	    end_w = ~(CARD16)0;
+	} else return FALSE;
+    } else if (prt == 6) {
 	type |= ResMem;
 	res_n = 0xff;	/* special flag for bios rom */
 	p_base = &(pvp->biosBase);
@@ -3564,10 +3565,7 @@ fixPciResource(unsigned int prt, memType alignment, pciVideoPtr pvp, long type)
 	p_type = 0;
 	/* bios is always in the 32 bit address range */
 	end_w = end_w_2nd = ~(CARD32)0;
-	break;
-    default:
-	return FALSE;
-    }
+    } else return FALSE;
 
     if (! *p_base) return FALSE;
     
@@ -3678,7 +3676,7 @@ fixPciResource(unsigned int prt, memType alignment, pciVideoPtr pvp, long type)
 }
 
 Bool
-xf86FixPciResource(int entityIndex, unsigned int prt, memType alignment,
+xf86FixPciResource(int entityIndex, int prt, memType alignment,
 		    long type)
 {
     pciVideoPtr pvp = xf86GetPciInfoForEntity(entityIndex);
@@ -3700,12 +3698,12 @@ xf86ReallocatePciResources(int entityIndex, resPtr pRes)
 	case ResMem:
 	    if (pRes->block_begin == pvp->biosBase &&
 		pRes->block_end == pvp->biosBase + (1 << (pvp->biosSize)) - 1)
-		prt = pciBios;
+		prt = 6;
 	    else for (i = 0 ; i < 6; i++) 
 		if (pRes->block_begin == pvp->memBase[i]
 		    && pRes->block_end
 		    == pvp->memBase[i] + (1 << (pvp->size[i])) - 1) {
-		    prt = i | pciMem;
+		    prt = i;
 		    break;
 		}
 	    break;
@@ -3714,7 +3712,7 @@ xf86ReallocatePciResources(int entityIndex, resPtr pRes)
 		if (pRes->block_begin == pvp->ioBase[i]
 		    && pRes->block_end
 		    == pvp->ioBase[i] + (1 << (pvp->size[i])) - 1) {
-		    prt = i | pciIo;
+		    prt = i;
 		    break;
 		}
 	    break;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.33 1999/05/16 10:12:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.34 1999/06/27 14:07:56 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -253,6 +253,9 @@
 #define PCI_CHIP_53C974		0x2020
 
 /* Trident */
+#define PCI_CHIP_8400		0x8400
+#define PCI_CHIP_8420		0x8420
+#define PCI_CHIP_8500		0x8500
 #define PCI_CHIP_9320		0x9320
 #define PCI_CHIP_9388		0x9388
 #define PCI_CHIP_9397		0x9397
@@ -582,7 +585,7 @@ SymTabRec xf86PCIVendorNameInfoData[] = {
 #endif
 
 /* Increase this as required */
-#define MAX_DEV_PER_VENDOR 40
+#define MAX_DEV_PER_VENDOR 45
 
 typedef struct {
     unsigned short VendorID;
@@ -746,6 +749,9 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_9750,		"3DImage975"},
 				{PCI_CHIP_9850,		"3DImage985"},
 				{PCI_CHIP_9880,		"Blade3D"},
+				{PCI_CHIP_8400,		"CyberBlade/i7"},
+				{PCI_CHIP_8420,		"CyberBlade/DSTN/i7"},
+				{PCI_CHIP_8500,		"CyberBlade/i1"},
 				{0x0000,		NULL}}},
 #ifdef VENDOR_INCLUDE_NONVIDEO
      {PCI_VENDOR_ALI, {
@@ -1045,14 +1051,20 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
                                 {0x9100, "320 P" },
 				{0x0000,		NULL}}},
     {PCI_VENDOR_VIA, {
+				{0x0501, "VT 8501 MVP4 Host Bridge" },
                                 {0x0505, "VT 82C505" },
                                 {0x0561, "VT 82C505" },
                                 {0x0571, "VT 82C586 MVP3 IDE Bridge" },
                                 {0x0576, "VT 82C576 3V" },
                                 {0x0586, "VT 82C586 MVP3 ISA Bridge" },
+                                {0x0686, "VT 82C686 MVP4 ISA Bridge" },
                                 {0x0597, "VT 82C598 MVP3 Host Bridge" },
                                 {0x3038, "VT 82C586 MVP3 USB Controller" },
-                                {0x3040, "VT 82C586B Apollo MVP3 ACPI Bridge" },
+                                {0x3040, "VT 82C586B MVP3 ACPI Bridge" },
+				{0x3057, "VT 8501 MVP4 ACPI Bridge" },
+				{0x3058, "VT 8501 MVP4 MultiMedia" },
+				{0x3068, "VT 8501 MVP4 Modem" },
+				{0x8501, "VT 8501 MVP4 PCI/AGP Bridge" },
                                 {0x8598, "VT 82C598 MVP3 PCI/AGP Bridge" },
 				{0x0000,		NULL}}},
     {PCI_VENDOR_VORTEX, {

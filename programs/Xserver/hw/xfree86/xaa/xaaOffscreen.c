@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaOffscreen.c,v 1.3 1999/01/14 13:05:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaOffscreen.c,v 1.4 1999/03/21 07:35:30 dawes Exp $ */
 
 /*
    Copyright (c) 1999 -  The XFree86 Project Inc.
@@ -128,7 +128,7 @@ XAAMoveOutOffscreenPixmap(PixmapPtr pPix)
     height = pPix->drawable.height;
     bitsPerPixel = pPix->drawable.bitsPerPixel;
 
-    devKind = (((width * bitsPerPixel) + 31) >> 5) << 2; /* which macro ?*/
+    devKind = BitmapBytePad(width * bitsPerPixel);
     if(!(data = xalloc(devKind * height)))
 	FatalError("Out of memory\n");
 

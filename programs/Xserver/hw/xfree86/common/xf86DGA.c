@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.18 1999/05/09 10:51:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.19 1999/05/16 10:12:58 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86str.h"
@@ -53,6 +53,7 @@ typedef struct {
    DGAFunctionPtr	funcs;
    int			input;
    ClientPtr		client;
+   int			pixmapMode;
 } DGAScreenRec, *DGAScreenPtr;
 
 
@@ -209,12 +210,56 @@ DGASetDGAMode(
    devRet->mode = device->mode = pMode;
    devRet->pPix = device->pPix = pPix;
    pScreenPriv->current = device;
+   pScreenPriv->pixmapMode = FALSE;
 
    return Success;
 }
 
 
 /*********** exported ones ***************/
+
+
+Bool
+DGAChangePixmapMode(int index, int x, int y, int mode)
+{
+   DGAScreenPtr pScreenPriv;
+   DGADevicePtr pDev;
+   DGAModePtr   pMode;
+   PixmapPtr    pPix;
+
+   if(DGAScreenIndex < 0)
+	return FALSE;
+
+   pScreenPriv = DGA_GET_SCREEN_PRIV(screenInfo.screens[index]);
+
+   if(!pScreenPriv || !pScreenPriv->current || !pScreenPriv->current->pPix)
+	return FALSE;
+
+   pDev = pScreenPriv->current;
+   pPix = pDev->pPix;
+   pMode = pDev->mode;
+
+   if(mode) {
+	if(x > (pMode->pixmapWidth - pMode->viewportWidth))
+	    x = pMode->pixmapWidth - pMode->viewportWidth;
+	if(y > (pMode->pixmapHeight - pMode->viewportHeight))
+	    y = pMode->pixmapHeight - pMode->viewportHeight;
+
+	pPix->drawable.x = x; 
+	pPix->drawable.y = y; 
+	pPix->drawable.width = pMode->viewportWidth; 
+	pPix->drawable.height = pMode->viewportHeight; 
+   } else {
+	pPix->drawable.x = 0; 
+	pPix->drawable.y = 0; 
+	pPix->drawable.width = pMode->pixmapWidth; 
+	pPix->drawable.height = pMode->pixmapHeight; 
+   }
+   pPix->drawable.serialNumber = NEXT_SERIAL_NUMBER;
+   pScreenPriv->pixmapMode = mode;
+
+   return TRUE;
+}
 
 Bool
 DGAAvailable(int index) 

@@ -1,5 +1,0 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/wabep/Imakefile,v 3.7 1997/03/17 07:19:06 hohndel Exp $
-
-#define VGADEFINES -DPC98_WAP
-
-#include "../Imakefile.vga"
