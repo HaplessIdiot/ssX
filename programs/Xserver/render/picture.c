@@ -204,6 +204,7 @@ PictureInit (ScreenPtr pScreen, PictFormatPtr formats, int nformats)
 	if (PictureScreenPrivateIndex < 0)
 	    return FALSE;
 	PictureWindowPrivateIndex = AllocateWindowPrivateIndex();
+	PictureGeneration = serverGeneration;
     }
     if (!formats)
     {
