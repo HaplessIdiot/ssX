@@ -1,4 +1,7 @@
 XFree86 4.4.99.1 (XX March 2004)
+   5. Turn off the DAC for Radeon DPMS modes.  Without this some monitors
+      can be badly affected. (Bugzilla #1221, Hui Yu@ATI, reported by
+      Paul Shupak).
    4. VeraIt.ttf wasn't getting installed (Bugzilla #1226, Matthieu Herrb).
    3. Fix an attempted free of an invalid pointer in ScreenSaverSetAttributes()
       (Bugzilla #1224, Matthieu Herrb, David Dawes).
@@ -18692,7 +18695,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3159 2004/03/01 19:23:23 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3160 2004/03/02 19:43:24 dawes Exp $
 
 
 
