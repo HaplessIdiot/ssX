@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.24tsi Exp $
+XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.25 2003/10/21 17:41:44 tsi Exp $
 
 /*
  * Cygwin shared library rules (DLL versions)
@@ -320,21 +320,6 @@ all:: binary								@@\
 	RemoveFile($(BUILDBINDIR)/binary)				@@\
 	cd $(BUILDBINDIR) && $(CP) $(BUILDBINTOP)/$(CURRENT_DIR)/binary .
 #endif /* LinkBuildBinary */
-
-
-/*
- * ComplexProgramTarget - Imake.rules doesn't wrap the program name
- * with ProgramTargetName(), so we need this rule for Cygwin.
- */
-
-#define ComplexProgramTarget(program)					@@\
-	AllTarget(ProgramTargetName(program))				@@\
-	ProgramTargetHelper(program,SRCS,OBJS,DEPLIBS,$(LOCAL_LIBRARIES),NullParameter) @@\
-	DependTarget()							@@\
-	LintTarget()							@@\
-									@@\
-clean::									@@\
-	RemoveFile(ProgramTargetName(program))
 
 
 #if CrossCompiling
