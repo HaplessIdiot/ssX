@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.3 1994/06/05 13:39:11 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.4 1994/06/12 16:30:23 dawes Exp $
 /******************************************************************************/
 /*
  * This file is provide a quick method for most people to change the
@@ -63,8 +63,8 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.3 1994/06/05 13:39:11 dawes Exp $
  *
  * For information about using LBX, refer to the README in workInProgress/lbx/.
  *
- */
 #define BuildLBX YES
+ */
 
 /* Should probably put this somewhere else */
 #if defined(BuildLBX) && BuildLBX
