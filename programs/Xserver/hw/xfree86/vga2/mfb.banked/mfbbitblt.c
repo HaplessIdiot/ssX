@@ -1,4 +1,3 @@
-/* $XConsortium: mfbbitblt.c,v 1.2 94/04/17 20:32:07 dpw Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -47,7 +46,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbitblt.c,v 1.2 94/04/17 20:32:07 dpw Exp $ */
+/* $XConsortium: mfbbitblt.c,v 5.25 94/04/17 20:28:16 dpw Exp $ */
+/* $XFree86$ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -94,13 +94,29 @@ destination.  this is a simple translation.
  ** Now, the same operation requires no XAlloc()'s, no region function calls,
  ** and much less overhead.  Nice for drawing lots of small pixmaps.
  */
- 
-extern int  (*ourmfbDoBitbltCopy)();
-extern int  mfbDoBitbltXor();
-extern int  (*ourmfbDoBitbltCopyInverted)();
-extern int  mfbDoBitbltOr();
-extern int  mfbDoBitbltGeneral();
 
+extern void (*ourmfbDoBitbltCopy)(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pSrc*/,
+    DrawablePtr /*pDst*/,
+    int /*alu*/,
+    RegionPtr /*prgnDst*/,
+    DDXPointPtr /*pptSrc*/
+#endif
+);
+/* mfbbltCI.c */
+
+extern void (*ourmfbDoBitbltCopyInverted)(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pSrc*/,
+    DrawablePtr /*pDst*/,
+    int /*alu*/,
+    RegionPtr /*prgnDst*/,
+    DDXPointPtr /*pptSrc*/
+#endif
+);
+
+void
 mfbDoBitblt (pSrc, pDst, alu, prgnDst, pptSrc)
     DrawablePtr	    pSrc, pDst;
     int		    alu;
@@ -110,15 +126,20 @@ mfbDoBitblt (pSrc, pDst, alu, prgnDst, pptSrc)
     switch (alu)
     {
     case GXcopy:
-	return ourmfbDoBitbltCopy (pSrc, pDst, alu, prgnDst, pptSrc);
+	(*ourmfbDoBitbltCopy) (pSrc, pDst, alu, prgnDst, pptSrc);
+	break;
     case GXxor:
-	return mfbDoBitbltXor (pSrc, pDst, alu, prgnDst, pptSrc);
+	mfbDoBitbltXor (pSrc, pDst, alu, prgnDst, pptSrc);
+	break;
     case GXcopyInverted:
-	return ourmfbDoBitbltCopyInverted (pSrc, pDst, alu, prgnDst, pptSrc);
+	(*ourmfbDoBitbltCopyInverted) (pSrc, pDst, alu, prgnDst, pptSrc);
+	break;
     case GXor:
-	return mfbDoBitbltOr (pSrc, pDst, alu, prgnDst, pptSrc);
+	mfbDoBitbltOr (pSrc, pDst, alu, prgnDst, pptSrc);
+	break;
     default:
-	return mfbDoBitbltGeneral (pSrc, pDst, alu, prgnDst, pptSrc);
+	mfbDoBitbltGeneral (pSrc, pDst, alu, prgnDst, pptSrc);
+	break;
     }
 }
 
@@ -149,7 +170,7 @@ int dstx, dsty;
     BoxRec fastBox;
     int fastClip = 0;		/* for fast clipping with pixmap source */
     int fastExpose = 0;		/* for fast exposures with pixmap source */
-    int (*localDoBitBlt)();
+    void (*localDoBitBlt)();
 
     origSource.x = srcx;
     origSource.y = srcy;
@@ -264,8 +285,8 @@ int dstx, dsty;
     }
     else
     {
-	(*pGC->pScreen->RegionInit)(&rgnDst, &fastBox, 1);
-	(*pGC->pScreen->Intersect)(&rgnDst, &rgnDst, prgnSrcClip);
+	REGION_INIT(pGC->pScreen, &rgnDst, &fastBox, 1);
+	REGION_INTERSECT(pGC->pScreen, &rgnDst, &rgnDst, prgnSrcClip);
     }
 
     dstx += pDstDrawable->x;
@@ -276,9 +297,9 @@ int dstx, dsty;
 	if (!((WindowPtr)pDstDrawable)->realized)
 	{
 	    if (!fastClip)
-		(*pGC->pScreen->RegionUninit)(&rgnDst);
+		REGION_UNINIT(pGC->pScreen, &rgnDst);
 	    if (freeSrcClip)
-		(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
+		REGION_DESTROY(pGC->pScreen, prgnSrcClip);
 	    return NULL;
 	}
     }
@@ -312,9 +333,13 @@ int dstx, dsty;
 
 	    /* Check to see if the region is empty */
 	    if (fastBox.x1 >= fastBox.x2 || fastBox.y1 >= fastBox.y2)
-		(*pGC->pScreen->RegionInit)(&rgnDst, NullBox, 0);
+	    {
+		REGION_INIT(pGC->pScreen, &rgnDst, NullBox, 0);
+	    }
 	    else
-		(*pGC->pScreen->RegionInit)(&rgnDst, &fastBox, 1);
+	    {
+		REGION_INIT(pGC->pScreen, &rgnDst, &fastBox, 1);
+	    }
 	}
         else
 	{
@@ -322,19 +347,18 @@ int dstx, dsty;
 	       a full blown region.  It is intersected with the
 	       composite clip below. */
 	    fastClip = 0;
-	    (*pGC->pScreen->RegionInit)(&rgnDst, &fastBox,1);
+	    REGION_INIT(pGC->pScreen, &rgnDst, &fastBox,1);
 	}
     }
     else
     {
-        (*pGC->pScreen->TranslateRegion)(&rgnDst, -dx, -dy);
+        REGION_TRANSLATE(pGC->pScreen, &rgnDst, -dx, -dy);
     }
 
     if (!fastClip)
     {
-	(*pGC->pScreen->Intersect)(&rgnDst,
-				   &rgnDst,
-				 ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip);
+	REGION_INTERSECT(pGC->pScreen, &rgnDst, &rgnDst,
+	 ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip);
     }
 
     /* Do bit blitting */
@@ -344,9 +368,9 @@ int dstx, dsty;
 	if(!(pptSrc = (DDXPointPtr)ALLOCATE_LOCAL(numRects *
 						  sizeof(DDXPointRec))))
 	{
-	    (*pGC->pScreen->RegionUninit)(&rgnDst);
+	    REGION_UNINIT(pGC->pScreen, &rgnDst);
 	    if (freeSrcClip)
-		(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
+		REGION_DESTROY(pGC->pScreen, prgnSrcClip);
 	    return NULL;
 	}
 	pbox = REGION_RECTS(&rgnDst);
@@ -375,9 +399,9 @@ int dstx, dsty;
 				  (int)origSource.height,
 				  origDest.x, origDest.y, (unsigned long)0);
     }
-    (*pGC->pScreen->RegionUninit)(&rgnDst);
+    REGION_UNINIT(pGC->pScreen, &rgnDst);
     if (freeSrcClip)
-	(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
+	REGION_DESTROY(pGC->pScreen, prgnSrcClip);
     return prgnExposed;
 }
 
@@ -401,7 +425,7 @@ mfbRegisterCopyPlaneProc (pScreen, proc)
 	    return FALSE;
 	copyPlaneGeneration = serverGeneration;
     }
-    pScreen->devPrivates[copyPlaneScreenIndex].ptr = (pointer) proc;
+    pScreen->devPrivates[copyPlaneScreenIndex].fptr = (pointer (*)()) proc;
     return TRUE;
 }
 
@@ -436,7 +460,7 @@ unsigned long plane;
     {
 	if (copyPlaneScreenIndex >= 0 &&
 	    (copyPlane = (RegionPtr (*)()) 
-		pSrcDrawable->pScreen->devPrivates[copyPlaneScreenIndex].ptr)
+		pSrcDrawable->pScreen->devPrivates[copyPlaneScreenIndex].fptr)
 	    )
 	{
 	    return (*copyPlane) (pSrcDrawable, pDstDrawable,
