@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.103 2003/08/23 10:25:19 twini Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.104 2003/08/23 15:03:13 dawes Exp $ */
 /*
  * Copyright 2001, 2002, 2003 by Thomas Winischhofer, Vienna, Austria.
  *
@@ -296,11 +296,13 @@ static const char *vgahwSymbols[] = {
     NULL
 };
 
+#ifdef XFree86LOADER
 static const char *miscfbSymbols[] = {
     "xf1bppScreenInit",
     "xf4bppScreenInit",
     NULL
 };
+#endif
 
 static const char *fbSymbols[] = {
     "fbPictureInit",
@@ -331,11 +333,13 @@ static const char *ddcSymbols[] = {
     NULL
 };
 
+#ifdef XFree86LOADER
 static const char *i2cSymbols[] = {
     "xf86I2CBusInit",
     "xf86CreateI2CBusRec",
     NULL
 };
+#endif
 
 static const char *int10Symbols[] = {
     "xf86FreeInt10",
