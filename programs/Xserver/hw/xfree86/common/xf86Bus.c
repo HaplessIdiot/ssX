@@ -525,14 +525,14 @@ disableAccess(void)
     for (i = 0; i < xf86NumScreens; i++) {
 	peacc = xf86Screens[i]->CurrentAccess->pIoAccess;
 	while (peacc) {
-	    if (peacc->pAccess->AccessDisable)
+	    if (peacc->pAccess && peacc->pAccess->AccessDisable)
 		peacc->pAccess->AccessDisable(peacc->pAccess->arg);
 	    peacc = peacc->next;
 	}
 	xf86Screens[i]->CurrentAccess->pIoAccess = NULL;
 	peacc = xf86Screens[i]->CurrentAccess->pMemAccess;
 	while (peacc) {
-	    if (peacc->pAccess->AccessDisable)
+	    if (peacc->pAccess && peacc->pAccess->AccessDisable)
 		peacc->pAccess->AccessDisable(peacc->pAccess->arg);
 	    peacc = peacc->next;
 	}

@@ -212,7 +212,9 @@ xf86ExtendedInitInt10(int entityIndex, int Flags)
     } else
 	((linuxInt10Priv*)pInt->private)->base_high = NULL;
 
-    MapCurrentInt10(pInt);
+    if (!MapCurrentInt10(pInt))
+	goto error3;
+    
     Int10Current = pInt;
 
 #ifdef DEBUG

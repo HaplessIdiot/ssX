@@ -1,4 +1,6 @@
 XFree86 4.3.99.903 (xx February 2004)
+ 788. Fixing segfaults that may happen in some corner cases on VT switch
+      and int10 initialization (Egbert Eich).
  787. Increase PCI I/O space size on Linux/PowerPC (Bugzilla #1143,
       Paul Mackerras).
  786. Fix DRI cleanup at exit and re-enabling on reset for the via driver
@@ -18614,7 +18616,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3128 2004/02/04 04:17:52 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3129 2004/02/04 16:30:43 tsi Exp $
 
 
 
