@@ -1,5 +1,6 @@
 XFree86 3.9.16Za (xx December 1999)
-3407. Remove duplicate symbol from loader (#3528, Nicholas Brealey).
+3407. Remove duplicate symbol from loader (#3516/3528,
+      Jarno Paananen/Nicholas Brealey).
 
 XFree86 3.9.16Z (28 December 1999)
 3406. Temporary fix for building linux platform without glide (Robin Cutshaw).
@@ -9203,4 +9204,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.903 1999/12/29 00:46:21 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.904 1999/12/29 14:47:08 robin Exp $
