@@ -72,7 +72,7 @@ especially the man pages and the other <tt>README</tt> files in
 Starting with XFree86-3.1.2F a new interactive setup utility
 <tt>XF86Setup</tt> has been included in the distribution. We recommend
 using this tool to setup the <tt>XF86Config</tt> file. Please read the
-corresponing documentation.
+corresponding documentation.
 
 XFree86 has the ability to perform VT switching to and from the X
 server. When first started, XFree86 will automatically locate the first
@@ -188,7 +188,7 @@ about Linux support or the Linux distribution should be made to
 <it>orestz@eskimo.com.</it>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Linux.sgml,v 3.6 1996/02/04 09:08:11 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Linux.sgml,v 3.7 1996/08/25 14:11:45 dawes Exp $
 
 
 

@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mouse.tcl,v 3.9 1996/08/25 14:06:22 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mouse.tcl,v 3.10 1996/08/26 10:47:42 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -527,7 +527,7 @@ proc Mouse_getsettings { win } {
 }
 
 proc Mouse_setentry { win lbox } {
-	global Pointer
+	global Pointer mseDeviceSelected
 
 	set w [winpathprefix $win]
 	set idx [$lbox curselection]
@@ -538,6 +538,7 @@ proc Mouse_setentry { win lbox } {
 	set devname [$lbox get $idx]
 	$w.mouse.device.entry insert end $devname
 	set Pointer(RealDev) $devname
+	set mseDeviceSelected 1
 }
 
 proc Mouse_setlistbox { win lbox } {

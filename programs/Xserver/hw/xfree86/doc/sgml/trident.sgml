@@ -64,7 +64,7 @@ although only the 9440 and 9660 have been tested with the hardware cursor.
 <tag>Option &dquot;tgui_pci_write_off&dquot;</tag>
 	Turn off PCI burst write mode.
 	NOTE: PCI modes. By default the read burst and write burst
-	are independant of each other. By not specifying one of the
+	are independent of each other. By not specifying one of the
 	above - the PCI registers are untouched. If you suffer from
 	screen corruption then try turning them off. By turning them on
 	explicitly may benefit from improved performance, but it
@@ -142,7 +142,7 @@ in the <tt>XF86Config</tt> file, these lockups are overcome. But it may
 be worth checking wait states etc. on the card and in the BIOS setup.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.11 1996/06/10 09:15:17 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/trident.sgml,v 3.12 1996/06/29 09:07:47 dawes Exp $
 
 
 

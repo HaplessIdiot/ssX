@@ -248,14 +248,14 @@ I could only test two cards against the linear addressing.
            This bug seems to be fixed since 3.1.2, and therefore the 
            workaround is not needed anymore.
 	<item>ELSA Winner 2000PRO/X Revision G<p>
-           be carefull with the newmmio Driver in XF86_S3. It may be the case
+           be careful with the newmmio Driver in XF86_S3. It may be the case
            that the Server fails because xf86MapVidMem says:<p>
            Could not mmap framebuffer [s=1010000,a=f8000000] (Not enough space)
            <p>If you declare 
            <verb>
            Chipset "mmio_928"
            </verb>
-           inside your XF86Config, everything will be allright again.<p>
+           inside your XF86Config, everything will be alright again.<p>
            This seems to be a problem with mmap. I will look further, but
            any help will be welcome.
 
@@ -503,7 +503,7 @@ as to all who contribute to this excellent piece of free software.
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.11 1996/02/24 05:59:14 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.12 1996/08/24 12:52:19 dawes Exp $
 
 
 

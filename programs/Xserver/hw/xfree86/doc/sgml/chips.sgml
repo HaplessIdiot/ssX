@@ -117,7 +117,7 @@ MemBase 0x03b00000 (or a different address)
 </tag>
         This sets the physical memory base address of the linear
         framebuffer. Typically this is probed correctly, but if
-	you believe it to be misprobed, this option might help.
+	you believe it to be mis-probed, this option might help.
 <tag>
 Option &dquot;sw_cursor&dquot; (Chips 65545 and later)
 </tag>
@@ -430,7 +430,7 @@ software.
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.2 1996/08/21 08:39:08 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.3 1996/08/24 12:52:18 dawes Exp $
 </verb>
 
 </article>

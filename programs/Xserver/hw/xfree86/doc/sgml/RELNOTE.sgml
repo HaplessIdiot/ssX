@@ -4,7 +4,7 @@
 
  <title>Release Notes for XFree86&tm; 3.1.2F (beta version)
  <author>The XFree86 Project, Inc
- <date>25 August 1996
+ <date>26 August 1996
 
 
 <abstract>
@@ -34,7 +34,8 @@ url="mailto:XFree86@XFree86.org">.
 
 The X servers included in beta releases have a built-in expiry date.
 The reason for this is to try to prevent them from persisting beyond the
-date of the next release.  The expiry date for 3.1.2E is 1 September 1996.
+date of the next release, and to encourage people to test new beta releases.
+The expiry date for 3.1.2F is 1 December 1996.
 
 The XFree86 binary beta releases may be freely redistributed providing that
 they are not modified in any way, and providing that an unmodified version
@@ -67,13 +68,153 @@ shown in the file(s).
 <sect> XFree86 and X11R6.1
 <p>
 XFree86 3.1.2D and subsequent releases are based on the X Consortium's
-X11R6.1.  3.1.2D is distributed as a complete release, and 3.1.2E is
-distributed as an upgrade relative to 3.1.2D.  R6.1 is an update to R6,
+X11R6.1.  3.1.2F is distributed as a complete release.
+R6.1 is an update to R6,
 and is intended to be compatible with R6 at the source and protocol
 levels.  Binaries should be upward-compatible.  X11R6.1 includes some
 new Xserver extensions: DOUBLE-BUFFER, XKEYBOARD and RECORD.  LBX has
 been dropped from R6.1, and as such, has been dropped from XFree86 too.
 It is expected that it will reappear in some form in a future release.
+<p>
+<sect> New Features in 3.1.2F
+<p>
+<sect1> General
+<p>
+<itemize>
+  <item>3.1.2F includes a new, graphical utility for X server configuration
+	called `XF86Setup'.
+  <item>3.1.2F includes a full distribution for Linux/m68k.
+  <item>Support for the Linux/Alpha has been improved.
+</itemize>
+<sect1> General X server changes
+<p>
+<itemize>
+  <item>The XKEYBOARD extension and related utilities and data files have
+	been updated.  The support for European keyboards should be better
+	than in the previous release.
+</itemize>
+<sect1> DGA Extension
+<p>
+<itemize>
+  <item>SetViewport has been fixed for the SVGA server.
+  <item>An InstallColormap function has been added.
+  <item>DGA support has been added to the AGX server.
+  <item>A man page has been added for this extension.
+</itemize>
+<sect1> XInput Extension
+<p>
+<itemize>
+  <item>Some problems with loading XInput dynamic modules have been fixed.
+  <item>Motion history support has been added for XInput devices.
+  <item>A driver for the SummaSketch tablet has been added.
+  <item>The Wacom driver has been updated.
+</itemize>
+<sect1> PC98 Support
+<p>
+<itemize>
+  <item>A server has been added for the GA-968V4/PCI(S3 968).
+</itemize>
+<sect1> S3 server
+<p>
+<itemize>
+  <item>A bug which caused the server to hang during startup with Trio64V+
+	cards in machines with PCI SCSI controllers has been fixed.
+  <item>Problems related to hardware bugs with the Trio64V+ video blanking
+	signal have been worked around.
+  <item>A new driver has been added for the 868/968/Trio64V+ which uses
+	the new MMIO mode available with these chips.  This new driver is
+	used by default for these chips on Intel platforms, but not yet
+	on Alpha platforms.  It can be enabled for Alpha platforms by 
+	specifying:
+	<verb>
+	Chipset "NewMMio"
+	</verb>
+	This driver has one known problem in 32bpp mode with a virtual
+	screen size of 1152x864 (1024x768 seems to work fine).  If you
+	see any other problems, please let us know.  It is possible to
+	disable this new driver and use the old one by specifying:
+	<verb>
+	Chipset "mmio_928"
+	</verb>
+	in the Device section.  Please test the new driver before
+	disabling it, and for any problem you see, also check if it happens
+	with the old driver, and let us know (even if the old driver fixes
+	the problem!).
+  <item>An initialisation problem with some VideoLogic cards has been fixed.
+</itemize>
+<sect1> Mach64 server
+<p>
+<itemize>
+  <item>A bug in the handling of block_write that was introduced in 3.1.2E
+	has been fixed.  If you needed to add the "no_block_write" option
+	to your XF86Config in 3.1.2E, you should be able to remove it now.
+</itemize>
+<sect1> W32 server
+<p>
+<itemize>
+  <item>Support has been added for the ET6000
+</itemize>
+<sect1> I128 server
+<p>
+<itemize>
+  <item>Support has been added for the Series 2 cards.
+</itemize>
+<sect1> Trident driver (SVGA server)
+<p>
+<itemize>
+  <item>Some problems introduced in 3.1.2E have been fixed.
+</itemize>
+<sect1> SiS driver (SVGA server)
+<p>
+<itemize>
+  <item>256 colour support has been added.
+</itemize>
+<sect1> Chips and Technologies driver (SVGA server)
+<p>
+<itemize>
+  <item>This driver has been significantly reworked.
+  <item>Support has been added for the 65546, 65548, 65550 and 65554.
+  <item>Linear addressing support for the 65530 and above.
+  <item>16bpp and 24bpp (packed) support for the 65545 an above.
+  <item>BitBLT acceleration for the 65545, 65546 and 65548.
+</itemize>
+<sect1> ALI driver (SVGA server)
+<p>
+<itemize>
+  <item>Interlaced modes now work with this driver.
+</itemize>
+<sect1> ATI driver (SVGA server)
+<p>
+<itemize>
+  <item>Mach64 support has been improved.
+</itemize>
+<sect1> Cirrus driver (SVGA server)
+<p>
+<itemize>
+  <item>Support has been added for the CL-GD5446 and CL-GD5462.
+</itemize>
+<sect1> ET3000 driver (SVGA server)
+<p>
+<itemize>
+  <item>VGA16 support has been added to the ET3000 driver.
+</itemize>
+<sect1> Client/Library changes
+<p>
+<itemize>
+  <item>Various bugs in the previous version of xterm have been fixed.
+  <item>The termcap and terminfo entries for xterm have been updated.
+  <item>Support for ddterm's escape sequences has been added to xterm.
+  <item>Support for most vt220/vt320 escape sequenced has been added to xterm.
+  <item>xdm's session handling on BSD OSs has been fixed.
+  <item>Some buffer overrun problems which can lead to security problems
+	have been fixed in libXt and libX11.  At least one of these
+	problems has been used to exploit the setuid xterm.
+</itemize>
+<sect1> Fonts
+<p>
+<itemize>
+  <item>The Cyrillic fonts have been updated.
+</itemize>
 <p>
 <sect> New Features in 3.1.2E
 <sect1> General
@@ -661,6 +802,7 @@ It is expected that it will reappear in some form in a future release.
 </itemize>
 <p>
 
+<!--
 <sect>Installing the XFree86 3.1.2E Beta Release
 <p>
 The XFree86 3.1.2E binary beta release is distributed as a upgrade to
@@ -782,45 +924,47 @@ For example:
 	rm /usr/lib/terminfo/x/xterms
 	rm /usr/lib/terminfo/v/vs100
 </verb></tscreen>
+-->
 
-<sect>Installing the XFree86 3.1.2D Beta Release
+<sect>Installing the XFree86 3.1.2F Beta Release
 <p>
-The XFree86 3.1.2D binary beta release is distributed as a full release,
-not as an upgrade.  For most operating systems, it consists of the following
-files.
+The XFree86 3.1.2F binary beta release is distributed as a full release,
+not as an upgrade.
 
-What follows is a list of the XFree86 3.1.2D components.  There may be
+What follows is a list of the XFree86 3.1.2F components.  There may be
 some variations in this for some OSs.
 
 The following are required for all installations:
 <quote>
 <verb>
 BetaReport         Beta test report template form
-X312Dbin.tgz       Clients, run-time libs, and app-defaults files.
-X312Ddoc.tgz       Documentation
-X312Dfnts.tgz      75dpi and misc fonts
-X312Dlib.tgz       Data files required at run-time.
-X312Dman.tgz       Manual pages
+preinst.sh         Pre-installation script
+postinst.sh        Post-installation script
+X312Fbin.tgz       Clients, run-time libs, and app-defaults files
+X312Fdoc.tgz       Documentation
+X312Ffnts.tgz      75dpi and misc fonts
+X312Flib.tgz       Data files required at run-time
+X312Fman.tgz       Manual pages
+X312Fset.tgz       XF86Setup utility
 </verb>
 </quote>
 
-<!--
 The following X servers are for PC/AT hardware.  Choose at least one which
 matches your hardware.
 <quote>
 <verb>
-X312D8514.tgz      8514/A server
-X312DAGX.tgz       AGX server
-X312DI128.tgz      I128 server
-X312DMa32.tgz      Mach 32 server
-X312DMa64.tgz      Mach 64 server
-X312DMa8.tgz       Mach 8 server
-X312DMono.tgz      Mono server
-X312DP9K.tgz       P9000 server
-X312DS3.tgz        S3 server
-X312DSVGA.tgz      SVGA server
-X312DVG16.tgz      16 colour VGA server
-X312DW32.tgz       ET4000/W32 server
+X312F8514.tgz      8514/A server
+X312FAGX.tgz       AGX server
+X312FI128.tgz      I128 server
+X312FMa32.tgz      Mach 32 server
+X312FMa64.tgz      Mach 64 server
+X312FMa8.tgz       Mach 8 server
+X312FMono.tgz      Mono server
+X312FP9K.tgz       P9000 server
+X312FS3.tgz        S3 server
+X312FSVGA.tgz      SVGA server
+X312FVG16.tgz      16 colour VGA server
+X312FW32.tgz       ET4000/W32, ET6000 server
 </verb>
 </quote>
 The following X servers are for PC98 hardware.  If you have a PC98 machine,
@@ -828,31 +972,32 @@ choose one which suits your hardware.  If you don't know what a PC98 machine
 is, you don't need any of these.
 <quote>
 <verb>
-X312D9NS3.tgz      PC98 NEC(S3) server
-X312D9SPW.tgz      PC98 PCSKB-PowerWindow(S3) server
-X312D9LPW.tgz      PC98 PowerWindowLB(S3) server
-X312D9EGC.tgz      PC98 EGC(generic) server
-X312D9GAN.tgz      PC98 GANB-WAP(cirrus) server
-X312D9480.tgz      PC98 PEGC-480(generic) server
-X312D9NKV.tgz      PC98 NKV-NEC(cirrus) server
-X312D9WBS.tgz      PC98 WABS(cirrus) server
-X312D9WEP.tgz      PC98 WAB-EP(cirrus) server
-X312D9WSN.tgz      PC98 WSN-A2F(cirrus) server
+X312F9NS3.tgz      PC98 NEC(S3) server
+X312F9SPW.tgz      PC98 PCSKB-PowerWindow(S3) server
+X312F9LPW.tgz      PC98 PowerWindowLB(S3) server
+X312F9EGC.tgz      PC98 EGC(generic) server
+X312F9GA9.tgz      PC98 GA-968V4/PCI(S3 968) server
+X312F9GAN.tgz      PC98 GANB-WAP(cirrus) server
+X312F9480.tgz      PC98 PEGC-480(generic) server
+X312F9NKV.tgz      PC98 NKV-NEC(cirrus) server
+X312F9TGU.tgz      PC98 TGUI server
+X312F9WBS.tgz      PC98 WABS(cirrus) server
+X312F9WEP.tgz      PC98 WAB-EP(cirrus) server
+X312F9WSN.tgz      PC98 WSN-A2F(cirrus) server
 </verb>
 </quote>
--->
 The following are optional.
 <quote>
 <verb>
-X312Df100.tgz     100dpi fonts
-X312Dfcyr.tgz     Cyrillic fonts
-X312Dfnon.tgz     Other fonts (Chinese, Japanese, Korean, Hebrew)
-X312Dfscl.tgz     Scalable fonts (Speedo and Type1)
-X312Dfsrv.tgz     Font server and config files
-X312Dprog.tgz     X header files, config files and compile-time libs
-X312Dcfg.tgz      sample config files for xinit, xdm
-X312Dnest.tgz     Nested X server
-X312Dvfb.tgz      Virtual framebuffer X server
+X312Ff100.tgz     100dpi fonts
+X312Ffcyr.tgz     Cyrillic fonts
+X312Ffnon.tgz     Other fonts (Chinese, Japanese, Korean, Hebrew)
+X312Ffscl.tgz     Scalable fonts (Speedo and Type1)
+X312Ffsrv.tgz     Font server and config files
+X312Fprog.tgz     X header files, config files and compile-time libs
+X312Fcfg.tgz      sample config files for xinit, xdm
+X312Fnest.tgz     Nested X server
+X312Fvfb.tgz      Virtual framebuffer X server
 </verb>
 </quote>
 
@@ -863,10 +1008,12 @@ installation procedure will overwrite your existing version of XFree86.
 If you have a previous version of XFree86 installed, you can upgrade to
 the new version by first running the script <tt>preinst.sh</tt>, and
 then extracting the required .tgz files over the previous version in
-<tt>/usr/X11R6</tt>.  The <tt>preinst.sh</tt> script must be run before
+<tt>/usr/X11R6</tt>, then running the script <tt>postinst.sh</tt>.
+The <tt>preinst.sh</tt> script must be run before
 removing any previous beta versions you have installed.  It removes
 symbolic links that are going to be replaced by either files or new
-links in this version (tar won't overwrite existing symbolic links).
+links in this version (tar won't overwrite existing symbolic links), and
+it removes some old files.
 
 If you are installing from scratch, create a directory called
 <tt>/usr/X11R6</tt>, then extract the required <tt>.tgz</tt> files.
@@ -878,28 +1025,42 @@ E.g., if you create a directory in <tt>/home</tt>:
 	ln -s /home/X11R6 /usr
 </verb></tscreen>
 
+If you are installing on top of an existing installation, after backing up
+your existing installation, copy the <tt>preinst.sh</tt> script to
+<tt>/var/tmp</tt>, then run go to <tt>/usr/X11R6</tt> and run it:
+<tscreen><verb>
+	cd /usr/X11R6
+	sh /var/tmp/preinst.sh
+</verb></tscreen>
+
 The <tt>.tgz</tt> files are gzipped tar files.  To extract them, go to
 <tt>/usr/X11R6</tt>, and run the following as <bf>root</bf> for each
 file you need:
 <tscreen><verb>
-	gzip -d < X312Dfile.tgz | tar vxf -
+	gzip -d < X312Ffile.tgz | tar vxf -
 </verb></tscreen>
 
-If you are using NetBSD or FreeBSD, an alternative to using the
-<tt>preinst.sh</tt> script is to extract the <tt>.tgz</tt> files with:
+If you are using NetBSD or FreeBSD, a more reliable way of doing this is
+to extract the <tt>.tgz</tt> files with:
 <tscreen><verb>
-        gzip -d < X312Dfile.tgz | tar -v -x --unlink -f -
+        gzip -d < X312Ffile.tgz | tar -v -x --unlink -f -
 </verb></tscreen>
 
-If you have GNU cpio (as Linux does) or SVR4 cpio, an alternative to
-using the <tt>preinst.sh</tt> script is to extract the <tt>.tgz</tt>
-files with:
+If you have GNU cpio (as Linux does) or SVR4 cpio, a more reliable way of
+doing this is to extract the <tt>.tgz</tt> files with:
 <tscreen><verb>
-	gzip -d < X312Dfile.tgz | cpio -i -v -u -H ustar
+	gzip -d < X312Ffile.tgz | cpio -i -v -u -H ustar
 </verb></tscreen>
 
-Note that there is no postinst.sh script to be run for this release.
-However, for OSs which use ldconfig (like Linux, FreeBSD and NetBSD), you
+Once the required <tt>.tgz</tt> files have been extracted, copy the
+<tt>postinst.sh</tt> script to <tt>/var/tmp</tt>, then run go to
+<tt>/usr/X11R6</tt> and run it:
+<tscreen><verb>
+	cd /usr/X11R6
+	sh /var/tmp/postinst.sh
+</verb></tscreen>
+
+For OSs which use ldconfig (like Linux, FreeBSD and NetBSD), you
 should either run ldconfig or reboot to complete the installation.
 On FreeBSD and NetBSD, ldconfig takes arguments.  In particular, you should
 at least include <tt>/usr/lib</tt> and <tt>/usr/X11R6/lib</tt> on the
@@ -937,7 +1098,7 @@ instructions, the files for that version will still be in the
 -->
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.33 1996/06/10 09:15:16 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.34 1996/08/24 12:52:17 dawes Exp $
 </verb>
 
 </article>
