@@ -3800,8 +3800,6 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
        }
     }
 
-
-
 #ifdef SIS_CP
     SIS_CP_DRIVER_RECONFIGOPT
 #endif
@@ -6058,7 +6056,25 @@ SISVESARestore(ScrnInfoPtr pScrn)
 {
    SISPtr pSiS = SISPTR(pScrn);
 
-   if(pSiS->UseVESA) SISVESASaveRestore(pScrn, MODE_RESTORE);
+   if(pSiS->UseVESA) {
+      SISVESASaveRestore(pScrn, MODE_RESTORE);
+#ifdef SISVRAMQ
+      /* Restore queue mode registers on 315/330 series */
+      /* (This became necessary due to the switch to VRAM queue) */
+      if(pSiS->VGAEngine == SIS_315_VGA) {
+         SISRegPtr sisReg = &pSiS->SavedReg;
+	 unsigned char tempCR55;
+	 inSISIDXREG(SISCR,0x55,tempCR55);
+	 andSISIDXREG(SISCR,0x55,0x33);
+	 outSISIDXREG(SISSR,0x26,0x01);
+	 MMIO_OUT32(pSiS->IOBase, 0x85c4, 0);
+	 outSISIDXREG(SISSR,0x27,sisReg->sisRegs3C4[0x27]);
+	 outSISIDXREG(SISSR,0x26,sisReg->sisRegs3C4[0x26]);
+	 MMIO_OUT32(pSiS->IOBase, 0x85C0, sisReg->sisMMIO85C0);
+	 outSISIDXREG(SISCR,0x55,tempCR55);
+      }
+#endif
+   }
 }
 
 /* Restore bridge config registers - to be called BEFORE VESARestore */
@@ -6187,7 +6203,11 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      * This is done on 300 and 315 series only.
      */
     if(pSiS->UseVESA) {
-       SiSEnableTurboQueue(pScrn);
+#ifdef SISVRAMQ
+       if(pSiS->VGAEngine != SIS_315_VGA)
+#endif
+          SiSEnableTurboQueue(pScrn);
+
     }
 
     /* Save the current state */
@@ -10116,7 +10136,7 @@ void SiSPostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 
 #ifdef SISVRAMQ
     if(pSiS->VGAEngine == SIS_315_VGA) {
-       /* Re-Enable TurboQueue */
+       /* Re-Enable command queue */
        SiSEnableTurboQueue(pScrn);
     }
 #endif
