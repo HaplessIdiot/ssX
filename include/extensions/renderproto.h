@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/include/extensions/renderproto.h,v 1.5 2000/11/20 07:13:09 keithp Exp $
+ * $XFree86: xc/include/extensions/renderproto.h,v 1.6 2001/01/21 21:19:08 tsi Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -74,7 +74,7 @@ typedef struct {
     Colormap	colormap;
 } xPictFormInfo;
 
-#define sz_xPictFormInfo    16
+#define sz_xPictFormInfo    24
 
 typedef struct {
     VisualID	visual;
