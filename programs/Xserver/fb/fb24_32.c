@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fb24_32.c,v 1.2 2000/04/09 15:03:17 alanh Exp $
+ * $XFree86: xc/programs/Xserver/fb/fb24_32.c,v 1.3 2000/05/06 21:09:31 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -555,7 +555,6 @@ fb24_32ReformatTile(PixmapPtr pOldTile, int bitsPerPixel)
 	    GXcopy,
 	    FB_ALLONES);
 
-    (*pScreen->DestroyPixmap) (pOldTile);
     return pNewTile;
 }
 
