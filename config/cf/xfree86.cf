@@ -30,6 +30,9 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #ifndef XConfigDir
 #define XConfigDir		$(LIBDIR)
 #endif
+#ifndef XLogFile
+#define XLogFile		XFree86
+#endif
 
 /*
  * Default settings for which X Servers to build.
