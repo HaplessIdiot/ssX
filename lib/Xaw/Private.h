@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Private.h,v 3.5 1998/06/28 11:30:06 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Private.h,v 3.6 1998/08/16 10:24:25 dawes Exp $ */
 
 #ifndef _XawPrivate_h
 #define _XawPrivate_h
@@ -143,5 +143,8 @@ XawArgVal *XawFindArgVal(XawParams *params, String name);
 
 /* misc */
 void XawTypeToStringWarning(Display*, String);
+
+/* OS.c */
+int _XawGetPageSize(void);
 
 #endif /* _XawPrivate_h */
