@@ -1,4 +1,5 @@
 XFree86 4.X.Ya (?? January 2001)
+ 106. ATI driver Sparc compile fix (David S. Miller).
  105. Implement BlockFills at 32bpp in the Permedia3 driver (Alan Hourihane).
  104. Ensure PCI retry is off for Permedia3, and fix an over by 1 error on
       FIFO usage (Alan Hourihane).
@@ -12364,4 +12365,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1553 2001/02/02 11:45:56 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1554 2001/02/02 16:17:14 alanh Exp $
