@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.91 1999/01/17 10:53:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.92 1999/01/17 11:25:20 dawes Exp $ */
 
 /*
  * Copyright 1991-1998 by The XFree86 Project, Inc.
@@ -163,6 +163,9 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
     /* Initialise the loader */
     LoaderInit();
 
+    /* Tell the loader the default module search path */
+    LoaderSetPath(xf86ModulePath);
+
 #ifdef TESTING
     {
 	char **list, **l;
@@ -176,19 +179,19 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 		NULL
 	};
 	ErrorF("Getting module listing...\n");
-	list = LoaderListDirs(xf86ModulePath, NULL, NULL);
+	list = LoaderListDirs(NULL, NULL, NULL);
 	if (list)
 	    for (l = list; *l; l++)
 		ErrorF("module: %s\n", *l);
 	LoaderFreeDirList(list);
 	ErrorF("Getting video driver listing...\n");
-	list = LoaderListDirs(xf86ModulePath, subdirs, NULL);
+	list = LoaderListDirs(NULL, subdirs, NULL);
 	if (list)
 	    for (l = list; *l; l++)
 		ErrorF("video driver: %s\n", *l);
 	LoaderFreeDirList(list);
 	ErrorF("Getting driver listing...\n");
-	list = LoaderListDirs(xf86ModulePath, NULL, patlist);
+	list = LoaderListDirs(NULL, NULL, patlist);
 	if (list)
 	    for (l = list; *l; l++)
 		ErrorF("video driver: %s\n", *l);
@@ -1136,8 +1139,7 @@ xf86LoadModules(char **list, pointer *optlist)
 	else
 	    opt = NULL;
 
-        if (!LoadModule(name, xf86ModulePath, NULL, NULL, opt, NULL,
-			&errmaj, &errmin)) {
+        if (!LoadModule(name, NULL, NULL, NULL, opt, NULL, &errmaj, &errmin)) {
 	    LoaderErrorMsg(NULL, name, errmaj, errmin);
 	    xfree(name);
             return FALSE;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.14 1998/12/06 06:08:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.15 1998/12/13 05:32:58 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -120,8 +120,9 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     if(!infoRec->FullPlanemask)
 	infoRec->FullPlanemask =  (1 << pScrn->depth) - 1;
 
-    xf86DrvMsg(index, X_INFO, 
-	"Using XFree86 Acceleration Architecture (XAA)\n");
+    if (serverGeneration == 1)
+	xf86DrvMsg(index, X_INFO, 
+		"Using XFree86 Acceleration Architecture (XAA)\n");
 
 
     /************** Low Level *************/
@@ -354,48 +355,52 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	HaveImageReadRect = TRUE;	
     } 
 
-    if(HaveScreenToScreenCopy)
-	xf86ErrorF("\tScreen to screen bit blits\n");
-    if(HaveSolidFillRect)
-	xf86ErrorF("\tSolid filled rectangles\n");
-    if(HaveSolidFillTrap)
-	xf86ErrorF("\tSolid filled trapezoids\n");
-    if(HaveMono8x8PatternFillRect)
-	xf86ErrorF("\t8x8 mono pattern filled rectangles\n");
-    if(HaveMono8x8PatternFillTrap)
-	xf86ErrorF("\t8x8 mono pattern filled trapezoids\n");
-    if(HaveColor8x8PatternFillRect)
-	xf86ErrorF("\t8x8 color pattern filled rectangles\n");
-    if(HaveColor8x8PatternFillTrap)
-	xf86ErrorF("\t8x8 color pattern filled trapezoids\n");
+    if (serverGeneration == 1) {
+	if(HaveScreenToScreenCopy)
+	    xf86ErrorF("\tScreen to screen bit blits\n");
+	if(HaveSolidFillRect)
+	    xf86ErrorF("\tSolid filled rectangles\n");
+	if(HaveSolidFillTrap)
+	    xf86ErrorF("\tSolid filled trapezoids\n");
+	if(HaveMono8x8PatternFillRect)
+	    xf86ErrorF("\t8x8 mono pattern filled rectangles\n");
+	if(HaveMono8x8PatternFillTrap)
+	    xf86ErrorF("\t8x8 mono pattern filled trapezoids\n");
+	if(HaveColor8x8PatternFillRect)
+	    xf86ErrorF("\t8x8 color pattern filled rectangles\n");
+	if(HaveColor8x8PatternFillTrap)
+	    xf86ErrorF("\t8x8 color pattern filled trapezoids\n");
 
-    if(HaveColorExpansion)
-	xf86ErrorF("\tCPU to Screen color expansion\n");
-    else if(HaveScanlineColorExpansion)
-	xf86ErrorF("\tIndirect CPU to Screen color expansion\n");
+	if(HaveColorExpansion)
+	    xf86ErrorF("\tCPU to Screen color expansion\n");
+	else if(HaveScanlineColorExpansion)
+	    xf86ErrorF("\tIndirect CPU to Screen color expansion\n");
 
-    if(HaveScreenToScreenColorExpandFill)
-	xf86ErrorF("\tScreen to Screen color expansion\n");
+	if(HaveScreenToScreenColorExpandFill)
+	    xf86ErrorF("\tScreen to Screen color expansion\n");
 
-    if(HaveSolidTwoPointLine || HaveSolidBresenhamLine)
-	xf86ErrorF("\tSolid Lines\n");
-    else if(HaveSolidHorVertLine)
-	xf86ErrorF("\tSolid Horizontal and Vertical Lines\n");
+	if(HaveSolidTwoPointLine || HaveSolidBresenhamLine)
+	    xf86ErrorF("\tSolid Lines\n");
+	else if(HaveSolidHorVertLine)
+	    xf86ErrorF("\tSolid Horizontal and Vertical Lines\n");
 
-    if(HaveDashedTwoPointLine || HaveDashedBresenhamLine)
-	xf86ErrorF("\tDashed Lines\n");
+	if(HaveDashedTwoPointLine || HaveDashedBresenhamLine)
+	    xf86ErrorF("\tDashed Lines\n");
 
-    if(HaveImageWriteRect)
-	xf86ErrorF("\tImage Writes\n");
-    else if(HaveScanlineImageWriteRect)
-	xf86ErrorF("\tScanline Image Writes\n");
+	if(HaveImageWriteRect)
+	    xf86ErrorF("\tImage Writes\n");
+	else if(HaveScanlineImageWriteRect)
+	    xf86ErrorF("\tScanline Image Writes\n");
 
-    if(HaveImageReadRect)
-	xf86ErrorF("\tImage Reads\n");
+	if(HaveImageReadRect)
+	    xf86ErrorF("\tImage Reads\n");
+    }
+
+#define XAAMSG(s) if (serverGeneration == 1) xf86ErrorF(s)
 
     if((infoRec->Flags & OFFSCREEN_PIXMAPS) && HaveScreenToScreenCopy &&
 		!xf86IsOptionSet(XAAOptions, XAAOPT_OFFSCREEN_PIXMAPS))
-	xf86ErrorF("\tOffscreen Pixmaps\n");
+	XAAMSG("\tOffscreen Pixmaps\n");
     else
 	infoRec->Flags &= ~OFFSCREEN_PIXMAPS;
 
@@ -405,7 +410,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     /**** ScreenToScreenBitBlt ****/
 
     if(infoRec->ScreenToScreenBitBlt) {
-	xf86ErrorF("\tDriver provided ScreenToScreenBitBlt replacement\n");
+	XAAMSG("\tDriver provided ScreenToScreenBitBlt replacement\n");
     } else if(HaveScreenToScreenCopy) {
 	infoRec->ScreenToScreenBitBlt = XAAScreenToScreenBitBlt;
 	infoRec->ScreenToScreenBitBltFlags = infoRec->ScreenToScreenCopyFlags;
@@ -414,7 +419,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     /**** FillSolidRects ****/
 
     if(infoRec->FillSolidRects) {
-	xf86ErrorF("\tDriver provided FillSolidRects replacement\n");
+	XAAMSG("\tDriver provided FillSolidRects replacement\n");
     } else if(HaveSolidFillRect) {
 	infoRec->FillSolidRects = XAAFillSolidRects;
 	infoRec->FillSolidRectsFlags = infoRec->SolidFillFlags;
@@ -424,7 +429,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     /**** FillSolidSpans ****/
 
     if(infoRec->FillSolidSpans) {
-	xf86ErrorF("\tDriver provided FillSolidSpans replacement\n");
+	XAAMSG("\tDriver provided FillSolidSpans replacement\n");
     } else if(HaveSolidFillRect) {
 	infoRec->FillSolidSpans = XAAFillSolidSpans;
 	infoRec->FillSolidSpansFlags = infoRec->SolidFillFlags;
@@ -434,7 +439,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     /**** FillMono8x8PatternRects ****/
 
     if(infoRec->FillMono8x8PatternRects) {
-	xf86ErrorF("\tDriver provided FillMono8x8PatternRects replacement\n");
+	XAAMSG("\tDriver provided FillMono8x8PatternRects replacement\n");
     } else if(HaveMono8x8PatternFillRect) {
 	infoRec->FillMono8x8PatternRects = 
 	  (infoRec->Mono8x8PatternFillFlags & HARDWARE_PATTERN_SCREEN_ORIGIN) ?
@@ -448,7 +453,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     /**** FillMono8x8PatternSpans ****/
 
     if(infoRec->FillMono8x8PatternSpans) {
-	xf86ErrorF("\tDriver provided FillMono8x8PatternSpans replacement\n");
+	XAAMSG("\tDriver provided FillMono8x8PatternSpans replacement\n");
     } else if(HaveMono8x8PatternFillRect) {
 	infoRec->FillMono8x8PatternSpans = 
 	  (infoRec->Mono8x8PatternFillFlags & HARDWARE_PATTERN_SCREEN_ORIGIN) ?
@@ -462,7 +467,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     /**** FillColor8x8Rects ****/
 
     if(infoRec->FillColor8x8PatternRects) {
-	xf86ErrorF("\tDriver provided FillColor8x8PatternRects replacement\n");
+	XAAMSG("\tDriver provided FillColor8x8PatternRects replacement\n");
     } else if(HaveColor8x8PatternFillRect) {
 	infoRec->FillColor8x8PatternRects = 
 	  (infoRec->Color8x8PatternFillFlags & HARDWARE_PATTERN_SCREEN_ORIGIN) ?
@@ -476,7 +481,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     /**** FillColor8x8Spans ****/
 
     if(infoRec->FillColor8x8PatternSpans) {
-	xf86ErrorF("\tDriver provided FillColor8x8PatternSpans replacement\n");
+	XAAMSG("\tDriver provided FillColor8x8PatternSpans replacement\n");
     } else if(HaveColor8x8PatternFillRect) {
 	infoRec->FillColor8x8PatternSpans = 
 	  (infoRec->Color8x8PatternFillFlags & HARDWARE_PATTERN_SCREEN_ORIGIN) ?
@@ -491,7 +496,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     /**** FillCacheBltRects ****/
 
     if(infoRec->FillCacheBltRects) {
-	xf86ErrorF("\tDriver provided FillCacheBltRects replacement\n");
+	XAAMSG("\tDriver provided FillCacheBltRects replacement\n");
     } else if(HaveScreenToScreenCopy) {
 	infoRec->FillCacheBltRects = XAAFillCacheBltRects;
 	infoRec->FillCacheBltRectsFlags = infoRec->ScreenToScreenCopyFlags;     
@@ -500,7 +505,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     /**** FillCacheBltSpans ****/
 
     if(infoRec->FillCacheBltSpans) {
-	xf86ErrorF("\tDriver provided FillCacheBltSpans replacement\n");
+	XAAMSG("\tDriver provided FillCacheBltSpans replacement\n");
     } else if(HaveScreenToScreenCopy) {
 	infoRec->FillCacheBltSpans = XAAFillCacheBltSpans;
 	infoRec->FillCacheBltSpansFlags = infoRec->ScreenToScreenCopyFlags;     
@@ -510,7 +515,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     /**** FillCacheExpandRects ****/
 
     if(infoRec->FillCacheExpandRects) {
-	xf86ErrorF("\tDriver provided FillCacheExpandRects replacement\n");
+	XAAMSG("\tDriver provided FillCacheExpandRects replacement\n");
     } else if(HaveScreenToScreenColorExpandFill) {
 	infoRec->FillCacheExpandRects = XAAFillCacheExpandRects;
 	infoRec->FillCacheExpandRectsFlags = 
@@ -520,7 +525,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     /**** FillCacheExpandSpans ****/
 
     if(infoRec->FillCacheExpandSpans) {
-	xf86ErrorF("\tDriver provided FillCacheExpandSpans replacement\n");
+	XAAMSG("\tDriver provided FillCacheExpandSpans replacement\n");
     } else if(HaveScreenToScreenColorExpandFill) {
 	infoRec->FillCacheExpandSpans = XAAFillCacheExpandSpans;
 	infoRec->FillCacheExpandSpansFlags = 
@@ -531,7 +536,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     /**** FillColorExpandRects ****/
 
     if(infoRec->FillColorExpandRects) {
-	xf86ErrorF("\tDriver provided FillColorExpandRects replacement\n");
+	XAAMSG("\tDriver provided FillColorExpandRects replacement\n");
     } else if(HaveColorExpansion) {
 #if 0
 	if (infoRec->CPUToScreenColorExpandFillFlags & TRIPLE_BITS_24BPP) {
@@ -606,7 +611,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     /**** FillColorExpandSpans ****/
 
     if(infoRec->FillColorExpandSpans) {
-	xf86ErrorF("\tDriver provided FillColorExpandSpans replacement\n");
+	XAAMSG("\tDriver provided FillColorExpandSpans replacement\n");
     } else if(HaveColorExpansion) {
 #if 0
 	if (infoRec->CPUToScreenColorExpandFillFlags & TRIPLE_BITS_24BPP) {
@@ -682,7 +687,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     /**** FillImageWriteRects ****/
 
     if(infoRec->FillImageWriteRects) {
-	xf86ErrorF("\tDriver provided FillImageWriteRects replacement\n");
+	XAAMSG("\tDriver provided FillImageWriteRects replacement\n");
     } else if(HaveImageWriteRect && 
 		(infoRec->ImageWriteFlags & LEFT_EDGE_CLIPPING_NEGATIVE_X) &&
 		(infoRec->ImageWriteFlags & LEFT_EDGE_CLIPPING)) {
@@ -693,7 +698,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     /**** WriteBitmap ****/
 
     if(infoRec->WriteBitmap) {
-	xf86ErrorF("\tDriver provided WriteBitmap replacement\n");
+	XAAMSG("\tDriver provided WriteBitmap replacement\n");
     } else if(HaveColorExpansion) {
 	if (infoRec->CPUToScreenColorExpandFillFlags & TRIPLE_BITS_24BPP) {
 	    if(infoRec->CPUToScreenColorExpandFillFlags & 
@@ -759,7 +764,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     /**** TE Glyphs ****/
 
     if(infoRec->TEGlyphRenderer) {
-	xf86ErrorF("\tDriver provided TEGlyphRenderer replacement\n");
+	XAAMSG("\tDriver provided TEGlyphRenderer replacement\n");
     } else if(HaveColorExpansion) {
         if (infoRec->CPUToScreenColorExpandFillFlags & TRIPLE_BITS_24BPP) {
 	    if(infoRec->CPUToScreenColorExpandFillFlags & 
@@ -832,7 +837,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     /**** NonTE Glyphs ****/
 
     if(infoRec->NonTEGlyphRenderer) {
-	xf86ErrorF("\tDriver provided NonTEGlyphRenderer replacement\n");
+	XAAMSG("\tDriver provided NonTEGlyphRenderer replacement\n");
     } else if(infoRec->WriteBitmap && 
 	!(infoRec->WriteBitmapFlags & NO_TRANSPARENCY)) {
 	infoRec->NonTEGlyphRenderer = XAANonTEGlyphRenderer;
@@ -843,10 +848,11 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     /**** WritePixmap ****/
 
     if(infoRec->WritePixmap) {
-	xf86ErrorF("\tDriver provided WritePixmap replacement\n");
+	XAAMSG("\tDriver provided WritePixmap replacement\n");
     } else if(HaveImageWriteRect) {
 	infoRec->WritePixmap = XAAWritePixmap;
-	infoRec->WritePixmapFlags = infoRec->ImageWriteFlags;
+	infoRec->WritePixmapFlags = 
+		infoRec->ImageWriteFlags | CONVERT_32BPP_TO_24BPP;
     } else if(HaveScanlineImageWriteRect) {
 	infoRec->WritePixmap = XAAWritePixmapScanline;
 	infoRec->WritePixmapFlags = infoRec->ScanlineImageWriteFlags;
@@ -856,7 +862,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     /**** ReadPixmap ****/
 
     if(infoRec->ReadPixmap) {
-	xf86ErrorF("\tDriver provided ReadPixmap replacement\n");
+	XAAMSG("\tDriver provided ReadPixmap replacement\n");
     } else if(HaveImageReadRect) {
 	infoRec->ReadPixmap = XAAReadPixmap;
 	infoRec->ReadPixmapFlags = infoRec->ImageReadFlags;
@@ -867,7 +873,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     /**** CopyArea ****/
 
     if(infoRec->CopyArea) {
-	xf86ErrorF("\tDriver provided GC level CopyArea replacement\n");
+	XAAMSG("\tDriver provided GC level CopyArea replacement\n");
     } else if(infoRec->ScreenToScreenBitBlt) {
 	infoRec->CopyArea = XAACopyArea;
 	infoRec->CopyAreaFlags = infoRec->ScreenToScreenBitBltFlags;
@@ -885,7 +891,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     }
 
     if(infoRec->CopyPlane) {
-	xf86ErrorF("\tDriver provided GC level CopyPlane replacement\n");
+	XAAMSG("\tDriver provided GC level CopyPlane replacement\n");
     } else if(infoRec->WriteBitmap && 
 		!(infoRec->WriteBitmapFlags & TRANSPARENCY_ONLY)) {
 	infoRec->CopyPlane = XAACopyPlaneColorExpansion;
@@ -893,7 +899,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     }
 
     if(infoRec->PushPixelsSolid) {
-	xf86ErrorF("\tDriver provided GC level PushPixelsSolid replacement\n");
+	XAAMSG("\tDriver provided GC level PushPixelsSolid replacement\n");
     } else if(infoRec->WriteBitmap &&
 		!(infoRec->WriteBitmapFlags & NO_TRANSPARENCY)) {
 	infoRec->PushPixelsSolid = XAAPushPixelsSolidColorExpansion;

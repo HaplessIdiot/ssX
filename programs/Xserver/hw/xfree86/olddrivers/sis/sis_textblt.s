@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis_textblt.s,v 1.2 1997/01/12 10:52:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_textblt.s,v 1.1 1997/03/06 23:16:58 hohndel Exp $ */
 
 /*
  *

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaCpyArea.c,v 1.6 1998/12/06 06:08:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaCpyArea.c,v 1.7 1999/01/03 03:58:50 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -30,11 +30,6 @@ XAACopyArea(
 {
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
 
-    if(pDstDrawable->bitsPerPixel != pSrcDrawable->bitsPerPixel) {
-	return (XAAFallbackOps.CopyArea(pSrcDrawable, pDstDrawable, pGC,
-   	    srcx, srcy, width, height, dstx, dsty));
-    }
-
     if(pDstDrawable->type == DRAWABLE_WINDOW) {
 	if((pSrcDrawable->type == DRAWABLE_WINDOW) ||
 		IS_OFFSCREEN_PIXMAP(pSrcDrawable)){
@@ -47,6 +42,10 @@ XAACopyArea(
 		XAADoBitBlt, 0L));
 	} else {
 	    if(infoRec->WritePixmap &&
+	     ((pDstDrawable->bitsPerPixel == pSrcDrawable->bitsPerPixel) |
+		((pDstDrawable->bitsPerPixel == 24) &&  
+		(pSrcDrawable->bitsPerPixel == 32) &&
+		(infoRec->WritePixmapFlags & CONVERT_32BPP_TO_24BPP))) &&
 	     CHECK_ROP(pGC,infoRec->WritePixmapFlags) &&
 	     CHECK_ROPSRC(pGC,infoRec->WritePixmapFlags) &&
 	     CHECK_PLANEMASK(pGC,infoRec->WritePixmapFlags) &&

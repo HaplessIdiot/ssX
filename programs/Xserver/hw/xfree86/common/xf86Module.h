@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.7 1999/01/15 02:12:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.8 1999/01/17 10:53:57 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -81,7 +81,8 @@ typedef enum {
     LDR_ONCEONLY,	/* Module should only be loaded once (not an error) */
     LDR_NOPORTOPEN,	/* could not open port (check errmin) */
     LDR_NOHARDWARE,	/* could not query/initialize the hardware device */
-    LDR_MISMATCH	/* the module didn't match the spec'd requirments */
+    LDR_MISMATCH,	/* the module didn't match the spec'd requirments */
+    LDR_BADUSAGE	/* LoadModule is called with bad arguments */
 } LoaderErrorCode;
 
 /* This structure is expected to be returned by the initfunc */

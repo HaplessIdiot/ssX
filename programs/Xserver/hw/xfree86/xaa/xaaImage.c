@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.9 1999/01/03 03:58:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.10 1999/01/14 13:05:26 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -79,6 +79,97 @@ void XAAMoveDWORDS_FixedSrc(
      *(dest + 2) = *src;
 }
 
+static void
+XAAWritePixmap32To24(
+   ScrnInfoPtr pScrn,
+   int x, int y, int w, int h,
+   unsigned char *srcInit,	
+   int srcwidth,	/* bytes */
+   int rop,
+   unsigned int planemask,
+   int trans
+){
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
+    int count, dwords = ((w * 3) + 3) >> 2;
+    CARD32 *src, *dst;
+    Bool PlusOne = FALSE;
+
+    if((infoRec->ImageWriteFlags & CPU_TRANSFER_PAD_QWORD) && 
+					((dwords * h) & 0x01)) {
+	PlusOne = TRUE;
+    }
+
+    (*infoRec->SetupForImageWrite)(pScrn, rop, planemask, trans, 24, 24);
+    (*infoRec->SubsequentImageWriteRect)(pScrn, x, y, w, h, 0);
+  
+    if(dwords > infoRec->ImageWriteRange) {
+	dst = (CARD32*)infoRec->ImageWriteBase;
+	while(h--) {
+	    src = (CARD32*)srcInit;
+  	    count = w;
+
+	    while(count >= 4) {
+		*dst = (src[0] & 0x00ffffff) | (src[1] << 24);
+		*dst = (src[1] >> 8) | (src[2] << 16);
+		*dst = (src[2] >> 16) | (src[3] << 8);
+		src += 4;
+		count -= 4;
+	    }
+	    switch(count) {
+	    case 0:	break;
+	    case 1:	*dst = src[0];
+			break;
+	    case 2:	*dst = (src[0] & 0x00ffffff) | (src[1] << 24);
+			*dst = src[1] >> 8;
+			break;
+	    default:	*dst = (src[0] & 0x00ffffff) | (src[1] << 24);
+			*dst = (src[1] >> 8) | (src[2] << 16);
+			*dst = src[2] >> 16;
+			break;
+	    }
+	    srcInit += srcwidth;
+	}
+    } else {
+	while(h--) {
+	    dst = (CARD32*)infoRec->ImageWriteBase;
+	    src = (CARD32*)srcInit;
+  	    count = w;
+
+	    while(count >= 4) {
+		dst[0] = (src[0] & 0x00ffffff) | (src[1] << 24);
+		dst[1] = (src[1] >> 8) | (src[2] << 16);
+		dst[2] = (src[2] >> 16) | (src[3] << 8);
+		dst += 3;
+		src += 4;
+		count -= 4;
+	    }
+	    switch(count) {
+	    case 0:	break;
+	    case 1:	dst[0] = src[0];
+			break;
+	    case 2:	dst[0] = (src[0] & 0x00ffffff) | (src[1] << 24);
+			dst[1] = src[1] >> 8;
+			break;
+	    default:	dst[0] = (src[0] & 0x00ffffff) | (src[1] << 24);
+			dst[1] = (src[1] >> 8) | (src[2] << 16);
+			dst[2] = src[2] >> 16;
+			break;
+	    }
+	    srcInit += srcwidth;
+	}
+    }
+
+    if(PlusOne) {
+	CARD32* base = (CARD32*)infoRec->ImageWriteBase;
+	*base = 0x00000000;
+    }
+
+    if(infoRec->ImageWriteFlags & SYNC_AFTER_IMAGE_WRITE)
+	(*infoRec->Sync)(pScrn);
+    else SET_SYNC_FLAG(infoRec);
+
+}
+
 void 
 XAAWritePixmap (
    ScrnInfoPtr pScrn,
@@ -90,10 +181,19 @@ XAAWritePixmap (
    int trans,
    int bpp, int depth
 ){
-    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
-    int dwords, skipleft, Bpp = bpp >> 3; 
-    Bool beCareful = FALSE;
-    Bool PlusOne = FALSE;
+    XAAInfoRecPtr infoRec;
+    int dwords, skipleft, Bpp; 
+    Bool beCareful, PlusOne;
+
+    if((bpp == 32) && (pScrn->bitsPerPixel == 24)) {
+	XAAWritePixmap32To24(pScrn, x, y, w, h, src, srcwidth, 
+						rop, planemask, trans);	
+	return;
+    }
+
+    infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
+    beCareful = PlusOne = FALSE;
+    Bpp = bpp >> 3;
 
     if((skipleft = (long)src & 0x03L)) {
 	if(!(infoRec->ImageWriteFlags & LEFT_EDGE_CLIPPING)) {
@@ -299,10 +399,13 @@ XAAPutImage(
     char        *pImage
 ){
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+    int bpp = BitsPerPixel(depth);
     if(!w || !h) return;
 
     if(((format == ZPixmap) && infoRec->WritePixmap &&
-	     (pDraw->bitsPerPixel == BitsPerPixel(depth)) &&
+	     ((pDraw->bitsPerPixel == bpp) |
+		((pDraw->bitsPerPixel == 24) &&  (bpp == 32) &&
+		(infoRec->WritePixmapFlags & CONVERT_32BPP_TO_24BPP))) &&
 	     CHECK_ROP(pGC,infoRec->WritePixmapFlags) &&
 	     CHECK_ROPSRC(pGC,infoRec->WritePixmapFlags) &&
 	     CHECK_PLANEMASK(pGC,infoRec->WritePixmapFlags) &&
@@ -352,9 +455,7 @@ XAAPutImage(
 		pbox++;
 	    }
         } else if(format == ZPixmap) {
-	    /* here we assume XImages match the framebuffer.  We will have
-	       to lookup Bpp by depth when this changes */
-	    int Bpp = infoRec->pScrn->bitsPerPixel >> 3;
+	    int Bpp = bpp >> 3;
 	    srcwidth = (((leftPad + w) * Bpp) + 3) & ~0x00000003;
 	    while(nboxes--) {
 		srcx = pbox->x1 - TheRect.x + leftPad;

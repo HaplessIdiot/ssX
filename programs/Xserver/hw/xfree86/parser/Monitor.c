@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.2 1998/07/25 16:57:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.3 1998/11/22 10:37:36 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -86,7 +86,7 @@ parseModeLine (void)
 	parsePrologue (XF86ConfModeLinePtr, XF86ConfModeLineRec)
 
 	/* Identifier */
-		if (xf86GetToken (NULL) != STRING)
+	if (xf86GetToken (NULL) != STRING)
 		Error ("ModeLine identifier expected", NULL);
 	ptr->ml_identifier = val.str;
 
@@ -320,15 +320,20 @@ parseVerboseMode (void)
 			break;
 		case HSKEW:
 			if (xf86GetToken (NULL) != NUMBER)
-				xf86ParseError ("Horizontal skew expected");
+				Error ("Horizontal skew expected", NULL);
 			ptr->ml_flags |= XF86CONF_HSKEW;
 			ptr->ml_hskew = val.num;
 			break;
 		case VSCAN:
 			if (xf86GetToken (NULL) != NUMBER)
-				xf86ParseError ("Vertical scan count expected");
+				Error ("Vertical scan count expected", NULL);
 			ptr->ml_vscan = val.num;
 			break;
+		case EOF_TOKEN:
+			Error (UNEXPECTED_EOF_MSG, NULL);
+			break;
+		default:
+			Error ("Unexepcted token in verbose \"Mode\" entry\n", NULL);
 		}
 	}
 	if (!had_dotclock)

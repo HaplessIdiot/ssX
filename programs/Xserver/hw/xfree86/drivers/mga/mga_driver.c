@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.67 1999/01/14 13:04:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.68 1999/01/17 10:54:02 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -84,6 +84,7 @@
 #include "cfb16.h"
 #include "cfb24.h"
 #include "cfb32.h"
+#include "cfb24_32.h"
 #include "cfb8_32.h"
 
 /* These need to be checked */
@@ -243,6 +244,7 @@ static const char *cfbSymbols[] = {
     "cfb24ScreenInit",
     "cfb32ScreenInit",
     "cfb8_32ScreenInit",
+    "cfb24_32ScreenInit",
     NULL
 };
 
@@ -826,7 +828,8 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
      * Our default depth is 8, so pass it to the helper function.
      * We support both 24bpp and 32bpp layouts, so indicate that.
      */
-    if (!xf86SetDepthBpp(pScrn, 8, 8, 8, Support24bppFb | Support32bppFb)) {
+    if (!xf86SetDepthBpp(pScrn, 8, 8, 8, Support24bppFb | Support32bppFb 
+	 	| SupportConvert32to24 | PreferConvert32to24)) {
 	return FALSE;
     } else {
 	/* Check that the returned depth is one we support */
@@ -954,18 +957,6 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     }
     if (xf86IsOptionSet(MGAOptions, OPTION_8_PLUS_24)) {
 	if(pScrn->bitsPerPixel == 32) {
-#if 0
-            int num = pScrn->numFormats;
-            pScrn->formats[num].depth = pScrn->formats[num - 1].depth;
-            pScrn->formats[num].bitsPerPixel =
-                                 pScrn->formats[num - 1].bitsPerPixel;
-            pScrn->formats[num].scanlinePad = 
-                                pScrn->formats[num - 1].scanlinePad;
-            pScrn->formats[num - 1].depth = 8;
-            pScrn->formats[num - 1].bitsPerPixel = 8;
-            pScrn->formats[num - 1].scanlinePad = BITMAP_SCANLINE_PAD;
-            pScrn->numFormats++;
-#endif
 	    pMga->Overlay8Plus24 = TRUE;
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
 				"PseudoColor overlay enabled\n");
@@ -1414,8 +1405,13 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	reqSym = "cfb16ScreenInit";
 	break;
     case 24:
-	mod = "cfb24";
-	reqSym = "cfb24ScreenInit";
+	if (0) {
+	    mod = "cfb24";
+	    reqSym = "cfb24ScreenInit";
+	} else {
+	    mod = "xf24_32bpp";
+	    reqSym = "cfb24_32ScreenInit";
+	}
 	break;
     case 32:
 	if (pMga->Overlay8Plus24) {
@@ -1814,7 +1810,13 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			pScrn->displayWidth);
 	break;
     case 24:
-	ret = cfb24ScreenInit(pScreen, pMga->FbStart,
+	if(0)
+	    ret = cfb24ScreenInit(pScreen, pMga->FbStart,
+			pScrn->virtualX, pScrn->virtualY,
+			pScrn->xDpi, pScrn->yDpi,
+			pScrn->displayWidth);
+	else
+	    ret = cfb24_32ScreenInit(pScreen, pMga->FbStart,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			pScrn->displayWidth);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/xf86overlay.c,v 1.2 1999/01/11 12:09:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/xf86overlay.c,v 1.3 1999/01/14 13:05:35 dawes Exp $ */
 
 /*
    Copyright (C) 1998.  The XFree86 Project Inc.
@@ -83,7 +83,7 @@ static void	 PixmapImageGlyphBlt(DrawablePtr, GCPtr, int, int,
 static void	 PixmapPolyGlyphBlt(DrawablePtr, GCPtr, int, int,
 				     unsigned int, CharInfoPtr *, pointer);
 
-GCOps PixmapGCOps = {
+static GCOps PixmapGCOps = {
     PixmapFillSpans, PixmapSetSpans, 
     PixmapPutImage, PixmapCopyArea, 
     PixmapCopyPlane, PixmapPolyPoint, 
@@ -134,7 +134,7 @@ static void	 WindowImageGlyphBlt(DrawablePtr, GCPtr, int, int,
 static void	 WindowPolyGlyphBlt(DrawablePtr, GCPtr, int, int,
 				     unsigned int, CharInfoPtr *, pointer);
 
-GCOps WindowGCOps = {
+static GCOps WindowGCOps = {
     WindowFillSpans, WindowSetSpans, 
     WindowPutImage, WindowCopyArea, 
     WindowCopyPlane, WindowPolyPoint, 
@@ -426,11 +426,18 @@ OverlayPaintWindow(
     PixmapPtr oldPix = NULL;
 
     if(what == PW_BACKGROUND) {
-	if((pWin->drawable.depth == 8) && 
-		(pWin->backgroundState == BackgroundPixmap)) {
-	   oldPix = pWin->background.pixmap;
-	   pixPriv = OVERLAY_GET_PIXMAP_PRIVATE(oldPix);
-	   pWin->background.pixmap = pixPriv->pix32;
+	if(pWin->drawable.depth == 8) {
+	   if(pWin->backgroundState == ParentRelative) {
+		do {
+		   pWin = pWin->parent;
+		} while (pWin->backgroundState == ParentRelative);
+	   }
+
+	   if(pWin->backgroundState == BackgroundPixmap) {
+		oldPix = pWin->background.pixmap;
+		pixPriv = OVERLAY_GET_PIXMAP_PRIVATE(oldPix);
+		pWin->background.pixmap = pixPriv->pix32;
+	   }
 	}
 
 	pScreen->PaintWindowBackground = pScreenPriv->PaintWindowBackground;

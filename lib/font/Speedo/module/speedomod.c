@@ -23,11 +23,9 @@
  * dealings in this Software without prior written authorization from the
  * XFree86 Project.
  */
-/* $XFree86: xc/lib/font/Speedo/module/speedomod.c,v 1.4 1998/12/13 10:33:32 dawes Exp $ */
+/* $XFree86: xc/lib/font/Speedo/module/speedomod.c,v 1.5 1999/01/17 10:53:45 dawes Exp $ */
 
-#include "X.h"
 #include "misc.h"
-#include "xf86_ansic.h"
 
 #include "fontmod.h"
 #include "xf86Module.h"

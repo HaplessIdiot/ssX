@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.10 1998/11/15 05:09:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.11 1999/01/11 05:13:29 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -138,6 +138,7 @@
 #define PCI_CHIP_SG86C202	0x0002
 #define PCI_CHIP_SG86C205	0x0205
 #define PCI_CHIP_SIS5597	0x0200
+#define PCI_CHIP_SIS6326	0x6326
 
 /* SGS */
 #define PCI_CHIP_STG2000	0x0008
@@ -337,6 +338,7 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_SG86C202,	"SG86C202"},
 				{PCI_CHIP_SG86C205,	"SG86C205"},
 				{PCI_CHIP_SIS5597,	"SIS5597"},
+				{PCI_CHIP_SIS6326,	"SIS6326"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_SGS,	"SGS-Thomson",	{
 				{PCI_CHIP_STG2000,	"STG2000"},

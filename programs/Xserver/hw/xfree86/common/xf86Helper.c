@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.20 1999/01/15 02:12:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.21 1999/01/17 10:53:56 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -858,18 +858,20 @@ xf86SaveRestoreImage(int scrnIndex, SaveRestoreFlags what)
 	     devPrivate = pScreenPix->devPrivate.ptr;
 	     devKind = pScreenPix->devKind;
 
-	     /* scratch pixmap for the old screen */
+	     /* scratch pixmap for the saved screen */
 	     pPix = GetScratchPixmapHeader(pScreen, width, height, 
 		   pScreen->rootDepth, bitsPerPixel, devKind, devPrivate);
 
 	     if(pPix) {
+		/* restore the screen pixmap's correct values */
+		pScreenPix->devPrivate.ptr = devPrivates[scrnIndex];
+		pScreenPix->devKind = devKinds[scrnIndex];
+
 		(*pScreen->BackingStoreFuncs.RestoreAreas)(pPix, &pixReg, 0, 0,
 						       WindowTable[scrnIndex]);
 		xfree(devPrivate);
 		FreeScratchPixmapHeader(pPix);
 		/* restore old values */
-		pScreenPix->devPrivate.ptr = devPrivates[scrnIndex];
-		pScreenPix->devKind = devKinds[scrnIndex];
 		WalkTree(xf86Screens[scrnIndex]->pScreen,xf86NewSerialNumber,0);
 		ret = TRUE;
 	     }
@@ -1873,7 +1875,8 @@ xf86SetBackingStore(ScreenPtr pScreen)
 	    from = X_CONFIG;
     }
     pScreen->backingStoreSupport = useBS ? Always : NotUseful;
-    xf86DrvMsg(pScreen->myNum, from, "Backing store %s\n",
-		useBS ? "enabled" : "disabled");
+    if (serverGeneration == 1)
+	xf86DrvMsg(pScreen->myNum, from, "Backing store %s\n",
+		   useBS ? "enabled" : "disabled");
 }
 

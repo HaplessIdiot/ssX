@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis_Blitter.h,v 1.2 1997/01/18 06:56:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_Blitter.h,v 1.1 1997/03/06 23:16:47 hohndel Exp $ */
 
 
 /* Definitions for the SIS engine communication. */

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: input.c /main/21 1996/04/17 15:54:23 kaleb $
- *	$XFree86: xc/programs/xterm/input.c,v 3.24 1998/10/25 07:12:43 dawes Exp $
+ *	$XFree86: xc/programs/xterm/input.c,v 3.25 1998/12/20 11:58:33 dawes Exp $
  */
 
 /*
@@ -144,6 +144,14 @@ Input (
 	reply.a_final = 0;
 	reply.a_nparam = 0;
 	reply.a_inters = 0;
+
+	/* VT220 & up: National Replacement Characters */
+	if ((nbytes == 1)
+	 && (term->flags & NATIONAL)) {
+		keysym = xtermCharSetIn(keysym, screen->keyboard_dialect[0]);
+		if (keysym < 128)
+			strbuf[0] = keysym;
+	}
 
 	/* VT300 & up: backarrow toggle */
 	if ((nbytes == 1)

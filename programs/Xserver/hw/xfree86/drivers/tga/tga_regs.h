@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_regs.h,v 1.1.2.1 1998/07/18 17:53:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_regs.h,v 1.2 1998/07/25 16:55:58 dawes Exp $ */
 
 /* TGA hardware description (minimal)
  *
@@ -34,30 +34,45 @@
 #ifndef TGA_REGS_H
 #define TGA_REGS_H
 
+#include "compiler.h"
+
 #define TYPE_TGA_8PLANE			0
 #define TYPE_TGA_24PLANE		1
 #define TYPE_TGA_24PLUSZ		3
 
 #ifdef __alpha__
-#define TGA_WRITE_REG(v,r) \
-	{ *(unsigned int *)((char*)(pTga->IOBaseDense)+(r)) = v; mb(); }
+/* we can avoid an mb() if we write to an alternate register space each time */
+extern unsigned int tga_reg_offset; /* in tga_accel.c */
 
+/* XXX should tga_reg_offset be screen-specific rather than global? */
+
+#define TGA_FAST_WRITE_REG(pTga,v,r) \
+do {\
+  *(unsigned int *)(((char *)pTga->IOBaseDense) + tga_reg_offset + (r)) = v;\
+  if(tga_reg_offset >= 1047552) (tga_reg_offset = 0); else (tga_reg_offset += 1024);\
+} while (0)
+
+#define TGA_WRITE_REG(v,r) \
+	do {\
+		 *(unsigned int *)((char*)(pTga->IOBaseDense)+(r)) = v;\
+		 mem_barrier();\
+	} while (0)
 #define TGA_READ_REG(r) \
 	( *(unsigned int *)((char*)(pTga->IOBaseDense)+(r)))
+
 #else
 #define TGA_WRITE_REG(v,r) \
-	{ *(unsigned int *)((char*)(pTga->IOBase)+(r)) = v; }
+	*(unsigned int *)((char*)(pTga->IOBase)+(r)) = v;
+
+#define TGA_FAST_WRITE_REG(pTga,v,r) TGA_WRITE_REG(v,r)
 
 #define TGA_READ_REG(r) \
 	( *(unsigned int *)((char*)(pTga->IOBase)+(r)))
-#endif
+#endif /* __alpha__ */
 
 #define BT485_WRITE(v,r) \
 	TGA_WRITE_REG((r),TGA_RAMDAC_SETUP_REG);		\
 	TGA_WRITE_REG(((v)&0xff)|((r)<<8),TGA_RAMDAC_REG);
-
-#define mb() \
-	__asm__ __volatile__("mb": : :"memory")
 
 #define	TGA_ROM_OFFSET			0x0000000
 #define	TGA_REGS_OFFSET			0x0100000
@@ -86,10 +101,17 @@
 #define		CAP_ENDS		0x8000
 #define		X11			0x0000
 #define		WIN32			0x2000
+ /* copy mode */
+#define         COPY                    0x07
+ /* opaque fill mode */
+#define         OPAQUEFILL              0x21
+#define         TRANSPARENTFILL         0x45
 #define	TGA_RASTEROP_REG		0x0034
+#define TGA_PIXELSHIFT_REG              0x0038
 #define TGA_ADDRESS_REG			0x003c
+#define TGA_CONTINUE_REG                0x004c
 #define	TGA_DEEP_REG			0x0050
-#define	TGA_PIXELMASK_REG		0x005c
+#define	TGA_PIXELMASK_REG		0x002c
 #define	TGA_CURSOR_BASE_REG		0x0060
 #define	TGA_HORIZ_REG			0x0064
 #define	TGA_VERT_REG			0x0068
@@ -97,8 +119,23 @@
 #define	TGA_VALID_REG			0x0070
 #define	TGA_CURSOR_XY_REG		0x0074
 #define	TGA_INTR_STAT_REG		0x007c
+ /* GDAR */
+#define TGA_DATA_REG                    0x0080
+#define TGA_WIDTH_REG                   0x009c
 #define TGA_SPAN_REG			0x00bc
 #define	TGA_RAMDAC_SETUP_REG		0x00c0
+#define TGA_SLOPE0_REG                  0x0120
+#define TGA_SLOPE1_REG                  0x0124
+#define TGA_SLOPE2_REG                  0x0128
+#define TGA_SLOPE3_REG                  0x012C
+#define TGA_SLOPE4_REG                  0x0130
+#define TGA_SLOPE5_REG                  0x0134
+#define TGA_SLOPE6_REG                  0x0138
+#define TGA_SLOPE7_REG                  0x013C
+#define TGA_BRES3_REG                   0x0048;
+#define TGA_BRES2_REG                   0x0044;
+#define TGA_BRES1_REG                   0x0040;
+
 #define	TGA_BLOCK_COLOR0_REG		0x0140
 #define	TGA_BLOCK_COLOR1_REG		0x0144
 #define	TGA_CLOCK_REG			0x01e8

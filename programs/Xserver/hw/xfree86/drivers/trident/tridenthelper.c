@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tridenthelper.c,v 1.3 1998/09/13 13:12:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tridenthelper.c,v 1.4 1998/11/15 04:30:34 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -185,4 +185,75 @@ CalculateMCLK(ScrnInfoPtr pScrn)
 	freq = ((n+8)*pTrident->frequency)/((m-2)*powerup[k]);
     }
     return (freq);
+}
+
+void
+TGUISetMCLK(ScrnInfoPtr pScrn, int clock, unsigned char *a, unsigned char *b)
+{
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+    int powerup[4] = { 1,2,4,8 };
+    int clock_diff = 750;
+    int freq, ffreq;
+    int m,n,k;
+    int p, q, r, s; 
+    int startn, endn;
+    int endm, endk;
+    unsigned char temp;
+
+    p = q = r = s = 0;
+
+    IsClearTV(pScrn);
+
+    if (pTrident->NewClockCode)
+    {
+	startn = 64;
+	endn = 255;
+	endm = 63;
+	endk = 3;
+    }
+    else
+    {
+	startn = 0;
+	endn = 121;
+	endm = 31;
+	endk = 1;
+    }
+
+    freq = clock;
+
+    if (!pTrident->HasSGRAM) {
+      for (k=0;k<=endk;k++)
+        for (n=startn;n<=endn;n++)
+          for (m=1;m<=endm;m++) {
+	    ffreq = ((((n+8)*pTrident->frequency)/((m+2)*powerup[k]))*1000);
+		if ((ffreq > freq - clock_diff) && (ffreq < freq + clock_diff)) 
+		{
+		    clock_diff = (freq > ffreq) ? freq - ffreq : ffreq - freq;
+		    p = n; q = m; r = k; s = ffreq;
+	    }
+	}
+
+	if (s == 0)
+	{
+		FatalError("Unable to set memory clock.\n"
+			   "Frequency %d is not a valid clock.\n"
+			   "Please modify XF86Config for a new clock.\n",	
+			   freq);
+	}
+
+	if (pTrident->NewClockCode)
+	{
+		/* N is all 8bits */
+		*a = p;
+		/* M is first 6bits, with K last 2bits */
+		*b = (q & 0x3F) | (r << 6);
+	}
+	else
+	{
+		/* N is first 7bits, first M bit is 8th bit */
+		*a = ((1 & q) << 7) | p;
+		/* first 4bits are rest of M, 1bit for K value */
+		*b = (((q & 0xFE) >> 1) | (r << 4));
+	}
+    }
 }

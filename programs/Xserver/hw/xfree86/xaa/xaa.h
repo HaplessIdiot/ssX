@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.15 1999/01/03 03:58:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.16 1999/01/03 08:06:39 dawes Exp $ */
 
 #ifndef _XAA_H
 #define _XAA_H
@@ -44,6 +44,19 @@
 18                         .
 17           HARDWARE_PATTERN_PROGRAMMED_ORIGIN
 16           HARDWARE_PATTERN_PROGRAMMED_BITS
+---------               -------
+
+   ****  write pixmap flags ****
+
+---------               --------
+23                         .
+22                         .
+21                         .
+20                         .
+19                         .
+18                         .
+17                         .
+16           CONVERT_32BPP_TO_24BPP
 ---------               -------
 
 
@@ -134,6 +147,9 @@
 #define LINE_PATTERN_MSBFIRST_LSBJUSTIFIED	0x00100000
 #define LINE_PATTERN_POWER_OF_2_ONLY 		0x00080000
 #define HARDWARE_CLIP_LINE			0x00040000
+
+/* image write flags */
+#define CONVERT_32BPP_TO_24BPP			0x00010000
 
 /* pixmap cache flags */
 #define CACHE_MONO_8x8			0x00000001

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.10 1999/01/14 13:05:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.11 1999/01/17 10:54:14 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -279,7 +279,6 @@ XAASaveAreas (
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCREEN(pScreen);
 
-
     if(IS_OFFSCREEN_PIXMAP(pPixmap)) {
 	BoxPtr pbox = REGION_RECTS(prgnSave);
 	int nboxes = REGION_NUM_RECTS(prgnSave);
@@ -361,7 +360,10 @@ XAARestoreAreas (
 
     if(pScrn->vtSema && infoRec->WritePixmap &&
 	!(infoRec->WritePixmapFlags & NO_GXCOPY) &&
-	(pWin->drawable.bitsPerPixel == pPixmap->drawable.bitsPerPixel)) {
+	((pWin->drawable.bitsPerPixel == pPixmap->drawable.bitsPerPixel) |
+		((pWin->drawable.bitsPerPixel == 24) &&  
+		(pPixmap->drawable.bitsPerPixel == 32) &&
+		(infoRec->WritePixmapFlags & CONVERT_32BPP_TO_24BPP)))) {
 	BoxPtr pbox = REGION_RECTS(prgnRestore);
 	int nboxes = REGION_NUM_RECTS(prgnRestore);
 	int Bpp =  pPixmap->drawable.bitsPerPixel >> 3;
@@ -405,7 +407,8 @@ XAACreatePixmap(ScreenPtr pScreen, int w, int h, int depth)
     int size = w * h;
     
     if((infoRec->Flags & OFFSCREEN_PIXMAPS) && pScrn->vtSema &&
-	(BitsPerPixel(depth) == pScrn->bitsPerPixel) && 
+	(depth != 1) && ((BitsPerPixel(depth) == pScrn->bitsPerPixel) | 
+		!(infoRec->Flags & OVERLAY_8_32))&& 
 	(size >= MIN_OFFPIX_SIZE)){
 
 	PixmapPtr pScreenPix;
@@ -431,6 +434,7 @@ XAACreatePixmap(ScreenPtr pScreen, int w, int h, int depth)
 		pPix->drawable.y = area->box.y1;
 		pPix->drawable.width = w;
 		pPix->drawable.height = h;
+		pPix->drawable.bitsPerPixel = pScrn->bitsPerPixel;
 		pPix->devKind = pScreenPix->devKind;
 		pPix->devPrivate.ptr = pScreenPix->devPrivate.ptr;
 
@@ -474,12 +478,9 @@ XAADestroyPixmap(PixmapPtr pPix)
 	if(pPriv->offscreenArea)
 	    xf86FreeOffscreenArea(pPriv->offscreenArea);
 	else
-	    xfree(pPix->devPrivate.ptr);	   
+	    xfree(pPix->devPrivate.ptr);
 
         DELIST_OFFSCREEN_PIXMAP(pPix);
-#if 0
-ErrorF("Freed one !!!!  (%x)\n", pPix);
-#endif
     }
     
     XAA_SCREEN_PROLOGUE (pScreen, DestroyPixmap);

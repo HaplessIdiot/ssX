@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.32 1998/12/05 14:40:01 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.33 1998/12/20 11:57:38 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994-1998 by The XFree86 Project, Inc.
 XCOMM
@@ -134,8 +134,6 @@ XCOMM    EndSubSection
 
 EndSection
 
-
-XCOMM EndSection
 
 XCOMM **********************************************************************
 XCOMM Server flags section.  This contains various server-wide Options.

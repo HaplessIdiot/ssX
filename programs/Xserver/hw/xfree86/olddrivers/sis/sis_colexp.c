@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_colexp.c,v 1.1 1997/03/06 23:16:52 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_colexp.c,v 1.2 1998/01/24 16:58:21 hohndel Exp $ */
 
 /*
  *

@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_regs.h,v 1.2 1998/09/13 05:23:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_regs.h,v 1.3 1998/11/15 04:30:34 dawes Exp $ */
 
 /* General Registers */
 #define SPR	0x1F		/* Software Programming Register (videoram) */
@@ -33,6 +33,8 @@
 #define OldMode2 0x0D
 #define OldMode1 0x0E
 #define NewMode1 0x0E
+#define MCLKLow 0x16
+#define MCLKHigh 0x17
 #define ClockLow 0x18
 #define ClockHigh 0x19
 
@@ -69,7 +71,9 @@
 #define CursorBG4 0x4F
 #define CursorControl 0x50
 #define PCIRetry 0x55
+#define PCIMaster 0x60
 #define Enhancement0 0x62
+#define NewEDO 0x64
 #define TVinterface 0xC0
 #define TVMode 0xC1
 #define ClockControl 0xCF
@@ -119,6 +123,7 @@
 #define		GE_ELLIP_FILL	0x09	/* Ellipse Fill (96xx only) (RES)*/
 #define	GER_FMIX	0x27
 #define GER_DRAWFLAG	0x28		/* long */
+#define		FASTMODE	1<<28
 #define		STENCIL		0x8000
 #define		SOLIDFILL	0x4000
 #define		TRANS_ENABLE	0x1000
@@ -197,11 +202,13 @@
 			x |= x << 8;		\
 	}
 
-#define CHECKCLIPPING				\
-	if (pTrident->Clipping)	{		\
-		pTrident->Clipping = FALSE;	\
-		TGUI_SRCCLIP_XY(0,0);		\
-		TGUI_DSTCLIP_XY(4095,2047);	\
+#define CHECKCLIPPING					\
+	if (pTrident->Clipping)	{			\
+		pTrident->Clipping = FALSE;		\
+		if (pTrident->Chipset < PROVIDIA9682) { \
+			TGUI_SRCCLIP_XY(0,0);		\
+			TGUI_DSTCLIP_XY(4095,2047);	\
+		}					\
 	}
 
 
@@ -289,8 +296,8 @@
 		*(CARD32 *)(pTrident->IOBase + GER_CKEY) = c;
 #define IMAGE_OUT(addr, c) \
 		*(CARD32 *)(pTrident->IOBase + addr) = c;
-#define TGUI_OUTB(addr, c) \
-		*(unsigned char *)(pTrident->IOBase + addr) = c;
+#define TGUI_OUTL(addr, c) \
+		*(CARD32 *)(pTrident->IOBase + addr) = c;
 #define TGUI_COMMAND(c) \
 		{ \
 		*(unsigned char *)(pTrident->IOBase + GER_COMMAND) = c; \
@@ -391,8 +398,8 @@
 		outw(GER_BASE+GER_PATLOC, addr);
 #define TGUI_CKEY(c) \
 		outl(GER_BASE+GER_CKEY, c);
-#define TGUI_OUTB(addr, c) \
-		outb(GER_BASE+addr, c);
+#define TGUI_OUTL(addr, c) \
+		outl(GER_BASE+addr, c);
 #define TGUI_OUTW(addr, c) \
 		outw(GER_BASE+addr, c);
 #define TGUI_COMMAND(c) \

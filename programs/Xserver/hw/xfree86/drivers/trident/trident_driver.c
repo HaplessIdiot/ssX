@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.39 1999/01/14 13:04:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.40 1999/01/17 10:54:05 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -154,15 +154,19 @@ typedef enum {
     OPTION_PCI_RETRY,
     OPTION_RGB_BITS,
     OPTION_NOACCEL,
-    OPTION_NOMMIO
+    OPTION_NOMMIO,
+    OPTION_MUX_THRESHOLD,
+    OPTION_MCLK
 } TRIDENTOpts;
 
 static OptionInfoRec TRIDENTOptions[] = {
     { OPTION_SW_CURSOR,		"SWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_HW_CURSOR,		"HWcursor",	OPTV_BOOLEAN,	{0}, FALSE  },
+    { OPTION_HW_CURSOR,		"HWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_PCI_RETRY,		"PciRetry",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_NOMMIO,		"NoMMIO",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_MUX_THRESHOLD,	"MUXThreshold",	OPTV_INTEGER,	{0}, FALSE },
+    { OPTION_MCLK,		"MCLK",		OPTV_INTEGER,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -357,6 +361,17 @@ static int ClockLimit32bpp[] = {
 	115000,
 };
 
+static const char *xaaSymbols[] = {
+    "XAADestroyInfoRec",
+    "XAACreateInfoRec",
+    "XAAInit",
+    "XAAStippleScanlineFuncLSBFirst",
+    "XAAOverlayFBfuncs",
+    "XAACachePlanarMonoStipple",
+    "XAAScreenIndex",
+    NULL
+};
+
 static const char *vgahwSymbols[] = {
     "vgaHWGetHWRec",
     "vgaHWUnlock",
@@ -382,6 +397,12 @@ static const char *fbSymbols[] = {
 
 static const char *racSymbols[] = {
     "xf86RACInit",
+    NULL
+};
+
+static const char *ddcSymbols[] = {
+    "xf86PrintEDID",
+    "xf86DoEDID_DDC1",
     NULL
 };
 
@@ -434,7 +455,7 @@ tridentSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	setupDone = TRUE;
 	xf86AddDriver(&TRIDENT, module, 0);
 	LoaderRefSymLists(vgahwSymbols, fbSymbols, racSymbols, i2cSymbols,
-			  NULL);
+			  xaaSymbols, NULL);
 	return (pointer)TRUE;
     } 
 
@@ -475,6 +496,12 @@ static void
 TRIDENTDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags)
 {
     unsigned char DPMSCont, PMCont, temp;
+
+#if 0
+    xf86AddControlledResource(pScrn,IO);
+    xf86EnableAccess(&pScrn->Access);
+#endif
+
     outb(0x3C4, 0x0E);
     temp = inb(0x3C5);
     outb(0x3C5, 0xC2);
@@ -509,6 +536,10 @@ TRIDENTDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int
 	outb(0x83C8, 0x04);
 	outb(0x83C6, PMCont);
 	outw(0x3C4, (temp<<8) | 0x0E);
+
+#if 0
+    xf86DelControlledResource(&pScrn->Access, FALSE);
+#endif
 }
 #endif
 
@@ -526,8 +557,15 @@ Trident1bppColorMap(ScrnInfoPtr pScrn) {
    black. I'm sure there's a better way to do that, just lazy to
    search the docs.  */
 
+#if 0
+    xf86AddControlledResource(pScrn,IO);
+    xf86EnableAccess(&pScrn->Access);
+#endif
    outb(0x3C8, 0x00); outb(0x3C9, 0x00); outb(0x3C9, 0x00); outb(0x3C9, 0x00);
    outb(0x3C8, 0x3F); outb(0x3C9, 0x3F); outb(0x3C9, 0x3F); outb(0x3C9, 0x3F);
+#if 0
+    xf86DelControlledResource(&pScrn->Access,FALSE);
+#endif
 }
 
 /* Mandatory */
@@ -655,7 +693,9 @@ TRIDENTProbe(DriverPtr drv, int flags)
 static int *
 GetAccelPitchValues(ScrnInfoPtr pScrn)
 {
+#if 0
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+#endif
     int *linePitches = NULL;
     int lines[4] = { 512, 1024, 2048, 4096 }; /* 9440AGi */
 #if 0
@@ -687,6 +727,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     MessageType from;
     unsigned char videoram;
     char *ramtype = NULL, *chipset = NULL;
+    Bool Support24bpp;
     int vgaIOBase;
     float mclk;
     int i,j;
@@ -696,6 +737,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     const char *Sym;
 
     xf86AddControlledResource(pScrn,IO);
+    xf86EnableAccess(&pScrn->Access);
 
     /*
      * Note: This function is only called once at server startup, and
@@ -710,7 +752,6 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
      * AllocateScreenPrivateIndex() from the ScreenInit() function.
      */
 
-    xf86EnableAccess(&pScrn->Access);
 
     /* The vgahw module should be loaded here when needed */
     if (!xf86LoadSubModule(pScrn, "vgahw"))
@@ -812,6 +853,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
     }
     pTrident = TRIDENTPTR(pScrn);
+    pTrident->pScrn = pScrn;
 
     /* Collect all of the relevant option flags (fill in pScrn->options) */
     xf86CollectOptions(pScrn, NULL);
@@ -855,6 +897,12 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     if (xf86IsOptionSet(TRIDENTOptions, OPTION_PCI_RETRY)) {
 	pTrident->UsePCIRetry = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry enabled\n");
+    }
+    pTrident->MUXThreshold = 100000; /* 100MHz */
+    if (xf86GetOptValInteger(TRIDENTOptions, OPTION_MUX_THRESHOLD, 
+						&pTrident->MUXThreshold)) {
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "MUX Threshold set to %d\n",
+						pTrident->MUXThreshold);
     }
 
     /* Find the PCI slot for this screen */
@@ -915,14 +963,18 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Revision is %d\n",revision);
 
     pTrident->EngineOperation = 0x00;
+    pTrident->UseGERetry = FALSE;
     pTrident->IsCyber = FALSE;
     pTrident->HasSGRAM = FALSE;
     pTrident->NewClockCode = FALSE;
+    pTrident->MUX = FALSE;
+    Support24bpp = FALSE;
 
     outb(vgaIOBase + 4, InterfaceSel);
 
     switch (pTrident->Chipset) {
 	case PCI_CHIP_9440:
+    	    pTrident->ddc1Read = Tridentddc1Read;
 	    pTrident->HWCursor = FALSE;
 	    chipset = "TGUI9440";
 	    pTrident->Chipset = TGUI9440AGi;
@@ -932,6 +984,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    pTrident->UsePCIRetry = FALSE; /* Not Supported */
 	    break;
 	case PCI_CHIP_9320:
+    	    pTrident->ddc1Read = Tridentddc1Read;
 	    chipset = "Cyber9320";
 	    pTrident->Chipset = CYBER9320;
 	    ramtype = "Standard DRAM";
@@ -940,6 +993,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    pTrident->UsePCIRetry = FALSE; /* Not Supported */
 	    break;
 	case PCI_CHIP_9660:
+    	    pTrident->ddc1Read = Tridentddc1Read;
     	    if ((inb(vgaIOBase + 5) & 0x0C) == 0x04)
 		ramtype = "EDO Ram";
     	    if ((inb(vgaIOBase + 5) & 0x0C) == 0x0C)
@@ -961,10 +1015,15 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 		    break;
 		case 0x10:
 		    chipset = "ProVidia 9682";
+		    Support24bpp = TRUE;
 		    pTrident->Chipset = PROVIDIA9682;
+		    if (pTrident->UsePCIRetry)
+		    	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry not supported, disabling\n");
+		    pTrident->UsePCIRetry = FALSE; /* Not Supported */
 		    break;
 		case 0x21:
 		    chipset = "ProVidia 9685";
+		    Support24bpp = TRUE;
 		    pTrident->NewClockCode = TRUE;
 		    pTrident->Chipset = PROVIDIA9685;
 		    break;
@@ -979,6 +1038,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 			pTrident->HasSGRAM = TRUE;
 			ramtype = "SGRAM";
 	    	    }
+	    	    pTrident->NoMMIO = FALSE; /* Can't disable MMIO */
 		    pTrident->NewClockCode = TRUE;
 		    pTrident->Chipset = CYBER9397;
 		    pTrident->IsCyber = TRUE;
@@ -993,6 +1053,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 			pTrident->HasSGRAM = TRUE;
 			ramtype = "SGRAM";
 	    	    }
+	    	    pTrident->NoMMIO = FALSE; /* Can't disable MMIO */
 		    pTrident->NewClockCode = TRUE;
 		    pTrident->Chipset = CYBER939A;
 		    pTrident->IsCyber = TRUE;
@@ -1025,14 +1086,15 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 		    break;
 		case 0x4A:
 		    chipset = "Cyber 9388";
-    	    if ((inb(vgaIOBase + 5) & 0x0C) == 0x04)
-		ramtype = "EDO Ram";
-    	    if ((inb(vgaIOBase + 5) & 0x0C) == 0x08)
-		ramtype = "SDRAM";
-    	    if ((inb(vgaIOBase + 5) & 0x0C) == 0x0C) {
-		pTrident->HasSGRAM = TRUE;
-		ramtype = "SGRAM";
-	    }
+    	    	    if ((inb(vgaIOBase + 5) & 0x0C) == 0x04)
+			ramtype = "EDO Ram";
+    	    	    if ((inb(vgaIOBase + 5) & 0x0C) == 0x08)
+			ramtype = "SDRAM";
+    	    	    if ((inb(vgaIOBase + 5) & 0x0C) == 0x0C) {
+			pTrident->HasSGRAM = TRUE;
+			ramtype = "SGRAM";
+	    	    }
+	    	    pTrident->NoMMIO = FALSE; /* Can't disable MMIO */
 		    pTrident->NewClockCode = TRUE;
 		    pTrident->Chipset = CYBER9388;
 		    pTrident->IsCyber = TRUE;
@@ -1044,6 +1106,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    }
 	    break;
 	case PCI_CHIP_9750:
+    	    pTrident->ddc1Read = Tridentddc1Read;
     	    if ((inb(vgaIOBase + 5) & 0x0C) == 0x04)
 		ramtype = "EDO Ram";
     	    if ((inb(vgaIOBase + 5) & 0x0C) == 0x08)
@@ -1052,11 +1115,14 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 		pTrident->HasSGRAM = TRUE;
 		ramtype = "SGRAM";
 	    }
+	    Support24bpp = TRUE;
 	    chipset = "3DImage975";
+	    pTrident->NoMMIO = FALSE; /* Can't disable MMIO for this chipset */
 	    pTrident->NewClockCode = TRUE;
 	    pTrident->Chipset = IMAGE975;
 	    break;
 	case PCI_CHIP_9850:
+    	    pTrident->ddc1Read = Tridentddc1Read;
     	    if ((inb(vgaIOBase + 5) & 0x0C) == 0x04)
 		ramtype = "EDO Ram";
     	    if ((inb(vgaIOBase + 5) & 0x0C) == 0x08)
@@ -1065,7 +1131,9 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 		pTrident->HasSGRAM = TRUE;
 		ramtype = "SGRAM";
 	    }
+	    Support24bpp = TRUE;
 	    chipset = "3DImage985";
+	    pTrident->NoMMIO = FALSE; /* Can't disable MMIO for this chipset */
 	    pTrident->NewClockCode = TRUE;
 	    pTrident->Chipset = IMAGE985;
 	    break;
@@ -1078,6 +1146,10 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Found %s chip\n", chipset);
     if (ramtype)
 	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "RAM type is %s\n", ramtype);
+    if (!Support24bpp) {
+	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "No support for 24bpp on this chipset, use 32bpp.\n");
+	return FALSE;
+    }
 
     pTrident->PciTag = pciTag(pTrident->PciInfo->bus, pTrident->PciInfo->device,
 			  pTrident->PciInfo->func);
@@ -1149,6 +1221,12 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 
     mclk = CalculateMCLK(pScrn);
     xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Memory Clock is %3.2f MHz\n", mclk);
+    pTrident->MCLK = 0;
+    if (xf86GetOptValInteger(TRIDENTOptions, OPTION_MCLK, 
+						&pTrident->MCLK)) {
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Setting new Memory Clock to %3.2f MHz\n",
+						(float)(pTrident->MCLK / 1000));
+    }
 		
     /* Set the min pixel clock */
     pTrident->MinClock = 16250;	/* XXX Guess, need to check this */
@@ -1219,16 +1297,21 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
      * care of this, we don't worry about setting them here.
      */
 
+    if ((pScrn->depth < 8) || 
+        (pScrn->bitsPerPixel == 24))
+		pTrident->NoAccel = TRUE;
+
     /* Select valid modes from those available */
-    if (pTrident->NoAccel) {
+    if (pTrident->NoAccel || pTrident->Chipset == IMAGE975 ||
+			     pTrident->Chipset == IMAGE985) {
 	/*
-	 * XXX Assuming min pitch 256, max 2048
-	 * XXX Assuming min height 128, max 2048
+	 * XXX Assuming min pitch 256, max 4096
+	 * XXX Assuming min height 128, max 4096
 	 */
 	i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
 			      pScrn->display->modes, clockRanges,
-			      NULL, 256, 2048,
-			      pScrn->bitsPerPixel, 128, 2048,
+			      NULL, 256, 4096,
+			      pScrn->bitsPerPixel, 128, 4096,
 			      pScrn->display->virtualX,
 			      pScrn->display->virtualY,
 			      pTrident->FbMapSize,
@@ -1276,13 +1359,11 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     switch (pScrn->bitsPerPixel) {
     case 1:
 	pTrident->EngineOperation |= 0x00;
-	pTrident->NoAccel = TRUE;
 	mod = "xf1bpp";
 	Sym = "xf1bppScreenInit";
 	break;
     case 4:
 	pTrident->EngineOperation |= 0x00;
-	pTrident->NoAccel = TRUE;
 	mod = "xf4bpp";
 	Sym = "xf4bppScreenInit";
 	break;
@@ -1337,6 +1418,8 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    return FALSE;
 	}
 
+        xf86LoaderReqSymLists(xaaSymbols, NULL);
+
         switch (pScrn->displayWidth * pScrn->bitsPerPixel / 8) {
 	    case 512:
 		pTrident->EngineOperation |= 0x00;
@@ -1352,6 +1435,18 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 		break;
 	}
     }
+
+    /* Load DDC if needed */
+    /* This gives us DDC1 - we should be able to get DDC2B using i2c */
+    if (!xf86LoadSubModule(pScrn, "ddc")) {
+	TRIDENTFreeRec(pScrn);
+	return FALSE;
+    }
+    xf86LoaderReqSymLists(ddcSymbols, NULL);
+
+    /* Initialize DDC1 if possible */
+    if (pTrident->ddc1Read) 
+	xf86PrintEDID(xf86DoEDID_DDC1(pScrn->scrnIndex,vgaHWddc1SetSpeed,pTrident->ddc1Read ) );
 
     return TRUE;
 }
@@ -1492,9 +1587,18 @@ TRIDENTSave(ScrnInfoPtr pScrn)
     vgaReg = &VGAHWPTR(pScrn)->SavedReg;
     tridentReg = &pTrident->SavedReg;
 
+#if 0
+    xf86AddControlledResource(pScrn,IO);
+    xf86EnableAccess(&pScrn->Access);
+#endif
+
     vgaHWSave(pScrn, vgaReg, VGA_SR_ALL);
 
     TridentSave(pScrn, tridentReg);
+
+#if 0
+    xf86DelControlledResource(&pScrn->Access,FALSE);
+#endif
 }
 
 
@@ -1507,13 +1611,39 @@ TRIDENTSave(ScrnInfoPtr pScrn)
 static Bool
 TRIDENTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
-    int ret = -1;
-    vgaHWPtr hwp;
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
     vgaRegPtr vgaReg;
-    TRIDENTPtr pTrident;
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     TRIDENTRegPtr tridentReg;
 
-    hwp = VGAHWPTR(pScrn);
+    if (mode->Clock > pTrident->MUXThreshold) pTrident->MUX = TRUE;
+    else				      pTrident->MUX = FALSE;
+
+    switch (pTrident->Chipset) {
+	case TGUI9660:
+	case TGUI9680:
+	case PROVIDIA9682:
+	case PROVIDIA9685:
+	    /* Get ready for MUX mode */
+	    if (pTrident->MUX && 
+		pScrn->bitsPerPixel == 8 && 
+		!mode->CrtcHAdjusted) {
+		mode->CrtcHDisplay >>= 1;
+		mode->CrtcHSyncStart >>= 1;
+		mode->CrtcHSyncEnd >>= 1;
+		mode->CrtcHBlankStart >>= 1;
+		mode->CrtcHBlankEnd >>= 1;
+		mode->CrtcHTotal >>= 1;
+		mode->CrtcHAdjusted = TRUE;
+	    }
+	    break;
+    }
+
+#if 0
+    xf86AddControlledResource(pScrn,IO);
+    xf86EnableAccess(&pScrn->Access);
+#endif
+
     vgaHWUnlock(hwp);
 
     /* Initialise the ModeReg values */
@@ -1521,11 +1651,7 @@ TRIDENTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	return FALSE;
     pScrn->vtSema = TRUE;
 
-    pTrident = TRIDENTPTR(pScrn);
-
-    ret = TridentInit(pScrn, mode);
-
-    if (!ret)
+    if (!TridentInit(pScrn, mode))
 	return FALSE;
 
     /* Program the registers */
@@ -1538,6 +1664,10 @@ TRIDENTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     TridentRestore(pScrn, tridentReg);
 
     vgaHWProtect(pScrn, FALSE);
+
+#if 0
+    xf86DelControlledResource(&pScrn->Access,FALSE);
+#endif
 
     return TRUE;
 }
@@ -1558,6 +1688,11 @@ TRIDENTRestore(ScrnInfoPtr pScrn)
     vgaReg = &hwp->SavedReg;
     tridentReg = &pTrident->SavedReg;
 
+#if 0
+    xf86AddControlledResource(pScrn,IO);
+    xf86EnableAccess(&pScrn->Access);
+#endif
+
     vgaHWProtect(pScrn, TRUE);
 
     TridentRestore(pScrn, tridentReg);
@@ -1565,6 +1700,10 @@ TRIDENTRestore(ScrnInfoPtr pScrn)
     vgaHWRestore(pScrn, vgaReg, VGA_SR_ALL);
 
     vgaHWProtect(pScrn, FALSE);
+
+#if 0
+    xf86DelControlledResource(&pScrn->Access,FALSE);
+#endif
 }
 
 
@@ -1606,7 +1745,8 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     TRIDENTSave(pScrn);
 
     /* Initialise the first mode */
-    TRIDENTModeInit(pScrn, pScrn->currentMode);
+    if (!TRIDENTModeInit(pScrn, pScrn->currentMode))
+	return FALSE;
 
     /* Darken the screen for aesthetic reasons and set the viewport */
     TRIDENTSaveScreen(pScreen, FALSE);
@@ -1627,7 +1767,7 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /*
      * Reset visual list.
      */
-    if (pScrn->bitsPerPixel >= 8) miClearVisualTypes();
+    miClearVisualTypes();
 
     /* Setup the visuals we support. */
 
@@ -1781,7 +1921,11 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	xf86ShowUnusedOptions(pScrn->scrnIndex, pScrn->options);
     }
 
+#if 0
     TRIDENTI2CInit(pScreen);
+
+    xf86PrintEDID(xf86DoEDID_DDC2(pScrn->scrnIndex,pTrident->DDC));
+#endif
 
     /* Turn on the screen now */
     TRIDENTSaveScreen(pScreen, TRUE);
@@ -1828,11 +1972,16 @@ TRIDENTAdjustFrame(int scrnIndex, int x, int y, int flags)
 	    base >>= 1;
 	    break;
 	case 24:
-	    base = ((base + 1) & ~0x03) * 3;
+	    base = (((base + 1) & ~0x03) * 3) >> 2;
 	    break;
 	case 32:
 	    break;
     }
+
+#if 0
+    xf86AddControlledResource(pScrn,IO);
+    xf86EnableAccess(&pScrn->Access);
+#endif
 
     /* CRT bits 0-15 */
     outw(vgaIOBase + 4, (base & 0x00FF00) | 0x0C);
@@ -1843,6 +1992,10 @@ TRIDENTAdjustFrame(int scrnIndex, int x, int y, int flags)
     /* CRT bit 17-19 */
     outb(vgaIOBase + 4, CRTHiOrd); temp = inb(vgaIOBase + 5) & 0xF8;
     outb(vgaIOBase + 5, temp | (base & 0xE0000) >> 17);
+
+#if 0
+    xf86DelControlledResource(&pScrn->Access,FALSE);
+#endif
 }
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis_bank.s,v 3.2 1996/12/23 06:58:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_bank.s,v 1.1 1997/03/06 23:16:50 hohndel Exp $ */
 /*
  * Copyright 1995 by Alan Hourihane, Wigan, England.
  *

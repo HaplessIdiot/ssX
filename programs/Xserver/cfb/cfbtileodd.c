@@ -2,7 +2,7 @@
  * Fill odd tiled rectangles and spans.
  * no depth dependencies.
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfbtileodd.c,v 3.0 1996/06/29 09:05:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbtileodd.c,v 3.1 1998/10/04 09:37:53 dawes Exp $ */
 
 /*
 
@@ -145,7 +145,7 @@ MROP_NAME(cfbFillBoxTileOdd) (pDrawable, nBox, pBox, tile, xrot, yrot, alu, plan
 
     MROP_DECLARE_REG()
 
-    unsigned long *pDstBase;	/* pointer to start of dest */
+    unsigned long *pdstBase;	/* pointer to start of dest */
     unsigned long *pDstLine;	/* poitner to start of dest box */
     unsigned long *pSrcBase;	/* pointer to start of source */
     unsigned long *pSrcLine;	/* pointer to start of source line */
@@ -181,7 +181,7 @@ MROP_NAME(cfbFillBoxTileOdd) (pDrawable, nBox, pBox, tile, xrot, yrot, alu, plan
     }
     pSrcBase = (unsigned long *)tile->devPrivate.ptr;
 
-    cfbGetLongWidthAndPointer (pDrawable, widthDst, pDstBase)
+    cfbGetLongWidthAndPointer (pDrawable, widthDst, pdstBase)
 
 #if PSZ == 24
     tileEndPart = (4 - tileWidth) & 3;
@@ -223,9 +223,9 @@ MROP_NAME(cfbFillBoxTileOdd) (pDrawable, nBox, pBox, tile, xrot, yrot, alu, plan
 	    maskbits (pBox->x1, w, startmask, endmask, nlwMiddle)
 	}
 #if PSZ == 24
-	pDstLine = pDstBase + (pBox->y1 * widthDst) + ((pBox->x1*3) >> 2);
+	pDstLine = pdstBase + (pBox->y1 * widthDst) + ((pBox->x1*3) >> 2);
 #else
-	pDstLine = pDstBase + (pBox->y1 * widthDst) + (pBox->x1 >> PWSH);
+	pDstLine = pdstBase + (pBox->y1 * widthDst) + (pBox->x1 >> PWSH);
 #endif
 	pSrcLine = pSrcBase + (srcy * widthSrc);
 #if PSZ == 24
@@ -401,7 +401,7 @@ MROP_NAME(cfbFillSpanTileOdd) (pDrawable, n, ppt, pwidth, tile, xrot, yrot, alu,
 
     MROP_DECLARE_REG()
 
-    unsigned long *pDstBase;	/* pointer to start of dest */
+    unsigned long *pdstBase;	/* pointer to start of dest */
     unsigned long *pDstLine;	/* poitner to start of dest box */
     unsigned long *pSrcBase;	/* pointer to start of source */
     unsigned long *pSrcLine;	/* pointer to start of source line */
@@ -437,7 +437,7 @@ MROP_NAME(cfbFillSpanTileOdd) (pDrawable, n, ppt, pwidth, tile, xrot, yrot, alu,
     }
     pSrcBase = (unsigned long *)tile->devPrivate.ptr;
 
-    cfbGetLongWidthAndPointer (pDrawable, widthDst, pDstBase)
+    cfbGetLongWidthAndPointer (pDrawable, widthDst, pdstBase)
 
 #if PSZ == 24
     tileEndPart = (4 - tileWidth) & 3;
@@ -475,9 +475,9 @@ MROP_NAME(cfbFillSpanTileOdd) (pDrawable, n, ppt, pwidth, tile, xrot, yrot, alu,
 	    maskbits (ppt->x, w, startmask, endmask, nlw)
 	}
 #if PSZ == 24
-	pDstLine = pDstBase + (ppt->y * widthDst)  + ((ppt->x *3)>> 2);
+	pDstLine = pdstBase + (ppt->y * widthDst)  + ((ppt->x *3)>> 2);
 #else
-	pDstLine = pDstBase + (ppt->y * widthDst) + (ppt->x >> PWSH);
+	pDstLine = pdstBase + (ppt->y * widthDst) + (ppt->x >> PWSH);
 #endif
 	pSrcLine = pSrcBase + (srcy * widthSrc);
 #if PSZ == 24

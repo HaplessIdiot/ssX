@@ -23,7 +23,7 @@
  * 
  * Trident 3DImage' accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/image_accel.c,v 1.1 1998/11/15 04:30:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/image_accel.c,v 1.2 1998/11/15 05:53:24 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -146,7 +146,9 @@ ImageAccelInit(ScreenPtr pScreen)
 
     ImageInitializeAccelerator(pScrn);
 
-    infoPtr->Flags = PIXMAP_CACHE;
+    infoPtr->Flags = PIXMAP_CACHE |
+		     LINEAR_FRAMEBUFFER |
+		     OFFSCREEN_PIXMAPS;
  
     infoPtr->Sync = ImageSync;
 
@@ -189,14 +191,12 @@ ImageAccelInit(ScreenPtr pScreen)
     infoPtr->SubsequentColor8x8PatternFillRect = 
 				TridentSubsequentColor8x8PatternFillRect;
 
-    infoPtr->ScreenToScreenColorExpandFillFlags = NO_PLANEMASK |
-						  NO_TRANSPARENCY |
-						  BIT_ORDER_IN_BYTE_MSBFIRST; 
+    infoPtr->ScreenToScreenColorExpandFillFlags = NO_TRANSPARENCY |NO_PLANEMASK;
 
     infoPtr->SetupForScreenToScreenColorExpandFill = 	
-				TridentSetupForScreenToScreenColorExpand;
+				ImageSetupForScreenToScreenColorExpand;
     infoPtr->SubsequentScreenToScreenColorExpandFill = 		
-				TridentSubsequentScreenToScreenColorExpand;
+				ImageSubsequentScreenToScreenColorExpand;
 
     infoPtr->CPUToScreenColorExpandFillFlags = CPU_TRANSFER_PAD_DWORD |
 				NO_TRANSPARENCY |
@@ -300,7 +300,7 @@ ImageSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
 	IMAGE_OUT(0x0C, (y2+h-1)<<16 | (x2+w-1));
     }
 
-    IMAGE_OUT(0x24, 0x80000000 | 1<<22 | 1<<7 | 1<<10 | pTrident->BltScanDirection);
+    IMAGE_OUT(0x24, 0x80000000 | 1<<22 | 1<<7 | (pTrident->ROP == GXcopy ? 0 : 1<<10) | pTrident->BltScanDirection);
 
     if (!pTrident->UsePCIRetry)
     	ImageSync(pScrn);
@@ -359,6 +359,7 @@ ImageSetupForFillRectSolid(ScrnInfoPtr pScrn, int color,
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
 
     REPLICATE(color);
+    pTrident->ROP = rop;
     IMAGE_OUT(0x20, 0x40000000 | pTrident->EngineOperation);
     IMAGE_OUT(0x44, color);
     IMAGE_OUT(0x48, color);
@@ -372,7 +373,7 @@ ImageSubsequentFillRectSolid(ScrnInfoPtr pScrn, int x, int y, int w, int h)
 
     IMAGE_OUT(0x08, y<<16 | x);
     IMAGE_OUT(0x0C, (y+h-1)<<16 | x+w-1);
-    IMAGE_OUT(0x24, 0x80000000 | 1<<22 | 1<<10 | 1<<9);
+    IMAGE_OUT(0x24, 0x80000000 | 3<<22 | (pTrident->ROP == GXcopy ? 0 : 1<<10) | 1<<9);
     if (!pTrident->UsePCIRetry)
     	ImageSync(pScrn);
 }
@@ -384,13 +385,13 @@ ImageSetupForScreenToScreenColorExpand(ScrnInfoPtr pScrn,
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
 
-    REPLICATE(fg);
-    TGUI_FCOLOUR(fg);
-    REPLICATE(bg);
-    TGUI_BCOLOUR(bg);
+    pTrident->ROP = rop;
 
-    TGUI_DRAWFLAG(SRCMONO | SCR2SCR);
-    TGUI_FMIX(TGUIRops_alu[rop]);
+    REPLICATE(bg);
+    REPLICATE(fg);
+    IMAGE_OUT(0x44, fg);
+    IMAGE_OUT(0x48, bg);
+    IMAGE_OUT(0x20, 0x90000000 | TGUIRops_alu[rop]);
 }
 
 static void 
@@ -399,13 +400,15 @@ ImageSubsequentScreenToScreenColorExpand(ScrnInfoPtr pScrn,
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
 
-    TGUI_SRC_XY(srcx,srcy);
-    TGUI_DEST_XY(x,y);
-    TGUI_DIM_XY(w,h);
-    TGUI_COMMAND(GE_BLT);
+	IMAGE_OUT(0x00, srcy<<16 | srcx);
+	IMAGE_OUT(0x04, (srcy+h-1)<<16 | (srcx+w-1));
+	IMAGE_OUT(0x08, y<<16 | x);
+	IMAGE_OUT(0x0C, (y+h-1)<<16 | (x+w-1));
+
+    IMAGE_OUT(0x24, 0x80000000 | 3<<22 | 1<<7 | (pTrident->ROP == GXcopy ? 0 : 1<<10) | offset<<25);
+
     if (!pTrident->UsePCIRetry)
     	ImageSync(pScrn);
-    CHECKCLIPPING;
 }
 
 static void 
@@ -556,13 +559,13 @@ ImageSetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
     } else {
     IMAGE_OUT(0x20, 0x80000000 | 1<<27);
     }
-    IMAGE_OUT(0x34, (patternx & 0xFF000000)>>24);
+    IMAGE_OUT(0x30, (patternx & 0xFF000000)>>24);
     IMAGE_OUT(0x30, (patternx & 0xFF0000)>>16);
-    IMAGE_OUT(0x34, (patternx & 0xFF00)>>8);
+    IMAGE_OUT(0x30, (patternx & 0xFF00)>>8);
     IMAGE_OUT(0x30, (patternx & 0xFF));
-    IMAGE_OUT(0x34, (patterny & 0xFF000000)>>24);
+    IMAGE_OUT(0x30, (patterny & 0xFF000000)>>24);
     IMAGE_OUT(0x30, (patterny & 0xFF0000)>>16);
-    IMAGE_OUT(0x34, (patterny & 0xFF00)>>8);
+    IMAGE_OUT(0x30, (patterny & 0xFF00)>>8);
     IMAGE_OUT(0x30, (patterny & 0xFF));
     IMAGE_OUT(0x50, fg);
     IMAGE_OUT(0x54, bg);
@@ -578,7 +581,7 @@ ImageSubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn,
   
     IMAGE_OUT(0x08, y<<16 | x);
     IMAGE_OUT(0x0C, (y+h-1)<<16 | x+w-1);
-    IMAGE_OUT(0x24, 0x80000000 | 1<<10 | 1<<22 | 1<<9);
+    IMAGE_OUT(0x24, 0x80000000 | 7<<18 | 1<<10 | 3<<22 | 1<<9);
     if (!pTrident->UsePCIRetry)
     	ImageSync(pScrn);
 }
