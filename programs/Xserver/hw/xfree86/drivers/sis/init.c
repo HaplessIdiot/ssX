@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init.c,v 1.3 2002/24/04 01:16:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init.c,v 1.1tsi Exp $ */
 /*
  * Mode switching code (CRT1 section) for SiS 300/540/630/730/315/550/650/740
  * (Universal module for Linux kernel framebuffer and XFree86 4.x)
@@ -4965,8 +4965,8 @@ SiSBuildBuiltInModeList(ScrnInfoPtr pScrn)
 
       current = new;
 
-      sprintf(current->name, "%dx%d\0", pSiS->SiS_Pr->SiS_RefIndex[i].XRes,
-                                        pSiS->SiS_Pr->SiS_RefIndex[i].YRes);
+      sprintf(current->name, "%dx%d", pSiS->SiS_Pr->SiS_RefIndex[i].XRes,
+                                      pSiS->SiS_Pr->SiS_RefIndex[i].YRes);
 
       current->status = MODE_OK;
 
