@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xfs/os/daemon.c,v 1.3 2001/03/07 15:54:16 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/daemon.c,v 1.4 2001/04/01 14:00:21 tsi Exp $ */
 
 #include <X11/Xos.h>
 #include <stdio.h>
@@ -38,7 +38,7 @@ from the X Consortium.
 #else
 #include <sys/ioctl.h>
 #endif
-#if defined(__osf__) || defined(linux) || defined(MINIX) || defined(__GNU__)
+#if defined(__osf__) || defined(linux) || defined(MINIX) || defined(__GNU__) || defined(__CYGWIN__)
 #define setpgrp setpgid
 #endif
 #ifdef hpux
