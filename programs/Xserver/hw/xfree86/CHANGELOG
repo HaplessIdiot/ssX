@@ -1,4 +1,6 @@
 XFree86 4.1.99.2 (xx October 2001)
+ 412. Startx enhancements and cleanups (#4875, Branden Robinson and
+      Henry T. So).
  411. Use DirectDraw2 instead of DirectDraw on Cygwin (#5012, Harold Hunt).
  410. Add French localization of XDarwin front end (Olivier Verdier).
  409. Fix portability problem in the generation of the man page version string
@@ -14049,4 +14051,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2007 2001/10/31 00:20:43 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2008 2001/11/01 12:19:35 alanh Exp $
