@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.15 1997/09/09 10:27:43 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.16 1997/10/25 13:50:24 hohndel Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -296,7 +296,9 @@ int ctAluConv3[] =
 
 /* Driver data structures. */
 
+#if WHATEVER_DEFINES_THIS
 int ctTVMode = XMODE_RGB;
+#endif
 /*
  * Built in TV output modes: These modes have been tested on NetBSD with CT65550 
  * and StrongARM. They give what seems to be the best output for a roughly 640x480 
@@ -1876,14 +1878,18 @@ Bool ctProbeHiQV()
      {
 	 CHIPS.ChipBuiltinModes = &ctPALMode;
 	 CHIPS.ChipBuiltinModes->prev = CHIPS.ChipBuiltinModes->next = &ctPALMode;
+#if WHATEVER_DEFINES_THIS
 	 ctTVMode = XMODE_PAL;
+#endif
      }
      else if (strlen(vga256InfoRec.modes->name) == 4 
 	      && strcmp(vga256InfoRec.modes->name, "NTSC") == 0)
      {
 	 CHIPS.ChipBuiltinModes = &ctNTSCMode;
 	 CHIPS.ChipBuiltinModes->prev = CHIPS.ChipBuiltinModes->next = &ctNTSCMode;
+#if WHATEVER_DEFINES_THIS
 	 ctTVMode = XMODE_NTSC;
+#endif
      }
      else if (strlen(vga256InfoRec.modes->name) == 5 
 	      && strcmp(vga256InfoRec.modes->name, "SECAM") == 0)
@@ -1893,9 +1899,12 @@ Bool ctProbeHiQV()
 	  */
 	 CHIPS.ChipBuiltinModes = &ctPALMode;
 	 CHIPS.ChipBuiltinModes->prev = CHIPS.ChipBuiltinModes->next = &ctPALMode;
+#if WHATEVER_DEFINES_THIS
 	 ctTVMode = XMODE_SECAM;
+#endif
      }
   
+#if WHATEVER_DEFINES_THIS
      if (ctTVMode != XMODE_RGB)
      {
 	 /*
@@ -1908,6 +1917,7 @@ Bool ctProbeHiQV()
 	 vga256InfoRec.clock[2] = CHIPS.ChipBuiltinModes->SynthClock;
 	 CHIPS.ChipBuiltinModes->Clock = 2;
      }
+#endif
   
     vga256InfoRec.chipset = CHIPSIdent(CHIPSchipset);
     vga256InfoRec.bankedMono = TRUE;
@@ -4151,6 +4161,7 @@ CHIPSInitHiQV32(mode)
 	}
     }
     
+#if WHATEVER_DEFINES_THIS
     if(ctTVMode != XMODE_RGB)
     {
 	/*
@@ -4178,6 +4189,7 @@ CHIPSInitHiQV32(mode)
 	 */
 	xf86SetRGBOut();
     }
+#endif
 
     /* STN specific */
     if (IS_STN(ctPanelType)) {
