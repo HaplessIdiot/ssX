@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.31 2003/02/19 01:19:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.32 2003/02/19 09:17:30 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario,
  *                VA Linux Systems Inc., Fremont, California.
@@ -1585,6 +1585,7 @@ void RADEONDRICloseScreen(ScreenPtr pScreen)
     if (info->irq) {
 	drmCtlUninstHandler(info->drmFD);
 	info->irq = 0;
+	info->ModeReg.gen_int_cntl = 0;
     }
 
 				/* De-allocate vertex buffers */
