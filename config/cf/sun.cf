@@ -1,7 +1,7 @@
 XCOMM platform:  $XConsortium: sun.cf,v 1.134 94/08/17 18:56:43 matt Exp $
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.10 1994/11/19 07:32:30 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.11 1994/12/02 05:38:36 dawes Exp $
 
-#ifdef SVR4
+#ifdef SVR4Architecture
 #ifdef i386Architecture
 #define OSName            SunOS 5.4 x86
 XCOMM operating system:  OSName
@@ -62,6 +62,13 @@ XCOMM operating system:  OSName
  * define CplusplusCompilerMajorVersion as 4 in site.def.
  *
  */
+
+#ifndef HasGcc2
+#define HasGcc2 NO
+#endif
+#ifndef HasGcc
+#define HasGcc HasGcc2
+#endif
 
 #ifndef HasSunC
 #if (HasCenterLineC || HasGcc || HasGcc2 || OSMajorVersion < 5)
@@ -147,7 +154,7 @@ XCOMM operating system:  OSName
 #define XawI18nDefines    -DHAS_WCTYPE_H -DHAS_ISW_FUNCS
 #endif
 #ifdef i386Architecture
-#define StandardDefines	  -Dsun -Di386 -D__i386 -DSVR4
+#define StandardDefines	  -Dsun -Di386 -DSVR4 -D__i386
 #else
 #define StandardDefines	  -Dsun -Dsparc -DSVR4
 #endif
@@ -180,7 +187,6 @@ XCOMM operating system:  OSName
 #if HasSunCplusplus || HasCenterLineCplusplus
 #define PositionIndependentCplusplusFlags -pic
 #endif
-#include <svr4.cf>
 #else
 #define InstKmemFlags	  -g kmem -m 2755
 #include <sunLib.rules>
@@ -254,6 +260,11 @@ XCOMM operating system:  OSName
 #ifndef DefaultCCOptions
 #define DefaultCCOptions -Xc
 #endif
+#ifdef i386Architecture
+#ifndef ServerCCOptions
+#define ServerCCOptions -Xa
+#endif
+#endif
 #endif	
 #endif	
 #endif
@@ -283,4 +294,8 @@ XCOMM operating system:  OSName
 #if OSMajorVersion < 5
 #define SharedAllocateLocalDefines -DINCLUDE_ALLOCA_H
 #define LibraryCCOptions /* don't want special floating point */
+#endif
+
+#if OSMajorVersion > 4
+#include <svr4.cf>
 #endif

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: svr4.cf,v 1.6 94/04/08 18:56:33 rws Exp $
-XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.5 1994/11/27 07:01:22 dawes Exp $
+XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.6 1994/12/02 05:38:38 dawes Exp $
 /*
  * A default OS name
  */
@@ -27,6 +27,17 @@ XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.5 1994/11/27 07:01:22 dawes Exp $
 #endif
 #ifndef OSTeenyVersion
 #define	OSTeenyVersion	0
+#endif
+#ifndef BootstrapCFlags
+#ifdef i386Architecture
+#define BootstrapCFlags		-DSVR4 -Di386
+#else
+#ifdef SYSV386
+#define BootstrapCFlags		-DSVR4 -Di386
+#else
+#define BootstrapCFlags		-DSVR4
+#endif
+#endif
 #endif
 
 /* Some stuff that all SVR4s should have */
@@ -74,33 +85,24 @@ XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.5 1994/11/27 07:01:22 dawes Exp $
 #endif
 #endif
 
+#ifndef HasGcc2
+#define HasGcc2 NO
+#endif
+#ifndef HasGcc
+#define HasGcc HasGcc2
+#endif
+
 #ifdef i386Architecture
 #ifndef StandardDefines
 #define StandardDefines		-DSVR4 -Di386
-#define BootstrapCFlags		-DSVR4 -Di386
 #endif
-
-#ifndef BootstrapCFlags
-#ifdef SYSV386			/* obsolete, use -DSVR4 -Di386 */
-#define BootstrapCFlags         -DSVR4 -DSYSV386
-#else
-#define BootstrapCFlags         -DSVR4
-#endif
-#endif
-
 #ifndef DefaultCCOptions
-#if HasGcc2
-#if UseInstalled
-#define DefaultCCOptions -ansi
-#else
-#define DefaultCCOptions -ansi -pedantic
-#endif
-#else
+#if !HasGcc
 #define DefaultCCOptions -Xc -Dasm=__asm
 #endif
 #endif
 #ifndef DefaultCDebugFlags
-#if HasGcc2
+#if HasGcc
 #define DefaultCDebugFlags -O2 -m486
 #else
 #define DefaultCDebugFlags -O

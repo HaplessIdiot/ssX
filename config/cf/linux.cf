@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: linux.cf,v 1.4 94/04/07 15:46:42 rws Exp $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.15 1994/11/26 12:32:19 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.16 1994/12/02 05:38:31 dawes Exp $
 
 #define OSName			Linux
 #define OSVendor		/**/
@@ -55,9 +55,6 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.15 1994/11/26 12:32:19 dawe
 #define PostIncDir		`CcCmd --print-libgcc-file-name | sed 's/libgcc.a/include/'`
 #define LdCombineFlags		-r
 #define OptimizedCDebugFlags	-O2 -m486
-#if !UseInstalled
-#define DefaultCCOptions	-ansi -pedantic
-#endif
 #define AsmDefines		-DUSE_GAS
 #define StandardDefines		-Dlinux -D__i386__ -D_POSIX_SOURCE \
 				-D_BSD_SOURCE -D_GNU_SOURCE
