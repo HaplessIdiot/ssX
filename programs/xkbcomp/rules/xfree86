@@ -5,7 +5,7 @@
 //  Copyright 1996 by Joseph Moss
 //
 //  2002 Modifier: Ivan Pascal      The XFree86 Project
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.58 2003/01/26 02:38:14 dawes Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.59 2003/02/14 21:53:11 dawes Exp $
 //
 
 // Layouts that still need be composed by old rules
@@ -101,7 +101,8 @@
               dell inspiron \
               dexxa diamond genius \
               ennyah_dkb1008 \
-              hpi6 hp2501 hp2505 hp5181 hpxe3gc hpxe3gf hpzt11xx hp500fa \
+              hpi6 hp2501 hp2505 hp5181 hpxe3gc hpxe3gf hpxe4xxx hpzt11xx \
+              hp500fa hp5xx \
               honeywell_euroboard \
               rapidaccess rapidaccess2 rapidaccess2a \
               ltcd logicdit logicdp logicdpa logicdpa2 logicdo logicfn \
