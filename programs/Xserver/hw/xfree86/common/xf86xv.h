@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.h,v 1.18 2000/08/04 16:13:26 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.h,v 1.19 2000/11/02 16:33:27 tsi Exp $ */
 
 #ifndef _XVDIX_H_
 #define _XVDIX_H_
@@ -205,6 +205,7 @@ void xf86XVFreeVideoAdaptorRec(XF86VideoAdaptorPtr ptr);
 
 /*** These are DDX layer privates ***/
 
+extern int XF86XvScreenIndex;
 
 typedef struct {
    CreateWindowProcPtr		CreateWindow;
