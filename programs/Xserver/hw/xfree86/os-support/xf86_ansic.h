@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.18 1999/03/06 13:12:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.19 1999/03/21 12:46:41 dawes Exp $ */
 
 #ifndef _XF86_ANSIC_H
 #define _XF86_ANSIC_H
@@ -227,7 +227,7 @@ extern int xf86vsprintf(char*,const char*,...);
 
 extern int xf86open(const char*, int,...);
 extern int xf86close(int);
-extern int xf86ioctl(int, unsigned long, char *);
+extern int xf86ioctl(int, unsigned long, pointer);
 extern unsigned int xf86read(int, void *, INT32);
 extern unsigned int xf86write(int, const void *, INT32);
 extern void* xf86mmap(void*, xf86size_t, int, int, int, xf86size_t /* off_t */);
