@@ -1,4 +1,6 @@
 XFree86 4.0.1h (4 December 2000)
+1087. Status doc updates for Neomagic an NVIDIA (#4334, Andrew C. Aitchison,
+      Mark Vojkovich).
 1086. Updated Rage 128 DRI support from the DRI CVS (Gareth Hughes, VA Linux).
 1085. Updates for Hurd support (#A.209, Marcus Brinkmann).
 1084. Bump the minor revisions of libXmu (UTF8_STRING) and libX11
@@ -11879,4 +11881,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1440 2000/12/04 18:49:45 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1441 2000/12/04 19:21:49 dawes Exp $
