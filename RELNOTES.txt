@@ -1,84 +1,78 @@
-                    Release Notes for XFree86® 4.4.99.903
+                      Release Notes for XFree86® 4.5.0
 
                           The XFree86 Project, Inc
 
-                                12 March 2005
+                                16 March 2005
 
                                   Abstract
 
-      This document contains information about features and their status
-     in XFree86 4.4.99.903.
+      This document contains information about the various features and
+     their current status in the XFree86 4.5.0 release.
 
 1.  Introduction to the 4.x Release Series
 
-XFree86 4.0 was the first official release of the XFree86 4 series.  XFree86
-4 represents a significant redesign of the XFree86 X server, with a strong
-focus on modularity and clean interfaces compared with the previous XFree86
-3.x series.
-
-1.1  4.5.0 RC3
-
-This is release candidate 3 for the 4.5.0 release.  This release candidate is
-feature-complete.  Known problems with this release candidate include:
-
-   o The documentation is not up to date.
+XFree86 4.0 was the first official release of the XFree86 4 series.  The cur-
+rent release (4.5.0) is the latest in that series.  The XFree86 4.x series
+represents a significant redesign of the XFree86 X server, with a strong
+focus on modularity and configurability.
 
 2.  Configuration: a Quick Synopsis
 
-XFree86 4.4 introduced an automatic configuration mechanism for the XFree86
-server which makes it now possible to start XFree86 without first creating a
-configuration file, and this has been improved in XFree86 4.5.  The initial
-automatic configuration support is targeted towards Linux and FreeBSD and it
-is hoped that automatic configuration will be supported on other platforms in
-future releases.
+Automatic configuration was introduced with XFree86 4.4.0 which makes it pos-
+sible to start XFree86 without first creating a configuration file.  This was
+further improved in XFree86 4.5.0.
 
-If you are running either Linux, FreeBSD, NetBSD, OpenBSD, or Solaris, try it
-out if you do not already have a working XF86Config file.  Even if you do,
-you can try it out by running:
+While the initial automatic configuration support was originally targeted ust
+for Linux and the FreeBSD variants, in 4.5.0 it now includes Solaris, NetBSD
+and OpenBSD support, and it is planned that automatic configuration will be
+supported on other platforms in future releases.
+
+If you are running either Linux, FreeBSD, NetBSD, OpenBSD, or Solaris, try
+Auto Configuration by running:
 
      XFree86 -autoconfig
 
-If you want to customise things afterwards, you can cut and paste the auto-
-matically generated configuration from the /var/log/XFree86.0.log file into
-an XF86Config file and make your customisations there.  If you want to cus-
-tomise some parts of the configuration while leaving others to be automati-
-cally detected, you can combine a static partial configuration with the auto-
-matically detected information by running:
+If you want to customise some things afterwards, you can cut and paste the
+automatically generated configuration from the /var/log/XFree86.0.log file
+into an XF86Config file and make your customisations there.  If you need to
+customise some parts of the configuration while leaving others to be automat-
+ically detected, you can combine a partial static configuration with the
+automatically detected one by running:
 
      XFree86 -appendauto
 
-If you do not have any luck with automatic configuration, or you are using a
-platform that is not currently supported, try one of the older methods for
-getting started.
+If you using a platform that is not currently supported, then you must try
+one of the older methods for getting started like xf86cfg", which is our
+graphical configuration tool.  It also has a text mode interface that an be
+used to create an initial configuration file and customise existing configu-
+rations.
 
-XFree86 comes with a graphical configuration tool called "xf86cfg", which
-also has a text mode interface and can be used to create an initial configu-
-ration file. It can also be used to customise existing configurations.
-
-Next in the order of configuration preferences is to use the XFree86 server's
-ability to create a starting configuration file.  Run as root:
+After that, you can use XFree86 server's ability to create a starting config-
+uration file.  To do so you must login as root, and run:
 
      XFree86 -configure
 
-and follow the instructions.
+and then follow the instructions.
 
 Finally, if all else fails, the trusty old standby text-based tool "xf86con-
 fig" can also be used for generating X server config files.
 
-At least one, and hopefully, all of these configuration options will give you
-a reasonable starting point for a suitable configuration file.  With the
-automatic mechanism you might even find that you don't need one!
+Hopefully, at least one, and perhaps all of these various configuration
+options will give you a reasonable starting point for a suitable configura-
+tion file but we think that with the automatic mechanism you will probably
+not need any.
 
-If you do need to customise the configuration file, see the XF86Config manual
-page.  You can also check the driver-specific manual pages and the related
-documentation (found at tables below (section 4., page 1)).
+If you would like to customise the configuration file, see the XF86Config
+manual page.  You should also check the driver-specific manual pages and the
+related documentation, which is found at tables below (section 4., page 1).
 
-Before downloading the binary distributions for this release, please have a
-quick read through the Installation Document.  It may save you some time and
-also help you figure out which of the binary releases you need.
+Before downloading any of the binary distributions for this release, read
+through the Installation Document as it can point out which particular binary
+you should download.
 
-There are lots of new features, and we definitely don't have enough space to
-cover them all here.
+The next section describes what is new in the latest version (4.5.0) compared
+with the previous full release (4.4.0).  There are many new features in this
+release and we unfortunately do not have enough space to cover them all here.
 
 3.  Summary of new features in 4.5.0.
 
@@ -804,7 +798,7 @@ complete list):
 
 4.1  Video Drivers
 
-XFree86 4.4.99.903 includes the following video drivers:
+XFree86 4.5.0 includes the following video drivers:
 
  +--------------+--------------------------+--------------------------------+
  |Driver Name   | Description              | Further Information            |
@@ -863,7 +857,7 @@ listed above. Further information can be found in README.Darwin.
 
 4.2  Input Drivers
 
-XFree86 4.4.99.903 includes the following input drivers:
+XFree86 4.5.0 includes the following input drivers:
 
    +------------+----------------------------------+---------------------+
    |Driver Name | Description                      | Further Information |
@@ -907,9 +901,9 @@ either have one or more video and input drivers linked in statically, or more
 usually, dynamically, and in that manner load the video drivers, input driv-
 ers, and other modules that are needed.
 
-XFree86 4.4.99.903 has X server support for most UNIX® and UNIX-like operat-
-ing systems on Intel/x86 platforms, plus support for Linux and some BSD OSs
-on Alpha, PowerPC, IA-64, AMD64, SPARC, and Mips platforms, and for Darwin on
+XFree86 4.5.0 has X server support for most UNIX® and UNIX-like operating
+systems on Intel/x86 platforms, plus support for Linux and some BSD OSs on
+Alpha, PowerPC, IA-64, AMD64, SPARC, and Mips platforms, and for Darwin on
 PowerPC.  Support for additional architectures and operating systems is in
 progress and is planned for future releases.
 
@@ -1003,9 +997,9 @@ Known problems:
 
 6.7  DGA version 2
 
-DGA 2.0 is included in 4.4.99.903.  Documentation for the client libraries
-can be found in the XDGA(3) man page.  A good degree of backwards compatibil-
-ity with version 1.0 is provided.
+DGA 2.0 is included in 4.5.0.  Documentation for the client libraries can be
+found in the XDGA(3) man page.  A good degree of backwards compatibility with
+version 1.0 is provided.
 
 6.8  DDC
 
@@ -1058,7 +1052,7 @@ anti-aliased text and geometric objects as well as perform translucent image
 overlays and other image operations not possible with the core X rendering
 system.
 
-XFree86 4.4.99.903 provides a partial implementation of Render sufficient for
+XFree86 4.5.0 provides a partial implementation of Render sufficient for
 drawing anti-aliased text and image composition.  Still to be implemented are
 geometric primitives and affine transformation of images.
 
@@ -1093,15 +1087,15 @@ the Xft(3) man page.
 
 6.11.2  FreeType support in Xft
 
-XFree86 4.4.99.903 includes sources for FreeType version 2.1.8, and, by
-default, they are built and installed automatically.
+XFree86 4.5.0 includes sources for FreeType version 2.1.8, and, by default,
+they are built and installed automatically.
 
 6.11.3  Application Support For Anti-Aliased Text
 
-Only three applications have been modified in XFree86 4.4.99.903 to work with
-the Render extension and the Xft and FreeType libraries to provide anti-
-aliased text.  Xterm, xditview and x11perf.  Migration of other applications
-may occur in future releases.
+Only three applications have been modified in XFree86 4.5.0 to work with the
+Render extension and the Xft and FreeType libraries to provide anti-aliased
+text.  Xterm, xditview and x11perf.  Migration of other applications may
+occur in future releases.
 
 By default, xterm uses core fonts through the standard core API.  It has a
 command line option and associated resource to direct it to use Xft instead:
@@ -1150,7 +1144,7 @@ README.fonts document.
 The XFree86 4.x server comes with a TrueType backend, known as the "FreeType"
 backend, based on the FreeType library.  The functionality of the former X-
 TrueType was merged into the FreeType backend by the After X-TT Project for
-the XFree86 4.4.0 releaes, and the old X-TrueType backend has been dropped as
+the XFree86 4.4.0 release, and the old X-TrueType backend has been dropped as
 of XFree86 4.5.0.
 
 6.16  CID font support
@@ -1282,10 +1276,6 @@ site <URL:http://www.urwpp.de>.
 
 7.  Credits
 
-THIS IS A DRAFT OF THE XFree86 4.5.0 CREDITS SECTION.  If you find missing
-credits, incorrect attributions, or other errors, please send details to
-<devel@XFree86.org>.
-
 This section lists the credits for the XFree86 4.5.0 release.  For a more
 detailed breakdown, refer to the CHANGELOG file in the XFree86 source tree,
 the cvs-commit archives <URL:http://www.mail-archive.com/cvs-com-
@@ -1326,44 +1316,45 @@ source files.
 
       Patches and other submissions (in alphabetical order):
             Szilveszter Adam, Tim Adye, Taneem Ahmed, Andrew Aitchison, Raoul
-            Arranz, Zaeem Arshad, Dwayne Bailey, Denis Barbier, Kyle Bateman,
-            J. Scott Berg, Thomas Biege, Dmitry Bolkhovityanov, H Merijn
-            Brand, Peter Breitenlohner, Benjamin Burke, Dale L Busacker, bus-
-            manus, Julian Cable, Mike Castle, David M. Clay, Philip Clayton,
-            Alan Coopersmith, Ricardo Cruz, Michel Dänzer, J. D. Darling,
-            David Dawes, Michael Dawes, Rafael Ávila de Espíndola, Rick De
-            Laet, Josip Deanovic, Angelus Dei, Laurent Deniel, Thomas Dickey,
-            Stefan Dirsch, Charles Dobson, DRI Project, Emmanuel Dreyfus,
-            Boris Dusek, Georgina Economou, Egbert Eich, Bernd Ernesti, Chris
-            Evans, Rik Faith, Adrian Fiechter, Matthew Fischer, FreeType
-            Team, Terry R. Frienrichsen, Christopher Fynn, Hubert Gburzynski,
-            Nicolas George, Frank Giessler, Fred Gleason, Dmitry Golubev,
-            Alexander Gottwald, Herbert Graeber, Miroslav Halas, John Harper,
-            Harshula, John Heasley, Matthieu Herrb, David Holl, Alex Holland,
-            Peng Hongbo, Alan Hourihane, Harold L Hunt II, Alan Iwi, Timur
-            Jamakeev, Paul Jarc, Kean Johnston, Nicolas Joly, Mark Kandianis,
-            Kaleb Keithley, Chamath Keppitiyagama, Jung-uk Kim, Satoshi
-            Kimura, Michael Knudsen, Vlatko Kosturjak, Alexei Kosut, Anton
-            Kovalenko, Joachim Kuebart, Marc La France, David Laight, Zarick
-            Lau, Pierre Lalet, Michael Lampe, Lanka Linux User Group, Nolan
-            Leake, Werner Lemberg, Dejan Lesjak, Noah Levitt, Greg Lewis,
-            Bernhard R Link, Jonas Lund, S. Lussos, Torrey T. Lyons, Roland
-            Mainz, N Marci, Kevin Martin, Stephen McCamant, Mesa Developers,
-            Luke Mewburn, Petr Mladek, Bram Moolenaar, Steve Murphy, Ishikawa
-            MUTSUMI, Radu Octavian, Lee Olsen, Greg Parker, Ivan Pascal,
-            Alexander E. Patrakov, Mike Pechkin, Soós Péter, Zvezdan
-            Petkovic, Alexander Pohoyda, Xie Qian, Bill Randle, Adam J.
-            Richter, Tim Roberts, Bernhard Rosenkraenzer, Andreas Rüden,
-            Steve Rumble, Oleg Safiullin, Ty Sarna, Leo Savernik, Barry
-            Scott, Shantonu Sen, Yu Shao, Andreas Schwab, Matthias Scheler,
-            Dan Shearer, Michael Shell, Paul Shupak, Alexander Stohr, Marius
-            Strobl, Mikko Markus Torni, Jess Thrysoee, Izumi Tsutsui, Tung-
-            sten Graphics, Ryan Underwood, Tristan Van Berkom, Michael van
-            Elst, Phillip Vandry, Roman Vasylyev, Luc Verhaegen, Rodion
-            Vshevtsov, Mark Vojkovich, Edi Werner, Keith Whitwell, Scot
-            Wilcoxon, Dave Williss, Thomas Winischhofer, Kuang-che Wu, X-Oz
-            Technologies, Chisato Yamauchi, Michael Yaroslavtsev, David
-            Yerger, Su Yong, Hui Yu, Sagi Zeevi, Christian Zietz
+            Arranz, Zaeem Arshad, Dwayne Bailey, Ilyas Bakirov, Denis Bar-
+            bier, Kyle Bateman, J. Scott Berg, Thomas Biege, Dmitry
+            Bolkhovityanov, H Merijn Brand, Peter Breitenlohner, Benjamin
+            Burke, Dale L Busacker, busmanus, Julian Cable, Mike Castle,
+            David M. Clay, Philip Clayton, Alan Coopersmith, Ricardo Cruz,
+            Michel Dänzer, J. D. Darling, David Dawes, Michael Dawes, Rafael
+            Ávila de Espíndola, Rick De Laet, Josip Deanovic, Angelus Dei,
+            Laurent Deniel, Thomas Dickey, Stefan Dirsch, Charles Dobson, DRI
+            Project, Emmanuel Dreyfus, Boris Dusek, Georgina O. Economou,
+            Egbert Eich, Bernd Ernesti, Chris Evans, Rik Faith, Adrian
+            Fiechter, Matthew Fischer, FreeType Team, Terry R. Frienrichsen,
+            Christopher Fynn, Hubert Gburzynski, Nicolas George, Frank
+            Giessler, Fred Gleason, Dmitry Golubev, Alexander Gottwald, Her-
+            bert Graeber, Miroslav Halas, John Harper, Harshula, John
+            Heasley, Matthieu Herrb, David Holl, Alex Holland, Peng Hongbo,
+            Alan Hourihane, Harold L Hunt II, Alan Iwi, Timur Jamakeev, Paul
+            Jarc, Kean Johnston, Nicolas Joly, Mark Kandianis, Kaleb Keith-
+            ley, Chamath Keppitiyagama, Jung-uk Kim, Satoshi Kimura, Michael
+            Knudsen, Vlatko Kosturjak, Alexei Kosut, Anton Kovalenko, Joachim
+            Kuebart, Marc La France, David Laight, Zarick Lau, Pierre Lalet,
+            Michael Lampe, Lanka Linux User Group, Nolan Leake, Werner Lem-
+            berg, Dejan Lesjak, Noah Levitt, Greg Lewis, Bernhard R Link,
+            Jonas Lund, S. Lussos, Torrey T. Lyons, Roland Mainz, N Marci,
+            Kevin Martin, Stephen McCamant, Mesa Developers, Luke Mewburn,
+            Petr Mladek, Bram Moolenaar, Steve Murphy, Ishikawa MUTSUMI, Radu
+            Octavian, Lee Olsen, Greg Parker, Ivan Pascal, Alexander E.
+            Patrakov, Mike Pechkin, Soós Péter, Zvezdan Petkovic, Alexander
+            Pohoyda, Xie Qian, Bill Randle, Adam J. Richter, Tim Roberts,
+            Bernhard Rosenkraenzer, Andreas Rüden, Steve Rumble, Oleg Safi-
+            ullin, Ty Sarna, Leo Savernik, Barry Scott, Shantonu Sen, Yu
+            Shao, Andreas Schwab, Matthias Scheler, Dan Shearer, Michael
+            Shell, Paul Shupak, Alexander Stohr, Marius Strobl, Mikko Markus
+            Torni, Jess Thrysoee, Izumi Tsutsui, Tungsten Graphics, Ryan
+            Underwood, Tristan Van Berkom, Michael van Elst, Phillip Vandry,
+            Roman Vasylyev, Luc Verhaegen, Rodion Vshevtsov, Mark Vojkovich,
+            Edi Werner, Keith Whitwell, Scot Wilcoxon, Dave Williss, Thomas
+            Winischhofer, Kuang-che Wu, X-Oz Technologies, Chisato Yamauchi,
+            Michael Yaroslavtsev, David Yerger, Su Yong, Hui Yu, Sagi Zeevi,
+            Christian Zietz
 
       Webmaster:
             Georgina O. Economou
@@ -1390,7 +1381,7 @@ its contributors
 This product includes software developed by X-Oz Technologies (http://www.x-
 oz.com/).
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.132 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.135 dawes Exp $
 
 
 $XFree86$

@@ -1,5 +1,6 @@
-XFree86 4.4.99.904 (xx March 2005)
- 363. Readability updates for the BUILD doc (Georgina O. Economou).
+XFree86 4.5.0 (16 March 2005)
+ 363. Readability updates for the BUILD and RELNOTES docs
+      (Georgina O. Economou).
  362. Fix KGA handling in s3 driver (Marc La France).
  361. Fix bugs in the Kyrgyz XKB map (based on Bugzilla #1555, Ilyas Bakirov).
  361. First cut at libXpm fix for CAN-2005-0605 (David Dawes).
@@ -19454,7 +19455,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3469 2005/03/15 21:39:18 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3470 2005/03/16 15:31:31 dawes Exp $
 
 
 
