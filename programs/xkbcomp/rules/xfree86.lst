@@ -4,7 +4,7 @@
 //  Rules descriptions for XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.49 2002/12/13 04:18:03 dawes Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.50 2002/12/15 00:44:56 dawes Exp $
 
 ! model
   pc101		Generic 101-key PC
@@ -42,6 +42,7 @@
   inspiron	Laptop/notebook Dell Inspiron 8xxx
   dexxa		Dexxa Wireless Desktop Keyboard
   diamond	Diamond 9801 / 9802 series
+  ennyah-dkb1008 Ennyah DKB-1008
   genius	Genius Comfy KB-16M / Genius MM Keyboard KWD-910
   hpi6		Hewlett-Packard Internet Keyboard
   hp2501	Hewlett-Packard SK-2501 Multimedia Keyboard
