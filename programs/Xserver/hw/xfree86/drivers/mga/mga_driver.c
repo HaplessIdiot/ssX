@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.161 2000/06/27 22:46:33 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.162 2000/06/29 20:56:59 mvojkovi Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1313,6 +1313,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
         /* The default is to use 512 lines on a G400, 128 on a G200 */
         switch (pMga->Chipset) {
 	  case PCI_CHIP_MGAG200:
+	  case PCI_CHIP_MGAG200_PCI:
 	    pMga->numXAALines = 128;
             break;
 	  default:
