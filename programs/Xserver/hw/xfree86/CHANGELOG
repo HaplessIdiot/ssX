@@ -1,3 +1,5 @@
+ 593. Add/fix support for the Rage 128 Mobility chips (M3/M4) (Kevin Martin).
+
 XFree86 4.0.1d (8 September 2000)
  592. Fix RegisterResources for multiple heads in glint driver 
       (#4143, Berend Ozceri).
@@ -11124,4 +11126,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1306 2000/09/13 07:57:52 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1307 2000/09/13 08:00:01 alanh Exp $

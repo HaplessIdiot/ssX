@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128.h,v 1.9 2000/06/14 00:16:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128.h,v 1.11 2000/08/04 16:13:32 eich Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -39,6 +39,8 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define R128_DEBUG    0		/* Turn off debugging output                */
 #define R128_TIMEOUT  2000000	/* Fall out of wait loops after this count */
 #define R128_MMIOSIZE 0x80000
+
+#define R128_VBIOS_SIZE 0x00010000
 
 				/* R128_NAME is used for the server-side
                                    ddx driver, the client-side DRI driver,
@@ -179,6 +181,7 @@ typedef struct {
     unsigned long     LinearAddr; /* Frame buffer physical address           */
     unsigned long     MMIOAddr;	  /* MMIO region physical address            */
     unsigned long     BIOSAddr;	  /* BIOS physical address                   */
+    Bool              BIOSFromPCI; /* BIOS is read from PCI space            */
 
     unsigned char     *MMIO;	  /* Map of MMIO region                      */
     unsigned char     *FB;	  /* Map of frame buffer                     */
@@ -188,19 +191,15 @@ typedef struct {
     unsigned long     FbMapSize;  /* Size of frame buffer, in bytes          */
     int               Flags;	  /* Saved copy of mode flags                */
     
-    Bool              EnableFP;     /* Enable use of FP registers            */
-    Bool              CRTOnly;      /* Only use External CRT instead of FP   */
     Bool              HasPanelRegs; /* Current chip can connect to a FP      */
+    Bool              CRTOnly;      /* Only use External CRT instead of FP   */
+    CARD8             *VBIOS;       /* Video BIOS for mode validation on FPs */
+    int               FPBIOSstart;  /* Start of the flat panel info          */
 
 				/* Computed values for FPs */
     int               PanelXRes;
     int               PanelYRes;
-    int               PanelHNonVis;
-    int               PanelHOverPlus;
-    int               PanelHSyncWidth;
-    int               PanelVNonVis;
-    int               PanelVOverPlus;
-    int               PanelVSyncWidth;
+    int               PanelPwrDly;
 
     R128PLLRec        pll;
     R128RAMPtr        ram;
