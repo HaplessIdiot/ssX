@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.h,v 1.9 2000/06/10 16:10:03 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.h,v 1.10 2000/06/10 18:10:59 mvojkovi Exp $ */
 
 #ifndef _XF86FBMAN_H
 #define _XF86FBMAN_H
@@ -27,26 +27,23 @@ typedef struct _FBArea {
    DevUnion 	devPrivate;
 } FBArea, *FBAreaPtr;
 
-typedef struct _FBLink {
-  FBArea area;
-  struct _FBLink *next;  
-} FBLink, *FBLinkPtr;
+typedef struct _FBLinear {
+   ScreenPtr    pScreen;
+   int		size;
+   int 		offset;
+   int 		granularity;
+   void 	(*MoveLinearCallback)(struct _FBLinear*, struct _FBLinear*);
+   void 	(*RemoveLinearCallback)(struct _FBLinear*);
+   DevUnion 	devPrivate;
+} FBLinear, *FBLinearPtr;
 
 typedef void (*FreeBoxCallbackProcPtr)(ScreenPtr, RegionPtr, pointer);
 typedef void (*MoveAreaCallbackProcPtr)(FBAreaPtr, FBAreaPtr);
 typedef void (*RemoveAreaCallbackProcPtr)(FBAreaPtr);
 
-typedef struct {
-   ScreenPtr	pScreen;
-   RegionPtr	InitialBoxes;
-   RegionPtr	FreeBoxes;
-   FBLinkPtr 	UsedAreas;
-   int		NumUsedAreas;
-   CloseScreenProcPtr 		CloseScreen;
-   int				NumCallbacks;
-   FreeBoxCallbackProcPtr	*FreeBoxesUpdateCallback;
-   DevUnion			*devPrivates;
-} FBManager, *FBManagerPtr;
+typedef void (*MoveLinearCallbackProcPtr)(FBLinearPtr, FBLinearPtr);
+typedef void (*RemoveLinearCallbackProcPtr)(FBLinearPtr);
+
 
 typedef struct {
     FBAreaPtr (*AllocateOffscreenArea)(
@@ -68,6 +65,21 @@ typedef struct {
 		ScreenPtr pScreen,  
 		FreeBoxCallbackProcPtr FreeBoxCallback,
 		pointer devPriv);
+/* linear functions */
+    FBLinearPtr (*AllocateOffscreenLinear)(
+		ScreenPtr pScreen, 
+		int size,
+		int granularity,
+		MoveLinearCallbackProcPtr moveCB,
+		RemoveLinearCallbackProcPtr removeCB,
+		pointer privData);
+    void      (*FreeOffscreenLinear)(FBLinearPtr area);
+    Bool      (*ResizeOffscreenLinear)(FBLinearPtr area, int size);
+    Bool      (*QueryLargestOffscreenLinear)(
+		ScreenPtr pScreen,
+		int *size,
+		int granularity,
+		int priority);
     Bool      (*PurgeOffscreenAreas) (ScreenPtr);
 } FBManagerFuncs, *FBManagerFuncsPtr;
 
@@ -114,13 +126,31 @@ xf86AllocateLinearOffscreenArea (
    pointer privData
 );
 
+FBLinearPtr 
+xf86AllocateOffscreenLinear (
+   ScreenPtr pScreen, 
+   int length,
+   int granularity,
+   MoveLinearCallbackProcPtr moveCB,
+   RemoveLinearCallbackProcPtr removeCB,
+   pointer privData
+);
+
 void xf86FreeOffscreenArea(FBAreaPtr area);
+void xf86FreeOffscreenLinear(FBLinearPtr area);
 
 Bool 
 xf86ResizeOffscreenArea(
    FBAreaPtr resize,
    int w, int h
 );
+
+Bool 
+xf86ResizeOffscreenLinear(
+   FBLinearPtr resize,
+   int size
+);
+
 
 Bool
 xf86RegisterFreeBoxCallback(
@@ -143,5 +173,14 @@ xf86QueryLargestOffscreenArea(
     int preferences,
     int priority
 );
+
+Bool
+xf86QueryLargestOffscreenLinear(
+    ScreenPtr pScreen,
+    int *size,
+    int granularity,
+    int priority
+);
+
 
 #endif /* _XF86FBMAN_H */
