@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.6 95/01/16 13:16:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.55 1995/07/15 15:07:03 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.56 1995/07/16 09:14:35 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -2595,7 +2595,8 @@ DispPtr disp;
 	 }
 	 
 	 do {
-	    if (strcmp(p->name, mode_string) == 0) {
+	    if (strcmp(p->name, mode_string) == 0
+		|| strcmp("*", mode_string) == 0) {
 	       found = TRUE;
 	       if (!p->PrivSize || !p->Private) {
 		  p->PrivSize = S3_MODEPRIV_SIZE;

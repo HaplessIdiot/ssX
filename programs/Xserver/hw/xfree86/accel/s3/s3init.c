@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.6 95/01/23 15:34:00 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.72 1995/07/15 15:06:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.73 1995/07/16 09:14:04 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -2069,7 +2069,13 @@ s3Init(mode)
       outb(0x3C5, tmp2 | 0x20); /* blank the screen */
 
       s3OutIBMRGBIndReg(IBMRGB_sync, 0, 0);
-      s3OutIBMRGBIndReg(IBMRGB_hsync_pos, 0, 0);
+      if (mode->Private[0] & (1 << S3_BLANK_DELAY)) {
+	 int pixels = (mode->Private[S3_BLANK_DELAY] & 0x07) * 8 / s3Bpp;
+	 if (pixels > 15) pixels = 15;
+	 s3OutIBMRGBIndReg(IBMRGB_hsync_pos, 0, pixels);
+      }
+      else
+	 s3OutIBMRGBIndReg(IBMRGB_hsync_pos, 0, 0);
       s3OutIBMRGBIndReg(IBMRGB_pwr_mgmt, 0, 0);
       s3OutIBMRGBIndReg(IBMRGB_dac_op, ~8, s3DACSyncOnGreen ? 8 : 0);
       s3OutIBMRGBIndReg(IBMRGB_dac_op, ~2, 1 /* fast slew */ ? 2 : 0);

@@ -26,7 +26,7 @@
  */
 
 /* $XConsortium: Print.c,v 1.5 95/01/16 13:16:19 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.15 1995/07/05 12:37:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.16 1995/07/07 16:03:07 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -192,8 +192,8 @@ struct RamDac_Name RamDac_Names[] =
 	  "TI ViewPoint3026 24-bit TrueColor DAC w/cursor,pixel-mux,clock" },
 	{ "RGB524", 
 	  "IBM RGB524 24-bit TrueColor DAC w/cursor,pixel-mux,clock" },
-	{ "RGB525", 
-	  "IBM RGB525 24-bit TrueColor DAC w/cursor,pixel-mux,clock" },
+	{ "RGB514/525", 
+	  "IBM RGB514/525 24-bit TrueColor DAC w/cursor,pixel-mux,clock" },
 	{ "RGB528", 
 	  "IBM RGB528 24-bit TrueColor DAC w/cursor,pixel-mux,clock" },
 	{ "STG1703", "STG1703 15/16/24-bit DAC w/pixel-mux,clock" },

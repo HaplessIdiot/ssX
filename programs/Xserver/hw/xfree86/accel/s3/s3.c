@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.9 95/04/07 19:28:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.93 1995/07/15 15:06:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.94 1995/07/16 09:13:51 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -795,7 +795,7 @@ s3Probe()
 	 } else if (S3_TRIO32_SERIES(s3ChipId)) {
 	    chipname = "Trio32";
 	 } else if (S3_TRIO64_SERIES(s3ChipId)) {
-	    if ((s3ChipRev & 0xf0) == 0x80) 
+	    if ((s3ChipRev & 0x40) == 0x40) 
 	       chipname = "Trio64V+ (untested, please report !!)";
 	    else 
 	       chipname = "Trio64";
@@ -2905,9 +2905,15 @@ s3Probe()
 	 if (!(pMode->Private[0] & (1 << S3_INVERT_VCLK))) {
 	    if (DAC_IS_TI3026 && s3BiosVendor == DIAMOND_BIOS)
 	       pMode->Private[S3_INVERT_VCLK] = 1;
-	    else if (DAC_IS_IBMRGB) 
-	       if (s3Bpp == 4) pMode->Private[S3_INVERT_VCLK] = 0;
-	       else pMode->Private[S3_INVERT_VCLK] = 1;
+	    else if (DAC_IS_IBMRGB)
+	       if (s3Bpp == 4) 
+		  pMode->Private[S3_INVERT_VCLK] = 0;
+	       else if (s3BiosVendor == STB_BIOS && s3Bpp == 2 
+			&& s3InfoRec.clock[pMode->Clock] > 125000 
+			&& s3InfoRec.clock[pMode->Clock] < 175000)
+		  pMode->Private[S3_INVERT_VCLK] = 0;
+	       else
+		  pMode->Private[S3_INVERT_VCLK] = 1;
 	    else 
 	       pMode->Private[S3_INVERT_VCLK] = 0;
 	    pMode->Private[0] |= 1 << S3_INVERT_VCLK;
@@ -2956,10 +2962,8 @@ s3Probe()
 		  pMode->Private[S3_BLANK_DELAY] = 0x00;
 	       }
 	       else if (s3BiosVendor == STB_BIOS) {
-		  if (s3Bpp == 1 && pMode->Clock > 135000)
-		     pMode->Private[S3_BLANK_DELAY] = 0x01;
-		  else if (s3Bpp == 4)
-		     pMode->Private[S3_BLANK_DELAY] = 0x01;
+		  if (s3Bpp == 1 && s3InfoRec.clock[pMode->Clock] > 50000)
+		     pMode->Private[S3_BLANK_DELAY] = 0x55;
 		  else
 		     pMode->Private[S3_BLANK_DELAY] = 0x00;
 	       }
@@ -2986,7 +2990,12 @@ s3Probe()
 	          pMode->Private[S3_EARLY_SC] = 0;
 	       }
 	       else if (s3BiosVendor == STB_BIOS) {
-	          pMode->Private[S3_EARLY_SC] = 1;
+		  if (s3Bpp == 2 && s3InfoRec.clock[pMode->Clock] > 125000)
+		     pMode->Private[S3_EARLY_SC] = 0;
+		  else if (s3Bpp == 4)
+		     pMode->Private[S3_EARLY_SC] = 0;
+		  else 
+		     pMode->Private[S3_EARLY_SC] = 1;
 	       }
 	       else if (s3BiosVendor == HERCULES_BIOS) {
 	          pMode->Private[S3_EARLY_SC] = 0;

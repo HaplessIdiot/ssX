@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86Conf.man,v 1.5 95/01/16 13:16:10 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.man,v 3.17 1995/07/05 12:37:20 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.man,v 3.18 1995/07/16 09:13:07 dawes Exp $
 .TH XF86Config 4/5 "Version 3.1.2"  "XFree86"
 .SH NAME
 XF86Config - Configuration File for XFree86
@@ -619,17 +619,23 @@ mode with \fBCtrl+Alt+Keypad-Minus\fP.
 .B InvertVCLK \fI"modename"\fP \fR0|1\fP
 This optional entry is specific to the S3 server only.  It may be used
 to change the default VCLK invert/non-invert state for individual modes.
+If \fI"modename"\fP is "\(**" the setting applies to all modes unless
+unless overridden by later entries.
 .TP 4
 .B EarlySC \fI"modename"\fP \fR0|1\fP
 This optional entry is specific to the S3 server only.  It may be used
 to change the default EarlySC setting for individual modes.  This
 setting can affect screen wrapping.
+If \fI"modename"\fP is "\(**" the setting applies to all modes unless 
+unless overridden by later entries.
 .TP 4
 .B BlankDelay \fI"modename" value1 value2\fP
 This optional entry is specific to the S3 server only.  It may be used
 to change the default blank delay settings for individual modes.  This
 can affect screen wrapping.  \fIvalue1\fP and \fIvalue2\fP must be
 integers in the range 0\-7.
+If \fI"modename"\fP is "\(**" the setting applies to all modes unless
+unless overridden by later entries.
 .TP 4
 .B Visual \fI"visual-name"\fP
 This optional entry sets the default root visual type.  This may

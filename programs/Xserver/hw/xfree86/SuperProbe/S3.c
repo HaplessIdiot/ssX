@@ -26,7 +26,7 @@
  */
 
 /* $XConsortium: S3.c,v 1.4 95/01/12 19:30:59 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/S3.c,v 3.5 1995/04/09 13:44:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/S3.c,v 3.6 1995/07/07 16:03:11 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -199,7 +199,7 @@ int *Chipset;
 			   else if (chip_id_low==0x10) 
 			      *Chipset = CHIP_S3_Trio32;
 			   else if (chip_id_low==0x11)
-			      if ((chip_rev&0xf0) == 0x80)
+			      if ((chip_rev&0x40) == 0x40)
 				 *Chipset = CHIP_S3_Trio64V;
 			      else
 				 *Chipset = CHIP_S3_Trio64;
