@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/globals.c,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/globals.c,v 1.12tsi Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -147,5 +147,3 @@ int	argcGlobal;
 char	**argvGlobal;
 
 DDXPointRec dixScreenOrigins[MAXSCREENS];
-
-volatile ScreenPtr currentRegionScreen;
