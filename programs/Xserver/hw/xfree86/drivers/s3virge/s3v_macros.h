@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_macros.h,v 1.8 1999/08/21 13:48:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_macros.h,v 1.9 2000/03/31 20:13:33 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -33,6 +33,7 @@ in this Software without prior written authorization from the XFree86 Project.
 
 /* miscellaneous registers */
 #define SUBSYS_STAT_REG 0x8504
+#define ADV_FUNC_CNTR 0x850c
 
 /* memory port controller registers */
 #define FIFO_CONTROL_REG 0x8200
@@ -95,9 +96,12 @@ in this Software without prior written authorization from the XFree86 Project.
 
 #define MAXLOOP 0x0fffff /* timeout value for engine waits, 0.5 secs */
 
+/* Switchable per chipset, must be initialized prior to a mode */
+/* switch! */
+#define WAITFIFO(n) ((*ps3v->pWaitFifo)(ps3v,n))
 
-#define WAITFIFO(n) if(ps3v->NoPCIRetry) \
-	 while(((INREG(SUBSYS_STAT_REG) >> 8) & 0x1f) < n){}
+/* gx2 only (16 slots), not used yet */
+#define WAITCMD() while(((INREG(ADV_FUNC_CNTR) >> 6) & 0x1f) != 16){}
 
 #define WAITIDLE()\
   do { int loop=0; mem_barrier(); \

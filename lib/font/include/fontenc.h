@@ -1,5 +1,5 @@
 /*
-Copyright (c) 1998 by Juliusz Chroboczek
+Copyright (c) 1998-2000 by Juliusz Chroboczek
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/include/fontenc.h,v 1.5 1999/04/27 07:08:58 dawes Exp $ */
+/* $XFree86: xc/lib/font/include/fontenc.h,v 1.6 1999/05/03 12:15:54 dawes Exp $ */
 
 /* Header for backend-independent encoding code */
 
@@ -67,6 +67,10 @@ struct font_encoding {
   int row_size;                 /* the size of a row, or 0 if bytes */
   struct font_encoding_mapping *mappings; /* linked list of mappings */
   struct font_encoding *next;   /* link to next element */
+  /* the following two were added in version 0.2 of the font interface */
+  /* they should be kept at the end to preserve binary compatibility */
+  int first;                    /* first byte or row */
+  int first_col;                /* first column in each row */
 };
 
 
@@ -91,5 +95,8 @@ char *font_encoding_name(unsigned,
                          struct font_encoding*,
                          struct font_encoding_mapping*);
 
+/* Identify an encoding file.  If fileName doesn't exist, or is not an
+   encoding file, return NULL, otherwise returns a NULL-terminated
+   array of strings. */
 char **identifyEncodingFile(const char *fileName);
 #endif

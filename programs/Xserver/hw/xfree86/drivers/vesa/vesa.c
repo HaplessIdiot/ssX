@@ -26,7 +26,7 @@
  *
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.4 2000/10/27 18:31:04 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.5 2000/10/29 14:24:12 tsi Exp $
  */
 
 #include "vesa.h"
@@ -1621,12 +1621,13 @@ VESASaveScreen(ScreenPtr pScreen, int mode)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     Bool on = xf86IsUnblank(mode);
-    unsigned char scrn = ReadSeq(0x01);
 
     if (on)
 	SetTimeSinceLastInputEvent();
 
     if (pScrn->vtSema) {
+	unsigned char scrn = ReadSeq(0x01);
+
 	if (on)
 	    scrn &= ~0x20;
 	else

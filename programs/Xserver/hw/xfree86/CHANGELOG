@@ -1,4 +1,25 @@
 XFree86 4.0.1f (xx November 2000)
+ 928. Fix an SVR4 loader build problem introduced in 4.0.1d (#4234,
+      Takaaki Nomura).
+ 927. Fix a bug in fontenc that would cause a memory leak whenever an
+      encoding would be declared in encodings.dir but not in the encoding
+      file itself (#4233, Juliusz Chroboczek).
+ 926. Make the freetype backend use the fontenc matrix encoding support,
+      remove support for the defunct XAnti extension, and bump the version
+      of the freetype backend to 1.1.8 (#4233, Juliusz Chroboczek).
+ 925. Add proper support for matrix encodings in fontenc (including the
+      new FIRSTINDEX keyword in encoding files), and bump the version of
+      the font module ABI to 0.2 (#4233, Juliusz Chroboczek).
+ 924. Fix a problem the vesa driver (#4232, Paulo Cesar Pereira de Andrade).
+ 923. Fix problems building the C&T driver with DEBUG defined (#4231,
+      Taketoshi Sano).
+ 922. Remove lt_LT.ISO8859-1 entry from compose.dir (#4230, Nerijus Baliunas).
+ 921. s3virge driver updates, including:
+       - Stabilize GX2 support, reenable silken mouse
+       - Enable MX fixes
+       - Add support for the render extension
+       - Enable BLT_BUG for ViRGE and VX chipsets
+      (#4229, Kevin Brosius).
  920. Don't initialize DRI when noaccel is specified in the tdfx driver
       (Alan Hourihane).
  919. Make module ABI compatibility mismatches fatal by default, and
@@ -11513,4 +11534,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1389 2000/11/13 23:31:33 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1390 2000/11/14 13:12:17 alanh Exp $

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 1998 by Juliusz Chroboczek
+Copyright (c) 1998-2000 by Juliusz Chroboczek
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/fontfile/encparse.c,v 1.11 1999/05/15 12:10:09 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/encparse.c,v 1.13 2000/09/19 12:46:08 eich Exp $ */
 
 /* Parser for encoding files */
 
@@ -55,6 +55,7 @@ THE SOFTWARE.
 #define NAME_LINE 7
 #define SIZE_LINE 8
 #define ALIAS_LINE 9
+#define FIRSTINDEX_LINE 10
 
 /* Return from lexer */
 #define MAXKEYWORDLEN 100
@@ -266,6 +267,26 @@ retry:
         skipEndOfLine(f,c);
         return ERROR_LINE;
       }
+    } else if(!strcasecmp(keyword_value, "FIRSTINDEX")) {
+      token=gettoken(f,c,&c);
+      if(token==NUMBER_TOKEN) {
+        value1=number_value;
+        token=gettoken(f,c,&c);
+        switch(token) {
+        case NUMBER_TOKEN:
+          value2=number_value;
+          return FIRSTINDEX_LINE;
+        case EOL_TOKEN:
+          value2=0;
+          return FIRSTINDEX_LINE;
+        default:
+          skipEndOfLine(f,c);
+          return ERROR_LINE;
+        }
+      } else {
+        skipEndOfLine(f,c);
+        return ERROR_LINE;
+      }
     } else if(!strcasecmp(keyword_value, "STARTMAPPING")) {
       keyword_value[0]=0;
       value1=0; value1=0;
@@ -440,6 +461,7 @@ parseEncodingFile(FontFilePtr f, int headerOnly)
     encoding->row_size=0;
     encoding->mappings=NULL;
     encoding->next=NULL;
+    encoding->first=encoding->first_col=0;
     goto no_mapping;
   default:
     goto error;
@@ -461,6 +483,10 @@ no_mapping:
   case SIZE_LINE:
     encoding->size=value1;
     encoding->row_size=value2;
+    goto no_mapping;
+  case FIRSTINDEX_LINE:
+    encoding->first=value1;
+    encoding->first_col=value2;
     goto no_mapping;
   case STARTMAPPING_LINE:
     if(headerOnly)
@@ -783,7 +809,7 @@ loadEncodingFile(const char *charset, const char *fontFileName)
 }
 
 /* Return a NULL-terminated array of encoding names.  Note that this
- * file has incestuous knowledge of the allocations done by
+ * function has incestuous knowledge of the allocations done by
  * parseEncodingFile. */
 
 char **

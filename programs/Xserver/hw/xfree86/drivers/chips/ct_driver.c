@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.98 2000/11/03 18:46:08 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.99 2000/11/03 22:05:46 tsi Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -801,7 +801,6 @@ static
 OptionInfoPtr
 CHIPSAvailableOptions(int chipid, int busid)
 {
-    int vendor = ((chipid & 0xffff0000) >> 16);
     int chip = chipid & 0x0000ffff;
 
     if (busid == BUS_ISA) {
@@ -6185,16 +6184,16 @@ chipsRestoreExtendedRegs(ScrnInfoPtr pScrn, CHIPSRegPtr Regs)
     /* debug - dump out all the extended registers... */
     if (IS_HiQV(cPtr)) {
 	for (i = 0; i < 0xFF; i++) {
-	    ErrorF("XR%X - %X : %X\n", i, ChipsReg->XR[i],
+	    ErrorF("XR%X - %X : %X\n", i, Regs->XR[i],
 		   cPtr->readXR(cPtr, i));
 	}
 	for (i = 0; i < 0x80; i++) {
-	    ErrorF("FR%X - %X : %X\n", i, ChipsReg->FR[i],
+	    ErrorF("FR%X - %X : %X\n", i, Regs->FR[i],
 		   cPtr->readFR(cPtr, i));
 	}
     } else {
 	for (i = 0; i < 0x80; i++) {
-	    ErrorF("XR%X - %X : %X\n", i, ChipsReg->XR[i],
+	    ErrorF("XR%X - %X : %X\n", i, Regs->XR[i],
 		   cPtr->readXR(cPtr, i));
 	}
     }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.22 2000/04/04 19:25:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.24 2000/11/02 16:29:12 anderson Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -139,8 +139,9 @@ typedef struct {
    unsigned char CR40, CR41, CR42, CR43, CR45;
    unsigned char CR51, CR53, CR54, CR55, CR58, CR5D, CR5E;
    unsigned char CR63, CR65, CR66, CR67, CR68, CR69, CR6D; /* Video attrib. */
-   unsigned char CR85, CR86;
-   unsigned char CR90, CR91;
+   unsigned char CR7B, CR7D;
+   unsigned char CR85, CR86, CR87;
+   unsigned char CR90, CR91, CR92, CR93;
    unsigned char ColorStack[8]; /* S3 hw cursor color stack CR4A/CR4B */
    unsigned int  STREAMS[22];   /* Streams regs */
    unsigned int  MMPR0, MMPR1, MMPR2, MMPR3;   /* MIU regs */
@@ -168,7 +169,7 @@ typedef struct {
 /* S3VRec  		 */
 /*************************/
 
-typedef struct {
+typedef struct tagS3VRec {
 	/* accel additions */
 	CARD32		AccelFlags;
 	CARD32		AccelCmd;
@@ -247,9 +248,12 @@ typedef struct {
   /* Limit the number of errors	*/
   /* printed using a counter 	*/
   int			GEResetCnt;
+  /* Accel WaitFifo function */
+  void (*pWaitFifo)(struct tagS3VRec *, int);
+
   /*************************/
   /* ViRGE options -start- */
-  
+  /*************************/  
   /* Enable PCI burst mode for reads? */
   Bool 		pci_burst;
   /* Diasable PCI retries */
@@ -389,6 +393,8 @@ extern void S3VCommonCalcClock(long freq, int min_m, int min_n1, int max_n1,
 extern Bool S3VAccelInit(ScreenPtr pScreen);
 extern Bool S3VAccelInit32(ScreenPtr pScreen);
 void S3VAccelSync(ScrnInfoPtr);
+void S3VWaitFifoGX2(S3VPtr ps3v, int slots );
+void S3VWaitFifoMain(S3VPtr ps3v, int slots );
 
 /* s3v_hwcurs.c */
 extern Bool S3VHWCursorInit(ScreenPtr pScreen);
