@@ -62,6 +62,7 @@ defstruct,Lisp_Defstruct,0,1,0
 endp,Lisp_Null,1,1,1
 equal,Lisp_Equal,1,2,2
 eval,Lisp_Eval,1,1,1
+format,Lisp_Format,1,2,0
 funcall,Lisp_Funcall,0,1,0
 gc,Lisp_Gc,1,0,0
 get,Lisp_Get,1,2,2
@@ -87,6 +88,7 @@ null,Lisp_Null,1,0,1
 numberp,Lisp_Numberp,1,1,1
 or,Lisp_Or,0,0,0
 pop,Lisp_Pop,0,1,1
+princ,Lisp_Princ,1,1,1
 print,Lisp_Print,1,1,1
 prog1,Lisp_Prog1,0,1,0
 prog2,Lisp_Prog2,0,2,0
@@ -95,6 +97,7 @@ provide,Lisp_Provide,1,1,1
 push,Lisp_Push,0,2,2
 quit,Lisp_Quit,1,0,1
 quote,Lisp_Quote,0,1,1
+read,Lisp_Read,1,0,0
 require,Lisp_Require,1,1,2
 reverse,Lisp_Reverse,1,1,1
 rplaca,Lisp_Rplaca,1,2,2

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.1 2001/08/31 15:00:14 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.3 2001/09/01 18:28:12 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -38,6 +38,7 @@
 #include "private.h"
 
 #include "core.h"
+#include "format.h"
 #include "require.h"
 #include "struct.h"
 #include "time.h"
@@ -54,7 +55,6 @@ static int LispSkipComment(LispMac*);
 static int LispSkipWhiteSpace(LispMac*);
 static char *LispIntToOpaqueType(LispMac*, int);
 
-void LispPrintObj(LispMac*, LispObj*, int);
 void LispSnprint(LispMac*, LispObj*, char*, int);
 void LispSnprintObj(LispMac*, LispObj*, char**, int*, int);
 
@@ -85,6 +85,7 @@ int gcpro;
 
 char *ExpectingListAt = "expecting list, at %s";
 char *ExpectingNumberAt = "expecting number, at %s";
+FILE *lisp_stdin, *lisp_stdout, *lisp_stderr;
 
 /*
  * Implementation
@@ -106,14 +107,14 @@ LispDestroy(LispMac *mac, char *fmt, ...)
 	mac->tok = 0;
     }
 
-    fprintf(stderr, "%s", "*** Error: ");
+    fprintf(lisp_stderr, "%s", "*** Error: ");
 
     va_start(ap, fmt);
-    vfprintf(stderr, fmt, ap);
+    vfprintf(lisp_stderr, fmt, ap);
     va_end(ap);
 
-    fputc('\n', stderr);
-    fflush(stderr);
+    fputc('\n', lisp_stderr);
+    fflush(lisp_stderr);
 
     if (mac->errexit)
 	exit(1);
@@ -129,7 +130,7 @@ LispTopLevel(LispMac *mac)
     gcpro = 0;
     mac->block.block_level = 0;
     mac->setf = NULL;
-    mac->cdr = 0;
+    mac->cdr = mac->princ = mac->justsize = 0;
     if (mac->stream.stream_level) {
 	if (mac->stream.stream[mac->stream.stream_level].fp) {
 	    /* i.e. if not called from LispExecute */
@@ -149,8 +150,8 @@ LispTopLevel(LispMac *mac)
     }
     mac->mem.mem_level = 0;
 
-    fflush(stdout);
-    fflush(stderr);
+    fflush(lisp_stdout);
+    fflush(lisp_stderr);
 }
 
 void
@@ -168,7 +169,7 @@ LispGC(LispMac *mac, LispObj *car, LispObj *cdr)
 	return;
 
 #ifdef DEBUG
-    printf("gc: ");
+    fprintf(lisp_stdout, "gc: ");
     gettimeofday(&start, NULL);
 #endif
 
@@ -190,6 +191,12 @@ LispGC(LispMac *mac, LispObj *car, LispObj *cdr)
 	    else if (entry->mark)
 		entry->mark = LispNil_t;
 	    else if (entry->dirty) {
+		if (entry->type == LispStream_t) {
+		    if (entry->data.stream.size < 0)
+			fclose(entry->data.stream.source.fp);
+		    else
+			free(entry->data.stream.source.str);
+		}
 		CAR(entry) = NIL;
 		CDR(entry) = freeobj;
 		freeobj = entry;
@@ -205,8 +212,8 @@ LispGC(LispMac *mac, LispObj *car, LispObj *cdr)
 	--sec;
 	msec += 1000000;
     }
-    printf("%ld sec, %ld msec, ", sec, msec);
-    printf("%d recovered, %d free, %d protected, %d total\n", nfree - count, nfree, nobjs - nfree, nobjs);
+    fprintf(lisp_stdout, "%ld sec, %ld msec, ", sec, msec);
+    fprintf(lisp_stdout, "%d recovered, %d free, %d protected, %d total\n", nfree - count, nfree, nobjs - nfree, nobjs);
 #endif
 }
 
@@ -404,7 +411,7 @@ LispAllocSeg(LispMac *mac)
     freeobj = objseg[numseg];
     ++numseg;
 #ifdef DEBUG
-    printf("gc: %d cell(s) allocated at %d segment(s)\n", nobjs, numseg);
+    fprintf(lisp_stdout, "gc: %d cell(s) allocated at %d segment(s)\n", nobjs, numseg);
 #endif
 }
 
@@ -497,10 +504,11 @@ LispGet(LispMac *mac)
 		mac->st = mac->cp = code;
 	    }
 	    else {
-		char *tmp = realloc(mac->st, (len = strlen(mac->st)) + strlen(code));
+		char *tmp = realloc(mac->st, (len = strlen(mac->st)) + strlen(code) + 1);
 
 		if (!tmp) {
 		    free(mac->st);
+		    mac->st = NULL;
 		    return (mac->tok = EOF);
 		}
 		mac->cp = &tmp[len];
@@ -515,6 +523,8 @@ LispGet(LispMac *mac)
     }
 
     ++mac->cp;
+    if (ch == '\n' && mac->interactive && mac->fp == lisp_stdin)
+	mac->newline = 1;
 
     return (mac->tok = ch);
 }
@@ -1318,7 +1328,7 @@ LispSnprintObj(LispMac *mac, LispObj *obj, char **str, int *len, int paren)
 	    *str += sz;
 	    break;
 	case LispOpaque_t:
-	    sz = snprintf(*str, *len, "#0x%06x-%s", (int)obj->data.opaque.data,
+	    sz = snprintf(*str, *len, "#0x%08x-%s", (int)obj->data.opaque.data,
 			  LispIntToOpaqueType(mac, obj->data.opaque.type));
 	    *len -= sz;
 	    *str += sz;
@@ -1559,28 +1569,100 @@ LispSnprint(LispMac *mac, LispObj *obj, char *str, int len)
     }
 }
 
-void
-LispPrintObj(LispMac *mac, LispObj *obj, int paren)
+int
+LispPrintf(LispMac *mac, LispObj *stream, char *fmt, ...)
 {
+    int size;
+    va_list ap;
+    FILE *fp = NULL;
+
+    if (stream == NIL)
+	fp = lisp_stdout;
+    else if (stream->data.stream.size < 0)
+	fp = stream->data.stream.source.fp;
+
+    va_start(ap, fmt);
+    if (fp && !mac->justsize)
+	size = vfprintf(fp, fmt, ap);
+    else {
+	int n;
+	unsigned char stk[1024], *ptr = stk;
+
+	size = sizeof(stk);
+	n = vsnprintf(stk, size, fmt, ap);
+	if (n < 0 || n >= size) {
+	    while (1) {
+		char *tmp;
+
+		va_end(ap);
+		if (n > size)
+		    size = n + 1;
+		else
+		    size *= 2;
+		if ((tmp = realloc(ptr, size)) == NULL) {
+		    free(ptr);
+		    LispDestroy(mac, "out of memory");
+		}
+		va_start(ap, fmt);
+		n = vsnprintf(ptr, size, fmt, ap);
+		if (n >= 0 && n < size)
+		    break;
+	    }
+	}
+	size = strlen(ptr);
+
+	if (!mac->justsize) {
+	    while (stream->data.stream.idx + size >= stream->data.stream.size) {
+		unsigned char *tmp = realloc(stream->data.stream.source.str,
+					     stream->data.stream.size + pagesize);
+
+		if (tmp == NULL) {
+		    if (ptr != stk)
+			free(ptr);
+		    LispDestroy(mac, "out of memory");
+		}
+		stream->data.stream.source.str = tmp;
+		stream->data.stream.size += pagesize;
+	    }
+	    strcpy(stream->data.stream.source.str + stream->data.stream.idx, ptr);
+	    stream->data.stream.idx += size;
+	}
+	if (ptr != stk)
+	    free(ptr);
+    }
+    va_end(ap);
+
+    return (size);
+}
+
+int
+LispPrintObj(LispMac *mac, LispObj *stream, LispObj *obj, int paren)
+{
+    int len = 0;
+
     switch (obj->type) {
 	case LispNil_t:
-	    printf("nil");
+	    len += LispPrintf(mac, stream, "nil");
 	    break;
 	case LispTrue_t:
-	    printf("t");
+	    len += LispPrintf(mac, stream, "t");
 	    break;
 	case LispOpaque_t:
-	    printf("#0x%06x-%s", (int)obj->data.opaque.data,
-		   LispIntToOpaqueType(mac, obj->data.opaque.type));
+	    len += LispPrintf(mac, stream, "#0x%08x-%s",
+			      (int)obj->data.opaque.data,
+			      LispIntToOpaqueType(mac, obj->data.opaque.type));
 	    break;
 	case LispAtom_t:
-	    printf("%s", obj->data.atom);
+	    len += LispPrintf(mac, stream, "%s", obj->data.atom);
 	    break;
 	case LispString_t:
-	    printf("\"%s\"", obj->data.atom);
+	    if (mac->princ)
+		len += LispPrintf(mac, stream, "%s", obj->data.atom);
+	    else
+		len += LispPrintf(mac, stream, "\"%s\"", obj->data.atom);
 	    break;
 	case LispReal_t:
-	    printf("%g", obj->data.real);
+	    len += LispPrintf(mac, stream, "%g", obj->data.real);
 	    break;
 	case LispCons_t: {
 	    LispObj *car, *cdr;
@@ -1589,41 +1671,43 @@ LispPrintObj(LispMac *mac, LispObj *obj, int paren)
 	    cdr = CDR(obj);
 	    if (!cdr || cdr->type == LispNil_t) {
 		if (paren)
-		    printf("(");
-		LispPrintObj(mac, car, car->type == LispCons_t);
+		    len += LispPrintf(mac, stream, "(");
+		len += LispPrintObj(mac, stream, car, car->type == LispCons_t);
 		if (paren)
-		    printf(")");
+		    len += LispPrintf(mac, stream, ")");
 	    }
 	    else {
 		if (paren)
-		    printf("(");
-		LispPrintObj(mac, car, car->type == LispCons_t);
+		    len += LispPrintf(mac, stream, "(");
+		LispPrintObj(mac, stream, car, car->type == LispCons_t);
 		if (cdr->type == LispQuote_t) {
-		    printf(" quote ");
-		    LispPrintObj(mac, cdr->data.quote, 0);
+		    len += LispPrintf(mac, stream, " quote ");
+		    len += LispPrintObj(mac, stream, cdr->data.quote, 0);
 		}
 		else if (cdr->type != LispCons_t) {
-		    printf(" . ");
-		    LispPrintObj(mac, cdr, 0);
+		    len += LispPrintf(mac, stream, " . ");
+		    len += LispPrintObj(mac, stream, cdr, 0);
 		}
 		else {
-		    printf(" ");
-		    LispPrintObj(mac, cdr, car->type != LispCons_t &&
-				 cdr->type != LispCons_t);
+		    len += LispPrintf(mac, stream, " ");
+		    len += LispPrintObj(mac, stream, cdr,
+					car->type != LispCons_t &&
+					cdr->type != LispCons_t);
 		}
 		if (paren)
-		    printf(")");
+		    len += LispPrintf(mac, stream, ")");
 	    }
 	}    break;
 	case LispQuote_t:
-	    printf("'");
-	    LispPrintObj(mac, obj->data.quote, 1);
+	    len += LispPrintf(mac, stream, "'");
+	    len += LispPrintObj(mac, stream, obj->data.quote, 1);
 	    break;
 	case LispArray_t:
 	    if (obj->data.array.rank == 1)
-		printf("#(");
+		len += LispPrintf(mac, stream, "#(");
 	    else
-		printf("#%dA(", obj->data.array.rank);
+		len += LispPrintf(mac, stream, "#%dA(", obj->data.array.rank);
+
 	    if (!obj->data.array.zero) {
 		if (obj->data.array.rank == 1) {
 		    LispObj *ary;
@@ -1634,9 +1718,9 @@ LispPrintObj(LispMac *mac, LispObj *obj, int paren)
 			count *= (int)CAR(ary)->data.real;
 		    for (ary = obj->data.array.list; count > 0;
 			 ary = CDR(ary), count--) {
-			LispPrintObj(mac, CAR(ary), 0);
+			len += LispPrintObj(mac, stream, CAR(ary), 0);
 			if (count - 1 > 0)
-			    printf(" ");
+			    len += LispPrintf(mac, stream, " ");
 		    }
 		}
 		else {
@@ -1656,7 +1740,7 @@ LispPrintObj(LispMac *mac, LispObj *obj, int paren)
 		    ary = obj->data.array.list;
 		    while (loop[0] < dims[0]) {
 			for (; i < rank - 1; i++)
-			    printf("(");
+			    len += LispPrintf(mac, stream, "(");
 			--i;
 			for (;;) {
 			    ++loop[i];
@@ -1667,57 +1751,76 @@ LispPrintObj(LispMac *mac, LispObj *obj, int paren)
 			    --i;
 			}
 			for (k = 0; k < dims[rank - 1] - 1; k++, ary = CDR(ary)) {
-			    LispPrintObj(mac, CAR(ary), 1);
-			    printf(" ");
+			    len += LispPrintObj(mac, stream, CAR(ary), 1);
+			    len += LispPrintf(mac, stream, " ");
 			}
-			LispPrintObj(mac, CAR(ary), 0);
+			len += LispPrintObj(mac, stream, CAR(ary), 0);
 			ary = CDR(ary);
 			for (k = rank - 1; k > i; k--)
-			    printf(")");
+			    len += LispPrintf(mac, stream, ")");
 			if (loop[0] < dims[0])
-			    printf(" ");
+			    len += LispPrintf(mac, stream, " ");
 		    }
-
 		    LispFree(mac, dims);
 		    LispFree(mac, loop);
 		}
 	    }
-	    printf(")");
+	    len += LispPrintf(mac, stream, ")");
 	    break;
 	case LispStruct_t: {
 	    LispObj *def = obj->data.struc.def;
 	    LispObj *field = obj->data.struc.fields;
 
-	    printf("S#(%s", CAR(def)->data.atom);
+	    len += LispPrintf(mac, stream, "S#(%s", CAR(def)->data.atom);
 	    def = CDR(def);
 	    for (; def != NIL; def = CDR(def), field = CDR(field)) {
-		printf(" :%s ", CAR(def)->type == LispAtom_t ?
-		       CAR(def)->data.atom : CAR(CAR(def))->data.atom);
-		LispPrintObj(mac, CAR(field), 1);
+		len += LispPrintf(mac, stream, " :%s ",
+				  CAR(def)->type == LispAtom_t ?
+				      CAR(def)->data.atom :
+				      CAR(CAR(def))->data.atom);
+		len += LispPrintObj(mac, stream, CAR(field), 1);
 	    }
-	    printf(")");
+	    len += LispPrintf(mac, stream, ")");
 	}   break;
 	case LispSymbol_t:
-	    printf("<#symbol# %s ", obj->data.symbol.name);
-	    LispPrintObj(mac, obj->data.symbol.obj, paren);
-	    printf(">");
+	    len += LispPrintf(mac, stream, "<#symbol# %s ",
+			      obj->data.symbol.name);
+	    len += LispPrintObj(mac, stream, obj->data.symbol.obj, paren);
+	    len += LispPrintf(mac, stream, ">");
 	    break;
 	case LispLambda_t:
 	    switch (obj->data.lambda.type) {
 		case LispLambda:
-		    printf("<#lambda# ");
+		    len += LispPrintf(mac, stream, "<#lambda# ");
 		    break;
 		case LispFunction:
-		    printf("<#function# %s ", obj->data.lambda.name);
+		    len += LispPrintf(mac, stream, "<#function# %s ",
+				      obj->data.lambda.name);
 		    break;
 		case LispMacro:
-		    printf("<#macro# %s ", obj->data.lambda.name);
+		    len += LispPrintf(mac, stream, "<#macro# %s ",
+				      obj->data.lambda.name);
 		    break;
 	    }
-	    LispPrintObj(mac, obj->data.lambda.code, 1);
-	    printf(">");
+	    len += LispPrintObj(mac, stream, obj->data.lambda.code, 1);
+	    len += LispPrintf(mac, stream, ">");
+	    break;
+	case LispStream_t:
+	    if (obj->data.stream.size < 0)
+		len += LispPrintf(mac, stream, "<#stream# 0x%8x>",
+				  (int)obj->data.stream.source.fp);
+	    else {
+		if (mac->princ)
+		    len += LispPrintf(mac, stream, "%s",
+				      obj->data.stream.source.str);
+		else
+		    len += LispPrintf(mac, stream, "\"%s\"",
+				      obj->data.stream.source.str);
+	    }
 	    break;
     }
+
+    return (len);
 }
 
 void
@@ -1725,8 +1828,10 @@ LispPrint(LispMac *mac, LispObj *obj)
 {
     if (!obj)
 	LispDestroy(mac, "internal error, at internal:print");
-    LispPrintObj(mac, obj, 1);
-    printf("\n");
+    if (!mac->newline)
+	LispPrintf(mac, NIL, "\n");
+    LispPrintObj(mac, NIL, obj, 1);
+    mac->newline = 0;
 }
 
 /* Needs a rewrite to either allow only one LispMac per process or some
@@ -1760,12 +1865,16 @@ LispMachine(LispMac *mac)
 	    global_mac = mac;
 	    mac->sigint = signal(SIGINT, LispAbortSignal);
 	    if (mac->interactive && mac->prompt)
-		printf("%s", mac->prompt);
+		fprintf(lisp_stdout, "%s", mac->prompt);
 	    mac->level = 0;
 	    if ((obj = LispRun(mac)) != NULL) {
 		obj = EVAL(obj);
 		if (mac->interactive)
 		    LispPrint(mac, obj);
+		if (!mac->newline) {
+		    LispPrintf(mac, NIL, "\n");
+		    mac->newline = 1;
+		}
 	    }
 	    global_mac = NULL;
 	    signal(SIGINT, mac->sigint);
@@ -1792,7 +1901,7 @@ LispExecute(LispMac *mac, char *str)
 		    (mac->stream.stream_size + 1));
 
 	if (stream == NULL) {
-	    fprintf(stderr, "out of memory");
+	    fprintf(lisp_stderr, "out of memory");
 	    return;
 	}
 
@@ -1841,6 +1950,13 @@ LispBegin(int argc, char *argv[])
     if (mac == NULL)
 	return (NULL);
 
+    if (lisp_stdin == NULL)
+	lisp_stdin = fdopen(0, "r");
+    if (lisp_stdout == NULL)
+	lisp_stdout = fdopen(1, "w");
+    if (lisp_stderr == NULL)
+	lisp_stderr = fdopen(2, "w");
+
     pagesize = getpagesize();
     segsize = pagesize / sizeof(LispObj);
     bzero(mac, sizeof(LispMac));
@@ -1851,12 +1967,12 @@ LispBegin(int argc, char *argv[])
     mac->stream.stream = (LispStream*)calloc(1, sizeof(LispStream));
     if (argc > 1) {
 	if ((mac->stream.stream[0].fp = mac->fp = fopen(argv[1], "r")) == NULL) {
-	    fprintf(stderr, "Cannot open %s.\n", argv[1]);
+	    fprintf(lisp_stderr, "Cannot open %s.\n", argv[1]);
 	    exit(1);
 	}
     }
     else {
-	mac->stream.stream[0].fp = mac->fp = stdin;
+	mac->stream.stream[0].fp = mac->fp = lisp_stdin;
 	mac->interactive = 1;
     }
     mac->stream.stream_size = 1;
@@ -1865,7 +1981,8 @@ LispBegin(int argc, char *argv[])
     mac->mem.mem = (void**)calloc(mac->mem.mem_size = 16, sizeof(void*));
     mac->mem.mem_level = 0;
 
-    mac->prompt = "\n>";
+    mac->prompt = ">";
+    mac->newline = 1;
 
     mac->errexit = !mac->interactive;
 
@@ -1875,7 +1992,7 @@ LispBegin(int argc, char *argv[])
 void
 LispEnd(LispMac *mac)
 {
-    if (mac->fp != stdin)
+    if (mac->fp != lisp_stdin)
 	fclose(mac->fp);
 }
 

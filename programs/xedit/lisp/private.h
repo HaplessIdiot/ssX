@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.1 2001/08/31 15:00:14 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.2 2001/08/31 19:00:05 paulo Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
@@ -105,6 +105,10 @@ struct _LispMac {
     int level;
     LispObj *setf;	/* setf place, set on some functions, reset at eval */
     int cdr;		/* use CDR instead of CAR in setf? */
+    int princ;		/* don't quote strings? */
+    int justsize;	/* just calculate size of output,
+			 * needed to calculate formatted output */
+    int newline;	/* at a newline in the output */
     int interactive;
     int errexit;
     LispString *strs[STRTBLSZ];

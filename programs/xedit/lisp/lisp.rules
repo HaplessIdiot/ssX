@@ -6,9 +6,7 @@ file.c: file.gperf							@@\
 	$(GPERF) flags $? > $@						@@\
 									@@\
 depend::								@@\
-									@@\
-clean::									@@\
-	RemoveFile(file.c)
+
 
 #ifndef LispModuleTarget
 #define LispModuleTarget(module,modlist,liblist)			@@\

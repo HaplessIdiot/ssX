@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/require.c,v 1.1 2001/08/31 15:00:14 paulo Exp $ */
 
 #include "require.h"
 
@@ -137,7 +137,7 @@ Lisp_Require(LispMac *mac, LispObj *list, char *fname)
 
 #if 0
 	if (mac->interactive)
-	    fprintf(stderr, "; Loading %s\n", filename);
+	    fprintf(lisp_stderr, "; Loading %s\n", filename);
 #endif
 	module = (LispModule*)LispMalloc(mac, sizeof(LispModule));
 	if ((module->handle = dlopen(filename, RTLD_LAZY | RTLD_GLOBAL)) == NULL)

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.1 2001/08/31 15:00:14 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.3 2001/09/01 18:28:12 paulo Exp $ */
 
 #include "helper.h"
 #include <ctype.h>
@@ -233,7 +233,7 @@ _LispDefLambda(LispMac *mac, LispObj *list, LispFunType type)
     if (type != LispLambda) {
 	for (obj = FUN; obj != NIL; obj = CDR(obj))
 	    if (CAR(obj)->data.lambda.name == name->data.atom) {
-		fprintf(stderr, "*** Warning: %s is being redefined\n",
+		fprintf(lisp_stderr, "*** Warning: %s is being redefined\n",
 			name->data.atom);
 		break;
 	    }
@@ -327,7 +327,7 @@ _LispLoadFile(LispMac *mac, char *filename, char *fname,
     }
 
     if (verbose)
-	fprintf(stderr, "; Loading %s\n", filename);
+	fprintf(lisp_stderr, "; Loading %s\n", filename);
 
     if (mac->stream.stream_level + 1 >= mac->stream.stream_size) {
 	LispStream *stream = (LispStream*)

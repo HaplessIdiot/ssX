@@ -27,12 +27,13 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.2 2001/09/01 18:28:12 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
 
 #include "lisp.h"
+#include <stdio.h>
 
 /*
  * Defines
@@ -77,6 +78,7 @@ typedef enum _LispType {
     LispLambda_t,
     LispArray_t,
     LispStruct_t,
+    LispStream_t,
     LispOpaque_t
 } LispType;
 
@@ -122,6 +124,14 @@ struct _LispObj {
 	    LispObj *fields;	/* structure fields */
 	    LispObj *def;	/* structure definition */
 	} struc;
+	struct {
+	    union {
+		FILE *fp;
+		unsigned char *str;
+	    } source;
+	    int size;		/* if smaller than zero, use source.fp */
+	    int idx;		/* index in string */
+	} stream;
 	struct {
 	    void *data;
 	    int type;
@@ -184,10 +194,14 @@ LispObj *LispSetVariable(LispMac*, LispObj*, LispObj*, char*, int);
 
 int LispRegisterOpaqueType(LispMac*, char*);
 
+int LispPrintf(LispMac*, LispObj*, char*, ...);
+int LispPrintObj(LispMac*, LispObj*, LispObj*, int);
+
 /*
  * Initialization
  */
 extern LispObj *NIL, *T;
 extern int gcpro;
+extern FILE *lisp_stdin, *lisp_stdout, *lisp_stderr;
 
 #endif /* Lisp_internal_h */
