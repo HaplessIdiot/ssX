@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.350 2001/03/21 17:36:43 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.351 2001/03/23 20:56:27 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -102,6 +102,30 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 #endif
 #ifndef XLogFile
 #define XLogFile		XFree86
+#endif
+
+ /*
+ * BuildXFree86ConfigTools:
+ *
+ * Turning this on allows the XFree86 config tools to build when
+ * BuildServersOnly is YES.  This requires more than the servonly CVS
+ * module.  This cannot be used to disable building the config tools with
+ * a full build.
+ */
+#ifndef BuildXFree86ConfigTools
+#ifdef BuildServersOnly
+#define BuildXFree86ConfigTools		!BuildServersOnly
+#else
+#define BuildXFree86ConfigTools		YES
+#endif
+#endif
+
+#if BuildXFree86ConfigTools
+#define BuildLibraries		YES
+#define BuildXF86MiscLibrary	YES
+#define BuildXF86VidModeLibrary	YES
+#define BuildXKBlib		YES
+#define BuildXKBuilib		YES
 #endif
 
 /*
