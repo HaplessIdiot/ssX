@@ -1,5 +1,5 @@
 XFree86 3.9Pu (27 June 1999)
-2797. Xaw and xedit updates (#2932, Paulo Cesar Pereira de Andrade).
+2797. Xaw and xedit updates (#2932, 2933, Paulo Cesar Pereira de Andrade).
 2796. Make the "fifo_conservative" memory settings default for the s3virge
       accelerator (#2931, Kevin Brosius).
 2795. Preliminary DGA2 code for the s3virge driver (#2931, Kevin Brosius).
@@ -8273,4 +8273,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.784 1999/06/27 09:20:09 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.785 1999/06/27 14:07:42 dawes Exp $
