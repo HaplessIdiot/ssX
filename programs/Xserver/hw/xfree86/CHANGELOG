@@ -1,4 +1,6 @@
-XFree86 4.3.99.903 (xx February 2004)
+XFree86 4.3.99.904 (xx February 2004)
+
+XFree86 4.3.99.903 (15 February 2004)
  805. Resync the pci.ids data with pciids.sf.net (2004-02-15 snapshot).
  804. Improve X server performance on OS/2 when using TCP transport:
        - Let the server set TCP_NODELAY, et al.
@@ -18644,7 +18646,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3143 2004/02/14 00:10:14 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3144 2004/02/16 00:48:34 dawes Exp $
 
 
 
