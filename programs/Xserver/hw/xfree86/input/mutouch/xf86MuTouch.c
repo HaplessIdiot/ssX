@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mutouch/xf86MuTouch.c,v 1.1 1999/04/11 13:11:02 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -1604,7 +1604,7 @@ Unplug(pointer	p)
 }
 
 static XF86ModuleVersionInfo version_rec = {
-  "xf86mutouch",
+  "mutouch",
   MODULEVENDORSTRING,
   MODINFOSTRING1,
   MODINFOSTRING2,
@@ -1621,6 +1621,6 @@ static XF86ModuleVersionInfo version_rec = {
  * is setup after the pattern <module_name>ModuleData.
  * Do not change it.
  */
-XF86ModuleData xf86mutouchModuleData = { &version_rec, Plug, Unplug };
+XF86ModuleData mutouchModuleData = { &version_rec, Plug, Unplug };
 
 #endif
