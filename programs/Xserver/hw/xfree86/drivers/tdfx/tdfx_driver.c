@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.76 2001/05/21 21:43:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.77 2001/05/22 07:54:15 alanh Exp $ */
 
 /*
  * Authors:
@@ -996,13 +996,6 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
   } else {
     xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "video key default 0x%x\n", pTDFX->videoKey = 0x1E);
   }
-
-  if (xf86GetOptValInteger(pTDFX->Options, OPTION_VIDEO_KEY, &(pTDFX->videoKey))) {
-       xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "video key set to 0x%x\n",
-                                		pTDFX->videoKey);
-  } else 
-	pTDFX->videoKey = 0x1E;
-
 
   if (!xf86ReturnOptValBool(pTDFX->Options, OPTION_SW_CURSOR, FALSE)) {
     if (!xf86LoadSubModule(pScrn, "ramdac")) {
