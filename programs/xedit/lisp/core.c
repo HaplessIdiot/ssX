@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.47 2002/08/05 03:56:23 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.48 2002/08/25 02:48:30 paulo Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -1616,7 +1616,7 @@ Lisp_Let(LispMac *mac, LispBuiltin *builtin)
 {
     GC_ENTER();
     int head = mac->env.length;
-    LispObj *init, *body, *pair, *result, *list, *cons;
+    LispObj *init, *body, *pair, *result, *list, *cons = NIL;
 
     body = ARGUMENT(1);
     init = ARGUMENT(0);
@@ -3978,7 +3978,7 @@ LispDeleteRemoveXSubstitute(LispMac *mac, LispBuiltin *builtin,
 	}
 
 	if (copy != count) {
-	    LispObj *cons;
+	    LispObj *cons = NIL;
 
 	    i = 0;
 	    object = list;
