@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/lib/xkbfile/xkbmisc.c,v 1.5 2003/03/26 20:43:53 tsi Exp $ */
+/* $XFree86: xc/lib/xkbfile/xkbmisc.c,v 1.6 2003/07/16 01:38:27 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -509,7 +509,7 @@ XkbMergeFile(XkbDescPtr xkb,XkbFileInfo finfo)
 #else
 XkbMergeFile(xkb,finfo)
     XkbDescPtr	 xkb;
-    XkbFileInfo	*finfo;
+    XkbFileInfo	finfo;
 #endif
 {
     return BadImplementation;
