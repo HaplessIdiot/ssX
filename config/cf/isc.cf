@@ -2,7 +2,7 @@ XCOMM $XConsortium: isc.cf /main/1 1996/10/31 14:45:18 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/isc.cf,v 3.12 1998/04/05 00:45:40 robin Exp $
+XCOMM platform:  $XFree86: xc/config/cf/isc.cf,v 3.14 1999/03/29 01:36:47 dawes Exp $
 
 #ifndef HasGcc2
 #define HasGcc2			YES
@@ -36,6 +36,19 @@ XCOMM platform:  $XFree86: xc/config/cf/isc.cf,v 3.12 1998/04/05 00:45:40 robin 
 /* Use mmap Driver                                                   */
 #ifndef HasSVR3mmapDrv
 # define HasSVR3mmapDrv		YES
+#endif
+
+#ifndef BuildXF86DRI
+#  define BuildXF86DRI   NO
+#endif
+
+/*
+ * disable building DRI support into video drivers, which can be done
+ * even on platforms that don't have functional DRI support.
+ * maybe not on ISC ? (mr 28.06.1999)
+ */
+#ifndef BuildXF86DRIDriverSupport
+#define BuildXF86DRIDriverSupport NO
 #endif
 
 /* to use inline Math from linux ;-) package inline-math-2.6.tar.gz           */

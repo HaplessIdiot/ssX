@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/dgaproc.h,v 1.13 1999/05/09 12:07:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/dgaproc.h,v 1.14 1999/07/04 06:38:33 dawes Exp $ */
 
 #ifndef __DGAPROC_H
 #define __DGAPROC_H
@@ -120,7 +120,7 @@ Bool DGAStealKeyEvent(int index, xEvent *e);
 Bool DGAOpenFramebuffer(int index, char **name, unsigned char **mem, 
 			int *size, int *offset, int *flags);
 void DGACloseFramebuffer(int index);
-Bool DGAChangePixmapMode(int index, int x, int y, int mode);
+Bool DGAChangePixmapMode(int index, int *x, int *y, int mode);
 
 extern unsigned char DGAReqCode;
 extern int DGAErrorBase;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86dgastr.h,v 3.8 1999/05/16 13:24:49 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86dgastr.h,v 3.9 1999/07/04 06:38:24 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -285,6 +285,22 @@ typedef struct {
     CARD32	flags B32;
 } xXDGAChangePixmapModeReq;
 #define sz_xXDGAChangePixmapModeReq	16
+
+typedef struct {
+    BYTE	type;			
+    BOOL	pad1;	
+    CARD16	sequenceNumber B16;
+    CARD32	length B32;
+    CARD16	x B16;
+    CARD16	y B16;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+    CARD32	pad5 B32;
+    CARD32	pad6 B32;
+    CARD32	pad7 B32;
+} xXDGAChangePixmapModeReply;
+#define sz_xXDGAChangePixmapModeReply	32
+
 
 
 typedef struct {

@@ -22,7 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.25 1999/04/29 09:13:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.26 1999/06/20 05:23:41 dawes Exp $ */
 
 /*  #include "compiler.h" */
 /* everybody includes these */
@@ -253,8 +253,16 @@ TGAGetRec(ScrnInfoPtr pScrn)
 static void
 TGAFreeRec(ScrnInfoPtr pScrn)
 {
+    TGAPtr pTga;
+
     if (pScrn->driverPrivate == NULL)
 	return;
+
+    pTga = TGAPTR(pScrn);
+#ifdef __alpha__
+    if(pTga->buffers)
+      free(pTga->buffers[0]);
+#endif
     xfree(pScrn->driverPrivate);
     pScrn->driverPrivate = NULL;
 }
@@ -280,6 +288,7 @@ TGAProbe(DriverPtr drv, int flags)
     int numDevSections;
     int numUsed;
     Bool foundScreen = FALSE;
+    EntityInfoPtr pEnt;
 
     /*
      * The aim here is to find all cards that this driver can handle,
@@ -337,30 +346,41 @@ TGAProbe(DriverPtr drv, int flags)
 	return FALSE;
 
     for (i = 0; i < numUsed; i++) {
-	ScrnInfoPtr pScrn;
+	pEnt = xf86GetEntityInfo(usedChips[i]);
 
-	/* Allocate a ScrnInfoRec and claim the slot */
-	pScrn = xf86AllocateScreen(drv, 0);
+	/*
+	 * Check that nothing else has claimed the slots.
+	 */
+	if(pEnt->active) {
+	    ScrnInfoPtr pScrn;
+	    
+	    /* Allocate a ScrnInfoRec and claim the slot */
+	    pScrn = xf86AllocateScreen(drv, 0);
 
-	pPci = xf86GetPciInfoForEntity(usedChips[i]);
-
-	/* Fill in what we can of the ScrnInfoRec */
-	pScrn->driverVersion	= VERSION;
-	pScrn->driverName	= TGA_DRIVER_NAME;
-	pScrn->name		= TGA_NAME;
-	pScrn->Probe	 	= TGAProbe;
-	pScrn->PreInit	 	= TGAPreInit;
-	pScrn->ScreenInit	= TGAScreenInit;
-	pScrn->SwitchMode	= TGASwitchMode;
-	pScrn->AdjustFrame	= TGAAdjustFrame;
-	pScrn->EnterVT		= TGAEnterVT;
-	pScrn->LeaveVT		= TGALeaveVT;
-	pScrn->FreeScreen	= TGAFreeScreen;
-	pScrn->ValidMode	= TGAValidMode;
-	xf86ConfigActivePciEntity(pScrn, usedChips[i], TGAPciChipsets, NULL,
+	    pPci = xf86GetPciInfoForEntity(pEnt->index);
+	    
+	    /* Fill in what we can of the ScrnInfoRec */
+	    pScrn->driverVersion = VERSION;
+	    pScrn->driverName	 = TGA_DRIVER_NAME;
+	    pScrn->name		 = TGA_NAME;
+	    pScrn->Probe	 = TGAProbe;
+	    pScrn->PreInit	 = TGAPreInit;
+	    pScrn->ScreenInit	 = TGAScreenInit;
+	    pScrn->SwitchMode	 = TGASwitchMode;
+	    pScrn->AdjustFrame	 = TGAAdjustFrame;
+	    pScrn->EnterVT	 = TGAEnterVT;
+	    pScrn->LeaveVT	 = TGALeaveVT;
+	    pScrn->FreeScreen	 = TGAFreeScreen;
+	    pScrn->ValidMode	 = TGAValidMode;
+/*  	    pScrn->device	 = usedDevs[i]; */
+	    xf86ConfigActivePciEntity(pScrn, pEnt->index, TGAPciChipsets, NULL,
 				      NULL, NULL, NULL, NULL);
-	foundScreen = TRUE;
+	    foundScreen = TRUE;
+	}
+	xfree(pEnt);
     }
+/*      xfree(usedDevs); */
+/*      xfree(usedPci); */
     return foundScreen;
 }
 
@@ -477,7 +497,8 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
     }
 
-    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Chipset: \"%s\"\n", pScrn->chipset);
+    from = X_PROBED;
+    xf86DrvMsg(pScrn->scrnIndex, from, "Chipset: \"%s\"\n", pScrn->chipset);
 
     pTga->PciTag = pciTag(pTga->PciInfo->bus, pTga->PciInfo->device,
 			  pTga->PciInfo->func);
@@ -669,6 +690,17 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 
     xf86DrvMsg(pScrn->scrnIndex, from, "MMIO registers at 0x%lX\n",
 	       (unsigned long)pTga->IOAddress);
+
+    /* RAC stuff: we don't have any resources we need to reserve,
+       but we should do this here anyway */
+    if (xf86RegisterResources(pTga->pEnt->index, NULL, ResExclusive)) {
+      xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		 "xf86RegisterResources() found resource conflicts\n");
+      TGAFreeRec(pScrn);
+      return FALSE;
+    }
+
+    
 
     /* HW bpp matches reported bpp */
     pTga->HwBpp = pScrn->bitsPerPixel;
@@ -1386,20 +1418,35 @@ TGARestoreHWCursor(ScrnInfoPtr pScrn)
   unsigned char *p = NULL;
   int i = 0;
   TGAPtr pTga;
-#ifdef __alpha__
-  const CARD64 cursor_source[64] = {
-    0x000000ff00000000,0x000000ff00000000,0x000000ff00000000,0x000000ff00000000,
-    0x000000ff00000000,0x000000ff00000000,0x000000ff00000000,0x000000ff00000000,
-    0x000000ff00000000,0x000000ff00000000,0x000000ff00000000,0x000000ff00000000,
-    0x000000ff00000000,0x000000ff00000000,0x000000ff00000000,0x000000ff00000000,
+  /* this is the linux console hw cursor...what about the bsd console? */
+  /* what about tgafb? */
+  const CARD32 cursor_source[128] = {
+    0x000000ff, 0x00000000, 0x000000ff, 0x00000000, 0x000000ff,
+    0x00000000, 0x000000ff, 0x00000000, 0x000000ff, 0x00000000,
+    0x000000ff, 0x00000000, 0x000000ff, 0x00000000, 0x000000ff,
+    0x00000000, 0x000000ff, 0x00000000, 0x000000ff, 0x00000000,
+    0x000000ff, 0x00000000, 0x000000ff, 0x00000000, 0x000000ff,
+    0x00000000, 0x000000ff, 0x00000000, 0x000000ff, 0x00000000,
+    0x000000ff, 0x00000000,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
   };
-#endif
 
   pTga = TGAPTR(pScrn);
 
+  /* we want to move the cursor off the screen before we do anything with it
+     otherwise, there is a "ghost cursor" that shows up */
+  tgaBTOutIndReg(pScrn, BT_CURS_X_LOW, 0x00, 0);
+  tgaBTOutIndReg(pScrn, BT_CURS_X_HIGH, 0xF0, 0);
+
+  tgaBTOutIndReg(pScrn, BT_CURS_Y_LOW, 0x00, 0);
+  tgaBTOutIndReg(pScrn, BT_CURS_Y_HIGH, 0xF0, 0);
+
+  
   /* set a windows cursor -- oddly, this doesn't seem necessary */
   tgaBTOutIndReg(pScrn, BT_COMMAND_REG_2, 0xFC, 0x02);
   
@@ -1426,8 +1473,8 @@ TGARestoreHWCursor(ScrnInfoPtr pScrn)
   tgaBTOutIndReg(pScrn, BT_CURS_DATA, 0x00, 0x00);
   tgaBTOutIndReg(pScrn, BT_CURS_DATA, 0x00, 0x00);
   tgaBTOutIndReg(pScrn, BT_CURS_DATA, 0x00, 0x00);
-
-#ifdef __alpha__
+ 
+  
   /* load the console cursor */
   tgaBTOutIndReg(pScrn, BT_WRITE_ADDR, 0xFC, 0x00);
   p = (unsigned char *)cursor_source;
@@ -1435,7 +1482,6 @@ TGARestoreHWCursor(ScrnInfoPtr pScrn)
     tgaBTOutIndReg(pScrn, BT_CURS_RAM_DATA, 0x00, *p++);
   for(i = 0; i < 512; i++)
     tgaBTOutIndReg(pScrn, BT_CURS_RAM_DATA, 0x00, 0xff);
-#endif
 
   return;
 }

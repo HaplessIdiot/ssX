@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_dga.c,v 1.2 1999/06/27 16:17:32 dawes Exp $ */
 
 /*
  * file: s3v_dga.c
@@ -108,8 +108,8 @@ SECOND_PASS:
 	currentMode->viewportWidth = pMode->HDisplay;
 	currentMode->viewportHeight = pMode->VDisplay;
 	/* currentMode->xViewportStep = (3 - ps3v->BppShift); */
-				/* always 3 on ViRGE ? */
-	currentMode->xViewportStep = 3;
+				/* always 1 on ViRGE ? */
+	currentMode->xViewportStep = 1;
 	currentMode->yViewportStep = 1;
 	currentMode->viewportFlags = DGA_FLIP_RETRACE;
 	/* currentMode->offset = ps3v->YDstOrg * (pScrn->bitsPerPixel / 8);

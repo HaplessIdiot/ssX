@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga.h,v 1.9 1999/04/25 10:02:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga.h,v 1.10 1999/06/20 05:23:41 dawes Exp $ */
 
 #ifndef _TGA_H_
 #define _TGA_H_
@@ -67,6 +67,18 @@ typedef struct {
     unsigned char       Bt463modeReg[59];
     unsigned char       Bt463saveReg[59];
     EntityInfoPtr       pEnt;
+#ifdef __alpha__
+    CARD64              *buffers[1];
+#endif
+    unsigned int        current_rop;
+    int                 transparent_pattern_p;
+    int                 blitdir;
+    int                 block_or_opaque_p;
+    int                 ce_height;
+    int                 ce_width;
+    int                 ce_x;
+    int                 ce_y;
+    int                 ce_skipleft;
 } TGARec, *TGAPtr;
 
 /* Prototypes */

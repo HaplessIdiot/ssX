@@ -1,5 +1,5 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide.cpp,v 1.1 1999/04/11 13:10:57 dawes Exp $
-.TH GLIDE __drivermansuffix__ "Version 4.0"  "XFree86"
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide.cpp,v 1.2 1999/04/18 13:49:09 dawes Exp $
+.TH GLIDE __drivermansuffix__ "Version 3.9.15"  "XFree86"
 .SH NAME
 glide \- Glide video driver
 .SH SYNOPSIS

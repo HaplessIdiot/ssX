@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.19 1999/05/16 10:12:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.20 1999/07/04 06:38:52 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86str.h"
@@ -15,6 +15,7 @@
 #include "inputstr.h"
 #include "XIproto.h"
 #include "globals.h"
+#include "servermd.h"
 
 static unsigned long DGAGeneration = 0;
 static int DGAScreenIndex = -1;
@@ -220,7 +221,7 @@ DGASetDGAMode(
 
 
 Bool
-DGAChangePixmapMode(int index, int x, int y, int mode)
+DGAChangePixmapMode(int index, int *x, int *y, int mode)
 {
    DGAScreenPtr pScreenPriv;
    DGADevicePtr pDev;
@@ -240,13 +241,26 @@ DGAChangePixmapMode(int index, int x, int y, int mode)
    pMode = pDev->mode;
 
    if(mode) {
-	if(x > (pMode->pixmapWidth - pMode->viewportWidth))
-	    x = pMode->pixmapWidth - pMode->viewportWidth;
-	if(y > (pMode->pixmapHeight - pMode->viewportHeight))
-	    y = pMode->pixmapHeight - pMode->viewportHeight;
+	int shift = 2;
 
-	pPix->drawable.x = x; 
-	pPix->drawable.y = y; 
+	if(*x > (pMode->pixmapWidth - pMode->viewportWidth))
+	    *x = pMode->pixmapWidth - pMode->viewportWidth;
+	if(*y > (pMode->pixmapHeight - pMode->viewportHeight))
+	    *y = pMode->pixmapHeight - pMode->viewportHeight;
+
+	switch(xf86Screens[index]->bitsPerPixel) {
+	case 16: shift = 1;  break;
+	case 32: shift = 0;  break;
+	default: break;
+	}
+
+	if(BITMAP_SCANLINE_PAD == 64)
+	    shift++;
+
+	*x = (*x >> shift) << shift;
+
+	pPix->drawable.x = *x; 
+	pPix->drawable.y = *y; 
 	pPix->drawable.width = pMode->viewportWidth; 
 	pPix->drawable.height = pMode->viewportHeight; 
    } else {

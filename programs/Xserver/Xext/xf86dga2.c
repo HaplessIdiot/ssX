@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/Xext/xf86dga2.c,v 1.8 1999/05/16 13:24:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86dga2.c,v 1.9 1999/07/04 06:38:34 dawes Exp $ */
 
 
 #define NEED_REPLIES
@@ -554,6 +554,8 @@ static int
 ProcXDGAChangePixmapMode(ClientPtr client)
 {
     REQUEST(xXDGAChangePixmapModeReq);
+    xXDGAChangePixmapModeReply rep;
+    int x, y;
 
     if (stuff->screen > screenInfo.numScreens)
         return BadValue;
@@ -562,9 +564,19 @@ ProcXDGAChangePixmapMode(ClientPtr client)
         return DGAErrorBase + XF86DGADirectNotActivated;
 
     REQUEST_SIZE_MATCH(xXDGAChangePixmapModeReq);
+    rep.type = X_Reply;
+    rep.length = 0;
+    rep.sequenceNumber = client->sequence;
+	
+    x = stuff->x;
+    y = stuff->y;
 
-    if(!DGAChangePixmapMode(stuff->screen, stuff->x, stuff->y, stuff->flags))
+    if(!DGAChangePixmapMode(stuff->screen, &x, &y, stuff->flags))
 	return BadMatch;
+
+    rep.x = x;
+    rep.y = y;
+    WriteToClient(client, sizeof(xXDGAChangePixmapModeReply), (char *)&rep);
 
     return (client->noClientException);
 }

@@ -1,7 +1,7 @@
 /*
    Copyright (c) 1999  XFree86 Inc
 */
-/* $XFree86: xc/include/extensions/xf86dga.h,v 3.14 1999/06/20 08:40:55 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86dga.h,v 3.15 1999/07/04 06:38:24 dawes Exp $ */
 
 #ifndef _XF86DGA_H_
 #define _XF86DGA_H_
@@ -241,8 +241,8 @@ Bool XDGASetClientVersion(
 void XDGAChangePixmapMode(
     Display 	*dpy,
     int		screen,
-    int		x,
-    int		y,
+    int		*x,
+    int		*y,
     int		mode
 );
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaNonTEText.c,v 1.6 1999/05/30 03:03:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaNonTEText.c,v 1.7 1999/07/04 06:39:17 dawes Exp $ */
 
 /********************************************************************
 
@@ -29,6 +29,7 @@
 #include "dixfontstr.h"
 #include "xf86str.h"
 #include "xaa.h"
+#include "xaacexp.h"
 #include "xaalocal.h"
 #include "gcstruct.h"
 #include "pixmapstr.h"
@@ -36,7 +37,7 @@
 
 static void ImageGlyphBltNonTEColorExpansion(ScrnInfoPtr pScrn,
 				int xInit, int yInit, FontPtr font,
-				int fg, int bg, int rop, unsigned planemask,
+				int fg, int bg, unsigned planemask,
 				RegionPtr cclip, int nglyph,
 				unsigned char* gBase, CharInfoPtr *ppci);
 static int PolyGlyphBltNonTEColorExpansion(ScrnInfoPtr pScrn,
@@ -131,7 +132,7 @@ XAAImageText8NonTEColorExpansion(
 
     if(n) ImageGlyphBltNonTEColorExpansion(
 	infoRec->pScrn, x + pDraw->x, y + pDraw->y,
-	pGC->font, pGC->fgPixel, pGC->bgPixel, GXcopy, pGC->planemask, 
+	pGC->font, pGC->fgPixel, pGC->bgPixel, pGC->planemask, 
 	pGC->pCompositeClip, n, FONTGLYPHS(pGC->font), infoRec->CharInfo);
 }
 
@@ -158,7 +159,7 @@ XAAImageText16NonTEColorExpansion(
 
     if(n) ImageGlyphBltNonTEColorExpansion(
 	infoRec->pScrn, x + pDraw->x, y + pDraw->y,
-	pGC->font, pGC->fgPixel, pGC->bgPixel, GXcopy, pGC->planemask, 
+	pGC->font, pGC->fgPixel, pGC->bgPixel, pGC->planemask, 
 	pGC->pCompositeClip, n, FONTGLYPHS(pGC->font), infoRec->CharInfo);
 }
 
@@ -188,7 +189,7 @@ XAAImageGlyphBltNonTEColorExpansion(
 
     ImageGlyphBltNonTEColorExpansion(
 	infoRec->pScrn, xInit + pDraw->x, yInit + pDraw->y,
-	pGC->font, pGC->fgPixel, pGC->bgPixel, GXcopy, pGC->planemask, 
+	pGC->font, pGC->fgPixel, pGC->bgPixel, pGC->planemask, 
 	pGC->pCompositeClip, nglyph, (unsigned char*)pglyphBase, ppci);
 }
 
@@ -251,11 +252,107 @@ CollectCharacterInfo(
 
 
 static void
+PolyGlyphBltAsSingleBitmap (
+   ScrnInfoPtr pScrn,
+   int nglyph,
+   FontPtr font,
+   int xInit,
+   int yInit,
+   int nbox,
+   BoxPtr pbox,
+   int fg,
+   int rop,
+   unsigned planemask
+){
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
+    CARD32 *block, *pntr, *bits;
+    int pitch, topLine, botLine, top, bot;
+    int Left, Right, Top, Bottom;
+    int LeftEdge, RightEdge;
+    int bitPitch, shift, size, i, skippix;
+    NonTEGlyphPtr glyphs = infoRec->GlyphInfo;
+    Bool extra;
+	
+    Left = xInit + infoRec->GlyphInfo[0].start;
+    Right = xInit + infoRec->GlyphInfo[nglyph - 1].end;
+    Top = yInit - FONTMAXBOUNDS(font,ascent);
+    Bottom = yInit + FONTMAXBOUNDS(font,descent);
+
+    /* get into the first band that may contain part of our string */
+    while(nbox && (Top >= pbox->y2)) {
+	pbox++; nbox--;
+    }
+
+    if(!nbox) return;
+
+    pitch = (Right - Left + 31) >> 5;
+    size = (pitch << 2) * (Bottom - Top);
+    block = (CARD32*)ALLOCATE_LOCAL(size);
+    bzero(block, size);
+
+    topLine = 10000; botLine = -10000;
+
+    while(nglyph--) {
+	top = -glyphs->yoff;
+	bot = top + glyphs->height;
+	if(top < topLine) topLine = top;
+	if(bot > botLine) botLine = bot;
+	skippix = glyphs->start - infoRec->GlyphInfo[0].start;
+	bits = (CARD32*)glyphs->bits;
+	bitPitch = glyphs->srcwidth >> 2;
+	pntr = block + ((FONTMAXBOUNDS(font,ascent) + top) * pitch) +
+				(skippix >> 5);
+	shift = skippix & 31;
+	extra = ((shift + glyphs->end - glyphs->start) > 32);
+
+	for(i = top; i < bot; i++) {
+	    *pntr |= SHIFT_L(*bits, shift);
+	    if(extra)
+		*(pntr + 1) |= SHIFT_R(*bits,32 - shift);
+	    pntr += pitch;
+	    bits += bitPitch;
+	}
+
+	glyphs++;
+    }
+
+    pntr = block + ((FONTMAXBOUNDS(font,ascent) + topLine) * pitch);
+
+    Top = yInit + topLine;
+    Bottom = yInit + botLine;
+
+    while(nbox && (Top >= pbox->y2)) {
+	pbox++; nbox--;
+    }
+
+    while(nbox && (Bottom >= pbox->y1)) {
+	LeftEdge = max(Left, pbox->x1);
+	RightEdge = min(Right, pbox->x2);
+
+	if(RightEdge > LeftEdge) {
+	    skippix = LeftEdge - Left;
+	    topLine = max(Top, pbox->y1);
+	    botLine = min(Bottom, pbox->y2);
+
+	    (*infoRec->WriteBitmap)(pScrn, LeftEdge, topLine, 
+			RightEdge - LeftEdge, botLine - topLine,
+			(unsigned char*)(pntr + ((topLine - Top) * pitch) +
+				(skippix >> 5)),
+			pitch << 2, skippix & 31, fg, -1, rop, planemask);
+	}
+
+	nbox--; pbox++;
+    }
+
+    DEALLOCATE_LOCAL(block);
+}
+
+static void
 ImageGlyphBltNonTEColorExpansion(
    ScrnInfoPtr pScrn,
    int xInit, int yInit,
    FontPtr font,
-   int fg, int bg, int rop,
+   int fg, int bg,
    unsigned planemask,
    RegionPtr cclip,
    int nglyph,
@@ -264,61 +361,77 @@ ImageGlyphBltNonTEColorExpansion(
 ){
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
     int skippix, skipglyph, width, n, i;
-    int LeftText, RightText, TopText, BottomText;
-    int LeftBox, RightBox, TopBox, BottomBox;
     int Left, Right, Top, Bottom;
     int LeftEdge, RightEdge, ytop, ybot;
     int nbox = REGION_NUM_RECTS(cclip);
     BoxPtr pbox = REGION_RECTS(cclip);
+    Bool AlreadySetup = FALSE;
 
     width = CollectCharacterInfo(infoRec->GlyphInfo, nglyph, ppci, font);
 
-    /* compute an approximate but covering bounding box */
-    LeftText = xInit + infoRec->GlyphInfo[0].start;
-    RightText = xInit + infoRec->GlyphInfo[nglyph - 1].end;
-    TopText = yInit - FONTMAXBOUNDS(font,ascent);
-    BottomText = yInit + FONTMAXBOUNDS(font,descent);
-
     /* find our backing rectangle dimensions */
-    LeftBox = xInit;
-    RightBox = LeftBox + width;
-    TopBox = yInit - FONTASCENT(font);
-    BottomBox = yInit + FONTDESCENT(font);
+    Left = xInit;
+    Right = Left + width;
+    Top = yInit - FONTASCENT(font);
+    Bottom = yInit + FONTDESCENT(font);
 
-    Left = min(LeftText, LeftBox);
-    Right = max(RightText, RightBox);
-    Top = min(TopText, TopBox);
-    Bottom = max(BottomText, BottomBox);
+    /* get into the first band that may contain part of our box */
+    while(nbox && (Top >= pbox->y2)) {
+	pbox++; nbox--;
+    }
+
+    while(nbox && (Bottom >= pbox->y1)) {
+	/* handle backing rect first */
+	LeftEdge = max(Left, pbox->x1);
+	RightEdge = min(Right, pbox->x2);
+	if(RightEdge > LeftEdge) {	    
+	    ytop = max(Top, pbox->y1);
+	    ybot = min(Bottom, pbox->y2);
+
+	    if(ybot > ytop) {
+		if(!AlreadySetup) {
+		   (*infoRec->SetupForSolidFill)(pScrn, bg, GXcopy, planemask);
+		   AlreadySetup = TRUE;
+		}
+		(*infoRec->SubsequentSolidFillRect)(pScrn, 
+			LeftEdge, ytop, RightEdge - LeftEdge, ybot - ytop);
+	    }
+	}
+	nbox--; pbox++;
+    }
  
-    /* get into the first band that may contain part of our string */
+    nbox = REGION_NUM_RECTS(cclip);
+    pbox = REGION_RECTS(cclip);
+
+    if((nglyph > 1) && ((FONTMAXBOUNDS(font, rightSideBearing) - 
+          		FONTMINBOUNDS(font, leftSideBearing)) <= 32)) {
+
+	PolyGlyphBltAsSingleBitmap(pScrn, nglyph, font, 
+				xInit, yInit, nbox, pbox,
+				fg, GXcopy, planemask);
+
+	return;
+    }
+
+    /* compute an approximate but covering bounding box */
+    Left = xInit + infoRec->GlyphInfo[0].start;
+    Right = xInit + infoRec->GlyphInfo[nglyph - 1].end;
+    Top = yInit - FONTMAXBOUNDS(font,ascent);
+    Bottom = yInit + FONTMAXBOUNDS(font,descent);
+
+    /* get into the first band that may contain part of our box */
     while(nbox && (Top >= pbox->y2)) {
 	pbox++; nbox--;
     }
 
     /* stop when the lower edge of the box is beyond our string */
     while(nbox && (Bottom >= pbox->y1)) {
-
-	/* handle backing rect first */
-	LeftEdge = max(LeftBox, pbox->x1);
-	RightEdge = min(RightBox, pbox->x2);
-	if(RightEdge > LeftEdge) {	    
-	    ytop = max(TopBox, pbox->y1);
-	    ybot = min(BottomBox, pbox->y2);
-
-	    if(ybot > ytop) {
-		(*infoRec->SetupForSolidFill)(pScrn, bg, rop, planemask);
-		(*infoRec->SubsequentSolidFillRect)(pScrn, 
-			LeftEdge, ytop, RightEdge - LeftEdge, ybot - ytop);
-	    }
-	}
-
-	/* Now do the text */
-	LeftEdge = max(LeftText, pbox->x1);
-	RightEdge = min(RightText, pbox->x2);
+	LeftEdge = max(Left, pbox->x1);
+	RightEdge = min(Right, pbox->x2);
 
 	if(RightEdge > LeftEdge) { /* we're possibly drawing something */
-	    ytop = max(TopText, pbox->y1);
-	    ybot = min(BottomText, pbox->y2);
+	    ytop = max(Top, pbox->y1);
+	    ybot = min(Bottom, pbox->y2);
 	    if(ybot > ytop) {
 		skippix = LeftEdge - xInit;
 		skipglyph = 0;
@@ -333,7 +446,7 @@ ImageGlyphBltNonTEColorExpansion(
 
 		if(n) (*infoRec->NonTEGlyphRenderer)(pScrn,
 			xInit, yInit, n, infoRec->GlyphInfo + skipglyph, 
-			pbox, fg, rop, planemask); 
+			pbox, fg, GXcopy, planemask); 
 	    }
 	}
 
@@ -362,6 +475,20 @@ PolyGlyphBltNonTEColorExpansion(
     BoxPtr pbox = REGION_RECTS(cclip);
 
     width = CollectCharacterInfo(infoRec->GlyphInfo, nglyph, ppci, font);
+
+    if(!nbox)
+	return width;
+
+    if((rop == GXcopy) && (nglyph > 1) &&
+	((FONTMAXBOUNDS(font, rightSideBearing) - 
+          FONTMINBOUNDS(font, leftSideBearing)) <= 32)) {
+
+	 PolyGlyphBltAsSingleBitmap(pScrn, nglyph, font, 
+				xInit, yInit, nbox, pbox,
+				fg, rop, planemask);
+
+	return width;
+    }
 
     /* compute an approximate but covering bounding box */
     Left = xInit + infoRec->GlyphInfo[0].start;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/pnp.c,v 1.4 1999/06/05 15:55:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/pnp.c,v 1.5 1999/07/10 07:24:46 dawes Exp $ */
 
 /*
  * Copyright 1998 by Kazutaka YOKOTA <yokota@zodiac.mech.utsunomiya-u.ac.jp>
@@ -34,14 +34,6 @@
 #include "xf86Xinput.h"
 #include "xf86OSmouse.h"
 #include "mouse.h"
-
-#ifdef ISC
-#define TIOCMGET	0x5415
-#define TIOCMBIS	0x5416
-#define TIOCMSET	0x5418
-#define	TIOCM_DTR	0x002
-#define	TIOCM_RTS	0x004
-#endif
 
 /* serial PnP ID string */
 typedef struct {

@@ -16,11 +16,12 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/programs/mkcfm/mkcfm.c,v 1.4 1999/05/15 12:10:37 dawes Exp $ */
+/* $XFree86: xc/programs/mkcfm/mkcfm.c,v 1.5 1999/06/13 13:47:50 dawes Exp $ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <sys/types.h>
 #include <dirent.h>
 #include "fntfilst.h"
 #include "FSproto.h"

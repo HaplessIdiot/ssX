@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.52 1999/06/21 10:06:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.53 1999/06/27 09:20:17 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -2048,6 +2048,19 @@ Bool
 xf86GetVidModeEnabled()
 {
     return xf86Info.vidModeEnabled;
+}
+
+Bool
+xf86GetModInDevAllowNonLocal()
+{
+    return xf86Info.miscModInDevAllowNonLocal;
+}
+
+
+Bool
+xf86GetModInDevEnabled()
+{
+    return xf86Info.miscModInDevEnabled;
 }
 
 

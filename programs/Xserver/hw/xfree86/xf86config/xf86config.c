@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.46 1999/03/28 15:33:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.47 1999/07/05 12:12:06 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -179,6 +179,7 @@ int config_xkbdisable = 0;
 char *config_xkbrules;
 char *config_xkbmodel;
 char *config_xkblayout;
+char *config_depth;
 
 char *temp_dir = "";
 
@@ -1544,7 +1545,7 @@ skipclockprobing:
 		printf("\n");
 
 		c = atoi(s) - 1;
-		if (c < 0 || c >= 4)
+		if (c < 0 || c >= 3)
 			break;
 
 		printf("Select modes from the following list:\n\n");
@@ -1606,6 +1607,45 @@ skipclockprobing:
 	}
 }
 
+static char *defaultdepthtext = 
+"Please specify which color depth you want to use by default:\n"
+"\n";
+
+static struct depth_str {
+    char *name;
+    char *desc;
+} depth_list[] = {
+    { "1", "1 bit (monochrome)" },
+    { "4", "4 bits (16 colors)" },
+    { "8", "8 bits (256 colors)" },
+    { "16", "16 bits (65536 colors)" },
+    { "24", "24 bits (16 million colors)" }
+};
+
+static int ndepths = sizeof(depth_list)/sizeof(struct depth_str);
+
+static void
+depth_configuration(void)
+{
+	int i;
+	char s[80];
+	int depth;
+
+	printf(defaultdepthtext);
+	for (i=0; i<ndepths; i++) {
+	    printf("%3d  %-50s\n",i+1,depth_list[i].desc);
+	}
+	
+	printf("\nEnter a number to choose the default depth.\n\n");
+	getstring(s);
+	if (strlen(s) == 0)
+	    depth = 0;
+	else {
+	    i = atoi(s)-1;
+	    depth = (i < 0 || i > ndepths) ? 0 : i;
+	}
+	config_depth = depth_list[depth].name;
+}
 
 /*
  * Create the XF86Config file.
@@ -1861,8 +1901,52 @@ static char *xinputsection_text =
 "# **********************************************************************\n"
 "#\n"
 "# Section \"InputDevice\" \n"
-"#        To be written !\n"
-"#    EndSubSection\n"
+"#    Identifier  \"Mouse2\"\n"
+"#    Driver      \"mouse\"\n"
+"#    Option      \"Protocol\"      \"MouseMan\"\n"
+"#    Option      \"Device\"        \"/dev/mouse2\"\n"
+"# EndSection\n"
+"#\n"
+"# Section \"InputDevice\"\n"
+"#    Identifier \"spaceball\"\n"
+"#    Driver     \"magellan\"\n"
+"#    Option     \"Device\"        \"/dev/cua0\"\n"
+"# EndSection\n"
+"#\n"
+"# Section \"InputDevice\"\n"
+"#    Identifier \"spaceball2\"\n"
+"#    Driver     \"spaceorb\"\n"
+"#    Option     \"Device\"        \"/dev/cua0\"\n"
+"# EndSection\n"
+"#\n"
+"# Section \"InputDevice\"\n"
+"#    Identifier \"touchscreen0\"\n"
+"#    Driver     \"microtouch\"\n"
+"#    Option     \"Device\"        \"/dev/ttyS0\"\n"
+"#    Option     \"MinX\"          \"1412\"\n"
+"#    Option     \"MaxX\"          \"15184\"\n"
+"#    Option     \"MinY\"          \"15372\"\n"
+"#    Option     \"MaxY\"          \"1230\"\n"
+"#    Option     \"ScreenNumber\"  \"0\"\n"
+"#    Option     \"ReportingMode\" \"Scaled\"\n"
+"#    Option     \"ButtonNumber\"  \"1\"\n"
+"#    Option     \"SendCoreEvents\"\n"
+"# EndSection\n"
+"#\n"
+"# Section \"InputDevice\"\n"
+"#    Identifier \"touchscreen1\"\n"
+"#    Driver     \"elo2300\"\n"
+"#    Option     \"Device\"        \"/dev/ttyS0\"\n"
+"#    Option     \"MinX\"          \"231\"\n"
+"#    Option     \"MaxX\"          \"3868\"\n"
+"#    Option     \"MinY\"          \"3858\"\n"
+"#    Option     \"MaxY\"          \"272\"\n"
+"#    Option     \"ScreenNumber\"  \"0\"\n"
+"#    Option     \"ReportingMode\" \"Scaled\"\n"
+"#    Option     \"ButtonThreshold\"       \"17\"\n"
+"#    Option     \"ButtonNumber\"  \"1\"\n"
+"#    Option     \"SendCoreEvents\"\n"
+"# EndSection\n"
 "\n";
 
 static char *monitorsection_text1 =
@@ -2307,12 +2391,15 @@ write_XF86Config(char *filename)
 		"    Identifier  \"Screen 1\"\n"
 		"    Device      \"%s\"\n"
 		"    Monitor     \"%s\"\n"
+		"    DefaultDepth %s\n"
+		"\n"
 		"    Subsection \"Display\"\n"
 		"        Depth       8\n"
 		"        Modes       %s\n"
 		"        ViewPort    0 0\n",
 		config_deviceidentifier,
 		config_monitoridentifier,
+		config_depth,
 		config_modesline8bpp);
 	if (config_virtual)
 		fprintf(f, "        Virtual     %d %d\n",
@@ -2526,6 +2613,10 @@ main(int argc, char *argv[]) {
 	emptylines();
 
  	screen_configuration();
+
+	emptylines();
+
+	depth_configuration();
 
 	emptylines();
 

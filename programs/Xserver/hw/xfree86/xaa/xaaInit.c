@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.19 1999/05/16 10:13:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.20 1999/06/20 08:41:39 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -74,6 +74,8 @@ XAACreateInfoRec()
     XAAInfoRecPtr infoRec;
 
     infoRec = xcalloc(1, sizeof(XAAInfoRec));
+    if(infoRec)
+	infoRec->CachePixelGranularity = -1;
 
     return infoRec;
 }
@@ -444,13 +446,25 @@ XAACreatePixmap(ScreenPtr pScreen, int w, int h, int depth)
 	if(pPix) {
 	    FBAreaPtr area = NULL;
 	    PixmapLinkPtr pLink = NULL;
+	    int gran = 0;
 
 	    pScreenPix = (*pScreen->GetScreenPixmap)(pScreen);
+
+	    switch(pScrn->bitsPerPixel) {
+	    case 24:
+	    case 8:  gran = 4;  break;
+	    case 16: gran = 2;  break;
+	    case 32: gran = 1;  break;
+	    default: break;
+	    }
+
+	    if(BITMAP_SCANLINE_PAD == 64)
+		gran *= 2;
 
 	    pLink = xalloc(sizeof(PixmapLink));
 
 	    if(pLink)
-	      area = xf86AllocateOffscreenArea(pScreen, w, h, 0, 0, 
+	      area = xf86AllocateOffscreenArea(pScreen, w, h, gran, 0, 
 				XAARemoveAreaCallback, pPix);	    
 	    if(area){
 		pPriv = XAA_GET_PIXMAP_PRIVATE(pPix);
@@ -536,7 +550,8 @@ XAAChangeWindowAttributes (WindowPtr pWin, unsigned long mask)
    if((mask & CWBackPixmap) && (pWin->backgroundState == BackgroundPixmap) &&
       PIXMAP_IS_SHARED(pWin->background.pixmap))
    {
-        XAAPixmapPtr pPixPriv = XAA_GET_PIXMAP_PRIVATE(pWin->background.pixmap);        pPixPriv->flags |= DIRTY;
+        XAAPixmapPtr pPixPriv = XAA_GET_PIXMAP_PRIVATE(pWin->background.pixmap);
+	pPixPriv->flags |= DIRTY;
    }
    if((mask & CWBorderPixmap) && !(pWin->borderIsPixel) &&
       PIXMAP_IS_SHARED(pWin->border.pixmap))
@@ -609,7 +624,7 @@ XAASetDGAMode(int index, int num, DGADevicePtr devRet)
 	XAAPixmapPtr pixPriv = XAA_GET_PIXMAP_PRIVATE(devRet->pPix);
 	FBAreaPtr area;
 
-	if(area = xalloc(sizeof(FBArea))) {
+	if((area = xalloc(sizeof(FBArea)))) {
 	    area->pScreen = pScreen;
 	    area->box.x1 = 0;
 	    area->box.x2 = 0;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.103 1999/07/05 12:12:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.104 1999/07/06 11:38:50 dawes Exp $ */
 
 /*
  *
@@ -48,6 +48,7 @@
 #include "xf86fbman.h"
 #include "dgaproc.h"
 #include "vidmodeproc.h"
+#include "xf86miscproc.h"
 #include "loader.h"
 #define DONT_DEFINE_WRAPPERS
 #include "xf86_ansic.h"
@@ -350,6 +351,8 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86CaughtSignal)
    SYMFUNC(xf86GetVidModeAllowNonLocal)
    SYMFUNC(xf86GetVidModeEnabled)
+   SYMFUNC(xf86GetModInDevAllowNonLocal)
+   SYMFUNC(xf86GetModInDevEnabled)
    SYMFUNC(xf86GetAllowMouseOpenFail)
    SYMFUNC(xf86GetClocks)
    SYMFUNC(xf86LoadSubModule)
@@ -469,6 +472,18 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(VidModeGetModeValue)
    SYMFUNC(VidModeSetModeValue)
    SYMFUNC(VidModeGetMonitorValue)
+#endif
+
+   /* xf86MiscExt.c */
+#ifdef XF86MISC
+   SYMFUNC(MiscExtGetMouseSettings)
+   SYMFUNC(MiscExtGetMouseValue)
+   SYMFUNC(MiscExtSetMouseValue)
+   SYMFUNC(MiscExtGetKbdSettings)
+   SYMFUNC(MiscExtGetKbdValue)
+   SYMFUNC(MiscExtSetKbdValue)
+   SYMFUNC(MiscExtCreateStruct)
+   SYMFUNC(MiscExtApply)
 #endif
 
    /* Misc */

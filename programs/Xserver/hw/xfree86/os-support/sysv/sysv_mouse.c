@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_mouse.c,v 1.1 1999/05/22 08:40:17 dawes Exp $ */
 
 /*
  * Copyright 1999 by The XFree86 Project, Inc.
@@ -19,6 +19,7 @@ SupportedInterfaces(void)
     return MSE_SERIAL | MSE_AUTO;
 }
 
+#ifndef ISC
 static const char *internalNames[] = {
 	"Xqueue",
 	NULL
@@ -40,6 +41,7 @@ CheckProtocol(const char *protocol)
 	    return TRUE;
     return FALSE;
 }
+#endif
 
 OSMouseInfoPtr
 xf86OSMouseInit(int flags)
@@ -50,9 +52,11 @@ xf86OSMouseInit(int flags)
     if (!p)
 	return NULL;
     p->SupportedInterfaces = SupportedInterfaces;
+#ifndef ISC
     p->BuiltinNames = BuiltinNames;
     p->CheckProtocol = CheckProtocol;
     p->PreInit = XqueueMousePreInit;
+#endif
     return p;
 }
 

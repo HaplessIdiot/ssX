@@ -30,7 +30,7 @@
 <date>Last modified 6 July 1999
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.4 1999/07/06 11:38:20 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.5 1999/07/07 12:05:48 dawes Exp $
 </ident>
 
 
@@ -5306,6 +5306,27 @@ programming the standard VGA registers, and for handling VGA colourmaps.
       should be called from a driver's &s.code;ChipFreeScreen()&e.code;
       function.
 
+    </quote>
+
+    &s.code;Bool vgaHWSetRegCounts(ScrnInfoPtr pScrn, int numCRTC,
+		&f.indent;int numSequencer, int numGraphics, int numAttribute)&e.code;
+    <quote><p>
+      This function allows the number of CRTC, Sequencer, Graphics and
+      Attribute registers to be set to a value higher than the defaults.
+      This makes it possible for extended registers to be saved and
+      restored with &s.code;vgaHWSave()&e.code; and
+      &s.code;vgaHWRestore()&e.code;.  This function should be called
+      after a &s.code;vgaHWRec&e.code; has been allocated with
+      &s.code;vgaHWGetHWRec()&e.code;.  The default values are defined
+      in &s.code;vgaHW.h&e.code; as follows:
+
+      <quote><verb>
+#define VGA_NUM_CRTC 25
+#define VGA_NUM_SEQ   5
+#define VGA_NUM_GFX   9
+#define VGA_NUM_ATTR 21
+      </verb></quote>
+      
     </quote>
 
     &s.code;void vgaHWSetStdFuncs(vgaHWPtr hwp)&e.code;

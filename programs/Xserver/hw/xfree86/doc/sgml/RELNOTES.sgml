@@ -4,12 +4,12 @@
 
 <article>
 
-<title>Release Notes for XFree86&tm; &relvers;
+<title>Release Notes for XFree86&trade; &relvers;
 <author>The XFree86 Project, Inc
-<date>6 July 1999 (this document needs work!)
+<date>10 July 1999 (this document needs work!)
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.3 1999/07/07 12:05:51 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.4 1999/07/08 08:28:39 dawes Exp $
 </ident>
 
 <abstract>
@@ -124,6 +124,49 @@ Known problems:
 
 <sect1>DDC
 <p>
+The VESA(R) Display Data Channel (DDC&trade;) standard (related to, but
+separate from, the VESA(R) Plug and Display standard) allows the
+monitor to tell the video card (or on some cases the computer
+directly) about itself; particularly the supported screen resolutions
+and refresh rates.
+
+Partial or complete DDC support is available in the following hardware modules
+(this list needs to be verified):
+<itemize>
+  <item>APM
+  <item>Chips
+  <item>Cirrus
+  <item>Glint
+  <item>MGA 
+  <item>Neomagic
+  <item>SIS
+  <item>Trident
+</itemize>
+
+DDC is enabled by default, but can be disabled 
+with a "Device" section entry:
+<tt>Option "NoDDC"</tt>.
+We have support for DDC versions 1 and 2; these can be disabled independently
+with <tt>Option "NoDDC1"</tt> and <tt>Option "NoDDC1"</tt>.
+
+At startup the server prints out DDC information from the display,
+but it does not yet use it the determine modelines.
+
+Changed behavior caused by DDC. The MGA driver uses DDC information to
+set the monitor gamma (brightness) curve, and the screen size and
+pitch.
+<itemize>
+  <item>The gamma is particularly noticeable; every monitor I have tried has
+a gamma setting > 2, which means that the picture is much lighter than
+under 3.3.x or without DDC. To revert to the previous behavior put
+<tt>Gamma 1.0 1.0 1.0</tt>
+in the appropriate "Monitor" section of the Config file.
+
+  <item>Similarly, you can override the DDC probed "dpi" value by explicitly
+resetting it to the 3.3.x and non-DDC default value 75 with the
+<tt>-dpi 75</tt> command line option for the X server. There may be a 
+way of doing this with the config file too.
+</itemize>
 
 <sect1>Other extensions
 <p>

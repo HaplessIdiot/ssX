@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86misc.h,v 3.10 1998/06/27 12:53:24 hohndel Exp $ */
+/* $XFree86: xc/include/extensions/xf86misc.h,v 3.11 1998/06/28 03:52:34 dawes Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -52,9 +52,11 @@
 #define MTYPE_NETSCROLLPS2	16
 #define MTYPE_SYSMOUSE		17
 #define MTYPE_AUTOMOUSE		18
+#define MTYPE_ACECAD		19
 
 #define MTYPE_XQUEUE		127
 #define MTYPE_OSMOUSE		126
+#define MTYPE_UNKNOWN		125
 
 #define KTYPE_UNKNOWN		0
 #define KTYPE_84KEY		1

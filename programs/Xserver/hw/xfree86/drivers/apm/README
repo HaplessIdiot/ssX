@@ -9,9 +9,37 @@ dynamic loading. Use static loading to build a useable (?) server.
 
 This is the Alliance Promotion driver for XFree86 4.0+. It currently
 only supports the AT3D and AT25 chipsets (found on various Voodoo-
-Rush cards). The 6422 and AT24 chips are supported in the XFree86
+Rush cards). There is preliminary, uncomplete and untested support for the
+6422 and AT24. The 6422 and AT24 chips are supported in the XFree86
 3.3.x series.
 
+What has worked on my computer :
+    - XAA for 8/16/32 bpp
+    - unaccelerated 24bpp
+    - DGA (not much tested)
+    - DPMS
+
+What has not worked :
+    - I2C (I'm not sure my card, Hercules 128/3D has proper cabling)
+    - glide2x (Either it segfault's or it loops forever depending
+               if I give the address of the locked buffers in the
+	       first or the second linear framebuffer). In addition, there
+	       is a problem because the library changes the registers of
+	       the chip in a way that is not compatible with the current
+	       driver.
+
+What is untested :
+    - module
+
+What should be done :
+    - acceleration for 24bpp
+    - overlays (with the video engine, everything should be overlayable
+      with everything)
+    - shadow framebuffer
+    - AP6422, AT24 (and why not 3210) support
+
+
+       Loïc Grenié
 
 Authors:
 -----------------------------------------------------------------------
@@ -76,6 +104,9 @@ Modified 1999-03-14 by Henrik Harmsen
   - Added preliminary (completely untested) support for dynamic 
     loading.
 
+Modified 1999-07-07 by Loïc Grenié
+  - Converted to new RAC. Support for DGA and DGA2, I2C, Rush extension.
 
 
-$XFree86$
+
+$XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/README,v 1.1 1999/03/21 07:35:02 dawes Exp $

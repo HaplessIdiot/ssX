@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.17 1999/01/31 12:22:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.18 1999/03/06 13:12:47 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -11,6 +11,7 @@
 #include "xaa.h"
 #include "xaalocal.h"
 #include "xf86fbman.h"
+#include "servermd.h"
 
 /*
  * XAA Config options
@@ -1322,6 +1323,18 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	   infoRec->PixmapCacheFlags &= ~CACHE_COLOR_8x8;
     }
 
+    if(infoRec->CachePixelGranularity < 0) {
+	switch(pScrn->bitsPerPixel) {
+	case 24:
+	case 8:  infoRec->CachePixelGranularity = 4;  break;
+	case 16: infoRec->CachePixelGranularity = 2;  break;
+	case 32: infoRec->CachePixelGranularity = 1;  break;
+	default: break;
+	}
+
+	if(BITMAP_SCANLINE_PAD == 64)
+	    infoRec->CachePixelGranularity *= 2;
+    }
 
     if(!infoRec->CacheTile && infoRec->WritePixmapToCache)
 	infoRec->CacheTile = XAACacheTile;
