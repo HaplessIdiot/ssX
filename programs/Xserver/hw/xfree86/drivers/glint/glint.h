@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.16 1999/03/28 15:32:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.17 1999/06/12 14:15:33 dawes Exp $ */
 /*
  * Copyright 1997,1998 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -35,10 +35,22 @@
 #include "xf86cmap.h"
 #include "xf86i2c.h"
 #include "xf86DDC.h"
+#ifdef XF86DRI
+#include "xf86drm.h"
+#include "sarea.h"
+#define _XF86DRI_SERVER_
+#include "xf86dri.h"
+#include "dri.h"
+#include "GL/glxint.h"
+#include "glint_dripriv.h"
+#endif
+
+#define GLINT_MAX_MX_DEVICES 2
 
 typedef struct {
 	unsigned long glintRegs[0x2000];
-	unsigned long DacRegs[0x100];
+	unsigned long glintSecondRegs[0x2000];
+	unsigned long DacRegs[0x100];  /* used by internal DACs */
 	unsigned char cmap[0x300];
 } GLINTRegRec, *GLINTRegPtr;
 
@@ -47,10 +59,13 @@ typedef struct {
 typedef struct {
     pciVideoPtr		PciInfo;
     pciVideoPtr		PciInfoGeometry;
+    pciVideoPtr		MXPciInfo[GLINT_MAX_MX_DEVICES];
+    int			numMXDevices;
     PCITAG		PciTag;
     PCITAG		PciTagGeometry;
     EntityInfoPtr	pEnt;
     EntityInfoPtr	pEntGeometry;
+    EntityInfoPtr	pEntMX[GLINT_MAX_MX_DEVICES];
     RamDacHelperRecPtr	RamDac;
     int			MemClock;
     int			Chipset;
@@ -77,6 +92,7 @@ typedef struct {
     int			planemask;
     CARD32		IOAddress;
     CARD32		FbAddress;
+    int                 irq;
     unsigned char *     IOBase;
     unsigned char *	FbBase;
     long		FbMapSize;
@@ -89,6 +105,12 @@ typedef struct {
     Bool		UseBlockWrite;
     Bool		UseFireGL3000;
     Bool		VGAcore;
+    int			MultiGLINTApSize;
+    int			MXFbSize;
+    int			realMXWidth;
+    CARD32		SecondaryAddress;
+    CARD32		rasterizerMode;
+    unsigned char *	SecondaryBase;
     int			MinClock;
     int			MaxClock;
     int			RefClock;
@@ -107,6 +129,16 @@ typedef struct {
     GCPtr		CurrentGC;
     I2CBusPtr		DDCBus, VSBus;
     unsigned char *	XAAScanlineColorExpandBuffers[1];
+#ifdef XF86DRI
+    Bool		directRenderingEnabled;
+    DRIInfoPtr		pDRIInfo;
+    int			drmSubFD;
+    drmBufMapPtr        drmBufs;         /* Map of DMA buffers */
+    int			numVisualConfigs;
+    __GLXvisualConfig*	pVisualConfigs;
+    GLINTConfigPrivPtr	pVisualConfigsPriv;
+    GLINTRegRec		DRContextRegs;
+#endif
 } GLINTRec, *GLINTPtr;
 
 /* Defines for PCI data */
@@ -125,6 +157,8 @@ typedef struct {
 			((PCI_VENDOR_3DLABS << 16) | PCI_CHIP_500TX)
 #define PCI_VENDOR_3DLABS_CHIP_MX	\
 			((PCI_VENDOR_3DLABS << 16) | PCI_CHIP_MX)
+#define PCI_VENDOR_3DLABS_CHIP_GAMMA	\
+			((PCI_VENDOR_3DLABS << 16) | PCI_CHIP_GAMMA)
 
 /* Prototypes */
 
@@ -155,6 +189,11 @@ void TXSave(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
 Bool TXInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 Bool TXAccelInit(ScreenPtr pScreen);
 
+void DualMXRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
+void DualMXSave(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
+Bool DualMXInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
+Bool DualMXAccelInit(ScreenPtr pScreen);
+
 void glintOutIBMRGBIndReg(ScrnInfoPtr pScrn,
 		     CARD32 reg, unsigned char mask, unsigned char data);
 unsigned char glintInIBMRGBIndReg(ScrnInfoPtr pScrn, CARD32 reg);
@@ -165,6 +204,15 @@ Bool glintIBMHWCursorInit(ScreenPtr pScreen);
 unsigned char glintIBMReadData(ScrnInfoPtr pScrn);
 Bool glintIBM526HWCursorInit(ScreenPtr pScreen);
 Bool glintIBM640HWCursorInit(ScreenPtr pScreen);
+
+void glintOutTIIndReg(ScrnInfoPtr pScrn,
+		     CARD32 reg, unsigned char mask, unsigned char data);
+unsigned char glintInTIIndReg(ScrnInfoPtr pScrn, CARD32 reg);
+void glintTIWriteAddress(ScrnInfoPtr pScrn, CARD32 index);
+void glintTIReadAddress(ScrnInfoPtr pScrn, CARD32 index);
+void glintTIWriteData(ScrnInfoPtr pScrn, unsigned char data);
+unsigned char glintTIReadData(ScrnInfoPtr pScrn);
+Bool glintTIHWCursorInit(ScreenPtr pScreen);
 
 void Permedia2OutIndReg(ScrnInfoPtr pScrn,
 		     CARD32, unsigned char mask, unsigned char data);
@@ -190,6 +238,16 @@ void Permedia2vOutIndReg(ScrnInfoPtr pScrn,
 unsigned char Permedia2vInIndReg(ScrnInfoPtr pScrn, CARD32);
 
 extern int partprodPermedia[];
+
+extern Bool GLINTDRIScreenInit(ScreenPtr pScreen);
+extern Bool GLINTDRIFinishScreenInit(ScreenPtr pScreen);
+extern void GLINTDRICloseScreen(ScreenPtr pScreen);
+extern Bool GLINTInitGLXVisuals(ScreenPtr pScreen);
+extern void GLINTDRIWakeupHandler(ScreenPtr pScreen);
+extern void GLINTDRIBlockHandler(ScreenPtr pScreen);
+extern void GLINTDRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 index);
+extern void GLINTDRIMoveBuffers(WindowPtr pWin, DDXPointRec ptOldOrg, 
+		RegionPtr prgnSrc, CARD32 index);
 
 void GLINT_VERB_WRITE_REG(GLINTPtr, CARD32 v, int r, char *file, int line);
 CARD32 GLINT_VERB_READ_REG(GLINTPtr, CARD32 r, char *file, int line);

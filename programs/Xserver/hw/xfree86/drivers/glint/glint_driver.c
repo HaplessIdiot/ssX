@@ -26,7 +26,8 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.38 1999/06/12 17:30:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.39 1999/06/13 05:18:52 dawes Exp $ */
+/* $PI: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.29 1999/06/09 20:05:12 jens Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -56,6 +57,7 @@
 
 #include "glint_regs.h"
 #include "IBM.h"
+#include "TI.h"
 #include "glint.h"
 
 #ifdef XFreeXDGA
@@ -134,6 +136,7 @@ static SymTabRec GLINTChipsets[] = {
     { PCI_VENDOR_3DLABS_CHIP_PERMEDIA,		"pm" },
     { PCI_VENDOR_3DLABS_CHIP_500TX,		"500tx" },
     { PCI_VENDOR_3DLABS_CHIP_MX,		"mx" },
+    { PCI_VENDOR_3DLABS_CHIP_GAMMA,		"gamma" },
     { -1,					NULL }
 };
 
@@ -145,6 +148,7 @@ static PciChipsets GLINTPciChipsets[] = {
     { PCI_VENDOR_3DLABS_CHIP_PERMEDIA,	 PCI_VENDOR_3DLABS_CHIP_PERMEDIA,   NULL },
     { PCI_VENDOR_3DLABS_CHIP_500TX,	 PCI_VENDOR_3DLABS_CHIP_500TX,	    NULL },
     { PCI_VENDOR_3DLABS_CHIP_MX,	 PCI_VENDOR_3DLABS_CHIP_MX,	    NULL },
+    { PCI_VENDOR_3DLABS_CHIP_GAMMA,	 PCI_VENDOR_3DLABS_CHIP_GAMMA,	    NULL },
     { -1,				 -1,				    RES_UNDEFINED }
 };
 
@@ -184,6 +188,11 @@ static RamDacSupportedInfoRec TXMXRamdacs[] = {
     { IBM526DB_RAMDAC },
     { IBM526_RAMDAC },
     { IBM640_RAMDAC },
+    { -1 }
+};
+
+static RamDacSupportedInfoRec GMX2000Ramdacs[] = {
+    { TI3030_RAMDAC },
     { -1 }
 };
 
@@ -260,6 +269,33 @@ static const char *i2cSymbols[] = {
     NULL
 };
 
+#ifdef XF86DRI
+static const char *drmSymbols[] = {
+    "drmAddBufs",
+    "drmAddMap",
+    "drmCtlAddCommand",
+    "drmCtlInstHandler",
+    "drmGetInterruptFromBusID",
+    "drmMapBufs",
+    "drmMarkBufs",
+    "drmUnmapBufs",
+    NULL
+};
+
+static const char *driSymbols[] = {
+    "DRIGetDrawableIndex",
+    "DRIFinishScreenInit",
+    "DRIDestroyInfoRec",
+    "DRICloseScreen",
+    "DRIDestroyInfoRec",
+    "DRIScreenInit",
+    "DRIDestroyInfoRec",
+    "DRICreateInfoRec",
+    "GlxSetVisualConfigs",
+    NULL
+};
+#endif
+
 #ifdef XFree86LOADER
 
 static MODULESETUPPROTO(glintSetup);
@@ -289,7 +325,11 @@ glintSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	setupDone = TRUE;
 	xf86AddDriver(&GLINT, module, 0);
 	LoaderRefSymLists(vgahwSymbols, fbSymbols, ddcSymbols, i2cSymbols,
-			  xaaSymbols, xf8_32bppSymbols, NULL);
+			  xaaSymbols, xf8_32bppSymbols,
+#ifdef XF86DRI
+			  drmSymbols, driSymbols,
+#endif
+			  NULL);
 	return (pointer)TRUE;
     }
 
@@ -387,7 +427,8 @@ GLINTDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
     int videocontrol = 0, vtgpolarity = 0;
     
     if((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_500TX) ||
-       (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_MX)) {
+       (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_MX) ||
+       (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_GAMMA)) {
 	vtgpolarity = GLINT_READ_REG(VTGPolarity) & 0xFFFFFFF0;
     } else {
         videocontrol = GLINT_READ_REG(PMVideoControl) & 0xFFFFFFD6;
@@ -419,7 +460,8 @@ GLINTDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
     }
 
     if((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_500TX) ||
-       (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_MX))  {
+       (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_MX) ||
+       (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_GAMMA)) {
     	GLINT_SLOW_WRITE_REG(vtgpolarity, VTGPolarity);
     } else {
     	GLINT_SLOW_WRITE_REG(videocontrol, PMVideoControl);
@@ -554,7 +596,8 @@ GLINTProbe(DriverPtr drv, int flags)
 	    /* and for the moment we claim all other chips on the same */
 	    /* bus/device number */
 	    if ( (pPci->chipType == PCI_CHIP_500TX) ||
-	         (pPci->chipType == PCI_CHIP_MX) ||
+                 (pPci->chipType == PCI_CHIP_MX) ||
+                 (pPci->chipType == PCI_CHIP_GAMMA) ||
 		 (pPci->chipType == PCI_CHIP_PERMEDIA) ) {
 
     		while (*checkusedPci != NULL) {
@@ -569,7 +612,10 @@ GLINTProbe(DriverPtr drv, int flags)
 			if ( (((*checkusedPci)->vendor == PCI_VENDOR_TI) || 
 			      ((*checkusedPci)->vendor == PCI_VENDOR_3DLABS)) &&
 			     (((*checkusedPci)->chipType == PCI_CHIP_DELTA) ||
-			      ((*checkusedPci)->chipType == PCI_CHIP_GAMMA)) ) {
+#if 0
+			      ((*checkusedPci)->chipType == PCI_CHIP_GAMMA) ||
+#endif
+			      ((*checkusedPci)->chipType == PCI_CHIP_MX)) ) {
 			    if ((*checkusedPci)->chipType == PCI_CHIP_DELTA) {
 				deltabase = (*checkusedPci)->memBase[0];
 				delta_pci_base = &((*checkusedPci)->memBase[0]);
@@ -737,6 +783,7 @@ GetAccelPitchValues(ScrnInfoPtr pScrn)
 	break;
     case PCI_VENDOR_3DLABS_CHIP_500TX:
     case PCI_VENDOR_3DLABS_CHIP_MX:
+    case PCI_VENDOR_3DLABS_CHIP_GAMMA:
 	linep = &partprod500TX[0];
 	break;
     }
@@ -786,8 +833,8 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
      * AllocateScreenPrivateIndex() from the ScreenInit() function.
      */
 
-    /* Check the number of entities, and fail if it isn't one or two. */
-    if (pScrn->numEntities < 1 || pScrn->numEntities > 2)
+    /* Check the number of entities, and fail if it isn't one or more. */
+    if (pScrn->numEntities < 1)
 	return FALSE;
 
     /* The ramdac module should be loaded here when needed */
@@ -810,15 +857,34 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     pGlint->PciInfo = xf86GetPciInfoForEntity(pGlint->pEnt->index);
     pGlint->PciTag = pciTag(pGlint->PciInfo->bus, pGlint->PciInfo->device,
 			    pGlint->PciInfo->func);
-    if (pScrn->numEntities == 2) {
-	pGlint->pEntGeometry = xf86GetEntityInfo(pScrn->entityList[1]);
-	if (pGlint->pEntGeometry->location.type != BUS_PCI)
-	    return FALSE;
-	pGlint->PciInfoGeometry =
-			xf86GetPciInfoForEntity(pGlint->pEntGeometry->index);
-    	pGlint->PciTagGeometry = pciTag(pGlint->PciInfoGeometry->bus, 
-					pGlint->PciInfoGeometry->device,
-			  		pGlint->PciInfoGeometry->func);
+    if (pScrn->numEntities > 1) {
+	pciVideoPtr pPci;
+	EntityInfoPtr pEnt;
+
+	for (i = 1; i < pScrn->numEntities; i++) {
+	    pEnt = xf86GetEntityInfo(pScrn->entityList[i]);
+	    pPci = xf86GetPciInfoForEntity(pEnt->index);
+	    if (pPci->chipType == PCI_CHIP_DELTA ||
+#if 0
+		pPci->chipType == PCI_CHIP_GAMMA
+#endif
+	       ) {
+		pGlint->pEntGeometry = pEnt;
+		pGlint->PciInfoGeometry = pPci;
+    		pGlint->PciTagGeometry = pciTag(pPci->bus, pPci->device,
+						pPci->func);
+	    } else if (pPci->chipType == PCI_CHIP_MX) {
+		if (pGlint->numMXDevices >= GLINT_MAX_MX_DEVICES) {
+		    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+			%d MX chips supported, additional MX device ignored\n",
+			GLINT_MAX_MX_DEVICES);
+		} else {
+		    pGlint->pEntMX[pGlint->numMXDevices] = pEnt;
+		    pGlint->MXPciInfo[pGlint->numMXDevices] = pPci;
+		    pGlint->numMXDevices++;
+		}
+	    }
+	}
     }
 
     /*
@@ -1060,12 +1126,42 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 
     xf86DrvMsg(pScrn->scrnIndex, from, "MMIO registers at 0x%lX\n",
 	       (unsigned long)pGlint->IOAddress);
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+	  "Secondary MMIO registers at 0x%lX\n", pGlint->SecondaryAddress);
+
+    /* Find IRQ */
+    /* FIXME NOT_DONE: This is completely
+       overridden in glint_dri.c.  We should
+       make it so that an IRQ listed in the
+       XF86Config file is used before the value
+       use the _int_line information at all,
+       since the kernel remaps this IRQ to
+       another IRQ whenever an IO-APIC is used.
+       I'll leave this line here, because this
+       is the place to get the XF86Config
+       information. */
+    pGlint->irq = -1;
 
     /* Register the PCI-assigned resources. */
     if (xf86RegisterResources(pGlint->pEnt->index, NULL, ResExclusive)) {
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		   "xf86RegisterResources() found resource conflicts\n");
 	return FALSE;
+    }
+    if (pGlint->pEntGeometry) {
+	if (xf86RegisterResources(pGlint->pEnt->index, NULL, ResExclusive)) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		       "xf86RegisterResources() found resource conflicts\n");
+	    return FALSE;
+	}
+    }
+    for (i = 0; i < pGlint->numMXDevices; i++) {
+	if (xf86RegisterResources(pGlint->pEntMX[i]->index, NULL,
+				  ResExclusive)) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		       "xf86RegisterResources() found resource conflicts\n");
+	    return FALSE;
+	}
     }
 
     /* HW bpp matches reported bpp */
@@ -1080,7 +1176,8 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	/* Need to access MMIO to determine videoRam */
         GLINTMapMem(pScrn);
 	if( (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_500TX) ||
-	    (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_MX) )
+	    (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_MX) ||
+	    (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_GAMMA) ))
 	    pScrn->videoRam = 1024 * (1 << ((GLINT_READ_REG(FBMemoryCtl) & 
 							0xE0000000)>>29));
 	else 
@@ -1089,13 +1186,82 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
         GLINTUnmapMem(pScrn);
     }
 
-    xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte\n",
-               pScrn->videoRam);
+    if ( (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_GAMMA) &&
+	     (pGlint->numMXDevices == 2) ) {
+	unsigned int chipconfig;
+	GLINTMapMem(pScrn);
 
-    pGlint->FbMapSize = pScrn->videoRam * 1024;
+	/*
+	 * This is needed before the first GLINT_SLOW_WRITE_REG --
+	 * otherwise the server will hang if it was left in a bad state.
+         */
+	GLINT_WRITE_REG(0, ResetStatus);
+	while (GLINT_READ_REG(ResetStatus) & 0x80000000) {
+	    xf86DrvMsg(pScrn->scrnIndex, from, "Resetting Core\n");
+	}
+	    
+	GLINT_SLOW_WRITE_REG(GCSRSecondaryGLINTMapEn, GCSRAperture);
+
+	xf86DrvMsg(pScrn->scrnIndex, from,
+		   "InFIFOSpace = %d, %d (after reset)\n",
+		   GLINT_READ_REG(InFIFOSpace),
+		   GLINT_SECONDARY_READ_REG(InFIFOSpace));
+	xf86DrvMsg(pScrn->scrnIndex, from,
+		   "OutFIFOSWords = %d, %d (after reset)\n",
+		   GLINT_READ_REG(OutFIFOWords),
+		   GLINT_SECONDARY_READ_REG(OutFIFOWords));
+
+				/* Reset doesn't appear to drain the Output
+                                   FIFO.  Argh. */
+	while (GLINT_READ_REG(OutFIFOWords)) {
+	    GLINT_READ_REG(OutputFIFO);
+	}
+	while (GLINT_SECONDARY_READ_REG(OutFIFOWords)) {
+	    GLINT_SECONDARY_READ_REG(OutputFIFO);
+	}
+	
+	xf86DrvMsg(pScrn->scrnIndex, from,
+		   "InFIFOSpace = %d, %d (after drain)\n",
+		   GLINT_READ_REG(InFIFOSpace),
+		   GLINT_SECONDARY_READ_REG(InFIFOSpace));
+	xf86DrvMsg(pScrn->scrnIndex, from,
+		   "OutFIFOSWords = %d, %d (after drain)\n",
+		   GLINT_READ_REG(OutFIFOWords),
+		   GLINT_SECONDARY_READ_REG(OutFIFOWords));
+	
+	chipconfig = GLINT_READ_REG(GChipConfig);
+	GLINTUnmapMem(pScrn);
+	
+	switch (chipconfig & GChipMultiGLINTApMask) {
+	case GChipMultiGLINTAp_0M:
+	    pGlint->MultiGLINTApSize = 0;
+	    break;
+	case GChipMultiGLINTAp_16M:
+	    pGlint->MultiGLINTApSize = 16 * 1024 * 1024;
+	    break;
+	case GChipMultiGLINTAp_32M:
+	    pGlint->MultiGLINTApSize = 32 * 1024 * 1024;
+	    break;
+	case GChipMultiGLINTAp_64M:
+	    pGlint->MultiGLINTApSize = 64 * 1024 * 1024;
+	    break;
+	}
+
+	pGlint->FbMapSize = pGlint->MultiGLINTApSize;
+	pGlint->MXFbSize = pScrn->videoRam * 1024;
+	/* we have twice the memory w/ two MX chips */
+	xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte\n",
+		   pScrn->videoRam * 2);
+    }
+    else {
+	pGlint->FbMapSize = pScrn->videoRam * 1024;
+	xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte\n",
+		   pScrn->videoRam);
+    }
 
     if((pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_500TX) &&
-       (pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_MX)) {
+       (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_MX) &&
+       (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_GAMMA)) {
 	pGlint->VGAcore = TRUE; /* chip has a vga core */
     	/* The vgahw module should be loaded here when needed */
     	if (!xf86LoadSubModule(pScrn, "vgahw"))
@@ -1119,6 +1285,15 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 		((GLINT_READ_REG(ChipConfig) & 0x200) ? "is" : "is not"));
         xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "AGP Sidebanding is %sabled\n",
 		((GLINT_READ_REG(ChipConfig) & 0x100) ? "en" : "dis"));
+	GLINTUnmapMem(pScrn);
+    }
+
+    if(pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_GAMMA) {
+	GLINTMapMem(pScrn);
+        xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Chip %s AGP Capable\n",
+	    ((GLINT_READ_REG(GChipConfig)&GChipAGPCapable) ? "is" : "is not"));
+        xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "AGP Sidebanding is %sabled\n",
+	    ((GLINT_READ_REG(GChipConfig)&GChipAGPSideband) ? "en" : "dis"));
 	GLINTUnmapMem(pScrn);
     }
 
@@ -1210,6 +1385,27 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	    if (pGlint->RamDac == NULL)
 		return FALSE;
 	    break;
+	case PCI_VENDOR_3DLABS_CHIP_GAMMA:
+	    maxheight = 4096;
+	    maxwidth = 4096;
+	    pGlint->RefClock = 14318;
+	    pGlint->RamDacRec = RamDacCreateInfoRec();
+	    pGlint->RamDacRec->ReadDAC = glintInTIIndReg;
+	    pGlint->RamDacRec->WriteDAC = glintOutTIIndReg;
+	    pGlint->RamDacRec->ReadAddress = glintTIReadAddress;
+	    pGlint->RamDacRec->WriteAddress = glintTIWriteAddress;
+	    pGlint->RamDacRec->ReadData = glintTIReadData;
+	    pGlint->RamDacRec->WriteData = glintTIWriteData;
+	    if(!RamDacInit(pScrn, pGlint->RamDacRec)) {
+		RamDacDestroyInfoRec(pGlint->RamDacRec);
+		return FALSE;
+	    }
+	    GLINTMapMem(pScrn);
+	    pGlint->RamDac = TIramdacProbe(pScrn, GMX2000Ramdacs);
+	    GLINTUnmapMem(pScrn);
+	    if (pGlint->RamDac == NULL)
+		return FALSE;
+	    break;
     }
 
     /* Set the min pixel clock */
@@ -1245,7 +1441,8 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	from = X_CONFIG;
     } else {
 	if((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_500TX)||
-	   (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_MX))
+	   (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_MX) ||
+	   (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_GAMMA) )
 		pGlint->MaxClock = 220000;
 	if ( (pGlint->Chipset == PCI_VENDOR_TI_CHIP_PERMEDIA) ||
 	     (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_PERMEDIA) ) {
@@ -1354,7 +1551,8 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* Only allow a single mode for MX and TX chipsets */
     if ((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_500TX) ||
-        (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_MX)) {
+        (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_MX) ||
+        (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_GAMMA)) {
 	xf86DrvMsg(pScrn->scrnIndex, X_WARNING, 
 	    "GLINT TX/MX chipsets only support one modeline, using first.\n");
 	pScrn->modes->next = NULL;
@@ -1368,6 +1566,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	        i = partprod500TX[pScrn->displayWidth >> 5];
 	    } while (i == -1);
 	}
+	pGlint->realMXWidth = pScrn->displayWidth;
     }
 
     switch (pGlint->Chipset)
@@ -1382,6 +1581,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	break;
     case PCI_VENDOR_3DLABS_CHIP_500TX:
     case PCI_VENDOR_3DLABS_CHIP_MX:
+    case PCI_VENDOR_3DLABS_CHIP_GAMMA:
 	pGlint->pprod = partprod500TX[pScrn->displayWidth >> 5];
 	pGlint->bppalign = 0;
 	break;
@@ -1505,6 +1705,16 @@ GLINTMapMem(ScrnInfoPtr pScrn)
     else
 	pGlint->IOBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO, 
 		pGlint->PciTag, pGlint->IOAddress, 0x20000);
+
+    if ( (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_GAMMA) &&
+	     (pGlint->numMXDevices == 2) ) {
+	pGlint->SecondaryAddress = pGlint->IOAddress;
+	pGlint->SecondaryBase = pGlint->IOBase+0x10000;
+    }
+    else {
+	pGlint->SecondaryAddress = pGlint->IOAddress;
+	pGlint->SecondaryBase = pGlint->IOBase;
+    }
 
     if (pGlint->IOBase == NULL)
 	return FALSE;
@@ -1632,7 +1842,14 @@ GLINTSave(ScrnInfoPtr pScrn)
 	break;
     case PCI_VENDOR_3DLABS_CHIP_500TX:
     case PCI_VENDOR_3DLABS_CHIP_MX:
-	TXSave(pScrn, glintReg);
+    case PCI_VENDOR_3DLABS_CHIP_GAMMA:
+	if ( (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_GAMMA) &&
+	     (pGlint->numMXDevices == 2) ) {
+	    DualMXSave(pScrn, glintReg);
+	}
+	else {
+	    TXSave(pScrn, glintReg);
+	}
 	(*pGlint->RamDac->Save)(pScrn, pGlint->RamDacRec, RAMDACreg);
 	break;
     }
@@ -1653,6 +1870,9 @@ GLINTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     GLINTRegPtr glintReg;
     RamDacHWRecPtr pRAMDAC = RAMDACHWPTR(pScrn);
     RamDacRegRecPtr RAMDACreg;
+    int bytesPerPixel, realMXWidthBytes, inputXSpanBytes;
+    CARD32 glintApSize, postMultiply, productEnable, use16xProduct, inputXSpan;
+    CARD32 binaryEval, value;
 
     if (pGlint->VGAcore) {
     	vgaHWPtr hwp = VGAHWPTR(pScrn);
@@ -1680,7 +1900,14 @@ GLINTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	break;
     case PCI_VENDOR_3DLABS_CHIP_500TX:
     case PCI_VENDOR_3DLABS_CHIP_MX:
-	ret = TXInit(pScrn, mode);
+    case PCI_VENDOR_3DLABS_CHIP_GAMMA:
+	if ( (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_GAMMA) &&
+	     (pGlint->numMXDevices == 2) ) {
+	    ret = DualMXInit(pScrn, mode);
+	}
+	else {
+	    ret = TXInit(pScrn, mode);
+	}
 	break;
     }
 
@@ -1713,9 +1940,105 @@ GLINTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	break;
     case PCI_VENDOR_3DLABS_CHIP_500TX:
     case PCI_VENDOR_3DLABS_CHIP_MX:
-	TXRestore(pScrn, glintReg);
+    case PCI_VENDOR_3DLABS_CHIP_GAMMA:
+	if ( (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_GAMMA) &&
+	     (pGlint->numMXDevices == 2) ) {
+	    DualMXRestore(pScrn, glintReg);
+	}
+	else {
+	    TXRestore(pScrn, glintReg);
+	}
 	(*pGlint->RamDac->Restore)(pScrn, pGlint->RamDacRec, RAMDACreg);
 	break;
+    }
+
+    if ( (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_GAMMA) &&
+         (pGlint->numMXDevices == 2) ) {
+
+	/* setup multi glint framebuffer aperture */
+
+	bytesPerPixel = (pScrn->bitsPerPixel >> 3);
+	realMXWidthBytes = pGlint->realMXWidth * bytesPerPixel;
+
+	/* compute Input X Span field */
+	binaryEval = ((realMXWidthBytes << 1) - 1);
+	if (binaryEval & (8 << 10)) {      /* 8K */
+	    inputXSpan = 3;
+	    inputXSpanBytes = 8 * 1024;
+	}
+	else if (binaryEval & (4 << 10)) { /* 4K */
+	    inputXSpan = 2;
+	    inputXSpanBytes = 4 * 1024;
+	}
+	else if (binaryEval & (2 << 10)) { /* 2K */
+	    inputXSpan = 1;
+	    inputXSpanBytes = 2 * 1024;
+	}
+	else {                             /* 1K */
+	    inputXSpan = 0;
+	    inputXSpanBytes = 1024;
+	}
+
+	/* set the MULTI width for software rendering */
+	pScrn->displayWidth = inputXSpanBytes / bytesPerPixel;
+
+	/* compute post multiply */
+	binaryEval = (realMXWidthBytes >> 3);
+	postMultiply = 0;
+	while ((postMultiply < 5) && !(binaryEval & 1)) {
+	    postMultiply++;
+	    binaryEval >>= 1;
+	}
+	postMultiply <<= 7;
+
+	/* compute product enable fields */
+	if (binaryEval & ~0x1f) {		/* too big */
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		       "GLINTModeInit: width (%d) too big\n",
+		       pScrn->displayWidth);
+	    return FALSE;
+	}
+	if ((binaryEval & 0x12) == 0x12) {	/* clash between x2 and x16 */
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		       "GLINTModeInit: width (%d) is mult 18, not supported\n",
+		       pScrn->displayWidth);
+	    return FALSE;
+	}
+	if (binaryEval & 0x10) {
+	    productEnable = (((binaryEval & 0xf) | 0x2) << 3);
+	    use16xProduct = (1 << 2);
+	}
+	else {
+	    productEnable = ((binaryEval & 0xf) << 3);
+	    use16xProduct = 0;
+	}
+
+	/* compute GLINT Aperture Size field */
+	binaryEval = ((pGlint->MXFbSize << 1) - 1);
+	if (binaryEval & (32 << 20)) {      /* 32M */
+	    glintApSize = 3 << 10;
+	}
+	else if (binaryEval & (16 << 20)) { /* 16M */
+	    glintApSize = 2 << 10;
+	}
+	else if (binaryEval & (8 << 20)) {  /*  8M */
+	    glintApSize = 1 << 10;
+	}
+	else {                              /*  4M */
+	    glintApSize = 0 << 10;
+	}
+
+	/* setup HW */
+	value = ( glintApSize      | 
+                  postMultiply     | 
+                  productEnable    | 
+                  use16xProduct    | 
+                  inputXSpan       );
+	GLINT_SLOW_WRITE_REG(value, GMultGLINTAperture);
+	value = pGlint->MXPciInfo[1]->memBase[2] & 0xFF800000;
+	GLINT_SLOW_WRITE_REG(value, GMultGLINT1);
+	value = pGlint->MXPciInfo[0]->memBase[2] & 0xFF800000;
+	GLINT_SLOW_WRITE_REG(value, GMultGLINT2);
     }
 
     if (pGlint->VGAcore) {
@@ -1762,7 +2085,14 @@ GLINTRestore(ScrnInfoPtr pScrn)
 	break;
     case PCI_VENDOR_3DLABS_CHIP_500TX:
     case PCI_VENDOR_3DLABS_CHIP_MX:
-	TXRestore(pScrn, glintReg);
+    case PCI_VENDOR_3DLABS_CHIP_GAMMA:
+	if ( (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_GAMMA) &&
+	     (pGlint->numMXDevices == 2) ) {
+	    DualMXRestore(pScrn, glintReg);
+	}
+	else {
+	    TXRestore(pScrn, glintReg);
+	}
 	(*pGlint->RamDac->Restore)(pScrn, pGlint->RamDacRec, RAMDACreg);
 	break;
     }
@@ -1822,7 +2152,11 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     }
     
     /* Initialise the first mode */
-    GLINTModeInit(pScrn, pScrn->currentMode);
+    if ( !(GLINTModeInit(pScrn, pScrn->currentMode))) {
+	xf86DrvMsg(scrnIndex, X_ERROR,
+		   "Internal error: invalid mode\n");
+	return FALSE;
+    }
 
     /* Darken the screen for aesthetic reasons and set the viewport */
     GLINTSaveScreen(pScreen, FALSE);
@@ -1866,6 +2200,20 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			      pScrn->rgbBits, pScrn->defaultVisual))
 	    return FALSE;
     }
+
+#ifdef XF86DRI
+    /*
+     * Setup DRI after visuals have been established, but before cfbScreenInit
+     * is called.   cfbScreenInit will eventually call into the drivers
+     * InitGLXVisuals call back.
+     */
+    if ((!pGlint->NoAccel) && (pGlint->HWCursor)) {
+	pGlint->directRenderingEnabled = GLINTDRIScreenInit(pScreen);
+    }
+    else {
+	pGlint->directRenderingEnabled = FALSE;
+    }
+#endif
 
     /*
      * Call the framebuffer layer's ScreenInit function, and fill in other
@@ -1962,7 +2310,13 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    break;
 	case PCI_VENDOR_3DLABS_CHIP_500TX:
 	case PCI_VENDOR_3DLABS_CHIP_MX:
-	    TXAccelInit(pScreen);
+	case PCI_VENDOR_3DLABS_CHIP_GAMMA:
+	    if (pGlint->numMXDevices == 2) {
+		DualMXAccelInit(pScreen);
+	    }
+	    else {
+		TXAccelInit(pScreen);
+	    }
 	    break;
         }
     }
@@ -1988,6 +2342,9 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	      (pGlint->RamDac->RamDacType == (IBM526_RAMDAC)) ||
 	      (pGlint->RamDac->RamDacType == (IBM640_RAMDAC))) )
 	    		glintIBMHWCursorInit(pScreen);
+	else
+	if (pGlint->RamDac->RamDacType == (TI3030_RAMDAC))
+	    		glintTIHWCursorInit(pScreen);
     }
 
     /* Initialise default colourmap */
@@ -2026,6 +2383,23 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 #ifdef DPMSExtension
     xf86DPMSInit(pScreen, (DPMSSetProcPtr)GLINTDisplayPowerManagementSet, 0);
+#endif
+
+#ifdef XF86DRI
+    if (pGlint->directRenderingEnabled) {
+	/* Now that mi, cfb, drm and others have done their thing, 
+         * complete the DRI setup.
+         */
+	GLINTDRIFinishScreenInit(pScreen);
+    }
+    if (pGlint->directRenderingEnabled) {
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+            "direct rendering enabled\n");
+    }
+    else {
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+            "direct rendering disabled\n");
+    }
 #endif
 
     pGlint->CloseScreen = pScreen->CloseScreen;
@@ -2149,6 +2523,12 @@ GLINTCloseScreen(int scrnIndex, ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     GLINTPtr pGlint = GLINTPTR(pScrn);
+
+#ifdef XF86DRI
+    if (pGlint->directRenderingEnabled) {
+	GLINTDRICloseScreen(pScreen);
+    }
+#endif
 
     switch (pGlint->Chipset) {
         case PCI_VENDOR_TI_CHIP_PERMEDIA2:

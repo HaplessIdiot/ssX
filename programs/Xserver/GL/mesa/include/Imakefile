@@ -1,5 +1,5 @@
-
-XCOMM Header: /p0/cvs/X39-3D/xc/programs/Xserver/GL/mesa/include/Imakefile,v 1.1 1999/02/23 07:49:30 martin Exp $
+XCOMM $XFree86$
+XCOMM $PI: xc/programs/Xserver/GL/mesa/include/Imakefile,v 1.4 1999/03/15 21:36:09 martin Exp $
 
 #define IHaveModules
 #include <Server.tmpl>

@@ -1,0 +1,18 @@
+XCOMM $XFree86$
+XCOMM $PI: xc/lib/GL/mesa/src/drv/Imakefile,v 1.1 1999/04/05 05:24:33 martin Exp $
+
+#define DoNormalLib NormalLibGlx
+#define DoSharedLib SharedLibGlx
+#define DoExtraLib SharedLibGlx
+#define DoDebugLib DebugLibGlx
+#define DoProfileLib ProfileLibGlx
+
+#define IHaveSubdirs
+#define PassCDebugFlags
+
+SUBDIRS = gamma
+
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
+
+DependTarget()

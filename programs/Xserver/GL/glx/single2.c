@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/GL/glx/single2.c,v 1.2 1999/03/14 03:21:26 dawes Exp $
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
@@ -16,8 +17,7 @@
 ** Those portions of the Subject Software created by Silicon Graphics, Inc.
 ** are Copyright (c) 1991-9 Silicon Graphics, Inc. All Rights Reserved.
 **
-** Header: /p0/cvs/X39-3D/xc/programs/Xserver/GL/glx/single2.c,v 1.2 1999/02/23 07:49:28 martin Exp $
-** $XFree86: xc/programs/Xserver/GL/glx/single2.c,v 1.0tsi Exp $
+** $SGI$
 */
 
 #define NEED_REPLIES

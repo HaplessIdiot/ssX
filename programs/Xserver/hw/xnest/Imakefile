@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/12 1997/11/03 14:13:20 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/hw/xnest/Imakefile,v 3.11 1999/04/17 09:08:46 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xnest/Imakefile,v 3.12 1999/05/09 10:52:00 dawes Exp $
 #include <Server.tmpl>
 
 #ifdef OS2Architecture
@@ -63,7 +63,9 @@ INCLUDES = -I. -I$(XBUILDINCDIR) -I$(FONTINCSRC) \
 LinkSourceFile(stubs.c,$(SERVERSRC)/Xi)
 SpecialCObjectRule(Init,$(ICONFIGFILES),$(EXT_DEFINES))
 LinkSourceFile(miinitext.c,$(SERVERSRC)/mi)
-SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(OS_DEFINES) -UXINPUT -UXF86VIDMODE -UXFreeXDGA -UXF86MISC -UMITSHM -UDPMSExtension)
+SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(OS_DEFINES) -UXINPUT \
+	-UXF86VIDMODE -UXFreeXDGA -UXF86MISC -UMITSHM -UDPMSExtension \
+	-UXF86DRI)
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(xnest,$(OBJS))

@@ -1,4 +1,4 @@
-
+/* $XFree86$ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -30,7 +30,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
  *
- * Header: /p0/cvs/X39-3D/xc/programs/Xserver/GL/mesa/src/X/xf86glxint.h,v 1.2 1999/02/26 08:52:46 martin Exp $
+ * $PI: xc/programs/Xserver/GL/mesa/src/X/xf86glxint.h,v 1.7 1999/04/11 04:20:55 martin Exp $
  */
 
 #ifndef _XF86GLXINT_H_
@@ -45,10 +45,12 @@ struct __GLcontextRec {
     XMesaContext xm_ctx;
 };
 
-typedef struct __MESA_visualRec *__MESA_visual;
-struct __MESA_visualRec {
+typedef struct __MESA_screenRec __MESA_screen;
+struct __MESA_screenRec {
+    int num_vis;
     __GLXvisualConfig *glx_vis;
-    XMesaVisual xm_vis;
+    XMesaVisual *xm_vis;
+    void **private;
 };
 
 typedef struct __MESA_bufferRec *__MESA_buffer;
@@ -60,6 +62,8 @@ struct __MESA_bufferRec {
     GLboolean (*fbswap)(__GLXdrawablePrivate *glxPriv);
 };
 
+extern void __MESA_setVisualConfigs(int nconfigs, __GLXvisualConfig *configs,
+				    void **privates);
 extern Bool __MESA_initVisuals(VisualPtr *visualp, DepthPtr *depthp,
 			       int *nvisualp, int *ndepthp, int *rootDepthp,
 			       VisualID *defaultVisp, unsigned long sizes,
@@ -79,8 +83,7 @@ extern void __MESA_destroyBuffer(__GLdrawablePrivate *glPriv);
 
 extern __GLinterface *__MESA_createContext(__GLimports *imports,
 					   __GLcontextModes *modes,
-					   __GLinterface *shareGC,
-					   __GLXvisualConfig *pGlxVisual);
+					   __GLinterface *shareGC);
 extern GLboolean __MESA_destroyContext(__GLcontext *gc);
 extern GLboolean __MESA_loseCurrent(__GLcontext *gc);
 extern GLboolean __MESA_makeCurrent(__GLcontext *gc,

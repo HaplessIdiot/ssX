@@ -1,4 +1,4 @@
-
+/* $XFree86$ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -30,7 +30,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
  *
- * Header: /p0/cvs/X39-3D/xc/programs/Xserver/GL/mesa/src/X/xf86glx_util.h,v 1.2 1999/02/26 08:52:46 martin Exp $
+ * $PI: xc/programs/Xserver/GL/mesa/src/X/xf86glx_util.h,v 1.5 1999/03/15 21:36:10 martin Exp $
  */
 
 #ifndef _XF86GLX_UTIL_H_

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.97 1999/06/12 15:37:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.98 1999/06/13 05:18:56 dawes Exp $ */
 
 /*
  *
@@ -710,6 +710,23 @@ LOOKUP xfree86LookupTab[] = {
 
    SYMFUNC(xf86getsecs)
    SYMFUNC(xf86fpossize)      /* for returning sizeof(fpos_t) */
+
+#ifdef XF86DRI
+				/* These may have more general uses, but
+                                   for now, they are only used by the DRI.
+                                   Loading them only when the DRI is built
+                                   may make porting (the non-DRI portions
+                                   of the X server) easier. */
+   SYMFUNC(xf86stat)
+   SYMFUNC(xf86fstat)
+   SYMFUNC(xf86access)
+   SYMFUNC(xf86geteuid)
+   SYMFUNC(xf86mknod)
+   SYMFUNC(xf86chmod)
+   SYMFUNC(xf86sleep)
+   SYMFUNC(xf86InstallSIGIOHandler)
+   SYMFUNC(xf86RemoveSIGIOHandler)
+#endif
   
 #if defined(__alpha__)
    SYMFUNC(__divl)

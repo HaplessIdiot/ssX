@@ -1,6 +1,7 @@
 #ifndef _glxext_h_
 #define _glxext_h_
 
+/* $XFree86: xc/programs/Xserver/GL/glx/glxext.h,v 1.2 1999/04/11 13:10:36 dawes Exp $ */
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
@@ -19,9 +20,8 @@
 ** Those portions of the Subject Software created by Silicon Graphics, Inc.
 ** are Copyright (c) 1991-9 Silicon Graphics, Inc. All Rights Reserved.
 **
-** Header: /p0/cvs/X39-3D/xc/programs/Xserver/GL/glx/glxext.h,v 1.2 1999/02/23 07:49:27 martin Exp $
+** $SGI$
 */
-/* $XFree86$ */
 
 typedef struct {
     int type;
@@ -35,6 +35,11 @@ typedef struct {
 	VisualID *        defaultVisp,
 	unsigned long     sizes,
 	int               bitsPerRGB
+	);
+    void (*setVisualConfigs)(
+	int                nconfigs,
+	__GLXvisualConfig *configs,
+	void              **privates
 	);
 } __GLXextensionInfo;
 
@@ -53,6 +58,11 @@ extern int __glXSwapQueryContextInfoEXT(__GLXclientState *cl, char *pc);
 
 extern Bool __glXCoreType(void);
 extern void GlxExtensionInit(void);
+extern void GlxSetVisualConfigs(
+    int nconfigs,
+    __GLXvisualConfig *configs,
+    void **privates
+);
 extern int GlxInitVisuals(
     VisualPtr *       visualp,
     DepthPtr *        depthp,

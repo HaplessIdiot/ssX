@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_regs.h,v 1.10 1999/03/14 03:21:57 dawes Exp $ */
 
 /*
  * glint register file 
@@ -90,7 +90,51 @@
 
 /* GLINT 500TX LocalBuffer Registers */
 #define LBMemoryCtl							0x1000
+#define   LBNumBanksMask	0x00000001
+#define    LBNumBanks1		(0)
+#define    LBNumBanks2		(1)
+#define   LBPageSizeMask        0x00000006
+#define    LBPageSize256	(0<<1)
+#define    LBPageSize512	(1<<1)
+#define    LBPageSize1024	(2<<1)
+#define    LBPageSize2048	(3<<1)
+#define   LBRASCASLowMask	0x00000018
+#define    LBRASCASLow2		(0<<3)
+#define    LBRASCASLow3		(1<<3)
+#define    LBRASCASLow4		(2<<3)
+#define    LBRASCASLow5		(3<<3)
+#define   LBRASPrechargeMask	0x00000060
+#define    LBRASPrecharge2	(0<<5)
+#define    LBRASPrecharge3	(1<<5)
+#define    LBRASPrecharge4	(2<<5)
+#define    LBRASPrecharge5	(3<<5)
+#define   LBCASLowMask		0x00000180
+#define    LBCASLow1		(0<<7)
+#define    LBCASLow2		(1<<7)
+#define    LBCASLow3		(2<<7)
+#define    LBCASLow4		(3<<7)
+#define   LBPageModeMask	0x00000200
+#define    LBPageModeEnabled	(0<<9)
+#define    LBPageModeDisabled	(1<<9)
+#define   LBRefreshCountMask    0x0003fc00
+#define   LBRefreshCountShift   10
+
 #define LBMemoryEDO							0x1008
+#define   LBEDOMask		0x00000001
+#define    LBEDODisabled	(0)
+#define    LBEDOEnabled		(1)
+#define   LBEDOBankSizeMask	0x0000000e
+#define    LBEDOBankSizeDiabled	(0<<1)
+#define    LBEDOBankSize256K	(1<<1)
+#define    LBEDOBankSize512K	(2<<1)
+#define    LBEDOBankSize1M	(3<<1)
+#define    LBEDOBankSize2M	(4<<1)
+#define    LBEDOBankSize4M	(5<<1)
+#define    LBEDOBankSize8M	(6<<1)
+#define    LBEDOBankSize16M	(7<<1)
+#define   LBTwoPageDetectorMask	0x00000010
+#define    LBSinglePageDetector	(0<<4)
+#define    LBTwoPageDetector	(1<<4)
 
 /* GLINT PerMedia Memory Control Registers */
 #define PMReboot							0x1000
@@ -382,6 +426,56 @@
 
 
 
+/**********************************
+ * GLINT Gamma Region 0 Registers *
+ **********************************/
+
+/* Control Status Registers */
+#define GInFIFOSpace							0x0018
+#define GDMAAddress							0x0028
+#define GDMACount							0x0030
+#define GDMAControl							0x0060
+#define GOutDMA								0x0080
+#define GOutDMACount							0x0088
+#define GResetStatus							0x0800
+#define GIntEnable							0x0808
+#define GIntFlags							0x0810
+#define GErrorFlags							0x0838
+#define GTestRegister							0x0848
+#define GFIFODis							0x0868
+
+#define GChipConfig							0x0870
+#define   GChipAGPCapable		1 << 0
+#define   GChipAGPSideband		1 << 1
+#define   GChipMultiGLINTApMask		3 << 19
+#define   GChipMultiGLINTAp_0M		0 << 19
+#define   GChipMultiGLINTAp_16M		1 << 19
+#define   GChipMultiGLINTAp_32M		2 << 19
+#define   GChipMultiGLINTAp_64M		3 << 19
+
+#define GCSRAperture							0x0878
+#define   GCSRSecondaryGLINTMapEn	1 << 0
+
+#define GPageTableAddr							0x0c00
+#define GPageTableLength						0x0c08
+#define GDelayTimer							0x0c38
+#define GCommandMode							0x0c40
+#define GCommandIntEnable						0x0c48
+#define GCommandIntFlags						0x0c50
+#define GCommandErrorFlags						0x0c58
+#define GCommandStatus							0x0c60
+#define GCommandFaultingAddr						0x0c68
+#define GVertexFaultingAddr						0x0c70
+#define GWriteFaultingAddr						0x0c88
+#define GFeedbackSelectCount						0x0c98
+#define GGammaProcessorMode						0x0cb8
+#define GVGAShadow							0x0d00
+#define GMultGLINTAperture						0x0d08
+#define GMultGLINT1							0x0d10
+#define GMultGLINT2							0x0d18
+
+
+
 /************************
  * GLINT Core Registers *
  ************************/
@@ -434,6 +528,7 @@
 #define PointTable2							GLINT_TAG_ADDR(0x01,0x02)
 #define PointTable3							GLINT_TAG_ADDR(0x01,0x03)
 #define RasterizerMode							GLINT_TAG_ADDR(0x01,0x04)
+#define		RMMultiGLINT			1<<17
 #define		BitMaskPackingEachScanline	1<<9
 #define		ForceBackgroundColor		1<<6
 #define		InvertBitMask			1<<1
@@ -502,6 +597,10 @@
 #define QStart							GLINT_TAG_ADDR(0x07,0x07)
 #define dQdx							GLINT_TAG_ADDR(0x07,0x08)
 #define dQdyDom							GLINT_TAG_ADDR(0x07,0x09)
+#define LOD							GLINT_TAG_ADDR(0x07,0x0A)
+#define dSdy							GLINT_TAG_ADDR(0x07,0x0B)
+#define dTdy							GLINT_TAG_ADDR(0x07,0x0C)
+#define dQdy							GLINT_TAG_ADDR(0x07,0x0D)
 
 #define TextureReadMode						GLINT_TAG_ADDR(0x09,0x00)
 #define TextureFormat						GLINT_TAG_ADDR(0x09,0x01)
@@ -516,10 +615,24 @@
 
 #define TexelLUTIndex						GLINT_TAG_ADDR(0x09,0x08)
 #define TexelLUTData						GLINT_TAG_ADDR(0x09,0x09)
+#define TexelLUTAddress						GLINT_TAG_ADDR(0x09,0x0A)
+#define TexelLUTTransfer					GLINT_TAG_ADDR(0x09,0x0B)
+#define TextureFilterMode					GLINT_TAG_ADDR(0x09,0x0C)
+#define TextureChromaUpper					GLINT_TAG_ADDR(0x09,0x0D)
+#define TextureChromaLower					GLINT_TAG_ADDR(0x09,0x0E)
 
-#define TxBaseAddr						GLINT_TAG_ADDR(0x0a,0x00)
-#define TxBaseAddrLR						GLINT_TAG_ADDR(0x0a,0x01)
-#define TexelLUT						GLINT_TAG_ADDR(0x0a,0x00)
+#define TxBaseAddr0						GLINT_TAG_ADDR(0x0A,0x00)
+#define TxBaseAddr1						GLINT_TAG_ADDR(0x0A,0x01)
+#define TxBaseAddr2						GLINT_TAG_ADDR(0x0A,0x02)
+#define TxBaseAddr3						GLINT_TAG_ADDR(0x0A,0x03)
+#define TxBaseAddr4						GLINT_TAG_ADDR(0x0A,0x04)
+#define TxBaseAddr5						GLINT_TAG_ADDR(0x0A,0x05)
+#define TxBaseAddr6						GLINT_TAG_ADDR(0x0A,0x06)
+#define TxBaseAddr7						GLINT_TAG_ADDR(0x0A,0x07)
+#define TxBaseAddr8						GLINT_TAG_ADDR(0x0A,0x08)
+#define TxBaseAddr9						GLINT_TAG_ADDR(0x0A,0x09)
+#define TxBaseAddr10						GLINT_TAG_ADDR(0x0A,0x0A)
+#define TxBaseAddr11						GLINT_TAG_ADDR(0x0A,0x0B)
 
 #define PMTextureBaseAddress					GLINT_TAG_ADDR(0x0b,0x00)
 #define PMTextureMapFormat					GLINT_TAG_ADDR(0x0b,0x01)
@@ -695,37 +808,40 @@
         #define LBRF_DepthWidth24   0x01
         #define LBRF_DepthWidth32   0x02
 
-        #define LBRF_StencilWidth1  (4 << 2)
-        #define LBRF_StencilWidth2  (8 << 2)
+        #define LBRF_StencilWidth0  (0 << 2)
+        #define LBRF_StencilWidth4  (1 << 2)
+        #define LBRF_StencilWidth8  (2 << 2)
 
-        #define LBRF_StencilPos0  (16 << 4)
-        #define LBRF_StencilPos1  (20 << 4)
-        #define LBRF_StencilPos2  (24 << 4)
-        #define LBRF_StencilPos3  (28 << 4)
-        #define LBRF_StencilPos4  (32 << 4)
+        #define LBRF_StencilPos16   (0 << 4)
+        #define LBRF_StencilPos20   (1 << 4)
+        #define LBRF_StencilPos24   (2 << 4)
+        #define LBRF_StencilPos28   (3 << 4)
+        #define LBRF_StencilPos32   (4 << 4)
 
-        #define LBRF_FrameCount1    (4 << 7)
-        #define LBRF_FrameCount2    (8 << 7)
+        #define LBRF_FrameCount0    (0 << 7)
+        #define LBRF_FrameCount4    (1 << 7)
+        #define LBRF_FrameCount8    (2 << 7)
 
-        #define LBRF_FrameCountPos0  (16 << 9)
-        #define LBRF_FrameCountPos1  (20 << 9)
-        #define LBRF_FrameCountPos2  (24 << 9)
-        #define LBRF_FrameCountPos3  (28 << 9)
-        #define LBRF_FrameCountPos4  (32 << 9)
-        #define LBRF_FrameCountPos5  (36 << 9)
-        #define LBRF_FrameCountPos6  (40 << 9)
+        #define LBRF_FrameCountPos16  (0 << 9)
+        #define LBRF_FrameCountPos20  (1 << 9)
+        #define LBRF_FrameCountPos24  (2 << 9)
+        #define LBRF_FrameCountPos28  (3 << 9)
+        #define LBRF_FrameCountPos32  (4 << 9)
+        #define LBRF_FrameCountPos36  (5 << 9)
+        #define LBRF_FrameCountPos40  (6 << 9)
 
-        #define LBRF_GIDWidth1 (4 << 12)
+        #define LBRF_GIDWidth0 (0 << 12)
+        #define LBRF_GIDWidth4 (1 << 12)
 
-        #define LBRF_GIDPos0  (16 << 13)
-        #define LBRF_GIDPos1  (20 << 13)
-        #define LBRF_GIDPos2  (24 << 13)
-        #define LBRF_GIDPos3  (28 << 13)
-        #define LBRF_GIDPos4  (32 << 13)
-        #define LBRF_GIDPos5  (36 << 13)
-        #define LBRF_GIDPos6  (40 << 13)
-        #define LBRF_GIDPos7  (44 << 13)
-        #define LBRF_GIDPos8  (48 << 13)
+        #define LBRF_GIDPos16  (0 << 13)
+        #define LBRF_GIDPos20  (1 << 13)
+        #define LBRF_GIDPos24  (2 << 13)
+        #define LBRF_GIDPos28  (3 << 13)
+        #define LBRF_GIDPos32  (4 << 13)
+        #define LBRF_GIDPos36  (5 << 13)
+        #define LBRF_GIDPos40  (6 << 13)
+        #define LBRF_GIDPos44  (7 << 13)
+        #define LBRF_GIDPos48  (8 << 13)
 
         #define LBRF_Compact32  (1 << 17)
 
@@ -745,13 +861,19 @@
 
 #define TextureData						GLINT_TAG_ADDR(0x11,0x0d)
 #define TextureDownloadOffset					GLINT_TAG_ADDR(0x11,0x0e)
+#define LBWindowOffset						GLINT_TAG_ADDR(0x11,0x0f)
 
 #define GLINTWindow						GLINT_TAG_ADDR(0x13,0x00)
-        #define GWIN_ForceLBUpdate      0x08
-        #define GWIN_LBUpdateSourceREG  0x10
-        #define GWIN_LBUpdateSourceLB   0
-        #define GWIN_DisableLBUpdate    0x40000
-        #define GWIN_EnableLBUpdate     0
+        #define GWIN_UnitEnable          (1 << 0)
+        #define GWIN_ForceLBUpdate       (1 << 3)
+        #define GWIN_LBUpdateSourceREG   (1 << 4)
+        #define GWIN_LBUpdateSourceLB    (0 << 4)
+        #define GWIN_StencilFCP          (1 << 17)
+        #define GWIN_DepthFCP            (1 << 18)
+        #define GWIN_OverrideWriteFilter (1 << 19)
+
+	/* ??? is this needed, set by permedia (2) modules */
+        #define GWIN_DisableLBUpdate    0x40000 
 
 #define StencilMode						GLINT_TAG_ADDR(0x13,0x01)
 #define StencilData						GLINT_TAG_ADDR(0x13,0x02)
@@ -868,6 +990,26 @@
 #define FBBlockColorL						GLINT_TAG_ADDR(0x18,0x0e)
 #define SuspendUntilFrameBlank					GLINT_TAG_ADDR(0x18,0x0f)
 
+#define KsRStart						GLINT_TAG_ADDR(0x19,0x00)
+#define dKsRdx							GLINT_TAG_ADDR(0x19,0x01)
+#define dKsRdyDom						GLINT_TAG_ADDR(0x19,0x02)
+#define KsGStart						GLINT_TAG_ADDR(0x19,0x03)
+#define dKsGdx							GLINT_TAG_ADDR(0x19,0x04)
+#define dKsGdyDom						GLINT_TAG_ADDR(0x19,0x05)
+#define KsBStart						GLINT_TAG_ADDR(0x19,0x06)
+#define dKsBdx							GLINT_TAG_ADDR(0x19,0x07)
+#define dKsBdyDom						GLINT_TAG_ADDR(0x19,0x08)
+
+#define KdRStart						GLINT_TAG_ADDR(0x1A,0x00)
+#define dKdRdx							GLINT_TAG_ADDR(0x1A,0x01)
+#define dKdRdyDom						GLINT_TAG_ADDR(0x1A,0x02)
+#define KdGStart						GLINT_TAG_ADDR(0x1A,0x03)
+#define dKdGdx							GLINT_TAG_ADDR(0x1A,0x04)
+#define dKdGdyDom						GLINT_TAG_ADDR(0x1A,0x05)
+#define KdBStart						GLINT_TAG_ADDR(0x1A,0x06)
+#define dKdBdx							GLINT_TAG_ADDR(0x1A,0x07)
+#define dKdBdyDom						GLINT_TAG_ADDR(0x1A,0x08)
+
 #define FBSourceBase						GLINT_TAG_ADDR(0x1B,0x00)
 #define FBSourceDelta						GLINT_TAG_ADDR(0x1B,0x01)
 #define Config							GLINT_TAG_ADDR(0x1B,0x02)
@@ -877,7 +1019,31 @@
 #define		CWM_Enable		1<<3
 #define		CCDDA_Enable		1<<4
 #define		CLogOp_Enable		1<<5
+#define ContextDump                                             GLINT_TAG_ADDR(0x1B,0x08)
+#define ContextRestore                                          GLINT_TAG_ADDR(0x1B,0x09)
+#define ContextData                                             GLINT_TAG_ADDR(0x1B,0x0a)
+
+#define TexelLUT0						GLINT_TAG_ADDR(0x1D,0x00)
+#define TexelLUT1						GLINT_TAG_ADDR(0x1D,0x01)
+#define TexelLUT2						GLINT_TAG_ADDR(0x1D,0x02)
+#define TexelLUT3						GLINT_TAG_ADDR(0x1D,0x03)
+#define TexelLUT4						GLINT_TAG_ADDR(0x1D,0x04)
+#define TexelLUT5						GLINT_TAG_ADDR(0x1D,0x05)
+#define TexelLUT6						GLINT_TAG_ADDR(0x1D,0x06)
+#define TexelLUT7						GLINT_TAG_ADDR(0x1D,0x07)
+#define TexelLUT8						GLINT_TAG_ADDR(0x1D,0x08)
+#define TexelLUT9						GLINT_TAG_ADDR(0x1D,0x09)
+#define TexelLUT10						GLINT_TAG_ADDR(0x1D,0x0A)
+#define TexelLUT11						GLINT_TAG_ADDR(0x1D,0x0B)
+#define TexelLUT12						GLINT_TAG_ADDR(0x1D,0x0C)
+#define TexelLUT13						GLINT_TAG_ADDR(0x1D,0x0D)
+#define TexelLUT14						GLINT_TAG_ADDR(0x1D,0x0E)
+#define TexelLUT15						GLINT_TAG_ADDR(0x1D,0x0F)
+
 #define YUVMode                                                 GLINT_TAG_ADDR(0x1E,0x00)
+#define ChromaUpper                                             GLINT_TAG_ADDR(0x1E,0x01)
+#define ChromaLower                                             GLINT_TAG_ADDR(0x1E,0x02)
+#define ChromaTestMode                                          GLINT_TAG_ADDR(0x1E,0x03)
 
 
 /******************************
@@ -964,7 +1130,7 @@
 #define DrawLine01						GLINT_TAG_ADDR(0x26,0x03)
 #define DrawLine10						GLINT_TAG_ADDR(0x26,0x04)
 #define RepeatLine						GLINT_TAG_ADDR(0x26,0x05)
-#define BroadcastMaskTag					GLINT_TAG_ADDR(0x26,0x0F)
+#define BroadcastMask						GLINT_TAG_ADDR(0x26,0x0F)
 
 /*  Colorformats */
 #define BGR555  1
@@ -999,7 +1165,21 @@ do{								\
 do{								\
 	while(GLINT_READ_REG(InFIFOSpace)<1);			\
         GLINT_WRITE_REG(v,r);					\
-}while(0)							\
+}while(0)
+
+#define GLINT_SECONDARY_WRITE_REG(v,r)                          	\
+do{									\
+	*(volatile CARD32 *)((char *)pGlint->SecondaryBase+(r))=v;	\
+}while(0)
+
+#define GLINT_SECONDARY_READ_REG(r)                             	\
+	(*(volatile CARD32 *)((char *)pGlint->SecondaryBase+(r)))
+
+#define GLINT_SECONDARY_SLOW_WRITE_REG(v,r)				\
+do{									\
+	while(GLINT_READ_REG(InFIFOSpace)<1);				\
+        GLINT_SECONDARY_WRITE_REG(v,r);					\
+}while(0)
 
 #define GLINT_LOAD_PAR(v,r) \
         *(unsigned long *)((char*)pGlint->IOBase+r) = *((unsigned long *) &v)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.44 1999/05/04 09:35:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.45 1999/05/14 14:11:21 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -26,6 +26,7 @@
 #include <X.h>
 #include <Xmd.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #if defined(__bsdi__)
 #undef _POSIX_SOURCE
 #undef _ANSI_SOURCE
@@ -502,6 +503,53 @@ xf86munmap(void *start, xf86size_t length)
 #endif
 }
 
+int
+xf86stat(const char *file_name, struct xf86stat *xfst)
+{
+    int         rc;
+    struct stat st;
+
+    rc            = stat(file_name, &st);
+    xf86errno     = xf86GetErrno();
+    xfst->st_rdev = st.st_rdev;	/* Not much is currently supported */
+    return rc;
+}
+
+int
+xf86fstat(int fd, struct xf86stat *xfst)
+{
+    int         rc;
+    struct stat st;
+
+    rc            = fstat(fd, &st);
+    xf86errno     = xf86GetErrno();
+    xfst->st_rdev = st.st_rdev;	/* Not much is currently supported */
+    return rc;
+}
+
+static int
+xfToOsAccessMode(int xfmode)
+{
+    switch(xfmode) {
+    case XF86_R_OK: return R_OK;
+    case XF86_W_OK: return W_OK;
+    case XF86_X_OK: return X_OK;
+    case XF86_F_OK: return F_OK;
+    }
+    return 0;
+}
+
+int
+xf86access(const char *pathname, int mode)
+{
+    int rc;
+    
+    mode      = xfToOsAccessMode(mode);
+    rc        = access(pathname, mode);
+    xf86errno = xf86GetErrno();
+    return rc;
+}
+
 
 
 /* limited stdio support */
@@ -653,14 +701,23 @@ xf86vfprintf(XF86FILE* f, const char *format,...)
 	return ret;
 }
 
+
+				/* This function originally used ..., and
+                                   passed args to vsprintf, which is wrong.
+                                   It should use va_list instead of ...,
+                                   but that requires loading another header
+                                   file.  So, I just fixed the ... use.
+                                   vsscanf may also be wrong. */
 int
 xf86vsprintf(char *s, const char *format, ...)
 {
 	int ret;
 	va_list args;
-	va_start(args, format);
+	va_list ap;
 
-	ret = vsprintf(s,format,args);
+	va_start(args, format);
+	ap = va_arg(args, va_list);
+	ret = vsprintf(s,format,ap);
 	va_end(args);
 	return ret;
 }
@@ -1257,6 +1314,70 @@ xf86closedir(XF86DIR* dir)
 
 	return n;
 }
+
+static mode_t
+xfToOsChmodMode(xf86mode_t xfmode)
+{
+    mode_t mode = 0;
+
+    if (xfmode & XF86_S_ISUID) mode |= S_ISUID;
+    if (xfmode & XF86_S_ISGID) mode |= S_ISGID;
+    if (xfmode & XF86_S_ISVTX) mode |= S_ISVTX;
+    if (xfmode & XF86_S_IRUSR) mode |= S_IRUSR;
+    if (xfmode & XF86_S_IWUSR) mode |= S_IWUSR;
+    if (xfmode & XF86_S_IXUSR) mode |= S_IXUSR;
+    if (xfmode & XF86_S_IRGRP) mode |= S_IRGRP;
+    if (xfmode & XF86_S_IWGRP) mode |= S_IWGRP;
+    if (xfmode & XF86_S_IXGRP) mode |= S_IXGRP;
+    if (xfmode & XF86_S_IROTH) mode |= S_IROTH;
+    if (xfmode & XF86_S_IWOTH) mode |= S_IWOTH;
+    if (xfmode & XF86_S_IXOTH) mode |= S_IXOTH;
+
+    return mode;
+}
+
+int
+xf86chmod(const char *path, xf86mode_t xfmode)
+{
+    mode_t mode = xfToOsChmodMode(xfmode);
+    int    rc   = chmod(path, mode);
+    
+    xf86errno   = xf86GetErrno();
+    return rc;
+}
+
+xf86uid_t xf86geteuid(void)
+{
+    return geteuid();
+}
+
+static mode_t
+xfToOsMknodMode(xf86mode_t xfmode)
+{
+    mode_t mode = xfToOsChmodMode(xfmode);
+
+    if (xfmode & XF86_S_IFREG) mode |= S_IFREG;
+    if (xfmode & XF86_S_IFCHR) mode |= S_IFCHR;
+    if (xfmode & XF86_S_IFBLK) mode |= S_IFBLK;
+    if (xfmode & XF86_S_IFIFO) mode |= S_IFIFO;
+
+    return mode;
+}
+
+int xf86mknod(const char *pathname, xf86mode_t xfmode, xf86dev_t dev)
+{
+    mode_t mode = xfToOsMknodMode(xfmode);
+    int rc      = mknod(pathname, mode, dev);
+    
+    xf86errno   = xf86GetErrno();
+    return rc;
+}
+
+unsigned int xf86sleep(unsigned int seconds)
+{
+    return sleep(seconds);
+}
+
 
 /* Several math functions */
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.39 1999/03/01 02:15:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.40 1999/04/11 13:11:20 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -436,10 +436,22 @@ InitExtensions(argc, argv)
 	}
 }
 
+static void (*__miHookInitVisualsFunction)(miInitVisualsProcPtr *);
+
 void
 InitVisualWrap()
 {
     miResetInitVisuals();
+    if (__miHookInitVisualsFunction)
+	(*__miHookInitVisualsFunction)(&miInitVisualsProc);
+}
+
+void miHookInitVisuals(void (**old)(miInitVisualsProcPtr *),
+		       void (*new)(miInitVisualsProcPtr *))
+{
+    if (old)
+	*old = __miHookInitVisualsFunction;
+    __miHookInitVisualsFunction = new;
 }
 
 #endif /* XFree86LOADER */

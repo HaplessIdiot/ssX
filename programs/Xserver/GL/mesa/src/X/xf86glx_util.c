@@ -1,4 +1,4 @@
-
+/* $XFree86: xc/programs/Xserver/GL/mesa/src/X/xf86glx_util.c,v 1.2 1999/03/14 03:21:29 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -30,11 +30,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
  *
- * Header: /p0/cvs/X39-3D/xc/programs/Xserver/GL/mesa/src/X/xf86glx_util.c,v 1.2 1999/02/26 08:52:46 martin Exp $
- * $XFree86: xc/programs/Xserver/GL/mesa/src/X/xf86glx_util.c,v 1.0tsi Exp $
+ * $PI: xc/programs/Xserver/GL/mesa/src/X/xf86glx_util.c,v 1.6 1999/05/27 03:43:48 jens Exp $
  */
 
-#include "gcstruct.h"
+#include <gcstruct.h>
 #include "pixmapstr.h"
 #include "xf86glx_util.h"
 #include <X11/Xmd.h>

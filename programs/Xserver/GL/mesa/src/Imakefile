@@ -1,6 +1,5 @@
-
-XCOMM Header: /p0/cvs/X39-3D/xc/programs/Xserver/GL/mesa/src/Imakefile,v 1.4 1999/02/27 03:25:03 jens Exp $
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/Imakefile,v 1.0tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/Imakefile,v 1.2 1999/03/14 03:21:29 dawes Exp $
+XCOMM $PI: xc/programs/Xserver/GL/mesa/src/Imakefile,v 1.9 1999/05/27 03:43:46 jens Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -77,6 +76,8 @@ LinkSourceFile(masking.c,../../../../../lib/GL/mesa/src)
 LinkSourceFile(masking.h,../../../../../lib/GL/mesa/src)
 LinkSourceFile(matrix.c,../../../../../lib/GL/mesa/src)
 LinkSourceFile(matrix.h,../../../../../lib/GL/mesa/src)
+LinkSourceFile(mesa_api.h,../../../../../lib/GL/mesa/src)
+LinkSourceFile(mesa_api_wrap.h,../../../../../lib/GL/mesa/src)
 LinkSourceFile(mmath.c,../../../../../lib/GL/mesa/src)
 LinkSourceFile(mmath.h,../../../../../lib/GL/mesa/src)
 LinkSourceFile(mthreads.c,../../../../../lib/GL/mesa/src)
