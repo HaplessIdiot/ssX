@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/parse.c,v 1.14 2002/09/19 13:22:04 tsi Exp $ */
+/* $XFree86: xc/programs/twm/parse.c,v 1.15 2002/09/24 21:00:28 tsi Exp $ */
 /*****************************************************************************/
 /*
 
@@ -325,6 +325,7 @@ void twmUnput (c)
 
 void
 TwmOutput(c)
+    int c;
 {
     putchar(c);
 }
