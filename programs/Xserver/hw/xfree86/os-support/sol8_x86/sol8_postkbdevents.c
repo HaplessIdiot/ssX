@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sol8_x86/sol8_postkbdevents.c,v 1.1 1999/09/25 14:38:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sol8_x86/sol8_postkbdevents.c,v 1.2 1999/10/13 04:21:36 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -47,6 +47,7 @@
 #endif
 
 #include <sys/vuid_event.h>
+#define DEFINE_SOL8_MAP
 #include "sol8_keynames.h"
 
 #ifdef XKB
@@ -162,7 +163,7 @@ void sol8PostKbdEvent(Firm_event	*event)
    * and now get some special keysequences
    */
 
-  specialkey = event->id;
+  specialkey = sol8map[event->id];
 
   if ((ModifierDown(ControlMask | AltMask)) ||
       (ModifierDown(ControlMask | AltLangMask)))
@@ -204,7 +205,17 @@ void sol8PostKbdEvent(Firm_event	*event)
   /*
    * Now map the scancodes to real X-keycodes ...
    */
-  keycode = event->id + MIN_KEYCODE;
+  keycode = sol8map[event->id];
+  if (keycode == KEY_NOTUSED) {
+    xf86MsgVerb(X_INFO, 0,
+	"raw code %d mapped to KEY_NOTUSED -- please report\n", event->id);
+    return;
+  } else if (keycode == KEY_UNKNOWN) {
+    xf86MsgVerb(X_INFO, 0,
+	"raw code %d mapped to KEY_UNKNOWN -- please report\n", event->id);
+    return;
+  }
+  keycode += MIN_KEYCODE;
   keysym = (keyc->curKeySyms.map +
 		keyc->curKeySyms.mapWidth *
 		(keycode - keyc->curKeySyms.minKeyCode));
