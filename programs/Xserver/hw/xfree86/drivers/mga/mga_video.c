@@ -85,6 +85,15 @@ void MGAInitVideo(ScreenPtr pScreen)
 	xfree(adaptors);
 }
 
+/* client libraries expect an encoding */
+XF86VideoEncodingRec DummyEncoding[1] =
+{
+   0,
+   "XV_IMAGE",
+   1024, 1024,
+   {1, 1}
+};
+
 #define NUM_FORMATS_G 3
 
 XF86VideoFormatRec FormatsG[NUM_FORMATS_G] = 
@@ -211,8 +220,8 @@ MGASetupImageVideoG(ScreenPtr pScreen)
     adapt->type = XvWindowMask | XvInputMask | XvImageMask;
     adapt->flags = VIDEO_OVERLAID_IMAGES | VIDEO_CLIP_TO_VIEWPORT;
     adapt->name = "Matrox G-Series Backend Scaler";
-    adapt->nEncodings = 0;
-    adapt->pEncodings = NULL;
+    adapt->nEncodings = 1;
+    adapt->pEncodings = DummyEncoding;
     adapt->nFormats = NUM_FORMATS_G;
     adapt->pFormats = FormatsG;
     adapt->nPorts = 1;
