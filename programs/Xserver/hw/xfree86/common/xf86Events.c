@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.153 2003/07/17 08:19:31 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.154 2003/08/24 17:36:52 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1150,16 +1150,16 @@ xf86Wakeup(pointer blockData, int err, pointer pReadmask)
 	    pInfo = xf86InputDevs;
 	    while (pInfo) {
 		if (pInfo->read_input && pInfo->fd >= 0 &&
-		    (FD_ISSET(pInfo->fd, ((fd_set *)pReadmask)) != 0)) {
+		    (FD_ISSET(pInfo->fd, &devicesWithInput) != 0)) {
 		    int sigstate = xf86BlockSIGIO();
 		    
 		    pInfo->read_input(pInfo);
 		    xf86UnblockSIGIO(sigstate);		    
 		    /*
-		     * Must break here because more than one device may share
-		     * the same file descriptor.
+		     * Remove the descriptior from the set because more than one
+		     * device may share the same file descriptor.
 		     */
-		    break;
+		    FD_CLR(pInfo->fd, &devicesWithInput);
 		}
 		pInfo = pInfo->next;
 	    }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.49 2003/09/13 21:33:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.50 2003/09/24 02:43:36 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -216,6 +216,12 @@ extern OsTimerPtr TimerSet(
 extern void TimerCheck(void);
 extern void TimerCancel(OsTimerPtr /* pTimer */);
 extern void TimerFree(OsTimerPtr /* pTimer */);
+
+extern void SetScreenSaverTimer(void);
+
+#ifdef DPMSExtension
+extern void SetDPMSTimers(void);
+#endif
 
 extern SIGVAL AutoResetServer(int /*sig*/);
 
