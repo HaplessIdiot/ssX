@@ -22,7 +22,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.57 2001/11/30 12:12:02 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.58 2001/12/11 15:33:45 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -275,6 +275,8 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
  	{
  	    if (i != 0xff) {
   		pReg->tridentRegs3x4[0x0] = LCD[i].shadow_0;
+  		pReg->tridentRegs3x4[0x1] = regp->CRTC[1];
+  		pReg->tridentRegs3x4[0x2] = regp->CRTC[2];
   		pReg->tridentRegs3x4[0x3] = LCD[i].shadow_3;
   		pReg->tridentRegs3x4[0x4] = LCD[i].shadow_4;
   		pReg->tridentRegs3x4[0x5] = LCD[i].shadow_5;
@@ -288,6 +290,8 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
  	    pReg->tridentRegs3x4[0x7] = LCD[i].shadow_7;
  	    pReg->tridentRegs3x4[0x10] = LCD[i].shadow_10;
  	    pReg->tridentRegs3x4[0x11] = LCD[i].shadow_11;
+ 	    pReg->tridentRegs3x4[0x12] = regp->CRTC[0x12];
+ 	    pReg->tridentRegs3x4[0x15] = regp->CRTC[0x15];
  	    pReg->tridentRegs3x4[0x16] = LCD[i].shadow_16;
  	    if (LCDActive) {
  		pReg->tridentRegs3x4[CRTHiOrd] = LCD[i].shadow_HiOrd;
@@ -442,8 +446,11 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	case IMAGE975:
 	case IMAGE985:
 	case CYBER9388:
+        case CYBERBLADEXPAI1:
 	    if (pScrn->bitsPerPixel >= 8)
     	    	pReg->tridentRegs3CE[MiscExtFunc] |= 0x10;
+	    else
+    	    	pReg->tridentRegs3CE[MiscExtFunc] &= ~0x10;
 	    if (!pReg->tridentRegs3x4[PreEndControl])
 	    	pReg->tridentRegs3x4[PreEndControl] = 0x01;
 	    if (!pReg->tridentRegs3x4[PreEndFetch])
@@ -690,6 +697,10 @@ TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     	OUTW_3CE(CyberEnhance);
 	SHADOW_ENABLE(tmp);
 	OUTW_3x4(0x0);
+	if (pTrident->shadowNew) {
+	    OUTW_3x4(0x1);
+	    OUTW_3x4(0x2);	    
+	}
 	OUTW_3x4(0x3);
 	OUTW_3x4(0x4);
 	OUTW_3x4(0x5);
@@ -697,6 +708,10 @@ TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
 	OUTW_3x4(0x7);	
 	OUTW_3x4(0x10);
 	OUTW_3x4(0x11); 
+	if (pTrident->shadowNew) {
+	    OUTW_3x4(0x12);
+	    OUTW_3x4(0x15);
+	}
 	OUTW_3x4(0x16);
 	SHADOW_RESTORE(tmp);
     }
@@ -792,6 +807,10 @@ TridentSave(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     	INB_3CE(CyberEnhance);
 	SHADOW_ENABLE(tmp);
 	INB_3x4(0x0);
+	if (pTrident->shadowNew) {
+	    INB_3x4(0x1);
+	    INB_3x4(0x2);	    
+	}
 	INB_3x4(0x3);
 	INB_3x4(0x4);
 	INB_3x4(0x5);
@@ -799,6 +818,10 @@ TridentSave(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
 	INB_3x4(0x7);
 	INB_3x4(0x10);
 	INB_3x4(0x11);
+	if (pTrident->shadowNew) {
+	    INB_3x4(0x12);
+	    INB_3x4(0x15);
+	}
 	INB_3x4(0x16);
 	SHADOW_RESTORE(tmp);
     }

@@ -418,8 +418,8 @@ XAAFillMono8x8PatternRectsScreenOrigin(
    	if(!(infoRec->Mono8x8PatternFillFlags & 		
 				HARDWARE_PATTERN_PROGRAMMED_ORIGIN)){
 	    XAARotateMonoPattern(&patx, &paty, xorg, yorg,
-				(infoRec->Mono8x8PatternFillFlags & 		
-				BIT_ORDER_IN_BYTE_MSBFIRST));
+				(infoRec->Mono8x8PatternFillFlags &
+				 BIT_ORDER_IN_BYTE_MSBFIRST));
 	    xorg = patx; yorg = paty;
         }
     } else {

@@ -60,9 +60,12 @@ extern confDRIRec xf86ConfigDRI;
 			(((p) == Pix24Use32) ? 32 : 0))
 
 /* variables for debugging */
+#ifdef BUILDDEBUG
+extern char* xf86p8bit[];
 extern CARD32 xf86DummyVar1;
 extern CARD32 xf86DummyVar2;
 extern CARD32 xf86DummyVar3;
+#endif
 
 /* Function Prototypes */
 #ifndef _NO_XF86_PROTOTYPES

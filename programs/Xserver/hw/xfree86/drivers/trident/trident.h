@@ -137,14 +137,16 @@ typedef struct {
     XF86VideoAdaptorPtr adaptor;
     int                 videoKey;
     int			hsync;
-    int			hsync_lskew;
+    int			hsync_rskew;
     int			vsync;
+    int			vsync_bskew;
     CARD32              videoFlags;
     int			keyOffset;
 #endif
     int                 OverrideHsync;
     int                 OverrideVsync;
     OptionInfoPtr	Options;
+    Bool		shadowNew;
 } TRIDENTRec, *TRIDENTPtr;
 
 typedef struct {

@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.151 2001/12/11 15:32:02 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.153 2001/12/11 22:23:03 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -1848,6 +1848,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
             pTrident->NoAccel = TRUE; /* Disable acceleration */
             pTrident->HWCursor = FALSE;
 	    pTrident->IsCyber = TRUE;
+	    pTrident->shadowNew = TRUE;
 	    Support24bpp = TRUE;
 	    chipset = "CyberBladeXPAi1";
 	    pTrident->NewClockCode = TRUE;
@@ -2402,6 +2403,7 @@ TRIDENTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	case CYBER9397DVD:
 	case CYBERBLADEXPm8:
 	case CYBERBLADEXPm16:
+	case CYBERBLADEXPAI1:
 	    /* Get ready for MUX mode */
 	    if (pTrident->MUX && 
 		pScrn->bitsPerPixel == 8 && 

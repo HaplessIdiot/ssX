@@ -128,7 +128,7 @@ S3VAccelInit(ScreenPtr pScreen)
     infoPtr->Mono8x8PatternFillFlags = NO_TRANSPARENCY |
 				HARDWARE_PATTERN_PROGRAMMED_BITS |
 				HARDWARE_PATTERN_SCREEN_ORIGIN |
-				BIT_ORDER_IN_BYTE_LSBFIRST;
+				BIT_ORDER_IN_BYTE_MSBFIRST;
 
 
 #ifndef __alpha__

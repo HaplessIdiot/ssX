@@ -1004,9 +1004,12 @@ LOOKUP xfree86LookupTab[] = {
    SYMVAR(xf86Screens)
    SYMVAR(byte_reversed)
    /* debugging variables */
+#ifdef BUILDDEBUG
+   SYMVAR(xf86p8bit)
    SYMVAR(xf86DummyVar1)
    SYMVAR(xf86DummyVar2)
    SYMVAR(xf86DummyVar3)
+#endif
 
    /* variables for PCI devices and cards from xf86Bus.c */
    SYMVAR(xf86PCICardInfo)

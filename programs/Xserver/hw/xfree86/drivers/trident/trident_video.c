@@ -783,9 +783,9 @@ TRIDENTDisplayVideo(
 	break;
     }  
     tx1 = dstBox->x1 + pTrident->hsync;
-    tx2 = dstBox->x2 + pTrident->hsync + pTrident->hsync_lskew; 
+    tx2 = dstBox->x2 + pTrident->hsync + pTrident->hsync_rskew; 
     ty1 = dstBox->y1 + pTrident->vsync - 2;
-    ty2 = dstBox->y2 + pTrident->vsync + 2;
+    ty2 = dstBox->y2 + pTrident->vsync + 2 + pTrident->vsync_bskew;
 
     OUTW(vgaIOBase + 4, (tx1 & 0xff) <<8 | 0x86);
     OUTW(vgaIOBase + 4, (tx1 & 0xff00)   | 0x87);
@@ -1380,8 +1380,9 @@ tridentFixFrame(ScrnInfoPtr pScrn, int *fixFrame)
     break;
   case CYBERBLADEXPm8:
   case CYBERBLADEXPm16:
+  case CYBERBLADEXPAI1:
     pTrident->hsync -= 15;
-    pTrident->hsync_lskew = 3;
+    pTrident->hsync_rskew = 3;
     break;
   case BLADE3D:
     if (pScrn->depth == 24)
@@ -1396,9 +1397,13 @@ tridentFixFrame(ScrnInfoPtr pScrn, int *fixFrame)
     pTrident->hsync -= 8;
     break;
   case CYBERBLADEAI1:
-  case CYBERBLADEAI1D:
     pTrident->hsync -= 7;
     break;
+  case CYBERBLADEAI1D:
+      pTrident->vsync += 2;
+      pTrident->vsync_bskew = -4;
+      pTrident->hsync -= 5;
+      break;
   case CYBERBLADEE4:
     pTrident->hsync -= 8;
     break;
