@@ -1,10 +1,16 @@
 XFree86 4.1.99.2 (xx October 2001)
+ 429. Add luit (#4914, Juliusz Chroboczek).
+ 428. Fix a typo in fontenc that prevents building with no dependency on
+      libfont (#4913, Juliusz Chroboczek).
+ 427. Add an encoding file for the KSC Johab encoding (#4912, Jungshik Shin).
+ 426. Remove some spurious entries in the KSC 5601 encoding file (#4910,
+      Jungshik Shin).
  425. Add Swedish localization of XDarwin front end (Patrik Montgomery).
  424. Fill in mode switch characters in XDarwin keymap (Mario Klebsch and
       Torrey T. Lyons).
  423. Linux/PA-RISC portability fixes (#4892, Grant Grundler, Bdale Garbee,
       and LaMont Jones).
- 422. Linux/mips portability patch (#4891, Guido Guenther).
+ 422. Linux/mips portability patch (#4891, 4919, Guido Guenther).
  421. Preliminary support for building on Linux/arm32 (#4890,
       Branden Robinson).
  420. Make it possible to build the X server on Linux/m68k platforms
@@ -14070,4 +14076,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2011 2001/11/01 23:56:27 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2012 2001/11/02 02:47:23 torrey Exp $
