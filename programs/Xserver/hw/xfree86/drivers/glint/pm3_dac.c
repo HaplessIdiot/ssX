@@ -26,7 +26,7 @@
  * this work is sponsored by Appian Graphics.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.12 2001/01/30 16:49:49 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.13 2001/01/31 16:15:02 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -55,31 +55,66 @@ int
 Permedia3MemorySizeDetect(ScrnInfoPtr pScrn)
 {
     GLINTPtr pGlint = GLINTPTR (pScrn);
-    CARD32 size = 0, i;
+    CARD32 size = 0, temp, temp1, temp2, i;
 
     /* We can map 64MB, as that's the size of the Permedia3 aperture 
      * regardless of memory configuration */
     pGlint->FbMapSize = 64*1024*1024;
 
-    pGlint->FbBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
+    /* Mark as VIDMEM_MMIO to avoid write-combining while detecting memory */
+    pGlint->FbBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
 			pGlint->PciTag, pGlint->FbAddress, pGlint->FbMapSize);
 
     if (pGlint->FbBase == NULL) 
 	return 0;
 
-    for(i=0;i<64;i++) {
-    	/* Clear test memory */
-	MMIO_OUT32(pGlint->FbBase,i*1024*1024, 0);
+    temp = GLINT_READ_REG(PM3MemBypassWriteMask);
+    GLINT_SLOW_WRITE_REG(0xffffffff, PM3MemBypassWriteMask);
+
+    /* The Permedia3 splits up memory, and even replicates it. Grrr.
+     * So that each 32MB appears at offset 0, and offset 32, unless
+     * there's really 64MB attached to the chip.
+     * So, 16MB appears at offset 0, nothing between 16-32, then it re-appears
+     * at offset 32.
+     * This below is to detect the cases of memory combinations
+     * It may also need closer examination for boards other than 16 or 32MB
+     */
+
+    /* Test first 32MB */
+    for(i=0;i<32;i++) {
+    	/* write test pattern */
+	MMIO_OUT32(pGlint->FbBase, i*1024*1024, i*0x00345678);
 	mem_barrier();
-    	/* ok, now write 0xf5f5f5f5 magic */
-	MMIO_OUT32(pGlint->FbBase,i*1024*1024, 0xf5f5f5f5);
-	mem_barrier();
-    	/* Let's check for wrapover, write will fail */
-	if (MMIO_IN32(pGlint->FbBase, i*1024*1024) == 0xf5f5f5f5) 
-		size = i;
+	temp1 = MMIO_IN32(pGlint->FbBase, i*1024*1024);
+    	/* Let's check for wrapover, write will fail at 16MB boundary */
+	if (temp1 == (i*0x00345678)) 
+	    size = i;
 	else 
-		break;
+	    break;
     }
+
+    /* Ok, we're satisfied we've got 32MB, let's test the second lot */
+    if (size == i) {
+	for(i=0;i<32;i++) {
+	    /* Clear first 32MB */
+	    MMIO_OUT32(pGlint->FbBase, i*1024*1024, 0);
+	    mem_barrier();
+	}
+        for(i=32;i<64;i++) {
+    	    /* write test pattern */
+	    MMIO_OUT32(pGlint->FbBase, i*1024*1024, i*0x00345678);
+	    mem_barrier();
+	    temp1 = MMIO_IN32(pGlint->FbBase, i*1024*1024);
+	    temp1 = MMIO_IN32(pGlint->FbBase, (i-32)*1024*1024);
+    	    /* Let's check for wrapover */
+	    if ( (temp1 == (i*0x00345678)) && (temp2 == 0) )
+	        size = i;
+	    else 
+	        break;
+	}
+    }
+
+    GLINT_SLOW_WRITE_REG(temp, PM3MemBypassWriteMask);
 
     xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pGlint->FbBase, 
 							pGlint->FbMapSize);
