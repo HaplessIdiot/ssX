@@ -1,9 +1,9 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv.cpp,v 1.7 2000/03/20 15:57:56 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv.cpp,v 1.8 2000/03/21 19:57:16 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH NV __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
-nv \-NVIDIA video driver
+nv \- NVIDIA video driver
 .SH SYNOPSIS
 .nf
 .B "Section \*qDevice\*q"
