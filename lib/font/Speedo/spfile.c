@@ -45,7 +45,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/Speedo/spfile.c,v 1.7 1998/10/03 09:07:11 dawes Exp $ */
+/* $XFree86: xc/lib/font/Speedo/spfile.c,v 1.8 1999/01/31 04:59:26 dawes Exp $ */
 
 #include "fntfilst.h"
 #include "fontenc.h"
@@ -152,10 +152,7 @@ read_4b(ptr)
  * loads the specified char's data
  */
 buff_t     *
-sp_load_char_data(file_offset, num, cb_offset)
-    fix31       file_offset;
-    fix15       num;
-    fix15       cb_offset;
+sp_load_char_data(fix31 file_offset, fix15 num, fix15 cb_offset)
 {
     SpeedoMasterFontPtr master = sp_fp_cur->master;
 
