@@ -1,4 +1,7 @@
 XFree86 4.3.99.10 (xx July 2003)
+ 358. SiS driver update:
+      - Added pseudo-Xinerama extension for MergedFB mode
+      - Fixes for Clevo L285/L287 (1024x768)
  357. Include Xmd.h in Xpm/lib/XpmI.h to get definitions of LONG64 
       (Bugzilla #562, John Dennis).
  356. Moved Meta_L/R keys and added Super_L/R keys on macintosh keyboard.
@@ -17487,7 +17490,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2794 2003/08/04 10:32:21 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2795 2003/08/06 14:04:02 eich Exp $
 
 
 
