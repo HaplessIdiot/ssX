@@ -1,4 +1,5 @@
 XFree86 4.1.99.6 (xx January 2002)
+ 667. Fix loader for Motorola 68k machines (Alan Hourihane).
  666. Fix very high resolution modes (e.g. 1600x1200@16bpp) in the
       Trident driver (Alan Hourihane).
  665. Disable HWcursor on Trident chips if they exceed the 4Mb boundary.
@@ -14512,4 +14513,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2126 2002/01/11 09:48:53 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2127 2002/01/11 13:06:28 alanh Exp $
