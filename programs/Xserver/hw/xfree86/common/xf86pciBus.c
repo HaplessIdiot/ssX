@@ -294,7 +294,11 @@ FindPCIVideoInfo(void)
 	    if ((!vendorname || !chipname) &&
 		!PCIALWAYSPRINTCLASSES(info->class, info->subclass))
 		continue;
-	    xf86Msg(X_PROBED, "PCI: (%d:%d:%d) ", info->bus, info->device,
+	    if (xf86IsPrimaryPci(info))
+	    	xf86Msg(X_PROBED, "PCI:*(%d:%d:%d) ", info->bus, info->device,
+		    info->func);
+	    else
+	    	xf86Msg(X_PROBED, "PCI: (%d:%d:%d) ", info->bus, info->device,
 		    info->func);
 	    if (vendorname)
 		ErrorF("%s ", vendorname);
