@@ -1,4 +1,5 @@
 XFree86 4.1.99.1 (xx June 2001)
+  15. Fix Trident XVideo colorkey at depth 15, 24 (Alan Hourihane).
   14. Fix some apm driver bugs, including one that prevented acceleration
       from working (#4674, Loïc Grenié).
   13. Fix 555 (depth 15) palette handling in the i810 driver (#4673,
@@ -13331,4 +13332,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1796 2001/05/23 18:40:48 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1797 2001/05/23 20:13:19 dawes Exp $
