@@ -1,4 +1,6 @@
 XFree86 4.0.99.3 (xx April 2001)
+ 435. Fix makedepend for '//' comment parsing and symbols that contain
+      expressions (Marc La France).
  434. Fix a problem with the mga G400 2nd head going into power saver mode
       when it should be blanked, and enable DPMS for the 2nd head (#A.358,
       Craig Leres).
@@ -13075,4 +13077,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1714 2001/04/25 02:23:42 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1715 2001/04/25 14:22:57 dawes Exp $

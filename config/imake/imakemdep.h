@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.48 2001/03/27 00:21:17 torrey Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.49 2001/04/12 20:09:53 torrey Exp $ */
 
 
 /* 
@@ -912,7 +912,14 @@ struct symtab	predefs[] = {
 	{"mc68020", "1"},
 #endif
 #ifdef __GNUC__
+# if __GNUC__ == 1
 	{"__GNUC__", "1"},
+# else
+	{"__GNUC__", "2"},
+# endif
+#endif
+#ifdef __STRICT_ANSI__
+	{"__STRICT_ANSI__", "1"},
 #endif
 #if __STDC__
 	{"__STDC__", "1"},

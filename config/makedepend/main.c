@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/main.c,v 3.17 2000/11/14 21:59:20 dawes Exp $ */
+/* $XFree86: xc/config/makedepend/main.c,v 3.18 2001/01/17 16:38:59 dawes Exp $ */
 
 #include "def.h"
 #ifdef hpux
@@ -570,10 +570,7 @@ char *getnextline(struct filepointer *filep)
 			*p++ = ' ', *p++ = ' ';
 			while (*p && *p != '\n')
 				*p++ = ' ';
-			if (*p == '\n') {
-				lineno++;
-				*p++ = ' ';
-			}
+			if (*p == '\n') --p;
 			continue;
 		}
 		else if (*p == '\\') {
@@ -593,6 +590,7 @@ char *getnextline(struct filepointer *filep)
 				for (cp = bol+1; 
 				     *cp && (*cp == ' ' || *cp == '\t'); cp++);
 				if (*cp) goto done;
+				--p;
 			}
 			bol = p+1;
 		}

@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/cppsetup.c,v 3.5 2000/04/04 19:24:45 dawes Exp $ */
+/* $XFree86: xc/config/makedepend/cppsetup.c,v 3.6 2001/01/17 16:38:57 dawes Exp $ */
 
 #include "def.h"
 
@@ -181,6 +181,7 @@ my_eval_defined (IfParser *ip, const char *var, int len)
 static long
 my_eval_variable (IfParser *ip, const char *var, int len)
 {
+    long val;
     struct symtab **s;
 
     s = lookup_variable (ip, var, len);
@@ -193,7 +194,9 @@ my_eval_variable (IfParser *ip, const char *var, int len)
 	s = lookup_variable (ip, var, strlen(var));
     } while (s);
 
-    return strtol(var, NULL, 0);
+    var = ParseIfExpression(ip, var, &val);
+    if (var && *var) warning("extraneous: '%s'\n", var);
+    return val;
 }
 
 int

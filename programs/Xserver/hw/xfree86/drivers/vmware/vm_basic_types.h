@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vm_basic_types.h,v 1.2 2001/04/10 16:08:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vm_basic_types.h,v 1.3 2001/04/25 02:17:47 tsi Exp $ */
 /* **********************************************************
  * Copyright (C) 1998-2001 VMware, Inc.
  * All Rights Reserved
@@ -49,8 +49,7 @@ typedef signed __int64 int64;
 #pragma warning (disable :4146) // unary minus operator applied to unsigned type, result still unsigned
 #pragma warning (disable :4142) // benign redefinition of type
 
-#else
-#if defined(__GNUC__)
+#elif defined(__GNUC__)
 /* The Xserver source compiles with -ansi -pendantic */
 #ifndef __STRICT_ANSI__
 typedef unsigned long long uint64;
@@ -58,7 +57,6 @@ typedef long long int64;
 #endif
 #else
 #error - Need compiler define for int64/uint64
-#endif
 #endif
 
 typedef unsigned int       uint32;
@@ -77,7 +75,7 @@ typedef char      int8;
 
 #ifdef _MSC_VER
 #define FMT64   "I64"
-#elif __GNUC__
+#elif defined(__GNUC__)
 #define FMT64   "L"
 #else
 #error - Need compiler define for FMT64
@@ -138,7 +136,7 @@ typedef uint32 MPN;
  */
 #ifdef _MSC_VER
 #define NORETURN_DECL(_fndecl)    __declspec(noreturn) _fndecl
-#elif __GNUC__ >= 2 && __GNUC_MINOR__ >= 5
+#elif defined(__GNUC__) && __GNUC__ >= 2 && __GNUC_MINOR__ >= 5
 #define NORETURN_DECL(_fndecl)    _fndecl __attribute__((__noreturn__))
 #else
 #define NORETURN_DECL(_fndecl)    _fndecl
