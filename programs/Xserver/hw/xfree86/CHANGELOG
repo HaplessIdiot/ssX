@@ -1,4 +1,6 @@
 XFree86 4.4.99.6 (xx May 2004)
+ 112. Bump the limit on the number of PCI devices the X server will scan for to
+      128 (Marc La France, requested by Dale L Busacker).
  111. Fixes for a few valgrind warnings in lib/Xt (Thomas Dickey).
  110. Xterm patch #190 (Thomas Dickey).
  109. Xterm patch #189 (Thomas Dickey).
@@ -18924,7 +18926,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3258 2004/05/26 01:19:53 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3259 2004/05/26 22:24:40 dickey Exp $
 
 
 
