@@ -27,7 +27,7 @@
  * 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128misc.c,v 3.5 1997/01/27 06:57:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128misc.c,v 3.6 1997/07/10 06:36:13 dawes Exp $ */
 
 #include "servermd.h"
 
@@ -305,7 +305,7 @@ i128AdjustFrame(int x, int y)
 {
    int   Base;
    unsigned char tmp;
-   extern int i128HDisplay, i128AdjustCursorXPos;
+   extern int i128HDisplay, i128AdjustCursorXPos, i128DisplayOffset;
 #define I128_PAN_MASK 0x01FFFFE0
 
    if (OFLG_ISSET(OPTION_SHOWCACHE, &i128InfoRec.options)) {
@@ -317,7 +317,7 @@ i128AdjustFrame(int x, int y)
       x  = i128DisplayWidth - i128HDisplay;
 
    Base = ((y*i128DisplayWidth + x) * (i128InfoRec.bitsPerPixel/8));
-   i128mem.rbase_g[DB_ADR] = Base & I128_PAN_MASK;
+   i128mem.rbase_g[DB_ADR] = (Base & I128_PAN_MASK) + i128DisplayOffset;
 
    /* now warp the cursor after the screen move */
    i128AdjustCursorXPos = Base - (Base & I128_PAN_MASK);

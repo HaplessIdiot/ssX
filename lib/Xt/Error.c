@@ -1,4 +1,4 @@
-/* $TOG: Error.c /main/41 1997/06/21 07:43:23 kaleb $ */
+/* $TOG: Error.c /main/42 1997/07/24 09:15:36 kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Error.c,v 3.6 1997/06/22 10:16:53 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Error.c,v 3.7 1997/06/29 07:54:26 dawes Exp $ */
 
 /*
 
@@ -283,9 +283,9 @@ in this environment. You may get a more descriptive message by running the\n\
 program as a non-root user or by removing the suid bit on the executable.");
 	    (*fn)(buffer); /* if *fn is an ErrorHandler it should exit */
 	}
-    } else
+    }
 #endif
-    {
+    else {
 	/*
 	 * If you have snprintf the worst thing that could happen is you'd
 	 * lose some information. Without snprintf you're probably going to 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128accel.c,v 3.6 1997/06/15 07:12:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128accel.c,v 3.7 1997/07/19 05:43:11 dawes Exp $ */
 
 /*
  * Copyright 1997 by Robin Cutshaw <robin@XFree86.Org>
@@ -36,6 +36,7 @@
 extern struct i128io i128io;
 extern struct i128mem i128mem;
 extern int i128DisplayWidth;
+extern int i128DisplayOffset;
 extern int i128DeviceType;
 static volatile CARD32 *eng_a;
 static volatile CARD32 *eng_b;
@@ -226,8 +227,8 @@ i128SetupForScreenToScreenCopy(int xdir, int ydir, int rop, unsigned planemask,
 	}
 
 	eng_cur[DE_PGE] = 0x00;
-	eng_cur[DE_SORG] = 0x00;
-	eng_cur[DE_DORG] = 0x00;
+	eng_cur[DE_SORG] = i128DisplayOffset;
+	eng_cur[DE_DORG] = i128DisplayOffset;
 	eng_cur[DE_MSRC] = 0x00;
 	eng_cur[DE_WKEY] = 0x00;
 	eng_cur[DE_SPTCH] = i128mem.rbase_g[DB_PTCH];

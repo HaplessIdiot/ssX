@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclmisc.c,v 3.7 1997/03/24 13:08:09 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclmisc.c,v 3.8 1997/05/18 13:58:12 dawes Exp $ */
 /*
  * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -107,6 +107,7 @@ XF86Misc_Init(interp)
 	return TCL_OK;
 }
 
+/* Note, the characters '_', ' ', and '\t' are ignored in the comparison */
 int
 StrCaseCmp(s1, s2)
 char *s1, *s2;
@@ -118,6 +119,10 @@ char *s1, *s2;
                         return(0);
                 else
                         return(1);
+	while (*s1 == '_' || *s1 == ' ' || *s1 == '\t')
+		s1++;
+	while (*s2 == '_' || *s2 == ' ' || *s2 == '\t')
+		s2++;
         c1 = (isupper(*s1) ? tolower(*s1) : *s1);
         c2 = (isupper(*s2) ? tolower(*s2) : *s2);
         while (c1 == c2)
@@ -125,6 +130,10 @@ char *s1, *s2;
                 if (c1 == '\0')
                         return(0);
                 s1++; s2++;
+		while (*s1 == '_' || *s1 == ' ' || *s1 == '\t')
+			s1++;
+		while (*s2 == '_' || *s2 == ' ' || *s2 == '\t')
+			s2++;
                 c1 = (isupper(*s1) ? tolower(*s1) : *s1);
                 c2 = (isupper(*s2) ? tolower(*s2) : *s2);
         }

@@ -1,4 +1,14 @@
 XFree86 3.9k (14 July 1997)
+1133. Support for I128 DRAM cards (#816, Robin Cutshaw).
+1132. PCI updates required for the I128 server (#815, Robin Cutshaw).
+1131. Fix for Xt/Error.c (#813, Kaleb Keithley).
+1130. Make XF86Setup's keyword matching the same as the Xservers (ie,
+      ignore '_', ' ', '\t' in keywords).
+1129. Tseng documentation update (#800, 803, Koen Gadeyne).
+1128. Update to imake's auto GCC PostIncDir detection for OpenBSD 
+      (#794, Matthieu Herrb).
+1127. Fix I128 problems (#792, 809, Robin Cutshaw).
+1126. Fix some errors in the symbols/th XKB file (Poonlap Veeratanabutr).
 1125. Don't use EXTRA_DEFINES in Xserver/xkb/Imamkefile (#786, Kaleb Keithley).
 1124. Alternate way of fixing the "./" problem in Imake.rules 
       (#785, Kaleb Keithley).
@@ -5135,4 +5145,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.510 1997/07/12 11:32:28 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.511 1997/07/19 05:43:08 dawes Exp $

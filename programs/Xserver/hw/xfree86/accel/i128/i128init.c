@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128init.c,v 3.9 1997/07/10 06:36:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128init.c,v 3.10 1997/07/19 05:43:11 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -46,6 +46,8 @@ extern struct i128mem i128mem;
 extern struct i128io i128io;
 extern int i128Weight;
 extern int i128DisplayWidth;
+extern int i128DisplayOffset;
+extern int i128MemoryTypeDram;
 extern int i128RamdacType;
 
 
@@ -413,6 +415,7 @@ i128Init(mode)
 	int pitch_multiplier, iclock;
       	unsigned PCI_DevIOPorts[2];
 	Bool ret;
+	CARD32 tmp;
 
 	i128HDisplay = mode->HDisplay;
 
@@ -439,12 +442,14 @@ xf86DisableIOPorts(i128InfoRec.scrnIndex);
 		iclock = 4;
 	else if (i128RamdacType == IBM528_DAC)
 		iclock = 128 / i128InfoRec.bitsPerPixel;
+	else if (i128MemoryTypeDram)
+		iclock = 32 / i128InfoRec.bitsPerPixel; /* IBM526 DAC 32b bus */
 	else
 		iclock = 64 / i128InfoRec.bitsPerPixel; /* IBM524/526 DAC */
 
 	i128mem.rbase_g[INT_VCNT] = 0x00;
 	i128mem.rbase_g[INT_HCNT] = 0x00;
-	i128mem.rbase_g[DB_ADR] = 0x00;
+	i128mem.rbase_g[DB_ADR] = i128DisplayOffset;
 	i128mem.rbase_g[DB_PTCH] = i128DisplayWidth * pitch_multiplier;
 	i128mem.rbase_g[CRT_HAC] = mode->HDisplay/iclock;
 	i128mem.rbase_g[CRT_HBL] = (mode->HTotal - mode->HDisplay)/iclock;
@@ -456,7 +461,17 @@ xf86DisableIOPorts(i128InfoRec.scrnIndex);
 	i128mem.rbase_g[CRT_VS] = mode->VSyncEnd - mode->VSyncStart;
 	i128mem.rbase_g[CRT_BORD] = 0x00;
 	i128mem.rbase_g[CRT_1CON] = 0x00000070;
-	i128mem.rbase_g[CRT_2CON] = 0x01040101;
+	if (i128MemoryTypeDram)
+		tmp = 0x20000100;
+	else {
+		tmp = 0x00040101;
+		if (i128InfoRec.videoRam == 2048)
+			tmp |= 0x00000002;
+		if ((i128DisplayWidth & (i128DisplayWidth-1)) ||
+		    ((i128DisplayWidth * i128InfoRec.bitsPerPixel) > 32768L))
+			tmp |= 0x01000000;  /* split transfer */
+	}
+	i128mem.rbase_g[CRT_2CON] = tmp;
 
 	i128mem.rbase_w[MW0_CTRL] = 0x00000000;
 	if (i128InfoRec.videoRam == 2048)
@@ -473,9 +488,15 @@ xf86DisableIOPorts(i128InfoRec.scrnIndex);
 	i128mem.rbase_w[MW0_MASK] = 0xFFFFFFFF;
 
 	if ((i128io.id&0x7) > 1) {
+      		PCI_DevIOPorts[0] = iR.iobase + 0x30;
+        	xf86AddIOPorts(i128InfoRec.scrnIndex, 1, PCI_DevIOPorts);
+        	xf86EnableIOPorts(i128InfoRec.scrnIndex);
+
 	   	i128io.vga_ctl &= 0x0000FF00;
    		i128io.vga_ctl |= 0x00000082;
    		outl(iR.iobase + 0x30, i128io.vga_ctl);
+
+        	xf86DisableIOPorts(i128InfoRec.scrnIndex);
 
 		if (!i128FontsSaved) {
 			int i;

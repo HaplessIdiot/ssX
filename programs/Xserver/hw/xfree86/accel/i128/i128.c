@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.32 1997/06/25 08:24:55 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.33 1997/07/10 06:36:12 dawes Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -176,6 +176,7 @@ ScreenPtr i128savepScreen;
 Bool  i128DAC8Bit = FALSE;
 Bool  i128DACSyncOnGreen = FALSE;
 int i128DisplayWidth;
+int i128DisplayOffset = 0;
 int i128Weight;
 int i128AdjustCursorXPos = 0;
 pointer i128VideoMem = NULL;
@@ -185,6 +186,7 @@ int i128hotX, i128hotY;
 Bool i128BlockCursor, i128ReloadCursor;
 int i128CursorStartX, i128CursorStartY, i128CursorLines;
 int i128DeviceType;
+int i128MemoryTypeDram = 0;
 int i128RamdacType = UNKNOWN_DAC;
 
 extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed, xf86Verbose;
@@ -292,6 +294,10 @@ i128Probe()
 
    i128DeviceType = pcrp->_device_vendor;
 
+   if (((pcrp->_status_command & 0x03) == 0x03) &&
+       ((pcrp->rsvd2 >>16) == 0x08))
+      i128MemoryTypeDram = 1;
+
    for (i=0; i<11; i++)  /* 11 32bit I/O address registers (0x00-0x28) */
       PCI_DevIOPorts[i] = iR.iobase + (i*4);
 
@@ -326,6 +332,10 @@ i128Probe()
 	    pcrp->_base4, pcrp->_base4 & 0xFFFF0000);
    ErrorF("    IO        0x%08x  addr 0x%08x\n",
 	    pcrp->_base5, pcrp->_base5 & 0xFFFFFF00);
+   ErrorF("    R1        0x%08x  addr 0x%08x\n",
+	    pcrp->rsvd1, pcrp->rsvd1 & 0xFFFFFF00);
+   ErrorF("    R2        0x%08x  addr 0x%08x\n",
+	    pcrp->rsvd2, pcrp->rsvd2 & 0xFFFFFF00);
    ErrorF("    RBASE_E   0x%08x  addr 0x%08x  %sdecode-enabled\n\n",
 	    pcrp->_baserom, pcrp->_baserom & 0xFFFF8000,
 	    pcrp->_baserom & 0x1 ? "" : "not-");
@@ -470,7 +480,7 @@ i128Probe()
                         i128InfoRec.videoRam * 1024);
    i128VideoMem = (pointer )i128mem.mw0_ad;
 #ifdef TOOMANYMMAPS
-   i128mem.mw1_ad =  (CARD32 *)xf86MapVidMem(0, 1,
+   i128mem.mw1_ad =  (unsigned char *)xf86MapVidMem(0, 1,
 			(pointer)(pcrp->_base1 & 0xFFC00000),
                         i128InfoRec.videoRam * 1024);
 #endif
@@ -495,8 +505,15 @@ i128Probe()
 	 i128RamdacType = IBM528_DAC;
       else
 	 i128RamdacType = TI3025_DAC;
-   } if (pcrp->_device_vendor == I128_DEVICE_ID2) {
+   } else if (pcrp->_device_vendor == I128_DEVICE_ID2) {
+      if (i128io.id & 0x0400)       /* 2 banks VRAM   */
+	 i128RamdacType = IBM528_DAC;
+      else
 	 i128RamdacType = IBM526_DAC;
+   } else {
+            ErrorF("%s: Unknown I128 rev (%x).\n", i128InfoRec.name,
+		pcrp->_device_vendor);
+            return(FALSE);
    }
 
    switch(i128RamdacType) {
@@ -713,6 +730,12 @@ i128Probe()
    else
       i128DisplayWidth = 2048;
 
+   if (i128InfoRec.videoRam > 4096)
+      i128DisplayOffset = 0x400000L %
+		          (i128DisplayWidth * (i128InfoRec.bitsPerPixel/8));
+
+   i128VideoMem = (pointer)((CARD32)i128VideoMem + i128DisplayOffset);
+
    if (OFLG_ISSET(OPTION_DAC_8_BIT, &i128InfoRec.options) ||
        (i128InfoRec.bitsPerPixel > 8))
       i128DAC8Bit = TRUE;
@@ -882,7 +905,7 @@ i128ProgramIBMRGB(freq, flags)
    i128mem.rbase_g_b[IDXL_I] = IBMRGB_pwr_mgmt;
    i128mem.rbase_g_b[DATA_I] = 0x00;
    i128mem.rbase_g_b[IDXL_I] = IBMRGB_dac_op;
-   tmp2 = (i128RamdacType == IBM526_DAC) ? 0x00 : 0x02;  /* fast slew */
+   tmp2 = (i128RamdacType == IBM528_DAC) ? 0x02 : 0x00;  /* fast slew */
    if (i128DACSyncOnGreen) tmp2 |= 0x08;
    i128mem.rbase_g_b[DATA_I] = tmp2;
    i128mem.rbase_g_b[IDXL_I] = IBMRGB_pal_ctrl;
@@ -891,9 +914,16 @@ i128ProgramIBMRGB(freq, flags)
    i128mem.rbase_g_b[DATA_I] = 0x01;
    i128mem.rbase_g_b[IDXL_I] = IBMRGB_misc1;
    tmp2 = i128mem.rbase_g_b[DATA_I] & 0xbc;
-   i128mem.rbase_g_b[DATA_I] = tmp2 | ((i128RamdacType == IBM528_DAC) ? 3 : 1);
+   if (!i128MemoryTypeDram)
+   	tmp2 |= (i128RamdacType == IBM528_DAC) ? 3 : 1;
+   i128mem.rbase_g_b[DATA_I] = tmp2;
    i128mem.rbase_g_b[IDXL_I] = IBMRGB_misc2;
-   i128mem.rbase_g_b[DATA_I] = 0x43 | (i128DAC8Bit ? 0x04 : 0x00);
+   tmp2 = 0x03;
+   if (i128DAC8Bit)
+	tmp2 |= 0x04;
+   if (!(i128MemoryTypeDram && (i128InfoRec.bitsPerPixel > 16)))
+	tmp2 |= 0x40;
+   i128mem.rbase_g_b[DATA_I] = tmp2;
    i128mem.rbase_g_b[IDXL_I] = IBMRGB_misc3;
    i128mem.rbase_g_b[DATA_I] = 0x00;
    i128mem.rbase_g_b[IDXL_I] = IBMRGB_misc4;
