@@ -24,7 +24,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/sis/sis_context.h,v 1.1 2003/09/28 20:15:33 alanh Exp $ */
 
 /*
  * Authors:
@@ -246,7 +246,7 @@ struct sis_context
   GLuint vertex_stride_shift;
   GLuint vertex_format;
   GLuint num_verts;
-  char *verts;		
+  GLubyte *verts;		
 
   unsigned int virtualX, virtualY;
   unsigned int bytesPerPixel;

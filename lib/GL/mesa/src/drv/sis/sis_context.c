@@ -24,7 +24,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/lib/GL/mesa/src/drv/sis/sis_ctx.c,v 1.3 2000/09/26 15:56:48 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/sis/sis_context.c,v 1.1 2003/09/28 20:15:33 alanh Exp $ */
 
 /*
  * Authors:
@@ -69,7 +69,7 @@ static const char * const card_extensions[] =
 void
 WaitEngIdle (sisContextPtr smesa)
 {
-   GLbyte *IOBase = GET_IOBase (smesa);
+   GLubyte *IOBase = GET_IOBase (smesa);
    GLbyte cEngineState;
 
    cEngineState = *((GLbyte volatile *) (IOBase + 0x8243));
@@ -83,7 +83,7 @@ WaitEngIdle (sisContextPtr smesa)
 void
 Wait2DEngIdle (sisContextPtr smesa)
 {
-   GLbyte *IOBase = GET_IOBase (smesa);
+   GLubyte *IOBase = GET_IOBase (smesa);
    GLbyte cEngineState;
 
    cEngineState = *((GLbyte volatile *) (IOBase + 0x8243));

@@ -24,7 +24,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/sis/sis_texstate.c,v 1.1 2003/09/28 20:15:34 alanh Exp $ */
 
 /*
  * Authors:
@@ -447,7 +447,7 @@ sis_set_texobj_parm( GLcontext *ctx, struct gl_texture_object *texObj,
 
    for (i = firstLevel; i <= lastLevel; i++)
    {
-      GLuint texOffset;
+      GLuint texOffset = 0;
       GLuint texPitch = TransferTexturePitch( t->image[i].pitch );
 
       switch (t->image[i].memType)
