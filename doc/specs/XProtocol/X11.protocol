@@ -1,4 +1,5 @@
-.\" $XConsortium: X11.protocol,v 1.43 94/04/18 17:43:44 rws Exp $
+.\" $TOG: X11.protocol /main/49 1997/11/04 18:34:11 kaleb $
+.\" $XFree86$
 .EH ''''
 .OH ''''
 .EF ''''
@@ -12,13 +13,12 @@
 
 \s+1\fBX Consortium Standard\fP\s-1
 
-\s+1\fBX Version 11, Release 6\fP\s-1
+\s+1\fBX Version 11, Release 6.4\fP\s-1
 .sp 6
 .ce 5
 \s-1Robert W. Scheifler
 .sp 6p
-Massachusetts Institute of Technology
-Laboratory for Computer Science\s+1
+X Consortium, Inc.
 .bp
 \&
 .ps 9
@@ -118,12 +118,11 @@ provide mechanism, not policy.
 .LP
 .Ds 0
 Robert W. Scheifler
-Massachusetts Institute of Technology
-Laboratory for Computer Science
+X Consortium, Inc.
 .De
 .bp 1
-.EH '\fBX Protocol\fP''\fBX11, Release 6\fP'
-.OH '\fBX Protocol\fP''\fBX11, Release 6\fP'
+.EH '\fBX Protocol\fP''\fBX11, Release 6.4\fP'
+.OH '\fBX Protocol\fP''\fBX11, Release 6.4\fP'
 .EF ''\fB % \fP''
 .OF ''\fB % \fP''
 .NH 1
@@ -160,7 +159,7 @@ Every reply contains a 32-bit length field expressed in units of four bytes.
 Every reply consists of 32 bytes followed by zero or more additional bytes of
 data, as specified in the length field.
 Unused bytes within a reply are not guaranteed to be zero.
-Every reply also contains the least-significant 16 bits of the sequence number 
+Every reply also contains the least significant 16 bits of the sequence number 
 of the corresponding request.
 .SH
 Error Format
@@ -169,7 +168,7 @@ Error reports are 32 bytes long.
 Every error includes an 8-bit error code.
 Error codes 128 through 255 are reserved for extensions.
 Every error also includes the major and minor opcodes of the failed request
-and the least-significant 16 bits of the sequence number of the request.
+and the least significant 16 bits of the sequence number of the request.
 For the following errors (see section 4), 
 the failing resource ID is also returned: 
 .PN Colormap ,
@@ -195,14 +194,14 @@ Event Format
 Events are 32 bytes long.
 Unused bytes within an event are not guaranteed to be zero.
 Every event contains an 8-bit type code.
-The most-significant bit in this code is set if the event was generated from a 
+The most significant bit in this code is set if the event was generated from a 
 .PN SendEvent 
 request.
 Event codes 64 through 127 are reserved for extensions, although the core
 protocol does not define a mechanism for selecting interest in such events.
 Every core event (with the exception of 
 .PN KeymapNotify ) 
-also contains the least-significant 16 bits of the sequence number of the last 
+also contains the least significant 16 bits of the sequence number of the last 
 request issued by the client that was (or is currently being) processed by 
 the server.
 .NH 1
@@ -230,7 +229,7 @@ Requests in section 9 are described in the following format:
 	\fIarg1\fP\^: type1
 	...
 	\fIargN\fP\^: typeN
-   =>
+   \(->
 	result1: type1
 	...
 	resultM: typeM
@@ -240,10 +239,10 @@ Requests in section 9 are described in the following format:
 	Description.
 .De
 .IP
-If no => is present in the description, 
+If no \(-> is present in the description, 
 then the request has no reply (it is asynchronous), 
 although errors may still be reported.
-If =>+ is used, 
+If \(->+ is used, 
 then one or more replies can be generated for a single request.
 .IP \(bu 5
 Events in section 11 are described in the following format:
@@ -311,9 +310,9 @@ The unused bits in the value-mask must be zero (or the server generates a
 .PN Value 
 error).
 The value-list contains one value for each bit set to 1 in the mask, 
-from least-significant to most-significant bit in the mask.
+from least significant to most significant bit in the mask.
 Each value is represented with four bytes, 
-but the actual value occupies only the least-significant bytes as required.
+but the actual value occupies only the least significant bytes as required.
 The values of the unused bytes do not matter.
 T}
 .sp 3p
@@ -541,16 +540,16 @@ T}
 The [x,y] coordinates of a RECTANGLE specify the upper-left corner.
 .LP
 The primary interpretation of large characters in a STRING16 is that they
-are composed of two bytes used to index a two-dimensional matrix;
+are composed of two bytes used to index a two-dimensional matrix,
 hence, the use of CHAR2B rather than CARD16.
 This corresponds to the JIS/ISO method of indexing 2-byte characters.
 It is expected that most large fonts will be defined with 2-byte 
 matrix indexing.
 For large fonts constructed with linear indexing, 
 a CHAR2B can be interpreted as a 16-bit number by treating byte1 as
-the most-significant byte.
+the most significant byte.
 This means that clients should always transmit such
-16-bit character values most-significant byte first, as the server will never
+16-bit character values most significant byte first, as the server will never
 byte-swap CHAR2B quantities.
 .LP
 The length, format, and interpretation of a HOST address are specific to the
@@ -793,7 +792,7 @@ Latin-3, Latin-4, Kana, Arabic, Cyrillic, Greek, Tech, Special, Publish, APL,
 Hebrew, Thai, and Korean as well as a set of symbols common on keyboards
 (Return, Help, Tab, 
 and so on).
-KEYSYMs with the most-significant bit (of the 29 bits) set are reserved 
+KEYSYMs with the most significant bit (of the 29 bits) set are reserved 
 as vendor-specific.
 .LP
 A list of KEYSYMs is associated with each KEYCODE.
@@ -881,7 +880,7 @@ this case, if the
 modifier is on, or if the
 .PN Lock 
 modifier is on and
-is interpreted as ShiftLock, then the first KEYSYM is used, otherwise the
+is interpreted as ShiftLock, then the first KEYSYM is used; otherwise, the
 second KEYSYM is used.
 .IP \(bu 5
 The
@@ -997,9 +996,9 @@ Connection Initiation
 The client must send an initial byte of data to identify the byte order to be
 employed.
 The value of the byte must be octal 102 or 154.
-The value 102 (ASCII uppercase B) means values are transmitted most-significant
+The value 102 (ASCII uppercase B) means values are transmitted most significant
 byte first, and value 154 (ASCII lowercase l) means values are transmitted 
-least-significant byte first.
+least significant byte first.
 Except where explicitly noted in the protocol,
 all 16-bit and 32-bit quantities sent by the client must be transmitted with 
 this byte order,
@@ -1232,11 +1231,11 @@ The scanline is quantized in multiples of bits as given by bitmap-scanline-unit.
 The bitmap-scanline-unit is always less than or equal to the
 bitmap-scanline-pad.
 Within each unit,
-the leftmost bit in the bitmap is either the least-significant
-or most-significant bit in the unit, as given by bitmap-bit-order.
+the leftmost bit in the bitmap is either the least significant
+or most significant bit in the unit, as given by bitmap-bit-order.
 If a pixmap is represented in XY format,
 each plane is represented as a bitmap, and the planes appear from 
-most-significant to least-significant in bit order with no padding 
+most significant to least significant in bit order with no padding 
 between planes.
 .LP
 Pixmap-formats contains one entry for each depth value.
@@ -1248,7 +1247,7 @@ In Z format,
 the pixels are in scanline order, left to right within a scanline.
 The number of bits used to hold each pixel is given by bits-per-pixel.
 Bits-per-pixel may be larger than strictly required by the depth,
-in which case the least-significant bits are used to hold
+in which case the least significant bits are used to hold
 the pixmap data, and the values of the unused high-order bits are
 undefined.
 When the bits-per-pixel is 4,
@@ -1442,8 +1441,8 @@ delim %%
 .sM
 .IN "CreateWindow" "" "@DEF@"
 .PN CreateWindow
-.in +.2i
 .LP
+.in +.2i
 \fIwid\fP, \fIparent\fP\^: WINDOW
 .br
 \fIclass\fP\^:
@@ -1463,7 +1462,9 @@ delim %%
 \fIvalue-mask\fP\^: BITMASK
 .br
 \fIvalue-list\fP\^: LISTofVALUE
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Alloc ,
 .PN Colormap , 
@@ -1947,14 +1948,16 @@ The server might or might not make a copy of the pixmap.
 .sM
 .IN "ChangeWindowAttributes" "" "@DEF@"
 .PN ChangeWindowAttributes
-.in +.2i
 .LP
+.in +.2i
 \fIwindow\fP\^: WINDOW
 .br
 \fIvalue-mask\fP\^: BITMASK
 .br
 \fIvalue-list\fP\^: LISTofVALUE
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Access ,
 .PN Colormap , 
@@ -2035,14 +2038,14 @@ a subset of the attributes may have been altered.
 .sM
 .IN "GetWindowAttributes" "" "@DEF@"
 .PN GetWindowAttributes
-.in +.2i
 .LP
+.in +.2i
 \fIwindow\fP\^: WINDOW
 .in -.2i
 .LP
-   =>
-.in +.2i
+   \(->
 .LP
+.in +.2i
 visual: VISUALID
 .br
 class:
@@ -2079,7 +2082,9 @@ all-event-masks, your-event-mask: SETofEVENT
 do-not-propagate-mask: SETofDEVICEEVENT
 .br
 override-redirect: BOOL
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Window
 .in -.2i
@@ -2097,10 +2102,12 @@ Your-event-mask is the event mask selected by the querying client.
 .sM
 .IN "DestroyWindow" "" "@DEF@"
 .PN DestroyWindow
+.LP
 .in +.2i
-.LP
 \fIwindow\fP\^: WINDOW
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Window
 .in -.2i
@@ -2131,10 +2138,12 @@ this request has no effect.
 .sM
 .IN "DestroySubwindows" "" "@DEF@"
 .PN DestroySubwindows
+.LP
 .in +.2i
-.LP
 \fIwindow\fP\^: WINDOW
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Window
 .in -.2i
@@ -2148,15 +2157,17 @@ request on all children of the window, in bottom-to-top stacking order.
 .sM
 .IN "ChangeSaveSet" "" "@DEF@"
 .PN ChangeSaveSet
-.in +.2i
 .LP
+.in +.2i
 \fIwindow\fP\^: WINDOW
 .br
 \fImode\fP\^:
 .Pn { Insert , 
 .PN Delete }
+.in -.2i
 .LP
 Errors: 
+.in +.2i
 .PN Match , 
 .PN Value ,
 .PN Window
@@ -2178,12 +2189,14 @@ the server automatically removes them from the save-set.
 .sM
 .IN "ReparentWindow" "" "@DEF@"
 .PN ReparentWindow
-.in +.2i
 .LP
+.in +.2i
 \fIwindow\fP\^, \fIparent\fP\^: WINDOW
 .br
 \fIx\fP\^, \fIy\fP\^: INT16
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Match ,
 .PN Window
@@ -2236,10 +2249,12 @@ background, and the new parent is not the same depth as the window.
 .sM
 .IN "MapWindow" "" "@DEF@"
 .PN MapWindow
+.LP
 .in +.2i
-.LP
 \fIwindow\fP\^: WINDOW
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Window
 .in -.2i
@@ -2274,10 +2289,12 @@ Similar tiling and exposure take place for any newly viewable inferiors.
 .sM
 .IN "MapSubwindows" "" "@DEF@"
 .PN MapSubwindows
+.LP
 .in +.2i
-.LP
 \fIwindow\fP\^: WINDOW
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Window
 .in -.2i
@@ -2292,10 +2309,12 @@ in top-to-bottom stacking order.
 .sM
 .IN "UnmapWindow" "" "@DEF@"
 .PN UnmapWindow
+.LP
 .in +.2i
-.LP
 \fIwindow\fP\^: WINDOW
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Window
 .in -.2i
@@ -2311,10 +2330,12 @@ Normal exposure processing on formerly obscured windows is performed.
 .sM
 .IN "UnmapSubwindows" "" "@DEF@"
 .PN UnmapSubwindows
+.LP
 .in +.2i
-.LP
 \fIwindow\fP\^: WINDOW
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Window
 .in -.2i
@@ -2329,14 +2350,16 @@ in bottom-to-top stacking order.
 .sM
 .IN "ConfigureWindow" "" "@DEF@"
 .PN ConfigureWindow
-.in +.2i
 .LP
+.in +.2i
 \fIwindow\fP\^: WINDOW
 .br
 \fIvalue-mask\fP\^: BITMASK
 .br
 \fIvalue-list\fP\^: LISTofVALUE
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Match , 
 .PN Value ,
@@ -2677,14 +2700,16 @@ Attempts to configure a root window have no effect.
 .sM
 .IN "CirculateWindow" "" "@DEF@"
 .PN CirculateWindow
-.in +.2i
 .LP
+.in +.2i
 \fIwindow\fP\^: WINDOW
 .br
 \fIdirection\fP\^: 
 .Pn { RaiseLowest , 
 .PN LowerHighest }
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Value ,
 .PN Window
@@ -2716,14 +2741,14 @@ Exposure processing is performed on formerly obscured windows.
 .sM
 .IN "GetGeometry" "" "@DEF@"
 .PN GetGeometry
-.in +.2i
 .LP
+.in +.2i
 \fIdrawable\fP\^: DRAWABLE
 .in -.2i
 .LP
-   =>
-.in +.2i
+   \(->
 .LP
+.in +.2i
 root: WINDOW
 .br
 depth: CARD8
@@ -2731,7 +2756,9 @@ depth: CARD8
 x, y: INT16
 .br
 width, height, border-width: CARD16
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Drawable
 .in -.2i
@@ -2753,21 +2780,23 @@ window as a drawable to this request.
 .sM
 .IN "QueryTree" "" "@DEF@"
 .PN QueryTree
-.in +.2i
 .LP
+.in +.2i
 \fIwindow\fP\^: WINDOW
-.LP
 .in -.2i
-   =>
-.in +.2i
 .LP
+   \(->
+.LP
+.in +.2i
 root: WINDOW
 .br
 parent: WINDOW or 
 .PN None
 .br
 children: LISTofWINDOW
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Window
 .in -.2i
@@ -2780,19 +2809,21 @@ The children are listed in bottom-to-top stacking order.
 .sM
 .IN "InternAtom" "" "@DEF@"
 .PN InternAtom
-.in +.2i
 .LP
+.in +.2i
 \fIname\fP\^: STRING8
 .br
 \fIonly-if-exists\fP\^: BOOL
 .in -.2i
 .LP
-   =>
-.in +.2i
+   \(->
 .LP
+.in +.2i
 atom: ATOM or 
 .PN None
+.in -.2i
 .LP
+.in +.2i
 Errors:
 .PN Alloc ,
 .PN Value
@@ -2813,16 +2844,18 @@ Atoms remain defined until server reset (see section 10).
 .sM
 .IN "GetAtomName" "" "@DEF@"
 .PN GetAtomName
-.in +.2i
 .LP
+.in +.2i
 \fIatom\fP\^: ATOM
 .in -.2i
 .LP
-   =>
+   \(->
+.LP
 .in +.2i
-.LP
 name: STRING8
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Atom
 .in -.2i
@@ -2834,8 +2867,8 @@ This request returns the name for the given atom.
 .sM
 .IN "ChangeProperty" "" "@DEF@"
 .PN ChangeProperty
-.in +.2i
 .LP
+.in +.2i
 \fIwindow\fP\^: WINDOW
 .br
 \fIproperty\fP, \fItype\fP\^: ATOM
@@ -2848,7 +2881,9 @@ This request returns the name for the given atom.
 .PN Append }
 .br
 \fIdata\fP\^: LISTofINT8 or LISTofINT16 or LISTofINT32
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Alloc ,
 .PN Atom , 
@@ -2897,12 +2932,14 @@ The maximum size of a property is server-dependent and may vary dynamically.
 .sM
 .IN "DeleteProperty" "" "@DEF@"
 .PN DeleteProperty
-.in +.2i
 .LP
+.in +.2i
 \fIwindow\fP\^: WINDOW
 .br
 \fIproperty\fP\^: ATOM
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Atom ,
 .PN Window
@@ -2918,8 +2955,8 @@ event on the window unless the property does not exist.
 .sM
 .IN "GetProperty" "" "@DEF@"
 .PN GetProperty
-.in +.2i
 .LP
+.in +.2i
 \fIwindow\fP\^: WINDOW
 .br
 \fIproperty\fP\^: ATOM
@@ -2932,9 +2969,9 @@ event on the window unless the property does not exist.
 \fIdelete\fP\^: BOOL
 .in -.2i
 .LP
-   =>
-.in +.2i
+   \(->
 .LP
+.in +.2i
 type: ATOM or 
 .PN None
 .br
@@ -2943,7 +2980,9 @@ format: {0, 8, 16, 32}
 bytes-after: CARD32
 .br
 value: LISTofINT8 or LISTofINT16 or LISTofINT32
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Atom , 
 .PN Value ,
@@ -2999,14 +3038,16 @@ event is generated on the window.
 .sM
 .IN "RotateProperties" "" "@DEF@"
 .PN RotateProperties
-.in +.2i
 .LP
+.in +.2i
 \fIwindow\fP\^: WINDOW
 .br
 \fIdelta\fP\^: INT16
 .br
 \fIproperties\fP\^: LISTofATOM
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Atom , 
 .PN Match ,
@@ -3041,16 +3082,18 @@ error is generated, no properties are changed.
 .sM
 .IN "ListProperties" "" "@DEF@"
 .PN ListProperties
-.in +.2i
 .LP
+.in +.2i
 \fIwindow\fP\^: WINDOW
 .in -.2i
 .LP
-   =>
+   \(->
+.LP
 .in +.2i
-.LP
 atoms: LISTofATOM
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Window
 .in -.2i
@@ -3062,8 +3105,8 @@ This request returns the atoms of properties currently defined on the window.
 .sM
 .IN "SetSelectionOwner" "" "@DEF@"
 .PN SetSelectionOwner
-.in +.2i
 .LP
+.in +.2i
 \fIselection\fP\^: ATOM
 .br
 \fIowner\fP\^: WINDOW or 
@@ -3071,7 +3114,9 @@ This request returns the atoms of properties currently defined on the window.
 .br
 \fItime\fP\^: TIMESTAMP or 
 .PN CurrentTime
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Atom , 
 .PN Window
@@ -3124,17 +3169,19 @@ Selections are global to the server.
 .sM
 .IN "GetSelectionOwner" "" "@DEF@"
 .PN GetSelectionOwner
-.in +.2i
 .LP
+.in +.2i
 \fIselection\fP\^: ATOM
 .in -.2i
 .LP
-   =>
-.in +.2i
+   \(->
 .LP
+.in +.2i
 owner: WINDOW or 
 .PN None
-.IP
+.in -.2i
+.LP
+.in +.2i
 Errors: 
 .PN Atom
 .in -.2i
@@ -3150,8 +3197,8 @@ is returned, then there is no owner for the selection.
 .sM
 .IN "ConvertSelection" "" "@DEF@"
 .PN ConvertSelection
-.in +.2i
 .LP
+.in +.2i
 \fIselection\fP, \fItarget\fP\^: ATOM
 .br
 \fIproperty\fP\^: ATOM or 
@@ -3161,7 +3208,9 @@ is returned, then there is no owner for the selection.
 .br
 \fItime\fP\^: TIMESTAMP or 
 .PN CurrentTime
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Atom , 
 .PN Window
@@ -3183,8 +3232,8 @@ The arguments are passed on unchanged in either of the events.
 .sM
 .IN "SendEvent" "" "@DEF@"
 .PN SendEvent
-.in +.2i
 .LP
+.in +.2i
 \fIdestination\fP\^: WINDOW or 
 .PN PointerWindow 
 or 
@@ -3195,7 +3244,9 @@ or
 \fIevent-mask\fP\^: SETofEVENT
 .br
 \fIevent\fP\^: <normal-event-format>
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Value ,
 .PN Window
@@ -3243,7 +3294,7 @@ defined by an extension (or a
 error results) so that the server can correctly byte-swap the
 contents as necessary.
 The contents of the event are otherwise unaltered and unchecked 
-by the server except to force on the most-significant bit of the event code
+by the server except to force on the most significant bit of the event code
 and to set the sequence number in the event correctly.
 .LP
 Active grabs are ignored for this request.
@@ -3252,8 +3303,8 @@ Active grabs are ignored for this request.
 .sM
 .IN "GrabPointer" "" "@DEF@"
 .PN GrabPointer
-.in +.2i
 .LP
+.in +.2i
 \fIgrab-window\fP\^: WINDOW
 .br
 \fIowner-events\fP\^: BOOL
@@ -3274,16 +3325,18 @@ Active grabs are ignored for this request.
 .PN CurrentTime
 .in -.2i
 .LP
-   =>
-.in +.2i
+   \(->
 .LP
+.in +.2i
 status: 
 .Pn { Success , 
 .PN AlreadyGrabbed , 
 .PN Frozen , 
 .PN InvalidTime , 
 .PN NotViewable }
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Cursor , 
 .PN Value ,
@@ -3382,8 +3435,8 @@ replaced by the current server time.
 .sM
 .IN "UngrabPointer" "" "@DEF@"
 .PN UngrabPointer
-.in +.2i
 .LP
+.in +.2i
 \fItime\fP\^: TIMESTAMP or 
 .PN CurrentTime
 .in -.2i
@@ -3415,8 +3468,8 @@ completely outside the boundaries of the root window.
 .sM
 .IN "GrabButton" "" "@DEF@"
 .PN GrabButton
-.in +.2i
 .LP
+.in +.2i
 \fImodifiers\fP\^: SETofKEYMASK or 
 .PN AnyModifier
 .br
@@ -3438,7 +3491,9 @@ completely outside the boundaries of the root window.
 .br
 \fIcursor\fP\^: CURSOR or 
 .PN None
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Access ,
 .PN Cursor , 
@@ -3509,8 +3564,8 @@ The request has no effect on an active grab.
 .sM
 .IN "UngrabButton" "" "@DEF@"
 .PN UngrabButton
-.in +.2i
 .LP
+.in +.2i
 \fImodifiers\fP\^: SETofKEYMASK or 
 .PN AnyModifier
 .br
@@ -3518,7 +3573,9 @@ The request has no effect on an active grab.
 .PN AnyButton
 .br
 \fIgrab-window\fP\^: WINDOW
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Value ,
 .PN Window
@@ -3540,8 +3597,8 @@ The request has no effect on an active grab.
 .sM
 .IN "ChangeActivePointerGrab" "" "@DEF@"
 .PN ChangeActivePointerGrab
-.in +.2i
 .LP
+.in +.2i
 \fIevent-mask\fP\^: SETofPOINTEREVENT
 .br
 \fIcursor\fP\^: CURSOR or 
@@ -3549,7 +3606,9 @@ The request has no effect on an active grab.
 .br
 \fItime\fP\^: TIMESTAMP or 
 .PN CurrentTime
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Cursor ,
 .PN Value
@@ -3569,8 +3628,8 @@ with
 .sM
 .IN "GrabKeyboard" "" "@DEF@"
 .PN GrabKeyboard
-.in +.2i
 .LP
+.in +.2i
 \fIgrab-window\fP\^: WINDOW
 .br
 \fIowner-events\fP\^: BOOL
@@ -3583,16 +3642,18 @@ with
 .PN CurrentTime
 .in -.2i
 .LP
-   =>
-.in +.2i
+   \(->
 .LP
+.in +.2i
 status:
 .Pn { Success , 
 .PN AlreadyGrabbed , 
 .PN Frozen ,
 .PN InvalidTime , 
 .PN NotViewable }
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Value ,
 .PN Window
@@ -3673,8 +3734,8 @@ replaced by the current server time.
 .sM
 .IN "UngrabKeyboard" "" "@DEF@"
 .PN UngrabKeyboard
-.in +.2i
 .LP
+.in +.2i
 \fItime\fP\^: TIMESTAMP or 
 .PN CurrentTime
 .in -.2i
@@ -3704,8 +3765,8 @@ becomes not viewable.
 .sM
 .IN "GrabKey" "" "@DEF@"
 .PN GrabKey
-.in +.2i
 .LP
+.in +.2i
 \fIkey\fP\^: KEYCODE or 
 .PN AnyKey
 .br
@@ -3719,7 +3780,9 @@ becomes not viewable.
 \fIpointer-mode\fP, \fIkeyboard-mode\fP\^:
 .Pn { Synchronous , 
 .PN Asynchronous }
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Access ,
 .PN Value , 
@@ -3791,8 +3854,8 @@ error is generated if there is a conflicting grab for any combination.
 .sM
 .IN "UngrabKey" "" "@DEF@"
 .PN UngrabKey
-.in +.2i
 .LP
+.in +.2i
 \fIkey\fP\^: KEYCODE or 
 .PN AnyKey
 .br
@@ -3800,7 +3863,9 @@ error is generated if there is a conflicting grab for any combination.
 .PN AnyModifier
 .br
 \fIgrab-window\fP\^: WINDOW
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Value ,
 .PN Window
@@ -3822,8 +3887,8 @@ This request has no effect on an active grab.
 .sM
 .IN "AllowEvents" "" "@DEF@"
 .PN AllowEvents
-.in +.2i
 .LP
+.in +.2i
 \fImode\fP:
 .Pn { AsyncPointer , 
 .PN SyncPointer , 
@@ -3838,7 +3903,9 @@ This request has no effect on an active grab.
 .br
 \fItime\fP\^: TIMESTAMP or 
 .PN CurrentTime
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Value
 .in -.2i
@@ -4017,14 +4084,14 @@ on other connections.
 .sM
 .IN "QueryPointer" "" "@DEF@"
 .PN QueryPointer
-.in +.2i
 .LP
+.in +.2i
 \fIwindow\fP\^: WINDOW
 .in -.2i
 .LP
-   =>
-.in +.2i
+   \(->
 .LP
+.in +.2i
 root: WINDOW
 .br
 child: WINDOW or 
@@ -4035,7 +4102,9 @@ same-screen: BOOL
 root-x, root-y, win-x, win-y: INT16
 .br
 mask: SETofKEYBUTMASK
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Window
 .in -.2i
@@ -4063,19 +4132,21 @@ may lag the physical state if device event processing is frozen.
 .sM
 .IN "GetMotionEvents" "" "@DEF@"
 .PN GetMotionEvents
-.in +.2i
 .LP
+.in +.2i
 \fIstart\fP, \fIstop\fP\^: TIMESTAMP or 
 .PN CurrentTime
 .br
 \fIwindow\fP\^: WINDOW
 .in -.2i
 .LP
-   =>
+   \(->
+.LP
 .in +.2i
-.LP
 events: LISTofTIMECOORD
+.in -.2i
 .LP
+.in +.2i
 where:
 .TS
 l l.
@@ -4083,7 +4154,9 @@ TIMECOORD:	[x, y: INT16
 .br
 	\ time: TIMESTAMP]
 .TE
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Window
 .in -.2i
@@ -4104,23 +4177,25 @@ If the stop time is in the future, it is equivalent to specifying
 .sM
 .IN "TranslateCoordinates" "" "@DEF@"
 .PN TranslateCoordinates
-.in +.2i
 .LP
+.in +.2i
 \fIsrc-window\fP, \fIdst-window\fP: WINDOW
 .br
 \fIsrc-x\fP, \fIsrc-y\fP\^: INT16
 .in -.2i
 .LP
-   =>
-.in +.2i
+   \(->
 .LP
+.in +.2i
 same-screen: BOOL
 .br
 child: WINDOW or 
 .PN None
 .br
 dst-x, dst-y: INT16
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Window
 .in -.2i
@@ -4140,8 +4215,8 @@ then that child is returned.
 .sM
 .IN "WarpPointer" "" "@DEF@"
 .PN WarpPointer
-.in +.2i
 .LP
+.in +.2i
 \fIsrc-window\fP\^: WINDOW or 
 .PN None
 .br
@@ -4153,7 +4228,9 @@ then that child is returned.
 \fIsrc-width\fP, \fIsrc-height\fP\^: CARD16
 .br
 \fIdst-x\fP, \fIdst-y\fP\^: INT16
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Window
 .in -.2i
@@ -4189,8 +4266,8 @@ moved the pointer.
 .sM
 .IN "SetInputFocus" "" "@DEF@"
 .PN SetInputFocus
-.in +.2i
 .LP
+.in +.2i
 \fIfocus\fP\^: WINDOW or 
 .PN PointerRoot 
 or 
@@ -4203,7 +4280,9 @@ or
 .br
 \fItime\fP\^: TIMESTAMP or 
 .PN CurrentTime
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Match ,
 .PN Value , 
@@ -4272,9 +4351,9 @@ but the last-focus-change time is not affected.
 .IN "GetInputFocus" "" "@DEF@"
 .PN GetInputFocus
 .LP
-   =>
-.in +.2i
+   \(->
 .LP
+.in +.2i
 focus: WINDOW or 
 .PN PointerRoot 
 or 
@@ -4294,9 +4373,9 @@ This request returns the current focus state.
 .IN "QueryKeymap" "" "@DEF@"
 .PN QueryKeymap
 .LP
-   =>
-.in +.2i
+   \(->
 .LP
+.in +.2i
 keys: LISTofCARD8
 .in -.2i
 .eM
@@ -4305,7 +4384,7 @@ This request returns a bit vector for the logical state of the keyboard.
 Each bit set to 1 indicates that the corresponding key is currently pressed.
 The vector is represented as 32 bytes.
 Byte N (from 0) contains the bits for keys 8N to 8N + 7
-with the least-significant bit in the byte representing key 8N.
+with the least significant bit in the byte representing key 8N.
 Note that the logical state of a device (as seen by means of the protocol)
 may lag the physical state if device event processing is frozen.
 .sp
@@ -4313,12 +4392,14 @@ may lag the physical state if device event processing is frozen.
 .sM
 .IN "OpenFont" "" "@DEF@"
 .PN OpenFont
-.in +.2i
 .LP
+.in +.2i
 \fIfid\fP\^: FONT
 .br
 \fIname\fP\^: STRING8
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Alloc ,
 .PN IDChoice , 
@@ -4346,10 +4427,12 @@ and can be stored as a component of any graphics context.
 .sM
 .IN "CloseFont" "" "@DEF@"
 .PN CloseFont
+.LP
 .in +.2i
-.LP
 \fIfont\fP\^: FONT
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Font
 .in -.2i
@@ -4362,18 +4445,20 @@ The font itself will be freed when no other resource references it.
 .sM
 .IN "QueryFont" "" "@DEF@"
 .PN QueryFont
-.in +.2i
 .LP
+.in +.2i
 \fIfont\fP\^: FONTABLE
 .in -.2i
 .LP
-   =>
-.in +.2i
+   \(->
 .LP
+.in +.2i
 font-info: FONTINFO
 .br
 char-infos: LISTofCHARINFO
+.in -.2i
 .LP
+.in +.2i
 where:
 .IP
 .TS
@@ -4403,7 +4488,9 @@ CHARINFO:	[left-side-bearing: INT16
 	\ descent: INT16
 	\ attributes: CARD16]
 .TE
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Font
 .in -.2i
@@ -4459,8 +4546,8 @@ The default-char specifies the character that will be used when an
 undefined or nonexistent character is used.
 Note that default-char is a CARD16, not CHAR2B.
 For a font using 2-byte matrix format, 
-the default-char has byte1 in the most-significant byte
-and byte2 in the least-significant byte.
+the default-char has byte1 in the most significant byte
+and byte2 in the least significant byte.
 If the default-char itself specifies an undefined or nonexistent character,
 then no printing is performed for an undefined or nonexistent character.
 .LP
@@ -4541,16 +4628,16 @@ server-dependent.
 .sM
 .IN "QueryTextExtents" "" "@DEF@"
 .PN QueryTextExtents
-.in +.2i
 .LP
+.in +.2i
 \fIfont\fP\^: FONTABLE
 .br
 \fIstring\fP\^: STRING16
 .in -.2i
 .LP
-   =>
-.in +.2i
+   \(->
 .LP
+.in +.2i
 draw-direction:
 .Pn { LeftToRight , 
 .PN RightToLeft }
@@ -4568,7 +4655,9 @@ overall-width: INT32
 overall-left: INT32
 .br
 overall-right: INT32
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Font
 .in -.2i
@@ -4595,8 +4684,8 @@ and the overall-right is the maximum R.
 .LP
 For fonts defined with linear indexing rather than 2-byte matrix indexing, 
 the server will interpret each CHAR2B as a 16-bit number that
-has been transmitted most-significant byte first (that is, byte1 of the
-CHAR2B is taken as the most-significant byte).
+has been transmitted most significant byte first (that is, byte1 of the
+CHAR2B is taken as the most significant byte).
 .LP
 Characters with all zero metrics are ignored.
 If the font has no defined default-char, 
@@ -4606,16 +4695,16 @@ then undefined characters in the string are also ignored.
 .sM
 .IN "ListFonts" "" "@DEF@"
 .PN ListFonts
-.in +.2i
 .LP
+.in +.2i
 \fIpattern\fP\^: STRING8
 .br
 \fImax-names\fP\^: CARD16
 .in -.2i
 .LP
-   =>
-.in +.2i
+   \(->
 .LP
+.in +.2i
 names: LISTofSTRING8
 .in -.2i
 .eM
@@ -4638,27 +4727,30 @@ The returned names are in lowercase.
 .sM
 .IN "ListFontsWithInfo" "" "@DEF@"
 .PN ListFontsWithInfo
-.in +.2i
 .LP
+.in +.2i
 \fIpattern\fP\^: STRING8
 .br
 \fImax-names\fP\^: CARD16
 .in -.2i
 .LP
-   =>+
-.in +.2i
+   \(->
 .LP
+.in +.2i
 name: STRING8
 .br
-info: FONTINFO
+info FONTINFO
 .br
 replies-hint: CARD32
-.LP
-where:
-.LP
-FONTINFO: <same type definition as in 
-.PN QueryFont >
 .in -.2i
+.LP
+.in +.2i
+where:
+.in -.2i
+.LP
+.in +.2i
+FONTINFO: <same type definition as in
+.PN QueryFont >
 .eM
 .LP
 This request is similar to
@@ -4681,10 +4773,12 @@ sequence.
 .sM
 .IN "SetFontPath" "" "@DEF@"
 .PN SetFontPath
+.LP
 .in +.2i
-.LP
 \fIpath\fP\^: LISTofSTRING8
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Value
 .in -.2i
@@ -4710,9 +4804,9 @@ The meaning of an error from this request is system specific.
 .IN "GetFontPath" "" "@DEF@"
 .PN GetFontPath
 .LP
-   =>
-.in +.2i
+   \(->
 .LP
+.in +.2i
 path: LISTofSTRING8
 .in -.2i
 .eM
@@ -4723,8 +4817,8 @@ This request returns the current search path for fonts.
 .sM
 .IN "CreatePixmap" "" "@DEF@"
 .PN CreatePixmap
-.in +.2i
 .LP
+.in +.2i
 \fIpid\fP\^: PIXMAP
 .br
 \fIdrawable\fP\^: DRAWABLE
@@ -4732,7 +4826,9 @@ This request returns the current search path for fonts.
 \fIdepth\fP\^: CARD8
 .br
 \fIwidth\fP, \fIheight\fP\^: CARD16
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Alloc ,
 .PN Drawable , 
@@ -4759,10 +4855,12 @@ window as a drawable to this request.
 .sM
 .IN "FreePixmap" "" "@DEF@"
 .PN FreePixmap
+.LP
 .in +.2i
-.LP
 \fIpixmap\fP\^: PIXMAP
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Pixmap
 .in -.2i
@@ -4775,8 +4873,8 @@ The pixmap storage will be freed when no other resource references it.
 .sM
 .IN "CreateGC" "" "@DEF@"
 .PN CreateGC
-.in +.2i
 .LP
+.in +.2i
 \fIcid\fP\^: GCONTEXT
 .br
 \fIdrawable\fP\^: DRAWABLE
@@ -4784,7 +4882,9 @@ The pixmap storage will be freed when no other resource references it.
 \fIvalue-mask\fP\^: BITMASK
 .br
 \fIvalue-list\fP\^: LISTofVALUE
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Alloc ,
 .PN Drawable , 
@@ -5657,14 +5757,16 @@ changes to a single gcontext.
 .sM
 .IN "ChangeGC" "" "@DEF@"
 .PN ChangeGC
-.in +.2i
 .LP
+.in +.2i
 \fIgc\fP\^: GCONTEXT
 .br
 \fIvalue-mask\fP\^: BITMASK
 .br
 \fIvalue-list\fP\^: LISTofVALUE
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Alloc ,
 .PN Font , 
@@ -5696,12 +5798,14 @@ a subset of the components may have been altered.
 .sM
 .IN "CopyGC" "" "@DEF@"
 .PN CopyGC
-.in +.2i
 .LP
+.in +.2i
 \fIsrc-gc\fP, \fIdst-gc\fP\^: GCONTEXT
 .br
 \fIvalue-mask\fP\^: BITMASK
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Alloc ,
 .PN GContext , 
@@ -5721,14 +5825,16 @@ error results).
 .sM
 .IN "SetDashes" "" "@DEF@"
 .PN SetDashes
-.in +.2i
 .LP
+.in +.2i
 \fIgc\fP\^: GCONTEXT
 .br
 \fIdash-offset\fP\^: CARD16
 .br
 \fIdashes\fP\^: LISTofCARD8
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Alloc ,
 .PN GContext , 
@@ -5793,8 +5899,8 @@ would be included in the dash when drawn unclipped.
 .sM
 .IN "SetClipRectangles" "" "@DEF@"
 .PN SetClipRectangles
-.in +.2i
 .LP
+.in +.2i
 \fIgc\fP\^: GCONTEXT
 .br
 \fIclip-x-origin\fP, \fIclip-y-origin\fP\^: INT16
@@ -5806,7 +5912,9 @@ would be included in the dash when drawn unclipped.
 .PN YSorted , 
 .PN YXSorted ,
 .PN YXBanded }
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Alloc , 
 .PN GContext , 
@@ -5862,10 +5970,12 @@ extents.
 .sM
 .IN "FreeGC" "" "@DEF@"
 .PN FreeGC
+.LP
 .in +.2i
-.LP
 \fIgc\fP\^: GCONTEXT
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN GContext
 .in -.2i
@@ -5878,8 +5988,8 @@ and destroys the gcontext.
 .sM
 .IN "ClearArea" "" "@DEF@"
 .PN ClearArea
-.in +.2i
 .LP
+.in +.2i
 \fIwindow\fP\^: WINDOW
 .br
 \fIx\fP, \fIy\fP\^: INT16
@@ -5887,7 +5997,9 @@ and destroys the gcontext.
 \fIwidth\fP, \fIheight\fP: CARD16
 .br
 \fIexposures\fP\^: BOOL
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Match ,
 .PN Value , 
@@ -5925,8 +6037,8 @@ window in this request.
 .sM
 .IN "CopyArea" "" "@DEF@"
 .PN CopyArea
-.in +.2i
 .LP
+.in +.2i
 \fIsrc-drawable\fP, \fIdst-drawable\fP\^: DRAWABLE
 .br
 \fIgc\fP\^: GCONTEXT
@@ -5936,7 +6048,9 @@ window in this request.
 \fIwidth\fP, \fIheight\fP\^: CARD16
 .br
 \fIdst-x\fP, \fIdst-y\fP\^: INT16
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Drawable , 
 .PN GContext , 
@@ -5989,8 +6103,8 @@ graphics-exposures, clip-x-origin, clip-y-origin, clip-mask
 .sM
 .IN "CopyPlane" "" "@DEF@"
 .PN CopyPlane
-.in +.2i
 .LP
+.in +.2i
 \fIsrc-drawable\fP, \fIdst-drawable\fP\^: DRAWABLE
 .br
 \fIgc\fP\^: GCONTEXT
@@ -6002,7 +6116,9 @@ graphics-exposures, clip-x-origin, clip-y-origin, clip-mask
 \fIdst-x\fP, \fIdst-y\fP\^: INT16
 .br
 \fIbit-plane\fP\^: CARD32
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Drawable , 
 .PN GContext , 
@@ -6038,8 +6154,8 @@ clip-mask
 .sM
 .IN "PolyPoint" "" "@DEF@"
 .PN PolyPoint
-.in +.2i
 .LP
+.in +.2i
 \fIdrawable\fP\^: DRAWABLE
 .br
 \fIgc\fP\^: GCONTEXT
@@ -6049,7 +6165,9 @@ clip-mask
 .PN Previous }
 .br
 \fIpoints\fP\^: LISTofPOINT
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Drawable , 
 .PN GContext , 
@@ -6073,8 +6191,8 @@ clip-x-origin, clip-y-origin, clip-mask
 .sM
 .IN "PolyLine" "" "@DEF@"
 .PN PolyLine
-.in +.2i
 .LP
+.in +.2i
 \fIdrawable\fP\^: DRAWABLE
 .br
 \fIgc\fP\^: GCONTEXT
@@ -6084,7 +6202,9 @@ clip-x-origin, clip-y-origin, clip-mask
 .PN Previous }
 .br
 \fIpoints\fP\^: LISTofPOINT
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Drawable , 
 .PN GContext , 
@@ -6131,18 +6251,24 @@ tile-stipple-x-origin, tile-stipple-y-origin, dash-offset, dashes
 .sM
 .IN "PolySegment" "" "@DEF@"
 .PN PolySegment
-.in +.2i
 .LP
+.in +.2i
 \fIdrawable\fP\^: DRAWABLE
 .br
 \fIgc\fP\^: GCONTEXT
 .br
 \fIsegments\fP\^: LISTofSEGMENT
+.in -.2i
 .LP
+.in +.2i
 where:
+.in -.2i
 .LP
+.in +.2i
 SEGMENT: [x1, y1, x2, y2: INT16]
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Drawable , 
 .PN GContext , 
@@ -6170,14 +6296,16 @@ tile-stipple-x-origin, tile-stipple-y-origin, dash-offset, dashes
 .sM
 .IN "PolyRectangle" "" "@DEF@"
 .PN PolyRectangle
-.in +.2i
 .LP
+.in +.2i
 \fIdrawable\fP\^: DRAWABLE
 .br
 \fIgc\fP\^: GCONTEXT
 .br
 \fIrectangles\fP\^: LISTofRECTANGLE
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Drawable , 
 .PN GContext , 
@@ -6213,14 +6341,16 @@ tile-stipple-x-origin, tile-stipple-y-origin, dash-offset, dashes
 .sM
 .IN "PolyArc" "" "@DEF@"
 .PN PolyArc
-.in +.2i
 .LP
+.in +.2i
 \fIdrawable\fP\^: DRAWABLE
 .br
 \fIgc\fP\^: GCONTEXT
 .br
 \fIarcs\fP\^: LISTofARC
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Drawable , 
 .PN GContext , 
@@ -6342,8 +6472,8 @@ tile-stipple-x-origin, tile-stipple-y-origin, dash-offset, dashes
 .sM
 .IN "FillPoly" "" "@DEF@"
 .PN FillPoly
-.in +.2i
 .LP
+.in +.2in
 \fIdrawable\fP\^: DRAWABLE
 .br
 \fIgc\fP\^: GCONTEXT
@@ -6358,7 +6488,9 @@ tile-stipple-x-origin, tile-stipple-y-origin, dash-offset, dashes
 .PN Previous }
 .br
 \fIpoints\fP\^: LISTofPOINT
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Drawable , 
 .PN GContext , 
@@ -6418,14 +6550,16 @@ tile-stipple-x-origin, tile-stipple-y-origin
 .sM
 .IN "PolyFillRectangle" "" "@DEF@"
 .PN PolyFillRectangle
-.in +.2i
 .LP
+.in +.2i
 \fIdrawable\fP\^: DRAWABLE
 .br
 \fIgc\fP\^: GCONTEXT
 .br
 \fIrectangles\fP\^: LISTofRECTANGLE
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Drawable , 
 .PN GContext , 
@@ -6459,14 +6593,16 @@ tile-stipple-x-origin, tile-stipple-y-origin
 .sM
 .IN "PolyFillArc" "" "@DEF@"
 .PN PolyFillArc
-.in +.2i
 .LP
+.in +.2i
 \fIdrawable\fP\^: DRAWABLE
 .br
 \fIgc\fP\^: GCONTEXT
 .br
 \fIarcs\fP\^: LISTofARC
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Drawable , 
 .PN GContext , 
@@ -6523,8 +6659,8 @@ tile-stipple-x-origin, tile-stipple-y-origin
 .sM
 .IN "PutImage" "" "@DEF@"
 .PN PutImage
-.in +.2i
 .LP
+.in +.2i
 \fIdrawable\fP\^: DRAWABLE
 .br
 \fIgc\fP\^: GCONTEXT
@@ -6543,7 +6679,9 @@ tile-stipple-x-origin, tile-stipple-y-origin
 .PN ZPixmap }
 .br
 \fIdata\fP\^: LISTofBYTE
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Drawable , 
 .PN GContext , 
@@ -6606,8 +6744,8 @@ GC mode-dependent components: foreground, background
 .sM
 .IN "GetImage" "" "@DEF@"
 .PN GetImage
-.in +.2i
 .LP
+.in +.2i
 \fIdrawable\fP\^: DRAWABLE
 .br
 \fIx\fP, \fIy\fP\^: INT16
@@ -6621,16 +6759,18 @@ GC mode-dependent components: foreground, background
 .PN ZPixmap }
 .in -.2i
 .LP
-   =>
-.in +.2i
+   \(->
 .LP
+.in +.2i
 depth: CARD8
 .br
 visual: VISUALID or 
 .PN None
 .br
 data: LISTofBYTE
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Drawable , 
 .PN Match ,
@@ -6646,7 +6786,7 @@ If
 .PN XYPixmap 
 is specified, 
 only the bit planes specified in plane-mask are transmitted, 
-with the planes appearing from most-significant to least-significant 
+with the planes appearing from most significant to least significant 
 in bit order.
 If 
 .PN ZPixmap 
@@ -6692,8 +6832,8 @@ It is intended specifically for rudimentary hardcopy support.
 .sM
 .IN "PolyText8" "" "@DEF@"
 .PN PolyText8
-.in +.2i
 .LP
+.in +.2i
 \fIdrawable\fP\^: DRAWABLE
 .br
 \fIgc\fP\^: GCONTEXT
@@ -6701,7 +6841,9 @@ It is intended specifically for rudimentary hardcopy support.
 \fIx\fP, \fIy\fP\^: INT16
 .br
 \fIitems\fP\^: LISTofTEXTITEM8
+.in -.2i
 .LP
+.in +.2i
 where:
 .TS
 r l.
@@ -6711,7 +6853,9 @@ TEXTELT8:	[delta: INT8
 .br
 	\ string: STRING8]
 .TE
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Drawable , 
 .PN Font ,
@@ -6732,7 +6876,7 @@ the delta is always added to the character origin.
 Each character image, as defined by the font in gc, 
 is treated as an additional mask for a fill operation on the drawable.
 .LP
-All contained FONTs are always transmitted most-significant byte first.
+All contained FONTs are always transmitted most significant byte first.
 .LP
 If a 
 .PN Font 
@@ -6753,8 +6897,8 @@ tile-stipple-x-origin, tile-stipple-y-origin
 .sM
 .IN "PolyText16" "" "@DEF@"
 .PN PolyText16
-.in +.2i
 .LP
+.in +.2i
 \fIdrawable\fP\^: DRAWABLE
 .br
 \fIgc\fP\^: GCONTEXT
@@ -6762,7 +6906,9 @@ tile-stipple-x-origin, tile-stipple-y-origin
 \fIx\fP, \fIy\fP\^: INT16
 .br
 \fIitems\fP\^: LISTofTEXTITEM16
+.in -.2i
 .LP
+.in +.2i
 where:
 .TS
 r l.
@@ -6772,7 +6918,9 @@ TEXTELT16:	[delta: INT8
 .br
 	\ string: STRING16]
 .TE
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Drawable , 
 .PN Font ,
@@ -6786,15 +6934,15 @@ This request is similar to
 except 2-byte (or 16-bit) characters are used.
 For fonts defined with linear indexing rather than 2-byte matrix indexing, 
 the server will interpret each CHAR2B as a 16-bit number that
-has been transmitted most-significant byte first (that is, byte1 of the
-CHAR2B is taken as the most-significant byte).
+has been transmitted most significant byte first (that is, byte1 of the
+CHAR2B is taken as the most significant byte).
 .sp
 .LP
 .sM
 .IN "ImageText8" "" "@DEF@"
 .PN ImageText8
-.in +.2i
 .LP
+.in +.2i
 \fIdrawable\fP\^: DRAWABLE
 .br
 \fIgc\fP\^: GCONTEXT
@@ -6802,7 +6950,9 @@ CHAR2B is taken as the most-significant byte).
 \fIx\fP, \fIy\fP\^: INT16
 .br
 \fIstring\fP\^: STRING8
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Drawable , 
 .PN GContext , 
@@ -6851,8 +7001,8 @@ subwindow-mode, clip-x-origin, clip-y-origin, clip-mask
 .sM
 .IN "ImageText16" "" "@DEF@"
 .PN ImageText16
-.in +.2i
 .LP
+.in +.2i
 \fIdrawable\fP\^: DRAWABLE
 .br
 \fIgc\fP\^: GCONTEXT
@@ -6860,7 +7010,9 @@ subwindow-mode, clip-x-origin, clip-y-origin, clip-mask
 \fIx\fP, \fIy\fP\^: INT16
 .br
 \fIstring\fP\^: STRING16
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Drawable , 
 .PN GContext , 
@@ -6873,15 +7025,15 @@ This request is similar to
 except 2-byte (or 16-bit) characters are used.
 For fonts defined with linear indexing rather than 2-byte matrix indexing, 
 the server will interpret each CHAR2B as a 16-bit number that
-has been transmitted most-significant byte first (that is, byte1 of the
-CHAR2B is taken as the most-significant byte).
+has been transmitted most significant byte first (that is, byte1 of the
+CHAR2B is taken as the most significant byte).
 .sp
 .LP
 .sM
 .IN "CreateColormap" "" "@DEF@"
 .PN CreateColormap
-.in +.2i
 .LP
+.in +.2i
 \fImid\fP\^: COLORMAP
 .br
 \fIvisual\fP\^: VISUALID
@@ -6891,7 +7043,9 @@ CHAR2B is taken as the most-significant byte).
 \fIalloc\fP\^:
 .Pn { None , 
 .PN All }
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Alloc ,
 .PN IDChoice , 
@@ -6961,10 +7115,12 @@ in all cases, none of these entries can be freed with
 .sM
 .IN "FreeColormap" "" "@DEF@"
 .PN FreeColormap
+.LP
 .in +.2i
-.LP
 \fIcmap\fP\^: COLORMAP
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Colormap
 .in -.2i
@@ -6994,10 +7150,12 @@ This request has no effect on a default colormap for a screen.
 .sM
 .IN "CopyColormapAndFree" "" "@DEF@"
 .PN CopyColormapAndFree
+.LP
 .in +.2i
-.LP
 \fImid\fP, \fIsrc-cmap\fP\^: COLORMAP
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Alloc ,
 .PN Colormap , 
@@ -7037,10 +7195,12 @@ and that have not been freed since they were allocated.
 .sM
 .IN "InstallColormap" "" "@DEF@"
 .PN InstallColormap
+.LP
 .in +.2i
-.LP
 \fIcmap\fP\^: COLORMAP
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Colormap
 .in -.2i
@@ -7087,10 +7247,12 @@ the required list).
 .sM
 .IN "UninstallColormap" "" "@DEF@"
 .PN UninstallColormap
+.LP
 .in +.2i
-.LP
 \fIcmap\fP\^: COLORMAP
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Colormap
 .in -.2i
@@ -7119,16 +7281,18 @@ event is generated on every window having that colormap as an attribute.
 .sM
 .IN "ListInstalledColormaps" "" "@DEF@"
 .PN ListInstalledColormaps
-.in +.2i
 .LP
+.in +.2i
 \fIwindow\fP\^: WINDOW
 .in -.2i
 .LP
-   =>
+   \(->
+.LP
 .in +.2i
-.LP
 cmaps: LISTofCOLORMAP
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Window
 .in -.2i
@@ -7145,20 +7309,22 @@ request).
 .sM
 .IN "AllocColor" "" "@DEF@"
 .PN AllocColor
-.in +.2i
 .LP
+.in +.2i
 \fIcmap\fP\^: COLORMAP
 .br
 \fIred\fP, \fIgreen\fP, \fIblue\fP\^: CARD16
 .in -.2i
 .LP
-   =>
-.in +.2i
+   \(->
 .LP
+.in +.2i
 pixel: CARD32
 .br
 red, green, blue: CARD16
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Alloc ,
 .PN Colormap 
@@ -7175,22 +7341,24 @@ the same read-only entry, allowing entries to be shared.
 .sM
 .IN "AllocNamedColor" "" "@DEF@"
 .PN AllocNamedColor
-.in +.2i
 .LP
+.in +.2i
 \fIcmap\fP\^: COLORMAP
 .br
 \fIname\fP\^: STRING8
 .in -.2i
 .LP
-   =>
-.in +.2i
+   \(->
 .LP
+.in +.2i
 pixel: CARD32
 .br
 exact-red, exact-green, exact-blue: CARD16
 .br
 visual-red, visual-green, visual-blue: CARD16
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Alloc ,
 .PN Colormap , 
@@ -7212,8 +7380,8 @@ and the visual values specify the values actually used in the colormap.
 .sM
 .IN "AllocColorCells" "" "@DEF@"
 .PN AllocColorCells
-.in +.2i
 .LP
+.in +.2i
 \fIcmap\fP\^: COLORMAP
 .br
 \fIcolors\fP, \fIplanes\fP\^: CARD16
@@ -7221,11 +7389,13 @@ and the visual values specify the values actually used in the colormap.
 \fIcontiguous\fP\^: BOOL
 .in -.2i
 .LP
-   =>
+   \(->
+.LP
 .in +.2i
-.LP
 pixels, masks: LISTofCARD32
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Alloc ,
 .PN Colormap , 
@@ -7266,8 +7436,8 @@ The RGB values of the allocated entries are undefined.
 .sM
 .IN "AllocColorPlanes" "" "@DEF@"
 .PN AllocColorPlanes
-.in +.2i
 .LP
+.in +.2i
 \fIcmap\fP\^: COLORMAP
 .br
 \fIcolors\fP, \fIreds\fP, \fIgreens\fP, \fIblues\fP\^: CARD16
@@ -7275,13 +7445,15 @@ The RGB values of the allocated entries are undefined.
 \fIcontiguous\fP\^: BOOL
 .in -.2i
 .LP
-   =>
-.in +.2i
+   \(->
 .LP
+.in +.2i
 pixels: LISTofCARD32
 .br
 red-mask, green-mask, blue-mask: CARD32
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Alloc ,
 .PN Colormap , 
@@ -7325,14 +7497,16 @@ corresponding independent entries are updated.
 .sM
 .IN "FreeColors" "" "@DEF@"
 .PN FreeColors
-.in +.2i
 .LP
+.in +.2i
 \fIcmap\fP\^: COLORMAP
 .br
 \fIpixels\fP\^: LISTofCARD32
 .br
 \fIplane-mask\fP\^: CARD32
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Access , 
 .PN Colormap , 
@@ -7382,12 +7556,14 @@ it is arbitrary as to which pixel is reported.
 .sM
 .IN "StoreColors" "" "@DEF@"
 .PN StoreColors
-.in +.2i
 .LP
+.in +.2i
 \fIcmap\fP\^: COLORMAP
 .br
 \fIitems\fP\^: LISTofCOLORITEM
+.in -.2i
 .LP
+.in +.2i
 where:
 .TS
 l l.
@@ -7397,7 +7573,9 @@ COLORITEM:	[pixel: CARD32
 .br
 	\ red, green, blue: CARD16]
 .TE
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Access , 
 .PN Colormap , 
@@ -7426,8 +7604,8 @@ it is arbitrary as to which pixel is reported.
 .sM
 .IN "StoreNamedColor" "" "@DEF@"
 .PN StoreNamedColor
-.in +.2i
 .LP
+.in +.2i
 \fIcmap\fP\^: COLORMAP
 .br
 \fIpixel\fP\^: CARD32
@@ -7435,7 +7613,9 @@ it is arbitrary as to which pixel is reported.
 \fIname\fP\^: STRING8
 .br
 \fIdo-red\fP, \fIdo-green\fP\^, \fIdo-blue\fP\^: BOOL
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Access , 
 .PN Colormap ,
@@ -7461,23 +7641,28 @@ errors are the same as in
 .sM
 .IN "QueryColors" "" "@DEF@"
 .PN QueryColors
-.in +.2i
 .LP
+.in +.2i
 \fIcmap\fP\^: COLORMAP
 .br
 \fIpixels\fP\^: LISTofCARD32
 .in -.2i
 .LP
-   =>
+   \(->
+.LP
 .in +.2i
-.LP
 colors: LISTofRGB
+.in -.2i
 .LP
+.in +.2i
 where:
+.in -.2i
 .LP
-.DS 0
+.in +.2i
 RGB: [red, green, blue: CARD16]
-.DE
+.in -.2i
+.LP
+.in +.2i
 Errors: 
 .PN Colormap , 
 .PN Value
@@ -7497,20 +7682,22 @@ it is arbitrary as to which pixel is reported.
 .sM
 .IN "LookupColor" "" "@DEF@"
 .PN LookupColor
-.in +.2i
 .LP
+.in +.2i
 \fIcmap\fP\^: COLORMAP
 .br
 \fIname\fP\^: STRING8
 .in -.2i
 .LP
-   =>
-.in +.2i
+   \(->
 .LP
+.in +.2i
 exact-red, exact-green, exact-blue: CARD16
 .br
 visual-red, visual-green, visual-blue: CARD16
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Colormap , 
 .PN Name
@@ -7528,8 +7715,8 @@ and uppercase and lowercase do not matter.
 .sM
 .IN "CreateCursor" "" "@DEF@"
 .PN CreateCursor
-.in +.2i
 .LP
+.in +.2i
 \fIcid\fP\^: CURSOR
 .br
 \fIsource\fP\^: PIXMAP
@@ -7542,7 +7729,9 @@ and uppercase and lowercase do not matter.
 \fIback-red\fP, \fIback-green\fP, \fIback-blue\fP\^: CARD16
 .br
 \fIx\fP, \fIy\fP\^: CARD16
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Alloc ,
 .PN IDChoice , 
@@ -7592,8 +7781,8 @@ The server might or might not make a copy of the pixmap.
 .sM
 .IN "CreateGlyphCursor" "" "@DEF@"
 .PN CreateGlyphCursor
-.in +.2i
 .LP
+.in +.2i
 \fIcid\fP\^: CURSOR
 .br
 \fIsource-font\fP\^: FONT
@@ -7606,7 +7795,9 @@ The server might or might not make a copy of the pixmap.
 \fIfore-red\fP, \fIfore-green\fP, \fIfore-blue\fP\^: CARD16
 .br
 \fIback-red\fP, \fIback-green\fP, \fIback-blue\fP\^: CARD16
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Alloc ,
 .PN Font , 
@@ -7633,8 +7824,8 @@ If no mask is given,
 all pixels of the source are displayed.
 Note that source-char and mask-char are CARD16, not CHAR2B.
 For 2-byte matrix fonts, 
-the 16-bit value should be formed with byte1 in the most-significant byte 
-and byte2 in the least-significant byte.
+the 16-bit value should be formed with byte1 in the most significant byte 
+and byte2 in the least significant byte.
 .LP
 The components of the cursor may be transformed arbitrarily to meet
 display limitations.
@@ -7646,10 +7837,12 @@ them are to be made.
 .sM
 .IN "FreeCursor" "" "@DEF@"
 .PN FreeCursor
+.LP
 .in +.2i
-.LP
 \fIcursor\fP\^: CURSOR
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Cursor
 .in -.2i
@@ -7662,14 +7855,16 @@ The cursor storage will be freed when no other resource references it.
 .sM
 .IN "RecolorCursor" "" "@DEF@"
 .PN RecolorCursor
-.in +.2i
 .LP
+.in +.2i
 \fIcursor\fP\^: CURSOR
 .br
 \fIfore-red\fP, \fIfore-green\fP, \fIfore-blue\fP\^: CARD16
 .br
 \fIback-red\fP, \fIback-green\fP, \fIback-blue\fP\^: CARD16
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Cursor
 .in -.2i
@@ -7683,8 +7878,8 @@ the change is visible immediately.
 .sM
 .IN "QueryBestSize" "" "@DEF@"
 .PN QueryBestSize
-.in +.2i
 .LP
+.in +.2i
 \fIclass\fP: 
 .Pn { Cursor , 
 .PN Tile , 
@@ -7695,11 +7890,13 @@ the change is visible immediately.
 \fIwidth\fP, \fIheight\fP\^: CARD16
 .in -.2i
 .LP
-   =>
+   \(->
+.LP
 .in +.2i
-.LP
 width, height: CARD16
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Drawable , 
 .PN Match ,
@@ -7740,14 +7937,14 @@ error results).
 .sM
 .IN "QueryExtension" "" "@DEF@"
 .PN QueryExtension
-.in +.2i
 .LP
+.in +.2i
 \fIname\fP\^: STRING8
 .in -.2i
 .LP
-   =>
-.in +.2i
+   \(->
 .LP
+.in +.2i
 present: BOOL
 .br
 major-opcode: CARD8
@@ -7780,9 +7977,9 @@ and uppercase and lowercase matter.
 .IN "ListExtensions" "" "@DEF@"
 .PN ListExtensions
 .LP
-   =>
-.in +.2i
+   \(->
 .LP
+.in +.2i
 names: LISTofSTRING8
 .in -.2i
 .eM
@@ -7792,21 +7989,23 @@ This request returns a list of all extensions supported by the server.
 .sM
 .IN "SetModifierMapping" "" "@DEF@"
 .PN SetModifierMapping
-.in +.2i
 .LP
+.in +.2i
 \fIkeycodes-per-modifier\fP\^: CARD8
 .br
 \fIkeycodes\fP\^: LISTofKEYCODE
 .in -.2i
 .LP
-   =>
-.in +.2i
+   \(->
 .LP
+.in +.2i
 status: 
 .Pn { Success , 
 .PN Busy , 
 .PN Failed }
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Alloc ,
 .PN Value
@@ -7871,9 +8070,9 @@ status.
 .IN "GetModifierMapping" "" "@DEF@"
 .PN GetModifierMapping
 .LP
-   =>
-.in +.2i
+   \(->
 .LP
+.in +.2i
 keycodes-per-modifier: CARD8
 .br
 keycodes: LISTofKEYCODE
@@ -7905,14 +8104,16 @@ The order of keycodes within each set is chosen arbitrarily by the server.
 .sM
 .IN "ChangeKeyboardMapping" "" "@DEF@"
 .PN ChangeKeyboardMapping
-.in +.2i
 .LP
+.in +.2i
 \fIfirst-keycode\fP\^: KEYCODE
 .br
 \fIkeysyms-per-keycode\fP\^: CARD8
 .br
 \fIkeysyms\fP\^: LISTofKEYSYM
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Alloc ,
 .PN Value
@@ -7965,20 +8166,22 @@ it is merely stored for reading and writing by clients (see section 5).
 .sM
 .IN "GetKeyboardMapping" "" "@DEF@"
 .PN GetKeyboardMapping
-.in +.2i
 .LP
+.in +.2i
 \fIfirst-keycode\fP\^: KEYCODE
 .br
 \fIcount\fP\^: CARD8
 .in -.2i
 .LP
-   =>
-.in +.2i
+   \(->
 .LP
+.in +.2i
 keysyms-per-keycode: CARD8
 .br
 keysyms: LISTofKEYSYM
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Value
 .in -.2i
@@ -8020,12 +8223,14 @@ is used to fill in unused elements for individual keycodes.
 .sM
 .IN "ChangeKeyboardControl" "" "@DEF@"
 .PN ChangeKeyboardControl
-.in +.2i
 .LP
+.in +.2i
 \fIvalue-mask\fP\^: BITMASK
 .br
 \fIvalue-list\fP\^: LISTofVALUE
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Match , 
 .PN Value
@@ -8169,9 +8374,9 @@ a subset of the controls may have been altered.
 .IN "GetKeyboardControl" "" "@DEF@"
 .PN GetKeyboardControl
 .LP
-   =>
-.in +.2i
+   \(->
 .LP
+.in +.2i
 key-click-percent: CARD8
 .br
 bell-percent: CARD8
@@ -8192,22 +8397,24 @@ auto-repeats: LISTofCARD8
 .LP
 This request returns the current control values for the keyboard.
 For the LEDs, 
-the least-significant bit of led-mask corresponds to LED one, 
+the least significant bit of led-mask corresponds to LED one, 
 and each one bit in led-mask indicates an LED that is lit.
 The auto-repeats is a bit vector; 
 each one bit indicates that auto-repeat is enabled for the corresponding key.
 The vector is represented as 32 bytes.
 Byte N (from 0) contains the bits for keys 8N to 8N + 7, 
-with the least-significant bit in the byte representing key 8N.
+with the least significant bit in the byte representing key 8N.
 .sp
 .LP
 .sM
 .IN "Bell" "" "@DEF@"
 .PN Bell
+.LP
 .in +.2i
-.LP
 \fIpercent\fP\^: INT8
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Value
 .in -.2i
@@ -8232,18 +8439,20 @@ base + [(base * percent) / 100]
 .sM
 .IN "SetPointerMapping" "" "@DEF@"
 .PN SetPointerMapping
-.in +.2i
 .LP
+.in +.2i
 \fImap\fP\^: LISTofCARD8
 .in -.2i
 .LP
-   =>
-.in +.2i
+   \(->
 .LP
+.in +.2i
 status: 
 .Pn { Success , 
 .PN Busy }
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Value
 .in -.2i
@@ -8281,9 +8490,9 @@ status.
 .IN "GetPointerMapping" "" "@DEF@"
 .PN GetPointerMapping
 .LP
-   =>
-.in +.2i
+   \(->
 .LP
+.in +.2i
 map: LISTofCARD8
 .in -.2i
 .eM
@@ -8298,14 +8507,16 @@ The nominal mapping for a pointer is the identity mapping: map[i]=i.
 .sM
 .IN "ChangePointerControl" "" "@DEF@"
 .PN ChangePointerControl
-.in +.2i
 .LP
+.in +.2i
 \fIdo-acceleration\fP, \fIdo-threshold\fP\^: BOOL
 .br
 \fIacceleration-numerator\fP, \fIacceleration-denominator\fP\^: INT16
 .br
 \fIthreshold\fP\^: INT16
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Value
 .in -.2i
@@ -8328,9 +8539,9 @@ error, as does a zero value for acceleration-denominator.
 .IN "GetPointerControl" "" "@DEF@"
 .PN GetPointerControl
 .LP
-   =>
-.in +.2i
+   \(->
 .LP
+.in +.2i
 acceleration-numerator, acceleration-denominator: CARD16
 .br
 threshold: CARD16
@@ -8343,8 +8554,8 @@ This request returns the current acceleration and threshold for the pointer.
 .sM
 .IN "SetScreenSaver" "" "@DEF@"
 .PN SetScreenSaver
-.in +.2i
 .LP
+.in +.2i
 \fItimeout\fP, \fIinterval\fP\^: INT16
 .br
 \fIprefer-blanking\fP\^: 
@@ -8356,7 +8567,9 @@ This request returns the current acceleration and threshold for the pointer.
 .Pn { Yes , 
 .PN No , 
 .PN Default }
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Value
 .in -.2i
@@ -8402,9 +8615,9 @@ randomly reorigined periodically.
 .IN "GetScreenSaver" "" "@DEF@"
 .PN GetScreenSaver
 .LP
-   =>
-.in +.2i
+   \(->
 .LP
+.in +.2i
 timeout, interval: CARD16
 .br
 prefer-blanking: 
@@ -8423,12 +8636,14 @@ This request returns the current screen-saver control values.
 .sM
 .IN "ForceScreenSaver" "" "@DEF@"
 .PN ForceScreenSaver
-.in +.2i
 .LP
+.in +.2i
 \fImode\fP\^: 
 .Pn { Activate , 
 .PN Reset }
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Value
 .in -.2i
@@ -8450,14 +8665,16 @@ as if device input had just been received.
 .sM
 .IN "ChangeHosts" "" "@DEF@"
 .PN ChangeHosts
-.in +.2i
 .LP
+.in +.2i
 \fImode\fP\^: 
 .Pn { Insert , 
 .PN Delete }
 .br
 \fIhost\fP: HOST
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Access , 
 .PN Value
@@ -8468,7 +8685,7 @@ This request adds or removes the specified host from the access control list.
 When the access control mechanism is enabled and a client attempts to
 establish a connection to the server, 
 the host on which the client resides must be in the access control list, 
-or have the client must have been granted permission by a server-dependent
+or the client must have been granted permission by a server-dependent
 method, or the server will refuse the connection.
 .LP
 The client must reside on the same host as the server and/or have been granted
@@ -8493,20 +8710,20 @@ The address bytes are in standard IP order;
 the server performs no automatic swapping on the address bytes.
 For a Class A address, 
 the network number is the first byte in the address, 
-and the host number is the remaining three bytes, most-significant byte first.
+and the host number is the remaining three bytes, most significant byte first.
 For a Class B address, 
 the network number is the first two bytes and the host number
-is the last two bytes, each most-significant byte first.
+is the last two bytes, each most significant byte first.
 For a Class C address, 
-the network number is the first three bytes, most-significant byte first, 
+the network number is the first three bytes, most significant byte first, 
 and the last byte is the host number.
 .LP
 For the DECnet family, 
 the server performs no automatic swapping on the address bytes.
 A Phase IV address is two bytes long:
-the first byte contains the least-significant eight bits of the node number,
-and the second byte contains the most-significant two bits of the node number in
-the least-significant two bits of the byte and the area in the most
+the first byte contains the least significant eight bits of the node number,
+and the second byte contains the most significant two bits of the node number in
+the least significant two bits of the byte and the area in the most
 significant six bits of the byte.
 .LP
 For the Chaos family, 
@@ -8520,9 +8737,9 @@ The server performs no automatic swapping on the address bytes.
 .IN "ListHosts" "" "@DEF@"
 .PN ListHosts
 .LP
-   =>
-.in +.2i
+   \(->
 .LP
+.in +.2i
 mode: 
 .Pn { Enabled , 
 .PN Disabled }
@@ -8541,12 +8758,14 @@ Each HOST is padded to a multiple of four bytes.
 .sM
 .IN "SetAccessControl" "" "@DEF@"
 .PN SetAccessControl
-.in +.2i
 .LP
+.in +.2i
 \fImode\fP\^: 
 .Pn { Enable , 
 .PN Disable }
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Access ,
 .PN Value
@@ -8566,13 +8785,15 @@ error results).
 .sM
 .IN "SetCloseDownMode" "" "@DEF@"
 .PN SetCloseDownMode
-.in +.2i
 .LP
+.in +.2i
 \fImode\fP: 
 .Pn { Destroy , 
 .PN RetainPermanent , 
 .PN RetainTemporary }
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Value
 .in -.2i
@@ -8589,11 +8810,13 @@ The meaning of the close-down mode is described in section 10.
 .sM
 .IN "KillClient" "" "@DEF@"
 .PN KillClient
-.in +.2i
 .LP
+.in +.2i
 \fIresource\fP\^: CARD32 or 
 .PN AllTemporary
+.in -.2i
 .LP
+.in +.2i
 Errors: 
 .PN Value
 .in -.2i
@@ -8797,8 +9020,8 @@ can both be used to modify the active grab.
 .br
 .IN "MotionNotify" "" "@DEF@"
 .PN MotionNotify
-.in +.2i
 .LP
+.in +.2i
 \fIroot\fP, \fIevent\fP\^: WINDOW
 .br
 \fIchild\fP\^: WINDOW or 
@@ -8927,8 +9150,8 @@ request.
 .br
 .IN "LeaveNotify" "" "@DEF@"
 .PN LeaveNotify
-.in +.2i
 .LP
+.in +.2i
 \fIroot\fP, \fIevent\fP\^: WINDOW
 .br
 \fIchild\fP\^: WINDOW or 
@@ -9162,8 +9385,8 @@ and final positions for the events.
 .br
 .IN "FocusOut" "" "@DEF@"
 .PN FocusOut
-.in +.2i
 .LP
+.in +.2i
 \fIevent\fP\^: WINDOW
 .br
 \fImode\fP\^:
@@ -9486,8 +9709,8 @@ above) as if the focus were to change from G to F.
 .sM
 .IN "KeymapNotify" "" "@DEF@"
 .PN KeymapNotify
-.in +.2i
 .LP
+.in +.2i
 \fIkeys\fP\^: LISTofCARD8
 .in -.2i
 .eM
@@ -9505,8 +9728,8 @@ and
 .sM
 .IN "Expose" "" "@DEF@"
 .PN Expose
-.in +.2i
 .LP
+.in +.2i
 \fIwindow\fP\^: WINDOW
 .br
 \fIx\fP, \fIy\fP, \fIwidth\fP, \fIheight\fP\^: CARD16
@@ -9583,8 +9806,8 @@ events is not constrained.
 .sM
 .IN "GraphicsExposure" "" "@DEF@"
 .PN GraphicsExposure
-.in +.2i
 .LP
+.in +.2i
 \fIdrawable\fP\^: DRAWABLE
 .br
 \fIx\fP, \fIy\fP, \fIwidth\fP, \fIheight\fP\^: CARD16
@@ -9627,8 +9850,8 @@ and minor-opcode is always zero.
 .sM
 .IN "NoExposure" "" "@DEF@"
 .PN NoExposure
-.in +.2i
 .LP
+.in +.2i
 \fIdrawable\fP\^: DRAWABLE
 .br
 \fImajor-opcode\fP\^: CARD8
@@ -9657,8 +9880,8 @@ and the minor-opcode is always zero.
 .sM
 .IN "VisibilityNotify" "" "@DEF@"
 .PN VisibilityNotify
-.in +.2i
 .LP
+.in +.2i
 \fIwindow\fP\^: WINDOW
 .br
 \fIstate\fP\^: 
@@ -9728,8 +9951,8 @@ events is not constrained.
 .sM
 .IN "CreateNotify" "" "@DEF@"
 .PN CreateNotify
-.in +.2i
 .LP
+.in +.2i
 \fIparent\fP, \fIwindow\fP\^: WINDOW
 .br
 \fIx\fP, \fIy\fP\^: INT16
@@ -9752,8 +9975,8 @@ request.
 .sM
 .IN "DestroyNotify" "" "@DEF@"
 .PN DestroyNotify
-.in +.2i
 .LP
+.in +.2i
 \fIevent\fP, \fIwindow\fP\^: WINDOW
 .in -.2i
 .eM
@@ -9780,8 +10003,8 @@ otherwise constrained.
 .sM
 .IN "UnmapNotify" "" "@DEF@"
 .PN UnmapNotify
-.in +.2i
 .LP
+.in +.2i
 \fIevent\fP, \fIwindow\fP\^: WINDOW
 .br
 \fIfrom-configure\fP\^: BOOL
@@ -9806,8 +10029,8 @@ when the window itself had a win-gravity of
 .sM
 .IN "MapNotify" "" "@DEF@"
 .PN MapNotify
-.in +.2i
 .LP
+.in +.2i
 \fIevent\fP, \fIwindow\fP\^: WINDOW
 .br
 \fIoverride-redirect\fP\^: BOOL
@@ -9828,8 +10051,8 @@ The override-redirect flag is from the window's attribute.
 .sM
 .IN "MapRequest" "" "@DEF@"
 .PN MapRequest
-.in +.2i
 .LP
+.in +.2i
 \fIparent\fP, \fIwindow\fP\^: WINDOW
 .in -.2i
 .eM
@@ -9845,8 +10068,8 @@ request is issued on an unmapped window with an override-redirect attribute of
 .sM
 .IN "ReparentNotify" "" "@DEF@"
 .PN ReparentNotify
-.in +.2i
 .LP
+.in +.2i
 \fIevent\fP, \fIwindow\fP, \fIparent\fP\^: WINDOW
 .br
 \fIx\fP, \fIy\fP\^: INT16
@@ -9872,8 +10095,8 @@ The override-redirect flag is from the window's attribute.
 .sM
 .IN "ConfigureNotify" "" "@DEF@"
 .PN ConfigureNotify
-.in +.2i
 .LP
+.in +.2i
 \fIevent\fP, \fIwindow\fP\^: WINDOW
 .br
 \fIx\fP, \fIy\fP\^: INT16
@@ -9910,8 +10133,8 @@ The override-redirect flag is from the window's attribute.
 .sM
 .IN "GravityNotify" "" "@DEF@"
 .PN GravityNotify
-.in +.2i
 .LP
+.in +.2i
 \fIevent\fP, \fIwindow\fP\^: WINDOW
 .br
 \fIx\fP, \fIy\fP\^: INT16
@@ -9934,8 +10157,8 @@ and specify the position of the upper-left outer corner of the window.
 .sM
 .IN "ResizeRequest" "" "@DEF@"
 .PN ResizeRequest
-.in +.2i
 .LP
+.in +.2i
 \fIwindow\fP\^: WINDOW
 .br
 \fIwidth\fP, \fIheight\fP\^: CARD16
@@ -9954,8 +10177,8 @@ The width and height are the requested inside size, not including the border.
 .sM
 .IN "ConfigureRequest" "" "@DEF@"
 .PN ConfigureRequest
-.in +.2i
 .LP
+.in +.2i
 \fIparent\fP, \fIwindow\fP\^: WINDOW
 .br
 \fIx\fP, \fIy\fP\^: INT16
@@ -9996,8 +10219,8 @@ and
 .sM
 .IN "CirculateNotify" "" "@DEF@"
 .PN CirculateNotify
-.in +.2i
 .LP
+.in +.2i
 \fIevent\fP, \fIwindow\fP\^: WINDOW
 .br
 \fIplace\fP\^: 
@@ -10025,8 +10248,8 @@ Otherwise, it is below all siblings.
 .sM
 .IN "CirculateRequest" "" "@DEF@"
 .PN CirculateRequest
-.in +.2i
 .LP
+.in +.2i
 \fIparent\fP, \fIwindow\fP\^: WINDOW
 .br
 \fIplace\fP: 
@@ -10047,8 +10270,8 @@ and the place specifies what the new position in the stacking order should be.
 .sM
 .IN "PropertyNotify" "" "@DEF@"
 .PN PropertyNotify
-.in +.2i
 .LP
+.in +.2i
 \fIwindow\fP\^: WINDOW
 .br
 \fIatom\fP\^: ATOM
@@ -10088,8 +10311,8 @@ The timestamp indicates the server time when the property was changed.
 .sM
 .IN "SelectionClear" "" "@DEF@"
 .PN SelectionClear
-.in +.2i
 .LP
+.in +.2i
 \fIowner\fP\^: WINDOW
 .br
 \fIselection\fP\^: ATOM
@@ -10110,8 +10333,8 @@ request.
 .sM
 .IN "SelectionRequest" "" "@DEF@"
 .PN SelectionRequest
-.in +.2i
 .LP
+.in +.2i
 \fIowner\fP\^: WINDOW
 .br
 \fIselection\fP\^: ATOM
@@ -10150,8 +10373,8 @@ standard \fIInter-Client Communication Conventions Manual\fP.
 .sM
 .IN "SelectionNotify" "" "@DEF@"
 .PN SelectionNotify
-.in +.2i
 .LP
+.in +.2i
 \fIrequestor\fP\^: WINDOW
 .br
 \fIselection\fP, \fItarget\fP\^: ATOM
@@ -10179,8 +10402,8 @@ or when a selection conversion could not be performed (indicated with property
 .sM
 .IN "ColormapNotify" "" "@DEF@"
 .PN ColormapNotify
-.in +.2i
 .LP
+.in +.2i
 \fIwindow\fP\^: WINDOW
 .br
 \fIcolormap\fP\^: COLORMAP or 
@@ -10210,8 +10433,8 @@ the state indicates whether the colormap is currently installed.
 .sM
 .IN "MappingNotify" "" "@DEF@"
 .PN MappingNotify
-.in +.2i
 .LP
+.in +.2i
 \fIrequest\fP: 
 .Pn { Modifier , 
 .PN Keyboard , 
@@ -10242,8 +10465,8 @@ then first-keycode and count indicate the range of altered keycodes.
 .sM
 .IN "ClientMessage" "" "@DEF@"
 .PN ClientMessage
-.in +.2i
 .LP
+.in +.2i
 \fIwindow\fP\^: WINDOW
 .br
 \fItype\fP\^: ATOM
@@ -10302,3 +10525,4 @@ and requests.
 For a request from a given client,
 any events destined for that client that are caused by executing the request
 must be sent to the client before any reply or error is sent.
+.bp

@@ -1,6 +1,6 @@
 .\" $TOG: Framework.ms /main/6 1997/11/04 18:03:10 kaleb $
 .\" To print this out, type tbl macros.t ThisFile | troff -ms
-.\" $XFree86$
+.\" $XFree86: xc/doc/specs/i18n/Framework.ms,v 1.2 2000/11/28 18:49:21 dawes Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -297,9 +297,9 @@ the components within the sample implementation.
 \h'3.063i'\v'0.782i'\h'-0.0m'\v'0.2m'\s12\fR>>\fP
 .sp -1
 .sp 1+4.344i
+.in -1c
 .PE
 .if \n(00 .fi
-.in -1c
 .\" figure end
 .LP
 .ce
