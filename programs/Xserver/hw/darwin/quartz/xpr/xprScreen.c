@@ -27,21 +27,22 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/xprScreen.c,v 1.2 2003/06/30 01:45:13 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/xprScreen.c,v 1.3 2003/08/12 23:47:10 torrey Exp $ */
 
 #include "quartzCommon.h"
+#include "quartz.h"
 #include "xpr.h"
 #include "pseudoramiX.h"
 #include "darwin.h"
-#include "aqua.h"
 #include "rootless.h"
+#include "safeAlpha.h"
 #include "dri.h"
 #include "Xplugin.h"
 #define _APPLEWM_SERVER_
 #include "applewmstr.h"
 
 // Name of GLX bundle for native OpenGL
-const char *quartzOpenGLBundle = "glxCGL.bundle";
+static const char *xprOpenGLBundle = "glxCGL.bundle";
 
 /*
  * displayScreenBounds
@@ -56,9 +57,9 @@ displayAtIndex(int index)
 
     err = CGGetActiveDisplayList(index + 1, dpy, &cnt);
     if (err == kCGErrorSuccess && cnt == index + 1)
-	return dpy[index];
+        return dpy[index];
     else
-	return kCGNullDirectDisplay;
+        return kCGNullDirectDisplay;
 }
 
 
@@ -77,8 +78,8 @@ displayScreenBounds(CGDirectDisplayID id)
 
     if (frame.origin.x == 0 && frame.origin.y == 0)
     {
-	frame.origin.y += aquaMenuBarHeight;
-	frame.size.height -= aquaMenuBarHeight;
+        frame.origin.y += aquaMenuBarHeight;
+        frame.size.height -= aquaMenuBarHeight;
     }
 
     return frame;
@@ -104,9 +105,9 @@ addPseudoramiXScreens(int *x, int *y, int *width, int *height)
     /* Get the union of all screens */
     for (i = 0; i < displayCount; i++)
     {
-	CGDirectDisplayID dpy = displayList[i];
-	frame = displayScreenBounds(dpy);
-	unionRect = CGRectUnion(unionRect, frame);
+        CGDirectDisplayID dpy = displayList[i];
+        frame = displayScreenBounds(dpy);
+        unionRect = CGRectUnion(unionRect, frame);
     }
 
     /* Use unionRect as the screen size for the X server. */
@@ -118,22 +119,22 @@ addPseudoramiXScreens(int *x, int *y, int *width, int *height)
     /* Tell PseudoramiX about the real screens. */
     for (i = 0; i < displayCount; i++)
     {
-	CGDirectDisplayID dpy = displayList[i];
+        CGDirectDisplayID dpy = displayList[i];
 
-	frame = displayScreenBounds(dpy);
+        frame = displayScreenBounds(dpy);
 
-	ErrorF("PseudoramiX screen %d added: %dx%d @ (%d,%d).\n", i,
-	       (int)frame.size.width, (int)frame.size.height,
-	       (int)frame.origin.x, (int)frame.origin.y);
+        ErrorF("PseudoramiX screen %d added: %dx%d @ (%d,%d).\n", i,
+               (int)frame.size.width, (int)frame.size.height,
+               (int)frame.origin.x, (int)frame.origin.y);
 
-	frame.origin.x -= unionRect.origin.x;
-	frame.origin.y -= unionRect.origin.y;
+        frame.origin.x -= unionRect.origin.x;
+        frame.origin.y -= unionRect.origin.y;
 
-	ErrorF("PseudoramiX screen %d placed at X11 coordinate (%d,%d).\n",
-	       i, (int)frame.origin.x, (int)frame.origin.y);
+        ErrorF("PseudoramiX screen %d placed at X11 coordinate (%d,%d).\n",
+               i, (int)frame.origin.x, (int)frame.origin.y);
 
-	PseudoramiXAddScreen(frame.origin.x, frame.origin.y,
-			     frame.size.width, frame.size.height);
+        PseudoramiXAddScreen(frame.origin.x, frame.origin.y,
+                             frame.size.width, frame.size.height);
     }
 
     xfree(displayList);
@@ -141,13 +142,15 @@ addPseudoramiXScreens(int *x, int *y, int *width, int *height)
 
 
 /*
- * AquaDisplayInit
+ * xprDisplayInit
  *  Find number of CoreGraphics displays and initialize Xplugin.
  */
-void
-AquaDisplayInit(void)
+static void
+xprDisplayInit(void)
 {
     CGDisplayCount displayCount;
+
+    ErrorF("Display mode: Rootless Quartz -- Xplugin implementation\n");
 
     CGGetActiveDisplayList(0, NULL, &displayCount);
 
@@ -155,7 +158,7 @@ AquaDisplayInit(void)
        itself knows about all of the screens. */
 
     if (noPseudoramiXExtension)
-	darwinScreensFound = displayCount;
+        darwinScreensFound = displayCount;
     else
         darwinScreensFound =  1;
 
@@ -165,16 +168,16 @@ AquaDisplayInit(void)
     }
 
     AppleDRIExtensionInit();
-    AppleWMExtensionInit();
+    xprAppleWMInit();
 }
 
 
 /*
- * AquaAddScreen
+ * xprAddScreen
  *  Init the framebuffer and record pixmap parameters for the screen.
  */
-Bool
-AquaAddScreen(int index, ScreenPtr pScreen)
+static Bool
+xprAddScreen(int index, ScreenPtr pScreen)
 {
     DarwinFramebufferPtr dfb = SCREEN_PRIV(pScreen);
 
@@ -188,23 +191,23 @@ AquaAddScreen(int index, ScreenPtr pScreen)
 
     if (darwinDesiredDepth == -1)
     {
-	dfb->bitsPerComponent = CGDisplayBitsPerSample(kCGDirectMainDisplay);
-	dfb->bitsPerPixel = CGDisplayBitsPerPixel(kCGDirectMainDisplay);
+        dfb->bitsPerComponent = CGDisplayBitsPerSample(kCGDirectMainDisplay);
+        dfb->bitsPerPixel = CGDisplayBitsPerPixel(kCGDirectMainDisplay);
         dfb->colorBitsPerPixel =
                 CGDisplaySamplesPerPixel(kCGDirectMainDisplay) *
                 dfb->bitsPerComponent;
     }
     else if (darwinDesiredDepth == 15)
     {
-	dfb->bitsPerComponent = 5;
-	dfb->bitsPerPixel = 16;
+        dfb->bitsPerComponent = 5;
+        dfb->bitsPerPixel = 16;
         dfb->colorBitsPerPixel = 15;
     }
     else if (darwinDesiredDepth == 8)
     {
         dfb->colorType = PseudoColor;
-	dfb->bitsPerComponent = 8;
-	dfb->bitsPerPixel = 8;
+        dfb->bitsPerComponent = 8;
+        dfb->bitsPerPixel = 8;
         dfb->colorBitsPerPixel = 8;
     }
 
@@ -213,9 +216,9 @@ AquaAddScreen(int index, ScreenPtr pScreen)
         CGDirectDisplayID dpy;
         CGRect frame;
 
-	dpy = displayAtIndex(index);
+        dpy = displayAtIndex(index);
 
-	frame = displayScreenBounds(dpy);
+        frame = displayScreenBounds(dpy);
 
         dfb->x = frame.origin.x;
         dfb->y = frame.origin.y;
@@ -224,7 +227,7 @@ AquaAddScreen(int index, ScreenPtr pScreen)
     }
     else
     {
-	addPseudoramiXScreens(&dfb->x, &dfb->y, &dfb->width, &dfb->height);
+        addPseudoramiXScreens(&dfb->x, &dfb->y, &dfb->width, &dfb->height);
     }
 
     /* Passing zero width (pitch) makes miCreateScreenResources set the
@@ -240,20 +243,20 @@ AquaAddScreen(int index, ScreenPtr pScreen)
 
 
 /*
- * AquaSetupScreen
+ * xprSetupScreen
  *  Setup the screen for rootless access.
  */
-Bool
-AquaSetupScreen(int index, ScreenPtr pScreen)
+static Bool
+xprSetupScreen(int index, ScreenPtr pScreen)
 {
-    // Add Aqua specific replacements for fb screen functions
-    pScreen->PaintWindowBackground = AquaPaintWindow;
-    pScreen->PaintWindowBorder = AquaPaintWindow;
+    // Add alpha protecting replacements for fb screen functions
+    pScreen->PaintWindowBackground = SafeAlphaPaintWindow;
+    pScreen->PaintWindowBorder = SafeAlphaPaintWindow;
 
 #ifdef RENDER
     {
         PictureScreenPtr ps = GetPictureScreen(pScreen);
-        ps->Composite = AquaComposite;
+        ps->Composite = SafeAlphaComposite;
     }
 #endif /* RENDER */
 
@@ -268,12 +271,46 @@ AquaSetupScreen(int index, ScreenPtr pScreen)
 
 
 /*
- * AquaInitInput
+ * xprInitInput
  *  Finalize xpr specific setup.
  */
-void
-AquaInitInput(int argc, char **argv)
+static void
+xprInitInput(int argc, char **argv)
 {
     rootlessGlobalOffsetX = darwinMainScreenX;
     rootlessGlobalOffsetY = darwinMainScreenY;
+}
+
+
+/*
+ * Quartz display mode function list.
+ */
+static QuartzModeProcsRec xprModeProcs = {
+    xprDisplayInit,
+    xprAddScreen,
+    xprSetupScreen,
+    xprInitInput,
+    QuartzInitCursor,
+    NULL,               // No need to update cursor
+    QuartzSuspendXCursor,
+    QuartzResumeXCursor,
+    NULL,               // No capture or release in rootless mode
+    NULL,
+    RootlessFrameForWindow,
+    TopLevelParent,
+    DRICreateSurface,
+    DRIDestroySurface
+};
+
+
+/*
+ * QuartzModeBundleInit
+ *  Initialize the display mode bundle after loading.
+ */
+Bool
+QuartzModeBundleInit(void)
+{
+    quartzProcs = &xprModeProcs;
+    quartzOpenGLBundle = xprOpenGLBundle;
+    return TRUE;
 }

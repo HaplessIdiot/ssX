@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessCommon.h,v 1.2 2003/04/30 23:15:35 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessCommon.h,v 1.3 2003/06/30 01:45:13 torrey Exp $ */
 
 #ifndef _ROOTLESSCOMMON_H
 #define _ROOTLESSCOMMON_H
@@ -236,12 +236,6 @@ extern RegionRec rootlessHugeRoot;
 // Returns TRUE if this window is visible inside a frame
 // (e.g. it is visible and has a top-level or root parent)
 Bool IsFramedWindow(WindowPtr pWin);
-
-// Prepare a window for direct access to its backing buffer.
-void RootlessStartDrawing(WindowPtr pWindow);
-
-// Finish drawing to a window's backing buffer.
-void RootlessStopDrawing(WindowPtr pWindow, Bool flush);
 
 // Routines that cause regions to get redrawn.
 // DamageRegion and DamageRect are in global coordinates.

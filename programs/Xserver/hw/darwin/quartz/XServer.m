@@ -34,7 +34,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.10 2003/08/12 23:47:10 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.11 2003/08/19 19:21:13 torrey Exp $ */
 
 #include "quartzCommon.h"
 
@@ -43,6 +43,7 @@
 #include "Xproto.h"
 #include "os.h"
 #include "darwin.h"
+#include "quartz.h"
 #define _APPLEWM_SERVER_
 #include "applewm.h"
 #undef BOOL
@@ -101,7 +102,6 @@ extern char **envpGlobal;
 extern int main(int argc, char *argv[], char *envp[]);
 extern void HideMenuBar(void);
 extern void ShowMenuBar(void);
-extern void QuartzReallySetCursor();
 static void childDone(int sig);
 static void powerDidChange(void *x, io_service_t y, natural_t messageType,
                            void *messageArgument);
@@ -431,6 +431,27 @@ static io_connect_t root_port;
     }
 }
 
+
+// Load the appropriate display mode bundle
+- (BOOL)loadDisplayBundle
+{
+    if (quartzRootless) {
+        NSEnumerator *enumerator = [[Preferences displayModeBundles]
+                                            objectEnumerator];
+        NSString *bundleName;
+
+        while ((bundleName = [enumerator nextObject])) {
+            if (QuartzLoadDisplayBundle([bundleName cString]))
+                return YES;
+        }
+
+        return NO;
+    } else {
+        return QuartzLoadDisplayBundle("fullscreen.bundle");
+    }
+}
+
+
 // Start the X server thread and the client process
 - (void)startX
 {
@@ -456,6 +477,9 @@ static io_connect_t root_port;
         NSLog(@"\n%@", appVersion);
     else
         NSLog(@"No version");
+
+    if (![self loadDisplayBundle])
+        [NSApp terminate:nil];
 
     // Start the X server thread
     serverState = server_Starting;
@@ -789,7 +813,7 @@ static io_connect_t root_port;
 
     if (show) {
         if (!quartzRootless) {
-            QuartzFSCapture();
+            quartzProcs->CaptureScreens();
             HideMenuBar();
         }
         xe.u.u.type = kXDarwinShow;
@@ -892,7 +916,7 @@ static io_connect_t root_port;
             // Make sure the X server wasn't queued to be shown again while
             // the hide was pending.
             if (!quartzRootless && !serverVisible) {
-                QuartzFSRelease();
+                quartzProcs->ReleaseScreens();
                 ShowMenuBar();
             }
             break;
@@ -910,7 +934,8 @@ static io_connect_t root_port;
             break;
 
         case kQuartzCursorUpdate:
-            QuartzReallySetCursor();
+            if (quartzProcs->CursorUpdate)
+                quartzProcs->CursorUpdate();
             break;
 
         case kQuartzPostEvent:
@@ -1145,7 +1170,7 @@ QuartzSetWindowMenu(int nitems, const char **items,
     }
 
     /* Send the array of strings over to the main thread. */
-    /* Will we released in main thread. */
+    /* Will be released in main thread. */
     QuartzMessageMainThread(kQuartzSetWindowMenu, &array, sizeof(NSArray *));
 }
 

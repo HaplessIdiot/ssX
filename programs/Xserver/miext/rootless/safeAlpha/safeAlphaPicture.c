@@ -1,8 +1,8 @@
 /*
- * Support for RENDER extension with rootless Aqua
+ * Support for RENDER extension while protecting the alpha channel
  */
 /*
- * Copyright (c) 2002 Torrey T. Lyons. All Rights Reserved.
+ * Copyright (c) 2002-2003 Torrey T. Lyons. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -31,7 +31,7 @@
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  */
- /* $XFree86: xc/programs/Xserver/hw/darwin/quartz/aquaPicture.c,v 1.2 2002/07/24 05:58:33 torrey Exp $ */
+ /* $XFree86: xc/programs/Xserver/hw/darwin/quartz/aquaPicture.c,v 1.3 2002/09/28 00:00:03 torrey Exp $ */
 
 #ifdef RENDER
 
@@ -39,17 +39,18 @@
 #include "picturestr.h"
 #include "mipict.h"
 #include "fbpict.h"
-#include "aqua.h"
+#include "safeAlpha.h"
 
 # define mod(a,b)	((b) == 1 ? 0 : (a) >= 0 ? (a) % (b) : (b) - (-a) % (b))
 
 
-// Replacement for fbStore_x8r8g8b8 that sets the Aqua alpha channel
+// Replacement for fbStore_x8r8g8b8 that sets the alpha channel
 void
-AquaStore_x8r8g8b8 (FbCompositeOperand *op, CARD32 value)
+SafeAlphaStore_x8r8g8b8 (FbCompositeOperand *op, CARD32 value)
 {
     FbBits  *line = op->u.drawable.line; CARD32 offset = op->u.drawable.offset;
-    ((CARD32 *)line)[offset >> 5] = (value & 0xffffff) | 0xff000000;
+    ((CARD32 *)line)[offset >> 5] = (value & ~RootlessAlphaMask(32)) |
+                                    RootlessAlphaMask(32);
 }
 
 
@@ -58,7 +59,7 @@ extern FbCombineFunc fbCombineFuncU[];
 extern FbCombineFunc fbCombineFuncC[];
 
 void
-AquaCompositeGeneral(
+SafeAlphaCompositeGeneral(
     CARD8               op,
     PicturePtr          pSrc,
     PicturePtr          pMask,
@@ -84,9 +85,9 @@ AquaCompositeGeneral(
     if (!fbBuildCompositeOperand (pDst, dst, xDst, yDst, FALSE, TRUE))
 	return;
 
-    // Use Aqua operands for on screen picture formats
+    // Use SafeAlpha operands for on screen picture formats
     if (pDst->format == PICT_x8r8g8b8) {
-        dst[0].store = AquaStore_x8r8g8b8;
+        dst[0].store = SafeAlphaStore_x8r8g8b8;
     }
 
     if (pSrc->alphaMap)
@@ -151,7 +152,7 @@ AquaCompositeGeneral(
 
 
 void
-AquaComposite(
+SafeAlphaComposite(
     CARD8           op,
     PicturePtr      pSrc,
     PicturePtr      pMask,
@@ -203,7 +204,7 @@ AquaComposite(
 
     // To preserve the alpha channel we only use a special,
     // non-optimzied compositor.
-    func = AquaCompositeGeneral;
+    func = SafeAlphaCompositeGeneral;
 
     n = REGION_NUM_RECTS (&region);
     pbox = REGION_RECTS (&region);

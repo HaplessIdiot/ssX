@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/dri/xf86dristr.h,v 1.9 2001/03/21 16:01:08 dawes Exp $ */
+/* $XFree86: xc/lib/apple/applewmstr.h,v 1.1 2003/08/12 23:47:10 torrey Exp $ */
 /**************************************************************************
 
 Copyright (c) 2002 Apple Computer, Inc.
@@ -223,28 +223,4 @@ typedef struct _AppleWMFrameDraw {
 } xAppleWMFrameDrawReq;
 #define sz_xAppleWMFrameDrawReq	36
 
-#ifdef _APPLEWM_SERVER_
-
-void AppleWMExtensionInit(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
-
-void AppleWMSendEvent (
-#if NeedFunctionPrototypes
-    int			/* type */,
-    unsigned int	/* mask */,
-    int			/* which */,
-    int			/* arg */
-#endif
-);
-
-unsigned int AppleWMSelectedEvents (
-#if NeedFunctionPrototypes
-    void
-#endif
-);
-
-#endif /* _APPLEWM_SERVER_ */
 #endif /* _APPLEWMSTR_H_ */

@@ -1,45 +1,34 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/Imakefile,v 1.8 2003/06/07 05:49:06 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/Imakefile,v 1.9 2003/08/12 23:47:10 torrey Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
 
-#if HasXplugin
-APPLEWMSRC = applewm.c
-APPLEWMOBJ = applewm.o
-#endif
-
 SRCS =  Preferences.m \
         XApplication.m \
         XServer.m \
-        fullscreen.c \
+        applewm.c \
         quartz.c \
         quartzAudio.c \
         quartzCocoa.m \
         quartzPasteboard.c \
         quartzStartup.c \
-        pseudoramiX.c \
-        aquaPicture.c \
-        aquaWindow.c \
-        $(APPLEWMSRC)
+        pseudoramiX.c
 
 OBJS =  Preferences.o \
         XApplication.o \
         XServer.o \
-        fullscreen.o \
+        applewm.o \
         quartz.o \
         quartzAudio.o \
         quartzCocoa.o \
         quartzPasteboard.o \
         quartzStartup.o \
-        pseudoramiX.o \
-        aquaPicture.o \
-        aquaWindow.o \
-        $(APPLEWMOBJ)
+        pseudoramiX.o
 
 INCLUDES = -I. -I$(SERVERSRC)/fb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC) -I$(FONTINCSRC) -I$(SERVERSRC)/render \
            -I$(SERVERSRC)/miext/shadow -I$(EXTINCSRC) -I$(SERVERSRC)/Xext \
-           -I.. -I$(APPLEWMLIBSRC) -I$(SERVERSRC)/miext/rootless
+           -I.. -I$(APPLEWMLIBSRC)
 
 #if defined(XFree86CustomVersion)
 CUSTOMVERSION = XFree86CustomVersion
@@ -56,8 +45,12 @@ DEBUGDEFINES = -DROOTLESSDEBUG
 PBXBUILDSTYLE = -buildstyle Deployment
 #endif
 
+#if HasXplugin
+XPRDEFINES = -DBUILD_XPR
+#endif
+
 DEFINES = $(CUSTOMVERDEF) -DXBINDIR=$(BINDIR) -DXINITDIR=$(XINITDIR) \
-          $(QUARTZDEFINES) $(DEBUGDEFINES)
+          $(QUARTZDEFINES) $(DEBUGDEFINES) $(XPRDEFINES)
 EXTRAMANDEFS = -D__XBinDir__=$(BINDIR)
 #if NothingOutsideProjectRoot
 XDARWINROOT = $(BINDIR)
@@ -66,9 +59,9 @@ XDARWINROOT = /Applications
 #endif
 
 #if HasXplugin
-SUBDIRS = cr xpr
+SUBDIRS = cr fullscreen xpr
 #else
-SUBDIRS = cr
+SUBDIRS = cr fullscreen
 #endif
 
 NormalLibraryObjectRule()

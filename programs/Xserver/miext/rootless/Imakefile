@@ -1,6 +1,16 @@
-XCOMM $XFree86: $
+XCOMM $XFree86: xc/programs/Xserver/miext/rootless/Imakefile,v 1.1 2003/04/15 01:05:44 torrey Exp $
 
 #include <Server.tmpl>
+
+#ifdef DarwinArchitecture
+#define RootlessSafeAlpha YES
+#else
+#define RootlessSafeAlpha NO
+#endif
+
+#if RootlessSafeAlpha
+#define IHaveSubdirs
+#endif
 
 SRCS =  rootlessCommon.c \
         rootlessScreen.c \
@@ -22,3 +32,10 @@ NormalLibraryObjectRule()
 LibraryModuleTarget(rootless,$(OBJS))
 
 DependTarget()
+
+#if RootlessSafeAlpha
+SUBDIRS = safeAlpha
+
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
+#endif

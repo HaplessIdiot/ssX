@@ -1,7 +1,7 @@
 /*
  * Screen routines for full screen Quartz mode
  *
- * Copyright (c) 2002 Torrey T. Lyons. All Rights Reserved.
+ * Copyright (c) 2002-2003 Torrey T. Lyons. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,15 +21,16 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * Except as contained in this notice, the name of Torrey T. Lyons shall not
- * be used in advertising or otherwise to promote the sale, use or other
- * dealings in this Software without prior written authorization from
- * Torrey T. Lyons.
+ * Except as contained in this notice, the name(s) of the above copyright
+ * holders shall not be used in advertising or otherwise to promote the sale,
+ * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/fullscreen.c,v 1.3 2002/12/10 00:00:39 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/fullscreen.c,v 1.4 2003/08/13 19:37:12 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "darwin.h"
+#include "quartz.h"
+#include "quartzCursor.h"
 #include "colormapst.h"
 #include "scrnintstr.h"
 #include "micmap.h"
@@ -44,15 +45,15 @@ typedef struct {
     CGDirectPaletteRef  aquaPalette;
     unsigned char      *framebuffer;
     unsigned char      *shadowPtr;
-} QuartzFSScreenRec, *QuartzFSScreenPtr;
+} FSScreenRec, *FSScreenPtr;
 
 #define FULLSCREEN_PRIV(pScreen) \
-    ((QuartzFSScreenPtr)pScreen->devPrivates[quartzFSScreenIndex].ptr)
+    ((FSScreenPtr)pScreen->devPrivates[fsScreenIndex].ptr)
 
-static int                  quartzFSScreenIndex;
+static int                  fsScreenIndex;
 static CGDirectDisplayID   *quartzDisplayList = NULL;
 static int                  quartzNumScreens = 0;
-static QuartzFSScreenPtr    quartzScreens[MAXSCREENS];
+static FSScreenPtr          quartzScreens[MAXSCREENS];
 
 static int                  darwinCmapPrivateIndex = -1;
 static unsigned long        darwinCmapGeneration = 0;
@@ -69,13 +70,13 @@ static unsigned long        darwinCmapGeneration = 0;
 */
 
 /*
- * QuartzFSInitCmapPrivates
+ * FSInitCmapPrivates
  *  Colormap privates may be allocated after the default colormap has
  *  already been created for some screens.  This initialization procedure
  *  is called for each default colormap that is found.
  */
 static Bool
-QuartzFSInitCmapPrivates(
+FSInitCmapPrivates(
     ColormapPtr         pCmap)
 {
     return TRUE;
@@ -83,20 +84,20 @@ QuartzFSInitCmapPrivates(
 
 
 /*
- * QuartzFSCreateColormap
+ * FSCreateColormap
  *  This is a callback from X after a new colormap is created.
  *  We allocate a new CoreGraphics pallete for each colormap.
  */
-Bool
-QuartzFSCreateColormap(
+static Bool
+FSCreateColormap(
     ColormapPtr         pCmap)
 {
-    CGDirectPaletteRef pallete;
+    CGDirectPaletteRef  pallete;
 
     // Allocate private storage for the hardware dependent colormap info.
     if (darwinCmapGeneration != serverGeneration) {
         if ((darwinCmapPrivateIndex =
-                AllocateColormapPrivateIndex(QuartzFSInitCmapPrivates)) < 0)
+                AllocateColormapPrivateIndex(FSInitCmapPrivates)) < 0)
         {
             return FALSE;
         }
@@ -112,13 +113,13 @@ QuartzFSCreateColormap(
 
 
 /*
- * QuartzFSDestroyColormap
+ * FSDestroyColormap
  *  This is called by DIX FreeColormap after it has uninstalled a colormap
  *  and notified all interested parties. We deallocated the corresponding
  *  CoreGraphics pallete.
  */
-void
-QuartzFSDestroyColormap(
+static void
+FSDestroyColormap(
     ColormapPtr         pCmap)
 {
     CGPaletteRelease( CMAP_PRIV(pCmap) );
@@ -126,17 +127,17 @@ QuartzFSDestroyColormap(
 
 
 /*
- * QuartzFSInstallColormap
+ * FSInstallColormap
  *  Set the current CoreGraphics pallete to the pallete corresponding
  *  to the provided colormap.
  */
-void
-QuartzFSInstallColormap(
+static void
+FSInstallColormap(
     ColormapPtr         pCmap)
 {
     CGDirectPaletteRef  palette = CMAP_PRIV(pCmap);
     ScreenPtr           pScreen = pCmap->pScreen;
-    QuartzFSScreenPtr   fsDisplayInfo = FULLSCREEN_PRIV(pScreen);
+    FSScreenPtr         fsDisplayInfo = FULLSCREEN_PRIV(pScreen);
 
     // Inform all interested parties that the map is being changed.
     miInstallColormap(pCmap);
@@ -149,19 +150,19 @@ QuartzFSInstallColormap(
 
 
 /*
- * QuartzFSStoreColors
+ * FSStoreColors
  *  This is a callback from X to change the hardware colormap
  *  when using PsuedoColor in full screen mode.
  */
 static void
-QuartzFSStoreColors(
+FSStoreColors(
     ColormapPtr         pCmap,
     int                 numEntries,
     xColorItem          *pdefs)
 {
     CGDirectPaletteRef  palette = CMAP_PRIV(pCmap);
     ScreenPtr           pScreen = pCmap->pScreen;
-    QuartzFSScreenPtr   fsDisplayInfo = FULLSCREEN_PRIV(pScreen);
+    FSScreenPtr         fsDisplayInfo = FULLSCREEN_PRIV(pScreen);
     CGDeviceColor       color;
     int                 i;
 
@@ -184,23 +185,111 @@ QuartzFSStoreColors(
 /*
  =============================================================================
 
+ Switching between Aqua and X
+
+ =============================================================================
+*/
+
+/*
+ * FSCapture
+ *  Capture the screen so we can draw. Called directly from the main thread
+ *  to synchronize with hiding the menubar.
+ */
+static void FSCapture(void)
+{
+    int i;
+
+    if (quartzRootless) return;
+
+    for (i = 0; i < quartzNumScreens; i++) {
+        FSScreenPtr fsDisplayInfo = quartzScreens[i];
+        CGDirectDisplayID cgID = fsDisplayInfo->displayID;
+
+        if (!CGDisplayIsCaptured(cgID)) {
+            CGDisplayCapture(cgID);
+            fsDisplayInfo->aquaDisplayMode = CGDisplayCurrentMode(cgID);
+            if (fsDisplayInfo->xDisplayMode != fsDisplayInfo->aquaDisplayMode)
+                CGDisplaySwitchToMode(cgID, fsDisplayInfo->xDisplayMode);
+            if (fsDisplayInfo->xPalette)
+                CGDisplaySetPalette(cgID, fsDisplayInfo->xPalette);
+        }
+    }
+}
+
+
+/*
+ * FSRelease
+ *  Release the screen so others can draw.
+ */
+static void FSRelease(void)
+{
+    int i;
+
+    if (quartzRootless) return;
+
+    for (i = 0; i < quartzNumScreens; i++) {
+        FSScreenPtr fsDisplayInfo = quartzScreens[i];
+        CGDirectDisplayID cgID = fsDisplayInfo->displayID;
+
+        if (CGDisplayIsCaptured(cgID)) {
+            if (fsDisplayInfo->xDisplayMode != fsDisplayInfo->aquaDisplayMode)
+                CGDisplaySwitchToMode(cgID, fsDisplayInfo->aquaDisplayMode);
+            if (fsDisplayInfo->aquaPalette)
+                CGDisplaySetPalette(cgID, fsDisplayInfo->aquaPalette);
+            CGDisplayRelease(cgID);
+        }
+    }
+}
+
+
+/*
+ * FSSuspendScreen
+ *  Suspend X11 cursor and drawing to the screen.
+ */
+static void FSSuspendScreen(
+    ScreenPtr pScreen)
+{
+    QuartzSuspendXCursor(pScreen);
+    xf86SetRootClip(pScreen, FALSE);
+}
+
+
+/*
+ * FSResumeScreen
+ *  Resume X11 cursor and drawing to the screen.
+ */
+static void FSResumeScreen(
+    ScreenPtr pScreen,
+    int x,			// cursor location
+    int y )
+{
+    QuartzResumeXCursor(pScreen, x, y);
+    xf86SetRootClip(pScreen, TRUE);
+}
+
+
+/*
+ =============================================================================
+
  Screen initialization
 
  =============================================================================
 */
 
 /*
- * QuartzFSDisplayInit
+ * FSDisplayInit
  *  Full screen specific initialization called from InitOutput.
  */
-void QuartzFSDisplayInit(void)
+static void FSDisplayInit(void)
 {
     static unsigned long generation = 0;
     CGDisplayCount quartzDisplayCount = 0;
 
+    ErrorF("Display mode: Full screen Quartz -- Direct Display\n");
+
     // Allocate private storage for each screen's mode specific info
     if (generation != serverGeneration) {
-        quartzFSScreenIndex = AllocateScreenPrivateIndex();
+        fsScreenIndex = AllocateScreenPrivateIndex();
         generation = serverGeneration;
     }
 
@@ -211,18 +300,18 @@ void QuartzFSDisplayInit(void)
                            &quartzDisplayCount);
 
     darwinScreensFound = quartzDisplayCount;
-    atexit(QuartzFSRelease);
+    atexit(FSRelease);
 }
 
 
 /*
- * QuartzFSFindDisplayMode
+ * FSFindDisplayMode
  *  Find the appropriate display mode to use in full screen mode.
  *  If display mode is not the same as the current Aqua mode, switch
  *  to the new mode.
  */
-static Bool QuartzFSFindDisplayMode(
-    QuartzFSScreenPtr fsDisplayInfo)
+static Bool FSFindDisplayMode(
+    FSScreenPtr fsDisplayInfo)
 {
     CGDirectDisplayID cgID = fsDisplayInfo->displayID;
     size_t height, width, bpp;
@@ -282,10 +371,10 @@ static Bool QuartzFSFindDisplayMode(
 
 
 /*
- * QuartzFSAddScreen
+ * FSAddScreen
  *  Do initialization of each screen for Quartz in full screen mode.
  */
-Bool QuartzFSAddScreen(
+static Bool FSAddScreen(
     int index,
     ScreenPtr pScreen)
 {
@@ -293,10 +382,10 @@ Bool QuartzFSAddScreen(
     QuartzScreenPtr displayInfo = QUARTZ_PRIV(pScreen);
     CGDirectDisplayID cgID = quartzDisplayList[index];
     CGRect bounds;
-    QuartzFSScreenPtr fsDisplayInfo;
+    FSScreenPtr fsDisplayInfo;
 
     // Allocate space for private per screen fullscreen specific storage.
-    fsDisplayInfo = xalloc(sizeof(QuartzFSScreenRec));
+    fsDisplayInfo = xalloc(sizeof(FSScreenRec));
     FULLSCREEN_PRIV(pScreen) = fsDisplayInfo;
 
     displayInfo->displayCount = 1;
@@ -314,7 +403,7 @@ Bool QuartzFSAddScreen(
     // We need to do this before we (potentially) switch the display mode.
     CGDisplayCapture(cgID);
 
-    if (! QuartzFSFindDisplayMode(fsDisplayInfo)) {
+    if (! FSFindDisplayMode(fsDisplayInfo)) {
         ErrorF("Could not support specified display mode on screen %i.\n",
                index);
         xfree(fsDisplayInfo);
@@ -357,19 +446,22 @@ Bool QuartzFSAddScreen(
 
 
 /*
- * QuartzFSShadowUpdate
+ * FSShadowUpdate
  *  Update the damaged regions of the shadow framebuffer on the display.
  */
-static void QuartzFSShadowUpdate(ScreenPtr pScreen, 
-                                 shadowBufPtr pBuf)
+static void FSShadowUpdate(
+    ScreenPtr pScreen,
+    shadowBufPtr pBuf)
 {
     DarwinFramebufferPtr dfb = SCREEN_PRIV(pScreen);
-    QuartzFSScreenPtr fsDisplayInfo = FULLSCREEN_PRIV(pScreen);
+    FSScreenPtr fsDisplayInfo = FULLSCREEN_PRIV(pScreen);
     RegionPtr damage = &pBuf->damage;
     int numBox = REGION_NUM_RECTS(damage);
     BoxPtr pBox = REGION_RECTS(damage);
     int pitch = dfb->pitch;
     int bpp = dfb->bitsPerPixel/8;
+
+ErrorF("FSShadowUpdate: %i\n", quartzServerVisible);
 
     // Don't update if the X server is not visible
     if (!quartzServerVisible)
@@ -399,19 +491,20 @@ static void QuartzFSShadowUpdate(ScreenPtr pScreen,
 
 
 /*
- * QuartzFSSetupScreen
+ * FSSetupScreen
  *  Finalize full screen specific setup of each screen.
  */
-Bool QuartzFSSetupScreen(
+static Bool FSSetupScreen(
     int index,
     ScreenPtr pScreen)
 {
     DarwinFramebufferPtr dfb = SCREEN_PRIV(pScreen);
-    QuartzFSScreenPtr fsDisplayInfo = FULLSCREEN_PRIV(pScreen);
+    FSScreenPtr fsDisplayInfo = FULLSCREEN_PRIV(pScreen);
     CGDirectDisplayID cgID = fsDisplayInfo->displayID;
 
+ErrorF("FSSetupScreen\n");
     // Initialize shadow framebuffer support
-    if (! shadowInit(pScreen, QuartzFSShadowUpdate, NULL)) {
+    if (! shadowInit(pScreen, FSShadowUpdate, NULL)) {
         ErrorF("Failed to initalize shadow framebuffer for screen %i.\n",
                index);
         return FALSE;
@@ -427,10 +520,10 @@ Bool QuartzFSSetupScreen(
         if (aquaBpp <= 8)
             fsDisplayInfo->aquaPalette = CGPaletteCreateWithDisplay(cgID);
 
-        pScreen->CreateColormap = QuartzFSCreateColormap;
-        pScreen->DestroyColormap = QuartzFSDestroyColormap;
-        pScreen->InstallColormap = QuartzFSInstallColormap;
-        pScreen->StoreColors = QuartzFSStoreColors;
+        pScreen->CreateColormap = FSCreateColormap;
+        pScreen->DestroyColormap = FSDestroyColormap;
+        pScreen->InstallColormap = FSInstallColormap;
+        pScreen->StoreColors = FSStoreColors;
 
     }
 
@@ -440,60 +533,34 @@ Bool QuartzFSSetupScreen(
 
 
 /*
- =============================================================================
-
- Switching between Aqua and X
-
- =============================================================================
-*/
-
-/*
- * QuartzFSCapture
- *  Capture the screen so we can draw. Called directly from the main thread
- *  to synchronize with hiding the menubar.
+ * Quartz display mode function list.
  */
-void QuartzFSCapture(void)
-{
-    int i;
-
-    if (quartzRootless) return;
-
-    for (i = 0; i < quartzNumScreens; i++) {
-        QuartzFSScreenPtr fsDisplayInfo = quartzScreens[i];
-        CGDirectDisplayID cgID = fsDisplayInfo->displayID;
-
-        if (!CGDisplayIsCaptured(cgID)) {
-            CGDisplayCapture(cgID);
-            fsDisplayInfo->aquaDisplayMode = CGDisplayCurrentMode(cgID);
-            if (fsDisplayInfo->xDisplayMode != fsDisplayInfo->aquaDisplayMode)
-                CGDisplaySwitchToMode(cgID, fsDisplayInfo->xDisplayMode);
-            if (fsDisplayInfo->xPalette)
-                CGDisplaySetPalette(cgID, fsDisplayInfo->xPalette);
-        }
-    }
-}
+static QuartzModeProcsRec fsModeProcs = {
+    FSDisplayInit,
+    FSAddScreen,
+    FSSetupScreen,
+    NULL,		// Not needed
+    QuartzInitCursor,
+    QuartzReallySetCursor,
+    FSSuspendScreen,
+    FSResumeScreen,
+    FSCapture,
+    FSRelease,
+    NULL,		// No rootless code in fullscreen
+    NULL,
+    NULL,		// No support for DRI surfaces
+    NULL
+};
 
 
 /*
- * QuartzFSRelease
- *  Release the screen so others can draw.
+ * QuartzModeBundleInit
+ *  Initialize the display mode bundle after loading.
  */
-void QuartzFSRelease(void)
+Bool
+QuartzModeBundleInit(void)
 {
-    int i;
-
-    if (quartzRootless) return;
-
-    for (i = 0; i < quartzNumScreens; i++) {
-        QuartzFSScreenPtr fsDisplayInfo = quartzScreens[i];
-        CGDirectDisplayID cgID = fsDisplayInfo->displayID;
-
-        if (CGDisplayIsCaptured(cgID)) {
-            if (fsDisplayInfo->xDisplayMode != fsDisplayInfo->aquaDisplayMode)
-                CGDisplaySwitchToMode(cgID, fsDisplayInfo->aquaDisplayMode);
-            if (fsDisplayInfo->aquaPalette)
-                CGDisplaySetPalette(cgID, fsDisplayInfo->aquaPalette);
-            CGDisplayRelease(cgID);
-        }
-    }
+    quartzProcs = &fsModeProcs;
+    quartzOpenGLBundle = NULL;	// Only Mesa support for now
+    return TRUE;
 }

@@ -1,4 +1,12 @@
 XFree86 4.3.99.13 (xx September 2003)
+ 444. XDarwin cleanup and improvements:
+      - Load bundle at runtime for chosen Quartz mode: xpr, cr, or fullscreen.
+      - AppleWM extension has been generalized to work with any Quartz mode.
+        Currently only the xpr implementation is complete.
+      - Wrote a man page for AppleWM.
+      - Moved hw/darwin/quartz/aqua* files that contained code to protect
+        the alpha channel to miext/rootless/safeAlpha.
+      (Torrey T. Lyons).
  443. Remove lots of redundant redeclarations (David Dawes).
  442. VIA driver:
       Fixed video memory detection. (Bugzilla #525, Alan Cox).
@@ -17723,7 +17731,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2853 2003/09/11 10:08:34 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2854 2003/09/13 21:33:05 dawes Exp $
 
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/dri/xf86dri.h,v 1.7 2000/12/07 20:26:02 dawes Exp $ */
+/* $XFree86: xc/lib/apple/applewm.h,v 1.1 2003/08/12 23:47:10 torrey Exp $ */
 /**************************************************************************
 
 Copyright (c) 2002 Apple Computer, Inc.
@@ -86,6 +86,38 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define AppleWMWindowLevelDock		3
 #define AppleWMWindowLevelDesktop	4
 #define AppleWMNumWindowLevels		5
+
+/* Possible value for frame_rect argument to XAppleWMFrameGetRect() */
+#define AppleWMFrameRectTitleBar	1
+#define AppleWMFrameRectTracking	2
+#define AppleWMFrameRectGrowBox		3
+
+/* Window frame classes */
+#define AppleWMFrameClassDocument	1 << 0
+#define AppleWMFrameClassDialog		1 << 1
+#define AppleWMFrameClassModalDialog	1 << 2
+#define AppleWMFrameClassSystemModalDialog 1 << 3
+#define AppleWMFrameClassUtility	1 << 4
+#define AppleWMFrameClassToolbar	1 << 5
+#define AppleWMFrameClassMenu		1 << 6
+#define AppleWMFrameClassSplash		1 << 7
+#define AppleWMFrameClassBorderless	1 << 8
+
+/* Window frame attributes */
+#define AppleWMFrameActive		0x0001
+#define AppleWMFrameUrgent		0x0002
+#define AppleWMFrameTitle		0x0004
+#define AppleWMFramePrelight		0x0008
+#define AppleWMFrameShaded		0x0010
+#define AppleWMFrameCloseBox		0x0100
+#define AppleWMFrameCollapseBox		0x0200
+#define AppleWMFrameZoomBox		0x0400
+#define AppleWMFrameAnyBox		0x0700
+#define AppleWMFrameCloseBoxClicked	0x0800
+#define AppleWMFrameCollapseBoxClicked	0x1000
+#define AppleWMFrameZoomBoxClicked	0x2000
+#define AppleWMFrameAnyBoxClicked	0x3800
+#define AppleWMFrameGrowBox		0x4000
 
 #ifndef _APPLEWM_SERVER_
 

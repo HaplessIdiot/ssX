@@ -1,15 +1,18 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/Imakefile,v 1.1 2003/04/30 23:15:42 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/cr/Imakefile,v 1.1 2003/06/07 05:49:07 torrey Exp $
 
 #include <Server.tmpl>
 
-LinkSourceFile(quartzCursor.c,..)
+LinkSourceFile(quartzCursor.c,../fullscreen)
+LinkSourceFile(quartzCursor.h,../fullscreen)
 
-SRCS =  crFrame.c \
-        crScreen.c \
+SRCS =  crAppleWM.m \
+        crFrame.m \
+        crScreen.m \
         quartzCursor.c \
         XView.m
 
-OBJS =  crFrame.o \
+OBJS =  crAppleWM.o \
+        crFrame.o \
         crScreen.o \
         quartzCursor.o \
         XView.o
@@ -17,7 +20,8 @@ OBJS =  crFrame.o \
 INCLUDES = -I. -I$(SERVERSRC)/fb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC) -I$(FONTINCSRC) -I$(SERVERSRC)/render \
            -I$(SERVERSRC)/miext/rootless -I$(EXTINCSRC) -I.. -I../.. \
-           -I$(SERVERSRC)/Xext
+           -I$(SERVERSRC)/miext/rootless/safeAlpha -I$(SERVERSRC)/Xext \
+           -I$(APPLEWMLIBSRC)
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(cr,$(OBJS))

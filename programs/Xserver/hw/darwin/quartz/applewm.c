@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/xf86dri.c,v 1.10 2000/12/07 20:26:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/applewm.c,v 1.1 2003/08/12 23:47:10 torrey Exp $ */
 /**************************************************************************
 
-Copyright (c) 2002 Apple Computer, Inc.
-All Rights Reserved.
+Copyright (c) 2002 Apple Computer, Inc. All Rights Reserved.
+Copyright (c) 2003 Torrey T. Lyons. All Rights Reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the
@@ -27,9 +27,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 **************************************************************************/
 
 #include "quartzCommon.h"
-#include "rootless.h"
-#define _APPLEWM_SERVER_
-#include "applewmstr.h"
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -41,7 +38,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "scrnintstr.h"
 #include "servermd.h"
 #include "swaprep.h"
-#include "xpr/Xplugin.h"
+#define _APPLEWM_SERVER_
+#include "applewmstr.h"
+#include "applewmExt.h"
+
+static AppleWMProcsPtr appleWMProcs;
 
 static int WMErrorBase;
 
@@ -65,7 +66,7 @@ static void SNotifyEvent(xAppleWMNotifyEvent *from, xAppleWMNotifyEvent *to);
 
 typedef struct _WMEvent *WMEventPtr;
 typedef struct _WMEvent {
-    WMEventPtr     next;
+    WMEventPtr      next;
     ClientPtr	    client;
     XID		    clientResource;
     unsigned int    mask;
@@ -83,7 +84,8 @@ make_box (int x, int y, int w, int h)
 }
 
 void
-AppleWMExtensionInit(void)
+AppleWMExtensionInit(
+    AppleWMProcsPtr procsPtr)
 {
     ExtensionEntry* extEntry;
 
@@ -98,11 +100,13 @@ AppleWMExtensionInit(void)
                                  ProcAppleWMDispatch,
                                  SProcAppleWMDispatch,
                                  AppleWMResetProc,
-                                 StandardMinorOpcode))) {
+                                 StandardMinorOpcode)))
+    {
         WMReqCode = (unsigned char)extEntry->base;
         WMErrorBase = extEntry->errorBase;
         WMEventBase = extEntry->eventBase;
         EventSwapVector[WMEventBase] = (EventSwapPtr) SNotifyEvent;
+        appleWMProcs = procsPtr;
     }
 }
 
@@ -331,7 +335,7 @@ ProcAppleWMDisableUpdate(
 {
     REQUEST_SIZE_MATCH(xAppleWMDisableUpdateReq);
 
-    xp_disable_update ();
+    appleWMProcs->DisableUpdate();
 
     return (client->noClientException);
 }
@@ -343,7 +347,7 @@ ProcAppleWMReenableUpdate(
 {
     REQUEST_SIZE_MATCH(xAppleWMReenableUpdateReq);
 
-    xp_reenable_update ();
+    appleWMProcs->EnableUpdate();
 
     return (client->noClientException);
 }
@@ -424,8 +428,7 @@ ProcAppleWMSetWindowLevel(
 {
     REQUEST(xAppleWMSetWindowLevelReq);
     WindowPtr pWin;
-    xp_window_id wid;
-    xp_window_changes wc;
+    int errno;
 
     REQUEST_SIZE_MATCH(xAppleWMSetWindowLevelReq);
 
@@ -439,14 +442,10 @@ ProcAppleWMSetWindowLevel(
         return BadValue;
     }
 
-    wid = (xp_window_id) RootlessFrameForWindow (pWin, TRUE);
-    if (wid == 0)
-        return BadWindow;
-
-    RootlessStopDrawing (pWin, FALSE);
-
-    wc.window_level = stuff->level;
-    xp_configure_window (wid, XP_WINDOW_LEVEL, &wc);
+     errno = appleWMProcs->SetWindowLevel(pWin, stuff->level);
+     if (errno != Success) {
+        return errno;
+    }
 
     return (client->noClientException);
 }
@@ -486,9 +485,10 @@ ProcAppleWMFrameGetRect(
     ir = make_box (stuff->ix, stuff->iy, stuff->iw, stuff->ih);
     or = make_box (stuff->ox, stuff->oy, stuff->ow, stuff->oh);
 
-    if (xp_frame_get_rect (stuff->frame_rect,
-                           stuff->frame_class,
-                           &or, &ir, &rr) != Success) {
+    if (appleWMProcs->FrameGetRect(stuff->frame_rect,
+                                   stuff->frame_class,
+                                   &or, &ir, &rr) != Success)
+    {
         return BadValue;
     }
 
@@ -519,8 +519,8 @@ ProcAppleWMFrameHitTest(
     ir = make_box (stuff->ix, stuff->iy, stuff->iw, stuff->ih);
     or = make_box (stuff->ox, stuff->oy, stuff->ow, stuff->oh);
 
-    if (xp_frame_hit_test (stuff->frame_class, stuff->px,
-                           stuff->py, &or, &ir, &ret) != Success)
+    if (appleWMProcs->FrameHitTest(stuff->frame_class, stuff->px,
+                                   stuff->py, &or, &ir, &ret) != Success)
     {
         return BadValue;
     }
@@ -541,7 +541,6 @@ ProcAppleWMFrameDraw(
     unsigned char *title_bytes;
     REQUEST(xAppleWMFrameDrawReq);
     WindowPtr pWin;
-    xp_window_id wid;
 
     REQUEST_AT_LEAST_SIZE(xAppleWMFrameDrawReq);
 
@@ -562,15 +561,11 @@ ProcAppleWMFrameDraw(
 
     title_bytes = (unsigned char *) &stuff[1];
 
-    wid = (xp_window_id) RootlessFrameForWindow (pWin, FALSE);
-    if (wid == 0)
-        return BadWindow;
-
-    if (xp_frame_draw (wid, stuff->frame_class,
-                       stuff->frame_attr, &or, &ir,
-                       title_length, title_bytes) != Success)
-    {
-        return BadValue;
+    errno = appleWMProcs->FrameDraw(pWin, stuff->frame_class,
+                                    stuff->frame_attr, &or, &ir,
+                                    title_length, title_bytes);
+    if (errno != Success) {
+        return errno;
     }
 
     return (client->noClientException);

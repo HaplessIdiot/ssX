@@ -28,13 +28,14 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzStartup.c,v 1.4 2003/05/14 05:27:56 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzStartup.c,v 1.5 2003/06/30 01:45:12 torrey Exp $ */
 
 #include <fcntl.h>
 #include <unistd.h>
 #include <CoreFoundation/CoreFoundation.h>
 #include "quartzCommon.h"
 #include "darwin.h"
+#include "quartz.h"
 #include "opaque.h"
 #include "micmap.h"
 
@@ -49,6 +50,8 @@ static GlxExtensionInitPtr GlxExtensionInit = NULL;
 
 typedef void (*GlxWrapInitVisualsPtr)(miInitVisualsProcPtr *);
 static GlxWrapInitVisualsPtr GlxWrapInitVisuals = NULL;
+
+typedef Bool (*QuartzModeBundleInitPtr)(void);
 
 
 /*
@@ -104,6 +107,64 @@ void DarwinHandleGUI(
 
 
 /*
+ * QuartzLoadDisplayBundle
+ *  Try to load the appropriate bundle containing the back end display code.
+ */
+Bool QuartzLoadDisplayBundle(
+    const char *dpyBundleName)
+{
+    CFBundleRef mainBundle;
+    CFStringRef bundleName;
+    CFURLRef    bundleURL;
+    CFBundleRef dpyBundle;
+    QuartzModeBundleInitPtr bundleInit;
+
+    // Get the main bundle for the application
+    mainBundle = CFBundleGetMainBundle();
+
+    // Make CFString from bundle name
+    bundleName = CFStringCreateWithCStringNoCopy(kCFAllocatorDefault,
+                                                 dpyBundleName,
+                                                 kCFStringEncodingASCII,
+                                                 NULL);
+
+    // Look for the appropriate bundle in the main bundle
+    bundleURL = CFBundleCopyResourceURL(mainBundle, bundleName,
+                                        NULL, NULL);
+    if (!bundleURL) {
+        ErrorF("Could not find display mode bundle %s.\n", dpyBundleName);
+        return FALSE;
+    }
+
+    // Make a bundle instance using the URLRef
+    dpyBundle = CFBundleCreate(kCFAllocatorDefault, bundleURL);
+
+    if (!CFBundleLoadExecutable(dpyBundle)) {
+        ErrorF("Could not load display mode bundle %s.\n", dpyBundleName);
+        return FALSE;
+    }
+
+    // Lookup the bundle initialization function
+    bundleInit = (void *)
+            CFBundleGetFunctionPointerForName(dpyBundle,
+                                              CFSTR("QuartzModeBundleInit"));
+    if (!bundleInit) {
+        ErrorF("Could not initialize display mode bundle %s.\n",
+               dpyBundleName);
+        return FALSE;
+    }
+    if (!bundleInit())
+        return FALSE;
+
+    // Release the CF objects
+    CFRelease(bundleName);
+    CFRelease(bundleURL);
+
+    return TRUE;
+}
+
+
+/*
  * LoadGlxBundle
  *  The Quartz mode X server needs to dynamically load the appropriate
  *  bundle before initializing GLX.
@@ -128,6 +189,7 @@ static void LoadGlxBundle(void)
         ErrorF("%s (using Apple's OpenGL)\n", quartzOpenGLBundle);
     } else {
         bundleName = CFSTR("glxMesa.bundle");
+        CFRetain(bundleName);			// so we can release later
         ErrorF("glxMesa.bundle (using Mesa)\n");
     }
 
@@ -157,7 +219,7 @@ static void LoadGlxBundle(void)
     }
 
     // Release the CF objects
-    CFRelease(mainBundle);
+    CFRelease(bundleName);
     CFRelease(bundleURL);
 }
 

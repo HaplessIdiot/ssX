@@ -30,11 +30,10 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/xprCursor.c,v 1.1 2003/04/30 23:15:42 torrey Exp $ */
 
 #include "quartzCommon.h"
-#include "quartzCursor.h"
-#include "quartz.h"
+#include "xpr.h"
 #include "darwin.h"
 #include "Xplugin.h"
 
@@ -224,16 +223,6 @@ QuartzSetCursor(ScreenPtr pScreen, CursorPtr pCursor, int x, int y)
             ScreenPriv->cursorVisible = TRUE;
         }
     }
-}
-
-
-/*
- * QuartzReallySetCursor
- *  Not needed for xpr. Cursor is set from the X server thread.
- */
-void
-QuartzReallySetCursor()
-{
 }
 
 

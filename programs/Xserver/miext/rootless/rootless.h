@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/miext/rootless/rootless.h,v 1.2 2003/04/30 23:15:35 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/miext/rootless/rootless.h,v 1.3 2003/06/30 01:45:13 torrey Exp $ */
 
 #ifndef _ROOTLESS_H
 #define _ROOTLESS_H
@@ -333,10 +333,24 @@ Bool RootlessInit(ScreenPtr pScreen, RootlessFrameProcsPtr procs);
 RootlessFrameID RootlessFrameForWindow(WindowPtr pWin, Bool create);
 
 /*
- *  Return the top-level parent of a window.
- *   The root is the top-level parent of itself, even though the root is
- *   not otherwise considered to be a top-level window.
+ * Return the top-level parent of a window.
+ *  The root is the top-level parent of itself, even though the root is
+ *  not otherwise considered to be a top-level window.
  */
 WindowPtr TopLevelParent(WindowPtr pWindow);
+
+/*
+ * Prepare a window for direct access to its backing buffer.
+ */
+void RootlessStartDrawing(WindowPtr pWindow);
+
+/*
+ * Finish drawing to a window's backing buffer.
+ *
+ *  flush       If true and ROOTLESS_TRACK_DAMAGE is set, damaged areas
+ *              are flushed to the screen.
+ */
+void RootlessStopDrawing(WindowPtr pWindow, Bool flush);
+
 
 #endif /* _ROOTLESS_H */

@@ -32,16 +32,16 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/GL/aqua/aquaGlx.c,v 1.3 2003/06/07 05:49:05 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/apple/aglGlx.c,v 1.1 2003/06/30 01:45:12 torrey Exp $ */
 
 #include "quartzCommon.h"
-#include "cr.h"
 #include <AGL/agl.h>
+#include "cr.h"
 
 // X11 and X11's glx
 #undef BOOL
 #define BOOL xBOOL
-#include "rootless.h"
+#include "quartz.h"
 #include <miscstruct.h>
 #include <windowstr.h>
 #include <resource.h>
@@ -241,11 +241,11 @@ static void attach(__GLcontext *gc, __GLdrawablePrivate *glPriv,
 
     if (glxPriv->type == DRAWABLE_WINDOW) {
         WindowPtr pWin = (WindowPtr) glxPriv->pDraw;
-        WindowPtr topWin = TopLevelParent(pWin);
+        WindowPtr topWin = quartzProcs->TopLevelParent(pWin);
         CRWindowPtr crWinPtr;
         AGLDrawable newPort;
 
-        crWinPtr = (CRWindowPtr) RootlessFrameForWindow(pWin, TRUE);
+        crWinPtr = (CRWindowPtr) quartzProcs->FrameForWindow(pWin, TRUE);
 
         if (crWinPtr) {
             newPort = (AGLDrawable) crWinPtr->port;

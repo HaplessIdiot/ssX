@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/cr/crFrame.m,v 1.1 2003/06/07 05:49:07 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/cr/crFrame.m,v 1.2 2003/07/22 01:16:59 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "cr.h"
@@ -36,6 +36,9 @@
 #define BOOL xBOOL
 #include "rootless.h"
 #undef BOOL
+
+WindowPtr nextWindowToFrame = NULL;
+unsigned int nextWindowStyle = 0;
 
 static void CRReshapeFrame(RootlessFrameID wid, RegionPtr pShape);
 
@@ -50,12 +53,13 @@ static void CRReshapeFrame(RootlessFrameID wid, RegionPtr pShape);
  */
 static Bool
 CRCreateFrame(RootlessWindowPtr pFrame, ScreenPtr pScreen,
-               int newX, int newY, RegionPtr pShape)
+              int newX, int newY, RegionPtr pShape)
 {
     CRWindowPtr crWinPtr;
     NSRect bounds;
     NSWindow *theWindow;
     XView *theView;
+    unsigned int theStyleMask = NSBorderlessWindowMask;
 
     crWinPtr = (CRWindowPtr) xalloc(sizeof(CRWindowRec));
 
@@ -64,9 +68,15 @@ CRCreateFrame(RootlessWindowPtr pFrame, ScreenPtr pScreen,
                         newY - pFrame->height,
                         pFrame->width, pFrame->height);
 
+    // Check if AppleWM has specified a style for this window
+    if (pFrame->win == nextWindowToFrame) {
+        theStyleMask = nextWindowStyle;
+    }
+    nextWindowToFrame = NULL;
+
     // Create an NSWindow for the new X11 window
     theWindow = [[NSWindow alloc] initWithContentRect:bounds
-                                  styleMask:NSBorderlessWindowMask
+                                  styleMask:theStyleMask
                                   backing:NSBackingStoreBuffered
                                   defer:NO];
     if (!theWindow) return FALSE;

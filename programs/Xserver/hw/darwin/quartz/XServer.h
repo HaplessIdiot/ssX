@@ -29,7 +29,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.h,v 1.10 2003/08/12 23:47:10 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.h,v 1.11 2003/08/19 19:21:13 torrey Exp $ */
 
 #define BOOL xBOOL
 #include "Xproto.h"
@@ -74,6 +74,7 @@
 
 + (void)append:(NSString *)value toEnv:(NSString *)name;
 
+- (BOOL)loadDisplayBundle;
 - (void)startX;
 - (void)finishStartX;
 - (BOOL)startXClients;
