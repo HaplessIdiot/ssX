@@ -1,4 +1,6 @@
 XFree86 4.2.99.1 (XX January 2002)
+  17. Fix Emulate3Buttons for wsmouse protocol on NetBSD and OpenBSD
+      (Matthieu Herrb).
   16. Add Portuguese localization of XDarwin front end (Fabr’cio de Castro).
   15. Fix mouse Protocol "Auto" for SunOS (Marc La France).
   14. Relocate all driver low memory accesses (atimisc module not yet done)
@@ -14585,4 +14587,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2152 2002/01/25 21:55:46 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2153 2002/01/26 05:04:06 torrey Exp $
