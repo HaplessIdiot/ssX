@@ -21,7 +21,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_privIoctl.h,v 1.2 2003/04/16 22:29:31 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_privIoctl.h,v 1.3 2003/04/16 22:34:57 alanh Exp $ */
 /*
  *	Information the OS will need for implementing
  *	future extensions.
@@ -36,12 +36,12 @@ typedef struct {
     CARD32 dwRefreshRate;    /* Refresh rate of the mode	 */
     CARD32 TotalVRAM;	     /* Total Video RAM in unit of Mega	 */
     CARD32 Offset;	     /* Offset to off screen memory	 */
-    CARD32 *ScreenAddress;  /* Linear Base address of screen	 */
-    CARD32 *VideoHeapBase;  /* Linear Start of video heap	 */
-    CARD32 * VideoHeapEnd;   /* Linear End of video heap	 */
+    CARD32 *ScreenAddress;   /* Linear Base address of screen	 */
+    CARD32 VideoHeapBase;    /* Linear Start of video heap	 */
+    CARD32 VideoHeapEnd;     /* Linear End of video heap	 */
     CARD32 * GEAddress;	     /* Linear address of GE Mem Map	 */
     CARD32 * VidMMAddress;   /* Linear address of Video Mem Map	 */
-    CARD32 ScreenPhysAddr;   /* Physical address of Video Memory */
+    unsigned long ScreenPhysAddr;   /* Physical address of Video Memory */
     CARD32 GEMode;	     /* the Data of HW GE mode 3c4 B1+4	 */
     CARD32 InterlaceMode;    /* Is it interlace mode ?		 */
     CARD32 dwDVIOn;	    /* Is it DVI simultaneous mode ?	*/
@@ -55,4 +55,3 @@ typedef struct {
     CARD32 Cap0_FieldSwap;   /* Capture 0 input field swap	 */
     BOOL  DRMEnabled;	    /* kernel module DRM flag		*/
 }VIAGRAPHICINFO, * LPVIAGRAPHICINFO;
-
