@@ -1,8 +1,10 @@
-XFree86 3.9Nv (17 January 1999)
+XFree86 3.9Nv (15 January 1999)
+2148. Add an UnloadSubModule() function that can unload individual sub-modules
+      without unloading sibilings.
 2147. Remove a lot of unnecessary casts of x*alloc().
 2146. Add a pciGetBaseSize() funtion to the PCI code.
-2145. Make our PCI code aware of the 2.1 type 0 header fields Cardbus CIS
-      pointer and subsytem ids.
+2145. Make our PCI code aware of the following 2.1 type 0 header fields:
+      Cardbus CIS pointer and subsystem ids.
 
 XFree86 3.9Nu (13 January 1999)
 2144. Fix a bug in PANORAMIX_FREE(), which was referencing just freed data.
@@ -7077,4 +7079,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.666 1999/01/14 01:44:11 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.667 1999/01/14 13:03:55 dawes Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loaderProcs.h,v 1.9 1998/12/05 14:40:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loaderProcs.h,v 1.10 1999/01/03 03:58:45 dawes Exp $ */
 
 /*
  *
@@ -30,6 +30,7 @@
 typedef struct module_desc {
 	struct module_desc *child;
 	struct module_desc *sib;
+	struct module_desc *parent;
 	struct module_desc *demand_next;
 	char *name;
 	char *filename;
@@ -57,9 +58,10 @@ ModuleDescPtr LoadModule(const char *, const char *, const char **,
 ModuleDescPtr LoadSubModule(ModuleDescPtr, const char *, const char *,
 			    const char **, const char **, pointer,
 			    int *, int *);
-ModuleDescPtr DuplicateModule(ModuleDescPtr mod);
+ModuleDescPtr DuplicateModule(ModuleDescPtr mod, ModuleDescPtr parent);
 void LoadFont (FontModule *);
 void UnloadModule (ModuleDescPtr);
+void UnloadSubModule (ModuleDescPtr);
 void UnloadDriver (ModuleDescPtr);
 void FreeModuleDesc (ModuleDescPtr mod);
 ModuleDescPtr NewModuleDesc (const char *);

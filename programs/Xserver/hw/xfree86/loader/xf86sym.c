@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.53 1999/01/13 08:31:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.54 1999/01/14 01:44:22 dawes Exp $ */
 
 /*
  *
@@ -453,6 +453,8 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(LoaderReqSymbols)
    SYMFUNC(LoaderReqSymLists)
    SYMFUNC(LoaderRefSymLists)
+   SYMFUNC(UnloadModule)
+   SYMFUNC(UnloadSubModule)
 
    /*
     * these here are our own interfaces to libc functions
