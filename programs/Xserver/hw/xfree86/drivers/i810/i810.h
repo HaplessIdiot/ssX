@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.7 2000/06/17 00:03:18 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.8 2000/06/20 05:08:46 dawes Exp $ */
 
 /*
  * Authors:
@@ -151,6 +151,11 @@ typedef struct _I810Rec {
    int CursorPhysical;
    int CursorStart;
 
+   DGAModePtr DGAModes;
+   int numDGAModes;
+   Bool DGAactive;
+   int DGAViewportStatus;
+
    int Chipset;
    int LinearAddr;
    int MMIOAddr;
@@ -241,7 +246,8 @@ extern void I810SetCursorPosition(ScrnInfoPtr pScrn, int x, int y);
 extern int I810AllocateGARTMemory( ScrnInfoPtr pScrn );
 extern void I810FreeGARTMemory( ScrnInfoPtr pScrn );
 
-
+extern Bool I810SwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
+extern void I810AdjustFrame(int scrnIndex, int x, int y, int flags);
 
 extern void I810SetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, 
 					   int ydir, int rop,

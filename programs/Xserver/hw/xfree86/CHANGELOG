@@ -1,4 +1,5 @@
 XFree86 4.0f (?? June 2000)
+ 357. Add DGA support to i810 (not tested) (Alan Hourihane).
  356. Fix GCC 2.96 complaints in big font extension and imstt driver
       (Steven King).
  355. Fix remaining DRI III compile glitches (Marc La France).
@@ -10690,4 +10691,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1200 2000/06/22 13:00:29 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1201 2000/06/22 16:59:25 tsi Exp $
