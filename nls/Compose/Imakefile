@@ -1,0 +1,20 @@
+XCOMM $XConsortium: Imakefile /main/6 1996/11/13 14:45:36 lehors $
+
+#ifndef Win32Architecture
+# define ComposeTarget(name)						@@\
+all:: name								@@\
+	MakeDir($(BUILDLIBDIR)/locale/name)				@@\
+	RemoveFile($(BUILDLIBDIR)/locale/name/Compose)			@@\
+	cd $(BUILDLIBDIR)/locale/name && $(LN) $(BUILDLIBTOP)/../../$(CURRENT_DIR)/name Compose @@\
+InstallNamedNonExec(name,Compose,$(XLOCALEDIR)/name)
+#else
+# define ComposeTarget(name)						@@\
+all:: name								@@\
+	MakeDir(Concat($(BUILDLIBDIR:/=\)\locale\,name))		@@\
+	RemoveFile(Concat($(BUILDLIBDIR:/=\)\locale\,name\Compose))	@@\
+	cd Concat($(BUILDLIBDIR:/=\)\locale\,name) && $(LN) Concat($(BUILDLIBTOP:/=\)\..\..\$(CURRENT_DIR:/=\)\,name) Compose @@\
+InstallNamedNonExec(name,Compose,$(XLOCALEDIR)/name)
+#endif
+
+ComposeTarget(iso8859-1)
+ComposeTarget(iso8859-2)
