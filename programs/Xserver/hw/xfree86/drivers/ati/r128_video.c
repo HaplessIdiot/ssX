@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.10 2000/12/02 15:30:33 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.11 2000/12/03 23:41:57 mvojkovi Exp $ */
 
 #include "r128.h"
 #include "r128_reg.h"
@@ -17,7 +17,6 @@
 #define CLIENT_VIDEO_ON 0x04
 
 #define TIMER_MASK      (OFF_TIMER | FREE_TIMER)
-
 
 #ifndef XvExtension
 void R128InitVideo(ScreenPtr pScreen) {}
@@ -495,18 +494,31 @@ R128CopyMungedData(
    int h,
    int w
 ){
-   CARD32 *dst = (CARD32*)dst1;
+   CARD32 *dst;
+   CARD8 *s1, *s2, *s3;
    int i, j;
 
-   dstPitch >>= 2;
    w >>= 1;
 
    for(j = 0; j < h; j++) {
-	for(i = 0; i < w; i++) {
-	    dst[i] = src1[i << 1] | (src1[(i << 1) + 1] << 16) |
-		     (src3[i] << 8) | (src2[i] << 24);
+	dst = (CARD32*)dst1;
+	s1 = src1;  s2 = src2;  s3 = src3;
+	i = w;
+	while(i > 4) {
+	   dst[0] = s1[0] | (s1[1] << 16) | (s3[0] << 8) | (s2[0] << 24);
+	   dst[1] = s1[2] | (s1[3] << 16) | (s3[1] << 8) | (s2[1] << 24);
+	   dst[2] = s1[4] | (s1[5] << 16) | (s3[2] << 8) | (s2[2] << 24);
+	   dst[3] = s1[6] | (s1[7] << 16) | (s3[3] << 8) | (s2[3] << 24);
+	   dst += 4; s2 += 4; s3 += 4; s1 += 8;
+	   i -= 4;
 	}
-	dst += dstPitch;
+	while(i--) {
+	   dst[0] = s1[0] | (s1[1] << 16) | (s3[0] << 8) | (s2[0] << 24);
+	   dst++; s2++; s3++;
+	   s1 += 2;
+	}
+
+	dst1 += dstPitch;
 	src1 += srcPitch;
 	if(j & 1) {
 	    src2 += srcPitch2;
@@ -646,11 +658,25 @@ R128PutImage(
    R128PortPrivPtr pPriv = (R128PortPrivPtr)data;
    INT32 x1, x2, y1, y2;
    unsigned char *dst_start;
-   int pitch, new_size, offset, offset2 = 0, offset3 = 0;
-   int srcPitch, srcPitch2 = 0, dstPitch;
+   int pitch, new_size, offset, s2offset, s3offset;
+   int srcPitch, srcPitch2, dstPitch;
    int top, left, npixels, nlines, bpp;
    BoxRec dstBox;
    CARD32 tmp;
+
+   /*
+    * s2offset, s3offset - byte offsets into U and V plane of the
+    *                      source where copying starts.  Y plane is
+    *                      done by editing "buf".
+    *
+    * offset - byte offset to the first line of the destination.
+    *
+    * dst_start - byte address to the first displayed pel.
+    *
+    */
+
+   /* make the compiler happy */
+   s2offset = s3offset = srcPitch2 = 0;
 
    if(src_w > (drw_w << 4))
 	drw_w = src_w >> 4;
@@ -679,20 +705,21 @@ R128PutImage(
    bpp = pScrn->bitsPerPixel >> 3;
    pitch = bpp * pScrn->displayWidth;
 
-   dstPitch = ((width << 1) + 15) & ~15;
-   new_size = ((dstPitch * height) + bpp - 1) / bpp;
-
    switch(id) {
    case FOURCC_YV12:
    case FOURCC_I420:
+	dstPitch = ((width << 1) + 15) & ~15;
+	new_size = ((dstPitch * height) + bpp - 1) / bpp;
 	srcPitch = (width + 3) & ~3;
-	offset2 = srcPitch * height;
+	s2offset = srcPitch * height;
 	srcPitch2 = ((width >> 1) + 3) & ~3;
-	offset3 = (srcPitch2 * (height >> 1)) + offset2;
+	s3offset = (srcPitch2 * (height >> 1)) + s2offset;
 	break;
    case FOURCC_UYVY:
    case FOURCC_YUY2:
    default:
+	dstPitch = ((width << 1) + 15) & ~15;
+	new_size = ((dstPitch * height) + bpp - 1) / bpp;
 	srcPitch = (width << 1);
 	break;
    }
@@ -709,35 +736,37 @@ R128PutImage(
    top = y1 >> 16;
    left = (x1 >> 16) & ~1;
    npixels = ((((x2 + 0xffff) >> 16) + 1) & ~1) - left;
-   left <<= 1;
 
-   offset = pPriv->linear->offset * bpp;
+   offset = (pPriv->linear->offset * bpp) + (top * dstPitch);
    if(pPriv->doubleBuffer)
 	offset += pPriv->currentBuffer * new_size * bpp;
-   dst_start = info->FB + offset + left + (top * dstPitch);
+   dst_start = info->FB + offset;
 
    switch(id) {
     case FOURCC_YV12:
     case FOURCC_I420:
 	top &= ~1;
-	tmp = ((top >> 1) * srcPitch2) + (left >> 2);
-	offset2 += tmp;
-	offset3 += tmp;
+	dst_start += left << 1;
+	tmp = ((top >> 1) * srcPitch2) + (left >> 1);
+	s2offset += tmp;
+	s3offset += tmp;
 	if(id == FOURCC_I420) {
-	   tmp = offset2;
-	   offset2 = offset3;
-	   offset3 = tmp;
+	   tmp = s2offset;
+	   s2offset = s3offset;
+	   s3offset = tmp;
 	}
 	nlines = ((((y2 + 0xffff) >> 16) + 1) & ~1) - top;
-	R128CopyMungedData(buf + (top * srcPitch) + (left >> 1),
-			  buf + offset2, buf + offset3, dst_start,
-			  srcPitch, srcPitch2, dstPitch, nlines, npixels);
+	R128CopyMungedData(buf + (top * srcPitch) + left, buf + s2offset,
+			   buf + s3offset, dst_start, srcPitch, srcPitch2,
+			   dstPitch, nlines, npixels);
 	break;
     case FOURCC_UYVY:
     case FOURCC_YUY2:
     default:
+	left <<= 1;
 	buf += (top * srcPitch) + left;
 	nlines = ((y2 + 0xffff) >> 16) - top;
+	dst_start += left;
 	R128CopyData(buf, dst_start, srcPitch, dstPitch, nlines, npixels);
 	break;
     }
@@ -752,7 +781,6 @@ R128PutImage(
 					REGION_RECTS(clipBoxes));
     }
 
-    offset += top * dstPitch;
     R128DisplayVideo(pScrn, id, offset, width, height, dstPitch,
 		     x1, x2, y1, &dstBox, src_w, src_h, drw_w, drw_h);
 
