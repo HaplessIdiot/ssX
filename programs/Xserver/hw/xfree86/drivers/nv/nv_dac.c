@@ -37,7 +37,7 @@
 |*                                                                           *|
  \***************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.35 2003/09/01 20:54:26 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.36 2003/09/03 01:10:23 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -83,11 +83,9 @@ NVDACInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
        vertStart = vertTotal - 3;  
        vertEnd = vertTotal - 2;
        vertBlankStart = vertStart;
-       horizStart = horizTotal - 3;
+       horizStart = horizTotal - 5;
        horizEnd = horizTotal - 2;   
        horizBlankEnd = horizTotal + 4;    
-       if(pNv->Architecture == NV_ARCH_30)
-          horizTotal += 2;
     }
 
     pVga->CRTC[0x0]  = Set8Bits(horizTotal);
@@ -183,7 +181,11 @@ NVDACInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     nvReg->scale = pNv->PRAMDAC[0x00000848/4] & 0xfff000ff;
     if(pNv->FlatPanel == 1) {
        nvReg->pixel |= (1 << 7);
-       nvReg->scale |= (1 << 8) ;
+       if(!pNv->fpScaler || (pNv->fpWidth <= mode->HDisplay)
+                         || (pNv->fpHeight <= mode->VDisplay))
+       {
+           nvReg->scale |= (1 << 8) ;
+       }
     }
 
     nvReg->vpll = nvReg->pll;

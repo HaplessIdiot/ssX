@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.42 2003/07/31 20:24:29 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.43 2003/09/01 20:54:26 mvojkovi Exp $ */
 
 #ifndef __NV_STRUCT_H__
 #define __NV_STRUCT_H__
@@ -148,6 +148,9 @@ typedef struct {
     unsigned char       DDCBase;
     Bool                twoHeads;
     Bool                twoStagePLL;
+    Bool                fpScaler;
+    int                 fpWidth;
+    int                 fpHeight;
 
     CARD32              dmaPut;
     CARD32              dmaCurrent;
