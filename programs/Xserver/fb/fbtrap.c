@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbtrap.c,v 1.5 2002/05/15 04:36:25 keithp Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbtrap.c,v 1.6 2002/05/17 18:16:33 keithp Exp $
  *
  * Copyright © 2000 University of Southern California
  *
@@ -874,8 +874,11 @@ SubPixelAlpha (Fixed_1_16	x1,
 static int
 RectAlpha(Fixed pixel_y, Fixed top, Fixed bottom, int depth)
 {
-    return (AlphaAbove (pixel_y, bottom, depth) -
-	    AlphaAbove (pixel_y, top, depth));
+    if (depth == 1)
+	return top == pixel_y ? 1 : 0;
+    else
+	return (AlphaAbove (pixel_y, bottom, depth) -
+		AlphaAbove (pixel_y, top, depth));
 }
 
 
@@ -944,10 +947,24 @@ PixelAlpha(Fixed	pixel_x,
     fflush(stderr);
 #endif
 
-    alpha = (AlphaAboveLeft(&pw->p_pixel_top, &pw->p_trap_bottom,
-			    bottom, pixel_x, pixel_y, depth) 
-	     - AlphaAboveLeft(&pw->p_pixel_top, &pw->p_trap_top,
-			      top, pixel_x, pixel_y, depth));
+    /*
+     * Sharp polygons are different, alpha is 1 if the
+     * area includes the pixel origin, else zero, in
+     * the above figure, only 'a' has alpha 1
+     */
+    if (depth == 1)
+    {
+	alpha = 0;
+	if (top == pixel_y && pw->p_pixel_top.x != pixel_x)
+	    alpha = 1;
+    }
+    else
+    {
+	alpha = (AlphaAboveLeft(&pw->p_pixel_top, &pw->p_trap_bottom,
+				bottom, pixel_x, pixel_y, depth) 
+		 - AlphaAboveLeft(&pw->p_pixel_top, &pw->p_trap_top,
+				  top, pixel_x, pixel_y, depth));
+    }
     
 #ifdef DEBUG
     fprintf(stderr, "0x%x => %f\n",
