@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_span.c,v 1.5 2002/02/22 21:45:01 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -31,7 +31,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Kevin E. Martin <martin@valinux.com>
  *   Gareth Hughes <gareth@valinux.com>
- *   Keith Whitwell <keithw@valinux.com>
+ *   Keith Whitwell <keith@tungstengraphics.com>
  *
  */
 
@@ -292,12 +292,22 @@ static void radeonSetReadBuffer( GLcontext *ctx,
 
    switch ( mode ) {
    case GL_FRONT_LEFT:
-      rmesa->state.pixel.readOffset = rmesa->radeonScreen->frontOffset;
-      rmesa->state.pixel.readPitch  = rmesa->radeonScreen->frontPitch;
+      if ( rmesa->sarea->pfCurrentPage == 1 ) {
+        rmesa->state.pixel.readOffset = rmesa->radeonScreen->backOffset;
+        rmesa->state.pixel.readPitch  = rmesa->radeonScreen->backPitch;
+      } else {
+      	rmesa->state.pixel.readOffset = rmesa->radeonScreen->frontOffset;
+      	rmesa->state.pixel.readPitch  = rmesa->radeonScreen->frontPitch;
+      }
       break;
    case GL_BACK_LEFT:
-      rmesa->state.pixel.readOffset = rmesa->radeonScreen->backOffset;
-      rmesa->state.pixel.readPitch  = rmesa->radeonScreen->backPitch;
+      if ( rmesa->sarea->pfCurrentPage == 1 ) {
+      	rmesa->state.pixel.readOffset = rmesa->radeonScreen->frontOffset;
+      	rmesa->state.pixel.readPitch  = rmesa->radeonScreen->frontPitch;
+      } else {
+        rmesa->state.pixel.readOffset = rmesa->radeonScreen->backOffset;
+        rmesa->state.pixel.readPitch  = rmesa->radeonScreen->backPitch;
+      }
       break;
    default:
       assert(0);

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_screen.h,v 1.3 2002/02/22 21:45:01 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -42,7 +42,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <X11/Xlibint.h>
 #include "dri_util.h"
 #include "xf86drm.h"
-#include "xf86drmRadeon.h"
+#include "radeon_common.h"
 #include "radeon_sarea.h"
 
 typedef struct {
@@ -51,12 +51,16 @@ typedef struct {
    drmAddress map;			/* Mapping of the DRM region */
 } radeonRegionRec, *radeonRegionPtr;
 
+/* chipset features */
+#define RADEON_CHIPSET_TCL	(1 << 0)
+
 typedef struct {
 
    int chipset;
    int cpp;
    int IsPCI;				/* Current card is a PCI card */
    int AGPMode;
+   unsigned int irq;			/* IRQ number (0 means none) */
 
    unsigned int frontOffset;
    unsigned int frontPitch;

@@ -21,7 +21,7 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810tex.c,v 1.7 2001/10/31 22:50:24 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810tex.c,v 1.8 2002/02/22 21:33:04 dawes Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -36,6 +36,10 @@
 #include "swrast/swrast.h"
 
 #include "mm.h"
+
+#include "i810screen.h"
+#include "i810_dri.h"
+
 #include "i810context.h"
 #include "i810tex.h"
 #include "i810state.h"

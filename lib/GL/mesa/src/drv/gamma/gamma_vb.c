@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_vb.c,v 1.2 2002/02/26 23:37:34 tsi Exp $ */
 /*
  * Copyright 2001 by Alan Hourihane.
  *
@@ -20,8 +20,8 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  *
- * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
- *           Keith Whitwell, <keithw@valinux.com>
+ * Authors:  Alan Hourihane, <alanh@tungstengraphics.com>
+ *           Keith Whitwell, <keith@tungstengraphics.com>
  *
  * 3DLabs Gamma driver.
  */
@@ -46,7 +46,9 @@
 #define GAMMA_RGBA_BIT       0x2
 #define GAMMA_XYZW_BIT       0x4
 #define GAMMA_PTEX_BIT       0x8
-#define GAMMA_MAX_SETUP      0x10
+#define GAMMA_FOG_BIT        0x10
+#define GAMMA_SPEC_BIT       0x20
+#define GAMMA_MAX_SETUP      0x40
 
 static struct {
    void                (*emit)( GLcontext *, GLuint, GLuint, void *, GLuint );
@@ -58,12 +60,9 @@ static struct {
    GLuint               vertex_format;
 } setup_tab[GAMMA_MAX_SETUP];
 
-
-/* Only one vertex format, atm, so no need to give them names:
- */
-#define TINY_VERTEX_FORMAT      0
-#define NOTEX_VERTEX_FORMAT     0
-#define TEX0_VERTEX_FORMAT      0
+#define TINY_VERTEX_FORMAT      1
+#define NOTEX_VERTEX_FORMAT     2
+#define TEX0_VERTEX_FORMAT      3
 #define TEX1_VERTEX_FORMAT      0
 #define PROJ_TEX1_VERTEX_FORMAT 0
 #define TEX2_VERTEX_FORMAT      0
@@ -72,8 +71,8 @@ static struct {
 
 #define DO_XYZW (IND & GAMMA_XYZW_BIT)
 #define DO_RGBA (IND & GAMMA_RGBA_BIT)
-#define DO_SPEC 0
-#define DO_FOG  0
+#define DO_SPEC (IND & GAMMA_SPEC_BIT)
+#define DO_FOG  (IND & GAMMA_FOG_BIT)
 #define DO_TEX0 (IND & GAMMA_TEX0_BIT)
 #define DO_TEX1 0
 #define DO_TEX2 0
@@ -81,10 +80,11 @@ static struct {
 #define DO_PTEX (IND & GAMMA_PTEX_BIT)
 			       
 #define VERTEX gammaVertex
+#define VERTEX_COLOR gamma_color_t
 #define GET_VIEWPORT_MAT() 0
 #define GET_TEXSOURCE(n)  n
-#define GET_VERTEX_FORMAT() 0
-#define GET_VERTEX_STORE() (GLubyte *)(GAMMA_CONTEXT(ctx)->verts)
+#define GET_VERTEX_FORMAT() GAMMA_CONTEXT(ctx)->vertex_format
+#define GET_VERTEX_STORE() GAMMA_CONTEXT(ctx)->verts
 #define GET_VERTEX_STRIDE_SHIFT() GAMMA_CONTEXT(ctx)->vertex_stride_shift
 #define INVALIDATE_STORED_VERTICES()
 #define GET_UBYTE_COLOR_STORE() &GAMMA_CONTEXT(ctx)->UbyteColor
@@ -93,7 +93,7 @@ static struct {
 #define HAVE_HW_VIEWPORT    1
 #define HAVE_HW_DIVIDE      1
 #define HAVE_RGBA_COLOR     0 	/* we're BGRA */
-#define HAVE_TINY_VERTICES  0
+#define HAVE_TINY_VERTICES  1
 #define HAVE_NOTEX_VERTICES 1
 #define HAVE_TEX0_VERTICES  1
 #define HAVE_TEX1_VERTICES  0
@@ -123,9 +123,12 @@ static struct {
  *             Generate vertex emit and interp functions               *
  ***********************************************************************/
 
-
 #define IND (GAMMA_XYZW_BIT|GAMMA_RGBA_BIT)
 #define TAG(x) x##_wg
+#include "tnl_dd/t_dd_vbtmp.h"
+
+#define IND (GAMMA_XYZW_BIT|GAMMA_RGBA_BIT|GAMMA_SPEC_BIT)
+#define TAG(x) x##_wgs
 #include "tnl_dd/t_dd_vbtmp.h"
 
 #define IND (GAMMA_XYZW_BIT|GAMMA_RGBA_BIT|GAMMA_TEX0_BIT)
@@ -136,82 +139,123 @@ static struct {
 #define TAG(x) x##_wgpt0
 #include "tnl_dd/t_dd_vbtmp.h"
 
+#define IND (GAMMA_XYZW_BIT|GAMMA_RGBA_BIT|GAMMA_SPEC_BIT|GAMMA_TEX0_BIT)
+#define TAG(x) x##_wgst0
+#include "tnl_dd/t_dd_vbtmp.h"
+
+#define IND (GAMMA_XYZW_BIT|GAMMA_RGBA_BIT|GAMMA_SPEC_BIT|GAMMA_TEX0_BIT|\
+             GAMMA_PTEX_BIT)
+#define TAG(x) x##_wgspt0
+#include "tnl_dd/t_dd_vbtmp.h"
+
+#define IND (GAMMA_XYZW_BIT|GAMMA_RGBA_BIT|GAMMA_FOG_BIT)
+#define TAG(x) x##_wgf
+#include "tnl_dd/t_dd_vbtmp.h"
+
+#define IND (GAMMA_XYZW_BIT|GAMMA_RGBA_BIT|GAMMA_FOG_BIT|GAMMA_SPEC_BIT)
+#define TAG(x) x##_wgfs
+#include "tnl_dd/t_dd_vbtmp.h"
+
+#define IND (GAMMA_XYZW_BIT|GAMMA_RGBA_BIT|GAMMA_FOG_BIT|GAMMA_TEX0_BIT)
+#define TAG(x) x##_wgft0
+#include "tnl_dd/t_dd_vbtmp.h"
+
+#define IND (GAMMA_XYZW_BIT|GAMMA_RGBA_BIT|GAMMA_FOG_BIT|GAMMA_TEX0_BIT|\
+             GAMMA_PTEX_BIT)
+#define TAG(x) x##_wgfpt0
+#include "tnl_dd/t_dd_vbtmp.h"
+
+#define IND (GAMMA_XYZW_BIT|GAMMA_RGBA_BIT|GAMMA_FOG_BIT|GAMMA_SPEC_BIT|\
+             GAMMA_TEX0_BIT)
+#define TAG(x) x##_wgfst0
+#include "tnl_dd/t_dd_vbtmp.h"
+
+#define IND (GAMMA_XYZW_BIT|GAMMA_RGBA_BIT|GAMMA_FOG_BIT|GAMMA_SPEC_BIT|\
+             GAMMA_TEX0_BIT|GAMMA_PTEX_BIT)
+#define TAG(x) x##_wgfspt0
+#include "tnl_dd/t_dd_vbtmp.h"
+
 #define IND (GAMMA_TEX0_BIT)
 #define TAG(x) x##_t0
+#include "tnl_dd/t_dd_vbtmp.h"
+
+#define IND (GAMMA_FOG_BIT)
+#define TAG(x) x##_f
+#include "tnl_dd/t_dd_vbtmp.h"
+
+#define IND (GAMMA_FOG_BIT|GAMMA_TEX0_BIT)
+#define TAG(x) x##_ft0
 #include "tnl_dd/t_dd_vbtmp.h"
 
 #define IND (GAMMA_RGBA_BIT)
 #define TAG(x) x##_g
 #include "tnl_dd/t_dd_vbtmp.h"
 
+#define IND (GAMMA_RGBA_BIT|GAMMA_SPEC_BIT)
+#define TAG(x) x##_gs
+#include "tnl_dd/t_dd_vbtmp.h"
+
 #define IND (GAMMA_RGBA_BIT|GAMMA_TEX0_BIT)
 #define TAG(x) x##_gt0
 #include "tnl_dd/t_dd_vbtmp.h"
 
+#define IND (GAMMA_RGBA_BIT|GAMMA_SPEC_BIT|GAMMA_TEX0_BIT)
+#define TAG(x) x##_gst0
+#include "tnl_dd/t_dd_vbtmp.h"
 
+#define IND (GAMMA_RGBA_BIT|GAMMA_FOG_BIT)
+#define TAG(x) x##_gf
+#include "tnl_dd/t_dd_vbtmp.h"
+
+#define IND (GAMMA_RGBA_BIT|GAMMA_FOG_BIT|GAMMA_SPEC_BIT)
+#define TAG(x) x##_gfs
+#include "tnl_dd/t_dd_vbtmp.h"
+
+#define IND (GAMMA_RGBA_BIT|GAMMA_FOG_BIT|GAMMA_TEX0_BIT)
+#define TAG(x) x##_gft0
+#include "tnl_dd/t_dd_vbtmp.h"
+
+#define IND (GAMMA_RGBA_BIT|GAMMA_FOG_BIT|GAMMA_SPEC_BIT|GAMMA_TEX0_BIT)
+#define TAG(x) x##_gfst0
+#include "tnl_dd/t_dd_vbtmp.h"
 
 static void init_setup_tab( void )
 {
    init_wg();
+   init_wgs();
    init_wgt0();
    init_wgpt0();
+   init_wgst0();
+   init_wgspt0();
+   init_wgf();
+   init_wgfs();
+   init_wgft0();
+   init_wgfpt0();
+   init_wgfst0();
+   init_wgfspt0();
    init_t0();
+   init_f();
+   init_ft0();
    init_g();
+   init_gs();
    init_gt0();
+   init_gst0();
+   init_gf();
+   init_gfs();
+   init_gft0();
+   init_gfst0();
 }
-
-
-#if 0
-void gammaPrintSetupFlags(char *msg, GLuint flags )
-{
-   fprintf(stderr, "%s(%x): %s%s%s%s%s%s\n",
-	   msg,
-	   (int)flags,
-	   (flags & GAMMA_XYZW_BIT)      ? " xyzw," : "", 
-	   (flags & GAMMA_RGBA_BIT)     ? " rgba," : "",
-	   (flags & GAMMA_SPEC_BIT)     ? " spec," : "",
-	   (flags & GAMMA_FOG_BIT)      ? " fog," : "",
-	   (flags & GAMMA_TEX0_BIT)     ? " tex-0," : "",
-	   (flags & GAMMA_TEX1_BIT)     ? " tex-1," : "");
-}
-#endif
-
 
 void gammaCheckTexSizes( GLcontext *ctx )
 {
    TNLcontext *tnl = TNL_CONTEXT(ctx);
    gammaContextPtr gmesa = GAMMA_CONTEXT( ctx );
 
-#if 0
    if (!setup_tab[gmesa->SetupIndex].check_tex_sizes(ctx)) {
       /* Invalidate stored verts
        */
       gmesa->SetupNewInputs = ~0;
       gmesa->SetupIndex |= GAMMA_PTEX_BIT;
-
-      if (/*!gmesa->Fallback && */
-	  !(ctx->_TriangleCaps & (DD_TRI_LIGHT_TWOSIDE|DD_TRI_UNFILLED))) {
-	 tnl->Driver.Render.Interp = setup_tab[gmesa->SetupIndex].interp;
-	 tnl->Driver.Render.CopyPV = setup_tab[gmesa->SetupIndex].copy_pv;
-      }
-   }
-#endif
-
-   if (!setup_tab[gmesa->SetupIndex].check_tex_sizes(ctx)) {
-
-      /* Radeon handles projective textures nicely; just have to change
-       * up to the new vertex format.
-       */
-#if 0
-      GLuint ind = gmesa->SetupIndex |= (GAMMA_PTEX_BIT|GAMMA_RGBA_BIT);
-
-      if (setup_tab[ind].vertex_format != gmesa->vertex_format) {
-	 RADEON_STATECHANGE(gmesa, 0);
-	 gmesa->vertex_format = setup_tab[ind].vertex_format;
-	 gmesa->vertex_size = setup_tab[ind].vertex_size;
-	 gmesa->vertex_stride_shift = setup_tab[ind].vertex_stride_shift;
-      }
-#endif
 
       if (!(ctx->_TriangleCaps & (DD_TRI_LIGHT_TWOSIDE|DD_TRI_UNFILLED))) {
 	 tnl->Driver.Render.Interp = setup_tab[gmesa->SetupIndex].interp;
@@ -236,15 +280,21 @@ void gammaBuildVertices( GLcontext *ctx,
       return;
 
    if (newinputs & VERT_CLIP) {
-      setup_tab[gmesa->SetupIndex].emit( ctx, start, count, v, stride );   
+      setup_tab[gmesa->SetupIndex].emit( ctx, start, count, v, stride );
    } else {
       GLuint ind = 0;
 
       if (newinputs & VERT_RGBA)
 	 ind |= GAMMA_RGBA_BIT;
-      
+
+      if (newinputs & VERT_SPEC_RGB)
+	 ind |= GAMMA_SPEC_BIT;
+
       if (newinputs & VERT_TEX0)
 	 ind |= GAMMA_TEX0_BIT;
+
+      if (newinputs & VERT_FOG_COORD)
+	 ind |= GAMMA_FOG_BIT;
 
       if (gmesa->SetupIndex & GAMMA_PTEX_BIT)
 	 ind = ~0;
@@ -252,7 +302,7 @@ void gammaBuildVertices( GLcontext *ctx,
       ind &= gmesa->SetupIndex;
 
       if (ind) {
-	 setup_tab[ind].emit( ctx, start, count, v, stride );   
+	 setup_tab[ind].emit( ctx, start, count, v, stride );
       }
    }
 }
@@ -263,13 +313,25 @@ void gammaChooseVertexState( GLcontext *ctx )
    TNLcontext *tnl = TNL_CONTEXT(ctx);
    GLuint ind = GAMMA_XYZW_BIT|GAMMA_RGBA_BIT;
 
+   if (ctx->_TriangleCaps & DD_SEPARATE_SPECULAR)
+      ind |= GAMMA_SPEC_BIT;
+
+   if (ctx->Fog.Enabled)
+      ind |= GAMMA_FOG_BIT;
+
    if (ctx->Texture._ReallyEnabled) {
       _tnl_need_projected_coords( ctx, GL_FALSE );
       ind |= GAMMA_TEX0_BIT;
    } else
-      _tnl_need_projected_coords( ctx, GL_TRUE );
+      _tnl_need_projected_coords( ctx, GL_FALSE );
 
    gmesa->SetupIndex = ind;
+
+   if (setup_tab[ind].vertex_format != gmesa->vertex_format) {
+      gmesa->vertex_format = setup_tab[ind].vertex_format;
+      gmesa->vertex_size = setup_tab[ind].vertex_size;
+      gmesa->vertex_stride_shift = setup_tab[ind].vertex_stride_shift;
+   }
 
    if (ctx->_TriangleCaps & (DD_TRI_LIGHT_TWOSIDE|DD_TRI_UNFILLED)) {
       tnl->Driver.Render.Interp = gamma_interp_extras;

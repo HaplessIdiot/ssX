@@ -22,9 +22,9 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *
  * Authors:
- *    Keith Whitwell <keithw@valinux.com>
+ *    Keith Whitwell <keith@tungstengraphics.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatex.c,v 1.10 2001/04/10 16:07:51 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatex.c,v 1.13 2002/02/22 21:44:55 dawes Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -189,8 +189,9 @@ static GLint mgaChooseTexFormat( mgaContextPtr mmesa,
        * got to be better than sticking them way down the end of this
        * huge list.
        */
-   case GL_RGBA:
    case 4:
+   case GL_RGBA:
+   case GL_COMPRESSED_RGBA:
       if ( format == GL_BGRA ) {
 	 if ( type == GL_UNSIGNED_INT_8_8_8_8_REV ) {
 	    SET_FORMAT( TMC_tformat_tw32, _mesa_texformat_argb8888 );
@@ -207,8 +208,9 @@ static GLint mgaChooseTexFormat( mgaContextPtr mmesa,
 			TMC_tformat_tw12, _mesa_texformat_argb4444 );
       break;
 
-   case GL_RGB:
    case 3:
+   case GL_RGB:
+   case GL_COMPRESSED_RGB:
       if ( format == GL_RGB && type == GL_UNSIGNED_SHORT_5_6_5 ) {
 	 SET_FORMAT( TMC_tformat_tw16, _mesa_texformat_rgb565 );
 	 break;
@@ -256,6 +258,7 @@ static GLint mgaChooseTexFormat( mgaContextPtr mmesa,
    case GL_ALPHA8:
    case GL_ALPHA12:
    case GL_ALPHA16:
+   case GL_COMPRESSED_ALPHA:
       /* FIXME: This will report incorrect component sizes... */
       SET_FORMAT( TMC_tformat_tw12, _mesa_texformat_argb4444 );
       break;
@@ -266,6 +269,7 @@ static GLint mgaChooseTexFormat( mgaContextPtr mmesa,
    case GL_LUMINANCE8:
    case GL_LUMINANCE12:
    case GL_LUMINANCE16:
+   case GL_COMPRESSED_LUMINANCE:
       /* FIXME: This will report incorrect component sizes... */
       SET_FORMAT( TMC_tformat_tw16, _mesa_texformat_rgb565 );
       break;
@@ -278,6 +282,7 @@ static GLint mgaChooseTexFormat( mgaContextPtr mmesa,
    case GL_LUMINANCE12_ALPHA4:
    case GL_LUMINANCE12_ALPHA12:
    case GL_LUMINANCE16_ALPHA16:
+   case GL_COMPRESSED_LUMINANCE_ALPHA:
       /* FIXME: This will report incorrect component sizes... */
       SET_FORMAT( TMC_tformat_tw12, _mesa_texformat_argb4444 );
       break;
@@ -287,6 +292,7 @@ static GLint mgaChooseTexFormat( mgaContextPtr mmesa,
    case GL_INTENSITY8:
    case GL_INTENSITY12:
    case GL_INTENSITY16:
+   case GL_COMPRESSED_INTENSITY:
       /* FIXME: This will report incorrect component sizes... */
       SET_FORMAT( TMC_tformat_tw12, _mesa_texformat_argb4444 );
       break;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_cursor.c,v 1.14 2002/07/11 20:11:51 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_cursor.c,v 1.15 2002/10/12 01:38:07 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -154,7 +154,7 @@ static void RADEONSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 
 	if ((X0 >= 0 || Y0 >= 0) &&
 	    ((info->CloneFrameX0 != X0) || (info->CloneFrameY0 != Y0))) {
-	    pScrn->AdjustFrame(pScrn->scrnIndex, X0, Y0, 1);
+	    RADEONDoAdjustFrame(pScrn, X0, Y0, TRUE);
 	    info->CloneFrameX0 = X0;
 	    info->CloneFrameY0 = Y0;
 	}

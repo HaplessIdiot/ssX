@@ -33,7 +33,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 **
 **
 ***************************************************************************/
-/* $XFree86: xc/lib/XvMC/hw/i810/I810XvMC.c,v 1.8 2002/09/18 17:11:43 tsi Exp $ */
+/* $XFree86: xc/lib/XvMC/hw/i810/I810XvMC.c,v 1.9 2002/09/24 20:47:39 tsi Exp $ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -67,13 +67,13 @@ static int event_base;
 // Returns: drmBufPtr containing the information about the allocated page.
 ***************************************************************************/
 drmBufPtr i810_get_free_buffer(i810XvMCContext *pI810XvMC) {
-   drm_i810_dma_t dma;
+   drmI810DMA dma;
    drmBufPtr buf;
 
    dma.granted = 0;
    dma.request_size = 4096;
    while(!dma.granted) {
-     if(GET_BUFFER(pI810XvMC, &dma) || !dma.granted)
+     if(GET_BUFFER(pI810XvMC, dma) || !dma.granted)
        FLUSH(pI810XvMC);
    } /* No DMA granted */
 
@@ -991,7 +991,7 @@ static __inline__ void dispatchYContext(i810XvMCSurface *privTarget,
   mc.used = (unsigned long)data - (unsigned long)pDMA->address;
   mc.last_render = ++pI810XvMC->last_render;
   privTarget->last_render = pI810XvMC->last_render;
-  I810_MC(pI810XvMC,&mc);
+  I810_MC(pI810XvMC,mc);
 }
 
 static __inline__ void renderError(void) {
@@ -2544,7 +2544,7 @@ Status XvMCRenderSurface(Display *display, XvMCContext *context,
 	datay = NULL;
 	mc.last_render = ++pI810XvMC->last_render;
 	privTarget->last_render = pI810XvMC->last_render;
-	I810_MC(pI810XvMC,&mc);
+	I810_MC(pI810XvMC,mc);
       } /* datay near full */
     } /* if(datay) */
     if(datau) {
@@ -2558,7 +2558,7 @@ Status XvMCRenderSurface(Display *display, XvMCContext *context,
 	    mc.used = pDMAu[j]->used;
 	    mc.last_render = ++pI810XvMC->last_render;
 	    privTarget->last_render = pI810XvMC->last_render;
-	    I810_MC(pI810XvMC,&mc);
+	    I810_MC(pI810XvMC,mc);
 	  }
 	  u_index = 0;
 	  dirty_context = 1;
@@ -2576,7 +2576,7 @@ Status XvMCRenderSurface(Display *display, XvMCContext *context,
 	    mc.used = pDMAv[j]->used;
 	    mc.last_render = ++pI810XvMC->last_render;
 	    privTarget->last_render = pI810XvMC->last_render;
-	    I810_MC(pI810XvMC,&mc);
+	    I810_MC(pI810XvMC,mc);
 	  }
 	  v_index = 0;
 	  dirty_context = 1;
@@ -2759,7 +2759,7 @@ Status XvMCRenderSurface(Display *display, XvMCContext *context,
   mc.used = (unsigned long)datay - (unsigned long)pDMAy->address;
   mc.last_render = ++pI810XvMC->last_render;
   privTarget->last_render = pI810XvMC->last_render;
-  I810_MC(pI810XvMC,&mc);
+  I810_MC(pI810XvMC,mc);
 
   pDMAu[u_index]->used = (unsigned long)datau - (unsigned long)pDMAu[u_index]->address;
   for(j=0; j<=u_index; j++) {
@@ -2767,7 +2767,7 @@ Status XvMCRenderSurface(Display *display, XvMCContext *context,
     mc.used = pDMAu[j]->used;
     mc.last_render = ++pI810XvMC->last_render;
     privTarget->last_render = pI810XvMC->last_render;
-    I810_MC(pI810XvMC,&mc);
+    I810_MC(pI810XvMC,mc);
   }
   pDMAv[v_index]->used = (unsigned long)datav - (unsigned long)pDMAv[v_index]->address;
   for(j=0; j<=v_index; j++) {
@@ -2775,7 +2775,7 @@ Status XvMCRenderSurface(Display *display, XvMCContext *context,
     mc.used = pDMAv[j]->used;
     mc.last_render = ++pI810XvMC->last_render;
     privTarget->last_render = pI810XvMC->last_render;
-    I810_MC(pI810XvMC,&mc);
+    I810_MC(pI810XvMC,mc);
   }
 
   I810_UNLOCK(pI810XvMC);
@@ -4206,7 +4206,7 @@ Status XvMCBlendSubpicture2(Display *display,
   mc.used = pDMA->used;
   mc.last_render = ++pI810XvMC->last_render;
   privTarget->last_render = pI810XvMC->last_render;
-  I810_MC(pI810XvMC,&mc);
+  I810_MC(pI810XvMC,mc);
 
   I810_UNLOCK(pI810XvMC);
   return Success;

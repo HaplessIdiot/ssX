@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/ffb/ffb_tris.c,v 1.1 2000/06/20 05:08:40 dawes Exp $
+/* $XFree86: xc/lib/GL/mesa/src/drv/ffb/ffb_tris.c,v 1.2 2002/02/22 21:32:59 dawes Exp $
  *
  * GLX Hardware Device Driver for Sun Creator/Creator3D
  * Copyright (C) 2000, 2001 David S. Miller
@@ -34,7 +34,7 @@
 
 #include "swrast/swrast.h"
 #include "swrast_setup/swrast_setup.h"
-#include "swrast_setup/ss_context.h"
+#include "swrast/s_context.h"
 #include "tnl/t_context.h"
 #include "tnl/t_pipeline.h"
 
@@ -926,7 +926,7 @@ void ffbFallback( GLcontext *ctx, GLuint bit, GLboolean mode )
 void ffbDDInitRenderFuncs( GLcontext *ctx )
 {
  	TNLcontext *tnl = TNL_CONTEXT(ctx);
-	SScontext *swsetup = SWSETUP_CONTEXT(ctx);
+	SWcontext *swrast = SWRAST_CONTEXT(ctx);
 	static int firsttime = 1;
 
 	if (firsttime) {
@@ -944,6 +944,6 @@ void ffbDDInitRenderFuncs( GLcontext *ctx )
 	tnl->Driver.Render.PrimTabVerts = _tnl_render_tab_verts;
 	tnl->Driver.Render.PrimTabElts = _tnl_render_tab_elts;
 
-	swsetup->Driver.Start = ffbSWRenderStart;
-	swsetup->Driver.Finish = ffbSWRenderFinish;
+	swrast->Driver.SpanRenderStart = ffbSWRenderStart;
+	swrast->Driver.SpanRenderFinish = ffbSWRenderFinish;
 }

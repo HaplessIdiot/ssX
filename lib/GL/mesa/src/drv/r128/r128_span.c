@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_span.c,v 1.5 2001/01/08 01:07:21 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_span.c,v 1.7 2002/02/22 21:44:58 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -29,7 +29,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 /*
  * Authors:
  *   Gareth Hughes <gareth@valinux.com>
- *   Keith Whitwell <keithw@valinux.com>
+ *   Keith Whitwell <keith@tungstengraphics.com>
  *   Kevin E. Martin <martin@valinux.com>
  *
  */

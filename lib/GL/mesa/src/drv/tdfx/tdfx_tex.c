@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_tex.c,v 1.4 2002/02/22 21:45:04 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_tex.c,v 1.5 2002/02/26 23:37:36 tsi Exp $ */
 
 /*
  * Original rewrite:
@@ -565,12 +565,12 @@ tdfxDDTexturePalette(GLcontext * ctx, struct gl_texture_object *tObj)
 /**** NEW TEXTURE IMAGE FUNCTIONS                                  ****/
 /**********************************************************************/
 
-#define TX_DITHER_NONE                                  0x00000000
-
-#if 000
 static FxBool TexusFatalError = FXFALSE;
 static FxBool TexusError = FXFALSE;
 
+#define TX_DITHER_NONE                                  0x00000000
+
+#if 000
 static void
 fxTexusError(const char *string, FxBool fatal)
 {
@@ -975,7 +975,7 @@ tdfxDDTexImage2D(GLcontext *ctx, GLenum target, GLint level,
                                 0, /* dstImageStride */
                                 format, type, pixels, packing);
         assert(!texImage->Data);
-        texImage->Data = MALLOC(mml->width * mml->height * texelBytes);
+        texImage->Data = MESA_PBUFFER_ALLOC(mml->width * mml->height * texelBytes);
         if (!texImage->Data) {
             _mesa_error(ctx, GL_OUT_OF_MEMORY, "glTexImage2D");
             FREE(tempImage);
@@ -991,7 +991,7 @@ tdfxDDTexImage2D(GLcontext *ctx, GLenum target, GLint level,
     else {
         /* no rescaling needed */
       assert(!texImage->Data);
-      texImage->Data = MALLOC(mml->width * mml->height * texelBytes);
+      texImage->Data = MESA_PBUFFER_ALLOC(mml->width * mml->height * texelBytes);
       if (!texImage->Data) {
           _mesa_error(ctx, GL_OUT_OF_MEMORY, "glTexImage2D");
           return;

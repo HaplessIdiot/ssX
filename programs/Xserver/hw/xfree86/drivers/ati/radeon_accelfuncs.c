@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accelfuncs.c,v 1.1 2002/09/18 18:14:58 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -31,7 +31,7 @@
  * Authors:
  *   Kevin E. Martin <martin@xfree86.org>
  *   Rickard E. Faith <faith@valinux.com>
- *   Alan Hourihane <ahourihane@valinux.com>
+ *   Alan Hourihane <alanh@fairlite.demon.co.uk>
  *   Michel Dänzer <michel@daenzer.net>
  *
  * Credits:
@@ -144,11 +144,16 @@ FUNC_NAME(RADEONWaitForIdle)(ScrnInfoPtr pScrn)
 
     int  ret;
 
+    if (!info->CPStarted) {
+	RADEONWaitForIdleMMIO(pScrn);
+	return;
+    }
+    
     FLUSH_RING();
 
     for (;;) {
 	do {
-	    ret = drmRadeonWaitForIdleCP(info->drmFD);
+	    ret = drmCommandNone(info->drmFD, DRM_RADEON_CP_IDLE);
 	    if (ret && ret != -EBUSY) {
 		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 			   "%s: CP idle %d\n", __FUNCTION__, ret);
@@ -578,15 +583,25 @@ FUNC_NAME(RADEONSetupForMono8x8PatternFill)(ScrnInfoPtr pScrn,
 					    unsigned int planemask)
 {
     RADEONInfoPtr  info = RADEONPTR(pScrn);
+    unsigned char  pattern[8];
     ACCEL_PREAMBLE();
+
+    /* Take care of endianness */
+    pattern[0] = (patternx & 0x000000ff);
+    pattern[1] = (patternx & 0x0000ff00) >> 8;
+    pattern[2] = (patternx & 0x00ff0000) >> 16;
+    pattern[3] = (patternx & 0xff000000) >> 24;
+    pattern[4] = (patterny & 0x000000ff);
+    pattern[5] = (patterny & 0x0000ff00) >> 8;
+    pattern[6] = (patterny & 0x00ff0000) >> 16;
+    pattern[7] = (patterny & 0xff000000) >> 24;
 
     /* Save for later clipping */
     info->dp_gui_master_cntl_clip = (info->dp_gui_master_cntl
 				     | (bg == -1
 					? RADEON_GMC_BRUSH_8X8_MONO_FG_LA
 					: RADEON_GMC_BRUSH_8X8_MONO_FG_BG)
-				     | RADEON_ROP[rop].pattern
-				     | RADEON_GMC_BYTE_MSB_TO_LSB);
+				     | RADEON_ROP[rop].pattern);
 
     BEGIN_ACCEL((bg == -1) ? 5 : 6);
 
@@ -595,8 +610,8 @@ FUNC_NAME(RADEONSetupForMono8x8PatternFill)(ScrnInfoPtr pScrn,
     OUT_ACCEL_REG(RADEON_DP_BRUSH_FRGD_CLR,  fg);
     if (bg != -1)
 	OUT_ACCEL_REG(RADEON_DP_BRUSH_BKGD_CLR, bg);
-    OUT_ACCEL_REG(RADEON_BRUSH_DATA0,        patternx);
-    OUT_ACCEL_REG(RADEON_BRUSH_DATA1,        patterny);
+    OUT_ACCEL_REG(RADEON_BRUSH_DATA0,        *(CARD32 *)&pattern[0]);
+    OUT_ACCEL_REG(RADEON_BRUSH_DATA1,        *(CARD32 *)&pattern[4]);
 
     FINISH_ACCEL();
 }
@@ -778,7 +793,7 @@ FUNC_NAME(RADEONSetupForScanlineCPUToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 #else
     BEGIN_ACCEL(2);
 
-    OUT_ACCEL_REG(RADEON_RBBM_GUICNTL,       RADEON_HOST_DATA_SWAP_NONE);
+    OUT_ACCEL_REG(RADEON_RBBM_GUICNTL,       RADEON_HOST_DATA_SWAP_32BIT);
 #endif
     OUT_ACCEL_REG(RADEON_DP_WRITE_MASK,      planemask);
 
@@ -1216,6 +1231,10 @@ FUNC_NAME(RADEONAccelInit)(ScreenPtr pScreen, XAAInfoRecPtr a)
     a->SubsequentSolidHorVertLine
 	= FUNC_NAME(RADEONSubsequentSolidHorVertLine);
 
+#ifdef XFree86LOADER
+    if (info->xaaReq.minorversion >= 1) {
+#endif
+
     /* RADEON only supports 14 bits for lines and clipping and only
      * draws lines that are completely on-screen correctly.  This will
      * cause display corruption problem in the cases when out-of-range
@@ -1252,6 +1271,13 @@ FUNC_NAME(RADEONAccelInit)(ScreenPtr pScreen, XAAInfoRecPtr a)
     a->DashedLineLimits.y1 = 0;
     a->DashedLineLimits.x2 = pScrn->virtualX-1;
     a->DashedLineLimits.y2 = pScrn->virtualY-1;
+
+#ifdef XFree86LOADER
+    } else {
+	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		   "libxaa too old, can't accelerate TwoPoint lines\n");
+    }
+#endif
 
     /* Clipping, note that without this, all line accelerations will
      * not be called

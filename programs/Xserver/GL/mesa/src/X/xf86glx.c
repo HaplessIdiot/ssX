@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/mesa/src/X/xf86glx.c,v 1.14 2002/04/04 14:05:37 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/mesa/src/X/xf86glx.c,v 1.15 2002/09/10 02:54:15 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -47,6 +47,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <glxext.h>
 #include <glxutil.h>
 #include "xf86glxint.h"
+#include "context.h"
 #include "xmesaP.h"
 #include <GL/xf86glx.h>
 #include "context.h"
@@ -136,12 +137,14 @@ static XMesaVisual find_mesa_visual(int screen, VisualID vid)
 
 /*
  * In the case the driver has no GLX visuals we'll use these.
- * [0] = RGB, double buffered
- * [1] = RGB, double buffered, stencil, accum
- * [2] = CI, double buffered
+ * One thing is funny here: the bufferSize field doesn't always include
+ * the alpha bits.  That is, bufferSize may be 24 when we have 8 bits
+ * of red, green, blue and alpha.  If set set bufferSize to 32 we may
+ * foul-up the visual matching code below (search for bufferSize).
  */
-#define NUM_FALLBACK_CONFIGS 3
+#define NUM_FALLBACK_CONFIGS 4
 static __GLXvisualConfig FallbackConfigs[NUM_FALLBACK_CONFIGS] = {
+  /* [0] = RGB, double buffered, Z */
   {
     -1,                 /* vid */
     -1,                 /* class */
@@ -161,6 +164,7 @@ static __GLXvisualConfig FallbackConfigs[NUM_FALLBACK_CONFIGS] = {
     0, 0, 0, 0,         /* transparent rgba color (floats scaled to ints) */
     0                   /* transparentIndex */
   },
+  /* [1] = RGB, double buffered, Z, stencil, accum */
   {
     -1,                 /* vid */
     -1,                 /* class */
@@ -180,10 +184,31 @@ static __GLXvisualConfig FallbackConfigs[NUM_FALLBACK_CONFIGS] = {
     0, 0, 0, 0,         /* transparent rgba color (floats scaled to ints) */
     0                   /* transparentIndex */
   },
+  /* [2] = RGB+Alpha, double buffered, Z, stencil, accum */
   {
     -1,                 /* vid */
     -1,                 /* class */
-    False,              /* color index */
+    True,               /* rgba */
+    -1, -1, -1, 8,      /* rgba sizes */
+    -1, -1, -1, -1,     /* rgba masks */
+    16, 16, 16, 16,     /* rgba accum sizes */
+    True,               /* doubleBuffer */
+    False,              /* stereo */
+    -1,                 /* bufferSize */
+    16,                 /* depthSize */
+    8,                  /* stencilSize */
+    0,                  /* auxBuffers */
+    0,                  /* level */
+    GLX_NONE_EXT,       /* visualRating */
+    0,                  /* transparentPixel */
+    0, 0, 0, 0,         /* transparent rgba color (floats scaled to ints) */
+    0                   /* transparentIndex */
+  },
+  /* [3] = CI, double buffered, Z */
+  {
+    -1,                 /* vid */
+    -1,                 /* class */
+    False,              /* rgba? (false = color index) */
     -1, -1, -1, 0,      /* rgba sizes */
     -1, -1, -1, 0,      /* rgba masks */
      0,  0,  0, 0,      /* rgba accum sizes */

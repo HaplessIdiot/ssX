@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  *
- * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
+ * Authors:  Alan Hourihane, <alanh@tungstengraphics.com>
  *
  */
 
@@ -30,15 +30,15 @@
 #include "X86/common_x86_asm.h"
 #endif
 
-#include "swrast/swrast.h"
 #include "context.h"
+#include "swrast/swrast.h"
 
 #define GAMMA_DATE	"20010624"
 
 
 /* Return the width and height of the current color buffer.
  */
-static void gammaDDGetBufferSize(GLframebuffer *buffer,
+static void gammaDDGetBufferSize( GLframebuffer *buffer,
 				 GLuint *width, GLuint *height )
 {
    GET_CURRENT_CONTEXT(ctx);
@@ -105,6 +105,7 @@ void gammaDDInitExtensions( GLcontext *ctx )
 void gammaDDInitDriverFuncs( GLcontext *ctx )
 {
    ctx->Driver.GetBufferSize		= gammaDDGetBufferSize;
+   ctx->Driver.ResizeBuffers            = _swrast_alloc_buffers;
    ctx->Driver.GetString		= gammaDDGetString;
 
    ctx->Driver.Error			= NULL;

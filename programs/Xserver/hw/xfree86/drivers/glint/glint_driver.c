@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.149tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.150 2002/10/08 22:14:07 tsi Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -341,9 +341,11 @@ const char *GLINTint10Symbols[] = {
 static const char *drmSymbols[] = {
     "drmAddBufs",
     "drmAddMap",
+    "drmCommandWrite",
     "drmCtlInstHandler",
     "drmFreeVersion",
     "drmGetInterruptFromBusID",
+    "drmGetLibVersion",
     "drmGetVersion",
     "drmMapBufs",
     "drmUnmapBufs",

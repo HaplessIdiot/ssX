@@ -44,7 +44,7 @@ LIBS =
 DRMTEMPLATES =	drm_auth.h drm_bufs.h drm_context.h drm_dma.h drm_drawable.h \
 		drm_drv.h drm_fops.h drm_init.h drm_ioctl.h drm_lists.h \
 		drm_lock.h drm_memory.h drm_proc.h drm_stub.h drm_vm.h
-DRMHEADERS =	drm.h drmP.h
+DRMHEADERS =	drm.h drmP.h drm_sarea.h
 
 GAMMAOBJS =	gamma_drv.o gamma_dma.o
 GAMMAHEADERS =	gamma_drv.h $(DRMHEADERS) $(DRMTEMPLATES)
@@ -55,7 +55,7 @@ TDFXHEADERS =	tdfx.h $(DRMHEADERS) $(DRMTEMPLATES)
 R128OBJS =	r128_drv.o r128_cce.o r128_state.o
 R128HEADERS =	r128.h r128_drv.h r128_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
 
-RADEONOBJS =	radeon_drv.o radeon_cp.o radeon_state.o
+RADEONOBJS =	radeon_drv.o radeon_cp.o radeon_state.o radeon_mem.o radeon_irq.o
 RADEONHEADERS =	radeon.h radeon_drv.h radeon_drm.h $(DRMHEADERS) \
 		$(DRMTEMPLATES)
 
@@ -270,12 +270,12 @@ ChangeLog:
 
 $(GAMMAOBJS): $(GAMMAHEADERS)
 $(TDFXOBJS): $(TDFXHEADERS)
+$(R128OBJS): $(R128HEADERS)
+$(RADEONOBJS): $(RADEONHEADERS)
 ifeq ($(AGP),1)
 $(MGAOBJS): $(MGAHEADERS)
 $(I810OBJS): $(I810HEADERS)
 $(I830OBJS): $(I830HEADERS)
-$(R128OBJS): $(R128HEADERS)
-$(RADEONOBJS): $(RADEONHEADERS)
 endif
 
 clean cleandir::

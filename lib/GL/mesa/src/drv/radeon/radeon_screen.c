@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_screen.c,v 1.4 2002/02/22 21:45:00 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -47,6 +47,16 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define PCI_CHIP_RADEON_QE	0x5145
 #define PCI_CHIP_RADEON_QF	0x5146
 #define PCI_CHIP_RADEON_QG	0x5147
+
+#define PCI_CHIP_RADEON_QY	0x5159
+#define PCI_CHIP_RADEON_QZ	0x515A
+
+#define PCI_CHIP_RADEON_LW	0x4C57 /* mobility 7 - has tcl */
+
+#define PCI_CHIP_RADEON_LY	0x4C59
+#define PCI_CHIP_RADEON_LZ	0x4C5A
+
+#define PCI_CHIP_RV200_QW	0x5157 /* a confusing name for a radeon */
 #endif
 
 
@@ -62,7 +72,9 @@ radeonScreenPtr radeonCreateScreen( __DRIscreenPrivate *sPriv )
       int major, minor, patch;
       if ( XF86DRIQueryVersion( sPriv->display, &major, &minor, &patch ) ) {
          if ( major != 4 || minor < 0 ) {
-            __driUtilMessage( "Radeon DRI driver expected DRI version 4.0.x but got version %d.%d.%d", major, minor, patch );
+            __driUtilMessage( "Radeon DRI driver expected DRI version 4.0.x "
+			      "but got version %d.%d.%d",
+			      major, minor, patch );
             return NULL;
          }
       }
@@ -71,23 +83,38 @@ radeonScreenPtr radeonCreateScreen( __DRIscreenPrivate *sPriv )
    /* Check that the DDX driver version is compatible */
    if ( sPriv->ddxMajor != 4 ||
 	sPriv->ddxMinor < 0 ) {
-      __driUtilMessage( "Radeon DRI driver expected DDX driver version 4.0.x but got version %d.%d.%d", sPriv->ddxMajor, sPriv->ddxMinor, sPriv->ddxPatch );
+      __driUtilMessage( "Radeon DRI driver expected DDX driver version 4.0.x "
+			"but got version %d.%d.%d", 
+			sPriv->ddxMajor, sPriv->ddxMinor, sPriv->ddxPatch );
       return NULL;
    }
 
    /* Check that the DRM driver version is compatible */
-   if ( sPriv->drmMajor != 1 ||
-	sPriv->drmMinor < 2 ) {
-      __driUtilMessage( "Radeon DRI driver expected DRM driver version 1.2.x but got version %d.%d.%d", sPriv->drmMajor, sPriv->drmMinor, sPriv->drmPatch );
+   if ( sPriv->drmMajor != 1 ) {
+      __driUtilMessage( "Radeon DRI driver expected DRM driver version 1.x.x "
+			"but got version %d.%d.%d", 
+			sPriv->drmMajor, sPriv->drmMinor, sPriv->drmPatch );
       return NULL;
    }
+
 
    /* Allocate the private area */
    radeonScreen = (radeonScreenPtr) CALLOC( sizeof(*radeonScreen) );
    if ( !radeonScreen ) {
-      __driUtilMessage("radeonCreateScreen(): CALLOC radeonScreen struct failed");
+      __driUtilMessage("%s: CALLOC radeonScreen struct failed",
+		       __FUNCTION__);
       return NULL;
    }
+
+   if ( sPriv->drmMinor < 3 ||
+        getenv("RADEON_COMPAT")) {
+	   fprintf( stderr, "Radeon DRI driver:\n\t"
+		    "Compatibility mode for DRM driver version %d.%d.%d\n\t"
+		    "TCL will be disabled, expect reduced performance\n\t"
+		    "(prefer DRM radeon.o 1.3.x or newer)\n\t", 
+		    sPriv->drmMajor, sPriv->drmMinor, sPriv->drmPatch ); 
+   }
+
 
    /* This is first since which regions we map depends on whether or
     * not we are using a PCI card.
@@ -144,16 +171,21 @@ radeonScreenPtr radeonCreateScreen( __DRIscreenPrivate *sPriv )
       }
    }
 
-
+   radeonScreen->chipset = 0;
    switch ( radeonDRIPriv->deviceID ) {
+   default:
+      fprintf(stderr, "unknown chip id, assuming full radeon support\n");
    case PCI_CHIP_RADEON_QD:
    case PCI_CHIP_RADEON_QE:
    case PCI_CHIP_RADEON_QF:
    case PCI_CHIP_RADEON_QG:
-      radeonScreen->chipset = RADEON_CARD_TYPE_RADEON;
-      break;
-   default:
-      radeonScreen->chipset = RADEON_CARD_TYPE_RADEON;
+   case PCI_CHIP_RV200_QW:
+   case PCI_CHIP_RADEON_LW:
+      radeonScreen->chipset |= RADEON_CHIPSET_TCL;
+   case PCI_CHIP_RADEON_QY:
+   case PCI_CHIP_RADEON_QZ:
+   case PCI_CHIP_RADEON_LY:
+   case PCI_CHIP_RADEON_LZ:
       break;
    }
 

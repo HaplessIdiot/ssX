@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.h,v 1.5 2001/01/31 16:14:55 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.h,v 1.6 2002/02/22 21:45:16 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -29,15 +29,15 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /*
  * Author:
- *   Jens Owen <jens@precisioninsight.com>
+ *   Jens Owen <jens@tungstengraphics.com>
  *
  */
 
 #ifndef _GLINT_DRI_H_
 #define _GLINT_DRI_H_
 
-#include <xf86drm.h>
-#include <xf86drmGamma.h>
+#include "xf86drm.h"
+#include "glint_common.h"
 
 typedef struct {
 	unsigned int	GDeltaMode;

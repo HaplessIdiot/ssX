@@ -22,9 +22,9 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *
  * Authors:
- *    Keith Whitwell <keithw@valinux.com>
+ *    Keith Whitwell <keith@tungstengraphics.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgaspan.c,v 1.9 2002/02/22 21:44:55 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgaspan.c,v 1.10 2002/02/26 23:37:35 tsi Exp $ */
 
 #include "mtypes.h"
 #include "mgadd.h"
@@ -32,8 +32,6 @@
 #include "mgaspan.h"
 #include "mgaioctl.h"
 #include "swrast/swrast.h"
-
-#include "xf86drmMga.h"
 
 #define DBG 0
 

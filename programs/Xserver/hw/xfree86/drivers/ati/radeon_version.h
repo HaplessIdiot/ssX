@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_version.h,v 1.3 2002/01/16 16:22:28 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_version.h,v 1.4 2002/04/06 19:06:07 tsi Exp $ */
 /*
  * Copyright 2000 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -26,6 +26,7 @@
 
 #define RADEON_NAME          "RADEON"
 #define RADEON_DRIVER_NAME   "radeon"
+#define R200_DRIVER_NAME     "r200"
 
 #define RADEON_VERSION_MAJOR 4
 #define RADEON_VERSION_MINOR 0

@@ -26,10 +26,10 @@
 
 /*
  * Authors:
- *	Keith Whitwell <keithw@valinux.com>
+ *	Keith Whitwell <keith@tungstengraphics.com>
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_tris.h,v 1.3 2002/02/22 21:45:04 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_tris.h,v 1.4 2002/02/27 00:51:15 dawes Exp $ */
 
 #ifndef TDFX_TRIS_INC
 #define TDFX_TRIS_INC

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_dd.c,v 1.13 2002/02/22 21:44:57 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_dd.c,v 1.14 2002/09/10 00:39:39 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -183,6 +183,7 @@ void r128DDInitExtensions( GLcontext *ctx )
 void r128DDInitDriverFuncs( GLcontext *ctx )
 {
    ctx->Driver.GetBufferSize	= r128DDGetBufferSize;
+   ctx->Driver.ResizeBuffers    = _swrast_alloc_buffers;
    ctx->Driver.GetString	= r128DDGetString;
    ctx->Driver.Finish		= r128DDFinish;
    ctx->Driver.Flush		= r128DDFlush;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.17 2002/09/18 18:14:59 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_video.c,v 1.18 2002/10/12 01:38:08 martin Exp $ */
 
 #include "radeon.h"
 #include "radeon_reg.h"
@@ -60,7 +60,6 @@ typedef struct {
 
    Bool          doubleBuffer;
    unsigned char currentBuffer;
-   FBLinearPtr   linear;
    RegionRec     clip;
    CARD32        colorKey;
    CARD32        videoStatus;
@@ -384,6 +383,7 @@ RADEONResetVideo(ScrnInfoPtr pScrn)
     unsigned char *RADEONMMIO = info->MMIO;
     RADEONPortPrivPtr pPriv = info->adaptor->pPortPrivates[0].ptr;
 
+    if (info->accelOn) info->accel->Sync(pScrn);
 
     RADEONWaitForIdleMMIO(pScrn);
     OUTREG(RADEON_OV0_SCALE_CNTL, 0x80000000);
@@ -677,9 +677,9 @@ RADEONStopVideo(ScrnInfoPtr pScrn, pointer data, Bool cleanup)
 	RADEONWaitForFifo(pScrn, 2);
 	OUTREG(RADEON_OV0_SCALE_CNTL, 0);
      }
-     if(pPriv->linear) {
-	xf86FreeOffscreenLinear(pPriv->linear);
-	pPriv->linear = NULL;
+     if(info->videoLinear) {
+	xf86FreeOffscreenLinear(info->videoLinear);
+	info->videoLinear = NULL;
      }
      pPriv->videoStatus = 0;
   } else {
@@ -800,7 +800,7 @@ RADEONGetPortAttribute(ScrnInfoPtr  pScrn,
     RADEONInfoPtr	info = RADEONPTR(pScrn);
     RADEONPortPrivPtr	pPriv = (RADEONPortPrivPtr)data;
 
-    info->accel->Sync(pScrn);
+    if (info->accelOn) info->accel->Sync(pScrn);
 
     if(attribute == xvAutopaintColorkey)
 	*value = pPriv->autopaint_colorkey;
@@ -1018,7 +1018,7 @@ RADEONDisplayVideo(
 
     RADEONWaitForFifo(pScrn, 2);
     OUTREG(RADEON_OV0_REG_LOAD_CNTL, 1);
-    RADEONWaitForIdleMMIO(pScrn);
+    if (info->accelOn) info->accel->Sync(pScrn);
     while(!(INREG(RADEON_OV0_REG_LOAD_CNTL) & (1 << 3)));
 
     RADEONWaitForFifo(pScrn, 14);
@@ -1194,7 +1194,7 @@ RADEONPutImage(
 	break;
    }
 
-   if(!(pPriv->linear = RADEONAllocateMemory(pScrn, pPriv->linear,
+   if(!(info->videoLinear = RADEONAllocateMemory(pScrn, info->videoLinear,
 		pPriv->doubleBuffer ? (new_size << 1) : new_size)))
    {
 	return BadAlloc;
@@ -1207,7 +1207,7 @@ RADEONPutImage(
    left = (xa >> 16) & ~1;
    npixels = ((((xb + 0xffff) >> 16) + 1) & ~1) - left;
 
-   offset = (pPriv->linear->offset * bpp) + (top * dstPitch);
+   offset = (info->videoLinear->offset * bpp) + (top * dstPitch);
    if(pPriv->doubleBuffer)
 	offset += pPriv->currentBuffer * new_size * bpp;
    dst_start = info->FB + offset;
@@ -1338,9 +1338,9 @@ RADEONVideoTimerCallback(ScrnInfoPtr pScrn, Time now)
 	    }
 	} else {  /* FREE_TIMER */
 	    if(pPriv->freeTime < now) {
-		if(pPriv->linear) {
-		   xf86FreeOffscreenLinear(pPriv->linear);
-		   pPriv->linear = NULL;
+		if(info->videoLinear) {
+		   xf86FreeOffscreenLinear(info->videoLinear);
+		   info->videoLinear = NULL;
 		}
 		pPriv->videoStatus = 0;
 		info->VideoTimerCallback = NULL;

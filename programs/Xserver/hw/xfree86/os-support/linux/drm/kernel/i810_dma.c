@@ -26,15 +26,24 @@
  *
  * Authors: Rickard E. (Rik) Faith <faith@valinux.com>
  *	    Jeff Hartmann <jhartmann@valinux.com>
- *          Keith Whitwell <keith_whitwell@yahoo.com>
+ *          Keith Whitwell <keith@tungstengraphics.com>
  *
  */
 
 #define __NO_VERSION__
 #include "i810.h"
 #include "drmP.h"
+#include "drm.h"
+#include "i810_drm.h"
 #include "i810_drv.h"
 #include <linux/interrupt.h>	/* For task queue support */
+#include <linux/delay.h>
+
+#ifdef DO_MUNMAP_4_ARGS
+#define DO_MUNMAP(m, a, l)	do_munmap(m, a, l, 1)
+#else
+#define DO_MUNMAP(m, a, l)	do_munmap(m, a, l)
+#endif
 
 #define I810_BUF_FREE		2
 #define I810_BUF_CLIENT		1
@@ -127,14 +136,14 @@ static int i810_freelist_put(drm_device_t *dev, drm_buf_t *buf)
 }
 
 static struct file_operations i810_buffer_fops = {
-	open:	 DRM(open),
-	flush:	 DRM(flush),
-	release: DRM(release),
-	ioctl:	 DRM(ioctl),
-	mmap:	 i810_mmap_buffers,
-	read:	 DRM(read),
-	fasync:	 DRM(fasync),
-      	poll:	 DRM(poll),
+	.open	 = DRM(open),
+	.flush	 = DRM(flush),
+	.release = DRM(release),
+	.ioctl	 = DRM(ioctl),
+	.mmap	 = i810_mmap_buffers,
+	.read	 = DRM(read),
+	.fasync  = DRM(fasync),
+      	.poll	 = DRM(poll),
 };
 
 int i810_mmap_buffers(struct file *filp, struct vm_area_struct *vma)
@@ -157,7 +166,7 @@ int i810_mmap_buffers(struct file *filp, struct vm_area_struct *vma)
    	buf_priv->currently_mapped = I810_BUF_MAPPED;
 	unlock_kernel();
 
-	if (remap_page_range(vma->vm_start,
+	if (remap_page_range(DRM_RPR_ARG(vma) vma->vm_start,
 			     VM_OFFSET(vma),
 			     vma->vm_end - vma->vm_start,
 			     vma->vm_page_prot)) return -EAGAIN;
@@ -215,7 +224,7 @@ static int i810_unmap_buffer(drm_buf_t *buf)
 #else
 	down_write( &current->mm->mmap_sem );
 #endif
-	retcode = do_munmap(current->mm,
+	retcode = DO_MUNMAP(current->mm,
 			    (unsigned long)buf_priv->virtual,
 			    (size_t) buf->total);
 #if LINUX_VERSION_CODE <= 0x020402
@@ -303,8 +312,6 @@ static int i810_wait_ring(drm_device_t *dev, int n)
 
 	end = jiffies + (HZ*3);
    	while (ring->space < n) {
-	   	int i;
-
 	   	ring->head = I810_READ(LP_RING + RING_HEAD) & HEAD_ADDR;
 	   	ring->space = ring->head - (ring->tail+8);
 		if (ring->space < 0) ring->space += ring->Size;
@@ -318,8 +325,7 @@ static int i810_wait_ring(drm_device_t *dev, int n)
 		   	DRM_ERROR("lockup\n");
 		   	goto out_wait_ring;
 		}
-
-	   	for (i = 0 ; i < 2000 ; i++) ;
+		udelay(1);
 	}
 
 out_wait_ring:

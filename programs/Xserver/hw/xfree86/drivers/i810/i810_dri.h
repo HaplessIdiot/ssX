@@ -1,19 +1,10 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.h,v 1.7 2002/09/11 00:29:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.h,v 1.8 2002/10/08 20:15:46 dawes Exp $ */
 
 #ifndef _I810_DRI_
 #define _I810_DRI_
 
 #include "xf86drm.h"
-#ifdef HAVE_DRM_COMMAND
 #include "i810_common.h"
-#else
-#include "xf86drmI810.h"
-#ifndef I810_CTX_SETUP_SIZE
-#define I810_CTX_SETUP_SIZE	20
-#define I810_DEST_SETUP_SIZE	10
-#define I810_TEX_SETUP_SIZE	8
-#endif
-#endif
 
 #define I810_MAX_DRAWABLES 256
 

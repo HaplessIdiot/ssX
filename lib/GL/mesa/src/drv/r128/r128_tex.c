@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_tex.c,v 1.11tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_tex.c,v 1.12 2002/09/18 17:11:41 tsi Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -129,7 +129,7 @@ static r128TexObjPtr r128AllocTexObj( struct gl_texture_object *texObj )
    r128TexObjPtr t;
 
    if ( R128_DEBUG & DEBUG_VERBOSE_API ) {
-      fprintf( stderr, "%s( %p, %p )\n", __FUNCTION__, texObj, t );
+      fprintf( stderr, __FUNCTION__"( %p )\n", texObj );
    }
 
    t = (r128TexObjPtr) CALLOC_STRUCT( r128_tex_obj );

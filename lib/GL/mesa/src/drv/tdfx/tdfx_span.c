@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_span.c,v 1.5 2002/04/10 16:20:04 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_span.c,v 1.6 2002/04/12 21:58:36 tsi Exp $ */
 
 /*
  * Original rewrite:
@@ -32,7 +32,7 @@
  * Authors:
  *	Gareth Hughes <gareth@valinux.com>
  *	Brian Paul <brianp@valinux.com>
- *	Keith Whitwell <keithw@valinux.com>
+ *	Keith Whitwell <keith@tungstengraphics.com>
  *
  */
 
@@ -572,30 +572,28 @@ GetFbParams(tdfxContextPtr fxMesa,
  *
  * Recall that x and y are screen coordinates.
  */
+#define GET_FB_DATA(ReadParamsp, type, x, y)                        \
+   (((x) < (ReadParamsp)->firstWrappedX)                            \
+        ? (((type *)((ReadParamsp)->lfbPtr))                        \
+                 [(y) * ((ReadParamsp)->LFBStrideInElts)            \
+                   + (x)])                                          \
+        : (((type *)((ReadParamsp)->lfbWrapPtr))                    \
+                 [((y)) * ((ReadParamsp)->LFBStrideInElts)          \
+                   + ((x) - (ReadParamsp)->firstWrappedX)]))
 #define GET_ORDINARY_FB_DATA(ReadParamsp, type, x, y)               \
-    ((*(type **)(&(ReadParamsp)->lfbPtr))                            \
+    (((type *)((ReadParamsp)->lfbPtr))                              \
                  [(y) * ((ReadParamsp)->LFBStrideInElts)            \
                    + (x)])
 #define GET_WRAPPED_FB_DATA(ReadParamsp, type, x, y)                \
-    ((*(type **)(&(ReadParamsp)->lfbWrapPtr))                        \
-                 [(y) * ((ReadParamsp)->LFBStrideInElts)            \
+    (((type *)((ReadParamsp)->lfbWrapPtr))                          \
+                 [((y)) * ((ReadParamsp)->LFBStrideInElts)          \
                    + ((x) - (ReadParamsp)->firstWrappedX)])
-#define GET_FB_DATA(ReadParamsp, type, x, y)                        \
-    (((x) < (ReadParamsp)->firstWrappedX) ?                         \
-	GET_ORDINARY_FB_DATA(ReadParamsp, type, x, y) :             \
-	GET_WRAPPED_FB_DATA(ReadParamsp, type, x, y))
-
-#define PUT_ORDINARY_FB_DATA(ReadParamsp, type, x, y, value)        \
+#define PUT_FB_DATA(ReadParamsp, type, x, y, value)                        \
+    (GET_FB_DATA(ReadParamsp, type, x, y) = (type)(value))
+#define PUT_ORDINARY_FB_DATA(ReadParamsp, type, x, y, value)              \
     (GET_ORDINARY_FB_DATA(ReadParamsp, type, x, y) = (type)(value))
-#define PUT_WRAPPED_FB_DATA(ReadParamsp, type, x, y, value)         \
+#define PUT_WRAPPED_FB_DATA(ReadParamsp, type, x, y, value)                \
     (GET_WRAPPED_FB_DATA(ReadParamsp, type, x, y) = (type)(value))
-#define PUT_FB_DATA(ReadParamsp, type, x, y, value)                 \
-    do {                                                            \
-	if ((x) < (ReadParamsp)->firstWrappedX)                     \
-	    PUT_ORDINARY_FB_DATA(ReadParamsp, type, x, y, value);   \
-	else                                                        \
-	    PUT_WRAPPED_FB_DATA(ReadParamsp, type, x, y, value);    \
-    } while(0)
 
 static void
 tdfxDDWriteDepthSpan(GLcontext * ctx,

@@ -24,11 +24,11 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810_xmesa.c,v 1.9 2000/12/07 20:26:06 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810screen.c,v 1.1 2002/02/22 21:33:04 dawes Exp $ */
 
 /*
  * Authors:
- *   Keith Whitwell <keithw@precisioninsight.com>
+ *   Keith Whitwell <keith@tungstengraphics.com>
  *
  */
 
@@ -41,13 +41,14 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "matrix.h"
 #include "simple_list.h"
 
+#include "i810screen.h"
+#include "i810_dri.h"
+
 #include "i810state.h"
 #include "i810tex.h"
 #include "i810span.h"
 #include "i810tris.h"
 #include "i810ioctl.h"
-
-#include "i810_dri.h"
 
 
 

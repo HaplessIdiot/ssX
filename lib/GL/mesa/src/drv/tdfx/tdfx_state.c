@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_state.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_state.c,v 1.6 2002/09/11 19:49:08 tsi Exp $ */
 
 /*
  * Original rewrite:
@@ -32,7 +32,7 @@
  * Authors:
  *	Gareth Hughes <gareth@valinux.com>
  *	Brian Paul <brianp@valinux.com>
- *      Keith Whitwell <keithw@valinux.com> (port to 3.5)
+ *      Keith Whitwell <keith@tungstengraphics.com> (port to 3.5)
  *
  */
 
@@ -1008,25 +1008,25 @@ static void tdfxDDSetDrawBuffer( GLcontext *ctx, GLenum mode )
 
    switch( mode) {
    case GL_FRONT_LEFT:
-      fxMesa->DrawBuffer = GR_BUFFER_FRONTBUFFER;
+      fxMesa->DrawBuffer = fxMesa->ReadBuffer = GR_BUFFER_FRONTBUFFER;
       fxMesa->new_state |= TDFX_NEW_RENDER;
       FALLBACK( fxMesa, TDFX_FALLBACK_DRAW_BUFFER, GL_FALSE );
-      return;
+      break;
 
    case GL_BACK_LEFT:
-      fxMesa->DrawBuffer = GR_BUFFER_BACKBUFFER;
+      fxMesa->DrawBuffer = fxMesa->ReadBuffer = GR_BUFFER_BACKBUFFER;
       fxMesa->new_state |= TDFX_NEW_RENDER;
       FALLBACK( fxMesa, TDFX_FALLBACK_DRAW_BUFFER, GL_FALSE );
-      return;
+      break;
 
    case GL_NONE:
       FX_grColorMaskv( ctx, false4 );
       FALLBACK( fxMesa, TDFX_FALLBACK_DRAW_BUFFER, GL_FALSE );
-      return;
+      break;
 
    default:
       FALLBACK( fxMesa, TDFX_FALLBACK_DRAW_BUFFER, GL_TRUE );
-      return;
+      break;
    }
 }
 

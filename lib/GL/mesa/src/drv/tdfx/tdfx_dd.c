@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_dd.c,v 1.8 2002/02/26 23:37:36 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_dd.c,v 1.9 2002/09/10 00:39:39 dawes Exp $ */
 
 /*
  * Original rewrite:
@@ -256,6 +256,7 @@ void tdfxDDInitDriverFuncs( GLcontext *ctx )
 
    ctx->Driver.GetString		= tdfxDDGetString;
    ctx->Driver.GetBufferSize		= tdfxDDGetBufferSize;
+   ctx->Driver.ResizeBuffers            = _swrast_alloc_buffers;
    ctx->Driver.Error			= NULL;
 
    /* Pixel path fallbacks.
@@ -265,7 +266,6 @@ void tdfxDDInitDriverFuncs( GLcontext *ctx )
    ctx->Driver.CopyPixels               = _swrast_CopyPixels;
    ctx->Driver.DrawPixels               = _swrast_DrawPixels;
    ctx->Driver.ReadPixels               = _swrast_ReadPixels;
-   ctx->Driver.ResizeBuffers            = _swrast_alloc_buffers;
 
    /* Accelerated paths
     */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mga_xmesa.c,v 1.15 2002/02/26 23:37:34 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mga_xmesa.c,v 1.16 2002/09/15 21:07:49 dawes Exp $ */
 /*
  * Copyright 2000-2001 VA Linux Systems, Inc.
  * All Rights Reserved.
@@ -23,7 +23,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *
  * Authors:
- *    Keith Whitwell <keithw@valinux.com>
+ *    Keith Whitwell <keith@tungstengraphics.com>
  */
 
 #ifdef GLX_DIRECT_RENDERING
@@ -31,7 +31,8 @@
 #include <X11/Xlibint.h>
 #include <stdio.h>
 
-#include "drm.h"
+#include "xf86drm.h"
+#include "mga_common.h"
 #include "mga_xmesa.h"
 #include "context.h"
 #include "matrix.h"
@@ -269,7 +270,7 @@ mgaCreateContext( Display *dpy, const __GLcontextModes *mesaVis,
    mgaContextPtr mmesa;
    __DRIscreenPrivate *sPriv = driContextPriv->driScreenPriv;
    mgaScreenPrivate *mgaScreen = (mgaScreenPrivate *)sPriv->private;
-   drm_mga_sarea_t *saPriv=(drm_mga_sarea_t*)(((char*)sPriv->pSAREA)+
+   MGASAREAPrivPtr saPriv=(MGASAREAPrivPtr)(((char*)sPriv->pSAREA)+
 					      mgaScreen->sarea_priv_offset);
 
    if (MGA_DEBUG&DEBUG_VERBOSE_DRI)

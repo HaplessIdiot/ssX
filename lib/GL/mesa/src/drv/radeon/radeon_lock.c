@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_lock.c,v 1.4 2002/02/22 21:45:00 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -38,11 +38,46 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "radeon_lock.h"
 #include "radeon_tex.h"
 #include "radeon_state.h"
+#include "radeon_ioctl.h"
 
 #if DEBUG_LOCKING
 char *prevLockFile = NULL;
 int prevLockLine = 0;
 #endif
+
+/* Turn on/off page flipping according to the flags in the sarea:
+ */
+static void
+radeonUpdatePageFlipping( radeonContextPtr rmesa )
+{
+   int use_back;
+
+   if (rmesa->dri.drmMinor < 3)
+      return;
+
+   rmesa->doPageFlip = rmesa->sarea->pfAllowPageFlip;
+
+   use_back = (rmesa->glCtx->Color.DriverDrawBuffer == GL_BACK_LEFT);
+   use_back ^= (rmesa->sarea->pfCurrentPage == 1);
+
+   if ( RADEON_DEBUG & DEBUG_VERBOSE )
+      fprintf(stderr, "%s allow %d current %d\n", __FUNCTION__, 
+	      rmesa->doPageFlip,
+	      rmesa->sarea->pfCurrentPage );
+
+   if ( use_back ) {
+	 rmesa->state.color.drawOffset = rmesa->radeonScreen->backOffset;
+	 rmesa->state.color.drawPitch  = rmesa->radeonScreen->backPitch;
+   } else {
+	 rmesa->state.color.drawOffset = rmesa->radeonScreen->frontOffset;
+	 rmesa->state.color.drawPitch  = rmesa->radeonScreen->frontPitch;
+   }
+
+   RADEON_STATECHANGE( rmesa, ctx );
+   rmesa->hw.ctx.cmd[CTX_RB3D_COLOROFFSET] = rmesa->state.color.drawOffset;
+   rmesa->hw.ctx.cmd[CTX_RB3D_COLORPITCH]  = rmesa->state.color.drawPitch;
+}
+
 
 
 /* Update the hardware state.  This is called if another context has
@@ -73,6 +108,7 @@ void radeonGetLock( radeonContextPtr rmesa, GLuint flags )
    DRI_VALIDATE_DRAWABLE_INFO( rmesa->dri.display, sPriv, dPriv );
 
    if ( rmesa->lastStamp != dPriv->lastStamp ) {
+      radeonUpdatePageFlipping( rmesa );
       radeonSetCliprects( rmesa, rmesa->glCtx->Color.DriverDrawBuffer );
       radeonUpdateViewportOffset( rmesa->glCtx );
       rmesa->lastStamp = dPriv->lastStamp;
@@ -81,24 +117,8 @@ void radeonGetLock( radeonContextPtr rmesa, GLuint flags )
    if ( sarea->ctxOwner != rmesa->dri.hwContext ) {
       sarea->ctxOwner = rmesa->dri.hwContext;
 
-      rmesa->upload_cliprects = 1;
-      if ( rmesa->store.statenr ) {
-	 rmesa->store.state[0].dirty = RADEON_UPLOAD_CONTEXT_ALL;
-	 if ( rmesa->store.texture[0][0] )
-	    rmesa->store.state[0].dirty |= RADEON_UPLOAD_TEX0;
-	 if ( rmesa->store.texture[1][0] )
-	    rmesa->store.state[0].dirty |= RADEON_UPLOAD_TEX1;
-      }
-      else {
-	 rmesa->state.hw.dirty = RADEON_UPLOAD_CONTEXT_ALL;
-	 if ( rmesa->state.texture.unit[0].texobj )
-	    rmesa->state.hw.dirty |= RADEON_UPLOAD_TEX0;
-	 if ( rmesa->state.texture.unit[1].texobj )
-	    rmesa->state.hw.dirty |= RADEON_UPLOAD_TEX1;
-      }
-
       for ( i = 0 ; i < rmesa->texture.numHeaps ; i++ ) {
-	 if ( sarea->texAge[i] != rmesa->texture.age[i] ) {
+	 if ( rmesa->texture.heap[i] && sarea->texAge[i] != rmesa->texture.age[i] ) {
 	    radeonAgeTextures( rmesa, i );
 	 }
       }

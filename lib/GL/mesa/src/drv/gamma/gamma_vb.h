@@ -19,8 +19,8 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  *
- * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
- *           Keith Whitwell, <keithw@valinux.com>
+ * Authors:  Alan Hourihane, <alanh@tungstengraphics.com>
+ *           Keith Whitwell, <keith@tungstengraphics.com>
  *
  * 3DLabs Gamma driver.
  */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/pixel.c,v 1.5 2001/10/28 03:32:27 tsi Exp $ */
+/* $XFree86: xc/lib/GL/glx/pixel.c,v 1.6 2002/02/22 21:32:54 dawes Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -183,7 +183,11 @@ GLint __glImageSize(GLsizei width, GLsizei height, GLsizei depth,
     */
     components = ElementsPerGroup(format,type);
     if (type == GL_BITMAP) {
-	bytes_per_row = (width + 7) >> 3;
+	if (format == GL_COLOR_INDEX || format == GL_STENCIL_INDEX) {
+	    bytes_per_row = (width + 7) >> 3;
+	} else {
+	    return 0;
+	}
     } else {
 	bytes_per_row = BytesPerElement(type) * width;
     }

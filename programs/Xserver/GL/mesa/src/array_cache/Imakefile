@@ -1,24 +1,12 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/array_cache/Imakefile,v 1.4 2002/05/31 18:12:38 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/array_cache/Imakefile,v 1.3 2002/02/28 17:52:18 dawes Exp $
 
-#if DoLoadableServer
-#if !BuildModuleInSubdir
 #define IHaveModules
-#elif !defined(IHaveModules)
-#define IHaveSubdirs
-SUBDIRS = module
-#endif
-#endif
-
 #include <Server.tmpl>
 
 #define NeedAllMesaSrc
 #define NeedToLinkMesaSrc
 #define MesaACBuildDir /**/
-#if !BuildModuleInSubdir || !defined(IHaveModules)
 #include "../../../../../../lib/GL/mesa/src/array_cache/Imakefile.inc"
-#else
-#include "../../../../../../../lib/GL/mesa/src/array_cache/Imakefile.inc"
-#endif
 
          SRCS = $(MESA_AC_SRCS)
          OBJS = $(MESA_AC_OBJS)
@@ -28,13 +16,13 @@ SUBDIRS = module
 		-I$(MESASRCDIR)/src/math \
 		-I$(MESASRCDIR)/include \
                 -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
-                -I$(SERVERSRC)/GL/include -I$(SERVERSRC)/GL/glx \
+                -I../../../include -I../../../glx \
                 -I$(LIBSRC)/GL/include \
                 -I$(XF86SRC) -I$(INCLUDESRC)
 
       DEFINES = $(GLX_DEFINES) /*-DUSE_X86_ASM*/ /*-DUSE_SPARC_ASM*/
 
-#ifdef IHaveModules
+#if DoLoadableServer
 ModuleObjectRule()
 #else
 NormalLibraryObjectRule()
@@ -46,9 +34,3 @@ LintLibraryTarget(dri,$(SRCS))
 NormalLintTarget($(SRCS))
 
 DependTarget()
-
-#ifdef IHaveSubdirs
-MakeSubdirs($(SUBDIRS))
-DependSubdirs($(SUBDIRS))
-#endif
-

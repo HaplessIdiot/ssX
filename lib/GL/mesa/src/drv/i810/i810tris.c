@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810tris.c,v 1.6 2002/02/22 21:33:04 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -28,7 +28,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /*
  * Authors:
- *   Keith Whitwell <keithw@valinux.com>
+ *   Keith Whitwell <keith@tungstengraphics.com>
  */
 
 #include <stdio.h>
@@ -43,6 +43,9 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "swrast_setup/swrast_setup.h"
 #include "tnl/t_context.h"
 #include "tnl/t_pipeline.h"
+
+#include "i810screen.h"
+#include "i810_dri.h"
 
 #include "i810tris.h"
 #include "i810state.h"
@@ -513,15 +516,19 @@ static void i810FastRenderClippedPoly( GLcontext *ctx, const GLuint *elts,
    int i,j;
 
    for (i = 2 ; i < n ; i++) {
-      COPY_DWORDS( j, vb, vertsize, start );
       COPY_DWORDS( j, vb, vertsize, V(elts[i-1]) );
       COPY_DWORDS( j, vb, vertsize, V(elts[i]) );
+      COPY_DWORDS( j, vb, vertsize, start );
    }
 }
 
 /**********************************************************************/
 /*                    Choose render functions                         */
 /**********************************************************************/
+
+/***********************************************************************
+ *                    Rasterization fallback helpers                   *
+ ***********************************************************************/
 
 
 

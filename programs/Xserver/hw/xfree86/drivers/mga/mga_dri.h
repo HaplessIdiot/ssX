@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.h,v 1.5 2001/03/21 17:02:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.h,v 1.6 2001/04/10 16:08:01 dawes Exp $ */
 
 /*
  * Copyright 2000 VA Linux Systems Inc., Fremont, California.
@@ -24,7 +24,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *
  * Authors:
- *   Keith WHitwell <keithw@valinux.com>
+ *   Keith Whitwell <keith@tungstengraphics.com>
  *   Gareth Hughes <gareth@valinux.com>
  */
 
@@ -32,7 +32,7 @@
 #define __MGA_DRI_H__
 
 #include "xf86drm.h"
-#include "xf86drmMga.h"
+#include "mga_common.h"
 
 #define MGA_DEFAULT_AGP_MODE     1
 #define MGA_MAX_AGP_MODE         4

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.67tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.68 2002/10/08 22:14:04 tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -284,18 +284,16 @@ static const char *drmSymbols[] = {
     "drmAgpUnbind",
     "drmAgpVendorId",
     "drmAvailable",
+    "drmCommandNone",
+    "drmCommandRead",
+    "drmCommandWrite",
+    "drmCommandWriteRead",
     "drmFreeVersion",
+    "drmGetLibVersion",
     "drmGetVersion",
     "drmMap",
     "drmMapBufs",
     "drmDMA",
-    "drmR128CleanupCCE",
-    "drmR128InitCCE",
-    "drmR128ResetCCE",
-    "drmR128StartCCE",
-    "drmR128StopCCE",
-    "drmR128WaitForIdleCCE",
-    "drmR128FlushIndirectBuffer",
     "drmScatterGatherAlloc",
     "drmScatterGatherFree",
     "drmUnmap",

@@ -22,7 +22,7 @@
  *
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfxvb.c,v 1.7 2000/11/08 05:02:43 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_vb.c,v 1.2 2002/02/22 21:45:04 dawes Exp $ */
  
 #include "glheader.h"
 #include "mtypes.h"
@@ -303,9 +303,9 @@ void tdfxChooseVertexState( GLcontext *ctx )
    tdfxContextPtr fxMesa = TDFX_CONTEXT( ctx );
    GLuint ind = TDFX_XYZ_BIT|TDFX_RGBA_BIT;
 
-   if (ctx->Texture._ReallyEnabled & 0xf0) 
+   if (ctx->Texture._ReallyEnabled & TEXTURE1_ANY) 
       ind |= TDFX_W_BIT|TDFX_TEX1_BIT|TDFX_TEX0_BIT;
-   else if (ctx->Texture._ReallyEnabled & 0xf) 
+   else if (ctx->Texture._ReallyEnabled & TEXTURE0_ANY) 
       ind |= TDFX_W_BIT|TDFX_TEX0_BIT;
    else if (ctx->Fog.Enabled)
       ind |= TDFX_W_BIT;

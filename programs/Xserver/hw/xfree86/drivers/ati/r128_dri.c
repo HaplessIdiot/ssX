@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.23tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.24 2002/10/08 22:14:04 tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -767,6 +767,9 @@ static int R128DRIKernelInit(R128InfoPtr info, ScreenPtr pScreen)
 {
     drmR128Init drmInfo;
 
+    memset( &drmInfo, 0, sizeof(drmR128Init) );
+
+    drmInfo.func                = DRM_R128_INIT_CCE;
     drmInfo.sarea_priv_offset   = sizeof(XF86DRISAREARec);
     drmInfo.is_pci              = info->IsPCI;
     drmInfo.cce_mode            = info->CCEMode;
@@ -794,7 +797,9 @@ static int R128DRIKernelInit(R128InfoPtr info, ScreenPtr pScreen)
     drmInfo.buffers_offset      = info->bufHandle;
     drmInfo.agp_textures_offset = info->agpTexHandle;
 
-    if (drmR128InitCCE(info->drmFD, &drmInfo) < 0) return FALSE;
+    if (drmCommandWrite(info->drmFD, DRM_R128_INIT,
+                        &drmInfo, sizeof(drmR128Init)) < 0)
+        return FALSE;
 
     return TRUE;
 }
@@ -994,6 +999,42 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
 	return FALSE;
     }
 
+    /* Check the DRM lib version.
+       drmGetLibVersion was not supported in version 1.0, so check for
+       symbol first to avoid possible crash or hang.
+     */
+    if (xf86LoaderCheckSymbol("drmGetLibVersion")) {
+        version = drmGetLibVersion(info->drmFD);
+    }
+    else {
+        /* drmlib version 1.0.0 didn't have the drmGetLibVersion
+           entry point.  Fake it by allocating a version record
+           via drmGetVersion and changing it to version 1.0.0
+         */
+        version = drmGetVersion(info->drmFD);
+        version->version_major      = 1;
+        version->version_minor      = 0;
+        version->version_patchlevel = 0;
+    }
+
+    if (version) {
+	if (version->version_major != 1 ||
+	    version->version_minor < 1) {
+            /* incompatible drm library version */
+            xf86DrvMsg(pScreen->myNum, X_ERROR,
+		"[dri] R128DRIScreenInit failed because of a version mismatch.\n"
+		"[dri] libdrm.a module version is %d.%d.%d but version 1.1.x is needed.\n"
+		"[dri] Disabling DRI.\n",
+                version->version_major,
+                version->version_minor,
+                version->version_patchlevel);
+            drmFreeVersion(version);
+	    R128DRICloseScreen(pScreen);
+            return FALSE;
+	}
+	drmFreeVersion(version);
+    }
+
     /* Check the r128 DRM version */
     version = drmGetVersion(info->drmFD);
     if (version) {
@@ -1128,6 +1169,7 @@ void R128DRICloseScreen(ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     R128InfoPtr info = R128PTR(pScrn);
+    drmR128Init drmInfo;
 
 				/* Stop the CCE if it is still in use */
     if (info->directRenderingEnabled) {
@@ -1141,7 +1183,10 @@ void R128DRICloseScreen(ScreenPtr pScreen)
     }
 
 				/* De-allocate all kernel resources */
-    drmR128CleanupCCE(info->drmFD);
+    memset(&drmInfo, 0, sizeof(drmR128Init));
+    drmInfo.func = DRM_R128_CLEANUP_CCE;
+    drmCommandWrite(info->drmFD, DRM_R128_INIT,
+                    &drmInfo, sizeof(drmR128Init));
 
 				/* De-allocate all AGP resources */
     if (info->agpTex) {

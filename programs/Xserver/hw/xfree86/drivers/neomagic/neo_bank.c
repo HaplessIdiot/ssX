@@ -22,14 +22,14 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_bank.c,v 1.2 2000/04/04 19:25:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_bank.c,v 1.3 2002/01/25 21:56:05 tsi Exp $ */
 
 /*
  * The original Precision Insight driver for
  * XFree86 v.3.3 has been sponsored by Red Hat.
  *
  * Authors:
- *   Jens Owen (jens@precisioninsight.com)
+ *   Jens Owen (jens@tungstengraphics.com)
  *   Kevin E. Martin (kevin@precisioninsight.com)
  *
  * Port to Xfree86 v.4.0

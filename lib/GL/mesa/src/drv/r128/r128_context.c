@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_context.c,v 1.5 2001/01/08 01:07:20 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_context.c,v 1.7 2002/02/22 21:44:57 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -218,6 +218,7 @@ void r128DestroyContext( __DRIcontextPrivate *driContextPriv  )
                r128DestroyTexObj( rmesa, t );
             }
             mmDestroy( rmesa->texHeap[i] );
+	    rmesa->texHeap[i] = NULL;
          }
 
          foreach_s ( t, next_t, &rmesa->SwappedOut ) {

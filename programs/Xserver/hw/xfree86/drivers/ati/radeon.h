@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.28 2002/09/18 18:14:58 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.29 2002/10/12 01:38:07 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -31,7 +31,7 @@
  * Authors:
  *   Kevin E. Martin <martin@xfree86.org>
  *   Rickard E. Faith <faith@valinux.com>
- *   Alan Hourihane <ahourihane@valinux.com>
+ *   Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
  */
 
@@ -66,9 +66,10 @@
 #include "picturestr.h"
 #endif
 
-#define RADEON_DEBUG    0       /* Turn off debugging output                 */
-#define RADEON_TIMEOUT  2000000 /* Fall out of wait loops after this count   */
-#define RADEON_MMIOSIZE 0x80000
+#define RADEON_DEBUG            0 /* Turn off debugging output               */
+#define RADEON_IDLE_RETRY      16 /* Fall out of idle loops after this count */
+#define RADEON_TIMEOUT    2000000 /* Fall out of wait loops after this count */
+#define RADEON_MMIOSIZE   0x80000
 
 #define RADEON_VBIOS_SIZE 0x00010000
 #define RADEON_USE_RMX 0x80000000 /* mode flag for using RMX 
@@ -394,6 +395,7 @@ typedef struct {
 
     RADEONFBLayout    CurrentLayout;
 #ifdef XF86DRI
+    Bool              noBackBuffer;
     Bool              directRenderingEnabled;
     DRIInfoPtr        pDRIInfo;
     int               drmFD;
@@ -412,12 +414,16 @@ typedef struct {
     unsigned char     *PCI;             /* Map */
 
     Bool              depthMoves;       /* Enable depth moves -- slow! */
+    Bool              allowPageFlip;    /* Enable 3d page flipping */
+    Bool              have3DWindows;    /* Are there any 3d clients? */
+    int               drmMinor;
 
     drmSize           agpSize;
     drmHandle         agpMemHandle;     /* Handle from drmAgpAlloc */
     unsigned long     agpOffset;
     unsigned char     *AGP;             /* Map */
     int               agpMode;
+    int               agpFastWrite;
 
     CARD32            pciCommand;
 
@@ -485,6 +491,12 @@ typedef struct {
 
     CARD32            dst_pitch_offset;
 
+				/* offscreen memory management */
+    int               backLines;
+    FBAreaPtr         backArea;
+    int               depthTexLines;
+    FBAreaPtr         depthTexArea;
+
 				/* Saved scissor values */
     CARD32            sc_left;
     CARD32            sc_right;
@@ -496,16 +508,26 @@ typedef struct {
 
     CARD32            aux_sc_cntl;
 
+    int               irq;
+    CARD32            gen_int_cntl;
+
 #ifdef PER_CONTEXT_SAREA
-    int 	      perctx_sarea_size;
+    int               perctx_sarea_size;
 #endif
 #endif
 
+				/* XVideo */
     XF86VideoAdaptorPtr adaptor;
     void              (*VideoTimerCallback)(ScrnInfoPtr, Time);
+    FBLinearPtr       videoLinear;
     int               videoKey;
+
+				/* general */
     Bool              showCache;
     OptionInfoPtr     Options;
+#ifdef XFree86LOADER
+    XF86ModReqInfo    xaaReq;
+#endif
 } RADEONInfoRec, *RADEONInfoPtr;
 
 #define RADEONWaitForFifo(pScrn, entries)				\
@@ -520,6 +542,9 @@ extern void        RADEONWaitForIdleMMIO(ScrnInfoPtr pScrn);
 #ifdef XF86DRI
 extern void        RADEONWaitForIdleCP(ScrnInfoPtr pScrn);
 #endif
+
+extern void        RADEONDoAdjustFrame(ScrnInfoPtr pScrn, int x, int y,
+				       int clone);
 
 extern void        RADEONEngineReset(ScrnInfoPtr pScrn);
 extern void        RADEONEngineFlush(ScrnInfoPtr pScrn);
@@ -549,11 +574,12 @@ extern Bool        RADEONDRIFinishScreenInit(ScreenPtr pScreen);
 extern drmBufPtr   RADEONCPGetBuffer(ScrnInfoPtr pScrn);
 extern void        RADEONCPFlushIndirect(ScrnInfoPtr pScrn, int discard);
 extern void        RADEONCPReleaseIndirect(ScrnInfoPtr pScrn);
+extern int         RADEONCPStop(ScrnInfoPtr pScrn,  RADEONInfoPtr info);
 
 
 #define RADEONCP_START(pScrn, info)					\
 do {									\
-    int _ret = drmRadeonStartCP(info->drmFD);				\
+    int _ret = drmCommandNone(info->drmFD, DRM_RADEON_CP_START);	\
     if (_ret) {								\
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,				\
 		   "%s: CP start %d\n", __FUNCTION__, _ret);		\
@@ -563,7 +589,7 @@ do {									\
 
 #define RADEONCP_STOP(pScrn, info)					\
 do {									\
-    int _ret = drmRadeonStopCP(info->drmFD);				\
+    int _ret = RADEONCPStop(pScrn, info);				\
     if (_ret) {								\
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,				\
 		   "%s: CP stop %d\n", __FUNCTION__, _ret);		\
@@ -575,7 +601,7 @@ do {									\
 #define RADEONCP_RESET(pScrn, info)					\
 do {									\
     if (RADEONCP_USE_RING_BUFFER(info->CPMode)) {			\
-	int _ret = drmRadeonResetCP(info->drmFD);			\
+	int _ret = drmCommandNone(info->drmFD, DRM_RADEON_CP_RESET);	\
 	if (_ret) {							\
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,			\
 		       "%s: CP reset %d\n", __FUNCTION__, _ret);	\
@@ -609,7 +635,7 @@ do {									\
 
 #define RADEON_VERBOSE	0
 
-#define RING_LOCALS	CARD32 *__head; int __count;
+#define RING_LOCALS	CARD32 *__head = NULL; int __count = 0
 
 #define BEGIN_RING(n) do {						\
     if (RADEON_VERBOSE) {						\

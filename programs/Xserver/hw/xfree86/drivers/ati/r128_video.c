@@ -1,10 +1,10 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.20 2001/10/02 11:44:16 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.21 2002/06/04 23:04:51 dawes Exp $ */
 
 #include "r128.h"
 #include "r128_reg.h"
 
 #ifdef XF86DRI
-#include "xf86drmR128.h"
+#include "r128_common.h"
 #include "r128_sarea.h"
 #endif
 
@@ -509,6 +509,7 @@ R128DMA(
     int err=-1, i, idx, offset, hpass, passes, srcpassbytes, dstpassbytes;
     int sizes[MAXPASSES], list[MAXPASSES];
     drmDMAReq req;
+    drmR128Blit blit;
 
     /* Verify conditions and bail out as early as possible */
     if (!info->directRenderingEnabled || !info->DMAForXv)
@@ -567,8 +568,17 @@ R128DMA(
 	    }
 	}
 
-	if ((err = drmR128TextureBlit(info->drmFD, idx, offset, dstPitch,
-		  (R128_DATATYPE_CI8 >> 16), (offset % 32), 0, w, hpass)) < 0)
+        blit.idx = idx;
+        blit.offset = offset;
+        blit.pitch = dstPitch;
+        blit.format = (R128_DATATYPE_CI8 >> 16);
+        blit.x = (offset % 32);
+        blit.y = 0;
+        blit.width = w;
+        blit.height = hpass;
+
+	if ((err = drmCommandWrite(info->drmFD, DRM_R128_BLIT,
+                                   &blit, sizeof(drmR128Blit))) < 0)
 	    break;
     }
 

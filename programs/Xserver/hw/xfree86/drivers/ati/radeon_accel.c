@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.28 2002/09/19 03:38:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.29 2002/10/12 01:38:07 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -31,7 +31,7 @@
  * Authors:
  *   Kevin E. Martin <martin@xfree86.org>
  *   Rickard E. Faith <faith@valinux.com>
- *   Alan Hourihane <ahourihane@valinux.com>
+ *   Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
  * Credits:
  *
@@ -405,6 +405,48 @@ void RADEONEngineInit(ScrnInfoPtr pScrn)
 #undef OUT_ACCEL_REG
 #undef FINISH_ACCEL
 
+/* Stop the CP */
+int RADEONCPStop(ScrnInfoPtr pScrn, RADEONInfoPtr info)
+{
+    drmRadeonCPStop  stop;
+    int              ret, i;
+
+    stop.flush = 1;
+    stop.idle  = 1;
+
+    ret = drmCommandWrite(info->drmFD, DRM_RADEON_CP_STOP, &stop, 
+			  sizeof(drmRadeonCPStop));
+
+    if (ret == 0) {
+	return 0;
+    } else if (errno != EBUSY) {
+	return -errno;
+    }
+
+    stop.flush = 0;
+ 
+    i = 0;
+    do {
+	ret = drmCommandWrite(info->drmFD, DRM_RADEON_CP_STOP, &stop, 
+			      sizeof(drmRadeonCPStop));
+    } while (ret && errno == EBUSY && i++ < RADEON_IDLE_RETRY);
+
+    if (ret == 0) {
+	return 0;
+    } else if (errno != EBUSY) {
+	return -errno;
+    }
+
+    stop.idle = 0;
+
+    if (drmCommandWrite(info->drmFD, DRM_RADEON_CP_STOP,
+			&stop, sizeof(drmRadeonCPStop))) {
+	return -errno;
+    } else {
+	return 0;
+    }
+}
+
 /* Get an indirect buffer for the CP 2D acceleration commands  */
 drmBufPtr RADEONCPGetBuffer(ScrnInfoPtr pScrn)
 {
@@ -472,9 +514,10 @@ drmBufPtr RADEONCPGetBuffer(ScrnInfoPtr pScrn)
 /* Flush the indirect buffer to the kernel for submission to the card */
 void RADEONCPFlushIndirect(ScrnInfoPtr pScrn, int discard)
 {
-    RADEONInfoPtr  info   = RADEONPTR(pScrn);
-    drmBufPtr      buffer = info->indirectBuffer;
-    int            start  = info->indirectStart;
+    RADEONInfoPtr      info   = RADEONPTR(pScrn);
+    drmBufPtr          buffer = info->indirectBuffer;
+    int                start  = info->indirectStart;
+    drmRadeonIndirect  indirect;
 
     if (!buffer) return;
     if (start == buffer->used && !discard) return;
@@ -483,8 +526,14 @@ void RADEONCPFlushIndirect(ScrnInfoPtr pScrn, int discard)
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Flushing buffer %d\n",
 		   buffer->idx);
     }
-    drmRadeonFlushIndirectBuffer(info->drmFD, buffer->idx,
-				 start, buffer->used, discard);
+
+    indirect.idx     = buffer->idx;
+    indirect.start   = start;
+    indirect.end     = buffer->used;
+    indirect.discard = discard;
+
+    drmCommandWriteRead(info->drmFD, DRM_RADEON_INDIRECT,
+			&indirect, sizeof(drmRadeonIndirect));
 
     if (discard) {
 	info->indirectBuffer = RADEONCPGetBuffer(pScrn);
@@ -502,9 +551,10 @@ void RADEONCPFlushIndirect(ScrnInfoPtr pScrn, int discard)
 /* Flush and release the indirect buffer */
 void RADEONCPReleaseIndirect(ScrnInfoPtr pScrn)
 {
-    RADEONInfoPtr  info   = RADEONPTR(pScrn);
-    drmBufPtr      buffer = info->indirectBuffer;
-    int            start  = info->indirectStart;
+    RADEONInfoPtr      info   = RADEONPTR(pScrn);
+    drmBufPtr          buffer = info->indirectBuffer;
+    int                start  = info->indirectStart;
+    drmRadeonIndirect  indirect;
 
     info->indirectBuffer = NULL;
     info->indirectStart  = 0;
@@ -515,8 +565,14 @@ void RADEONCPReleaseIndirect(ScrnInfoPtr pScrn)
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Releasing buffer %d\n",
 		   buffer->idx);
     }
-    drmRadeonFlushIndirectBuffer(info->drmFD, buffer->idx,
-				 start, buffer->used, 1);
+
+    indirect.idx     = buffer->idx;
+    indirect.start   = start;
+    indirect.end     = buffer->used;
+    indirect.discard = 1;
+
+    drmCommandWriteRead(info->drmFD, DRM_RADEON_INDIRECT,
+			&indirect, sizeof(drmRadeonIndirect));
 }
 #endif
 

@@ -23,10 +23,10 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfxtris.c,v 1.5 2000/09/24 13:51:04 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_tris.c,v 1.3 2002/02/22 21:45:04 dawes Exp $ */
 
 /* Authors:
- *    Keith Whitwell <keithw@valinux.com>
+ *    Keith Whitwell <keith@tungstengraphics.com>
  */
 
 #include <stdio.h>
@@ -901,7 +901,7 @@ static void tdfxFastRenderClippedPoly( GLcontext *ctx, const GLuint *elts,
    int i;
 
    for (i = 2 ; i < n ; i++) {
-      fxMesa->Glide.grDrawTriangle( start, VERT(elts[i-1]), VERT(elts[i]) );
+      fxMesa->Glide.grDrawTriangle( VERT(elts[i-1]), VERT(elts[i]), start );
    }
 }
 
@@ -1167,24 +1167,6 @@ static void tdfxRenderFinish( GLcontext *ctx )
 }
 
 
-
-/*
- * These functions are used when we're software rendering, and
- * lock/unlock the hardware (for span reading/writing).  
- */
-static void tdfxSwSetupStart( GLcontext *ctx )
-{
-   tdfxContextPtr fxMesa = TDFX_CONTEXT(ctx);
-   LOCK_HARDWARE(fxMesa);
-}
-
-static void tdfxSwSetupFinish( GLcontext *ctx )
-{
-   tdfxContextPtr fxMesa = TDFX_CONTEXT(ctx);
-   UNLOCK_HARDWARE(fxMesa);
-}
-
-
 /**********************************************************************/
 /*               Manage total rasterization fallbacks                 */
 /**********************************************************************/
@@ -1257,7 +1239,6 @@ void tdfxFallback( GLcontext *ctx, GLuint bit, GLboolean mode )
 void tdfxDDInitTriFuncs( GLcontext *ctx )
 {
    TNLcontext *tnl = TNL_CONTEXT(ctx);
-   SScontext *swsetup = SWSETUP_CONTEXT(ctx);
    tdfxContextPtr fxMesa = TDFX_CONTEXT(ctx);
    static int firsttime = 1;
 
@@ -1275,10 +1256,6 @@ void tdfxDDInitTriFuncs( GLcontext *ctx )
    tnl->Driver.Render.ResetLineStipple  = _swrast_ResetLineStipple;
    tnl->Driver.Render.BuildVertices     = tdfxBuildVertices;
    tnl->Driver.Render.Multipass		= NULL;
-
-
-   swsetup->Driver.Start = tdfxSwSetupStart;
-   swsetup->Driver.Finish = tdfxSwSetupFinish;
 
    (void) tdfx_print_vertex;
 }

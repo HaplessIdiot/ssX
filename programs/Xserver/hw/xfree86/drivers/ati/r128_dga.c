@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dga.c,v 1.7 2002/05/14 20:31:44 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dga.c,v 1.8 2002/05/29 22:48:38 alanh Exp $ */
 /*
  * Authors:
  *   Ove Kåven <ovek@transgaming.com>,
@@ -16,7 +16,7 @@
 #include "dgaproc.h"
 
 #ifdef XF86DRI
-#include "xf86drmR128.h"
+#include "r128_common.h"
 #endif
 
 static Bool R128_OpenFramebuffer(ScrnInfoPtr, char **, unsigned char **,
@@ -207,7 +207,7 @@ R128DGAInit(ScreenPtr pScreen)
    info->DGAFuncs.BlitTransRect      = NULL;
 
    if (info->accel) {
-      info->DGAFuncs.Sync            = R128WaitForIdle;
+      info->DGAFuncs.Sync            = info->accel->Sync;
       if (info->accel->SetupForSolidFill &&
 	  info->accel->SubsequentSolidFillRect)
 	info->DGAFuncs.FillRect      = R128_FillRect;

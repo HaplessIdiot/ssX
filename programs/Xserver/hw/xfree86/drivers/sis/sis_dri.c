@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.21 2002/04/04 14:05:48 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.22 2002/04/06 18:16:06 tsi Exp $ */
 
 /* modified from tdfx_dri.c, mga_dri.c */
 
@@ -15,7 +15,7 @@
 
 #include "sis.h"
 #include "sis_dri.h"
-#include "xf86drmSiS.h"
+#include "xf86drmCompat.h"
 
 #define BR(x)   (0x8200 | (x) << 2)
 #define SiSIdle \

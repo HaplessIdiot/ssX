@@ -1,8 +1,8 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_lock.c,v 1.2 2002/02/26 23:37:33 tsi Exp $ */
 
 #include "gamma_context.h"
 
-#ifdef DEBUG_LOCKING
+#if DEBUG_LOCKING
 char *prevLockFile = NULL;
 int prevLockLine = 0;
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgabuffers.h,v 1.5tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgabuffers.h,v 1.6 2002/09/11 19:49:07 tsi Exp $ */
 /*
  * Copyright 2000-2001 VA Linux Systems, Inc.
  * All Rights Reserved.
@@ -23,7 +23,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *
  * Authors:
- *    Keith Whitwell <keithw@valinux.com>
+ *    Keith Whitwell <keith@tungstengraphics.com>
  */
 
 #ifndef MGA_BUFFERS_H

@@ -27,7 +27,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /*
  * Authors:
- *   Keith Whitwell <keithw@precisioninsight.com>
+ *   Keith Whitwell <keith@tungstengraphics.com>
  *
  */
 

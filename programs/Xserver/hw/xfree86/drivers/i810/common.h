@@ -27,11 +27,11 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.31 2002/05/10 12:50:05 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/common.h,v 1.1 2002/09/11 00:29:31 dawes Exp $ */
 
 /*
  * Authors:
- *   Keith Whitwell <keithw@precisioninsight.com>
+ *   Keith Whitwell <keith@tungstengraphics.com>
  *   David Dawes <dawes@tungstengraphics.com>
  *
  */

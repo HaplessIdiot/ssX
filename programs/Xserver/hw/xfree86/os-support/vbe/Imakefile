@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/Imakefile,v 1.10 2001/08/17 22:08:15 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/Imakefile,v 1.11 2002/08/06 13:46:27 dawes Exp $
 
 
 /*
@@ -20,6 +20,8 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(SERVERSRC)/mi \
            -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
 	   -I$(XF86SRC)/int10 -I$(XF86SRC)/ddc \
 	   -I$(XF86SRC)/i2c
+
+DEFINES = 
 
 ModuleObjectRule()
 

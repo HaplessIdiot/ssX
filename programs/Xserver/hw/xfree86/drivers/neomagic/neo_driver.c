@@ -30,14 +30,14 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * Copyright 2002 Shigehiro Nomura
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.61 2002/04/04 14:05:44 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.63 2002/09/16 18:05:57 eich Exp $ */
 
 /*
  * The original Precision Insight driver for
  * XFree86 v.3.3 has been sponsored by Red Hat.
  *
  * Authors:
- *   Jens Owen (jens@precisioninsight.com)
+ *   Jens Owen (jens@tungstengraphics.com)
  *   Kevin E. Martin (kevin@precisioninsight.com)
  *
  * Port to Xfree86 v.4.0

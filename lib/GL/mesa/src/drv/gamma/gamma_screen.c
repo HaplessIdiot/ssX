@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  *
- * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
+ * Authors:  Alan Hourihane, <alanh@tungstengraphics.com>
  *
  */
 

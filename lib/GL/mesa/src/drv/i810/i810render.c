@@ -1,5 +1,3 @@
-/* $Id$ */
-
 /*
  * Intel i810 DRI driver for Mesa 3.5
  *
@@ -24,7 +22,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  * Author:
- *    Keith Whitwell <keithw@valinux.com>
+ *    Keith Whitwell <keith@tungstengraphics.com>
  */
 
 
@@ -41,6 +39,9 @@
 #include "mmath.h"
 
 #include "tnl/t_context.h"
+
+#include "i810screen.h"
+#include "i810_dri.h"
 
 #include "i810context.h"
 #include "i810tris.h"

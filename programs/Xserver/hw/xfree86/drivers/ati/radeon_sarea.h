@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_sarea.h,v 1.3 2002/02/22 21:45:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_sarea.h,v 1.4 2002/04/24 16:20:41 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario,
  *                VA Linux Systems Inc., Fremont, California.
@@ -168,23 +168,6 @@ typedef struct {
     /* Setup state */
     unsigned int se_cntl_status;
 
-#ifdef TCL_ENABLE
-    /* TCL state */
-    radeon_color_regs_t se_tcl_material_emmissive;
-    radeon_color_regs_t se_tcl_material_ambient;
-    radeon_color_regs_t se_tcl_material_diffuse;
-    radeon_color_regs_t se_tcl_material_specular;
-    unsigned int se_tcl_shininess;
-    unsigned int se_tcl_output_vtx_fmt;
-    unsigned int se_tcl_output_vtx_sel;
-    unsigned int se_tcl_matrix_select_0;
-    unsigned int se_tcl_matrix_select_1;
-    unsigned int se_tcl_ucp_vert_blend_ctl;
-    unsigned int se_tcl_texture_proc_ctl;
-    unsigned int se_tcl_light_model_ctl;
-    unsigned int se_tcl_per_light_ctl[4];
-#endif
-
     /* Misc state */
     unsigned int re_top_left;
     unsigned int re_misc;
@@ -198,13 +181,7 @@ typedef struct {
     unsigned int pp_txcblend;
     unsigned int pp_txablend;
     unsigned int pp_tfactor;
-
     unsigned int pp_border_color;
-
-#ifdef CUBIC_ENABLE
-    unsigned int pp_cubic_faces;
-    unsigned int pp_cubic_offset[5];
-#endif
 } radeon_texture_regs_t;
 
 typedef struct {
@@ -252,6 +229,9 @@ typedef struct {
     int texAge[RADEON_NR_TEX_HEAPS];
 
     int ctxOwner;		/* last context to upload state */
+    int pfAllowPageFlip;	/* set by the 2d driver, read by the client */
+    int pfCurrentPage;		/* set by kernel, read by others */
+    int crtc2_base;		/* for pageflipping with CloneMode */
 } RADEONSAREAPriv, *RADEONSAREAPrivPtr;
 
 #endif

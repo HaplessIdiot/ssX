@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  *
- * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
+ * Authors:  Alan Hourihane, <alanh@tungstengraphics.com>
  *
  * 3DLabs Gamma driver.
  *
@@ -74,7 +74,7 @@ GLboolean gammaCreateContext( Display *dpy, const __GLcontextModes *glVisual,
    __DRIscreenPrivate *sPriv = driContextPriv->driScreenPriv;
    gammaContextPtr gmesa;
    gammaScreenPtr gammascrn;
-   drm_gamma_sarea_t *saPriv=(drm_gamma_sarea_t *)(((char*)sPriv->pSAREA)+
+   GLINTSAREADRIPtr saPriv=(GLINTSAREADRIPtr)(((char*)sPriv->pSAREA)+
 						 sizeof(XF86DRISAREARec));
 
    gmesa = (gammaContextPtr) CALLOC( sizeof(*gmesa) );
