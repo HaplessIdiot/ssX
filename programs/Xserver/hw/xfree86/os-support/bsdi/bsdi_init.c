@@ -1,5 +1,5 @@
 /* $XConsortium: bsdi_init.c,v 1.2 94/10/12 20:46:00 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsdi/bsdi_init.c,v 3.0 1994/09/23 10:24:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsdi/bsdi_init.c,v 3.2 1995/01/28 17:04:32 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -33,11 +33,25 @@
 
 #include "compiler.h"
 
+#include <sys/param.h>
 #include "xf86.h"
 #include "xf86Procs.h"
 #include "xf86_OSlib.h"
 
+extern Bool RunFromSmartParent;
+
 static Bool KeepTty = FALSE;
+
+#if BSD >= 199306
+static void NonBlockConsoleOff()
+{
+    register int i;
+
+    i = fcntl(2, F_GETFL, 0);
+    if (i >= 0)
+        (void) fcntl(2, F_SETFL, i & ~FNDELAY);
+}
+#endif
 
 void xf86OpenConsole()
 {
@@ -53,6 +67,17 @@ void xf86OpenConsole()
 
 	if (!KeepTty)
 	{
+#if BSD >= 199306
+	    if (RunFromSmartParent) {
+              if (atexit(NonBlockConsoleOff))
+                ErrorF("InitOutput: can't register NBIO exit handler\n");
+	      i = fcntl(2, F_GETFL, 0);
+	      if (i >= 0)
+	        i = fcntl(2, F_SETFL, i | FNDELAY);
+	      if (i < 0)
+	        ErrorF("InitOutput: can't put stderr in non-block mode\n");
+	    }
+#else
 	    /*
 	     * detaching the controlling tty solves problems of kbd character
 	     * loss.  This is not interesting for CO driver, because it is 
@@ -64,6 +89,7 @@ void xf86OpenConsole()
 		ioctl(i,TIOCNOTTY,(char *)0);
 		close(i);
 	    }
+#endif
 	}
 
 	if ((xf86Info.consoleFd = open("/dev/kbd", O_RDWR|O_NDELAY,0)) < 0)

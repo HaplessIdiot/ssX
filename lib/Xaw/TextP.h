@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextP.h,v 1.53 94/04/17 20:13:08 kaleb Exp $
+* $XConsortium: TextP.h,v 1.54 95/06/14 15:07:27 kaleb Exp $
 */
 
 
@@ -220,8 +220,6 @@ typedef struct _TextPart {
     /* private state, shared w/Source and Sink */
     Boolean	    redisplay_needed; /* in SetValues */
     XawTextSelectionSalt    *salt2;	     /* salted away selections */
-
-    String	internal_selection; /* stores the selection for later pastage */
 } TextPart;
 
 /*************************************************************

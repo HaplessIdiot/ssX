@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.111 95/05/05 17:44:08 kaleb Exp $
-XCOMM $XFree86: xc/lib/Xt/Imakefile,v 3.0 1994/06/28 12:23:47 dawes Exp $
+XCOMM $XConsortium: Imakefile,v 1.112 95/06/16 17:47:39 gildea Exp $
+XCOMM $XFree86: xc/lib/Xt/Imakefile,v 3.1 1995/06/14 07:12:05 dawes Exp $
 #define DoNormalLib NormalLibXt
 #define DoSharedLib SharedLibXt
 #define DoDebugLib DebugLibXt
@@ -218,6 +218,9 @@ SpecialCObjectRule(sharedlib,$(_NOOP_),$(SHLIBDEF))
 SpecialCLibObjectRule(Shell,$(ICONFIGFILES),-DXT_NO_SM)
 #endif
 
-ToolkitMakeStringsRule($(STRINGSABIOPTIONS),StringDefs.c StringDefs.h Shell.h,util/string.list,StringDefs.c)
+STRINGS_FILES = StringDefs.c StringDefs.h Shell.h
+STRINGS_TMPLS = util/StrDefs.ct util/StrDefs.ht util/Shell.ht
+
+ToolkitMakeStrings($(STRINGS_FILES),util/string.list,$(STRINGSABIOPTIONS),$(STRINGS_TMPLS),StringDefs.c)
 
 DependTarget()

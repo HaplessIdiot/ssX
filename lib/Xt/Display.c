@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.115 94/04/17 20:13:58 kaleb Exp $ */
+/* $XConsortium: Display.c,v 1.118 95/06/16 19:25:22 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -120,6 +120,7 @@ static void AddToAppContext(d, app)
 	}
 
 	app->list[app->count++] = d;
+	app->rebuild_fdlist = TRUE;
 #ifndef USE_POLL
 	if (ConnectionNumber(d) + 1 > app->fds.nfds) {
 	    app->fds.nfds = ConnectionNumber(d) + 1;
@@ -143,6 +144,7 @@ static void XtDeleteFromAppContext(d, app)
 	    for (i++; i < app->count; i++) app->list[i-1] = app->list[i];
 	    app->count--;
 	}
+	app->rebuild_fdlist = TRUE;
 	app->fds.nfds--;
 }
 
@@ -261,9 +263,9 @@ Display *XtOpenDisplay(app, displayName, applName, className,
 	if (! applName && !(applName = getenv("RESOURCE_NAME"))) {
 	    if (*argc > 0 && argv[0] && *argv[0]) {
 #ifdef WIN32
-		char *ptr = strchr(argv[0], '\\');
+		char *ptr = strrchr(argv[0], '\\');
 #else
-		char *ptr = strchr(argv[0], '/');
+		char *ptr = strrchr(argv[0], '/');
 #endif
 		if (ptr) applName = ++ptr;
 		else applName = argv[0];
@@ -436,6 +438,7 @@ XtAppContext XtCreateApplicationContext()
 	app->dpy_destroy_count = 0;
 	app->dpy_destroy_list = NULL;
 	app->exit_flag = FALSE;
+	app->rebuild_fdlist = TRUE;
 	UNLOCK_PROCESS;
 	UNLOCK_APP(app);
 	return app;

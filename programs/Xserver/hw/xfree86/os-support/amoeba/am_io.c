@@ -95,7 +95,7 @@ int xf86GetKbdLeds()
 	return cur_leds;
 }
 
-#if __STDC__
+#if NeedFunctionPrototypes
 void xf86SetKbdRepeat(char rad)
 #else
 void xf86SetKbdRepeat(rad)

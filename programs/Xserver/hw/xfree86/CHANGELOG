@@ -1,4 +1,16 @@
+XFree86 3.1.1Bb (17 June 1995)
+142. Config updates to make LinkKit more self-contained
+     (Marc Aurele La France).
+141. For some problems with blocking stderr on BSD/OS 2.0 (Hans Nasten).
+140. Add auto-apply mode to xvidtune, and flesh out the xvidtune man
+     page (Joe Moss).
+139. AGX font cache bug fixes, and fix font clipping problem (Henry Worth).
+138. Some more pre-fix-12 fix-trackers, including:
+      - Xaw - removal of undocumented/broken INTERNAL selection mechanism
+      - Fix makestrs problem with -earlyR6bc.
+
 XFree86 3.1.1Ba (14 June 1995)
+137. Fix AGX problem with vertically overlapping fonts (Henry Worth).
 136. Fix some mono (VGA2) problems that can lead to a server crash.
 135. New "VGAbase" keyword for XF86Config -- currently used only by the
      AGX server (Henry Worth).
