@@ -1,4 +1,6 @@
 XFree86 4.0.99.3 (26 April 2001)
+ 452. Fix dependencies for libGLU on Cygwin/XFree86 (Alan Hourihane).
+ 451. Make xdm & xfs compile on Cygwin/XFree86 (Alan Hourihane).
  450. Update Japanese localization of XDarwin.app's Preferences window
       (Toshimitsu Tanaka).
  449. Don't build clients that require extension libraries unless those
@@ -13102,4 +13104,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1722 2001/04/26 21:27:50 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1723 2001/04/26 23:02:06 torrey Exp $
