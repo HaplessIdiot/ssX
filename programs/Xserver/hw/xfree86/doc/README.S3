@@ -11,14 +11,22 @@ Contents
 1 - Supported hardware
 ----------------------
 
+S3 805 VLB + ATT490 (Orchid Farenheit 1280+ VLB) 8 and 16bpp
+S3 801 ISA + ATT490 (Actix GE 32) 8 and 16bpp
+
 
 2 - 16bpp and 32bpp
 -------------------
 
+On 801/805 + ATT490 Cards (like the Farenheit 1280+ VLB) only 15
+and 16bpp are supported. 32bpp isn't available on this type of
+chips. (There a 24 bit modes under MS Windows, but it's not a 32bpp
+sparse mode but a real 3 bytes/pixel mode -- implementing this in
+XFree86 isn't easy).
 
 3 - Additional Notes
 --------------------
 
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.S3,v 3.0 1994/09/26 15:33:12 dawes Exp $
