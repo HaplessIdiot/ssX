@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.225.1.1 95/01/13 21:13:04 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.12 1995/01/28 16:17:44 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.13 1995/01/28 17:47:51 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -1037,7 +1037,6 @@ char **argv;
 	d_tio.c_cc[VQUIT] = '\\' & 0x3f;	/* '^\'	*/
     	d_tio.c_cc[VEOF] = 'D' & 0x3f;		/* '^D'	*/
 	d_tio.c_cc[VEOL] = '@' & 0x3f;		/* '^@'	*/
-#endif
 #ifdef VSWTCH
 	d_tio.c_cc[VSWTCH] = '@' & 0x3f;	/* '^@'	*/
 #endif	/* VSWTCH */
