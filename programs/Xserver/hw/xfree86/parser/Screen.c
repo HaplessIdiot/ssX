@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Screen.c,v 1.13 2000/10/20 14:59:03 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Screen.c,v 1.15 2000/11/30 20:45:34 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -59,7 +59,6 @@ xf86parseDisplaySubSection (void)
 {
 	parsePrologue (XF86ConfDisplayPtr, XF86ConfDisplayRec)
 
-	ptr->disp_weight.red = ptr->disp_weight.green = ptr->disp_weight.blue = -1;
 	ptr->disp_black.red = ptr->disp_black.green = ptr->disp_black.blue = -1;
 	ptr->disp_white.red = ptr->disp_white.green = ptr->disp_white.blue = -1;
 	while ((token = xf86getToken (DisplayTab)) != ENDSUBSECTION)
@@ -408,9 +407,9 @@ xf86printScreenSection (FILE * cf, XF86ConfScreenPtr ptr)
 			{
 				fprintf (cf, "\t\tVisual    \"%s\"\n", dptr->disp_visual);
 			}
-			if (dptr->disp_weight.red != -1)
+			if (dptr->disp_weight.red != 0)
 			{
-				fprintf (cf, "\t\tWeight    0x%04x 0x%04x 0x%04x\n",
+				fprintf (cf, "\t\tWeight    %d %d %d\n",
 					 dptr->disp_weight.red, dptr->disp_weight.green, dptr->disp_weight.blue);
 			}
 			if (dptr->disp_black.red != -1)
