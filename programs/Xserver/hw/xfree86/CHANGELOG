@@ -1,4 +1,5 @@
 XFree86 4.3.99.3 (xx April 2003)
+ 141. Remove old XF86Setup source code. (Matthieu Herrb).
  140. Only add all default modes to mode list when RandR is enabled and 
       active (Egbert Eich).
  139. MGA driver: vertical blanking can generate interrupt (2D driver part)
@@ -16876,7 +16877,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2661 2003/04/24 20:08:19 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2662 2003/04/24 20:54:46 eich Exp $
 
 
 

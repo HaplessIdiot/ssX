@@ -2,7 +2,7 @@ XCOMM platform:  $Xorg: bsdi.cf,v 1.3 2000/08/17 19:41:47 cpqbld Exp $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.35 2001/01/23 23:31:48 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.36 2001/04/19 19:54:42 dawes Exp $
 #ifndef OSName
 #define OSName		DefaultOSName
 #endif
@@ -148,16 +148,6 @@ XCOMM math.h uses _REENTRANT in FreeBSD, so we define it here too
 #endif
 
 #ifdef i386Architecture
-# define HasTk        YES
-# define TkLibName    tk4.2
-# define TkLibDir     /usr/contrib/lib
-# define TkIncDir     /usr/include
-# define XF86SetupUsesStaticTk        NO
-# define HasTcl       YES
-# define TclLibName   tcl7.6
-# define TclLibDir    /usr/contrib/lib
-# define TclIncDir    /usr/include
-# define XF86SetupUsesStaticTcl       NO
 # define ServerExtraDefines GccGasOption XFree86ServerDefines -I/sys
 # define ServerOSDefines XFree86ServerOSDefines -DDDXTIME
 # define XFree86ConsoleDefines /**/

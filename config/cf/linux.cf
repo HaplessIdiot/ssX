@@ -4,7 +4,7 @@ XCOMM platform:  $Xorg: linux.cf,v 1.3 2000/08/17 19:41:47 cpqbld Exp $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.201tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.202 2003/03/04 16:25:04 tsi Exp $
 
 #ifndef LinuxElfDefault
 # define LinuxElfDefault	YES
@@ -89,16 +89,6 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #if LinuxDistribution == LinuxDebian
 # define SystemManDirectory	/usr/share/man
 # define HasPam			YES
-# define HasTk			YES
-# define TkLibDir		/usr/lib
-# define TkIncDir		/usr/include
-# define TkLibName		tk8.3
-# define XF86SetupUsesStaticTk	NO
-# define HasTcl			YES
-# define TclLibDir		/usr/lib
-# define TclIncDir		/usr/include
-# define TclLibName		tcl8.3
-# define XF86SetupUsesStaticTcl	NO
 /* un-comment this when it is un-broken */
 /* # define JoystickSupport YES */
 # define XAppLoadDir		EtcX11Directory/app-defaults

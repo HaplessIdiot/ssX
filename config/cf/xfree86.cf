@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.443 2003/04/15 15:35:41 alanh Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.444 2003/04/22 22:07:20 herrb Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -1492,30 +1492,6 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
  */
 #ifndef BuildXF86BigfontExt
 # define BuildXF86BigfontExt		YES
-#endif
-
-/*
- * Build XF86Setup -- needs Tk and Tcl
- */
-/* There are problems building XF86Setup, so turn it off for now */
-#ifndef BuildXF86Setup
-# define BuildXF86Setup NO
-#endif
-
-#ifndef BuildXF86Setup
-# if HasTk && HasTcl && \
-     BuildXF86VidModeLibrary && BuildXF86MiscLibrary && BuildXKBlib
-#  define BuildXF86Setup		YES
-# else
-#  define BuildXF86Setup		NO
-# endif
-#endif
-
-#ifndef XF86SetupUsesStaticTk
-# define XF86SetupUsesStaticTk		YES
-#endif
-#ifndef XF86SetupUsesStaticTcl
-# define XF86SetupUsesStaticTcl		YES
 #endif
 
 /*

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.183 2003/04/14 20:35:50 herrb Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.184 2003/04/15 03:59:03 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -404,67 +404,6 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.183 2003/04/14 20:35:50 herrb Exp 
  * to uncomment the following
  *
 #define TermcapLibrary		-lncurses
- */
-
-/*
- * If you have Tk (which is required to build XF86Setup), uncomment this
- * Notes:
- *   - version 4.0 or 4.1 is required, and XF86Setup links it statically by
- *     default.
- *   - XF86Setup is not built or supported with XFree86 4.x
- *
-#define HasTk			YES
- */
-
-/*
- * Set the paths and names for your Tk library if they don't match the
- * defaults (check your OS .cf file or Imake.tmpl for the defaults).
- *
- * Common values for TkLibName are tk4.0, tk4.1, etc.
- *
- * Some Linux releases need TkIncDir set to /usr/include/tcl, and some
- * need it set to /usr/X11R6/include.
- *
- * Some Linux releases need TkLibDir set to /usr/X11R6/lib
- *
-#define TkLibDir		/usr/local/lib
-#define TkIncDir		/usr/local/include
-#define TkLibName		tk
- */
-
-/*
- * By default, XF86Setup is linked with a static Tk library.  To change
- * that, uncomment the following line.
- *
-#define XF86SetupUsesStaticTk	NO
- */
-
-/*
- * If you have Tcl (which is required to build XF86Setup), uncomment this
- * Note: version 7.4 or 7.5 is required, and XF86Setup links it statically by
- * default.
- *
-#define HasTcl			YES
- */
-
-/*
- * Set the paths and names for your Tcl library if they don't match the
- * defaults (check your OS .cf file or Imake.tmpl for the defaults).
- *
- * Common values for TclLibName are tcl7.4, tcl7.5, etc.
- *
- * Some Linux releases need TclIncDir set to /usr/include/tcl.
- *
-#define TclLibDir		/usr/local/lib
-#define TclIncDir		/usr/local/include
-#define TclLibName		tcl
- */
-
-/*
- * By default, XF86Setup is linked with a static Tcl library.  To change
- * that, uncomment the following line.
- *
-#define XF86SetupUsesStaticTcl	NO
  */
 
 /*
