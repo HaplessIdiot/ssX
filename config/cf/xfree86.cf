@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.116 1996/10/17 15:10:02 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.117 1996/10/19 15:12:31 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -459,8 +459,11 @@ XCOMM $XConsortium: xfree86.cf /main/17 1996/01/03 14:50:55 kaleb $
 #endif
 #endif
 
-#ifndef XF86SetupUsesStaticTkTcl
-#define XF86SetupUsesStaticTkTcl	YES
+#ifndef XF86SetupUsesStaticTk
+#define XF86SetupUsesStaticTk		YES
+#endif
+#ifndef XF86SetupUsesStaticTcl
+#define XF86SetupUsesStaticTcl		YES
 #endif
 
 /*
@@ -743,7 +746,7 @@ XFREE86JAPANESEDOCDIR = $(XFREE86DOCDIR)/Japanese
 #endif
 
 #ifndef XFree86Version
-#define XFree86Version	3200
+#define XFree86Version	3201
 #endif
 
 #ifndef XVendorString

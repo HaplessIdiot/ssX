@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.18 1996/10/03 08:34:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.19 1996/10/08 12:23:13 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1206,6 +1206,14 @@ static int inb(port)
 #endif
 
 /*
+ * This header sometimes gets included where is isn't needed, and on some
+ * OSs this causes problems because the following functions generate
+ * references to inb() and outb() which can't be resolved.  Defining
+ * NO_COMPILER_H_EXTRAS avoids this problem.
+ */
+
+#ifndef NO_COMPILER_H_EXTRAS
+/*
  *-----------------------------------------------------------------------
  * Port manipulation convenience functions
  *-----------------------------------------------------------------------
@@ -1333,6 +1341,7 @@ unsigned char ind;
 {
 	return(testinx2(port, ind, 0xFF));
 }
+#endif /* NO_COMPILER_H_EXTRAS */
 
 #endif /* NO_INLINE */
 #endif /* _COMPILER_H */

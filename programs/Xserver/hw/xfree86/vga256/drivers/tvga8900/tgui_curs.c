@@ -26,7 +26,7 @@
  * accel/s3/s3Cursor.c, and ark/ark_cursor.c
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_curs.c,v 3.10 1996/09/25 14:18:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_curs.c,v 3.11 1996/10/08 12:38:45 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -87,10 +87,6 @@ int TridentCursorHotY;
 int TridentCursorWidth;	/* Must be set before calling TridentCursorInit. */
 int TridentCursorHeight;
 static CursorPtr TridentCursorpCurs;
-
-#ifdef PC98_TGUI
-extern pointer mmioBase;
-#endif
 
 /*
  * This is a high-level init function, called once; it passes a local
@@ -507,7 +503,7 @@ TridentRecolorCursor(pScr, pCurs, displayed)
 	outb(GER_BYTE1, 0xFF);
    }
    else
-   if ((TVGAchipset == TGUI9660XGi) || (TVGAchipset == TGUI9680))
+   if (TVGAchipset == TGUI96xx)
    {
 	/* We've got specific colours now for the cursor */
 

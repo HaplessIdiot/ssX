@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.57 1996/09/23 13:26:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.58 1996/10/16 14:40:21 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -231,7 +231,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
       if (xf86LinearVidMem() &&
 	  !OFLG_ISSET(OPTION_NOLINEAR_MODE, &s3InfoRec.options)) {
 	 /* Now, see if we can map a high buffer */
-	 if (s3Localbus && !S3_924_ONLY(s3ChipId) &&
+	 if (s3Localbus && !S3_911_SERIES(s3ChipId) &&
 	     !OFLG_ISSET(OPTION_NO_MEM_ACCESS, &s3InfoRec.options)) {
 	    long i;
 	    long *poker;
@@ -372,8 +372,9 @@ s3Initialize(scr_index, pScreen, argc, argv)
 
 		     s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
 						(pointer)addr, s3BankSize);
-		     s3MmioMem = xf86MapVidMem(scr_index, MMIO_REGION,
-						(pointer)(addr+S3_NEWMMIO_REGBASE), S3_NEWMMIO_REGSIZE);
+		     if (s3NewMmio)
+			s3MmioMem = xf86MapVidMem(scr_index, MMIO_REGION,
+						  (pointer)(addr+S3_NEWMMIO_REGBASE), S3_NEWMMIO_REGSIZE);
 		     poker = (long *) s3VideoMem; 
 
 		     if (s3TryAddress(poker, pVal, addr, 1)) {
@@ -564,7 +565,8 @@ s3Initialize(scr_index, pScreen, argc, argv)
    s3ImageInit();
 
 
-   if (S3_x64_SERIES(s3ChipId)) { /* avoid bogus bug messages for old chips */
+   /* avoid bogus bug messages for old chips */
+   if (serverGeneration == 1 && S3_x64_SERIES(s3ChipId)) {
 
       /* now testing Trio32 BITBLT bug 
        * using a 2*2 pixel pattern BLT from (0,0) to (0,2) */
@@ -771,32 +773,29 @@ s3Initialize(scr_index, pScreen, argc, argv)
 		     s3DisplayWidth))
       return (FALSE);
 
+
+   switch (s3InfoRec.bitsPerPixel) {
+   case 8:
+      pScreen->InstallColormap = s3InstallColormap;
+      pScreen->UninstallColormap = s3UninstallColormap;
+      pScreen->ListInstalledColormaps = s3ListInstalledColormaps;
+      pScreen->StoreColors = s3StoreColors;
+      break;       
+   case 16:
+   case 24:
+   case 32:
+      pScreen->InstallColormap = cfbInstallColormap;
+      pScreen->UninstallColormap = cfbUninstallColormap;
+      pScreen->ListInstalledColormaps = cfbListInstalledColormaps;
+      pScreen->StoreColors = (void (*)())NoopDDA;
+   }
+   pScreen->QueryBestSize = s3QueryBestSize;
+   xf86PointerScreenFuncs.WarpCursor = s3WarpCursor;
+   (void)s3CursorInit(0, pScreen);
+
    pScreen->CloseScreen = s3CloseScreen;
    pScreen->SaveScreen = s3SaveScreen;
 
-
-#if 0
-	miDCInitialize (pScreen, &xf86PointerScreenFuncs);
-#else
- 	switch (s3InfoRec.bitsPerPixel) {
-	case 8:
-	    pScreen->InstallColormap = s3InstallColormap;
-	    pScreen->UninstallColormap = s3UninstallColormap;
-	    pScreen->ListInstalledColormaps = s3ListInstalledColormaps;
-	    pScreen->StoreColors = s3StoreColors;
-	    break;       
-	case 16:
-        case 24:
-        case 32:
-	    pScreen->InstallColormap = cfbInstallColormap;
-	    pScreen->UninstallColormap = cfbUninstallColormap;
-	    pScreen->ListInstalledColormaps = cfbListInstalledColormaps;
-	    pScreen->StoreColors = (void (*)())NoopDDA;
-	}
-	pScreen->QueryBestSize = s3QueryBestSize;
-	xf86PointerScreenFuncs.WarpCursor = s3WarpCursor;
-	(void)s3CursorInit(0, pScreen);
-#endif
    s3savepScreen = pScreen;
    return (cfbCreateDefColormap(pScreen));
 

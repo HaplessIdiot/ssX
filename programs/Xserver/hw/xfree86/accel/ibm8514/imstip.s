@@ -1,10 +1,15 @@
-/* $XConsortium: ibm8514imst.s,v 1.2 94/03/29 09:37:45 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/imstip.s,v 1.1.1.3 1996/01/03 07:12:37 dawes Exp $ */
+
+
+
+
+
+/* $XConsortium: imstip.s /main/2 1995/11/12 16:54:40 kaleb $ */
 /******************************************************************************
 
 This is a assembly language version of the ibm8514ImageStipple routine.
 
 Written by Hans Nasten ( nasten@everyware.se ) SEP 16, 1993.
-
 
 This is a assembly language version of the C code in ibm8514im.c
 

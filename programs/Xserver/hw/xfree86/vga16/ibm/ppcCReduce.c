@@ -1,4 +1,5 @@
-/* $XConsortium: ppcCReduce.c,v 1.1 94/03/28 21:36:04 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcCReduce.c,v 1.1.1.2 1996/01/03 07:22:01 dawes Exp $ */
+
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -22,8 +23,7 @@
  *
 */
 
-/* Header: /andrew/X11/R3src/tape/server/ddx/ibm/ppc/RCS/ppcCReduce.c,v 9.1 88/10/24 03:59:37 paul Exp */
-/* Source: /andrew/X11/R3src/tape/server/ddx/ibm/ppc/RCS/ppcCReduce.c,v */
+/* $XConsortium: ppcCReduce.c /main/2 1995/11/13 07:04:51 kaleb $ */
 
 #include "X.h"
 #include "misc.h"

@@ -1,4 +1,11 @@
-/* $XConsortium: mach8imwrt.s,v 1.2 94/03/29 09:51:20 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8imwrt.s,v 1.1.1.2 1996/01/03 07:13:56 dawes Exp $ */
+
+
+
+
+
+
+/* $XConsortium: mach8imwrt.s /main/3 1995/11/12 18:00:50 kaleb $ */
 /******************************************************************************
 
 This is a assembly language version of the mach8ImageWrite routine.
@@ -20,7 +27,6 @@ mach8ImageWrite(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
     short		planemask;
 
 ******************************************************************************/
-
 
 #define _MACH8_ASM_
 #include "assyntax.h"

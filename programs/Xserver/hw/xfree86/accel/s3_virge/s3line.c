@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3line.c,v 3.6 1996/10/16 14:40:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3line.c,v 3.7 1996/10/18 15:01:53 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -729,14 +729,15 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
 	(ppt == pptInit + 1))) {
       nbox = nboxInit;
       pbox = pboxInit;
+      WaitQueue(1);
+      SETL_LDX(0);
       while (nbox--) {
 	 if ((x2 >= pbox->x1) &&
 	     (y2 >= pbox->y1) &&
 	     (x2 < pbox->x2) &&
 	     (y2 < pbox->y2)) {
-	    WaitQueue(5);
+	    WaitQueue(4);
 	    SETL_LXEND0_END1(x2, x2);
-	    SETL_LDX(0);
 	    SETL_LXSTART(x2 << 20);
 	    SETL_LYSTART(y2);
 	    SETL_LYCNT(1);
@@ -762,6 +763,7 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
    SETB_RDEST_XY(0,0);
    SETB_RWIDTH_HEIGHT(0,1);
    SETB_CMD_SET(s3_gcmd | CMD_BITBLT | ROP_S);
+   WaitIdle();
 
    UNBLOCK_CURSOR;
 }

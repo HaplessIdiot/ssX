@@ -1,4 +1,5 @@
-/* $XConsortium: ppcFillRct.c,v 1.2 94/04/17 20:31:48 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcFillRct.c,v 1.1.1.2 1996/01/03 07:22:08 dawes Exp $ */
+
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -47,7 +48,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: ppcFillRct.c,v 1.2 94/04/17 20:31:48 dpw Exp $ */
+/* $XConsortium: ppcFillRct.c /main/4 1995/11/13 07:05:05 kaleb $ */
+
 #include "X.h"
 #include "Xprotostr.h"
 #include "pixmapstr.h"

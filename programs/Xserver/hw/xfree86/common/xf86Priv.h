@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.20 1996/08/18 01:51:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.21 1996/10/03 08:34:14 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -68,7 +68,7 @@ typedef struct {
   Bool          serverNumLock;
   Bool          composeLock;
   Bool          vtSysreq;
-#if defined(SVR4) && defined(i386) && !defined(PC98)
+#if defined(SVR4) && defined(i386)
   Bool           panix106;
 #endif  /* SVR4 && i386 */
 

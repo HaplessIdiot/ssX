@@ -1,6 +1,6 @@
-/* $XConsortium: ioperm_noop.c,v 1.1 94/03/28 21:31:29 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/ioperm_noop.c,v 1.1.1.2 1996/01/03 07:20:53 dawes Exp $ */
 /*
- * Copyright 1993 by David Wexelblat <dwex@goblin.org>
+ * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-
+/* $XConsortium: ioperm_noop.c /main/2 1995/11/13 06:15:07 kaleb $ */
 
 /*
  * Amoeba, Minix and 386BSD don't bother with I/O permissions, 

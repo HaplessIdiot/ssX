@@ -1,5 +1,5 @@
 .\" $XConsortium: xterm.man /main/83 1995/12/15 14:06:17 gildea $
-.\" $XFree86: xc/programs/xterm/xterm.man,v 3.10 1996/08/23 11:06:23 dawes Exp $
+.\" $XFree86: xc/programs/xterm/xterm.man,v 3.11 1996/09/22 05:16:14 dawes Exp $
 .\" Copyright (c) 1989  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -56,7 +56,6 @@ the ``VT Options'' menu in the VT102 window, and the ``Tek Options''
 menu in the 4014 window.
 .SH EMULATIONS
 The VT102 emulation is fairly complete, but does not support
-VT52 mode,
 autorepeat,
 the blinking character attribute
 nor the double-wide and double-size character sets.

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.5 1996/10/10 14:03:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.6 1996/10/17 15:17:49 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -255,6 +255,7 @@ int s3_968_DashBug = 0;
 unsigned long s3MemBase = 0;
 int s3_gcmd = CMD_NOP;
 int s3bltbug_width1, s3bltbug_width2;
+Bool tmp_useSWCursor = FALSE;
 
 extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed;
 extern int  xf86Verbose;
@@ -665,12 +666,9 @@ s3Probe()
    }
 
    OFLG_ZERO(&validOptions);
-   OFLG_SET(OPTION_LEGEND, &validOptions);
    OFLG_SET(OPTION_CLKDIV2, &validOptions);
-   OFLG_SET(OPTION_NOLINEAR_MODE, &validOptions);
    OFLG_SET(OPTION_SW_CURSOR, &validOptions);
    OFLG_SET(OPTION_SHOWCACHE, &validOptions);
-   OFLG_SET(OPTION_FB_DEBUG, &validOptions);
    OFLG_SET(OPTION_NO_FONT_CACHE, &validOptions);
    OFLG_SET(OPTION_NO_PIXMAP_CACHE, &validOptions);
    OFLG_SET(OPTION_DAC_8_BIT, &validOptions);

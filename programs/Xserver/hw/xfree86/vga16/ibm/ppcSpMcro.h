@@ -1,4 +1,5 @@
-/* $XConsortium: ppcSpMcro.h,v 1.1 94/03/28 21:38:30 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcSpMcro.h,v 1.1.1.2 1996/01/03 07:22:27 dawes Exp $ */
+
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -43,10 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-
-/* Header: /andrew/X11/r3src/release/server/ddx/ibm/ppc/RCS/ppcSpMcro.h,v 9.2 89/04/29 21:25:54 jeff Exp */
-/* Source: /andrew/X11/r3src/release/server/ddx/ibm/ppc/RCS/ppcSpMcro.h,v */
-
+/* $XConsortium: ppcSpMcro.h /main/2 1995/11/13 07:05:49 kaleb $ */
 
 /* This screwy macro is used in all the spans routines and you find
    it all over the place, so it is a macro just to tidy things up.

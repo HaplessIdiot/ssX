@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
 XCOMM $XConsortium: Imake.tmpl /main/r61_main/3 1996/02/02 18:57:32 gildea $
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.26 1996/09/01 04:12:48 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.27 1996/09/14 13:05:02 dawes Exp $
 XCOMM
 
 /*
@@ -299,6 +299,7 @@ XCOMM the platform-specific parameters - edit site.def to change
 #define TkLibName
 #endif
 #endif
+TKLIBNAME = TkLibName
 #ifndef TkLibDir
 #if HasTk
 #define TkLibDir /usr/local/lib
@@ -306,6 +307,7 @@ XCOMM the platform-specific parameters - edit site.def to change
 #define TkLibDir
 #endif
 #endif
+TKLIBDIR = TkLibDir
 #ifndef TkIncDir
 #if HasTk
 #define TkIncDir /usr/local/include
@@ -315,7 +317,7 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #ifndef TkLibrary
 #ifdef HasTk
-#define TkLibrary Concat(-L,TkLibDir) Concat(-l,TkLibName)
+#define TkLibrary Concat(-L,$(TKLIBDIR)) Concat(-l,$(TKLIBNAME))
 #else
 #define TkLibrary
 #endif
@@ -330,6 +332,7 @@ XCOMM the platform-specific parameters - edit site.def to change
 #define TclLibName
 #endif
 #endif
+TCLLIBNAME = TclLibName
 #ifndef TclLibDir
 #if HasTcl
 #define TclLibDir /usr/local/lib
@@ -337,6 +340,7 @@ XCOMM the platform-specific parameters - edit site.def to change
 #define TclLibDir
 #endif
 #endif
+TCLIBDIR = TclLibDir
 #ifndef TclIncDir
 #if HasTcl
 #define TclIncDir /usr/local/include
@@ -346,7 +350,7 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #ifndef TclLibrary
 #ifdef HasTcl
-#define TclLibrary Concat(-L,TclLibDir) Concat(-l,TclLibName)
+#define TclLibrary Concat(-L,$(TCLLIBDIR)) Concat(-l,$(TCLLIBNAME))
 #else
 #define TclLibrary
 #endif

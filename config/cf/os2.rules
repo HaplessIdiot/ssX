@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.11 1996/05/10 06:53:55 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.12 1996/10/17 15:10:00 dawes Exp $
 
 .SUFFIXES: .Osuf .c .CCsuf
 
@@ -17,6 +17,7 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.11 1996/05/10 06:53:55 daw
 #define ImakeSubCmdHelper \imake -I$(IRULESRC) $(IMAKE_DEFINES)
 #define Fontc \bdftopcf
 #define MkFontDir \mkfontdir
+#define XkbComp \xkbcomp
 #else
 #define ImakeHelper imakesvc
 #define IMmode u
@@ -24,12 +25,14 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.11 1996/05/10 06:53:55 daw
 #define ImakeSubCmdHelper $(IMAKE_CMD)
 #define Fontc bdftopcf
 #define MkFontDir mkfontdir
+#define XkbComp xkbcomp
 #endif
 
 #define echo ImakeHelper 8 
 #define RunProgram(progvar,options) $(subst /,\,$(progvar)) options
 #define RemoveFile(file) $(RM) file
 #define RemoveFiles(files) $(RM) files
+#define NeedLdLibraryPathForXkbComp NO
 
 #define LibObjCompile(dir,options) RemoveFiles($@ dir\$@)		@@\
 	$(CC) $(CCOPTIONS) $(ALLDEFINES) options -c  $*.c		@@\
@@ -498,4 +501,14 @@ clean::									@@\
 
 #ifndef StaticLibrary
 #define StaticLibrary(libpath,libname) Concat4(libpath,/,libname,_s.a)
+#endif
+
+#ifndef MakeXkbDir
+#define MakeXkbDir(basedir,subdir)					@@\
+all::	Concat(subdir,.dir)						@@\
+									@@\
+Concat(subdir,.dir):							@@\
+	$(XKBCOMPCMD) -lfhlpR -o Concat(subdir,.dir) *			@@\
+									@@\
+InstallTarget(install,Concat(subdir,.dir),$(INSTDATFLAGS),basedir)
 #endif

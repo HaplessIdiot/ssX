@@ -1,4 +1,5 @@
-/* $XConsortium: ppcQuery.c,v 1.1 94/03/28 21:37:52 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcQuery.c,v 1.1.1.2 1996/01/03 07:22:21 dawes Exp $ */
+
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -21,9 +22,7 @@
  * SOFTWARE.
  *
 */
-
-/* Header: /andrew/X11/R3src/tape/server/ddx/ibm/ppc/RCS/ppcQuery.c,v 9.1 88/10/24 04:01:06 paul Exp */
-/* Source: /andrew/X11/R3src/tape/server/ddx/ibm/ppc/RCS/ppcQuery.c,v */
+/* $XConsortium: ppcQuery.c /main/2 1995/11/13 07:05:37 kaleb $ */
 
 #include "X.h"
 #include "Xproto.h"

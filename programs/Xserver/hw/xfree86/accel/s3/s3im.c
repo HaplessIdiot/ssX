@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.30 1996/10/21 05:27:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.31 1996/10/24 14:25:02 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -665,16 +665,16 @@ s3ImageRead (x, y, w, h, psrc, pwidth, px, py, planemask)
      unsigned long planemask;
 #endif
 {
-   int   j;
+   int   i,j,w0;
    int   offset;
    int   bank;
    char *videobuffer;
-
+   unsigned long l_planemask;
 
    if (w == 0 || h == 0)
       return;
 
-   if ((planemask & s3BppPMask) != s3BppPMask) {
+   if ((planemask & s3BppPMask) != s3BppPMask && !S3_x64_SERIES(s3ChipId)) {
       s3ImageReadNoMem(x, y, w, h, psrc, pwidth, px, py, planemask);
       return;
    }
@@ -690,6 +690,20 @@ s3ImageRead (x, y, w, h, psrc, pwidth, px, py, planemask)
    offset = (y * s3BppDisplayWidth) + x * s3Bpp;
    bank = offset / s3BankSize;
    offset %= s3BankSize;
+   if ((planemask & s3BppPMask) != s3BppPMask) {
+      w0 = w;
+      l_planemask = planemask &= s3BppPMask;
+      for (i=s3Bpp; i<sizeof(long); i+=s3Bpp)
+	 l_planemask = (l_planemask << (s3Bpp<<3)) | planemask;
+#ifdef __alpha__
+      if (s3Bpp == 3)
+	 l_planemask |= (1<<(24*(sizeof(long)/3))) - 1;
+#endif
+      planemask |= ~s3BppPMask;
+   }
+   else 
+      w0 = 0;
+
    w *= s3Bpp;
 
    BLOCK_CURSOR;
@@ -709,6 +723,39 @@ s3ImageRead (x, y, w, h, psrc, pwidth, px, py, planemask)
 	 offset -= s3BankSize;
       }
       BusToMem (psrc, &videobuffer[offset], w);
+      if (w0) {
+	 char *p = psrc;
+
+	 switch (s3Bpp) {
+	 case 1: 
+	    for (i=w0; i>=sizeof(long); i-=sizeof(long),p+=sizeof(long))
+	       *((long*)p) &= l_planemask;
+	    for (; i; i--)
+	       *p++ &= planemask;
+	    break;
+	 case 2: 
+	    for (i=w0; i>=sizeof(long); i-=sizeof(long),p+=sizeof(long))
+	       *((long*)p) &= l_planemask;
+	    for (; i; i--,p+=sizeof(short))
+	       *((short*)p) &= planemask;
+	    break;
+	 case 3:  /* XXX depends on byte sex! __BYTE_ORDER == 1234 assumed */
+	    i=w0;
+#ifdef __alpha__
+	    for (; i>=1; i-=2,p+=6)
+	       *((long*)p) &= l_planemask ;
+#endif
+	    for (; i; i--,p+=3) 
+	       *((int*)p) &= planemask;
+	    break;
+	 case 4:
+	    for (i=w0; i>=sizeof(long); i-=sizeof(long),p+=sizeof(long))
+	       *((long*)p) &= l_planemask;
+	    for (; i; i--,p+=sizeof(int))
+	       *((int*)p) &= planemask;
+	    break;
+	 }
+      }
    }
    old_bank = bank;
 
@@ -1132,8 +1179,15 @@ s3RealImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
       SET_BKGD_MIX(BSS_BKGDCOL | alu);
       SET_BKGD_COLOR(bgPixel);
     }
-    else
-      SET_BKGD_MIX(BSS_BKGDCOL | MIX_DST);
+    else {
+       if (s3_968_DashBug) {
+	  SET_BKGD_COLOR(0);
+	  SET_BKGD_MIX(BSS_BKGDCOL | MIX_OR);
+       }
+       else {
+	  SET_BKGD_MIX(BSS_BKGDCOL | MIX_DST);
+       }
+    }
 
     SET_FRGD_COLOR(fgPixel);
     WaitQueue(6);

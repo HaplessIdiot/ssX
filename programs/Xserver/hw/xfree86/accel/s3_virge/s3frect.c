@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3frect.c,v 3.4 1996/10/08 13:11:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3frect.c,v 3.5 1996/10/18 15:01:49 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -146,7 +146,7 @@ DoCacheExpandPixmap(pci)
 	       INC_X);
    }
 
-   WaitQueue(1);
+   WaitIdle();
    SETB_CMD_SET(CMD_NOP);
    UNBLOCK_CURSOR;
 }
@@ -380,7 +380,7 @@ DoCacheImageFill(pci, x, y, w, h, pox, poy, fgalu, bgalu,
 	       INC_X);
    }
 
-   WaitQueue(1);
+   WaitIdle();
    SETB_CMD_SET(CMD_NOP);
    UNBLOCK_CURSOR;
 }
@@ -636,7 +636,7 @@ s3PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	      pboxClipped++;
 	   }
 
-	   WaitQueue(1);
+	   WaitIdle();
 	   SETB_CMD_SET(CMD_NOP);
 	   UNBLOCK_CURSOR;
 	   break;

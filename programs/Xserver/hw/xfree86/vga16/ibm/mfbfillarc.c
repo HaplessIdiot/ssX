@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbfillarc.c,v 1.1.1.2 1996/01/03 07:21:49 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -24,9 +25,10 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 ********************************************************/
+
 /* GJA -- Took mfb code and modified it. */
 
-/* $XConsortium: mfbfillarc.c,v 5.8 94/04/17 20:31:44 dpw Exp $ */
+/* $XConsortium: mfbfillarc.c /main/3 1995/11/13 07:04:22 kaleb $ */
 
 #define BANKING_MODS
 #include "X.h"

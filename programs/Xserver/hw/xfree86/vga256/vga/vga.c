@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.60 1996/09/24 13:56:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.61 1996/09/29 13:41:32 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -61,7 +61,9 @@
 #include "cfb16.h"
 #include "cfb24.h"
 #include "cfb32.h"
-#include "vgabpp.h"
+#include "xf86scrin.h"
+#else
+#include "windowstr.h"
 #endif
 
 #ifdef PC98_EGC
@@ -1203,7 +1205,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 		     vga256InfoRec.displayWidth))
 #else
   if (vgaBitsPerPixel == 8)
-      if (!vga256ScreenInit(pScreen,
+      if (!xf86XAAScreenInitvga256(pScreen,
 		     (pointer) vgaVirtBase,
 		     vga256InfoRec.virtualX,
 		     vga256InfoRec.virtualY,
@@ -1211,7 +1213,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 		     vga256InfoRec.displayWidth))
           return(FALSE);
   if (vgaBitsPerPixel == 16)
-      if (!vga16bppScreenInit(pScreen,
+      if (!xf86XAAScreenInit16bpp(pScreen,
 		     vgaLinearBase,
 		     vga256InfoRec.virtualX,
 		     vga256InfoRec.virtualY,
@@ -1219,7 +1221,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 		     vga256InfoRec.displayWidth))
           return(FALSE);
   if (vgaBitsPerPixel == 24)
-      if (!vga24bppScreenInit(pScreen,
+      if (!xf86XAAScreenInit24bpp(pScreen,
 		     vgaLinearBase,
 		     vga256InfoRec.virtualX,
 		     vga256InfoRec.virtualY,
@@ -1227,7 +1229,7 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 		     vga256InfoRec.displayWidth))
           return(FALSE);
   if (vgaBitsPerPixel == 32)
-      if (!vga32bppScreenInit(pScreen,
+      if (!xf86XAAScreenInit32bpp(pScreen,
 		     vgaLinearBase,
 		     vga256InfoRec.virtualX,
 		     vga256InfoRec.virtualY,
@@ -1374,6 +1376,22 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 static void saveDummy() {}
 
 /*
+ *      Assign a new serial number to the window.
+ *      Used to force GC validation on VT switch.
+ */
+
+/*ARGSUSED*/
+static int
+vgaNewSerialNumber(pWin, data)
+    WindowPtr pWin;
+    pointer data;
+{
+    pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
+    return WT_WALKCHILDREN;
+}
+
+
+/*
  * vgaEnterLeaveVT -- 
  *      grab/ungrab the current VT completely.
  */
@@ -1408,6 +1426,10 @@ vgaEnterLeaveVT(enter, screen_idx)
       pspix = (PixmapPtr)pScreen->devPrivate;
 #endif
     }
+
+  /* Force every GC writing to the screen to be validated.  */
+  if (pScreen && !xf86Exiting && !xf86Resetting)
+      WalkTree(pScreen, vgaNewSerialNumber, 0);
 
   if (enter)
     {

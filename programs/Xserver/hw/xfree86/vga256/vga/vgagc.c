@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgagc.c,v 3.3 1995/05/27 03:18:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgagc.c,v 3.4 1996/02/04 09:15:10 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -51,7 +51,7 @@ SOFTWARE.
 #include "vga256.h"
 #include "migc.h"
 
-static void vga256ValidateGC();
+void vga256ValidateGC();
 
 static GCFuncs vga256Funcs = {
     vga256ValidateGC,
@@ -159,7 +159,7 @@ GCOps	vga256NonTEOps = {
     NULL,
 };
 
-static GCOps *
+GCOps *
 vga256matchCommon (pGC, devPriv)
     GCPtr	    pGC;
     cfbPrivGCPtr    devPriv;
@@ -244,7 +244,7 @@ vga256CreateGC(pGC)
 	    CT_other ==> pCompositeClip is the pixmap bounding box
 */
 
-static void
+void
 vga256ValidateGC(pGC, changes, pDrawable)
     register GCPtr  pGC;
     Mask	    changes;

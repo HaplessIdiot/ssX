@@ -1,4 +1,3 @@
-/* $XFree86$ */
 
 /*
  * Definitions for ARK Logic coprocessor (COP).
@@ -14,8 +13,14 @@
 #define FOREGROUNDCOLOR	0x02
 #define BACKGROUNDCOLORHIGH 0x04
 #define FOREGROUNDCOLORHIGH 0x06
+#define TRANSPARENCYCOLOR 0x08
+#define TRANSPARENCYCOLORMASK 0x0A
+#define TRANSPARENCYCOLORHIGH 0x0C
+#define TRANSPARENCYCOLORMASKHIGH 0x0E
 #define COLORMIXSELECT	0x18
 #define WRITEPLANEMASK	0x1A
+#define ERRORTERM	0x50
+#define AXIALERRORINCREMENT 0x54
 #define STENCILPITCH	0x60
 #define SOURCEPITCH	0x62
 #define DESTPITCH	0x64
@@ -72,11 +77,25 @@
 #define	SYSTEMDEST		0x0002
 #define LINEARDESTADDR		0x0001
 
+/* Because of the non-optimal layout of the background and foreground */
+/* colors, there are lots of macros for them. */
+
 #define SETBACKGROUNDCOLOR(c) \
 	*(unsigned short *)(arkMMIOBase + BACKGROUNDCOLOR) = c;
 
 #define SETFOREGROUNDCOLOR(c) \
 	*(unsigned short *)(arkMMIOBase + FOREGROUNDCOLOR) = c;
+
+#define SETBACKGROUNDCOLOR32(c) \
+	*(unsigned short *)(arkMMIOBase + BACKGROUNDCOLOR) = c; \
+	*(unsigned short *)(arkMMIOBase + BACKGROUNDCOLORHIGH) = (c) >> 16;
+
+#define SETFOREGROUNDCOLOR32(c) \
+	*(unsigned short *)(arkMMIOBase + FOREGROUNDCOLOR) = c; \
+	*(unsigned short *)(arkMMIOBase + FOREGROUNDCOLORHIGH) = (c) >> 16;
+
+#define SETBGANDFGCOLOR(c) \
+	*(unsigned int *)(arkMMIOBase + BACKGROUNDCOLOR) = c;
 
 #define SETBACKGROUNDCOLORHIGH(c) \
 	*(unsigned short *)(arkMMIOBase + BACKGROUNDCOLORHIGH) = c;
@@ -84,11 +103,37 @@
 #define SETFOREGROUNDCOLORHIGH(c) \
 	*(unsigned short *)(arkMMIOBase + FOREGROUNDCOLORHIGH) = c;
 
+#define SETBGANDFGCOLORHIGH(c) \
+	*(unsigned int *)(arkMMIOBase + BACKGROUNDCOLORHIGH) = c;
+
+#define SETTRANSPARENCYCOLOR(c) \
+	*(unsigned short *)(arkMMIOBase + TRANSPARENCYCOLOR) = c;
+
+#define SETTRANSPARENCYCOLOR32(c) \
+	*(unsigned short *)(arkMMIOBase + TRANSPARENCYCOLOR) = c; \
+	*(unsigned short *)(arkMMIOBase + TRANSPARENCYCOLORHIGH) = (c) >> 16;
+
+#define SETTRANSPARENCYCOLORMASK(c) \
+	*(unsigned short *)(arkMMIOBase + TRANSPARENCYCOLORMASK) = c;
+
+#define SETTRANSPARENCYCOLORMASK32(c) \
+	*(unsigned short *)(arkMMIOBase + TRANSPARENCYCOLORMASK) = c; \
+	*(unsigned short *)(arkMMIOBase + TRANSPARENCYCOLORMASKHIGH) = (c) >> 16;
+
 #define SETCOLORMIXSELECT(m) \
 	*(unsigned short *)(arkMMIOBase + COLORMIXSELECT) = m;
 
 #define SETWRITEPLANEMASK(m) \
 	*(unsigned short *)(arkMMIOBase + WRITEPLANEMASK) = m;
+
+#define SETWRITEPLANEMASK32(m) \
+	*(unsigned int *)(arkMMIOBase + WRITEPLANEMASK) = m;
+
+#define SETERRORTERM(e) \
+	*(short *)(arkMMIOBase + ERRORTERM) = e;
+
+#define SETERRORINCREMENT(e1, e2) \
+	*(unsigned int *)(arkMMIOBase + AXIALERRORINCREMENT) = (e1) | ((e2) << 16);
 
 #define SETSTENCILPITCH(p) \
 	*(unsigned short *)(arkMMIOBase + STENCILPITCH) = p;
@@ -131,6 +176,9 @@
 
 #define SETHEIGHT(p) \
 	*(unsigned short *)(arkMMIOBase + HEIGHT) = p - 1;
+
+#define SETWIDTHANDHEIGHT(w, h) \
+	*(unsigned int *)(arkMMIOBase + WIDTH) = ((h - 1) << 16) | (w - 1);
 
 #define SETBITMAPCONFIG(p) \
 	*(unsigned short *)(arkMMIOBase + BITMAPCONFIG) = p;

@@ -1,8 +1,8 @@
 XCOMM platform:  $XConsortium: FreeBSD.cf /main/10 1996/01/22 17:35:30 gildea $
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.53 1996/08/26 06:19:49 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.54 1996/10/16 14:28:22 dawes Exp $
 
 #ifndef OSName
-#define OSName			FreeBSD 2.1.5
+#define OSName			FreeBSD 2.1.6
 #endif
 #ifndef OSVendor
 #define OSVendor		/**/
@@ -15,7 +15,7 @@ XCOMM operating system:  OSName
 #define OSMinorVersion		1
 #endif
 #ifndef OSTeenyVersion
-#define OSTeenyVersion		5
+#define OSTeenyVersion		6
 #endif
 
 #define HasGcc			YES
@@ -74,12 +74,38 @@ XCOMM operating system:  OSName
 #define GnuMallocLibrary	-lgnumalloc
 #endif
 
+#if OSMajorVersion >= 2 || (OSMajorVersion == 2 && OSMinorVersion >= 2)
+/*
+ * Note: the tk-4.1 package for FreeBSD doesn't have the static lib, so
+ * you'll have to build it yourself, or change the definition of
+ * XF86SetupUsesStaticTk.
+ */
+#ifndef TkLibName
+#define TkLibName		tk41
+#endif
+#ifndef TclLibName
+#define TclLibName		tcl
+#endif
+#ifndef TclLibDir
+#define TclLibDir		/usr/lib
+#endif
+#ifndef TclIncDir
+#define TclIncDir		/usr/include
+#endif
+/* FreeBSD 2.2 has libtcl in the base system */
+#ifndef XF86SetupUsesStaticTcl
+#define XF86SetupUsesStaticTcl	NO
+#endif
+
+#else
+
 #ifndef TkLibName
 #define TkLibName		tk40
 #endif
-
 #ifndef TclLibName
 #define TclLibName		tcl74
+#endif
+
 #endif
 
 #undef  InstallCmd

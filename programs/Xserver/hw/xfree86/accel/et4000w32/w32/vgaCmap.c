@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vgaCmap.c,v 3.4 1995/01/28 15:51:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vgaCmap.c,v 3.5 1996/02/04 09:00:41 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -31,6 +31,13 @@
 #include "xf86.h"
 #include "vga.h"
 #include "w32.h"
+
+#ifdef XFreeXDGA
+#include "scrnintstr.h"
+#include "servermd.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
 
 #define NOMAPYET        (ColormapPtr) 0
 
@@ -125,7 +132,13 @@ vgaStoreColors(pmap, ndef, pdefs)
         cmap[1] = pdefs[i].green >> RamdacShift;
         cmap[2] = pdefs[i].blue  >> RamdacShift;
 
-        if (xf86VTSema && (!W32Blanked || pdefs[i].pixel != overscan))
+        if ((xf86VTSema 
+#ifdef XFreeXDGA
+	     || ((vga256InfoRec.directMode & XF86DGADirectGraphics)
+		 && !(vga256InfoRec.directMode & XF86DGADirectColormap))
+	     || (vga256InfoRec.directMode & XF86DGAHasColormap)
+#endif
+	    ) && (!W32Blanked || pdefs[i].pixel != overscan))
 	{
 	    outb(0x3C8, pdefs[i].pixel);
 	    GlennsIODelay();
@@ -184,7 +197,13 @@ vgaStoreColors(pmap, ndef, pdefs)
 	        overscan = tmp_overscan;
 	    }
 	    ((vgaHWPtr)vgaNewVideoState)->Attribute[OVERSCAN] = overscan;
-            if (xf86VTSema)
+            if (xf86VTSema
+#ifdef XFreeXDGA
+		|| ((vga256InfoRec.directMode & XF86DGADirectGraphics)
+		    && !(vga256InfoRec.directMode & XF86DGADirectColormap))
+		|| (vga256InfoRec.directMode & XF86DGAHasColormap)
+#endif
+	       )
 	    {
 		if (W32Blanked)
 		    set_clu_entry(overscan, black_cmap);

@@ -5,7 +5,7 @@ XCOMM $XConsortium: Imakefile /main/7 1996/01/12 12:04:36 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/Imakefile,v 3.11 1996/08/11 13:03:05 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/Imakefile,v 3.12 1996/09/29 13:41:30 dawes Exp $
 #include <Server.tmpl>
 
 FSRCS =  fBitBlt.s fFillCopy.s fFillOr.s fFillAnd.s \
@@ -60,7 +60,7 @@ OBJS =   vgagc.o vgawindow.o vgascrinit.o \
    INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86HWSRC) \
 	      -I$(SERVERSRC)/cfb -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
               -I$(SERVERSRC)/include -I$(INCLUDESRC) -I$(FONTINCSRC) \
-	      -I../vgainit
+	      -I../../xaa
    LINTLIBS = ../../../dix/llib-ldix.ln ../../../os/llib-los.ln \
 	     ../../mfb/llib-lmfb.ln ../../mi/llib-lmi.ln
 

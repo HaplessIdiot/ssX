@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c /main/191 1996/01/23 11:34:26 kaleb $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.35 1996/09/01 04:50:55 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.36 1996/09/22 05:16:06 dawes Exp $
  */
 
 /*
@@ -321,7 +321,7 @@ static	int	defaultScrollLines = SCROLLLINES;
 static  int	defaultNMarginBell = N_MARGINBELL;
 static  int	defaultMultiClickTime = MULTICLICKTIME;
 static  int	defaultBellSuppressTime = BELLSUPPRESSMSEC;
-static	int	default_DECID = MIN_DECID;
+static	int	default_DECID = DFT_DECID;
 static	char *	_Font_Selected_ = "yes";  /* string is arbitrary */
 
 #if OPT_BLINK_CURS
@@ -847,6 +847,11 @@ static void VTparse()
 	static Char *string_area;
 	static Size_t string_size, string_used;
 
+#if OPT_VT52_MODE
+	static Bool vt52_cup = FALSE;
+#endif
+
+	Const PARSE_T *groundtable = ansi_table;
 	register TScreen *screen = &term->screen;
 	register Const PARSE_T *parsestate;
 	register unsigned int c;
@@ -858,6 +863,7 @@ static void VTparse()
 	/* We longjmp back to this point in VTReset() */
 	(void)setjmp(vtjmpbuf);
 
+	groundtable = screen->ansi_level ? ansi_table : vt52_table;
 	parsestate = groundtable;
 	scstype = 0;
 	private_function = False;
@@ -881,6 +887,29 @@ static void VTparse()
 		string_used = 0;
 	    }
 
+	    /*
+	     * VT52 is a little ugly in the one place it has a parameterized
+	     * control sequence, since the parameter falls after the character
+	     * that denotes the type of sequence.
+	     */
+#if OPT_VT52_MODE
+	    if (vt52_cup) {
+		param[nparam++] = (c & 0x7f) - 32;
+		if (nparam < 2)
+			continue;
+		vt52_cup = FALSE;
+		if((row = param[0]) < 0)
+			row = 0;
+		if((col = param[1]) < 0)
+			col = 0;
+		CursorSet(screen, row, col, term->flags);
+		parsestate = vt52_table;
+		param[0] = 0;
+		param[1] = 0;
+		continue;
+	    }
+#endif
+
 	    switch (parsestate[c]) {
 		 case CASE_PRINT:
 			/* printable characters */
@@ -888,6 +917,10 @@ static void VTparse()
 			cp = bptr;
 			*--bptr = c;
 			while(top > 0 && isprint(*cp & 0x7f)) {
+#if OPT_VT52_MODE
+				if (screen->ansi_level <= 1)
+					*cp &= 0x7f;
+#endif
 				top--;
 				bcnt--;
 				cp++;
@@ -959,8 +992,18 @@ static void VTparse()
 
 		 case CASE_ESC:
 			/* escape */
+			if_OPT_VT52_MODE(screen,{
+				parsestate = vt52_esc_table;
+				break;})
 			parsestate = esc_table;
 			break;
+
+#if OPT_VT52_MODE
+		 case CASE_VT52_CUP:
+			vt52_cup = TRUE;
+			nparam = 0;
+			break;
+#endif
 
 		 case CASE_VMOT:
 			/*
@@ -998,10 +1041,12 @@ static void VTparse()
 
 		 case CASE_SI:
 			screen->curgl = 0;
+			parsestate = groundtable;
 			break;
 
 		 case CASE_SO:
 			screen->curgl = 1;
+			parsestate = groundtable;
 			break;
 
 		 case CASE_SCR_STATE:
@@ -1197,11 +1242,18 @@ static void VTparse()
 					count = 1;
 				RevScroll(screen, count);
 				do_xevents();
-				parsestate = groundtable;
 			}
+			parsestate = groundtable;
 			break;
 
 		 case CASE_DECID:
+			if_OPT_VT52_MODE(screen,{
+				unparseputc(ESC,  screen->respond);
+				unparseputc('/',  screen->respond);
+				unparseputc('Z',  screen->respond);
+				parsestate = groundtable;
+				break;
+				})
 			param[0] = -1;		/* Default ID parameter */
 			/* FALLTHRU */
 		 case CASE_DA1:
@@ -1453,6 +1505,7 @@ static void VTparse()
 
 		 case CASE_MC:
 			/* FIXME: implement media control */
+			parsestate = groundtable;
 			break;
 
 		 case CASE_HP_MEM_LOCK:
@@ -1519,6 +1572,12 @@ static void VTparse()
 		 case CASE_DECRST:
 			/* DECRST */
 			dpmodes(term, bitclr);
+#if OPT_VT52_MODE
+			if (screen->ansi_level == 0)
+				groundtable = vt52_table;
+			else if (screen->terminal_id >= 100)
+				groundtable = ansi_table;
+#endif
 			parsestate = groundtable;
 			break;
 
@@ -1583,14 +1642,22 @@ static void VTparse()
 			 * equivalents of DECSCL - T.Dickey)
 			 */
 		 case CASE_ANSI_LEVEL_1:
-			screen->ansi_level = 1;
-			screen->control_eight_bits = False;
+			if (screen->terminal_id >= 100) {
+				screen->ansi_level = 1;
+				screen->control_eight_bits = False;
+#if OPT_VT52_MODE
+				groundtable =
+				parsestate = ansi_table;
+#endif
+			}
 			break;
 		 case CASE_ANSI_LEVEL_2:
-			screen->ansi_level = 2;
+			if (screen->terminal_id >= 200)
+				screen->ansi_level = 2;
 			break;
 		 case CASE_ANSI_LEVEL_3:
-			screen->ansi_level = 3;
+			if (screen->terminal_id >= 300)
+				screen->ansi_level = 3;
 			break;
 
 		 case CASE_DECSCL:
@@ -1772,6 +1839,10 @@ static void VTparse()
 		 	break;
 
 		 case CASE_S8C1T:
+#if OPT_VT52_MODE
+			if (screen->ansi_level <= 1)
+				break;
+#endif
 			screen->control_eight_bits = True;
 			parsestate = groundtable;
 		 	break;
@@ -2333,14 +2404,26 @@ dpmodes(termw, func)
 			update_appcursor();
 			break;
 		case 2:			/* ANSI/VT52 mode		*/
-			if (func == bitset) {
+			if (func == bitset) {	/* ANSI (VT100)	*/
 				screen->gsets[0] =
-					screen->gsets[1] =
-					screen->gsets[2] =
-					screen->gsets[3] = 'B';
+				screen->gsets[1] =
+				screen->gsets[2] =
+				screen->gsets[3] = 'B';
 				screen->curgl = 0;
 				screen->curgr = 2;
+				if_OPT_VT52_MODE(screen,{
+					screen->ansi_level = 1;})
 			}
+#if OPT_VT52_MODE
+			else if (screen->terminal_id >= 100) {	/* VT52 */
+				screen->ansi_level = 0;
+				param[0] = 0;
+				param[1] = 0;
+				screen->curgl = 0;
+				screen->gsets[0] = 'B';
+				screen->gsets[1] = '0';
+			}
+#endif
 			break;
 		case 3:			/* DECCOLM			*/
 			if(screen->c132) {
@@ -2448,6 +2531,9 @@ dpmodes(termw, func)
 			    else
 				FromAlternate(screen);
 			}
+			break;
+		case 66:	/* DECNKM */
+			/* FIXME: numeric keypad */
 			break;
 		case 67:	/* DECBKM */
 			/* FIXME: back-arrow mapped to backspace or delete(D)*/
@@ -2867,7 +2953,7 @@ unparseseq(ap, fd)
 	register int	inters;
 
 	unparseputc1(c = ap->a_type, fd);
-	if (c==ESC || c==DCS || c==CSI || c==OSC || c==PM || c==APC) {
+	if (c==ESC || c==DCS || c==CSI || c==OSC || c==PM || c==APC || c==SS3) {
 		if (ap->a_pintro != 0)
 			unparseputc((char) ap->a_pintro, fd);
 		for (i=0; i<ap->a_nparam; ++i) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/IBMRGBCurs.c,v 3.5 1996/06/10 09:14:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/IBMRGBCurs.c,v 3.6 1996/09/22 05:03:09 dawes Exp $ */
 /*
  *
  * Copyright 1995 The XFree86 Project, Inc.
@@ -27,6 +27,7 @@
 #define MAX_CURS_HEIGHT 64   /* 64 scan lines */
 #define MAX_CURS_WIDTH  64   /* 64 pixels     */
 
+extern Bool tmp_useSWCursor;
 
 #ifndef __GNUC__
 # define __inline__ /**/
@@ -56,6 +57,11 @@ s3IBMRGBRealizeCursor(pScr, pCurs)
    int   wsrc, h;
    unsigned char *ram, *plane0, *plane1;
    CursorBitsPtr bits = pCurs->bits;
+
+   if (bits->height > MAX_CURS_HEIGHT || bits->width > MAX_CURS_WIDTH) {
+      extern miPointerSpriteFuncRec miSpritePointerFuncs;
+      return (miSpritePointerFuncs.RealizeCursor)(pScr, pCurs);
+   }
 
    if (pCurs->bits->refcnt > 1)
       return TRUE;
@@ -184,6 +190,12 @@ s3IBMRGBMoveCursor(pScr, x, y)
    if (!xf86VTSema)
       return;
    
+   if (tmp_useSWCursor) {
+      extern miPointerSpriteFuncRec miSpritePointerFuncs;
+      (miSpritePointerFuncs.MoveCursor)(pScr, x, y);
+      return;
+   }
+
    if (s3BlockCursor)
       return;
    

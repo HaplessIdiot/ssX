@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.8 1996/08/24 12:51:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.9 1996/09/01 04:15:08 dawes Exp $ */
 /*
  * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -34,13 +34,11 @@
 #include "servermd.h"
 #include "scrnintstr.h"
 
-#include "compiler.h"
-
 #define INIT_OPTIONS
 #include "xf86_Option.h"
 
+#define NO_COMPILER_H_EXTRAS
 #include "xf86Procs.h"
-
 #include "xf86_Config.h"
 
 #include "tcl.h"

@@ -1,6 +1,10 @@
-/* $XConsortium: SC11412.h,v 1.1 94/03/28 21:25:22 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/SC11412.h,v 1.1.1.2 1996/01/03 07:19:50 dawes Exp $ */
+
 
 /* Norbert Distler ndistler@physik.tu-muenchen.de */
+
+
+/* $XConsortium: SC11412.h /main/2 1995/11/12 19:30:24 kaleb $ */
 
 typedef int Bool;
 #define TRUE 1
@@ -14,3 +18,4 @@ Bool SC11412SetClock(
    long
 #endif
 );     
+

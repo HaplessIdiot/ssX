@@ -1,5 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga.h,v 3.2 1996/10/10 14:04:45 dawes Exp $ */
-
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga.h,v 3.3 1996/10/16 14:43:02 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -22,13 +21,33 @@
 #define OUTREG(addr, val) MGAREG(addr) = (val)
 
 extern unsigned char *MGAMMIOBase;
-extern int MGAScrnWidth;
 
 #define MGAWAITFIFO() while(MGAREG16(MGAREG_FIFOSTATUS) & 0x100);
 #define MGAWAITFREE() while(MGAREG8(MGAREG_Status + 2) & 0x01);
 
 #define MGAWAITFIFOSLOTS(SLOTS) while ( ((MGAREG16(MGAREG_FIFOSTATUS) & 0x3f) - SLOTS) < 0 );
 
+/*
+ * ROPs
+ *
+ * for some silly reason, the bits in the ROPs are just the other way round
+ */
+
+/*
+ * definitions for the new acceleration interface
+ */
+#define WAITUNTILFINISHED()	MGAWAITFREE()
+#define SETBACKGROUNDCOLOR(col)	MGAREG(MGAREG_BCOL) = (col)
+#define SETFOREGROUNDCOLOR(col)	MGAREG(MGAREG_FCOL) = (col)
+#define SETRASTEROP(rop)	mga_cmd |= (((rop & 1)==1)*8 | \
+					    ((rop & 2)==2)*4 | \
+					    ((rop & 4)==4)*2 | \
+					    ((rop & 8)==8)) << 16;
+#define SETWRITEPLANEMASK(pm)	MGAREG(MGAREG_PLNWT) = (pm)
+#define SETBLTXYDIR(x,y)	MGAREG(MGAREG_SGN) = ((-x+1)>>1)+4*((-y+1)>>1)
+/*
+ * prototypes
+ */
 void
 mgaLine (
 #ifdef NeedFunctionPrototypes
@@ -79,10 +98,4 @@ mgaFillBoxSolid(
 #endif
 );                
 
-int
-MGAWaitForBlitter(
-#ifdef NeedFunctionPrototypes
-	void
-#endif
-);
 #endif

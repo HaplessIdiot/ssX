@@ -1,4 +1,5 @@
-/* $XConsortium: ppcScrn.h,v 1.1 94/03/28 21:38:11 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcScrn.h,v 1.1.1.2 1996/01/03 07:22:24 dawes Exp $ */
+
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -44,8 +45,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* Header: /andrew/X11/r3src/r3plus/server/ddx/ibm/ppc/RCS/ppcScrn.h,v 1.3 89/06/21 16:36:51 jeff Exp Locker: jeff */
-/* Source: /andrew/X11/r3src/r3plus/server/ddx/ibm/ppc/RCS/ppcScrn.h,v */
+/* $XConsortium: ppcScrn.h /main/2 1995/11/13 07:05:44 kaleb $ */
 
 typedef struct {
 	PixmapRec	pixmap ; /* this is here for mfb, it expects

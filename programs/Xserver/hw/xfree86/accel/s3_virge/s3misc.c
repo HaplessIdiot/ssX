@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3misc.c,v 3.6 1996/10/16 14:40:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3misc.c,v 3.7 1996/10/17 15:17:59 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -376,10 +376,6 @@ s3Initialize(scr_index, pScreen, argc, argv)
 		     s3DisplayWidth))
       return (FALSE);
 
-   pScreen->CloseScreen = s3CloseScreen;
-   pScreen->SaveScreen = s3SaveScreen;
-
-
    switch (s3InfoRec.bitsPerPixel) {
    case 8:
       pScreen->InstallColormap = s3InstallColormap;
@@ -398,6 +394,9 @@ s3Initialize(scr_index, pScreen, argc, argv)
    pScreen->QueryBestSize = s3QueryBestSize;
    xf86PointerScreenFuncs.WarpCursor = s3WarpCursor;
    (void)s3CursorInit(0, pScreen);
+
+   pScreen->CloseScreen = s3CloseScreen;
+   pScreen->SaveScreen = s3SaveScreen;
 
    s3savepScreen = pScreen;
    return (cfbCreateDefColormap(pScreen));

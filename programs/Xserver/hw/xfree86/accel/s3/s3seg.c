@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3seg.c,v 3.9 1996/08/20 12:27:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3seg.c,v 3.10 1996/09/01 04:15:44 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -106,7 +106,6 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
    unsigned int bias = miGetZeroLineBias(pDrawable->pScreen);
    short cmd = CMD_LINE | DRAW | PLANAR | WRTDATA | LASTPIX;
    short cmd2;
-   short fix;
 
  /* a bunch of temporaries */
    int   tmp;
@@ -259,11 +258,8 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
 	 }
       } else {			/* sloped line */
 	 cmd2 = cmd;
-	 if ((adx = x2 - x1) < 0) {
-	    fix = 0;
-	 } else {
+	 if ((adx = x2 - x1) >= 0) {
 	    cmd2 |= INC_X;
-	    fix = -1;
 	 }
 	 if ((ady = y2 - y1) >= 0) {
 	    cmd2 |= INC_Y;
@@ -317,7 +313,7 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
 	      */
 	       WaitQueue(7);
 	       SET_CURPT((short)x1, (short)y1);
-	       SET_ERR_TERM((short)(e + fix));
+	       SET_ERR_TERM((short)e);
 	       SET_DESTSTP((short)e2, (short)e1);
 	       SET_MAJ_AXIS_PCNT((short)len);
 	       SET_CMD(cmd2);
@@ -406,7 +402,7 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
 		     }
 		     WaitQueue(7);
 		     SET_CURPT((short)new_x1, (short)new_y1);
-		     SET_ERR_TERM((short)(err + fix));
+		     SET_ERR_TERM((short)err);
 		     SET_DESTSTP((short)e2, (short)e1);
 		     SET_MAJ_AXIS_PCNT((short)len);
 		     SET_CMD(cmd2);

@@ -32,7 +32,7 @@
  *		RAMDAC timing, and BIOS stuff
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.9 1996/10/20 13:34:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.10 1996/10/23 13:10:33 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -50,27 +50,18 @@
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 
-#include "vga256.h"
-#include "mipointer.h"
-
 #include "mgabios.h"
 #include "mgareg.h"
 #include "mga.h"
 
-extern GCOps cfb16TEOps1Rect, cfb16TEOps, cfb16NonTEOps1Rect, cfb16NonTEOps;
-extern GCOps cfb24TEOps1Rect, cfb24TEOps, cfb24NonTEOps1Rect, cfb24NonTEOps;
-extern GCOps cfb32TEOps1Rect, cfb32TEOps, cfb32NonTEOps1Rect, cfb32NonTEOps;
-extern vgaHWCursorRec vgaHWCursor;
-extern miPointerScreenFuncRec xf86PointerScreenFuncs;
 extern vgaPCIInformation *vgaPCIInfo;
 
 /*
  * Driver data structures.
  */
-unsigned long MGAMMIOAddr = 0;
-unsigned char* MGAMMIOBase = NULL;
 MGABiosInfo MGABios;
-extern int MGAScrnWidth;
+unsigned char* MGAMMIOBase = NULL;
+static unsigned long MGAMMIOAddr = 0;
 static pciTagRec MGAPciTag;
 static int MGABppShft;
 static int MGADAClong;
@@ -122,18 +113,11 @@ static void *		MGASave();
 static void		MGARestore();
 static void		MGAAdjust();
 static void		MGAFbInit();
-static void 		MGACursorInit();
 static int		MGAPitchAdjust();
-static int		MGAScrnInit();
 
 extern void		MGASetRead();
 extern void		MGASetWrite();
 extern void		MGASetReadWrite();
-extern void		MGABlitterInit();
-extern void		MGADoBitbltCopy();
-extern RegionPtr	MGA16CopyArea();
-extern RegionPtr	MGA24CopyArea();
-extern RegionPtr	MGA32CopyArea();
 
 /*
  * This data structure defines the driver itself.
@@ -269,6 +253,24 @@ static unsigned mgaExtPorts[] =
 
 static int Num_mgaExtPorts =
 	(sizeof(mgaExtPorts)/sizeof(mgaExtPorts[0]));
+
+/*
+ * MGAWaitForBlitter waits for drawing engine to be free and tries to dislock
+ * engine when is locked by ILOAD (should not happen, but...)
+ */
+ 
+static int
+MGAWaitForBlitter()
+{
+	int i;
+	
+	MGAREG8(MGAREG_OPMODE) = 0; /* terminate DMA sequence */
+	for(i = 10000000; (MGAREG8(MGAREG_Status + 2) & 0x01) && (--i >= 0););
+	if( i >= 0 )
+		return 1;
+	FatalError("MGA: BitBlt Engine timeout\n");
+	return 0;
+}
 
 /*
  * MGAReadBios - Read the video BIOS info block.
@@ -1151,65 +1153,20 @@ MGAFbInit()
 	if (!OFLG_ISSET(OPTION_NO_BITBLT, &vga256InfoRec.options))
 	{
 
-		/* width checking moved to MGAPitchAdjust */
-
-		{
-			if (xf86Verbose)
-				ErrorF("%s %s: Using BitBlt Engine\n", XCONFIG_PROBED,
-						vga256InfoRec.name);
-		
-			vga256LowlevFuncs.doBitbltCopy = MGADoBitbltCopy;
-			vga256LowlevFuncs.fillRectSolidCopy = mgaFillRectSolidCopy;
-		
-			vga256TEOps1Rect.Polylines = mgaLine;
-			vga256NonTEOps1Rect.Polylines = mgaLine;
-			vga256TEOps.Polylines = mgaLine;
-			vga256NonTEOps.Polylines = mgaLine;
-		
-			cfb16TEOps.CopyArea = MGA16CopyArea;
-			cfb16NonTEOps.CopyArea = MGA16CopyArea;
-			cfb16TEOps1Rect.CopyArea = MGA16CopyArea;
-			cfb16NonTEOps1Rect.CopyArea = MGA16CopyArea;
-
-			cfb24TEOps.CopyArea = MGA24CopyArea;
-			cfb24NonTEOps.CopyArea = MGA24CopyArea;
-			cfb24TEOps1Rect.CopyArea = MGA24CopyArea;
-			cfb24NonTEOps1Rect.CopyArea = MGA24CopyArea;
-	
-			cfb32TEOps.CopyArea = MGA32CopyArea;
-			cfb32NonTEOps.CopyArea = MGA32CopyArea;
-			cfb32TEOps1Rect.CopyArea = MGA32CopyArea;
-			cfb32NonTEOps1Rect.CopyArea = MGA32CopyArea;
-			
-			cfb16TEOps.PolyFillRect = mgaPolyFillRect;
-			cfb16NonTEOps.PolyFillRect = mgaPolyFillRect;
-			cfb16TEOps1Rect.PolyFillRect = mgaPolyFillRect;
-			cfb16NonTEOps1Rect.PolyFillRect = mgaPolyFillRect;
-			
-			cfb24TEOps.PolyFillRect = mgaPolyFillRect;
-			cfb24NonTEOps.PolyFillRect = mgaPolyFillRect;
-			cfb24TEOps1Rect.PolyFillRect = mgaPolyFillRect;
-			cfb24NonTEOps1Rect.PolyFillRect = mgaPolyFillRect;
-			
-			cfb32TEOps.PolyFillRect = mgaPolyFillRect;
-			cfb32NonTEOps.PolyFillRect = mgaPolyFillRect;
-			cfb32TEOps1Rect.PolyFillRect = mgaPolyFillRect;
-			cfb32NonTEOps1Rect.PolyFillRect = mgaPolyFillRect;
-			
-	
-			vgaSetScreenInitHook(MGAScrnInit);
-
 #if 0
-			/*
-			 * Hardware cursor is not supported yet.
-			 */
-			vgaHWCursor.Initialized = TRUE;
-			vgaHWCursor.Init = MGACursorInit;
-			vgaHWCursor.Restore = (void (*)())NoopDDA;
-			vgaHWCursor.Warp = xf86PointerScreenFuncs.WarpCursor;
-			vgaHWCursor.QueryBestSize = mfbQueryBestSize;
+		/*
+		 * Hardware cursor is not supported yet.
+		 */
+		vgaHWCursor.Initialized = TRUE;
+		vgaHWCursor.Init = MGACursorInit;
+		vgaHWCursor.Restore = (void (*)())NoopDDA;
+		vgaHWCursor.Warp = xf86PointerScreenFuncs.WarpCursor;
+		vgaHWCursor.QueryBestSize = mfbQueryBestSize;
 #endif
-		}
+		/*
+		 * now call the new acc interface
+		 */
+		MGAAccelInit();
 	}
 	
 	/*
@@ -1237,9 +1194,11 @@ ScreenPtr pScreen;
 char *LinearBase;
 int virtualX, virtualY, res1, res2, width;
 {
+#if OLD_ACC_SUPPORT
 	pScreen->CopyWindow = vga256CopyWindow;
 	pScreen->PaintWindowBackground = mgaPaintWindow;
 	pScreen->PaintWindowBorder = mgaPaintWindow;
+#endif
 	
 	return(TRUE);
 }
@@ -1398,9 +1357,8 @@ vgaMGAPtr restore;
 
 	pciWriteLong(MGAPciTag, PCI_OPTION_REG, restore->DAClong);
 
-	MGABlitterInit(vgaBitsPerPixel,	vga256InfoRec.displayWidth);
-	if (!MGAWaitForBlitter())
-				FatalError("MGA: BitBlt Engine timeout\n");
+	MGAWaitForBlitter();
+	MGAEngineInit();
 }
 
 /*
@@ -1475,8 +1433,7 @@ Bool enter;
 		{
 			xf86MapDisplay(vga256InfoRec.scrnIndex,
 					MMIO_REGION);
-			if (!MGAWaitForBlitter())
-				ErrorF("MGA: BitBlt Engine timeout\n");
+			MGAWaitForBlitter();
 		}
 		
 		vgaIOBase = (inb(0x3CC) & 0x01) ? 0x3D0 : 0x3B0;
@@ -1493,8 +1450,7 @@ Bool enter;
 		
 		if (MGAMMIOBase)
 		{
- 			if (!MGAWaitForBlitter())
-				ErrorF("MGA: BitBlt Engine timeout\n");
+ 			MGAWaitForBlitter();
 			xf86UnMapDisplay(vga256InfoRec.scrnIndex,
 					MMIO_REGION);
 		}
@@ -1541,7 +1497,7 @@ DisplayModePtr mode;
 {
 	int lace = 1 + ((mode->Flags & V_INTERLACE) != 0);
 	
-	if ((mode->CrtcHDisplay <= 4096) &&
+	if ((mode->CrtcHDisplay <= 2048) &&
 	    (mode->CrtcHSyncStart <= 4096) && 
 	    (mode->CrtcHSyncEnd <= 4096) && 
 	    (mode->CrtcHTotal <= 4096) &&

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.40 1996/09/01 12:29:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.41 1996/09/14 13:09:36 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -187,31 +187,42 @@ extern int s3_968_DashBug;
 
 #define UNKNOWN_DAC       -1
 #define NORMAL_DAC         0
-#define BT485_DAC          1
-#define ATT20C505_DAC      2
-#define TI3020_DAC         3
-#define ATT498_DAC         4
+#define S3_TRIO32_DAC      1
+#define S3_TRIO64_DAC      2
+#define TI3026_DAC         3
+#define TI3030_DAC         4
+#define TI3020_DAC         5
+#define TI3025_DAC         6
+#define BT485_DAC          7
+#define ATT20C505_DAC      8
+#define ATT22C498_DAC      9
+#define ATT498_DAC        10
 #define ATT20C498_DAC      ATT498_DAC
-#define TI3025_DAC         5
-#define ATT20C490_DAC      6
-#define SC15025_DAC        7
-#define STG1700_DAC        8
-#define S3_SDAC_DAC        9
-#define S3_GENDAC_DAC     10
-#define ATT22C498_DAC     11
-#define S3_TRIO32_DAC     12
-#define S3_TRIO64_DAC     13
-#define TI3026_DAC        14
-#define IBMRGB52x_DAC     15
-#define IBMRGB524_DAC     16
-#define IBMRGB525_DAC     17
-#define IBMRGB528_DAC     18
-#define STG1703_DAC       19
-#define SC1148x_M2_DAC    20
-#define SC1148x_M3_DAC    21
-#define ATT20C409_DAC     22
-#define TI3030_DAC        23
-#define	SS2410_DAC	  24
+#define ATT20C409_DAC     11
+#define SC15025_DAC       12
+#define STG1700_DAC       13
+#define STG1703_DAC       14
+#define IBMRGB524_DAC     15
+#define IBMRGB525_DAC     16
+#define IBMRGB528_DAC     17
+#define S3_SDAC_DAC       18
+#define S3_GENDAC_DAC     19
+#define ATT20C490_DAC     20
+#define	SS2410_DAC	  21
+#define SC1148x_M2_DAC    22
+
+#define SC1148x_M3_DAC    23
+#define IBMRGB52x_DAC     24
+
+typedef struct {
+    char *DacName;
+    int DacSpeed;
+    Bool (*DacProbe)();
+    int (*PreInit)();
+} s3RamdacInfo;
+
+extern s3RamdacInfo s3Ramdacs[];
+
 
 #define DAC_IS_BT485_SERIES	(s3RamdacType == BT485_DAC || \
 				 s3RamdacType == ATT20C505_DAC)

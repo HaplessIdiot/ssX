@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.36 1996/09/14 13:13:33 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.37 1996/10/21 05:28:05 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -558,8 +558,13 @@ setExternClock(clock)
             progname++;
           else
             progname = vga256InfoRec.clockprog;
-          sprintf(clockarg, "%.3f", vga256InfoRec.clock[clock] / 1000.0);
-          sprintf(clockindex, "%d", clock);
+ 	  if(clock < MAXCLOCKS){
+ 	    sprintf(clockarg, "%.3f", vga256InfoRec.clock[clock] / 1000.0);
+ 	    sprintf(clockindex, "%d", clock );
+ 	  } else {
+ 	    sprintf(clockarg, "%.3f", clock / 1000.0);
+ 	    sprintf(clockindex, "%d",255 );
+ 	  }
           execl(vga256InfoRec.clockprog, progname, clockarg, clockindex, NULL);
           ErrorF("Exec failed for ClockProg command \"%s\" (%s)\n",
                  vga256InfoRec.clockprog, strerror(errno));

@@ -1,0 +1,96 @@
+/* $XFree86$ */
+
+#include "xf86.h"
+#include "vga.h"
+
+#include "mga.h"
+#include "mgareg.h"
+
+void Mga8AccelInit();
+void Mga16AccelInit();
+void Mga24AccelInit();
+void Mga32AccelInit();
+
+/*
+ * The following function sets up the supported acceleration. Call it
+ * from the FbInit() function in the SVGA driver.
+ */
+void MGAAccelInit() {
+    switch( vgaBitsPerPixel )
+    {
+    case 8:
+    	Mga8AccelInit();
+    	break;
+    case 16:
+    	Mga16AccelInit();
+    	break;
+    case 24:
+    	Mga24AccelInit();
+    	break;
+    case 32:
+    	Mga32AccelInit();
+    	break;
+    }
+}
+
+/*
+ * This is the implementation of the Sync() function.
+ */
+void MgaSync() 
+{
+    WAITUNTILFINISHED();
+}
+
+/*
+ * Global initialization of drawing engine
+ */
+void MGAEngineInit()
+{
+    long maccess;
+    
+    switch( vgaBitsPerPixel )
+    {
+    case 8:
+        maccess = 0;
+        break;
+    case 16:
+	/* set 16 bpp, turn off dithering, turn on 5:5:5 pixels */
+        maccess = 1 + (1 << 30) + (1 << 31);
+        break;
+    case 24:
+        maccess = 3;
+        break;
+    case 32:
+        maccess = 2;
+        break;
+    }
+    
+    MGAREG(MGAREG_PITCH) = vga256InfoRec.displayWidth;
+    MGAREG(MGAREG_YDSTORG) = 0;
+    MGAREG(MGAREG_MACCESS) = maccess;
+    MGAREG(MGAREG_PLNWT) = ~0;
+    MGAREG(MGAREG_OPMODE) = 0;
+}
+
+/*
+ * for testing only; reads accel config from file 
+ * values:
+ *   0 - disable primitive
+ *   1 - enable primitive
+ *   2 - set NoopDDA as primitive
+ */
+int MgaAccelSwitch(primitive)
+    char* primitive;
+{
+    char buf[1000];
+    int i;
+    int file = fopen("/tmp/accelswitch", "r");
+    if( !file )
+        return 1;
+    
+    while( fscanf(file, "%s%d", buf, &i) == 2 )
+        if( !strcmp(buf, primitive) ) 
+            return i;
+    
+    return 1;
+}

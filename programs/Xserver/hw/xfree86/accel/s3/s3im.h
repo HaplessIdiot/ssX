@@ -1,4 +1,4 @@
-/* $XConsortium: s3im.h,v 1.1 94/03/28 21:15:45 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.h,v 1.1.1.2 1996/01/03 07:14:51 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -25,9 +25,8 @@
 /*
  * Modified by Amancio Hasty and Jon Tombs
  * 
- * Id: s3im.h,v 2.2 1993/06/22 20:54:09 jon Exp jon
  */
-
+/* $XConsortium: s3im.h /main/2 1995/11/12 19:06:47 kaleb $ */
 
 #ifndef modulus
 #define	modulus(a,b,d)	if (((d) = (a) % (b)) < 0) (d) += (b)

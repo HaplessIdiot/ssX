@@ -4,7 +4,7 @@
 
  <title>README for XFree86&tm; 3.2
  <author> The XFree86 Project, Inc
- <date>26 October 1996
+ <date>29 October 1996
 
 
 <abstract>
@@ -826,15 +826,24 @@ and the following mirror sites:
 	name="ftp://ftp.bsdi.com/contrib/X11/XFree86">
 	(source and BSD/OS binaries)
 -->
+<!--
 <item>   <htmlurl url="ftp://XFree86.cdrom.com/pub/XFree86" 
 	name="ftp://XFree86.cdrom.com/pub/XFree86">
 	(source and binaries)
 <item>   <htmlurl url="ftp://ftp.redhat.com/pub/mirrors/ftp.xfree86.org" 
 	name="ftp://ftp.redhat.com/pub/mirrors/ftp.xfree86.org">
 	(source and Linux binaries)
+-->
 <item>   <htmlurl url="ftp://ftp.rge.com/pub/X/XFree86" 
 	name="ftp://ftp.rge.com/pub/X/XFree86">
 	(source and binaries)
+<item>   <htmlurl url="ftp://ftp.gw.com/pub/unix/XFree86" 
+	name="ftp://ftp.gw.com/pub/unix/XFree86">
+	(source and NetBSD binaries)
+<item>   <htmlurl url="ftp://ftp.varesearch.com/pub/mirrors/xfree86" 
+	name="ftp://ftp.varesearch.com/pub/mirrors/xfree86">
+	(source and binaries)
+<!--
 <item>   <htmlurl url="ftp://ftp.iastate.edu/pub/XFree86/XFree86-3.2" 
 	name="ftp://ftp.iastate.edu/pub/XFree86/XFree86-3.2">
 	(source patches and NetBSD binaries)<newline>
@@ -842,14 +851,17 @@ and the following mirror sites:
 <item>   <htmlurl url="ftp://tsx-11.mit.edu/pub/linux/packages/X11/XFree86-3.2" 
 	name="ftp://tsx-11.mit.edu/pub/linux/packages/X11/XFree86-3.2">
 	(Linux binaries and source)
+-->
 <!--
 <item>   <htmlurl url="ftp://ref.tfs.com/pub/mirrors/XFree86" 
 	name="ftp://ref.tfs.com/pub/mirrors/XFree86">
 	(source patches and FreeBSD binaries)
 -->
+<!--
 <item>   <htmlurl url="ftp://ftp.eecs.umich.edu/BSD/XFree86" 
 	name="ftp://ftp.eecs.umich.edu/BSD/XFree86">
 	(source and binaries)
+-->
 <item>   <htmlurl url="ftp://ftp.cs.umn.edu/pub/XFree86" 
 	name="ftp://ftp.cs.umn.edu/pub/XFree86">
 	(source and binaries)
@@ -868,40 +880,48 @@ and the following mirror sites:
 
 <item>      Europe:  
 <itemize>
+<!--
 <item>   <htmlurl url="ftp://fvkma.tu-graz.ac.at/pub/XFree86" 
 	name="ftp://fvkma.tu-graz.ac.at/pub/XFree86">
 	(source and binaries)
+-->
 <!--
 <item>   <htmlurl url="ftp://ftp.switch.ch/mirror/XFree86" 
 	name="ftp://ftp.switch.ch/mirror/XFree86">
 	(source and binaries)
 -->
+<!--
 <item>   <htmlurl url="ftp://sunsite.mff.cuni.cz/X11/XFree86"
 	name="ftp://sunsite.mff.cuni.cz/X11/XFree86">
 	(source and binaries)
+-->
 <item>   <htmlurl url="ftp://ftp.fee.vutbr.cz/pub/XFree86"
 	name="ftp://ftp.fee.vutbr.cz/pub/XFree86">
 	(source patches and binaries)
 <item>   <htmlurl url="ftp://ftp.gwdg.de/pub/xfree86/XFree86"
 	name="ftp://ftp.gwdg.de/pub/xfree86/XFree86">
 	(source and binaries)
+<!--
 <item>   <htmlurl url="ftp://ftp.uni-erlangen.de/pub/Linux/MIRROR.xfree86" 
 	name="ftp://ftp.uni-erlangen.de/pub/Linux/MIRROR.xfree86">
 	(source patches and Linux binaries)
 <item>   <htmlurl url="ftp://ftp.uni-stuttgart.de/pub/X11/Xfree86" 
 	name="ftp://ftp.uni-stuttgart.de/pub/X11/Xfree86">
 	(source and binaries)
+-->
 <item>   <htmlurl url="ftp://ftp.funet.fi/pub/X11/XFree86" 
 	name="ftp://ftp.funet.fi/pub/X11/XFree86">
 	(source and binaries)
+<!--
 <item>   <htmlurl url="ftp://ftp.calvacom.fr/pub/unix/X/XFree86" 
 	name="ftp://ftp.calvacom.fr/pub/unix/X/XFree86">
 	(source and binaries)
-<item>   <htmlurl url="ftp://ftp.ibp.fr/pub/X11/XFree86" 
-	name="ftp://ftp.ibp.fr/pub/X11/XFree86">
+-->
+<item>   <htmlurl url="ftp://ftp.ibp.fr/pub/X11/XFree86/XFree86" 
+	name="ftp://ftp.ibp.fr/pub/X11/XFree86/XFree86">
 	(source and binaries)
-<item>   <htmlurl url="ftp://ftp.laas.fr/pub/ii/NetBSD/XFree86-3.2" 
-	name="ftp://ftp.laas.fr/pub/ii/NetBSD/XFree86-3.2">
+<item>   <htmlurl url="ftp://ftp.laas.fr/pub/ii/NetBSD/XFree86" 
+	name="ftp://ftp.laas.fr/pub/ii/NetBSD/XFree86">
 	(NetBSD binaries only)
 <!--
 <item>   <htmlurl url="ftp://ftp.unipi.it/pub/mirrors/XFree86-3.2"
@@ -939,20 +959,22 @@ and the following mirror sites:
 <item>   <htmlurl url="ftp://ftp.iij.ad.jp/pub/X/XFree86/XFree86" 
 	name="ftp://ftp.iij.ad.jp/pub/X/XFree86/XFree86">
 	(source and binaries)
+<!--
 <item>   <htmlurl url="ftp://ftp.sf.co.kr/pub/XFree86" 
 	name="ftp://ftp.sf.co.kr/pub/XFree86">
 	(source and binaries)
-<!--
+-->
 <item>   <htmlurl url="ftp://ftp.hk.super.net/mirror/XFree86" 
 	name="ftp://ftp.hk.super.net/mirror/XFree86">
 	(source and binaries)
--->
 <item>   <htmlurl url="ftp://ftp.nectec.or.th/pub/mirrors/XFree86" 
 	name="ftp://ftp.nectec.or.th/pub/mirrors/XFree86">
 	(source patches and binaries)
+<!--
 <item>   <htmlurl url="ftp://ftp.edu.tw/X/XFree86" 
 	name="ftp://ftp.edu.tw/X/XFree86">
 	(source and binaries)
+-->
 </itemize>
 
 </itemize>
@@ -968,7 +990,7 @@ url="RELNOTES.html"> to find which files you need to take from the
 archive.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.63 1996/10/24 12:30:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.64 1996/10/26 09:38:53 dawes Exp $
 
 
 

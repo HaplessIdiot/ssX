@@ -1,4 +1,10 @@
-/* $XConsortium: ibm8514imrd.s,v 1.2 94/03/29 09:37:41 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/imread.s,v 1.1.1.3 1996/01/03 07:12:36 dawes Exp $ */
+
+
+
+
+
+/* $XConsortium: imread.s /main/2 1995/11/12 16:54:38 kaleb $ */
 /******************************************************************************
 
 This is a assembly language version of the ibm8514ImageRead routine.
@@ -17,7 +23,6 @@ ibm8514ImageRead(x, y, w, h, psrc, pwidth, px, py, planemask)
     short		planemask;
 
 ******************************************************************************/
-
 
 #define _8514_ASM_
 #include "assyntax.h"

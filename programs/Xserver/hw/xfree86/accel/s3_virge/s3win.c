@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3win.c,v 3.1 1996/10/03 08:33:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3win.c,v 3.2 1996/10/18 15:01:57 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -175,7 +175,7 @@ s3CopyWindow(pWin, ptOldOrg, prgnSrc)
       }
    }
 
-   WaitQueue(1);
+   WaitIdle();
    SETB_CMD_SET(CMD_NOP);
 
    UNBLOCK_CURSOR;

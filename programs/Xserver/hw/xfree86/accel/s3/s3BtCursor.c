@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3BtCursor.c,v 3.10 1996/02/04 09:04:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3BtCursor.c,v 3.11 1996/03/31 11:48:34 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -44,6 +44,10 @@
 
 static unsigned short s3BtLowBits[] = { 0x3C8, 0x3C9, 0x3C6, 0x3C7 };
 static unsigned char s3BtYPosMask = 0xFF;
+
+#define MAX_CURS 64
+
+extern Bool tmp_useSWCursor;
 
 #ifndef __GNUC__
 # define __inline__ /**/
@@ -210,6 +214,11 @@ s3BtRealizeCursor(pScr, pCurs)
    unsigned char *ram, *plane0, *plane1;
    CursorBitsPtr bits = pCurs->bits;
 
+   if (bits->height > MAX_CURS || bits->width > MAX_CURS) {
+      extern miPointerSpriteFuncRec miSpritePointerFuncs;
+      return (miSpritePointerFuncs.RealizeCursor)(pScr, pCurs);
+   }
+
    if (pCurs->bits->refcnt > 1)
       return TRUE;
 
@@ -223,8 +232,6 @@ s3BtRealizeCursor(pScr, pCurs)
 
    pServSrc = (unsigned char *)bits->source;
    pServMsk = (unsigned char *)bits->mask;
-
-#define MAX_CURS 64
 
    h = bits->height;
    if (h > MAX_CURS)
@@ -316,6 +323,12 @@ s3BtMoveCursor(pScr, x, y)
 
    if (!xf86VTSema)
       return;
+
+   if (tmp_useSWCursor) {
+      extern miPointerSpriteFuncRec miSpritePointerFuncs;
+      (miSpritePointerFuncs.MoveCursor)(pScr, x, y);
+      return;
+   }
 
    if (s3BlockCursor)
       return;

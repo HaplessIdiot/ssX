@@ -22,7 +22,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.h,v 3.2 1996/01/08 08:56:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.h,v 3.3 1996/02/04 09:14:20 dawes Exp $ */
 
 /*
  * Trident Chipset Definitions
@@ -44,8 +44,7 @@
 #define TGUI9420DGi	13
 #define TGUI9430DGi	14
 #define TGUI9440AGi	15
-#define TGUI9660XGi	16
-#define TGUI9680	17
+#define TGUI96xx	16
 
 /*
  * Trident DAC's
@@ -53,12 +52,3 @@
 
 #define TKD8001		0
 #define TGUIDAC		1
-
-/*
- * Trident Bus types.
- */
-
-#define PCI		0
-#define VLBus		1
-#define ISA		2
-#define Unknown		3

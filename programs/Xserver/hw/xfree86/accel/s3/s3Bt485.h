@@ -1,6 +1,6 @@
-/* $XConsortium: s3Bt485.h,v 1.1 94/03/28 21:13:48 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Bt485.h,v 1.1.1.2 1996/01/03 07:14:17 dawes Exp $ */
 /*
- * Copyright 1993 by David Wexelblat <dwex@goblin.org>
+ * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,7 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-
+/* $XConsortium: s3Bt485.h /main/2 1995/11/12 19:05:42 kaleb $ */
 
 #include "compiler.h"
 #include <X11/Xfuncproto.h>

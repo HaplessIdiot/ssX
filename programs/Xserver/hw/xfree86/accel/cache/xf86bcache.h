@@ -1,13 +1,15 @@
-/* $XConsortium: xf86bcache.h,v 1.1 94/03/28 21:02:16 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86bcache.h,v 1.1.1.2 1996/01/03 07:12:06 dawes Exp $ */
+
 /*
  * Structures, typedefs and function prototypes.
  */
+
+/* $XConsortium: xf86bcache.h /main/2 1995/11/13 10:11:02 kaleb $ */
 
 #ifndef _XF86_BCACHE_H
 #define _XF86_BCACHE_H
 
 #undef DEBUG_FCACHE    /* Define it to see the bugs */
-
 
 #ifdef DEBUG_FCACHE
 #define SHOWCACHE() xf86showcache()

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.103 1996/10/06 13:16:03 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.104 1996/10/16 14:40:45 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -38,10 +38,8 @@ extern char *getenv();
 #include "servermd.h"
 #include "scrnintstr.h"
 
-#include "compiler.h"
-
+#define NO_COMPILER_H_EXTRAS
 #include "xf86Procs.h"
-
 #include "xf86_OSlib.h"
 
 #define INIT_CONFIG
@@ -2874,13 +2872,15 @@ configScreenSection()
 
     if (driver->clockprog && !driver->clocks)
     {
-      FatalError(
-        "%s: When ClockProg is specified a Clocks line is required\n",
-        driver->name);
+       if (!OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &(screen->clockOptions))){
+       ErrorF("%s: No clock line specified: assuming programmable clocks\n");
+       OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &(screen->clockOptions));}
+       driver->textclock = textClockValue;
     }
 
     /* Find the Index of the Text Clock for the ClockProg */
-    if (driver->clockprog && textClockValue > 0)
+    if (driver->clockprog && textClockValue > 0
+ 	&& !OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &(screen->clockOptions)))
     {
       driver->textclock = xf86GetNearestClock(driver, textClockValue);
       if (abs(textClockValue - driver->clock[driver->textclock]) >

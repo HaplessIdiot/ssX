@@ -1,4 +1,10 @@
-XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:27:22 dpw Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/amoeba/Imakefile,v 1.1.1.2 1996/01/03 07:20:07 dawes Exp $
+
+
+
+
+XCOMM $XConsortium: Imakefile /main/2 1995/11/13 05:50:02 kaleb $
+
 #include <Server.tmpl>
 
 #if AckToolset
@@ -26,3 +32,4 @@ ObjectFromSpecialAsmSource(inout,../shared/inout,/**/)
 #endif
 
 DependTarget()
+

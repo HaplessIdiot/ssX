@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/r61_main/5 1996/02/02 18:44:52 gildea $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.68 1996/10/08 12:12:33 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.69 1996/10/24 12:29:08 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -573,7 +573,9 @@ XF86SVGASUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) \
                   $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
 XF86SVGAOBJS = $(XF86COMSRC)/XF86_SVGA.o $(XF86SRC)/vga256/vga256Conf.o
 XF86SVGALIBS = $(VGADRIVERSRC)/LibraryTargetName(driver256) \
-               $(XF86SRC)/vga256/LibraryTargetName(vga256) $(XF86LIBS) CFBLibs
+               $(XF86SRC)/xaa/LibraryTargetName(xaa) \
+               $(XF86SRC)/vga256/LibraryTargetName(vga256) \
+               $(XF86LIBS) CFBLibs
 XF86SVGASYSLIBS = $(SYSLIBS)
 #if HasParallelMake
 MakeMutex($(XF86SVGASUBDIRS) $(XF86SVGAOBJS) $(XF86SVGALIBS) $(XF86SVGASYSLIBS))

@@ -1,4 +1,5 @@
-/* $XConsortium: ppcGCstr.h,v 1.1 94/03/28 21:36:45 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcGCstr.h,v 1.1.1.2 1996/01/03 07:22:10 dawes Exp $ */
+
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -43,9 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-
-/* Header: /andrew/X11/r3src/r3plus/server/ddx/ibm/ppc/RCS/ppcGCstr.h,v 1.2 89/04/29 21:25:43 jeff Exp Locker: jeff */
-/* Source: /andrew/X11/r3src/r3plus/server/ddx/ibm/ppc/RCS/ppcGCstr.h,v */
+/* $XConsortium: ppcGCstr.h /main/2 1995/11/13 07:05:11 kaleb $ */
 
 typedef struct {
     unsigned long	planemask ;

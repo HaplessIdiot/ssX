@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/Ti3026Curs.c,v 3.3 1996/02/04 09:04:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/Ti3026Curs.c,v 3.4 1996/09/22 05:03:10 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -48,6 +48,7 @@
 #define MAX_CURS_HEIGHT 64   /* 64 scan lines */
 #define MAX_CURS_WIDTH  64   /* 64 pixels     */
 
+extern Bool tmp_useSWCursor;
 
 #ifndef __GNUC__
 # define __inline__ /**/
@@ -154,6 +155,11 @@ s3Ti3026RealizeCursor(pScr, pCurs)
    unsigned char *ram, *plane0, *plane1;
    CursorBitsPtr bits = pCurs->bits;
 
+   if (bits->height > MAX_CURS_HEIGHT || bits->width > MAX_CURS_WIDTH) {
+      extern miPointerSpriteFuncRec miSpritePointerFuncs;
+      return (miSpritePointerFuncs.RealizeCursor)(pScr, pCurs);
+   }
+
    if (pCurs->bits->refcnt > 1)
       return TRUE;
 
@@ -257,6 +263,12 @@ s3Ti3026MoveCursor(pScr, x, y)
    if (!xf86VTSema)
       return;
    
+   if (tmp_useSWCursor) {
+      extern miPointerSpriteFuncRec miSpritePointerFuncs;
+      (miSpritePointerFuncs.MoveCursor)(pScr, x, y);
+      return;
+   }
+
    if (s3BlockCursor)
       return;
    

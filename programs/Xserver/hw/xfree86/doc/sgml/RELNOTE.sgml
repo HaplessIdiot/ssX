@@ -4,7 +4,7 @@
 
  <title>Release Notes for XFree86&tm; 3.2
  <author>The XFree86 Project, Inc
- <date>26 October 1996
+ <date>29 October 1996
 
 <abstract>
 
@@ -589,7 +589,9 @@ Note, items marked with `*' have been added since the last beta release
   <item>The client-side library code for the XFree86 extensions and the
 	ScreenSaver extension has been moved into separate libraries.
 	The old libXExExt has been removed.
-  <item>Colour support is now included by default in xterm.  I18N support
+  <item>Colour support is now included by default in xterm.  It isn't enabled
+	by default, but can be enabled with the <tt>+cm</tt> command line
+	flag, or by setting the `colorMode' resource to `true'.  I18N support
 	in xterm has been improved (as part of X11R6.1).  If you've previously
 	been using one of the many "color_xterm" variants, try this and let
 	us know if you have any problems.
@@ -924,7 +926,7 @@ boot time.
 
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.46 1996/10/24 12:30:23 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.47 1996/10/26 09:38:54 dawes Exp $
 </verb>
 
 </article>

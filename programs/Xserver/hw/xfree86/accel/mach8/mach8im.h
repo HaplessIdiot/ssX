@@ -1,4 +1,5 @@
-/* $XConsortium: mach8im.h,v 1.1 94/03/28 21:11:47 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8im.h,v 1.1.1.2 1996/01/03 07:13:51 dawes Exp $ */
+
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -21,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-
+/* $XConsortium: mach8im.h /main/2 1995/11/12 18:00:39 kaleb $ */
 
 #ifndef modulus
 #define	modulus(a,b,d)	if (((d) = (a) % (b)) < 0) (d) += (b)

@@ -22,9 +22,9 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_ger.h,v 3.1 1996/01/08 08:56:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_ger.h,v 3.2 1996/02/04 09:14:23 dawes Exp $ */
 
-/* Graphics Engine for 9420/9430 */
+/* Graphics Engine for 9400/9420/9430 */
 
 #define GER_INDEX	0x210A
 #define GER_BYTE0	0x210C
@@ -34,35 +34,86 @@
 
 /* Graphics Engine for 9440/9660/9680 */
 
-#define GER_STATUS	0x2120		
+#define GER_STATUS	0x20		
 #define		GE_BUSY	0x80
-#define GER_OPERMODE	0x2122		/* Byte for 9440, Word for 9660/9680 */
-#define GER_COMMAND	0x2124		
+#define GER_OPERMODE	0x22		/* Byte for 9440, Word for 96xx */
+#define GER_COMMAND	0x24		
 #define		GE_NOP		0x00	/* No Operation */
 #define		GE_BLT		0x01	/* BitBLT ROP3 only */
-#define		GE_BLT_ROP4	0x02	/* BitBLT ROP4 (9660/9680 only) */
+#define		GE_BLT_ROP4	0x02	/* BitBLT ROP4 (96xx only) */
 #define		GE_SCANLINE	0x03	/* Scan Line */
 #define		GE_BRESLINE	0x04	/* Bresenham Line */
 #define		GE_SHVECTOR	0x05	/* Short Vector */
-#define		GE_FASTLINE	0x06	/* Fast Line (9660/9680 only) */
-#define		GE_TRAPEZ	0x07	/* Trapezoidal fill (9660/9680 only) */
-#define		GE_ELLIPSE	0x08	/* Ellipse (9660/9680 only) (RES) */
-#define		GE_ELLIP_FILL	0x09	/* Ellipse Fill (9660/9680 only) (RES)*/
-#define	GER_FMIX	0x2127
-#define GER_DRAWFLAG	0x2128		/* long */
-#define GER_FCOLOUR	0x212C		/* Word for 9440, long for 9660/9680 */
-#define GER_BCOLOUR	0x2130		/* Word for 9440, long for 9660/9680 */
-#define GER_PATLOC	0x2134		/* Word */
-#define GER_DEST_X	0x2138		/* Word */
-#define GER_DEST_Y	0x213A		/* Word */
-#define GER_SRC_X	0x213C		/* Word */
-#define GER_SRC_Y	0x213D		/* Word */
-#define GER_DIM_X	0x2140		/* Word */
-#define GER_DIM_Y	0x2142		/* Word */
-#define GER_PATTERN	0x2180		/* from 0x2180 to 0x21FF */
+#define		GE_FASTLINE	0x06	/* Fast Line (96xx only) */
+#define		GE_TRAPEZ	0x07	/* Trapezoidal fill (96xx only) */
+#define		GE_ELLIPSE	0x08	/* Ellipse (96xx only) (RES) */
+#define		GE_ELLIP_FILL	0x09	/* Ellipse Fill (96xx only) (RES)*/
+#define	GER_FMIX	0x27
+#define GER_DRAWFLAG	0x28		/* long */
+#define		STENCIL		0x8000
+#define		SOLIDFILL	0x4000
+#define		TRANS_ENABLE	0x3000
+#define		YMAJ		0x0400
+#define		XNEG		0x0200
+#define		YNEG		0x0100
+#define		SRCMONO		0x0040
+#define		PATMONO		0x0020
+#define		SCR2SCR		0x0004
+#define		PAT2SCR		0x0002
+#define GER_FCOLOUR	0x2C		/* Word for 9440, long for 96xx */
+#define GER_BCOLOUR	0x30		/* Word for 9440, long for 96xx */
+#define GER_PATLOC	0x34		/* Word */
+#define GER_DEST_XY	0x38
+#define GER_DEST_X	0x38		/* Word */
+#define GER_DEST_Y	0x3A		/* Word */
+#define GER_SRC_XY	0x3C
+#define GER_SRC_X	0x3C		/* Word */
+#define GER_SRC_Y	0x3E		/* Word */
+#define GER_DIM_XY	0x40
+#define GER_DIM_X	0x40		/* Word */
+#define GER_DIM_Y	0x42		/* Word */
+#define GER_PATTERN	0x80		/* from 0x2180 to 0x21FF */
 
-/* Graphics Engine for 9660/9680 */
+/* Additional - Graphics Engine for 96xx */
+#define GER_SRCCLIP_X	0x48		/* Word */
+#define GER_SRCCLIP_Y	0x4A		/* Word */
+#define GER_DSTCLIP_X	0x4C		/* Word */
+#define GER_DSTCLIP_Y	0x4E		/* Word */
 
-/* Routines */
+/* ROPS */
+#define TGUIROP_0		0x00		/* 0 */
+#define TGUIROP_1		0xFF		/* 1 */
+#define TGUIROP_SRC		0xCC		/* S */
+#define TGUIROP_DST		0xAA		/* D */
+#define TGUIROP_NOT_SRC		0x33		/* Sn */
+#define TGUIROP_NOT_DST		0x55		/* Dn */
+#define TGUIROP_AND		0x88		/* DSa */
+#define TGUIROP_SRC_AND_NOT_DST	0x44		/* SDna */
+#define TGUIROP_NOT_SRC_AND_DST 0x22		/* DSna */
+#define TGUIROP_NOR		0x77		/* DSan */
+#define TGUIROP_OR		0xEE		/* DSo */
+#define TGUIROP_SRC_OR_NOT_DST	0xDD		/* SDno */
+#define TGUIROP_NOT_SRC_OR_DST	0xBB		/* DSno */
+#define TGUIROP_NAND		0x11		/* Dson */
+#define TGUIROP_XOR		0x66		/* DSx */
+#define TGUIROP_XNOR		0x99		/* SDxn */
 
-#define WaitIdle()	while (inb(GER_STATUS) & GE_BUSY);
+/* MMIO */
+#define TGUI_OPERMODE(c) \
+		*(unsigned int *)(tguiMMIOBase + GER_OPERMODE) = c;
+#define TGUI_FCOLOUR(c) \
+		*(unsigned int *)(tguiMMIOBase + GER_FCOLOUR) = c;
+#define TGUI_BCOLOUR(c) \
+		*(unsigned int *)(tguiMMIOBase + GER_BCOLOUR) = c;
+#define TGUI_DRAWFLAG(c) \
+		*(unsigned int *)(tguiMMIOBase + GER_DRAWFLAG) = c;
+#define TGUI_FMIX(c) \
+		*(unsigned int *)(tguiMMIOBase + GER_FMIX) = c;
+#define TGUI_DIM_XY(w,h) \
+		*(unsigned int *)(tguiMMIOBase + GER_DIM_XY) = ((h-1)<<16) + (w-1);
+#define TGUI_SRC_XY(x,y) \
+		*(unsigned int *)(tguiMMIOBase + GER_SRC_XY) = (y << 16) + x;
+#define TGUI_DEST_XY(x,y) \
+		*(unsigned int *)(tguiMMIOBase + GER_DEST_XY) = (y << 16) + x;
+#define TGUI_COMMAND(c) \
+		*(unsigned int *)(tguiMMIOBase + GER_COMMAND) = c;

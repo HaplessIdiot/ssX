@@ -1,4 +1,10 @@
-/* $XConsortium: mach8imst.s,v 1.2 94/03/29 09:51:16 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8imst.s,v 1.1.1.2 1996/01/03 07:13:54 dawes Exp $ */
+
+
+
+
+
+/* $XConsortium: mach8imst.s /main/3 1995/11/12 18:00:47 kaleb $ */
 /******************************************************************************
 
 This is a assembly language version of the mach8ImageStipple routine.
@@ -6,7 +12,6 @@ This is a assembly language version of the mach8ImageStipple routine.
 Except for the extended fifo status register, everything should be
 8514 compatible.
 Written by Hans Nasten ( nasten@everyware.se ) SEP 16, 1993.
-
 
 This is a assembly language version of the C code in mach8im.c
 

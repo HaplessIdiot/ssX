@@ -1,4 +1,10 @@
-/* $XConsortium: cir_inline.h,v 1.1 94/03/28 21:49:47 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_inline.h,v 1.1.1.2 1996/01/03 07:23:50 dawes Exp $ */
+
+
+
+
+
+/* $XConsortium: cir_inline.h /main/2 1995/11/13 08:21:13 kaleb $ */
 
 /* Some inline assembler functions. */
 
@@ -140,5 +146,4 @@ int count;
 		count--;
 	}
 }
-
 #endif

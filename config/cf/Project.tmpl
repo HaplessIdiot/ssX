@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
 XCOMM $XConsortium: Project.tmpl /main/r61_main/6 1996/01/15 12:26:59 gildea $
-XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.33tsi Exp $
+XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.34 1996/10/03 08:28:05 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -618,6 +618,10 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.33tsi Exp $
 #endif
 #endif
 
+#ifndef XkbComp
+#define XkbComp xkbcomp
+#endif
+
 XCOMM -----------------------------------------------------------------------
 XCOMM X Window System make variables; these need to be coordinated with rules
 
@@ -1216,14 +1220,14 @@ UnsharedLibReferences(XKBFILE,xkbfile,$(XKBFILELIBSRC))
 #define	XkbClientLibs /**/
 #endif
 #endif
-#ifdef UseInstalled
-     XKBCOMPCMD = xkbcomp			/* assume BINDIR in path */
+#if defined(UseInstalled) || defined(OS2Architecture)
+     XKBCOMPCMD = XkbComp			/* assume BINDIR in path */
 #else
      XKBCOMPSRC = $(PROGRAMSRC)/xkbcomp
 #if HasSharedLibraries
 XKBCOMPENVSETUP = LdLibraryPath=$(BUILDLIBDIR):$(LdLibraryPath)
 #endif
-     XKBCOMPCMD = $(XKBCOMPENVSETUP) $(XKBCOMPSRC)/xkbcomp
+     XKBCOMPCMD = $(XKBCOMPENVSETUP) $(XKBCOMPSRC)/XkbComp
 #endif
 #else /* !BuildXKBlib */
 #ifndef XkbClientDepLibs

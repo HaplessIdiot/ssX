@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3blt.c,v 3.5 1996/10/17 15:17:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3blt.c,v 3.6 1996/10/18 15:01:48 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -347,7 +347,7 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
 	    }
 	 }
 
-	 WaitQueue(1);
+	 WaitIdle();
 	 SETB_CMD_SET(CMD_NOP);
 	 UNBLOCK_CURSOR;
 	 DEALLOCATE_LOCAL(ordering);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3init.c,v 3.7 1996/10/17 15:17:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3init.c,v 3.8 1996/10/18 15:01:52 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -1066,7 +1066,15 @@ s3InitEnvironment()
       /* reset S3 graphics engine and disable all interrupts. */
       SET_SUBSYS_CRTL(GPCTRL_RESET);
       SET_SUBSYS_CRTL(GPCTRL_ENAB);
-      IN_SUBSYS_STAT();
+      usleep(10000);  /* wait a little bit... */
+      if (IN_SUBSYS_STAT() != 0x3000) {  /* 2nd try */
+	int tmp;
+	outb(vgaCRIndex, 0x66);
+	tmp = inb(vgaCRReg);
+	outb(vgaCRReg, tmp |  0x02);
+	outb(vgaCRReg, tmp & ~0x02);
+	usleep(10000);  /* wait a little bit... */
+      }
       WaitIdleEmpty();
 
       SETB_CMD_SET(CMD_NOP);
@@ -1104,7 +1112,7 @@ s3InitEnvironment()
       SETB_MONO_PAT1(~0);
       SETB_CMD_SET((s3_gcmd & ~CMD_HWCLIP) | CMD_BITBLT | MIX_MONO_PATT | INC_X | INC_Y | ROP_P);
 
-      WaitQueue(4);
+      WaitIdleEmpty();
 
       /* Reset current draw position */
       SETB_RSRC_XY(0,0);
@@ -1113,6 +1121,15 @@ s3InitEnvironment()
       /* Reset current colors, foreground is all on, background is 0. */
       SETB_PAT_FG_CLR(~0);
       SETB_PAT_BG_CLR(0);
+   }
+   else {
+      int tmp;
+      /* reset S3 graphics engine */
+      outb(vgaCRIndex, 0x66);
+      tmp = inb(vgaCRReg);
+      outb(vgaCRReg, tmp |  0x02);
+      outb(vgaCRReg, tmp & ~0x02);
+      usleep(10000);  /* wait a little bit... */
    }
 
    /* Load the LUT */

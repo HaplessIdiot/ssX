@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.19 1996/10/06 13:17:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.20 1996/10/16 14:42:21 dawes Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -369,6 +369,8 @@ static int arkDisplayableMemory;
 static int arkUseCOP;
 static int arkDRAMBandwidth;
 unsigned char *arkMMIOBase = NULL;
+int arkCOPBufferSpaceAddr;
+int arkCOPBufferSpaceSize;
 
 static SymTabRec chipsets[] = {
 	{ ARK1000VL,	"ark1000vl" },
@@ -1195,6 +1197,7 @@ ArkFbInit()
 				XCONFIG_PROBED, vga256InfoRec.name,
 				vga256InfoRec.chipset);
 		arkUseCOP = TRUE;
+#if 0
 		/*
 		 * We only accelerate GXcopy ScreenCopy.
 		 * This function is called from vga256DoBitbltCopy
@@ -1220,6 +1223,19 @@ ArkFbInit()
 			cfb32NonTEOps.CopyArea = Ark32CopyArea;
 		}
 		/* CopyWindow is hooked in the "ScreenInit" hook. */
+#endif
+
+		if (offscreen_available >= 16384) {
+		    arkCOPBufferSpaceAddr =
+		        vga256InfoRec.videoRam * 1024 - 16384;
+		    arkCOPBufferSpaceSize = 16384 - 256;
+		}
+		else {
+		    arkCOPBufferSpaceAddr = 0;
+		    arkCOPBufferSpaceSize = 0;
+		}
+
+		ArkAccelInit();
 	}
 }
 
@@ -1425,7 +1441,14 @@ vgaArkPtr restore;
 		arkMMIOBase = (unsigned char *)vgaBase + 0x18000;
 
 		SETCOLORMIXSELECT(0x0303);	/* Copy source. */
-		SETWRITEPLANEMASK(0xFFFF);
+		if (arkChip < ARK2000PV) {
+		    SETWRITEPLANEMASK(0xFFFF);
+		    SETTRANSPARENCYCOLORMASK(0xFFFF);
+		}
+		else {
+		    SETWRITEPLANEMASK(0xFFFFFFFF);
+		    SETTRANSPARENCYCOLORMASK(0xFFFFFFFF);
+		}
 		if (vgaBitsPerPixel == 24) {
 			SETSTENCILPITCH(vga256InfoRec.displayWidth * 3);
 			SETSOURCEPITCH(vga256InfoRec.displayWidth * 3);
@@ -1983,9 +2006,11 @@ ArkScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
    * Note: At 8bpp the vga256 code already accelerates this function
    * using vgaLowlevFuncs.
    */
+#if 0
   if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options)
   && vgaBitsPerPixel != 8)
 	  pScreen->CopyWindow = ArkCopyWindow;
+#endif
   return TRUE;
 }
 

@@ -1,4 +1,5 @@
-/* $XConsortium: mfbimggblt.c,v 1.2 94/04/17 20:31:44 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbimggblt.c,v 1.1.1.2 1996/01/03 07:21:51 dawes Exp $ */
+
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -47,7 +48,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbimggblt.c,v 1.2 94/04/17 20:31:44 dpw Exp $ */
+/* $XConsortium: mfbimggblt.c /main/4 1995/11/13 07:04:27 kaleb $ */
+
 #define BANKING_MODS
 #include	"X.h"
 #include	"Xmd.h"

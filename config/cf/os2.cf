@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.13 1996/09/24 13:48:45 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.14 1996/10/17 15:09:58 dawes Exp $
 
 #define OSName           OS/2
 #define OSVendor	 IBM
@@ -58,7 +58,6 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.13 1996/09/24 13:48:45 dawes 
 #define NroffCmd	groff -Tascii
 #define	EqnCmd 		eqn -Tascii
 #define TroffCmd        groff -Tps
-          COL = /usr/bin/col
          NEQN = NeqnCmd
         NROFF = NroffCmd
 

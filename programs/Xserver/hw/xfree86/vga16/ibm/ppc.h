@@ -1,4 +1,4 @@
-/* $XConsortium: ppc.h,v 1.1 94/03/28 21:35:27 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppc.h,v 1.1.1.2 1996/01/03 07:21:56 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -21,9 +21,7 @@
  * SOFTWARE.
  *
 */
-/* Header: /andrew/X11/r3src/release/server/ddx/ibm/ppc/RCS/ppc.h,v 9.2 89/04/29 21:25:30 jeff Exp */
-/* Source: /andrew/X11/r3src/release/server/ddx/ibm/ppc/RCS/ppc.h,v */
-/* "@(#)ppc.h	3.1 88/09/22 09:35:08" */
+/* $XConsortium: ppc.h /main/2 1995/11/13 07:04:38 kaleb $ */
 
 #include "gcstruct.h"
 
@@ -31,3 +29,4 @@
 
 #include "ppcScrn.h"
 #include "vga16.h"
+

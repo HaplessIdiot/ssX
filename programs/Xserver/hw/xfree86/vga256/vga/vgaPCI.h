@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.17 1996/10/10 14:05:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.18 1996/10/13 11:21:39 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -51,8 +51,8 @@
 /* Tseng */
 #define PCI_CHIP_ET4000_W32P_A	0x3202
 #define PCI_CHIP_ET4000_W32P_B	0x3205
-#define PCI_CHIP_ET4000_W32P_C	0x3206
-#define PCI_CHIP_ET4000_W32P_D	0x3207
+#define PCI_CHIP_ET4000_W32P_D	0x3206
+#define PCI_CHIP_ET4000_W32P_C	0x3207
 #define PCI_CHIP_ET6000		0x3208
 
 /* Weitek */

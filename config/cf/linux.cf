@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: linux.cf /main/18 1996/02/02 18:59:31 gildea $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.48 1996/10/06 13:09:41 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.49 1996/10/19 15:12:28 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -50,7 +50,9 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.48 1996/10/06 13:09:41 dawe
 #define GccUsesGas		YES
 #define UseGas			YES
 #define GnuCpp			YES
-#define HasShadowPasswd		NO
+#ifndef HasShadowPasswd
+# define HasShadowPasswd	NO
+#endif
 #ifndef HasLibCrypt
 # define HasLibCrypt		NO
 #endif

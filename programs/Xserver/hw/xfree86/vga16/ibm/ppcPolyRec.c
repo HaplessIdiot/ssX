@@ -1,4 +1,5 @@
-/* $XConsortium: ppcPolyRec.c,v 1.2 94/04/17 20:31:55 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcPolyRec.c,v 1.1.1.2 1996/01/03 07:22:19 dawes Exp $ */
+
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -68,8 +69,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-
-/* Header: mipolyrect.c,v 1.12 88/09/06 14:50:28 jim Exp */
+/* $XConsortium: ppcPolyRec.c /main/3 1995/11/13 07:05:31 kaleb $ */
 
 #include "X.h"
 #include "Xprotostr.h"

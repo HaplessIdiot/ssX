@@ -1,4 +1,5 @@
-/* $XConsortium: ppcBitMacs.h,v 1.1 94/03/28 21:35:52 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcBitMacs.h,v 1.1.1.2 1996/01/03 07:21:59 dawes Exp $ */
+
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -44,9 +45,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* Header: /andrew/X11/r3src/release/server/ddx/ibm/ppc/RCS/ppcBitMacs.h,v 9.1 89/04/29 21:25:37 jeff Exp */
-/* Source: /andrew/X11/r3src/release/server/ddx/ibm/ppc/RCS/ppcBitMacs.h,v */
-/* "@(#)ppcbitmacs.h	3.1 88/09/22 09:35:18" */
+/* $XConsortium: ppcBitMacs.h /main/2 1995/11/13 07:04:46 kaleb $ */
 
 /* Screen Bit-Order Macros */
 #if !defined(BITMAP_BIT_ORDER)

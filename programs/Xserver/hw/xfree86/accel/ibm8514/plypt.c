@@ -1,4 +1,5 @@
-/* $XConsortium: ibm8514plyp.c,v 1.2 94/04/17 20:30:36 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/plypt.c,v 1.1.1.3 1996/01/03 07:12:41 dawes Exp $ */
+
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -37,9 +38,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 Modified by Tiago Gons (tiago@comosjn.hobby.nl)
 
 ********************************************************/
-
-
-/* $XConsortium: ibm8514plyp.c,v 1.2 94/04/17 20:30:36 dpw Exp $ */
+/* $XConsortium: plypt.c /main/3 1995/11/12 16:54:52 kaleb $ */
 
 #include "X.h"
 #include "gcstruct.h"
