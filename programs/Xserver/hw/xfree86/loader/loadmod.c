@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.38 1999/01/24 13:32:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.39 1999/01/26 05:54:13 dawes Exp $ */
 
 /*
  *
@@ -793,9 +793,6 @@ LoadModule (const char *module, const char *path, const char **subdirlist,
 			const XF86ModReqInfo * modreq,
 			int *errmaj, int *errmin)
 {
-#if 0
-	ModuleInitProc initfunc = NULL;
-#endif
 	XF86ModuleData *initdata = NULL;
 	char **pathlist = NULL;
 	char *found = NULL;

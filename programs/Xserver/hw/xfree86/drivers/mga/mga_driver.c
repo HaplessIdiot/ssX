@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.69 1999/01/23 09:55:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.70 1999/01/26 05:54:04 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -342,6 +342,12 @@ mgaSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 
 #endif /* XFree86LOADER */
 
+/*
+ * This is intentionally screen-independent.  It indicates the binding
+ * choice made in the first PreInit.
+ */
+static int pix24bpp = 0;
+ 
 /* 
  * ramdac info structure initialization
  */
@@ -836,6 +842,10 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
     xf86PrintDepthBpp(pScrn);
+
+    /* Get the depth24 pixmap format */
+    if (pScrn->depth == 24 && pix24bpp == 0)
+	pix24bpp = xf86GetBppFromDepth(pScrn, 24);
 
     /*
      * This must happen after pScrn->display has been set because
@@ -1393,7 +1403,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	reqSym = "cfb16ScreenInit";
 	break;
     case 24:
-	if (0) {
+	if (pix24bpp == 24) {
 	    mod = "cfb24";
 	    reqSym = "cfb24ScreenInit";
 	} else {
@@ -1798,7 +1808,7 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			pScrn->displayWidth);
 	break;
     case 24:
-	if(0)
+	if (pix24bpp == 24)
 	    ret = cfb24ScreenInit(pScreen, pMga->FbStart,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,

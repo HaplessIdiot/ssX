@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.1 1999/01/23 09:55:50 dawes Exp $ */
 
 #ifndef _SIS_H
 #define _SIS_H_
@@ -77,10 +77,12 @@ typedef struct {
     xf86CursorInfoPtr	CursorInfoRec;
     XAAInfoRecPtr	AccelInfoRec;
     CloseScreenProcPtr	CloseScreen;
+    unsigned int	(*ddc1Read)(ScrnInfoPtr);
 } SISRec, *SISPtr;
 
 /* Prototypes */
 
+unsigned int SiSddc1Read(ScrnInfoPtr pScrn);
 void SiSRestore(ScrnInfoPtr pScrn, SISRegPtr sisReg);
 void SiSSave(ScrnInfoPtr pScrn, SISRegPtr sisReg);
 Bool SiSInit(ScrnInfoPtr pScrn, DisplayModePtr mode);

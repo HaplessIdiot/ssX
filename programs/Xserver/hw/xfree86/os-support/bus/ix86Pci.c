@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ix86Pci.c,v 1.4 1998/09/19 12:14:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ix86Pci.c,v 1.5 1998/09/27 04:43:41 dawes Exp $ */
 /*
  * ix86Pci.c - x86 PCI driver
  *
@@ -195,9 +195,9 @@ void ix86PciSelectCfgmech(void)
 
     /*
      * Determine if motherboard chipset supports PCI Config Mech 1 or 2
-     * We rely on xf86PCIFlags to tell which mechanisms to try....
+     * We rely on xf86Info.pciFlags to tell which mechanisms to try....
      */
-    switch (xf86PCIFlags) {
+    switch (xf86Info.pciFlags) {
 
     case PCIProbe1: /* { */
 

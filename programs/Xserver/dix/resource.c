@@ -41,6 +41,29 @@ SOFTWARE.
 
 ********************************************************/
 
+/* The panoramix components contained the following notice */
+/****************************************************************
+*                                                               *
+*    Copyright (c) Digital Equipment Corporation, 1991, 1997    *
+*                                                               *
+*   All Rights Reserved.  Unpublished rights  reserved  under   *
+*   the copyright laws of the United States.                    *
+*                                                               *
+*   The software contained on this media  is  proprietary  to   *
+*   and  embodies  the  confidential  technology  of  Digital   *
+*   Equipment Corporation.  Possession, use,  duplication  or   *
+*   dissemination of the software and media is authorized only  *
+*   pursuant to a valid written license from Digital Equipment  *
+*   Corporation.                                                *
+*                                                               *
+*   RESTRICTED RIGHTS LEGEND   Use, duplication, or disclosure  *
+*   by the U.S. Government is subject to restrictions  as  set  *
+*   forth in Subparagraph (c)(1)(ii)  of  DFARS  252.227-7013,  *
+*   or  in  FAR 52.227-19, as applicable.                       *
+*                                                               *
+*****************************************************************/
+
+
 /* $TOG: resource.c /main/41 1998/02/09 14:20:31 kaleb $ */
 
 /*	Routines to manage various kinds of resources:
@@ -65,7 +88,7 @@ SOFTWARE.
  *      1, and an otherwise arbitrary ID in the low 22 bits, we can create a
  *      resource "owned" by the client.
  */
-/* $XFree86: xc/programs/Xserver/dix/resource.c,v 3.3 1998/10/04 09:38:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/resource.c,v 3.4 1999/01/13 08:30:54 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"

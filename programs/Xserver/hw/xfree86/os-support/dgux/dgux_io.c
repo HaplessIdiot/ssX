@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/dgux/dgux_io.c,v 1.1 1998/12/13 07:37:46 dawes Exp $ */
 /*
  * INTEL DG/UX RELEASE 4.20 MU03
  * Copyright 1997 Takis Psarogiannakopoulos Cambridge,UK
@@ -68,7 +68,7 @@ MouseDevPtr mouse;
 {
 	if ((mouse->mseFd = open(mouse->mseDevice, O_RDONLY|O_NDELAY)) < 0)
 	{
-		if (xf86AllowMouseOpenFail) {
+		if (xf86Info.allowMouseOpenFail) {
 			ErrorF("Cannot open mouse (%s) - Continuing...\n",
 				strerror(errno));
 			return(-2);

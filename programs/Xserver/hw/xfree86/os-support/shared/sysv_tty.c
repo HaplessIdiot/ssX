@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sysv_tty.c,v 3.8.4.3 1998/06/05 16:23:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sysv_tty.c,v 3.10 1998/07/25 16:57:02 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -98,7 +98,7 @@ xf86SetMouseSpeed(MouseDevPtr mouse, int old, int new, unsigned cflag)
 
 	if (ioctl(mouse->mseFd, TCSETAW, &tty) < 0)
 	{
-	    if (xf86AllowMouseOpenFail) {
+	    if (xf86Info.allowMouseOpenFail) {
 		xf86Msg(X_WARNING,
 		    "Unable to set status of mouse fd (%s) - Continuing...\n",
 		    strerror(errno));

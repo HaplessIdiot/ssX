@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.3 1998/11/28 10:43:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.4 1998/11/29 10:50:29 dawes Exp $ */
 
 #ifndef _S3V_H
 #define _S3V_H
@@ -39,6 +39,7 @@
 #include "cfb16.h"
 #include "cfb24.h"
 #include "cfb32.h"
+#include "cfb24_32.h"
 
 /* Drivers using the XAA interface ... */
 #include "xaa.h"

@@ -43,7 +43,30 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.9 1998/11/29 10:50:16 dawes Exp $ */
+
+/* The panoramix components contained the following notice */
+/****************************************************************
+*                                                               *
+*    Copyright (c) Digital Equipment Corporation, 1991, 1997    *
+*                                                               *
+*   All Rights Reserved.  Unpublished rights  reserved  under   *
+*   the copyright laws of the United States.                    *
+*                                                               *
+*   The software contained on this media  is  proprietary  to   *
+*   and  embodies  the  confidential  technology  of  Digital   *
+*   Equipment Corporation.  Possession, use,  duplication  or   *
+*   dissemination of the software and media is authorized only  *
+*   pursuant to a valid written license from Digital Equipment  *
+*   Corporation.                                                *
+*                                                               *
+*   RESTRICTED RIGHTS LEGEND   Use, duplication, or disclosure  *
+*   by the U.S. Government is subject to restrictions  as  set  *
+*   forth in Subparagraph (c)(1)(ii)  of  DFARS  252.227-7013,  *
+*   or  in  FAR 52.227-19, as applicable.                       *
+*                                                               *
+*****************************************************************/
+
+/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.10 1999/01/13 08:30:54 dawes Exp $ */
 
 #include "misc.h"
 #include "scrnintstr.h"

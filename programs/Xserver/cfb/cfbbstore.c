@@ -14,10 +14,7 @@
  *
  *
  */
-#ifndef lint
-static char rcsid[] =
-"$XConsortium: cfbbstore.c,v 5.8 93/12/13 17:21:51 dpw Exp $ SPRITE (Berkeley)";
-#endif
+/* $TOG: cfbbstore.c /main/18 1998/02/17 11:03:44 kaleb $ */
 
 #include    "cfb.h"
 #include    "X.h"
@@ -76,11 +73,8 @@ cfbSaveAreas(pPixmap, prgnSave, xorg, yorg, pWin)
 	pBox++;
     }
 
-#ifdef CFB_NEED_SCREEN_PRIVATE
-    pScrPix = (PixmapPtr) pScreen->devPrivates[cfbScreenPrivateIndex].ptr;
-#else
-    pScrPix = (PixmapPtr) pScreen->devPrivate;
-#endif
+    pScrPix = (*pScreen->GetScreenPixmap)(pScreen);
+
 
     cfbDoBitbltCopy((DrawablePtr) pScrPix, (DrawablePtr)pPixmap,
 		    GXcopy, prgnSave, pPtsInit, ~0L);
@@ -137,11 +131,7 @@ cfbRestoreAreas(pPixmap, prgnRestore, xorg, yorg, pWin)
 	pBox++;
     }
 
-#ifdef CFB_NEED_SCREEN_PRIVATE
-    pScrPix = (PixmapPtr) pScreen->devPrivates[cfbScreenPrivateIndex].ptr;
-#else
-    pScrPix = (PixmapPtr) pScreen->devPrivate;
-#endif
+    pScrPix = (*pScreen->GetScreenPixmap)(pScreen);
 
     cfbDoBitbltCopy((DrawablePtr)pPixmap, (DrawablePtr) pScrPix,
 		    GXcopy, prgnRestore, pPtsInit, ~0L);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_accel.c,v 1.3 1999/01/23 09:55:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_accel.c,v 1.4 1999/01/24 03:13:55 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -44,6 +44,7 @@ SiSAccelInit(ScreenPtr pScreen)
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     SISPtr pSiS = SISPTR(pScrn);
     BoxRec AvailFBArea;
+    int offset;
 
     pSiS->AccelInfoRec = infoPtr = XAACreateInfoRec();
     if (!infoPtr) return FALSE;
@@ -68,27 +69,27 @@ SiSAccelInit(ScreenPtr pScreen)
     infoPtr->SubsequentScreenToScreenCopy = 		
 				SiSSubsequentScreenToScreenCopy;
 
+#if 0 /* not right for 6326 */
     infoPtr->Mono8x8PatternFillFlags =  NO_PLANEMASK | 
 					HARDWARE_PATTERN_SCREEN_ORIGIN | 
 					HARDWARE_PATTERN_PROGRAMMED_BITS |
-					HARDWARE_PATTERN_PROGRAMMED_ORIGIN | 
+					HARDWARE_PATTERN_PROGRAMMED_ORIGIN |
 					BIT_ORDER_IN_BYTE_MSBFIRST;
 
     infoPtr->SetupForMono8x8PatternFill =
 				SiSSetupForMono8x8PatternFill;
     infoPtr->SubsequentMono8x8PatternFillRect = 
 				SiSSubsequentMono8x8PatternFillRect;
+#endif
 
     AvailFBArea.x1 = 0;
     AvailFBArea.y1 = 0;
     AvailFBArea.x2 = pScrn->displayWidth;
-    if (!pSiS->TurboQueue) {
-    	AvailFBArea.y2 = pSiS->FbMapSize / (pScrn->displayWidth *
+    if (pSiS->TurboQueue) offset = 32768;
+    if (pSiS->HWCursor) offset = 16384;
+    if (pSiS->HWCursor && pSiS->TurboQueue) offset = 65536;
+    AvailFBArea.y2 = (pSiS->FbMapSize - offset) / (pScrn->displayWidth *
 					    pScrn->bitsPerPixel / 8);
-    } else {
-    	AvailFBArea.y2 = (pSiS->FbMapSize - 32768) / (pScrn->displayWidth *
-					    pScrn->bitsPerPixel / 8);
-    }
 
     xf86InitFBManager(pScreen, &AvailFBArea);
 

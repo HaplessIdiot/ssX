@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.22 1998/12/20 11:57:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.23 1999/01/13 08:30:53 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -41,6 +41,29 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+
+/* The panoramix components contained the following notice */
+/****************************************************************
+*                                                               *
+*    Copyright (c) Digital Equipment Corporation, 1991, 1997    *
+*                                                               *
+*   All Rights Reserved.  Unpublished rights  reserved  under   *
+*   the copyright laws of the United States.                    *
+*                                                               *
+*   The software contained on this media  is  proprietary  to   *
+*   and  embodies  the  confidential  technology  of  Digital   *
+*   Equipment Corporation.  Possession, use,  duplication  or   *
+*   dissemination of the software and media is authorized only  *
+*   pursuant to a valid written license from Digital Equipment  *
+*   Corporation.                                                *
+*                                                               *
+*   RESTRICTED RIGHTS LEGEND   Use, duplication, or disclosure  *
+*   by the U.S. Government is subject to restrictions  as  set  *
+*   forth in Subparagraph (c)(1)(ii)  of  DFARS  252.227-7013,  *
+*   or  in  FAR 52.227-19, as applicable.                       *
+*                                                               *
+*****************************************************************/
+
 /* $TOG: main.c /main/86 1998/02/09 14:20:03 kaleb $ */
 
 #define NEED_EVENTS

@@ -13,7 +13,7 @@
  *	David Dawes, Andrew E. Mileski, Leonard N. Zubkoff,
  *	Guy DESBIEF, Itai Nahshon.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.5 1998/12/06 06:08:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.6 1999/01/14 13:04:22 dawes Exp $ */
  
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -54,6 +54,7 @@
 #undef PSZ
 #include "cfb16.h"
 #include "cfb24.h"
+#include "cfb24_32.h"
 #include "cfb32.h"
 
 #include "xf86DDC.h"
@@ -91,6 +92,12 @@ int	LgValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose,
 static void LgRestoreLgRegs(ScrnInfoPtr pScrn, LgRegPtr lgReg);
 static int LgFindLineData(int displayWidth, int bpp);
 
+/*
+ * This is intentionally screen-independent.  It indicates the binding
+ * choice made in the first PreInit.
+ */
+static int pix24bpp = 0;
+ 
 /* 
  * This contains the functions needed by the server after loading the
  * driver module.  It must be supplied, and gets added the driver list by
@@ -251,7 +258,8 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
      * Our default depth is 8, so pass it to the helper function.
      * We support both 24bpp and 32bpp layouts, so indicate that.
      */
-    if (!xf86SetDepthBpp(pScrn, 8, 8, 8, Support24bppFb | Support32bppFb)) {
+    if (!xf86SetDepthBpp(pScrn, 8, 8, 8, Support24bppFb | Support32bppFb |
+				SupportConvert32to24 | PreferConvert32to24)) {
 	return FALSE;
     } else {
 	/* Check that the returned depth is one we support */
@@ -271,6 +279,10 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
     xf86PrintDepthBpp(pScrn);
+
+    /* Get the depth24 pixmap format */
+    if (pScrn->depth == 24 && pix24bpp == 0)
+	pix24bpp = xf86GetBppFromDepth(pScrn, 24);
 
     /*
      * This must happen after pScrn->display has been set because
@@ -627,7 +639,11 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
     case 4:  mod = "xf4bpp";  break;
     case 8:  mod = "cfb";     break;
     case 16: mod = "cfb16";   break;
-    case 24: mod = "cfb24";   break;
+    case 24: if (pix24bpp == 24)
+		mod = "cfb24";
+             else
+		mod = "xf24_32bpp";
+             break;
     case 32: mod = "cfb32";   break;
     }
     if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
@@ -1219,7 +1235,13 @@ LgScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			pScrn->displayWidth);
 	break;
     case 24:
-	ret = cfb24ScreenInit(pScreen, pLg->FbBase,
+	if (pix24bpp == 24)
+	    ret = cfb24ScreenInit(pScreen, pLg->FbBase,
+			pScrn->virtualX, pScrn->virtualY,
+			pScrn->xDpi, pScrn->yDpi,
+			pScrn->displayWidth);
+	else
+	    ret = cfb24_32ScreenInit(pScreen, pLg->FbBase,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			pScrn->displayWidth);

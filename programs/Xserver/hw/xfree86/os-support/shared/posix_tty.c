@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/posix_tty.c,v 3.13 1998/08/29 05:43:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/posix_tty.c,v 3.14 1998/12/05 14:40:26 dawes Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -127,7 +127,7 @@ xf86SetMouseSpeed(MouseDevPtr mouse, int old, int new, unsigned int cflag)
 
 	if (tcsetattr(mouse->mseFd, TCSADRAIN, &tty) < 0)
 	{
-	    if (xf86AllowMouseOpenFail) {
+	    if (xf86Info.allowMouseOpenFail) {
 		xf86Msg(X_WARNING,
 		    "Unable to set status of mouse fd (%s) - Continuing...\n",
 		    strerror(errno));
@@ -165,7 +165,7 @@ xf86SetMouseSpeed(MouseDevPtr mouse, int old, int new, unsigned int cflag)
 	{
 	    if (write(mouse->mseFd, c, 2) != 2)
 	    {
-		if (xf86AllowMouseOpenFail) {
+		if (xf86Info.allowMouseOpenFail) {
 		    xf86Msg(X_WARNING,
 			"Unable to write to mouse fd (%s) - Continuing...\n",
 			strerror(errno));

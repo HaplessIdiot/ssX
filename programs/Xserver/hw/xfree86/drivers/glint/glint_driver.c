@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.22 1999/01/17 10:54:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.23 1999/01/26 05:54:03 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -90,6 +90,12 @@ static void	GLINTSave(ScrnInfoPtr pScrn);
 static void	GLINTRestore(ScrnInfoPtr pScrn);
 static Bool	GLINTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 
+/*
+ * This is intentionally screen-independent.  It indicates the binding
+ * choice made in the first PreInit.
+ */
+static int pix24bpp = 0;
+ 
 #define VERSION 4000
 #define GLINT_NAME "GLINT"
 #define GLINT_DRIVER_NAME "glint"
@@ -758,6 +764,8 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
 
+    xf86PrintDepthBpp(pScrn);
+
     /*
      * This must happen after pScrn->display has been set because
      * xf86SetWeight references it.
@@ -1301,7 +1309,10 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	mod = "cfb16";
 	break;
     case 24:
-	mod = "cfb24";
+	if (pix24bpp == 24)
+	    mod = "cfb24";
+	else
+	    mod = "xf24_32bpp";
 	break;
     case 32:
 	mod = "cfb32";
@@ -1764,7 +1775,13 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			pScrn->displayWidth);
 	break;
     case 24:
-	ret = cfb24ScreenInit(pScreen, pGlint->FbBase,
+	if (pix24bpp == 24)
+	    ret = cfb24ScreenInit(pScreen, pGlint->FbBase,
+			pScrn->virtualX, pScrn->virtualY,
+			pScrn->xDpi, pScrn->yDpi,
+			pScrn->displayWidth);
+	else
+	    ret = cfb24_32ScreenInit(pScreen, pGlint->FbBase,
 			pScrn->virtualX, pScrn->virtualY,
 			pScrn->xDpi, pScrn->yDpi,
 			pScrn->displayWidth);

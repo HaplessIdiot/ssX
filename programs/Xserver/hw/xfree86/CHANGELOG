@@ -1,4 +1,18 @@
 XFree86 3.9Ny (26 January 1999)
+2194. Some improvements to the XAA TE font rendering assembly code (#2413,
+      David Bateman).
+2193. Fix some places in cfb that were accessing the screen pixmap directly
+      from the private (#2412, Mark Vojkovich).
+2192. Fix a FreeType build problem on 64-bit platforms (#2411, Alan Hourihane).
+2191. Fix a cfb24 build problem that shows up with egcs (#2410,
+      Alan Hourihane).
+2190. Add DPMS, DDC1 and HW cursor support to the SiS driver, and fix panning
+      in the SiS driver (#2409, Alan Hourihane).
+2189. Put copyright notices from the pandix/panmi code into the merged
+      dix/mi versions (#2408, Alan Hourihane).
+2188. Update drivers to use the 24/32 conversion layer, and to default to
+      a 24bpp framebuffer format when supported.
+2187. Make some refinements to the way the depth 24 pixmap format is set.
 2186. Replace the ModuleInit function with a ModuleData data object.  This
       allows the loader to get the version and entry points from a module
       without first executing module code.
@@ -7156,4 +7170,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.676 1999/01/24 13:32:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.677 1999/01/26 05:53:51 dawes Exp $

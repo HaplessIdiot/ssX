@@ -1,6 +1,6 @@
 /* ft_conf.h.  Xserver-specific version. */
 
-/* $XFree86: xc/lib/font/FreeType/ft_conf.h,v 1.3 1998/09/06 12:35:39 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ft_conf.h,v 1.4 1999/01/24 13:32:26 dawes Exp $ */
 
 /* we need the following because there are some typedefs in this file */
 #ifndef FT_CONF_H
@@ -181,7 +181,7 @@
   typedef INT32      TT_Int32;
   typedef CARD32     TT_Word32;
 
-#ifdef WORD64
+#if defined(WORD64) || defined(_XSERVER64)
 #define LONG64
 #define INT64   long
 #endif /* WORD64 */
