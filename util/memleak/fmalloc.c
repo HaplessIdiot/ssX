@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/util/memleak/fmalloc.c,v 3.5 1999/12/27 00:56:41 robin Exp $ */
+/* $XFree86: xc/util/memleak/fmalloc.c,v 3.6 2000/02/12 03:40:07 dawes Exp $ */
 
 
 /*
@@ -157,6 +157,7 @@ unsigned long	FindLeakAllocBreakpoint = ~0;
 unsigned long	FindLeakFreeBreakpoint = ~0;
 unsigned long	FindLeakTime;
 int		FindLeakCheckAlways = 0;
+int		FindLeakValidateAlways = 0;
 
 static void MarkActiveBlock ();
 static int  tree_insert (), tree_delete ();
@@ -550,6 +551,11 @@ malloc (desiredsize)
 	endOfStaticMemory = (mem *) sbrk(0);
     if (FindLeakCheckAlways)
 	CheckMemory ();
+    else if (FindLeakValidateAlways)
+    {
+	ValidateActiveMemory ();
+	ValidateFreedMemory ();
+    }
     size = RoundUp(desiredsize);
     totalsize = TotalSize (size);
 
@@ -631,6 +637,11 @@ free (p)
     AddFreedBlock (h);
     if (FindLeakCheckAlways)
 	CheckMemory ();
+    else if (FindLeakValidateAlways)
+    {
+	ValidateActiveMemory ();
+	ValidateFreedMemory ();
+    }
 }
 
 char *
