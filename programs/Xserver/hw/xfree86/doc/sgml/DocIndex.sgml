@@ -64,6 +64,8 @@
 	url="ark.html">
 <item> <htmlurl name="ATI boards README"
 	url="ati.html">
+<item> <htmlurl name="Information for Chips and Technologies Users"
+	url="chips.html">
 <item> <htmlurl name="Information for Cirrus Chipset Users"
 	url="cirrus.html">
 <item> <htmlurl name="Notes for Mach64 X Server"
@@ -87,7 +89,7 @@
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DocIndex.sgml,v 3.11 1996/05/12 12:36:31 dawes Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DocIndex.sgml,v 3.12 1996/08/13 11:30:52 dawes Exp $ 
 
 
 

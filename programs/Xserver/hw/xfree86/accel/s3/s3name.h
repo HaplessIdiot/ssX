@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3name.h,v 3.10 1996/02/20 14:34:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3name.h,v 3.11 1996/06/29 09:07:16 dawes Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -35,6 +35,11 @@
 
 #ifdef S3_MMIO
 #define CUSTOMNAME(name) CATNAME(mmio928,name)
+#endif
+
+/* this generates names for new driver BL 0816150096 */
+#ifdef S3_NEWMMIO
+#define CUSTOMNAME(name) CATNAME(newmmio,name)
 #endif
 
 #ifdef CUSTOMNAME

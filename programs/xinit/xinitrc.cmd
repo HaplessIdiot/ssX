@@ -1,5 +1,5 @@
 /* OS/2 REXX */
-/* $XFree86: xc/programs/xinit/xinitrc.cmd,v 3.1 1996/03/10 12:14:23 dawes Exp $ */
+/* $XFree86: xc/programs/xinit/xinitrc.cmd,v 3.2 1996/04/15 11:35:16 dawes Exp $ */
 '@echo off'
 env = 'OS2ENVIRONMENT'
 x11root = VALUE('X11ROOT',,env)
@@ -14,6 +14,8 @@ userresources = home'\.Xresources'
 usermodmap    = home'\.Xmodmap'
 sysresources  = x11root'\XFree86\lib\X11\xinit\.Xresources'
 sysmodmap     = x11root'\XFree86\lib\X11\xinit\.Xmodmap'
+xbitmapdir    = x11root'\XFree86\include\X11\bitmaps'
+manpath       = VALUE('MANPATH',,env)
 
 /* merge in defaults */
 IF exists(sysresources) THEN
@@ -29,10 +31,17 @@ IF exists(usermodmap) THEN
 	'xmodmap 'usermodmap
 
 /* start some nice :-) test programs */
-'start/min/n xclock -update 1 -geometry 100x100-1+1'
-'start/min/n xterm -sb -geometry 80x25+0+0 -name login'
-/* 'start/min/n 'xterm -sb -geometry 80x50+494+51 */
-/* 'start/min/n 'xterm -sb -geometry 80x20+494-0 */
+'xsetroot -bitmap 'xbitmapdir'\xos2'
+/* also try out the following ones: 
+ * 'xsetroot -bitmap 'xbitmapdir'\xfree1'
+ * 'xsetroot -bitmap 'xbitmapdir'\xfree2'
+ */
+'start/min/k "X Clock" xclock -update 1 -geometry 100x100-1+1'
+'start/min/k "Login Xterm" xterm -sb -geometry 80x25+0+0 -name login'
+IF manpath \= '' THEN
+	'start/min/k "X Manual" xman -geometry 100x100-105+1'
+/* 'start/min/k "Xterm 1" xterm -sb -geometry 80x50+494+51' */
+/* 'start/min/k "Xterm 2" xterm -sb -geometry 80x20+494-0' */
 'twm'
 
 EXIT

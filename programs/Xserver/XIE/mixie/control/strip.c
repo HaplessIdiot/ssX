@@ -1,4 +1,5 @@
-/* $XConsortium: strip.c,v 1.7 94/04/17 20:34:13 rws Exp $ */
+/* $XConsortium: strip.c /main/9 1995/12/02 16:48:50 dpw $ */
+/* AGE Logic - Oct 15 1995 - Larry Hare */
 /**** module strip.c ****/
 /*****************************************************************************
 
@@ -102,6 +103,7 @@ terms and conditions:
 #include <flostr.h>
 #include <element.h>
 #include <texstr.h>
+#include <memory.h>
 
 
 /* routines exported to the photoflo manager
@@ -368,8 +370,8 @@ static int export_data(flo,ped,band,maxLen,term)
 static int query_data(flo,list,pending,available)
      floDefPtr         flo;
      xieTypPhototag **list;
-     CARD32       *pending;
-     CARD32     *available;
+     CARD16       *pending;
+     CARD16     *available;
 {
   peDefPtr ped;
   pedLstPtr lst = ListEmpty(&flo->optDAG) ? &flo->defDAG : &flo->optDAG;
@@ -782,7 +784,7 @@ static void bypass_src(flo,pet,sbnd)
     }
     /* shut down the src band, or the dst band if we're all done
      */
-    if(pet->emitting & ~(1<<dbnd->band))
+    if(pet->emitting &= ~(1<<dbnd->band))
       disable_src(flo,pet,sbnd,FLUSH);
     else
       disable_dst(flo,pet,dbnd);
@@ -1125,14 +1127,14 @@ static void forward_strip(flo,pet,fwd)
 	  free_strip(flo,fwd);
 	  AllocError(flo,pet->peDef, return);
 	}
-      if(!size) break;
-
-      datlen = min(size, tmp->bufSiz - tmp->length);
-      memcpy((char*)&tmp->data[tmp->length], (char*)data, (int)datlen);
-      tmp->length += datlen;
-      tmp->end    += datlen;
-      data        += datlen;
-      size        -= datlen;
+      if(size) {
+	datlen = min(size, tmp->bufSiz - tmp->length);
+	memcpy((char*)&tmp->data[tmp->length], (char*)data, (int)datlen);
+	tmp->length += datlen;
+	tmp->end    += datlen;
+	data        += datlen;
+	size        -= datlen;
+      }
       if(!size && fwd->final || tmp->length == tmp->bufSiz) {
 	RemoveMember(tmp,lst->flink);
 	start        = tmp->start + tmp->length;
@@ -1143,6 +1145,7 @@ static void forward_strip(flo,pet,fwd)
 	if(!tmp->flink)
 	  free_strip(flo,tmp);
       }
+      if(!size)   break;
     }
     free_strip(flo,fwd);
   }

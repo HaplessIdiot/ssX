@@ -1,5 +1,5 @@
 /* $XConsortium: mijpeg.c,v 1.4 94/04/17 20:34:54 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/import/mijpeg.c,v 3.0 1996/02/20 14:32:25 dawes Exp $ */
 /**** module mijpeg.c ****/
 /******************************************************************************
 Copyright (c) 1993, 1994  X Consortium
@@ -106,6 +106,7 @@ terms and conditions:
 #include <photomap.h>
 #include <element.h>
 #include <texstr.h>
+#include <memory.h>
 
 
 #ifndef XIE

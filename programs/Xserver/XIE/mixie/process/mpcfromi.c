@@ -106,6 +106,7 @@ terms and conditions:
 #include <element.h>
 #include <xiemd.h>
 #include <texstr.h>
+#include <memory.h>
 
 extern int QueryColors(); /* in ...server/dix/colormap.c */
 

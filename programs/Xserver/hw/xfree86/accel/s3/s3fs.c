@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fs.c,v 3.6 1996/02/04 09:05:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fs.c,v 3.7 1996/06/29 09:07:05 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -163,25 +163,22 @@ s3SolidFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
    BLOCK_CURSOR;
    WaitQueue16_32(3,5);
-   S3_OUTW32(FRGD_COLOR, (pGC->fgPixel));
-   S3_OUTW(FRGD_MIX, FSS_FRGDCOL | s3alu[pGC->alu]);
-   S3_OUTW32(WRT_MASK, pGC->planemask);
+   SET_FRGD_COLOR((pGC->fgPixel));
+   SET_FRGD_MIX(FSS_FRGDCOL | s3alu[pGC->alu]);
+   SET_WRT_MASK(pGC->planemask);
 
    while (n--) {
       WaitQueue(5);
-      S3_OUTW(CUR_X, ppt->x);
-      S3_OUTW(CUR_Y, ppt->y);
-      S3_OUTW(MAJ_AXIS_PCNT, ((short)*pwidth) - 1);
-      S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | 0);
-      S3_OUTW(CMD, CMD_RECT | INC_Y | INC_X | DRAW | PLANAR | WRTDATA);
+      SET_CURPT(ppt->x, ppt->y);
+      SET_AXIS_PCNT(((short)*pwidth) - 1, 0);
+      SET_CMD(CMD_RECT | INC_Y | INC_X | DRAW | PLANAR | WRTDATA);
 
       ppt++;
       pwidth++;
    }
 
    WaitQueue(2);
-   S3_OUTW(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
-   S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
+   SET_MIX(FSS_FRGDCOL | MIX_SRC, BSS_BKGDCOL | MIX_SRC);
    UNBLOCK_CURSOR;
 
    DEALLOCATE_LOCAL(initPpt);

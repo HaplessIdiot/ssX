@@ -108,6 +108,7 @@ terms and conditions:
 #include <element.h>
 #include <texstr.h>
 #include <xiemd.h>
+#include <memory.h>
 
 
 DrawablePtr ValDrawable();

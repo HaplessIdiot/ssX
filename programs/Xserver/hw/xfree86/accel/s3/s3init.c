@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.93 1996/08/10 13:06:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.94 1996/08/14 14:32:06 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -86,6 +86,7 @@ extern Bool (*s3ClockSelectFunc) ();
 extern int s3DisplayWidth;
 extern Bool s3Localbus;
 extern Bool s3Mmio928;
+extern Bool s3NewMmio;
 extern Bool s3PixelMultiplexing;
 extern pointer vgaBase;
 extern pointer vgaBaseLow;
@@ -147,6 +148,12 @@ s3CleanUp(void)
      outb(vgaCRReg, CR5C & ~0x80);
      vgaBase = vgaBaseLow;
    }
+   /* BL */
+   if (s3NewMmio)	{
+      outb (vgaCRIndex, 0x58);
+      outb (vgaCRReg, s3SAM256); /* disable linear mode */
+   } /* end BL */
+
 
    WaitQueue(8);
    outb(vgaCRIndex, 0x35);
@@ -155,7 +162,7 @@ s3CleanUp(void)
    cebank();
 
    outw(ADVFUNC_CNTL, 0);
-   if (s3Mmio928) {
+   if (s3Mmio928 || s3NewMmio) {
       outb(vgaCRIndex, 0x53);
       outb(vgaCRReg, 0x00);
    }
@@ -2661,6 +2668,8 @@ s3Init(mode)
       tmp = inb(vgaCRReg) & ~0x18;
       if (s3Mmio928)
 	 tmp |= 0x10;
+      if (s3NewMmio)
+	 tmp |= 0x18;
 
       /*
        * Now the DRAM interleaving bit for the 801/805 chips

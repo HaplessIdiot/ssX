@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/card.tcl,v 3.3 1996/08/16 12:29:38 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/card.tcl,v 3.4 1996/08/18 01:47:17 dawes Exp $
 #
 #
 
@@ -381,6 +381,24 @@ proc Card_cbox_setentry { cb text } {
 		$cb einsert 0 $text
 	}
 	$cb econfig -state disabled
+	set cblist [$cb lget 0 end]
+	if { [string match *.options.cbox $cb] } {
+		$cb lselection clear 0 end
+		foreach option [split $text ,] {
+			set idx [lsearch $cblist $option]
+			if { $idx != -1 } {
+				$cb see $idx
+				$cb lselection set $idx
+			}
+		}
+	} else {
+		set idx [lsearch $cblist $text]
+		if { $idx != -1 } {
+			$cb see $idx
+			$cb lselection clear 0 end
+			$cb lselection set $idx
+		}
+	}
 }
 
 proc Card_selected { win lbox } {
@@ -487,12 +505,14 @@ proc Card_set_cboxlists { win } {
 	} else {
 		$w.card.options.cbox.button configure -state disabled
 	}
-	set options [$w.card.options.cbox eget]
-	if { [string length $options] && [lsearch \
-			$CardOptions($cardServer) $options] < 0} {
-		Card_cbox_setentry $w.card.options.cbox ""
+	set options ""
+	foreach option [split [$w.card.options.cbox eget] ,] {
+		if { [string length $option] && [lsearch \
+			$CardOptions($cardServer) $option] != -1} {
+		    lappend options $option
+		}
 	}
-
+	Card_cbox_setentry $w.card.options.cbox [join $options ,]
 }
 
 proc Card_display_readme { win } {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.19 1996/02/04 09:05:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.20 1996/03/05 05:42:25 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -236,11 +236,8 @@ Dos3CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 		   * the xf86loadfontblock function.
 		   */
 		  WaitQueue16_32(5,6);
-		  S3_OUTW(MULTIFUNC_CNTL, SCISSORS_T | 0);
-		  S3_OUTW(MULTIFUNC_CNTL, SCISSORS_L | 0);
-		  S3_OUTW(MULTIFUNC_CNTL, SCISSORS_R | (s3DisplayWidth-1));
-		  S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | s3ScissB);
-		  S3_OUTW32(RD_MASK, ~0);
+		  SET_SCISSORS(0,0,(s3DisplayWidth - 1), s3ScissB);
+		  SET_RD_MASK(~0);
 
 		  xf86loadFontBlock(fentry, blocki);
 		  block = fentry->fblock[blocki];		  
@@ -249,36 +246,33 @@ Dos3CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 		   * Restore the GE context.
 		   */
 		  WaitQueue(4);
-		  S3_OUTW(MULTIFUNC_CNTL, SCISSORS_L | (short)pBox->x1);
-		  S3_OUTW(MULTIFUNC_CNTL, SCISSORS_T | (short)pBox->y1);
-		  S3_OUTW(MULTIFUNC_CNTL, SCISSORS_R | (short)(pBox->x2 - 1));
-		  S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | (short)(pBox->y2 - 1));
+		  SET_SCISSORS((short)pBox->x1,(short)pBox->y1,(short)(pBox->x2 - 1), 
+							(short)(pBox->y2 - 1));
 		  WaitQueue16_32(5,7);
-		  S3_OUTW32(FRGD_COLOR, pGC->fgPixel);
-		  S3_OUTW(MULTIFUNC_CNTL, 
-			PIX_CNTL | MIXSEL_EXPBLT | COLCMPOP_F);
-		  S3_OUTW(FRGD_MIX, FSS_FRGDCOL | s3alu[pGC->alu]);
+		  SET_FRGD_COLOR(pGC->fgPixel);
+		  SET_PIX_CNTL(MIXSEL_EXPBLT | COLCMPOP_F);
+		  SET_FRGD_MIX(FSS_FRGDCOL | s3alu[pGC->alu]);
 		  if (s3Trio32FCBug) {
-		     S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_OR);
-		     S3_OUTW32(WRT_MASK, pGC->planemask);
+		     SET_BKGD_MIX(BSS_BKGDCOL | MIX_OR);
+		     SET_WRT_MASK(pGC->planemask);
 
 		     WaitQueue16_32(1,2);
-		     S3_OUTW32(BKGD_COLOR, 0);
+		     SET_BKGD_COLOR(0);
 		  } else {
-		     S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_DST);
-		     S3_OUTW32(WRT_MASK, pGC->planemask);
+		     SET_BKGD_MIX(BSS_BKGDCOL | MIX_DST);
+		     SET_WRT_MASK(pGC->planemask);
 		  }
 		  height = width = pmsk = 0;
 	       }
 	       WaitQueue16_32(2,3);
-	       S3_OUTW(CUR_Y, block->y);	       
+	       SET_CUR_Y(block->y);	       
 
 	       /*
 		* Is the readmask altered
 		*/
 	       if (!pmsk || pmsk != block->id) {
 		  pmsk = block->id;
-	       	  S3_OUTW32(RD_MASK, pmsk);
+	       	  SET_RD_MASK(pmsk);
 	       }
 	       xoff = block->x;
 	       block->lru = NEXT_FONT_AGE;
@@ -286,19 +280,18 @@ Dos3CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 
 	    WaitQueue(6);
 
-	    S3_OUTW(CUR_X, (short) (xoff + (*chars & 0x1f) * w));
-	    S3_OUTW(DESTX_DIASTP,
-		  (short)(x + pci->metrics.leftSideBearing));
-	    S3_OUTW(DESTY_AXSTP, (short)(y - pci->metrics.ascent));
+	    SET_CUR_X((short) (xoff + (*chars & 0x1f) * w));
+		SET_DESTSTP((short)(x + pci->metrics.leftSideBearing),
+	    							(short)(y - pci->metrics.ascent));
 	    if (!width || (short)(GLYPHWIDTHPIXELS(pci) - 1) != width) {
 	       width = (short)(GLYPHWIDTHPIXELS(pci) - 1);
-	       S3_OUTW(MAJ_AXIS_PCNT, width);
+	       SET_MAJ_AXIS_PCNT(width);
 	    }
 	    if (!height || (short)(gHeight - 1) != height) {
 	       height = (short)(gHeight - 1);
-	       S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | height);
+	       SET_MIN_AXIS_PCNT(height);
 	    }
-	    S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+	    SET_CMD(CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
 	 }
 	 x += pci->metrics.characterWidth;
       }
@@ -322,41 +315,35 @@ s3GlyphWrite(x, y, count, chars, fentry, pGC, pBox, numRects)
 {
    BLOCK_CURSOR;
    WaitQueue16_32(5,7);
-   S3_OUTW32(FRGD_COLOR, pGC->fgPixel);
-   S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPBLT | COLCMPOP_F);
-   S3_OUTW(FRGD_MIX, FSS_FRGDCOL | s3alu[pGC->alu]);
+   SET_FRGD_COLOR(pGC->fgPixel);
+   SET_PIX_CNTL(MIXSEL_EXPBLT | COLCMPOP_F);
+   SET_FRGD_MIX(FSS_FRGDCOL | s3alu[pGC->alu]);
    if (s3Trio32FCBug) {
-      S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_OR);
-      S3_OUTW32(WRT_MASK, pGC->planemask);
+      SET_BKGD_MIX(BSS_BKGDCOL | MIX_OR);
+      SET_WRT_MASK(pGC->planemask);
 
       WaitQueue16_32(1,2);
-      S3_OUTW32(BKGD_COLOR, 0);
+      SET_BKGD_COLOR(0);
    } else {
-      S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_DST);
-      S3_OUTW32(WRT_MASK, pGC->planemask);
+      SET_BKGD_MIX(BSS_BKGDCOL | MIX_DST);
+      SET_WRT_MASK(pGC->planemask);
    }
 
    for (; --numRects >= 0; ++pBox) {
       WaitQueue(4);
-      S3_OUTW(MULTIFUNC_CNTL, SCISSORS_L | (short)pBox->x1);
-      S3_OUTW(MULTIFUNC_CNTL, SCISSORS_T | (short)pBox->y1);
-      S3_OUTW(MULTIFUNC_CNTL, SCISSORS_R | (short)(pBox->x2 - 1));
-      S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | (short)(pBox->y2 - 1));
+	  SET_SCISSORS((short)pBox->x1, (short)pBox->y1, (short)(pBox->x2 - 1),
+      												(short)(pBox->y2 - 1));
 
       Dos3CPolyText8(x, y, count, chars, fentry, pGC, pBox);
    }
 
    WaitQueue(4);
-   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_T | 0);
-   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_L | 0);
-   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_R | (s3DisplayWidth-1));
-   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | s3ScissB);
+   SET_SCISSORS(0,0,(s3DisplayWidth - 1), s3ScissB);
 
    WaitQueue16_32(4,5);
-   S3_OUTW32(RD_MASK, ~0);
-   S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
-   S3_OUTW(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
-   S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
+   SET_RD_MASK(~0);
+   SET_PIX_CNTL(MIXSEL_FRGDMIX | COLCMPOP_F);
+   SET_MIX(FSS_FRGDCOL | MIX_SRC, BSS_BKGDCOL | MIX_SRC);
    UNBLOCK_CURSOR;
 
    return;

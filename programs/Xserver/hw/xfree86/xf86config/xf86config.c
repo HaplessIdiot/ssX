@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.30 1996/05/11 11:05:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.31 1996/05/11 12:03:00 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -99,7 +99,7 @@
 #define TEMPORARY_XF86CONFIG_FILENAME "/tmp/XF86Config.tmp"
 #else
 /* put in root dir, would have to find TMP dir first else */
-#define TEMPORARY_XF86CONFIG_FILENAME "/XConfig.tmp"
+#define TEMPORARY_XF86CONFIG_FILENAME "\\XConfig.tmp"
 #endif
 
 /*
@@ -124,8 +124,8 @@
  * 8.3 names here
  */
 #ifdef __EMX__
-#define DUMBCONFIG2 "/dconfig.2"
-#define DUMBCONFIG3 "/dconfig.3"
+#define DUMBCONFIG2 "\\dconfig.2"
+#define DUMBCONFIG3 "\\dconfig.3"
 #else
 #define DUMBCONFIG2 "/tmp/dumbconfig.2"
 #define DUMBCONFIG3 "/tmp/dumbconfig.3"
@@ -1317,16 +1317,22 @@ static char *modestring[NU_MODESTRINGS] = {
 
 #ifdef __EMX__
 /* yet another instance of this code, sigh! */
-char *__XOS2RedirRoot(char *path)
+char *__XOS2RedirRoot(char *path, char sep)
 {
 	static char pn[300];
 	char *root;
+	int i,l;
 	if ((isalpha(path[0]) && path[1]==':') || path[0] != '/')
 		return path;
 
 	root = getenv("X11ROOT");
 	if (!root) root = "";
 	sprintf(pn,"%s%s",root,path);
+	if (sep=='\\') {
+		l = strlen(pn);
+		for (i=0; i<l; i++) 
+			if (pn[i]=='/') pn[i]='\\';
+	}
 	return pn;
 }
 #endif
@@ -1336,7 +1342,7 @@ static int exists_dir(char *name) {
 	struct stat sbuf;
 
 #ifdef __EMX__
-	name = __XOS2RedirRoot(name);
+	name = __XOS2RedirRoot(name,'/');
 #endif
 	/* is it there ? */
 	if (stat(name,&sbuf) == -1)
@@ -1706,6 +1712,8 @@ skipramdacselection:
 		 */
 		FILE *f;
 		char *buf;
+		char syscmdline[2*256+100]; /* enough */
+
 		if (getuid() != 0) {
 			printf("Sorry, you must be root to do this.\n\n");
 			goto endofprobeonly;
@@ -1718,8 +1726,22 @@ skipramdacselection:
 #ifndef __EMX__
 		sync();
 #endif
-		if (system("X -probeonly -pn -xf86config "
-		TEMPORARY_XF86CONFIG_FILENAME " 2>" DUMBCONFIG2)) {
+		/* compose a line with the real path */
+#ifndef __EMX__
+		strcpy(syscmdline,
+		       "X -probeonly -pn -xf86config "
+		       TEMPORARY_XF86CONFIG_FILENAME " 2>" DUMBCONFIG2);
+#else
+		/* OS/2 does not have symlinks, so "X" does not exist,
+		 * call the real X server
+		 */
+		sprintf(syscmdline,"%s/XF86_%s -probeonly -pn -xf86config "
+		       TEMPORARY_XF86CONFIG_FILENAME " 2>" DUMBCONFIG2,
+		       __XOS2RedirRoot("/XFree86/bin",'\\'),
+		       card[card_selected].server);
+#endif
+
+		if (system(syscmdline)) {
 			printf("X -probeonly call failed.\n");
 			printf("No Clocks line inserted.\n");
 			goto clocksprobefailed;
@@ -2017,25 +2039,29 @@ static char *keyboardchunk2_text =
 
 static char *keyboardchunk3_text =
 "# To customise the XKB settings to suit your keyboard, modify the\n"
-"# lines below (which are the defaults).  For example, one way to get\n"
-"# a german layout on a 101 key keyboard is to modify the XkbSymbols\n"
-"# line:\n"
-"#    XkbSymbols  \"us(pc101)+de\"\n"
+"# lines below (which are the defaults).  For example, for a non-U.S.\n"
+"# keyboard, you will probably want to use:\n"
+"#    XkbModel    \"pc102\"\n"
 "# If you have a US Microsoft Natural keyboard, you can use:\n"
-"#    XkbSymbols  \"us(microsoft)\"\n"
-"#    XkbGeometry \"microsoft\"\n"
+"#    XkbModel    \"microsoft\"\n"
+"#\n"
+"# Then to change the language, change the Layout setting.\n"
+"# For example, a german layout can be obtained with:\n"
+"#    XkbLayout   \"de\"\n"
+"# or:\n"
+"#    XkbLayout   \"de\"\n"
+"#    XkbVariant  \"nodeadkeys\"\n"
+"#\n"
+"# If you'd like to switch the positions of your capslock and\n"
+"# control keys, use:\n"
+"#    XkbOptions  \"ctrl:swapcaps\"\n"
 "\n"
 "# These are the default XKB settings for XFree86\n"
-"#    Xkbkeycodes \"xfree86\"\n"
-"#    XkbTypes    \"default\"\n"
-"#    XkbCompat   \"default\"\n"
-"#    XkbSymbols  \"us(pc101)\"\n"
-"#    XkbGeometry \"pc\"\n"
-"\n"
-"# To specify a keymap file entry to use, use XkbKeymap.  This will\n"
-"# override the other Xkb parameters described above.\n"
-"# An example is:\n"
-"#    XkbKeymap   \"xfree86(us_microsoft)\"\n"
+"#    XkbRules    \"xfree86\"\n"
+"#    XkbModel    \"pc101\"\n"
+"#    XkbLayout   \"us\"\n"
+"#    XkbVariant  \"\"\n"
+"#    XkbOptions  \"\"\n"
 "\n";
 
 static char *keyboardchunk4_text =
@@ -2687,7 +2713,7 @@ char *ask_XF86Config_location() {
 		getstring(s);
 		printf("\n");
 		if (answerisyes(s)) {
-			return __XOS2RedirRoot("/XFree86/lib/X11/XConfig");
+			return __XOS2RedirRoot("/XFree86/lib/X11/XConfig",'/');
 		}
 #endif /* __EMX__ */
 	}

@@ -6,13 +6,6 @@ Finish writing the help text
 
 Write documentation (modify the QuickStart guide)
 
-Clean up temp files (but leave final temp config file if they did
-   a reconfig without root privileges)
-
-fix stack handling: -ls option doesn't work on ISC
-
-When reading symlinks, resolve relative paths
-
 Check for symlink loops
 
 Update man page
@@ -26,10 +19,6 @@ When using the SVGA server, further restrict the list of available
 
 Add keybindings to enter and/or space in listboxes to match the
    button-up binding
-
-Sort items in listboxes
-
-Check that mouse device link can only be changed by root
 
 Change behaviour (with a 'u' for David :-) of "Probed" buttons as per
 Harald's request:
@@ -68,6 +57,8 @@ Add support for Modules
 
 Add ability to select modes and their order
 
+Internationalization of messages
+
 
 RELATED CHANGES TO OTHER PARTS OF THE X SOURCE TREE:
 ----------------------------------------------------------------------
@@ -76,14 +67,5 @@ Update VidMode extension to know about the Hskew parameter
 
 Add ability to dynamically add & remove video modes ???
 
-Alter XFree86-Misc extension to automatically enable allowMouseOpenFail
-   whenever a mouse change is requested (we don't want a failed
-   attempt to reopen the device to cause the server to die)
-
-Alter xf86SetMouseSpeed to not cause a fatal error if it can't write
-   to the mouse device, if allowMouseOpenFail is enabled
-
 Update os-support/README.OS-lib with info regarding allowMouseOpenFail
-
-Update XF86Conf.{man,cpp} to match latest XKB changes
 

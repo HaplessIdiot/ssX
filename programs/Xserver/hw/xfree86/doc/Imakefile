@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/17 1996/02/06 10:03:48 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.30 1996/05/12 13:01:09 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.31 1996/08/11 13:00:36 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -79,7 +79,7 @@ all::
 
 #if !BuildLinuxDocText
 HWREADME =  README.ati README.trident README.tseng README.WstDig \ 
-            README.cirrus README.Video7 README.P9000 README.agx \
+            README.chips README.cirrus README.Video7 README.P9000 README.agx \
             README.S3 README.W32 README.Oak README.Mach64 README.ark
 
 MAINDOCS = COPYRIGHT README README.Config INSTALL RELNOTES
@@ -87,7 +87,7 @@ MAINDOCS = COPYRIGHT README README.Config INSTALL RELNOTES
 OTHERDOCS = /*VideoModes.doc*/ QuickStart.doc README.clkprog xinput
 #endif
 
-MISCDOCS = ServersOnly LbxproxyOnly $(REPORTFORM) README.DGA README.chips
+MISCDOCS = ServersOnly LbxproxyOnly $(REPORTFORM) README.DGA
 
 DATABASE = /*modeDB.txt*/ AccelCards Monitors Devices
 

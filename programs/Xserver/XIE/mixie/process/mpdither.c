@@ -1,4 +1,5 @@
-/* $XConsortium: mpdither.c,v 1.5 94/04/17 20:35:17 rws Exp $ */
+/* $XConsortium: mpdither.c /main/6 1995/12/02 16:53:58 dpw $ */
+/* AGE Logic - Oct 15 1995 - Larry Hare */
 /**** module mpdither.c ****/
 /******************************************************************************
 
@@ -105,6 +106,7 @@ terms and conditions:
 #include <texstr.h>
 #include <xiemd.h>
 #include <technq.h>
+#include <memory.h>
 
 /*
  *  routines referenced by other DDXIE modules
@@ -132,6 +134,11 @@ typedef struct _mpditherEDdef {
   DitherFloat	range1over;
   DitherFloat	round;
   INT32		width;
+#if defined(SF_DITHER)
+  CARD32        shift;
+  INT32         irange;
+  INT32         iround;
+#endif
 } mpDitherEDDefRec, *mpDitherEDDefPtr;
 
 static void EdDitherQb(), EdDitherPb(), EdDitherBb(), EdDitherbb();
@@ -291,13 +298,18 @@ static int InitializeDitherErrorDiffusion(flo,ped)
 	    bmask &= ~(1<<band);
 	    continue;
 	}
+#if defined(SF_DITHER)
+        pvt->shift = (iband->format->class == PAIR_PIXEL ? 11 : 19);
+        pvt->irange = pvt->range * (1<<pvt->shift);
+        pvt->iround = pvt->round * (1<<pvt->shift);
+#endif
 
 	if (ped->techVec->number == xieValDitherErrorDiffusion) {
 	    /* Use XieCalloc to force DitherFloat's to 0.0 */
-	    int auxsize = (pvt->width + 2) * sizeof(DitherFloat) * 2;
-	    if(!(pvt->previous = (DitherFloat *) XieCalloc(auxsize)))
+	    int auxsize = (pvt->width + 2) * sizeof(DitherFloat);
+	    if((!(pvt->previous = (DitherFloat *) XieCalloc(auxsize))) ||
+	       (!(pvt->current  = (DitherFloat *) XieCalloc(auxsize))))
 		    AllocError(flo, ped, return(FALSE));
-	    pvt->current  = pvt->previous + (pvt->width + 2);
 	}
     }
     return
@@ -592,6 +604,8 @@ static int ResetDitherErrorDiffusion(flo,ped)
 	pvt->action = 0;
 	if (pvt->previous)
 		pvt->previous = (DitherFloat *) XieFree(pvt->previous);
+	if (pvt->current)
+		pvt->current  = (DitherFloat *) XieFree(pvt->current);
     }
 
     ResetReceptors(ped);
@@ -687,6 +701,38 @@ static void fn_name(INP,OUTP,pvt) 					\
 	}								\
 }
 
+#if defined(SF_DITHER)
+#define MakeEdBitI(fn_name,itype,otype)                                 \
+static void fn_name(INP,OUTP,pvt)                                       \
+        pointer INP; pointer OUTP; mpDitherEDDefPtr pvt;                \
+{                                                                       \
+        register itype *inp = (itype *) INP;                            \
+        register LogInt *outp = (LogInt *) OUTP;                        \
+        register unsigned int actual;                                   \
+        register CARD32 shift = pvt->shift;                             \
+        register INT32 range = pvt->irange;                             \
+        register INT32 round = pvt->iround;                             \
+        register INT32 *prev = (INT32 *) pvt->previous;                 \
+        register INT32 *curr = (INT32 *) pvt->current;                  \
+        register INT32 current = *curr, desire;                         \
+        register int ix, bw = pvt->width;                               \
+        bzero((char *)outp, (bw+7)>>3);                                 \
+        for (ix = 0; ix < bw; ix++) {                                   \
+            desire = (((CARD32) inp[ix]) << shift) +                    \
+                                      ((( current  * 7) +               \
+                                        (*(prev+0)    ) +               \
+                                        (*(prev+1) * 5) +               \
+                                        (*(prev+2) * 3) ) >> 4) ;       \
+            prev++;                                                     \
+            actual = (desire+round)/range;                              \
+            if (actual) {                                               \
+                LOG_setbit(outp,ix);                                    \
+                *++curr = current = desire - actual*range;              \
+            } else                                                      \
+                *++curr = current = desire;                             \
+        }                                                               \
+}
+#endif
 
 /*
 ** All the other multitudes of combinations.
@@ -716,7 +762,54 @@ static void fn_name(INP,OUTP,pvt) 					\
 	}								\
 }
 
+#if defined(SF_DITHER)
+        /* NOTE:  has <<, /, then * which means many cycles.
+        ** A better design would use a *, >>, *.  The last * might
+        ** be a <<, and the first * on mips would pipeline with the
+        ** *(prev+N) calculations.  This should double or triple the
+        ** speed for many of these architectures.
+        */
+#define MakeEdPixI(fn_name,itype,otype)                                 \
+static void fn_name(INP,OUTP,pvt)                                       \
+        pointer INP; pointer OUTP; mpDitherEDDefPtr pvt;                \
+{                                                                       \
+        register itype *inp = (itype *) INP;                            \
+        register otype *outp = (otype *) OUTP;                          \
+        register CARD32 actual;                                         \
+        register CARD32 shift = pvt->shift;                             \
+        /* ?? replace divide by range with multiply and >> ?? */        \
+        register INT32 range = pvt->irange;                             \
+        register INT32 round = pvt->iround;                             \
+        register INT32 *prev = (INT32 *) pvt->previous;                 \
+        register INT32 *curr = (INT32 *) pvt->current;                  \
+        register INT32 current = *curr, desire;                         \
+        register int ix, bw = pvt->width;                               \
+        for (ix = 0; ix < bw; ix++) {                                   \
+            desire = (((CARD32)inp[ix]) << shift) +                     \
+                                      (((current   * 7) +               \
+                                        (*(prev+0)    ) +               \
+                                        (*(prev+1) * 5) +               \
+                                        (*(prev+2) * 3) ) >> 4) ;       \
+            prev++;                                                     \
+            *outp++ = actual = (desire+round)/range;                    \
+            *++curr = current = desire - actual * range;                \
+        }                                                               \
+}
+#endif
 
+#if defined(SF_DITHER)
+
+MakeEdBit       (EdDitherQb,QuadPixel,BitPixel)
+MakeEdBitI      (EdDitherPb,PairPixel,BitPixel)
+MakeEdBitI      (EdDitherBb,BytePixel,BitPixel)
+MakeEdPix       (EdDitherQB,QuadPixel,BytePixel)
+MakeEdPixI      (EdDitherPB,PairPixel,BytePixel)
+MakeEdPixI      (EdDitherBB,BytePixel,BytePixel)
+MakeEdPix       (EdDitherQP,QuadPixel,PairPixel)
+MakeEdPixI      (EdDitherPP,PairPixel,PairPixel)
+MakeEdPix       (EdDitherQQ,QuadPixel,QuadPixel)
+
+#else
 MakeEdBit	(EdDitherQb,QuadPixel,BitPixel)
 MakeEdBit	(EdDitherPb,PairPixel,BitPixel)
 MakeEdBit	(EdDitherBb,BytePixel,BitPixel)
@@ -730,6 +823,7 @@ MakeEdPix	(EdDitherPP,PairPixel,PairPixel)
 
 MakeEdPix	(EdDitherQQ,QuadPixel,QuadPixel)
 
+#endif
 
 /*------------------------------------------------------------------------
 ------------------------------- Macro Mania ------------------------------

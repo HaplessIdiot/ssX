@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/main.c,v 3.4 1996/08/18 01:47:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/main.c,v 3.5 1996/08/18 09:47:33 dawes Exp $ */
 
 /*
  * Main procedure for XF86Setup, by Joe Moss
@@ -288,6 +288,22 @@ main(argc, argv)
 {
     char *tmpptr, *filename, *argv0, tmpbuf[20], buf[128];
     int   Phase2FallBack = 0;
+
+#ifdef RLIMIT_STACK
+#define STACK_SIZE	(2048*1024)
+
+    struct rlimit rlim;
+
+    if (!getrlimit(RLIMIT_STACK, &rlim))
+    {
+	if (STACK_SIZE < rlim.rlim_max)
+	    rlim.rlim_cur = STACK_SIZE;
+	else
+	    rlim.rlim_cur = rlim.rlim_max;
+	(void)setrlimit(RLIMIT_STACK, &rlim);
+    }
+#undef STACK_SIZE
+#endif
 
     /****  Create the Tcl interpreter  ****/
     interp = Tcl_CreateInterp();

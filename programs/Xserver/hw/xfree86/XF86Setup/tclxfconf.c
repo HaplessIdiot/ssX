@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.5 1996/08/16 12:29:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.6 1996/08/18 01:47:28 dawes Exp $ */
 
 /*
 
@@ -240,6 +240,7 @@ init_config_vars(xwinhome)
 	defaultColorVisualClass = xf86bpp         = -1;
 	xf86AllowMouseOpenFail  = xf86ScreensOpen = FALSE;
 	xf86fpFlag = xf86coFlag = xf86sFlag       = FALSE;
+	xf86BestRefresh = FALSE;
 	xf86MaxScreens = XF86MAXSCREENS;
 
 	pathlen = strlen(xwinhome);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_mouse.c,v 3.7 1996/04/15 11:31:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_mouse.c,v 3.8 1996/05/13 06:40:07 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -46,10 +46,13 @@
 #include "xf86Procs.h"
 #include "xf86_OSlib.h"
 
-
 #include "xf86Procs.h"
 #include "xf86_OSlib.h"
 #include "xf86_Config.h"
+
+extern int miPointerGetMotionEvents(DeviceIntPtr pPtr, xTimecoord *coords,
+				    unsigned long start, unsigned long stop,
+				    ScreenPtr pScreen);
 
 HMOU hMouse=65535;
 HEV hMouseSem;
@@ -118,7 +121,8 @@ int what;
 			map[i] = i;
 
 		InitPointerDeviceStruct((DevicePtr)pPointer, map, nbutton,
-			GetMotionEvents, (PtrCtrlProcPtr)xf86MseCtrl, 0);
+			miPointerGetMotionEvents, (PtrCtrlProcPtr)xf86MseCtrl,
+			miPointerGetMotionBufferSize());
 
 		xfree(map);
 

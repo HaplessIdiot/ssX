@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.58 1996/08/16 12:31:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.59 1996/08/18 01:51:52 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -228,6 +228,9 @@ typedef struct {
   unsigned char HIDDENDAC;	/* Hidden DAC Register */
   DACcolourRec  FOREGROUND;     /* Hidden DAC cursor foreground colour */
   DACcolourRec  BACKGROUND;     /* Hidden DAC cursor background colour */
+#ifdef FORMAT
+#undef FORMAT
+#endif
   unsigned short FORMAT;        /* Video format (546X) */
   unsigned long VSC;            /* Vendor specific control (546X) */
   unsigned short DTTC;          /* Display Threshold and Tiling Control */

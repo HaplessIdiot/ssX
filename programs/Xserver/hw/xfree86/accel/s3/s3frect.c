@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3frect.c,v 3.7 1996/02/04 09:05:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3frect.c,v 3.8 1996/06/29 09:07:04 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -107,68 +107,51 @@ DoCacheExpandPixmap(pci)
 
    BLOCK_CURSOR;
    WaitQueue16_32(7,8);
-   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_T | 0);
-   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_L | 0);
-   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_R | (s3DisplayWidth-1));
-   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | s3ScissB);
-   S3_OUTW(FRGD_MIX, FSS_BITBLT | MIX_SRC);
-   S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
-   S3_OUTW32(WRT_MASK, ~0);
+   SET_SCISSORS(0,0,s3DisplayWidth-1,s3ScissB);
+   SET_MIX(FSS_BITBLT | MIX_SRC,BSS_BKGDCOL | MIX_SRC);
+   SET_WRT_MASK(~0);
 
  /* Expand in the x direction */
 
    while (cur_w * 2 <= pci->w) {
       WaitQueue(7);
-      S3_OUTW(CUR_X, (short)pci->x);
-      S3_OUTW(CUR_Y, (short)pci->y);
-      S3_OUTW(DESTX_DIASTP, (short)(pci->x + cur_w));
-      S3_OUTW(DESTY_AXSTP, (short)pci->y);
-      S3_OUTW(MAJ_AXIS_PCNT, (short)(cur_w - 1));
-      S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(cur_h - 1));
-      S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+      SET_CURPT((short)pci->x,(short)pci->y);
+      SET_DESTSTP((short)(pci->x + cur_w),(short)pci->y);
+      SET_AXIS_PCNT((short)(cur_w - 1),(short)(cur_h - 1));
+      SET_CMD(CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
 
       cur_w *= 2;
    }
 
    if (cur_w != pci->w) {
       WaitQueue(7);
-      S3_OUTW(CUR_X, (short)pci->x);
-      S3_OUTW(CUR_Y, (short)pci->y);
-      S3_OUTW(DESTX_DIASTP, (short)(pci->x + cur_w));
-      S3_OUTW(DESTY_AXSTP, (short)pci->y);
-      S3_OUTW(MAJ_AXIS_PCNT, (short)(pci->w - cur_w - 1));
-      S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(cur_h - 1));
-      S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+      SET_CURPT((short)pci->x,(short)pci->y);
+      SET_DESTSTP((short)(pci->x + cur_w),(short)pci->y);
+      SET_AXIS_PCNT((short)(pci->w - cur_w - 1),(short)(cur_h - 1));
+      SET_CMD(CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
 
       cur_w = pci->w;
    }
  /* Expand in the y direction */
    while (cur_h * 2 <= pci->h) {
       WaitQueue(7);
-      S3_OUTW(CUR_X, (short)pci->x);
-      S3_OUTW(CUR_Y, (short)pci->y);
-      S3_OUTW(DESTX_DIASTP, (short)pci->x);
-      S3_OUTW(DESTY_AXSTP, (short)(pci->y + cur_h));
-      S3_OUTW(MAJ_AXIS_PCNT, (short)(cur_w - 1));
-      S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(cur_h - 1));
-      S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+      SET_CURPT((short)pci->x, (short)pci->y);
+      SET_DESTSTP((short)pci->x,(short)(pci->y + cur_h));
+      SET_AXIS_PCNT((short)(cur_w - 1), (short)(cur_h - 1));
+      SET_CMD(CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
 
       cur_h *= 2;
    }
 
    if (cur_h != pci->h) {
       WaitQueue(7);
-      S3_OUTW(CUR_X, (short)pci->x);
-      S3_OUTW(CUR_Y, (short)pci->y);
-      S3_OUTW(DESTX_DIASTP, (short)pci->x);
-      S3_OUTW(DESTY_AXSTP, (short)(pci->y + cur_h));
-      S3_OUTW(MAJ_AXIS_PCNT, (short)(cur_w - 1));
-      S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(pci->h - cur_h - 1));
-      S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+      SET_CURPT((short)pci->x,(short)pci->y);
+      SET_DESTSTP((short)pci->x,(short)(pci->y + cur_h));
+      SET_AXIS_PCNT((short)(cur_w - 1), (short)(pci->h - cur_h - 1));
+      SET_CMD(CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
    }
    WaitQueue(2);
-   S3_OUTW(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
-   S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
+   SET_MIX(FSS_FRGDCOL | MIX_SRC,BSS_BKGDCOL | MIX_SRC);
    UNBLOCK_CURSOR;
 }
 
@@ -263,128 +246,92 @@ DoCacheImageFill(pci, x, y, w, h, pox, poy, fgalu, bgalu,
 
    BLOCK_CURSOR;
    WaitQueue16_32(7,8);
-   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_T | 0);
-   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_L | 0);
-   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_R | (s3DisplayWidth-1));
-   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | s3ScissB);
-   S3_OUTW(FRGD_MIX, fgmix | fgalu);
-   S3_OUTW(BKGD_MIX, bgmix | bgalu);
-   S3_OUTW32(WRT_MASK,  planemask);
+   SET_SCISSORS(0,0,s3DisplayWidth-1,s3ScissB);
+   SET_MIX(fgmix | fgalu,bgmix | bgalu);
+   SET_WRT_MASK(planemask);
 
    if (starty + h - 1 < pci->h) {
       if (startx + w - 1 < pci->w) {
 	 WaitQueue(7);
-	 S3_OUTW(CUR_X, (short)(pci->x + startx));
-	 S3_OUTW(CUR_Y, (short)(pci->y + starty));
-	 S3_OUTW(DESTX_DIASTP, (short)x);
-	 S3_OUTW(DESTY_AXSTP, (short)y);
-	 S3_OUTW(MAJ_AXIS_PCNT, (short)(w - 1));
-	 S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(h - 1));
-	 S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+         SET_CURPT((short)(pci->x + startx),(short)(pci->y + starty));
+	 SET_DESTSTP((short)x,(short)y);
+	 SET_AXIS_PCNT((short)(w - 1), (short)(h - 1));
+	 SET_CMD(CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
       } else {
 	 WaitQueue(7);
-	 S3_OUTW(CUR_X, (short)(pci->x + startx));
-	 S3_OUTW(CUR_Y, (short)(pci->y + starty));
-	 S3_OUTW(DESTX_DIASTP, (short)x);
-	 S3_OUTW(DESTY_AXSTP, (short)y);
-	 S3_OUTW(MAJ_AXIS_PCNT, (short)(pci->w - startx - 1));
-	 S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(h - 1));
-	 S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+	 SET_CURPT((short)(pci->x + startx), (short)(pci->y + starty));
+	 SET_DESTSTP((short)x,(short)y);
+	 SET_AXIS_PCNT((short)(pci->w - startx - 1), (short)(h - 1));
+	 SET_CMD(CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
 
 	 x += pci->w - startx;
 
 	 while (xwmid > 0) {
 	    WaitQueue(7);
-	    S3_OUTW(CUR_X, (short)pci->x);
-	    S3_OUTW(CUR_Y, (short)(pci->y + starty));
-	    S3_OUTW(DESTX_DIASTP, (short)x);
-	    S3_OUTW(DESTY_AXSTP, (short)y);
-	    S3_OUTW(MAJ_AXIS_PCNT, (short)(pci->w - 1));
-	    S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(h - 1));
-	    S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR |
-		  WRTDATA);
+	    SET_CURPT((short)pci->x, (short)(pci->y + starty));
+	    SET_DESTSTP((short)x, (short)y);
+	    SET_AXIS_PCNT((short)(pci->w - 1), (short)(h - 1));
+	    SET_CMD(CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
 	    x += pci->w;
 	    xwmid -= pci->w;
 	 }
 
 	 WaitQueue(7);
-	 S3_OUTW(CUR_X, (short)pci->x);
-	 S3_OUTW(CUR_Y, (short)(pci->y + starty));
-	 S3_OUTW(DESTX_DIASTP, (short)x);
-	 S3_OUTW(DESTY_AXSTP, (short)y);
-	 S3_OUTW(MAJ_AXIS_PCNT, (short)endx);
-	 S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(h - 1));
-	 S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+	 SET_CURPT((short)pci->x, (short)(pci->y + starty));
+	 SET_DESTSTP((short)x, (short)y);
+	 SET_AXIS_PCNT((short)endx,(short)(h - 1));
+	 SET_CMD(CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
       }
    } else if (startx + w - 1 < pci->w) {
       WaitQueue(7);
-      S3_OUTW(CUR_X, (short)(pci->x + startx));
-      S3_OUTW(CUR_Y, (short)(pci->y + starty));
-      S3_OUTW(DESTX_DIASTP, (short)x);
-      S3_OUTW(DESTY_AXSTP, (short)y);
-      S3_OUTW(MAJ_AXIS_PCNT, (short)(w - 1));
-      S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(pci->h - starty - 1));
-      S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+      SET_CURPT((short)(pci->x + startx), (short)(pci->y + starty));
+      SET_DESTSTP((short)x, (short)y);
+      SET_AXIS_PCNT((short)(w - 1), (short)(pci->h - starty - 1));
+      SET_CMD(CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
 
       y += pci->h - starty;
 
       while (ywmid > 0) {
 	 WaitQueue(7);
-	 S3_OUTW(CUR_X, (short)(pci->x + startx));
-	 S3_OUTW(CUR_Y, (short)pci->y);
-	 S3_OUTW(DESTX_DIASTP, (short)x);
-	 S3_OUTW(DESTY_AXSTP, (short)y);
-	 S3_OUTW(MAJ_AXIS_PCNT, (short)(w - 1));
-	 S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(pci->h - 1));
-	 S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+	 SET_CURPT((short)(pci->x + startx), (short)pci->y);
+	 SET_DESTSTP((short)x, (short)y);
+	 SET_AXIS_PCNT((short)(w - 1), (short)(pci->h - 1));
+	 SET_CMD(CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
 
 	 y += pci->h;
 	 ywmid -= pci->h;
       }
 
       WaitQueue(7);
-      S3_OUTW(CUR_X, (short)(pci->x + startx));
-      S3_OUTW(CUR_Y, (short)pci->y);
-      S3_OUTW(DESTX_DIASTP, (short)x);
-      S3_OUTW(DESTY_AXSTP, (short)y);
-      S3_OUTW(MAJ_AXIS_PCNT, (short)(w - 1));
-      S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)endy);
-      S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+      SET_CURPT((short)(pci->x + startx), (short)pci->y);
+      SET_DESTSTP((short)x, (short)y);
+      SET_AXIS_PCNT((short)(w - 1), (short)endy);
+      SET_CMD(CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
    } else {
       WaitQueue(7);
-      S3_OUTW(CUR_X, (short)(pci->x + startx));
-      S3_OUTW(CUR_Y, (short)(pci->y + starty));
-      S3_OUTW(DESTX_DIASTP, (short)x);
-      S3_OUTW(DESTY_AXSTP, (short)y);
-      S3_OUTW(MAJ_AXIS_PCNT, (short)(pci->w - startx - 1));
-      S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(pci->h - starty - 1));
-      S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+      SET_CURPT((short)(pci->x + startx), (short)(pci->y + starty));
+      SET_DESTSTP((short)x, (short)y);
+      SET_AXIS_PCNT((short)(pci->w - startx - 1), (short)(pci->h - starty - 1));
+      SET_CMD(CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
 
       x += pci->w - startx;
 
       while (xwmid > 0) {
 	 WaitQueue(7);
-	 S3_OUTW(CUR_X, (short)pci->x);
-	 S3_OUTW(CUR_Y, (short)(pci->y + starty));
-	 S3_OUTW(DESTX_DIASTP, (short)x);
-	 S3_OUTW(DESTY_AXSTP, (short)y);
-	 S3_OUTW(MAJ_AXIS_PCNT, (short)(pci->w - 1));
-	 S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT |
-	       (short)(pci->h - starty - 1));
-	 S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+	 SET_CURPT((short)pci->x, (short)(pci->y + starty));
+	 SET_DESTSTP((short)x, (short)y);
+	 SET_AXIS_PCNT((short)(pci->w - 1), (short)(pci->h - starty - 1));
+	 SET_CMD(CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
 
 	 x += pci->w;
 	 xwmid -= pci->w;
       }
 
       WaitQueue(7);
-      S3_OUTW(CUR_X, (short)pci->x);
-      S3_OUTW(CUR_Y, (short)(pci->y + starty));
-      S3_OUTW(DESTX_DIASTP, (short)x);
-      S3_OUTW(DESTY_AXSTP, (short)y);
-      S3_OUTW(MAJ_AXIS_PCNT, (short)endx);
-      S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(pci->h - starty - 1));
-      S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+      SET_CURPT((short)pci->x, (short)(pci->y + starty));
+      SET_DESTSTP((short)x, (short)y);
+      SET_AXIS_PCNT((short)endx, (short)(pci->h - starty - 1));
+      SET_CMD(CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
 
       y += pci->h - starty;
 
@@ -393,39 +340,29 @@ DoCacheImageFill(pci, x, y, w, h, pox, poy, fgalu, bgalu,
 	 xwmid = orig_xwmid;
 
 	 WaitQueue(7);
-	 S3_OUTW(CUR_X, (short)(pci->x + startx));
-	 S3_OUTW(CUR_Y, (short)pci->y);
-	 S3_OUTW(DESTX_DIASTP, (short)x);
-	 S3_OUTW(DESTY_AXSTP, (short)y);
-	 S3_OUTW(MAJ_AXIS_PCNT, (short)(pci->w - startx - 1));
-	 S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(pci->h - 1));
-	 S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+	 SET_CURPT((short)(pci->x + startx), (short)pci->y);
+	 SET_DESTSTP((short)x, (short)y);
+	 SET_AXIS_PCNT((short)(pci->w - startx - 1), (short)(pci->h - 1));
+	 SET_CMD(CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
 
 	 x += pci->w - startx;
 
 	 while (xwmid > 0) {
 	    WaitQueue(7);
-	    S3_OUTW(CUR_X, (short)pci->x);
-	    S3_OUTW(CUR_Y, (short)pci->y);
-	    S3_OUTW(DESTX_DIASTP, (short)x);
-	    S3_OUTW(DESTY_AXSTP, (short)y);
-	    S3_OUTW(MAJ_AXIS_PCNT, (short)(pci->w - 1));
-	    S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(pci->h - 1));
-	    S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR |
-		  WRTDATA);
+	    SET_CURPT((short)pci->x, (short)pci->y);
+	    SET_DESTSTP((short)x, (short)y);
+	    SET_AXIS_PCNT((short)(pci->w - 1), (short)(pci->h - 1));
+	    SET_CMD(CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
 
 	    x += pci->w;
 	    xwmid -= pci->w;
 	 }
 
 	 WaitQueue(7);
-	 S3_OUTW(CUR_X, (short)pci->x);
-	 S3_OUTW(CUR_Y, (short)pci->y);
-	 S3_OUTW(DESTX_DIASTP, (short)x);
-	 S3_OUTW(DESTY_AXSTP, (short)y);
-	 S3_OUTW(MAJ_AXIS_PCNT, (short)endx);
-	 S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(pci->h - 1));
-	 S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+	 SET_CURPT((short)pci->x, (short)pci->y);
+	 SET_DESTSTP((short)x, (short)y);
+	 SET_AXIS_PCNT((short)endx, (short)(pci->h - 1));
+	 SET_CMD(CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
 
 	 y += pci->h;
 	 ywmid -= pci->h;
@@ -435,43 +372,33 @@ DoCacheImageFill(pci, x, y, w, h, pox, poy, fgalu, bgalu,
       xwmid = orig_xwmid;
 
       WaitQueue(7);
-      S3_OUTW(CUR_X, (short)(pci->x + startx));
-      S3_OUTW(CUR_Y, (short)pci->y);
-      S3_OUTW(DESTX_DIASTP, (short)x);
-      S3_OUTW(DESTY_AXSTP, (short)y);
-      S3_OUTW(MAJ_AXIS_PCNT, (short)(pci->w - startx - 1));
-      S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)endy);
-      S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);      
+      SET_CURPT((short)(pci->x + startx), (short)pci->y);
+      SET_DESTSTP((short)x, (short)y);
+      SET_AXIS_PCNT((short)(pci->w - startx - 1), (short)endy);
+      SET_CMD(CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);      
 
       x += pci->w - startx;
 
       while (xwmid > 0) {
 	 WaitQueue(7);
-	 S3_OUTW(CUR_X, (short)pci->x);
-	 S3_OUTW(CUR_Y, (short)pci->y);
-	 S3_OUTW(DESTX_DIASTP, (short)x);
-	 S3_OUTW(DESTY_AXSTP, (short)y);
-	 S3_OUTW(MAJ_AXIS_PCNT, (short)(pci->w - 1));
-	 S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)endy);
-	 S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+	 SET_CURPT((short)pci->x, (short)pci->y);
+	 SET_DESTSTP((short)x, (short)y);
+	 SET_AXIS_PCNT((short)(pci->w - 1), (short)endy);
+	 SET_CMD(CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
 
 	 x += pci->w;
 	 xwmid -= pci->w;
       }
 
       WaitQueue(7);
-      S3_OUTW(CUR_X, (short)pci->x);
-      S3_OUTW(CUR_Y, (short)pci->y);
-      S3_OUTW(DESTX_DIASTP, (short)x);
-      S3_OUTW(DESTY_AXSTP, (short)y);
-      S3_OUTW(MAJ_AXIS_PCNT, (short)endx);
-      S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)endy);
-      S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+      SET_CURPT((short)pci->x, (short)pci->y);
+      SET_DESTSTP((short)x, (short)y);
+      SET_AXIS_PCNT((short)endx, (short)endy);
+      SET_CMD(CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
    }
 
    WaitQueue(2);
-   S3_OUTW(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
-   S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
+   SET_MIX(FSS_FRGDCOL | MIX_SRC, BSS_BKGDCOL | MIX_SRC);
    UNBLOCK_CURSOR;
 }
 
@@ -507,27 +434,26 @@ s3CImageStipple(pci, x, y, w, h, pox, poy, fg, alu, planemask)
      Pixel planemask;
 {
    BLOCK_CURSOR;
-
    if (s3Trio32FCBug) {
       WaitQueue16_32(4,7);
-      S3_OUTW32(FRGD_COLOR, fg);
-      S3_OUTW32(BKGD_COLOR, 0);
-      S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPBLT | COLCMPOP_F);
-      S3_OUTW32(RD_MASK, 0x01);
+      SET_FRGD_COLOR(fg);
+      SET_BKGD_COLOR(0);
+      SET_PIX_CNTL(MIXSEL_EXPBLT | COLCMPOP_F);
+      SET_RD_MASK(0x01);
       DoCacheImageFill(pci, x, y, w, h, pox, poy, alu, 
 		       MIX_OR, FSS_FRGDCOL, BSS_BKGDCOL, planemask);
    } else {
       WaitQueue16_32(3,5);
-      S3_OUTW32(FRGD_COLOR, fg);
-      S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPBLT | COLCMPOP_F);
-      S3_OUTW32(RD_MASK, 0x01);
+      SET_FRGD_COLOR(fg);
+      SET_PIX_CNTL(MIXSEL_EXPBLT | COLCMPOP_F);
+      SET_RD_MASK(0x01);
       DoCacheImageFill(pci, x, y, w, h, pox, poy, alu, 
 		       MIX_DST, FSS_FRGDCOL, BSS_BKGDCOL, planemask);
    }
 
    WaitQueue16_32(2,3);
-   S3_OUTW32(RD_MASK, ~0);
-   S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
+   SET_RD_MASK(~0);
+   SET_PIX_CNTL(MIXSEL_FRGDMIX | COLCMPOP_F);
    UNBLOCK_CURSOR;
 }
 
@@ -547,17 +473,17 @@ s3CImageOpStipple(pci, x, y, w, h, pox, poy, fg, bg, alu, planemask)
 {
    BLOCK_CURSOR;
    WaitQueue16_32(4,7);
-   S3_OUTW32(FRGD_COLOR, fg);
-   S3_OUTW32(BKGD_COLOR, bg);
-   S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPBLT | COLCMPOP_F);
-   S3_OUTW32(RD_MASK, 0x01);
+   SET_FRGD_COLOR(fg);
+   SET_BKGD_COLOR(bg);
+   SET_PIX_CNTL(MIXSEL_EXPBLT | COLCMPOP_F);
+   SET_RD_MASK(0x01);
 
    DoCacheImageFill(pci, x, y, w, h, pox, poy, alu, alu, 
 		    FSS_FRGDCOL, BSS_BKGDCOL, planemask);
 
    WaitQueue16_32(2,3);
-   S3_OUTW32(RD_MASK, ~0);
-   S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
+   SET_RD_MASK(~0);
+   SET_PIX_CNTL(MIXSEL_FRGDMIX | COLCMPOP_F);
    UNBLOCK_CURSOR;
 }
 
@@ -723,27 +649,23 @@ s3PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	case FillSolid:
 	   BLOCK_CURSOR;
 	   WaitQueue16_32(3,5);
-	   S3_OUTW32(FRGD_COLOR, (pGC->fgPixel));
-	   S3_OUTW(FRGD_MIX, FSS_FRGDCOL | s3alu[pGC->alu]);
-	   S3_OUTW32(WRT_MASK, pGC->planemask);
+	   SET_FRGD_COLOR(pGC->fgPixel);
+	   SET_FRGD_MIX(FSS_FRGDCOL | s3alu[pGC->alu]);
+	   SET_WRT_MASK(pGC->planemask);
 
 	   pboxClipped = pboxClippedBase;
 	   while (n--) {
 	      WaitQueue(5);
-	      S3_OUTW(CUR_X, (short)(pboxClipped->x1));
-	      S3_OUTW(CUR_Y, (short)(pboxClipped->y1));
-	      S3_OUTW(MAJ_AXIS_PCNT,
-		    (short)(pboxClipped->x2 - pboxClipped->x1 - 1));
-	      S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT |
+	      SET_CURPT((short)(pboxClipped->x1), (short)(pboxClipped->y1));
+	      SET_AXIS_PCNT((short)(pboxClipped->x2 - pboxClipped->x1 - 1), 
 		    (short)(pboxClipped->y2 - pboxClipped->y1 - 1));
-	      S3_OUTW(CMD, CMD_RECT | INC_Y | INC_X | DRAW | PLANAR | WRTDATA);
+	      SET_CMD(CMD_RECT | INC_Y | INC_X | DRAW | PLANAR | WRTDATA);
 
 	      pboxClipped++;
 	   }
 
 	   WaitQueue(2);
-	   S3_OUTW(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
-	   S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
+	   SET_MIX(FSS_FRGDCOL | MIX_SRC, BSS_BKGDCOL | MIX_SRC);
 	   UNBLOCK_CURSOR;
 	   break;
 	case FillTiled:

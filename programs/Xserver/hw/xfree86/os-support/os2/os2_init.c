@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_init.c,v 3.7 1996/05/10 06:59:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_init.c,v 3.8 1996/05/13 06:40:04 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -66,8 +66,8 @@ static void check_emx (void)
 	char name[CCHMAXPATH];
 	char fail[9];
 
-	if (_emx_rev < 41) {
-		ErrorF("This program requires emx.dll revision 41 (0.9b fix 02) "
+	if (_emx_rev < 42) {
+		ErrorF("This program requires emx.dll revision 42 (0.9b fix 04) "
 			"or later.\n");
 		rc = DosLoadModule (fail, sizeof (fail), "emx", &hmod);
 		if (rc == 0) {
@@ -168,6 +168,8 @@ void xf86OpenConsole()
 	rc = KbdSetCp(0,0,fd);
 	if(rc != 0)
 		FatalError("xf86OpenConsole: cannot set keyboard codepage, rc=%d\n",rc);
+
+	hwid.cb = sizeof(hwid);	/* fix crash on P9000 */
 	rc = KbdGetHWID(&hwid, fd);
 	if (rc == 0) {
 		switch (hwid.idKbd) {

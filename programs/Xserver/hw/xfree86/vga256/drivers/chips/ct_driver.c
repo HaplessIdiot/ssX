@@ -2,7 +2,7 @@
 #define CT_LINE_ACCL		       /* Enable line acceleration */
 
 /* $XConsortium: ct_driver.c /main/6 1996/01/12 12:16:39 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.14 1996/08/11 13:02:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.15 1996/08/14 14:32:48 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -1525,25 +1525,6 @@ CHIPSProbe()
 	}
     }
 
-    /* If we are using MMIO, we need to adjust the size of the Linear
-     * Address space so as to have access to the memory mapped registers */
-    if (ctUseMMIO) {
-	if (ctisHiQV32) {
-	    /* !!! Major problem. It seems that we can only mmap 4Mb (at least
-	     * on Linux). Hence the required 8Mb address space of the 65550
-	     * can not be obtained. For now leave ChipLinearSize alone a set 
-	     * aside extra space for the MMIO using xf86MapVidMem. This has
-	     * to be done in CHIPSInit though.
-	     */
-#if 0
-	    CHIPS.ChipLinearSize = 0x800000L;	/* 8Mb address space */
-	    xf86MapVidMem(vga256InfoRec.scrnIndex, LINEAR_REGION,
-		(pointer) (CHIPS.ChipLinearBase + 0x400000L),
-		0x400000L);
-#endif
-	} else
-	    CHIPS.ChipLinearSize = 0x400000L;	/* 4Mb address space */
-    }
     /*
      * Last we fill in the remaining data structures.    We specify
      * the chipset name, using the Ident() function and an appropriate
@@ -1726,10 +1707,10 @@ CHIPSRestore(restore)
         read_xr(0x57,tmp57);
         if((tmp55 & 0x20) || (tmp57 & 0x20)){
 	  ctRestoreStretching(tmp55 & (~0x20),		/* disable h-double */
-			      tmp57 & (~0x20));/* disable vertical stretching*/
+			      tmp57 & (~0x20)); /* disable v-stretching*/
 	}
     }
-
+#ifdef USE
     if (restore->XMode) {
 	/* 
 	 *  We have to initialize the generic VGA registers before 
@@ -1744,7 +1725,7 @@ CHIPSRestore(restore)
 	if (ctisHiQV32) {
 	  ctRestoreStretching(restore->Port_3D0[0x40],restore->Port_3D0[0x48]);
 	  /* why twice ? :
-           * some times console is not well restored even if this registers 
+           * some times console is not well restored even if these registers 
 	   * are good, re-write the registers works around 
 	   */
 	  /*ctRestoreStretching(restore->Port_3D0[0x40],restore->Port_3D0[0x48]);*/
@@ -1759,6 +1740,7 @@ CHIPSRestore(restore)
 	    outb(0x3D5, tmp | 0x80);
 	}
     } else {
+#endif /*USE*/
 	ctRestore(restore);
 	if (!ctisHiQV32)
 	    outw(0x3D6, 0x15);	       /* do we have to do this again? */
@@ -1768,7 +1750,7 @@ CHIPSRestore(restore)
 	if (ctisHiQV32) {
 	  ctRestoreStretching(restore->Port_3D0[0x40],restore->Port_3D0[0x48]);
 	  /* why twice ? :
-           * some times console is not well restored even if this registers 
+           * some times console is not well restored even if these registers 
 	   * are good, re-write the registers works around 
 	   */
 	  ctRestoreStretching(restore->Port_3D0[0x40],restore->Port_3D0[0x48]);
@@ -1792,11 +1774,15 @@ CHIPSRestore(restore)
 	    tmp = inb(0x3D5);
 	    outb(0x3D5, tmp | 0x80);
 	}
+#ifdef USE
     }
+#endif
 
     outb(0x3C2, (((((vgaHWPtr) restore)->MiscOutReg) & 0xFE) | ctVgaIOBaseFlag));
     ctXMode = restore->XMode;
+#ifdef USE1
     outw(0x3C4, 0x0300);	       /* now reenable the timing sequencer */
+#endif
 
     /* debug - dump out all the extended registers... */
 
@@ -1846,28 +1832,26 @@ CHIPSSave(save)
 	outw(0x3D6, 0x10);
 	outw(0x3D6, 0x11);
     }
-
+    /* now reenable the timing sequencer to catch VSync in ctRestoreStreching*/
+    outw(0x3C4, 0x0300);
     if (ctisHiQV32) {
       /* must reset Stretching, because graphic mode must not be change
        * with stretching enable.
        * vgaHWSave at the first time changes to Graphic mode to save FONT 
        * and so on .
        */
-      outw(0x3C4, 0x0300);	       /* now reenable the timing sequencer */
       read_fr(0x40, ctHorizontalStretch);
       read_fr(0x48, ctVerticalStretch);
       /* Disable horizontal/vertical stretching   */
       ctRestoreStretching(0, 0);
     }
     else {
-      outw(0x3C4, 0x0300);	       /* now reenable the timing sequencer */
       read_xr(0x55, ctHorizontalStretch);
       read_xr(0x57, ctVerticalStretch);
       /* Disable horizontal/vertical stretching   */
       ctRestoreStretching(ctHorizontalStretch & (~0x20),
 			  ctVerticalStretch & (~0x20) );
     }      
-
 
     if (!ctisHiQV32)
 	ctLoadSWFlag;
@@ -1890,11 +1874,12 @@ CHIPSSave(save)
 	    ErrorF("FS%X - %X\n", i, save->Port_3D0[i]);
 #endif
 	}
-	/* this registers is already saved and modified 
-	   streching is disable as soon as possible.
+	/* these registers are already saved and modified 
+	   stretching is disable as soon as possible.
 	*/
 	save->Port_3D0[0x40] = ctHorizontalStretch ;
 	save->Port_3D0[0x48] = ctVerticalStretch ;
+
 	/* Save CR0-CR40 even though we don't use them, so they can be 
 	 *  printed */
 	for (i = 0x0; i < 0x80; i++) {
@@ -1923,7 +1908,7 @@ CHIPSSave(save)
 	    ErrorF("XS%X - %X\n", i, save->Port_3D6[i]);
 #endif
 	}
-	/* this registers is already saved and modified 
+	/* these registers are already saved and modified 
 	   streching is disable as soon as possible.
 	*/
 	save->Port_3D6[0x55] = ctHorizontalStretch ;
@@ -1980,6 +1965,7 @@ CHIPSInit655xx(mode)
     int lcdVTotal, lcdVDisplay;
     int lcdHBlankStart, lcdHBlankEnd, lcdHRetraceStart, lcdHRetraceEnd;
     int lcdVRetraceStart, lcdVRetraceEnd;
+    int CrtcHDisplay;
 
 #ifdef DEBUG
     ErrorF("CHIPSInit655xx\n");
@@ -2118,11 +2104,16 @@ CHIPSInit655xx(mode)
 	lcdHDisplay = (lcdHDisplay >> 3) - 1;
 	lcdHRetraceStart = (lcdHRetraceStart >> 3);
 	lcdHRetraceEnd = (lcdHRetraceEnd >> 3);
+	/* This ugly hack is needed because CR01 and XR1C share the 8th bit!*/
+	CrtcHDisplay = ((mode->CrtcHDisplay >> 3) - 1);
+	if((lcdHDisplay & 0x100) != ( CrtcHDisplay & 0x100)){
+	  ErrorF("This display configuration might cause problems !\n");
+	  lcdHDisplay = 255;}
 
 	/* Only program the FP timings if needed */
 
 	new->Port_3D6[0x17] = (((lcdHTotal) & 0x100) >> 8)
-	    | (((lcdHDisplay) & 0x100) >> 7)
+	    | ((lcdHDisplay & 0x100) >> 7)
 	    | ((lcdHRetraceStart & 0x100) >> 6)
 	    | (((lcdHRetraceEnd) & 0x20) >> 2);
 
@@ -2184,9 +2175,12 @@ CHIPSInit655xx(mode)
 	new->Port_3D6[0x55] &= 0xC0;   /* Mask off Polarity bits          */
 	new->Port_3D6[0x55] |= 0x01;   /* enable horizontal-compensation  */
 
-	if (OFLG_ISSET(OPTION_LCD_CENTER, &vga256InfoRec.options) 
-	    && (mode->CrtcHDisplay < 1489))     /* HWBug                  */ 
-	    new->Port_3D6[0x55] |= 0x02;	/* enable h-centering     */
+	if (OFLG_ISSET(OPTION_LCD_CENTER, &vga256InfoRec.options)){
+	    if (mode->CrtcHDisplay < 1489)      /* HWBug                  */ 
+		new->Port_3D6[0x55] |= 0x02;	/* enable h-centering     */
+	    else if (vgaBitsPerPixel == 24)
+		new->Port_3D6[0x56] = (lcdHDisplay - CrtcHDisplay) >> 1;
+	}
 
 	new->Port_3D6[0x57] = 0x03;    /* enable v-comp disable v-stretch */
 	if (!OFLG_ISSET(OPTION_LCD_STRETCH, &vga256InfoRec.options)) {
@@ -2338,7 +2332,9 @@ CHIPSInit655xx(mode)
      * 2Mb for 65545/6/8 with PCI.
      */
     if (ctUseMMIO && ctMMIOBase == NULL) {
-	ctMMIOBase = (unsigned char *)vgaLinearBase + 0x200000;
+	ctMMIOBase = xf86MapVidMem(vga256InfoRec.scrnIndex, LINEAR_REGION,
+	    (pointer) (CHIPS.ChipLinearBase + 0x200000L),
+	    0x200000L);
     }
 #endif
 
@@ -2963,7 +2959,7 @@ CHIPSSaveScreen(start)
 #endif
     /*
      *	Do not reset timing sequencer.
-     *  Some changes must be synchronize with VSync.
+     *  Some changes must be synchronized with VSync.
      */
 }
 #endif
@@ -2973,7 +2969,7 @@ ctRestoreStretching(ctHorizontalStretch, ctVerticalStretch)
 {
     unsigned char tmp;
     /*
-     *	be carefull timing sequencer must be enable.
+     *	be careful timing sequencer must be enabled.
      */
     tmp = inb(vgaIOBase + 0x0A);     	/* Reset flip-flop */
     /*outb(0x3C0, 0x00);*/		/* Enables pallete access */
@@ -2981,7 +2977,7 @@ ctRestoreStretching(ctHorizontalStretch, ctVerticalStretch)
     /* Stretching must disable during VSync */
     while (((inb(vgaIOBase + 0x0A)) & 0x08) == 0x08){};/* wait VSync off */
     /* to be sure we work at start Vsync */
-    while ( ((inb(vgaIOBase + 0x0A)) & 0x08) == 0 ) {}; /* wait VSync on */
+    while (((inb(vgaIOBase + 0x0A)) & 0x08) == 0 ) {}; /* wait VSync on */
     if (ctisHiQV32) {
         write_fr(0x40, ctHorizontalStretch);
         write_fr(0x48, ctVerticalStretch);
@@ -2991,15 +2987,15 @@ ctRestoreStretching(ctHorizontalStretch, ctVerticalStretch)
         write_xr(0x57, ctVerticalStretch);
     }
     while (((inb(vgaIOBase + 0x0A)) & 0x08) == 0x08){};/* wait VSync off */
-    /* wait one trame more */
+    /* wait one more frame */
     while ( ((inb(vgaIOBase + 0x0A)) & 0x08) == 0 ) {}; /* wait VSync on */
     
     (void)inb(vgaIOBase + 0x0A);     	/* Reset flip-flop */
     /*outb(0x3C0, 0x20);*/		/* Disable pallete access */ 
     
     usleep(20000);			/* to be active */
-
 }
+
 
 void
 ctRestore(restore)
@@ -3062,7 +3058,7 @@ ctRestore(restore)
 	    if ( (i == 0x40) || (i==0x48)) 
 	        continue ;  /* some registers must be set before FR40/FR48 */
 	    outb(0x3D0, i);
-	    if (inb(0x3D1) != restore->Port_3D0[i])	/* only modify if changed */
+	    if (inb(0x3D1) != restore->Port_3D0[i])/* only modify if changed */
 		outb(0x3D1, restore->Port_3D0[i]);
 	}
 	for (i = 0x30; i < 0x80; i++) {
@@ -3092,11 +3088,10 @@ ctRestore(restore)
 	tmp = inb(0x3D7);	       /* restore the non clock bits */
 	outb(0x3D6, 0x54);
 	outb(0x3D7, ((restore->Port_3D6[0x54] & 0xF3) | (tmp & ~0xF3)));
-	i++;
 
 	/* Don't touch alternate clock select reg. */
-	for (; i < 0x80; i++) {
-	    if ( (i == 0x55) || (i==0x57)) 
+	for (i=0x56; i < 0x80; i++) {
+	    if (i==0x57) 
 	        continue ;             /* there is restoreStretching */
 	    outb(0x3D6, i);
 	    if (inb(0x3D7) != restore->Port_3D6[i])	/* only modify if changed */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.35 1996/05/06 05:57:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.36 1996/06/29 09:06:56 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -148,6 +148,8 @@ extern void (*s3ImageFillFunc)(
 
 extern int s3DisplayWidth;
 extern int s3ScissB;
+/* right scissor BL 0816150096 */
+extern int s3ScissR;
 extern int s3Bpp;    /* Bytes per pixel */
 extern int s3BppDisplayWidth;
 extern int s3Weight;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.7 1996/05/10 06:58:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.8 1996/08/18 01:51:37 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -7,19 +7,19 @@
  * documentation for any purpose is hereby granted without fee, provided that
  * the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
- * documentation, and that the names of Orest Zborowski and David Wexelblat 
- * not be used in advertising or publicity pertaining to distribution of 
+ * documentation, and that the names of Orest Zborowski and David Wexelblat
+ * not be used in advertising or publicity pertaining to distribution of
  * the software without specific, written prior permission.  Orest Zborowski
- * and David Wexelblat make no representations about the suitability of this 
- * software for any purpose.  It is provided "as is" without express or 
+ * and David Wexelblat make no representations about the suitability of this
+ * software for any purpose.  It is provided "as is" without express or
  * implied warranty.
  *
- * OREST ZBOROWSKI AND DAVID WEXELBLAT DISCLAIMS ALL WARRANTIES WITH REGARD 
- * TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND 
- * FITNESS, IN NO EVENT SHALL OREST ZBOROWSKI OR DAVID WEXELBLAT BE LIABLE 
- * FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES 
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN 
- * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF 
+ * OREST ZBOROWSKI AND DAVID WEXELBLAT DISCLAIMS ALL WARRANTIES WITH REGARD
+ * TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+ * FITNESS, IN NO EVENT SHALL OREST ZBOROWSKI OR DAVID WEXELBLAT BE LIABLE
+ * FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
@@ -34,14 +34,11 @@
 #include "xf86_OSlib.h"
 
 #ifdef __alpha__
-/* defined the base KSEG address for DENSE memory on (most) Alphas */
-/* this is used to trick "mmap" into mapping BUS physical memory for us */
-#define BUS_BASE 0xfffffc0300000000UL
-/* also, current LIBC (0.37) has no "iopl" but does (and needs) "ioperm" */
-#define iopl(a) ((a)?ioperm(0, 0x10000, 1):ioperm(0, 0x10000, 0))
-#else /* __alpha__ */
+extern unsigned long _bus_base(void) __attribute__((const));
+#define BUS_BASE _bus_base()
+#else
 #define BUS_BASE 0
-#endif /* __alpha__ */
+#endif
 
 /***************************************************************************/
 /* Video Memory Mapping section                                            */
@@ -96,8 +93,8 @@ unsigned long Size;
 	}
 	/* This requirers linux-0.99.pl10 or above */
 	base = (pointer)mmap((caddr_t)0, Size, PROT_READ|PROT_WRITE,
-			     MAP_SHARED, fd, (off_t)Base | BUS_BASE);
-#endif			     
+			     MAP_SHARED, fd, (off_t)Base + BUS_BASE);
+#endif
 	close(fd);
 	if ((long)base == -1)
 	{
@@ -128,10 +125,10 @@ int Region;
 pointer Base;
 unsigned long Size;
 {
-    munmap((caddr_t)((off_t)Base | BUS_BASE), Size);
+    munmap((caddr_t)Base, Size);
 #ifdef ONLY_MMAP_FIXED_WORKS
     xfree(AllocAddress[ScreenNum][Region]);
-#endif    
+#endif
 }
 
 Bool xf86LinearVidMem()
@@ -362,7 +359,7 @@ void xf86DisableIOPrivs()
 {
 	if (ExtendedEnabled)
 		iopl(0);
-	return;	
+	return;
 }
 
 /***************************************************************************/

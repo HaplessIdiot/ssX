@@ -1,5 +1,5 @@
 /* $XConsortium: phist.c,v 1.4 94/04/17 20:33:46 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/process/phist.c,v 3.0 1996/03/29 22:11:00 dawes Exp $ */
 /**** module phist.c ****/
 /******************************************************************************
 
@@ -103,6 +103,7 @@ terms and conditions:
 #include <element.h>
 #include <technq.h>
 #include <difloat.h>
+#include <memory.h>
 
 
 /*

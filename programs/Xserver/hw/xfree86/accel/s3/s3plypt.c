@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3plypt.c,v 3.6 1996/05/06 05:57:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3plypt.c,v 3.7 1996/06/29 09:07:17 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -117,10 +117,10 @@ s3PolyPoint(pDrawable, pGC, mode, npt, pptInit)
 
    BLOCK_CURSOR;
    WaitQueue16_32(4,6);
-   S3_OUTW(FRGD_MIX, FSS_FRGDCOL | s3alu[pGC->alu]);
-   S3_OUTW32(WRT_MASK, pGC->planemask);
-   S3_OUTW32(FRGD_COLOR, pGC->fgPixel);
-   S3_OUTW(MAJ_AXIS_PCNT, 0);
+   SET_FRGD_MIX(FSS_FRGDCOL | s3alu[pGC->alu]);
+   SET_WRT_MASK(pGC->planemask);
+   SET_FRGD_COLOR(pGC->fgPixel);
+   SET_MAJ_AXIS_PCNT(0);
 
    for (nbox = REGION_NUM_RECTS(cclip), pbox = REGION_RECTS(cclip);
 	--nbox >= 0;
@@ -131,15 +131,14 @@ s3PolyPoint(pDrawable, pGC, mode, npt, pptInit)
 	 pt = *ppt++;
 	 if (!isClipped(pt, c1, c2)) {
 	    WaitQueue(3);
-	    S3_OUTW(CUR_X, (short)(intToX(pt) + pDrawable->x));
-	    S3_OUTW(CUR_Y, (short)(intToY(pt) + pDrawable->y));
-	    S3_OUTW(CMD, CMD_LINE | DRAW | LINETYPE | PLANAR | WRTDATA);
+	    SET_CURPT((short)(intToX(pt) + pDrawable->x), 
+	    		(short)(intToY(pt) + pDrawable->y));
+	    SET_CMD(CMD_LINE | DRAW | LINETYPE | PLANAR | WRTDATA);
 	 }
       }
    }
 
    WaitQueue(2);
-   S3_OUTW(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
-   S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
+   SET_MIX(FSS_FRGDCOL | MIX_SRC, BSS_BKGDCOL | MIX_SRC);
    UNBLOCK_CURSOR;
 }

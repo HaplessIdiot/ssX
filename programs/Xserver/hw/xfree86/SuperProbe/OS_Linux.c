@@ -1,25 +1,25 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Linux.c,v 3.4 1996/05/06 05:56:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Linux.c,v 3.5 1996/05/10 06:56:34 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by Orest Zborowski <orestz@eskimo.com>
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
- * to deal in the Software without restriction, including without limitation 
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
- * OREST ZBOROWSKI BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF 
- * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ * OREST ZBOROWSKI BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF
+ * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * Except as contained in this notice, the name of Orest Zborowski shall not be
  * used in advertising or otherwise to promote the sale, use or other dealings
  * in this Software without prior written authorization from Orest Zborowski.
@@ -30,17 +30,18 @@
 
 #include "Probe.h"
 
+#include <errno.h>
 #include <fcntl.h>
 #include <sys/kd.h>
 #include <sys/vt.h>
 #include <sys/mman.h>
 
 #ifdef __alpha__
-#define BUS_BASE 0xfffffc0300000000UL
-#define iopl(a) ((a)?ioperm(0, 0x10000, 1):ioperm(0,0x10000,0))
-#else /* __alpha__ */
+extern unsigned long _bus_base(void) __attribute__((const));
+#define BUS_BASE _bus_base()
+#else
 #define BUS_BASE 0
-#endif /* __alpha__ */
+#endif
 
 static int VT_fd = -1;
 static int VT_num = -1;
@@ -51,7 +52,7 @@ static int BIOS_fd = -1;
  * OpenVideo --
  *
  * Enable access to the installed video hardware.  For Linux, open a new
- * VT, and disable IO protection, since we may need to get at extended 
+ * VT, and disable IO protection, since we may need to get at extended
  * registers (full 16-bit decoding).
  */
 int OpenVideo()
@@ -166,7 +167,7 @@ Byte *MapVGA()
 		return((Byte *)0);
 	}
 	base = (Byte *)mmap((caddr_t)0, 0x10000, PROT_READ|PROT_WRITE,
-			    MAP_SHARED, fd, (off_t)0xA0000 | BUS_BASE);
+			    MAP_SHARED, fd, (off_t)0xA0000 + BUS_BASE);
 	close(fd);
 	if ((long)base == -1)
 	{
@@ -184,14 +185,14 @@ Byte *MapVGA()
 void UnMapVGA(base)
 Byte *base;
 {
-	munmap((caddr_t)((off_t)base | BUS_BASE), 0x10000);
+	munmap((caddr_t)base, 0x10000);
 	return;
 }
 
 /*
  * ReadBIOS --
  *
- * Read 'Len' bytes from the video BIOS at address 'Bios_Base'+'Offset' into 
+ * Read 'Len' bytes from the video BIOS at address 'Bios_Base'+'Offset' into
  * buffer 'Buffer'.
  */
 int ReadBIOS(Offset, Buffer, Len)
@@ -215,21 +216,15 @@ int Len;
 	}
 
 #ifdef __alpha__
-
-	if ((off_t)((off_t)Base & 0x7FFF) != (off_t)0)
-	{
-		myoffset = (off_t)Base & 0x7FFF;
+	if ((myoffset = ((off_t)Base & 0x7FFF)) != 0)
 		Base = (Byte *)((off_t)Base & 0xF8000);
-	}
-	else
-		myoffset = 0;
 
 	mysize = myoffset + Len;
 	mybase = (unsigned char *)mmap((caddr_t)0, mysize, PROT_READ,
 				       MAP_SHARED, BIOS_fd,
-				       (off_t)Base | BUS_BASE);
+				       (off_t)Base + BUS_BASE);
 
-	if (mybase == (unsigned char *)NULL) {
+	if (mybase == (unsigned char *)-1UL) {
 		fprintf(stderr, "%s: Failed to mmap /dev/mem (%d)\n",
 			MyName, errno);
 		return(-1);
@@ -243,7 +238,7 @@ int Len;
 		tmp = *(Word *)mybase;
 		if (tmp != (Word)0xAA55)
 		{
-			fprintf(stderr, 
+			fprintf(stderr,
 				"%s: BIOS sanity check failed, addr=%lx\n",
 				MyName, (long)Base);
 			return(-1);
@@ -252,7 +247,7 @@ int Len;
 
 	memcpy(Buffer, &mybase[myoffset], Len);
 
-	munmap((caddr_t)((off_t)Base | BUS_BASE), mysize);
+	munmap((caddr_t)mybase, mysize);
 
 #else /* __alpha__ */
 
@@ -265,7 +260,7 @@ int Len;
 		(void)read(BIOS_fd, &tmp, 2);
 		if (tmp != (Word)0xAA55)
 		{
-			fprintf(stderr, 
+			fprintf(stderr,
 				"%s: BIOS sanity check failed, addr=%x\n",
 				MyName, (int)Base);
 			return(-1);
@@ -289,7 +284,7 @@ int Len;
 /*
  * EnableIOPort --
  *
- * Enable access to 'NumPorts' IO ports listed in array 'Ports'.  For Linux, 
+ * Enable access to 'NumPorts' IO ports listed in array 'Ports'.  For Linux,
  * we've disabled IO protections so this is a no-op.
  */
 /*ARGSUSED*/
@@ -303,7 +298,7 @@ CONST Word *Ports;
 /*
  * DisableIOPort --
  *
- * Disable access to 'NumPorts' IO ports listed in array  'Ports'.  For Linux, 
+ * Disable access to 'NumPorts' IO ports listed in array  'Ports'.  For Linux,
  * we've disabled IO protections so this is a no-op.
  */
 /*ARGSUSED*/

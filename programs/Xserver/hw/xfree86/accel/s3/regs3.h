@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.18 1996/02/04 09:04:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.19 1996/06/30 04:41:49 dawes Exp $ */
 /*
  * regs3.h
  * 
@@ -26,6 +26,10 @@
 
 /* for OUT instructions */
 #include "compiler.h"
+
+/* for new trio64V+ and 968 mmio */
+#include "newmmio.h"
+
 
 /* S3 chipset definitions */
 
@@ -412,23 +416,26 @@
 
   typedef struct {
      unsigned char r, g, b;
+#define       _16BIT          0x0200
+#define       _32BIT          0x0400
+
   }
 LUTENTRY;
 
 /* Wait until "v" queue entries are free */
-#define	WaitQueue(v)	do { while (inb(GP_STAT) & (0x0100 >> (v))); } while(0)
+#define WaitQueue(v)  do { mem_barrier(); while (inb(GP_STAT) & (0x0100 >> (v))); } while(0)
 
 /* x64: Wait until "v" queue entries are free, v>8 for 864/964 */
-#define	WaitQueue16(v)	do { while (inw(GP_STAT) & (0x8000 >> (v-9))); } while(0)
+#define	WaitQueue16(v)	do { mem_barrier(); while (inw(GP_STAT) & (0x8000 >> (v-9))); } while(0)
 
 /* Wait until GP is idle and queue is empty */
 /* x64: bits 15-11 are reserved in 928 and should be zero,
         for 864/964 these are FIFO-STATUS bits 9-13 */
 #define	WaitIdleEmpty() \
-   do { int fx86=(S3_x64_SERIES(s3ChipId)?0xF800:0); while (inw(GP_STAT) & (GPBUSY | 1 | fx86)); } while (0)
+   do { int fx86=(S3_x64_SERIES(s3ChipId)?0xF800:0); mem_barrier(); while (inw(GP_STAT) & (GPBUSY | 1 | fx86)); } while (0)
 
 /* Wait until GP is idle */
-#define WaitIdle() do { while (inw(GP_STAT) & GPBUSY) ; } while (0)
+#define WaitIdle() do { mem_barrier(); while (inw(GP_STAT) & GPBUSY) ; } while (0)
 
 #define	MODE_800	1
 #define	MODE_1024	2

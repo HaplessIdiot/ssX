@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.h,v 3.4 1996/02/04 09:07:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.h,v 3.5 1996/02/22 05:11:51 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -30,32 +30,32 @@
 struct pci_config_reg {
     /* start of official PCI config space header */
     union {
-        unsigned long device_vendor;
+	CARD32 device_vendor;
 	struct {
-	    unsigned short vendor;
-	    unsigned short device;
+	    CARD16 vendor;
+	    CARD16 device;
 	} dv;
     } dv_id;
 #define _device_vendor dv_id.device_vendor
 #define _vendor dv_id.dv.vendor
 #define _device dv_id.dv.device
     union {
-        unsigned long status_command;
+        CARD32 status_command;
 	struct {
-	    unsigned short command;
-	    unsigned short status;
+	    CARD16 command;
+	    CARD16 status;
 	} sc;
     } stat_cmd;
 #define _status_command stat_cmd.status_command
 #define _command stat_cmd.sc.command
 #define _status  stat_cmd.sc.status
     union {
-        unsigned long class_revision;
+        CARD32 class_revision;
 	struct {
-	    unsigned char rev_id;
-	    unsigned char prog_if;
-	    unsigned char sub_class;
-	    unsigned char base_class;
+	    CARD8 rev_id;
+	    CARD8 prog_if;
+	    CARD8 sub_class;
+	    CARD8 base_class;
 	} cr;
     } class_rev;
 #define _class_revision class_rev.class_revision
@@ -64,12 +64,12 @@ struct pci_config_reg {
 #define _sub_class  class_rev.cr.sub_class
 #define _base_class class_rev.cr.base_class
     union {
-        unsigned long bist_header_latency_cache;
+        CARD32 bist_header_latency_cache;
 	struct {
-	    unsigned char cache_line_size;
-	    unsigned char latency_timer;
-	    unsigned char header_type;
-	    unsigned char bist;
+	    CARD8 cache_line_size;
+	    CARD8 latency_timer;
+	    CARD8 header_type;
+	    CARD8 bist;
 	} bhlc;
     } bhlc;
 #define _bist_header_latency_cache bhlc.bist_header_latency_cache
@@ -79,26 +79,26 @@ struct pci_config_reg {
 #define _bist            bhlc.bhlc.bist
     union {
 	struct {
-	    unsigned long dv_base0;
-	    unsigned long dv_base1;
-	    unsigned long dv_base2;
-	    unsigned long dv_base3;
-	    unsigned long dv_base4;
-	    unsigned long dv_base5;
+	    CARD32 dv_base0;
+	    CARD32 dv_base1;
+	    CARD32 dv_base2;
+	    CARD32 dv_base3;
+	    CARD32 dv_base4;
+	    CARD32 dv_base5;
 	} dv;
 	struct {
-	    unsigned long bg_rsrvd[2];
-	    unsigned char primary_bus_number;
-	    unsigned char secondary_bus_number;
-	    unsigned char subordinate_bus_number;
-	    unsigned char secondary_latency_timer;
-	    unsigned char io_base;
-	    unsigned char io_limit;
-	    unsigned short secondary_status;
-	    unsigned short mem_base;
-	    unsigned short mem_limit;
-	    unsigned short prefetch_mem_base;
-	    unsigned short prefetch_mem_limit;
+	    CARD32 bg_rsrvd[2];
+	    CARD8 primary_bus_number;
+	    CARD8 secondary_bus_number;
+	    CARD8 subordinate_bus_number;
+	    CARD8 secondary_latency_timer;
+	    CARD8 io_base;
+	    CARD8 io_limit;
+	    CARD16 secondary_status;
+	    CARD16 mem_base;
+	    CARD16 mem_limit;
+	    CARD16 prefetch_mem_base;
+	    CARD16 prefetch_mem_limit;
 	} bg;
     } bc;
 #define	_base0				bc.dv.dv_base0
@@ -118,18 +118,18 @@ struct pci_config_reg {
 #define _mem_limit			bc.bg.mem_limit
 #define _prefetch_mem_base		bc.bg.prefetch_mem_base
 #define _prefetch_mem_limit		bc.bg.prefetch_mem_limit
-    unsigned long rsvd1;
-    unsigned long rsvd2;
-    unsigned long _baserom;
-    unsigned long rsvd3;
-    unsigned long rsvd4;
+    CARD32 rsvd1;
+    CARD32 rsvd2;
+    CARD32 _baserom;
+    CARD32 rsvd3;
+    CARD32 rsvd4;
     union {
-        unsigned long max_min_ipin_iline;
+        CARD32 max_min_ipin_iline;
 	struct {
-	    unsigned char int_line;
-	    unsigned char int_pin;
-	    unsigned char min_gnt;
-	    unsigned char max_lat;
+	    CARD8 int_line;
+	    CARD8 int_pin;
+	    CARD8 min_gnt;
+	    CARD8 max_lat;
 	} mmii;
     } mmii;
 #define _max_min_ipin_iline mmii.max_min_ipin_iline
@@ -139,12 +139,12 @@ struct pci_config_reg {
 #define _max_lat  mmii.mmii.max_lat
     /* I don't know how accurate or standard this is (DHD) */
     union {
-	unsigned long user_config;
+	CARD32 user_config;
 	struct {
-	    unsigned char user_config_0;
-	    unsigned char user_config_1;
-	    unsigned char user_config_2;
-	    unsigned char user_config_3;
+	    CARD8 user_config_0;
+	    CARD8 user_config_1;
+	    CARD8 user_config_2;
+	    CARD8 user_config_3;
 	} uc;
     } uc;
 #define _user_config uc.user_config
@@ -153,12 +153,12 @@ struct pci_config_reg {
 #define _user_config_2 uc.uc.user_config_2
 #define _user_config_3 uc.uc.user_config_3
     /* end of official PCI config space header */
-    unsigned long _pcibusidx;
-    unsigned long _pcinumbus;
-    unsigned long _pcibuses[16];
-    unsigned short _configtype;   /* config type found                   */
-    unsigned short _ioaddr;       /* config type 1 - private I/O addr    */
-    unsigned long _cardnum;       /* config type 2 - private card number */
+    CARD32 _pcibusidx;
+    CARD32 _pcinumbus;
+    CARD32 _pcibuses[16];
+    CARD16 _configtype;   /* config type found                   */
+    CARD16 _ioaddr;       /* config type 1 - private I/O addr    */
+    CARD32 _cardnum;       /* config type 2 - private card number */
 };
 
 #define PCI_EN 0x80000000

@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/carddata.tcl,v 3.2 1996/08/13 11:28:21 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/carddata.tcl,v 3.3 1996/08/18 01:47:18 dawes Exp $
 #
 #
 
@@ -9,7 +9,7 @@ set AccelServerList {	8514 AGX I128 Mach8 Mach32 Mach64 P9000 S3 W32 }
 ###
 
 # For each server, what chipsets can be chosen?
-set CardChipSets(Mono)	   { generic \
+set CardChipSets(Mono)	   { \
 			     ati \
 			     cl6410 cl6412 cl6420 cl6440 \
 			     clgd5420 clgd5422 clgd5424 clgd5426 \
@@ -32,7 +32,8 @@ set CardChipSets(Mono)	   { generic \
 				tgui9420dgi tgui9430dgi tgui9440agi \
 				tgui9660xgi tgui9680 \
 			   }
-set CardChipSets(VGA16)	   { generic \
+set CardChipSets(Mono)	   [concat generic [lsort $CardChipSets(Mono)]]
+set CardChipSets(VGA16)	   { \
 			     ati \
 			     cl6410 cl6412 cl6420 cl6440 \
 			     et3000 \
@@ -48,7 +49,8 @@ set CardChipSets(VGA16)	   { generic \
 				tgui9420dgi tgui9430dgi tgui9440agi \
 				tgui9660xgi tgui9680 \
 			   }
-set CardChipSets(SVGA)	   { generic \
+set CardChipSets(VGA16)	   [concat generic [lsort $CardChipSets(VGA16)]]
+set CardChipSets(SVGA)	   { \
 			     al2101 \
 			     ali2228 ali2301 ali2302 ali2308 ali2401 \
 			     ark1000vl ark1000pv ark2000pv \
@@ -82,26 +84,28 @@ set CardChipSets(SVGA)	   { generic \
 				tgui9660xgi tgui9680 \
 			     video7 \
 			   }
+set CardChipSets(SVGA)	   [concat generic [lsort $CardChipSets(SVGA)]]
 set CardChipSets(8514)	   { ibm8514 }
-set CardChipSets(AGX)	   { xga-1 xga-2 agx-010 agx-014 agx-015 agx-016 }
+set CardChipSets(AGX)	   { agx-010 agx-014 agx-015 agx-016 xga-1 xga-2 }
 set CardChipSets(I128)	   { i128 }
 set CardChipSets(Mach8)	   { mach8 }
 set CardChipSets(Mach32)   { mach32 }
 set CardChipSets(Mach64)   { mach64 }
-set CardChipSets(P9000)	   { vipervlb viperpci orchid_p9000 }
-set CardChipSets(S3)	   { s3_generic mmio_928 }
-set CardChipSets(W32)	   { et4000w32 et4000w32i et4000w32p_rev_a \
-			     et4000w32i_rev_b et4000w32p_rev_b \
-			     et4000w32p_rev_d et4000w32p_rev_c \
-			     et4000w32i_rev_c et6000 }
+set CardChipSets(P9000)	   { orchid_p9000 viperpci vipervlb }
+set CardChipSets(S3)	   { mmio_928 s3_generic }
+set CardChipSets(W32)	   { et4000w32 et4000w32i et4000w32i_rev_b \
+			     et4000w32i_rev_c et4000w32p_rev_a \
+			     et4000w32p_rev_b et4000w32p_rev_c \
+			     et4000w32p_rev_d et6000 }
 
 ###
 
 # For each server, what ramdacs can be chosen?
 set CardRamDacs(8514)	   {}
-set CardRamDacs(AGX)	   { normal bt481 bt482 sc15025 \
-			     herc_dual_dac herc_small_dac xga att20c490 }
-set CardRamDacs(I128)	   { ti3025 ibm526 ibm528 }
+set CardRamDacs(AGX)	   { normal att20c490 bt481 bt482 \
+			     herc_dual_dac herc_small_dac \
+			     sc15025 xga }
+set CardRamDacs(I128)	   { ibm526 ibm528 ti3025 }
 set CardRamDacs(Mach8)	   {}
 set CardRamDacs(Mach32)	   { ati68830 ati68860 ati68875 \
 			     att20c490 att20c491 att21c498 \
@@ -126,24 +130,32 @@ set CardRamDacs(Mach64)	   { internal \
 			     sc15021 sc15026 \
 			     stg1700 stg1702 stg1703 \
 			     tlc34075 \
-			     tvp3026 }
+			     tvp3026 \
+			   }
 set CardRamDacs(P9000)	   {}
-set CardRamDacs(S3)	   { normal bt485 bt9485 att20c505 \
-			     ti3020 att20c498 att21c498 att22c498 \
-			     ti3025 ti3026 ti3030 ibm_rgb514 ibm_rgb524 \
-			     ibm_rgb525 ibm_rgb526 ibm_rgb528 att20c490 \
-			     att20c491 ch8391 sc11482 sc11483 \
-			     sc11484 sc11485 sc11487 sc11489 \
-			     sc15025 stg1700 stg1703 s3_sdac \
-			     ics5342 s3gendac ics5300 s3_trio32 \
-			     s3_trio64 s3_trio att20c409 }
-
-set CardRamDacs(W32)	   { normal att20c47xa sc1502x att20c497 \
-			     att20c490 att20c493 att20c491 att20c492 \
-			     ics5341 stg1703 et6000 }
-set CardRamDacs(SVGA-ark)	   { att20c490 ark1491a w30c491 \
-					att20c498 w30c498 w30c516 \
-					zoomdac stg1700 ics5342 }
+set CardRamDacs(S3)	   { normal \
+			     att20c409 att20c490 att20c491 att20c498 \
+				att20c505 att21c498 att22c498 \
+			     bt485 bt9485 \
+			     ch8391 \
+			     ibm_rgb514 ibm_rgb524 ibm_rgb525 \
+				ibm_rgb526 ibm_rgb528 \
+			     ics5300 ics5342 \
+			     s3gendac s3_sdac \
+				s3_trio s3_trio32 s3_trio64 \
+			     sc11482 sc11483 sc11484 sc11485 \
+				sc11487 sc11489 sc15025 \
+			     stg1700 stg1703 \
+			     ti3020 ti3025 ti3026 ti3030 \
+			   }
+set CardRamDacs(W32)	   { normal \
+			     att20c47xa att20c490 att20c491 \
+				att20c492 att20c493 att20c497 \
+			     ics5341 sc1502x stg1703 et6000 }
+set CardRamDacs(SVGA-ark)	   { ark1491a att20c490 att20c498 \
+					ics5342 stg1700 \
+					w30c491 w30c498 w30c516 \
+					zoomdac }
 set CardRamDacs(SVGA-ati)	   [lrmdups [concat \
 					$CardRamDacs(Mach8) \
 					$CardRamDacs(Mach32) \
@@ -168,18 +180,20 @@ set CardClockChips(I128)   { ibm_rgb526 ibm_rgb528 ibm_rbg52x ibm_rgb5xx \
 			     ti3025 }
 set CardClockChips(Mach8)  {}
 set CardClockChips(Mach32) {}
-set CardClockChips(Mach64) { ati18818 ics2595 stg1703 ch8398 \
-			     att20c408 ibm_rgb514 }
+set CardClockChips(Mach64) { ati18818 att20c408 ch8398 ibm_rgb514 \
+			     ics2595 stg1703 }
 set CardClockChips(P9000)  { icd2061a }
-set CardClockChips(S3)	   { att20c409 att20c499 att20c408 ch8391 \
-			     ibm_rgb514 ibm_rgb524 ibm_rgb525 ibm_rgb528 \
-			     ibm_rgb51x ibm_rgb52x ibm_rgb5xx icd2061a \
-			     ics9161a dcs2824 ics2595 ati18818 ics5342 \
-			     s3gendac s3_sdac ics5300 s3_trio s3_trio32 \
-			     s3_trio64 sc11412 stg1703 ti3025 ti3026 ti3030 \
+set CardClockChips(S3)	   { ati18818 att20c409 att20c499 att20c408 \
+			     ch8391 dcs2824 \
+			     ibm_rgb514 ibm_rgb51x ibm_rgb524 ibm_rgb525 \
+				ibm_rgb528 ibm_rgb52x ibm_rgb5xx \
+			     icd2061a ics2595 ics5300 ics5342 ics9161a \
+			     s3_sdac s3_trio s3_trio32 \
+				s3_trio64 s3gendac \
+			     sc11412 stg1703 ti3025 ti3026 ti3030 \
 			   }
 
-set CardClockChips(W32)	   { dcs2824 icd2061a ics5341 stg1703 et6000 }
+set CardClockChips(W32)	   { dcs2824 et6000 icd2061a ics5341 stg1703 }
 set CardClockChips(SVGA-ark)		{ ics5341 }
 set CardClockChips(SVGA-et4000)		$CardClockChips(W32)
 set CardClockChips(SVGA-tvga8900)	{ tgui }

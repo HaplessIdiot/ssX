@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/10 1996/01/30 15:18:35 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/Imakefile,v 3.10 1996/02/04 09:12:26 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/Imakefile,v 3.11 1996/02/09 08:21:08 dawes Exp $
 #include <Server.tmpl>
 #define IHaveSubdirs
 
@@ -18,7 +18,7 @@ OBJS = */?*_drv.o
 #else
 SRCS = al2101/?*.c ali/?*.c ark/?*.c ati/?*.c chips/?*.c cirrus/?*.c \
        cl64xx/?*.c et3000/?*.c et4000/?*.c generic/?*.c gvga/?*.c \
-       mx/?*.c ncr77c22/?*.c oak/?*.c pvga1/?*.c realtek/?*.c \
+       mx/?*.c ncr77c22/?*.c oak/?*.c pvga1/?*.c realtek/?*.c sis/?*.c \
        tvga8900/?*.c video7/?*.c
 XCOMM compaq/?*.c
 
@@ -26,7 +26,7 @@ OBJS = al2101/?*_drv.o ali/?*_drv.o ark/?*_drv.o ati/?*_drv.o chips/?*_drv.o \
        cirrus/?*_drv.o cl64xx/?*_drv.o et3000/?*_drv.o \
        et4000/?*_drv.o generic/?*_drv.o gvga/?*_drv.o mx/?*_drv.o \
        ncr77c22/?*_drv.o oak/?*_drv.o pvga1/?*_drv.o realtek/?*_drv.o \
-       tvga8900/?*_drv.o video7/?*_drv.o
+       sis/?*_drv.o tvga8900/?*_drv.o video7/?*_drv.o
 XCOMM compaq/?*_drv.o
 
 #endif

@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.16 1996/08/16 12:31:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.17 1996/08/18 01:51:17 dawes Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -31,18 +31,18 @@
  * the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the names of the above listed copyright holder(s)
- * not be used in advertising or publicity pertaining to distribution of 
+ * not be used in advertising or publicity pertaining to distribution of
  * the software without specific, written prior permission.  The above listed
- * copyright holder(s) make(s) no representations about the suitability of this 
- * software for any purpose.  It is provided "as is" without express or 
+ * copyright holder(s) make(s) no representations about the suitability of this
+ * software for any purpose.  It is provided "as is" without express or
  * implied warranty.
  *
- * THE ABOVE LISTED COPYRIGHT HOLDER(S) DISCLAIM(S) ALL WARRANTIES WITH REGARD 
- * TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY 
- * AND FITNESS, IN NO EVENT SHALL THE ABOVE LISTED COPYRIGHT HOLDER(S) BE 
- * LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY 
- * DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER 
- * IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING 
+ * THE ABOVE LISTED COPYRIGHT HOLDER(S) DISCLAIM(S) ALL WARRANTIES WITH REGARD
+ * TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS, IN NO EVENT SHALL THE ABOVE LISTED COPYRIGHT HOLDER(S) BE
+ * LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY
+ * DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER
+ * IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
@@ -82,7 +82,7 @@
 #define GCCUSESGAS
 #endif
 #endif
-#if defined(__NetBSD__) 
+#if defined(__NetBSD__)
 #include <sys/param.h>
 #include <sys/file.h>
 #include <machine/sysarch.h>
@@ -100,11 +100,11 @@
 #endif
 #if defined(SCO)
 #include <sys/console.h>
-#include <sys/param.h> 
+#include <sys/param.h>
 #include <sys/immu.h>
 #include <sys/region.h>
 #include <sys/proc.h>
-#include <sys/tss.h> 
+#include <sys/tss.h>
 #include <sys/sysi86.h>
 #include <sys/v86.h>
 #endif
@@ -139,8 +139,6 @@ unsigned inb(unsigned port);
 #define outb(p,v) _outb((v),(p))
 #define outw(p,v) _outw((v),(p))
 #define outl(p,v) _outl((v),(p))
-/* current LIBC has ioperm(), not iopl() */
-#define iopl(a) ((a)?ioperm(0x400, 0x10000 - 0x400, 1):0)
 #else /* defined(linux) && defined(__alpha__) */
 #if defined(GCCUSESGAS)
 #define OUTB_GCC "outb %0,%1"
@@ -1065,5 +1063,3 @@ disable_os_io()
     close(io_fd);
 #endif
 }
-
-

@@ -28,7 +28,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ********************************************************/
 
 /* $XConsortium: cfbmskbits.h,v 4.25 94/04/17 20:28:55 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbmskbits.h,v 3.0 1996/06/29 09:05:43 dawes Exp $ */
 /* Optimizations for PSZ == 32 added by Kyle Marvin (marvin@vitec.com) */
 
 #include	"X.h"
@@ -512,6 +512,16 @@ getleftbits(psrc, w, dst)
 #define mask32bits(x, w, startmask, endmask) \
     startmask = cfbstarttab[(x)&PIM]; \
     endmask = cfbendtab[((x)+(w)) & PIM];
+
+/* FIXME */
+#define maskbits24(x, w, startmask, endmask, nlw) \
+    abort()
+#define getbits24(psrc, dst, index) \
+    abort()
+#define putbits24(src, x, w, pdst, planemask, index) \
+    abort()
+#define putbitsrop24(src, x, pdst, planemask, rop) \
+    abort()
 
 #endif /* PSZ == 24 && PPW == 1 */
 

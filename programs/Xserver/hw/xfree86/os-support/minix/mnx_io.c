@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/minix/mnx_io.c,v 3.6 1996/03/04 05:16:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/minix/mnx_io.c,v 3.7 1996/03/10 12:06:38 dawes Exp $ */
 /*
  * Copyright 1993 by Vrije Universiteit, The Netherlands
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -198,12 +198,22 @@ MouseDevPtr mouse;
 		flags = fcntl(mouse->mseFd, F_GETFD);
 		if (flags == -1)
 		{
+			if (xf86AllowMouseOpenFail) {
+				ErrorF("Unable to get mouse flags (%s) - Continuing...\n",
+					strerror(errno));
+				return;
+			}
 			FatalError("Unable to get mouse flags (%s)\n",
 				strerror(errno));
 		}
 		r = fcntl(mouse->mseFd, F_SETFD, flags | FD_ASYNCHIO);
 		if (r == -1)
 		{
+			if (xf86AllowMouseOpenFail) {
+				ErrorF("Unable to set mouse flags (%s) - Continuing...\n",
+					strerror(errno));
+				return;
+			}
 			FatalError("Unable to set mouse flags (%s)\n",
 				strerror(errno));
 		}
@@ -226,6 +236,11 @@ MouseDevPtr mouse;
 		if ((r == -1 && errno == EAGAIN) || xf86AllowMouseOpenFail)
 		{
 			break;
+		}
+		if (xf86AllowMouseOpenFail) {
+			ErrorF("Unable to read from mouse (%s) - Continuing...\n",
+				strerror(errno));
+			return -2;
 		}
 		FatalError("unable to read from mouse (%s)\n",
 			   strerror(errno));

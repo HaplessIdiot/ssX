@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3ga968/Imakefile,v 3.1 1996/08/14 23:41:53 dawes Exp $
 
 
 
@@ -8,7 +8,7 @@ XCOMM $XFree86$
 
 #define IHaveSubdirs
 
-SUBDIRS = s3mmio drivers
+SUBDIRS = s3newmmio s3mmio drivers
 
 SRCS = 	s3.c s3misc.c s3cmap.c s3gc.c s3gc16.c s3gc24.c s3gc32.c s3fs.c s3ss.c \
 	s3gs.c s3win.c s3init.c s3im.c s3bstor.c \
@@ -60,6 +60,7 @@ LinkSourceFile(Ti3026Curs.c,$(XF86SRC)/accel/s3)
 LinkSourceFile(confS3.sh,$(XF86SRC)/accel/s3)
 LinkSourceFile(confs3.cmd,$(XF86SRC)/accel/s3)
 LinkSourceFile(regs3.h,$(XF86SRC)/accel/s3)
+LinkSourceFile(newmmio.h,$(XF86SRC)/accel/s3)
 LinkSourceFile(s3.c,$(XF86SRC)/accel/s3)
 LinkSourceFile(s3.h,$(XF86SRC)/accel/s3)
 LinkSourceFile(s3Bt485.h,$(XF86SRC)/accel/s3)

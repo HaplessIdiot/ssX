@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sysv_tty.c,v 3.5 1996/02/04 09:10:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sysv_tty.c,v 3.6 1996/03/10 12:07:21 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -104,6 +104,11 @@ unsigned cflag;
 
 	if (ioctl(mouse->mseFd, TCSETAW, &tty) < 0)
 	{
+		if (xf86AllowMouseOpenFail) {
+			ErrorF("Unable to set status of mouse fd (%s) - Continuing...\n",
+			       strerror(errno));
+			return;
+		}
 		xf86FatalError("Unable to set status of mouse fd (%s)\n",
 			       strerror(errno));
 	}
@@ -132,6 +137,11 @@ unsigned cflag;
 	{
 		if (write(mouse->mseFd, c, 2) != 2)
 		{
+			if (xf86AllowMouseOpenFail) {
+				ErrorF("Unable to write to mouse fd (%s) - Continuing...\n",
+				       strerror(errno));
+				return;
+			}
 			xf86FatalError("Unable to write to mouse fd (%s)\n",
 				       strerror(errno));
 		}
@@ -140,6 +150,11 @@ unsigned cflag;
 
 	if (ioctl(mouse->mseFd, TCSETAW, &tty) < 0)
 	{
+		if (xf86AllowMouseOpenFail) {
+			ErrorF("Unable to set status of mouse fd (%s) - Continuing...\n",
+			       strerror(errno));
+			return;
+		}
 		xf86FatalError("Unable to set status of mouse fd (%s)\n",
 			       strerror(errno));
 	}

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3dseg.c,v 3.9 1996/02/20 14:34:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3dseg.c,v 3.10 1996/06/29 09:07:03 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -175,27 +175,27 @@ s3Dsegment (pDrawable, pGC, nseg, pSeg)
 
    BLOCK_CURSOR;
    WaitQueue16_32(3,4);
-   S3_OUTW(FRGD_MIX, FSS_FRGDCOL | s3alu[pGC->alu]);
+   SET_FRGD_MIX(FSS_FRGDCOL | s3alu[pGC->alu]);
    if (pGC->lineStyle == LineDoubleDash) {
-      S3_OUTW32(BKGD_COLOR, pGC->bgPixel);
-      S3_OUTW(BKGD_MIX, BSS_BKGDCOL | s3alu[pGC->alu]);      
+      SET_BKGD_COLOR(pGC->bgPixel);
+      SET_BKGD_MIX(BSS_BKGDCOL | s3alu[pGC->alu]);      
    } else {
       if (s3_968_DashBug) {
-	 S3_OUTW32(BKGD_COLOR, 0);
-	 S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_OR);
+      SET_BKGD_COLOR(0);
+      SET_BKGD_MIX(BSS_BKGDCOL | MIX_OR);
       }
       else {
-	 S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_DST);
+      SET_BKGD_MIX(BSS_BKGDCOL | MIX_DST);
       }
    }
 
    WaitQueue16_32(3,5);
-   S3_OUTW32(WRT_MASK, pGC->planemask);
-   S3_OUTW32(FRGD_COLOR, pGC->fgPixel);
-   S3_OUTW (MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPPC | COLCMPOP_F);
+   SET_WRT_MASK(pGC->planemask);
+   SET_FRGD_COLOR(pGC->fgPixel);
+   SET_PIX_CNTL(MIXSEL_EXPPC | COLCMPOP_F);
    /* Fix problem writing to the cursor storage area */
    WaitQueue(1);
-   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | (pDrawable->pScreen->height-1));
+   SET_SCISSORS_RB(pDrawable->pScreen->width-1,pDrawable->pScreen->height-1);
    
    xorg = pDrawable->x;
    yorg = pDrawable->y;
@@ -266,16 +266,15 @@ s3Dsegment (pDrawable, pGC, nseg, pSeg)
 		     thisDash = dashRemaining ;
 		     
 		     WaitQueue(4);
-		     S3_OUTW(CUR_X, (short)x1);
-		     S3_OUTW(CUR_Y, (short)y1t);
+		     SET_CURPT((short)x1, (short)y1t);
 		     len = y2t - y1t;
-		     S3_OUTW(MAJ_AXIS_PCNT, (short)(len - 1));
-		     S3_OUTW(CMD, CMD_LINE | DRAW | LINETYPE | PLANAR |
+		     SET_MAJ_AXIS_PCNT((short)(len - 1));
+		     SET_CMD(CMD_LINE | DRAW | LINETYPE | PLANAR |
 			   PCDATA | _16BIT |WRTDATA | (6 << 5));
 
 		     for (tmp = 0 ; tmp < len; tmp+=16) {
 			FillDashPat;			
-			S3_OUTW(PIX_TRANS, dashPat);
+			SET_PIX_TRANS_W(dashPat);
 		     }		  
 		  }
 	       }
@@ -334,15 +333,14 @@ s3Dsegment (pDrawable, pGC, nseg, pSeg)
 		  thisDash = dashRemaining ;
 		  
 		  WaitQueue(4);
-		  S3_OUTW(CUR_X, (short)x1t);
-		  S3_OUTW(CUR_Y, (short)y1);
+		  SET_CURPT((short)x1t, (short)y1);
 		  len = x2t - x1t;
-		  S3_OUTW(MAJ_AXIS_PCNT, (short)(len - 1));
-		  S3_OUTW(CMD, CMD_LINE | DRAW | LINETYPE | PLANAR |
+		  SET_MAJ_AXIS_PCNT((short)(len - 1));
+		  SET_CMD(CMD_LINE | DRAW | LINETYPE | PLANAR |
 			PCDATA | _16BIT | WRTDATA);
 		  for (tmp = 0 ; tmp < len; tmp+=16) {
 		     FillDashPat;
-		     S3_OUTW(PIX_TRANS, dashPat);
+		     SET_PIX_TRANS_W(dashPat);
 		  }		 
 	       }
 	       nbox--;
@@ -421,17 +419,15 @@ s3Dsegment (pDrawable, pGC, nseg, pSeg)
 	        * addition of 'fix' stuff in cfbline.c
 	        */
 	       WaitQueue(7);
-	       S3_OUTW(CUR_X, (short)x1);
-	       S3_OUTW(CUR_Y, (short)y1);
-	       S3_OUTW(ERR_TERM, (short)(e + fix));
-	       S3_OUTW(DESTY_AXSTP, (short)e1);
-	       S3_OUTW(DESTX_DIASTP, (short)e2);
-	       S3_OUTW(MAJ_AXIS_PCNT, (short)len);
-	       S3_OUTW(CMD, CMD_LINE | DRAW | LASTPIX | PLANAR | direction |
+	       SET_CURPT((short)x1, (short)y1);
+	       SET_ERR_TERM((short)(e + fix));
+	       SET_DESTSTP((short)e2, (short)e1);
+	       SET_MAJ_AXIS_PCNT((short)len);
+	       SET_CMD(CMD_LINE | DRAW | LASTPIX | PLANAR | direction |
 		       PCDATA | _16BIT | WRTDATA);
 	       for (tmp = 0 ; tmp < len; tmp+=16) {
 		  FillDashPat;
-		  S3_OUTW(PIX_TRANS, dashPat);
+		  SET_PIX_TRANS_W(dashPat);
 	       }
 	       break;
 	    } else if (oc1 & oc2) {
@@ -529,18 +525,16 @@ s3Dsegment (pDrawable, pGC, nseg, pSeg)
 		     thisDash = dashRemaining ;
 
 		     WaitQueue(7);
-		     S3_OUTW(CUR_X, (short)new_x1);
-		     S3_OUTW(CUR_Y, (short)new_y1);
-		     S3_OUTW(ERR_TERM, (short)(err + fix));
-		     S3_OUTW(DESTY_AXSTP, (short)e1);
-		     S3_OUTW(DESTX_DIASTP, (short)e2);
-		     S3_OUTW(MAJ_AXIS_PCNT, (short)len);
-		     S3_OUTW(CMD, CMD_LINE | DRAW | LASTPIX | PLANAR |
+		     SET_CURPT((short)new_x1, (short)new_y1);
+		     SET_ERR_TERM((short)(err + fix));
+		     SET_DESTSTP((short)e2, (short)e1);
+		     SET_MAJ_AXIS_PCNT((short)len);
+		     SET_CMD(CMD_LINE | DRAW | LASTPIX | PLANAR |
 			     direction | PCDATA | _16BIT | WRTDATA);
 
 		     for (tmp = 0 ; tmp < len; tmp+=16) {
 			FillDashPat;
-			S3_OUTW(PIX_TRANS, dashPat);
+			SET_PIX_TRANS_W(dashPat);
 		     }
 		  }
 	       pbox++;
@@ -550,9 +544,8 @@ s3Dsegment (pDrawable, pGC, nseg, pSeg)
    } /* while (nline--) */
 
    WaitQueue(4);
-   S3_OUTW(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
-   S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
-   S3_OUTW (MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);  
-   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | s3ScissB);
+   SET_MIX(FSS_FRGDCOL | MIX_SRC, BSS_BKGDCOL | MIX_SRC);
+   SET_PIX_CNTL(MIXSEL_FRGDMIX | COLCMPOP_F);  
+   SET_SCISSORS_RB(s3ScissR,s3ScissB);
    UNBLOCK_CURSOR;
 }

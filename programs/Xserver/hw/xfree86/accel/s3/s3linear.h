@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3linear.h,v 3.7 1996/01/28 07:30:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3linear.h,v 3.8 1996/02/04 09:05:17 dawes Exp $ */
 /*
  * s3EnableLinear() and s3DisableLinear() are wrappers to surround
  * any function call that is going to access the video ram through
@@ -9,6 +9,13 @@
  *    s3DisableLinear();
  *
  * Not currently used apart from s3im.c
+ *
+ * Note BL 08161500996: 
+ * With S3_NEWMMIO the switching between modes is normally 
+ * disabled, there is a uniform address space with mem and regs. 
+ * But there are image functions used during 
+ * initialization, which use this macros in the same way as
+ * S3_MMIO. 
  */
 /* $XConsortium: s3linear.h /main/5 1996/01/28 07:58:06 kaleb $ */
 
@@ -19,7 +26,7 @@ extern unsigned char s3Port54;
 extern unsigned char s3Port51;
 
 /* Some poor compilers don't have inlines */
-#ifdef S3_MMIO 
+#if defined (S3_MMIO) || defined (S3_NEWMMIO)
 # define DISABLE_MMIO   \
       { unsigned char tmp; \
       outb(vgaCRIndex, 0x53); \

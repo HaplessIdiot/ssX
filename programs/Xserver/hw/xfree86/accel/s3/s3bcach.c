@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3bcach.c,v 3.7 1995/01/28 17:01:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3bcach.c,v 3.8 1996/02/04 09:04:55 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Tombs. Oxford University
  * 
@@ -44,32 +44,25 @@ unsigned int id;
 {
    BLOCK_CURSOR;
    WaitQueue(7);
-   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_T | 0);
-   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_L | 0);
-   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_R | (s3DisplayWidth - 1));
-   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | s3ScissB);
-   S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX);  
-   S3_OUTW(FRGD_MIX, FSS_BITBLT | MIX_SRC);
-   S3_OUTW(BKGD_MIX, BSS_BITBLT | MIX_SRC);
+   SET_SCISSORS(0,0,(s3DisplayWidth - 1), s3ScissB);
+   SET_PIX_CNTL(MIXSEL_FRGDMIX);  
+   SET_MIX(FSS_BITBLT | MIX_SRC, BSS_BITBLT | MIX_SRC);
 
    WaitQueue16_32(6,8);		/* now shift the cache */
-   S3_OUTW32(WRT_MASK, id);
-   S3_OUTW32(RD_MASK, id);
-   S3_OUTW(CUR_Y, srcy);
-   S3_OUTW(CUR_X, srcx);
-   S3_OUTW(DESTX_DIASTP, dstx);
-   S3_OUTW(DESTY_AXSTP, dsty);
+   
+   SET_WRT_MASK(id);
+   SET_RD_MASK(id);
+   SET_CURPT(srcx, srcy);
+   SET_DESTSTP(dstx, dsty);
 
    WaitQueue(3);
-   S3_OUTW(MAJ_AXIS_PCNT, w - 1);
-   S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (h - 1));
-   S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+   SET_AXIS_PCNT(w-1,h-1);
+   SET_CMD(CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
 
    /* sanity returns */
    WaitQueue16_32(4,5);
-   S3_OUTW32(RD_MASK, ~0);
-   S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
-   S3_OUTW(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
-   S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
+   SET_RD_MASK(~0);
+   SET_PIX_CNTL(MIXSEL_FRGDMIX | COLCMPOP_F);
+   SET_MIX(FSS_FRGDCOL | MIX_SRC, BSS_BKGDCOL | MIX_SRC);
    UNBLOCK_CURSOR;
 }

@@ -1,4 +1,21 @@
-XFree86 3.1.2Ej (19 August 1996)
+XFree86 3.1.2Ej (20 August 1996)
+678. Prevent server exit if the mouse device is changed to something
+     unsuitable (Joe Moss).
+677. XF86Setup updates (Joe Moss).
+676. Update XF86Config man page and sample XF86Config file for XKB changes
+     (Joe Moss).
+675. LinkKit fixes (David Bateman).
+674. Chips & Tech driver updates (David Bateman and others?).
+673. xterm bug fixes (Thomas E. Dickey).
+672. PCI probe fix for S3 server (Harald Koenig).
+671. Support for new MMIO style for 868/968/Trio64V+, and MMIO support
+     (with optimised use of memory barriers) for Alpha/AXP.  This currently
+     has problems at 32bpp (Bernd Lind, Harald Koenig).
+670. Use POSIX termios for xterm for all Linux systems (Richard Henderson).
+669. Generalise mmap access to DENSE I/O memory for Alpha (Richard Henderson).
+668. 32/64 bit cleanup, especially in server's XIE code (Richard Henderson).
+667. Config updates for Linux/Alpha (Richard Henderson).
+666. Updates for OS/2 (Holger Veit).
 665. Fix problems building XF86Setup with BuildServersOnly set to YES.
 
 XFree86 3.1.2Ei (18 August 1996)

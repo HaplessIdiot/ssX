@@ -1,4 +1,5 @@
-/* $XConsortium: mpctoi.c,v 1.6 94/04/17 20:35:16 rws Exp $ */
+/* $XConsortium: mpctoi.c /main/8 1995/12/02 16:53:54 dpw $ */
+/* AGE Logic - Oct 15 1995 - Larry Hare */
 /**** module mpctoi.c ****/
 /******************************************************************************
 
@@ -107,6 +108,7 @@ terms and conditions:
 #include <texstr.h>
 #include <xiemd.h>
 #include <technq.h>
+#include <memory.h>
 
 
 extern int AllocColor();  /* in . . . server/dix/colormap.c */
@@ -128,6 +130,10 @@ static int ResetCtoIAll();
 static int DestroyCtoI();
 
 static int allocDirect();
+static int allocGray1();
+static int allocGray3();
+static int allocRGB1();
+static int allocRGB3();
 static pointer cvt();
 
 
@@ -165,8 +171,11 @@ typedef struct _mpctiall {
   ColormapPtr    cmap;			   /* colormap-id		     */
   int		 cmapFull;		   /* == Success until allocs fail   */
   int		 clindex;		   /* index of client doing allocs   */
+  int	       (*alloc)();		   /* color allocation routine	     */
   Pixel		*pixLst;		   /* list of alloc'd pixels         */
-  CARD32	 pixCnt;		   /* count of alloc'd pixels        */
+  CARD32	 pixCnt;		   /* count of alloc'd pixels (total)*/
+  CARD32	 allocMatch;		   /* count of alloc'd/matched pixels*/
+  CARD32	 shareMatch;		   /* count of shared/matched pixels */
   CARD32	 width;			   /* image width		     */
   CARD32	 fill;			   /* value to use if alloc fails    */
   BOOL		 hashing;		   /* true if using hash table	     */
@@ -304,6 +313,7 @@ static int InitializeCtoIAll(flo,ped)
 {
   xieFloConvertToIndex  *raw = (xieFloConvertToIndex *)ped->elemRaw;
   xieTecColorAllocAll   *tec = (xieTecColorAllocAll *) &raw[1];
+  pTecCtoIDefPtr         pvt = (pTecCtoIDefPtr) ped->techPvt;
   peTexPtr		 pet = ped->peTex;
   formatPtr		 ift = &ped->inFloLst[SRCtag].format[0];
   formatPtr		 oft = &ped->outFlo.format[0];
@@ -317,11 +327,13 @@ static int InitializeCtoIAll(flo,ped)
    */
   ddx->cmap        = dix->cmap;
   ddx->clindex     = dix->list->client->index;
-  ddx->fill	   = tec->fill;
+  ddx->fill	   = pvt->fill;
   ddx->width       = oft->width;
-  ddx->cmapFull    = FALSE;
+  ddx->cmapFull    = 0;
   ddx->pixCnt      = 0;
-  if(!(ddx->pixLst = (Pixel*) XieCalloc(dix->cells * sizeof(Pixel))))
+  ddx->allocMatch  = 0;
+  ddx->shareMatch  = 0;
+  if(!(ddx->pixLst = (Pixel*) XieCalloc((dix->cells + 1) * sizeof(Pixel))))
     AllocError(flo,ped, return(FALSE));
   
   /* examine input data format-classes
@@ -353,6 +365,10 @@ static int InitializeCtoIAll(flo,ped)
     ddx->tmpSet    = TRUE;
     ddx->tmpLen[0] = (ddx->mask[0] + 1) * sizeof(Pixel);
     ddx->action    = gray_action[oc-1][ic-1];
+    ddx->alloc	   = (pvt->defTech ? dix->class <= PseudoColor
+		      ? allocGray1 : allocGray3 : AllocColor);
+    if(ddx->alloc == allocGray3)
+       ddx->pixLst[dix->cells] = ~0;
     ped->ddVec.activate = DoGrayCtoIAll;
     
   } else if(dix->class <= PseudoColor) {
@@ -375,6 +391,7 @@ static int InitializeCtoIAll(flo,ped)
     }
     bands       = 1;	    /* only 1 colormap band */
     ddx->action = rgb1_action[ddx->hashing ? 1 : 0][oc-1][ic-1];
+    ddx->alloc	= pvt->defTech ? allocRGB1 : AllocColor;
     ped->ddVec.activate = DoRGB1CtoIAll;
     
   } else {
@@ -388,6 +405,7 @@ static int InitializeCtoIAll(flo,ped)
     ddx->tmpSet  = FALSE;
     ddx->action  = rgb3_action_usage[ic-1];
     ddx->action2 = rgb3_action_remap[oc-1][ic-1];
+    ddx->alloc	 = pvt->defTech ? allocRGB3 : AllocColor;
     ped->ddVec.activate = DoRGB3CtoIAll;
   }
   if(!ddx->action)  ImplementationError(flo,ped, return(FALSE));
@@ -571,30 +589,31 @@ static int ResetCtoIAll(flo,ped)
   pCtoIDefPtr  dix = (pCtoIDefPtr) ped->elemPvt;
   ctiAllPtr    ddx = (ctiAllPtr)   ped->peTex->private;
   colorListPtr lst = dix->list;
-  CARD32       b, i;
+  CARD32       b, i, j;
   /*
    * if we've got pixels, they might need to be transfered into the ColorList
    */
   if((lst->cellPtr = ddx->pixLst) && (lst->cellCnt = ddx->pixCnt)) {
 
-    if(ddx->hashing) {
-      ctiHashPtr hash = (ctiHashPtr) ddx->tmpLst[0];
+    if(dix->class <= PseudoColor) {
+      for(i = j = 0; i < ddx->pixCnt; ++j)
+        if(lst->cellPtr[j])
+           lst->cellPtr[i++] = (Pixel)j;
 
-      for(i = 0; i < ddx->pixCnt; ++hash)
-        if(hash->rgbVal)
-          lst->cellPtr[i++] = hash->pixdex;
-
-    } else if(dix->graySrc || dix->class <= PseudoColor) {
+    } else if(dix->graySrc && ddx->alloc == AllocColor) {
       Pixel p, *ppix = (Pixel*) ddx->tmpLst[0];
-
+      
       for(i = 0; i < ddx->pixCnt; ++ppix)
-        if((long int)(p = *ppix) >= 0)
-          lst->cellPtr[i++] = p;
+	if((long int)(p = *ppix) >= 0)
+	  lst->cellPtr[i++] = p;
 
-    }/* else triple band/map and pixels are already in place */
+    } /* else pixels are already in place */
   }
-  if(raw->notify && ddx->cmapFull && !ferrCode(flo) && !flo->flags.aborted)
-    SendColorAllocEvent(flo, ped, lst->mapID, raw->colorAlloc, ddx->pixCnt);
+  if(raw->notify && !ferrCode(flo) && !flo->flags.aborted &&
+     (ddx->cmapFull || ddx->allocMatch || ddx->shareMatch))
+    SendColorAllocEvent(flo, ped, lst->mapID, raw->colorAlloc,
+			ddx->pixCnt - ddx->allocMatch +	(ddx->cmapFull
+			? 0 : ddx->shareMatch + ddx->allocMatch << 16));
   
   for(b = 0; b < xieValMaxBands; ++b) {
     if(ddx->tmpLst[b]) ddx->tmpLst[b] = (pointer ) XieFree(ddx->tmpLst[b]);
@@ -670,12 +689,13 @@ static int allocDirect(flo,ped,pet,ddx)
     /* alloc a triplet of color cells
      */
     pix = &ddx->pixLst[ddx->pixCnt];
+
     if( ddx->cmapFull ||
-       (ddx->cmapFull = AllocColor(ddx->cmap,&value[0],&value[1],&value[2],
-				   pix,ddx->clindex)))
+       (ddx->cmapFull = (*ddx->alloc)(ddx->cmap,&value[0],&value[1],&value[2],
+				      pix,ddx->clindex,ddx)))
       *pix = ddx->fill;
     else
-      ++ddx->pixCnt;
+      ddx->cmapFull = ++ddx->pixCnt > dix->cells;
     
     /* save the result and find the next color needed in each usage map
      */
@@ -689,6 +709,157 @@ static int allocDirect(flo,ped,pet,ddx)
   } while(!final);
 
   return(TRUE);
+}
+
+/*------------------------------------------------------------------------
+------------- allocate closest match for Default Technique ---------------
+------------------------------------------------------------------------*/
+static int allocGray1(cmap, red, grn, blu, pix, client, ddx)
+     ColormapPtr cmap;
+     CARD16	*red, *grn, *blu;
+     Pixel	*pix;
+     int	 client;
+     ctiAllPtr	 ddx;
+{
+  int status;
+
+  if(status = AllocColor(cmap, red, grn, blu, pix, client)) {
+    xColorItem rgb;
+
+    rgb.pixel = 0;
+    rgb.red   = rgb.green = rgb.blue = *red;
+    FakeAllocColor(cmap, &rgb);
+
+    if(!ddx->pixLst[(*pix = rgb.pixel)]++) {
+      xrgb match;
+
+      QueryColors(cmap,1,&rgb.pixel,&match);
+      FakeFreeColor(cmap, rgb.pixel);
+      *red = match.red;
+      *grn = match.green;
+      *blu = match.blue;
+      if(status = AllocColor(cmap, red, grn, blu, pix, client))
+	ddx->pixLst[rgb.pixel] = 0;
+      else
+	ddx->allocMatch++;
+    } else {
+      FakeFreeColor(cmap, rgb.pixel);
+      ++ddx->shareMatch;
+      --ddx->pixCnt;
+      status = 0;
+    }
+  } else {
+    ++ddx->pixLst[*pix];
+  }
+  return(status);
+}
+
+static int allocGray3(cmap, red, grn, blu, pix, client, ddx)
+     ColormapPtr cmap;
+     CARD16	*red, *grn, *blu;
+     Pixel	*pix;
+     int	 client;
+     ctiAllPtr	 ddx;
+{
+  int status;
+
+  if(ddx->pixLst[ddx->pixCnt]) return(BadAlloc);
+
+  if(status = AllocColor(cmap, red, grn, blu, pix, client)) {
+    xColorItem rgb;
+    xrgb     match;
+
+    rgb.pixel = 0;
+    rgb.red   = rgb.green = rgb.blue = *red;
+    FakeAllocColor(cmap, &rgb);
+
+    QueryColors(cmap,1,&rgb.pixel,&match);
+    FakeFreeColor(cmap, rgb.pixel);
+    *pix = rgb.pixel;
+    *red = match.red;
+    *grn = match.green;
+    *blu = match.blue;
+    if(!(status = AllocColor(cmap, red, grn, blu, pix, client)))
+      ddx->allocMatch++;
+  }
+  ddx->pixLst[ddx->pixCnt] = *pix;
+  return(status);
+}
+
+static int allocRGB1(cmap, red, grn, blu, pix, client, ddx)
+     ColormapPtr cmap;
+     CARD16	*red, *grn, *blu;
+     Pixel	*pix;
+     int	 client;
+     ctiAllPtr	 ddx;
+{
+  int status;
+
+  if(status = AllocColor(cmap, red, grn, blu, pix, client)) {
+    xColorItem rgb;
+
+    rgb.pixel = 0;
+    rgb.red   = *red;
+    rgb.green = *grn;
+    rgb.blue  = *blu;
+    FakeAllocColor(cmap, &rgb);
+
+    if(!ddx->pixLst[(*pix = rgb.pixel)]++) {
+      xrgb match;
+
+      QueryColors(cmap,1,&rgb.pixel,&match);
+      FakeFreeColor(cmap, rgb.pixel);
+      *red = match.red;
+      *grn = match.green;
+      *blu = match.blue;
+      if(status = AllocColor(cmap, red, grn, blu, pix, client))
+	ddx->pixLst[rgb.pixel] = 0;
+      else
+	ddx->allocMatch++;
+    } else {
+      if(!ddx->hashing ||
+	 *ddx->tmpLen > ddx->shareMatch * sizeof(ctiHashRec) << 1) {
+	++ddx->shareMatch;
+	--ddx->pixCnt;
+	status = 0;
+      }
+      FakeFreeColor(cmap, rgb.pixel);
+    }
+  } else {
+    ++ddx->pixLst[*pix];
+  }
+  return(status);
+}
+
+static int allocRGB3(cmap, red, grn, blu, pix, client, ddx)
+     ColormapPtr cmap;
+     CARD16	*red, *grn, *blu;
+     Pixel	*pix;
+     int	 client;
+     ctiAllPtr	 ddx;
+{
+  int status;
+
+  if(status = AllocColor(cmap, red, grn, blu, pix, client)) {
+    xColorItem rgb;
+    xrgb     match;
+
+    rgb.pixel = 0;
+    rgb.red   = *red;
+    rgb.green = *grn;
+    rgb.blue  = *blu;
+    FakeAllocColor(cmap, &rgb);
+
+    QueryColors(cmap,1,&rgb.pixel,&match);
+    FakeFreeColor(cmap, rgb.pixel);
+    *pix = rgb.pixel;
+    *red = match.red;
+    *grn = match.green;
+    *blu = match.blue;
+    if(!(status = AllocColor(cmap, red, grn, blu, pix, client)))
+      ddx->allocMatch++;
+  }
+  return(status);
 }
 
 /*------------------------------------------------------------------------
@@ -734,14 +905,15 @@ static void fn_do(ddx, DST, SRC)  					      \
 {									      \
   itype *src = (itype *)SRC;						      \
   otype *dst = (otype *)DST;						      \
-  Pixel  px, *pp, *lst = (Pixel *)ddx->tmpLst[0];				      \
+  Pixel  px, *pp, *lst = (Pixel *)ddx->tmpLst[0];			      \
   CARD32  w, val, mask = ddx->mask[0], trim = ddx->trim[0];		      \
   CARD16  r, g, b;							      \
   for(w = ddx->width; w--; *dst++ = px) {				      \
     if((long int)(px = *(pp = &lst[(val = *src++ >> trim & mask)])) < 0) {    \
       if(!ddx->cmapFull) {						      \
 	r = g = b = (unsigned short)((float)val * ddx->coef[0]);	      \
-	if(!(ddx->cmapFull = AllocColor(ddx->cmap,&r,&g,&b,pp,ddx->clindex))){\
+	if(!(ddx->cmapFull = (*ddx->alloc)(ddx->cmap,&r,&g,&b,pp,	      \
+					   ddx->clindex,ddx))) {	      \
 	  ++ddx->pixCnt;						      \
 	  px = *pp;							      \
 	  continue;							      \
@@ -784,7 +956,8 @@ static void fn_do(ddx, DST, SRCR, SRCG, SRCB)				      \
 	r = (unsigned short)((float)rv * ddx->coef[0]);			      \
 	g = (unsigned short)((float)gv * ddx->coef[1]);			      \
 	b = (unsigned short)((float)bv * ddx->coef[2]);			      \
-	if(!(ddx->cmapFull = AllocColor(ddx->cmap,&r,&g,&b,pp,ddx->clindex))){\
+	if(!(ddx->cmapFull = (*ddx->alloc)(ddx->cmap,&r,&g,&b,pp,	      \
+					   ddx->clindex,ddx))) {	      \
 	  ++ddx->pixCnt;						      \
 	  px = *pp;							      \
 	  continue;							      \
@@ -827,8 +1000,8 @@ static void fn_do(ddx, DST, SRCR, SRCG, SRCB)				      \
       r = (unsigned short)((float)rgb.rgbVals[0] * ddx->coef[0]);	      \
       g = (unsigned short)((float)rgb.rgbVals[1] * ddx->coef[1]);	      \
       b = (unsigned short)((float)rgb.rgbVals[2] * ddx->coef[2]);	      \
-      if(!(ddx->cmapFull =						      \
-	   AllocColor(ddx->cmap,&r,&g,&b,&hash->pixdex,ddx->clindex))) {      \
+      if(!(ddx->cmapFull = (*ddx->alloc)(ddx->cmap,&r,&g,&b,&hash->pixdex,    \
+					 ddx->clindex,ddx))) {		      \
 	++ddx->pixCnt;							      \
 	*dst++ = hash->pixdex;						      \
 	hash->rgbVal = rgb.rgbGlob;					      \
@@ -851,7 +1024,7 @@ DO_RGB31H_CtoI_ALL(CtoIall_31dHPP,PairPixel,PairPixel)
 ------------------------------------------------------------------------*/
 #define DO_RGB33U_CtoI_ALL(fn_do,itype)					      \
 static void fn_do(ddx, SRC, band)  					      \
-  ctiAllPtr ddx; pointer SRC; CARD8 band;					      \
+  ctiAllPtr ddx; pointer SRC; CARD8 band;				      \
 {									      \
   itype   *src = (itype *)SRC;						      \
   CARD32  mask = ddx->mask[band];					      \

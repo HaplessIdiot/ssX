@@ -1,5 +1,5 @@
 /* $XConsortium: menu.c /main/64 1996/01/14 16:52:55 kaleb $ */
-/* $XFree86: xc/programs/xterm/menu.c,v 3.4 1996/01/30 15:28:29 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/menu.c,v 3.5 1996/08/13 11:37:01 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -396,7 +396,7 @@ static void handle_send_signal (gw, sig)
 void DoSecureKeyboard (tp)
     Time tp;
 {
-    do_securekbd (term->screen.mainMenu, NULL, NULL);
+    do_securekbd (term->screen.mainMenu, (XtPointer)0, (XtPointer)0);
 }
 
 static void do_securekbd (gw, closure, data)
@@ -797,7 +797,7 @@ static void do_vtfont (gw, closure, data)
 
     for (i = 0; i < NMENUFONTS; i++) {
 	if (strcmp (entryname, fontMenuEntries[i].name) == 0) {
-	    SetVTFont (i, True, NULL, NULL);
+	    SetVTFont (i, True, (char *)0, (char *)0);
 	    return;
 	}
     }
@@ -970,7 +970,7 @@ void HandleAllowSends(w, event, params, param_count)
     Cardinal *param_count;
 {
     handle_toggle (do_allowsends, (int) term->screen.allowSendEvents,
-		   params, *param_count, w, NULL, NULL);
+		   params, *param_count, w, (XtPointer)0, (XtPointer)0);
 }
 
 void HandleSetVisualBell(w, event, params, param_count)
@@ -980,7 +980,7 @@ void HandleSetVisualBell(w, event, params, param_count)
     Cardinal *param_count;
 {
     handle_toggle (do_visualbell, (int) term->screen.visualbell,
-		   params, *param_count, w, NULL, NULL);
+		   params, *param_count, w, (XtPointer)0, (XtPointer)0);
 }
 
 #ifdef ALLOWLOGGING
@@ -991,7 +991,7 @@ void HandleLogging(w, event, params, param_count)
     Cardinal *param_count;
 {
     handle_toggle (do_logging, (int) term->screen.logging,
-		   params, *param_count, w, NULL, NULL);
+		   params, *param_count, w, (XtPointer)0, (XtPointer)0);
 }
 #endif
 
@@ -1002,7 +1002,7 @@ void HandleRedraw(w, event, params, param_count)
     String *params;
     Cardinal *param_count;
 {
-    do_redraw(w, NULL, NULL);
+    do_redraw(w, (XtPointer)0, (XtPointer)0);
 }
 
 /* ARGSUSED */
@@ -1055,7 +1055,7 @@ void HandleQuit(w, event, params, param_count)
     String *params;
     Cardinal *param_count;
 {
-    do_quit(w, NULL, NULL);
+    do_quit(w, (XtPointer)0, (XtPointer)0);
 }
 
 void Handle8BitControl(w, event, params, param_count)
@@ -1065,7 +1065,7 @@ void Handle8BitControl(w, event, params, param_count)
     Cardinal *param_count;
 {
     handle_toggle (do_8bit_control, (int) term->screen.control_eight_bits,
-		   params, *param_count, w, NULL, NULL);
+		   params, *param_count, w, (XtPointer)0, (XtPointer)0);
 }
 
 void HandleSunFunctionKeys(w, event, params, param_count)
@@ -1075,7 +1075,7 @@ void HandleSunFunctionKeys(w, event, params, param_count)
     Cardinal *param_count;
 {
     handle_toggle (do_sun_fkeys, (int) sunFunctionKeys,
-		   params, *param_count, w, NULL, NULL);
+		   params, *param_count, w, (XtPointer)0, (XtPointer)0);
 }
 
 void HandleScrollbar(w, event, params, param_count)
@@ -1085,7 +1085,7 @@ void HandleScrollbar(w, event, params, param_count)
     Cardinal *param_count;
 {
     handle_toggle (do_scrollbar, (int) term->screen.scrollbar,
-		   params, *param_count, w, NULL, NULL);
+		   params, *param_count, w, (XtPointer)0, (XtPointer)0);
 }
 
 void HandleJumpscroll(w, event, params, param_count)
@@ -1095,7 +1095,7 @@ void HandleJumpscroll(w, event, params, param_count)
     Cardinal *param_count;
 {
     handle_toggle (do_jumpscroll, (int) term->screen.jumpscroll,
-		   params, *param_count, w, NULL, NULL);
+		   params, *param_count, w, (XtPointer)0, (XtPointer)0);
 }
 
 void HandleReverseVideo(w, event, params, param_count)
@@ -1105,7 +1105,7 @@ void HandleReverseVideo(w, event, params, param_count)
     Cardinal *param_count;
 {
     handle_toggle (do_reversevideo, (int) (term->flags & REVERSE_VIDEO),
-		   params, *param_count, w, NULL, NULL);
+		   params, *param_count, w, (XtPointer)0, (XtPointer)0);
 }
 
 void HandleAutoWrap(w, event, params, param_count)
@@ -1115,7 +1115,7 @@ void HandleAutoWrap(w, event, params, param_count)
     Cardinal *param_count;
 {
     handle_toggle (do_autowrap, (int) (term->flags & WRAPAROUND),
-		   params, *param_count, w, NULL, NULL);
+		   params, *param_count, w, (XtPointer)0, (XtPointer)0);
 }
 
 void HandleReverseWrap(w, event, params, param_count)
@@ -1125,7 +1125,7 @@ void HandleReverseWrap(w, event, params, param_count)
     Cardinal *param_count;
 {
     handle_toggle (do_reversewrap, (int) (term->flags & REVERSEWRAP),
-		   params, *param_count, w, NULL, NULL);
+		   params, *param_count, w, (XtPointer)0, (XtPointer)0);
 }
 
 void HandleAutoLineFeed(w, event, params, param_count)
@@ -1135,7 +1135,7 @@ void HandleAutoLineFeed(w, event, params, param_count)
     Cardinal *param_count;
 {
     handle_toggle (do_autolinefeed, (int) (term->flags & LINEFEED),
-		   params, *param_count, w, NULL, NULL);
+		   params, *param_count, w, (XtPointer)0, (XtPointer)0);
 }
 
 void HandleAppCursor(w, event, params, param_count)
@@ -1145,7 +1145,7 @@ void HandleAppCursor(w, event, params, param_count)
     Cardinal *param_count;
 {
     handle_toggle (do_appcursor, (int) (term->keyboard.flags & CURSOR_APL),
-		   params, *param_count, w, NULL, NULL);
+		   params, *param_count, w, (XtPointer)0, (XtPointer)0);
 }
 
 void HandleAppKeypad(w, event, params, param_count)
@@ -1155,7 +1155,7 @@ void HandleAppKeypad(w, event, params, param_count)
     Cardinal *param_count;
 {
     handle_toggle (do_appkeypad, (int) (term->keyboard.flags & KYPD_APL),
-		   params, *param_count, w, NULL, NULL);
+		   params, *param_count, w, (XtPointer)0, (XtPointer)0);
 }
 
 void HandleScrollKey(w, event, params, param_count)
@@ -1165,7 +1165,7 @@ void HandleScrollKey(w, event, params, param_count)
     Cardinal *param_count;
 {
     handle_toggle (do_scrollkey, (int) term->screen.scrollkey,
-		   params, *param_count, w, NULL, NULL);
+		   params, *param_count, w, (XtPointer)0, (XtPointer)0);
 }
 
 void HandleScrollTtyOutput(w, event, params, param_count)
@@ -1175,7 +1175,7 @@ void HandleScrollTtyOutput(w, event, params, param_count)
     Cardinal *param_count;
 {
     handle_toggle (do_scrollttyoutput, (int) term->screen.scrollttyoutput,
-		   params, *param_count, w, NULL, NULL);
+		   params, *param_count, w, (XtPointer)0, (XtPointer)0);
 }
 
 void HandleAllow132(w, event, params, param_count)
@@ -1185,7 +1185,7 @@ void HandleAllow132(w, event, params, param_count)
     Cardinal *param_count;
 {
     handle_toggle (do_allow132, (int) term->screen.c132,
-		   params, *param_count, w, NULL, NULL);
+		   params, *param_count, w, (XtPointer)0, (XtPointer)0);
 }
 
 void HandleCursesEmul(w, event, params, param_count)
@@ -1195,7 +1195,7 @@ void HandleCursesEmul(w, event, params, param_count)
     Cardinal *param_count;
 {
     handle_toggle (do_cursesemul, (int) term->screen.curses,
-		   params, *param_count, w, NULL, NULL);
+		   params, *param_count, w, (XtPointer)0, (XtPointer)0);
 }
 
 void HandleMarginBell(w, event, params, param_count)
@@ -1205,7 +1205,7 @@ void HandleMarginBell(w, event, params, param_count)
     Cardinal *param_count;
 {
     handle_toggle (do_marginbell, (int) term->screen.marginbell,
-		   params, *param_count, w, NULL, NULL);
+		   params, *param_count, w, (XtPointer)0, (XtPointer)0);
 }
 
 void HandleAltScreen(w, event, params, param_count)
@@ -1216,7 +1216,7 @@ void HandleAltScreen(w, event, params, param_count)
 {
     /* eventually want to see if sensitive or not */
     handle_toggle (do_altscreen, (int) term->screen.alternate,
-		   params, *param_count, w, NULL, NULL);
+		   params, *param_count, w, (XtPointer)0, (XtPointer)0);
 }
 
 /* ARGSUSED */
@@ -1226,7 +1226,7 @@ void HandleSoftReset(w, event, params, param_count)
     String *params;
     Cardinal *param_count;
 {
-    do_softreset(w, NULL, NULL);
+    do_softreset(w, (XtPointer)0, (XtPointer)0);
 }
 
 /* ARGSUSED */
@@ -1236,7 +1236,7 @@ void HandleHardReset(w, event, params, param_count)
     String *params;
     Cardinal *param_count;
 {
-    do_hardreset(w, NULL, NULL);
+    do_hardreset(w, (XtPointer)0, (XtPointer)0);
 }
 
 /* ARGSUSED */
@@ -1246,7 +1246,7 @@ void HandleClearSavedLines(w, event, params, param_count)
     String *params;
     Cardinal *param_count;
 {
-    do_clearsavedlines(w, NULL, NULL);
+    do_clearsavedlines(w, (XtPointer)0, (XtPointer)0);
 }
 
 void HandleSetTerminalType(w, event, params, param_count)
@@ -1258,10 +1258,10 @@ void HandleSetTerminalType(w, event, params, param_count)
     if (*param_count == 1) {
 	switch (params[0][0]) {
 	  case 'v': case 'V':
-	    if (term->screen.TekEmu) do_vtmode (w, NULL, NULL);
+	    if (term->screen.TekEmu) do_vtmode (w, (XtPointer)0, (XtPointer)0);
 	    break;
 	  case 't': case 'T':
-	    if (!term->screen.TekEmu) do_tekmode (w, NULL, NULL);
+	    if (!term->screen.TekEmu) do_tekmode (w, (XtPointer)0, (XtPointer)0);
 	    break;
 	  default:
 	    Bell(XkbBI_MinorError, 0);
@@ -1281,11 +1281,11 @@ void HandleVisibility(w, event, params, param_count)
 	switch (params[0][0]) {
 	  case 'v': case 'V':
 	    handle_toggle (do_vtonoff, (int) term->screen.Vshow,
-			   params+1, (*param_count) - 1, w, NULL, NULL);
+			   params+1, (*param_count) - 1, w, (XtPointer)0, (XtPointer)0);
 	    break;
 	  case 't': case 'T':
 	    handle_toggle (do_tekonoff, (int) term->screen.Tshow,
-			   params+1, (*param_count) - 1, w, NULL, NULL);
+			   params+1, (*param_count) - 1, w, (XtPointer)0, (XtPointer)0);
 	    break;
 	  default:
 	    Bell(XkbBI_MinorError, 0);
@@ -1317,7 +1317,7 @@ void HandleSetTekText(w, event, params, param_count)
 	}
 	break;
     }
-    if (proc) (*proc) (w, NULL, NULL);
+    if (proc) (*proc) (w, (XtPointer)0, (XtPointer)0);
     else Bell(XkbBI_MinorError, 0);
 }
 
@@ -1328,7 +1328,7 @@ void HandleTekPage(w, event, params, param_count)
     String *params;
     Cardinal *param_count;
 {
-    do_tekpage(w, NULL, NULL);
+    do_tekpage(w, (XtPointer)0, (XtPointer)0);
 }
 
 /* ARGSUSED */
@@ -1338,7 +1338,7 @@ void HandleTekReset(w, event, params, param_count)
     String *params;
     Cardinal *param_count;
 {
-    do_tekreset(w, NULL, NULL);
+    do_tekreset(w, (XtPointer)0, (XtPointer)0);
 }
 
 /* ARGSUSED */
@@ -1348,7 +1348,5 @@ void HandleTekCopy(w, event, params, param_count)
     String *params;
     Cardinal *param_count;
 {
-    do_tekcopy(w, NULL, NULL);
+    do_tekcopy(w, (XtPointer)0, (XtPointer)0);
 }
-
-

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: gethost.c /main/23 1995/12/05 16:53:41 mor $
- * $XFree86: xc/programs/xauth/gethost.c,v 3.3 1995/01/28 16:16:34 dawes Exp $
+ * $XFree86: xc/programs/xauth/gethost.c,v 3.4 1996/01/05 13:20:38 dawes Exp $
  *
  * 
 Copyright (c) 1989  X Consortium
@@ -172,13 +172,13 @@ char *get_hostname (auth)
  */
 static Bool get_inet_address (name, resultp)
     char *name;
-    unsigned long *resultp;		/* return */
+    unsigned int *resultp;		/* return */
 {
-    unsigned long hostinetaddr = inet_addr (name);
+    unsigned int hostinetaddr = inet_addr (name);
     struct hostent *host_ptr;
     struct sockaddr_in inaddr;		/* dummy variable for size calcs */
 
-    if (hostinetaddr == -1) {		/* oh, gross.... */
+    if (hostinetaddr == INADDR_NONE) {
 	if ((host_ptr = gethostbyname (name)) == NULL) {
 	    /* No such host! */
 	    errno = EINVAL;
@@ -230,7 +230,7 @@ char *get_address_info (family, fulldpyname, prefix, host, lenp)
     int len = 0;
     char *src = NULL;
 #ifdef TCPCONN
-    unsigned long hostinetaddr;
+    unsigned int hostinetaddr;
     struct sockaddr_in inaddr;		/* dummy variable for size calcs */
 #endif
 #ifdef DNETCONN

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.25 1996/04/15 11:30:03 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.26 1996/06/29 09:06:58 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -363,10 +363,7 @@ s3LoadCursor(pScr, pCurs, x, y)
    WaitIdle();
 
    WaitQueue(4);
-   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_L | 0);
-   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_T | 0);
-   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_R | (s3DisplayWidth-1));
-   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | s3ScissB);
+   SET_SCISSORS(0,0,(s3DisplayWidth - 1), s3ScissB);
 
    WaitIdle();
 

@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.3 1996/08/13 11:28:29 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.4 1996/08/18 01:47:23 dawes Exp $
 #
 # Phase I - Initial text mode interaction w/user and starting of VGA16 server
 #
@@ -151,8 +151,8 @@ proc set_xf86config_defaults {} {
 	    if { ![info exists $varname] ||
 		    [lsearch -exact $ServerList [set $varname]] < 0} {
 		if { [file type $Xwinhome/bin/X] == "link" } {
-		    set $varname [string range \
-			[file readlink $Xwinhome/bin/X] 5 end]
+		    set $varname [string range [file tail \
+			[file readlink $Xwinhome/bin/X]] 5 end]
 		}
 		if { [lsearch -exact $ServerList [set $varname]] < 0} {
 		    set $varname SVGA
@@ -240,8 +240,9 @@ if { [string length $ConfigFile] > 0 } {
 	initconfig $Xwinhome
 }
 
+set gotlink 0
 
-if { !$UseConfigFile } {
+if { [getuid] && !$UseConfigFile } {
     # Check for the SysV Xqueue mouse driver
     if { [file exists /etc/conf/pack.d/xque]
 		&& [file exists /usr/lib/mousemgr] } {
@@ -252,6 +253,7 @@ if { !$UseConfigFile } {
 		set Pointer(Protocol)	Xqueue
 		set Pointer(Device)	""
 		set Pointer_realdevice	""
+		set gotlink 1
 	}
     }
 
@@ -264,13 +266,28 @@ if { !$UseConfigFile } {
 		set Pointer(Protocol)	OsMouse
 		set Pointer(Device)	""
 		set Pointer_realdevice	""
+		set gotlink 1
 	}
     }
+} else {
+    if { ![string compare $Pointer(Protocol) OsMouse]
+	    || ![string compare $Pointer(Protocol) Xqueue] } {
+	set gotlink 1
+    }
+}
 
-    if { $Pointer(Device) == "/dev/mouse" } {
-	if { [file exists /dev/mouse]
+if { [getuid] } {
+	set gotlink 1
+}
+
+while { !$gotlink } {
+    if { !$UseConfigFile || ![file exists $Pointer(Device)]
+	    || [file type $Pointer(Device)] != "link" } {
+        if { $Pointer(Device) == "/dev/mouse" } {
+	    if { [file exists /dev/mouse]
 			&& [file type /dev/mouse] != "link" } {
 		set Pointer(Device) /dev/pointer
+	    }
 	}
 	if { ![string length $Dialog] } {
 		puts "This program needs to make a link to the real mouse device."
@@ -291,6 +308,7 @@ if { !$UseConfigFile } {
 				$Pointer(Device) >@stdout
 		} output]
 		if [string match "chil*proc*exit*abnormally" $output] {
+			puts "Aborted"
 
 			exit 1
 		}
@@ -298,13 +316,36 @@ if { !$UseConfigFile } {
 			set Pointer(Device) $output
 		}
 	}
-	if { [file exists $Pointer(Device)]
-			&& [file type $Pointer(Device)] == "link" } {
-		set Pointer_realdevice [file readlink $Pointer(Device)]
-	}
+    }
+
+    if { [file exists $Pointer(Device)] && [has_symlinks]
+	    && [file type $Pointer(Device)] != "link" } {
+	mesg "The file $Pointer(Device) already exists, but is not a\n\
+		symbolic link. The name of a file that can be linked\n\
+		to the actual mouse device is what is needed." okay
+	set gotlink 0
+	continue
+    }
+    set gotlink 1
+
+    file lstat [file dirname $Pointer(Device)] fstat
+    if { $fstat(uid) != 0 || ($fstat(mode) & 002)
+		|| ($fstat(gid) > 99 && ($fstat(mode) & 020)) } {
+	set chgperm [mesg "Warning! The directory\
+		[file dirname $Pointer(Device)]\n\
+		is writable by users other than root.\n\
+		By creating the link to the mouse in this directory\n\
+		you may be opening a huge security hole.\n\n\
+		Do you want to change the location of the link?" yesno]
+	if $chgperm {set gotlink 0}
     }
 }
 
+if { [file exists $Pointer(Device)]
+		&& [file type $Pointer(Device)] == "link"
+		&& ![info exists Pointer_realdevice] } {
+	set Pointer_realdevice [readlink $Pointer(Device)]
+}
 set Confname "$TmpDir/XS.[pid]"
 
 if $StartServer {

@@ -104,6 +104,7 @@ terms and conditions:
 #include <texstr.h>
 #include <miuncomp.h>
 #include <xiemd.h>
+#include <memory.h>
 
 
 /*

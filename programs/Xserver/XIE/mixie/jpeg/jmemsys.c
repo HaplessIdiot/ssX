@@ -93,6 +93,7 @@ terms and conditions:
 #include "jmemsys.h"
 
 #ifdef _XIEC_MEMORY
+#include <memory.h>
 #ifdef malloc
 #undef malloc
 #endif

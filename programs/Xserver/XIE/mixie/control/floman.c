@@ -1,4 +1,5 @@
 /* $XConsortium: floman.c,v 1.6 94/04/17 20:34:12 dpw Exp $ */
+/* $XFree86$ */
 /**** module floman.c ****/
 /******************************************************************************
 
@@ -101,6 +102,7 @@ terms and conditions:
 #include <macro.h>
 #include <element.h>
 #include <texstr.h>
+#include <memory.h>
 
 /*
  *  routines referenced by other DDXIE modules
@@ -196,7 +198,8 @@ int MakePETex(flo,ped,extend,inSync,bandSync)
   if(extend) {
     /* In case private structure has 'double', round up */
     unsigned char *ptr = (pointer) &pet->receptor[ped->inCnt];
-    pet->private = (pointer) ((((int) ptr) & 4) ? ptr + 4 : ptr);
+    pet->private = (pointer)
+	(((unsigned long)ptr + sizeof(double)-1) & -sizeof(double));
   }
 
   return(TRUE);

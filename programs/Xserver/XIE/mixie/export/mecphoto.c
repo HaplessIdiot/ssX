@@ -104,6 +104,7 @@ terms and conditions:
 #include <texstr.h>
 #include <xiemd.h>
 #include <meuncomp.h>
+#include <memory.h>
 
 /* routines referenced by other DDXIE modules
  */

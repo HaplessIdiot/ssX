@@ -28,15 +28,19 @@ proc Phase4_run_xvidtune { win } {
 }
 
 proc Phase4_nextphase { win } {
-	global Confname ConfigFile StartServer
+	global Confname ConfigFile StartServer PID
 
 	set w [winpathprefix $win]
 	writeXF86Config $Confname-3 -displayof $win
 	set text "The configuration has been completed.\n"
+	set delete_conf-3 1
 	if { [getuid] != 0 } {
 		set text "$text\
 			No changes were made to the file $ConfigFile,\n\
-			because you are not running as root."
+			because you are not running as root.  However,\n\
+			the file $Confname-3 contains the configuration\n
+			settings that would have been used."
+		set delete_conf-3 0
 	}
 	if {![getuid] && ![catch {exec mv $ConfigFile $ConfigFile.bak} ret]} {
            set text "$text\
@@ -46,7 +50,9 @@ proc Phase4_nextphase { win } {
 	if {![getuid] && [catch {exec cp $Confname-3 $ConfigFile} ret] != 0} {
            set text "$text\n\
 		However, I am unable to save the configuration to\n
-		the file $ConfigFile"
+		the file $ConfigFile.  The file $Confname-3, contains
+		the settings that should be used"
+		set delete_conf-3 0
 	}
 	$w.text configure -text $text
 	pack   forget $w.buttons
@@ -56,6 +62,16 @@ proc Phase4_nextphase { win } {
 	}
 	button $w.okay -text "Okay"  -command $cmd
 	pack   $w.text $w.okay -side top
+	foreach fname [glob -nocomplain /tmp/XS*$PID*] {
+		if { !$delete_conf-3
+				&& ![string compare $fname $Confname-3] } {
+			continue
+		}
+		if [string match *.err $fname] {
+			continue
+		}
+		unlink $fname
+	}
 }
 
 label  $w.text -text " $msg\

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3line.c,v 3.7 1996/02/04 09:05:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3line.c,v 3.8 1996/06/29 09:07:14 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -143,12 +143,12 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
 
    BLOCK_CURSOR;
    WaitQueue16_32(3,5);
-   S3_OUTW(FRGD_MIX, FSS_FRGDCOL | s3alu[pGC->alu]);
-   S3_OUTW32(WRT_MASK, pGC->planemask);
-   S3_OUTW32(FRGD_COLOR, pGC->fgPixel);
+   SET_FRGD_MIX(FSS_FRGDCOL | s3alu[pGC->alu]);
+   SET_WRT_MASK(pGC->planemask);
+   SET_FRGD_COLOR(pGC->fgPixel);
    /* Fix problem writing to the cursor storage area */
    WaitQueue(1);
-   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | (pDrawable->pScreen->height-1));
+   SET_SCISSORS_RB(pDrawable->pScreen->width,pDrawable->pScreen->height-1);
    xorg = pDrawable->x;
    yorg = pDrawable->y;
    ppt = pptInit;
@@ -200,10 +200,9 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
 		  y2t = min(y2, pbox->y2);
 		  if (y1t != y2t) {
 		     WaitQueue(4);
-		     S3_OUTW(CUR_X, (short)x1);
-		     S3_OUTW(CUR_Y, (short)y1t);
-		     S3_OUTW(MAJ_AXIS_PCNT, (short)(y2t - y1t - 1));
-		     S3_OUTW(CMD, CMD_LINE | DRAW | LINETYPE | PLANAR |
+		     SET_CURPT((short)x1, (short)y1t);
+		     SET_MAJ_AXIS_PCNT((short)(y2t - y1t - 1));
+		     SET_CMD(CMD_LINE | DRAW | LINETYPE | PLANAR |
 			   WRTDATA | (6 << 5));		     
 		  }
 	       }
@@ -252,10 +251,9 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
 	       x2t = min(x2, pbox->x2);
 	       if (x1t != x2t) {
 		  WaitQueue(4);
-		  S3_OUTW(CUR_X, (short)x1t);
-		  S3_OUTW(CUR_Y, (short)y1);
-		  S3_OUTW(MAJ_AXIS_PCNT, (short)(x2t - x1t - 1));
-		  S3_OUTW(CMD, CMD_LINE | DRAW | LINETYPE | PLANAR |
+		  SET_CURPT((short)x1t, (short)y1);
+		  SET_MAJ_AXIS_PCNT((short)(x2t - x1t - 1));
+		  SET_CMD(CMD_LINE | DRAW | LINETYPE | PLANAR |
 			WRTDATA);
 	       }
 	       nbox--;
@@ -319,13 +317,11 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
 	      * addition of 'fix' stuff in cfbline.c
 	      */
 	       WaitQueue(7);
-	       S3_OUTW(CUR_X, (short)x1);
-	       S3_OUTW(CUR_Y, (short)y1);
-	       S3_OUTW(ERR_TERM, (short)(e + fix));
-	       S3_OUTW(DESTY_AXSTP, (short)e1);
-	       S3_OUTW(DESTX_DIASTP, (short)e2);
-	       S3_OUTW(MAJ_AXIS_PCNT, (short)len);
-	       S3_OUTW(CMD, cmd2);
+	       SET_CURPT((short)x1, (short)y1);
+	       SET_ERR_TERM((short)(e + fix));
+	       SET_DESTSTP((short)e2, (short)e1);
+	       SET_MAJ_AXIS_PCNT((short)len);
+	       SET_CMD(cmd2);
 	       break;
 	    } else if (oc1 & oc2) {
 	       pbox++;
@@ -408,13 +404,11 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
 #endif
 		     }
 		     WaitQueue(7);
-		     S3_OUTW(CUR_X, (short)new_x1);
-		     S3_OUTW(CUR_Y, (short)new_y1);
-		     S3_OUTW(ERR_TERM, (short)(err + fix));
-		     S3_OUTW(DESTY_AXSTP, (short)e1);
-		     S3_OUTW(DESTX_DIASTP, (short)e2);
-		     S3_OUTW(MAJ_AXIS_PCNT, (short)len);
-		     S3_OUTW(CMD, cmd2);
+		     SET_CURPT((short)new_x1, (short)new_y1);
+		     SET_ERR_TERM((short)(err + fix));
+		     SET_DESTSTP((short)e2, (short)e1);
+		     SET_MAJ_AXIS_PCNT((short)len);
+		     SET_CMD(cmd2);
 		  }
 	       pbox++;
 	    }
@@ -440,18 +434,16 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
 	     (x2 < pbox->x2) &&
 	     (y2 < pbox->y2)) {
 	    WaitQueue(4);
-	    S3_OUTW(CUR_X, (short)x2);
-	    S3_OUTW(CUR_Y, (short)y2);
-	    S3_OUTW(MAJ_AXIS_PCNT, 0);
-	    S3_OUTW(CMD, CMD_LINE | DRAW | LINETYPE | PLANAR | WRTDATA);
+	    SET_CURPT((short)x2, (short)y2);
+	    SET_MAJ_AXIS_PCNT(0);
+	    SET_CMD(CMD_LINE | DRAW | LINETYPE | PLANAR | WRTDATA);
 	    break;
 	 } else
 	    pbox++;
       }
    }
    WaitQueue(3);
-   S3_OUTW(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
-   S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
-   S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | s3ScissB);
+   SET_MIX(FSS_FRGDCOL | MIX_SRC, BSS_BKGDCOL | MIX_SRC);
+   SET_SCISSORS_RB(s3ScissR,s3ScissB);
    UNBLOCK_CURSOR;
 }

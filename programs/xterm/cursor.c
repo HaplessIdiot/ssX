@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: cursor.c,v 1.14 93/09/20 17:42:23 hersh Exp $
- *	$XFree86: xc/programs/xterm/cursor.c,v 3.1 1996/01/10 05:51:39 dawes Exp $
+ *	$XFree86: xc/programs/xterm/cursor.c,v 3.2 1996/08/13 11:36:55 dawes Exp $
  */
 
 /*
@@ -40,7 +40,8 @@ register TScreen *screen;
 {
     if (screen->cur_row > screen->endHRow ||
 	(screen->cur_row == screen->endHRow &&
-	 screen->cur_col >= screen->endHCol)) {}
+	 screen->cur_col >= screen->endHCol))
+	 ;
     else
 	DisownSelection(term);
 }
@@ -84,7 +85,8 @@ int		n;
 	register int i, j, k, rev;
 
 	if((rev = (term->flags & (REVERSEWRAP | WRAPAROUND)) ==
-	 (REVERSEWRAP | WRAPAROUND)) && screen->do_wrap)
+	                         (REVERSEWRAP | WRAPAROUND)) != 0
+	 && screen->do_wrap)
 		n--;
 	if ((screen->cur_col -= n) < 0) {
 		if(rev) {

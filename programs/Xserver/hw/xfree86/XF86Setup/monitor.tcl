@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/monitor.tcl,v 3.3 1996/08/18 01:47:21 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/monitor.tcl,v 3.4 1996/08/18 09:47:34 dawes Exp $
 #
 #
 
@@ -175,6 +175,13 @@ proc Monitor_cbox_setentry { cb text } {
 		$cb einsert 0 $text
 	}
 	$cb econfig -state disabled
+	set cblist [$cb lget 0 end]
+	set idx [lsearch $cblist $text]
+	if { $idx != -1 } {
+		$cb see $idx
+		$cb lselection clear 0 end
+		$cb lselection set $idx
+	}
 }
 
 proc Monitor_popup_help { win } {

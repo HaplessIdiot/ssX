@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.21 1996/05/13 07:29:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.22 1996/05/13 11:56:55 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -538,6 +538,16 @@ s3ImageFillBanked (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
    outw (FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
    UNBLOCK_CURSOR;
 }
+/* BL */
+#ifdef S3_NEWMMIO
+#undef s3EnableLinear
+#undef s3DisableLinear
+#undef s3BankSelect
+#define s3EnableLinear()
+#define s3DisableLinear()
+#define s3BankSelect(X)
+#endif
+/* end BL */
 
 static void
 #if NeedFunctionPrototypes
@@ -782,7 +792,6 @@ s3ImageFill (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 
    BLOCK_CURSOR;
    s3EnableLinear();
-
    if (bank != old_bank) {
       s3BankSelect(bank);
    }
@@ -865,14 +874,15 @@ s3ImageWriteNoMem (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
    outw32 (WRT_MASK, planemask);
    outw (MULTIFUNC_CNTL, PIX_CNTL | 0);
 
-   WaitQueue(4);
+   WaitQueue(5);
    outw (CUR_X, (short) x);
    outw (CUR_Y, (short) y);
    outw (MAJ_AXIS_PCNT, (short) w - 1);
    outw (MULTIFUNC_CNTL, MIN_AXIS_PCNT | (h - 1));
-   WaitIdle();
    outw (CMD, CMD_RECT | BYTSEQ | _16BIT | INC_Y | INC_X | DRAW | PCDATA
 	  | WRTDATA);
+
+   WaitQueue(8);
 
    w *= s3Bpp;
    psrc += pwidth * py;
@@ -946,7 +956,7 @@ s3ImageReadNoMem (x, y, w, h, psrc, pwidth, px, py, planemask)
 
    WaitQueue16_32(1,2);
 
-   S3_OUTW32(RD_MASK, planemask);
+   outw32(RD_MASK, planemask);
 
    WaitQueue(8);
 
@@ -976,7 +986,7 @@ s3ImageReadNoMem (x, y, w, h, psrc, pwidth, px, py, planemask)
       psrc += pwidth;
    }
    WaitQueue16_32(2,3);
-   S3_OUTW32(RD_MASK, ~0);
+   outw32(RD_MASK, ~0);
    outw (FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
    UNBLOCK_CURSOR;
 }
@@ -1023,7 +1033,7 @@ s3ImageFillNoMem (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
       return;
 
    BLOCK_CURSOR;  
-   WaitQueue16_32(6,7);
+   WaitQueue16_32(7,8);
    outw (FRGD_MIX, FSS_PCDATA | alu);
    outw32 (WRT_MASK, planemask);
    outw (CUR_X, (short) x);
@@ -1109,24 +1119,22 @@ s3RealImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
 
     BLOCK_CURSOR;
     WaitQueue16_32(5,8);
-    S3_OUTW32 (WRT_MASK, planemask);
-    S3_OUTW (FRGD_MIX, FSS_FRGDCOL | alu);
+    SET_WRT_MASK(planemask);
+    SET_FRGD_MIX(FSS_FRGDCOL | alu);
     if( opaque ) {
-      S3_OUTW (BKGD_MIX, BSS_BKGDCOL | alu);
-      S3_OUTW32 (BKGD_COLOR,  bgPixel);
+      SET_BKGD_MIX(BSS_BKGDCOL | alu);
+      SET_BKGD_COLOR(bgPixel);
     }
     else
-      S3_OUTW (BKGD_MIX, BSS_BKGDCOL | MIX_DST);
+      SET_BKGD_MIX(BSS_BKGDCOL | MIX_DST);
 
-    S3_OUTW32 (FRGD_COLOR,  fgPixel);
+    SET_FRGD_COLOR(fgPixel);
     WaitQueue(5);
-    S3_OUTW (MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPPC | COLCMPOP_F);
-    S3_OUTW (MAJ_AXIS_PCNT, (short) (w - 1));
-    S3_OUTW (CUR_X, (short) x);
-    S3_OUTW (CUR_Y, (short) y);
-    S3_OUTW (MULTIFUNC_CNTL, MIN_AXIS_PCNT | (h-1));   
-    WaitIdle();
-    S3_OUTW (CMD, CMD_RECT | PCDATA | _16BIT | INC_Y | INC_X |
+    SET_PIX_CNTL(MIXSEL_EXPPC | COLCMPOP_F);
+    SET_AXIS_PCNT((short) (w - 1), (short)(h-1));
+    SET_CURPT((short) x, (short) y);
+	WaitIdle();
+    SET_CMD(CMD_RECT | PCDATA | _16BIT | INC_Y | INC_X |
 	     DRAW | PLANAR | WRTDATA | BYTSEQ);
     modulus(x - pox, pw, x);
     modulus(y - poy, ph, y);
@@ -1141,7 +1149,7 @@ s3RealImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
 	pnt = (unsigned char *)(psrc + pwidth * y + (x >> 3));
 	while( h-- > 0 ) {
 	    pix = *((unsigned short *)(pnt));
-	    S3_OUTW(PIX_TRANS, s3SwapBits[ pix & 0xff ] | 
+	    SET_PIX_TRANS_W(s3SwapBits[ pix & 0xff ] | 
 			       s3SwapBits[ ( pix >> 8 ) & 0xff ] << 8);
 	    pnt += pwidth;
 	}
@@ -1190,7 +1198,7 @@ s3RealImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
 			    np += pw;
 			}
 		    }
-		    S3_OUTW(PIX_TRANS, s3SwapBits[ pix & 0xff ] | 
+		    SET_PIX_TRANS_W(s3SwapBits[ pix & 0xff ] | 
 				       s3SwapBits[ ( pix >> 8 ) & 0xff ] << 8);
 		    srcx += 16;
 		    if( srcx >= pw )
@@ -1205,9 +1213,8 @@ s3RealImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
 	}
     }
     WaitQueue(3);
-    S3_OUTW(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
-    S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
-    S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
+    SET_MIX(FSS_FRGDCOL | MIX_SRC, BSS_BKGDCOL | MIX_SRC);
+    SET_PIX_CNTL(MIXSEL_FRGDMIX | COLCMPOP_F);
     UNBLOCK_CURSOR;
 }
 

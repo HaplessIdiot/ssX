@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.135 1996/08/14 14:31:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.136 1996/08/18 01:50:08 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -148,6 +148,7 @@ ScrnInfoRec s3InfoRec =
 };
 
 typedef struct S3PCIInformation {
+   int DevID;
    int ChipType;
    int ChipRev;
    unsigned long MemBase;
@@ -266,6 +267,7 @@ static Bool Gloria8ClockSelect();
 ScreenPtr s3savepScreen;
 Bool  s3Localbus = FALSE;
 Bool  s3VLB = FALSE;
+Bool  s3NewMmio = FALSE;
 Bool  s3LinearAperture = FALSE;
 Bool  s3Mmio928 = FALSE;
 Bool  s3PixelMultiplexing = FALSE;
@@ -274,6 +276,7 @@ Bool  s3DACSyncOnGreen = FALSE;
 Bool  s3PCIHack = FALSE;
 Bool  s3PowerSaver = FALSE;
 unsigned char s3LinApOpt;
+int s3LBWindow;
 unsigned char s3SAM256 = 0x00;
 int s3BankSize;
 int s3DisplayWidth;
@@ -287,6 +290,7 @@ unsigned long s3MemBase = 0;
 
 extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed;
 extern int  xf86Verbose;
+int s3ScissR; 
 
 int s3ScissB;
 unsigned char s3SwapBits[256];
@@ -635,6 +639,7 @@ s3GetPCIInfo()
 	    break;
 	 default:
 	    info.ChipType = S3_UNKNOWN;
+	    info.DevID = pcrp->_device;
 	    break;
 	 }
 	 info.ChipRev = pcrp->_class_revision & 0xFF;
@@ -659,7 +664,7 @@ s3GetPCIInfo()
       } else {
 	 ErrorF("%s %s: PCI: unknown (please report), ID 0x%04x rev %x,"
 		" Linear FB @ 0x%08x\n", XCONFIG_PROBED,
-		s3InfoRec.name, info.ChipType, info.ChipRev, info.MemBase);
+		s3InfoRec.name, info.DevID, info.ChipRev, info.MemBase);
       }
    }
    if (found)

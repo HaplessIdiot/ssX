@@ -107,6 +107,7 @@ terms and conditions:
 #include <texstr.h>
 #include <technq.h>
 #include <xiemd.h>
+#include <memory.h>
 
 /*
  *  routines referenced by other DDXIE modules

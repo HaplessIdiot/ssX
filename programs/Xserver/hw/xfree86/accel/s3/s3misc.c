@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.45 1996/04/15 11:30:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.46 1996/06/29 09:07:15 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -62,6 +62,7 @@
  
 extern char s3Mbanks;
 extern Bool s3Mmio928;
+extern Bool s3NewMmio;
 extern unsigned long s3MemBase;
 
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
@@ -73,6 +74,7 @@ extern Bool  s3Localbus;
 extern Bool  s3VLB;
 extern Bool  s3LinearAperture;
 extern int s3BankSize;
+extern int s3LBWindow;        /* BL, for Trio64V+ and x68 */
 extern int s3DisplayWidth;
 extern pointer vgaBase;
 extern pointer vgaBaseLow;
@@ -122,6 +124,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
    
    /* for clips */
    s3ScissB = ((s3InfoRec.videoRam * 1024) / s3BppDisplayWidth) - 1;
+   s3ScissR = s3BppDisplayWidth - 1;
 
  /*
   * Initialize the screen, saving the original state for Save/Restore
@@ -270,10 +273,14 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	     * Normally only 6 bits are set in hw, but the Diamond Stealth
 	     * Pro is different.
 	     */
+		if (s3NewMmio) 
+			s3LBWindow = 0x1010000; 	/* BL: 16 MB + 64k */
+	    else 
+			s3LBWindow = s3BankSize;
 	    if (s3InfoRec.MemBase != 0) {
 	       addr = (s3InfoRec.MemBase & 0xffc00000);
 	       s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
-					  (pointer)addr, s3BankSize);
+					  (pointer)addr, s3LBWindow);
 	       s3DisableLinear();
 	       outb(vgaCRIndex, 0x5a);
 	       if (S3_x64_SERIES(s3ChipId)) {
@@ -305,7 +312,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
 		     ErrorF("Read LAW as 0x%08X \n", addr);
 	          }
 		  s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
-                                             (pointer)addr, s3BankSize);
+                                             (pointer)addr, s3LBWindow);
 		  poker = (long *) s3VideoMem;
 		  if (s3TryAddress(poker, pVal, addr, 1)) {
 		     s3LinearAperture = TRUE;
@@ -322,7 +329,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
 			       "but linear fb not usable");
 		     }
 		     xf86UnMapVidMem(scr_index, LINEAR_REGION, s3VideoMem,
-				     s3BankSize);
+				     s3LBWindow);
 		  }
 	       } else {
 #ifdef PC98_PWLB
@@ -330,7 +337,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
 		     unsigned long addr = (PWLB_WinAdd << 16) + 0x400000;
 
 		     s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
-						(pointer)addr, s3BankSize);
+						(pointer)addr, s3LBWindow);
 		     poker = (long *) s3VideoMem; 
 
 		     if (s3TryAddress(poker, pVal, addr, 1)) {
@@ -344,7 +351,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
 		     addr = (i << 24);
 
 		     s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
-						(pointer)addr, s3BankSize);
+						(pointer)addr, s3LBWindow);
 		     poker = (long *) s3VideoMem; 
 
 		     if (s3TryAddress(poker, pVal, addr, 1)) {
@@ -359,10 +366,10 @@ s3Initialize(scr_index, pScreen, argc, argv)
 			if (!s3TryAddress(poker, pVal, addr, 2)) {
 			   addr += (0x0C<<20);
 			   xf86UnMapVidMem(scr_index, LINEAR_REGION,
-					   s3VideoMem, s3BankSize);
+					   s3VideoMem, s3LBWindow);
 			   s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
 						      (pointer)addr,
-						      s3BankSize);
+						      s3LBWindow);
 		     
 			   if (s3TryAddress((long *)s3VideoMem, pVal,
 					    addr, 3)) {
@@ -380,10 +387,10 @@ s3Initialize(scr_index, pScreen, argc, argv)
 			    */
 			   addr = (i << 24) | 0x24000000;
 			   xf86UnMapVidMem(scr_index, LINEAR_REGION,
-					   s3VideoMem, s3BankSize);
+					   s3VideoMem, s3LBWindow);
 			   s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
 						      (pointer)addr,
-						      s3BankSize);
+						      s3LBWindow);
 			   if (s3TryAddress((long *)s3VideoMem, pVal,
 					    addr, 4)) {
 			      ErrorF("%s %s: Local bus LAW is 0x%03Xxxxxx\n", 
@@ -405,7 +412,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
 			s3EnableLinear();
 		     }
 		     xf86UnMapVidMem(scr_index, LINEAR_REGION, s3VideoMem,
-				     s3BankSize);
+				     s3LBWindow);
 		  }
 #ifdef PC98_PWLB
 		 }
@@ -480,6 +487,26 @@ s3Initialize(scr_index, pScreen, argc, argv)
    } else
       s3Init(s3InfoRec.modes);
 
+   /* BL: for new mmio we enable linear mode */
+   if (s3NewMmio) {
+      unsigned char tmp;
+      unsigned long ltmp;
+      WaitIdle();
+      outb(vgaCRIndex, 0x39);
+      outb(vgaCRReg, 0xa5);
+      outb (vgaCRIndex, 0x53);
+      tmp = inb(vgaCRReg);
+      outb (vgaCRReg, tmp | 0x18);	/* old and new mmio enabled */
+     
+      outb (vgaCRIndex, 0x58);
+      outb (vgaCRReg, s3LinApOpt & ~0x4 | s3SAM256);  /* window size for linear mode */
+
+      *(volatile int *)s3VideoMem = 0x12345678;
+      if ((ltmp = *(volatile int *)s3VideoMem) != 0x12345678)
+	ErrorF("new mmio linear mode doesn't work ltmp %x\n",ltmp);
+   }
+   /* end BL */
+
    s3InitEnvironment();
    AlreadyInited = TRUE;
 
@@ -510,31 +537,28 @@ s3Initialize(scr_index, pScreen, argc, argv)
 
       if (s3Trio32FCBug) {
 	 WaitQueue16_32(2, 3);
-	 S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_OR);
-	 S3_OUTW32(BKGD_COLOR, 0);
+	 SET_BKGD_MIX(BSS_BKGDCOL | MIX_OR);
+	 SET_BKGD_COLOR(0);
       } else {
 	 WaitQueue(1);
-	 S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_DST);
+	 SET_BKGD_MIX(BSS_BKGDCOL | MIX_DST);
       }
 
       WaitQueue16_32(3, 6);
-      S3_OUTW32(FRGD_COLOR, 1);
-      S3_OUTW32(RD_MASK, 1);
-      S3_OUTW32(WRT_MASK, ~0);
+      SET_FRGD_COLOR(1);
+      SET_RD_MASK(1);
+      SET_WRT_MASK(~0);
 
       WaitQueue(4);
-      S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPBLT | COLCMPOP_F);
-      S3_OUTW(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
-      S3_OUTW(CUR_X, 0);
-      S3_OUTW(CUR_Y, 0);
+      SET_PIX_CNTL(MIXSEL_EXPBLT | COLCMPOP_F);
+      SET_FRGD_MIX(FSS_FRGDCOL | MIX_SRC);
+	  SET_CURPT(0,0);
 	 
       WaitQueue(5);
-      S3_OUTW(DESTX_DIASTP, 0);
-      S3_OUTW(DESTY_AXSTP, 2);
-      S3_OUTW(MAJ_AXIS_PCNT, 1);
-      S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | 1);
+	  SET_DESTSTP(0,2);
+      SET_AXIS_PCNT(1, 1);
 
-      S3_OUTW(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+      SET_CMD(CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
 
       /* read back the destination */
       WaitIdle();
@@ -571,7 +595,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
 
    /* restore read mask */
    WaitQueue16_32(1, 2);
-   S3_OUTW32(RD_MASK, 0);
+   SET_RD_MASK(0);
 
 
 
@@ -597,30 +621,28 @@ s3Initialize(scr_index, pScreen, argc, argv)
 
       BLOCK_CURSOR;
       WaitQueue16_32(3,4);
-      S3_OUTW(FRGD_MIX, FSS_FRGDCOL | MIX_XOR);
+      SET_FRGD_MIX(FSS_FRGDCOL | MIX_XOR);
       if (s3_968_DashBug) {
-	 S3_OUTW32(BKGD_COLOR, 0);
-	 S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_OR);
+	 SET_BKGD_COLOR(0);
+	 SET_BKGD_MIX(BSS_BKGDCOL | MIX_OR);
       }
       else {
-	 S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_DST);
+	 SET_BKGD_MIX(BSS_BKGDCOL | MIX_DST);
       }      
 
       WaitQueue16_32(3,5);
-      S3_OUTW32(WRT_MASK, ~0);
-      S3_OUTW32(FRGD_COLOR, ~0);
-      S3_OUTW (MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPPC | COLCMPOP_F);
+      SET_WRT_MASK(~0);
+      SET_FRGD_COLOR(~0);
+      SET_PIX_CNTL(MIXSEL_EXPPC | COLCMPOP_F);
       
       WaitQueue(7);
-      S3_OUTW(CUR_X, 0);
-      S3_OUTW(CUR_Y, 0);
-      S3_OUTW(MAJ_AXIS_PCNT, 8-1);
-      S3_OUTW(DESTX_DIASTP, 2*(0-8));
-      S3_OUTW(DESTY_AXSTP, 2*0);
-      S3_OUTW(ERR_TERM, 2*0 - 8 -1);
-      S3_OUTW(CMD, CMD_LINE | DRAW | LASTPIX | PLANAR | INC_X | INC_Y  |
+	  SET_CURPT(0,0);
+      SET_MAJ_AXIS_PCNT(8-1);
+      SET_DESTSTP(2*(0-8), 2*0);
+      SET_ERR_TERM(2*0 - 8 -1);
+      SET_CMD(CMD_LINE | DRAW | LASTPIX | PLANAR | INC_X | INC_Y  |
 	      PCDATA | _16BIT | WRTDATA);
-      S3_OUTW(PIX_TRANS, dash_test_pattern);
+      SET_PIX_TRANS_W(dash_test_pattern);
       
       /* read back the destination */
       WaitIdle();
@@ -662,8 +684,8 @@ s3Initialize(scr_index, pScreen, argc, argv)
 
 
    WaitQueue16_32(2,3);
-   S3_OUTW32(FRGD_COLOR, 1);
-   S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPBLT | COLCMPOP_F);
+   SET_FRGD_COLOR(1);
+   SET_PIX_CNTL(MIXSEL_EXPBLT | COLCMPOP_F);
 
    xf86InitCache(s3CacheMoveBlock);
    s3FontCache8Init();

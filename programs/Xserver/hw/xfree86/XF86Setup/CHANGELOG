@@ -265,7 +265,7 @@
 			Output "Aborted" message when abort is pressed
 
 0.15	17 Aug 1996	Added -script option to look for a file in
-			  the scripts directory, otherwise the PATH
+(3.1.2Ei)		  the scripts directory, otherwise the PATH
 			  is searched
 			Fix typo in Mach64 RamDacs (David Dawes)
 			Fix typo in writing Virtual size (Harald Koenig)
@@ -280,4 +280,31 @@
 			Use list of devices to pick a default mouse
 			  device
 
+0.16	19 Aug 1996	Improve patterns used to find available mouse
+			  devices (David Dawes)
+			Sorted lists that are going to displayed in a
+			  listbox
+			Fixed bug with mouse link not being read for
+			  the real device when reading the exiting
+			  config file
+			Real mouse device is converted to a full path
+			  if the symlink was relative
+			Fixed bug where device wasn't reopened when a
+			  new device name was specified
+			When reading the X link to find out what server
+			  to use, strip off any directory name
+			Stack size limit is now changed in main.c on
+			  OSes that support it
+			Write a 24bpp screen section to config file
+			Remove temp files when exiting normally
+			Check that the mouse link is in a directory
+			  not writeable by non-root users
+			Update selection in listboxes when the value
+			  of the entry changes
+			Change the mouse device combobox to a listbox
+			  that is always showing - this is due to
+			  problems with keybindings in comboboxes
+			  (which are very important since the mouse
+			  is probably not yet working when this list
+			  is used)
 

@@ -104,6 +104,7 @@ terms and conditions:
 #include <photomap.h>
 #include <element.h>
 #include <texstr.h>
+#include <memory.h>
 #include <../include/jpeg.h>	/* XXX - ugh! */
 
 

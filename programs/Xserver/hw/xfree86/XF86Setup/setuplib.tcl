@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/setuplib.tcl,v 3.3 1996/08/13 11:28:34 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/setuplib.tcl,v 3.4 1996/08/18 01:47:26 dawes Exp $
 #
 
 
@@ -94,7 +94,7 @@ proc initconfig {xwinhome} {
 	set Scrn_VGA2(Depth,1)		1
 	set Scrn_VGA16(Depth,4)		4
 
-	foreach depth {8 15 16 32} {
+	foreach depth {8 15 16 24 32} {
 		set Scrn_SVGA(Depth,$depth)	$depth
 		set Scrn_Accel(Depth,$depth)	$depth
 	}
@@ -378,7 +378,7 @@ proc start_server { server configfile outfile } {
 
 	set pid [exec $Xwinhome/bin/XF86_$server $disp \
 		-allowMouseOpenFail -xf86config $configfile \
-		-ls 2048 -bestRefresh >& $TmpDir/$outfile & ]
+		-bestRefresh >& $TmpDir/$outfile & ]
 
 	sleep 9
 	set trycount 0
@@ -456,6 +456,7 @@ proc save_state {} {
 	puts $fd [list set ConfigFile $ConfigFile]
 	puts $fd [list set UseConfigFile $UseConfigFile]
 	puts $fd [list set StartServer $StartServer]
+	puts $fd [list set PID [pid]]
 	global DeviceIDs MonitorIDs
 	puts $fd [list set DeviceIDs $DeviceIDs]
 	puts $fd [list set MonitorIDs $MonitorIDs]

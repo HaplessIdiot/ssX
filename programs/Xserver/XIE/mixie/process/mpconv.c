@@ -1,4 +1,5 @@
-/* $XConsortium: mpconv.c,v 1.5 94/04/17 20:35:15 rws Exp $ */
+/* $XConsortium: mpconv.c /main/6 1995/12/02 16:53:50 dpw $ */
+/* AGE Logic - Oct 15 1995 - Larry Hare */
 /**** module mpconv.c ****/
 /******************************************************************************
 
@@ -105,6 +106,7 @@ terms and conditions:
 #include <flostr.h>
 #include <texstr.h>
 #include <technq.h>
+#include <memory.h>
 
 
 /*
@@ -387,7 +389,7 @@ static int ActivateConvolveConstant(flo,ped,pet)
 
     for(b = 0; b < ped->inFloLst[SRCtag].bands; b++, cpvt++, tconst++, iband++,
 						oband++) 
-      if(bmask & 1<<b) {
+      if(bmask & 1<<b && pet->scheduled & 1<<b) {
 
         CARD32    end = iband->format->height - 1 - k2;
 	CARD32  width = oband->format->width;
@@ -426,7 +428,7 @@ static int ActivateConvolveConstant(flo,ped,pet)
 		currX += (run > 0) ? run : -run;
 	    }
 	}
-	FreeData(flo,pet,iband,iband->current); 
+	FreeData(flo, pet, iband, len ? iband->current : iband->maxGlobal);
    }
   return(TRUE);
 }                               /* end ActivateConvolveConstant */

@@ -28,9 +28,9 @@
 //
 // HISTORY
 // Log: lk,v 
-# Revision 1.2  1996/06/18  09:12:47  erik
-# use flags correctly, assorted cleanups and consortium fixes
-#
+// Revision 1.2  1996/06/18  09:12:47  erik
+// use flags correctly, assorted cleanups and consortium fixes
+//
 // Revision 1.1.6.2  1995/08/18  21:15:16  William_Walker
 // 	Upgrade XKB to Protocol Rev. 0.64
 // 	[1995/08/18  20:41:46  William_Walker]

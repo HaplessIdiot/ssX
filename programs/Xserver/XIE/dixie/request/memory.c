@@ -1,5 +1,5 @@
 /* $XConsortium: memory.c,v 1.6 94/04/17 20:33:56 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/request/memory.c,v 3.0 1995/07/07 15:36:39 dawes Exp $ */
 /* Module memory.c */
 
 /****************************************************************************
@@ -86,7 +86,9 @@ terms and conditions:
 #include <X11/X.h>
 #include <X11/Xfuncs.h>
 
-#include "misc.h" /* for pointer */
+#include "misc.h"	/* for pointer */
+#include <memory.h>	/* to assert declaration and definition match */
+
 
 int ALLOCS = 0; /* DEBUG */
 

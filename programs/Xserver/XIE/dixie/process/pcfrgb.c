@@ -1,5 +1,5 @@
 /* $XConsortium: pcfrgb.c,v 1.4 94/04/17 20:33:41 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/XIE/dixie/process/pcfrgb.c,v 3.0 1996/03/29 22:10:47 dawes Exp $ */
 /**** module pcfrgb.c ****/
 /******************************************************************************
 
@@ -105,6 +105,7 @@ terms and conditions:
 #include <element.h>
 #include <technq.h>
 #include <difloat.h>
+#include <memory.h>
 
 /*
  *  routines referenced by other modules

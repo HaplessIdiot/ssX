@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3blt.c,v 3.12 1996/02/04 09:04:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3blt.c,v 3.13 1996/06/29 09:06:59 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -300,67 +300,57 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
 	 BLOCK_CURSOR;
 	 WaitQueue16_32(3,4);
 	 PCI_HACK();
-	 S3_OUTW(FRGD_MIX, FSS_BITBLT | s3alu[pGC->alu]);
-	 S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
-	 S3_OUTW32(WRT_MASK, pGC->planemask);
+         SET_MIX(FSS_BITBLT | s3alu[pGC->alu],BSS_BKGDCOL | MIX_SRC);
+         SET_WRT_MASK(pGC->planemask);
 	 if (direction == (INC_X | INC_Y)) {
 	    for (i = 0; i < numRects; i++) {
 	       prect = &pbox[ordering[i]];
 
 	       WaitQueue(7); PCI_HACK();
-	       S3_OUTW(CUR_X, (short)(prect->x1 + dx));
-	       S3_OUTW(CUR_Y, (short)(prect->y1 + dy));
-	       S3_OUTW(DESTX_DIASTP, (short)(prect->x1));
-	       S3_OUTW(DESTY_AXSTP, (short)(prect->y1));
-	       S3_OUTW(MAJ_AXIS_PCNT, (short)(prect->x2 - prect->x1 - 1));
-	       S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(prect->y2 - prect->y1 - 1));
-	       S3_OUTW(CMD, CMD_BITBLT | direction | DRAW | PLANAR | WRTDATA);
+               SET_CURPT((short)(prect->x1 + dx),(short)(prect->y1 + dy));
+               SET_DESTSTP((short)(prect->x1), (short)(prect->y1));
+               SET_AXIS_PCNT((short)(prect->x2 - prect->x1 - 1),\
+                                (short)(prect->y2 - prect->y1 - 1));
+               SET_CMD(CMD_BITBLT | direction | DRAW | PLANAR | WRTDATA);
 	    }
 	 } else if (direction == INC_X) {
 	    for (i = 0; i < numRects; i++) {
 	       prect = &pbox[ordering[i]];
 
 	       WaitQueue(7); PCI_HACK();
-	       S3_OUTW(CUR_X, (short)(prect->x1 + dx));
-	       S3_OUTW(CUR_Y, (short)(prect->y2 + dy - 1));
-	       S3_OUTW(DESTX_DIASTP, (short)(prect->x1));
-	       S3_OUTW(DESTY_AXSTP, (short)(prect->y2 - 1));
-	       S3_OUTW(MAJ_AXIS_PCNT, (short)(prect->x2 - prect->x1 - 1));
-	       S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(prect->y2 - prect->y1 - 1));
-	       S3_OUTW(CMD, CMD_BITBLT | direction | DRAW | PLANAR | WRTDATA);
+               SET_CURPT((short)(prect->x1 + dx),(short)(prect->y2 + dy - 1));
+               SET_DESTSTP((short)(prect->x1), (short)(prect->y2 - 1));
+               SET_AXIS_PCNT((short)(prect->x2 - prect->x1 - 1),\
+                                (short)(prect->y2 - prect->y1 - 1));
+               SET_CMD(CMD_BITBLT | direction | DRAW | PLANAR | WRTDATA);
 	    }
 	 } else if (direction == INC_Y) {
 	    for (i = 0; i < numRects; i++) {
 	       prect = &pbox[ordering[i]];
 
 	       WaitQueue(7); PCI_HACK();
-	       S3_OUTW(CUR_X, (short)(prect->x2 + dx - 1));
-	       S3_OUTW(CUR_Y, (short)(prect->y1 + dy));
-	       S3_OUTW(DESTX_DIASTP, (short)(prect->x2 - 1));
-	       S3_OUTW(DESTY_AXSTP, (short)(prect->y1));
-	       S3_OUTW(MAJ_AXIS_PCNT, (short)(prect->x2 - prect->x1 - 1));
-	       S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(prect->y2 - prect->y1 - 1));
-	       S3_OUTW(CMD, CMD_BITBLT | direction | DRAW | PLANAR | WRTDATA);
+               SET_CURPT((short)(prect->x2 + dx - 1),(short)(prect->y1 + dy));
+               SET_DESTSTP((short)(prect->x2 - 1), (short)(prect->y1));
+               SET_AXIS_PCNT((short)(prect->x2 - prect->x1 - 1),\
+                                (short)(prect->y2 - prect->y1 - 1));
+               SET_CMD(CMD_BITBLT | direction | DRAW | PLANAR | WRTDATA);
 	    }
 	 } else {
 	    for (i = 0; i < numRects; i++) {
 	       prect = &pbox[ordering[i]];
 
 	       WaitQueue(7); PCI_HACK();
-	       S3_OUTW(CUR_X, (short)(prect->x2 + dx - 1));
-	       S3_OUTW(CUR_Y, (short)(prect->y2 + dy - 1));
-	       S3_OUTW(DESTX_DIASTP, (short)(prect->x2 - 1));
-	       S3_OUTW(DESTY_AXSTP, (short)(prect->y2 - 1));
-	       S3_OUTW(MAJ_AXIS_PCNT, (short)(prect->x2 - prect->x1 - 1));
-	       S3_OUTW(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(prect->y2 - prect->y1 - 1));
-	       S3_OUTW(CMD, CMD_BITBLT | direction | DRAW | PLANAR | WRTDATA);
+               SET_CURPT((short)(prect->x2 + dx - 1),(short)(prect->y2 + dy - 1));
+               SET_DESTSTP((short)(prect->x2 - 1), (short)(prect->y2 - 1));
+               SET_AXIS_PCNT((short)(prect->x2 - prect->x1 - 1),\
+                                (short)(prect->y2 - prect->y1 - 1));
+               SET_CMD(CMD_BITBLT | direction | DRAW | PLANAR | WRTDATA);
 	    }
 	 }
 
 	 WaitQueue16_32(3,4); PCI_HACK();
-	 S3_OUTW(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
-	 S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
-	 S3_OUTW32(WRT_MASK, ~0);
+         SET_MIX(FSS_FRGDCOL | MIX_SRC,BSS_BKGDCOL | MIX_SRC); 
+         SET_WRT_MASK(~0);
 	 UNBLOCK_CURSOR;
 	 DEALLOCATE_LOCAL(ordering);
       } else if (pSrcDrawable->type == DRAWABLE_WINDOW &&
@@ -809,78 +799,66 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
 
 	 BLOCK_CURSOR;
 	 WaitQueue16_32(3,5);
-	 S3_OUTW(FRGD_MIX, FSS_FRGDCOL | s3alu[pGC->alu]);
-	 S3_OUTW32(RD_MASK, bitPlane);
-	 S3_OUTW32(WRT_MASK, pGC->planemask);
+         SET_FRGD_MIX(FSS_FRGDCOL | s3alu[pGC->alu]);
+         SET_RD_MASK(bitPlane);
+         SET_WRT_MASK(pGC->planemask);
 
 	 WaitQueue16_32(3,5);
-	 S3_OUTW32(FRGD_COLOR, pGC->fgPixel);
-	 S3_OUTW32(BKGD_COLOR, pGC->bgPixel);
-	 S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL|MIXSEL_EXPBLT);
+         SET_FRGD_COLOR(pGC->fgPixel);
+         SET_BKGD_COLOR(pGC->bgPixel);
+         SET_PIX_CNTL(MIXSEL_EXPBLT);
 
 	 if (direction == (INC_X | INC_Y)) {
 	    for (i = 0; i < numRects; i++) {
 	       prect = &pbox[ordering[i]];
 
 	       WaitQueue(7);
-	       S3_OUTW(CUR_X, (short)(prect->x1 + dx));
-	       S3_OUTW(CUR_Y, (short)(prect->y1 + dy));
-	       S3_OUTW(DESTX_DIASTP, (short)(prect->x1));
-	       S3_OUTW(DESTY_AXSTP, (short)(prect->y1));
-	       S3_OUTW(MAJ_AXIS_PCNT, (short)(prect->x2 - prect->x1 - 1));
-	       S3_OUTW(MULTIFUNC_CNTL, 
-		    MIN_AXIS_PCNT | (short)(prect->y2 - prect->y1 - 1));
-	       S3_OUTW(CMD, CMD_BITBLT | direction | DRAW | PLANAR | WRTDATA);
+               SET_CURPT((short)(prect->x1 + dx), (short)(prect->y1 + dy));
+               SET_DESTSTP((short)(prect->x1), (short)(prect->y1));
+               SET_AXIS_PCNT((short)(prect->x2 - prect->x1 - 1), \
+                                        (short)(prect->y2 - prect->y1 - 1));
+               SET_CMD(CMD_BITBLT | direction | DRAW | PLANAR | WRTDATA);
 	    }
 	 } else if (direction == INC_X) {
 	    for (i = 0; i < numRects; i++) {
 	       prect = &pbox[ordering[i]];
 
 	       WaitQueue(7);
-	       S3_OUTW(CUR_X, (short)(prect->x1 + dx));
-	       S3_OUTW(CUR_Y, (short)(prect->y2 + dy - 1));
-	       S3_OUTW(DESTX_DIASTP, (short)(prect->x1));
-	       S3_OUTW(DESTY_AXSTP, (short)(prect->y2 - 1));
-	       S3_OUTW(MAJ_AXIS_PCNT, (short)(prect->x2 - prect->x1 - 1));
-	       S3_OUTW(MULTIFUNC_CNTL, 
-		    MIN_AXIS_PCNT | (short)(prect->y2 - prect->y1 - 1));
-	       S3_OUTW(CMD, CMD_BITBLT | direction | DRAW | PLANAR | WRTDATA);
+               SET_CURPT((short)(prect->x1 + dx), (short)(prect->y2 + dy - 1));
+               SET_DESTSTP((short)(prect->x1), (short)(prect->y2 - 1));
+               SET_AXIS_PCNT((short)(prect->x2 - prect->x1 - 1), \
+                                        (short)(prect->y2 - prect->y1 - 1));
+               SET_CMD(CMD_BITBLT | direction | DRAW | PLANAR | WRTDATA);
 	    }
 	 } else if (direction == INC_Y) {
 	    for (i = 0; i < numRects; i++) {
 	       prect = &pbox[ordering[i]];
 
 	       WaitQueue(7);
-	       S3_OUTW(CUR_X, (short)(prect->x2 + dx - 1));
-	       S3_OUTW(CUR_Y, (short)(prect->y1 + dy));
-	       S3_OUTW(DESTX_DIASTP, (short)(prect->x2 - 1));
-	       S3_OUTW(DESTY_AXSTP, (short)(prect->y1));
-	       S3_OUTW(MAJ_AXIS_PCNT, (short)(prect->x2 - prect->x1 - 1));
-	       S3_OUTW(MULTIFUNC_CNTL, 
-		    MIN_AXIS_PCNT | (short)(prect->y2 - prect->y1 - 1));
-	       S3_OUTW(CMD, CMD_BITBLT | direction | DRAW | PLANAR | WRTDATA);
+               SET_CURPT((short)(prect->x2 + dx - 1), (short)(prect->y1 + dy));
+               SET_DESTSTP((short)(prect->x2 - 1), (short)(prect->y1));
+               SET_AXIS_PCNT((short)(prect->x2 - prect->x1 - 1), \
+                                        (short)(prect->y2 - prect->y1 - 1));
+               SET_CMD(CMD_BITBLT | direction | DRAW | PLANAR | WRTDATA);
 	    }
 	 } else {
 	    for (i = 0; i < numRects; i++) {
 	       prect = &pbox[ordering[i]];
 
 	       WaitQueue(7);
-	       S3_OUTW(CUR_X, (short)(prect->x2 + dx - 1));
-	       S3_OUTW(CUR_Y, (short)(prect->y2 + dy - 1));
-	       S3_OUTW(DESTX_DIASTP, (short)(prect->x2 - 1));
-	       S3_OUTW(DESTY_AXSTP, (short)(prect->y2 - 1));
-	       S3_OUTW(MAJ_AXIS_PCNT, (short)(prect->x2 - prect->x1 - 1));
-	       S3_OUTW(MULTIFUNC_CNTL, 
-		    MIN_AXIS_PCNT | (short)(prect->y2 - prect->y1 - 1));
-	       S3_OUTW(CMD, CMD_BITBLT | direction | DRAW | PLANAR | WRTDATA);
+               SET_CURPT((short)(prect->x2+dx-1), (short)(prect->y2+dy-1));
+               SET_DESTSTP((short)(prect->x2 - 1), (short)(prect->y2 - 1));
+               SET_AXIS_PCNT((short)(prect->x2 - prect->x1 - 1), \
+                                        (short)(prect->y2 - prect->y1 - 1));
+               SET_CMD(CMD_BITBLT | direction | DRAW | PLANAR | WRTDATA);
 	    }
 	 }
 
 	 WaitQueue16_32(4,6);
-	 S3_OUTW(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
-	 S3_OUTW32(RD_MASK, ~0);
-	 S3_OUTW32(WRT_MASK, ~0);
-	 S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
+         SET_FRGD_MIX(FSS_FRGDCOL | MIX_SRC);
+         SET_RD_MASK(~0);
+         SET_WRT_MASK(~0);
+         SET_PIX_CNTL(MIXSEL_FRGDMIX | COLCMPOP_F);
 	 UNBLOCK_CURSOR;
 	 DEALLOCATE_LOCAL(ordering);
       } else if (pSrcDrawable->type == DRAWABLE_WINDOW && 

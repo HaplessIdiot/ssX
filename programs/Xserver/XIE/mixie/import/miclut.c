@@ -1,4 +1,4 @@
-/* $XConsortium: miclut.c,v 1.5 94/04/17 20:34:48 rws Exp $ */
+/* $XConsortium: miclut.c /main/6 1995/12/02 16:52:36 dpw $ */
 /**** module miclut.c ****/
 /******************************************************************************
 
@@ -102,6 +102,7 @@ terms and conditions:
 #include <element.h>
 #include <texstr.h>
 #include <lut.h>
+#include <memory.h>
 
 
 /*
@@ -212,13 +213,14 @@ static int ActivateICLUT(flo,ped,pet)
     pointer ivoid, ovoid;
     int     ilen, icopy;
 
+    if(!(pet->scheduled & 1<<band)) continue;
     if(!(ovoid = GetDstBytes(flo,pet,oband,0,ext->striplength,FALSE)))
       return(FALSE);
     /*
     **  We have no guarantee to get all the output in one packet.  In 
     **  fact we have no guarantee we will ever get all the output, or
     **  that perhaps we might get too much.  If we do get too much we
-    **  would like to notify the user but the protocol does provide
+    **  would like to notify the user but the protocol doesn't provide
     **  something similar to a decodeNotify.
     */
     for(ilen = 0;

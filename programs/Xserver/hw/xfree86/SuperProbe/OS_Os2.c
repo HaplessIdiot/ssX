@@ -27,7 +27,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Os2.c,v 3.2 1996/01/24 22:00:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Os2.c,v 3.3 1996/02/04 08:56:58 dawes Exp $ */
 
 
 #include "Probe.h"
@@ -61,15 +61,36 @@ static void sorry()
  * Enable access to the installed video hardware.  For OS/2, we take
  * advantage of the driver xf86sup.sys which was specifically written
  * for XFree86/OS2.
+ * 
+ * At this point we also try to weed out systems with outdated EMX code.
  */
 int OpenVideo()
 {
+	ULONG rc;
+	HMODULE hmod;
+	char name[CCHMAXPATH];
+	char fail[9];
+
 	if (DosOpen((PSZ)videoDrvPath, (PHFILE)&consFd, (PULONG)&action,
 	   (ULONG)0, FILE_SYSTEM, FILE_OPEN,
 	   OPEN_SHARE_DENYNONE|OPEN_FLAGS_NOINHERIT|OPEN_ACCESS_READONLY,
 	   (ULONG)0) != 0) {
 		sorry();
-		return -1;
+		exit(2);
+	}
+
+	/* check for correct EMX */
+	if (_emx_rev < 43) {
+		fputs ("This program requires emx.dll revision 43 (0.9b fix 05) "
+			"or later.\n", stderr);
+		rc = DosLoadModule (fail, sizeof (fail), "emx", &hmod);
+		if (rc == 0) {
+			rc = DosQueryModuleName (hmod, sizeof (name), name);
+			if (rc == 0)
+				fprintf (stderr, "Please delete or update `%s'.\n", name);
+			DosFreeModule (hmod);
+		}
+		exit (2);
 	}
 	return 1;
 }
