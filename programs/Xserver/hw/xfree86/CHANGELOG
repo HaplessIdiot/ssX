@@ -1,4 +1,5 @@
 XFree86 3.0Ac (1 June 1994)
+ 73. Preliminary 90C33 support (Bill Conn).
  72. NetBSD.cf updates, and README.NetBSD added (Matthieu Herrb).
  71. Preliminary support for the ELSA Winner 1000PRO-VL-2 (Harald Koenig).
  70. Add "weight" and "displayWidth" entries to ScrnInfoRec.
