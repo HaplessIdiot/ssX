@@ -1,7 +1,7 @@
 
 // based on a keyboard map from an 'xkb/symbols/de' file
 //
-// $XFree86$
+// $XFree86: xc/programs/xkbcomp/symbols/pc/de,v 1.2 2002/11/22 04:03:28 dawes Exp $
 
 xkb_symbols "basic" {
 
@@ -29,6 +29,8 @@ xkb_symbols "basic" {
 
     key <LSGT>	{ type[Group1] = "FOUR_LEVEL",
                   [      less,    greater,          bar,    brokenbar ]	};
+
+    key <KPDL>	{ [ KP_Delete, KP_Separator                           ]	};
 
     key <RALT>  { type[Group1]="TWO_LEVEL",
                   [ ISO_Level3_Shift, Multi_key ]   };

@@ -1,6 +1,6 @@
 // $Xorg: fi,v 1.3 2000/08/17 19:54:42 cpqbld Exp $
 
-// $XFree86: xc/programs/xkbcomp/symbols/fi,v 3.7 2002/06/04 23:04:51 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/fi,v 3.8 2002/10/11 02:00:29 dawes Exp $
 
 
 partial alphanumeric_keys 
@@ -84,7 +84,9 @@ partial alphanumeric_keys
     key <AD12> {   	[  dead_diaeresis, dead_circumflex      ],
                  	[      dead_tilde,      dead_caron      ]};
 
-    // End alphanumeric section
+    // End alphanumeric section, begin "Keypad"
+    key <KPDL> {	[  KP_Delete,	KP_Separator	]	};
+    // End "Keypad" section
 
     // Begin modifier mappings
     
