@@ -180,6 +180,7 @@ XRenderQueryFormats (Display *dpy)
     void			*xData;
     int				nf, ns, nd, nv;
     int				rlength;
+    int				nbytes;
     
     RenderCheckExtension (dpy, info, 0);
     LockDisplay (dpy);
@@ -246,12 +247,13 @@ XRenderQueryFormats (Display *dpy)
 	       rep.numVisuals * sizeof (xPictVisual) +
 	       rep.numSubpixel * 4);
     xData = (void *) Xmalloc (rlength);
+    nbytes = (int) rep.length << 2;
     
-    if (!xri || !xData)
+    if (!xri || !xData || nbytes < rlength)
     {
 	if (xri) Xfree (xri);
 	if (xData) Xfree (xData);
-	_XEatData (dpy, rlength);
+	_XEatData (dpy, nbytes);
 	UnlockDisplay (dpy);
 	SyncHandle ();
 	return 0;
@@ -315,6 +317,12 @@ XRenderQueryFormats (Display *dpy)
 	screen++;
     }
     info->data = (XPointer) xri;
+    /*
+     * Skip any extra data
+     */
+    if (nbytes > rlength)
+	_XEatData (dpy, (unsigned long) (nbytes - rlength));
+    
     UnlockDisplay (dpy);
     SyncHandle ();
     Xfree (xData);
