@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.100 2003/09/21 01:20:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.101 2003/09/24 02:43:28 dawes Exp $ */
 
 /*
  * Authors:
@@ -1095,13 +1095,14 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
   pTDFX->writeLong(pTDFX, MISCINIT0, pTDFX->ModeReg.miscinit0);
 #endif
 
+#ifdef XF86DRI
   /* Load the dri module if requested. */
   if (xf86ReturnOptValBool(pTDFX->Options, OPTION_DRI, FALSE)) {
     if (xf86LoadSubModule(pScrn, "dri")) {
       xf86LoaderReqSymLists(driSymbols, drmSymbols, NULL);
     }
   }
-
+#endif
   return TRUE;
 }
 
