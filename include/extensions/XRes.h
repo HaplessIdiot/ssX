@@ -1,7 +1,7 @@
 /*
    Copyright (c) 2002  XFree86 Inc
 */
-/* $XFree86: xc/include/extensions/XRes.h,v 1.2 2002/03/05 04:25:30 mvojkovi Exp $ */
+/* $XFree86: xc/include/extensions/XRes.h,v 1.3 2002/03/10 22:05:51 mvojkovi Exp $ */
 
 #ifndef _XRES_H
 #define _XRES_H
@@ -29,8 +29,8 @@ Bool XResQueryExtension (
 
 Status XResQueryVersion (
    Display *dpy,
-   int *major,
-   int *minor
+   int *major_versionp,
+   int *minor_versionp
 );
 
 Status XResQueryClients (
