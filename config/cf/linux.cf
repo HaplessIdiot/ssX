@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: linux.cf /main/27 1996/12/26 08:52:44 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.55 1996/12/31 04:14:40 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.56 1997/01/02 04:04:29 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -236,8 +236,14 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
 #endif /* Mc68020Architecture */
 
+#if UseElfFormat
+#define DlLibrary		-rdynamic -ldl
+#else
+#define DlLibrary		/**/
+#endif
+
 #if BuildDynamicLoading
-#define ServerExtraSysLibs	-rdynamic -ldl
+#define ServerExtraSysLibs	DlLibrary
 #else
 #define ServerExtraSysLibs	/**/
 #endif
