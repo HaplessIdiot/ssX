@@ -39,7 +39,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/fslsfonts/fslsfonts.c,v 3.2 1998/10/04 09:40:04 dawes Exp $ */
+/* $XFree86: xc/programs/fslsfonts/fslsfonts.c,v 3.3 1999/02/19 21:27:08 hohndel Exp $ */
 
 #include "FSlib.h"
 #include <stdio.h>
@@ -452,7 +452,9 @@ show_font_header(FontList *list)
     }
 }
 
+#ifndef max
 #define	max(a, b)	((a) > (b) ? (a) : (b))
+#endif
 
 static void
 copy_number(char **pp1, char **pp2, int n1, int n2)

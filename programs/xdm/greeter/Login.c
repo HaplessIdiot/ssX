@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/Login.c,v 3.3 1998/10/10 15:25:45 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/Login.c,v 3.4 1999/03/14 03:22:25 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -230,7 +230,9 @@ static XtResource resources[] = {
 # define PAD_Y(w)	(max (max (Y_INC(w), GREET_Y_INC(w)),\
 			     FAIL_Y_INC(w)))
 	
+#ifndef max
 static int max (int a, int b) { return a > b ? a : b; }
+#endif
 
 static void
 EraseName (LoginWidget w, int cursor)

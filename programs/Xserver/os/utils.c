@@ -45,7 +45,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.53 1999/11/19 13:55:11 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.54 1999/12/08 21:34:10 robin Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -69,7 +69,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
 #endif
 #endif
 #include <sys/wait.h>
-#if !defined(SYSV) && !defined(AMOEBA) && !defined(_MINIX) && !defined(WIN32) && !defined(Lynx) && !defined(QNX)
+#if !defined(SYSV) && !defined(AMOEBA) && !defined(_MINIX) && !defined(WIN32) && !defined(Lynx) && !defined(QNX4)
 #include <sys/resource.h>
 #endif
 #include <time.h>

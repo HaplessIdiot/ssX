@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/osdep.h,v 3.8 1998/10/04 09:39:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/osdep.h,v 3.9 1998/10/10 15:25:27 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -89,6 +89,9 @@ SOFTWARE.
 #endif /* X_NOT_POSIX */
 #endif
 
+#ifdef __QNX__
+#define NOFILES_MAX 256
+#endif
 #ifndef OPEN_MAX
 #ifdef SVR4
 #define OPEN_MAX 128

@@ -3,7 +3,7 @@ XCOMM $TOG: Imakefile /main/196 1997/05/20 10:06:09 kaleb $
 
 
 
-XCOMM $XFree86: xc/lib/X11/Imakefile,v 3.25 1999/04/28 15:04:48 dawes Exp $
+XCOMM $XFree86: xc/lib/X11/Imakefile,v 3.26 1999/07/06 11:38:04 dawes Exp $
 #define DoNormalLib NormalLibX11
 #define DoSharedLib SharedLibX11
 #define DoExtraLib SharedLibX11
@@ -954,6 +954,10 @@ LinkSourceFile(k5encode.c,$(XAUTHSRC))
 LinkSourceFile(Wrap.h,$(XDMCPLIBSRC))
 LinkSourceFile(Wrap.c,$(XDMCPLIBSRC))
 LinkSourceFile(Wraphelp.c,$(XDMCPLIBSRC))
+#endif
+
+#ifdef QNX4Architecture
+LOCAL_LDFLAGS=-F
 #endif
 
 MAKEKEYS = ./makekeys

@@ -56,7 +56,7 @@ SOFTWARE.
  *      socket ids aren't small nums (0 - 2^8)
  *
  *****************************************************************/
-/* $XFree86: xc/programs/lbxproxy/os/connection.c,v 1.8 1998/12/20 11:58:08 dawes Exp $ */
+/* $XFree86: xc/programs/lbxproxy/os/connection.c,v 1.9 1999/04/29 09:13:56 dawes Exp $ */
 
 #include "misc.h"
 #include <X11/Xtrans.h>
@@ -80,6 +80,10 @@ extern int errno;
 
 #ifdef AIXV3
 #include <sys/ioctl.h>
+#endif
+
+#ifdef QNX4
+#include <sys/stat.h>
 #endif
 
 #if defined (TCPCONN) || defined(STREAMSCONN)

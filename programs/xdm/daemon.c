@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/daemon.c,v 3.8 1998/10/04 09:40:54 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/daemon.c,v 3.9 1998/10/10 15:25:32 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -94,7 +94,7 @@ BecomeOrphan (void)
 	/* parent */
 
 #ifndef CSRG_BASED
-#if defined(SVR4)
+#if defined(SVR4) || defined(__QNXNTO__)
 	stat = setpgid(child_id, child_id);
 	/* This gets error EPERM.  Why? */
 #else
@@ -124,7 +124,7 @@ BecomeDaemon (void)
      * Close standard file descriptors and get rid of controlling tty
      */
 
-#if defined(SYSV) || defined(SVR4) || defined(__GNU__)
+#if defined(SYSV) || defined(SVR4) || defined(__GNU__) || defined(__QNXNTO__)
     setpgrp ();
 #else
     setpgrp (0, getpid());

@@ -67,7 +67,7 @@ terms and conditions:
 	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/xieperf/abort.c,v 1.4 1999/03/02 11:49:41 dawes Exp $ */
 
 #include "xieperf.h"
 #include <stdio.h>
@@ -155,7 +155,7 @@ DoAbort(XParms xp, Parms p, int reps)
 
 		/* now, the flo should be active and waiting for data */
 
-		if ( !AbortAndWaitForEvent( xp, p, 0, flo ) )
+		if ( !AbortAndWaitForEvent( xp, p, 0L, flo ) )
 			break;
     	}
 }

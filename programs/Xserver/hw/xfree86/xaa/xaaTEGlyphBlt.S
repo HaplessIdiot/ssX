@@ -21,7 +21,7 @@
  * 
  * Written by Harm Hanemaayer (H.Hanemaayer@inter.nl.net).
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaTEGlyphBlt.s,v 1.3 1999/01/26 10:40:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaTEGlyphBlt.S,v 1.1 1999/07/10 07:24:54 dawes Exp $ */
 
 
 /*
@@ -35,7 +35,11 @@
 
 #include "assyntax.h"
 
+#ifndef QNX4
  	FILE("xaaTEGlyphBlt.s")
+#else
+ 	FILE( __FILE__ )
+#endif
 
 	AS_BEGIN
 

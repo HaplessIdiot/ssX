@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.16 1998/10/04 09:39:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.18 1999/11/19 13:55:11 hohndel Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -61,7 +61,7 @@ SOFTWARE.
 #endif
 #endif
 
-#if !defined(SYSV) && !defined(AMOEBA) && !defined(_MINIX) && !defined(WIN32) && !defined(Lynx)
+#if !defined(SYSV) && !defined(AMOEBA) && !defined(_MINIX) && !defined(WIN32) && !defined(Lynx) && !defined(QNX4)
 #include <sys/resource.h>
 #endif
 

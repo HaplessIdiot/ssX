@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.43 1999/06/14 12:02:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.46 1999/12/03 19:17:21 eich Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -61,6 +61,31 @@
 #define inb RealInb
 #define inw RealInw
 #define inl RealInl
+#endif
+
+#if defined(QNX4) /* Do this for now to keep Watcom happy */
+#define outb outp
+#define outw outpw
+#define outl outpd 
+#define inb inp
+#define inw inpw
+#define inl inpd
+
+/* Define the ffs function for inlining */
+extern int ffs(unsigned long);
+#pragma aux ffs_ = \
+        "bsf edx, eax"          \
+        "jnz bits_set"          \
+        "xor eax, eax"          \
+        "jmp exit1"             \
+        "bits_set:"             \
+        "mov eax, edx"          \
+        "inc eax"               \
+        "exit1:"                \
+        __parm [eax]            \
+        __modify [eax edx]      \
+        __value [eax]           \
+        ;
 #endif
 
 #if defined(NO_INLINE) || defined(DO_PROTOTYPES)
@@ -1081,7 +1106,7 @@ extern void outl(unsigned int a, unsigned char l);
 #endif /* !PPCIO_DEBUG */
 
 #else /* !GNUC && !PPC */
-#if !defined(AMOEBA) && !defined(MINIX)
+#if !defined(AMOEBA) && !defined(MINIX) && !defined(QNX4)
 # if defined(__STDC__) && (__STDC__ == 1)
 #  ifndef asm
 #   define asm __asm
@@ -1393,6 +1418,24 @@ static int inb(port)
 #define mem_barrier()   /* NOP */
 #define write_mem_barrier()   /* NOP */
 #endif /* __GNUC__ */
+
+#if defined(QNX4)
+#include <sys/types.h>
+extern unsigned  inb(unsigned port);
+extern unsigned  inw(unsigned port);
+extern unsigned  inl(unsigned port);
+extern void outb(unsigned port, unsigned val);
+extern void outw(unsigned port, unsigned val);
+extern void outl(unsigned port, unsigned val);
+#define ldq_u(p)        (*((unsigned long  *)(p)))
+#define ldl_u(p)        (*((unsigned int   *)(p)))
+#define ldw_u(p)        (*((unsigned short *)(p)))
+#define stq_u(v,p)      ((unsigned long  *)(p)) = (v)
+#define stl_u(v,p)      ((unsigned int   *)(p)) = (v)
+#define stw_u(v,p)      ((unsigned short *)(p)) = (v)
+#define mem_barrier()   /* NOP */
+#define write_mem_barrier()   /* NOP */
+#endif /* QNX4 */
 
 #if defined(IODEBUG) && defined(__GNUC__)
 #undef inb

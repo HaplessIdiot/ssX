@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level3/miRndrPick.c,v 1.6 1998/07/26 13:14:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level3/miRndrPick.c,v 1.7 1998/10/04 09:34:37 dawes Exp $ */
 
 #include "miLUT.h"
 #include "ddpex3.h"
@@ -429,7 +429,7 @@ miPPLevel		*path;		/* the path 	   */
     /* dont know what this is supposed to do */
     if ((pRend->pickstr.list)->numObj >= pRend->pickstr.max_hits) {
 	pRend->pickstr.more_hits = PEXMoreHits;
-	return;
+	return(0);
     }
     else pRend->pickstr.more_hits = PEXNoMoreHits;
 

@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xmu/WidgetNode.c,v 1.5 1998/10/03 09:06:37 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/WidgetNode.c,v 1.6 1999/03/21 07:34:39 dawes Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -41,7 +41,7 @@ in this Software without prior written authorization from The Open Group.
  * Prototypes
  */
 static char *binsearch(char*, char*, int, int,
-		       int(_Xconst void*, _Xconst void*));
+		       int (*__compar)(_Xconst void*, _Xconst void*));
 static int compare_resource_entries(_Xconst void *a,  _Xconst void *b);
 static XmuWidgetNode *find_resource(XmuWidgetNode*, char*, Bool);
 static void mark_resource_owner(XmuWidgetNode*);

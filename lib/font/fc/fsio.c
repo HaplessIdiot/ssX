@@ -23,7 +23,7 @@
  *
  * Author:  	Dave Lemke, Network Computing Devices, Inc
  */
-/* $XFree86: xc/lib/font/fc/fsio.c,v 3.8 1999/07/17 05:30:37 dawes Exp $ */
+/* $XFree86: xc/lib/font/fc/fsio.c,v 3.9 1999/12/13 02:52:53 robin Exp $ */
 /*
  * font server i/o routines
  */
@@ -198,11 +198,11 @@ _fs_setup_connection(FSFpePtr conn, char *servername, int timeout,
     prefix.num_auths = 0;
     prefix.auth_len = 0;
 
-    if (_fs_write(conn, (char *) &prefix, SIZEOF(fsConnClientPrefix)) == -1)
+    if (_fs_write(conn, (char *) &prefix, (unsigned long) SIZEOF(fsConnClientPrefix)) == -1)
 	return FALSE;
 
     /* read setup info */
-    if (_fs_read(conn, (char *) &rep, SIZEOF(fsConnSetup)) == -1)
+    if (_fs_read(conn, (char *) &rep, (unsigned long) SIZEOF(fsConnSetup)) == -1)
 	return FALSE;
 
     conn->fsMajorVersion = rep.major_version;
@@ -221,7 +221,7 @@ _fs_setup_connection(FSFpePtr conn, char *servername, int timeout,
 	    return FALSE;
 	}
 	alt_data = (char *) (alts + nalts);
-	if (_fs_read(conn, (char *) alt_data, setuplength) == -1) {
+	if (_fs_read(conn, (char *) alt_data, (unsigned long) setuplength) == -1) {
 	    xfree(alts);
 	    return FALSE;
 	}
@@ -245,14 +245,14 @@ _fs_setup_connection(FSFpePtr conn, char *servername, int timeout,
     auth_data = 0;
     if (setuplength)
     {
-	auth_data = (char *) xalloc((unsigned int) setuplength);
+	auth_data = (char *) xalloc((unsigned long) setuplength);
 	if (!auth_data)
 	{
 	    _FontTransClose(conn->trans_conn);
 	    ESET (ENOMEM);
 	    return FALSE;
 	}
-	if (_fs_read(conn, (char *) auth_data, setuplength) == -1) {
+	if (_fs_read(conn, (char *) auth_data, (unsigned long) setuplength) == -1) {
 	    xfree(auth_data);
 	    return FALSE;
 	}
@@ -264,7 +264,7 @@ _fs_setup_connection(FSFpePtr conn, char *servername, int timeout,
 	return FALSE;
     }
     /* get rest */
-    if (_fs_read(conn, (char *) &conn_accept, (long) SIZEOF(fsConnSetupAccept)) == -1) {
+    if (_fs_read(conn, (char *) &conn_accept, (unsigned long) SIZEOF(fsConnSetupAccept)) == -1) {
 	xfree(auth_data);
 	return FALSE;
     }

@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.69 1999/11/19 13:54:15 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.70 1999/11/19 14:46:51 hohndel Exp $ */
 
 /*
  * Includes
@@ -50,7 +50,7 @@
 # include <memory.h>
 #endif
 #else
-#ifdef _MINIX
+#if defined(_MINIX) || defined(__QNX__)
 # include <string.h>
 #else
 # include <strings.h>

@@ -46,7 +46,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/FS/FSlibInt.c,v 3.5 1999/02/19 21:26:51 hohndel Exp $ */
+/* $XFree86: xc/lib/FS/FSlibInt.c,v 3.6 1999/02/25 06:00:56 dawes Exp $ */
 
 /*
  *	FSlibInt.c - Internal support routines for the C subroutine
@@ -1279,7 +1279,9 @@ _FSFreeQ()
 }
 
 #ifdef _POSIX_SOURCE                     /* stupid makedepend [need if] */
+#ifndef __QNX__ /* QNX's uname nodename entry is not same as tcpip hostname */
 #define NEED_UTSNAME
+#endif
 #endif
 #ifdef hpux
 #define NEED_UTSNAME

@@ -8,7 +8,7 @@
  * be passed to the template file.                                         *
  *                                                                         *
  ***************************************************************************/
-/* $XFree86: xc/config/imake/imake.c,v 3.31 1999/03/14 03:20:33 dawes Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.32 1999/05/15 06:24:46 dawes Exp $ */
 
 /*
  * 
@@ -265,6 +265,10 @@ extern int	errno;
 #include <limits.h>
 #include <stdio.h>
 #endif
+#ifdef __QNX__
+#include <unix.h>
+#endif
+
 /* 
  * is strstr() in <strings.h> on X_NOT_STDC_ENV? 
  * are there any X_NOT_STDC_ENV machines left in the world?

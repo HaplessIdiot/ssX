@@ -1,4 +1,5 @@
 XFree86 3.9.16Z (xx December 1999)
+3395. Add QNX4, Neutrino support (#3489, Frank Guangxin Liu).
 3394. Add ATI Rage 128 Pro PF support to r128 driver (#3488, Rik Faith).
 3393. AutoRepeat fix for xf86config (#3485, Harald Koenig).
 3392. Cirrus driver split for Laguna and Alpine (#3484, Derek Fawcus).
@@ -9182,4 +9183,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.890 1999/12/27 00:11:57 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.891 1999/12/27 00:16:09 robin Exp $

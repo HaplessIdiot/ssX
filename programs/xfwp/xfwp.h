@@ -21,7 +21,7 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from The Open Group.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xfwp/xfwp.h,v 1.7 1999/03/02 11:49:40 dawes Exp $ */
 
 #ifndef _XFWP_H
 #define _XFWP_H
@@ -31,8 +31,12 @@ from The Open Group.
 #define FALSE		0
 #define TRUE		1
 
+#ifndef min
 #define	min(a,b)		((a) < (b) ? (a) : (b))
+#endif
+#ifndef max
 #define	max(a,b)		((a) > (b) ? (a) : (b))
+#endif
 
 /*
  * Default connection array sizes

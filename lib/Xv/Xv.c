@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xv/Xv.c,v 1.7 1999/04/11 13:10:33 dawes Exp $ */
+/* $XFree86: xc/lib/Xv/Xv.c,v 1.9 1999/12/11 19:27:59 mvojkovi Exp $ */
 /*
 ** File: 
 **
@@ -1067,12 +1067,12 @@ _XvInitExtension(Display *dpy)
   _XvOldWireToEventVideo = 
     XESetWireToEvent(dpy, 
 		     _XvCodes->first_event + XvVideoNotify, 
-		     _XvWireToEvent);
+		     (int) _XvWireToEvent);
 
   _XvOldWireToEventPort = 
     XESetWireToEvent(dpy, 
 		     _XvCodes->first_event + XvPortNotify, 
-		     _XvWireToEvent);
+		     (int) _XvWireToEvent);
 
   _XvOldErrorString = XESetErrorString(dpy, _XvCodes->extension, 
 				       _XvErrorString);

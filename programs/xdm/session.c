@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/session.c,v 3.19tsi Exp $ */
+/* $XFree86: xc/programs/xdm/session.c,v 3.20 1999/03/14 03:22:22 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -118,7 +118,9 @@ static	struct dlfuncs	dlfuncs = {
 	endgrent,
 #ifdef USESHADOW
 	getspnam,
+#ifndef QNX4
 	endspent,
+#endif /* QNX4 doesn't use endspent */
 #endif
 	getpwnam,
 	crypt,
@@ -531,11 +533,13 @@ StartClient (
 	    return(0);
 	}
 #endif
+#ifndef QNX4
 	if (initgroups(name, verify->gid) < 0)
 	{
 	    LogError("initgroups for \"%s\" failed, errno=%d\n", name, errno);
 	    return (0);
 	}
+#endif   /* QNX4 doesn't support multi-groups, no initgroups() */
 	if (setuid(verify->uid) < 0)
 	{
 	    LogError("setuid %d (user \"%s\") failed, errno=%d\n",

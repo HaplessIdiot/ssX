@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgafb/enhanced/suBitBlt.s,v 1.1.2.1 1997/07/16 10:37:07 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgafb/enhanced/suBitBlt.s,v 1.2 1998/07/25 16:58:31 dawes Exp $ */
 /*******************************************************************************
 			Copyr 1992 by Glenn G. Lai 
 
@@ -123,6 +123,10 @@ GLNAME(WinWin):
 	PUSH_L	(EDI)
 	PUSH_L	(ESI)
 	PUSH_L	(EBX)
+#ifdef QNX4
+	PUSH_SR (DS)
+	POP_SR  (ES)
+#endif
 	CLD
 
 	MOV_L	(width, ECX)

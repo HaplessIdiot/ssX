@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.29 1999/11/19 13:54:22 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.30 1999/12/13 23:38:12 robin Exp $ */
 
 #ifndef _xf86Xinput_h
 #define _xf86Xinput_h
@@ -34,8 +34,8 @@
 #include "Xproto.h"
 #include "inputstr.h"
 #ifdef XINPUT
-#include "XI.h"
-#include "XIproto.h"
+#include "extensions/XI.h"
+#include "extensions/XIproto.h"
 #include "XIstubs.h"
 #endif
 

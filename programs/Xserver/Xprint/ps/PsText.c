@@ -69,7 +69,7 @@ in this Software without prior written authorization from The Open Group.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/PsText.c,v 1.4 1998/10/04 09:37:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/PsText.c,v 1.5 1999/12/13 02:13:02 robin Exp $ */
 
 #include "Ps.h"
 #include "gcstruct.h"
@@ -191,7 +191,7 @@ PsImageText8(
     DisplayListPtr  disp;
     GCPtr           gc;
 
-    if ((gc = PsCreateAndCopyGC(pDrawable, pGC)) == NULL) return;
+    if ((gc = PsCreateAndCopyGC(pDrawable, pGC)) == NULL) return 0;
 
     disp = PsGetFreeDisplayBlock(priv);
 
@@ -244,7 +244,7 @@ PsImageText16(
     DisplayListPtr  disp;
     GCPtr           gc;
 
-    if ((gc = PsCreateAndCopyGC(pDrawable, pGC)) == NULL) return;
+    if ((gc = PsCreateAndCopyGC(pDrawable, pGC)) == NULL) return 0;
 
     disp = PsGetFreeDisplayBlock(priv);
 

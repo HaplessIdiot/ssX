@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.48 1999/07/10 12:17:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.49 1999/12/27 00:11:55 robin Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -309,6 +309,7 @@ getstring(char *s)
  *
  * (hv) OS/2 (__EMX__) only has an OS supported mouse, so user has no options
  * the server will enable a third button automatically if there is one
+ * We also do the same for QNX4, since we use the OS mouse drivers.
  */
 
 static char *mousetype_identifier[] = {
@@ -321,7 +322,7 @@ static char *mousetype_identifier[] = {
 	"MMSeries",
 	"MMHitTab",
 	"IntelliMouse",
-#ifdef __EMX__
+#if defined(__EMX__) || defined(QNX4)
 	"OSMOUSE"
 #endif
 };
@@ -392,7 +393,7 @@ static char *mousemancomment_text =
 static void 
 mouse_configuration(void) {
 
-#ifndef __EMX__
+#if !defined(__EMX__) && !defined(QNX4)
 	int i;
 	char s[80];
 	printf("%s", mouseintro_text);
@@ -497,7 +498,11 @@ mouse_configuration(void) {
 	config_chordmiddle = 0;       
 	config_cleardtrrts = 0;
 	config_emulate3buttons = 0;
+#if !defined(QNX4)
 	config_pointerdevice = "OS2MOUSE";
+#else
+	config_pointerdevice = "QNXMOUSE";
+#endif
 #endif /* __EMX__ */
 }
 
@@ -2298,7 +2303,7 @@ write_XF86Config(char *filename)
 	fprintf(f, "%s", pointersection_text1);
 	fprintf(f, "    Option \"Protocol\"    \"%s\"\n",
 		mousetype_identifier[config_mousetype]);
-#ifndef __EMX__
+#if !defined(__EMX__) && !defined(QNX4)
 	fprintf(f, "    Option \"Device\"      \"%s\"\n", config_pointerdevice);
 #endif
 	fprintf(f, "%s", pointersection_text2);

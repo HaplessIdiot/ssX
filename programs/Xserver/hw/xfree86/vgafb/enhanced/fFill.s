@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgafb/enhanced/fFill.s,v 1.1.2.1 1997/07/16 10:37:03 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgafb/enhanced/fFill.s,v 1.2 1998/07/25 16:58:28 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -113,6 +113,10 @@ GL_RROP_NAME:
 	PUSH_L	(EDI)
 	PUSH_L	(ESI)
 	PUSH_L	(EBX)
+#ifdef QNX4
+	PUSH_SR (DS)
+	POP_SR  (ES)
+#endif
 	MOV_L	(REGOFF(8,EBP),pdst)
 	MOV_L	(REGOFF(12,EBP),fill)
 	MOV_L	(REGOFF(20,EBP),hcount)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.30 1999/07/18 03:27:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.32 1999/12/03 19:17:47 eich Exp $ */
 
 /*
  *
@@ -38,7 +38,7 @@
 #define SAVE_FONT1
 #endif
 
-#if defined(Lynx) || defined(CSRG_BASED) || defined(MACH386) || defined(linux) || defined(AMOEBA) || defined(MINIX)
+#if defined(Lynx) || defined(CSRG_BASED) || defined(MACH386) || defined(linux) || defined(AMOEBA) || defined(MINIX) || defined(__QNX__)
 #ifndef NEED_SAVED_CMAP
 #define NEED_SAVED_CMAP
 #endif

@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/include/Xpoll.h,v 3.5 1998/12/13 12:23:40 dawes Exp $ */
 
 #ifndef _XPOLL_H_
 #define _XPOLL_H_
@@ -44,6 +44,11 @@ from The Open Group.
 #include <sys/time.h> 
 #include <sys/types.h>
 #include <unistd.h>
+#endif
+
+#ifdef __QNX__  /* Make sure we get 256 bit select masks */
+#define FD_SETSIZE 256
+#include <sys/select.h>
 #endif
 
 /* AIX 4.2 fubar-ed <sys/select.h>, so go to heroic measures to get it */

@@ -46,7 +46,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/FS/FSlibos.h,v 3.3 1998/08/16 10:24:06 dawes Exp $ */
+/* $XFree86: xc/lib/FS/FSlibos.h,v 3.4 1998/10/03 08:41:08 dawes Exp $ */
 
 /*
  * FSlib networking & os include file
@@ -84,7 +84,7 @@ in this Software without prior written authorization from The Open Group.
 #ifdef NOFILE
 #define OPEN_MAX NOFILE
 #else
-#ifndef __EMX__
+#if !defined(__EMX__) && !defined(__QNX__)
 #ifdef __GNU__
 #define OPEN_MAX (sysconf(_SC_OPEN_MAX))
 #else /* !__GNU__ */

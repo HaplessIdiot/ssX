@@ -64,7 +64,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.34 1999/10/14 04:25:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.37 1999/12/03 19:17:38 eich Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -143,6 +143,10 @@ extern Bool xf86DisableInterrupts(void);
 extern void xf86EnableInterrupts(void);
 extern void xf86SetTVOut(int);
 extern void xf86SetRGBOut(void);
+#if defined(QNX4)
+#pragma aux xf86BusToMem modify [eax ebx ecx edx esi edi];
+#pragma aux xf86MemToBus modify [eax ebx ecx edx esi edi];
+#endif
 extern void xf86BusToMem(unsigned char *, unsigned char *, int);
 extern void xf86MemToBus(unsigned char *, unsigned char *, int);
 extern void xf86IODelay(void);
