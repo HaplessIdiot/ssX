@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.12 2003/02/18 15:41:37 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Config.man,v 1.13 2003/02/20 04:05:13 dawes Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH XF86Config __filemansuffix__ __vendorversion__
@@ -155,7 +155,7 @@ ignored.  Most strings (including
 names) are also case-insensitive, and insensitive to white space and
 "_" characters.
 .PP
-Each config file entry usually take up a single line in the file.
+Each config file entry usually takes up a single line in the file.
 They consist of a keyword, which is possibly followed by one or
 more arguments, with the number and types of the arguments depending
 on the keyword.  The argument types are:
@@ -392,7 +392,7 @@ command line option.
 This prevents the X server from trapping a range of unexpected
 fatal signals and exiting cleanly.  Instead, the X server will die
 and drop core where the fault occurred.  The default behaviour is
-for the X server exit cleanly, but still drop a core file.  In
+for the X server to exit cleanly, but still drop a core file.  In
 general you never want to use this option unless you are debugging
 an X server problem and know how to deal with the consequences.
 .TP 7
@@ -568,6 +568,26 @@ and
 will allow users to remove the grab used by screen saver/locker programs.
 An API was written to such cases. If you enable this option, make sure your
 screen saver/locker is updated.
+.TP 7
+.BI "Option \*qHandleSpecialKeys\*q \*q" when \*q
+This option controls when the server uses the builtin handler
+to process special key combinations (such as
+.BR Ctrl+Alt+Backspace ).
+Normally the XKEYBOARD extension keymaps will provide mappings
+for each of the special key combinations, so the builtin handler
+is not needed unless the XKEYBOARD extension is disabled.
+The value of
+.I when
+can be
+.BR Always ,
+.BR Never ,
+or
+.BR WhenNeeded .
+Default: Use the builtin handler only if needed.  The server will
+scan the keymap for a mapping to the
+.B Terminate
+action and, if found, use XKEYBOARD for processing actions, otherwise
+the builtin handler will be used.
 .SH MODULE SECTION
 The
 .B Module

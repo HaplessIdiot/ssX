@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.57 2003/02/24 05:01:08 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.58 2003/02/25 21:25:37 dawes Exp $ 
 .TH XFree86 1 __vendorversion__
 .SH NAME
 XFree86 - X11R6 X server
@@ -319,10 +319,10 @@ sections.
 .B \-showconfig
 This is the same as the
 .B \-version
-option, and is included for compatibilty reasons.  It may be removed in
+option, and is included for compatibility reasons.  It may be removed in
 a future release, so the
 .B \-version
-options hould be used instead.
+option should be used instead.
 .TP 8
 .B \-weight \fInnn\fP
 Set RGB weighting at 16 bpp.  The default is 565.  This applies only to
@@ -348,7 +348,25 @@ for any file when the server is run as root (i.e, with real-uid 0), or
 for files relative to a directory in the config search path for all
 other users.
 .SH "KEYBOARD"
-Multiple key presses recognized directly by \fIXFree86\fP are:
+.PP
+The XFree86 server is normally configured to recognize various
+special combinations of key presses that instruct the server to
+perform some action, rather than just sending the keypress event
+to a client application.
+The default XKEYBOARD keymap defines the key combinations listed below.
+The server also has these key combinations builtin to its event
+handler for cases where the XKEYBOARD extension is not being used.
+When using the XKEYBOARD extension, which key combinations
+perform which actions is completely configurable.
+.PP
+For more information about when the builtin event handler
+is used to recognize the special key combinations, see
+the documentation on the
+.B HandleSpecialKeys
+option in the XF86Config(__filemansuffix__) man page.
+.PP
+The special combinations of key presses recognized directly
+by \fIXFree86\fP are:
 .TP 8
 .B Ctrl+Alt+Backspace
 Immediately kills the server -- no questions asked.  This can be disabled
