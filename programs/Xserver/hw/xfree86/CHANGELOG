@@ -1,4 +1,3 @@
- 594. Add ScreenToScreenColorExpansion support for I810 (Mark Vojkovich).
  593. Add/fix support for the Rage 128 Mobility chips (M3/M4) (Kevin Martin).
 
 XFree86 4.0.1d (8 September 2000)
@@ -11127,4 +11126,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1308 2000/09/13 15:47:29 martin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1309 2000/09/15 20:31:34 mvojkovi Exp $
