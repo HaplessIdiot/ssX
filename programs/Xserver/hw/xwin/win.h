@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.3 2001/04/19 12:56:03 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.4 2001/05/02 00:45:26 alanh Exp $ */
 
 #ifndef _WIN_H_
 #define _WIN_H_
@@ -154,9 +154,9 @@
 #include "miline.h"
 #include "shadow.h"
 #include "fb.h"
-#include "mipict.h"
 
 #ifdef RENDER
+#include "mipict.h"
 #include "picturestr.h"
 #endif
 
