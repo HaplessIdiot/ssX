@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cirrus_acl.c,v 1.4 1997/04/10 11:34:25 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cirrus_acl.c,v 1.5 1997/04/13 13:57:17 hohndel Exp $ */
 
 /*
  * New-style acceleration for chips with BitBLT engine:
@@ -76,9 +76,9 @@
 #define CHIPHAS(feature) (cirrusChipFeatures & feature)
 
 #define BPPADJUST(x) \
-    vga256InfoRec.bitsPerPixel == 8 ? x : \
-    vga256InfoRec.bitsPerPixel == 16 ? x * 2 : \
-    vga256InfoRec.bitsPerPixel == 24 ? x * 3 : x * 4
+    (vga256InfoRec.bitsPerPixel == 8 ? (x) : \
+     vga256InfoRec.bitsPerPixel == 16 ? (x) * 2 : \
+     vga256InfoRec.bitsPerPixel == 24 ? (x) * 3 : (x) * 4)
 
 #define WAITEMPTY() { \
     if (!cirrusPCIRetrySupport) \
@@ -307,12 +307,12 @@ void CirrusAccelInit() {
 #if DO_PATTERNS
     /* Pattern fills. */
     if (CHIPHAS(NEWSTYLEPATTERNOFFSET) || CHIPHAS(OLDSTYLEPATTERNOFFSET))
-        xf86AccelInfoRec.Flags |= HARDWARE_PATTERN_PROGRAMMED_ORIGIN;
+        xf86AccelInfoRec.PatternFlags |= HARDWARE_PATTERN_PROGRAMMED_ORIGIN;
     if (vga256InfoRec.bitsPerPixel != 24 || CHIPHAS(PACKED24FILL)) {
 #if 0
         if (vga256InfoRec.bitsPerPixel == 24)
             /* 8 "filler byte" at the end of each pattern scanline. */
-            xf86AccelInfoRec.Flags |= HARDWARE_PATTERN_PAD_24BPP;
+            xf86AccelInfoRec.PatternFlags |= HARDWARE_PATTERN_PAD_24BPP;
             /*
              * However, don't use the regular 8x8 pattern fill at 24bpp
              * at the moment because the 5446 needs special pattern offset
@@ -327,15 +327,13 @@ void CirrusAccelInit() {
                 CirrusSetupFor8x8PatternFill;
             xf86AccelInfoRec.SubsequentFill8x8Pattern =
                 CirrusSubsequent8x8PatternFill;
+
+	    xf86AccelInfoRec.SetupFor8x8PatternColorExpand =
+	      CirrusSetupFor8x8PatternColorExpand;
+	    xf86AccelInfoRec.Subsequent8x8PatternColorExpand =
+	      CirrusSubsequent8x8PatternColorExpand;
         }
 
-#if 0
-	/* The 8x8 ColExp code isn't correct yet! --corey, 4.12.97 */
-        xf86AccelInfoRec.SetupFor8x8PatternColorExpand =
-            CirrusSetupFor8x8PatternColorExpand;
-        xf86AccelInfoRec.Subsequent8x8PatternColorExpand =
-            CirrusSubsequent8x8PatternColorExpand;
-#endif
     }
 #endif /* DO_PATTERNS */
 
@@ -369,12 +367,7 @@ void CirrusAccelInit() {
          * of the DWORD source alignment requirement.
          */
 
-	/* 
-	 * Using CPUToScreen ColExp locks the machine with the 5480, and
-	 * probably other Alpine cards.  Let's just not use it until the 
-	 * bugs can be worked out.  --corey 4.12.97
-	 */
-	if (vga256InfoRec.bitsPerPixel != 24) {
+	if (1) {
 	    /*
 	     * A modern chip with 32-bit scanline alignment is compatible
 	     * with optimized XAA CPU-to-screen color expansion.
@@ -795,6 +788,12 @@ void CirrusSetupForCPUToScreenColorExpand(bg, fg, rop, planemask)
                 fg = ~bg;
             }
             break;
+	case 24 :
+            bg = (~fg) & 0xFFFFFF;
+            if (cirrusChip == CLGD5434) {
+                fg = ~bg;
+            }
+	    break;
         case 32 :
             bg = ~fg;
             break;
@@ -859,7 +858,13 @@ void CirrusSubsequentCPUToScreenColorExpand(x, y, w, h, skipleft)
          * Apart from setting the write mask, this also satisfies the
          * requirement of writing to GR2C for the 5430/40.
          */
+      /* Packed 24bpp mode is special.  The write mask is a _byte_ mask,
+	 and can be up to 5 bits. */
+      if (vga256InfoRec.bitsPerPixel == 24) {
+        SETSRCADDR((skipleft*3) << 24);
+      } else {
         SETSRCADDR(skipleft << 24);
+      }
     }
     destaddr = y * vga256InfoRec.displayWidth + x;
     destaddr = BPPADJUST(destaddr);
@@ -904,6 +909,12 @@ void CirrusSetupForScreenToScreenColorExpand(bg, fg, rop, planemask)
         case 16 :
             bg = (~fg) & 0xFFFF;
             bg |= bg << 16;
+            if (cirrusChip == CLGD5434) {
+                fg = ~bg;
+            }
+            break;
+        case 24 :
+            bg = (~fg) & 0xFFFFFF;
             if (cirrusChip == CLGD5434) {
                 fg = ~bg;
             }
@@ -1011,6 +1022,12 @@ rop, planemask)
         case 16 :
             bg = (~fg) & 0xFFFF;
             bg |= bg << 16;
+            if (cirrusChip == CLGD5434) {
+                fg = ~bg;
+            }
+            break;
+        case 24 :
+            bg = (~fg) & 0xFFFFFF;
             if (cirrusChip == CLGD5434) {
                 fg = ~bg;
             }
@@ -1199,6 +1216,12 @@ planemask)
         case 16 :
             bg = (~fg) & 0xFFFF;
             bg |= bg << 16;
+            if (cirrusChip == CLGD5434) {
+                fg = ~bg;
+            }
+            break;
+        case 24 :
+            bg = (~fg) & 0xFFFFFF;
             if (cirrusChip == CLGD5434) {
                 fg = ~bg;
             }

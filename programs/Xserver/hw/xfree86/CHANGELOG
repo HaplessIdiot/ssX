@@ -1,4 +1,19 @@
 XFree86 3.2At (14 April 1997)
+ 684. Some fixes for NonTE text. Add FixedBase support. Add TRIPLE_BITS24BPP
+      support. Fix CPU_TRANSFER_PAD_QWORD problem. Fix possible loss of a few
+      pixels at the end of NonTE text strings (#286, David Bateman).
+ 683. Fix compile problem with USL compiler (#283, David Bateman).
+ 682. Updates to mga_reg.h for Mystique (Guy Desbief).
+ 681. Add ATT20C49x RAMDAC support for 16 and 24bpp modes to tseng driver.
+      Make ET6000 hardware cursor use closest available color instead of
+      refusing to change colors when it can't find an exact match. Fix
+      another W32i linear mode bug. Change ET6000 pixel clock limits as per
+      Tseng's recommendations (=much lower than we had before). fix a BUG in
+      the ET4000 "standard set-of-clocks" code. Use ChipClockScaleFactor.
+      (#282, Koen Gadeyne).
+ 680. Fix and re-enable 8x8 pattern color expansion (!=24bpp) for Alpine cards 
+      Fix CPUToScreen color expansion for 24bpp mode, fix determining the BG
+      color in 24bpp color expansion routines (#281,285, Corin Anderson).
  679. Various Cirrus fixes and additions. Fix HAVE_546X() macro for Laguna
       support. Add support for CL-GD5480. Disable Alpine XAA color expansion
       code. Fix 32bpp Alpine mode bug. Overload {slow,med,fast}_dram options
@@ -4350,4 +4365,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.446 1997/04/12 13:44:02 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.447 1997/04/13 13:56:58 hohndel Exp $

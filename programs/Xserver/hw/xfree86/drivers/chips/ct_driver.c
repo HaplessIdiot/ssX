@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.2 1997/03/22 09:35:33 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.3 1997/04/08 10:12:25 hohndel Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -634,7 +634,8 @@ ctClockFind(Type, no, Clock)
 	Clock->xr33 = 0;
 	Clock->xr54 = Clock->msr;
 	Clock->Clock = vga256InfoRec.clock[no];
-	Clock->Clock *= ((vgaBitsPerPixel >= 8) ? vgaBytesPerPixel : 1);
+	if (vgaBitsPerPixel >= 8)
+	    Clock->Clock *= vgaBytesPerPixel;
       }
 	break;
       case OLD_STYLE:
@@ -660,7 +661,8 @@ ctClockFind(Type, no, Clock)
 	Clock->msr = 3 << 2;
 	Clock->xr33 = 0;
 	Clock->Clock = vga256InfoRec.clock[no];
-	Clock->Clock *= ((vgaBitsPerPixel >= 8) ? vgaBytesPerPixel : 1);
+	if (vgaBitsPerPixel >= 8)
+	    Clock->Clock *= vgaBytesPerPixel;
       }
 	break;
     }

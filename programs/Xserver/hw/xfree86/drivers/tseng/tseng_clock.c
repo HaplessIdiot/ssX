@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/tseng_clock.c,v 3.2 1997/02/24 17:47:07 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_clock.c,v 1.1 1997/03/06 23:17:12 hohndel Exp $ */
 
 /*
  *
@@ -10,7 +10,8 @@
  **
  ** This code was moved out of et4_driver.c [kmg]
  **
- ** Most (if not all) of the code in here is NEVER used.
+ ** The code in here is ONLY used used for clock probing!
+ ** Setting the actual clock is done in ET4000Restore().
  **/
 
 #include "compiler.h"

@@ -2,18 +2,35 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mgareg.h,v 1.2 1997/04/08 10:12:52 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_reg.h,v 1.1 1997/04/10 11:34:37 hohndel Exp $ */
+
+
 
 /*
- * mga register file 
+ * MGA Millennium (MGA2064W) functions
+ * MGA Mystique (MGA1064SG) functions
  *
- */ 
+ * Copyright 1996 The XFree86 Project, Inc.
+ *
+ * Authors
+ *		Dirk Hohndel
+ *			hohndel@XFree86.Org
+ *		David Dawes
+ *			dawes@XFree86.Org
+ * Contributors:
+ *		Guy DESBIEF, Aix-en-provence, France
+ *			g.desbief@aix.pacwan.net
+ *		MGA1064SG Mystique register file
+ */
+  
 
 #ifndef _MGA_REG_H_
 #define _MGA_REG_H_
 
 #define	MGAREG_DWGCTL		0x1c00
 #define	MGAREG_MACCESS		0x1c04
+/* the following is a mystique only register */
+#define MGAREG_MCTLWTST		0x1c08
 #define	MGAREG_ZORG		0x1c0c
 
 #define	MGAREG_PAT0		0x1c10
@@ -32,6 +49,8 @@
 #define	MGAREG_XYEND		0x1c44
 
 #define	MGAREG_SHIFT		0x1c50
+/* the following is a mystique only register */
+#define MGAREG_DMAPAD		0x1c54
 #define	MGAREG_SGN		0x1c58
 #define	MGAREG_LEN		0x1c5c
 
@@ -177,10 +196,33 @@
 
 #define MGADWG_PATTERN		( 0x01 << 29 )
 #define MGADWG_TRANSC		( 0x01 << 30 )
-
+#define MGAREG_MISC_WRITE	0x1fc2
+#define MGAREG_MISC_READ	0x1fcc
+#define MGAREG_MISC_IOADSEL	(0x1 << 0)
+#define MGAREG_MISC_RAMMAPEN	(0x1 << 1)
+#define MGAREG_MISC_CLK_SEL_VGA25	(0x0 << 2)
+#define MGAREG_MISC_CLK_SEL_VGA28	(0x1 << 2)
+#define MGAREG_MISC_CLK_SEL_MGA_PIX	(0x2 << 2)
+#define MGAREG_MISC_CLK_SEL_MGA_MSK	(0x3 << 2)
+#define MGAREG_MISC_VIDEO_DIS	(0x1 << 4)
+#define MGAREG_MISC_HIGH_PG_SEL	(0x1 << 5)
+ 
 /* MMIO VGA registers */
 #define MGAREG_CRTC_INDEX	0x1fd4
 #define MGAREG_CRTC_DATA	0x1fd5
+
+/* MGA bits for registers PCI_OPTION_REG */
+#define MGA1064_OPT_SYS_CLK_PCI   		( 0x00 << 0 )
+#define MGA1064_OPT_SYS_CLK_PLL   		( 0x01 << 0 )
+#define MGA1064_OPT_SYS_CLK_EXT   		( 0x02 << 0 )
+#define MGA1064_OPT_SYS_CLK_MSK   		( 0x03 << 0 )
+
+#define MGA1064_OPT_SYS_CLK_DIS   		( 0x01 << 2 )
+#define MGA1064_OPT_G_CLK_DIV_1   		( 0x01 << 3 )
+#define MGA1064_OPT_M_CLK_DIV_1   		( 0x01 << 4 )
+
+#define MGA1064_OPT_SYS_PLL_PDN   		( 0x01 << 5 )
+#define MGA1064_OPT_VGA_ION   		( 0x01 << 8 )
 
 /* MGA registers in PCI config space */
 #define PCI_MGA_INDEX		0x44
@@ -237,4 +279,93 @@
 #define TVP3026_ID		0x3f
 #define TVP3026_RESET		0xff
 
+
+/* MGA1064 DAC Register file */
+/* MGA1064 direct registers */
+/* #define PCI_CHIP_MGA1064        0x051A */
+
+#define MGA1064_INDEX		0x00
+#define MGA1064_WADR_PAL	0x00
+#define MGA1064_COL_PAL		0x01
+#define MGA1064_PIX_RD_MSK	0x02
+#define MGA1064_RADR_PAL	0x03
+#define MGA1064_DATA		0x0a
+
+#define MGA1064_CUR_XLOW	0x0c
+#define MGA1064_CUR_XHI		0x0d
+#define MGA1064_CUR_YLOW	0x0e
+#define MGA1064_CUR_YHI		0x0f
+
+/* MGA1064 indirect registers */
+#define MGA1064_CURSOR_BASE_ADR_LOW	0x04
+#define MGA1064_CURSOR_BASE_ADR_HI	0x05
+#define MGA1064_CURSOR_CTL	0x06
+#define MGA1064_CURSOR_COL0_RED	0x08
+#define MGA1064_CURSOR_COL0_GREEN	0x09
+#define MGA1064_CURSOR_COL0_BLUE	0x0a
+
+#define MGA1064_CURSOR_COL1_RED	0x0c
+#define MGA1064_CURSOR_COL1_GREEN	0x0d
+#define MGA1064_CURSOR_COL1_BLUE	0x0e
+
+#define MGA1064_CURSOR_COL2_RED	0x010
+#define MGA1064_CURSOR_COL2_GREEN	0x011
+#define MGA1064_CURSOR_COL2_BLUE	0x012
+
+#define MGA1064_VREF_CTL	0x018
+
+#define MGA1064_MUL_CTL		0x19
+#define MGA1064_MUL_CTL_8bits		0x0
+#define MGA1064_MUL_CTL_15bits		0x01
+#define MGA1064_MUL_CTL_16bits		0x02
+#define MGA1064_MUL_CTL_24bits		0x03
+#define MGA1064_MUL_CTL_32bits		0x04
+#define MGA1064_MUL_CTL_2G8V16bits		0x05
+#define MGA1064_MUL_CTL_G16V16bits		0x06
+#define MGA1064_MUL_CTL_32_24bits		0x07
+
+#define MGA1064_PIX_CLK_CTL		0x1a
+#define MGA1064_PIX_CLK_CTL_CLK_DIS   		( 0x01 << 2 )
+#define MGA1064_PIX_CLK_CTL_CLK_POW_DOWN   	( 0x01 << 3 )
+#define MGA1064_PIX_CLK_CTL_SEL_PCI   		( 0x00 << 0 )
+#define MGA1064_PIX_CLK_CTL_SEL_PLL   		( 0x01 << 0 )
+#define MGA1064_PIX_CLK_CTL_SEL_EXT   		( 0x02 << 0 )
+#define MGA1064_PIX_CLK_CTL_SEL_MSK   		( 0x03 << 0 )
+
+#define MGA1064_GEN_CTL		0x1d
+#define MGA1064_MISC_CTL	0x1e
+#define MGA1064_MISC_CTL_VGA   		( 0x01 << 1 )
+#define MGA1064_MISC_CTL_MAFC   		( 0x02 << 1 )
+#define MGA1064_MISC_CTL_VGA8   		( 0x01 << 3 )
+#define MGA1064_MISC_CTL_DAC_POW_UP   		( 0x01 << 4 )
+
+#define MGA1064_GEN_IO_CTL	0x2a
+#define MGA1064_GEN_IO_DATA	0x2b
+#define MGA1064_SYS_PLL_M	0x2c
+#define MGA1064_SYS_PLL_N	0x2d
+#define MGA1064_SYS_PLL_P	0x2e
+#define MGA1064_SYS_PLL_STAT	0x2f
+#define MGA1064_ZOOM_CTL	0x38
+#define MGA1064_SENSE_TST	0x3a
+
+#define MGA1064_CRC_LSB		0x3c
+#define MGA1064_CRC_MSB		0x3d
+#define MGA1064_CRC_CTL		0x3e
+#define MGA1064_COL_KEY_MSK_LSB		0x40
+#define MGA1064_COL_KEY_MSK_MSB		0x41
+#define MGA1064_COL_KEY_LSB		0x42
+#define MGA1064_COL_KEY_MSB		0x43
+#define MGA1064_PIX_PLLA_M	0x44
+#define MGA1064_PIX_PLLA_N	0x45
+#define MGA1064_PIX_PLLA_P	0x46
+#define MGA1064_PIX_PLLB_M	0x48
+#define MGA1064_PIX_PLLB_N	0x49
+#define MGA1064_PIX_PLLB_P	0x4a
+#define MGA1064_PIX_PLLC_M	0x4c
+#define MGA1064_PIX_PLLC_N	0x4d
+#define MGA1064_PIX_PLLC_P	0x4e
+
+#define MGA1064_PIX_PLL_STAT	0x4f
+
 #endif
+

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_ramdac.c,v 1.2 1997/03/27 08:31:03 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_ramdac.c,v 1.3 1997/04/08 10:13:33 hohndel Exp $ */
 
 /*
  *
@@ -431,6 +431,42 @@ void Check_Tseng_Ramdac()
     outb(RAMDAC_RMR, 0xff);
 }
 
+
+/* 
+ * This doesn't work for 24bpp modes yet, where ChipClockScaleFactor should
+ * be 1.5, nor for PIXMUX modes, where it should be 0.5.
+ * ChipClockScaleFactor is an int instead of a float...
+ */
+
+void tseng_init_clockscale(int bytesperpixel)
+{
+    int hdiv=1, hmul=1;
+
+    if ( (bytesperpixel > 1) && (et4000_type < TYPE_ET6000) )
+    {
+       /* 16-bit ET4000W32p RAMDACs need different treatment than 8-bitters */
+        switch (TsengRamdacType) {
+            case STG1702_DAC:
+            case STG1703_DAC:
+            case ICS5341_DAC:
+            case CH8398_DAC:
+               switch (bytesperpixel) {
+                   case 3: hdiv = 2; 
+                           hmul = 3;
+                           break;
+                   case 4: hmul = 2;
+                           break;
+               }
+               break;
+            default:
+               hmul = bytesperpixel; /* this is the case for 8-bit RAMDACs */
+        }
+    }
+
+   TSENG.ChipClockScaleFactor = hmul/hdiv;
+}
+
+
 void tseng_set_dacspeed(int bytesperpixel)
 {
    /*
@@ -464,6 +500,9 @@ void tseng_set_dacspeed(int bytesperpixel)
           case ET6000_DAC:
               vga256InfoRec.dacSpeed = 135000;
               break;
+          case ET6300_DAC:
+              vga256InfoRec.dacSpeed = 175000;
+              break;
           default:
               vga256InfoRec.dacSpeed = MAX_TSENG_CLOCK;
         }
@@ -472,7 +511,7 @@ void tseng_set_dacspeed(int bytesperpixel)
     if (et4000_type < TYPE_ET6000) {
         mem_bw = 90000;
         if (vga256InfoRec.videoRam > 1024)
-            mem_bw = mem_bw * 17 / 10;  /* interleaved DRAM gives 70% more bandwidth */
+            mem_bw = 150000;  /* interleaved DRAM gives 70% more bandwidth */
 
         maxclock_bpp[0] = vga256InfoRec.dacSpeed;
         if (dac_is_16bit)
@@ -490,22 +529,50 @@ void tseng_set_dacspeed(int bytesperpixel)
     }
     else
     {
+#define USE_OFFICIAL_TSENG_LIMITS
+    /* According to Tseng:
+     * "Besides the 135 MHz maximum pixel clock frequency, the other limit has to
+     * do with where you get FIFO breakdown (usually appears as stray horizontal
+     * lines on the screen). Assuming the accelerator is running steadily doing a
+     * worst case operation, to avoid FIFO breakdown you should keep the product
+     *   pixel_clock*(bytes/pixel) <= 225 MHz . This is based on an XCLK
+     * (system/memory) clock of 92 MHz (which is what we currently use) and
+     * a value in the RAS/CAS Configuration register (CFG 44) of either 015h
+     * or 014h (depending on the type of MDRAM chips). Also, the FIFO low
+     * threshold control bit (bit 4 of CFG 41) should be set for modes where
+     * pixel_clock*(bytes/pixel) > 130 MHz . These limits are for the
+     * current ET6000 chips. An upcoming revision of the ET6000 [scheduled
+     * for q3, the ET6300] will raise the pixel clock limit to 175 MHz and
+     * the pixel_clock*(bytes/pixel) FIFO breakdown limit to about 275 MHz."
+     */
+#ifdef USE_OFFICIAL_TSENG_LIMITS
+      if (et4000_type > TYPE_ET6000)      /* ET6300 */
+          mem_bw = 275000;
+      else                                /* ET6000 */
+          mem_bw = 225000;
+#else
       mem_bw = 90000 * 2 * 5/6;       /* 1 MDRAM bandwidth at 90 MHz, with 80% efficiency */
       bw_reg = inb(ET6Kbase + 0x45);
       if (bw_reg & 0x04) mem_bw *=2;  /* 2 MDRAM channels  (2 chips) */
       if (bw_reg & 0x03) mem_bw *=2;  /* interleaved MDRAM (4 chips) */
+#endif
       maxclock_bpp[0] = vga256InfoRec.dacSpeed;
       maxclock_bpp[1] = min(maxclock_bpp[0], mem_bw/2);
       maxclock_bpp[2] = min(maxclock_bpp[0], mem_bw/3);
       maxclock_bpp[3] = min(maxclock_bpp[0], mem_bw/4);
     }
     
+#ifndef USE_OFFICIAL_TSENG_LIMITS
     if (xf86Verbose) {
     ErrorF("%s %s: Estimated video memory bandwidth: %d MB/s.\n",
              XCONFIG_PROBED, vga256InfoRec.name, mem_bw/1000);
     }
+#endif
 
     vga256InfoRec.maxClock = maxclock_bpp[bytesperpixel-1];
+    
+    /* this is a kludge, until ChipClockScaleFactor supports full floats */
+    vga256InfoRec.maxClock *= TSENG.ChipClockScaleFactor;
 
     if (xf86Verbose) {
       ErrorF("%s %s: Ramdac speed: %3.3f MHz\n",
@@ -564,7 +631,6 @@ void tseng_set_dacspeed(int bytesperpixel)
       }
     }
 }
-
 
 void tseng_validate_mode(DisplayModePtr mode, int bytesperpixel, Bool verbose)
 {
@@ -639,29 +705,7 @@ void tseng_validate_mode(DisplayModePtr mode, int bytesperpixel, Bool verbose)
        }
     }
     
-    if ( (bytesperpixel > 1) && (et4000_type < TYPE_ET6000) )
-    {
-       /* 16-bit ET4000W32p RAMDACs need different treatment than 8-bitters */
-        switch (TsengRamdacType) {
-            case STG1702_DAC:
-            case STG1703_DAC:
-            case ICS5341_DAC:
-            case CH8398_DAC:
-               switch (bytesperpixel) {
-                   case 3: hdiv = 2; 
-                           hmul = 3;
-                           mode->SynthClock *= 1.5;
-                           break;
-                   case 4: hmul = 2;
-                           mode->SynthClock *= 2;
-                           break;
-               }
-               break;
-            default:
-               hmul = bytesperpixel; /* this is the case for 8-bit RAMDACs */
-               mode->SynthClock *= bytesperpixel;
-        }
-    }
+    hmul *= TSENG.ChipClockScaleFactor;
 
    /*
     * Modify mode timings accordingly
@@ -698,6 +742,9 @@ static unsigned char CMD_STG1703[] = { 0x00, 0xFF, 0xFF, 0xFF, 0xFF,
 static unsigned char CMD_CH8398[]  = { 0x24, 0xC4, 0x64, 0x74, 0xFF,
                                        0x04, 0x14, 0x34, 0xb4, 0xFF };
 
+static unsigned char CMD_ATT49x[]  = { 0x00, 0xa0, 0xc0, 0xe0, 0xe0,
+                                       0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+
 /*
  * This sets up the RAMDAC registers for the correct BPP and pixmux values.
  * (also set VGA controller registers for pixmux and BPP)
@@ -716,7 +763,7 @@ void tseng_set_ramdac_bpp(DisplayModePtr mode, vgaET4000Ptr tseng_regs, int byte
    * mode It should rather be passed on from the tseng_validate_mode() code.
    * Right now it'd better agree with what tseng_validate_mode() proposed.
    */ 
-   dac16bit = (bytesperpixel > 1) || (mode->Flags & V_PIXMUX);
+   dac16bit = (dac_is_16bit) && ((bytesperpixel > 1) || (mode->Flags & V_PIXMUX));
 
    tseng_regs->Misc &= 0xCF; /* ATC index 0x16 -- bits-per-PCLK */
    if (et4000_type >= TYPE_ET6000)
@@ -726,6 +773,13 @@ void tseng_set_ramdac_bpp(DisplayModePtr mode, vgaET4000Ptr tseng_regs, int byte
 
 
    switch (TsengRamdacType) {
+       case ATT20C490_DAC:
+       case ATT20C491_DAC:
+       case ATT20C492_DAC:
+       case ATT20C493_DAC:
+           cmd_array = CMD_ATT49x;
+           cmd_dest = &(tseng_regs->ATTdac_cmd);
+           break;
        case STG1702_DAC:
        case STG1703_DAC:
            tseng_regs->gendac.cmd_reg |= 8;

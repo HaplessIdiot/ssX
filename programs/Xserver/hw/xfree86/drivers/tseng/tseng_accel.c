@@ -11,7 +11,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.2 1997/03/11 13:05:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.3 1997/04/08 10:13:28 hohndel Exp $ */
 
 
 /*
@@ -364,7 +364,7 @@ static __inline__ void SET_FG_COLOR(int color)
     *ACL_SOURCE_ADDRESS  = Fg;
     *ACL_SOURCE_Y_OFFSET = 3;
     color = COLOR_REPLICATE_DWORD(color);
-    if (et4000_type > TYPE_ET4000W32I)
+    if (et4000_type >= TYPE_ET4000W32P)
     {
       *ACL_SOURCE_WRAP   = 0x02;
       *MemFg             = color;
@@ -373,7 +373,7 @@ static __inline__ void SET_FG_COLOR(int color)
     {
       *ACL_SOURCE_WRAP    = 0x12;
       *MemFg             = color;
-      *(MemFg + 4)       = color;
+      *(MemFg + 1)       = color;
     }
 }
 
@@ -382,7 +382,7 @@ static __inline__ void SET_BG_COLOR(int color)
     *ACL_PATTERN_ADDRESS  = Pat;
     *ACL_PATTERN_Y_OFFSET = 3;
     color = COLOR_REPLICATE_DWORD(color);
-    if (et4000_type > TYPE_ET4000W32I)
+    if (et4000_type >= TYPE_ET4000W32P)
     {
       *ACL_PATTERN_WRAP   = 0x02;
       *MemPat             = color;
@@ -391,7 +391,7 @@ static __inline__ void SET_BG_COLOR(int color)
     {
       *ACL_PATTERN_WRAP   = 0x12;
       *MemPat             = color;
-      *(MemPat + 4)       = color;
+      *(MemPat + 1)       = color;
     }
 }
 
@@ -408,7 +408,7 @@ static __inline__ void SET_FG_BG_COLOR(int fgcolor, int bgcolor)
     *((LongP) ACL_PATTERN_Y_OFFSET) = 0x00030003;
     fgcolor = COLOR_REPLICATE_DWORD(fgcolor);
     bgcolor = COLOR_REPLICATE_DWORD(bgcolor);
-    if (et4000_type > TYPE_ET4000W32I)
+    if (et4000_type >= TYPE_ET4000W32P)
     {
       *ACL_SOURCE_WRAP    = 0x02;
       *ACL_PATTERN_WRAP   = 0x02;
@@ -420,9 +420,9 @@ static __inline__ void SET_FG_BG_COLOR(int fgcolor, int bgcolor)
       *ACL_SOURCE_WRAP    = 0x12;
       *ACL_PATTERN_WRAP   = 0x12;
       *MemFg              = fgcolor;
-      *(MemFg+4)          = fgcolor;
+      *(MemFg+1)          = fgcolor;
       *MemPat             = bgcolor;
-      *(MemPat+4)         = bgcolor;
+      *(MemPat+1)         = bgcolor;
     }
 }
 
@@ -547,7 +547,7 @@ static __inline__ void SET_XY_RAW(int x, int y)
 /* Must do 0x09 (in one operation) for the W32 */
 #define START_ACL(dst) \
     *(ACL_DESTINATION_ADDRESS) = dst; \
-    if (et4000_type <= TYPE_ET4000W32I) *ACL_OPERATION_STATE = 0x09;
+    if (et4000_type < TYPE_ET4000W32P) *ACL_OPERATION_STATE = 0x09;
 
 /* START_ACL for the ET6000 */
 #define START_ACL_6(dst) \
