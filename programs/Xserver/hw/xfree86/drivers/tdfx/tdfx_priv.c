@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_priv.c,v 1.11 2000/12/01 14:29:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_priv.c,v 1.12 2000/12/08 17:22:13 dawes Exp $ */
 
 
 #include "xf86.h"
@@ -117,9 +117,9 @@ void TDFXResetFifo(ScrnInfoPtr pScrn)
 static void TDFXSyncFifo(ScrnInfoPtr pScrn)
 {
   TDFXPtr pTDFX;
-  int i, cnt, resets=0;
+  int i, cnt;
   int stat;
-  long start_sec, end_sec, dummy, readptr;
+  long start_sec, end_sec, dummy;
 
   TDFXTRACEACCEL("TDFXSyncFifo start\n");
   pTDFX=TDFXPTR(pScrn);
@@ -127,7 +127,6 @@ static void TDFXSyncFifo(ScrnInfoPtr pScrn)
   i=0;
   cnt=0;
   start_sec=0;
-  readptr=TDFXReadLongMMIO(pTDFX, SST_FIFO_RDPTRL0);
   do {
     stat=TDFXReadLongMMIO(pTDFX, 0);
     if (stat&SST_BUSY) i=0; else i++;
@@ -138,17 +137,7 @@ static void TDFXSyncFifo(ScrnInfoPtr pScrn)
       } else {
 	getsecs(&end_sec, &dummy);
 	if (end_sec-start_sec>3) {
-	  dummy=TDFXReadLongMMIO(pTDFX, SST_FIFO_RDPTRL0);
-	  if (dummy==readptr) {
-	    TDFXResetFifo(pScrn);
-	    readptr=dummy;
-	    resets++;
-	    if (resets==3) {
-	      xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-			 "Board is not responding.\n");
-	      return;
-	    }
-	  }
+	  TDFXResetFifo(pScrn);
 	  start_sec=0;
         }
       }
@@ -248,6 +237,24 @@ void TDFXSwapContextFifo(ScreenPtr pScreen)
     pTDFX->fifoSlots = pTDFX->fifoEnd-pTDFX->fifoPtr-8;
 }    
 
+void TDFXLostContext(ScreenPtr pScreen)
+{
+  ScrnInfoPtr pScrn;
+  TDFXPtr pTDFX;
+  TDFXSAREAPriv *sPriv;
+
+  pScrn = xf86Screens[pScreen->myNum];
+  pTDFX=TDFXPTR(pScrn);
+  sPriv=(TDFXSAREAPriv*)DRIGetSAREAPrivate(pScreen);
+  if (!sPriv) return;
+  if (sPriv->fifoPtr!=(((unsigned char*)pTDFX->fifoPtr)-pTDFX->FbBase) ||
+      sPriv->fifoRead!=(((unsigned char*)pTDFX->fifoRead)-pTDFX->FbBase)) {
+    sPriv->fifoPtr=(((unsigned char*)pTDFX->fifoPtr)-pTDFX->FbBase);
+    sPriv->fifoRead=(((unsigned char*)pTDFX->fifoRead)-pTDFX->FbBase);
+    sPriv->fifoOwner=DRIGetContext(pScreen);
+    /* ErrorF("Out FifoPtr=%d FifoRead=%d\n", sPriv->fifoPtr, sPriv->fifoRead); */
+  }
+}
 #endif
 
 static void 

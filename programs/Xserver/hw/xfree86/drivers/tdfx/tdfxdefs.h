@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfxdefs.h,v 1.7 2000/09/24 13:51:31 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfxdefs.h,v 1.8 2000/12/01 14:29:00 dawes Exp $ */
 /*
    Voodoo Banshee driver version 1.0.1
 
@@ -201,7 +201,6 @@
 #define SST_3D_CHIPMASK			SST_3D_OFFSET+0x214
 
 /* NAPALM REGISTERS */
-#define CFG_PCI_COMMAND			4
 #define CFG_MEM0BASE			16
 #define CFG_MEM1BASE			20
 #define CFG_INIT_ENABLE        		64

@@ -5,7 +5,7 @@
 
    Copyright: 1998,1999
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.15 2000/12/08 17:14:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.16 2000/12/08 17:22:13 dawes Exp $ */
 
 #ifndef _TDFX_H_
 #define _TDFX_H_
@@ -35,17 +35,15 @@
 struct _TDFXRec;
 typedef struct _TDFXRec *TDFXPtr;
 
-#define PIXMAP_CACHE_LINES 750
-#define PIXMAP_CACHE_LINES_NODRI 2048
+#ifdef XF86DRI
+#define PIXMAP_CACHE_LINES 128
+#else
+#define PIXMAP_CACHE_LINES 512
+#endif
 
 #include "tdfx_priv.h"
-
-extern Bool TDFXInitFifo(ScreenPtr pScreen);
-extern void TDFXShutdownFifo(ScreenPtr pScreen);
 extern void TDFXSwapContextFifo(ScreenPtr pScreen);
 extern void TDFXLostContext(ScreenPtr pScreen);
-extern Bool TDFXSetupSLI(ScrnInfoPtr pScrn, Bool sliEnable, int aaSamples);
-extern Bool TDFXDisableSLI(TDFXPtr pTDFX);
 
 #ifdef XF86DRI
 extern void FillPrivateDRI(TDFXPtr pTDFX, TDFXDRIPtr pTDFXDRI);
@@ -267,6 +265,7 @@ extern void TDFXSubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y,
 					int w, int h);
 
 extern void TDFXSelectBuffer(TDFXPtr pTDFX, int which);
+
 
 #endif
 
