@@ -624,6 +624,10 @@
 
         o  Henry Worth <henry.worth@amail.amdahl.com>,
 
+     Number Nine I128 driver by:
+
+        o  Robin Cutshaw <robin@XFree86.org>,
+
      ET4000/W32 accelerated code by:
 
         o  Glenn Lai <glenn@cs.utexas.edu>,
@@ -652,11 +656,11 @@
 
         o  Ported to X11R5 by Rik Faith <faith@cs.unc.edu>.
 
+
+
         o  Rewritten by Marc La France <Marc.La-France@ualberta.ca>
 
      WD90C24 support by:
-
-
 
         o  Brad Bosch <brad@lachman.com>
 
@@ -719,10 +723,10 @@
 
         o  Paolo Severini <lendl@dist.dist.unige.it>
 
+
      Avance Logic ``ali'' SVGA driver by:
 
         o  Ching-Tai Chiu <cchiu@netcom.com>
-
 
      Chips & Technologies SVGA driver by:
 
@@ -784,11 +788,11 @@
 
      XInput integration, devices and clients by:
 
+
+
         o  Frederic Lepied <lepied@XFree86.Org> (XInput integration,
            Wacom tablet, Joystick and extended mouse devices,
            xsetpointer and xsetmode clients)
-
-
 
         o  Patrick Lecoanet <lecoanet@cena.dgac.fr> (Elographics
            touchscreen device)
@@ -855,7 +859,6 @@
   By doing this, we were able to be involved in the beta-test interval
   for X11R6, and have contributed the majority of XFree86 to the X11R6
   and X11R6.1 core release.  The version of XFree86 in the initial X11R6
-
   core is 3.0.  The version of XFree86 in the current X11R6.1 release is
   3.1.2C.
 
@@ -918,9 +921,8 @@
   The XFree86 Project has been provided from its proceeds.
 
 
+
      o  AIB Software Corporation <http://www.aib.com/>, Herndon, VA
-
-
 
      o  Roland Alder, Armin Fessler, Patrick Seemann, Martin Wunderli
 
@@ -985,8 +987,8 @@
 
      o  Prime Time Freeware <http://www.ptf.com/>, San Bruno, CA
 
-     o  Red Hat Software <http://www.redhat.com/>, Chapel Hill, NC
 
+     o  Red Hat Software <http://www.redhat.com/>, Chapel Hill, NC
 
      o  Norbert Reithinger
 
@@ -1050,9 +1052,10 @@
 
      o  Europe:
 
+
+
         +  ftp://ftp.fee.vutbr.cz/pub/XFree86 (source patches and
            binaries)
-
 
         +  ftp://ftp.gwdg.de/pub/xfree86/XFree86 (source and binaries)
 
@@ -1093,16 +1096,13 @@
   files you need to take from the archive.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.66 1996/12/23 06:46:09 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.67 1997/01/12 10:41:52 dawes Exp $
 
 
 
 
 
   $XConsortium: README.sgml /main/31 1996/10/28 05:43:24 kaleb $
-
-
-
 
 
 
