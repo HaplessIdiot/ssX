@@ -1,4 +1,6 @@
 XFree86 4.0.99.1 (?? February 2001)
+ 113. Change the Thai charset and locale description to a form agreed to
+      by some Thai developers (#4412, Chanop Silpa-Anan).
  112. [SECURITY] Fix temp files vulnerabilites in xman on systems with 
       mkstemp(). (Matthieu Herrb).
  111. Major improvement to the Xmaster UI on Mac OS X. (#4447, XonX team).
@@ -12375,4 +12377,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1562 2001/02/08 22:46:25 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1563 2001/02/08 23:36:24 dawes Exp $
