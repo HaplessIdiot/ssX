@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.38 2001/03/25 05:32:07 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.39 2001/04/01 14:00:08 tsi Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -406,7 +406,8 @@ FindPCIVideoInfo(void)
 		xf86ErrorF("unknown chipset (0x%04x) ", info->chipType);
 	    xf86ErrorF("rev %d", info->chipRev);
 	    for (i = 0; i < 6; i++) {
-		if (info->memBase[i]) {
+		if (info->memBase[i] &&
+		    (info->memBase[i] < (memType)(-1 << info->size[i]))) {
 		    if (!memdone) {
 			xf86ErrorF(", Mem @ ");
 			memdone = TRUE;
@@ -416,7 +417,8 @@ FindPCIVideoInfo(void)
 		}
 	    }
 	    for (i = 0; i < 6; i++) {
-		if (info->ioBase[i]) {
+		if (info->ioBase[i] &&
+		    (info->ioBase[i] < (memType)(-1 << info->size[i]))) {
 		    if (!iodone) {
 			xf86ErrorF(", I/O @ ");
 			iodone = TRUE;
@@ -425,6 +427,10 @@ FindPCIVideoInfo(void)
 		    xf86ErrorF("0x%04x/%d", info->ioBase[i], info->size[i]);
 		}
 	    }
+	    if (info->biosBase &&
+		(info->biosBase < (memType)(-1 << info->biosSize)))
+		xf86ErrorF(", BIOS @ 0x%08x/%d",
+			   info->biosBase, info->biosSize);
 	    xf86ErrorF("\n");
 	}
     }
@@ -819,12 +825,14 @@ xf86GetPciRes(resPtr *activeRes, resPtr *inactiveRes)
 		resMisc |= ResEstimated;
 	    
 	    for (i = 0; i < 6; i++) {
-		if (pvp->ioBase[i]) {
+		if (pvp->ioBase[i] &&
+		    (pvp->ioBase[i] < (memType)(-1 << pvp->size[i]))) {
 		    PV_I_RANGE(range,pvp,i,ResExcIoBlock | resMisc);
 		    tmp = xf86AddResToList(NULL, &range, -1);
 		    removeOverlapsWithBridges(pvp->bus,tmp);
 		    *res = xf86JoinResLists(tmp,*res);
-		} else if (pvp->memBase[i]) {
+		} else if (pvp->memBase[i] &&
+		    (pvp->memBase[i] < (memType)(-1 << pvp->size[i]))) {
 		    PV_M_RANGE(range, pvp,i, ResExcMemBlock | resMisc);
 		    tmp = xf86AddResToList(NULL, &range, -1);
 		    removeOverlapsWithBridges(pvp->bus,tmp);
@@ -834,7 +842,8 @@ xf86GetPciRes(resPtr *activeRes, resPtr *inactiveRes)
 	    /* FIXME!!!: Don't use BIOS resources for overlap
 	     * checking but reserve them!
 	     */
-	    if (pvp->biosBase) {
+	    if (pvp->biosBase &&
+		(pvp->biosBase < (memType)(-1 << pvp->biosSize))) {
 		PV_B_RANGE(range, pvp, ResExcMemBlock | resMisc);
 		tmp = xf86AddResToList(NULL, &range, -1);
 		removeOverlapsWithBridges(pvp->bus,tmp);
@@ -1185,13 +1194,12 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, long type)
 	xf86FreeResList(w_2nd);
 	xf86FreeResList(avoid);
 	return TRUE;
-    } else {
-#ifdef DEBUG
-	    ErrorF("removing old resource\n");
-#endif
-	orgAcc = Acc;
-	Acc = AccTmp;
     }
+#ifdef DEBUG
+	ErrorF("removing old resource\n");
+#endif
+    orgAcc = Acc;
+    Acc = AccTmp;
 #else
     orgAcc = xf86DupResList(Acc);
     pAcc = &Acc;
@@ -1436,7 +1444,9 @@ getValidBIOSBase(PCITAG tag, int *num)
     }	
     pciConvertListToHost(pvp->bus,pvp->device,pvp->func, avoid);
 
-    if (pvp->biosBase) { /* try biosBase first */
+    if (pvp->biosBase &&
+	(pvp->biosBase < (memType)(-1 << pvp->biosSize))) {
+	/* try biosBase first */
 	P_M_RANGE(range, TAG(pvp),pvp->biosBase,biosSize,ResExcMemBlock);
 	if (xf86IsSubsetOf(range,m) && ! ChkConflict(&range,avoid,SETUP)) {
 	    xf86FreeResList(avoid);
