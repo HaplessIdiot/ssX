@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3.h,v 1.4 1997/03/27 08:30:44 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3.h,v 1.5 1997/06/10 12:30:29 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -45,7 +45,7 @@ vgaS3Rec, *vgaS3Ptr;
 
 typedef struct {
     char *DacName;
-    int DacSpeed;
+    int DacSpeeds[MAXDACSPEEDS];
     Bool (*DacProbe)();
     int (*PreInit)();
     void (*DacRestore)(vgaS3Ptr);

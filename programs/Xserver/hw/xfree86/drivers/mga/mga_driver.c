@@ -40,7 +40,7 @@
  *		RAMDAC MGA1064 timing,
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.5 1997/06/03 14:12:10 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.6 1997/06/10 12:30:28 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -189,7 +189,7 @@ vgaVideoChipRec MGA = {
 	 */
 	0,
 	/*
-	 * This is the size	 of the linear-mapped frame buffer (when used).
+	 * This is the size of the linear-mapped frame buffer (when used).
 	 * Set it to 0 when not in use.
 	 */
 	0,
@@ -974,11 +974,6 @@ Bool enter;
 		/* Unprotect CRTC[0-7] */
 		outb(vgaIOBase + 4, 0x11); temp = inb(vgaIOBase + 5);
 		outb(vgaIOBase + 5, temp & 0x7F);
-		if (MGAchipset == PCI_CHIP_MGA1064 )  {
-			misc_ctrl = inMGA1064(MGA1064_MISC_CTL);
-			misc_ctrl |= MGA1064_MISC_CTL_VGA8;
-			outMGA1064(MGA1064_MISC_CTL,misc_ctrl);
-			}
 	}
 	else
 	{
@@ -991,11 +986,6 @@ Bool enter;
  			MGAStormSync();
 			xf86UnMapDisplay(vga256InfoRec.scrnIndex,
 					MMIO_REGION);
-		if (MGAchipset == PCI_CHIP_MGA1064 )  {
-			misc_ctrl = inMGA1064(MGA1064_MISC_CTL);
-			misc_ctrl &= ~MGA1064_MISC_CTL_VGA8;
-			outMGA1064(MGA1064_MISC_CTL,misc_ctrl);
-			}
 		}
 		
 		xf86DisableIOPorts(vga256InfoRec.scrnIndex);

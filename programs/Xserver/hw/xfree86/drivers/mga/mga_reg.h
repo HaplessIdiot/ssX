@@ -2,7 +2,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_reg.h,v 1.2 1997/04/14 07:05:21 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_reg.h,v 1.3 1997/05/03 09:18:14 dawes Exp $ */
 
 
 
@@ -27,8 +27,6 @@
 #ifndef _MGA_REG_H_
 #define _MGA_REG_H_
 
-#define	MGAINDEX2064		0x0
-#define	MGAINDEX1064		0x1
 #define	MGAREG_DWGCTL		0x1c00
 #define	MGAREG_MACCESS		0x1c04
 /* the following is a mystique only register */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.13 1997/04/12 13:45:35 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.14 1997/05/03 09:19:03 dawes Exp $ */
 
 
 
@@ -293,10 +293,12 @@ LoadModule(module,path)
 			case MAGIC_DONT_CHECK_UNRESOLVED:
 				check_unresolved_sema++;
 				break;
+#ifdef GLXEXT
 
                         case MAGIC_GLX_VISUALS_INIT:
 				GlxInitVisualsPtr = (GlxInitVisualsType)data;
                                 break; 
+#endif
 
 			default:
 				ErrorF("Unknown magic action %d\n",magic);

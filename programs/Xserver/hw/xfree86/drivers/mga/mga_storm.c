@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.3 1997/04/14 07:05:21 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.4 1997/06/03 14:12:10 hohndel Exp $ */
 
 /*
  * This is a sample driver implementation template for the new acceleration
@@ -49,6 +49,7 @@ static int mga_cmd, mga_lastcmd, mga_linecmd, mga_rop;
 static int mga_sgn, mga_lastsgn, mga_lastcxright, mga_lastshift;
 static int mgablitxdir, mgablitydir;
 static int mga_ClipRect;
+static int mga_useBLKopaqueExpand;
 
 static CARD32 mgaDashedPatternBuf[4];	/* allocate 128 bits */
 static CARD32 mgaStylelen;
@@ -76,8 +77,8 @@ void MGANAME(AccelInit)()
                              HARDWARE_CLIP_LINE |
                              USE_TWO_POINT_LINE |
                              TWO_POINT_LINE_NOT_LAST |
-                             NO_SYNC_AFTER_CPU_COLOR_EXPAND |
-			     LINE_PATTERN_MSBFIRST_DECREASING;
+			     /* LINE_PATTERN_MSBFIRST_DECREASING | */
+                             NO_SYNC_AFTER_CPU_COLOR_EXPAND;
 
     xf86AccelInfoRec.PatternFlags = HARDWARE_PATTERN_PROGRAMMED_BITS |
                              HARDWARE_PATTERN_PROGRAMMED_ORIGIN |
@@ -94,11 +95,13 @@ void MGANAME(AccelInit)()
     xf86AccelInfoRec.SubsequentTwoPointLine = MGANAME(SubsequentTwoPointLine);
     xf86AccelInfoRec.SetClippingRectangle = MGANAME(SetClippingRectangle);
 
+#if 0 /* server crashes with olvwm */
     xf86AccelInfoRec.SetupForDashedLine = MGANAME(SetupForDashedLine);
     xf86AccelInfoRec.SubsequentDashedBresenhamLine = MGANAME(SubsequentDashedBresenhamLine);
     xf86AccelInfoRec.LinePatternBuffer = (void *) &mgaDashedPatternBuf[0];
     xf86AccelInfoRec.LinePatternMaxLength = 128;
     xf86AccelInfoRec.ErrorTermBits = 15;
+#endif
 
     /*
      * The following line installs a "Sync" function, that waits for
@@ -165,6 +168,9 @@ void MGANAME(AccelInit)()
     xf86AccelInfoRec.ColorExpandFlags |= NO_PLANEMASK;
 #endif
 
+    /* Mystique can't do opaque color expansion in BLOCK access type */
+    mga_useBLKopaqueExpand = (MGAchipset == PCI_CHIP_MGA2064);
+    
     xf86AccelInfoRec.SetupForScreenToScreenColorExpand =
     			MGANAME(SetupForScreenToScreenColorExpand);
     xf86AccelInfoRec.SubsequentScreenToScreenColorExpand =
@@ -316,6 +322,9 @@ void MGAStormEngineInit()
 #define REPLICATE(pixel) ; 
 #endif    
 
+#define REPLICATE24(pixel) \
+      pixel &= 0xffffff; pixel |= (pixel & 0xff) << 24;
+
 /*
  * Disable clipping
  */
@@ -348,12 +357,22 @@ void MGAStormEngineInit()
  * when rop == GXcopy and bpp != 24 we can use BLOCK access type 
  * (mga2064w pp 5-23, 5-24, 5-33, 5-39)
  */
-#define SETACCESS2(cmd,rop,bg,fg,transc) SETACCESS1(cmd,rop,fg)
 #define SETACCESS1(cmd,rop,fg) \
-    if( rop == GXcopy ) \
+    if( rop == GXcopy ) { \
     	cmd |= MGADWG_BLK; \
-    else \
-        SETACCESSNOGXCOPY(cmd,rop);
+    } else { \
+        SETACCESSNOGXCOPY(cmd,rop); \
+    }
+
+#define SETACCESS2(cmd,rop,bg,fg,transc) \
+    if( rop == GXcopy ) { \
+        if( transc || mga_useBLKopaqueExpand ) \
+    	    cmd |= MGADWG_BLK; \
+    	else \
+    	    cmd |= MGADWG_RPL; \
+    } else { \
+        SETACCESSNOGXCOPY(cmd,rop); \
+    }
 
 #else /* PSZ != 24 */
 
@@ -361,23 +380,24 @@ void MGAStormEngineInit()
  * in 24 bpp, when rop == GXcopy, we can use BLOCK atype
  * only if color is gray (R=G=B=A)
  */
+#define RGBEQUAL(c) ( !(((c >> 16) ^ c) & 0xFF) && !(((c >> 8) ^ c) & 0xFF) )
+
 /* 
  * SETACCESS1 checks only foreground color
  * (mga2064w pp 5-23) 
  */
 #define SETACCESS1(cmd,rop,fg) \
-    if( rop == GXcopy ) \
-    { \
-        if( !(((fg >> 16) ^ fg) & 0xFF) && !(((fg >> 8) ^ fg) & 0xFF) ) \
+    if( rop == GXcopy ) { \
+        if( RGBEQUAL(fg) ) \
         { \
-    	    fg |= (fg & 0xFF) << 24; \
+    	    REPLICATE24(fg); \
     	    mga_cmd |= MGADWG_BLK; \
     	} \
     	else \
     	    mga_cmd |= MGADWG_RPL; \
-    } \
-    else \
-        SETACCESSNOGXCOPY(cmd,rop);
+    } else { \
+        SETACCESSNOGXCOPY(cmd,rop); \
+    }
 
 /*
  * SETACCESS2 checks both foreground and background colors.
@@ -385,19 +405,19 @@ void MGAStormEngineInit()
  * (mga2064w pp 5-24, 5-33, 5-39)
  */
 #define SETACCESS2(cmd,rop,bg,fg,transc) \
-    if( rop == GXcopy ) \
-        if( (transc || \
-             !(((bg >> 16) ^ bg) & 0xFF) && !(((bg >> 8) ^ bg) & 0xFF) ) && \
-            !(((fg >> 16) ^ fg) & 0xFF) && !(((fg >> 8) ^ fg) & 0xFF) ) \
+    if( rop == GXcopy ) { \
+        if( (transc || mga_useBLKopaqueExpand) && \
+            (transc || RGBEQUAL(bg)) && RGBEQUAL(fg) ) \
         { \
-    	    bg |= (bg & 0xFF) << 24; \
-    	    fg |= (fg & 0xFF) << 24; \
+    	    REPLICATE24(bg); \
+    	    REPLICATE24(fg); \
     	    cmd |= MGADWG_BLK; \
     	} \
     	else \
     	    cmd |= MGADWG_RPL; \
-    else \
-        SETACCESSNOGXCOPY(cmd,rop);
+    } else { \
+        SETACCESSNOGXCOPY(cmd,rop); \
+    }
 
 #endif /* PSZ != 24 */
              

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3probe.c,v 1.6 1997/06/03 14:12:15 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3probe.c,v 1.7 1997/06/10 12:30:30 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -527,24 +527,34 @@ Bool S3Probe()
    	|	 Now set the DAC speed if not already set 	|
 	\*******************************************************/
 
-   if (vga256InfoRec.dacSpeeds[0] <= 0) {
-	vga256InfoRec.dacSpeeds[0] = s3Ramdacs[s3RamdacType].DacSpeed;
+   if(vga256InfoRec.bitsPerPixel > 8) 
+	s3Bpp = vga256InfoRec.bitsPerPixel >> 3;
+
+   i = s3Bpp - 1;
+
+   if (vga256InfoRec.dacSpeeds[i] <= 0) {
+	vga256InfoRec.dacSpeeds[i] = s3Ramdacs[s3RamdacType].DacSpeeds[i];
+   } else {
+	if(vga256InfoRec.dacSpeeds[i] > s3Ramdacs[s3RamdacType].DacSpeeds[i])
+	   ErrorF("WARNING!!! default dacSpeed limit for %i bpp has been "
+ 		"overridden\n\t %d MHz changed to %d MHz\n",s3Bpp << 3,
+		s3Ramdacs[s3RamdacType].DacSpeeds[i] / 1000,
+		vga256InfoRec.dacSpeeds[i] / 1000);
+	s3Ramdacs[s3RamdacType].DacSpeeds[i] = vga256InfoRec.dacSpeeds[i];
    }
-   
+  
    if (xf86Verbose) {
-      ErrorF("%s %s: Ramdac speed: %d\n",
+      ErrorF("%s %s: Max RAMDAC speed for this depth: %d MHz\n",
 	     OFLG_ISSET(XCONFIG_DACSPEED, &vga256InfoRec.xconfigFlag) ?
 	     XCONFIG_GIVEN : XCONFIG_PROBED, vga256InfoRec.name,
-	     vga256InfoRec.dacSpeeds[0] / 1000);
+	     vga256InfoRec.dacSpeeds[i] / 1000);
    }
 
    /*******************************************************************\
    | Check that the depth requested is supported by the ramdac/chipset |
    \*******************************************************************/
 
-    if(vga256InfoRec.bitsPerPixel > 8) 
-	s3Bpp = vga256InfoRec.bitsPerPixel >> 3;
-
+ 
     if (S3_801_SERIES(s3ChipId)) {
       if (s3Bpp > 2) {
          ErrorF("Depths greater than 16bpp are not supported for 801/805 "

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3ramdacs.c,v 1.4 1997/06/03 14:12:15 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3ramdacs.c,v 1.5 1997/06/10 12:30:31 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -187,60 +187,71 @@ static Bool Gloria8ClockSelect();
 /* NOTE:  This order must be the same as the #define order in
 	s3.h !!!!!!!! */
 s3RamdacInfo s3Ramdacs[] = {
-	   /*   DacName,  DacSpeed, DacProbe(), PreInit(), DacRestore(vgaS3Ptr save),
-			DacSave(),  DacInit() */
-/* 0 */		{"normal", 110000, NORMAL_Probe, NORMAL_PreInit,Null_Restore,
-			Null_Save, Null_Init},
-/* 1 */		{"s3_trio32", 135000, S3_TRIO32_Probe, S3_TRIO_PreInit, 	
-			S3_TRIO_Restore,S3_TRIO_Save,S3_TRIO_Init},
-/* 2 */		{"s3_trio64", 135000, S3_TRIO64_Probe, S3_TRIO_PreInit, 	
-			S3_TRIO_Restore,S3_TRIO_Save,S3_TRIO_Init},
-/* 3 */		{"ti3026", 135000, TI3026_Probe, TI3030_3026_PreInit,
+	/*   DacName,  DacSpeeds, DacProbe(), PreInit(), 
+		DacRestore(vgaS3Ptr save), DacSave(),  DacInit() */
+/* 0 */		{"normal", {110000,0,0,0}, NORMAL_Probe, NORMAL_PreInit, 	
+			Null_Restore, Null_Save, Null_Init},
+/* 1 */		{"s3_trio32", {135000,80000,0,50000}, S3_TRIO32_Probe, 
+			S3_TRIO_PreInit, S3_TRIO_Restore, S3_TRIO_Save, 
+			S3_TRIO_Init},
+/* 2 */		{"s3_trio64", {135000,80000,0,50000}, S3_TRIO64_Probe, 
+			S3_TRIO_PreInit, S3_TRIO_Restore,S3_TRIO_Save,
+			S3_TRIO_Init},
+/* 3 */		{"ti3026", {135000,0,0,0}, TI3026_Probe, TI3030_3026_PreInit,
 			TI3030_3026_Restore,TI3030_3026_Save,TI3030_3026_Init},
-/* 4 */		{"ti3030", 175000, TI3030_Probe, TI3030_3026_PreInit,
+/* 4 */		{"ti3030", {175000,0,0,0}, TI3030_Probe, TI3030_3026_PreInit,
 			TI3030_3026_Restore,TI3030_3026_Save,TI3030_3026_Init},
-/* 5 */		{"ti3020", 135000, TI3020_Probe, TI3020_3025_PreInit, 
+/* 5 */		{"ti3020", {135000,0,0,0}, TI3020_Probe, TI3020_3025_PreInit, 
 			TI3020_3025_Restore,TI3020_3025_Save,TI3020_3025_Init},
-/* 6 */		{"ti3025", 135000, TI3025_Probe, TI3020_3025_PreInit,
+/* 6 */		{"ti3025", {135000,0,0,0}, TI3025_Probe, TI3020_3025_PreInit,
 			TI3020_3025_Restore,TI3020_3025_Save,TI3020_3025_Init},
-/* 7 */		{"Bt485", 135000, BT485_Probe, BT485_SERIES_PreInit,
+/* 7 */		{"Bt485", {135000,0,0,0}, BT485_Probe, BT485_SERIES_PreInit,
 			BT485_Restore, BT485_Save, BT485_Init},
-/* 8 */		{"att20c505", 135000, ATT20C505_Probe, BT485_SERIES_PreInit,
-			BT485_Restore, BT485_Save, BT485_Init},
-/* 9 */		{"att22c498", 135000, ATT22C498_Probe, ATT409_498_PreInit,
-			ATT409_498_Restore,ATT409_498_Save,ATT409_498_Init},
-/* 10 */	{"att20c498", 135000, ATT498_Probe, ATT409_498_PreInit,
+/* 8 */		{"att20c505", {135000,0,0,0}, ATT20C505_Probe, 
+			BT485_SERIES_PreInit,BT485_Restore, BT485_Save, 
+			BT485_Init},
+/* 9 */		{"att22c498", {135000,0,0,0}, ATT22C498_Probe, 
+			ATT409_498_PreInit,ATT409_498_Restore, 
+			ATT409_498_Save,ATT409_498_Init},
+/* 10 */	{"att20c498", {135000,0,0,0}, ATT498_Probe, ATT409_498_PreInit,
 			ATT409_498_Restore, ATT409_498_Save, ATT409_498_Init},
-/* 11 */	{"att20c409", 135000, ATT20C409_Probe, ATT409_498_PreInit,
-			ATT409_498_Restore, ATT409_498_Save, ATT409_498_Init},
-/* 12 */	{"sc15025", 110000, SC15025_Probe, SC15025_PreInit,
+/* 11 */	{"att20c409", {135000,0,0,0}, ATT20C409_Probe, 
+			ATT409_498_PreInit, ATT409_498_Restore, ATT409_498_Save,
+			ATT409_498_Init},
+/* 12 */	{"sc15025", {110000,0,0,0}, SC15025_Probe, SC15025_PreInit,
 			SC15025_Restore,SC15025_Save,SC15025_Init},
-/* 13 */	{"stg1700", 135000, STG1700_Probe, STG17xx_PreInit,
+/* 13 */	{"stg1700", {135000,0,0,0}, STG1700_Probe, STG17xx_PreInit,
 			STG17xx_Restore,STG17xx_Save,STG17xx_Init},
-/* 14 */	{"stg1703", 135000, STG1703_Probe, STG17xx_PreInit,
+/* 14 */	{"stg1703", {135000,0,0,0}, STG1703_Probe, STG17xx_PreInit,
 			STG17xx_Restore,STG17xx_Save,STG17xx_Init},
-/* 15 */	{"ibm_rgb524", 170000, IBMRGB524_Probe, IBMRGB52x_PreInit,
-			IBMRGB52x_Restore,IBMRGB52x_Save,IBMRGB52x_Init},
-/* 16 */	{"ibm_rgb525", 170000, IBMRGB525_Probe, IBMRGB52x_PreInit,
-			IBMRGB52x_Restore,IBMRGB52x_Save,IBMRGB52x_Init},
-/* 17 */	{"ibm_rgb528", 170000, IBMRGB528_Probe, IBMRGB52x_PreInit,
-			IBMRGB52x_Restore,IBMRGB52x_Save,IBMRGB52x_Init},
-/* 18 */	{"s3_sdac", 135000, S3_SDAC_Probe, S3_SDAC_GENDAC_PreInit,
-			S3_SDAC_GENDAC_Restore,S3_SDAC_GENDAC_Save,
-			S3_SDAC_Init},
-/* 19 */	{"s3_gendac", 110000, S3_GENDAC_Probe, S3_SDAC_GENDAC_PreInit,
-			S3_SDAC_GENDAC_Restore,S3_SDAC_GENDAC_Save,
-			S3_GENDAC_Init},
-/* 20 */	{"att20c490", 110000, ATT20C490_Probe, MISC_HI_COLOR_PreInit,
-			ATT20C490_Restore,ATT20C490_Save,ATT20C490_Init},
-/* 21 */	{"ss2410", 110000, SS2410_Probe, MISC_HI_COLOR_PreInit,
+/* 15 */	{"ibm_rgb524", {170000,0,0,0}, IBMRGB524_Probe,
+			IBMRGB52x_PreInit,IBMRGB52x_Restore,IBMRGB52x_Save,
+			IBMRGB52x_Init},
+/* 16 */	{"ibm_rgb525", {170000,0,0,0}, IBMRGB525_Probe, 
+			IBMRGB52x_PreInit,IBMRGB52x_Restore,IBMRGB52x_Save,
+			IBMRGB52x_Init},
+/* 17 */	{"ibm_rgb528", {170000,0,0,0}, IBMRGB528_Probe, 		
+			IBMRGB52x_PreInit,IBMRGB52x_Restore,IBMRGB52x_Save,
+			IBMRGB52x_Init},
+/* 18 */	{"s3_sdac", {135000,0,0,0}, S3_SDAC_Probe,
+		 	S3_SDAC_GENDAC_PreInit,S3_SDAC_GENDAC_Restore,
+			S3_SDAC_GENDAC_Save,S3_SDAC_Init},
+/* 19 */	{"s3_gendac", {110000,0,0,0}, S3_GENDAC_Probe,
+		 	S3_SDAC_GENDAC_PreInit,S3_SDAC_GENDAC_Restore,
+			S3_SDAC_GENDAC_Save,S3_GENDAC_Init},
+/* 20 */	{"att20c490", {110000,0,0,0}, ATT20C490_Probe, 
+			MISC_HI_COLOR_PreInit,ATT20C490_Restore,ATT20C490_Save,
+			ATT20C490_Init},
+/* 21 */	{"ss2410", {110000,0,0,0}, SS2410_Probe, MISC_HI_COLOR_PreInit,
 			SS2410_Restore,SS2410_Save,SS2410_Init},
-/* 22 */	{"sc1148x", 110000, SC1148x_Probe, MISC_HI_COLOR_PreInit,
-			SC1148x_Restore,SC1148x_Save,SC1148x_Init},
-/* 23 */	{"s3_trio64v2", 170000, S3_TRIO64V2_Probe, S3_TRIO_PreInit, 	
-			S3_TRIO_Restore,S3_TRIO_Save,S3_TRIO_Init},
-/* 24 */	{NULL, 0, Null_Probe, Null_PreInit,Null_Restore,Null_Save,
-			Null_Init}
+/* 22 */	{"sc1148x", {110000,0,0,0}, SC1148x_Probe, 	
+			MISC_HI_COLOR_PreInit,SC1148x_Restore,SC1148x_Save,
+			SC1148x_Init},
+/* 23 */	{"s3_trio64v2", {170000,110000,0,60000}, S3_TRIO64V2_Probe, 
+			S3_TRIO_PreInit, S3_TRIO_Restore,S3_TRIO_Save,
+			S3_TRIO_Init},
+/* 24 */	{NULL, {0,0,0,0}, Null_Probe, Null_PreInit, Null_Restore, 
+			Null_Save,Null_Init}
 }; 
 
 #if 0
@@ -2566,19 +2577,10 @@ static int S3_TRIO_PreInit()
     	allowPixMuxSwitching = TRUE;
     	pixMuxLimitedWidths = FALSE;
     	pixMuxMinWidth = 0;
-   
-	vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[0];
-    } else if (s3Bpp < 4)
-       if (OFLG_ISSET(CLOCK_OPTION_S3TRIO64V2, &vga256InfoRec.clockOptions))
-	  vga256InfoRec.maxClock = 110000;
-       else
-	  vga256InfoRec.maxClock = 80000;
-    else
-       if (OFLG_ISSET(CLOCK_OPTION_S3TRIO64V2, &vga256InfoRec.clockOptions))
-	  vga256InfoRec.maxClock = 60000;
-       else
-	  vga256InfoRec.maxClock = 50000;
- 
+    }
+ 	
+    vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[s3Bpp - 1];
+
 
     /* If there is an internal clock, set s3ClockSelectFunc, s3maxRawClock
 	s3numClocks and whatever options need to be set. For external
@@ -3118,8 +3120,7 @@ static int TI3030_3026_Init(DisplayModePtr mode)
 	 }
 	 if (vga256InfoRec.bitsPerPixel >= 24) {   /* 32bpp or packed 24bpp */
 	    rclock = TI_OCLK_R2;
-	 } else if ((vga256InfoRec.bitsPerPixel == 16) ||
-		    (vga256InfoRec.bitsPerPixel == 15)) {  /* 15/16bpp */
+	 } else if (vga256InfoRec.bitsPerPixel == 16) {  /* 15/16bpp */
 	    rclock = TI_OCLK_R4;
 	 } else {
 	    rclock = TI_OCLK_R8;
@@ -3147,7 +3148,7 @@ static int TI3030_3026_Init(DisplayModePtr mode)
 	 tmp = (inb(vgaCRReg) & 0xbf) | s3SAM256;
          outb(vgaCRReg, tmp);
 
-	 if (xf86bpp == 24) {                        /* packed 24bpp */
+	 if (vga256InfoRec.bitsPerPixel == 24) {            /* packed 24bpp */
 	    s3OutTi3026IndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_3026T_888_P8);
 	    if (DAC_IS_TI3030)
 	       s3OutTi3026IndReg(TI_MUX_CONTROL_2, 0x00, 
@@ -3156,8 +3157,8 @@ static int TI3030_3026_Init(DisplayModePtr mode)
 	       s3OutTi3026IndReg(TI_MUX_CONTROL_2, 0x00, 
 			TI_MUX2_BUS_3026TC_D24P64);
 	    s3OutTi3026IndReg(TI_COLOR_KEY_CONTROL, 0x00, 0x01);
-	 } else if (vga256InfoRec.bitsPerPixel == 32) {               /* 32bpp */
-	    s3OutTi3026IndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_3026T_888);
+	 } else if (vga256InfoRec.bitsPerPixel == 32) {              /* 32bpp */
+	    s3OutTi3026IndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_3026D_888);
 	    if (DAC_IS_TI3030)
 	       s3OutTi3026IndReg(TI_MUX_CONTROL_2, 0x00,
 			 TI_MUX2_BUS_3030TC_D24P128);
@@ -3166,7 +3167,7 @@ static int TI3030_3026_Init(DisplayModePtr mode)
 				TI_MUX2_BUS_3026TC_D24P64);
 	    s3OutTi3026IndReg(TI_COLOR_KEY_CONTROL, 0x00, 0x01);
 	 } else if (vga256InfoRec.depth == 16) {                    /* 5-6-5 */
-	    s3OutTi3026IndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_3026T_565);
+	    s3OutTi3026IndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_3026D_565);
 	    if (DAC_IS_TI3030)
 	       s3OutTi3026IndReg(TI_MUX_CONTROL_2, 0x00, 
 				TI_MUX2_BUS_3030TC_D16P128);
@@ -3175,7 +3176,7 @@ static int TI3030_3026_Init(DisplayModePtr mode)
 				TI_MUX2_BUS_3026TC_D16P64);
 	    s3OutTi3026IndReg(TI_COLOR_KEY_CONTROL, 0x00, 0x01);
 	 } else if (vga256InfoRec.depth == 15) {                     /* 5-5-5 */
-	    s3OutTi3026IndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_3026T_555);
+	    s3OutTi3026IndReg(TI_MUX_CONTROL_1, 0x00, TI_MUX1_3026D_555);
 	    if (DAC_IS_TI3030)
 	       s3OutTi3026IndReg(TI_MUX_CONTROL_2, 0x00, 
 				TI_MUX2_BUS_3030TC_D15P128);
