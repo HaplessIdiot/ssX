@@ -1,5 +1,5 @@
 # $FreeBSD$
 
-SUBDIR = drm mga
+SUBDIR = drm tdfx mga
 
 .include <bsd.subdir.mk>
