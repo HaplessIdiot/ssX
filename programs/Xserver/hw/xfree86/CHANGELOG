@@ -1,4 +1,9 @@
 XFree86 3.9.18c (2 March 2000)
+3910. Add skeleton man pages for the video and input drivers that don't
+      already have one (David Dawes).
+3909. Add man pages for the mouse, keyboard and void input drivers
+      (David Dawes).
+3908. Enable building the "void" input driver by default (David Dawes).
 3907. Keep xf86RegisterRootWindowProperty from freeing data it didn't
       allocate (Mark Vojkovich).
 3906. Add an extra file name to the server config file search path --
@@ -9924,4 +9929,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1051 2000/03/02 16:07:41 martin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1053 2000/03/03 00:30:42 mvojkovi Exp $

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.154 2000/02/29 15:24:13 tsi Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.155 2000/03/02 17:52:52 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -402,8 +402,8 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.154 2000/02/29 15:24:13 tsi Exp $
 /*
  * Select the XInput devices you want by uncommenting this.
  *
-#define XInputDrivers dynapro elo2300 elographics magellan microtouch \
-	mutouch spaceorb wacom
+#define XInputDrivers mouse dynapro elo2300 elographics magellan microtouch \
+	mutouch spaceorb wacom void
  */
 
 /*

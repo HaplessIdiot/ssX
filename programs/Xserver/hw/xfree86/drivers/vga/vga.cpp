@@ -1,5 +1,5 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/vga.cpp,v 1.1 1999/08/26 08:16:19 dawes Exp $ 
-.TH VGA __drivermansuffix__ "Version 3.9.16"  "XFree86"
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/vga.cpp,v 1.2 1999/08/28 09:01:08 dawes Exp $ 
+.TH VGA __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 vga \- Generic VGA video driver
 .SH SYNOPSIS

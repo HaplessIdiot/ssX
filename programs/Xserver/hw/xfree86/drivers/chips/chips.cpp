@@ -1,5 +1,5 @@
-.\" $XFree86: $
-.TH CHIPS __drivermansuffix__ "Version 3.9.16"  "XFree86"
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/chips.cpp,v 1.2 1999/11/19 14:59:17 hohndel Exp $
+.TH CHIPS __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 chips \- Chips and Technologies video driver
 .SH SYNOPSIS

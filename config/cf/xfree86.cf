@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.275 2000/03/02 16:06:53 martin Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.276 2000/03/02 17:52:52 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -26,10 +26,10 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 /* XInput drivers */
 #ifndef XInputDrivers
 #if 1
-#define XInputDrivers		dynapro microtouch wacom
+#define XInputDrivers		mouse dynapro microtouch wacom void
 #else
-#define XInputDrivers		dynapro elo2300 elographics magellan \
-				microtouch mutouch spaceorb wacom
+#define XInputDrivers		mouse dynapro elo2300 elographics magellan \
+				microtouch mutouch spaceorb wacom void
 #endif
 #endif
 
