@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.64 1999/07/19 13:36:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.65 1999/08/14 10:49:39 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -1908,12 +1908,19 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     }
     
     /* Check if maxClock is limited by the MemClk. Only 70% to allow for */
-    /* RAS/CAS. Extra byte per memory clock needed if framebuffer used */
+    /* RAS/CAS. Extra byte per memory clock needed if framebuffer used   */
+    /* Extra byte if the overlay plane is avtivated                      */
     if (cPtr->FrameBufferSize)
-	cPtr->MaxClock = min(cPtr->MaxClock,
+	if (cPtr->Flags & ChipsOverlay8plus16)
+	    cPtr->MaxClock = min(cPtr->MaxClock, MemClk->Clk * 4 * 0.7 / 4);
+	else
+	    cPtr->MaxClock = min(cPtr->MaxClock,
 			     MemClk->Clk * 4 * 0.7 / (bytesPerPixel + 1));
     else
-	cPtr->MaxClock = min(cPtr->MaxClock, 
+	if (cPtr->Flags & ChipsOverlay8plus16)
+	    cPtr->MaxClock = min(cPtr->MaxClock, MemClk->Clk * 4 * 0.7 / 3);
+	else
+	    cPtr->MaxClock = min(cPtr->MaxClock, 
 			     MemClk->Clk * 4 * 0.7 / bytesPerPixel);
     
     if (cPtr->pEnt->device->dacSpeeds[0]) {
@@ -3523,7 +3530,8 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		    pScrn->virtualY * (pScrn->bitsPerPixel >> 3);
 
 	currentaddr = allocatebase;
-	xf86DrvMsg(scrnIndex, X_PROBED,
+	if (serverGeneration == 1)
+	    xf86DrvMsg(scrnIndex, X_PROBED,
 		   "%d bytes off-screen memory available\n", freespace);
 
 	/* 
@@ -4547,8 +4555,8 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
     }
     if ((pScrn->bitsPerPixel == 16) && (cPtr->Flags & ChipsOverlay8plus16)) {
 	/* Make sure that the overlay isn't visible in the overscan region */
-	if (ChipsStd->Attribute[0x11] == TRANSPARENCY_KEY)
-	    ChipsStd->Attribute[0x11] = TRANSPARENCY_KEY - 1;
+	if (ChipsStd->Attribute[0x11] == pScrn->colorKey)
+	    ChipsStd->Attribute[0x11] = pScrn->colorKey - 1;
     } else
 	ChipsStd->Attribute[0x11] = 0x00;   /* overscan (border) color */
     ChipsStd->Attribute[0x12] = 0x0F;   /* enable all color planes */
@@ -4883,7 +4891,7 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	ChipsNew->MR[0x3C] |= 0x07;	/* Enable keyed overlay window */
 	ChipsNew->MR[0x3D] = 0x00;
 	ChipsNew->MR[0x3E] = 0x00;
-	ChipsNew->MR[0x3F] = TRANSPARENCY_KEY; /* 8bpp transparency key */
+	ChipsNew->MR[0x3F] = pScrn->colorKey; /* 8bpp transparency key */
 	ChipsNew->MR[0x40] = 0xFF;
 	ChipsNew->MR[0x41] = 0xFF;
 	ChipsNew->MR[0x42] = 0x00;

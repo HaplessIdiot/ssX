@@ -1,4 +1,7 @@
 XFree86 3.9.16 (31 August 1999)
+3124. Modify the ISO-8859-{6,7,10} to Unicode tables so that they agree with
+      the tables found on ftp.unicode.org (#3172, Bruno Haible).
+3123. Some minor C&T bug fixes (#3194, David Bateman).
 3122. Xman update (#3174, Carlos A M dos Santos).
 3021. Import some xkb data file updates from 3.3.5.
 3020. Fix a build problem on Alpha platforms (#3191, Matt Grossman).
@@ -8685,4 +8688,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.823 1999/08/30 02:34:09 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.824 1999/08/30 13:09:15 dawes Exp $
