@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/85 1998/02/26 17:14:44 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/programs/Imakefile,v 3.30 2000/09/18 19:03:39 mvojkovi Exp $
+XCOMM $XFree86: xc/programs/Imakefile,v 3.32 2001/01/02 02:53:18 keithp Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -75,7 +75,7 @@ SUBDIRS = $(XSSRCDIR)
 #else
 SUBDIRS = \
 	appres bdftopcf bitmap \
-	$(SCREENSAVESRCDIR) editres fsinfo fslsfonts fstobdf iceauth \
+	$(SCREENSAVESRCDIR) editres fslsfonts fstobdf iceauth \
 	ico listres \
 	$(MAKEPSRESDIR) $(MKCFMSRCDIR) \
 	mkfontdir oclock $(PROXYMGRSRCDIR) $(RGBSRCDIR) $(RSTARTSRCDIR) \
@@ -83,7 +83,7 @@ SUBDIRS = \
 	$(SMPROXYSRCDIR) $(TWMSRCDIR) viewres x11perf xauth xbiff xcalc \
 	xclipboard xclock \
 	xcmsdb $(XCONSOLESRCDIR) xditview $(XDMSRCDIR) xdpyinfo \
-	$(XF86DGASRCDIR) xedit xev xeyes xfd xfontsel $(XFSSRCDIR) \
+	$(XF86DGASRCDIR) xedit xev xeyes xfd xfontsel $(XFSSRCDIR) xfsinfo \
 	$(XFINDPROXYSRCDIR) $(XFWPSRCDIR) $(XGAMMASRCDIR) xgc $(XHOSTSRCDIR) \
 	xieperf $(XINITSRCDIR) $(XKBSRCDIRS) xkill xload xlogo xlsatoms \
 	xlsclients xlsfonts xmag xman xmessage xmodmap xprop xrdb \
