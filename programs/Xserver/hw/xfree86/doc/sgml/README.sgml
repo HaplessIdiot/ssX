@@ -10,7 +10,7 @@
 <date>18 July 1999
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.93 1999/07/18 15:47:53 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.94 1999/07/19 14:38:43 dawes Exp $
 </ident>
 
 <abstract>
@@ -77,13 +77,16 @@ form.  Binaries for some platforms may be made available at a later time.
 The source for version &relvers; is split into three tarballs:
 <tt>X&srcvers;src-1.tgz</tt>, <tt>X&srcvers;src-2.tgz</tt>,
 <tt>X&srcvers;src-3.tgz</tt>.  The first contains everything except the
-fonts and general X11 documentation.  It is sufficient to build XFree86
-is you already have a set of fonts.  The second contains the fonts and
-the source for the general X11 documentation.  The third contains the
-general X11 documentation in hardcopy format.
+fonts and general X11 documentation.  It is sufficient for building
+XFree86 is you already have a set of fonts.  The second contains the
+fonts and the source for the general X11 documentation.  The third
+contains the general X11 documentation in hardcopy format.
 
 The contrib part of the distribution can be found in the following tarball:
 <tt>X&srcvers;contrib.tgz</tt>.
+
+To format the XFree86 documentation, the latest version of our doctools
+package.  That is available as <tt>doctools-1.1.tgz</tt>.
 
 <sect>Reporting Bugs
 <p>

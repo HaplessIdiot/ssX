@@ -9,7 +9,7 @@
 <date>19 July 1999
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.10 1999/07/19 13:36:21 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.11 1999/07/19 14:38:44 dawes Exp $
 </ident>
 
 <abstract>
@@ -263,7 +263,7 @@ The following new X server command line options have been added:
 	the depth is different from the ``bpp'' that was specified with
 	previous versions.  The depth is the number of bits in each
 	pixel that are significant in determining the pixel's value.
-	The bpp is total size occupied by each pixel, including bits
+	The bpp is the total size occupied by each pixel, including bits
 	that are not used.  The old <tt>-bpp</tt> option is no longer
 	recognised because it isn't a good way of specifying the server
 	behaviour.
@@ -351,7 +351,7 @@ The following new X server command line options have been added:
 
 <tt>-scanpci</tt>
 <quote><p>
-	This specifies the <tt>scanpci</tt> module should be loaded and
+	This specifies that the <tt>scanpci</tt> module should be loaded and
 	executed.  This does a scan of the PCI bus.  This option is only
 	available when the server is started by the <tt>root</tt> user.
 
@@ -366,7 +366,7 @@ The following new X server command line options have been added:
 
 </quote>
 
-The following new X server command line options have been changed since 3.3.x:
+The following X server command line options have been changed since 3.3.x:
 
 <quote><p>
 
@@ -374,7 +374,7 @@ The following new X server command line options have been changed since 3.3.x:
 <quote><p>
 	This option specifies the verbosity level to use for the server
 	messages that get written to stderr.  It may be specified multiple
-	time to increase the verbosity level (as with 3.3.x), or the
+	times to increase the verbosity level (as with 3.3.x), or the
 	verbosity level may be specified explicitly as a number.  The
 	default verbosity level is 1.
 
