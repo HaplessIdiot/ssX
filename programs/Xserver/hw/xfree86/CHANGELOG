@@ -1,4 +1,5 @@
 XFree86 3.9Pa (14 February 1999)
+2258. Use /dev/io to enable I/O access on FreeBSD instead of KDENABIO.
 2257. Correct some typos/grammatical problems with the DESIGN doc (Ivan Bach).
 2256. Fix a crash when PciAccInfo isn't initialized (#2468, Alan Hourihane).
 2255. Add SiS530 detection to the SiS driver. Clock programming,
@@ -7289,4 +7290,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.688 1999/02/13 16:44:51 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.689 1999/02/14 03:20:34 dawes Exp $
