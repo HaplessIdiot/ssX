@@ -1,10 +1,12 @@
 XFree86 4.1.99.2 (xx September 2001)
+ 349. Move ati driver out of DevelDrivers on PPC platforms (#4952, 
+      Michel Dänzer).
  348. SECURITY: set default value of authComplain resource in xdm to true. 
       This closes a hole where anyone can connect to the X server if 
       the xdm auth dir doesn't exist (Galen Hancock).
  347. SECURITY: don't let a non-root user halt the machine by having X
       send SIGUSR1 to init (Thomas Moestl).
- 346. Changed itn10 module to stub on Sparc (Egbert Eich).
+ 346. Changed int10 module to stub on Sparc (Egbert Eich).
  345. Added hyperpen driver (Roland Jansen et. al.).
  344. Fixed alignments of x86emu-structures for AXP (Jay Estabrook).
  343. Fixed XLoadQueryFont() and XLoadFont() to support locales 
@@ -13961,4 +13963,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1965 2001/10/01 21:15:50 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1966 2001/10/01 21:40:06 herrb Exp $
