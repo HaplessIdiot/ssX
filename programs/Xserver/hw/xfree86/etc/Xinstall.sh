@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.1 2000/02/24 18:50:45 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.2 2000/02/25 21:03:10 dawes Exp $
 #
 # Copyright © 1995-2000 by The XFree86 Project, Inc
 # Portions Copyright © 2000 by Precision Insight, Inc
@@ -162,6 +162,109 @@ Description()
 	esac
 }
 
+GetOsInfo()
+{
+	echo "Checking which OS your running..."
+
+	OsName="`uname`"
+	OsVersion="`uname -r`"
+	OsArch="`uname -m`"
+	echo "uname reports '$OsName' version '$OsVersion', architecture '$OsArch'"
+
+	# test's flag for symlinks
+	#
+	# For OSs that don't support symlinks, choose a type that is guaranteed to
+	# return false for regular files and directories.
+
+	case "$OsName" in
+	FreeBSD)
+		case "$OsVersion" in
+		2.*)
+			L="-h"
+			;;
+		*)
+			L="-L"
+		esac
+		;;
+	*)
+		L="-L"
+		;;
+	esac
+}
+
+DoOsChecks()
+{
+	# Do some OS-specific checks
+
+	case "$OsName" in
+	Linux)
+		if file -L /bin/sh | grep ELF > /dev/null 2>&1; then
+			case "$OsArch" in
+			i*86)
+				echo ""
+				if ldd /bin/sh | grep "libc.so.6" > /dev/null 2>&1; then
+					echo "You appear to have a Linux glibc (libc-6) based"
+					echo "system.  Make sure you are installing the "
+					echo "'Linux-ix86-glibc' binary distrbution."
+				else
+					echo "You appear to have a Linux libc-5 based system."
+					echo "Make sure you are installing the 'Linux-ix86-libc5'"
+					echo "binary distrbution (if one is available)."
+				fi
+				;;
+			esac
+			# Check ldconfig
+			LDSO=`/sbin/ldconfig -v -n | awk '{ print $3 }'`
+			LDSOMIN=`echo $LDSO | awk -F[.-] '{ print $3 }'`
+			LDSOMID=`echo $LDSO | awk -F[.-] '{ print $2 }'`
+			LDSOMAJ=`echo $LDSO | awk -F[.-] '{ print $1 }'`
+			if [ "$LDSOMAJ" -gt 1 ]; then
+				: OK
+			else
+				if [ "$LDSOMID" -gt 7 ]; then
+					: OK
+				else
+					if [ "$LDSOMIN" -ge 14 ]; then
+						: OK
+					else
+						echo ""
+						echo "Before continuing, you will need to get a"
+						echo "current version of ld.so.  Version 1.7.14 or"
+						echo "newer will do."
+						NEEDSOMETHING=YES
+					fi
+				fi
+			fi
+		else
+			case "$OsArch" in
+			i*86)
+				echo ""
+				echo "You appear to have a Linux a.out system.  a.out binaries"
+				echo "are no longer provided or supported."
+				echo ""
+				exit 1
+				;;
+			esac
+		fi
+		# The /dev/tty0 check is left out.  Presumably nobody has a system where
+		# this is missing any more.
+		echo ""
+		;;
+	esac
+}
+
+FindDistName()
+{
+	echo "FindDistName not implemented yet."
+}
+
+if [ X"$1" = "X-check" ]; then
+	GetOsInfo
+	DoOsChecks
+	#FindDistName
+	exit 0
+fi
+
 echo ""
 echo "		Welcome to the XFree86 $VERSION installer"
 echo ""
@@ -203,7 +306,7 @@ if [ X"$Needed" != X ]; then
 	echo "must be present in the current directory to proceed with the"
 	echo "installation.  You should be able to find it at the same place"
 	echo "you picked up the rest of the XFree86 binary distribution."
-	echo "Please re-run $0 to proceed with the installation when"
+	echo "Please re-run 'sh $0' to proceed with the installation when"
 	echo "you have them."
 	echo ""
 	exit 1
@@ -220,92 +323,12 @@ WDIR=`pwd`
 EXTRACT=$WDIR/extract
 TAR=$WDIR/gnu-tar
 
-# Now, do some OS-specific checks
-
-echo "Checking which OS your running..."
-
-OsName="`uname`"
-echo "uname reports '$OsName'"
-
-case "$OsName" in
-Linux)
-	if file -L /bin/sh | grep ELF > /dev/null 2>&1; then
-		case "`arch`" in
-		i*86)
-			echo ""
-			if ldd /bin/sh | grep "libc.so.6" > /dev/null 2>&1; then
-				echo "You appear to have a Linux glibc (libc-6) based system."
-				echo "Make sure you are installing the 'Linux-ix86-glibc'"
-				echo "binary distrbution."
-			else
-				echo "You appear to have a Linux libc-5 based system."
-				echo "Make sure you are installing the 'Linux-ix86-libc5'"
-				echo "binary distrbution (if one is available)."
-			fi
-			;;
-		esac
-		# Check ldconfig
-		LDSO=`/sbin/ldconfig -v -n | awk '{ print $3 }'`
-		LDSOMIN=`echo $LDSO | awk -F[.-] '{ print $3 }'`
-		LDSOMID=`echo $LDSO | awk -F[.-] '{ print $2 }'`
-		LDSOMAJ=`echo $LDSO | awk -F[.-] '{ print $1 }'`
-		if [ "$LDSOMAJ" -gt 1 ]; then
-			: OK
-		else
-			if [ "$LDSOMID" -gt 7 ]; then
-				: OK
-			else
-				if [ "$LDSOMIN" -ge 14 ]; then
-					: OK
-				else
-					echo ""
-					echo "Before continuing, you will need to get a current"
-					echo "version of ld.so.  Version 1.7.14 or newer will do."
-					NEEDSOMETHING=YES
-				fi
-			fi
-		fi
-	else
-		case "`arch`" in
-		i*86)
-			echo ""
-			echo "You appear to have a Linux a.out system.  a.out binaries"
-			echo "are no longer provided or supported."
-			echo ""
-			exit 1
-			;;
-		esac
-	fi
-	# The /dev/tty0 check is left out.  Presumably nobody has a system where
-	# this is missing any more.
-	echo ""
-	;;
-esac
-
-# test's flag for symlinks
-#
-# For OSs that don't support symlinks, choose a type that is guaranteed to
-# return false for regular files and directories.
-
-case "$OsName" in
-FreeBSD)
-	case "`uname -r`" in
-	2.*)
-		L="-h"
-		;;
-	*)
-		L="-L"
-	esac
-	;;
-*)
-	L="-L"
-	;;
-esac
+DoOsCheck
 
 if [ X"$NEEDSOMETHING" != X ]; then
 	echo ""
-	echo "Please re-run $0 to proceed with the installation after you have"
-	echo "made the required updates."
+	echo "Please re-run 'sh $0' to proceed with the installation after you"
+	echo "have made the required updates."
 	echo ""
 	exit 1
 fi
