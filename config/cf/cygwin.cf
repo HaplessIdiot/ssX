@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.28 2001/09/19 15:47:00 alanh Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.29 2001/09/19 16:16:55 alanh Exp $
 
 #ifndef OSName
 #define OSName                  Cygwin
@@ -73,7 +73,7 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.28 2001/09/19 15:47:00 ala
 #define TermcapLibrary -lncurses.dll
 
 #define AvoidNullMakeCommand    YES
-#define StripInstalledPrograms  NO
+#define StripInstalledPrograms  YES
 #define CompressAllFonts        YES
 #define Malloc0ReturnsNull      NO
 #define NeedConstPrototypes     YES
