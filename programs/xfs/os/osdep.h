@@ -1,4 +1,5 @@
 /* $XConsortium: osdep.h,v 1.9 94/04/17 19:56:07 dpw Exp $ */
+/* $XFree86$ */
 /*
 Copyright (c) 1987  X Consortium
 
