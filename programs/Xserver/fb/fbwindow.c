@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbwindow.c,v 1.5 2000/04/06 15:27:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbwindow.c,v 1.6 2000/05/06 21:09:34 keithp Exp $ */
 
 #include "fb.h"
 #ifdef IN_MODULE
@@ -157,7 +157,10 @@ fbChangeWindowAttributes(WindowPtr pWin, unsigned long mask)
 		pPixmap = fb24_32ReformatTile (pPixmap,
 					       pWin->drawable.bitsPerPixel);
 		if (pPixmap)
+		{
+		    (*pWin->drawable.pScreen->DestroyPixmap) (pWin->background.pixmap);
 		    pWin->background.pixmap = pPixmap;
+		}
 	    }
 #endif
 	    if (FbEvenTile (pPixmap->drawable.width *
@@ -177,7 +180,10 @@ fbChangeWindowAttributes(WindowPtr pWin, unsigned long mask)
 		pPixmap = fb24_32ReformatTile (pPixmap,
 					       pWin->drawable.bitsPerPixel);
 		if (pPixmap)
+		{
+		    (*pWin->drawable.pScreen->DestroyPixmap) (pWin->border.pixmap);
 		    pWin->border.pixmap = pPixmap;
+		}
 	    }
 #endif
 	    if (FbEvenTile (pPixmap->drawable.width *

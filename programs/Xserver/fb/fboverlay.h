@@ -29,26 +29,36 @@
 extern int	fbOverlayGeneration;
 extern int	fbOverlayScreenPrivateIndex;
 
-#define FB_OVERLAY_MAX	3
+#ifndef FB_OVERLAY_MAX
+#define FB_OVERLAY_MAX	2
+#endif
+
+typedef	void	(*fbOverlayPaintKeyProc) (DrawablePtr, RegionPtr, CARD32, int);
+
+typedef struct _fbOverlayLayer {
+    union {
+	struct {
+	    pointer	pbits;
+	    int		width;
+	    int		depth;
+	} init;
+	struct {
+	    PixmapPtr	pixmap;
+	    RegionRec	region;
+	} run;
+    } u;
+    CARD32	key;	    /* special pixel value */
+} FbOverlayLayer;
 
 typedef struct _fbOverlayScrPriv {
-    int		nlayers;
-    PixmapPtr	pLayer[FB_OVERLAY_MAX];
+    int			    nlayers;
+    fbOverlayPaintKeyProc   PaintKey;
+    fbCopyProc		    CopyWindow;
+    FbOverlayLayer	    layer[FB_OVERLAY_MAX];
 } FbOverlayScrPrivRec, *FbOverlayScrPrivPtr;
 
 #define fbOverlayGetScrPriv(s)	((FbOverlayScrPrivPtr) \
 				 (s)->devPrivates[fbOverlayScreenPrivateIndex].ptr)
-
-typedef struct _fbOverlayInit {
-    pointer		pbits;
-    int			width;
-    int			depth;
-} FbOverlayInitRec, *FbOverlayInitPtr;
-
-typedef struct _fbOverlayScrInit {
-    int			nlayers;
-    FbOverlayInitRec	init[FB_OVERLAY_MAX];
-} FbOverlayScrInitRec, *FbOverlayScrInitPtr;
 
 Bool
 fbOverlayCreateWindow(WindowPtr pWin);
@@ -56,8 +66,35 @@ fbOverlayCreateWindow(WindowPtr pWin);
 Bool
 fbOverlayCloseScreen (int iScreen, ScreenPtr pScreen);
 
+int
+fbOverlayWindowLayer(WindowPtr pWin);
+
 Bool
 fbOverlayCreateScreenResources(ScreenPtr pScreen);
+
+void
+fbOverlayPaintKey (DrawablePtr	pDrawable,
+		   RegionPtr	pRegion,
+		   CARD32	pixel,
+		   int		layer);
+void
+fbOverlayUpdateLayerRegion (ScreenPtr	pScreen,
+			    int		layer,
+			    RegionPtr	prgn);
+
+    
+void
+fbOverlayCopyWindow(WindowPtr	pWin,
+		    DDXPointRec	ptOldOrg,
+		    RegionPtr	prgnSrc);
+    
+void
+fbOverlayWindowExposures (WindowPtr	pWin,
+			  RegionPtr	prgn,
+			  RegionPtr	other_exposed);
+
+void
+fbOverlayPaintWindow(WindowPtr pWin, RegionPtr pRegion, int what);
 
 
 Bool
