@@ -56,6 +56,7 @@ cfb24_32CreatePixmap (
     pPixPriv = CFB24_32_GET_PIXMAP_PRIVATE(pPix);
     pPixPriv->pix = NULL;           /* no clone yet */
     pPixPriv->freePrivate = FALSE;
+    pPixPriv->isRefPix = FALSE;
 
     return pPix;
 }
@@ -119,6 +120,7 @@ cfb24_32RefreshPixmap(PixmapPtr pPix)
 	    newPixPriv = CFB24_32_GET_PIXMAP_PRIVATE(newPix);
 	    newPixPriv->pix = pPix;
 	    newPixPriv->freePrivate = TRUE;
+	    pixPriv->isRefPix = TRUE;
 	}
     } else { /* bitsPerPixel == 32 */
         if(!pixPriv->pix) {	/* need to make a 32bpp clone */
@@ -128,17 +130,21 @@ cfb24_32RefreshPixmap(PixmapPtr pPix)
 	    pixPriv->pix->refcnt = pPix->refcnt;
 	    newPixPriv = CFB24_32_GET_PIXMAP_PRIVATE(pixPriv->pix);
 	    newPixPriv->pix = pPix;
+	    pixPriv->isRefPix = TRUE;
 	}
     }
 
     if(pPix->refcnt != pixPriv->pix->refcnt)
 	ErrorF("Pixmap refcnt mismatch in RefreshPixmap()\n");
 
-    pGC = GetScratchGC(24, pScreen);
-    ValidateGC((DrawablePtr)pixPriv->pix, pGC);
-    (*pGC->ops->CopyArea)((DrawablePtr)pPix, (DrawablePtr)pixPriv->pix,
+    /* make sure copies only go from the real to the clone */
+    if(pixPriv->isRefPix) {
+	pGC = GetScratchGC(24, pScreen);
+	ValidateGC((DrawablePtr)pixPriv->pix, pGC);
+	(*pGC->ops->CopyArea)((DrawablePtr)pPix, (DrawablePtr)pixPriv->pix,
 					pGC, 0, 0, width, height, 0, 0);
-    FreeScratchGC(pGC);
+	FreeScratchGC(pGC);
+    }
 
     return pixPriv->pix;
 }
