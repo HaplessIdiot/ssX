@@ -1037,13 +1037,14 @@ SiS301BSave(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     SISPtr  pSiS = SISPTR(pScrn);
     int     Part1max, Part2max, Part3max, Part4max;
 
-    Part1max = 0x37; /* 0x23, but we also need 2c-2e, 35-37 */
+    Part1max = 0x4c;
     Part2max = 0x4d;
     Part3max = 0x3e;
-    if(pSiS->VBFlags & (VB_301LV|VB_302LV|VB_302ELV))
+    Part4max = 0x23;
+    if(pSiS->VBFlags & (VB_301C|VB_302ELV))
+       Part2max = 0xff;
+    if(pSiS->VBFlags & (VB_301C|VB_301LV|VB_302LV|VB_302ELV))
        Part4max = 0x34;
-    else
-       Part4max = 0x23;
 
     SiSVBSave(pScrn, sisReg, Part1max, Part2max, Part3max, Part4max);
 
@@ -1061,10 +1062,11 @@ SiS301BRestore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     Part1max = 0x23;
     Part2max = 0x4d;
     Part3max = 0x3e;
+    Part4max = 0x22;
+    if(pSiS->VBFlags & (VB_301C|VB_302ELV))
+       Part2max = 0xff;
     if(pSiS->VBFlags & (VB_301LV|VB_302LV|VB_302ELV))
        Part4max = 0x24;
-    else
-       Part4max = 0x22;
 
     SiS_DisableBridge(pSiS->SiS_Pr, &pSiS->sishw_ext);
 

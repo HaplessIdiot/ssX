@@ -36,7 +36,7 @@
 
 #define SISDRIVERVERSIONYEAR    3
 #define SISDRIVERVERSIONMONTH   11
-#define SISDRIVERVERSIONDAY     28
+#define SISDRIVERVERSIONDAY     30
 #define SISDRIVERREVISION       1
 
 #define SISDRIVERIVERSION (SISDRIVERVERSIONYEAR << 16) | (SISDRIVERVERSIONMONTH << 8) \
@@ -379,7 +379,7 @@ typedef struct {
     unsigned char sisCapt[0x60];
     unsigned char sisVid[0x50];
     unsigned char VBPart1[0x50];
-    unsigned char VBPart2[0x50];
+    unsigned char VBPart2[0x100];
     unsigned char VBPart3[0x50];
     unsigned char VBPart4[0x50];
     unsigned short ch70xx[64];
