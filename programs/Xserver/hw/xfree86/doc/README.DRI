@@ -143,6 +143,16 @@ graphics hardware:
 
         o Radeon 32MB SDR PCI (Alpha-based systems)
 
+        o Radeon 7000, M6 (RV100)
+
+        o Radeon 7200 (R100)
+
+        o Radeon 7500, M7 (RV200)
+
+        o Radeon 8500, 9100 (R200)
+
+        o Radeon 9000, M9 (RV250)
+
    o 3Dlabs, supported on Intel x86 and AMD:
 
         o Oxygen GMX 2000 (MX/Gamma based).  Note:  this driver is no longer
@@ -1241,7 +1251,7 @@ demo programs is available from http://dri.sourceforge.net/res.phtml
    o In the future there may be IHV and Linux vendor support resources for
      the DRI.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.28 2002/02/22 21:45:13 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.29 2003/02/17 03:57:29 dawes Exp $
 
 
 $XFree86: $
