@@ -25,7 +25,7 @@
  * without specific, written prior permission.
  *
  */
-/* $XFree86: xc/programs/xmh/init.c,v 1.3 2001/08/01 00:45:06 tsi Exp $ */
+/* $XFree86: xc/programs/xmh/init.c,v 1.4 2001/10/28 03:34:38 tsi Exp $ */
 
 /* Init.c - Handle start-up initialization. */
 
@@ -205,9 +205,8 @@ Dimension defwidth, defheight;
 }
 
 
-static int _IOErrorHandler(dpy, err)
+static int _IOErrorHandler(dpy)
     Display *dpy;
-    XErrorEvent *err;
 {
     (void) fprintf (stderr,
 	     "%s:\tfatal IO error after %lu requests (%lu known processed)\n",
