@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.48 2000/02/08 17:19:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.50 2000/04/17 16:30:14 eich Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -209,9 +209,6 @@ extern void XcupExtensionInit(INITARGS);
 #ifdef DPMSExtension
 extern void DPMSExtensionInit(INITARGS);
 #endif
-#ifdef XANTI
-extern void XAntiExtensionInit(INITARGS);
-#endif
 #ifdef DPS
 extern void DPSExtensionInit(INITARGS);
 #endif
@@ -316,9 +313,6 @@ InitExtensions(argc, argv)
 #ifdef FONTCACHE
     FontCacheExtensionInit();
 #endif
-#ifdef XANTI
-    XAntiExtensionInit();
-#endif
 #ifdef XF86BIGFONT
     XFree86BigfontExtensionInit();
 #endif
@@ -409,7 +403,6 @@ ExtensionModule extension[] =
 #else
     { NULL, "NOXINERAMA", NULL, NULL },
 #endif
-    { NULL, "XAnti", NULL, NULL },
     { NULL, "XFree86-Bigfont", NULL, NULL },
     { NULL, "XFree86-DRI", NULL, NULL },
     { NULL, "Adobe-DPS-Extension", NULL, NULL },

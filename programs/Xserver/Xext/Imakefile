@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/63 1997/11/24 16:48:40 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/Xext/Imakefile,v 3.33 2000/06/15 20:49:59 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xext/Imakefile,v 3.34 2000/08/01 23:38:46 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -60,12 +60,6 @@ XF86BIGFOBJS = xf86bigfont.o
       XVOBJS = xvmain.o xvdisp.o
 #endif
 
-#if BuildXantiExt
-      XANTISRCS = anti.c 
-      XANTIOBJS = anti.o
-#endif
-
-
 #if BuildAppgroup
   APPGROUPSRCS = appgroup.c
   APPGROUPOBJS = appgroup.o
@@ -104,14 +98,14 @@ XF86BIGFOBJS = xf86bigfont.o
 	      bigreq.c sync.c $(SCRNSAVSRC) xcmisc.c $(VIDMODESRCS) \
 	      $(XF86MISCSRCS) $(XF86BIGFSRCS) $(XF86DGASRCS) $(SECURITYSRCS) \
 	      $(APPGROUPSRCS) xprint.c $(CUPSRCS) $(PNRXSRCS) $(DPMSSRCS) \
-	      $(EVISRCS) $(XVSRCS) $(XANTISRCS) $(FONTCACHESRCS)
+	      $(EVISRCS) $(XVSRCS) $(FONTCACHESRCS)
 
        OBJS = shape.o $(SHMOBJS) $(MULTIBUFOBJ) \
               mitmisc.o xtest.o xtest1di.o xtest1dd.o sleepuntil.o \
               bigreq.o sync.o $(SCRNSAVOBJ) xcmisc.o $(VIDMODEOBJS) \
 	      $(XF86MISCOBJS) $(XF86BIGFOBJS) $(XF86DGAOBJS) $(SECURITYOBJS) \
 	      $(APPGROUPOBJS) xprint.o $(CUPOBJS) $(PNRXOBJS) $(DPMSOBJS) \
-	      $(EVIOBJS) $(XVOBJS) $(XANTIOBJS) $(FONTCACHEOBJS)
+	      $(EVIOBJS) $(XVOBJS) $(FONTCACHEOBJS)
 
       SOBJS = $(SHMOBJS) $(APPGROUPOBJS) $(SECURITYOBJS) xprint.o \
 	      xtest.o xtest1di.o xtest1dd.o sleepuntil.o $(PNRXOBJS) \
