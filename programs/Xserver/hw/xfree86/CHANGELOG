@@ -1,4 +1,6 @@
-XFree86 3.9.17Za (21 February 2000)
+XFree86 3.9.18 (21 February 2000)
+3833. Bump the minor version number for libXaw since it has some symbols
+      that are not present in 6.0.
 3832. Add a "xf86LoaderCheckSymbol" function and use this in drivers to
       check if the vgahw module is loaded before calling vgaHWFreeHWRec()
       (David Dawes).
@@ -9775,4 +9777,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1019 2000/02/21 18:05:37 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1020 2000/02/21 19:22:44 dawes Exp $
