@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile,v 1.15 94/04/04 21:49:55 gildea Exp $
 
 
 
-XCOMM $XFree86: xc/programs/xditview/Imakefile,v 1.3 2000/12/03 05:20:53 keithp Exp $
+XCOMM $XFree86: xc/programs/xditview/Imakefile,v 1.5tsi Exp $
 
 
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
@@ -11,7 +11,7 @@ XCOMM $XFree86: xc/programs/xditview/Imakefile,v 1.3 2000/12/03 05:20:53 keithp 
     DEPFONTLIBS = XftClientDepLibs
        FONTLIBS = XftClientLibs
        FONTDEFS = -DUSE_XFT
-      INCLUDES = $(XFTINCLUDES)
+      INCLUDES = $(XFTINCLUDES) -I$(XBUILDINCDIR)
 #endif
 #if HasMkstemp
        TEMPDEFS = -DHAS_MKSTEMP
@@ -22,9 +22,9 @@ LOCAL_LIBRARIES = $(FONTLIBS) XawClientLibs
         DEFINES = $(TEMPDEFS) $(FONTDEFS)
         BITMAPS = ldblarrow rdblarrow
            SRCS = xditview.c Dvi.c draw.c font.c lex.c page.c parse.c\
-	   	  XFontName.c DviChar.c
+		  XFontName.c DviChar.c
            OBJS = xditview.o Dvi.o draw.o font.o lex.o page.o parse.o\
-	   	  XFontName.o DviChar.o
+		  XFontName.o DviChar.o
 
 ComplexProgramTarget(xditview)
 BuildIncludes($(BITMAPS),X11/bitmaps,../..)

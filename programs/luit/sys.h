@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
 Copyright (c) 2001 by Juliusz Chroboczek
 

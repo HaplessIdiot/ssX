@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/fonttosfnt/write.c,v 1.4tsi Exp $ */
 
 #if defined(linux) && !defined(_GNU_SOURCE)
 /* for fwrite_unlocked and fread_unlocked */
@@ -142,7 +142,7 @@ writeBYTEs(FILE *out, unsigned char *chars, int n)
 }
 
 static void
-writeCHAR(FILE *out, signed char val)
+writeCHAR(FILE *out, char val)
 {
     int rc;
     rc = DO_FWRITE(&val, 1, 1, out);
@@ -150,7 +150,7 @@ writeCHAR(FILE *out, signed char val)
 }
 
 static void
-writeCHARs(FILE *out, signed char *chars, int n)
+writeCHARs(FILE *out, char *chars, int n)
 {
     int rc;
     rc = DO_FWRITE(chars, 1, n, out);
@@ -472,7 +472,7 @@ outputRaster(FILE *out, char *raster, int width, int height, int stride,
 
     if(!bit_aligned || width % 8 == 0) {
         for(i = 0; i < height; i++) {
-            writeBYTEs(out, raster + i * stride, (width + 7) / 8);
+            writeCHARs(out, raster + i * stride, (width + 7) / 8);
             len += (width + 7) / 8;
         }
     } else {
@@ -948,7 +948,7 @@ writename(FILE* out, FontPtr font)
         offset += font->names[i].size;
     }
     for(i = 0; i < font->numNames; i++)
-        writeBYTEs(out, font->names[i].value, font->names[i].size);
+        writeCHARs(out, font->names[i].value, font->names[i].size);
     return 0;
 }
 
@@ -1068,7 +1068,7 @@ writePCLT(FILE* out, FontPtr font)
     writeUSHORT(out, FONT_UNITS(max_y)); /* CapHeight */
     writeUSHORT(out, 0);        /* SymbolSet */
     writeCHARs(out, name, 16);  /* TypeFace */
-    writeCHARs(out, charComplement, 8); /* CharacterComplement */
+    writeBYTEs(out, charComplement, 8); /* CharacterComplement */
     writeCHARs(out, filename, 6); /* FileName */
     writeCHAR(out, strokeWeight); /* StrokeWeight */
     writeCHAR(out, widthType);  /* WidthType */

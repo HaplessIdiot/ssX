@@ -46,7 +46,7 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/lbxproxy/di/cache.c,v 1.5 2001/10/28 03:34:21 tsi Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/cache.c,v 1.6tsi Exp $ */
 #include	"misc.h"
 #include	"util.h"
 #include	"cache.h"
@@ -222,9 +222,7 @@ rebuild_cache(server, cache)
 }
 
 static void
-flush_cache(cache, needed)
-    CachePtr    cache;
-    unsigned long needed;
+flush_cache(CachePtr cache, unsigned long needed)
 {
     CacheEntryPtr cp, *prev, oldest, *oldprev = NULL;
     int i;

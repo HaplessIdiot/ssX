@@ -19,7 +19,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/mkfontscale/ident.c,v 1.3tsi Exp $ */
 
 /* The function identifyBitmap returns -1 if filename is definitively not
    a font file, 1 if it is a single-face bitmap font with a XLFD name,
@@ -123,7 +123,7 @@ pcfIdentify(gzFile f, char **name)
 {
     int prop_position;
     PropPtr props = NULL;
-    int format, count, prop_size, nprops, i, string_size, rc;
+    int format, count, nprops, i, string_size, rc;
     char *strings = NULL, *s;
 
     count = getLSB32(f);
@@ -132,14 +132,13 @@ pcfIdentify(gzFile f, char **name)
 
     prop_position = -1;
     for(i = 0; i < count; i++) {
-        int type, format, size, offset;
+        int type, offset;
         type = getLSB32(f);
-        format = getLSB32(f);
-        size = getLSB32(f);
+        (void) getLSB32(f);
+        (void) getLSB32(f);
         offset = getLSB32(f);
         if(type == PCF_PROPERTIES) {
             prop_position = offset;
-            prop_size = size;
             break;
         }
     }

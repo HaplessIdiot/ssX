@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/compile.c,v 1.14tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/compile.c,v 1.15tsi Exp $ */
 
 #define VARIABLE_USED		0x0001
 #define VARIABLE_ARGUMENT	0x0002
@@ -1672,7 +1672,7 @@ rest_label:
 		/* The last argument is not saved in the stack */
 		ComEval(com, CAR(values));
 		values = NIL;
-		com_Bytecode(com, XBC_BCONS + (count - 1));
+		com_Bytecode(com, (LispByteOpcode)(XBC_BCONS + (count - 1)));
 	    }
 	}
 	else {

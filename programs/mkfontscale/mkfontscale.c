@@ -19,7 +19,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.12tsi Exp $ */
+/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.13tsi Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -700,17 +700,17 @@ filePrio(char *filename)
     int n = strlen(filename);
     if(n < 4)
         return 0;
-    if(memcmp(filename + n - 4, ".otf", 4) == 0)
+    if(strcmp(filename + n - 4, ".otf") == 0)
         return 4;
-    if(memcmp(filename + n - 4, ".OTF", 4) == 0)
+    if(strcmp(filename + n - 4, ".OTF") == 0)
         return 4;
-    if(memcmp(filename + n - 4, ".ttf", 4) == 0)
+    if(strcmp(filename + n - 4, ".ttf") == 0)
         return 3;
-    if(memcmp(filename + n - 4, ".TTF", 4) == 0)
+    if(strcmp(filename + n - 4, ".TTF") == 0)
         return 3;
-    if(memcmp(filename + n - 3, ".gz", 3) == 0)
+    if(strcmp(filename + n - 3, ".gz") == 0)
         return 2;
-    if(memcmp(filename + n - 2, ".Z", 2) == 0)
+    if(strcmp(filename + n - 2, ".Z") == 0)
         return 1;
     return 0;
 }
@@ -846,10 +846,11 @@ doDirectory(char *dirname_given, int numEncodings, ListPtr encodingsToDo)
 
         if(xlfd_name) {
             /* We know it's a bitmap font, and we know its XLFD */
-            char *s;
             int n = strlen(xlfd_name);
             if(reencodeLegacy &&
                n >= 12 && strcasecmp(xlfd_name + n - 11, "-iso10646-1") == 0) {
+                char *s;
+
                 s = malloc(n - 10);
                 memcpy(s, xlfd_name, n - 11);
                 s[n - 11] = '\0';

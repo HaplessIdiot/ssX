@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/fonttosfnt/struct.c,v 1.2tsi Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -87,7 +87,7 @@ makeStrike(FontPtr font, int sizeX, int sizeY)
 BitmapPtr
 makeBitmap(StrikePtr strike, int code,
            int advanceWidth, int horiBearingX, int horiBearingY,
-           int width, int height, int stride, char *raster, int crop)
+           int width, int height, int stride, unsigned char *raster, int crop)
 {
     BitmapPtr bitmap;
     int i, j, x, y;
