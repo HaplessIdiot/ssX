@@ -1,5 +1,6 @@
 /*
  * $XConsortium: ifparser.c /main/9 1995/08/09 14:10:57 kaleb $
+ * $XFree86$
  *
  * Copyright 1992 Network Computing Devices, Inc.
  * 
