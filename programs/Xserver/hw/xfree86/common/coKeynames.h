@@ -49,6 +49,7 @@
  */
 
 unsigned char xf86CodrvMap[128] = {
+#ifndef PC98
  0,
  KEY_Tilde,       /* ` (Accent)  ~ (Tilde) 0x01      1 */
  KEY_1,           /* 1           !         0x02      2 */
@@ -165,6 +166,7 @@ unsigned char xf86CodrvMap[128] = {
  KEY_Print,       /* Print                 0x7a    124 */
  KEY_ScrollLock,  /* ScrollLock            0x7b    125 */
  KEY_SysReqest,   /* SysReqest             0x7c    126 */
+#endif
  0
 };
 

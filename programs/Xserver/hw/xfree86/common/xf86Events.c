@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Events.c,v 1.11 95/01/16 13:16:59 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.18 1995/12/02 05:05:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.19 1995/12/09 11:07:43 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -395,6 +395,7 @@ xf86PostKbdEvent(key)
 
     switch (scanCode) {
       
+#ifndef PC98
     case KEY_Prefix0:
     case KEY_Prefix1:
 #if defined(PCCONS_SUPPORT) || defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT)
@@ -407,12 +408,16 @@ xf86PostKbdEvent(key)
       }
       break;
 #endif
+#endif /* not PC98 */
     case KEY_CapsLock:
+#ifndef PC98
     case KEY_NumLock:
     case KEY_ScrollLock:
+#endif
       updateLeds = TRUE;              /* led changes by firmware */
       break;
     }
+#ifndef PC98
     if (xf86Info.serverNumLock) {
      if ((!xf86Info.numLock && ModifierDown(ShiftMask)) ||
          (xf86Info.numLock && !ModifierDown(ShiftMask))) {
@@ -449,8 +454,10 @@ xf86PostKbdEvent(key)
       }
      }
     }
+#endif /* not PC98 */
   }
 
+#ifndef PC98
   else if (
 #ifdef CSRG_BASED
            (xf86Info.consType == PCCONS || xf86Info.consType == SYSCONS
@@ -500,6 +507,8 @@ xf86PostKbdEvent(key)
       if (scanCode != KEY_NumLock) return;
       scanCode = KEY_Pause;       /* pause */
     }
+#endif /* not PC98 */  
+
   /*
    * and now get some special keysequences
    */
@@ -668,13 +677,17 @@ xf86PostKbdEvent(key)
 
       /* Ignore these keys -- ie don't let them cancel an alt-sysreq */
       case KEY_Alt:
+#ifndef PC98
       case KEY_AltLang:
+#endif /* not PC98 */
 	break;
 
+#ifndef PC98
       case KEY_SysReqest:
         if (down && (ModifierDown(AltMask) || ModifierDown(AltLangMask)))
           VTSysreqToggle = TRUE;
 	break;
+#endif /* not PC98 */
 
       default:
         if (VTSysreqToggle)
@@ -779,6 +792,7 @@ xf86PostKbdEvent(key)
    * ignore releases, toggle on & off on presses.
    * Don't deal with the Caps_Lock keysym directly, but check the lock modifier
    */
+#ifndef PC98
   if (keyc->modifierMap[keycode] & LockMask ||
       keysym[0] == XK_Scroll_Lock ||
       keysym[1] == XF86XK_ModeLock ||
@@ -800,7 +814,8 @@ xf86PostKbdEvent(key)
       if (keysym[1] == XF86XK_ModeLock)   xf86Info.modeSwitchLock = flag;
       updateLeds = TRUE;
     }
-	
+#endif /* not PC98 */	
+
   /*
    * check for an autorepeat-event
    */

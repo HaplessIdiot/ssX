@@ -1,6 +1,6 @@
 
 /* $XConsortium: s3misc.c,v 1.6 95/01/23 15:34:03 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.32 1995/12/09 11:07:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.33 1995/12/17 05:03:24 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -57,6 +57,10 @@
 #define _XF86DGA_SERVER_
 #include "extensions/xf86dgastr.h"
 #endif
+
+#ifdef PC98
+#include "s3pc98.h"
+#endif
  
 extern char s3Mbanks;
 extern Bool s3Mmio928;
@@ -86,6 +90,9 @@ extern int xf86Verbose;
 static Bool AlreadyInited = FALSE;
 static Bool s3ModeSwitched = FALSE;
 
+#ifdef PC98
+extern int pc98BoardType;
+#endif
 
 /*
  * s3Initialize -- Attempt to find and initialize a VGA framebuffer Most of
@@ -128,8 +135,44 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	vgaBase = vgaBaseLow;
       } else {
 	/* First, map the vga window -- it is always required */
+#ifndef PC98
 	vgaBase = xf86MapVidMem(scr_index, VGA_REGION, (pointer)0xA0000,
 				s3BankSize);
+#else
+      switch(pc98BoardType & 0xf0 ){
+      case PW:
+      case PW805I:
+            vgaBase = xf86MapVidMem(scr_index, VGA_REGION, 
+                                      (pointer)(PW_WinAdd << 16), s3BankSize);
+            ErrorF("   PC98: PW mem-access\n");
+	    break;
+      case PCSKB:
+      case PCHKB:
+            vgaBase = xf86MapVidMem(scr_index, VGA_REGION,
+                                      (pointer)(XKB_WinAdd << 16), s3BankSize);
+            ErrorF("   PC98: SKB,HKB mem-access\n");
+	    break;
+      case PCSKB4:
+            vgaBase = xf86MapVidMem(scr_index, VGA_REGION,
+                                      (pointer)(SKB4_WinAdd << 16), s3BankSize);
+            ErrorF("   PC98: SKB4 mem-access(not work,yet)\n");
+	    break;
+      case NECWAB:
+            vgaBase = xf86MapVidMem(scr_index, VGA_REGION,
+                                      (pointer)(NEC_WinAdd << 16), s3BankSize);
+            ErrorF("   PC98: NEC-WAB(C Bus) mem-access\n");
+	    break;
+      case PWLB:
+            vgaBase = xf86MapVidMem(scr_index, LINEAR_REGION,
+                                      (pointer)((PWLB_WinAdd << 16) + 0xA0000),
+							s3BankSize);
+            ErrorF("   PC98: PW localbus mem-access\n");
+	    break;
+      default: 
+            vgaBase = xf86MapVidMem(scr_index, VGA_REGION, 
+				      (pointer)0xA0000,s3BankSize);
+      }
+#endif /* PC98 */
       }
 
       s3Init(s3InfoRec.modes);
@@ -152,6 +195,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
 			      0, 0, (short) s3alu[GXcopy], ~0);	 
 
 	    if (S3_801_928_SERIES (s3ChipId)) {
+#ifndef PC98_PWLB
 	       outb(vgaCRIndex, 0x59);
 	       if (S3_x64_SERIES(s3ChipId)) 
 		  if (s3InfoRec.MemBase != 0) 
@@ -162,6 +206,12 @@ s3Initialize(scr_index, pScreen, argc, argv)
 		  outb(vgaCRReg, 0x03);
 	       outb(vgaCRIndex, 0x5a);
 	       outb(vgaCRReg, 0x00);
+#else
+	       outb(vgaCRIndex, 0x59);
+	       outb(vgaCRReg, 0x00);
+	       outb(vgaCRIndex, 0x5a);
+	       outb(vgaCRReg, 0x40);
+#endif
 	       outb (vgaCRIndex, 0x58);
 	       if (s3InfoRec.videoRam <= 1024) {
 		  s3LinApOpt=0x15;
@@ -251,6 +301,21 @@ s3Initialize(scr_index, pScreen, argc, argv)
 				     s3BankSize);
 		  }
 	       } else {
+#ifdef PC98_PWLB
+		 if (pc98BoardType == PWLB) {
+		     unsigned long addr = (PWLB_WinAdd << 16) + 0x400000;
+
+		     s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
+						(pointer)addr, s3BankSize);
+		     poker = (long *) s3VideoMem; 
+
+		     if (s3TryAddress(poker, pVal, addr, 1)) {
+			ErrorF("%s %s: Local bus LAW is 0x%08X\n", 
+			     XCONFIG_PROBED, s3InfoRec.name, addr);
+			s3LinearAperture = TRUE;
+		     }
+		 } else {
+#endif
 	          for (i = 0xff; i >= 3; i--) { /* 4080Mb..48Mb stepsize 16Mb */
 		     addr = (i << 24);
 
@@ -318,6 +383,9 @@ s3Initialize(scr_index, pScreen, argc, argv)
 		     xf86UnMapVidMem(scr_index, LINEAR_REGION, s3VideoMem,
 				     s3BankSize);
 		  }
+#ifdef PC98_PWLB
+		 }
+#endif
 	       }
 	    }
 
@@ -344,10 +412,32 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	 addr = 0xA0000;
 	 /* If using VGA aperture, set it up */
 	 if (s3BankSize == 0x10000) {
+#ifndef PC98
 	    outb(vgaCRIndex, 0x59);
 	    outb(vgaCRReg, 0x00);
 	    outb(vgaCRIndex, 0x5a);
 	    outb(vgaCRReg, 0x0a);
+#else
+	    switch( pc98BoardType & 0xf0 ){
+		case PCSKB4:
+		    outb(vgaCRIndex, 0x59);
+		    outb(vgaCRReg, SKB4_WinAdd >> 8);
+		    outb(vgaCRIndex, 0x5a);
+		    outb(vgaCRReg, SKB4_WinAdd & 0xff);
+		    break;
+		case NECWAB:
+		    outb(vgaCRIndex, 0x59);
+		    outb(vgaCRReg, 0x00);
+		    outb(vgaCRIndex, 0x5a);
+		    outb(vgaCRReg, NEC_WinAdd );
+		    break;
+		default:
+		    outb(vgaCRIndex, 0x59);
+		    outb(vgaCRReg, 0x00);
+		    outb(vgaCRIndex, 0x5a);
+		    outb(vgaCRReg, 0x0a);
+	    }
+#endif
 	    s3LinApOpt = 0x14;
 	 }
       }

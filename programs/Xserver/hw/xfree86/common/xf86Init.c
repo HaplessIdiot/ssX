@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Init.c,v 1.8 95/01/16 13:17:00 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.27 1995/11/30 13:04:10 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.28 1995/12/07 07:25:21 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -41,6 +41,10 @@
 #include "atKeynames.h"
 extern int xtest_command_key;
 #endif /* XTESTEXT1 */
+
+#ifdef PC98
+#include "pc98_vers.h"
+#endif
 
 /* xf86Exiting is set while the screen is shutting down (even on a reset) */
 Bool xf86Exiting = FALSE;
@@ -599,6 +603,9 @@ xf86PrintConfig()
   ErrorF("(protocol Version %d, revision %d, vendor release %d)\n",
          X_PROTOCOL, X_PROTOCOL_REVISION, VENDOR_RELEASE );
   ErrorF("Release Date: %s\n", XF86_DATE);
+#ifdef PC98
+  ErrorF("PC98: %s \n",PC98_GENERAL_NAME);
+#endif
   ErrorF("Operating System: %s %s\n", OSNAME, OSVENDOR);
   ErrorF("Configured drivers:\n");
   for (i = 0; i < xf86MaxScreens; i++)

@@ -1,5 +1,5 @@
 /* $XConsortium: compiler.h,v 1.2 94/10/12 20:33:21 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.4 1995/09/17 06:31:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.5 1995/11/30 13:04:07 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -46,6 +46,10 @@
 # endif /* __GNUC__ */
 #endif /* !__STDC__ */
 
+#ifdef PC98
+#undef NO_INLINE
+#endif
+
 #ifdef NO_INLINE
 
 extern void outb();
@@ -81,6 +85,7 @@ extern int textinx();
  * If gcc uses gas rather than the native assembler, the syntax of these
  * inlines has to be different.		DHD
  */
+#ifndef PC98
 
 static __inline__ void
 outb(port, val)
@@ -139,6 +144,216 @@ short port;
        "d" (port));
    return ret;
 }
+
+#else /* PC98 */
+
+static __inline__ void
+_outb(port, val)
+short port;
+char val;
+{
+     __asm__ __volatile__("outb %0,%1" ::"a" (val), "d" (port));
+}
+
+static __inline__ void
+_outw(port, val)
+short port;
+short val;
+{
+     __asm__ __volatile__("outw %0,%1" ::"a" (val), "d" (port));
+}
+ 
+
+static __inline__ unsigned int
+_inb(port)
+short port;
+{
+     unsigned char ret;
+     __asm__ __volatile__("inb %1,%0" :
+                          "=a" (ret) :
+                          "d" (port));
+     return ret;
+}
+
+static __inline__ unsigned int
+_inw(port)
+short port;
+{
+     unsigned char ret;
+     __asm__ __volatile__("inw %1,%0" :
+                          "=a" (ret) :
+                          "d" (port));
+     return ret;
+}
+
+#if defined(PC98_WAB)||defined(PC98_GANB_WAP)
+static __inline__ short
+port_convert(short port)
+{
+     port <<= 8;
+     port &= 0x7f00; /* Mask 0111 1111 0000 0000 */
+     port |= 0xE0;
+     return port;
+}
+#endif /* PC98_WAB || PC98_GANB_WAP */
+
+#ifdef PC98_NKVNEC
+#ifdef	PC98_NEC_CIRRUS2
+static __inline__ short
+port_convert(short port)
+{
+     port = (port & 0xf) + ((port & 0xf0) << 4) + 0x0050;
+     return port;
+}
+#else
+static __inline__ short
+port_convert(short port)
+{
+     port = (port & 0xf) + ((port & 0xf0) << 4) + 0x00a0;
+     return port;
+}
+#endif /* PC98_NEC_CIRRUS2 */
+#endif /* PC98_NKVNEC */
+
+#if defined(PC98_PW)||defined(PC98_XKB)||defined(PC98_NEC)||defined(PC98_PWLB)
+#define PW_PORT 0x600
+extern short chipID;
+#if NeedFunctionPrototypes
+extern void *mmioBase;
+#else
+extern unsigned char *mmioBase;
+#endif
+extern unsigned short _port_tbl[];
+#define	port_convert(x)	_port_tbl[(unsigned short)x]
+#endif 
+
+static __inline__ void
+outb(port, val)
+unsigned short port;
+char val;
+{
+#if defined(PC98_GANB_WAP) || defined(PC98_NKVNEC) || defined(PC98_WABS) || \
+    defined(PC98_PW) || defined(PC98_XKB) || defined(PC98_NEC)
+   unsigned short tmp;
+   tmp=port_convert(port);
+   port=tmp;
+#endif
+
+#if defined(PC98_NEC)||defined(PC98_PWLB)
+   *(volatile unsigned char *)((char *)mmioBase+(port)) = (unsigned char)(val);
+#else
+   __asm__ __volatile__("outb %0,%1" : :"a" (val), "d" (port));
+#endif
+}
+
+static __inline__ void
+outw(port, val)
+unsigned short port;
+short val;
+{
+#if defined(PC98_GANB_WAP) || defined(PC98_NKVNEC) || defined(PC98_WABS) || \
+    defined(PC98_PW) || defined(PC98_XKB) || defined(PC98_NEC)
+   unsigned short tmp;
+   tmp=port_convert(port);
+   port=tmp;
+#endif
+
+#if defined(PC98_NEC)||defined(PC98_PWLB)
+   *(volatile unsigned short *)((char *)mmioBase+(port)) = (unsigned short)(val);
+#else
+   __asm__ __volatile__("outw %0,%1" : :"a" (val), "d" (port));
+#endif
+}
+
+static __inline__ void
+outl(port, val)
+unsigned short port;
+int val;
+{
+#if defined(PC98_GANB_WAP) || defined(PC98_NKVNEC) || defined(PC98_WABS) || \
+    defined(PC98_PW) || defined(PC98_XKB) || defined(PC98_NEC)
+   unsigned short tmp;
+   tmp=port_convert(port);
+   port=tmp;
+#endif
+
+#if defined(PC98_NEC)||defined(PC98_PWLB)
+   *(volatile unsigned int *)((char *)mmioBase+(port)) = (unsigned int)(val);
+#else
+   __asm__ __volatile__("outl %0,%1" : :"a" (val), "d" (port));
+#endif
+}
+
+static __inline__ unsigned int
+inb(port)
+unsigned short port;
+{
+   unsigned char ret;
+
+#if defined(PC98_GANB_WAP) || defined(PC98_NKVNEC) || defined(PC98_WABS) || \
+    defined(PC98_PW) || defined(PC98_XKB) || defined(PC98_NEC)
+   unsigned short tmp;
+   tmp=port_convert(port);
+   port=tmp;
+#endif
+
+#if defined(PC98_NEC)||defined(PC98_PWLB)
+   ret =*(volatile unsigned char *)((char *)mmioBase+(port));
+#else
+   __asm__ __volatile__("inb %1,%0" :
+       "=a" (ret) :
+       "d" (port));
+#endif
+   return ret;
+}
+
+static __inline__ unsigned int
+inw(port)
+unsigned short port;
+{
+   unsigned short ret;
+
+#if defined(PC98_GANB_WAP) || defined(PC98_NKVNEC) || defined(PC98_WABS) || \
+    defined(PC98_PW) || defined(PC98_XKB) || defined(PC98_NEC)
+   unsigned short tmp;
+   tmp=port_convert(port);
+   port=tmp;
+#endif
+
+#if defined(PC98_NEC)||defined(PC98_PWLB)
+   ret =*(volatile unsigned short *)((char *)mmioBase+(port));
+#else
+   __asm__ __volatile__("inw %1,%0" :
+       "=a" (ret) :
+       "d" (port));
+#endif
+   return ret;
+}
+
+static __inline__ unsigned int
+inl(port)
+unsigned short port;
+{
+   unsigned int ret;
+
+#if defined(PC98_GANB_WAP) || defined(PC98_NKVNEC) || defined(PC98_WABS) || \
+    defined(PC98_PW) || defined(PC98_XKB) || defined(PC98_NEC)
+   unsigned short tmp;
+   tmp=port_convert(port);
+   port=tmp;
+#endif
+
+#if defined(PC98_NEC)||defined(PC98_PWLB)
+   ret =*(volatile unsigned int *)((char *)mmioBase+(port));
+#else
+   __asm__ __volatile__("inl %1,%0" :
+       "=a" (ret) :
+       "d" (port));
+#endif
+   return ret;
+}
+
+#endif /* PC98 */
 
 #else	/* GCCUSESGAS */
 

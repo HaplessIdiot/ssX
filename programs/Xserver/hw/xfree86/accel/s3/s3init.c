@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.6 95/01/23 15:34:00 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.79 1995/12/02 05:05:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.80 1995/12/07 07:24:33 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -90,6 +90,11 @@ extern Bool s3PixelMultiplexing;
 extern pointer vgaBase;
 extern pointer vgaBaseLow;
 extern pointer vgaBaseHigh;
+
+#ifdef PC98
+extern void crtswitch(short);
+#endif
+
 
 #define new ((vgaHWPtr)vgaNewVideoState)
 
@@ -199,6 +204,7 @@ s3CleanUp(void)
    }
 
    /* Restore S3 SDAC Command and PLL registers */
+#if !defined(PC98_PW) && !defined(PC98_PWLB)
    if (DAC_IS_SDAC || DAC_IS_GENDAC)
    {
       outb(vgaCRIndex, 0x55);
@@ -216,6 +222,7 @@ s3CleanUp(void)
 
       outb(vgaCRReg, tmp & ~1);
    }
+#endif
    
    /* Restore S3 Trio32/64 ext. sequenzer (PLL) registers */
    if (DAC_IS_TRIO)
@@ -469,6 +476,10 @@ s3CleanUp(void)
       
    vgaProtect(FALSE);
 
+#ifdef PC98
+	crtswitch(0);
+#endif
+
    xf86DisableIOPorts(s3InfoRec.scrnIndex);
 }
 
@@ -568,6 +579,7 @@ s3Init(mode)
       }
 
       /* Save S3 SDAC Command and PLL registers */
+#if !defined(PC98_PW) && !defined(PC98_PWLB)
       if (DAC_IS_SDAC || DAC_IS_GENDAC)
       {
          outb(vgaCRIndex, 0x55);
@@ -585,6 +597,7 @@ s3Init(mode)
 
          outb(vgaCRReg, tmp & ~1);
       }
+#endif
    
       /* Save S3 Trio32/64 ext. sequenzer (PLL) registers */
       if (DAC_IS_TRIO)
@@ -802,7 +815,7 @@ s3Init(mode)
    else if (S3_964_SERIES(s3ChipId) && DAC_IS_BT485_SERIES)
       /* Stealth64 and Miro Crystal 20SV */
       pixMuxShift =  mode->Flags & V_DBLCLK ? 1 : 0;
-   else if (S3_928_SERIES(s3ChipId) && DAC_IS_SC15025)
+   else if (S3_801_928_SERIES(s3ChipId) && DAC_IS_SC15025)
       pixMuxShift = -(s3Bpp>>1);  /* for 16/32 bpp */
    else if (S3_864_SERIES(s3ChipId) || S3_805_I_SERIES(s3ChipId))
 	    /* && (DAC_IS_ATT498 || DAC_IS_STG1700) */
@@ -1557,7 +1570,11 @@ s3Init(mode)
  	    /* set s3 reg65 for some unknown reason                      */
 	    /* Setting this for the SPEA Mercury affects clocks > 120MHz */
 	  } else if ((s3DisplayWidth >= 1024) || (s3InfoRec.depth == 24)) {
+#ifndef PC98_PW
 	    outb(vgaCRReg, tmp | 0x40);
+#else
+	    outb(vgaCRReg, tmp | 0x08);
+#endif
 	    /* remove horizontal stripes in 1600/8bpp and 1152/16bpp      */
 	    /* 800/32bpp linewidth pixmux modes                           */
 	    /* someone should check this for other 928 + Bt485 cards      */
@@ -2330,7 +2347,7 @@ s3Init(mode)
    case 32:
       if (S3_864_SERIES(s3ChipId))
 	 outb(vgaCRReg, 0x08);  /* 0x88 can't be used for 864/964 */
-      else if (S3_928_SERIES(s3ChipId) && DAC_IS_SC15025)
+      else if (S3_801_928_SERIES(s3ChipId) && DAC_IS_SC15025)
 	 outb(vgaCRReg, 0x01);  /* ELSA Winner 1000 */
       else if (DAC_IS_BT485_SERIES && S3_928_SERIES(s3ChipId))
 	 outb(vgaCRReg, 0x00);
@@ -2740,6 +2757,10 @@ s3Init(mode)
    outb(DAC_MASK, 0xff);
 
    LOCK_SYS_REGS;
+
+#ifdef PC98
+   crtswitch(1);
+#endif
    return TRUE;
 }
 

@@ -1,5 +1,5 @@
 /* $XConsortium: regs3.h,v 1.3 94/12/27 11:29:42 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.13 1995/04/09 13:45:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.14 1995/04/24 05:20:08 dawes Exp $ */
 /*
  * regs3.h
  * 
@@ -116,6 +116,7 @@
 #define	V_SYNC_STRT	0x1ae8
 #define	V_SYNC_WID	0x1ee8
 #define	DISP_CNTL	0x22e8
+#if !defined(PC98_PW) && !defined(PC98_XKB) && !defined(PC98_NEC)
 #define	ADVFUNC_CNTL	0x4ae8
 #define	SUBSYS_STAT	0x42e8
 #define	SUBSYS_CNTL	0x42e8
@@ -139,6 +140,57 @@
 #define	MULTIFUNC_CNTL	0xbee8
 #define	PIX_TRANS	0xe2e8
 #define	PIX_TRANS_EXT	0xe2ea
+#else /* PC98_PW || PC98_XKB || PC98_NEC */
+#ifdef S3_MMIO
+#define	ADVFUNC_CNTL	0x4a
+#define	SUBSYS_STAT	0x42
+#define	SUBSYS_CNTL	0x42
+#define	ROM_PAGE_SEL	0x46
+#define	CUR_Y		0x82e8
+#define	CUR_X		0x86e8
+#define	DESTY_AXSTP	0x8ae8
+#define	DESTX_DIASTP	0x8ee8
+#define	ERR_TERM	0x92e8
+#define	MAJ_AXIS_PCNT	0x96e8
+#define	GP_STAT		0x9a
+#define	CMD		0x9ae8
+#define	SHORT_STROKE	0x9ee8
+#define	BKGD_COLOR	0xa2e8
+#define	FRGD_COLOR	0xa6e8
+#define	WRT_MASK	0xaae8
+#define	RD_MASK		0xaee8
+#define	COLOR_CMP	0xb2e8
+#define	BKGD_MIX	0xb6e8
+#define	FRGD_MIX	0xbae8
+#define	MULTIFUNC_CNTL	0xbee8
+#define	PIX_TRANS	0xe2e8
+#define	PIX_TRANS_EXT	0xe2ea
+#else	/*	regs3>>8	*/
+#define ADVFUNC_CNTL    0x4a
+#define SUBSYS_STAT     0x42
+#define SUBSYS_CNTL     0x42
+#define ROM_PAGE_SEL    0x46
+#define CUR_Y           0x82
+#define CUR_X           0x86
+#define DESTY_AXSTP     0x8a
+#define DESTX_DIASTP    0x8e
+#define ERR_TERM        0x92
+#define MAJ_AXIS_PCNT   0x96
+#define GP_STAT         0x9a
+#define CMD             0x9a
+#define SHORT_STROKE    0x9e
+#define BKGD_COLOR      0xa2
+#define FRGD_COLOR      0xa6
+#define WRT_MASK        0xaa
+#define RD_MASK         0xae
+#define COLOR_CMP       0xb2
+#define BKGD_MIX        0xb6
+#define FRGD_MIX        0xba
+#define MULTIFUNC_CNTL  0xbe
+#define	PIX_TRANS	0xe2
+#define	PIX_TRANS_EXT	0xe2 /* (0xe2ea) not used? ignored for PC98 */ 
+#endif /* S3MMIO */
+#endif	/* PC98_PW || PC98_XKB || PC98_NEC */
 #define	MIN_AXIS_PCNT	0x0000
 #define	SCISSORS_T	0x1000
 #define	SCISSORS_L	0x2000

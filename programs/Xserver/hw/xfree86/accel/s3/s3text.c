@@ -1,5 +1,5 @@
 /* $XConsortium: s3text.c,v 1.2 94/10/12 20:07:37 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3text.c,v 3.7 1994/09/08 14:26:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3text.c,v 3.9 1995/01/28 17:02:30 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -52,11 +52,12 @@ int x, y;
 int  width, height, pwidth;
 unsigned char *pb;
 {
-	    WaitQueue(5);
+	    WaitQueue(4);
 	    S3_OUTW (CUR_X, (short) x);
 	    S3_OUTW (CUR_Y, (short) y);
 	    S3_OUTW (MAJ_AXIS_PCNT, (short) (width - 1));
 	    S3_OUTW (MULTIFUNC_CNTL, MIN_AXIS_PCNT | (height-1));   
+	    WaitIdle();
 	    S3_OUTW (CMD, CMD_RECT | PCDATA | _16BIT | INC_Y | INC_X |
 	     DRAW | PLANAR | WRTDATA);
 

@@ -1,5 +1,5 @@
 /* $XConsortium: I2061Aalt.c,v 1.1 95/01/26 15:25:49 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/I2061Aalt.c,v 3.5 1995/07/01 10:48:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/I2061Aalt.c,v 3.6 1995/12/02 05:05:30 dawes Exp $ */
 
 /*
  * This code is derived from code available from the STB bulletin board
@@ -38,6 +38,12 @@ static void wait_vb();
 static void wrt_clk_bit();
 static void init_clock();
 #endif
+#ifdef PC98_PW
+static void PWClockSet(short,unsigned long);
+#endif
+#ifdef PC98_PWLB
+static void PWLBClockSet(short,unsigned long);
+#endif
 
 void AltICD2061SetClock(frequency, select)
 register long   frequency;               /* in Hz */
@@ -62,8 +68,13 @@ int select;
    tmp = inb(crtcaddr + 1);
    outb(crtcaddr + 1, tmp & ~0x80);
 
+#if !defined(PC98_PW) && !defined(PC98_PWLB)
    outw(crtcaddr, 0x4838);	/* Unlock S3 register set */
    outw(crtcaddr, 0xA039);
+#else
+   outw(crtcaddr, 0x4838);	/* Unlock S3 register set */
+   outw(crtcaddr, 0xA539);
+#endif
 
    clknum = select;
 
@@ -111,6 +122,7 @@ int select;
    }
    fvco = fref / (1<<bestm);
    realval = (fvco * bestp) /  bestq;
+#if !defined(PC98_PW) && !defined(PC98_PWLB)
    dwv = ((((((long)besti << 7) | (bestp-3)) << 3) | bestm) << 7) | (bestq-2);
 
 #ifdef EXTENDED_DEBUG
@@ -128,6 +140,23 @@ int select;
    wait_vb();
    wait_vb();
    wait_vb();		/* 0.10 second delay... */
+#else
+	bestp = (~(0x82 - bestp)) & 0x7f;
+	bestq = (~(0x81 - bestq)) & 0x7f;		
+	dwv = ((((((((long)besti << 7) | bestp) << 1) | 1) << 3) | bestm) << 7) | (bestq-2);
+#ifdef PC98_PW
+	PWClockSet(select, (unsigned long)dwv);
+#else
+#ifdef PC98_PWLB
+	PWLBClockSet(select, (unsigned long)dwv);
+#endif
+#endif
+
+	inb(0x3d4);
+	inb(0x3d4);
+	inb(0x3d4);
+	inb(0x3d4);
+#endif
 }
 
 
@@ -250,3 +279,49 @@ static void wrt_clk_bit(value)
    for (j=2; --j; )
       inb(0x200);
    }
+
+#ifdef PC98_PW
+static void
+PWClockSet(short a, unsigned long setup)
+{
+	unsigned char b, div;	
+	unsigned short	i, bitval;
+
+	div = (a)? 0: rdinx(0x3d4, 0x41);
+	b = (a)? 0x20: 0x90;
+
+	for (i=0; i<22; i++) {
+		bitval = setup & 0x01;
+		setup >>= 1;
+		div &= 0x0f;
+		div |= (bitval)? 0x40: 0;
+		div |= b;
+		_outb(0x0dc|PW_PORT, div);
+		div |= 0x30; 
+		_outb(0x0dc|PW_PORT, div);
+	}
+}
+#endif
+
+#ifdef PC98_PWLB
+static void
+PWLBClockSet(short a, unsigned long setup)
+{
+	unsigned char b, div;	
+	unsigned short	i, bitval;
+
+	div = (a)? 0: rdinx(0x3d4, 0x41);
+	b = (a)? 0x20: 0x90;
+
+	for (i=0; i<22; i++) {
+		bitval = setup & 0x01;
+		setup >>= 1;
+		div &= 0x0f;
+		div |= (bitval)? 0x40: 0;
+		div |= b;
+		PWLBctrl(div);
+		div |= 0x30; 
+		PWLBctrl(div);
+	}
+}
+#endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.c,v 3.9 1995/11/12 09:52:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.c,v 3.10 1995/11/16 11:05:21 dawes Exp $ */
 /*
  * Progaming of the S3 gendac programable clocks, from the S3 Gendac
  * programing documentation by S3 Inc. 
@@ -232,8 +232,13 @@ unsigned char data2;
    outb(GENDAC_DATA, data2);
 
    /* Now clean up our mess */
+#ifndef PC98_PW
    outb(GENDAC_INDEX, tmp1);  
    outb(vgaCRReg, tmp);
+#else
+   outb(GENDAC_INDEX, 0x0e);
+   outb(GENDAC_DATA, 0x27);
+#endif
 }
 
 

@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.9 95/04/07 19:28:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.108 1995/12/16 08:20:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.109 1995/12/17 05:03:20 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -56,6 +56,11 @@
 #include "servermd.h"
 #define _XF86DGA_SERVER_
 #include "extensions/xf86dgastr.h"
+#endif
+
+#ifdef PC98
+#include "pc98_vers.h"
+#include "s3pc98.h"
 #endif
 
 extern int s3MaxClock;
@@ -283,6 +288,11 @@ static Bool clockDoublingPossible = FALSE;
 int s3AdjustCursorXPos = 0;
 static int s3BiosVendor = UNKNOWN_BIOS;
 
+#ifdef PC98
+extern Bool	BoardInit();
+extern int	pc98BoardType;
+#endif
+
 /*
  * s3PrintIdent -- print identification message
  */
@@ -294,6 +304,19 @@ s3PrintIdent()
 
   ErrorF("  %s: accelerated server for S3 graphics adaptors (Patchlevel %s)\n",
 	 s3InfoRec.name, s3InfoRec.patchLevel);
+	 
+#ifdef PC98
+  ErrorF("\tmodified for PC98 S3 (Patchlevel %s):\n      ",PC98_S3_PL);
+#if defined(PC98_PW)||defined(PC98_XKB)
+  ErrorF("\tThis server was compiled for Power Window and PCSKB/2/4.\n      ");
+#endif
+#ifdef PC98_NEC
+  ErrorF("\tThis server was compiled for NEC-S3(928).\n      ");
+#endif
+#ifdef PC98_PWLB
+  ErrorF("\tThis server was compiled for Power Window(Local Bus).\n      ");
+#endif
+#endif
 
   ErrorF("      ");
   for (i = 0; s3Drivers[i]; i++)
@@ -318,6 +341,9 @@ s3PrintIdent()
       c += strlen(id);
     }
   ErrorF("\n");
+#ifdef PC98
+  ErrorF("Supported video boards:\n \t%s \n    ",PC98_S3_BOARDS);
+#endif
 }
 
 
@@ -641,6 +667,26 @@ s3Probe()
    /* Enable I/O access */
    xf86EnableIOPorts(s3InfoRec.scrnIndex);
 
+#ifdef PC98
+   pc98BoardType = PW;
+
+   if (OFLG_ISSET(OPTION_PCSKB, &s3InfoRec.options))
+	pc98BoardType = PCSKB;
+   if (OFLG_ISSET(OPTION_PCSKB4, &s3InfoRec.options))
+	pc98BoardType = PCSKB4;
+   if (OFLG_ISSET(OPTION_PCHKB, &s3InfoRec.options))
+	pc98BoardType = PCHKB;
+   if (OFLG_ISSET(OPTION_NECWAB, &s3InfoRec.options))
+	pc98BoardType = NECWAB;
+   if (OFLG_ISSET(OPTION_PW805I, &s3InfoRec.options))
+	pc98BoardType = PW805I;
+   if (OFLG_ISSET(OPTION_PWLB, &s3InfoRec.options))
+	pc98BoardType = PWLB;
+   ErrorF("PC98   :Board Type = %X \n",pc98BoardType);
+   if(BoardInit() == FALSE)
+	return(FALSE);
+#endif 
+
    vgaIOBase = (inb(0x3CC) & 0x01) ? 0x3D0 : 0x3B0;
    vgaCRIndex = vgaIOBase + 4;
    vgaCRReg = vgaIOBase + 5;
@@ -745,6 +791,17 @@ s3Probe()
    OFLG_SET(OPTION_SPEA_MERCURY, &validOptions);
    OFLG_SET(OPTION_NUMBER_NINE, &validOptions);
    OFLG_SET(OPTION_STB_PEGASUS, &validOptions);
+#ifdef PC98
+   OFLG_SET(OPTION_PCSKB, &validOptions);
+   OFLG_SET(OPTION_PCSKB4, &validOptions);
+   OFLG_SET(OPTION_PCHKB, &validOptions);
+   OFLG_SET(OPTION_NECWAB, &validOptions);
+   OFLG_SET(OPTION_PW805I, &validOptions);
+   OFLG_SET(OPTION_PWLB, &validOptions);
+   OFLG_SET(OPTION_EPSON_MEM_WIN, &validOptions);
+   OFLG_SET(OPTION_PW_MUX, &validOptions);
+   OFLG_SET(OPTION_NOINIT, &validOptions);
+#endif
    /* ELSA_W1000PRO isn't really required any more */
    OFLG_SET(OPTION_ELSA_W1000PRO, &validOptions);
    OFLG_SET(OPTION_ELSA_W2000PRO, &validOptions);
@@ -763,6 +820,12 @@ s3Probe()
    OFLG_SET(OPTION_SLOW_DRAM_REFRESH, &validOptions);
    OFLG_SET(OPTION_FAST_VRAM, &validOptions);
    xf86VerifyOptions(&validOptions, &s3InfoRec);
+
+#ifdef PC98
+   if (OFLG_ISSET(OPTION_PW_MUX, &s3InfoRec.options)) {
+      OFLG_SET(OPTION_SPEA_MERCURY, &s3InfoRec.options);
+    }
+#endif
 
    if (S3_x64_SERIES(s3ChipId))
       if (OFLG_ISSET(OPTION_NO_MEM_ACCESS, &s3InfoRec.options)) {
@@ -3468,9 +3531,13 @@ icd2061ClockSelect(freq)
 	 if (OFLG_ISSET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions)) {
 	    /* setting exactly 120 MHz doesn't work all the time */
 	    if (freq > 119900000) freq = 119900000;
+#if defined(PC98_PW) || defined(PC98_PWLB)
+	    AltICD2061SetClock(freq, 0);
+#else
 	    AltICD2061SetClock(freq, 2);
 	    AltICD2061SetClock(freq, 2);
 	    AltICD2061SetClock(freq, 2);
+#endif
 	    if (DAC_IS_TI3026) {
 	       /* 
 	        * then we need to setup the loop clock
@@ -3514,6 +3581,9 @@ s3GendacClockSelect(freq)
 {
    Bool result = TRUE;
    unsigned char tmp;
+#if defined(PC98_PW) || defined(PC98_PWLB)
+   int  i = 0;
+#endif
  
    UNLOCK_SYS_REGS;
    
@@ -3525,6 +3595,11 @@ s3GendacClockSelect(freq)
       break;
    default:
       {
+#if defined(PC98_PW) || defined(PC98_PWLB)
+      for (i=0;i<10;i++) {
+	(void) S3gendacSetClock(freq, 7);
+#else
+
 	 if (S3_TRIOxx_SERIES(s3ChipId)) {
 	    (void) S3TrioSetClock(freq, 2); /* can't fail */
 	 }
@@ -3533,11 +3608,20 @@ s3GendacClockSelect(freq)
 	       (void) ICS5342SetClock(freq, 2); /* can't fail */
 	    else
 	       (void) S3gendacSetClock(freq, 2); /* can't fail */
+#endif
 	    outb(vgaCRIndex, 0x42);/* select the clock */
+#if defined(PC98_PW) || defined(PC98_PWLB)
+	    tmp = inb(vgaCRReg) & 0xf0;
+	    outb(vgaCRReg, tmp | 0x07);
+	}
+#else
 	    tmp = inb(vgaCRReg) & 0xf0;
 	    outb(vgaCRReg, tmp | 0x02);
+#endif
 	    usleep(150000);
+#if !defined(PC98_PW) && !defined(PC98_PWLB)
 	 }
+#endif
       }
    }
    LOCK_SYS_REGS;

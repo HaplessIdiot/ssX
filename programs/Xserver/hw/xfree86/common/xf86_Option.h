@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Option.h,v 1.6 95/01/23 15:34:06 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.38 1995/12/16 08:20:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.39 1995/12/17 05:03:30 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -30,7 +30,7 @@
 /*
  * Structures and macros for handling option flags.
  */
-#define MAX_OFLAGS	160
+#define MAX_OFLAGS	192
 #define FLAGBITS	sizeof(unsigned long)
 typedef struct {
 	unsigned long flag_bits[MAX_OFLAGS/FLAGBITS];
@@ -162,6 +162,23 @@ typedef struct {
 #define OPTION_ENABLE_BITBLT    138
 
 
+/* #ifdef PC98 */
+#define OPTION_PCSKB		 140 /* SELECT EPSON PCSKB for S3 Server */
+#define OPTION_PCSKB4		 141 /* SELECT EPSON PCSKB for S3 Server */
+#define OPTION_PCHKB		 142 /* SELECT EPSON PCHKB for S3 Server */
+#define OPTION_NECWAB		 143 /* SELECT NEC WAB-A/B for S3 Server */
+#define OPTION_PW805I		 144 /* SELECT Canopus PW805i for S3 Server */
+#define	OPTION_PWLB		 145 /* SELECT Canopus PW_LB for S3 Server */
+#define OPTION_GA98NB1           150 /* SELECT IO DATA GA-98NB1 for SVGA */
+#define OPTION_GA98NB2           151 /* SELECT IO DATA GA-98NB2 for SVGA */
+#define OPTION_GA98NB4           152 /* SELECT IO DATA GA-98NB4 for SVGA */
+#define OPTION_WAP               153 /* SELECT MELCO WAP-2000/4000 for SVGA */
+#define OPTION_NEC_CIRRUS        154 /* SELECT NEC Internal Server for SVGA */
+#define OPTION_EPSON_MEM_WIN	 161 /* ENABLE mem-window 0xF00000 for EPSON */
+#define OPTION_PW_MUX            162 /* ENABLE MUX on PW928II */
+#define	OPTION_NOINIT		 163 /* Not Initialize SDAC & VGA Registers */
+/* #endif */
+
 #define CLOCK_OPTION_PROGRAMABLE 0 /* has a programable clock */
 #define CLOCK_OPTION_ICD2061A	 1 /* use ICD 2061A programable clocks      */
 #define CLOCK_OPTION_SC11412     3 /* use SC11412 programmable clocks */
@@ -271,6 +288,23 @@ OptFlagRec xf86_OptionTab[] = {
 
   { "showcache",	OPTION_SHOWCACHE },
   { "fb_debug",		OPTION_FB_DEBUG },
+
+/* #ifdef PC98 */
+  { "pcskb",		OPTION_PCSKB },
+  { "pcskb4",		OPTION_PCSKB4 },
+  { "pchkb",		OPTION_PCHKB },
+  { "necwab",		OPTION_NECWAB },
+  { "pw805i",		OPTION_PW805I },
+  { "pw_localbus",	OPTION_PWLB },
+  { "ga98nb1",		OPTION_GA98NB1 },
+  { "ga98nb2",		OPTION_GA98NB2 },
+  { "ga98nb4",		OPTION_GA98NB4 },
+  { "wap",		OPTION_WAP },
+  { "nec_cirrus",	OPTION_NEC_CIRRUS },
+  { "epsonmemwin",	OPTION_EPSON_MEM_WIN },
+  { "pw_mux",		OPTION_PW_MUX },
+  { "noinit",		OPTION_NOINIT },
+/* #endif */
 
   { "8_bit_bus",        OPTION_8_BIT_BUS },
   { "wait_state",       OPTION_WAIT_STATE },

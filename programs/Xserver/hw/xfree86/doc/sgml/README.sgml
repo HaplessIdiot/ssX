@@ -728,7 +728,8 @@ XFree86 Project has been provided from its proceeds.
 	name="Diamond Multimedia Systems, Inc.">
   <item>  <url url="http://www.digital.com/"  
 	name="Digital Equipment Corporation">
-  <item>  Elsa GmbH, Aachen, Germany
+  <item>  <url url="http://www.elsa.de/"
+	name="Elsa GmbH">, Aachen, Germany
   <item>  Genoa Systems Corporation
   <item>  <url url="http://www.hercules.com/"
 	name="Hercules Computer Technology, Inc.">
@@ -927,7 +928,7 @@ compile-time option selections were made when building the distribution.
 
 <verb>
 $XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.37 1995/11/30 13:04:41 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.38 1995/12/07 07:25:36 dawes Exp $
 </verb>
 
 </article>

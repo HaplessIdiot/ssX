@@ -1,5 +1,5 @@
 /* $XConsortium: s3im.c,v 1.6 95/01/06 20:57:19 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.14tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.15 1995/07/12 15:36:46 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -872,15 +872,14 @@ s3ImageWriteNoMem (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
    outw32 (WRT_MASK, planemask);
    outw (MULTIFUNC_CNTL, PIX_CNTL | 0);
 
-   WaitQueue(5);
+   WaitQueue(4);
    outw (CUR_X, (short) x);
    outw (CUR_Y, (short) y);
    outw (MAJ_AXIS_PCNT, (short) w - 1);
    outw (MULTIFUNC_CNTL, MIN_AXIS_PCNT | (h - 1));
+   WaitIdle();
    outw (CMD, CMD_RECT | BYTSEQ | _16BIT | INC_Y | INC_X | DRAW | PCDATA
 	  | WRTDATA);
-
-   WaitQueue(8);
 
    w *= s3Bpp;
    psrc += pwidth * py;
@@ -1031,13 +1030,14 @@ s3ImageFillNoMem (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
       return;
 
    BLOCK_CURSOR;  
-   WaitQueue16_32(7,8);
+   WaitQueue16_32(6,7);
    outw (FRGD_MIX, FSS_PCDATA | alu);
    outw32 (WRT_MASK, planemask);
    outw (CUR_X, (short) x);
    outw (CUR_Y, (short) y);
    outw (MAJ_AXIS_PCNT, (short) w - 1);
    outw (MULTIFUNC_CNTL, MIN_AXIS_PCNT | (h - 1));
+   WaitIdle();
    outw (CMD, CMD_RECT | BYTSEQ|_16BIT | INC_Y | INC_X | DRAW |
 	 PCDATA | WRTDATA);
 
@@ -1126,12 +1126,13 @@ s3RealImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
       S3_OUTW (BKGD_MIX, BSS_BKGDCOL | MIX_DST);
 
     S3_OUTW32 (FRGD_COLOR,  fgPixel);
-    WaitQueue(6);
+    WaitQueue(5);
     S3_OUTW (MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPPC | COLCMPOP_F);
     S3_OUTW (MAJ_AXIS_PCNT, (short) (w - 1));
     S3_OUTW (CUR_X, (short) x);
     S3_OUTW (CUR_Y, (short) y);
     S3_OUTW (MULTIFUNC_CNTL, MIN_AXIS_PCNT | (h-1));   
+    WaitIdle();
     S3_OUTW (CMD, CMD_RECT | PCDATA | _16BIT | INC_Y | INC_X |
 	     DRAW | PLANAR | WRTDATA | BYTSEQ);
     modulus(x - pox, pw, x);

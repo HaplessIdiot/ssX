@@ -1,5 +1,5 @@
 /* $XConsortium: bsd_video.c,v 1.2 94/10/12 20:45:13 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.6 1995/12/09 11:08:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.7 1995/12/17 05:03:41 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -225,7 +225,11 @@ unsigned long Size;
 			 ((unsigned long)Base - MAP_BASE)));
 
 #else
+#ifndef PC98
 	if ((unsigned long)Base < 0xA0000 || (unsigned long)Base >= 0xC0000)
+#else
+	if ((unsigned long)Base < 0xA0000 || (unsigned long)Base >= 0xE8000)
+#endif
 	{
 		FatalError("%s: Address 0x%x outside allowable range\n",
 			   "xf86MapVidMem", Base);
