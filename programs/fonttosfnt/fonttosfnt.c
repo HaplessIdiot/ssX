@@ -26,7 +26,8 @@ THE SOFTWARE.
 #include "fonttosfnt.h"
 
 int verbose_flag = 0;
-int glyph_flag = 1;
+int reencode_flag = 1;
+int glyph_flag = 2;
 int metrics_flag = 1;
 int crop_flag = 1;
 int bit_aligned_flag = 1;
@@ -36,7 +37,7 @@ usage()
 {
     fprintf(stderr, "Usage:\n");
     fprintf(stderr, 
-            "fonttosfnt [ -v ] [ -c ] [ -b ] [ -g n ] [ -m n ] -o font.ttf "
+            "fonttosfnt [ -v ] [ -c ] [ -b ] [ -r ] [ -g n ] [ -m n ] -o font.ttf "
             "[ -- ] font ...\n");
 }
 
@@ -69,6 +70,9 @@ main(int argc, char **argv)
             i++;
         } else if(strcmp(argv[i], "-b") == 0) {
             bit_aligned_flag = 0;
+            i++;
+        } else if(strcmp(argv[i], "-r") == 0) {
+            reencode_flag = 0;
             i++;
         } else if(strcmp(argv[i], "-g") == 0) {
             if(argc <= i + 1) {

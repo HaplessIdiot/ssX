@@ -816,7 +816,8 @@ writecmap(FILE* out, FontPtr font)
     writeUSHORT(out, 0);        /* version */
     writeUSHORT(out, 1);        /* number of encoding tables */
     writeUSHORT(out, 3);        /* platform ID */
-    writeUSHORT(out, 1);        /* encoding ID */
+    writeUSHORT(out, (font->flags & FACE_SYMBOL) ? 0 : 1);
+                                /* encoding ID */
     writeULONG(out, 12);        /* offset to beginning of subtable */
 
     /* subtable */

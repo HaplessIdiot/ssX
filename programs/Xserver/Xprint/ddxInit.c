@@ -39,8 +39,6 @@ copyright holders.
 #include "Xos.h"
 #include "DiPrint.h"
 
-static void Exit(int);
-
 /*-
  *-----------------------------------------------------------------------
  * InitOutput --
@@ -238,12 +236,6 @@ GetTimeInMillis(void)
 void ddxUseMsg(void)
 {
 	/* Right now, let's just do nothing */
-}
-
-static void Exit (code)
-    int	code;
-{
-    exit (code);
 }
 
 void AbortDDX (void)

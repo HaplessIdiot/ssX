@@ -1,4 +1,15 @@
 XFree86 4.3.99.7 (xx June 2003)
+ 239. Fixed X*LookupString() in imDevLkup.c to return status 
+      XBufferOverflow and the required size as required 
+      (Bugzilla #397, Kusanagi Kouichi).
+      Dto. for imLcLkup.c (Egbert Eich).
+ 238. Removed unused function QualifyName, Exit() from Xprint 
+      and CountBits(), matchVisuals() from GLX 
+      (Bugzilla #395, #400, #394 Jason L. Wright).
+ 237. Fixed type warning when building sunffb driver on 64bit 
+      (Bugzilla #404, Jason L. Wright).
+ 236. Fixed warnings when building Palmex touchscreen driver statically
+      (Bugzilla #405, Jason L. Wright).
  235. Fixes and updates for XKB keyboard maps:
       - add programmers variant to the Turkish keyboard map (Nilgün Belma
         Bugüner)
@@ -17128,7 +17139,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2743 2003/06/20 15:49:50 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2744 2003/06/21 13:05:17 pascal Exp $
 
 
 
