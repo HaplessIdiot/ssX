@@ -1,22 +1,22 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.5 1995/01/11 03:52:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.6 1995/01/11 04:35:03 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
- * Modified by Mike Hollick <hollick@>
+ * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
  * Modified 1994 by Régis Cridlig <cridlig@dmi.ens.fr>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
  * the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of Jon Block not be used in
+ * documentation, and that the name of the authors not be used in
  * advertising or publicity pertaining to distribution of the software without
- * specific, written prior permission.  Jon Block makes no representations
+ * specific, written prior permission.  The authors makes no representations
  * about the suitability of this software for any purpose.  It is provided
  * "as is" without express or implied warranty.
  *
- * JON BLOCK DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * THE AUTHORS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
  * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
- * EVENT SHALL JON BLOCK BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * EVENT SHALL THE AUTHORS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
  * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
  * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
@@ -28,8 +28,8 @@
  * several people. It is NOT a stable or complete driver.
  *
  * It has only one time been verified to work for the Chips & Technologies
- * 65530 chipset in 640x480x256 mode. It does not work correctly for higher
- * resolutions.
+ * 65530 chipset in 640x480x256 mode. It does not correctly handle dot-clocks
+ * other than 25 and 28 MHz.
  *
  * The driver code has much obsolete excluded code and has some suspect
  * bits. Notably the extended registers do not seem to ever be unlocked

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti3025clk.c,v 3.2 1994/09/18 08:49:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti3025clk.c,v 3.3 1994/09/23 10:17:06 dawes Exp $ */
 
 /*
  * Copyright 1994 The XFree86 Project, Inc
@@ -15,16 +15,13 @@
 #include "xf86_OSlib.h"
 #include <math.h>
 
-extern int vgaIOBase;
-
 #ifdef __STDC__
 static void
-s3ProgramTi3025Clock(int doubleit, unsigned char n, unsigned char m,
+s3ProgramTi3025Clock(unsigned char n, unsigned char m,
                           unsigned char p)
 #else
 static void
-s3ProgramTi3025Clock(doubleit, n, m, p)
-unsigned char doubleit;
+s3ProgramTi3025Clock(n, m, p)
 unsigned char n;
 unsigned char m;
 unsigned char p;
@@ -47,22 +44,23 @@ unsigned char p;
     */
    s3OutTiIndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, 0x01);
    s3OutTiIndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, 0x01);
-   s3OutTiIndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, p);
+   s3OutTiIndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, p>0 ? p : 1);
    s3OutTiIndReg(TI_MISC_CONTROL, 0x00,
                 TI_MC_LOOP_PLL_RCLK | TI_MC_LCLK_LATCH | TI_MC_INT_6_8_CONTROL);
 
+#if 0
    /*
     * Set a standard MCLK (109.7MHz / 2)
     */
    s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, 0x16);
    s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, 0x15);
    s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, 0x80);
+#endif
 
    /*
     * And finally enable the clock
     */
-   s3OutTiIndReg(TI_INPUT_CLOCK_SELECT, 0x00,
-      doubleit ? TI_ICLK_CLK1_DOUBLE : TI_ICLK_CLK1);
+   s3OutTiIndReg(TI_INPUT_CLOCK_SELECT, 0x00, TI_ICLK_PLL);
 }
 
 #ifdef __STDC__
@@ -74,64 +72,70 @@ long freq;
 int clk;
 #endif
 {
-   float ffreq;
-   unsigned char n, p, m;
-   int doubleit;
-   float nf, pf, mf;
-   float  max_error = 0.05;  /* ~ within 1% at 100MHz */
+   double ffreq;
+   int n, p, m;
+   int best_n=32, best_m=32;
+   double  diff, mindiff;
+   
+#define FREQ_MIN   27500  /* 110/8 MHz is the specified limit */
+#undef  FREQ_MIN
+#define FREQ_MIN   12000
+#define FREQ_MAX  220000
 
-   ffreq = (float) freq;
+   if (freq < FREQ_MIN)
+      ffreq = FREQ_MIN / 1000.0;
+   else if (freq > FREQ_MAX)
+      ffreq = FREQ_MAX / 1000.0;
+   else
+      ffreq = freq / 1000.0;
+   
 
-   if (ffreq > 100000.0) {
-      ffreq /= 2.0;
-      doubleit = 1;
-   } else
-      doubleit = 0;
 
    /* work out suitable timings */
 
    /* pick the right p value */
 
-   if (ffreq > 110000.0) {
-      p = 0;
-   } else if (ffreq > 55000.0) {
-      p = 1;
-      ffreq *= 2.0;
-   } else if (ffreq > 27500.0) {
-      p = 2;
-      ffreq *= 4.0;
-   } else {
-      p = 3;
-      ffreq *= 8.0;
+   for(p=0; p<4 && ffreq < 110.0; p++)
+      ffreq *= 2;
+#if FREQ_MIN < 110000/8
+   if (p==4) {
+      ffreq /= 2;
+      p--;
    }
-   /* now 110000 <= ffreq <= 220000 */   
-
-   ffreq /= TI_REF_FREQ * 1000;
-
-   /* the remaining formula is  ffreq = (m+2)*8 / (n+2) */
-   /* mf and nf are the `+2' values */
-
-   while (1) {
-      for (nf = 3.0; nf < 28.0; nf++) {  /* to have Fref/(n+2)>0.5MHz */
-         for (mf = 3.0; mf < 129.0; mf++) {      
-           float div = (8.0 * mf)/nf;
-           
-           if (div > (ffreq + max_error))   /* next n */
-              break;
-           if (div < (ffreq - max_error))
-              continue; 
-           n = nf - 2.0;
-           m = mf - 2.0;
-#ifdef DEBUG
-           ErrorF("clk %d, setting to %f, n %02x, m %02x, p %d\n", clk,
-                     8.0/(float)(1 << (int)p)*(mf/nf) * TI_REF_FREQ,
-                     (int )n, (int )m, (int )p);
 #endif
-           s3ProgramTi3025Clock(doubleit, n, m, p);
-           return;
-         }
+   
+   /* now 110.0 <= ffreq <= 220.0 */   
+   
+   ffreq /= TI_REF_FREQ;
+   
+   /* now 7.6825 <= ffreq <= 15.3650 */
+   /* the remaining formula is  ffreq = (m+2)*8 / (n+2) */
+   
+   
+   mindiff = ffreq;
+   
+   for (n = 1; n <= (int)(TI_REF_FREQ/0.5 - 2); n++) {
+      m = (int)(ffreq * (n+2) / 8.0 + 0.5) - 2;
+      if (m < 1)
+	 m = 1;
+      else if (m > 127) 
+	 m = 127;
+      
+      diff = ((m+2) * 8) / (n+2.0) - ffreq;
+      if (diff<0)
+	 diff = -diff;
+      
+      if (diff < mindiff) {
+	 mindiff = diff;
+	 best_n = n;
+	 best_m = m;
       }
-      /* try again with a bigger error */
-      max_error += 0.05;
    }
+#ifndef DEBUG
+   ErrorF("clk %d (%f), setting to %f, n %02x, m %02x, p %d\n", clk,freq/1e3,
+	  8.0/(1 << p)*((best_m+2.0)/(best_n+2)) * TI_REF_FREQ,
+	  best_n, best_m, p);
+#endif
+   
+   s3ProgramTi3025Clock(best_n, best_m, p);
 }

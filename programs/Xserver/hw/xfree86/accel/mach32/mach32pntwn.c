@@ -1,5 +1,5 @@
 /* $XConsortium: mach32pntwn.c,v 1.2 94/04/17 20:30:49 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32pntwn.c,v 3.1 1994/07/15 06:58:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32pntwn.c,v 3.2 1994/09/11 00:49:05 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -77,6 +77,7 @@ mach32PaintWindow(pWin, pRegion, what)
 {
     register cfbPrivWin	*pPrivWin;
     void (*pcfbFillBoxTile32)(), (*pcfbFillBoxTileOdd)();
+    WindowPtr pBgWin;
 
     if (!mach32Use4MbAperture)
     {
@@ -155,6 +156,10 @@ mach32PaintWindow(pWin, pRegion, what)
 	else if (pWin->border.pixmap->drawable.width >=
 	    /* PPW/2 */ 16 / pWin->drawable.bitsPerPixel)
 	{
+	    for (pBgWin = pWin;
+		 pBgWin->backgroundState == ParentRelative;
+		 pBgWin = pBgWin->parent);
+
 	    (*pcfbFillBoxTileOdd) ((DrawablePtr)pWin,
 			       (int)REGION_NUM_RECTS(pRegion),
 			       REGION_RECTS(pRegion),

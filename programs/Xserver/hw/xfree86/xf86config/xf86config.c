@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.5 1995/01/07 04:14:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.6 1995/01/11 03:53:11 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -842,19 +842,22 @@ static char *clockchipcomment_text =
 "Choose from the following list:\n"
 "\n";
 
-#define NU_CLOCKCHIPS 6
+#define NU_CLOCKCHIPS 8
 
 static char *clockchip_name[] = {
+	"Chrontel 8391 (uncertain at the time of writing)",
 	"ICD2061A and compatibles (ICS9161A, DCS2824)",
 	"ICS2595",
+	"ICS5342 (similar to SDAC, but not completely compatible)",
 	"S3 GenDAC (86C708) and ICS5300 (autodetected)",
-	"S3 SDAC (86C716) and ICS5342 (autodetected)",
+	"S3 SDAC (86C716)",
 	"Sierra SC11412",
 	"TI 3025",
 };
 
 static char *clockchip_id[] = {
-	"icd2061a", "ics2595", "s3gendac", "s3_sdac", "sc11412", "ti3025"
+	"ch8391", "icd2061a", "ics2595", "ics5342", "s3gendac", "s3_sdac",
+	"sc11412", "ti3025"
 };
 
 static char *deviceclockscomment_text =

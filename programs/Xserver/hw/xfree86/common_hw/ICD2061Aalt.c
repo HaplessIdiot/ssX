@@ -1,5 +1,5 @@
 /* $XConsortium: ICD2061Aalt.c,v 1.1 94/03/28 21:24:51 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/ICD2061Aalt.c,v 3.1 1994/12/18 11:01:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/ICD2061Aalt.c,v 3.2 1995/01/10 10:25:13 dawes Exp $ */
 
 /*
  * This code is derived from code available from the STB bulletin board
@@ -51,7 +51,7 @@ int select;
    double dev, devx;
    double delta, deltax;
    double f0;
-   unsigned int p, q, p0;
+   unsigned int p, q;
    unsigned int bestp=0, bestq=0, bestm=0, besti=0;
    unsigned char tmp;
 
@@ -86,27 +86,25 @@ int select;
       f0  = fvco / fref;
 
       for (q = 14; q <= 71; q++) {     /* q={15..71}:Constraint 2 on page 14 */
-	 p0 = f0 * q;
-	 for (p=p0-1; p<=p0+1; p++) {
-	    if (p < 4 || p > 130)      /* p={4..130}:Constraint 5 on page 14 */
-	       continue; 
-	    deltax = (double)(p) / (double)(q) - f0;
-	    if (deltax < 0) deltax = -deltax;
-	    if (deltax <= delta) {
-	       for (i = 13; i >= 0; i--)
-		  if (fvco >= range[i])
-		     break;
-	       devx = (fvco - (range[i] + range[i+1])/2)/fvco;
-	       if (devx < 0)
-		  devx = -devx;
-	       if (deltax < delta || devx < dev) {
-		  delta = deltax;
-		  dev   = devx;
-		  bestp = p;
-		  bestq = q;
-		  bestm = m;
-		  besti = i;
-	       }
+	 p = (int)(f0 * q + 0.5);
+	 if (p < 4 || p > 130)      /* p={4..130}:Constraint 5 on page 14 */
+	    continue; 
+	 deltax = (double)(p) / (double)(q) - f0;
+	 if (deltax < 0) deltax = -deltax;
+	 if (deltax <= delta) {
+	    for (i = 13; i >= 0; i--)
+	       if (fvco >= range[i])
+		  break;
+	    devx = (fvco - (range[i] + range[i+1])/2)/fvco;
+	    if (devx < 0)
+	       devx = -devx;
+	    if (deltax < delta || devx < dev) {
+	       delta = deltax;
+	       dev   = devx;
+	       bestp = p;
+	       bestq = q;
+	       bestm = m;
+	       besti = i;
 	    }
 	 }
       }

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_HWlib.h,v 1.1 94/03/28 21:25:34 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.4 1994/11/30 20:41:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.5 1995/01/15 10:33:36 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -151,8 +151,30 @@ extern int S3gendacSetClock(
 #endif
 );
 
+extern int ICS5342SetClock(
+#if NeedFunctionPrototypes
+	long,
+	int
+#endif
+);
+
+extern int S3TrioSetClock(
+#if NeedFunctionPrototypes
+	long,
+	int
+#endif
+);
+
 /* Ti3025clk.c */
 extern void Ti3025SetClock(
+#if NeedFunctionPrototypes
+	long,
+	int
+#endif
+);
+
+/* Ch8391clk.c */
+extern void Chrontel8391SetClock(
 #if NeedFunctionPrototypes
 	long,
 	int

@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 # 
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.2 1995/01/12 12:06:37 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.3 1995/01/15 10:35:52 dawes Exp $
 
 # Cirrus Logic
 
@@ -128,6 +128,14 @@ NAME VI720
 CHIPSET CL-GD5434
 SEE Cirrus Logic GD543x
 
+NAME Cirrus Logic GD62xx (laptop)
+CHIPSET CL-GD6205/15/25/35
+SERVER SVGA
+
+NAME Cirrus Logic GD64xx (laptop)
+CHIPSET CL-GD6420/6440
+SERVER SVGA
+
 # S3 801/805
 
 NAME S3-801/805 (generic)
@@ -177,7 +185,7 @@ LINE     #Probable clocks:
 LINE     #Clocks 25.20 28.32 32.50 0.00 40.00 44.90 50.40 65.00
 LINE     #Clocks 78.00 56.70 63.10 75.10 80.00 89.90 100.90 31.50
 
-NAME Orchid Farenheit-1280+
+NAME Orchid Fahrenheit-1280+
 CHIPSET S3-801/805
 SERVER S3
 RAMDAC att20C490
@@ -186,6 +194,7 @@ LINE     Option     "dac_8_bit"
 LINE     #Probable clocks:
 LINE     #Clocks     25.20 28.32 40.0 0.0 50.10 77.0 36.10 45.0 
 LINE     #Clocks     130.0 120.20 80.0 31.50 110.30 65.0 75.0 94.60
+
 NAME Diamond Stealth 24
 SEE S3-801/805 (generic)
 
@@ -571,6 +580,16 @@ SERVER SVGA
 NAME Diamond SpeedStar 24X
 CHIPSET WD90C31
 SERVER SVGA
+
+NAME WD 90C24 (laptop) (wd90c30 compatible)
+CHIPSET WD90C24
+SERVER SVGA
+LINE     Chipset "wd90c30"
+
+NAME WD 90C24A (laptop) (wd90c31 compatible)
+CHIPSET WD90C24A
+SERVER SVGA
+LINE     Chipset "wd90c31"
 
 # Avance Logic
 

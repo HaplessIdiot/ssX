@@ -1,5 +1,5 @@
 /* $XConsortium: oak_driver.c,v 1.1 94/03/28 21:52:02 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.9 1994/12/25 12:35:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.10 1995/01/10 02:11:09 dawes Exp $ */
 /*
  * Copyright 1994 by Jorge Delgado <ernar@dit.upm.es>
  *
@@ -27,9 +27,9 @@
  * This is a oak SVGA driver for XFree86.  
  *
  *  Built from Xfree86 1.3 stub file.
- * 9/1/93 Initial version Steve Goldman  sgoldman@encore.com
- * 10/9/94 Revamped 067/077 version with added support for 
- *         087 chipset by Jorge Delgado  ernar@dit.upm.es  
+ *  9/ 1/93 Initial version Steve Goldman  sgoldman@encore.com
+ * 10/ 9/94 Revamped 067/077 version with added support for 
+ *          087 chipset by Jorge Delgado  ernar@dit.upm.es  
  * 24/10/94 New version by Jorge Delgado with support for
  *          2MB of DRAM in 087 chipsets with extended bank
  *          switching, and ported to X11R6 structure, adding ALPHA linear  
@@ -39,6 +39,11 @@
  * 23/12/94 Okay, now linear addressing is cleaner, and more
  *          efficient, Membase has been set at 0xE00000 (14Mb) and
  *          aperture is selected matching video memory.
+ * 18/ 1/95 Yabadabadoo!!! I found an undocumented way of setting
+ *          linear addressing above 16Mbytes for OTI087 VLB cards, activating
+ *          the 64Mbyte pin of my VLB card. Thanks must be given to
+ *          the people that wrote the README.cirrus, it gave me the clue.
+ *          okay for all you there..voila!! >16Mb linear addressing.
  *
  * This one file can be used for both the color and monochrome servers.
  * Remember that the monochrome server is actually using a 16-color mode,
@@ -399,6 +404,7 @@ vgaVideoChipRec OAK = {
 static int OTI_chipset;
 static Bool OTI_2mb_bank = FALSE;
 static Bool OTI_linear = FALSE;
+static Bool OTI_vlb = FALSE;
 
 static unsigned OAK_ExtPorts[] = { OTI_INDEX, OTI_R_W };
 static int Num_OAK_ExtPorts = (sizeof(OAK_ExtPorts)/sizeof(OAK_ExtPorts[0]));
@@ -713,66 +719,88 @@ OAKProbe()
       }
     }
   }
-  if (vga256InfoRec.videoRam == 2048) {
-    ErrorF("%s %s: oti087: 2MB supported, but not tested!!!\n",
-	   XCONFIG_PROBED, vga256InfoRec.name);
-    ErrorF("%s %s: oti087: use 'VideoRam 1024' in XF86Config file\n",
-	   XCONFIG_PROBED, vga256InfoRec.name);
-    ErrorF("%s %s: oti087: if you find any problem. Or mail me\n",
-	   XCONFIG_PROBED, vga256InfoRec.name);
-    ErrorF("%s %s: oti087: at ernar@dit.upm.es \n",
-	   XCONFIG_PROBED, vga256InfoRec.name);
-  }
 
-  /* HERE WE KNOW THE CHIPSET SO WE CHANGE THE BANKING ROUTINES, AND
-   * THE STRUCTURE, ALLOWING FOR LINEAR FRAMEBUFFER
+    if (OTI_chipset == OTI87) {
+      if (vga256InfoRec.videoRam == 2048) {
+	ErrorF("%s %s: oti087: 2MB supported, but not tested!!!\n",
+	       XCONFIG_PROBED, vga256InfoRec.name);
+	ErrorF("%s %s: oti087: use 'VideoRam 1024' in XF86Config file\n",
+	       XCONFIG_PROBED, vga256InfoRec.name);
+	ErrorF("%s %s: oti087: if you find any problem. Or mail me\n",
+	       XCONFIG_PROBED, vga256InfoRec.name);
+	ErrorF("%s %s: oti087: at ernar@dit.upm.es \n",
+	       XCONFIG_PROBED, vga256InfoRec.name);
+      }
+      
+      /* Now we perform other detections, such as RAMDAC and
+       * the like.
+       */
+      
+      outb(OTI_INDEX,OTI87_CONFIG_1);
+      temp2 = ( inb(OTI_R_W) & 0x06);
+      switch ( temp2 )
+	{
+	case 0x00 :
+	  ErrorF("%s %s: oti087: VLB card integrated in MotherBoard. \n",
+		 XCONFIG_PROBED, vga256InfoRec.name);
+	  ErrorF("%s %s: oti087: MemBase for Linear Addressing will be\n",
+		 XCONFIG_PROBED, vga256InfoRec.name);
+	  ErrorF("%s %s: oti087: set at 0x4E00000 (the 78Mbyte mark). \n",
+		 XCONFIG_PROBED, vga256InfoRec.name);
+	  OTI_vlb = TRUE;
+	  break;
+	case 0x02 :
+	  ErrorF("%s %s: oti087: VLB card in a 32-bit VESA slot. \n",
+		 XCONFIG_PROBED, vga256InfoRec.name);
+	  ErrorF("%s %s: oti087: MemBase for Linear Addressing will be. \n",
+		 XCONFIG_PROBED, vga256InfoRec.name);
+	  ErrorF("%s %s: oti087: set at 0x4E00000 (the 78Mbyte mark). \n",
+		 XCONFIG_PROBED, vga256InfoRec.name);
+	  OTI_vlb = TRUE;
+	  break;
+	case 0x04 :
+	  ErrorF("%s %s: oti087: ISA card integrated in MotherBoard. \n",
+		 XCONFIG_PROBED, vga256InfoRec.name);
+	  ErrorF("%s %s: oti087: MemBase for Linear Addressing will be. \n",
+		 XCONFIG_PROBED, vga256InfoRec.name);
+	  ErrorF("%s %s: oti087: set at 0xE00000 (the 14Mbyte mark). \n",
+		 XCONFIG_PROBED, vga256InfoRec.name);
+	  OTI_vlb = FALSE;
+	  break;
+	case 0x06 :
+	  ErrorF("%s %s: oti087: ISA card in a 16-bit AT-BUS slot.  \n",
+		 XCONFIG_PROBED, vga256InfoRec.name);
+	  ErrorF("%s %s: oti087: MemBase for Linear Addressing will be. \n",
+		 XCONFIG_PROBED, vga256InfoRec.name);
+	  ErrorF("%s %s: oti087: set at 0xE00000 (the 14Mbyte mark). \n",
+		 XCONFIG_PROBED, vga256InfoRec.name);
+	  OTI_vlb = FALSE;
+	  break;
+	}
+      
+      outb(OTI_INDEX,OTI87_CONFIG_2);
+      temp2 = ( inb(OTI_R_W) & 0x0C);
+      switch (temp2 )
+	{
+	case 0x00 :
+	  ErrorF("%s %s: oti087: BT476, SC11487, IMSG174 or equivalent RAMDAC.\n",
+		 XCONFIG_PROBED, vga256InfoRec.name);
+	  break;
+	case 0x04 :
+	  ErrorF("%s %s: oti087: MU9C1715 or equivalent RAMDAC.\n",
+		 XCONFIG_PROBED, vga256InfoRec.name);
+	  break;
+	case 0x08 :
+	  ErrorF("%s %s: oti087: BT484 or equivalent RAMDAC.\n",
+		 XCONFIG_PROBED, vga256InfoRec.name);
+	  break;
+	}
+    }
+
+  /* Here we know the chipset so we change the banking routines, and
+   * the structure, allowing for "Linear Framebuffer"
    */
-
-  /* Now we perform other detections, such as RAMDAC and
-   * the like.
-   */
-
-  outb(OTI_INDEX,OTI87_CONFIG_1);
-  temp2 = ( inb(OTI_R_W) & 0x06);
-  switch ( temp2 )
-  {
-  case 0x00 :
-    ErrorF("%s %s: oti087: VLB card integrated in MotherBoard. \n",
-           XCONFIG_PROBED, vga256InfoRec.name);
-    break;
-  case 0x02 :
-    ErrorF("%s %s: oti087: VLB card in a 32-bit VESA slot. \n",
-           XCONFIG_PROBED, vga256InfoRec.name);
-    break;
-  case 0x04 :
-    ErrorF("%s %s: oti087: ISA card integrated in MotherBoard. \n",
-           XCONFIG_PROBED, vga256InfoRec.name);
-    break;
-  case 0x06 :
-    ErrorF("%s %s: oti087: ISA card in a 16-bit AT-BUS slot.  \n",
-           XCONFIG_PROBED, vga256InfoRec.name);
-    break;
-  }
-
-  outb(OTI_INDEX,OTI87_CONFIG_2);
-  temp2 = ( inb(OTI_R_W) & 0x0C);
-  switch (temp2 )
-  {
-  case 0x00 :
-    ErrorF("%s %s: oti087: BT476, SC11487, IMSG174 or equivalent RAMDAC.\n",
-           XCONFIG_PROBED, vga256InfoRec.name);
-    break;
-  case 0x04 :
-    ErrorF("%s %s: oti087: MU9C1715 or equivalent RAMDAC.\n",
-           XCONFIG_PROBED, vga256InfoRec.name);
-    break;
-  case 0x08 :
-    ErrorF("%s %s: oti087: BT484 or equivalent RAMDAC.\n",
-           XCONFIG_PROBED, vga256InfoRec.name);
-    break;
-  }
-
-
+  
   if (OTI_chipset == OTI87)
     {
       OAK.ChipSetRead = OTI87SetRead ;
@@ -783,9 +811,16 @@ OAKProbe()
       if (OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))     
 	{
 	  OAK.ChipUseLinearAddressing = TRUE ;
-	  OAK.ChipLinearBase = 0xE00000 ; /* This is a default, just in case */
+	  if (OTI_vlb) 
+	    {
+	      OAK.ChipLinearBase=0x4E00000 ;/* This is a hack ;), but works */
+	    } 
+	  else 
+	    {
+	      OAK.ChipLinearBase=0xE00000 ;/* This is a default, just in case*/
+	    }
 	  OAK.ChipLinearSize = vga256InfoRec.videoRam * 1024 ;
-
+	  OTI_linear = TRUE; /* Don't take this out, it is needed */
 #if 0
 	  OAK.ChipHas16bpp = TRUE ;
 	  OAK.ChipHas32bpp = TRUE ;
@@ -1327,7 +1362,7 @@ OAKInit(mode)
       
       if (OFLG_ISSET(OPTION_FIFO_CONSERV, &vga256InfoRec.options)) {
 	new->oti87FIFODepth = 0xE ;
-	ErrorF ("%s %s: oti087: FIFO set to 15. \n", XCONFIG_GIVEN,
+	ErrorF ("%s %s: oti087: FIFO set to 14. \n", XCONFIG_GIVEN,
 		vga256InfoRec.name);
       } else if (OFLG_ISSET(OPTION_FIFO_AGGRESSIVE, &vga256InfoRec.options)) {
 	new->oti87FIFODepth = 0x2 ;
@@ -1407,24 +1442,54 @@ OAKInit(mode)
 	      vga256InfoRec.name);
     }
 
-  if (OTI_linear) 
+  if (OTI_linear)
     {
-      switch(vga256InfoRec.videoRam)
-      {
-      case 256:
-        new -> oti87Mapping = 0xE1;
-        break;
-      case 512:
-        new -> oti87Mapping = 0xE5;
-          break;
-      case 1024:
-        new -> oti87Mapping = 0xE9; 
-          break;
-      case 2048:
-        new -> oti87Mapping = 0xED;
-          break;
-      } 
-
+      if (OTI_vlb)
+	{
+    
+  /* This is an undocumented option of the board. Disabling DMA tranasfers
+   * the 64MB (0x4000000) address mark pin is enabled, allowing higher-than
+   * 16Mbyte-mark addressing, I must thank the people who did the
+   * README.cirrus for the clue, and the binaries of the OTI087 MS-Windoze
+   * drivers for allowing me to do some diff's :), it was a hell to find 
+   * and debug, but at last....it's here (and I will be able to buy another
+   * 4 Mbytes of RAM and be allowed linear addressing)
+   */
+   
+	  switch(vga256InfoRec.videoRam)
+	    {
+	    case 256:
+	      new -> oti87Mapping = 0xE3;
+	      break;
+	    case 512:
+	      new -> oti87Mapping = 0xE7;
+	      break;
+	    case 1024:
+	      new -> oti87Mapping = 0xEB; 
+	      break;
+	    case 2048:
+	      new -> oti87Mapping = 0xEF; 
+	      break;
+	    } 
+	}
+      else
+	{
+	  switch(vga256InfoRec.videoRam)
+	    {
+	    case 256:
+	      new -> oti87Mapping = 0xE3;
+	      break;
+	    case 512:
+	      new -> oti87Mapping = 0xE7;
+	      break;
+	    case 1024:
+	      new -> oti87Mapping = 0xEB; 
+	      break;
+	    case 2048:
+	      new -> oti87Mapping = 0xEF; 
+	      break;
+	    } 
+	}    
       ErrorF ("%s %s: oti087: linear framebuffer enabled. \n", XCONFIG_GIVEN,
 	      vga256InfoRec.name);
       ErrorF ("%s %s: oti087: base address is set at 0x%X.\n", XCONFIG_GIVEN,

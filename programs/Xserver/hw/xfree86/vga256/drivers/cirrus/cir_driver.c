@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.1 94/03/28 21:48:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.28 1995/01/15 10:35:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.29 1995/01/18 06:14:37 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -1400,9 +1400,6 @@ nolinear:
 	    if (xf86Verbose) {
               ErrorF("%s %s: %s: Using BitBLT engine\n",
 	             XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset);
-	      if (cirrusAvoidImageBLT)
-                  ErrorF("%s %s: %s: Not using system-to-video BitBLT\n",
-                    XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset);
               }
 
 #ifdef CIRRUS_INCLUDE_COPYPLANE1TO8

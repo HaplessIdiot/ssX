@@ -1,6 +1,6 @@
 /*
  * $XConsortium: s3Cursor.c,v 1.2 94/03/28 21:14:00 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.9 1995/01/10 10:23:00 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.10 1995/01/12 12:03:08 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -435,10 +435,12 @@ s3MoveCursor(pScr, x, y)
    x -= s3InfoRec.frameX0 - s3AdjustCursorXPos;
    y -= s3InfoRec.frameY0;
 
-   if (!S3_x64_SERIES(s3ChipId) && !S3_805_I_SERIES(s3ChipId)) 
-      x *= s3Bpp;
-   else if (s3Bpp > 2)
-      x *= 2;
+   if (!S3_TRIOxx_SERIES(s3ChipId)) {
+      if (!S3_x64_SERIES(s3ChipId) && !S3_805_I_SERIES(s3ChipId)) 
+	 x *= s3Bpp;
+      else if (s3Bpp > 2)
+	 x *= 2;
+   }
 
    x -= s3hotX;
    y -= s3hotY;
@@ -528,11 +530,25 @@ s3RecolorCursor(pScr, pCurs, displayed)
 	FakeAllocColor(pmap, &maskColor);
 	FakeFreeColor(pmap, sourceColor.pixel);
 	FakeFreeColor(pmap, maskColor.pixel);
-	
-	outb(vgaCRIndex, 0x0E);
-	outb(vgaCRReg, sourceColor.pixel);
-	outb(vgaCRIndex, 0x0F);
-	outb(vgaCRReg, maskColor.pixel);
+
+	if (S3_TRIOxx_SERIES(s3ChipId)) {
+	   outb(vgaCRIndex, 0x45);
+	   inb(vgaCRReg);  /* reset stack pointer */
+	   outb(vgaCRIndex, 0x4A);
+	   outb(vgaCRReg, sourceColor.pixel);
+	   outb(vgaCRReg, sourceColor.pixel);
+	   outb(vgaCRIndex, 0x45);
+	   inb(vgaCRReg);  /* reset stack pointer */
+	   outb(vgaCRIndex, 0x4B);
+	   outb(vgaCRReg, maskColor.pixel);
+	   outb(vgaCRReg, maskColor.pixel);
+	}
+	else {
+	   outb(vgaCRIndex, 0x0E);
+	   outb(vgaCRReg, sourceColor.pixel);
+	   outb(vgaCRIndex, 0x0F);
+	   outb(vgaCRReg, maskColor.pixel);
+	}
 	break;
      case 16:
         if (s3InfoRec.depth == 15) {

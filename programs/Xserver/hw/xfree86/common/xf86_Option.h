@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Option.h,v 1.1 94/03/28 21:24:25 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.18 1995/01/15 10:33:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.19 1995/01/18 06:10:19 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -138,6 +138,7 @@ typedef struct {
 #define CLOCK_OPTION_CIRRUS      7 /* use Cirrus programmable clocks */
 #define CLOCK_OPTION_CH8391      8 /* use Chrontel 8391 programmable clocks */
 #define CLOCK_OPTION_ICS5342     9 /* use ICS 5342 programmable clocks */
+#define CLOCK_OPTION_S3TRIO     10 /* use S3 Trio32/64 programmable clocks */
 
 /*
  * Table to map option strings to tokens.
@@ -236,6 +237,9 @@ OptFlagRec xf86_ClockOptionTab [] = {
   { "s3_sdac",		CLOCK_OPTION_S3GENDAC },  /* S3 SDAC */
   { "ics5300",		CLOCK_OPTION_S3GENDAC },  /* S3 gendac compatible */
   { "ics5342",		CLOCK_OPTION_ICS5342 },   /* not completely S3 SDAC compatible */
+  { "s3_trio",		CLOCK_OPTION_S3TRIO },    /* S3 Trio32/64 */
+  { "s3_trio32",	CLOCK_OPTION_S3TRIO },    /* S3 Trio32/64 */
+  { "s3_trio64",	CLOCK_OPTION_S3TRIO },    /* S3 Trio32/64 */
   { "ti3025",		CLOCK_OPTION_TI3025 },    /* TI3025 */
   { "ics2595",		CLOCK_OPTION_ICS2595 },   /* ICS2595 */
   { "cirrus",		CLOCK_OPTION_CIRRUS }, 	  /* Cirrus built-in */

@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.62 1995/01/18 06:06:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.63 1995/01/18 10:57:51 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -168,6 +168,9 @@ static SymTabRec s3DacTable[] = {
    { S3_SDAC_DAC,	"ics5342" },       /* XXXX should be checked if true */
    { S3_GENDAC_DAC,	"s3gendac" },
    { S3_GENDAC_DAC,	"ics5300" },
+   { S3_TRIO32_DAC,	"s3_trio32" },
+   { S3_TRIO64_DAC,	"s3_trio64" },
+   { S3_TRIO64_DAC,	"s3_trio" },
    { -1,		"" },
 };
 
@@ -329,7 +332,8 @@ static int check_SPEA_bios(int BIOSbase)
 }
 
 
-static Bool s3ProbeSDAC()
+static Bool
+s3ProbeSDAC(Bool quiet)
 {
    /* probe for S3 GENDAC or SDAC */
    /*
@@ -382,24 +386,27 @@ static Bool s3ProbeSDAC()
        (clock01 == 0x7f7f7f7f && clock23 != 0x7f7f7f7f)) {
       found = TRUE;
 
-      xf86dactopel();
-      inb(0x3c6);
-      inb(0x3c6);
-      inb(0x3c6);
+      if (!quiet) {
+	 xf86dactopel();
+	 inb(0x3c6);
+	 inb(0x3c6);
+	 inb(0x3c6);
 
-      /* the forth read will show the SDAC chip ID and revision */
-      if (((i=inb(0x3c6)) & 0xf0) == 0x70) {
-	 ErrorF("%s %s: Detected an S3 SDAC 86C716 RAMDAC and programmable clock\n",
-		XCONFIG_PROBED, s3InfoRec.name);
-	 s3RamdacType = S3_SDAC_DAC;
-      }
-      else {
-	 ErrorF("%s %s: Detected an S3 GENDAC 86C708 RAMDAC and programmable clock\n",
-		XCONFIG_PROBED, s3InfoRec.name);
-	 s3RamdacType = S3_GENDAC_DAC;
+	 /* the fourth read will show the SDAC chip ID and revision */
+	 if (((i=inb(0x3c6)) & 0xf0) == 0x70) {
+	    ErrorF("%s %s: Detected an S3 SDAC 86C716 RAMDAC and programmable clock\n",
+		   XCONFIG_PROBED, s3InfoRec.name);
+	    s3RamdacType = S3_SDAC_DAC;
+	 }
+	 else {
+	    ErrorF("%s %s: Detected an S3 GENDAC 86C708 RAMDAC and programmable clock\n",
+		   XCONFIG_PROBED, s3InfoRec.name);
+	    s3RamdacType = S3_GENDAC_DAC;
+	 }
       }
       xf86dactopel();
    }
+   return found;
 }
 
 /*
@@ -615,6 +622,8 @@ s3Probe()
 	 case ELSA_WINNER_1000PRO:
 	    /* This option isn't required at the moment */
 	    OFLG_SET(OPTION_ELSA_W1000PRO,  &s3InfoRec.options);
+	    if (s3ProbeSDAC(TRUE)) 
+	       continue;  /* SDAC detected, don't set ICD2061A clock */
 	    break;
 	 case ELSA_WINNER_2000PRO:
 	    OFLG_SET(OPTION_ELSA_W2000PRO,  &s3InfoRec.options);
@@ -843,7 +852,33 @@ s3Probe()
     * type possible.  Only probe for 928, 805i and 864/964.
     */
 
-   if (S3_928_SERIES(s3ChipId) || S3_x64_SERIES(s3ChipId)
+   if (S3_TRIOxx_SERIES(s3ChipId)) {
+      if (s3RamdacType != UNKNOWN_DAC && !DAC_IS_TRIO) {
+	 ErrorF("%s %s: for Trio32/64 chips you shouldn't specify a Ramdac\n",
+		XCONFIG_PROBED, s3InfoRec.name);
+	 OFLG_CLR(XCONFIG_RAMDAC, &s3InfoRec.xconfigFlag);
+      }
+      if (!DAC_IS_TRIO) {
+	 if (S3_TRIO32_SERIES(s3ChipId))
+	    s3RamdacType = S3_TRIO32_DAC;
+	 else 
+	    s3RamdacType = S3_TRIO64_DAC;
+	 s3InfoRec.ramdac = xf86TokenToString(s3DacTable, s3RamdacType);
+      }
+      if ( OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions) &&
+	  !OFLG_ISSET(CLOCK_OPTION_S3TRIO, &s3InfoRec.clockOptions)) {
+	 ErrorF("%s %s: for Trio32/64 chips you shouldn't specify a Clockchip\n",
+		XCONFIG_PROBED, s3InfoRec.name);
+	 /* Clear the other clock options */
+	 OFLG_ZERO(&s3InfoRec.clockOptions);
+      }
+      if (!OFLG_ISSET(CLOCK_OPTION_S3TRIO, &s3InfoRec.clockOptions)) {
+	 OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
+	 OFLG_SET(CLOCK_OPTION_S3TRIO, &s3InfoRec.clockOptions);
+	 clockchip_probed = XCONFIG_PROBED;
+      }
+   }
+   else if (S3_928_SERIES(s3ChipId) || S3_x64_SERIES(s3ChipId)
        || S3_805_I_SERIES(s3ChipId)) {
       /* First probe for Ti3020 and Ti3025 */
       if (s3RamdacType == UNKNOWN_DAC) {
@@ -1032,7 +1067,7 @@ s3Probe()
    if (S3_864_SERIES(s3ChipId) || S3_805_I_SERIES(s3ChipId) 
        || S3_801_SERIES(s3ChipId)) {
       if (s3RamdacType == UNKNOWN_DAC) {
-	 if (s3ProbeSDAC() &&
+	 if (s3ProbeSDAC(FALSE) &&
 	     !OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions)) {
 	    OFLG_SET(CLOCK_OPTION_S3GENDAC,    &s3InfoRec.clockOptions);
 	    OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
@@ -1097,6 +1132,10 @@ s3Probe()
             /* SPEA Mirage P64 Bios 4.xx */
             ErrorF("%s %s: SPEA Mirage P64 detected.\n",
             XCONFIG_PROBED, s3InfoRec.name);
+          else if (S3_TRIO64_SERIES(s3ChipId)) 
+            /* SPEA Mirage P64 Bios 5.xx */
+            ErrorF("%s %s: SPEA Mirage P64 Trio64 detected.\n",
+            XCONFIG_PROBED, s3InfoRec.name);
           break;
        case S3_GENDAC_DAC:
           if (S3_801_SERIES(s3ChipId))
@@ -1137,6 +1176,11 @@ s3Probe()
 	 if (!S3_801_SERIES(s3ChipId))
 	    chips = "801 and 805 chips";
 	 break;
+      case S3_TRIO32_DAC:
+      case S3_TRIO64_DAC:
+	 if (!S3_TRIOxx_SERIES(s3ChipId))
+	    chips = "Trio32 and Trio64";
+	 break;
       }
       if (chips) {
 	 ErrorF("%s %s: Ramdac \"%s\" is only supported with %s\n",
@@ -1144,6 +1188,20 @@ s3Probe()
 	 OFLG_CLR(XCONFIG_RAMDAC, &s3InfoRec.xconfigFlag);
 	 /* Treat the ramdac as a "normal" dac */
 	 s3RamdacType = NORMAL_DAC;
+	 s3InfoRec.ramdac = xf86TokenToString(s3DacTable, s3RamdacType);
+      }
+   }
+
+   if (S3_TRIOxx_SERIES(s3ChipId)) {
+      if (!DAC_IS_TRIO) {
+	 ErrorF("%s %s: for Trio32/64 chips you shouldn't specify a Ramdac\n",
+		XCONFIG_PROBED, s3InfoRec.name);
+	 OFLG_CLR(XCONFIG_RAMDAC, &s3InfoRec.xconfigFlag);
+	 /* Treat the ramdac as a "normal" dac */
+	 if (S3_TRIO32_SERIES(s3ChipId))
+	    s3RamdacType = S3_TRIO32_DAC;
+	 else 
+	    s3RamdacType = S3_TRIO64_DAC;
 	 s3InfoRec.ramdac = xf86TokenToString(s3DacTable, s3RamdacType);
       }
    }
@@ -1196,6 +1254,8 @@ s3Probe()
 	 case STG1700_DAC:
 	 case S3_SDAC_DAC:
 	 case S3_GENDAC_DAC:
+	 case S3_TRIO32_DAC:
+	 case S3_TRIO64_DAC:
 	    break;
 	 case SC15025_DAC:
 	    break;
@@ -1235,6 +1295,8 @@ s3Probe()
       case ATT22C498_DAC:
       case STG1700_DAC:
       case S3_SDAC_DAC:
+      case S3_TRIO32_DAC:
+      case S3_TRIO64_DAC:
 	 if (OFLG_ISSET(CLOCK_OPTION_ICS5342, &s3InfoRec.clockOptions)) 
 	    s3InfoRec.dacSpeed = 125000;  /* limit of current ICS5342 clock code */
 	 else
@@ -1300,8 +1362,8 @@ s3Probe()
 	S3_964_SERIES(s3ChipId)))
       s3Bt485PixMux = TRUE;
 
-   if ((DAC_IS_ATT498 || DAC_IS_STG1700 || DAC_IS_SDAC) && 
-       (S3_864_SERIES(s3ChipId) || S3_805_I_SERIES(s3ChipId)))
+   if ((DAC_IS_ATT498 || DAC_IS_STG1700 || DAC_IS_SDAC || DAC_IS_TRIO) && 
+       (S3_x64_SERIES(s3ChipId) || S3_805_I_SERIES(s3ChipId)))
       if (xf86bpp <= 8) s3ATT498PixMux = TRUE;
 
    /* Set the pix-mux description based on the ramdac type */
@@ -1436,7 +1498,7 @@ s3Probe()
 	 m &= 0x7f;
 	 n1 = n & 0x1f;
 	 n2 = (n>>5) & 0x03;
-	 mclk = ((1431818 * (m+2.0)) / (n1+2.0) / (1 << n2) + 50) / 100;
+	 mclk = ((1431818 * (m+2)) / (n1+2) / (1 << n2) + 50) / 100;
 	 ErrorF("%s %s: Using %s programmable clock (MCLK %1.3f MHz)\n"
 		,clockchip_probed, s3InfoRec.name
 		,OFLG_ISSET(CLOCK_OPTION_ICS5342, &s3InfoRec.clockOptions)
@@ -1451,6 +1513,40 @@ s3Probe()
 	 }
       }
       numClocks = 3;
+   } else if (OFLG_ISSET(CLOCK_OPTION_S3TRIO, &s3InfoRec.clockOptions)) {
+      s3ClockSelectFunc = s3GendacClockSelect;
+      numClocks = 3;
+      if (xf86Verbose) {
+	 unsigned char sr8;
+	 int i,m,n,n1,n2, mclk;
+
+	 outb(0x3c4, 0x08);
+	 sr8 = inb(0x3c5);
+	 outb(0x3c5, 0x06);
+	 
+	 outb(0x3c4, 0x11);
+	 m = inb(0x3c5);
+	 outb(0x3c4, 0x10);
+	 n = inb(0x3c5);
+	 
+	 outb(0x3c4, 0x08);
+	 outb(0x3c5, sr8);
+
+	 m &= 0x7f;
+	 n1 = n & 0x1f;
+	 n2 = (n>>5) & 0x03;
+	 mclk = ((1431818 * (m+2)) / (n1+2) / (1 << n2) + 50) / 100;
+	 ErrorF("%s %s: Using Trio32/64 programmable clock (MCLK %1.3f MHz)\n"
+		,clockchip_probed, s3InfoRec.name
+		,mclk / 1000.0);
+	 if (s3InfoRec.s3MClk > 0) {
+	    ErrorF("%s %s: using specified MCLK value of %1.3f MHz for DRAM timings\n",
+		   XCONFIG_GIVEN, s3InfoRec.s3MClk / 1000.0);
+	 }
+	 else {
+	    s3InfoRec.s3MClk = mclk;
+	 }
+      }
    } else if (OFLG_ISSET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions)) {
       s3ClockSelectFunc = icd2061ClockSelect;
       if (xf86Verbose)
@@ -1458,17 +1554,11 @@ s3Probe()
 		XCONFIG_GIVEN, s3InfoRec.name);
       numClocks = 3;
    } else if (OFLG_ISSET(CLOCK_OPTION_CH8391, &s3InfoRec.clockOptions)) {
-#ifdef CH8391
       s3ClockSelectFunc = ch8391ClockSelect;
       if (xf86Verbose)
 	 ErrorF("%s %s: Using Chrontel 8391 programmable clock\n",
 		XCONFIG_GIVEN, s3InfoRec.name);
       numClocks = 3;
-#else
-      ErrorF("CH8391 clock chip support is not yet included\n");
-      xf86DisableIOPorts(s3InfoRec.scrnIndex);
-      return(FALSE);
-#endif
    } else {
       s3ClockSelectFunc = s3ClockSelect;
       numClocks = 16;
@@ -1508,6 +1598,8 @@ s3Probe()
       } else if (OFLG_ISSET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions)) {
 	 maxRawClock = 145000; /* This is what is in common_hw/ICS2595.h */
       } else if (OFLG_ISSET(CLOCK_OPTION_CH8391, &s3InfoRec.clockOptions)) {
+	 maxRawClock = 135000;
+      } else if (OFLG_ISSET(CLOCK_OPTION_S3TRIO, &s3InfoRec.clockOptions)) {
 	 maxRawClock = 135000;
       } else {
 	 /* Shouldn't get here */
@@ -1572,6 +1664,15 @@ s3Probe()
 	    maxRawClock /= 2;
 	 }
       }
+      break;
+   case S3_TRIO32_DAC:
+   case S3_TRIO64_DAC:
+      if (s3ATT498PixMux)
+	 s3InfoRec.maxClock = s3InfoRec.dacSpeed;
+      else if (s3Bpp < 4)
+	 s3InfoRec.maxClock = 80000;
+      else
+	 s3InfoRec.maxClock = 50000;
       break;
    case TI3020_DAC:
       clockDoublingPossible = TRUE;
@@ -1745,6 +1846,8 @@ s3Probe()
 	 case TI3025_DAC:
 	 case S3_SDAC_DAC:
 	 case S3_GENDAC_DAC:
+	 case S3_TRIO32_DAC:
+	 case S3_TRIO64_DAC:
 	    /*
 	     * We should never get here since these have a programmable
 	     * clock built in.
@@ -2042,9 +2145,10 @@ s3Probe()
 	        */
 	       if (( DAC_IS_ATT20C498 && pMode->SynthClock > nonMuxMaxClock) ||
 		   (!DAC_IS_ATT20C498 && pMode->SynthClock > 67500)) {
-		  if (!S3_864_SERIES(s3ChipId) || !DAC_IS_SDAC)
+		  if (!(DAC_IS_SDAC)) {
 		     pMode->SynthClock /= 2;
-		  pMode->Flags |= V_DBLCLK;
+		     pMode->Flags |= V_DBLCLK;
+		  }
 	       }
 	       break;
 	    case 2:
@@ -2052,6 +2156,25 @@ s3Probe()
 	       break;
 	    case 4:
 	       pMode->SynthClock *= 2;
+	       break;
+	    }
+	    break;
+	 case S3_TRIO32_DAC:
+	 case S3_TRIO64_DAC:
+	    switch (s3Bpp) {
+	    case 1:
+#if 0  
+	       /* XXXX pMode->SynthClock /= 2 might be better with sr15 &= ~0x40
+		  in s3init.c if screen wouldn't completely blank... */
+	       if (pMode->SynthClock > nonMuxMaxClock) {
+		  pMode->SynthClock /= 2;
+		  pMode->Flags |= V_DBLCLK;
+	       }
+#endif
+	       break;
+	    case 2:
+	    case 4:
+	       /* No change for 16bpp and 24bpp */
 	       break;
 	    }
 	    break;
@@ -2352,7 +2475,7 @@ icd2061ClockSelect(freq)
 }
 
 
-/* The GENDAC code also works for the SDAC */
+/* The GENDAC code also works for the SDAC, used for Trio32/Trio64 too */
 
 static Bool
 s3GendacClockSelect(freq)
@@ -2371,13 +2494,18 @@ s3GendacClockSelect(freq)
       break;
    default:
       {
-	 if (OFLG_ISSET(CLOCK_OPTION_ICS5342, &s3InfoRec.clockOptions))
-	    (void) ICS5342SetClock(freq, 2); /* can't fail */
-	 else
-	    (void) S3gendacSetClock(freq, 2); /* can't fail */
-	 outb(vgaCRIndex, 0x42);/* select the clock */
-	 outb(vgaCRReg, 0x02);
-	 usleep(150000);
+	 if (S3_TRIOxx_SERIES(s3ChipId)) {
+	    (void) S3TrioSetClock(freq, 2); /* can't fail */
+	 }
+	 else {
+	    if (OFLG_ISSET(CLOCK_OPTION_ICS5342, &s3InfoRec.clockOptions))
+	       (void) ICS5342SetClock(freq, 2); /* can't fail */
+	    else
+	       (void) S3gendacSetClock(freq, 2); /* can't fail */
+	    outb(vgaCRIndex, 0x42);/* select the clock */
+	    outb(vgaCRReg, 0x02);
+	    usleep(150000);
+	 }
       }
    }
    LOCK_SYS_REGS;
@@ -2445,9 +2573,7 @@ ch8391ClockSelect(freq)
 	    result = FALSE;
 	    break;
 	 }
-#ifdef CH8391
 	 (void) Chrontel8391SetClock(freq, 2); /* can't fail */
-#endif
 	 outb(vgaCRIndex, 0x42);/* select the clock */
 	 outb(vgaCRReg, 0x02);
 	 usleep(150000);

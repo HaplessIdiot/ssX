@@ -3,7 +3,7 @@
 <article>
 <title> README for XFree86 3.1.1 on FreeBSD 2.0
 <author>Rich Murphey, David Dawes
-<date>15 January 1995
+<date>20 January 1995
 
 <toc>
  
@@ -44,7 +44,7 @@ If you want to save space, first select which archives you want to
 unpack.  If you can't decide what to pick and you have 52Mb of disk
 space, it's safe to unpack everything.
 
-At a minimum you need to unpack the 'required' <tt/XFree86-3.1.1-*.tar.gz/
+At a minimum you need to unpack the 'required' <tt/X311*.tgz/
 archives plus at least one server that matches your vga card.  You'll
 need 9Mb for the minimum required run-time binaries only.
 
@@ -52,53 +52,60 @@ need 9Mb for the minimum required run-time binaries only.
 <tag/Required (6.7Mb):/
 
 <descrip>
-<tag/bin/
+<tag/X311bin.tgz/
      all the executable X client applications and shared libs
 
-<tag/fonts/
+<tag/X311fnts.tgz/
      the misc and 75 dpi fonts
 
-<tag/lib/
+<tag/X311lib.tgz/
      data files needed at runtime
-
-<tag/xinit-config/
-     customizable xinit runtime configuration file
 </descrip>
 
-<tag/Choose one server (~2.3Mb):/
+<tag/Required unless you have already customized your configuration files:
 
 <descrip>
-<tag/8514/
+<tag/X311xicf.tgz/
+     customizable xinit runtime configuration file
+
+<tag/X311xdcf.tgz/
+     customizable xdm runtime configuration file
+</descrip>
+
+<tag/Choose at least one server (~2.3Mb):/
+
+<descrip>
+<tag/X3118514.tgz/
      8-bit color for IBM 8514 and true compatibles.
 
-<tag/AGX/
+<tag/X311AGX.tgz/
      8-bit color for AGX boards.
 
-<tag/Mach32/
+<tag/X311Mch3.tgz/
      8 and 16-bit color for ATI Mach32 boards.
 
-<tag/Mach8/
+<tag/X311Mch8.tgz/
      8-bit color for ATI Mach8 boards.
 
-<tag/Mono/
+<tag/X311Mono.tgz/
      1-bit monochrome for VGA, Super-VGA, Hercules, and others.
 
-<tag/P9000/
+<tag/X311P900.tgz/
      8, 16, and 24-bit color for Weitek P9000 boards (Diamond Viper).
 
-<tag/S3/
+<tag/X311S3.tgz/
      8, 16 and 24-bit color for S3 boards (&num;9 GXE, Actix GE32, SPEA Mercury, STB Pegasus)
 
-<tag/SVGA/
+<tag/X311SVGA.tgz/
      8-bit color for Super-VGA cards.
 
-<tag/VGA16/
+<tag/X311VG16.tgz/
      4-bit color for VGA and Super-VGA cards
 
-<tag/W32/
+<tag/X311W32.tgz/
      8-bit Color for ET4000/W32, /W32i and /W32p cards.
 
-<tag/Xnest/
+<tag/X311nest.tgz/
      A nested server running as a client window on another display.
 </descrip>
 
@@ -106,34 +113,34 @@ need 9Mb for the minimum required run-time binaries only.
 
 <descrip>
 
-<tag/doc/
+<tag/X311doc.tgz/
      (.5Mb) READMEs and XFree86 specific man pages
 
-<tag/man/
+<tag/X311man.tgz/
      (1.7Mb) man pages except XFree86 specific ones in etc archive
 
-<tag/fonts-100dpi/
+<tag/X311f100.tgz/
      (1.8Mb) 100dpi fonts
 
-<tag/fonts-scaled/
+<tag/X311fscl.tgz/
      (1.6Mb) Speedo and Type1 fonts
 
-<tag/fonts-non-english/
-     (3.3Mb) Japanese, Chinese, etc. fonts
+<tag/X311fnon.tgz/
+     (3.3Mb) Japanese, Chinese and other non-english fonts
 
-<tag/prog/
-     (3.9Mb) config, lib*.a and *.h files needed only for compiling
-
-<tag/fontserver/
+<tag/X311fsrv.tgz/
      (.3Mb) the font server and it's man page
 
-<tag/linkkit/
+<tag/X311prog.tgz/
+     (3.9Mb) config, lib*.a and *.h files needed only for compiling
+
+<tag/X311link.tgz/
      (7.8Mb) X server reconfiguration kit
 
-<tag/pex/
+<tag/X311pex.tgz/
      (.5Mb) PEX fonts and shared libs needed by PEX applications.
 
-<tag/lbx/
+<tag/X311lbx.tgz/
      (.2Mb) low bandwidth X proxy server and libraries.
 </descrip>
 </descrip>
@@ -173,14 +180,14 @@ separate tar balls.
      If you are using sh (as root usually does):
 
 <tscreen><verb>
- # for i in XFree86-3.1.1-*.tar.gz; do
+ # for i in X311*.tgz; do
  #   tar -xzf $i
  # done
 </verb></tscreen>
 
      Else, if you are using csh:
 <tscreen><verb>
- % foreach i (XFree86-3.1.1-*.tar.gz)
+ % foreach i (X311*.tgz)
  %   tar -xzf $i
  % end
 </verb></tscreen>
@@ -200,8 +207,8 @@ separate tar balls.
 First do numbers 1 and 2 above. Then unpack the required archives:
 
 <tscreen><verb>
- # for i in bin fonts lib xinit-config; do
- #   tar -xzf  XFree86-3.1.1-$i.tar.gz
+ # for i in bin fnts lib xicf; do
+ #   tar -xzf  X311$i.tgz
  # done
 </verb></tscreen>
 
@@ -211,7 +218,7 @@ sets supported by each server.  For example, if you have an ET4000
 based card you will use the XF86_SVGA server:
 
 <tscreen><verb>
- # tar -xzf XFree86-3.1.1-SVGA.tar.gz
+ # tar -xzf X311SVGA.tgz
  # cd /usr/X11R6/bin; rm X; ln -s XF86_SVGA X
 </verb></tscreen>
 
@@ -240,8 +247,8 @@ If you had already configured <tt>X11R6/lib/X11/xinit/xinitrc</tt> or
 <tt/xdm-config/ archive or unpack it separately and merge in your
 customizations.
 
-The <tt/fonts-scaled/ and <tt/fonts-100dpi/ archives are optional and
-can be omitted if you are short on space.  The optional <tt/linkkit/
+The <tt/fscl/ and <tt/f100/ archives are optional and
+can be omitted if you are short on space.  The optional <tt/link/
 archive allows you to reconfigure and customize a X server binary.
 The optional <tt/prog/ archive is needed only for writing or compiling X
 applications.  The optional <tt/pex/ archive contains pex clients and
@@ -563,7 +570,7 @@ Many thanks to:
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.4 1995/01/08 07:41:55 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.5 1995/01/15 10:34:13 dawes Exp $
 </verb>
 
 </article>
