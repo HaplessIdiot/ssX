@@ -1,4 +1,6 @@
 XFree86 4.1.99.6 (xx January 2002)
+ 664. Quick hack to allow GLX to be included in non-XFree86 servers
+      (Marc La France).
  663. More ROP_NEEDS_SOURCE fixes for Savage chipsets (Egbert Eich).
  662. Improvements to the SiS driver which should fix a lot of the 630
       issues (Thomas Winischhofer).
@@ -14506,4 +14508,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2123 2002/01/10 19:08:58 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2124 2002/01/10 20:55:45 tsi Exp $
