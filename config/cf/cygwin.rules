@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.26 2003/10/26 18:14:22 herrb Exp $
+XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.27 2003/10/26 18:17:37 herrb Exp $
 
 /*
  * Cygwin shared library rules (DLL versions)
@@ -25,6 +25,7 @@ XCOMM $XFree86: xc/config/cf/cygwin.rules,v 3.26 2003/10/26 18:14:22 herrb Exp $
 #define SharedLibDps		YES
 #define SharedLibDpsTk		YES
 #define SharedLibGlu		YES
+#define SharedLibWindowsWM	NO
 #ifndef SharedDataSeparation
 #define SharedDataSeparation	NO
 #endif
@@ -180,11 +181,11 @@ clean::									@@\
 
 /*
  * MakeDllProg
- */
-
-#define MakeDLLProg(libname,solist,prog,rev)				@@\
-	prog -shared -Wl,--out-implib=ImportLibraryName(libname,rev) -Wl,--enable-auto-import --def libname.def -Wl,--exclude-libs,ALL -o SharedLibraryName(libname,rev) solist $(REQUIREDLIBS)
-
+ */ 
+    
+#define MakeDLLProg(libname,solist,prog,rev)			        @@\
+	prog -shared -Wl,--out-implib=ImportLibraryName(libname,rev) -Wl,--enable-auto-import,--enable-runtime-pseudo-reloc --def libname.def -Wl,--exclude-libs,ALL -o SharedLibraryName(libname,rev) solist $(REQUIREDLIBS)
+    
 /*
  * MakeDll
  */

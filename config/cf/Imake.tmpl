@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.153 2003/11/04 01:25:31 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.154 2003/11/04 01:59:31 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -1327,7 +1327,7 @@ TCLIBDIR = TclLibDir
 #endif
 #endif
 #ifndef LdPostLib
-#if !defined(UseInstalled) && AlternateUsrLibDir && !HasLdRunPath
+#if !defined(UseInstalled) && AlternateUsrLibDir && !HasLdRunPath && !defined(CrossCompileDir)
 #define LdPostLib -L$(USRLIBDIR)
 #else
 #define LdPostLib /**/
@@ -2075,11 +2075,11 @@ XCOMM Not sure this belongs here
 #endif
 #include LocalTmplFile
 
-#if !BuildLibraries && AlternateIncRoot
+#if !BuildLibraries && AlternateIncRoot && !defined(CrossCompileDir)
 INSTALLED_INCLUDES = -I$(INCROOT)
 #endif
 
-#if !defined(UseInstalled) && !BuildLibraries && AlternateUsrLibDir
+#if !defined(UseInstalled) && !BuildLibraries && AlternateUsrLibDir && !defined(CrossCompileDir)
 INSTALLED_LIBS = -L$(USRLIBDIR)
 #endif
 
