@@ -30,7 +30,7 @@
  * Project.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.16 2001/12/19 15:59:36 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.17 2001/12/19 21:31:21 dawes Exp $ */
 
 /* function prototypes, common data structures & generic includes */
 #include "newport.h"
@@ -719,7 +719,7 @@ NewportRestore(ScrnInfoPtr pScrn, Bool Closing)
 	NewportVc2Set( pNewportRegs, VC2_IREG_CONTROL, pNewport->txt_vc2ctrl );
 	NewportRestorePalette( pScrn );
 	if( pNewport->Bpp == 3) {
-		NewportRestoreXMap9s( pScrn);
+		NewportRestoreXmap9s( pScrn);
 	}
 }
 

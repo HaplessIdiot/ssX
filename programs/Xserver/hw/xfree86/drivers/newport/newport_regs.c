@@ -1,7 +1,7 @@
 /*
  * Id: newport_regs.c,v 1.3 2000/11/29 20:58:10 agx Exp $
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_regs.c,v 1.4 2001/12/19 15:59:36 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_regs.c,v 1.5 2001/12/19 21:31:21 dawes Exp $ */
 
 #include "newport.h"
 
@@ -150,7 +150,7 @@ void NewportBackupXmap9s( ScrnInfoPtr pScrn)
 	pNewport->txt_xmap9_mod0 = NewportXmap9GetModeRegister(pNewportRegs, 0, 0);
 }
 
-void NewportRestoreXMap9s( ScrnInfoPtr pScrn)
+void NewportRestoreXmap9s( ScrnInfoPtr pScrn)
 {
 	NewportPtr pNewport = NEWPORTPTR(pScrn);
 	NewportRegsPtr pNewportRegs = NEWPORTREGSPTR(pScrn);
