@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_accel.c,v 1.4 1999/01/24 03:13:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_accel.c,v 1.5 1999/01/26 10:40:30 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -44,7 +44,7 @@ SiSAccelInit(ScreenPtr pScreen)
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     SISPtr pSiS = SISPTR(pScrn);
     BoxRec AvailFBArea;
-    int offset;
+    int offset=0;
 
     pSiS->AccelInfoRec = infoPtr = XAACreateInfoRec();
     if (!infoPtr) return FALSE;
@@ -55,6 +55,7 @@ SiSAccelInit(ScreenPtr pScreen)
 		     OFFSCREEN_PIXMAPS |
 		     LINEAR_FRAMEBUFFER;
  
+
     infoPtr->Sync = SiSSync;
 
 #if 1
@@ -69,9 +70,8 @@ SiSAccelInit(ScreenPtr pScreen)
     infoPtr->SubsequentScreenToScreenCopy = 		
 				SiSSubsequentScreenToScreenCopy;
 
-#if 0 /* not right for 6326 */
+#if 1 /* now right for 6326 */
     infoPtr->Mono8x8PatternFillFlags =  NO_PLANEMASK | 
-					HARDWARE_PATTERN_SCREEN_ORIGIN | 
 					HARDWARE_PATTERN_PROGRAMMED_BITS |
 					HARDWARE_PATTERN_PROGRAMMED_ORIGIN |
 					BIT_ORDER_IN_BYTE_MSBFIRST;
@@ -226,6 +226,7 @@ SiSSetupForMono8x8PatternFill(ScrnInfoPtr pScrn, int patternx, int patterny,
      */
     /* becareful with rop */
     if (isTransparent) {
+	sisSETBGCOLOR(bg);
 	sisSETFGCOLOR(fg);
 	sisSETROPFG(0xf0); 	/* pat copy */
 	sisSETROPBG(0xAA); 	/* dst */

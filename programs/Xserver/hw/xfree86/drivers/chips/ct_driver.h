@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.18 1999/03/21 07:35:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.19 1999/04/11 13:10:55 dawes Exp $ */
 
 
 #ifndef _CT_DRIVER_H_
@@ -63,11 +63,12 @@ typedef struct {
     unsigned char xr54;
     unsigned char fr03;
     int Clock;
+    int FPClock;
 } CHIPSClockReg, *CHIPSClockPtr;
 
 typedef struct {
-    unsigned int Max;		/* Memory Clock Related */
     unsigned int ProbedClk;
+    unsigned int Max;		/* Memory Clock Related */
     unsigned int Clk;
     unsigned char M;
     unsigned char N;
@@ -102,10 +103,9 @@ typedef struct {
 #define ChipsGammaSupport	0x00000080
 
 /* Options flags for the C&T chipsets */
-#define ChipsUseVClk1		0x00000100
-#define ChipsHWCursor		0x00000200
-#define ChipsShadowFB		0x00000400
-#define ChipsOverlay8plus16	0x00000800
+#define ChipsHWCursor		0x00000100
+#define ChipsShadowFB		0x00000200
+#define ChipsOverlay8plus16	0x00000400
 
 /* Architecture type flags */
 #define ChipsHiQV		0x00001000
@@ -259,7 +259,12 @@ typedef struct _CHIPSRec {
     CHIPSClockReg	SaveClock;		/* Storage for ClockSelect */
     CHIPSMemClockReg	MemClock;
     unsigned char	ClockType;
-    unsigned char	ConsoleClk[4];
+    unsigned char	CRTClk[4];
+    unsigned char       FPClk[4];
+    int                 FPclock;
+    int                 FPclkInx;
+    int                 CRTclkInx;
+    Bool                FPClkModified;
     int			ClockMulFactor;
     int			Rounding;
     CHIPSSuspendHackRec	SuspendHack;

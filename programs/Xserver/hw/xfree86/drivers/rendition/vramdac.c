@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * includes
  */
@@ -5,8 +6,13 @@
 #include "vramdac.h"
 #include "vos.h"
 #include "v1kregs.h"
-#include <stdio.h>
-#include <stdlib.h>
+#include "xf86.h"
+
+/*
+#define XCONFIG_FLAGS_ONLY
+#include "xf86_Config.h"
+*/
+
 
 
 
@@ -78,7 +84,7 @@
 #define BT485_CLOCK_DOUBLER         0x08
 #define BT485_64_BY_64_CURSOR       0x04
 #define BT485_32_BY_32_CURSOR       0x00
-#define BT485_SIZE_MASK             0x07
+#define BT485_SIZE_MASK             0x04
 
 /* special constants for the Brooktree BT485 RAMDAC */
 #define BT485_INPUT_LIMIT           110000000 
@@ -127,12 +133,12 @@ int v_initdac(struct v_board_t *board, vu8 bpp, vu8 doubleclock)
     switch (bpp) {
         case 1:
         case 4:
-			fprintf(stderr, "vlib: color depth %d not yet supported\n", bpp);
-			exit(1);
+			ErrorF("%s %s: color depth %d not (yet ?) supported\n",
+				X_CONFIG, /*vga256InfoRec.name*/"Rendition", bpp);
+			return -1;
 
         case 8:
             v_out8(iob+BT485_COMMAND_REG_0, BT485_CR0_EXTENDED_REG_ACCESS );
-                                            /* BT485_CR0_8_BIT_DAC); */
             v_out8(iob+BT485_COMMAND_REG_1, BT485_CR1_8BPP |
                                             BT485_CR1_PIXEL_PORT_AB);
             v_out8(iob+BT485_COMMAND_REG_2, BT485_PIXEL_INPUT_GATE |
@@ -174,14 +180,17 @@ int v_initdac(struct v_board_t *board, vu8 bpp, vu8 doubleclock)
             break;
 
         default:
-            fprintf(stderr, "vlib: Color depth not supported (%d bpp)\n", bpp);
-            exit(1);
+            ErrorF( "%s %s: Color depth not supported (%d bpp)\n",
+	    	    X_CONFIG, /*vga256InfoRec.name*/"Rendition", bpp);
+            return -1;
             break;
     }
 
     v_out8(iob+BT485_WRITE_ADDR, BT485_COMMAND_REG_3);
     v_out8(iob+BT485_STATUS_REG, cmd3_data);
+/*
     Bt485_write_masked(iob, BT485_COMMAND_REG_0, 0x7f, 0x00);
+*/
     v_out8(iob+BT485_PIXEL_MASK, 0xff);
 
     return 0;
@@ -226,7 +235,7 @@ void v_enablecursor(struct v_board_t *board, int type, int size)
  * void v_movecursor(struct v_board_t *board, vu16 x, vu16 y, vu8 xo, vu8 yo)
  *
  * Moves the cursor to the specified location. To hide the cursor, call
- * this routine with x=0xffff and y=0xffff.
+ * this routine with x=0x0 and y=0x0.
  */
 void v_movecursor(struct v_board_t *board, vu16 x, vu16 y, vu8 xo, vu8 yo)
 {
@@ -252,9 +261,6 @@ void v_setcursorcolor(struct v_board_t *board, vu32 fg, vu32 bg)
 {
     vu16 iob=board->io_base+RAMDACBASEADDR;
 
-    fg=0xff0000;
-    bg=0x0000ff;
-
     /* load the cursor color 0, i.e. overscan */
     v_out8(iob+BT485_CURS_WR_ADDR, 0x00);
     v_out8(iob+BT485_CURS_DATA, 0x00);
@@ -262,29 +268,32 @@ void v_setcursorcolor(struct v_board_t *board, vu32 fg, vu32 bg)
     v_out8(iob+BT485_CURS_DATA, 0x00);
 
     /* load the cursor color 1 */
+    v_out8(iob+BT485_CURS_DATA, bg&0xff);
+    v_out8(iob+BT485_CURS_DATA, (bg>>8)&0xff);
+    v_out8(iob+BT485_CURS_DATA, (bg>>16)&0xff);
+
+    /* load the cursor color 2 */
     v_out8(iob+BT485_CURS_DATA, fg&0xff);
     v_out8(iob+BT485_CURS_DATA, (fg>>8)&0xff);
     v_out8(iob+BT485_CURS_DATA, (fg>>16)&0xff);
 
-    /* load the cursor color 2 */
-    v_out8(iob+BT485_CURS_DATA, bg&0xff);
-    v_out8(iob+BT485_CURS_DATA, (bg>>8)&0xff);
-    v_out8(iob+BT485_CURS_DATA, (bg>>16)&0xff);
 }
 
 
 
+/*
+ * Oh god, this code is quite a mess ... should be re-written soon.
+ * But for now I'm happy it works ;) <ml> 
+ */
 void v_loadcursor(struct v_board_t *board, vu8 size, vu8 *cursorimage)
 {
-    int c;
-    vu8 *src, *mask;
-    vu16 bytes;
+    int c, bytes, row;
+    vu8 *src;
     vu16 iob=board->io_base+RAMDACBASEADDR;
+    vu8 tmp;
 
     if (NULL == cursorimage) 
         return;
-
-    v_enablecursor(board, V_NOCURSOR, 0);
 
     size&=1;
     if (size)
@@ -293,27 +302,53 @@ void v_loadcursor(struct v_board_t *board, vu8 size, vu8 *cursorimage)
         bytes=32;
     bytes=(bytes*bytes)/8;
 
-fprintf(stderr, "I/O=%x\n", iob);
-fprintf(stderr, "bytes=%d\n", bytes);
-
-    /* now load the cursor data into the cursor ram */
-    Bt485_write_cmd3_masked(iob, 0xfc, 0x00);
+    if (board->chip == V1000_DEVICE) {
+      /* now load the cursor data into the cursor ram */
 /*
-    Bt485_write_masked(iob, BT485_COMMAND_REG_0, 0x7d, 0x00);
+  Bt485_write_cmd3_masked(iob, 0xfc, 0x00);
+  Bt485_write_masked(iob, BT485_COMMAND_REG_0, 0x7d, 0x00);
 */
-    v_out8(iob+BT485_WRITE_ADDR, 0x00);
+      /*Bt485_write_masked(iob, BT485_COMMAND_REG_0, 0x7f, 0x80);*/
+      tmp=v_in8(iob+BT485_COMMAND_REG_0)&0x7f;
+      v_out8(iob+BT485_COMMAND_REG_0, tmp|0x80);
+      v_out8(iob+BT485_WRITE_ADDR, BT485_COMMAND_REG_3);
+      /*Bt485_write_masked(iob, BT485_STATUS_REG, 0xfc, size<<2);*/
+      tmp=v_in8(iob+BT485_STATUS_REG)&0xf8;
+      v_out8(iob+BT485_STATUS_REG, tmp|(size<<2));
+      v_out8(iob+BT485_WRITE_ADDR, 0x00);
 
-    /* output cursor image */
-    src=cursorimage;
-    mask=cursorimage+1;
-
-    for (c=0; c<bytes; c++, mask+=2) 
-        v_out8(iob+BT485_CURS_RAM_DATA, *mask);
-
-
-    v_out8(iob+BT485_CURS_WR_ADDR, 0x80);
-    for (c=0; c<bytes; c++, src+=2) 
+      /* output cursor image */
+      src=cursorimage+1;
+      
+      for (c=0; c<bytes; c++)  {
         v_out8(iob+BT485_CURS_RAM_DATA, *src);
+        src+=2;
+      }
+      
+/*
+    tmp=v_in8(iob+BT485_STATUS_REG)&0xf8;
+    v_out8(iob+BT485_STATUS_REG, tmp|(size<<2)|(1<<size));
+    if (size)
+        v_out8(iob+BT485_WRITE_ADDR, 0x00);
+*/
+
+      src=cursorimage;
+      for (c=0; c<bytes; c++)  {
+        v_out8(iob+BT485_CURS_RAM_DATA, *src);
+        src+=2;
+      }
+    } else {                                            /* V2x00 */
+      v_out32(iob+0xAC /* CURSORBASE - v2k */, 0);
+      for (row=0; row<64; row++)
+	for (c=0, src=cursorimage+1+16*row; c<8; c++, src+=2)
+	  v_write_memory8(board->vmem_base, 16*(63-row)+c,
+			  (c&1)?(*(src-2)):(*(src+2)));
+
+      for (row=0; row<64; row++)
+	for (c=0, src=cursorimage+16*row; c<8; c++, src+=2)
+	  v_write_memory8(board->vmem_base, 8+16*(63-row)+c,
+			  (c&1)?(*(src-2)):(*(src+2)));
+    }
 }
 
 
@@ -374,10 +409,14 @@ static void Bt485_write_masked(vu16 port, vu8 reg, vu8 mask, vu8 data)
  */
 static void Bt485_write_cmd3_masked(vu16 port, vu8 mask, vu8 data)
 {
+/*
     Bt485_write_masked(port, BT485_COMMAND_REG_0, 0x7f, 0x80);
+*/
     v_out8(port+BT485_WRITE_ADDR, BT485_COMMAND_REG_3);
     Bt485_write_masked(port, BT485_STATUS_REG, mask, data);
+/*
     Bt485_write_masked(port, BT485_COMMAND_REG_0, 0x7f, 0x00);
+*/
 }
 
 

@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.19 1999/03/21 07:35:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.21 1999/04/04 08:46:19 dawes Exp $ */
 
 #define DEBUG
 
@@ -167,7 +167,7 @@ static OptionInfoRec SISOptions[] = {
     { OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_NOTURBOQUEUE,	"NoTurboQueue",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SET_MEMCLOCK,	"SetMClk",	OPTV_INTEGER,	{0}, -1    },
-    { OPTION_FAST_VRAM,		"FastVram",	OPTV_INTEGER,	{0}, -1    },
+    { OPTION_FAST_VRAM,		"FastVram",	OPTV_BOOLEAN,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 

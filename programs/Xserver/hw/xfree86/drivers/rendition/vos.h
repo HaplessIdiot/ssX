@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * file vos.h
  *
@@ -14,15 +15,7 @@
  */
 
 #include "vtypes.h"
-#ifdef __alpha__
-#include "vaxp.h"
-#include "compiler.h"
-#else
 #include <compiler.h>
-#endif
-#ifdef DEBUG
-#include <stdio.h>
-#endif
 #include <unistd.h>
 
 
@@ -34,13 +27,13 @@
 /* IO port programming */
 #ifdef DEBUG
 #define /*void*/ v_out8(/*vu16*/ port, /*vu8*/ data) \
-    printf("v_out8(%x, %x)\n", port, data); \
+    ErrorF("v_out8(%x, %x)\n", port, data); \
     outb(port, data)
 #define /*void*/ v_out16(/*vu16*/ port, /*vu16*/ data) \
-    printf("v_out16(%x, %x)\n", port, data); \
+    ErrorF("v_out16(%x, %x)\n", port, data); \
     outw(port, data)
 #define /*void*/ v_out32(/*vu16*/ port, /*vu32*/ data) \
-    printf("v_out32(%x, %x)\n", port, data); \
+    ErrorF("v_out32(%x, %x)\n", port, data); \
     outl(port, data)
 #else
 #define /*void*/ v_out8(/*vu16*/ port, /*vu8*/ data)   outb(port, data)

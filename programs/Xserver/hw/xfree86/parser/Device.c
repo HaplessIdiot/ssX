@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Device.c,v 1.4 1999/03/29 09:41:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Device.c,v 1.5 1999/04/04 08:46:23 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -275,7 +275,7 @@ printDeviceSection (FILE * cf, XF86ConfDevicePtr ptr)
 		if (ptr->dev_io_base)
 			fprintf (cf, "\tIOBase      0x%lx\n", ptr->dev_io_base);
 		if (ptr->dev_clockchip)
-			fprintf (cf, "\tClockChip   \"%s\"", ptr->dev_clockchip);
+			fprintf (cf, "\tClockChip   \"%s\"\n", ptr->dev_clockchip);
 		if (ptr->dev_chipid != -1)
 			fprintf (cf, "\tChipId      %d\n", ptr->dev_chipid);
 		if (ptr->dev_chiprev != -1)

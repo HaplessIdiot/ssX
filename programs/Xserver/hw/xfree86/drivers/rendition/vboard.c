@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * includes
  */
@@ -6,7 +7,6 @@
 #include "vboard.h"
 #include "vloaduc.h"
 #include "vos.h"
-#include <stdio.h>
 
 
 
@@ -23,7 +23,7 @@
  */
 
 
-
+#if NOT_YET_USED
 /*
  * functions
  */
@@ -52,7 +52,7 @@ int v_initboard(struct v_board_t *board)
 
   c=v_load_ucfile(board, "/home/smurf/RENDITION/rendition/v10002d.uc");
   if (c == -1) {
-    fprintf(stderr, "Jeuch\n");
+    ErrorF( "Jeuch\n");
   }
   else {
     board->ucode_entry=c;
@@ -65,7 +65,7 @@ int v_initboard(struct v_board_t *board)
   return 0;
 }
 
-
+#endif
 
 int v_resetboard(struct v_board_t *board)
 {
@@ -102,19 +102,24 @@ int v_getmemorysize(struct v_board_t *board)
     start=v_read_memory32(board->vmem_base, 0);
     v_write_memory32(board->vmem_base, 0, START);
     for (offset=ONEMEG; offset<16*ONEMEG; offset+=ONEMEG) {
-        fprintf(stderr, "Testing %d MB: ", offset/ONEMEG);
-
+#ifdef DEBUG
+        ErrorF( "Testing %d MB: ", offset/ONEMEG);
+#endif
         pattern=v_read_memory32(board->vmem_base, offset/4);
         if (START == pattern) {
-            fprintf(stderr, "Back at the beginning\n");
+#ifdef DEBUG
+            ErrorF( "Back at the beginning\n");
+#endif
             break;    
         }
         
         pattern^=PATTERN;
         v_write_memory32(board->vmem_base, offset/4, pattern);
         
-        fprintf(stderr, "%x <-> %x\n", (int)pattern, 
+#ifdef DEBUG
+        ErrorF( "%x <-> %x\n", (int)pattern, 
                     (int)v_read_memory32(board->vmem_base, offset/4));
+#endif
 
         if (pattern != v_read_memory32(board->vmem_base, offset/4)) {
             offset-=ONEMEG;

@@ -1,0 +1,34 @@
+XCOMM $XFree86$
+#define IHaveModules
+#include <Server.tmpl>
+
+
+SRCS = neo_driver.c neo_bank.c neo_cursor.c neo_2097.c neo_2070.c \
+	neo_2090.c neo_2200.c neo_i2c.c
+
+OBJS = neo_driver.o neo_bank.o neo_cursor.o neo_2097.o neo_2070.o \
+	neo_2090.o neo_2200.o neo_i2c.o
+
+DEFINES = -DPSZ=8
+
+INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
+           -I$(XF86SRC)/vgafb -I$(XF86SRC)/vgahw -I$(SERVERSRC)/include \
+	   -I$(SERVERSRC)/mi -I$(SERVERSRC)/cfb -I$(SERVERSRC)/mfb \
+	   -I$(XINCLUDESRC) -I$(XF86SRC)/xaa -I$(FONTINCSRC) \
+	   -I$(XF86SRC)/ramdac -I$(XF86SRC)/rac	-I$(XF86SRC)/ddc \
+           -I$(XF86SRC)/i2c -I$(XF86SRC)/shadowfb -I$(XF86SRC)/xf24_32bpp
+
+#if MakeHasPosixVariableSubstitutions
+SubdirLibraryRule($(OBJS))
+#endif
+
+
+ModuleObjectRule()
+
+ObjectModuleTarget(neomagic,$(OBJS))
+
+InstallObjectModule(neomagic,$(MODULEDIR),drivers)
+
+#ifndef OS2Architecture
+DependTarget()
+#endif

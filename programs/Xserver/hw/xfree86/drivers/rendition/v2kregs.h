@@ -1,3 +1,4 @@
+/* $XFree86$ */
 #ifndef _V2KREGS_H
 #define _V2KREGS_H
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.1 1999/03/28 15:31:36 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.2 1999/04/11 13:10:34 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -379,7 +379,159 @@ void XDGAInstallColormap(
     SyncHandle();
 }
 
+void XDGASelectInput(
+    Display	*dpy,
+    int		screen,
+    long	mask
+){
+    XExtDisplayInfo *info = xdga_find_display (dpy);
+    xXDGASelectInputReq *req;
 
+    XextSimpleCheckExtension (dpy, info, xdga_extension_name);
+
+    LockDisplay(dpy);
+    GetReq(XDGASelectInput, req);
+    req->reqType = info->codes->major_opcode;
+    req->dgaReqType = X_XDGASelectInput;
+    req->screen = screen;
+    req->mask = mask;
+    UnlockDisplay(dpy);
+    SyncHandle();
+}
+
+void XDGAFillRectangle(
+    Display	*dpy,
+    int		screen,
+    int		x,
+    int		y,
+    unsigned int	width,
+    unsigned int	height,
+    unsigned long	color
+){
+    XExtDisplayInfo *info = xdga_find_display (dpy);
+    xXDGAFillRectangleReq *req;
+
+    XextSimpleCheckExtension (dpy, info, xdga_extension_name);
+
+    LockDisplay(dpy);
+    GetReq(XDGAFillRectangle, req);
+    req->reqType = info->codes->major_opcode;
+    req->dgaReqType = X_XDGAFillRectangle;
+    req->screen = screen;
+    req->x = x;
+    req->y = y;
+    req->width = width;
+    req->height = height;
+    req->color = color;
+    UnlockDisplay(dpy);
+    SyncHandle();
+}
+
+void XDGACopyArea(
+    Display	*dpy,
+    int		screen,
+    int		srcx,
+    int		srcy,
+    unsigned int	width,
+    unsigned int	height,
+    int		dstx,
+    int		dsty
+){
+    XExtDisplayInfo *info = xdga_find_display (dpy);
+    xXDGACopyAreaReq *req;
+
+    XextSimpleCheckExtension (dpy, info, xdga_extension_name);
+
+    LockDisplay(dpy);
+    GetReq(XDGACopyArea, req);
+    req->reqType = info->codes->major_opcode;
+    req->dgaReqType = X_XDGACopyArea;
+    req->screen = screen;
+    req->srcx = srcx;
+    req->srcy = srcy;
+    req->width = width;
+    req->height = height;
+    req->dstx = dstx;
+    req->dsty = dsty;
+    UnlockDisplay(dpy);
+    SyncHandle();
+}
+
+void XDGACopyTransparentArea(
+    Display	*dpy,
+    int		screen,
+    int		srcx,
+    int		srcy,
+    unsigned int	width,
+    unsigned int	height,
+    int		dstx,
+    int		dsty,
+    unsigned long key
+){
+    XExtDisplayInfo *info = xdga_find_display (dpy);
+    xXDGACopyTransparentAreaReq *req;
+
+    XextSimpleCheckExtension (dpy, info, xdga_extension_name);
+
+    LockDisplay(dpy);
+    GetReq(XDGACopyTransparentArea, req);
+    req->reqType = info->codes->major_opcode;
+    req->dgaReqType = X_XDGACopyTransparentArea;
+    req->screen = screen;
+    req->srcx = srcx;
+    req->srcy = srcy;
+    req->width = width;
+    req->height = height;
+    req->dstx = dstx;
+    req->dsty = dsty;
+    req->key = key;
+    UnlockDisplay(dpy);
+    SyncHandle();
+}
+
+
+int XDGAGetViewportStatus(
+    Display *dpy,
+    int screen 
+){
+    XExtDisplayInfo *info = xdga_find_display (dpy);
+    xXDGAGetViewportStatusReply rep;
+    xXDGAGetViewportStatusReq *req;
+    int status = 0;
+
+    XDGACheckExtension (dpy, info, 0);
+
+    LockDisplay(dpy);
+    GetReq(XDGAGetViewportStatus, req);
+    req->reqType = info->codes->major_opcode;
+    req->dgaReqType = X_XDGAGetViewportStatus;
+    req->screen = screen;
+    if (!_XReply(dpy, (xReply *)&rep, 0, xFalse))
+	status = rep.status;
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return status;
+}
+
+void XDGAFlush(
+    Display *dpy,
+    int screen 
+){
+    XExtDisplayInfo *info = xdga_find_display (dpy);
+    xXDGAFlushReply rep;
+    xXDGAFlushReq *req;
+
+    XextSimpleCheckExtension (dpy, info, xdga_extension_name);
+
+    LockDisplay(dpy);
+    GetReq(XDGAFlush, req);
+    req->reqType = info->codes->major_opcode;
+    req->dgaReqType = X_XDGAFlush;
+    req->screen = screen;
+    _XReply(dpy, (xReply *)&rep, 0, xFalse);
+    UnlockDisplay(dpy);
+    SyncHandle();
+}
 
 #include <X11/Xmd.h>
 #include <X11/extensions/xf86dga.h>

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/ICS1562.c,v 1.1.2.1 1998/07/18 17:53:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/ICS1562.c,v 1.2 1998/07/25 16:55:56 dawes Exp $ */
 
 #define BASE_FREQ 14.31818
 #define MAX_FREQ 230000
@@ -51,6 +51,7 @@ static void Set_1562_PLL(int f, int p, int m, int a, int r, unsigned char *bits)
 #endif
 }
 
+void ICS1562_CalcClockBits(long f, unsigned char *bits);
 
 void ICS1562_CalcClockBits(long f, unsigned char *bits)
 {

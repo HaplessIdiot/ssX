@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dga.c,v 1.5 1999/03/28 15:32:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dga.c,v 1.6 1999/04/11 13:10:58 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -17,7 +17,7 @@
 static Bool MGA_OpenFramebuffer(ScrnInfoPtr, char **, unsigned char **, 
 					int *, int *, int *);
 static Bool MGA_SetMode(ScrnInfoPtr, DGAModePtr);
-static int  MGA_GetViewport(ScrnInfoPtr, int);
+static int  MGA_GetViewport(ScrnInfoPtr);
 static void MGA_SetViewport(ScrnInfoPtr, int, int, int);
 static void MGA_FillRect(ScrnInfoPtr, int, int, int, int, unsigned long);
 static void MGA_BlitRect(ScrnInfoPtr, int, int, int, int, int, int);
@@ -175,10 +175,11 @@ MGA_SetMode(
 
 static int  
 MGA_GetViewport(
-  ScrnInfoPtr pScrn, 
-  int flags
+  ScrnInfoPtr pScrn
 ){
-    return DGA_COMPLETED;
+    MGAPtr pMga = MGAPTR(pScrn);
+
+    return pMga->DGAViewportStatus;
 }
 
 static void 
@@ -187,7 +188,10 @@ MGA_SetViewport(
    int x, int y, 
    int flags
 ){
+   MGAPtr pMga = MGAPTR(pScrn);
+
    MGAAdjustFrame(pScrn->pScreen->myNum, x, y, flags);
+   pMga->DGAViewportStatus = 0;  /* MGAAdjustFrame loops until finished */
 }
 
 static void 

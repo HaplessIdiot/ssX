@@ -1,15 +1,35 @@
 /*
- *  Permedia 2 Xv Driver 
- *  Copyright (C) 1998-1999 Michael Schimek
+ * Permedia 2 Xv Driver for Elsa Winner Office/2000 and GLoria Synergy
+ *
+ * Copyright (C) 1998, 1999 Michael Schimek
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Michael Schimek not be used in
+ * advertising or publicity pertaining to distribution of the software without
+ * specific, written prior permission. Michael Schimek makes no representations
+ * about the suitability of this software for any purpose. It is provided
+ * "as is" without express or implied warranty.
+ *
+ * MICHAEL SCHIMEK DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+ * EVENT SHALL MICHAEL SCHIMEK BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+ * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.3 1999/03/14 03:21:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.4 1999/03/28 15:32:38 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h"
 #include "xf86Pci.h"
 #include "xf86PciInfo.h"
+#include "xf86Xinput.h"
 #include "xf86fbman.h"
 #include "xf86i2c.h"
 #include "xf86xv.h"
@@ -18,16 +38,57 @@
 #include "glint_regs.h"
 #include "glint.h"
 
+#define XVIPC_MAGIC		0x6A5D70E6
+#define XVIPC_VERSION		1
+#define VIDIOC_PM2_XVIPC	0x00007F7F
+
 typedef enum {
+	OP_ATTR = 0,
+	OP_RESET = 8,		/* unused */
+	OP_START,
+	OP_STOP,
+	OP_PLUG,
+	OP_VIDEOSTD,
+	OP_WINDOW,		/* unused */
+	OP_CONNECT,
+	OP_EVENT,
+	OP_ALLOC,
+	OP_FREE,
+	OP_UPDATE,
+	OP_NOP			/* ignored */
+} xvipc_op;
+
+typedef struct _pm2_xvipc {
+	int			magic;
+	void 			*pm2p, *pAPriv;
+	int			port, op, time, block;
+	int			a,b,c,d,e,f;
+} pm2_xvipc;
+
+static pm2_xvipc xvipc;
+static int xvipc_fd = -1;
+static LocalDevicePtr xvipc_local;
+
+typedef enum {
+    OPTION_DEVICE,
+    OPTION_FPS,
+    OPTION_BUFFERS,
     OPTION_EXPOSE
 } OptToken;
 
-static OptionInfoRec InputOptions[] = {
+static OptionInfoRec AdaptorOptions[] = {
+    { OPTION_DEVICE,		"Device",	OPTV_STRING,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
-
+static OptionInfoRec InputOptions[] = {
+    { OPTION_BUFFERS,		"Buffers",	OPTV_INTEGER,	{0}, FALSE },
+    { OPTION_FPS,		"FramesPerSec", OPTV_INTEGER,	{0}, FALSE },
+    { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
+};
 static OptionInfoRec OutputOptions[] = {
+    { OPTION_BUFFERS,		"Buffers",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_EXPOSE,		"Expose",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_FPS,		"FramesPerSec", OPTV_INTEGER,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -41,7 +102,7 @@ static OptionInfoRec OutputOptions[] = {
 
 typedef struct {
     CARD32			xy, wh;			/* 16.0 16.0 dw */
-    CARD32			s, t;			/* 12.20 sfp */
+    INT32			s, t;			/* 12.20 fp */
     short			y1, y2;
 } CookieRec, *CookiePtr;
 
@@ -50,33 +111,41 @@ typedef struct _PortPrivRec {
     I2CDevRec                   I2CDev;
     int                         Plug;
     INT32			Attribute[8];		/* Brig, Con, Sat, Hue, Int, Filt */
-    FBAreaPtr			pFBArea[2];		/* double buffering */
-    CARD32			BufferBase[2];		/* x1 */
+    FBAreaPtr			pFBArea[3];
+    int				Buffers;
+    CARD32			BufferBase[3];		/* x1 */
     CARD32			BufferStride;		/* x1 */
     CARD32			BufferPProd;		/* PProd(BufferStride / 2) */
-    short			vx, vy, vw, vh;
-    short			dx, dy, dw, dh;
+    INT32			vx, vy, vw, vh;		/* 12.10 fp; int */
+    int				dx, dy, dw, dh;
+    int				fw, fh;
     CookiePtr			pCookies;
     int				nCookies;
-    CARD32			dS, dT;			/* 12.20 sfp */
-    short			fw, fh;
+    INT32			dS, dT;			/* 12.20 fp */
     int				APO;
-    unsigned int		Frames, FrameAcc;
+    int				FramesPerSec, FrameAcc;
+    int				BkgCol;			/* RGB 5:6:5;5:6:5 */
     int				VideoOn;		/* No, Once, Yes */
     Bool			StreamOn;
-    Bool			BlackOut;
 } PortPrivRec, *PortPrivPtr;
+
+typedef struct _LFBAreaRec {
+    struct _LFBAreaRec *	Next;
+    FBAreaPtr			pFBArea;
+    int				Linear;
+} LFBAreaRec, *LFBAreaPtr;
 
 typedef struct _AdaptorPrivRec {
     struct _AdaptorPrivRec *	Next;
     ScrnInfoPtr			pScrn;
-    void *			VDID;
+    void *			pm2p;
+    LFBAreaPtr			LFBList;
     CARD32			FifoControl;
     OsTimerPtr			Timer;
     int                         VideoStd;
-    unsigned int		FramesPerSec;
+    int				FramesPerSec;
     int				FrameLines;
-    int				IntLine;		/* frame */
+    int				IntLine;		/* Frame */
     int				LinePer;		/* nsec */
     PortPrivRec                 Port[2];
 } AdaptorPrivRec, *AdaptorPrivPtr;
@@ -86,8 +155,8 @@ static AdaptorPrivPtr AdaptorPrivList = NULL;
 #define PORTNUM(p) (((p) == &pAPriv->Port[0]) ? 0 : 1)
 #define BPPSHIFT(g) (2 - (g)->BppShift)			/* BytesPerPixel = 1 << BPPSHIFT(pGlint) */
 
-#undef COLORBARS
-#define DEBUG(x) x
+#undef COLORBARS /* Display them while output is unused, else just shut off */
+#define DEBUG(x) /* x */
 
 #define FreeCookies(pPPriv)		\
 do {					\
@@ -97,23 +166,25 @@ do {					\
     }					\
 } while (0)
 
-/* forward */
+/* Forward */
 static CARD32 TimerCallback(OsTimerPtr pTim, CARD32 now, pointer p);
 static void DelayedStopVideo(PortPrivPtr pPPriv);
+static Bool xvipcHandshake(PortPrivPtr pPPriv, int op, Bool block);
 
 #define XV_ENCODING	"XV_ENCODING"
 #define XV_BRIGHTNESS  	"XV_BRIGHTNESS"
 #define XV_CONTRAST 	"XV_CONTRAST"
 #define XV_SATURATION  	"XV_SATURATION"
 #define XV_HUE		"XV_HUE"
-/* proprietary */
+/* Proprietary */
 #define XV_INTERLACE	"XV_INTERLACE"			/* Boolean */
 #define XV_FILTER	"XV_FILTER"			/* Boolean */
+#define XV_BKGCOLOR	"XV_BKGCOLOR"			/* Integer */
 
 #define MAKE_ATOM(a) MakeAtom(a, sizeof(a) - 1, TRUE)
 
 static Atom xvEncoding, xvBrightness, xvContrast, xvSaturation, xvHue;
-static Atom xvInterlace, xvFilter;
+static Atom xvInterlace, xvFilter, xvBkgColor;
 
 static XF86VideoEncodingRec
 InputVideoEncodings[] =
@@ -140,7 +211,7 @@ OutputVideoEncodings[] =
 
 static XF86VideoFormatRec
 InputVideoFormats[] = {
-    { 8,  TrueColor }, /* dithered */
+    { 8,  TrueColor }, /* Dithered */
     { 15, TrueColor },
     { 16, TrueColor },
     { 24, TrueColor },
@@ -149,7 +220,7 @@ InputVideoFormats[] = {
 static XF86VideoFormatRec
 OutputVideoFormats[] = {
     { 8,  TrueColor },
-    { 8,  PseudoColor }, /* using .. */
+    { 8,  PseudoColor }, /* Using .. */
     { 8,  StaticColor },
     { 8,  GrayScale },
     { 8,  StaticGray }, /* .. TexelLUT */
@@ -226,8 +297,16 @@ EncVS[2][14] =
 static int
 SetAttr(PortPrivPtr pPPriv, int i, I2CByte s, I2CByte v)
 {
-	return xf86I2CWriteByte(&pPPriv->I2CDev, s, v) ?
+    AdaptorPrivPtr pAPriv = pPPriv->pAdaptor;
+
+    if (pAPriv->pm2p) {
+	xvipc.a = v << 8;
+	return xvipcHandshake(pPPriv, OP_ATTR + i, TRUE) ?
 	    Success : XvBadAlloc;
+    }
+
+    return xf86I2CWriteByte(&pPPriv->I2CDev, s, v) ?
+	Success : XvBadAlloc;
 }
 
 static Bool
@@ -235,7 +314,10 @@ SetPlug(PortPrivPtr pPPriv)
 {
     AdaptorPrivPtr pAPriv = pPPriv->pAdaptor;
 
-    {
+    if (pAPriv->pm2p) {
+	xvipc.a = pPPriv->Plug - PORTNUM(pPPriv);
+	return xvipcHandshake(pPPriv, OP_PLUG, TRUE);
+    } else {
 	if (pPPriv == &pAPriv->Port[0]) {
 	    xf86I2CWriteByte(&pPPriv->I2CDev, 0x02, Dec02[pPPriv->Plug]);
 	    xf86I2CWriteByte(&pPPriv->I2CDev, 0x09, Dec09[pPPriv->Plug]);
@@ -255,7 +337,13 @@ SetPlug(PortPrivPtr pPPriv)
 static Bool
 SetVideoStd(AdaptorPrivPtr pAPriv)
 {
-    {
+    Bool r;
+
+    if (pAPriv->pm2p) {
+	xvipc.a = pAPriv->VideoStd;
+	r = xvipcHandshake(&pAPriv->Port[0], OP_VIDEOSTD, TRUE);
+	pAPriv->VideoStd = xvipc.a; /* Actual */
+    } else {
 	if (pAPriv->VideoStd >= 2)
 	    xf86I2CWriteByte(&pAPriv->Port[1].I2CDev, 0x61, 0xC2);
 
@@ -264,26 +352,30 @@ SetVideoStd(AdaptorPrivPtr pAPriv)
 	if (pAPriv->VideoStd < 2)
 	    xf86I2CWriteVec(&pAPriv->Port[1].I2CDev, &EncVS[pAPriv->VideoStd][0], 7);
 
-	if (pAPriv->VideoStd == 1) {
-	    pAPriv->FramesPerSec = 30;
-	    pAPriv->FrameLines = 525;
-	    pAPriv->IntLine = 513;
-	    pAPriv->LinePer = 63555;
-	} else {
-	    pAPriv->FramesPerSec = 25;
-	    pAPriv->FrameLines = 625;
-	    pAPriv->IntLine = 613;
-	    pAPriv->LinePer = 64000;
-	}
-
-	pAPriv->Port[0].Frames = pAPriv->FramesPerSec;
-	pAPriv->Port[1].Frames = pAPriv->FramesPerSec;
+	r = TRUE;
     }
 
-    return TRUE;
+    if (pAPriv->VideoStd == 1) {
+	pAPriv->FramesPerSec = 30;
+	pAPriv->FrameLines = 525;
+	pAPriv->IntLine = 513;
+	pAPriv->LinePer = 63555;
+    } else {
+	pAPriv->FramesPerSec = 25;
+	pAPriv->FrameLines = 625;
+	pAPriv->IntLine = 613;
+	pAPriv->LinePer = 64000;
+    }
+
+#if 0
+    pAPriv->Port[0].FramesPerSec = pAPriv->FramesPerSec;
+    pAPriv->Port[1].FramesPerSec = pAPriv->FramesPerSec;
+#endif
+
+    return r;
 }
 
-/* FIXME 2048 */
+/* **FIXME**: 2048 limit */
 
 static Bool
 AllocOffRec(PortPrivPtr pPPriv, int i)
@@ -307,13 +399,14 @@ AllocOffRec(PortPrivPtr pPPriv, int i)
 	    return TRUE;
 
 	DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_ERROR, 2,
-	    "Xv/ROB couldn't resize buffer %d,%d-%d,%d to %dx%d\n",
+	    "AOR couldn't resize buffer %d,%d-%d,%d to %dx%d\n",
 	    pPPriv->pFBArea[i]->box.x1, pPPriv->pFBArea[i]->box.y1,
 	    pPPriv->pFBArea[i]->box.x2, pPPriv->pFBArea[i]->box.y2,
 	    width, height));
 
 	DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2,
-	    "Xv/ROB free buffer 0x%08x\n", pPPriv->BufferBase[i]));
+	    "AOR free buffer 0x%08x\n", pPPriv->BufferBase[i]));
+
 	xf86FreeOffscreenArea(pPPriv->pFBArea[i]);
 	pPPriv->pFBArea[i] = NULL;
     }
@@ -325,7 +418,7 @@ AllocOffRec(PortPrivPtr pPPriv, int i)
         return TRUE;
 
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_ERROR, 2,
-        "Xv/ROB couldn't allocate buffer %dx%d\n",
+        "AOR couldn't allocate buffer %dx%d\n",
 	width, height));
 
     return FALSE;
@@ -337,85 +430,66 @@ AllocOffLin(PortPrivPtr pPPriv, int i)
     AdaptorPrivPtr pAPriv = pPPriv->pAdaptor;
     ScrnInfoPtr pScrn = pAPriv->pScrn;
     GLINTPtr pGlint = GLINTPTR(pScrn);
-    int width, height;
+    int length;
+    
+    length = ((704 << 1) * ((pAPriv->VideoStd == 1) ? 512 : 608)) >> BPPSHIFT(pGlint);
 
-    height = (pAPriv->VideoStd == 1) ? 512 : 608;
-    width = pScrn->displayWidth << BPPSHIFT(pGlint);
-    height = (height * (704 << 1) + width - 1) / width;
-    width = pScrn->displayWidth;
+    if (!pPPriv->Attribute[4])
+	length >>= 1;
 
     pPPriv->BufferStride = 704 << 1;
 
     if (pPPriv->pFBArea[i] != NULL) {
-	if (xf86ResizeOffscreenArea(pPPriv->pFBArea[i], width, height))
-	    return TRUE;
-
-	DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_ERROR, 2,
-	    "Xv/ROB couldn't resize buffer %d,%d-%d,%d to %dx%d\n",
-	    pPPriv->pFBArea[i]->box.x1, pPPriv->pFBArea[i]->box.y1,
-	    pPPriv->pFBArea[i]->box.x2, pPPriv->pFBArea[i]->box.y2,
-	    width, height));
-
-	DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2,
-	    "Xv/ROB free buffer 0x%08x\n", pPPriv->BufferBase[i]));
 	xf86FreeOffscreenArea(pPPriv->pFBArea[i]);
 	pPPriv->pFBArea[i] = NULL;
     }
 
-    pPPriv->pFBArea[i] = xf86AllocateOffscreenArea(pScrn->pScreen,
-        width, height, 2, NULL, NULL, NULL);
+    pPPriv->pFBArea[i] = xf86AllocateLinearOffscreenArea(pScrn->pScreen,
+        length, 2, NULL, NULL, NULL);
 
     if (pPPriv->pFBArea[i] != NULL)
 	return TRUE;
 
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_ERROR, 2,
-	"Xv/ROB couldn't allocate buffer %dx%d\n",
-	width, height));
+	"AOL couldn't allocate buffer %d\n",
+	length));
 
     return FALSE;
 }
 
 static Bool
-ReallocateOffscreenBuffer(PortPrivPtr pPPriv, Bool new, Bool two)
+ReallocateOffscreenBuffer(PortPrivPtr pPPriv, int num)
 {
     AdaptorPrivPtr pAPriv = pPPriv->pAdaptor;
     ScrnInfoPtr pScrn = pAPriv->pScrn;
     GLINTPtr pGlint = GLINTPTR(pScrn);
     int i;
 
-    if (!new) {
-	for (i = 0; i < 2; i++)
-	    if (pPPriv->pFBArea[i]) {
-		DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2,
-		    "Xv/ROB free buffer 0x%08x\n", pPPriv->BufferBase[i]));
-		xf86FreeOffscreenArea(pPPriv->pFBArea[i]);
-		pPPriv->pFBArea[i] = NULL;
-	    }
-
+    if (pAPriv->pm2p != NULL)
 	return FALSE;
-    }
 
-    if (pAPriv->VDID != NULL) return FALSE;
+    for (i = 2; i >= 0; i--)
+	if (pPPriv->pFBArea[i]) {
+	    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2,
+	        "ROB free buffer 0x%08x\n", pPPriv->BufferBase[i]));
 
-    while (1) { /* retry */
-	PortPrivPtr pPPrivN;
-/*
-	if (AllocOffRec(pPPriv, 0)) {
-	    if (!two || AllocOffRec(pPPriv, 1))
-		break;
-	    xf86FreeOffscreenArea(pPPriv->pFBArea[0]);
-	    pPPriv->pFBArea[0] = NULL;
-	}
-*/
-	if (AllocOffLin(pPPriv, 0)) {
-	    if (two) AllocOffLin(pPPriv, 1);
-	    break;
+	    xf86FreeOffscreenArea(pPPriv->pFBArea[i]);
+	    pPPriv->pFBArea[i] = NULL;
 	}
 
-	if (AllocOffRec(pPPriv, 0))
-	    break;
+    if (num <= 0)
+	return FALSE;
 
-	pPPrivN = &pAPriv->Port[1 - PORTNUM(pPPriv)];
+    while (1) {
+	PortPrivPtr pPPrivN = &pAPriv->Port[1 - PORTNUM(pPPriv)];
+
+	for (i = 0; i < num; i++)
+	    if (!AllocOffLin(pPPriv, i)) break;
+	if (i > 0) break;
+
+	for (i = 0; i < num; i++)
+	    if (!AllocOffRec(pPPriv, i)) break;
+	if (i > 0) break;
 
 	if (pPPrivN->VideoOn <= 0 && pPPrivN->APO >= 0)
 	    DelayedStopVideo(pPPrivN);
@@ -423,23 +497,22 @@ ReallocateOffscreenBuffer(PortPrivPtr pPPriv, Bool new, Bool two)
 	    return FALSE;
     }
 
-    pPPriv->BufferBase[0] = ((pPPriv->pFBArea[0]->box.y1 * pScrn->displayWidth) +
-			     pPPriv->pFBArea[0]->box.x1) << BPPSHIFT(pGlint);
+    for (i = 0; i <= 2; i++)
+	if (pPPriv->pFBArea[i]) {
+	    pPPriv->BufferBase[i] =
+		((pPPriv->pFBArea[i]->box.y1 * pScrn->displayWidth) +
+	         pPPriv->pFBArea[i]->box.x1) << BPPSHIFT(pGlint);
 
-    if (pPPriv->pFBArea[1])
-	pPPriv->BufferBase[1] = ((pPPriv->pFBArea[1]->box.y1 * pScrn->displayWidth) +
-			         pPPriv->pFBArea[1]->box.x1) << BPPSHIFT(pGlint);
+	    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2,
+		"ROB buffer #%d 0x%08x str %d\n",
+		i, pPPriv->BufferBase[i], pPPriv->BufferStride));
+	}
 
     pPPriv->BufferPProd = partprodPermedia[(pPPriv->BufferStride / 2) >> 5];
 
     pPPriv->fw = 704;
-    pPPriv->fh = (pAPriv->VideoStd == 1) ? 480 : 576;
-    if (!pPPriv->Attribute[4])
-	pPPriv->fh >>= 1;
-
-    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2,
-	"Xv/ROB new buffer addr 0x%08x, 0x%08x str %d\n",
-	pPPriv->BufferBase[0], pPPriv->BufferBase[1], pPPriv->BufferStride));
+    pPPriv->fh = InputVideoEncodings[pAPriv->VideoStd * 3].height >>
+	(1 - pPPriv->Attribute[4]);
 
     return TRUE;
 }
@@ -449,7 +522,7 @@ PutCookies(PortPrivPtr pPPriv, RegionPtr pRegion)
 {
     BoxPtr pBox;
     CookiePtr pCookie;
-    int nBox, vy, vh;
+    int nBox;
 
     if (!pRegion) {
 	pBox = (BoxPtr) NULL;
@@ -466,21 +539,20 @@ PutCookies(PortPrivPtr pPPriv, RegionPtr pRegion)
 	}
     }
 
-    vy = pPPriv->vy >> (1 - pPPriv->Attribute[4]);
-    vh = pPPriv->vh >> (1 - pPPriv->Attribute[4]);
-
-    pPPriv->dS = (pPPriv->vw * (1 << 20)) / pPPriv->dw;
-    pPPriv->dT = (vh * (1 << 20)) / pPPriv->dh;
+    pPPriv->dS = (pPPriv->vw << 10) / pPPriv->dw;
+    pPPriv->dT = (pPPriv->vh << 10) / pPPriv->dh;
 
     for (pCookie = pPPriv->pCookies; nBox--; pCookie++, pBox++) {
 	if (pRegion) {
-	    pCookie->xy = (pBox->y1 << 16) | pBox->x1;
-	    pCookie->wh = ((pBox->y2 - pBox->y1) << 16) | (pBox->x2 - pBox->x1);
-	    pCookie->s = (pPPriv->vx << 20) + (pBox->x1 - pPPriv->dx) * pPPriv->dS;
 	    pCookie->y1 = pBox->y1;
+	    pCookie->y2 = pBox->x1;
+	    pCookie->xy = (pBox->y1 << 16) | pBox->x1;
+	    pCookie->wh = ((pBox->y2 - pBox->y1) << 16) |
+			   (pBox->x2 - pBox->x1);
 	}
 
-	pCookie->t = (vy << 20) + (pCookie->y1 - pPPriv->dy) * pPPriv->dT;
+	pCookie->s = (pPPriv->vx << 10) + (pCookie->y2 - pPPriv->dx) * pPPriv->dS;
+	pCookie->t = (pPPriv->vy << 10) + (pCookie->y1 - pPPriv->dy) * pPPriv->dT;
     }
 
     pPPriv->nCookies = pCookie - pPPriv->pCookies;
@@ -489,14 +561,14 @@ PutCookies(PortPrivPtr pPPriv, RegionPtr pRegion)
 }
 
 static void
-PutYUV(PortPrivPtr pPPriv, int i)
+PutYUV(PortPrivPtr pPPriv, int BufferBase)
 {
     ScrnInfoPtr pScrn = pPPriv->pAdaptor->pScrn;
     GLINTPtr pGlint = GLINTPTR(pScrn);
     CookiePtr pCookie = pPPriv->pCookies;
     int nCookies = pPPriv->nCookies;
 
-    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 4, "PutYUV %d\n", i));
+    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 4, "PutYUV %08x\n", BufferBase));
 
     if (!nCookies)
 	return;
@@ -539,8 +611,7 @@ PutYUV(PortPrivPtr pPPriv, int i)
     GLINT_WRITE_REG(1 << 16, dY);
     GLINT_WRITE_REG(0, RasterizerMode);
     GLINT_WRITE_REG(UNIT_DISABLE, AreaStippleMode);
-    if (!pPPriv->pFBArea[1]) i = 0;
-    GLINT_WRITE_REG(pPPriv->BufferBase[i] / 2, PMTextureBaseAddress);
+    GLINT_WRITE_REG(BufferBase >> 1 /* 16 */, PMTextureBaseAddress);
     GLINT_WRITE_REG((1 << 19) /* 16 */ | pPPriv->BufferPProd,
 		    PMTextureMapFormat);
     GLINT_WRITE_REG((1 << 4) /* No alpha */ |
@@ -578,7 +649,7 @@ PutYUV(PortPrivPtr pPPriv, int i)
 
     /* Cleanup */
 
-    pGlint->x = pGlint->y = -1; /* force reload */
+    pGlint->x = pGlint->y = -1; /* Force reload */
     pGlint->w = pGlint->h = -1;
     pGlint->ROP = 0xFF;
     GLINT_WAIT(6);
@@ -600,23 +671,19 @@ BlackOut(PortPrivPtr pPPriv, RegionPtr pRegion)
     BoxRec DBox;
     BoxPtr pBox;
     int nBox;
-    int vy, vh;
 
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 4,
-	"Xv/BlackOut %d,%d,%d,%d -- %d,%d,%d,%d\n",
+	"BlackOut %d,%d,%d,%d -- %d,%d,%d,%d\n",
 	pPPriv->vx, pPPriv->vy, pPPriv->vw, pPPriv->vh,
 	pPPriv->dx, pPPriv->dy, pPPriv->dw, pPPriv->dh));
 
-    vy = pPPriv->vy >> (1 - pPPriv->Attribute[4]);
-    vh = pPPriv->vh >> (1 - pPPriv->Attribute[4]);
-
     DBox.x1 = pPPriv->dx - (pPPriv->vx * pPPriv->dw) / pPPriv->vw;
-    DBox.y1 = pPPriv->dy - (vy * pPPriv->dh) / vh;
+    DBox.y1 = pPPriv->dy - (pPPriv->vy * pPPriv->dh) / pPPriv->vh;
     DBox.x2 = DBox.x1 + (pPPriv->fw * pPPriv->dw) / pPPriv->vw;
-    DBox.y2 = DBox.y1 + (pPPriv->fh * pPPriv->dh) / vh;
+    DBox.y2 = DBox.y1 + (pPPriv->fh * pPPriv->dh) / pPPriv->vh;
 
     REGION_INIT(pScreen, &DRegion, &DBox, 1);
-    
+
     if (pRegion)
 	REGION_SUBTRACT(pScreen, &DRegion, &DRegion, pRegion);
 
@@ -629,15 +696,15 @@ BlackOut(PortPrivPtr pPPriv, RegionPtr pRegion)
     GLINT_WRITE_REG(UNIT_DISABLE, ColorDDAMode);
     GLINT_WRITE_REG(pPPriv->BufferPProd, FBReadMode);
     GLINT_WRITE_REG(0x1, FBReadPixel); /* 16 */
-    GLINT_WRITE_REG(0 /* -1 */, FBBlockColor);
+    GLINT_WRITE_REG(pPPriv->BkgCol, FBBlockColor);
     GLINT_WRITE_REG(pPPriv->BufferBase[0] >> 1 /* 16 */, FBWindowBase);
     GLINT_WRITE_REG(UNIT_DISABLE, LogicalOpMode);
 
     for (; nBox--; pBox++) {
         int w = ((pBox->x2 - pBox->x1) * pPPriv->vw + pPPriv->dw) / pPPriv->dw + 1;
-	int h = ((pBox->y2 - pBox->y1) * vh + pPPriv->dh) / pPPriv->dh + 1;
+	int h = ((pBox->y2 - pBox->y1) * pPPriv->vh + pPPriv->dh) / pPPriv->dh + 1;
 	int x = ((pBox->x1 - DBox.x1) * pPPriv->vw + (pPPriv->dw >> 1)) / pPPriv->dw;
-	int y = ((pBox->y1 - DBox.y1) * vh + (pPPriv->dh >> 1)) / pPPriv->dh;
+	int y = ((pBox->y1 - DBox.y1) * pPPriv->vh + (pPPriv->dh >> 1)) / pPPriv->dh;
 
 	if ((x + w) > pPPriv->fw)
 	    w = pPPriv->fw - x;
@@ -653,7 +720,7 @@ BlackOut(PortPrivPtr pPPriv, RegionPtr pRegion)
 
     REGION_UNINIT(pScreen, &DRegion);
 
-    pGlint->x = pGlint->y = -1; /* force reload */
+    pGlint->x = pGlint->y = -1; /* Force reload */
     pGlint->w = pGlint->h = -1;
     pGlint->ROP = 0xFF;
     GLINT_WAIT(3);
@@ -667,7 +734,7 @@ GetCookies(PortPrivPtr pPPriv, RegionPtr pRegion)
 {
     BoxPtr pBox;
     CookiePtr pCookie;
-    int nBox, vy, vh;
+    int nBox;
     int dw1 = pPPriv->dw - 1;
     int dh1 = pPPriv->dh - 1;
 
@@ -686,32 +753,27 @@ GetCookies(PortPrivPtr pPPriv, RegionPtr pRegion)
 	}
     }
 
-    vy = pPPriv->vy >> (1 - pPPriv->Attribute[4]);
-    vh = pPPriv->vh >> (1 - pPPriv->Attribute[4]);
-
     pPPriv->dS = (pPPriv->dw << 20) / pPPriv->vw;
-    pPPriv->dT = (pPPriv->dh << 20) / vh;
+    pPPriv->dT = (pPPriv->dh << 20) / pPPriv->vh;
 
     for (pCookie = pPPriv->pCookies; nBox--; pBox++) {
 	int n1, n2;
 
 	if (pRegion) {
 	    n1 = ((pBox->x1 - pPPriv->dx) * pPPriv->vw + dw1) / pPPriv->dw;
-	    n2 = ((pBox->x2 - pPPriv->dx) * pPPriv->vw - 1) / pPPriv->dw;
-	    if (n1 > n2) continue; /* clip is subpixel */
+                       	    n2 = ((pBox->x2 - pPPriv->dx) * pPPriv->vw - 1) / pPPriv->dw;
+	    if (n1 > n2) continue; /* Clip is subpixel */
 	    pCookie->xy = n1 + pPPriv->vx;
 	    pCookie->wh = n2 - n1 + 1;
-	    /* pCookie->s = (n1 * pPPriv->dw / pPPriv->vw + pPPriv->dx) << 20; */
 	    pCookie->s = n1 * pPPriv->dS + (pPPriv->dx << 20);
 	    pCookie->y1 = pBox->y1;
 	    pCookie->y2 = pBox->y2;
 	}
 
-	n1 = ((pCookie->y1 - pPPriv->dy) * vh + dh1) / pPPriv->dh;
-	n2 = ((pCookie->y2 - pPPriv->dy) * vh - 1) / pPPriv->dh;
-	pCookie->xy = (pCookie->xy & 0xFFFF) | ((n1 + vy) << 16);
+	n1 = ((pCookie->y1 - pPPriv->dy) * pPPriv->vh + dh1) / pPPriv->dh;
+	n2 = ((pCookie->y2 - pPPriv->dy) * pPPriv->vh - 1) / pPPriv->dh;
+	pCookie->xy = (pCookie->xy & 0xFFFF) | ((n1 + pPPriv->vy) << 16);
 	pCookie->wh = (pCookie->wh & 0xFFFF) | ((n2 - n1 + 1) << 16);
-	/* pCookie->t = (n1 * pPPriv->dh / vh + pPPriv->dy) << 20; */
 	pCookie->t = n1 * pPPriv->dT + (pPPriv->dy << 20);
 	if (n1 > n2) pCookie->t = -1;
 
@@ -735,7 +797,7 @@ GetYUV(PortPrivPtr pPPriv)
     if (!nCookies)
 	return;
 
-    /* FIXME: clip + filt d-1 */
+    /* FIXME? clip + filt d-1 */
 
     /* Setup */
 
@@ -818,7 +880,7 @@ GetYUV(PortPrivPtr pPPriv)
 
     /* Cleanup */
 
-    pGlint->x = pGlint->y = -1; /* force reload */
+    pGlint->x = pGlint->y = -1; /* Force reload */
     pGlint->w = pGlint->h = -1;
     pGlint->ROP = 0xFF;
     GLINT_WAIT(10);
@@ -834,13 +896,6 @@ GetYUV(PortPrivPtr pPPriv)
     GLINT_WRITE_REG(UNIT_DISABLE, YUVMode);
 }
 
-static Bool
-WaitFrame(PortPrivPtr pPPriv)
-{
-    usleep(80000);
-    return TRUE;
-}
-
 static void
 StopVideoStream(AdaptorPrivPtr pAPriv, int which)
 {
@@ -849,7 +904,21 @@ StopVideoStream(AdaptorPrivPtr pAPriv, int which)
     if (which & 1) pAPriv->Port[0].VideoOn = 0;
     if (which & 2) pAPriv->Port[1].VideoOn = 0;
 
-    /* on? */
+    if (pAPriv->pm2p) {
+	/* Hard stop, frees buffers */
+
+	if (which & 2) {
+	    xvipcHandshake(&pAPriv->Port[1], OP_STOP, TRUE);
+	    pAPriv->Port[1].StreamOn = FALSE;
+	}
+
+	if (which & 1) {
+	    xvipcHandshake(&pAPriv->Port[0], OP_STOP, TRUE);
+	    pAPriv->Port[0].StreamOn = FALSE;
+	}
+
+	return;
+    }
 
     if (which & 2) {
     	xf86I2CWriteByte(&pAPriv->Port[1].I2CDev, 0x3A, 0x83);
@@ -863,7 +932,7 @@ StopVideoStream(AdaptorPrivPtr pAPriv, int which)
     if (which & 1) {
 	GLINT_WRITE_REG(0, VSABase + VSControl);
 	pAPriv->Port[0].StreamOn = FALSE;
-	WaitFrame(&pAPriv->Port[0]);
+	usleep(80000);
     }
 
     if (!(pAPriv->Port[0].StreamOn || pAPriv->Port[1].StreamOn)) {
@@ -882,11 +951,39 @@ StartVideoStream(PortPrivPtr pPPriv, RegionPtr pRegion)
 
     pPPriv->APO = -1;
 
-    {
+    if (pAPriv->pm2p) {
+	if (pPPriv == &pAPriv->Port[0]) {
+	    if (!PutCookies(pPPriv, pRegion))
+		return FALSE;
+	    if (pPPriv->StreamOn)
+		return TRUE;
+	} else {
+	    if (!GetCookies(pPPriv, pRegion))
+		return FALSE;
+	    if (pPPriv->StreamOn) {
+		BlackOut(pPPriv, pRegion);
+		return TRUE;
+	    }
+	}
+
+	xvipc.a = pPPriv->Buffers;
+	xvipc.b = 1 - pPPriv->Attribute[4];
+	xvipc.c = 1;
+
+	if (!xvipcHandshake(pPPriv, OP_START, TRUE))
+		return FALSE;
+
+	if (pPPriv == &pAPriv->Port[1]) {
+	    pPPriv->BufferBase[0] = xvipc.d;
+	    BlackOut(pPPriv, pRegion);
+	}
+
+	return pPPriv->StreamOn = TRUE;
+    } else {
 	CARD32 Base = (pPPriv == &pAPriv->Port[0]) ? VSABase : VSBBase;
 
         if (pPPriv->pFBArea[0] == NULL)
-    	    if (!ReallocateOffscreenBuffer(pPPriv, TRUE, pPPriv == &pAPriv->Port[0]))
+    	    if (!ReallocateOffscreenBuffer(pPPriv, (pPPriv == &pAPriv->Port[0]) ? 2 : 1))
 		return FALSE;
 
 	if (pPPriv == &pAPriv->Port[0]) {
@@ -911,13 +1008,13 @@ StartVideoStream(PortPrivPtr pPPriv, RegionPtr pRegion)
 	GLINT_WRITE_REG(0, Base + VSCurrentLine);
 
 	if (pAPriv->VideoStd == 1) {
-	    /* NTSC FIXME */
+	    /* NTSC untested */
 	    GLINT_WRITE_REG(16, Base + VSVideoStartLine);
 	    GLINT_WRITE_REG(16 + 240, Base + VSVideoEndLine);
 	    GLINT_WRITE_REG(288 + (8 & ~3) * 2, Base + VSVideoStartData);
 	    GLINT_WRITE_REG(288 + ((8 & ~3) + 704) * 2, Base + VSVideoEndData);
 	} else {
-	    /* PAL, SECAM (SECAM untested) */
+	    /* PAL, SECAM (untested) */
 	    GLINT_WRITE_REG(16, Base + VSVideoStartLine);
 	    GLINT_WRITE_REG(16 + 288, Base + VSVideoEndLine);
 	    GLINT_WRITE_REG(288 + (8 & ~3) * 2, Base + VSVideoStartData);
@@ -959,7 +1056,9 @@ StartVideoStream(PortPrivPtr pPPriv, RegionPtr pRegion)
     return FALSE;
 }
 
-/* Pseudo interrupt - better than nothing */
+/* Pseudo interrupt - better than nothing
+ * (not used in kernel backbone mode)
+ */
 
 static CARD32
 TimerCallback(OsTimerPtr pTim, CARD32 now, pointer p)
@@ -971,11 +1070,17 @@ TimerCallback(OsTimerPtr pTim, CARD32 now, pointer p)
 
     pPPriv = &pAPriv->Port[0];
 
-    if (pPPriv->VideoOn >= 2) {
-	pPPriv->FrameAcc += pPPriv->Frames;
+    if (pPPriv->VideoOn >= 1) {
+	pPPriv->FrameAcc += pPPriv->FramesPerSec;
 	if (pPPriv->FrameAcc >= pAPriv->FramesPerSec) {
 	    pPPriv->FrameAcc -= pAPriv->FramesPerSec;
-	    PutYUV(pPPriv, 1 - GLINT_READ_REG(VSABase + VSVideoAddressIndex));
+
+	    PutYUV(pPPriv, (!pPPriv->pFBArea[1]) ?
+		   pPPriv->BufferBase[0] : pPPriv->BufferBase[1 -
+		   GLINT_READ_REG(VSABase + VSVideoAddressIndex)]);
+
+	    if (pPPriv->VideoOn == 1)
+		pPPriv->VideoOn = 0;
 	}
     } else if (pPPriv->APO >= 0 && !(pPPriv->APO--))
 	DelayedStopVideo(pPPriv);
@@ -983,10 +1088,12 @@ TimerCallback(OsTimerPtr pTim, CARD32 now, pointer p)
     pPPriv = &pAPriv->Port[1];
 
     if (pPPriv->VideoOn >= 1) {
-	pPPriv->FrameAcc += pPPriv->Frames;
+	pPPriv->FrameAcc += pPPriv->FramesPerSec;
 	if (pPPriv->FrameAcc >= pAPriv->FramesPerSec) {
 	    pPPriv->FrameAcc -= pAPriv->FramesPerSec;
+
 	    GetYUV(pPPriv);
+
 	    if (pPPriv->VideoOn == 1)
 		pPPriv->VideoOn = 0;
 	}
@@ -1007,8 +1114,6 @@ TimerCallback(OsTimerPtr pTim, CARD32 now, pointer p)
     if (delay > (pAPriv->IntLine - 16))
 	delay -= pAPriv->FrameLines;
 
-    /* FIXME adap */
-
     return (((pAPriv->IntLine - delay) * pAPriv->LinePer) + 999999) / 1000000;
 }
 
@@ -1025,34 +1130,34 @@ Permedia2PutVideo(ScrnInfoPtr pScrn,
 	"PutVideo %d,%d,%d,%d -> %d,%d,%d,%d\n",
 	vid_x, vid_y, vid_w, vid_h, drw_x, drw_y, drw_w, drw_h));
 
-    /* One never know... */
     if (pPPriv == &pAPriv->Port[0]) {
-	if ((vid_x + vid_w) > InputVideoEncodings[pAPriv->VideoStd * 3].width ||
-	    (vid_y + vid_h) > InputVideoEncodings[pAPriv->VideoStd * 3].height)
+	int sw = InputVideoEncodings[pAPriv->VideoStd * 3].width;
+	int sh = InputVideoEncodings[pAPriv->VideoStd * 3].height;
+
+	if ((vid_x + vid_w) > sw ||
+	    (vid_y + vid_h) > sh)
 	    return BadValue;
 
 	pPPriv->VideoOn = 0;
 
-        pPPriv->vx = vid_x;
-	pPPriv->vy = vid_y;
-        pPPriv->vw = vid_w;
-	pPPriv->vh = vid_h;
+        pPPriv->vx = ((vid_x << 10) * pPPriv->fw) / sw;
+	pPPriv->vy = ((vid_y << 10) * pPPriv->fh) / sh;
+        pPPriv->vw = ((vid_w << 10) * pPPriv->fw) / sw;
+	pPPriv->vh = ((vid_h << 10) * pPPriv->fh) / sh;
 
         pPPriv->dx = drw_x;
 	pPPriv->dy = drw_y;
         pPPriv->dw = drw_w;
 	pPPriv->dh = drw_h;
 
-	{
-	    pPPriv->FrameAcc = pAPriv->FramesPerSec;
+	pPPriv->FrameAcc = pAPriv->FramesPerSec;
 
-	    if (!StartVideoStream(pPPriv, clipBoxes))
-		return XvBadAlloc;
+	if (!StartVideoStream(pPPriv, clipBoxes))
+	    return XvBadAlloc;
 
-	    pPPriv->VideoOn = 2;
+	pPPriv->VideoOn = 2;
 
-	    return Success;
-	}
+	return Success;
     }
 
     return XvBadAlloc;
@@ -1073,16 +1178,19 @@ Permedia2PutStill(ScrnInfoPtr pScrn,
 	vid_x, vid_y, vid_w, vid_h, drw_x, drw_y, drw_w, drw_h));
 
     if (pPPriv == &pAPriv->Port[0]) {
-	if ((vid_x + vid_w) > InputVideoEncodings[pAPriv->VideoStd * 3].width ||
-	    (vid_y + vid_h) > InputVideoEncodings[pAPriv->VideoStd * 3].height)
+	int sw = InputVideoEncodings[pAPriv->VideoStd * 3].width;
+	int sh = InputVideoEncodings[pAPriv->VideoStd * 3].height;
+
+	if ((vid_x + vid_w) > sw ||
+	    (vid_y + vid_h) > sh)
 	    return BadValue;
 
 	pPPriv->VideoOn = 0;
 
-        pPPriv->vx = vid_x;
-	pPPriv->vy = vid_y;
-        pPPriv->vw = vid_w;
-	pPPriv->vh = vid_h;
+        pPPriv->vx = ((vid_x << 10) * pPPriv->fw) / sw;
+	pPPriv->vy = ((vid_y << 10) * pPPriv->fh) / sh;
+        pPPriv->vw = ((vid_w << 10) * pPPriv->fw) / sw;
+	pPPriv->vh = ((vid_h << 10) * pPPriv->fh) / sh;
 
         pPPriv->dx = drw_x;
 	pPPriv->dy = drw_y;
@@ -1090,13 +1198,28 @@ Permedia2PutStill(ScrnInfoPtr pScrn,
 	pPPriv->dh = drw_h;
 
 	{
-	    Bool r;
+	    Bool r = TRUE;
+
+	    pPPriv->FrameAcc = pAPriv->FramesPerSec;
 
 	    if (!StartVideoStream(pPPriv, clipBoxes))
 		return XvBadAlloc;
 
-	    if ((r = WaitFrame(pPPriv)))
-		PutYUV(pPPriv, 1 - GLINT_READ_REG(VSABase + VSVideoAddressIndex));
+	    if (pAPriv->pm2p) {
+		/* Sleep, not busy wait, until the very next frame is ready.
+		   Accept memory requests and other window's update events
+		   in the meantime. */
+		for (pPPriv->VideoOn = 1; pPPriv->VideoOn;)
+		    if (!xvipcHandshake(pPPriv, OP_UPDATE, TRUE)) {
+			r = FALSE;
+			break;
+		    }
+	    } else {
+		usleep(80000);
+		PutYUV(pPPriv, (!pPPriv->pFBArea[1]) ?
+		    pPPriv->BufferBase[0] : pPPriv->BufferBase[1 -
+		    GLINT_READ_REG(VSABase + VSVideoAddressIndex)]);
+	    }
 
 	    pPPriv->APO = 125; /* Delayed stop: consider PutStill staccato */
 
@@ -1122,34 +1245,35 @@ Permedia2GetVideo(ScrnInfoPtr pScrn,
 	vid_x, vid_y, vid_w, vid_h, drw_x, drw_y, drw_w, drw_h));
 
     if (pPPriv == &pAPriv->Port[1]) {
-	if ((vid_x + vid_w) > InputVideoEncodings[pAPriv->VideoStd * 3].width ||
-	    (vid_y + vid_h) > InputVideoEncodings[pAPriv->VideoStd * 3].height)
+	int sw = InputVideoEncodings[pAPriv->VideoStd * 3].width;
+	int sh = InputVideoEncodings[pAPriv->VideoStd * 3].height;
+
+	if ((vid_x + vid_w) > sw ||
+	    (vid_y + vid_h) > sh)
 	    return BadValue;
 
 	pPPriv->VideoOn = 0;
 
-        pPPriv->vx = vid_x;
-	pPPriv->vy = vid_y;
-        pPPriv->vw = vid_w;
-	pPPriv->vh = vid_h;
+        pPPriv->vx = (vid_x * pPPriv->fw) / sw;
+	pPPriv->vy = (vid_y * pPPriv->fh) / sh;
+        pPPriv->vw = (vid_w * pPPriv->fw) / sw;
+	pPPriv->vh = (vid_h * pPPriv->fh) / sh;
 
         pPPriv->dx = drw_x;
 	pPPriv->dy = drw_y;
         pPPriv->dw = drw_w;
 	pPPriv->dh = drw_h;
 
-	{
-	    pPPriv->FrameAcc = pAPriv->FramesPerSec;
+	pPPriv->FrameAcc = pAPriv->FramesPerSec;
 
-	    if (!StartVideoStream(pPPriv, clipBoxes))
-		return XvBadAlloc;
+	if (!StartVideoStream(pPPriv, clipBoxes))
+	    return XvBadAlloc;
 
-	    GetYUV(pPPriv);
+	GetYUV(pPPriv);
 
-	    pPPriv->VideoOn = 2;
+	pPPriv->VideoOn = 2;
 
-	    return Success;
-	}
+	return Success;
     }
 
     return XvBadAlloc;
@@ -1169,30 +1293,36 @@ Permedia2GetStill(ScrnInfoPtr pScrn,
 	vid_x, vid_y, vid_w, vid_h, drw_x, drw_y, drw_w, drw_h));
 
     if (pPPriv == &pAPriv->Port[1]) {
-	if ((vid_x + vid_w) > InputVideoEncodings[pAPriv->VideoStd * 3].width ||
-	    (vid_y + vid_h) > InputVideoEncodings[pAPriv->VideoStd * 3].height)
+	int sw = InputVideoEncodings[pAPriv->VideoStd * 3].width;
+	int sh = InputVideoEncodings[pAPriv->VideoStd * 3].height;
+
+	if ((vid_x + vid_w) > sw ||
+	    (vid_y + vid_h) > sh)
 	    return BadValue;
 
 	pPPriv->VideoOn = 0;
 
-        pPPriv->vx = vid_x;
-	pPPriv->vy = vid_y;
-        pPPriv->vw = vid_w;
-	pPPriv->vh = vid_h;
+        pPPriv->vx = (vid_x * pPPriv->fw) / sw;
+	pPPriv->vy = (vid_y * pPPriv->fh) / sh;
+        pPPriv->vw = (vid_w * pPPriv->fw) / sw;
+	pPPriv->vh = (vid_h * pPPriv->fh) / sh;
 
         pPPriv->dx = drw_x;
 	pPPriv->dy = drw_y;
         pPPriv->dw = drw_w;
 	pPPriv->dh = drw_h;
 
-	{
-	    if (!StartVideoStream(pPPriv, clipBoxes))
-		return XvBadAlloc;
+	pPPriv->FrameAcc = pAPriv->FramesPerSec;
 
-	    GetYUV(pPPriv);
-	
-	    return Success;
-	}
+	if (!StartVideoStream(pPPriv, clipBoxes))
+	    return XvBadAlloc;
+
+	GetYUV(pPPriv);
+
+	/* Remains active until the client (implicitly)
+	   calls StopVideo for this port, GetStill, or GetVideo */
+
+	return Success;
     }
 
     return XvBadAlloc;
@@ -1212,9 +1342,9 @@ Permedia2StopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit)
 
     if (exit) {
     	StopVideoStream(pAPriv, 1 << PORTNUM(pPPriv));
-	ReallocateOffscreenBuffer(pPPriv, FALSE, FALSE);
+	ReallocateOffscreenBuffer(pPPriv, 0);
     } else
-	pPPriv->APO = 750; /* delay */
+	pPPriv->APO = 750; /* Delay, appx. 30 sec */
 }
 
 static void
@@ -1229,21 +1359,30 @@ DelayedStopVideo(PortPrivPtr pPPriv)
     Permedia2StopVideo(pAPriv->pScrn, (pointer) pPPriv, TRUE);
 }
 
+/* Remind Port[0].v* are shifted 1 << 10 */
+
+static void
+AdjustVideoW(PortPrivPtr pPPriv, int num, int denom)
+{
+    pPPriv->vx = (pPPriv->vx * num) / denom;
+    pPPriv->vw = (pPPriv->vw * num) / denom;
+}
+
 static void
 AdjustVideoH(PortPrivPtr pPPriv, int num, int denom)
 {
-    pPPriv->vy = ((int) pPPriv->vy * num) / denom;
-    pPPriv->vh = ((int) pPPriv->vh * num) / denom;
+    pPPriv->vy = (pPPriv->vy * num) / denom;
+    pPPriv->vh = (pPPriv->vh * num) / denom;
 }
 
 static int
 Permedia2SetPortAttribute(ScrnInfoPtr pScrn,
     Atom attribute, INT32 value, pointer data)
 {
-    PortPrivPtr pPPriv = (PortPrivPtr) data; 
+    PortPrivPtr pPPriv = (PortPrivPtr) data;
     AdaptorPrivPtr pAPriv = pPPriv->pAdaptor;
 
-    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "Xv/SPA %d, %d, %d\n",
+    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "SPA attr=%d, val=%d, port=%d\n",
 	attribute, value, PORTNUM(pPPriv)));
 
     if (attribute == xvFilter) {
@@ -1254,29 +1393,38 @@ Permedia2SetPortAttribute(ScrnInfoPtr pScrn,
 
 	if (value != pPPriv->Attribute[4]) {
 	    int VideoOn = ABS(pPPriv->VideoOn);
+	    int fh;
 
     	    StopVideoStream(pAPriv, 1 << PORTNUM(pPPriv));
-	    ReallocateOffscreenBuffer(pPPriv, FALSE, FALSE);
+
+	    ReallocateOffscreenBuffer(pPPriv, 0);
+
 	    pPPriv->Attribute[4] = value;
 
+	    fh = InputVideoEncodings[pAPriv->VideoStd * 3].height >> (1 - value);
+	    AdjustVideoH(pPPriv, fh, pPPriv->fh);
+	    pPPriv->fh = fh;
+
 	    if (VideoOn)
-		if (StartVideoStream(pPPriv, NULL))
+		if (StartVideoStream(pPPriv, NULL)) {
 		    pPPriv->VideoOn = VideoOn;
-		else {
+		    if (pPPriv == &pAPriv->Port[1])
+			GetYUV(pPPriv);
+		} else {
 		    pPPriv->VideoOn = -VideoOn;
 		    return XvBadAlloc;
 		}
 	}
-	
+
 	return Success;
     }
-    
+
     if (PORTNUM(pPPriv) == 0) {
 	if (attribute == xvEncoding) {
 	    if (value < 0 || value > 8) {
 		return XvBadEncoding;
 	    }
-	    /* fall thru */
+	    /* Fall through */
 	} else if (attribute == xvBrightness) {
 	    pPPriv->Attribute[0] = value = CLAMP(value, -1000, +1000);
 	    return SetAttr(&pAPriv->Port[0], 0, 0x0A, 128 + (MIN(value, +999) * 128) / 1000);
@@ -1296,6 +1444,17 @@ Permedia2SetPortAttribute(ScrnInfoPtr pScrn,
 	    if (value < 0 || value > 3)
 		return XvBadEncoding;
 	    if (++value >= 3) value++;
+	} else if (attribute == xvBkgColor) {
+	    pPPriv->Attribute[6] = value;
+	    pPPriv->BkgCol = ((value & 0xF80000) >> 8) |
+			     ((value & 0x00FC00) >> 5) |
+			     ((value & 0x0000F8) >> 3);
+	    pPPriv->BkgCol |= pPPriv->BkgCol << 16;
+	    if (pPPriv->StreamOn) {
+		BlackOut(pPPriv, NULL);
+		GetYUV(pPPriv);
+	    }
+	    return Success;
 	} else
     	    return Success;
     }
@@ -1311,39 +1470,51 @@ Permedia2SetPortAttribute(ScrnInfoPtr pScrn,
 	if (value != pAPriv->VideoStd) {
 	    int VideoOn0 = ABS(pAPriv->Port[0].VideoOn);
 	    int	VideoOn1 = ABS(pAPriv->Port[1].VideoOn);
+	    int fh;
 
 	    StopVideoStream(pAPriv, 1 | 2);
 
-	    if (value == 1) {
-		AdjustVideoH(&pAPriv->Port[0], 576, 480);
-		AdjustVideoH(&pAPriv->Port[1], 576, 480);
-	    } else if (pAPriv->VideoStd == 1) {
-		AdjustVideoH(&pAPriv->Port[0], 480, 576);
-		AdjustVideoH(&pAPriv->Port[1], 480, 576);
-	    }
-
 	    if (value == 1 || pAPriv->VideoStd == 1) {
-		ReallocateOffscreenBuffer(&pAPriv->Port[0], FALSE, FALSE);
-		ReallocateOffscreenBuffer(&pAPriv->Port[1], FALSE, FALSE);
+		ReallocateOffscreenBuffer(&pAPriv->Port[0], 0);
+		ReallocateOffscreenBuffer(&pAPriv->Port[1], 0);
 	    }
 
 	    pAPriv->VideoStd = value;
+
+	    SetVideoStd(pAPriv);
+
+	    fh = InputVideoEncodings[pAPriv->VideoStd * 3].height >> (1 - pAPriv->Port[0].Attribute[4]);
+	    AdjustVideoH(&pAPriv->Port[0], fh, pAPriv->Port[0].fh);
+	    pAPriv->Port[0].fh = fh;
+
+	    fh = InputVideoEncodings[pAPriv->VideoStd * 3].height >> (1 - pAPriv->Port[1].Attribute[4]);
+	    AdjustVideoH(&pAPriv->Port[1], fh, pAPriv->Port[1].fh);
+	    pAPriv->Port[1].fh = fh;
 
 	    if (VideoOn0)
 		pAPriv->Port[0].VideoOn = (StartVideoStream(&pAPriv->Port[0], NULL)) ?
 		    VideoOn0 : -VideoOn0;
 
 	    if (VideoOn1)
-		pAPriv->Port[1].VideoOn = (StartVideoStream(&pAPriv->Port[1], NULL)) ?
-		    VideoOn1 : -VideoOn1;
+		if (StartVideoStream(&pAPriv->Port[1], NULL)) {
+		    pAPriv->Port[1].VideoOn = VideoOn1;
+		    GetYUV(pPPriv);
+		} else
+		    pAPriv->Port[1].VideoOn = -VideoOn1;
 
-	    if (pAPriv->Port[0].VideoOn < 0 || pAPriv->Port[1].VideoOn < 0)
+	    if (pAPriv->Port[0].VideoOn < 0 ||
+		pAPriv->Port[1].VideoOn < 0 ||
+		pAPriv->VideoStd != value)
 		return XvBadAlloc;
 	}
     }
 
     return Success;
 }
+
+/* FIXME? Should update attrs via XVIPC too,
+ * Xv has XvPortNotify but no DDX equivalent.
+ */
 
 static int
 Permedia2GetPortAttribute(ScrnInfoPtr pScrn, 
@@ -1366,10 +1537,12 @@ Permedia2GetPortAttribute(ScrnInfoPtr pScrn,
 	*value = pPPriv->Attribute[4];
     else if (attribute == xvFilter)
 	*value = pPPriv->Attribute[5];
+    else if (attribute == xvBkgColor)
+	*value = pPPriv->Attribute[6];
     else
 	return BadMatch;
 
-    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "Xv/GPA %d, %d, %d\n",
+    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "GPA attr=%d, val=%d, port=%d\n",
 	attribute, *value, PORTNUM(pPPriv)));
 
     return Success;
@@ -1384,23 +1557,261 @@ Permedia2QueryBestSize(ScrnInfoPtr pScrn, Bool motion,
     *p_h = drw_h;
 }
 
+static Bool
+xvipcHandshake(PortPrivPtr pPPriv, int op, Bool block)
+{
+    int r;
+    int brake = 150;
+
+    xvipc.magic = XVIPC_MAGIC;
+    xvipc.op = op;
+    xvipc.block = block; /* Wait (with timeout), else don't wait for events
+			   if none are pending. */
+
+    if (pPPriv) {
+	AdaptorPrivPtr pAPriv = pPPriv->pAdaptor;
+
+	xvipc.pm2p = pAPriv->pm2p;
+	xvipc.pAPriv = pAPriv;
+	xvipc.port = PORTNUM(pPPriv);
+    } else {
+	xvipc.pm2p = (void *) -1;
+	xvipc.pAPriv = NULL;
+	xvipc.port = -1;
+    }
+
+    while (TRUE) {
+	if (brake-- <= 0) return FALSE; /* We have a bug. */
+
+	DEBUG(xf86MsgVerb(X_INFO, 4,
+	    "PM2 XVIPC send op=%d bl=%d po=%d a=%d b=%d c=%d\n",
+	    xvipc.op, xvipc.block, xvipc.port, xvipc.a, xvipc.b, xvipc.c));
+
+	r = ioctl(xvipc_fd, VIDIOC_PM2_XVIPC, (void *) &xvipc);
+
+	DEBUG(xf86MsgVerb(X_INFO, 4,
+	    "PM2 XVIPC recv op=%d bl=%d po=%d a=%d b=%d c=%d err=%d/%d\n",
+	    xvipc.op, xvipc.block, xvipc.port, xvipc.a, xvipc.b, xvipc.c, r, errno));
+
+	switch (xvipc.op) {
+	    case OP_ALLOC:
+	    {
+		AdaptorPrivPtr pAPriv = xvipc.pAPriv;
+		ScrnInfoPtr pScrn = pAPriv->pScrn;
+		GLINTPtr pGlint = GLINTPTR(pScrn);
+		FBAreaPtr pFBArea;
+		LFBAreaPtr pLFBArea = NULL;
+
+		xvipc.a = -1;
+
+		if ((pFBArea = xf86AllocateLinearOffscreenArea(pScrn->pScreen,
+		    xvipc.b >> BPPSHIFT(pGlint), 2, NULL, NULL, NULL)))
+		    xvipc.a = ((pFBArea->box.y1 * pScrn->displayWidth) +
+			      pFBArea->box.x1) << BPPSHIFT(pGlint);
+
+		if (ioctl(xvipc_fd, VIDIOC_PM2_XVIPC, (void *) &xvipc) != 0) {
+		    if (pFBArea) xf86FreeOffscreenArea(pFBArea);
+		    pFBArea = NULL;
+		}
+
+		if (pFBArea && (pLFBArea = xalloc(sizeof(LFBAreaRec)))) {
+		    pLFBArea->Next = pAPriv->LFBList;
+		    pLFBArea->pFBArea = pFBArea;
+		    pLFBArea->Linear = xvipc.a;
+		    pAPriv->LFBList = pLFBArea;
+		}
+
+		DEBUG(xf86MsgVerb(X_INFO, 3, "PM2 XVIPC alloc addr=%d=0x%08x pFB=%p pLFB=%p\n",
+		    xvipc.a, xvipc.a, pFBArea, pLFBArea));
+
+		goto event;
+	    }
+
+	    case OP_FREE:
+	    {
+		AdaptorPrivPtr pAPriv = xvipc.pAPriv;
+		LFBAreaPtr pLFBArea, *ppLFBArea;
+
+		for (ppLFBArea = &pAPriv->LFBList; (pLFBArea = *ppLFBArea);
+		     ppLFBArea = &pLFBArea->Next)
+		    if (pLFBArea->Linear == xvipc.a)
+			break;
+
+		if (!pLFBArea)
+		    xvipc.a = -1;
+
+		DEBUG(xf86MsgVerb(X_INFO, 3, "PM2 XVIPC free addr=%d=0x%08x pLFB=%p\n",
+		    xvipc.a, xvipc.a, pLFBArea));
+
+		if (ioctl(xvipc_fd, VIDIOC_PM2_XVIPC, (void *) &xvipc) == 0) {
+		    xf86FreeOffscreenArea(pLFBArea->pFBArea);
+		    *ppLFBArea = pLFBArea->Next;
+		    xfree(pLFBArea);
+		    pLFBArea = NULL;
+		}
+
+		goto event;
+	    }
+
+	    case OP_UPDATE:
+	    {
+		AdaptorPrivPtr pAPriv = xvipc.pAPriv;
+		PortPrivPtr pPPriv;
+
+		pPPriv = &pAPriv->Port[0];
+
+		if (pPPriv->VideoOn >= 1 && xvipc.a > 0) {
+		    pPPriv->FrameAcc += pPPriv->FramesPerSec;
+		    if (pPPriv->FrameAcc >= pAPriv->FramesPerSec) {
+			pPPriv->FrameAcc -= pAPriv->FramesPerSec;
+
+			/* Asynchronous resizing caused by kernel app */
+
+			if (xvipc.c != pPPriv->fw ||
+			    xvipc.d != pPPriv->fh) {
+			    AdjustVideoW(pPPriv, xvipc.c, pPPriv->fw);
+			    AdjustVideoH(pPPriv, xvipc.d, pPPriv->fh);
+			    pPPriv->fw = xvipc.c;
+			    pPPriv->fh = xvipc.d;
+			    pPPriv->BufferPProd = xvipc.e;
+
+			    PutCookies(pPPriv, NULL);
+			}
+
+			PutYUV(pPPriv, xvipc.a);
+
+			if (pPPriv->VideoOn == 1)
+			    pPPriv->VideoOn = 0;
+		    }
+		} else if (pPPriv->APO >= 0 && !(pPPriv->APO--))
+		    DelayedStopVideo(pPPriv);
+
+		pPPriv = &pAPriv->Port[1];
+
+		if (pPPriv->VideoOn >= 1 && xvipc.b > 0) {
+		    pPPriv->FrameAcc += pPPriv->FramesPerSec;
+		    if (pPPriv->FrameAcc >= pAPriv->FramesPerSec) {
+			pPPriv->FrameAcc -= pAPriv->FramesPerSec;
+
+			pPPriv->BufferBase[0] = xvipc.b;
+
+			/* Output is always exclusive, no async resizing */
+
+			GetYUV(pPPriv);
+
+			if (pPPriv->VideoOn == 1)
+			    pPPriv->VideoOn = 0;
+		    }
+		} else if (pPPriv->APO >= 0 && !(pPPriv->APO--))
+		    DelayedStopVideo(pPPriv);
+
+		/* Fall through */
+	    }
+
+	    default:
+	    event:
+		if (xvipc.op == op)
+		    return r == 0;
+
+		xvipc.op = OP_EVENT;
+		xvipc.block = block;
+	}
+    }
+
+    return TRUE;
+}
+
+static void
+Permedia2ReadInput(LocalDevicePtr unused)
+{
+    xvipcHandshake(NULL, OP_EVENT, FALSE);
+}
+
 static void
 AdaptorPrivUninit(AdaptorPrivPtr pAPriv)
 {
     GLINTPtr pGlint = GLINTPTR(pAPriv->pScrn);
 
-    {
+    if (!pAPriv->pm2p) {
 	TimerFree(pAPriv->Timer);
 	xf86DestroyI2CDevRec(&pAPriv->Port[0].I2CDev, FALSE);
 	xf86DestroyI2CDevRec(&pAPriv->Port[1].I2CDev, FALSE);
 	GLINT_MASK_WRITE_REG(VS_UnitMode_ROM, ~VS_UnitMode_Mask, VSConfiguration);
-	FreeCookies(&pAPriv->Port[0]);
-	FreeCookies(&pAPriv->Port[1]);
+	GLINT_WRITE_REG(pAPriv->FifoControl, PMFifoControl);
     }
 
-    GLINT_WRITE_REG(pAPriv->FifoControl, PMFifoControl);
+    FreeCookies(&pAPriv->Port[0]);
+    FreeCookies(&pAPriv->Port[1]);
 
     xfree(pAPriv);
+}
+
+static Bool
+xvipcOpen(char *name, ScrnInfoPtr pScrn)
+{
+    const char *osname;
+
+    if (xvipc_fd >= 0)
+	return TRUE;
+
+    LoaderGetOS(&osname, NULL, NULL, NULL);
+
+    if (!osname || strcmp(osname, "linux"))
+	return FALSE;
+
+    while (1) {
+	DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "XVIPC probing device %s\n", name));
+
+    	if ((xvipc_fd = open(name, O_RDWR /* | O_TRUNC */, 0)) < 0)
+	    break;
+
+	xvipc.magic = XVIPC_MAGIC;
+	xvipc.pm2p = (void *) -1;
+	xvipc.pAPriv = NULL;
+	xvipc.op = OP_CONNECT;
+	xvipc.a = 0;
+	xvipc.b = 0;
+	xvipc.c = 0;
+	xvipc.d = 0;
+
+	if (ioctl(xvipc_fd, VIDIOC_PM2_XVIPC, (void *) &xvipc) < 0 || xvipc.pm2p)
+	    break;
+
+	if (xvipc.c != XVIPC_VERSION) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		       "Your Permedia 2 kernel driver %d.%d uses XVIPC protocol "
+		       "V.%d while this Xv driver expects V.%d. Please update.\n",
+		       xvipc.a, xvipc.b, xvipc.c, XVIPC_VERSION);
+	    break;
+	}
+
+	/* FIXME */
+
+	xvipc_local = xcalloc(1, sizeof(LocalDeviceRec));
+	xvipc_local->type_name = "Permedia 2 kernel backbone";
+	xvipc_local->flags = XI86_NO_OPEN_ON_INIT;
+	xvipc_local->read_input = Permedia2ReadInput;
+	xvipc_local->fd = xvipc_fd;
+	xf86AddLocalDevice(xvipc_local, NULL);
+	xvipc_local->flags &= ~XI86_CONFIGURED; /* Don't xf86ActivateDevice us */
+	AddEnabledDevice(xvipc_fd);
+
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Xv driver connected to %s\n", name);
+
+	return TRUE;
+    }
+
+    if (xvipc_fd >= 0)
+	close(xvipc_fd);
+
+    xvipc_fd = -1;
+
+    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+	       "Cannot connect to Permedia 2 kernel driver. "
+	       "Note that using both drivers at the same time "
+	       "will cause problems.\n");
+
+    return FALSE;
 }
 
 static AdaptorPrivPtr
@@ -1424,8 +1835,47 @@ AdaptorPrivInit(ScrnInfoPtr pScrn)
 
 	pAPriv->Port[1].Attribute[4] = 1;	/* Interlaced (Bool) */
 	pAPriv->Port[1].Attribute[5] = 0;	/* Bilinear Filter (Bool) */
+	pAPriv->Port[1].Attribute[6] = 0;	/* BkgColor 0x00RRGGBB */
+	pAPriv->Port[1].BkgCol = 0;
 
-	{
+	pAPriv->Port[0].Buffers = 2;
+	pAPriv->Port[1].Buffers = 1;
+
+	for (i = 0; i <= 1; i++) {
+	    pAPriv->Port[i].fw = 704;
+	    pAPriv->Port[i].fh = 576;
+	    pAPriv->Port[i].FramesPerSec = 30;
+	    pAPriv->Port[i].APO = -1;
+	    pAPriv->Port[i].BufferPProd = partprodPermedia[704 >> 5];
+	}
+
+	if (xvipc_fd >= 0) {
+	    xvipc.magic = XVIPC_MAGIC;
+	    xvipc.pm2p = (void *) -1;
+	    xvipc.pAPriv = pAPriv;
+	    xvipc.op = OP_CONNECT;
+	    xvipc.a = pGlint->PciInfo->bus;
+	    xvipc.b = pGlint->PciInfo->device;
+	    xvipc.c = pGlint->PciInfo->func;
+	    xvipc.d = pScrn->videoRam << 10;
+
+	    if (ioctl(xvipc_fd, VIDIOC_PM2_XVIPC, (void *) &xvipc) < 0) {
+		if (errno == EBUSY)
+		    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+			       "Another application already opened the Permedia 2 "
+			       "kernel driver for this board. To enable "
+			       "shared access please start the server first.\n");
+		else
+		    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+			       "Initialization of Xv support with kernel backbone "
+			       "failed due to error %d: %s.\n", errno, strerror(errno));
+		goto failed;
+	    }
+
+	    pAPriv->pm2p = xvipc.pm2p;
+
+	    SetVideoStd(pAPriv);
+	} else {
 	    GLINT_WRITE_REG(0, VSABase + VSControl);
 	    GLINT_WRITE_REG(0, VSBBase + VSControl);
 #if 0
@@ -1499,10 +1949,7 @@ AdaptorPrivInit(ScrnInfoPtr pScrn)
 
 	    SetVideoStd(pAPriv);
 
-	    pAPriv->Port[0].APO = -1;
-
-     	    pAPriv->Timer = TimerSet(NULL, 0, 0,
-		TimerCallback, pAPriv);
+     	    pAPriv->Timer = TimerSet(NULL, 0, 0, TimerCallback, pAPriv);
 
 	    if (!pAPriv->Timer)
 		goto failed;
@@ -1531,6 +1978,11 @@ Permedia2VideoUninit(ScrnInfoPtr pScrn)
 	    AdaptorPrivUninit(pAPriv);
 	    break;
 	}
+
+    if (xvipc_fd >= 0) {
+	close(xvipc_fd);
+	xvipc_fd = -1;
+    }
 }
 
 /* Required to retire delayed stop */
@@ -1558,27 +2010,19 @@ Permedia2VideoInit(ScreenPtr pScreen)
     DevUnion Private[2];
     XF86VideoAdaptorRec VAR[2];
     XF86VideoAdaptorPtr VARPtrs[2];
-    pointer options[2];
-    int VideoIO = TRUE;
+    pointer options[3];
+    Bool VideoIO = TRUE;
     int i;
 
     options[0] = NULL;
     options[1] = NULL;
-
-    /* Following the Xv design the correct syntax consists of several (2)
-       VideoAdaptor sections, each containing only the (1) input, the (1)
-       output, or the (0) i/o VideoPort subsections. For now I accept
-       both VideoPort subsections in a single VideoAdaptor section as a
-       shortcut. VideoAdaptor options should probably be merged with each
-       of its VideoPort's options, but ignored yet. Absence of a VideoAdaptor
-       reference in the Screen section disables this driver. 
-     */
+    options[2] = NULL;
 
     for (i = 0;; i++) {
 	char *adaptor;
 
 	if (!options[0])
-	    options[0] = xf86FindXvOptions(pScreen->myNum, i, "input", &adaptor, NULL);
+	    options[0] = xf86FindXvOptions(pScreen->myNum, i, "input", &adaptor, &options[2]);
 	if (!options[1])
 	    options[1] = xf86FindXvOptions(pScreen->myNum, i, "output", &adaptor, NULL);
 	if (!adaptor) {
@@ -1619,12 +2063,27 @@ Permedia2VideoInit(ScreenPtr pScreen)
 	return;
     }
 
-    xf86ProcessOptions(pScrn->scrnIndex, options[0], InputOptions);
-    xf86ProcessOptions(pScrn->scrnIndex, options[1], OutputOptions);
+    for (i = 0; i <= 2; i++) {
+	xf86ProcessOptions(pScrn->scrnIndex, options[i],
+	    (i == 0) ? InputOptions : ((i == 1) ? OutputOptions : AdaptorOptions));
+	xf86ShowUnusedOptions(pScrn->scrnIndex, options[i]);
+    }
+
+    if (xf86IsOptionSet(AdaptorOptions, OPTION_DEVICE))
+        xvipcOpen(xf86GetOptValString(AdaptorOptions, OPTION_DEVICE), pScrn);
 
     if (!(pAPriv = AdaptorPrivInit(pScrn))) {
-	DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_ERROR, 1, "AdaptorPrivInit failed\n"));
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Xv driver initialization failed\n");
 	return;
+    }
+
+    for (i = 0; i <= 1; i++) {
+	int n;
+
+	if (xf86GetOptValInteger(i ? OutputOptions : InputOptions, OPTION_BUFFERS, &n))
+	    pAPriv->Port[i].Buffers = CLAMP(n, 1, i ? 1 : 2); /* FIXME */
+	if (xf86GetOptValInteger(i ? OutputOptions : InputOptions, OPTION_FPS, &n))
+	    pAPriv->Port[i].FramesPerSec = CLAMP(n, 1, 30);
     }
 
     if (pGlint->NoAccel) {
@@ -1685,7 +2144,7 @@ Permedia2VideoInit(ScreenPtr pScreen)
     }
 
     if (!xf86XVScreenInit(pScreen, VARPtrs, 2)) {
-	DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_ERROR, 1, "xf86XVScreenInit failed\n"));
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Xv initialization failed\n");
 	return;
     }
 
@@ -1696,9 +2155,11 @@ Permedia2VideoInit(ScreenPtr pScreen)
     xvContrast   = MAKE_ATOM(XV_CONTRAST);
     xvInterlace  = MAKE_ATOM(XV_INTERLACE);
     xvFilter	 = MAKE_ATOM(XV_FILTER);
+    xvBkgColor	 = MAKE_ATOM(XV_BKGCOLOR);
 
     pAPriv->Next = AdaptorPrivList;
     AdaptorPrivList = pAPriv;
 
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Xv driver enabled\n");
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Xv driver %senabled\n",
+	       (xvipc_fd >= 0) ? "with kernel backbone " : "");
 }

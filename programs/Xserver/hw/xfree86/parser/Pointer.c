@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Pointer.c,v 1.2 1998/07/25 16:57:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Pointer.c,v 1.3 1998/07/26 09:56:20 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -127,6 +127,7 @@ parsePointerSection (void)
 				if (xf86GetToken (NULL) != NUMBER)
 					Error (NUMBER_MSG, "ZAxisMapping");
 				ptr->pntr_positiveZ = val.num;
+                                break;
 			case XAXIS:
 				ptr->pntr_positiveZ = CONF_ZAXIS_MAPTOX;
 				ptr->pntr_negativeZ = CONF_ZAXIS_MAPTOX;

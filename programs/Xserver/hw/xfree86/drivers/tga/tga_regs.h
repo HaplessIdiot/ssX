@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_regs.h,v 1.5 1999/02/07 11:11:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_regs.h,v 1.6 1999/02/13 01:13:37 dawes Exp $ */
 
 /* TGA hardware description (minimal)
  *
@@ -40,8 +40,13 @@
 #define TYPE_TGA_24PLANE		1
 #define TYPE_TGA_24PLUSZ		3
 
-/* #define PROFILE */
-#undef PROFILE
+#define TGA_WRITE_REG(v,r) \
+	do {\
+		 *(unsigned int *)((char*)(pTga->IOBase)+(r)) = v;\
+		 mem_barrier();\
+	} while (0)
+#define TGA_READ_REG(r) \
+	( *(unsigned int *)((char*)(pTga->IOBase)+(r)))
 
 #ifdef __alpha__
 /* we can avoid an mb() if we write to an alternate register space each time */
@@ -49,9 +54,12 @@
 #define MAX_OFFSET 8192
 #define OFFSET_INC 1024
 
-#define TGA_GET_IOBASE() iobase = (unsigned long)pTga->IOBaseDense;
+#define TGA_GET_IOBASE() iobase = (unsigned long)pTga->IOBase;
 #define TGA_GET_OFFSET() offset = pTga->regOffset;
 #define TGA_SAVE_OFFSET() pTga->regOffset = offset;
+
+/* #define PROFILE */
+#undef PROFILE
 
 #ifdef PROFILE
 static __inline__ unsigned int realcc()
@@ -71,7 +79,7 @@ start = realcc();\
   ErrorF("TGA_FAST_WRITE_REG = %d\n", stop - start);\
 } while (0)
 
-#else
+#else /* PROFILE */
 
 #define TGA_FAST_WRITE_REG(v,r) \
 do {\
@@ -81,26 +89,13 @@ do {\
 } while (0)
 #endif /* PROFILE */
 
-#define TGA_WRITE_REG(v,r) \
-	do {\
-		 *(unsigned int *)((char*)(pTga->IOBaseDense)+(r)) = v;\
-		 mem_barrier();\
-	} while (0)
-#define TGA_READ_REG(r) \
-	( *(unsigned int *)((char*)(pTga->IOBaseDense)+(r)))
+#else /* __alpha__ */
 
-#else
+#define TGA_GET_IOBASE() ;
 #define TGA_GET_OFFSET() ;
 #define TGA_SAVE_OFFSET() ;
-#define TGA_GET_IOBASE() ;
-
-#define TGA_WRITE_REG(v,r) \
-	*(unsigned int *)((char*)(pTga->IOBase)+(r)) = v;
-
 #define TGA_FAST_WRITE_REG(v,r) TGA_WRITE_REG(v,r)
 
-#define TGA_READ_REG(r) \
-	( *(unsigned int *)((char*)(pTga->IOBase)+(r)))
 #endif /* __alpha__ */
 
 #define BT485_WRITE(v,r) \

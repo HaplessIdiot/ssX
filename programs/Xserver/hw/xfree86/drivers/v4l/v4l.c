@@ -2,7 +2,7 @@
  *  video4linux Xv Driver 
  *  based on Michael Schimek's permedia 2 driver.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.4 1999/04/11 13:10:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.5 1999/04/11 14:30:05 dawes Exp $ */
 
 #include "videodev.h"
 #include "xf86.h"
@@ -114,8 +114,10 @@ typedef struct _PortPrivRec {
 
     /* attributes */
     struct video_picture	pict;
+    struct video_audio          audio;
 
     XF86VideoEncodingPtr        enc;
+    int                         nenc,cenc;
 } PortPrivRec, *PortPrivPtr;
 
 #define XV_ENCODING	"XV_ENCODING"
@@ -125,10 +127,13 @@ typedef struct _PortPrivRec {
 #define XV_HUE		"XV_HUE"
 
 #define XV_FREQ		"XV_FREQ"
+#define XV_MUTE		"XV_MUTE"
+#define XV_VOLUME      	"XV_VOLUME"
 
 #define MAKE_ATOM(a) MakeAtom(a, sizeof(a) - 1, TRUE)
 
-static Atom xvEncoding, xvBrightness, xvContrast, xvSaturation, xvHue, xvFreq;
+static Atom xvEncoding, xvBrightness, xvContrast, xvSaturation, xvHue;
+static Atom xvFreq, xvMute, xvVolume;
 
 static XF86VideoFormatRec
 InputVideoFormats[] = {
@@ -136,6 +141,15 @@ InputVideoFormats[] = {
     { 16, TrueColor },
     { 24, TrueColor },
 };
+
+/* ---------------------------------------------------------------------- */
+/* forward decl */
+
+static void V4lQueryBestSize(ScrnInfoPtr pScrn, Bool motion,
+		 short vid_w, short vid_h, short drw_w, short drw_h,
+		 unsigned int *p_w, unsigned int *p_h, pointer data);
+
+/* ---------------------------------------------------------------------- */
 
 static int V4lOpenDevice(PortPrivPtr pPPriv, ScrnInfoPtr pScrn)
 {
@@ -180,20 +194,30 @@ V4lPutVideo(ScrnInfoPtr pScrn,
     PortPrivPtr pPPriv = (PortPrivPtr) data;
     struct video_clip *clip;
     BoxPtr pBox;
-    int i;
+    unsigned int i,dx,dy,dw,dh;
     int one=1;
 
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "Xv/PV\n"));
+    /* FIXME: vid-* is ignored for now */
 
-    /* ignore vid-* for now */
+    V4lQueryBestSize(pScrn, 0, vid_w, vid_h, drw_w, drw_h, &dw, &dh, data);
+    /* if the window is too big, center the video */
+    dx = drw_x + (drw_w - dw)/2;
+    dy = drw_y + (drw_h - dh)/2;
+    /* bttv prefeares aligned addresses */
+    dx &= ~3;
+    if (dx < drw_x) dx += 4;
+    if (dx+dw > drw_x+drw_w) dw -= 4;
 
     /* window */
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "  win: %dx%d+%d+%d\n",
 		drw_w,drw_h,drw_x,drw_y));
-    pPPriv->ov_win.x      = drw_x;
-    pPPriv->ov_win.y      = drw_y;
-    pPPriv->ov_win.width  = drw_w;
-    pPPriv->ov_win.height = drw_h;
+    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "  use: %dx%d+%d+%d\n",
+		dw,dh,dx,dy));
+    pPPriv->ov_win.x      = dx;
+    pPPriv->ov_win.y      = dy;
+    pPPriv->ov_win.width  = dw;
+    pPPriv->ov_win.height = dh;
     pPPriv->ov_win.flags  = 0;
  
     /* clipping */
@@ -210,8 +234,8 @@ V4lPutVideo(ScrnInfoPtr pScrn,
 	pBox = REGION_RECTS(clipBoxes);
 	clip = pPPriv->ov_win.clips;
 	for (i = 0; i < REGION_NUM_RECTS(clipBoxes); i++, pBox++, clip++) {
-	    clip->x	 = pBox->x1 - drw_x;
-	    clip->y      = pBox->y1 - drw_y;
+	    clip->x	 = pBox->x1 - dx;
+	    clip->y      = pBox->y1 - dy;
 	    clip->width  = pBox->x2 - pBox->x1;
 	    clip->height = pBox->y2 - pBox->y1;
 	}
@@ -293,10 +317,15 @@ V4lSetPortAttribute(ScrnInfoPtr pScrn,
     if (-1 == pPPriv->fd) {
 	ret = Success /* FIXME: EBUSY/ENODEV ?? */;
     } else if (attribute == xvEncoding) {
-	chan.channel = value/3;
-	chan.norm    = value%3;
-	if (-1 == ioctl(pPPriv->fd,VIDIOCSCHAN,&chan))
-	    perror("ioctl VIDIOCSCHAN");
+	if (value >= 0 && value < pPPriv->nenc) {
+	    pPPriv->cenc = value;
+	    chan.channel = value/3;
+	    chan.norm    = value%3;
+	    if (-1 == ioctl(pPPriv->fd,VIDIOCSCHAN,&chan))
+		perror("ioctl VIDIOCSCHAN");
+	} else {
+	    ret = BadValue;
+	}
     } else if (attribute == xvBrightness ||
                attribute == xvContrast   ||
                attribute == xvSaturation ||
@@ -306,11 +335,27 @@ V4lSetPortAttribute(ScrnInfoPtr pScrn,
 	if (attribute == xvContrast)   pPPriv->pict.contrast   = xv_to_v4l(value);
 	if (attribute == xvSaturation) pPPriv->pict.colour     = xv_to_v4l(value);
 	if (attribute == xvHue)        pPPriv->pict.hue        = xv_to_v4l(value);
-	ioctl(pPPriv->fd,VIDIOCSPICT,&pPPriv->pict);
+	if (-1 == ioctl(pPPriv->fd,VIDIOCSPICT,&pPPriv->pict))
+	    perror("ioctl VIDIOCSPICT");
+    } else if (attribute == xvMute ||
+	       attribute == xvVolume) {
+	ioctl(pPPriv->fd,VIDIOCGAUDIO,&pPPriv->audio);
+	if (attribute == xvMute) {
+	    if (value)
+		pPPriv->audio.flags |= VIDEO_AUDIO_MUTE;
+	    else
+		pPPriv->audio.flags &= ~VIDEO_AUDIO_MUTE;
+	} else if (attribute == xvVolume && (pPPriv->audio.flags & VIDEO_AUDIO_VOLUME)) {
+	    pPPriv->audio.volume = xv_to_v4l(value);
+	} else {
+	    ret = BadValue;
+	}
+	if (ret != BadValue)
+	    if (-1 == ioctl(pPPriv->fd,VIDIOCSAUDIO,&pPPriv->audio))
+		perror("ioctl VIDIOCSAUDIO");
     } else if (attribute == xvFreq) {
-	/* ErrorF("setfreq=%d\n",value); */
 	if (-1 == ioctl(pPPriv->fd,VIDIOCSFREQ,&value))
-	    perror("ioctl");
+	    perror("ioctl VIDIOCSFREQ");
     } else {
 	ret = BadValue;
     }
@@ -331,7 +376,7 @@ V4lGetPortAttribute(ScrnInfoPtr pScrn,
     if (-1 == pPPriv->fd) {
 	ret = Success /* FIXME: EBUSY/ENODEV ?? */;
     } else if (attribute == xvEncoding) {
-	/* TODO */
+	*value = pPPriv->cenc;
     } else if (attribute == xvBrightness ||
                attribute == xvContrast   ||
                attribute == xvSaturation ||
@@ -341,6 +386,16 @@ V4lGetPortAttribute(ScrnInfoPtr pScrn,
 	if (attribute == xvContrast)   *value = v4l_to_xv(pPPriv->pict.contrast);
 	if (attribute == xvSaturation) *value = v4l_to_xv(pPPriv->pict.colour);
 	if (attribute == xvHue)        *value = v4l_to_xv(pPPriv->pict.hue);
+    } else if (attribute == xvMute ||
+	       attribute == xvVolume) {
+	ioctl(pPPriv->fd,VIDIOCGAUDIO,&pPPriv->audio);
+	if (attribute == xvMute) {
+	    *value = (pPPriv->audio.flags & VIDEO_AUDIO_MUTE) ? 1 : 0;
+	} else if (attribute == xvVolume && (pPPriv->audio.flags & VIDEO_AUDIO_VOLUME)) {
+	    *value = v4l_to_xv(pPPriv->audio.volume);
+	} else {
+	    ret = BadValue;
+	}
     } else if (attribute == xvFreq) {
 	ioctl(pPPriv->fd,VIDIOCGFREQ,value);
     } else {
@@ -359,9 +414,15 @@ V4lQueryBestSize(ScrnInfoPtr pScrn, Bool motion,
     short vid_w, short vid_h, short drw_w, short drw_h,
     unsigned int *p_w, unsigned int *p_h, pointer data)
 {
-    /* FIXME */
-    *p_w = drw_w;
-    *p_h = drw_h;
+    PortPrivPtr pPPriv = (PortPrivPtr) data;
+    int maxx = pPPriv->enc[pPPriv->cenc].width;
+    int maxy = pPPriv->enc[pPPriv->cenc].height;
+
+    *p_w = (drw_w < maxx) ? drw_w : maxx;
+    *p_h = (drw_h < maxy) ? drw_h : maxy;
+
+    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "Xv/BS %d %dx%d %dx%d\n",
+			 pPPriv->cenc,drw_w,drw_h,*p_w,*p_h));
 }
 
 
@@ -469,6 +530,8 @@ V4LProbe(DriverPtr drv, int flags)
 	pPPriv->fd    = -1;
 	strncpy(pPPriv->devname, dev, 16);
 	pPPriv->useCount=0;
+	pPPriv->enc = enc;
+	pPPriv->nenc = nenc;
 
 	/* alloc VideoAdaptorRec */
 	VAR[i] = xalloc(sizeof(XF86VideoAdaptorRec));
@@ -509,6 +572,8 @@ V4LProbe(DriverPtr drv, int flags)
     xvContrast   = MAKE_ATOM(XV_CONTRAST);
 
     xvFreq       = MAKE_ATOM(XV_FREQ);
+    xvMute       = MAKE_ATOM(XV_MUTE);
+    xvVolume     = MAKE_ATOM(XV_VOLUME);
 
     DEBUG(xf86Msg(X_INFO, "v4l: init done, %d found\n",i));
     if (i) {
