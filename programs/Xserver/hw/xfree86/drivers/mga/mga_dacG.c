@@ -334,8 +334,10 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		}
 		pReg->Option2 = 0x0000007;
 		break;
-#ifndef USEMGAHAL
 	case PCI_CHIP_MGAG400:
+#ifdef USEMGAHAL
+	       MGA_HAL(break;);
+#endif
 	       if(pMga->Dac.maxPixelClock == 360000) {  /* G400 MAX */
 	           if(pMga->OverclockMem) {
 			/* 150/200  */
@@ -376,6 +378,9 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	case PCI_CHIP_MGAG200:
 	case PCI_CHIP_MGAG200_PCI:
 	default:
+#ifdef USEMGAHAL
+	       MGA_HAL(break;);
+#endif
 		if(pMga->OverclockMem) {
                      /* 143 Mhz */
 		    pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x06;
@@ -393,7 +398,6 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		else
 		    pReg->Option = 0x4049cd21;
 		break;
-#endif
 	}
 
 	MGA_NOT_HAL(

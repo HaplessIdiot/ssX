@@ -47,6 +47,7 @@
 #include "loader.h"
 #include "coffloader.h"
 
+#include "compiler.h"
 /*
 #ifndef LDTEST
 #define COFFDEBUG ErrorF

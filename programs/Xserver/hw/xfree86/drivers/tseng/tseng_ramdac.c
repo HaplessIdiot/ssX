@@ -618,6 +618,8 @@ tseng_set_ramdac_bpp(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	cmd_array = CMD_MU4910;
 	cmd_dest = &(pTseng->ModeReg.ATTdac_cmd);
 	break;
+    default:
+        break;
     }
 
     if (cmd_array != NULL) {

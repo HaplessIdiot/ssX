@@ -200,6 +200,30 @@ xf86addListItem (GenericListPtr head, GenericListPtr new)
 		return (new);
 }
 
+/* 
+ * Test if one chained list contains the other.
+ * In this case both list have the same endpoint (provided they don't loop)
+ */
+int
+xf86itemNotSublist(GenericListPtr list_1, GenericListPtr list_2)
+{
+    GenericListPtr p = list_1;
+    GenericListPtr last_1 = NULL, last_2 = NULL;
+
+    while (p) {
+        last_1 = p;
+	p = p->next;
+    }
+    
+    p = list_2;
+    while (p) {
+      last_2 = p;
+      p = p->next;
+    }
+    
+    return (!(last_1 == last_2));
+}
+
 void
 xf86freeConfig (XF86ConfigPtr p)
 {

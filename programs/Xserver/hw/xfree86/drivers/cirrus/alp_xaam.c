@@ -13,8 +13,10 @@
 #include "vgaHW.h"
 
 #include "cir.h"
+#define _ALP_PRIVATE_
 #include "alp.h"
 
+#ifdef DEBUG
 #define minb(p) \
         ErrorF("minb(%X)\n", p),\
         MMIO_IN8(pCir->IOBase, (p))
@@ -27,7 +29,12 @@
 #define moutl(p,v) \
         ErrorF("moutl(%X)\n", p),\
 	MMIO_OUT32(pCir->IOBase, (p),(v))
-
+#else
+#define minb(p) MMIO_IN8(pCir->IOBase, (p))
+#define moutb(p,v) MMIO_OUT8(pCir->IOBase, (p),(v))
+#define minl(p) MMIO_IN32(pCir->IOBase, (p))
+#define moutl(p,v) MMIO_OUT32(pCir->IOBase, (p),(v))
+#endif
 
 #define WAIT while(minb(0x40) & pCir->chip.alp->waitMsk){};
 #define WAIT_1 while(minb(0x40) & 0x1){};
@@ -158,7 +165,6 @@ Bool
 AlpXAAInitMMIO(ScreenPtr pScreen)
 {
 	ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-	vgaHWPtr hwp = VGAHWPTR(pScrn);
 	CirPtr pCir = CIRPTR(pScrn);
 	XAAInfoRecPtr XAAPtr;
 

@@ -71,14 +71,20 @@
                      {int timeout; \
                      timeout = 0; \
 		     for (;;) { \
-                         if (!(cPtr->readXR(cPtr,0x20) & 0x1)) break; \
+                         if (cPtr->Chipset >= CHIPS_CT69000) { \
+                            if (!(MMIO_IN32(cPtr->MMIOBase,BR(0x4))&(1<<31)))\
+                                    break; \
+                         } else { \
+                            if (!(cPtr->readXR(cPtr,0x20) & 0x1)) break; \
+                         } \
                          timeout++; \
                          if (timeout == 100000) { \
 			    unsigned char tmp; \
                             ErrorF("timeout\n"); \
 			    tmp = cPtr->readXR(cPtr, 0x20); \
 			    cPtr->writeXR(cPtr, 0x20, ((tmp & 0xFD) | 0x2)); \
-			    cPtr->writeXR(cPtr, 0x20, (tmp & 0xFD)); \
+                            xf86UDelay(10000); \
+                            cPtr->writeXR(cPtr, 0x20, (tmp & 0xFD)); \
 			    break; \
                          } \
 		      } \

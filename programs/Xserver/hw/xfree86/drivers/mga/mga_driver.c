@@ -220,7 +220,8 @@ typedef enum {
     OPTION_TV,
     OPTION_TVSTANDARD,
     OPTION_CABLETYPE,
-    OPTION_USEIRQZERO
+    OPTION_USEIRQZERO,
+    OPTION_NOHAL
 } MGAOpts;
 
 static OptionInfoRec MGAOptions[] = {
@@ -250,6 +251,7 @@ static OptionInfoRec MGAOptions[] = {
     { OPTION_TVSTANDARD,	"TVStandard",	OPTV_ANYSTR,	{0}, FALSE },
     { OPTION_CABLETYPE,		"CableType",	OPTV_ANYSTR,	{0}, FALSE },
     { OPTION_USEIRQZERO,	"UseIrqZero",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_NOHAL,		"NoHal",	OPTV_BOOLEAN,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -419,7 +421,21 @@ static const char *fbdevHWSymbols[] = {
 	NULL
 };
 
-
+#ifdef USEMGAHAL
+static const char *halSymbols[] = {
+  "MGACloseLibrary",
+  "MGASaveVgaState",
+  "MGARestoreVgaState",
+  "MGASetVgaMode",
+  "MGASetMode",
+  "MGAValidateMode",
+  "MGAValidateVideoParameters",
+  "MGAGetBOARDHANDLESize",
+  "MGAGetHardwareInfo",
+  "MGAOpenLibrary",
+        NULL 
+};
+#endif
 #ifdef XFree86LOADER
 
 static MODULESETUPPROTO(mgaSetup);
@@ -468,7 +484,9 @@ mgaSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 #ifdef XF86DRI 
 			  drmSymbols, driSymbols,
 #endif
-			  
+#ifdef USEMGAHAL
+			  halSymbols,
+#endif
 			  NULL);
 
 	/*
@@ -1356,13 +1374,15 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     /* Process the options */
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, MGAOptions);
 
-   if(xf86ReturnOptValBool(MGAOptions, OPTION_INT10, FALSE) &&
+    pMga->softbooted = FALSE;
+   if (xf86ReturnOptValBool(MGAOptions, OPTION_INT10, FALSE) &&
       xf86LoadSubModule(pScrn, "int10"))
    {
         xf86Int10InfoPtr pInt;
 
         xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Initializing int10\n");
         pInt = xf86InitInt10(pMga->pEnt->index);
+	if (pInt) pMga->softbooted = TRUE;
         xf86FreeInt10(pInt);
     }
 
@@ -1397,6 +1417,16 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     } else {
 	pMga->ChipRev = pMga->PciInfo->chipRev;
     }
+
+#ifdef USEMGAHAL
+   if (HAL_CHIPSETS && !xf86ReturnOptValBool(MGAOptions, OPTION_NOHAL, FALSE)
+     && xf86LoadSubModule(pScrn, "mga_hal")) {
+	 xf86LoaderReqSymLists(halSymbols, NULL);
+	 xf86DrvMsg(pScrn->scrnIndex, X_INFO,"Matrox HAL module used\n");
+	 pMga->HALLoaded = TRUE;
+       } else 
+	 pMga->HALLoaded = FALSE;
+#endif
 
     /*
      * This shouldn't happen because such problems should be caught in
@@ -1481,13 +1511,15 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	from = X_CONFIG;
     }
 #ifdef USEMGAHAL
-    xf86GetOptValBool(MGAOptions, OPTION_TV, &tv);
-    if (tv == TRUE) {
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "TV Support\n");
-    }
-    xf86GetOptValBool(MGAOptions, OPTION_DIGITAL, &digital);
-    if (digital == TRUE) {
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Digital Screen Support\n");
+    if (pMga->HALLoaded) {
+        xf86GetOptValBool(MGAOptions, OPTION_TV, &tv);
+	if (tv == TRUE) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "TV Support\n");
+	}
+	xf86GetOptValBool(MGAOptions, OPTION_DIGITAL, &digital);
+	if (digital == TRUE) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Digital Screen Support\n");
+	}
     }
 #endif
     /* For compatibility, accept this too (as an override) */
@@ -1598,23 +1630,6 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
 		"Valid options are \"CW\" or \"CCW\"\n");
       }
-    }
-
-    if(pMga->HasSDRAM) { /* don't bother checking */ }
-    else if ((pMga->PciInfo->subsysCard == PCI_CARD_MILL_G200_SD) ||
-	(pMga->PciInfo->subsysCard == PCI_CARD_MARV_G200_SD) ||
-	(pMga->PciInfo->subsysCard == PCI_CARD_MYST_G200_SD) ||
-	(pMga->PciInfo->subsysCard == PCI_CARD_PROD_G100_SD)) {
-        pMga->HasSDRAM = TRUE;
-	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Has SDRAM\n");
-    } 
-    else if (pMga->Primary && (pMga->Chipset != PCI_CHIP_MGA2064) && 
-		(pMga->Chipset != PCI_CHIP_MGA2164) &&
-		(pMga->Chipset != PCI_CHIP_MGA2164_AGP)) {	
-	if(!(pciReadLong(pMga->PciTag, PCI_OPTION_REG) & (1 << 14))) {
-	    pMga->HasSDRAM = TRUE;
-	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Has SDRAM\n");
-	}
     }
 
     switch (pMga->Chipset) {
@@ -2095,6 +2110,29 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     );	/* MGA_HAL */
 #endif
 
+    if(pMga->HasSDRAM) { /* don't bother checking */ }
+    else if ((pMga->PciInfo->subsysCard == PCI_CARD_MILL_G200_SD) ||
+	(pMga->PciInfo->subsysCard == PCI_CARD_MARV_G200_SD) ||
+	(pMga->PciInfo->subsysCard == PCI_CARD_MYST_G200_SD) ||
+	(pMga->PciInfo->subsysCard == PCI_CARD_PROD_G100_SD)) {
+        pMga->HasSDRAM = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Has SDRAM\n");
+    } 
+    /* 
+     * Can we trust HALlib to set the memory configuration 
+     * registers correctly?
+     */
+    else if ((pMga->softbooted || pMga->Primary /*|| pMga->HALLoaded*/ ) && 
+	     (pMga->Chipset != PCI_CHIP_MGA2064) && 
+		(pMga->Chipset != PCI_CHIP_MGA2164) &&
+		(pMga->Chipset != PCI_CHIP_MGA2164_AGP)) {	
+        CARD32 option_reg = pciReadLong(pMga->PciTag, PCI_OPTION_REG);
+	if(!(option_reg & (1 << 14))) {
+	    pMga->HasSDRAM = TRUE;
+	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Has SDRAM\n");
+	}
+    }
+
     /*
      * Set the CRTC parameters for all of the modes based on the type
      * of mode, and the chipset's interlace requirements.
@@ -2104,8 +2142,8 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
      * are not pre-initialised at all.
      */
 #ifdef USEMGAHAL
-    MGA_HAL(xf86SetCrtcForModes(pScrn, 0));
-    MGA_NOT_HAL(xf86SetCrtcForModes(pScrn, INTERLACE_HALVE_V));
+        MGA_HAL(xf86SetCrtcForModes(pScrn, 0));
+	MGA_NOT_HAL(xf86SetCrtcForModes(pScrn, INTERLACE_HALVE_V));
 #else
     xf86SetCrtcForModes(pScrn, INTERLACE_HALVE_V);
 #endif
@@ -2457,7 +2495,8 @@ MGASave(ScrnInfoPtr pScrn)
 
     if(pMga->SecondCrtc == TRUE) return;
 #ifdef USEMGAHAL
-    MGA_HAL(if (pMga->pBoard != NULL) MGASaveVgaState(pMga->pBoard));
+    if (pMga->HALLoaded)
+        MGA_HAL(if (pMga->pBoard != NULL) MGASaveVgaState(pMga->pBoard));
 #endif
 
     /* Only save text mode fonts/text for the primary card */
@@ -2547,10 +2586,12 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     Bool tv = FALSE;
     ULONG status;
 
-    /* Verify if user wants digital screen output */
-    xf86GetOptValBool(MGAOptions, OPTION_DIGITAL, &digital);
-    /* Verify if user wants TV output */
-    xf86GetOptValBool(MGAOptions, OPTION_TV, &tv);
+    if (pMga->HALLoaded) {
+        /* Verify if user wants digital screen output */
+        xf86GetOptValBool(MGAOptions, OPTION_DIGITAL, &digital);
+	/* Verify if user wants TV output */
+	xf86GetOptValBool(MGAOptions, OPTION_TV, &tv);
+    }
 #endif
 
     vgaHWUnlock(hwp);
@@ -2569,7 +2610,7 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     mgaReg = &pMga->ModeReg;
 
 #ifdef USEMGAHAL
-    MGA_HAL(
+      MGA_HAL(
     FillModeInfoStruct(pScrn,mode);
 
     if(pMga->SecondCrtc == TRUE) {
@@ -2680,12 +2721,12 @@ MGARestore(ScrnInfoPtr pScrn)
     vgaHWProtect(pScrn, TRUE);
     if (pMga->Primary) {
 #ifdef USEMGAHAL
-	MGA_HAL(
-	if(pMga->pBoard != NULL) {
-	    MGASetVgaMode(pMga->pBoard);
-	    MGARestoreVgaState(pMga->pBoard);
-	}
-	);	/* MGA_HAL */
+      MGA_HAL(
+	      if(pMga->pBoard != NULL) {
+		  MGASetVgaMode(pMga->pBoard);
+		  MGARestoreVgaState(pMga->pBoard);
+	      }
+	      );	/* MGA_HAL */
 #endif
         (*pMga->Restore)(pScrn, vgaReg, mgaReg, TRUE);
     } else {
@@ -2744,7 +2785,6 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     pMga = MGAPTR(pScrn);
     MGAdac = &pMga->Dac;
    
-
     /* Map the MGA memory and MMIO areas */
     if (pMga->FBDev) {
 	if (!MGAMapMemFBDev(pScrn))
@@ -2787,7 +2827,7 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	  pMga->pBoard = pMgaEnt->pBoard;
 	  pMga->pMgaHwInfo = pMgaEnt->pMgaHwInfo;
        }
-       );	/* MGA_HAL */
+       );
 #endif
     } else {
 #ifdef USEMGAHAL
@@ -2802,6 +2842,17 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	  );	/* MGA_HAL */
 #endif
     }
+#ifdef USEMGAHAL
+    MGA_HAL(
+	    /* There is a problem in the HALlib: set soft reset bit */
+	    if ( !pMga->Primary && !pMga->FBDev && 
+		 (pMga->PciInfo->subsysCard == PCI_CARD_MILL_G200_SG) ) {
+	      OUTREG(MGAREG_Reset, 1);
+	      usleep(200);
+	      OUTREG(MGAREG_Reset, 0);
+	    }
+	    )
+#endif
 
     /* Initialise the MMIO vgahw functions */
     vgaHWSetMmioFuncs(hwp, pMga->IOBase, PORT_OFFSET);
@@ -2828,7 +2879,6 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	if (!MGAModeInit(pScrn, pScrn->currentMode))
 	    return FALSE;
     }
-
 
     /* Darken the screen for aesthetic reasons and set the viewport */
     if (pMga->SecondCrtc == TRUE) {

@@ -76,6 +76,7 @@ extern PciChipsets CIRPciChipsets[];
 
 extern Bool CirMapMem(CirPtr pCir, int scrnIndex);
 extern Bool CirUnmapMem(CirPtr pCir, int scrnIndex);
+extern void cirProbeDDC(ScrnInfoPtr pScrn, int index);
 
 /* in cir_shadow.c */
 void cirPointerMoved(int index, int x, int y);

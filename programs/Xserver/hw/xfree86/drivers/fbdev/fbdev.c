@@ -267,15 +267,23 @@ FBDevProbe(DriverPtr drv, int flags)
 	xf86LoaderReqSymLists(fbdevHWSymbols, NULL);
 	
 	for (i = 0; i < numDevSections; i++) {
+	    Bool isIsa = FALSE;
+	    Bool isPci = FALSE;
+
 	    dev = xf86FindOptionValue(devSections[i]->options,"fbdev");
 	    if (devSections[i]->busID) {
-		xf86ParsePciBusString(devSections[i]->busID,&bus,&device,&func);
-		if (!xf86CheckPciSlot(bus,device,func))
-		    continue;
+	        if (xf86ParsePciBusString(devSections[i]->busID,&bus,&device,
+					  &func)) {
+		    if (!xf86CheckPciSlot(bus,device,func))
+		        continue;
+		    isPci = TRUE;
+		} else if (xf86ParseIsaBusString(devSections[i]->busID))
+		    isIsa = TRUE;
+		  
 	    }
 	    if (fbdevHWProbe(NULL,dev,NULL)) {
 		pScrn = NULL;
-		if (devSections[i]->busID) {
+		if (isPci) {
 		    /* XXX what about when there's no busID set? */
 		    int entity;
 		    
@@ -291,8 +299,7 @@ FBDevProbe(DriverPtr drv, int flags)
 		    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 			       "claimed PCI slot %d:%d:%d\n",bus,device,func);
 
-		} else {
-		    /* XXX This is a quick hack */
+		} else if (isIsa) {
 		    int entity;
 		    
 		    entity = xf86ClaimIsaSlot(drv, 0,
@@ -300,6 +307,14 @@ FBDevProbe(DriverPtr drv, int flags)
 		    pScrn = xf86ConfigIsaEntity(pScrn,0,entity,
 						      NULL,RES_SHARED_VGA,
 						      NULL,NULL,NULL,NULL);
+		} else {
+		   int entity;
+
+		    entity = xf86ClaimFbSlot(drv, 0,
+					      devSections[i], TRUE);
+		    pScrn = xf86ConfigFbEntity(pScrn,0,entity,
+					       NULL,NULL,NULL,NULL);
+		   
 		}
 		if (pScrn) {
 		    foundScreen = TRUE;

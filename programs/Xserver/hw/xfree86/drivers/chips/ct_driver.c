@@ -542,6 +542,7 @@ typedef enum {
     OPTION_LCD_STRETCH,
     OPTION_LCD_CENTER,
     OPTION_MMIO,
+    OPTION_FULL_MMIO,
     OPTION_SUSPEND_HACK,
     OPTION_RGB_BITS,
     OPTION_SYNC_ON_GREEN,
@@ -613,6 +614,7 @@ static OptionInfoRec ChipsHiQVOptions[] = {
     { OPTION_LCD_STRETCH,	"NoStretch",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_LCD_CENTER,	"LcdCenter",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_MMIO,		"MMIO",		OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_FULL_MMIO,		"FullMMIO",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SUSPEND_HACK,	"SuspendHack",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_PANEL_SIZE,	"FixPanelSize",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_RGB_BITS,		"RGBbits",	OPTV_INTEGER,	{0}, FALSE },
@@ -1426,9 +1428,6 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 		   "Enabling linear addressing\n");
 	xf86DrvMsg(pScrn->scrnIndex, from,
 		   "base address is set at 0x%X.\n", cPtr->FbAddress);
-	cPtr->UseMMIO = TRUE;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-		   "Using MMIO\n");
 	cPtr->IOAddress = cPtr->FbAddress + 0x400000L;
     } else
 	xf86DrvMsg(pScrn->scrnIndex, from,
@@ -1539,35 +1538,41 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     else
 	cPtr->Flags &= ~ChipsHWCursor;
 
-    /* Are we using MMIO mapping of VGA registers */
-    if (xf86ReturnOptValBool(cPtr->Options, OPTION_MMIO, FALSE)) {
-	if ((cPtr->Flags & ChipsLinearSupport) && cPtr->UseMMIO && 
-		(cPtr->Flags & ChipsFullMMIOSupport) &&
-		cPtr->pEnt->location.type == BUS_PCI) {
-
-	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Enabling MMIO\n");
-	    cPtr->UseFullMMIO = TRUE;
-
-	    /* 
-	     * We need to map the framebuffer to read/write regs.
-	     * but can't do that without the FbMapSize. So need to
-	     * fake value for PreInit. This isn't a problem as framebuffer
-	     * isn't actually used in PreInit
-	     */
-	    cPtr->FbMapSize = 1024 * 1024;
-
-	    /* Map the linear framebuffer */
-	    if (!chipsMapMem(pScrn))
-		return FALSE;
-
-	    /* Setup the MMIO register functions */
-	    if (cPtr->MMIOBaseVGA) {
-		CHIPSSetMmioExtFuncs(cPtr);
-		CHIPSHWSetMmioFuncs(pScrn, cPtr->MMIOBaseVGA, 0x0);
+    if (xf86ReturnOptValBool(cPtr->Options, OPTION_MMIO, TRUE)) {
+        cPtr->UseMMIO = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		   "Using MMIO\n");
+    
+	/* Are we using MMIO mapping of VGA registers */
+	if (xf86ReturnOptValBool(cPtr->Options, OPTION_FULL_MMIO, FALSE)) {
+	    if ((cPtr->Flags & ChipsLinearSupport) 
+		&& (cPtr->Flags & ChipsFullMMIOSupport) 
+		&& (cPtr->pEnt->location.type == BUS_PCI)) {
+	        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Enabling Full MMIO\n");
+		cPtr->UseFullMMIO = TRUE;
+		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+			   "Using Full MMIO\n");
+	      
+		/* Map the linear framebuffer */
+		if (!chipsMapMem(pScrn))
+		    return FALSE;
+	      
+		/* Setup the MMIO register functions */
+		if (cPtr->MMIOBaseVGA) {
+		    CHIPSSetMmioExtFuncs(cPtr);
+		    CHIPSHWSetMmioFuncs(pScrn, cPtr->MMIOBaseVGA, 0x0);
+		}
+	    } else {
+	       xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+			  "FULL_MMIO option ignored\n");
 	    }
-	} else {
-	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "MMIO option ignored\n");
 	}
+    } else {
+        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,"Disabling MMIO: "
+		   "no acceleration, no hw_cursor\n");
+	cPtr->UseMMIO = FALSE;
+	cPtr->Accel.UseHWCursor = FALSE;
+	cPtr->Flags &= ~ChipsAccelSupport;
     }
 
 	    /* memory size */
@@ -3330,10 +3335,12 @@ CHIPSEnterVT(int scrnIndex, int flags)
     if ((!(cPtr->Flags & ChipsOverlay8plus16)) &&
 		(cPtr->Flags & ChipsVideoSupport)) 
       CHIPSResetVideo(pScrn); 
+    xf86UDelay(50000);
     chipsHWCursorOn(cPtr);
     /* cursor settle delay */
-    usleep(50000);
+    xf86UDelay(50000);
     CHIPSAdjustFrame(pScrn->scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);    
+    xf86UDelay(50000);
     return TRUE;
 }
 
@@ -3515,7 +3522,6 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			    pScrn->rgbBits, pScrn->defaultVisual))
 	return FALSE;
     }
-    ErrorF("bla\n");
     miSetPixmapDepths ();
 
     /*
@@ -3594,7 +3600,7 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     xf86SetBlackWhitePixels(pScreen);
 
-    if ((cPtr->Flags & ChipsAccelSupport) && (pScrn->depth >= 8))
+    if ( (pScrn->depth >= 8))
 	CHIPSDGAInit(pScreen);
 
     cPtr->HWCursorShown = FALSE;
@@ -6315,18 +6321,19 @@ chipsMapMem(ScrnInfoPtr pScrn)
 	    if (cPtr->MMIOBase == NULL)
 		return FALSE;
 	}
-    
-	if (cPtr->Bus == ChipsPCI)
-	    cPtr->FbBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
-		  cPtr->PciTag, (unsigned long)cPtr->FbAddress,
-		  cPtr->FbMapSize);
-	else
-	    cPtr->FbBase = xf86MapVidMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
-		  (unsigned long)cPtr->FbAddress, cPtr->FbMapSize);
+	if (cPtr->FbMapSize) {
+	  if (cPtr->Bus == ChipsPCI)
+	      cPtr->FbBase = xf86MapPciMem(pScrn->scrnIndex,VIDMEM_FRAMEBUFFER,
+ 			          cPtr->PciTag, (unsigned long)cPtr->FbAddress,
+				  cPtr->FbMapSize);
+	  else
+	      cPtr->FbBase = xf86MapVidMem(pScrn->scrnIndex,VIDMEM_FRAMEBUFFER,
+				   (unsigned long)cPtr->FbAddress, 
+				   cPtr->FbMapSize);
 
-	if (cPtr->FbBase == NULL)
-	  return FALSE;
-	
+	  if (cPtr->FbBase == NULL)
+	      return FALSE;
+	}
 	if (cPtr->Flags & ChipsFullMMIOSupport)
 	    cPtr->MMIOBaseVGA = xf86MapPciMem(pScrn->scrnIndex,
 					      VIDMEM_MMIO,cPtr->PciTag,

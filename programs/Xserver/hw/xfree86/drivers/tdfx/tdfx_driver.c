@@ -400,7 +400,7 @@ TDFXProbeDDC(ScrnInfoPtr pScrn, int index)
 #endif
     {
 	pVbe =  VBEInit(NULL,index);
-	vbeDoEDID(pVbe, NULL);
+	ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
     }
 }
 
@@ -740,17 +740,9 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
       return FALSE;
   }
 
-  if (!xf86SetDefaultVisual(pScrn, -1)) {
+  if (!xf86SetDefaultVisual (pScrn, -1)) {
     return FALSE;
-  } else {
-    /* We don't currently support DirectColor at > 8bpp */
-    if (pScrn->depth > 8 && pScrn->defaultVisual != TrueColor) {
-      xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Given default visual"
-		 " (%s) is not supported at depth %d\n",
-		 xf86GetVisualName(pScrn->defaultVisual), pScrn->depth);
-      return FALSE;
-    }
-  }
+  } 
 
   /* We use a programamble clock */
   pScrn->progClock = TRUE;
@@ -1683,19 +1675,28 @@ static void allocateMemory(ScrnInfoPtr pScrn) {
   /* it to be on a page boundary too, just  */
   /* for giggles.                           */
   pTDFX->fbOffset
-      = (pTDFX->backOffset - (pScrn->virtualY+128)*pTDFX->stride) &~ 0xFFF;
+      = (pTDFX->backOffset - (pScrn->virtualY+PIXMAP_CACHE_LINES)
+	 *pTDFX->stride) &~ 0xFFF;
   /* Give the cmd fifo at least             */
   /* CMDFIFO_PAGES pages, but no more than  */
   /* 255.                                   */
   fifoSize = ((255 <= CMDFIFO_PAGES) ? 255 : CMDFIFO_PAGES) << 12;
   /* We give 4096 bytes to the cursor, fifoSize to the */
   /* FIFO, and everything to textures.                 */
-  texSize = (pTDFX->fbOffset - fifoSize - 4096 - 16*1024);
-  pTDFX->texOffset = pTDFX->fbOffset - texSize + 16*1024;
-  pTDFX->texSize = texSize;
   pTDFX->fifoOffset = 4096+16*1024;
   pTDFX->fifoSize = fifoSize;
   pTDFX->cursorOffset = 0+16*1024;
+  texSize = (pTDFX->fbOffset - fifoSize - 4096 - 16*1024);
+  if (texSize < 0) {
+    pTDFX->texSize = 0;
+    pTDFX->backOffset = -1;
+    pTDFX->depthOffset = -1;
+    pTDFX->fbOffset = fifoSize + pTDFX->fifoOffset;
+
+  } else {
+    pTDFX->texOffset = pTDFX->fbOffset - texSize + 16*1024;
+    pTDFX->texSize = texSize;
+  }
 #if	0
   xf86DrvMsg(pScrn->scrnIndex, X_INFO,
              "Cursor Offset: [0x%08X,0x%08X)\n",
@@ -1735,6 +1736,7 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   int maxy;
   BoxRec MemBox;
   RegionRec MemRegion;
+  Bool doDR = FALSE;
 
   TDFXTRACE("TDFXScreenInit start\n");
   pScrn = xf86Screens[pScreen->myNum];
@@ -1773,7 +1775,17 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   pTDFX->sync=TDFXSync;
 #endif
 
-  maxy=pScrn->virtualY+PIXMAP_CACHE_LINES;
+#ifdef XF86DRI
+  pTDFX->NoAccel=xf86ReturnOptValBool(TDFXOptions, OPTION_NOACCEL, FALSE);
+  if (!pTDFX->NoAccel 
+      && ((pTDFX->backOffset == -1) || (pTDFX->depthOffset == -1) )) {
+      doDR = TRUE;
+      pTDFX->pixmapCacheLines = PIXMAP_CACHE_LINES;
+  } else
+#endif
+      pTDFX->pixmapCacheLines = PIXMAP_CACHE_LINES_NODRI;
+
+  maxy=pScrn->virtualY+pTDFX->pixmapCacheLines;
   MemBox.y1 = pScrn->virtualY;
   MemBox.x1 = 0;
   MemBox.x2 = pScrn->displayWidth;
@@ -1794,15 +1806,14 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 
   miSetPixmapDepths ();
     
-  pTDFX->NoAccel=xf86ReturnOptValBool(TDFXOptions, OPTION_NOACCEL, FALSE);
 #ifdef XF86DRI
   /*
    * Setup DRI after visuals have been established, but before fbScreenInit
    * is called.   fbScreenInit will eventually call into the drivers
    * InitGLXVisuals call back.
    */
-  if (!pTDFX->NoAccel)
-    pTDFX->directRenderingEnabled = TDFXDRIScreenInit(pScreen);
+  if (doDR)
+      pTDFX->directRenderingEnabled = TDFXDRIScreenInit(pScreen);
 #endif
 
   switch (pScrn->bitsPerPixel) {
@@ -1891,7 +1902,7 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 #endif
 
 #ifdef XF86DRI
-  if (!pTDFX->NoAccel) {
+  if (doDR) {
     if (pTDFX->directRenderingEnabled) {
 	/* Now that mi, fb, drm and others have done their thing, 
          * complete the DRI setup.

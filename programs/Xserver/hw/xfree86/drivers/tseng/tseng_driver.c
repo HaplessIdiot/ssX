@@ -75,9 +75,6 @@ static Bool TsengSaveScreen(ScreenPtr pScreen, int mode);
 /* Required if the driver supports mode switching */
 static Bool TsengSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
 
-/* Required if the driver supports moving the viewport */
-static void TsengAdjustFrame(int scrnIndex, int x, int y, int flags);
-
 /* Optional functions */
 static void TsengFreeScreen(int scrnIndex, int flags);
 static ModeStatus TsengValidMode(int scrnIndex, DisplayModePtr mode,
@@ -91,7 +88,6 @@ static Bool TsengMapMem(ScrnInfoPtr pScrn);
 static Bool TsengUnmapMem(ScrnInfoPtr pScrn);
 static void TsengSave(ScrnInfoPtr pScrn);
 static void TsengRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, TsengRegPtr tsengReg, int flags);
-static Bool TsengModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static void TsengUnlock(void);
 static void TsengLock(void);
 
@@ -2073,6 +2069,9 @@ TsengScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     xf86SetBlackWhitePixels(pScreen);
 
+    if (pScrn->depth >= 8)
+        TsengDGAInit(pScreen);
+
     if (pScrn->bitsPerPixel > 8) {
 	/* Fixup RGB ordering */
 	visual = pScreen->visuals + pScreen->numVisuals;
@@ -2366,7 +2365,7 @@ TsengFreeScreen(int scrnIndex, int flags)
     TsengFreeRec(xf86Screens[scrnIndex]);
 }
 
-static Bool
+Bool
 TsengModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
     vgaHWPtr hwp;
@@ -2710,7 +2709,7 @@ TsengSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 /*
  * adjust the current video frame (viewport) to display the mousecursor.
  */
-static void
+void
 TsengAdjustFrame(int scrnIndex, int x, int y, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];

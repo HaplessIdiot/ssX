@@ -13,6 +13,7 @@
 #include "vgaHW.h"
 
 #include "cir.h"
+#define _ALP_PRIVATE_
 #include "alp.h"
 
 #define CURSORWIDTH	pAlp->CursorWidth

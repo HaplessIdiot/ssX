@@ -1070,23 +1070,33 @@ readPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
 	romaddr = PCIGETROM(newbase);
 	if (romaddr != 0 && romaddr == newbase) {
 #if 1
+	  /* move mem base out of the way if in conflict with ROM */
 	  if ((basereg >= 0) && (basereg <= 5)) {
-	    savebase = pciReadLong(Tag, PCI_MAP_REG_START + (basereg << 2));
-	    if (PCIGETROM(savebase) == romaddr)
+	      savebase = pciReadLong(Tag, PCI_MAP_REG_START + (basereg << 2));
+	      if (PCIGETROM(savebase) == romaddr) {
+	          xf86MsgVerb(X_INFO,5,"xf86ReadPciBios: modifying membase[%i]"
+			    " for device %i:%i:%i\n", basereg,
+			    PCI_BUS_FROM_TAG(Tag), PCI_DEV_FROM_TAG(Tag),
+			    PCI_FUNC_FROM_TAG(Tag));
 		pciWriteLong(Tag, PCI_MAP_REG_START + (basereg << 2), 0);
+	    }
 	  }
 #endif
 	    pciWriteLong(Tag, PCI_MAP_ROM_REG, romaddr);
 	} else
 	    romaddr = 0;
     }
-#ifdef DEBUG
-    ErrorF("ValidBIOSBase: %x\n",newbase);
-#endif
+
+
     if (romaddr == 0) {
 	xf86Msg(X_WARNING, "xf86ReadPciBIOS: cannot locate a BIOS address\n");
 	return -1;
-    }
+    } 
+    else
+      xf86MsgVerb(X_INFO,5,"xf86ReadPciBIOS: found ValidBIOSBase for %i:%i:%i:"
+		  " %x\n", PCI_BUS_FROM_TAG(Tag), PCI_DEV_FROM_TAG(Tag),
+		  PCI_FUNC_FROM_TAG(Tag),newbase);
+
     hostbase = pciBusAddrToHostAddr(Tag, PCI_MEM, PCIGETROM(romaddr));
 #ifdef DEBUG
     ErrorF("ReadPciBIOS: base = 0x%x\n",romaddr);
@@ -1119,7 +1129,7 @@ xf86ReadPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
 
   size = readPciBIOS(Offset,Tag,basereg,Buf,Len);
   
-  if (Buf[0] == 0x55 && Buf[1] == 0xaa)
+  if (size != -1 && Buf[0] == 0x55 && Buf[1] == 0xaa)
     return size;
 
   num = pciTestMultiDeviceCard(PCI_BUS_FROM_TAG(Tag),
@@ -1139,7 +1149,7 @@ xf86ReadPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
 					     PCI_CMD_STAT_REG,(Acc2 | PCI_ENA));
     size = readPciBIOS(Offset,pTag[i],0,Buf,Len);
     ((WriteProcPtr)(pciLongFunc(pTag[i],WRITE)))(pTag[i],PCI_CMD_STAT_REG,Acc2);
-    if (((CARD8*)Buf)[0] == 0x55 && ((CARD8*)Buf)[1] == 0xaa)
+    if (size != -1 && ((CARD8*)Buf)[0] == 0x55 && ((CARD8*)Buf)[1] == 0xaa)
       break;
   }
   ((WriteProcPtr)(pciLongFunc(Tag,WRITE)))(Tag,PCI_CMD_STAT_REG,Acc1);

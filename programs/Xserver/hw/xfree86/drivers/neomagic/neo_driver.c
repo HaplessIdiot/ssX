@@ -2267,6 +2267,7 @@ neoModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     NeoRegPtr NeoNew = &nPtr->NeoModeReg;
     vgaRegPtr NeoStd = &hwp->ModeReg;
+    Bool noLcdStretch = nPtr->noLcdStretch;
 
     neoUnlock(pScrn);
 
@@ -2537,7 +2538,7 @@ neoModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 #define MAX_N 127
 #define MAX_D 31
 #define MAX_F 1
-#define DEBUG
+
 static void
 neoCalcVCLK(ScrnInfoPtr pScrn, long freq)
 {

@@ -57,13 +57,17 @@ startx(void)
 	char commandline[PATH_MAX * 4];
 	int c_pos;
 	int len;
-	
+	/* 
+	 * The name of the 4.0 binary is XFree86. X might also
+	 * be the name of the 3.3 binary. Therefore don't change
+	 * name to 'X'.
+	 */
 	if (XFree86_path)
 	    c_pos = XmuSnprintf(commandline, sizeof(commandline),
-				"%s/X :8 -configure ",XFree86_path);
+				"%s/XFree86 :8 -configure ",XFree86_path);
 	else
 	    c_pos = XmuSnprintf(commandline, sizeof(commandline), 
-				"%s/bin/X :8 -configure ", XFree86Dir);
+				"%s/bin/XFree86 :8 -configure ", XFree86Dir);
 	if (XF86Module_path && ((len = sizeof(commandline) - c_pos) > 0))
 	    c_pos += XmuSnprintf(commandline + c_pos,len,
 				 " -modulepath %s",XF86Module_path);
@@ -95,10 +99,11 @@ startx(void)
     switch (xpid = fork()) {
 	case 0: {
 	    char path[PATH_MAX];
+	    /* Don't change to X! see above */
 	    if (XFree86_path)
-	        XmuSnprintf(path, sizeof(path), "%s/X", XFree86_path);
+	        XmuSnprintf(path, sizeof(path), "%s/XFree86", XFree86_path);
 	    else
-	        XmuSnprintf(path, sizeof(path), "%s/bin/X", XFree86Dir);
+	        XmuSnprintf(path, sizeof(path), "%s/bin/XFree86", XFree86Dir);
 	    execl(path, "X", ":8", /*"+xinerama",*/ "+accessx","-allowMouseOpenFail",
 		  "-xf86config", XF86Config_path, NULL);
 	    exit(-127);

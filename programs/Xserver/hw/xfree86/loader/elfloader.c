@@ -46,6 +46,8 @@
 #include "sym.h"
 #include "loader.h"
 
+#include "compiler.h"
+
 /*
 #ifndef LDTEST
 #define ELFDEBUG ErrorF

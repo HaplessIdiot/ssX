@@ -19,25 +19,38 @@ DRIINCLUDES = -I$(SERVERSRC)/GL/dri -I$(LIBSRC)/GL/dri \
 DRIDEFINES = $(GLX_DEFINES)
 #endif
 
-#if UseMatroxHal
-MGAHALSRCS = clientlx.c
+#if DoLoadableServer
+MGAHALMODSRC = mga_halmod.c
+MGAHALMODOBJ = mga_halmod.o
+#endif
+
+#if UseMatroxHal || HaveMatroxHal || BuildMatroxHal
 MGAHALDEFINES = -DUSEMGAHAL
-#if !BuildMatroxHal
-MGAHALOBJS = clientlx.o HALlib/mgaHALlib.a
-MGAHALINCLUDES = -IHALlib
-#else
-MGAHALOBJS = clientlx.o hallib/libmga_hal.a
+#if BuildMatroxHal
 MGAHALINCLUDES = -Ihallib
+#else
+MGAHALINCLUDES = -IHALlib
+#endif
+#if BuildMatroxHal || HaveMatroxHal
+MGAHALSRCS = $(MGAHALMODSRC) clientlx.c
+#if !BuildMatroxHal
+MGAHALOBJS = $(MGAHALMODOBJ) clientlx.o HALlib/mgaHALlib.a
+#else
+MGAHALOBJS = $(MGAHALMODOBJ) clientlx.o hallib/libmga_hal.a
 hallib/libmga_hal.a: $(SUBDIRS)
 #endif
 #endif
+#endif
 
-SRCS = mga_driver.c mga_hwcurs.c /* mga_cmap.c */ mga_dac3026.c mga_dacG.c \
+MGASRCS = mga_driver.c mga_hwcurs.c /* mga_cmap.c */ mga_dac3026.c mga_dacG.c \
        mga_storm8.c mga_storm16.c mga_storm24.c mga_storm32.c mga_arc.c \
-       mga_dga.c mga_shadow.c mga_video.c $(MGAHALSRCS) $(DRISRCS)
-OBJS = mga_driver.o mga_hwcurs.o /* mga_cmap.o */ mga_dac3026.o mga_dacG.o \
+       mga_dga.c mga_shadow.c mga_video.c  $(DRISRCS)
+MGAOBJS = mga_driver.o mga_hwcurs.o /* mga_cmap.o */ mga_dac3026.o mga_dacG.o \
        mga_storm8.o mga_storm16.o mga_storm24.o mga_storm32.o mga_arc.o \
-       mga_dga.o mga_shadow.o mga_video.o $(MGAHALOBJS) $(DRIOBJS)
+       mga_dga.o mga_shadow.o mga_video.o  $(DRIOBJS)
+
+SRCS = $(MGASRCS) $(MGAHALSRCS)
+OBJS = $(MGAOBJS) $(MGAHALOBJS)
 
 #if defined(XF86DriverSDK)
 INCLUDES = -I. -I../../include
@@ -63,7 +76,10 @@ SubdirLibraryRule($(OBJS))
 
 ModuleObjectRule()
 
-ObjectModuleTarget(mga,$(OBJS))
+ObjectModuleTarget(mga,$(MGAOBJS))
+#if BuildMatroxHal || HaveMatroxHal
+ObjectModuleTarget(mga_hal,$(MGAHALOBJS))
+#endif
 
 ObjectFromSpecialSource(mga_storm8, mga_storm, -DPSZ=8)
 ObjectFromSpecialSource(mga_storm16, mga_storm, -DPSZ=16)
@@ -71,6 +87,9 @@ ObjectFromSpecialSource(mga_storm24, mga_storm, -DPSZ=24)
 ObjectFromSpecialSource(mga_storm32, mga_storm, -DPSZ=32)
   
 InstallObjectModule(mga,$(MODULEDIR),drivers)
+#if BuildMatroxHal || HaveMatroxHal
+InstallObjectModule(mga_hal,$(MODULEDIR),drivers)
+#endif
 
 #if !defined(XF86DriverSDK)
 CppManTarget(mga,)
@@ -94,8 +113,12 @@ InstallDriverSDKNonExecFile(mga_reg.h,$(DRIVERSDKDIR)/drivers/mga)
 InstallDriverSDKNonExecFile(mga_shadow.c,$(DRIVERSDKDIR)/drivers/mga)
 InstallDriverSDKNonExecFile(mga_storm.c,$(DRIVERSDKDIR)/drivers/mga)
 InstallDriverSDKNonExecFile(mga_video.c,$(DRIVERSDKDIR)/drivers/mga)
+InstallDriverSDKNonExecFile(mga_halmod.c,$(DRIVERSDKDIR)/drivers/mga)
 
 InstallDriverSDKObjectModule(mga,$(DRIVERSDKMODULEDIR),drivers)
+#if BuildMatroxHal
+InstallDriverSDKObjectModule(mga_hal,$(DRIVERSDKMODULEDIR),drivers)
+#endif
 
 #if BuildMatroxHal
 MakeSubdirs($(SUBDIRS))

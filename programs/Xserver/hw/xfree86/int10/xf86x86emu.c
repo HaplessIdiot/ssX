@@ -93,13 +93,13 @@ x86emu_do_int(int num)
 void
 xf86ExecX86int10(xf86Int10InfoPtr pInt)
 {
-    setup_int(pInt);
+    int sig = setup_int(pInt);
 
     if (int_handler(pInt)) {
 	X86EMU_exec();	
     }
     
-    finish_int(pInt);
+    finish_int(pInt, sig);
 }
     
 Bool

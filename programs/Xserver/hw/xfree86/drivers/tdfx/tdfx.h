@@ -35,11 +35,8 @@
 struct _TDFXRec;
 typedef struct _TDFXRec *TDFXPtr;
 
-#ifdef XF86DRI
 #define PIXMAP_CACHE_LINES 128
-#else
-#define PIXMAP_CACHE_LINES 512
-#endif
+#define PIXMAP_CACHE_LINES_NODRI 512
 
 #include "tdfx_priv.h"
 
@@ -209,6 +206,7 @@ typedef struct _TDFXRec {
    * shadow everything and make it happen automatically for every write. */
   INT32 sst2DSrcFmtShadow;
   INT32 sst2DDstFmtShadow;
+  int pixmapCacheLines;
 } TDFXRec;
 
 typedef struct {

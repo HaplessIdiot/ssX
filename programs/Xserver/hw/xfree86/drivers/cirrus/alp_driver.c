@@ -53,19 +53,9 @@
 /* Framebuffer memory manager */
 #include "xf86fbman.h"
 
-/*
- * If using cfb, cfb.h is required.  Select the others for the bpp values
- * the driver supports.
- */
 #include "xf4bpp.h"
 #include "xf1bpp.h"
-#define PSZ 8	/* needed for cfb.h */
-#include "cfb.h"
-#undef PSZ
-#include "cfb16.h"
-#include "cfb24.h"
-#include "cfb32.h"
-#include "cfb24_32.h"
+#include "fb.h"
 
 /* These need to be checked */
 #if 0
@@ -79,6 +69,7 @@
 #include "xf86int10.h"
 
 #include "cir.h"
+#define _ALP_PRIVATE_
 #include "alp.h"
 
 #ifdef XvExtension
@@ -94,8 +85,6 @@ static void AlpProbeI2C(int scrnIndex);
 /*
  * Forward definitions for the functions that make up the driver.
  */
-
-ScrnInfoPtr AlpProbe(int entity);
 
 /* Mandatory functions */
 
@@ -187,21 +176,11 @@ static const char *vgahwSymbols[] = {
 	NULL
 };
 
-static const char *cfbSymbols[] = {
-	"xf1bppScreenInit",
-	"xf4bppScreenInit",
-	"cfbScreenInit",
-	"cfb16ScreenInit",
-	"cfb24ScreenInit",
-	"cfb32ScreenInit",
-	"cfb8_32ScreenInit",
-	"cfb24_32ScreenInit",
-	NULL
-};
-
-static const char *xf8_32bppSymbols[] = {
-	"xf86Overlay8Plus32Init",
-	NULL
+static const char *fbSymbols[] = {
+    "xf1bppScreenInit",
+    "xf4bppScreenInit",
+    "fbScreenInit",
+    NULL
 };
 
 static const char *xaaSymbols[] = {
@@ -284,8 +263,8 @@ alpSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	static Bool setupDone = FALSE;
 	if (!setupDone) {
 		setupDone = TRUE;
-		LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols,
-				  xf8_32bppSymbols, ramdacSymbols,int10Symbols,
+		LoaderRefSymLists(vgahwSymbols, fbSymbols, xaaSymbols,
+				  ramdacSymbols,int10Symbols,
 				  ddcSymbols, i2cSymbols, shadowSymbols, NULL);
 	}
 	return (pointer)1;
@@ -534,11 +513,13 @@ AlpPreInit(ScrnInfoPtr pScrn, int flags)
 	MessageType from;
 	int i;
 	ClockRangePtr clockRanges;
-	char *mod = NULL;
 	char *s;
 
-	if (flags & PROBE_DETECT) return FALSE;
-	
+	if (flags & PROBE_DETECT)  {
+	  cirProbeDDC( pScrn, xf86GetEntityInfo(pScrn->entityList[0])->index );
+	  return TRUE;
+	}
+
 #ifdef ALP_DEBUG
 	ErrorF("AlpPreInit\n");
 #endif
@@ -651,23 +632,16 @@ AlpPreInit(ScrnInfoPtr pScrn, int flags)
 
 	if (!xf86SetDefaultVisual(pScrn, -1)) {
 		return FALSE;
-	} else {
-		/* We don't currently support DirectColor at > 8bpp */
-		if (pScrn->depth > 8 && pScrn->defaultVisual != TrueColor) {
-			xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Given default visual"
-				" (%s) is not supported at depth %d\n",
-				xf86GetVisualName(pScrn->defaultVisual), pScrn->depth);
-			return FALSE;
-		}
-	}
-
+	} 
 	/* Collect all of the relevant option flags (fill in pScrn->options) */
 	xf86CollectOptions(pScrn, NULL);
 
 	/* Process the options */
 	xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, CirOptions);
 
-	pScrn->rgbBits = 6;
+	if (pScrn->depth == 8) 
+	    pScrn->rgbBits = 6;
+
 	from = X_DEFAULT;
 	pCir->HWCursor = FALSE;
 	if (xf86GetOptValBool(CirOptions, OPTION_HW_CURSOR, &pCir->HWCursor))
@@ -1082,21 +1056,33 @@ AlpPreInit(ScrnInfoPtr pScrn, int flags)
 
 	/* Load bpp-specific modules */
 	switch (pScrn->bitsPerPixel) {
-	case 1:  mod = "xf1bpp";  break;
-	case 4:  mod = "xf4bpp";  break;
-	case 8:  mod = "cfb";     break;
-	case 16: mod = "cfb16";   break;
-	case 24:
-		if (pix24bpp == 24)
-			mod = "cfb24";
-		else
-			mod = "xf24_32bpp";
-		break;
-	case 32: mod = "cfb32";   break;
-	}
-	if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
-		AlpFreeRec(pScrn);
+	case 1:  
+	    if (xf86LoadSubModule(pScrn, "xf1bpp") == NULL) {
+	        AlpFreeRec(pScrn);
 		return FALSE;
+	    } 
+	    LoaderReqSymbols("xf1bppScreenInit",NULL);
+	    break;
+	case 4:  
+	    if (xf86LoadSubModule(pScrn, "xf4bpp") == NULL) {
+	        AlpFreeRec(pScrn);
+		return FALSE;
+	    } 
+	    LoaderReqSymbols("xf4bppScreenInit",NULL);	    
+	    break;
+	case 8:
+	case 16:
+	case 24:
+	case 32:
+	    if (xf86LoadSubModule(pScrn, "fb") == NULL) {
+	        AlpFreeRec(pScrn);
+		return FALSE;
+	    } 
+	    LoaderReqSymbols("fbScreenInit",NULL);
+#ifdef RENDER
+	xf86LoaderReqSymbols("fbPictureInit", NULL);
+#endif
+	    break;
 	}
 
 	/* Load XAA if needed */
@@ -1525,8 +1511,6 @@ AlpScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	 * function.  If not, the visuals will need to be setup before calling
 	 * a fb ScreenInit() function and fixed up after.
 	 *
-	 * For most PC hardware at depths >= 8, the defaults that cfb uses
-	 * are not appropriate.  In this driver, we fixup the visuals after.
 	 */
 
 	/*
@@ -1536,27 +1520,13 @@ AlpScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 	/* Setup the visuals we support. */
 
-	/*
-	 * For bpp > 8, the default visuals are not acceptable because we only
-	 * support TrueColor and not DirectColor.  To deal with this, call
-	 * miSetVisualTypes with the appropriate visual mask.
-	 */
-#ifdef ALP_DEBUG
-	ErrorF("AlpScreenInit before miSetVisualTypes\n");
-#endif
-	if (pScrn->bitsPerPixel > 8) {
-		if (!miSetVisualTypes(pScrn->depth, TrueColorMask, pScrn->rgbBits,
-								pScrn->defaultVisual))
+	if (!miSetVisualTypes(pScrn->depth,
+			      miGetDefaultVisualMask(pScrn->depth),
+			      pScrn->rgbBits, pScrn->defaultVisual))
 			return FALSE;
-	} else {
-		if (!miSetVisualTypes(pScrn->depth,
-								miGetDefaultVisualMask(pScrn->depth),
-								pScrn->rgbBits, pScrn->defaultVisual))
-			return FALSE;
-	}
-#ifdef ALP_DEBUG
-	ErrorF("AlpScreenInit after miSetVisualTypes\n");
-#endif
+
+	miSetPixmapDepths ();
+
 	displayWidth = pScrn->displayWidth;
 	if (pCir->rotate) {
 	    height = pScrn->virtualX;
@@ -1595,34 +1565,13 @@ AlpScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 				   displayWidth);
 	    break;
 	case 8:
-	    ret = cfbScreenInit(pScreen, FbBase,
+	case 16:
+	case 24:
+	case 32:
+	    ret = fbScreenInit(pScreen, FbBase,
 				width,height,
 				pScrn->xDpi, pScrn->yDpi,
-				displayWidth);
-	    break;
-	case 16:
-	    ret = cfb16ScreenInit(pScreen, FbBase,
-				  width,height,
-				  pScrn->xDpi, pScrn->yDpi,
-				  displayWidth);
-	    break;
-	case 24:
-	    if (pix24bpp == 24)
-		ret = cfb24ScreenInit(pScreen, FbBase,
-				      width,height,
-				      pScrn->xDpi, pScrn->yDpi,
-				      displayWidth);
-	    else
-		ret = cfb24_32ScreenInit(pScreen, FbBase,
-					 width,height,
-					 pScrn->xDpi, pScrn->yDpi,
-					 displayWidth);
-	    break;
-	case 32:
-	    ret = cfb32ScreenInit(pScreen, FbBase,
-				  width,height,
-				  pScrn->xDpi, pScrn->yDpi,
-				  displayWidth);
+				displayWidth,pScrn->bitsPerPixel);
 	    break;
 	default:
 	    xf86DrvMsg(scrnIndex, X_ERROR,
@@ -1633,6 +1582,9 @@ AlpScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	}
 	if (!ret)
 		return FALSE;
+#ifdef RENDER
+	fbPictureInit (pScreen, 0, 0);
+#endif
 
 #ifdef ALP_DEBUG
 	ErrorF("AlpScreenInit after depth dependent init\n");

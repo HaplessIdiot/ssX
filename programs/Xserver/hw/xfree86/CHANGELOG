@@ -1,4 +1,27 @@
 XFree86 4.0.1i (xx December 2000)
+2014. Changed name of server binary to call by xf86cfg back to "XFree86
+      (Egbert Eich).
+2013. Modified handling of memory alloctaion in TDFX driver (Egbert Eich).
+2012. Attempt to fix the 'UseModes' directive in the Monitor section 
+      (Egbert Eich).
+2011. Added debugging output for BIOS base address search (Egbert Eich).
+2010. Changed neomagic driver to treat disable stretching for each mode
+      individually (Egbert Eich).
+2009. Removed '-traditional' from cpp rule for makedpend. Required for
+      new glibc header files (Ruediger Oertel).
+2007. Fix to make SuperProbe build again on ia64 (Andreas Schwab).
+2007. Attempt to fix int10 (Egbert Eich).
+2006. Modified blitter busy test to use the MMIO mapped registers on chips
+      > CT69000 (Egbert Eich).
+2005. Attempt to improve dga support in C&T driver (Egbert Eich).
+2004. Moved ppc_flush_icache to compiler.h - hope this fixes build problems
+      (Egert Eich).
+2003. changed cirrus driver to us fb instead of cfb (Egbert Eich).
+2002. Modularized HALlib for mga driver (Egbert Eich).
+2001. Added DGA support to tseng driver (Rainer Keller).
+2000. Added "framebuffer" bus type allowing resource control to take place
+      outside of the server (Egbert Eich).
+1099. Added turkish keyboard layout (Togan Muftuoglu).
 1098. Fix Cyber9397/DVD acceleration problem (Alan Hourihane).
 1097. Resync with the DRI CVS trunk.
 1096. Fix alot of Rage 128 Xv bugs (Mark Vojkovich).

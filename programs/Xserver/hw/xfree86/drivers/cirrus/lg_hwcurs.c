@@ -23,6 +23,7 @@
 #include "vgaHW.h"
 
 #include "cir.h"
+#define _LG_PRIVATE_
 #include "lg.h"
 #include "lg_xaa.h" /* For BitBLT engine macros */
 

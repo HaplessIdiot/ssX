@@ -426,12 +426,12 @@ do_vm86(xf86Int10InfoPtr pInt)
 void
 xf86ExecX86int10(xf86Int10InfoPtr pInt)
 {
-    setup_int(pInt);
+    int sig = setup_int(pInt);
 
     if (int_handler(pInt))
 	while(do_vm86(pInt)) {};
 
-    finish_int(pInt);
+    finish_int(pInt,sig);
 }
 
 static int
