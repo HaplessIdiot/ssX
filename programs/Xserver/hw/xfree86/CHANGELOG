@@ -1,4 +1,5 @@
 XFree86 4.1.99.1 (xx June 2001)
+   3. Update Japanese localization of XDarwin help file (Toshimitsu Tanaka).
    2. Update XDarwin man pages, help files, and version info. Add option to
       build XDarwin.app bundle for deployment (Torrey Lyons).
    1. Finish DRI resync, including tdfx driver updates for textured video
@@ -13310,4 +13311,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1787 2001/05/21 01:42:14 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1788 2001/05/21 21:43:52 dawes Exp $
