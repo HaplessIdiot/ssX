@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.9 1999/01/03 03:58:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.10 1999/01/14 13:05:29 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -631,7 +631,7 @@ XAAInitPixmapCache(
    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
    XAAInfoRecPtr infoRec = (XAAInfoRecPtr)data;
    XAAPixmapCachePrivatePtr pCachePriv;
-   Bool FirstTime = TRUE;
+   static Bool FirstTime = TRUE;
    BoxPtr pBox = REGION_RECTS(areas);
    int nBox = REGION_NUM_RECTS(areas);
    int Num512, Num256, Num128, NumPartial, NumColor, NumMono;
@@ -655,7 +655,6 @@ XAAInitPixmapCache(
 	FreePixmapCachePrivate(
 		(XAAPixmapCachePrivatePtr)infoRec->PixmapCachePrivate);
 	infoRec->PixmapCachePrivate = NULL;
-	FirstTime = FALSE;
    }
 
    Num512 = Num256 = Num128 = NumPartial = NumMono = NumColor = 0;
@@ -1042,6 +1041,7 @@ XAAInitPixmapCache(
     }
 
     if(FirstTime) {
+	FirstTime = FALSE;
 	xf86ErrorF("\tSetting up tile and stipple cache:\n");
 	if(NumPartial) 
 	   xf86ErrorF("\t\t%i %ix%i slots\n", 
