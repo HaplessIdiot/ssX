@@ -554,8 +554,6 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags) {
   int flags24;
   rgb defaultWeight = {0, 0, 0};
 
-  if (flags & PROBE_DETECT) return FALSE;
-
   TDFXTRACE("TDFXPreInit start\n");
   if (pScrn->numEntities != 1) return FALSE;
 
