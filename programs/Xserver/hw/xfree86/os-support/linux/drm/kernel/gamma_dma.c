@@ -45,9 +45,14 @@ static inline void gamma_dma_dispatch(drm_device_t *dev, unsigned long address,
 	drm_gamma_private_t *dev_priv =
 				(drm_gamma_private_t *)dev->dev_private;
 	mb();
-	while ( GAMMA_READ(GAMMA_INFIFOSPACE) < 2);
+	while ( GAMMA_READ(GAMMA_INFIFOSPACE) < 2)
+		cpu_relax();
+
 	GAMMA_WRITE(GAMMA_DMAADDRESS, address);
-	while (GAMMA_READ(GAMMA_GCOMMANDSTATUS) != 4);
+
+	while (GAMMA_READ(GAMMA_GCOMMANDSTATUS) != 4)
+		cpu_relax();
+
 	GAMMA_WRITE(GAMMA_DMACOUNT, length / 4);
 }
 
@@ -55,16 +60,18 @@ void gamma_dma_quiescent_single(drm_device_t *dev)
 {
 	drm_gamma_private_t *dev_priv =
 				(drm_gamma_private_t *)dev->dev_private;
-	while (GAMMA_READ(GAMMA_DMACOUNT));
+	while (GAMMA_READ(GAMMA_DMACOUNT))
+		cpu_relax();
 
-	while (GAMMA_READ(GAMMA_INFIFOSPACE) < 2);
+	while (GAMMA_READ(GAMMA_INFIFOSPACE) < 2)
+		cpu_relax();
 
 	GAMMA_WRITE(GAMMA_FILTERMODE, 1 << 10);
 	GAMMA_WRITE(GAMMA_SYNC, 0);
 
 	do {
 		while (!GAMMA_READ(GAMMA_OUTFIFOWORDS))
-			;
+			cpu_relax();
 	} while (GAMMA_READ(GAMMA_OUTPUTFIFO) != GAMMA_SYNC_TAG);
 }
 
@@ -72,9 +79,11 @@ void gamma_dma_quiescent_dual(drm_device_t *dev)
 {
 	drm_gamma_private_t *dev_priv =
 				(drm_gamma_private_t *)dev->dev_private;
-	while (GAMMA_READ(GAMMA_DMACOUNT));
+	while (GAMMA_READ(GAMMA_DMACOUNT))
+		cpu_relax();
 
-	while (GAMMA_READ(GAMMA_INFIFOSPACE) < 3);
+	while (GAMMA_READ(GAMMA_INFIFOSPACE) < 3)
+		cpu_relax();
 
 	GAMMA_WRITE(GAMMA_BROADCASTMASK, 3);
 	GAMMA_WRITE(GAMMA_FILTERMODE, 1 << 10);
@@ -82,12 +91,14 @@ void gamma_dma_quiescent_dual(drm_device_t *dev)
 
 	/* Read from first MX */
 	do {
-		while (!GAMMA_READ(GAMMA_OUTFIFOWORDS));
+		while (!GAMMA_READ(GAMMA_OUTFIFOWORDS))
+			cpu_relax();
 	} while (GAMMA_READ(GAMMA_OUTPUTFIFO) != GAMMA_SYNC_TAG);
 
 	/* Read from second MX */
 	do {
-		while (!GAMMA_READ(GAMMA_OUTFIFOWORDS + 0x10000));
+		while (!GAMMA_READ(GAMMA_OUTFIFOWORDS + 0x10000))
+			cpu_relax();
 	} while (GAMMA_READ(GAMMA_OUTPUTFIFO + 0x10000) != GAMMA_SYNC_TAG);
 }
 
@@ -95,14 +106,15 @@ void gamma_dma_ready(drm_device_t *dev)
 {
 	drm_gamma_private_t *dev_priv =
 				(drm_gamma_private_t *)dev->dev_private;
-	while (GAMMA_READ(GAMMA_DMACOUNT));
+	while (GAMMA_READ(GAMMA_DMACOUNT))
+		cpu_relax();
 }
 
 static inline int gamma_dma_is_ready(drm_device_t *dev)
 {
 	drm_gamma_private_t *dev_priv =
 				(drm_gamma_private_t *)dev->dev_private;
-	return(!GAMMA_READ(GAMMA_DMACOUNT));
+	return (!GAMMA_READ(GAMMA_DMACOUNT));
 }
 
 irqreturn_t gamma_irq_handler( DRM_IRQ_ARGS )
@@ -115,13 +127,16 @@ irqreturn_t gamma_irq_handler( DRM_IRQ_ARGS )
 	/* FIXME: should check whether we're actually interested in the interrupt? */
 	atomic_inc(&dev->counts[6]); /* _DRM_STAT_IRQ */
 
-	while (GAMMA_READ(GAMMA_INFIFOSPACE) < 3);
+	while (GAMMA_READ(GAMMA_INFIFOSPACE) < 3)
+		cpu_relax();
+
 	GAMMA_WRITE(GAMMA_GDELAYTIMER, 0xc350/2); /* 0x05S */
 	GAMMA_WRITE(GAMMA_GCOMMANDINTFLAGS, 8);
 	GAMMA_WRITE(GAMMA_GINTFLAGS, 0x2001);
 	if (gamma_dma_is_ready(dev)) {
 				/* Free previous buffer */
-		if (test_and_set_bit(0, &dev->dma_flag)) return IRQ_HANDLED;
+		if (test_and_set_bit(0, &dev->dma_flag))
+			return IRQ_HANDLED;
 		if (dma->this_buffer) {
 			gamma_free_buffer(dev, dma->this_buffer);
 			dma->this_buffer = NULL;
@@ -337,6 +352,9 @@ static int gamma_dma_priority(struct file *filp,
 	drm_buf_t	  *buf;
 	drm_buf_t	  *last_buf = NULL;
 	drm_device_dma_t  *dma	    = dev->dma;
+	int		  *send_indices = NULL;
+	int		  *send_sizes = NULL;
+
 	DECLARE_WAITQUEUE(entry, current);
 
 				/* Turn off interrupt handling */
@@ -356,11 +374,31 @@ static int gamma_dma_priority(struct file *filp,
 		++must_free;
 	}
 
+	send_indices = DRM(alloc)(d->send_count * sizeof(*send_indices),
+				  DRM_MEM_DRIVER);
+	if (send_indices == NULL)
+		return -ENOMEM;
+	if (copy_from_user(send_indices, d->send_indices, 
+			   d->send_count * sizeof(*send_indices))) {
+		retcode = -EFAULT;
+                goto cleanup;
+	}
+	
+	send_sizes = DRM(alloc)(d->send_count * sizeof(*send_sizes),
+				DRM_MEM_DRIVER);
+	if (send_sizes == NULL)
+		return -ENOMEM;
+	if (copy_from_user(send_sizes, d->send_sizes, 
+			   d->send_count * sizeof(*send_sizes))) {
+		retcode = -EFAULT;
+                goto cleanup;
+	}
+
 	for (i = 0; i < d->send_count; i++) {
-		idx = d->send_indices[i];
+		idx = send_indices[i];
 		if (idx < 0 || idx >= dma->buf_count) {
 			DRM_ERROR("Index %d (of %d max)\n",
-				  d->send_indices[i], dma->buf_count - 1);
+				  send_indices[i], dma->buf_count - 1);
 			continue;
 		}
 		buf = dma->buflist[ idx ];
@@ -382,7 +420,7 @@ static int gamma_dma_priority(struct file *filp,
 				   process closes the /dev/drm? handle, so
 				   it can't also be doing DMA. */
 		buf->list	  = DRM_LIST_PRIO;
-		buf->used	  = d->send_sizes[i];
+		buf->used	  = send_sizes[i];
 		buf->context	  = d->context;
 		buf->while_locked = d->flags & _DRM_DMA_WHILE_LOCKED;
 		address		  = (unsigned long)buf->address;
@@ -393,14 +431,14 @@ static int gamma_dma_priority(struct file *filp,
 		if (buf->pending) {
 			DRM_ERROR("Sending pending buffer:"
 				  " buffer %d, offset %d\n",
-				  d->send_indices[i], i);
+				  send_indices[i], i);
 			retcode = -EINVAL;
 			goto cleanup;
 		}
 		if (buf->waiting) {
 			DRM_ERROR("Sending waiting buffer:"
 				  " buffer %d, offset %d\n",
-				  d->send_indices[i], i);
+				  send_indices[i], i);
 			retcode = -EINVAL;
 			goto cleanup;
 		}
@@ -449,6 +487,12 @@ cleanup:
 		gamma_dma_ready(dev);
 		gamma_free_buffer(dev, last_buf);
 	}
+	if (send_indices)
+		DRM(free)(send_indices, d->send_count * sizeof(*send_indices), 
+			  DRM_MEM_DRIVER);
+	if (send_sizes)
+		DRM(free)(send_sizes, d->send_count * sizeof(*send_sizes), 
+			  DRM_MEM_DRIVER);
 
 	if (must_free && !dev->context_flag) {
 		if (gamma_lock_free(dev, &dev->lock.hw_lock->lock,
@@ -467,9 +511,13 @@ static int gamma_dma_send_buffers(struct file *filp,
 	drm_buf_t	  *last_buf = NULL;
 	int		  retcode   = 0;
 	drm_device_dma_t  *dma	    = dev->dma;
+	int               send_index;
+
+	if (get_user(send_index, &d->send_indices[d->send_count-1]))
+		return -EFAULT;
 
 	if (d->flags & _DRM_DMA_BLOCK) {
-		last_buf = dma->buflist[d->send_indices[d->send_count-1]];
+		last_buf = dma->buflist[send_index];
 		add_wait_queue(&last_buf->dma_wait, &entry);
 	}
 
@@ -830,7 +878,8 @@ void DRM(driver_irq_preinstall)( drm_device_t *dev ) {
 	drm_gamma_private_t *dev_priv =
 				(drm_gamma_private_t *)dev->dev_private;
 
-	while(GAMMA_READ(GAMMA_INFIFOSPACE) < 2);
+	while(GAMMA_READ(GAMMA_INFIFOSPACE) < 2)
+		cpu_relax();
 
 	GAMMA_WRITE( GAMMA_GCOMMANDMODE,	0x00000004 );
 	GAMMA_WRITE( GAMMA_GDMACONTROL,		0x00000000 );
@@ -840,7 +889,8 @@ void DRM(driver_irq_postinstall)( drm_device_t *dev ) {
 	drm_gamma_private_t *dev_priv =
 				(drm_gamma_private_t *)dev->dev_private;
 
-	while(GAMMA_READ(GAMMA_INFIFOSPACE) < 3);
+	while(GAMMA_READ(GAMMA_INFIFOSPACE) < 3)
+		cpu_relax();
 
 	GAMMA_WRITE( GAMMA_GINTENABLE,		0x00002001 );
 	GAMMA_WRITE( GAMMA_COMMANDINTENABLE,	0x00000008 );
@@ -853,7 +903,8 @@ void DRM(driver_irq_uninstall)( drm_device_t *dev ) {
 	if (!dev_priv)
 		return;
 
-	while(GAMMA_READ(GAMMA_INFIFOSPACE) < 3);
+	while(GAMMA_READ(GAMMA_INFIFOSPACE) < 3)
+		cpu_relax();
 
 	GAMMA_WRITE( GAMMA_GDELAYTIMER,		0x00000000 );
 	GAMMA_WRITE( GAMMA_COMMANDINTENABLE,	0x00000000 );

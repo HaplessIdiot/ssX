@@ -131,7 +131,7 @@ int DRM(addmap)( struct inode *inode, struct file *filp,
 	switch ( map->type ) {
 	case _DRM_REGISTERS:
 	case _DRM_FRAME_BUFFER:
-#if !defined(__sparc__) && !defined(__alpha__)
+#if !defined(__sparc__) && !defined(__alpha__) && !defined(__ia64__)
 		if ( map->offset + map->size < map->offset ||
 		     map->offset < virt_to_phys(high_memory) ) {
 			DRM(free)( map, sizeof(*map), DRM_MEM_MAPS );
@@ -148,7 +148,9 @@ int DRM(addmap)( struct inode *inode, struct file *filp,
 					      MTRR_TYPE_WRCOMB, 1 );
 		}
 #endif
-		map->handle = DRM(ioremap)( map->offset, map->size, dev );
+		if (map->type == _DRM_REGISTERS)
+			map->handle = DRM(ioremap)( map->offset, map->size,
+						    dev );
 		break;
 
 	case _DRM_SHM:

@@ -6,29 +6,29 @@
 # platforms in a flexible way by David Dawes.  It's not clear, however,
 # that this approach is simpler than the old one.
 #
-# The purpose of this Makefile.linux file is to handle setting up everything
+# The purpose of this Makefile is to handle setting up everything
 # needed for an out-of-kernel source build.  Makefile.kernel contains
 # everything required for in-kernel source builds.  It is included into
 # this file, so none of that should be duplicated here.
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/Makefile.linux,v 1.42 2003/12/02 13:02:42 alanh Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/Makefile.linux,v 1.40 2003/08/17 17:12:25 dawes Exp $
 #
 
 #
 # By default, the build is done against the running linux kernel source.
 # To build against a different kernel source tree, set LINUXDIR:
 #
-#    make -f Makefile.linux LINUXDIR=/path/to/kernel/source
+#    make LINUXDIR=/path/to/kernel/source
 
 #
 # To build only some modules, either set DRM_MODULES to the list of modules,
 # or specify the modules as targets:
 #
-#    make -f Makefile.linux r128.o radeon.o
+#    make r128.o radeon.o
 #
 # or:
 #
-#    make -f Makefile.linux DRM_MODULES="r128 radeon"
+#    make DRM_MODULES="r128 radeon"
 #
 
 SHELL=/bin/sh
@@ -39,7 +39,6 @@ ifndef LINUXDIR
 RUNNING_REL := $(shell uname -r)
 
 LINUXDIR := /lib/modules/$(RUNNING_REL)/build
-MODULEDIR := /lib/modules/$(RUNNING_REL)
 endif
 
 MACHINE := $(shell uname -m)
@@ -50,10 +49,13 @@ MODULE_LIST := gamma.o tdfx.o r128.o radeon.o mga.o sis.o
 # Modules only for ix86 architectures
 ifneq (,$(findstring 86,$(MACHINE)))
 ARCHX86 := 1
-MODULE_LIST += i830.o i810.o
+MODULE_LIST += i830.o i810.o i915.o
 endif
 
-# Add ffb.o for sparc??
+ifneq (,$(findstring sparc64,$(MACHINE)))
+ARCHSPARC64 := 1
+MODULE_LIST += ffb.o
+endif
 
 DRM_MODULES ?= $(MODULE_LIST)
 
@@ -82,15 +84,19 @@ MGASHARED =     mga.h mga_dma.c mga_drm.h mga_drv.h mga_irq.c mga_state.c \
                 mga_ucode.h mga_warp.c
 I810HEADERS =   i810.h i810_drv.h i810_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
 I830HEADERS =   i830.h i830_drv.h i830_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
+I915HEADERS =   i915.h i915_drv.h i915_drm.h $(DRMHEADERS) $(DRMTEMPLATES)
+I915SHARED  =   i915.h i915_drv.h i915_drm.h i915_irq.c i915_mem.c i915_dma.c
 SISHEADERS=     sis.h sis_drv.h sis_drm.h $(DRMHEADERS)
 SISSHARED=      sis.h sis_drv.h sis_drm.h sis_ds.c sis_ds.h sis_mm.c
+FFBHEADERS	= ffb.h ffb_drv.h $(DRMHEADERS) $(DRMTEMPLATES)
 
 SHAREDSRC = $(DRMSHARED) $(MGASHARED) $(R128SHARED) $(RADEONSHARED) \
-	$(SISSHARED) $(TDFXSHARED)
+	$(SISSHARED) $(TDFXSHARED) \
+	$(I915SHARED)
 
 PROGS = dristat drmstat
 
-CLEANFILES = *.o *.ko $(PROGS) .depend .*.flags .*.d .*.cmd
+CLEANFILES = *.o *.ko $(PROGS) .depend .*.flags .*.d .*.cmd *.mod.c linux
 
 # VERSION is not defined from the initial invocation.  It is defined when
 # this Makefile is invoked from the kernel's root Makefile.
@@ -148,23 +154,10 @@ ifeq ($(CLEANCONFIG),y)
 CLEANFILES += $(LINUXDIR)/.config .config $(LINUXDIR)/tmp_include_depends
 endif
 
-# The Makefile renaming hack is required because the standard kernel build,
-# especially 2.5.52 and later, explicitly references the Makefile by the
-# name "Makefile".  For builds prior to 2.5.52, the name GNUmakefile could
-# have been used.
-
 all: modules
 
 modules: includes
-	@if test -f Makefile && cmp -s Makefile Makefile.linux; then : ; \
-	  else \
-		if [ -e Makefile ]; then \
-			(set -x; mv -f Makefile Makefile._xx_); fi; \
-		(set -x; ln -s Makefile.linux Makefile); fi
 	make -C $(LINUXDIR) $(GETCONFIG) SUBDIRS=`pwd` DRMSRCDIR=`pwd` modules
-	@if cmp -s Makefile Makefile.linux && [ -e Makefile._xx_ ]; then \
-		(set -x; rm -f Makefile; \
-		 mv -f Makefile._xx_ Makefile); fi
 
 ifeq ($(HEADERFROMBOOT),1)
 
@@ -212,7 +205,10 @@ SHAREDDIR := ../../../shared/drm/kernel
 HASSHARED := $(shell if [ -d $(SHAREDDIR) ]; then echo y; fi)
 
 ifeq ($(HASSHARED),y)
-includes:: $(SHAREDSRC)
+includes:: $(SHAREDSRC) drm_pciids.h
+
+drm_pciids.h: $(SHAREDDIR)/drm_pciids.txt
+	sh ./create_linux_pci_lists.sh < $(SHAREDDIR)/drm_pciids.txt
 
 $(SHAREDSRC):
 	@if [ -r $(SHAREDDIR)/$@ ]; then \
@@ -231,18 +227,8 @@ clean cleandir:
 	rm -f $(CLEANFILES)
 
 $(MODULE_LIST)::
-	make -f Makefile.linux DRM_MODULES=$@ modules
+	make DRM_MODULES=$@ modules
 
-ifdef MODULEDIR
-install:
-	@(cd $(MODULEDIR)/kernel/drivers/char/drm && \
-	  set -x && rm -f $(MODULE_LIST))
-	cp -p $(MODULE_LIST) $(MODULEDIR)/kernel/drivers/char/drm/.
-else
-install:
-	@echo "Run 'make MODULEDIR=/path/to/moduledir install'"
-endif
-	
 # Build test utilities
 
 PRGCFLAGS = $(CFLAGS) -g -ansi -pedantic -DPOSIX_C_SOURCE=199309L \
@@ -322,6 +308,7 @@ CONFIG_DRM_I810 := n
 CONFIG_DRM_R128 := n
 CONFIG_DRM_RADEON := n
 CONFIG_DRM_I830 := n
+CONFIG_DRM_I915 := n
 CONFIG_DRM_SIS := n
 CONFIG_DRM_FFB := n
 
@@ -342,6 +329,9 @@ endif
 ifneq (,$(findstring sis,$(DRM_MODULES)))
 CONFIG_DRM_SIS := m
 endif
+ifneq (,$($findstring ffb,$(DRM_MODULES)))
+CONFIG_DRM_FFB := m
+endif
 
 # These require AGP support
 
@@ -355,6 +345,9 @@ endif
 ifneq (,$(findstring i830,$(DRM_MODULES)))
 CONFIG_DRM_I830 := m
 endif
+ifneq (,$(findstring i915,$(DRM_MODULES)))
+CONFIG_DRM_I915 := m
+endif
 endif
 
 include $(DRMSRCDIR)/Makefile.kernel
@@ -366,6 +359,7 @@ $(r128-objs):	$(R128HEADERS)
 $(mga-objs):	$(MGAHEADERS)
 $(i810-objs):	$(I810HEADERS)
 $(i830-objs):	$(I830HEADERS)
+$(i915-objs):	$(I830HEADERS)
 $(radeon-objs):	$(RADEONHEADERS)
 $(sis-objs):	$(SISHEADERS)
 $(ffb-objs):	$(FFBHEADERS)

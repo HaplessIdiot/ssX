@@ -24,7 +24,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/drm/kernel/sis.h,v 1.1 2003/09/28 20:16:09 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/sis.h,v 1.3 2002/10/30 12:52:38 alanh Exp $ */
 
 #ifndef __SIS_H__
 #define __SIS_H__
@@ -33,11 +33,7 @@
  * Name it sisdrv_##x as there's a conflict with sis_free/malloc in the kernel
  * that's used for fb devices 
  */
-#ifdef __linux__
 #define DRM(x) sisdrv_##x
-#else
-#define DRM(x) sis_##x
-#endif
 
 /* General customization:
  */
@@ -61,13 +57,6 @@
 	[DRM_IOCTL_NR(DRM_IOCTL_SIS_AGP_ALLOC)] = { sis_ioctl_agp_alloc, 1, 0 }, \
 	[DRM_IOCTL_NR(DRM_IOCTL_SIS_AGP_FREE)]	= { sis_ioctl_agp_free,	1, 0 }, \
 	[DRM_IOCTL_NR(DRM_IOCTL_SIS_FB_INIT)]	= { sis_fb_init,	1, 1 }
-
-#define DRIVER_PCI_IDS							\
-	{0x1039, 0x0300, 0, "SiS 300/305"},				\
-	{0x1039, 0x5300, 0, "SiS 540"},					\
-	{0x1039, 0x6300, 0, "SiS 630"},					\
-	{0x1039, 0x7300, 0, "SiS 730"},					\
-	{0, 0, 0, NULL}
 
 #define __HAVE_COUNTERS		5
 
