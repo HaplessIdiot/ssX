@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/main.c,v 3.32tsi Exp $ */
+/* $XFree86: xc/config/makedepend/main.c,v 3.33tsi Exp $ */
 
 #include "def.h"
 #ifdef hpux
@@ -271,6 +271,7 @@ main(int argc, char *argv[])
 		/* do not use if endmarker processing */
 		case 'a':
 			if (endmarker) break;
+			if (argv[0][2]) goto badopt;
 			append = TRUE;
 			break;
 		case 'w':
@@ -278,7 +279,8 @@ main(int argc, char *argv[])
 			if (argv[0][2] == '\0') {
 				argv++;
 				argc--;
-				width = atoi(argv[0]);
+				if (argv[0])
+					width = atoi(argv[0]);
 			} else
 				width = atoi(argv[0]+2);
 			break;
@@ -329,6 +331,8 @@ main(int argc, char *argv[])
 			break;
 
 		case 'm':
+			if (endmarker) break;
+			if (argv[0][2]) goto badopt;
 			warn_multiple = TRUE;
 			break;
 
@@ -362,8 +366,10 @@ main(int argc, char *argv[])
 			/* intentional fall through */
 		default:
 			if (endmarker) break;
-	/*		fatalerr("unknown opt = %s\n", argv[0]); */
+		badopt:
+	/*		fatalerr("unknown option = %s\n", argv[0]); */
 			warning("ignoring option %s\n", argv[0]);
+			break;
 		}
 	}
 	/* Now do the undefs from the command line */
