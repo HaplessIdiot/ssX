@@ -1,5 +1,5 @@
 /* $XConsortium: dm.c,v 1.71 95/07/10 21:18:07 gildea Exp $ */
-/* $XFree86: xc/programs/xdm/dm.c,v 3.1 1994/10/20 06:15:09 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/dm.c,v 3.2 1995/11/02 00:29:40 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -80,7 +80,7 @@ extern int errno;
 #endif
 
 
-#ifdef SVR4
+#if defined(SVR4) && !defined(SCO)
 extern FILE    *fdopen();
 #endif
 

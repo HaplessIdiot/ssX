@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: resize.c,v 1.34 95/05/24 22:12:04 gildea Exp $
- *	$XFree86: xc/programs/xterm/resize.c,v 3.14 1996/09/01 12:31:02 dawes Exp $
+ *	$XFree86: xc/programs/xterm/resize.c,v 3.15 1996/09/22 05:16:12 dawes Exp $
  */
 
 /*
@@ -577,13 +577,13 @@ readstring(fp, buf, str)
     char *str;
 {
 	register int last, c;
-#if !defined(USG) && !defined(AMOEBA) && !defined(MINIX) && !defined(SCO) && !(__EMX__)
+#if !defined(USG) && !defined(AMOEBA) && !defined(MINIX) && !(__EMX__)
 	/* What is the advantage of setitimer() over alarm()? */
 	struct itimerval it;
 #endif
 
 	signal(SIGALRM, resize_timeout);
-#if defined(USG) || defined(AMOEBA) || defined(MINIX) || defined(SCO) || defined(__EMX__)
+#if defined(USG) || defined(AMOEBA) || defined(MINIX) || defined(__EMX__)
 	alarm (TIMEOUT);
 #else
 	bzero((char *)&it, sizeof(struct itimerval));
@@ -602,7 +602,7 @@ readstring(fp, buf, str)
 	last = str[strlen(str) - 1];
 	while((*buf++ = getc(fp)) != last)
 	    ;
-#if defined(USG) || defined(AMOEBA) || defined(MINIX) || defined(SCO) || defined(__EMX__)
+#if defined(USG) || defined(AMOEBA) || defined(MINIX) || defined(__EMX__)
 	alarm (0);
 #else
 	bzero((char *)&it, sizeof(struct itimerval));
