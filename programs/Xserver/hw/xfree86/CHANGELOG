@@ -1,4 +1,6 @@
 XFree86 3.9.15d (29 August 1999)
+3011. Reinstate the code to stop DDC1 problems on secondary screens with
+      the MGA driver (#3182, Andrew Aitchison).
 3010. Fix for the option handling in the glide driver (#3181, Henrik Harmsen).
 3009. NVIDIA doc update (#3179, Jarno Paananen).
 3008. Doc update for the C&T driver (#3176, David Bateman).
@@ -8663,4 +8665,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.818 1999/08/26 08:16:07 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.819 1999/08/28 09:00:44 dawes Exp $
