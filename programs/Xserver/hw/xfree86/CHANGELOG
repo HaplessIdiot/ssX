@@ -1,4 +1,7 @@
 XFree86 4.2.99.4 (xx January 2003)
+ 708. Fix for when firmware/BIOS initialisation does not enable the extra
+      command FIFO entries available on second-generation integrated Mach64
+      variants (Marc La France).
  707. Copying Syriac OTF fonts to directory OTF instead of TTF.
       The xtt font renderer cannot handle OTF fonts causing the
       entire directory to be ignored (Egbert Eich).
@@ -15970,4 +15973,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2467 2003/01/06 00:04:51 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2469 2003/01/10 13:29:37 eich Exp $
