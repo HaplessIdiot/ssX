@@ -31,6 +31,16 @@
 #define DACREGSIZE 0x50
     
 /*
+ * Only change bits shown in this mask.  Ideally reserved bits should be
+ * zeroed here.  Also, don't change the vgaioen bit here since it is
+ * controlled elsewhere.
+ *
+ * XXX These settings need to be checked.
+ */
+#define OPTION1_MASK	0xFFFFFEFF
+#define OPTION2_MASK	0xFFFFFFFF
+
+/*
  * Read/write to the DAC via MMIO 
  */
 
@@ -530,9 +540,11 @@ MGAGRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	}
 
 	/* restore pci_option register */
-	pciWriteLong(pMga->PciTag, PCI_OPTION_REG, mgaReg->Option);
+	pciSetBitsLong(pMga->PciTag, PCI_OPTION_REG, OPTION1_MASK,
+		       mgaReg->Option);
 	if (pMga->Chipset != PCI_CHIP_MGA1064)
-		pciWriteLong(pMga->PciTag, PCI_MGA_OPTION2, mgaReg->Option2);
+		pciSetBitsLong(pMga->PciTag, PCI_MGA_OPTION2, OPTION2_MASK,
+			       mgaReg->Option2);
 
 	/* restore CRTCEXT regs */
 	for (i = 0; i < 6; i++)
