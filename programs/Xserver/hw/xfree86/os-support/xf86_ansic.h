@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.34 2000/02/08 13:13:28 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.35 2000/02/08 17:19:20 dawes Exp $ */
 
 #ifndef _XF86_ANSIC_H
 #define _XF86_ANSIC_H
@@ -262,7 +262,6 @@ extern void xf86bcopy(const void*,void*,xf86size_t);
 extern int xf86ffs(int);
 extern char* xf86strdup(const char*);
 extern void xf86bzero(void*,unsigned int);
-extern void xf86getsecs(CARD32 *, CARD32 *);
 extern int xf86execl(const char *, const char *, ...);
 extern long xf86fpossize(void);
 extern int xf86chmod(const char *, xf86mode_t);
@@ -297,10 +296,13 @@ extern int xf86shmctl(int id, int xf86cmd, pointer *buf);
 
 extern int xf86getpagesize(void);
 extern void xf86usleep(unsigned long);
+extern void xf86getsecs(CARD32 *, CARD32 *);
 #ifndef DONT_DEFINE_WRAPPERS
 #undef getpagesize
 #define getpagesize()		xf86getpagesize()
 #undef usleep
 #define usleep(ul)		xf86usleep(ul)
+#undef getsecs
+#define getsecs(a, b)		xf86getsecs(a, b)
 #endif
 #endif /* _XF86_ANSIC_H */
