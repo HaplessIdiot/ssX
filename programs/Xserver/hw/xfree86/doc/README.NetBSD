@@ -1,7 +1,7 @@
   README for XFree86 3.1.2 on NetBSD
   Rich  Murphey, David Dawes, Marc  Wandschneider, Mark  Weaver,
   Matthieu Herrb
-  Last modified on: 3 Dec 1995
+  Last modified on: 27 Jan 1996
 
   1.  What and Where is XFree86?
 
@@ -406,9 +406,9 @@
        options XSERVER, UCONSOLE
 
 
-  The server supports several console drivers: pccons, pcvt, syscons and
-  codrv.  They are detected at runtime and no configuration of the
-  server itself is required.
+  The server supports the two standard NetBSD/i386 console drivers:
+  pccons and pcvt. They are detected at runtime and no configuration of
+  the server itself is required.
 
   The pccons driver is the most widely tested and is the console driver
   contained in the NetBSD binary distribution's kernels.
@@ -431,19 +431,15 @@
   in your kernel config file, and rebuild and install your kernel.
 
   Syscons and codrv are not bundled with NetBSD 1.1. They are available
-  by anonymous FTP from a number of sites.
+  by anonymous FTP from a number of sites. They are not supported by the
+  XFree86 binary distribution anymore. You can compile support for them
+  by adding -DSYSCONS_SUPPORT or -DCODRV_SUPPORT to
+  XFree86ConsoleDefines in xf86site.def. See the section ``Console
+  drivers'' for details.
 
   If using pccons you get the message:
 
 
-
-       > XFree86 Version 3.1.2 / X Window System
-       > (protocol Version 11, revision 0, vendor release 6000)
-       > Operating System: NetBSD
-       > Configured drivers:
-       >   Mach8: accelerated server for ATI Mach-8 graphics adaptors
-       > (Patchlevel 0)
-       >
        > Fatal server error:
        > xf86OpenConsole: CONSOLE_X_MODE_OFF failed (Inappropriate ioctl for device)
        > Was expecting pccons driver with X support
@@ -456,16 +452,13 @@
   then delete /dev/ttyv0. I don't know why ``MAKEDEV'' move /dev/ttyqf
   to /dev/ttyv0. (from Hung-Chi Chu hcchu@r350.ee.ntu.edu.tw)
 
-
-
-
-
   7.1.  Aperture Driver
 
   By default NetBSD 0.9C and higher include the BSD 4.4 kernel security
   feature that disable access to the /dev/mem device when in multi-users
   mode. But XFree86 servers can take advantage (or require) linear
   access to the display memory.
+
 
   The P9000, Mach64 and AGX servers require linear memory access, other
   accelerated servers can take advantage of it, but do not require it.
@@ -507,11 +500,13 @@
         mode when you want to run another kernel.
 
 
-       Caveat: the NetBSD aperture driver only allows one access at
-       a time (so that the system is in the same security state
-       once X is launched). This means that if you run multiple
-       servers on multiples VT, only the first one will have linear
-       memory access.
+          Caveat: the NetBSD aperture driver only allows one access
+          at a time (so that the system is in the same security
+          state once X is launched). This means that if you run
+          multiple servers on multiples VT, only the first one will
+          have linear memory access.  Use 'option INSECURE' if you
+          need more that one X server at a time.
+
 
 
   7.2.  MIT-SHM
@@ -525,13 +520,10 @@
 
 
 
-
-   # System V-like IPC
-   options         SYSVMSG
-   options         SYSVSEM
-   options         SYSVSHM
-
-
+        # System V-like IPC
+        options         SYSVMSG
+        options         SYSVSEM
+        options         SYSVSHM
 
 
   to your kernel config file. Then from /sys/arch/i386/config, type:
@@ -592,11 +584,11 @@
 
 
 
+
      o  if you're using syscons put:
 
 
            #define XFree86ConsoleDefines -DSYSCONS_SUPPORT
-
 
 
 
@@ -608,29 +600,24 @@
 
 
 
-  If you don't define XFree86ConsoleDefines in xf86site.def the pccons,
-  pcvt and syscons drivers will be supported.
+  If you don't define XFree86ConsoleDefines in xf86site.def the pccons
+  and pcvt drivers will be supported.
 
   8.2.  console.h and ioctl_pc.h files:
 
-  If you want to build a server supporting syscons or codrv and you
-  don't already have the corresponding header files console.h and
-  ioctl_pc.h installed in /usr/include/machine, then install the copies
-  that are supplied in xc/programs/Xserver/hw/xfree86/etc.  If you run
-  NetBSD-current you probably want to install them in
-  /usr/src/sys/arch/i386/include too, so that they get reinstalled each
-  time you make install in /usr/src/include.
+  If you want to build a server supporting codrv and you don't already
+  have the corresponding header file ioctl_pc.h installed in
+  /usr/include/machine, then install the copy that is supplied in
+  xc/programs/Xserver/hw/xfree86/etc.  If you run NetBSD-current you
+  probably want to install it in /usr/src/sys/arch/i386/include too, so
+  that it get reinstalled each time you make install in
+  /usr/src/include.
 
-  Another way to keep these files accessible is to make a symbolic link
-  like this in the xc directory (suggested by Andrew Cagney
-  cagney@highland.com.au):
+  If you have installed the  codrv console driver, this file should be
+  taken from your installed version of the driver.
 
-
-       ln -s programs/Xserver/hw/xfree86/etc machine
-
-
-  If you have installed the syscons or codrv console drivers, these
-  files should be taken from your installed version of the driver.
+  The console.h file for syscons isn't distributed with XFree86 anymore.
+  You should get it from the syscons distribution.
 
   8.3.  Support for shared libs under NetBSD 1.0 and later
 
@@ -670,6 +657,7 @@
   The easiest way to build a new client (X application) is to use xmkmf
   if an Imakefile is included in the sources.  Type ``xmkmf -a'' to
   create the Makefiles, check the configuration if necessary and type
+
   ``make''.  Whenever you install additional man pages you should update
   whatis.db by running ``makewhatis /usr/X11R6/man''.
 
@@ -723,7 +711,6 @@
 
      o  Christoph Robitschko for fixing com.c and thus select().
 
-
      o  Nate Williams for the patchkit support for X.
 
      o  Rod Grimes and Jack Velte of Walnut Creek Cdrom for use of their
@@ -731,60 +718,7 @@
 
 
   $XConsortium: NetBSD.sgml,v 1.4 95/01/27 16:14:26 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.17 1995/12/31 12:02:12 dawes Exp $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.18 1996/01/28 07:30:36 dawes Exp $
 
 
 
