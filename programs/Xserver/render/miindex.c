@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/miindex.c,v 1.2 2001/07/19 04:42:10 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/miindex.c,v 1.3 2001/07/20 19:22:37 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -83,6 +83,8 @@ miBuildRenderColormap (ColormapPtr  pColormap,
 	if (pix > *last)
 	    *last = pix;
     }
+
+    return TRUE;
 }
 
 /* 0 <= red, green, blue < 32 */
