@@ -52,7 +52,7 @@ miBSFuncRec cfbBSFuncRec = {
     (PixmapPtr (*)()) 0,
 };
 
-#if XFree86LOADER
+#ifdef XFree86LOADER
 
 #include <xf86.h>
     /*
