@@ -216,6 +216,8 @@ xf86freeConfig (XF86ConfigPtr p)
 	xf86freeScreenList (p->conf_screen_lst);
 	xf86freeLayoutList (p->conf_layout_lst);
 	xf86freeInputList (p->conf_input_lst);
+	xf86freeVendorList (p->conf_vendor_lst);
+	xf86freeDRI (p->conf_dri);
 
 	xf86conffree (p);
 }

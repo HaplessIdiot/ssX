@@ -59,6 +59,9 @@ xf86parseDisplaySubSection (void)
 {
 	parsePrologue (XF86ConfDisplayPtr, XF86ConfDisplayRec)
 
+	ptr->disp_weight.red = ptr->disp_weight.green = ptr->disp_weight.blue = -1;
+	ptr->disp_black.red = ptr->disp_black.green = ptr->disp_black.blue = -1;
+	ptr->disp_white.red = ptr->disp_white.green = ptr->disp_white.blue = -1;
 	while ((token = xf86getToken (DisplayTab)) != ENDSUBSECTION)
 	{
 		switch (token)
@@ -405,9 +408,24 @@ xf86printScreenSection (FILE * cf, XF86ConfScreenPtr ptr)
 			{
 				fprintf (cf, "\t\tVisual    \"%s\"\n", dptr->disp_visual);
 			}
+			if (dptr->disp_weight.red != -1)
+			{
+				fprintf (cf, "\t\tWeight    0x%04x 0x%04x 0x%04x\n",
+					 dptr->disp_weight.red, dptr->disp_weight.green, dptr->disp_weight.blue);
+			}
+			if (dptr->disp_black.red != -1)
+			{
+				fprintf (cf, "\t\tBlack     0x%04x 0x%04x 0x%04x\n",
+					  dptr->disp_black.red, dptr->disp_black.green, dptr->disp_black.blue);
+			}
+			if (dptr->disp_white.red != -1)
+			{
+				fprintf (cf, "\t\tWhite     0x%04x 0x%04x 0x%04x\n",
+					  dptr->disp_white.red, dptr->disp_white.green, dptr->disp_white.blue);
+			}
 			if (dptr->disp_mode_lst)
 			{
-				fprintf (cf, "\t\tModes");
+				fprintf (cf, "\t\tModes   ");
 			}
 			for (mptr = dptr->disp_mode_lst; mptr; mptr = mptr->list.next)
 			{

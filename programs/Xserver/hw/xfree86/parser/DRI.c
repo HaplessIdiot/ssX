@@ -133,6 +133,8 @@ xf86printDRISection (FILE * cf, XF86ConfDRIPtr ptr)
 	fprintf (cf, "\tGroup        \"%s\"\n", ptr->dri_group_name);
     else if (ptr->dri_group >= 0)
 	fprintf (cf, "\tGroup        %d\n", ptr->dri_group);
+    if (ptr->dri_mode)
+	fprintf (cf, "\tMode         0%o\n", ptr->dri_mode);
     for (bufs = ptr->dri_buffers_lst; bufs; bufs = bufs->list.next) {
 	fprintf (cf, "\tBuffers      %d %d",
 		 bufs->buf_count, bufs->buf_size);
@@ -147,6 +149,7 @@ xf86freeDRI (XF86ConfDRIPtr ptr)
     if (ptr == NULL)
 	return;
     
+    xf86freeBuffersList (ptr->dri_buffers_lst);
     xf86conffree (ptr);
 }
 

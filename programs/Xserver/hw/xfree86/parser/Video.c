@@ -228,10 +228,10 @@ xf86printVideoAdaptorSection (FILE * cf, XF86ConfVideoAdaptorPtr ptr)
 		{
 			fprintf (cf, "\tSubSection \"VideoPort\"\n");
 			if (pptr->vp_identifier)
-				fprintf (cf, "\tIdentifier \"%s\"\n", pptr->vp_identifier);
+				fprintf (cf, "\t\tIdentifier \"%s\"\n", pptr->vp_identifier);
 			for (optr = pptr->vp_option_lst; optr; optr = optr->list.next)
 			{
-				fprintf (cf, "\tOption     \"%s\"", optr->opt_name);
+				fprintf (cf, "\t\tOption     \"%s\"", optr->opt_name);
 				if (optr->opt_val)
 					fprintf (cf, " \"%s\"", optr->opt_val);
 				fprintf (cf, "\n");
