@@ -1,5 +1,7 @@
 XFree86 3.0Aa (22 May 1994)
- 55. 
+ 57. Merge in XC public fix-01.
+ 56. Updates to FreeBSD.cf.
+ 55. SCO support and some bug fixes (David McCullough).
  54. Some initial untested S3 864/964 code (Harald Koenig).
  53. Fix for bsdLib.tmpl.
  52. STREAMSCONN fixes for xdm, chooser and Xserver XDMCP code (Stuart

@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86$
+XCOMM platform:  $XFree86: xc/config/cf/sco.cf,v 3.0 1994/05/21 23:39:29 dawes Exp $
 
 /*****************************************************************************
  *	            Defaults for SCO-specfic parameters                          *
@@ -80,8 +80,8 @@ install.man::                                                           @@\
         @(SUFFIX=`echo $(DESTDIR)destdir/file.* | cut -f3,4 -d.`; \     @@\
         for i in aliases; do (set -x; \                                 @@\
         $(RM) $(DESTDIR)destdir/$$i.*; \                                @@\
-        $(LN) $(DESTDIR)destdir/file.$${SUFFIX} \                       @@\
-        $(DESTDIR)destdir/$$i.$${SUFFIX}); \                            @@\
+        (cd $(DESTDIR)destdir; $(LN) file.$${SUFFIX} \                  @@\
+        $$i.$${SUFFIX})); \                                             @@\
         done)
 
 #include <svr3.cf>

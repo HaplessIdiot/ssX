@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: NetBSD.cf,v 1.1 94/03/29 15:34:45 gildea Exp $
-XCOMM platform:  $XFree86$
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.0 1994/04/29 14:03:05 dawes Exp $
 
 #define OSName		NetBSD
 #define	OSVendor	/**/
@@ -44,7 +44,7 @@ XCOMM operating system:  OSName
 #define CcCmd gcc
 #define DefaultCCOptions /**/
 
-#ifdef __i386__
+#ifdef i386Architecture
 #define OptimizedCDebugFlags -m486 -O2
 #define ServerOSDefines	-DDDXTIME
 #else
@@ -107,8 +107,8 @@ install.man:: 								@@\
 	@case '${MFLAGS}' in *[i]*) set +e;; esac; \                    @@\
 	for i in aliases; do \                                          @@\
 		(set -x; \						@@\
-		$(RM) $(DESTDIR)destdir/$$i.0;\  				@@\
-		$(LN) destdir/file.0 $(DESTDIR)destdir/$$i.0;\  @@\
+		$(RM) $(DESTDIR)destdir/$$i.0;\  			@@\
+		(cd $(DESTDIR)/destdir; $(LN) file.0 $$i.0);\ 		@@\
 		); \							@@\
 	done
 
@@ -120,6 +120,6 @@ install.man:: 								@@\
 
 #include <bsdLib.rules>
 
-#ifdef __i386__
+#ifdef i386Architecture
 # include <xfree86.cf>
 #endif

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imake.cf,v 1.12 94/03/29 15:42:08 gildea Exp $
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.0 1994/05/08 05:12:57 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.1 1994/05/21 23:39:23 dawes Exp $
 /*
  * To add support for another platform:
  * 
@@ -47,6 +47,8 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.0 1994/05/08 05:12:57 dawes Exp $
 #define MacroFile bsdi.cf
 #undef bsdi
 #define BSD386Architecture
+#define i386BsdArchitecture
+#define i386Architecture
 #endif /* bsdi */
 
 #ifdef __NetBSD__
@@ -55,6 +57,7 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.0 1994/05/08 05:12:57 dawes Exp $
 #undef __NetBSD__
 #ifdef __i386__
 #define i386BsdArchitecture
+#define i386Architecture
 #endif
 #endif /* NetBSD */
 
@@ -65,6 +68,7 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.0 1994/05/08 05:12:57 dawes Exp $
 #ifdef __i386__
 #define FreeBSDArchitecture
 #define i386BsdArchitecture
+#define i386Architecture
 #endif
 #endif /* __FreeBSD__ */
 
@@ -347,6 +351,7 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.0 1994/05/08 05:12:57 dawes Exp $
 #define MacroFile linux.cf
 #undef linux
 #define LinuxArchitecture
+#define i386Architecture
 #endif /* linux */
 
 #ifdef __uxp__
@@ -394,6 +399,7 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.0 1994/05/08 05:12:57 dawes Exp $
 #define MacroFile minix.cf
 #undef minix
 #define MinixArchitecture
+#define i386Architecture
 #endif /* minix */
 
 #ifndef MacroIncludeFile

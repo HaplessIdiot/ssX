@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/config/cf/svr3.cf,v 3.0 1994/05/21 23:39:33 dawes Exp $
 
 #ifndef HasGcc
 #define HasGcc      YES
@@ -278,8 +278,8 @@ install.man::                                                           @@\
         @(SUFFIX=`echo $(DESTDIR)destdir/file.* | cut -f2,3 -d.`; \     @@\
         for i in aliases; do (set -x; \                                 @@\
         $(RM) $(DESTDIR)destdir/$$i.*; \                                @@\
-        $(LN) $(DESTDIR)destdir/file.$${SUFFIX} \                       @@\
-        $(DESTDIR)destdir/$$i.$${SUFFIX}); \                            @@\
+        (cd $(DESTDIR)destdir; $(LN) file.$${SUFFIX} \                  @@\
+        $$i.$${SUFFIX})); \                                             @@\
         done)
 #endif
 
