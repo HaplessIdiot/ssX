@@ -1,6 +1,6 @@
   Information for SVR4 Users
   The XFree86 Project, Inc
-  14 December 1994
+  7 July 1995
 
   NOTE: If you intend to use any of the accelerated servers, read sec-
   tion 10 and follow the instructions.  Otherwise the X server will
@@ -32,7 +32,7 @@
 
      o  Consensys
 
-     o  Novell UnixWare
+     o  Novell UnixWare 1.x and 2.0
 
   Basically, we believe that XFree86 binaries will run unmodified on any
   ISA, EISA, or MCA platform version version of SVR4.0 (Solaris 2.x is
@@ -146,7 +146,6 @@
           For other SVR4:   "-DSVR4 -Di386"
 
 
-
   5.  Notes for running XFree86 on SVR4
 
   NOTE: If you intend to use any of the accelerated servers, read
@@ -197,7 +196,6 @@
         If you have problems with both Xqueue and your standard asy
         driver with SVR4, then you should install SAS.  When using SAS,
         set up XF86Config as you would for the standard driver.
-
         SAS is available from ftp.physics.su.oz.au.  When using SAS for
         a serial mouse, you will get smoother operation if you change
         EVENT_TIME from 80 to 30 in sas.h.  A couple of details which
@@ -253,6 +251,7 @@
         use a Unix socket for the connection.  To use the Unix socket
         connection, the client must connect to unix:0.
 
+
         The local connection types available are "NAMED" (named streams
         pipe), "PTS" (old-stype USL streams pipe), "SCO" (SCO Xsight
         streams pipe), and "ISC" (ISC streams pipe).  The XLOCAL
@@ -267,14 +266,6 @@
         startx) or your /usr/X11R6/lib/xdm/Xsession script (when using
         xdm).
 
-
-        The X server doesn't currently remove the links it makes to its
-        PTS listener when it exits.  This can lead to problems when
-        starting a new server if something else is now using that PTS
-        device.  This is usually noticed by delays in clients making
-        connections to the server.  The only solution is to make sure
-        that an old link in /dev/X/server.N is removed before starting a
-        server for display N.
 
 
   6.  Notes for running XFree86 on SVR4.2
@@ -311,16 +302,6 @@
      The best solution is to modify the code so it compiles correctly
      without -DSYSV.
 
-
-     2. The default compiler options include `-ansi' for gcc, and `-Xc'
-        for cc.  A consequence of this is __STDC__ gets #defined to `1'.
-        There are a number of functions which will not have prototypes
-        declared unless either __STDC__ is not defined, or
-                __STDC__ == 0 || defined(_POSIX_SOURCE) || defined(_XOPEN_SOURCE)
-
-     Possible solutions are to change the definition of CCOPTIONS by
-     adding a line to the Imakefile, or to add the required prototypes
-     to the source.
 
   8.  Using DOS/Merge 2.2 with XFree86
 
@@ -391,9 +372,6 @@
                 /usr/bin/dos.real "$@"
 
 
-
-
-
   9.  Keyboard mapping problems with some Esix systems
 
   One of the console driver patches for Esix 4.0.3A causes the XFree86
@@ -413,11 +391,14 @@
   to your .xinitrc file (or your Xsetup file if using xdm).
 
 
+
+
+
   10.  A kernel patch that is required for accelerated servers
 
   SVR4.0 has a bug handling programs that access extended I/O registers
   (above 0x3FF).  Boards like S3 and 8514/A use these extended I/O
-  registers.  XFree86 now supports boards that tickle this bug.  In
+  registers.  XFree86 supports boards that tickle this bug.  In
   preparation for using these servers, we have produced a kernel patch
   that works around the problem, and provided scripts for you that will
   both install and back out the patch.  You must install this if you
@@ -448,7 +429,26 @@
 
 
   $XConsortium: SVR4.sgml,v 1.2 95/01/16 13:17:49 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.4 1995/06/17 12:16:28 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.5 1995/07/07 15:40:19 dawes Exp $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

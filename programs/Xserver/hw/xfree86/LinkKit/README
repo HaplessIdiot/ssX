@@ -1,15 +1,15 @@
-  Readme for the XFree86 3.1.1 LinkKit
+  Readme for the XFree86 3.1.2 LinkKit
   The XFree86 Project, Inc.
-  15 February 1995
+  7 July 1995
 
-  1.  Readme for the XFree86 3.1.1 LinkKit
+  1.  Readme for the XFree86 3.1.2 LinkKit
 
 
      1. For systems which don't use gcc-2, you may need to install
         libgcc.a if the binary distribution you are using was built with
         gcc-2.
 
-     2. Make sure that you have the XFree86 3.1.1 config files and
+     2. Make sure that you have the XFree86 3.1.2 config files and
         libraries and headers installed under /usr/X11R6.  For some OSs
         these will be included in the `lib' and `inc' packages.  For
         others they are included in the `prog' or `dev' package.  Older
@@ -118,7 +118,7 @@
         extensions are included, start the Xserver and run `xdpyinfo'.
 
   $XConsortium: LinkKit.sgml,v 1.2 95/01/16 13:17:43 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LinkKit.sgml,v 3.4 1995/05/27 03:11:41 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LinkKit.sgml,v 3.6 1995/07/07 15:40:15 dawes Exp $
 
 
 

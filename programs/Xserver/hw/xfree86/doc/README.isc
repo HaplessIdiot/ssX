@@ -1,6 +1,6 @@
   Information for ISC Users
   Michael Rohleder
-  24 January 1995
+  06 July 1995
 
   1.  X11R6/XFree86[TM] on Interactive Unix
 
@@ -12,7 +12,8 @@
   If you have any suggestions, comments, fixes or ideas regarding
   X11R6/XFree86 on Interactive Unix, send e-mail to
 
-  michael.rohleder@stadt-frankfurt.de
+  michael.rohleder@stadt-frankfurt.de (mailto:michael.rohleder@stadt-
+  frankfurt.de)
 
   Bug Reports should be sent to
 
@@ -36,12 +37,13 @@
 
       gcc-2.6.x
         Use the highest number for x you found.  Fresco will only build
-        2.6.3 and later.
+        2.6.3 and later.  I'd tried gcc Version 2.5.8, 2.6.0, 2.6.2 and
+        2.6.3, but not 2.7.0 yet.
 
-        I'd tried gcc Version 2.5.8, 2.6.0, 2.6.2 and 2.6.3.
-
-        2.6.2 and 2.6.3 had some problems compiling 3.1.  2.6.3 builds
-        since 3.1.0A (beta) without problem.
+        With 2.6.3 the current source tree should be able to compile
+        with a little bit more Optimization:  #define DefaultCDebugFlags
+        -O3 -fomit-frame-pointer inside xf86site.def to overwrite the
+        default -O2.
 
       libg++-2.6.x
         The needed g++ Libraries for use with g++ 2.6.x
@@ -61,8 +63,11 @@
         Enable #define UseGnuMalloc YES inside xf86site.def or within
         the Linkkit site.def.
 
-        Set #define MallocLibrary to your needs if it isn't like the
-        default -lgmalloc
+        Enable and set #define GnuMallocLibrary to your needs, if it
+        isn't like the default -L/usr/local/lib -lgmalloc.
+
+
+
 
   3.  Changes to the System Header Files
 
@@ -125,11 +130,6 @@
 
   to prevent multiple includes were <net/errno.h> is explicit included
   from the sources.
-
-
-
-
-
   3.4.  /usr/include/rpc/types.h
 
   copy this file to gcc-lib/include/rpc/types.h and change the
@@ -163,23 +163,18 @@
         HasSymLinks to Yes ('cause symbolic linking were only supported
         from Version 4.x using the S5L Filesystem)
 
+        If you could use long filenames, you could enable the
+        installation of expanded Manual Pages by including  #define
+        ExpandManNames      YES inside xf86site.def.
+
         A build on ISC 4.x only needs -DISC40 defined in the
-        BOOTSRAPCFLAGS -- the -DISC30 will be included automatically.
+        BOOTSTRAPCFLAGS -- the -DISC30 will be included automatically.
 
 
      -DSYSV [-Di386]
         standard defines for SystemV Release3 on x86 platform.  You
         don't need to explicitly define -Di386 because this is pre-
         defined in /lib/cpp.
-
-
-  ______________________________________________________________________
-    You maybe got some warnings from makedepend regarding that it can
-    not find the file <sys/mman.h>.
-    Don't worry about it, the actual compile will be alright.
-    If you don't want to see this, generate an empty file sys/mman.h
-    under /usr/include
-  ______________________________________________________________________
 
 
 
@@ -262,6 +257,7 @@
 
      in either xf86site.def (just uncomment the appropriate definition.
 
+
      o  Using ...
 
 
@@ -327,7 +323,6 @@
 
         +  RightAlt ModeShift
 
-
         +  RightCtl Compose
 
         in your XF86Config - Section "Keyboard"
@@ -374,8 +369,9 @@
         filesystems. On ISC Version 4.x this is now allowed. But you
         should use the new S5L on both filesystems.  ISC30 systems
         should take care that the two directories are on the same FS.
-        Else if you are using a ISC40 compiled binary, the Server abort
-        due to a SIGSYS.
+        Else if you are using a ISC40 compiled binary, the Server could
+        maybe abort due to a SIGSYS.  We tried to catch this signal, so
+        if it dumps please send me a note.
 
 
 
@@ -388,7 +384,11 @@
 
 
   $XConsortium: isc.sgml,v 1.2 95/01/27 16:14:38 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.6 1995/06/25 09:53:47 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.7 1995/07/07 15:40:21 dawes Exp $
+
+
+
+
 
 
 

@@ -113,7 +113,7 @@
 
      Option "override_bios"
         This option allows you to specify a video mode that the video
-        card's BIOS believes to be illegal.  Some BIOS's have incorrect
+        card's BIOS believes to be illegal.  Some BIOSs have incorrect
         maximum resolution and/or dot clock limitations.  Use this
         option with care.  It is possible to specify a video mode that
         can damage your card.
@@ -150,7 +150,7 @@
 
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach64.sgml,v 3.3 1995/07/03 08:50:54 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach64.sgml,v 3.4 1995/07/07 15:40:16 dawes Exp $
 
 
 

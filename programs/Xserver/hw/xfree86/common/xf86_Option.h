@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Option.h,v 1.6 95/01/23 15:34:06 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.28 1995/07/03 08:50:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.29 1995/07/05 12:39:52 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -94,9 +94,9 @@ typedef struct {
 #define OPTION_SYNC_ON_GREEN	54 /* Set Sync-On-Green in RAMDAC */
 #define OPTION_BT482_CURS       55 /* Use Bt482 RAMDAC cursor */
 #define OPTION_S3_964_BT485_VCLK	56 /* probe/invert VCLK for 964 + Bt485 */
-#define OPTION_TI3026_CURS	56 /* Use 3026 RAMDAC cursor (default) */
-#define OPTION_IBMRGB_CURS	57 /* Use IBM RGB52x RAMDAC cursor (default) */
-#define OPTION_DAC_6_BIT	58 /* 6-bit DAC operation */
+#define OPTION_TI3026_CURS	57 /* Use 3026 RAMDAC cursor (default) */
+#define OPTION_IBMRGB_CURS	58 /* Use IBM RGB52x RAMDAC cursor (default) */
+#define OPTION_DAC_6_BIT	59 /* 6-bit DAC operation */
 
 /* Vendor specific options */
 #define OPTION_SPEA_MERCURY	70 /* pixmux for SPEA Mercury (S3) */

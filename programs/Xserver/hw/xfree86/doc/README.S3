@@ -1,6 +1,6 @@
   Information for S3 Chipset Users
   The XFree86 Project Inc.
-  1 February 1995
+  7 July 1995
 
   1.  Supported hardware
 
@@ -14,9 +14,6 @@
   these chipsets. The following list contains some data points on boards
   that are known to work.  If your card is similar to one of the
   described ones, chances are good it might work for you, too.
-
-  Note that 968-based cards which use the IBM 64bit RAMDACs are not yet
-  supported.
 
 
      S3 801/805, AT&T 20C490 (or similar) RAMDAC
@@ -64,6 +61,9 @@
 
 
 
+
+
+
       ClockChip "icd2061a"
       RamDac    "att20c490"
       Option    "dac_8_bit
@@ -95,11 +95,13 @@
 
         The 8391 is compatible with the AT&T 20C490 RAMDAC
 
-        Ramdac "att20c490"
 
-        ClockChip "ch8391"
+           ClockChip "ch8391"
+           Ramdac    "ch8391"
+           Option    "dac_8_bit"
 
-        Option "dac_8_bit"
+
+
 
 
 
@@ -130,6 +132,7 @@
 
         Supports 8bit/pixel RGB in 8bpp and gamma correction for 15/16
         and 24bpp modes
+
         24 bpp might get ``snowy'' if the clock is near the limit of
         30MHz. This is not considered dangerous, but limits the
         usability of 24 bpp.
@@ -137,6 +140,12 @@
         D-step (or below) chips cannot be used with a line width of
         1152; hence the most effective mode for a 1 MB board is about
         1088x800x8 (similar to 2 MB, 1088x800x16).
+
+
+           ClockChip "icd2061a"
+
+
+
 
 
 
@@ -153,9 +162,12 @@
         more main memory can be supported without losing linear frame
         buffer access.
 
-        Option "stb_pegasus"
 
-        The "dac_8_bit" option is always selected on this board.
+           ClockChip "icd2061a"
+           Option    "stb_pegasus"
+
+
+
 
 
 
@@ -165,11 +177,12 @@
 
         8, 15/16 and 24(32) bpp
 
-        Option "SPEA_Mercury"
 
-        ClockChip "SC11412"
+           ClockChip "SC11412"
+           Option    "SPEA_Mercury"
 
-        The "dac_8_bit" option is recommended.
+
+
 
 
 
@@ -180,9 +193,14 @@
 
         8, 15/16 and 24(32) bpp
 
-        Option "number_nine"
 
-        The "dac_8_bit" option is recommended.
+
+
+      ClockChip "icd2061a"
+      Option    "number_nine"
+
+
+
 
 
 
@@ -194,13 +212,16 @@
 
         Supports RGB with sync-on-green
 
-        Option "number_nine"
 
-        The "dac_8_bit" option is recommended.
+           ClockChip "icd2061a"
+           Option    "number_nine"
 
 
 
-     S3 864, AT&T20c498, ICS2494 Clockchip
+
+
+
+     S3 864, AT&T20C498, ICS2494 Clockchip
 
         o  MIRO 20SD (BIOS 1.xx)
 
@@ -212,7 +233,7 @@
 
 
 
-     S3 864, AT&T20c498 or STG1700 RAMDAC, ICD2061A or ICS9161 Clockchip
+     S3 864, AT&T20C498 or STG1700 RAMDAC, ICD2061A or ICS9161 Clockchip
 
         o  Elsa Winner1000PRO VLB
 
@@ -220,15 +241,15 @@
 
         o  MIRO 20SD (BIOS 2.xx)
 
-        8, 15/16 and 24(32) bpp
-
-
-
-     S3 864, STG1700 RAMDAC, ICD2061A Clockchip
-
         o  Actix GraphicsENGINE 64 VLB/2MB
 
         8, 15/16 and 24(32) bpp
+
+
+           ClockChip "icd2061a"
+
+
+
 
 
 
@@ -238,8 +259,6 @@
 
         8, 15/16 and 24(32) bpp
 
-        ClockChip "ICS2595"
-
         Clockchip support is still sometimes flaky and on some machines
         problems with the first mode after startup of XF86_S3 or after
         switching back from VT have been seen; switching to next mode
@@ -248,6 +267,12 @@
         Interlaced modes don't work correctly.
 
         Mirage P64 with BIOS 4.xx uses the S3 SDAC.
+
+
+           ClockChip "ics2595"
+
+
+
 
 
 
@@ -262,7 +287,6 @@
         o  Diamond Stealth 64 DRAM
 
         8, 15/16 and 24 bpp
-        ClockChip "s3_sdac"  (should be detected automatically)
 
 
 
@@ -272,9 +296,12 @@
 
         8, 15/16 and 24 bpp
 
-        ClockChip "ics5342"
 
-        RAMDAC    "ics5342"
+           ClockChip "ics5342"
+           Ramdac    "ics5342"
+
+
+
 
 
 
@@ -284,9 +311,12 @@
 
         8, 15/16, 24(32) bpp
 
-        Option "number_nine"
 
-        Option "dac_8_bit" (recommended)
+           ClockChip "icd2061a"
+           Option    "number_nine"
+
+
+
 
 
 
@@ -298,11 +328,25 @@
 
 
 
+      ClockChip "icd2061a"
+      Ramdac    "att20c505"
+
+
+
+
+
+
      S3 964, Bt485 RAMDAC, ICD2061A Clockchip
 
         o  Diamond Stealth 64
 
         8, 15/16, 24(32) bpp
+
+
+           ClockChip "icd2061a"
+
+
+
 
 
 
@@ -312,7 +356,12 @@
 
         8, 15/16, 24(32) bpp
 
-        Option "SPEA_Mercury"
+
+           ClockChip "ics9161a"
+           Option    "SPEA_Mercury"
+
+
+
 
 
 
@@ -321,6 +370,12 @@
         o  Elsa Winner2000PRO PCI
 
         8 bpp only
+
+
+           ClockChip "icd2061a"
+
+
+
 
 
 
@@ -334,17 +389,20 @@
 
         8 bpp, 15, 16 and 24(32) bpp
 
-        Option "number_nine"
-
         There are some known problems with the GXE64 Pro support,
         including some image shifting/wrapping at 15/16/24 bpp.
 
         We have found that #9 no longer support the GXE64 Pro at
         1600x1200.  They do however have a new (and more expensive)
         board called the GXE64Pro-1600 which uses a 220MHz RAMDAC
-        instead of 135MHz part used on the other boards.  It is not
-        known at this stage whether the GXE64Pro-1600 will work with
-        XFree86 3.1.
+        instead of 135MHz part used on the other boards.
+
+
+           ClockChip "icd2061a"
+
+
+
+
 
 
      S3 764 (Trio64)
@@ -357,11 +415,25 @@
 
         8/15/16/24 bpp
 
-        Note: there are some display wrapping problems with the Trio64
-        at 8bpp which have not yet been fixed.
+        Note: The Trio64 has a builtin RAMDAC and clockchip, so the
+        server should work with all Trio64 cards, and there is no need
+        to specify the RAMDAC or clockchip in the XF86Config file.
 
 
-     S3 868, ? RAMDAC, ? Clockchip
+
+     S3 732 (Trio32)
+
+        o  Diamond Stealth 64 DRAM SE
+
+        8/15/16/24 bpp
+
+        Note: The Trio32 has a builtin RAMDAC and clockchip, so the
+        server should work with all Trio32 cards, and there is no need
+        to specify the RAMDAC or clockchip in the XF86Config file.
+
+
+
+     S3 868, S3 86C716 SDAC RAMDAC and Clockchip
 
         o  ELSA Winner 1000AVI
 
@@ -384,29 +456,29 @@
   On 801/805 + AT&T490 Cards (like the Fahrenheit 1280+ VLB) only 15 and
   16bpp are supported. 32bpp isn't available on this type of chips.
   (There is a 24 bit mode under MS Windows, but it's not a 32bpp sparse
-  mode but a real 3 bytes/pixel mode -- implementing this in XFree86
-  isn't easy).
+  mode but a real 3 bytes/pixel mode).
+
 
 
   3.  List of Supported Clock Chips
 
 
 
+       ICD2061A                                ==> ClockChip "icd2061a"
+       ICS9161A (ICD2061A compatible)          ==> ClockChip "ics9161a"
+       DCS2824-0 (Diamond, ICD2061A comp.)     ==> ClockChip "dcs2824"
 
+       S3 86c708 GENDAC                        ==> ClockChip "s3gendac"
+       ICS5300 GENDAC (86c708 compatible)      ==> ClockChip "ics5300"
 
-  ICD2061A                                ==> ClockChip "icd2061a"
-  ICS9161A (ICD2061A compatible)          ==> ClockChip "ics9161a"
-  DCS2824-0 (Diamond, ICD2061A comp.)     ==> ClockChip "dcs2824"
+       S3 86c716 SDAC                          ==> ClockChip "s3_sdac"
+       ICS5342 GENDAC                          ==> ClockChip "ics5342"
 
-  S3 86c708 GENDAC                        ==> ClockChip "s3gendac"
-  ICS5300 GENDAC (86c708 compatible)      ==> ClockChip "ics5300"
+       Sierra SC11412                          ==> ClockChip "sc11412"
+       ICS2595                                 ==> ClockChip "ics2595"
+       TI3025                                  ==> ClockChip "ti3025"
 
-  S3 86c716 SDAC                          ==> ClockChip "s3_sdac"
-  ICS5342 GENDAC                          ==> ClockChip "ics5342"
-
-  Sierra SC11412                          ==> ClockChip "sc11412"
-  ICS2595                                 ==> ClockChip "ics2595"
-  TI3025                                  ==> ClockChip "ti3025"
+       Chrontel 8391                           ==> ClockChip "ch8391"
 
 
 
@@ -443,8 +515,8 @@
 
 
 
-  This is a AT&T 490 with a speed grade of 110 MHz. This would then mean
-  that you put a `DacSpeed 110' line in your XF86Config file.  Be
+  This is a AT&T 20C490 with a speed grade of 110 MHz. This would then
+  mean that you put a `DacSpeed 110' line in your XF86Config file.  Be
   advised that some RAMDACs have different modes that have different
   limits. The manufacturer will always mark the chip naming the higher
   limits, so you should be careful.  The S3 server knows how to handle
@@ -454,10 +526,10 @@
 
   chips labeled -80 or -8  should use `DacSpeed 80' in the device
   section
-
        S3716-ME SDAC  ==>  DacSpeed 110
        SC15025-8      ==>  DacSpeed  80
        ATT20C490-80   ==>  DacSpeed  80
+
 
 
   Some RAMDACs (like the Ti3025) require some mode timing consideration
@@ -467,7 +539,7 @@
   when positioned close to the right edge of the screen.
 
 
-  5.  How to to avoid "snowing" display while graphics operations
+  5.  How to to avoid ``snowing'' display while graphics operations
 
 
   For cards with S3 Vision864 chip there is a automatic correction which
@@ -508,12 +580,6 @@
   determine the MLCK value, which is printed in MHz. Up to 4 tests are
   run, so you'll get up to 4 estimates (where the first might be the
   most accurate one).
-
-
-
-
-
-
 
 
 
@@ -567,7 +633,7 @@
 
 
   $XConsortium: S3.sgml,v 1.6 95/01/27 16:14:30 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.19 1995/06/25 09:53:41 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.20 1995/07/07 15:40:17 dawes Exp $
 
 
 

@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.6 95/01/23 15:34:00 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.67 1995/06/29 13:30:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.68 1995/07/03 08:48:42 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -776,8 +776,10 @@ s3Init(mode)
    if (OFLG_ISSET(OPTION_ELSA_W2000PRO, &s3InfoRec.options))
       pixMuxShift = s3InfoRec.clock[mode->Clock] > 120000 ? 2 : 
 		      s3InfoRec.clock[mode->Clock] > 60000 ? 1 : 0 ;
-   else if (S3_964_SERIES(s3ChipId) && DAC_IS_IBMRGB)
+   else if (S3_968_SERIES(s3ChipId) && DAC_IS_IBMRGB)
       pixMuxShift = 1;
+   else if (S3_964_SERIES(s3ChipId) && DAC_IS_IBMRGB)
+      pixMuxShift = 0;
    else if (S3_964_SERIES(s3ChipId) && DAC_IS_TI3025)
       pixMuxShift =  mode->Flags & V_DBLCLK ? 1 : 0;
    else if (S3_964_SERIES(s3ChipId) && DAC_IS_BT485_SERIES)
@@ -2039,18 +2041,15 @@ s3Init(mode)
       s3OutIBMRGBIndReg(IBMRGB_dac_op, ~8, s3DACSyncOnGreen ? 8 : 0);
       s3OutIBMRGBIndReg(IBMRGB_dac_op, ~2, 1 /* fast slew */ ? 2 : 0);
       s3OutIBMRGBIndReg(IBMRGB_pal_ctrl, 0, 0);
-      s3OutIBMRGBIndReg(IBMRGB_misc1, ~0x40, 0);
+      /* set VRAM size to 64 bit and disable VRAM mask */
+      s3OutIBMRGBIndReg(IBMRGB_misc1, ~0x43, 1);
       if (s3DAC8Bit)
 	 s3OutIBMRGBIndReg(IBMRGB_misc2, 0, 0x47);
       else
 	 s3OutIBMRGBIndReg(IBMRGB_misc2, 0, 0x43);
 
-      outb(vgaCRIndex, 0x22);
-      tmp = inb(vgaCRReg);
-      if (s3Bpp == 1)
-	 outb(vgaCRReg, tmp | 8);
-      else 
-	 outb(vgaCRReg, tmp & ~8);
+      outb(vgaCRIndex, 0x22); /* don't know why it's important    */
+      outb(vgaCRReg, 0xff);   /* to set a "read only" register ?? */
 
       outb(vgaCRIndex, 0x65);
       outb(vgaCRReg, 0);
@@ -2499,10 +2498,6 @@ s3Init(mode)
       if ((tmp & 0x30) == 0x30) 		/* 3.5 MCLKs */
 	 outb(vgaCRReg, tmp & 0xef);		/* 4.5 MCLKs */
    }
-
-#if 0
-   ErrorF("s3InfoRec.s3BlankDelay %x\n",s3InfoRec.s3BlankDelay);
-#endif
 
    if (s3InfoRec.s3BlankDelay >= 0) {
       outb(vgaCRIndex, 0x6d);

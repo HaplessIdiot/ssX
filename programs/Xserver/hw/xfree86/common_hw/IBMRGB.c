@@ -5,14 +5,13 @@
  * Harald Koenig <koenig@tat.physik.uni-tuebingen.de>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/IBMRGB.c,v 3.0 1995/06/29 13:32:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/IBMRGB.c,v 3.1 1995/07/01 10:48:59 dawes Exp $ */
 
 #include "compiler.h"
 #define NO_OSLIB_PROTOTYPES
 #include "xf86_OSlib.h"
 
 
-#define DEBUG
 #define S3_SERVER
 #include "IBMRGB.h" 
 
