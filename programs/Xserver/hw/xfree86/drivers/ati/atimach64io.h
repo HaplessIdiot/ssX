@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64io.h,v 1.9 2001/04/16 15:02:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64io.h,v 1.10 2001/07/19 02:22:50 tsi Exp $ */
 /*
  * Copyright 2000 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -247,16 +247,22 @@ extern void ATIAccessMach64PLLReg FunctionPrototype((ATIPtr, const CARD8,
     (defined(i386) || defined(__i386) || defined(__i386__))
 
 #define ATIMove32(_pDst, _pSrc, _nCount) \
-    __asm__ __volatile__ \
-    ( \
-        "cld\n\t" \
-        "rep ; movsl" \
-        : /* No output */ \
-        : "c" (_nCount), \
-          "D" (_pDst), \
-          "S" (_pSrc) \
-        : "cx", "di", "si", "memory" \
-    );
+    do                                   \
+    {                                    \
+        long d0, d1, d2;                 \
+        __asm__ __volatile__             \
+        (                                \
+            "cld\n\t"                    \
+            "rep ; movsl"                \
+            : "=&c" (d0),                \
+              "=&D" (d1),                \
+              "=&S" (d2)                 \
+            : "0" (_nCount),             \
+              "1" (_pDst),               \
+              "2" (_pSrc)                \
+            : "memory"                   \
+        );                               \
+    } while (0)
 
 #endif
 
