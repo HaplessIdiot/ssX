@@ -40,7 +40,7 @@
  *		RAMDAC MGA1064 timing,
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.11 1997/07/19 05:43:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.12 1997/07/29 12:08:00 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -476,7 +476,7 @@ MGAProbe()
 	 *	OK. It's MGA
 	 */
 	 
-	MGAPciTag = pcibusTag(pcr->_bus, pcr->_device, pcr->_func);
+	MGAPciTag = pcibusTag(pcr->_bus, pcr->_cardnum, pcr->_func);
 
 	/* ajv changes to reflect actual values. see sdk pp 3-2. */
 	/* these masks just get rid of the crap in the lower bits */
