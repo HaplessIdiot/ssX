@@ -104,6 +104,9 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 				/* DDC support */
 #include "xf86DDC.h"
 
+				/* VESA support */
+#include "vbe.h"
+
 				/* Driver data structures */
 #include "r128.h"
 #include "r128_reg.h"
