@@ -1,5 +1,4 @@
 /* $XConsortium: XKBAlloc.c /main/6 1996/02/02 14:09:14 kaleb $ */
-/* $XFree86$ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -93,7 +92,7 @@ XkbCompatMapPtr	compat;
     if (nSI>0) {
 	compat->sym_interpret= _XkbTypedCalloc(nSI,XkbSymInterpretRec);
 	if (!compat->sym_interpret) {
-	    xfree(compat);
+	    Xfree(compat);
 	    return BadAlloc;
 	}
     }
@@ -126,12 +125,12 @@ register XkbCompatMapPtr compat;
 	bzero((char *)&compat->groups[0],XkbNumKbdGroups*sizeof(XkbModsRec));
     if (which&XkbSymInterpMask) {
 	if ((compat->sym_interpret)&&(compat->size_si>0))
-	    xfree(compat->sym_interpret);
+	    Xfree(compat->sym_interpret);
 	compat->size_si= compat->num_si= 0;
 	compat->sym_interpret= NULL;
     }
     if (freeMap) {
-	xfree(compat);
+	Xfree(compat);
 	xkb->compat= NULL;
     }
     return;

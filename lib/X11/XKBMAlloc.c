@@ -1,5 +1,5 @@
 /* $XConsortium: XKBMAlloc.c /main/7 1996/03/01 14:29:44 kaleb $ */
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/XKBMAlloc.c,v 3.4 1996/03/16 12:45:26 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -251,15 +251,15 @@ XkbCopyKeyType(from,into)
     if ((!from)||(!into))
 	return BadMatch;
     if (into->map) {
-	xfree(into->map);
+	Xfree(into->map);
 	into->map= NULL;
     }
     if (into->preserve) {
-	xfree(into->preserve);
+	Xfree(into->preserve);
 	into->preserve= NULL;
     }
     if (into->level_names) {
-	xfree(into->level_names);
+	Xfree(into->level_names);
 	into->level_names= NULL;
     }
     *into= *from;
@@ -428,10 +428,10 @@ KeyCode		matchingKeys[XkbMaxKeyCount],nMatchingKeys;
     type= &xkb->map->types[type_ndx];
     if (map_count==0) {
 	if (type->map!=NULL)
-	    xfree(type->map);
+	    Xfree(type->map);
 	type->map= NULL;
 	if (type->preserve!=NULL)
-	    xfree(type->preserve);
+	    Xfree(type->preserve);
 	type->preserve= NULL;
 	type->map_count= 0;
     }
@@ -449,7 +449,7 @@ KeyCode		matchingKeys[XkbMaxKeyCount],nMatchingKeys;
 		return BadAlloc;
 	}
 	else if (type->preserve!=NULL) {
-	    xfree(type->preserve);
+	    Xfree(type->preserve);
 	    type->preserve= NULL;
 	}
 	type->map_count= map_count;
