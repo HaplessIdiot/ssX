@@ -3,7 +3,7 @@ XCOMM!/bin/sh
 XCOMM
 XCOMM makedepend which uses 'gcc -M'
 XCOMM
-XCOMM $XFree86$
+XCOMM $XFree86: xc/config/util/gccmdep.cpp,v 3.0 1994/11/22 02:34:17 dawes Exp $
 XCOMM
 XCOMM Based on mdepend.cpp and code supplied by Hongjiu Lu <hjl@nynexst.com>
 XCOMM
@@ -112,7 +112,7 @@ for i in $files; do
     esac
 done
 
-CMD="$CC -M $args `echo $files | sed 's,\.s,\.S,g'` | sed 's,\.S,\.s,'"
+CMD="$CC -M $args `echo $files | sed 's,\.s$,\.S,g'` | sed 's,\.S$,\.s,'"
 CMD="$CMD >> $TMP"
 eval $CMD
 $RM ${makefile}.bak
