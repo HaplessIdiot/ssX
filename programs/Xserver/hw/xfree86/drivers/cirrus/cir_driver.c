@@ -9,7 +9,7 @@
  *	Guy DESBIEF
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.51 2000/02/18 12:19:57 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.52 2000/03/01 16:01:06 tsi Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -184,9 +184,24 @@ CIRAvailableOptions(int chipid, int busid)
 	    chip == PCI_CHIP_GD5464 ||
 	    chip == PCI_CHIP_GD5464BD ||
 	    chip == PCI_CHIP_GD5465) 
-		return LgAvailableOptions(chipid);
-	else
-		return AlpAvailableOptions(chipid);
+	    if (!lg_loaded) {
+	        if(!xf86LoadSubModule(pScrn, "cirrus_laguna")) {
+		    return NULL;
+		}
+		xf86LoaderReqSymLists(lgSymbols, NULL);
+		lg_loaded = TRUE;
+	    }
+	    return LgAvailableOptions(chipid);
+	} else {
+	    if (!alp_loaded) {
+	        if (!xf86LoadSubModule(pScrn, "cirrus_alpine")) {
+		    return NULL;
+		}
+		xf86LoaderReqSymLists(alpSymbols, NULL);
+		alp_loaded = TRUE;
+	    }
+	    return AlpAvailableOptions(chipid);
+	}
 }
 
 /* Mandatory */
@@ -276,7 +291,7 @@ CIRProbe(DriverPtr drv, int flags)
 			xf86LoaderReqSymLists(lgSymbols, NULL);
 			lg_loaded = TRUE;
 		    }
-			subProbe = LgProbe;
+		    subProbe = LgProbe;
 		} else {
 		    if (!alp_loaded) {
 		        if (!xf86LoadSubModule(pScrn, "cirrus_alpine")) {
@@ -286,7 +301,7 @@ CIRProbe(DriverPtr drv, int flags)
 			xf86LoaderReqSymLists(alpSymbols, NULL);
 			alp_loaded = TRUE;
 		    }
-			subProbe = AlpProbe;
+		    subProbe = AlpProbe;
 		}
 		if (subProbe(usedChips[i], pScrn))
 			foundScreen = TRUE;

@@ -1,4 +1,10 @@
 XFree86 3.9.18Zb (8 March 2000)
+3972. Possible fix for a cirrus driver crash when using -configure
+      (David Dawes).
+3971. R128 driver doc update (#3813, Ove Kaaven).
+3970. Update Unicode/ISO 10646 information in the release notes (#3812,
+      Markus Kuhn).
+3969. Fix an apm driver crash when using -configure (#3811, Loic Grenie).
 3968. Release notes updates (David Dawes).
 3967. Major updates to the XF86Config man page (David Dawes).
 3966. Update the Cyrix driver documentation (#3810, Richard Hecker).
@@ -10029,4 +10035,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1076 2000/03/07 16:16:51 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1077 2000/03/08 05:38:25 dawes Exp $
