@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Flags.c,v 1.20 2002/09/17 17:15:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Flags.c,v 1.21 2003/01/01 19:22:20 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -132,8 +132,6 @@ xf86parseFlagsSection (void)
 
 		case EOF_TOKEN:
 			Error (UNEXPECTED_EOF_MSG, NULL);
-			break;
-		case EOL_TOKEN:
 			break;
 		default:
 			Error (INVALID_KEYWORD_MSG, xf86tokenString ());

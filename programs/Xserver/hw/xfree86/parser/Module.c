@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Module.c,v 1.9 2001/08/06 20:51:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Module.c,v 1.10 2003/01/01 19:22:21 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -78,8 +78,6 @@ xf86parseModuleSubSection (XF86LoadPtr head, char *name)
 			xf86parseError (UNEXPECTED_EOF_MSG, NULL);
 			xf86conffree(ptr);
 			return NULL;
-		case EOL_TOKEN:
-			break;
 		default:
 			xf86parseError (INVALID_KEYWORD_MSG, xf86tokenString ());
 			xf86conffree(ptr);
@@ -127,8 +125,6 @@ xf86parseModuleSection (void)
 			break;
 		case EOF_TOKEN:
 			Error (UNEXPECTED_EOF_MSG, NULL);
-			break;
-		case EOL_TOKEN:
 			break;
 		default:
 			Error (INVALID_KEYWORD_MSG, xf86tokenString ());
