@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/luit/Imakefile,v 1.2 2002/10/17 01:06:09 dawes Exp $
+XCOMM $XFree86: xc/programs/luit/Imakefile,v 1.3tsi Exp $
 
 #ifndef LocaleAliasFile
 #define LocaleAliasFile $(XLOCALEDIR)/locale.alias
@@ -8,7 +8,7 @@ LOCALEALIASFILE = LocaleAliasFile
 LOCAL_LIBRARIES = $(XFONTENCLIB)
 DEPLIBS = $(DEPXFONTENCLIB)
 
-SYS_LIBRARIES = MathLibrary GzipLibrary
+SYS_LIBRARIES = GzipLibrary
 
 SRCS = luit.c iso2022.c charset.c parser.c sys.c other.c
 
