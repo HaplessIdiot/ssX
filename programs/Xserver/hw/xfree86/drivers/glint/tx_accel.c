@@ -28,7 +28,7 @@
  * 
  * GLINT 500TX / MX accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/tx_accel.c,v 1.26 2001/04/19 09:28:32 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/tx_accel.c,v 1.27 2001/05/29 11:23:38 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -277,6 +277,8 @@ TXAccelInit(ScreenPtr pScreen)
     if (memory > (16383*1024)) memory = 16383*1024;
     AvailFBArea.y2 = memory / (pScrn->displayWidth * 
 					  pScrn->bitsPerPixel / 8);
+
+    if (AvailFBArea.y2 > 4095) AvailFBArea.y2 = 4095;
 
     xf86InitFBManager(pScreen, &AvailFBArea);
 
