@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/ispell.c,v 1.16 2001/07/25 15:05:20 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/ispell.c,v 1.18 2002/02/10 02:50:05 paulo Exp $ */
 
 #include "xedit.h"
 #include <stdlib.h>
@@ -1347,7 +1347,7 @@ IspellStartProcess(void)
 	    close(ispell.ofd[1]);
 	    close(ispell.ifd[0]);
 	    close(ispell.ifd[1]);
-	    execl("/bin/sh", "sh", "-c", command, NULL);
+	    execl("/bin/sh", "sh", "-c", command, (void *)NULL);
 	    exit(-127);
 	}
 	else if (ispell.pid < 0) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.190 2002/09/29 23:54:34 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.191 2002/10/11 01:40:30 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -1703,7 +1703,7 @@ xf86RunVtInit(void)
               dup(xf86Info.consoleFd);
             }
           }
-          execl("/bin/sh", "sh", "-c", xf86Info.vtinit, NULL);
+          execl("/bin/sh", "sh", "-c", xf86Info.vtinit, (void *)NULL);
           xf86Msg(X_WARNING, "exec of /bin/sh failed for VTInit (%s)\n",
                  strerror(errno));
           exit(255);
