@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
+ * Copyright (C) 1998-2002 The XFree86 Project, Inc.  All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -44,7 +44,7 @@ static XF86ModuleVersionInfo VersRec =
 	MODINFOSTRING1,
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,
-	1, 1, 10,
+        2, 0, 1,
 	ABI_CLASS_FONT,			/* Font module */
 	ABI_FONT_VERSION,
 	MOD_CLASS_FONT,
