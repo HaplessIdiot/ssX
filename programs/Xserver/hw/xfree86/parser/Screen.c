@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Screen.c,v 1.19 2001/07/02 15:38:34 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Screen.c,v 1.20 2001/07/02 18:17:10 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -56,6 +56,7 @@ static xf86ConfigSymTabRec DisplayTab[] =
 XF86ConfDisplayPtr
 xf86parseDisplaySubSection (void)
 {
+	int token;
 	parsePrologue (XF86ConfDisplayPtr, XF86ConfDisplayRec)
 
 	ptr->disp_black.red = ptr->disp_black.green = ptr->disp_black.blue = -1;
@@ -192,6 +193,7 @@ xf86parseScreenSection (void)
 {
 	int has_ident = FALSE;
         int has_driver= FALSE;
+	int token;
 
 	parsePrologue (XF86ConfScreenPtr, XF86ConfScreenRec)
 

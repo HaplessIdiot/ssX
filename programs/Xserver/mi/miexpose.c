@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miexpose.c,v 3.6 2000/01/02 00:25:57 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miexpose.c,v 3.7 2001/01/17 22:37:06 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -63,8 +63,6 @@ SOFTWARE.
 
 #include "globals.h"
 
-extern WindowPtr *WindowTable;
-
 #ifdef PANORAMIX
 #include "panoramiX.h"
 #include "panoramiXsrv.h"
@@ -107,7 +105,7 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
     int 			dstx, dsty;
     unsigned long		plane;
 {
-    register ScreenPtr pscr = pGC->pScreen;
+    register ScreenPtr pscr;
     RegionPtr prgnSrcClip;	/* drawable-relative source clip */
     RegionRec rgnSrcRec;
     RegionPtr prgnDstClip;	/* drawable-relative dest clip */
@@ -124,6 +122,8 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
     BoxRec expBox;
     Bool extents;
 
+    /* This prevents warning about pscr not being used. */
+    pGC->pScreen = pscr = pGC->pScreen;
 
     /* avoid work if we can */
     if (!pGC->graphicsExposures &&
@@ -425,7 +425,7 @@ miSendExposures(pWin, pRgn, dx, dy)
     if(!noPanoramiXExtension) {
 	int scrnum = pWin->drawable.pScreen->myNum;
 	int x = 0, y = 0;
-	XID realWin;
+	XID realWin = 0;
 
 	if(!pWin->parent) {
 	    x = panoramiXdataPtr[scrnum].x;
@@ -579,9 +579,9 @@ static GCPtr	screenContext[MAXSCREENS];
 
 /*ARGSUSED*/
 static int
-tossGC (value, id)
-pointer value;
-XID id;
+tossGC (
+    pointer value,
+    XID id)
 {
     GCPtr pGC = (GCPtr)value;
     screenContext[pGC->pScreen->myNum] = (GCPtr)NULL;
@@ -589,6 +589,8 @@ XID id;
     numGCs--;
     if (!numGCs)
 	ResType = 0;
+
+    return 0;
 }
 
 

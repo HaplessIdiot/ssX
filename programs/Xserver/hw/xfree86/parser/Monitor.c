@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.22 2001/07/02 15:38:34 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.23 2001/07/02 18:17:10 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -97,6 +97,7 @@ static xf86ConfigSymTabRec ModeTab[] =
 XF86ConfModeLinePtr
 xf86parseModeLine (void)
 {
+	int token;
 	parsePrologue (XF86ConfModeLinePtr, XF86ConfModeLineRec)
 
 	/* Identifier */
@@ -225,7 +226,7 @@ xf86parseModeLine (void)
 XF86ConfModeLinePtr
 xf86parseVerboseMode (void)
 {
-	int token2;
+	int token, token2;
 	int had_dotclock = 0, had_htimings = 0, had_vtimings = 0;
 	parsePrologue (XF86ConfModeLinePtr, XF86ConfModeLineRec)
 
@@ -379,6 +380,7 @@ XF86ConfMonitorPtr
 xf86parseMonitorSection (void)
 {
 	int has_ident = FALSE;
+	int token;
 	parsePrologue (XF86ConfMonitorPtr, XF86ConfMonitorRec)
 
 		while ((token = xf86getToken (MonitorTab)) != ENDSECTION)
@@ -570,6 +572,7 @@ XF86ConfModesPtr
 xf86parseModesSection (void)
 {
 	int has_ident = FALSE;
+	int token;
 	parsePrologue (XF86ConfModesPtr, XF86ConfModesRec)
 
 	while ((token = xf86getToken (ModesTab)) != ENDSECTION)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mifillarc.c,v 3.4 1999/04/11 13:11:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mifillarc.c,v 3.5 2001/01/17 22:37:06 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -134,11 +134,12 @@ miFillArcDSetup(arc, info)
 }
 
 static void
-miGetArcEdge(arc, edge, k, top, left)
-    register xArc *arc;
-    register miSliceEdgePtr edge;
-    int k;
-    Bool top, left;
+miGetArcEdge(
+	     register xArc *arc,
+	     register miSliceEdgePtr edge,
+	     int k,
+	     Bool top, 
+	     Bool left )
 {
     register int xady, y;
 
@@ -263,11 +264,12 @@ miEllipseAngleToSlope (angle, width, height, dxp, dyp, d_dxp, d_dyp)
 }
 
 static void
-miGetPieEdge(arc, angle, edge, top, left)
-    register xArc *arc;
-    register int angle;
-    register miSliceEdgePtr edge;
-    Bool top, left;
+miGetPieEdge(
+	     register xArc *arc,
+	     register int angle,
+	     register miSliceEdgePtr edge,
+	     Bool top, 
+	     Bool left )
 {
     register int k;
     int	dx, dy;
@@ -537,10 +539,10 @@ miFillArcSliceSetup(arc, slice, pGC)
     }
 
 static void
-miFillEllipseI(pDraw, pGC, arc)
-    DrawablePtr pDraw;
-    GCPtr pGC;
-    xArc *arc;
+miFillEllipseI(
+	       DrawablePtr pDraw,
+	       GCPtr pGC,
+	       xArc *arc )
 {
     register int x, y, e;
     int yk, xk, ym, xm, dx, dy, xorg, yorg;
@@ -580,10 +582,10 @@ miFillEllipseI(pDraw, pGC, arc)
 }
 
 static void
-miFillEllipseD(pDraw, pGC, arc)
-    DrawablePtr pDraw;
-    GCPtr pGC;
-    xArc *arc;
+miFillEllipseD(
+	       DrawablePtr pDraw,
+	       GCPtr pGC,
+	       xArc *arc )
 {
     register int x, y;
     int xorg, yorg, dx, dy, slw;
@@ -645,10 +647,10 @@ miFillEllipseD(pDraw, pGC, arc)
     }
 
 static void
-miFillArcSliceI(pDraw, pGC, arc)
-    DrawablePtr pDraw;
-    GCPtr pGC;
-    xArc *arc;
+miFillArcSliceI(
+		DrawablePtr pDraw,
+		GCPtr pGC,
+		xArc *arc )
 {
     int yk, xk, ym, xm, dx, dy, xorg, yorg, slw;
     register int x, y, e;
@@ -708,10 +710,10 @@ miFillArcSliceI(pDraw, pGC, arc)
 }
 
 static void
-miFillArcSliceD(pDraw, pGC, arc)
-    DrawablePtr pDraw;
-    GCPtr pGC;
-    xArc *arc;
+miFillArcSliceD(
+		DrawablePtr pDraw,
+		GCPtr pGC,
+		xArc *arc )
 {
     register int x, y;
     int dx, dy, xorg, yorg, slw;

@@ -24,7 +24,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86: xc/programs/Xserver/mi/mipointer.c,v 3.6 2001/01/17 22:37:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mipointer.c,v 3.7 2001/04/19 14:14:07 tsi Exp $ */
 
 # define NEED_EVENTS
 # include   "X.h"
@@ -168,8 +168,6 @@ miPointerDisplayCursor (pScreen, pCursor)
     ScreenPtr	pScreen;
     CursorPtr	pCursor;
 {
-    SetupScreen(pScreen);
-
     miPointer.pCursor = pCursor;
     miPointer.pScreen = pScreen;
     miPointerUpdate ();

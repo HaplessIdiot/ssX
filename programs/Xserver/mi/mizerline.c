@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mizerline.c,v 3.4 1999/10/14 04:43:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mizerline.c,v 3.5 2001/01/17 22:37:08 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -99,13 +99,13 @@ miZeroLine(pDraw, pGC, mode, npt, pptInit)
     int		npt;		/* number of points */
     DDXPointPtr pptInit;
 {
-    int Nspans, current_y;
+    int Nspans, current_y = 0;
     DDXPointPtr ppt; 
     DDXPointPtr pspanInit, spans;
     int *pwidthInit, *widths, list_len;
     int xleft, ytop, xright, ybottom;
     int new_x1, new_y1, new_x2, new_y2;
-    int x, y, x1, y1, x2, y2, xstart, ystart;
+    int x = 0, y = 0, x1, y1, x2, y2, xstart, ystart;
     int oc1, oc2;
     int result;
     int pt1_clipped, pt2_clipped = 0;

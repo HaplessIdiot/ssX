@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mispans.c,v 3.1 1998/10/04 09:39:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mispans.c,v 3.2 2001/01/17 22:37:07 dawes Exp $ */
 /***********************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -219,10 +219,10 @@ void miFreeSpanGroup(spanGroup)
     if (spanGroup->group != NULL) xfree(spanGroup->group);
 }
 
-static void QuickSortSpansX(points, widths, numSpans)
-    register DDXPointRec    points[];
-    register int	    widths[];
-    register int	    numSpans;
+static void QuickSortSpansX(
+    register DDXPointRec    points[],
+    register int	    widths[],
+    register int	    numSpans )
 {
     register int	    x;
     register int	    i, j, m;
@@ -306,10 +306,10 @@ static void QuickSortSpansX(points, widths, numSpans)
 } /* QuickSortSpans */
 
 
-static int UniquifySpansX(spans, newPoints, newWidths)
-    Spans		    *spans;
-    register DDXPointRec    *newPoints;
-    register int	    *newWidths;
+static int UniquifySpansX(
+    Spans		    *spans,
+    register DDXPointRec    *newPoints,
+    register int	    *newWidths )
 {
     register int newx1, newx2, oldpt, i, y;
     register DDXPointRec    *oldPoints;

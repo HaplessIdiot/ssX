@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/mi/miline.h,v 1.4 1999/10/13 22:33:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miline.h,v 1.5 2001/01/17 22:37:06 dawes Exp $ */
 
 #ifndef MILINE_H
 
@@ -75,10 +75,8 @@ in this Software without prior written authorization from The Open Group.
  */
 
 extern void miSetZeroLineBias(
-#if NeedFunctionPrototypes
     ScreenPtr /* pScreen */,
     unsigned int /* bias */
-#endif
 );
 
 /*
@@ -151,7 +149,6 @@ extern void miSetZeroLineBias(
 extern int miZeroLineScreenIndex;
 
 extern int miZeroClipLine(
-#if NeedFunctionPrototypes
     int /*xmin*/,
     int /*ymin*/,
     int /*xmax*/,
@@ -168,7 +165,6 @@ extern int miZeroClipLine(
     unsigned int /*bias*/,
     int /*oc1*/,
     int /*oc2*/
-#endif
 );
 
 #endif /* MILINE_H */

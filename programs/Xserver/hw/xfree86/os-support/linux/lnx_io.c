@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_io.c,v 3.18 2000/08/31 19:03:59 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_io.c,v 3.19 2001/03/05 20:18:24 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Dawes <dawes@xfree86.org>
@@ -200,7 +200,7 @@ char rad;
   usleep(10000);
   outb(0x60, value);
 
-#endif /* __alpha__ || __i386__ */
+#endif /* __alpha__ || __i386__ || __ia64__ */
 }
 
 static int kbdtrans;

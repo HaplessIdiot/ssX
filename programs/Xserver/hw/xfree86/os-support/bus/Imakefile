@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/16 1996/10/27 18:07:43 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Imakefile,v 1.15 2000/12/01 00:24:35 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Imakefile,v 1.16 2001/04/20 17:02:43 tsi Exp $
 
 #include <Server.tmpl>
 
@@ -27,7 +27,9 @@ SBUSDRVOBJ = Sbus.o
 #elif defined(LinuxArchitecture) && \
       (defined(PpcArchitecture) || \
        defined(MipsArchitecture) || \
-       defined(ia64Architecture))
+       defined(ia64Architecture) || \
+       defined(SuperHArchitecture) || \
+       defined(SuperHebArchitecture))
 
 XCOMM generic linux PCI driver (using /proc/bus/pci, requires kernel 2.2)
 

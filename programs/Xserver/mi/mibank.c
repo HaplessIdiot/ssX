@@ -44,7 +44,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/mi/mibank.c,v 1.8 2000/02/18 12:20:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mibank.c,v 1.9 2001/01/06 20:58:12 tsi Exp $ */
 
 /*
  * This thing originated from an idea of Edwin Goei and his bank switching
@@ -178,8 +178,6 @@ typedef struct _miBankQueue
 static int           miBankScreenIndex;
 static int           miBankGCIndex;
 static unsigned long miBankGeneration = 0;
-static GCOps         miBankGCOps;
-static GCFuncs       miBankGCFuncs;
 
 #define BANK_SCRPRIVLVAL pScreen->devPrivates[miBankScreenIndex].ptr
 

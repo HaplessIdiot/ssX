@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.58 2001/05/23 03:29:42 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.59 2001/05/31 16:11:15 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -66,11 +66,7 @@ extern Bool noXkbExtension;
 #endif
 
 #ifndef XFree86LOADER
-#if NeedFunctionPrototypes
 #define INITARGS void
-#else
-#define INITARGS /*nothing*/
-#endif
 typedef void (*InitExtension)(INITARGS);
 #else /* XFree86Loader */
 #include "loaderProcs.h"

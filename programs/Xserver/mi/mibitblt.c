@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mibitblt.c,v 3.8 2000/02/12 03:40:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mibitblt.c,v 3.9 2001/01/17 22:37:05 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -271,17 +271,20 @@ miCopyArea(pSrcDrawable, pDstDrawable,
  */
 static
 MiBits	*
-miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
-    DrawablePtr		pDraw;
-    int			planeNum;	/* number of the bitPlane */
-    int			sx, sy, w, h;
-    MiBits	*result;
+miGetPlane(
+    DrawablePtr		pDraw,
+    int			planeNum,	/* number of the bitPlane */
+    int			sx,
+    int			sy,
+    int			w,
+    int			h,
+    MiBits	*result)
 {
     int			i, j, k, width, bitsPerPixel, widthInBytes;
-    DDXPointRec 	pt;
+    DDXPointRec 	pt = {0, 0};
     MiBits	pixel;
     MiBits	bit;
-    unsigned char	*pCharsOut;
+    unsigned char	*pCharsOut = NULL;
 
 #if BITMAP_SCANLINE_UNIT == 8
 #define OUT_TYPE unsigned char
@@ -297,7 +300,7 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
 #endif
 
     OUT_TYPE		*pOut;
-    int			delta;
+    int			delta = 0;
 
     sx += pDraw->x;
     sy += pDraw->y;
@@ -642,10 +645,10 @@ miGetImage(pDraw, sx, sy, w, h, format, planeMask, pDst)
 {
     unsigned char	depth;
     int			i, linelength, width, srcx, srcy;
-    DDXPointRec		pt;
+    DDXPointRec		pt = {0, 0};
     XID			gcv[2];
     PixmapPtr		pPixmap = (PixmapPtr)NULL;
-    GCPtr		pGC;
+    GCPtr		pGC = NULL;
 
     depth = pDraw->depth;
     if(format == ZPixmap)

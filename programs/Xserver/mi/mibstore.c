@@ -38,7 +38,7 @@ implied warranty.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/Xserver/mi/mibstore.c,v 1.5 1999/10/13 22:33:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mibstore.c,v 1.6 2001/01/17 22:37:05 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -386,7 +386,7 @@ miBSGetImage (pDrawable, sx, sy, w, h, format, planemask, pdstLine)
     {
 	PixmapPtr	pPixmap;
 	miBSWindowPtr	pWindowPriv;
-	GCPtr		pGC;
+	GCPtr		pGC = NULL;
 	WindowPtr	pWin, pSrcWin;
 	int		xoff, yoff;
 	RegionRec	Remaining;
@@ -2593,7 +2593,10 @@ miBSFree(pWin)
     WindowPtr pWin;
 {
     miBSWindowPtr 	pBackingStore;
-    register ScreenPtr	pScreen = pWin->drawable.pScreen;
+    register ScreenPtr	pScreen;
+
+    /* Avoid "unused" warning for pScreen. */
+    pWin->drawable.pScreen = pScreen = pWin->drawable.pScreen;
 
     pBackingStore = (miBSWindowPtr)pWin->backStorage;
     if (pBackingStore)
@@ -3280,7 +3283,7 @@ miBSValidateGC (pGC, stateChanges, pDrawable)
     DrawablePtr   pDrawable;
 {
     GCPtr   	  	pBackingGC;
-    miBSWindowPtr	pWindowPriv;
+    miBSWindowPtr	pWindowPriv = NULL;
     miBSGCPtr		pPriv;
     WindowPtr		pWin;
     int			lift_functions;
@@ -3637,7 +3640,7 @@ miCreateBSPixmap (pWin, pExtents)
     miBSWindowPtr	pBackingStore;
     ScreenPtr		pScreen;
     PixUnion		background;
-    char		backgroundState;
+    char		backgroundState = 0;
     BoxPtr		extents;
     Bool		backSet;
 

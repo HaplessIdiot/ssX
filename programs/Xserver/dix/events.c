@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.38 2001/02/16 13:24:07 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.39 2001/05/26 01:25:41 keithp Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -107,8 +107,6 @@ extern Bool XkbFilterEvents();
 #include "dispatch.h"
 
 extern WindowPtr *WindowTable;
-
-extern void (* EventSwapVector[128]) ();
 
 #define EXTENSION_EVENT_BASE  64
 
