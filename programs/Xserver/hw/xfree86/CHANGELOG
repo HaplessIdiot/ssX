@@ -1,4 +1,6 @@
 XFree86 4.4.99.9 (xx June 2004)
+ 141. Add Distributed Multihead X (DMX) support (Kevin Martin and
+      Rik Faith).
 
 XFree86 4.4.99.8 (27 June 2004)
  140. DGA client library cleanups and fixups (Marc La France).
@@ -19018,7 +19020,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3286 2004/06/25 17:48:39 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3287 2004/06/27 11:02:26 dawes Exp $
 
 
 

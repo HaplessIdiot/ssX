@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Imakefile,v 3.77 2004/04/19 21:51:57 alanh Exp $
+XCOMM $XFree86: xc/lib/Imakefile,v 3.78 2004/06/01 00:16:55 dawes Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -108,6 +108,10 @@ XINERAMADIR=Xinerama
 
 #if BuildXResLibrary
 XRESLIBDIR = XRes
+#endif
+
+#if BuildDmxLibrary
+DMXLIBDIR = dmx
 #endif
 
 #if BuildGLXLibrary
@@ -250,7 +254,8 @@ LINTSUBDIRS = $(XAULIBDIR) $(XDMCPLIBDIR) $(THRSTUBLIBDIR) $(X11LIBDIR) \
              $(ZLIBDIR) $(REGEXDIR) $(RENDERLIBDIR) $(FREETYPE2BUILDDIR) \
              $(LIBXML2BUILDDIR) $(FONTCONFIGBUILDDIR) \
              $(XFT1LIBDIR) $(XFTLIBDIR) $(XVMCLIBDIR) $(RANDRLIBDIR) \
-             $(XTRAPLIBDIR) $(XRESLIBDIR) $(XCURSORLIBDIR) $(APPLELIBDIR)
+             $(XTRAPLIBDIR) $(XRESLIBDIR) $(XCURSORLIBDIR) $(APPLELIBDIR) \
+	     $(DMXLIBDIR)
 
 SUBDIRS = $(BERKDIR) xtrans $(LINTSUBDIRS) $(FONTSUBDIR) $(FONTENCSUBDIR) \
           $(FONTCACHELIBDIR)

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/render.c,v 1.29 2004/03/19 16:17:26 alanh Exp $
+ * $XFree86: xc/programs/Xserver/render/render.c,v 1.30 2004/03/19 16:20:03 alanh Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -242,6 +242,8 @@ RenderExtensionInit (void)
 static void
 RenderResetProc (ExtensionEntry *extEntry)
 {
+    ResetPicturePrivateIndex();
+    ResetGlyphSetPrivateIndex();
 }
 
 static int
