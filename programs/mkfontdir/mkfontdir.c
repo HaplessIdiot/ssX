@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/mkfontdir/mkfontdir.c,v 3.14 2001/08/13 21:46:51 dawes Exp $ */
+/* $XFree86: xc/programs/mkfontdir/mkfontdir.c,v 3.15 2001/08/16 14:33:53 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1988  X Consortium
@@ -638,7 +638,7 @@ DoDirectory(char *dirName, EncodingBucketPtr *encodings, int count)
     FontTableRec	table;
     Bool		status;
 
-    status = FALSE;
+    status = TRUE;
 
     if(processFonts) {
         if (!FontFileInitTable (&table, 100))
@@ -657,7 +657,8 @@ DoDirectory(char *dirName, EncodingBucketPtr *encodings, int count)
             status = WriteFontTable (dirName, &table);
         FontFileFreeTable (&table);
     }
-    status = status || WriteEncodingsTable(dirName, encodings, count);
+    if (status)
+	WriteEncodingsTable(dirName, encodings, count);
     return status;
 }
 
