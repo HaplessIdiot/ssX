@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/parse.c,v 1.13tsi Exp $ */
+/* $XFree86: xc/config/makedepend/parse.c,v 1.14tsi Exp $ */
 
 #include "def.h"
 
@@ -211,8 +211,6 @@ deftype (char *line, struct filepointer *filep,
 			       file->i_incstring,
 			       (*sym) -> s_name,
 			       (*sym) -> s_value));
-			/* mark file as having included a 'soft include' */
-			file->i_flags |= INCLUDED_SYM;
 		}
 
 		/*
@@ -519,10 +517,13 @@ static char args[S_ARGS_BUFLEN];
 struct symtab **
 slookup(char *symbol, struct inclist *file)
 {
-	register int first = 0;
-	register int last = file->i_ndefs - 1;
+	register int first = 0, last;
 
-	if (file) while (last >= first)
+	if (!file)
+	    return NULL;
+
+	last = file->i_ndefs - 1;
+	while (last >= first)
 	{
 	    /* Fast inline binary search */
 	    register char *s1;
@@ -552,7 +553,8 @@ slookup(char *symbol, struct inclist *file)
 		last = middle - 1;
 	    }
 	}
-	return(NULL);
+
+	return NULL;
 }
 
 static int
