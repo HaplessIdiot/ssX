@@ -25,13 +25,14 @@ typedef struct {
   CloseScreenProcPtr CloseScreen; 
   int num_adaptors;
   XF86MCAdaptorPtr *adaptors;
+  XvMCAdaptorPtr dixinfo;
 } xf86XvMCScreenRec, *xf86XvMCScreenPtr;
 
 static unsigned long XF86XvMCGeneration = 0;
-static int XF86XvScreenIndex = -1;
+static int XF86XvMCScreenIndex = -1;
 
 #define XF86XVMC_GET_PRIVATE(pScreen) \
-   (xf86XvMCScreenPtr)((pScreen)->devPrivates[XF86XvScreenIndex].ptr)
+   (xf86XvMCScreenPtr)((pScreen)->devPrivates[XF86XvMCScreenIndex].ptr)
 
 
 static int 
@@ -121,7 +122,7 @@ xf86XvMCCloseScreen (int i, ScreenPtr pScreen)
 
     pScreen->CloseScreen = pScreenPriv->CloseScreen;
 
-    xfree(pScreenPriv->adaptors);
+    xfree(pScreenPriv->dixinfo);
     xfree(pScreenPriv);
 
     return (*pScreen->CloseScreen)(i, pScreen);
@@ -143,7 +144,7 @@ Bool xf86XvMCScreenInit(
    if(!XvMCScreenInitProc) return FALSE;
 
    if(XF86XvMCGeneration != serverGeneration) {
-	if((XF86XvScreenIndex = AllocateScreenPrivateIndex()) < 0)
+	if((XF86XvMCScreenIndex = AllocateScreenPrivateIndex()) < 0)
 	   return FALSE;
 	XF86XvMCGeneration = serverGeneration;
    }
@@ -156,13 +157,14 @@ Bool xf86XvMCScreenInit(
 	return FALSE;
    }
 
-   pScreen->devPrivates[XF86XvScreenIndex].ptr = (pointer)pScreenPriv; 
+   pScreen->devPrivates[XF86XvMCScreenIndex].ptr = (pointer)pScreenPriv; 
 
    pScreenPriv->CloseScreen = pScreen->CloseScreen;
    pScreen->CloseScreen = xf86XvMCCloseScreen;
 
    pScreenPriv->num_adaptors = num_adaptors;
    pScreenPriv->adaptors = adaptors;
+   pScreenPriv->dixinfo = pAdapt;
 
    for(i = 0; i < num_adaptors; i++) {
 	pAdapt[i].xv_adaptor = NULL;
