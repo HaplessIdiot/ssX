@@ -2,7 +2,7 @@
 
                     Juliusz Chroboczek, <jch@xfree86.org>
 
-                               7 January 2003
+                               17 January 2003
 
 1.  Introduction
 
@@ -155,6 +155,8 @@ environment variable `GDK_USE_XFT' should be set to `1':
 
      $ export GDK_USE_XFT=1
 
+GTK+ 2.2 uses Xft by default.
+
 For KDE applications, you should select ``Anti-alias fonts'' in the ``Fonts''
 panel of KDE's ``Control Center''.  Note that this option is misnamed: it
 switches KDE to using Xft but doesn't enable anti-aliasing in case it was
@@ -171,7 +173,7 @@ a current version of Xft; on most systems, it is enough to install the cur-
 rent version of the Xft and Fontconfig libraries.
 
 If, for some reason, you cannot upgrade the shared libraries, please check
-the Xft(5) manual page included with XFree86 4.2 for the configuration mecha-
+the Xft(3) manual page included with XFree86 4.2 for the configuration mecha-
 nisms of the previous version of Xft.
 
 2.2  Configuring the core X11 fonts system
@@ -296,7 +298,7 @@ keyed fonts are copied to a machine with a different architecture.
 
 The list of directories where the server looks for fonts is known as the font
 path.  Informing the server of the existence of a new font directory consists
-in putting it on the font path.
+of putting it on the font path.
 
 The font path is an ordered list; if a client's request matches multiple
 fonts, the first one in the font path is the one that gets used.  When match-
@@ -956,7 +958,7 @@ FreeType library (see the FreeType web site <URL:http://www.freetype.org/>)
 and has support for the ``fontenc'' style of internationalisation (see The
 fontenc layer (section 4.1.1, page 1)).  This backend supports TrueType font
 files (`*.ttf'), OpenType font files (`*.otf'), TrueType Collections
-(`*.ttc'), OpenType Collections (`*.ttc') and Type 1 font files (`*.pfa' and
+(`*.ttc'), OpenType Collections (`*.otc') and Type 1 font files (`*.pfa' and
 `*.pfb').
 
 In order to access the faces in a TrueType Collection file, the face number
@@ -1043,7 +1045,7 @@ are identified by glyph names.  In the case of TrueType fonts, glyphs are
 indexed by integers corresponding to one of a number of indexing schemes
 (usually Unicode --- see below).
 
-The X11 core fonts system uses the data in font file to generate font
+The X11 core fonts system uses the data in a font file to generate font
 instances, which are collections of glyphs at a given size indexed according
 to a given encoding.
 
@@ -1098,7 +1100,7 @@ last two fields of their XLFD set to `iso10646-1'.
 XFree86 comes with extensive documentation in the form of manual pages and
 typeset documents.  Before installing fonts, you really should read the font-
 config(3) and mkfontdir(1) manual pages; other manual pages of interest
-include X(1), Xserver(1), xset(1), Xft(5), xlsfonts(1) and showfont(1).  In
+include X(7), Xserver(1), xset(1), Xft(3), xlsfonts(1) and showfont(1).  In
 addition, you may want to read the X Logical Font Description document, by
 Jim Flowers, which is provided in the file `xc/doc/xlfd.PS.Z'.
 
@@ -1138,7 +1140,7 @@ The IANA RFC documents, available from a number of sites throughout the
 world, often provide interesting information about character set issues; see
 for example RFC 373.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.18 2003/01/15 03:04:04 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.20 2003/01/20 03:43:07 dawes Exp $
 
 
 $XFree86: $
