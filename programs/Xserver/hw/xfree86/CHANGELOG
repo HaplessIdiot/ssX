@@ -7,7 +7,7 @@ XFree86 3.9.17d (8 February 2000)
 3680. Added function callback registration. Drivers can register
       callback functions to be notified of the start/end of a 
       resource transition. (Egbert Eich)
-3679. Addeded support for OS specific Pci address windows. (Egbert Eich)
+3679. Added support for OS specific Pci address windows. (Egbert Eich)
 3678. Added more debug traps to xalloc.c. Added support to peek/poke
       MMIO registers and fb addresses from a debugger. (Egbert Eich)
 3677. Changed resource registration to use CPU space addresses
@@ -60,7 +60,6 @@ XFree86 3.9.17d (8 February 2000)
 3649. Changed memory mapping in int10 support for Linux to use SYSV
       IPC shm instead of mapping /proc/self/mem (Egbert Eich)
 3648. Added APM support for portable systems. (Egbert Eich)
-
 3647. XFree86-Bigfont extension that provides efficient client access to
       the complete glyph metrics, using shared memory where possible/available
       or transmitting the data in a compressed format otherwise (#3626,
@@ -9509,4 +9508,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.975 2000/02/07 22:13:03 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.977 2000/02/08 18:57:42 eich Exp $
