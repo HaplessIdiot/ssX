@@ -6,3 +6,4 @@ bin/Xvfb
 bin/X
 bin/xfs
 bin/xmseconfig
+bin/XFree86
