@@ -20,49 +20,79 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Sbus.h,v 1.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Sbus.h,v 1.7tsi Exp $ */
 
 #ifndef _XF86_SBUS_H
 #define _XF86_SBUS_H
 
+#ifdef XFree86Module
+# error XFree86 module code must not #include "xf86Sbus.h"
+#else
+
 #if defined(linux)
-#include <asm/types.h>
-#include <asm/fbio.h>
-#include <asm/openpromio.h>
+# include <asm/types.h>
+# include <asm/fbio.h>
+# include <asm/openpromio.h>
 #elif defined(SVR4)
-#include <sys/fbio.h>
-#include <sys/openpromio.h>
+# include <sys/fbio.h>
+# include <sys/openpromio.h>
 #elif defined(__OpenBSD__) && defined(__sparc64__)
 /* XXX */
 #elif defined(CSRG_BASED)
-#if defined(__FreeBSD__)
-#include <sys/types.h>
-#include <sys/fbio.h>
-#include <dev/ofw/openpromio.h>
+# if defined(__FreeBSD__)
+#  include <sys/types.h>
+#  include <sys/fbio.h>
+#  include <dev/ofw/openpromio.h>
+# else
+#  include <machine/fbio.h>
+# endif
 #else
-#include <machine/fbio.h>
-#endif
-#else
-#include <sun/fbio.h>
+# include <sun/fbio.h>
 #endif
 
-#ifndef FBTYPE_SUNGP3
-#define FBTYPE_SUNGP3 17
+/*
+ * Some of these vary by OS (or are non-existent on some).  If this is ever
+ * ported to older systems, all FBTYPE's will likely need to be here.
+ */
+
+#ifndef   FBTYPE_SUNGP3
+# define  FBTYPE_SUNGP3 17
 #endif
-#ifndef FBTYPE_SUNGT
-#define FBTYPE_SUNGT 18
+
+#ifndef   FBTYPE_SUNGT
+# define  FBTYPE_SUNGT 18
 #endif
-#ifndef FBTYPE_SUNLEO
-#define FBTYPE_SUNLEO 19
+
+#ifndef   FBTYPE_SUNLEO
+# define  FBTYPE_SUNLEO 19
 #endif
-#ifndef FBTYPE_MDICOLOR
-#define FBTYPE_MDICOLOR 20
+
+#ifndef   FBTYPE_MDICOLOR
+# ifndef CSRG_BASED
+#  define FBTYPE_MDICOLOR 20
+# else
+#  define FBTYPE_MDICOLOR 28
+# endif
 #endif
-#ifndef FBTYPE_TCXCOLOR
-#define FBTYPE_TCXCOLOR 21
+
+#ifndef   FBTYPE_TCXCOLOR
+# ifndef CSRG_BASED
+#  define FBTYPE_TCXCOLOR 21
+# else
+#  define FBTYPE_TCXCOLOR 29
+# endif
 #endif
-#ifndef FBTYPE_CREATOR
-#define FBTYPE_CREATOR 22
+
+#ifndef   FBTYPE_CREATOR
+# if defined(linux)
+#  define FBTYPE_CREATOR 22
+# elif defined(CSRG_BASED)
+#  define FBTYPE_CREATOR 30
+# elif defined(sun)
+#  define FBTYPE_CREATOR 65535	/* Larger than life ... */
+# endif
 #endif
+
+#endif /* XFree86Module */
 
 #endif /* _XF86_SBUS_H */

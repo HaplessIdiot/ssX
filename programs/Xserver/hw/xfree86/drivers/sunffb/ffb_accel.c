@@ -24,7 +24,7 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_accel.c,v 1.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_accel.c,v 1.7tsi Exp $ */
 
 #include	"scrnintstr.h"
 #include	"pixmapstr.h"
@@ -55,7 +55,6 @@
 #include	"ffb_stip.h"
 #include 	"ffb_gc.h"
 
-int	CreatorScreenPrivateIndex;
 int	CreatorGCPrivateIndex;
 int	CreatorWindowPrivateIndex;
 int	CreatorGeneration;
@@ -799,10 +798,11 @@ Bool FFBAccelInit (ScreenPtr pScreen, FFBPtr pFfb)
 	ffb_fbcPtr ffb;
 
 	if (serverGeneration != CreatorGeneration) {
-		CreatorScreenPrivateIndex = AllocateScreenPrivateIndex ();
-		if (CreatorScreenPrivateIndex == -1) return FALSE;
 		CreatorGCPrivateIndex = AllocateGCPrivateIndex ();
 		CreatorWindowPrivateIndex = AllocateWindowPrivateIndex ();
+		if ((CreatorGCPrivateIndex < 0) ||
+		    (CreatorWindowPrivateIndex < 0))
+			return FALSE;
 		CreatorGeneration = serverGeneration;
 	}
 	
@@ -810,7 +810,6 @@ Bool FFBAccelInit (ScreenPtr pScreen, FFBPtr pFfb)
 		return FALSE;
 	if (!AllocateWindowPrivate(pScreen, CreatorWindowPrivateIndex, 0))
 		return FALSE;
-	pScreen->devPrivates[CreatorScreenPrivateIndex].ptr = pFfb;
 
 	pFfb->fifo_cache = 0;
 	ffb = pFfb->regs;
