@@ -201,6 +201,7 @@ typedef struct {
    CreateWindowProcPtr		CreateWindow;
    DestroyWindowProcPtr		DestroyWindow;
    ClipNotifyProcPtr		ClipNotify;
+   WindowExposuresProcPtr	WindowExposures;
    void                         (*AdjustFrame)(int, int, int, int);
    Bool                         (*EnterVT)(int, int);
    void                         (*LeaveVT)(int, int);

@@ -18,6 +18,7 @@
 #include "regionstr.h"
 #include "windowstr.h"
 #include "pixmapstr.h"
+#include "mivalidate.h"
 #include "validate.h"
 #include "resource.h"
 #include "gcstruct.h"
@@ -73,6 +74,7 @@ static int xf86XVQueryImageAttributes(ClientPtr, XvPortPtr, XvImagePtr,
 
 static Bool xf86XVCreateWindow(WindowPtr pWin);
 static Bool xf86XVDestroyWindow(WindowPtr pWin);
+static void xf86XVWindowExposures(WindowPtr pWin, RegionPtr r1, RegionPtr r2);
 static void xf86XVClipNotify(WindowPtr pWin, int dx, int dy);
 
 /* ScrnInfoRec functions */
@@ -101,6 +103,15 @@ unsigned long (*XvGetRTPortProc)(void) = XvGetRTPort;
 int (*XvScreenInitProc)(ScreenPtr) = XvScreenInit;
 #endif
 
+
+#define GET_XV_SCREEN(pScreen) \
+	((XvScreenPtr)((pScreen)->devPrivates[XF86XvScreenIndex].ptr))
+
+#define GET_XF86XV_SCREEN(pScreen) \
+  	((XF86XVScreenPtr)(GET_XV_SCREEN(pScreen)->devPriv.ptr))
+
+#define GET_XF86XV_WINDOW(pWin) \
+	((XF86XVWindowPtr)((pWin)->devPrivates[XF86XVWindowIndex].ptr))
 
 static xf86XVInitGenericAdaptorPtr *GenDrivers = NULL;
 static int NumGenDrivers = 0;
@@ -173,7 +184,7 @@ xf86XVScreenInit(
   XF86XvScreenIndex = (*XvGetScreenIndexProc)();
   PortResource = (*XvGetRTPortProc)();
 
-  pxvs = (XvScreenPtr)pScreen->devPrivates[XF86XvScreenIndex].ptr;
+  pxvs = GET_XV_SCREEN(pScreen);
 
 
   /* Anyone initializing the Xv layer must provide these two.
@@ -193,17 +204,19 @@ xf86XVScreenInit(
   if(!ScreenPriv) return FALSE;
 
 
-  ScreenPriv->ClipNotify = pScreen->ClipNotify;
   ScreenPriv->CreateWindow = pScreen->CreateWindow;
   ScreenPriv->DestroyWindow = pScreen->DestroyWindow;
+  ScreenPriv->WindowExposures = pScreen->WindowExposures;
+  ScreenPriv->ClipNotify = pScreen->ClipNotify;
   ScreenPriv->EnterVT = pScrn->EnterVT;
   ScreenPriv->LeaveVT = pScrn->LeaveVT;
   ScreenPriv->AdjustFrame = pScrn->AdjustFrame;
 
 
-  pScreen->ClipNotify = xf86XVClipNotify;
   pScreen->CreateWindow = xf86XVCreateWindow;
   pScreen->DestroyWindow = xf86XVDestroyWindow;
+  pScreen->WindowExposures = xf86XVWindowExposures;
+  pScreen->ClipNotify = xf86XVClipNotify;
   pScrn->EnterVT = xf86XVEnterVT;
   pScrn->LeaveVT = xf86XVLeaveVT;
   pScrn->AdjustFrame = xf86XVAdjustFrame;
@@ -274,7 +287,7 @@ xf86XVInitAdaptors(
    XF86VideoAdaptorPtr *infoPtr,
    int number
 ) {
-  XvScreenPtr pxvs = (XvScreenPtr)(pScreen->devPrivates[XF86XvScreenIndex].ptr);
+  XvScreenPtr pxvs = GET_XV_SCREEN(pScreen);
   ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
   XF86VideoAdaptorPtr adaptorPtr;
   XvAdaptorPtr pAdaptor, pa;
@@ -863,8 +876,7 @@ CLIP_VIDEO_BAILOUT:
 static int
 xf86XVReputAllVideo(WindowPtr pWin, pointer data)
 {
-    XF86XVWindowPtr WinPriv = 
-	(XF86XVWindowPtr)pWin->devPrivates[XF86XVWindowIndex].ptr;
+    XF86XVWindowPtr WinPriv = GET_XF86XV_WINDOW(pWin);
 
     while(WinPriv) {
 	if(WinPriv->PortRec->type == XvInputMask)
@@ -882,8 +894,7 @@ xf86XVEnlistPortInWindow(WindowPtr pWin, XvPortRecPrivatePtr portPriv)
 {
    XF86XVWindowPtr winPriv, PrivRoot;    
 
-   winPriv = PrivRoot = 
-		(XF86XVWindowPtr)(pWin->devPrivates[XF86XVWindowIndex].ptr);
+   winPriv = PrivRoot = GET_XF86XV_WINDOW(pWin);
 
   /* Enlist our port in the window private */
    while(winPriv) {
@@ -908,7 +919,7 @@ xf86XVRemovePortFromWindow(WindowPtr pWin, XvPortRecPrivatePtr portPriv)
 {
      XF86XVWindowPtr winPriv, prevPriv = NULL;
 
-     winPriv = (XF86XVWindowPtr)(pWin->devPrivates[XF86XVWindowIndex].ptr);
+     winPriv = GET_XF86XV_WINDOW(pWin);
 
      while(winPriv) {
 	if(winPriv->PortRec == portPriv) {
@@ -933,8 +944,7 @@ static Bool
 xf86XVCreateWindow(WindowPtr pWin)
 {
   ScreenPtr pScreen = pWin->drawable.pScreen;
-  XvScreenPtr pxvs = (XvScreenPtr)pScreen->devPrivates[XF86XvScreenIndex].ptr;
-  XF86XVScreenPtr ScreenPriv = (XF86XVScreenPtr)pxvs->devPriv.ptr;
+  XF86XVScreenPtr ScreenPriv = GET_XF86XV_SCREEN(pScreen);
   int ret;
 
   pScreen->CreateWindow = ScreenPriv->CreateWindow;
@@ -951,13 +961,10 @@ static Bool
 xf86XVDestroyWindow(WindowPtr pWin)
 {
   ScreenPtr pScreen = pWin->drawable.pScreen;
-  XvScreenPtr pxvs = (XvScreenPtr)pScreen->devPrivates[XF86XvScreenIndex].ptr;
-  XF86XVScreenPtr ScreenPriv = (XF86XVScreenPtr)pxvs->devPriv.ptr;
-  XF86XVWindowPtr tmp, WinPriv = 
-	(XF86XVWindowPtr)pWin->devPrivates[XF86XVWindowIndex].ptr;
+  XF86XVScreenPtr ScreenPriv = GET_XF86XV_SCREEN(pScreen);
+  XF86XVWindowPtr tmp, WinPriv = GET_XF86XV_WINDOW(pWin);
   int ret;
 
-  /* The DI layer only stops and removes video not transient stills/images */
   while(WinPriv) {
      XvPortRecPrivatePtr pPriv = WinPriv->PortRec;
 
@@ -983,41 +990,80 @@ xf86XVDestroyWindow(WindowPtr pWin)
 }
 
 
-
 static void
+xf86XVWindowExposures(WindowPtr pWin, RegionPtr reg1, RegionPtr reg2)
+{
+  ScreenPtr pScreen = pWin->drawable.pScreen;
+  XF86XVScreenPtr ScreenPriv = GET_XF86XV_SCREEN(pScreen);
+  XF86XVWindowPtr WinPriv, pPrev;
+  XvPortRecPrivatePtr pPriv;
+
+  pScreen->WindowExposures = ScreenPriv->WindowExposures;
+  (*pScreen->WindowExposures)(pWin, reg1, reg2);
+  pScreen->WindowExposures = xf86XVWindowExposures;
+
+  /* filter out XClearWindow/Area */
+  if (!pWin->valdata) return;
+   
+  WinPriv = GET_XF86XV_WINDOW(pWin);
+  pPrev = NULL;
+
+  while(WinPriv) {
+     pPriv = WinPriv->PortRec;
+
+     /* Reput anyone with a reput function */
+
+     switch(pPriv->type) {
+     case XvInputMask:
+	xf86XVReputVideo(pPriv);
+	break;	     
+     case XvOutputMask:
+	xf86XVRegetVideo(pPriv);	
+	break;     
+     default:  /* overlaid still/image*/
+	if (pPriv->AdaptorRec->ReputImage)
+	   xf86XVReputImage(pPriv);
+	break;
+     }
+     pPrev = WinPriv;
+     WinPriv = WinPriv->next;
+  }
+}
+
+
+static void 
 xf86XVClipNotify(WindowPtr pWin, int dx, int dy)
 {
   ScreenPtr pScreen = pWin->drawable.pScreen;
-  XvScreenPtr pxvs = (XvScreenPtr)pScreen->devPrivates[XF86XvScreenIndex].ptr;
-  XF86XVScreenPtr ScreenPriv = (XF86XVScreenPtr)pxvs->devPriv.ptr;
-  XF86XVWindowPtr WinPriv = 
-		(XF86XVWindowPtr)pWin->devPrivates[XF86XVWindowIndex].ptr;
+  XF86XVScreenPtr ScreenPriv = GET_XF86XV_SCREEN(pScreen);
+  XF86XVWindowPtr WinPriv = GET_XF86XV_WINDOW(pWin);
   XF86XVWindowPtr tmp, pPrev = NULL;
-   
+  XvPortRecPrivatePtr pPriv;
+  Bool visible = (pWin->visibility == VisibilityUnobscured) ||
+		 (pWin->visibility == VisibilityPartiallyObscured);
+
   while(WinPriv) {
-     XvPortRecPrivatePtr pPriv = WinPriv->PortRec;
+     pPriv = WinPriv->PortRec;
 
      if(pPriv->pCompositeClip && pPriv->FreeCompositeClip)
 	REGION_DESTROY(pScreen, pPriv->pCompositeClip);
 
      pPriv->pCompositeClip = NULL;
 
-     if(!pPriv->type) { /* overlaid still/image */
-	if ((pPriv->AdaptorRec->ReputImage) &&
-	   ((pWin->visibility == VisibilityUnobscured) ||
-	    (pWin->visibility == VisibilityPartiallyObscured)))    
-	{
-	    xf86XVReputImage(pPriv);
-	}
-	else {
-	    (*pPriv->AdaptorRec->StopVideo)(
-			    pPriv->pScrn, pPriv->DevPriv.ptr, FALSE);
+     /* Stop everything except images, but stop them too if the 
+	window isn't visible.  But we only remove the images. */
 
-	    pPriv->isOn = FALSE;
+     if(pPriv->type || !visible) {
+	(*pPriv->AdaptorRec->StopVideo)(
+			pPriv->pScrn, pPriv->DevPriv.ptr, FALSE);
+	pPriv->isOn = FALSE;
+
+	if(!pPriv->type) {  /* overlaid still/image */
 	    pPriv->pDraw = NULL;
+
 	    if(!pPrev) 
-	       pWin->devPrivates[XF86XVWindowIndex].ptr = 
-					(pointer)(WinPriv->next);
+	       pWin->devPrivates[XF86XVWindowIndex].ptr = 		
+						(pointer)(WinPriv->next);
 	    else
 	       pPrev->next = WinPriv->next;
 	    tmp = WinPriv;
@@ -1025,20 +1071,16 @@ xf86XVClipNotify(WindowPtr pWin, int dx, int dy)
 	    xfree(tmp);
 	    continue;
 	}
-     } else {
-	if(pPriv->type == XvInputMask)
-	   xf86XVReputVideo(pPriv);	     
-	else
-	   xf86XVRegetVideo(pPriv);	     
      }
+
      pPrev = WinPriv;
      WinPriv = WinPriv->next;
   }
- 
+
   if(ScreenPriv->ClipNotify) {
-	pScreen->ClipNotify = ScreenPriv->ClipNotify;
-	(*pScreen->ClipNotify)(pWin, dx, dy);
-	pScreen->ClipNotify = xf86XVClipNotify;
+      pScreen->ClipNotify = ScreenPriv->ClipNotify;
+      (*pScreen->ClipNotify)(pWin, dx, dy);
+      pScreen->ClipNotify = xf86XVClipNotify;
   }
 }
 
@@ -1050,8 +1092,8 @@ static Bool
 xf86XVCloseScreen(int i, ScreenPtr pScreen)
 {
   ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-  XvScreenPtr pxvs = (XvScreenPtr) pScreen->devPrivates[XF86XvScreenIndex].ptr;
-  XF86XVScreenPtr ScreenPriv = (XF86XVScreenPtr)pxvs->devPriv.ptr;
+  XvScreenPtr pxvs = GET_XV_SCREEN(pScreen);
+  XF86XVScreenPtr ScreenPriv = GET_XF86XV_SCREEN(pScreen);
   XvAdaptorPtr pa;
   int c;
 
@@ -1059,6 +1101,7 @@ xf86XVCloseScreen(int i, ScreenPtr pScreen)
 
   pScreen->CreateWindow = ScreenPriv->CreateWindow;
   pScreen->DestroyWindow = ScreenPriv->DestroyWindow;
+  pScreen->WindowExposures = ScreenPriv->WindowExposures;
   pScreen->ClipNotify = ScreenPriv->ClipNotify;
 
   pScrn->EnterVT = ScreenPriv->EnterVT; 
@@ -1085,7 +1128,7 @@ xf86XVQueryAdaptors(
    XvAdaptorPtr *p_pAdaptors,
    int *p_nAdaptors
 ){
-  XvScreenPtr pxvs = (XvScreenPtr) pScreen->devPrivates[XF86XvScreenIndex].ptr;
+  XvScreenPtr pxvs = GET_XV_SCREEN(pScreen);
 
   *p_nAdaptors = pxvs->nAdaptors;
   *p_pAdaptors = pxvs->pAdaptors;
@@ -1100,9 +1143,7 @@ static Bool
 xf86XVEnterVT(int index, int flags)
 {
     ScreenPtr pScreen = screenInfo.screens[index];
-    XvScreenPtr pxvs = 
-	(XvScreenPtr) pScreen->devPrivates[XF86XvScreenIndex].ptr;
-    XF86XVScreenPtr ScreenPriv = (XF86XVScreenPtr)pxvs->devPriv.ptr;
+    XF86XVScreenPtr ScreenPriv = GET_XF86XV_SCREEN(pScreen);
     Bool ret;
 
     ret = (*ScreenPriv->EnterVT)(index, flags);
@@ -1116,9 +1157,8 @@ static void
 xf86XVLeaveVT(int index, int flags)
 {
     ScreenPtr pScreen = screenInfo.screens[index];
-    XvScreenPtr pxvs = 
-	(XvScreenPtr) pScreen->devPrivates[XF86XvScreenIndex].ptr;
-    XF86XVScreenPtr ScreenPriv = (XF86XVScreenPtr)pxvs->devPriv.ptr;
+    XvScreenPtr pxvs = GET_XV_SCREEN(pScreen);
+    XF86XVScreenPtr ScreenPriv = GET_XF86XV_SCREEN(pScreen);
     XvAdaptorPtr pAdaptor;
     XvPortPtr pPort;
     XvPortRecPrivatePtr pPriv;
@@ -1154,8 +1194,8 @@ xf86XVAdjustFrame(int index, int x, int y, int flags)
 {
   ScrnInfoPtr pScrn = xf86Screens[index];
   ScreenPtr pScreen = pScrn->pScreen;
-  XvScreenPtr pxvs = (XvScreenPtr)pScreen->devPrivates[XF86XvScreenIndex].ptr;
-  XF86XVScreenPtr ScreenPriv = (XF86XVScreenPtr)pxvs->devPriv.ptr;
+  XvScreenPtr pxvs = GET_XV_SCREEN(pScreen);
+  XF86XVScreenPtr ScreenPriv = GET_XF86XV_SCREEN(pScreen);
   WindowPtr pWin;
   XvAdaptorPtr pa;
   int c, i;
