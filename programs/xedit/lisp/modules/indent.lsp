@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/indent.lsp,v 1.5 2002/12/20 04:32:47 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/indent.lsp,v 1.6 2003/01/16 03:50:46 paulo Exp $
 ;;
 
 (provide "indent")
@@ -360,7 +360,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro indtoken (pattern token
 		    &key icase nospec begin switch code (nosub t))
-    (setq pattern (re-comp pattern :icase icase :nospec nospec :nosub nosub))
+    (setq pattern (re-comp (eval pattern) :icase icase :nospec nospec :nosub nosub))
     (when (consp (re-exec pattern "" :notbol t :noteol t))
 	(error "INDTOKEN: regex ~A matches empty string" pattern)
     )

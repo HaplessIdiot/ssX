@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/compile.c,v 1.10 2002/11/26 04:06:27 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/compile.c,v 1.12 2002/12/02 14:49:44 paulo Exp $ */
 
 #define VARIABLE_USED		0x0001
 #define VARIABLE_ARGUMENT	0x0002
@@ -1256,7 +1256,12 @@ ComVariableSetFlag(LispCom *com, LispAtom *atom, int flag)
 		      block->variables.length);
 	if (i >= 0) {
 	    block->variables.flags[i] |= flag;
-	    break;
+	    /*  Descend block list if an argument to function being called
+	     * has the same name as a bound variable in the current function.
+	     */
+	    if ((flag & VARIABLE_ARGUMENT) ||
+		!(block->variables.flags[i] & VARIABLE_ARGUMENT))
+		break;
 	}
 	block = block->prev;
     }

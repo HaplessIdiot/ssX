@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.13 2002/11/23 08:26:48 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.14 2002/11/25 02:35:29 paulo Exp $ */
 
 
 /*
@@ -439,10 +439,13 @@ Lisp_Compile(LispBuiltin *builtin)
 		}
 
 		for (i = 0; i < alist->keys.num_symbols; i++) {
+		    /* key symbol */
 		    if (alist->keys.keys[i])
-			argument = alist->keys.keys[i];
+			argument = QUOTE(alist->keys.keys[i]);
 		    else
 			argument = alist->keys.symbols[i];
+
+		    /* add key */
 		    if (arguments == NIL) {
 			arguments = form = CONS(argument, NIL);
 			GC_PROTECT(arguments);
@@ -451,6 +454,11 @@ Lisp_Compile(LispBuiltin *builtin)
 			RPLACD(form, CONS(argument, NIL));
 			form = CDR(form);
 		    }
+
+		    /* add value */
+		    RPLACD(form, CONS(NIL, NIL));
+		    form = CDR(form);
+
 		    if (alist->keys.sforms[i]) {
 			RPLACD(form, CONS(NIL, NIL));
 			form = CDR(form);
@@ -3630,7 +3638,7 @@ OPCODE_LABEL(XBC_LCONS):
 	/* Finish list */
 OPCODE_LABEL(XBC_LFINI):
 	phead -= 2;
-	reg0 = lisp__data.protect.objects[phead];
+	reg0 = lisp__data.protect.objects[phead + 1];
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_STRUCT):

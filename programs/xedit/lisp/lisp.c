@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.83 2002/12/20 04:32:46 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.84 2002/12/30 05:37:55 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -4258,7 +4258,7 @@ key_label:
 	/* OPTIMIZATION:
 	 * Builtin functions require that the keyword be in the keyword package.
 	 * User functions don't need the arguments being pushed in the stack
-	 * in the declared order.
+	 * in the declared order (bytecode expects it...).
 	 * XXX Error checking should be done elsewhere, code may be looping
 	 * and doing error check here may consume too much cpu time.
 	 * XXX Would also be good to already have the arguments specified in
@@ -4329,6 +4329,7 @@ keyword_builtin_used_label:;
 	    }
 	}
 
+#if 0
 	else {
 	    /* The base offset of the atom in the stack, to check for
 	     * keywords specified twice. */
@@ -4436,6 +4437,105 @@ keyword_duplicated_label:;
 		}
 	    }
 	}
+#else
+	else {
+	    int varset;
+
+	    sforms = alist->keys.sforms;
+	    keys = alist->keys.keys;
+
+	    /* Add variables */
+	    for (i = 0; i < alist->keys.num_symbols; i++) {
+		val = defaults[i];
+		varset = 0;
+		if (keys[i]) {
+		    Atom_id atom = ATOMID(keys[i]);
+
+		    /* Special keyword specification, need to compare ATOMID
+		     * and keyword specification must be a quoted object */
+		    for (karg = values; CONSP(karg); karg = CDR(karg)) {
+			val = CAR(karg);
+		 	if (QUOTEP(val) && atom == ATOMID(val->data.quote)) {
+			    val = CADR(karg);
+			    varset = 1;
+			    ++nused;
+			    break;
+			}
+			karg = CDR(karg);
+		    }
+		}
+
+		else {
+		    /* Normal keyword specification, can compare object pointers,
+		     * as they point to the same object in the keyword package */
+		    for (karg = values; CONSP(karg); karg = CDR(karg)) {
+			/* Don't check if argument is a valid keyword or
+			 * special quoted keyword */
+			if (symbols[i] == CAR(karg)) {
+			    val = CADR(karg);
+			    varset = 1;
+			    ++nused;
+			    break;
+			}
+			karg = CDR(karg);
+		    }
+		}
+
+		/* Add the variable to environment */
+		if (varset) {
+		    NORMAL_ARGUMENT(symbols[i], eval ? EVAL(val) : val);
+		    if (sforms[i]) {
+			NORMAL_ARGUMENT(sforms[i], T);
+		    }
+		}
+		else {
+		    /* default arguments are evaluated for macros */
+		    if (!CONSTANTP(val)) {
+			int head = lisp__data.env.head;
+			int lex = lisp__data.env.lex;
+
+			lisp__data.env.lex = base;
+			lisp__data.env.head = lisp__data.env.length;
+			NORMAL_ARGUMENT(symbols[i], EVAL(val));
+			lisp__data.env.head = head;
+			lisp__data.env.lex = lex;
+		    }
+		    else {
+			NORMAL_ARGUMENT(symbols[i], val);
+		    }
+		    if (sforms[i]) {
+			NORMAL_ARGUMENT(sforms[i], NIL);
+		    }
+		}
+	    }
+
+	    if (argc != nused) {
+		/* Argument(s) may be incorrectly specified, or specified
+		 * twice (what is not an error). */
+		for (karg = values; CONSP(karg); karg = CDDR(karg)) {
+		    val = CAR(karg);
+		    if (KEYWORDP(val)) {
+			for (i = 0; i < count; i++)
+			    if (symbols[i] == val)
+				break;
+		    }
+		    else if (QUOTEP(val) && SYMBOLP(val->data.quote)) {
+			Atom_id atom = ATOMID(val->data.quote);
+
+			for (i = 0; i < count; i++)
+			    if (ATOMID(keys[i]) == atom)
+				break;
+		    }
+		    else
+			/* Just make the error test true */
+			i = count;
+
+		    if (i == count)
+			goto invalid_keyword_label;
+		}
+	    }
+	}
+#endif
 	goto check_aux_label;
 
 invalid_keyword_label:
