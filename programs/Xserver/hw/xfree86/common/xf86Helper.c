@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.21 1999/01/17 10:53:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.22 1999/01/23 09:55:45 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1798,7 +1798,7 @@ xf86LoadSubModule(ScrnInfoPtr pScrn, const char *name)
     pointer ret;
     int errmaj = 0, errmin = 0;
 
-    ret = LoadSubModule(pScrn->module, name, NULL, NULL, NULL, NULL, NULL,
+    ret = LoadSubModule(pScrn->module, name, NULL, NULL, NULL, NULL,
 			&errmaj, &errmin);
     if (!ret)
 	LoaderErrorMsg(pScrn->name, name, errmaj, errmin);

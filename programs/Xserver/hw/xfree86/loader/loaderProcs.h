@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loaderProcs.h,v 1.12 1999/01/17 10:54:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loaderProcs.h,v 1.13 1999/01/23 09:56:00 dawes Exp $ */
 
 /*
  *
@@ -56,7 +56,7 @@ ModuleDescPtr LoadDriver(const char *, const char *, int, pointer, int *,
 ModuleDescPtr LoadModule(const char *, const char *, const char **,
 			 const char **, pointer, const XF86ModReqInfo *,
 			 int *, int *);
-ModuleDescPtr LoadSubModule(ModuleDescPtr, const char *, const char *,
+ModuleDescPtr LoadSubModule(ModuleDescPtr, const char *,
 			    const char **, const char **, pointer,
 			    const XF86ModReqInfo *, int *, int *);
 ModuleDescPtr DuplicateModule(ModuleDescPtr mod, ModuleDescPtr parent);
@@ -73,9 +73,7 @@ void LoaderSetPath(const char *path);
 void LoaderVReqSymLists(const char **, va_list args);
 void LoaderVReqSymbols(const char *, va_list args);
 
-int LoaderCheckUnresolved(int);
 void LoaderShowStack(void);
-void *LoaderSymbol(const char *);
 void *LoaderSymbolHandle(const char *, int);
 int LoaderUnload(int);
 

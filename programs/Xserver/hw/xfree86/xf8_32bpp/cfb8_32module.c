@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfb8_32module.c,v 1.3 1999/01/17 10:54:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfb8_32module.c,v 1.4 1999/01/17 12:29:24 dawes Exp $ */
 
 
 #ifdef XFree86LOADER
@@ -34,10 +34,10 @@ xf8_32bppModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
 static pointer
 xf8_32bppSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 {
-    if (!LoadSubModule(module, "cfb", NULL, NULL, NULL, NULL, NULL,
+    if (!LoadSubModule(module, "cfb", NULL, NULL, NULL, NULL,
 			errmaj, errmin))
         return NULL;
-    if (!LoadSubModule(module, "cfb32", NULL, NULL, NULL, NULL, NULL,
+    if (!LoadSubModule(module, "cfb32", NULL, NULL, NULL, NULL,
 			errmaj, errmin))
         return NULL;
     return (pointer)1;  /* non-NULL required to indicate success */

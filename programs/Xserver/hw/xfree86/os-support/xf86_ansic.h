@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.12 1998/10/06 06:59:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.13 1998/12/05 14:40:25 dawes Exp $ */
 
 #ifndef _XF86_ANSIC_H
 #define _XF86_ANSIC_H
@@ -140,12 +140,14 @@ extern int xf86sscanf(/*char*,const char*,char *,char *,char *,char *,
 extern char* xf86strcat(char*,const char*);
 extern char* xf86strchr(const char*, int c);
 extern int xf86strcmp(const char*,const char*);
+extern int xf86strcasecmp(const char*,const char*);
 extern char* xf86strcpy(char*,const char*);
 extern INT32 xf86strcspn(const char*,const char*);
 extern char* xf86strerror(int);
 extern INT32 xf86strlen(const char*);
 extern char* xf86strncat(char *, const char *, INT32);
 extern int xf86strncmp(const char*,const char*,INT32);
+extern int xf86strncasecmp(const char*,const char*,INT32);
 extern char* xf86strncpy(char*,const char*,INT32);
 extern char* xf86strpbrk(const char*,const char*);
 extern char* xf86strrchr(const char*,int);

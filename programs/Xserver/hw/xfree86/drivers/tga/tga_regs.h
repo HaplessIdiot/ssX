@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_regs.h,v 1.2 1998/07/25 16:55:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_regs.h,v 1.3 1999/01/23 09:55:57 dawes Exp $ */
 
 /* TGA hardware description (minimal)
  *
@@ -42,14 +42,12 @@
 
 #ifdef __alpha__
 /* we can avoid an mb() if we write to an alternate register space each time */
-extern unsigned int tga_reg_offset; /* in tga_accel.c */
 
-/* XXX should tga_reg_offset be screen-specific rather than global? */
-
-#define TGA_FAST_WRITE_REG(pTga,v,r) \
+#define TGA_FAST_WRITE_REG(v,r) \
 do {\
-  *(unsigned int *)(((char *)pTga->IOBaseDense) + tga_reg_offset + (r)) = v;\
-  if(tga_reg_offset >= 1047552) (tga_reg_offset = 0); else (tga_reg_offset += 1024);\
+  *(unsigned int *)(((char *)pTga->IOBaseDense) + pTga->regOffset + (r)) = v;\
+  if(pTga->regOffset >= 1047552) (pTga->regOffset = 0);\
+  else (pTga->regOffset += 1024);\
 } while (0)
 
 #define TGA_WRITE_REG(v,r) \
@@ -64,7 +62,7 @@ do {\
 #define TGA_WRITE_REG(v,r) \
 	*(unsigned int *)((char*)(pTga->IOBase)+(r)) = v;
 
-#define TGA_FAST_WRITE_REG(pTga,v,r) TGA_WRITE_REG(v,r)
+#define TGA_FAST_WRITE_REG(v,r) TGA_WRITE_REG(v,r)
 
 #define TGA_READ_REG(r) \
 	( *(unsigned int *)((char*)(pTga->IOBase)+(r)))

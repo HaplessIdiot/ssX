@@ -1,6 +1,10 @@
 /* ft_conf.h.  Xserver-specific version. */
 
-/* $XFree86: xc/lib/font/FreeType/ft_conf.h,v 1.2 1998/09/06 07:31:57 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ft_conf.h,v 1.3 1998/09/06 12:35:39 dawes Exp $ */
+
+/* we need the following because there are some typedefs in this file */
+#ifndef FT_CONF_H
+#define FT_CONF_H
 
 #include <X11/Xmd.h>
 #include "fontmisc.h"
@@ -45,6 +49,11 @@
 #define WORDS_BIGENDIAN 0
 #endif
 
+
+/* Define if the X Window System is missing or not being used.	*/
+/* Not relevant. */
+/* #undef X_DISPLAY_MISSING */
+
 /* Define if you have the getpagesize function.  */
 #ifdef HAVE_MMAP
 #define HAVE_GETPAGESIZE 1
@@ -57,10 +66,22 @@
 #define HAVE_MEMMOVE 1          /* provided by Xos.h */
 
 /* Define if you have the <fcntl.h> header file.  */
-#undef HAVE_FCNTL_H             /* provided by Xos.h if relevant*/
+#undef HAVE_FCNTL_H             /* included by Xos.h if relevant*/
 
 /* Define if you have the <unistd.h> header file.  */
-#undef HAVE_UNISTD_H            /* provided by Xos.h if relevant */
+#undef HAVE_UNISTD_H            /* included by Xos.h if relevant */
+
+/* Define if you have the <locale.h> header file.  */
+/* Not relevant */
+/* #undef HAVE_LOCALE_H */
+
+/* Define if you have the <libintl.h> header file.  */
+/* Not relevant */
+/* #undef HAVE_LIBINTL_H */
+
+/* Define if you have the libintl library.  */
+/* Not relevant */
+/* #undef HAVE_LIBINTL */
 
 /**********************************************************************/
 /*                                                                    */
@@ -95,7 +116,7 @@
 /* a.k.a. font-smoothing or anti-aliasing. Default is on, but you can    */
 /* disable it if you don't need it.                                      */
 
-/* X has no font smoothing */
+/* Not used in X yet */
 
 #undef  TT_CONFIG_OPTION_GRAY_SCALING
 
@@ -115,7 +136,7 @@
 /* Define TT_CONFIG_THREAD_SAFE if you want to build a thread-safe       */
 /* version of the library.                                               */
 
-#undef  TT_CONFIG_OPTION_THREAD_SAFE
+/* #undef  TT_CONFIG_OPTION_THREAD_SAFE */
 
 /**********************************************************************/
 /*                                                                    */
@@ -145,10 +166,24 @@
 /**********************************************************************/
 
 /* Define if you want to use the tracing debug mode */
-#undef  DEBUG_LEVEL_TRACE
+/* #undef  DEBUG_LEVEL_TRACE */
 
 /* Define if you want to use the error debug mode - ignored if */
 /* DEBUG_LEVEL_TRACE is defined                                */
-#undef  DEBUG_LEVEL_ERROR
+/* #undef  DEBUG_LEVEL_ERROR */
 
+/**************************************************************************/
+/* Definition of various integer sizes. These types are used by ttcalc    */
+/* and ttinterp (for the 64-bit integers) only..                          */
 
+/* Use X-specific configuration methods */
+
+  typedef INT32      TT_Int32;
+  typedef CARD32     TT_Word32;
+
+#ifdef WORD64
+#define LONG64
+#define INT64   long
+#endif /* WORD64 */
+
+#endif /* FT_CONF_H */

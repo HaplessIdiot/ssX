@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.93 1999/01/23 09:55:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.94 1999/01/24 03:13:53 dawes Exp $ */
 
 /*
  * Copyright 1991-1998 by The XFree86 Project, Inc.
@@ -179,19 +179,19 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 		NULL
 	};
 	ErrorF("Getting module listing...\n");
-	list = LoaderListDirs(NULL, NULL, NULL);
+	list = LoaderListDirs(NULL, NULL);
 	if (list)
 	    for (l = list; *l; l++)
 		ErrorF("module: %s\n", *l);
 	LoaderFreeDirList(list);
 	ErrorF("Getting video driver listing...\n");
-	list = LoaderListDirs(NULL, subdirs, NULL);
+	list = LoaderListDirs(subdirs, NULL);
 	if (list)
 	    for (l = list; *l; l++)
 		ErrorF("video driver: %s\n", *l);
 	LoaderFreeDirList(list);
 	ErrorF("Getting driver listing...\n");
-	list = LoaderListDirs(NULL, NULL, patlist);
+	list = LoaderListDirs(NULL, patlist);
 	if (list)
 	    for (l = list; *l; l++)
 		ErrorF("video driver: %s\n", *l);
@@ -1131,8 +1131,7 @@ xf86RunVtInit(void)
 
 #ifdef XFree86LOADER
 /*
- * xf86LoadModules iterates over a list that is being passed in
- * since LoadModule().
+ * xf86LoadModules iterates over a list that is being passed in.
  */             
 static Bool
 xf86LoadModules(char **list, pointer *optlist)

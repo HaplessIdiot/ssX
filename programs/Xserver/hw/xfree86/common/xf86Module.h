@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.9 1999/01/23 09:55:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.10 1999/01/24 03:13:53 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -93,7 +93,7 @@ typedef struct {
     CARD32	_modinfo2_;	/* infoarea with a binary editor or sign tool */
     CARD32	xf86version;	/* contains XF86_VERSION_CURRENT */
     CARD8	majorversion;	/* module-specific major version */
-    CARD8	minorversion;	/* moudle-specific minor version */
+    CARD8	minorversion;	/* module-specific minor version */
     CARD16	patchlevel;	/* module-specific patch level */
     CARD32	abiclass;	/* ABI class that the module uses */
     CARD32	abiversion;	/* ABI version */
@@ -137,20 +137,21 @@ extern ExtensionModule extension[];
 /* Prototypes for Loader functions that are exported to modules */
 #ifndef IN_LOADER
 /* Prototypes with opaque pointers for use by modules */
-pointer LoadSubModule(pointer, const char *, const char *, const char **,
+pointer LoadSubModule(pointer, const char *, const char **,
 		      const char **, pointer, const XF86ModReqInfo *,
 		      int *, int *);
 void UnloadSubModule(pointer);
 void LoadFont(pointer);
-pointer LoaderSymbol(const char *);
 #endif
-char **LoaderListDirs(const char *, const char **, const char **);
+pointer LoaderSymbol(const char *);
+char **LoaderListDirs(const char **, const char **);
 void LoaderFreeDirList(char **);
 void LoaderErrorMsg(const char *, const char *, int, int);
 void LoadExtension(ExtensionModule *);
 void LoaderRefSymLists(const char **, ...);
 void LoaderReqSymLists(const char **, ...);
 void LoaderReqSymbols(const char *, ...);
+int LoaderCheckUnresolved(int);
 
 typedef pointer (*ModuleSetupProc)(pointer, pointer, int *, int *);
 typedef void (*ModuleTearDownProc)(pointer);

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf24_32bpp/cfb24_32module.c,v 1.1 1999/01/23 09:56:13 dawes Exp $ */
 
 #ifdef XFree86LOADER
 
@@ -33,10 +33,10 @@ xf24_32bppModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
 static pointer
 xf24_32bppSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 {
-    if (!LoadSubModule(module, "cfb24", NULL, NULL, NULL, NULL, NULL,
+    if (!LoadSubModule(module, "cfb24", NULL, NULL, NULL, NULL,
 			errmaj, errmin))
         return NULL;
-    if (!LoadSubModule(module, "cfb32", NULL, NULL, NULL, NULL, NULL,
+    if (!LoadSubModule(module, "cfb32", NULL, NULL, NULL, NULL,
 			errmaj, errmin))
         return NULL;
     return (pointer)1;  /* non-NULL required to indicate success */

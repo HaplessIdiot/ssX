@@ -1,4 +1,8 @@
 XFree86 3.9Nx (24 January 1999)
+2183. Prevent LoadSubModule() from passing absolute module paths and from
+      providing its own module search path.
+2182. Import FreeType 1.2.  This includes the FreeType library specific parts
+      of #2385 from Juliusz Chroboczek.
 2181. Add a root-only -modulepath command line option to the X server.
 2180. Fix the VT switch screen restore bug introduced a few versions ago
       (#2406, Mark Vojkovich).
@@ -7143,4 +7147,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.674 1999/01/23 09:55:40 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.675 1999/01/24 03:13:47 dawes Exp $
