@@ -2590,6 +2590,10 @@ set_overlay(SISPtr pSiS, SISOverlayPtr pOverlay, SISPortPrivPtr pPriv, int index
     /* Is this required? */
     setvideoreg(pSiS, Index_VI_Control_Misc1, data | 0x20);
 
+    /* Is this required? (seems so) */
+    if((pSiS->Chipset == SIS_315_VGA) && !index)
+       setvideoregmask(pSiS, Index_VI_Control_Misc3, 0x00, (1 << index));
+
     /* Set Y buf pitch */
     setvideoreg(pSiS, Index_VI_Disp_Y_Buf_Pitch_Low, (CARD8)(pitch));
     setvideoregmask(pSiS, Index_VI_Disp_Y_UV_Buf_Pitch_Middle, (CARD8)(pitch >> 8), 0x0f);
@@ -2677,10 +2681,10 @@ set_overlay(SISPtr pSiS, SISOverlayPtr pOverlay, SISPortPrivPtr pPriv, int index
     }
 #endif
 
-    if(pSiS->VGAEngine == SIS_315_VGA) {
+    if((pSiS->VGAEngine == SIS_315_VGA) && (index)){
        /* Trigger register copy for 315/330 series */
-       setvideoreg(pSiS, Index_VI_Control_Misc3, (1 << index));
-       /* setvideoregmask(pSiS, Index_VI_Control_Misc3, (1 << index), (1 << index)); */
+       /* setvideoreg(pSiS, Index_VI_Control_Misc3, (1 << index)); */
+       setvideoregmask(pSiS, Index_VI_Control_Misc3, (1 << index), (1 << index)); 
     }
 
     /* set destination window position */
@@ -3317,6 +3321,11 @@ MIRROR:
 
    /* set overlay parameters */
    set_overlay(pSiS, &overlay, pPriv, index, iscrt2);
+
+   if((pSiS->VGAEngine == SIS_315_VGA) && !index) {
+      /* Trigger register copy for 315 series */
+      setvideoregmask(pSiS, Index_VI_Control_Misc3, (1 << index), (1 << index));
+   }
 
    /* enable overlay */
    setvideoregmask (pSiS, Index_VI_Control_Misc0, 0x02, 0x02);
