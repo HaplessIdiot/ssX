@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfbpntwin.c,v 1.1 1999/01/03 03:58:56 dawes Exp $ */
 
 #include "X.h"
 
@@ -14,6 +14,11 @@
 #include "cfb8_32.h"
 #include "mi.h"
 
+#ifdef PANORAMIX
+#include "panoramiX.h"
+#include "panoramiXsrv.h"
+#endif
+
 void
 cfb8_32PaintWindow(
     WindowPtr   pWin,
@@ -22,6 +27,7 @@ cfb8_32PaintWindow(
 ){
     cfb8_32ScreenPtr pScreenPriv;
     WindowPtr pBgWin;
+    int xorg, yorg;
 
     switch (what) {
     case PW_BACKGROUND:
@@ -36,12 +42,21 @@ cfb8_32PaintWindow(
 						pWin, pRegion, what);
 	    break;
 	case BackgroundPixmap:
+	    xorg = pWin->drawable.x;
+	    yorg = pWin->drawable.y;
+#ifdef PANORAMIX
+	    if(!noPanoramiXExtension) {
+		int index = pWin->drawable.pScreen->myNum;
+		if(WindowTable[index] == pWin) {
+		    xorg -= panoramiXdataPtr[index].x;
+		    yorg -= panoramiXdataPtr[index].y;
+		}
+	    }
+#endif
 	    cfb32FillBoxTileOddCopy ((DrawablePtr)pWin,
 			(int)REGION_NUM_RECTS(pRegion), REGION_RECTS(pRegion),
-			pWin->background.pixmap,
-			(int) pWin->drawable.x, (int) pWin->drawable.y,
-			GXcopy, (pWin->drawable.depth == 24) ? 0x00ffffff :
-				0xff000000);
+			pWin->background.pixmap, xorg, yorg, GXcopy, 
+			(pWin->drawable.depth == 24) ? 0x00ffffff : 0xff000000);
 	    break;
 	case BackgroundPixel:
 	    if(pWin->drawable.depth == 24) 
@@ -76,12 +91,22 @@ cfb8_32PaintWindow(
 		 pBgWin->backgroundState == ParentRelative;
 		 pBgWin = pBgWin->parent);
 
+	    xorg = pBgWin->drawable.x;
+	    yorg = pBgWin->drawable.y;
+
+#ifdef PANORAMIX
+	    if(!noPanoramiXExtension) {
+		int index = pWin->drawable.pScreen->myNum;
+		if(WindowTable[index] == pBgWin) {
+		    xorg -= panoramiXdataPtr[index].x;
+		    yorg -= panoramiXdataPtr[index].y;
+		}
+	    }
+#endif
 	    cfb32FillBoxTileOddCopy ((DrawablePtr)pWin,
 			(int)REGION_NUM_RECTS(pRegion), REGION_RECTS(pRegion),
-			pWin->border.pixmap,
-			(int) pBgWin->drawable.x, (int) pBgWin->drawable.y,
-			GXcopy, (pWin->drawable.depth == 24) ? 0x00ffffff :
-				0xff000000);
+			pWin->border.pixmap, xorg, yorg, GXcopy, 
+			(pWin->drawable.depth == 24) ? 0x00ffffff : 0xff000000);
 
 	    if(pWin->drawable.depth == 24) {
 	       pScreenPriv = CFB8_32_GET_SCREEN_PRIVATE(pWin->drawable.pScreen);

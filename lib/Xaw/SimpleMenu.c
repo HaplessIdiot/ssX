@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
 
-/* $XFree86: xc/lib/Xaw/SimpleMenu.c,v 3.13 1999/04/25 10:01:24 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SimpleMenu.c,v 3.14 1999/05/09 10:51:39 dawes Exp $ */
 
 /*
  * SimpleMenu.c - Source code file for SimpleMenu widget.
@@ -1727,7 +1727,6 @@ PopupSubMenu(SimpleMenuWidget smw)
     Widget menu;
     SmeBSBObject entry = (SmeBSBObject)smw->simple_menu.entry_set;
     Position menu_x, menu_y;
-    Dimension menu_width, menu_height;
     Bool popleft;
 
     if (entry->sme_bsb.menu_name == NULL)
@@ -1741,14 +1740,10 @@ PopupSubMenu(SimpleMenuWidget smw)
     if (!XtIsRealized(menu))
 	XtRealizeWidget(menu);
 
-    menu_width = XtWidth(menu) + XtBorderWidth(menu);
-    menu_height = XtHeight(menu) + XtBorderWidth(menu);
-
     popleft = (smw->simple_menu.state & SMW_POPLEFT) != 0;
 
     if (popleft) 
-	XtTranslateCoords((Widget)smw, XtX(entry) - (int)XtBorderWidth(entry) -
-			  (int)menu_width - (int)XtBorderWidth(menu),
+	XtTranslateCoords((Widget)smw, -(int)XtWidth(menu),
 			  XtY(entry) - XtBorderWidth(menu), &menu_x, &menu_y);
     else
 	XtTranslateCoords((Widget)smw, XtWidth(smw), XtY(entry)
@@ -1757,9 +1752,8 @@ PopupSubMenu(SimpleMenuWidget smw)
     if (!popleft && menu_x >= 0) {
 	int scr_width = WidthOfScreen(XtScreen(menu));
 
-	if (menu_x + menu_width > scr_width) {
-	    menu_x -= menu_width + XtWidth(entry) + XtBorderWidth(entry) +
-		      XtBorderWidth(smw);
+	if (menu_x + XtWidth(menu) > scr_width) {
+	    menu_x -= XtWidth(menu) + XtWidth(smw);
 	    popleft = True;
 	}
     }
@@ -1770,8 +1764,8 @@ PopupSubMenu(SimpleMenuWidget smw)
     if (menu_y >= 0) {
 	int scr_height = HeightOfScreen(XtScreen(menu));
 
-	if (menu_y + menu_height > scr_height)
-	    menu_y = scr_height - menu_height;
+	if (menu_y + XtHeight(menu) > scr_height)
+	    menu_y = scr_height - XtHeight(menu) - XtBorderWidth(menu);
     }
     if (menu_y < 0)
 	menu_y = 0;

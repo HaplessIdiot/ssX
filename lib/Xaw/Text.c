@@ -70,7 +70,7 @@ SOFTWARE.
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Text.c,v 3.24 1999/05/03 12:15:43 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.c,v 3.25 1999/05/09 10:51:40 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -1289,66 +1289,71 @@ _XawTextBuildLineTable(TextWidget ctx, XawTextPosition position,
 static XawTextPosition
 _BuildLineTable(TextWidget ctx, XawTextPosition position, int line)
 {
-  XawTextLineTableEntry *lt = ctx->text.lt.info + line;
-  XawTextPosition end;
-  Position y;
-  int wwidth, width, height;
-  Widget src = ctx->text.source;
+    XawTextLineTableEntry *lt = ctx->text.lt.info + line;
+    XawTextPosition end;
+    Position y;
+    int wwidth, width, height;
+    Widget src = ctx->text.source;
 
-  if (ctx->text.wrap == XawtextWrapNever)
-    wwidth = 0x7fffffff;
-  else
-    wwidth = GetMaxTextWidth(ctx);
+    if (ctx->text.wrap == XawtextWrapNever)
+	wwidth = 0x7fffffff;
+    else
+	wwidth = GetMaxTextWidth(ctx);
 
-  y = line == 0 ? ctx->text.margin.top : lt->y;
+    y = line == 0 ? ctx->text.margin.top : lt->y;
 
-  if (line == 0) {
-      XawTextPosition pos = ctx->text.lt.top;
-      int base_line = ctx->text.lt.base_line;
+    if (ctx->text.lt.base_line < 0) {
+	if (line == 0)
+	    ctx->text.lt.top = position;
+    }
+    else if (line == 0) {
+	XawTextPosition pos = ctx->text.lt.top;
+	int base_line = ctx->text.lt.base_line;
 
-      if (position == 0)
-	  base_line = 1;
-      else if (ctx->text.source_changed == SRC_CHANGE_OVERLAP) {
-	  pos = 0;
-	  base_line = 1;
+	if (position == 0)
+	    base_line = 1;
+	else if (ctx->text.lt.base_line == 0 ||
+		 ctx->text.source_changed == SRC_CHANGE_OVERLAP) {
+	    pos = 0;
+	    base_line = 1;
 
-	  while (pos < position) {
-	      pos = SrcScan(src, pos, XawstEOL, XawsdRight, 1, True);
-	      if (pos <= position) {
-		  ++base_line;
-		  if (pos == ctx->text.lastPos) {
-		      base_line -= !_XawTextSourceNewLineAtEOF(src);
-		      break;
-		  }
-	      }
-	  }
-      }
-      else if (ctx->text.wrap == XawtextWrapNever
-	  && IsPositionVisible(ctx, position))
-	  base_line += LineForPosition(ctx, position);
-      else if (pos < position) {
-	  while (pos < position) {
-	      pos = SrcScan(src, pos, XawstEOL, XawsdRight, 1, True);
-	      if (pos <= position) {
-		  ++base_line;
-		  if (pos == ctx->text.lastPos) {
-		      base_line -= !_XawTextSourceNewLineAtEOF(src);
-		      break;
-		  }
-	      }
-	  }
-      }
-      else if (pos > position) {
-	  while (pos > position) {
-	      pos = SrcScan(src, pos, XawstEOL, XawsdLeft, 1, False);
-	      if (--pos >= position)
-		  --base_line;
-	  }
-      }
+	    while (pos < position) {
+		pos = SrcScan(src, pos, XawstEOL, XawsdRight, 1, True);
+		if (pos <= position) {
+		    ++base_line;
+		    if (pos == ctx->text.lastPos) {
+			base_line -= !_XawTextSourceNewLineAtEOF(src);
+			break;
+		    }
+		}
+	    }
+	}
+	else if (ctx->text.wrap == XawtextWrapNever
+		 && IsPositionVisible(ctx, position))
+	    base_line += LineForPosition(ctx, position);
+	else if (pos < position) {
+	    while (pos < position) {
+		pos = SrcScan(src, pos, XawstEOL, XawsdRight, 1, True);
+		if (pos <= position) {
+		    ++base_line;
+		    if (pos == ctx->text.lastPos) {
+			base_line -= !_XawTextSourceNewLineAtEOF(src);
+			break;
+		    }
+		}
+	    }
+	}
+	else if (pos > position) {
+	    while (pos > position) {
+		pos = SrcScan(src, pos, XawstEOL, XawsdLeft, 1, False);
+		if (--pos >= position)
+		    --base_line;
+	    }
+	}
 
-      ctx->text.lt.top = position;
-      ctx->text.lt.base_line = base_line;
-  }
+	ctx->text.lt.top = position;
+	ctx->text.lt.base_line = base_line;
+    }
 
     /* CONSTCOND */
     while (True) {
@@ -1412,7 +1417,7 @@ GetWidestLine(TextWidget ctx)
   unsigned int widest;
   XawTextLineTablePtr lt = &(ctx->text.lt);
 
-  for (i = 0, widest = 1; i < lt->lines; i++)
+  for (i = 0, widest = 0; i < lt->lines; i++)
     if (widest < lt->info[i].textWidth)
       widest = lt->info[i].textWidth;
 
@@ -1447,10 +1452,14 @@ _XawTextSetScrollBars(TextWidget ctx)
 
   if (ctx->text.scroll_horiz)
     {
-  denom = GetWidestLine(ctx);
-      if (denom == 0)
+      int width = (int)XtWidth(ctx) - RHMargins(ctx);
+
+      denom = GetWidestLine(ctx);
+      if (denom < width)
+	denom = width;
+      if (denom <= 0)
 	denom = 1;
-  widest = ((int)XtWidth(ctx) - RHMargins(ctx)) / denom;
+      widest = ((int)XtWidth(ctx) - RHMargins(ctx)) / denom;
       first = ctx->text.r_margin.left - ctx->text.left_margin;
       first /= denom;
 
@@ -1507,7 +1516,7 @@ XawTextScroll(TextWidget ctx, int vlines, int hpixels)
   Bool scroll;
   XRectangle rect;
 
-  vwidth = GetMaxTextWidth(ctx);
+  vwidth = (int)XtWidth(ctx) - RHMargins(ctx);
   vheight = (int)XtHeight(ctx) - RVMargins(ctx);
   lt = &ctx->text.lt;
 
@@ -1782,6 +1791,8 @@ VJump(Widget w, XtPointer closure, XtPointer callData)
       _XawTextSetScrollBars(ctx);
       return;
   }
+
+  ctx->text.lt.base_line = -1;
 
   if (position > lt->top)	/* VScroll Up */
     {
@@ -2339,8 +2350,16 @@ _SetSelection(TextWidget ctx, XawTextPosition left, XawTextPosition right,
 void
 _XawTextSetLineAndColumnNumber(TextWidget ctx, Bool force)
 {
-    int line_number = ResolveLineNumber(ctx);
-    int column_number = ResolveColumnNumber(ctx);
+    int line_number, column_number;
+
+    if (ctx->text.old_insert != ctx->text.insertPos &&
+	ctx->text.lt.base_line < 0) {
+	ctx->text.lt.base_line = 0;
+	(void)_BuildLineTable(ctx, ctx->text.lt.top, 0);
+    }
+
+    line_number = ResolveLineNumber(ctx);
+    column_number = ResolveColumnNumber(ctx);
 
     if (force || (ctx->text.column_number != column_number
 		  || ctx->text.line_number != line_number)) {
@@ -2356,7 +2375,6 @@ _XawTextSetLineAndColumnNumber(TextWidget ctx, Bool force)
     }
 }
 
-#define TAB_SIZE	8
 static int
 ResolveColumnNumber(TextWidget ctx)
 {
@@ -2365,6 +2383,13 @@ ResolveColumnNumber(TextWidget ctx)
     XawTextPosition position;
     XawTextBlock block;
     unsigned long format = _XawTextFormat(ctx);
+    TextSinkObject sink = (TextSinkObject)ctx->text.sink;
+    short *char_tabs = sink->text_sink.char_tabs;
+    int tab_count = sink->text_sink.tab_count;
+    int tab_index = 0, tab_column = 0, tab_base = 0;
+
+    if (ctx->text.lt.base_line < 1)
+	return (ctx->text.column_number);
 
     position = SrcScan(src, ctx->text.insertPos, XawstEOL, XawsdLeft, 1, False);
     XawTextSourceRead(src, position, &block, ctx->text.insertPos - position);
@@ -2372,18 +2397,27 @@ ResolveColumnNumber(TextWidget ctx)
     for (; position < ctx->text.insertPos; position++) {
 	if (position - block.firstPos >= block.length)
 	    XawTextSourceRead(src, position, &block, ctx->text.insertPos - position);
-	if (format == XawFmt8Bit) {
-	    if (block.ptr[position - block.firstPos] == '\t')
-		column_number += TAB_SIZE - (column_number % TAB_SIZE);
-	    else
-		++column_number;
+	if ((format == XawFmt8Bit && block.ptr[position - block.firstPos] == '\t') ||
+	    (format == XawFmtWide && ((wchar_t*)block.ptr)[position - block.firstPos] == _Xaw_atowc(XawTAB))) {
+	    while (tab_base + tab_column <= column_number) {
+		if (tab_count) {
+		    for (; tab_index < tab_count; ++tab_index)
+			if (tab_base + char_tabs[tab_index] > column_number) {
+			    tab_column = char_tabs[tab_index];
+			    break;
+			}
+		    if (tab_index >= tab_count) {
+			tab_base += char_tabs[tab_count - 1];
+			tab_column = tab_index = 0;
+		    }
+		}
+		else
+		    tab_column += DEFAULT_TAB_SIZE;
+	    }
+	    column_number = tab_base + tab_column;
 	}
-	else {
-	    if (((wchar_t*)block.ptr)[position - block.firstPos] == _Xaw_atowc(XawTAB))
-		column_number += TAB_SIZE - (column_number % TAB_SIZE);
-	    else
-		++column_number;
-	}
+	else
+	    ++column_number;
 	if (column_number >= 16384) {
 	    column_number = 16383;
 	    break;
@@ -3368,6 +3402,9 @@ ResolveLineNumber(TextWidget ctx)
 {
     int line_number = ctx->text.lt.base_line;
     XawTextPosition position = ctx->text.lt.top;
+
+    if (ctx->text.lt.base_line < 1)
+	return (ctx->text.line_number);
 
     if (ctx->text.wrap == XawtextWrapNever
 	&& IsPositionVisible(ctx, ctx->text.insertPos))

@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextSink.c,v 1.8 1999/05/03 12:15:45 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSink.c,v 1.9 1999/05/09 10:51:42 dawes Exp $ */
 
 /*
  * Author:  Chris Peterson, MIT X Consortium.
@@ -794,13 +794,20 @@ XawTextSinkSetTabs(Widget w, int tab_count, int *tabs)
     {
       TextSinkObjectClass cclass = (TextSinkObjectClass)w->core.widget_class;
       short *char_tabs = (short*)XtMalloc((unsigned)tab_count * sizeof(short));
-      short *tab;
+      short *tab, len = 0;
       int i;
 
-      for (i = tab_count, tab = char_tabs; i; i--)
-	*tab++ = (short)*tabs++;
+      for (i = tab_count, tab = char_tabs; i; i--) {
+	    if ((short)*tabs > len)
+		*tab++ = (len = (short)*tabs++);
+	    else {
+		tabs++;
+		--tab_count;
+	    }
+      }
 
-      (*cclass->text_sink_class.SetTabs)(w, tab_count, char_tabs);
+	if (tab_count > 0)
+	    (*cclass->text_sink_class.SetTabs)(w, tab_count, char_tabs);
       XtFree((char *)char_tabs);
   }
 }

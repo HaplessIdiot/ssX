@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/commands.c,v 1.14 1999/04/29 09:13:57 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/commands.c,v 1.15 1999/05/09 10:52:02 dawes Exp $ */
 
 #include <X11/Xfuncs.h>
 #include <X11/Xos.h>
@@ -366,7 +366,10 @@ DoSave(Widget w, XtPointer client_data, XtPointer call_data)
 void
 DoLoad(Widget w, XtPointer client_data, XtPointer call_data)
 {
-    (void)ReallyDoLoad(GetString(filenamewindow), ResolveName(NULL));
+    if (ReallyDoLoad(GetString(filenamewindow), ResolveName(NULL))) {
+        SwitchDirWindow(False);
+        XtSetKeyboardFocus(topwindow, textwindow);
+    }
 }
 
 static Bool
@@ -386,7 +389,6 @@ ReallyDoLoad(char *name, char *filename)
     else if (*name == '\0') {
 	XeditPrintf("Load: No file specified.\n");
 	Feep();
-	return (False);
     }
     if ((item = FindTextSource(NULL, filename)) != NULL) {
 	SwitchTextSource(item);
@@ -592,6 +594,22 @@ KillFile(Widget w, XEvent *event, String *params, Cardinal *num_params)
 void
 FindFile(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
+    char *string = GetString(filenamewindow);
+    char *slash = NULL;
+    XawTextBlock block;
+    XawTextPosition end = XawTextSourceScan(XawTextGetSource(filenamewindow),
+					    0, XawstAll, XawsdRight, 1, True);
+
+    if (string)
+	slash = strrchr(string, '/');
+    block.firstPos = 0;
+    block.format = FMT8BIT;
+    block.ptr = string;
+    block.length = slash ? slash - string + 1 : 0;
+
+    if (block.length != end)
+	XawTextReplace(filenamewindow, 0, end, &block);
+    XawTextSetInsertionPoint(filenamewindow, end);
     XtSetKeyboardFocus(topwindow, filenamewindow);
 }
 

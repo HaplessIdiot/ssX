@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/ispell.c,v 1.3 1999/05/03 12:16:09 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/ispell.c,v 1.4 1999/05/09 10:52:02 dawes Exp $ */
 
 #include "xedit.h"
 #ifndef X_NOT_STDC_ENV
@@ -36,6 +36,9 @@
 #endif
 #include <fcntl.h>
 #include <signal.h>
+#include <ctype.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #define RECEIVE		1
 #define SEND		2
@@ -70,6 +73,7 @@ struct _ispell {
     int stat;
     char *buf;
     int bufsiz;
+    char sendbuf[1024];
 
     int undo_depth;
     ispell_undo *undo_head, *undo_base;
@@ -78,6 +82,7 @@ struct _ispell {
     char *cmd;
     char *skip;
     char *command;
+    Boolean terse_mode;
 };
 
 typedef struct _ReplaceList {
@@ -122,13 +127,12 @@ Bool _XawTextSrcUndo(TextSrcObject, XawTextPosition*);
 /*
  * Initialization
  */
-extern Boolean international;
-
 static struct _ispell ispell;
 
-#define STRTBLSZ	23
-static ReplaceList *replace_list[STRTBLSZ];
-static IgnoreList *ignore_list[STRTBLSZ];
+#define RSTRTBLSZ	23
+#define ISTRTBLSZ	71
+static ReplaceList *replace_list[RSTRTBLSZ];
+static IgnoreList *ignore_list[ISTRTBLSZ];
 
 #define Offset(field) XtOffsetOf(struct _ispell, field)
 static XtResource resources[] = {
@@ -138,6 +142,8 @@ static XtResource resources[] = {
 	Offset(cmd), XtRString, "/usr/local/bin/ispell"},
     {"skipLines", "Skip", XtRString, sizeof(char*),
 	Offset(skip), XtRString, "#"},
+    {"terseMode", "Terse", XtRBoolean, sizeof(Boolean),
+	Offset(terse_mode), XtRImmediate, (XtPointer)False},
 };
 #undef Offset
 
@@ -215,7 +221,7 @@ IspellReplacedWord(char *word, char *replace)
 	ii = (ii << 1) ^ *pp++;
     if (ii < 0)
 	ii = -ii;
-    ii %= STRTBLSZ;
+    ii %= RSTRTBLSZ;
     for (list = replace_list[ii]; list; list = list->next)
 	if (strcmp(list->word, word) == 0) {
 	    if (replace) {
@@ -248,7 +254,7 @@ IspellIgnoredWord(char *word, int cmd, Bool add)
 	ii = (ii << 1) ^ *pp++;
     if (ii < 0)
 	ii = -ii;
-    ii %= STRTBLSZ;
+    ii %= ISTRTBLSZ;
     for (prev = list = ignore_list[ii]; list; prev = list, list = list->next)
 	if (strcmp(list->word, word) == 0) {
 	    if (cmd == REMOVE) {
@@ -288,6 +294,7 @@ IspellReceive(void)
 	return (False);
 
     buflen = 0;
+    len = 0;
     while (1) {		/* read the entire line */
 	if (len >= ispell.bufsiz)
 	    ispell.buf = XtRealloc(ispell.buf, ispell.bufsiz += BUFSIZ);
@@ -296,10 +303,10 @@ IspellReceive(void)
 	    break;
 	buflen += len;
     }
-    while (buflen > 0 && ispell.buf[buflen - 1] == '\n')
-	--buflen;
     if (buflen <= 0)
 	return (False);
+    while (buflen > 0 && ispell.buf[buflen - 1] == '\n')
+	--buflen;
     ispell.buf[buflen] = '\0';
 
     switch (ispell.buf[0]) {
@@ -397,9 +404,12 @@ IspellReceive(void)
 	    ispell.lock = True;
 	    break;
 	case '#':	/* NONE */
-	    str = strchr(&ispell.buf[2], ' ');
-	    *str = '\0';
-	    XtSetArg(args[0], XtNlabel, &ispell.buf[2]);
+	case '-':	/* COMPOUND */
+	case '+':	/* ROOT */
+	    *strchr(ispell.sendbuf, '\n') = '\0';
+	    str = &ispell.sendbuf[1];
+
+	    XtSetArg(args[0], XtNlabel, str);
 	    XtSetValues(ispell.word, args, 1);
 
 	    XtSetArg(args[0], XtNlist, &old_list);
@@ -408,15 +418,15 @@ IspellReceive(void)
 	    ispell.item = NULL;
 
 	    list = (char**)XtMalloc(sizeof(char**));
-	    if ((str = IspellReplacedWord(&ispell.buf[2], NULL)) == NULL)
-		str = &ispell.buf[2];
+	    if ((tmp = IspellReplacedWord(str, NULL)) != NULL)
+		str = tmp;
 	    list[0] = XtNewString(str);
 
 	    XtSetArg(args[0], XtNlist, list);
 	    XtSetArg(args[1], XtNnumberStrings, 1);
 	    XtSetValues(ispell.list, args, 2);
 
-	    if (str == &ispell.buf[2])
+	    if (tmp == NULL)
 		XawListUnhighlight(ispell.list);
 	    else
 		XawListHighlight(ispell.list, 0);
@@ -434,9 +444,10 @@ IspellReceive(void)
 
 	    ispell.lock = True;
 	    break;
-	case '-':	/* COMPOUND */
-	case '+':	/* ROOT */
 	case '*':	/* OK */
+	case '\0':	/* when running in terse mode */
+	    *strchr(ispell.sendbuf, '\n') = '\0';
+	    (void)IspellIgnoredWord(&ispell.sendbuf[1], ADD, False);
 	    ispell.lock = False;
 	    break;
 	default:
@@ -445,10 +456,9 @@ IspellReceive(void)
     }
 
     ispell.stat = SEND;
-    if (!ispell.lock) {
+    if (!ispell.lock)
 	while (IspellSend() == 0)
 	    ;
-    }
 
     return (True);
 }
@@ -460,14 +470,13 @@ IspellSend(void)
     XawTextPosition position;
     XawTextBlock block;
     int i, len;
-    char buf[1024];
     Bool nl;
 
     if (ispell.lock || ispell.stat != SEND)
 	return (-1);
 
     len = 1;
-    strcpy(buf, "^");	/* don't evaluate following characters as commands */
+    ispell.sendbuf[0] = '^';	/* don't evaluate following characters as commands */
 
     /* skip non word characters */
     position = ispell.right;
@@ -559,8 +568,8 @@ IspellSend(void)
 		    done = True;
 		    break;
 		}
-		buf[len] = *mb;
-		if (++len >= sizeof(buf) - 1) {
+		ispell.sendbuf[len] = *mb;
+		if (++len >= sizeof(ispell.sendbuf) - 1) {
 		    done = True;
 		    fprintf(stderr, "Warning: word is too large!\n");
 		    break;
@@ -574,8 +583,8 @@ IspellSend(void)
 		    done = True;
 		    break;
 		}
-		buf[len] = block.ptr[i];
-		if (++len >= sizeof(buf) - 1) {
+		ispell.sendbuf[len] = block.ptr[i];
+		if (++len >= sizeof(ispell.sendbuf) - 1) {
 		    done = True;
 		    fprintf(stderr, "Warning: word is too large!\n");
 		    break;
@@ -587,13 +596,13 @@ IspellSend(void)
 	    break;
     }
 
-    buf[len] = '\0';
-    if (IspellIgnoredWord(&buf[1], CHECK, False))
+    ispell.sendbuf[len] = '\0';
+    if (len <= 2 || IspellIgnoredWord(&ispell.sendbuf[1], CHECK, False))
 	return (0);
 
-    buf[len++] = '\n';
+    ispell.sendbuf[len++] = '\n';
 
-    write(ispell.ofd[1], buf, len);
+    write(ispell.ofd[1], ispell.sendbuf, len);
 
     ispell.stat = RECEIVE;
 
@@ -621,11 +630,12 @@ IspellInputCallback(XtPointer closure, int *source, XtInputId *id)
 	}
 	else
 	    fprintf(stderr, "Error: is ispell talking with me?\n");
+	if (ispell.terse_mode)
+	    write(ispell.ofd[1], "!\n", 2);	/* enter terse mode */
 	while (IspellSend() == 0)
 	    ;
     }
-
-    if (ispell.source)
+    else if (ispell.source)
 	IspellReceive();
 }
 
@@ -652,7 +662,7 @@ IspellAction(Widget w, XEvent *event, String *params, Cardinal *num_params)
     InitIspell();
 
     if (*num_params == 1 && (params[0][0] == 'e' || params[0][0] == 'E')) {
-	PopdownIspell(w, NULL, NULL);
+	PopdownIspell(w, (XtPointer)True, NULL);
 	return;
     }
 
@@ -792,7 +802,7 @@ PopdownIspell(Widget w, XtPointer client_data, XtPointer call_data)
 	int i;
 
 	/* insert added words in private dictionary */
-	for (i = 0; i < STRTBLSZ; i++) {
+	for (i = 0; i < ISTRTBLSZ; i++) {
 	    pil = il = ignore_list[i];
 	    while (il) {
 		if (il->add) {
@@ -837,7 +847,7 @@ PopdownIspell(Widget w, XtPointer client_data, XtPointer call_data)
 		XtFree(ispell.buf);
 	    ispell.buf = NULL;
 
-	    for (i = 0; i < STRTBLSZ; i++) {
+	    for (i = 0; i < RSTRTBLSZ; i++) {
 		prl = rl = replace_list[i];
 		while (prl) {
 		    rl = rl->next;
@@ -846,9 +856,9 @@ PopdownIspell(Widget w, XtPointer client_data, XtPointer call_data)
 		    XtFree((char*)prl);
 		    prl = rl;
 		}
-	        replace_list[i] = NULL;
+		replace_list[i] = NULL;
 	    }
-	    for (i = 0; i < STRTBLSZ; i++) {
+	    for (i = 0; i < ISTRTBLSZ; i++) {
 		pil = il = ignore_list[i];
 		while (pil) {
 		    il = il->next;
@@ -856,7 +866,7 @@ PopdownIspell(Widget w, XtPointer client_data, XtPointer call_data)
 		    XtFree((char*)pil);
 		    pil = il;
 		}
-	        ignore_list[i] = NULL;
+		ignore_list[i] = NULL;
 	    }
 	}
 

@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Private.h,v 3.7 1998/12/06 10:44:34 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Private.h,v 3.8 1999/04/04 08:46:02 dawes Exp $ */
 
 #ifndef _XawPrivate_h
 #define _XawPrivate_h
@@ -83,6 +83,7 @@ void XawDeclareAction(Widget, XEvent*, String*, Cardinal*);
 void XawCallProcAction(Widget, XEvent*, String*, Cardinal*);
 
 /* display lists */
+#define	XAWDL_CONVERT_ERROR	(XtPointer)-1
 typedef struct _XawDL _XawDisplayList;
 typedef struct _XawDLClass XawDLClass, XawDisplayListClass;
 

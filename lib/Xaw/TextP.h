@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextP.h,v 3.13 1999/05/03 12:15:45 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextP.h,v 3.14 1999/05/09 10:51:41 dawes Exp $ */
 
 #ifndef _XawTextP_h
 #define _XawTextP_h
@@ -76,6 +76,7 @@ extern Cardinal _XawTextActionsTableCount;
 
 /* constants that subclasses may want to know */
 #define DEFAULT_TEXT_HEIGHT ((Dimension)~0)
+#define DEFAULT_TAB_SIZE	8
 
 /* displayable text management data structures */
 typedef struct {
