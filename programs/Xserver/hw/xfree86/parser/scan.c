@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.9 2000/01/31 19:33:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.10 2000/03/02 17:53:13 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -94,7 +94,7 @@ StrToUL (char *str)
 	if (*p == '0')
 	{
 		p++;
-		if (*p == 'x')
+		if ((*p == 'x') || (*p == 'X'))
 		{
 			p++;
 			base = 16;
@@ -205,7 +205,7 @@ xf86GetToken (xf86ConfigSymTabRec * tab)
 			configRBuf[0] = c;
 			i = 1;
 			while (isdigit (c = configBuf[configPos++]) ||
-				   (c == '.') || (c == 'x') ||
+				   (c == '.') || (c == 'x') || (c == 'X') ||
 				   ((base == 16) && (((c >= 'a') && (c <= 'f')) ||
 									 ((c >= 'A') && (c <= 'F')))))
 				configRBuf[i++] = c;
