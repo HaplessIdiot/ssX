@@ -1,5 +1,5 @@
-// $XConsortium: xfree86 /main/9 1996/03/01 17:10:21 kaleb $
-// $XFree86: xc/programs/xkbcomp/keymap/xfree86,v 3.2 1996/02/18 03:45:37 dawes Exp $
+// $XConsortium: xfree86 /main/11 1996/03/07 13:42:13 kaleb $
+// $XFree86: xc/programs/xkbcomp/keymap/xfree86,v 3.3 1996/03/04 05:31:13 dawes Exp $
 default xkb_keymap "us" {
     xkb_keycodes	{ include "xfree86"		};
     xkb_types		{ include "default"		};
@@ -32,43 +32,43 @@ xkb_keymap "de"	{
     xkb_keycodes	{ include "xfree86"		};
     xkb_types		{ include "default"		};
     xkb_compatibility	{ include "default"		};
-    xkb_symbols		{ include "en_US(pc101)+de"	};
-    xkb_geometry 	{ include "pc"			};
+    xkb_symbols		{ include "en_US(pc102)+de"	};
+    xkb_geometry 	{ include "pc(pc102)"		};
 };
 xkb_keymap "fr"	{
     xkb_keycodes	{ include "xfree86"		};
     xkb_types		{ include "default"		};
     xkb_compatibility	{ include "default"		};
-    xkb_symbols		{ include "en_US(pc101)+fr"	};
-    xkb_geometry 	{ include "pc"			};
+    xkb_symbols		{ include "en_US(pc102)+fr"	};
+    xkb_geometry 	{ include "pc(pc102)"		};
 };
 xkb_keymap "gb"	{
     xkb_keycodes	{ include "xfree86"		};
     xkb_types		{ include "default"		};
     xkb_compatibility	{ include "default"		};
-    xkb_symbols		{ include "en_US(pc101)+gb"	};
-    xkb_geometry 	{ include "pc"			};
+    xkb_symbols		{ include "en_US(pc102)+gb"	};
+    xkb_geometry 	{ include "pc(pc102)"		};
 };
 xkb_keymap "th"	{
     xkb_keycodes	{ include "xfree86"		};
     xkb_types		{ include "default"		};
     xkb_compatibility	{ include "default"		};
-    xkb_symbols		{ include "en_US(pc101)+th"	};
-    xkb_geometry 	{ include "pc"			};
+    xkb_symbols		{ include "en_US(pc102)+th"	};
+    xkb_geometry 	{ include "pc(pc102)"		};
 };
 xkb_keymap "de_CH"	{
     xkb_keycodes	{ include "xfree86"		};
     xkb_types		{ include "default"		};
     xkb_compatibility	{ include "default"		};
-    xkb_symbols		{ include "en_US(pc101)+de_CH"	};
-    xkb_geometry 	{ include "pc"			};
+    xkb_symbols		{ include "en_US(pc102)+de_CH"	};
+    xkb_geometry 	{ include "pc(pc102)"		};
 };
 xkb_keymap "fr_CH"	{
     xkb_keycodes	{ include "xfree86"		};
     xkb_types		{ include "default"		};
     xkb_compatibility	{ include "default"		};
-    xkb_symbols		{ include "en_US(pc101)+fr_CH"	};
-    xkb_geometry 	{ include "pc"			};
+    xkb_symbols		{ include "en_US(pc102)+fr_CH"	};
+    xkb_geometry 	{ include "pc(pc102)"		};
 };
 xkb_keymap "jp106" {
     xkb_keycodes	{ include "xfree86(jp106)"		};
