@@ -1,3 +1,5 @@
+3532. Update some drivers to respect the PROBE_DETECT flag and update 
+      xf86DoProbe to print out the supported chipset list (Alan Hourihane).
 3531. Update Trident driver to fix Clock source for 9440 chips and allow
       linear framebuffer mapping for nommio (Alan Hourihane).
 3530. Fix fb for module compiling and ifdef fbcmap for now (Alan Hourihane).
