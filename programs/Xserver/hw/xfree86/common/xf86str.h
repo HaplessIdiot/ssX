@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.54 1999/11/02 16:16:31 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.55 1999/11/18 16:52:07 tsi Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -353,9 +353,13 @@ typedef enum {
 
 typedef struct _screenlayoutrec {
     confScreenPtr	screen;
+    char *		topname;
     confScreenPtr	top;
+    char *		bottomname;
     confScreenPtr	bottom;
+    char *		leftname;
     confScreenPtr	left;
+    char *		rightname;
     confScreenPtr	right;
     PositionType	where;
     int			x;

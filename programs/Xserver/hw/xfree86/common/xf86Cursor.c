@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.19 1999/09/25 14:37:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.20 1999/10/13 22:32:56 dawes Exp $ */
 /* $XConsortium: xf86Cursor.c /main/10 1996/10/19 17:58:23 kaleb $ */
 
 #define NEED_EVENTS
@@ -505,7 +505,7 @@ xf86InitOrigins(void)
 
 	    switch(screen->where) {
 	    case PosObsolete:
-#if 0
+#if 1
 		pLayout = &xf86ScreenLayout[i];
 		/* force edge lists */
 		if(screen->left) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.193 1999/09/06 11:27:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.194 1999/10/13 04:21:02 dawes Exp $ */
 
 
 /*
@@ -1075,6 +1075,10 @@ configLayout(serverLayoutPtr servlayoutp, XF86ConfLayoutPtr conf_layout)
 	switch (adjp->adj_where) {
 	case CONF_ADJ_OBSOLETE:
 	    slp[count].where = PosObsolete;
+	    slp[count].topname = adjp->adj_top_str;
+	    slp[count].bottomname = adjp->adj_bottom_str;
+	    slp[count].leftname = adjp->adj_left_str;
+	    slp[count].rightname = adjp->adj_right_str;
 	    break;
 	case CONF_ADJ_ABSOLUTE:
 	    slp[count].where = PosAbsolute;
@@ -1101,14 +1105,28 @@ configLayout(serverLayoutPtr servlayoutp, XF86ConfLayoutPtr conf_layout)
 
     /* XXX Need to tie down the upper left screen. */
 
-    /* Fill in the refscreen values */
+    /* Fill in the refscreen and top/bottom/left/right values */
     for (i = 0; i < count; i++) {
-	if (slp[i].refname) {
-	    for (j = 0; j < count; j++) {
-		if (strcmp(slp[i].refname, slp[j].screen->id) == 0) {
-		    slp[i].refscreen = slp[j].screen;
-		    break;
-		}
+	for (j = 0; j < count; j++) {
+	    if (slp[i].refname &&
+		strcmp(slp[i].refname, slp[j].screen->id) == 0) {
+		slp[i].refscreen = slp[j].screen;
+	    }
+	    if (slp[i].topname &&
+		strcmp(slp[i].topname, slp[j].screen->id) == 0) {
+		slp[i].top = slp[j].screen;
+	    }
+	    if (slp[i].bottomname &&
+		strcmp(slp[i].bottomname, slp[j].screen->id) == 0) {
+		slp[i].bottom = slp[j].screen;
+	    }
+	    if (slp[i].leftname &&
+		strcmp(slp[i].leftname, slp[j].screen->id) == 0) {
+		slp[i].left = slp[j].screen;
+	    }
+	    if (slp[i].rightname &&
+		strcmp(slp[i].rightname, slp[j].screen->id) == 0) {
+		slp[i].right = slp[j].screen;
 	    }
 	}
     }
@@ -1121,7 +1139,8 @@ configLayout(serverLayoutPtr servlayoutp, XF86ConfLayoutPtr conf_layout)
 	       slp[i].screen->screennum);
 	switch (slp[i].where) {
 	case PosObsolete:
-	    ErrorF("\tObsolete format\n");
+	    ErrorF("\tObsolete format: \"%s\" \"%s\" \"%s\" \"%s\"\n",
+		   slp[i].top, slp[i].bottom, slp[i].left, slp[i].right);
 	    break;
 	case PosAbsolute:
 	    if (slp[i].x == -1)
