@@ -1,7 +1,7 @@
-/* $Xorg: LogoP.h,v 1.4 2001/02/09 02:05:54 xorgcvs Exp $ */
+/* $Xorg: Logo.h,v 1.4 2001/02/09 02:05:54 xorgcvs Exp $ */
 /*
 
-Copyright 1988, 1993, 1998  The Open Group
+Copyright 1988, 1990, 1998  The Open Group
 
 Permission to use, copy, modify, distribute, and sell this software and its
 documentation for any purpose is hereby granted without fee, provided that
@@ -27,48 +27,11 @@ from The Open Group.
 
 */
 
+#ifndef _RenderLogo_h
+#define _RenderLogo_h
 
-#ifndef _XawLogoP_h
-#define _XawLogoP_h
+void
+RenderLogo(Display *dpy, int op, Picture src, Picture dst, XRenderPictFormat *maskFormat,
+	   int x, int y, unsigned int width, unsigned int height);
 
-#include "Logo.h"
-#include <X11/Xaw/SimpleP.h>
-
-#ifdef XRENDER
-#include <X11/extensions/Xrender.h>
-#include <X11/Xft/Xft.h>
-#endif
-
-typedef struct {
-         Pixel fgpixel;
-	 GC	 foreGC;
-	 GC	 backGC;
-	 Boolean shape_window;
-	 Boolean need_shaping;
-#ifdef XRENDER
-         Boolean render;
-         Boolean sharp;
-	 XftDraw    *draw;
-         XRenderPictFormat *mask_format;
-	 XftColor   fg;
-	 XftColor   bg;
-#endif
-   } LogoPart;
-
-typedef struct _LogoRec {
-   CorePart core;
-   SimplePart simple;
-   LogoPart logo;
-   } LogoRec;
-
-typedef struct {int dummy;} LogoClassPart;
-
-typedef struct _LogoClassRec {
-   CoreClassPart core_class;
-   SimpleClassPart simple_class;
-   LogoClassPart logo_class;
-   } LogoClassRec;
-
-extern LogoClassRec logoClassRec;
-
-#endif /* _XawLogoP_h */
+#endif /* _RenderLogo_h */

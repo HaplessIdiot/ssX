@@ -51,6 +51,14 @@ from The Open Group.
 #define XtNshapeWindow "shapeWindow"
 #define XtCShapeWindow "ShapeWindow"
 
+#define XtNrender "render"
+#define XtCRender "Render"
+
+#define XtRXftColor "XftColor"
+
+#define XtNsharp "sharp"
+#define XtCSharp "Sharp"
+
 typedef struct _LogoRec *LogoWidget;
 typedef struct _LogoClassRec *LogoWidgetClass;
 
