@@ -1,8 +1,5 @@
-/* $Header$
- *
- * $Log$
- * Revision 1.1  1994-04-27 07:36:22  dawes
- * Initial revision
+/* oldHeader: common.h,v 2.0.1.2 88/06/22 20:44:53 lwall Locked $
+ * $XConsortium: common.h,v 3.3 94/09/14 21:13:08 gildea Exp $
  *
  * Revision 2.0.1.2  88/06/22  20:44:53  lwall
  * patch12: sprintf was declared wrong
@@ -46,8 +43,13 @@
 #include <sys/stat.h>
 #include <ctype.h>
 #include <signal.h>
+#include <fcntl.h>
 #undef malloc
 #undef realloc
+
+#ifdef WIN32
+#include "winnt.h"
+#endif
 
 /* constants */
 
@@ -118,7 +120,9 @@ EXT char buf[MAXLINELEN];		/* general purpose buffer */
 EXT FILE *ofp INIT(Nullfp);		/* output file pointer */
 EXT FILE *rejfp INIT(Nullfp);		/* reject file pointer */
 
+#ifndef WIN32
 EXT int myuid;				/* cache getuid return value */
+#endif
 
 EXT bool using_plan_a INIT(TRUE);	/* try to keep everything in memory */
 EXT bool out_of_mem INIT(FALSE);	/* ran out of memory in plan a */
@@ -183,7 +187,9 @@ char *getenv();
 char *strcpy();
 char *strcat();
 char *rindex();
+#if 0
 long lseek();
+#endif
 char *mktemp();
 #if 0				/* This can cause a prototype conflict.  */
 #ifdef CHARSPRINTF
@@ -193,9 +199,16 @@ int sprintf();
 #endif
 #endif
 
+#ifndef WIN32
 #if !defined(S_ISDIR) && defined(S_IFDIR)
 #define	S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
 #endif
 #if !defined(S_ISREG) && defined(S_IFREG)
 #define	S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
 #endif
+#else
+#define	S_ISDIR(m) (((m) & _S_IFMT) == _S_IFDIR)
+#define	S_ISREG(m) (((m) & _S_IFMT) == _S_IFREG)
+#endif
+
+

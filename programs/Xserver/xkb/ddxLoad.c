@@ -1,5 +1,5 @@
 /* $XConsortium: ddxLoad.c /main/16 1996/06/11 11:31:21 kaleb $ */
-/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.10 1996/08/13 11:32:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.11 1996/08/20 12:32:14 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -291,6 +291,26 @@ char	buf[PATH_MAX],keymap[PATH_MAX],xkm_output_dir[PATH_MAX];
 		strncpy(nameRtrn,keymap,nameRtrnLen);
 		nameRtrn[nameRtrnLen-1]= '\0';
 	    }
+#if defined(Lynx) && defined(__i386__)
+	/* somehow popen/pclose is broken on LynxOS AT 2.3.0/2.4.0!
+	 * the problem usually shows up with XF86Setup
+	 * this hack waits at max 5 seconds after pclose() returns
+	 * for the output of the xkbcomp output file.
+	 * I didn't manage to get a patch in time for the 3.2 release
+	 */
+            {
+		int i;
+		char name[PATH_MAX];
+		sprintf(name,"%s%s.xkm", xkm_output_dir, keymap);
+		for (i = 0; i < 10; i++) {
+	            if (access(name, 0) == 0) break;
+		    usleep(500000);
+		}
+#ifdef DEBUG
+		if (i) ErrorF(">>>> Waited %d times for %s\n", i, name);
+#endif
+	    }
+#endif
 	    return True;
 	}
 #ifdef DEBUG
