@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: input.c,v 1.17 92/03/20 17:43:06 gildea Exp $
+ *	$XConsortium: input.c,v 1.18 94/05/14 15:53:34 gildea Exp $
  */
 
 /*
@@ -70,18 +70,34 @@ Input (keyboard, screen, event, eightbit)
     Bool eightbit;
 {
 
+#ifdef I18N
+#define STRBUFSIZE 500
+#else
 #define STRBUFSIZE 100
+#endif
 
 	char strbuf[STRBUFSIZE];
 	register char *string;
 	register int key = FALSE;
 	int	pty	= screen->respond;
 	int	nbytes;
-	KeySym  keysym;
+	KeySym  keysym = 0;
 	ANSI	reply;
+#ifdef I18N
+	Status	status_return;
+#endif
 
+#ifdef I18N
+	if (screen->xic)
+	    nbytes = XmbLookupString (screen->xic, event, strbuf, STRBUFSIZE,
+				      &keysym, &status_return);
+	else
+	    nbytes = XLookupString (event, strbuf, STRBUFSIZE,
+				    &keysym, &compose_status);
+#else
 	nbytes = XLookupString (event, strbuf, STRBUFSIZE,
 				&keysym, &compose_status);
+#endif
 
 	string = &strbuf[0];
 	reply.a_pintro = 0;
@@ -89,18 +105,14 @@ Input (keyboard, screen, event, eightbit)
 	reply.a_nparam = 0;
 	reply.a_inters = 0;
 
+	if (keysym >= XK_KP_Home && keysym <= XK_KP_Begin) {
+	    keysym += XK_Home - XK_KP_Home;
+	}
+
 	if (IsPFKey(keysym)) {
 		reply.a_type = SS3;
 		unparseseq(&reply, pty);
 		unparseputc((char)(keysym-XK_KP_F1+'P'), pty);
-		key = TRUE;
-	} else if (IsKeypadKey(keysym)) {
-	  	if (keyboard->flags & KYPD_APL)	{
-			reply.a_type   = SS3;
-			unparseseq(&reply, pty);
-			unparseputc(kypd_apl[keysym-XK_KP_Space], pty);
-		} else
-			unparseputc(kypd_num[keysym-XK_KP_Space], pty);
 		key = TRUE;
         } else if (IsCursorKey(keysym) &&
         	keysym != XK_Prior && keysym != XK_Next) {
@@ -116,7 +128,8 @@ Input (keyboard, screen, event, eightbit)
 		key = TRUE;
 	 } else if (IsFunctionKey(keysym) || IsMiscFunctionKey(keysym) ||
 	 	keysym == XK_Prior || keysym == XK_Next ||
-	 	keysym == DXK_Remove) {
+	 	keysym == DXK_Remove || keysym == XK_KP_Delete ||
+		keysym == XK_KP_Insert) {
 		reply.a_type = CSI;
 		reply.a_nparam = 1;
 		if (sunFunctionKeys) {
@@ -128,6 +141,14 @@ Input (keyboard, screen, event, eightbit)
 		}
 		if (reply.a_param[0] > 0)
 			unparseseq(&reply, pty);
+		key = TRUE;
+	} else if (IsKeypadKey(keysym)) {
+	  	if (keyboard->flags & KYPD_APL)	{
+			reply.a_type   = SS3;
+			unparseseq(&reply, pty);
+			unparseputc(kypd_apl[keysym-XK_KP_Space], pty);
+		} else
+			unparseputc(kypd_num[keysym-XK_KP_Space], pty);
 		key = TRUE;
 	} else if (nbytes > 0) {
 		if(screen->TekGIN) {
@@ -200,7 +221,9 @@ static int funcvalue (keycode)
 
 		case XK_Find :	return(1);
 		case XK_Insert:	return(2);
+		case XK_KP_Insert: return(2);
 		case XK_Delete:	return(3);
+		case XK_KP_Delete: return(3);
 		case DXK_Remove: return(3);
 		case XK_Select:	return(4);
 		case XK_Prior:	return(5);
@@ -255,7 +278,9 @@ static int sunfuncvalue (keycode)
   
 		case XK_Find :	return(1);
 		case XK_Insert:	return(2);
+		case XK_KP_Insert: return(2);
 		case XK_Delete:	return(3);
+		case XK_KP_Delete: return(3);
 		case DXK_Remove: return(3);
 		case XK_Select:	return(4);
 		case XK_Prior:	return(5);

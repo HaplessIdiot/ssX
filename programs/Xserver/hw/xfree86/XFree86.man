@@ -1,5 +1,5 @@
 .\" $XConsortium: XFree86.man,v 1.3 94/04/11 16:03:13 matt Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.6 1994/09/27 10:27:18 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.7 1995/01/07 05:43:28 dawes Exp $
 .TH XFree86 1 "Version 3.1.1"  "XFree86"
 .SH NAME
 XFree86 - X11R6 for UNIX on x86 platforms
@@ -23,7 +23,7 @@ operates under the following operating systems:
 .br
 -- Solaris (x86) 2.1, 2.4
 .br
--- FreeBSD 1.1.5, NetBSD 1.0 (i386 port only)
+-- FreeBSD 1.1.5, 2.0, NetBSD 1.0 (i386 port only)
 .br
 -- BSD/386 version 1.1
 .br
@@ -211,6 +211,9 @@ The accelerated Mach8 X server
 <XRoot>/bin/XF86_Mach32
 The accelerated Mach32 X server
 .TP 30
+<XRoot>/bin/XF86_Mach64
+The accelerated Mach64 X server
+.TP 30
 <XRoot>/bin/XF86_P9000
 The accelerated P9000 X server
 .TP 30
@@ -261,7 +264,7 @@ Initial access control list for display \fIn\fP
 .LP
 Note: <XRoot> refers to the root of the X11 install tree.
 .SH "SEE ALSO"
-X(1), Xserver(1), xdm(1), xinit(1), Xconfig(4/5),
+X(1), Xserver(1), xdm(1), xinit(1), XF86Config(4/5), xf86config(1),
 XF86_SVGA(1), XF86_VGA16(1), XF86_Mono(1), XF86_Accel(1)
 .SH AUTHORS
 .PP
@@ -374,7 +377,8 @@ Bernhard Bender,   \fIbr@elsa.mhs.compuserve.com\fP
 S3 server development.
 .TP 8
 Kevin Martin,      \fImartin@cs.unc.edu\fP
-Overall work on the base accelerated servers (ATI and 8514/A).
+Overall work on the base accelerated servers (ATI and 8514/A), and Mach64
+server.
 .TP 8
 Rik Faith,         \fIfaith@cs.unc.edu\fP
 Overall work on the base accelerated servers (ATI and 8514/A).
@@ -418,11 +422,26 @@ WD accelerated code.
 Bill Conn,         \fIconn@bnr.ca\fP
 WD accelerated code.
 .TP 8
+Steve Goldman,     \fIsgoldman@encore.com\fP
+Oak 067/077 SVGA driver.
+.TP 8
+Jorge Delgado,     \fIernar@dit.upm.es\fP
+Oak SVGA driver, and 087 accelerated code.
+.TP 8
+Bill Conn,         \fIconn@bnr.ca\fP
+WD accelerated code.
+.TP 8
 Paolo Severini,    \fIlendl@dist.dist.unige.it\fP
 AL2101 SVGA driver
 .TP 8
+Ching-Tai Chiu,    \fIcchiu@netcom.com\fP
+Avance Logic ALI SVGA driver
+.TP 8
 Manfred Brands     \fImb@oceonics.nl\fP
-Cirrus 6420 SVGA driver
+Cirrus 64xx SVGA driver
+.TP 8
+Randy Hendry       \fIrandy@sgi.com\fP
+Cirrus 64xx SVGA driver
 .TP 8
 Frank Dikker       \fIdikker@cs.utwente.nl\fP
 MX SVGA driver

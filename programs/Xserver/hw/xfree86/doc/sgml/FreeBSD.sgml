@@ -27,11 +27,11 @@ url="ftp://ftp.XFree86.org/pub/XFree86/current">
 
 Binaries for XFree86 on FreeBSD are available from:
 
-<url name="ftp.XFree86.org:/pub/XFree86/current/binaries/FreeBSD"
-url="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/FreeBSD">
+<url name="ftp.XFree86.org:/pub/XFree86/current/binaries/FreeBSD-2.0"
+url="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/FreeBSD-2.0">
 <p>
-<url name="XFree86.cdrom.com:/pub/XFree86"
-url="ftp://XFree86.cdrom.com/pub/XFree86">
+<url name="XFree86.cdrom.com:/pub/XFree86/current/binaries/FreeBSD-2.0"
+url="ftp://XFree86.cdrom.com/pub/XFree86/current/binaries/FreeBSD-2.0">
 
 Send email to <em/Rich-Murphey@Rice.edu/ or <em/XFree86@XFree86.org/
 if you have comments or suggestions about this file and we'll revise
@@ -296,7 +296,7 @@ The display manager makes your PC look like an X terminal.  That is, it
 presents you with a login screen that runs under X.
 
 The easiest way to automaticly start the display manager on boot is to
-add a line in <tt>/etc/ttys</tt> to start it on one of the unocupied
+add a line in <tt>/etc/ttys</tt> to start it on one of the unoccupied
 virtual terminals:
 
 <tscreen><verb>
@@ -308,7 +308,7 @@ link to the Xserver that matches your video card or edit the file
 Xservers in <tt>/usr/X11R6/lib/X11/xdm</tt> to specify the pathname of
 the X server.
 
-The change to <tt>/etc/ttys</tt> won't take effect untill you either
+The change to <tt>/etc/ttys</tt> won't take effect until you either
 reboot or ``<tt/kill -HUP 1/'' to force initd to reread
 <tt>/etc/ttys</tt>.  You can also test the display manager manually by
 loging in as root on the console and typing ``<tt/xdm -nodaemon/''.
@@ -456,7 +456,7 @@ name="README.FreeBSD">
 file there for complete installation instructions.
 
 The XFree86 servers include support for the MIT-SHM extension.  The
-GENERIC kenrel does not support this, so if you want to make use of
+GENERIC kernel does not support this, so if you want to make use of
 this, you will need a kernel configured with SYSV shared memory
 support.  To do this, add the following line to your kernel config
 file:
@@ -471,7 +471,7 @@ If you are using a SoundBlaster 16 on IRQ 2 (9), then you need a patch for
 sb16_dsp.c.  Otherwise a kernel configured with the SoundBlaster driver will
 claim interrupt 9 doesn't exist and X server will lock up.
 
-S3 cards and serial port COM 4 cannot be installed togeather on a
+S3 cards and serial port COM 4 cannot be installed together on a
 system because the I/O port addresses overlap.
 
 
@@ -531,7 +531,7 @@ On FreeBSD 1.0 and earlier systems, to avoid the ``Virtual memory
 exhausted'' message from cc while compiling, increase the data and
 stack size limits (in csh type ``<tt/limit datasize 32M/'' and
 ``<tt/limit stacksize 16M/'').  This is not needed on FreeBSD 2.0 and
-later since the defauls are ample.
+later since the defaults are ample.
 
 <bf/Note:/ Starting with XFree86 2.1 and FreeBSD 1.1, the symbol
 <bf/__386BSD__/ no longer gets defined either by the compiler or via the
@@ -570,7 +570,7 @@ Many thanks to:
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.5 1995/01/15 10:34:13 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.6 1995/01/20 04:21:38 dawes Exp $
 </verb>
 
 </article>

@@ -33,7 +33,7 @@ chipsets by Cirrus Logic are supported:
 	the "<tt>noaccel</tt>" option.
 <tag>CL-GD6420/6440</tag>
 	These chipsets are not compatible with the 542x series, but is
-        supported by a seperate driver (cl64xx). It is used in
+        supported by a separate driver (cl64xx). It is used in
         recent laptops, and bears some similarity to old Cirrus
         chipsets (5410/AVGA2). The driver may also work for other
         64xx chips. The configuration identifiers for this driver are
@@ -450,7 +450,7 @@ framebuffer code can be very slow for monochrome stipples and bitmaps.
 
 In the <tt>XF86Config</tt> <tt>"Screen"</tt> section, a
 <tt>"Display"</tt> subsection must be
-defined for each depth that you want to run, with seperates Modes
+defined for each depth that you want to run, with separates Modes
 and virtual screen size. Example (2Mb of video memory):
 <tscreen><verb>
 Section "screen"
@@ -614,7 +614,7 @@ New features in XFree86 3.1.1:
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.5 1995/01/15 10:34:26 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.6 1995/01/18 06:11:57 dawes Exp $
 </verb>
 
 </article>

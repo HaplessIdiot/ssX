@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.4 1995/01/10 10:21:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.5 1995/01/15 10:31:07 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -641,6 +641,10 @@ mach64Probe()
 		    if(pEnd == (DisplayModePtr) NULL)
                         pEnd = pMode;
 		    pMode = pMode->next;
+		    mach64InfoRec.virtualX = max(mach64InfoRec.virtualX,
+						 pMode->HDisplay);
+		    mach64InfoRec.virtualY = max(mach64InfoRec.virtualY,
+						 pMode->VDisplay);
 		}
           }
     } while (pMode != pEnd);

@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.63 1995/01/18 10:57:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.64 1995/01/20 04:20:25 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -547,6 +547,7 @@ s3Probe()
    OFLG_SET(OPTION_NOLINEAR_MODE, &validOptions);
    if (!S3_x64_SERIES(s3ChipId))
       OFLG_SET(OPTION_NO_MEM_ACCESS, &validOptions);
+   OFLG_SET(OPTION_SW_CURSOR, &validOptions);
    OFLG_SET(OPTION_BT485_CURS, &validOptions);
    OFLG_SET(OPTION_SHOWCACHE, &validOptions);
    OFLG_SET(OPTION_FB_DEBUG, &validOptions);
@@ -1083,9 +1084,10 @@ s3Probe()
       s3RamdacType = NORMAL_DAC;
    }
   
-   if (!OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions) &&
+   if ((!OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions) &&
        !OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) &&
-       (s3InfoRec.ramdac == NULL)) { /* ensure that autodetection can be */
+       (s3InfoRec.ramdac == NULL)) || S3_TRIO64_SERIES(s3ChipId))
+				   { /* ensure that autodetection can be */
                                      /* overwritten 			 */	
      card_id = check_SPEA_bios(s3InfoRec.BIOSbase); 
      if (card_id > 0) {
@@ -1132,7 +1134,9 @@ s3Probe()
             /* SPEA Mirage P64 Bios 4.xx */
             ErrorF("%s %s: SPEA Mirage P64 detected.\n",
             XCONFIG_PROBED, s3InfoRec.name);
-          else if (S3_TRIO64_SERIES(s3ChipId)) 
+          break;
+       case S3_TRIO64_DAC: 
+          if (S3_TRIO64_SERIES(s3ChipId)) 
             /* SPEA Mirage P64 Bios 5.xx */
             ErrorF("%s %s: SPEA Mirage P64 Trio64 detected.\n",
             XCONFIG_PROBED, s3InfoRec.name);

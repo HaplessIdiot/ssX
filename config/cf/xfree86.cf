@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xfree86.cf,v 1.2 94/03/31 11:37:26 gildea Exp $
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.44 1995/01/19 05:18:31 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.45 1995/01/19 06:25:34 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -182,6 +182,13 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.44 1995/01/19 05:18:31 dawes Exp $
  */
 #ifndef BuildFresco
 #define BuildFresco	NO
+#endif
+
+/*
+ * Build xterm with Internationalisation support by default.
+ */
+#ifndef XtermWithI18N
+#define XtermWithI18N	YES
 #endif
 
 /*

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.31 1995/01/14 10:39:36 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.32 1995/01/18 06:01:48 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -142,6 +142,13 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.31 1995/01/14 10:39:36 dawes Exp $
  *
  */
 #define BuildLBXCompatible	YES
+
+/*
+ * Build xterm with Internationalisation support by default.
+ * To disable this, uncomment the following.
+ *
+#define XtermWithI18N	NO 
+ */
 
 /*
  * Do you want to install the default system config files, this will overwrite

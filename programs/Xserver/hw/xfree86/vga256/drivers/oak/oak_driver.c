@@ -1,5 +1,5 @@
 /* $XConsortium: oak_driver.c,v 1.1 94/03/28 21:52:02 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.10 1995/01/10 02:11:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.11 1995/01/20 04:23:24 dawes Exp $ */
 /*
  * Copyright 1994 by Jorge Delgado <ernar@dit.upm.es>
  *
@@ -721,17 +721,7 @@ OAKProbe()
   }
 
     if (OTI_chipset == OTI87) {
-      if (vga256InfoRec.videoRam == 2048) {
-	ErrorF("%s %s: oti087: 2MB supported, but not tested!!!\n",
-	       XCONFIG_PROBED, vga256InfoRec.name);
-	ErrorF("%s %s: oti087: use 'VideoRam 1024' in XF86Config file\n",
-	       XCONFIG_PROBED, vga256InfoRec.name);
-	ErrorF("%s %s: oti087: if you find any problem. Or mail me\n",
-	       XCONFIG_PROBED, vga256InfoRec.name);
-	ErrorF("%s %s: oti087: at ernar@dit.upm.es \n",
-	       XCONFIG_PROBED, vga256InfoRec.name);
-      }
-      
+            
       /* Now we perform other detections, such as RAMDAC and
        * the like.
        */
@@ -1477,16 +1467,16 @@ OAKInit(mode)
 	  switch(vga256InfoRec.videoRam)
 	    {
 	    case 256:
-	      new -> oti87Mapping = 0xE3;
+	      new -> oti87Mapping = 0xE1;
 	      break;
 	    case 512:
-	      new -> oti87Mapping = 0xE7;
+	      new -> oti87Mapping = 0xE5;
 	      break;
 	    case 1024:
-	      new -> oti87Mapping = 0xEB; 
+	      new -> oti87Mapping = 0xE9; 
 	      break;
 	    case 2048:
-	      new -> oti87Mapping = 0xEF; 
+	      new -> oti87Mapping = 0xED; 
 	      break;
 	    } 
 	}    

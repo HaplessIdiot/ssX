@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Kbd.c,v 1.1 94/03/28 21:23:22 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Kbd.c,v 3.2 1994/11/30 20:41:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Kbd.c,v 3.3 1994/12/11 10:54:39 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -243,7 +243,20 @@ xf86KbdGetMapping (pKeySyms, pModMap)
 #endif /* !AMOEBA && !MINIX && !__OSF__ */
   char          type;
   int           i, j;
+  KeySym        *pMap;
   
+#if !defined(AMOEBA) && !defined(MINIX) && !defined(__OSF__)
+  xf86Info.kbdType =
+    ioctl(xf86Info.consoleFd, KDGKBTYPE, &type) != -1 ? type : KB_101;
+  if (xf86Info.kbdType == KB_84)
+    pMap = map84;
+  else
+    pMap = map;
+#else
+  xf86Info.kbdType = 0;
+  pMap = map;
+#endif
+
 #if !defined(AMOEBA) && !defined(MINIX) && !defined(__OSF__)
   /*
    * use the keymap, which can be gotten from our oringinal vt??.
@@ -254,7 +267,7 @@ xf86KbdGetMapping (pKeySyms, pModMap)
       
       if (remap[i]) {
 	
-	k = map + (remap[i] << 2);
+	k = pMap + (remap[i] << 2);
 	
 	k[0] = KD_GET_ENTRY(i,0);             /* non-shifed */
 	k[1] = KD_GET_ENTRY(i,1);	      /* shifted */
@@ -272,7 +285,7 @@ xf86KbdGetMapping (pKeySyms, pModMap)
   /*
    * Apply the special key mapping specified in XF86Config 
    */
-  for (k = map, i = MIN_KEYCODE;
+  for (k = pMap, i = MIN_KEYCODE;
        i < (NUM_KEYCODES + MIN_KEYCODE);
        i++, k += 4) {
     switch (k[0]) {
@@ -327,7 +340,7 @@ xf86KbdGetMapping (pKeySyms, pModMap)
   for (i = 0; i < MAP_LENGTH; i++)
     pModMap[i] = NoSymbol;  /* make sure it is restored */
   
-  for (k = map, i = MIN_KEYCODE;
+  for (k = pMap, i = MIN_KEYCODE;
        i < (NUM_KEYCODES + MIN_KEYCODE);
        i++, k += 4)
     
@@ -373,15 +386,8 @@ xf86KbdGetMapping (pKeySyms, pModMap)
 
     }
   
-#if !defined(AMOEBA) && !defined(MINIX) && !defined(__OSF__)
-  xf86Info.kbdType =
-    ioctl(xf86Info.consoleFd, KDGKBTYPE, &type) != -1 ? type : KB_101;
-#else
-  xf86Info.kbdType = 0;
-#endif
 
-
-  pKeySyms->map        = map;
+  pKeySyms->map        = pMap;
   pKeySyms->mapWidth   = GLYPHS_PER_KEY;
   pKeySyms->minKeyCode = MIN_KEYCODE;
   if (xf86Info.serverNumLock)

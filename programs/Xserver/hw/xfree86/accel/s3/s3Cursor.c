@@ -1,6 +1,6 @@
 /*
  * $XConsortium: s3Cursor.c,v 1.2 94/03/28 21:14:00 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.10 1995/01/12 12:03:08 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.11 1995/01/20 04:20:32 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -122,7 +122,9 @@ s3CursorInit(pm, pScr)
    s3ReloadCursor = FALSE;
    
    if (s3CursGeneration != serverGeneration) {
-      if (OFLG_ISSET(OPTION_BT485_CURS, &s3InfoRec.options)) {
+      if (OFLG_ISSET(OPTION_SW_CURSOR, &s3InfoRec.options)) {
+	 miDCInitialize (pScr, &xf86PointerScreenFuncs);
+      } else if (OFLG_ISSET(OPTION_BT485_CURS, &s3InfoRec.options)) {
          if (!(miPointerInitialize(pScr, &s3BtPointerSpriteFuncs,
 				   &xf86PointerScreenFuncs, FALSE)))
             return FALSE;

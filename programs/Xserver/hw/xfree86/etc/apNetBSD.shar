@@ -15,7 +15,7 @@
 #	version.h
 #	xf86-2.1.1.patch
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/apNetBSD.shar,v 3.1 1994/07/24 11:51:00 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/apNetBSD.shar,v 3.2 1994/11/22 02:39:51 dawes Exp $
 #
 echo x - README
 sed 's/^X//' >README << 'END-of-README'
@@ -394,8 +394,13 @@ X
 X/* cdevsw-specific types */
 X#define dev_type_read(n)        int n __P((dev_t, struct uio *, int))
 X#define dev_type_write(n)       int n __P((dev_t, struct uio *, int))
+X#if NetBSD <= 1994100
 X#define dev_type_ioctl(n) \
 X        int n __P((dev_t, int, caddr_t, int, struct proc *))
+X#else
+X#define dev_type_ioctl(n) \
+X        int n __P((dev_t, u_long, caddr_t, int, struct proc *))
+X#endif
 X#define dev_type_stop(n)        int n __P((struct tty *, int))
 X#define dev_type_reset(n)       int n __P((int))
 X#define dev_type_select(n)      int n __P((dev_t, int, struct proc *))
@@ -425,12 +430,19 @@ X    }
 X    return(0);
 X}
 X
+X#if NetBSD <= 1994100
 Xint
 Xap(struct lkm_table *lkmtp, int cmd, int ver)
 X{
 X    DISPATCH(lkmtp, cmd, ver, ap_load, nosys, nosys)
 X}
-X
+X#else
+Xint
+Xap(struct lkm_table *lkmtp, int cmd, int ver)
+X{
+X    DISPATCH(lkmtp, cmd, ver, ap_load, lkm_nofunc, lkm_nofunc)
+X}
+X#endif
 X
 X    
 END-of-lkm.c
@@ -442,7 +454,7 @@ X *
 X * Copyright (c) 1994 The XFree86 Project Inc.
 X */
 Xchar *ap_major_version = "1";
-Xchar *ap_minor_version = "1";
+Xchar *ap_minor_version = "2";
 END-of-version.c
 echo x - version.h
 sed 's/^X//' >version.h << 'END-of-version.h'

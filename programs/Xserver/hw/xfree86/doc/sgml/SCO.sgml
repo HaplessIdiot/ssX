@@ -131,7 +131,7 @@ mapping in high memory when accessing the card. The dmmap driver comes in
 two forms, a binary archive which is supplied with the full binary
 distribution and a source archive which is located in 
 <tt>/usr/X11R6/lib/X11/etc</tt>.
-Both distributions provide instuctions for installation/removal within the
+Both distributions provide instructions for installation/removal within the
 <tt>README file</tt>. <p>
 
 <sect>Switching Consoles<p>
@@ -140,7 +140,7 @@ XFree86 uses similar console switching keys as the SCO R4 and R5
 servers.  That is, <tt>Ctrl-PrntScr</tt> takes you to the next console along
 from the one X is running on.  If this is the last console it will take
 you to console 1.  Those interested in modifying the console switching
-should look in <tt>mit/server/ddx/x386/common/x386Events.c</tt>.
+should look in <tt>xc/programs/Xserver/hw/xfree86/common/xf86Events.c</tt>.
 
 
 <sect>Setting up Man Pages<p>
@@ -395,17 +395,17 @@ been debugged.<p>
 </quote>
 <tag/Problem:/
 <quote>
-    <tt>x386install</tt> does not work.
+    <tt>xf86install</tt> does not work.
 </quote>
 <tag/Causes:/
 <quote>
-    You should not be running <tt>x386install</tt> when using the 
+    You should not be running <tt>xf86install</tt> when using the 
     XFree86 server
     under SCO.  It is used for Interactive (ISC) installations.
 </quote>
 <tag/Problem:/
 <quote>
-    The server starts but the screen is not aligned correctly or is shakey
+    The server starts but the screen is not aligned correctly or is shaky
     and impossible to view.
 </quote>
 <tag/Causes:/
@@ -582,6 +582,6 @@ for providing an
 ftp site for the binary distribution.
 
 <verb>  
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.1 1994/12/26 11:03:36 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.2 1995/01/15 10:34:22 dawes Exp $
 </verb>
 </article>

@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_VGA16.man,v 1.2 94/04/11 16:03:12 matt Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_VGA16.man,v 3.5 1995/01/07 05:43:27 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_VGA16.man,v 3.6 1995/01/08 06:58:30 dawes Exp $
 .TH XF86_VGA16 1 "Version 3.1.1"  "XFree86"
 .SH NAME
 XF86_VGA16 - 4 bit non-accelerated X Window System server for UNIX on
@@ -52,7 +52,7 @@ manpage.
 .I XFree86
 uses a configuration file called \fBXF86Config\fP for its initial setup.  
 See the 
-.I Xconfig(4/5) 
+.I XF86Config(4/5) 
 manpage for general details. Here only the
 .I XF86_VGA16
 specific parts are explained.
@@ -160,10 +160,11 @@ Server configuration file
 .LP
 Note: <XRoot> refers to the root of the X11 install tree.
 .SH "SEE ALSO"
-X(1), Xserver(1), XFree86(1), XF86Config(4/5), XF86_Mono(1), xdm(1), xinit(1)
+X(1), Xserver(1), XFree86(1), XF86Config(4/5), XF86_Mono(1), xf86config(1),
+xdm(1), xinit(1)
 .SH CONTACT INFO
 \fIXFree86\fP source is available from the FTP server
-\fIftp.XFree86.org\fP and \fIftp.x.org\fP.  Send email to
+\fIftp.XFree86.org\fP.  Send email to
 \fIXFree86@XFree86.org\fP for details.
 .SH AUTHORS
 .PP

@@ -36,7 +36,7 @@ on Fixing Problems.  This will enlighten you on ways to tweak the timing
 numbers to achieve particular effects.
 
 XFree86 allows you to hot-key between different modes defined in XF86Config
-(see XF86Config.man for details).  Use this capabilty to save yourself
+(see XF86Config.man for details).  Use this capability to save yourself
 hassles!  When you want to test a new mode, give it a unique mode
 label and add it to the <em/end/ your hot-key list.  Leave a
 known-good mode as the default to fall back on if the test mode
@@ -194,7 +194,7 @@ possible configurations.  It may affect your display's visual quality (esp.
 sharpness for fine details).
 
 Your monitor's video bandwidth should be included on the manual's spec page.
-If it's not, look at the monitor's higest rated resolution.  As a rule of
+If it's not, look at the monitor's highest rated resolution.  As a rule of
 thumb, here's how to translate these into bandwidth estimates (and thus into
 rough upper bounds for the dot clock you can use):
 
@@ -499,7 +499,7 @@ the example above).  But before you try this "overdriving" maneuver, if you
 do, make *sure* that your monitor electron guns can sync up to 76 Hz vertical.
 (the popular NEC 4D, for instance, cannot.  It goes only up to 75 Hz VSF).
 
-So far, most of this is simple arithematic and basic facts about raster
+So far, most of this is simple arithmetic and basic facts about raster
 displays.  Hardly any black magic at all!
 
 <sect> Black Magic and Sync Pulses
@@ -509,7 +509,7 @@ refresh rate acceptable, and checked that you have enough VRAM.  Now for the
 real black magic -- you need to know when and where to place synchronization
 pulses.
 
-The sync pulses actually control the horizontal and vertical scan frequebcies
+The sync pulses actually control the horizontal and vertical scan frequencies
 of the monitor.  The HSF and VSF you've pulled off the spec sheet are nominal,
 approximate maximum sync frequencies.  The sync pulse in the signal from the
 adapter card tells the monitor how fast to actually run.
@@ -628,7 +628,7 @@ comfortable with a VGT of 0 (no guard time) and we'll use that in this
 example.  A few need two or three ticks of guard time, and it usually doesn't
 hurt to add that.
 
-Returning to the example: since by the defintion of frame length, a vertical
+Returning to the example: since by the definition of frame length, a vertical
 tick is the time for tracing a complete HORIZONTAL frame, therefore in our
 example, it is 1232/65Mhz=18.95us.
 
@@ -659,7 +659,7 @@ section contains the number of dots per line which will be illuminated to form
 the picture (what we've called HR).  The second field of the section indicates
 at which dot the horizontal sync pulse will begin.  The third field indicates
 at which dot the horizontal sync pulse will end.  The fourth field specifies
-the toal horzontal frame length (HFL).
+the toal horizontal frame length (HFL).
 
 The vertical section also contains four fields.  The first field contains the
 number of visible lines which will appear on the display (VR).  The second
@@ -742,7 +742,7 @@ done.
    Q. The example you gave is not a standard screen size, can I use
       it?
 
-   A. Why not?  There is NO reason whatsover why you have to use 640x480,
+   A. Why not?  There is NO reason whatsoever why you have to use 640x480,
 800x600, or even 1024x768.  XFree86 driver lets you config your hardware with a
 lot of freedom.  It usually takes two to three minutes to come up the right
 one.  The important thing to shoot for is high refresh rate with reasonable
@@ -758,7 +758,7 @@ nasty video hash, but nothing you do can actually damage a multi-sync monitor
 (unless you somehow force your card to clock it at way above its bandwidth ---
 if you stick reasonably close to the highest resolution the monitor is
 documented to support this can't happen).
-   Beware fixed-frequency monitors!  This kind ofhacking around *can* damage
+   Beware fixed-frequency monitors!  This kind of hacking around *can* damage
 them.
 
    Q. You just mentioned two standard resolutions. In Xconfig, there are many
@@ -766,7 +766,7 @@ standard resolutions available, can you tell me whether there's any point in
 tinkering with timings?
 
    A. Absolutely!  Take, for example, the "standard" 640x480 listed in the
-current Xconfig.  It employes 25Mhz driving frequency, frame lengths are 800
+current Xconfig.  It employs 25Mhz driving frequency, frame lengths are 800
 and 525 => refresh rate ~ 59.5Hz. Not too bad.  But 28Mhz is a commonly
 available driving frequency from many SVGA boards.  If we use it to drive
 640x480, following the procedure we discussed above, you would get frame
@@ -1146,7 +1146,7 @@ Finally, remember that increasing either frame length will decrease your
 refresh rate, and vice-versa.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VidModes.sgml,v 3.0 1994/12/20 11:33:37 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VidModes.sgml,v 3.1 1994/12/25 08:38:41 dawes Exp $
 </verb>
 
 </article>

@@ -7,7 +7,7 @@ David Dawes,
 Marc  Wandschneider,
 Mark  Weaver,
 Matthieu Herrb
-<Date>15 January 1995
+<Date>19 January 1995
 
 <toc>
 
@@ -45,7 +45,7 @@ url="ftp://ftp.eecs.umich.edu/BSD/XFree86">
 If you're still running NetBSD 0.9, you'll have to build it from the source.
 If you've done it and want to share your binaries, please let us know.
 
-This release has also been tested on NetBSD-current of January, 1st 1995 with
+This release has also been tested on NetBSD-current of January, 11th 1995 with
 <tt/option "COMPAT_10"/ in the kernel config file.
 
 XFree86 now also builds on NetBSD/sparc. See section <ref id="sparc"
@@ -65,7 +65,7 @@ this file and we'll revise it.
 The binary distribution is composed of a number of split tar archives
 which are the executables, servers, fonts, libraries, include files,
 man pages, config files, and the server link kit.  The full distribution
-takes over 40MB of disk space.  The large archives are split into
+takes over 55MB of disk space.  The large archives are split into
 smaller chunks.
 
 All archives are now made using the NetBSD package tools. We recommand
@@ -142,7 +142,8 @@ You can remove individual parts once they are cat'd together.
 </verb></tscreen>
 If you don't have enough room in /usr/X11R6 you can specify another
 directory by using the <tt/-p/ option to <tt/pkg_add/. See
-<em/pkg_add(8)/ for details.
+<em/pkg_add(8)/ for details. Then make a symbolic link
+<tt>/usr/X11R6</tt> to this directory.
 
 </enum>
 
@@ -353,7 +354,7 @@ in your kernel config file, and rebuild and install your kernel.
 Syscons and codrv are not bundled with NetBSD 1.0. They are
 available by anonymous FTP from a number of sites.
 
-If using pccons you get the mesage:
+If using pccons you get the message:
 
 <tscreen><verb>
 > XFree86 Version 3.1.1 / X Window System
@@ -483,14 +484,41 @@ You should configure the distribution by editing
 <tt>xc/config/cf/xf86site.def</tt>  before compiling.  To compile the
 sources, invoke ``<tt/make World/'' in the xc directory.
 
+<sect1>Console drivers
+
+<p>
+XFree86 3.1.0C has now a configuration option to select the console
+drivers to use in <tt/xf86site.def/:
+<itemize>
+<item> if you're using pccons put:
+<tscreen><verb>
+ #define XFree86ConsoleDefines -DPCCONS_SUPPORT
+</verb></tscreen>
+<item> if you're using pcvt put:
+<tscreen><verb>
+ #define XFree86ConsoleDefines -DPCVT_SUPPORT
+</verb></tscreen>
+<item> if you're using syscons put:
+<tscreen><verb>
+ #define XFree86ConsoleDefines -DSYSCONS_SUPPORT
+</verb></tscreen>
+<item> if you're running codrv put:
+<tscreen><verb>
+ #define XFree86ConsoleDefines -DCODRV_SUPPORT
+</verb></tscreen>
+</itemize>
+If you don't define <bf/XFree86ConsoleDefines/ in <tt/xf86site.def/ the
+pccons, pcvt and syscons drivers will be supported.
+
 <sect1>console.h and ioctl_pc.h files:
 
 <p>
-If you don't already have the header files <tt/console.h/ and
-<tt/ioctl_pc.h/ installed in <tt>/usr/include/machine</tt>, then install the
-copies that are supplied in <tt>lib/Server/etc</tt> (or in
-<tt>xc/programs/Xserver/hw/xfree86/etc</tt> if you got the full source
-distribution). If you run NetBSD-current you probably want to install
+If you want to build a server supporting syscons or codrv and you
+don't already have the corresponding header files <tt/console.h/ and
+<tt/ioctl_pc.h/ installed in <tt>/usr/include/machine</tt>, then
+install the copies that are supplied in
+<tt>xc/programs/Xserver/hw/xfree86/etc</tt>.
+If you run NetBSD-current you probably want to install
 them in <tt>/usr/src/sys/arch/i386/include</tt> too, so that they get
 reinstalled each time you make install in <tt>/usr/src/include</tt>. 
 
@@ -530,7 +558,8 @@ modifications to <tt/xf86site.def/ are needed:
 defined at the end of <tt/NetBSD.cf/.)
 <item> Set <bf/ServerToInstall/ to the sun server of your
 choice. (Xsun or XsunMono).
-<item> Look at other applicable options in the <em/INSTALL/ document.
+<item> Look at other applicable options in the <url name="INSTALL document"
+url="INSTALL.html">.
 </itemize>
 
 Problems with this port should be reported to the
@@ -581,7 +610,7 @@ Another note: If you get the message:
 
 at run-time, you've stumbled on a semantic weakness of NetBSD 1.0
 dynamic linker. Applications that use libXmu also need libXt. If the
-client uses a standard <tt/Imakefile/, this dependancy will probably by
+client uses a standard <tt/Imakefile/, this dependency will probably by
 included in the Makefile automagically -- you'll not see the
 problem. Otherwise, just add ``<tt/-lXt/'' to your library list in the
 Imakefile or Makefile and relink.
@@ -600,7 +629,7 @@ and many others.
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.3 1995/01/04 04:40:32 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.4 1995/01/15 10:34:15 dawes Exp $
 </verb>
 
 </article>

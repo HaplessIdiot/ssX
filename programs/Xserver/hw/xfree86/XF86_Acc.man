@@ -1,9 +1,9 @@
 .\" $XConsortium: XF86_Acc.man,v 1.3 94/04/11 16:03:08 matt Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.21 1995/01/08 06:58:25 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.22 1995/01/15 10:28:52 dawes Exp $
 .TH XF86_Accel 1 "Version 3.1.1"  "XFree86"
 .SH NAME
 XF86_Accel - accelerated X Window System servers for
-UNIX on x86 platforms with an S3, Mach8, Mach32, P9000, AGX, ET4000/W32
+UNIX on x86 platforms with an S3, Mach8, Mach32, Mach64, P9000, AGX, ET4000/W32
 or 8514/A accelerator board
 .SH SYNOPSIS
 .B XF86_S3
@@ -44,6 +44,10 @@ is an 8-bit PseudoColor and 16-bit TrueColor server for ATI Mach32
 graphic accelerator boards.  Note, 16-bit operation is not supported on
 all Mach32 accelerator boards.
 .PP
+.I XF86_Mach64
+is an 8-bit PseudoColor, 16-bit TrueColor, and 24-bit TrueColor  server
+for ATI Mach64 graphic accelerator boards.
+.PP
 .I XF86_P9000
 is an 8-bit PseudoColor, 16-bit TrueColor, and 24-bit TrueColor
 server for Weitek Power 9000 (P9000) graphic accelerator boards. 
@@ -69,7 +73,8 @@ The servers support the following chipsets:
 .RS .5i
 .TP 13
 XF86_S3:
-86C911, 86C924, 86C801, 86C805, 86C805i, 86C928, 86C928-P, 86C864, 86C964
+86C911, 86C924, 86C801, 86C805, 86C805i, 86C928, 86C928-P, 86C764, 86C864,
+86C964
 .TP 13
 XF86_Mach8:
 ATI Mach8, ATI Mach32
@@ -181,6 +186,14 @@ mach32
 .RE
 .RS 8
 .PP
+XF86_Mach64:
+.RE
+.RS 1.5i
+.PP
+mach64
+.RE
+.RS 8
+.PP
 XF86_P9000:
 .RE
 .RS 1.5i
@@ -258,8 +271,9 @@ by the P9000 server.
 .B ClockChip \fI"clockchip-type"\fP
 For boards with programmable clock chips (except with the P9000 server),
 the name of the clock chip is given.  Possible values for the S3 server
-include \fB"icd2061a"\fP and \fB"sc11412"\fP, \fB"s3gendac"\fP,
-\fB"s3_sdac"\fP, \fB"ti3025"\fP, and \fB"ics2595"\fP.
+include \fB"icd2061a"\fP, \fB"ics9161a"\fP, \fB"dcs2834"\fP, \fB"sc11412"\fP,
+\fB"s3gendac"\fP, \fB"s3_sdac"\fP, \fB"ti3025"\fP, \fB"ics2595"\fP,
+\fB"ics5300"\fP, \fB"ics5342"\fP and \fB"ch8391"\fP.
 When using the AGX server with an XGA-2
 board, specify any one of these \fBClockChip\fP values to enable its
 programmable clock code.
@@ -285,8 +299,8 @@ as AT&T 20C492).  16bpp works fine with the Winbond 82C490.
 \fBsc15025\fP - (S3, AGX) Card has a Sierra SC15025 or SC15026 RAMDAC.
 The S3 server has code to auto-detect this RAMDAC.
 .sp
-\fBbt485\fP - (S3) Card has a BrookTree Bt485 RAMDAC.  This must be specified
-if the server fails to detect the Bt485.
+\fBbt485\fP - (S3) Card has a BrookTree Bt485 or Bt9485 RAMDAC.  This must
+be specified if the server fails to detect it.
 .sp
 \fBatt20c505\fP - (S3) Card has an AT&T 20C505 RAMDAC.  This must be specified
 either if the server fails to detect the 20C505, or if the card has a Bt485
@@ -309,6 +323,14 @@ auto-detection for this RAMDAC.
 .sp
 \fBs3_sdac\fP - (S3) Card has an S3 86C716 SDAC RAMDAC.  This must be specified
 if the server fails to detect it.
+.sp
+\fBics5300\fP - (S3) Card has an ICS5300 RAMDAC.  This must be specified
+if the server fails to detect it (the server will recognise this as
+an S3 GENDAC which is OK).
+.sp
+\fBics5342\fP - (S3) Card has an ICS5342 RAMDAC.  This must be specified
+if the server fails to detect it (the server will recognise this as
+an S3 SDAC which is OK).
 .sp
 \fBti3020\fP - (S3) Card has a TI ViewPoint Ti3020 RAMDAC.  This must
 be specified if the server fails to detect the Ti3020.
@@ -374,6 +396,13 @@ This sets the coprocessor base address for the AGX server.  Refer to
 .B Instance \fIinstance\fP
 This sets the XGA instance number for the AGX server.  Refer to
 \fIREADME.agx\fP for details.
+.TP 8
+.B S3MClk \fImemclk\fP
+This allows the video card's memory clock value to be specified.  This is
+only used for 864 and Trio64 cards, and the value should not normally be
+given here for cards with an S3 Gendac or Trio64).  This entry doesn't
+change the card's memory clock, but it is used to calculate the DRAM
+timing parameters.  For further details refer to \fIREADME.S3\fP.
 .PP
 \fBOption\fP flags may be specified in either the \fBDevice\fP section
 or the \fBDisplay\fP subsection of the XF86Config file.
@@ -395,9 +424,10 @@ is ignored for the 864 and 964 chips.
 .sp
 \fBno_ti3020_curs\fP - (S3) Disables the Ti3020's internal HW cursor.
 .sp
-\fBsw_cursor\fP - (Mach32, P9000) Disable the hardware cursor.
+\fBsw_cursor\fP - (S3, Mach32, Mach64, P9000) Disable the hardware cursor.
 .sp
-\fBdac_8_bit\fP - (S3, Mach32, AGX) Enables 8-bit per RGB.  Currently only
+\fBdac_8_bit\fP - (S3, Mach32, Mach64, AGX) Enables 8-bit per RGB.
+Currently only
 supported with the Ti3020/5, Bt485, AT&T 20C505, AT&T 20C490/1,
 Sierra SC15025/6, AT&T 20C498 and STG1700 (S3 server),
 Bt481 and Bt482 (AGX server),
@@ -504,7 +534,7 @@ Extra documentation for the W32 server
 .LP
 Note: <XRoot> refers to the root of the X11 install tree.
 .SH "SEE ALSO"
-X(1), Xserver(1), XFree86(1), XF86Config(4/5), xdm(1), xinit(1)
+X(1), Xserver(1), XFree86(1), XF86Config(4/5), xdm(1), xf86config(1), xinit(1)
 .SH AUTHORS
 .PP
 In addition to the authors of \fIXFree86\fP the following people

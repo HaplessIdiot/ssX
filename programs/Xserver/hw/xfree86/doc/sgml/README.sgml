@@ -38,7 +38,8 @@ October 1994:
     <item> Support for `double scan' video modes (most servers).
     <item> New chipset support for the SVGA server.  This includes the
 	Avance Logic 2228/2301, Chips &amp; Technology 655xx, Cirrus Logic
-	6440, and improved support for the Oak OTI-087.
+	6440, and Oak OTI-087.  Accelerated support is included for the
+	OTI-087.
     <item> Support for FreeBSD 2.0.
     <item> Preliminary support for OS/2 (client-only at this stage; this
 	is still under development).
@@ -172,7 +173,7 @@ At this time, XFree86 3.1.1 supports the following accelerated chipsets:
 	ET4000/W32, ET4000/W32i, ET4000/W32p 
  </DESCRIP>
 
-The Cirrus and Western Digital accelerators are supported in the SVGA
+The Cirrus, Western Digital and Oak accelerators are supported in the SVGA
 server; the other chipsets each have their own server.  A list of some
 cards which the accelerated servers have been tested is included in the
 files AccelCards, Devices, and some of the chipset-specific <tt>README</tt> files.
@@ -221,9 +222,9 @@ the exception of the Advance Logic, MX, Chips &amp; Technology and Video 7
 chipsets, which are only
 supported in 256 color mode.
 
-Refer to the chipset-specific <tt>README</tt> files (currently for Cirrus, Tseng,
-Western Digital, ATI, Trident and Video 7) for more information about using
-those chipsets.
+Refer to the chipset-specific <tt>README</tt> files (currently for Cirrus,
+Tseng, Western Digital, ATI, Trident, Oak and Video 7) for more
+information about using those chipsets.
 
 The monochrome server also supports generic VGA cards, using 64k of video
 memory in a single bank, the Hercules monochrome card, the Hyundai HGC1280,
@@ -265,7 +266,7 @@ The old <tt>Xconfig</tt> file has been replaced in XFree86 3.1 by an
 This is more than just a name change.  
 The new <tt>XF86Config</tt> file uses a format that is quite different
 from the old <tt>Xconfig</tt> file.   
-The new format is more structured, logical, and extendable than the
+The new format is more structured, logical, and extensible than the
 old format.  
 We realise that the transition to this new format won't be without
 problems.  
@@ -475,6 +476,10 @@ XFree86 support was integrated into the base X11R6 distribution by:
        <item> Mike Tierney <it>&lt;floyd@pepsi.eng.umd.edu&gt;</it>,
        <item> Bill Conn <it>&lt;conn@bnr.ca&gt;</it>
 </itemize>
+<tag/Oak Technologies Inc. accelerated code by:  /
+<itemize>
+       <item> Jorge Delgado <it>&lt;ernar@dit.upm.es&gt;</it>,
+</itemize>
 
 <tag/16 color VGA server by:  /
 <itemize>
@@ -582,7 +587,7 @@ The XFree86 Project, Inc, has been founded to accomplish two major goals:
 	   X Consortium, Inc, the organization responsible for the
 	   design, development, and release of The X Window System.
 	<item> To provide some basic funding for acquisition of facilities for
-	   ongoing XFree86 development, largly to consist of new video
+	   ongoing XFree86 development, largely to consist of new video
 	   hardware and basic computing facilities.
 </enum>
 The first of these was the primary motivation.  We have held discussions
@@ -800,7 +805,7 @@ file that describes what files you need to take from the archive, and which
 compile-time option selections were made when building the distribution.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.9 1995/01/18 10:47:07 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.10 1995/01/19 05:22:51 dawes Exp $
 </verb>
 
 </article>

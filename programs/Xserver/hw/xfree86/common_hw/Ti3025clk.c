@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti3025clk.c,v 3.3 1994/09/23 10:17:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti3025clk.c,v 3.4 1995/01/20 04:21:22 dawes Exp $ */
 
 /*
  * Copyright 1994 The XFree86 Project, Inc
@@ -13,7 +13,11 @@
 #include "compiler.h"
 #define NO_OSLIB_PROTOTYPES
 #include "xf86_OSlib.h"
+#include <xf86.h>
+#include <xf86_Option.h>
 #include <math.h>
+
+extern ScrnInfoRec s3InfoRec;
 
 #ifdef __STDC__
 static void
@@ -48,14 +52,14 @@ unsigned char p;
    s3OutTiIndReg(TI_MISC_CONTROL, 0x00,
                 TI_MC_LOOP_PLL_RCLK | TI_MC_LCLK_LATCH | TI_MC_INT_6_8_CONTROL);
 
-#if 0
    /*
     * Set a standard MCLK (109.7MHz / 2)
     */
-   s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, 0x16);
-   s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, 0x15);
-   s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, 0x80);
-#endif
+   if (OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options)) {
+     s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, 0x14);
+     s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, 0x13);
+     s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, 0x80);
+   }
 
    /*
     * And finally enable the clock
@@ -131,7 +135,7 @@ int clk;
 	 best_m = m;
       }
    }
-#ifndef DEBUG
+#ifdef DEBUG
    ErrorF("clk %d (%f), setting to %f, n %02x, m %02x, p %d\n", clk,freq/1e3,
 	  8.0/(1 << p)*((best_m+2.0)/(best_n+2)) * TI_REF_FREQ,
 	  best_n, best_m, p);

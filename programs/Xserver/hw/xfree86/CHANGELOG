@@ -1,3 +1,16 @@
+XFree86 3.1.0Cd (21 January 1995)
+236. Fix problem with Cirrus mono server crashing (Stephen Kump).
+235. Allow the "sw_cursor" option to work for the S3 server.
+234. Fix S3 HW cursor hot spot problem when no ViewPort entry is given in
+     the XF86Config (Harald Koenig).
+233. Fix some S3 Trio64 8bpp+pixmux display errors (Harald Koenig).
+232. Fix #9 GXE64Pro problems introduced in 3.1.0Cc (Hans Nasten).
+231. SPEA auto-detection for their Trio64 cards (Norbert Distler).
+230. Possible fix for keymap problems with 84-key keyboards.
+229. Internationalisation support for xterm (Martin Forssén).
+228. Remove the need for a Virtual entry in the XF86Config for the Mach64
+     server.
+
 XFree86 3.1.0Cc (20 January 1995)
 227. Add a check to the W32 server for invalid depths.
 226. Fix bug in PaintWindow in Mach32 and AGX servers (Stuart Anderson).

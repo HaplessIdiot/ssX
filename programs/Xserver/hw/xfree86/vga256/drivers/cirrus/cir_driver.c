@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.1 94/03/28 21:48:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.29 1995/01/18 06:14:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.30 1995/01/20 04:23:10 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -2090,6 +2090,7 @@ cirrusInit(mode)
          new->SRF |= 0x20;	/* Enable 64 byte FIFO. */
          }
 
+#ifndef MONOVGA
      if (cirrusChip == CLGD5424 || cirrusChip == CLGD5426 ||
          cirrusChip == CLGD5428 || cirrusChip == CLGD5429 ||
 	 cirrusChip == CLGD5434 || cirrusChip == CLGD5430)
@@ -2168,6 +2169,7 @@ cirrusInit(mode)
 		 new->SR16 |= threshold - fifoshift_5430;
          } /* endelse */
          } /* endif */
+#endif
 
      if (cirrusChip == CLGD5430
      && !OFLG_ISSET(OPTION_NO_2MB_BANKSEL, &vga256InfoRec.options))

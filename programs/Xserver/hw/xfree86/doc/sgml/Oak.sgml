@@ -80,7 +80,7 @@ Option &dquot;favour_bitblt&dquot; (OTI087)
 	will be used as a rudimentary bitblt engine. Performance boost
 	is more or less 100&percnt;, (double BlitStones on xbench). Most
 	OTI087 boards seem to have this feature broken, corrupting text
-	from xterms and leaving mouse droppings thoughout the
+	from xterms and leaving mouse droppings throughout the
 	screen. As a rule of thumb, enable it, if it works badly,
 	disable it ;).
 </descrip>
@@ -119,7 +119,7 @@ Option &dquot;favour_bitblt&dquot; (OTI087)
     GOOD LUCK!!!!
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Oak.sgml,v 3.0 1995/01/19 05:22:48 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Oak.sgml,v 3.1 1995/01/20 04:21:39 dawes Exp $
 </verb>
 
 </article>

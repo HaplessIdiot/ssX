@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.46 1995/01/16 22:07:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.47 1995/01/20 04:20:36 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -1224,7 +1224,7 @@ s3Init(mode)
 	 /* x64:pixmux */
 	 /* pixmux with 16/32 bpp not possible for 864 ==> only 8bit mode  */
          pixmux = 0x10;         /* two 8bit pixels per clock */
-         invert_vclk = 1;
+         invert_vclk = 2;       /* XXXX strange: reserved bit which helps! */
 	 sr15 |= 0x10;  /* XXXX 0x40? see above! */
 	 sr18 |= 0x80;
       }
@@ -1677,15 +1677,26 @@ s3Init(mode)
                s3OutTiIndReg(TI_GENERAL_IO_DATA, 0x00, TI_GID_TI_DAC_6BIT);
          }
          if (DAC_IS_TI3025) {
-            outb(vgaCRIndex, 0x6D);
-	    if (s3Bpp == 1) {
-	       if (mode->Flags & V_DBLCLK) 
-		  outb(vgaCRReg, 0x01);
-	       else
-		  outb(vgaCRReg, 0x03);
-	    }
-	    else
-	       outb(vgaCRReg, 0x00);
+	   if (OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options)) {
+             outb(vgaCRIndex, 0x6D);             /* set blank delay */
+             if (s3InfoRec.bitsPerPixel == 32)
+               outb(vgaCRReg, 0x10);
+             else if (s3InfoRec.bitsPerPixel == 16)
+               outb(vgaCRReg, 0x53);
+            else
+              outb(vgaCRReg, 0x51);
+	   }
+	   else {
+             outb(vgaCRIndex, 0x6D);
+	     if (s3Bpp == 1) {
+	        if (mode->Flags & V_DBLCLK) 
+		   outb(vgaCRReg, 0x01);
+	        else
+		   outb(vgaCRReg, 0x03);
+	     }
+	     else
+	        outb(vgaCRReg, 0x00);
+	   }
 	 }
       } else {
          /* set s3 reg53 to non-parallel addressing by and'ing 0xDF     */
@@ -2127,6 +2138,8 @@ s3Init(mode)
    if (OFLG_ISSET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions))
          (void) (s3ClockSelectFunc)(mode->SynthClock);
          /* fixes the ICS2595 initialisation problems */
+
+   s3AdjustFrame(s3InfoRec.frameX0, s3InfoRec.frameY0);
 
 #ifdef REG_DEBUG
    for (i=0; i<10; i++) {

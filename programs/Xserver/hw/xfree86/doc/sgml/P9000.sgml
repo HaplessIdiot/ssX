@@ -46,7 +46,7 @@
 	 drawing mode.  Appears the rect mode does not update the CINDEX
 	 register correctly.  Changed the color to 1 (black) from 0. (Chris)
 	<item>
-	 Added p9000QuadAlu.  When drawing a quad, the p9000 equivilant to X's
+	 Added p9000QuadAlu.  When drawing a quad, the p9000 equivalent to X's
 	 source	is the foreground mask.  When bliting/pixel8ing/pixel1ing,
  	 it is the p9000 source mask and the p9000alu lookup table should be
  	 used. (Chris Mason)
@@ -220,7 +220,7 @@ for more information.  Their P9000 server is also much faster than
 ours at present (but then this server is free :-)
 
 <sect> Acceleration <p>
-Some of the accelration code is working, but
+Some of the acceleration code is working, but
 there are probably still bugs.  Only a very small number of
 accelerated features have been implemented.  Before working on any
 acceleration, please contact <it>nygren@mit.edu</it> so we don't duplicate
@@ -256,7 +256,7 @@ Example problems:
   		     24 bpp mode when compiled with -DRS6000 and when
 		     run with ``<tt>-dither color</tt>''
    <tag/xpaint 2.1/   Works great in both modes but has a bug in the
-                     color requestor for the selection tool.
+                     color requester for the selection tool.
 		     I think later versions may have fixed this.
 </descrip>
 
@@ -274,7 +274,7 @@ to 135 MHz with a warning printed over 110 MHz.  Diamond claims that
 this is the max in their docs, but examination has shown some Viper's
 to contain 110 MHz bt485's.  Without 135 MHz, it is not possible for
 people to with large monitors to run at 1280x1024.  Diamond claims
-that all Vipers have 135MHz bt485's or compatables.  If you have
+that all Vipers have 135MHz bt485's or compatibles.  If you have
 something slower, call their tech support and they will send you
 a RMA to get the board replaced.
 
@@ -284,7 +284,7 @@ high memory should work.  This should include Linux, FreeBSD, SVR4,
 and more.
 
 <sect1> NetBSD <p>
-If you have NetBSD, you will need to install the aperature driver.
+If you have NetBSD, you will need to install the aperture driver.
 Extract the file <tt>apNetBSD.shar</tt>
 (in <tt>xc/programs/Xserver/hw/xfree86/etc/apNetBSD.shar</tt>) and read
 the <tt>README</tt> contained therein.
@@ -312,7 +312,7 @@ of the <tt>XF86Config</tt> file are:
 			<tag/Orchid P9000:/ 0xC0000000 or 0xD0000000 or
 				 0xE0000000
 				(this MUST be set to correspond to the jumpers)
-			<tag/Viper PCI:/ any value coresponding to the output
+			<tag/Viper PCI:/ any value corresponding to the output
 				of <tt>PCIDUMP.EXE</tt>
 			</descrip>
    <tag/IOBase/		
@@ -361,8 +361,8 @@ Section "Device"
     Identifier "ViperVLB"
     VendorName "Diamond"
     BoardName "Viper VLB"
-    Videoram 2048                        # This is manditory
-    Membase 0x80000000                   # This is manditory on non-ViperVLB's
+    Videoram 2048                        # This is mandatory
+    Membase 0x80000000                   # This is mandatory on non-ViperVLB's
     IOBase  0xe000			 # Use this ONLY on ViperPCI's
 EndSection
 
@@ -414,7 +414,7 @@ During the course of the next few months, people will be working on
 acceleration, etc.  Please send any patches to me (<it>nygren@mit.edu</it>).
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.3 1995/01/15 10:34:17 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.4 1995/01/19 05:22:49 dawes Exp $
 </verb>
 
 </article>

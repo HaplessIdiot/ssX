@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_SVGA.man,v 1.2 94/04/11 16:03:11 matt Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.14 1995/01/08 06:58:29 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.15 1995/01/11 03:46:18 dawes Exp $
 .TH XF86_SVGA 1 "Version 3.1.1"  "XFree86"
 .SH NAME
 XF86_SVGA - non-accelerated SVGA X Window System servers for UNIX on 
@@ -293,6 +293,9 @@ Extra documentation for the Trident driver
 <XRoot>/lib/X11/doc/README.tseng
 Extra documentation for the ET4000 and ET3000 drivers
 .TP 30
+<XRoot>/lib/X11/doc/README.Oak
+Extra documentation for the Oak driver
+.TP 30
 <XRoot>/lib/X11/doc/README.Video7
 Extra documentation for the Video7 driver
 .TP 30
@@ -301,7 +304,7 @@ Extra documentation for the WD/PVGA driver
 .LP
 Note: <XRoot> refers to the root of the X11 install tree.
 .SH "SEE ALSO"
-X(1), Xserver(1), XFree86(1), XF86Config(4/5), xdm(1), xinit(1)
+X(1), Xserver(1), XFree86(1), XF86Config(4/5), xf86config(1), xdm(1), xinit(1)
 .SH BUGS
 .PP
 There are no known bugs at this time, although we welcome reports emailed
