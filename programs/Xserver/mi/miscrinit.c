@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/mi/miscrinit.c,v 3.9 1999/09/27 06:30:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miscrinit.c,v 3.10 1999/10/13 22:33:12 dawes Exp $ */
 
 #include "X.h"
 #include "servermd.h"
@@ -248,6 +248,7 @@ miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
     /* PaintWindowBackground, PaintWindowBorder, CopyWindow */
     pScreen->ClearToBackground = miClearToBackground;
     pScreen->ClipNotify = (ClipNotifyProcPtr) 0;
+    pScreen->RestackWindow = (RestackWindowProcPtr) 0;
     /* CreatePixmap, DestroyPixmap */
     /* RealizeFont, UnrealizeFont */
     /* CreateGC */
