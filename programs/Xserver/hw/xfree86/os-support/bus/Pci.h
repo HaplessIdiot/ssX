@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.26 2002/07/25 05:06:16 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.27 2002/08/06 13:13:15 herrb Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -182,7 +182,7 @@
 #  define INCLUDE_XF86_MAP_PCI_MEM
 #  define INCLUDE_XF86_NO_DOMAIN
 # elif defined(__NetBSD__)
-#  defined ARCH_PCI_INIT netbsdPciInit
+#  define ARCH_PCI_INIT netbsdPciInit
 #  define INCLUDE_XF86_MAP_PCI_MEM
 #  define INCLUDE_XF86_NO_DOMAIN
 # endif
