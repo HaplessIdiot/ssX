@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.31 2001/01/30 22:06:18 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.33 2001/02/15 20:31:57 eich Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -966,7 +966,7 @@ xf86GetPciRes(resPtr *activeRes, resPtr *inactiveRes)
 	    }
 	}
 	xf86MsgVerb(X_INFO, 3,
-	    "Active PCI resource ranges after removing overlaps:\n");
+	    "Inactive PCI resource ranges after removing overlaps:\n");
 	xf86PrintResList(3, *inactiveRes);
     }
 }
