@@ -6,7 +6,7 @@
  * Copyright © 2000 VA Linux Systems, Inc.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_agp.c,v 3.2 2000/08/16 01:45:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_agp.c,v 3.3 2000/08/23 20:05:03 dawes Exp $ */
 
 #include "X.h"
 #include "xf86.h"
@@ -61,14 +61,16 @@ GARTInit()
 		return FALSE;
 	}
 
-	/* Presumably Acquire/Release isn't required for this? */
+	xf86AcquireGART(-1);
 	/* Check the kernel driver version. */
 	if (ioctl(gartFd, AGPIOC_INFO, &agpinf) != 0) {
-		xf86Msg(X_ERROR, "AGPIOC_INFO failed (%s)\n", strerror(errno));
+		xf86Msg(X_ERROR, "GARTInit: AGPIOC_INFO failed (%s)\n",
+			strerror(errno));
 		close(gartFd);
 		gartFd = -1;
 		return FALSE;
 	}
+	xf86ReleaseGART(-1);
 
 #if defined(linux)
 	/* Should this look for version >= rather than version == ? */
@@ -110,8 +112,9 @@ xf86GetAGPInfo(int screenNum)
 	}
 
 	if (ioctl(gartFd, AGPIOC_INFO, &agpinf) != 0) {
-		xf86DrvMsg(screenNum, X_ERROR, "AGPIOC_INFO failed (%s)\n",
-				strerror(errno));
+		xf86DrvMsg(screenNum, X_ERROR,
+			   "xf86GetAGPInfo: AGPIOC_INFO failed (%s)\n",
+			   strerror(errno));
 		return NULL;
 	}
 
@@ -134,10 +137,10 @@ xf86GetAGPInfo(int screenNum)
 Bool
 xf86AcquireGART(int screenNum)
 {
-	if (!GARTInit())
+	if (screenNum != -1 && !GARTInit())
 		return FALSE;
 
-	if (screenNum != -1 && acquiredScreen != screenNum) {
+	if (screenNum == -1 || acquiredScreen != screenNum) {
 		if (ioctl(gartFd, AGPIOC_ACQUIRE, 0) != 0) {
 			xf86DrvMsg(screenNum, X_WARNING,
 				   "AGPIOC_ACQUIRE failed (%s)\n",
@@ -152,7 +155,7 @@ xf86AcquireGART(int screenNum)
 Bool
 xf86ReleaseGART(int screenNum)
 {
-	if (!GARTInit())
+	if (screenNum != -1 && !GARTInit())
 		return FALSE;
 
 	if (acquiredScreen == screenNum) {
@@ -192,9 +195,10 @@ xf86AllocateGARTMemory(int screenNum, unsigned long size, int type,
 
 	alloc.pg_count = pages;
 	alloc.type = type;
+
 	if (ioctl(gartFd, AGPIOC_ALLOCATE, &alloc) != 0) {
 		xf86DrvMsg(screenNum, X_WARNING, "xf86AllocateGARTMemory: "
-			   "allocation of %d pages failed (%s)\n", pages,
+			   "allocation of %d pages failed\n\t(%s)\n", pages,
 			   strerror(errno));
 		return -1;
 	}
@@ -230,10 +234,14 @@ xf86BindGARTMemory(int screenNum, int key, unsigned long offset)
 	}
 	pageOffset = offset / AGP_PAGE_SIZE;
 
+	bind.pg_start = pageOffset;
+	bind.key = key;
+
 	if (ioctl(gartFd, AGPIOC_BIND, &bind) != 0) {
 		xf86DrvMsg(screenNum, X_WARNING, "xf86BindGARTMemory: "
-			   "binding of gart memory with key %d at offset 0x%x "
-			   "failed (%s)\n", key, offset, strerror(errno));
+			   "binding of gart memory with key %d\n"
+			   "\tat offset 0x%x failed (%s)\n",
+			   key, offset, strerror(errno));
 		return FALSE;
 	}
 
