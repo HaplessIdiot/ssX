@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.58 2002/10/21 11:21:18 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.59 2002/10/21 19:38:35 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -2400,10 +2400,13 @@ initMouseHW(InputInfoPtr pInfo)
 	    xf86FlushInput(pInfo->fd);
 	    do {
 	      if (!ps2EnableDataReporting(pInfo)) {
+		xf86Msg(X_INFO, "%s: ps2EnableDataReporting: failed\n",
+			pInfo->name);
                 ErrorF("failed\n");
 		xf86FlushInput(pInfo->fd);
 	      } else {
-                ErrorF("succeeded\n");
+		xf86Msg(X_INFO, "%s: ps2EnableDataReporting: succeeded\n",
+			pInfo->name);
 		break;
               }
 	    } while (count --);
