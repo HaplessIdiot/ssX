@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.39 2002/03/08 04:33:17 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.43 2002/03/12 23:28:54 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -80,6 +80,14 @@
 #include "time.h"
 #include "write.h"
 #include <math.h>
+
+typedef struct {
+    LispObj **objects;
+    LispObj *freeobj;
+    int nsegs;
+    int nobjs;
+    int nfree;
+} LispObjSeg;
 
 /*
  * Prototypes
@@ -147,7 +155,7 @@ static LispObj *LispDoGetAtomProperty(LispMac*, LispAtom*, LispObj*, int);
 
 void LispCheckMemLevel(LispMac*);
 
-void LispAllocSeg(LispMac*, int);
+void LispAllocSeg(LispMac*, LispObjSeg*, int);
 static INLINE void LispMark(LispObj*);
 
 /* functions, macros, setf methods, and structure definitions */
@@ -182,12 +190,18 @@ Atom_id Satom, Ssymbol, Sinteger, Scharacter, Sreal, Sstring, Slist,
 LispObj *Oformat, *Kunspecific;
 LispObj *Oexpand_setf_method;
 
-static LispObj **objseg, *freeobj = &lispnil;
 static LispProperty noproperty;
 LispProperty *NOPROPERTY = &noproperty;
-static int segsize, minfree, numseg;
-static int nfree, nobjs;
+static int segsize, minfree;
 int pagesize, gcpro;
+
+static LispObjSeg objseg = {
+    NULL, &lispnil
+};
+
+static LispObjSeg atomseg = {
+    NULL, &lispnil
+};
 
 int LispArgList_t;
 
@@ -781,11 +795,12 @@ LispGC(LispMac *mac, LispObj *car, LispObj *cdr)
     LispMark(cdr);
 
     /* this actually only need to be done when directly calling LispGC */
-    nfree = 0;
-    freeobj = NIL;
+    objseg.nfree = 0;
+    objseg.freeobj = NIL;
 
-    for (j = 0; j < numseg; j++) {
-	for (entry = objseg[j], last = entry + segsize; entry < last; entry++) {
+    for (j = 0; j < objseg.nsegs; j++) {
+	for (entry = objseg.objects[j], last = entry + segsize;
+	     entry < last; entry++) {
 	    if (entry->mark)
 		entry->mark = LispNil_t;
 	    else if (!entry->prot) {
@@ -841,9 +856,9 @@ LispGC(LispMac *mac, LispObj *car, LispObj *cdr)
 			break;
 		}
 		entry->type = LispNil_t;
-		CDR(entry) = freeobj;
-		freeobj = entry;
-		++nfree;
+		CDR(entry) = objseg.freeobj;
+		objseg.freeobj = entry;
+		++objseg.nfree;
 	    }
 	}
     }
@@ -862,7 +877,8 @@ LispGC(LispMac *mac, LispObj *car, LispObj *cdr)
 		"%ld sec, %ld msec, "
 		"%d recovered, %d free, %d protected, %d total",
 		sec, msec,
-		nfree - count, nfree, nobjs - nfree, nobjs);
+		objseg.nfree - count, objseg.nfree,
+		objseg.nobjs - objseg.nfree, objseg.nobjs);
 #else
     if (mac->gc.timebits) {
 	gettimeofday(&end, NULL);
@@ -1790,35 +1806,36 @@ LispAddBuiltinFunction(LispMac *mac, LispBuiltin *builtin)
 }
 
 void
-LispAllocSeg(LispMac *mac, int cellcount)
+LispAllocSeg(LispMac *mac, LispObjSeg *seg, int cellcount)
 {
     unsigned int i;
     LispObj **list, *obj;
 
-    while (nfree < cellcount) {
+    while (seg->nfree < cellcount) {
 	if ((obj = (LispObj*)calloc(1, sizeof(LispObj) * segsize)) == NULL)
 	    LispDestroy(mac, "out of memory");
-	if ((list = (LispObj**)realloc(objseg,
-				       sizeof(LispObj*) * (numseg + 1))) == NULL) {
+	if ((list = (LispObj**)realloc(seg->objects,
+	    sizeof(LispObj*) * (seg->nsegs + 1))) == NULL) {
 	    free(obj);
 	    LispDestroy(mac, "out of memory");
 	}
-	objseg = list;
-	objseg[numseg] = obj;
+	seg->objects = list;
+	seg->objects[seg->nsegs] = obj;
 
-	nfree += segsize;
-	nobjs += segsize;
+	seg->nfree += segsize;
+	seg->nobjs += segsize;
 	for (i = 1; i < segsize; i++, obj++) {
 	    CAR(obj) = NIL;
 	    CDR(obj) = obj + 1;
 	}
 	CAR(obj) = NIL;
-	CDR(obj) = freeobj;
-	freeobj = objseg[numseg];
-	++numseg;
+	CDR(obj) = seg->freeobj;
+	seg->freeobj = seg->objects[seg->nsegs];
+	++seg->nsegs;
     }
 #ifdef DEBUG
-    LispMessage(mac, "gc: %d cell(s) allocated at %d segment(s)", nobjs, numseg);
+    LispMessage(mac, "gc: %d cell(s) allocated at %d segment(s)",
+		seg->nobjs, seg->nsegs);
 #endif
 }
 
@@ -1832,6 +1849,7 @@ mark_again:
     switch (obj->type) {
 	case LispNil_t:		/* only NIL and UNBOUND (should) have this type */
 	case LispTrue_t:	/* only T (should) has this type */
+	case LispAtom_t:	/* atoms are never release, once created */
 	    return;
 	case LispLambda_t:
 	    obj->data.lambda.name->mark = LispTrue_t;
@@ -1909,6 +1927,7 @@ immutable_again:
     switch (obj->type) {
 	case LispNil_t:		/* only NIL and UNBOUND (should) have this type */
 	case LispTrue_t:	/* only T (should) has this type */
+	case LispAtom_t:	/* atoms are never release, once created */
 	    return;
 	case LispLambda_t:
 	    obj->data.lambda.name->prot = LispTrue_t;
@@ -1981,6 +2000,7 @@ mutable_again:
     switch (obj->type) {
 	case LispNil_t:		/* only NIL and UNBOUND (should) have this type */
 	case LispTrue_t:	/* only T (should) has this type */
+	case LispAtom_t:	/* atoms are never release, once created */
 	    return;
 	case LispLambda_t:
 	    obj->data.lambda.name->prot = LispNil_t;
@@ -2074,11 +2094,11 @@ LispNew(LispMac *mac, LispObj *car, LispObj *cdr)
 {
     LispObj *obj;
 
-    if (freeobj == NIL) {
+    if (objseg.freeobj == NIL) {
 	int cellcount;
 
 	LispGC(mac, car, cdr);
-	mac->gc.average = (nfree + mac->gc.average) >> 1;
+	mac->gc.average = (objseg.nfree + mac->gc.average) >> 1;
 	if (mac->gc.average < minfree) {
 	    if (mac->gc.expandbits < 6)
 		++mac->gc.expandbits;
@@ -2090,13 +2110,13 @@ LispNew(LispMac *mac, LispObj *car, LispObj *cdr)
 	 * the maximum extra memory requested here should be 1Mb
 	 */
 	cellcount = minfree << mac->gc.expandbits;
-	if (freeobj == NIL || nfree < cellcount)
-	    LispAllocSeg(mac, cellcount);
+	if (objseg.freeobj == NIL || objseg.nfree < cellcount)
+	    LispAllocSeg(mac, &objseg, cellcount);
     }
 
-    obj = freeobj;
-    freeobj = CDR(obj);
-    --nfree;
+    obj = objseg.freeobj;
+    objseg.freeobj = CDR(obj);
+    --objseg.nfree;
 
     return (obj);
 }
@@ -2110,7 +2130,12 @@ LispNewAtom(LispMac *mac, char *str)
     if (atom->object)
 	return (atom->object);
 
-    object = LispNew(mac, NIL, NIL);
+    if (atomseg.freeobj == NIL)
+	LispAllocSeg(mac, &atomseg, pagesize);
+    object = atomseg.freeobj;
+    atomseg.freeobj = CDR(object);
+    --atomseg.nfree;
+
     object->type = LispAtom_t;
     object->data.atom = atom;
     atom->object = object;
@@ -2126,7 +2151,6 @@ LispNewStaticAtom(LispMac *mac, char *str)
     LispAtom *atom = LispDoGetAtom(mac, str, 1);
 
     object = LispNewSymbol(mac, atom);
-    object->prot = LispTrue_t;
 
     return (object);
 }
@@ -2139,7 +2163,12 @@ LispNewSymbol(LispMac *mac, LispAtom *atom)
     else {
 	LispObj *symbol;
 
-	symbol = LispNew(mac, NIL, NIL);
+	if (atomseg.freeobj == NIL)
+	    LispAllocSeg(mac, &atomseg, pagesize);
+	symbol = atomseg.freeobj;
+	atomseg.freeobj = CDR(symbol);
+	--atomseg.nfree;
+
 	symbol->type = LispAtom_t;
 	symbol->data.atom = atom;
 	atom->object = symbol;
@@ -4328,7 +4357,8 @@ LispBegin(int argc, char *argv[])
     MOD = FEAT = COD = FRM = DBG = BRK = PRO = DOC = NIL;
 
     /* allocate initial object cells */
-    LispAllocSeg(mac, minfree);
+    LispAllocSeg(mac, &objseg, minfree);
+    LispAllocSeg(mac, &atomseg, pagesize);
     mac->gc.average = segsize;
 
     /* Don't allow gc in initialization */
