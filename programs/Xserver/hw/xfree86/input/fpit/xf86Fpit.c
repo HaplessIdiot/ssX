@@ -40,6 +40,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
+/* $XFree86$ */
 
 #include <xf86Version.h>
 
