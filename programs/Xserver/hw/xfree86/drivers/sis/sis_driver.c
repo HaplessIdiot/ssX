@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.70 2001/12/19 18:55:13 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.71 2001/12/21 15:44:40 tsi Exp $ */
 
 #include "fb.h"
 #include "xf1bpp.h"
@@ -839,6 +839,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     xf86DrvMsg(pScrn->scrnIndex, from, "Linear framebuffer at 0x%lX\n",
            (unsigned long)pSiS->FbAddress);
 
+    from = X_PROBED;
     if (pSiS->pEnt->device->IOBase != 0) {
         /*
          * XXX Should check that the config file value matches one of the
