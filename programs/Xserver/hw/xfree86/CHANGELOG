@@ -1,4 +1,7 @@
 XFree86 4.3.99.15 (xx October 2003)
+ 508. Implement SharedLibtoolLibraryTarget, etc for bsdLib/ELF, including
+      creating links for older but compatible revisions of such
+      libraries (David Dawes).
  507. Allow a simple form of option name aliasing for options handled
       via OptionInfoRec (David Dawes).
  506. Add optimized code for RENDER with rootless XDarwin (John Harper,
@@ -17960,7 +17963,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2888 2003/10/18 00:00:31 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2889 2003/10/18 12:34:16 dawes Exp $
 
 
 
