@@ -1,0 +1,51 @@
+XCOMM $XConsortium: Imakefile,v 1.3 93/09/04 17:37:04 rws Exp $
+#include <Server.tmpl>
+
+SRCS = 	Args.c \
+	Color.c \
+	Cursor.c \
+	Display.c \
+	Events.c \
+	Font.c \
+	GC.c \
+	GCOps.c \
+	GetTime.c \
+	Handlers.c \
+	Init.c \
+	Keyboard.c \
+	Pixmap.c \
+	Pointer.c \
+	Screen.c \
+	Visual.c \
+	Window.c
+
+OBJS = 	Args.o \
+	Color.o \
+	Cursor.o \
+	Display.o \
+	Events.o \
+	Font.o \
+	GC.o \
+	GCOps.o \
+	GetTime.o \
+	Handlers.o \
+	Init.o \
+	Keyboard.o \
+	Pixmap.o \
+	Pointer.o \
+	Screen.o \
+	Visual.o \
+	Window.o
+
+
+INCLUDES = -I. -I$(BUILDINCDIR) -I$(FONTINCSRC) \
+	   -I../../mi -I../../include -I../../os  \
+           -I$(EXTINCSRC) -I$(INCLUDESRC)
+
+all:: $(OBJS)
+
+NormalLibraryObjectRule()
+NormalLibraryTarget(xnest,$(OBJS))
+
+InstallManPage(Xnest,$(MANDIR))
+DependTarget()

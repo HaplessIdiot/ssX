@@ -1,0 +1,80 @@
+XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:27:13 dpw Exp $
+#include <Server.tmpl>
+
+#define IHaveSubdirs
+
+#if defined(SVR3Architecture) 
+# if defined(i386Sco)
+OS_SUBDIR = sco
+# else
+OS_SUBDIR = sysv
+# endif
+#endif
+
+#if defined(SVR4Architecture) 
+# if defined(SunArchitecture)
+OS_SUBDIR = solx86
+# else
+OS_SUBDIR = sysv
+# endif
+#endif
+
+#if defined(LinuxArchitecture)
+OS_SUBDIR = linux
+#endif
+
+/*
+ * This would be "cleaner", but I don't understand all of the BSD stuff yet
+ *
+#if defined(BSD386Architecture)
+OS_SUBDIR = bsdi
+#endif
+
+#if defined(BSDArchitecture)
+OS_SUBDIR = bsd
+#endif
+*/
+
+#if defined(i386BsdArchitecture)
+# if defined(i386Bsdi)
+OS_SUBDIR = bsdi
+# else
+OS_SUBDIR = bsd
+# endif
+#endif
+
+#if defined(i386MachArchitecture) || defined(OsfArchitecture)
+OS_SUBDIR = mach
+#endif
+
+#if defined(AmoebaArchitecture)
+OS_SUBDIR = amoeba
+#endif
+
+#if defined(Minix)
+OS_SUBDIR = minix
+#endif
+
+SUBDIRS = $(OS_SUBDIR) misc
+
+SRCS = $(OS_SUBDIR)/?*.c misc/?*.c
+
+OBJS = $(OS_SUBDIR)/?*.o misc/?*.o
+
+DONES = $(OS_SUBDIR)/DONE misc/DONE
+
+/* Hack to force bsd make to do things in the correct order */
+all::
+
+all:: subdirs libxf86_os.a
+
+NamedMakeSubdirs(subdirs,$(SUBDIRS))
+
+NormalDepLibraryTarget(xf86_os,$(SUBDIRS) $(DONES),$(OBJS))
+
+InstallLinkKitLibrary(xf86_os,$(LINKKITDIR)/lib)
+InstallLinkKitNonExecFile(assyntax.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(xf86_OSlib.h,$(LINKKITDIR)/include)
+
+DependSubdirs($(SUBDIRS))
+

@@ -1,0 +1,38 @@
+XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:51:11 dpw Exp $
+#include <Server.tmpl>
+
+#if i386Mach
+SRCS = gvg_driver.c
+#else
+SRCS = gvg_driver.c bank.s
+#endif
+
+#if defined(i386BsdArchitecture)
+OBJS = driverg.o bankg.o
+#else
+OBJS = gvg_driver.o bank.o
+#endif
+
+#if XF86LinkKit
+INCLUDES = -I. -I../../../include -I../..
+#else
+INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
+           -I../../vga -I$(SERVERSRC)/include -I$(INCLUDESRC)
+#endif
+
+NormalLibraryObjectRule()
+NormalAsmObjectRule()
+
+NormalRelocatableTarget(gvga_drv, $(OBJS))
+
+#if defined(i386BsdArchitecture)
+ObjectFromSpecialAsmSource(bankg,bank,NullParameter)
+ObjectFromSpecialSource(driverg,gvg_driver,NullParameter)
+#endif
+
+InstallLinkKitNonExecFile(gvg_driver.c,$(LINKKITDIR)/drivers/vga256/gvga)
+InstallLinkKitNonExecFile(bank.s,$(LINKKITDIR)/drivers/vga256/gvga)
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga256/gvga)
+
+DependTarget()
+

@@ -1,0 +1,19 @@
+XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:43:02 dpw Exp $
+#include <Server.tmpl>
+
+SRCS =	 dixfonts.c mibitblt.c
+OBJS =	 dixfonts.o mibitblt.o
+
+INCLUDES = -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
+           -I$(INCLUDESRC) -I$(FONTINCSRC)
+
+DEFINES = -DXF86MONOVGA
+
+NormalLibraryObjectRule()
+
+NormalRelocatableTarget(vga2misc, $(OBJS))
+
+ObjectFromSpecialSource(dixfonts,$(SERVERSRC)/dix/dixfonts,/**/)
+ObjectFromSpecialSource(mibitblt,$(SERVERSRC)/mi/mibitblt,/**/)
+
+DependTarget()

@@ -1,0 +1,175 @@
+bdm2/HISTORY
+Pascal Haible 8/93
+haible@izfm.uni-stuttgart.de
+
+sa,su 13/14Nov93
+- changed and tested hgc1280 to work as
+  - primary on primary address
+  - secondary on primary address and
+  - secondary on secondary address.
+- fixed port constants in visa.
+fr 12Nov93
+- finished integrating visa.
+Nov93
+- got info about the 'visa' card from Christian Mock.
+- Frank Dolle found my stupid bug in the Sigma L-View code.
+- got bug report about hgc1280 compiled for primary address: does not
+  restore text mode correctly.
+we 29Sep93
+- Ran XTEST on the bdm2 server with hgc1280.
+th 09Sep93
+- New idea for Sigma LaserView: use two 'real' banking windows (out of four)
+  to bank one 'logical' bank: this way all lines can be used. But now I have
+  16k banks.
+we 08Sep93
+- first version of 'sigmalview' finished.
+tu 07Sep93
+- got Sigma L-View / LaserView PLUS docs from rich@rice.edu.
+	This damned thing is aligned on the right and on the bottom, and the
+	first line isn't even aligned to a bank boundary!!!
+	=> Looks like I will have to leave the first 48 lines unused
+		(about 1cm).
+sa 04Sep93
+- got and ran xbench. Results see README
+th 02Sep93
+- XFree86-1.9Cc now includes bdm2 with hgc1280, problem with I/O ports
+  for multiple screens has been solved.
+th 26Aug93
+- got XFree86-1.9C tree.
+- added #ifdef LINE_BANK_ALIGNED to fillarc, fillsp, getsp, hrzvert,
+	pntarea, setsp, tile copied to Amfb*.c
+  About no performance improvement with hgc1280 (is the bus really
+	that slow, or did I something wrong with compiling and
+	running x11perf - or don't these changes affect x11perf tests?)
+  I'm leaving them in as this might improve the driver on other hardware.
+we 25Aug93
+- reported bug in lnx_video.c (in linux/kernel/chr_drv/vt.c?) to XFree86 team:
+  - KDADDIO only allows vga ports,
+  - KDENABIO does not enable the added ports, but enables all vga ports.
+  - the method of clearing the port list on driver-probe and disabling all
+    ports on exit is not suitable for dual headed servers.
+mo 23Aug93
+- copied hgc1280 to hgc1280ob (one bank) to
+  1) test having two low level drivers
+  2) test and compare one bank mods.
+su 22Aug93
+- Added support for chipsets with only one read/write bank.
+  Had to back out changes in bdmBank.s: Push and Pop mustn't be NoOp anymore.
+- made change in mfb.banked/mfbbltc.c:
+  added #ifdef LINE_BANK_ALIGNED :
+	if the scan line and the bank are aligned, we don't need to
+	CHECK* within the line. this saves about 2 comparisons per long.
+- total performance diff (compared to 16Aug93):
+	Scrolling full size xterm (font huge) 0.6s (~40%)
+	dot +29%, 1x1 rectangle +13%, circles & ellipses +25to+30%,
+	scroll & window to window -10to-20%, window to pixmap &
+	pixmap to pixmap: +<10to+30%, 
+sa 21Aug93
+- First new version running.
+- Changes in XFree86 code (EnterLeaveVT) reminded me that I had no savescreen.
+  'till now the copying of the screen was also clearing it.
+- coded HGC1280SaveScreen: kind of a hack: set left and right visible border
+  to the middle. Dont't know what syncing does then.. But as I can set
+  visible width to a small value without loosing sync, it should be ok.
+th 19Aug93
+- Got XFree86-1.9B tree. Will take a few days 'till I have a working binary
+  again.
+we 18Aug93
+- introduced #define USE_ONE_BIG_BANK in driver/hgc1280/hgc1280bank.s and
+  .../hgc1280HW.h.
+  Everything BUT scrolling worked fine, scrolling leaves garbage.
+  Scrolling probably needs one read and one write bank.
+  Performance: 100 downto 50 % compared to two banks.
+we 18Aug93
+- tried switching bus clock from 25/3 MHz to 25/2 MHz. Little performance
+  inprovement (up to 5 - 10 %). Not worth the possible trouble of 12.5MHz.
+mo 16Aug93
+- backed out last changes in bdm/bdmBank.h.
+mo 16Aug93
+- defined TWO_READ_WRITE_BANKS in bdm/bdmBank.h:
+  that changes the PUSHR() and POPR() macros to /**/.
+  Explanation see below.
+  Very little performance improvement.
+mo 16Aug93
+- hgc1280 can do panning only in steps of 16 pixels. If I just shift x by 4
+  this is ok for the left side but not for the right side.
+  Solution: compare x with the value of the last call. x>oldx -> right side.
+  No performance improvement, rather a little bit slower.
+su 15Aug93
+- Some changes for panning. Screensize and virtual size is handled in
+  the lowlevel driver as really dumb cards typically can't do many modes:
+  you have to take the mode the card can do and the lowlevel driver just
+  checks this.
+su 15Aug93
+- tried to set io recovery to one dummy input - didn't work for card
+  initialization. Probaply only one of the regs needs time to settle down.
+  BTW in hgc1280bank.s one assembly dummy input is enough (perhaps even less?)
+su 15Aug93
+- defined TWO_READ_WRITE_BANKS in bdm/bdmBank.s:
+  that changes bdmPushRead() and bdmPopRead() to simple RET
+  both banks are real read/write, so no need for this.
+  This really should be selected upon info from the lowlevel driver.
+	Speedup:
+	Dot 38200 (1%), 1x1 rectangle 27500 (0%),
+	500-pixel line segment 222 (0%),
+	100-pixel line segment (1 kid) 1120 (0%),
+	100-pixel line segment (3 kids) 1180 (0%),
+	10-pixel line 8360 (0%), 1-pixel circle 7730 (0%),
+	10-pixel circle 1260 (0%), 100-pixel circle 146 (0%),
+	10-pixel ellipse 1670 (0%), 100-pixel ellipse 188 (0%),
+	Char in 80-char line (6x13) 5180 (0%),
+	Char in 80-char image line (6x13) 12000 (0%),
+	Scroll 10x10 pixels 1730 (78%), Scroll 100x100 pixels 124 (161%),
+	Scroll 500x500 pixels 9.7 (246%),
+	Copy 10x10 from window to window 1570 (67%),
+	Copy 100x100 from window to window 111 (152%),
+	Copy 500x500 from window to window 8.2 (3.28),
+	Copy 10x10 from pixmap to window 2310 (99%),
+	Copy 100x100 from pixmap to window 188 (265%),
+	Copy 500x500 from pixmap to window 16 (452%),
+	Copy 10x10 from window to pixmap 2520 (0%),
+	Copy 100x100 from window to pixmap 194 (0%),
+	Copy 500x500 from window to pixmap 13 (0%),
+	Copy 10x10 from pixmap to pixmap 5780 (0%),
+	Copy 100x100 from pixmap to pixmap 531 (0%),
+	Copy 500x500 from pixmap to pixmap 32.1 (0%),
+	Copy 10x10 1-bit deep plane 2280 (98%),
+	Copy 100x100 1-bit deep plane 187 (265%),
+	Copy 500x500 1-bit deep plane 16 (452%),
+	PutImage 500x500 square 9.5 (265%), GetImage 500x500 square 10.9 (0%),
+	X protocol NoOperation 69300 (-7%).
+	Scrolling full size xterm (font huge) <1s (100%)
+
+su 15Aug93
+- replaced bdmBank.c with bdmBank.s (and therefore the lowlevel banking
+	functions in hgc1280/driver.c with hgc1280bank.s
+	Speedup:
+	Dot					31200	37800	21%
+	div. lines						up to 10-15%
+	div. circles and ellipses				15-25%
+	div. chars						2-5%
+	Scroll 10x10 pixels			727	973	34%
+	Scroll 100x100 pixels			33.1	47.5	44%
+	Scroll 500x500 pixels			1.9	2.8	47%
+	Copy 10x10 from window to window	712	940	32%
+	Copy 100x100 from window to window	32	44	38%
+	Copy 500x500 from window to window	1.9	2.5	32%
+	Copy ... from pixmap to window				up to 45%
+	Copy ... from window to pixmap				up to 13%
+	Copy ... 1-bit deep plane				31,39,45%
+	PutImage ... square					29,37,37%
+	X protocol NoOperation			72700	74400	2%
+	div. unmapped windows					7%
+	div. move window					few %
+	div. move unmapped window				mostly 23%
+	resize unmapped window					about 10%
+	Scrolling full size xterm (font huge)	5s	<2s	150%
+
+fr 13Aug93
+- bug fixed: wrong hor. size of pixmap (has to be ScanLineWidth != width)
+	caused drawing operations while VT switched out to kill server.
+th 12Aug93
+- First real picture on my secondary display
+fr 08Aug93
+- untared of XFree86-1.3 source code.
+- started reading copying and modifying code

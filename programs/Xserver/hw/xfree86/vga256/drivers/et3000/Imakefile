@@ -1,0 +1,38 @@
+XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:50:32 dpw Exp $
+#include <Server.tmpl>
+
+#if i386Mach
+SRCS = et3_driver.c
+#else
+SRCS = et3_driver.c bank.s
+#endif
+
+#if defined(i386BsdArchitecture)
+OBJS = driver3.o bank3.o
+#else
+OBJS = et3_driver.o bank.o
+#endif
+
+#if XF86LinkKit
+INCLUDES = -I. -I../../../include -I../..
+#else
+INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
+           -I../../vga -I$(SERVERSRC)/include  -I$(INCLUDESRC)
+#endif
+
+NormalLibraryObjectRule()
+NormalAsmObjectRule()
+
+NormalRelocatableTarget(et3_drv, $(OBJS))
+
+#if defined(i386BsdArchitecture)
+ObjectFromSpecialAsmSource(bank3,bank,NullParameter)
+ObjectFromSpecialSource(driver3,et3_driver,NullParameter)
+#endif
+
+InstallLinkKitNonExecFile(et3_driver.c,$(LINKKITDIR)/drivers/vga256/et3000)
+InstallLinkKitNonExecFile(bank.s,$(LINKKITDIR)/drivers/vga256/et3000)
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga256/et3000)
+
+DependTarget()
+

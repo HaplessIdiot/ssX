@@ -1,0 +1,25 @@
+XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:18:48 dpw Exp $
+#include <Server.tmpl>
+
+SRCS = 	bdm.c
+
+OBJS = 	bdm.o 
+
+INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/mfb \
+	   -I$(SERVERSRC)/mi -I$(SERVERSRC)/include  -I$(INCLUDESRC)
+
+#if DirtyStartup
+STARTUPDEFINES = -DDIRTY_STARTUP
+#endif
+
+DEFINES = $(STARTUPDEFINES)
+
+BDMDRIVERS = XF86Bdm2Drivers
+
+SubdirLibraryRule($(OBJS))
+NormalLibraryObjectRule()
+NormalAsmObjectRule()
+
+InstallLinkKitNonExecFile(bdm.h,$(LINKKITDIR)/drivers)
+
+DependTarget()

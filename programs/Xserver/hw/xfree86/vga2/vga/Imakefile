@@ -1,0 +1,25 @@
+XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:43:09 dpw Exp $
+#include <Server.tmpl>
+
+SRCS = 	vgaHW.c vga.c vgaBank.s
+
+OBJS = 	vgaHW.o vga.o vgaBank.o
+
+INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86HWSRC) -I../../vga256/vga \
+           -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
+	   -I$(SERVERSRC)/cfb -I$(SERVERSRC)/include -I$(INCLUDESRC)
+
+SubdirLibraryRule($(OBJS))
+NormalLibraryObjectRule()
+
+#if DirtyStartup
+DEFINES = -DDIRTY_STARTUP
+#endif
+
+DEFINES = -DMONOVGA -DXF86MONOVGA
+
+ObjectFromSpecialSource(vga,../../vga256/vga/vga,/**/)
+ObjectFromSpecialSource(vgaHW,../../vga256/vga/vgaHW,/**/)
+ObjectFromSpecialAsmSource(vgaBank,../../vga256/vga/vgaBank,/**/)
+
+DependTarget()

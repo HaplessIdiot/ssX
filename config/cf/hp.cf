@@ -1,0 +1,55 @@
+XCOMM platform:  $XConsortium: hp.cf,v 1.67 94/04/01 20:00:21 kaleb Exp $
+
+#define OSName                 HP-UX 9.1
+XCOMM operating system:  OSName
+#define OSMajorVersion         9
+#define OSMinorVersion         1
+#define OSTeenyVersion         0
+
+#define SystemV                YES
+#define Malloc0ReturnsNull     YES
+
+#ifdef __hp9000s800
+#define OptimizedCDebugFlags   +O1
+#define DefaultCCOptions       -Aa +ESlit
+#define SharedLibraryCCOptions -Aa
+#define StandardDefines        -Dhpux -DSYSV -D_HPUX_SOURCE
+#define ServerExtraDefines -DXOS -DBSTORE -DSOFTWARE_CURSOR -DNO_ALLOCA -DSCREEN_PIXMAPS -DMERGE_SAVE_UNDERS -DR5 -DHAS_IFREQ -DFORCE_SEPARATE_PRIVATE
+/* #include <hpLib.rules> */
+#else
+#define StandardDefines        -Dhpux -DSYSV
+#if OSMajorVersion < 8
+#define DefaultCCOptions       -Wc,-Nd4000,-Ns4100,-Ne700,-Np200,-Nw300
+#define PexCCOptions           -Wp,-H150000 -Wc,-Nd4000,-Ns8100,-Ne700,-Np200
+#else
+#define OptimizedCDebugFlags   +O1
+#define PexCCOptions           -Wp,-H250000
+#endif
+#define PexShmIPC              NO
+#define LintOpts               -ax -Nd4000 -Ns8000 -Ne700 -Np200 -Na25000
+#endif
+#define MvCmd                  mv -f
+#define LdCombineFlags -r
+#define ExecableScripts        YES
+#define HasVFork               YES
+#define HasPoll                YES
+#define RemoveTargetProgramByMoving YES
+#define ExpandManNames         YES
+#define HasPutenv              YES
+#define HasNdbm		       YES
+#define PrimaryScreenResolution	91
+#define ExtensionOSDefines     -DHPINPUT -DXTESTEXT1
+#define XhpServer              YES
+#define BuildXInputExt         YES
+#define HPFastScrolling        YES
+#define BuildServer            __hp9000s700
+#define NeedBerklib            (BuildServer|BuildFontServer)
+#define XawI18nDefines	       -DHAS_WCHAR_H -DHAS_ISW_FUNCS
+
+#if OSMajorVersion < 6 || (OSMajorVersion == 6 && OSMinorVersion < 2)
+#define ConnectionFlags		-DTCPCONN	/* no unix sockets */
+#endif
+
+#if OSMajorVersion > 8
+#define HasWChar32             YES
+#endif

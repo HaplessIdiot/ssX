@@ -1,0 +1,96 @@
+
+			README
+
+         Hewlett Packard CFB Server Implementation
+
+
+
+
+	Copyright (c) 1986, 1987 by Hewlett-Packard Company
+	Copyright (c) 1986, 1987 by X Consortium, Inc.
+
+	Permission to use, copy, modify, and distribute this
+	software and its documentation for any purpose and without
+	fee is hereby granted, provided that the above copyright
+	notice appear in all copies and that both that copyright
+	notice and this permission notice appear in supporting
+	documentation, and that the name of Hewlett Packard or 
+	the X Consortium not be used in advertising or publicity 
+	pertaining to distribution of the software without specific, 
+	written prior permission.
+
+	HEWLETT-PACKARD MAKES NO WARRANTY OF ANY KIND WITH REGARD
+	TO THIS SOFWARE, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+	WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+	PURPOSE.  Hewlett-Packard shall not be liable for errors
+	contained herein or direct, indirect, special, incidental or
+	consequential damages in connection with the furnishing,
+	performance, or use of this material.
+	
+	This software is not subject to any license of the American
+	Telephone and Telegraph Company or of the Regents of the
+	University of California.
+
+
+        ==================
+	HP Product Numbers
+	==================
+
+	The following displays are supported with this CFB X Server.
+
+	Please refer to the HP catalog or to the apropriate data sheets
+	for the displays.  The following data relates the use of the 
+	product names with their official HP product numbers:
+
+	HPA1659A  CRX       1280x1024 Color, 8 planes
+	
+	HPA1439A  CRX24	    1280x1024 Color, 24 planes
+
+	HPA1924A  GRX       1280x1024 Grayscale, 8 planes
+
+	HPA2269A  Dual CRX  1280x1024 Color, 8 planes, two displays
+
+	HP710C    710 SPU   1280x1024 Color, 8 planes
+
+	HP710G    710 SPU   1280x1024 Grayscale, 8 planes
+
+	HP710L    710 SPU   1024x768 Color, 8 planes
+
+	
+	=======================
+	MULTIPLE SCREEN SUPPORT
+	=======================
+
+	The HP X11 sample server supports multiple physical screens
+	connected to a single server program.  The file
+	/usr/lib/X11/X*screens is read by the X11 server to determine
+	information about the system screen configuration.
+
+	For a complete description of the X*screens file, refer to the
+	HP-UX manuals, or view the sample file in /usr/lib/X11.
+	
+	==========================
+	24 PLANE SUPPORT FOR CRX24
+	==========================
+	
+	The HP X11 sample server support two modes for the CRX24 display
+	hardware:  8 plane and 24 plane, with 8 plane being the default.
+	To run the server in 24 plane mode, add a depth parameter to
+	the Xnscreens file.  For example:
+	
+		/dev/crt  depth 24
+		
+	In depth 24 mode, the default visual type is DirectColor.
+
+
+	=====================
+	FAST SCROLLING OPTION
+	=====================
+
+	Since scrolling speed is especially slow on this server compared
+	to HP's product server, we have supplied fast scrolling support,
+	using a .o to link into the server.  Using HP's fast scrolling
+	is optional.  To enable the fast scrolling, set the token
+	"HPFastScrolling" to TRUE in the config/hp.cf file.  If you want
+	to use the CFB scrolling module, simply remove the define in
+	config/hp.cf, remake the Makefiles, and recompile.
