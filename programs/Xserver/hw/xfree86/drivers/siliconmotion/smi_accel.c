@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from the XFree86 Project and silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_accel.c,v 1.2 2000/12/05 21:18:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_accel.c,v 1.3 2001/02/09 03:23:30 dawes Exp $ */
 
 #include "smi.h"
 
@@ -714,10 +714,11 @@ SMI_SetupForColor8x8PatternFill(ScrnInfoPtr pScrn, int patx, int paty, int rop,
 
 	if (pScrn->bitsPerPixel <= 16)
 	{
-		unsigned char * pattern = pSmi->FBBase + patx * pSmi->Bpp
-								+ paty * pSmi->Stride;
+		/* PDR#950 */
+		CARD8* pattern = pSmi->FBBase
+					   + (patx + paty * pSmi->Stride) * pSmi->Bpp;
 
-		WaitQueue(1);
+		WaitIdleEmpty();
 		WRITE_DPR(pSmi, 0x0C, SMI_BITBLT | SMI_COLOR_PATTERN);
 		memcpy(pSmi->DataPortBase, pattern, 8 * pSmi->Bpp * 8);
 	}
@@ -777,7 +778,7 @@ SMI_SubsequentColor8x8PatternFillRect(ScrnInfoPtr pScrn, int patx, int paty,
 
 	WaitQueue(3);
 	WRITE_DPR(pSmi, 0x04, (x << 16) | (y & 0xFFFF));
-	WRITE_DPR(pSmi, 0x08, (w << 16) | (y & 0xFFFF));
+	WRITE_DPR(pSmi, 0x08, (w << 16) | (h & 0xFFFF));	/* PDR#950 */
 	WRITE_DPR(pSmi, 0x0C, pSmi->AccelCmd);
 
 	LEAVE_PROC("SMI_SubsequentColor8x8PatternFillRect");

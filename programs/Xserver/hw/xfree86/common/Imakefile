@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.123 2000/11/03 18:46:05 eich Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.125 2000/12/06 15:35:06 eich Exp $
 
 
 
@@ -95,7 +95,7 @@ SRCS =	\
 	xf86Cursor.c \
 	xf86DGA.c \
 	xf86DPMS.c \
-	xf86DefModes.c \
+	xf86DefModeSet.c \
 	xf86DoProbe.c \
 	xf86DoScanPci.c \
 	xf86Events.c \
@@ -130,7 +130,7 @@ OBJS = \
 	xf86Cursor.o \
 	xf86DGA.o \
 	xf86DPMS.o \
-	xf86DefModes.o \
+	xf86DefModeSet.o \
 	xf86DoProbe.o \
 	xf86DoScanPci.o \
 	xf86Events.o \
@@ -214,6 +214,28 @@ LinkSourceFile(xf86Version.h,..)
 LinkSourceFile(xf86Pci.h,$(XF86OSSRC)/bus)
 #ifdef SparcArchitecture
 LinkSourceFile(xf86Sbus.h,$(XF86OSSRC)/bus)
+#endif
+
+#if HasPerl
+MODEDEFSRCS = ../etc/vesamodes ../etc/extramodes
+
+MODEDEFS = modedefs
+
+$(MODEDEFS): $(MODEDEFSRCS)
+	RemoveFile($@)
+	cat $(MODEDEFSRCS) > $@
+
+includes:: xf86DefModeSet.c
+
+xf86DefModeSet.c: $(MODEDEFS) modeline2c.pl
+	RemoveFile($@)
+	RunPerlScript(modeline2c.pl, < $(MODEDEFS) > $@)
+
+clean::
+	RemoveFile($(MODEDEFS))
+	RemoveFile(xf86DefModeSet.c)
+#else
+LinkFile(xf86DefModeSet.c,xf86DefModes.c)
 #endif
 
 #ifndef OS2Architecture

@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from The XFree86 Project or Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.7 2001/01/21 21:19:31 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.8 2001/02/09 03:23:30 dawes Exp $ */
 
 #include "xf86Resources.h"
 #include "xf86RAC.h"
@@ -82,10 +82,10 @@ static void SMI_ProbeDDC(ScrnInfoPtr pScrn, int index);
 
 #define SILICONMOTION_NAME			"Silicon Motion"
 #define SILICONMOTION_DRIVER_NAME	"siliconmotion"
-#define SILICONMOTION_VERSION_NAME	"1.2.1"
+#define SILICONMOTION_VERSION_NAME	"1.2.2"
 #define SILICONMOTION_VERSION_MAJOR	1
 #define SILICONMOTION_VERSION_MINOR	2
-#define SILICONMOTION_PATCHLEVEL	1
+#define SILICONMOTION_PATCHLEVEL	2
 #define SILICONMOTION_DRIVER_VERSION	( (SILICONMOTION_VERSION_MAJOR << 24)  \
 										| (SILICONMOTION_VERSION_MINOR << 16)  \
 										| (SILICONMOTION_PATCHLEVEL)		   \
@@ -153,6 +153,7 @@ typedef enum
 	OPTION_BYTESWAP,
 #endif
 	OPTION_USEBIOS,
+	OPTION_ZOOMONLCD,
 	NUMBER_OF_OPTIONS
 
 } SMIOpts;
@@ -176,6 +177,7 @@ static OptionInfoRec SMIOptions[] =
    { OPTION_BYTESWAP,		 "ByteSwap",		  OPTV_BOOLEAN, {0}, FALSE },
 #endif
    { OPTION_USEBIOS,		 "UseBIOS",			  OPTV_BOOLEAN,	{0}, FALSE },
+   { OPTION_ZOOMONLCD,		 "ZoomOnLCD",		  OPTV_BOOLEAN,	{0}, FALSE },
    { -1,					 NULL,				  OPTV_NONE,	{0}, FALSE }
 };
 
@@ -737,6 +739,9 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 				pSmi->shadowFB ? "enabled" : "disabled");
 	}
 
+	#if 1 /* PDR#932 */
+	if ((pScrn->depth == 8) || (pScrn->depth == 16))
+	#endif /* PDR#932 */
 	if ((s = xf86GetOptValString(SMIOptions, OPTION_ROTATE)))
 	{
 		if(!xf86NameCmp(s, "CW"))
@@ -795,6 +800,17 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 	{
 		/* Default to UseBIOS enabled. */
 		pSmi->useBIOS = TRUE;
+	}
+
+	if (xf86GetOptValBool(SMIOptions, OPTION_ZOOMONLCD, &pSmi->zoomOnLCD))
+	{
+		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: ZoomOnLCD %s.\n",
+				pSmi->zoomOnLCD ? "enabled" : "disabled");
+	}
+	else
+	{
+		/* Default to ZoomOnLCD disabled. */
+		pSmi->zoomOnLCD = FALSE;
 	}
 
 	/* Find the PCI slot for this screen */
@@ -1230,6 +1246,20 @@ SMI_EnterVT(int scrnIndex, int flags)
 	{
 		BoxRec box;
 
+		/* #920 */
+		if (pSmi->paletteBuffer)
+		{
+			int i;
+
+			VGAOUT8(pSmi, VGA_DAC_WRITE_ADDR, 0);
+			for(i = 0; i < 256 * 3; i++)
+			{
+				VGAOUT8(pSmi, VGA_DAC_DATA, pSmi->paletteBuffer[i]);
+			}
+			xfree(pSmi->paletteBuffer);
+			pSmi->paletteBuffer = NULL;
+		}
+
 		if (pSmi->pSaveBuffer)
 		{
 			memcpy(pSmi->FBBase, pSmi->pSaveBuffer, pSmi->saveBufferSize);
@@ -1276,6 +1306,22 @@ SMI_LeaveVT(int scrnIndex, int flags)
 
 		pSmi->savedFBOffset = pSmi->FBOffset;
 		pSmi->savedFBReserved = pSmi->FBReserved;
+
+		/* #920 */
+		if (pSmi->Bpp == 1)
+		{
+			pSmi->paletteBuffer = xnfalloc(256 * 3);
+			if (pSmi->paletteBuffer)
+			{
+				int i;
+
+				VGAOUT8(pSmi, VGA_DAC_READ_ADDR, 0);
+				for (i = 0; i < 256 * 3; i++)
+				{
+					pSmi->paletteBuffer[i] = VGAIN8(pSmi, VGA_DAC_DATA);
+				}
+			}
+		}
 	}
 
 	memset(pSmi->FBBase, 0, 256 * 1024);	/* #689 */
@@ -1367,6 +1413,9 @@ SMI_Save(ScrnInfoPtr pScrn)
 		{
 			save->CRA0[i] = VGAIN8_INDEX(pSmi, vgaCRIndex, vgaCRData, 0xA0 + i);
 		}
+
+		/* PDR#1069 */
+		VGAOUT8_INDEX(pSmi, vgaCRIndex, vgaCRData, 0x9E, save->CR90[14]);
 	}
 	else
 	{
@@ -1737,16 +1786,16 @@ SMI_MapMem(ScrnInfoPtr pScrn)
 	 * the frame buffer.  Also set up the reserved memory space.
 	 */
 	pSmi->FBCursorOffset = pSmi->videoRAMBytes - 1024;
-	if (VGAIN8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_INDEX, 0x30) & 0x01)
+	if (VGAIN8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x30) & 0x01)/* #1074 */
 	{
-		CARD32 fifiOffset = 0;
-		fifiOffset |= VGAIN8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x46)
+		CARD32 fifoOffset = 0;
+		fifoOffset |= VGAIN8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x46)
 				<< 3;
-		fifiOffset |= VGAIN8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x47)
+		fifoOffset |= VGAIN8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x47)
 				<< 11;
-		fifiOffset |= (VGAIN8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x49)
+		fifoOffset |= (VGAIN8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x49)
 				& 0x1C) << 17;
-		pSmi->FBReserved = pSmi->videoRAMBytes - fifiOffset;
+		pSmi->FBReserved = fifoOffset;	/* PDR#1074 */
 	}
 	else
 	{
@@ -2154,7 +2203,7 @@ SMI_ValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 		mem  = (pScrn->virtualX * pScrn->bitsPerPixel / 8 + 15) & ~15;
 		mem *= pScrn->virtualY * 2;
 
-		if (mem > pSmi->videoRAMBytes - pSmi->FBReserved)
+		if (mem > pSmi->FBReserved)	/* PDR#1074 */
 		{
 			LEAVE_PROC("SMI_ValidMode");
 			return(MODE_MEM);
@@ -2163,15 +2212,8 @@ SMI_ValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 
 	if (!pSmi->useBIOS || pSmi->lcd)
 	{
-		if (   (mode->HDisplay != pSmi->lcdWidth)
-			|| (mode->VDisplay != pSmi->lcdHeight)
-		)
-		{
-			LEAVE_PROC("SMI_ValidMode");
-			return(MODE_PANEL);
-		}
-
-		if (pSmi->rotate)
+		#if 1 /* PDR#983 */
+		if (pSmi->zoomOnLCD)
 		{
 			if (   (mode->HDisplay > pSmi->lcdWidth)
 				|| (mode->VDisplay > pSmi->lcdHeight)
@@ -2181,7 +2223,32 @@ SMI_ValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 				return(MODE_PANEL);
 			}
 		}
+		else
+		#endif
+		{
+			if (   (mode->HDisplay != pSmi->lcdWidth)
+				|| (mode->VDisplay != pSmi->lcdHeight)
+			)
+			{
+				LEAVE_PROC("SMI_ValidMode");
+				return(MODE_PANEL);
+			}
+		}
+
 	}
+
+	#if 1 /* PDR#944 */
+	if (pSmi->rotate)
+	{
+		if (   (mode->HDisplay != pSmi->lcdWidth)
+			|| (mode->VDisplay != pSmi->lcdHeight)
+		)
+		{
+			LEAVE_PROC("SMI_ValidMode");
+			return(MODE_PANEL);
+		}
+	}
+	#endif
 
 	LEAVE_PROC("SMI_ValidMode");
 	return(MODE_OK);
@@ -2585,6 +2652,11 @@ SMI_CloseScreen(int scrnIndex, ScreenPtr pScreen)
 	{
 		xfree(pSmi->pSaveBuffer);
 	}
+	/* #920 */
+	if (pSmi->paletteBuffer)
+	{
+		xfree(pSmi->paletteBuffer);
+	}
 
 	pScrn->vtSema = FALSE;
 	pScreen->CloseScreen = pSmi->CloseScreen;
@@ -2631,10 +2703,22 @@ SMI_AdjustFrame(int scrnIndex, int x, int y, int flags)
 	if (SMI_LYNX3D_SERIES(pSmi->Chipset))
 	{
 		Base = (Base + 15) & ~15;
+		#if 1 /* PDR#1058 */
+		while ((Base % pSmi->Bpp) > 0)
+		{
+			Base -= 16;
+		}
+		#endif
 	}
 	else
 	{
 		Base = (Base + 7) & ~7;
+		#if 1 /* PDR#1058 */
+		while ((Base % pSmi->Bpp) > 0)
+		{
+			Base -= 8;
+		}
+		#endif
 	}
 
 	WRITE_VPR(pSmi, 0x0C, Base >> 3);
