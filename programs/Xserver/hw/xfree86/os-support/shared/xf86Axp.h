@@ -1,3 +1,4 @@
+/* $XFree86$ */
 
 #ifndef _XF86_AXP_H_
 #define _XF86_AXP_H_

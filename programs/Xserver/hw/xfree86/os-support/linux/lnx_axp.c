@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #include <stdio.h>
 #include "X.h"
 #include "os.h"

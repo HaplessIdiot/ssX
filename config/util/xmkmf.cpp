@@ -1,5 +1,6 @@
 XCOMM!/bin/sh
 
+XCOMM $XFree86$
 XCOMM
 XCOMM make a Makefile from an Imakefile from inside or outside the sources
 XCOMM 
