@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.61 2001/11/30 12:11:56 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.62 2002/01/04 21:22:32 tsi Exp $ */
 
 /*
  * Authors:
@@ -860,17 +860,17 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
       xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "%d XvMC Surfaces Requested.\n",
                                                 pI810->numSurfaces);
       if(pI810->numSurfaces > 7) {
-         xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+         xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
                     "Using 7 XvMC Surfaces (Maximum Allowed).\n");
          pI810->numSurfaces = 7;
       }
       if(pI810->numSurfaces < 6) {
-         xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+         xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
                     "Using 6 XvMC Surfaces (Minimum Allowed).\n");
          pI810->numSurfaces = 6;
       }
    } else {
-         xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+         xf86DrvMsg(pScrn->scrnIndex, X_INFO,
            "XvMC is Disabled: use XvMCSurfaces config option to enable.\n");
       pI810->numSurfaces = 0;
    }
