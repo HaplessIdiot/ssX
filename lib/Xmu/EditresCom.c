@@ -25,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/EditresCom.c,v 1.19tsi Exp $ */
+/* $XFree86: xc/lib/Xmu/EditresCom.c,v 1.20tsi Exp $ */
 
 /*
  * Author:  Chris D. Peterson, Dave Sternlicht, MIT X Consortium
@@ -135,7 +135,7 @@ typedef struct _Globals {
  */
 static Widget _FindChild(Widget, int, int);
 static void _XEditresGetStringValues(Widget, Arg*, int);
-static XtPointer BuildReturnPacket(ResIdent, EditresCommand, ProtocolStream*);
+static XtPointer BuildReturnPacket(ResIdent, EditResError, ProtocolStream*);
 static void CommandDone(Widget, Atom*, Atom*);
 static Boolean ConvertReturnCommand(Widget, Atom*, Atom*, Atom*, XtPointer*,
 				    unsigned long*, int*);
