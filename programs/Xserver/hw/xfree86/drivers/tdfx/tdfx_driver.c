@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.37 2000/06/22 13:00:30 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.38 2000/06/22 17:41:06 alanh Exp $ */
 
 /*
  * Authors:
@@ -74,17 +74,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /* Required for line biases */
 #include "miline.h"
 
-/* Drivers using cfb need: */
-
-#define PSZ 8
-#include "cfb.h"
-#undef PSZ
-
-/* Drivers supporting bpp 16, 24 or 32 with cfb need one or more of: */
-
-#include "cfb16.h"
-#include "cfb24.h"
-#include "cfb32.h"
+#include "fb.h"
 
 /* !!! These need to be checked !!! */
 #if 0
@@ -213,13 +203,8 @@ static const char *vgahwSymbols[] = {
     0
 };
 
-static const char *cfbSymbols[] = {
-    "cfbScreenInit",
-    "cfb16ScreenInit",
-    "cfb24ScreenInit",
-    "cfb32ScreenInit",
-    "cfb8_32ScreenInit",
-    "cfb24_32ScreenInit",
+static const char *fbSymbols[] = {
+    "fbScreenInit",
     NULL
 };
 
@@ -335,7 +320,7 @@ tdfxSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 * Tell the loader about symbols from other modules that this module
 	 * might refer to.
 	 */
-	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols, 
+	LoaderRefSymLists(vgahwSymbols, fbSymbols, xaaSymbols, 
 			  xf8_32bppSymbols, ramdacSymbols, vbeSymbols,
 #ifdef XF86DRI
 			  drmSymbols, driSymbols,
@@ -938,29 +923,11 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
 
   xf86SetDpi(pScrn, 0, 0);
 
-  switch (pScrn->bitsPerPixel) {
-  case 8:
-    mod = "cfb";
-    reqSym = "cfbScreenInit";
-    break;
-  case 16:
-    mod = "cfb16";
-    reqSym = "cfb16ScreenInit";
-    break;
-  case 24:
-    mod = "cfb24";
-    reqSym = "cfb24ScreenInit";
-    break;
-  case 32:
-    mod = "cfb32";
-    reqSym = "cfb32ScreenInit";
-    break;
-  }
-  if (mod && !xf86LoadSubModule(pScrn, mod)) {
+  if (!xf86LoadSubModule(pScrn, "fb")) {
     TDFXFreeRec(pScrn);
     return FALSE;
   }
-  xf86LoaderReqSymbols(reqSym, NULL);
+  xf86LoaderReqSymbols("fbScreenInit", NULL);
 
   if (!xf86ReturnOptValBool(TDFXOptions, OPTION_NOACCEL, FALSE)) {
     if (!xf86LoadSubModule(pScrn, "xaa")) {
@@ -1758,8 +1725,8 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 
 #ifdef XF86DRI
   /*
-   * Setup DRI after visuals have been established, but before cfbScreenInit
-   * is called.   cfbScreenInit will eventually call into the drivers
+   * Setup DRI after visuals have been established, but before fbScreenInit
+   * is called.   fbScreenInit will eventually call into the drivers
    * InitGLXVisuals call back.
    */
   pTDFX->directRenderingEnabled = TDFXDRIScreenInit(pScreen);
@@ -1770,31 +1737,13 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 
   switch (pScrn->bitsPerPixel) {
   case 8:
-    if (!cfbScreenInit(pScreen, pTDFX->FbBase+pTDFX->fbOffset, 
+  case 16:
+  case 24:
+  case 32:
+    if (!fbScreenInit(pScreen, pTDFX->FbBase+pTDFX->fbOffset, 
 		       pScrn->virtualX, pScrn->virtualY,
 		       pScrn->xDpi, pScrn->yDpi,
-		       pScrn->displayWidth))
-      return FALSE;
-    break;
-  case 16:
-    if (!cfb16ScreenInit(pScreen, pTDFX->FbBase+pTDFX->fbOffset, 
-			 pScrn->virtualX, pScrn->virtualY,
-			 pScrn->xDpi, pScrn->yDpi,
-			 pScrn->displayWidth))
-      return FALSE;
-    break;
-  case 24:
-    if (!cfb24ScreenInit(pScreen, pTDFX->FbBase+pTDFX->fbOffset, 
-			 pScrn->virtualX, pScrn->virtualY,
-			 pScrn->xDpi, pScrn->yDpi,
-			 pScrn->displayWidth))
-      return FALSE;
-    break;
-  case 32:
-    if (!cfb32ScreenInit(pScreen, pTDFX->FbBase+pTDFX->fbOffset, 
-			 pScrn->virtualX, pScrn->virtualY,
-			 pScrn->xDpi, pScrn->yDpi,
-			 pScrn->displayWidth))
+		       pScrn->displayWidth, pScrn->bitsPerPixel))
       return FALSE;
     break;
   default:
@@ -1871,7 +1820,7 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 
 #ifdef XF86DRI
     if (pTDFX->directRenderingEnabled) {
-	/* Now that mi, cfb, drm and others have done their thing, 
+	/* Now that mi, fb, drm and others have done their thing, 
          * complete the DRI setup.
          */
 	pTDFX->directRenderingEnabled = TDFXDRIFinishScreenInit(pScreen);

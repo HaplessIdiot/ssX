@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_dri.c,v 1.2 2000/06/20 20:34:38 dawes Exp $
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_dri.c,v 1.3 2000/06/23 19:29:45 dawes Exp $
  * Acceleration for the Creator and Creator3D framebuffer - DRI/DRM support.
  *
  * Copyright (C) 2000 David S. Miller (davem@redhat.com)
@@ -209,6 +209,11 @@ FFBDRIScreenInit(ScreenPtr pScreen)
 		return FALSE;
 	if (!xf86LoaderCheckSymbol("drmAvailable"))
 		return FALSE;
+        if (!xf86LoaderCheckSymbol("DRIQueryVersion")) {
+      		xf86DrvMsg(pScreen->myNum, X_ERROR,
+                 	"FFBDRIScreenInit failed (libdri.a too old)\n");
+		return FALSE;
+        }
 
 	pDRIInfo = DRICreateInfoRec();
 	if (pDRIInfo == NULL)
