@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.63 2003/01/18 07:27:13 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.64 2003/01/20 05:29:07 paulo Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -690,19 +690,27 @@ keyboard_configuration(void)
             return;
         }
 
-	printf(xkbmodeltext);
-	for (i=0; i < rules->models.num_desc; i++) {
-	    printf("%3d  %-50s\n", i+1, rules->models.desc[i].desc);
+	number = -1;
+	for (i=0;;) {
+		emptylines();
+		printf(xkbmodeltext);
+		for (j = i; j < i + 16 && j < rules->models.num_desc; j++)
+		    printf("%3d  %-50s\n", j+1, rules->models.desc[j].desc);
+		printf("\nEnter a number to choose the keyboard.\n\n");
+		if (rules->models.num_desc >= 16)
+			printf("Press enter for the next page\n");
+		getstring(s);
+		if (strlen(s) == 0) {
+			i += 16;
+			if (i > rules->models.num_desc)
+				i = 0;
+			continue;
+		}
+		number = atoi(s) - 1;
+		if (number >= 0 && number < rules->models.num_desc)
+			break;
 	}
-	
-	printf("\nEnter a number to choose the keyboard.\n\n");
-	getstring(s);
-	if (strlen(s) == 0)
-	    number = 0;
-	else {
-	    i = atoi(s)-1;
-	    number = (i < 0 || i > rules->models.num_desc) ? 0 : i;
-	}
+
 	i = strlen(rules->models.desc[number].name) + 1;
 	config_xkbmodel = Malloc(i);
 	sprintf(config_xkbmodel,"%s", rules->models.desc[number].name);
