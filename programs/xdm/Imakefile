@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:54:14 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.54 2003/07/09 15:27:37 tsi Exp $
+XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.56 2003/09/08 14:25:31 eich Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
@@ -143,18 +143,6 @@ FRAGILE_DEFINES = -DFRAGILE_DEV_MEM
 
 #ifdef RandomDefines
 RANDOM_DEFINES = RandomDefines
-#else
-#ifdef OpenBSDArchitecture
-RANDOM_DEFINES = -DARC4_RANDOM
-#else
-/* Replaced with equivalent RandomDefines in NetBSD.cf
- * #if defined(NetBSDArchitecture) && \
- *   ((OSMajorVersion > 1) || \
- *    (OSMajorVersion == 1 && OSMinorVersion > 3))
- * RANDOM_DEFINES = -DDEV_RANDOM=\"/dev/urandom\"
- * #endif
- */
-#endif
 #endif
 
 #if HasVFork
