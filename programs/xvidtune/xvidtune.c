@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.30 2001/12/08 18:51:30 herrb Exp $ */
+/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.32 2003/02/19 18:55:22 eich Exp $ */
 
 /*
 
@@ -1049,7 +1049,6 @@ static void
 displayNoTune(Widget top)
 {
     Widget w, popup, popupBox;
-    int x, y;
 
     popup = XtCreateWidget ("Notice", formWidgetClass, top, NULL, 0);
     popupBox = XtVaCreateManagedWidget(
