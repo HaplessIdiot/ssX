@@ -34,7 +34,7 @@
  * with <TAB> characters expanded at 8-column intervals.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_dga.c,v 1.1 2002/09/11 00:29:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_dga.c,v 1.2 2002/11/05 02:01:18 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -108,7 +108,7 @@ I830DGAInit(ScreenPtr pScreen)
 
       currentMode->mode = pMode;
       currentMode->flags = DGA_CONCURRENT_ACCESS | DGA_PIXMAP_AVAILABLE;
-      if (pI830->AccelInfoRec)
+      if (!pI830->noAccel)
 	 currentMode->flags |= DGA_FILL_RECT | DGA_BLIT_RECT;
       if (pMode->Flags & V_DBLSCAN)
 	 currentMode->flags |= DGA_DOUBLESCAN;
