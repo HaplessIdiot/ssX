@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.36 2001/09/25 14:58:50 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.37 2001/09/26 12:49:25 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -2359,6 +2359,11 @@ RADEONBlockHandler(int i, pointer blockData, pointer pTimeout, pointer pReadmask
     ScreenPtr     pScreen = screenInfo.screens[i];
     ScrnInfoPtr   pScrn   = xf86Screens[i];
     RADEONInfoPtr info    = RADEONPTR(pScrn);
+
+#ifdef XF86DRI
+    if (info->directRenderingEnabled)
+        FLUSH_RING();
+#endif
 
     pScreen->BlockHandler = info->BlockHandler;
     (*pScreen->BlockHandler) (i, blockData, pTimeout, pReadmask);
