@@ -1,5 +1,5 @@
 /* $XConsortium: chgptr.c /main/19 1996/01/14 16:44:45 kaleb $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xi/chgptr.c,v 3.0 1996/02/18 03:41:42 dawes Exp $ */
 
 /************************************************************
 
@@ -159,11 +159,7 @@ ProcXChangePointerDevice (client)
 	if (!dev->ptrfeed)
 	   InitPtrFeedbackClassDeviceStruct(dev, (PtrCtrlProcPtr)NoopDDA);
 	RegisterOtherDevice (xptr);
-#ifdef DEVINTPTR
 	RegisterPointerDevice (dev);
-#else
-	RegisterPointerDevice ((DevicePtr)dev);
-#endif
 
 	ev.type = ChangeDeviceNotify;
 	ev.deviceid = stuff->deviceid;

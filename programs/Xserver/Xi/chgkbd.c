@@ -1,5 +1,5 @@
 /* $XConsortium: chgkbd.c /main/20 1996/01/14 16:44:41 kaleb $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xi/chgkbd.c,v 3.0 1996/02/18 03:41:40 dawes Exp $ */
 
 /************************************************************
 
@@ -171,11 +171,7 @@ ProcXChangeKeyboardDevice (client)
 	for (i=0; i<df->traceSize; i++)
 	    df->trace[i] = xf->trace[i];
 	RegisterOtherDevice (xkbd);
-#ifdef DEVINTPTR
 	RegisterKeyboardDevice (dev);
-#else
-	RegisterKeyboardDevice ((DevicePtr)dev);
-#endif
 
 	ev.type = ChangeDeviceNotify;
 	ev.deviceid = stuff->deviceid;

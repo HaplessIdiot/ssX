@@ -2,7 +2,7 @@
  * This script serves as a helper cmd file for imake. Install this in
  * the path just like imake itself.
  *
- * $XFree86: xc/config/imake/imakesvc.cmd,v 3.4 1996/02/09 08:18:00 dawes Exp $
+ * $XFree86: xc/config/imake/imakesvc.cmd,v 3.5 1996/02/19 09:47:31 dawes Exp $
  */
 '@echo off'
 call RxFuncAdd 'SysFileDelete', 'RexxUtil', 'SysFileDelete'
@@ -68,7 +68,7 @@ SELECT
          ncurdir = currentdir  /* use to be pfx || currentdir */
       END
       imakecmd useinst '-I'nruledir' -DTOPDIR='ntopdir' -DCURDIR='ncurdir'/'dirfwd
-      'make SHELL= Makefiles'
+      'x11make MAKE=x11make SHELL= Makefiles'
       d = DIRECTORY(curdir)
    END
    WHEN code=2 THEN DO

@@ -1,5 +1,5 @@
 /* $XConsortium: Xrm.c,v 1.89 95/06/08 23:20:39 gildea Exp $ */
-/* $XFree86: xc/lib/X11/Xrm.c,v 3.0 1994/10/20 06:03:29 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xrm.c,v 3.1 1995/06/14 07:07:15 dawes Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988, 1990 by Digital Equipment Corporation, Maynard
@@ -299,7 +299,11 @@ typedef unsigned char XrmBits;
 /* parsing types */
 static XrmBits Const xrmtypes[256] = {
     EOS,0,0,0,0,0,0,0,
+#ifndef __EMX__
     0,SPACE,EOL,0,0,0,0,0,
+#else
+    0,SPACE,EOL,0,0,EOL,0,0,
+#endif
     0,0,0,0,0,0,0,0,
     0,0,0,0,0,0,0,0,
     SPACE,NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,NORMAL,
