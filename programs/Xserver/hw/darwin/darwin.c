@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.26 2001/06/26 23:29:11 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.27 2001/07/01 02:13:40 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -55,6 +55,7 @@ int                     quartzEventWriteFD = -1;
 int                     quartzStartClients = 1;
 int                     quartzRootless = QUARTZ_DEFAULT_ROOTLESS;
 int                     quartzUseSysBeep = 0;
+int                     quartzMouseAccelChange = 1;
 int                     darwinFakeButtons = 0;
 UInt32                  darwinDesiredWidth = 0, darwinDesiredHeight = 0;
 IOIndex                 darwinDesiredDepth = -1;
@@ -284,6 +285,9 @@ static void DarwinChangePointerControl(
 {
     kern_return_t   kr;
     double          acceleration;
+
+    if (!quartzMouseAccelChange)
+        return;
 
     acceleration = ctrl->num / ctrl->den;
     kr = IOHIDSetMouseAcceleration( dfb.hidParam, acceleration );

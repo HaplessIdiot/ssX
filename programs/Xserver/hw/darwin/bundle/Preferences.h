@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.h,v 1.4 2001/04/25 02:23:47 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.h,v 1.5 2001/05/09 07:16:19 torrey Exp $ */
 
 #import <Cocoa/Cocoa.h>
 
@@ -15,6 +15,7 @@
     IBOutlet id splashStartupHelpButton;
     IBOutlet id startupHelpButton;
     IBOutlet id systemBeepButton;
+    IBOutlet id mouseAccelChangeButton;
 
     BOOL isGettingKeyCode;
     int keyCode;
@@ -38,6 +39,7 @@
 + (void)setDisplay:(int)newDisplay;
 + (void)setDockSwitch:(BOOL)newDockSwitch;
 + (void)setFakeButtons:(BOOL)newFakeButtons;
++ (void)setMouseAccelChange:(BOOL)newMouseAccelChange;
 + (void)setStartupHelp:(BOOL)newStartupHelp;
 + (void)setSystemBeep:(BOOL)newSystemBeep;
 + (void)saveToDisk;
@@ -50,6 +52,7 @@
 + (int)display;
 + (BOOL)dockSwitch;
 + (BOOL)fakeButtons;
++ (BOOL)mouseAccelChange;
 + (BOOL)startupHelp;
 + (BOOL)systemBeep;
 

@@ -7,7 +7,7 @@
  * that use X include files to avoid symbol collisions.
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCocoa.m,v 1.4 2001/04/25 02:23:47 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCocoa.m,v 1.5 2001/04/28 20:42:19 torrey Exp $ */
 
 #include <Cocoa/Cocoa.h>
 
@@ -23,6 +23,7 @@ void QuartzReadPreferences(void)
     char *fileString;
 
     darwinFakeButtons = [Preferences fakeButtons];
+    quartzMouseAccelChange = [Preferences mouseAccelChange];
     quartzUseSysBeep = [Preferences systemBeep];
 
     if ([Preferences useKeymapFile]) {

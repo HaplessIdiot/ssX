@@ -17,6 +17,7 @@
                 keyField = id; 
                 keymapFileField = id; 
                 loadKeymapFileButton = id; 
+                mouseAccelChangeButton = id; 
                 pickKeymapFileButton = id; 
                 splashStartupHelpButton = id; 
                 startupHelpButton = id; 
