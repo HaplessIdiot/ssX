@@ -1526,22 +1526,25 @@ xf86MatchDevice(const char *drivername, GDevPtr **driversectlist)
             devices[i][count[i]++] = screensecptr->device;
         }
     }
+
     /* Then handle the inactive devices */
     j = 0;
-    while (xf86ConfigLayout.inactives[j].identifier) {
-	gdp = &xf86ConfigLayout.inactives[j];
-	if (gdp->driver != NULL && (xf86NameCmp(gdp->driver,drivername) == 0)
-	    && (! gdp->claimed)) {
-            /*
-             * we have a matching driver that wasn't claimed, yet
-             */
-            gdp->claimed = TRUE;
-            devices[i] = xnfrealloc(devices[i],
-                                    (count[i] + 2) * sizeof(GDevPtr));
-            devices[i][count[i]++] = gdp;
-        }
-	j++;
-    }
+    if (xf86ConfigLayout.inactives)
+	while (xf86ConfigLayout.inactives[j].identifier) {
+	    gdp = &xf86ConfigLayout.inactives[j];
+	    if (gdp->driver != NULL
+		&& (xf86NameCmp(gdp->driver,drivername) == 0)
+		&& (! gdp->claimed)) {
+		/*
+		 * we have a matching driver that wasn't claimed, yet
+		 */
+		gdp->claimed = TRUE;
+		devices[i] = xnfrealloc(devices[i],
+					(count[i] + 2) * sizeof(GDevPtr));
+		devices[i][count[i]++] = gdp;
+	    }
+	    j++;
+	}
     
 #if 0
     /*

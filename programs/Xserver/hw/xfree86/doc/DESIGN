@@ -5645,6 +5645,36 @@ NOTE: The xf86DrvMsg() functions cannot be used from the Probe.
                  pScrn->ValidMode     = ZZZValidMode;
                  foundScreen = TRUE;
              }
+             if (numUsed > 0)
+                 xfree(usedChips);
+         }
+
+     #ifdef HAS_ISA_DEVS
+         /*
+          * If the driver supports ISA hardware, the following block
+          * can be included too.
+          */
+         numUsed = xf86MatchIsaInstances(ZZZ_NAME, ZZZChipsets,
+                                  ZZZIsaChipsets, drv, ZZZFindIsaDevice,
+                                  devSections, numDevSections, &usedChips);
+         for (i = 0; i < numUsed; i++) {
+             ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
+
+             pScrn->driverVersion = VERSION;
+             pScrn->driverName    = ZZZ_DRIVER_NAME;
+             pScrn->name          = ZZZ_NAME;
+             pScrn->Probe         = ZZZProbe;
+             pScrn->PreInit       = ZZZPreInit;
+             pScrn->ScreenInit    = ZZZScreenInit;
+             pScrn->SwitchMode    = ZZZSwitchMode;
+             pScrn->AdjustFrame   = ZZZAdjustFrame;
+             pScrn->EnterVT       = ZZZEnterVT;
+             pScrn->LeaveVT       = ZZZLeaveVT;
+             pScrn->FreeScreen    = ZZZFreeScreen;
+             pScrn->ValidMode     = ZZZValidMode;
+             foundScreen = TRUE;
+             xf86ConfigActiveIsaEntity(pScrn, usedChips[i], ZZZIsaChipsets,
+                                       NULL, NULL, NULL, NULL, NULL);
          }
          if (numUsed > 0)
              xfree(usedChips);

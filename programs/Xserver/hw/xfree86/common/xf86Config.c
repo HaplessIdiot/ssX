@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.221 2000/04/28 18:19:20 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.223 2000/05/31 07:14:59 eich Exp $ */
 
 
 /*
@@ -301,7 +301,8 @@ xf86DriverlistFromConfig()
      * Handle the set of inactive "Device" sections.
      */
     j = 0;
-    while (xf86ConfigLayout.inactives[j++].identifier)
+    if (xf86ConfigLayout.inactives)
+	while (xf86ConfigLayout.inactives[j++].identifier)
 	count++;
 
     if (count == 0)
@@ -318,9 +319,12 @@ xf86DriverlistFromConfig()
 	count++;
 	slp++;
     }
+
     j = 0;
-    while (xf86ConfigLayout.inactives[j].identifier) 
-	modulearray[count++] = xf86ConfigLayout.inactives[j++].driver;
+
+    if (xf86ConfigLayout.inactives)
+	while (xf86ConfigLayout.inactives[j].identifier) 
+	    modulearray[count++] = xf86ConfigLayout.inactives[j++].driver;
 
     modulearray[count] = NULL;
 
