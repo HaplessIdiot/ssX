@@ -1,4 +1,5 @@
 XFree86 4.1.99.1 (xx June 2001)
+ 153. Fix 'make install' for Freetype. (#4812, Carlos A M dos Santos).
  152. Turn on dll style modules for Linux/MIPS. (#4807, Guido Guenther).
  151. Add support for ATI's Radeon VE, Mobility M6, All-In-Wonder Radeon
       and Rage128 Pro Ultra, Digital Flat Panel support. Use DDC2 interface.
@@ -13581,4 +13582,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1882 2001/07/25 08:04:40 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1883 2001/07/25 08:11:03 alanh Exp $
