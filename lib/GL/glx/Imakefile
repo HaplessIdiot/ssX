@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/glx/Imakefile,v 1.3 1999/12/14 01:32:23 robin Exp $
+XCOMM $XFree86: xc/lib/GL/glx/Imakefile,v 1.4 2000/02/08 17:18:29 dawes Exp $
 XCOMM The contents of this file are subject to the GLX Public License Version 1.0
 XCOMM (the "License"). You may not use this file except in compliance with the
 XCOMM License. You may obtain a copy of the License at Silicon Graphics, Inc.,
@@ -45,7 +45,6 @@ LinkSourceFile(assyntax.h, ../../../extras/Mesa/src/X86)
      GLX_SRCS = \
 		clientattrib.c \
 		compsize.c \
-		dispatch.c \
 		eval.c \
 		g_render.c \
 		g_single.c \
@@ -68,7 +67,6 @@ LinkSourceFile(assyntax.h, ../../../extras/Mesa/src/X86)
      GLX_OBJS = \
 	        clientattrib.o \
 		compsize.o \
-		dispatch.o \
 		eval.o \
 		g_render.o \
 		g_single.o \
@@ -91,16 +89,18 @@ LinkSourceFile(assyntax.h, ../../../extras/Mesa/src/X86)
 #if BuildXF86DRI
      GLX_DEFS = GlxDefines
      DRI_INCS = -I../dri
+     DRI_SRCS = dispatch.c
+     DRI_OBJS = dispatch.o
 #endif
 
-#ifdef i386Architecture
+#if defined(i386Architecture) && BuildXF86DRI
      ASM_SRCS = glapi_x86.S
      ASM_OBJS = glapi_x86.o
      ASM_DEFS = -DUSE_X86_ASM
 #endif
 
-         SRCS = $(GLX_SRCS) $(ASM_SRCS)
-         OBJS = $(GLX_OBJS) $(ASM_OBJS)
+         SRCS = $(GLX_SRCS) $(DRI_SRCS) $(ASM_SRCS)
+         OBJS = $(GLX_OBJS) $(DRI_OBJS) $(ASM_OBJS)
       DEFINES = $(GLX_DEFS) $(ASM_DEFS)
 
      INCLUDES = -I$(TOP)/include \
