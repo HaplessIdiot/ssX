@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.28 2000/08/28 14:20:45 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.29 2000/09/26 15:57:09 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -36,6 +36,7 @@
 #include "ativalid.h"
 #include "ativersion.h"
 #include "atividmem.h"
+#include "atiwonderio.h"
 
 /*
  * NOTES:
@@ -972,9 +973,9 @@ ATIProbe
     ATIGDev             *ATIGDevs = NULL, *pATIGDev;
     ScrnInfoPtr         pScreenInfo;
     CARD32              PciReg;
+    Bool                ProbeSuccess = FALSE;
     int                 i, j, k;
     int                 nGDev, nATIGDev = 0, nATIPtr = 0;
-    int                 nAdapter = 0;
     int                 Chipset;
     ATIChipType         Chip;
 
@@ -1702,15 +1703,17 @@ ATIProbe
             AddAdapter(pVGA);
 
         /*
-         * Non-ix86's should never get here.  Any VGA should have installed its
-         * int 10 vector.  Use that to find the VGA BIOS.  If this fails, scan
-         * all legacy BIOS segments, in 512-byte increments.
+         * A VGA should have installed its int 10 vector.  Use that to find the
+         * VGA BIOS.  If this fails, scan all legacy BIOS segments, in 512-byte
+         * increments.
          */
         if (xf86ReadBIOS(0U, 0x42U, BIOS, 2) != 2)
             goto NoVGAWonder;
 
         pATI = NULL;
-        BIOSBase = ((BIOS[1] << 8) | BIOS[0]) << 4;
+        BIOSBase = 0;
+        if (!(BIOS[0] & 0x1FU)) /* Otherwise there's no 512-byte alignment */
+            BIOSBase = ((BIOS[1] << 8) | BIOS[0]) << 4;
 
         /* Look for its BIOS */
         for(;  ;  BIOSBase += 0x00000200U)
@@ -1905,7 +1908,7 @@ NoVGAWonder:;
 #endif /* AVOID_CPIO */
 
             {
-                nAdapter++;
+                ProbeSuccess = TRUE;
                 pGDev = xf86AddDeviceToConfigure(ATI_DRIVER_NAME,
                     pATI->PCIInfo, ATI_CHIPSET_ATI);
                 if (pGDev)
@@ -1913,6 +1916,8 @@ NoVGAWonder:;
                     /* Fill in additional information */
                     pGDev->vendor = ATI_NAME;
                     pGDev->chipset = (char *)ATIChipsetNames[ATI_CHIPSET_ATI];
+                    if (!pATI->PCIInfo)
+                        pGDev->busID = NULL;
                 }
             }
 
@@ -1920,7 +1925,7 @@ NoVGAWonder:;
         }
 
         xfree(ATIPtrs);
-        return (nAdapter != 0);
+        return ProbeSuccess;
     }
 
     /*
@@ -2184,7 +2189,7 @@ NoVGAWonder:;
 
         pATI->Chipset = pATIGDev->Chipset;
 
-        nAdapter++;
+        ProbeSuccess = TRUE;
     }
 
     /* Deal with unassigned adapters */
@@ -2209,5 +2214,5 @@ NoVGAWonder:;
     xfree(ATIPtrs);
     xfree(ATIGDevs);
 
-    return (nAdapter != 0);
+    return ProbeSuccess;
 }

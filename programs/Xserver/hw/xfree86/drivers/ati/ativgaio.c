@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativersion.h,v 1.23 2000/09/26 15:57:10 tsi Exp $ */
+/* $XFree86$ */
 /*
- * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,19 +21,26 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ___ATIVERSION_H___
-#define ___ATIVERSION_H___ 1
+#include "ati.h"
+#include "atistruct.h"
+#include "ativgaio.h"
 
-#define ATI_NAME            "ATI"
-#define ATI_DRIVER_NAME     "ati"
+#ifndef AVOID_CPIO
 
-#define ATI_VERSION_NAME    "6.0.7"
+/*
+ * ATISetVGAIOBase --
+ *
+ * This sets vgaIOBase according to the value of the passed value of the
+ * miscellaneous output register.
+ */
+void
+ATISetVGAIOBase
+(
+    ATIPtr      pATI,
+    const CARD8 misc
+)
+{
+    pATI->CPIO_VGABase = (misc & 0x01U) ? ColourIOBase : MonochromeIOBase;
+}
 
-#define ATI_VERSION_MAJOR   6
-#define ATI_VERSION_MINOR   0
-#define ATI_VERSION_PATCH   7
-
-#define ATI_VERSION_CURRENT \
-    ((ATI_VERSION_MAJOR << 20) | (ATI_VERSION_MINOR << 10) | ATI_VERSION_PATCH)
-
-#endif /* ___ATIVERSION_H___ */
+#endif /* AVOID_CPIO */

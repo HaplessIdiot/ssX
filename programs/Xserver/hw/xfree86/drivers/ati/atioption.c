@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.c,v 1.10 2000/08/22 21:54:30 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.c,v 1.11 2000/08/28 14:20:44 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -21,33 +21,13 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "ati.h"
-#include "atiadapter.h"
 #include "atioption.h"
-#include "atistruct.h"
+#include "atiutil.h"
 
 /*
  * Recognised XF86Config options.
  */
-typedef enum
-{
-    ATI_OPTION_ACCEL,
-    ATI_OPTION_CRT,
-    ATI_OPTION_CSYNC,
-    ATI_OPTION_LINEAR,
-    ATI_OPTION_MMIO_CACHE,
-    ATI_OPTION_PROBE_CLOCKS,
-    ATI_OPTION_REFERENCE_CLOCK,
-    ATI_OPTION_SHADOW_FB
-} ATIPublicOptionType;
-
-typedef enum
-{
-    ATI_OPTION_DEVEL,   /* Intentionally undocumented */
-    ATI_OPTION_SYNC     /* Temporary and undocumented */
-} ATIPrivateOptionType;
-
-static OptionInfoRec ATIPublicOptions[] =
+OptionInfoRec ATIPublicOptions[] =
 {
     {
         ATI_OPTION_ACCEL,
@@ -114,6 +94,8 @@ static OptionInfoRec ATIPublicOptions[] =
     }
 };
 
+const unsigned long ATIPublicOptionSize = SizeOf(ATIPublicOptions);
+
 /*
  * ATIAvailableOptions --
  *
@@ -127,136 +109,4 @@ ATIAvailableOptions
 )
 {
     return ATIPublicOptions;
-}
-
-/*
- * ATIProcessOptions --
- *
- * This function extracts options from what was parsed out of the XF86Config
- * file.
- */
-void
-ATIProcessOptions
-(
-    ScrnInfoPtr pScreenInfo,
-    ATIPtr      pATI
-)
-{
-    OptionInfoRec PublicOption[NumberOf(ATIPublicOptions)];
-    OptionInfoRec PrivateOption[] =
-    {
-        {
-            ATI_OPTION_DEVEL,
-            "tsi",
-            OPTV_BOOLEAN,
-            {0, },
-            FALSE
-        },
-        {
-            ATI_OPTION_SYNC,
-            "lcdsync",
-            OPTV_BOOLEAN,
-            {0, },
-            FALSE
-        },
-        {
-            -1,
-            NULL,
-            OPTV_NONE,
-            {0, },
-            FALSE
-        }
-    };
-
-    (void)memcpy(PublicOption, ATIPublicOptions, SizeOf(ATIPublicOptions));
-
-#   define Accel       PublicOption[ATI_OPTION_ACCEL].value.bool
-#   define CRTScreen   PublicOption[ATI_OPTION_CRT].value.bool
-#   define CSync       PublicOption[ATI_OPTION_CSYNC].value.bool
-#   define Devel       PrivateOption[ATI_OPTION_DEVEL].value.bool
-#   define Linear      PublicOption[ATI_OPTION_LINEAR].value.bool
-#   define CacheMMIO   PublicOption[ATI_OPTION_MMIO_CACHE].value.bool
-#   define ProbeClocks PublicOption[ATI_OPTION_PROBE_CLOCKS].value.bool
-#   define ShadowFB    PublicOption[ATI_OPTION_SHADOW_FB].value.bool
-#   define Sync        PrivateOption[ATI_OPTION_SYNC].value.bool
-
-#   define ReferenceClock \
-        PublicOption[ATI_OPTION_REFERENCE_CLOCK].value.freq.freq
-
-    /* Pick up XF86Config options */
-    xf86CollectOptions(pScreenInfo, NULL);
-
-    /* Set non-zero defaults */
-
-#ifndef AVOID_CPIO
-
-    if (pATI->Adapter >= ATI_ADAPTER_MACH64)
-
-#endif /* AVOID_CPIO */
-
-    {
-        Accel = Linear = CacheMMIO = TRUE;
-    }
-
-    ReferenceClock = ((double)157500000.0) / ((double)11.0);
-
-#ifndef AVOID_CPIO
-
-    if (pATI->PCIInfo)
-
-#endif /* AVOID_CPIO */
-
-    {
-        ShadowFB = TRUE;
-    }
-
-    Sync = TRUE;
-
-    xf86ProcessOptions(pScreenInfo->scrnIndex, pScreenInfo->options,
-        PublicOption);
-    xf86ProcessOptions(pScreenInfo->scrnIndex, pScreenInfo->options,
-        PrivateOption);
-
-    /* Disable linear apertures if the OS doesn't support them */
-    if (!xf86LinearVidMem() && Linear)
-    {
-        if (PublicOption[ATI_OPTION_LINEAR].found)
-            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
-                "OS does not support linear apertures.\n");
-        Linear = FALSE;
-    }
-
-    /* Move option values into driver private structure */
-    pATI->OptionAccel = Accel;
-    pATI->OptionCRT = CRTScreen;
-    pATI->OptionCSync = CSync;
-    pATI->OptionDevel = Devel;
-    pATI->OptionLinear = Linear;
-    pATI->OptionMMIOCache = CacheMMIO;
-    pATI->OptionProbeClocks = ProbeClocks;
-    pATI->OptionShadowFB = ShadowFB;
-    pATI->OptionSync = Sync;
-
-    /* Only set the reference clock if it hasn't already been determined */
-    if (pATI->ReferenceNumerator && pATI->ReferenceDenominator)
-        return;
-
-    switch ((int)(ReferenceClock / ((double)100000.0)))
-    {
-        case 143:
-            pATI->ReferenceNumerator = 157500;
-            pATI->ReferenceDenominator = 11;
-            break;
-
-        case 286:
-            pATI->ReferenceNumerator = 315000;
-            pATI->ReferenceDenominator = 11;
-            break;
-
-        default:
-            pATI->ReferenceNumerator =
-                (int)(ReferenceClock / ((double)1000.0));
-            pATI->ReferenceDenominator = 1;
-            break;
-    }
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.32 2000/06/20 05:08:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.33 2000/09/26 15:57:08 tsi Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -1137,12 +1137,12 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	  for (i = 0; i < scrp->monitor->nHsync; i++)
 	    if (scrp->monitor->hsync[i].lo == scrp->monitor->hsync[i].hi)
 	      xf86DrvMsg(scrp->scrnIndex, X_INFO,
-			 "%s: Using hsync value of %6.2f kHz\n",
+			 "%s: Using hsync value of %.2f kHz\n",
 			 scrp->monitor->id,
 			 scrp->monitor->hsync[i].lo);
 	    else
 	      xf86DrvMsg(scrp->scrnIndex, X_INFO,
-			 "%s: Using hsync range of %6.2f-%6.2f kHz\n",
+			 "%s: Using hsync range of %.2f-%.2f kHz\n",
 			 scrp->monitor->id,
 			 scrp->monitor->hsync[i].lo,
 			 scrp->monitor->hsync[i].hi);
@@ -1158,12 +1158,12 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	  for (i = 0; i < scrp->monitor->nVrefresh; i++)
 	    if (scrp->monitor->vrefresh[i].lo == scrp->monitor->vrefresh[i].hi)
 	      xf86DrvMsg(scrp->scrnIndex, X_INFO,
-			 "%s: Using vrefresh value of %6.2f Hz\n",
+			 "%s: Using vrefresh value of %.2f Hz\n",
 			 scrp->monitor->id,
 			 scrp->monitor->vrefresh[i].lo);
 	    else
 	      xf86DrvMsg(scrp->scrnIndex, X_INFO,
-			 "%s: Using vrefresh range of %6.2f-%6.2f Hz\n",
+			 "%s: Using vrefresh range of %.2f-%.2f Hz\n",
 			 scrp->monitor->id,
 			 scrp->monitor->vrefresh[i].lo,
 			 scrp->monitor->vrefresh[i].hi);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.h,v 1.2 2000/02/18 12:19:27 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.h,v 1.3 2000/08/04 21:07:15 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -24,13 +24,28 @@
 #ifndef ___ATIOPTION_H___
 #define ___ATIOPTION_H___ 1
 
-#include "atipriv.h"
 #include "atiproto.h"
 
 #include "xf86str.h"
 
-extern OptionInfoPtr ATIAvailableOptions FunctionPrototype((int, int));
-extern void          ATIProcessOptions   FunctionPrototype((ScrnInfoPtr,
-                                                            ATIPtr));
+/*
+ * Documented XF86Config options.
+ */
+typedef enum
+{
+    ATI_OPTION_ACCEL,
+    ATI_OPTION_CRT,
+    ATI_OPTION_CSYNC,
+    ATI_OPTION_LINEAR,
+    ATI_OPTION_MMIO_CACHE,
+    ATI_OPTION_PROBE_CLOCKS,
+    ATI_OPTION_REFERENCE_CLOCK,
+    ATI_OPTION_SHADOW_FB
+} ATIPublicOptionType;
+
+extern OptionInfoRec       ATIPublicOptions[];
+extern const unsigned long ATIPublicOptionSize;
+
+extern OptionInfoPtr       ATIAvailableOptions FunctionPrototype((int, int));
 
 #endif /* ___ATIOPTION_H___ */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonsole.c,v 1.12 2000/06/19 15:00:56 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonsole.c,v 1.13 2000/08/04 21:07:13 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -26,6 +26,7 @@
 #include "aticrtc.h"
 #include "atilock.h"
 #include "atimach64.h"
+#include "atimode.h"
 #include "atistruct.h"
 #include "ativga.h"
 #include "atividmem.h"
@@ -150,17 +151,17 @@ ATIEnterGraphics
 
     /* Calculate hardware data */
     if (pScreen &&
-        !ATIAdapterCalculate(pScreenInfo->scrnIndex, pATI, &pATI->NewHW,
+        !ATIModeCalculate(pScreenInfo->scrnIndex, pATI, &pATI->NewHW,
             pScreenInfo->currentMode))
         return FALSE;
 
     pScreenInfo->vtSema = TRUE;
 
     /* Save current state */
-    ATIAdapterSave(pScreenInfo, pATI, &pATI->OldHW);
+    ATIModeSave(pScreenInfo, pATI, &pATI->OldHW);
 
     /* Set graphics state */
-    ATIAdapterSet(pScreenInfo, pATI, &pATI->NewHW);
+    ATIModeSet(pScreenInfo, pATI, &pATI->NewHW);
 
     /* Possibly blank the screen */
     if (pScreen)
@@ -191,10 +192,10 @@ ATILeaveGraphics
     {
         /* If not exiting, save graphics video state */
         if (!xf86ServerIsExiting())
-            ATIAdapterSave(pScreenInfo, pATI, &pATI->NewHW);
+            ATIModeSave(pScreenInfo, pATI, &pATI->NewHW);
 
         /* Restore mode in effect on server entry */
-        ATIAdapterSet(pScreenInfo, pATI, &pATI->OldHW);
+        ATIModeSet(pScreenInfo, pATI, &pATI->OldHW);
 
         pScreenInfo->vtSema = FALSE;
     }
@@ -226,14 +227,14 @@ ATISwitchMode
     ATIPtr      pATI        = ATIPTR(pScreenInfo);
 
     /* Calculate new hardware data */
-    if (!ATIAdapterCalculate(iScreen, pATI, &pATI->NewHW, pMode))
+    if (!ATIModeCalculate(iScreen, pATI, &pATI->NewHW, pMode))
         return FALSE;
 
     /* Set new hardware state */
     if (pScreenInfo->vtSema)
     {
         pScreenInfo->currentMode = pMode;
-        ATIAdapterSet(pScreenInfo, pATI, &pATI->NewHW);
+        ATIModeSet(pScreenInfo, pATI, &pATI->NewHW);
     }
 
     SetTimeSinceLastInputEvent();

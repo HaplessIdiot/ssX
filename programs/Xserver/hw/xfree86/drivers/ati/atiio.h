@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiio.h,v 1.8 2000/08/04 21:07:14 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiio.h,v 1.9 2000/08/22 21:54:30 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -30,7 +30,7 @@
 
 #define ___ATIIO_H___ 1
 
-#include "atistruct.h"
+#include "atiregs.h"
 
 #ifndef NO_COMPILER_H_EXTRAS
 # define NO_COMPILER_H_EXTRAS
@@ -45,30 +45,6 @@ typedef enum
 } ATIIODecodingType;
 
 #ifndef AVOID_CPIO
-
-extern void ATISetVGAIOBase FunctionPrototype((ATIPtr, const CARD8));
-extern void ATIModifyExtReg FunctionPrototype((ATIPtr, const CARD8, int,
-                                               const CARD8, CARD8));
-
-#endif /* AVOID_CPIO */
-
-/* Odds and ends to ease reading and writting of registers */
-#define GetReg(_Register, _Index) \
-    (                             \
-        outb(_Register, _Index),  \
-        inb((_Register) + 1)      \
-    )
-#define PutReg(_Register, _Index, _Value) \
-    do                                    \
-    {                                     \
-        outb(_Register, _Index);          \
-        outb((_Register) + 1, _Value);    \
-    } while(0)
-
-#define ATIGetExtReg(_Index)                    \
-    GetReg(pATI->CPIO_VGAWonder, _Index)
-#define ATIPutExtReg(_Index, _Value)            \
-    PutReg(pATI->CPIO_VGAWonder, _Index, _Value)
 
 /* Wait until "n" queue entries are free */
 #define ibm8514WaitQueue(_n)                      \
@@ -104,5 +80,7 @@ extern void ATIModifyExtReg FunctionPrototype((ATIPtr, const CARD8, int,
     {                                      \
         while (!(inw(GP_STAT) & DATARDY)); \
     }
+
+#endif /* AVOID_CPIO */
 
 #endif /* ___ATIIO_H___ */

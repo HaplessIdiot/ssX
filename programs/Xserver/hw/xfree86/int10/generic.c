@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.9 2000/06/07 22:03:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.10 2000/07/13 21:31:38 tsi Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -114,7 +114,7 @@ xf86InitInt10(int entityIndex)
 	set_return_trap(pInt);
 	pInt->BIOSseg = cs;
     } else {
-	reset_int_vect(pInt);
+        reset_int_vect(pInt);
 	set_return_trap(pInt);
 	vbiosMem = (unsigned char *)base + V_BIOS;
 	if (!mapPciRom(pInt,(unsigned char *)(vbiosMem))) {
@@ -136,9 +136,24 @@ xf86InitInt10(int entityIndex)
     setup_int_vect(pInt);
     set_return_trap(pInt);
     vbiosMem = (unsigned char *)base + V_BIOS;
-    if (!mapPciRom(pInt,(unsigned char *)(vbiosMem))) {
-	xf86DrvMsg(screen,X_ERROR,"Cannot read V_BIOS (4)\n");
-	goto error1;
+    {
+        EntityInfoPtr pEnt = xf86GetEntityInfo(pInt->entityIndex);
+	switch (pEnt->location.type) {
+	case BUS_PCI:
+	    if (!mapPciRom(pInt,(unsigned char *)(vbiosMem))) {
+	      xf86DrvMsg(screen,X_ERROR,"Cannot read V_BIOS (4)\n");
+	      goto error1;
+	    }
+	    break;
+	case BUS_ISA:  
+	    if (!int10_read_bios(screen,V_BIOS,vbiosMem)) {
+	        xf86DrvMsg(screen,X_ERROR,"Cannot read V_BIOS (5)\n");
+		goto error1;
+	    }
+	    break;
+	default:
+	    goto error1;
+	}
     }
     pInt->BIOSseg = V_BIOS >> 4;
     pInt->num = 0xe6;

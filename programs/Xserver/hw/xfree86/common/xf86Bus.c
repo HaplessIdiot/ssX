@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.51 2000/06/20 18:03:00 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.53 2000/08/04 16:13:24 eich Exp $ */
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
  */
@@ -2940,15 +2940,15 @@ xf86FindPrimaryDevice()
 	    break;
 	case BUS_ISA:
 	    bus = "ISA";
-	    loc = "";
+	    loc[0] = 0;
 	    break;
 	case BUS_SBUS:
 	    bus = "SBUS";
-	    sprintf(loc,"%2.2",primaryBus.id.sbus.fbNum);
+	    sprintf(loc,"%2.2x",primaryBus.id.sbus.fbNum);
 	    break;
 	default:
 	    bus = "";
-	    loc = "";
+	    loc[0] = 0;
 	}
 	
 	xf86MsgVerb(X_INFO, 2, "Primary Device is: %s %s\n",bus,loc);

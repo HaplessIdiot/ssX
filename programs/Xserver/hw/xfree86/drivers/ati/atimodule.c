@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimodule.c,v 1.6 2000/06/19 15:00:57 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimodule.c,v 1.7 2000/08/04 21:07:14 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -65,29 +65,6 @@ ATISetup
         Inited = TRUE;
         xf86AddDriver(&ATI, Module, 0);
 
-        /*
-         * Tell loader about symbols from other modules that this module might
-         * refer to.
-         */
-        LoaderRefSymbols(
-
-#ifndef AVOID_CPIO
-
-            "xf1bppScreenInit",
-            "xf4bppScreenInit",
-
-#endif /* AVOID_CPIO */
-
-            "cfbScreenInit",
-            "cfb16ScreenInit",
-            "cfb24ScreenInit",
-            "cfb32ScreenInit",
-            "ShadowFBInit",
-            "XAACreateInfoRec",
-            "XAADestroyInfoRec",
-            "XAAInit",
-            NULL);
-
         return (pointer)TRUE;
     }
 
@@ -137,6 +114,29 @@ ATILoadModules
     ATIPtr      pATI
 )
 {
+    /*
+     * Tell loader about symbols from other modules that this module might
+     * refer to.
+     */
+    LoaderRefSymbols(
+
+#ifndef AVOID_CPIO
+
+        "xf1bppScreenInit",
+        "xf4bppScreenInit",
+
+#endif /* AVOID_CPIO */
+
+        "cfbScreenInit",
+        "cfb16ScreenInit",
+        "cfb24ScreenInit",
+        "cfb32ScreenInit",
+        "ShadowFBInit",
+        "XAACreateInfoRec",
+        "XAADestroyInfoRec",
+        "XAAInit",
+        NULL);
+
     /* Load shadow frame buffer code if needed */
     if (pATI->OptionShadowFB &&
         !ATILoadModule(pScreenInfo, "shadowfb", "ShadowFBInit"))
