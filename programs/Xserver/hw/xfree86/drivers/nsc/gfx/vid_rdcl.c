@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/gfx/vid_rdcl.c,v 1.1 2002/12/10 15:12:27 alanh Exp $ */
 /*
  * $Workfile: vid_rdcl.c $
  *
@@ -477,10 +477,13 @@ gfx_set_clock_frequency(unsigned long frequency)
    }
 
    /* PROGRAM THE SETTINGS WITH THE RESET BIT SET */
+   /* Clear the bypass bit to ensure that the programmed */
+   /* M, N and P values are being used.                  */
 
    gfx_msr_read(RC_ID_MCP, MCP_DOTPLL, &msr_value);
    msr_value.high = PllTable[index].pll_value;
    msr_value.low |= 0x00000001;
+   msr_value.low &= ~MCP_DOTPLL_BYPASS;
    gfx_msr_write(RC_ID_MCP, MCP_DOTPLL, &msr_value);
 
    /* PROGRAM THE MCP DIVIDER VALUES */
@@ -759,20 +762,12 @@ gfx_set_video_size(unsigned short width, unsigned short height)
    gfx_set_display_video_size(width, height);
 
    /* SET VIDEO PITCH */
-   /* Set pitch to line width for GX1 legacy.         */
-   /* UV Pitch is 2x line width as GX1 required 4:2:0 */
-   /* data for every line, while Redcloud reads for   */
-   /* every other line.                               */
+   /* We are only maintaining legacy for 4:2:2 video formats. */
+   /* 4:2:0 video in previous chips was inadequate for most   */
+   /* common video formats.                                   */
 
-   gfx_set_video_yuv_pitch(pitch, pitch << 1);
-
-   /* SET VIDEO OFFSETS */
-   /* Set U and V Offsets to match legacy */
-
-   if (vid_420)
-      gfx_set_video_yuv_offsets(gfx_vid_offset,
-				gfx_vid_offset + (pitch >> 1),
-				gfx_vid_offset + (pitch >> 1) + (pitch >> 2));
+   if (!vid_420)
+      gfx_set_video_yuv_pitch(pitch, pitch << 1);
 
    return (0);
 }
@@ -1153,18 +1148,25 @@ gfx_set_video_left_crop(unsigned short x)
 {
    unsigned long vcfg, initread;
 
+   vcfg = READ_VID32(RCDF_VIDEO_CONFIG);
+
    /* CLIPPING ON LEFT */
-   /* Adjust initial read for scale, checking for divide by zero */
+   /* Adjust initial read for scale, checking for divide by zero. Mask the     */
+   /* lower three bits when clipping 4:2:0 video.  By masking the bits instead */
+   /* of rounding up we ensure that we always clip less than or equal to the   */
+   /* desired number of pixels.  This prevents visual artifacts from           */
+   /* over-clipping.  We mask three bits to meet the HW requirement that 4:2:0 */
+   /* clipping be 16-byte or 8-pixel aligned.                                  */
 
-   if (gfx_vid_dstw)
+   if (gfx_vid_dstw) {
       initread = (unsigned long)x *gfx_vid_srcw / gfx_vid_dstw;
-
-   else
+      if (vcfg & RCDF_VCFG_4_2_0_MODE)
+	 initread &= 0xFFF8;
+   } else
       initread = 0;
 
    /* SET INITIAL READ ADDRESS */
 
-   vcfg = READ_VID32(RCDF_VIDEO_CONFIG);
    vcfg &= ~RCDF_VCFG_INIT_READ_MASK;
    vcfg |= (initread << 15) & RCDF_VCFG_INIT_READ_MASK;
    WRITE_VID32(RCDF_VIDEO_CONFIG, vcfg);
@@ -2358,6 +2360,7 @@ gfx_read_crc(void)
 
       /* WAIT UNTIL NOT ACTIVE, THEN ACTIVE, NOT ACTIVE, THEN ACTIVE */
 
+      while (!gfx_test_vertical_active()) ;
       while (gfx_test_vertical_active()) ;
       while (!gfx_test_vertical_active()) ;
       while (gfx_test_vertical_active()) ;
@@ -2405,6 +2408,7 @@ gfx_read_crc32(void)
 
       /* WAIT UNTIL NOT ACTIVE, THEN ACTIVE, NOT ACTIVE, THEN ACTIVE */
 
+      while (!gfx_test_vertical_active()) ;
       while (gfx_test_vertical_active()) ;
       while (!gfx_test_vertical_active()) ;
       while (gfx_test_vertical_active()) ;
@@ -2443,8 +2447,7 @@ gfx_read_window_crc(int source, unsigned short x, unsigned short y,
 
    msr_value.high = 0;
    msr_value.low =
-	 (source ==
-	  CRC_SOURCE_GFX_DATA) ? (RCDF_MBD_DIAG_EN0 | 0x0000000F)
+	 (source == CRC_SOURCE_GFX_DATA) ? (RCDF_MBD_DIAG_EN0 | 0x0000000F)
 	 : (RCDF_MBD_DIAG_EN0 | 0x0000000B);
    gfx_msr_write(RC_ID_DF, MBD_MSR_DIAG, &msr_value);
 
@@ -2726,6 +2729,7 @@ gfx_read_window_crc(int source, unsigned short x, unsigned short y,
 
    /* DELAY TWO FRAMES */
 
+   while (!gfx_test_vertical_active()) ;
    while (gfx_test_vertical_active()) ;
    while (!gfx_test_vertical_active()) ;
    while (gfx_test_vertical_active()) ;

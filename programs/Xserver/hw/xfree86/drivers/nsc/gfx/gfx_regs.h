@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/gfx/gfx_regs.h,v 1.1 2002/12/10 15:12:25 alanh Exp $ */
 /*
  * $Workfile: gfx_regs.h $
  *
@@ -1352,6 +1352,7 @@
 #define MCP_DOTPLL_N              0x000001FC
 #define MCP_DOTPLL_M              0x00001E00
 #define MCP_DOTPLL_LOCK           0x02000000
+#define MCP_DOTPLL_BYPASS         0x00008000
 
 /* END OF FILE */
 

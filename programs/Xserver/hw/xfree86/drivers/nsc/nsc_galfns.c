@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_galfns.c,v 1.1 2002/12/10 15:12:23 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_galfns.c,v 1.2 2003/01/14 09:34:30 alanh Exp $ */
 /*
  * $Workfile: nsc_galfns.c $
  * $Revision$
@@ -2189,7 +2189,7 @@ Gal_set_tv_enable(int bState)
  *      return:	'1' was returned on success otherwise '0' was returned.
  *------------------------------------------------------------------------*/
 BOOLEAN
-Gal_get_tv_enable(int *bState)
+Gal_get_tv_enable(unsigned int *bState)
 {
    GAL_TVPARAMS pTV;
 
@@ -3726,7 +3726,6 @@ Gal_set_vbi_direct(unsigned long even_lines, unsigned long odd_lines)
       return 1;
    }
 }
-
 BOOLEAN
 Gal2_set_destination_stride(unsigned short stride)
 {

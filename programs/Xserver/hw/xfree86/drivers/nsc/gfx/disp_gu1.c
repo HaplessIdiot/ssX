@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/gfx/disp_gu1.c,v 1.1 2002/12/10 15:12:25 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/gfx/disp_gu1.c,v 1.2 2003/01/14 09:34:34 alanh Exp $ */
 /*
  * $Workfile: disp_gu1.c $
  *
@@ -2219,14 +2219,9 @@ unsigned long
 gfx_get_max_supported_pixel_clock(void)
 #endif
 {
-   /* PYRAMID CAN HANDLE 157.5 MHz */
+   /* ALL CHIPS CAN HANDLE 1280X1024@85HZ - 157.5 MHz */
 
-   if (gfx_cpu_version == GFX_CPU_PYRAMID)
-      return 157500;
-
-   /* EVERYTHING ELSE IS 135.0 MHz */
-
-   return 135000;
+   return 157500;
 }
 
 /*----------------------------------------------------------------------------
