@@ -41,8 +41,9 @@
  *     the hardware.  The implementation of this is not quite complete.
  *   12 September 2002 - Better software scaling with some averaging, giving a nicer
  *     picture.
+ *   13 January 2003 - Fixed a minor bug where the video would occasionally stop updating,
+ *     which was worked around just by re-sizing the window.
  */
-/* $XFree86$ */
 
 
 /*
@@ -122,12 +123,6 @@ typedef struct {
 	Time         freeTime;
 	FBLinearPtr  linear;
 
-	unsigned long overlay_mem1, overlay_mem2;
-	unsigned long overlay_isrc_w, overlay_isrc_h;
-	unsigned long overlay_idst_w, overlay_idst_h;
-	unsigned long overlay_ddst_x, overlay_ddst_y;
-	unsigned long overlay_ddst_w, overlay_ddst_h;
-	unsigned long overlay_pitch;
 } I740PortPrivRec, *I740PortPrivPtr;        
 
 typedef struct {
@@ -193,23 +188,6 @@ __inline__ static void i740fb_overlay_set(ScrnInfoPtr pScrn, I740PortPrivPtr pPr
   ddst_x+=pI740->ov_offset_x;
   ddst_y+=pI740->ov_offset_y;
 
-  /* If any of the dimensions of the image have changed since last time,
-   * we re-program.
-   */
-  if (mem1 != pPriv->overlay_mem1 ||
-      mem2 != pPriv->overlay_mem2 ||
-      isrc_w != pPriv->overlay_isrc_w ||
-      isrc_h != pPriv->overlay_isrc_h ||
-      idst_w != pPriv->overlay_idst_w ||
-      idst_h != pPriv->overlay_idst_h ||
-      ddst_x != pPriv->overlay_ddst_x ||
-      ddst_y != pPriv->overlay_ddst_y ||
-      ddst_w != pPriv->overlay_ddst_w ||
-      ddst_h != pPriv->overlay_ddst_h ||
-      pitch != pPriv->overlay_pitch) {
-
-    /*xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "i740fb_overlay_set - changed parameters\n");*/
-
       /* Program the i740 overlay to use the new image dimensions. */
 
     i740_wc(fb_p, MRX, 0x24, mem1>>16);
@@ -244,21 +222,6 @@ __inline__ static void i740fb_overlay_set(ScrnInfoPtr pScrn, I740PortPrivPtr pPr
     i740_wc(fb_p, XRX, 0xD0, 0x3F);
       /* 0x3C = COL_KEY_CNTL_1 */
     i740_wc(fb_p, MRX, 0x3C, 0x05 | 0x02);
-    usleep(50000);
-
-      /* Remember what we programmed. */
-    pPriv->overlay_mem1 = mem1;
-    pPriv->overlay_mem2 = mem2;
-    pPriv->overlay_isrc_w = isrc_w;
-    pPriv->overlay_isrc_h = isrc_h;
-    pPriv->overlay_idst_w = idst_w;
-    pPriv->overlay_idst_h = idst_h;
-    pPriv->overlay_ddst_x = ddst_x;
-    pPriv->overlay_ddst_y = ddst_y;
-    pPriv->overlay_ddst_w = ddst_w;
-    pPriv->overlay_ddst_h = ddst_h;
-    pPriv->overlay_pitch = pitch;
-  }
 
   /*i740_wc(fb_p, MRX, 0x20, (flip ? 0x14 : 0x04));*/
   /*i740_wc(fb_p, MRX, 0x20, 0);*/
@@ -433,8 +396,6 @@ static void I740StopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit)
 	  pPriv->linear = NULL;
 	}
       pPriv->videoStatus = 0;
-      pPriv->overlay_mem1 = (unsigned long)-1L;  /*SB*/
-      pPriv->overlay_mem2 = (unsigned long)-1L;  /*SB*/
     }
   else
     {
@@ -723,8 +684,6 @@ static int I740PutImage(ScrnInfoPtr pScrn,
 		REGION_EXTENTS(pScreen, clipBoxes), width, height);
 
   if((x1 >= x2) || (y1 >= y2)) {
-    pPriv->overlay_mem1 = (unsigned long)-1L;  /*SB*/
-    pPriv->overlay_mem2 = (unsigned long)-1L;  /*SB*/
     return Success;
   }
 
@@ -757,8 +716,6 @@ static int I740PutImage(ScrnInfoPtr pScrn,
     FBLinearPtr new_linear = I740AllocateMemory(pScrn, pPriv->linear, size);
     if (new_linear != pPriv->linear) {
       pPriv->linear = new_linear;
-      pPriv->overlay_mem1 = (unsigned long)-1L;  /*SB*/
-      pPriv->overlay_mem2 = (unsigned long)-1L;  /*SB*/
     }
   }
   if(!pPriv->linear)
@@ -922,8 +879,6 @@ static void I740BlockHandler(int i, pointer blockData, pointer pTimeout, pointer
               /*xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "I740BlockHandler: OFF_TIMER expired\n");*/  /* ### */
 	      /* Turn off the overlay */
 	      i740fb_overlay_off(pScrn);
-	      pPriv->overlay_mem1 = (unsigned long)-1L;  /*SB*/
-	      pPriv->overlay_mem2 = (unsigned long)-1L;  /*SB*/
 
 	      pPriv->videoStatus = FREE_TIMER;
 	      pPriv->freeTime = currentTime.milliseconds + FREE_DELAY;
@@ -938,8 +893,6 @@ static void I740BlockHandler(int i, pointer blockData, pointer pTimeout, pointer
                   /*xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "I740BlockHandler: FREE_TIMER expired\n");*/  /* ### */
 		  xf86FreeOffscreenLinear(pPriv->linear);
 		  pPriv->linear = NULL;
-		  pPriv->overlay_mem1 = (unsigned long)-1L;  /*SB*/
-		  pPriv->overlay_mem2 = (unsigned long)-1L;  /*SB*/
 		}
 	      pPriv->videoStatus = 0;
 	    }
