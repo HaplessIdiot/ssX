@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.219 2004/10/23 15:29:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.220 2004/11/07 04:20:59 dawes Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -468,6 +468,8 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 
     if (!xf86LoadModules(baseModules, NULL))
 	FatalError("Unable to load required base modules, Exiting...\n");
+
+    xfree(baseModules);
     
 #endif
 
