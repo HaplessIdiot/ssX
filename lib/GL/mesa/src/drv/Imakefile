@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/Imakefile,v 1.14tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/Imakefile,v 1.15 2000/08/24 22:20:06 tsi Exp $
 
 #define DoNormalLib NormalLibGlx
 #define DoSharedLib SharedLibGlx
@@ -33,29 +33,42 @@ DRIVER += sis
 #endif
 
 SUBDIRS = $(DRIVER)
-#else
+
+#else /* GlxUseBuiltInDRIDriver */
+
 #if defined(i386Architecture) || defined(ia64Architecture)
-SUBDIRS += gamma
-#if HasGlide3
-SUBDIRS += tdfx
-#endif
+
 SUBDIRS += common
+SUBDIRS += gamma
 SUBDIRS += mga
 SUBDIRS += i810
 SUBDIRS += r128
 SUBDIRS += sis
-#elif defined(AlphaArchitecture) 
-SUBDIRS += gamma
 #if HasGlide3
 SUBDIRS += tdfx
 #endif
+
+#elif defined(AlphaArchitecture) 
+
 SUBDIRS += common
+SUBDIRS += gamma
 SUBDIRS += mga
 SUBDIRS += r128
+#if HasGlide3
+SUBDIRS += tdfx
+#endif
+
 #elif defined(SparcArchitecture)
+
 SUBDIRS += ffb
-#endif
-#endif
+
+#else
+
+SUBDIRS = 
+
+#endif /* architecture */
+
+#endif /* GlxUseBuiltInDRIDriver */
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
