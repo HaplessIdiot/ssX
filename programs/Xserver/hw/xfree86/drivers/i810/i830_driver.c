@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.44 2003/10/21 02:17:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.45 2003/10/21 04:13:40 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -3582,7 +3582,7 @@ I830BIOSCloseScreen(int scrnIndex, ScreenPtr pScreen)
    return (*pScreen->CloseScreen) (scrnIndex, pScreen);
 }
 
-static int
+static ModeStatus
 I830ValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 {
    if (mode->Flags & V_INTERLACE) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.h,v 1.11 2003/07/02 17:31:30 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.h,v 1.12 2003/09/28 20:15:56 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -100,7 +100,7 @@ extern void                 RADEONLeaveVT
 			    FunctionPrototype((int, int));
 extern void                 RADEONFreeScreen
 			    FunctionPrototype((int, int));
-extern int                  RADEONValidMode
+extern ModeStatus           RADEONValidMode
 			    FunctionPrototype((int, DisplayModePtr, Bool,
 					       int));
 

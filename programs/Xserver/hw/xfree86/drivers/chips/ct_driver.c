@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.130 2003/10/02 13:29:57 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.131 2003/10/08 15:48:39 eich Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -142,7 +142,7 @@ static Bool     CHIPSEnterVT(int scrnIndex, int flags);
 static void     CHIPSLeaveVT(int scrnIndex, int flags);
 static Bool     CHIPSCloseScreen(int scrnIndex, ScreenPtr pScreen);
 static void     CHIPSFreeScreen(int scrnIndex, int flags);
-static int      CHIPSValidMode(int scrnIndex, DisplayModePtr mode,
+static ModeStatus CHIPSValidMode(int scrnIndex, DisplayModePtr mode,
                                  Bool verbose, int flags);
 static Bool	CHIPSSaveScreen(ScreenPtr pScreen, int mode);
 
@@ -4540,7 +4540,7 @@ CHIPSFreeScreen(int scrnIndex, int flags)
 }
 
 /* Optional */
-static int
+static ModeStatus
 CHIPSValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];

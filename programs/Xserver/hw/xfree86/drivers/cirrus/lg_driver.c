@@ -13,7 +13,7 @@
  *	David Dawes, Andrew E. Mileski, Leonard N. Zubkoff,
  *	Guy DESBIEF, Itai Nahshon.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.46 2003/09/24 02:43:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.47 2003/09/24 03:16:53 dawes Exp $ */
 
 #define EXPERIMENTAL
 
@@ -84,7 +84,8 @@ void LgAdjustFrame(int scrnIndex, int x, int y, int flags);
 
 /* Optional functions */
 void LgFreeScreen(int scrnIndex, int flags);
-int	LgValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags);
+ModeStatus LgValidMode(int scrnIndex, DisplayModePtr mode,
+		       Bool verbose, int flags);
 
 /* Internally used functions */
 static void LgRestoreLgRegs(ScrnInfoPtr pScrn, LgRegPtr lgReg);
@@ -1726,7 +1727,7 @@ LgFreeScreen(int scrnIndex, int flags)
 /* Checks if a mode is suitable for the selected chipset. */
 
 /* Optional */
-int
+ModeStatus
 LgValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 {
 	int lace;

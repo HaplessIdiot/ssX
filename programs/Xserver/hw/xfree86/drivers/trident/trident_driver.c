@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.184 2003/10/30 13:38:01 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.185 2003/10/30 14:33:02 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -79,8 +79,8 @@ static Bool	TRIDENTSaveScreen(ScreenPtr pScreen, int mode);
 
 /* Optional functions */
 static void	TRIDENTFreeScreen(int scrnIndex, int flags);
-static int	TRIDENTValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose,
-			     int flags);
+static ModeStatus TRIDENTValidMode(int scrnIndex, DisplayModePtr mode,
+				   Bool verbose, int flags);
 
 /* Internally used functions */
 static Bool	TRIDENTMapMem(ScrnInfoPtr pScrn);
@@ -3260,7 +3260,7 @@ TRIDENTFreeScreen(int scrnIndex, int flags)
 /* Checks if a mode is suitable for the selected chipset. */
 
 /* Optional */
-static int
+static ModeStatus
 TRIDENTValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];

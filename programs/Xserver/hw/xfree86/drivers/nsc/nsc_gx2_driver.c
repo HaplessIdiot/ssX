@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_driver.c,v 1.7 2003/04/23 21:51:41 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_driver.c,v 1.8 2003/08/23 15:03:09 dawes Exp $ */
 /*
  * $Workfile: nsc_gx2_driver.c $
  * $Revision$
@@ -230,7 +230,7 @@ static void GX2LeaveVT(int, int);
 static void GX2FreeScreen(int, int);
 void GX2AdjustFrame(int, int, int, int);
 Bool GX2SwitchMode(int, DisplayModePtr, int);
-static int GX2ValidMode(int, DisplayModePtr, Bool, int);
+static ModeStatus GX2ValidMode(int, DisplayModePtr, Bool, int);
 static void GX2LoadPalette(ScrnInfoPtr pScreenInfo,
 			   int numColors, int *indizes,
 			   LOCO * colors, VisualPtr pVisual);
@@ -2217,7 +2217,7 @@ GX2FreeScreen(int scrnIndex, int flags)
  * Comments     :none.
 *----------------------------------------------------------------------------
 */
-static int
+static ModeStatus
 GX2ValidMode(int scrnIndex, DisplayModePtr pMode, Bool Verbose, int flags)
 {
    unsigned int total_memory_required;

@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.102 2003/09/24 06:03:13 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.103 2003/10/08 15:48:41 eich Exp $ */
 
 /*
  * Authors:
@@ -129,8 +129,8 @@ static Bool TDFXSaveScreen(ScreenPtr pScreen, int mode);
 static void TDFXFreeScreen(int scrnIndex, int flags);
 
 /* Check if a mode is valid on the hardware */
-static int TDFXValidMode(int scrnIndex, DisplayModePtr mode, Bool
-		       verbose, int flags);
+static ModeStatus TDFXValidMode(int scrnIndex, DisplayModePtr mode,
+				Bool verbose, int flags);
 
 static void TDFXBlockHandler(int, pointer, pointer, pointer);
 
@@ -2403,7 +2403,7 @@ TDFXFreeScreen(int scrnIndex, int flags) {
     vgaHWFreeHWRec(xf86Screens[scrnIndex]);
 }
 
-static int
+static ModeStatus
 TDFXValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags) {
   ScrnInfoPtr pScrn;
   TDFXPtr pTDFX;

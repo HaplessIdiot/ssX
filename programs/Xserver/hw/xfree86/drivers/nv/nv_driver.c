@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.114 2003/08/23 16:09:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.115 2003/10/02 13:29:59 eich Exp $ */
 
 #include "nv_include.h"
 
@@ -51,8 +51,8 @@ static Bool    NVSaveScreen(ScreenPtr pScreen, int mode);
 
 /* Optional functions */
 static void    NVFreeScreen(int scrnIndex, int flags);
-static int     NVValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose,
-                           int flags);
+static ModeStatus NVValidMode(int scrnIndex, DisplayModePtr mode,
+			      Bool verbose, int flags);
 
 /* Internally used functions */
 
@@ -750,7 +750,7 @@ NVFreeScreen(int scrnIndex, int flags)
 /* Checks if a mode is suitable for the selected chipset. */
 
 /* Optional */
-static int
+static ModeStatus
 NVValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 {
     return (MODE_OK);

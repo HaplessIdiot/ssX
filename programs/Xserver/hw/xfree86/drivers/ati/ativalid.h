@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativalid.h,v 1.7 2002/01/16 16:22:28 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativalid.h,v 1.8 2003/01/01 19:16:34 tsi Exp $ */
 /*
  * Copyright 1997 through 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -28,6 +28,7 @@
 
 #include "xf86str.h"
 
-extern int ATIValidMode FunctionPrototype((int, DisplayModePtr, Bool, int));
+extern ModeStatus ATIValidMode FunctionPrototype((int, DisplayModePtr, Bool,
+                                                  int));
 
 #endif /* ___ATIVALID_H___ */

@@ -11,7 +11,7 @@
  *    Guy DESBIEF
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.32 2003/08/23 16:09:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.33 2003/09/24 02:43:21 dawes Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -93,7 +93,8 @@ void AlpAdjustFrame(int scrnIndex, int x, int y, int flags);
 
 /* Optional functions */
 void AlpFreeScreen(int scrnIndex, int flags);
-int	AlpValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags);
+ModeStatus AlpValidMode(int scrnIndex, DisplayModePtr mode,
+			Bool verbose, int flags);
 /* Internally used functions */
 static void	AlpSave(ScrnInfoPtr pScrn);
 static void	AlpRestore(ScrnInfoPtr pScrn);
@@ -1908,7 +1909,7 @@ AlpFreeScreen(int scrnIndex, int flags)
 /* Checks if a mode is suitable for the selected chipset. */
 
 /* Optional */
-int
+ModeStatus
 AlpValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 {
 	int lace;

@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.46 2003/08/23 15:02:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.47 2003/08/23 16:09:17 dawes Exp $ */
 
 /*
  * Authors:
@@ -137,8 +137,8 @@ static Bool I740SaveScreen(ScreenPtr pScreen, int mode);
 static void I740FreeScreen(int scrnIndex, int flags);
 
 /* Check if a mode is valid on the hardware */
-static int I740ValidMode(int scrnIndex, DisplayModePtr mode, Bool
-		       verbose, int flags);
+static ModeStatus I740ValidMode(int scrnIndex, DisplayModePtr mode,
+				Bool verbose, int flags);
 
 /* Switch to various Display Power Management System levels */
 static void I740DisplayPowerManagementSet(ScrnInfoPtr pScrn, 
@@ -1851,7 +1851,7 @@ I740FreeScreen(int scrnIndex, int flags) {
     vgaHWFreeHWRec(xf86Screens[scrnIndex]);
 }
 
-static int
+static ModeStatus
 I740ValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags) {
   if (mode->Flags & V_INTERLACE) {
     if (verbose) {
