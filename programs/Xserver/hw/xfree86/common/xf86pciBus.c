@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.51 2002/04/04 14:05:40 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.52 2002/05/02 15:20:19 tsi Exp $ */
 /*
- * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2002 by The XFree86 Project, Inc.
  */
 
 /*
@@ -15,13 +15,10 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86Resources.h"
-#include "xf86ScanPci.h"
 
 /* Bus-specific headers */
-#undef  DECLARE_CARD_DATASTRUCTURES
-#define DECLARE_CARD_DATASTRUCTURES TRUE
 #include "xf86PciInfo.h"
-#include "xf86ScanPci.h"
+#include "xf86PciData.h"
 
 #include "xf86Bus.h"
 
@@ -36,6 +33,14 @@ Bool pciSlotClaimed = FALSE;
 pciConfigPtr *xf86PciInfo = NULL;		/* Full PCI probe info */
 pciVideoPtr *xf86PciVideoInfo = NULL;		/* PCI probe for video hw */
 pciAccPtr * xf86PciAccInfo = NULL;              /* PCI access related */
+
+/* pcidata globals */
+ScanPciSetupProcPtr xf86SetupPciIds = NULL;
+ScanPciCloseProcPtr xf86ClosePciIds = NULL;
+ScanPciFindByDeviceProcPtr xf86FindPciNamesByDevice = NULL;
+ScanPciFindBySubsysProcPtr xf86FindPciNamesBySubsys = NULL;
+ScanPciFindClassBySubsysProcPtr xf86FindPciClassBySubsys = NULL;
+ScanPciFindClassByDeviceProcPtr xf86FindPciClassByDevice = NULL;
 
 static resPtr pciAvoidRes = NULL;
 
@@ -117,10 +122,6 @@ static PciBusPtr xf86PciBus = NULL;
                   P_M_RANGE(range,TAG(pvp),pvp->biosBase,pvp->biosSize,type)
 #define PV_I_RANGE(range,pvp,i,type) \
                   P_I_RANGE(range,TAG(pvp),pvp->ioBase[i],pvp->size[i],type)
-
-SymTabPtr xf86PCIVendorNameInfo;
-pciVendorCardInfo *xf86PCICardInfo;
-pciVendorDeviceInfo * xf86PCIVendorInfo;
 
 static void
 getPciClassFlags(pciConfigPtr *pcrpp);
@@ -423,43 +424,24 @@ FindPCIVideoInfo(void)
     /* Print a summary of the video devices found */
     {
 	for (k = 0; k < num; k++) {
-	    char *vendorname = NULL, *chipname = NULL;
+	    const char *vendorname = NULL, *chipname = NULL;
+	    const char *prim = " ";
 	    char busnum[8];
 	    Bool memdone = FALSE, iodone = FALSE;
 
 	    i = 0; 
 	    info = xf86PciVideoInfo[k];
 	    xf86FormatPciBusNumber(info->bus, busnum);
-	    while (xf86PCIVendorNameInfo[i].token) {
-		if (xf86PCIVendorNameInfo[i].token == info->vendor) 
-		    vendorname = (char *)xf86PCIVendorNameInfo[i].name;
-		i++;
-	    }
-	    i = 0;
-	    while(xf86PCIVendorInfo[i].VendorID) {
-		if (xf86PCIVendorInfo[i].VendorID == info->vendor) {
-		    j = 0;
-		    while (xf86PCIVendorInfo[i].Device[j].DeviceName) {
-			if (xf86PCIVendorInfo[i].Device[j].DeviceID ==
-			    info->chipType) {
-			    chipname =
-				xf86PCIVendorInfo[i].Device[j].DeviceName;
-			    break;
-			}
-			j++;
-		    }
-		    break;
-		}
-		i++;
-	    }
+	    xf86FindPciNamesByDevice(info->vendor, info->chipType,
+				     NOVENDOR, NOSUBSYS,
+				     &vendorname, &chipname, NULL, NULL);
 	    if ((!vendorname || !chipname) &&
 		!PCIALWAYSPRINTCLASSES(info->class, info->subclass))
 		continue;
 	    if (xf86IsPrimaryPci(info))
-	    	xf86Msg(X_PROBED, "PCI:*(%s:%d:%d) ", busnum, info->device,
-		    info->func);
-	    else
-	    	xf86Msg(X_PROBED, "PCI: (%s:%d:%d) ", busnum, info->device,
+		prim = "*";
+
+	    xf86Msg(X_PROBED, "PCI:%s(%s:%d:%d) ", prim, busnum, info->device,
 		    info->func);
 	    if (vendorname)
 		xf86ErrorF("%s ", vendorname);
@@ -1812,20 +1794,31 @@ getValidBIOSBase(PCITAG tag, int *num)
 void
 xf86PciProbe(void)
 {
-    typedef void DataSetupFuncType(SymTabPtr *, pciVendorDeviceInfo **,
-				   pciVendorCardInfo **);
-    DataSetupFuncType *DataSetupFunc;
-#ifdef XFree86LOADER
-    /* 
-     * we need to get the pointer to the pci data structures initialized
+    /*
+     * Initialise the pcidata entry points.
      */
-
-    DataSetupFunc = (DataSetupFuncType *)LoaderSymbol("xf86SetupPciData");
+#ifdef XFree86LOADER
+    xf86SetupPciIds = (ScanPciSetupProcPtr)LoaderSymbol("ScanPciSetupPciIds");
+    xf86ClosePciIds = (ScanPciCloseProcPtr)LoaderSymbol("ScanPciClosePciIds");
+    xf86FindPciNamesByDevice =
+	(ScanPciFindByDeviceProcPtr)LoaderSymbol("ScanPciFindPciNamesByDevice");
+    xf86FindPciNamesBySubsys =
+	(ScanPciFindBySubsysProcPtr)LoaderSymbol("ScanPciFindPciNamesBySubsys");
+    xf86FindPciClassBySubsys =
+	(ScanPciFindClassBySubsysProcPtr)LoaderSymbol("ScanPciFindPciClassBySubsys");
+    xf86FindPciClassByDevice =
+	(ScanPciFindClassByDeviceProcPtr)LoaderSymbol("ScanPciFindPciClassByDevice");
 #else
-    DataSetupFunc = xf86SetupScanPci;
+    xf86SetupPciIds = ScanPciSetupPciIds;
+    xf86ClosePciIds = ScanPciClosePciIds;
+    xf86FindPciNamesByDevice = ScanPciFindPciNamesByDevice;
+    xf86FindPciNamesBySubsys = ScanPciFindPciNamesBySubsys;
+    xf86FindPciClassBySubsys = ScanPciFindPciClassBySubsys;
+    xf86FindPciClassByDevice = ScanPciFindPciClassByDevice;
 #endif
-    (*DataSetupFunc)(&xf86PCIVendorNameInfo, &xf86PCIVendorInfo, &
-		      xf86PCICardInfo);
+
+    if (!xf86SetupPciIds())
+	FatalError("xf86SetupPciIds() failed\n");
     FindPCIVideoInfo();
 }
 
@@ -3255,49 +3248,34 @@ xf86CheckPciSlot(int bus, int device, int func)
 }
 
 
-CARD32 (*FindPCIClassInCardList)(
-    unsigned short vendorID, unsigned short subsystemID);
-CARD32 (*FindPCIClassInDeviceList)(
-    unsigned short vendorID, unsigned short deviceID);
+/*
+ * This used to load the scanpci module.  The pcidata module is now used
+ * (which the server always loads early).  The main difference between the
+ * two modules is size, and the scanpci module should only ever be loaded
+ * when the X server is run with the -scanpci flag.
+ *
+ * To make sure that the required information is present in the pcidata
+ * module, add a PCI_VENDOR_* macro for the relevant vendor to xf86PciInfo.h,
+ * and add the class override data to ../etc/extrapci.ids.
+ */
 
 static void
 getPciClassFlags(pciConfigPtr *pcrpp)
 {
     pciConfigPtr pcrp;
     int i = 0;
-#ifdef XFree86LOADER
-    pointer scan_mod = NULL;
-#endif
 
     if (!pcrpp)
 	return;
-
-#ifdef XFree86LOADER
-    if (!(scan_mod = xf86LoadOneModule("scanpci", NULL))) {
-	xf86Msg(X_WARNING,"Could not load scanpci module\n");
-	return;
-    } else {
-	FindPCIClassInCardList = (CARD32 (*)(unsigned short, unsigned short))
-	    LoaderSymbol("xf86FindPCIClassInCardList");
-	FindPCIClassInDeviceList = (CARD32 (*)(unsigned short, unsigned short))
-	    LoaderSymbol("xf86FindPCIClassInDeviceList");
-    }
-#else
-    FindPCIClassInCardList = xf86FindPCIClassInCardList;
-    FindPCIClassInDeviceList = xf86FindPCIClassInDeviceList;
-#endif
-
     while ((pcrp = pcrpp[i])) {
-	if (!(pcrp->listed_class = FindPCIClassInCardList(
-	    pcrp->pci_subsys_vendor,pcrp->pci_subsys_card)))
-	    pcrp->listed_class = FindPCIClassInDeviceList(
-		pcrp->pci_vendor,pcrp->pci_device);
+	if (!(pcrp->listed_class =
+		xf86FindPciClassBySubsys(pcrp->pci_subsys_vendor,
+					 pcrp->pci_subsys_card))) {
+	    pcrp->listed_class =
+		xf86FindPciClassByDevice(pcrp->pci_vendor, pcrp->pci_device);
+	}
 	i++;
     }
-
-#ifdef XFree86LOADER
-    UnloadModule(scan_mod);
-#endif
 }
 
 /*

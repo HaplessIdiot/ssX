@@ -1,0 +1,40 @@
+#
+#	Modifications and additions to the standard list of PCI IDs in
+#	pci.ids.
+#
+#	To modify an entry, simply add the modified version here.
+#	To leave part of an entry unchanged, use '"' for the name
+#	(e.g., leave the vendor name unchanged while adding/modifying
+#	a device).  To delete an entry, set the name to '-'.
+#
+#	One syntax extension is allowing a 16-bit class value to be
+#	specified for a device (see the syntax description below).
+#
+#	Don't make gratuitous changes, and please send back
+#	changes/additions that aren't XFree86-specific to the pciids
+#	project (http://pciids.sf.net/).
+#
+#	$XFree86$
+#
+
+# Vendors, devices and subsystems. Please keep sorted.
+
+# Syntax:
+# vendor  vendor_name
+#	device  device_name				<-- single tab
+#		C  class				<-- two tabs
+#		subvendor subdevice  subsystem_name	<-- two tabs
+#
+# Use lower-case hex digits for all numeric values.
+
+# More familiar names for the Intel graphics chips
+
+8086  "
+	1132  i815 [82815 Chipset Graphics Controller]
+	2560  82845G 845G Chipset AGP Bridge
+	2562  i845G [82845G Chipset Graphics Controller]
+	3577  i830 [82830 Chipset Graphics Controller]
+	7121  i810 [82810 Chipset Graphics Controller]
+	7123  i810-dc100  [82810 DC-100 Chipset Graphics Controller]
+	7125  i810e [82810E DC-133 Chipset Graphics Controller]
+

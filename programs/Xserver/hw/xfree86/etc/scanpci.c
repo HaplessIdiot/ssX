@@ -1,5 +1,7 @@
-/* Copyright 2000 by Egbert Eich 
+/*
+ * Copyright 2000 by Egbert Eich 
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
+ * Copyright 2002 by David Dawes
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,7 +23,7 @@
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.82 2001/10/28 03:33:55 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.83 2002/01/04 22:28:06 tsi Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -29,8 +31,8 @@
 #include "xf86Priv.h"
 #include "xf86_OSproc.h"
 #include "xf86Pci.h"
-#include "xf86ScanPci.h"
 #include "xf86PciInfo.h"
+#include "xf86ScanPci.h"
 #include "dummylib.h"
 
 #include <stdarg.h>
@@ -59,6 +61,8 @@ static void print_i128(pciConfigPtr pcr);
 static void print_pcibridge(pciConfigPtr pcr);
 static void print_apb(pciConfigPtr pcr);
 
+#define MAX_DEV_PER_VENDOR 40
+
 typedef struct {
     unsigned int Vendor;
     struct {
@@ -66,6 +70,10 @@ typedef struct {
 	void(*func)(pciConfigPtr);
     } Device[MAX_DEV_PER_VENDOR];
 } pciVendorDevFuncInfo;
+
+#ifndef PCI_CHIP_DC21050
+#define PCI_CHIP_DC21050 0x0001
+#endif
 
 static pciVendorDevFuncInfo vendorDeviceFuncInfo[] = {
     { PCI_VENDOR_ATI, {
@@ -200,39 +208,35 @@ main(int argc, char *argv[])
 static void
 identify_card(pciConfigPtr pcr, int verbose)
 {
-
     int i, j; 
+    int ret;
     int foundit = 0;
     int foundvendor = 0;
+    const char *vname, *dname, *svname, *sname;
 
-    SymTabRec *pvnd;
-    pciVendorDeviceInfo *pvd;
     pciVendorDevFuncInfo *vdf = vendorDeviceFuncInfo;
-    pciVendorCardInfo *pvc;
-    
-    xf86SetupScanPci(&pvnd,&pvd,&pvc);
+
+    if (!ScanPciSetupPciIds()) {
+	fprintf(stderr, "xf86SetupPciIds() failed\n");
+	exit(1);
+    }
     
     printf("\npci bus 0x%04x cardnum 0x%02x function 0x%02x:"
 	   " vendor 0x%04x device 0x%04x\n",
 	   pcr->busnum, pcr->devnum, pcr->funcnum,
 	   pcr->pci_vendor, pcr->pci_device);
-    
-    for (i = 0;  pvnd[i].name;  i++) {
-	if (pvnd[i].token == pcr->pci_vendor) {
-	    printf(" %s ", pvnd[i].name);
-	    break;
-	}
-    }
 
-    for (i = 0; pvd[i].VendorID && pvd[i].VendorID != pcr->pci_vendor; i++)
-	;
-    if (pvd[i].VendorID) {
-	for (j = 0;  pvd[i].Device[j].DeviceName;  j++) {
-	    if (pvd[i].Device[j].DeviceID == pcr->pci_device) {
-		printf("%s", pvd[i].Device[j].DeviceName);
-		foundit = 1;
-		break;
-	    }
+    ret = ScanPciFindPciNamesByDevice(pcr->pci_vendor, pcr->pci_device,
+			     pcr->pci_subsys_vendor, pcr->pci_subsys_card,
+			     &vname, &dname, &svname, &sname);
+
+    printf("xf86FindPciNamesByDevice returns %d\n", ret);
+
+    if (vname) {
+	printf(" %s ", vname);
+	if (dname) {
+	    printf("%s", dname);
+	    foundit = 1;
 	}
     }
 
@@ -261,27 +265,15 @@ identify_card(pciConfigPtr pcr, int verbose)
         foundvendor = 0;
 	printf(" CardVendor 0x%04x card 0x%04x",
 	       pcr->pci_subsys_vendor, pcr->pci_subsys_card);
-	for (i = 0;  pvnd[i].name;  i++) {
-	    if (pvnd[i].token == pcr->pci_subsys_vendor) {
-	        printf(" (%s", pvnd[i].name);
-		foundvendor = 1;
-	        break;
+	if (svname) {
+	    printf(" (%s", svname);
+	    foundvendor = 1;
+	    if (sname) {
+		printf(" %s)", sname);
+		foundit = 1;
 	    }
-        }
+	}
 
-        for (i = 0;
-	     pvc[i].VendorID && pvc[i].VendorID != pcr->pci_subsys_vendor;
-	     i++)
-	    ;
-        if (pvc[i].VendorID) {
-	    for (j = 0;  pvc[i].Device[j].CardName;  j++) {
-	        if (pvc[i].Device[j].SubsystemID == pcr->pci_subsys_card) {
-		    printf(" %s)", pvc[i].Device[j].CardName);
-		    foundit = 1;
-		    break;
-	        }
-	    }
-        }
         if (!foundit) {
 	    if (!foundvendor)
 		printf(" (");

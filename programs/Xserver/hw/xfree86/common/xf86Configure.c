@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.72 2002/05/31 18:45:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.73 2002/06/28 20:41:40 herrb Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -39,7 +39,7 @@
 #include "xf86.h"
 #include "xf86Config.h"
 #include "xf86Priv.h"
-#include "xf86PciInfo.h"
+#include "xf86PciData.h"
 #define IN_XSERVER
 #include "xf86Parser.h"
 #include "xf86tokens.h"
@@ -83,41 +83,6 @@ static char *DFLT_MOUSE_DEV = "/dev/devi/mouse0";
 static char *DFLT_MOUSE_DEV = "/dev/mouse";
 static char *DFLT_MOUSE_PROTO = "auto";
 #endif
-
-static void
-GetPciCard(int vendor, int chipType, int *vendor1, int *vendor2, int *card)
-{
-    int k, j;
-   
-    *vendor1 = 0;
-    *vendor2 = 0;
-    *card = 0;
-
-    k = 0;
-    while (xf86PCIVendorNameInfo[k].token) {
-	if (xf86PCIVendorNameInfo[k].token == vendor) {
-	    *vendor1 = k;
-	    break;
-	}
-	k++;
-    }
-    k = 0;
-    while(xf86PCIVendorInfo[k].VendorID) {
-    	if (xf86PCIVendorInfo[k].VendorID == vendor) {
-	    j = 0;
-	    while (xf86PCIVendorInfo[k].Device[j].DeviceName) {
-	        if (xf86PCIVendorInfo[k].Device[j].DeviceID == chipType) {
-		    *vendor2 = k;
-		    *card = j;
-		    break;
-	    	}
-	    	j++;
-	    }
-	    break;
-    	}
-	k++;
-    }
-}
 
 /*
  * This is called by the driver, either through xf86Match???Instances() or
@@ -195,26 +160,25 @@ xf86AddBusDeviceToConfigure(const char *driver, BusType bus, void *busData, int 
 
     switch (bus) {
     case BUS_PCI: {
-	int vendor1, vendor2, card;
+	const char *VendorName;
+	const char *CardName;
 	char busnum[8];
 
 	NewDevice.pVideo = pVideo;
-	GetPciCard(pVideo->vendor, pVideo->chipType,
-	    &vendor1, &vendor2, &card);
+	xf86FindPciNamesByDevice(pVideo->vendor, pVideo->chipType,
+				 NOVENDOR, NOSUBSYS,
+				 &VendorName, &CardName, NULL, NULL);
 
-	if (vendor1 == 0 || (vendor2 == 0 && card == 0)) {
+	if (!VendorName || !CardName) {
    	    FatalError("\nXFree86 has found a valid card configuration.\nUnfortunately the appropriate data has not been added to xf86PciInfo.h.\nPlease forward 'scanpci -v' output to XFree86 support team.");
 	}
-
-#	define VendorName xf86PCIVendorNameInfo[vendor1].name
-#	define CardName   xf86PCIVendorInfo[vendor2].Device[card].DeviceName
 
 	NewDevice.GDev.identifier =
 	    xnfalloc(strlen(VendorName) + strlen(CardName) + 2);
 	sprintf(NewDevice.GDev.identifier, "%s %s", VendorName, CardName);
 
 	NewDevice.GDev.vendor = (char *)VendorName;
-	NewDevice.GDev.board = CardName;
+	NewDevice.GDev.board = (char *)CardName;
 
 	NewDevice.GDev.busID = xnfalloc(16);
 	xf86FormatPciBusNumber(pVideo->bus, busnum);
@@ -223,9 +187,6 @@ xf86AddBusDeviceToConfigure(const char *driver, BusType bus, void *busData, int 
 
 	NewDevice.GDev.chipID = pVideo->chipType;
 	NewDevice.GDev.chipRev = pVideo->chipRev;
-
-#	undef VendorName
-#	undef CardName
 
 	if (chipset < 0)
 	    chipset = (pVideo->vendor << 16) | pVideo->chipType;
