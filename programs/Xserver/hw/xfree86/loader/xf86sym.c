@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.94 1999/05/22 09:59:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.95 1999/06/05 15:55:30 dawes Exp $ */
 
 /*
  *
@@ -31,6 +31,7 @@
 #include "loaderProcs.h"
 #include "xf86Pci.h"
 #include "xf86.h"
+#include "xf86Resources.h"
 #include "xf86_OSproc.h"
 #define DECLARE_CARD_DATASTRUCTURES
 #include "xf86PciInfo.h"
@@ -233,26 +234,34 @@ LOOKUP xfree86LookupTab[] = {
    /* xf86Bus.c */
    SYMFUNC(xf86CheckPciSlot)
    SYMFUNC(xf86ClaimPciSlot)
-   SYMFUNC(xf86ReleasePciSlot)
    SYMFUNC(xf86GetPciVideoInfo)
+#if 0
    SYMFUNC(xf86GetPciConfigInfo)
-   SYMFUNC(xf86GetPciInfoForScreen)
-   SYMFUNC(xf86CheckIsaSlot)
+#endif
    SYMFUNC(xf86ClaimIsaSlot)
-   SYMFUNC(xf86ReleaseIsaSlot)
-   SYMFUNC(xf86DeleteBusSlotsForScreen)
    SYMFUNC(xf86ParsePciBusString)
    SYMFUNC(xf86ComparePciBusString)
    SYMFUNC(xf86ParseIsaBusString)
-   SYMFUNC(xf86IsPciBus)
-   SYMFUNC(xf86IsIsaBus)
-   SYMFUNC(xf86FindChipsetsForScreen)
-   SYMFUNC(xf86AddControlledResource)
-   SYMFUNC(xf86DelControlledResource)
    SYMFUNC(xf86EnableAccess)
    SYMFUNC(xf86IsPrimaryPci)
    SYMFUNC(xf86IsPrimaryIsa)
    SYMFUNC(xf86CheckPciGAType)
+   SYMFUNC(xf86ClaimFixedResources)
+   SYMFUNC(xf86AddEntityToScreen)
+   SYMFUNC(xf86RemoveEntityFromScreen)
+   SYMFUNC(xf86GetEntityInfo)
+   SYMFUNC(xf86GetPciInfoForEntity)
+   SYMFUNC(xf86SetEntityFuncs)
+   SYMFUNC(xf86DeallocateResourcesForEntity)
+   SYMFUNC(xf86RegisterResources)
+   SYMFUNC(xf86CheckPciMemBase)
+   SYMFUNC(xf86SetAccessFuncs)
+   SYMFUNC(xf86IsEntityPrimary)
+   SYMFUNC(xf86FixPciResource)
+   SYMFUNC(xf86SetOperatingState)
+   SYMFUNC(xf86EnterServerState)
+   SYMFUNC(xf86GetBlock)
+   SYMFUNC(xf86GetSparse)
    
    /* xf86Cursor.c  XXX not all of these should be exported */
    SYMFUNC(xf86LockZoom)
@@ -317,9 +326,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86PrintChipsets)
    SYMFUNC(xf86MatchDevice)
    SYMFUNC(xf86MatchPciInstances)
-   SYMFUNC(xf86FindPciResource)
    SYMFUNC(xf86MatchIsaInstances)
-   SYMFUNC(xf86FindIsaResource)
    SYMFUNC(xf86GetVerbosity)
    SYMFUNC(xf86GetVisualName)
    SYMFUNC(xf86GetPix24)
@@ -345,6 +352,11 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86NewSerialNumber)
    SYMFUNC(xf86FindXvOptions)
    SYMFUNC(xf86GetOS)
+   SYMFUNC(xf86ConfigActivePciEntity)
+   SYMFUNC(xf86ConfigActiveIsaEntity)
+   SYMFUNC(xf86ConfigPciEntityInactive)
+   SYMFUNC(xf86ConfigIsaEntityInactive)
+   SYMFUNC(xf86IsScreenPrimary)
 
    /* xf86Init.c */
    SYMFUNC(xf86GetPixFormat)
@@ -795,6 +807,15 @@ LOOKUP xfree86LookupTab[] = {
    SYMVAR(xf86PCIVendorInfo)
    SYMVAR(xf86PCIVendorNameInfo)
 
+   /* predefined resource lists from xf86Bus.h */
+   SYMVAR(resVgaExclusive)
+   SYMVAR(resVgaShared)
+   SYMVAR(resVgaUnusedExclusive)
+   SYMVAR(resVgaUnusedShared)
+   SYMVAR(res8514Exclusive)
+   SYMVAR(res8514Shared)
+   SYMVAR(PciAvoid)
+
 #if defined(__powerpc__) && (!defined(NO_INLINE) || defined(Lynx))
    SYMVAR(ioBase)
 #endif
@@ -802,3 +823,5 @@ LOOKUP xfree86LookupTab[] = {
   { 0, 0 },
 
 };
+
+

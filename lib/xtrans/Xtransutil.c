@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtransutil.c,v 3.11 1999/03/28 15:32:08 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransutil.c,v 3.12 1999/03/29 03:13:27 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -474,8 +474,6 @@ trans_mkdir(char *path, int mode)
     struct stat buf;
 
     if (mkdir(path, mode) == 0) {
-	/* I don't know why this is done, but  it was in the original 
-	   xtrans code */
 	chmod(path, mode);
 	return 0;
     }
@@ -483,9 +481,72 @@ trans_mkdir(char *path, int mode)
        the right modes, else fail */
     if (errno == EEXIST) {
 	if (lstat(path, &buf) != 0) {
+	    PRMSG(1, "mkdir: (l)stat failed for %s (%d)\n",
+		  path, errno, 0);
 	    return -1;
 	}
-	if (S_ISDIR(buf.st_mode) && ((buf.st_mode & ~S_IFMT) == mode)) {
+	if (S_ISDIR(buf.st_mode)) {
+	    int updateOwner = 0;
+	    int updateMode = 0;
+	    int updatedOwner = 0;
+	    int updatedMode = 0;
+	    /* Check if the directory's ownership is OK. */
+	    if (buf.st_uid != 0)
+		updateOwner = 1;
+	    /*
+	     * Check if the directory's mode is OK.  An exact match isn't
+	     * required, just a mode that isn't more permissive than the
+	     * one requested.
+	     */
+	    if ((~mode) & 0077 & buf.st_mode)
+		updateMode = 1;
+	    if ((mode & 01000) &&
+		(buf.st_mode & 0002) && !(buf.st_mode & 01000))
+		updateMode = 1;
+#ifdef HAS_FCHOWN
+	    /*
+	     * If fchown(2) and fchmod(2) are available, try to correct the
+	     * directory's owner and mode.  Otherwise it isn't safe to attempt
+	     * to do this.
+	     */
+	    if (updateMode || updateOwner) {
+		int fd = -1;
+		struct stat fbuf;
+		if ((fd = open(path, O_RDONLY)) != -1) {
+		    if (fstat(fd, &fbuf) == -1) {
+			PRMSG(1, "mkdir: fstat failed for %s (%d)\n",
+			      path, errno, 0);
+			return -1;
+		    }
+		    /*
+		     * Verify that we've opened the same directory as was
+		     * checked above.
+		     */
+		    if (!S_ISDIR(fbuf.st_mode) ||
+			buf.st_dev != fbuf.st_dev ||
+			buf.st_ino != fbuf.st_ino) {
+			PRMSG(1, "mkdir: inode for %s changed\n",
+			      path, 0, 0);
+			return -1;
+		    }
+		    if (updateOwner && fchown(fd, 0, 0) == 0)
+			updatedOwner = 1;
+		    if (updateMode && fchmod(fd, mode) == 0)
+			updatedMode = 1;
+		    close(fd);
+		}
+	    }
+#endif
+	    if (updateOwner && !updatedOwner) {
+	  	PRMSG(1, "mkdir: Owner of %s should be set to root\n",
+		      path, 0, 0);
+		sleep(5);
+	    }
+	    if (updateMode && !updatedMode) {
+	  	PRMSG(1, "mkdir: Mode of %s should be set to %04o\n",
+		      path, mode, 0);
+		sleep(5);
+	    }
 	    return 0;
 	}
     }

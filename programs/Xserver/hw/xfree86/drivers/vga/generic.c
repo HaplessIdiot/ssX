@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.26 1999/04/04 08:46:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.27 1999/04/04 13:51:02 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -57,6 +57,7 @@
 #include "micmap.h"
 
 #include "xf86RAC.h"
+#include "xf86Resources.h"
 
 /* Some systems define VGA for their own purposes */
 #undef VGA
@@ -82,7 +83,7 @@ static void       GenericAdjustFrame(int, int, int, int);
 static Bool       GenericEnterVT(int, int);
 static void       GenericLeaveVT(int, int);
 static void       GenericFreeScreen(int, int);
-static int        VGAFindIsaDevice(void);
+static int        VGAFindIsaDevice(GDevPtr dev);
 
 static ModeStatus GenericValidMode(int, DisplayModePtr, Bool, int);
 
@@ -127,11 +128,6 @@ static const char *fbSymbols[] = {
     NULL
 };
 
-static const char *racSymbols[] = {
-    "xf86RACInit",
-    NULL
-};
-
 static const char *shadowfbSymbols[] = {
     "ShadowFBInit",
     NULL
@@ -172,7 +168,7 @@ GenericSetup(pointer Module, pointer Options, int *ErrorMajor, int *ErrorMinor)
     {
         Initialised = TRUE;
         xf86AddDriver(&VGA, Module, 0);
-	LoaderRefSymLists(vgahwSymbols, fbSymbols, racSymbols, shadowfbSymbols,
+	LoaderRefSymLists(vgahwSymbols, fbSymbols, shadowfbSymbols,
 			  NULL);
         return (pointer)TRUE;
     }
@@ -203,7 +199,7 @@ static PciChipsets GenericPCIchipsets[] = {
 };
 
 static IsaChipsets GenericISAchipsets[] = {
-  {CHIP_VGA_GENERIC, RES_VGA},
+  {CHIP_VGA_GENERIC, RES_EXCLUSIVE_VGA},
   {-1,                0 }
 };
 
@@ -226,11 +222,10 @@ GenericProbe(DriverPtr drv, int flags)
 {
     Bool foundScreen = FALSE;
     int numDevSections, numUsed;
-    GDevPtr *devSections, *usedDevs;
-    GDevPtr usedDev;
-    pciVideoPtr pPci, *usedPci;
+    GDevPtr *devSections;
     int *usedChips;
-    int usedChip;
+    EntityInfoPtr pEnt;
+    int i;
 
     /*
      * Find the config file Device sections that match this
@@ -246,24 +241,13 @@ GenericProbe(DriverPtr drv, int flags)
 	numUsed = xf86MatchPciInstances(VGA_NAME, PCI_VENDOR_GENERIC,
 					GenericChipsets, GenericPCIchipsets, 
 					devSections,numDevSections,
-					&usedDevs, &usedPci, &usedChips);
+					drv, &usedChips);
 	if (numUsed > 0){
-	    int i;
-	    
 	    for (i = 0; i < numUsed; i++) {
-		pciVideoPtr pPci;
-		BusResource Resource;
-		pPci = usedPci[i];
-		Resource = xf86FindPciResource(usedChips[i],
-					       GenericPCIchipsets);
-		if (xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func,
-				     Resource)) {  
-		    ScrnInfoPtr pScrn;
-		    /* Allocate a ScrnInfoRec and claim the slot */
-		    pScrn = xf86AllocateScreen(drv,0);
-		    xf86ClaimPciSlot(pPci->bus, pPci->device, pPci->func,
-				     Resource, &VGA, usedChips[i],
-				     pScrn->scrnIndex);
+		pEnt = xf86GetEntityInfo(usedChips[i]);
+		if (pEnt->active) {
+		    /* Allocate a ScrnInfoRec  */
+		    ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
 		    pScrn->driverVersion = VGA_VERSION_CURRENT;
 		    pScrn->driverName    = VGA_DRIVER_NAME;
 		    pScrn->name          = VGA_NAME;
@@ -276,49 +260,49 @@ GenericProbe(DriverPtr drv, int flags)
 		    pScrn->LeaveVT       = GenericLeaveVT;
 		    pScrn->FreeScreen    = GenericFreeScreen;
 		    pScrn->ValidMode     = GenericValidMode;
-		    pScrn->device        = usedDevs[i];
 		    foundScreen = TRUE;
+		    xf86ConfigActivePciEntity(pScrn,pEnt,GenericPCIchipsets,
+					      NULL,NULL,NULL,NULL,NULL);
 		}
+		xfree(pEnt);
 	    }
-      
-	    xfree(usedDevs);
-	    xfree(usedPci);
 	}
     }
     /* Isa Bus */
-
-    usedChip = xf86MatchIsaInstances(VGA_NAME,GenericChipsets,
-				     GenericISAchipsets,
+    numUsed = xf86MatchIsaInstances(VGA_NAME,GenericChipsets,
+				     GenericISAchipsets,drv,
 				     VGAFindIsaDevice,devSections,
-				     numDevSections,&usedDev);    /*XXX*/
-    if(usedChip >= 0)
-    {
-	ScrnInfoPtr pScrn;
-	int Resource = xf86FindIsaResource(usedChip,GenericISAchipsets);
-	pScrn = xf86AllocateScreen(drv,0);
-	xf86ClaimIsaSlot(Resource,&VGA,usedChip,pScrn->scrnIndex);
-	pScrn->driverVersion = VGA_VERSION_CURRENT;
-	pScrn->driverName    = VGA_DRIVER_NAME;
-	pScrn->name          = VGA_NAME;
-	pScrn->Probe         = GenericProbe;
-	pScrn->PreInit       = GenericPreInit;
-	pScrn->ScreenInit    = GenericScreenInit;
-	pScrn->SwitchMode    = GenericSwitchMode;
-	pScrn->AdjustFrame   = GenericAdjustFrame;
-	pScrn->EnterVT       = GenericEnterVT;
-	pScrn->LeaveVT       = GenericLeaveVT;
-	pScrn->FreeScreen    = GenericFreeScreen;
-	pScrn->ValidMode     = GenericValidMode;
-	pScrn->device        = usedDev;
-	foundScreen = TRUE;
-    }
+				     numDevSections,&usedChips);
+    if(numUsed >= 0)
+	for (i = 0; i < numUsed; i++) {
+	    pEnt = xf86GetEntityInfo(usedChips[i]);
+	    if (pEnt->active) {
+		ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);
 
+		pScrn->driverVersion = VGA_VERSION_CURRENT;
+		pScrn->driverName    = VGA_DRIVER_NAME;
+		pScrn->name          = VGA_NAME;
+		pScrn->Probe         = GenericProbe;
+		pScrn->PreInit       = GenericPreInit;
+		pScrn->ScreenInit    = GenericScreenInit;
+		pScrn->SwitchMode    = GenericSwitchMode;
+		pScrn->AdjustFrame   = GenericAdjustFrame;
+		pScrn->EnterVT       = GenericEnterVT;
+		pScrn->LeaveVT       = GenericLeaveVT;
+		pScrn->FreeScreen    = GenericFreeScreen;
+		pScrn->ValidMode     = GenericValidMode;
+		foundScreen = TRUE;
+		xf86ConfigActiveIsaEntity(pScrn,pEnt,GenericISAchipsets,
+					  NULL,NULL,NULL,NULL,NULL);
+	    }
+	    xfree(pEnt);
+	}
     xfree(devSections);
     return foundScreen;
 }
 
 static int
-VGAFindIsaDevice()
+VGAFindIsaDevice(GDevPtr dev)
 {
 #ifndef PC98_EGC
     CARD16 GenericIOBase = VGAHW_GET_IOBASE();
@@ -456,25 +440,31 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
     const char	     *Sym;
     vgaHWPtr          pvgaHW;
     GenericPtr        pGenericPriv;
-
-    xf86AddControlledResource(pScreenInfo,IO);
-    xf86EnableAccess(&pScreenInfo->Access);
+    EntityInfoPtr     pEnt;
 
     /* Set the monitor */
     pScreenInfo->monitor = pScreenInfo->confScreen->monitor;
 
+    if (pScreenInfo->numEntities > 1)
+	return FALSE;
+    pEnt = xf86GetEntityInfo(*pScreenInfo->entityList);
+    if (pEnt->resources)
+	return FALSE;
 
-    /* Print chipset, but don't set it yet */
-    if (pScreenInfo->chipset)
-        xf86DrvMsg(pScreenInfo->scrnIndex, X_CONFIG, "Chipset: \"%s\".\n",
-            pScreenInfo->chipset);
-    else
-        xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED, "Chipset: \"%s\".\n",
-            GenericChipsets[0].name);
+    {
+	resRange unusedmem[] =	{ {ResShrMemBlock,0xB0000,0xB7FFF},
+				  {ResShrMemBlock,0xB8000,0xBFFFF},
+				  _END };
+	
+	/* XXX Should this be "disabled" or "unused"? */
+	xf86SetOperatingState(unusedmem, pEnt->index, ResUnusedOpr);
+    }
 
     /* Determine depth, bpp, etc. */
     if (!xf86SetDepthBpp(pScreenInfo, 4, 0, 4, NoDepth24Support))
         return FALSE;
+    pScreenInfo->chipset = (char *)xf86TokenToString(GenericChipsets,
+						   pEnt->chipset);
 
     switch (pScreenInfo->depth)
     {
@@ -513,7 +503,7 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
      * Determine videoRam.  For mode validation purposes, this needs to be
      * limited to VGA specifications.
      */
-    if ((videoRam = pScreenInfo->device->videoRam))
+    if ((videoRam = pEnt->device->videoRam))
     {
         pScreenInfo->videoRam = videoRam;
         if (pScreenInfo->depth == 8)
@@ -544,18 +534,14 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
         xf86ErrorF(" (using %d kBytes)", pScreenInfo->videoRam);
     xf86ErrorF(".\n");
 
+    if (xf86RegisterResources(pEnt->index,NULL,ResNone))
+	return FALSE;
+	
     /* Ensure vgahw entry points are available for the clock probe */
     if (!xf86LoadSubModule(pScreenInfo, "vgahw"))
         return FALSE;
 
     xf86LoaderReqSymLists(vgahwSymbols, NULL);
-
-    if (!xf86LoadSubModule(pScreenInfo, "rac")){
-        GenericFreeRec(pScreenInfo);
-	return FALSE;
-    }
-
-    xf86LoaderReqSymLists(racSymbols, NULL);
 
     /* Allocate driver private structure */
     if (!(pGenericPriv = GenericGetRec(pScreenInfo)))
@@ -583,12 +569,12 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
      * Determine clocks.  Limit them to the first four because that's all that
      * can be addressed.
      */
-    if ((pScreenInfo->numClocks = pScreenInfo->device->numclocks))
+    if ((pScreenInfo->numClocks = pEnt->device->numclocks))
     {
         if (pScreenInfo->numClocks > 4)
             pScreenInfo->numClocks = 4;
         for (i = 0;  i < pScreenInfo->numClocks;  i++)
-            pScreenInfo->clock[i] = pScreenInfo->device->clock[i];
+            pScreenInfo->clock[i] = pEnt->device->clock[i];
         From = X_CONFIG;
     }
     else
@@ -663,6 +649,7 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
 
     if (xf86ReturnOptValBool(GenericOptions,OPTION_SHADOW_FB,FALSE)) {
         pScreenInfo->bitmapBitOrder = BITMAP_BIT_ORDER;
+        pScreenInfo->bitmapScanlineUnit = BITMAP_SCANLINE_UNIT;
 	pGenericPriv->ShadowFB = TRUE;
         xf86DrvMsg(pScreenInfo->scrnIndex, X_CONFIG,
 		   "Using \"Shadow Framebuffer\"\n");
@@ -685,7 +672,7 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
     /* Only one chipset here */
     if (!pScreenInfo->chipset)
         pScreenInfo->chipset = (char *)GenericChipsets[0].name;
-
+   
     return TRUE;        /* Tada! */
 }
 
@@ -1047,8 +1034,6 @@ GenericScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     GenericPtr pGenericPriv;
     Bool Inited = FALSE;
 
-    xf86EnableAccess(&pScreenInfo->Access);
-    
     /* Get driver private */
     pGenericPriv = GenericGetRec(pScreenInfo);
 
@@ -1152,7 +1137,10 @@ GenericScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (!Inited)
         GenericCloseScreen(scrnIndex, pScreen);
 
-    xf86RACInit(pScreen, RAC_COLORMAP | RAC_FB);
+    pScreenInfo->racIoFlags = RAC_COLORMAP | RAC_VIEWPORT;
+    if (pScreenInfo->depth < 8)
+	pScreenInfo->racIoFlags |= RAC_FB;
+    pScreenInfo->racMemFlags = RAC_FB;
     if (serverGeneration == 1)
 	xf86ShowUnusedOptions(pScreenInfo->scrnIndex, pScreenInfo->options);
 

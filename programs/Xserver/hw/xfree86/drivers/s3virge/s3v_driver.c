@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.24 1999/04/27 12:05:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.25 1999/05/30 14:41:03 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -24,7 +24,9 @@ Except as contained in this notice, the name of the XFree86 Project shall not
 be used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the XFree86 Project.
 */
-
+#include "xf86Resources.h"
+/* Needed by Resources Access Control (RAC) */
+#include "xf86RAC.h"
 
 /*
  * s3v_driver.c
@@ -162,7 +164,7 @@ static SymTabRec S3VChipsets[] = {
 static PciChipsets S3VPciChipsets[] = {
   /* numChipset,		PciID,			Resource */
   { PCI_CHIP_VIRGE,      PCI_CHIP_VIRGE,     	RES_SHARED_VGA },
-  { PCI_CHIP_VIRGE_VX,   PCI_CHIP_VIRGE_VX,		RES_SHARED_VGA },
+  { PCI_CHIP_VIRGE_VX,   PCI_CHIP_VIRGE_VX,     RES_SHARED_VGA },
   { PCI_CHIP_VIRGE_DXGX, PCI_CHIP_VIRGE_DXGX,	RES_SHARED_VGA },
   { PCI_CHIP_VIRGE_GX2,  PCI_CHIP_VIRGE_GX2,  	RES_SHARED_VGA },
   { PCI_CHIP_VIRGE_MX,   PCI_CHIP_VIRGE_MX,   	RES_SHARED_VGA },
@@ -379,45 +381,15 @@ static Bool
 S3VProbe(DriverPtr drv, int flags)
 {
     int i;
-    pciVideoPtr pPci, *usedPci;
     GDevPtr *devSections;
-    GDevPtr *usedDevs;
     int *usedChips;
     int numDevSections;
     int numUsed;
     Bool foundScreen = FALSE;
-    BusResource resource;
+    EntityInfoPtr pEnt;
     
     PVERB5("	S3VProbe begin\n");
     
-    /*
-     * The aim here is to find all cards that this driver can handle,
-     * and for the ones not already claimed by another driver, claim the
-     * slot, and allocate a ScrnInfoRec.
-     *
-     * This should be a minimal probe, and it should under no circumstances
-     * change the state of the hardware.  Because a device is found, don't
-     * assume that it will be used.  Don't do any initialisations other than
-     * the required ScrnInfoRec initialisations.  Don't allocate any new
-     * data structures.
-     *
-     */
-     
-    /*
-     * Try for support without vgaHW...
-    if (xf86CheckIsaSlot(ISA_COLOR) == FALSE) {
-	return FALSE;
-    }
-     */
-     
-
-    /*
-     * Next we check, if there has been a chipset override in the config file.
-     * For this we must find out if there is an active device section which
-     * is relevant, i.e., which has no driver specified or has THIS driver
-     * specified.
-     */
-
     if ((numDevSections = xf86MatchDevice(S3VIRGE_DRIVER_NAME,
 					  &devSections)) <= 0) {
 	/*
@@ -426,30 +398,13 @@ S3VProbe(DriverPtr drv, int flags)
 	 */
 	return FALSE;
     }
-
-
-    /*
-     * We need to probe the hardware first.  We then need to see how this
-     * fits in with what is given in the config file, and allow the config
-     * file info to override any contradictions.
-     */
-
-    /*
-     * All of the cards this driver supports are PCI, so the "probing" just
-     * amounts to checking the PCI data that the server has already collected.
-     */
     if (xf86GetPciVideoInfo() == NULL) {
-	/*
-	 * We won't let anything in the config file override finding no
-	 * PCI video cards at all.  This seems reasonable now, but we'll see.
-	 */
 	return FALSE;
     }
 
     numUsed = xf86MatchPciInstances(S3VIRGE_NAME, PCI_S3_VENDOR_ID,
-				    /*	S3VPciIds, S3VPciNames*/
-			S3VChipsets, S3VPciChipsets, devSections, numDevSections,
-			&usedDevs, &usedPci, &usedChips);
+				    S3VChipsets, S3VPciChipsets, devSections,
+				    numDevSections, drv, &usedChips);
     /* Free it since we don't need that list after this */
     xfree(devSections);
     devSections = NULL;
@@ -457,25 +412,13 @@ S3VProbe(DriverPtr drv, int flags)
 	return FALSE;
 
     for (i = 0; i < numUsed; i++) {
-	pPci = usedPci[i];
-	/* Another copy from MGA {KF} */
-	resource = xf86FindPciResource(usedChips[i], S3VPciChipsets);
-	/*
-	 * PCI_ONLY for use without vgaHW, use PCI_VGA otherwise.
-	 */
-	if (xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func,resource)) {
-	    ScrnInfoPtr pScrn;
-
+	pEnt = xf86GetEntityInfo(usedChips[i]);
+	
+ 	if (pEnt->active) {
 	    /* Allocate a ScrnInfoRec and claim the slot */
-	    pScrn = xf86AllocateScreen(drv, 0);
-	    if (!xf86ClaimPciSlot(pPci->bus, pPci->device, pPci->func, 
-				  resource, &S3VIRGE, usedChips[i], 
-				  pScrn->scrnIndex)) {
-		/* This can't happen */
-	      /*Need this ?{KF}*/
-		FatalError("someone claimed the free slot!\n");
-	    }
-	    /* Fill in what we can of the ScrnInfoRec */
+	    ScrnInfoPtr pScrn = xf86AllocateScreen(drv, 0);
+
+		/* Fill in what we can of the ScrnInfoRec */
 	    pScrn->driverVersion = S3VIRGE_DRIVER_VERSION;
 	    pScrn->driverName	 = S3VIRGE_DRIVER_NAME;
 	    pScrn->name		 = S3VIRGE_NAME;
@@ -488,12 +431,13 @@ S3VProbe(DriverPtr drv, int flags)
 	    pScrn->LeaveVT	 = S3VLeaveVT;
 	    pScrn->FreeScreen	 = NULL; /*S3VFreeScreen;*/
 	    pScrn->ValidMode	 = S3VValidMode;
-	    pScrn->device	 = usedDevs[i];
 	    foundScreen = TRUE;
+	    xf86ConfigActivePciEntity(pScrn,pEnt,S3VPciChipsets,NULL,NULL,
+				      NULL,NULL,NULL);
 	}
+	xfree(pEnt);
     }
-    xfree(usedDevs);
-    xfree(usedPci);
+    xfree(usedChips);
     PVERB5("	S3VProbe end\n");
     return foundScreen;
 }
@@ -503,7 +447,7 @@ S3VProbe(DriverPtr drv, int flags)
 static Bool
 S3VPreInit(ScrnInfoPtr pScrn, int flags)
 {
-    pciVideoPtr *pciList = NULL;
+    EntityInfoPtr pEnt;
     S3VPtr ps3v;
     MessageType from;
     int i;
@@ -519,7 +463,6 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     vgaHWPtr hwp;
     int vgaCRIndex, vgaCRReg, vgaIOBase;
     
-    			      
     PVERB5("	S3VPreInit 1\n");
     	      
   
@@ -548,6 +491,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
      */
     if (!vgaHWGetHWRec(pScrn))
 	return FALSE;
+    
 
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
@@ -765,31 +709,32 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
      * XXX Ignoring the Type list for now.  It might be needed when
      * multiple cards are supported.
      */
-    if ((i = xf86GetPciInfoForScreen(pScrn->scrnIndex, &pciList, NULL)) != 1) {
-	/* This shouldn't happen */
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		   "Expected one PCI card, but found %d\n", i);
+    if (pScrn->numEntities > 1) {
 	S3VFreeRec(pScrn);
-	if (i > 0)
-	    xfree(pciList);
 	return FALSE;
     }
-
-    ps3v->PciInfo = *pciList;
-    xfree(pciList);
+    
+    pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
+    
+    if (pEnt->resources) {
+	S3VFreeRec(pScrn);
+	return FALSE;
+    }
+    ps3v->PciInfo = xf86GetPciInfoForEntity(pEnt->index);
+    xf86RegisterResources(pEnt->index,NULL,ResNone);
     /*
      * Set the Chipset and ChipRev, allowing config file entries to
      * override.
      */
-    if (pScrn->device->chipset && *pScrn->device->chipset) {
-	pScrn->chipset = pScrn->device->chipset;
+    if (pEnt->device->chipset && *pEnt->device->chipset) {
+	pScrn->chipset = pEnt->device->chipset;
         ps3v->Chipset = xf86StringToToken(S3VChipsets, pScrn->chipset);
         from = X_CONFIG;
-    } else if (pScrn->device->chipID >= 0) {
-	ps3v->Chipset = pScrn->device->chipID;
+    } else if (pEnt->device->chipID >= 0) {
+	ps3v->Chipset = pEnt->device->chipID;
 	pScrn->chipset = (char *)xf86TokenToString(S3VChipsets, ps3v->Chipset);
 	from = X_CONFIG;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipID override: 0x%04X\n",
+  	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipID override: 0x%04X\n",
 		   ps3v->Chipset);
     } else {
 	from = X_PROBED;
@@ -797,8 +742,8 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 	pScrn->chipset = (char *)xf86TokenToString(S3VChipsets, ps3v->Chipset);
     }								    
     
-    if (pScrn->device->chipRev >= 0) {
-	ps3v->ChipRev = pScrn->device->chipRev;
+    if (pEnt->device->chipRev >= 0) {
+	ps3v->ChipRev = pEnt->device->chipRev;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipRev override: %d\n",
 		   ps3v->ChipRev);
     } else {
@@ -837,11 +782,6 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 			ps3v->PciInfo->memBase[0] + S3_NEWMMIO_VGABASE,
 			S3V_MMIO_REGSIZE );
   		   
-					/* Add me to resource management */
-    xf86AddControlledResource(pScrn, MEM_IO);
-    					/* Enable card from server side  */
-    xf86EnableAccess(&pScrn->Access);
-					/* Enable MMIO on the ViRGE */
     S3VEnableMmio( pScrn);
 
 		/********************************************************/
@@ -873,13 +813,14 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 		  			/* Note that for convience during */
 					/* Init we have mapped at 0 offset*/
   vgaHWSetMmioFuncs( hwp, ps3v->IOBase, 0 );
-  
-    xf86ErrorFVerb(VERBLEV, 
+
+  xf86ErrorFVerb(VERBLEV, 
 	"	S3VPreInit hwp=%p, hwp->MMIOBase=%x\n",
 		hwp, hwp->MMIOBase );
 	
   					/* assigns hwp->IOBase to 3D0 or 3B0 */
 					/* needs hwp->MMIOBase to work */
+
   vgaHWGetIOBase(hwp);
   vgaIOBase = hwp->IOBase;
   vgaCRIndex = vgaIOBase + 4;
@@ -895,7 +836,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
    VGAOUT8(vgaCRIndex, 0x38);
    VGAOUT8(vgaCRReg, 0x48);
    #endif
- 
+
    /* Next go on to detect amount of installed ram */
 
    VGAOUT8(vgaCRIndex, 0x36);              /* for register CR36 (CONFG_REG1), */
@@ -906,9 +847,10 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 
    /* And compute the amount of video memory and offscreen memory */
    ps3v->MemOffScreen = 0;
+
    if (!pScrn->videoRam) {
       if (ps3v->Chipset == S3_ViRGE_VX) {
-         switch((config2 & 0x60) >> 5) {
+	  switch((config2 & 0x60) >> 5) {
          case 1:
             ps3v->MemOffScreen = 4 * 1024;
             break;
@@ -933,8 +875,8 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
          ps3v->videoRamKbytes -= ps3v->MemOffScreen;
       }
       else if (S3_ViRGE_GX2_SERIES(ps3v->Chipset) || S3_ViRGE_MX_SERIES(ps3v->Chipset)) {
-         switch((config1 & 0xC0) >> 6) {
-         case 1:
+	  switch((config1 & 0xC0) >> 6) {
+	  case 1:
             ps3v->videoRamKbytes = 4 * 1024;
             break;
          case 3:
@@ -977,7 +919,6 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
       xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "videoram:  %dk\n",
               	ps3v->videoRamKbytes);
    }
-
 
    /* reset S3 graphics engine to avoid memory corruption */
    if (ps3v->Chipset != S3_ViRGE_VX) {
@@ -1071,7 +1012,6 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     ps3v->maxClock = 270000;
   }
     
-
    /* Detect current MCLK and print it for user */
    VGAOUT8(0x3c4, 0x08);
    VGAOUT8(0x3c5, 0x06); 
@@ -1362,12 +1302,10 @@ S3VEnterVT(int scrnIndex, int flags)
 
     PVERB5("	S3VEnterVT\n");
     /*vgaHWUnlockMMIO(hwp);*/
-					/* Add me to resource management */
-    xf86AddControlledResource(pScrn, MEM_IO);
-    					/* Enable card from server side  */
-    xf86EnableAccess(&pScrn->Access);
     				/* Enable MMIO and map memory */
+#ifdef unmap_always
     S3VMapMem(pScrn);
+#endif
     #if 0
     	/* todo - KJB - cep */
     				/* New pointer mapping means we need to call */
@@ -1398,16 +1336,18 @@ S3VLeaveVT(int scrnIndex, int flags)
     S3VPtr ps3v = S3VPTR(pScrn);
     vgaRegPtr vgaSavePtr = &hwp->SavedReg;
     S3VRegPtr S3VSavePtr = &ps3v->SavedReg;
-
+    
     PVERB5("	S3VLeaveVT\n");
     					/* Like S3VRestore, but uses passed */
 					/* mode registers.		    */
     S3VWriteMode(pScrn, vgaSavePtr, S3VSavePtr);
     					/* Restore standard register access */
 					/* and unmap memory.		    */
+#ifdef unmap_always
     S3VUnmapMem(pScrn);
-    xf86DelControlledResource(&pScrn->Access, FALSE);
+#endif
     /*vgaHWLockMMIO(hwp);*/
+
 }
 
 
@@ -1433,7 +1373,7 @@ S3VSave (ScrnInfoPtr pScrn)
   int vgaCRIndex, vgaCRReg, vgaIOBase;
   vgaIOBase = hwp->IOBase;
   vgaCRIndex = 0;
-  
+    
   vgaCRReg = 0;
 
   vgaCRReg = vgaIOBase + 5;
@@ -1879,7 +1819,6 @@ S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
    					/* Mode only for non-primary? */
    else
      vgaHWRestore(pScrn, vgaSavePtr, VGA_SR_MODE);
-
  		/* moved from before vgaHWRestore, to prevent segfault? */
    VGAOUT8(vgaCRIndex, 0x66);             
    VGAOUT8(vgaCRReg, cr66);
@@ -1892,6 +1831,7 @@ S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
    }
    
    vgaHWProtect(pScrn, FALSE);
+   
    return;
 
 }
@@ -2034,7 +1974,6 @@ S3VMapMem(ScrnInfoPtr pScrn)
   				/* Set up offset to hwcursor memory area */
   				/* It's a 1K chunk at the end of the frame buffer */
   ps3v->FBCursorOffset = ps3v->videoRambytes - 1024;
-  
   S3VEnableMmio( pScrn);
    					/* Assign hwp->MemBase & IOBase here */
   hwp = VGAHWPTR(pScrn);
@@ -2045,8 +1984,10 @@ S3VMapMem(ScrnInfoPtr pScrn)
   					/* assigns hwp->IOBase to 3D0 or 3B0 */
 					/* needs hwp->MMIOBase to work */
   vgaHWGetIOBase(hwp);
+  
     					/* Map the VGA memory when the */
 					/* primary video */
+	  
   if (xf86IsPrimaryPci(ps3v->PciInfo)) {
     hwp->MapSize = 0x10000;
     if (!vgaHWMapMem(pScrn))
@@ -2100,12 +2041,13 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
   ScrnInfoPtr pScrn;
   S3VPtr ps3v;
   int ret;
-  					/* First get the ScrnInfoRec */
+  PVERB5("	S3VScreenInit\n");
+                                        /* First get the ScrnInfoRec */
   pScrn = xf86Screens[pScreen->myNum];
   					/* Get S3V rec */
   ps3v = S3VPTR(pScrn);
   					/* Make sure we have card access */
-  xf86EnableAccess(&pScrn->Access);
+/*  xf86EnableAccess(pScrn);*/
    					/* Map MMIO regs and framebuffer */
   if( !S3VMapMem(pScrn) )
     return FALSE;
@@ -2219,7 +2161,8 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 				    	/* All the ugly stuff is done, 	*/
 					/* so re-enable the screen. 	*/
   vgaHWBlankScreen(pScrn, FALSE );  
-    
+
+  pScrn->racMemFlags = RAC_COLORMAP | RAC_CURSOR | RAC_FB | RAC_VIEWPORT;
   pScreen->SaveScreen = S3VSaveScreen;
 
     					/* Wrap the current CloseScreen function */
@@ -2795,6 +2738,7 @@ S3VCloseScreen(int scrnIndex, ScreenPtr pScreen)
 
     					/* Like S3VRestore, but uses passed */
 					/* mode registers.		    */
+/*  xf86EnableAccess(xf86Screens[scrnIndex]);*/
   S3VWriteMode(pScrn, vgaSavePtr, S3VSavePtr);
   vgaHWLock(hwp);
   S3VUnmapMem(pScrn);
@@ -2804,6 +2748,7 @@ S3VCloseScreen(int scrnIndex, ScreenPtr pScreen)
   pScrn->vtSema = FALSE;
 
   pScreen->CloseScreen = ps3v->CloseScreen;
+
   return (*pScreen->CloseScreen)(scrnIndex, pScreen);
 }
 
@@ -2990,25 +2935,47 @@ S3VEnableMmio(ScrnInfoPtr pScrn)
   vgaHWPtr hwp;
   S3VPtr ps3v;
   int vgaCRIndex, vgaCRReg;
+  unsigned char val;
   
   PVERB5("	S3VEnableMmio\n");
   
   hwp = VGAHWPTR(pScrn);
   ps3v = S3VPTR(pScrn);
-  			  
+  /*
+   * enable chipset (seen on uninitialized secondary cards)
+   * might not be needed once we use the VGA softbooter
+   * (EE 05/04/99)
+   */
+  val = inb(0x3C3);               /*@@@EE*/
+  outb(0x3C3,val | 0x01);
+  /*
+   * set CR registers to color mode
+   * in mono mode extended CR registers
+   * are not accessible. (EE 05/04/99)
+   */
+  val = inb(VGA_MISC_OUT_R);      /*@@@EE*/
+  outb(VGA_MISC_OUT_W,val | 0x01);
   vgaHWGetIOBase(hwp);             	/* Get VGA I/O base */
   vgaCRIndex = hwp->IOBase + 4;
   vgaCRReg = hwp->IOBase + 5;
-
-  
+#if 1
+  /*
+   * set linear base register to the PCI register values
+   * some DX chipsets don´t seem to do it automatically
+   * (EE 06/03/99)
+   */
+  outb(vgaCRIndex, 0x59);         /*@@@EE*/
+  outb(vgaCRReg, ps3v->PciInfo->memBase[0] >> 24);  
+  outb(vgaCRIndex, 0x5A);
+  outb(vgaCRReg, ps3v->PciInfo->memBase[0] >> 16);
   outb(vgaCRIndex, 0x53);
-  					/* Save register for restore */
+#endif
+  /* Save register for restore */
   ps3v->EnableMmioCR53 = inb(vgaCRReg);
-      
   			      	/* Enable new MMIO, if TRIO mmio is already */
 				/* enabled, then it stays enabled. */
-  outb(vgaCRReg, ps3v->EnableMmioCR53 | 0x08 );
-  
+  outb(vgaCRReg, (ps3v->EnableMmioCR53 | 0x08) );
+  outb(VGA_MISC_OUT_W,val);
   return;
 }
 
@@ -3020,19 +2987,19 @@ S3VDisableMmio(ScrnInfoPtr pScrn)
   vgaHWPtr hwp;
   S3VPtr ps3v;
   int vgaCRIndex, vgaCRReg;
-
+  unsigned char c;
+  
   PVERB5("	S3VDisableMmio\n");
- 
+  
   hwp = VGAHWPTR(pScrn);
+  
   ps3v = S3VPTR(pScrn);
- 
+
   vgaCRIndex = hwp->IOBase + 4;
   vgaCRReg = hwp->IOBase + 5;
-  
   outb(vgaCRIndex, 0x53);
 				/* Restore register's original state */
-  outb(vgaCRReg, ps3v->EnableMmioCR53 );
-   
+  outb(vgaCRReg,ps3v->EnableMmioCR53 );
   return;
 }
 

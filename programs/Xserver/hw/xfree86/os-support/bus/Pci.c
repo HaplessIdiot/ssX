@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.13 1999/04/18 04:08:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.14 1999/04/25 15:30:27 dawes Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -18,6 +18,7 @@
  * 	pciWriteWord() - Write a 16 bit value to a PCI devices cfg space
  * 	pciWriteByte() - Write an 8 bit value to a PCI devices cfg space
  *	pciSetBitsLong() - Write a 32 bit value against a mask
+ *      pciSetBitsByte() - Write an 8 bit value against a mask
  * 	pciTag()       - Return tag for a given PCI bus, device, & function
  * 	pciBusAddrToHostAddr() - Convert a PCI address to a host address
  * 	pciHostAddrToBusAddr() - Convert a host address to a PCI address
@@ -348,7 +349,7 @@ pciWriteWord(PCITAG tag, int offset, CARD16 val)
   tmp &= ~(0xffffL << shift);
   tmp |= (((CARD32)val) << shift);
   
-  pciWriteLong(tag, offset, tmp);
+  pciWriteLong(tag, aligned_offset, tmp);
 }
 
 void
@@ -363,7 +364,7 @@ pciWriteByte(PCITAG tag, int offset, CARD8 val)
   tmp &= ~(0xffL << shift);
   tmp |= (((CARD32)val) << shift);
   
-  pciWriteLong(tag, offset, tmp);
+  pciWriteLong(tag, aligned_offset, tmp);
 } 
   
 void
@@ -382,6 +383,19 @@ pciSetBitsLong(PCITAG tag, int offset, CARD32 mask, CARD32 val)
 	(*pciBusInfo[bus]->funcs.pciSetBitsLong)(tag, offset, mask, val);
 
     }
+}
+
+void
+pciSetBitsByte(PCITAG tag, int offset, CARD8 mask, CARD8 val)
+{ 
+  CARD32 tmp_mask, tmp_val;
+  int    aligned_offset = offset & ~3;
+  int    shift = (offset & 3) *8 ;
+
+  
+  tmp_mask = mask << shift;
+  tmp_val = val << shift;
+  pciSetBitsLong(tag, aligned_offset, tmp_mask, tmp_val);
 }
 
 ADDRESS

@@ -1,44 +1,41 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/stdResource.c,v 1.3 1999/04/04 10:59:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/stdResource.c,v 1.4 1999/04/04 13:51:03 dawes Exp $ */
 
 /* Standard resource information code */
 
 #include "X.h"
 #include "xf86.h"
 #include "xf86Priv.h"
+#include "xf86Privstr.h"
 #include "xf86Pci.h"
 #define NEED_OS_RAC_PROTOS
 #include "xf86_OSlib.h"
 
 #ifdef USESTDRES
-#define xf86StdMemWindowFromOS xf86MemWindowFromOS
-#define xf86StdIoWindowFromOS xf86IoWindowFromOS
-#define xf86StdMemResFromOS xf86MemResFromOS
-#define xf86StdIoResFromOS xf86IoResFromOS
+#define xf86StdAccWindowsFromOS xf86AccWindowsFromOS
+#define xf86StdAccResFromOS xf86AccResFromOS
 #define xf86StdInitOSPciAllocator xf86InitOSPciAllocator
 #endif
 
-void
-xf86StdMemWindowFromOS(unsigned long *begin, unsigned long *end)
+resPtr
+xf86StdAccWindowsFromOS(void)
 {
     /* Fallback is to allow addressing of all memory space */
-    *begin = 0;
-    *end = 0xffffffff;
-}
+    resPtr ret = NULL;
+    resRange range;
 
+    RANGE(range,0,0xffffffff,ResExcMemBlock);
+    ret = xf86AddResToList(ret, &range, -1);
 
-void
-xf86StdIoWindowFromOS(unsigned long *begin, unsigned long *end)
-{
     /* Fallback is to allow addressing of all I/O space */
-    *begin = 0;
-    *end = 0xffff;
+    RANGE(range,0,0xffff,ResExcIoBlock);
+    ret = xf86AddResToList(ret, &range, -1);
+    return ret;
 }
-
 
 resPtr
-xf86StdMemResFromOS()
+xf86StdAccResFromOS(resPtr ret)
 {
-    resPtr ret = NULL;
+    resRange range;
 
     /*
      * Fallback it to claim the following areas:
@@ -54,113 +51,143 @@ xf86StdMemResFromOS()
      */
 
     /* Fallback is to claim 0x0 - 0x9ffff and 0x100000 - 0x7fffffff */
-    ret = xf86AddResToList(ret, 0, 0x9ffff, ResExcMemBlock, -1);
-    ret = xf86AddResToList(ret, 0xf0000, 0xfffff, ResExcMemBlock, -1);
-    ret = xf86AddResToList(ret, 0x100000, 0x7fffffff, ResExcMemBlock, -1);
-    ret = xf86AddResToList(ret, 0xfec00000, 0xfecfffff, ResExcMemBlock, -1);
-    ret = xf86AddResToList(ret, 0xfee00000, 0xfeefffff, ResExcMemBlock, -1);
-    ret = xf86AddResToList(ret, 0xffe00000, 0xffffffff, ResExcMemBlock, -1);
-    return ret;
-}
-
-
-resPtr
-xf86StdIoResFromOS()
-{
-    resPtr ret = NULL;
+    RANGE(range,0,0x9ffff,ResExcMemBlock);
+    ret = xf86AddResToList(ret, &range, -1);
+    RANGE(range,0xf0000,0xfffff,ResExcMemBlock);
+    ret = xf86AddResToList(ret, &range, -1);
+    RANGE(range,0x100000,0x7fffffff,ResExcMemBlock | ResBios);
+    ret = xf86AddResToList(ret, &range, -1);
+    RANGE(range,0xfec00000,0xfecfffff,ResExcMemBlock | ResBios);
+    ret = xf86AddResToList(ret, &range, -1);
+    RANGE(range,0xfee00000,0xfeefffff,ResExcMemBlock | ResBios);
+    ret = xf86AddResToList(ret, &range, -1);
+    RANGE(range,0xffe00000,0xffffffff,ResExcMemBlock | ResBios);
+    ret = xf86AddResToList(ret, &range, -1);
 
     /* Fallback is to claim well known ports in the 0x0 - 0x3ff range */
     /* Possibly should claim some of them as sparse ranges */
 
-    ret = xf86AddResToList(ret, 0, 0x1ff, ResExcIoBlock, -1);
+    RANGE(range,0,0x1ff,ResExcIoBlock);
+    ret = xf86AddResToList(ret, &range, -1);
     /* XXX add others */
     return ret;
 }
 
-typedef struct {
-    int brbus, brdev, brfunc;	/* ID of the bridge to this bus */
-    int subclass;	/* bridge type */
-    resPtr io;		/* I/O range */
-    resPtr mem;		/* non-prefetchable memory range */
-    resPtr pmem;	/* prefetchable memory range */
-    int brcontrol;	/* bridge_control byte */
-} PciBusRec, *PciBusPtr;
+static resPtr *pSysRes = NULL;
+static resPtr PciRes = NULL;
 
-static int NumBusses = 0;
-static PciBusPtr *PciBusList = NULL;
-static resPtr *pSysMem = NULL;
-static resPtr *pSysIo = NULL;
-static resPtr PciMem = NULL;
-static resPtr PciIo = NULL;
-
-void
-xf86StdInitOSPciAllocator(const pciConfigPtr *pciInfo, resPtr *sysMem,
-			  resPtr *sysIo, const resPtr pciMem,
-			  const resPtr pciIo)
+static PciBusPtr
+xf86FindPciBridgeInfo(const pciConfigPtr *pciInfo)
 {
     const pciConfigPtr *pcrpp;
     pciConfigPtr pcrp;
-    int i;
-    unsigned long begin, end;
-
-    /* Initialise the pointers to the system exclusive lists */
-    pSysMem = sysMem;
-    pSysIo = sysIo;
-
-    if (!pciInfo)
-	return;
-
-    /* Make a local copy of the current non-system PCI allocations */
-    PciMem = xf86DupResList(pciMem);
-    PciIo = xf86DupResList(pciIo);
-
+    resRange range;
+    PciBusPtr PciBus, PciBusBase;
+    
     /* Get the current address ranges for each additional PCI bus */
     /* Bus zero is a little special */
-    NumBusses = 1;
-    PciBusList = xnfalloc(sizeof(PciBusPtr));
-    PciBusList[0] = xnfcalloc(1, sizeof(PciBusRec));
-    PciBusList[0]->subclass = PCI_SUBCLASS_BRIDGE_HOST;
+    PciBus = PciBusBase = xnfcalloc(1, sizeof(PciBusRec));
+    PciBus->subclass = PCI_SUBCLASS_BRIDGE_HOST;
+    PciBus->primary = -1;
+    PciBus->secondary = 0;
+    /* for the primary host bridge assume: io: 0-0xffff mem: 0-0xffffffff */
+    /* prefetchable range is unknown therefore we don't set it            */
+    RANGE(range,0,0xFFFF, ResIo | ResBlock | ResExclusive | ResMinimised);
+    PciBus->io = xf86AddResToList(NULL, &range, -1);
+    RANGE(range,0,~(unsigned long)0,
+		      ResMem | ResBlock | ResExclusive | ResMinimised);
+    PciBus->mem = xf86AddResToList(NULL, &range, -1);
     /* Add each PCI-PCI bridge */
     /* XXX What about secondary host bridges?? */
     for (pcrpp = pciInfo, pcrp = *pcrpp; pcrp; pcrp = *(++pcrpp)) {
 	if (pcrp->pci_base_class == PCI_CLASS_BRIDGE &&
 	    pcrp->pci_sub_class == PCI_SUBCLASS_BRIDGE_PCI) {
-	    i = pcrp->pci_secondary_bus_number;
-	    if (i + 1 > NumBusses) {
-		NumBusses = i + 1;
-		PciBusList = xnfrealloc(PciBusList,
-					NumBusses * sizeof(PciBusPtr));
+	    PciBus->next = xnfcalloc(1, sizeof(PciBusRec));
+	    PciBus = PciBus->next;
+	    PciBus->secondary = pcrp->pci_secondary_bus_number;
+	    PciBus->primary = pcrp->pci_primary_bus_number;
+	    PciBus->subordinate = pcrp->pci_subordinate_bus_number;
+	    PciBus->brbus = pcrp->busnum;
+	    PciBus->brdev = pcrp->devnum;
+	    PciBus->brfunc = pcrp->funcnum;
+	    PciBus->subclass = pcrp->pci_sub_class;
+	    PciBus->brcontrol = pcrp->pci_bridge_control;
+	    if (pcrp->pci_io_base <= pcrp->pci_io_limit) {
+		RANGE(range,pcrp->pci_io_base << 8,
+		      (pcrp->pci_io_limit << 8) | 0xfff,
+		      ResIo | ResBlock | ResExclusive | ResMinimised);
+		PciBus->io = xf86AddResToList(NULL, &range, -1);
 	    }
-	    PciBusList[i] = xnfcalloc(1, sizeof(PciBusRec));
-	    PciBusList[i]->brbus = pcrp->busnum;
-	    PciBusList[i]->brdev = pcrp->devnum;
-	    PciBusList[i]->brfunc = pcrp->funcnum;
-	    PciBusList[i]->subclass = pcrp->pci_sub_class;
-	    PciBusList[i]->brcontrol = pcrp->pci_bridge_control;
-	    begin = pcrp->pci_io_base << 8;
-	    end = (pcrp->pci_io_limit << 8) | 0xfff;
-	    PciBusList[i]->io = xf86AddResToList(NULL, begin, end,
-					ResIo | ResBlock | ResMinimised, -1);
-	    begin = pcrp->pci_mem_base << 16;
-	    end = (pcrp->pci_mem_limit << 16) | 0xfffff;
-	    PciBusList[i]->mem = xf86AddResToList(NULL, begin, end,
-					ResMem | ResBlock | ResMinimised, -1);
-	    begin = pcrp->pci_prefetch_mem_base << 16;
-	    end = (pcrp->pci_prefetch_mem_limit << 16) | 0xfffff;
-	    PciBusList[i]->pmem = xf86AddResToList(NULL, begin, end,
-					ResMem | ResBlock | ResMinimised, -1);
+	    if (pcrp->pci_mem_base <= pcrp->pci_mem_limit) {
+		RANGE(range,pcrp->pci_mem_base << 16,
+		      (pcrp->pci_mem_limit << 16) | 0xfffff,
+		      ResMem | ResBlock | ResExclusive | ResMinimised);
+		PciBus->mem = xf86AddResToList(NULL, &range, -1);
+	    }
+	    if (pcrp->pci_prefetch_mem_base <= pcrp->pci_prefetch_mem_limit) {
+		RANGE(range,pcrp->pci_prefetch_mem_base << 16,
+		      (pcrp->pci_prefetch_mem_limit << 16) | 0xfffff,
+		      ResMem | ResBlock | ResExclusive | ResMinimised);
+		PciBus->pmem = xf86AddResToList(NULL, &range, -1);
+	    }
 	    xf86MsgVerb(X_INFO, 3, "Bus %d: bridge is at (%d:%d:%d), "
-			"BCTRL: 0x%02x (VGA_EN is %s)\n",
-			i, PciBusList[i]->brbus, PciBusList[i]->brdev,
-			PciBusList[i]->brfunc, PciBusList[i]->brcontrol,
-			(PciBusList[i]->brcontrol & 0x08) ? "set" : "cleared");
-	    xf86MsgVerb(X_INFO, 3, "Bus %d I/O range:\n", i);
-	    xf86PrintResList(3, PciBusList[i]->io);
+			"(%d,%d,%d), BCTRL: 0x%02x (VGA_EN is %s)\n",
+			PciBus->secondary, PciBus->brbus, PciBus->brdev,
+			PciBus->brfunc, PciBus->primary,
+			PciBus->secondary, PciBus->subordinate,
+			PciBus->brcontrol,
+			(PciBus->brcontrol & PCI_PCI_BRIDGE_VGA_EN)
+			? "set" : "cleared");
+	    xf86MsgVerb(X_INFO, 3, "Bus %d I/O range:\n", PciBus->secondary);
+	    xf86PrintResList(3, PciBus->io);
 	    xf86MsgVerb(X_INFO, 3,
-			"Bus %d non-prefetchable memory range:\n", i);
-	    xf86PrintResList(3, PciBusList[i]->mem);
-	    xf86MsgVerb(X_INFO, 3, "Bus %d prefetchable memory range:\n", i);
-	    xf86PrintResList(3, PciBusList[i]->pmem);
+			"Bus %d non-prefetchable memory range:\n",
+			PciBus->secondary);
+	    xf86PrintResList(3, PciBus->mem);
+	    xf86MsgVerb(X_INFO, 3, "Bus %d prefetchable memory range:\n",
+			PciBus->secondary);
+	    xf86PrintResList(3, PciBus->pmem);
+	}
+	if (pcrp->pci_base_class == PCI_CLASS_BRIDGE &&
+	    pcrp->pci_sub_class == PCI_SUBCLASS_BRIDGE_ISA) {
+	    PciBus->next = xnfcalloc(1, sizeof(PciBusRec));
+	    PciBus = PciBus->next;
+	    PciBus->primary = 0;
+	    PciBus->secondary = -1;
+	    PciBus->brbus = pcrp->busnum;
+	    PciBus->brdev = pcrp->devnum;
+	    PciBus->brfunc = pcrp->funcnum;
+	    PciBus->subclass = pcrp->pci_sub_class;
 	}
     }
+    return PciBusBase;
+    
 }
+
+PciBusPtr
+xf86StdInitOSPciAllocator(const pciConfigPtr *pciInfo, resPtr *sysRes,
+			  const resPtr pciRes)
+{
+    resPtr res, tmp_res;
+    
+    /* Initialise the pointers to the system exclusive lists */
+    pSysRes = sysRes;
+
+    if (!pciInfo)
+	return NULL;
+
+    /* Make a local copy of the current non-system PCI allocations */
+    PciRes = xf86DupResList(pciRes);
+
+    /* resources assigned by bios should be avoided */
+    res = tmp_res = xf86DupResList(pciRes);
+    while (tmp_res) {
+	tmp_res->r_type |= ResBios;
+	tmp_res = tmp_res->next;
+    }
+    (*sysRes) = xf86JoinResLists(res,(*sysRes));
+
+    return xf86FindPciBridgeInfo(pciInfo);
+}
+
+

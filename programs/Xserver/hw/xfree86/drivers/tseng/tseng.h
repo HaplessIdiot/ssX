@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.25 1998/09/05 06:36:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.26 1999/04/27 12:05:16 dawes Exp $ */
 
 
 
@@ -93,10 +93,10 @@ typedef enum {
 #define ET6100REVID (0x70)
 
 typedef enum {
-    BUS_ISA,
-    BUS_MCA,
-    BUS_VLB,
-    BUS_PCI
+    T_BUS_ISA,
+    T_BUS_MCA,
+    T_BUS_VLB,
+    T_BUS_PCI
 } t_tseng_bus;
 
 extern SymTabRec TsengDacTable[];
@@ -239,6 +239,7 @@ typedef struct {
     unsigned char *HWCursorBuffer;
     unsigned char * XAAScanlineColorExpandBuffers[1];
     CARD32* ColExpLUT;
+    EntityInfoPtr       pEnt;
 } TsengRec, *TsengPtr;
 
 #define TsengPTR(p) ((TsengPtr)((p)->driverPrivate))
