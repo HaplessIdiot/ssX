@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/vdif.h,v 1.2 1999/12/03 19:17:26 eich Exp $ */
 
 #ifndef _VDIF_H
 #define _VDIF_H
@@ -21,7 +21,8 @@
 #define VDIF_SCAN_OTHER 2
 #define VDIF_POLARITY_NEGATIVE 0
 #define VDIF_POLARITY_POSITIVE 1
-#include "xf86.h"
+
+#include "Xmd.h"
 
 #pragma pack(1)
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86int10.h,v 1.2 2000/02/08 13:13:26 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86int10.h,v 1.3 2000/02/13 02:17:19 dawes Exp $ */
 
 /*
  *                   XFree86 int10 module
@@ -8,6 +8,9 @@
 
 #ifndef _XF86INT10_H
 #define _XF86INT10_H
+
+#include "Xmd.h"
+#include "Xdefs.h"
 
 #define SEG_ADDR(x) ((x>>4) & 0xF000)
 #define SEG_OFF(x) (x & 0xFFFF)
