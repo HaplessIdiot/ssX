@@ -22,6 +22,9 @@
 #include "colormapst.h"
 #include "cfb8_32.h"
 
+#define IS_DIRTY 	1
+#define IS_SHARED	2
+
 /** Screen Functions **/
 
 static Bool OverlayCloseScreen (int, ScreenPtr);
@@ -177,7 +180,7 @@ typedef struct {
 
 typedef struct {
    PixmapPtr		pix32;
-   Bool			dirty;
+   CARD32		dirty;
 } OverlayPixmapRec, *OverlayPixmapPtr;
 
 
@@ -251,7 +254,7 @@ static unsigned long OverlayGeneration = 0;
     pGCPriv->wrapOps = pGC->ops;\
     pGC->funcs = &OverlayGCFuncs;\
     pGC->ops = &PixmapGCOps;\
-    pPixPriv->dirty = TRUE
+    pPixPriv->dirty |= IS_DIRTY
     
 
 Bool
@@ -359,7 +362,9 @@ OverlayCreatePixmap(ScreenPtr pScreen, int w, int h, int depth)
     if(pPix) {
 	OverlayPixmapPtr pPriv = OVERLAY_GET_PIXMAP_PRIVATE(pPix);
         pPriv->pix32 = NULL;
-        pPriv->dirty = TRUE;
+        pPriv->dirty = IS_DIRTY;
+	if(!w || !h)
+	   pPriv->dirty |= IS_SHARED;
     }
 
     return pPix;
@@ -498,7 +503,6 @@ OverlayRefreshPixmap(PixmapPtr pix8)
 		pix8->drawable.height, 24);
 	newPix->drawable.depth = 8;  /* Bad Mark! Bad Mark! */
         pixPriv->pix32 = newPix;
-        pixPriv->dirty = TRUE;
     }
 
     if(pixPriv->dirty) {
@@ -515,7 +519,7 @@ OverlayRefreshPixmap(PixmapPtr pix8)
 	pScreenPriv->LockPrivate--;
 	FreeScratchGC(pGC);
 
-	pixPriv->dirty = FALSE;
+	pixPriv->dirty &= ~IS_DIRTY;
 	pixPriv->pix32->drawable.serialNumber = NEXT_SERIAL_NUMBER;    
     }
 
