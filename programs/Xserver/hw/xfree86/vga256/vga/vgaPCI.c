@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.c,v 3.10 1996/09/29 13:41:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.c,v 3.11 1996/12/23 06:59:32 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -51,26 +51,6 @@ vgaGetPCIInfo()
 	    info->ThisCard = pcrp;
 	    info->MemBase = 0;
 	    info->IOBase = 0;
-
-	    /*
-	     * It should be possible to move this out into the Cirrus
-	     * driver now.
-	     */
-	    if (info->Vendor == PCI_VENDOR_CIRRUS &&
-		(info->ChipType == PCI_CHIP_GD5462) ||
-		(info->ChipType == PCI_CHIP_GD5464) ||
-		(info->ChipType == PCI_CHIP_GD7548)) {
-	      info->IOBase = pcrp->_base0;
-	      info->MemBase = pcrp->_base1;
-
-	      xf86writepci(vga256InfoRec.scrnIndex, pcrp->_bus,
-			   pcrp->_cardnum, pcrp->_func,
-			   PCI_CMD_STAT_REG,
-			   PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE,
-			   PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE);
-	      break;
-	    }
-
 
 	    if (pcrp->_base0) {
 		if (pcrp->_base0 & 1)
@@ -152,7 +132,7 @@ vgaGetPCIInfo()
 	    ErrorF("%s ", chipname);
 	else
 	    ErrorF("Unknown chipset (0x%04x) ", info->ChipType);
-	ErrorF("rev %d", info->ChipRev);
+	ErrorF("rev %x", info->ChipRev);
 
 	if (info->MemBase)
 	    ErrorF(", Memory @ 0x%08x", info->MemBase);

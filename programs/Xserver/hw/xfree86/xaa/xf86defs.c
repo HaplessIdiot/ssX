@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86defs.c,v 3.4 1997/01/20 12:38:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86defs.c,v 3.5 1997/02/27 14:00:00 hohndel Exp $ */
 
 
 #include "windowstr.h"
@@ -8,6 +8,7 @@
 #include "xf86.h"
 #include "xf86xaa.h"
 
+Bool NeedToSync = FALSE;
 
 xf86GCInfoRecType xf86GCInfoRec = {
     NULL, 0,	/* PolyFillRectSolid() */
@@ -38,6 +39,18 @@ xf86GCInfoRecType xf86GCInfoRec = {
     NULL,	/* cfbBitBltDispatch() */
     NULL,	/* CopyPlane1toNFallBack() */
     NULL,	/* PolyFillRectSolidFallBack() */
+/************ start of wrappers ***************/
+    NULL,	/* FillPolygonWrapper */
+    NULL,	/* PolyRectangleWrapper */
+    NULL,	/* PolyArcWrapper */
+    NULL,	/* PolyLinesWrapper */
+    NULL,	/* PolySegmentWrapper */
+    NULL,	/* ImageGlyphBltWrapper */
+    NULL,	/* PolyGlyphBltWrapper */
+    NULL,	/* FillSpansWrapper */
+    NULL,	/* PolyFillArcWrapper */
+    NULL,	/* PolyFillRectWrapper */
+    NULL	/* CopyAreaWrapper */
 };
 
 xf86AccelInfoRecType xf86AccelInfoRec = {

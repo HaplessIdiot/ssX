@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/2 1996/09/28 17:22:16 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3newmmio/Imakefile,v 3.4 1997/02/20 10:01:11 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3newmmio/Imakefile,v 3.5 1997/02/25 14:20:49 hohndel Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -13,14 +13,14 @@ SRCS = 	s3misc.c s3cmap.c s3gc.c s3gc16.c s3gc24.c s3gc32.c s3fs.c s3ss.c \
 	s3scrin.c s3blt.c s3plypt.c \
 	s3line.c s3seg.c s3frect.c s3text.c \
 	s3font.c s3fcach.c s3Cursor.c s3dline.c \
-	s3dseg.c s3bcach.c
+	s3dseg.c s3bcach.c s3mod.c
 
 OBJS = 	s3misc.o s3cmap.o s3gc.o s3gc16.o s3gc24.o s3gc32.o s3fs.o s3ss.o \
 	s3gs.o s3win.o s3im.o s3bstor.o \
 	s3scrin.o s3blt.o s3plypt.o \
 	s3line.o s3seg.o s3frect.o s3text.o \
 	s3font.o s3fcach.o s3Cursor.o s3dline.o \
-	s3dseg.o s3bcach.o
+	s3dseg.o s3bcach.o s3mod.o
 
 INCLUDES = -I.. -I$(XF86SRC) -I. -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
            -I$(SERVERSRC)/include \
@@ -61,6 +61,7 @@ LinkSourceFile(s3seg.c,..)
 LinkSourceFile(s3ss.c,..)
 LinkSourceFile(s3text.c,..)
 LinkSourceFile(s3win.c,..)
+LinkSourceFile(s3mod.c,..)
 
 InstallLinkKitLibrary(s3newmmio,$(LINKKITDIR)/drivers)
 

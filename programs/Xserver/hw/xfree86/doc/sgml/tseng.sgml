@@ -131,7 +131,7 @@ lines to the right of the screen while the accelerator is busy. The garbage
 should not be persistent: it should go away as soon as the server is left
 alone. This may get fixed in the future. This may also be a bandwidth
 problem, in which case it cannot be resolved (except by not allowing such
-modes at all).
+modes at all, which is what is done in the current driver).
 
 Ignoring it is one option (it isn't destructive). Disabling acceleration in
 the Device section of the <tt>XF86Config</tt> file is another option: since
@@ -321,10 +321,10 @@ a working accelerator, things become increasingly crammed, because modern
 accelerators can consume huge amounts of bandwidth (but they also give you
 high speeds in return). High color depths also need extra bandwidth.
 
-If you are short on memory bandwidth and experience blitting slowness or
-screen "glitches", try using the lowest dot clock that is acceptable; for
-example, on a 14" or 15" screen 800x600 with high refresh (50 MHz dot clock)
-is not so bad, with a large virtual screen.
+If you are short on memory bandwidth (see the separate section on this) and
+experience blitting slowness or screen "glitches", try using the lowest dot
+clock that is acceptable; for example, on a 14" or 15" screen 800x600 with
+high refresh (50 MHz dot clock) is not so bad, with a large virtual screen.
 
 Tseng chips are mostly known for their (very) good memory bandwidth, so you
 should only start to see problems in the higher regions.
@@ -367,6 +367,105 @@ unused, which will then be used by the accelerator to enhance performance.
 Most 1MB cards cannot display modes larger than 1024x768 with a decent
 refresh rate, leaving 256kb unused.
 
+<sect> ET6000 memory size facts and fiction <p>
+
+The ET6000 uses a special kind of video memory called MDRAM (multi-bank
+DRAM). It may have a non-power-of-two amount of MDRAM: 2.25 or even 4.50 MB.
+Especially 2.25 MB MDRAM is popular, since this can support 1024x768 at
+24bpp without needing 4MB of RAM.
+
+There are a few less intuitive problems with this.
+
+First of all, All memory above the 4 MB limit is a waste of money, because
+the ET6000 cannot use this memory for anything at all. There are boards with
+4.5 MB around, but that extra 0.5 MB is a waste. The ET6000 can only refresh
+4 MB of (M)DRAM (refresh register). It can only access 64 banks of 64KB in
+VGA mode (bank select register). All accelerated commands use a 22-bit
+address (=4MB) inside the video memory. You get the idea...
+
+And Secondly (more importantly): you may not have 2.25 MB at all! There have
+been several reports about ET6000 cards that were sold with (supposedly)
+2.25 MB of MDRAM, but which turned out to be standard 2MB MDRAM cards.
+People have been having trouble with these all along, since sometimes the
+X-server used to detect this as 2.25 MB (or even 2.5 MB) due to internal
+chip design and also due to faulty BIOSses. This memory detection problem
+has been fixed now, and the server should detect the correct amount of memory.
+
+Do NOT define the amount of memory in the XF86Config yourself, unless you
+are absolutely sure about the amount. There is a simple way to determine the
+amount of MDRAM on your card beyond doubt.
+
+Look at the video card. There is one large chip with 204 pins on it, which
+is the ET6000. One socketed rectangular chip, mostly with a sticker on it,is
+the BIOS. The remaining chips are (mostly) 2 or 4 other large square chips
+on it with the following markings:
+
+	MDRAM
+	MD9xy     ("xy" is a two-digit number)
+	SJ-5-100  (this may differ, but it will hava the same layout)
+
+and a nice logo next to all that with 4 diamonds and the name "MoSys"
+underneath.
+
+The "xy" number tells you how much MEGABITS are in that one chip.
+
+The amount of RAM on the card is then:
+
+	("xy" * number_of_MDRAM_chips) / 8    Mbytes
+
+On my board, there are two MD908 chips, which means I have
+
+	(08 * 2) / 8 = 2 MB of MDRAM.
+	
+Boards with two MD909 chips have 2.25 MB, etc.
+
+Current MDRAM chips are MD904, MD906, MD908, MD909, MD910, MD916, MD918 and
+MD920.
+
+Due to the design of the ET6000, boards with 4 MD909 chips will be faster
+than boards with 2 MD918 chips. The ET6000 can do memory interleaving when
+it finds 4 MDRAM chips, increasing performance.
+
+<sect> ET6000 memory bandwidth hype and the impact on video modes <p>
+
+Tseng has always had wet dreams about memory bandwidth, and their press
+anouncements about the ET6000 memory bandwidth is no exception.
+
+They claim the ET6000 using MDRAM is capable of reaching an incredible 1.2
+Gbytes/sec of bandwidth. That would surpass just about everything on the
+market.
+
+And that would be true, _if_ they actually used the fastest available MDRAMs
+on their boards, which they don't. The stunning 1.2 GByte mark is only
+reached when using 4 MDRAM chips at their max clock rate of 166 MHz. But due
+to design limitations, the first-generation ET6000 can only drive the
+memories at 90 MHz (that will change when the ET6300 hits the streets).
+
+This means the max. bandwidth available on current ET6000 boards is "only"
+360 MB/sec on boards with 2 MDRAM chips, and 720 MB/sec on boards with 4
+MDRAM chips. And this assumes a best-case situation (=extremely long bursts
+-- the MDRAMs use a shared address/data bus, much like the PCI bus does). In
+the real world, unaligned accesses both from the PCI bus and the accelerator
+will reduce the effective available bandwidth by over 20 %, which brings us
+to about 300 MB/sec for a 2-chip design, and 600 MB/sec for a 4-chip design.
+
+600 MB/sec is still an awesome bandwidth. The ET4000W32i/p with 2 MB DRAM
+already boasted over 150 MB/sec, which is still the best by far for a 32-bit
+memory bus. It even rivals with modern 64-bit bus designs...
+
+Bandwidth limits the maximum resolution you can use at a given color depth.
+The ET6000 RAMDAC can cope with 135 MHz in any situation. But the RAM
+cannot. At 32bpp (sparse 16M color mode), using a 135 MHz pixel clock would
+require a memory bandwidth of 135*4 = 540 MB/sec, which a 2-chip MDRAM
+design simply cannot cope with. Even a board with 4 MDRAM chips will live on
+the edge in this case. The remaining bandwidth must be divided amongst the
+PCI bus and the accelerator.
+
+That is why some modes will be refused, depending on your MDRAM memory
+layout, even if the amount of memory would permit such a mode. See also the
+trouble shooting section to see what can happen if too little memory
+bandwidth is available.
+
 <sect> Linear addressing and 16bpp/24bpp/32bpp modes <p>
 
 Currently the 16-bit (32768 or 65536 colors), 24-bit (16M colors, packed
@@ -380,9 +479,10 @@ MemBase setting (in the device section) is probably also required on non-PCI
 based systems, and optionally on PCI systems that have trouble finding out
 for themselves where the MemBase is.
 
-Non-PCI cards are not supported in linear memory mode at this moment. Some
-of them don't support it at all, and some of the ones that do have so many
-address decoding bugs that it isn't feasible to provide a working solution.
+Non-PCI cards are not (or not well) supported in linear memory mode at this
+moment. Some of them don't support it at all, and some of the ones that do
+have so many address decoding bugs that it isn't feasible to provide a
+working solution.
 
 For the most part, many of the accelerated features in the 8bpp server have
 been implemented to support 16, 24, and 32 bpp modes. So although there are
@@ -390,10 +490,10 @@ now up to 4 times as many bits to display, the X server shouldn't feel
 overly sluggish. Note also that the 24bpp and 32bpp modes are only supported
 on a limited set of cards, and with at least 2Mb of memory.
 
-The ET6000, using MDRAM, may have a non-power-of-two amount of MDRAM: 2.25
-or even 4.50 MB. Especially 2.25 MB MDRAM is cheap-and-sound, since it can
-_just_ support 1024x768 at 24bpp (using all available video memory) With
-only 2MB of MDRAM, 960x720 is the best you can hope for.
+An ET6000 with 2.25 MB MDRAM cheap-and-sound, since it can support exactly
+1024x768 at 24bpp (using all available video memory). On all other video
+cards, you need at least 4MB of video memory to do this. With only 2MB of
+(M)DRAM, 960x720 is the best you can hope for.
 
 In the <tt>XF86Config</tt> <tt>"Screen"</tt> section, a
 <tt>"Display"</tt> subsection must be
@@ -453,12 +553,17 @@ all of the horizontal timing parameters).
         it is a standard mode and frequency that your monitor should be able
         to handle, try to find different timings for a similar mode and
         frequency combination.
+
 <tag>Horizontal jitter at high dot clocks.</tag>
-        This problem shows especially when drawing operations such as
-        scrolling are in progress. There is currently no easy fix for this,
-        You can try the <tt>"fast_dram"</tt> option, or use a lower dot
-        clock. If that is not sufficient, the <tt>"noaccel"</tt> option will
-        almost always help.
+        This problem shows up especially when drawing operations such as
+        scrolling or blitting are in progress. There is currently no easy
+        fix for this, You can try the <tt>"fast_dram"</tt> option, or use a
+        lower dot clock. If that is not sufficient, the <tt>"noaccel"</tt>
+        option will almost always help (it leaves more bandwidth for the
+        RAMDAC). In most cases, this is caused by the video memory not being
+        able to provide pixel data to the RAMDAC fast enough, so it gets fed
+        with garbage.
+
 <tag>`Wavy' screen.</tag>
         Horizontal waving or jittering of the whole screen, continuously
         (independent from drawing operations). You are probably using a dot
@@ -487,7 +592,8 @@ Crash, hang, or trash on the screen after a graphics operation.
         Same as for the above entry. However, on some systems, the problem
         will not go away no matter what you do. It may be related to the
         operating system you use (it has only been seen on Linux systems,
-        and even then it depends on the kernel versions).
+        and even then it depends on the kernel versions). Sometimes,
+        choosing another MemBase may help.
 <tag>
 Occasional erroneous pixels in text, pixel dust when moving window-frame
 </tag>
@@ -495,7 +601,10 @@ Occasional erroneous pixels in text, pixel dust when moving window-frame
         linear addressing even though banked mode runs OK). Most (if not
         all) ET6000 cards are sold with the MCLK slightly over clocked for
         performance, which may cause these problems. There is currently no
-        fix for this.
+        fix for this. If the pixel dust is only temporary (it disappears as
+        soon as nothing moves on the screen anymore), then memory bandwidth
+        is probably the cause. The only solution is to disable acceleration,
+        or, if that doesn't help, using a lower pixel clock.
 <tag>
 Textmode is not properly restored
 </tag>
@@ -504,10 +613,10 @@ Textmode is not properly restored
         textmode font using a utility that sets it (<tt>setfont</tt>,
         <tt>runx</tt>, <tt>restorefont</tt> on Linux).
 <tag>
-Mostly black screen when using accelerated driver features
+Mostly black or blue screen when using accelerated driver features
 </tag>
-        If you are seeing a mostly black screen, with only a few icons
-        (pixmaps) displayed, this section applies to you.
+        If you are seeing a mostly black or blue screen, with only a few
+        icons (pixmaps) displayed, this section applies to you.
 
         There can be several causes for this.
         
@@ -515,7 +624,8 @@ Mostly black screen when using accelerated driver features
         server's autodetection mechanism detects too much memory,
         accelarated features will not work. Define the amount of memory in
         the <tt>XF86Config</tt> file. This seems to happen sometimes on some
-        2.25 MB ET6000 cards, where the server detects 2.5 MB instead.
+        2.25 MB ET6000 cards, where the server detects 2.5 MB instead (add
+        <tt>videoram "2304"</tt> in this particular case).
         
         If that doesn't help, disabling acceleration (option
         <tt>"noaccel"</tt>) is the only solution.
@@ -535,6 +645,11 @@ Problems with DMA hardware (floppy, tape)
 	There are two possible solutions: disable acceleration using the
 	<tt>"noaccel"</tt> option, or disable PCI-retry (which is causing
 	the large bus delays) by removing the <tt>"pci_retry"</tt> option.
+	This will cause a very small slowdown of accelerated operations.
+	
+	The <tt>"pci_retry"</tt> option apllies not only to the PCI bus
+        systems, but has a similar effect on other busses.
+
 </descrip>
 For other screen drawing related problems, try the <tt>"noaccel"</tt>
 option.
@@ -544,9 +659,9 @@ is more mature, and has been tested more extensively as a result. See
 <htmlurl name="README.W32" url="W32.html">.
 
 
-If are having driver-related problems that are not addressed by this document,
-or if you have found bugs in accelerated functions, you can try contacting
-the XFree86 team.
+If you are having driver-related problems that are not addressed by this
+document, or if you have found bugs in accelerated functions, you can try
+contacting the XFree86 team.
 
 In fact, reports (success or failure) are very welcome, especially
 on configurations that have not been tested. You can do this
@@ -556,7 +671,7 @@ keep an eye on forthcoming beta releases at <it>www.xfree86.org</it>.
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.17 1997/03/11 13:05:46 hohndel Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.18 1997/03/17 07:18:01 hohndel Exp $ 
 
 
 

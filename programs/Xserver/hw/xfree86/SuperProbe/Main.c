@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.19 1997/03/07 00:28:53 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.20 1997/03/07 09:18:19 hohndel Exp $ */
 
 #include "Probe.h"
 #include "PatchLevel.h"
@@ -76,6 +76,7 @@ static Chip_Descriptor *SVGA_Descriptors[] = {
     &Weitek_Descriptor,
     &ARK_Descriptor,
     &Alliance_Descriptor,
+    &SigmaDesigns_Descriptor,
     &CT_Descriptor, /* I think this is screwing people up, so put it last */
     NULL
 };

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.163 1997/03/23 07:58:36 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.164 1997/03/24 16:29:30 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -423,9 +423,11 @@ static SymTabRec s3ChipTable[] = {
    { S3_TRIO64VP,	"Trio64V+" },
    { S3_ViRGE,		"ViRGE" },
    { S3_ViRGE_VX,	"ViRGE/VX" },
+   { S3_ViRGE_DXGX,	"ViRGE/DX or /GX" },
    { S3_TRIO64UVP,	"Trio64UV+" },
    { S3_AURORA64VP,	"Aurora64V+" },
    { S3_TRIO64V2,	"Trio64V2" },
+   { S3_PLATO_PX,	"PLATO/PX" },
    { -1,		"" },
 };
 
@@ -963,8 +965,18 @@ s3Probe()
    }
 
    if (!S3_ANY_SERIES(s3ChipId)) {
-      ErrorF("%s %s: Unknown S3 chipset: chip_id = 0x%02x rev. %x\n", 
-	     XCONFIG_PROBED,s3InfoRec.name,s3ChipId,s3ChipRev);
+      if (S3_ANY_ViRGE_SERIES(s3ChipId)) {
+#if defined(XFree86LOADER)
+	 ErrorF("%s %s: S3 ViRGE chipset: please load \"libs3v.a\" module\n",
+		XCONFIG_PROBED, s3InfoRec.name);
+#else
+         ErrorF("%s %s: S3 ViRGE chipset: please use \"XF86_S3V\" serve\n",
+		XCONFIG_PROBED,s3InfoRec.name);
+#endif
+      } else {
+	 ErrorF("%s %s: Unknown S3 chipset: chip_id = 0x%02x rev. %x\n",
+		XCONFIG_PROBED,s3InfoRec.name,s3ChipId,s3ChipRev);
+      }
       xf86DisableIOPorts(s3InfoRec.scrnIndex);
       return(FALSE);
    }
@@ -1012,10 +1024,6 @@ s3Probe()
 	    chipname = "968";
 	 } else if (S3_964_SERIES(s3ChipId)) {
 	    chipname = "964";
-#if 0
-	 } else if (S3_ViRGE_SERIES(s3ChipId)) {
-	    chipname = "ViRGE";
-#endif
 	 } else if (S3_TRIO32_SERIES(s3ChipId)) {
 	    chipname = "Trio32";
 	 } else if (S3_TRIO64UVP_SERIES(s3ChipId)) {

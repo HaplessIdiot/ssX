@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86im.c,v 3.1 1996/12/09 11:55:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86im.c,v 3.2 1997/01/12 10:48:09 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -97,6 +97,9 @@ void xf86ImageWriteFallBack(x, y, w, h, src, srcwidth, rop, planemask)
     box.x2 = x + w;
     box.y2 = y + h;
     REGION_INIT(pScreen, &rgnDst, &box, 1);
+
+    SYNC_CHECK;
+
 #ifdef VGA256
     vga256DoBitblt((DrawablePtr)pix, (DrawablePtr)rootWin, rop, &rgnDst, &ptSrc,
         planemask);
@@ -143,6 +146,9 @@ bg, fg, rop, planemask)
     box.x2 = x + w;
     box.y2 = y + h;
     REGION_INIT(pScreen, &rgnDst, &box, 1);
+
+    SYNC_CHECK;
+
 #ifdef VGA256
     cfb8CheckOpaqueStipple(rop, fg, bg, planemask);
     vga256CopyPlane1to8((DrawablePtr)pix, (DrawablePtr)rootWin, rop, &rgnDst,

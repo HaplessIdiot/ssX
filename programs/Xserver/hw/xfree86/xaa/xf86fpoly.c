@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86fpoly.c,v 3.2 1997/02/28 14:53:41 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86fpoly.c,v 3.3 1997/03/03 10:20:33 hohndel Exp $ */
 /*
  * Copyright 1996  The XFree86 Project
  *
@@ -338,5 +338,5 @@ xf86FillPolygonSolid1Rect(pDrawable, pGC, shape, mode, count, ptsIn)
 	    break;
     }
     if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-        xf86AccelInfoRec.Sync();
+        NeedToSync = TRUE;
 }

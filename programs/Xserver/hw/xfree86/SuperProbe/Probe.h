@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.48 1997/03/07 00:29:03 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.49 1997/03/22 09:34:45 hohndel Exp $ */
 
 /*
  * Includes
@@ -189,6 +189,7 @@ Bool Probe_HMC __STDCARGS((int *));
 Bool Probe_UMC __STDCARGS((int *));
 Bool Probe_Weitek __STDCARGS((int *));
 Bool Probe_ARK __STDCARGS((int *));
+Bool Probe_SigmaDesigns __STDCARGS((int *));
 /* CoProc */
 Bool Probe_8514 __STDCARGS((int *));
 Bool Probe_ATIMach __STDCARGS((int *));
@@ -245,6 +246,7 @@ extern Chip_Descriptor WD_Descriptor;
 extern Chip_Descriptor Weitek_Descriptor;
 extern Chip_Descriptor Yamaha_Descriptor;
 extern Chip_Descriptor ARK_Descriptor;
+extern Chip_Descriptor SigmaDesigns_Descriptor;
 
 extern Chip_Descriptor IBM8514_Descriptor;
 extern Chip_Descriptor ATIMach_Descriptor;
@@ -405,8 +407,9 @@ extern struct RamDac_Name RamDac_Names[];
 #define V_ARK		23
 #define V_ALLIANCE	24
 #define V_MATROX	25
+#define V_SD		26
 
-#define NUM_VENDORS	25
+#define NUM_VENDORS	26
 #define CHPS_PER_VENDOR	34
 
 #define CHIP_AHEAD_UNK	SVGA_TYPE(V_AHEAD,0)	/* Ahead unknown	*/
@@ -632,6 +635,8 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_WEIT_5186	SVGA_TYPE(V_WEITEK,2)	/* Weitek 5186		*/
 #define CHIP_WEIT_5286	SVGA_TYPE(V_WEITEK,3)	/* Weitek 5286		*/
 #define CHIP_YAMAHA6388	SVGA_TYPE(V_YAMAHA,0)	/* Yamaha 6388 VPDC	*/
+#define CHIP_SD_RM_UNK	SVGA_TYPE(V_SD,0)	/* Sigma Desigs unknown	*/
+#define CHIP_SD_RM64GX	SVGA_TYPE(V_SD,1)	/* Sigma Desigs SD6425	*/
 
 /*
  * Graphics Coprocessors

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.110 1997/01/18 06:55:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.112 1997/02/25 14:20:35 hohndel Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -530,7 +530,7 @@ s3Init(mode)
    new->Attribute[0x11] = currents3dac_border; /* The overscan colour AR11 gets */
 					/* disabled anyway */
 
-   if ((S3_TRIO64V_SERIES(s3ChipId) && (s3ChipRev <= 0x531) && (s3Bpp==1)) ^
+   if ((S3_TRIO64V_SERIES(s3ChipId) && (s3ChipRev <= 0x53) && (s3Bpp==1)) ^
        !!OFLG_ISSET(OPTION_TRIO64VP_BUG2, &s3InfoRec.options)) {
       /* set correct blanking for broken Trio64V+ to avoid bright left border:
 	 blank signal needs to go off ~400 usec before video signal starts 
@@ -1003,7 +1003,7 @@ s3Init(mode)
 	 mode->CrtcVAdjusted = TRUE;
       }
 
-      if ((S3_TRIO64V_SERIES(s3ChipId) && (s3ChipRev <= 0x531) && (s3Bpp==1)) ^
+      if ((S3_TRIO64V_SERIES(s3ChipId) && (s3ChipRev <= 0x53) && (s3Bpp==1)) ^
 	  !!OFLG_ISSET(OPTION_TRIO64VP_BUG2, &s3InfoRec.options))
 	 i = (((mode->CrtcVTotal - 2) & 0x400) >> 10)  |
 	     (((mode->CrtcVDisplay - 1) & 0x400) >> 9) |
@@ -1018,7 +1018,7 @@ s3Init(mode)
       outb(vgaCRIndex, 0x5e);
       outb(vgaCRReg, i);
 
-      if ((S3_TRIO64V_SERIES(s3ChipId) && (s3ChipRev <= 0x531) && (s3Bpp==1)) ^
+      if ((S3_TRIO64V_SERIES(s3ChipId) && (s3ChipRev <= 0x53) && (s3Bpp==1)) ^
 	  !!OFLG_ISSET(OPTION_TRIO64VP_BUG2, &s3InfoRec.options)) {
 	 i = ((((mode->CrtcHTotal >> 3) - 5) & 0x100) >> 8) |
 	     ((((mode->CrtcHDisplay >> 3) - 1) & 0x100) >> 7) |
@@ -1259,7 +1259,10 @@ s3Init(mode)
    s3AdjustFrame(s3InfoRec.frameX0, s3InfoRec.frameY0);
 
    if ( S3_TRIO64V2_SERIES(s3ChipId) ) {
-     /* disable the stream display fetch length control */
+      /* disable DAC power saving to avoid bright left edge */
+      outb(0x3d4,0x86);
+      outb(0x3d5,0x80);
+      /* disable the stream display fetch length control */
       outb(0x3d4,0x90);
       outb(0x3d5,0x00);
    }     

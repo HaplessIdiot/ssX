@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ramdacs.c,v 3.11 1997/03/18 10:32:07 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ramdacs.c,v 3.12 1997/03/22 09:34:59 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -2725,10 +2725,8 @@ static int S3_TRIO_Init(DisplayModePtr mode)
       cr33 = inb(vgaCRReg) & ~0x28;
 
       /* for Trio64+ we need corrected blank signal timing */
-      if (!(S3_TRIO64V_SERIES(s3ChipId) && (s3ChipRev <= 0x531)
-	    && !S3_TRIO64UVP_SERIES(s3ChipId)
-	    && !S3_AURORA64VP_SERIES(s3ChipId)
-	    && !S3_TRIO64V2_SERIES(s3ChipId)) ^ 
+      if (!(S3_TRIO64V_SERIES(s3ChipId) && (s3ChipRev <= 0x53)
+	    || (S3_TRIO64V2_SERIES(s3ChipId))) ^ 
 	  !!OFLG_ISSET(OPTION_TRIO64VP_BUG1, &s3InfoRec.options)) {
 	 cr33 |= 0x20;
       }

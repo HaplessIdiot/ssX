@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86cparea.c,v 3.0 1996/11/18 13:22:11 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -107,6 +107,24 @@ xf86CopyArea(pSrcDrawable, pDstDrawable,
      * It would be a win to catch blits from a pixmap to a window here,
      * so that any optimized ImageWrite can be used.
      */
+    /* Like this?
+
+    if(pDstDrawable->type == DRAWABLE_WINDOW) {
+	if(pSrcDrawable->type == DRAWABLE_WINDOW)
+            return (*xf86GCInfoRec.cfbBitBltDispatch)(
+            	pSrcDrawable, pDstDrawable,
+            	pGC, srcx, srcy, width, height, dstx, dsty,
+            	xf86DoBitBlt, 0L);
+	else if(xf86AccelInfo.ImageWrite) 
+            return (*xf86GCInfoRec.cfbBitBltDispatch)(
+            	pSrcDrawable, pDstDrawable,
+            	pGC, srcx, srcy, width, height, dstx, dsty,
+            	xf86DoImageWrite, 0L);
+    }
+    */
+
+    SYNC_CHECK;
+
     return (*xf86GCInfoRec.CopyAreaFallBack)(pSrcDrawable, pDstDrawable, pGC,
    	    srcx, srcy, width, height, dstx, dsty);
 }
@@ -277,7 +295,7 @@ void xf86ScreenToScreenBitBlt(nbox, pptSrc, pbox, xdir, ydir, alu, planemask)
             xf86AccelInfoRec.SubsequentScreenToScreenCopy(pptSrc->x, pptSrc->y,
                 pbox->x1, pbox->y1, pbox->x2 - pbox->x1, pbox->y2 - pbox->y1);
         if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-            xf86AccelInfoRec.Sync();
+            NeedToSync = TRUE;
         return;
     }
 
@@ -324,7 +342,7 @@ void xf86ScreenToScreenBitBlt(nbox, pptSrc, pbox, xdir, ydir, alu, planemask)
                         stripeWidth, pbox->y2 - pbox->y1);
             }
         if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-            xf86AccelInfoRec.Sync();
+            NeedToSync = TRUE;
         return;
     }
 
@@ -389,6 +407,6 @@ void xf86ScreenToScreenBitBlt(nbox, pptSrc, pbox, xdir, ydir, alu, planemask)
             }
     } /* next box */
     if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-        xf86AccelInfoRec.Sync();
+        NeedToSync = TRUE;
 }
 

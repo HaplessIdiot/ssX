@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3accel.c,v 1.2 1997/03/10 10:12:09 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3accel.c,v 1.3 1997/03/17 07:18:04 hohndel Exp $ */
 
 /*
  *
@@ -29,6 +29,8 @@ void S3SubsequentFill8x8Pattern();
 void S3SetupForScanlineScreenToScreenColorExpand();
 void S3SubsequentScanlineScreenToScreenColorExpand16();
 void S3SubsequentScanlineScreenToScreenColorExpand32();
+void S3ImageWrite16();
+void S3ImageWrite32();
 
 static Bool Transfer32 = FALSE;
 
@@ -76,11 +78,12 @@ void S3AccelInit() {
     if(Transfer32) {
 	xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand =
 			S3SubsequentScanlineScreenToScreenColorExpand32;
+	xf86AccelInfoRec.ImageWrite = S3ImageWrite32;
 
     } else {
 	xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand =
 			S3SubsequentScanlineScreenToScreenColorExpand16;
-
+	xf86AccelInfoRec.ImageWrite = S3ImageWrite16;
     }
 
     xf86AccelInfoRec.ColorExpandFlags = SCANLINE_PAD_DWORD |
@@ -106,7 +109,6 @@ void S3AccelInit() {
 		\******************/
 
 void S3Sync() {
-    UNBLOCK_CURSOR;
     WaitIdle();
 }
 
@@ -130,7 +132,6 @@ transparency_color)
     if(xdir == 1) BltDirection |= INC_X;
     if(ydir == 1) BltDirection |= INC_Y;
    
-    BLOCK_CURSOR;
     WaitQueue16_32(3,4);
     SET_PIX_CNTL(0);
     SET_FRGD_MIX(FSS_BITBLT | s3alu[rop]);
@@ -169,7 +170,6 @@ void S3SetupForFillRectSolid(color, rop, planemask)
     int color, rop;
     unsigned planemask;
 {
-    BLOCK_CURSOR;
     WaitQueue16_32(4,6);
     SET_PIX_CNTL(0);
     SET_FRGD_COLOR(color);
@@ -233,7 +233,6 @@ void S3SubsequentBresenhamLine(x1, y1, octant, err, e1, e2, length)
 void S3SetupForFill8x8Pattern(patternx, patterny, rop, planemask, trans_col)
     int patternx, patterny, rop, planemask, trans_col;
 {
-    BLOCK_CURSOR;
     WaitQueue16_32(3,4);
     SET_PIX_CNTL(0);
     SET_FRGD_MIX(FSS_BITBLT | s3alu[rop]);
@@ -261,7 +260,6 @@ void S3SetupForScanlineScreenToScreenColorExpand(x, y, w, h, bg, fg,
 						 rop, planemask)
    int x, y, w, h, bg, fg, rop, planemask;
 {
-    BLOCK_CURSOR;
     WaitQueue16_32(5,8);
     SET_FRGD_COLOR(fg);
     SET_FRGD_MIX(FSS_FRGDCOL | s3alu[rop]); 
@@ -277,7 +275,7 @@ void S3SetupForScanlineScreenToScreenColorExpand(x, y, w, h, bg, fg,
     WaitQueue(5);
     SET_CURPT((short)x, (short)y); 
     SET_PIX_CNTL(MIXSEL_EXPPC);
-    SET_AXIS_PCNT(w - 1, h - 1);
+    SET_AXIS_PCNT((short)w - 1, (short)h - 1);
 
     if(Transfer32) {
     	ScanlineWordCount = (w + 31) >> 5; 
@@ -310,4 +308,117 @@ void S3SubsequentScanlineScreenToScreenColorExpand32(int srcaddr)
 
     while(count--)
 	SET_PIX_TRANS_L(*(ptr++)); 
+}
+
+
+		/***********************\
+		|  	Image Write	|
+		\***********************/
+
+
+void S3ImageWrite32(x, y, w, h, src, srcwidth, rop, planemask)
+    int x, y, w, h;
+    void *src;
+    int srcwidth, rop;
+    unsigned planemask;
+{
+    register unsigned long* ptr = src;
+    register int count;
+    int linepad;
+
+    WaitQueue16_32(7,8);
+    SET_PIX_CNTL(0);
+    SET_WRT_MASK(planemask);
+    SET_FRGD_MIX(FSS_PCDATA | s3alu[rop]); 
+
+    SET_CURPT((short)x, (short)y); 
+    SET_AXIS_PCNT((short)w - 1, (short)h - 1);
+
+    switch(s3Bpp) {
+	case 8:
+	    count = (w + 3) >> 2;
+	    break;
+	case 16:
+	    count = (w + 1) >> 1;
+	    break;
+	default:
+	    count = w;
+    }
+
+    linepad = (srcwidth - (w * s3Bpp)) >> 2;
+
+    WaitIdle();
+    SET_CMD(CMD_RECT | _32BIT | PCDATA | BYTSEQ | INC_Y | INC_X |
+						 DRAW | WRTDATA);
+    
+
+    if(linepad) {
+	int NumPerLine = count;
+
+	while(h--) {
+	    while(count--) 
+		    SET_PIX_TRANS_L(*(ptr++));
+
+	    ptr += linepad;
+	    count = NumPerLine;
+	}
+     } else {
+	count *= h;
+	while(count--)
+	    SET_PIX_TRANS_L(*(ptr++));
+     }
+}
+
+
+
+void S3ImageWrite16(x, y, w, h, src, srcwidth, rop, planemask)
+    int x, y, w, h;
+    void *src;
+    int srcwidth, rop;
+    unsigned planemask;
+{
+    register unsigned short* ptr = src;
+    register int count;
+    int linepad;
+
+    WaitQueue16_32(7,8);
+    SET_PIX_CNTL(0);
+    SET_WRT_MASK(planemask);
+    SET_FRGD_MIX(FSS_PCDATA | s3alu[rop]); 
+
+    SET_CURPT((short)x, (short)y); 
+    SET_AXIS_PCNT((short)w - 1, (short)h - 1);
+
+    switch(s3Bpp) {
+	case 8:
+	    count = (w + 1) >> 1;
+	    break;
+	case 16:
+	    count = w;
+	    break;
+	default:
+	    count = w << 1;
+    }
+
+    linepad = (srcwidth - (w * s3Bpp)) >> 1;
+ 
+    WaitIdle();
+    SET_CMD(CMD_RECT | _16BIT | PCDATA | BYTSEQ | INC_Y | INC_X |
+						 DRAW | WRTDATA);
+
+    if(linepad) {
+	int NumPerLine = count;
+
+	while(h--) {
+	    while(count--) 
+		SET_PIX_TRANS_W(*(ptr++));
+
+	    ptr += linepad;
+	    count = NumPerLine;
+	}
+    } else {
+	count *= h;
+	while(count--)
+	    SET_PIX_TRANS_W(*(ptr++));
+    }
 }

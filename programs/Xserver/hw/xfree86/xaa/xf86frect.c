@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.12 1997/02/27 14:00:05 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.13 1997/03/10 10:12:38 hohndel Exp $ */
 
 /*
  * Fill rectangles.
@@ -40,7 +40,7 @@ in this Software without prior written authorization from the X Consortium.
 */
 
 /* $XConsortium: cfbfillrct.c,v 5.18 94/04/17 20:28:47 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.12 1997/02/27 14:00:05 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.13 1997/03/10 10:12:38 hohndel Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -122,6 +122,8 @@ xf86PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     (xf86GCInfoRec.PolyFillRectSolidFlags & RGB_EQUAL) &&
     ((pGC->fgPixel & 0xFF) != ((pGC->fgPixel & 0xFF00) >> 8) ||
     (pGC->fgPixel & 0xFF) != ((pGC->fgPixel & 0xFF0000) >> 16))) {
+	SYNC_CHECK;
+
         (*xf86GCInfoRec.PolyFillRectSolidFallBack)(pDrawable, pGC,
             nrectFill, prectInit);
         return;
@@ -389,7 +391,7 @@ xf86SimpleFillRectSolid(pDrawable, pGC, nBox, pBoxInit)
 	nBox--;
     }
     if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-        xf86AccelInfoRec.Sync();
+        NeedToSync = TRUE;
 }
 
 /*
@@ -455,6 +457,9 @@ xf86miFillRectStippledFallBack(pDrawable, pGC, nBox, pBox)
         pGC->ops->FillSpans = cfb32UnnaturalStippleFS;
         break;
     }
+
+    SYNC_CHECK;
+
     miPolyFillRect(pDrawable, pGC, nBox, pRect);
     pGC->ops->FillSpans = SavedFillSpans;
     DEALLOCATE_LOCAL(pRect);
@@ -527,40 +532,42 @@ static void RotatePattern(pattern, xoffset, yoffset)
     int yoffset;
 {
     int y;
+    unsigned char old_pattern[8];
     y = yoffset;
+    memcpy(old_pattern, pattern, 8);
     if (xf86AccelInfoRec.Flags & HARDWARE_PATTERN_BIT_ORDER_MSBFIRST) {
-        pattern[0] = (pattern[y] << xoffset) | (pattern[y] >> (8 - xoffset));
+        pattern[0] = (old_pattern[y] << xoffset) | (old_pattern[y] >> (8 - xoffset));
         y = (y + 1) & 7;
-        pattern[1] = (pattern[y] << xoffset) | (pattern[y] >> (8 - xoffset));
+        pattern[1] = (old_pattern[y] << xoffset) | (old_pattern[y] >> (8 - xoffset));
         y = (y + 1) & 7;
-        pattern[2] = (pattern[y] << xoffset) | (pattern[y] >> (8 - xoffset));
+        pattern[2] = (old_pattern[y] << xoffset) | (old_pattern[y] >> (8 - xoffset));
         y = (y + 1) & 7;
-        pattern[3] = (pattern[y] << xoffset) | (pattern[y] >> (8 - xoffset));
+        pattern[3] = (old_pattern[y] << xoffset) | (old_pattern[y] >> (8 - xoffset));
         y = (y + 1) & 7;
-        pattern[4] = (pattern[y] << xoffset) | (pattern[y] >> (8 - xoffset));
+        pattern[4] = (old_pattern[y] << xoffset) | (old_pattern[y] >> (8 - xoffset));
         y = (y + 1) & 7;
-        pattern[5] = (pattern[y] << xoffset) | (pattern[y] >> (8 - xoffset));
+        pattern[5] = (old_pattern[y] << xoffset) | (old_pattern[y] >> (8 - xoffset));
         y = (y + 1) & 7;
-        pattern[6] = (pattern[y] << xoffset) | (pattern[y] >> (8 - xoffset));
+        pattern[6] = (old_pattern[y] << xoffset) | (old_pattern[y] >> (8 - xoffset));
         y = (y + 1) & 7;
-        pattern[7] = (pattern[y] << xoffset) | (pattern[y] >> (8 - xoffset));
+        pattern[7] = (old_pattern[y] << xoffset) | (old_pattern[y] >> (8 - xoffset));
     }
     else {
-        pattern[0] = (pattern[y] >> xoffset) | (pattern[y] << (8 - xoffset));
+        pattern[0] = (old_pattern[y] >> xoffset) | (old_pattern[y] << (8 - xoffset));
         y = (y + 1) & 7;
-        pattern[1] = (pattern[y] >> xoffset) | (pattern[y] << (8 - xoffset));
+        pattern[1] = (old_pattern[y] >> xoffset) | (old_pattern[y] << (8 - xoffset));
         y = (y + 1) & 7;
-        pattern[2] = (pattern[y] >> xoffset) | (pattern[y] << (8 - xoffset));
+        pattern[2] = (old_pattern[y] >> xoffset) | (old_pattern[y] << (8 - xoffset));
         y = (y + 1) & 7;
-        pattern[3] = (pattern[y] >> xoffset) | (pattern[y] << (8 - xoffset));
+        pattern[3] = (old_pattern[y] >> xoffset) | (old_pattern[y] << (8 - xoffset));
         y = (y + 1) & 7;
-        pattern[4] = (pattern[y] >> xoffset) | (pattern[y] << (8 - xoffset));
+        pattern[4] = (old_pattern[y] >> xoffset) | (old_pattern[y] << (8 - xoffset));
         y = (y + 1) & 7;
-        pattern[5] = (pattern[y] >> xoffset) | (pattern[y] << (8 - xoffset));
+        pattern[5] = (old_pattern[y] >> xoffset) | (old_pattern[y] << (8 - xoffset));
         y = (y + 1) & 7;
-        pattern[6] = (pattern[y] >> xoffset) | (pattern[y] << (8 - xoffset));
+        pattern[6] = (old_pattern[y] >> xoffset) | (old_pattern[y] << (8 - xoffset));
         y = (y + 1) & 7;
-        pattern[7] = (pattern[y] >> xoffset) | (pattern[y] << (8 - xoffset));
+        pattern[7] = (old_pattern[y] >> xoffset) | (old_pattern[y] << (8 - xoffset));
     }
 }
 
@@ -713,7 +720,7 @@ if( (pBoxInit->x2 - pBoxInit->x1) <= 100 )
 	    } /* end for loop through each rectangle to draw */
 
             if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-                xf86AccelInfoRec.Sync();
+                NeedToSync = TRUE;
 	    return;
 	} /* end section to handle full-depth fixed patterns */
 
@@ -865,7 +872,7 @@ if( (pBoxInit->x2 - pBoxInit->x1) <= 100 )
 	    } /* end for loop through each rectangle to draw */
 
             if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-                xf86AccelInfoRec.Sync();
+                NeedToSync = TRUE;
 	    return;
 	} /* end section to handle color-expanded fixed patterns */
 
@@ -932,5 +939,5 @@ no8x8:
     } /* end for loop through each rectangle to draw */
 
     if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-        xf86AccelInfoRec.Sync();
+        NeedToSync = TRUE;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86text.c,v 3.5 1997/01/14 22:22:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86text.c,v 3.6 1997/01/18 06:57:30 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -1272,7 +1272,7 @@ static void DrawTextTEScreenToScreenColorExpand(nglyph, w, h, glyphp, glyphwidth
     }
 
     if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-        xf86AccelInfoRec.Sync();
+        NeedToSync = TRUE;
 }
 
 /*
@@ -1380,5 +1380,5 @@ static void DrawTextNonTEScreenToScreenColorExpand(nglyph, w, h, glyphinfop)
     }
 
     if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-        xf86AccelInfoRec.Sync();
+        NeedToSync = TRUE;
 }

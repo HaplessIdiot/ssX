@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/drivers/s3_virge/s3_virge.c,v 3.1 1996/10/03 08:33:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/drivers/s3_virge/s3_virge.c,v 3.2 1996/12/27 07:03:37 dawes Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -25,6 +25,47 @@
 /* $XConsortium: s3_virge.c /main/3 1996/10/25 11:35:48 kaleb $ */
 
 #include "s3v.h"
+
+#if defined(XFree86LOADER)
+#include "xf86Version.h"
+
+extern char *xf86ModulePath;
+
+XF86ModuleVersionInfo s3_virgeVersRec =
+{
+	"s3_virge.o", 
+	"The XFree86 Project",
+	MODINFOSTRING1,
+	MODINFOSTRING2,
+	XF86_VERSION_CURRENT,
+	0x00010001,
+	{0,0,0,0}	/* signature, to be patched into the file by a tool */
+};
+
+
+/*
+ * this function returns the vgaVideoChipPtr for this driver
+ *
+ * it name has to be ModuleInit()
+ */
+void
+ModuleInit(data,magic)
+    pointer	* data;
+    INT32	* magic;
+{
+    extern vgaVideoChipRec MGA;
+    static int cnt = 0;
+
+    switch(cnt++)
+    {
+    default:
+        * magic= MAGIC_DONE;
+        break;
+    }
+    return;
+}
+#endif  /* XFree86LOADER */
+
 
 static Bool S3_VIRGEProbe();
 static char *S3_VIRGEIdent();

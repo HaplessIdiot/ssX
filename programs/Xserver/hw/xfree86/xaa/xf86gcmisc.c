@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmisc.c,v 3.6 1997/01/22 11:17:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmisc.c,v 3.7 1997/01/27 06:58:39 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -91,48 +91,26 @@ void xf86GCNewFillPolygon(pGC, new_cfb_line)
     Bool new_cfb_line;
 {
     void (*FillPolygonFunc) ();
-    cfbPrivGCPtr devPriv;
+    cfbPrivGCPtr devPriv = cfbGetGCPrivate(pGC);
 
-    devPriv = cfbGetGCPrivate(pGC);
+
     if (new_cfb_line)
-        FillPolygonFunc = miFillPolygon;
+        FillPolygonFunc = xf86GCInfoRec.FillPolygonWrapper;
     else
         FillPolygonFunc = pGC->ops->FillPolygon;
-#ifdef NO_ONE_RECT
-    if (new_cfb_line && pGC->fillStyle == FillSolid)
-    {
-	switch (devPriv->rop) {
-	case GXcopy:
-            FillPolygonFunc = cfbFillPoly1RectCopy;
-	    break;
-	default:
-	    FillPolygonFunc = cfbFillPoly1RectGeneral;
-	    break;
-	}
-    }
-#else
+
     /*
      * For acceleration purposes, assume that ONE_RECT detection
      * is defined.
      */
     if (devPriv->oneRect && pGC->fillStyle == FillSolid)
     {
-        if (new_cfb_line)
-	    switch (devPriv->rop) {
-	    case GXcopy:
-	        FillPolygonFunc = cfbFillPoly1RectCopy;
-	        break;
-	    default:
-	        FillPolygonFunc = cfbFillPoly1RectGeneral;
-	        break;
-	    }
 	if (xf86GCInfoRec.FillPolygonSolid &&
             CHECKPLANEMASK(xf86GCInfoRec.FillPolygonSolidFlags) &&
             CHECKROP(xf86GCInfoRec.FillPolygonSolidFlags) &&
             CHECKRGBEQUAL(xf86GCInfoRec.FillPolygonSolidFlags))
             FillPolygonFunc = xf86GCInfoRec.FillPolygonSolid;
     }
-#endif
     pGC->ops->FillPolygon = FillPolygonFunc;
 }
 
@@ -142,13 +120,12 @@ void xf86GCNewRectangle(pGC, new_cfb_line)
     Bool new_cfb_line;
 {
     void (*PolyRectangleFunc) ();
-    cfbPrivGCPtr devPriv;
 
-    devPriv = cfbGetGCPrivate(pGC);
     if (new_cfb_line)
-        PolyRectangleFunc = miPolyRectangle;
+        PolyRectangleFunc = xf86GCInfoRec.PolyRectangleWrapper;
     else
         PolyRectangleFunc = pGC->ops->PolyRectangle;
+
     if (xf86GCInfoRec.PolyRectangleSolidZeroWidth &&
         pGC->lineStyle == LineSolid &&
         pGC->fillStyle == FillSolid &&
@@ -176,76 +153,13 @@ void xf86GCNewLine(pGC, pDrawable, new_cfb_line)
         PolySegmentFunc = pGC->ops->PolySegment;
     }
     else {
-	if (pGC->lineWidth == 0)
-	{
-#ifdef PIXEL_ADDR
-	    if ((pGC->lineStyle == LineSolid) && (pGC->fillStyle == FillSolid))
-	    {
-		switch (devPriv->rop)
-		{
-		case GXxor:
-		    pGC->ops->PolyArc = cfbZeroPolyArcSS8Xor;
-		    break;
-		case GXcopy:
-		    pGC->ops->PolyArc = cfbZeroPolyArcSS8Copy;
-		    break;
-		default:
-		    pGC->ops->PolyArc = cfbZeroPolyArcSS8General;
-		    break;
-		}
-	    }
-	    else
-#endif
-		pGC->ops->PolyArc = miZeroPolyArc;
-	}
-	else
-	    pGC->ops->PolyArc = miPolyArc;
-	PolySegmentFunc = miPolySegment;
-	switch (pGC->lineStyle)
-	{
-	case LineSolid:
-	    if(pGC->lineWidth == 0)
-	    {
-		if (pGC->fillStyle == FillSolid)
-		{
-#if defined(PIXEL_ADDR) && !defined(NO_ONE_RECT)
-		    if (devPriv->oneRect &&
-			((pDrawable->x >= pGC->pScreen->width - 32768) &&
-			 (pDrawable->y >= pGC->pScreen->height - 32768)))
-		    {
-			PolyLineFunc = cfb8LineSS1Rect;
-			PolySegmentFunc = cfb8SegmentSS1Rect;
-		    } else
-#endif
-#ifdef NO_ONE_RECT
-		    {
-			PolyLineFunc = cfb8LineSS1Rect;
-			PolySegmentFunc = cfb8SegmentSS1Rect;
-		    }
-#else
-		    {
-		    	PolyLineFunc = cfbLineSS;
-		    	PolySegmentFunc = cfbSegmentSS;
-		    }
-#endif
-		}
- 		else
-		    PolyLineFunc = miZeroLine;
-	    }
-	    else
-		PolyLineFunc = miWideLine;
-	    break;
-	case LineOnOffDash:
-	case LineDoubleDash:
-	    if (pGC->lineWidth == 0 && pGC->fillStyle == FillSolid)
-	    {
-		PolyLineFunc = cfbLineSD;
-		PolySegmentFunc = cfbSegmentSD;
-	    } else
-		PolyLineFunc = miWideDash;
-	    break;
-	}
+	pGC->ops->PolyArc = xf86GCInfoRec.PolyArcWrapper;
+
+        PolyLineFunc = xf86GCInfoRec.PolyLinesWrapper;
+        PolySegmentFunc = xf86GCInfoRec.PolySegmentWrapper;
+
     } /* endif new_cfb_line */
+
     if (xf86GCInfoRec.PolyLineSolidZeroWidth &&
         pGC->lineStyle == LineSolid &&
         pGC->fillStyle == FillSolid &&
@@ -258,6 +172,7 @@ void xf86GCNewLine(pGC, pDrawable, new_cfb_line)
         CHECKROP(xf86GCInfoRec.PolyLineSolidZeroWidthFlags) &&
         CHECKRGBEQUAL(xf86GCInfoRec.PolyLineSolidZeroWidthFlags))
         PolyLineFunc = xf86GCInfoRec.PolyLineSolidZeroWidth;
+
     if (xf86GCInfoRec.PolySegmentSolidZeroWidth &&
         pGC->lineStyle == LineSolid &&
         pGC->fillStyle == FillSolid &&
@@ -272,6 +187,7 @@ void xf86GCNewLine(pGC, pDrawable, new_cfb_line)
         (pGC->capStyle != CapNotLast || 
         !(xf86GCInfoRec.PolySegmentSolidZeroWidthFlags & NO_CAP_NOT_LAST)))
         PolySegmentFunc = xf86GCInfoRec.PolySegmentSolidZeroWidth;
+
     pGC->ops->Polylines = PolyLineFunc;
     pGC->ops->PolySegment = PolySegmentFunc;
 }
@@ -283,59 +199,15 @@ xf86GCNewText(pGC, new_cfb_text)
 {
     void (*PolyGlyphBltFunc) ();
     void (*ImageGlyphBltFunc) ();
-    cfbPrivGCPtr devPriv;
-
-    devPriv = cfbGetGCPrivate(pGC);
 
     if (!new_cfb_text) {
         PolyGlyphBltFunc = pGC->ops->PolyGlyphBlt;
         ImageGlyphBltFunc = pGC->ops->ImageGlyphBlt;
-    	goto no_new_cfb_text;
+    } else {
+    	PolyGlyphBltFunc = xf86GCInfoRec.PolyGlyphBltWrapper;
+    	ImageGlyphBltFunc = xf86GCInfoRec.ImageGlyphBltWrapper;
     }
 
-    if (FONTMAXBOUNDS(pGC->font, rightSideBearing) -
-	FONTMINBOUNDS(pGC->font, leftSideBearing) > 32 ||
-	FONTMINBOUNDS(pGC->font, characterWidth) < 0) {
-	PolyGlyphBltFunc = miPolyGlyphBlt;
-	ImageGlyphBltFunc = miImageGlyphBlt;
-    } else {
-	/* Start with the non-accelerated defaults. */
-#ifdef WriteBitGroup
-	if (pGC->fillStyle == FillSolid) {
-	    if (devPriv->rop == GXcopy)
-		PolyGlyphBltFunc = cfbPolyGlyphBlt8;
-	    else
-#ifdef FOUR_BIT_CODE
-		PolyGlyphBltFunc = cfbPolyGlyphRop8;
-#else
-		PolyGlyphBltFunc = miPolyGlyphBlt;
-#endif
-	} else
-#endif
-	    PolyGlyphBltFunc = miPolyGlyphBlt;
-	/* special case ImageGlyphBlt for terminal emulator fonts */
-#if !defined(WriteBitGroup) || PSZ == 8
-	if (TERMINALFONT(pGC->font) &&
-	    (pGC->planemask & PMSK) == PMSK
-#ifdef FOUR_BIT_CODE
-	    && FONTMAXBOUNDS(pGC->font, characterWidth) >= PGSZB
-#endif
-	    ) {
-	    ImageGlyphBltFunc = useTEGlyphBlt;
-	} else
-#endif
-	{
-#ifdef WriteBitGroup
-	    if (devPriv->rop == GXcopy &&
-		pGC->fillStyle == FillSolid &&
-		(pGC->planemask & PMSK) == PMSK)
-		ImageGlyphBltFunc = cfbImageGlyphBlt8;
-	    else
-#endif
-		ImageGlyphBltFunc = miImageGlyphBlt;
-	}
-    }
-no_new_cfb_text:
 
     /* Replace with accelerated functions if possible. */
     if (!TERMINALFONT(pGC->font)) {
@@ -378,56 +250,13 @@ xf86GCNewFillSpans(pGC, new_cfb_spans)
     GCPtr pGC;
 {
     void (*FillSpansFunc) ();
-    cfbPrivGCPtr devPriv;
 
-    devPriv = cfbGetGCPrivate(pGC);
 
     /* Non-accelerated defaults. */
     if (!new_cfb_spans)
         FillSpansFunc = pGC->ops->FillSpans;
     else
-    switch (pGC->fillStyle) {
-    case FillSolid:
-	switch (devPriv->rop) {
-	case GXcopy:
-	    FillSpansFunc = cfbSolidSpansCopy;
-	    break;
-	case GXxor:
-	    FillSpansFunc = cfbSolidSpansXor;
-	    break;
-	default:
-	    FillSpansFunc = cfbSolidSpansGeneral;
-	    break;
-	}
-	break;
-    case FillTiled:
-	if (devPriv->pRotatedPixmap) {
-	    if (pGC->alu == GXcopy && (pGC->planemask & PMSK) == PMSK)
-		FillSpansFunc = cfbTile32FSCopy;
-	    else
-		FillSpansFunc = cfbTile32FSGeneral;
-	} else
-	    FillSpansFunc = cfbUnnaturalTileFS;
-	break;
-    case FillStippled:
-#ifdef FOUR_BIT_CODE
-	if (devPriv->pRotatedPixmap)
-	    FillSpansFunc = cfb8Stipple32FS;
-	else
-#endif
-	    FillSpansFunc = cfbUnnaturalStippleFS;
-	break;
-    case FillOpaqueStippled:
-#ifdef FOUR_BIT_CODE
-	if (devPriv->pRotatedPixmap)
-	    FillSpansFunc = cfb8OpaqueStipple32FS;
-	else
-#endif
-	    FillSpansFunc = cfbUnnaturalStippleFS;
-	break;
-    default:
-	FatalError("xf86ValidateGC: illegal fillStyle\n");
-    }
+        FillSpansFunc = xf86GCInfoRec.FillSpansWrapper;
 
     /* Replace with accelerated functions if possible. */
     switch (pGC->fillStyle) {
@@ -487,19 +316,8 @@ xf86GCNewFillArea(pGC, new_cfb_fillarea)
 
     if (!new_cfb_fillarea)
         PolyFillRectFunc = pGC->ops->PolyFillRect;
-    else {
-        /* Non-accelerated defaults for PolyFillRect. */
-#ifdef FOUR_BIT_CODE
-        /* 8bpp */
-        PolyFillRectFunc = cfbPolyFillRect;
-#else
-        /* > 8bpp */
-        PolyFillRectFunc = miPolyFillRect;
-        if (pGC->fillStyle == FillSolid || pGC->fillStyle == FillTiled) {
-            PolyFillRectFunc = cfbPolyFillRect;
-        }
-#endif
-    }
+    else
+        PolyFillRectFunc = xf86GCInfoRec.PolyFillRectWrapper;
 
     /* Now check if we can replace the operation. */
     switch (pGC->fillStyle) {
@@ -551,6 +369,7 @@ xf86GCNewFillArea(pGC, new_cfb_fillarea)
     }
     pGC->ops->PolyFillRect = PolyFillRectFunc;
 
+   /* What is this? (MArk) */
 #ifdef FOUR_BIT_CODE
     if (new_cfb_fillarea) {
         pGC->ops->PushPixels = mfbPushPixels;
@@ -562,17 +381,9 @@ xf86GCNewFillArea(pGC, new_cfb_fillarea)
     if (!new_cfb_fillarea)
         PolyFillArcFunc = pGC->ops->PolyFillArc;
     else
-        PolyFillArcFunc = miPolyFillArc;
+        PolyFillArcFunc = xf86GCInfoRec.PolyFillArcWrapper;
+
     if (pGC->fillStyle == FillSolid) {
-        if (new_cfb_fillarea)
-	    switch (devPriv->rop) {
-	    case GXcopy:
-	        PolyFillArcFunc = cfbPolyFillArcSolidCopy;
-	        break;
-	    default:
-	        PolyFillArcFunc = cfbPolyFillArcSolidGeneral;
-	        break;
-	    }
         if (xf86GCInfoRec.PolyFillArcSolid &&
             CHECKPLANEMASK(xf86GCInfoRec.PolyFillArcSolidFlags) &&
             CHECKROP(xf86GCInfoRec.PolyFillArcSolidFlags) &&
@@ -587,20 +398,14 @@ void
 xf86GCNewCopyArea(pGC)
     GCPtr pGC;
 {
-    RegionPtr (*CopyAreaFunc) ();
-    cfbPrivGCPtr devPriv;
-
-    devPriv = cfbGetGCPrivate(pGC);
-
-    /* Default is cfb. */
-    CopyAreaFunc = cfbCopyArea;
     if (xf86GCInfoRec.CopyArea &&
 	CHECKPLANEMASK(xf86GCInfoRec.CopyAreaFlags) &&
 	CHECKROP(xf86GCInfoRec.CopyAreaFlags) &&
 	CHECKSOURCEROP()
 	)
-	CopyAreaFunc = xf86GCInfoRec.CopyArea;
-    pGC->ops->CopyArea = CopyAreaFunc;
+	pGC->ops->CopyArea = xf86GCInfoRec.CopyArea;
+    else
+    	pGC->ops->CopyArea = xf86GCInfoRec.CopyAreaWrapper;
 }
 
 
@@ -664,6 +469,8 @@ pglyphBase)
 	}
     }
 
+    SYNC_CHECK;
+
     (*ImageGlyphBltFunc)(pDrawable, pGC, xInit, yInit, nglyph, ppci,
         pglyphBase);
 }
@@ -716,6 +523,8 @@ pglyphBase)
 #endif
 	    PolyGlyphBltFunc = miPolyGlyphBlt;
     }
+
+    SYNC_CHECK;
 
     (*PolyGlyphBltFunc)(pDrawable, pGC, xInit, yInit, nglyph, ppci,
         pglyphBase);
@@ -778,6 +587,8 @@ void xf86FillSpansFallBack(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	    break;
         }
     }
+    
+    SYNC_CHECK;
 
     (*FillSpansFunc)(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
 }
@@ -801,6 +612,9 @@ void xf86FillRectTileFallBack(pDrawable, pGC, nBoxInit, pBoxInit)
 	    FillRectTileFunc =
 	        cfbFillRectTile32General;
     }
+
+    SYNC_CHECK;
+
     (*FillRectTileFunc)(pDrawable, pGC, nBoxInit, pBoxInit);
 }
 
@@ -815,6 +629,8 @@ void xf86FillRectStippledFallBack(pDrawable, pGC, nBoxInit, pBoxInit)
 
     devPriv = cfbGetGCPrivate(pGC);
 #if PSZ == 8
+    SYNC_CHECK;
+
     if (!devPriv->pRotatedPixmap)
 	FillRectStippledFunc = cfb8FillRectStippledUnnatural;
     else
@@ -836,6 +652,8 @@ void xf86FillRectOpaqueStippledFallBack(pDrawable, pGC, nBoxInit, pBoxInit)
 
     devPriv = cfbGetGCPrivate(pGC);
 #if PSZ == 8
+    SYNC_CHECK;
+
     if (!devPriv->pRotatedPixmap)
 	FillRectOpaqueStippledFunc = cfb8FillRectStippledUnnatural;
     else

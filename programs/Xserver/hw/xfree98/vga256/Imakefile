@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/9 1996/10/25 15:43:07 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/Imakefile,v 3.13 1997/03/17 07:18:54 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/Imakefile,v 3.14 1997/03/24 13:14:58 hohndel Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -60,15 +60,23 @@ TGUIOBJS    = trident/?*.o
 TGUIDONES   = trident/DONE
 #endif
 
+#if XF98EGCServer || XF98EGCModule
+EGCSUBDIRS = egc
+EGCSRCS    = egc/?*.c
+EGCOBJS    = egc/?*.o
+EGCDONES   = egc/DONE
+#endif
+
 SUBDIRS = $(GANBWAPSUBDIRS) $(PEGCSUBDIRS) $(NKVNECSUBDIRS) \
-	  $(WABSSUBDIRS) $(WABEPSUBDIRS) $(WSNASUBDIRS) $(TGUISUBDIRS)
+	  $(WABSSUBDIRS) $(WABEPSUBDIRS) $(WSNASUBDIRS) $(TGUISUBDIRS) \
+	  $(EGCSUBDIRS)
 
 SRCS    = $(GANBWAPSRCS) $(PEGCSRCS) $(NKVNECSRCS) $(WABSSRCS) \
-	  $(WABEPSRCS) $(WSNASRCS) $(TGUISRCS)
+	  $(WABEPSRCS) $(WSNASRCS) $(TGUISRCS) $(EGCSRCS)
 OBJS    = $(GANBWAPOBJS) $(PEGCOBJS) $(NKVNECOBJS) $(WABSOBJS) \
-	  $(WABEPOBJS) $(WSNAOBJS) $(TGUIOBJS)
+	  $(WABEPOBJS) $(WSNAOBJS) $(TGUIOBJS) $(EGCOBJS)
 DONES   = $(GANBWAPDONES) $(PEGCDONES) $(NKVNECDONES) $(WABSDONES) \
-	  $(WABEPDONES) $(WSNADONES) $(TGUIDONES)
+	  $(WABEPDONES) $(WSNADONES) $(TGUIDONES) $(EGCDONES)
 
 INCLUDES = -I$(XF86SRC)/vga256/vga -I$(XF86COMSRC) -I$(XF86OSSRC) \
 	   -I$(SERVERSRC)/include -I$(XINCLUDESRC)
@@ -105,6 +113,9 @@ ConfigTargetNoDepend(vga256Conf,$(ICONFIGFILES),cvga256.SHsuf,cirrus)
 #if XF98TGUIServer
 ConfigTargetNoDepend(tguiConf,$(ICONFIGFILES),ctgui.SHsuf,trident)
 #endif
+#if XF98EGCServer
+ConfigTargetNoDepend(egcConf,$(ICONFIGFILES),cegc.SHsuf,egc)
+#endif
 #endif
 
 #ifdef OS2Architecture
@@ -132,6 +143,9 @@ NormalDepLibraryTarget(wabep,$(WABEPSUBDIRS) $(WABEPDONES),?*.o)
 #if XF98TGUIServer || XF98TGUIModule
 NormalDepLibraryTarget(trident,$(TGUISUBDIRS) $(TGUIDONES),?*.o)
 #endif
+#if XF98EGCServer || XF98EGCModule
+NormalDepLibraryTarget(egc,$(EGCSUBDIRS) $(EGCDONES),?*.o)
+#endif
 #else
 #if XF98GANBWAPServer || XF98GANBWAPModule
 NormalDepLibraryTarget(ganbwap,$(GANBWAPSUBDIRS) $(GANBWAPDONES),$(GANBWAPOBJS))
@@ -154,6 +168,9 @@ NormalDepLibraryTarget(wabep,$(WABEPSUBDIRS) $(WABEPDONES),$(WABEPOBJS))
 #if XF98TGUIServer || XF98TGUIModule
 NormalDepLibraryTarget(trident,$(TGUISUBDIRS) $(TGUIDONES),$(TGUIOBJS))
 #endif
+#if XF98EGCServer || XF98EGCModule
+NormalDepLibraryTarget(egc,$(EGCSUBDIRS) $(EGCDONES),$(EGCOBJS))
+#endif
 #endif
 
 NormalLibraryObjectRule()
@@ -167,11 +184,13 @@ InstallLinkKitLibrary(trident,$(XF98LINKKITDIR)/drivers98)
 InstallLinkKitLibrary(wabep,$(XF98LINKKITDIR)/drivers98)
 InstallLinkKitLibrary(wabs,$(XF98LINKKITDIR)/drivers98)
 InstallLinkKitLibrary(wsna,$(XF98LINKKITDIR)/drivers98)
+InstallLinkKitLibrary(egc,$(XF98LINKKITDIR)/drivers98)
 #ifndef DontInstallPC98Version
 InstallLinkKitNonExecFile(cvga256.SHsuf,$(XF98LINKKITDIR))
 #endif
 InstallLinkKitNonExecFile(cpegc.SHsuf,$(XF98LINKKITDIR))
 InstallLinkKitNonExecFile(ctgui.SHsuf,$(XF98LINKKITDIR))
+InstallLinkKitNonExecFile(cegc.SHsuf,$(XF98LINKKITDIR))
 
 #if DoLoadableServer
 #if XF98GANBWAPModule
@@ -196,6 +215,9 @@ InstallDynamicModule(LibraryTargetName(wabs),$(MODULEDIR))
 #endif
 #if XF98WSNAModule
 InstallDynamicModule(LibraryTargetName(wsna),$(MODULEDIR))
+#endif
+#if XF98EGCModule
+InstallDynamicModule(LibraryTargetName(egc),$(MODULEDIR))
 #endif
 #endif
 

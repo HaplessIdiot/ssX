@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.10 1997/02/17 09:48:47 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.11 1997/03/10 10:12:41 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -525,7 +525,7 @@ static void Expand8x8Pattern(x, y, w, h, pSrc, srcwidth)
             x, y + i, x + 64, y + i, 64, 1);
     }
     if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-        xf86AccelInfoRec.Sync();
+        NeedToSync = TRUE;
 }
 
 
@@ -1081,8 +1081,7 @@ static int DoCacheStipple(slot, pDrawable, pGC)
 	     * versions (unless we have special support as checked for
 	     * below).
 	     */
-	    if ((xf86AccelInfoRec.Flags & HARDWARE_PATTERN_PROGRAMMED_BITS)
-	    && (xf86AccelInfoRec.Flags & HARDWARE_PATTERN_PROGRAMMED_ORIGIN)) {
+	    if (xf86AccelInfoRec.Flags & HARDWARE_PATTERN_PROGRAMMED_BITS) {
 	        /*
 	         * Easy, just put the 8x8 stipple data into two ints.
 	         * No need to use the pixmap cache slot at all.
@@ -1253,7 +1252,7 @@ static void DoCacheExpandPixmap(pci)
     }
 
     if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-        xf86AccelInfoRec.Sync();
+        NeedToSync = TRUE;
 }
 
 static Bool

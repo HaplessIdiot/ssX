@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.1 1997/03/06 23:15:24 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.2 1997/03/22 09:35:37 hohndel Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -196,9 +196,11 @@ int cirrusBufferSpaceSize;
 			 ((x) == CLGD5430 || (x) == CLGD5434 || \
 			  (x) == CLGD5436) || \
 			 (x) == CLGD5446 || \
-			 ((x) == CLGD5462 || (x) == CLGD5464))
+			 ((x) == CLGD5462 || (x) == CLGD5464) || \
+			 (x) == CLGD5465)
 
-#define HasLargeHWCursor(x) ((x) == CLGD5462 || (x) == CLGD5464)
+#define HasLargeHWCursor(x) ((x) == CLGD5462 || (x) == CLGD5464 || \
+			     (x) == CLGD5465)
 			 
 
 /* Define a structure for the HIDDEN DAC cursor colours */
@@ -247,6 +249,7 @@ typedef struct {
   unsigned short FORMAT;        /* Video format (546X) */
   unsigned long VSC;            /* Vendor specific control (546X) */
   unsigned short DTTC;          /* Display Threshold and Tiling Control */
+  unsigned short TileCtrl;      /* Tiling control (5465) */
   unsigned char TILE;           /* Tile control (546X) */
   unsigned short CONTROL;       /* Control (546X) */
   unsigned short cursorX;
@@ -498,6 +501,7 @@ static int cirrusClockLimit4bpp[] = {
   135100,       /* 5446 */
   170000,       /* 5462 */
   170000,       /* 5464 */
+  170000,       /* 5465 */
   80100,	/* 7541 */
   80100,	/* 7542 */
   80100,	/* 7543 */
@@ -524,7 +528,8 @@ static int cirrusClockLimit8bpp[] = {
   135100,	/* 5436 */
   135100,       /* 5446 */
   170000,       /* 5462 */
-  170000,       /* 5464 */
+  300000,       /* 5464 */      /* This 300 figure was chosen pretty */
+  300000,       /* 5465 */      /* much arbitrarily.  --corey (3/24/97) */
   80100,	/* 7541 */
   80100,	/* 7542 */
   80100,	/* 7543 */
@@ -546,7 +551,8 @@ static int cirrusClockLimit16bpp[] = {
   85500,	/* 5436 */
   85500,        /* 5446 */
   135100,       /* 5462 */
-  135100,       /* 5464 */
+  170000,       /* 5464 */     /* Increased from 135.1MHz. */
+  170000,       /* 5464 */     /* --corey (3/24/97) */
   40100,	/* 7541 */
   40100,	/* 7542 */
   40100,	/* 7543 */
@@ -567,7 +573,8 @@ static int cirrusClockLimit24bpp[] = {
   85500,	/* 5436 */
   85500,        /* 5446 */
   135100,      	/* 5462 */
-  135100,       /* 5464 */
+  170000,       /* 5464 */  /* Used to be 135.1M --corey (3/24/97) */
+  170000,       /* 5465 */
   80100 / 3,	/* 7541 XXXX Don't know for 754x. */ /* 80100 / 3 is a guess */
   0,		/* 7542 */
   80100 / 3,	/* 7543 */
@@ -584,7 +591,8 @@ static int cirrusClockLimit32bpp[] = {
   45100,	/* 5436 */
   45100,	/* 5446 */
   85500,	/* 5462 */  /* Hmm... I wonder if this will break something */
-  85500,        /* 5464 */
+  135100,       /* 5464 */
+  135100,       /* 5465 */
   0,		/* 7541 */
   0,		/* 7542 */
   0,		/* 7543 */
@@ -606,6 +614,7 @@ static SymTabRec chipsets[] = {
   { CLGD5446,   "clgd5446" },
   { CLGD5462,   "clgd5462" },
   { CLGD5464,   "clgd5464" },
+  { CLGD5465,   "clgd5465" },
   { CLGD6205,	"clgd6205" },
   { CLGD6215,	"clgd6215" },
   { CLGD6225,	"clgd6225" },
@@ -1104,7 +1113,12 @@ cirrusProbe()
 		   break;
 
 		 case PCI_CHIP_GD5464:
+		 case PCI_CHIP_GD5464BD:
 		   cirrusChip = CLGD5464;
+		   break;
+
+		 case PCI_CHIP_GD5465:
+		   cirrusChip = CLGD5465;
 		   break;
 
 		 case PCI_CHIP_GD7548:
@@ -1900,9 +1914,14 @@ cirrusProbe()
 	 cirrusMemoryInterleave = 0x80;
 	 break;
        } /* memory size switch statement */
+
+       /* The 5465AA and AB are stuck with one-way memory interleaving.  
+	  I don't know about the AC yet... */
+       if (cirrusChip == CLGD5465)
+	 cirrusMemoryInterleave = 0x00;
      }
 
-
+   
      /* If we found a laguna, install the pitch adjust hook.  If we don't,
 	then we can't pad the screen pitch, and the display won't be correct
 	for both cfb and accelerated output.  */
@@ -2103,8 +2122,38 @@ cirrusFbInit()
         	        CIRRUS.ChipLinearBase = 0x04000000;	/* 64MB */
         	}
                 if (cirrusBusType == CIRRUS_BUS_PCI) {
-		    cirrusUseLinear = FALSE;
-		    if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_CIRRUS) {
+		  cirrusUseLinear = FALSE;
+		  if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_CIRRUS) {
+		    /* The later Cirrus PCI chips don't set the lower
+		       order bit of the PCI base registers as expected by
+		       XFree86.  This was done (by Cirrus) by design.  It's 
+		       okay, though, because we know how the registers 
+		       should be decoded in these cases. */
+		    if ((vgaPCIInfo->ChipType == PCI_CHIP_GD5462) ||
+			(vgaPCIInfo->ChipType == PCI_CHIP_GD5464) ||
+			(vgaPCIInfo->ChipType == PCI_CHIP_GD5464BD) ||
+			(vgaPCIInfo->ChipType == PCI_CHIP_GD5465) ||
+			(vgaPCIInfo->ChipType == PCI_CHIP_GD7548)) {
+
+		      if (vgaPCIInfo->ChipType == PCI_CHIP_GD5465) {
+			/* Swapped in the '65, by design. */
+			vgaPCIInfo->IOBase = vgaPCIInfo->ThisCard->_base1;
+			vgaPCIInfo->MemBase = vgaPCIInfo->ThisCard->_base0;
+		      } else {
+			vgaPCIInfo->IOBase = vgaPCIInfo->ThisCard->_base0;
+			vgaPCIInfo->MemBase = vgaPCIInfo->ThisCard->_base1;
+		      }
+
+		      ErrorF("%s %s: PCI: ", XCONFIG_PROBED, 
+			     vga256InfoRec.name);
+		      if (vgaPCIInfo->MemBase)
+			ErrorF("Memory @ 0x%08x", vgaPCIInfo->MemBase);
+		      if (vgaPCIInfo->IOBase)
+			ErrorF(", I/O @ 0x%08x", vgaPCIInfo->IOBase);
+		      ErrorF("\n");
+		      
+		    }
+
                     	/*
                     	 * Known devices:
                     	 * 0x00A0	5430, 5440
@@ -2113,6 +2162,8 @@ cirrusFbInit()
 			 * 0x00B8       5446
 			 * 0x00D0       5462
 			 * 0x00D4       5464
+			 * 0x00D5       5464BD
+			 * 0x00D6       5465
       			 */
                     	if (vgaPCIInfo->MemBase != 0) {
 			  /* Why the mask?  (CRA) */
@@ -2673,6 +2724,7 @@ cirrusRestore(restore)
 /*  unsigned short FORMAT;       Video format (546X) */
 /*  unsigned long VSC;           Vendor specific control (546X) */
 /*  unsigned short DTTC;         Display Threshold and Tiling Control (546X) */
+/*  unsigned short TileCtrl;     Tiling control (5465) */
 /*  unsigned char TILE;          Tile control (546X) */
 /*  unsigned short CONTROL;      Control (546X) */
 /*  unsigned short cursorX; */
@@ -2772,7 +2824,7 @@ cirrusRestore(restore)
     }
     else {
       unsigned char *pTILE;
-      unsigned short *pFORMAT, *pDTTC, *pCONTROL;
+      unsigned short *pFORMAT, *pDTTC, *pCONTROL, *pTileCtrl;
       unsigned int *pVSC;
 
       pFORMAT = (unsigned short *)(cirrusMMIOBase + 0xC0);
@@ -2783,6 +2835,11 @@ cirrusRestore(restore)
 
       pDTTC = (unsigned short *)(cirrusMMIOBase + 0xEA);
       *pDTTC = (restore->DTTC & 0x3FFF) | (cirrusMemoryInterleave << 8);
+
+      if (cirrusChip == CLGD5465) {
+	pTileCtrl = (unsigned short *)(cirrusMMIOBase + 0x2C4);
+	*pTileCtrl = (*pTileCtrl & 0x003F) | (restore->TileCtrl & 0xFFC0);
+      }
 
       pTILE = (unsigned char *)(cirrusMMIOBase + 0x407);
       *pTILE = (restore->TILE & 0x3F) | (cirrusMemoryInterleave);
@@ -2903,6 +2960,7 @@ cirrusSave(save)
 /*  DACcolourRec  BACKGROUND;    Hidden DAC cursor background colour */
 /*  unsigned short FORMAT;       Video format (546X) */
 /*  unsigned long VSC;           Vendor specific control (546X) */
+/*  unsigned short TileCtrl;     Tiling control (5465) */
 /*  unsigned short DTTC;         Display Threshold and Tiling Control (546X) */
 /*  unsigned char TILE;          Tile control (546X) */
 /*  unsigned short CONTROL;      Control (546X) */
@@ -3041,6 +3099,11 @@ cirrusSave(save)
       pW = (unsigned short *)(cirrusMMIOBase + 0xEA);
       save->DTTC = *pW;
 
+      if (cirrusChip == CLGD5465) {
+	pW = (unsigned short *)(cirrusMMIOBase + 0x2C4);
+	save->TileCtrl = *pW;
+      }
+
       pB = (unsigned char *)(cirrusMMIOBase + 0x407);
       save->TILE = *pB;
       
@@ -3168,6 +3231,7 @@ cirrusInit(mode)
   /*  unsigned short FORMAT;             Video format (546X) */
   /*  unsigned long VSC;                 Vendor specific control (546X) */
   /*  unsigned short DTTC;               Display Threshold and Tiling Ctrl */
+  /*  unsigned short TileCtrl;           Tiling control (5465) */
   /*  unsigned char TILE;                Tile control (546X) */
   /*  unsigned short CONTROL;            Control (546X) */
   
@@ -3800,6 +3864,7 @@ cirrusInit(mode)
 
       if (HAVE546X()) {
 	unsigned short *pDTTC;
+	unsigned short *pTileCtrl;
 	unsigned char *pTILE;
 
 	/* Only 28th bit matters */
@@ -4153,6 +4218,14 @@ cirrusInit(mode)
 	  break;
 	} /* memory size switch statement */
 #endif
+
+	/* The 5465AA and AB are stuck with one-way memory interleaving.  
+	   I don't know about the AC yet... */
+	if (cirrusChip == CLGD5465)
+	  cirrusMemoryInterleave = 0x00;
+
+	if (cirrusChip == CLGD5465)
+	  new->TileCtrl = new->DTTC & 0xFFC0;
       } /* if HAVE546X() */
 
 

@@ -582,6 +582,11 @@ Flags
     general lines. This flag is automatically set if appropriate. It
     should not be set in a driver in any case.
 
+    HORIZONTAL_TWOPOINTLINE
+
+    Use TwoPointLine for Horizontal Lines instead of the FillRectSolid
+    function.
+
     TWO_POINT_LINE_NOT_LAST
 
     Indicates that TwoPointLine supports the notlast flag that indicates
@@ -648,6 +653,11 @@ Flags
     Indicates that the monochrome 8x8 pattern supports transparency
     (signalled by a background color equal to -1).
 
+    HARDWARE_PATTERN_NOT_LINEAR
+
+    Indicates that the 8x8 pattern data should not be stored linearly
+    in video memory, but rather, as a tiled 8x8 pattern in the cache.
+
     ONLY_TWO_BITBLT_DIRECTIONS
 
     Indicates that ScreenToScreenCopy is only allowed with xdir = ydir
@@ -711,6 +721,20 @@ SubsequentFillRectSolid(x, y, w, h)
 
     This function is taken advantage of when filling solid rectangles,
     spans, polygons and arcs, and in other places.
+
+SubsequentFillTrapezoidSolid(y, h, left, dxl, dyl, el, right, dxr, dyr, er)
+
+    Defining this will enable most solid polygons to be rendered as a
+    collection of trapezoids rather than horizontal spans. Y is the
+    top line of a trapezoid which has height h. Left and right are the
+    starting X positions of the left and right edges on the top line.
+    Dyl/dxl and dyr/dxr define the slopes of the left and right edges
+    and el and er are the initial error terms (always rendered from 
+    top of the screen to the bottom). 
+
+    Note that dyl, dxl, dyr and dxr are merely used to define the slope
+    of the line and are not necessarily the deltas between the top and
+    bottom points. 
 
 SetupForScreenToScreenCopy(xdir, ydir, rop, planemask, transparency_color)
 
@@ -790,8 +814,8 @@ SetupForFill8x8Pattern(patternx, patterny, rop, planemask, trans_col)
     PATTERN_PROGRAMMED_ORIGIN flag is set, patternx and patterny can be
     ignored. Otherwise, patternx and patterny just indicate the video
     memory address where the pattern is stored. The pattern is stored
-    linearly in video memory. When the transparency color is -1 there
-    is no transparency.
+    linearly in video memory unless HARDWARE_PATTERN_NOT_LINEAR is
+    specified. When the transparency color is -1 there is no transparency.
 
 SubsequentFill8x8Pattern(patternx, patterny, x, y, w, h)
 

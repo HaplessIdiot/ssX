@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.69 1997/03/03 10:18:36 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.70 1997/03/11 13:05:31 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -221,6 +221,7 @@ ScrnInfoRec mach64InfoRec = {
 #endif
 };
 
+#if defined(XFree86LOADER)
 ScrnInfoRec *
 ServerInit()
 {
@@ -256,12 +257,17 @@ ModuleInit(data,magic)
 	* data = (pointer) &mach64InfoRec;
 	* magic= MAGIC_ADD_VIDEO_CHIP_REC;
 	break;
+    case 2:
+        * data = (pointer) "libxf86cache.a";
+        * magic= MAGIC_LOAD;
+        break;
     default:
 	* magic= MAGIC_DONE;
 	break;
     }
     return;
 }
+#endif
 
 int mach64alu[16] = {
     MIX_0,

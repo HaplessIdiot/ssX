@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/tseng_ramdac.c,v 3.2 1997/02/27 13:59:27 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_ramdac.c,v 1.1 1997/03/06 23:17:16 hohndel Exp $ */
 
 /*
  *
@@ -429,10 +429,23 @@ void tseng_set_dacspeed(int bytesperpixel)
 {
    /*
     * Memory bandwidth is important in > 8bpp modes, especially on ET4000
+    *
+    * This code evaluates a video mode with respect to requested dot clock
+    * (depends on the VGA chip and the RAMDAC) and the resulting bandwidth
+    * demand on memory (which in turn depends on color depth).
+    *
+    * For each mode, the minimum of max data transfer speed (dot clock
+    * limit) and memory bandwidth determines if the mode is allowed.
+    *
+    * We should also take acceleration into account: accelerated modes
+    * strain the bandwidth heavily, because they cause lots of random
+    * acesses to video memory, which is bad for bandwidth due to smaller
+    * page-mode memory requests.
     */
 
     int maxclock_bpp[4];
     int mem_bw;     /* memory bandwidth */
+    unsigned char bw_reg;
 
     /* if not set in the XF86Config file, use defaults */
     if (vga256InfoRec.dacSpeed <= 0) {
@@ -450,10 +463,9 @@ void tseng_set_dacspeed(int bytesperpixel)
     }
 
     if (et4000_type < TYPE_ET6000) {
-        if (vga256InfoRec.videoRam <= 1024)
-            mem_bw = 80000;
-        else
-            mem_bw = 160000;  /* interleaved DRAM */
+        mem_bw = 90000;
+        if (vga256InfoRec.videoRam > 1024)
+            mem_bw = mem_bw * 17 / 10;  /* interleaved DRAM gives 70% more bandwidth */
 
         maxclock_bpp[0] = vga256InfoRec.dacSpeed;
         if (dac_is_16bit)
@@ -471,16 +483,19 @@ void tseng_set_dacspeed(int bytesperpixel)
     }
     else
     {
-      /*
-       * This is a bit more difficult, so we'll guess at it right now.
-       * Either MDRAM or DRAM, with MDRAM interleaved or not, and DRAM 2-way
-       * or 4-way interleaved.
-       */
-      mem_bw = 300000;  /* empyrical */
+      mem_bw = 90000 * 2 * 5/6;       /* 1 MDRAM bandwidth at 90 MHz, with 80% efficiency */
+      bw_reg = inb(ET6Kbase + 0x45);
+      if (bw_reg & 0x04) mem_bw *=2;  /* 2 MDRAM channels  (2 chips) */
+      if (bw_reg & 0x03) mem_bw *=2;  /* interleaved MDRAM (4 chips) */
       maxclock_bpp[0] = vga256InfoRec.dacSpeed;
       maxclock_bpp[1] = min(maxclock_bpp[0], mem_bw/2);
       maxclock_bpp[2] = min(maxclock_bpp[0], mem_bw/3);
       maxclock_bpp[3] = min(maxclock_bpp[0], mem_bw/4);
+    }
+    
+    if (xf86Verbose) {
+    ErrorF("%s %s: Estimated video memory bandwidth: %d MB/s.\n",
+             XCONFIG_PROBED, vga256InfoRec.name, mem_bw/1000);
     }
 
     vga256InfoRec.maxClock = maxclock_bpp[bytesperpixel-1];

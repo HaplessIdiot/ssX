@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.37 1997/03/07 07:45:31 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.38 1997/03/22 09:36:00 hohndel Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -670,6 +670,9 @@ struct pci_vendor_device {
         { 0x11FE, "Control", {
                             { 0x0000, (char *)NULL, NF } } },
         { 0x120E, "Cyclades", {
+                            { 0x0000, (char *)NULL, NF } } },
+        { 0x1236, "Sigma Designs", {
+                            { 0x6401, "REALmagic64/GX (SD 6425)", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1281, "YOKOGAWA", {
                             { 0x0000, (char *)NULL, NF } } },

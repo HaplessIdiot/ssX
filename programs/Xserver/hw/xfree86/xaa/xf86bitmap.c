@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86bitmap.c,v 3.6 1997/01/18 06:57:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86bitmap.c,v 3.7 1997/01/23 11:04:21 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -229,7 +229,7 @@ srcy, bg, fg, rop, planemask)
 	    xf86WriteBitmapLeftEdge(x, y, skipleft, h, src, srcwidth,
 	        srcx, srcy);
 	    if (done) {
-		xf86AccelInfoRec.Sync();
+		NeedToSync = TRUE;
 	        return;
 	    }
 	    if (!(xf86AccelInfoRec.Flags & NO_SYNC_AFTER_CPU_COLOR_EXPAND))
@@ -433,7 +433,7 @@ srcy, bg, fg, rop, planemask)
     }
 
     if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-        xf86AccelInfoRec.Sync();
+        NeedToSync = TRUE;
 }
 
 /*

@@ -1,0 +1,46 @@
+A first attempt at a virge driver for XAA. This is a total rewrite, 
+so unfortunately there are probably many bugs present and not all features
+of the accel virge server are implemented. 
+
+
+What works: 
+- Supports PCI hardware, ViRGE and ViRGE/VX (probably)
+- Supports 8bpp, 16bpp and 24bpp. Has not been tested on VX.
+  8bpp pixmux on virge seems to work, as do interlace modes.
+- VT switching seems to work well, no corruption for 8, 16 and 24bpp. This
+  has only been tested on OS/2.
+- Basic acceleration: ScreenToScreen copy, solid rectangle fills, CPU to
+  screen color expansion, 8x8 mono and color fills. Currently, this appears
+  to be substantially faster than the accel server at least for 
+  color expansions. Note that the 8x8 color fills have not been tested.
+
+What does not work for sure:
+- No VLB support for now (were there any VLB virge cards produced??)
+- None of this doublescan stuff
+- The pixmap cache gets corrupted after a VT switch (normal) but XAA still
+  uses it. I'm not sure wether the problem is with XAA or higher up. 
+- Not all of the XConfig options work as yet, mainly the chipset override.
+
+What probably does not work:
+- 16bpp and 24bpp on the VX, as I have no way of testing this. I believe that
+  8bpp should work, though.
+- Special handling of memory accesses on alpha?
+- DGA support
+- Many other things which I cannot think of now :-)
+
+What is in the works:
+- Add transparency to 8x8 mono/color fills, and planemask support.
+- Maybe add accelerated lines and polygons, if the DDA issue is resolved.
+- Add accelerated spans, ImageWrite. Also hook some functions at a higher level
+  so that we can use the hardware clipping (eg. rectangles).
+
+- Fixing the bugs :-)
+
+XCONFIG options:
+- "pci_burst_off" will disable the PCI busrt mode
+- "slow_edodram" will switch the ViRGE to 2-cycle edo mode
+- "fpm_vram" will switch the ViRGE/VX to fast page mode vram mode
+- "noaccel" turns off all acceleration
+
+Sebastien Marineau 
+26/03/97

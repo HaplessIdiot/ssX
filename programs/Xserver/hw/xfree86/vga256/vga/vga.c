@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.86 1997/03/18 10:05:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.87 1997/03/22 09:36:15 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -691,6 +691,7 @@ vgaProbe()
             vga256InfoRec.whiteColour.red = 0xff;
             vga256InfoRec.whiteColour.green = 0xff;
             vga256InfoRec.whiteColour.blue = 0xff;
+	    xf86weight.red = xf86weight.green = xf86weight.blue = 8;
 	}
 
 	/* if Virtual given: is the virtual size too big? */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86plane.c,v 3.3 1997/01/18 06:57:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86plane.c,v 3.4 1997/01/22 11:17:17 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -118,6 +118,8 @@ xf86CopyPlane(pSrcDrawable, pDstDrawable,
 
     bgPixel = pGC->bgPixel;
     fgPixel = pGC->fgPixel;
+
+    SYNC_CHECK;
 
     if (pSrcDrawable->bitsPerPixel == 24 || pDstDrawable->bitsPerPixel == 24) {
     	/* Check to see if the 24bpp operation can be accelerated. */
@@ -285,6 +287,7 @@ planemask, bitPlane)
      * that guarantee that we never get here (the function is only called
      * when the accelerated WriteBitmap can be used).
      */
+
 
 #ifdef VGA256
     cfb8CheckOpaqueStipple(alu, fgPixel, bgPixel, planemask);

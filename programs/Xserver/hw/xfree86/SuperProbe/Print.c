@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.49 1997/03/07 00:29:02 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.50 1997/03/22 09:34:44 hohndel Exp $ */
 
 #include "Probe.h"
 
@@ -185,6 +185,8 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 /* Matrox */	{ "Matrox (chipset unknown)",
 		  "Matrox Millennium",
 		  "Matrox Atlas" },
+/* Sigma Designs */	{ "Sigma Designs (chipset unknown)",
+		  "Sigma Designs REALmagic64/GX (SD 6425)" },
 };
 
 static CONST char *Herc_Names[] = 

@@ -404,10 +404,10 @@ s3Init(mode)
    else
       s3PixelMultiplexing = FALSE;
 
-   if (S3_ViRGE_SERIES(s3ChipId))
-      pixMuxShift = -(s3Bpp == 2);
-   else
+   if (S3_ViRGE_VX_SERIES(s3ChipId))
       pixMuxShift = 0;
+   else
+      pixMuxShift = -(s3Bpp == 2);
 
    if (!mode->CrtcHAdjusted) {	 
       #if 0
@@ -931,6 +931,15 @@ s3Init(mode)
       outb(vgaCRIndex, 0x42);
       tmp = inb(vgaCRReg);
       outb(vgaCRReg, ~0x20 & tmp);
+   }
+
+   if (S3_ViRGE_DXGX_SERIES(s3ChipId)) {
+      /* disable DAC power saving to avoid bright left edge */
+      outb(0x3d4,0x86);
+      outb(0x3d5,0x80);
+      /* disable the stream display fetch length control */
+      outb(0x3d4,0x90);
+      outb(0x3d5,0x00);
    }
 
    if (mode->Private) {

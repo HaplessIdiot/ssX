@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86line.c,v 3.0 1996/11/18 13:22:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86line.c,v 3.1 1997/01/18 06:57:23 dawes Exp $ */
 
 /***********************************************************
 
@@ -48,7 +48,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: cfbline.c,v 1.24 94/07/28 14:33:33 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86line.c,v 3.0 1996/11/18 13:22:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86line.c,v 3.1 1997/01/18 06:57:23 dawes Exp $ */
 
 /*
  * Generic accelerated general lines.
@@ -562,6 +562,6 @@ xf86PolyLine(pDrawable, pGC, mode, npt, pptInit)
 #endif
 
     if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
-        xf86AccelInfoRec.Sync();
+        NeedToSync = TRUE;
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.8 1997/02/27 14:00:07 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.9 1997/03/10 10:12:43 hohndel Exp $ */
 
 
 /* AccelInfoRec flags */
@@ -25,6 +25,7 @@
 #define HARDWARE_PATTERN_MONO_TRANSPARENCY	0x80000
 #define NO_TEXT_COLOR_EXPANSION		0x100000
 #define HARDWARE_PATTERN_NOT_LINEAR	0x200000
+#define HORIZONTAL_TWOPOINTLINE		0x400000
 /* Graphics operation flags */
 
 #define GXCOPY_ONLY		0x1
@@ -341,6 +342,128 @@ typedef struct {
         xRectangle	*prectInit
 #endif
     );
+
+/************* begin wrappers *********************/
+
+    void (*FillPolygonWrapper)(
+#if NeedNestedPrototypes
+    	DrawablePtr	pDrawable,
+    	GCPtr		pGC,
+    	int		shape,
+    	int		mode,
+    	int		count,
+    	DDXPointPtr	ptsIn
+#endif
+    );
+
+    void (*PolyRectangleWrapper)(
+#if NeedNestedPrototypes
+    	DrawablePtr  	pDrawable,	
+    	GCPtr        	pGC,    	
+    	int	      	nRectsInit, 	
+    	xRectangle  	*pRectsInit
+#endif
+   );
+
+
+    void (*PolyArcWrapper)(
+#if NeedNestedPrototypes
+    	DrawablePtr	pDraw,
+    	GCPtr		pGC,
+    	int		narcs,
+   	xArc		*parcs
+#endif
+   );
+
+    void (*PolyLinesWrapper)(
+#if NeedNestedPrototypes
+    	DrawablePtr 	pDrawable,
+    	GCPtr		pGC,
+    	int		mode,		
+    	int		npt,		
+    	DDXPointPtr 	pptInit
+#endif
+   );
+
+    void (*PolySegmentWrapper)(
+#if NeedNestedPrototypes
+    	DrawablePtr	pDrawable,
+    	GCPtr		pGC,
+    	int		nseg,
+    	xSegment	*pSeg
+#endif
+   );
+
+
+    void (*ImageGlyphBltWrapper)(
+#if NeedNestedPrototypes
+    	DrawablePtr 	pDrawable,
+    	GC 		*pGC,
+    	int 		x, 
+	int		y,
+    	unsigned int 	nglyph,
+    	CharInfoPtr 	*ppci,		
+    	unsigned char 	*pglyphBase	
+#endif
+   );
+
+
+    void (*PolyGlyphBltWrapper)(
+#if NeedNestedPrototypes
+    	DrawablePtr 	pDrawable,
+   	GC 		*pGC,
+    	int 		x, 
+	int		y,
+    	unsigned int 	nglyph,
+    	CharInfoPtr 	*ppci,		
+    	unsigned char 	*pglyphBase
+#endif
+   );
+
+    void (*FillSpansWrapper)(
+#if NeedNestedPrototypes
+    	DrawablePtr 	pDrawable,
+    	GC		*pGC,
+    	int		nInit,	
+    	DDXPointPtr 	pptInit,	
+    	int 		*pwidthInit,		
+    	int 		fSorted
+#endif
+   );
+
+    void (*PolyFillArcWrapper)(
+#if NeedNestedPrototypes
+    	DrawablePtr	pDraw,
+    	GCPtr		pGC,
+    	int		narcs,
+    	xArc		*parcs
+#endif
+   );
+
+    void (*PolyFillRectWrapper)(
+#if NeedNestedPrototypes
+    	DrawablePtr	pDrawable,
+    	GCPtr		pGC,
+    	int		nrectFill, 
+    	xRectangle	*prectInit  
+#endif
+   );
+
+    RegionPtr (*CopyAreaWrapper)(
+#if NeedNestedPrototypes
+    	DrawablePtr 	pSrcDrawable,
+    	DrawablePtr 	pDstDrawable,
+    	GC 		*pGC,
+    	int 		srcx,	
+	int 		srcy,
+    	int 		width, 
+	int		height,
+    	int 		dstx, 
+	int		dsty
+#endif
+   );
+
+  
 } xf86GCInfoRecType;
 
 extern xf86GCInfoRecType xf86GCInfoRec;
@@ -784,3 +907,13 @@ void xf86InitializeAcceleration(
     ScreenPtr pScreen
 #endif
 );
+
+void xf86InitWrappers();
+extern Bool NeedToSync;
+
+#define	SYNC_CHECK			\
+    if(NeedToSync) {			\
+	xf86AccelInfoRec.Sync();	\
+	NeedToSync = FALSE;		\
+    }
+

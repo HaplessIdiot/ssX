@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.24 1997/03/22 09:35:14 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.25 1997/03/24 16:29:53 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -196,6 +196,8 @@ ScrnInfoRec s3InfoRec =
 #endif
 };
 
+#if defined(XFree86LOADER)
+
 XF86ModuleVersionInfo s3vVersRec =
 {
 	"libs3v.a", 
@@ -256,6 +258,7 @@ ModuleInit(data,magic)
     }
     return;
 }
+#endif  /* XFree86LOADER */
 
 
 
@@ -842,6 +845,15 @@ s3Probe()
       if (S3_ViRGE_SERIES(s3ChipId)) {
 	 chipname = "ViRGE";
       }
+      else if (S3_ViRGE_DXGX_SERIES(s3ChipId)) {
+	 outb(vgaCRIndex, 0x39);
+	 outb(vgaCRReg, 0xa5);
+	 outb(vgaCRIndex, 0x6f);
+	 if (inb(vgaCRReg) & 1)
+	    chipname = "ViRGE/GX";
+	 else
+	    chipname = "ViRGE/DX";
+      }
       else if (S3_ViRGE_VX_SERIES(s3ChipId)) {
 	 chipname = "ViRGE/VX";
       }
@@ -891,7 +903,15 @@ s3Probe()
 	    s3InfoRec.videoRam = 2 * 1024;
 	    break;
 	 case 6:
-	    s3InfoRec.videoRam = 1 * 1024;
+#if 0
+	    /*
+	     * normally this setting is illegal for older ViRGE
+	     * chips, but it is in fact used for example on the
+	     * Elsa Gloria L board
+	     */
+	    if (S3_ViRGE_DXGX_SERIES(s3ChipId))
+#endif
+	       s3InfoRec.videoRam = 1 * 1024;
 	    break;
 	 }
       }
@@ -1009,6 +1029,24 @@ s3Probe()
 	 s3RamdacType = S3_TRIO64_DAC;
 	 s3InfoRec.ramdac = xf86TokenToString(s3DacTable, s3RamdacType);
       }
+      if (S3_ViRGE_DXGX_SERIES(s3ChipId)) {
+	 if ( OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions) &&
+	     !OFLG_ISSET(CLOCK_OPTION_S3TRIO, &s3InfoRec.clockOptions) &&
+	     !OFLG_ISSET(CLOCK_OPTION_S3TRIO64V2, &s3InfoRec.clockOptions)) {
+	    ErrorF("%s %s: for ViRGE/DX/GX chips you shouldn't specify any Clockchip\n"
+		   "\t other than \"s3_trio64v2\" or maybe \"s3_trio64\"\n",
+		   XCONFIG_PROBED, s3InfoRec.name);
+	    /* Clear the other clock options */
+	    OFLG_ZERO(&s3InfoRec.clockOptions);
+	 }
+	 if (S3_ViRGE_DXGX_SERIES(s3ChipId) &&
+	     !OFLG_ISSET(CLOCK_OPTION_S3TRIO, &s3InfoRec.clockOptions)) {
+	    OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
+	    OFLG_SET(CLOCK_OPTION_S3TRIO64V2, &s3InfoRec.clockOptions);
+	    clockchip_probed = XCONFIG_PROBED;
+	 }
+      }
+      else
       if ( OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions) &&
 	  !OFLG_ISSET(CLOCK_OPTION_S3TRIO, &s3InfoRec.clockOptions)) {
 	 ErrorF("%s %s: for ViRGE chips you shouldn't specify a Clockchip\n",
@@ -1016,7 +1054,8 @@ s3Probe()
 	 /* Clear the other clock options */
 	 OFLG_ZERO(&s3InfoRec.clockOptions);
       }
-      if (!OFLG_ISSET(CLOCK_OPTION_S3TRIO, &s3InfoRec.clockOptions)) {
+      if (!OFLG_ISSET(CLOCK_OPTION_S3TRIO, &s3InfoRec.clockOptions) && 
+	  !OFLG_ISSET(CLOCK_OPTION_S3TRIO64V2, &s3InfoRec.clockOptions)) {
 	 OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
 	 OFLG_SET(CLOCK_OPTION_S3TRIO, &s3InfoRec.clockOptions);
 	 clockchip_probed = XCONFIG_PROBED;
@@ -1092,7 +1131,9 @@ s3Probe()
       case S3_TRIO64_DAC:
 	 if (S3_ViRGE_VX_SERIES(s3ChipId))
 	    s3InfoRec.dacSpeed = 220000;
-	 else
+	 else if (S3_ViRGE_DXGX_SERIES(s3ChipId))
+	    s3InfoRec.dacSpeed = 170000;
+	 else 
 	    s3InfoRec.dacSpeed = 135000;
 	 break;
       default:
@@ -1143,7 +1184,8 @@ s3Probe()
     * generation ramdacs will have a built in clock (i.e. TI 3025)
     */
 
-   if (OFLG_ISSET(CLOCK_OPTION_S3TRIO, &s3InfoRec.clockOptions)) {
+   if (OFLG_ISSET(CLOCK_OPTION_S3TRIO, &s3InfoRec.clockOptions) ||
+       OFLG_ISSET(CLOCK_OPTION_S3TRIO64V2, &s3InfoRec.clockOptions)) {
       unsigned char sr8;
       int m,n,n1,n2, mclk;
 
@@ -1192,9 +1234,12 @@ s3Probe()
    if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions)) {
       if (OFLG_ISSET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions)) {
 	 maxRawClock = 120000;
-      } else if (OFLG_ISSET(CLOCK_OPTION_S3TRIO, &s3InfoRec.clockOptions)) {
+      } else if (OFLG_ISSET(CLOCK_OPTION_S3TRIO, &s3InfoRec.clockOptions) ||
+		 OFLG_ISSET(CLOCK_OPTION_S3TRIO64V2, &s3InfoRec.clockOptions)) {
 	 if (S3_ViRGE_VX_SERIES(s3ChipId))
 	    maxRawClock = 220000;
+	 else if (S3_ViRGE_DXGX_SERIES(s3ChipId))
+	    maxRawClock = 170000;
 	 else
 	    maxRawClock = 135000;
       } else {
@@ -1216,12 +1261,18 @@ s3Probe()
       if (s3ATT498PixMux)
 	 s3InfoRec.maxClock = s3InfoRec.dacSpeed;
       else if (s3Bpp < 3 && !S3_ViRGE_VX_SERIES(s3ChipId))
-	 s3InfoRec.maxClock = 80000;
+	 if (S3_ViRGE_DXGX_SERIES(s3ChipId))
+	    s3InfoRec.maxClock = 110000;
+	 else
+	    s3InfoRec.maxClock =  80000;
       else
 	 if (S3_ViRGE_VX_SERIES(s3ChipId))
 	    s3InfoRec.maxClock = 135000;
 	 else
-	    s3InfoRec.maxClock = 50000;
+	    if (S3_ViRGE_DXGX_SERIES(s3ChipId))
+	       s3InfoRec.maxClock = 60000;
+	    else
+	       s3InfoRec.maxClock = 50000;
       break;
    default:
       /* For DACs we don't have special code for, keep this as a limit */
@@ -1908,8 +1959,13 @@ s3GendacClockSelect(freq)
 #if defined(PC98_PW)
 	 (void) S3gendacSetClock(freq, 7);  /* PW805i can't use reg 2 */
 #else
-
-	 (void) S3TrioSetClock(freq, 2); /* can't fail */
+	 
+	 if (OFLG_ISSET(CLOCK_OPTION_S3TRIO64V2, &s3InfoRec.clockOptions))
+	    (void) S3Trio64V2SetClock(freq, 2); /* can't fail */
+	 else if (S3_ViRGE_VX_SERIES(s3ChipId))
+	    (void) S3ViRGE_VXSetClock(freq, 2); /* can't fail */
+	 else
+	    (void) S3TrioSetClock(freq, 2); /* can't fail */
 #endif
 	 outb(vgaCRIndex, 0x42);/* select the clock */
 #if defined(PC98_PW)
