@@ -31,6 +31,7 @@
 ** published by SGI, but has not been independently verified as being
 ** compliant with the OpenGL(R) version 1.2.1 Specification.
 */
+/* $XFree86$ */
 
 /*
  * arctessellator.c++
@@ -380,7 +381,9 @@ ArcTessellator::tessellateNonlinear( Arc *arc, REAL geo_stepsize, REAL arc_steps
 
 	/* strength reduction on p = dp * step would introduce error */
 	int step;
+#ifndef NOELIMINATION
 	int ocanremove = 0;
+#endif
     	register long order =  bezierArc->order;
 	for( step=1, ++vert; step<nsteps; step++, vert++ ) {
 	    register REAL p = dp * step;
@@ -441,7 +444,9 @@ ArcTessellator::tessellateNonlinear( Arc *arc, REAL geo_stepsize, REAL arc_steps
 
 	/* strength reduction on p = dp * step would introduce error */
 	int step;
+#ifndef NOELIMINATION
 	int ocanremove = 0;
+#endif
     	register long order =  bezierArc->order;
 	for( step=1, ++vert; step<nsteps; step++, vert++ ) {
 	    register REAL p = dp * step;

@@ -33,6 +33,8 @@
 **
 ** $Date$ $Revision$
 */
+/* $XFree86$ */
+
 /*
 ** $Header$
 */
@@ -97,7 +99,7 @@ void OpenGLCurveEvaluator::inMap1f(int which, //0: vert, 1: norm, 2: color, 3: t
 				   int uorder,
 				   REAL *ctlpoints)
 {
-  int i,j,x;
+  int i,x;
   curveEvalMachine *temp_em;
   switch(which){
   case 0: //vertex
@@ -139,7 +141,6 @@ void OpenGLCurveEvaluator::inDoDomain1(curveEvalMachine *em, REAL u, REAL *retPo
 {
   int j, row;
   REAL the_uprime;
-  REAL p;
   REAL *data;
   
   if(em->u2 == em->u1)

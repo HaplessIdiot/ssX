@@ -33,6 +33,8 @@
 **
 ** $Date$ $Revision$
 */
+/* $XFree86$ */
+
 /*
 ** $Header$
 */
@@ -96,7 +98,6 @@ sampledLine::sampledLine(Int n_points, Real2 pts[])
 
 sampledLine::sampledLine(Real pt1[2], Real pt2[2])
 {
-  int i;
   npoints = 2;
   points = (Real2*) malloc(sizeof(Real2) * 2);
   assert(points);

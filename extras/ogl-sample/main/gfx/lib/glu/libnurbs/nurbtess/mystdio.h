@@ -38,12 +38,13 @@
  * $Date$ $Revision$
  * $Header$
  */
+/* $XFree86$ */
 
 #ifndef __glumystdio_h_
 #define __glumystdio_h_
 
 #ifdef STANDALONE
-inline void dprintf( char *, ... ) { }
+static inline void dprintf( char *fmt, ... ) { }
 #endif
 
 #ifdef LIBRARYBUILD
@@ -51,12 +52,12 @@ inline void dprintf( char *, ... ) { }
 #include <stdio.h>
 #define dprintf printf
 #else
-inline void dprintf( char *, ... ) { }
+static inline void dprintf( char *fmt, ... ) { }
 #endif
 #endif
 
 #ifdef GLBUILD
-inline void dprintf( char *, ... ) { }
+static inline void dprintf( char *fmt, ... ) { }
 #endif
 
 #ifndef NULL

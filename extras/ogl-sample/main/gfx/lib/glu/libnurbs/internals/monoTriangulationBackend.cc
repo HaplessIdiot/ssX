@@ -36,6 +36,7 @@
 /*
 ** $Header$
 */
+/* $XFree86$ */
 
 #include "monoTriangulation.h"
 #include "polyUtil.h"
@@ -45,7 +46,9 @@
 void reflexChain::outputFan(Real v[2], Backend* backend)
 {
   Int i;
+  /*
   TrimVertex trimVert;
+  */
   backend->bgntfan();
 
   /*
@@ -84,7 +87,10 @@ void reflexChain::processNewVertex(Real v[2], Backend* backend)
 {
   Int i,j,k;
   Int isReflex;
+  /*
   TrimVertex trimVert;
+  */
+
   /*if there are at most one vertex in the queue, then simply insert
    */
   if(index_queue <=1){

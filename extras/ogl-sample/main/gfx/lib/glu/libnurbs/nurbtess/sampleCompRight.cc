@@ -33,6 +33,7 @@
 **
 ** $Date$ $Revision$
 */
+/* $XFree86$ */
 /*
 ** $Header$
 */
@@ -497,7 +498,8 @@ void sampleRightOneGridStep(vertexArray* rightChain,
 
     return;
   }
-	   
+
+#if 0
   //this following code cannot be reached, but leave it for debuggig purpose.
   Int i;
   //find the maximal U-monotone chain of beginRightIndex, beginRightIndex+1,...
@@ -575,6 +577,7 @@ void sampleRightOneGridStep(vertexArray* rightChain,
 		     j+1,
 		     0, ///a decreae chain
 		     pStream);
+#endif
 }
 		  
 #endif    

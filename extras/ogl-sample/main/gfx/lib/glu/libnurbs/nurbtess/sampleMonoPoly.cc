@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/extras/ogl-sample/main/gfx/lib/glu/libnurbs/nurbtess/sampleMonoPoly.cc,v 1.2tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -2104,10 +2104,7 @@ void sampleLeftOneGridStep(vertexArray* leftChain,
     return;
   }
  
-
-
- 
-
+#if 0
   Int i;
   if(1/*leftGridChain->getUlineIndex(leftGridChainStartIndex) >= 
      leftGridChain->getUlineIndex(leftGridChainStartIndex+1)*/
@@ -2249,6 +2246,7 @@ void sampleLeftOneGridStep(vertexArray* leftChain,
 			 pStream);
 
     }
+#endif
 }
   
 /*n_upper>=1

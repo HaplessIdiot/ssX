@@ -36,6 +36,7 @@
 /*
 ** $Header$
 */
+/* $XFree86$ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -47,6 +48,7 @@
 
 extern directedLine* arcLoopToDLineLoop(Arc_ptr loop);
 
+/*
 static directedLine* copy_loop(Arc_ptr loop, Real2* vertArray, int& index, directedLine dline_buf[], sampledLine sline_buf[], int& index_dline)
 {
   directedLine *ret;
@@ -103,7 +105,7 @@ static int num_edges(Bin& bin)
     sum += jarc->pwlArc->npts-1;
   return sum;
 }
-/*
+
 directedLine* bin_to_DLineLoops(Bin& bin)
 {
   directedLine *ret=NULL;
