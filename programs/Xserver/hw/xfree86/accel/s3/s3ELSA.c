@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.c,v 3.21 1997/02/17 09:45:28 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.c,v 3.22 1997/02/27 13:58:18 hohndel Exp $ */
 /* 
  * s3ELSA.c 
  * 
@@ -79,7 +79,7 @@ static __inline__ void shift_out(int b) {
    outb(0x3d5,j); outb(0x3d5,j); outb(0x3d5,j); outb(0x3d5,j); 
 } 
 
-static __inline__ int shift_in(void)
+static __inline__ int shift_in()
 { 
    int i,j; 
    outb(0x3d4,0x5c); i = inb(0x3d5) & 0xaf; 

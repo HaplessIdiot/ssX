@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ramdacs.c,v 3.9 1997/01/23 11:01:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ramdacs.c,v 3.10 1997/01/25 04:17:56 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -3393,7 +3393,7 @@ static int IBMRGB52x_PreInit()
       }
       else if (OFLG_ISSET(OPTION_ELSA_W2000PRO_X8,  &s3InfoRec.options)) {
 	 if (!s3InfoRec.s3RefClk)
-	    s3InfoRec.s3RefClk = 28332;
+	    s3InfoRec.s3RefClk = 28322;
       }
       else if (find_bios_string(s3InfoRec.BIOSbase,
 				"Hercules Graphite Terminator",NULL) != NULL) {
