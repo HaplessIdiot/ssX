@@ -49,7 +49,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/xclock/ClockP.h,v 1.5 2001/01/17 23:45:18 dawes Exp $ */
+/* $XFree86: xc/programs/xclock/ClockP.h,v 1.7 2002/05/17 22:37:47 keithp Exp $ */
 
 #ifndef _XawClockP_h
 #define _XawClockP_h
@@ -105,7 +105,10 @@ typedef struct {
 	 XRenderColor	sec_color;
 	 XRenderColor	major_color;
 	 XRenderColor	minor_color;
+    
+	 XRenderPictFormat  *mask_format;
 	 Boolean    render;
+	 Boolean    sharp;
 	 Picture    picture;
 	 Picture    fill_picture;
 	 XRenderColor	fill_color;

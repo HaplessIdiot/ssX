@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/xclock/Clock.c,v 3.10 2001/07/25 15:05:17 dawes Exp $ */
+/* $XFree86: xc/programs/xclock/Clock.c,v 3.12 2002/05/17 22:37:46 keithp Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/StringDefs.h>
@@ -120,6 +120,8 @@ static XtResource resources[] = {
 #ifdef XRENDER
     {XtNrender, XtCBoolean, XtRBoolean, sizeof(Boolean),
 	offset(render), XtRImmediate, (XtPointer) FALSE },
+    {XtNsharp, XtCBoolean, XtRBoolean, sizeof(Boolean),
+	offset(sharp), XtRImmediate, (XtPointer) FALSE },
     {XtNhourColor, XtCForeground, XtRRenderColor, sizeof(XRenderColor),
 	offset(hour_color), XtRString, "rgba:7f/00/00/c0"},
     {XtNminuteColor, XtCForeground, XtRRenderColor, sizeof(XRenderColor),
@@ -349,6 +351,11 @@ Initialize (Widget request, Widget new, ArgList args, Cardinal *num_args)
     w->clock.numseg = 0;
     w->clock.interval_id = 0;
 #ifdef XRENDER
+    if (w->clock.render)
+	w->clock.mask_format = XRenderFindStandardFormat (XtDisplay (w),
+							  w->clock.sharp ?
+							  PictStandardA1 :
+							  PictStandardA8);
     w->clock.picture = 0;
     w->clock.fill_picture = 0;
     w->clock.damage.x = 0;
@@ -498,8 +505,7 @@ RenderLine (ClockWidget w, XDouble x1, XDouble y1, XDouble x2, XDouble y2,
 					PictOpOver,
 					w->clock.fill_picture,
 					w->clock.picture,
-					XRenderFindStandardFormat (XtDisplay (w),
-								   PictStandardA8),
+					w->clock.mask_format,
 					0, 0, 0, 0, poly, 4, EvenOddRule);
 	}
     }
@@ -544,8 +550,7 @@ RenderHand (ClockWidget w, int tick_units, int size, XRenderColor *color,
 					PictOpOver,
 					w->clock.fill_picture,
 					w->clock.picture,
-					XRenderFindStandardFormat (XtDisplay (w),
-								   PictStandardA8),
+					w->clock.mask_format,
 					0, 0, 0, 0, poly, 3, EvenOddRule);
 	}
     }
@@ -605,8 +610,7 @@ RenderSec (ClockWidget w, struct tm *tm, Boolean draw)
 					PictOpOver,
 					w->clock.fill_picture,
 					w->clock.picture,
-					XRenderFindStandardFormat (XtDisplay (w),
-								   PictStandardA8),
+					w->clock.mask_format,
 					0, 0, 0, 0, poly, 10, EvenOddRule);
 	}
     }
