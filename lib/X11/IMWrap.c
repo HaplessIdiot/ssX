@@ -1,6 +1,6 @@
 /*
- * $XConsortium: IMWrap.c /main/12 1995/12/09 12:03:06 gildea $
- * $XFree86: xc/lib/X11/IMWrap.c,v 3.1 1994/09/17 13:44:11 dawes Exp $
+ * $XConsortium: IMWrap.c /main/13 1996/01/05 11:22:19 kaleb $
+ * $XFree86: xc/lib/X11/IMWrap.c,v 3.2 1996/01/05 13:11:03 dawes Exp $
  */
 
 /*
@@ -130,15 +130,6 @@ XOpenIM( display, rdb, res_name, res_class )
 
     if( !lcd )
 	return( (XIM)NULL );
-    if( lcd->methods->open_im == NULL )
-#ifdef X11_TINY_IM
-    {
-    	_XCloseLC(lcd);
-    	return NULL;
-    }
-#else
-	_XInitIM( lcd );
-#endif
     return (*lcd->methods->open_im) (lcd, display, rdb, res_name, res_class);
 }
 
@@ -199,15 +190,6 @@ XRegisterIMInstantiateCallback( display, rdb, res_name, res_class, callback,
 
     if( !lcd )
 	return( False );
-    if( lcd->methods->register_callback == NULL )
-#ifdef X11_TINY_IM
-    {
-    	_XCloseLC(lcd);
-    	return NULL;
-    }
-#else
-	_XInitIM( lcd );
-#endif
     return( (*lcd->methods->register_callback)( lcd, display, rdb, res_name,
 						res_class, callback,
 						client_data ) );

@@ -1,4 +1,4 @@
-/* $XConsortium: xkbPrKeyEv.c /main/3 1995/12/07 21:23:03 kaleb $ */
+/* $XConsortium: xkbPrKeyEv.c /main/4 1996/01/01 10:57:13 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -40,10 +40,14 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 /***====================================================================***/
 
 static XkbAction
+#if NeedFunctionPrototypes
+XkbKeyAction(XkbSrvInfoPtr xkbi,XkbStatePtr xkbState,CARD8 key)
+#else
 XkbKeyAction(xkbi,xkbState,key)
     XkbSrvInfoPtr	xkbi;
     XkbStatePtr		xkbState;
     CARD8 	 	key;
+#endif
 {
 int			effectiveGroup;
 int			col;
@@ -165,16 +169,30 @@ typedef struct _XkbFilter {
 	CARD8			  filterOthers;
 	CARD32			  priv;
 	XkbAction		  upAction;
-	int			(*filter)();
+	int			(*filter)(
+#if NeedFunctionPrototypes
+					XkbSrvInfoPtr 		/* xkbi */,
+					struct _XkbFilter *	/* filter */,
+					CARD8			/* keycode */,
+					XkbAction *		/* action */
+#endif
+				  );
 	struct _XkbFilter	 *next;
 } XkbFilterRec,*XkbFilterPtr;
 
 static int
+#if NeedFunctionPrototypes
+_XkbFilterSetState(	XkbSrvInfoPtr	xkbi,
+			XkbFilterPtr	filter,
+			CARD8		keycode,
+			XkbAction *pAction)
+#else
 _XkbFilterSetState(xkbi,filter,keycode,pAction)
     XkbSrvInfoPtr	xkbi;
     XkbFilterPtr	filter;
     CARD8		keycode;
     XkbAction *		pAction;
+#endif
 {
 
     if (filter->keycode==0) {		/* initial press */
@@ -222,7 +240,7 @@ _XkbFilterSetState(xkbi,filter,keycode,pAction)
 #define	NO_LATCH	3
 
 static int
-#if NeedFunctionPrototype
+#if NeedFunctionPrototypes
 _XkbFilterLatchState(	XkbSrvInfoPtr	xkbi,
 			XkbFilterPtr	filter,
 			CARD8		keycode,
@@ -316,9 +334,14 @@ _XkbFilterLatchState(xkbi,filter,keycode,pAction)
 	}
 	else {
 	    filter->priv= LATCH_PENDING;
-	    if (filter->upAction.type==XkbSA_LatchMods)
-		 xkbi->state.latched_mods |= filter->upAction.mods.mask;
-	    else xkbi->state.latched_group+=XkbSAGroup(&filter->upAction.group);
+	    if (filter->upAction.type==XkbSA_LatchMods) {
+		xkbi->state.latched_mods |= filter->upAction.mods.mask;
+		needBeep = xkbi->state.latched_mods ? needBeep : 0;
+		xkbi->state.latched_mods |= filter->upAction.mods.mask;
+	    }
+	    else {
+		xkbi->state.latched_group+= XkbSAGroup(&filter->upAction.group);
+	    }
 	    if (needBeep && (beepType==_BEEP_NONE))
 		beepType= _BEEP_STICKY_LATCH;
 	}
@@ -333,11 +356,18 @@ _XkbFilterLatchState(xkbi,filter,keycode,pAction)
 }
 
 static int
+#if NeedFunctionPrototypes
+_XkbFilterLockState(	XkbSrvInfoPtr	xkbi,
+			XkbFilterPtr	filter,
+			CARD8		keycode,
+			XkbAction *	pAction)
+#else
 _XkbFilterLockState(xkbi,filter,keycode,pAction)
     XkbSrvInfoPtr	xkbi;
     XkbFilterPtr	filter;
     CARD8		keycode;
     XkbAction *		pAction;
+#endif
 {
 
     if (pAction&&(pAction->type==XkbSA_LockGroup)) {
@@ -347,8 +377,6 @@ _XkbFilterLockState(xkbi,filter,keycode,pAction)
 	return 1;
     }
     if (filter->keycode==0) {		/* initial press */
-	unsigned tmp;
-
 	filter->keycode = keycode;
 	filter->active = 1;
 	filter->filterOthers = 0;
@@ -369,11 +397,18 @@ _XkbFilterLockState(xkbi,filter,keycode,pAction)
 #define	NO_ISO_LOCK		1
 
 static int
+#if NeedFunctionPrototypes
+_XkbFilterISOLock(	XkbSrvInfoPtr	xkbi,
+			XkbFilterPtr	filter,
+			CARD8		keycode,
+			XkbAction *	pAction)
+#else
 _XkbFilterISOLock(xkbi,filter,keycode,pAction)
     XkbSrvInfoPtr	xkbi;
     XkbFilterPtr	filter;
     CARD8		keycode;
     XkbAction *		pAction;
+#endif
 {
 
     if (filter->keycode==0) {		/* initial press */
@@ -456,10 +491,14 @@ _XkbFilterISOLock(xkbi,filter,keycode,pAction)
 
 
 static CARD32
+#if NeedFunctionPrototypes
+_XkbPtrAccelExpire(OsTimerPtr timer,CARD32 now,pointer arg)
+#else
 _XkbPtrAccelExpire(timer,now,arg)
     OsTimerPtr	 timer;
     CARD32	 now;
     pointer	 arg;
+#endif
 {
 XkbSrvInfoPtr	xkbi= (XkbSrvInfoPtr)arg;
 XkbControlsPtr	ctrls= xkbi->desc->ctrls;
@@ -499,11 +538,18 @@ int		dx,dy;
 }
 
 static int
+#if NeedFunctionPrototypes
+_XkbFilterPointerMove(	XkbSrvInfoPtr	xkbi,
+			XkbFilterPtr	filter,
+			CARD8		keycode,
+			XkbAction *	pAction)
+#else
 _XkbFilterPointerMove(xkbi,filter,keycode,pAction)
     XkbSrvInfoPtr	xkbi;
     XkbFilterPtr	filter;
     CARD8		keycode;
     XkbAction *		pAction;
+#endif
 {
 int	x,y;
 Bool	accel;
@@ -545,11 +591,18 @@ Bool	accel;
 }
 
 static int
+#if NeedFunctionPrototypes
+_XkbFilterPointerBtn(	XkbSrvInfoPtr	xkbi,
+			XkbFilterPtr	filter,
+			CARD8		keycode,
+			XkbAction *	pAction)
+#else
 _XkbFilterPointerBtn(xkbi,filter,keycode,pAction)
     XkbSrvInfoPtr	xkbi;
     XkbFilterPtr	filter;
     CARD8		keycode;
     XkbAction *		pAction;
+#endif
 {
     if (filter->keycode==0) {		/* initial press */
 	int	button= pAction->btn.button;
@@ -647,11 +700,18 @@ _XkbFilterPointerBtn(xkbi,filter,keycode,pAction)
 }
 
 static int
+#if NeedFunctionPrototypes
+_XkbFilterControls(	XkbSrvInfoPtr	xkbi,
+			XkbFilterPtr	filter,
+			CARD8		keycode,
+			XkbAction *	pAction)
+#else
 _XkbFilterControls(xkbi,filter,keycode,pAction)
     XkbSrvInfoPtr	xkbi;
     XkbFilterPtr	filter;
     CARD8		keycode;
     XkbAction *		pAction;
+#endif
 {
 XkbControlsRec	old;
 XkbControlsPtr	ctrls;
@@ -686,13 +746,11 @@ unsigned int	change;
 		cn.requestMinor = 0;
 		XkbSendControlsNotify(kbd,&cn);
 	    }
-#ifndef NO_CLEAR_LATCHES_FOR_STICKY_KEYS_OFF
 	    /* If sticky keys were disabled, clear all locks and latches */
 	    if ((old.enabled_ctrls&XkbStickyKeysMask)&&
 		(!(ctrls->enabled_ctrls&XkbStickyKeysMask))) {
 		XkbClearAllLatchesAndLocks(kbd,xkbi,False,keycode,KeyPress,0,0);
     	    }
-#endif
 	    if (xkbi->iAccel.usesControls)
 		XkbUpdateIndicators(kbd,xkbi->iAccel.usesControls,NULL);
 	    if (XkbAX_NeedFeedback(ctrls,XkbAX_FeatureFBMask))
@@ -712,14 +770,12 @@ unsigned int	change;
 		cn.requestMinor = 0;
 		XkbSendControlsNotify(kbd,&cn);
 	    }
-#ifndef NO_CLEAR_LATCHES_FOR_STICKY_KEYS_OFF
 	    /* If sticky keys were disabled, clear all locks and latches */
 	    if ((old.enabled_ctrls&XkbStickyKeysMask)&&
 		(!(ctrls->enabled_ctrls&XkbStickyKeysMask))) {
 		XkbClearAllLatchesAndLocks(kbd,xkbi,False,keycode,KeyRelease,
 									0,0);
     	    }
-#endif
 	    if (xkbi->iAccel.usesControls)
 		XkbUpdateIndicators(kbd,xkbi->iAccel.usesControls,NULL);
 	    if (XkbAX_NeedFeedback(ctrls,XkbAX_FeatureFBMask))
@@ -732,11 +788,18 @@ unsigned int	change;
 }
 
 static int
+#if NeedFunctionPrototypes
+_XkbFilterActionMessage(XkbSrvInfoPtr	xkbi,
+			XkbFilterPtr	filter,
+			CARD8		keycode,
+			XkbAction *	pAction)
+#else
 _XkbFilterActionMessage(xkbi,filter,keycode,pAction)
     XkbSrvInfoPtr	xkbi;
     XkbFilterPtr	filter;
     CARD8		keycode;
     XkbAction *		pAction;
+#endif
 {
 XkbMessageAction *	pMsg;
 DeviceIntPtr		kbd;
@@ -785,14 +848,19 @@ DeviceIntPtr		kbd;
 }
 
 static int
+#if NeedFunctionPrototypes
+_XkbFilterRedirectKey(	XkbSrvInfoPtr	xkbi,
+			XkbFilterPtr	filter,
+			CARD8		keycode,
+			XkbAction *	pAction)
+#else
 _XkbFilterRedirectKey(xkbi,filter,keycode,pAction)
     XkbSrvInfoPtr	xkbi;
     XkbFilterPtr	filter;
     CARD8		keycode;
     XkbAction *		pAction;
+#endif
 {
-DeviceIntPtr		kbd;
-
     if (filter->keycode==0) {		/* initial press */
 	filter->keycode = keycode;
 	filter->active = 1;
@@ -815,11 +883,18 @@ DeviceIntPtr		kbd;
 }
 
 static int
+#if NeedFunctionPrototypes
+_XkbFilterDeviceBtn(	XkbSrvInfoPtr	xkbi,
+			XkbFilterPtr	filter,
+			CARD8		keycode,
+			XkbAction *	pAction)
+#else
 _XkbFilterDeviceBtn(xkbi,filter,keycode,pAction)
     XkbSrvInfoPtr	xkbi;
     XkbFilterPtr	filter;
     CARD8		keycode;
     XkbAction *		pAction;
+#endif
 {
 DeviceIntPtr	dev;
 int		button;
@@ -900,9 +975,7 @@ register int	i;
 
 static int
 #if NeedFunctionPrototypes
-_XkbApplyFilters(	XkbSrvInfoPtr	xkbi,
-			CARD8		kc,
-			XkbAction *	pAction)
+_XkbApplyFilters(XkbSrvInfoPtr xkbi,CARD8 kc,XkbAction *pAction)
 #else
 _XkbApplyFilters(xkbi,kc,pAction)
     XkbSrvInfoPtr	xkbi;
@@ -921,17 +994,20 @@ register int	i,send;
 }
 
 void
+#if NeedFunctionPrototypes
+XkbHandleActions(xEvent *xE,DeviceIntPtr kbd,int count)
+#else
 XkbHandleActions(xE,kbd,count)
     xEvent *		xE;
     DeviceIntPtr  	kbd;
     int		  	count;
+#endif
 {
 int		key,bit,i;
 CARD8		realMods;
 XkbSrvInfoPtr	xkbi;
 KeyClassPtr	keyc = kbd->key;
 int		changed,sendEvent;
-CARD16		data;
 Bool		genStateNotify;
 XkbStateRec	oldState;
 XkbAction	act;
@@ -1071,10 +1147,14 @@ XkbFilterPtr	filter;
 }
 
 void
+#if NeedFunctionPrototypes
+XkbProcessKeyboardEvent(xEvent *xE,DeviceIntPtr keybd,int count)
+#else
 XkbProcessKeyboardEvent(xE,keybd,count)
     xEvent *		xE;
     DeviceIntPtr 	keybd;
     int 		count;
+#endif
 {
 KeyClassPtr	keyc = keybd->key;
 XkbSrvInfoPtr	xkbi;
@@ -1139,7 +1219,6 @@ XkbBehavior	behavior;
 		    unsigned	ndx= behavior.data;
 		    if ( ndx<xkbi->nRadioGroups ) {
 			XkbRadioGroupPtr	rg;
-			register int 		i;
 
 			rg = &xkbi->radioGroups[ndx];
 			if ( rg->currentDown == xE->u.u.detail ) {
@@ -1188,14 +1267,17 @@ XkbBehavior	behavior;
 }
 
 void
+#if NeedFunctionPrototypes
+ProcessKeyboardEvent(xEvent *xE,DeviceIntPtr keybd,int count)
+#else
 ProcessKeyboardEvent(xE,keybd,count)
     xEvent *		xE;
     DeviceIntPtr 	keybd;
     int			count;
+#endif
 {
 KeyClassPtr	keyc = keybd->key;
 XkbSrvInfoPtr	xkbi;
-XkbAction	act;
 
     xkbi= keyc->xkbInfo;
 
@@ -1233,6 +1315,10 @@ unsigned	clear;
 	xkbi = pXDev->key->xkbInfo;
 	clear= (mask&(~latches));
 	xkbi->state.latched_mods&= ~clear;
+	/* Clear any pending latch to locks.
+	 */
+	act.type = XkbSA_NoAction;
+	_XkbApplyFilters(xkbi,SYNTHETIC_KEYCODE,&act);
 	act.type = XkbSA_LatchMods;
 	act.mods.flags = 0;
 	act.mods.mask  = mask&latches;
@@ -1245,9 +1331,13 @@ unsigned	clear;
 }
 
 int
+#if NeedFunctionPrototypes
+XkbLatchGroup(DeviceIntPtr pXDev,int group)
+#else
 XkbLatchGroup(pXDev,group)
     DeviceIntPtr  pXDev;
     int		  group;
+#endif
 {
 XkbSrvInfoPtr	xkbi;
 XkbFilterPtr	filter;
@@ -1269,6 +1359,15 @@ XkbAction	act;
 /***====================================================================***/
 
 void
+#if NeedFunctionPrototypes
+XkbClearAllLatchesAndLocks(	DeviceIntPtr	dev,
+				XkbSrvInfoPtr	xkbi,
+				Bool		genEv,
+				unsigned	keycode,
+				unsigned	evType,
+				unsigned	rMajor,
+				unsigned	rMinor)
+#else
 XkbClearAllLatchesAndLocks(dev,xkbi,genEv,keycode,evType,rMajor,rMinor)
     DeviceIntPtr	dev;
     XkbSrvInfoPtr	xkbi;
@@ -1277,6 +1376,7 @@ XkbClearAllLatchesAndLocks(dev,xkbi,genEv,keycode,evType,rMajor,rMinor)
     unsigned		evType;
     unsigned		rMajor;
     unsigned		rMinor;
+#endif
 {
 XkbStateRec	os;
 xkbStateNotify	sn;

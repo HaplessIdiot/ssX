@@ -1,4 +1,4 @@
-/* $XConsortium: xkbInit.c /main/10 1995/12/07 21:22:57 kaleb $ */
+/* $XConsortium: xkbInit.c /main/11 1996/01/01 10:57:03 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -26,6 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ********************************************************/
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <ctype.h>
 #include <math.h>
 #define NEED_EVENTS 1
@@ -85,12 +86,22 @@ typedef struct	_SrvXkmInfo {
 #ifndef XKB_BASE_DIRECTORY
 #define	XKB_BASE_DIRECTORY	"/usr/lib/X11/xkb"
 #endif
+#ifndef XKB_DFLT_KB_LANG
+#define	XKB_DFLT_KB_LANG	"us"
+#endif
+#ifndef XKB_DFLT_KB_TYPE
+#define	XKB_DFLT_KB_TYPE	"dflt"
+#endif
 
 char	*		XkbBaseDirectory=	XKB_BASE_DIRECTORY;
 char	*		XkbInitialMap=		NULL;
 int	 		XkbWantAccessX=		0;	
 static XkbFileInfo *	_XkbInitFileInfo=	NULL;
-
+char *			XkbCompCommand=		"/usr/bin/X11/xkbcomp";
+char *			XkbDB=			NULL;
+int			XkbAutoLoad=		1;
+char *			XkbDDX_kbLangDflt=	XKB_DFLT_KB_LANG;
+char *			XkbDDX_kbTypeDflt=	XKB_DFLT_KB_TYPE;
 
 #if defined(luna)
 #define	XKB_DDX_PERMANENT_LOCK	1
@@ -98,9 +109,13 @@ static XkbFileInfo *	_XkbInitFileInfo=	NULL;
 #include "xkbDflts.h"
 
 static Bool
+#if NeedFunctionPrototypes
+XkbInitKeyTypes(XkbDescPtr xkb,SrvXkmInfo *file)
+#else
 XkbInitKeyTypes(xkb,file)
     XkbDescPtr		xkb;
     SrvXkmInfo *	file;
+#endif
 {
     if (file->xkbinfo.defined&XkmTypesMask)
 	return True;
@@ -116,12 +131,14 @@ XkbInitKeyTypes(xkb,file)
 }
 
 static void
+#if NeedFunctionPrototypes
+XkbInitRadioGroups(XkbSrvInfoPtr xkbi,SrvXkmInfo *file)
+#else
 XkbInitRadioGroups(xkbi,file)
     XkbSrvInfoPtr	xkbi;
     SrvXkmInfo *	file;
+#endif
 {
-XkbRadioGroupPtr	grp;
- 
     xkbi->nRadioGroups = 0;
     xkbi->radioGroups = NULL;
     return;
@@ -129,9 +146,13 @@ XkbRadioGroupPtr	grp;
 
 
 static Status
+#if NeedFunctionPrototypes
+XkbInitCompatStructs(XkbDescPtr xkb,SrvXkmInfo *file)
+#else
 XkbInitCompatStructs(xkb,file)
     XkbDescPtr		xkb;
     SrvXkmInfo *	file;
+#endif
 {
 register int 	i;
 XkbCompatMapPtr	compat;
@@ -158,12 +179,14 @@ XkbCompatMapPtr	compat;
 }
 
 static void
+#if NeedFunctionPrototypes
+XkbInitSemantics(XkbDescPtr xkb,SrvXkmInfo *file)
+#else
 XkbInitSemantics(xkb,file)
     XkbDescPtr		xkb;
     SrvXkmInfo *	file;
+#endif
 {
-char	buf[1024];
-
     XkbInitKeyTypes(xkb,file);
     XkbInitCompatStructs(xkb,file);
     return;
@@ -172,13 +195,16 @@ char	buf[1024];
 /***====================================================================***/
 
 static Status
+#if NeedFunctionPrototypes
+XkbInitNames(XkbSrvInfoPtr xkbi,SrvXkmInfo *file)
+#else
 XkbInitNames(xkbi,file)
     XkbSrvInfoPtr	xkbi;
     SrvXkmInfo *	file;
+#endif
 {
 XkbDescPtr	xkb;
 XkbNamesPtr	names;
-register int	i;
 Status		rtrn;
 Atom		unknown;
 
@@ -232,13 +258,16 @@ Atom		unknown;
 }
 
 static Status
+#if NeedFunctionPrototypes
+XkbInitIndicatorMap(XkbSrvInfoPtr xkbi,SrvXkmInfo *file)
+#else
 XkbInitIndicatorMap(xkbi,file)
     XkbSrvInfoPtr	xkbi;
     SrvXkmInfo *	file;
+#endif
 {
 XkbDescPtr	xkb;
 XkbIndicatorPtr	map;
-register int 	i;
 
     xkb= xkbi->desc;
     if (XkbAllocIndicatorMaps(xkb)!=Success)
@@ -273,10 +302,14 @@ register int 	i;
 }
 
 static Status
+#if NeedFunctionPrototypes
+XkbInitControls(DeviceIntPtr pXDev,XkbSrvInfoPtr xkbi,SrvXkmInfo *file)
+#else
 XkbInitControls(pXDev,xkbi,file)
     DeviceIntPtr	pXDev;
     XkbSrvInfoPtr	xkbi;
     SrvXkmInfo *	file;
+#endif
 {
 XkbDescPtr	xkb;
 XkbControlsPtr	ctrls;
@@ -305,10 +338,14 @@ XkbControlsPtr	ctrls;
 }
 
 void
+#if NeedFunctionPrototypes
+XkbInitDevice(DeviceIntPtr pXDev)
+#else
 XkbInitDevice(pXDev)
     DeviceIntPtr pXDev;
+#endif
 {
-int		nKeys,i;
+int		i;
 XkbSrvInfoPtr	xkbi;
 XkbChangesRec	changes;
 SrvXkmInfo	file;
@@ -317,7 +354,7 @@ unsigned	check;
     file.dev= pXDev;
     file.file=NULL;
     bzero(&file.xkbinfo,sizeof(XkbFileInfo));
-    if (XkbInitialMap!=NULL) {
+    if (XkbAutoLoad && (XkbInitialMap!=NULL)) {
 	if ((file.file=XkbDDXOpenConfigFile(XkbInitialMap,NULL,0))!=NULL) {
 	    XkmReadFile(file.file,0,XkmKeymapLegal,&file.xkbinfo);
 	    if (file.xkbinfo.xkb==NULL) {
@@ -361,12 +398,18 @@ unsigned	check;
 	    xkbi->desc->max_key_code = pXDev->key->curKeySyms.maxKeyCode;
 	}
 	xkb= xkbi->desc;
-#ifndef NO_DEC_BUG_FIX
 	if (xkb->min_key_code == 0)
 	    xkb->min_key_code = pXDev->key->curKeySyms.minKeyCode;
 	if (xkb->max_key_code == 0)
 	    xkb->max_key_code = pXDev->key->curKeySyms.maxKeyCode;
-#endif
+	if ((pXDev->key->curKeySyms.minKeyCode!=xkbi->desc->min_key_code)||
+	    (pXDev->key->curKeySyms.maxKeyCode!=xkbi->desc->max_key_code)) {
+	    /* 12/9/95 (ef) -- XXX! Maybe we should try to fix up one or */
+	    /*                 the other here, but for now just complain */
+	    /*                 can't just update the core range without */
+	    /*                 reallocating the KeySymsRec (pain)       */
+	    ErrorF("Internal Error!! XKB and core keymap have different range\n");
+	}
 	if (XkbAllocClientMap(xkb,XkbAllClientInfoMask,0)!=Success)
 	    FatalError("Couldn't allocate client map in XkbInitDevice\n");
 	i= XkbNumKeys(xkb)/3+1;
@@ -374,7 +417,6 @@ unsigned	check;
 	    FatalError("Couldn't allocate server map in XkbInitDevice\n");
 
 	xkbi->dfltPtrDelta=1;
-	xkbi->interest = NULL;
 	xkbi->device = pXDev;
 
 	file.xkbinfo.xkb= xkb;
@@ -422,6 +464,14 @@ unsigned	check;
 
 
 Bool
+#if NeedFunctionPrototypes
+XkbInitKeyboardDeviceStruct(	DeviceIntPtr		dev,
+				XkbComponentNamesPtr	names,
+				KeySymsPtr		pSymsIn,
+				CARD8 			pModsIn[],
+				void			(*bellProc)(),
+				void			(*ctrlProc)())
+#else
 XkbInitKeyboardDeviceStruct( dev, names, pSymsIn, pModsIn, bellProc, ctrlProc )
     DeviceIntPtr		  dev;
     XkbComponentNamesPtr	  names;
@@ -429,6 +479,7 @@ XkbInitKeyboardDeviceStruct( dev, names, pSymsIn, pModsIn, bellProc, ctrlProc )
     CARD8 			  pModsIn[];
     void			(*bellProc)();
     void			(*ctrlProc)();
+#endif
 {
 XkbFileInfo	finfo;
 KeySymsRec	tmpSyms,*pSyms;
@@ -510,8 +561,12 @@ XPointer	config;
 	 * software autorepeat), false otherwise.
 	 */
 int
+#if NeedFunctionPrototypes
+XkbUpdateAutoRepeat(DeviceIntPtr pXDev)
+#else
 XkbUpdateAutoRepeat(pXDev)
     DeviceIntPtr pXDev;
+#endif
 {
 XkbSrvInfoPtr	xkbi;
 XkbDescPtr	xkb;
@@ -545,8 +600,12 @@ int		softRepeat;
 	 * is part of this larger block.
 	 */
 void
+#if NeedFunctionPrototypes
+XkbFreeInfo(XkbSrvInfoPtr xkbi)
+#else
 XkbFreeInfo(xkbi)
     XkbSrvInfoPtr	xkbi;
+#endif
 {
     if (xkbi->radioGroups) {
 	Xfree(xkbi->radioGroups);
@@ -596,10 +655,14 @@ extern unsigned int	XkbDfltAccessXFeedback;
 extern unsigned char	XkbDfltAccessXOptions;
 
 int
+#if NeedFunctionPrototypes
+XkbProcessArguments(int argc,char *argv[],int i)
+#else
 XkbProcessArguments(argc,argv,i)
     int		argc;
     char *	argv[];
     int		i;
+#endif
 {
     if (strncmp(argv[i], "-xkbdir", 7) == 0) {
 	if(++i < argc) {
@@ -618,6 +681,28 @@ XkbProcessArguments(argc,argv,i)
 	else {
 	    return -1;
 	}
+    }
+    else if (strncmp(argv[i], "-xkbcomp", 7) == 0) {
+	if(++i < argc) {
+	    XkbCompCommand= argv[i];
+	    return 2;
+	}
+	else {
+	    return -1;
+	}
+    }
+    else if (strncmp(argv[i], "-xkbdb", 7) == 0) {
+	if(++i < argc) {
+	    XkbDB= argv[i];
+	    return 2;
+	}
+	else {
+	    return -1;
+	}
+    }
+    else if (strncmp(argv[i], "-noloadxkb", 7) == 0) {
+	XkbAutoLoad= 0;
+	return 1;
     }
     else if ((strncmp(argv[i],"-accessx",8)==0)||
                  (strncmp(argv[i],"+accessx",8)==0)) {
@@ -670,13 +755,20 @@ XkbProcessArguments(argc,argv,i)
 }
 
 void
+#if NeedFunctionPrototypes
+XkbUseMsg(void)
+#else
 XkbUseMsg()
+#endif
 {
-    ErrorF("-xkbdir                base directory for XKB layout files\n");
-    ErrorF("-xkbmap                XKB keyboard description to load on startup\n");
     ErrorF("[+-]accessx [ timeout [ timeout_mask [ feedback [ options_mask] ] ] ]\n");
     ErrorF("                       enable/disable accessx key sequences\n");
     ErrorF("-ar1                   set XKB autorepeat delay\n");
     ErrorF("-ar2                   set XKB autorepeat interval\n");
+    ErrorF("-noloadxkb             don't load XKB keymap description\n");
+    ErrorF("-xkbcmd                default keymap compiler\n");
+    ErrorF("-xkbdb                 file that contains default XKB keymaps\n");
+    ErrorF("-xkbdir                base directory for XKB layout files\n");
+    ErrorF("-xkbmap                XKB keyboard description to load on startup\n");
 }
 

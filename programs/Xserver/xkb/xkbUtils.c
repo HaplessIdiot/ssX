@@ -1,4 +1,4 @@
-/* $XConsortium: xkbUtils.c /main/16 1995/12/07 21:23:15 kaleb $ */
+/* $XConsortium: xkbUtils.c /main/17 1996/01/01 10:57:34 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -59,9 +59,13 @@ extern Bool noKME; /* defined in os/utils.c */
 /***====================================================================***/
 
 DeviceIntPtr
+#if NeedFunctionPrototypes
+_XkbLookupAnyDevice(int id,int *why_rtrn)
+#else
 _XkbLookupAnyDevice(id,why_rtrn)
     int id;
     int *why_rtrn;
+#endif
 {
 DeviceIntPtr dev = NULL;
 
@@ -75,18 +79,23 @@ DeviceIntPtr dev = NULL;
 
     if (id&(~0xff))
 	 dev = NULL;
-#ifdef XINPUT
-    else dev = (DeviceIntPtr)LookupDeviceIntRec(id);
-#endif
+
+    dev= (DeviceIntPtr)LookupDevice(id);
+    if (dev!=NULL) 
+	return dev;
     if ((!dev)&&(why_rtrn))
 	*why_rtrn= XkbErr_BadDevice;
     return dev;
 }
 
 DeviceIntPtr
+#if NeedFunctionPrototypes
+_XkbLookupKeyboard(int id,int *why_rtrn)
+#else
 _XkbLookupKeyboard(id,why_rtrn)
     int id;
     int *why_rtrn;
+#endif
 {
 DeviceIntPtr dev = NULL;
 
@@ -101,9 +110,13 @@ DeviceIntPtr dev = NULL;
 }
 
 DeviceIntPtr
+#if NeedFunctionPrototypes
+_XkbLookupBellDevice(int id,int *why_rtrn)
+#else
 _XkbLookupBellDevice(id,why_rtrn)
     int id;
     int *why_rtrn;
+#endif
 {
 DeviceIntPtr dev = NULL;
 
@@ -118,9 +131,13 @@ DeviceIntPtr dev = NULL;
 }
 
 DeviceIntPtr
+#if NeedFunctionPrototypes
+_XkbLookupLedDevice(int id,int *why_rtrn)
+#else
 _XkbLookupLedDevice(id,why_rtrn)
     int id;
     int *why_rtrn;
+#endif
 {
 DeviceIntPtr dev = NULL;
 
@@ -135,9 +152,13 @@ DeviceIntPtr dev = NULL;
 }
 
 DeviceIntPtr
+#if NeedFunctionPrototypes
+_XkbLookupButtonDevice(int id,int *why_rtrn)
+#else
 _XkbLookupButtonDevice(id,why_rtrn)
     int id;
     int *why_rtrn;
+#endif
 {
 DeviceIntPtr dev = NULL;
 
@@ -152,10 +173,14 @@ DeviceIntPtr dev = NULL;
 }
 
 static void
+#if NeedFunctionPrototypes
+XkbSetActionKeyMods(XkbDescPtr xkb,XkbAction *act,unsigned mods)
+#else
 XkbSetActionKeyMods(xkb,act,mods)
     XkbDescPtr	xkb;
     XkbAction *	act;
     unsigned	mods;
+#endif
 {
 register unsigned	tmp;
 
@@ -190,10 +215,14 @@ register unsigned	tmp;
 	 * used only inside the server.
 	 */
 Bool
+#if NeedFunctionPrototypes
+XkbVirtualModsToReal(XkbDescPtr xkb,unsigned virtual_mask,unsigned *mask_rtrn)
+#else
 XkbVirtualModsToReal(xkb,virtual_mask,mask_rtrn)
     XkbDescPtr		xkb;
     unsigned		virtual_mask;
     unsigned *		mask_rtrn;
+#endif
 {
 register int i,bit;
 register unsigned mask;
@@ -215,9 +244,13 @@ register unsigned mask;
 }
 
 unsigned
+#if NeedFunctionPrototypes
+XkbMaskForVMask(XkbDescPtr xkb,unsigned vmask)
+#else
 XkbMaskForVMask(xkb,vmask)
     XkbDescPtr	xkb;
     unsigned	vmask;
+#endif
 {
 register int i,bit;
 register unsigned mask;
@@ -241,7 +274,6 @@ XkbVMUpdateKeyType(xkb,ndx,changes)
 {
 register unsigned i;
 XkbKeyTypePtr	type;
-CARD8		mask;
 
 #ifdef DEBUG
     if (xkbDebugFlags>0)
@@ -283,13 +315,20 @@ CARD8		mask;
 }
 
 Bool
+#if NeedFunctionPrototypes
+XkbApplyVirtualModChanges(	XkbSrvInfoPtr	xkbi,
+				unsigned	changed,
+				XkbChangesPtr	changes,
+				unsigned *	needChecksRtrn)
+#else
 XkbApplyVirtualModChanges(xkbi,changed,changes,needChecksRtrn)
     XkbSrvInfoPtr	 xkbi;
     unsigned		 changed;
     XkbChangesPtr	 changes;
     unsigned *		 needChecksRtrn;
+#endif
 {
-register unsigned 	i,n,bit;
+register unsigned 	i,n;
 int 			lowChange,highChange;
 XkbDescPtr		xkb;
 XkbCompatMapPtr		compat;
@@ -298,6 +337,8 @@ unsigned		check;
     xkb= xkbi->desc;
     check= 0;
 #ifdef DEBUG
+{
+register unsigned bit;
     for (i=0,bit=1;i<XkbNumVirtualMods;i++,bit<<=1) {
 	if ((changed&bit)==0)
 	    continue;
@@ -305,6 +346,7 @@ unsigned		check;
 	    ErrorF("Should be applying: change vmod %d to 0x%x\n",i,
 					xkb->server->vmods[i]);
     }
+}
 #endif
     for (i=0;i<xkb->map->num_types;i++) {
 	if (xkb->map->types[i].mods.vmods & changed)
@@ -415,9 +457,13 @@ unsigned		check;
 /***====================================================================***/
 
 unsigned
+#if NeedFunctionPrototypes
+XkbIndicatorsToUpdate(DeviceIntPtr keybd,unsigned long modsChanged)
+#else
 XkbIndicatorsToUpdate(keybd,modsChanged)
-    DeviceIntRec		*keybd;
-    unsigned long	 	 modsChanged;
+    DeviceIntPtr	keybd;
+    unsigned long	 modsChanged;
+#endif
 {
 register unsigned	update=	0;
 XkbSrvInfoPtr		xkbi = keybd->key->xkbInfo;
@@ -436,11 +482,18 @@ XkbSrvInfoPtr		xkbi = keybd->key->xkbInfo;
 }
 
 Bool
+#if NeedFunctionPrototypes
+XkbApplyLEDChangeToKeyboard(	XkbSrvInfoPtr		xkbi,
+				XkbIndicatorMapPtr	map,
+				Bool			on,
+				XkbChangesPtr		change)
+#else
 XkbApplyLEDChangeToKeyboard(xkbi,map,on,change)
     XkbSrvInfoPtr	xkbi;
     XkbIndicatorMapPtr	map;
     Bool		on;
     XkbChangesPtr	change;
+#endif
 {
 Bool		ctrlChange,stateChange;
 XkbStatePtr	state;
@@ -513,12 +566,20 @@ XkbStatePtr	state;
 }
 
 void
+#if NeedFunctionPrototypes
+XkbSetIndicators(	DeviceIntPtr		keybd,
+			CARD32			affect,
+			CARD32			values,
+			XkbChangesPtr		pChanges,
+			XkbEventCausePtr	pCause)
+#else
 XkbSetIndicators(keybd,affect,values,pChanges,pCause)
     DeviceIntPtr	keybd;
     CARD32		affect;
     CARD32		values;
     XkbChangesPtr	pChanges;
     XkbEventCausePtr	pCause;
+#endif
 {
 XkbSrvInfoPtr		xkbi=	keybd->key->xkbInfo;
 XkbChangesRec		changes;
@@ -569,10 +630,16 @@ register CARD32		led_changes;
 }
 
 void
+#if NeedFunctionPrototypes
+XkbUpdateIndicators(	DeviceIntPtr		keybd,
+			register CARD32		update,
+			XkbIndicatorChangesPtr	pChanges)
+#else
 XkbUpdateIndicators(keybd,update,pChanges)
     DeviceIntPtr		keybd;
     register CARD32		update;
     XkbIndicatorChangesPtr	pChanges;
+#endif
 {
 register int	i,bit;
 XkbSrvInfoPtr	xkbi= keybd->key->xkbInfo;
@@ -669,9 +736,13 @@ unsigned	changedLEDs;
 }
 
 void
+#if NeedFunctionPrototypes
+XkbCheckIndicatorMaps(XkbSrvInfoPtr xkbi,unsigned which)
+#else
 XkbCheckIndicatorMaps(xkbi,which)
     XkbSrvInfoPtr	xkbi;
     unsigned		which;
+#endif
 {
 register unsigned	i,bit;
 XkbIndicatorPtr		leds;
@@ -904,11 +975,15 @@ generate a NewKeyboard notify here?
 /***====================================================================***/
 
 static XkbSymInterpretPtr
+#if NeedFunctionPrototypes
+_XkbFindMatchingInterp(XkbDescPtr xkb,KeySym sym,CARD8 real_mods,CARD8 level)
+#else
 _XkbFindMatchingInterp(xkb,sym,real_mods,level)
     XkbDescPtr	xkb;
     KeySym	sym;
     CARD8	real_mods;
     CARD8	level;
+#endif
 {
 register unsigned	 i;
 XkbSymInterpretPtr	 interp,rtrn;
@@ -1150,8 +1225,12 @@ CARD16		 	changedVMods;
 }
 
 void
+#if NeedFunctionPrototypes
+XkbUpdateCoreDescription(DeviceIntPtr keybd)
+#else
 XkbUpdateCoreDescription(keybd)
     DeviceIntPtr keybd;
+#endif
 {
 register int		key,tmp;
 int			maxSymsPerKey,maxKeysPerMod;
@@ -1288,10 +1367,14 @@ CARD8			keysPerMod[XkbNumModifiers];
 }
 
 void
+#if NeedFunctionPrototypes
+XkbSetRepeatKeys(DeviceIntPtr pXDev,int key,int onoff)
+#else
 XkbSetRepeatKeys(pXDev,key,onoff)
     DeviceIntPtr pXDev;
     int		 key;
     int		 onoff;
+#endif
 {
     if (pXDev && pXDev->key && pXDev->key->xkbInfo) {
 	xkbControlsNotify	cn;
@@ -1365,9 +1448,13 @@ unsigned	 	check;
 }
 
 void
+#if NeedFunctionPrototypes
+XkbDisableComputedAutoRepeats(DeviceIntPtr dev,unsigned key)
+#else
 XkbDisableComputedAutoRepeats(dev,key)
     DeviceIntPtr	dev;
     unsigned		key;
+#endif
 {
 XkbSrvInfoPtr	xkbi = dev->key->xkbInfo;
 xkbMapNotify	mn;
@@ -1382,11 +1469,15 @@ xkbMapNotify	mn;
 }
 
 unsigned
+#if NeedFunctionPrototypes
+XkbStateChangedFlags(XkbStatePtr old,XkbStatePtr new)
+#else
 XkbStateChangedFlags(old,new)
     XkbStatePtr	old;
     XkbStatePtr	new;
+#endif
 {
-int		groupUnlatch,changed;
+int		changed;
 
     changed=(old->group!=new->group?XkbGroupStateMask:0);
     changed|=(old->base_group!=new->base_group?XkbGroupBaseMask:0);
@@ -1408,10 +1499,13 @@ int		groupUnlatch,changed;
 }
 
 void
+#if NeedFunctionPrototypes
+XkbComputeCompatState(XkbSrvInfoPtr xkbi)
+#else
 XkbComputeCompatState(xkbi)
     XkbSrvInfoPtr	xkbi;
+#endif
 {
-register int 	i,bit;
 CARD16 		grp_mask;
 XkbStatePtr	state= &xkbi->state;
 XkbCompatMapPtr	map;
@@ -1427,61 +1521,65 @@ XkbCompatMapPtr	map;
     return;
 }
 
-static void
+unsigned
 #if NeedFunctionPrototypes
-_XkbAdjustGroup(CARD8 *pGroup,unsigned nGroups,unsigned act,unsigned newGroup)
+XkbAdjustGroup(int group,XkbControlsPtr ctrls)
 #else
-_XkbAdjustGroup(pGroup,nGroups,act,newGroup)
-    CARD8 *	pGroup;
-    unsigned	nGroups;
-    unsigned	act;
-    unsigned	newGroup;
+XkbAdjustGroup(group,ctrls)
+    int 		group;
+    XkbControlsPtr	ctrls;
 #endif
 {
-register int group = XkbCharToInt(*pGroup);
+unsigned	act;
 
+    act= XkbOutOfRangeGroupAction(ctrls->groups_wrap);
     if (group<0) {
 	while ( group < 0 )  {
 	    if (act==XkbClampIntoRange) {
-		group= 0;
+		group= XkbGroup1Index;
 	    }
 	    else if (act==XkbRedirectIntoRange) {
-		if (newGroup>=nGroups)
-		     group= 0;
+		int newGroup;
+		newGroup= XkbOutOfRangeGroupNumber(ctrls->groups_wrap);
+		if (newGroup>=ctrls->num_groups)
+		     group= XkbGroup1Index;
 		else group= newGroup;
 	    }
 	    else {
-		group+= nGroups;
+		group+= ctrls->num_groups;
 	    }
 	}
     }
-    else if (((unsigned)group)>=nGroups) {
+    else if (group>=ctrls->num_groups) {
 	if (act==XkbClampIntoRange) {
-	    group= nGroups-1;
+	    group= ctrls->num_groups-1;
 	}
 	else if (act==XkbRedirectIntoRange) {
-	    if (newGroup>=nGroups)
-		 group= 0;
+	    int newGroup;
+	    newGroup= XkbOutOfRangeGroupNumber(ctrls->groups_wrap);
+	    if (newGroup>=ctrls->num_groups)
+		 group= XkbGroup1Index;
 	    else group= newGroup;
 	}
 	else {
-	    group%= nGroups;
+	    group%= ctrls->num_groups;
 	}
     }
-    *pGroup= group;
-    return;
+    return group;
 }
 
 void
+#if NeedFunctionPrototypes
+XkbComputeDerivedState(XkbSrvInfoPtr xkbi)
+#else
 XkbComputeDerivedState(xkbi)
     XkbSrvInfoPtr	xkbi;
+#endif
 {
 XkbStatePtr	state= &xkbi->state;
 XkbControlsPtr	ctrls= xkbi->desc->ctrls;
-unsigned	act,newGroup;
+unsigned	grp;
 
-    act= XkbOutOfRangeGroupAction(ctrls->groups_wrap);
-    newGroup= XkbOutOfRangeGroupNumber(ctrls->groups_wrap);
     state->mods= (state->base_mods|state->latched_mods);
     state->mods|= state->locked_mods;
     state->lookup_mods= state->mods&(~ctrls->internal.mask);
@@ -1489,12 +1587,14 @@ unsigned	act,newGroup;
     state->grab_mods|= 
 		(state->base_mods|state->latched_mods&ctrls->ignore_lock.mask);
 
-    _XkbAdjustGroup(&state->locked_group,ctrls->num_groups,act,newGroup);
 
-    state->group = state->base_group+state->latched_group;
-    state->group+= state->locked_group;
-    _XkbAdjustGroup(&state->group,ctrls->num_groups,act,newGroup);
+    grp= state->locked_group;
+    if (grp>=ctrls->num_groups)
+	state->locked_group= XkbAdjustGroup(grp,ctrls);
 
+    grp= state->locked_group+state->base_group+state->latched_group;
+    if (grp>=ctrls->num_groups)
+	state->group= XkbAdjustGroup(grp,ctrls);
     XkbComputeCompatState(xkbi);
     return;
 }
@@ -1502,10 +1602,16 @@ unsigned	act,newGroup;
 /***====================================================================***/
 
 void
+#if NeedFunctionPrototypes
+XkbCheckSecondaryEffects(	XkbSrvInfoPtr	xkbi,
+				unsigned	which,
+				XkbChangesPtr 	changes)
+#else
 XkbCheckSecondaryEffects(xkbi,which,changes)
     XkbSrvInfoPtr	xkbi;
     unsigned		which;
     XkbChangesPtr	changes;
+#endif
 {
     if (which&XkbStateNotifyMask) {
 	XkbStateRec old;
@@ -1522,15 +1628,18 @@ XkbCheckSecondaryEffects(xkbi,which,changes)
 /***====================================================================***/
 
 void
+#if NeedFunctionPrototypes
+XkbSetPhysicalLockingKey(DeviceIntPtr dev,unsigned key)
+#else
 XkbSetPhysicalLockingKey(dev,key)
    DeviceIntPtr	dev;
    unsigned	key;
+#endif
 {
 XkbDescPtr	xkb;
 
     xkb= dev->key->xkbInfo->desc;
     if ((key>=xkb->min_key_code) && (key<=xkb->max_key_code)) {
-	XkbAction	*pActs;
 	xkb->server->behaviors[key].type= XkbKB_Lock|XkbKB_Permanent;
     }
     else ErrorF("Internal Error!  Bad XKB info in SetPhysicalLockingKey\n");
@@ -1540,12 +1649,20 @@ XkbDescPtr	xkb;
 /***====================================================================***/
 
 Bool
+#if NeedFunctionPrototypes
+XkbChangeEnabledControls(	XkbSrvInfoPtr		xkbi,
+				unsigned long		change,
+				unsigned long		newValues,
+				XkbEventCausePtr	cause,
+				XkbChangesPtr		changes)
+#else
 XkbChangeEnabledControls(xkbi,change,newValues,cause,changes)
     XkbSrvInfoPtr	xkbi;
     unsigned long	change;
     unsigned long	newValues;
     XkbEventCausePtr	cause;
     XkbChangesPtr	changes;
+#endif
 {
 XkbControlsPtr		ctrls;
 unsigned 		old;
@@ -1592,10 +1709,14 @@ unsigned 		old;
 #define	MAX_TOC	16
 
 XkbGeometryPtr 
+#if NeedFunctionPrototypes
+XkbLookupNamedGeometry(DeviceIntPtr dev,Atom name,Bool *shouldFree)
+#else
 XkbLookupNamedGeometry(dev,name,shouldFree)
     DeviceIntPtr	dev;
     Atom		name;
     Bool *		shouldFree;
+#endif
 {
 XkbSrvInfoPtr	xkbi=	dev->key->xkbInfo;
 XkbDescPtr	xkb=	xkbi->desc;
@@ -1633,10 +1754,14 @@ XkbDescPtr	xkb=	xkbi->desc;
 }
 
 void
+#if NeedFunctionPrototypes
+XkbConvertCase(register KeySym sym, KeySym *lower, KeySym *upper)
+#else
 XkbConvertCase(sym, lower, upper)
     register KeySym sym;
     KeySym *lower;
     KeySym *upper;
+#endif
 {
     *lower = sym;
     *upper = sym;

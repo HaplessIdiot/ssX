@@ -1,5 +1,5 @@
-/* $XConsortium $ */
-/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.2 1996/01/05 13:11:07 dawes Exp $ */
+/* $XConsortium: XKBCvt.c /main/19 1996/01/01 11:26:24 kaleb $ */
+/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.3 1996/01/06 05:21:22 dawes Exp $ */
 /*
 
 Copyright (c) 1988, 1989  X Consortium
@@ -169,9 +169,13 @@ static unsigned long	WantAPL = sAPL;
 static unsigned long	WantHebrew = sHebrew;
 
 static int 
+#if NeedFunctionPrototypes
+_XkbHandleSpecialSym(KeySym keysym, char *buffer)
+#else
 _XkbHandleSpecialSym(keysym, buffer)
     KeySym	 keysym;
     char	*buffer;
+#endif
 {
 
     /* try to convert to Latin-1, handling ctrl */
@@ -195,12 +199,20 @@ _XkbHandleSpecialSym(keysym, buffer)
 
 /*ARGSUSED*/
 int 
+#if NeedFunctionPrototypes
+_XkbKSToKnownSet (	XPointer 	priv,
+			KeySym 		keysym,
+			char *		buffer,
+			int 		nbytes,
+			Status *	status)
+#else
 _XkbKSToKnownSet (priv, keysym, buffer, nbytes, status)
     XPointer priv;
     KeySym keysym;
     char *buffer;
     int nbytes;
     Status *status;
+#endif
 {
     unsigned long kset,keysymSet;
     int	count,isLatin1;
@@ -309,11 +321,15 @@ typedef struct _XkbToKS {
 
 /*ARGSUSED*/
 static KeySym
+#if NeedFunctionPrototypes
+_XkbKnownSetToKS(XPointer priv,char *buffer,int nbytes,Status *status)
+#else
 _XkbKnownSetToKS(priv,buffer,nbytes,status)
     XPointer priv;
     char *buffer;
     int nbytes;
     Status *status;
+#endif
 {
     if (nbytes!=1)
 	return NoSymbol;
@@ -332,12 +348,20 @@ _XkbKnownSetToKS(priv,buffer,nbytes,status)
 
 /*ARGSUSED*/
 int 
+#if NeedFunctionPrototypes
+_XkbKSToThai (	XPointer 	priv,
+		KeySym 		keysym,
+		char *		buffer,
+		int 		nbytes,
+		Status *	status)
+#else
 _XkbKSToThai (priv, keysym, buffer, nbytes, status)
     XPointer priv;
     KeySym keysym;
     char *buffer;
     int nbytes;
     Status *status;
+#endif
 {
 
     if ((keysym&0xffffff00)==0xff00) {
@@ -356,11 +380,15 @@ _XkbKSToThai (priv, keysym, buffer, nbytes, status)
 
 /*ARGSUSED*/
 static KeySym
+#if NeedFunctionPrototypes
+_XkbThaiToKS(XPointer priv,char *buffer,int nbytes,Status *status)
+#else
 _XkbThaiToKS(priv,buffer,nbytes,status)
     XPointer priv;
     char *buffer;
     int nbytes;
     Status *status;
+#endif
 {
     if (nbytes!=1)
         return NoSymbol;
@@ -373,8 +401,12 @@ _XkbThaiToKS(priv,buffer,nbytes,status)
 }
 
 static KeySym
+#if NeedFunctionPrototypes
+__XkbDefaultToUpper(KeySym sym)
+#else
 __XkbDefaultToUpper(sym)
     KeySym	sym;
+#endif
 {
     KeySym	lower,upper;
 
@@ -438,8 +470,12 @@ static XkbConverters    cvt_Thai = {
 };
 
 static int
+#if NeedFunctionPrototypes
+Strcmp(char *str1, char *str2)
+#else
 Strcmp(str1, str2)
     char *str1, *str2;
+#endif
 {
     char str[256];
     char c, *s;
@@ -454,9 +490,13 @@ Strcmp(str1, str2)
 }
 
 int 
+#if NeedFunctionPrototypes
+_XkbGetConverters(char *charset, XkbConverters *cvt_rtrn)
+#else
 _XkbGetConverters(charset, cvt_rtrn)
     char *charset;
     XkbConverters *cvt_rtrn;
+#endif
 {
     if ( cvt_rtrn ) {
 	if ( (charset==NULL) || (Strcmp(charset,"ascii")==0) )
@@ -500,8 +540,12 @@ _XkbGetConverters(charset, cvt_rtrn)
 static char *_XkbKnownLanguages = "c=ascii:da,de,en,es,fi,fr,is,it,nl,no,pt,sv=iso8859-1:hu,pl,cs=iso8859-2:bg,ru=iso8859-5:ar,ara=iso8859-6:el=iso8859-7:th,th_TH,th_TH.TACTIS:tis620.2533-1";
 
 char	*
+#if NeedFunctionPrototypes
+_XkbGetCharset(char *locale)
+#else
 _XkbGetCharset(locale)
     char *locale;
+#endif
 {
     /*
      * PAGE USAGE TUNING: explicitly initialize to move these to data
@@ -594,8 +638,12 @@ _XkbGetCharset(locale)
 }
 #else
 char	*
+#if NeedFunctionPrototypes
+_XkbGetCharset(char *locale)
+#else
 _XkbGetCharset(locale)
     char *locale;
+#endif
 {
 char *tmp;
 
