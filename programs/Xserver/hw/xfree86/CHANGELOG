@@ -1,4 +1,5 @@
 XFree86 4.0e (20 June 2000)
+ 353. Fix a couple of acceleration problems in glint driver (Alan Hourihane).
  352. Don't attempt to build the Sparc DRI drivers on ix86, and vice versa
       (David Dawes).
  351. Fix a lib/GL build problem when the DRI isn't enabled (#4014,
@@ -10681,4 +10682,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1197 2000/06/20 21:36:23 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1198 2000/06/21 00:24:47 dawes Exp $

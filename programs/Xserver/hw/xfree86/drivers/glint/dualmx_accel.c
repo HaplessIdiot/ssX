@@ -28,7 +28,7 @@
  * Modified version of tx_accel.c to support dual MX chips by
  *   Jens Owen, <jens@precisioninsight.com>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/dualmx_accel.c,v 1.6 2000/02/23 04:47:06 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/dualmx_accel.c,v 1.8 2000/05/10 18:55:28 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -249,6 +249,7 @@ DualMXAccelInit(ScreenPtr pScreen)
     infoPtr->SubsequentMono8x8PatternFillRect = 
 				    DualMXSubsequentMono8x8PatternFillRect;
 
+#if 0
     if (!pGlint->UsePCIRetry) {
         infoPtr->ScanlineCPUToScreenColorExpandFillFlags = 
 					       TRANSPARENCY_ONLY |
@@ -288,6 +289,7 @@ DualMXAccelInit(ScreenPtr pScreen)
         infoPtr->SubsequentCPUToScreenColorExpandFill = 
 				DualMXSubsequentCPUToScreenColorExpandFill;
     } 
+#endif
 
     infoPtr->ColorExpandRange = MAX_FIFO_ENTRIES;
 
@@ -930,6 +932,7 @@ DualMXPolySegmentThinSolidWrapper(
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
     GLINTPtr pGlint = GLINTPTR(infoRec->pScrn);
     pGlint->CurrentGC = pGC;
+    pGlint->CurrentDrawable = pDraw;
     if(infoRec->NeedToSync) (*infoRec->Sync)(infoRec->pScrn);
     XAAPolySegment(pDraw, pGC, nseg, pSeg);
 }
