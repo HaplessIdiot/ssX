@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/mipict.h,v 1.5 2001/01/21 21:19:39 tsi Exp $
+ * $XFree86: xc/programs/Xserver/render/mipict.h,v 1.6 2001/07/18 10:15:02 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -42,7 +42,7 @@ typedef struct _miIndexed {
 
 #define miCvtR8G8B8to15(s) ((((s) >> 3) & 0x001f) | \
 			     (((s) >> 6) & 0x03e0) | \
-			     (((s) >> 9) & 0x7e00))
+			     (((s) >> 9) & 0x7c00))
 #define miIndexToEnt15(mif,rgb15) ((mif)->ent[rgb15])
 #define miIndexToEnt24(mif,rgb24) miIndexToEnt15(mif,miCvtR8G8B8to15(rgb24))
 
