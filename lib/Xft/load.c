@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/load.c,v 1.1 2000/10/05 18:05:27 keithp Exp $
+ * $XFree86: xc/lib/Xft/load.c,v 1.2 2000/10/07 05:54:18 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -76,6 +76,7 @@ XftLoadFont (Display *dpy, XftFontName *name)
     font->realized = 0;
     font->nrealized = 0;
     font->monospace = resolved.spacing != XftFontSpacingAny;
+    font->format = format;
     
     height = font->face->height;
     ascent = font->face->ascender;

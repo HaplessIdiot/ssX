@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/lib/Xft/glyphs.c,v 1.1 2000/10/05 18:05:26 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -23,6 +23,7 @@
  */
 
 #include "xftint.h"
+#include <freetype/ftoutln.h>
 
 void
 _XftLoadGlyphs (Display *dpy, XftFont *font, unsigned long *glyphs, int nglyph)
@@ -32,9 +33,9 @@ _XftLoadGlyphs (Display *dpy, XftFont *font, unsigned long *glyphs, int nglyph)
     FT_GlyphSlot    glyph;
     XGlyphInfo	    *gi;
     Glyph	    g;
-    char	    bufLocal[4096];
-    char	    *bufBitmap = bufLocal;
-    unsigned char   *b, v;
+    unsigned char   bufLocal[4096];
+    unsigned char   *bufBitmap = bufLocal;
+    unsigned char   *b;
     int		    bufSize = sizeof (bufLocal);
     int		    size, pitch;
     int		    width;
@@ -86,18 +87,18 @@ _XftLoadGlyphs (Display *dpy, XftFont *font, unsigned long *glyphs, int nglyph)
 	    ftbit.pixel_mode = ft_pixel_mode_grays;
 	    ftbit.buffer     = bufBitmap;
 	    
-	    FT_Translate_Outline( &glyph->outline, -left, -bottom );
+	    FT_Outline_Translate ( &glyph->outline, -left, -bottom );
 
-	    FT_Get_Outline_Bitmap( _XftFTlibrary, &glyph->outline, &ftbit );
+	    FT_Outline_Get_Bitmap( _XftFTlibrary, &glyph->outline, &ftbit );
 	    i = size;
 	    b = (unsigned char *) bufBitmap;
+#if 0
 	    while (i--)
 	    {
 		v = *b;
 		*b = v << 1 | v >> 7;
 		b++;
 	    }
-#if 0
 	    {
 		int x, y;
 
@@ -136,7 +137,8 @@ _XftLoadGlyphs (Display *dpy, XftFont *font, unsigned long *glyphs, int nglyph)
 	gi->yOff = 0;
 	g = charcode;
 
-	XRenderAddGlyphs (dpy, font->glyphset, &g, gi, 1, bufBitmap, size);
+	XRenderAddGlyphs (dpy, font->glyphset, &g, gi, 1, 
+			  (char *) bufBitmap, size);
     }
     if (bufBitmap != bufLocal)
 	free (bufBitmap);

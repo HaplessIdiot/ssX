@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.1 2000/10/05 18:05:26 keithp Exp $
+XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.2 2000/10/06 00:01:54 keithp Exp $
 
 #define DoNormalLib NormalLibXft
 #define DoSharedLib SharedLibXft
@@ -13,10 +13,8 @@ XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.1 2000/10/05 18:05:26 keithp Exp $
 
 #include <Threads.tmpl>
 
-FREETYPEDIR=Freetype2Dir
-
-FREETYPE=$(FREETYPEDIR)/obj/libfreetype.a
-INCLUDES=-I$(FREETYPEDIR)/include
+INCLUDES=$(FREETYPE2INCLUDES)
+DEFINES=$(FREETYPE2DEFINES)
 
 #ifndef XftLibDir
 #define XftLibDir $(LIBDIR)
@@ -31,7 +29,7 @@ XFTCONFIG=$(XFTLIBDIR)/XftConfig
 TYPE1DIR=XftType1Dir
 CONFIG_DEFS=-DXFT_TYPE1_DIR=\"$(TYPE1DIR)\"
 DEFINES=-DXFT_DEFAULT_PATH=\"$(XFTCONFIG)\"
-REQUIREDLIBS=$(LDPRELIBS) $(XRENDER) $(XLIB) $(FREETYPE)
+REQUIREDLIBS=$(LDPRELIBS) $(XRENDER) $(XLIB) $(FREETYPE2LIB)
 
 HEADERS = Xft.h
    SRCS = drawstr.c extents.c glyphs.c lex.c load.c match.c metrics.c parse.c
