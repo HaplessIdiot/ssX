@@ -27,7 +27,7 @@
 
 <title>XFree86 X server ``New Design'' (DRAFT)
 <author>The XFree86 Project, Inc
-<date>Last modified 15 February 2000
+<date>Last modified 19 April 2000
 
 
 
@@ -36,7 +36,7 @@
 
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.25 2000/04/04 19:25:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.27 2000/04/17 16:29:56 eich Exp $
 </ident>
 
 
@@ -851,7 +851,7 @@ is what &s.code;InitOutput()&e.code; does:
       used to load modules depending on whether a 
       &s.code;ScrnInfoRec&e.code; has been set up. A driver may unload 
       a module within this function if it was only needed temporarily, 
-      and the &s.code;UnloadSubModule()&e.code; function should be used 
+      and the &s.code;xf86UnloadSubModule()&e.code; function should be used 
       to do that.  Otherwise there is no need to explicitly unload modules
       because the loader takes care of module dependencies and will
       unload submodules automatically if/when the driver module is

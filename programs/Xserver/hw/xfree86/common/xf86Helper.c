@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.85 2000/04/04 15:54:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.87 2000/04/17 16:29:53 eich Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -2265,7 +2265,11 @@ xf86LoadSubModule(ScrnInfoPtr pScrn, const char *name)
 void
 xf86UnloadSubModule(pointer mod)
 {
-#ifdef XFree86LOADER
+    /*
+     * This is disabled for now.  The loader isn't smart enough yet to undo
+     * relocations.
+     */
+#if defined(XFree86LOADER) && 0
     UnloadSubModule(mod);
 #endif
 }

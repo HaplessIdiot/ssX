@@ -24,7 +24,8 @@ XFree86 4.0b (?? April 2000)
  107. Minor fixes to i810 driver (Egbert Eich)
  106. Fixed format of float numbers in C&T driver. (Jens Taprogge)
  105. Added support for the NeoMagic 2360. (Gregory Pomerantz)
- 104. Add an XF86UnloadSubModule() entry (Marc La France).
+ 104. Add an xf86UnloadSubModule() entry (temporarily disabled)
+      (Marc La France).
  103. Fix missing symbol "ServerGrabCallback" (Mark Vojkovich).
  102. Fix XAA problems with CPU-to-screen colour expansion (Marc La France).
  101. For panel support in the ATI driver, add an entry to the monitor
@@ -10257,4 +10258,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1127 2000/04/15 17:27:23 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1129 2000/04/17 16:29:49 eich Exp $
