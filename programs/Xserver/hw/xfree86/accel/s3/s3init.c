@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.96 1996/08/23 11:03:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.97 1996/08/24 12:51:54 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -985,14 +985,17 @@ s3Init(mode)
    new->Attribute[0x11] = currents3dac_border; /* The overscan colour AR11 gets */
 					/* disabled anyway */
 
-   if (S3_TRIO64V_SERIES(s3ChipId) ^
+   if ((S3_TRIO64V_SERIES(s3ChipId) && (s3ChipRev <= 0x531) && (s3Bpp==1)) ^
        !!OFLG_ISSET(OPTION_TRIO64VP_BUG2, &s3InfoRec.options)) {
-      /* set correct blanking w/o border for Trio64V+ */
+      /* set correct blanking for broken Trio64V+ to avoid bright left border:
+	 blank signal needs to go off ~400 usec before video signal starts 
+	 w/o border:  blank_shift = 0 */
+      int blank_shift = 400 * s3InfoRec.clock[mode->Clock] / 1000000 / 8;
       new->CRTC[2]  = mode->CrtcHDisplay >> 3;
       new->CRTC[3] &= ~0x1f;
-      new->CRTC[3] |=  ((mode->CrtcHTotal >> 3) - 2) & 0x1f;
+      new->CRTC[3] |=  ((mode->CrtcHTotal >> 3) - 2 - blank_shift) & 0x1f;
       new->CRTC[5] &= ~0x80;
-      new->CRTC[5] |= (((mode->CrtcHTotal >> 3) - 2) & 0x20) << 2;
+      new->CRTC[5] |= (((mode->CrtcHTotal >> 3) - 2 - blank_shift) & 0x20) << 2;
       
       new->CRTC[21] =  (mode->CrtcVDisplay - 1) & 0xff; 
       new->CRTC[7] &= ~0x08;
@@ -1584,7 +1587,7 @@ s3Init(mode)
       cr33 = inb(vgaCRReg) & ~0x28;
 
       /* for Trio64+ we need corrected blank signal timing */
-      if (!S3_TRIO64V_SERIES(s3ChipId /* , s3ChipRev */) ^ 
+      if (!(S3_TRIO64V_SERIES(s3ChipId) && (s3ChipRev <= 0x531)) ^ 
 	  !!OFLG_ISSET(OPTION_TRIO64VP_BUG1, &s3InfoRec.options)) {
 	 cr33 |= 0x20;
       }
@@ -2672,6 +2675,10 @@ s3Init(mode)
       outb(vgaCRIndex, 0x58);
       outb(vgaCRReg, s3SAM256);
 
+#ifdef DEBUG
+      ErrorF("Writing CR59 0x%02x, CR5A 0x%02x\n", s3Port59, s3Port5A);
+#endif
+
       outb(vgaCRIndex, 0x59);
       outb(vgaCRReg, s3Port59);
       outb(vgaCRIndex, 0x5A);
@@ -2769,7 +2776,7 @@ s3Init(mode)
 	 mode->CrtcVAdjusted = TRUE;
       }
 
-      if (S3_TRIO64V_SERIES(s3ChipId) ^
+      if ((S3_TRIO64V_SERIES(s3ChipId) && (s3ChipRev <= 0x531) && (s3Bpp==1)) ^
 	  !!OFLG_ISSET(OPTION_TRIO64VP_BUG2, &s3InfoRec.options))
 	 i = (((mode->CrtcVTotal - 2) & 0x400) >> 10)  |
 	     (((mode->CrtcVDisplay - 1) & 0x400) >> 9) |
@@ -2784,7 +2791,7 @@ s3Init(mode)
       outb(vgaCRIndex, 0x5e);
       outb(vgaCRReg, i);
 
-      if (S3_TRIO64V_SERIES(s3ChipId) ^
+      if ((S3_TRIO64V_SERIES(s3ChipId) && (s3ChipRev <= 0x531) && (s3Bpp==1)) ^
 	  !!OFLG_ISSET(OPTION_TRIO64VP_BUG2, &s3InfoRec.options)) {
 	 i = ((((mode->CrtcHTotal >> 3) - 5) & 0x100) >> 8) |
 	     ((((mode->CrtcHDisplay >> 3) - 1) & 0x100) >> 7) |

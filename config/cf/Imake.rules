@@ -1,7 +1,7 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
 XCOMM rules:  $XConsortium: Imake.rules /main/208 1996/01/17 11:08:27 kaleb $
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.25 1996/06/29 09:01:56 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.26 1996/08/14 14:30:36 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -18,6 +18,8 @@ XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.25 1996/06/29 09:01:56 dawe
  * Concat4			(a,b,c,d)
  * _Use				(a,b)
  * _UseCat			(a,b,c)
+ * _MUse			(a,b)
+ * _MUseCat			(a,b,c)
  * ProgramTargetName		(target)
  * RunProgram			(progvar,options)
  * RemoveFile			(file)
@@ -264,6 +266,14 @@ XCOMM special target for clearmake					@@\
 #endif
 #endif
 #endif /* _UseCat */
+
+#ifndef _MUse
+#define _MUse(a,b) _Use(a,b)
+#endif
+
+#ifndef _MUseCat
+#define _MUseCat(a,b,c) _UseCat(a,b,c)
+#endif
 
 #ifndef ProgramTargetName
 #define ProgramTargetName(target)target
@@ -604,6 +614,20 @@ InstallProgram(program,$(BINDIR))					@@\
 InstallManPage(program,$(MANDIR))
 #endif /* ProgramTargetHelper */
 
+#ifndef ProgramTargetHelperNoMan
+#define        ProgramTargetHelperNoMan(program,srcs,objs,deplib,locallib,syslib) @@\
+ProgramTargetName(program): $(objs) $(deplib)                          @@\
+       RemoveTargetProgram($@)                                         @@\
+       LinkRule($@,$(LDOPTIONS),$(objs),locallib $(LDLIBS) syslib)     @@\
+                                                                       @@\
+CenterProgramTarget(program,$(srcs),$(objs),locallib,syslib)           @@\
+SentinelProgramTarget(program,$(objs) $(deplib),$(objs) locallib $(LDLIBS) syslib) @@\
+PurifyProgramTarget(program,$(objs) $(deplib),$(objs) locallib $(LDLIBS) syslib) @@\
+ProofProgramTarget(program,$(objs) $(deplib),$(objs) locallib $(LDLIBS) syslib) @@\
+                                                                       @@\
+InstallProgram(program,$(BINDIR))
+#endif /* ProgramTargetHelperNoMan */
+
 #ifndef CplusplusProgramTargetHelper
 #define	CplusplusProgramTargetHelper(program,srcs,objs,deplib,locallib,syslib) @@\
 ProgramTargetName(program): $(objs) $(deplib)				@@\
@@ -654,6 +678,27 @@ LintTarget()								@@\
 clean::									@@\
 	RemoveFile(ProgramTargetName(program))
 #endif /* ComplexCplusplusProgramTarget */
+
+/*
+ * ComplexProgramTargetNoMan - generate rules for compiling and linking
+ * the program specified by $(OBJS) and $(SRCS), installing the program 
+ * and generating dependencies.  It should only be used in Imakefiles
+ * that describe a single program.
+ */
+#ifndef ComplexProgramTargetNoMan
+#define        ComplexProgramTargetNoMan(program)                      @@\
+        PROGRAM = program                                              @@\
+                                                                       @@\
+AllTarget(program)                                                     @@\
+                                                                       @@\
+ProgramTargetHelperNoMan(program,SRCS,OBJS,DEPLIBS,$(LOCAL_LIBRARIES),NullParameter) @@\
+                                                                       @@\
+DependTarget()                                                         @@\
+LintTarget()                                                           @@\
+                                                                       @@\
+clean::                                                                @@\
+       RemoveFile(ProgramTargetName(program))
+#endif /* ComplexProgramTargetNoMan */
 
 /*
  * ComplexProgramTarget_1 - generate rules for compiling and linking the

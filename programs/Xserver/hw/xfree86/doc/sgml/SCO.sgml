@@ -4,7 +4,8 @@
 <!-- TitleS information -->
 
 <title>Information for SCO Users
-<author>David McCullough (davidm@stallion.com)
+<author>David McCullough (davidm@stallion.com),
+J. Kean Johnston (hug@netecom.com)
 <date>14 December 1994
 
 
@@ -363,7 +364,7 @@ Compiling XFree86,
       of <tt>-DNO_PROTOTYPE</tt> as this is what 3.2.4 expects.
 </itemize>
 </enum>
-<sect>Compiling with <tt>__STDC__=0</tt><p>
+<sect>Compiling with __STDC__=0<p>
 
 <bf>DO NOT</bf> make these changes unless you have gcc configured 
 with <tt>STDC_VALUE=0</tt>.
@@ -404,9 +405,14 @@ using the following.
 There is no reason to modify gcc in any way.  It compiles cleanly on
 Open Server 5.<p>
 
-Build the system using
+<enum>
+<item> Check the paragraph on <tt>site.def/xf86site.def</tt> in the
+compiling for 3.2.2 section.
+
+<item> Add a <tt>-DSCO325</tt> to the <tt>BOOTSTRAPCFLAGS</tt> when
+you do the make World.
 <verb>
-        make World
+        make BOOTSTRAPCFLAGS="-DSYSV -Di386 -DSCO -DSCO324 -DSCO325" World
 </verb>
 
 Under Open Server 5 things are very different to previous versions of
@@ -414,9 +420,8 @@ SCO UNIX.
 <itemize>
 <item>All programs are compiled in ELF mode to reduce size
 <item>Both ELF and COFF libraries are generated
-<item>You do not need to provide a <tt>BOOTSTAPCFLAGS</tt> line when
-building.  Open Server 5 is automatically detected.
 </itemize>
+</enum>
 
 <sect>Relevant Documentation<p>
 
@@ -706,7 +711,7 @@ for providing an
 ftp site for the binary distribution.
 
 <verb>  
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.10 1996/02/24 05:59:11 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.11 1996/08/11 13:00:44 dawes Exp $
 
 
 

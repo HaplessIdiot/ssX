@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.139 1996/08/24 12:51:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.140 1996/08/26 10:48:52 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -665,7 +665,7 @@ s3GetPCIInfo()
    if (   info.ChipType == S3_868 
        || info.ChipType == S3_968 
        || info.ChipType == S3_TRIO_32_64  /* only needed for Trio64V+ */
-       || info.ChipType == S3_ViRGE) {
+       /* || info.ChipType == S3_ViRGE */) {
       unsigned long base0;
       char *probed;
       char map_64m[64];
@@ -681,8 +681,8 @@ s3GetPCIInfo()
       }
 
       /* map allocated 64MB blocks */
-      map_64m[63] = 1;  /* don't use the last 64MB area */
       for (j=0; j<64; j++) map_64m[j] = 0;
+      map_64m[63] = 1;  /* don't use the last 64MB area */
       for (j=0; pcrp = pci_devp[j]; j++) {
 	 if (i != j) {
 	    map_64m[ (pcrp->_base0 >> 26) & 0x3f] = 1;
@@ -708,7 +708,7 @@ s3GetPCIInfo()
 	 for (j=63; j>=16 && map_64m[j]; j--);
 	 info.MemBase = ((unsigned long)j) << 26;
 	 ErrorF("%s %s: PCI: base address not correctly aligned or address conflict\n",
-		probed, info.ChipRev);
+		probed, s3InfoRec.name);
 	 ErrorF("\t\tbase address changed from 0x%08lx to 0x%08lx\n",
 		base0, info.MemBase);
          xf86writepci(s3InfoRec.scrnIndex, pci_devp[i]->_cardnum, 0x10,
@@ -1158,8 +1158,10 @@ s3Probe()
 	    chipname = "968";
 	 } else if (S3_964_SERIES(s3ChipId)) {
 	    chipname = "964";
+#if 0
 	 } else if (S3_ViRGE_SERIES(s3ChipId)) {
 	    chipname = "ViRGE";
+#endif
 	 } else if (S3_TRIO32_SERIES(s3ChipId)) {
 	    chipname = "Trio32";
 	 } else if (S3_TRIO64V_SERIES(s3ChipId /* , s3ChipRev */)) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3blt.c,v 3.13 1996/06/29 09:06:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3blt.c,v 3.14 1996/08/20 12:26:56 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -803,7 +803,7 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
          SET_RD_MASK(bitPlane);
          SET_WRT_MASK(pGC->planemask);
 
-	 WaitQueue16_32(3,5);
+	 WaitQueue16_32(4,6);
          SET_FRGD_COLOR(pGC->fgPixel);
          SET_BKGD_COLOR(pGC->bgPixel);
          SET_PIX_CNTL(MIXSEL_EXPBLT);
@@ -854,7 +854,7 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
 	    }
 	 }
 
-	 WaitQueue16_32(4,6);
+	 WaitQueue16_32(5,7);
          SET_FRGD_MIX(FSS_FRGDCOL | MIX_SRC);
          SET_RD_MASK(~0);
          SET_WRT_MASK(~0);

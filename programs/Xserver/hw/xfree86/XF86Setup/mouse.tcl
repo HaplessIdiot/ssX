@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mouse.tcl,v 3.11 1996/08/26 14:08:33 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mouse.tcl,v 3.12 1996/08/27 03:23:39 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -569,7 +569,7 @@ proc Mouse_defaultdevice { mousetype } {
 
 	switch $mousetype {
 		PS/2	 { set idx [lsearch -regexp $mseDevices \
-					/dev/p[ms].*] }
+					/dev/p\[ms\].*] }
 		BusMouse { set idx [lsearch -regexp $mseDevices \
 					/dev/.*bm|/dev/mse.*]  }
 		OsMouse  -

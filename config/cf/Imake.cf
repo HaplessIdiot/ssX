@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imake.cf /main/22 1995/12/05 16:39:53 mor $
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.23 1996/08/13 11:24:02 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.24 1996/08/16 12:24:59 dawes Exp $
 /*
  * To add support for another platform:
  * 
@@ -152,8 +152,20 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.23 1996/08/13 11:24:02 dawes Exp $
 # undef USL
 # undef SYSV
 # undef i386
+# undef SCO
 # define i386Architecture
 # define SCOArchitecture
+# define i386SVR3Architecture
+# define SVR3Architecture
+# define i386ScoArchitecture
+# ifdef SCO324
+#  define i386Sco324Architecture
+#  undef SCO324
+# endif
+# ifdef SCO325
+#  define i386Sco325Architecture
+#  undef SCO325
+# endif
 #endif /* sco */
 
 #ifdef USL
@@ -346,6 +358,7 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.23 1996/08/13 11:24:02 dawes Exp $
 # undef i386
 #  ifdef SCO
 #   define i386Architecture
+#   define SVR3Architecture
 #   define i386SVR3Architecture
 #   define MacroIncludeFile <sco.cf>
 #   define MacroFile sco.cf
@@ -406,6 +419,7 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.23 1996/08/13 11:24:02 dawes Exp $
 #  ifdef SCO
 #   define i386Architecture
 #   define i386SVR3Architecture
+#   define SVR3Architecture
 #   define MacroIncludeFile <sco.cf>
 #   define MacroFile sco.cf
 #   define i386ScoArchitecture

@@ -1,5 +1,5 @@
-/* $XConsortium: ConnDis.c,v 11.126 95/04/25 14:47:17 mor Exp $ */
-/* $XFree86: xc/lib/X11/ConnDis.c,v 3.9 1996/01/05 13:11:01 dawes Exp $ */
+/* $XConsortium: ConnDis.c /main/113 1996/08/19 08:48:39 kaleb $ */
+/* $XFree86: xc/lib/X11/ConnDis.c,v 3.10 1996/05/10 06:55:06 dawes Exp $ */
 /*
  
 Copyright (c) 1989  X Consortium
@@ -116,8 +116,9 @@ _X11TransConnectDisplay (display_name, fullnamep, dpynump, screenp,
     int (*connfunc)();			/* method to create connection */
     int len, hostlen;			/* length tmp variable */
     int retry;				/* retry counter */
-    char address[128];			/* final address passed to
+    char addrbuf[128];			/* final address passed to
 					   X Transport Interface */
+    char* address = addrbuf;
     XtransConnInfo trans_conn = NULL;	/* transport connection object */
     int connect_stat;
 #ifdef LOCALCONN
@@ -287,6 +288,13 @@ _X11TransConnectDisplay (display_name, fullnamep, dpynump, screenp,
      * host, and port back together to pass to _X11TransOpenCOTSClient().
      */
 
+    {
+	int olen = 3 + pprotocol ? strlen(pprotocol) : 0 + 
+		       phostname ? strlen(phostname) : 0 + 
+		       pdpynum   ? strlen(pdpynum)   : 0;
+	if (olen > sizeof addrbuf) address = Xmalloc (olen);
+    }
+
     sprintf(address,"%s/%s:%s",
 	pprotocol ? pprotocol : "",
 	phostname ? phostname : "",
@@ -342,6 +350,8 @@ _X11TransConnectDisplay (display_name, fullnamep, dpynump, screenp,
 
 	break;
 	}
+
+    if (address != addrbuf) Xfree (address);
 
     if( trans_conn == NULL )
       goto bad;

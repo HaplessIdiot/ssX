@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.52 1996/08/13 11:30:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.53 1996/08/18 01:51:10 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -281,6 +281,7 @@ static SymTabRec ModeTab[] = {
 #define BLANKTIME	1084
 #define SUSPENDTIME	1085
 #define OFFTIME		1086
+#define DEFBPP		1087
 
 #ifdef INIT_CONFIG
 static SymTabRec ScreenTab[] = {
@@ -293,6 +294,7 @@ static SymTabRec ScreenTab[] = {
   { SUSPENDTIME,"suspendtime" },
   { OFFTIME,	"offtime" },
   { SUBSECTION,	"subsection" },
+  { DEFBPP,	"defaultcolordepth" },
   { -1,		"" },
 };
 #endif /* INIT_CONFIG */

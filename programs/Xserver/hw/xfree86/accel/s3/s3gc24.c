@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gc24.c,v 3.0 1996/06/29 09:07:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gc24.c,v 3.1 1996/08/14 14:32:02 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -572,7 +572,7 @@ s3ValidateGC(pGC, changes, pDrawable)
 	   if (!pGC->tileIsPixel) { /* XXX: check constants */
 	      int   width = pGC->tile.pixmap->drawable.width * 24;
 
-	      if ((width <= 64) && !(width & (width - 1))) {
+	      if ((width <= PPW*PSZ) && !(width & (width - 1))) {
 		 cfb24CopyRotatePixmap(pGC->tile.pixmap,
 				     &devPriv->pRotatedPixmap,
 				     xrot, yrot);

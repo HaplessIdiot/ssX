@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3frect.c,v 3.8 1996/06/29 09:07:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3frect.c,v 3.9 1996/08/20 12:27:00 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -435,7 +435,7 @@ s3CImageStipple(pci, x, y, w, h, pox, poy, fg, alu, planemask)
 {
    BLOCK_CURSOR;
    if (s3Trio32FCBug) {
-      WaitQueue16_32(4,7);
+      WaitQueue16_32(5,8);
       SET_FRGD_COLOR(fg);
       SET_BKGD_COLOR(0);
       SET_PIX_CNTL(MIXSEL_EXPBLT | COLCMPOP_F);
@@ -443,7 +443,7 @@ s3CImageStipple(pci, x, y, w, h, pox, poy, fg, alu, planemask)
       DoCacheImageFill(pci, x, y, w, h, pox, poy, alu, 
 		       MIX_OR, FSS_FRGDCOL, BSS_BKGDCOL, planemask);
    } else {
-      WaitQueue16_32(3,5);
+      WaitQueue16_32(4,6);
       SET_FRGD_COLOR(fg);
       SET_PIX_CNTL(MIXSEL_EXPBLT | COLCMPOP_F);
       SET_RD_MASK(0x01);
@@ -451,7 +451,7 @@ s3CImageStipple(pci, x, y, w, h, pox, poy, fg, alu, planemask)
 		       MIX_DST, FSS_FRGDCOL, BSS_BKGDCOL, planemask);
    }
 
-   WaitQueue16_32(2,3);
+   WaitQueue16_32(3,4);
    SET_RD_MASK(~0);
    SET_PIX_CNTL(MIXSEL_FRGDMIX | COLCMPOP_F);
    UNBLOCK_CURSOR;
@@ -472,7 +472,7 @@ s3CImageOpStipple(pci, x, y, w, h, pox, poy, fg, bg, alu, planemask)
      Pixel planemask;
 {
    BLOCK_CURSOR;
-   WaitQueue16_32(4,7);
+   WaitQueue16_32(5,8);
    SET_FRGD_COLOR(fg);
    SET_BKGD_COLOR(bg);
    SET_PIX_CNTL(MIXSEL_EXPBLT | COLCMPOP_F);
@@ -481,7 +481,7 @@ s3CImageOpStipple(pci, x, y, w, h, pox, poy, fg, bg, alu, planemask)
    DoCacheImageFill(pci, x, y, w, h, pox, poy, alu, alu, 
 		    FSS_FRGDCOL, BSS_BKGDCOL, planemask);
 
-   WaitQueue16_32(2,3);
+   WaitQueue16_32(3,4);
    SET_RD_MASK(~0);
    SET_PIX_CNTL(MIXSEL_FRGDMIX | COLCMPOP_F);
    UNBLOCK_CURSOR;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3bcach.c,v 3.8 1996/02/04 09:04:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3bcach.c,v 3.9 1996/08/20 12:26:55 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Tombs. Oxford University
  * 
@@ -43,7 +43,7 @@ int srcx, srcy, dstx, dsty, h, w;
 unsigned int id;
 {
    BLOCK_CURSOR;
-   WaitQueue(7);
+   WaitQueue(8);
    SET_SCISSORS(0,0,(s3DisplayWidth - 1), s3ScissB);
    SET_PIX_CNTL(MIXSEL_FRGDMIX);  
    SET_MIX(FSS_BITBLT | MIX_SRC, BSS_BITBLT | MIX_SRC);
@@ -60,7 +60,7 @@ unsigned int id;
    SET_CMD(CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
 
    /* sanity returns */
-   WaitQueue16_32(4,5);
+   WaitQueue16_32(5,6);
    SET_RD_MASK(~0);
    SET_PIX_CNTL(MIXSEL_FRGDMIX | COLCMPOP_F);
    SET_MIX(FSS_FRGDCOL | MIX_SRC, BSS_BKGDCOL | MIX_SRC);

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/newmmio/newmmio.c,v 3.0 1996/08/20 12:27:25 dawes Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -90,7 +90,9 @@ NEWMMIO_Probe()
       }
    }
 
-   if (S3_x68_SERIES(s3ChipId) ||  S3_TRIO64V_SERIES(s3ChipId)) {
+   if ((S3_x68_SERIES(s3ChipId) ||  S3_TRIO64V_SERIES(s3ChipId))
+       && xf86LinearVidMem()
+       && !OFLG_ISSET(OPTION_NOLINEAR_MODE, &s3InfoRec.options)) {
       s3InfoRec.chipset = NEWMMIO_Ident(0);
       s3NewMmio = TRUE;
       return(TRUE);

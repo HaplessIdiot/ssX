@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.97 1996/08/16 12:29:52 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.98 1996/08/18 01:51:03 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -2584,6 +2584,12 @@ configScreenSection()
 
   while ((token = xf86GetToken(ScreenTab)) != ENDSECTION) {
     switch (token) {
+
+    case DEFBPP:
+      if (xf86GetToken(NULL) != NUMBER) 
+        xf86ConfigError("Default color depth expected");
+      screen->depth = val.num;
+      break;
 
     case SCREENNO:
       if (xf86GetToken(NULL) != NUMBER) xf86ConfigError("Screen number expected");

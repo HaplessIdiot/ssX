@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gc32.c,v 3.5 1996/02/04 09:05:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gc32.c,v 3.6 1996/08/14 14:32:04 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -572,7 +572,7 @@ s3ValidateGC(pGC, changes, pDrawable)
 	   if (!pGC->tileIsPixel) { /* XXX: check constants */
 	      int   width = pGC->tile.pixmap->drawable.width * 32;
 
-	      if ((width <= 128) && !(width & (width - 1))) {
+	      if ((width <= PPW*PSZ) && !(width & (width - 1))) {
 		 mfbCopyRotatePixmap(pGC->tile.pixmap,
 				     &devPriv->pRotatedPixmap,
 				     xrot, yrot);

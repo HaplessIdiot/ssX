@@ -1,5 +1,5 @@
 /* $XConsortium: Xtranstli.c /main/26 1995/12/13 18:07:13 kaleb $ */
-/* $XFree86: xc/lib/xtrans/Xtranstli.c,v 3.3 1996/08/27 03:11:50 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranstli.c,v 3.4 1996/08/27 03:51:12 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -261,7 +261,7 @@ char	*port;
     
     if( family == AF_UNIX )
     {
-	if( (req=(struct t_bind *)t_alloc(fd,T_BIND,T_OPT|T_UDATA)) == NULL )
+	if( (req=(struct t_bind *)t_alloc(fd,T_BIND,0)) == NULL )
 	{
 	    PRMSG(1,
 		  "TLITLIBindLocal() failed to allocate a t_bind\n",
@@ -270,7 +270,7 @@ char	*port;
 	}
 	
 	if( (sunaddr=(struct sockaddr_un *)
-	     xalloc(sizeof(struct sockaddr_un))) == NULL )
+	     malloc(sizeof(struct sockaddr_un))) == NULL )
 	{
 	    PRMSG(1,
 		  "TLITLIBindLocal: failed to allocate a sockaddr_un\n",
@@ -775,13 +775,7 @@ struct t_bind	*req;
     ciptr->addrlen=ret->addr.len;
     memcpy(ciptr->addr,ret->addr.buf,ret->addr.len);
     
-#if 0
-    /*
-     * There is an indication that this might be trying to free a pointer
-     * that hasn't been allocated.
-     */
     t_free((char *)req,T_BIND);
-#endif
     t_free((char *)ret, T_BIND);
     
     return 0;
@@ -869,7 +863,7 @@ char		*port;
     PRMSG(2,"TLITLICreateListener(%x->%d,%s)\n", ciptr, ciptr->fd,
 	port ? port : "NULL");
     
-    if( (req=(struct t_bind *)t_alloc(ciptr->fd,T_BIND,T_OPT|T_UDATA)) == NULL )
+    if( (req=(struct t_bind *)t_alloc(ciptr->fd,T_BIND,0)) == NULL )
     {
 	PRMSG(1,
 	      "TLITLICreateListener: failed to allocate a t_bind\n",
@@ -878,7 +872,7 @@ char		*port;
     }
     
     if( (sunaddr=(struct sockaddr_un *)
-	 xalloc(sizeof(struct sockaddr_un))) == NULL )
+	 malloc(sizeof(struct sockaddr_un))) == NULL )
     {
 	PRMSG(1,
 	      "TLITLICreateListener: failed to allocate a sockaddr_un\n",
@@ -1176,7 +1170,7 @@ char		*port;
     }
     
     if( (sunaddr=(struct sockaddr_un *)
-	 xalloc(sizeof(struct sockaddr_un))) == NULL )
+	 malloc(sizeof(struct sockaddr_un))) == NULL )
     {
 	PRMSG(1,
 	      "TLITLIConnect: failed to allocate a sockaddr_un\n",

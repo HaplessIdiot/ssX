@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
 XCOMM $XConsortium: Project.tmpl /main/r61_main/6 1996/01/15 12:26:59 gildea $
-XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.31 1996/08/21 08:37:23 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.32 1996/08/25 13:51:23 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -447,6 +447,12 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.31 1996/08/21 08:37:23 dawes Exp $
 #ifndef XdmDir
 #define XdmDir $(LIBDIR)/xdm
 #endif
+#ifndef XdmVarDir
+#define XdmVarDir $(VARLIBDIR)/xdm
+#endif
+#ifndef XdmAuthDir
+#define XdmAuthDir $(LIBDIR)/xdm
+#endif
 #ifndef XdmConfigurationSubdirectory		/* under xdm sources */
 #define XdmConfigurationSubdirectory config
 #endif
@@ -544,6 +550,7 @@ XCOMM X Window System make variables; these need to be coordinated with rules
           FONTDIR = FontDir		/* font directories */
          XINITDIR = XinitDir		/* xinit config files */
            XDMDIR = XdmDir		/* xdm config files */
+        XDMVARDIR = XdmVarDir		/* xdm runtime files */
            TWMDIR = TwmDir		/* twm config files */
            XSMDIR = XsmDir		/* xsm config files */
            NLSDIR = NlsDir		/* nls files */
@@ -565,6 +572,8 @@ XCOMM X Window System make variables; these need to be coordinated with rules
 #endif
 
        DOCUTILSRC = $(TOP)/doc/util
+        CLIENTSRC = $(TOP)/clients
+          DEMOSRC = $(TOP)/demos
        XDOCMACROS = $(DOCUTILSRC)/macros.t
        XIDXMACROS = $(DOCUTILSRC)/indexmacros.t
        PROGRAMSRC = $(TOP)/programs
@@ -1087,6 +1096,16 @@ UnsharedLibReferences(FS,FS,$(FSLIBSRC))
 
          FONTLIBSRC = $(LIBSRC)/font
 UnsharedLibReferences(FONT,font,$(FONTLIBSRC))
+
+          XPMLIBSRC = $(LIBSRC)/Xpm
+#if SharedLibXpm
+#ifndef SharedXpmRev
+#define SharedXpmRev 4.8
+#endif
+SharedLibReferences(XPM,Xpm,$(XPMLIBSRC),SOXPMREV,SharedXpmRev)
+#else
+UnsharedLibReferences(XPM,Xpm,$(XPMLIBSRC))
+#endif
 
 #ifndef LdLibraryPath
 #define LdLibraryPath LD_LIBRARY_PATH

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3line.c,v 3.8 1996/06/29 09:07:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3line.c,v 3.9 1996/08/20 12:27:07 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -147,8 +147,8 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
    SET_WRT_MASK(pGC->planemask);
    SET_FRGD_COLOR(pGC->fgPixel);
    /* Fix problem writing to the cursor storage area */
-   WaitQueue(1);
-   SET_SCISSORS_RB(pDrawable->pScreen->width,pDrawable->pScreen->height-1);
+   WaitQueue(2);
+   SET_SCISSORS_RB(pDrawable->pScreen->width-1,pDrawable->pScreen->height-1);
    xorg = pDrawable->x;
    yorg = pDrawable->y;
    ppt = pptInit;
@@ -442,7 +442,7 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
 	    pbox++;
       }
    }
-   WaitQueue(3);
+   WaitQueue(4);
    SET_MIX(FSS_FRGDCOL | MIX_SRC, BSS_BKGDCOL | MIX_SRC);
    SET_SCISSORS_RB(s3ScissR,s3ScissB);
    UNBLOCK_CURSOR;

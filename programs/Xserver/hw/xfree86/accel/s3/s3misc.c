@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.49 1996/08/24 12:51:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.50 1996/08/27 03:13:24 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -133,6 +133,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
 
    if (serverGeneration == 1) {
       unsigned long addr = 0;
+      unsigned long base0 = 0xa0000;   /* old default for s3Port59/s3Port5A */
       s3BankSize = 0x10000;
       s3LinApOpt = 0x14;
 
@@ -187,6 +188,40 @@ s3Initialize(scr_index, pScreen, argc, argv)
 #endif /* PC98 */
       }
 
+      /* s3Port59/s3Port5A need to be checked/initialized
+	 before s3Init() is called the first time */
+
+      if (S3_801_928_SERIES (s3ChipId)) {
+	 if (S3_x64_SERIES(s3ChipId)) 
+	    if (s3InfoRec.MemBase != 0) {
+	       if (s3InfoRec.MemBase & 0x3ffffff) {
+		  ErrorF("%s %s: base address not correctly aligned to 64MB\n",
+			 XCONFIG_PROBED, s3InfoRec.name);
+		  ErrorF("\t\tbase address changed from 0x%08lx to 0x%08lx\n",
+			 s3InfoRec.MemBase, s3InfoRec.MemBase & 0x3ffffff);
+		  s3InfoRec.MemBase &= ~0x3ffffff;
+	       }
+	       base0 = s3InfoRec.MemBase;
+	    }
+	    else if (s3MemBase != 0)  /* checked in s3.c */
+	       base0 = s3MemBase;
+	    else if (s3NewMmio)
+	       base0 = 0xf0000000;
+	    else 
+	       base0 = 0xf3000000;  /* old default, not good for newmmio */
+	 else {
+#ifdef PC98_PWLB
+	    if (pc98BoardType == PWLB)
+	       base0 = 0x0;
+	    else
+#endif
+	    base0 = 0x03000000;
+	 }
+      }
+
+      s3Port59 = base0 >> 24;
+      s3Port5A = base0 >> 16;
+
       s3Init(s3InfoRec.modes);
 
       if (xf86LinearVidMem() &&
@@ -209,37 +244,10 @@ s3Initialize(scr_index, pScreen, argc, argv)
 
 	    if (S3_801_928_SERIES (s3ChipId)) {
 	       outb(vgaCRIndex, 0x59);
-	       if (S3_x64_SERIES(s3ChipId)) 
-		  if (s3InfoRec.MemBase != 0) 
-		     outb(vgaCRReg, s3InfoRec.MemBase >> 24);
-		  else if (s3MemBase != 0)
-		     outb(vgaCRReg, s3MemBase >> 24);
-		  else
-		     outb(vgaCRReg, 0xf3);
-	       else
-#ifdef PC98_PWLB
-		if (pc98BoardType == PWLB)
-		  outb(vgaCRReg, 0x00);
-		else
-#endif
-		  outb(vgaCRReg, 0x03);
-
+	       outb(vgaCRReg, s3Port59);
 	       outb(vgaCRIndex, 0x5a);
-	       if (S3_x64_SERIES(s3ChipId)) 
-		  if (s3InfoRec.MemBase != 0) 
-		     outb(vgaCRReg, (s3InfoRec.MemBase >> 16) & 0x80);
-		  else if (s3MemBase != 0)
-		     outb(vgaCRReg, (s3MemBase >> 16) & 0x80);
-		  else
-		     outb(vgaCRReg, 0x00);
-	       else
-#ifdef PC98_PWLB
-	       if (pc98BoardType == PWLB)
-		 outb(vgaCRReg, 0x40);
-	       else
-#endif
-	          outb(vgaCRReg, 0x00);
-	       outb (vgaCRIndex, 0x58);
+	       outb(vgaCRReg, s3Port5A);
+
 	       if (s3InfoRec.videoRam <= 1024) {
 		  s3LinApOpt=0x15;
 	       } else if (s3InfoRec.videoRam <= 2048) {
@@ -255,7 +263,8 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	     * XXXX This is for debugging only.  It attempts to find
 	     * which values of LAW are decoded (see s3TryAddress() below).
 	     */
-	    if (OFLG_ISSET(OPTION_FB_DEBUG, &s3InfoRec.options)) {
+	    if (OFLG_ISSET(OPTION_FB_DEBUG, &s3InfoRec.options)
+		&& !s3NewMmio) {  /* don't poke around for newmmio */
 	       for (i = 0xff; i >= 3; i--) { /* 4080Mb..48Mb stepsize 16Mb */
 		  addr = (i << 24);
 
@@ -441,6 +450,9 @@ s3Initialize(scr_index, pScreen, argc, argv)
       if (!s3VideoMem) {
 	 s3VideoMem = vgaBase;
 	 addr = 0xA0000;
+	 if (s3NewMmio)  /* doesn't work without linear mapping (yet?) */
+	    FatalError("%s %s: Chipset \"newmmio\" needs linear framebuffer\n",
+		       XCONFIG_GIVEN, s3InfoRec.name);
 	 /* If using VGA aperture, set it up */
 	 if (s3BankSize == 0x10000) {
 #ifndef PC98
@@ -549,7 +561,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
       SET_RD_MASK(1);
       SET_WRT_MASK(~0);
 
-      WaitQueue(4);
+      WaitQueue(5);
       SET_PIX_CNTL(MIXSEL_EXPBLT | COLCMPOP_F);
       SET_FRGD_MIX(FSS_FRGDCOL | MIX_SRC);
 	  SET_CURPT(0,0);
@@ -637,7 +649,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	 SET_BKGD_MIX(BSS_BKGDCOL | MIX_DST);
       }      
 
-      WaitQueue16_32(3,5);
+      WaitQueue16_32(4,6);
       SET_WRT_MASK(~0);
       SET_FRGD_COLOR(~0);
       SET_PIX_CNTL(MIXSEL_EXPPC | COLCMPOP_F);
@@ -697,7 +709,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
    xfree(pat);
 
 
-   WaitQueue16_32(2,3);
+   WaitQueue16_32(3,4);
    SET_FRGD_COLOR(1);
    SET_PIX_CNTL(MIXSEL_EXPBLT | COLCMPOP_F);
 

@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: linux.cf /main/18 1996/02/02 18:59:31 gildea $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.44 1996/08/20 12:07:06 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.45 1996/08/26 14:51:28 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -31,7 +31,7 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.44 1996/08/20 12:07:06 dawe
 #define OSMinorVersion		0
 #endif
 #ifndef OSTeenyVersion
-#define OSTeenyVersion		0
+#define OSTeenyVersion		13
 #endif
 
 /*
@@ -187,7 +187,6 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.44 1996/08/20 12:07:06 dawe
 #define ServerExtraSysLibs	/**/
 #endif
 #define ConnectionFlags		-DUNIXCONN -DTCPCONN
-#define InstUidFlags		-s -m 4711
 
 /* Some of these man page defaults are overriden in the above OS sections */
 #ifndef ManSuffix

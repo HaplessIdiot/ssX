@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/isc.cf,v 3.7 1995/11/30 12:48:21 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/isc.cf,v 3.8 1996/01/14 13:33:17 dawes Exp $
 
 #ifndef HasGcc2
 #define HasGcc2			YES
@@ -80,14 +80,15 @@ XCOMM platform:  $XFree86: xc/config/cf/isc.cf,v 3.7 1995/11/30 12:48:21 dawes E
 
 #if IscVersion > 300
 # ifndef HasSymLinks
-#  define HasSymLinks             YES
+#  define HasSymLinks           YES
 # endif
 #endif
 
 #define HasShm			YES
+#define HasSnprintf		YES
 
 #ifndef HasLibCrypt
-#define HasLibCrypt            YES
+#define HasLibCrypt		YES
 #define SpecialLibCrypt        -lcrypt
 #endif
 

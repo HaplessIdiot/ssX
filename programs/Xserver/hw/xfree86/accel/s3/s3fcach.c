@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.20 1996/03/05 05:42:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.21 1996/08/20 12:26:59 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -248,7 +248,7 @@ Dos3CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 		  WaitQueue(4);
 		  SET_SCISSORS((short)pBox->x1,(short)pBox->y1,(short)(pBox->x2 - 1), 
 							(short)(pBox->y2 - 1));
-		  WaitQueue16_32(5,7);
+		  WaitQueue16_32(6,8);
 		  SET_FRGD_COLOR(pGC->fgPixel);
 		  SET_PIX_CNTL(MIXSEL_EXPBLT | COLCMPOP_F);
 		  SET_FRGD_MIX(FSS_FRGDCOL | s3alu[pGC->alu]);
@@ -314,7 +314,7 @@ s3GlyphWrite(x, y, count, chars, fentry, pGC, pBox, numRects)
      BoxPtr pBox;
 {
    BLOCK_CURSOR;
-   WaitQueue16_32(5,7);
+   WaitQueue16_32(6,8);
    SET_FRGD_COLOR(pGC->fgPixel);
    SET_PIX_CNTL(MIXSEL_EXPBLT | COLCMPOP_F);
    SET_FRGD_MIX(FSS_FRGDCOL | s3alu[pGC->alu]);
@@ -340,7 +340,7 @@ s3GlyphWrite(x, y, count, chars, fentry, pGC, pBox, numRects)
    WaitQueue(4);
    SET_SCISSORS(0,0,(s3DisplayWidth - 1), s3ScissB);
 
-   WaitQueue16_32(4,5);
+   WaitQueue16_32(5,6);
    SET_RD_MASK(~0);
    SET_PIX_CNTL(MIXSEL_FRGDMIX | COLCMPOP_F);
    SET_MIX(FSS_FRGDCOL | MIX_SRC, BSS_BKGDCOL | MIX_SRC);

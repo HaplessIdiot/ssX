@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.49 1996/08/11 12:53:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.50 1996/08/18 01:49:08 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -1016,6 +1016,10 @@ mach64Probe()
     }
 
     mach64MemType = info->Mem_Type;
+    if (xf86Verbose) {
+	ErrorF("%s %s: Memory type: %d\n", XCONFIG_PROBED,
+	       mach64InfoRec.name, mach64MemType);
+    }
     mach64MinFreq = info->MinFreq;
     mach64MaxFreq = info->MaxFreq;
     mach64RefFreq = info->RefFreq;

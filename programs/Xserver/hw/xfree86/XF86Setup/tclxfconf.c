@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.7 1996/08/20 12:26:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.8 1996/08/24 12:51:03 dawes Exp $ */
 /*
  * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -395,6 +395,12 @@ xf86OsMouseProc(pPointer, what)
 }
 void
 xf86OsMouseEvents()
+{
+}
+void
+xf86OsMouseOption(lt,lp)
+  int lt;
+  pointer lp;
 {
 }
 #endif

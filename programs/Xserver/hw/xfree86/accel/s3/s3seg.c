@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3seg.c,v 3.8 1996/06/29 09:07:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3seg.c,v 3.9 1996/08/20 12:27:12 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -145,7 +145,7 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
    SET_WRT_MASK(pGC->planemask);
    SET_FRGD_COLOR(pGC->fgPixel);
    /* Fix problem writing to the cursor storage area */
-   WaitQueue(1);
+   WaitQueue(2);
    SET_SCISSORS_RB(pDrawable->pScreen->width-1,pDrawable->pScreen->height-1);
 
    xorg = pDrawable->x;
@@ -417,7 +417,7 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
       }				/* sloped line */
    }				/* while (nline--) */
 
-   WaitQueue(3);
+   WaitQueue(4);
    SET_MIX(FSS_FRGDCOL | MIX_SRC, BSS_BKGDCOL | MIX_SRC);
    SET_SCISSORS_RB(s3ScissR,s3ScissB);
    UNBLOCK_CURSOR;

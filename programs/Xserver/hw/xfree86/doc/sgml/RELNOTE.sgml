@@ -2,15 +2,15 @@
 
  <article>
 
- <title>Release Notes for XFree86&tm; 3.1.2F (beta version)
+ <title>Release Notes for XFree86&tm; 3.1.2G (beta version)
  <author>The XFree86 Project, Inc
- <date>26 August 1996
+ <date>1 September 1996
 
 
 <abstract>
 
 This document describes the rationale and conditions of this beta release,
-what is new in the XFree86 beta versions 3.1.2F, 3.1.2E, 3.1.2D,
+what is new in the XFree86 beta versions 3.1.2G, 3.1.2F, 3.1.2E, 3.1.2D,
 3.1.2B and 3.1.2A
 compared with the current release version 3.1.2, and how to install this
 beta release.  Note: version 3.1.2C is included (in source form)
@@ -35,7 +35,7 @@ url="mailto:XFree86@XFree86.org">.
 The X servers included in beta releases have a built-in expiry date.
 The reason for this is to try to prevent them from persisting beyond the
 date of the next release, and to encourage people to test new beta releases.
-The expiry date for 3.1.2F is 1 December 1996.
+The expiry date for 3.1.2G is 15 January 1997.
 
 The XFree86 binary beta releases may be freely redistributed providing that
 they are not modified in any way, and providing that an unmodified version
@@ -65,10 +65,12 @@ Note that much of the documentation provided with this release has not
 been updated and still refers to 3.1.2.  If in doubt, check the date
 shown in the file(s).
 
+<sect> Who are the XFree86 Beta Releases Targeted At?
+<p>
 <sect> XFree86 and X11R6.1
 <p>
 XFree86 3.1.2D and subsequent releases are based on the X Consortium's
-X11R6.1.  3.1.2F is distributed as a complete release.
+X11R6.1.  3.1.2G is distributed as a complete release.
 R6.1 is an update to R6,
 and is intended to be compatible with R6 at the source and protocol
 levels.  Binaries should be upward-compatible.  X11R6.1 includes some
@@ -76,13 +78,20 @@ new Xserver extensions: DOUBLE-BUFFER, XKEYBOARD and RECORD.  LBX has
 been dropped from R6.1, and as such, has been dropped from XFree86 too.
 It is expected that it will reappear in some form in a future release.
 <p>
+<sect> New Features in 3.1.2G
+<p>
+3.1.2G is primarily a bug-fix release.  It is intended to fix some serious
+problems that were discovered shortly after 3.1.2F was released.
+<p>
 <sect> New Features in 3.1.2F
 <p>
 <sect1> General
 <p>
 <itemize>
   <item>3.1.2F includes a new, graphical utility for X server configuration
-	called `XF86Setup'.
+	called `XF86Setup'.  NOTE: this utility requires that you have the
+	VGA16 server installed, as well as the server specific to your
+	video card.
   <item>3.1.2F includes a full distribution for Linux/m68k.
   <item>Support for the Linux/Alpha has been improved.
 </itemize>
@@ -926,12 +935,12 @@ For example:
 </verb></tscreen>
 -->
 
-<sect>Installing the XFree86 3.1.2F Beta Release
+<sect>Installing the XFree86 3.1.2G Beta Release
 <p>
-The XFree86 3.1.2F binary beta release is distributed as a full release,
+The XFree86 3.1.2G binary beta release is distributed as a full release,
 not as an upgrade.
 
-What follows is a list of the XFree86 3.1.2F components.  There may be
+What follows is a list of the XFree86 3.1.2G components.  There may be
 some variations in this for some OSs.
 
 The following are required for all installations:
@@ -940,31 +949,33 @@ The following are required for all installations:
 BetaReport         Beta test report template form
 preinst.sh         Pre-installation script
 postinst.sh        Post-installation script
-X312Fbin.tgz       Clients, run-time libs, and app-defaults files
-X312Fdoc.tgz       Documentation
-X312Ffnts.tgz      75dpi and misc fonts
-X312Flib.tgz       Data files required at run-time
-X312Fman.tgz       Manual pages
-X312Fset.tgz       XF86Setup utility
+312Gbin.tgz        Clients, run-time libs, and app-defaults files
+312Gdoc.tgz        Documentation
+312Gfnts.tgz       75dpi and misc fonts
+312Glib.tgz        Data files required at run-time
+312Gman.tgz        Manual pages
+312Gset.tgz        XF86Setup utility
+312GVG16.tgz       16 colour VGA server (XF86Setup needs this server)
 </verb>
 </quote>
 
 The following X servers are for PC/AT hardware.  Choose at least one which
-matches your hardware.
+matches your hardware, as well as the VGA16 server.  The VGA16 server is
+required by the new configuration utility (XF86Setup).
 <quote>
 <verb>
-X312F8514.tgz      8514/A server
-X312FAGX.tgz       AGX server
-X312FI128.tgz      I128 server
-X312FMa32.tgz      Mach 32 server
-X312FMa64.tgz      Mach 64 server
-X312FMa8.tgz       Mach 8 server
-X312FMono.tgz      Mono server
-X312FP9K.tgz       P9000 server
-X312FS3.tgz        S3 server
-X312FSVGA.tgz      SVGA server
-X312FVG16.tgz      16 colour VGA server
-X312FW32.tgz       ET4000/W32, ET6000 server
+312G8514.tgz       8514/A server
+312GAGX.tgz        AGX server
+312GI128.tgz       I128 server
+312GMa32.tgz       Mach 32 server
+312GMa64.tgz       Mach 64 server
+312GMa8.tgz        Mach 8 server
+312GMono.tgz       Mono server
+312GP9K.tgz        P9000 server
+312GS3.tgz         S3 server
+312GSVGA.tgz       SVGA server
+312GVG16.tgz       16 colour VGA server (XF86Setup needs this server)
+312GW32.tgz        ET4000/W32, ET6000 server
 </verb>
 </quote>
 The following X servers are for PC98 hardware.  If you have a PC98 machine,
@@ -972,48 +983,38 @@ choose one which suits your hardware.  If you don't know what a PC98 machine
 is, you don't need any of these.
 <quote>
 <verb>
-X312F9NS3.tgz      PC98 NEC(S3) server
-X312F9SPW.tgz      PC98 PCSKB-PowerWindow(S3) server
-X312F9LPW.tgz      PC98 PowerWindowLB(S3) server
-X312F9EGC.tgz      PC98 EGC(generic) server
-X312F9GA9.tgz      PC98 GA-968V4/PCI(S3 968) server
-X312F9GAN.tgz      PC98 GANB-WAP(cirrus) server
-X312F9480.tgz      PC98 PEGC-480(generic) server
-X312F9NKV.tgz      PC98 NKV-NEC(cirrus) server
-X312F9TGU.tgz      PC98 TGUI server
-X312F9WBS.tgz      PC98 WABS(cirrus) server
-X312F9WEP.tgz      PC98 WAB-EP(cirrus) server
-X312F9WSN.tgz      PC98 WSN-A2F(cirrus) server
+312G9NS3.tgz       PC98 NEC(S3) server
+312G9SPW.tgz       PC98 PCSKB-PowerWindow(S3) server
+312G9LPW.tgz       PC98 PowerWindowLB(S3) server
+312G9EGC.tgz       PC98 EGC(generic) server
+312G9GA9.tgz       PC98 GA-968V4/PCI(S3 968) server
+312G9GAN.tgz       PC98 GANB-WAP(cirrus) server
+312G9480.tgz       PC98 PEGC-480(generic) server
+312G9NKV.tgz       PC98 NKV-NEC(cirrus) server
+312G9TGU.tgz       PC98 TGUI server
+312G9WBS.tgz       PC98 WABS(cirrus) server
+312G9WEP.tgz       PC98 WAB-EP(cirrus) server
+312G9WSN.tgz       PC98 WSN-A2F(cirrus) server
 </verb>
 </quote>
 The following are optional.
 <quote>
 <verb>
-X312Ff100.tgz     100dpi fonts
-X312Ffcyr.tgz     Cyrillic fonts
-X312Ffnon.tgz     Other fonts (Chinese, Japanese, Korean, Hebrew)
-X312Ffscl.tgz     Scalable fonts (Speedo and Type1)
-X312Ffsrv.tgz     Font server and config files
-X312Fprog.tgz     X header files, config files and compile-time libs
-X312Fcfg.tgz      sample config files for xinit, xdm
-X312Fnest.tgz     Nested X server
-X312Fvfb.tgz      Virtual framebuffer X server
+312Gf100.tgz      100dpi fonts
+312Gfcyr.tgz      Cyrillic fonts
+312Gfnon.tgz      Other fonts (Chinese, Japanese, Korean, Hebrew)
+312Gfscl.tgz      Scalable fonts (Speedo and Type1)
+312Gfsrv.tgz      Font server and config files
+312Gprog.tgz      X header files, config files and compile-time libs
+312Gcfg.tgz       sample config files for xinit, xdm
+312Gnest.tgz      Nested X server
+312Gvfb.tgz       Virtual framebuffer X server
 </verb>
 </quote>
 
 If you already have a version of XFree86 installed, <bf>MAKE A BACKUP OF</bf>
 <tt>/usr/X11R6</tt> <bf>BEFORE DOING ANYTHING ELSE</bf>.  The standard
 installation procedure will overwrite your existing version of XFree86.
-
-If you have a previous version of XFree86 installed, you can upgrade to
-the new version by first running the script <tt>preinst.sh</tt>, and
-then extracting the required .tgz files over the previous version in
-<tt>/usr/X11R6</tt>, then running the script <tt>postinst.sh</tt>.
-The <tt>preinst.sh</tt> script must be run before
-removing any previous beta versions you have installed.  It removes
-symbolic links that are going to be replaced by either files or new
-links in this version (tar won't overwrite existing symbolic links), and
-it removes some old files.
 
 If you are installing from scratch, create a directory called
 <tt>/usr/X11R6</tt>, then extract the required <tt>.tgz</tt> files.
@@ -1025,8 +1026,13 @@ E.g., if you create a directory in <tt>/home</tt>:
 	ln -s /home/X11R6 /usr
 </verb></tscreen>
 
-If you are installing on top of an existing installation, after backing up
-your existing installation, copy the <tt>preinst.sh</tt> script to
+The next step is to run the pre-installation script.  This script makes
+some preliminary checks of your system.  For some OSs, it may tell you
+to install new versions of some system components before proceeding with
+the installation.  This script also removes outdated files and symbolic
+links from a previous installation that may cause problems.
+
+Copy the <tt>preinst.sh</tt> script to
 <tt>/var/tmp</tt>, then run go to <tt>/usr/X11R6</tt> and run it:
 <tscreen><verb>
 	cd /usr/X11R6
@@ -1098,7 +1104,7 @@ instructions, the files for that version will still be in the
 -->
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.35 1996/08/26 14:08:45 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.36 1996/08/27 03:13:51 dawes Exp $
 </verb>
 
 </article>

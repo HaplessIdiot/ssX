@@ -1,5 +1,5 @@
 /* $XConsortium: Xtransint.h /main/25 1995/12/05 16:51:28 mor $ */
-/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.12 1996/05/10 06:55:48 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.13 1996/05/10 12:07:11 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -393,7 +393,7 @@ typedef struct _Xtransport_table {
  * systems, so they may be emulated.
  */
 
-#if defined(CRAY) || (defined(SYSV) && defined(i386)) || defined(WIN32) || defined(__sxg__) || defined(SCO) || defined(sco324) || defined(__EMX__)
+#if defined(CRAY) || (defined(SYSV) && defined(i386)) || defined(WIN32) || defined(__sxg__) || ((defined(SCO) || defined(sco324)) && !defined(SCO325)) || defined(__EMX__)
 
 #define READV(ciptr, iov, iovcnt)	TRANS(ReadV)(ciptr, iov, iovcnt)
 
@@ -412,7 +412,7 @@ static	int TRANS(ReadV)(
 #endif /* CRAY || (SYSV && i386) || WIN32 || __sxg__ || SCO || sco324 */
 
 
-#if defined(CRAY) || defined(WIN32) || defined(__sxg__) || defined(SCO) || defined(sco324) || defined(__EMX__)
+#if defined(CRAY) || defined(WIN32) || defined(__sxg__) || ((defined(SCO) || defined(sco324)) && !defined(SCO325)) || defined(__EMX__)
 
 #define WRITEV(ciptr, iov, iovcnt)	TRANS(WriteV)(ciptr, iov, iovcnt)
 

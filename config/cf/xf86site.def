@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.80 1996/08/20 12:07:09 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.81 1996/08/21 13:04:21 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -210,7 +210,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.80 1996/08/20 12:07:09 dawes Exp $
  *
 #define XF86SvgaDrivers		et4000 et3000 pvga1 gvga ati sis tvga8900 \
 				cirrus ncr77c22 oak mx al2101 ali cl64xx \
-				video7 chips ark realtek generic
+				video7 chips ark realtek apm generic
  */
 
 /*

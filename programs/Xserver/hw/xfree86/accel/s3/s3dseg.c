@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3dseg.c,v 3.10 1996/06/29 09:07:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3dseg.c,v 3.11 1996/08/20 12:26:58 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -189,12 +189,12 @@ s3Dsegment (pDrawable, pGC, nseg, pSeg)
       }
    }
 
-   WaitQueue16_32(3,5);
+   WaitQueue16_32(4,6);
    SET_WRT_MASK(pGC->planemask);
    SET_FRGD_COLOR(pGC->fgPixel);
    SET_PIX_CNTL(MIXSEL_EXPPC | COLCMPOP_F);
    /* Fix problem writing to the cursor storage area */
-   WaitQueue(1);
+   WaitQueue(2);
    SET_SCISSORS_RB(pDrawable->pScreen->width-1,pDrawable->pScreen->height-1);
    
    xorg = pDrawable->x;
@@ -543,7 +543,7 @@ s3Dsegment (pDrawable, pGC, nseg, pSeg)
       }/* sloped line */
    } /* while (nline--) */
 
-   WaitQueue(4);
+   WaitQueue(6);
    SET_MIX(FSS_FRGDCOL | MIX_SRC, BSS_BKGDCOL | MIX_SRC);
    SET_PIX_CNTL(MIXSEL_FRGDMIX | COLCMPOP_F);  
    SET_SCISSORS_RB(s3ScissR,s3ScissB);

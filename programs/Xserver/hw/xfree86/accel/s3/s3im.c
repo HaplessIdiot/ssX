@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.26 1996/08/26 10:48:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.27 1996/08/27 03:13:23 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -1136,7 +1136,7 @@ s3RealImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
       SET_BKGD_MIX(BSS_BKGDCOL | MIX_DST);
 
     SET_FRGD_COLOR(fgPixel);
-    WaitQueue(5);
+    WaitQueue(6);
     SET_PIX_CNTL(MIXSEL_EXPPC | COLCMPOP_F);
     SET_AXIS_PCNT((short) (w - 1), (short)(h-1));
     SET_CURPT((short) x, (short) y);
@@ -1219,7 +1219,7 @@ s3RealImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
 	    y = 0;
 	}
     }
-    WaitQueue(3);
+    WaitQueue(4);
     SET_MIX(FSS_FRGDCOL | MIX_SRC, BSS_BKGDCOL | MIX_SRC);
     SET_PIX_CNTL(MIXSEL_FRGDMIX | COLCMPOP_F);
     UNBLOCK_CURSOR;

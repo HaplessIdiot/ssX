@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3text.c,v 3.11 1996/02/04 09:05:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3text.c,v 3.12 1996/08/20 12:27:13 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -51,10 +51,10 @@ int x, y;
 int  width, height, pwidth;
 unsigned char *pb;
 {
-	    WaitQueue(4);
+	    WaitQueue(5);
 	    SET_CURPT((short) x, (short) y);
 	    SET_AXIS_PCNT((short) (width - 1), (height-1));   
-		WaitIdle();
+	    WaitIdle();
 	    SET_CMD(CMD_RECT | PCDATA | _16BIT | INC_Y | INC_X |
 	     DRAW | PLANAR | WRTDATA);
 
@@ -166,14 +166,14 @@ unsigned char *pb;
 
    WaitQueue16_32(1, 2);
    SET_WRT_MASK(id);
-   WaitQueue16_32(5, 7);
+   WaitQueue16_32(6, 8);
    SET_MIX(FSS_FRGDCOL | s3alu[GXcopy], BSS_BKGDCOL | s3alu[GXcopy]);
    SET_FRGD_COLOR(~0);
    SET_BKGD_COLOR(0);
    SET_PIX_CNTL(MIXSEL_EXPPC | COLCMPOP_F);
 
    s3SimpleStipple(x, y, width, height, pb, pwidth);
-   WaitQueue(3);
+   WaitQueue(4);
    SET_MIX(FSS_FRGDCOL | MIX_SRC, BSS_BKGDCOL | MIX_SRC);
    SET_PIX_CNTL(MIXSEL_FRGDMIX | COLCMPOP_F);
 
@@ -256,7 +256,7 @@ s3NoCPolyText(pDraw, pGC, x, y, count, chars, is8bit)
    }
 
    BLOCK_CURSOR;
-   WaitQueue16_32(5,7);
+   WaitQueue16_32(6,8);
    SET_WRT_MASK(pGC->planemask);   
    SET_MIX(FSS_FRGDCOL | s3alu[pGC->alu], BSS_BKGDCOL | MIX_DST);
    SET_PIX_CNTL(MIXSEL_EXPPC | COLCMPOP_F);
@@ -271,7 +271,7 @@ s3NoCPolyText(pDraw, pGC, x, y, count, chars, is8bit)
 
    }
 
-   WaitQueue(7);
+   WaitQueue(8);
    SET_MIX(FSS_FRGDCOL | MIX_SRC, BSS_BKGDCOL | MIX_SRC);
    SET_PIX_CNTL(MIXSEL_FRGDMIX | COLCMPOP_F);
    SET_SCISSORS(0,0,s3DisplayWidth - 1, s3ScissB);
@@ -385,7 +385,7 @@ s3NoCImageText(pDraw, pGC, x, y, count, chars, is8bit)
    }
 
    BLOCK_CURSOR;
-   WaitQueue16_32(5,7);
+   WaitQueue16_32(6,8);
    SET_WRT_MASK(pGC->planemask);
    SET_MIX(FSS_FRGDCOL | s3alu[pGC->alu], BSS_BKGDCOL | MIX_DST);
    SET_PIX_CNTL(MIXSEL_EXPPC | COLCMPOP_F);
@@ -400,7 +400,7 @@ s3NoCImageText(pDraw, pGC, x, y, count, chars, is8bit)
 
    }
 
-   WaitQueue(7);
+   WaitQueue(8);
    SET_MIX(FSS_FRGDCOL | MIX_SRC, BSS_BKGDCOL | MIX_SRC);
    SET_PIX_CNTL(MIXSEL_FRGDMIX | COLCMPOP_F);
    SET_SCISSORS(0,0,s3DisplayWidth - 1, s3ScissB);
