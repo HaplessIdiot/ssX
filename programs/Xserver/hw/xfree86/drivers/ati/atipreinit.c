@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.60 2002/02/26 05:10:56 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.61 2002/07/24 01:47:25 tsi Exp $ */
 /*
  * Copyright 1999 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -1324,14 +1324,14 @@ ATIPreInit
 
         if (pATI->Adapter >= ATI_ADAPTER_MACH64)
 
-#endif /* AVOID_CPIO */
-
         {
             Message += snprintf(Message, Buffer + SizeOf(Buffer) - Message,
                 ";  %s I/O base is 0x%04lX",
                 (pATI->CPIODecoding == SPARSE_IO) ? "sparse" : "block",
                 pATI->CPIOBase);
         }
+
+#endif /* AVOID_CPIO */
 
         xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED, "%s.\n", Buffer);
     }

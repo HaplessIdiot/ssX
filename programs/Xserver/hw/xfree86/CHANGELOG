@@ -1,4 +1,12 @@
 XFree86 4.2.99.2 (xx August 2002)
+ 234. Attempt to prevent PCI scans on non-PCI ix86 systems (Marc La France).
+ 233. Allow master aborts on CardBus buses to complete normally during PCI
+      scans (Marc La France).
+ 232. Fix bug that prevented the server from restoring CardBus data properly
+      (Marc La France).
+ 231. Fix DEVID define and make it more generally available (Marc La France).
+ 230. Fix bug in NetBSD PCI code (Marc La France).
+ 229. Add an option to completely disable PCI scans (Marc La France).
  228. Xterm patch #167 (Thomas Dickey).
  227. Add CreateCursor request to Render extension (Keith Packard)
  226. Change scanpci to not disable I/O too early (Marc La France).
@@ -14986,4 +14994,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2284 2002/08/23 05:48:22 keithp Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2285 2002/08/24 19:02:26 dickey Exp $

@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ix86Pci.c,v 1.11 2002/07/25 05:06:16 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ix86Pci.c,v 1.12 2002/07/25 13:58:09 tsi Exp $ */
 /*
  * ix86Pci.c - x86 PCI driver
  *
- * The Xfree server PCI access functions have been reimplemented as a
+ * The XFree86 server PCI access functions have been reimplemented as a
  * framework that allows each supported platform/OS to have their own
  * platform/OS specific PCI driver.
  *
@@ -70,18 +70,18 @@
  * the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the names of the above listed copyright holder(s)
- * not be used in advertising or publicity pertaining to distribution of 
+ * not be used in advertising or publicity pertaining to distribution of
  * the software without specific, written prior permission.  The above listed
- * copyright holder(s) make(s) no representations about the suitability of this 
- * software for any purpose.  It is provided "as is" without express or 
+ * copyright holder(s) make(s) no representations about the suitability of this
+ * software for any purpose.  It is provided "as is" without express or
  * implied warranty.
  *
- * THE ABOVE LISTED COPYRIGHT HOLDER(S) DISCLAIM(S) ALL WARRANTIES WITH REGARD 
- * TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY 
- * AND FITNESS, IN NO EVENT SHALL THE ABOVE LISTED COPYRIGHT HOLDER(S) BE 
- * LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY 
- * DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER 
- * IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING 
+ * THE ABOVE LISTED COPYRIGHT HOLDER(S) DISCLAIM(S) ALL WARRANTIES WITH REGARD
+ * TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS, IN NO EVENT SHALL THE ABOVE LISTED COPYRIGHT HOLDER(S) BE
+ * LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY
+ * DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER
+ * IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * This code is also based heavily on the code in FreeBSD-current, which was
@@ -112,7 +112,6 @@
 #include <stdio.h>
 #include "compiler.h"
 #include "xf86.h"
-#include "xf86PciInfo.h"
 #include "xf86Priv.h"
 #include "Pci.h"
 
@@ -151,38 +150,83 @@ static CARD32 ix86PciReadLongCFG2(PCITAG tag, int off);
 static void ix86PciWriteLongCFG2(PCITAG, int off, CARD32 val);
 static void ix86PciSetBitsLongCFG2(PCITAG, int off, CARD32 mask, CARD32 val);
 
+static pciBusFuncs_t ix86Funcs0 = {
+/* pciReadLong      */	ix86PciReadLongSetup,
+/* pciWriteLong     */	ix86PciWriteLongSetup,
+/* pciSetBitsLong   */	ix86PciSetBitsLongSetup,
+/* pciAddrHostToBus */	pciAddrNOOP,
+/* pciAddrBusToHost */	pciAddrNOOP
+};
+
+static pciBusFuncs_t ix86Funcs1 = {
+/* pciReadLong      */	ix86PciReadLongCFG1,
+/* pciWriteLong     */	ix86PciWriteLongCFG1,
+/* pciSetBitsLong   */	ix86PciSetBitsLongCFG1,
+/* pciAddrHostToBus */	pciAddrNOOP,
+/* pciAddrBusToHost */	pciAddrNOOP
+};
+
+static pciBusFuncs_t ix86Funcs2 = {
+/* pciReadLong      */	ix86PciReadLongCFG2,
+/* pciWriteLong     */	ix86PciWriteLongCFG2,
+/* pciSetBitsLong   */	ix86PciSetBitsLongCFG2,
+/* pciAddrHostToBus */	pciAddrNOOP,
+/* pciAddrBusToHost */	pciAddrNOOP
+};
+
 static pciBusInfo_t ix86Pci0 = {
-/* configMech  */	  PCI_CFG_MECH_UNKNOWN, /* Set by ix86PciInit() */
-/* numDevices  */	  0,                    /* Set by ix86PciInit() */
-/* secondary   */	  FALSE,
-/* primary_bus */	  0,
+/* configMech  */	PCI_CFG_MECH_UNKNOWN,	/* Set by ix86PciInit() */
+/* numDevices  */	0,			/* Set by ix86PciInit() */
+/* secondary   */	FALSE,
+/* primary_bus */	0,
 #ifdef PowerMAX_OS
-/* ppc_io_base */	  0,
-/* ppc_io_size */	  0,		  
+/* ppc_io_base */	0,
+/* ppc_io_size */	0,
 #endif
-/* funcs       */	  {
-	                    ix86PciReadLongSetup,
-			    ix86PciWriteLongSetup,
-			    ix86PciSetBitsLongSetup,
-			    pciAddrNOOP,
-			    pciAddrNOOP
-		          },
-/* pciBusPriv  */	  NULL
+/* funcs       */	&ix86Funcs0,		/* Set by ix86PciInit() */
+/* pciBusPriv  */	NULL,
+/* bridge      */	NULL
 };
 
 static Bool
 ix86PciBusCheck(void)
 {
+    PCITAG tag;
+    CARD32 id, class;
     CARD8 device;
 
     for (device = 0; device < ix86Pci0.numDevices; device++) {
-	CARD32 id;
-	id = (*ix86Pci0.funcs.pciReadLong)(PCI_MAKE_TAG(0, device, 0), 0);
-	if (id && id != 0xffffffff) {
+	tag = PCI_MAKE_TAG(0, device, 0);
+	id = (*ix86Pci0.funcs->pciReadLong)(tag, PCI_ID_REG);
+
+	if ((id == 0x00000000) ||
+	    (id == 0xffffffff) ||
+	    (id == 0x0000ffff) ||
+	    (id == 0xffff0000))
+		continue;
+
+	/* The rest of this is inspired by the Linux kernel */
+	class = (*ix86Pci0.funcs->pciReadLong)(tag, PCI_CLASS_REG);
+
+	/* Ignore revision id and programming interface */
+	switch (class >> 16) {
+	case (PCI_CLASS_PREHISTORIC << 8) | PCI_SUBCLASS_PREHISTORIC_MISC:
+	    /* Check for vendors of known buggy chipsets */
+	    id &= 0x0000ffff;
+	    if ((id == PCI_VENDOR_INTEL) || (id == PCI_VENDOR_COMPAQ))
+		return TRUE;
+	    continue;
+
+	case (PCI_CLASS_PREHISTORIC << 8) | PCI_SUBCLASS_PREHISTORIC_VGA:
+	case (PCI_CLASS_DISPLAY << 8) | PCI_SUBCLASS_DISPLAY_VGA:
+	case (PCI_CLASS_BRIDGE << 8) | PCI_SUBCLASS_BRIDGE_HOST:
 	    return TRUE;
+
+	default:
+	    break;
 	}
     }
-    return 0;
+    return FALSE;
 }
 
 static
@@ -234,10 +278,8 @@ void ix86PciSelectCfgmech(void)
 
 	ix86Pci0.configMech = PCI_CFG_MECH_1;
 	ix86Pci0.numDevices = PCI_CFGMECH1_MAXDEV;
-	ix86Pci0.funcs.pciReadLong = ix86PciReadLongCFG1;
-	ix86Pci0.funcs.pciWriteLong = ix86PciWriteLongCFG1;
-	ix86Pci0.funcs.pciSetBitsLong = ix86PciSetBitsLongCFG1;
-	
+	ix86Pci0.funcs = &ix86Funcs1;
+
 	outl(PCI_CFGMECH1_ADDRESS_REG, PCI_EN);
 
 #if 0
@@ -347,20 +389,18 @@ void ix86PciSelectCfgmech(void)
 
 	}
       }
-   
+
       xf86MsgVerb(X_INFO, 3, "PCI: Standard check for type 1 failed.\n");
       xf86MsgVerb(X_INFO, 3, "PCI: stages = 0x%02x, oldVal1 = 0x%08x,\n"
 	       "\tmode1Res1 = 0x%08x, mode1Res2 = 0x%08x\n",
 	       stages, oldVal1, mode1Res1, mode1Res2);
- 
+
       /* Try config type 2 */
       oldVal2 = inb(PCI_CFGMECH2_ENABLE_REG);
       if ((oldVal2 & 0xf0) == 0) {
 	ix86Pci0.configMech = PCI_CFG_MECH_2;
 	ix86Pci0.numDevices = PCI_CFGMECH2_MAXDEV;
-	ix86Pci0.funcs.pciReadLong = ix86PciReadLongCFG2;
-	ix86Pci0.funcs.pciWriteLong = ix86PciWriteLongCFG2;
-	ix86Pci0.funcs.pciSetBitsLong = ix86PciSetBitsLongCFG2;
+	ix86Pci0.funcs = &ix86Funcs2;
 
 	outb(PCI_CFGMECH2_ENABLE_REG, 0x0e);
 	mode2Res1 = inb(PCI_CFGMECH2_ENABLE_REG);
@@ -390,9 +430,7 @@ void ix86PciSelectCfgmech(void)
 	xf86MsgVerb(X_INFO, 2, "PCI: Config type is 2\n");
 	ix86Pci0.configMech = PCI_CFG_MECH_2;
 	ix86Pci0.numDevices = PCI_CFGMECH2_MAXDEV;
-	ix86Pci0.funcs.pciReadLong = ix86PciReadLongCFG2;
-	ix86Pci0.funcs.pciWriteLong = ix86PciWriteLongCFG2;
-	ix86Pci0.funcs.pciSetBitsLong = ix86PciSetBitsLongCFG2;
+	ix86Pci0.funcs = &ix86Funcs2;
 	return;
       }
 
@@ -404,9 +442,7 @@ void ix86PciSelectCfgmech(void)
 	xf86MsgVerb(X_INFO, 2, "PCI: Config type is 1\n");
 	ix86Pci0.configMech = PCI_CFG_MECH_1;
 	ix86Pci0.numDevices = PCI_CFGMECH1_MAXDEV;
-	ix86Pci0.funcs.pciReadLong = ix86PciReadLongCFG1;
-	ix86Pci0.funcs.pciWriteLong = ix86PciWriteLongCFG1;
-	ix86Pci0.funcs.pciSetBitsLong = ix86PciSetBitsLongCFG1;
+	ix86Pci0.funcs = &ix86Funcs1;
 	return;
       }
       break; /* } */
@@ -417,9 +453,7 @@ void ix86PciSelectCfgmech(void)
 
       ix86Pci0.configMech = PCI_CFG_MECH_1;
       ix86Pci0.numDevices = PCI_CFGMECH1_MAXDEV;
-      ix86Pci0.funcs.pciReadLong = ix86PciReadLongCFG1;
-      ix86Pci0.funcs.pciWriteLong = ix86PciWriteLongCFG1;
-      ix86Pci0.funcs.pciSetBitsLong = ix86PciSetBitsLongCFG1;
+      ix86Pci0.funcs = &ix86Funcs1;
       return;
 
     case PCIForceConfig2:
@@ -428,17 +462,19 @@ void ix86PciSelectCfgmech(void)
 
       ix86Pci0.configMech = PCI_CFG_MECH_2;
       ix86Pci0.numDevices = PCI_CFGMECH2_MAXDEV;
-      ix86Pci0.funcs.pciReadLong = ix86PciReadLongCFG2;
-      ix86Pci0.funcs.pciWriteLong = ix86PciWriteLongCFG2;
-      ix86Pci0.funcs.pciSetBitsLong = ix86PciSetBitsLongCFG2;
+      ix86Pci0.funcs = &ix86Funcs2;
       return;
 
     case PCIOsConfig:
 	return;
+
+    case PCIForceNone:
+	break;
     }
 
     /* No PCI found */
-    xf86MsgVerb(X_INFO, 2, "PCI: No PCI bus found\n");
+    ix86Pci0.configMech = PCI_CFG_MECH_UNKNOWN;
+    xf86MsgVerb(X_INFO, 2, "PCI: No PCI bus found or probed for\n");
 }
 
 #if 0
@@ -458,14 +494,14 @@ ix86PcibusTag(CARD8 bus, CARD8 cardnum, CARD8 func)
 		       ((CARD32)cardnum << 11) |
 		       ((CARD32)func << 8);
 	    break;
-	    
+
     case PCI_CFG_MECH_2:
 	    tag.cfg2.port    = 0xc000 | ((CARD16)cardnum << 8);
 	    tag.cfg2.enable  = 0xf0 | (func << 1);
 	    tag.cfg2.forward = bus;
 	    break;
     }
-    
+
     return tag;
 }
 #endif
@@ -474,9 +510,9 @@ static CARD32
 ix86PciReadLongSetup(PCITAG Tag, int reg)
 {
     ix86PciSelectCfgmech();
-    return (*ix86Pci0.funcs.pciReadLong)(Tag,reg);
+    return (*ix86Pci0.funcs->pciReadLong)(Tag,reg);
 }
-    
+
 static CARD32
 ix86PciReadLongCFG1(PCITAG Tag, int reg)
 {
@@ -529,7 +565,7 @@ static void
 ix86PciWriteLongSetup(PCITAG Tag, int reg, CARD32 data)
 {
     ix86PciSelectCfgmech();
-    (*ix86Pci0.funcs.pciWriteLong)(Tag,reg,data);
+    (*ix86Pci0.funcs->pciWriteLong)(Tag,reg,data);
 }
 
 static void
@@ -548,11 +584,11 @@ ix86PciWriteLongCFG2(PCITAG Tag, int reg, CARD32 data)
 {
     CARD32    addr;
     CARD8 forward, enable;
-    
+
     forward  = PCI_FORWARD_FROM_TAG(Tag);
     enable   = PCI_ENABLE_FROM_TAG(Tag);
     addr     = PCI_ADDR_FROM_TAG_CFG2(Tag,reg);
-    
+
     outb(PCI_CFGMECH2_ENABLE_REG, enable);
     outb(PCI_CFGMECH2_FORWARD_REG, forward);
     outl((CARD16)addr, data);
@@ -564,7 +600,7 @@ static void
 ix86PciSetBitsLongSetup(PCITAG Tag, int reg, CARD32 mask, CARD32 val)
 {
     ix86PciSelectCfgmech();
-    (*ix86Pci0.funcs.pciSetBitsLong)(Tag,reg,mask,val);
+    (*ix86Pci0.funcs->pciSetBitsLong)(Tag,reg,mask,val);
 }
 
 static void
@@ -625,8 +661,6 @@ ix86PciInit()
 }
 
 #ifdef ARCH_PCI_HOST_BRIDGE
-
-#define DEVID(vendor, device) ((PCI_VENDOR_##vendor << 16) | PCI_CHIP_##device)
 
 /*
  * A small table of host bridges that limit the number of PCI buses to less

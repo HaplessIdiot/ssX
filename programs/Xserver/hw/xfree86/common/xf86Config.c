@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.258 2002/05/31 18:45:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.259 2002/06/11 16:31:32 herrb Exp $ */
 
 
 /*
@@ -681,6 +681,7 @@ typedef enum {
     FLAG_PCIPROBE2,
     FLAG_PCIFORCECONFIG1,
     FLAG_PCIFORCECONFIG2,
+    FLAG_PCIFORCENONE,
     FLAG_PCIOSCONFIG,
     FLAG_SAVER_BLANKTIME,
     FLAG_DPMS_STANDBYTIME,
@@ -724,6 +725,8 @@ static OptionInfoRec FlagOptions[] = {
   { FLAG_PCIFORCECONFIG1,	"PciForceConfig1",		OPTV_BOOLEAN,
 	{0}, FALSE },
   { FLAG_PCIFORCECONFIG2,	"PciForceConfig2",		OPTV_BOOLEAN,
+	{0}, FALSE },
+  { FLAG_PCIFORCENONE,		"PciForceNone",			OPTV_BOOLEAN,
 	{0}, FALSE },
   { FLAG_PCIOSCONFIG,	        "PciOsConfig",   		OPTV_BOOLEAN,
 	{0}, FALSE },
@@ -853,6 +856,8 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
 	xf86Info.pciFlags = PCIForceConfig2;
     if (xf86IsOptionSet(FlagOptions, FLAG_PCIOSCONFIG))
 	xf86Info.pciFlags = PCIOsConfig;
+    if (xf86IsOptionSet(FlagOptions, FLAG_PCIFORCENONE))
+	xf86Info.pciFlags = PCIForceNone;
 
     xf86Info.pmFlag = TRUE;
     if (xf86GetOptValBool(FlagOptions, FLAG_NOPM, &value)) 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.30 2001/11/30 12:11:55 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.31 2002/04/04 14:05:40 eich Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -22,6 +22,7 @@ typedef enum {
     PCIProbe2,
     PCIForceConfig1,
     PCIForceConfig2,
+    PCIForceNone,
     PCIOsConfig
 } PciProbeType;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/axpPci.c,v 1.10 2002/01/25 21:56:18 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/axpPci.c,v 1.11 2002/07/24 19:06:52 tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -61,30 +61,33 @@ static CARD32 axpPciCfgRead(PCITAG tag, int off);
 static void axpPciCfgWrite(PCITAG, int off, CARD32 val);
 static void axpPciCfgSetBits(PCITAG tag, int off, CARD32 mask, CARD32 bits);
 
+static pciBusFuncs_t axpFuncs0 = {
+/* pciReadLong      */	axpPciCfgRead,
+/* pciWriteLong     */	axpPciCfgWrite,
+/* pciSetBitsLong   */	axpPciCfgSetBits,
+/* pciAddrHostToBus */	pciAddrNOOP,
+/* pciAddrBusToHost */	pciAddrNOOP
+};
+
 #if 0
 static pciBusInfo_t axpPci0 = {
-/* configMech  */	  PCI_CFG_MECH_OTHER,
-/* numDevices  */	  32,
-/* secondary   */	  FALSE,
-/* primary_bus */	  0,
+/* configMech  */	PCI_CFG_MECH_OTHER,
+/* numDevices  */	32,
+/* secondary   */	FALSE,
+/* primary_bus */	0,
 #ifdef PowerMAX_OS
-/* ppc_io_base */	  0,
-/* ppc_io_size */	  0,		  
+/* ppc_io_base */	0,
+/* ppc_io_size */	0,
 #endif
-/* funcs       */	  {
-	                    axpPciCfgRead,
-			    axpPciCfgWrite,
-			    axpPciCfgSetBits,
-			    pciAddrNOOP,
-			    pciAddrNOOP
-		          },
-/* pciBusPriv  */	  NULL
+/* funcs       */	&axpFuncs0,
+/* pciBusPriv  */	NULL,
+/* bridge      */	NULL
 };
 #else
 static pciBusInfo_t axpPci[MAX_PCI_BUSES];
 #endif
 
-void  
+void
 axpPciInit()
 {
 #if 0
@@ -98,11 +101,7 @@ axpPciInit()
   for (i = 0; i < MAX_PCI_BUSES; ++i) {
 	  axpPci[i].configMech = PCI_CFG_MECH_OTHER;
 	  axpPci[i].numDevices = 32;
-	  axpPci[i].funcs.pciReadLong = axpPciCfgRead;
-	  axpPci[i].funcs.pciWriteLong = axpPciCfgWrite;
-	  axpPci[i].funcs.pciSetBitsLong = axpPciCfgSetBits;
-	  axpPci[i].funcs.pciAddrHostToBus = pciAddrNOOP;
-	  axpPci[i].funcs.pciAddrBusToHost = pciAddrNOOP;
+	  axpPci[i].funcs = &axpFuncs0;
 	  pciBusInfo[i] = axpPci + i;
   }
 #endif
@@ -143,7 +142,7 @@ axpPciCfgWrite(PCITAG tag, int off, CARD32 val)
 
 	bus = PCI_BUS_FROM_TAG(tag);
 	dfn = PCI_DFN_FROM_TAG(tag);
-	
+
 	syscall(__NR_pciconfig_write, bus, dfn, off, 4, &val);
 }
 
@@ -155,7 +154,7 @@ axpPciCfgSetBits(PCITAG tag, int off, CARD32 mask, CARD32 bits)
 
     bus = PCI_BUS_FROM_TAG(tag);
     dfn = PCI_DFN_FROM_TAG(tag);
-	
+
     syscall(__NR_pciconfig_read, bus, dfn, off, 4, &val);
     val = (val & ~mask) | (bits & mask);
     syscall(__NR_pciconfig_write, bus, dfn, off, 4, &val);

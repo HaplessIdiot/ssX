@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/freebsdPci.c,v 1.3 2002/01/25 21:56:18 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/freebsdPci.c,v 1.4 2002/07/24 19:06:52 tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -62,23 +62,26 @@ static CARD32 freebsdPciCfgRead(PCITAG tag, int off);
 static void freebsdPciCfgWrite(PCITAG, int off, CARD32 val);
 static void freebsdPciCfgSetBits(PCITAG tag, int off, CARD32 mask, CARD32 bits);
 
+static pciBusFuncs_t freebsdFuncs0 = {
+/* pciReadLong      */	freebsdPciCfgRead,
+/* pciWriteLong     */	freebsdPciCfgWrite,
+/* pciSetBitsLong   */	freebsdPciCfgSetBits,
+/* pciAddrHostToBus */	pciAddrNOOP,
+/* pciAddrBusToHost */	pciAddrNOOP
+};
+
 static pciBusInfo_t freebsdPci0 = {
-/* configMech  */	  PCI_CFG_MECH_OTHER,
-/* numDevices  */	  32,
-/* secondary   */	  FALSE,
-/* primary_bus */	  0,
+/* configMech  */	PCI_CFG_MECH_OTHER,
+/* numDevices  */	32,
+/* secondary   */	FALSE,
+/* primary_bus */	0,
 #ifdef PowerMAX_OS
-/* ppc_io_base */	  0,
-/* ppc_io_size */	  0,		  
+/* ppc_io_base */	0,
+/* ppc_io_size */	0,
 #endif
-/* funcs       */	  {
-	                    freebsdPciCfgRead,
-			    freebsdPciCfgWrite,
-			    freebsdPciCfgSetBits,
-			    pciAddrNOOP,
-			    pciAddrNOOP
-		          },
-/* pciBusPriv  */	  NULL
+/* funcs       */	&freebsdFuncs0,
+/* pciBusPriv  */	NULL,
+/* bridge      */	NULL
 };
 
 #if !defined(__OpenBSD__)
@@ -102,7 +105,7 @@ __ret;											\
 #define PCI_CPU(val)	(val)
 #endif
 #else /* ! OpenBSD */
-/* OpenBSD has already the bytes in the right order 
+/* OpenBSD has already the bytes in the right order
    for all architectures */
 #define PCI_CPU(val)	(val)
 #endif
@@ -113,7 +116,7 @@ __ret;											\
 
 static int pciFd = -1;
 
-void  
+void
 freebsdPciInit()
 {
 	pciFd = open("/dev/pci", O_RDWR);

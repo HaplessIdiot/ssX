@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.52 2002/05/02 15:20:19 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.53 2002/07/15 20:46:01 dawes Exp $ */
 /*
  * Copyright (c) 1997-2002 by The XFree86 Project, Inc.
  */
@@ -17,7 +17,6 @@
 #include "xf86Resources.h"
 
 /* Bus-specific headers */
-#include "xf86PciInfo.h"
 #include "xf86PciData.h"
 
 #include "xf86Bus.h"
@@ -391,21 +390,14 @@ FindPCIVideoInfo(void)
 
     /* If we haven't found a primary device try a different heuristic */
     if (primaryBus.type == BUS_NONE && num) {
-	i = 0;
-	while (i < num) {
-	    k = 0;
+	for (i = 0;  i < num;  i++) {
 	    info = xf86PciVideoInfo[i];
-	    while ((pcrp = xf86PciInfo[k++])) {
-		if ( pcrp->busnum == info->bus
-		     && pcrp->devnum == info->device
-		     && pcrp->funcnum == info->func )
-		    break;
-	    }
+	    pcrp = info->thisCard;
 	    
-	    if (pcrp && (num == 1
-		 || ( info->class == PCI_CLASS_DISPLAY
-		      && info->subclass == PCI_SUBCLASS_DISPLAY_MISC))
-		&& pcrp->pci_command & PCI_CMD_MEM_ENABLE) {
+	    if ((pcrp->pci_command & PCI_CMD_MEM_ENABLE) &&
+		(num == 1 ||
+		 ((info->class == PCI_CLASS_DISPLAY) &&
+		  (info->subclass == PCI_SUBCLASS_DISPLAY_MISC)))) {
 		if (primaryBus.type == BUS_NONE) {
 		    primaryBus.type = BUS_PCI;
 		    primaryBus.id.pci.bus = pcrp->busnum;
@@ -417,69 +409,65 @@ FindPCIVideoInfo(void)
 		    primaryBus.type ^= (BusType)(-1);
 		}
 	    }
-	    i++;
 	}
     }
     
     /* Print a summary of the video devices found */
-    {
-	for (k = 0; k < num; k++) {
-	    const char *vendorname = NULL, *chipname = NULL;
-	    const char *prim = " ";
-	    char busnum[8];
-	    Bool memdone = FALSE, iodone = FALSE;
+    for (k = 0; k < num; k++) {
+	const char *vendorname = NULL, *chipname = NULL;
+	const char *prim = " ";
+	char busnum[8];
+	Bool memdone = FALSE, iodone = FALSE;
 
-	    i = 0; 
-	    info = xf86PciVideoInfo[k];
-	    xf86FormatPciBusNumber(info->bus, busnum);
-	    xf86FindPciNamesByDevice(info->vendor, info->chipType,
-				     NOVENDOR, NOSUBSYS,
-				     &vendorname, &chipname, NULL, NULL);
-	    if ((!vendorname || !chipname) &&
-		!PCIALWAYSPRINTCLASSES(info->class, info->subclass))
-		continue;
-	    if (xf86IsPrimaryPci(info))
-		prim = "*";
+	i = 0; 
+	info = xf86PciVideoInfo[k];
+	xf86FormatPciBusNumber(info->bus, busnum);
+	xf86FindPciNamesByDevice(info->vendor, info->chipType,
+				 NOVENDOR, NOSUBSYS,
+				 &vendorname, &chipname, NULL, NULL);
+	if ((!vendorname || !chipname) &&
+	    !PCIALWAYSPRINTCLASSES(info->class, info->subclass))
+	    continue;
+	if (xf86IsPrimaryPci(info))
+	    prim = "*";
 
-	    xf86Msg(X_PROBED, "PCI:%s(%s:%d:%d) ", prim, busnum, info->device,
-		    info->func);
-	    if (vendorname)
-		xf86ErrorF("%s ", vendorname);
-	    else
-		xf86ErrorF("unknown vendor (0x%04x) ", info->vendor);
-	    if (chipname)
-		xf86ErrorF("%s ", chipname);
-	    else
-		xf86ErrorF("unknown chipset (0x%04x) ", info->chipType);
-	    xf86ErrorF("rev %d", info->chipRev);
-	    for (i = 0; i < 6; i++) {
-		if (info->memBase[i] &&
-		    (info->memBase[i] < (memType)(-1 << info->size[i]))) {
-		    if (!memdone) {
-			xf86ErrorF(", Mem @ ");
-			memdone = TRUE;
-		    } else
-			xf86ErrorF(", ");
-		    xf86ErrorF("0x%08x/%d", info->memBase[i], info->size[i]);
-		}
+	xf86Msg(X_PROBED, "PCI:%s(%s:%d:%d) ", prim, busnum, info->device,
+		info->func);
+	if (vendorname)
+	    xf86ErrorF("%s ", vendorname);
+	else
+	    xf86ErrorF("unknown vendor (0x%04x) ", info->vendor);
+	if (chipname)
+	    xf86ErrorF("%s ", chipname);
+	else
+	    xf86ErrorF("unknown chipset (0x%04x) ", info->chipType);
+	xf86ErrorF("rev %d", info->chipRev);
+	for (i = 0; i < 6; i++) {
+	    if (info->memBase[i] &&
+		(info->memBase[i] < (memType)(-1 << info->size[i]))) {
+		if (!memdone) {
+		    xf86ErrorF(", Mem @ ");
+		    memdone = TRUE;
+		} else
+		    xf86ErrorF(", ");
+		xf86ErrorF("0x%08x/%d", info->memBase[i], info->size[i]);
 	    }
-	    for (i = 0; i < 6; i++) {
-		if (info->ioBase[i] &&
-		    (info->ioBase[i] < (memType)(-1 << info->size[i]))) {
-		    if (!iodone) {
-			xf86ErrorF(", I/O @ ");
-			iodone = TRUE;
-		    } else
-			xf86ErrorF(", ");
-		    xf86ErrorF("0x%04x/%d", info->ioBase[i], info->size[i]);
-		}
-	    }
-	    if (info->biosBase &&
-		(info->biosBase < (memType)(-1 << info->biosSize)))
-		xf86ErrorF(", BIOS @ 0x%08x/%d",
-			   info->biosBase, info->biosSize);
-	    xf86ErrorF("\n");
 	}
+	for (i = 0; i < 6; i++) {
+	    if (info->ioBase[i] &&
+		(info->ioBase[i] < (memType)(-1 << info->size[i]))) {
+		if (!iodone) {
+		    xf86ErrorF(", I/O @ ");
+		    iodone = TRUE;
+		} else
+		    xf86ErrorF(", ");
+		xf86ErrorF("0x%04x/%d", info->ioBase[i], info->size[i]);
+	    }
+	}
+	if (info->biosBase &&
+	    (info->biosBase < (memType)(-1 << info->biosSize)))
+	    xf86ErrorF(", BIOS @ 0x%08x/%d", info->biosBase, info->biosSize);
+	xf86ErrorF("\n");
     }
 }
 
@@ -1955,7 +1943,7 @@ xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
 		PciBus->interface = pcrp->pci_prog_if;
 		PciBus->brcontrol = pcrp->pci_bridge_control;
 		if (pcrp->pci_vendor == PCI_VENDOR_SUN &&
-		    pcrp->pci_device == 0x5000) {
+		    pcrp->pci_device == PCI_CHIP_SIMBA) {
 			get_sun_apb_ranges(PciBus, pcrp);
 			break;
 		}
@@ -2207,7 +2195,7 @@ xf86GetPciBridgeInfo(const pciConfigPtr *pciInfo)
     for (PciBus = PciBusBase; PciBus; PciBus = PciBus->next) {
 	Bool subtractive_pci_pci = FALSE;
 	switch (PciBus->subclass) {
-	    case  PCI_SUBCLASS_BRIDGE_PCI:
+	    case PCI_SUBCLASS_BRIDGE_PCI:
 		if (PciBus->interface == PCI_IF_BRIDGE_PCI_SUBTRACTIVE) {
 		    PciBusPtr PciBus1;
 		    for (PciBus1 = PciBusBase; PciBus1; 
@@ -2254,8 +2242,9 @@ alignBridgeRanges(PciBusPtr PciBusBase, PciBusPtr primary)
     PciBusPtr PciBus;
 
     for (PciBus = PciBusBase; PciBus; PciBus = PciBus->next) {
-	if ((PciBus->primary == primary->secondary)
-	    && (PciBus->subclass == PCI_SUBCLASS_BRIDGE_PCI)) {
+	if ((PciBus->primary == primary->secondary) &&
+	    ((PciBus->subclass == PCI_SUBCLASS_BRIDGE_PCI) ||
+	     (PciBus->subclass == PCI_SUBCLASS_BRIDGE_CARDBUS))) {
 	    resPtr tmp;
 	    tmp = xf86FindIntersectOfLists(primary->preferred_io,
 					   PciBus->preferred_io);
@@ -2693,6 +2682,7 @@ initPciBusState(void)
 	    pbap->busdep.pci.acc = pciTag(pbp->brbus,pbp->brdev,pbp->brfunc);
 	    pbap->busdep.pci.func =
 		(SetBitsProcPtr)pciLongFunc(pbap->busdep.pci.acc,SET_BITS);
+	    savePciCardBusState(pbap);
 	    break;
 	case PCI_SUBCLASS_BRIDGE_ISA:
 #ifdef DEBUG

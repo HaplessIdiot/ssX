@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/pmax_pci.c,v 1.5 2000/07/31 23:24:32 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/pmax/pmax_pci.c,v 1.6 2002/07/24 19:06:53 tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -251,7 +251,7 @@ nh640xPciInit(void)
 {
   int                     i,n;
   struct nh640x_pci_info *infop;
-  pciBusFuncs_t          *functions;
+  pciBusFuncs_p           functions;
 	
   switch (pmax_sys_type) {
   case MODEL_NH6400:
@@ -292,7 +292,7 @@ nh640xPciInit(void)
 	  busp->numDevices  = infop->num_cfg_addrs;
 	  busp->secondary   = (infop->type == SECONDARY_PCI ? TRUE : FALSE);
 	  busp->primary_bus = infop->primary_bus;
-	  busp->funcs       = *functions;             /* Structure assignment */
+	  busp->funcs       = functions;
 	  busp->pciBusPriv  = infop;
 
 	  /* Initialize I/O base/size info */ 

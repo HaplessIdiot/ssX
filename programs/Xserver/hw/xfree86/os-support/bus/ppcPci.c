@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ppcPci.c,v 1.7 2002/01/25 21:56:18 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ppcPci.c,v 1.8 2002/07/24 19:06:52 tsi Exp $ */
 /*
  * ppcPci.c - PowerPC PCI access functions
  *
@@ -69,21 +69,21 @@
 #define MAP_FAILED (pointer)(-1)
 #endif
 
-void  
+void
 ppcPciInit()
 {
 #if defined(PowerMAX_OS)
   extern void pmaxPciInit(void);
 
   pmaxPciInit();
-  
+
 #else
-  
+
   extern void motoppcPciInit(void);
 
   motoppcPciInit();
-  
-#endif  
+
+#endif
 }
 
 /*
@@ -93,8 +93,8 @@ ppcPciInit()
  * as well as the various PowerStack and RiscPC models.  All of these
  * machines support PCI config mechanism #1 and use the std config
  * address and data regs locations:
- * 	cfg address reg = 0xcf8 (PCI I/O)
- * 	cfg data reg = 0xcfc (PCI I/O)
+ *	cfg address reg = 0xcf8 (PCI I/O)
+ *	cfg data reg = 0xcfc (PCI I/O)
  *
  * The moto machines do have different address maps on either side
  * of the PCI-host bridge though.
@@ -102,23 +102,26 @@ ppcPciInit()
 static ADDRESS motoppcBusAddrToHostAddr(PCITAG, PciAddrType, ADDRESS);
 static ADDRESS motoppcHostAddrToBusAddr(PCITAG, PciAddrType, ADDRESS);
 
+static pciBusFuncs_t motoppcFuncs0 = {
+/* pciReadLong      */	pciCfgMech1Read,
+/* pciWriteLong     */	pciCfgMech1Write,
+/* pciSetBitsLong   */	pciCfgMech1SetBits,
+/* pciAddrHostToBus */	motoppcHostAddrToBusAddr,
+/* pciAddrBusToHost */	motoppcBusAddrToHostAddr
+};
+
 static pciBusInfo_t motoppcPci0 = {
-/* configMech  */	  PCI_CFG_MECH_1,
-/* numDevices  */	  32,
-/* secondary   */	  FALSE,
-/* primary_bus */	  0,
+/* configMech  */	PCI_CFG_MECH_1,
+/* numDevices  */	32,
+/* secondary   */	FALSE,
+/* primary_bus */	0,
 #ifdef PowerMAX_OS
-/* ppc_io_base */	  0x80000000,
-/* ppc_io_size */	  64 * 1024,		  
+/* ppc_io_base */	0x80000000,
+/* ppc_io_size */	64 * 1024,
 #endif
-/* funcs       */	  {
-	                    pciCfgMech1Read,
-			    pciCfgMech1Write,
-			    pciCfgMech1SetBits,	/* XXX not implemented yet */
-			    motoppcHostAddrToBusAddr,
-			    motoppcBusAddrToHostAddr
-		          },
-/* pciBusPriv  */	  NULL
+/* funcs       */	&motoppcFuncs0,
+/* pciBusPriv  */	NULL,
+/* bridge      */	NULL
 };
 
 extern volatile unsigned char *ioBase;
@@ -163,7 +166,7 @@ motoppcBusAddrToHostAddr(PCITAG tag, PciAddrType type, ADDRESS addr)
 	   * are seen at [0xc0000000,0xfeffffff] on moto host
 	   */
 	  return((ADDRESS)((motoPciMemBaseCPU - motoPciMemBase) + addr_l));
-  
+
   else if (addr_l >= 0x80000000)
 	  /*
 	   * Moto host memory [0,0x7fffffff] is seen at
@@ -175,10 +178,10 @@ motoppcBusAddrToHostAddr(PCITAG tag, PciAddrType type, ADDRESS addr)
 		     addr_l);
   } else
       return addr;
-  
+
   /*NOTREACHED*/
 }
-			
+
 static ADDRESS
 motoppcHostAddrToBusAddr(PCITAG tag, PciAddrType type, ADDRESS addr)
 {
@@ -191,19 +194,19 @@ motoppcHostAddrToBusAddr(PCITAG tag, PciAddrType type, ADDRESS addr)
 	   * [0x80000000,0xffffffff] on PCI bus
 	   */
 	  return((ADDRESS)(0x80000000 | addr_l));
-      
+
       else if (addr_l >= motoPciMemBaseCPU && addr_l < motoPciMemBaseCPU + motoPciMemLen)
 	  /*
 	   * PCI memory space addresses [0-0x3effffff] are
 	   * are seen at [0xc0000000,0xfeffffff] on moto host
 	   */
 	  return((ADDRESS)(addr_l - (motoPciMemBaseCPU - motoPciMemBase)));
-      
+
       else
 	  FatalError("motoppcHostAddrToBusAddr: Host addr 0x%x is not accessible to PCI!!!\n",
 		     addr_l);
   } else
       return addr;
-  
+
   /*NOTREACHED*/
 }
