@@ -23,6 +23,7 @@
  */
 
 /* $XConsortium: lbxfuncs.c,v 1.5 94/03/27 13:42:04 dpw Exp $ */
+/* $XFree86$ */
 
 /*
  * top level LBX request & reply handling
@@ -1430,6 +1431,9 @@ FinishLBXRequest(client, yank)
 #ifdef PROTOCOL_POOR
     LBXCacheSafe(client) = TRUE;
 #endif
+
+    if (NumReplies(client) > 0)
+	LBXCacheSafe(client) = FALSE;
 
     if (yank == REQ_YANK) {
 	LBXSequenceLost(client)++;
