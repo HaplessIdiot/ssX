@@ -1,4 +1,6 @@
-XFree86 4.4.99.3 (xx March 2004)
+XFree86 4.4.99.4 (xx April 2004)
+
+XFree86 4.4.99.3 (12 April 2004)
   71. Fix a segfault in Xlib if IPv6 XDM-AUTHORIZATION-1 data is present 
       in .Xauthority (NetBSD PR xsrc/25098, Michel van Elst).
   70. Merge Mesa 6.0.1 which now contain the DRI drivers (DRI Project,
@@ -18849,7 +18851,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3221 2004/04/08 10:15:34 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3222 2004/04/10 14:01:45 herrb Exp $
 
 
 
