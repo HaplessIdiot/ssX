@@ -264,3 +264,6 @@ are also required: X86_EAX,...,X86_EFLAGS for access of the full
 32 bit registers, X86_AX...X86_FLAGS for access of the 16 bit 
 registers and XF86_AL,XF86_BL,XF86_CL,XF86_DL to access the 
 lower byte of the AX,BX,CX and DX register.
+
+
+$XFree86$

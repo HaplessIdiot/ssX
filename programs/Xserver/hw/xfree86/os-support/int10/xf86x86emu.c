@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #include <x86emu.h>
 #include "xf86.h"
 #include "xf86str.h"

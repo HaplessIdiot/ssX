@@ -5,6 +5,7 @@
 # Last modified: 1994-03-25
 # Public domain
 #
+# $XFree86$
 
 errstatus=0
 umask 022

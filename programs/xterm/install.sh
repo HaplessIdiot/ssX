@@ -10,6 +10,8 @@
 # This script is compatible with the BSD install script, but was written
 # from scratch.
 #
+# $XFree86$
+#
 
 
 # set DOITPROG to echo to test this script

@@ -9,6 +9,7 @@
 # Note 2! The CFLAGS definitions are now inherited from the
 # parent makes..
 #
+# $XFree86$
 
 L_TARGET        := libdrm.a
 
