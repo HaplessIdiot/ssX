@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/Imakefile,v 3.3 1998/07/25 16:56:56 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/Imakefile,v 3.4 1999/04/04 00:20:59 dawes Exp $
 
 
 
@@ -9,11 +9,11 @@ XCOMM $XConsortium: Imakefile /main/4 1996/09/28 17:24:25 rws $
 
 SRCS = sco_init.c sco_video.c sco_io.c bios_devmem.c mapVT_noop.c VTsw_sco.c \
        sysv_kbd.c std_kbdEv.c sysv_tty.c std_mseEv.c sco_mouse.c \
-       libc_wrapper.c stdResource.c
+       libc_wrapper.c stdResource.c sigiostubs.c
 
 OBJS = sco_init.o sco_video.o sco_io.o bios_devmem.o mapVT_noop.o VTsw_sco.o \
        sysv_kbd.o std_kbdEv.o sysv_tty.o std_mseEv.o sco_mouse.o \
-       libc_wrapper.o stdResource.o
+       libc_wrapper.o stdResource.o sigiostubs.o
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC)
@@ -33,6 +33,7 @@ LinkSourceFile(sysv_tty.c,../shared)
 LinkSourceFile(std_mseEv.c,../shared)
 LinkSourceFile(libc_wrapper.c,../shared)
 LinkSourceFile(stdResource.c,../shared)
+LinkSourceFile(sigiostubs.c,../shared)
 
 DependTarget()
 

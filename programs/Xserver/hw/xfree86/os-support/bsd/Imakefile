@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/10/27 11:06:35 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.30 1999/08/22 11:59:50 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.31 1999/09/04 13:04:41 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -48,11 +48,11 @@ MTRRDEFINES = -DHAS_MTRR_SUPPORT
 
 SRCS = bsd_init.c bsd_video.c bsd_io.c bsd_VTsw.c \
        libc_wrapper.c $(IOPERM_SRC) std_kbdEv.c posix_tty.c $(MOUSESRC) \
-       stdResource.c vidmem.c $(JOYSTICK_SRC)
+       stdResource.c vidmem.c $(JOYSTICK_SRC) sigiostubs.c
 
 OBJS = bsd_init.o bsd_video.o bsd_io.o bsd_VTsw.o \
        libc_wrapper.o $(IOPERM_OBJ) std_kbdEv.o posix_tty.o $(MOUSEOBJ) \
-       stdResource.o vidmem.o $(JOYSTICK_OBJ)
+       stdResource.o vidmem.o $(JOYSTICK_OBJ) sigiostubs.o
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC) -I$(EXTINCSRC) -I$(SERVERSRC)/mi
@@ -87,6 +87,7 @@ LinkSourceFile(posix_tty.c,../shared)
 LinkSourceFile(libc_wrapper.c,../shared)
 LinkSourceFile(stdResource.c,../shared)
 LinkSourceFile(vidmem.c,../shared)
+LinkSourceFile(sigiostubs.c,../shared)
 
 DependTarget()
 

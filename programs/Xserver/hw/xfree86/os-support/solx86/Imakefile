@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/Imakefile,v 3.12 1999/07/18 15:37:25 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/Imakefile,v 3.13 1999/09/04 13:04:48 dawes Exp $
 
 
 
@@ -18,11 +18,11 @@ MOUSEOBJ = solx86_mouse.o
 
 SRCS = solx86_init.c solx86_vid.c solx86_bios.c sysv_io.c \
 	VTsw_usl.c sysv_kbd.c std_kbdEv.c posix_tty.c $(MOUSESRC) \
-	libc_wrapper.c $(PROWORKS_INOUT_SRC) stdResource.c
+	libc_wrapper.c $(PROWORKS_INOUT_SRC) stdResource.c sigiostubs.c
 
 OBJS = solx86_init.o solx86_vid.o solx86_bios.o sysv_io.o \
 	VTsw_usl.o sysv_kbd.o std_kbdEv.o posix_tty.o $(MOUSEOBJ) \
-	libc_wrapper.o $(PROWORKS_INOUT_OBJ) stdResource.o
+	libc_wrapper.o $(PROWORKS_INOUT_OBJ) stdResource.o sigiostubs.o
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC) -I$(EXTINCSRC)
@@ -42,5 +42,6 @@ LinkSourceFile(std_kbdEv.c,../shared)
 LinkSourceFile(sysv_io.c,../sysv)
 LinkSourceFile(libc_wrapper.c,../shared)
 LinkSourceFile(stdResource.c,../shared)
+LinkSourceFile(sigiostubs.c,../shared)
 
 DependTarget()
