@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/confwrite.c,v 1.1 1999/04/05 07:12:58 dawes Exp $ */
 /*
  * Copyright 1999 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -158,7 +158,7 @@ putsection_files(interp, varpfx)
 	char section[128];
 	XF86ConfFilesPtr fptr;
 
-	fprintf(stderr, "putsection_files(%x, %s)\n", interp, varpfx);
+	fprintf(stderr, "putsection_files(%p, %s)\n", interp, varpfx);
 	SECTION_NAME("Files");
 
 	fptr = (XF86ConfFilesPtr) XtMalloc(sizeof(XF86ConfFilesRec));
@@ -180,7 +180,7 @@ putsection_module(interp, varpfx)
 	int i, idxc;
 	XF86LoadPtr lptr, prev;
 
-	fprintf(stderr, "putsection_module(%x, %s)\n", interp, varpfx);
+	fprintf(stderr, "putsection_module(%p, %s)\n", interp, varpfx);
 	SECTION_NAME("Module");
 
 	config_list->conf_modules =
@@ -229,7 +229,7 @@ putsection_flags(interp, varpfx)
 {
 	char section[128];
 
-	fprintf(stderr, "putsection_flags(%x, %s)\n", interp, varpfx);
+	fprintf(stderr, "putsection_flags(%p, %s)\n", interp, varpfx);
 	SECTION_NAME("Server");
 
 	if (Tcl_GetVar2(interp, section, "Options", 0) != NULL) {
@@ -251,7 +251,7 @@ putsection_keyboard(interp, varpfx)
 	long val;
 	XF86ConfKeyboardPtr kptr;
 
-	fprintf(stderr, "putsection_keyboard(%x, %s)\n", interp, varpfx);
+	fprintf(stderr, "putsection_keyboard(%p, %s)\n", interp, varpfx);
 	SECTION_NAME("Keyboard");
 	kptr = (XF86ConfKeyboardPtr)  XtMalloc(sizeof(XF86ConfKeyboardRec));
 	config_list->conf_keyboard = kptr;
@@ -311,7 +311,7 @@ putsection_pointer(interp, varpfx)
 	char section[128], *ptr;
 	XF86ConfPointerPtr pptr;
 
-	fprintf(stderr, "putsection_pointer(%x, %s)\n", interp, varpfx);
+	fprintf(stderr, "putsection_pointer(%p, %s)\n", interp, varpfx);
 	SECTION_NAME("Pointer");
 	pptr = (XF86ConfPointerPtr) XtMalloc(sizeof(XF86ConfPointerRec));
 	config_list->conf_pointer = pptr;
@@ -359,7 +359,7 @@ putsection_monitor(interp, varpfx)
 	int i, idxc;
 	XF86ConfMonitorPtr mptr, prev;
 
-	fprintf(stderr, "putsection_monitor(%x, %s)\n", interp, varpfx);
+	fprintf(stderr, "putsection_monitor(%p, %s)\n", interp, varpfx);
 	SECTION_NAME("Monitor");
 	ptr = Tcl_GetVar2(interp, section, "Identifiers", 0);
 	if (Tcl_SplitList(interp, ptr, &idxc, &idxv) != TCL_OK)
@@ -399,7 +399,7 @@ putsection_device(interp, varpfx)
 	int i, j, idxc, ac, n;
 	XF86ConfDevicePtr dptr, prev;
 
-	fprintf(stderr, "putsection_device(%x, %s)\n", interp, varpfx);
+	fprintf(stderr, "putsection_device(%p, %s)\n", interp, varpfx);
 	SECTION_NAME("Device");
 	ptr = Tcl_GetVar2(interp, section, "Identifiers", 0);
 	if (Tcl_SplitList(interp, ptr, &idxc, &idxv) != TCL_OK)
@@ -470,7 +470,7 @@ putsection_screen(interp, varpfx)
 	int i, idxc;
 	XF86ConfScreenPtr sptr, prev;
 
-	fprintf(stderr, "putsection_screen(%x, %s)\n", interp, varpfx);
+	fprintf(stderr, "putsection_screen(%p, %s)\n", interp, varpfx);
 	SECTION_NAME("Screen");
 	ptr = Tcl_GetVar2(interp, section, "Identifiers", 0);
 	if (Tcl_SplitList(interp, ptr, &idxc, &idxv) != TCL_OK)
@@ -500,7 +500,7 @@ putsection_layout(interp, varpfx)
 	int i, idxc;
 	XF86ConfLayoutPtr lptr, prev;
 
-	fprintf(stderr, "putsection_layout(%x, %s)\n", interp, varpfx);
+	fprintf(stderr, "putsection_layout(%p, %s)\n", interp, varpfx);
 	SECTION_NAME("Layout");
 	ptr = Tcl_GetVar2(interp, section, "Identifiers", 0);
 	if (Tcl_SplitList(interp, ptr, &idxc, &idxv) != TCL_OK)
@@ -531,7 +531,7 @@ putsection_vidadptr(interp, varpfx)
 	XF86ConfVideoAdaptorPtr	aptr, prev;
 	XF86ConfVideoPortPtr	pptr;
 
-	fprintf(stderr, "putsection_vidadptr(%x, %s)\n", interp, varpfx);
+	fprintf(stderr, "putsection_vidadptr(%p, %s)\n", interp, varpfx);
 	SECTION_NAME("VidAdaptr");
 	ptr = Tcl_GetVar2(interp, section, "Identifiers", 0);
 	if (Tcl_SplitList(interp, ptr, &idxc, &idxv) != TCL_OK)
@@ -568,7 +568,7 @@ putsection_modes(interp, varpfx)
 	int i, idxc;
 	XF86ConfModesPtr	mptr, prev;
 
-	fprintf(stderr, "putsection_modes(%x, %s)\n", interp, varpfx);
+	fprintf(stderr, "putsection_modes(%p, %s)\n", interp, varpfx);
 	SECTION_NAME("Modes");
 	ptr = Tcl_GetVar2(interp, section, "Identifiers", 0);
 	if (Tcl_SplitList(interp, ptr, &idxc, &idxv) != TCL_OK)
@@ -600,7 +600,7 @@ putsection_vendor(interp, varpfx)
 	int i, idxc;
 	XF86ConfVendorPtr	vptr, prev;
 
-	fprintf(stderr, "putsection_vendor(%x, %s)\n", interp, varpfx);
+	fprintf(stderr, "putsection_vendor(%p, %s)\n", interp, varpfx);
 	SECTION_NAME("Vendor");
 	ptr = Tcl_GetVar2(interp, section, "Identifiers", 0);
 	if (Tcl_SplitList(interp, ptr, &idxc, &idxv) != TCL_OK)

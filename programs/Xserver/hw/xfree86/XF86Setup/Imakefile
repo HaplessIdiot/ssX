@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/4 1996/10/24 10:16:33 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/Imakefile,v 3.25 1999/03/21 07:34:56 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/Imakefile,v 3.26 1999/04/05 07:12:57 dawes Exp $
 #include <Server.tmpl>
 #define IHaveSubdirs
 
@@ -56,6 +56,16 @@ includes::
 
    MODULEDEFINES = -DDEFAULT_MODULE_PATH=\"$(MODULEDIR)\"
 
+#ifdef DefaultFontPath
+DEFAULTFONTPATH = DefaultFontPath
+SITE_FONT_PATH = -DCOMPILEDDEFAULTFONTPATH=\"$(DEFAULTFONTPATH)\"
+#endif
+
+#ifdef DefaultRGBDatabase
+DEFAULTRGBDATABASE = DefaultRGBDatabase
+SITE_RGB_DB = -DRGB_DB=\"$(DEFAULTRGBDATABASE)\"
+#endif
+
 #if defined(SVR4Architecture) || (defined(LinuxArchitecture) && UseElfFormat)
 /* Some OSs need this, and it should(?) be harmless when not needed */
 /* Not available for Linux x86/a.out and Linux AXP/ECOFF */
@@ -72,19 +82,21 @@ includes::
  TCLTK_LIBRARIES = $(TKLIBRARY) $(TCLLIBRARY)
 
      XF86CONFLIB = $(XF86SRC)/parser/LibraryTargetName(xf86config)
-      XF86COMLIB = $(XF86COMSRC)/LibraryTargetName(xf86)
 
-/* XXX This needs to be setup properly in the config/cf files */
+/*
+ * HasNCurses should be set to YES in the os.cf file if the include file
+ * is called ncurses.h instead of curses.h
+ */
+#if HasNCurses
 CURSESLIB = -lncurses
-CURSES_DEFINES = -DCURSES
-/* Add -DNCURSES if the include file is named ncurses.h, instead of curses.h
 CURSES_DEFINES = -DCURSES -DNCURSES
-*/
+#else
+CURSESLIB = -lcurses
+CURSES_DEFINES = -DCURSES
+#endif
 
  LOCAL_LIBRARIES = $(USEBUILTLIB) $(XKBUILIB) $(XKBFILELIB) \
-		   $(XF86CONFLIB) $(SERVERSRC)/os/xalloc.o \
-		   $(SERVERSRC)/dix/globals.o \
-		   $(XF86OSSRC)/LibraryTargetName(xf86_os) $(XF86COMLIB) \
+		   $(XF86CONFLIB) \
 		   $(TCLTK_LIBRARIES) $(XXF86VMLIB) $(XXF86MISCLIB) \
 		   $(USEINSTALLEDLIB) XawClientLibs $(CURSESLIB) MathLibrary
          DEPLIBS = XawClientDepLibs $(DEPXXF86VMLIB)
@@ -94,6 +106,7 @@ CURSES_DEFINES = -DCURSES -DNCURSES
  XCONFIG_DEFINES = $(EXT_DEFINES) -DXF86SETUP \
 		   '-DPROJECTROOT="$(PROJECTROOT)"' \
 		   '-DSERVER_CONFIG_FILE="$(LIBDIR)/$(XCONFIGFILE)"' \
+		   $(SITE_FONT_PATH) $(SITE_RGB_DB) \
 		   -DNO_WRAPPERS
 
  XF86SETUPLIBDIR = $(LIBDIR)/XF86Setup

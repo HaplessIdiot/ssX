@@ -1,5 +1,5 @@
 XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.90 1999/03/28 15:31:30 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.91 1999/04/04 08:45:58 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -186,6 +186,9 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #endif
 #if OSMajorVersion >= 2
 #define HasUsableFileMmap	YES
+#endif
+#ifndef HasNCurses
+#define HasNCurses		YES
 #endif
 
 #define AvoidNullMakeCommand	YES

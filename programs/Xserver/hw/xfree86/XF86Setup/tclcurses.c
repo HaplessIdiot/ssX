@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclcurses.c,v 1.1 1999/04/05 07:13:01 dawes Exp $ */
 /*
  * Copyright 1997 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -860,7 +860,7 @@ drawbox(winPtr, begrow, begcol, rows, cols, lchar, ulattr, lrattr)
 
 #define bchar(ch)	(lchar? (ch): ' ')
 
-	DEBUG9("drawbox(%p, %d, %d, %d, %d, %d, %x, %x)\n",
+	DEBUG9("drawbox(%p, %d, %d, %d, %d, %d, %lx, %lx)\n",
 		winPtr, begrow, begcol, rows, cols, lchar, ulattr, lrattr);
 	wattrset(winPtr->win, ulattr);
 	wmove(winPtr->win, begrow, begcol);

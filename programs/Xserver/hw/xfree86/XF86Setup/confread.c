@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/confread.c,v 1.1 1999/04/05 07:12:58 dawes Exp $ */
 /*
  * Copyright 1999 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -37,6 +37,9 @@
 
 #include "tcl.h"
 #include "xfsconf.h"
+
+char *defaultFontPath = COMPILEDDEFAULTFONTPATH;
+char *rgbPath = RGB_DB;
 
 #if NeedVarargsPrototypes
 #include <stdarg.h>
@@ -140,7 +143,7 @@ getsection_files(interp, varpfx)
 	char *f, section[128];
 
 	SECTION_NAME("Files");
-	fprintf(stderr, "getsection_%s(%x, %x(%s))\n", section, interp, varpfx, varpfx);
+	fprintf(stderr, "getsection_%s(%p, %p(%s))\n", section, interp, varpfx, varpfx);
 
 	Tcl_SetVar2(interp, section, "LogFile",
 		StrOrNull(config_list->conf_files->file_logfile), 0);
@@ -172,7 +175,7 @@ getsection_flags(interp, varpfx)
 	char section[128];
 
 	SECTION_NAME("Server");
-	fprintf(stderr, "getsection_%s(%x, %x(%s))\n", section, interp, varpfx, varpfx);
+	fprintf(stderr, "getsection_%s(%p, %p(%s))\n", section, interp, varpfx, varpfx);
 
 	if (!config_list->conf_flags)
 		return TRUE;
@@ -197,7 +200,7 @@ getsection_keyboard(interp, varpfx)
 	int	i;
 
 	SECTION_NAME("Keyboard");
-	fprintf(stderr, "getsection_%s(%x, %x(%s))\n", section, interp, varpfx, varpfx);
+	fprintf(stderr, "getsection_%s(%p, %p(%s))\n", section, interp, varpfx, varpfx);
 
 	keyboard = config_list->conf_keyboard;
 #ifdef XQUEUE
@@ -291,7 +294,7 @@ getsection_pointer(interp, varpfx)
 	int i;
 
 	SECTION_NAME("Pointer");
-	fprintf(stderr, "getsection_%s(%x, %x(%s))\n", section, interp, varpfx, varpfx);
+	fprintf(stderr, "getsection_%s(%p, %p(%s))\n", section, interp, varpfx, varpfx);
 	pntr = config_list->conf_pointer;
 	name = NULL;
 	if (pntr->pntr_protocol) {
@@ -397,7 +400,7 @@ getsection_monitor(interp, varpfx)
 	XF86ConfModeLinePtr	dptr;
 
 	SECTION_NAME("Monitor");
-	fprintf(stderr, "getsection_%s(%x, %x(%s))\n", section, interp, varpfx, varpfx);
+	fprintf(stderr, "getsection_%s(%p, %p(%s))\n", section, interp, varpfx, varpfx);
 	Tcl_SetVar2(interp, section, "Identifiers", "", 0);
 	for (mptr = config_list->conf_monitor_lst; mptr; mptr = mptr->list.next) {
 		namebuf = (char *)XtMalloc(strlen(section)
@@ -463,7 +466,7 @@ getsection_device(interp, varpfx)
 	XF86ConfDevicePtr	dptr;
 
 	SECTION_NAME("Device");
-	fprintf(stderr, "getsection_%s(%x, %x(%s))\n", section, interp, varpfx, varpfx);
+	fprintf(stderr, "getsection_%s(%p, %p(%s))\n", section, interp, varpfx, varpfx);
 	Tcl_SetVar2(interp, section, "Identifiers", "", 0);
 	for (dptr = config_list->conf_device_lst; dptr; dptr = dptr->list.next) {
 		namebuf = XtMalloc(strlen(section)
@@ -543,7 +546,7 @@ getsection_screen(interp, varpfx)
     int			depth;
 
     SECTION_NAME("Screen");
-	fprintf(stderr, "getsection_%s(%x, %x(%s))\n", section, interp, varpfx, varpfx);
+	fprintf(stderr, "getsection_%s(%p, %p(%s))\n", section, interp, varpfx, varpfx);
     Tcl_SetVar2(interp, section, "Identifiers", "", 0);
     for (screen = config_list->conf_screen_lst; screen; screen = screen->list.next) {
 	namebuf = (char *) XtMalloc(strlen(section) 
@@ -629,7 +632,7 @@ getsection_module(interp, varpfx)
     XF86LoadPtr lptr;
 
     SECTION_NAME("Module");
-	fprintf(stderr, "getsection_%s(%x, %x(%s))\n", section, interp, varpfx, varpfx);
+	fprintf(stderr, "getsection_%s(%p, %p(%s))\n", section, interp, varpfx, varpfx);
     for (lptr = config_list->conf_modules->mod_load_lst; lptr; lptr = lptr->list.next) {
 	    Tcl_SetVar2(interp, section, lptr->load_name,
 			lptr->load_type? "driver": "module", 0);
@@ -654,7 +657,7 @@ getsection_layout(interp, varpfx)
     XF86ConfInactivePtr		iptr;
 
     SECTION_NAME("Layout");
-	fprintf(stderr, "getsection_%s(%x, %x(%s))\n", section, interp, varpfx, varpfx);
+	fprintf(stderr, "getsection_%s(%p, %p(%s))\n", section, interp, varpfx, varpfx);
     Tcl_SetVar2(interp, section, "Identifiers", "", 0);
     for (lptr = config_list->conf_layout_lst; lptr; lptr = lptr->list.next) {
 	namebuf = (char *)XtMalloc(strlen(section)
@@ -704,7 +707,7 @@ getsection_vidadptr(interp, varpfx)
     XF86ConfVideoPortPtr	pptr;
 
     SECTION_NAME("VidAdaptr");
-	fprintf(stderr, "getsection_%s(%x, %x(%s))\n", section, interp, varpfx, varpfx);
+	fprintf(stderr, "getsection_%s(%p, %p(%s))\n", section, interp, varpfx, varpfx);
     Tcl_SetVar2(interp, section, "Identifiers", "", 0);
     for (aptr= config_list->conf_videoadaptor_lst; aptr; aptr= aptr->list.next) {
 	namebuf = (char *)XtMalloc(strlen(section)
@@ -747,7 +750,7 @@ getsection_modes(interp, varpfx)
     XF86ConfModesPtr	mptr;
 
     SECTION_NAME("Modes");
-	fprintf(stderr, "getsection_%s(%x, %x(%s))\n", section, interp, varpfx, varpfx);
+	fprintf(stderr, "getsection_%s(%p, %p(%s))\n", section, interp, varpfx, varpfx);
     Tcl_SetVar2(interp, section, "Identifiers", "", 0);
     for (mptr = config_list->conf_modes_lst; mptr; mptr = mptr->list.next) {
 	namebuf = (char *)XtMalloc(strlen(section)
@@ -770,7 +773,7 @@ getsection_vendor(interp, varpfx)
     XF86ConfVendorPtr	vptr;
 
     SECTION_NAME("Vendor");
-	fprintf(stderr, "getsection_%s(%x, %x(%s))\n", section, interp, varpfx, varpfx);
+	fprintf(stderr, "getsection_%s(%p, %p(%s))\n", section, interp, varpfx, varpfx);
     Tcl_SetVar2(interp, section, "Identifiers", "", 0);
     for (vptr = config_list->conf_vendor_lst; vptr; vptr = vptr->list.next) {
 	namebuf = (char *)XtMalloc(strlen(section)
