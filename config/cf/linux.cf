@@ -4,7 +4,7 @@ XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.146 2000/11/29 17:40:19 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.147 2000/11/30 23:29:56 dawes Exp $
 
 #ifndef LinuxElfDefault
 # define LinuxElfDefault	YES
@@ -107,7 +107,9 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define InstallXinitConfig	YES
 #define InstallXdmConfig	YES
 #define InstallFSConfig		YES
+#if 0
 #define HasXdmAuth		YES
+#endif
 #define DebuggableLibraries	YES
 #define ForceNormalLib		YES
 #define BuildSpecsDocs		YES
