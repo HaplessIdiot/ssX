@@ -34,7 +34,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.20 2003/11/03 05:11:28 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.21 2004/09/01 23:57:57 dawes Exp $ */
 
 
 #include "xf86.h"
@@ -174,23 +174,11 @@ RamDacSupportedInfoRec S3IBMRamdacs[] = {
 	{ -1 }
 };
 
-#define S3_USEFB
-
-#ifdef S3_USEFB
 static const char *fbSymbols[] = {
     "fbPictureInit",
     "fbScreenInit",
     NULL
 };
-#else
-static const char *cfbSymbols[] = {
-	"cfbScreenInit",
-	"cfb16ScreenInit",
-	"cfb24ScreenInit",
-	"cfb32ScreenInit",
-	NULL
-};
-#endif
 
 static const char *vgaHWSymbols[] = {
         "vgaHWGetHWRec",
@@ -276,12 +264,7 @@ pointer S3Setup (pointer module, pointer opts, int *errmaj, int *errmin)
                 xf86AddDriver(&S3, module, 0);
                 LoaderRefSymLists(vgaHWSymbols,
 				  vbeSymbols, int10Symbols, ramdacSymbols,
-#ifdef S3_USEFB
-				  fbSymbols,
-#else
-				  cfbSymbols,
-#endif
-				  xaaSymbols,
+				  fbSymbols, xaaSymbols,
 				  NULL);
                 return (pointer) 1;
         } else {
@@ -741,31 +724,8 @@ static Bool S3PreInit(ScrnInfoPtr pScrn, int flags)
         xf86PrintModes(pScrn);
         xf86SetDpi(pScrn, 0, 0);
  
-#ifdef S3_USEFB
         xf86LoadSubModule(pScrn, "fb");
         xf86LoaderReqSymLists(fbSymbols, NULL);
-#else
-	{
-		switch (pScrn->bitsPerPixel) {
-		case 8:
-		        xf86LoadSubModule(pScrn, "cfb");
-	     		xf86LoaderReqSymbols("cfbScreenInit", NULL);
-			break;
-		case 16:
-		        xf86LoadSubModule(pScrn, "cfb16");
-	     		xf86LoaderReqSymbols("cfb16ScreenInit", NULL);
-			break;
-		case 24:
-		        xf86LoadSubModule(pScrn, "cfb24");
-	     		xf86LoaderReqSymbols("cfb24ScreenInit", NULL);
-			break;
-		case 32:
-		        xf86LoadSubModule(pScrn, "cfb32");
-	     		xf86LoaderReqSymbols("cfb32ScreenInit", NULL);
-			break;
-		}
-	}
-#endif
 
 	if (!xf86LoadSubModule(pScrn, "xaa"))
 		return FALSE;
@@ -814,45 +774,10 @@ static Bool S3ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc,
         
         miSetPixmapDepths ();
 
-#ifdef S3_USEFB
         if (!fbScreenInit(pScreen, pS3->FBBase, pScrn->virtualX,
                           pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
                           pScrn->displayWidth, pScrn->bitsPerPixel))
                 return FALSE;
-#else
-	{
-		int ret;
-
-		switch(pScrn->bitsPerPixel) {
-		case 8:
-			ret = cfbScreenInit(pScreen, pS3->FBBase,
-				pScrn->virtualX, pScrn->virtualY,
-				pScrn->xDpi, pScrn->yDpi,
-				pScrn->displayWidth);
-			break;
-		case 16:
-			ret = cfb16ScreenInit(pScreen, pS3->FBBase,
-				pScrn->virtualX, pScrn->virtualY,
-				pScrn->xDpi, pScrn->yDpi,
-				pScrn->displayWidth);
-			break;
-		case 24:
-			ret = cfb24ScreenInit(pScreen, pS3->FBBase,
-				pScrn->virtualX, pScrn->virtualY,
-				pScrn->xDpi, pScrn->yDpi,
-				pScrn->displayWidth);
-			break;
-		case 32:
-			ret = cfb32ScreenInit(pScreen, pS3->FBBase,
-				pScrn->virtualX, pScrn->virtualY,
-				pScrn->xDpi, pScrn->yDpi,
-				pScrn->displayWidth);
-			break;
-		}
-		if (!ret)
-			return FALSE;
-	}
-#endif
         
         xf86SetBlackWhitePixels(pScreen);
                         
@@ -871,9 +796,9 @@ static Bool S3ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc,
                         }
                 } 
         }
-#ifdef S3_USEFB
+
 	fbPictureInit (pScreen, 0, 0);
-#endif
+
 	S3DGAInit(pScreen);
 
         miInitializeBackingStore(pScreen);
