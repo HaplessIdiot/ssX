@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.90 2002/12/27 21:08:20 dickey Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.91 2003/02/06 23:09:44 dickey Exp $
   -->
 <HTML>
 <HEAD>
@@ -43,6 +43,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_174">Patch #174 - 2003/2/25 - XFree86 4.2.99.903</A>
 <LI><A HREF="#xterm_173">Patch #173 - 2003/2/6 - XFree86 4.2.99.902</A>
 <LI><A HREF="#xterm_172">Patch #172 - 2002/12/27 - XFree86 4.2.99.3</A>
 <LI><A HREF="#xterm_171">Patch #171 - 2002/12/12 - XFree86 4.2.99.3</A>
@@ -218,6 +219,18 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_174">Patch #174 - 2003/2/25 - XFree86 4.2.99.903</A></H1>
+<ul>
+	<li>work-around for XFree86 bug which made <code>XDefineCursor()</code>
+	    on a shell-window no longer work.  The tek4014 emulation used this. 
+	    Use the next lower window (report by Karl Rudolf Bauchspiess).
+
+	<li>add a resource setting to control whether the extended window
+	    operations should be allowed, e.g., resize, iconify, report
+	    window attributes.  This is to accommodate people who are not
+	    capable of using a pager to view log-files.
+</ul>
 
 <H1><A NAME="xterm_173">Patch #173 - 2003/2/6 - XFree86 4.2.99.902</A></H1>
 <ul>
