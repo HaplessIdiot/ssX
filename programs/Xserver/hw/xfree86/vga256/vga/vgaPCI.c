@@ -37,8 +37,9 @@ vgaGetPCIInfo()
 #if !defined(PC98_TGUI) && !defined(PC98_MGA)
 	if ((pcrp->_base_class == PCI_CLASS_PREHISTORIC &&
 	     pcrp->_sub_class == PCI_SUBCLASS_PREHISTORIC_VGA) ||
-	    (pcrp->_base_class == PCI_CLASS_DISPLAY &&
-	     pcrp->_sub_class == PCI_SUBCLASS_DISPLAY_VGA)) {
+	    (pcrp->_base_class == PCI_CLASS_DISPLAY) ||
+	    (pcrp->_base_class == PCI_CLASS_MULTIMEDIA &&
+	     pcrp->_sub_class == PCI_SUBCLASS_MULTIMEDIA_VIDEO)) {
 #else /* PC98 */
 #ifdef PC98_TGUI
 	if (pcrp->_base_class == PCI_CLASS_DISPLAY &&

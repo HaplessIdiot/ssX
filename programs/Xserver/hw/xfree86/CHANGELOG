@@ -1,4 +1,7 @@
 XFree86 3.9Ad (25 January 1998)
+1591. Pick up PCI multimedia/video devices and display devices of all
+      subclasses (not just VGA) in vgaGetPCIInfo().
+1590. Reinstate Xserver/hw/ibm for reference purposes.
 1589. Cirrus and vga256 driver changes to support the PowerPC machines.
       (1357, Gary Barton/Concurrent).
 1588. Organize xf86_ansic.h/xf86_libc.h/xf86_OSlib.h, and de-mangle xf86* 

@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xdm/session.c,v 3.11 1996/12/23 07:10:57 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/session.c,v 3.12 1997/11/16 06:42:44 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -65,10 +65,10 @@ from the X Consortium.
 
 #ifdef CSRG_BASED
 #include <sys/param.h>
+#endif
 #ifdef HAS_SETUSERCONTEXT
 #include <login_cap.h>
 #include <pwd.h>
-#endif
 #endif
 
 extern	int	PingServer();

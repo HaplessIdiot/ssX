@@ -27,7 +27,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/cfb/cfbcmap.c,v 3.3 1997/05/11 04:58:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbcmap.c,v 3.4 1997/11/16 06:17:53 dawes Exp $ */
 
 
 #include "X.h"
@@ -625,8 +625,6 @@ cfbInitVisuals (visualp, depthp, nvisualp, ndepthp, rootDepthp, defaultVisp, siz
                sizes,
                bitsPerRGB
            );
-#else
-    return TRUE;
 #endif
-
+    return TRUE;
 }
