@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.54 2002/04/04 14:05:49 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.56 2002/09/16 18:06:02 eich Exp $ */
 /*#define VBE_INFO*/
 
 #ifndef _TRIDENT_H_
@@ -49,6 +49,7 @@ typedef struct {
 	unsigned char DacRegs[0x300];
 } TRIDENTRegRec, *TRIDENTRegPtr;
 
+#define VGA_REGNUM_ABOUT_TV 19
 #define TRIDENTPTR(p)	((TRIDENTPtr)((p)->driverPrivate))
 
 typedef struct {
@@ -163,6 +164,11 @@ typedef struct {
     int			brightness;
     double		gamma;
     int			FPDelay;	/* just for debugging - will go away */
+    int                 TVChipset;    /* 0: None 1: VT1621 2: CH7005C*/
+    int                 TVSignalMode; /* 0: NTSC 1: PAL */
+    Bool                TVRegSet;     /* 0: User not customer TV Reg, 1: User customer TV Reg */
+    unsigned char       TVRegUserSet[2][128]; /*[0][128] for Reg Index, [1][128] for Reg Value */
+    unsigned char       DefaultTVDependVGASetting[VGA_REGNUM_ABOUT_TV+0x62]; /* VGA_REGNUM_ABOUT_TV: VGA Reg, 0x62: TV Reg */
 } TRIDENTRec, *TRIDENTPtr;
 
 typedef struct {
@@ -249,6 +255,11 @@ void TRIDENTRefreshArea8(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 void TRIDENTRefreshArea16(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 void TRIDENTRefreshArea24(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 void TRIDENTRefreshArea32(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+
+void VIA_TVInit(ScrnInfoPtr pScrn);
+void VIA_SaveTVDepentVGAReg(ScrnInfoPtr pScrn);
+void VIA_RestoreTVDependVGAReg(ScrnInfoPtr pScrn);
+void VIA_DumpReg(ScrnInfoPtr pScrn);
 
 /*
  * Trident Chipset Definitions
