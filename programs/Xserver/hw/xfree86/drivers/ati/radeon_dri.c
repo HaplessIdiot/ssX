@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.22 2002/11/25 14:04:57 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.23 2002/12/16 16:19:12 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario,
  *                VA Linux Systems Inc., Fremont, California.
@@ -1017,7 +1017,9 @@ static int RADEONDRIKernelInit(RADEONInfoPtr info, ScreenPtr pScreen)
 
     memset(&drmInfo, 0, sizeof(drmRadeonInit));
 
-    if (info->ChipFamily == CHIP_FAMILY_R200)
+    if ( (info->ChipFamily == CHIP_FAMILY_R200) ||
+		 (info->ChipFamily == CHIP_FAMILY_RV250) ||
+		 (info->ChipFamily == CHIP_FAMILY_M9) )
        drmInfo.func             = DRM_RADEON_INIT_R200_CP;
     else
        drmInfo.func             = DRM_RADEON_INIT_CP;
@@ -1148,7 +1150,7 @@ static void RADEONDRIIrqInit(RADEONInfoPtr info, ScreenPtr pScreen)
 	    info->irq = 0;
 	} else {
 	    unsigned char *RADEONMMIO = info->MMIO;
-	    info->gen_int_cntl = INREG( RADEON_GEN_INT_CNTL );
+	    info->ModeReg.gen_int_cntl = INREG( RADEON_GEN_INT_CNTL );
 	}
     }
 
@@ -1239,6 +1241,9 @@ Bool RADEONDRIScreenInit(ScreenPtr pScreen)
 
     if (info->ChipFamily == CHIP_FAMILY_R200)
        pDRIInfo->clientDriverName        = R200_DRIVER_NAME;
+	else if ((info->ChipFamily == CHIP_FAMILY_RV250) ||
+			 (info->ChipFamily == CHIP_FAMILY_M9))
+       pDRIInfo->clientDriverName        = RV250_DRIVER_NAME;
     else 
        pDRIInfo->clientDriverName        = RADEON_DRIVER_NAME;
 
@@ -1362,7 +1367,9 @@ Bool RADEONDRIScreenInit(ScreenPtr pScreen)
     if (version) {
 	int req_minor, req_patch;
 
-   	if (info->ChipFamily == CHIP_FAMILY_R200) {
+   	if ((info->ChipFamily == CHIP_FAMILY_R200) ||
+		(info->ChipFamily == CHIP_FAMILY_RV250) ||
+		(info->ChipFamily == CHIP_FAMILY_M9)) {
 	    req_minor = 5;
 	    req_patch = 0;	
 	} else {
