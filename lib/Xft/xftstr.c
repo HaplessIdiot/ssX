@@ -63,7 +63,6 @@ _XftSplitStr (const char *field, char *save)
 	if (*field == '-')
 	    break;
 	c = *field++;
-	if (isupper (c)) c = tolower (c);
 	*save++ = c;
     }
     *save = 0;
@@ -79,7 +78,6 @@ _XftDownStr (const char *field, char *save)
     while (*field)
     {
 	c = *field++;
-	if (isupper (c)) c = tolower (c);
 	*save++ = c;
     }
     *save = 0;
@@ -96,7 +94,6 @@ _XftSplitField (const char *field, char *save)
 	if (*field == '-' || *field == '=')
 	    break;
 	c = *field++;
-	if (isupper (c)) c = tolower (c);
 	*save++ = c;
     }
     *save = 0;
@@ -113,7 +110,6 @@ _XftSplitValue (const char *field, char *save)
 	if (*field == '-' || *field == ',')
 	    break;
 	c = *field++;
-	if (isupper (c)) c = tolower (c);
 	*save++ = c;
     }
     *save = 0;
@@ -127,9 +123,30 @@ _XftMatchSymbolic (XftSymbolic *s, int n, const char *name, int def)
 {
     while (n--)
     {
-	if (!strcmp (s->name, name))
+	if (!_XftStrCmpIgnoreCase (s->name, name))
 	    return s->value;
 	s++;
     }
     return def;
+}
+
+int
+_XftStrCmpIgnoreCase (const char *s1, const char *s2)
+{
+    char    c1, c2;
+    
+    for (;;) 
+    {
+	c1 = *s1++;
+	c2 = *s2++;
+	if (!c1 || !c2)
+	    break;
+	if (isupper (c1))
+	    c1 = tolower (c1);
+	if (isupper (c2))
+	    c2 = tolower (c2);
+	if (c1 != c2)
+	    break;
+    }
+    return (int) c2 - (int) c1;
 }

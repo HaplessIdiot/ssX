@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftcfg.c,v 1.3 2000/12/03 19:03:22 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftcfg.c,v 1.4 2000/12/03 19:05:27 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -36,7 +36,7 @@ char		**XftConfigDirs = XftConfigDefaultDirs;
 static int	XftConfigNdirs;
 
 static XftSubst	*XftSubsts;
-/* #define XFT_DEBUG_EDIT */
+#define XFT_DEBUG_EDIT
 
 Bool
 XftConfigAddDir (char *d)
@@ -179,10 +179,10 @@ _XftConfigCompareValue (XftValue    m,
 	case XftTypeString:
 	    switch (op) {
 	    case XftOpEqual:    
-		ret = strcmp (m.u.s, v.u.s) == 0;
+		ret = _XftStrCmpIgnoreCase (m.u.s, v.u.s) == 0;
 		break;
 	    case XftOpNotEqual:    
-		ret = strcmp (m.u.s, v.u.s) != 0;
+		ret = _XftStrCmpIgnoreCase (m.u.s, v.u.s) != 0;
 		break;
 	    default:
 		break;
@@ -366,11 +366,11 @@ _XftConfigEvaluate (XftPattern *p, XftExpr *e)
 		switch (e->op) {
 		case XftOpEqual:
 		    v.type = XftTypeBool;
-		    v.u.b = strcmp (vl.u.s, vr.u.s) == 0;
+		    v.u.b = _XftStrCmpIgnoreCase (vl.u.s, vr.u.s) == 0;
 		    break;
 		case XftOpNotEqual:
 		    v.type = XftTypeBool;
-		    v.u.b = strcmp (vl.u.s, vr.u.s) != 0;
+		    v.u.b = _XftStrCmpIgnoreCase (vl.u.s, vr.u.s) != 0;
 		    break;
 		case XftOpPlus:
 		    v.type = XftTypeString;
@@ -549,7 +549,7 @@ XftConfigSubstitute (XftPattern *p)
 	    if (v.type == XftTypeVoid)
 		continue;
 	    for (t = s->test, i = 0; t; t = t->next, i++)
-		if (!strcmp (t->field, e->field))
+		if (!_XftStrCmpIgnoreCase (t->field, e->field))
 		    break;
 	    switch (e->op) {
 	    case XftOpAssign:

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftint.h,v 1.12 2000/12/08 07:51:28 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftint.h,v 1.13 2000/12/12 00:45:17 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -425,6 +425,9 @@ _XftSplitValue (const char *field, char *save);
 int
 _XftMatchSymbolic (XftSymbolic *s, int n, const char *name, int def);
 
+int
+_XftStrCmpIgnoreCase (const char *s1, const char *s2);
+    
 /* xftxlfd.c */
 Bool
 XftCoreAddFonts (XftFontSet *set, Display *dpy, Bool ignore_scalable);

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.2 2000/12/02 10:02:05 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.3 2000/12/03 19:03:22 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -281,7 +281,7 @@ XftFreeTypeOpen (Display *dpy, XftPattern *pattern)
     encoding = face->charmaps[0]->encoding;
     
     for (j = 0; j < NUM_FT_ENCODINGS; j++)
-	if (!strcmp (encoding_name, xftFtEncoding[j].name))
+	if (!_XftStrCmpIgnoreCase (encoding_name, xftFtEncoding[j].name))
 	{
 	    encoding = xftFtEncoding[j].encoding;
 	    break;
