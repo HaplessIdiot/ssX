@@ -1,3 +1,44 @@
+XFree86 3.9o (9 September 1997)
+1244. Yet another fix for the problems around installing xkbcomp 
+      (Michael Rohleder, David Dawes, Dirk Hohndel).
+1243. Add more acceleration for 500TX to glint server (Alan Hourihane).
+1242. Add initial acceleration for Permedia to glint server (Dirk Hohndel).
+1241. Lots of cleanups and fixes to glint server (Stefan Dirsch, Helmut
+      Fahrion, Dirk Hohndel).
+1240. Fix glint server problems on some ASUS motherboards (Stefan Dirsch).
+1239. Add Permedia support to glint server (Helmut Fahrion, Dirk Hohndel).
+1238. Several m68k related fixes (fater pic code, change Atari TT geometry),
+      fixes to not reference the undefined variable XPROJECTROOT, some glibc
+      updates (#947, Andreas Schwab).
+1237. Move some of the improvements that Mark Vojkovich made for the S3 stipple
+      code back into XAA (#945, David Bateman).
+1236. Fix problem with HW cursor disapearing on Cirrus Laguna chips (#943,
+      Corin Anderson).
+1235. Fix 24bpp XAA NonTE image text with RGB_EQUAL (#942, David Bateman).
+1234. Fix BIOS layout issues in matrox drivers. This might make Millennium
+      Rev 3 cards work (#941, Andrew van der Stock).
+1233. Improve the performance of the 24bpp fills on the 6554x machines and 
+      hopefully implements a solid fill at 32bpp for the 6555x machines 
+      (untested). Some cosmetic changes (#940,944, David Bateman).
+1232. Turn off CPU_TRANSFER_BASE_FIXED in SVGA/S3 driver (#939, Mark Vojkovich).
+1231. Add the correct Enable/DisableIO Ports back into the glint driver (#938,
+      Alan Hourihane).
+1230. Fix trident & mga driver for PC98. Fix XF98Conf.cpp. Resync PC98
+      Imakefiles (#935, Takaaki Nomura).
+1229. Add accelerated Image Write to C&T driver. Attemptted fix for the use
+      of TMED DSTN dithering on the 65555 and 68554 chips. Small
+      documentation patch (#934, David Bateman).
+1228. Fix XF86Setup to load XFree86-VidModeExtension (#932, Takaaki Nomura).
+1227. Fix MClk limits for matrox driver (#931, Andrew van der Stock).
+1226. Fix build problem on Solaris (#929, Matthieu Herrb).
+1225. Add DacSpeed to C&T driver (#930, David Bateman).
+1224. Disable acceleration for IMA bus chips in tseng driver (#928, 
+      David Bateman)
+1223. Turn Record extension into module and fix problems in XInput joystick
+      module (#927,933, Matthieu Herrb).
+1222. Add support for the ch8398 and ch8398a clockchips to the tseng driver 
+      (#913,914 Gyorgy Krajcsovits).
+
 XFree86 3.9n (26 August 1997)
 1221. Lots of small fixes for xterm (#912, Thomas Dickey).
 1220. Add DirectColor visual to Matrox server (#911, Andres Aitchison).
@@ -5293,4 +5334,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.522 1997/08/15 07:19:12 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.523 1997/08/26 10:00:49 hohndel Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.13 1997/07/29 12:07:58 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.14 1997/08/26 10:01:13 hohndel Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -1732,6 +1732,14 @@ Bool ctProbeHiQV()
       vga256InfoRec.maxClock = min(vga256InfoRec.maxClock,
 			 ctMemClk->Clk * 4 * 0.7 / vgaBytesPerPixel);
     
+    if (vga256InfoRec.dacSpeeds[0] > 0) {
+      /* Maximum clock is overridden by a user supplied value */
+      ErrorF("%s %s: CHIPS: user max dot-clock of %d kHz overrides %d kHz limit\n",
+	     XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.dacSpeeds[0],
+	     vga256InfoRec.maxClock);
+      vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[0];
+    }
+
     /* Set the flags for Colour transparency. This is dependent
      * on the revision on the chip. Until exactly which chips
      * have this bug are found, only allow 8bpp Colour transparency */
@@ -2000,6 +2008,14 @@ Bool ctProbeWINGINE()
   case CT_4300:
     vga256InfoRec.maxClock = 85000;
     break;
+  }
+
+  if (vga256InfoRec.dacSpeeds[0] > 0) {
+    /* Maximum clock is overridden by a user supplied value */
+    ErrorF("%s %s: CHIPS: user max dot-clock of %d kHz overrides %d kHz limit\n",
+	   XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.dacSpeeds[0],
+	   vga256InfoRec.maxClock);
+    vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[0];
   }
 
   vga256InfoRec.chipset = CHIPSIdent(CHIPSchipset);
@@ -2467,6 +2483,14 @@ Bool ctProbe()
 	    /*3.3V Vcc */
 	    vga256InfoRec.maxClock = 56000;
 	}
+    }
+
+    if (vga256InfoRec.dacSpeeds[0] > 0) {
+      /* Maximum clock is overridden by a user supplied value */
+      ErrorF("%s %s: CHIPS: user max dot-clock of %d kHz overrides %d kHz limit\n",
+	     XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.dacSpeeds[0],
+	     vga256InfoRec.maxClock);
+      vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[0];
     }
 
     vga256InfoRec.chipset = CHIPSIdent(CHIPSchipset);
@@ -3360,6 +3384,8 @@ CHIPSInit655xx(mode)
 	 */
 	xf86AccelInfoRec.CPUToScreenColorExpandBase = 
 	    (unsigned int *)ctBltDataWindow;
+	xf86AccelInfoRec.ImageWriteBase = 
+	    (unsigned int *)ctBltDataWindow;
     }
 
     /* common general setup */
@@ -3658,6 +3684,8 @@ CHIPSInitWINGINE(mode)
 	 */
 	xf86AccelInfoRec.CPUToScreenColorExpandBase = 
 	    (unsigned int *)ctBltDataWindow;
+	xf86AccelInfoRec.ImageWriteBase = 
+	    (unsigned int *)ctBltDataWindow;
     }
 
     /* common general setup */
@@ -3945,16 +3973,12 @@ CHIPSInitHiQV32(mode)
     if (IS_STN(ctPanelType)) {
 	new->Port_3D0[0x11] &= ~0x03;	/* FRC clear                    */
 	new->Port_3D0[0x11] &= ~0x8C;	/* Dither clear                 */
+	new->Port_3D0[0x11] |= 0x01;	/* 16 frame FRC                 */
+	new->Port_3D0[0x11] |= 0x84;	/* Dither                       */
 	if (ctTMED) {
-	  new->Port_3D0[0x73] |= 0x80;   /* Enable TMED                  */
-	  new->Port_3D0[0x73] &= 0xC8;   /* TMED 33 Shades of RB and 65 G*/
-	  if (vgaBitsPerPixel == 8)
-	     new->Port_3D0[0x73] |= 0x10;/* TMED 65 Shades of RGB */
-	  else if ((vgaBitsPerPixel == 24) || (vgaBitsPerPixel == 32))
-	     new->Port_3D0[0x73] |= 0x30;/* TMED 256 Shades of RGB */
-	} else {
-	  new->Port_3D0[0x11] |= 0x01;	/* 16 frame FRC                 */
-	  new->Port_3D0[0x11] |= 0x84;	/* Dither                       */
+	  new->Port_3D0[0x73] &= 0x4F;   /* Clear TMED                  */
+	  new->Port_3D0[0x73] |= 0x80;   /* Enable TMED                 */
+	  new->Port_3D0[0x73] |= 0x30;   /* TMED 256 Shades of RGB      */
 	}
 	if (ctPanelType == DD)		/* Shift Clock Mask. Use to get */
 	    new->Port_3D0[0x12] |= 0x4;	/* rid of line in DSTN screens  */
@@ -3987,6 +4011,8 @@ CHIPSInitHiQV32(mode)
 	 * was initialised with CtBltDataWindow set to NULL
 	 */
 	xf86AccelInfoRec.CPUToScreenColorExpandBase = 
+	    (unsigned int *)ctBltDataWindow;
+	xf86AccelInfoRec.ImageWriteBase = 
 	    (unsigned int *)ctBltDataWindow;
 
     }
@@ -4156,10 +4182,17 @@ CHIPSFbInit()
 	  case 16:
 	    ctBLTPatternAddress = ctAllocate(128, 0x7F);
 	    break;
+	  case 24:
+	    /* One scanline of data used for solid fill */
+	    if (!ctisHiQV32)
+	        ctBLTPatternAddress = 
+		       ctAllocate(3 * (vga256InfoRec.displayWidth + 4), 0x3);
+	    break;
 	  case 32:
 	    /* One scanline of data used for solid fill */
-	    ctBLTPatternAddress =
-	        ctAllocate((vga256InfoRec.displayWidth << 2), 0x0);
+	    if (ctisHiQV32)
+	        ctBLTPatternAddress =
+		  ctAllocate((vga256InfoRec.displayWidth << 2), 0x3);
 	    break;
 	}
 	    

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.15 1997/05/21 15:16:57 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.16 1997/08/12 12:01:52 hohndel Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1519,7 +1519,7 @@ ProjectUnsharedLibReferences(XKBFILE,xkbfile,$(XKBFILELIBSRC),XBuildLibDir)
      XKBCOMPCMD = XkbComp                       /* assume BINDIR in path */
 #else
      XKBCOMPSRC = $(PROGRAMSRC)/xkbcomp
-     XKBCOMPCMD = $(CLIENTENVSETUP) $(XKBCOMPSRC)/xkbcomp
+     XKBCOMPCMD = $(CLIENTENVSETUP) $(XBUILDBINDIR)/xkbcomp
 #endif
 #else /* !BuildXKBlib */
 #ifndef XkbClientDepLibs

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3accel.c,v 1.9 1997/06/10 12:30:29 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3accel.c,v 1.12 1997/08/15 07:19:19 hohndel Exp $ */
 
 /*
  *
@@ -139,7 +139,6 @@ void S3AccelInit()
     xf86AccelInfoRec.CPUToScreenColorExpandRange = 0x8000;
 
     xf86AccelInfoRec.ColorExpandFlags = CPU_TRANSFER_PAD_DWORD |
-				       	CPU_TRANSFER_BASE_FIXED |
 					BIT_ORDER_IN_BYTE_MSBFIRST |
 					SCANLINE_PAD_DWORD;
 

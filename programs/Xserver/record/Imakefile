@@ -1,10 +1,15 @@
-XCOMM $XConsortium: Imakefile /main/1 1995/12/08 12:17:44 dpw $
+XCOMM $XConsortium: Imakefile /main/3 1996/09/28 17:15:43 rws $
 #include <Server.tmpl>
+
+#if DoLoadableServer
+EXTRAINCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC)
+#endif
 
        SRCS = record.c set.c
        OBJS = record.o set.o
-   INCLUDES = -I../include -I$(INCLUDESRC) -I$(EXTINCSRC)
+   INCLUDES = -I../include -I$(XINCLUDESRC) -I$(EXTINCSRC) $(EXTRAINCLUDES)
    LINTLIBS = ../dix/llib-ldix.ln
+    DEFINES = -DNDEBUG
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(record,$(OBJS))
@@ -12,5 +17,8 @@ LintLibraryTarget(record,$(SRCS))
 NormalLintTarget($(SRCS))
 
 InstallLinkKitLibrary(record,$(LINKKITDIR)/lib)
+#if DoLoadableServer
+InstallDynamicModule(LibraryTargetName(record),$(MODULEDIR))
+#endif
 
 DependTarget()

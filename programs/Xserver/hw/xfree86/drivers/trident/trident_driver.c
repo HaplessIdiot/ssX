@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.11 1997/06/03 14:12:20 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.12 1997/08/26 10:01:26 hohndel Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -536,6 +536,7 @@ TVGA8900Probe()
 
 #ifdef PC98_TGUI
 	OFLG_SET(OPTION_PC98TGUI, &TRIDENT.ChipOptionFlags);
+      	xf86EnableIOPorts(vga256InfoRec.scrnIndex);
 	if( BoardInit() == FALSE )
 		return(FALSE);
 #endif

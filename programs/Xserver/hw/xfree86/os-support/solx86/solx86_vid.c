@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_vid.c,v 3.6 1997/06/20 11:30:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_vid.c,v 3.7 1997/08/26 10:01:42 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -179,7 +179,7 @@ int ScreenNum;
 	int i;
 
 	if (!InitDone) {
-	    for (i = 0; i < NumScr; i++)
+	    for (i = 0; i < MAXSCREENS; i++)
 	    {
 		ScreenEnabled[i] = FALSE;
 		ExtendedPorts[i] = FALSE;

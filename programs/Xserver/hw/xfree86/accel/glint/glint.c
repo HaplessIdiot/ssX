@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.4 1997/07/31 07:16:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.5 1997/08/26 12:47:48 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane, Wigan, England.
  *
@@ -79,6 +79,8 @@ static int glintValidMode(
 #define GLINT_MAX_CLOCK	220000
 
 int glintMaxClock = GLINT_MAX_CLOCK;
+
+
 
 ScrnInfoPtr xf86Screens[] = 
 {
@@ -195,7 +197,7 @@ XF86ModuleVersionInfo glintVersRec =
 ScrnInfoRec *
 ServerInit()
 {
-return &glintInfoRec;
+  return &glintInfoRec;
 }
 
 void
@@ -255,7 +257,11 @@ static PixmapPtr ppix = NULL;
 int glintDisplayWidth;
 volatile pointer glintVideoMem = NULL;
 volatile pointer GLINTMMIOBase;
-volatile pointer PERMEDIAMMIOBase;
+
+/* ### test vga */
+volatile pointer PMIOBase0;
+
+/* volatile pointer RGLINTMMIOBase; */
 Bool AlreadyInited;
 int coprotype = -1;
 int glintLBBase;
@@ -345,10 +351,12 @@ glintProbe()
   unsigned long glintdelta = 0;
   unsigned long glintcopro = 0;
   unsigned long basecopro = 0;
-  unsigned long base3copro;
+  unsigned long base3copro, base4copro;
   unsigned long basedelta;
   unsigned long *delta_pci_basep;
   int cardnum = -1;
+  int offset;
+  unsigned short usData;
 
   pcrpp = xf86scanpci(glintInfoRec.scrnIndex);
  
@@ -372,17 +380,18 @@ glintProbe()
 			cardnum = pcrp->_cardnum;
 		else if( cardnum != pcrp->_cardnum )
 		{
-			ErrorF("found second board based on GLINT "
-			       "will use information from there\n");
+			ErrorF("%s %s: found second board based on GLINT "
+			       "will use information from there\n",
+			       XCONFIG_PROBED, glintInfoRec.name);
 			glintdelta = 0;
 			pcrpdelta = NULL;
 			cardnum = pcrp->_cardnum;
 		}
-		if( xf86Verbose > 1 ) 
+		if( xf86Verbose ) 
 		{
-			ErrorF("found GLINT 300SX at card #%d func #%d with "
-			       "base 0x%x\n",pcrp->_cardnum,pcrp->_func,
-			       basecopro);
+			ErrorF("%s %s: found GLINT 300SX at card #%d func #%d with "
+			       "base 0x%x\n",XCONFIG_PROBED, glintInfoRec.name,
+			       pcrp->_cardnum,pcrp->_func,basecopro);
 		}
 		break;
 	case PCI_CHIP_3DLABS_500TX:
@@ -396,17 +405,18 @@ glintProbe()
 			cardnum = pcrp->_cardnum;
 		else if( cardnum != pcrp->_cardnum )
 		{
-			ErrorF("found second board based on GLINT "
-			       "will use information from there\n");
+			ErrorF("%s %s: found second board based on GLINT "
+			       "will use information from there\n",
+			       XCONFIG_PROBED, glintInfoRec.name);
 			glintdelta = 0;
 			pcrpdelta = NULL;
 			cardnum = pcrp->_cardnum;
 		}
-		if( xf86Verbose > 1 ) 
+		if( xf86Verbose ) 
 		{
-			ErrorF("found GLINT 500TX at card #%d func #%d with "
-			       "base 0x%x\n",pcrp->_cardnum,pcrp->_func,
-			       basecopro);
+			ErrorF("%s %s: found GLINT 500TX at card #%d func #%d with "
+			       "base 0x%x\n",XCONFIG_PROBED, glintInfoRec.name,
+			       pcrp->_cardnum,pcrp->_func,basecopro);
 		}
 		break;
 	case PCI_CHIP_3DLABS_PERMEDIA:
@@ -420,17 +430,18 @@ glintProbe()
 			cardnum = pcrp->_cardnum;
 		else if( cardnum != pcrp->_cardnum )
 		{
-			ErrorF("found second board based on GLINT "
-			       "will use information from there\n");
+			ErrorF("%s %s: found second board based on GLINT "
+			       "will use information from there\n",
+			       XCONFIG_PROBED, glintInfoRec.name);
 			glintdelta = 0;
 			pcrpdelta = NULL;
 			cardnum = pcrp->_cardnum;
 		}
-		if( xf86Verbose > 1 ) 
+		if( xf86Verbose ) 
 		{
-			ErrorF("found GLINT PerMedia at card #%d func #%d with "
-			       "base 0x%x\n",pcrp->_cardnum,pcrp->_func,
-			       basecopro);
+			ErrorF("%s %s: found GLINT PerMedia at card #%d func #%d with "
+			       "base 0x%x\n",XCONFIG_PROBED, glintInfoRec.name,
+			       pcrp->_cardnum,pcrp->_func,basecopro);
 		}
 		break;
 	case PCI_CHIP_3DLABS_DELTA:
@@ -444,18 +455,19 @@ glintProbe()
 			cardnum = pcrp->_cardnum;
 		else if( cardnum != pcrp->_cardnum )
 		{
-			ErrorF("found second board based on GLINT "
-			       "will use information from there\n");
+			ErrorF("%s %s: found second board based on GLINT "
+			       "will use information from there\n",
+			       XCONFIG_PROBED, glintInfoRec.name);
 			coprotype = -1;
 			glintcopro = 0;
 			pcrpglint = NULL;
 			cardnum = pcrp->_cardnum;
 		}
-		if( xf86Verbose > 1 ) 
+		if( xf86Verbose ) 
 		{
-			ErrorF("found GLINT Delta at card #%d func #%d with "
-			       "base 0x%x\n",pcrp->_cardnum,pcrp->_func,
-			       basedelta);
+			ErrorF("%s %s: found GLINT Delta at card #%d func #%d with "
+			       "base 0x%x\n",XCONFIG_PROBED, glintInfoRec.name,
+			       pcrp->_cardnum,pcrp->_func,basedelta);
 		}
 		break;
 	}
@@ -489,7 +501,7 @@ glintProbe()
    * or 300SX are different
    * We only handle config type 1 at this point
    */
-  if( glintdelta && glintcopro )
+  if( glintdelta && glintcopro)
   {
     if( (basedelta & 0x20000) ^ (basecopro & 0x20000) )
     {
@@ -507,7 +519,13 @@ glintProbe()
 	 *
 	 * to be able to do that we need to enable IO
 	 */
-	outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x1c); /* base3 */
+	xf86EnableIOPorts(glintInfoRec.scrnIndex);
+ 	if (coprotype == PCI_CHIP_3DLABS_PERMEDIA) {
+ 		offset = 0x20; /* base4 */
+         } else {
+ 		offset = 0x1c; /* base3 */
+ 	}
+ 	outl(PCI_MODE1_ADDRESS_REG, glintcopro | offset); 
 	base3copro  = inl(PCI_MODE1_DATA_REG);
 	if( (basecopro & 0x20000) ^ (base3copro & 0x20000) )
 	{
@@ -549,15 +567,106 @@ glintProbe()
 	 * now update our internal structure accordingly
 	 */
 	*delta_pci_basep = base3copro;
+        xf86DisableIOPorts(glintInfoRec.scrnIndex);
     }
   }
-  if (glintcopro) {
-	outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x04);
-	temp = inl(PCI_MODE1_DATA_REG);
-       	outl(PCI_MODE1_DATA_REG, temp | 0x04); /* Master enable */
-	temp = inl(PCI_MODE1_DATA_REG);
-  }
 
+  if (glintcopro) {
+    xf86EnableIOPorts(glintInfoRec.scrnIndex);
+
+    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x04);
+    temp = inl(PCI_MODE1_DATA_REG);
+    outl(PCI_MODE1_DATA_REG, temp | 0x04); /* Master enable */
+    temp = inl(PCI_MODE1_DATA_REG);
+
+    /*
+     * and now for the magic.
+     * read old value
+     * write fffffffff
+     * read value
+     * print size
+     * write old value
+     */
+    outl(PCI_MODE1_ADDRESS_REG, glintdelta | 0x10);
+    temp = inl(PCI_MODE1_DATA_REG);
+    outl(PCI_MODE1_ADDRESS_REG, glintdelta | 0x10);
+    outl(PCI_MODE1_DATA_REG,0xffffffff);
+    outl(PCI_MODE1_ADDRESS_REG, glintdelta | 0x10);
+#ifdef DEBUG
+    ErrorF("Delta - Control Register size: 0x%08x\n", ~inl(PCI_MODE1_DATA_REG));
+#else
+    inl(PCI_MODE1_DATA_REG);
+#endif
+    outl(PCI_MODE1_ADDRESS_REG, glintdelta | 0x10);
+    outl(PCI_MODE1_DATA_REG,temp);
+    
+    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x10);
+    temp = inl(PCI_MODE1_DATA_REG);
+    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x10);
+    outl(PCI_MODE1_DATA_REG,0xffffffff);
+    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x10);
+#ifdef DEBUG
+    ErrorF("500TX - Control Register size: 0x%08x\n", ~inl(PCI_MODE1_DATA_REG));
+#else
+    inl(PCI_MODE1_DATA_REG);
+#endif
+    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x10);
+    outl(PCI_MODE1_DATA_REG,temp);
+    
+    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x14);
+    temp = inl(PCI_MODE1_DATA_REG);
+    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x14);
+    outl(PCI_MODE1_DATA_REG,0xffffffff);
+    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x14);
+#ifdef DEBUG
+    ErrorF("500TX - Localbuffer0 size: 0x%08x\n", ~inl(PCI_MODE1_DATA_REG));
+#else
+    inl(PCI_MODE1_DATA_REG);
+#endif
+    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x14);
+    outl(PCI_MODE1_DATA_REG,temp);
+    
+    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x18);
+    temp = inl(PCI_MODE1_DATA_REG);
+    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x18);
+    outl(PCI_MODE1_DATA_REG,0xffffffff);
+    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x18);
+#ifdef DEBUG
+    ErrorF("500TX - Framebuffer0 size: 0x%08x\n", ~inl(PCI_MODE1_DATA_REG));
+#else
+    inl(PCI_MODE1_DATA_REG);
+#endif
+    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x18);
+    outl(PCI_MODE1_DATA_REG,temp);
+    
+    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x1C);
+    temp = inl(PCI_MODE1_DATA_REG);
+    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x1C);
+    outl(PCI_MODE1_DATA_REG,0xffffffff);
+    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x1C);
+#ifdef DEBUG
+    ErrorF("500TX - Localbuffer1 size: 0x%08x\n", ~inl(PCI_MODE1_DATA_REG));
+#else
+    inl(PCI_MODE1_DATA_REG);
+#endif
+    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x1C);
+    outl(PCI_MODE1_DATA_REG,temp);
+    
+    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x20);
+    temp = inl(PCI_MODE1_DATA_REG);
+    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x20);
+    outl(PCI_MODE1_DATA_REG,0xffffffff);
+    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x20);
+#ifdef DEBUG
+    ErrorF("500TX - Framebuffer1 size: 0x%08x\n", ~inl(PCI_MODE1_DATA_REG));
+#else
+    inl(PCI_MODE1_DATA_REG);
+#endif
+    outl(PCI_MODE1_ADDRESS_REG, glintcopro | 0x20);
+    outl(PCI_MODE1_DATA_REG,temp);
+    
+    xf86DisableIOPorts(glintInfoRec.scrnIndex);
+  }
   if (coprotype == PCI_CHIP_3DLABS_500TX) {
 	  GLINTMMIOBase = xf86MapVidMem(0,MMIO_REGION,
   				(pointer)pcrpdelta->_base0,0x20000);
@@ -565,13 +674,14 @@ glintProbe()
 	  ErrorF("%s %s: Localbuffer address at 0x%x\n",XCONFIG_PROBED,
 			glintInfoRec.name, glintLBBase);
 	  glintInfoRec.MemBase = pcrpglint->_base2;
-  } else if (coprotype == PCI_CHIP_3DLABS_PERMEDIA) {
-	  GLINTMMIOBase = xf86MapVidMem(0,MMIO_REGION,
-  				(pointer)pcrpdelta->_base0,0x20000);
-	  PERMEDIAMMIOBase = xf86MapVidMem(0,MMIO_REGION,
-  				(pointer)pcrpglint->_base0,0x20000);
-  	  glintLBBase = 0; /* no local buffer on PerMedia cards */
-	  glintInfoRec.MemBase = pcrpglint->_base1;
+  } else if (coprotype == PCI_CHIP_3DLABS_PERMEDIA) 
+    {
+      /* Glint IO */
+      GLINTMMIOBase = xf86MapVidMem(0, MMIO_REGION, (pointer)pcrpdelta->_base0, 0x40000);
+      PMIOBase0     = xf86MapVidMem(0, MMIO_REGION, (pointer)pcrpglint->_base0, 0x20000);
+
+      glintLBBase = 0; /* no local buffer on PerMedia cards */
+      glintInfoRec.MemBase = pcrpglint->_base2;
   }
   ErrorF("%s %s: Framebuffer address at 0x%x\n",XCONFIG_PROBED,
 		glintInfoRec.name, glintInfoRec.MemBase);
@@ -583,13 +693,10 @@ glintProbe()
 		glintInfoRec.videoRam = 1024 * (1 << ((GLINTFrameBufferSize &
 						0xE0000000) >> 29));
 	} else if (coprotype == PCI_CHIP_3DLABS_PERMEDIA) {
-		/*
-		 * we need to get this field from the PerMedia, not the 
-		 * Delta chip */
-		GLINTFrameBufferSize = 
-			*(unsigned int *)((char*)PERMEDIAMMIOBase+PMMemConfig);
-		glintInfoRec.videoRam = 2048 * (1 + ((GLINTFrameBufferSize &
-						0x60000000) >> 29));
+	  GLINTFrameBufferSize = GLINT_READ_REG(PMMemConfig);
+	  ErrorF("Memconfig register 0x%x\n", GLINTFrameBufferSize);
+	  glintInfoRec.videoRam = 2048 * (((GLINTFrameBufferSize >> 29) & 0x03) + 1);
+
 	}
 	ErrorF("%s %s: videoram : %dk\n", XCONFIG_PROBED, 
 		glintInfoRec.name, glintInfoRec.videoRam);
@@ -633,24 +740,7 @@ glintProbe()
 	glintIBMRGB52x_PreInit();
   } 
 
-  if (coprotype == PCI_CHIP_3DLABS_PERMEDIA) {
-  	/* we need to turn off the VGA part as the very first thing 
-	 * and make sure that the Aperture is set up correctly 
-	 * additionally, we want to set a few other magic values */
-	GLINT_WRITE_REG(0x05,0x63c4);
-	GLINT_WRITE_REG(0x00,0x63c4);
-	GLINT_WRITE_REG(0x0f,ErrorFlags);
-	GLINT_WRITE_REG(0x00,IntEnable);
-	GLINT_WRITE_REG(0x8000003f,IntFlags);
-	GLINT_WRITE_REG(0xffffffff,PMBypassWriteMask);
-	GLINT_WRITE_REG(0x7ff,PMInterruptLine);
-	GLINT_WRITE_REG(0x01,FBWriteMode);
-	GLINT_WRITE_REG(0x00,Aperture0);
-	GLINT_WRITE_REG(0x7ff0000,PackedDataLimits);
-	GLINT_WRITE_REG(0x7ff0000,XLimits);
-	GLINT_WRITE_REG(0x7ff0000,YLimits);
-  }
-  /* Initialize options that reflect the GLINT */
+
   OFLG_ZERO(&validOptions);
 
   OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &validOptions);
@@ -799,19 +889,20 @@ glintInitialize (int scr_index, ScreenPtr pScreen, int argc, char **argv)
 	int displayResolution = 75; 	/* default to 75dpi */
 	int i;
 	extern int monitorResolution;
+	Bool  ret;
 	Bool (*ScreenInitFunc)(register ScreenPtr,pointer,int,int,int,int,int);
 
 	/* Init the screen */
-	
 	glintInitAperture(scr_index);
 	glintInit(glintInfoRec.modes);
 	glintInitEnvironment();
 	AlreadyInited = TRUE;
 	glintCalcCRTCRegs(&glintCRTCRegs, glintInfoRec.modes);
 	glintSetCRTCRegs(&glintCRTCRegs);
+
 	for (i = 0; i < 256; i++)
 	{ 
-		glintReorderSwapBits(i, glintSwapBits[i]);
+	  glintReorderSwapBits(i, glintSwapBits[i]);
 	}
 
 	/*
@@ -859,7 +950,9 @@ glintInitialize (int scr_index, ScreenPtr pScreen, int argc, char **argv)
 
 	pScreen->whitePixel = (Pixel) 1;
 	pScreen->blackPixel = (Pixel) 0;
+
 	XF86FLIP_PIXELS();
+
 	pScreen->CloseScreen = glintCloseScreen;
 	pScreen->SaveScreen = glintSaveScreen;
 
@@ -889,6 +982,7 @@ glintInitialize (int scr_index, ScreenPtr pScreen, int argc, char **argv)
 	miDCInitialize (pScreen, &xf86PointerScreenFuncs);
 
 	savepScreen = pScreen;
+
 	return (cfbCreateDefColormap(pScreen));
 }
 
@@ -938,7 +1032,6 @@ glintEnterLeaveVT(Bool enter, int screen_idx)
 	xf86MapDisplay(screen_idx, LINEAR_REGION);
 	if (!xf86Resetting) {
 	    ScrnInfoPtr pScr = (ScrnInfoPtr)XF86SCRNINFO(pScreen);
-
 	    glintInit(glintInfoRec.modes);
 	    glintInitEnvironment();
 	    AlreadyInited = TRUE;
@@ -1019,8 +1112,10 @@ glintCloseScreen(int screen_idx, ScreenPtr pScreen)
      * current vt. Let's catch this case here.
      */
     xf86Exiting = TRUE;
+
     if (xf86VTSema)
 	glintEnterLeaveVT(LEAVE, screen_idx);
+
     else if (ppix) {
     /* 7-Jan-94 CEG: The server is not running on the current vt.
      * Free the screen snapshot taken when the server vt was left.
@@ -1046,6 +1141,7 @@ glintCloseScreen(int screen_idx, ScreenPtr pScreen)
     }
 
     savepScreen = NULL;
+
     return(TRUE);
 }
 
@@ -1142,8 +1238,8 @@ void
 glintAdjustFrame(x, y)
     int x, y;
 {
-	GLINTWindowBase = y * glintInfoRec.displayWidth + x;
-	GLINT_WRITE_REG(GLINTWindowBase, FBWindowBase);
+  GLINTWindowBase = y * glintInfoRec.displayWidth + x;
+  GLINT_WRITE_REG(GLINTWindowBase, FBWindowBase);
 }
 
 /*

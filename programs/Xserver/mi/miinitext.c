@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: miinitext.c /main/41 1996/09/28 17:15:08 rws $ */
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.22 1997/05/11 04:58:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.23 1997/08/26 10:01:48 hohndel Exp $ */
 
 #include "misc.h"
 #include "extension.h"
@@ -382,9 +382,7 @@ InitExtensions(argc, argv)
     extension[16].initFunc = XkbExtensionInit;
 #endif
     /* 17 - XCMISC */
-#ifdef RECORD
-    extension[18].initFunc = RecordExtensionInit;
-#endif
+    /* 18 - RECORD */
 #ifdef LBX
     extension[19].initFunc = LbxExtensionInit;
 #endif
@@ -404,12 +402,13 @@ InitExtensions(argc, argv)
     /* 27 - DPMS */
     /* 28 - GLX */
 
-    for (i = 0; extension[i].name != NULL; i++) 
+    for (i = 0; extension[i].name != NULL; i++) {
 	if (extension[i].initFunc != NULL && 
 	    (extension[i].disablePtr == NULL || 
 	     extension[i].disablePtr != NULL && !*extension[i].disablePtr)) {
 	    (*extension[i].initFunc)();
 	}
+    }
 }
 
 #endif /* XFree86LOADER */

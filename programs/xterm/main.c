@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c /main/247 1996/11/29 10:33:51 swick $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.54 1997/07/29 13:26:05 hohndel Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.55 1997/08/26 10:01:55 hohndel Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -2934,7 +2934,7 @@ spawn ()
 
 		/* set up the new entry */
 		utmp.ut_type = USER_PROCESS;
-#if !defined(linux) && !defined(SVR4)
+#if !(defined(linux) && __GLIBC__ < 2) && !defined(SVR4)
 		utmp.ut_exit.e_exit = 2;
 #endif
 		(void) strncpy(utmp.ut_user,
@@ -2962,7 +2962,7 @@ spawn ()
 			       sizeof(utmp.ut_name));
 
 		utmp.ut_pid = getpid();
-#if defined(SVR4) || defined(SCO325)
+#if defined(SVR4) || defined(SCO325) || (defined(linux) && __GLIBC__ >= 2)
 		utmp.ut_session = getsid(0);
 		utmp.ut_xtime = time ((Time_t *) 0);
 		utmp.ut_tv.tv_usec = 0;
@@ -2978,11 +2978,16 @@ spawn ()
 		if (term->misc.login_shell)
 		    updwtmpx(WTMPX_FILE, &utmp);
 #else
+#if defined(linux) && __GLIBC__ >= 2
+		if (term->misc.login_shell)
+		    updwtmp(etc_wtmp, &utmp);
+#else
 		if (term->misc.login_shell &&
 		     (i = open(etc_wtmp, O_WRONLY|O_APPEND)) >= 0) {
 		    write(i, (char *)&utmp, sizeof(struct utmp));
 		    close(i);
 		}
+#endif
 #endif
 #endif
 		/* close the file */
@@ -3737,7 +3742,7 @@ Exit(n)
 #endif
 	char* ptyname;
 	char* ptynameptr = 0;
-#if defined(WTMP) && !defined(SVR4)
+#if defined(WTMP) && !defined(SVR4) && !(defined(linux) && __GLIBC__ >= 2)
 	int fd;			/* for /etc/wtmp */
 	int i;
 #endif
@@ -3769,7 +3774,7 @@ Exit(n)
 	    /* write it out only if it exists, and the pid's match */
 	    if (utptr && (utptr->ut_pid == term->screen.pid)) {
 		    utptr->ut_type = DEAD_PROCESS;
-#if defined(SVR4) || defined(SCO325)
+#if defined(SVR4) || defined(SCO325) || (defined(linux) && __GLIBC__ >= 2)
 		    utmp.ut_session = getsid(0);
 		    utmp.ut_xtime = time ((Time_t *) 0);
 		    utmp.ut_tv.tv_usec = 0;
@@ -3783,12 +3788,17 @@ Exit(n)
 		    if (term->misc.login_shell)
 			updwtmpx(WTMPX_FILE, &utmp);
 #else
+#if defined(linux) && __GLIBC__ >= 2
+		    if (term->misc.login_shell)
+			updwtmp(etc_wtmp, &utmp);
+#else
 		    /* set wtmp entry if wtmp file exists */
 		    if (term->misc.login_shell &&
 			(fd = open(etc_wtmp, O_WRONLY | O_APPEND)) >= 0) {
 		      i = write(fd, utptr, sizeof(utmp));
 		      i = close(fd);
 		    }
+#endif
 #endif
 #endif
 

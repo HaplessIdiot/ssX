@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.8 1997/06/03 14:12:04 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.9 1997/08/26 10:01:14 hohndel Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -4450,7 +4450,27 @@ DisplayModePtr mode;
 Bool verbose;
 int flag;
 {
-return MODE_OK;
+  if (HAVE546X()) {
+    /* If the Horizontal Sync region starts within 8 pixels of the
+       end of the displayable pixels, the cursor doesn't get drawn
+       properly.  The cursor image appears on only the first
+       scanline of the screen. */
+    if (mode->CrtcHSyncStart <= mode->CrtcHDisplay + 8) {
+      if(verbose) {
+	ErrorF("%s %s: In mode \"%s\", HSyncStart (%d) is "
+	       "too close to display\n",
+	       XCONFIG_PROBED, vga256InfoRec.name, mode->name, 
+	       mode->CrtcHSyncStart);
+	ErrorF("%s %s:   width (%d).  Increase HSyncStart to at least %d.\n",
+	       XCONFIG_PROBED, vga256InfoRec.name, mode->CrtcHDisplay,
+	       ((mode->CrtcHDisplay+7)/8)*8 + 16);
+      }
+      
+      return MODE_BAD;
+    }
+  }
+
+  return MODE_OK;
 }
 
 

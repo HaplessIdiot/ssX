@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glintIBMCurs.c,v 1.1 1997/06/17 08:17:55 hohndel Exp $ */
 /*
  * Copyright 1996 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -34,8 +34,7 @@
 #define MAX_CURS_HEIGHT 64   /* 64 scan lines */
 #define MAX_CURS_WIDTH  64   /* 64 pixels     */
 
-extern struct glintmem glintmem;
-extern Bool glintBlockCursor;
+extern struct glintmem glintmem; extern Bool glintBlockCursor;
 
 /*
  * Convert the cursor from server-format to hardware-format.  The IBMRGB
@@ -144,7 +143,6 @@ glintIBMCursorOff()
    GLINT_SLOW_WRITE_REG(tmp1, IBMRGB_INDEX_DATA);
 
    GLINT_SLOW_WRITE_REG(tmp, IBMRGB_INDEX_LOW);
-
    return;
 }
 
@@ -212,7 +210,6 @@ glintIBMRecolorCursor(ScreenPtr pScr, CursorPtr pCurs, Bool displayed)
    GLINT_SLOW_WRITE_REG((pCurs->foreBlue >> 8) & 0xFF, IBMRGB_INDEX_DATA);
 
    GLINT_SLOW_WRITE_REG(tmp, IBMRGB_INDEX_LOW);
-
    return;
 }
 

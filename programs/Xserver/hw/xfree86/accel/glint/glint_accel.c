@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_accel.c,v 1.4 1997/07/29 12:07:29 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_accel.c,v 1.5 1997/08/12 12:01:59 hohndel Exp $ */
 /*
  * Copyright 1996,1997 by Alan Hourihane, Wigan, England.
  *
@@ -79,6 +79,7 @@ unsigned char byte_reversed[256] =
 };
 
 extern int pprod;
+extern int coprotype;
 extern GLINTWindowBase;
 static int ScanlineWordCount;
 int BitMaskOffset;
@@ -93,12 +94,16 @@ int DashPatternSize;
 CARD32 ScratchBuffer[512];
 
 void GLINTSync();
+void PermediaSetupForFillRectSolid();
+void PermediaSubsequentFillRectSolid();
 void GLINTSetupForFillRectSolid();
 void GLINTSubsequentFillRectSolid();
 void GLINTSubsequentFillTrapezoidSolid();
 void GLINTSubsequentTwoPointLine();
 void GLINTSetupForDashedLine();
 void GLINTSubsequentDashedTwoPointLine();
+void PermediaSetupForScreenToScreenCopy();
+void PermediaSubsequentScreenToScreenCopy();
 void GLINTSetupForScreenToScreenCopy();
 void GLINTSubsequentScreenToScreenCopy();
 void GLINTSetClippingRectangle();
@@ -122,84 +127,108 @@ void GLINTSubsequentScanlineScreenToScreenColorExpand();
 }
 
 void GLINTAccelInit() {
-    xf86AccelInfoRec.Flags = PIXMAP_CACHE |
-			     ONLY_LEFT_TO_RIGHT_BITBLT |
-			     COP_FRAMEBUFFER_CONCURRENCY |
-			     HORIZONTAL_TWOPOINTLINE |
-			     HARDWARE_CLIP_LINE |
-			     USE_TWO_POINT_LINE |
-			     TWO_POINT_LINE_NOT_LAST |
-			     BACKGROUND_OPERATIONS |
-			     NO_CAP_NOT_LAST |
-			     DELAYED_SYNC;
-
+    if (coprotype == PCI_CHIP_3DLABS_PERMEDIA) {
+	xf86AccelInfoRec.Flags = GXCOPY_ONLY;
 #if 0
-    xf86AccelInfoRec.PatternFlags =
-			     HARDWARE_PATTERN_NOT_LINEAR |
-			     HARDWARE_PATTERN_SCREEN_ORIGIN |
-			     HARDWARE_PATTERN_PROGRAMMED_ORIGIN |
-			     HARDWARE_PATTERN_MONO_TRANSPARENCY | 
-			     HARDWARE_PATTERN_TRANSPARENCY |
-			     HARDWARE_PATTERN_PROGRAMMED_BITS;
+	    BACKGROUND_OPERATIONS | 
+	    COP_FRAMEBUFFER_CONCURRENCY |  
+	    DELAYED_SYNC; 
 #endif
-				
-    xf86AccelInfoRec.Sync = GLINTSync;
-
-    xf86GCInfoRec.PolyFillRectSolidFlags = NO_PLANEMASK;
-
-    xf86AccelInfoRec.SetupForFillRectSolid = GLINTSetupForFillRectSolid;
+	xf86AccelInfoRec.PatternFlags = 0;
+    } else {
+	xf86AccelInfoRec.Flags = PIXMAP_CACHE |
+	    ONLY_LEFT_TO_RIGHT_BITBLT |
+	    COP_FRAMEBUFFER_CONCURRENCY |
+	    HORIZONTAL_TWOPOINTLINE |
+	    HARDWARE_CLIP_LINE |
+	    USE_TWO_POINT_LINE |
+	    TWO_POINT_LINE_NOT_LAST |
+	    BACKGROUND_OPERATIONS |
+	    NO_CAP_NOT_LAST |
+	    DELAYED_SYNC;
+  
 #if 0
-    xf86AccelInfoRec.SubsequentFillTrapezoidSolid = GLINTSubsequentFillTrapezoidSolid;
+	xf86AccelInfoRec.PatternFlags =
+	    HARDWARE_PATTERN_NOT_LINEAR |
+	    HARDWARE_PATTERN_SCREEN_ORIGIN |
+	    HARDWARE_PATTERN_PROGRAMMED_ORIGIN |
+	    HARDWARE_PATTERN_MONO_TRANSPARENCY | 
+	    HARDWARE_PATTERN_TRANSPARENCY |
+	    HARDWARE_PATTERN_PROGRAMMED_BITS;
 #endif
-    xf86AccelInfoRec.SubsequentFillRectSolid = GLINTSubsequentFillRectSolid;
-    xf86AccelInfoRec.SubsequentTwoPointLine = GLINTSubsequentTwoPointLine;
-    xf86AccelInfoRec.SetClippingRectangle = GLINTSetClippingRectangle;
-    xf86AccelInfoRec.SetupForDashedLine = GLINTSetupForDashedLine;
-    xf86AccelInfoRec.SubsequentDashedTwoPointLine = GLINTSubsequentDashedTwoPointLine;
-    xf86AccelInfoRec.LinePatternBuffer = (void *) &DashPattern;
-    xf86AccelInfoRec.LinePatternMaxLength = 16;
-
-    xf86GCInfoRec.CopyAreaFlags = NO_TRANSPARENCY | NO_PLANEMASK;
-
-    xf86AccelInfoRec.SetupForScreenToScreenCopy =
-       		GLINTSetupForScreenToScreenCopy;
-    xf86AccelInfoRec.SubsequentScreenToScreenCopy =
-	       	GLINTSubsequentScreenToScreenCopy;
-
-    xf86AccelInfoRec.ColorExpandFlags = VIDEO_SOURCE_GRANULARITY_PIXEL |
-					CPU_TRANSFER_PAD_DWORD |
-					ONLY_TRANSPARENCY_SUPPORTED | 
-					BIT_ORDER_IN_BYTE_LSBFIRST |
-					NO_PLANEMASK;
-
-    xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand =
-				GLINTSetupForScanlineScreenToScreenColorExpand;
-    xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand =
-				GLINTSubsequentScanlineScreenToScreenColorExpand;
-    xf86AccelInfoRec.ScratchBufferAddr = 1;
-    xf86AccelInfoRec.ScratchBufferSize = 512;
-    xf86AccelInfoRec.ScratchBufferBase = (void*)ScratchBuffer;
-    xf86AccelInfoRec.PingPongBuffers = 1;
-
+    }
+    if (coprotype == PCI_CHIP_3DLABS_500TX) {
+	xf86AccelInfoRec.Sync = GLINTSync;
+  
+	xf86GCInfoRec.PolyFillRectSolidFlags = NO_PLANEMASK;
+  
+	xf86AccelInfoRec.SetupForFillRectSolid = GLINTSetupForFillRectSolid;
+#if 0
+	xf86AccelInfoRec.SubsequentFillTrapezoidSolid = GLINTSubsequentFillTrapezoidSolid;
+#endif
+	xf86AccelInfoRec.SubsequentFillRectSolid = GLINTSubsequentFillRectSolid;
+	xf86AccelInfoRec.SubsequentTwoPointLine = GLINTSubsequentTwoPointLine;
+	xf86AccelInfoRec.SetClippingRectangle = GLINTSetClippingRectangle;
+	xf86AccelInfoRec.SetupForDashedLine = GLINTSetupForDashedLine;
+	xf86AccelInfoRec.SubsequentDashedTwoPointLine = GLINTSubsequentDashedTwoPointLine;
+	xf86AccelInfoRec.LinePatternBuffer = (void *) &DashPattern;
+	xf86AccelInfoRec.LinePatternMaxLength = 16;
+  
+	xf86GCInfoRec.CopyAreaFlags = NO_TRANSPARENCY | NO_PLANEMASK;
+  
+	xf86AccelInfoRec.SetupForScreenToScreenCopy =
+	    GLINTSetupForScreenToScreenCopy;
+	xf86AccelInfoRec.SubsequentScreenToScreenCopy =
+	    GLINTSubsequentScreenToScreenCopy;
+  
+	xf86AccelInfoRec.ColorExpandFlags = VIDEO_SOURCE_GRANULARITY_PIXEL |
+	    CPU_TRANSFER_PAD_DWORD |
+	    ONLY_TRANSPARENCY_SUPPORTED | 
+	    BIT_ORDER_IN_BYTE_LSBFIRST |
+	    NO_PLANEMASK;
+  
+	xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand =
+	    GLINTSetupForScanlineScreenToScreenColorExpand;
+	xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand =
+	    GLINTSubsequentScanlineScreenToScreenColorExpand;
+	xf86AccelInfoRec.ScratchBufferAddr = 1;
+	xf86AccelInfoRec.ScratchBufferSize = 512;
+	xf86AccelInfoRec.ScratchBufferBase = (void*)ScratchBuffer;
+	xf86AccelInfoRec.PingPongBuffers = 1;
+  
 #if 0 /* Pattern upload is not yet working.... */
-    xf86AccelInfoRec.SetupForFill8x8Pattern = GLINTSetupForFill8x8Pattern;
-    xf86AccelInfoRec.SubsequentFill8x8Pattern = GLINTSubsequentFill8x8Pattern;
+	xf86AccelInfoRec.SetupForFill8x8Pattern = GLINTSetupForFill8x8Pattern;
+	xf86AccelInfoRec.SubsequentFill8x8Pattern = GLINTSubsequentFill8x8Pattern;
 #endif
-
+  
 #if 0
-    xf86AccelInfoRec.SetupFor8x8PatternColorExpand = 
-				GLINTSetupFor8x8PatternColorExpand;
-    xf86AccelInfoRec.Subsequent8x8PatternColorExpand = 
-				GLINTSubsequent8x8PatternColorExpand;
+	xf86AccelInfoRec.SetupFor8x8PatternColorExpand = 
+	    GLINTSetupFor8x8PatternColorExpand;
+	xf86AccelInfoRec.Subsequent8x8PatternColorExpand = 
+	    GLINTSubsequent8x8PatternColorExpand;
 #endif
+  
+    } else if (coprotype == PCI_CHIP_3DLABS_PERMEDIA) {
+	xf86AccelInfoRec.Sync = GLINTSync;
 
+	xf86GCInfoRec.PolyFillRectSolidFlags = 0;
+
+	xf86AccelInfoRec.SetupForFillRectSolid = 
+	    PermediaSetupForFillRectSolid;
+	xf86AccelInfoRec.SubsequentFillRectSolid = 
+	    PermediaSubsequentFillRectSolid;
+	xf86AccelInfoRec.SetupForScreenToScreenCopy =
+	    PermediaSetupForScreenToScreenCopy;
+	xf86AccelInfoRec.SubsequentScreenToScreenCopy =
+	    PermediaSubsequentScreenToScreenCopy;
+    }
     xf86AccelInfoRec.ServerInfoRec = &glintInfoRec;
 
     xf86AccelInfoRec.PixmapCacheMemoryStart = glintInfoRec.virtualY *
-		glintInfoRec.displayWidth * glintInfoRec.bitsPerPixel / 8;
+	glintInfoRec.displayWidth * glintInfoRec.bitsPerPixel / 8;
 
-    xf86AccelInfoRec.PixmapCacheMemoryEnd = glintInfoRec.videoRam * 1024
-						- 1024 - 16384;
+    xf86AccelInfoRec.PixmapCacheMemoryEnd = 
+	glintInfoRec.videoRam * 1024 - 1024 - 16384;
 }
 
 long
@@ -245,11 +274,67 @@ void GLINTSync() {
  * rectangle fills.
  */
 
-void GLINTSetupForFillRectSolid(int color, int rop, unsigned planemask)
+void PermediaSetupForFillRectSolid(int color, int rop, unsigned planemask)
 {
 	GLINT_WAIT(11);
 
 	REPLICATE(color);
+
+	gcolor = color;
+	
+	GLINT_WRITE_REG(pprod, FBReadMode);
+	GLINT_WRITE_REG(color, FBBlockColor);
+	GLINT_WRITE_REG(0, LogicalOpMode);
+	GLINT_WRITE_REG(planemask, FBHardwareWriteMask);
+	GLINT_WRITE_REG(0xFFFFFFFF, FBSoftwareWriteMask);
+	mode = FASTFILL;
+
+	GLINT_WRITE_REG(0,dXDom);
+	GLINT_WRITE_REG(0,dXSub);
+	GLINT_WRITE_REG(0, FBPixelOffset);
+	GLINT_WRITE_REG(0, AreaStippleMode);
+	GLINT_WRITE_REG(1<<16,dY);
+}
+
+/*
+ * This is the implementation of the SubsequentForFillRectSolid function
+ * that sends commands to the coprocessor to fill a solid rectangle of
+ * the specified location and size, with the parameters from the SetUp
+ * call.
+ * We need checks here that x <= 2047 and y <= 1023 (these seem to be the
+ * drawing limits for the Permedia
+ */
+void PermediaSubsequentFillRectSolid(int x, int  y, int  w, int  h)
+{
+	GLINT_WAIT(5);
+	GLINT_WRITE_REG((x+w)<<16, StartXSub);
+	GLINT_WRITE_REG(x<<16,StartXDom);
+	GLINT_WRITE_REG(y<<16,StartY);
+	GLINT_WRITE_REG(h,Count);
+
+	GLINT_WRITE_REG(TRAPEZOID | mode,Render);
+}
+
+/*
+ * This is the implementation of the SetupForFillRectSolid function
+ * that sets up the coprocessor for a subsequent batch for solid
+ * rectangle fills.
+ */
+
+void GLINTSetupForFillRectSolid(int color, int rop, unsigned planemask)
+{
+	GLINT_WAIT(11);
+
+	if (glintInfoRec.bitsPerPixel < 32)
+	{
+		color |= color << 16;
+		planemask |= planemask << 16;
+		if (glintInfoRec.bitsPerPixel < 16)
+		{
+			color |= color << 8;
+			planemask |= planemask << 8;
+		}
+	}
 
 	gcolor = color;
 	
@@ -444,6 +529,86 @@ void GLINTSetClippingRectangle(int x1, int y1, int x2, int y2)
 	GLINT_WRITE_REG(3, ScissorMode); /* Enable Scissor Mode */
 }
 
+static int blitxdir, blitydir;
+ 
+void PermediaSetupForScreenToScreenCopy( int xdir, int  ydir, int  rop,
+				    unsigned planemask, int transparency_color)
+{
+	blitydir = ydir;
+	blitxdir = xdir;
+
+	notline = 0;
+
+	GLINT_WAIT(8);
+	GLINT_WRITE_REG(0, RasterizerMode);
+	if (glintInfoRec.bitsPerPixel < 32)
+	{
+		planemask |= planemask << 16;
+		if (glintInfoRec.bitsPerPixel < 16)
+		{
+			planemask |= planemask << 8;
+		}
+	}
+
+	if (rop == GXcopy) {
+		GLINT_WRITE_REG(pprod | ReadSource, FBReadMode);
+	} else {
+	        GLINT_WRITE_REG(pprod | ReadSource | ReadDestination, FBReadMode);
+	}
+
+	GLINT_WRITE_REG(planemask, FBHardwareWriteMask);
+	GLINT_WRITE_REG(0xFFFFFFFF, FBSoftwareWriteMask);
+	GLINT_WRITE_REG(rop<<1|1, LogicalOpMode); 
+	GLINT_WRITE_REG(0, AreaStippleMode);
+
+	GLINT_WRITE_REG(0, dXDom);
+	GLINT_WRITE_REG(0, dXSub);
+}
+/*
+ * This is the implementation of the SubsequentForScreenToScreenCopy
+ * that sends commands to the coprocessor to perform a screen-to-screen
+ * copy of the specified areas, with the parameters from the SetUp call.
+ * In this sample implementation, the direction must be taken into
+ * account when calculating the addresses (with coordinates, it might be
+ * a little easier).
+ */
+void PermediaSubsequentScreenToScreenCopy(int x1, int y1, int x2, int y2,
+				     int w, int h)
+{
+	int srcaddr;
+	int dstaddr;
+
+	GLINT_WAIT(7);
+	/* Permedia only allows left to right bitblt's */
+
+	if (blitydir < 0) {
+		y1 = y1 + h - 1;
+		y2 = y2 + h - 1;
+		GLINT_WRITE_REG(-1<<16, dY);
+	} else {
+		GLINT_WRITE_REG(1<<16, dY);
+	}
+
+	srcaddr = GLINTWindowBase + y1 * glintInfoRec.displayWidth + x1;
+	dstaddr = GLINTWindowBase + y2 * glintInfoRec.displayWidth + x2;
+
+	GLINT_WRITE_REG(srcaddr - dstaddr, FBSourceOffset);
+	/* this is said to be needed after writing to FBSourceOffset 
+	   GLINT_WRITE_REG(0,WaitForCompletion); */
+
+	GLINT_WRITE_REG(x2<<16, StartXDom);
+	GLINT_WRITE_REG((x2+w)<<16, StartXSub);
+	GLINT_WRITE_REG(y2<<16, StartY);
+	GLINT_WRITE_REG(h, Count);
+
+	GLINT_WRITE_REG(TRAPEZOID, Render);
+}
+/*
+ * This is the implementation of the SetupForScreenToScreenCopy function
+ * that sets up the coprocessor for a subsequent batch for solid
+ * screen-to-screen copies. Remember, we don't handle transparency,
+ * so the transparency color is ignored.
+ */
 static int blitxdir, blitydir;
  
 void GLINTSetupForScreenToScreenCopy( int xdir, int  ydir, int  rop,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.8 1997/08/12 12:02:05 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.9 1997/08/26 10:01:18 hohndel Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -1025,41 +1025,93 @@ MGA3026RamdacInit()
     MGAdac.MoveCursor      = MGA3026MoveCursor;
     MGAdac.RecolorCursor   = MGA3026RecolorCursor;
 
-    switch( MGABios.RamdacType & 0xff )
+    if ( MGAchipset == PCI_CHIP_MGA2064 && MGABios2.PinID == 0 )
     {
-    case 1: MGAdac.maxPixelClock = 220000;
-            break;
-    case 2: MGAdac.maxPixelClock = 250000;
-            break;
-    default:
-            MGAdac.maxPixelClock = 175000;
-            break;
+	switch( MGABios.RamdacType & 0xff )
+	{
+	case 1: MGAdac.maxPixelClock = 220000;
+	    break;
+	case 2: MGAdac.maxPixelClock = 250000;
+	    break;
+	default:
+	    MGAdac.maxPixelClock = 175000;
+	    break;
+	}
+	/* Set MCLK based on amount of memory */
+	if ( vga256InfoRec.videoRam < 4096 )
+	    MGAdac.MemoryClock = MGABios.ClkBase * 10;
+	else if ( vga256InfoRec.videoRam < 8192 )
+	    MGAdac.MemoryClock = MGABios.Clk4MB * 10;
+	else
+	    MGAdac.MemoryClock = MGABios.Clk8MB * 10;
     }
-
-    /* Set MCLK based on amount of memory */
-    if ( vga256InfoRec.videoRam < 4096 )
-        MGAdac.MemoryClock = MGABios.ClkBase * 10;
-    else if ( vga256InfoRec.videoRam < 8192 )
-        MGAdac.MemoryClock = MGABios.Clk4MB * 10;
     else
-        MGAdac.MemoryClock = MGABios.Clk8MB * 10;
+    {
+	if ( MGABios2.PinID ) 	/* make sure BIOS is available */
+	{
+	    if ( MGABios2.PclkMax != 0xff )
+	    {
+		MGAdac.maxPixelClock = (MGABios2.PclkMax + 100) * 1000;
+	    }
+	    else
+		MGAdac.maxPixelClock = 220000;
 
-/* XXX ajv need to have more details about Mill II */
-/* this catches the case where the ROM is being probed and the ROM's layout
-   is new (ie overridden) and we don't have a clue. It's just a safe value,
-   and should be taken out asap we get documentation */
-/* Actually, having some save range here isn't all that a bad idea;
-   between 40 and 100 MHz sounds reasonable (dhh) */
+	    /* make sure we are not overdriving the GE for the amount of WRAM */
+	    switch ( vga256InfoRec.videoRam )
+	    {
+		case 4096:
+		    if (MGABios2.Clk4MB != 0xff)
+			MGABios2.ClkGE = MGABios2.Clk4MB;
+		    break;
+		case 8192:
+		    if (MGABios2.Clk8MB != 0xff)
+			MGABios2.ClkGE = MGABios2.Clk8MB;
+		    break;
+		case 12288:
+		    if (MGABios2.Clk12MB != 0xff)
+			MGABios2.ClkGE = MGABios2.Clk12MB;
+		    break;
+		case 16384:
+		    if (MGABios2.Clk16MB != 0xff)
+			MGABios2.ClkGE = MGABios2.Clk16MB;
+		    break;
+		default:
+		    break;
+	    }
 
-    if ( (MGAdac.MemoryClock < 40000.0) ||
-         (MGAdac.MemoryClock >100000.0) )
-	MGAdac.MemoryClock = 50000.0; /* XXX hack hack hack */
+		if ( MGABios2.ClkGE != 0xff && MGABios2.ClkMem == 0xff )
+		    MGABios2.ClkMem = MGABios2.ClkGE;
+		else if ( MGABios2.ClkGE == 0xff && MGABios2.ClkMem != 0xff )
+		    ; /* don't need to do anything */
+		else if ( MGABios2.ClkGE == MGABios2.ClkMem && MGABios2.ClkGE != 0xff )
+		    MGABios2.ClkMem = MGABios2.ClkGE;
+		else
+		    MGABios2.ClkMem = 60;
+
+		MGAdac.MemoryClock = MGABios2.ClkMem * 1000;
+
+	    } /* BIOS enabled initialization */
+	    else
+	    {
+		/* bios is not available, initialize to rational figures */
+		MGAdac.MemoryClock = 60000.0;	/* 60 MHz WRAM */
+		MGAdac.maxPixelClock = 220000;  /* 220 MHz */
+            }
+	} /* 2164 specific initialization */
 
 #if MCLK_FROM_XCONFIG
     /* or get it from XF86Config */
     if (vga256InfoRec.MemClk)
         MGAdac.MemoryClock = vga256InfoRec.MemClk;
 #endif
-        
+
+    /* safety check. Too slow = corruption, too fast = smoking chips */
+    /* 40 MHz (=40000) is a little slower, 50 MHz is safe (and the default */
+    /* 60 MHz is pushing it (YMMV), and > 65 is in Danger Will Robinson territory */
+
+    if ( (MGAdac.MemoryClock < 40000.0) ||
+         (MGAdac.MemoryClock > 65000.0) )
+	MGAdac.MemoryClock = 50000.0; 
+
     MGATi3026SetMCLK( MGAdac.MemoryClock );
 }

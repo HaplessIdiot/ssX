@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.6 1997/05/06 09:46:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.7 1997/06/25 08:25:04 hohndel Exp $ */
 
 
 
@@ -49,6 +49,7 @@ extern int defaultColorVisualClass;
 extern int GrabInProgress;
 extern int monitorResolution;
 extern Bool permitOldBugs;
+extern Bool noTestExtensions;
 
 #ifdef XINPUT
 extern void InitValuatorAxisStruct();
@@ -82,20 +83,24 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(InitPtrFeedbackClassDeviceStruct)
   SYMFUNC(InitValuatorClassDeviceStruct)
   /* dispatch.c */
-  SYMVAR(dispatchException)
-  SYMVAR(isItTimeToYield)
   SYMFUNC(SetInputCheck)
   SYMFUNC(SendErrorToClient)
   SYMFUNC(UpdateCurrentTime)
   SYMFUNC(UpdateCurrentTimeIf)
+  SYMVAR(dispatchException)
+  SYMVAR(isItTimeToYield)
+  SYMVAR(ClientStateCallback)
   /* dixutils.c */
+  SYMFUNC(AddCallback)
   SYMFUNC(CopyISOLatin1Lowered)
-  SYMFUNC(RemoveBlockAndWakeupHandlers)
+  SYMFUNC(DeleteCallback)
   SYMFUNC(LookupClient)
   SYMFUNC(LookupDrawable)
   SYMFUNC(LookupWindow)
   SYMFUNC(NoopDDA)
   SYMFUNC(RegisterBlockAndWakeupHandlers)
+  SYMFUNC(RemoveBlockAndWakeupHandlers)
+  SYMFUNC(SecurityLookupDrawable)
   SYMFUNC(SecurityLookupWindow)
   /* events.c */
   SYMFUNC(CheckCursorConfinement)
@@ -104,6 +109,8 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(PointerConfinedToScreen)
   SYMFUNC(TryClientEvents)
   SYMFUNC(WriteEventsToClient)
+  SYMVAR(DeviceEventCallback)
+  SYMVAR(EventCallback)
   SYMVAR(inputInfo)
   /* extension.c */
   SYMFUNC(AddExtension)
@@ -134,6 +141,8 @@ LOOKUP dixLookupTab[] = {
 #endif
   SYMVAR(ScreenSaverBlanking)
   SYMVAR(WindowTable)
+  SYMVAR(clients)
+  SYMVAR(currentMaxClients)
   SYMVAR(currentTime)
   SYMVAR(defaultColorVisualClass)
   SYMVAR(globalSerialNumber)
@@ -149,6 +158,8 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(FreeScratchPixmapHeader)
   SYMVAR(PixmapWidthPaddingInfo)
   /* privates.c */
+  SYMFUNC(AllocateClientPrivate)
+  SYMFUNC(AllocateClientPrivateIndex)
   SYMFUNC(AllocateGCPrivate)
   SYMFUNC(AllocateGCPrivateIndex)
   SYMFUNC(AllocateWindowPrivate)
@@ -156,6 +167,7 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(AllocateScreenPrivateIndex)
   /* resource.c */
   SYMFUNC(AddResource)
+  SYMFUNC(ChangeResourceValue)
   SYMFUNC(CreateNewResourceClass)
   SYMFUNC(CreateNewResourceType)
   SYMFUNC(FakeClientID)
@@ -170,6 +182,8 @@ LOOKUP dixLookupTab[] = {
   /* swaprep.c */
   SYMFUNC(CopySwap32Write)
   SYMFUNC(Swap32Write)
+  SYMFUNC(SwapConnSetupInfo)
+  SYMFUNC(SwapConnSetupPrefix)
   SYMFUNC(SwapShorts)
   SYMFUNC(SwapLongs)
   /* tables.c */
@@ -218,12 +232,17 @@ LOOKUP dixLookupTab[] = {
   SYMVAR(TimerSet)
   /* io.c */
   SYMFUNC(WriteToClient)
+  SYMFUNC(SetCriticalOutputPending)
+  SYMVAR(FlushCallback)
+  SYMVAR(ReplyCallback)
+  SYMVAR(SkippedRequestsCallback)
   /* connection.c */
   SYMFUNC(IgnoreClient)
   SYMFUNC(AttendClient)
   SYMVAR(GrabInProgress)
   /* utils.c */
   SYMFUNC(AdjustWaitForDelay)
+  SYMVAR(noTestExtensions)
 
 #ifdef XINPUT
   /* Xi */
