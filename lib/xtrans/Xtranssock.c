@@ -1,5 +1,5 @@
 /* $XConsortium: Xtranssock.c,v 1.34 95/01/12 18:25:25 kaleb Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.11 1995/01/28 15:44:19 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.12 1995/03/11 14:10:23 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -155,6 +155,7 @@ static int IBMsockInit = 0;
 #define SOCKET int
 #else
 /* others don't need this */
+#define SocketInitOnce() /**/
 #endif
 
 /*
