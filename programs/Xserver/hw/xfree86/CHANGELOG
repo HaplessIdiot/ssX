@@ -1,4 +1,6 @@
-XFree86 4.3.99.7 (xx June 2003)
+XFree86 4.3.99.8 (xx June 2003)
+
+XFree86 4.3.99.7 (25 June 2003)
  243. Added 'BitKeeper' to the directories that get excluded by lndir
       (Bugzilla #408, H.J.Lu).
  242. Fixed gcc warnings in xdmauth.c (Bugzilla #410, Jason L. Wright).
@@ -17146,7 +17148,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2746 2003/06/23 18:39:56 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2747 2003/06/24 15:44:46 eich Exp $
 
 
 
