@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_io.c,v 3.12 1998/07/25 16:56:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_io.c,v 3.13 1999/04/29 09:13:49 dawes Exp $ */
 /*
  * (c) Copyright 1994,1999 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -141,6 +141,7 @@ int xf86KbdOff()
 	return -1;
 }
 
+#if 0 /*OBSOLETE*/
 void xf86MouseInit(mouse)
 MouseDevPtr mouse;
 {
@@ -163,7 +164,9 @@ MouseDevPtr mouse;
 	if (rc == 0)
 		xf86Msg(X_INFO,"OsMouse has %d button(s).\n",nbut);
 }
+#endif
 
+#if 0 /*OBSOLETE*/
 int xf86MouseOn(mouse)
 MouseDevPtr mouse;
 {
@@ -194,10 +197,12 @@ MouseDevPtr mouse;
 	return (mouse->mseFd);
 #endif
 }
+#endif
 
+#if 0 /*OBSOLETE*/
 /* This table is a bit irritating, because these mouse types are infact
  * defined in the OS/2 kernel, but I want to force the user to put
- * ïOsMouseï in the config file, and not worry about the particular mouse
+ * "OsMouse" in the config file, and not worry about the particular mouse
  * type that is connected.
  */
 Bool xf86SupportedMouseTypes[] =
@@ -214,3 +219,4 @@ Bool xf86SupportedMouseTypes[] =
 
 int xf86NumMouseTypes = sizeof(xf86SupportedMouseTypes) /
 			sizeof(xf86SupportedMouseTypes[0]);
+#endif

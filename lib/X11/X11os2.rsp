@@ -59,7 +59,7 @@ imLcIm.obj imLcLkup.obj imLcPrs.obj imLcSIc.obj imRm.obj imRmAttr.obj+
 imThaiFlt.obj imThaiIc.obj imThaiIm.obj imTrX.obj imTrans.obj imTransR.obj+
 lcCT.obj lcCharSet.obj lcConv.obj lcDB.obj lcDefConv.obj lcEuc.obj lcFile.obj+
 lcGenConv.obj lcGeneric.obj lcInit.obj lcJis.obj lcPrTxt.obj lcPubWrap.obj lcPublic.obj+
-lcRM.obj lcSjis.obj lcStd.obj lcTxtPr.obj lcUTF.obj lcUtil.obj lcWrap.obj+
+lcRM.obj lcSjis.obj lcStd.obj lcTxtPr.obj lcUTF.obj lcUTF8.obj lcUtil.obj lcWrap.obj+
 locking.obj mbWMProps.obj mbWrap.obj omDefault.obj omGeneric.obj omImText.obj+
 omText.obj omTextEsc.obj omTextExt.obj omTextPer.obj omXChar.obj uvY.obj+
 XKB.obj XKBAlloc.obj XKBBell.obj XKBBind.obj XKBCompat.obj XKBCtrls.obj+

@@ -2,7 +2,7 @@
  * This script serves as a helper cmd file for imake. Install this in
  * the path just like imake itself.
  *
- * $XFree86: xc/config/imake/imakesvc.cmd,v 3.12 1997/11/22 06:50:07 dawes Exp $
+ * $XFree86: xc/config/imake/imakesvc.cmd,v 3.13 1999/04/29 09:13:23 dawes Exp $
  */
 '@echo off'
 ADDRESS CMD
@@ -184,7 +184,7 @@ SELECT
       END
    END
    WHEN code=15 THEN DO
-      /* imakesvc 14 destdir suffix srcfile... */
+      /* imakesvc 15 destdir suffix srcfile... */
       destdir = TRANSLATE(WORD(all,2),'\','/')
       suffix = WORD(all,3)
       DO i=4 TO WORDS(all)
@@ -192,6 +192,16 @@ SELECT
 	tgt = destdir'\'src'.'suffix
 	'groff -e -t -man -Tascii 'src'.man | col -b >'tgt
       END
+   END
+   WHEN code=16 THEN DO
+      /* imakesvc 16 dirlist...*/
+      mkfontdir = TRANSLATE(WORD(all,2),'\','/')
+      earg=''
+      DO i=3 TO WORDS(all)
+        arg = WORD(all,i)
+        earg = earg' -e 'arg
+      END
+      mkfontdir' -r -p inst/ 'earg' .'
    END
    OTHERWISE NOP
 END

@@ -42,11 +42,10 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miNSurf.c,v 3.5 1998/07/26 13:13:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miNSurf.c,v 3.6 1998/10/04 09:34:23 dawes Exp $ */
 
 #define TRIMING 1
 
-#include <math.h>
 #include "mipex.h"
 #include "misc.h"
 #include "miscstruct.h"
@@ -58,6 +57,11 @@ SOFTWARE.
 #include "miNurbs.h"
 #include "pexos.h"
 
+#if !defined(IN_MODULE) /* hv: not a module header file */
+#include <math.h>
+#else
+#include <xf86_ansic.h>
+#endif
 
 static ddpex3rtn       build_surf_reps();
 static int             add_grid();

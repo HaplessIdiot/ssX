@@ -1,5 +1,5 @@
 /* REXX */
-/* $XFree86: xc/config/util/buildos2.cmd,v 3.8 1997/06/03 14:11:05 hohndel Exp $
+/* $XFree86: xc/config/util/buildos2.cmd,v 3.9 1999/04/29 09:13:24 dawes Exp $
  * this file is supposed to run from the xc/ dir.
  * you must copy it manually to there before using. It is just here
  * in order not to be in the root dir.
@@ -23,7 +23,7 @@ CALL VALUE 'MAKEFLAGS','--no-print-directory',env
 'emxload -e x11make.exe rm.exe mv.exe'
 'emxload -e -gcc -omf'
 
-'x11make MAKE=x11make SHELL= MFLAGS="MAKE=x11make CC=gcc BOOTSTRAPCFLAGS=-DBSD43 SHELL= " World.OS2 2>&1 | tee buildxc.log'
+'x11make MAKE=x11make SHELL= MFLAGS="MAKE=x11make CC=gcc BOOTSTRAPCFLAGS=-DBSD43 SHELL= " World.OS2 2>&1 | tee buildos2.log'
 
 EXIT
 

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.64 2000/03/21 21:08:08 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.65 2000/03/22 21:23:32 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1068,6 +1068,10 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #define XkbComp xkbcomp
 #endif
 
+#ifndef PsWrap
+#define PsWrap $(PSWRAPSRC)/pswrap
+#endif
+
 #ifndef ResourceConfigurationManagement 
 #define ResourceConfigurationManagement YES
 #endif
@@ -1533,6 +1537,18 @@ ProjectUnsharedLibReferences(XXF86RUSH,Xxf86rush,$(XXF86RUSHLIBSRC),XBuildLibDir
 SharedLibReferences(XV,Xv,$(XVLIBSRC),SOXVREV,SharedXvRev)
 #else
 ProjectUnsharedLibReferences(XV,Xv,$(XVLIBSRC),XBuildLibDir)
+#endif
+#endif
+
+#if BuildXineramaLibrary
+    XINERAMALIBSRC = $(LIBSRC)/Xinerama
+#if SharedLibXinerama
+#ifndef SharedXineramaRev
+#define SharedXineramaRev 1.0
+#endif
+SharedLibReferences(XINERAMA,Xinerama,$(XINERAMALIBSRC),SOXINERAMAREV,SharedXineramaRev)
+#else
+ProjectUnsharedLibReferences(XINERAMA,Xinerama,$(XINERAMALIBSRC),XBuildLibDir)
 #endif
 #endif
 
@@ -2508,6 +2524,6 @@ install:: deps								@@\
 #endif
 
 #ifndef InstallRoffDoc
-
 #define InstallRoffDoc(name) InstallDoc(name,name.PS name.txt)
 #endif
+

@@ -51,8 +51,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#endif
 #include <float.h>
+#endif
 
 
 #ifdef HAVE_CONFIG_H

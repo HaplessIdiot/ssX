@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/os2funcs.c,v 1.3 1997/02/28 14:53:48 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/os2funcs.c,v 1.4 1997/03/10 10:12:22 hohndel Exp $ */
 /*
  * (c) Copyright 1997 by Sebastien Marineau
  *                      <marineau@genie.uottawa.ca>
@@ -39,110 +39,143 @@
 #include <sys/types.h>
 #include <umalloc.h>
 #include "os.h"
+#include "xf86str.h"
 
-#define RESERVED_BLOCKS 512  /* reserve 2MB memory for modules */
+#define RESERVED_BLOCKS 4096  /* reserve 16MB memory for modules */
 
-void *os2loader_AddToHeap(Heap_t, size_t *, int *);
-void os2loader_RemoveFromHeap(Heap_t, void *, size_t);
+void *os2ldAddToHeap(Heap_t, size_t *, int *);
+void os2ldRemoveFromHeap(Heap_t, void *, size_t);
 
-PVOID os2loader_CommitedTop;
-PVOID os2loader_baseAddress;
-Heap_t os2loader_heapAddress;
-int os2loader_TotalCommitedBlocks;
+PVOID os2ldCommitedTop;
+PVOID os2ldBase;
+Heap_t os2ldHeap;
+int os2ldTotalCommitedBlocks;
+static BOOL FirstTime = TRUE;
 
-void *os2loader_calloc(size_t num_elem, size_t size_elem){
-APIRET rc;
-int ret;
-static BOOL FirstTime=TRUE;
-void *allocMem;
+void *os2ldcalloc(size_t num_elem, size_t size_elem) {
+	APIRET rc;
+	int ret;
 
-if(FirstTime){
-	rc=DosAllocMem(&os2loader_baseAddress,RESERVED_BLOCKS * 4096, 
-                PAG_READ | PAG_WRITE | PAG_EXECUTE);
-	if(rc!=0) {
-		ErrorF("OS/2AllocMem: Could not create heap for module loading\n");
-		return(NULL);
+	if (FirstTime) {
+		if ((rc=DosAllocMem(&os2ldBase,RESERVED_BLOCKS * 4096, 
+				PAG_READ | PAG_WRITE | PAG_EXECUTE)) != 0) {
+			xf86Msg(X_ERROR,
+				"OS2LD: DosAllocMem failed, rc=%d\n",
+				rc);
+			return NULL;
 		}
 
-/* Now commit the first 128Kb, the rest will be done dynamically */
-        rc=DosSetMem(os2loader_baseAddress,32*4096, PAG_DEFAULT | PAG_COMMIT); 
-        	if(rc!=0) {
-		ErrorF("OS/2AllocMem: Could not commit heap memory!\n");
-		DosFreeMem(os2loader_baseAddress);
-                return(NULL);
+		/* Now commit the first 128Kb, the rest will 
+		 * be done dynamically */
+		if ((rc=DosSetMem(os2ldBase,
+				  32*4096,
+				  PAG_DEFAULT | PAG_COMMIT)) != 0) {
+			xf86Msg(X_ERROR,
+				"OS2LD: DosSetMem failed, rc=%d\n",rc);
+			DosFreeMem(os2ldBase);
+			return NULL;
 		}
-        os2loader_CommitedTop=os2loader_baseAddress + 32*4096;
-        os2loader_TotalCommitedBlocks=32;
-	ErrorF("OS2Alloc: allocated mem for heap, rc=%d, addr=%p\n",rc,os2loader_baseAddress);
+	        os2ldCommitedTop = os2ldBase + 32*4096;
+		os2ldTotalCommitedBlocks = 32;
+#ifdef DEBUG
+		xf86Msg(X_INFO,
+			"OS2LD: Initial heap at addr=%p\n",
+			os2ldBase);
+#endif
 
-	if((os2loader_heapAddress=_ucreate(os2loader_baseAddress,32*4096,_BLOCK_CLEAN,
-		_HEAP_REGULAR,os2loader_AddToHeap, os2loader_RemoveFromHeap))==NULL){
-		ErrorF("OS/2AllocMem: Could not create heap for loadable modules\n");
-		DosFreeMem(os2loader_baseAddress);
-		return(NULL);
+		if ((os2ldHeap=_ucreate(os2ldBase,
+					32*4096, _BLOCK_CLEAN,
+					_HEAP_REGULAR, os2ldAddToHeap, 
+					os2ldRemoveFromHeap)) == NULL) {
+			xf86Msg(X_ERROR,
+				"OS2LD: heap creation failed\n");
+			DosFreeMem(os2ldBase);
+			return NULL;
 		}
 	
-	ret=_uopen(os2loader_heapAddress);
-	if(ret!=0){
-		ErrorF("OS/2AllocMem: Could not open heap for loadable modules\n");
-		ret=_udestroy(os2loader_heapAddress,_FORCE);
-		DosFreeMem(os2loader_baseAddress);
-		return(NULL);
+		if ((ret=_uopen(os2ldHeap)) != 0) {
+			xf86Msg(X_ERROR,
+				"OS2LD: heap open failed\n");
+			ret = _udestroy(os2ldHeap,_FORCE);
+			DosFreeMem(os2ldBase);
+			return(NULL);
 		}
-	FirstTime=FALSE;
-	ErrorF("OS/2: done creating heap, addr=%p\n",os2loader_heapAddress);
+
+		FirstTime = FALSE;
+
+#ifdef DEBUG
+		xf86Msg(X_INFO,"OS2LD: Created module heap at addr=%p\n",
+			os2ldHeap);
+#endif
 	}
 
-allocMem=_ucalloc(os2loader_heapAddress,num_elem,size_elem);
-return(allocMem);
+	return _ucalloc(os2ldHeap,num_elem,size_elem);
 }
 
-
-void *os2loader_AddToHeap(Heap_t H, size_t *new_size, int *PCLEAN)
+void *os2ldAddToHeap(Heap_t H, size_t *new_size, int *PCLEAN)
 {
-PVOID NewBase;
-long adjusted_size;
-long blocks;
-APIRET rc;
+	PVOID NewBase;
+	long adjusted_size;
+	long blocks;
+	APIRET rc;
 
-   if(H != os2loader_heapAddress){
-      ErrorF("OS/2: Tried to grow an inexistant heap, p=%08x\n",H);
-      return (NULL);
-      }
-   NewBase=os2loader_CommitedTop;
-   adjusted_size = (*new_size/65536) * 65536;
-   if((*new_size % 65536)> 0 ) adjusted_size += 65536;
-   blocks=adjusted_size / 4096;
-   if((os2loader_TotalCommitedBlocks + blocks)>RESERVED_BLOCKS){
-      ErrorF("OS/2 GrowHeap: Could not allocate any more memory for module loading!\n");
-      ErrorF("Total reserved memory of %ld bytes is exhausted\n",RESERVED_BLOCKS * 4096);
-      return(NULL);
-      }
-   rc = DosSetMem(NewBase, adjusted_size, PAG_DEFAULT | PAG_COMMIT);
-   if(rc!=0) {
-	ErrorF("OS/2 GrowHeap: Could not grow heap! Requested size %d, \n", adjusted_size);
-        return(NULL);
+	if (H != os2ldHeap) {
+		xf86Msg(X_ERROR,
+			"OS2LD: Heap corruption in GrowHeap, p=%08x\n",H);
+		return NULL;
 	}
-   os2loader_CommitedTop+=adjusted_size;
-   os2loader_TotalCommitedBlocks += blocks;
-   *PCLEAN = _BLOCK_CLEAN;
-   *new_size=adjusted_size;
-   ErrorF("OS/2: Added %d bytes to heap, addr %08x\n",adjusted_size, NewBase);
-   return(NewBase);
+	NewBase = os2ldCommitedTop;
+	adjusted_size = (*new_size/65536) * 65536;
+	if ((*new_size % 65536) > 0) 
+		adjusted_size += 65536;
+	blocks = adjusted_size / 4096;
+
+	if ((os2ldTotalCommitedBlocks + blocks) > RESERVED_BLOCKS) {
+		xf86Msg(X_ERROR,
+			"OS2LD: Out of memory in GrowHeap\n");
+		xf86Msg(X_ERROR,
+			"OS2LD: Max available memory is of %ld bytes\n",
+			RESERVED_BLOCKS * 4096);
+		return NULL;
+	}
+	if ((rc=DosSetMem(NewBase, adjusted_size, PAG_DEFAULT | PAG_COMMIT)) != 0) {
+		xf86Msg(X_ERROR,
+			"OS2LD: DosSetMem failed in GrowHeap, size req'd=%d, rc=%d\n",
+			adjusted_size,
+			rc);
+		return NULL;
+	}
+
+	os2ldCommitedTop += adjusted_size;
+	os2ldTotalCommitedBlocks += blocks;
+	*PCLEAN = _BLOCK_CLEAN;
+	*new_size = adjusted_size;
+#ifdef DEBUG
+	xf86Msg(X_INFO,"OS2LD: Heap extended by %d bytes, addr=%p\n",
+		adjusted_size, NewBase);
+#endif
+	return NewBase;
 }
 
-void os2loader_RemoveFromHeap(Heap_t H, void *memory, size_t size)
+void os2ldRemoveFromHeap(Heap_t H, void *memory, size_t size)
 {
-   if(H != os2loader_heapAddress){
-      ErrorF("OS/2: Tried to shrink an inexistant heap, p=%08x\n",H);
-      return;
-      }
-/* Currently we do nothing, as we do not keep track of the commited memory */
-ErrorF("OS/2: module heap requests that heap memory be deallocated. Request ignored\n");
+	if (H != os2ldHeap) {
+		xf86Msg(X_ERROR,
+			"OS2LD: Heap corruption in ShrinkHeap, p=%08x\n",H);
+		return;
+	}
 
-/* Only handle it if it is the base address */
-   if(memory == os2loader_baseAddress) {
-        DosFreeMem(os2loader_baseAddress);
-        ErrorF("OS/2: total heap area was deallocated\n");
-        }
+	/* Currently we do nothing, as we do not keep track of the
+	 * commited memory */
+
+
+	/* Only handle it if it is the base address */
+	if (memory == os2ldBase) {
+		DosFreeMem(os2ldBase);
+#ifdef DEBUG
+		xf86Msg(X_INFO,"OS2LD: total heap area deallocated\n");
+#endif
+		os2ldBase = 0;
+		FirstTime = TRUE;
+	}
 }

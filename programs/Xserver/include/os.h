@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.29 1999/05/15 12:10:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.30 1999/10/13 04:21:38 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -50,8 +50,10 @@ SOFTWARE.
 #define ALLOCATE_LOCAL_FALLBACK(_size) Xalloc((unsigned long)(_size))
 #define DEALLOCATE_LOCAL_FALLBACK(_ptr) Xfree((pointer)(_ptr))
 #include "Xalloca.h"
-#if NeedVarargsPrototypes
+#ifndef IN_MODULE
 #include <stdarg.h>
+#else
+#include "xf86_ansic.h"
 #endif
 
 #define NullFID ((FID) 0)

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/30 1996/03/09 09:37:57 kaleb $
-XCOMM $XFree86: contrib/programs/xload/Imakefile,v 3.6 1997/11/22 10:40:12 dawes Exp $
+XCOMM $XFree86: xc/programs/xload/Imakefile,v 1.1 2000/02/13 03:26:31 dawes Exp $
         DEPLIBS = XawClientDepLibs
 LOCAL_LIBRARIES = XawClientLibs
 #ifdef i386MachArchitecture
@@ -34,7 +34,7 @@ LOCAL_LIBRARIES = XawClientLibs
  OSMINORVERSION = OSMinorVersion
       DEFINES = -DOSMAJORVERSION=$(OSMAJORVERSION) -DOSMINORVERSION=$(OSMINORVERSION) 
 
-AllTarget(xload)
+AllTarget(ProgramTargetName(xload))
 NormalProgramTarget(xload,$(OBJS),$(DEPLIBS),$(LOCAL_LIBRARIES),NullParameter)
 
 #if defined(OSF1Architecture) || defined(NetBSDArchitecture) || (defined(FreeBSDArchitecture) && OSMajorVersion > 1) || defined(OpenBSDArchitecture)

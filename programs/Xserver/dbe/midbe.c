@@ -30,13 +30,13 @@
  *     Machine-independent DBE code
  *
  *****************************************************************************/
+/* $XFree86$ */
 
 
 /* INCLUDES */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
-#include <stdio.h>
 #include "X.h"
 #include "Xproto.h"
 #include "misc.h"
@@ -54,6 +54,7 @@
 #include "gcstruct.h"
 #include "inputstr.h"
 
+#include <xf86_ansic.h>
 
 /* DEFINES */
 

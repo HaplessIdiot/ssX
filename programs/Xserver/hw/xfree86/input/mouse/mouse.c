@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.27 2000/03/03 20:36:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.28 2000/03/06 22:59:33 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -498,6 +498,10 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     xf86CollectInputOptions(pInfo, pProto->defaults, NULL);
     xf86ProcessCommonOptions(pInfo, pInfo->options);
 
+    /* XXX should handle this OS dependency elsewhere. */
+#ifndef __OS2ELF__
+    /* OS/2 has a mouse handled by the OS - it cannot fail here */
+
     /* Check if the device can be opened. */
     pInfo->fd = xf86OpenSerial(pInfo->options);
     if (pInfo->fd == -1) {
@@ -511,6 +515,7 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 	}
     }
     xf86CloseSerial(pInfo->fd);
+#endif
     pInfo->fd = -1;
 
     pMse->CommonOptions(pInfo);

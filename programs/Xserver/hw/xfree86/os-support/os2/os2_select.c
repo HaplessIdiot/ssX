@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_select.c,v 3.6 1998/07/25 16:56:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_select.c,v 3.7 1999/04/29 09:13:50 dawes Exp $ */
 
 /*
  * (c) Copyright 1996 by Sebastien Marineau
@@ -45,20 +45,21 @@
 #include <sys/errno.h>
 #include <emx/io.h>
 
+#define I_NEED_OS2_H
 #define INCL_DOSSEMAPHORES
 #define INCL_DOSPROFILE
 #define INCL_DOSPROCESS
 #define INCL_DOSFILEMGR
 #define INCL_DOSMISC
 #define INCL_DOSMODULEMGR
-#include <os2.h>
 
-#include "os2_select.h"
 
 #include "Xpoll.h"
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
+
+#include "os2_select.h"
 
 int os2MouseQueueQuery();
 int os2KbdQueueQuery();
@@ -337,7 +338,7 @@ fd_set *readfds,*writefds;
                 sd->socket_nwrite, 0, 0);
 
         if(e == 0) return(e);
-/* We have something ready? */
+	/* We have something ready? */
         if(e>0){
             j = 0; n = 0;
             for (i = 0; i < sd->socket_nread; ++i, ++j)
@@ -370,10 +371,10 @@ int os2_check_pipes(sd,readfds,writefds)
 struct select_data *sd;
 fd_set *readfds,*writefds;
 {
-int i,e;
-ULONG ulPostCount;
-PIPESEMSTATE pipeSemState[128];
-APIRET rc;
+	int i,e;
+	ULONG ulPostCount;
+	PIPESEMSTATE pipeSemState[128];
+	APIRET rc;
         e = 0;
         rc = DosResetEventSem(hPipeSem,&ulPostCount);
         rc = DosQueryNPipeSemState((HSEM) hPipeSem, (PPIPESEMSTATE)&pipeSemState, 
@@ -404,8 +405,8 @@ APIRET rc;
             i++;
             } /* endwhile */
 
-errno = 0;
-return(e);
+	errno = 0;
+	return(e);
 }
 
 

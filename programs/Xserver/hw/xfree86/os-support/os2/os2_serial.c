@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_serial.c,v 1.2 1999/11/19 13:55:01 hohndel Exp $ */
 /*
  * (c) Copyright 1999 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -274,7 +274,7 @@ int xf86ReadSerial (int fd, void *buf, int count)
 	return rc ? -1 : (int)nread;
 }
 
-int xf86WriteSerial (int fd, void *buf, int count)
+int xf86WriteSerial (int fd, const void *buf, int count)
 {
 	ULONG nwrite;
 	APIRET rc = DosWrite((HFILE)fd,(PVOID)buf,(ULONG)count,&nwrite);
@@ -336,4 +336,178 @@ int xf86FlushInput(int fd)
 		nq--;
 	}
 	return 0;
+}
+
+static struct states {
+        int xf;
+        int os;
+} modemStates[] = {
+        { XF86_M_DTR, 0x01 },
+        { XF86_M_RTS, 0x02 },
+        { XF86_M_CTS, 0x10 },
+        { XF86_M_DSR, 0x20 },
+        { XF86_M_RNG, 0x40 },
+        { XF86_M_CAR, 0x80 },
+};
+
+static int numStates = sizeof(modemStates) / sizeof(modemStates[0]);
+
+static int
+xf2osState(int state)
+{
+        int i;
+        int ret = 0;
+
+        for (i = 0; i < numStates; i++)
+                if (state & modemStates[i].xf)
+                        ret |= modemStates[i].os;
+        return ret;
+}
+
+static int
+os2xfState(int state)
+{
+        int i;
+        int ret = 0;
+
+        for (i = 0; i < numStates; i++)
+                if (state & modemStates[i].os)
+                        ret |= modemStates[i].xf;
+        return ret;
+}
+
+static int
+getOsStateMask(void)
+{
+        int i;
+        int ret = 0;
+        for (i = 0; i < numStates; i++)
+                ret |= modemStates[i].os;
+        return ret;
+}
+
+static int osStateMask = 0;
+
+static 
+int _get_modem_state(int fd,ULONG* state) 
+{
+	ULONG state1,len;
+
+	if (DosDevIOCtl((HFILE)fd,IOCTL_ASYNC,ASYNC_GETMODEMOUTPUT,
+		NULL,0,NULL, state, sizeof(BYTE), &len) != 0 ||
+	    DosDevIOCtl((HFILE)fd,IOCTL_ASYNC,ASYNC_GETMODEMINPUT,
+		NULL,0,NULL, &state1, sizeof(BYTE), &len) != 0)
+		return -1;
+	*state |= state1;
+	*state &= 0xff;
+	return 0;	
+}
+
+static 
+int _set_modem_state(int fd,ULONG state,ULONG mask) 
+{
+	int len;
+	struct {
+		BYTE onmask;
+		BYTE offmask;
+	} modemctrl;
+	modemctrl.onmask = state;
+	modemctrl.offmask = mask;
+
+	if (DosDevIOCtl((HFILE)fd,IOCTL_ASYNC,ASYNC_SETMODEMCTRL,
+		NULL,0,NULL, (PULONG)&modemctrl, sizeof(modemctrl), &len) != 0)
+		return -1;
+	else
+		return 0;
+}
+
+int
+xf86SetSerialModemState(int fd, int state)
+{
+        ULONG s;
+
+        if (fd < 0)
+                return -1;
+
+        /* Don't try to set parameters for non-tty devices. */
+        if (!isatty(fd))
+                return 0;
+
+        if (!osStateMask)
+                osStateMask = getOsStateMask();
+
+        state = xf2osState(state);
+
+	if (_get_modem_state(fd,&s) != 0)
+		return -1;
+
+        s &= ~osStateMask;
+        s |= state;
+
+	return _set_modem_state(fd,s,0x03);
+}
+
+int
+xf86GetSerialModemState(int fd)
+{
+        ULONG s;
+
+        if (fd < 0)
+                return -1;
+
+        /* Don't try to set parameters for non-tty devices. */
+        if (!isatty(fd))
+                return 0;
+
+	if (_get_modem_state(fd,&s) != 0)
+		return -1;
+
+        return os2xfState(s);
+}
+
+int
+xf86SerialModemSetBits(int fd, int bits)
+{
+        int ret;
+        int s;
+
+        if (fd < 0)
+                return -1;
+
+        /* Don't try to set parameters for non-tty devices. */
+        if (!isatty(fd))
+                return 0;
+
+        s = xf2osState(bits);
+	return _set_modem_state(fd,s,0x03);
+}
+
+int
+xf86SerialModemClearBits(int fd, int bits)
+{
+        int ret;
+        int s;
+
+        if (fd < 0)
+                return -1;
+
+        /* Don't try to set parameters for non-tty devices. */
+        if (!isatty(fd))
+                return 0;
+
+        s = xf2osState(bits);
+	return _set_modem_state(fd, 0, ~s & 0xff);
+}
+
+int
+xf86SetSerialSpeed (int fd, int speed)
+{
+	if (fd < 0)
+		return -1;
+
+        /* Don't try to set parameters for non-tty devices. */
+        if (!isatty(fd))
+                return 0;
+
+	return _set_baudrate(fd,speed);
 }

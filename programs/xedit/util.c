@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/util.c,v 1.13 1999/08/15 13:00:56 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/util.c,v 1.14 1999/08/28 09:01:21 dawes Exp $ */
 
 #include <stdio.h>
 #ifndef X_NOT_STDC_ENV
@@ -417,7 +417,11 @@ ResolveName(char *filename)
     if (filename == NULL)
 	filename = GetString(filenamewindow);
 
+#ifndef __EMX__
     return (realpath(filename, name));
+#else
+    return filename;
+#endif
 }
 
 static void

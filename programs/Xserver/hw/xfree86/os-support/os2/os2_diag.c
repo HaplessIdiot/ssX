@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_diag.c,v 3.5 1998/07/25 16:56:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_diag.c,v 3.6 1999/04/29 09:13:48 dawes Exp $ */
 /*
  * (c) Copyright 1997 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -59,7 +59,8 @@
 static BOOL diag_checks = FALSE;
 
 /* from Eberhard to check for the right EMX version */
-static void check_emx (void)
+static void 
+check_emx (void)
 {
 	ULONG rc;
 	HMODULE hmod;
@@ -80,7 +81,8 @@ static void check_emx (void)
         }
 }
 
-static void check_bsl(const char *var)
+static void 
+check_bsl(const char *var)
 {
 	char *t1 = strrchr(var,'\\');
 	if (strchr(var,'/')) {
@@ -96,7 +98,8 @@ static void check_bsl(const char *var)
 }
 
 
-static void check_fsl(const char *var)
+static void 
+check_fsl(const char *var)
 {
 	char *t1 = strrchr(var,'/');
 	if (strchr(var,'\\')) {
@@ -107,7 +110,8 @@ static void check_fsl(const char *var)
 }
 
 
-static void check_long(const char* path)
+static void 
+check_long(const char* path)
 {
 	FILE *f;
 	char n[300];
@@ -124,7 +128,8 @@ static void check_long(const char* path)
 	}
 }
 
-char *check_env_present(const char *env)
+static char *
+check_env_present(const char *env)
 {
 	char *e = getenv(env);
 	if (!e) {

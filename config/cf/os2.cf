@@ -2,7 +2,7 @@ XCOMM $TOG: os2.cf /main/2 1997/08/05 08:51:25 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.27 1999/03/21 01:45:00 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.28 1999/04/29 09:13:20 dawes Exp $
 
 #define OSName           OS/2
 #define OSVendor	 IBM
@@ -37,7 +37,8 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.27 1999/03/21 01:45:00 dawes 
  * Please report any directories missed to Holger.Veit@gmd.de 
 */
 #ifdef UseInstalled
-#define IncRoot $(X11ROOT)/XFree86/include
+/*#define IncRoot $(X11ROOT)/XFree86/include*/
+#define ConfigDir $(X11ROOT)$(LIBDIR)/config
 #define LdPreLib -L$(X11ROOT)/XFree86/lib
 #endif
 
@@ -53,6 +54,7 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.27 1999/03/21 01:45:00 dawes 
 #define FileManSuffix	4
 #define XmanSearchPath	/XFree86/man/man
 #define ManSourcePath	$(MANPATH)
+#define DontUseLibPAthVar YES
 
 /* you must have installed groff! */
 #define TblCmd		tbl
@@ -75,6 +77,12 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.27 1999/03/21 01:45:00 dawes 
 #ifndef BuildLBX
 #define BuildLBX		YES
 #endif
+#ifndef DoLoadableServer
+#define DoLoadableServer        YES
+#endif
+#undef MakeDLLModules
+#define MakeDLLModules          NO
+
 
 /* some more properties of the OS/2 implementation */
 #define HasNdbm         	YES
@@ -82,6 +90,7 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.27 1999/03/21 01:45:00 dawes 
 #define HasSockets		YES
 #define HasSnprintf		YES
 #define HasBsearch		NO
+#define HasFchown		NO
 #define HasLargeTmp		NO
 #define HasPoll			NO
 #define HasBSD44Sockets 	NO
@@ -90,6 +99,7 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.27 1999/03/21 01:45:00 dawes 
 #define HasVFork		NO
 #define HasVarDirectory		NO
 #define HasStrcasecmp		NO
+#define StrcasecmpDefines	-DNEED_STRCASECMP -Dstrcasecmp=stricmp -Dstrncasecmp=strnicmp
 #define Malloc0ReturnsNull	YES
 #define SetTtyGroup     	NO
 #ifndef HasLibCrypt
@@ -101,6 +111,7 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.27 1999/03/21 01:45:00 dawes 
 #define ConnectionFlags		-DTCPCONN -DOS2PIPECONN
 #define StdIncDir $(C_INCLUDE_PATH)
 #define HasStickyDirBit		NO
+#define HasMkstemp		NO
 
 /* XF86Setup stuff - does not work yet! */
 #define HasTcl			NO
@@ -205,18 +216,9 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.27 1999/03/21 01:45:00 dawes 
 #define InstDatFlags /**/
 #define InstallFlags /**/
 
-#ifdef i386Architecture
-# define OptimizedCDebugFlags 	DefaultGcc2i386Opt
-# define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME
-#else
-# define OptimizedCDebugFlags 	-O
-# define ServerOSDefines 	/**/
-#endif
-#ifdef i386Architecture
-#define ServerExtraDefines GccGasOption XFree86ServerDefines
-#else
-#define ServerExtraDefines GccGasOption
-#endif
+#define OptimizedCDebugFlags 	DefaultGcc2i386Opt
+#define ServerOSDefines		XFree86ServerOSDefines -DDDXTIME -DXNO_SYSCONF
+#define ServerExtraDefines	GccGasOption XFree86ServerDefines
 
 /*
  * Make & install Features
@@ -263,6 +265,9 @@ Concat3(DEP,varname,LIB) = SharedLibDependencies(libname,libsource,revname) @@\
 Concat(varname,LIB) = LoaderLibPrefix Concat(-l,libname)		@@\
 LintLibReferences(varname,libname,libsource)
 #endif
+
+#define XFileSearchPathBase Concat4($(LIBDIR)/;L/;T/;N;C,;S:$(LIBDIR)/;l/;T/;N;C,;S:$(LIBDIR)/;T/;N;C,;S:$(LIBDIR)/;L/;T/;N;S:$(LIBDIR)/;l/;T/;N;S:$(LIBDIR)/;T/;N;S)
+
 
 #include <os2.rules>
 #include <os2Lib.rules>

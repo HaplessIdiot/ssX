@@ -208,8 +208,10 @@ StartXDPSNX(additionalArgs)
   /* now try to start up the agent... */
   if ((childPid = fork()) != -1) {
     if (childPid == 0) {	/* Child process */
+#ifndef __EMX__
       if (setsid() < 0)
         DPSWarnProc(NULL, "Agent unable to create session.  Continuing...\n");
+#endif
 
       /* Try to start the agent */
       if (execvp(args[0], args) < 0) { /* Error!! */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.215 2000/03/22 21:19:29 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.216 2000/04/04 19:24:59 dawes Exp $ */
 
 
 /*
@@ -43,6 +43,16 @@ extern DeviceAssocRec mouse_assoc;
     (defined(__FreeBSD__) || defined(__NetBSD__) || defined(linux) || \
      (defined(SVR4) && !defined(sun)))
 #define SUPPORT_PC98
+#endif
+
+#ifdef __EMX__
+#define ROOT_CONFIGPATH	"%A," "%R," \
+			"%E," \
+			"%D/%X," \
+			"%&/XFree86/lib/X11/%X-%M," "%&/XFree86/lib/X11/%X," "%&XFree86/lib/X11/%X," \
+			"%P/etc/X11/%X.%H," "%P/etc/X11/%X-%M," \
+			"%P/etc/X11/%X,"
+#define USER_CONFIGPATH ROOT_CONFIGPATH
 #endif
 
 /*

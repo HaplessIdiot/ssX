@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_video.c,v 3.11 1999/04/18 04:08:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_video.c,v 3.12 1999/04/29 09:13:51 dawes Exp $ */
 /*
  * (c) Copyright 1994,1999 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -116,33 +116,15 @@ mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size)
 	plen 		= sizeof(par);
 	dlen		= sizeof(dta);
 
-	/* First, redirect stderr to file so that video calls do not block */
-	if (!ErrRedir) {
-		/* hv300996 create redirect file on boot drive, instead 
-		 * anywhere you are just standing
-		 */
-		char buf[20],dr[3];
-		ULONG drive;
-		APIRET rc = DosQuerySysInfo(5,5,&drive,sizeof(drive));
-		if (rc) dr[0] = 0;
-		else {	dr[0] = drive+96;
-			dr[1] = ':';
-			dr[2] = 0;
-		}
-		sprintf(buf,"%s\\xf86log.os2",dr);
-		freopen(buf,"w",stderr); 
-		ErrRedir=TRUE; 
-	}
-
 	open_mmap();
 	if (mapdev == -1)
-		FatalError("xf86MapVidMem: install DEVICE=path\\XF86SUP.SYS!");
+		FatalError("mapVidMem: install DEVICE=path\\XF86SUP.SYS!");
 
 	if ((rc=DosDevIOCtl(mapdev, (ULONG)0x76, (ULONG)0x44,
 	      (PVOID)&par, (ULONG)plen, (PULONG)&plen,
 	      (PVOID)&dta, (ULONG)dlen, (PULONG)&dlen)) == 0) {
-		xf86Msg(X_INFO, xf86MapVidMem succeeded: (ScreenNum= %d, Base= 0x%x, Size= 0x%x\n",
-		ScreenNum, Base, Size);
+		xf86Msg(X_INFO,"mapVidMem succeeded: (ScreenNum= %d, Base= 0x%x, Size= 0x%x,paddr=0x%x)\n",
+		ScreenNum, Base, Size, dta.addr);
 		if (dlen==sizeof(dta)) {
 			return (pointer)dta.addr;
 		}
@@ -150,7 +132,7 @@ mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size)
 	}
 
 	/* fail */
-	FatalError("xf86MapVidMem FAILED!!: rc = %d (ScreenNum= %d, Base= 0x%x, Size= 0x%x return len %d\n",
+	FatalError("mapVidMem FAILED!!: rc = %d (ScreenNum= %d, Base= 0x%x, Size= 0x%x return len %d)\n",
 		rc, ScreenNum, Base, Size,dlen);
 	return (pointer)0;
 }
@@ -179,7 +161,7 @@ unmapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 	    DosDevIOCtl(mapdev, (ULONG)0x76, (ULONG)0x46,
 	      (PVOID)&par, (ULONG)plen, (PULONG)&plen,
 	      &vmaddr, sizeof(ULONG), &plen);
-        xf86Msg(X_INFO,"Unmapping physical memory at base %x, virtual address %x\n",Base,vmaddr);
+        xf86Msg(X_INFO,"unmapVidMem: Unmap phys memory at base %x, virtual address %x\n",Base,vmaddr);
 
 /* Now if more than one region has been allocated and we close the driver,
  * the other pointers will immediately become invalid. We avoid closing
@@ -218,9 +200,11 @@ xf86OSInitVidMem(VidMemInfoPtr pVidMem)
         pVidMem->linearSupported = TRUE;
         pVidMem->mapMem = mapVidMem;
         pVidMem->unmapMem = unmapVidMem;
+#if 0
         pVidMem->mapMemSparse = 0;
         pVidMem->unmapMemSparse = 0;
-        pVidMem->setWC = 0;
+#endif
+        pVidMem->setWC = 0; /* no MTRR support */
         pVidMem->undoWC = 0;
         pVidMem->initialised = TRUE;
 }

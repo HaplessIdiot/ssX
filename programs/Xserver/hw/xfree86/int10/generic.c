@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.2 2000/02/08 13:13:22 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.3 2000/02/18 16:23:23 dawes Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -108,12 +108,27 @@ xf86InitInt10(int entityIndex)
     if (xf86IsEntityPrimary(entityIndex)) {
 	int size;
 	int cs = MEM_RW(pInt,((0x10<<2)+2));
-	xf86DrvMsg(screen,X_INFO,"Primary V_BIOS segmant is: 0x%x\n",cs);
-	if (xf86ReadBIOS(cs << 4,0,(unsigned char *)vbiosMem,
+	int cs1 = cs;
+
+	xf86DrvMsg(screen,X_INFO,"Primary V_BIOS segment is: 0x%x\n",cs);
+
+	/* in some cases the int10 vector seems to point to f000:xxxx,
+	 * this is really correct only in case of CGA/MDA; assume there
+	 * is a V BIOS at 0xc000, and map this as well
+	 *
+	 * XXX What if the V BIOS is not at 0xc000?
+	 */
+	if (cs != 0xc000) {
+	    xf86DrvMsg(screen,X_INFO,
+			"Non-standard vector, assuming V_BIOS at 0xc000\n");
+	    cs1 = 0xc000;
+	}
+	if (xf86ReadBIOS(cs1 << 4,0,(unsigned char *)vbiosMem,
 			 0x10) < 0) {
 	    xf86DrvMsg(screen,X_ERROR,"Cannot read V_BIOS (1)\n");
 	    goto error1;
 	}
+
 	if (!((*(CARD8*)vbiosMem == 0x55)
 	      && (*((CARD8*)vbiosMem + 1) == 0xAA))) {
 	    xf86DrvMsg(screen,X_ERROR,"No V_BIOS found\n");
@@ -121,7 +136,7 @@ xf86InitInt10(int entityIndex)
 	}
 	
 	size = *((CARD8*)vbiosMem + 2) * 512;
-	if (xf86ReadBIOS(cs << 4,0,vbiosMem, size) < 0) {
+	if (xf86ReadBIOS(cs1 << 4,0,vbiosMem, size) < 0) {
 	    xf86DrvMsg(screen,X_ERROR,"Cannot read V_BIOS (2)\n");
 	    goto error1;
 	}
@@ -129,8 +144,7 @@ xf86InitInt10(int entityIndex)
 	    xf86DrvMsg(screen,X_ERROR,"Bad checksum of V_BIOS \n");
 	    goto error1;
 	}
-
-	setupTable(pInt,(memType)vbiosMem,cs<<4,size);
+	setupTable(pInt,(memType)vbiosMem,cs1<<4,size);
 	set_return_trap(pInt);
 	pInt->BIOSseg = cs;
     } else {

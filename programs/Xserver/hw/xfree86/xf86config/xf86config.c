@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.50 1999/12/27 00:39:53 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.51 2000/01/23 05:24:05 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -1123,7 +1123,7 @@ static char *modestring[NU_MODESTRINGS] = {
 
 #ifdef __EMX__
 /* yet another instance of this code, sigh! */
-static char *
+char *
 __XOS2RedirRoot(char *path, char sep)
 {
 	static char pn[300];

@@ -2,7 +2,7 @@ XCOMM $XConsortium: os2Lib.tmpl /main/1 1996/10/31 14:47:31 kaleb $
 
 
 
-XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.7 1999/05/03 15:20:33 dawes Exp $
+XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.8 1999/06/06 12:13:23 dawes Exp $
 
 /*
  * OS2/EMX shared library template
@@ -13,6 +13,7 @@ XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.7 1999/05/03 15:20:33 dawes Exp $
 
 /* note these are special because of linking with link386 */
 #ifdef NOT_EMX
+#define SharedX11Libs $(LDPRELIB) $(SHM)
 #define SharedXtReqs $(LDPRELIB) $(XLIBONLY)
 #define SharedXaw6Reqs $(LDPRELIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
 #define SharedXawReqs $(LDPRELIB) $(XMULIB) $(XTOOLLIB) $(XPMLIB) $(XLIB)
@@ -29,9 +30,13 @@ XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.7 1999/05/03 15:20:33 dawes Exp $
 #define SharedGLReqs $(LDPRELIBS) $(XLIB)
 #define SharedXfontReqs $(LDPRELIBS) $(XLIB)
 #define SharedXpmReqs $(LDPRELIBS) $(XLIB)
+#define SharedDPSReqs $(LDPRELIBS) $(XMULIB) $(XTOOLLIB) $(XLIB)
+#define SharedDPSTKReqs $(LDPRELIBS) $(DPSLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
 #else
+#define SharedX11Reqs shm
 #define SharedXtReqs ..\\..\\exports\\lib\\ ICE SM X11
 #define SharedXawReqs ..\\..\\exports\\lib\\ Xmu Xt Xpm X11 Xext
+#define SharedXaw6Reqs ..\\..\\exports\\lib\\ Xmu Xt Xpm X11 Xext
 #define SharedXmuReqs ..\\..\\exports\\lib\\ Xt X11 Xext
 #define SharedSMReqs ..\\..\\exports\\lib\\ ICE
 #define SharedXextReqs ..\\..\\exports\\lib\\ X11
@@ -45,7 +50,47 @@ XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.7 1999/05/03 15:20:33 dawes Exp $
 #define SharedGLReqs ..\\..\\exports\\lib\\ X11 Xext
 #define SharedXfontReqs ..\\..\\exports\\lib\\ X11
 #define SharedXpmReqs ..\\..\\exports\\lib\\ X11
+#define SharedDPSReqs ..\\..\\exports\\lib\\ Xmu Xt X11
+#define SharedDPSTKReqs ..\\..\\exports\\lib\\ DPS Xmu Xt X11
 #endif
+
+/* library revisions, these are typically empty! */
+#define SharedX11Rev /**/
+#define SharedXThrStubRev /**/
+#define SharedXextRev /**/
+#define SharedXssRev /**/
+#define SharedXxf86miscRev /**/
+#define SharedXxf86vmRev /**/
+#define SharedXxf86dgaRev /**/
+#define SharedXxf86rushRev /**/
+#define SharedXvRev /**/
+#define SharedXineramaRev /**/
+#define SharedDpsRev /**/
+#define SharedDpsTkRev /**/
+#define SharedPSResRev /**/
+#define SharedXantiRev /**/
+#define SharedGlxRev /**/
+#define SharedXfontcacheRev /**/
+#define SharedXauRev /**/
+#define SharedXdmcpRev /**/
+#define SharedXmuRev /**/
+#define SharedOldXRev /**/
+#define SharedXpRev /**/
+#define SharedXtRev /**/
+#define SharedXaRev /**/
+#define SharedXawRev /**/
+#define SharedXaw6Rev 6
+#define SharedXiRev /**/
+#define SharedXtstRev /**/
+#define SharedPexRev /**/
+#define SharedXieRev /**/
+#define SharedPhigsRev /**/
+#define SharedICERev /**/
+#define SharedSMRev /**/
+#define SharedXkeyRev /**/
+#define SharedFSRev /**/
+#define SharedFontRev /**/
+#define SharedXpmRev /**/
 
 /*
  * By setting this in your Imakefile, you can force using static libraries
@@ -61,6 +106,7 @@ XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.7 1999/05/03 15:20:33 dawes Exp $
 #define SDlibXmu -lXmu_s
 #define SDlibXt -lXt_s
 #define SDlibXaw -lXaw_s
+#define SDlibXaw6 -lXaw_s
 #define SDlibXi -lXi_s
 #define SDlibXIE -lXIE_s
 #define SDlibXtst -lXtst_s
@@ -68,12 +114,15 @@ XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.7 1999/05/03 15:20:33 dawes Exp $
 #define SDlibXp -lXp_s
 #define SDlibXv -lXv_s
 #define SDlibGL -lGL_s
+#define SDlibDPS -lDPS_s
+#define SDlibDPSTK -lDPSTK_s
 #else
 #define SDlibX11 -lX11
 #define SDlibXExt -lXExt
 #define SDlibXmu -lXmu
 #define SDlibXt -lXt
 #define SDlibXaw -lXaw
+#define SDlibXaw6 -lXaw
 #define SDlibXi -lXi
 #define SDlibXIE -lXIE
 #define SDlibXtst -lXtst
@@ -81,6 +130,8 @@ XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.7 1999/05/03 15:20:33 dawes Exp $
 #define SDlibXp -lXp
 #define SDlibXv -lXv
 #define SDlibGL -lGL
+#define SDlibDPS -lDPS
+#define SDlibDPSTK -lDPSTK
 #endif
 
 /*
@@ -114,6 +165,10 @@ XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.7 1999/05/03 15:20:33 dawes Exp $
        DEPXAWLIB = 
           XAWLIB = _Use(SDlibXaw,-L$(AWIDGETSRC) SDlibXaw)
 #endif
+#if SharedLibXaw6
+      DEPXAW6LIB = 
+         XAW6LIB = _Use(SDlibXaw6,-L$(AWIDGETSRC) SDlibXaw6)
+#endif
 #if SharedLibXi
         DEPXILIB = 
            XILIB = _Use(SDlibXi,-L$(XILIBSRC) SDlibXi)
@@ -127,14 +182,22 @@ XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.7 1999/05/03 15:20:33 dawes Exp $
          PEXLIB = _Use(SDlibPEX5,-L$(PEXLIBSRC) SDlibPEX5)
 #endif
 #if SharedLibXp
- DEPEXTENSIONLIB = 
-    EXTENSIONLIB = _Use(SDlibXp,-L$(EXTENSIONSRC)/lib SDlibXp)
+       DEPXPLIB = 
+          XPLIB = _Use(SDlibXp,-L$(EXTENSIONSRC)/lib SDlibXp)
 #endif
 #if SharedLibXv
- DEPEXTENSIONLIB = 
-    EXTENSIONLIB = _Use(SDlibXv,-L$(EXTENSIONSRC)/lib SDlibXv)
+       DEPXVLIB = 
+          XVLIB = _Use(SDlibXv,-L$(EXTENSIONSRC)/lib SDlibXv)
 #endif
 #if SharedLibGL
- DEPEXTENSIONLIB = 
-    EXTENSIONLIB = _Use(SDlibGL,-L$(EXTENSIONSRC)/lib SDlibGL)
+       DEPGLLIB = 
+          GLLIB = _Use(SDlibGL,-L$(EXTENSIONSRC)/lib SDlibGL)
+#endif
+#if SharedLibDPS
+      DEPDPSLIB = 
+         DPSLIB = _Use(SDlibDPS,-L$(EXTENSIONSRC)/lib SDlibDPS)
+#endif
+#if SharedLibDPSTK
+    DEPDPSTKLIB = 
+       DPSTKLIB = _Use(SDlibDPSTK,-L$(EXTENSIONSRC)/lib SDlibDPSTK)
 #endif

@@ -39,12 +39,17 @@
 *				user library.
 *
 ****************************************************************************/
+/* $XFree86$ */
 
 #include "x86emu.h"
 #include "x86emu/regs.h"
 #include "x86emu/debug.h"
 #include "x86emu/prim_ops.h"
+#if IN_MODULE
+#include "xf86_ansic.h"
+#else
 #include <string.h>
+#endif
 
 /*------------------------- Global Variables ------------------------------*/
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.131 2000/03/02 23:15:03 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.132 2000/03/31 22:55:30 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -17,7 +17,11 @@
 #include "xf86str.h"
 #include "xf86Opt.h"
 #include <X11/Xfuncproto.h>
+#ifndef IN_MODULE
 #include <stdarg.h>
+#else
+#include "xf86_ansic.h"
+#endif
 
 #include "propertyst.h"
 

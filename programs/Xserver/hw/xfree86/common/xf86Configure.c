@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.28 2000/03/22 04:22:28 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.29 2000/04/04 22:36:53 dawes Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -54,6 +54,14 @@ static int nDevToConfig = 0, CurrentDriver;
 xf86MonPtr ConfiguredMonitor;
 Bool xf86DoConfigurePass1 = TRUE;
 Bool foundMouse = FALSE;
+
+#ifndef __EMX__
+#define DFLT_MOUSE_DEV	"/dev/mouse"
+#define DFLT_MOUSE_PROTO "auto"
+#else
+#define DFLT_MOUSE_DEV "mouse$"
+#define DFLT_MOUSE_PROTO "OS2Mouse"
+#endif
 
 static void
 GetPciCard(int vendor, int chipType, int *vendor1, int *vendor2, int *card)
@@ -195,7 +203,7 @@ configureInputSection (void)
     { 
 	int fd;
 
-	fd = open("/dev/mouse", 0);
+	fd = open(DFLT_MOUSE_DEV, 0);
 	if (fd != -1) {
 	    foundMouse = TRUE;
 	    close(fd);
@@ -207,11 +215,10 @@ configureInputSection (void)
     mouse->inp_identifier = "Mouse0";
     mouse->inp_driver = "mouse";
     mouse->inp_option_lst = 
-			addNewOption(mouse->inp_option_lst, "Protocol", "auto");
+		addNewOption(mouse->inp_option_lst, "Protocol", DFLT_MOUSE_PROTO);
     mouse->inp_option_lst = 
-		addNewOption(mouse->inp_option_lst, "Device", "/dev/mouse");
+		addNewOption(mouse->inp_option_lst, "Device", DFLT_MOUSE_DEV);
     ptr = (XF86ConfInputPtr)addListItem((glp)ptr, (glp)mouse);
-
     return ptr;
 }
 
@@ -605,6 +612,9 @@ DoConfigure()
     if (!(home = getenv("HOME")))
     	home = "/";
     {
+#ifdef __EMX__
+#define PATH_MAX 2048
+#endif
     	char homebuf[PATH_MAX];
     	/* getenv might return R/O memory, as with OS/2 */
     	strncpy(homebuf,home,PATH_MAX-1);
@@ -687,10 +697,12 @@ DoConfigure()
 	ErrorF("\nXFree86 is not able to detect your mouse.\n"
 		"Edit the file and correct the Device.\n");
     } else {
-	ErrorF("\nXFree86 detected your mouse at device /dev/mouse.\n"
+#ifndef __EMX__ /* OS/2 definitely has a mouse */
+	ErrorF("\nXFree86 detected your mouse at device %s.\n"
 		"Please check your config if the mouse is still not\n"
 		"operational, as by default XFree86 tries to autodetect\n"
-		"the protocol.\n");
+		"the protocol.\n",DFLT_MOUSE_DEV);
+#endif
     }
 
     if (xf86NumScreens > 1) {

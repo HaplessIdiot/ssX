@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.10 2000/03/02 17:53:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.11 2000/03/15 17:21:25 tsi Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -359,6 +359,7 @@ PathIsSafe(const char *path)
  *    %P    projroot
  *    %M    major version number
  *    %%    %
+ *    %&    EMX only: prepend X11ROOT env var
  */
 
 #ifndef XCONFIGFILE
@@ -407,6 +408,9 @@ DoSubstitution(const char *template, const char *cmdline, const char *projroot,
 	static const char *env = NULL, *home = NULL;
 	static char *hostname = NULL;
 	static char majorvers[3] = "";
+#ifdef __EMX__
+	static char *x11root = NULL;
+#endif
 
 	if (!template)
 		return NULL;
@@ -523,6 +527,16 @@ DoSubstitution(const char *template, const char *cmdline, const char *projroot,
 				result[l++] = '%';
 				CHECK_LENGTH;
 				break;
+#ifdef __EMX__
+			case '&':
+				if (!x11root)
+					x11root = getenv("X11ROOT");
+				if (x11root)
+					APPEND_STR(x11root);
+				else
+					BAIL_OUT;
+				break;
+#endif
 			default:
 				fprintf(stderr, "invalid escape %%%c found in path template\n",
 						template[i]);

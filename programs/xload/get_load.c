@@ -1,5 +1,5 @@
 /* $XConsortium: get_load.c /main/37 1996/03/09 09:38:04 kaleb $ */
-/* $XFree86: xc/programs/xload/get_load.c,v 1.1 2000/02/13 03:26:31 dawes Exp $ */
+/* $XFree86: xc/programs/xload/get_load.c,v 1.2 2000/02/21 18:05:49 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -51,7 +51,7 @@ from the X Consortium.
 #ifndef macII
 #ifndef apollo
 #ifndef LOADSTUB
-#if !defined(linux) && !defined(AMOEBA)
+#if !defined(linux) && !defined(AMOEBA) && !defined(__EMX__)
 #include <nlist.h>
 #endif /* linux || AMOEBA */
 #endif /* LOADSTUB */

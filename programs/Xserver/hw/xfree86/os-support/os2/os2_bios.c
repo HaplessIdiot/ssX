@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_bios.c,v 3.8 1999/04/29 09:13:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_bios.c,v 3.9 1999/12/14 03:38:55 robin Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -107,7 +107,7 @@ int Len;
  		Len -= chunksz;
  		rc = doioctl(fd,(ULONG)Phys_address,chunksz,dta+off);
  		if (rc != 0) {
- 			ErrorF("xf86ReadBIOS: BIOS map failed, addr=%lx, rc=%d\n",
+ 			FatalError("xf86ReadBIOS: BIOS map failed, addr=%lx, rc=%d\n",
  			Phys_address,rc);
  			xfree(dta);
  			DosClose(fd);
@@ -120,11 +120,13 @@ int Len;
 	 * Sanity check... No longer fatal, as some PS/1 and PS/2 fail here but still work.
 	 * S. Marineau, 10/10/96
          */
+#if 0
 	if ((Phys_address & 0x7fff) != 0 && 
 		(dta[0] != 0x55 || dta[1] != 0xaa)) {
 		FatalError("BIOS sanity check failed, addr=%x\nPlease report if you encounter problems\n",
 			Phys_address);
 	}
+#endif
 
 	/* copy data to buffer */
  	memcpy(Buf, dta, lensave);

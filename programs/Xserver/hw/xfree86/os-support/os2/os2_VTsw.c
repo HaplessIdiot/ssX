@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_VTsw.c,v 3.8 1996/12/23 06:50:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_VTsw.c,v 3.9 1999/04/29 09:13:47 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Modified 1996 by Sebastien Marineau <marineau@genie.uottawa.ca>
@@ -190,13 +190,47 @@ void * arg;
 /* End of thread */
 }
 
-void os2ServerVideoAccess()
+static BOOL is_redirected = FALSE;
+
+static void 
+redirect_output(void) 
+{
+	/* hv300996 create redirect file on boot drive, instead 
+	 * anywhere you are just standing
+	 */
+	char buf[20],dr[3];
+	ULONG drive;
+	APIRET rc;
+
+	if (is_redirected) return;
+
+	if ((rc = DosQuerySysInfo(5,5,&drive,sizeof(drive))) != 0)
+		dr[0] = 0;
+	else {	
+		dr[0] = drive+96;
+		dr[1] = ':';
+		dr[2] = 0;
+	}
+	sprintf(buf,"%s\\xf86log.os2",dr);
+
+	ErrorF("\nThis is the XFree86/OS2-4.0 server\n");
+	ErrorF("\nAll output from now on will be redirected to %s\n",buf);
+	freopen(buf,"w",stderr); 
+
+	is_redirected = TRUE;
+}
+
+void 
+os2ServerVideoAccess()
 {
    APIRET rc;
    ULONG fgSession;
    ULONG length=4;
    CHAR Status;
 
+   /* Redirect output as early as possible */
+   redirect_output();
+  
 /* Wait for screen access. This is called at server reset or at server startup */
 /* Here we do some waiting until this session comes in the foreground before *
  * going any further. This is because we may have been started in the bg      */

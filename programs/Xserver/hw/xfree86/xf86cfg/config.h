@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/config.h,v 1.1 2000/04/04 22:36:58 dawes Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -44,6 +44,12 @@
 #else
 #include <varargs.h>
 #define Va_start(a,b) va_start(a)
+#endif
+
+#ifdef __EMX__
+#define strcasecmp stricmp
+#define setenv putenv
+#define PATH_MAX 260
 #endif
 
 #include <xf86Parser.h>

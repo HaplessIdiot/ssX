@@ -1,6 +1,6 @@
 /*
 ** $XConsortium: tests.c,v 1.20 91/06/08 18:57:07 rws Exp $
-** $XFree86: xc/programs/xgc/tests.c,v 1.1 2000/02/13 03:26:28 dawes Exp $
+** $XFree86: xc/programs/xgc/tests.c,v 1.2 2000/02/14 19:21:02 dawes Exp $
 **
 */
 
@@ -56,8 +56,10 @@ timer(flag)
 #if !defined(SYSV) && !defined(MINIX) && !defined(AMOEBA)
   static struct timeval starttime;  /* starting time for gettimeofday() */
   struct timeval endtime;           /* ending time for gettimeofday() */
+#ifndef __EMX__
   static struct rusage startusage;  /* starting time for getrusage() */
   struct rusage endusage;           /* ending time for getrusage() */
+#endif
   struct timezone tz;               /* to make gettimeofday() happy */
 
   long elapsedtime;                 /* how long since we started the timer */
@@ -65,16 +67,21 @@ timer(flag)
   switch (flag) {
     case StartTimer:                       /* store initial values */
       gettimeofday(&starttime,&tz);       
+#ifndef __EMX__
       getrusage(RUSAGE_SELF,&startusage);
+#endif
       return((long) NULL);
     case EndTimer:
       gettimeofday(&endtime,&tz);          /* store final values */
+#ifndef __EMX__
       getrusage(RUSAGE_SELF,&endusage);
+#endif
 
   /* all the following line does is use the formula 
      elapsed time = ending time - starting time, but there are three 
      different timers and two different units of time, ack... */
 
+#ifndef __EMX__
       elapsedtime = (long) ((long)
 	((endtime.tv_sec - endusage.ru_utime.tv_sec - endusage.ru_stime.tv_sec
 	 - starttime.tv_sec + startusage.ru_utime.tv_sec
@@ -82,6 +89,10 @@ timer(flag)
       ((endtime.tv_usec - endusage.ru_utime.tv_usec - endusage.ru_stime.tv_usec
 	 - starttime.tv_usec + startusage.ru_utime.tv_usec
 	 + startusage.ru_stime.tv_usec));
+#else
+      elapsedtime = (long)( ((long)endtime.tv_sec-(long)starttime.tv_sec)*1000000
+			   +((long)endtime.tv_usec-(long)starttime.tv_usec));
+#endif
       return(elapsedtime);                
 
     default:                              

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.44 1999/12/13 02:52:55 robin Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.45 1999/12/27 00:39:29 robin Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -714,7 +714,7 @@ TRANS(SocketSetOption) (XtransConnInfo ciptr, int option, int arg)
     return -1;
 }
 
-
+#ifdef UNIXCONN
 static int
 set_sun_path(const char *port, const char *upath, char *path)
 {
@@ -735,6 +735,7 @@ set_sun_path(const char *port, const char *upath, char *path)
     }
     return 0;
 }
+#endif
 
 #ifdef TRANS_SERVER
 

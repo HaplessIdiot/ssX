@@ -1,5 +1,5 @@
 /*
- * Copyright 1997,1998 by The XFree86 Project, Inc
+ * Copyright 1997-2000 by The XFree86 Project, Inc
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.35 2000/02/08 17:19:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.36 2000/02/16 15:28:34 dawes Exp $ */
 
 #ifndef _XF86_ANSIC_H
 #define _XF86_ANSIC_H
@@ -31,6 +31,39 @@
 #include "misc.h"
 #endif
 #include "xf86_libc.h"
+
+/* Handle <stdarg.h> */
+
+#ifndef IN_MODULE
+
+#include <stdarg.h>
+
+#else /* !IN_MODULE */
+
+#ifndef __OS2ELF__
+
+#include <stdarg.h>
+
+#else /* __OS2ELF__ */
+
+/* EMX/gcc_elf under OS/2 does not have native header files */
+#if !defined (_VA_LIST)
+#define _VA_LIST
+typedef char *va_list;
+#endif
+
+#define _VA_ROUND(t) ((sizeof (t) + 3) & -4)
+
+#if !defined (va_start)
+#define va_start(ap,v) ap = (va_list)&v + ((sizeof (v) + 3) & -4)
+#define va_end(ap) (ap = 0, (void)0)
+#define va_arg(ap,t) (ap += _VA_ROUND (t), *(t *)(ap - _VA_ROUND (t)))
+#endif
+
+#endif /* __OS2ELF__ */
+
+#endif /* IN_MODULE */
+
 
 /*
  * The first set of definitions are required both for modules and
@@ -106,8 +139,6 @@
 #ifndef MAXLONG
 #define MAXLONG LONG_MAX
 #endif
-
-#include <stdarg.h>
 
 /*
  * ANSI C compilers only.

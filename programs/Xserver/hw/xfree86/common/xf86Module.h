@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.22 2000/03/31 22:55:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.23 2000/04/01 01:33:53 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -71,7 +71,11 @@ typedef enum {
 #define MODINFOSTRING2	0x10dc023a
 
 #ifndef MODULEVENDORSTRING
+#ifndef __OS2ELF__
 #define MODULEVENDORSTRING	"The XFree86 Project"
+#else
+#define MODULEVENDORSTRING	"The XFree86 Project - XFree86/OS2"
+#endif
 #endif
 
 /* Error return codes for errmaj.  New codes must only be added at the end. */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.59 2000/02/08 17:19:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.61 2000/03/25 20:30:44 mvojkovi Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -50,6 +50,7 @@
 #include <sys/ioctl.h>
 #ifdef __EMX__
 #define NO_MMAP
+#include <sys/param.h>
 #endif
 #ifdef HAS_SVR3_MMAPDRV
 #define NO_MMAP
@@ -1323,7 +1324,9 @@ xfToOsChmodMode(xf86mode_t xfmode)
 
     if (xfmode & XF86_S_ISUID) mode |= S_ISUID;
     if (xfmode & XF86_S_ISGID) mode |= S_ISGID;
+#ifndef __EMX__
     if (xfmode & XF86_S_ISVTX) mode |= S_ISVTX;
+#endif
     if (xfmode & XF86_S_IRUSR) mode |= S_IRUSR;
     if (xfmode & XF86_S_IWUSR) mode |= S_IWUSR;
     if (xfmode & XF86_S_IXUSR) mode |= S_IXUSR;
@@ -1350,7 +1353,11 @@ xf86chmod(const char *path, xf86mode_t xfmode)
 int
 xf86chown(const char *path, xf86uid_t owner, xf86gid_t group)
 {
+#ifndef __EMX__
     int rc = chown(path, owner, group);
+#else
+    int rc = 0;
+#endif
     xf86errno = xf86GetErrno();
     return rc;
 }
@@ -1368,7 +1375,9 @@ xfToOsMknodMode(xf86mode_t xfmode)
 
     if (xfmode & XF86_S_IFREG) mode |= S_IFREG;
     if (xfmode & XF86_S_IFCHR) mode |= S_IFCHR;
+#ifndef __EMX__
     if (xfmode & XF86_S_IFBLK) mode |= S_IFBLK;
+#endif
     if (xfmode & XF86_S_IFIFO) mode |= S_IFIFO;
 
     return mode;
@@ -1377,8 +1386,11 @@ xfToOsMknodMode(xf86mode_t xfmode)
 int xf86mknod(const char *pathname, xf86mode_t xfmode, xf86dev_t dev)
 {
     mode_t mode = xfToOsMknodMode(xfmode);
+#ifndef __EMX__
     int rc      = mknod(pathname, mode, dev);
-    
+#else
+    int rc = 0;
+#endif    
     xf86errno   = xf86GetErrno();
     return rc;
 }

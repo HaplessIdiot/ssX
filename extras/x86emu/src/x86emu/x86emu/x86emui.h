@@ -37,6 +37,7 @@
 *				and never in a binary portable driver.
 *
 ****************************************************************************/
+/* $XFree86$ */
 
 #ifndef __X86EMU_X86EMUI_H
 #define __X86EMU_X86EMUI_H
@@ -68,8 +69,13 @@
 #include "x86emu/prim_ops.h"
 #include "x86emu/fpu.h"
 #include "x86emu/fpu_regs.h"
+
+#ifdef IN_MODULE
+#include <xf86_ansic.h>
+#else
 #include <stdio.h>
 #include <string.h>
+#endif
 
 /*--------------------------- Inline Functions ----------------------------*/
 
