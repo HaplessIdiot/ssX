@@ -940,7 +940,8 @@ XawTextSourceReplace(Widget w, XawTextPosition left,
 		    memcpy(list->left->buffer, undo->left->buffer, size);
 		}
 		++list->left->length;
-		XtFree(l_state->buffer);
+		if (l_state->buffer != SrcNL && l_state->buffer != (char*)SrcWNL)
+		    XtFree(l_state->buffer);
 	    }
 
 	    if (src->textSrc.undo->num_list >= UNDO_DEPTH)

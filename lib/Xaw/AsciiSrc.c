@@ -1405,7 +1405,6 @@ InitStringOrFile(AsciiSrcObject src, Bool newString)
     const char *fdopen_mode = NULL;
     int fd;
     FILE *file;
-    char fileName[TMPSIZ];
 
     if (src->ascii_src.type == XawAsciiString) {
 	if (src->ascii_src.string == NULL)
@@ -1449,11 +1448,8 @@ InitStringOrFile(AsciiSrcObject src, Bool newString)
 	case XawtextAppend:
 	case XawtextEdit:
 	    if (src->ascii_src.string == NULL) {
-		src->ascii_src.string = fileName;
-		(void)tmpnam(src->ascii_src.string);
+		src->ascii_src.string = "*ascii-src*";
 		src->ascii_src.is_tempfile = True;
-		open_mode = O_WRONLY | O_CREAT | O_EXCL;
-		fdopen_mode = "w";
 	    }
 	    else {
 /* O_NOFOLLOW is a FreeBSD & Linux extension */
@@ -1472,11 +1468,8 @@ InitStringOrFile(AsciiSrcObject src, Bool newString)
 		       NULL, NULL);
     }
 
-    /* Allocate new memory for the temp filename, because it is held in
-     * a stack variable, not static memory.  This widget does not need
-     * to keep the private state field is_tempfile -- it is only accessed
-     * in this routine, and its former setting is unused
-     */
+    /* If is_tempfile, allocate a private copy of the text
+     * Unlikely to be changed, just to set allocated_string */
     if (newString || src->ascii_src.is_tempfile) {
 	src->ascii_src.string = XtNewString(src->ascii_src.string);
 	src->ascii_src.allocated_string = True;
