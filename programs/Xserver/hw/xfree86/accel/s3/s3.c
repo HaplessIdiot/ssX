@@ -820,8 +820,9 @@ s3Probe()
    vgaCRIndex = vgaIOBase + 4;
    vgaCRReg = vgaIOBase + 5;
 
-   outb(vgaCRIndex, 0x11);	/* for register CR11, (Vertical Retrace End) */
-   outb(vgaCRReg, 0x00);		/* set to 0 */
+   outb(vgaCRIndex, 0x11);	/* for register CR11 */
+   tmp = inb(vgaCRReg);         /* enable CR0-7 and disable interrupts */
+   outb(vgaCRReg, tmp & 0x0f);
 
    outb(vgaCRIndex, 0x38);		/* check if we have an S3 */
    outb(vgaCRReg, 0x00);

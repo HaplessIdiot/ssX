@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.109 1997/01/14 22:16:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.110 1997/01/18 06:55:01 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -327,8 +327,9 @@ s3Init(mode)
 #endif
       }
 
-      outb(vgaCRIndex, 0x11);	/* allow writting? */
-      outb(vgaCRReg, 0x00);
+      outb(vgaCRIndex, 0x11);	/* allow writting to CR0-7 */
+      tmp = inb(vgaCRReg);
+      outb(vgaCRReg, tmp & 0x7f);
       for (i = 0; i < 16; i++) {
 	 outb(vgaCRIndex, 0x40 + i);
 	 oldS3->s3sysreg[i] = inb(vgaCRReg);
@@ -1465,7 +1466,8 @@ s3Unlock()
    outb(vgaCRReg, tmp & 0xf0);
    cebank();
 
-   outb(vgaCRIndex, 0x11);		/* allow writting? */
-   outb(vgaCRReg, 0x00);
+   outb(vgaCRIndex, 0x11);		/* allow writting to CR0-7 */
+   tmp = inb(vgaCRReg);
+   outb(vgaCRReg, tmp & 0x7f);
 
 }

@@ -359,8 +359,9 @@ s3Init(mode)
       outb(vgaCRIndex, 0x36);
       oldS3->s3reg[10] = inb(vgaCRReg);
 
-      outb(vgaCRIndex, 0x11);	/* allow writting? */
-      outb(vgaCRReg, 0x00);
+      outb(vgaCRIndex, 0x11);	/* allow writting to CR0-7 */
+      tmp = inb(vgaCRReg);
+      outb(vgaCRReg, tmp & 0x7f);
       for (i = 0; i < 16; i++) {
 	 outb(vgaCRIndex, 0x40 + i);
 	 oldS3->s3sysreg[i] = inb(vgaCRReg);
@@ -1361,7 +1362,8 @@ s3Unlock()
    outb(vgaCRReg, tmp & 0xf0);
    cebank();
 
-   outb(vgaCRIndex, 0x11);		/* allow writting? */
-   outb(vgaCRReg, 0x00);
+   outb(vgaCRIndex, 0x11);		/* allow writting to CR0-7 */
+   tmp = inb(vgaCRReg);
+   outb(vgaCRReg, tmp & 0x7f);
 
 }
