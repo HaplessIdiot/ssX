@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.142tsi Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.143 2003/05/27 16:34:30 tsi Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -1442,6 +1442,11 @@ TCLIBDIR = TclLibDir
 #define HTMLroffCmd groff -Thtml
 #endif
 #endif
+#ifdef HTMLroffCmd
+#ifndef DocFilesToClean
+#define DocFilesToClean grohtml*.png *-auto-*.png
+#endif
+#endif
 #ifndef MsMacros
 #define MsMacros -ms
 #endif
@@ -1568,6 +1573,9 @@ TCLIBDIR = TclLibDir
 #endif
 #ifndef ExtraFilesToClean
 #define ExtraFilesToClean /**/
+#endif
+#ifndef DocFilesToClean
+#define DocFilesToClean /**/
 #endif
 #ifndef FilesToClean
 #define FilesToClean *.CKP *.ln *.BAK *.bak *.Osuf core errs ,* *~ *.a .emacs_* tags TAGS make.log MakeOut 
