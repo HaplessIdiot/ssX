@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86RandR.c,v 1.6 2003/11/06 13:03:10 alanh Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86RandR.c,v 1.7tsi Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -199,9 +199,11 @@ xf86RandRSetConfig (ScreenPtr		pScreen,
 static Bool
 xf86RandRCreateScreenResources (ScreenPtr pScreen)
 {
-    ScrnInfoPtr		    scrp = XF86SCRNINFO(pScreen);
     XF86RandRInfoPtr	    randrp = XF86RANDRINFO(pScreen);
+#if 0
+    ScrnInfoPtr		    scrp = XF86SCRNINFO(pScreen);
     DisplayModePtr	    mode;
+#endif
 
     pScreen->CreateScreenResources = randrp->CreateScreenResources;
     if (!(*pScreen->CreateScreenResources) (pScreen))
