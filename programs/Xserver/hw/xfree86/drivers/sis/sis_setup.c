@@ -264,7 +264,7 @@ sis300Setup(ScrnInfoPtr pScrn)
                                     100, 100, 100, 100};
     const int adaptermclk300[8] = { 125, 125, 125, 100,
                                     100, 100, 100, 100};
-    unsigned int    config, pciconfig, ramtype;
+    unsigned int    config, pciconfig, sr3a, ramtype;
     unsigned char   temp;
     int		    cpubuswidth;
     int 	    from = X_PROBED;
@@ -274,17 +274,18 @@ sis300Setup(ScrnInfoPtr pScrn)
     inSISIDXREG(SISSR, 0x14, config);
     cpubuswidth = bus[config >> 6];
 
-    inSISIDXREG(SISSR, 0x3A, ramtype);
-    ramtype &= 0x03;
-    ramtype += 4;
+    inSISIDXREG(SISSR, 0x3A, sr3a);
+    ramtype = (sr3a & 0x03) + 4;
 
     switch(pSiS->Chipset) {
     case PCI_CHIP_SIS300:
     	pScrn->videoRam = ((config & 0x3F) + 1) * 1024;
     	pSiS->BusWidth = cpubuswidth;
+	pSiS->IsAGPCard = ((sr3a & 0x30) == 0x30) ? FALSE : TRUE;
 	break;
     case PCI_CHIP_SIS540:
     case PCI_CHIP_SIS630:
+    	pSiS->IsAGPCard = TRUE;
         pciconfig = pciReadByte(0x00000000, 0x63);
 	if(pciconfig & 0x80) {
 	   pScrn->videoRam = (1 << (((pciconfig & 0x70) >> 4) + 21)) / 1024;
@@ -352,7 +353,7 @@ sis315Setup(ScrnInfoPtr pScrn)
     int     busSDR[4]  = {64, 64, 128, 128};
     int     busDDR[4]  = {32, 32,  64,  64};
     int     busDDRA[4] = {64+32, 64+32 , (64+32)*2, (64+32)*2};
-    unsigned int config, config1, config2;
+    unsigned int config, config1, config2, sr3a;
     char    *dramTypeStr315[] = {
         "Single Channel 1 rank SDR SDRAM",
         "Single Channel 1 rank SDR SGRAM",
@@ -390,16 +391,20 @@ sis315Setup(ScrnInfoPtr pScrn)
 
     inSISIDXREG(SISSR, 0x14, config);
     config1 = (config & 0x0C) >> 2;
-    inSISIDXREG(SISSR, 0x3A, config2);
-    config2 &= 0x03;
+    inSISIDXREG(SISSR, 0x3A, sr3a);
+    config2 = sr3a & 0x03;
 
     pScrn->videoRam = (1 << ((config & 0xF0) >> 4)) * 1024;
 
     if(pSiS->Chipset == PCI_CHIP_SIS330) {
 
+       pSiS->IsAGPCard = TRUE;
+
        if(config1) pScrn->videoRam <<= 1;
 
     } else {
+
+       pSiS->IsAGPCard = ((sr3a & 0x30) == 0x30) ? FALSE : TRUE;
 
        /* If SINGLE_CHANNEL_2_RANK or DUAL_CHANNEL_1_RANK -> mem * 2 */
        if((config1 == 0x01) || (config1 == 0x03))
@@ -454,7 +459,7 @@ sis315Setup(ScrnInfoPtr pScrn)
 	    pSiS->BusWidth);
 }
 
-/* TW: for 550, 650, 740, 660 */
+/* For 550, 65x, 74x, 660 */
 static  void
 sis550Setup(ScrnInfoPtr pScrn)
 {
@@ -462,6 +467,8 @@ sis550Setup(ScrnInfoPtr pScrn)
     unsigned int    config, ramtype=0, i;
     CARD8	    pciconfig, temp;
     BOOLEAN	    alldone = FALSE;
+
+    pSiS->IsAGPCard = TRUE;
 
     pSiS->MemClock = SiSMclk(pSiS);
 

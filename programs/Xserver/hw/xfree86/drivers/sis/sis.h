@@ -650,9 +650,12 @@ typedef struct {
     Bool		AGPInitOK;
     Bool 		irqEnabled;
     int 		irq;
+    Bool		IsAGPCard;
+    unsigned long	DRIheapstart, DRIheapend;
 
     void		(*RenderCallback)(ScrnInfoPtr);
     Time		RenderTime;
+    unsigned char       *RenderAccelArray;
 
     int 		ColorExpandRingHead;
     int 		ColorExpandRingTail;
