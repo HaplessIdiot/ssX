@@ -1,4 +1,4 @@
-.\" $XFree86$
+.\" $XFree86: xc/programs/Xserver/hw/xwin/XWin.man,v 1.2 2001/07/29 22:08:15 tsi Exp $
 .TH XWIN 1 __vendorversion__
 .SH NAME
 XWin \- X Server for the Cygwin environment on Microsoft Windows
@@ -30,15 +30,28 @@ is 50 milliseconds.
 Override the server's automatically supported engine type.  This
 parameter will be ignored if the specified engine type is not
 supported on the current system.  The supported engine type ids are 1
-- Windows GDI, 2 - DirectDraw, and 4 - DirectDraw4.
+- Shadow GDI, 2 - Shadow DirectDraw, and 4 - Shadow DirectDraw4.
+Additionally, there is a barely functional experimental engine type id
+16 - Native GDI.
 .TP 8
 .B \-fullscreen
 Run the server in fullscreen mode, as opposed to the default windowed
 mode.
 .TP 8
+.B "\-refresh \fIrate_in_Hz\fP"
+Specify an optional refresh rate to use when running in
+fullscreen with a DirectDraw engine.  This parameter is ignored if
+\fB\-fullscreen\fP is not specified.
+.TP 8
 .B "\-screen \fIscreen_number\fP \fIwidth\fP \fIheight\fP"
 Sets the display resolution for the X server to use on screen
 .I screen_number.
+.TP 8
+.B \-[no]unixkill
+Ctrl+Alt+Backspace exits the X Server
+.TP 8
+.B \-[no]winkill
+Alt+F4 exits the X Server
 .SH "SEE ALSO"
 .PP
 X(__miscmansuffix__), Xserver(1), xdm(1), xinit(1)
@@ -48,10 +61,6 @@ and this man page still have many limitations. Some of the more obvious
 ones are:
 .br
 - The display mode can not be changed once the X server has started.
-.br
-- Locking your Windows NT Workstation with Ctrl-Alt-Del while
-.I XWin has the keyboard focus causes the keyboard to misbehave in 
-.I XWin until you press and release the Ctrl key and Alt key once. 
 .PP
 .SH AUTHORS
 XFree86 was originally ported to Cygwin by Dakshinamurthy Karra,
@@ -63,7 +72,7 @@ provided by RedHat.
 The following members, in alphabetical order by last name, of the
 Cygwin/XFree86 Team contributed to the XFree86 4.1.0 release:
 .PP
-Robert Collins - Lead website maintainer
+Robert Collins
 .br
 Christopher Faylor - Management of hosting services, general
 programming guru
@@ -74,7 +83,7 @@ Alan Hourihane - Developer, patch reviewer, general programming guru
 .br
 Pierre A Humblet - Debugging of socket-related crashes, developer
 .br
-Harold L Hunt II - Lead developer, documentation, and minor website updates
+Harold L Hunt II - Lead developer, documentation, and website updates
 .br
 Suhaib Siddiqi - Project lead
 

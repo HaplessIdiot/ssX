@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/wingc.c,v 1.6 2001/09/13 08:25:45 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/wingc.c,v 1.7 2001/10/22 15:21:11 alanh Exp $ */
 
 #include "win.h"
 
@@ -174,10 +174,18 @@ winValidateGCNativeGDI (GCPtr pGC,
 	    }
 	  else if (pGC->fgPixel)
 	    {
-	      ErrorF ("winValidateGC - Selecting custom pen\n");
+	      ErrorF ("winValidateGC - Selecting custom pen: %d\n",
+		      pGC->fgPixel);
+	      /*
+	       * FIXME: So far I've only seen a white pen selected here.
+	       */
+#if 1	     
+	      SelectObject (pGCPriv->hdcMem, GetStockObject (WHITE_PEN));
+#else
 	      /* FIXME: This leaks a pen */
 	      SelectObject (pGCPriv->hdcMem, 
 			    CreatePen (PS_SOLID, 0, pGC->fgPixel));
+#endif
 	    }
 	  else
 	    {
@@ -241,6 +249,9 @@ winValidateGCNativeGDI (GCPtr pGC,
 
 	  /* Push the tile into the GC's DC */
 	  hbmpOrig = SelectObject (pGCPriv->hdcMem, pPixmapPriv->hBitmap);
+	  if (hbmpOrig == NULL)
+	    FatalError ("winValidateDC () - DRAWABLE_WINDOW - FillTiled - "
+			"SelectObject () failed on pPixmapPriv->hBitmap\n");
 
 	  /* Blit the tile to a remote area of the screen */
 	  BitBlt (pGCPriv->hdc, 
