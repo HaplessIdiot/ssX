@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_video.c,v 1.9 2004/03/29 16:25:17 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_video.c,v 1.10 2004/03/30 10:34:07 eich Exp $ */
 /*
  * $Workfile: nsc_gx1_video.c $
  * $Revision$
@@ -239,43 +239,42 @@ GX1InitVideo(ScreenPtr pScreen)
    GeodePtr pGeode;
 
    ScrnInfoPtr pScreenInfo = xf86Screens[pScreen->myNum];
+    XF86VideoAdaptorPtr *adaptors, *newAdaptors = NULL;
+   XF86VideoAdaptorPtr newAdaptor = NULL;
+   
+   int num_adaptors;
 
    pGeode = GEODEPTR(pScreenInfo);
 
-      ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-      XF86VideoAdaptorPtr *adaptors, *newAdaptors = NULL;
-      XF86VideoAdaptorPtr newAdaptor = NULL;
-
-      int num_adaptors;
-
-      DEBUGMSG(0, (0, X_NONE, "InitVideo\n"));
-      newAdaptor = GX1SetupImageVideo(pScreen);
-      GX1InitOffscreenImages(pScreen);
-
-      num_adaptors = xf86XVListGenericAdaptors(pScrn, &adaptors);
-
-      if (newAdaptor) {
-	 if (!num_adaptors) {
-	    num_adaptors = 1;
-	    adaptors = &newAdaptor;
-	 } else {
-	    newAdaptors =		/* need to free this someplace */
-		  xalloc((num_adaptors + 1) * sizeof(XF86VideoAdaptorPtr *));
-	    if (newAdaptors) {
+   
+   DEBUGMSG(0, (0, X_NONE, "InitVideo\n"));
+   newAdaptor = GX1SetupImageVideo(pScreen);
+   GX1InitOffscreenImages(pScreen);
+   
+   num_adaptors = xf86XVListGenericAdaptors(pScreenInfo, &adaptors);
+   
+   if (newAdaptor) {
+       if (!num_adaptors) {
+	   num_adaptors = 1;
+	   adaptors = &newAdaptor;
+       } else {
+	   newAdaptors =		/* need to free this someplace */
+	       xalloc((num_adaptors + 1) * sizeof(XF86VideoAdaptorPtr *));
+	   if (newAdaptors) {
 	       memcpy(newAdaptors, adaptors, num_adaptors *
 		      sizeof(XF86VideoAdaptorPtr));
 	       newAdaptors[num_adaptors] = newAdaptor;
 	       adaptors = newAdaptors;
 	       num_adaptors++;
-	    }
-	 }
-      }
-
-      if (num_adaptors)
-	 xf86XVScreenInit(pScreen, adaptors, num_adaptors);
-
-      if (newAdaptors)
-	 xfree(newAdaptors);
+	   }
+       }
+   }
+   
+   if (num_adaptors)
+       xf86XVScreenInit(pScreen, adaptors, num_adaptors);
+   
+   if (newAdaptors)
+       xfree(newAdaptors);
 }
 
 /* client libraries expect an encoding */
