@@ -1,4 +1,4 @@
-static char rcsid[] = "$Header$";
+static char rcsid[] = "Header: /home/cs/phelps/spine/rman/RCS/rman.c,v 1.144 1999/08/10 00:41:55 phelps Exp phelps $";
 
 /*
    PolyglotMan by Thomas A. Phelps (phelps@ACM.org)
@@ -16,6 +16,7 @@ static char rcsid[] = "$Header$";
      source interpretation added September 24, 1996
 	renamed PolyglotMan due to lawsuit by Rosetta, Inc. August 8, 1997
 */
+/* $XFree86$ */
 
 
 /* TO DO ****
@@ -1505,6 +1506,10 @@ HTML(enum command cmd) {
 		   case ENDBODY:
 			printf("\n");
 			break;
+	   	   case BEGINBOLD:		printf("<B>"); break;
+	   	   case ENDBOLD:		printf("</B>"); break;
+	   	   case BEGINITALICS:	printf("<I>"); break;
+	   	   case ENDITALICS:		printf("</I>"); break;
 		   default:
 			/* nothing */
 			break;
@@ -4013,6 +4018,17 @@ source_out0(char *p, char end) {
 	   /* end stylings? (found in Solaris) * /
 	   p++;
 	   -------------------*/
+	 case 'N':
+	   p++;
+	   if (*p == '\'') {
+	     char *tmp;
+	     p++;
+	     if ((tmp = strchr(p, '\'')) != NULL) {
+	       sputchar(atoi(p));
+	       p = tmp + 1;
+	     }
+	   }
+	   break;
 	 default:		/* unknown escaped character */
 	   sputchar(*p++);
 	 }
@@ -4428,7 +4444,10 @@ source_command(char *p) {
     /* /usr/sww/man/man1/CC.1 a good test of this */
     q = strchr(p,' ');
     if (q!=NULL) {
-	 *q='\0'; while (*++q) /*nada*/;
+	 *q='\0'; q++;
+#if 0
+	 while (*++q) /*nada*/;
+#endif
 	 if (*q=='"') q++;
 	 if (substcnt<SUBSTMAX) {
 	   subst[substcnt].key = mystrdup(p); subst[substcnt].subst = mystrdup(q); substcnt++;
@@ -4484,46 +4503,54 @@ source_command(char *p) {
   } else if (checkcmd("B")) {
     supresseol=0;
     stagadd(BEGINBOLD); p = source_out_word(p); source_out(p); stagadd(ENDBOLD);
+    if (finnf) source_struct(SHORTLINE);
   } else if (checkcmd("I")) {
     supresseol=0;
     stagadd(BEGINITALICS); p = source_out_word(p); stagadd(ENDITALICS);
     source_out(p);
+    if (finnf) source_struct(SHORTLINE);
   } else if (checkcmd("BI")) {
     supresseol=0;
     while (*p) {
 	 stagadd(BEGINBOLD); p = source_out_word(p); stagadd(ENDBOLD);
 	 if (*p) { stagadd(BEGINITALICS); p = source_out_word(p); stagadd(ENDITALICS); }
     }
+    if (finnf) source_struct(SHORTLINE);
   } else if (checkcmd("IB")) {
     supresseol=0;
     while (*p) {
 	 stagadd(BEGINITALICS); p = source_out_word(p); stagadd(ENDITALICS);
 	 if (*p) { stagadd(BEGINBOLD); p = source_out_word(p); stagadd(ENDBOLD); }
     }
+    if (finnf) source_struct(SHORTLINE);
   } else if (checkcmd("RB")) {
     supresseol=0;
     while (*p) {
 	 p = source_out_word(p);
 	 if (*p) { stagadd(BEGINBOLD); p = source_out_word(p); stagadd(ENDBOLD); }
     }
+    if (finnf) source_struct(SHORTLINE);
   } else if (checkcmd("BR")) {
     supresseol=0;
     while (*p) {
 	 stagadd(BEGINBOLD); p = source_out_word(p); stagadd(ENDBOLD);
 	 p = source_out_word(p);
     }
+    if (finnf) source_struct(SHORTLINE);
   } else if (checkcmd("IR")) {
     supresseol=0;
     while (*p) {
 	 stagadd(BEGINITALICS); p=source_out_word(p); stagadd(ENDITALICS);
 	 p=source_out_word(p);
     }
+    if (finnf) source_struct(SHORTLINE);
   } else if (checkcmd("RI")) {
     supresseol=0;
     while (*p) {
 	 p=source_out_word(p);
 	 stagadd(BEGINITALICS); p=source_out_word(p); stagadd(ENDITALICS);
     }
+    if (finnf) source_struct(SHORTLINE);
 
 
   /* HP-UX */
