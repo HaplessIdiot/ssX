@@ -30,13 +30,15 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.15 2001/07/25 14:30:08 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.16 2001/07/31 09:46:57 alanh Exp $ */
 
 #include "win.h"
+
 
 /*
  * Create a full screen window
  */
+
 Bool
 winCreateBoundingWindowFullScreen (ScreenPtr pScreen)
 {
@@ -101,9 +103,11 @@ winCreateBoundingWindowFullScreen (ScreenPtr pScreen)
   return TRUE;
 }
 
+
 /*
  * Create our primary Windows display window
  */
+
 Bool
 winCreateBoundingWindowWindowed (ScreenPtr pScreen)
 {
@@ -244,11 +248,13 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen)
   return TRUE;
 }
 
+
 /*
  * Determine what type of screen we are initializing
  * and call the appropriate procedure to intiailize
  * that type of screen.
  */
+
 Bool
 winScreenInit (int index,
 	       ScreenPtr pScreen,
@@ -319,7 +325,9 @@ winScreenInit (int index,
   return TRUE;
 }
 
+
 /* See Porting Layer Definition - p. 20 */
+
 Bool
 winFinishScreenInitFB (int index,
 		       ScreenPtr pScreen,
@@ -461,19 +469,17 @@ winFinishScreenInitFB (int index,
 #endif
 
 #if WIN_LAYER_SUPPORT
-  /* We use shadow for the primary layer, so setup shadow now */
-  if (!shadowInit (pScreen,
-		   pScreenPriv->pwinShadowUpdate,
-		   NULL))
-    {
-      ErrorF ("winFinishScreenInitFB () - shadowInit () failed\n");
-      return FALSE;
-    }
-
   /* KDrive does LayerStartInit right after fbPictureInit */
   if (!LayerStartInit (pScreen))
     {
       ErrorF ("winFinishScreenInitFB () - LayerStartInit () failed\n");
+      return FALSE;
+    }
+
+  /* Not sure what we're adding to shadow, but add it anyway */
+  if (!shadowAdd (pScreen, 0, pScreenPriv->pwinShadowUpdate, NULL, 0, 0))
+    {
+      ErrorF ("winFinishScreenInitFB () - shadowAdd () failed\n");
       return FALSE;
     }
 
@@ -502,13 +508,11 @@ winFinishScreenInitFB (int index,
 #endif
 #endif
 
-#if !WIN_LAYER_SUPPORT
   /*
    * Backing store support should reduce network traffic and increase
    * performance.
    */
   miInitializeBackingStore (pScreen);
-#endif
 
   /* KDrive does miDCInitialize right after miInitializeBackingStore */
   /* Setup the cursor routines */
@@ -561,10 +565,12 @@ winFinishScreenInitFB (int index,
   return TRUE;
 }
 
+
 /*
  * Detect engines supported by current Windows version
  * DirectDraw version and hardware
  */
+
 Bool
 winDetectSupportedEngines (ScreenPtr pScreen)
 {
@@ -674,11 +680,13 @@ winDetectSupportedEngines (ScreenPtr pScreen)
   return TRUE;
 }
 
+
 /*
  * Set the engine type, depending on the engines
  * supported for this screen, and whether the user
  * suggested an engine type
  */
+
 Bool
 winSetEngine (ScreenPtr pScreen)
 {
@@ -752,7 +760,9 @@ winSetEngine (ScreenPtr pScreen)
   return TRUE;
 }
 
+
 /* See Porting Layer Definition - p. 33 */
+
 Bool
 winSaveScreen (ScreenPtr pScreen, int on)
 {
@@ -772,7 +782,9 @@ winSaveScreen (ScreenPtr pScreen, int on)
  *
  */
 
+
 /* See Porting Layer Definition - p. 20 */
+
 Bool
 winFinishScreenInitNativeGDI (int index,
 			      ScreenPtr pScreen,
@@ -953,12 +965,14 @@ winFinishScreenInitNativeGDI (int index,
   return TRUE;
 }
 
+
 PixmapPtr
 winGetWindowPixmap (WindowPtr pwin)
 {
   ErrorF ("winGetWindowPixmap ()\n");
   return NULL;
 }
+
 
 void
 winSetWindowPixmap (WindowPtr pwin, PixmapPtr pPix)

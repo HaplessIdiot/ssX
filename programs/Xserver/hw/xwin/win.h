@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.14 2001/07/31 09:46:57 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.15 2001/08/06 11:02:30 alanh Exp $ */
 
 #ifndef _WIN_H_
 #define _WIN_H_
@@ -54,7 +54,7 @@ gcc -o XWin.exe -g -ansi -pedantic -Wall -Wpointer-arith -L../../exports/lib hw/
  * Build toggles for experimental features
  */
 #define WIN_NATIVE_GDI_SUPPORT	YES
-#define WIN_LAYER_SUPPORT	NO
+#define WIN_LAYER_SUPPORT	YES
 
 /* Turn debug messages on or off */
 #define CYGDEBUG		NO

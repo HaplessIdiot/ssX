@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.48 2001/07/25 15:05:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.49 2001/08/01 00:44:59 tsi Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -259,6 +259,8 @@ InitConnectionLimits()
 {
     lastfdesc = -1;
 
+#ifndef __CYGWIN__
+
 #ifndef __EMX__
 
 #if !defined(XNO_SYSCONF) && defined(_SC_OPEN_MAX)
@@ -278,6 +280,8 @@ InitConnectionLimits()
 #else /* __EMX__ */
     lastfdesc = _nfiles - 1;
 #endif
+
+#endif /* __CYGWIN__ */
 
     /* This is the fallback */
     if (lastfdesc < 0)

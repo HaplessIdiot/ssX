@@ -1,4 +1,6 @@
 XFree86 4.1.99.1 (xx August 2001)
+ 220. Use MAXSOCKS for connection limit in Cygwin/XFree86 (Alan Hourihane).
+ 219. Add Render's layer support to Cygwin/XFree86 (#4872, Harold Hunt).
  218. Support for OpenBSD/powerpc (Matthieu Herrb).
  217. Experimental change to default behaviour of ATI panel support to override
       the horizontal and vertical porches of all modes to that found in the
@@ -13703,4 +13705,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1912 2001/08/15 11:54:22 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1913 2001/08/15 19:19:56 herrb Exp $
