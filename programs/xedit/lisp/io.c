@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/io.c,v 1.8 2002/08/05 03:56:24 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/io.c,v 1.9 2002/08/25 02:48:31 paulo Exp $ */
 
 #include "io.h"
 #include <errno.h>
@@ -57,10 +57,10 @@ extern int pagesize;
  * Implementation
  */
 int
-LispGet(LispMac *mac)
+LispGet(void)
 {
     int ch = EOF;
-    LispUngetInfo *unget = mac->unget[mac->iunget];
+    LispUngetInfo *unget = lisp__data.unget[lisp__data.iunget];
 
     if (unget->offset)
 	ch = unget->buffer[--unget->offset];
@@ -85,28 +85,28 @@ LispGet(LispMac *mac)
 	if (file != NULL) {
 	    if (file->nonblock) {
 		if (fcntl(file->descriptor, F_SETFL, 0) < 0)
-		    LispDestroy(mac, "fcntl: %s", strerror(errno));
+		    LispDestroy("fcntl: %s", strerror(errno));
 		file->nonblock = 0;
 	    }
 	    ch = LispFgetc(file);
 	}
     }
     else
-	LispDestroy(mac, "cannot read from *STANDARD-INPUT*");
+	LispDestroy("cannot read from *STANDARD-INPUT*");
 
     if (ch == EOF)
-	mac->eof = 1;
+	lisp__data.eof = 1;
 
     return (ch);
 }
 
 int
-LispUnget(LispMac *mac, int ch)
+LispUnget(int ch)
 {
-    LispUngetInfo *unget = mac->unget[mac->iunget];
+    LispUngetInfo *unget = lisp__data.unget[lisp__data.iunget];
 
     if (unget->offset == sizeof(unget->buffer)) {
-	LispWarning(mac, "character %c lost at LispUnget()", unget->buffer[0]);
+	LispWarning("character %c lost at LispUnget()", unget->buffer[0]);
 	memmove(unget->buffer, unget->buffer + 1, unget->offset - 1);
 	unget->buffer[unget->offset - 1] = ch;
     }
@@ -117,36 +117,40 @@ LispUnget(LispMac *mac, int ch)
 }
 
 void
-LispPushInput(LispMac *mac, LispObj *stream)
+LispPushInput(LispObj *stream)
 {
     if (!STREAM_P(stream) || !stream->data.stream.readable)
-	LispDestroy(mac, "bad stream at PUSH-INPUT");
-    mac->input_list = CONS(stream, mac->input_list);
+	LispDestroy("bad stream at PUSH-INPUT");
+    lisp__data.input_list = CONS(stream, lisp__data.input_list);
     SINPUT = stream;
-    if (mac->iunget + 1 == mac->nunget) {
+    if (lisp__data.iunget + 1 == lisp__data.nunget) {
 	LispUngetInfo **info =
-	    realloc(mac->unget, sizeof(LispUngetInfo) * (mac->nunget + 1));
+	    realloc(lisp__data.unget,
+		    sizeof(LispUngetInfo) * (lisp__data.nunget + 1));
 
 	if (!info ||
-	    (info[mac->nunget] = calloc(1, sizeof(LispUngetInfo))) == NULL)
-	    LispDestroy(mac, "out of memory");
-	mac->unget = info;
-	++mac->nunget;
+	    (info[lisp__data.nunget] =
+	     calloc(1, sizeof(LispUngetInfo))) == NULL)
+	    LispDestroy("out of memory");
+	lisp__data.unget = info;
+	++lisp__data.nunget;
     }
-    ++mac->iunget;
-    memset((char*)mac->unget[mac->iunget], '\0', sizeof(LispUngetInfo));
-    mac->eof = 0;
+    ++lisp__data.iunget;
+    memset((char*)lisp__data.unget[lisp__data.iunget], '\0',
+	   sizeof(LispUngetInfo));
+    lisp__data.eof = 0;
 }
 
 void
-LispPopInput(LispMac *mac, LispObj *stream)
+LispPopInput(LispObj *stream)
 {
-    if (!CONS_P(mac->input_list) || stream != CAR(mac->input_list))
-	LispDestroy(mac, "bad stream at POP-INPUT");
-    mac->input_list = CDR(mac->input_list);
-    SINPUT = CONS_P(mac->input_list) ? CAR(mac->input_list) : mac->input_list;
-    --mac->iunget;
-    mac->eof = 0;
+    if (!CONS_P(lisp__data.input_list) || stream != CAR(lisp__data.input_list))
+	LispDestroy("bad stream at POP-INPUT");
+    lisp__data.input_list = CDR(lisp__data.input_list);
+    SINPUT = CONS_P(lisp__data.input_list) ?
+    CAR(lisp__data.input_list) : lisp__data.input_list;
+    --lisp__data.iunget;
+    lisp__data.eof = 0;
 }
 
 /*

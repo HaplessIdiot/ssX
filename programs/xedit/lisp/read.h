@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/read.h,v 1.1 2002/01/30 21:00:58 paulo Exp $ */
 
 #ifndef Lisp_read_h
 #define Lisp_read_h
@@ -37,6 +37,6 @@
 /*
  * Prototypes
  */
-LispObj *LispRead(LispMac*);
+LispObj *LispRead(void);
 
 #endif /* Lisp_read_h */

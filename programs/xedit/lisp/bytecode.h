@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/bytecode.h,v 1.2 2002/09/22 07:09:06 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/bytecode.h,v 1.3 2002/11/02 22:58:09 paulo Exp $ */
 
 #include "private.h"
 
@@ -224,13 +224,13 @@ struct _LispBytecode {
 /*
  * Prototypes
  */
-void LispBytecodeInit(LispMac*);
+void LispBytecodeInit(void);
 
-LispObj *Lisp_Compile(LispMac*, LispBuiltin*);		/* compile */
-LispObj *Lisp_Disassemble(LispMac*, LispBuiltin*);	/* disassemble */
+LispObj *Lisp_Compile(LispBuiltin*);
+LispObj *Lisp_Disassemble(LispBuiltin*);
 
-LispObj *LispCompileForm(LispMac*, LispObj*);
-LispObj *LispExecuteBytecode(LispMac*, LispObj*);
+LispObj *LispCompileForm(LispObj*);
+LispObj *LispExecuteBytecode(LispObj*);
 
 void Com_And(LispCom*, LispBuiltin*);
 void Com_Block(LispCom*, LispBuiltin*);

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/pathname.h,v 1.2 2002/08/05 03:56:24 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/pathname.h,v 1.3 2002/08/25 02:48:31 paulo Exp $ */
 
 #ifndef Lisp_pathname_h
 #define Lisp_pathname_h
@@ -45,7 +45,7 @@
 #define NAME_MAX	256
 #endif
 
-/* field number in list */
+
 #define PATH_STRING	0
 #define PATH_HOST	1
 #define PATH_DEVICE	2
@@ -54,25 +54,25 @@
 #define PATH_TYPE	5
 #define PATH_VERSION	6
 
-void LispPathnameInit(LispMac*);
+void LispPathnameInit(void);
 
-LispObj *Lisp_Directory(LispMac*, LispBuiltin*);	  /* directory */
-LispObj *Lisp_Namestring(LispMac*, LispBuiltin*);	  /* namestring */
-LispObj *Lisp_FileNamestring(LispMac*, LispBuiltin*);     /* file-namestring */
-LispObj *Lisp_DirectoryNamestring(LispMac*, LispBuiltin*);/* directory-namestring */
-LispObj *Lisp_EnoughNamestring(LispMac*, LispBuiltin*);	  /* enough-namestring */
-LispObj *Lisp_HostNamestring(LispMac*, LispBuiltin*);	  /* host-namestring */
-LispObj *Lisp_MakePathname(LispMac*, LispBuiltin*);	  /* make-pathname */
-LispObj *Lisp_Pathnamep(LispMac*, LispBuiltin*);	  /* pathnamep */
-LispObj *Lisp_ParseNamestring(LispMac*, LispBuiltin*);	  /* parse-namestring */
-LispObj *Lisp_PathnameHost(LispMac*, LispBuiltin*);	  /* pathname-host */
-LispObj *Lisp_PathnameDevice(LispMac*, LispBuiltin*);	  /* pathname-device */
-LispObj *Lisp_PathnameDirectory(LispMac*, LispBuiltin*);  /* pathname-directory */
-LispObj *Lisp_PathnameName(LispMac*, LispBuiltin*);	  /* pathname-name */
-LispObj *Lisp_PathnameType(LispMac*, LispBuiltin*);	  /* pathname-type */
-LispObj *Lisp_PathnameVersion(LispMac*, LispBuiltin*);	  /* pathname-version */
-LispObj *Lisp_Truename(LispMac*, LispBuiltin*);		  /* truename */
-LispObj *Lisp_ProbeFile(LispMac*, LispBuiltin*);	  /* probe-file */
-LispObj *Lisp_UserHomedirPathname(LispMac*, LispBuiltin*);/* user-homedir-pathname */
+LispObj *Lisp_Directory(LispBuiltin*);
+LispObj *Lisp_Namestring(LispBuiltin*);
+LispObj *Lisp_FileNamestring(LispBuiltin*);
+LispObj *Lisp_DirectoryNamestring(LispBuiltin*);
+LispObj *Lisp_EnoughNamestring(LispBuiltin*);
+LispObj *Lisp_HostNamestring(LispBuiltin*);
+LispObj *Lisp_MakePathname(LispBuiltin*);
+LispObj *Lisp_Pathnamep(LispBuiltin*);
+LispObj *Lisp_ParseNamestring(LispBuiltin*);
+LispObj *Lisp_PathnameHost(LispBuiltin*);
+LispObj *Lisp_PathnameDevice(LispBuiltin*);
+LispObj *Lisp_PathnameDirectory(LispBuiltin*);
+LispObj *Lisp_PathnameName(LispBuiltin*);
+LispObj *Lisp_PathnameType(LispBuiltin*);
+LispObj *Lisp_PathnameVersion(LispBuiltin*);
+LispObj *Lisp_Truename(LispBuiltin*);
+LispObj *Lisp_ProbeFile(LispBuiltin*);
+LispObj *Lisp_UserHomedirPathname(LispBuiltin*);
 
 #endif /* Lisp_pathname_h */

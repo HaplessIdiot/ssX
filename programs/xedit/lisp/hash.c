@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/hash.c,v 1.1 2002/10/06 17:11:42 paulo Exp $ */
 
 #include "hash.h"
 
@@ -45,8 +45,8 @@
  * Prototypes
  */
 static unsigned long LispHashKey(LispObj*, int);
-static LispObj *LispHash(LispMac*, LispBuiltin*, int);
-static void LispRehash(LispMac*, LispHashTable*);
+static LispObj *LispHash(LispBuiltin*, int);
+static void LispRehash(LispHashTable*);
 static void LispFreeHashEntries(LispHashEntry*, long);
 
 /*
@@ -82,7 +82,7 @@ LispHashKey(LispObj *object, int function)
     if (function == FEQUALP) {
 	switch (object->type) {
 	    case LispCharacter_t:
-		key = (unsigned long)toupper(object->data.integer);
+		key = (unsigned long)toupper(GETINT(object));
 		goto hash_key_done;
 	    case LispString_t:
 		string = THESTR(object);
@@ -101,7 +101,7 @@ LispHashKey(LispObj *object, int function)
     switch (object->type) {
 	case LispInteger_t:
 	case LispCharacter_t:
-	    key = (unsigned long)object->data.integer;
+	    key = (unsigned long)GETINT(object);
 	    goto hash_key_done;
 	case LispRatio_t:
 	    key = (object->data.ratio.numerator << 16) ^
@@ -176,7 +176,7 @@ hash_key_done:
 }
 
 static LispObj *
-LispHash(LispMac *mac, LispBuiltin *builtin, int code)
+LispHash(LispBuiltin *builtin, int code)
 {
     LispHashEntry *entry;
     LispHashTable *hash;
@@ -217,12 +217,12 @@ LispHash(LispMac *mac, LispBuiltin *builtin, int code)
 	}
 	else {
 	    for (i = entry->cache; i >= 0; i--) {
-		if (LispObjectCompare(mac, entry->keys[i], okey,
+		if (LispObjectCompare(entry->keys[i], okey,
 				      hash->function) == T)
 		    goto found_key;
 	    }
 	    for (i = entry->cache + 1; i < entry->count; i++) {
-		if (LispObjectCompare(mac, entry->keys[i], okey,
+		if (LispObjectCompare(entry->keys[i], okey,
 				      hash->function) == T)
 		    break;
 	    }
@@ -256,11 +256,11 @@ found_key:
 
 		    keys = realloc(entry->keys, sizeof(LispObj*) * (i + 4));
 		    if (keys == NULL)
-			LispDestroy(mac, "out of memory");
+			LispDestroy("out of memory");
 		    values = realloc(entry->values, sizeof(LispObj*) * (i + 4));
 		    if (values == NULL) {
 			free(keys);
-			LispDestroy(mac, "out of memory");
+			LispDestroy("out of memory");
 		    }
 		    entry->keys = keys;
 		    entry->values = values;
@@ -270,7 +270,7 @@ found_key:
 		++entry->count;
 		++hash->count;
 		if (hash->count > hash->rehash_threshold * hash->num_entries)
-		    LispRehash(mac, hash);
+		    LispRehash(hash);
 	    }
 	    break;
 	case REM_HASH:
@@ -294,7 +294,7 @@ found_key:
 }
 
 static void
-LispRehash(LispMac *mac, LispHashTable *hash)
+LispRehash(LispHashTable *hash)
 {
     unsigned long key;
     LispHashEntry *entries, *nentry, *entry, *last;
@@ -343,7 +343,7 @@ LispRehash(LispMac *mac, LispHashTable *hash)
 out_of_memory:
     if (entries)
 	LispFreeHashEntries(entries, size);
-    LispDestroy(mac, "out of memory");
+    LispDestroy("out of memory");
 }
 
 static void
@@ -366,7 +366,7 @@ LispFreeHashTable(LispHashTable *hash)
 }
 
 LispObj *
-Lisp_Clrhash(LispMac *mac, LispBuiltin *builtin)
+Lisp_Clrhash(LispBuiltin *builtin)
 /*
  clrhash hash-table
  */
@@ -392,16 +392,16 @@ Lisp_Clrhash(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Gethash(LispMac *mac, LispBuiltin *builtin)
+Lisp_Gethash(LispBuiltin *builtin)
 /*
  gethash key hash-table &optional default
  */
 {
-    return (LispHash(mac, builtin, GET_HASH));
+    return (LispHash(builtin, GET_HASH));
 }
 
 LispObj *
-Lisp_HashTableP(LispMac *mac, LispBuiltin *builtin)
+Lisp_HashTableP(LispBuiltin *builtin)
 /*
  hash-table-p object
  */
@@ -412,7 +412,7 @@ Lisp_HashTableP(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_HashTableCount(LispMac *mac, LispBuiltin *builtin)
+Lisp_HashTableCount(LispBuiltin *builtin)
 /*
  hash-table-count hash-table
  */
@@ -425,7 +425,7 @@ Lisp_HashTableCount(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_HashTableRehashSize(LispMac *mac, LispBuiltin *builtin)
+Lisp_HashTableRehashSize(LispBuiltin *builtin)
 /*
  hash-table-rehash-size hash-table
  */
@@ -438,7 +438,7 @@ Lisp_HashTableRehashSize(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_HashTableRehashThreshold(LispMac *mac, LispBuiltin *builtin)
+Lisp_HashTableRehashThreshold(LispBuiltin *builtin)
 /*
  hash-table-rehash-threshold hash-table
  */
@@ -451,7 +451,7 @@ Lisp_HashTableRehashThreshold(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_HashTableSize(LispMac *mac, LispBuiltin *builtin)
+Lisp_HashTableSize(LispBuiltin *builtin)
 /*
  hash-table-size hash-table
  */
@@ -464,7 +464,7 @@ Lisp_HashTableSize(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_HashTableTest(LispMac *mac, LispBuiltin *builtin)
+Lisp_HashTableTest(LispBuiltin *builtin)
 /*
  hash-table-test hash-table
  */
@@ -477,7 +477,7 @@ Lisp_HashTableTest(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Maphash(LispMac *mac, LispBuiltin *builtin)
+Lisp_Maphash(LispBuiltin *builtin)
 /*
  maphash function hash-table
  */
@@ -503,7 +503,7 @@ Lisp_Maphash(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_MakeHashTable(LispMac *mac, LispBuiltin *builtin)
+Lisp_MakeHashTable(LispBuiltin *builtin)
 /*
  make-hash-table &key test size rehash-size rehash-threshold initial-contents
  */
@@ -532,7 +532,7 @@ Lisp_MakeHashTable(LispMac *mac, LispBuiltin *builtin)
 	else if (test == Oequalp)
 	    function = FEQUALP;
 	else
-	    LispDestroy(mac, "%s: :TEST must be EQ, EQL, EQUAL, "
+	    LispDestroy("%s: :TEST must be EQ, EQL, EQUAL, "
 			"or EQUALP, not %s", STRFUN(builtin), STROBJ(test));
     }
     else
@@ -540,7 +540,7 @@ Lisp_MakeHashTable(LispMac *mac, LispBuiltin *builtin)
 
     if (size != NIL) {
 	ERROR_CHECK_INDEX(size);
-	isize = size->data.integer;
+	isize = GETINT(size);
     }
     else
 	isize = 1;
@@ -548,7 +548,7 @@ Lisp_MakeHashTable(LispMac *mac, LispBuiltin *builtin)
     if (rehash_size != NIL) {
 	ERROR_CHECK_FLOAT(rehash_size);
 	if (rehash_size->data.real <= 1.0)
-	    LispDestroy(mac, "%s: :REHASH-SIZE must a float > 1, not %s",
+	    LispDestroy("%s: :REHASH-SIZE must a float > 1, not %s",
 			STRFUN(builtin), STROBJ(rehash_size));
 	drsize = rehash_size->data.real;
     }
@@ -559,7 +559,7 @@ Lisp_MakeHashTable(LispMac *mac, LispBuiltin *builtin)
 	ERROR_CHECK_FLOAT(rehash_threshold);
 	if (rehash_threshold->data.real < 0.0 ||
 	    rehash_threshold->data.real > 1.0)
-	    LispDestroy(mac, "%s: :REHASH-THRESHOLD must a float "
+	    LispDestroy("%s: :REHASH-THRESHOLD must a float "
 			"in the range 0.0 - 1.0, not %s",
 			STRFUN(builtin), STROBJ(rehash_threshold));
 	drthreshold = rehash_threshold->data.real;
@@ -586,21 +586,21 @@ Lisp_MakeHashTable(LispMac *mac, LispBuiltin *builtin)
 	    break;
 	}
 
-    hash_table = LispMalloc(mac, sizeof(LispHashTable));
-    hash_table->entries = LispCalloc(mac, 1, sizeof(LispHashEntry) * isize);
+    hash_table = LispMalloc(sizeof(LispHashTable));
+    hash_table->entries = LispCalloc(1, sizeof(LispHashEntry) * isize);
     hash_table->num_entries = isize;
     hash_table->count = 0;
     hash_table->function = function;
     hash_table->rehash_size = drsize;
     hash_table->rehash_threshold = drthreshold;
 
-    result = LispNew(mac, NIL, NIL);
+    result = LispNew(NIL, NIL);
     result->type = LispHashTable_t;
     result->data.hash.table = hash_table;
     result->data.hash.test = test;
 
-    LispMused(mac, hash_table);
-    LispMused(mac, hash_table->entries);
+    LispMused(hash_table);
+    LispMused(hash_table->entries);
 
     if (initial_contents != NIL) {
 	unsigned long key;
@@ -615,11 +615,11 @@ Lisp_MakeHashTable(LispMac *mac, LispBuiltin *builtin)
 
 		keys = realloc(entry->keys, sizeof(LispObj*) * (i + 4));
 		if (keys == NULL)
-		    LispDestroy(mac, "out of memory");
+		    LispDestroy("out of memory");
 		values = realloc(entry->values, sizeof(LispObj*) * (i + 4));
 		if (values == NULL) {
 		    free(keys);
-		    LispDestroy(mac, "out of memory");
+		    LispDestroy("out of memory");
 		}
 		entry->keys = keys;
 		entry->values = values;
@@ -635,19 +635,19 @@ Lisp_MakeHashTable(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Remhash(LispMac *mac, LispBuiltin *builtin)
+Lisp_Remhash(LispBuiltin *builtin)
 /*
  remhash key hash-table
  */
 {
-    return (LispHash(mac, builtin, REM_HASH));
+    return (LispHash(builtin, REM_HASH));
 }
 
 LispObj *
-Lisp_XeditPuthash(LispMac *mac, LispBuiltin *builtin)
+Lisp_XeditPuthash(LispBuiltin *builtin)
 /*
  lisp::puthash key hash-table value
  */
 {
-    return (LispHash(mac, builtin, PUT_HASH));
+    return (LispHash(builtin, PUT_HASH));
 }

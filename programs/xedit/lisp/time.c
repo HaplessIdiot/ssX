@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/time.c,v 1.5 2002/08/25 02:48:31 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/time.c,v 1.6 2002/09/15 21:32:23 paulo Exp $ */
 
 #include "time.h"
 #include "bytecode.h"
@@ -36,7 +36,7 @@
  * Implementation
 */
 LispObj *
-Lisp_Time(LispMac *mac, LispBuiltin *builtin)
+Lisp_Time(LispBuiltin *builtin)
 /*
  time form
  */
@@ -72,15 +72,15 @@ Lisp_Time(LispMac *mac, LispBuiltin *builtin)
     getitimer(ITIMER_VIRTUAL, &virt);
     getitimer(ITIMER_PROF, &prof);
 
-    mac->gc.gctime = 0;
-    mac->gc.timebits = 1;
+    lisp__data.gc.gctime = 0;
+    lisp__data.gc.timebits = 1;
 
-    count = mac->gc.count;
+    count = lisp__data.gc.count;
 
 #if 0
     form = CONS(form, NIL);
     COD = CONS(form, COD);
-    result = LispExecuteBytecode(mac, (LispCompileForm(mac, form)));
+    result = LispExecuteBytecode(LispCompileForm(form));
 #else
     result = EVAL(form);
 #endif
@@ -95,7 +95,7 @@ Lisp_Time(LispMac *mac, LispBuiltin *builtin)
 	--sec;
 	usec += 1000000;
     }
-    LispMessage(mac, "Real time   : %g sec", sec + usec / 1000000.0);
+    LispMessage("Real time   : %g sec", sec + usec / 1000000.0);
 
     sec = virt.it_interval.tv_sec - virt.it_value.tv_sec;
     usec = virt.it_interval.tv_usec - virt.it_value.tv_usec + 10000;
@@ -103,7 +103,7 @@ Lisp_Time(LispMac *mac, LispBuiltin *builtin)
 	--sec;
 	usec += 1000000;
     }
-    LispMessage(mac, "Virtual time: %g sec", sec + usec / 1000000.0);
+    LispMessage("Virtual time: %g sec", sec + usec / 1000000.0);
 
     sec = prof.it_interval.tv_sec - prof.it_value.tv_sec;
     usec = prof.it_interval.tv_usec - prof.it_value.tv_usec + 10000;
@@ -111,7 +111,7 @@ Lisp_Time(LispMac *mac, LispBuiltin *builtin)
 	--sec;
 	usec += 1000000;
     }
-    LispMessage(mac, "Profile time: %g sec", sec + usec / 1000000.0);
+    LispMessage("Profile time: %g sec", sec + usec / 1000000.0);
 
     real.it_value.tv_sec =
 	virt.it_value.tv_sec =
@@ -130,9 +130,9 @@ Lisp_Time(LispMac *mac, LispBuiltin *builtin)
     setitimer(ITIMER_VIRTUAL, &virt, NULL);
     setitimer(ITIMER_PROF, &prof, NULL);
 
-    LispMessage(mac, "GC: %ld times, %g sec",
-		mac->gc.count - count, mac->gc.gctime / 1000000.0);
-    mac->gc.timebits = 0;
+    LispMessage("GC: %ld times, %g sec",
+		lisp__data.gc.count - count, lisp__data.gc.gctime / 1000000.0);
+    lisp__data.gc.timebits = 0;
 
     return (result);
 }

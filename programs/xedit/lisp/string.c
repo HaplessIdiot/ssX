@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.13 2002/08/25 02:48:31 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.14 2002/10/06 17:11:45 paulo Exp $ */
 
 #include "helper.h"
 #include "read.h"
@@ -45,14 +45,13 @@
 /*
  * Prototypes
  */
-static LispObj *LispCharCompare(LispMac*, LispBuiltin*, int, int);
+static LispObj *LispCharCompare(LispBuiltin*, int, int);
 
 /*
  * Implementation
  */
 static LispObj *
-LispCharCompare(LispMac *mac, LispBuiltin *builtin,
-		int operation, int ignore_case)
+LispCharCompare(LispBuiltin *builtin, int operation, int ignore_case)
 {
     LispObj *object;
     int cmp, value, next_value;
@@ -63,7 +62,7 @@ LispCharCompare(LispMac *mac, LispBuiltin *builtin,
     character = ARGUMENT(0);
 
     ERROR_CHECK_CHARACTER(character);
-    value = character->data.integer;
+    value = GETINT(character);
     if (ignore_case && islower(value))
 	value = toupper(value);
 
@@ -80,13 +79,13 @@ LispCharCompare(LispMac *mac, LispBuiltin *builtin,
 	do {
 	    for (object = more_characters; CONS_P(object); object = CDR(object)) {
 		character = CAR(object);
-		next_value = character->data.integer;
+		next_value = GETINT(character);
 		if (ignore_case && islower(next_value))
 		    next_value = toupper(next_value);
 		if (value == next_value)
 		    return (NIL);
 	    }
-	    value = CAR(more_characters)->data.integer;
+	    value = GETINT(CAR(more_characters));
 	    if (ignore_case && islower(value))
 		value = toupper(value);
 	    more_characters = CDR(more_characters);
@@ -98,7 +97,7 @@ LispCharCompare(LispMac *mac, LispBuiltin *builtin,
     /* Linearly compare characters */
     for (; CONS_P(more_characters); more_characters = CDR(more_characters)) {
 	character = CAR(more_characters);
-	next_value = character->data.integer;
+	next_value = GETINT(character);
 	if (ignore_case && islower(next_value))
 	    next_value = toupper(next_value);
 
@@ -120,7 +119,7 @@ LispCharCompare(LispMac *mac, LispBuiltin *builtin,
 }
 
 LispObj *
-Lisp_AlphaCharP(LispMac *mac, LispBuiltin *builtin)
+Lisp_AlphaCharP(LispBuiltin *builtin)
 /*
  alpha-char-p char
  */
@@ -131,11 +130,11 @@ Lisp_AlphaCharP(LispMac *mac, LispBuiltin *builtin)
 
     ERROR_CHECK_CHARACTER(character);
 
-    return (isalpha(character->data.integer) ? T : NIL);
+    return (isalpha(GETINT(character)) ? T : NIL);
 }
 
 LispObj *
-Lisp_Char(LispMac *mac, LispBuiltin *builtin)
+Lisp_Char(LispBuiltin *builtin)
 /*
  char string index
  schar simple-string index
@@ -151,12 +150,12 @@ Lisp_Char(LispMac *mac, LispBuiltin *builtin)
 
     ERROR_CHECK_STRING(ostring);
     ERROR_CHECK_INDEX(oindex);
-    offset = oindex->data.integer;
+    offset = GETINT(oindex);
     string = THESTR(ostring);
     length = STRLEN(ostring);
 
     if (offset >= length)
-	LispDestroy(mac, "%s: index %ld too large for string length %ld",
+	LispDestroy("%s: index %ld too large for string length %ld",
 		    STRFUN(builtin), offset, length);
 
     character = *(unsigned char*)(string + offset);
@@ -168,7 +167,7 @@ Lisp_Char(LispMac *mac, LispBuiltin *builtin)
  *	DONT explicitly call. Non standard function
  */
 LispObj *
-Lisp_XeditCharStore(LispMac *mac, LispBuiltin *builtin)
+Lisp_XeditCharStore(LispBuiltin *builtin)
 /*
  xedit::char-store string index value
  */
@@ -184,16 +183,16 @@ Lisp_XeditCharStore(LispMac *mac, LispBuiltin *builtin)
     ERROR_CHECK_STRING(ostring);
     ERROR_CHECK_INDEX(oindex);
     length = STRLEN(ostring);
-    offset = oindex->data.integer;
+    offset = GETINT(oindex);
     if (offset >= length)
-	LispDestroy(mac, "%s: index %ld too large for string length %ld",
+	LispDestroy("%s: index %ld too large for string length %ld",
 		    STRFUN(builtin), offset, length);
     ERROR_CHECK_CHARACTER(ovalue);
 
-    character = ovalue->data.integer;
+    character = GETINT(ovalue);
 
     if (character < 0 || character > 255)
-	LispDestroy(mac, "%s: cannot represent character %d",
+	LispDestroy("%s: cannot represent character %d",
 		    STRFUN(builtin), character);
 
     THESTR(ostring)[offset] = character;
@@ -202,115 +201,115 @@ Lisp_XeditCharStore(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_CharLess(LispMac *mac, LispBuiltin *builtin)
+Lisp_CharLess(LispBuiltin *builtin)
 /*
  char< character &rest more-characters
  */
 {
-    return (LispCharCompare(mac, builtin, CHAR_LESS, 0));
+    return (LispCharCompare(builtin, CHAR_LESS, 0));
 }
 
 LispObj *
-Lisp_CharLessEqual(LispMac *mac, LispBuiltin *builtin)
+Lisp_CharLessEqual(LispBuiltin *builtin)
 /*
  char<= character &rest more-characters
  */
 {
-    return (LispCharCompare(mac, builtin, CHAR_LESS_EQUAL, 0));
+    return (LispCharCompare(builtin, CHAR_LESS_EQUAL, 0));
 }
 
 LispObj *
-Lisp_CharEqual_(LispMac *mac, LispBuiltin *builtin)
+Lisp_CharEqual_(LispBuiltin *builtin)
 /*
  char= character &rest more-characters
  */
 {
-    return (LispCharCompare(mac, builtin, CHAR_EQUAL, 0));
+    return (LispCharCompare(builtin, CHAR_EQUAL, 0));
 }
 
 LispObj *
-Lisp_CharGreater(LispMac *mac, LispBuiltin *builtin)
+Lisp_CharGreater(LispBuiltin *builtin)
 /*
  char> character &rest more-characters
  */
 {
-    return (LispCharCompare(mac, builtin, CHAR_GREATER, 0));
+    return (LispCharCompare(builtin, CHAR_GREATER, 0));
 }
 
 LispObj *
-Lisp_CharGreaterEqual(LispMac *mac, LispBuiltin *builtin)
+Lisp_CharGreaterEqual(LispBuiltin *builtin)
 /*
  char>= character &rest more-characters
  */
 {
-    return (LispCharCompare(mac, builtin, CHAR_GREATER_EQUAL, 0));
+    return (LispCharCompare(builtin, CHAR_GREATER_EQUAL, 0));
 }
 
 LispObj *
-Lisp_CharNotEqual_(LispMac *mac, LispBuiltin *builtin)
+Lisp_CharNotEqual_(LispBuiltin *builtin)
 /*
  char/= character &rest more-characters
  */
 {
-    return (LispCharCompare(mac, builtin, CHAR_NOT_EQUAL, 0));
+    return (LispCharCompare(builtin, CHAR_NOT_EQUAL, 0));
 }
 
 LispObj *
-Lisp_CharLessp(LispMac *mac, LispBuiltin *builtin)
+Lisp_CharLessp(LispBuiltin *builtin)
 /*
  char-lessp character &rest more-characters
  */
 {
-    return (LispCharCompare(mac, builtin, CHAR_LESS, 1));
+    return (LispCharCompare(builtin, CHAR_LESS, 1));
 }
 
 LispObj *
-Lisp_CharNotGreaterp(LispMac *mac, LispBuiltin *builtin)
+Lisp_CharNotGreaterp(LispBuiltin *builtin)
 /*
  char-not-greaterp character &rest more-characters
  */
 {
-    return (LispCharCompare(mac, builtin, CHAR_LESS_EQUAL, 1));
+    return (LispCharCompare(builtin, CHAR_LESS_EQUAL, 1));
 }
 
 LispObj *
-Lisp_CharEqual(LispMac *mac, LispBuiltin *builtin)
+Lisp_CharEqual(LispBuiltin *builtin)
 /*
  char-equalp character &rest more-characters
  */
 {
-    return (LispCharCompare(mac, builtin, CHAR_EQUAL, 1));
+    return (LispCharCompare(builtin, CHAR_EQUAL, 1));
 }
 
 LispObj *
-Lisp_CharGreaterp(LispMac *mac, LispBuiltin *builtin)
+Lisp_CharGreaterp(LispBuiltin *builtin)
 /*
  char-greaterp character &rest more-characters
  */
 {
-    return (LispCharCompare(mac, builtin, CHAR_GREATER, 1));
+    return (LispCharCompare(builtin, CHAR_GREATER, 1));
 }
 
 LispObj *
-Lisp_CharNotLessp(LispMac *mac, LispBuiltin *builtin)
+Lisp_CharNotLessp(LispBuiltin *builtin)
 /*
  char-not-lessp &rest more-characters
  */
 {
-    return (LispCharCompare(mac, builtin, CHAR_GREATER_EQUAL, 1));
+    return (LispCharCompare(builtin, CHAR_GREATER_EQUAL, 1));
 }
 
 LispObj *
-Lisp_CharNotEqual(LispMac *mac, LispBuiltin *builtin)
+Lisp_CharNotEqual(LispBuiltin *builtin)
 /*
  char-not-equal character &rest more-characters
  */
 {
-    return (LispCharCompare(mac, builtin, CHAR_NOT_EQUAL, 1));
+    return (LispCharCompare(builtin, CHAR_NOT_EQUAL, 1));
 }
 
 LispObj *
-Lisp_Character(LispMac *mac, LispBuiltin *builtin)
+Lisp_Character(LispBuiltin *builtin)
 /*
  character object
  */
@@ -319,11 +318,11 @@ Lisp_Character(LispMac *mac, LispBuiltin *builtin)
 
     object = ARGUMENT(0);
 
-    return (LispCharacterCoerce(mac, builtin, object));
+    return (LispCharacterCoerce(builtin, object));
 }
 
 LispObj *
-Lisp_Characterp(LispMac *mac, LispBuiltin *builtin)
+Lisp_Characterp(LispBuiltin *builtin)
 /*
  characterp object
  */
@@ -336,7 +335,7 @@ Lisp_Characterp(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_CharDowncase(LispMac *mac, LispBuiltin *builtin)
+Lisp_CharDowncase(LispBuiltin *builtin)
 /*
  char-downcase character
  */
@@ -349,15 +348,15 @@ Lisp_CharDowncase(LispMac *mac, LispBuiltin *builtin)
 
     ERROR_CHECK_CHARACTER(character);
 
-    c = tolower((int)character->data.integer);
-    if (c == character->data.integer)
+    c = tolower((int)GETINT(character));
+    if (c == GETINT(character))
 	return (character);
 
     return (CHAR(c));
 }
 
 LispObj *
-Lisp_CharInt(LispMac *mac, LispBuiltin *builtin)
+Lisp_CharInt(LispBuiltin *builtin)
 /*
  char-int character
  */
@@ -368,11 +367,11 @@ Lisp_CharInt(LispMac *mac, LispBuiltin *builtin)
 
     ERROR_CHECK_CHARACTER(character);
 
-    return (SMALLINT(character->data.integer));
+    return (SMALLINT(GETINT(character)));
 }
 
 LispObj *
-Lisp_CharUpcase(LispMac *mac, LispBuiltin *builtin)
+Lisp_CharUpcase(LispBuiltin *builtin)
 /*
  char-upcase character
  */
@@ -385,15 +384,15 @@ Lisp_CharUpcase(LispMac *mac, LispBuiltin *builtin)
 
     ERROR_CHECK_CHARACTER(character);
 
-    c = toupper((int)character->data.integer);
-    if (c == character->data.integer)
+    c = toupper((int)GETINT(character));
+    if (c == GETINT(character))
 	return (character);
 
     return (CHAR(c));
 }
 
 LispObj *
-Lisp_DigitCharP(LispMac *mac, LispBuiltin *builtin)
+Lisp_DigitCharP(LispBuiltin *builtin)
 /*
  digit-char-p character &optional (radix 10)
  */
@@ -406,15 +405,15 @@ Lisp_DigitCharP(LispMac *mac, LispBuiltin *builtin)
 
     ERROR_CHECK_CHARACTER(ochar);
 
-    character = ochar->data.integer;
+    character = GETINT(ochar);
 
     if (oradix != NIL) {
 	ERROR_CHECK_INDEX(oradix);
-	radix = oradix->data.integer;
+	radix = GETINT(oradix);
     }
 
     if (radix < 2 || radix > 36)
-	LispDestroy(mac, "%s: radix must be >= 2 and <= 36, not %d",
+	LispDestroy("%s: radix must be >= 2 and <= 36, not %d",
 		    STRFUN(builtin), radix);
 
     if (character >= '0' && character <= '9') {
@@ -438,7 +437,7 @@ Lisp_DigitCharP(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_IntChar(LispMac *mac, LispBuiltin *builtin)
+Lisp_IntChar(LispBuiltin *builtin)
 /*
  int-char integer
  */
@@ -449,17 +448,17 @@ Lisp_IntChar(LispMac *mac, LispBuiltin *builtin)
     integer = ARGUMENT(0);
 
     if (INT_P(integer))
-	character = integer->data.integer;
+	character = GETINT(integer);
     else
-	LispDestroy(mac, "%s: cannot convert %s to character",
+	LispDestroy("%s: cannot convert %s to character",
 		    STRFUN(builtin), STROBJ(integer));
 
-    return (character >= 0 && character < 0xffff ? CHAR(character) : NIL);
+    return (character >= 0 && character < 0xff ? CHAR(character) : NIL);
 }
 
 /* XXX ignoring element-type */
 LispObj *
-Lisp_MakeString(LispMac *mac, LispBuiltin *builtin)
+Lisp_MakeString(LispBuiltin *builtin)
 /*
  make-string size &key initial-element element-type
  */
@@ -474,22 +473,22 @@ Lisp_MakeString(LispMac *mac, LispBuiltin *builtin)
     size = ARGUMENT(0);
 
     ERROR_CHECK_INDEX(size);
-    length = size->data.integer;
+    length = GETINT(size);
     if (initial_element != NIL) {
 	ERROR_CHECK_CHARACTER(initial_element);
-	initial = initial_element->data.integer;
+	initial = GETINT(initial_element);
     }
     else
 	initial = 0;
 
-    string = LispMalloc(mac, length);
+    string = LispMalloc(length);
     memset(string, initial, length);
 
     return (LSTRING2(string, length));
 }
 
 LispObj *
-Lisp_ParseInteger(LispMac *mac, LispBuiltin *builtin)
+Lisp_ParseInteger(LispBuiltin *builtin)
 /*
  parse-integer string &key start end radix junk-allowed
  */
@@ -512,11 +511,11 @@ Lisp_ParseInteger(LispMac *mac, LispBuiltin *builtin)
     result = NIL;
 
     ERROR_CHECK_STRING(ostring);
-    LispCheckSequenceStartEnd(mac, builtin, ostring, ostart, oend,
+    LispCheckSequenceStartEnd(builtin, ostring, ostart, oend,
 			      &start, &end, &length);
     string = THESTR(ostring);
     if (radix < 2 || radix > 36)
-	LispDestroy(mac, "%s: :RADIX %ld must be in the range 2 to 36",
+	LispDestroy("%s: :RADIX %ld must be in the range 2 to 36",
 		    STRFUN(builtin), radix);
 
     integer = check = 0;
@@ -574,24 +573,24 @@ Lisp_ParseInteger(LispMac *mac, LispBuiltin *builtin)
 	    ;
 
     if ((junk || ptr == string) && junk_allowed == NIL)
-	LispDestroy(mac, "%s: %s has a bad integer representation",
+	LispDestroy("%s: %s has a bad integer representation",
 		    STRFUN(builtin), STROBJ(ostring));
     else if (ptr == string)
 	result = NIL;
     else if (overflow) {
-	mpi *bigi = LispMalloc(mac, sizeof(mpi));
+	mpi *bigi = LispMalloc(sizeof(mpi));
 	char *str;
 
 	length = end - start + sign;
-	str = LispMalloc(mac, length + 1);
+	str = LispMalloc(length + 1);
 
 	strncpy(str, string - sign, length + sign);
 	str[length + sign] = '\0';
 	mpi_init(bigi);
 	mpi_setstr(bigi, str, radix);
-	LispFree(mac, str);
+	LispFree(str);
 	result = BIGINTEGER(bigi);
-	LispMused(mac, bigi);
+	LispMused(bigi);
     }
     else
 	result = SMALLINT(sign ? -integer : integer);
@@ -605,7 +604,7 @@ Lisp_ParseInteger(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_String(LispMac *mac, LispBuiltin *builtin)
+Lisp_String(LispBuiltin *builtin)
 /*
  string object
  */
@@ -614,11 +613,11 @@ Lisp_String(LispMac *mac, LispBuiltin *builtin)
 
     object = ARGUMENT(0);
 
-    return (LispStringCoerce(mac, builtin, object));
+    return (LispStringCoerce(builtin, object));
 }
 
 LispObj *
-Lisp_Stringp(LispMac *mac, LispBuiltin *builtin)
+Lisp_Stringp(LispBuiltin *builtin)
 /*
  stringp object
  */
@@ -632,7 +631,7 @@ Lisp_Stringp(LispMac *mac, LispBuiltin *builtin)
 
 /* XXX preserve-whitespace is being ignored */
 LispObj *
-Lisp_ReadFromString(LispMac *mac, LispBuiltin *builtin)
+Lisp_ReadFromString(LispBuiltin *builtin)
 /*
  read-from-string string &optional eof-error-p eof-value &key start end preserve-whitespace
  */
@@ -654,29 +653,29 @@ Lisp_ReadFromString(LispMac *mac, LispBuiltin *builtin)
 
     ERROR_CHECK_STRING(ostring);
     string = THESTR(ostring);
-    LispCheckSequenceStartEnd(mac, builtin, ostring, ostart, oend,
+    LispCheckSequenceStartEnd(builtin, ostring, ostart, oend,
 			      &start, &end, &length);
 
     if (start > 0 || end < length)
 	length = end - start;
     stream = LSTRINGSTREAM((unsigned char*)string + start, STREAM_READ, length);
 
-    LispPushInput(mac, stream);
-    result = LispRead(mac);
+    LispPushInput(stream);
+    result = LispRead();
     /* stream->data.stream.source.string->input is
      * the offset of the last byte read in string */
     bytes_read = stream->data.stream.source.string->input;
-    LispPopInput(mac, stream);
+    LispPopInput(stream);
 
     if (result == EOLIST)
-	LispDestroy(mac, "%s: object cannot start with #\\)", STRFUN(builtin));
+	LispDestroy("%s: object cannot start with #\\)", STRFUN(builtin));
     if (result == DOT)
-	LispDestroy(mac, "dot allowed only on lists");
+	LispDestroy("dot allowed only on lists");
     if (result == NULL) {
 	if (eof_error_p == NIL)
 	    result = eof_value;
 	else
-	    LispDestroy(mac, "%s: unexpected end of input", STRFUN(builtin));
+	    LispDestroy("%s: unexpected end of input", STRFUN(builtin));
     }
 
     GC_PROTECT(result);
@@ -688,34 +687,34 @@ Lisp_ReadFromString(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_StringTrim(LispMac *mac, LispBuiltin *builtin)
+Lisp_StringTrim(LispBuiltin *builtin)
 /*
  string-trim character-bag string
  */
 {
-    return (LispStringTrim(mac, builtin, 1, 1));
+    return (LispStringTrim(builtin, 1, 1));
 }
 
 LispObj *
-Lisp_StringLeftTrim(LispMac *mac, LispBuiltin *builtin)
+Lisp_StringLeftTrim(LispBuiltin *builtin)
 /*
  string-left-trim character-bag string
  */
 {
-    return (LispStringTrim(mac, builtin, 1, 0));
+    return (LispStringTrim(builtin, 1, 0));
 }
 
 LispObj *
-Lisp_StringRightTrim(LispMac *mac, LispBuiltin *builtin)
+Lisp_StringRightTrim(LispBuiltin *builtin)
 /*
  string-right-trim character-bag string
  */
 {
-    return (LispStringTrim(mac, builtin, 0, 1));
+    return (LispStringTrim(builtin, 0, 1));
 }
 
 LispObj *
-Lisp_StringEqual_(LispMac *mac, LispBuiltin *builtin)
+Lisp_StringEqual_(LispBuiltin *builtin)
 /*
  string= string1 string2 &key start1 end1 start2 end2
  */
@@ -723,7 +722,7 @@ Lisp_StringEqual_(LispMac *mac, LispBuiltin *builtin)
     char *string1, *string2;
     int start1, end1, start2, end2, length;
 
-    LispGetStringArgs(mac, builtin, &string1, &string2,
+    LispGetStringArgs(builtin, &string1, &string2,
 		      &start1, &end1, &start2, &end2);
 
     length = end1 - start1;
@@ -737,7 +736,7 @@ Lisp_StringEqual_(LispMac *mac, LispBuiltin *builtin)
 /* Note, most functions bellow also compare with the ending '\0'.
  * This is expected, to avoid an extra if */
 LispObj *
-Lisp_StringLess(LispMac *mac, LispBuiltin *builtin)
+Lisp_StringLess(LispBuiltin *builtin)
 /*
  string< string1 string2 &key start1 end1 start2 end2
  */
@@ -745,7 +744,7 @@ Lisp_StringLess(LispMac *mac, LispBuiltin *builtin)
     char *string1, *string2;
     int start1, end1, start2, end2, offset1, offset2;
 
-    LispGetStringArgs(mac, builtin, &string1, &string2,
+    LispGetStringArgs(builtin, &string1, &string2,
 		      &start1, &end1, &start2, &end2);
 
     string1 += start1;
@@ -762,7 +761,7 @@ Lisp_StringLess(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_StringGreater(LispMac *mac, LispBuiltin *builtin)
+Lisp_StringGreater(LispBuiltin *builtin)
 /*
  string> string1 string2 &key start1 end1 start2 end2
  */
@@ -770,7 +769,7 @@ Lisp_StringGreater(LispMac *mac, LispBuiltin *builtin)
     char *string1, *string2;
     int start1, end1, start2, end2, offset1, offset2;
 
-    LispGetStringArgs(mac, builtin, &string1, &string2,
+    LispGetStringArgs(builtin, &string1, &string2,
 		      &start1, &end1, &start2, &end2);
 
     string1 += start1;
@@ -787,7 +786,7 @@ Lisp_StringGreater(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_StringLessEqual(LispMac *mac, LispBuiltin *builtin)
+Lisp_StringLessEqual(LispBuiltin *builtin)
 /*
  string<= string1 string2 &key start1 end1 start2 end2
  */
@@ -795,7 +794,7 @@ Lisp_StringLessEqual(LispMac *mac, LispBuiltin *builtin)
     char *string1, *string2;
     int start1, end1, start2, end2, offset1, offset2;
 
-    LispGetStringArgs(mac, builtin, &string1, &string2,
+    LispGetStringArgs(builtin, &string1, &string2,
 		      &start1, &end1, &start2, &end2);
 
     string1 += start1;
@@ -814,7 +813,7 @@ Lisp_StringLessEqual(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_StringGreaterEqual(LispMac *mac, LispBuiltin *builtin)
+Lisp_StringGreaterEqual(LispBuiltin *builtin)
 /*
  string>= string1 string2 &key start1 end1 start2 end2
  */
@@ -822,7 +821,7 @@ Lisp_StringGreaterEqual(LispMac *mac, LispBuiltin *builtin)
     char *string1, *string2;
     int start1, end1, start2, end2, offset1, offset2;
 
-    LispGetStringArgs(mac, builtin, &string1, &string2,
+    LispGetStringArgs(builtin, &string1, &string2,
 		      &start1, &end1, &start2, &end2);
 
     string1 += start1;
@@ -841,7 +840,7 @@ Lisp_StringGreaterEqual(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_StringNotEqual_(LispMac *mac, LispBuiltin *builtin)
+Lisp_StringNotEqual_(LispBuiltin *builtin)
 /*
  string/= string1 string2 &key start1 end1 start2 end2
  */
@@ -849,7 +848,7 @@ Lisp_StringNotEqual_(LispMac *mac, LispBuiltin *builtin)
     char *string1, *string2;
     int start1, end1, start2, end2, offset1, offset2;
 
-    LispGetStringArgs(mac, builtin, &string1, &string2,
+    LispGetStringArgs(builtin, &string1, &string2,
 		       &start1, &end1, &start2, &end2);
 
     string1 += start1;
@@ -864,7 +863,7 @@ Lisp_StringNotEqual_(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_StringEqual(LispMac *mac, LispBuiltin *builtin)
+Lisp_StringEqual(LispBuiltin *builtin)
 /*
  string-equal string1 string2 &key start1 end1 start2 end2
  */
@@ -872,7 +871,7 @@ Lisp_StringEqual(LispMac *mac, LispBuiltin *builtin)
     char *string1, *string2;
     int start1, end1, start2, end2, length;
 
-    LispGetStringArgs(mac, builtin, &string1, &string2,
+    LispGetStringArgs(builtin, &string1, &string2,
 		      &start1, &end1, &start2, &end2);
 
     length = end1 - start1;
@@ -885,7 +884,7 @@ Lisp_StringEqual(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_StringLessp(LispMac *mac, LispBuiltin *builtin)
+Lisp_StringLessp(LispBuiltin *builtin)
 /*
  string-lessp string1 string2 &key start1 end1 start2 end2
  */
@@ -893,7 +892,7 @@ Lisp_StringLessp(LispMac *mac, LispBuiltin *builtin)
     char *string1, *string2;
     int start1, end1, start2, end2, offset1, offset2, char1, char2;
 
-    LispGetStringArgs(mac, builtin, &string1, &string2,
+    LispGetStringArgs(builtin, &string1, &string2,
 		      &start1, &end1, &start2, &end2);
 
     string1 += start1;
@@ -913,7 +912,7 @@ Lisp_StringLessp(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_StringGreaterp(LispMac *mac, LispBuiltin *builtin)
+Lisp_StringGreaterp(LispBuiltin *builtin)
 /*
  string-greaterp string1 string2 &key start1 end1 start2 end2
  */
@@ -921,7 +920,7 @@ Lisp_StringGreaterp(LispMac *mac, LispBuiltin *builtin)
     char *string1, *string2;
     int start1, end1, start2, end2, offset1, offset2, char1, char2;
 
-    LispGetStringArgs(mac, builtin, &string1, &string2,
+    LispGetStringArgs(builtin, &string1, &string2,
 		       &start1, &end1, &start2, &end2);
 
     string1 += start1;
@@ -941,7 +940,7 @@ Lisp_StringGreaterp(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_StringNotGreaterp(LispMac *mac, LispBuiltin *builtin)
+Lisp_StringNotGreaterp(LispBuiltin *builtin)
 /*
  string-not-greaterp string1 string2 &key start1 end1 start2 end2
  */
@@ -949,7 +948,7 @@ Lisp_StringNotGreaterp(LispMac *mac, LispBuiltin *builtin)
     char *string1, *string2;
     int start1, end1, start2, end2, offset1, offset2, char1, char2;
 
-    LispGetStringArgs(mac, builtin, &string1, &string2,
+    LispGetStringArgs(builtin, &string1, &string2,
 		      &start1, &end1, &start2, &end2);
 
     string1 += start1;
@@ -971,7 +970,7 @@ Lisp_StringNotGreaterp(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_StringNotLessp(LispMac *mac, LispBuiltin *builtin)
+Lisp_StringNotLessp(LispBuiltin *builtin)
 /*
  string-not-lessp string1 string2 &key start1 end1 start2 end2
  */
@@ -979,7 +978,7 @@ Lisp_StringNotLessp(LispMac *mac, LispBuiltin *builtin)
     char *string1, *string2;
     int start1, end1, start2, end2, offset1, offset2, char1, char2;
 
-    LispGetStringArgs(mac, builtin, &string1, &string2,
+    LispGetStringArgs(builtin, &string1, &string2,
 		      &start1, &end1, &start2, &end2);
 
     string1 += start1;
@@ -1001,7 +1000,7 @@ Lisp_StringNotLessp(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_StringNotEqual(LispMac *mac, LispBuiltin *builtin)
+Lisp_StringNotEqual(LispBuiltin *builtin)
 /*
  string-not-equal string1 string2 &key start1 end1 start2 end2
  */
@@ -1009,7 +1008,7 @@ Lisp_StringNotEqual(LispMac *mac, LispBuiltin *builtin)
     char *string1, *string2;
     int start1, end1, start2, end2, offset1, offset2;
 
-    LispGetStringArgs(mac, builtin, &string1, &string2,
+    LispGetStringArgs(builtin, &string1, &string2,
 		       &start1, &end1, &start2, &end2);
 
     string1 += start1;
@@ -1024,7 +1023,7 @@ Lisp_StringNotEqual(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_StringUpcase(LispMac *mac, LispBuiltin *builtin)
+Lisp_StringUpcase(LispBuiltin *builtin)
 /*
  string-upcase string &key start end
  */
@@ -1039,7 +1038,7 @@ Lisp_StringUpcase(LispMac *mac, LispBuiltin *builtin)
     ostart = ARGUMENT(1);
     ostring = ARGUMENT(0);
     ERROR_CHECK_STRING(ostring);
-    LispCheckSequenceStartEnd(mac, builtin, ostring, ostart, oend,
+    LispCheckSequenceStartEnd(builtin, ostring, ostart, oend,
 			      &start, &end, &offset);
     result = ostring;
     string = THESTR(ostring);
@@ -1055,7 +1054,7 @@ Lisp_StringUpcase(LispMac *mac, LispBuiltin *builtin)
 	return (result);
 
     /* upcase a copy of argument */
-    newstring = LispStrdup(mac, string);
+    newstring = LispStrdup(string);
     for (offset = start; offset < end; offset++)
 	newstring[offset] = toupper(newstring[offset]);
 
@@ -1065,7 +1064,7 @@ Lisp_StringUpcase(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_StringDowncase(LispMac *mac, LispBuiltin *builtin)
+Lisp_StringDowncase(LispBuiltin *builtin)
 /*
  string-downcase string &key start end
  */
@@ -1080,7 +1079,7 @@ Lisp_StringDowncase(LispMac *mac, LispBuiltin *builtin)
     ostart = ARGUMENT(1);
     ostring = ARGUMENT(0);
     ERROR_CHECK_STRING(ostring);
-    LispCheckSequenceStartEnd(mac, builtin, ostring, ostart, oend,
+    LispCheckSequenceStartEnd(builtin, ostring, ostart, oend,
 			      &start, &end, &offset);
     result = ostring;
     string = THESTR(ostring);
@@ -1096,7 +1095,7 @@ Lisp_StringDowncase(LispMac *mac, LispBuiltin *builtin)
 	return (result);
 
     /* downcase a copy of argument */
-    newstring = LispStrdup(mac, string);
+    newstring = LispStrdup(string);
     for (offset = start; offset < end; offset++)
 	newstring[offset] = tolower(newstring[offset]);
 
@@ -1106,7 +1105,7 @@ Lisp_StringDowncase(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_StringCapitalize(LispMac *mac, LispBuiltin *builtin)
+Lisp_StringCapitalize(LispBuiltin *builtin)
 /*
  string-capitalize string &key start end
  */
@@ -1121,7 +1120,7 @@ Lisp_StringCapitalize(LispMac *mac, LispBuiltin *builtin)
     ostart = ARGUMENT(1);
     ostring = ARGUMENT(0);
     ERROR_CHECK_STRING(ostring);
-    LispCheckSequenceStartEnd(mac, builtin, ostring, ostart, oend,
+    LispCheckSequenceStartEnd(builtin, ostring, ostart, oend,
 			      &start, &end, &offset);
     result = ostring;
     string = THESTR(ostring);
@@ -1153,7 +1152,7 @@ Lisp_StringCapitalize(LispMac *mac, LispBuiltin *builtin)
 	return (result);
 
     /* capitalize a copy of argument */
-    newstring = LispStrdup(mac, string);
+    newstring = LispStrdup(string);
     for (upcase = 1, offset = start; offset < end; offset++) {
 	if (upcase) {
 	    if (!isalpha(newstring[offset]))
@@ -1175,7 +1174,7 @@ Lisp_StringCapitalize(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_StringConcat(LispMac *mac, LispBuiltin *builtin)
+Lisp_StringConcat(LispBuiltin *builtin)
 /*
  string-concat &rest strings
  */
@@ -1197,7 +1196,7 @@ Lisp_StringConcat(LispMac *mac, LispBuiltin *builtin)
 	length += STRLEN(string);
     }
 
-    buffer = LispMalloc(mac, length);
+    buffer = LispMalloc(length);
 
     for (length = 0, object = strings; CONS_P(object); object = CDR(object)) {
 	string = CAR(object);

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/xaw.c,v 1.9 2002/03/10 06:53:47 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/xaw.c,v 1.11 2002/10/06 17:11:47 paulo Exp $ */
 
 #include <stdlib.h>
 #include <X11/Intrinsic.h>
@@ -71,7 +71,6 @@
  * Types
  */
 typedef struct {
-    LispMac *mac;
     LispObj *object;
     void *data;
 } WidgetData;
@@ -79,24 +78,24 @@ typedef struct {
 /*
  * Prototypes
  */
-int xawLoadModule(LispMac*);
+int xawLoadModule(void);
 void LispXawCleanupCallback(Widget, XtPointer, XtPointer);
 
 /* until a better/smarter interface be written... */
-LispObj *Lisp_XawCoerceToListReturnStruct(LispMac*, LispBuiltin*);
-LispObj *Lisp_XawScrollbarCoerceToReal(LispMac*, LispBuiltin*);
+LispObj *Lisp_XawCoerceToListReturnStruct(LispBuiltin*);
+LispObj *Lisp_XawScrollbarCoerceToReal(LispBuiltin*);
 
-LispObj *Lisp_XawFormDoLayout(LispMac*, LispBuiltin*);
-LispObj *Lisp_XawListChange(LispMac*, LispBuiltin*);
-LispObj *Lisp_XawListHighlight(LispMac*, LispBuiltin*);
-LispObj *Lisp_XawListUnhighlight(LispMac*, LispBuiltin*);
-LispObj *Lisp_XawTextGetSource(LispMac*, LispBuiltin*);
-LispObj *Lisp_XawTextLastPosition(LispMac*, LispBuiltin*);
-LispObj *Lisp_XawTextReplace(LispMac*, LispBuiltin*);
-LispObj *Lisp_XawTextSearch(LispMac*, LispBuiltin*);
-LispObj *Lisp_XawTextGetInsertionPoint(LispMac*, LispBuiltin*);
-LispObj *Lisp_XawTextSetInsertionPoint(LispMac*, LispBuiltin*);
-LispObj *Lisp_XawScrollbarSetThumb(LispMac*, LispBuiltin*);
+LispObj *Lisp_XawFormDoLayout(LispBuiltin*);
+LispObj *Lisp_XawListChange(LispBuiltin*);
+LispObj *Lisp_XawListHighlight(LispBuiltin*);
+LispObj *Lisp_XawListUnhighlight(LispBuiltin*);
+LispObj *Lisp_XawTextGetSource(LispBuiltin*);
+LispObj *Lisp_XawTextLastPosition(LispBuiltin*);
+LispObj *Lisp_XawTextReplace(LispBuiltin*);
+LispObj *Lisp_XawTextSearch(LispBuiltin*);
+LispObj *Lisp_XawTextGetInsertionPoint(LispBuiltin*);
+LispObj *Lisp_XawTextSetInsertionPoint(LispBuiltin*);
+LispObj *Lisp_XawScrollbarSetThumb(LispBuiltin*);
 
 /*
  * Initialization
@@ -132,139 +131,139 @@ static int num_list_data;
  * Implementation
  */
 int
-xawLoadModule(LispMac *mac)
+xawLoadModule(void)
 {
     int i;
     char *fname = "XAW-LOAD-MODULE";
 
-    xawWidget_t = LispRegisterOpaqueType(mac, "Widget");
-    xawWidgetClass_t = LispRegisterOpaqueType(mac, "WidgetClass");
-    xawListReturnStruct_t = LispRegisterOpaqueType(mac, "XawListReturnStruct");
-    xawFloatp_t = LispRegisterOpaqueType(mac, "float*");
+    xawWidget_t = LispRegisterOpaqueType("Widget");
+    xawWidgetClass_t = LispRegisterOpaqueType("WidgetClass");
+    xawListReturnStruct_t = LispRegisterOpaqueType("XawListReturnStruct");
+    xawFloatp_t = LispRegisterOpaqueType("float*");
 
-    LispExecute(mac, "(DEFSTRUCT XAW-LIST-RETURN-STRUCT STRING INDEX)\n");
+    LispExecute("(DEFSTRUCT XAW-LIST-RETURN-STRUCT STRING INDEX)\n");
 
     GCDisable();
-    (void)LispSetVariable(mac, ATOM2("ASCII-SINK-OBJECT-CLASS"),
+    (void)LispSetVariable(ATOM2("ASCII-SINK-OBJECT-CLASS"),
 			  OPAQUE(asciiSinkObjectClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("ASCII-SRC-OBJECT-CLASS"),
+    (void)LispSetVariable(ATOM2("ASCII-SRC-OBJECT-CLASS"),
 			  OPAQUE(asciiSinkObjectClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("ASCII-TEXT-WIDGET-CLASS"),
+    (void)LispSetVariable(ATOM2("ASCII-TEXT-WIDGET-CLASS"),
 			  OPAQUE(asciiTextWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("BOX-WIDGET-CLASS"),
+    (void)LispSetVariable(ATOM2("BOX-WIDGET-CLASS"),
 			  OPAQUE(boxWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("COMMAND-WIDGET-CLASS"),
+    (void)LispSetVariable(ATOM2("COMMAND-WIDGET-CLASS"),
 			  OPAQUE(commandWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("DIALOG-WIDGET-CLASS"),
+    (void)LispSetVariable(ATOM2("DIALOG-WIDGET-CLASS"),
 			  OPAQUE(dialogWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("FORM-WIDGET-CLASS"),
+    (void)LispSetVariable(ATOM2("FORM-WIDGET-CLASS"),
 			  OPAQUE(formWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("GRIP-WIDGET-CLASS"),
+    (void)LispSetVariable(ATOM2("GRIP-WIDGET-CLASS"),
 			  OPAQUE(gripWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("LABEL-WIDGET-CLASS"),
+    (void)LispSetVariable(ATOM2("LABEL-WIDGET-CLASS"),
 			  OPAQUE(labelWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("LIST-WIDGET-CLASS"),
+    (void)LispSetVariable(ATOM2("LIST-WIDGET-CLASS"),
 			  OPAQUE(listWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("MENU-BUTTON-WIDGET-CLASS"),
+    (void)LispSetVariable(ATOM2("MENU-BUTTON-WIDGET-CLASS"),
 			  OPAQUE(menuButtonWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("MULTI-SINK-OBJEC-TCLASS"),
+    (void)LispSetVariable(ATOM2("MULTI-SINK-OBJEC-TCLASS"),
 			  OPAQUE(multiSinkObjectClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("MULTI-SRC-OBJECT-CLASS"),
+    (void)LispSetVariable(ATOM2("MULTI-SRC-OBJECT-CLASS"),
 			  OPAQUE(multiSrcObjectClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("PANED-WIDGET-CLASS"),
+    (void)LispSetVariable(ATOM2("PANED-WIDGET-CLASS"),
 			  OPAQUE(panedWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("PANNER-WIDGET-CLASS"),
+    (void)LispSetVariable(ATOM2("PANNER-WIDGET-CLASS"),
 			  OPAQUE(pannerWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("PORTHOLE-WIDGET-CLASS"),
+    (void)LispSetVariable(ATOM2("PORTHOLE-WIDGET-CLASS"),
 			  OPAQUE(portholeWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("REPEATER-WIDGET-CLASS"),
+    (void)LispSetVariable(ATOM2("REPEATER-WIDGET-CLASS"),
 			  OPAQUE(repeaterWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("SCROLLBAR-WIDGET-CLASS"),
+    (void)LispSetVariable(ATOM2("SCROLLBAR-WIDGET-CLASS"),
 			  OPAQUE(scrollbarWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("SIMPLE-MENU-WIDGET-CLASS"),
+    (void)LispSetVariable(ATOM2("SIMPLE-MENU-WIDGET-CLASS"),
 			  OPAQUE(simpleMenuWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("SIMPLE-WIDGET-CLASS"),
+    (void)LispSetVariable(ATOM2("SIMPLE-WIDGET-CLASS"),
 			  OPAQUE(simpleWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("SME-BSB-OBJECT-CLASS"),
+    (void)LispSetVariable(ATOM2("SME-BSB-OBJECT-CLASS"),
 			  OPAQUE(smeBSBObjectClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("SME-LINE-OBJECT-CLASS"),
+    (void)LispSetVariable(ATOM2("SME-LINE-OBJECT-CLASS"),
 			  OPAQUE(smeLineObjectClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("SME-OBJECT-CLASS"),
+    (void)LispSetVariable(ATOM2("SME-OBJECT-CLASS"),
 			  OPAQUE(smeObjectClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("STRIP-CHART-WIDGET-CLASS"),
+    (void)LispSetVariable(ATOM2("STRIP-CHART-WIDGET-CLASS"),
 			  OPAQUE(stripChartWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("TEXT-WIDGET-CLASS"),
+    (void)LispSetVariable(ATOM2("TEXT-WIDGET-CLASS"),
 			  OPAQUE(textWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("TEXT-SINKOBJECT-CLASS"),
+    (void)LispSetVariable(ATOM2("TEXT-SINKOBJECT-CLASS"),
 			  OPAQUE(textSinkObjectClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("TEXT-SRC-OBJECT-CLASS"),
+    (void)LispSetVariable(ATOM2("TEXT-SRC-OBJECT-CLASS"),
 			  OPAQUE(textSrcObjectClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("TIP-WIDGET-CLASS"),
+    (void)LispSetVariable(ATOM2("TIP-WIDGET-CLASS"),
 			  OPAQUE(tipWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("TOGGLE-WIDGET-CLASS"),
+    (void)LispSetVariable(ATOM2("TOGGLE-WIDGET-CLASS"),
 			  OPAQUE(toggleWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("TREE-WIDGET-CLASS"),
+    (void)LispSetVariable(ATOM2("TREE-WIDGET-CLASS"),
 			  OPAQUE(treeWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("VIEWPORT-WIDGET-CLASS"),
+    (void)LispSetVariable(ATOM2("VIEWPORT-WIDGET-CLASS"),
 			  OPAQUE(viewportWidgetClass, xawWidgetClass_t),
 			  fname, 0);
-    (void)LispSetVariable(mac, ATOM2("VENDOR-SHELL-WIDGET-CLASS"),
+    (void)LispSetVariable(ATOM2("VENDOR-SHELL-WIDGET-CLASS"),
 			  OPAQUE(vendorShellWidgetClass, xawWidgetClass_t),
 			  fname, 0);
 
     /* return codes of XawTextReplace */
-    (void)LispSetVariable(mac, ATOM2("XAW-REPLACE-ERROR"),
+    (void)LispSetVariable(ATOM2("XAW-REPLACE-ERROR"),
 			  INTEGER(XawReplaceError), fname, 0);
-    (void)LispSetVariable(mac, ATOM2("XAW-EDIT-DONE"),
+    (void)LispSetVariable(ATOM2("XAW-EDIT-DONE"),
 			  INTEGER(XawEditDone), fname, 0);
-    (void)LispSetVariable(mac, ATOM2("XAW-EDIT-ERROR"),
+    (void)LispSetVariable(ATOM2("XAW-EDIT-ERROR"),
 			  INTEGER(XawEditError), fname, 0);
-    (void)LispSetVariable(mac, ATOM2("XAW-POSITION-ERROR"),
+    (void)LispSetVariable(ATOM2("XAW-POSITION-ERROR"),
 			  INTEGER(XawPositionError), fname, 0);
 
     /* return code of XawTextSearch */
-    (void)LispSetVariable(mac, ATOM2("XAW-TEXT-SEARCH-ERROR"),
+    (void)LispSetVariable(ATOM2("XAW-TEXT-SEARCH-ERROR"),
 			  INTEGER(XawTextSearchError), fname, 0);
 
     /* enum XawTextScanDirection */
-    (void)LispSetVariable(mac, ATOM2("XAWSD-LEFT"),
+    (void)LispSetVariable(ATOM2("XAWSD-LEFT"),
 			  INTEGER(XawsdLeft), fname, 0);
-    (void)LispSetVariable(mac, ATOM2("XAWSD-RIGHT"),
+    (void)LispSetVariable(ATOM2("XAWSD-RIGHT"),
 			  INTEGER(XawsdRight), fname, 0);
     GCEnable();
 
     for (i = 0; i < sizeof(lispbuiltins) / sizeof(lispbuiltins[0]); i++)
-	LispAddBuiltinFunction(mac, &lispbuiltins[i]);
+	LispAddBuiltinFunction(&lispbuiltins[i]);
 
     return (1);
 }
@@ -273,7 +272,6 @@ void
 LispXawCleanupCallback(Widget w, XtPointer user_data, XtPointer call_data)
 {
     WidgetData *data = (WidgetData*)user_data;
-    LispMac *mac = data->mac;
 
     UPROTECT(CAR(data->object), data->object);
     XtFree((XtPointer)data->data);
@@ -281,7 +279,7 @@ LispXawCleanupCallback(Widget w, XtPointer user_data, XtPointer call_data)
 }
 
 LispObj *
-Lisp_XawCoerceToListReturnStruct(LispMac *mac, LispBuiltin *builtin)
+Lisp_XawCoerceToListReturnStruct(LispBuiltin *builtin)
 /*
  xaw-coerce-to-list-return-struct opaque
  */
@@ -294,7 +292,7 @@ Lisp_XawCoerceToListReturnStruct(LispMac *mac, LispBuiltin *builtin)
     opaque = ARGUMENT(0);
 
     if (!CHECKO(opaque, xawListReturnStruct_t))
-	LispDestroy(mac, "%s: cannot convert %s to XawListReturnStruct",
+	LispDestroy("%s: cannot convert %s to XawListReturnStruct",
 		    STRFUN(builtin), STROBJ(opaque));
 
     retlist = (XawListReturnStruct*)(opaque->data.opaque.data);
@@ -315,7 +313,7 @@ Lisp_XawCoerceToListReturnStruct(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_XawScrollbarCoerceToReal(LispMac *mac, LispBuiltin *builtin)
+Lisp_XawScrollbarCoerceToReal(LispBuiltin *builtin)
 /*
  xaw-scrollbar-coerce-to-real opaque
  */
@@ -329,7 +327,7 @@ Lisp_XawScrollbarCoerceToReal(LispMac *mac, LispBuiltin *builtin)
     opaque = ARGUMENT(0);
 
     if (!CHECKO(opaque, xawFloatp_t))
-	LispDestroy(mac, "%s: cannot convert %s to float*",
+	LispDestroy("%s: cannot convert %s to float*",
 		    STRFUN(builtin), STROBJ(opaque));
 
     floatp = (float*)(opaque->data.opaque.data);
@@ -339,7 +337,7 @@ Lisp_XawScrollbarCoerceToReal(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_XawFormDoLayout(LispMac *mac, LispBuiltin *builtin)
+Lisp_XawFormDoLayout(LispBuiltin *builtin)
 /*
  xaw-form-do-layout widget force
  */
@@ -352,7 +350,7 @@ Lisp_XawFormDoLayout(LispMac *mac, LispBuiltin *builtin)
     owidget = ARGUMENT(0);
 
     if (!CHECKO(owidget, xawWidget_t))
-	LispDestroy(mac, "%s: cannot convert %s to Widget",
+	LispDestroy("%s: cannot convert %s to Widget",
 		    STRFUN(builtin), STROBJ(owidget));
 
     force = oforce != NIL;
@@ -362,7 +360,7 @@ Lisp_XawFormDoLayout(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_XawTextGetSource(LispMac *mac, LispBuiltin *builtin)
+Lisp_XawTextGetSource(LispBuiltin *builtin)
 /*
  xaw-text-get-source widget
  */
@@ -372,7 +370,7 @@ Lisp_XawTextGetSource(LispMac *mac, LispBuiltin *builtin)
     owidget = ARGUMENT(0);
 
     if (!CHECKO(owidget, xawWidget_t))
-	LispDestroy(mac, "%s: cannot convert %s to Widget",
+	LispDestroy("%s: cannot convert %s to Widget",
 		    STRFUN(builtin), STROBJ(owidget));
 
     return (OPAQUE(XawTextGetSource((Widget)(owidget->data.opaque.data)),
@@ -380,7 +378,7 @@ Lisp_XawTextGetSource(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_XawTextLastPosition(LispMac *mac, LispBuiltin *builtin)
+Lisp_XawTextLastPosition(LispBuiltin *builtin)
 /*
  xaw-text-last-position widget
  */
@@ -390,14 +388,14 @@ Lisp_XawTextLastPosition(LispMac *mac, LispBuiltin *builtin)
     owidget = ARGUMENT(0);
 
     if (!CHECKO(owidget, xawWidget_t))
-	LispDestroy(mac, "%s: cannot convert %s to Widget",
+	LispDestroy("%s: cannot convert %s to Widget",
 		    STRFUN(builtin), STROBJ(owidget));
 
     return (INTEGER(XawTextLastPosition((Widget)(owidget->data.opaque.data))));
 }
 
 LispObj *
-Lisp_XawTextGetInsertionPoint(LispMac *mac, LispBuiltin *builtin)
+Lisp_XawTextGetInsertionPoint(LispBuiltin *builtin)
 /*
  xaw-text-get-insertion-point widget
  */
@@ -407,14 +405,14 @@ Lisp_XawTextGetInsertionPoint(LispMac *mac, LispBuiltin *builtin)
     owidget = ARGUMENT(0);
 
     if (!CHECKO(owidget, xawWidget_t))
-	LispDestroy(mac, "%s: cannot convert %s to Widget",
+	LispDestroy("%s: cannot convert %s to Widget",
 		    STRFUN(builtin), STROBJ(owidget));
 
     return (INTEGER(XawTextGetInsertionPoint((Widget)(owidget->data.opaque.data))));
 }
 
 LispObj *
-Lisp_XawTextSetInsertionPoint(LispMac *mac, LispBuiltin *builtin)
+Lisp_XawTextSetInsertionPoint(LispBuiltin *builtin)
 /*
  xaw-text-set-insertion-point widget position
  */
@@ -428,12 +426,12 @@ Lisp_XawTextSetInsertionPoint(LispMac *mac, LispBuiltin *builtin)
     owidget = ARGUMENT(0);
 
     if (!CHECKO(owidget, xawWidget_t))
-	LispDestroy(mac, "%s: cannot convert %s to Widget",
+	LispDestroy("%s: cannot convert %s to Widget",
 		    STRFUN(builtin), STROBJ(owidget));
     widget = (Widget)(owidget->data.opaque.data);
 
     ERROR_CHECK_INDEX(oposition);
-    position = (XawTextPosition)oposition->data.integer;
+    position = (XawTextPosition)GETINT(oposition);
 
     XawTextSetInsertionPoint(widget, position);
 
@@ -441,7 +439,7 @@ Lisp_XawTextSetInsertionPoint(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_XawTextReplace(LispMac *mac, LispBuiltin *builtin)
+Lisp_XawTextReplace(LispBuiltin *builtin)
 /*
  xaw-text-replace widget left right text
  */
@@ -458,15 +456,15 @@ Lisp_XawTextReplace(LispMac *mac, LispBuiltin *builtin)
     owidget = ARGUMENT(0);
 
     if (!CHECKO(owidget, xawWidget_t))
-	LispDestroy(mac, "%s: cannot convert %s to Widget",
+	LispDestroy("%s: cannot convert %s to Widget",
 		    STRFUN(builtin), STROBJ(owidget));
     widget = (Widget)(owidget->data.opaque.data);
 
     ERROR_CHECK_INDEX(oleft);
-    left = (XawTextPosition)oleft->data.integer;
+    left = (XawTextPosition)GETINT(oleft);
 
     ERROR_CHECK_INDEX(oright);
-    right = (XawTextPosition)oright->data.integer;
+    right = (XawTextPosition)GETINT(oright);
 
     ERROR_CHECK_STRING(otext);
     block.firstPos = 0;
@@ -478,7 +476,7 @@ Lisp_XawTextReplace(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_XawTextSearch(LispMac *mac, LispBuiltin *builtin)
+Lisp_XawTextSearch(LispBuiltin *builtin)
 /*
  xaw-text-search widget direction text
  */
@@ -494,14 +492,14 @@ Lisp_XawTextSearch(LispMac *mac, LispBuiltin *builtin)
     owidget = ARGUMENT(0);
 
     if (!CHECKO(owidget, xawWidget_t))
-	LispDestroy(mac, "%s: cannot convert %s to Widget",
+	LispDestroy("%s: cannot convert %s to Widget",
 		    STRFUN(builtin), STROBJ(owidget));
     widget = (Widget)(owidget->data.opaque.data);
 
     ERROR_CHECK_INDEX(odirection);
-    direction = (XawTextPosition)odirection->data.integer;
+    direction = (XawTextPosition)GETINT(odirection);
     if (direction != XawsdLeft && direction != XawsdRight)
-	LispDestroy(mac, "%s: %d does not fit in XawTextScanDirection",
+	LispDestroy("%s: %d does not fit in XawTextScanDirection",
 		    STRFUN(builtin), direction);
 
     ERROR_CHECK_STRING(otext);
@@ -514,7 +512,7 @@ Lisp_XawTextSearch(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_XawListChange(LispMac *mac, LispBuiltin *builtin)
+Lisp_XawListChange(LispBuiltin *builtin)
 /*
  xaw-list-change widget list &optional longest resize
  */
@@ -535,7 +533,7 @@ Lisp_XawListChange(LispMac *mac, LispBuiltin *builtin)
     owidget = ARGUMENT(0);
 
     if (!CHECKO(owidget, xawWidget_t))
-	LispDestroy(mac, "%s: cannot convert %s to Widget",
+	LispDestroy("%s: cannot convert %s to Widget",
 		    STRFUN(builtin), STROBJ(owidget));
     widget = (Widget)(owidget->data.opaque.data);
 
@@ -546,7 +544,7 @@ Lisp_XawListChange(LispMac *mac, LispBuiltin *builtin)
 
     if (olongest != NIL) {
 	ERROR_CHECK_INDEX(olongest);
-	longest = olongest->data.integer;
+	longest = GETINT(olongest);
     }
     else
 	XtVaGetValues(widget, XtNlongest, &longest, NULL, 0);
@@ -574,7 +572,6 @@ Lisp_XawListChange(LispMac *mac, LispBuiltin *builtin)
     }
 
     data = (WidgetData*)XtMalloc(sizeof(WidgetData));
-    data->mac = mac;
     data->data = list;
     list_data[i] = data;
     data->object = CONS(owidget, olist);
@@ -587,7 +584,7 @@ Lisp_XawListChange(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_XawListHighlight(LispMac *mac, LispBuiltin *builtin)
+Lisp_XawListHighlight(LispBuiltin *builtin)
 /*
  xaw-list-highlight widget index
  */
@@ -601,12 +598,12 @@ Lisp_XawListHighlight(LispMac *mac, LispBuiltin *builtin)
     owidget = ARGUMENT(0);
 
     if (!CHECKO(owidget, xawWidget_t))
-	LispDestroy(mac, "%s: cannot convert %s to Widget",
+	LispDestroy("%s: cannot convert %s to Widget",
 		    STRFUN(builtin), STROBJ(owidget));
     widget = (Widget)(owidget->data.opaque.data);
 
     ERROR_CHECK_INDEX(oindex);
-    position = oindex->data.integer;
+    position = GETINT(oindex);
 
     XawListHighlight(widget, position);
 
@@ -614,7 +611,7 @@ Lisp_XawListHighlight(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_XawListUnhighlight(LispMac *mac, LispBuiltin *builtin)
+Lisp_XawListUnhighlight(LispBuiltin *builtin)
 /*
  xaw-list-unhighlight widget
  */
@@ -624,7 +621,7 @@ Lisp_XawListUnhighlight(LispMac *mac, LispBuiltin *builtin)
     owidget = ARGUMENT(0);
 
     if (!CHECKO(owidget, xawWidget_t))
-	LispDestroy(mac, "%s: cannot convert %s to Widget",
+	LispDestroy("%s: cannot convert %s to Widget",
 		    STRFUN(builtin), STROBJ(owidget));
 
     XawListUnhighlight((Widget)(owidget->data.opaque.data));
@@ -633,7 +630,7 @@ Lisp_XawListUnhighlight(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_XawScrollbarSetThumb(LispMac *mac, LispBuiltin *builtin)
+Lisp_XawScrollbarSetThumb(LispBuiltin *builtin)
 /*
  xaw-scrollbar-set-thumb widget top &optional shown
  */
@@ -648,19 +645,19 @@ Lisp_XawScrollbarSetThumb(LispMac *mac, LispBuiltin *builtin)
     owidget = ARGUMENT(0);
 
     if (!CHECKO(owidget, xawWidget_t))
-	LispDestroy(mac, "%s: cannot convert %s to Widget",
+	LispDestroy("%s: cannot convert %s to Widget",
 		    STRFUN(builtin), STROBJ(owidget));
     widget = (Widget)(owidget->data.opaque.data);
 
     if (!FIXNUM_P(otop))
-	LispDestroy(mac, "%s: %s is not a number",
+	LispDestroy("%s: %s is not a number",
 		    STRFUN(builtin), STROBJ(otop));
     top = FIXNUM_VALUE(otop);
 
     if (oshown == NIL)
 	shown = 1.0;
     else if (!FIXNUM_P(oshown))
-	LispDestroy(mac, "%s: %s is not a number",
+	LispDestroy("%s: %s is not a number",
 		    STRFUN(builtin), STROBJ(oshown));
     else
 	shown = FIXNUM_VALUE(oshown);

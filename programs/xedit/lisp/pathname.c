@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/pathname.c,v 1.11 2002/09/15 21:32:22 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/pathname.c,v 1.12 2002/10/06 17:11:44 paulo Exp $ */
 
 #include <stdio.h>		/* including dirent.h first may cause problems */
 #include <dirent.h>
@@ -50,7 +50,7 @@ Atom_id Serror, Sabsolute, Srelative, Sskip;
  * Implementation
  */
 void
-LispPathnameInit(LispMac *mac)
+LispPathnameInit(void)
 {
     Kerror		= KEYWORD("ERROR");
     Oparse_namestring	= STATIC_ATOM("PARSE-NAMESTRING");
@@ -167,7 +167,7 @@ glob_match(char *cmp1, char *cmp2)
  * (default)	:skip	=> skip search in this directory
  */
 LispObj *
-Lisp_Directory(LispMac *mac, LispBuiltin *builtin)
+Lisp_Directory(LispBuiltin *builtin)
 /*
  directory pathname &key all if-cannot-read
  */
@@ -196,7 +196,7 @@ Lisp_Directory(LispMac *mac, LispBuiltin *builtin)
 	if (!KEYWORD_P(if_cannot_read) ||
 	    (ATOMID(if_cannot_read) != Sskip &&
 	     ATOMID(if_cannot_read) != Serror))
-	    LispDestroy(mac, "%s: bad :IF-CANNOT-READ %s",
+	    LispDestroy("%s: bad :IF-CANNOT-READ %s",
 			STRFUN(builtin), STROBJ(if_cannot_read));
 	if (ATOMID(if_cannot_read) != Sskip)
 	    cannot_read = NOREAD_SKIP;
@@ -211,20 +211,19 @@ Lisp_Directory(LispMac *mac, LispBuiltin *builtin)
     else if (STREAM_P(pathname) && pathname->data.stream.type == LispStreamFile)
 	pathname = CAR(pathname->data.stream.pathname->data.pathname);
     else if (!STRING_P(pathname))
-	LispDestroy(mac, "%s: %s is not a pathname",
+	LispDestroy("%s: %s is not a pathname",
 		    STRFUN(builtin), STROBJ(pathname));
 
     strncpy(name, THESTR(pathname), sizeof(name) - 1);
     name[sizeof(name) - 1] = '\0';
     length = strlen(name);
     if (length < STRLEN(pathname))
-	LispDestroy(mac, "%s: pathname too long %s",
+	LispDestroy("%s: pathname too long %s",
 		    STRFUN(builtin), name);
 
     if (length == 0) {
 	if (getcwd(path, sizeof(path) - 2) == NULL)
-	    LispDestroy(mac, "%s: getcwd(): %s",
-			STRFUN(builtin), strerror(errno));
+	    LispDestroy("%s: getcwd(): %s", STRFUN(builtin), strerror(errno));
 	length = strlen(path);
 	if (!length || path[length - 1] != PATH_SEP) {
 	    path[length++] = PATH_SEP;
@@ -248,8 +247,7 @@ Lisp_Directory(LispMac *mac, LispBuiltin *builtin)
 
     if (name[0] != PATH_SEP) {
 	if (getcwd(path, sizeof(path) - 2) == NULL)
-	    LispDestroy(mac, "%s: getcwd(): %s",
-			STRFUN(builtin), strerror(errno));
+	    LispDestroy("%s: getcwd(): %s", STRFUN(builtin), strerror(errno));
 	length = strlen(path);
 	if (!length || path[length - 1] != PATH_SEP) {
 	    path[length++] = PATH_SEP;
@@ -264,12 +262,11 @@ Lisp_Directory(LispMac *mac, LispBuiltin *builtin)
     /* list intermediate directories */
     matches = NULL;
     nmatches = 0;
-    dirs = LispMalloc(mac, sizeof(char*));
+    dirs = LispMalloc(sizeof(char*));
     ndirs = 1;
     if (snprintf(directory, sizeof(directory), "%s%s%c",
 		 path, name, PATH_SEP) > PATH_MAX)
-	LispDestroy(mac, "%s: pathname too long %s",
-		    STRFUN(builtin), directory);
+	LispDestroy("%s: pathname too long %s", STRFUN(builtin), directory);
 
     /* Remove ../ */
     sep = directory;
@@ -304,7 +301,7 @@ Lisp_Directory(LispMac *mac, LispBuiltin *builtin)
 
     base = directory;
     sep = strchr(base + 1, PATH_SEP);
-    dirs[0] = LispMalloc(mac, 2);
+    dirs[0] = LispMalloc(2);
     dirs[0][0] = PATH_SEP;
     dirs[0][1] = '\0';
 
@@ -344,7 +341,7 @@ Lisp_Directory(LispMac *mac, LispBuiltin *builtin)
 			strcpy(ptr, ent->d_name);
 		    else {
 			closedir(dir);
-			LispDestroy(mac, "%s: pathname too long %s",
+			LispDestroy("%s: pathname too long %s",
 				    STRFUN(builtin), dirs[i]);
 		    }
 
@@ -362,9 +359,9 @@ Lisp_Directory(LispMac *mac, LispBuiltin *builtin)
 				ptr[length] = '\0';
 			    }
 			    /* XXX won't closedir on memory allocation failure! */
-			    matches = LispRealloc(mac, matches, sizeof(char*) *
+			    matches = LispRealloc(matches, sizeof(char*) *
 						  nmatches + 1);
-			    matches[nmatches++] = LispStrdup(mac, ptr);
+			    matches[nmatches++] = LispStrdup(ptr);
 			}
 		    }
 		}
@@ -372,7 +369,7 @@ Lisp_Directory(LispMac *mac, LispBuiltin *builtin)
 
 		if (nmatches == 0) {
 		    if (sep || !listdirs || *base) {
-			LispFree(mac, dirs[i]);
+			LispFree(dirs[i]);
 			if (i + 1 < ndirs)
 			    memmove(dirs + i, dirs + i + 1,
 				    sizeof(char*) * (ndirs - (i + 1)));
@@ -385,36 +382,36 @@ Lisp_Directory(LispMac *mac, LispBuiltin *builtin)
 
 		    length = strlen(dirs[i]);
 		    if (nmatches > 1) {
-			dirs = LispRealloc(mac, dirs, sizeof(char*) *
+			dirs = LispRealloc(dirs, sizeof(char*) *
 					   (ndirs + nmatches));
 			if (i + 1 < ndirs)
 			    memmove(dirs + i + nmatches, dirs + i + 1,
 				    sizeof(char*) * (ndirs - (i + 1)));
 		    }
 		    for (j = 1; j < nmatches; j++) {
-			dirs[i + j] = LispMalloc(mac, length +
+			dirs[i + j] = LispMalloc(length +
 						 strlen(matches[j]) + 1);
 			sprintf(dirs[i + j], "%s%s", dirs[i], matches[j]);
 		    }
-		    dirs[i] = LispRealloc(mac, dirs[i],
+		    dirs[i] = LispRealloc(dirs[i],
 					  length + strlen(matches[0]) + 1);
 		    strcpy(dirs[i] + length, matches[0]);
 		    i += nmatches - 1;	/* XXX playing with for loop */
 		    ndirs += nmatches - 1;
 
 		    for (j = 0; j < nmatches; j++)
-			LispFree(mac, matches[j]);
-		    LispFree(mac, matches);
+			LispFree(matches[j]);
+		    LispFree(matches);
 		    matches = NULL;
 		    nmatches = 0;
 		}
 	    }
 	    else {
 		if (cannot_read == NOREAD_ERROR)
-		    LispDestroy(mac, "%s: opendir(%s): %s",
+		    LispDestroy("%s: opendir(%s): %s",
 				STRFUN(builtin), dirs[i], strerror(errno));
 		else {
-		    LispFree(mac, dirs[i]);
+		    LispFree(dirs[i]);
 		    if (i + 1 < ndirs)
 			memmove(dirs + i, dirs + i + 1,
 				sizeof(char*) * (ndirs - (i + 1)));
@@ -440,14 +437,14 @@ Lisp_Directory(LispMac *mac, LispBuiltin *builtin)
 	    cons = CDR(cons);
 	}
     }
-    LispFree(mac, dirs);
+    LispFree(dirs);
     GC_LEAVE();
 
     return (result);
 }
 
 LispObj *
-Lisp_ParseNamestring(LispMac *mac, LispBuiltin *builtin)
+Lisp_ParseNamestring(LispBuiltin *builtin)
 /*
  parse-namestring object &optional host defaults &key start end junk-allowed
  */
@@ -495,7 +492,7 @@ Lisp_ParseNamestring(LispMac *mac, LispBuiltin *builtin)
 	      string[PATH_MAX + 1], *namestr, *typestr;
 	long start, end, length, alength;
 
-	LispCheckSequenceStartEnd(mac, builtin, object, ostart, oend,
+	LispCheckSequenceStartEnd(builtin, object, ostart, oend,
 				  &start, &end, &length);
 	alength = end - start;
 
@@ -544,7 +541,7 @@ Lisp_ParseNamestring(LispMac *mac, LispBuiltin *builtin)
 	    *str++ = '\0';
 	while (str) {
 	    if (strlen(ptr) > NAME_MAX)
-		LispDestroy(mac, "%s: directory name too long %s",
+		LispDestroy("%s: directory name too long %s",
 			    STRFUN(builtin), ptr);
 	    RPLACD(cdr, CONS(STRING(ptr), NIL));
 	    cdr = CDR(cdr);
@@ -555,8 +552,7 @@ Lisp_ParseNamestring(LispMac *mac, LispBuiltin *builtin)
 	}
 
 	if (strlen(ptr) > NAME_MAX)
-	    LispDestroy(mac, "%s: file name too long %s",
-			STRFUN(builtin), ptr);
+	    LispDestroy("%s: file name too long %s", STRFUN(builtin), ptr);
 
 	/* name */
 	if (defaults != NIL)
@@ -622,8 +618,7 @@ Lisp_ParseNamestring(LispMac *mac, LispBuiltin *builtin)
 	result = PATHNAME(result);
     }
     else if (junk_allowed == NIL)
-	LispDestroy(mac, "%s: bad argument %s",
-		    STRFUN(builtin), STROBJ(object));
+	LispDestroy("%s: bad argument %s", STRFUN(builtin), STROBJ(object));
 
     GC_LEAVE();
 
@@ -631,7 +626,7 @@ Lisp_ParseNamestring(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_MakePathname(LispMac *mac, LispBuiltin *builtin)
+Lisp_MakePathname(LispBuiltin *builtin)
 /*
  make-pathname &key host device directory name type version defaults
  */
@@ -665,7 +660,7 @@ Lisp_MakePathname(LispMac *mac, LispBuiltin *builtin)
 	ERROR_CHECK_KEYWORD(CAR(directory));
 	atom = ATOMID(CAR(directory));
 	if (atom != Sabsolute && atom != Srelative)
-	    LispDestroy(mac, "%s: bad directory type %s",
+	    LispDestroy("%s: bad directory type %s",
 			STRFUN(builtin), STROBJ(CAR(directory)));
     }    
 
@@ -677,8 +672,7 @@ Lisp_MakePathname(LispMac *mac, LispBuiltin *builtin)
     }
 
     if (version != NIL && (!FIXNUM_P(version) || FIXNUM_VALUE(version) < 0))
-	LispDestroy(mac, "%s: bad :VERSION %s",
-		    STRFUN(builtin), STROBJ(version));
+	LispDestroy("%s: bad :VERSION %s", STRFUN(builtin), STROBJ(version));
 
     if (defaults != NIL && !PATHNAME_P(defaults) &&
 	(host == NIL || device == NIL || directory == NIL ||
@@ -720,7 +714,7 @@ Lisp_MakePathname(LispMac *mac, LispBuiltin *builtin)
 	    string = THESTR(CAR(cdr));
 	    alength = STRLEN(CAR(cdr));
 	    if (alength > NAME_MAX)
-		LispDestroy(mac, "%s: directory name too long %s",
+		LispDestroy("%s: directory name too long %s",
 			    STRFUN(builtin), string);
 	    if (length + alength + 2 > sizeof(pathname))
 		alength = sizeof(pathname) - length - 2;
@@ -738,7 +732,7 @@ Lisp_MakePathname(LispMac *mac, LispBuiltin *builtin)
 	string = THESTR(name);
 	alength = STRLEN(name);
 	if (alength + xlength > NAME_MAX)
-	    LispDestroy(mac, "%s: file name too long %s",
+	    LispDestroy("%s: file name too long %s",
 			STRFUN(builtin), string);
 	if (length + alength + 2 > sizeof(pathname))
 	    alength = sizeof(pathname) - length - 2;
@@ -792,79 +786,79 @@ Lisp_MakePathname(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_PathnameHost(LispMac *mac, LispBuiltin *builtin)
+Lisp_PathnameHost(LispBuiltin *builtin)
 /*
  pathname-host pathname
  */
 {
-    return (LispPathnameField(mac, PATH_HOST, 0));
+    return (LispPathnameField(PATH_HOST, 0));
 }
 
 LispObj *
-Lisp_PathnameDevice(LispMac *mac, LispBuiltin *builtin)
+Lisp_PathnameDevice(LispBuiltin *builtin)
 /*
  pathname-device pathname
  */
 {
-    return (LispPathnameField(mac, PATH_DEVICE, 0));
+    return (LispPathnameField(PATH_DEVICE, 0));
 }
 
 LispObj *
-Lisp_PathnameDirectory(LispMac *mac, LispBuiltin *builtin)
+Lisp_PathnameDirectory(LispBuiltin *builtin)
 /*
  pathname-device pathname
  */
 {
-    return (LispPathnameField(mac, PATH_DIRECTORY, 0));
+    return (LispPathnameField(PATH_DIRECTORY, 0));
 }
 
 LispObj *
-Lisp_PathnameName(LispMac *mac, LispBuiltin *builtin)
+Lisp_PathnameName(LispBuiltin *builtin)
 /*
  pathname-name pathname
  */
 {
-    return (LispPathnameField(mac, PATH_NAME, 0));
+    return (LispPathnameField(PATH_NAME, 0));
 }
 
 LispObj *
-Lisp_PathnameType(LispMac *mac, LispBuiltin *builtin)
+Lisp_PathnameType(LispBuiltin *builtin)
 /*
  pathname-type pathname
  */
 {
-    return (LispPathnameField(mac, PATH_TYPE, 0));
+    return (LispPathnameField(PATH_TYPE, 0));
 }
 
 LispObj *
-Lisp_PathnameVersion(LispMac *mac, LispBuiltin *builtin)
+Lisp_PathnameVersion(LispBuiltin *builtin)
 /*
  pathname-version pathname
  */
 {
-    return (LispPathnameField(mac, PATH_VERSION, 0));
+    return (LispPathnameField(PATH_VERSION, 0));
 }
 
 LispObj *
-Lisp_FileNamestring(LispMac *mac, LispBuiltin *builtin)
+Lisp_FileNamestring(LispBuiltin *builtin)
 /*
  file-namestring pathname
  */
 {
-    return (LispPathnameField(mac, PATH_NAME, 1));
+    return (LispPathnameField(PATH_NAME, 1));
 }
 
 LispObj *
-Lisp_DirectoryNamestring(LispMac *mac, LispBuiltin *builtin)
+Lisp_DirectoryNamestring(LispBuiltin *builtin)
 /*
  directory-namestring pathname
  */
 {
-    return (LispPathnameField(mac, PATH_DIRECTORY, 1));
+    return (LispPathnameField(PATH_DIRECTORY, 1));
 }
 
 LispObj *
-Lisp_EnoughNamestring(LispMac *mac, LispBuiltin *builtin)
+Lisp_EnoughNamestring(LispBuiltin *builtin)
 /*
  enough-pathname pathname &optional defaults
  */
@@ -884,7 +878,7 @@ Lisp_EnoughNamestring(LispMac *mac, LispBuiltin *builtin)
 		     pathname->data.stream.type == LispStreamFile)
 		pathname  = CAR(pathname->data.stream.pathname->data.pathname);
 	    else
-		LispDestroy(mac, "%s: bad PATHNAME %s",
+		LispDestroy("%s: bad PATHNAME %s",
 			    STRFUN(builtin), STROBJ(pathname));
 	}
 
@@ -895,7 +889,7 @@ Lisp_EnoughNamestring(LispMac *mac, LispBuiltin *builtin)
 		     defaults->data.stream.type == LispStreamFile)
 		defaults  = CAR(defaults->data.stream.pathname->data.pathname);
 	    else
-		LispDestroy(mac, "%s: bad DEFAULTS %s",
+		LispDestroy("%s: bad DEFAULTS %s",
 			    STRFUN(builtin), STROBJ(defaults));
 	}
 
@@ -927,31 +921,31 @@ Lisp_EnoughNamestring(LispMac *mac, LispBuiltin *builtin)
 		return (CAR(pathname->data.stream.pathname->data.pathname));
 	}
     }
-    LispDestroy(mac, "%s: bad PATHNAME %s", STRFUN(builtin), STROBJ(pathname));
+    LispDestroy("%s: bad PATHNAME %s", STRFUN(builtin), STROBJ(pathname));
 
     return (NIL);
 }
 
 LispObj *
-Lisp_Namestring(LispMac *mac, LispBuiltin *builtin)
+Lisp_Namestring(LispBuiltin *builtin)
 /*
  namestring pathname
  */
 {
-    return (LispPathnameField(mac, PATH_STRING, 1));
+    return (LispPathnameField(PATH_STRING, 1));
 }
 
 LispObj *
-Lisp_HostNamestring(LispMac *mac, LispBuiltin *builtin)
+Lisp_HostNamestring(LispBuiltin *builtin)
 /*
  host-namestring pathname
  */
 {
-    return (LispPathnameField(mac, PATH_HOST, 1));
+    return (LispPathnameField(PATH_HOST, 1));
 }
 
 LispObj *
-Lisp_Pathnamep(LispMac *mac, LispBuiltin *builtin)
+Lisp_Pathnamep(LispBuiltin *builtin)
 /*
  pathnamep object
  */
@@ -966,7 +960,7 @@ Lisp_Pathnamep(LispMac *mac, LispBuiltin *builtin)
 /* XXX only checks if host is a string and only checks the HOME enviroment
  * variable */
 LispObj *
-Lisp_UserHomedirPathname(LispMac *mac, LispBuiltin *builtin)
+Lisp_UserHomedirPathname(LispBuiltin *builtin)
 /*
  user-homedir-pathname &optional host
  */
@@ -981,8 +975,7 @@ Lisp_UserHomedirPathname(LispMac *mac, LispBuiltin *builtin)
     host = ARGUMENT(0);
 
     if (host != NIL && !STRING_P(host))
-	LispDestroy(mac, "%s: bad hostname %s",
-		    STRFUN(builtin), STROBJ(host));
+	LispDestroy("%s: bad hostname %s", STRFUN(builtin), STROBJ(host));
 
     length = 0;
     if (home) {
@@ -1002,13 +995,13 @@ Lisp_UserHomedirPathname(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Truename(LispMac *mac, LispBuiltin *builtin)
+Lisp_Truename(LispBuiltin *builtin)
 {
-    return (LispProbeFile(mac, builtin, 0));
+    return (LispProbeFile(builtin, 0));
 }
 
 LispObj *
-Lisp_ProbeFile(LispMac *mac, LispBuiltin *builtin)
+Lisp_ProbeFile(LispBuiltin *builtin)
 {
-    return (LispProbeFile(mac, builtin, 1));
+    return (LispProbeFile(builtin, 1));
 }

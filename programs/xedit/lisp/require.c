@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/require.c,v 1.12 2002/03/10 06:53:46 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/require.c,v 1.13 2002/09/15 21:32:22 paulo Exp $ */
 
 #include "require.h"
 
@@ -35,7 +35,7 @@
  * Implementation
  */
 LispObj *
-Lisp_Load(LispMac *mac, LispBuiltin *builtin)
+Lisp_Load(LispBuiltin *builtin)
 /*
  load filename &key verbose print if-does-not-exist
  */
@@ -51,12 +51,12 @@ Lisp_Load(LispMac *mac, LispBuiltin *builtin)
 	filename = CAR(filename->data.pathname);
     else ERROR_CHECK_STRING(filename);
 
-    return (LispLoadFile(mac, filename, verbose != NIL, print != NIL,
+    return (LispLoadFile(filename, verbose != NIL, print != NIL,
 			 if_does_not_exist != NIL));
 }
 
 LispObj *
-Lisp_Require(LispMac *mac, LispBuiltin *builtin)
+Lisp_Require(LispBuiltin *builtin)
 /*
  require module &optional pathname
  */
@@ -110,13 +110,13 @@ Lisp_Require(LispMac *mac, LispBuiltin *builtin)
 	char data[64];
 	int len;
 
-	if (mac->module == NULL) {
+	if (lisp__data.module == NULL) {
 	    /* export our own symbols */
 	    if (dlopen(NULL, RTLD_LAZY | RTLD_GLOBAL) == NULL)
 		LispDestroy(mac, "%s: ", STRFUN(builtin), dlerror());
 	}
 
-	lisp_module = (LispModule*)LispMalloc(mac, sizeof(LispModule));
+	lisp_module = (LispModule*)LispMalloc(sizeof(LispModule));
 	if ((lisp_module->handle =
 	     dlopen(filename, RTLD_LAZY | RTLD_GLOBAL)) == NULL)
 	    LispDestroy(mac, "%s: dlopen: %s", STRFUN(builtin), dlerror());
@@ -124,14 +124,14 @@ Lisp_Require(LispMac *mac, LispBuiltin *builtin)
 	if ((lisp_module->data =
 	     (LispModuleData*)dlsym(lisp_module->handle, data)) == NULL) {
 	    dlclose(lisp_module->handle);
-	    LispDestroy(mac, "%s: cannot find LispModuleData for %s",
+	    LispDestroy("%s: cannot find LispModuleData for %s",
 			STRFUN(builtin), STROBJ(module));
 	}
-	LispMused(mac, lisp_module);
-	lisp_module->next = mac->module;
-	mac->module = lisp_module;
+	LispMused(lisp_module);
+	lisp_module->next = lisp__data.module;
+	lisp__data.module = lisp_module;
 	if (lisp_module->data->load)
-	    (lisp_module->data->load)(mac);
+	    (lisp_module->data->load)();
 
 	if (MOD == NIL)
 	    MOD = CONS(module, NIL);
@@ -139,14 +139,14 @@ Lisp_Require(LispMac *mac, LispBuiltin *builtin)
 	    RPLACD(MOD, CONS(CAR(MOD), CDR(MOD)));
 	    RPLACA(MOD, module);
 	}
-	LispSetVar(mac, mac->modules, MOD);
+	LispSetVar(lisp__data.modules, MOD);
 
 	return (module);
     }
 #endif
 
     strcpy(ext, ".lsp");
-    (void)LispLoadFile(mac, STRING(filename), 0, 0, 0);
+    (void)LispLoadFile(STRING(filename), 0, 0, 0);
 
     return (module);
 }

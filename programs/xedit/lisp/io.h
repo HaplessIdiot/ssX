@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/io.h,v 1.2 2002/02/08 02:59:29 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/io.h,v 1.3 2002/08/05 03:56:24 paulo Exp $ */
 
 #ifndef Lisp_io_h
 #define Lisp_io_h
@@ -75,10 +75,10 @@ struct _LispString {
  * Prototypes
  */
 	/* higher level functions */
-int LispGet(LispMac*);
-int LispUnget(LispMac*, int);
-void LispPushInput(LispMac*, LispObj*);
-void LispPopInput(LispMac*, LispObj*);
+int LispGet(void);
+int LispUnget(int);
+void LispPushInput(LispObj*);
+void LispPopInput(LispObj*);
 
 	/* functions that read/write using the LispFile structure */
 LispFile *LispFdopen(int, int);

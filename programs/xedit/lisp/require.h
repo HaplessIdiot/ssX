@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/require.h,v 1.2 2001/10/15 07:05:52 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/require.h,v 1.3 2002/01/30 21:00:58 paulo Exp $ */
 
 #ifndef Lisp_require_h
 #define Lisp_require_h
@@ -38,7 +38,7 @@
 #include <dlfcn.h>
 #endif
 
-LispObj *Lisp_Load(LispMac*, LispBuiltin*);			/* load */
-LispObj *Lisp_Require(LispMac*, LispBuiltin*);			/* require */
+LispObj *Lisp_Load(LispBuiltin*);
+LispObj *Lisp_Require(LispBuiltin*);
 
 #endif /* Lisp_require_h */

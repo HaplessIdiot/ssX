@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.22 2002/08/25 02:48:30 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.23 2002/09/15 21:32:19 paulo Exp $ */
 
 #include "io.h"
 #include "write.h"
@@ -120,38 +120,37 @@ typedef struct {
  */
 static void merge_arguments(FmtArgs*, FmtDefs*, int*);
 static char *parse_arguments(char*, FmtArgs*, int*, LispObj**, int*);
-static void merge_error(LispMac*, FmtArgs*, int);
-static void parse_error(LispMac*, FmtArgs*, int);
-static void generic_error(LispMac*, FmtArgs*, int);
-static void format_error(LispMac*, FmtArgs*, char*);
+static void merge_error(FmtArgs*, int);
+static void parse_error(FmtArgs*, int);
+static void generic_error(FmtArgs*, int);
+static void format_error(FmtArgs*, char*);
 
-static int format_object(LispMac*, LispObj*, LispObj*);
+static int format_object(LispObj*, LispObj*);
 
-static void format_ascii(LispMac*, LispObj*, LispObj*, FmtArgs*);
-static void format_in_radix(LispMac*, LispObj*, LispObj*, int, FmtArgs*);
-static void format_radix_special(LispMac*, LispObj*, LispObj*, FmtArgs*);
-static void format_roman(LispMac*, LispObj*, LispObj*, FmtArgs*);
-static void format_english(LispMac*, LispObj*, LispObj*, FmtArgs*);
-static void format_character(LispMac*, LispObj*, LispObj*, FmtArgs*);
-static void format_fixed_float(LispMac*, LispObj*, LispObj*, FmtArgs*);
-static void format_exponential_float(LispMac*, LispObj*, LispObj*, FmtArgs*);
-static void format_general_float(LispMac*, LispObj*, LispObj*, FmtArgs*);
-static void format_dollar_float(LispMac*, LispObj*, LispObj*, FmtArgs*);
-static void format_tabulate(LispMac*, LispObj*, FmtArgs*);
+static void format_ascii(LispObj*, LispObj*, FmtArgs*);
+static void format_in_radix(LispObj*, LispObj*, int, FmtArgs*);
+static void format_radix_special(LispObj*, LispObj*, FmtArgs*);
+static void format_roman(LispObj*, LispObj*, FmtArgs*);
+static void format_english(LispObj*, LispObj*, FmtArgs*);
+static void format_character(LispObj*, LispObj*, FmtArgs*);
+static void format_fixed_float(LispObj*, LispObj*, FmtArgs*);
+static void format_exponential_float(LispObj*, LispObj*, FmtArgs*);
+static void format_general_float(LispObj*, LispObj*, FmtArgs*);
+static void format_dollar_float(LispObj*, LispObj*, FmtArgs*);
+static void format_tabulate(LispObj*, FmtArgs*);
 
-static void format_goto(LispMac*, FmtInfo*);
-static void format_indirection(LispMac*, LispObj*, LispObj*, FmtInfo*);
+static void format_goto(FmtInfo*);
+static void format_indirection(LispObj*, LispObj*, FmtInfo*);
 
-static void list_formats(LispMac*, FmtInfo*, int, char**, char***,
-			 int*, int*, int*, int*);
-static void free_formats(LispMac*, char**, int);
+static void list_formats(FmtInfo*, int, char**, char***, int*, int*, int*, int*);
+static void free_formats(char**, int);
 
-static void format_case_conversion(LispMac*, LispObj*, FmtInfo*);
-static void format_conditional(LispMac*, LispObj*, FmtInfo*);
-static void format_iterate(LispMac*, LispObj*, FmtInfo*);
-static void format_justify(LispMac*, LispObj*, FmtInfo*);
+static void format_case_conversion(LispObj*, FmtInfo*);
+static void format_conditional(LispObj*, FmtInfo*);
+static void format_iterate(LispObj*, FmtInfo*);
+static void format_justify(LispObj*, FmtInfo*);
 
-static void LispFormat(LispMac*, LispObj*, FmtInfo*);
+static void LispFormat(LispObj*, FmtInfo*);
 
 /*
  * Initialization
@@ -332,11 +331,11 @@ parse_arguments(char *format, FmtArgs *arguments,
 		if (INT_P(object)) {
 		    argument->achar = 0;
 		    argument->specified = 1;
-		    argument->value = object->data.integer;
+		    argument->value = GETINT(object);
 		}
 		else if (CHAR_P(object)) {
 		    argument->achar = argument->specified = 1;
-		    argument->value = object->data.integer;
+		    argument->value = GETINT(object);
 		}
 		else {
 		    *code = PARSE_BADFMTARG;
@@ -425,7 +424,7 @@ parse_arguments(char *format, FmtArgs *arguments,
 }
 
 static void
-parse_error(LispMac *mac, FmtArgs *args, int code)
+parse_error(FmtArgs *args, int code)
 {
     static char *errors[] = {
 	NULL,
@@ -438,11 +437,11 @@ parse_error(LispMac *mac, FmtArgs *args, int code)
 	"parameter is not a fixnum integer",
     };
 
-    format_error(mac, args, errors[code]);
+    format_error(args, errors[code]);
 }
 
 static void
-merge_error(LispMac *mac, FmtArgs *args, int code)
+merge_error(FmtArgs *args, int code)
 {
     static char *errors[] = {
 	NULL,
@@ -451,11 +450,11 @@ merge_error(LispMac *mac, FmtArgs *args, int code)
 	"argument must be a fixnum integer",
     };
 
-    format_error(mac, args, errors[code]);
+    format_error(args, errors[code]);
 }
 
 static void
-generic_error(LispMac *mac, FmtArgs *args, int code)
+generic_error(FmtArgs *args, int code)
 {
     static char *errors[] = {
 	NULL,
@@ -465,11 +464,11 @@ generic_error(LispMac *mac, FmtArgs *args, int code)
 	"argument must be a list",
     };
 
-    format_error(mac, args, errors[code]);
+    format_error(args, errors[code]);
 }
 
 static void
-format_error(LispMac *mac, FmtArgs *args, char *str)
+format_error(FmtArgs *args, char *str)
 {
     char *message;
     int errorlen, formatlen;
@@ -482,27 +481,27 @@ format_error(LispMac *mac, FmtArgs *args, char *str)
 
     /* XXX allocate string with LispMalloc,
      * so that it will be freed in LispTopLevel */
-    message = LispMalloc(mac, formatlen + errorlen + 1);
+    message = LispMalloc(formatlen + errorlen + 1);
 
     sprintf(message, "%s\n", str);
     memcpy(message + errorlen, args->base, formatlen);
     message[errorlen + formatlen] = '\0';
 
-    LispDestroy(mac, "FORMAT: %s", message);
+    LispDestroy("FORMAT: %s", message);
 }
 
 static int
-format_object(LispMac *mac, LispObj *stream, LispObj *object)
+format_object(LispObj *stream, LispObj *object)
 {
     int length;
 
-    length = LispWriteObject(mac, stream, object);
+    length = LispWriteObject(stream, object);
 
     return (length);
 }
 
 static void
-format_ascii(LispMac *mac, LispObj *stream, LispObj *object, FmtArgs *args)
+format_ascii(LispObj *stream, LispObj *object, FmtArgs *args)
 {
     GC_ENTER();
     LispObj *string = NIL;
@@ -535,20 +534,20 @@ format_ascii(LispMac *mac, LispObj *stream, LispObj *object, FmtArgs *args)
 	    string = LSTRINGSTREAM((unsigned char*)"",
 				   STREAM_READ | STREAM_WRITE, 1);
 	    GC_PROTECT(string);
-	    length = LispWriteObject(mac, string, object);
+	    length = LispWriteObject(string, object);
 	}
 
 	/* output minpad characters at left */
 	if (minpad) {
 	    length += minpad;
-	    LispWriteChars(mac, stream, padchar, minpad);
+	    LispWriteChars(stream, padchar, minpad);
 	}
 
 	if (colinc) {
 	    /* puts colinc spaces at a time,
 	     * until at least mincol chars out */
 	    while (length < mincol) {
-		LispWriteChars(mac, stream, padchar, colinc);
+		LispWriteChars(stream, padchar, colinc);
 		length += colinc;
 	    }
 	}
@@ -556,23 +555,23 @@ format_ascii(LispMac *mac, LispObj *stream, LispObj *object, FmtArgs *args)
 
     if (object == NIL) {
 	if (collon)
-	    LispWriteStr(mac, stream, "()", 2);
+	    LispWriteStr(stream, "()", 2);
 	else
-	    LispWriteStr(mac, stream,  Snil, 3);
+	    LispWriteStr(stream,  Snil, 3);
     }
     else {
 	if (CHAR_P(object))
-	    LispWriteChar(mac, stream, object->data.integer);
+	    LispWriteChar(stream, GETINT(object));
 	else {
 	    /* if string is not NIL, atsign was specified
 	     * and object printed to string */
 	    if (string == NIL)
-		length = format_object(mac, stream, object);
+		length = format_object(stream, object);
 	    else {
 		int size;
 		char *str = LispGetSstring(SSTREAMP(string), &size);
 
-		LispWriteStr(mac, stream, str, size);
+		LispWriteStr(stream, str, size);
 	    }
 	}
     }
@@ -582,13 +581,13 @@ format_ascii(LispMac *mac, LispObj *stream, LispObj *object, FmtArgs *args)
 	/* output minpad characters at left */
 	if (minpad) {
 	    length += minpad;
-	    LispWriteChars(mac, stream, padchar, minpad);
+	    LispWriteChars(stream, padchar, minpad);
 	}
 	if (colinc) {
 	    /* puts colinc spaces at a time,
 	     * until at least mincol chars out */
 	    while (length < mincol) {
-		LispWriteChars(mac, stream, padchar, colinc);
+		LispWriteChars(stream, padchar, colinc);
 		length += colinc;
 	    }
 	}
@@ -599,8 +598,7 @@ format_ascii(LispMac *mac, LispObj *stream, LispObj *object, FmtArgs *args)
 
 /* assumes radix is 0 or in range 2 - 36 */
 static void
-format_in_radix(LispMac *mac, LispObj *stream, LispObj *object,
-	       int radix, FmtArgs *args)
+format_in_radix(LispObj *stream, LispObj *object, int radix, FmtArgs *args)
 {
     if (INTEGER_P(object)) {
 	int i, check, atsign, collon, mincol, padchar, commachar, commainterval;
@@ -612,7 +610,7 @@ format_in_radix(LispMac *mac, LispObj *stream, LispObj *object,
 	    radix = args->arguments[0].value;
 	    if (radix < 2 || radix > 36) {
 		args->offset = args->arguments[0].offset;
-		generic_error(mac, args, GENERIC_RADIX);
+		generic_error(args, GENERIC_RADIX);
 	    }
 	}
 	mincol = args->arguments[i++].value;
@@ -620,35 +618,34 @@ format_in_radix(LispMac *mac, LispObj *stream, LispObj *object,
 	commachar = args->arguments[i++].value;
 	commainterval = args->arguments[i++].value;
 
-	LispFormatInteger(mac, stream, object, radix, atsign, collon,
+	LispFormatInteger(stream, object, radix, atsign, collon,
 			  mincol, padchar, commachar, commainterval);
     }
     else
-	format_object(mac, stream, object);
+	format_object(stream, object);
 }
 
 static void
-format_radix_special(LispMac *mac, LispObj *stream,
-		     LispObj *object, FmtArgs *args)
+format_radix_special(LispObj *stream, LispObj *object, FmtArgs *args)
 {
     if (INTEGER_P(object)) {
 	if (args->atsign)
-	    format_roman(mac, stream, object, args);
+	    format_roman(stream, object, args);
 	else
-	    format_english(mac, stream, object, args);
+	    format_english(stream, object, args);
     }
     else
-	format_object(mac, stream, object);
+	format_object(stream, object);
 }
 
 static void
-format_roman(LispMac *mac, LispObj *stream, LispObj *object, FmtArgs *args)
+format_roman(LispObj *stream, LispObj *object, FmtArgs *args)
 {
     long value = 0;
     int cando, new_roman = args->collon == 0;
 
     if (INT_P(object)) {
-	value = object->data.integer;
+	value = GETINT(object);
 	if (new_roman)
 	    cando = value >= 1 && value <= 3999;
 	else
@@ -658,60 +655,58 @@ format_roman(LispMac *mac, LispObj *stream, LispObj *object, FmtArgs *args)
 	cando = 0;
 
     if (cando)
-	LispFormatRomanInteger(mac, stream, value, new_roman);
+	LispFormatRomanInteger(stream, value, new_roman);
     else
-	format_object(mac, stream, object);
+	format_object(stream, object);
 }
 
 static void
-format_english(LispMac *mac, LispObj *stream, LispObj *object, FmtArgs *args)
+format_english(LispObj *stream, LispObj *object, FmtArgs *args)
 {
     int cando;
     long number = 0;
 
     if (INT_P(object)) {
-	number = object->data.integer;
+	number = GETINT(object);
 	cando = number >= -999999999 && number <= 999999999;
     }
     else
 	cando = 0;
 
     if (cando)
-	LispFormatEnglishInteger(mac, stream, number, args->collon);
+	LispFormatEnglishInteger(stream, number, args->collon);
     else
-	format_object(mac, stream, object);
+	format_object(stream, object);
 }
 
 static void
-format_character(LispMac *mac, LispObj *stream, LispObj *object, FmtArgs *args)
+format_character(LispObj *stream, LispObj *object, FmtArgs *args)
 {
     if (CHAR_P(object))
-	LispFormatCharacter(mac, stream, object, args->atsign, args->collon);
+	LispFormatCharacter(stream, object, args->atsign, args->collon);
     else
-	format_object(mac, stream, object);
+	format_object(stream, object);
 }
 
 static void
-format_fixed_float(LispMac *mac, LispObj *stream,
-		   LispObj *object, FmtArgs *args)
+format_fixed_float(LispObj *stream, LispObj *object, FmtArgs *args)
 {
     if (FLOAT_P(object))
-	LispFormatFixedFloat(mac, stream, object, args->atsign,
+	LispFormatFixedFloat(stream, object, args->atsign,
 			     args->arguments[0].value,
 			     IF_SPECIFIED(args->arguments[1]),
 			     args->arguments[2].value,
 			     args->arguments[3].value,
 			     args->arguments[4].value);
     else
-	format_object(mac, stream, object);
+	format_object(stream, object);
 }
 
 static void
-format_exponential_float(LispMac *mac, LispObj *stream,
-			 LispObj *object, FmtArgs *args)
+format_exponential_float(LispObj *stream, LispObj *object, FmtArgs *args)
 {
     if (FLOAT_P(object))
-	LispFormatExponentialFloat(mac, stream, object, args->atsign,
+	LispFormatExponentialFloat(stream, object, args->atsign,
 				   args->arguments[0].value,
 				   IF_SPECIFIED(args->arguments[1]),
 				   args->arguments[2].value,
@@ -720,15 +715,14 @@ format_exponential_float(LispMac *mac, LispObj *stream,
 				   args->arguments[5].value,
 				   args->arguments[6].value);
     else
-	format_object(mac, stream, object);
+	format_object(stream, object);
 }
 
 static void
-format_general_float(LispMac *mac, LispObj *stream,
-		     LispObj *object, FmtArgs *args)
+format_general_float(LispObj *stream, LispObj *object, FmtArgs *args)
 {
     if (FLOAT_P(object))
-	LispFormatGeneralFloat(mac, stream, object, args->atsign,
+	LispFormatGeneralFloat(stream, object, args->atsign,
 				args->arguments[0].value,
 				IF_SPECIFIED(args->arguments[1]),
 				args->arguments[2].value,
@@ -737,52 +731,51 @@ format_general_float(LispMac *mac, LispObj *stream,
 				args->arguments[5].value,
 				args->arguments[6].value);
     else
-	format_object(mac, stream, object);
+	format_object(stream, object);
 }
 
 static void
-format_dollar_float(LispMac *mac, LispObj *stream,
-		    LispObj *object, FmtArgs *args)
+format_dollar_float(LispObj *stream, LispObj *object, FmtArgs *args)
 {
     if (FLOAT_P(object))
-	LispFormatDollarFloat(mac, stream, object,
+	LispFormatDollarFloat(stream, object,
 			      args->atsign, args->collon,
 			      args->arguments[0].value,
 			      args->arguments[1].value,
 			      args->arguments[2].value,
 			      args->arguments[3].value);
     else
-	format_object(mac, stream, object);
+	format_object(stream, object);
 }
 
 static void
-format_tabulate(LispMac *mac, LispObj *stream, FmtArgs *args)
+format_tabulate(LispObj *stream, FmtArgs *args)
 {
     int atsign = args->atsign,
 	colnum = args->arguments[0].value,
 	colinc = args->arguments[1].value,
 	column;
 
-    column = LispGetColumn(mac, stream);
+    column = LispGetColumn(stream);
 
     if (atsign) {
 	/* relative tabulation */
 	if (colnum > 0) {
-	    LispWriteChars(mac, stream, ' ', colnum);
+	    LispWriteChars(stream, ' ', colnum);
 	    column += colnum;
 	}
 	/* tabulate until at a multiple of colinc */
 	if (colinc > 0)
-	    LispWriteChars(mac, stream, ' ', colinc - (column % colinc));
+	    LispWriteChars(stream, ' ', colinc - (column % colinc));
     }
     else {
 	/* if colinc not specified, just move to given column */
 	if (colinc <= 0)
-	    LispWriteChars(mac, stream, ' ', column - colnum);
+	    LispWriteChars(stream, ' ', column - colnum);
 	else {
 	    /* always output at least colinc spaces */
 	    do {
-		LispWriteChars(mac, stream, ' ', colinc);
+		LispWriteChars(stream, ' ', colinc);
 		colnum -= colinc;
 	    } while (colnum > column);
 	}
@@ -790,7 +783,7 @@ format_tabulate(LispMac *mac, LispObj *stream, FmtArgs *args)
 }
 
 static void
-format_goto(LispMac *mac, FmtInfo *info)
+format_goto(FmtInfo *info)
 {
     int count, num_arguments;
     LispObj *object, *arguments;
@@ -798,7 +791,7 @@ format_goto(LispMac *mac, FmtInfo *info)
     /* number of arguments to ignore or goto offset */
     count = info->args.arguments[0].value;
     if (count < 0)
-	generic_error(mac, &(info->args), GENERIC_NEGATIVE);
+	generic_error(&(info->args), GENERIC_NEGATIVE);
 
     if (info->args.atsign) {
 	/* absolute goto */
@@ -809,7 +802,7 @@ format_goto(LispMac *mac, FmtInfo *info)
 
 	/* if offset too large */
 	if (count > info->total_arguments)
-	    parse_error(mac, &(info->args), PARSE_NOARGSLEFT);
+	    parse_error(&(info->args), PARSE_NOARGSLEFT);
 	else if (count != info->total_arguments - *(info->num_arguments)) {
 	    /* calculate new parameters */
 	    object = NIL;
@@ -840,7 +833,7 @@ format_goto(LispMac *mac, FmtInfo *info)
 
 	if (count > 0) {
 	    if (count > *(info->num_arguments))
-		parse_error(mac, &(info->args), PARSE_NOARGSLEFT);
+		parse_error(&(info->args), PARSE_NOARGSLEFT);
 
 	    object = *(info->object);
 	    for (; count > 0; count--, arguments = CDR(arguments))
@@ -848,7 +841,7 @@ format_goto(LispMac *mac, FmtInfo *info)
 	}
 	else {		/* count < 0 */
 	    if (info->total_arguments + count - *(info->num_arguments) < 0)
-		parse_error(mac, &(info->args), PARSE_NOARGSLEFT);
+		parse_error(&(info->args), PARSE_NOARGSLEFT);
 
 	    object = NIL;
 	    arguments = info->base_arguments;
@@ -865,14 +858,14 @@ format_goto(LispMac *mac, FmtInfo *info)
 }
 
 static void
-format_indirection(LispMac *mac, LispObj *stream, LispObj *format, FmtInfo *info)
+format_indirection(LispObj *stream, LispObj *format, FmtInfo *info)
 {
     char *string;
     LispObj *object;
     FmtInfo indirect_info;
 
     if (!STRING_P(format))
-	generic_error(mac, &(info->args), GENERIC_BADSTRING);
+	generic_error(&(info->args), GENERIC_BADSTRING);
     string = THESTR(format);
 
     /* most information is the same */
@@ -886,7 +879,7 @@ format_indirection(LispMac *mac, LispObj *stream, LispObj *format, FmtInfo *info
 	/* use current arguments */
 
 	/* do the indirect format */
-	LispFormat(mac, stream, &indirect_info);
+	LispFormat(stream, &indirect_info);
     }
     else {
 	/* next argument is the recursive call arguments */
@@ -901,7 +894,7 @@ format_indirection(LispMac *mac, LispObj *stream, LispObj *format, FmtInfo *info
 	    object = NIL;
 
 	if (object != NIL && !CONS_P(object))
-	    generic_error(mac, &(info->args), GENERIC_BADLIST);
+	    generic_error(&(info->args), GENERIC_BADLIST);
 
 	/* update information now */
 	*(info->object) = object;
@@ -921,7 +914,7 @@ format_indirection(LispMac *mac, LispObj *stream, LispObj *format, FmtInfo *info
 	indirect_info.num_arguments = &num_arguments;
 
 	/* do the indirect format */
-	LispFormat(mac, stream, &indirect_info);
+	LispFormat(stream, &indirect_info);
     }
 }
 
@@ -935,7 +928,7 @@ format_indirection(LispMac *mac, LispObj *stream, LispObj *format, FmtInfo *info
  * format_ptr is updated to the correct pointer in the "main" format string
  */
 static void
-list_formats(LispMac *mac, FmtInfo *info, int command, char **format_ptr,
+list_formats(FmtInfo *info, int command, char **format_ptr,
 	     char ***format_list, int *format_count, int *has_default,
 	     int *comma_width, int *line_width)
 {
@@ -996,10 +989,10 @@ list_formats(LispMac *mac, FmtInfo *info, int command, char **format_ptr,
 	    if (add_format) {
 		int length = format - start;
 
-		formats = LispRealloc(mac, formats,
+		formats = LispRealloc(formats,
 				      (num_formats + 1) * sizeof(char*));
 
-		formats[num_formats] = LispMalloc(mac, length + 1);
+		formats[num_formats] = LispMalloc(length + 1);
 		strncpy(formats[num_formats], start, length);
 		formats[num_formats][length] = '\0';
 		++num_formats;
@@ -1039,7 +1032,7 @@ list_formats(LispMac *mac, FmtInfo *info, int command, char **format_ptr,
 	char error_message[64];
 
 	sprintf(error_message, "expecting ~%c", command);
-	format_error(mac, &(info->args), error_message);
+	format_error(&(info->args), error_message);
     }
 
     /* update pointers */
@@ -1049,17 +1042,17 @@ list_formats(LispMac *mac, FmtInfo *info, int command, char **format_ptr,
 }
 
 static void
-free_formats(LispMac *mac, char **formats, int num_formats)
+free_formats(char **formats, int num_formats)
 {
     if (num_formats) {
 	while (--num_formats >= 0)
-	    LispFree(mac, formats[num_formats]);
-	LispFree(mac, formats);
+	    LispFree(formats[num_formats]);
+	LispFree(formats);
     }
 }
 
 static void
-format_case_conversion(LispMac *mac, LispObj *stream, FmtInfo *info)
+format_case_conversion(LispObj *stream, FmtInfo *info)
 {
     GC_ENTER();
     LispObj *string;
@@ -1080,7 +1073,7 @@ format_case_conversion(LispMac *mac, LispObj *stream, FmtInfo *info)
 
     /* list formats */
     next_format = *(info->format);
-    list_formats(mac, info, '(', &next_format, &formats, &num_formats,
+    list_formats(info, '(', &next_format, &formats, &num_formats,
 		 NULL, NULL, NULL);
 
     /* set new format string */
@@ -1089,7 +1082,7 @@ format_case_conversion(LispMac *mac, LispObj *stream, FmtInfo *info)
     case_info.format = &format;
 
     /* format text to string */
-    LispFormat(mac, string, &case_info);
+    LispFormat(string, &case_info);
 
     str = ptr = (unsigned char*)LispGetSstring(SSTREAMP(string), &length);
 
@@ -1134,20 +1127,20 @@ format_case_conversion(LispMac *mac, LispObj *stream, FmtInfo *info)
     }
 
     /* output case converted string */
-    LispWriteStr(mac, stream, (char*)str, length);
+    LispWriteStr(stream, (char*)str, length);
 
     /* temporary string stream is not necessary anymore */
     GC_LEAVE();
 
     /* free temporary memory */
-    free_formats(mac, formats, num_formats);
+    free_formats(formats, num_formats);
 
     /* this information always updated */
     *(info->format) = next_format;
 }
 
 static void
-format_conditional(LispMac *mac, LispObj *stream, FmtInfo *info)
+format_conditional(LispObj *stream, FmtInfo *info)
 {
     LispObj *object, *arguments;
     char *format, *next_format, **formats;
@@ -1163,14 +1156,14 @@ format_conditional(LispMac *mac, LispObj *stream, FmtInfo *info)
     next_format = *(info->format);
 
     /* list formats */
-    list_formats(mac, info, '[',
+    list_formats(info, '[',
 		 &next_format, &formats, &num_formats, &has_default, NULL, NULL);
 
     /* ~:[false;true] */
     if (info->args.collon) {
 	/* one argument always consumed */
 	if (!CONS_P(arguments))
-	    parse_error(mac, &(info->args), PARSE_NOARGSLEFT);
+	    parse_error(&(info->args), PARSE_NOARGSLEFT);
 	object = CAR(arguments);
 	arguments = CDR(arguments);
 	--num_arguments;
@@ -1180,7 +1173,7 @@ format_conditional(LispMac *mac, LispObj *stream, FmtInfo *info)
     else if (info->args.atsign) {
 	/* argument consumed only if nil, but one must be available */
 	if (!CONS_P(arguments))
-	    parse_error(mac, &(info->args), PARSE_NOARGSLEFT);
+	    parse_error(&(info->args), PARSE_NOARGSLEFT);
 	if (CAR(arguments) != NIL)
 	    choice = 0;
 	else {
@@ -1197,13 +1190,13 @@ format_conditional(LispMac *mac, LispObj *stream, FmtInfo *info)
     else {
 	/* one argument consumed, it is the index in the available formats */
 	if (!CONS_P(arguments))
-	    parse_error(mac, &(info->args), PARSE_NOARGSLEFT);
+	    parse_error(&(info->args), PARSE_NOARGSLEFT);
 	object = CAR(arguments);
 	arguments = CDR(arguments);
 	--num_arguments;
 	/* */
 	if (INT_P(object))
-	    choice = object->data.integer;
+	    choice = GETINT(object);
 	/* if choice is out of range check if there is a default choice */
 	if (has_default && (choice < 0 || choice >= num_formats))
 	    choice = num_formats - 1;
@@ -1227,18 +1220,18 @@ format_conditional(LispMac *mac, LispObj *stream, FmtInfo *info)
 	conditional_info.format = &format;
 
 	/* do the conditional format */
-	LispFormat(mac, stream, &conditional_info);
+	LispFormat(stream, &conditional_info);
     }
 
     /* free temporary memory */
-    free_formats(mac, formats, num_formats);
+    free_formats(formats, num_formats);
 
     /* this information always updated */
     *(info->format) = next_format;
 }
 
 static void
-format_iterate(LispMac *mac, LispObj *stream, FmtInfo *info)
+format_iterate(LispObj *stream, FmtInfo *info)
 {
     FmtInfo iterate_info;
     LispObj *object, *arguments, *iarguments, *iobject;
@@ -1260,7 +1253,7 @@ format_iterate(LispMac *mac, LispObj *stream, FmtInfo *info)
     iterate_max = info->args.arguments[0].value;
 
     /* list formats */
-    list_formats(mac, info, '{', &next_format, &formats, &num_formats,
+    list_formats(info, '{', &next_format, &formats, &num_formats,
 		 NULL, NULL, NULL);
     loop_format = formats[0];
 
@@ -1273,7 +1266,7 @@ format_iterate(LispMac *mac, LispObj *stream, FmtInfo *info)
 
 	/* fetch argument list, must exist */
 	if (!CONS_P(arguments))
-	    parse_error(mac, &(info->args), PARSE_NOARGSLEFT);
+	    parse_error(&(info->args), PARSE_NOARGSLEFT);
 	iarguments = object = CAR(arguments);
 	object = CAR(arguments);
 	arguments = CDR(arguments);
@@ -1286,7 +1279,7 @@ format_iterate(LispMac *mac, LispObj *stream, FmtInfo *info)
 		++inum_arguments;
 	}
 	else if (object != NIL)
-	    generic_error(mac, &(info->args), GENERIC_BADLIST);
+	    generic_error(&(info->args), GENERIC_BADLIST);
 
 	iobject = NIL;
 
@@ -1316,7 +1309,7 @@ format_iterate(LispMac *mac, LispObj *stream, FmtInfo *info)
 	    iterate_info.iteration = ITERATION_NORMAL;
 
 	    /* do the format */
-	    LispFormat(mac, stream, &iterate_info);
+	    LispFormat(stream, &iterate_info);
 
 	    /* check for forced loop break */
 	    if (iterate_info.upandout & UPANDOUT_HASH)
@@ -1337,7 +1330,7 @@ format_iterate(LispMac *mac, LispObj *stream, FmtInfo *info)
 
 	    /* fetch argument list, must exist */
 	    if (!CONS_P(arguments))
-		parse_error(mac, &(info->args), PARSE_NOARGSLEFT);
+		parse_error(&(info->args), PARSE_NOARGSLEFT);
 	    iarguments = object = CAR(arguments);
 	    object = CAR(arguments);
 	    arguments = CDR(arguments);
@@ -1350,7 +1343,7 @@ format_iterate(LispMac *mac, LispObj *stream, FmtInfo *info)
 		    ++inum_arguments;
 	    }
 	    else if (object != NIL)
-		generic_error(mac, &(info->args), GENERIC_BADLIST);
+		generic_error(&(info->args), GENERIC_BADLIST);
 
 	    iobject = NIL;
 
@@ -1373,7 +1366,7 @@ format_iterate(LispMac *mac, LispObj *stream, FmtInfo *info)
 		num_arguments > 0 ? ITERATION_NORMAL : ITERATION_LAST;
 
 	    /* do the format */
-	    LispFormat(mac, stream, &iterate_info);
+	    LispFormat(stream, &iterate_info);
 
 	    /* check for forced loop break */
 	    if (iterate_info.upandout & UPANDOUT_HASH)
@@ -1389,7 +1382,7 @@ format_iterate(LispMac *mac, LispObj *stream, FmtInfo *info)
 
 	/* fetch argument list, must exist */
 	if (!CONS_P(arguments))
-	    parse_error(mac, &(info->args), PARSE_NOARGSLEFT);
+	    parse_error(&(info->args), PARSE_NOARGSLEFT);
 	sarguments = object = CAR(arguments);
 	object = CAR(arguments);
 	arguments = CDR(arguments);
@@ -1402,7 +1395,7 @@ format_iterate(LispMac *mac, LispObj *stream, FmtInfo *info)
 		++snum_arguments;
 	}
 	else
-	    generic_error(mac, &(info->args), GENERIC_BADLIST);
+	    generic_error(&(info->args), GENERIC_BADLIST);
 
 	/* iterate */
 	for (;; iterate++) {
@@ -1414,7 +1407,7 @@ format_iterate(LispMac *mac, LispObj *stream, FmtInfo *info)
 
 	    /* fetch argument list, must exist */
 	    if (!CONS_P(sarguments))
-		parse_error(mac, &(info->args), PARSE_NOARGSLEFT);
+		parse_error(&(info->args), PARSE_NOARGSLEFT);
 	    iarguments = sobject = CAR(sarguments);
 	    sobject = CAR(sarguments);
 	    sarguments = CDR(sarguments);
@@ -1427,7 +1420,7 @@ format_iterate(LispMac *mac, LispObj *stream, FmtInfo *info)
 		    ++inum_arguments;
 	    }
 	    else if (sobject != NIL)
-		generic_error(mac, &(info->args), GENERIC_BADLIST);
+		generic_error(&(info->args), GENERIC_BADLIST);
 
 	    iobject = NIL;
 
@@ -1450,7 +1443,7 @@ format_iterate(LispMac *mac, LispObj *stream, FmtInfo *info)
 		snum_arguments > 0 ? ITERATION_NORMAL : ITERATION_LAST;
 
 	    /* do the format */
-	    LispFormat(mac, stream, &iterate_info);
+	    LispFormat(stream, &iterate_info);
 
 	    /* check for forced loop break */
 	    if (iterate_info.upandout & UPANDOUT_HASH)
@@ -1485,7 +1478,7 @@ format_iterate(LispMac *mac, LispObj *stream, FmtInfo *info)
 	    iterate_info.iteration = ITERATION_NORMAL;
 
 	    /* do the format */
-	    LispFormat(mac, stream, &iterate_info);
+	    LispFormat(stream, &iterate_info);
 
 	    /* check for forced loop break */
 	    if (iterate_info.upandout & UPANDOUT_HASH)
@@ -1494,7 +1487,7 @@ format_iterate(LispMac *mac, LispObj *stream, FmtInfo *info)
     }
 
     /* free temporary memory */
-    free_formats(mac, formats, num_formats);
+    free_formats(formats, num_formats);
 
     /* update anything that may have changed */
     *(info->object) = object;
@@ -1506,7 +1499,7 @@ format_iterate(LispMac *mac, LispObj *stream, FmtInfo *info)
 }
 
 static void
-format_justify(LispMac *mac, LispObj *stream, FmtInfo *info)
+format_justify(LispObj *stream, FmtInfo *info)
 {
     GC_ENTER();
     FmtInfo justify_info;
@@ -1524,7 +1517,7 @@ format_justify(LispMac *mac, LispObj *stream, FmtInfo *info)
     next_format = *(info->format);
 
     /* list formats */
-    list_formats(mac, info, '<', &next_format, &formats, &num_formats,
+    list_formats(info, '<', &next_format, &formats, &num_formats,
 		 &has_default, &comma_width, &line_width);
 
     /* initialize list of strings streams */
@@ -1552,7 +1545,7 @@ format_justify(LispMac *mac, LispObj *stream, FmtInfo *info)
 	justify_info.format = &format;
 
 	/* format string, maybe consuming arguments */
-	LispFormat(mac, CAR(cons), &justify_info);
+	LispFormat(CAR(cons), &justify_info);
 
 	/* if format was aborted, it is discarded */
 	if (justify_info.upandout)
@@ -1566,7 +1559,7 @@ format_justify(LispMac *mac, LispObj *stream, FmtInfo *info)
     }
 
     /* free temporary format strings */
-    free_formats(mac, formats, num_formats);
+    free_formats(formats, num_formats);
 
     /* remove aborted formats */
 	/* first remove leading discarded formats */
@@ -1576,7 +1569,7 @@ format_justify(LispMac *mac, LispObj *stream, FmtInfo *info)
 	    --num_formats;
 	}
 	/* keep strings gc protected, discarding first entries */
-	mac->protect.objects[gc__protect] = strings;
+	lisp__data.protect.objects[gc__protect] = strings;
     }
 	/* now remove intermediary discarded formats */
     cons = strings;
@@ -1638,24 +1631,24 @@ format_justify(LispMac *mac, LispObj *stream, FmtInfo *info)
 	if (has_default && line_width > 0 && comma_width >= 0 &&
 	    total_length + comma_width > line_width) {
 	    str = LispGetSstring(SSTREAMP(CAR(strings)), &size);
-	    LispWriteStr(mac, stream, str, size);
+	    LispWriteStr(stream, str, size);
 	}
 	string = has_default ? CAR(CDR(strings)) : CAR(strings);
 	/* check if need left padding */
 	if (k && !atsign) {
-	    LispWriteChars(mac, stream, padchar, k);
+	    LispWriteChars(stream, padchar, k);
 	    k = 0;
 	}
 	/* check for centralizing text */
 	else if (k && atsign && collon) {
-	    LispWriteChars(mac, stream, padchar, k / 2);
+	    LispWriteChars(stream, padchar, k / 2);
 	    k -= k / 2;
 	}
 	str = LispGetSstring(SSTREAMP(string), &size);
-	LispWriteStr(mac, stream, str, size);
+	LispWriteStr(stream, str, size);
 	/* if any padding remaining */
 	if (k)
-	    LispWriteChars(mac, stream, padchar, k);
+	    LispWriteChars(stream, padchar, k);
     }
     else {
 	LispObj *result;
@@ -1688,37 +1681,37 @@ format_justify(LispMac *mac, LispObj *stream, FmtInfo *info)
 		    int spaces;
 
 		    spaces = minpad > colinc ? minpad : colinc;
-		    LispWriteChars(mac, result, padchar, spaces);
+		    LispWriteChars(result, padchar, spaces);
 		    k -= spaces;
 		}
 		str = LispGetSstring(SSTREAMP(string), &size);
-		LispWriteStr(mac, result, str, size);
+		LispWriteStr(result, str, size);
 		padout = 0;
 	    }
 	    if (!padout)
-		LispWriteChars(mac, result, padchar, k);
+		LispWriteChars(result, padchar, k);
 	    padout = k;
 	    /* if not first string, or if left padding specified */
 	    if (spaces_before) {
 		str = LispGetSstring(SSTREAMP(string), &size);
-		LispWriteStr(mac, result, str, size);
+		LispWriteStr(result, str, size);
 		padout = 0;
 	    }
 	    padding -= k;	
 	}
 
 	if (has_default && line_width > 0 && comma_width >= 0) {
-	    length = SSTREAMP(result)->length + LispGetColumn(mac, stream);
+	    length = SSTREAMP(result)->length + LispGetColumn(stream);
 
 	    /* if current line is too large */
 	    if (has_default && length + comma_width > line_width) {
 		str = LispGetSstring(SSTREAMP(CAR(strings)), &size);
-		LispWriteStr(mac, stream, str, size);
+		LispWriteStr(stream, str, size);
 	    }
 
 	    /* write result to stream */
 	    str = LispGetSstring(SSTREAMP(result), &size);
-	    LispWriteStr(mac, stream, str, size);
+	    LispWriteStr(stream, str, size);
 	}
     }
 
@@ -1730,7 +1723,7 @@ format_justify(LispMac *mac, LispObj *stream, FmtInfo *info)
 }
 
 static void
-LispFormat(LispMac *mac, LispObj *stream, FmtInfo *info)
+LispFormat(LispObj *stream, FmtInfo *info)
 {
     FmtArgs *args;
     FmtDefs *defs = NULL;
@@ -1753,7 +1746,7 @@ LispFormat(LispMac *mac, LispObj *stream, FmtInfo *info)
 	if (*format == '~') {
 	    /* flush non formatted characters */
 	    if (length) {
-		LispWriteStr(mac, stream, stk, length);
+		LispWriteStr(stream, stk, length);
 		length = 0;
 	    }
 
@@ -1764,7 +1757,7 @@ LispFormat(LispMac *mac, LispObj *stream, FmtInfo *info)
 	    next_format = parse_arguments(format + 1, args, &num_arguments,
 					  &arguments, &code);
 	    if (code != NOERROR)
-		parse_error(mac, args, code);
+		parse_error(args, code);
 
 	    /* check parameters */
 	    switch (args->command) {
@@ -1803,28 +1796,28 @@ LispFormat(LispMac *mac, LispObj *stream, FmtInfo *info)
 		    break;
 		case ')':
 		    /* this is never seen, processed in format_case_conversion */
-		    format_error(mac, args, "no match for directive ~)");
+		    format_error(args, "no match for directive ~)");
 		case '[':
 		    defs = &OneDefs;
 		    break;
 		case ']':
 		    /* this is never seen, processed in format_conditional */
-		    format_error(mac, args, "no match for directive ~]");
+		    format_error(args, "no match for directive ~]");
 		case '{':
 		    defs = &OneDefs;
 		    break;
 		case '}':
 		    /* this is never seen, processed in format_iterate */
-		    format_error(mac, args, "no match for directive ~}");
+		    format_error(args, "no match for directive ~}");
 		case '<':
 		    defs = &AsciiDefs;
 		    break;
 		case '>':
 		    /* this is never seen, processed in format_justify */
-		    format_error(mac, args, "no match for directive ~>");
+		    format_error(args, "no match for directive ~>");
 		case ';':
 		    /* this is never seen here */
-		    format_error(mac, args, "misplaced directive ~;");
+		    format_error(args, "misplaced directive ~;");
 		case '#':
 		    /* special handling for ~#^ */
 		    if (*next_format == '^') {
@@ -1834,17 +1827,17 @@ LispFormat(LispMac *mac, LispObj *stream, FmtInfo *info)
 			args->command = '^';
 			break;
 		    }
-		    parse_error(mac, args, PARSE_BADDIRECTIVE);
+		    parse_error(args, PARSE_BADDIRECTIVE);
 		case '^':
 		    defs = &NoneDefs;
 		    break;
 		default:
-		    parse_error(mac, args, PARSE_BADDIRECTIVE);
+		    parse_error(args, PARSE_BADDIRECTIVE);
 		    break;
 	    }
 	    merge_arguments(args, defs, &code);
 	    if (code != NOERROR)
-		merge_error(mac, args, code);
+		merge_error(args, code);
 
 	    /* check if an argument is required by directive */
 	    switch (args->command) {
@@ -1880,7 +1873,7 @@ LispFormat(LispMac *mac, LispObj *stream, FmtInfo *info)
 	    }
 	    if (need_argument) {
 		if (!CONS_P(arguments))
-		    parse_error(mac, args, PARSE_NOARGSLEFT);
+		    parse_error(args, PARSE_NOARGSLEFT);
 		object = CAR(arguments);
 		arguments = CDR(arguments);
 		--num_arguments;
@@ -1897,106 +1890,106 @@ LispFormat(LispMac *mac, LispObj *stream, FmtInfo *info)
 	    /* everything seens fine, print the format directive */
 	    switch (args->command) {
 		case 'A':
-		    escape = LispGetEscape(mac, stream);
-		    LispSetEscape(mac, stream, 1);
-		    format_ascii(mac, stream, object, args);
-		    LispSetEscape(mac, stream, escape);
+		    escape = LispGetEscape(stream);
+		    LispSetEscape(stream, 1);
+		    format_ascii(stream, object, args);
+		    LispSetEscape(stream, escape);
 		    break;
 		case 'S':
-		    format_ascii(mac, stream, object, args);
+		    format_ascii(stream, object, args);
 		    break;
 		case 'B':
-		    format_in_radix(mac, stream, object, 2, args);
+		    format_in_radix(stream, object, 2, args);
 		    break;
 		case 'O':
-		    format_in_radix(mac, stream, object, 8, args);
+		    format_in_radix(stream, object, 8, args);
 		    break;
 		case 'D':
-		    format_in_radix(mac, stream, object, 10, args);
+		    format_in_radix(stream, object, 10, args);
 		    break;
 		case 'X':
-		    format_in_radix(mac, stream, object, 16, args);
+		    format_in_radix(stream, object, 16, args);
 		    break;
 		case 'R':
 		    /* if a single argument specified */
 		    if (args->count)
-			format_in_radix(mac, stream, object, 0, args);
+			format_in_radix(stream, object, 0, args);
 		    else
-			format_radix_special(mac, stream, object, args);
+			format_radix_special(stream, object, args);
 		    break;
 		case 'P':
 		    if (args->atsign) {
-			if (INT_P(object) && object->data.integer == 1)
-			    LispWriteChar(mac, stream, 'y');
+			if (INT_P(object) && GETINT(object) == 1)
+			    LispWriteChar(stream, 'y');
 			else
-			    LispWriteStr(mac, stream, "ies", 3);
+			    LispWriteStr(stream, "ies", 3);
 		    }
-		    else if (!INT_P(object) || object->data.integer != 1)
-			LispWriteChar(mac, stream, 's');
+		    else if (!INT_P(object) || GETINT(object) != 1)
+			LispWriteChar(stream, 's');
 		    break;
 		case 'C':
-		    format_character(mac, stream, object, args);
+		    format_character(stream, object, args);
 		    break;
 		case 'F':
-		    format_fixed_float(mac, stream, object, args);
+		    format_fixed_float(stream, object, args);
 		    break;
 		case 'E':
-		    format_exponential_float(mac, stream, object, args);
+		    format_exponential_float(stream, object, args);
 		    break;
 		case 'G':
-		    format_general_float(mac, stream, object, args);
+		    format_general_float(stream, object, args);
 		    break;
 		case '$':
-		    format_dollar_float(mac, stream, object, args);
+		    format_dollar_float(stream, object, args);
 		    break;
 		case '&':
-		    if (LispGetColumn(mac, stream) == 0)
+		    if (LispGetColumn(stream) == 0)
 			--args->arguments[0].value;
 		case '%':
-		    LispWriteChars(mac, stream, '\n', args->arguments[0].value);
+		    LispWriteChars(stream, '\n', args->arguments[0].value);
 		    break;
 		case '|':
-		    LispWriteChars(mac, stream, '\f', args->arguments[0].value);
+		    LispWriteChars(stream, '\f', args->arguments[0].value);
 		    break;
 		case '~':
-		    LispWriteChars(mac, stream, '~', args->arguments[0].value);
+		    LispWriteChars(stream, '~', args->arguments[0].value);
 		    break;
 		case '\n':
 		    if (!args->collon) {
 			if (args->atsign)
-			    LispWriteChar(mac, stream, '\n');
+			    LispWriteChar(stream, '\n');
 			/* ignore newline and following spaces */
 			while (*next_format && isspace(*next_format))
 			    ++next_format;
 		    }
 		    break;
 		case 'T':
-		    format_tabulate(mac, stream, args);
+		    format_tabulate(stream, args);
 		    break;
 		case '*':
-		    format_goto(mac, info);
+		    format_goto(info);
 		    break;
 		case '?':
-		    format_indirection(mac, stream, object, info);
+		    format_indirection(stream, object, info);
 		    need_update = 1;
 		    break;
 		case '(':
-		    format_case_conversion(mac, stream, info);
+		    format_case_conversion(stream, info);
 		    /* next_format if far from what is set now */
 		    next_format = *(info->format);
 		    break;
 		case '[':
-		    format_conditional(mac, stream, info);
+		    format_conditional(stream, info);
 		    /* next_format if far from what is set now */
 		    next_format = *(info->format);
 		    break;
 		case '{':
-		    format_iterate(mac, stream, info);
+		    format_iterate(stream, info);
 		    /* next_format if far from what is set now */
 		    next_format = *(info->format);
 		    break;
 		case '<':
-		    format_justify(mac, stream, info);
+		    format_justify(stream, info);
 		    /* next_format if far from what is set now */
 		    next_format = *(info->format);
 		    break;
@@ -2031,7 +2024,7 @@ LispFormat(LispMac *mac, LispObj *stream, FmtInfo *info)
 	}
 	else {
 	    if (length >= sizeof(stk)) {
-		LispWriteStr(mac, stream, stk, length);
+		LispWriteStr(stream, stk, length);
 		length = 0;
 	    }
 	    stk[length++] = *format++;
@@ -2040,7 +2033,7 @@ LispFormat(LispMac *mac, LispObj *stream, FmtInfo *info)
 
     /* flush any peding output */
     if (length)
-	LispWriteStr(mac, stream, stk, length);
+	LispWriteStr(stream, stk, length);
 
 format_up_and_out:
     /* update for recursive call */
@@ -2051,7 +2044,7 @@ format_up_and_out:
 }
 
 LispObj *
-Lisp_Format(LispMac *mac, LispBuiltin *builtin)
+Lisp_Format(LispBuiltin *builtin)
 /*
  format destination control-string &rest arguments
  */
@@ -2079,10 +2072,10 @@ Lisp_Format(LispMac *mac, LispBuiltin *builtin)
 	     stream == STANDARD_OUTPUT)
 	stream = NIL;
     else if (!STREAM_P(stream))
-	LispDestroy(mac, "%s: %s is not a stream",
+	LispDestroy("%s: %s is not a stream",
 		    STRFUN(builtin), STROBJ(stream));
     else if (!stream->data.stream.writable)
-	LispDestroy(mac, "%s: stream %s is not writable",
+	LispDestroy("%s: stream %s is not writable",
 		    STRFUN(builtin), STROBJ(stream));
 
     /* count number of arguments */
@@ -2107,7 +2100,7 @@ Lisp_Format(LispMac *mac, LispBuiltin *builtin)
     info.iteration = 0;
 
     /* format arguments */
-    LispFormat(mac, stream, &info);
+    LispFormat(stream, &info);
 
     /* if printing to stdout */
     if (stream == NIL)

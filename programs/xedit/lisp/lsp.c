@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lsp.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lsp.c,v 1.5 2002/09/18 17:11:54 tsi Exp $ */
 
 #include <stdio.h>
 #include <string.h>
@@ -51,11 +51,12 @@ int
 main(int argc, char *argv[])
 {
     int i;
-    LispMac *mac = LispBegin();
+
+    LispBegin();
 
     i = 1;
     if (argc > 1 && strcmp(argv[1], "-d") == 0) {
-	LispDebug(mac, 1);
+	LispDebug(1);
 	++i;
     }
 
@@ -64,13 +65,13 @@ main(int argc, char *argv[])
 
 	for (; i < argc; i++) {
 	    snprintf(buffer, sizeof(buffer), "(load \"%s\")", argv[i]);
-	    LispExecute(mac, buffer);
+	    LispExecute(buffer);
 	}
     }
     else
-	LispMachine(mac);
+	LispMachine();
 
-    LispEnd(mac);
+    LispEnd();
 
     return (0);
 }

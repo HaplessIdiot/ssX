@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp.c,v 1.13 2002/10/06 17:11:39 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp.c,v 1.14 2002/11/04 04:15:51 paulo Exp $ */
 
 #include "xedit.h"
 #include "lisp/lisp.h"
@@ -44,7 +44,7 @@ static void XeditDoLispEval(Widget);
 /*
  * Initialization
  */
-LispMac *lisp_handler;
+static int lisp_initialized;
 extern Widget scratch;
 
 /*
@@ -54,14 +54,15 @@ void
 XeditLispInitialize(void)
 {
     setlocale(LC_NUMERIC, "C");
-    lisp_handler = LispBegin();
-    LispXeditInitialize(lisp_handler);
+    lisp_initialized = 1;
+    LispBegin();
+    LispXeditInitialize();
 }
 
 void
 XeditLispCleanUp(void)
 {
-    LispEnd(lisp_handler);
+    LispEnd();
 }
 
 void
@@ -91,13 +92,13 @@ XeditKeyboardReset(Widget w, XEvent *event, String *params, Cardinal *num_params
 void
 SetTextProperties(xedit_flist_item *item)
 {
-    if (lisp_handler) {
+    if (lisp_initialized) {
 	Widget source = XawTextGetSource(textwindow);
 	XawTextPosition top = XawTextTopPosition(textwindow);
 
 	if (source != item->source)
 	    XawTextSetSource(textwindow, item->source, 0);
-	XeditLispSetEditMode(lisp_handler, item);
+	XeditLispSetEditMode(item);
 	if (source != item->source)
 	    XawTextSetSource(textwindow, source, top);
     }
@@ -106,7 +107,7 @@ SetTextProperties(xedit_flist_item *item)
 void
 UnsetTextProperties(xedit_flist_item *item)
 {
-    XeditLispUnsetEditMode(lisp_handler, item);
+    XeditLispUnsetEditMode(item);
 }
 
 static void
@@ -194,5 +195,5 @@ XeditDoLispEval(Widget output)
 	}
     }
 
-    XeditLispExecute(lisp_handler, output, position, end);
+    XeditLispExecute(output, position, end);
 }

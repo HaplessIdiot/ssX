@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/regex.c,v 1.4 2002/09/08 02:29:49 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/regex.c,v 1.5 2002/09/15 21:32:22 paulo Exp $ */
 
 #include "regex.h"
 #include "private.h"
@@ -36,7 +36,7 @@
 /*
  * Prototypes
  */
-static re_cod *LispRecomp(LispMac*, LispBuiltin*, char*, int);
+static re_cod *LispRecomp(LispBuiltin*, char*, int);
 
 /*
  * Initialization
@@ -47,32 +47,31 @@ LispObj *Knomatch;
  * Implementation
  */
 static re_cod *
-LispRecomp(LispMac *mac, LispBuiltin *builtin, char *pattern, int cflags)
+LispRecomp(LispBuiltin *builtin, char *pattern, int cflags)
 {
     int code;
-    re_cod *regex = LispMalloc(mac, sizeof(re_cod));
+    re_cod *regex = LispMalloc(sizeof(re_cod));
 
     if ((code = recomp(regex, pattern, cflags)) != 0) {
 	char buffer[256];
 
 	reerror(code, regex, buffer, sizeof(buffer));
 	refree(regex);
-	LispFree(mac, regex);
-	LispDestroy(mac, "%s: recomp(\"%s\"): %s",
-		    STRFUN(builtin), pattern, buffer);
+	LispFree(regex);
+	LispDestroy("%s: recomp(\"%s\"): %s", STRFUN(builtin), pattern, buffer);
     }
 
     return (regex);
 }
 
 void
-LispRegexInit(LispMac *mac)
+LispRegexInit(void)
 {
     Knomatch = KEYWORD("NOMATCH");
 }
 
 LispObj *
-Lisp_Recomp(LispMac *mac, LispBuiltin *builtin)
+Lisp_Recomp(LispBuiltin *builtin)
 /*
  re-comp pattern &key nospec icase nosub newline
  */
@@ -105,19 +104,19 @@ Lisp_Recomp(LispMac *mac, LispBuiltin *builtin)
     if (newline != NIL)
 	cflags |= RE_NEWLINE;
 
-    regex = LispRecomp(mac, builtin, THESTR(pattern), cflags);
-    result = LispNew(mac, pattern, NIL);
+    regex = LispRecomp(builtin, THESTR(pattern), cflags);
+    result = LispNew(pattern, NIL);
     result->type = LispRegex_t;
     result->data.regex.regex = regex;
     result->data.regex.pattern = pattern;
     result->data.regex.options = cflags;
-    LispMused(mac, regex);
+    LispMused(regex);
 
     return (result);
 }
 
 LispObj *
-Lisp_Reexec(LispMac *mac, LispBuiltin *builtin)
+Lisp_Reexec(LispBuiltin *builtin)
 /*
  re-exec regex string &key count start end notbol noteol
  */
@@ -142,7 +141,7 @@ Lisp_Reexec(LispMac *mac, LispBuiltin *builtin)
     regex = ARGUMENT(0);
 
     if (STRING_P(regex))
-	regexp = LispRecomp(mac, builtin, THESTR(regex), cflags = 0);
+	regexp = LispRecomp(builtin, THESTR(regex), cflags = 0);
     else {
 	ERROR_CHECK_REGEX(regex);
 	regexp = regex->data.regex.regex;
@@ -155,10 +154,9 @@ Lisp_Reexec(LispMac *mac, LispBuiltin *builtin)
 	nmatch = 1;
     else {
 	ERROR_CHECK_INDEX(count);
-	nmatch = count->data.integer;
+	nmatch = GETINT(count);
 	if (nmatch > 10)
-	    LispDestroy(mac, "%s: COUNT cannot be larger than 10",
-			STRFUN(builtin));
+	    LispDestroy("%s: COUNT cannot be larger than 10", STRFUN(builtin));
     }
     if (nmatch & (cflags & RE_NOSUB))
 	nmatch = 1;
@@ -170,7 +168,7 @@ Lisp_Reexec(LispMac *mac, LispBuiltin *builtin)
 
     string = THESTR(ostring);
     if (ostart != NIL || oend != NIL)
-	LispCheckSequenceStartEnd(mac, builtin, ostring, ostart, oend,
+	LispCheckSequenceStartEnd(builtin, ostring, ostart, oend,
 				  &start, &end, &length);
     else {
 	start = 0;
@@ -207,7 +205,7 @@ Lisp_Reexec(LispMac *mac, LispBuiltin *builtin)
 
     if (!REGEX_P(regex)) {
 	refree(regexp);
-	LispFree(mac, regexp);
+	LispFree(regexp);
     }
 
     GC_LEAVE();
@@ -216,7 +214,7 @@ Lisp_Reexec(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_Rep(LispMac *mac, LispBuiltin *builtin)
+Lisp_Rep(LispBuiltin *builtin)
 /*
  re-p object
  */

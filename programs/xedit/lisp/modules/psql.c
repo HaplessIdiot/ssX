@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/psql.c,v 1.7 2002/04/16 17:12:06 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/psql.c,v 1.9 2002/10/06 17:11:46 paulo Exp $ */
 
 #include <stdlib.h>
 #include <libpq-fe.h>
@@ -40,35 +40,35 @@
 /*
  * Prototypes
  */
-int psqlLoadModule(LispMac *mac);
+int psqlLoadModule(void);
 
-LispObj *Lisp_PQbackendPID(LispMac*, LispBuiltin*);
-LispObj *Lisp_PQclear(LispMac*, LispBuiltin*);
-LispObj *Lisp_PQconsumeInput(LispMac*, LispBuiltin*);
-LispObj *Lisp_PQdb(LispMac*, LispBuiltin*);
-LispObj *Lisp_PQerrorMessage(LispMac*, LispBuiltin*);
-LispObj *Lisp_PQexec(LispMac*, LispBuiltin*);
-LispObj *Lisp_PQfinish(LispMac*, LispBuiltin*);
-LispObj *Lisp_PQfname(LispMac*, LispBuiltin*);
-LispObj *Lisp_PQfnumber(LispMac*, LispBuiltin*);
-LispObj *Lisp_PQfsize(LispMac*, LispBuiltin*);
-LispObj *Lisp_PQftype(LispMac*, LispBuiltin*);
-LispObj *Lisp_PQgetlength(LispMac*, LispBuiltin*);
-LispObj *Lisp_PQgetvalue(LispMac*, LispBuiltin*);
-LispObj *Lisp_PQhost(LispMac*, LispBuiltin*);
-LispObj *Lisp_PQnfields(LispMac*, LispBuiltin*);
-LispObj *Lisp_PQnotifies(LispMac*, LispBuiltin*);
-LispObj *Lisp_PQntuples(LispMac*, LispBuiltin*);
-LispObj *Lisp_PQoptions(LispMac*, LispBuiltin*);
-LispObj *Lisp_PQpass(LispMac*, LispBuiltin*);
-LispObj *Lisp_PQport(LispMac*, LispBuiltin*);
-LispObj *Lisp_PQresultStatus(LispMac*, LispBuiltin*);
-LispObj *Lisp_PQsetdb(LispMac*, LispBuiltin*);
-LispObj *Lisp_PQsetdbLogin(LispMac*, LispBuiltin*);
-LispObj *Lisp_PQsocket(LispMac*, LispBuiltin*);
-LispObj *Lisp_PQstatus(LispMac*, LispBuiltin*);
-LispObj *Lisp_PQtty(LispMac*, LispBuiltin*);
-LispObj *Lisp_PQuser(LispMac*, LispBuiltin*);
+LispObj *Lisp_PQbackendPID(LispBuiltin*);
+LispObj *Lisp_PQclear(LispBuiltin*);
+LispObj *Lisp_PQconsumeInput(LispBuiltin*);
+LispObj *Lisp_PQdb(LispBuiltin*);
+LispObj *Lisp_PQerrorMessage(LispBuiltin*);
+LispObj *Lisp_PQexec(LispBuiltin*);
+LispObj *Lisp_PQfinish(LispBuiltin*);
+LispObj *Lisp_PQfname(LispBuiltin*);
+LispObj *Lisp_PQfnumber(LispBuiltin*);
+LispObj *Lisp_PQfsize(LispBuiltin*);
+LispObj *Lisp_PQftype(LispBuiltin*);
+LispObj *Lisp_PQgetlength(LispBuiltin*);
+LispObj *Lisp_PQgetvalue(LispBuiltin*);
+LispObj *Lisp_PQhost(LispBuiltin*);
+LispObj *Lisp_PQnfields(LispBuiltin*);
+LispObj *Lisp_PQnotifies(LispBuiltin*);
+LispObj *Lisp_PQntuples(LispBuiltin*);
+LispObj *Lisp_PQoptions(LispBuiltin*);
+LispObj *Lisp_PQpass(LispBuiltin*);
+LispObj *Lisp_PQport(LispBuiltin*);
+LispObj *Lisp_PQresultStatus(LispBuiltin*);
+LispObj *Lisp_PQsetdb(LispBuiltin*);
+LispObj *Lisp_PQsetdbLogin(LispBuiltin*);
+LispObj *Lisp_PQsocket(LispBuiltin*);
+LispObj *Lisp_PQstatus(LispBuiltin*);
+LispObj *Lisp_PQtty(LispBuiltin*);
+LispObj *Lisp_PQuser(LispBuiltin*);
 
 /*
  * Initialization
@@ -114,13 +114,13 @@ static int PGconn_t, PGresult_t;
  * Implementation
  */
 int
-psqlLoadModule(LispMac *mac)
+psqlLoadModule(void)
 {
     int i;
     char *fname = "PSQL-LOAD-MODULE";
 
-    PGconn_t = LispRegisterOpaqueType(mac, "PGconn*");
-    PGresult_t = LispRegisterOpaqueType(mac, "PGresult*");
+    PGconn_t = LispRegisterOpaqueType("PGconn*");
+    PGresult_t = LispRegisterOpaqueType("PGresult*");
 
     GCDisable();
     /* NOTE: Implemented just enough to make programming examples
@@ -128,56 +128,55 @@ psqlLoadModule(LispMac *mac)
      * Completing this is an exercise to the reader, or may be implemented
      * when/if required.
      */
-    LispExecute(mac,
-		"(DEFSTRUCT PG-NOTIFY RELNAME BE-PID)\n"
+    LispExecute("(DEFSTRUCT PG-NOTIFY RELNAME BE-PID)\n"
 		"(DEFSTRUCT PG-POINT X Y)\n"
 		"(DEFSTRUCT PG-BOX HIGH LOW)\n"
 		"(DEFSTRUCT PG-POLYGON SIZE NUM-POINTS BOUNDBOX POINTS)\n");
 
     /* enum ConnStatusType */
-    (void)LispSetVariable(mac, ATOM2("PG-CONNECTION-OK"),
+    (void)LispSetVariable(ATOM2("PG-CONNECTION-OK"),
 			  REAL(CONNECTION_OK), fname, 0);
-    (void)LispSetVariable(mac, ATOM2("PG-CONNECTION-BAD"),
+    (void)LispSetVariable(ATOM2("PG-CONNECTION-BAD"),
 			  REAL(CONNECTION_BAD), fname, 0);
-    (void)LispSetVariable(mac, ATOM2("PG-CONNECTION-STARTED"),
+    (void)LispSetVariable(ATOM2("PG-CONNECTION-STARTED"),
 			  REAL(CONNECTION_STARTED), fname, 0);
-    (void)LispSetVariable(mac, ATOM2("PG-CONNECTION-MADE"),
+    (void)LispSetVariable(ATOM2("PG-CONNECTION-MADE"),
 			  REAL(CONNECTION_MADE), fname, 0);
-    (void)LispSetVariable(mac, ATOM2("PG-CONNECTION-AWAITING-RESPONSE"),
+    (void)LispSetVariable(ATOM2("PG-CONNECTION-AWAITING-RESPONSE"),
 			  REAL(CONNECTION_AWAITING_RESPONSE), fname, 0);
-    (void)LispSetVariable(mac, ATOM2("PG-CONNECTION-AUTH-OK"),
+    (void)LispSetVariable(ATOM2("PG-CONNECTION-AUTH-OK"),
 			  REAL(CONNECTION_AUTH_OK), fname, 0);
-    (void)LispSetVariable(mac, ATOM2("PG-CONNECTION-SETENV"),
+    (void)LispSetVariable(ATOM2("PG-CONNECTION-SETENV"),
 			  REAL(CONNECTION_SETENV), fname, 0);
 
 
     /* enum ExecStatusType */
-    (void)LispSetVariable(mac, ATOM2("PGRES-EMPTY-QUERY"),
+    (void)LispSetVariable(ATOM2("PGRES-EMPTY-QUERY"),
 			  REAL(PGRES_EMPTY_QUERY), fname, 0);
-    (void)LispSetVariable(mac, ATOM2("PGRES-COMMAND-OK"),
+    (void)LispSetVariable(ATOM2("PGRES-COMMAND-OK"),
 			  REAL(PGRES_COMMAND_OK), fname, 0);
-    (void)LispSetVariable(mac, ATOM2("PGRES-TUPLES-OK"),
+    (void)LispSetVariable(ATOM2("PGRES-TUPLES-OK"),
 			  REAL(PGRES_TUPLES_OK), fname, 0);
-    (void)LispSetVariable(mac, ATOM2("PGRES-COPY-OUT"),
+    (void)LispSetVariable(ATOM2("PGRES-COPY-OUT"),
 			  REAL(PGRES_COPY_OUT), fname, 0);
-    (void)LispSetVariable(mac, ATOM2("PGRES-COPY-IN"),
+    (void)LispSetVariable(ATOM2("PGRES-COPY-IN"),
 			  REAL(PGRES_COPY_IN), fname, 0);
-    (void)LispSetVariable(mac, ATOM2("PGRES-BAD-RESPONSE"),
+    (void)LispSetVariable(ATOM2("PGRES-BAD-RESPONSE"),
 			  REAL(PGRES_BAD_RESPONSE), fname, 0);
-    (void)LispSetVariable(mac, ATOM2("PGRES-NONFATAL-ERROR"),
+    (void)LispSetVariable(ATOM2("PGRES-NONFATAL-ERROR"),
 			  REAL(PGRES_NONFATAL_ERROR), fname, 0);
-    (void)LispSetVariable(mac, ATOM2("PGRES-FATAL-ERROR"),
+    (void)LispSetVariable(ATOM2("PGRES-FATAL-ERROR"),
 			  REAL(PGRES_FATAL_ERROR), fname, 0);
     GCEnable();
 
     for (i = 0; i < sizeof(lispbuiltins) / sizeof(lispbuiltins[0]); i++)
-	LispAddBuiltinFunction(mac, &lispbuiltins[i]);
+	LispAddBuiltinFunction(&lispbuiltins[i]);
 
     return (1);
 }
 
 LispObj *
-Lisp_PQbackendPID(LispMac *mac, LispBuiltin *builtin)
+Lisp_PQbackendPID(LispBuiltin *builtin)
 /*
  pq-backend-pid connection
  */
@@ -190,7 +189,7 @@ Lisp_PQbackendPID(LispMac *mac, LispBuiltin *builtin)
     connection = ARGUMENT(0);
 
     if (!CHECKO(connection, PGconn_t))
-	LispDestroy(mac, "%s: cannot convert %s to PGconn*",
+	LispDestroy("%s: cannot convert %s to PGconn*",
 		    STRFUN(builtin), STROBJ(connection));
     conn = (PGconn*)(connection->data.opaque.data);
 
@@ -200,7 +199,7 @@ Lisp_PQbackendPID(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_PQclear(LispMac *mac, LispBuiltin *builtin)
+Lisp_PQclear(LispBuiltin *builtin)
 /*
  pq-clear result
  */
@@ -212,7 +211,7 @@ Lisp_PQclear(LispMac *mac, LispBuiltin *builtin)
     result = ARGUMENT(0);
 
     if (!CHECKO(result, PGresult_t))
-	LispDestroy(mac, "%s: cannot convert %s to PGresult*",
+	LispDestroy("%s: cannot convert %s to PGresult*",
 		    STRFUN(builtin), STROBJ(result));
     res = (PGresult*)(result->data.opaque.data);
 
@@ -222,7 +221,7 @@ Lisp_PQclear(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_PQconsumeInput(LispMac *mac, LispBuiltin *builtin)
+Lisp_PQconsumeInput(LispBuiltin *builtin)
 /*
  pq-consume-input connection
  */
@@ -235,7 +234,7 @@ Lisp_PQconsumeInput(LispMac *mac, LispBuiltin *builtin)
     connection = ARGUMENT(0);
 
     if (!CHECKO(connection, PGconn_t))
-	LispDestroy(mac, "%s: cannot convert %s to PGconn*",
+	LispDestroy("%s: cannot convert %s to PGconn*",
 		    STRFUN(builtin), STROBJ(connection));
     conn = (PGconn*)(connection->data.opaque.data);
 
@@ -245,7 +244,7 @@ Lisp_PQconsumeInput(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_PQdb(LispMac *mac, LispBuiltin *builtin)
+Lisp_PQdb(LispBuiltin *builtin)
 /*
  pq-db connection
  */
@@ -258,7 +257,7 @@ Lisp_PQdb(LispMac *mac, LispBuiltin *builtin)
     connection = ARGUMENT(0);
 
     if (!CHECKO(connection, PGconn_t))
-	LispDestroy(mac, "%s: cannot convert %s to PGconn*",
+	LispDestroy("%s: cannot convert %s to PGconn*",
 		    STRFUN(builtin), STROBJ(connection));
     conn = (PGconn*)(connection->data.opaque.data);
 
@@ -268,7 +267,7 @@ Lisp_PQdb(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_PQerrorMessage(LispMac *mac, LispBuiltin *builtin)
+Lisp_PQerrorMessage(LispBuiltin *builtin)
 {
     char *string;
     PGconn *conn;
@@ -278,7 +277,7 @@ Lisp_PQerrorMessage(LispMac *mac, LispBuiltin *builtin)
     connection = ARGUMENT(0);
 
     if (!CHECKO(connection, PGconn_t))
-	LispDestroy(mac, "%s: cannot convert %s to PGconn*",
+	LispDestroy("%s: cannot convert %s to PGconn*",
 		    STRFUN(builtin), STROBJ(connection));
     conn = (PGconn*)(connection->data.opaque.data);
 
@@ -288,7 +287,7 @@ Lisp_PQerrorMessage(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_PQexec(LispMac *mac, LispBuiltin *builtin)
+Lisp_PQexec(LispBuiltin *builtin)
 /*
  pq-exec connection query
  */
@@ -302,7 +301,7 @@ Lisp_PQexec(LispMac *mac, LispBuiltin *builtin)
     connection = ARGUMENT(0);
 
     if (!CHECKO(connection, PGconn_t))
-	LispDestroy(mac, "%s: cannot convert %s to PGconn*",
+	LispDestroy("%s: cannot convert %s to PGconn*",
 		    STRFUN(builtin), STROBJ(connection));
     conn = (PGconn*)(connection->data.opaque.data);
 
@@ -313,7 +312,7 @@ Lisp_PQexec(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_PQfinish(LispMac *mac, LispBuiltin *builtin)
+Lisp_PQfinish(LispBuiltin *builtin)
 /*
  pq-finish connection
  */
@@ -325,7 +324,7 @@ Lisp_PQfinish(LispMac *mac, LispBuiltin *builtin)
     connection = ARGUMENT(0);
 
     if (!CHECKO(connection, PGconn_t))
-	LispDestroy(mac, "%s: cannot convert %s to PGconn*",
+	LispDestroy("%s: cannot convert %s to PGconn*",
 		    STRFUN(builtin), STROBJ(connection));
     conn = (PGconn*)(connection->data.opaque.data);
 
@@ -335,7 +334,7 @@ Lisp_PQfinish(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_PQfname(LispMac *mac, LispBuiltin *builtin)
+Lisp_PQfname(LispBuiltin *builtin)
 /*
  pq-fname result field-number
  */
@@ -350,12 +349,12 @@ Lisp_PQfname(LispMac *mac, LispBuiltin *builtin)
     result = ARGUMENT(0);
 
     if (!CHECKO(result, PGresult_t))
-	LispDestroy(mac, "%s: cannot convert %s to PGresult*",
+	LispDestroy("%s: cannot convert %s to PGresult*",
 		    STRFUN(builtin), STROBJ(result));
     res = (PGresult*)(result->data.opaque.data);
 
     ERROR_CHECK_INDEX(field_number);
-    field = field_number->data.integer;
+    field = GETINT(field_number);
 
     string = PQfname(res, field);
 
@@ -363,7 +362,7 @@ Lisp_PQfname(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_PQfnumber(LispMac *mac, LispBuiltin *builtin)
+Lisp_PQfnumber(LispBuiltin *builtin)
 /*
  pq-fnumber result field-name
  */
@@ -378,7 +377,7 @@ Lisp_PQfnumber(LispMac *mac, LispBuiltin *builtin)
     result = ARGUMENT(0);
 
     if (!CHECKO(result, PGresult_t))
-	LispDestroy(mac, "%s: cannot convert %s to PGresult*",
+	LispDestroy("%s: cannot convert %s to PGresult*",
 		    STRFUN(builtin), STROBJ(result));
     res = (PGresult*)(result->data.opaque.data);
 
@@ -389,7 +388,7 @@ Lisp_PQfnumber(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_PQfsize(LispMac *mac, LispBuiltin *builtin)
+Lisp_PQfsize(LispBuiltin *builtin)
 /*
  pq-fsize result field-number
  */
@@ -403,12 +402,12 @@ Lisp_PQfsize(LispMac *mac, LispBuiltin *builtin)
     result = ARGUMENT(0);
 
     if (!CHECKO(result, PGresult_t))
-	LispDestroy(mac, "%s: cannot convert %s to PGresult*",
+	LispDestroy("%s: cannot convert %s to PGresult*",
 		    STRFUN(builtin), STROBJ(result));
     res = (PGresult*)(result->data.opaque.data);
 
     ERROR_CHECK_INDEX(field_number);
-    field = field_number->data.integer;
+    field = GETINT(field_number);
 
     size = PQfsize(res, field);
 
@@ -416,7 +415,7 @@ Lisp_PQfsize(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_PQftype(LispMac *mac, LispBuiltin *builtin)
+Lisp_PQftype(LispBuiltin *builtin)
 {
     Oid oid;
     int field;
@@ -428,12 +427,12 @@ Lisp_PQftype(LispMac *mac, LispBuiltin *builtin)
     result = ARGUMENT(0);
 
     if (!CHECKO(result, PGresult_t))
-	LispDestroy(mac, "%s: cannot convert %s to PGresult*",
+	LispDestroy("%s: cannot convert %s to PGresult*",
 		    STRFUN(builtin), STROBJ(result));
     res = (PGresult*)(result->data.opaque.data);
 
     ERROR_CHECK_INDEX(field_number);
-    field = field_number->data.integer;
+    field = GETINT(field_number);
 
     oid = PQftype(res, field);
 
@@ -441,7 +440,7 @@ Lisp_PQftype(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_PQgetlength(LispMac *mac, LispBuiltin *builtin)
+Lisp_PQgetlength(LispBuiltin *builtin)
 /*
  pq-getlength result tupple field-number
  */
@@ -456,15 +455,15 @@ Lisp_PQgetlength(LispMac *mac, LispBuiltin *builtin)
     result = ARGUMENT(0);
 
     if (!CHECKO(result, PGresult_t))
-	LispDestroy(mac, "%s: cannot convert %s to PGresult*",
+	LispDestroy("%s: cannot convert %s to PGresult*",
 		    STRFUN(builtin), STROBJ(result));
     res = (PGresult*)(result->data.opaque.data);
 
     ERROR_CHECK_INDEX(otupple);
-    tuple = otupple->data.integer;
+    tuple = GETINT(otupple);
 
     ERROR_CHECK_INDEX(field_number);
-    field = field_number->data.integer;
+    field = GETINT(field_number);
 
     length = PQgetlength(res, tuple, field);
 
@@ -472,7 +471,7 @@ Lisp_PQgetlength(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_PQgetvalue(LispMac *mac, LispBuiltin *builtin)
+Lisp_PQgetvalue(LispBuiltin *builtin)
 /*
  pq-getvalue result tuple field &optional type-specifier
  */
@@ -490,15 +489,15 @@ Lisp_PQgetvalue(LispMac *mac, LispBuiltin *builtin)
     result = ARGUMENT(0);
 
     if (!CHECKO(result, PGresult_t))
-	LispDestroy(mac, "%s: cannot convert %s to PGresult*",
+	LispDestroy("%s: cannot convert %s to PGresult*",
 		    STRFUN(builtin), STROBJ(result));
     res = (PGresult*)(result->data.opaque.data);
 
     ERROR_CHECK_INDEX(otupple);
-    tuple = otupple->data.integer;
+    tuple = GETINT(otupple);
 
     ERROR_CHECK_INDEX(field_number);
-    field = field_number->data.integer;
+    field = GETINT(field_number);
 
     string = PQgetvalue(res, tuple, field);
 
@@ -531,7 +530,7 @@ Lisp_PQgetvalue(LispMac *mac, LispBuiltin *builtin)
 	else if (strcmp(typestring, "PG-POLYGON") == 0)
 	    goto polygon_type;
 	else if (strcmp(typestring, "STRING") != 0)
-	    LispDestroy(mac, "%s: unknown type %s",
+	    LispDestroy("%s: unknown type %s",
 			STRFUN(builtin), typestring);
     }
 
@@ -597,7 +596,7 @@ polygon_type:
 }
 
 LispObj *
-Lisp_PQhost(LispMac *mac, LispBuiltin *builtin)
+Lisp_PQhost(LispBuiltin *builtin)
 /*
  pq-host connection
  */
@@ -610,7 +609,7 @@ Lisp_PQhost(LispMac *mac, LispBuiltin *builtin)
     connection = ARGUMENT(0);
 
     if (!CHECKO(connection, PGconn_t))
-	LispDestroy(mac, "%s: cannot convert %s to PGconn*",
+	LispDestroy("%s: cannot convert %s to PGconn*",
 		    STRFUN(builtin), STROBJ(connection));
     conn = (PGconn*)(connection->data.opaque.data);
 
@@ -620,7 +619,7 @@ Lisp_PQhost(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_PQnfields(LispMac *mac, LispBuiltin *builtin)
+Lisp_PQnfields(LispBuiltin *builtin)
 /*
  pq-nfields result
  */
@@ -633,7 +632,7 @@ Lisp_PQnfields(LispMac *mac, LispBuiltin *builtin)
     result = ARGUMENT(0);
 
     if (!CHECKO(result, PGresult_t))
-	LispDestroy(mac, "%s: cannot convert %s to PGresult*",
+	LispDestroy("%s: cannot convert %s to PGresult*",
 		    STRFUN(builtin), STROBJ(result));
     res = (PGresult*)(result->data.opaque.data);
 
@@ -643,7 +642,7 @@ Lisp_PQnfields(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_PQnotifies(LispMac *mac, LispBuiltin *builtin)
+Lisp_PQnotifies(LispBuiltin *builtin)
 /*
  pq-notifies connection
  */
@@ -657,7 +656,7 @@ Lisp_PQnotifies(LispMac *mac, LispBuiltin *builtin)
     connection = ARGUMENT(0);
 
     if (!CHECKO(connection, PGconn_t))
-	LispDestroy(mac, "%s: cannot convert %s to PGconn*",
+	LispDestroy("%s: cannot convert %s to PGconn*",
 		    STRFUN(builtin), STROBJ(connection));
     conn = (PGconn*)(connection->data.opaque.data);
 
@@ -681,7 +680,7 @@ Lisp_PQnotifies(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_PQntuples(LispMac *mac, LispBuiltin *builtin)
+Lisp_PQntuples(LispBuiltin *builtin)
 /*
  pq-ntuples result
  */
@@ -694,7 +693,7 @@ Lisp_PQntuples(LispMac *mac, LispBuiltin *builtin)
     result = ARGUMENT(0);
 
     if (!CHECKO(result, PGresult_t))
-	LispDestroy(mac, "%s: cannot convert %s to PGresult*",
+	LispDestroy("%s: cannot convert %s to PGresult*",
 		    STRFUN(builtin), STROBJ(result));
     res = (PGresult*)(result->data.opaque.data);
 
@@ -704,7 +703,7 @@ Lisp_PQntuples(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_PQoptions(LispMac *mac, LispBuiltin *builtin)
+Lisp_PQoptions(LispBuiltin *builtin)
 /*
  pq-options connection
  */
@@ -717,7 +716,7 @@ Lisp_PQoptions(LispMac *mac, LispBuiltin *builtin)
     connection = ARGUMENT(0);
 
     if (!CHECKO(connection, PGconn_t))
-	LispDestroy(mac, "%s: cannot convert %s to PGconn*",
+	LispDestroy("%s: cannot convert %s to PGconn*",
 		    STRFUN(builtin), STROBJ(connection));
     conn = (PGconn*)(connection->data.opaque.data);
 
@@ -727,7 +726,7 @@ Lisp_PQoptions(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_PQpass(LispMac *mac, LispBuiltin *builtin)
+Lisp_PQpass(LispBuiltin *builtin)
 /*
  pq-pass connection
  */
@@ -740,7 +739,7 @@ Lisp_PQpass(LispMac *mac, LispBuiltin *builtin)
     connection = ARGUMENT(0);
 
     if (!CHECKO(connection, PGconn_t))
-	LispDestroy(mac, "%s: cannot convert %s to PGconn*",
+	LispDestroy("%s: cannot convert %s to PGconn*",
 		    STRFUN(builtin), STROBJ(connection));
     conn = (PGconn*)(connection->data.opaque.data);
 
@@ -750,7 +749,7 @@ Lisp_PQpass(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_PQport(LispMac *mac, LispBuiltin *builtin)
+Lisp_PQport(LispBuiltin *builtin)
 /*
  pq-port connection
  */
@@ -763,7 +762,7 @@ Lisp_PQport(LispMac *mac, LispBuiltin *builtin)
     connection = ARGUMENT(0);
 
     if (!CHECKO(connection, PGconn_t))
-	LispDestroy(mac, "%s: cannot convert %s to PGconn*",
+	LispDestroy("%s: cannot convert %s to PGconn*",
 		    STRFUN(builtin), STROBJ(connection));
     conn = (PGconn*)(connection->data.opaque.data);
 
@@ -773,7 +772,7 @@ Lisp_PQport(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_PQresultStatus(LispMac *mac, LispBuiltin *builtin)
+Lisp_PQresultStatus(LispBuiltin *builtin)
 /*
  pq-result-status result
  */
@@ -786,7 +785,7 @@ Lisp_PQresultStatus(LispMac *mac, LispBuiltin *builtin)
     result = ARGUMENT(0);
 
     if (!CHECKO(result, PGresult_t))
-	LispDestroy(mac, "%s: cannot convert %s to PGresult*",
+	LispDestroy("%s: cannot convert %s to PGresult*",
 		    STRFUN(builtin), STROBJ(result));
     res = (PGresult*)(result->data.opaque.data);
 
@@ -796,7 +795,7 @@ Lisp_PQresultStatus(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-LispPQsetdb(LispMac *mac, LispBuiltin *builtin, int loginp)
+LispPQsetdb(LispBuiltin *builtin, int loginp)
 /*
  pq-setdb host port options tty dbname
  pq-setdb-login host port options tty dbname login password
@@ -874,25 +873,25 @@ LispPQsetdb(LispMac *mac, LispBuiltin *builtin, int loginp)
 }
 
 LispObj *
-Lisp_PQsetdb(LispMac *mac, LispBuiltin *builtin)
+Lisp_PQsetdb(LispBuiltin *builtin)
 /*
  pq-setdb host port options tty dbname
  */
 {
-    return (LispPQsetdb(mac, builtin, 0));
+    return (LispPQsetdb(builtin, 0));
 }
 
 LispObj *
-Lisp_PQsetdbLogin(LispMac *mac, LispBuiltin *builtin)
+Lisp_PQsetdbLogin(LispBuiltin *builtin)
 /*
  pq-setdb-login host port options tty dbname login password
  */
 {
-    return (LispPQsetdb(mac, builtin, 1));
+    return (LispPQsetdb(builtin, 1));
 }
 
 LispObj *
-Lisp_PQsocket(LispMac *mac, LispBuiltin *builtin)
+Lisp_PQsocket(LispBuiltin *builtin)
 /*
  pq-socket connection
  */
@@ -905,7 +904,7 @@ Lisp_PQsocket(LispMac *mac, LispBuiltin *builtin)
     connection = ARGUMENT(0);
 
     if (!CHECKO(connection, PGconn_t))
-	LispDestroy(mac, "%s: cannot convert %s to PGconn*",
+	LispDestroy("%s: cannot convert %s to PGconn*",
 		    STRFUN(builtin), STROBJ(connection));
     conn = (PGconn*)(connection->data.opaque.data);
 
@@ -915,7 +914,7 @@ Lisp_PQsocket(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_PQstatus(LispMac *mac, LispBuiltin *builtin)
+Lisp_PQstatus(LispBuiltin *builtin)
 /*
  pq-status connection
  */
@@ -928,7 +927,7 @@ Lisp_PQstatus(LispMac *mac, LispBuiltin *builtin)
     connection = ARGUMENT(0);
 
     if (!CHECKO(connection, PGconn_t))
-	LispDestroy(mac, "%s: cannot convert %s to PGconn*",
+	LispDestroy("%s: cannot convert %s to PGconn*",
 		    STRFUN(builtin), STROBJ(connection));
     conn = (PGconn*)(connection->data.opaque.data);
 
@@ -938,7 +937,7 @@ Lisp_PQstatus(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_PQtty(LispMac *mac, LispBuiltin *builtin)
+Lisp_PQtty(LispBuiltin *builtin)
 /*
  pq-tty connection
  */
@@ -951,7 +950,7 @@ Lisp_PQtty(LispMac *mac, LispBuiltin *builtin)
     connection = ARGUMENT(0);
 
     if (!CHECKO(connection, PGconn_t))
-	LispDestroy(mac, "%s: cannot convert %s to PGconn*",
+	LispDestroy("%s: cannot convert %s to PGconn*",
 		    STRFUN(builtin), STROBJ(connection));
     conn = (PGconn*)(connection->data.opaque.data);
 
@@ -961,7 +960,7 @@ Lisp_PQtty(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
-Lisp_PQuser(LispMac *mac, LispBuiltin *builtin)
+Lisp_PQuser(LispBuiltin *builtin)
 /*
  pq-user connection
  */
@@ -974,7 +973,7 @@ Lisp_PQuser(LispMac *mac, LispBuiltin *builtin)
     connection = ARGUMENT(0);
 
     if (!CHECKO(connection, PGconn_t))
-	LispDestroy(mac, "%s: cannot convert %s to PGconn*",
+	LispDestroy("%s: cannot convert %s to PGconn*",
 		    STRFUN(builtin), STROBJ(connection));
     conn = (PGconn*)(connection->data.opaque.data);
 
