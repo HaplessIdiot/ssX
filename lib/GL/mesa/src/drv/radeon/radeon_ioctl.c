@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_ioctl.c,v 1.5 2002/02/22 21:45:00 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -181,6 +181,7 @@ static void print_values( const char *name, const void *vals, int sz )
       fprintf(stderr, "%s %d: 0x%x\n", name, i, ivals[i]);
 }
 
+/*
 static void print_state( drmRadeonState *state )
 {
    int dirty = state->dirty;
@@ -220,7 +221,7 @@ static void print_state( drmRadeonState *state )
    if ( dirty & RADEON_UPLOAD_TEX1 ) 
       print_values( "TEX1", &state->texture[1], sizeof(state->texture[1]) );
 }
-
+*/
 
 static void emit_prim( radeonContextPtr rmesa )
 {

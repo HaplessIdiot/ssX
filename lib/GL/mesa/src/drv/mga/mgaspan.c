@@ -24,7 +24,7 @@
  * Authors:
  *    Keith Whitwell <keithw@valinux.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgaspan.c,v 1.8 2001/04/10 16:07:51 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgaspan.c,v 1.9 2002/02/22 21:44:55 dawes Exp $ */
 
 #include "mtypes.h"
 #include "mgadd.h"
@@ -32,6 +32,8 @@
 #include "mgaspan.h"
 #include "mgaioctl.h"
 #include "swrast/swrast.h"
+
+#include "xf86drmMga.h"
 
 #define DBG 0
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_vb.c,v 1.11 2001/01/08 01:07:24 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_vb.c,v 1.12 2002/02/22 21:44:58 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -107,7 +107,7 @@ static struct {
 #define GET_VIEWPORT_MAT() rmesa->hw_viewport
 #define GET_TEXSOURCE(n)  rmesa->tmu_source[n]
 #define GET_VERTEX_FORMAT() rmesa->vertex_format
-#define GET_VERTEX_STORE() rmesa->verts
+#define GET_VERTEX_STORE() (GLubyte *)(rmesa->verts)
 #define GET_VERTEX_STRIDE_SHIFT() rmesa->vertex_stride_shift
 #define INVALIDATE_STORED_VERTICES()
 #define GET_UBYTE_COLOR_STORE() &rmesa->UbyteColor

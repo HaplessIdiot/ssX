@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/ffb/Imakefile.inc,v 1.2 2001/05/02 15:06:03 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/ffb/Imakefile.inc,v 1.3 2002/02/22 21:32:58 dawes Exp $
 
 #ifndef MesaDrvSrcDir
 #define MesaDrvSrcDir $(GLXLIBSRC)/mesa/src/drv
@@ -9,7 +9,7 @@ MESADRVSRCDIR = MesaDrvSrcDir
 #ifndef MesaDrvFfbBuildDir
 #define MesaDrvFfbBuildDir /**/
 #endif
-MESADRVRADEONBUILDDIR = MesaDrvFfbBuildDir
+MESADRVFFBBUILDDIR = MesaDrvFfbBuildDir
 
 #if Malloc0ReturnsNull
 ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
@@ -34,87 +34,87 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src \
 		-I$(MESADRVSRCDIR)/ffb
    X_INCLUDES = -I$(XINCLUDESRC) -I$(EXTINCSRC)
 
-   FFBSRCS    = $(MESADRVRADEONBUILDDIR)ffb_bitmap.c \
-		$(MESADRVRADEONBUILDDIR)ffb_clear.c \
-		$(MESADRVRADEONBUILDDIR)ffb_dd.c \
-		$(MESADRVRADEONBUILDDIR)ffb_depth.c \
-                $(MESADRVRADEONBUILDDIR)ffb_fog.c \
-		$(MESADRVRADEONBUILDDIR)ffb_lines.c \
-		$(MESADRVRADEONBUILDDIR)ffb_points.c \
-		$(MESADRVRADEONBUILDDIR)ffb_span.c \
-		$(MESADRVRADEONBUILDDIR)ffb_state.c \
-		$(MESADRVRADEONBUILDDIR)ffb_stencil.c \
-		$(MESADRVRADEONBUILDDIR)ffb_tex.c \
-		$(MESADRVRADEONBUILDDIR)ffb_tris.c \
-		$(MESADRVRADEONBUILDDIR)ffb_vb.c \
-		$(MESADRVRADEONBUILDDIR)ffb_xmesa.c
+   FFBSRCS    = $(MESADRVFFBBUILDDIR)ffb_bitmap.c \
+		$(MESADRVFFBBUILDDIR)ffb_clear.c \
+		$(MESADRVFFBBUILDDIR)ffb_dd.c \
+		$(MESADRVFFBBUILDDIR)ffb_depth.c \
+		/* $(MESADRVFFBBUILDDIR)ffb_fog.c */ \
+		$(MESADRVFFBBUILDDIR)ffb_lines.c \
+		$(MESADRVFFBBUILDDIR)ffb_points.c \
+		$(MESADRVFFBBUILDDIR)ffb_span.c \
+		$(MESADRVFFBBUILDDIR)ffb_state.c \
+		$(MESADRVFFBBUILDDIR)ffb_stencil.c \
+		$(MESADRVFFBBUILDDIR)ffb_tex.c \
+		$(MESADRVFFBBUILDDIR)ffb_tris.c \
+		$(MESADRVFFBBUILDDIR)ffb_vb.c \
+		$(MESADRVFFBBUILDDIR)ffb_xmesa.c
 
-   FFBOBJS    = $(MESADRVRADEONBUILDDIR)ffb_bitmap.o \
-		$(MESADRVRADEONBUILDDIR)ffb_clear.o \
-		$(MESADRVRADEONBUILDDIR)ffb_dd.o \
-		$(MESADRVRADEONBUILDDIR)ffb_depth.o \
-                $(MESADRVRADEONBUILDDIR)ffb_fog.o \
-		$(MESADRVRADEONBUILDDIR)ffb_lines.o \
-		$(MESADRVRADEONBUILDDIR)ffb_points.o \
-		$(MESADRVRADEONBUILDDIR)ffb_span.o \
-		$(MESADRVRADEONBUILDDIR)ffb_state.o \
-		$(MESADRVRADEONBUILDDIR)ffb_stencil.o \
-		$(MESADRVRADEONBUILDDIR)ffb_tex.o \
-		$(MESADRVRADEONBUILDDIR)ffb_tris.o \
-		$(MESADRVRADEONBUILDDIR)ffb_vb.o \
-		$(MESADRVRADEONBUILDDIR)ffb_xmesa.o
+   FFBOBJS    = $(MESADRVFFBBUILDDIR)ffb_bitmap.o \
+		$(MESADRVFFBBUILDDIR)ffb_clear.o \
+		$(MESADRVFFBBUILDDIR)ffb_dd.o \
+		$(MESADRVFFBBUILDDIR)ffb_depth.o \
+		/* $(MESADRVFFBBUILDDIR)ffb_fog.o */ \
+		$(MESADRVFFBBUILDDIR)ffb_lines.o \
+		$(MESADRVFFBBUILDDIR)ffb_points.o \
+		$(MESADRVFFBBUILDDIR)ffb_span.o \
+		$(MESADRVFFBBUILDDIR)ffb_state.o \
+		$(MESADRVFFBBUILDDIR)ffb_stencil.o \
+		$(MESADRVFFBBUILDDIR)ffb_tex.o \
+		$(MESADRVFFBBUILDDIR)ffb_tris.o \
+		$(MESADRVFFBBUILDDIR)ffb_vb.o \
+		$(MESADRVFFBBUILDDIR)ffb_xmesa.o
 
-   FFBUOBJS   = $(MESADRVRADEONBUILDDIR)unshared/ffb_bitmap.o \
-		$(MESADRVRADEONBUILDDIR)unshared/ffb_clear.o \
-		$(MESADRVRADEONBUILDDIR)unshared/ffb_dd.o \
-		$(MESADRVRADEONBUILDDIR)unshared/ffb_depth.o \
-                $(MESADRVRADEONBUILDDIR)unshared/ffb_fog.o \
-		$(MESADRVRADEONBUILDDIR)unshared/ffb_lines.o \
-		$(MESADRVRADEONBUILDDIR)unshared/ffb_points.o \
-		$(MESADRVRADEONBUILDDIR)unshared/ffb_span.o \
-		$(MESADRVRADEONBUILDDIR)unshared/ffb_state.o \
-		$(MESADRVRADEONBUILDDIR)unshared/ffb_stencil.o \
-		$(MESADRVRADEONBUILDDIR)unshared/ffb_tex.o \
-		$(MESADRVRADEONBUILDDIR)unshared/ffb_tris.o \
-		$(MESADRVRADEONBUILDDIR)unshared/ffb_vb.o \
-		$(MESADRVRADEONBUILDDIR)unshared/ffb_xmesa.o
+   FFBUOBJS   = $(MESADRVFFBBUILDDIR)unshared/ffb_bitmap.o \
+		$(MESADRVFFBBUILDDIR)unshared/ffb_clear.o \
+		$(MESADRVFFBBUILDDIR)unshared/ffb_dd.o \
+		$(MESADRVFFBBUILDDIR)unshared/ffb_depth.o \
+		/* $(MESADRVFFBBUILDDIR)unshared/ffb_fog.o */ \
+		$(MESADRVFFBBUILDDIR)unshared/ffb_lines.o \
+		$(MESADRVFFBBUILDDIR)unshared/ffb_points.o \
+		$(MESADRVFFBBUILDDIR)unshared/ffb_span.o \
+		$(MESADRVFFBBUILDDIR)unshared/ffb_state.o \
+		$(MESADRVFFBBUILDDIR)unshared/ffb_stencil.o \
+		$(MESADRVFFBBUILDDIR)unshared/ffb_tex.o \
+		$(MESADRVFFBBUILDDIR)unshared/ffb_tris.o \
+		$(MESADRVFFBBUILDDIR)unshared/ffb_vb.o \
+		$(MESADRVFFBBUILDDIR)unshared/ffb_xmesa.o
 
-   FFBDOBJS   = $(MESADRVRADEONBUILDDIR)debugger/ffb_bitmap.o \
-		$(MESADRVRADEONBUILDDIR)debugger/ffb_clear.o \
-		$(MESADRVRADEONBUILDDIR)debugger/ffb_dd.o \
-		$(MESADRVRADEONBUILDDIR)debugger/ffb_depth.o \
-                $(MESADRVRADEONBUILDDIR)debugger/ffb_fog.o \
-		$(MESADRVRADEONBUILDDIR)debugger/ffb_lines.o \
-		$(MESADRVRADEONBUILDDIR)debugger/ffb_points.o \
-		$(MESADRVRADEONBUILDDIR)debugger/ffb_span.o \
-		$(MESADRVRADEONBUILDDIR)debugger/ffb_state.o \
-		$(MESADRVRADEONBUILDDIR)debugger/ffb_stencil.o \
-		$(MESADRVRADEONBUILDDIR)debugger/ffb_tex.o \
-		$(MESADRVRADEONBUILDDIR)debugger/ffb_tris.o \
-		$(MESADRVRADEONBUILDDIR)debugger/ffb_vb.o \
-		$(MESADRVRADEONBUILDDIR)debugger/ffb_xmesa.o
+   FFBDOBJS   = $(MESADRVFFBBUILDDIR)debugger/ffb_bitmap.o \
+		$(MESADRVFFBBUILDDIR)debugger/ffb_clear.o \
+		$(MESADRVFFBBUILDDIR)debugger/ffb_dd.o \
+		$(MESADRVFFBBUILDDIR)debugger/ffb_depth.o \
+		/* $(MESADRVFFBBUILDDIR)debugger/ffb_fog.o */ \
+		$(MESADRVFFBBUILDDIR)debugger/ffb_lines.o \
+		$(MESADRVFFBBUILDDIR)debugger/ffb_points.o \
+		$(MESADRVFFBBUILDDIR)debugger/ffb_span.o \
+		$(MESADRVFFBBUILDDIR)debugger/ffb_state.o \
+		$(MESADRVFFBBUILDDIR)debugger/ffb_stencil.o \
+		$(MESADRVFFBBUILDDIR)debugger/ffb_tex.o \
+		$(MESADRVFFBBUILDDIR)debugger/ffb_tris.o \
+		$(MESADRVFFBBUILDDIR)debugger/ffb_vb.o \
+		$(MESADRVFFBBUILDDIR)debugger/ffb_xmesa.o
 
-   FFBPOBJS   = $(MESADRVRADEONBUILDDIR)profiled/ffb_bitmap.o \
-		$(MESADRVRADEONBUILDDIR)profiled/ffb_clear.o \
-		$(MESADRVRADEONBUILDDIR)profiled/ffb_dd.o \
-		$(MESADRVRADEONBUILDDIR)profiled/ffb_depth.o \
-                $(MESADRVRADEONBUILDDIR)profiled/ffb_fog.o \
-		$(MESADRVRADEONBUILDDIR)profiled/ffb_lines.o \
-		$(MESADRVRADEONBUILDDIR)profiled/ffb_points.o \
-		$(MESADRVRADEONBUILDDIR)profiled/ffb_span.o \
-		$(MESADRVRADEONBUILDDIR)profiled/ffb_state.o \
-		$(MESADRVRADEONBUILDDIR)profiled/ffb_stencil.o \
-		$(MESADRVRADEONBUILDDIR)profiled/ffb_tex.o \
-		$(MESADRVRADEONBUILDDIR)profiled/ffb_tris.o \
-		$(MESADRVRADEONBUILDDIR)profiled/ffb_vb.o \
-		$(MESADRVRADEONBUILDDIR)profiled/ffb_xmesa.o
+   FFBPOBJS   = $(MESADRVFFBBUILDDIR)profiled/ffb_bitmap.o \
+		$(MESADRVFFBBUILDDIR)profiled/ffb_clear.o \
+		$(MESADRVFFBBUILDDIR)profiled/ffb_dd.o \
+		$(MESADRVFFBBUILDDIR)profiled/ffb_depth.o \
+		/* $(MESADRVFFBBUILDDIR)profiled/ffb_fog.o */ \
+		$(MESADRVFFBBUILDDIR)profiled/ffb_lines.o \
+		$(MESADRVFFBBUILDDIR)profiled/ffb_points.o \
+		$(MESADRVFFBBUILDDIR)profiled/ffb_span.o \
+		$(MESADRVFFBBUILDDIR)profiled/ffb_state.o \
+		$(MESADRVFFBBUILDDIR)profiled/ffb_stencil.o \
+		$(MESADRVFFBBUILDDIR)profiled/ffb_tex.o \
+		$(MESADRVFFBBUILDDIR)profiled/ffb_tris.o \
+		$(MESADRVFFBBUILDDIR)profiled/ffb_vb.o \
+		$(MESADRVFFBBUILDDIR)profiled/ffb_xmesa.o
 
 #ifdef NeedToLinkMesaSrc
 LinkSourceFile(ffb_bitmap.c, $(MESADRVSRCDIR)/ffb)
 LinkSourceFile(ffb_clear.c, $(MESADRVSRCDIR)/ffb)
 LinkSourceFile(ffb_dd.c, $(MESADRVSRCDIR)/ffb)
 LinkSourceFile(ffb_depth.c, $(MESADRVSRCDIR)/ffb)
-LinkSourceFile(ffb_fog.c, $(MESADRVSRCDIR)/ffb)
+/* LinkSourceFile(ffb_fog.c, $(MESADRVSRCDIR)/ffb) */
 LinkSourceFile(ffb_lines.c, $(MESADRVSRCDIR)/ffb)
 LinkSourceFile(ffb_points.c, $(MESADRVSRCDIR)/ffb)
 LinkSourceFile(ffb_span.c, $(MESADRVSRCDIR)/ffb)

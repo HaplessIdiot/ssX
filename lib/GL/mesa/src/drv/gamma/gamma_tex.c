@@ -1,5 +1,8 @@
+/* $XFree86$ */
+
 #include <stdlib.h>
 #include <stdio.h>
+#include <X11/Xarch.h>
 
 #include "glheader.h"
 #include "mtypes.h"
@@ -200,10 +203,12 @@ static void gammaTexEnv( GLcontext *ctx, GLenum target,
       break;
 
    case GL_TEXTURE_LOD_BIAS_EXT:
+#if 0 /* !?!?! */
       {
          struct gl_texture_object *tObj = ctx->Texture.Unit[unit]._Current;
          gammaTextureObjectPtr t = (gammaTextureObjectPtr) tObj->DriverData;
       }
+#endif
       break;
 
    default:
@@ -365,7 +370,6 @@ static GLboolean gammaIsTextureResident( GLcontext *ctx,
 
 static void gammaInitTextureObjects( GLcontext *ctx )
 {
-   gammaContextPtr gmesa = GAMMA_CONTEXT(ctx);
    struct gl_texture_object *texObj;
    GLuint tmp = ctx->Texture.CurrentUnit;
 

@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Copyright 2001 by Alan Hourihane.
  *
@@ -83,7 +84,7 @@ static struct {
 #define GET_VIEWPORT_MAT() 0
 #define GET_TEXSOURCE(n)  n
 #define GET_VERTEX_FORMAT() 0
-#define GET_VERTEX_STORE() GAMMA_CONTEXT(ctx)->verts
+#define GET_VERTEX_STORE() (GLubyte *)(GAMMA_CONTEXT(ctx)->verts)
 #define GET_VERTEX_STRIDE_SHIFT() GAMMA_CONTEXT(ctx)->vertex_stride_shift
 #define INVALIDATE_STORED_VERTICES()
 #define GET_UBYTE_COLOR_STORE() &GAMMA_CONTEXT(ctx)->UbyteColor
@@ -197,12 +198,13 @@ void gammaCheckTexSizes( GLcontext *ctx )
 #endif
 
    if (!setup_tab[gmesa->SetupIndex].check_tex_sizes(ctx)) {
-      GLuint ind = gmesa->SetupIndex |= (GAMMA_PTEX_BIT|GAMMA_RGBA_BIT);
 
       /* Radeon handles projective textures nicely; just have to change
        * up to the new vertex format.
        */
 #if 0
+      GLuint ind = gmesa->SetupIndex |= (GAMMA_PTEX_BIT|GAMMA_RGBA_BIT);
+
       if (setup_tab[ind].vertex_format != gmesa->vertex_format) {
 	 RADEON_STATECHANGE(gmesa, 0);
 	 gmesa->vertex_format = setup_tab[ind].vertex_format;

@@ -25,7 +25,7 @@
  *    Keith Whitwell <keithw@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgapixel.c,v 1.3 2001/04/10 16:07:51 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgapixel.c,v 1.4 2002/02/22 21:33:06 dawes Exp $ */
 
 #include "enums.h"
 #include "mtypes.h"
@@ -220,18 +220,22 @@ mgaTryReadPixels( GLcontext *ctx,
 		  GLvoid *pixels )
 {
    mgaContextPtr mmesa = MGA_CONTEXT(ctx);
+#if 0
    drm_mga_blit_t blit;
+#endif
    GLint size, skipPixels, skipRows;
    GLint pitch = pack->RowLength ? pack->RowLength : width;
    GLboolean ok;
 
    GLuint planemask;
-   GLuint source, dest;
+   GLuint source;
+#if 0
+   GLuint dest;
    GLint source_pitch, dest_pitch;
    GLint delta_sx, delta_sy;
    GLint delta_dx, delta_dy;
    GLint blit_height, ydir;
-
+#endif
 
    if (!clip_pixelrect(ctx, ctx->ReadBuffer,
 		       &x, &y, &width, &height,
@@ -390,11 +394,13 @@ static void do_draw_pix( GLcontext *ctx,
 			 GLuint dest, GLuint planemask)
 {
    mgaContextPtr mmesa = MGA_CONTEXT(ctx);
-   drm_mga_blit_t blit;
    __DRIdrawablePrivate *dPriv = mmesa->driDrawable;
+#if 0
+   drm_mga_blit_t blit;
    XF86DRIClipRectPtr pbox = dPriv->pClipRects;
    int nbox = dPriv->numClipRects;
    int retcode, i;
+#endif
 
    y = dPriv->h - y - height;
    x += mmesa->drawX;
