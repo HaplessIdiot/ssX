@@ -5,15 +5,18 @@
   1.  Supported hardware
 
   The current S3 Server supports the following S3 chipsets: 911, 924,
-  801/805, 928, 732 (Trio32), 764 (Trio64), 864, and 964.  The S3 server
-  will also recognise the 866, 868 and 968, but it has not been tested
-  these chipsets.  If you have any problems or success with these,
-  please report it to us.
+  801/805, 928, 732 (Trio32), 764 (Trio64), 864, 868, 964 and 968.  The
+  S3 server will also recognise the 866, but it has not been tested with
+  this chipset.  If you have any problems or success with these, please
+  report it to us.
 
   Nevertheless, this is not enough to support every board using one of
   these chipsets. The following list contains some data points on boards
   that are known to work.  If your card is similar to one of the
   described ones, chances are good it might work for you, too.
+
+  Note that 968-based cards which use the IBM 64bit RAMDACs are not yet
+  supported.
 
 
      S3 801/805, AT&T 20C490 (or similar) RAMDAC
@@ -58,9 +61,6 @@
         Note: the AT&T20C490 RAMDAC is not automatically detected by the
         server.  You need to provide a `Ramdac "att20c490"' entry in
         your XF86Config.
-
-
-
 
 
 
@@ -240,10 +240,12 @@
 
         ClockChip "ICS2595"
 
-        Clockchip support is only preliminary and on some machines
+        Clockchip support is still sometimes flakey and on some machines
         problems with the first mode after startup of XF86_S3 or after
         switching back from VT have been seen; switching to next mode
-        with CTRL+ALT+``KP+'' and back seems to solve this problem
+        with CTRL+ALT+``KP+'' and back seems to solve this problem.
+
+        Interlaced modes don't work correctly.
 
         Mirage P64 with BIOS 4.xx uses the S3 SDAC.
 
@@ -260,8 +262,10 @@
         o  Diamond Stealth 64 DRAM
 
         8, 15/16 and 24 bpp
-
         ClockChip "s3_sdac"  (should be detected automatically)
+
+
+
      S3 864, ICS5342 RAMDAC and Clockchip
 
         o  Diamond Stealth 64 DRAM (only some cards)
@@ -357,6 +361,22 @@
         at 8bpp which have not yet been fixed.
 
 
+     S3 868, ? RAMDAC, ? Clockchip
+
+        o  ELSA Winner 1000AVI
+
+        8/15/16/24 bpp
+
+
+     S3 968, Ti3026 RAMDAC, Ti3026 Clockchip
+
+        o  Elsa Winner 2000PRO/X
+
+        o  Diamond Stealth 64 VIDEO VRAM
+
+        8/15/16/24 bpp
+
+
 
   2.  16bpp and 32bpp
 
@@ -372,19 +392,21 @@
 
 
 
-       ICD2061A                                ==> ClockChip "icd2061a"
-       ICS9161A (ICD2061A compatible)          ==> ClockChip "ics9161a"
-       DCS2824-0 (Diamond, ICD2061A comp.)     ==> ClockChip "dcs2824"
 
-       S3 86c708 GENDAC                        ==> ClockChip "s3gendac"
-       ICS5300 GENDAC (86c708 compatible)      ==> ClockChip "ics5300"
 
-       S3 86c716 SDAC                          ==> ClockChip "s3_sdac"
-       ICS5342 GENDAC                          ==> ClockChip "ics5342"
+  ICD2061A                                ==> ClockChip "icd2061a"
+  ICS9161A (ICD2061A compatible)          ==> ClockChip "ics9161a"
+  DCS2824-0 (Diamond, ICD2061A comp.)     ==> ClockChip "dcs2824"
 
-       Sierra SC11412                          ==> ClockChip "sc11412"
-       ICS2595                                 ==> ClockChip "ics2595"
-       TI3025                                  ==> ClockChip "ti3025"
+  S3 86c708 GENDAC                        ==> ClockChip "s3gendac"
+  ICS5300 GENDAC (86c708 compatible)      ==> ClockChip "ics5300"
+
+  S3 86c716 SDAC                          ==> ClockChip "s3_sdac"
+  ICS5342 GENDAC                          ==> ClockChip "ics5342"
+
+  Sierra SC11412                          ==> ClockChip "sc11412"
+  ICS2595                                 ==> ClockChip "ics2595"
+  TI3025                                  ==> ClockChip "ti3025"
 
 
 
@@ -394,6 +416,7 @@
   If you have a RAMDAC that is not listed here, be VERY careful not to
   overdrive it using XF86_S3. Better contact the XFree86 team first to
   verify that running XF86_S3 will not damage your board.
+
   If you feel adventurous you could also open up your computer and have
   a peek at your RAMDAC. The RAMDAC is usually one the larger chips
   (second or third largest chip that is NOT an EPROM) on the board.  The
@@ -437,7 +460,6 @@
        ATT20C490-80   ==>  DacSpeed  80
 
 
-
   Some RAMDACs (like the Ti3025) require some mode timing consideration
   for their hardware cursor to work correctly.  The Ti3025 requires that
   the mode have a back porch of at least 80 pixel-clock cycles.  A
@@ -458,9 +480,7 @@
   specify e.g.
 
 
-
-
-   s3MCLK 55
+        s3MCLK 55
 
 
 
@@ -488,26 +508,6 @@
   determine the MLCK value, which is printed in MHz. Up to 4 tests are
   run, so you'll get up to 4 estimates (where the first might be the
   most accurate one).
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -567,7 +567,7 @@
 
 
   $XConsortium: S3.sgml,v 1.6 95/01/27 16:14:30 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.17 1995/06/10 14:00:05 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.18 1995/06/14 09:45:50 dawes Exp $
 
 
 
