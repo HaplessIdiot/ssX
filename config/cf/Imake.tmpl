@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.105 2001/08/06 20:51:00 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.106 2001/08/27 17:40:55 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -338,6 +338,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 #else
 #define HasVFork		YES
 #endif
+#endif
+#ifndef HasSetProcTitle
+#define HasSetProcTitle		NO
 #endif
 #ifndef HasSetUserContext
 #define HasSetUserContext	NO
