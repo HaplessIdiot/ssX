@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.66 2001/11/19 15:44:17 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.67 2002/01/07 20:38:28 dawes Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -68,16 +68,20 @@ xf86MonPtr ConfiguredMonitor;
 Bool xf86DoConfigurePass1 = TRUE;
 Bool foundMouse = FALSE;
 
-#ifndef __EMX__
-#if defined(SCO)
+#if defined(__EMX__)
+#define DFLT_MOUSE_DEV "mouse$"
+#define DFLT_MOUSE_PROTO "OS2Mouse"
+#elif defined(SCO)
 static char *DFLT_MOUSE_PROTO = "OSMouse";
+#elif defined(QNX4)
+static char *DFLT_MOUSE_PROTO = "OSMouse";
+static char *DFLT_MOUSE_DEV = "/dev/mouse";
+#elif defined(__QNXNTO__)
+static char *DFLT_MOUSE_PROTO = "OSMouse";
+static char *DFLT_MOUSE_DEV = "/dev/devi/mouse0";
 #else
 static char *DFLT_MOUSE_DEV = "/dev/mouse";
 static char *DFLT_MOUSE_PROTO = "auto";
-#endif
-#else
-#define DFLT_MOUSE_DEV "mouse$"
-#define DFLT_MOUSE_PROTO "OS2Mouse"
 #endif
 
 static void
