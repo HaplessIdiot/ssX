@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbbresd.c,v 3.1 1996/08/25 14:05:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbbresd.c,v 3.2 1998/10/04 09:37:37 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -61,7 +61,7 @@ cfbBresD(rrops,
     int		    numInDashList;	/* total length of dash list */
     int		    *pdashOffset;	/* offset into current dash */
     int		    isDoubleDash;
-    unsigned long   *addrl;		/* pointer to base of bitmap */
+    CfbBits   *addrl;		/* pointer to base of bitmap */
     int		    nlwidth;		/* width in longwords of bitmap */
     int		    signdx, signdy;	/* signs of directions */
     int		    axis;		/* major axis (Y_AXIS or X_AXIS) */
@@ -78,11 +78,11 @@ cfbBresD(rrops,
     int			dashIndex;
     int			dashOffset;
     int			dashRemaining;
-    unsigned long	xorFg, andFg, xorBg, andBg;
+    CfbBits	xorFg, andFg, xorBg, andBg;
     Bool		isCopy;
     int			thisDash;
 #if PSZ == 24
-    unsigned long xorPiQxlFg[3], andPiQxlFg[3], xorPiQxlBg[3], andPiQxlBg[3]; 
+    CfbBits xorPiQxlFg[3], andPiQxlFg[3], xorPiQxlBg[3], andPiQxlBg[3]; 
     char *addrb;
     int signdx3, signdy3;
 #endif
@@ -159,7 +159,7 @@ cfbBresD(rrops,
     signdy *= nlwidth;
 #if PSZ == 24
     signdx3 = signdx * 3;
-    signdy3 = signdy * sizeof (long);
+    signdy3 = signdy * sizeof (CfbBits);
 #endif
     if (axis == Y_AXIS)
     {
@@ -179,8 +179,8 @@ cfbBresD(rrops,
     {
 #if PSZ == 24
 #define body_copy(pix) { \
-	addrp = (PixelType *)((unsigned long)addrb & ~0x03); \
-	switch((unsigned long)addrb & 3){ \
+	addrp = (PixelType *)((CfbBits)addrb & ~0x03); \
+	switch((CfbBits)addrb & 3){ \
 	case 0: \
 	  *addrp = (*addrp & 0xFF000000)|((pix)[0] & 0xFFFFFF); \
 	  break; \
@@ -228,8 +228,8 @@ cfbBresD(rrops,
     else
     {
 #define body_set(and, xor) { \
-	addrp = (PixelType *)((unsigned long)addrb & ~0x03); \
-	switch((unsigned long)addrb & 3){ \
+	addrp = (PixelType *)((CfbBits)addrb & ~0x03); \
+	switch((CfbBits)addrb & 3){ \
 	case 0: \
 	  *addrp = (*addrp & ((and)[0]|0xFF000000)) ^ ((xor)[0] & 0xFFFFFF); \
 	  break; \
@@ -275,8 +275,8 @@ cfbBresD(rrops,
     }
 #else /* !PIXEL_ADDR */
     {
-    	register unsigned long	tmp;
-	unsigned long		startbit, bit;
+    	register CfbBits	tmp;
+	CfbBits		startbit, bit;
 
     	/* point to longword containing first point */
 #if PSZ == 24

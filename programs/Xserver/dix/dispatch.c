@@ -64,7 +64,7 @@ SOFTWARE.
 *                                                               *
 *****************************************************************/
 
-/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.14 1999/03/14 03:21:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.17 2000/01/22 01:59:56 mvojkovi Exp $ */
 
 #ifdef PANORAMIX_DEBUG
 #include <stdio.h>
@@ -2019,9 +2019,6 @@ ProcPutImage(client)
 	    (stuff->leftPad >= (unsigned int)screenInfo.bitmapScanlinePad))
             return BadMatch;
         length 	    = BitmapBytePad(stuff->width + stuff->leftPad);
-#ifdef INTERNAL_VS_EXTERNAL_PADDING
-        lengthProto = BitmapBytePadProto(stuff->width + stuff->leftPad);
-#endif
     }
     else if (stuff->format == XYPixmap)
     {
@@ -2030,19 +2027,12 @@ ProcPutImage(client)
             return BadMatch;
         length      = BitmapBytePad(stuff->width + stuff->leftPad);
 	length      *= stuff->depth;
-#ifdef INTERNAL_VS_EXTERNAL_PADDING
-        lengthProto = BitmapBytePadProto(stuff->width + stuff->leftPad);
-	lengthProto *= stuff->depth;
-#endif
     }
     else if (stuff->format == ZPixmap)
     {
         if ((pDraw->depth != stuff->depth) || (stuff->leftPad != 0))
             return BadMatch;
         length      = PixmapBytePad(stuff->width, stuff->depth);
-#ifdef INTERNAL_VS_EXTERNAL_PADDING
-        lengthProto = PixmapBytePadProto(stuff->width, stuff->depth);
-#endif
     }
     else
     {
@@ -2050,50 +2040,8 @@ ProcPutImage(client)
         return BadValue;
     }
 
-#ifdef INTERNAL_VS_EXTERNAL_PADDING
-    /* handle 64 bit case where protocol may pad to 32 and we want 64 */
-    if ( length != lengthProto ) {
-	register int 	i;
-	char 		* stuffptr, /* pointer into protocol data */
-			* tmpptr;   /* new location to copy to */
-
-        if(!(tmpImage = (char *) ALLOCATE_LOCAL(length*stuff->height)))
-            return (BadAlloc);
-    
-	bzero(tmpImage,length*stuff->height);
-    
-	if ( stuff->format == XYPixmap ) {
-	    int lineBytes = BitmapBytePad(stuff->width + stuff->leftPad);
-	    int lineBytesProto = 
-		BitmapBytePadProto(stuff->width + stuff->leftPad);
-	    int depth = stuff->depth;
-
-	    stuffptr = (char *)&stuff[1];
-	    tmpptr = tmpImage;
-	    for ( i = 0; i < stuff->height*stuff->depth;
-	        stuffptr += lineBytesProto,tmpptr += lineBytes, i++) 
-	        memmove(tmpptr,stuffptr,lineBytesProto);
-	}
-	else {
-	    for ( i = 0,stuffptr = (char *)&stuff[1],tmpptr=tmpImage;
-	        i < stuff->height;
-	        stuffptr += lengthProto,tmpptr += length, i++) 
-	        memmove(tmpptr,stuffptr,lengthProto);
-	}
-    }
-
-    /* handle 64-bit case where stuff is not 64-bit aligned */
-    else if ((unsigned long)&stuff[1] & (sizeof(long)-1)) {
-        if(!(tmpImage = (char *) ALLOCATE_LOCAL(length*stuff->height)))
-            return (BadAlloc);
-	memmove(tmpImage,(char *)&stuff[1],length*stuff->height);
-    }
-    else
-	tmpImage = (char *)&stuff[1];
-#else
     tmpImage = (char *)&stuff[1];
     lengthProto = length;
-#endif /* INTERNAL_VS_EXTERNAL_PADDING */
 	
     if (((((lengthProto * stuff->height) + (unsigned)3) >> 2) + 
 	(sizeof(xPutImageReq) >> 2)) != client->req_len)
@@ -2102,12 +2050,6 @@ ProcPutImage(client)
     (*pGC->ops->PutImage) (pDraw, pGC, stuff->depth, stuff->dstX, stuff->dstY,
 		  stuff->width, stuff->height, 
 		  stuff->leftPad, stuff->format, tmpImage);
-
-#ifdef INTERNAL_VS_EXTERNAL_PADDING
-    /* free up our temporary space if used */
-    if (tmpImage != (char *)&stuff[1])
-        DEALLOCATE_LOCAL(tmpImage);
-#endif /* INTERNAL_VS_EXTERNAL_PADDING */
 
      return (client->noClientException);
 }
@@ -2126,9 +2068,6 @@ DoGetImage(client, format, drawable, x, y, width, height, planemask, im_return)
     int			nlines, linesPerBuf;
     register int	linesDone;
     long		widthBytesLine, length;
-#ifdef INTERNAL_VS_EXTERNAL_PADDING
-    long		widthBytesLineProto, lengthProto;
-#endif
     Mask		plane;
     char		*pBuf;
     xGetImageReply	xgi;
@@ -2179,10 +2118,6 @@ DoGetImage(client, format, drawable, x, y, width, height, planemask, im_return)
 	widthBytesLine = PixmapBytePad(width, pDraw->depth);
 	length = widthBytesLine * height;
 
-#ifdef INTERNAL_VS_EXTERNAL_PADDING
-	widthBytesLineProto = PixmapBytePadProto(width, pDraw->depth);
-	lengthProto 	    = widthBytesLineProto * height;
-#endif
     }
     else 
     {
@@ -2192,18 +2127,9 @@ DoGetImage(client, format, drawable, x, y, width, height, planemask, im_return)
 	length = widthBytesLine * height *
 		 Ones(planemask & (plane | (plane - 1)));
 
-#ifdef INTERNAL_VS_EXTERNAL_PADDING
-	widthBytesLineProto = BitmapBytePadProto(width);
-	lengthProto = widthBytesLineProto * height *
-		 Ones(planemask & (plane | (plane - 1)));
-#endif
     }
 
-#ifdef INTERNAL_VS_EXTERNAL_PADDING
-    xgi.length = lengthProto;
-#else
     xgi.length = length;
-#endif
 
     if (im_return) {
 	pBuf = (char *)xalloc(sz_xGetImageReply + length);
@@ -2286,35 +2212,13 @@ DoGetImage(client, format, drawable, x, y, width, height, planemask, im_return)
 			nlines, format, pBuf);
 #endif
 
-#ifdef INTERNAL_VS_EXTERNAL_PADDING
-	    /* for 64-bit server, convert image to pad to 32 bits */
-	    if ( widthBytesLine != widthBytesLineProto ) {
-		register char * bufPtr, * protoPtr;
-		register int i;
-
-		for (i = 1,
-		     bufPtr = pBuf + widthBytesLine,
-		     protoPtr = pBuf + widthBytesLineProto;
-		     i < nlines;
-		     bufPtr += widthBytesLine,
-		     protoPtr += widthBytesLineProto, 
-		     i++)
-		    memmove(protoPtr, bufPtr, widthBytesLineProto);
-	    }
-#endif
 	    /* Note that this is NOT a call to WriteSwappedDataToClient,
                as we do NOT byte swap */
 	    if (!im_return)
 /* Don't split me, gcc pukes when you do */
-#ifdef INTERNAL_VS_EXTERNAL_PADDING
-		(void)WriteToClient(client,
-				    (int)(nlines * widthBytesLineProto),
-				    pBuf);
-#else
 		(void)WriteToClient(client,
 				    (int)(nlines * widthBytesLine),
 				    pBuf);
-#endif
 	    linesDone += nlines;
         }
     }
@@ -2344,41 +2248,15 @@ DoGetImage(client, format, drawable, x, y, width, height, planemask, im_return)
 				nlines, format, pBuf);
 #endif
 
-#ifdef INTERNAL_VS_EXTERNAL_PADDING
-	    	    /* for 64-bit server, convert image to pad to 32 bits */
-	    	    if ( widthBytesLine != widthBytesLineProto ) {
-			register char * bufPtr, * protoPtr;
-			register int i;
-
-			for (i = 1,
-			     bufPtr = pBuf + widthBytesLine,
-			     protoPtr = pBuf + widthBytesLineProto;
-			     i < nlines;
-			     bufPtr += widthBytesLine,
-			     protoPtr += widthBytesLineProto,
-			     i++)
-		    	    memmove(protoPtr, bufPtr, widthBytesLineProto);
-	    	    }
-#endif
 		    /* Note: NOT a call to WriteSwappedDataToClient,
 		       as we do NOT byte swap */
 		    if (im_return) {
-#ifdef INTERNAL_VS_EXTERNAL_PADDING
-			pBuf += nlines * widthBytesLineProto;
-#else
 			pBuf += nlines * widthBytesLine;
-#endif
 		    } else
 /* Don't split me, gcc pukes when you do */
-#ifdef INTERNAL_VS_EXTERNAL_PADDING
-			(void)WriteToClient(client,
-					(int)(nlines * widthBytesLineProto),
-					pBuf);
-#else
 			(void)WriteToClient(client,
 					(int)(nlines * widthBytesLine),
 					pBuf);
-#endif
 		    linesDone += nlines;
 		}
             }

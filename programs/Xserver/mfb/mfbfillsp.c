@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbfillsp.c,v 1.4 1999/04/11 13:11:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbfillsp.c,v 1.5 1999/07/17 09:06:43 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -590,7 +590,7 @@ mfbTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     int rop;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
-    unsigned long   flip;
+    MfbBits   flip;
 
 
     if (!(pGC->planemask & 1))

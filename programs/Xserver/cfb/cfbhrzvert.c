@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbhrzvert.c,v 3.2 1996/11/24 09:51:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbhrzvert.c,v 3.3 1998/10/04 09:37:44 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987,1998  The Open Group
@@ -55,22 +55,23 @@ SOFTWARE.
 /* horizontal solid line
    abs(len) > 1
 */
+void
 cfbHorzS(rop, and, xor, addrl, nlwidth, x1, y1, len)
 register int rop;
-register unsigned long and;
-register unsigned long xor;
-register unsigned long *addrl;	/* pointer to base of bitmap */
+register CfbBits and;
+register CfbBits xor;
+register CfbBits *addrl;	/* pointer to base of bitmap */
 int nlwidth;		/* width in longwords of bitmap */
 int x1;			/* initial point */ 
 int y1;
 int len;		/* length of line */
 {
     register int nlmiddle;
-    register unsigned long startmask;
-    register unsigned long endmask;
+    register CfbBits startmask;
+    register CfbBits endmask;
 #if PSZ == 24
     int leftIndex, rightIndex, xOffset;
-    unsigned long piQxelAnd[3], piQxelXor[3];
+    CfbBits piQxelAnd[3], piQxelXor[3];
     piQxelAnd[0] = (and & 0xFFFFFF) | ((and<<24)  & 0xFF000000);
     piQxelAnd[1] = ((and>>8)  & 0xFFFF)| ((and<<16) & 0xFFFF0000);
     piQxelAnd[2] = ((and<<8) & 0xFFFFFF00) | ((and>>16) & 0xFF);
@@ -329,15 +330,15 @@ int len;		/* length of line */
 void
 cfbVertS(rop, and, xor, addrl, nlwidth, x1, y1, len)
 int rop;
-register unsigned long and, xor;
-register unsigned long *addrl;	/* pointer to base of bitmap */
+register CfbBits and, xor;
+register CfbBits *addrl;	/* pointer to base of bitmap */
 register int nlwidth;	/* width in longwords of bitmap */
 int x1, y1;		/* initial point */
 register int len;	/* length of line */
 {
 #if PSZ == 24
     int xIdx;
-    unsigned long and2, xor2, offset, mask, mask2;
+    CfbBits and2, xor2, offset, mask, mask2;
 #endif
 #ifdef PIXEL_ADDR
     register PixelType    *bits = (PixelType *) addrl;

@@ -2,7 +2,7 @@
  * Fill odd tiled rectangles and spans.
  * no depth dependencies.
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfbtileodd.c,v 3.1 1998/10/04 09:37:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbtileodd.c,v 3.2 1999/01/23 09:55:38 dawes Exp $ */
 
 /*
 
@@ -43,17 +43,9 @@ in this Software without prior written authorization from The Open Group.
 #include "mergerop.h"
 
 #if PSZ == 24
-#if PGSZ == 32
 #define LEFTSHIFT_AMT (3)
-#else /* PGSZ == 64 */
-#define LEFTSHIFT_AMT (4 - PWSH)
-#endif /* PGSZ */
 #else /* PSZ != 24 */
-#if PGSZ == 32
 #define LEFTSHIFT_AMT (5 - PWSH)
-#else /* PGSZ == 64 */
-#define LEFTSHIFT_AMT (6 - PWSH)
-#endif /* PGSZ */
 #endif /* PSZ == 24*/
 
 #define LastTileBits {\
@@ -132,8 +124,8 @@ MROP_NAME(cfbFillBoxTileOdd) (pDrawable, nBox, pBox, tile, xrot, yrot, alu, plan
     int widthDst;	/* width in longwords of the dest pixmap */
     int w;		/* width of current box */
     int h;		/* height of current box */
-    unsigned long startmask;
-    unsigned long endmask;/* masks for reggedy bits at either end of line */
+    CfbBits startmask;
+    CfbBits endmask;/* masks for reggedy bits at either end of line */
     int nlwMiddle;	/* number of longwords between sides of boxes */
     int nlwSrc;		/* number of whole longwords in source */
     
@@ -145,23 +137,23 @@ MROP_NAME(cfbFillBoxTileOdd) (pDrawable, nBox, pBox, tile, xrot, yrot, alu, plan
 
     MROP_DECLARE_REG()
 
-    unsigned long *pdstBase;	/* pointer to start of dest */
-    unsigned long *pDstLine;	/* poitner to start of dest box */
-    unsigned long *pSrcBase;	/* pointer to start of source */
-    unsigned long *pSrcLine;	/* pointer to start of source line */
-    register unsigned long *pDst;
-    register unsigned long *pSrc;
-    register unsigned long bits, tmp;
+    CfbBits *pdstBase;	/* pointer to start of dest */
+    CfbBits *pDstLine;	/* poitner to start of dest box */
+    CfbBits *pSrcBase;	/* pointer to start of source */
+    CfbBits *pSrcLine;	/* pointer to start of source line */
+    register CfbBits *pDst;
+    register CfbBits *pSrc;
+    register CfbBits bits, tmp;
     register int	   nlwPart;
     int xoffStart, xoff;
     int leftShiftStart, rightShiftStart, nlwSrcStart;
-    unsigned long tileEndMask;
+    CfbBits tileEndMask;
     int tileEndLeftShift, tileEndRightShift;
     int	xoffStep;
     int tileEndPart;
     int needFirst;
-    unsigned long   narrow[2];
-    unsigned long   narrowMask;
+    CfbBits   narrow[2];
+    CfbBits   narrowMask;
     int	    narrowShift;
     Bool    narrowTile;
 
@@ -179,7 +171,7 @@ MROP_NAME(cfbFillBoxTileOdd) (pDrawable, nBox, pBox, tile, xrot, yrot, alu, plan
 	widthSrc = 2;
 	narrowTile = TRUE;
     }
-    pSrcBase = (unsigned long *)tile->devPrivate.ptr;
+    pSrcBase = (CfbBits *)tile->devPrivate.ptr;
 
     cfbGetLongWidthAndPointer (pDrawable, widthDst, pdstBase)
 
@@ -389,8 +381,8 @@ MROP_NAME(cfbFillSpanTileOdd) (pDrawable, n, ppt, pwidth, tile, xrot, yrot, alu,
 
     int widthDst;		/* width in longwords of the dest pixmap */
     int w;		/* width of current span */
-    unsigned long startmask;
-    unsigned long endmask;	/* masks for reggedy bits at either end of line */
+    CfbBits startmask;
+    CfbBits endmask;	/* masks for reggedy bits at either end of line */
     int nlwSrc;		/* number of whole longwords in source */
     
     register int nlw;	/* loop version of nlwMiddle */
@@ -401,23 +393,23 @@ MROP_NAME(cfbFillSpanTileOdd) (pDrawable, n, ppt, pwidth, tile, xrot, yrot, alu,
 
     MROP_DECLARE_REG()
 
-    unsigned long *pdstBase;	/* pointer to start of dest */
-    unsigned long *pDstLine;	/* poitner to start of dest box */
-    unsigned long *pSrcBase;	/* pointer to start of source */
-    unsigned long *pSrcLine;	/* pointer to start of source line */
-    register unsigned long *pDst;
-    register unsigned long *pSrc;
-    register unsigned long bits, tmp;
+    CfbBits *pdstBase;	/* pointer to start of dest */
+    CfbBits *pDstLine;	/* poitner to start of dest box */
+    CfbBits *pSrcBase;	/* pointer to start of source */
+    CfbBits *pSrcLine;	/* pointer to start of source line */
+    register CfbBits *pDst;
+    register CfbBits *pSrc;
+    register CfbBits bits, tmp;
     register int	   nlwPart;
     int xoffStart, xoff;
     int leftShiftStart, rightShiftStart, nlwSrcStart;
-    unsigned long tileEndMask;
+    CfbBits tileEndMask;
     int tileEndLeftShift, tileEndRightShift;
     int	xoffStep;
     int tileEndPart;
     int needFirst;
-    unsigned long   narrow[2];
-    unsigned long   narrowMask;
+    CfbBits   narrow[2];
+    CfbBits   narrowMask;
     int	    narrowShift;
     Bool    narrowTile;
 
@@ -435,7 +427,7 @@ MROP_NAME(cfbFillSpanTileOdd) (pDrawable, n, ppt, pwidth, tile, xrot, yrot, alu,
 	widthSrc = 2;
 	narrowTile = TRUE;
     }
-    pSrcBase = (unsigned long *)tile->devPrivate.ptr;
+    pSrcBase = (CfbBits *)tile->devPrivate.ptr;
 
     cfbGetLongWidthAndPointer (pDrawable, widthDst, pdstBase)
 
@@ -635,8 +627,8 @@ MROP_NAME(cfbFillBoxTile32s) (pDrawable, nBox, pBox, tile, xrot, yrot, alu, plan
     int widthDst;	/* width in longwords of the dest pixmap */
     int w;		/* width of current box */
     int h;		/* height of current box */
-    unsigned long startmask;
-    unsigned long endmask;/* masks for reggedy bits at either end of line */
+    CfbBits startmask;
+    CfbBits endmask;/* masks for reggedy bits at either end of line */
     int nlMiddle;	/* number of longwords between sides of boxes */
     
     register int nl;	/* loop version of nlMiddle */
@@ -649,19 +641,19 @@ MROP_NAME(cfbFillBoxTile32s) (pDrawable, nBox, pBox, tile, xrot, yrot, alu, plan
 
     MROP_DECLARE_REG()
 
-    unsigned long	    *pdstBase;	/* pointer to start of dest */
-    unsigned long	    *pdstLine;	/* poitner to start of dest box */
-    unsigned long	    *psrcBase;	/* pointer to start of source */
-    unsigned long	    *psrcLine;	/* pointer to fetch point of source */
-    unsigned long	    *psrcStart;	/* pointer to start of source line */
-    register unsigned long  *pdst;
-    register unsigned long  *psrc;
-    register unsigned long  bits, bits1;
+    CfbBits	    *pdstBase;	/* pointer to start of dest */
+    CfbBits	    *pdstLine;	/* poitner to start of dest box */
+    CfbBits	    *psrcBase;	/* pointer to start of source */
+    CfbBits	    *psrcLine;	/* pointer to fetch point of source */
+    CfbBits	    *psrcStart;	/* pointer to start of source line */
+    register CfbBits  *pdst;
+    register CfbBits  *psrc;
+    register CfbBits  bits, bits1;
     register int	    nlTemp;
 
     MROP_INITIALIZE (alu, planemask)
 
-    psrcBase = (unsigned long *)tile->devPrivate.ptr;
+    psrcBase = (CfbBits *)tile->devPrivate.ptr;
     tileHeight = tile->drawable.height;
     tileWidth = tile->drawable.width;
 #if PSZ == 24
@@ -946,8 +938,8 @@ MROP_NAME(cfbFillSpanTile32s) (pDrawable, n, ppt, pwidth, tile, xrot, yrot, alu,
 
     int widthDst;	/* width in longwords of the dest pixmap */
     int w;		/* width of current box */
-    unsigned long startmask;
-    unsigned long endmask;/* masks for reggedy bits at either end of line */
+    CfbBits startmask;
+    CfbBits endmask;/* masks for reggedy bits at either end of line */
     int nlMiddle;	/* number of longwords between sides of boxes */
     
     register int nl;	/* loop version of nlMiddle */
@@ -960,19 +952,19 @@ MROP_NAME(cfbFillSpanTile32s) (pDrawable, n, ppt, pwidth, tile, xrot, yrot, alu,
 
     MROP_DECLARE_REG()
 
-    unsigned long	    *pdstBase;	/* pointer to start of dest */
-    unsigned long	    *pdstLine;	/* poitner to start of dest box */
-    unsigned long	    *psrcBase;	/* pointer to start of source */
-    unsigned long	    *psrcLine;	/* pointer to fetch point of source */
-    unsigned long	    *psrcStart;	/* pointer to start of source line */
-    register unsigned long  *pdst;
-    register unsigned long  *psrc;
-    register unsigned long  bits, bits1;
+    CfbBits	    *pdstBase;	/* pointer to start of dest */
+    CfbBits	    *pdstLine;	/* poitner to start of dest box */
+    CfbBits	    *psrcBase;	/* pointer to start of source */
+    CfbBits	    *psrcLine;	/* pointer to fetch point of source */
+    CfbBits	    *psrcStart;	/* pointer to start of source line */
+    register CfbBits  *pdst;
+    register CfbBits  *psrc;
+    register CfbBits  bits, bits1;
     register int	    nlTemp;
 
     MROP_INITIALIZE (alu, planemask)
 
-    psrcBase = (unsigned long *)tile->devPrivate.ptr;
+    psrcBase = (CfbBits *)tile->devPrivate.ptr;
     tileHeight = tile->drawable.height;
     tileWidth = tile->drawable.width;
 #if PSZ == 24

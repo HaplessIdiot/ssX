@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbfillarc.c,v 3.1 1996/08/13 11:27:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbfillarc.c,v 3.2 1998/10/04 09:37:39 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -54,15 +54,15 @@ RROP_NAME(cfbFillEllipseSolid) (pDraw, pGC, arc)
 #if PSZ == 24
     unsigned char *addrlt, *addrlb;
 #else
-    unsigned long *addrlt, *addrlb;
+    CfbBits *addrlt, *addrlb;
 #endif
-    register unsigned long *addrl;
+    register CfbBits *addrl;
     register int n;
     int nlwidth;
     RROP_DECLARE
     register int xpos;
     register int slw;
-    unsigned long startmask, endmask;
+    CfbBits startmask, endmask;
     int	nlmiddle;
 #if PSZ == 24
     register int pidx;
@@ -93,11 +93,11 @@ RROP_NAME(cfbFillEllipseSolid) (pDraw, pGC, arc)
 	xpos = xorg - x;
 #if PSZ == 24
 	xpos3 = (xpos * 3) & ~0x03;
-	addrl = (unsigned long *)((char *)addrlt + xpos3);
+	addrl = (CfbBits *)((char *)addrlt + xpos3);
 	if (slw == 1){
 	  RROP_SOLID24(addrl, xpos);
 	  if (miFillArcLower(slw)){
-	    addrl = (unsigned long *)((char *)addrlb + xpos3);
+	    addrl = (CfbBits *)((char *)addrlb + xpos3);
 	    RROP_SOLID24(addrl, xpos);
           }
 	  continue;
@@ -122,7 +122,7 @@ RROP_NAME(cfbFillEllipseSolid) (pDraw, pGC, arc)
 	  RROP_SOLID_MASK(addrl, endmask, pidx);
 	if (!miFillArcLower(slw))
 	  continue;
-	addrl = (unsigned long *)((char *)addrlb + xpos3);
+	addrl = (CfbBits *)((char *)addrlb + xpos3);
 	pidx = xpos;
 	if (startmask){
 	  RROP_SOLID_MASK(addrl, startmask, pidx-1);
@@ -183,7 +183,7 @@ RROP_NAME(cfbFillEllipseSolid) (pDraw, pGC, arc)
 #define FILLSPAN(xl,xr,addr) \
     if (xr >= xl){ \
 	n = xr - xl + 1; \
-	addrl = (unsigned long *)((char *)addr + ((xl * 3) & ~0x03)); \
+	addrl = (CfbBits *)((char *)addr + ((xl * 3) & ~0x03)); \
 	if (n <= 1){ \
           if (n) \
             RROP_SOLID24(addrl, xl); \
@@ -263,13 +263,13 @@ RROP_NAME(cfbFillArcSliceSolid)(pDraw, pGC, arc)
 #if PSZ == 24
     unsigned char *addrlt, *addrlb;
 #else
-    unsigned long *addrlt, *addrlb;
+    CfbBits *addrlt, *addrlb;
 #endif
-    register unsigned long *addrl;
+    register CfbBits *addrl;
     register int n;
     int nlwidth;
     RROP_DECLARE
-    unsigned long startmask, endmask;
+    CfbBits startmask, endmask;
 #if PSZ == 24
     register int pidx;
 #endif /* PSZ == 24 */

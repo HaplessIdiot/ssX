@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128.h,v 1.1 1999/11/19 13:54:42 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128.h,v 1.2 2000/01/22 21:35:52 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -154,6 +154,7 @@ typedef struct {
     Bool              BIOSFromPCI;/* BIOS can be read from PCI space         */
 
     unsigned char     *MMIO;	  /* Map of MMIO region                      */
+    unsigned char     *MMIO32;	  /* 32-bit MMIO region			     */
     unsigned char     *FB;	  /* Map of frame buffer                     */
 
     CARD32            MemCntl;

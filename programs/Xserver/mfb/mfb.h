@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfb.h,v 1.14 1999/06/06 08:49:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfb.h,v 1.15 1999/12/27 00:39:55 robin Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -63,10 +63,14 @@ SOFTWARE.
 
 extern int InverseAlu[];
 
+
 /* warning: PixelType definition duplicated in maskbits.h */
 #ifndef PixelType
-#define PixelType unsigned long
+#define PixelType CARD32
 #endif /* PixelType */
+#ifndef MfbBits
+#define MfbBits CARD32
+#endif
 
 /* mfbbitblt.c */
 
@@ -108,7 +112,7 @@ extern Bool mfbRegisterCopyPlaneProc(
 	int                 /* height */,
 	int                 /* dstx */,
 	int                 /* dsty */,
-	unsigned long       /* bitPlane */
+	unsigned long	    /* bitPlane */
 #endif
 	)
 #endif
@@ -1198,7 +1202,7 @@ than a switch on the rop per item (span or rectangle.)
 #define fnORINVERTED(src, dst)	(~src | dst)
 #define fnNAND(src, dst)	(~(src & dst))
 #undef fnSET
-#define fnSET(src, dst)		(unsigned long)(~0)
+#define fnSET(src, dst)		(MfbBits)(~0)
 
 /*  Using a "switch" statement is much faster in most cases
  *  since the compiler can do a look-up table or multi-way branch

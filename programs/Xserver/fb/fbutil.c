@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/fb/fbutil.c,v 1.1 1999/11/19 13:53:47 hohndel Exp $ */
 
 #include "fb.h"
 
@@ -139,7 +139,16 @@ I,O,O,I,	/* nand		0xe		NOT src OR NOT dst */
 O,O,O,I,	/* set		0xf		1 */
 };
 
-#define Mask(x,w)	FbBitsMask((x)*(w),(w))
+/*
+ * Stipple masks are independent of bit/byte order as long
+ * as bitorder == byteorder.  FB doesn't handle the case
+ * where these differ
+ */
+#define BitsMask(x,w)	((FB_ALLONES << ((x) & FB_MASK)) & \
+			 (FB_ALLONES >> ((FB_UNIT - ((x) + (w))) & FB_MASK)))
+
+#define Mask(x,w)	BitsMask((x)*(w),(w))
+
 
 #define SelMask(b,n,w)	((((b) >> n) & 1) * Mask(n,w))
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbgc.c,v 1.2 1998/03/20 21:05:02 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbgc.c,v 1.3 1998/10/04 09:37:41 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -536,7 +536,7 @@ cfbValidateGC(pGC, changes, pDrawable)
     {
 	GCOps	*newops;
 
-	if (newops = cfbMatchCommon (pGC, devPriv))
+	if ((newops = cfbMatchCommon (pGC, devPriv)))
  	{
 	    if (pGC->ops->devPrivate.val)
 		miDestroyGCOps (pGC->ops);

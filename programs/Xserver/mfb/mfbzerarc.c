@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbzerarc.c,v 3.2 1998/03/20 21:08:20 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbzerarc.c,v 3.3 1998/10/04 09:39:18 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -46,7 +46,7 @@ in this Software without prior written authorization from The Open Group.
  * LONG2CHARS() takes care of the re-ordering as required. (DHD)
  */
 #if (BITMAP_BIT_ORDER == MSBFirst)
-#define LEFTMOST	((PixelType) LONG2CHARS(((unsigned long)1 << PLST)))
+#define LEFTMOST	((PixelType) LONG2CHARS(((MfbBits)1 << PLST)))
 #else
 #define LEFTMOST	((PixelType) LONG2CHARS(1))
 #endif

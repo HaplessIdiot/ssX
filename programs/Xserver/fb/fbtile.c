@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbtile.c,v 1.1 1999/11/19 13:53:47 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbtile.c,v 1.2 2000/01/21 15:06:20 dawes Exp $ */
 
 #include "fb.h"
 
@@ -29,8 +29,6 @@
  * Accelerated tile fill -- tile width is a power of two not greater
  * than FB_UNIT
  */
-
-#define FbSelectPart(x,o)	FbSelectPatternPart(x,o)
 
 void
 fbEvenTile (FbBits	*dst,

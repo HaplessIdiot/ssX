@@ -21,11 +21,9 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbstipple.c,v 1.2 2000/01/21 01:11:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbstipple.c,v 1.3 2000/01/21 15:06:19 dawes Exp $ */
 
 #include "fb.h"
-
-#define FbSelectPart(x,o)   FbSelectPatternPart(x,o)
 
 #ifndef FBNOPIXADDR
 /*
@@ -33,30 +31,7 @@
  * code, the idea is to generate code for each case of a copy-mode
  * transparent stipple
  */
-#define LaneBits    (FB_MASK >> 3)
-    
-#define LaneOff1(o) (o)
-#define LaneOff2(o) (o)
-#define LaneOff4(o) (o)
-    
-#define LaneCase1(c,a,o)    ((c) == 0x01 ? (*(CARD8 *) ((a)+LaneOff1(o)) = fgxor) : 0)
-#define LaneCase2(c,a,o)    ((c) == 0x03 ? (*(CARD16 *) ((a)+LaneOff2(o)) = fgxor) : \
-			     (LaneCase1((c)&1,a,o), LaneCase1((c)>>1,a,(o)+1)))
-#define LaneCase4(c,a,o)    ((c) == 0x0f ? (*(CARD32 *) ((a)+LaneOff4(o)) = fgxor) : \
-			     (LaneCase2((c)&3,a,o), LaneCase2((c)>>2,a,(o)+2)))
-#define LaneCase8(c,a,o)    ((c) == 0xff ? (*(FbBits *) ((a)+(o)) = fgxor) : \
-			     (LaneCase4((c)&0xf,a,o), LaneCase4((c)>>4,a,(o)+4)))
-
-#if FB_SHIFT == 6
-#define LaneCases1(c,a)	    case c: while (n--) { LaneCase8(c,((CARD8 *) a),0); a++; } break;
-#define LaneCases(a)	    LaneCases256(0,a)
-#endif
-    
-#if FB_SHIFT == 5
-#define LaneCases1(c,a)	    case c: while (n--) { LaneCase4(c,((CARD8 *) a),0); a++; } break;
-#define LaneCases(a)	    LaneCases16(0,a)
-#endif
-							   
+#define LaneCases1(c,a)	    case c: while (n--) { FbLaneCase(c,a); a++; } break;
 #define LaneCases2(c,a)	    LaneCases1(c,a) LaneCases1(c+1,a)
 #define LaneCases4(c,a)	    LaneCases2(c,a) LaneCases2(c+2,a)
 #define LaneCases8(c,a)	    LaneCases4(c,a) LaneCases4(c+4,a)
@@ -66,6 +41,14 @@
 #define LaneCases128(c,a)   LaneCases64(c,a) LaneCases64(c+64,a)
 #define LaneCases256(c,a)   LaneCases128(c,a) LaneCases128(c+128,a)
     
+#if FB_SHIFT == 6
+#define LaneCases(a)	    LaneCases256(0,a)
+#endif
+    
+#if FB_SHIFT == 5
+#define LaneCases(a)	    LaneCases16(0,a)
+#endif
+							   
 /*
  * Repeat a transparent stipple across a scanline n times
  */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/int10/stub.c,v 1.4 1999/12/03 19:17:41 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/stub.c,v 1.1 2000/01/23 04:44:34 dawes Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -53,3 +53,8 @@ xf86ExecX86int10(xf86Int10InfoPtr pInt)
     return;
 }
 
+pointer
+xf86int10Addr(xf86Int10InfoPtr pInt, CARD32 addr)
+{
+    return 0;
+}

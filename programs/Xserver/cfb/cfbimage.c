@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbimage.c,v 1.8 2000/01/21 01:11:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbimage.c,v 1.9 2000/01/29 18:58:26 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -88,9 +88,9 @@ cfbPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
     }
     else
     {
-	unsigned long	oldFg, oldBg;
+	CfbBits	oldFg, oldBg;
 	XID		gcv[3];
-	unsigned long	oldPlanemask;
+	CfbBits	oldPlanemask;
 	unsigned long	i;
 	long		bytesPer;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbmskbits.h,v 3.6 1998/10/04 09:37:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbmskbits.h,v 3.7 1998/12/20 11:57:29 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -100,6 +100,10 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * parameter to the putbits and putbitsrop macros that is the plane
  * mask.
  * ==========================================================================
+ *
+ * Keith Packard (keithp@suse.com)
+ * 64bit code is no longer supported; it requires DIX support
+ * for repadding images which significantly impacts performance
  */
 
 /*
@@ -113,20 +117,20 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 /*
  *  PixelGroup is the data type used to operate on groups of pixels.
- *  We typedef it here to unsigned long with the assumption that you
- *  want to manipulate as many pixels at a time as you can.  If unsigned
- *  long is not appropriate for your server, define it to something else
+ *  We typedef it here to CARD32 with the assumption that you
+ *  want to manipulate 32 bits worth of pixels at a time as you can.  If CARD32
+ *  is not appropriate for your server, define it to something else
  *  before including this file.  In this case you will also have to define
  *  PGSZB to the size in bytes of PixelGroup.
  */
 #ifndef PixelGroup
-typedef unsigned long PixelGroup;
-#ifdef LONG64
-#define PGSZB 8
-#else
+#define PixelGroup CARD32
 #define PGSZB 4
-#endif /* LONG64 */
 #endif /* PixelGroup */
+    
+#ifndef CfbBits
+#define CfbBits	CARD32
+#endif
 
 #define PGSZ	(PGSZB << 3)
 #define PPW	(PGSZ/PSZ)
@@ -557,8 +561,8 @@ if ( ((x)+(w)) <= PPW) \
 } \
 else \
 { \
-    unsigned long m; \
-    unsigned long n; \
+    unsigned int m; \
+    unsigned int n; \
     PixelGroup pm = PFILL(planemask); \
     m = PPW-(x); \
     n = (w) - m; \
@@ -616,8 +620,8 @@ if ( ((x)+(w)) <= PPW) \
 } \
 else \
 { \
-    unsigned long m; \
-    unsigned long n; \
+    CfbBits m; \
+    CfbBits n; \
     PixelGroup t1, t2; \
     PixelGroup pm; \
     PFILL2(planemask, pm); \
@@ -813,19 +817,23 @@ if ((x) + (w) <= PPW) {\
 #define getstipplepixels24(psrcstip,xt,ones,psrcpix,destpix,stipindex) \
 { \
     PixelGroup q, srcpix, srcstip; \
-    unsigned long src; \
+    CfbBits src; \
     register unsigned int stipidx; \
     q = *(psrcstip) >> (xt); \
     q = ((ones) ? q : ~q) & 1; \
     *(destpix) = (*(psrcpix)) & QuartetPixelMaskTable[q]; \
 }
 #else /* BITMAP_BIT_ORDER == LSB */
+
+/* this must load 32 bits worth; for most machines, thats an int */
+#define CfbFetchUnaligned(x)	ldl_u(x)
+
 #define getstipplepixels( psrcstip, xt, w, ones, psrcpix, destpix ) \
 { \
     PixelGroup q; \
-    q = ldq_u(psrcstip) >> (xt); \
+    q = CfbFetchUnaligned(psrcstip) >> (xt); \
     if ( ((xt)+(w)) > (PPW*PSZ) ) \
-        q |= (ldq_u((psrcstip)+1)) << ((PPW*PSZ)-(xt)); \
+        q |= (CfbFetchUnaligned((psrcstip)+1)) << ((PPW*PSZ)-(xt)); \
     q = QuartetBitsTable[(w)] & ((ones) ? q : ~q); \
     *(destpix) = (*(psrcpix)) & QuartetPixelMaskTable[q]; \
 }
@@ -834,7 +842,7 @@ if ((x) + (w) <= PPW) {\
 #define getstipplepixels24( psrcstip,xt,w,ones,psrcpix,destpix,stipindex,srcindex,dstindex) \
 { \
     PixelGroup q, srcpix, srcstip; \
-    unsigned long src; \
+    CfbBits src; \
     register unsigned int sidx; \
     register unsigned int didx; \
     register unsigned int stipidx; \
@@ -870,7 +878,7 @@ if ((x) + (w) <= PPW) {\
 #define getstipplepixels24(psrcstip,xt,ones,psrcpix,destpix,stipindex) \
 { \
     PixelGroup q, srcpix, srcstip; \
-    unsigned long src; \
+    CfbBits src; \
     register unsigned int stipidx; \
     q = *(psrcstip) >> (xt); \
     q = ((ones) ? q : ~q) & 1; \

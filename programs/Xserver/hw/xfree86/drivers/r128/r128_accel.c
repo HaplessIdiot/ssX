@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_accel.c,v 1.2 2000/01/22 21:35:52 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_accel.c,v 1.3 2000/02/05 19:20:58 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -125,6 +125,7 @@ static struct {
 static void R128EngineFlush(ScrnInfoPtr pScrn)
 {
     unsigned char *R128MMIO = R128PTR(pScrn)->MMIO;
+    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
     int           i;
     
     OUTREGP(R128_PC_NGUI_CTLSTAT, R128_PC_FLUSH_ALL, ~R128_PC_FLUSH_ALL);
@@ -137,6 +138,7 @@ static void R128EngineFlush(ScrnInfoPtr pScrn)
 static void R128EngineReset(ScrnInfoPtr pScrn)
 {
     unsigned char *R128MMIO = R128PTR(pScrn)->MMIO;
+    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
     CARD32        clock_cntl_index;
     CARD32        mclk_cntl;
     CARD32        gen_reset_cntl;
@@ -172,6 +174,7 @@ static void R128WaitForFifoFunction(ScrnInfoPtr pScrn, int entries)
 {
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
+    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
     int           i;
 
     for (;;) {
@@ -195,6 +198,7 @@ static void R128WaitForFifoFunction(ScrnInfoPtr pScrn, int entries)
 static void R128WaitForIdle(ScrnInfoPtr pScrn)
 {
     unsigned char *R128MMIO = R128PTR(pScrn)->MMIO;
+    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
     int           i;
 
     R128WaitForFifoFunction(pScrn, 64);
@@ -222,6 +226,7 @@ static void R128SetupForSolidFill(ScrnInfoPtr pScrn,
 {
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
+    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
 
     R128WaitForFifo(pScrn, 4);
     OUTREG(R128_DP_GUI_MASTER_CNTL, (info->dp_gui_master_cntl
@@ -243,6 +248,7 @@ static void  R128SubsequentSolidFillRect(ScrnInfoPtr pScrn,
 {
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
+    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
 
     R128WaitForFifo(pScrn, 2);
     OUTREG(R128_DST_Y_X,          (y << 16) | x);
@@ -255,6 +261,7 @@ static void R128SetupForSolidLine(ScrnInfoPtr pScrn,
 {
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
+    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
 
     R128WaitForFifo(pScrn, 3);
     OUTREG(R128_DP_GUI_MASTER_CNTL, (info->dp_gui_master_cntl
@@ -286,6 +293,7 @@ static void R128SubsequentSolidBresenhamLine(ScrnInfoPtr pScrn,
 {
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
+    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
     int           flags     = 0;
 
     if (octant & YMAJOR)         flags |= R128_DST_Y_MAJOR;
@@ -313,6 +321,7 @@ static void R128SubsequentSolidHorVertLine(ScrnInfoPtr pScrn,
 {
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
+    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
 
     R128WaitForFifo(pScrn, 1);
     OUTREG(R128_DP_CNTL, (R128_DST_X_LEFT_TO_RIGHT
@@ -346,6 +355,7 @@ static void R128SetupForDashedLine(ScrnInfoPtr pScrn,
 {
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
+    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
     CARD32        pat       = *(CARD32 *)pattern;
 
     switch (length) {
@@ -377,6 +387,7 @@ static void R128SubsequentDashedBresenhamLine(ScrnInfoPtr pScrn,
 {
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
+    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
     int           flags     = 0;
 
     if (octant & YMAJOR)         flags |= R128_DST_Y_MAJOR;
@@ -409,6 +420,7 @@ static void R128SubsequentSolidFillTrap(ScrnInfoPtr pScrn, int y, int h,
                                         int right, int dxR, int dyR, int eR)
 {
     unsigned char *R128MMIO = R128PTR(pScrn)->MMIO;
+    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
     int           flags     = 0;
     int           Lymajor   = 0;
     int           Rymajor   = 0;
@@ -473,6 +485,7 @@ static void R128SetClippingRectangle(ScrnInfoPtr pScrn,
 {
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
+    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
 
     if (left > 8191 || top > 8191 || right > 8191 || bottom > 8191
 	|| left < 0 || top < 0 || right < 0 || bottom < 0
@@ -490,6 +503,7 @@ static void R128DisableClipping (ScrnInfoPtr pScrn)
 {
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
+    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
     
     R128WaitForFifo(pScrn,       2);
     OUTREG(R128_SC_TOP_LEFT,     0);
@@ -510,6 +524,7 @@ static void R128SetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
 {
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
+    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
 
     info->xdir = xdir;
     info->ydir = ydir;
@@ -543,6 +558,7 @@ static void R128SubsequentScreenToScreenCopy(ScrnInfoPtr pScrn,
 {
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
+    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
 
     if (info->xdir < 0) x1 += w - 1, x2 += w - 1;
     if (info->ydir < 0) y1 += h - 1, y2 += h - 1;
@@ -572,6 +588,7 @@ static void R128SetupForMono8x8PatternFill(ScrnInfoPtr pScrn,
 {
     R128InfoPtr   info           = R128PTR(pScrn);
     unsigned char *R128MMIO      = info->MMIO;
+    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
 
     R128WaitForFifo(pScrn, 6);
     OUTREG(R128_DP_GUI_MASTER_CNTL, (info->dp_gui_master_cntl
@@ -595,6 +612,7 @@ static void R128SubsequentMono8x8PatternFillRect(ScrnInfoPtr pScrn,
 {
     R128InfoPtr   info           = R128PTR(pScrn);
     unsigned char *R128MMIO      = info->MMIO;
+    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
 
     R128WaitForFifo(pScrn, 3);
     OUTREG(R128_BRUSH_Y_X,        (patterny << 8) | patternx);
@@ -614,6 +632,7 @@ static void R128SetupForColor8x8PatternFill(ScrnInfoPtr pScrn,
 {
     R128InfoPtr   info           = R128PTR(pScrn);
     unsigned char *R128MMIO      = info->MMIO;
+    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
 
     R128TRACE(("Color8x8 %d %d %d\n", trans_color, patx, paty));
     
@@ -641,6 +660,7 @@ static void R128SubsequentColor8x8PatternFillRect( ScrnInfoPtr pScrn,
 						   int x, int y, int w, int h)
 {
     unsigned char *R128MMIO = R128PTR(pScrn)->MMIO;
+    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
 
     R128TRACE(("Color8x8 %d,%d %d,%d %d %d\n", patx, paty, x, y, w, h));
     R128WaitForFifo(pScrn, 3);
@@ -701,6 +721,7 @@ static void R128SetupForScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 {
     R128InfoPtr   info           = R128PTR(pScrn);
     unsigned char *R128MMIO      = info->MMIO;
+    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
 
     R128WaitForFifo(pScrn, 4);
     OUTREG(R128_DP_GUI_MASTER_CNTL, (info->dp_gui_master_cntl
@@ -725,6 +746,7 @@ static void R128SubsequentScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 {
     R128InfoPtr   info           = R128PTR(pScrn);
     unsigned char   *R128MMIO    = info->MMIO;
+    unsigned char   *R128MMIO32  = info->MMIO32;
 
     info->scanline_y      = y;
     info->scanline_x      = x;
@@ -754,6 +776,7 @@ static void R128SubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
 {
     R128InfoPtr     info           = R128PTR(pScrn);
     unsigned char   *R128MMIO      = info->MMIO;
+    unsigned char   *R128MMIO32    = info->MMIO32;
     CARD32          *p             = (CARD32 *)info->scratch_buffer[bufno];
     int             i;
     int             left           = info->scanline_words;
@@ -811,6 +834,7 @@ static void R128SetupForScanlineImageWrite(ScrnInfoPtr pScrn,
 {
     R128InfoPtr   info           = R128PTR(pScrn);
     unsigned char *R128MMIO      = info->MMIO;
+    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
 
     info->scanline_bpp = bpp;
 
@@ -842,6 +866,7 @@ static void R128SubsequentScanlineImageWriteRect(ScrnInfoPtr pScrn,
 {
     R128InfoPtr   info           = R128PTR(pScrn);
     unsigned char   *R128MMIO    = info->MMIO;
+    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
 
     info->scanline_y      = y;
     info->scanline_x      = x;
@@ -871,6 +896,7 @@ static void R128SubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
 {
     R128InfoPtr     info           = R128PTR(pScrn);
     unsigned char   *R128MMIO      = info->MMIO;
+    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
     CARD32          *p             = (CARD32 *)info->scratch_buffer[bufno];
     int             i;
     int             left           = info->scanline_words;
@@ -915,6 +941,7 @@ static void R128EngineInit(ScrnInfoPtr pScrn)
 {
     R128InfoPtr   info      = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
+    unsigned char *R128MMIO32 = R128PTR(pScrn)->MMIO32;
 
     R128TRACE(("EngineInit (%d/%d)\n", info->pixel_code, pScrn->bitsPerPixel));
 

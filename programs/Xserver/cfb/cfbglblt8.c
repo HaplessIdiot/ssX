@@ -19,7 +19,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86: xc/programs/Xserver/cfb/cfbglblt8.c,v 3.1 1996/08/13 11:27:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbglblt8.c,v 3.2 1998/10/04 09:37:43 dawes Exp $ */
 
 /*
  * Poly glyph blt.  Accepts an arbitrary font <= 32 bits wide, in Copy mode
@@ -60,7 +60,7 @@ in this Software without prior written authorization from The Open Group.
 
 #ifdef USE_LEFTBITS
 typedef	unsigned char	*glyphPointer;
-extern unsigned long endtab[];
+extern CfbBits endtab[];
 
 #define GlyphBits(bits,width,dst)	getleftbits(bits,width,dst); \
 					(dst) &= widthMask; \
@@ -118,18 +118,18 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     CharInfoPtr *ppci;		/* array of character info */
     pointer	pglyphBase;	/* start of array of glyphs */
 {
-    register unsigned long  c;
+    register CfbBits  c;
 #ifndef GLYPHROP
-    register unsigned long  pixel;
+    register CfbBits  pixel;
 #endif
-    register unsigned long  *dst;
+    register CfbBits  *dst;
     register glyphPointer   glyphBits;
     register int	    xoff;
 
     FontPtr		pfont = pGC->font;
     CharInfoPtr		pci;
-    unsigned long	*dstLine;
-    unsigned long	*pdstBase;
+    CfbBits	*dstLine;
+    CfbBits	*pdstBase;
     int			hTmp;
     int			bwidthDst;
     int			widthDst;
@@ -142,7 +142,7 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     BoxPtr		extents;
 #ifdef USE_LEFTBITS
     int			widthGlyph;
-    unsigned long	widthMask;
+    CfbBits	widthMask;
 #endif
 #ifndef STIPPLE
 #ifdef USE_STIPPLE_CODE
@@ -209,7 +209,7 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     pixel = cfbGetGCPrivate(pGC)->xor;
 #endif
 
-    cfbGetTypedWidthAndPointer (pDrawable, bwidthDst, pdstBase, char, unsigned long)
+    cfbGetTypedWidthAndPointer (pDrawable, bwidthDst, pdstBase, char, CfbBits)
 
     widthDst = bwidthDst / PGSZB;
     while (nglyph--)
@@ -244,7 +244,7 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 #endif
 	    do {
 	    	dst = dstLine;
-	    	dstLine = (unsigned long *) (((char *) dstLine) + bwidthDst);
+	    	dstLine = (CfbBits *) (((char *) dstLine) + bwidthDst);
 	    	GlyphBits(glyphBits, w, c)
 	    	WriteBitGroup(dst, pixel, GetBitGroup(BitRight(c,xoff)));
 	    	dst += DST_INC;
@@ -271,19 +271,19 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     CharInfoPtr *ppci;		/* array of character info */
     unsigned char *pglyphBase;	/* start of array of glyphs */
 {
-    register unsigned long  c;
+    register CfbBits  c;
 #ifndef GLYPHROP
-    register unsigned long  pixel;
+    register CfbBits  pixel;
 #endif
-    register unsigned long  *dst;
+    register CfbBits  *dst;
     register glyphPointer   glyphBits;
     register int	    xoff;
-    unsigned long	    c1;
+    CfbBits	    c1;
 
     CharInfoPtr		pci;
     FontPtr		pfont = pGC->font;
-    unsigned long	*dstLine;
-    unsigned long	*pdstBase;
+    CfbBits	*dstLine;
+    CfbBits	*pdstBase;
     CARD32		*cTmp, *clips;
     int			maxAscent, maxDescent;
     int			minLeftBearing;
@@ -299,11 +299,11 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     RegionPtr		pRegion;
     int			yBand;
 #ifdef GLYPHROP
-    unsigned long       bits;
+    CfbBits       bits;
 #endif
 #ifdef USE_LEFTBITS
     int			widthGlyph;
-    unsigned long	widthMask;
+    CfbBits	widthMask;
 #endif
 
 #ifdef GLYPHROP
@@ -312,7 +312,7 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     pixel = cfbGetGCPrivate(pGC)->xor;
 #endif
     
-    cfbGetTypedWidthAndPointer (pDrawable, bwidthDst, pdstBase, char, unsigned long)
+    cfbGetTypedWidthAndPointer (pDrawable, bwidthDst, pdstBase, char, CfbBits)
 
     widthDst = bwidthDst / PGSZB;
     maxAscent = FONTMAXBOUNDS(pfont,ascent);
@@ -373,7 +373,7 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    	cTmp = clips;
 	    	do {
 	    	    dst = dstLine;
-	    	    dstLine = (unsigned long *) (((char *) dstLine) + bwidthDst);
+	    	    dstLine = (CfbBits *) (((char *) dstLine) + bwidthDst);
 	    	    GlyphBits(glyphBits, w, c)
 		    c &= *cTmp++;
 		    if (c)
@@ -413,7 +413,7 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 #else
 	    	do {
 	    	    dst = dstLine;
-	    	    dstLine = (unsigned long *) (((char *) dstLine) + bwidthDst);
+	    	    dstLine = (CfbBits *) (((char *) dstLine) + bwidthDst);
 	    	    GlyphBits(glyphBits, w, c)
 		    if (c)
 		    {
