@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.55 2001/08/01 00:44:55 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.56 2001/08/01 12:17:32 tsi Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -62,7 +62,7 @@ static Bool ExtendedEnabled = FALSE;
  * Due to conflicts with "compiler.h", don't rely on <sys/io.h> to declare
  * these.
  */
-extern int ioperm(unsigned long __from, unsigned long __num, int __turn_on));
+extern int ioperm(unsigned long __from, unsigned long __num, int __turn_on);
 extern int iopl(int __level);
 
 #endif
