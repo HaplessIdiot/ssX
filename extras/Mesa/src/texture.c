@@ -2063,10 +2063,12 @@ _mesa_texture_combine(const GLcontext *ctx,
                const GLubyte red   = FLOAT_TO_UBYTE(textureUnit->EnvColor[0]);
                const GLubyte green = FLOAT_TO_UBYTE(textureUnit->EnvColor[1]);
                const GLubyte blue  = FLOAT_TO_UBYTE(textureUnit->EnvColor[2]);
+               const GLubyte alpha = FLOAT_TO_UBYTE(textureUnit->EnvColor[3]);
                for (i = 0; i < n; i++) {
                   c[i][RCOMP] = red;
                   c[i][GCOMP] = green;
                   c[i][BCOMP] = blue;
+                  c[i][ACOMP] = alpha;
                }
                argRGB[j] = ccolor[j];
             }
@@ -2079,6 +2081,7 @@ _mesa_texture_combine(const GLcontext *ctx,
          GLubyte (*src)[4] = argRGB[j];
          GLubyte (*dst)[4] = ccolor[j];
 
+         /* point to new arg[j] storage */
          argRGB[j] = ccolor[j];
 
          if (textureUnit->CombineOperandRGB[j] == GL_ONE_MINUS_SRC_COLOR) {
@@ -2089,7 +2092,6 @@ _mesa_texture_combine(const GLcontext *ctx,
             }
          }
          else if (textureUnit->CombineOperandRGB[j] == GL_SRC_ALPHA) {
-            src = argA[j];
             for (i = 0; i < n; i++) {
                dst[i][RCOMP] = src[i][ACOMP];
                dst[i][GCOMP] = src[i][ACOMP];
@@ -2097,7 +2099,6 @@ _mesa_texture_combine(const GLcontext *ctx,
             }
          }
          else {                      /*  GL_ONE_MINUS_SRC_ALPHA  */
-            src = argA[j];
             for (i = 0; i < n; i++) {
                dst[i][RCOMP] = 255 - src[i][ACOMP];
                dst[i][GCOMP] = 255 - src[i][ACOMP];
