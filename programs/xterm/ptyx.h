@@ -72,7 +72,6 @@
 #include <X11/Xosdefs.h>
 #include <X11/Xmu/Converters.h>
 #ifdef XRENDERFONT
-#include <X11/extensions/Xrender.h>
 #include <X11/Xft/Xft.h>
 #endif
 
