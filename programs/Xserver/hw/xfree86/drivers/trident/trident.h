@@ -192,7 +192,8 @@ typedef enum {
     BLADE3D,
     CYBERBLADEI7,
     CYBERBLADEI7D,
-    CYBERBLADEI1
+    CYBERBLADEI1,
+    CYBERBLADEI1D
 } TRIDENTType;
 
 #define UseMMIO		(pTrident->NoMMIO == FALSE)
@@ -215,6 +216,7 @@ typedef enum {
 			 (pTrident->Chipset == CYBERBLADEI7)  || \
 			 (pTrident->Chipset == CYBERBLADEI7D)  || \
 			 (pTrident->Chipset == CYBERBLADEI1)  || \
+			 (pTrident->Chipset == CYBERBLADEI1D)  || \
 			 (pTrident->Chipset == BLADE3D))
 
 /*
