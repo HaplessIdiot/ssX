@@ -46,6 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: io.c,v 1.88 94/04/17 20:27:00 dpw Exp $ */
+/* $XFree86$ */
 /*****************************************************************
  * i/o functions
  *
@@ -61,8 +62,10 @@ extern int errno;
 #endif
 #include "Xmd.h"
 #include <errno.h>
+#if !defined(AMOEBA) && !defined(_MINIX)
 #include <sys/param.h>
 #include <sys/uio.h>
+#endif
 #include "X.h"
 #include "Xproto.h"
 #include "os.h"
@@ -358,11 +361,13 @@ ReadRequestFromClient(client)
 #endif
 	if (result <= 0)
 	{
+#if !defined(SVR4) && !defined(i386)
 	    if ((result < 0) && ETEST(errno))
 	    {
 		YieldControlNoInput();
 		return 0;
 	    }
+#endif
 	    YieldControlDeath();
 	    return -1;
 	}

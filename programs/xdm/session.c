@@ -1,4 +1,5 @@
 /* $XConsortium: session.c,v 1.72 94/04/17 20:03:45 gildea Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -223,10 +224,7 @@ static
 IOErrorHandler (dpy)
     Display *dpy;
 {
-    extern char *sys_errlist[];
-    extern int sys_nerr;
-    char *s = ((errno >= 0 && errno < sys_nerr) ? sys_errlist[errno]
-						: "unknown error");
+    char *s = strerror(errno);
 
     LogError("fatal IO error %d (%s)\n", errno, s);
     exit(RESERVER_DISPLAY);

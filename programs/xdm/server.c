@@ -1,4 +1,5 @@
 /* $XConsortium: server.c,v 1.19 94/04/17 20:03:44 hersh Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -63,16 +64,6 @@ CatchUsr1 (n)
 #endif
     Debug ("display manager caught SIGUSR1\n");
     ++receivedUsr1;
-}
-
-static char *_SysErrorMsg (n)
-    int n;
-{
-    extern char *sys_errlist[];
-    extern int sys_nerr;
-    char *s = ((n >= 0 && n < sys_nerr) ? sys_errlist[n] : "unknown error");
-
-    return (s ? s : "no such error");
 }
 
 StartServerOnce (d)
@@ -340,7 +331,7 @@ WaitForServer (d)
 	    	return 1;
 	    } else {
 	    	Debug ("OpenDisplay failed %d (%s) on \"%s\"\n",
-		       errno, _SysErrorMsg (errno), d->name);
+		       errno, strerror (errno), d->name);
 	    }
 	    Debug ("waiting for server to start %d\n", i);
 	    sleep ((unsigned) d->openDelay);

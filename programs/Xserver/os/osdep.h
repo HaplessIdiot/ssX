@@ -46,11 +46,30 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: osdep.h,v 1.40 94/04/17 20:27:05 dpw Exp $ */
+/* $XFree86$ */
+
+#ifdef AMOEBA
+#include <stddef.h>
+#define port am_port_t
+#include <amoeba.h>
+#include <stdio.h>
+#include <assert.h>
+#include <semaphore.h>
+#include <circbuf.h>
+#include <exception.h>
+#include <vc.h>
+#include <fault.h>
+#include <module/signals.h>
+#include <server/x11/Xamoeba.h>
+#undef  port
+#endif
 
 #define BOTIMEOUT 200 /* in milliseconds */
 #define BUFSIZE 4096
 #define BUFWATERMARK 8192
+#ifndef MAXBUFSIZE
 #define MAXBUFSIZE (1 << 22)
+#endif
 
 #include <X11/Xmd.h>
 
@@ -200,6 +219,18 @@ typedef FdMask FdSet[mskcnt];
  * #define ANYSET(src) (src[0] || src[1] || src[2] || src[3] || src[4] ...)
  */
 #endif
+
+#ifdef AMOEBA
+#include "X.h"
+#include "misc.h"
+
+#define FamilyAmoeba 33
+
+extern char             *XServerHostName;       /* X server host name */
+extern char             *XTcpServerName;        /* TCP/IP server name */
+extern int              maxClient;              /* Highest client# */
+extern int              nNewConns;              /* # of new clients */
+#endif /* AMOEBA */
 
 typedef struct _connectionInput {
     struct _connectionInput *next;

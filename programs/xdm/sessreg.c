@@ -1,5 +1,6 @@
 /*
  * $XConsortium: sessreg.c,v 1.11 94/04/17 20:03:46 rws Exp $
+ * $XFree86$
  *
 Copyright (c) 1990  X Consortium
 
@@ -206,7 +207,7 @@ char	**argv;
 		wtmp_file = WTMP_FILE;
 	if (!uflag)
 		utmp_file = UTMP_FILE;
-#ifndef SYSV
+#if !defined(SYSV) && !defined(linux)
 	if (!tflag)
 		ttys_file = TTYS_FILE;
 	if (!sflag) {

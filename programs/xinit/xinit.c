@@ -1,4 +1,5 @@
 /* $XConsortium: xinit.c,v 11.58 94/04/17 20:24:30 rws Exp $ */
+/* $XFree86$ */
 
 /*
 
@@ -94,6 +95,15 @@ char *server_names[] = {
 #ifdef M4310				/* Tektronix Pegasus */
     "Xpeg        Tektronix Pegasus display on 431x series",
 #endif
+#ifdef XFREE86
+    "XF86_SVGA   SVGA colour display on i386 PC",
+    "XF86_Mono   monochrome display on i386 PC",
+    "XF86_VGA16  16 colour VGA display on i386 PC",
+    "XF86_S3     S3 colour display on i386 PC",  
+    "XF86_8514   IBM 8514/A colour display on i386 PC",
+    "XF86_Mach8  ATI Mach8 colour display on i386 PC",
+    "XF86_Mach32 ATI Mach32 colour display on i386 PC",
+#endif
     NULL};
 
 #ifndef XINITRC
@@ -122,7 +132,7 @@ char *displayNum;
 char *program;
 Display *xd;			/* server connection */
 #ifndef SYSV
-#if defined(SVR4) || defined(_POSIX_SOURCE) || defined(__bsdi__)
+#if defined(SVR4) || defined(_POSIX_SOURCE) || defined(__bsdi__) || defined(__FreeBSD__) || defined(__386BSD__) || defined(__NetBSD__)
 int status;
 #else
 union wait	status;
@@ -160,7 +170,7 @@ SIGVAL sigCatch(sig)
 SIGVAL sigAlarm(sig)
 	int sig;
 {
-#ifdef SYSV
+#if defined(SYSV) || defined(linux)
 	signal (sig, sigAlarm);
 #endif
 }
@@ -169,7 +179,7 @@ SIGVAL
 sigUsr1(sig)
 	int sig;
 {
-#ifdef SYSV
+#if defined(SYSV) || defined(linux)
 	signal (sig, sigUsr1);
 #endif
 }
@@ -629,10 +639,8 @@ Fatal(fmt, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
 Error(fmt, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
 	char	*fmt;
 {
-	extern char	*sys_errlist[];
-
 	fprintf(stderr, "%s:  ", program);
-	if (errno > 0 && errno < sys_nerr)
-	  fprintf (stderr, "%s (errno %d):  ", sys_errlist[errno], errno);
+	if (errno > 0)
+	  fprintf (stderr, "%s (errno %d):  ", strerror(errno), errno);
 	fprintf(stderr, fmt, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9);
 }

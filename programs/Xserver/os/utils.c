@@ -1,4 +1,5 @@
 /* $XConsortium: utils.c,v 1.146 94/04/17 20:27:07 erik Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -71,7 +72,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
 #undef _POSIX_SOURCE
 #endif
 #endif
-#ifndef SYSV
+#if !defined(SYSV) && !defined(AMOEBA) && !defined(_MINIX)
 #include <sys/resource.h>
 #endif
 #include <time.h>
@@ -79,6 +80,23 @@ OR PERFORMANCE OF THIS SOFTWARE.
 #include <ctype.h>    /* for isspace */
 #if NeedVarargsPrototypes
 #include <stdarg.h>
+#endif
+
+#ifdef AMOEBA
+#include "osdep.h"
+#include <amoeba.h>
+#include <module/mutex.h>
+
+static mutex print_lock;
+#endif
+
+#if defined(__STDC__) || defined(AMOEBA)
+/* DHD: SVR4.0 has a prototype for abs() in stdlib.h */
+/* DHD: might be better to move this include higher up? */
+#ifdef abs
+#undef abs
+#endif
+#include <stdlib.h>	/* for malloc() */
 #endif
 
 extern char *display;
@@ -182,6 +200,9 @@ AutoResetServer (sig)
 #if defined(SYSV) && defined(X_NOT_POSIX)
     OsSignal (SIGHUP, AutoResetServer);
 #endif
+#ifdef AMOEBA
+    WakeUpMainThread();
+#endif
 }
 
 /* Force connections to close and then exit on SIGTERM, SIGINT */
@@ -197,6 +218,9 @@ GiveUp(sig)
     if (sig)
 	OsSignal(sig, SIG_IGN);
 #endif
+#ifdef AMOEBA
+    WakeUpMainThread();
+#endif
 }
 
 
@@ -207,6 +231,9 @@ AbortServer()
 
     AbortDDX();
     fflush(stderr);
+#ifdef AMOEBA
+    IOPCleanUp();
+#endif
     if (CoreDump)
 	abort();
     exit (1);
@@ -216,17 +243,27 @@ void
 Error(str)
     char *str;
 {
+#ifdef AMOEBA
+    mu_lock(&print_lock);
+#endif
     perror(str);
+#ifdef AMOEBA
+    mu_unlock(&print_lock);
+#endif
 }
 
 #ifndef DDXTIME
 CARD32
 GetTimeInMillis()
 {
+#ifndef AMOEBA
     struct timeval  tp;
 
     X_GETTIMEOFDAY(&tp);
     return(tp.tv_sec * 1000) + (tp.tv_usec / 1000);
+#else
+    return sys_milli();
+#endif
 }
 #endif
 
@@ -258,7 +295,11 @@ AdjustWaitForDelay (waitTime, newdelay)
 void UseMsg()
 {
 #if !defined(AIXrt) && !defined(AIX386)
+#ifndef AMOEBA
     ErrorF("use: X [:<display>] [option]\n");
+#else
+    ErrorF("use: X [[<host>]:<display>] [option]\n");
+#endif
     ErrorF("-a #                   mouse acceleration (pixels)\n");
     ErrorF("-ac                    disable access control restrictions\n");
 #ifdef MEMBUG
@@ -314,6 +355,9 @@ void UseMsg()
     ErrorF("-v                     screen-saver without video blanking\n");
     ErrorF("-wm                    WhenMapped default backing-store\n");
     ErrorF("-x string              loads named extension at init time \n");
+#ifdef AMOEBA
+    ErrorF("-tcp capability        specify TCP/IP server capability\n");
+#endif
 #ifdef XDMCP
     XdmcpUseMsg();
 #endif
@@ -334,6 +378,10 @@ char	*argv[];
 {
     int i, skip;
 
+#ifdef AMOEBA
+    mu_init(&print_lock);
+#endif
+
     defaultKeyboardControl.autoRepeat = TRUE;
 
 #ifdef AIXV3
@@ -352,6 +400,22 @@ char	*argv[];
 	    display = argv[i];
 	    display++;
 	}
+#ifdef AMOEBA
+        else if (strchr(argv[i], ':') != NULL) {
+            char *p;
+
+            XServerHostName = argv[i];
+            if ((p = strchr(argv[i], ':')) != NULL) {
+                *p++ = '\0';
+                display = p;
+            }
+        } else if (strcmp( argv[i], "-tcp") == 0) {
+            if (++i < argc)
+                XTcpServerName = argv[i];
+            else
+                UseMsg();
+        }
+#endif /* AMOEBA */
 	else if ( strcmp( argv[i], "-a") == 0)
 	{
 	    if(++i < argc)
@@ -793,7 +857,9 @@ unsigned long *
 Xalloc (amount)
     unsigned long amount;
 {
+#if !defined(__STDC__) && !defined(AMOEBA)
     char		*malloc();
+#endif
     register pointer  ptr;
 	
     if ((long)amount <= 0)
@@ -821,7 +887,9 @@ unsigned long *
 XNFalloc (amount)
     unsigned long amount;
 {
+#if !defined(__STDC__) && !defined(AMOEBA)
     char             *malloc();
+#endif
     register pointer ptr;
 
     if ((long)amount <= 0)
@@ -863,8 +931,10 @@ Xrealloc (ptr, amount)
     register pointer ptr;
     unsigned long amount;
 {
+#if !defined(__STDC__) && !defined(AMOEBA)
     char *malloc();
     char *realloc();
+#endif
 
 #ifdef MEMBUG
     if (!Must_have_memory && Memory_fail &&
@@ -1041,7 +1111,13 @@ ErrorF(
     if (SyncOn)
         sync();
 #else /* not AIXV3 */
+#ifdef AMOEBA
+    mu_lock(&print_lock);
+#endif
     fprintf( stderr, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
+#ifdef AMOEBA
+    mu_unlock(&print_lock);
+#endif
 #endif /* AIXV3 */
 #endif
 }

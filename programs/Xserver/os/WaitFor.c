@@ -47,6 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $XConsortium: WaitFor.c,v 1.68 94/04/17 20:26:52 dpw Exp $ */
+/* $XFree86$ */
 
 /*****************************************************************
  * OS Dependent input routines:
@@ -129,6 +130,8 @@ static OsTimerPtr timers;
  *****************/
 
 static INT32 timeTilFrob = 0;		/* while screen saving */
+
+#if !defined(AMOEBA)
 
 int
 WaitForSomething(pClientsReady)
@@ -363,6 +366,153 @@ ANYSET(src)
     return (FALSE);
 }
 #endif
+
+#else /* AMOEBA */
+
+#define dbprintf(list)  /* printf list */
+
+int
+WaitForSomething(pClientsReady)
+    int		*pClientsReady;
+{
+    register int	i, wt, nt;
+    struct timeval	*wtp;
+    long        	alwaysCheckForInput[2];
+    int 		nready;
+    int 		timeout;
+    unsigned long	now;
+
+    WakeupInitWaiters();
+
+    /* Be sure to check for input on every sweep in the dispatcher.
+     * This routine should be in InitInput, but since this is more
+     * or less a device dependent routine, and the semantics of it
+     * are device independent I decided to put it here.
+     */
+    alwaysCheckForInput[0] = 0;
+    alwaysCheckForInput[1] = 1;
+    SetInputCheck(&alwaysCheckForInput[0], &alwaysCheckForInput[1]);
+
+    while (1) {
+	/* deal with any blocked jobs */
+	if (workQueue)
+	    ProcessWorkQueue();
+
+	if (ANYSET(ClientsWithInput)) {
+	    dbprintf(("WaitFor: "));
+	    nready = 0;
+	    for (i=0; i < mskcnt; i++) {
+		while (ClientsWithInput[i]) {
+		    int curclient, client_index;
+
+		    curclient = ffs (ClientsWithInput[i]) - 1;
+		    client_index = ConnectionTranslation[curclient + (i << 5)];
+		    dbprintf(("%d has input\n", curclient));
+		    /* TODO: XSYNC priorities */
+		    pClientsReady[nready++] = client_index;
+		    ClientsWithInput[i] &= ~(((FdMask)1) << curclient);
+		}
+	    }
+	    break;
+	}	
+
+	wt = -1;
+	now = GetTimeInMillis();
+	if (timers)
+	{
+	    while (timers && timers->expires <= now)
+		DoTimer(timers, now, &timers);
+	    if (timers)
+	    {
+		timeout = timers->expires - now;
+		wt = timeout;
+	    }
+	}
+	if (ScreenSaverTime) {
+	    timeout = ScreenSaverTime - TimeSinceLastInputEvent();
+	    if (timeout <= 0) { /* may be forced by AutoResetServer() */
+		long timeSinceSave;
+
+		timeSinceSave = -timeout;
+		if ((timeSinceSave >= timeTilFrob) && (timeTilFrob >= 0)) {
+		    SaveScreens(SCREEN_SAVER_ON, ScreenSaverActive);
+		    if (ScreenSaverInterval)
+			/* round up to the next ScreenSaverInterval */
+			timeTilFrob = ScreenSaverInterval *
+				((timeSinceSave + ScreenSaverInterval) /
+					ScreenSaverInterval);
+		    else
+			timeTilFrob = -1;
+		}
+		timeout = timeTilFrob - timeSinceSave;
+	    } else {
+		if (timeout > ScreenSaverTime)
+		    timeout = ScreenSaverTime;
+		timeTilFrob = 0;
+	    }
+	    
+	    if (wt < 0 || (timeTilFrob >= 0 && wt > timeout)) {
+		wt = timeout;
+	    }
+	}
+
+	/* Check for new clients. We do this here and not in the listener
+	 * threads because we cannot be sure that dix is re-entrant, and
+	 * we need to call some dix routines during startup.
+	 */
+	if (nNewConns) {
+	    QueueWorkProc(EstablishNewConnections, NULL,
+			  (pointer) 0);
+	}
+
+	/* Call device dependent block handlers, which may want to
+	 * specify a different timeout (e.g. used for key auto-repeat).
+	 */
+	wtp = (struct timeval *) NULL;
+	BlockHandler((pointer)&wtp, (pointer)NULL);
+	if (wtp) wt = (wtp->tv_sec * 1000) + (wtp->tv_usec / 1000);
+
+	if (NewOutputPending)
+	    FlushAllOutput();
+
+	/* TODO: XTESTEXT1 */
+
+	nready = AmFindReadyClients(pClientsReady, AllSockets);
+
+	/* If we found some work, or the iop server has us informed about
+	 * new device events, we return.
+	 */
+	if (nready || AmoebaEventsAvailable())
+	    break;
+
+	if (dispatchException)
+	    return 0;
+
+	/* Nothing interesting is available. Go to sleep with a timeout.
+	 * The other threads will wake us when needed.
+	 */
+	i = SleepMainThread(wt);
+
+	/* Wake up any of the sleeping handlers */
+	WakeupHandler((unsigned long)0, (pointer)NULL);
+
+	/* TODO: XTESTEXT1 */
+
+	if (dispatchException)
+	    return 0;
+
+	if (i == -1) {
+	    /* An error or timeout occurred */
+	    return 0;
+	}
+    }
+
+    dbprintf(("WaitForSomething: %d clients ready\n", nready));
+    return nready;
+}
+
+#endif /* AMOEBA */
+
 
 static void
 DoTimer(timer, now, prev)

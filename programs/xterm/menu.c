@@ -1,4 +1,5 @@
 /* $XConsortium: menu.c,v 1.63 94/04/17 20:23:30 gildea Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -176,11 +177,11 @@ static Bool domenu (w, event, params, param_count)
 #ifdef ALLOWLOGGING
 	    update_logging();
 #endif
-#ifndef SIGTSTP
+#if !defined(SIGTSTP) || defined(AMOEBA)
 	    set_sensitivity (screen->mainMenu,
 			     mainMenuEntries[mainMenu_suspend].widget, FALSE);
 #endif
-#ifndef SIGCONT
+#if !defined(SIGCONT) || defined(AMOEBA)
 	    set_sensitivity (screen->mainMenu, 
 			     mainMenuEntries[mainMenu_continue].widget, FALSE);
 #endif
@@ -413,7 +414,7 @@ static void do_suspend (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
 {
-#ifdef SIGTSTP
+#if defined(SIGTSTP) && !defined(AMOEBA)
     handle_send_signal (gw, SIGTSTP);
 #endif
 }
@@ -423,7 +424,7 @@ static void do_continue (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
 {
-#ifdef SIGCONT
+#if defined(SIGCONT) && !defined(AMOEBA)
     handle_send_signal (gw, SIGCONT);
 #endif
 }

@@ -1,5 +1,6 @@
 /*
  * $XConsortium: charproc.c,v 1.180 94/04/17 20:23:25 hersh Exp $
+ * $XFree86$
  */
 
 /*
@@ -1183,8 +1184,13 @@ v_write(f, d, len)
 	}
 #endif
 
+#ifndef AMOEBA
 	if ((1 << f) != pty_mask)
 		return(write(f, d, len));
+#else
+	if (term->screen.respond != f)
+		return(write(f, d, len));
+#endif
 
 	/*
 	 * Append to the block we already have.
@@ -1257,9 +1263,15 @@ v_write(f, d, len)
 #define MAX_PTY_WRITE 128	/* 1/2 POSIX minimum MAX_INPUT */
 
 	if (v_bufptr > v_bufstr) {
+#ifndef AMOEBA
 	    riten = write(f, v_bufstr, v_bufptr - v_bufstr <= MAX_PTY_WRITE ?
 			  	       v_bufptr - v_bufstr : MAX_PTY_WRITE);
 	    if (riten < 0) {
+#else
+	    riten = v_bufptr - v_bufstr <= MAX_PTY_WRITE ?
+		    v_bufptr - v_bufstr : MAX_PTY_WRITE;
+	    if (cb_puts(term->screen.tty_inq, v_bufstr, riten) != 0) {
+#endif /* AMOEBA */
 #ifdef DEBUG
 		if (debug) perror("write");
 #endif
@@ -1314,12 +1326,24 @@ in_put()
     static struct timeval select_timeout;
 
     for( ; ; ) {
+#ifndef AMOEBA
 	if (select_mask & pty_mask && eventMode == NORMAL) {
+#else
+	if ((bcnt = cb_full(screen->tty_outq)) > 0 && eventMode == NORMAL) {
+#endif
 #ifdef ALLOWLOGGING
 	    if (screen->logging)
 		FlushLog(screen);
 #endif
+#ifndef AMOEBA
 	    bcnt = read(screen->respond, (char *)(bptr = buffer), BUF_SIZE);
+#else
+	    bptr = buffer;
+	    if ((bcnt = cb_gets(screen->tty_outq, bptr, bcnt, BUF_SIZE)) == 0) {
+		errno = EIO;
+		bcnt = -1;
+	    }
+#endif
 	    if (bcnt < 0) {
 		if (errno == EIO)
 		    Cleanup (0);
@@ -1369,6 +1393,7 @@ in_put()
 
 	XFlush(screen->display); /* always flush writes before waiting */
 
+#ifndef AMOEBA
 	/* Update the masks and, unless X events are already in the queue,
 	   wait for I/O to be possible. */
 	select_mask = Select_mask;
@@ -1394,6 +1419,21 @@ in_put()
 	if (QLength(screen->display) || (select_mask & X_mask)) {
 	    xevents();
 	}
+#else  /* AMOEBA */
+	i = _X11TransAmSelect(ConnectionNumber(screen->display), 1);
+	/* if there are X events already in our queue,
+	   it counts as being readable */
+	if (QLength(screen->display) || i > 0) {
+	    xevents();
+	    continue;
+	} else if (i < 0) {
+	    extern int exiting;
+	    if (errno != EINTR && !exiting)
+		SysError(ERROR_SELECT);
+	}
+	if (cb_full(screen->tty_outq) <= 0)
+	    SleepMainThread();
+#endif /* AMOENA */
 
     }
     bcnt--;
@@ -1993,6 +2033,9 @@ int fd;
 	register i = 1;
 	extern XtermWidget term;
 
+#ifdef AMOEBA
+	if (ttypreprocess(c)) return;
+#endif
 	if((buf[0] = c) == '\r' && (term->flags & LINEFEED)) {
 		buf[1] = '\n';
 		i++;

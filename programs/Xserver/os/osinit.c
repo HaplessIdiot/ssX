@@ -46,6 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: osinit.c,v 1.48 94/04/17 20:27:05 dpw Exp $ */
+/* $XFree86$ */
 
 #include <stdio.h>
 #include "X.h"
@@ -61,7 +62,7 @@ SOFTWARE.
 #endif
 #endif
 
-#ifndef SYSV
+#if !defined(SYSV) && !defined(AMOEBA) && !defined(_MINIX)
 #include <sys/resource.h>
 #endif
 
@@ -83,6 +84,7 @@ int limitNoFile = -1;
 void
 OsInit()
 {
+#ifndef AMOEBA
     static Bool been_here = FALSE;
     char fname[PATH_MAX];
 
@@ -178,6 +180,7 @@ OsInit()
 #endif
 	been_here = TRUE;
     }
+#endif /* AMOEBA */
     TimerInit();
 #ifdef DDXOSINIT
     OsVendorInit();

@@ -1,4 +1,5 @@
 /* $XConsortium: util.c,v 1.17 94/04/17 20:03:48 rws Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -52,7 +53,7 @@ from the X Consortium.
 #undef _POSIX_SOURCE
 #endif
 #endif
-#ifdef __osf__
+#if defined(__osf__) || defined(linux)
 #define setpgrp setpgid
 #endif
 

@@ -1,5 +1,6 @@
 /*
  *	$XConsortium: ptyx.h,v 1.62 93/02/25 17:21:26 gildea Exp $
+ *	$XFree86$
  */
 
 /*
@@ -32,6 +33,17 @@
 #include <X11/Xmu/Misc.h>	/* For Max() and Min(). */
 #include <X11/Xfuncs.h>
 #include <X11/Xosdefs.h>
+
+#ifdef AMOEBA
+/* Avoid name clashes with standard Amoeba types: */
+#define event    am_event_t
+#define interval am_interval_t
+#include <amoeba.h>
+#include <semaphore.h>
+#include <circbuf.h>
+#undef event
+#undef interval
+#endif
 
 /* Extra Xlib definitions */
 #define AllButtonsUp(detail, ignore)  (\
@@ -196,6 +208,11 @@ typedef struct {
 	Display		*display;	/* X display for screen		*/
 	int		respond;	/* socket for responses
 					   (position report, etc.)	*/
+#ifdef AMOEBA
+	capability      proccap;        /* process capability           */
+	struct circbuf  *tty_inq;       /* tty server input queue       */
+	struct circbuf  *tty_outq;      /* tty server output queue      */
+#endif
 	long		pid;		/* pid of process on far side   */
 	int		uid;		/* user id of actual person	*/
 	int		gid;		/* group id of actual person	*/
