@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from The XFree86 Project or Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.26tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.27 2003/01/12 03:55:49 tsi Exp $ */
 
 #include "xf86Resources.h"
 #include "xf86RAC.h"
@@ -1134,15 +1134,14 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 	 * Setup the ClockRanges, which describe what clock ranges are available,
 	 * and what sort of modes they can be used for.
 	 */
-	clockRanges = xnfalloc(sizeof(ClockRange));
+	clockRanges = xnfcalloc(sizeof(ClockRange),1);
 	clockRanges->next = NULL;
 	clockRanges->minClock = pSmi->minClock;
 	clockRanges->maxClock = pSmi->maxClock;
 	clockRanges->clockIndex = -1;
 	clockRanges->interlaceAllowed = FALSE;
 	clockRanges->doubleScanAllowed = FALSE;
-
-					
+		
 	i = xf86ValidateModes(
 			pScrn,						/* Screen pointer					  */
 			pScrn->monitor->Modes,		/* Available monitor modes			  */
