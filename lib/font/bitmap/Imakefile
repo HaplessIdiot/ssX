@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/9 1996/11/03 19:31:58 kaleb $
-XCOMM $XFree86: xc/lib/font/bitmap/Imakefile,v 1.4 1998/07/25 06:57:03 dawes Exp $
+XCOMM $XFree86: xc/lib/font/bitmap/Imakefile,v 1.5 1999/01/11 05:13:17 dawes Exp $
 
 #if DoLoadableServer
 #define IHaveSubdirs
@@ -31,7 +31,7 @@ SUBDIRS = module
 #include <Library.tmpl>
 LibraryObjectRule()
 
-SpecialCObjectRule(bitmapfunc,$(ICONFIGFILES),$(GZIP_DEFS))
+SpecialCLibObjectRule(bitmapfunc,$(ICONFIGFILES),$(GZIP_DEFS))
 SubdirLibraryRule($(OBJS))
 NormalLintTarget($(SRCS))
 
