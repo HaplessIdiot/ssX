@@ -26,7 +26,7 @@
  * 
  * Permedia 3 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.15 2001/02/01 12:26:02 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.16 2001/02/02 11:45:58 alanh Exp $ */
 
 #include "Xarch.h"
 #include "xf86.h"
@@ -651,6 +651,7 @@ Permedia3SubsequentFillRectSolid(ScrnInfoPtr pScrn, int x, int y, int w, int h)
     GLINTPtr pGlint = GLINTPTR(pScrn);
     TRACE_ENTER("Permedia3SubsequentFillRectSolid");
 
+    GLINT_WAIT(2);
     GLINT_WRITE_REG(
 	PM3RectanglePosition_XOffset(x) |
 	PM3RectanglePosition_YOffset(y),
