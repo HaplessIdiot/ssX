@@ -1,10 +1,20 @@
 XFree86 4.2.99.903 (xx February 2003)
- 919. Fixing vidtune to pop up a info window if mode on chipset is
+ 923. Fix xvidtune to pop up a info window if mode on chipset is
       not tuneable (Egbert Eich).
- 918. Fixing a NULL pointer in a var_arg list in xfd which causes problems
+ 922. Fix a NULL pointer in a var_arg list in xfd which causes problems
       on 64 bit systems (Egbert Eich).
- 917. Fix a typo in the nsc Imakefile when installing the linkkit 
+ 921. Fix a typo in the nsc Imakefile when installing the linkkit 
       (#A.1624, Stanislav Brabec).
+ 920. Remove a dependency on how Xlib buffers requests internally for
+      xtest's test 2 of XSync (Keith Packard).
+ 919. Fix a bug in the way the bitmap font code calculates mix/max bounds
+      (it was ignoring empty characters), which fixes some xtest fonts
+      bounds check failures (Keith Packard).
+ 918. Check that the HW cursor has been setup before calling
+      xf86ForceHWCursor() in the radeon (and r128) driver.  This fixes
+      crashes when using only the SW cursor (#5628, Michel Dänzer).
+ 917. Fix duplicate arguments for xf86MatchPciInstances() in the DESIGN doc
+      (#5627, Guido Guenther).
  916. Miscellaneous 64-bit and warning fixes to mfb, xf1bpp and xf4bpp
       (Marc La France).
  915. Fix a bug in beforelight that was preventing it from being restarted 
@@ -13,8 +23,8 @@ XFree86 4.2.99.903 (xx February 2003)
       layer's check for mis-configured PCI-to-PCI bridges (Marc La France).
  913. Fix bug that would sometimes cause an extra hardware cursor to re-appear
       on a secondary head after a server reset (Marc La France).
- 912. Protect "cvl" references in recent changes with '#ifdef XTHREADS'
-      (reported by Dan Holm).
+ 912. Protect "cvl" references in recent changes to _XEventsQueued() with
+      '#ifdef XTHREADS' (reported by Dan Holm).
 
 XFree86 4.2.99.902 (17 February 2003)
  911. Change the newport driver to use ShadowFBInit2 to fix the broken
@@ -16430,4 +16440,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2566 2003/02/19 10:10:46 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2567 2003/02/19 18:55:22 eich Exp $
