@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/configProcs.h,v 1.8 1999/05/23 14:38:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/configProcs.h,v 1.9 1999/05/30 07:18:29 dawes Exp $ */
 
 /* Private procs.  Public procs are in xf86Parser.h and xf86Optrec.h */
 
@@ -91,3 +91,7 @@ void xf86ValidationError(char *format, ...);
 void SetSection(char *section);
 int getStringToken(xf86ConfigSymTabRec *tab);
 /* write.c */
+
+/* Externally provided functions */
+void ErrorF(const char *f, ...);
+void VErrorF(const char *f, va_list args);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Configint.h,v 1.11 1999/05/23 14:38:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Configint.h,v 1.12 1999/05/30 07:18:29 dawes Exp $ */
 /*
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -37,6 +37,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 #include "xf86Parser.h"
 
 typedef struct
