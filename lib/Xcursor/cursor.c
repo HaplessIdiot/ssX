@@ -82,7 +82,7 @@ XcursorAnimateNext (XcursorAnimate *animate)
 {
     Cursor  cursor = animate->cursors->cursors[animate->sequence++];
 
-    if (animate->sequence > animate->cursors->ncursor)
+    if (animate->sequence >= animate->cursors->ncursor)
 	animate->sequence = 0;
     return cursor;
 }
