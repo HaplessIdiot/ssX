@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mioverlay.c,v 3.10 2001/04/14 21:15:26 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mioverlay.c,v 3.11 2001/08/06 20:51:19 dawes Exp $ */
 
 #include "X.h"
 #include "scrnintstr.h"
@@ -75,6 +75,8 @@ static void miOverlayMoveWindow(WindowPtr, int, int, WindowPtr, VTKind);
 static void miOverlayWindowExposures(WindowPtr, RegionPtr, RegionPtr);
 static void miOverlayResizeWindow(WindowPtr, int, int, unsigned int,
 					unsigned int, WindowPtr);
+static void miOverlayClearToBackground(WindowPtr, int, int, int, int, Bool);
+
 #ifdef SHAPE
 static void miOverlaySetShape(WindowPtr);
 #endif
@@ -151,6 +153,7 @@ miInitOverlay(
     pScreen->WindowExposures = miOverlayWindowExposures;
     pScreen->ResizeWindow = miOverlayResizeWindow;
     pScreen->MarkWindow = miOverlayMarkWindow;
+    pScreen->ClearToBackground = miOverlayClearToBackground;
 #ifdef SHAPE
     pScreen->SetShape = miOverlaySetShape;
 #endif
@@ -1744,6 +1747,66 @@ miOverlaySetRootClip(ScreenPtr pScreen, Bool enable)
 
     REGION_BREAK(pScreen, &pTree->clipList);
 }
+
+static void 
+miOverlayClearToBackground(
+    WindowPtr pWin,
+    int x, int y,
+    int w, int h,
+    Bool generateExposures
+)
+{
+    miOverlayTreePtr pTree = MIOVERLAY_GET_WINDOW_TREE(pWin);
+    BoxRec box;
+    RegionRec reg;
+    RegionPtr pBSReg = NullRegion;
+    ScreenPtr pScreen = pWin->drawable.pScreen;
+    RegionPtr clipList;
+    BoxPtr  extents;
+    int     x1, y1, x2, y2;
+
+    x1 = pWin->drawable.x + x;
+    y1 = pWin->drawable.y + y;
+    if (w)
+        x2 = x1 + (int) w;
+    else
+        x2 = x1 + (int) pWin->drawable.width - (int) x;
+    if (h)
+        y2 = y1 + h;    
+    else
+        y2 = y1 + (int) pWin->drawable.height - (int) y;
+
+    clipList = (pTree) ? &pTree->clipList : &pWin->clipList;
+
+    extents = REGION_EXTENTS(pScreen, clipList);
+    
+    if (x1 < extents->x1) x1 = extents->x1;
+    if (x2 > extents->x2) x2 = extents->x2;
+    if (y1 < extents->y1) y1 = extents->y1;
+    if (y2 > extents->y2) y2 = extents->y2;
+
+    if (x2 <= x1 || y2 <= y1) 
+        x2 = x1 = y2 = y1 = 0;
+
+    box.x1 = x1; box.x2 = x2;
+    box.y1 = y1; box.y2 = y2;
+
+    REGION_INIT(pScreen, &reg, &box, 1);
+    if (pWin->backStorage) {
+        pBSReg = (* pScreen->ClearBackingStore)(pWin, x, y, w, h,
+                                                 generateExposures);
+    }
+
+    REGION_INTERSECT(pScreen, &reg, &reg, clipList);
+    if (generateExposures)
+        (*pScreen->WindowExposures)(pWin, &reg, pBSReg);
+    else if (pWin->backgroundState != None)
+        (*pScreen->PaintWindowBackground)(pWin, &reg, PW_BACKGROUND);
+    REGION_UNINIT(pScreen, &reg);
+    if (pBSReg)
+        REGION_DESTROY(pScreen, pBSReg);
+}
+
 
 /****************************************************************/
 
