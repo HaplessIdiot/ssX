@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.79 2001/03/03 09:53:00 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.80 2001/04/20 16:54:05 tsi Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -108,7 +108,10 @@ extern int vsnprintf(char *str, size_t size, const char *format, va_list ap);
 /**************************************************************************/
 /* SYSV386 (SVR3, SVR4) - But not Solaris8                                */
 /**************************************************************************/
-#if (defined(SYSV) || defined(SVR4)) && !defined(DGUX) && !defined(__SOL8__)
+#if (defined(SYSV) || defined(SVR4)) && \
+    !defined(DGUX) && \
+    !defined(__SOL8__) && \
+    (!defined(sun) || defined(i386))
 # ifdef SCO325
 #  ifndef _SVID3
 #   define _SVID3
@@ -252,7 +255,7 @@ extern int vsnprintf(char *str, size_t size, const char *format, va_list ap);
  * Good ol' Solaris8, and its lack of VT support 
  ***********/
 
-#ifdef __SOL8__
+#if defined(__SOL8__) || (defined(sun) && !defined(i386))
 # include <sys/mman.h>
 # include <errno.h>
 # ifdef i386

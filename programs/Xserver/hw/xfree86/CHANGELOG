@@ -1,4 +1,11 @@
 XFree86 4.0.99.4 (xx May 2001)
+ 543. Back out sunleo conversion to fb.  This driver is too heavily dependent
+      on cfb32 for a simple fb conversion (Marc La France).
+ 542. Miscellaneous build/warning fixes (Marc La France).
+ 541. More prep work for SunOS (Marc La France).
+ 540. Fix libXft build on SunOS (Marc La France).
+ 539. Another makedepend bug fix (Marc La France).
+ 538. Fix use of xftcache utility during !UseInstalled builds (Marc La France).
  537. Adds #XFree86LOADER define to wrap ModuleInfo related functions
       (#4654, Harold Hunt).
  536. Add an option to the SiS driver to turn off Xvideo support
@@ -13268,4 +13275,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1777 2001/05/16 13:43:15 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1778 2001/05/16 20:08:34 paulo Exp $

@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.c,v 1.3 2000/12/01 18:31:07 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.c,v 1.4 2001/05/15 18:22:23 paulo Exp $
  */
 #define LOADER_PRIVATE
 #include "loader.h"
@@ -34,12 +34,12 @@
 /* XXX beware (or fix it) libc functions called here are the xf86 ones */
 
 #ifdef USE_MODULES
-static void AddModuleOptions(char*, OptionInfoPtr*);
+static void AddModuleOptions(char*, OptionInfoPtr);
 void xf86AddDriver(DriverPtr, void*, int);
 Bool xf86ServerIsOnlyDetecting(void);
 void xf86AddInputDriver(InputDriverPtr, pointer, int);
 void xf86AddModuleInfo(ModuleInfoPtr, void*);
-Bool xf86LoaderCheckSymbol(char*);
+Bool xf86LoaderCheckSymbol(const char*);
 void xf86LoaderReqSymLists(const char **, ...);
 
 xf86cfgModuleOptions *module_options;
@@ -249,7 +249,7 @@ static ModuleInfoPtr info;
 static ModuleType type = GenericModule;
 
 static void
-AddModuleOptions(char *name, OptionInfoPtr *option)
+AddModuleOptions(char *name, OptionInfoPtr option)
 {
     xf86cfgModuleOptions *ptr;
     OptionInfoPtr tmp;
@@ -379,13 +379,9 @@ xf86AddModuleInfo(ModuleInfoPtr inf, void *module)
 }
 
 Bool
-xf86LoaderCheckSymbol(char *symbol)
+xf86LoaderCheckSymbol(const char *symbol)
 {
-    itemPtr item;
-
-    item = LoaderHashFind(symbol);
-
-    return (item ? True : False);
+    return LoaderSymbol(symbol) != NULL;
 }
 
 void

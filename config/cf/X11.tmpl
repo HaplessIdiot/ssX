@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.113 2001/04/10 16:07:47 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.114 2001/04/23 15:53:45 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1348,6 +1348,7 @@ XCOMM X Window System make variables; these need to be coordinated with rules
               RGB = $(BINDIR)/rgb
             FONTC = $(BINDIR)/bdftopcf
         MKFONTDIR = $(BINDIR)/mkfontdir
+         XFTCACHE = $(BINDIR)/xftcache
       MKHTMLINDEX = $(BINDIR)/mkhtmlindex
           UCS2ANY = $(BINDIR)/ucs2any.pl
       BDFTRUNCATE = $(BINDIR)/bdftruncate.pl
@@ -1356,7 +1357,7 @@ XCOMM X Window System make variables; these need to be coordinated with rules
               RGB = $(CLIENTENVSETUP) $(XBUILDBINDIR)/rgb
             FONTC = $(CLIENTENVSETUP) $(XBUILDBINDIR)/bdftopcf
         MKFONTDIR = $(CLIENTENVSETUP) $(XBUILDBINDIR)/mkfontdir
-         XFTCACHE = $(CLIENTENVSETUP) $(XBUILDBINDIR)/xftcache
+         XFTCACHE = $(CLIENTENVSETUP) XFT_CONFIG=$(XFTLIBSRC)/XftConfig $(XBUILDBINDIR)/xftcache
 #if HasPerl
       MKHTMLINDEX = RunPerlScript($(CONFIGSRC)/util/mkhtmlindex.pl,)
 #else

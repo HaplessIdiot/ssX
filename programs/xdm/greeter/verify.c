@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.11 2001/01/17 23:45:25 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.12 2001/05/11 09:03:07 alanh Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -117,7 +117,11 @@ static char *PAM_password;
 static int pam_error;
 
 static int PAM_conv (int num_msg,
+#ifdef sun
+		     struct pam_message **msg,
+#else
 		     const struct pam_message **msg,
+#endif
 		     struct pam_response **resp,
 		     void *appdata_ptr) {
 	int replies = 0;
@@ -153,7 +157,7 @@ static int PAM_conv (int num_msg,
 }
 
 static struct pam_conv PAM_conversation = {
-	&PAM_conv,
+	PAM_conv,
 	NULL
 };
 #endif /* USE_PAM */

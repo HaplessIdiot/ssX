@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/options.c,v 1.4 2000/11/30 20:55:18 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/options.c,v 1.5 2001/05/15 18:22:23 paulo Exp $
  */
 
 #include "options.h"
@@ -175,7 +175,7 @@ ModuleOptionsPopup(Widget w, XtPointer user_data, XtPointer call_data)
 	    }
 
 	    if (opts && opts->name) {
-		list.string = opts->name;
+		list.string = (char *)opts->name;
 		list.list_index = idx;
 		XawListHighlight(optList, idx);
 		SelectModuleOptionCallback(optList, NULL, (XtPointer)&list);
@@ -252,7 +252,9 @@ OptionsPopup(XF86OptionPtr *opts)
 	XtAddCallback(update, XtNcallback, UpdateOption, NULL);
 	command = XtCreateManagedWidget("help", commandWidgetClass,
 					form, NULL, 0);
+#ifdef USE_MODULES
 	XtAddCallback(command, XtNcallback, ModuleOptionsPopup, NULL);
+#endif
 	form = XtCreateManagedWidget("form", formWidgetClass,
 				     pane, NULL, 0);
 	XtVaCreateManagedWidget("label1", labelWidgetClass, form,
@@ -479,7 +481,7 @@ AddDriverOption(Widget w, XtPointer user_data, XtPointer call_data)
     OptionInfoPtr opt = (OptionInfoPtr)user_data;
     XF86OptionPtr option;
 
-    option_str = opt->name;
+    option_str = (char *)opt->name;
     XtSetArg(args[0], XtNstring, opt->name);
     XtSetValues(name, args, 1);
     if ((option = xf86findOption(*options, opt->name)) == NULL)

@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.21 2001/04/01 14:00:15 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.22 2001/05/15 18:22:23 paulo Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -171,7 +171,9 @@ static XtActionsRec actions[] = {
     {"testmode-cancel", CancelTestModeAction},
     {"help-close", HelpCancelAction},
     {"expert-close", ExpertCloseAction},
+#ifdef USE_MODULES
     {"module-options-close", ModuleOptionsCancelAction},
+#endif
 };
 
 static char *device_names[] = {

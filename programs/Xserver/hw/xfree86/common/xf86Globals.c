@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.30 2001/05/15 10:19:35 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.31 2001/05/15 18:22:21 paulo Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -137,7 +137,6 @@ xf86InfoRec xf86Info = {
 #if defined(i386) || defined(__i386__)
 	FALSE,		/* pc98 */
 #endif
-	FALSE,		/* kbdCustomKeycodes */
 	TRUE,		/* pmFlag */
 	0,		/* estimateSizesAggressively */
 	FALSE           /* kbdCustomKeycodes */

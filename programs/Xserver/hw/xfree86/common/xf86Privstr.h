@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.23 2001/03/05 20:18:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.24 2001/04/20 16:32:30 tsi Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -12,8 +12,8 @@
 #ifndef _XF86PRIVSTR_H
 #define _XF86PRIVSTR_H
 
-#include "Xproto.h"
 #include "xf86Pci.h"
+#include "xf86str.h"
 
 /* PCI probe flags */
 
