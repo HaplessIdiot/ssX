@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/s3_generic/s3_generic.c,v 3.7 1997/03/22 09:35:11 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/s3_generic/s3_generic.c,v 3.8 1997/03/23 07:59:04 hohndel Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -108,13 +108,27 @@ S3_GENERICProbe()
    if (s3InfoRec.chipset) {
       if (StrCaseCmp(s3InfoRec.chipset, S3_GENERICIdent(0)))
 	 return(FALSE);
-      else
-	 return(TRUE);
    }
+   else
+      s3InfoRec.chipset = S3_GENERICIdent(0);
 
-   s3InfoRec.chipset = S3_GENERICIdent(0);
 #if defined(XFree86LOADER)
+#ifndef PC98
    LoadModule("libs3pio.a", xf86ModulePath);
+#else
+#ifdef PC98_NEC
+   LoadModule("libs3necpio.a", xf86ModulePath);
+#endif
+#ifdef PC98_XKB
+   LoadModule("libs3pwskbpio.a", xf86ModulePath);
+#endif
+#ifdef PC98_PWLB
+   LoadModule("libs3pwlbpio.a", xf86ModulePath);
+#endif
+#ifdef PC98_GA968
+   LoadModule("libs3ga968pio.a", xf86ModulePath);
+#endif
+#endif
 #endif
    return(TRUE);
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/mmio_928/mmio_928.c,v 3.10 1997/03/22 09:35:08 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/mmio_928/mmio_928.c,v 3.11 1997/03/23 07:58:52 hohndel Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -134,7 +134,22 @@ MMIO_928Probe()
 
    s3Mmio928 = TRUE;
 #if defined(XFree86LOADER)
+#ifndef PC98
    LoadModule("libs3mmio.a", xf86ModulePath);
+#else
+#ifdef PC98_NEC
+   LoadModule("libs3necmmio.a", xf86ModulePath);
+#endif
+#ifdef PC98_XKB
+   LoadModule("libs3pwskbmmio.a", xf86ModulePath);
+#endif
+#ifdef PC98_PWLB
+   LoadModule("libs3pwlbmmio.a", xf86ModulePath);
+#endif
+#ifdef PC98_GA968
+   LoadModule("libs3ga968mmio.a", xf86ModulePath);
+#endif
+#endif
 #endif
    return(TRUE);
 

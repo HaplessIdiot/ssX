@@ -1,3 +1,12 @@
+XFree86 3.2Ar (26 March 1997)
+ 601. Fix and enhance handling of unresolved symbols in loader (#196, Harald
+      Koenig).
+ 600. Fixes and Additions for XF86Setup (#194,195, Joe Moss).
+ 599. Fix SuperProbe for W32 chipsets (#191, Koen Gadeyne).
+ 598. Fix building the static S3 server (#188-190, Harald Koenig).
+ 597. Fix undefined symbols in the pex5 module (#187, Matthieu Herrb).
+ 596. Fix autoloading modules in the S3 server for PC98 (#186, Takaaki Nomura).
+
 XFree86 3.2Aq (23 March 1997)
  595. Fix building static XF86_S3 (#185, Harald Koenig).
  594. Enable loader on OpenBSD (#184, Matthieu Herrb).
@@ -4211,4 +4220,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.435 1997/03/22 09:34:33 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.436 1997/03/23 07:58:02 hohndel Exp $
