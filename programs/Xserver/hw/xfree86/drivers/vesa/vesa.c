@@ -27,7 +27,7 @@
  *
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.20 2001/06/15 21:23:06 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.21 2001/06/15 21:54:46 paulo Exp $
  */
 
 #include "vesa.h"
@@ -41,6 +41,10 @@
 /* Colormap handling */
 #include "micmap.h"
 #include "xf86cmap.h"
+
+/* DPMS */
+#define DPMS_SERVER
+#include "extensions/dpms.h"
 
 /* Mandatory functions */
 static const OptionInfoRec * VESAAvailableOptions(int chipid, int busid);
@@ -188,10 +192,12 @@ static const char *ddcSymbols[] = {
     NULL
 };
 
+#if 0
 static const char *vgahwSymbols[] = {
     "vgaHWDPMSSet",
     NULL
 };
+#endif
 
 #ifdef XFree86LOADER
 
@@ -443,12 +449,14 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
     pVesa->device = xf86GetDevFromEntity(pScrn->entityList[0],
 					 pScrn->entityInstanceList[0]);
 
+#if 0
     /* Load vgahw module */
     if (!xf86LoadSubModule(pScrn, "vgahw"))
     	return (FALSE);
 
     xf86LoaderReqSymLists(vgahwSymbols, NULL);
-    
+#endif
+
     /* Load vbe module */
     if ((pVbeModule = xf86LoadSubModule(pScrn, "vbe")) == NULL)
         return (FALSE);
@@ -1241,8 +1249,14 @@ VESAMapVidMem(ScrnInfoPtr pScrn)
     pScrn->memPhysBase = pVesa->mapPhys;
     pScrn->fbOffset = pVesa->mapOff;
 
-    pVesa->base = xf86MapVidMem(pScrn->scrnIndex, 0,
-				pScrn->memPhysBase, pVesa->mapSize);
+    if (pVesa->mapPhys != 0xa0000 && pVesa->pEnt->location.type == BUS_PCI)
+	pVesa->base = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
+				    pVesa->pciTag, pScrn->memPhysBase,
+				    pVesa->mapSize);
+    else
+	pVesa->base = xf86MapVidMem(pScrn->scrnIndex, 0,
+				    pScrn->memPhysBase, pVesa->mapSize);
+
     if (pVesa->base) {
 	if (pVesa->mapPhys != 0xa0000)
 	    pVesa->VGAbase = xf86MapVidMem(pScrn->scrnIndex, 0,
@@ -1426,6 +1440,16 @@ ReadGr(int index)
     outb(VGA_GRAPH_INDEX, index);
 
     return (inb(VGA_GRAPH_DATA));
+}
+
+#define WriteCrtc(index, value)	outb(VGA_CRTC_INDEX_OFFSET, index);\
+				outb(VGA_CRTC_DATA_OFFSET, value)
+
+static int
+ReadCrtc(int index)
+{
+    outb(VGA_CRTC_INDEX_OFFSET, index);
+    return inb(VGA_CRTC_DATA_OFFSET);
 }
 
 static void
@@ -1683,8 +1707,45 @@ static void
 VESADisplayPowerManagementSet(ScrnInfoPtr pScrn, int mode,
                 int flags)
 {
+#if 0
    /* XXX How can this work without the vgahw module being initialized? */
    vgaHWDPMSSet(pScrn, mode, flags);
+#else
+    unsigned char seq1 = 0, crtc17 = 0;
+
+    if (!pScrn->vtSema)
+	return;
+
+    switch (mode) {
+	case DPMSModeOn:
+	    /* Screen: On; HSync: On, VSync: On */
+	    seq1 = 0x00;
+	    crtc17 = 0x80;
+	    break;
+	case DPMSModeStandby:
+	    /* Screen: Off; HSync: Off, VSync: On -- Not Supported */
+	    seq1 = 0x20;
+	    crtc17 = 0x80;
+	    break;
+	case DPMSModeSuspend:
+	    /* Screen: Off; HSync: On, VSync: Off -- Not Supported */
+	    seq1 = 0x20;
+	    crtc17 = 0x80;
+	    break;
+	case DPMSModeOff:
+	    /* Screen: Off; HSync: Off, VSync: Off */
+	    seq1 = 0x20;
+	    crtc17 = 0x00;
+	    break;
+    }
+    WriteSeq(0x00, 0x01);		  /* Synchronous Reset */
+    seq1 |= ReadSeq(0x01) & ~0x20;
+    WriteSeq(0x01, seq1);
+    crtc17 |= ReadCrtc(0x17) & ~0x80;
+    usleep(10000);
+    WriteCrtc(0x17, crtc17);
+    WriteSeq(0x00, 0x03);		  /* End Reset */
+#endif
 }
 
 
