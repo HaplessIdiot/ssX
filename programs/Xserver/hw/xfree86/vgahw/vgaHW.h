@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.h,v 1.17 1999/07/10 12:17:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.h,v 1.18 1999/07/17 05:30:57 dawes Exp $ */
 
 
 /*
@@ -204,6 +204,7 @@ void vgaHWSave(ScrnInfoPtr scrninfp, vgaRegPtr save, int flags);
 Bool vgaHWInit(ScrnInfoPtr scrnp, DisplayModePtr mode);
 Bool vgaHWSetRegCounts(ScrnInfoPtr scrp, int numCRTC, int numSequencer,
                   	int numGraphics, int numAttribute);
+Bool vgaHWCopyReg(vgaRegPtr dst, vgaRegPtr src);
 Bool vgaHWGetHWRec(ScrnInfoPtr scrp);
 void vgaHWFreeHWRec(ScrnInfoPtr scrp);
 Bool vgaHWMapMem(ScrnInfoPtr scrp);

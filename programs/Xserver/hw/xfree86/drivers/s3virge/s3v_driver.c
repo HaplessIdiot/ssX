@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.29 1999/06/27 14:08:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.30 1999/07/10 12:17:33 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -1550,7 +1550,8 @@ S3VSave (ScrnInfoPtr pScrn)
    				/* Dup the VGA & S3V state to the */
 				/* new mode state, but only first time. */
    if( !ps3v->ModeStructInit ) {
-     memcpy( &hwp->ModeReg, vgaSavePtr, sizeof(vgaRegRec) );
+     /* XXX Should check the return value of vgaHWCopyReg() */
+     vgaHWCopyReg( &hwp->ModeReg, vgaSavePtr );
      memcpy( &ps3v->ModeReg, save, sizeof(S3VRegRec) );
      ps3v->ModeStructInit = TRUE;
    }

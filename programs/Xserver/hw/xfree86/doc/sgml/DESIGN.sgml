@@ -27,10 +27,10 @@
 
 <title>XFree86 X server ``New Design'' (DRAFT)
 <author>The XFree86 Project, Inc
-<date>Last modified 6 July 1999
+<date>Last modified 17 July 1999
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.6 1999/07/10 12:17:24 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.7 1999/07/11 08:49:22 dawes Exp $
 </ident>
 
 
@@ -5326,6 +5326,17 @@ programming the standard VGA registers, and for handling VGA colourmaps.
 #define VGA_NUM_ATTR 21
       </verb></quote>
       
+    </quote>
+
+    &s.code;Bool vgaHWCopyReg(vgaRegPtr dst, vgaRegPtr src)&e.code;
+    <quote><p>
+      This function copies the contents of the VGA saved registers in
+      &s.code;src&e.code; to &s.code;dst&e.code;.  Note that it isn't
+      possible to simply do this with &s.code;memcpy()&e.code; (or
+      similar).  This function returns &s.code;TRUE&e.code; unless there
+      is a problem allocating space for the &s.code;CRTC&e.code and
+      related fields in &s.code;dst&e.code;.
+
     </quote>
 
     &s.code;void vgaHWSetStdFuncs(vgaHWPtr hwp)&e.code;
