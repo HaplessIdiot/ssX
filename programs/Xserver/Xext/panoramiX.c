@@ -1059,10 +1059,13 @@ ProcPanoramiXDispatch (ClientPtr client)
 }
 
 
-
+#if X_BYTE_ORDER == X_LITTLE_ENDIAN
 #define SHIFT_L(v,s) (v) << (s)
 #define SHIFT_R(v,s) (v) >> (s)
-
+#else
+#define SHIFT_L(v,s) (v) >> (s)
+#define SHIFT_R(v,s) (v) << (s)
+#endif
 
 static void
 CopyBits(char *dst, int shiftL, char *src, int bytes)
@@ -1203,7 +1206,7 @@ XineramaGetImageData(
 			}
 		    }
 		} else {
-		    j = pDraw->bitsPerPixel >> 3;
+		    j = BitsPerPixel(depth) >> 3;
 		    x = (pbox->x1 - SrcBox.x1) * j;
 		    y = pbox->y1 - SrcBox.y1;
 		    w *= j;
