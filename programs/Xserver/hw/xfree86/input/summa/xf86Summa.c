@@ -24,7 +24,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/summa/xf86Summa.c,v 1.15tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/summa/xf86Summa.c,v 1.16 2003/11/03 05:11:49 tsi Exp $ */
 
 #if 0
 static const char identification[] = "$Identification: 18 $";
@@ -299,18 +299,14 @@ static const char * ss_initstr = SS_TABID0 SS_UPPER_ORIGIN SS_BINARY_FMT SS_STRE
 #define ENQUEUE	xf86eqEnqueue
 
 extern void xf86eqEnqueue(
-#if NeedFunctionPrototypes
     xEventPtr /*e*/
-#endif
 );
 #endif
 
 extern void miPointerDeltaCursor(
-#if NeedFunctionPrototypes
     int /*dx*/,
     int /*dy*/,
     unsigned long /*time*/
-#endif
 );
 
 #endif

@@ -68,7 +68,7 @@ SOFTWARE.
 *                                                               *
 *****************************************************************/
 
-/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.31tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.32 2003/11/10 18:21:45 tsi Exp $ */
 
 #ifdef PANORAMIX_DEBUG
 #include <stdio.h>
@@ -136,15 +136,11 @@ HWEventQueuePtr checkForInput[2];
 extern int connBlockScreenStart;
 
 static void KillAllClients(
-#if NeedFunctionPrototypes
     void
-#endif
 );
 
 static void DeleteClientFromAnySelections(
-#if NeedFunctionPrototypes
     ClientPtr /*client*/
-#endif
 );
 
 static int nextFreeClientID; /* always MIN free client ID */
@@ -1172,12 +1168,7 @@ ProcGrabServer(client)
 }
 
 static void
-#if NeedFunctionPrototypes
 UngrabServer(ClientPtr client)
-#else
-UngrabServer(client)
-    ClientPtr client;
-#endif
 {
     int i;
 

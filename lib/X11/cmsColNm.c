@@ -31,7 +31,7 @@
  *
  *
  */
-/* $XFree86: xc/lib/X11/cmsColNm.c,v 3.10 2002/05/31 18:45:42 dawes Exp $ */
+/* $XFree86: xc/lib/X11/cmsColNm.c,v 3.11 2003/04/13 19:22:20 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xcmsint.h"
@@ -809,21 +809,12 @@ _XcmsCopyISOLatin1Lowered(
  *
  *	SYNOPSIS
  */
-#if NeedFunctionPrototypes
 Status
 _XcmsResolveColorString (
     XcmsCCC ccc,
     const char **color_string,
     XcmsColor *pColor_exact_return,
     XcmsColorFormat result_format)
-#else
-Status
-_XcmsResolveColorString(ccc, color_string, pColor_exact_return, result_format)
-    XcmsCCC ccc;
-    const char **color_string;
-    XcmsColor *pColor_exact_return;
-    XcmsColorFormat result_format;
-#endif
 /*
  *	DESCRIPTION
  *		The XcmsLookupColor function finds the color specification

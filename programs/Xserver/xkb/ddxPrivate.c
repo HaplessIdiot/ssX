@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/xkb/ddxPrivate.c,v 1.1 2002/11/20 04:49:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxPrivate.c,v 1.2 2003/04/03 16:20:22 dawes Exp $ */
 
 #include <stdio.h>
 #define NEED_EVENTS 1
@@ -12,14 +12,7 @@
 #endif
 
 int
-#if NeedFunctionPrototypes
 XkbDDXPrivate(DeviceIntPtr dev,KeyCode key,XkbAction *act)
-#else
-XkbDDXPrivate(dev,key,act)
-    DeviceIntPtr  dev;
-    KeyCode	  key;
-    XkbAction	 *act;
-#endif
 {
 #ifdef XF86DDXACTIONS
     XkbAnyAction *xf86act = &(act->any);

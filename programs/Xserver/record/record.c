@@ -32,7 +32,7 @@ This work benefited from earlier work done by Martha Zimet of NCD
 and Jim Haggerty of Metheus.
 
 */
-/* $XFree86: xc/programs/Xserver/record/record.c,v 1.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/record/record.c,v 1.11 2003/11/03 05:12:01 tsi Exp $ */
 
 #define NEED_EVENTS
 #include "dixstruct.h"
@@ -136,10 +136,8 @@ static int numEnabledRCAPs;
 }
 
 static int RecordDeleteContext(
-#if NeedFunctionPrototypes
     pointer /*value*/,
     XID /*id*/
-#endif
 );
 
 
@@ -151,9 +149,7 @@ static int RecordDeleteContext(
  *  Proc function.
  */
 typedef int (*ProcFunctionPtr)(
-#if NeedFunctionPrototypes
     ClientPtr /*pClient*/
-#endif
 );
 
 /* Record client private.  Generally a client only has one of these if

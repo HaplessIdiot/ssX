@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XKBBind.c,v 3.18tsi Exp $ */
+/* $XFree86: xc/lib/X11/XKBBind.c,v 3.19 2003/05/27 22:26:25 tsi Exp $ */
 
 	/* the new monsters ate the old ones */
 
@@ -50,9 +50,7 @@ from The Open Group.
 		 Mod1Mask|Mod2Mask|Mod3Mask|Mod4Mask|Mod5Mask)
 
 static int _XkbLoadDpy(
-#if NeedFunctionPrototypes
     Display *dpy
-#endif
 );
 
 struct _XKeytrans {
@@ -66,7 +64,6 @@ struct _XKeytrans {
 };
 
 KeySym
-#if NeedFunctionPrototypes
 XkbKeycodeToKeysym(Display *dpy,
 #if NeedWidePrototypes
 		 unsigned int kc,
@@ -75,13 +72,6 @@ XkbKeycodeToKeysym(Display *dpy,
 #endif
 		 int 	group,
 		 int	level)
-#else
-XkbKeycodeToKeysym(dpy, kc, group, level)
-    Display *dpy;
-    KeyCode kc;
-    int group;
-    int level;
-#endif
 {
     XkbDescRec	*xkb;
     
@@ -110,7 +100,6 @@ XkbKeycodeToKeysym(dpy, kc, group, level)
 }
 
 KeySym
-#if NeedFunctionPrototypes
 XKeycodeToKeysym(Display *dpy,
 #if NeedWidePrototypes
 		 unsigned int kc,
@@ -118,12 +107,6 @@ XKeycodeToKeysym(Display *dpy,
 		 KeyCode kc,
 #endif
 		 int col)
-#else
-XKeycodeToKeysym(dpy, kc, col)
-    Display *dpy;
-    KeyCode kc;
-    int col;
-#endif
 {
     XkbDescRec	*xkb;
     
@@ -168,13 +151,7 @@ XKeycodeToKeysym(dpy, kc, col)
 }
 
 KeyCode
-#if NeedFunctionPrototypes
 XKeysymToKeycode(Display *dpy, KeySym ks)
-#else
-XKeysymToKeycode(dpy, ks)
-    Display *dpy;
-    KeySym ks;
-#endif
 {
     register int i, j, gotOne;
 
@@ -199,12 +176,7 @@ XKeysymToKeycode(dpy, ks)
 }
 
 static int
-#if NeedFunctionPrototypes
 _XkbComputeModmap(Display *dpy)
-#else
-_XkbComputeModmap(dpy)
-    Display *dpy;
-#endif
 {
 register XkbDescPtr xkb;
 
@@ -215,13 +187,7 @@ register XkbDescPtr xkb;
 }
 
 unsigned
-#if NeedFunctionPrototypes
 XkbKeysymToModifiers(Display *dpy,KeySym ks)
-#else
-XkbKeysymToModifiers(dpy,ks)
-    Display *dpy;
-    KeySym ks;
-#endif
 {
     XkbDescRec *xkb;
     register int i,j;
@@ -250,13 +216,7 @@ XkbKeysymToModifiers(dpy,ks)
 }
 
 KeySym
-#if NeedFunctionPrototypes
 XLookupKeysym(register XKeyEvent *event, int col)
-#else
-XLookupKeysym(event, col)
-    register XKeyEvent *event;
-    int col;
-#endif
 {
     Display *dpy = event->display;
     if (_XkbUnavailable(dpy))
@@ -277,39 +237,21 @@ XkbTranslateKey(	register Display *	dpy,
 			unsigned int *		mods_rtrn,
 			KeySym *		keysym_rtrn);
 int
-#if NeedFunctionPrototypes
 XkbTranslateKey(	register Display *	dpy,
 			KeyCode 		key,
 			register unsigned int 	mods,
 			unsigned int *		mods_rtrn,
 			KeySym *		keysym_rtrn)
-#else
-XkbTranslateKey(dpy, key, mods, mods_rtrn, keysym_rtrn)
-    register Display *dpy;
-    KeyCode key;
-    register unsigned int mods;
-    unsigned int *mods_rtrn;
-    KeySym *keysym_rtrn;
-#endif
 {
     return XkbLookupKeySym(dpy,key,mods,mods_rtrn,keysym_rtrn);
 }
 
 Bool
-#if NeedFunctionPrototypes
 XkbLookupKeySym(	register Display *	dpy,
 			KeyCode 		key,
 			register unsigned int 	mods,
 			unsigned int *		mods_rtrn,
 			KeySym *		keysym_rtrn)
-#else
-XkbLookupKeySym(dpy, key, mods, mods_rtrn, keysym_rtrn)
-    register Display *dpy;
-    KeyCode key;
-    register unsigned int mods;
-    unsigned int *mods_rtrn;
-    KeySym *keysym_rtrn;
-#endif
 {
     if (_XkbUnavailable(dpy))
 	return _XTranslateKey(dpy, key, mods, mods_rtrn, keysym_rtrn);
@@ -319,20 +261,11 @@ XkbLookupKeySym(dpy, key, mods, mods_rtrn, keysym_rtrn)
 }
 
 Bool
-#if NeedFunctionPrototypes
 XkbTranslateKeyCode(	register XkbDescPtr	xkb,
 			KeyCode 		key,
 			register unsigned int 	mods,
 			unsigned int *		mods_rtrn,
 			KeySym *		keysym_rtrn)
-#else
-XkbTranslateKeyCode(xkb, key, mods, mods_rtrn, keysym_rtrn)
-    register XkbDescPtr xkb;
-    KeyCode key;
-    register unsigned int mods;
-    unsigned int *mods_rtrn;
-    KeySym *keysym_rtrn;
-#endif
 {
     XkbKeyTypeRec *type;
     int col,nKeyGroups;
@@ -407,12 +340,7 @@ XkbTranslateKeyCode(xkb, key, mods, mods_rtrn, keysym_rtrn)
 }
 
 Status
-#if NeedFunctionPrototypes
 XkbRefreshKeyboardMapping(register XkbMapNotifyEvent *event)
-#else
-XkbRefreshKeyboardMapping(event)
-    register XkbMapNotifyEvent *event;
-#endif
 {
     Display *dpy = event->display;
     XkbInfoPtr xkbi;
@@ -455,12 +383,7 @@ XkbRefreshKeyboardMapping(event)
 }
 
 int
-#if NeedFunctionPrototypes
 XRefreshKeyboardMapping(register XMappingEvent *event)
-#else
-XRefreshKeyboardMapping(event)
-    register XMappingEvent *event;
-#endif
 {
     XkbEvent	*xkbevent = (XkbEvent *)event;
     Display *dpy = event->display;
@@ -569,12 +492,7 @@ XRefreshKeyboardMapping(event)
 }
 
 static int
-#if NeedFunctionPrototypes
 _XkbLoadDpy(Display *dpy)
-#else
-_XkbLoadDpy(dpy)
-    Display *dpy;
-#endif
 {
     XkbInfoPtr xkbi;
     unsigned query,oldEvents;
@@ -611,12 +529,7 @@ _XkbLoadDpy(dpy)
 }
 
 void
-#if NeedFunctionPrototypes
 _XkbReloadDpy(Display *dpy)
-#else
-_XkbReloadDpy(dpy)
-    Display *dpy;
-#endif
 {
     XkbInfoPtr xkbi;
     XkbDescRec *desc;
@@ -659,22 +572,12 @@ _XkbReloadDpy(dpy)
 }
 
 int
-#if NeedFunctionPrototypes
 XkbTranslateKeySym(	register Display *	dpy,
 			register KeySym *	sym_rtrn,
 			unsigned int 		mods,
 			char *			buffer,
 			int 			nbytes,
 			int *			extra_rtrn)
-#else
-XkbTranslateKeySym(dpy, sym_rtrn, mods, buffer, nbytes, extra_rtrn)
-    register Display *dpy;
-    register KeySym *sym_rtrn;
-    unsigned int mods;
-    char *buffer;
-    int nbytes;
-    int *extra_rtrn;
-#endif
 {
     register XkbInfoPtr	xkb;
     XkbKSToMBFunc cvtr;
@@ -748,20 +651,11 @@ XkbTranslateKeySym(dpy, sym_rtrn, mods, buffer, nbytes, extra_rtrn)
 }
 
 int
-#if NeedFunctionPrototypes
 XLookupString (	register XKeyEvent *	event,
 		char *			buffer,
 		int 			nbytes,
 		KeySym *		keysym,
 		XComposeStatus *	status)
-#else
-XLookupString (event, buffer, nbytes, keysym, status)
-    register XKeyEvent *event;
-    char *buffer;	/* buffer */
-    int nbytes;	/* space in buffer for characters */
-    KeySym *keysym;
-    XComposeStatus *status;
-#endif
 {
     KeySym	dummy;
     int rtrnLen;
@@ -915,22 +809,12 @@ XLookupString (event, buffer, nbytes, keysym, status)
 
 
 int
-#if NeedFunctionPrototypes
 XkbLookupKeyBinding(	Display *		dpy,
 			register KeySym 	sym,
 			unsigned int 		mods,
 			char *			buffer,
 			int 			nbytes,
 			int * 			extra_rtrn)
-#else
-XkbLookupKeyBinding(dpy, sym, mods, buffer, nbytes, extra_rtrn)
-    Display *dpy;
-    register KeySym sym;
-    unsigned int mods;
-    char *buffer;
-    int nbytes;
-    int * extra_rtrn;
-#endif
 {
     register struct _XKeytrans *p; 
 
@@ -953,12 +837,7 @@ XkbLookupKeyBinding(dpy, sym, mods, buffer, nbytes, extra_rtrn)
 }
 
 char
-#if NeedFunctionPrototypes
 XkbToControl( char ch )
-#else
-XkbToControl( ch )
-    char ch;
-#endif
 {
     register char c = ch;
  

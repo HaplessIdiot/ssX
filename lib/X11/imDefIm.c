@@ -31,7 +31,7 @@ OF THIS SOFTWARE.
                                makoto@sm.sony.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imDefIm.c,v 1.13 2003/04/17 02:06:32 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imDefIm.c,v 1.15 2003/08/22 19:27:24 eich Exp $ */
 
 #include <X11/Xatom.h>
 #define NEED_EVENTS
@@ -56,20 +56,12 @@ _XimCheckDataSize(
 }
 
 Public void
-#if NeedFunctionPrototypes
 _XimSetHeader(
     XPointer	 buf,
     CARD8	 major_opcode,
     CARD8	 minor_opcode,
     INT16	*len
 )
-#else
-_XimSetHeader(buf, major_opcode, minor_opcode, len)
-    XPointer	 buf;
-    CARD8	 major_opcode;
-    CARD8	 minor_opcode;
-    INT16	*len;
-#endif /* NeedFunctionPrototypes */
 {
     CARD8	*buf_b = (CARD8 *)buf;
     CARD16	*buf_s = (CARD16 *)buf;
@@ -531,19 +523,11 @@ _XimAuthNG(
 }
 
 Private	Bool
-#if NeedFunctionPrototypes
 _XimAllRecv(
     Xim		 im,
     INT16	 len,
     XPointer	 data,
     XPointer	 arg)
-#else
-_XimAllRecv(im, len, data, arg)
-    Xim		 im;
-    INT16	 len;
-    XPointer	 data;
-    XPointer	 arg;
-#endif
 {
     return True;
 }
@@ -713,19 +697,11 @@ _XimConnection(
 }
 
 Private	Bool
-#if NeedFunctionPrototypes
 _XimDisconnectCheck(
     Xim		 im,
     INT16	 len,
     XPointer	 data,
     XPointer	 arg)
-#else
-_XimDisconnectCheck(im, len, data, arg)
-    Xim		 im;
-    INT16	 len;
-    XPointer	 data;
-    XPointer	 arg;
-#endif
 {
     CARD8	 major_opcode = *((CARD8 *)data);
     CARD8	 minor_opcode = *((CARD8 *)data + 1);
@@ -780,19 +756,11 @@ _XimDisconnect(
 }
 
 Private	Bool
-#if NeedFunctionPrototypes
 _XimOpenCheck(
     Xim		 im,
     INT16	 len,
     XPointer	 data,
     XPointer	 arg)
-#else
-_XimOpenCheck(im, len, data, arg)
-    Xim		 im;
-    INT16	 len;
-    XPointer	 data;
-    XPointer	 arg;
-#endif
 {
     CARD8	 major_opcode = *((CARD8 *)data);
     CARD8	 minor_opcode = *((CARD8 *)data + 1);
@@ -903,19 +871,11 @@ _XimOpen(
 }
 
 Private	Bool
-#if NeedFunctionPrototypes
 _XimCloseCheck(
     Xim		 im,
     INT16	 len,
     XPointer	 data,
     XPointer	 arg)
-#else
-_XimCloseCheck(im, len, data, arg)
-    Xim		 im;
-    INT16	 len;
-    XPointer	 data;
-    XPointer	 arg;
-#endif
 {
     CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
     CARD8	 major_opcode = *((CARD8 *)data);
@@ -1242,19 +1202,11 @@ _XimDelayModeSetIMValues(
 #endif /* XIM_CONNECTABLE */
 
 Private Bool
-#if NeedFunctionPrototypes
 _XimSetIMValuesCheck(
     Xim          im,
     INT16        len,
     XPointer	 data,
     XPointer     arg)
-#else
-_XimSetIMValuesCheck(im, len, data, arg)
-    Xim          im;
-    INT16        len;
-    XPointer	 data;
-    XPointer     arg;
-#endif
 {
     CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
     CARD8	 major_opcode = *((CARD8 *)data);
@@ -1419,19 +1371,11 @@ _XimDelayModeGetIMValues(
 #endif /* XIM_CONNECTABLE */
 
 Private Bool
-#if NeedFunctionPrototypes
 _XimGetIMValuesCheck(
     Xim          im,
     INT16        len,
     XPointer	 data,
     XPointer     arg)
-#else
-_XimGetIMValuesCheck(im, len, data, arg)
-    Xim          im;
-    INT16        len;
-    XPointer	 data;
-    XPointer     arg;
-#endif
 {
     CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
     CARD8	 major_opcode = *((CARD8 *)data);
@@ -1706,19 +1650,11 @@ _XimGetEncoding(
 }
 
 Private	Bool
-#if NeedFunctionPrototypes
 _XimEncodingNegoCheck(
     Xim		 im,
     INT16	 len,
     XPointer	 data,
     XPointer	 arg)
-#else
-_XimEncodingNegoCheck(im, len, data, arg)
-    Xim		 im;
-    INT16	 len;
-    XPointer	 data;
-    XPointer	 arg;
-#endif
 {
     CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
     CARD8	 major_opcode = *((CARD8 *)data);

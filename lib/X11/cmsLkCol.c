@@ -32,7 +32,7 @@
  *
  *
  */
-/* $XFree86: xc/lib/X11/cmsLkCol.c,v 1.4 2001/07/25 15:04:44 dawes Exp $ */
+/* $XFree86: xc/lib/X11/cmsLkCol.c,v 1.5 2003/04/13 19:22:20 dawes Exp $ */
 
 #define NEED_REPLIES
 #include <stdio.h>
@@ -47,7 +47,6 @@
  *
  *	SYNOPSIS
  */
-#if NeedFunctionPrototypes
 Status
 XcmsLookupColor (
     Display *dpy,
@@ -56,17 +55,6 @@ XcmsLookupColor (
     XcmsColor *pColor_exact_return,
     XcmsColor *pColor_scrn_return,
     XcmsColorFormat result_format)
-#else
-Status
-XcmsLookupColor(dpy, cmap, colorname, pColor_exact_return, pColor_scrn_return,
-	result_format)
-    Display *dpy;
-    Colormap cmap;
-    char *colorname;
-    XcmsColor *pColor_exact_return;
-    XcmsColor *pColor_scrn_return;
-    XcmsColorFormat result_format;
-#endif
 /*
  *	DESCRIPTION
  *		The XcmsLookupColor function finds the color specification

@@ -33,7 +33,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ******************************************************************/
 /* 2000 Modifier: Ivan Pascal	The XFree86 Project.
  */
-/* $XFree86: xc/lib/X11/imConv.c,v 1.31 2001/02/09 00:02:53 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imConv.c,v 1.32 2003/04/13 19:22:20 dawes Exp $ */
 
 #define NEED_EVENTS
 #include <stdio.h>
@@ -57,12 +57,10 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 typedef unsigned int ucs4_t;
 
 typedef int (*ucstocsConvProc)(
-#if NeedFunctionPrototypes
     XPointer,
     unsigned char *,
     ucs4_t,
     int
-#endif
 );
 
 struct SubstRec {
@@ -83,13 +81,8 @@ static struct SubstRec SubstTable[] = {
  * This converter is needed for _XimGetCharCode subroutine.
  */
 XPointer
-#if NeedFunctionPrototypes
 _XimGetLocaleCode (
     _Xconst char*	encoding_name)
-#else
-_XimGetLocaleCode (encoding_name)
-    _Xconst char*	encoding_name;
-#endif
 {
     XPointer cvt = _Utf8GetConvByName(encoding_name);
     if (!cvt && encoding_name) {
@@ -112,19 +105,11 @@ _XimGetLocaleCode (encoding_name)
  */
 /*ARGSUSED*/
 int 
-#if NeedFunctionPrototypes
 _XimGetCharCode (
     XPointer            ucs_conv,
     KeySym 		keysym,
     unsigned char*	buf,
     int 		nbytes)
-#else
-_XimGetCharCode (ucs_conv, keysym, buf, nbytes)
-    XPointer ucs_conv;
-    KeySym keysym;
-    unsigned char *buf;
-    int nbytes;
-#endif
 {
     int count = 0;
     ucstocsConvProc cvt = (ucstocsConvProc) ucs_conv;

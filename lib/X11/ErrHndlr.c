@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/ErrHndlr.c,v 1.5 2001/12/14 19:53:59 dawes Exp $ */
+/* $XFree86: xc/lib/X11/ErrHndlr.c,v 1.6 2003/04/13 19:22:15 dawes Exp $ */
 
 #include "Xlibint.h"
 
@@ -34,12 +34,8 @@ in this Software without prior written authorization from The Open Group.
  * the original error handler is restored.
  */
  
-#if NeedFunctionPrototypes
-XErrorHandler XSetErrorHandler(XErrorHandler handler)
-#else
-XErrorHandler XSetErrorHandler(handler)
-    register XErrorHandler handler;
-#endif
+XErrorHandler
+XSetErrorHandler(XErrorHandler handler)
 {
     int (*oldhandler)(Display *dpy, XErrorEvent *event);
 
@@ -66,12 +62,8 @@ XErrorHandler XSetErrorHandler(handler)
  * the original error handler is restored.
  */
  
-#if NeedFunctionPrototypes
-XIOErrorHandler XSetIOErrorHandler(XIOErrorHandler handler)
-#else
-XIOErrorHandler XSetIOErrorHandler(handler)
-    register XIOErrorHandler handler;
-#endif
+XIOErrorHandler
+XSetIOErrorHandler(XIOErrorHandler handler)
 {
     int (*oldhandler)(Display *dpy);
 

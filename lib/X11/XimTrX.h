@@ -1,4 +1,4 @@
-/* $XConsortium: XimTrX.h,v 1.4 94/03/31 22:01:43 rws Exp $ */
+/* $Xorg: XimTrX.h,v 1.3 2000/08/17 19:45:05 cpqbld Exp $ */
 /******************************************************************
 
            Copyright 1992 by Sun Microsystems, Inc.
@@ -28,6 +28,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
+/* $XFree86$ */
 
 #ifndef _XIMTRX_H
 #define _XIMTRX_H
@@ -36,9 +37,7 @@ typedef struct _XIntrCallbackRec	*XIntrCallbackPtr;
 
 typedef struct _XIntrCallbackRec {
     Bool		 (*func)(
-#if NeedNestedPrototypes
 				 Xim, INT16, XPointer, XPointer
-#endif
 );
     XPointer		 call_data;
     XIntrCallbackPtr	 next;

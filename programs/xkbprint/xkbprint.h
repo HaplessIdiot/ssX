@@ -1,7 +1,7 @@
 #ifndef _XKBPRINT_H_
 #define	_XKBPRINT_H_ 1
 
-/* $XConsortium: xkbprint.h /main/1 1995/11/30 19:19:35 kaleb $ */
+/* $Xorg: xkbprint.h,v 1.3 2000/08/17 19:54:50 cpqbld Exp $ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -27,6 +27,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
+/* $XFree86$ */
 
 #define	LABEL_AUTO	-1
 #define	LABEL_NONE	0
@@ -48,6 +49,7 @@ typedef struct _XKBPrintArgs {
 	int	nKBPerPage;
 	int	labelLevel;
 	int	wantSymbols;
+	Bool	wantKeycodes;
 	Bool	wantDiffs;
 	Bool	scaleToFit;
 	Bool	wantColor;
@@ -57,19 +59,15 @@ typedef struct _XKBPrintArgs {
 
 extern Bool
 DumpInternalFont(
-#if NeedFunctionPrototypes
 	FILE *		/* out */,
 	char *		/* fontName */
-#endif
 );
 
 extern Bool
 GeometryToPostScript(
-#if NeedFunctionPrototypes
 	FILE *		/* out */,
 	XkbFileInfo *	/* result */,
 	XKBPrintArgs *	/* args */
-#endif
 );
 
 #endif /* _XKBPRINT_H_ */

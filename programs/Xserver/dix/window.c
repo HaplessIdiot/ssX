@@ -70,7 +70,7 @@ SOFTWARE.
 *                                                               *
 *****************************************************************/
 
-/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.35 2003/11/10 18:21:47 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.36 2003/11/14 23:52:50 torrey Exp $ */
 
 #include "misc.h"
 #include "scrnintstr.h"
@@ -125,10 +125,8 @@ extern void RecalculateDeliverableEvents();
 #endif
 
 static Bool TileScreenSaver(
-#if NeedFunctionPrototypes
     int /*i*/,
     int /*kind*/
-#endif
 );
 
 
@@ -253,12 +251,7 @@ Bool	enableBackingStore = FALSE;
 Bool	disableSaveUnders = FALSE;
 
 static void
-#if NeedFunctionPrototypes
 SetWindowToDefaults(register WindowPtr pWin)
-#else
-SetWindowToDefaults(pWin)
-    register WindowPtr pWin;
-#endif
 {
     pWin->prevSib = NullWindow;
     pWin->firstChild = NullWindow;
@@ -293,12 +286,7 @@ SetWindowToDefaults(pWin)
 }
 
 static void
-#if NeedFunctionPrototypes
 MakeRootTile(WindowPtr pWin)
-#else
-MakeRootTile(pWin)
-    WindowPtr pWin;
-#endif
 {
     ScreenPtr pScreen = pWin->drawable.pScreen;
     GCPtr pGC;
@@ -812,12 +800,7 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
 }
 
 static void
-#if NeedFunctionPrototypes
 FreeWindowResources(register WindowPtr pWin)
-#else
-FreeWindowResources(pWin)
-    register WindowPtr pWin;
-#endif
 {
     register ScreenPtr pScreen = pWin->drawable.pScreen;
 
@@ -846,12 +829,7 @@ FreeWindowResources(pWin)
 }
 
 static void
-#if NeedFunctionPrototypes
 CrushTree(WindowPtr pWin)
-#else
-CrushTree(pWin)
-    WindowPtr pWin;
-#endif
 {
     register WindowPtr pChild, pSib, pParent;
     UnrealizeWindowProcPtr UnrealizeWindow;
@@ -1879,14 +1857,9 @@ ResizeChildrenWinSize(pWin, dx, dy, dw, dh)
  */
 
 static int
-#if NeedFunctionPrototypes
 IsSiblingAboveMe(
     register WindowPtr pMe,
     register WindowPtr pSib)
-#else
-IsSiblingAboveMe(pMe, pSib)
-    register WindowPtr pMe, pSib;
-#endif
 {
     register WindowPtr pWin;
 
@@ -1903,15 +1876,9 @@ IsSiblingAboveMe(pMe, pSib)
 }
 
 static BoxPtr
-#if NeedFunctionPrototypes
 WindowExtents(
     register WindowPtr pWin,
     register BoxPtr pBox)
-#else
-WindowExtents(pWin, pBox)
-    register WindowPtr pWin;
-    register BoxPtr pBox;
-#endif
 {
     pBox->x1 = pWin->drawable.x - wBorderWidth (pWin);
     pBox->y1 = pWin->drawable.y - wBorderWidth (pWin);
@@ -1926,15 +1893,9 @@ WindowExtents(pWin, pBox)
 #define IS_SHAPED(pWin)	(wBoundingShape (pWin) != (RegionPtr) NULL)
 
 static RegionPtr
-#if NeedFunctionPrototypes
 MakeBoundingRegion (
     register WindowPtr	pWin,
     BoxPtr	pBox)
-#else
-MakeBoundingRegion (pWin, pBox)
-    register WindowPtr	pWin;
-    BoxPtr	pBox;
-#endif
 {
     RegionPtr	pRgn;
     ScreenPtr   pScreen = pWin->drawable.pScreen;
@@ -1951,17 +1912,11 @@ MakeBoundingRegion (pWin, pBox)
 }
 
 static Bool
-#if NeedFunctionPrototypes
 ShapeOverlap (
     WindowPtr	pWin,
     BoxPtr	pWinBox,
     WindowPtr	pSib,
     BoxPtr	pSibBox)
-#else
-ShapeOverlap (pWin, pWinBox, pSib, pSibBox)
-    WindowPtr	pWin, pSib;
-    BoxPtr	pWinBox, pSibBox;
-#endif
 {
     RegionPtr	pWinRgn, pSibRgn;
     register ScreenPtr	pScreen;
@@ -1981,16 +1936,10 @@ ShapeOverlap (pWin, pWinBox, pSib, pSibBox)
 #endif
 
 static Bool
-#if NeedFunctionPrototypes
 AnyWindowOverlapsMe(
     WindowPtr pWin,
     WindowPtr pHead,
     register BoxPtr box)
-#else
-AnyWindowOverlapsMe(pWin, pHead, box)
-    WindowPtr pWin, pHead;
-    register BoxPtr box;
-#endif
 {
     register WindowPtr pSib;
     BoxRec sboxrec;
@@ -2013,15 +1962,9 @@ AnyWindowOverlapsMe(pWin, pHead, box)
 }
 
 static Bool
-#if NeedFunctionPrototypes
 IOverlapAnyWindow(
     WindowPtr pWin,
     register BoxPtr box)
-#else
-IOverlapAnyWindow(pWin, box)
-    WindowPtr pWin;
-    register BoxPtr box;
-#endif
 {
     register WindowPtr pSib;
     BoxRec sboxrec;
@@ -2072,7 +2015,6 @@ IOverlapAnyWindow(pWin, box)
  */
 
 static WindowPtr
-#if NeedFunctionPrototypes
 WhereDoIGoInTheStack(
     register WindowPtr pWin,
     register WindowPtr pSib,
@@ -2081,13 +2023,6 @@ WhereDoIGoInTheStack(
     unsigned short w,
     unsigned short h,
     int smode)
-#else
-WhereDoIGoInTheStack(pWin, pSib, x, y, w, h, smode)
-    register WindowPtr pWin, pSib;
-    short x, y;
-    unsigned short w, h;
-    int smode;
-#endif
 {
     BoxRec box;
     register ScreenPtr pScreen;
@@ -2186,16 +2121,10 @@ WhereDoIGoInTheStack(pWin, pSib, x, y, w, h, smode)
 }
 
 static void
-#if NeedFunctionPrototypes
 ReflectStackChange(
     register WindowPtr pWin,
     register WindowPtr pSib,
     VTKind  kind)
-#else
-ReflectStackChange(pWin, pSib, kind)
-    register WindowPtr pWin, pSib;
-    VTKind  kind;
-#endif
 {
 /* Note that pSib might be NULL */
 
@@ -2593,15 +2522,9 @@ CirculateWindow(pParent, direction, client)
 }
 
 static int
-#if NeedFunctionPrototypes
 CompareWIDs(
     WindowPtr pWin,
     pointer   value) /* must conform to VisitWindowProcPtr */
-#else
-CompareWIDs(pWin, value)
-    WindowPtr pWin;
-    pointer   value; /* must conform to VisitWindowProcPtr */
-#endif
 {
     Window *wid = (Window *)value;
 
@@ -2710,12 +2633,7 @@ ReparentWindow(pWin, pParent, x, y, client)
 }
 
 static void
-#if NeedFunctionPrototypes
 RealizeTree(WindowPtr pWin)
-#else
-RealizeTree(pWin)
-    WindowPtr pWin;
-#endif
 {
     register WindowPtr pChild;
     RealizeWindowProcPtr Realize;
@@ -3002,15 +2920,9 @@ MapSubwindows(pParent, client)
 }
 
 static void
-#if NeedFunctionPrototypes
 UnrealizeTree(
     WindowPtr pWin,
     Bool fromConfigure)
-#else
-UnrealizeTree(pWin, fromConfigure)
-    WindowPtr pWin;
-    Bool fromConfigure;
-#endif
 {
     register WindowPtr pChild;
     UnrealizeWindowProcPtr Unrealize;
@@ -3375,9 +3287,7 @@ SendVisibilityNotify(pWin)
 
 #ifndef NOLOGOHACK
 static void DrawLogo(
-#if NeedFunctionPrototypes
     WindowPtr /*pWin*/
-#endif
 );
 #endif
 
@@ -3497,13 +3407,7 @@ SaveScreens(on, mode)
 }
 
 static Bool
-#if NeedFunctionPrototypes
 TileScreenSaver(int i, int kind)
-#else
-TileScreenSaver(i, kind)
-    int i;
-    int	kind;
-#endif
 {
     int j;
     int result;
@@ -3771,12 +3675,7 @@ DisposeWindowOptional (pWin)
 
 #ifndef NOLOGOHACK
 static void
-#if NeedFunctionPrototypes
 DrawLogo(WindowPtr pWin)
-#else
-DrawLogo(pWin)
-    WindowPtr pWin;
-#endif
 {
     DrawablePtr pDraw;
     ScreenPtr pScreen;

@@ -41,7 +41,7 @@ interest in or to any trademark, service mark, logo or trade name of
 Sun Microsystems, Inc. or its licensors is granted.
 
 */
-/* $XFree86: xc/lib/X11/XDefaultIMIF.c,v 1.2 2001/11/19 15:33:38 tsi Exp $ */
+/* $XFree86: xc/lib/X11/XDefaultIMIF.c,v 1.3 2003/04/13 19:22:18 dawes Exp $ */
 
 #include <stdio.h>
 #define NEED_EVENTS
@@ -74,27 +74,19 @@ typedef struct _StaticXIM {
 } StaticXIMRec;
 
 static Status _CloseIM(
-#if NeedFunctionPrototypes
 	XIM
-#endif
 );
 
 static char *_SetIMValues(
-#if NeedFunctionPrototypes
 	XIM, XIMArg *
-#endif
 );
 
 static char *_GetIMValues(
-#if NeedFunctionPrototypes
 	XIM, XIMArg*
-#endif
 );
 
 static XIC _CreateIC(
-#if NeedFunctionPrototypes
 	XIM, XIMArg*
-#endif
 );
 
 static _Xconst XIMMethodsRec local_im_methods = {
@@ -107,49 +99,31 @@ static _Xconst XIMMethodsRec local_im_methods = {
 };
 
 static void _DestroyIC(
-#if NeedFunctionPrototypes
 		       XIC
-#endif
 );
 static void _SetFocus(
-#if NeedFunctionPrototypes
 		      XIC
-#endif
 );
 static void _UnsetFocus(
-#if NeedFunctionPrototypes
 			XIC
-#endif
 );
 static char* _SetICValues(
-#if NeedFunctionPrototypes
 			 XIC, XIMArg *
-#endif
 );
 static char* _GetICValues(
-#if NeedFunctionPrototypes
 			 XIC, XIMArg *
-#endif
 );
 static char *_MbReset(
-#if NeedFunctionPrototypes
 		      XIC
-#endif
 );
 static wchar_t *_WcReset(
-#if NeedFunctionPrototypes
 			 XIC
-#endif
 );
 static int _MbLookupString(
-#if NeedFunctionPrototypes
 	XIC, XKeyEvent *, char *, int, KeySym *, Status *
-#endif
 );
 static int _WcLookupString(
-#if NeedFunctionPrototypes
 	XIC, XKeyEvent *, wchar_t *, int, KeySym *, Status *
-#endif
 );
 
 static _Xconst XICMethodsRec local_ic_methods = {

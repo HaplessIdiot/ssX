@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/KeyBind.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/lib/X11/KeyBind.c,v 1.8 2003/05/27 22:26:25 tsi Exp $ */
 
 /* Beware, here be monsters (still under construction... - JG */
 
@@ -87,14 +87,7 @@ struct _XKeytrans {
 };
 
 static KeySym
-#if NeedFunctionPrototypes
 KeyCodetoKeySym(register Display *dpy, KeyCode keycode, int col)
-#else
-KeyCodetoKeySym(dpy, keycode, col)
-    register Display *dpy;
-    KeyCode keycode;
-    int col;
-#endif
 {
     register int per = dpy->keysyms_per_keycode;
     register KeySym *syms;
@@ -125,7 +118,6 @@ KeyCodetoKeySym(dpy, keycode, col)
     return syms[col];
 }
 
-#if NeedFunctionPrototypes
 KeySym
 XKeycodeToKeysym(Display *dpy,
 #if NeedWidePrototypes
@@ -134,13 +126,6 @@ XKeycodeToKeysym(Display *dpy,
 		 KeyCode kc,
 #endif
 		 int col)
-#else
-KeySym
-XKeycodeToKeysym(dpy, kc, col)
-    Display *dpy;
-    KeyCode kc;
-    int col;
-#endif
 {
     if ((! dpy->keysyms) && (! _XKeyInitialize(dpy)))
 	return NoSymbol;
@@ -873,20 +858,11 @@ XConvertCase(sym, lower, upper)
 }
 
 int
-#if NeedFunctionPrototypes
 _XTranslateKey(	register Display *dpy,
 		KeyCode keycode,
 		register unsigned int modifiers,
 		unsigned int *modifiers_return,
 		KeySym *keysym_return)
-#else
-_XTranslateKey(dpy, keycode, modifiers, modifiers_return, keysym_return)
-    register Display *dpy;
-    KeyCode keycode;
-    register unsigned int modifiers;
-    unsigned int *modifiers_return;
-    KeySym *keysym_return;
-#endif
 {
     int per;
     register KeySym *syms;
@@ -1105,7 +1081,6 @@ _XFreeKeyBindings(
 }
 
 int
-#if NeedFunctionPrototypes
 XRebindKeysym (
     Display *dpy,
     KeySym keysym,
@@ -1113,15 +1088,6 @@ XRebindKeysym (
     int nm,		/* number of modifiers in mlist */
     _Xconst unsigned char *str,
     int nbytes)
-#else
-XRebindKeysym (dpy, keysym, mlist, nm, str, nbytes)
-    Display *dpy;
-    KeySym keysym;
-    KeySym *mlist;
-    int nm;		/* number of modifiers in mlist */
-    unsigned char *str;
-    int nbytes;
-#endif
 {
     register struct _XKeytrans *tmp, *p;
     int nb;

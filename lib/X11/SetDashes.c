@@ -24,26 +24,17 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/SetDashes.c,v 1.3 2001/01/17 19:41:43 dawes Exp $ */
+/* $XFree86: xc/lib/X11/SetDashes.c,v 1.4 2001/12/14 19:54:06 dawes Exp $ */
 
 #include "Xlibint.h"
 
 int
-#if NeedFunctionPrototypes
 XSetDashes (
     register Display *dpy,
     GC gc,
     int dash_offset,
     _Xconst char *list,
     int n)
-#else
-XSetDashes (dpy, gc, dash_offset, list, n)
-    register Display *dpy;
-    GC gc;
-    int dash_offset;
-    char *list;
-    int n;
-#endif
     {
     register xSetDashesReq *req;
 

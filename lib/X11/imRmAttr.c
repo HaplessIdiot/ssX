@@ -26,7 +26,7 @@ PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imRmAttr.c,v 1.6 2001/10/28 03:32:34 tsi Exp $ */
+/* $XFree86: xc/lib/X11/imRmAttr.c,v 1.7 2003/04/13 19:22:21 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
@@ -411,7 +411,6 @@ _XimDecodeInnerIMATTRIBUTE(
 }
 
 Public char *
-#if NeedFunctionPrototypes
 _XimDecodeIMATTRIBUTE(
     Xim			 im,
     XIMResourceList	 res_list,
@@ -420,16 +419,6 @@ _XimDecodeIMATTRIBUTE(
     INT16		 data_len,
     XIMArg		*arg,
     BITMASK32		 mode)
-#else
-_XimDecodeIMATTRIBUTE(im, res_list, res_num,  data, data_len, arg, mode)
-    Xim			 im;
-    XIMResourceList	 res_list;
-    unsigned int	 res_num;
-    CARD16		*data;
-    INT16		 data_len;
-    XIMArg		*arg;
-    BITMASK32		 mode;
-#endif /* NeedFunctionPrototypes */
 {
     register XIMArg	*p;
     XIMResourceList	 res;
@@ -495,7 +484,6 @@ _XimDecodeInnerICATTRIBUTE(
 }
 
 Public char *
-#if NeedFunctionPrototypes
 _XimDecodeICATTRIBUTE(
     Xic			 ic,
     XIMResourceList	 res_list,
@@ -504,16 +492,6 @@ _XimDecodeICATTRIBUTE(
     INT16		 data_len,
     XIMArg		*arg,
     BITMASK32		 mode)
-#else
-_XimDecodeICATTRIBUTE(ic, res_list, res_num,  data, data_len, arg, mode)
-    Xic			 ic;
-    XIMResourceList	 res_list;
-    unsigned int	 res_num;
-    CARD16		*data;
-    INT16		 data_len;
-    XIMArg		*arg;
-    BITMASK32		 mode;
-#endif /* NeedFunctionPrototypes */
 {
     register XIMArg	*p;
     XIMResourceList	 res;

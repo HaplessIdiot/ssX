@@ -28,7 +28,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imTransR.c,v 3.5 2003/04/13 19:22:21 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imTransR.c,v 3.6 2003/04/17 02:39:56 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
@@ -68,14 +68,7 @@ _XimShutdown(im)
 }
 
 Public Bool
-#if NeedFunctionPrototypes
 _XimWrite(Xim im, INT16 len, XPointer data)
-#else
-_XimWrite(im, len, data)
-    Xim		 im;
-    INT16	 len;
-    XPointer	 data;
-#endif
 {
     return im->private.proto.write(im, len, data);
 }
@@ -224,9 +217,7 @@ _XimRead(im, len, buf, buf_size, predicate, arg)
     XPointer	 buf;
     int		 buf_size;
     Bool	 (*predicate)(
-#if NeedNestedPrototypes
 			      Xim, INT16, XPointer, XPointer
-#endif
 			      );
     XPointer	 arg;
 {
@@ -252,9 +243,7 @@ Public Bool
 _XimRegisterDispatcher(
     Xim		 im,
     Bool	 (*callback)(
-#if NeedNestedPrototypes
 			     Xim, INT16, XPointer, XPointer
-#endif
 			     ),
     XPointer	 call_data)
 {

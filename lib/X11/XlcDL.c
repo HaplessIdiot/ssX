@@ -41,7 +41,7 @@ interest in or to any trademark, service mark, logo or trade name of
 Sun Microsystems, Inc. or its licensors is granted.
 
 */
-/* $XFree86: xc/lib/X11/XlcDL.c,v 1.11 2003/04/07 16:23:31 eich Exp $ */
+/* $XFree86: xc/lib/X11/XlcDL.c,v 1.12 2003/04/13 19:22:19 dawes Exp $ */
 
 #include <stdio.h>
 #if defined(hpux)
@@ -382,12 +382,7 @@ close_object(XI18NObjectsList object)
 typedef XLCd (*dynamicLoadProc)(const char *);
 
 XLCd
-#if NeedFunctionPrototypes
 _XlcDynamicLoad(const char *lc_name)
-#else
-_XlcDynamicLoad(lc_name)
-     const char *lc_name;
-#endif
 {
     XLCd lcd = (XLCd)NULL;
     dynamicLoadProc lc_loader = (dynamicLoadProc)NULL;
@@ -426,16 +421,8 @@ _XlcDynamicLoad(lc_name)
 typedef XIM (*dynamicOpenProcp)(XLCd, Display *, XrmDatabase, char *, char *);
 
 static XIM
-#if NeedFunctionPrototypes
 _XDynamicOpenIM(XLCd lcd, Display *display, XrmDatabase rdb,
 		char *res_name, char *res_class)
-#else
-_XDynamicOpenIM(lcd, display, rdb, res_name, res_class)
-XLCd lcd;
-Display *display;
-XrmDatabase rdb;
-char *res_name, *res_class;
-#endif
 {
   XIM im = (XIM)NULL;
   char lc_dir[BUFSIZE];
@@ -567,12 +554,7 @@ _XDynamicUnRegisterIMInstantiateCallback(
 }
 
 Bool
-#if NeedFunctionPrototypes
 _XInitDynamicIM(XLCd lcd)
-#else
-_XInitDynamicIM(lcd)
-XLCd lcd;
-#endif
 {
     if(lcd == (XLCd)NULL)
 	return False;
@@ -587,17 +569,8 @@ typedef XOM (*dynamicIOpenProcp)(
         XLCd, Display *, XrmDatabase, _Xconst char *, _Xconst char *);
 
 static XOM
-#if NeedFunctionPrototypes
 _XDynamicOpenOM(XLCd lcd, Display *display, XrmDatabase rdb,
 		_Xconst char *res_name, _Xconst char *res_class)
-#else
-_XDynamicOpenOM(lcd, display, rdb, res_name, res_class)
-XLCd lcd;
-Display *display;
-XrmDatabase rdb;
-char *res_name;
-char *res_class;
-#endif
 {
   XOM om = (XOM)NULL;
   int count;
@@ -633,12 +606,7 @@ char *res_class;
 }
 
 Bool
-#if NeedFunctionPrototypes
 _XInitDynamicOM(XLCd lcd)
-#else
-_XInitDynamicOM(lcd)
-    XLCd lcd;
-#endif
 {
     if(lcd == (XLCd)NULL)
 	return False;

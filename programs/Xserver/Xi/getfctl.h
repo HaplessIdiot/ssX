@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xi/getfctl.h,v 3.0 1996/03/29 22:13:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xi/getfctl.h,v 3.1 1996/04/15 11:18:39 dawes Exp $ */
 /************************************************************
 
 Copyright 1996 by Thomas E. Dickey <dickey@clark.net>
@@ -29,79 +29,61 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 int
 SProcXGetFeedbackControl(
-#if NeedFunctionPrototypes
 	ClientPtr              /* client */
-#endif
 	);
 
 int
 ProcXGetFeedbackControl(
-#if NeedFunctionPrototypes
 	ClientPtr              /* client */
-#endif
 	);
 
 void
 CopySwapKbdFeedback (
-#if NeedFunctionPrototypes
 	ClientPtr              /* client */,
 	KbdFeedbackPtr         /* k */,
 	char **                /* buf */
-#endif
 	);
 
 void
 CopySwapPtrFeedback (
-#if NeedFunctionPrototypes
 	ClientPtr              /* client */,
 	PtrFeedbackPtr         /* p */,
 	char **                /* buf */
-#endif
 	);
 
 void
 CopySwapIntegerFeedback (
-#if NeedFunctionPrototypes
 	ClientPtr              /* client */,
 	IntegerFeedbackPtr     /* i */,
 	char **                /* buf */
-#endif
 	);
 
 void
 CopySwapStringFeedback (
-#if NeedFunctionPrototypes
 	ClientPtr              /* client */,
 	StringFeedbackPtr      /* s */,
 	char **                /* buf */
-#endif
 	);
 
 void
 CopySwapLedFeedback (
-#if NeedFunctionPrototypes
 	ClientPtr              /* client */,
 	LedFeedbackPtr         /* l */,
 	char **                /* buf */
-#endif
 	);
 
 void
 CopySwapBellFeedback (
-#if NeedFunctionPrototypes
 	ClientPtr              /* client */,
 	BellFeedbackPtr        /* b */,
 	char **                /* buf */
-#endif
 	);
 
 void
 SRepXGetFeedbackControl (
-#if NeedFunctionPrototypes
 	ClientPtr              /* client */,
 	int                    /* size */,
 	xGetFeedbackControlReply * /* rep */
-#endif
 	);
 
 #endif /* GETFCTL_H */

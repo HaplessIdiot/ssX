@@ -34,7 +34,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
     ------------------------------------------------------------------------ **/
-/* $XFree86: xc/programs/xwd/multiVis.c,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/xwd/multiVis.c,v 1.9 2003/05/27 22:27:14 tsi Exp $ */
 
 #include <stdlib.h>
 #include <X11/Xlib.h>
@@ -119,79 +119,53 @@ extern unsigned int list_length();
 
 /* Prototype Declarations for Static Functions */
 static int QueryColorMap(
-#if NeedFunctionPrototypes
            Display *, Colormap , Visual *, 
            XColor **, int *, int *, int *
-#endif
 	   );
 static void TransferImage(
-#if NeedFunctionPrototypes
            Display *, XImage *,int, int , image_region_type*,
            XImage *,int ,int 
-#endif
 	   );
 static XImage * ReadRegionsInList(
-#if NeedFunctionPrototypes
            Display *, Visual *, int ,int ,int ,
            int , XRectangle, list_ptr 
-#endif
            );
 
 static list_ptr make_region_list( 
-#if NeedFunctionPrototypes
                   Display*, Window, XRectangle*,
                   int*, int, XVisualInfo**, int	*
-#endif
          );
 
 static void destroy_region_list( 
-#if NeedFunctionPrototypes
             list_ptr 
-#endif
             ) ;
 static void subtr_rect_from_image_region( 
-#if NeedFunctionPrototypes
            image_region_type *, int , int , int , int 
-#endif
      );
 static void add_rect_to_image_region( 
-#if NeedFunctionPrototypes
            image_region_type *,
            int , int , int , int 
-#endif
      );
 static int src_in_region_list( 
-#if NeedFunctionPrototypes
     image_win_type *, list_ptr 
-#endif
     );
 static void add_window_to_list(
-#if NeedFunctionPrototypes
     list_ptr, Window, int, int ,
     int	, int , int , int, int,
     Visual*, Colormap, Window
-#endif
     );
 static int src_in_image( 
-#if NeedFunctionPrototypes
     image_win_type 	*, int	, XVisualInfo**
-#endif
     );
 static int src_in_overlay( 
-#if NeedFunctionPrototypes
     image_region_type *, int, OverlayInfo *, int*, int*
-#endif 
     );
 static void make_src_list(
-#if NeedFunctionPrototypes
     Display *, list_ptr, XRectangle *, Window,
     int, int, XWindowAttributes *, XRectangle *
-#endif 
 );
 static void destroy_image_region(
-#if NeedFunctionPrototypes
     image_region_type *
-#endif
 );
 
 /* End of Prototype Declarations */

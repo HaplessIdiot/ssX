@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/xkbfile/XKBfile.h,v 3.6 2003/10/24 16:33:09 tsi Exp $ */
 
 #ifndef _XKBFILE_H_
 #define	_XKBFILE_H_ 1
@@ -47,14 +47,12 @@ typedef struct _XkbFileInfo {
 } XkbFileInfo,*XkbFileInfoPtr;
 
 typedef void	(*XkbFileAddOnFunc)(
-#if NeedFunctionPrototypes
     FILE *		/* file */,
     XkbFileInfo *	/* result */,
     Bool		/* topLevel */,
     Bool		/* showImplicit */,
     int			/* fileSection */,
     void *		/* priv */
-#endif
 );
 
 /***====================================================================***/
@@ -97,153 +95,113 @@ extern unsigned		_XkbErrData;
 _XFUNCPROTOBEGIN
 
 extern	char *	XkbIndentText(
-#if NeedFunctionPrototypes
     unsigned	/* size */
-#endif
 );
 
 extern	char *	XkbAtomText(
-#if NeedFunctionPrototypes
     Display *	/* dpy */,
     Atom 	/* atm */,
     unsigned	/* format */
-#endif
 );
 
 extern char *	XkbKeysymText(
-#if NeedFunctionPrototypes
     KeySym	/* sym */,
     unsigned	/* format */
-#endif
 );
 
 extern char *	XkbStringText(
-#if NeedFunctionPrototypes
     char *	/* str */,
     unsigned	/* format */
-#endif
 );
 
 extern char *	XkbKeyNameText(
-#if NeedFunctionPrototypes
     char *	/* name */,
     unsigned	/* format */
-#endif
 );
 
 extern char *
 XkbModIndexText(
-#if NeedFunctionPrototypes
     unsigned	/* ndx */,
     unsigned	/* format */
-#endif
 );
 
 extern char *
 XkbModMaskText(
-#if NeedFunctionPrototypes
     unsigned	/* mask */,
     unsigned	/* format */
-#endif
 );
 
 extern char *	XkbVModIndexText(
-#if NeedFunctionPrototypes
     Display *	/* dpy */,
     XkbDescPtr	/* xkb */,
     unsigned	/* ndx */,
     unsigned	/* format */
-#endif
 );
 
 extern	char *	XkbVModMaskText(
-#if NeedFunctionPrototypes
     Display *	/* dpy */,
     XkbDescPtr	/* xkb */,
     unsigned	/* modMask */,
     unsigned	/* mask */,
     unsigned	/* format */
-#endif
 );
 
 extern char *	XkbConfigText(
-#if NeedFunctionPrototypes
     unsigned 	/* config */,
     unsigned 	/* format */
-#endif
 );
 
 extern char *	XkbSIMatchText(
-#if NeedFunctionPrototypes
     unsigned	/* type */,
     unsigned	/* format */
-#endif
 );
 
 extern char *	XkbIMWhichStateMaskText(
-#if NeedFunctionPrototypes
     unsigned	/* use_which */,
     unsigned	/* format */
-#endif
 );
 
 extern char *	XkbAccessXDetailText(
-#if NeedFunctionPrototypes
     unsigned	/* state */,
     unsigned	/* format */
-#endif
 );
 
 extern char *	XkbNKNDetailMaskText(
-#if NeedFunctionPrototypes
     unsigned	/* detail */,
     unsigned	/* format */
-#endif
 );
 
 extern char *	XkbControlsMaskText(
-#if NeedFunctionPrototypes
     unsigned	/* ctrls */,
     unsigned	/* format */
-#endif
 );
 
 extern char *	XkbGeomFPText(
-#if NeedFunctionPrototypes
     int		/* val */,
     unsigned 	/* format */
-#endif
 );
 
 extern char *	XkbDoodadTypeText(
-#if NeedFunctionPrototypes
     unsigned	/* type */,
     unsigned	/* format */
-#endif
 );
 
 extern char *	XkbActionTypeText(
-#if NeedFunctionPrototypes
     unsigned	/* type */,
     unsigned	/* format */
-#endif
 );
 
 extern char *	XkbActionText(
-#if NeedFunctionPrototypes
     Display *	/* dpy */,
     XkbDescPtr	/* xkb */,
     XkbAction *	/* action */,
     unsigned	/* format */
-#endif
 );
 
 extern char *	XkbBehaviorText(
-#if NeedFunctionPrototypes
     XkbDescPtr 		/* xkb */,
     XkbBehavior *	/* behavior */,
     unsigned		/* format */
-#endif
 );
 
 /***====================================================================***/
@@ -258,27 +216,21 @@ extern char *	XkbBehaviorText(
 		(((k)>=XK_dead_grave)&&((k)<=XK_dead_semivoiced_sound))
 
 extern	unsigned _XkbKSCheckCase(
-#if NeedFunctionPrototypes
    KeySym	/* sym */
-#endif
 );
 
 extern	int	 XkbFindKeycodeByName(
-#if NeedFunctionPrototypes
     XkbDescPtr	/* xkb */,
     char *	/* name */,
     Bool	/* use_aliases */
-#endif
 );
 
 extern	Bool	XkbLookupGroupAndLevel(
-#if NeedFunctionPrototypes
     XkbDescPtr	/* xkb */,
     int		/* key */,
     int	*	/* mods_inout */,
     int *	/* grp_inout */,
     int	*	/* lvl_rtrn */
-#endif
 );
 
 /***====================================================================***/
@@ -286,10 +238,8 @@ extern	Bool	XkbLookupGroupAndLevel(
 #ifndef XKB_IN_SERVER
 
 extern Bool	XkbLookupCanonicalRGBColor(
-#if NeedFunctionPrototypes
     char *	/* def */,
     XColor *	/* color */
-#endif
 );
 
 #endif
@@ -297,39 +247,29 @@ extern Bool	XkbLookupCanonicalRGBColor(
 /***====================================================================***/
 
 extern	char *	XkbAtomGetString(
-#if NeedFunctionPrototypes
     Display *	/* dpy */,
     Atom 	/* atm */
-#endif
 );
 
 extern	Atom	XkbInternAtom(
-#if NeedFunctionPrototypes
     Display *	/* dpy */,
     char *	/* name */,
     Bool	/* onlyIfExists */
-#endif
 );
 
 extern	Status	XkbChangeKbdDisplay(
-#if NeedFunctionPrototypes
     Display *		/* newDpy */,
     XkbFileInfo *	/* result */
-#endif
 );
 
 extern	Atom	XkbChangeAtomDisplay(
-#if NeedFunctionPrototypes
     Display *	/* oldDpy */,
     Display *	/* newDpy */,
     Atom	/* atm */
-#endif
 );
 
 extern	void	XkbInitAtoms(
-#if NeedFunctionPrototypes
     Display *	/* dpy */
-#endif
 );
 
 /***====================================================================***/
@@ -351,17 +291,13 @@ typedef struct _XkbDrawable {
 
 extern	XkbDrawablePtr
 XkbGetOrderedDrawables(
-#if NeedFunctionPrototypes
     XkbGeometryPtr	/* geom */,
     XkbSectionPtr	/* section */
-#endif
 );
 
 extern	void
 XkbFreeOrderedDrawables(
-#if NeedFunctionPrototypes
     XkbDrawablePtr	/* draw */
-#endif
 );
 
 #endif
@@ -369,170 +305,134 @@ XkbFreeOrderedDrawables(
 /***====================================================================***/
 
 extern	unsigned	XkbConvertGetByNameComponents(
-#if NeedFunctionPrototypes
     Bool		/* toXkm */,
     unsigned 		/* orig */
-#endif
 );
 
 extern	unsigned	XkbConvertXkbComponents(
-#if NeedFunctionPrototypes
     Bool		/* toXkm */,
     unsigned 		/* orig */
-#endif
 );
 
 extern	Bool	XkbDetermineFileType(
-#if NeedFunctionPrototypes
     XkbFileInfo *	/* xkb */,
     int			/* format */,
     int *		/* opts_missing */
-#endif
 );
 
 extern	Bool	XkbNameMatchesPattern(
-#if NeedFunctionPrototypes
     char *		/* name */,
     char *		/* pattern */
-#endif
 );
 
 /***====================================================================***/
 
 extern	Bool	XkbWriteXKBKeycodes(
-#if NeedFunctionPrototypes
     FILE *		/* file */,
     XkbFileInfo *	/* result */,
     Bool		/* topLevel */,
     Bool		/* showImplicit */,
     XkbFileAddOnFunc	/* addOn */,
     void *		/* priv */
-#endif
 );
 
 extern	Bool	XkbWriteXKBKeyTypes(
-#if NeedFunctionPrototypes
     FILE *		/* file */,
     XkbFileInfo *	/* result */,
     Bool		/* topLevel */,
     Bool		/* showImplicit */,
     XkbFileAddOnFunc	/* addOn */,
     void *		/* priv */
-#endif
 );
 
 extern	Bool	XkbWriteXKBCompatMap(
-#if NeedFunctionPrototypes
     FILE *		/* file */,
     XkbFileInfo *	/* result */,
     Bool		/* topLevel */,
     Bool		/* showImplicit */,
     XkbFileAddOnFunc	/* addOn */,
     void *		/* priv */
-#endif
 );
 
 extern	Bool	XkbWriteXKBSymbols(
-#if NeedFunctionPrototypes
     FILE *		/* file */,
     XkbFileInfo *	/* result */,
     Bool		/* topLevel */,
     Bool		/* showImplicit */,
     XkbFileAddOnFunc	/* addOn */,
     void *		/* priv */
-#endif
 );
 
 extern	Bool	XkbWriteXKBGeometry(
-#if NeedFunctionPrototypes
     FILE *		/* file */,
     XkbFileInfo *	/* result */,
     Bool		/* topLevel */,
     Bool		/* showImplicit */,
     XkbFileAddOnFunc	/* addOn */,
     void *		/* priv */
-#endif
 );
 
 extern	Bool	XkbWriteXKBSemantics(
-#if NeedFunctionPrototypes
     FILE *		/* file */,
     XkbFileInfo *	/* result */,
     Bool		/* topLevel */,
     Bool		/* showImplicit */,
     XkbFileAddOnFunc	/* addOn */,
     void *		/* priv */
-#endif
 );
 
 extern	Bool	XkbWriteXKBLayout(
-#if NeedFunctionPrototypes
     FILE *		/* file */,
     XkbFileInfo *	/* result */,
     Bool		/* topLevel */,
     Bool		/* showImplicit */,
     XkbFileAddOnFunc	/* addOn */,
     void *		/* priv */
-#endif
 );
 
 extern	Bool	XkbWriteXKBKeymap(
-#if NeedFunctionPrototypes
     FILE *		/* file */,
     XkbFileInfo *	/* result */,
     Bool		/* topLevel */,
     Bool		/* showImplicit */,
     XkbFileAddOnFunc	/* addOn */,
     void *		/* priv */
-#endif
 );
 
 extern	Bool	XkbWriteXKBFile(
-#if NeedFunctionPrototypes
     FILE *		/* file */,
     XkbFileInfo *	/* result */,
     Bool		/* showImplicit */,
     XkbFileAddOnFunc	/* addOn */,
     void *		/* priv */
-#endif
 );
 
 extern	Bool	XkbWriteCFile(
-#if NeedFunctionPrototypes
     FILE *		/* file */,
     char *		/* name */,
     XkbFileInfo *	/* info */
-#endif
 );
 
 extern	Bool	XkbWriteXKMFile(
-#if NeedFunctionPrototypes
     FILE *		/* file */,
     XkbFileInfo *	/* result */
-#endif
 );
 
 extern	Bool	XkbWriteToServer(
-#if NeedFunctionPrototypes
     XkbFileInfo *	/* result */
-#endif
 );
 
 extern	void	XkbEnsureSafeMapName(
-#if NeedFunctionPrototypes
     char *		/* name */
-#endif
 );
 
 extern	Bool	XkbWriteXKBKeymapForNames(
-#if NeedFunctionPrototypes
     FILE *			/* file */,
     XkbComponentNamesPtr	/* names */,
     Display *			/* dpy */,
     XkbDescPtr			/* xkb */,
     unsigned			/* want */,
     unsigned			/* need */
-#endif
 );
 
 extern	Status	XkbMergeFile(
@@ -543,62 +443,48 @@ extern	Status	XkbMergeFile(
 /***====================================================================***/
 
 extern Bool	XkmProbe(
-#if NeedFunctionPrototypes
     FILE *		/* file */
-#endif
 );
 
 extern unsigned XkbReadFromServer(
-#if NeedFunctionPrototypes
     Display *		/* dpy */,
     unsigned		/* need */,
     unsigned		/* want */,
     XkbFileInfo *	/* result */
-#endif
 );
 
 extern unsigned	XkmReadFile(
-#if NeedFunctionPrototypes
     FILE *		/* file */,
     unsigned		/* need */,
     unsigned		/* want */,
     XkbFileInfo *	/* result */
-#endif
 );
 
 #ifdef _XKMFORMAT_H_
 
 extern Bool	XkmReadTOC(
-#if NeedFunctionPrototypes
     FILE *              /* file */,
     xkmFileInfo *       /* file_info */,
     int                 /* max_toc */,
     xkmSectionInfo *    /* toc */
-#endif
 );
 
 extern xkmSectionInfo *XkmFindTOCEntry(
-#if NeedFunctionPrototypes
     xkmFileInfo *       /* finfo */,
     xkmSectionInfo *    /* toc */,
     unsigned            /* type */
-#endif
 );
 
 extern Bool	XkmReadFileSection(
-#if NeedFunctionPrototypes
     FILE *              /* file */,
     xkmSectionInfo *    /* toc */,
     XkbFileInfo *       /* result */,
     unsigned *          /* loaded_rtrn */
-#endif
 );
 
 extern char *	XkmReadFileSectionName(
-#if NeedFunctionPrototypes
     FILE *		/* file */,
     xkmSectionInfo *	/* toc */
-#endif
 );
 
 #endif /* _XKMFORMAT_H  */

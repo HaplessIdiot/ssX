@@ -1,4 +1,4 @@
-/* $XConsortium: ddxLEDs.c /main/1 1995/11/30 19:22:17 kaleb $ */
+/* $Xorg: ddxLEDs.c,v 1.3 2000/08/17 19:53:46 cpqbld Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,6 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
+/* $XFree86$ */
 
 #include <stdio.h>
 #define	NEED_EVENTS 1
@@ -36,15 +37,34 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "XKBsrv.h"
 #include "XI.h"
 
-extern	CARD16	xkbDebugFlags;
+void
+XkbDDXUpdateIndicators(DeviceIntPtr dev,CARD32 new)
+{
+    dev->kbdfeed->ctrl.leds= new;
+    (*dev->kbdfeed->CtrlProc)(dev,&dev->kbdfeed->ctrl);
+    return;
+}
 
 void
-XkbDDXUpdateIndicators(pXDev,old,new)
-    DeviceIntPtr  pXDev;
-    CARD32 old;
-    CARD32 new;
+XkbDDXUpdateDeviceIndicators(	DeviceIntPtr		dev,
+				XkbSrvLedInfoPtr 	sli,
+				CARD32 			new)
 {
-    pXDev->kbdfeed->ctrl.leds= new;
-    (*pXDev->kbdfeed->CtrlProc)(pXDev,&pXDev->kbdfeed->ctrl);
+    if (sli->fb.kf==dev->kbdfeed)
+	XkbDDXUpdateIndicators(dev,new);
+    else if (sli->class==KbdFeedbackClass) {
+	KbdFeedbackPtr	kf;
+	kf= sli->fb.kf;
+	if (kf && kf->CtrlProc) {
+	    (*kf->CtrlProc)(dev,&kf->ctrl);
+	}
+    }
+    else if (sli->class==LedFeedbackClass) {
+	LedFeedbackPtr	lf;
+	lf= sli->fb.lf;
+	if (lf && lf->CtrlProc) {
+	    (*lf->CtrlProc)(dev,&lf->ctrl);
+	}
+    }
     return;
 }

@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.19tsi Exp $ */
+/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.20 2003/05/27 22:26:26 tsi Exp $ */
 
 /*
 **++ 
@@ -225,12 +225,7 @@ char const thaicat_isc_lookup[CH_CLASSES][CH_CLASSES] = {
 
 /* returns classification of a char */
 Private int
-#if NeedFunctionPrototypes
 THAI_chtype (unsigned char	ch)
-#else
-THAI_chtype (ch)
-    unsigned char	ch;
-#endif
 {
     return tactis_chtype[ch];
 }
@@ -238,12 +233,7 @@ THAI_chtype (ch)
 
 /* returns the display level */
 Private int
-#if NeedFunctionPrototypes
 THAI_chlevel (unsigned char	ch)
-#else
-THAI_chlevel (ch)
-    unsigned char	ch;
-#endif
 {
     int     chlevel;
 
@@ -284,12 +274,7 @@ THAI_chlevel (ch)
 
 /* return True if char is non-spacing */
 Private Bool
-#if NeedFunctionPrototypes
 THAI_isdead (unsigned char	ch)
-#else
-THAI_isdead (ch)
-    unsigned char	ch;
-#endif
 {
     return ((tactis_chtype[ch] == CTRL) || (tactis_chtype[ch] == BV1) ||
             (tactis_chtype[ch] == BV2)  || (tactis_chtype[ch] == BD)  ||
@@ -302,12 +287,7 @@ THAI_isdead (ch)
 
 /* return True if char is consonant */
 Private Bool
-#if NeedFunctionPrototypes
 THAI_iscons (unsigned char	ch)
-#else
-THAI_iscons (ch)
-    unsigned char	ch;
-#endif
 {
     return (tactis_chtype[ch] == CONS);
 }
@@ -315,12 +295,7 @@ THAI_iscons (ch)
 
 /* return True if char is vowel */
 Private Bool
-#if NeedFunctionPrototypes
 THAI_isvowel (unsigned char	ch)
-#else
-THAI_isvowel (ch)
-    unsigned char	ch;
-#endif
 {
     return ((tactis_chtype[ch] == LV)  || (tactis_chtype[ch] == FV1) ||
             (tactis_chtype[ch] == FV2) || (tactis_chtype[ch] == FV3) ||
@@ -332,27 +307,16 @@ THAI_isvowel (ch)
 
 /* return True if char is tonemark */
 Private Bool
-#if NeedFunctionPrototypes
 THAI_istone (unsigned char	ch)
-#else
-THAI_istone (ch)
-    unsigned char	ch;
-#endif
 {
     return (tactis_chtype[ch] == TONE);
 }
 
 
 Private Bool
-#if NeedFunctionPrototypes
 THAI_iscomposible (
     unsigned char	follow_ch, 
     unsigned char	lead_ch)
-#else
-THAI_iscomposible (follow_ch, lead_ch)
-    unsigned char	follow_ch;
-    unsigned char	lead_ch;
-#endif
 {/* "Can follow_ch be put in the same display cell as lead_ch?" */
 
     return (write_rules_lookup[THAI_chtype(lead_ch)][THAI_chtype(follow_ch)] 
@@ -360,17 +324,10 @@ THAI_iscomposible (follow_ch, lead_ch)
 }
 
 Private Bool
-#if NeedFunctionPrototypes
 THAI_isaccepted (
     unsigned char	follow_ch, 
     unsigned char	lead_ch,
     unsigned char	mode)
-#else
-THAI_isaccepted (follow_ch, lead_ch, mode)
-    unsigned char	follow_ch;
-    unsigned char	lead_ch;
-    unsigned char	mode;
-#endif
 {
     Bool iskeyvalid; /*  means "Can follow_ch be keyed in after lead_ch?" */
 
@@ -398,19 +355,11 @@ THAI_isaccepted (follow_ch, lead_ch, mode)
 
 #if 0
 Private void 
-#if NeedFunctionPrototypes
 THAI_apply_write_rules(
     unsigned char	*instr, 
     unsigned char	*outstr, 
     unsigned char	insert_ch, 
     int 		*num_insert_ch)
-#else
-THAI_apply_write_rules(instr, outstr, insert_ch, num_insert_ch)
-    unsigned char	*instr;
-    unsigned char	*outstr;
-    unsigned char	insert_ch;
-    int 		*num_insert_ch;
-#endif
 {
 /*
 Input parameters: 
@@ -452,15 +401,9 @@ Output parameters:
 }
 
 Private int 
-#if NeedFunctionPrototypes
 THAI_find_chtype (
     unsigned char	*instr, 
     int		chtype)
-#else
-THAI_find_chtype (instr, chtype)
-    unsigned char	*instr;
-    int		chtype;
-#endif
 {
 /*
 Input parameters:
@@ -487,21 +430,12 @@ Output parameters:
 #endif
 
 Private int 
-#if NeedFunctionPrototypes
 THAI_apply_scm(
     unsigned char	*instr, 
     unsigned char	*outstr, 
     unsigned char	spec_ch, 
     int		num_sp, 
     unsigned char	insert_ch)
-#else
-THAI_apply_scm(instr, outstr, spec_ch, num_sp, insert_ch)
-    unsigned char	*instr;
-    unsigned char	*outstr;
-    unsigned char	spec_ch;
-    int		num_sp;
-    unsigned char	insert_ch;
-#endif
 {
     unsigned char   *scan, *outch;
     int             i, dead_count, found_count;
@@ -601,13 +535,7 @@ Private Bool ThaiComposeConvert(
 		(IC_RealDeletePreviousChar(ic))
 
 Private unsigned char
-#if NeedFunctionPrototypes
 IC_RealGetPreviousChar(Xic ic, unsigned short pos)
-#else
-IC_RealGetPreviousChar(ic, pos)
-  Xic ic;
-  XIMStringConversionPosition pos;
-#endif
 {
     XICCallback* cb = &ic->core.string_conversion_callback;
 
@@ -649,12 +577,7 @@ IC_RealGetPreviousChar(ic, pos)
 }
 
 Private unsigned char
-#if NeedFunctionPrototypes
 IC_RealDeletePreviousChar(Xic ic)
-#else
-IC_RealDeletePreviousChar(ic)
-  Xic ic;
-#endif
 {
     XICCallback* cb = &ic->core.string_conversion_callback;
 
@@ -1273,14 +1196,7 @@ Private void InitIscMode(Xic ic)
  * Helper functions for _XimThaiFilter()
  */
 Private Bool
-#if NeedFunctionPrototypes
 ThaiFltAcceptInput(Xic ic, unsigned char new_char, KeySym symbol)
-#else
-ThaiFltAcceptInput(ic, new_char, symbol)
-    Xic           ic;
-    unsigned char new_char;
-    KeySym        symbol;
-#endif
 {
     ic->private.local.composed->wc[0] = tis2ucs(new_char);
     ic->private.local.composed->wc[1] = '\0';
@@ -1294,13 +1210,7 @@ ThaiFltAcceptInput(ic, new_char, symbol)
 }
 
 Private Bool
-#if NeedFunctionPrototypes
 ThaiFltReorderInput(Xic ic, unsigned char previous_char, unsigned char new_char)
-#else
-ThaiFltReorderInput(ic, previous_char, new_char)
-    Xic           ic;
-    unsigned char previous_char, new_char;
-#endif
 {
     if (!IC_DeletePreviousChar(ic)) return False;
     ic->private.local.composed->wc[0] = tis2ucs(new_char);
@@ -1313,14 +1223,7 @@ ThaiFltReorderInput(ic, previous_char, new_char)
 }
 
 Private Bool
-#if NeedFunctionPrototypes
 ThaiFltReplaceInput(Xic ic, unsigned char new_char, KeySym symbol)
-#else
-ThaiFltReplaceInput(ic, new_char, symbol)
-    Xic           ic;
-    unsigned char new_char;
-    KeySym        symbol;
-#endif
 {
     if (!IC_DeletePreviousChar(ic)) return False;
     ic->private.local.composed->wc[0] = tis2ucs(new_char);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgaBitBlt.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgaBitBlt.c,v 1.5 2003/11/03 05:11:57 tsi Exp $ */
 /* GJA -- span move routines */
 
 
@@ -101,33 +101,23 @@ static unsigned char rmasktab[] = {
 	}
 
 static void aligned_blit(
-#if NeedFunctionPrototypes
     WindowPtr, int, int, int, int, int, int, int, int
-#endif
 );
 
 static void aligned_blit_center(
-#if NeedFunctionPrototypes
     WindowPtr, int, int, int, int, int, int
-#endif
 );
 
 static void shift(
-#if NeedFunctionPrototypes
     WindowPtr, int, int, int, int, int, int, int
-#endif
 );
 
 static void shift_thin_rect(
-#if NeedFunctionPrototypes
     WindowPtr, int, int, int, int, int, int, int
-#endif
 );
 
 static void shift_center(
-#if NeedFunctionPrototypes
     WindowPtr, int, int, int, int, int, int, int
-#endif
 );
 
 void xf4bppBitBlt(pWin,alu,writeplanes,x0,y0,x1,y1,w,h)

@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/lbxproxy/di/utils.c,v 1.16 2003/05/27 22:26:56 tsi Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/utils.c,v 1.17 2003/09/13 21:33:10 dawes Exp $ */
 
 #include "lbx.h"
 #include <stdio.h>
@@ -708,10 +708,8 @@ strnalloc(str, len)
 typedef struct _WorkQueue {
     struct _WorkQueue *next;
     Bool        (*function) (
-#if NeedNestedPrototypes
 		ClientPtr	/* pClient */,
 		pointer		/* closure */
-#endif
 );
     ClientPtr   client;
     pointer     closure;

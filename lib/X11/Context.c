@@ -50,7 +50,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Context.c,v 1.4 2001/10/28 03:32:30 tsi Exp $ */
+/* $XFree86: xc/lib/X11/Context.c,v 1.5 2001/12/14 19:53:58 dawes Exp $ */
 
 /* This module implements a simple sparse array.
 
@@ -155,19 +155,11 @@ static void _XFreeContextDB(Display *display)
    Possible errors are Out-of-memory.
 */   
 
-#if NeedFunctionPrototypes
 int XSaveContext(
     Display *display,
     register XID rid,
     register XContext context,
     _Xconst char* data)
-#else
-int XSaveContext(display, rid, context, data)
-    Display *display;
-    register XID rid;
-    register XContext context;
-    XPointer data;
-#endif
 {
     DB *pdb;
     register DB db;

@@ -35,7 +35,7 @@
  * TORTIOUS ACTIONS, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/hyperpen/xf86HyperPen.c,v 1.8 2003/09/24 02:43:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/hyperpen/xf86HyperPen.c,v 1.9 2003/09/24 03:16:59 dawes Exp $ */
 
 #include <xf86Version.h>
 
@@ -345,18 +345,14 @@ static const char * ss_initstr = SS_STREAM_MODE;
 #define ENQUEUE	xf86eqEnqueue
 
 extern void xf86eqEnqueue(
-#if NeedFunctionPrototypes
 			     xEventPtr	/*e */
-#endif
     );
 #endif
 
 extern void miPointerDeltaCursor(
-#if NeedFunctionPrototypes
 				    int /*dx */ ,
 				    int /*dy */ ,
 				    unsigned long	/*time */
-#endif
     );
 
 

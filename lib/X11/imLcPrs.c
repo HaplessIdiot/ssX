@@ -30,7 +30,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/lib/X11/imLcPrs.c,v 1.9 2003/04/13 19:22:21 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imLcPrs.c,v 1.10 2003/09/06 14:06:32 pascal Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/Xmd.h>
@@ -42,19 +42,15 @@ OR PERFORMANCE OF THIS SOFTWARE.
 #include <stdio.h>
 
 extern int _Xmbstowcs(
-#if NeedFunctionPrototypes
     wchar_t	*wstr,
     char	*str,
     int		len
-#endif
 );
 
 extern int _Xmbstoutf8(
-#if NeedFunctionPrototypes
     char	*ustr,
     const char	*str,
     int		len
-#endif
 );
 
 /*

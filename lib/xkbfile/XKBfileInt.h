@@ -27,6 +27,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
+/* $XFree86$ */
 
 #include "XKBfile.h"
 
@@ -64,16 +65,12 @@
 _XFUNCPROTOBEGIN
 
 extern char *	_XkbDupString(
-#if NeedFunctionPrototypes
 	char *	/* old_str */
-#endif
 );
 
 extern int	_XkbStrCaseCmp(
-#if NeedFunctionPrototypes
 	char *	/* str1 */,
 	char *	/* str2 */
-#endif
 );
 #define _XkbStrCaseEqual(s1,s2)	(_XkbStrCaseCmp(s1,s2)==0)
 

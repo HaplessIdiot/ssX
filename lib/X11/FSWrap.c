@@ -56,7 +56,7 @@ from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/X11/FSWrap.c,v 1.6 2001/12/14 19:54:00 dawes Exp $ */
+/* $XFree86: xc/lib/X11/FSWrap.c,v 1.8 2003/08/22 19:27:24 eich Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
@@ -160,7 +160,6 @@ copy_string_list(
     return string_list_ret;
 }
 
-#if NeedFunctionPrototypes
 XFontSet
 XCreateFontSet (
     Display        *dpy,
@@ -168,16 +167,6 @@ XCreateFontSet (
     char         ***missing_charset_list,
     int            *missing_charset_count,
     char          **def_string)
-#else
-XFontSet
-XCreateFontSet (dpy, base_font_name_list, missing_charset_list,
-	        missing_charset_count, def_string)
-    Display        *dpy;
-    char           *base_font_name_list;
-    char         ***missing_charset_list;
-    int            *missing_charset_count;
-    char          **def_string;
-#endif
 {
     XOM om;
     XOC oc;

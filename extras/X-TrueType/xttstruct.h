@@ -31,7 +31,7 @@
 
 Notice===
 */
-/* $XFree86: xc/extras/X-TrueType/xttstruct.h,v 1.3 2003/07/27 02:01:17 dawes Exp $ */
+/* $XFree86: xc/extras/X-TrueType/xttstruct.h,v 1.4 2003/10/19 17:39:42 dawes Exp $ */
 
 #ifndef _XTTSTRUCT_H_
 #define _XTTSTRUCT_H_
@@ -93,11 +93,9 @@ typedef struct FreeTypeFont {
     CodeConverterInfo codeConverterInfo;
 
     void (*convert)(
-#if NeedNestedPrototypes
         struct FreeTypeFont*   /* font */,
         unsigned char *        /* p */,
         int size
-#endif
     );
 
     int spacing;

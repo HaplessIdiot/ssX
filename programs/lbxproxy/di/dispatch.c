@@ -21,7 +21,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/lbxproxy/di/dispatch.c,v 1.6 2001/10/28 03:34:22 tsi Exp $ */
 
 #include <stdio.h>
 #include "assert.h"
@@ -36,16 +36,12 @@
 extern int (* InitialVector[3]) ();
 
 static void KillAllClients(
-#if NeedFunctionPrototypes
     void
-#endif
 );
 
 static void
 HandleLargeRequest(
-#if NeedFunctionPrototypes
     void
-#endif
 );
 
 int nextFreeClientID; /* always MIN free client ID */

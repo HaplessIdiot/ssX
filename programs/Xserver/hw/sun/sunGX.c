@@ -27,7 +27,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/Xserver/hw/sun/sunGX.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunGX.c,v 1.8 2003/07/19 13:22:28 tsi Exp $ */
 
 #include	"sun.h"
 
@@ -2845,15 +2845,9 @@ sunGXCopyWindow(pWin, ptOldOrg, prgnSrc)
 }
 
 Bool
-#if NeedFunctionPrototypes
 sunGXInit (
     ScreenPtr	pScreen,
     fbFd	*fb)
-#else
-sunGXInit (pScreen, fb)
-    ScreenPtr	pScreen;
-    fbFd	*fb;
-#endif
 {
     sunGXPtr	    gx;
     Uint	    mode;

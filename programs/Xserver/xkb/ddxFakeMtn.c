@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/ddxFakeMtn.c,v 1.4 2001/01/17 22:37:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxFakeMtn.c,v 1.5 2003/09/13 16:39:01 dawes Exp $ */
 
 #include <stdio.h>
 #define	NEED_EVENTS 1
@@ -46,14 +46,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "mipointrst.h"
 
 void
-#if NeedFunctionPrototypes
 XkbDDXFakePointerMotion(unsigned flags,int x,int y)
-#else
-XkbDDXFakePointerMotion(flags,x,y)
-    unsigned	flags;
-    int 	x;
-    int 	y;
-#endif
 {
 int 		   oldX,oldY;
 ScreenPtr	   pScreen, oldScreen;

@@ -28,7 +28,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imTrans.c,v 1.2 2003/04/13 19:22:21 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imTrans.c,v 1.3 2003/04/17 02:06:32 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Xatom.h>
@@ -121,21 +121,12 @@ _XimTransShutdown(
 
 
 Public Bool
-#if NeedFunctionPrototypes
 _XimTransRegisterDispatcher(
     Xim				 im,
     Bool			 (*callback)(
-#if NeedNestedPrototypes
 					     Xim, INT16, XPointer, XPointer
-#endif
 					     ),
     XPointer			 call_data)
-#else
-_XimTransRegisterDispatcher(im, callback, call_data)
-    Xim				 im;
-    Bool			 (*callback)();
-    XPointer			 call_data;
-#endif
 {
     TransSpecRec		*spec = (TransSpecRec *)im->private.proto.spec;
     TransIntrCallbackPtr	 rec;
@@ -168,14 +159,7 @@ _XimFreeTransIntrCallback(
 
 
 Public Bool
-#if NeedFunctionPrototypes
 _XimTransCallDispatcher(Xim im, INT16 len, XPointer data)
-#else
-_XimTransCallDispatcher(im, len, data)
-    Xim				 im;
-    INT16			 len;
-    XPointer			 data;
-#endif
 {
     TransSpecRec		*spec = (TransSpecRec *)im->private.proto.spec;
     TransIntrCallbackRec	*rec;
@@ -230,14 +214,7 @@ _XimTransInternalConnection(
 
 
 Public Bool
-#if NeedFunctionPrototypes
 _XimTransWrite(Xim im, INT16 len, XPointer data)
-#else
-_XimTransWrite(im, len, data)
-    Xim			 im;
-    INT16		 len;
-    XPointer		 data;
-#endif
 {
     TransSpecRec	*spec	= (TransSpecRec *)im->private.proto.spec;
     char		*buf = (char *)data;

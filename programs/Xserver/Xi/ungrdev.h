@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xi/ungrdev.h,v 3.0 1996/03/29 22:14:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xi/ungrdev.h,v 3.1 1996/04/15 11:19:08 dawes Exp $ */
 /************************************************************
 
 Copyright 1996 by Thomas E. Dickey <dickey@clark.net>
@@ -29,16 +29,12 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 int
 SProcXUngrabDevice(
-#if NeedFunctionPrototypes
 	ClientPtr /* client */
-#endif
 	);
 
 int
 ProcXUngrabDevice(
-#if NeedFunctionPrototypes
 	ClientPtr /* client */
-#endif
 	);
 
 #endif /* UNGRDEV_H */

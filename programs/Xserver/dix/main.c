@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.42 2003/10/29 04:17:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.43 2003/10/30 21:21:02 herrb Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -106,15 +106,11 @@ SOFTWARE.
 #endif
 
 extern int InitClientPrivates(
-#if NeedFunctionPrototypes
     ClientPtr /*client*/
-#endif
 );
 
 extern void Dispatch(
-#if NeedFunctionPrototypes
     void
-#endif
 );
 
 char *ConnectionInfo;
@@ -151,11 +147,9 @@ NotImplemented(xEvent *from, xEvent *to)
 /*ARGSUSED*/
 void
 ReplyNotSwappd(
-#if NeedNestedPrototypes
 	ClientPtr pClient ,
 	int size ,
 	void * pbuf
-#endif
 	)
 {
     FatalError("Not implemented");
@@ -648,24 +642,15 @@ with its screen number, a pointer to its ScreenRec, argc, and argv.
 */
 
 int
-#if NeedFunctionPrototypes
 AddScreen(
     Bool	(* pfnInit)(
-#if NeedNestedPrototypes
 	int /*index*/,
 	ScreenPtr /*pScreen*/,
 	int /*argc*/,
 	char ** /*argv*/
-#endif
 		),
     int argc,
     char **argv)
-#else
-AddScreen(pfnInit, argc, argv)
-    Bool	(* pfnInit)();
-    int argc;
-    char **argv;
-#endif
 {
 
     int i;

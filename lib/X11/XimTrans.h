@@ -28,7 +28,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
                                fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/XimTrans.h,v 1.3 2003/10/24 15:34:00 tsi Exp $ */
 
 #ifndef _XIMTRANS_H
 #define _XIMTRANS_H
@@ -37,9 +37,7 @@ typedef struct _TransIntrCallbackRec	*TransIntrCallbackPtr;
 
 typedef struct _TransIntrCallbackRec {
     Bool			(*func)(
-#if NeedNestedPrototypes
 					Xim, INT16, XPointer, XPointer
-#endif
 					);
     XPointer			 call_data;
     TransIntrCallbackPtr	 next;
@@ -69,15 +67,11 @@ extern Bool _XimTransRegisterDispatcher(
 
 
 extern Bool _XimTransIntrCallback(
-#if NeedFunctionPrototypes
     Xim		 im,
     Bool	 (*callback)(
-#if NeedNestedPrototypes
 			     Xim, INT16, XPointer, XPointer
-#endif
 			     ),
     XPointer	 call_data
-#endif
 );
 
 extern Bool _XimTransCallDispatcher(
@@ -87,57 +81,43 @@ extern Bool _XimTransCallDispatcher(
 );
 
 extern void _XimFreeTransIntrCallback(
-#if NeedFunctionPrototypes
     Xim		 im
-#endif
 );
 
 extern Bool _XimTransIntrCallbackCheck(
-#if NeedFunctionPrototypes
     Xim		 im,
     INT16	 len,
     XPointer	 data
-#endif
 );
 
 extern Bool _XimTransFilterWaitEvent(
-#if NeedFunctionPrototypes
     Display	*d,
     Window	 w,
     XEvent	*ev,
     XPointer	 arg
-#endif
 );
 
 extern void _XimTransInternalConnection(
-#if NeedFunctionPrototypes
     Display	*d,
     int		 fd,
     XPointer	 arg
-#endif
 );
 
 extern Bool _XimTransWrite(
-#if NeedFunctionPrototypes
     Xim		 im,
     INT16	 len,
     XPointer	 data
-#endif
 );
 
 extern Bool _XimTransRead(
-#if NeedFunctionPrototypes
     Xim		 im,
     XPointer	 recv_buf,
     int		 buf_len,
     int		*ret_len
-#endif
 );
 
 extern void _XimTransFlush(
-#if NeedFunctionPrototypes
     Xim		 im
-#endif
 );
 
 #endif /* _XIMTRANS__H */

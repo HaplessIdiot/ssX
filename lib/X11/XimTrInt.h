@@ -1,4 +1,4 @@
-/* $XConsortium: XimTrInt.h,v 1.4 94/03/26 16:57:07 rws Exp $ */
+/* $Xorg: XimTrInt.h,v 1.3 2000/08/17 19:45:05 cpqbld Exp $ */
 /******************************************************************
 
               Copyright 1992 by Sun Microsystems, Inc.
@@ -28,21 +28,18 @@ OR PERFORMANCE OF THIS SOFTWARE.
 			       fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
+/* $XFree86$ */
 
 #ifndef _XIMTRINT_H
 #define _XIMTRINT_H
 
-#if NeedFunctionPrototypes
 #include "Ximint.h"
-#endif
 
 typedef struct {
     char	*transportname;
     Bool	 (*config)(
-#if NeedFunctionPrototypes
 			Xim,
 			char *
-#endif
     );
 } TransportSW;
 
@@ -53,19 +50,15 @@ extern TransportSW _XimTransportRec[];
  */
 
 extern Bool	_XimXConf(
-#if NeedFunctionPrototypes
     Xim		 im,
     char	*address
-#endif
 );
 
 #if defined(TCPCONN) || defined(UNIXCONN) || defined(DNETCONN) || defined(STREAMSCONN)
 
 extern Bool	_XimTransConf(
-#if NeedFunctionPrototypes
     Xim		 im,
     char	*address
-#endif
 );
 
 #endif

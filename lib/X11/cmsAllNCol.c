@@ -32,7 +32,7 @@
  *
  *
  */
-/* $XFree86: xc/lib/X11/cmsAllNCol.c,v 1.3 2001/01/17 19:41:50 dawes Exp $ */
+/* $XFree86: xc/lib/X11/cmsAllNCol.c,v 1.4 2003/04/13 19:22:20 dawes Exp $ */
 
 #define NEED_REPLIES
 #include <stdio.h>
@@ -47,7 +47,6 @@
  *
  *	SYNOPSIS
  */
-#if NeedFunctionPrototypes
 Status
 XcmsAllocNamedColor (
     Display *dpy,
@@ -56,17 +55,6 @@ XcmsAllocNamedColor (
     XcmsColor *pColor_scrn_return,
     XcmsColor *pColor_exact_return,
     XcmsColorFormat result_format)
-#else
-Status
-XcmsAllocNamedColor(dpy, cmap, colorname, pColor_scrn_return,
-	pColor_exact_return, result_format)
-    Display *dpy;
-    Colormap cmap;
-    char *colorname;
-    XcmsColor *pColor_scrn_return;
-    XcmsColor *pColor_exact_return;
-    XcmsColorFormat result_format;
-#endif
 /*
  *	DESCRIPTION
  *		Finds the color specification associated with the color

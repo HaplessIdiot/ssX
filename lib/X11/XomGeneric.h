@@ -31,7 +31,7 @@
  * Modifier: Takanori Tateno   FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/XomGeneric.h,v 1.4 2001/01/17 19:41:50 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XomGeneric.h,v 1.5 2003/04/13 19:22:19 dawes Exp $ */
 
 #ifndef _XOMGENERIC_H_
 #define _XOMGENERIC_H_
@@ -150,24 +150,19 @@ typedef struct _XOCGenericRec {
 _XFUNCPROTOBEGIN
 
 extern XOM _XomGenericOpenOM(
-#if NeedFunctionPrototypes
     XLCd		/* lcd */,
     Display*		/* dpy */,
     XrmDatabase		/* rdb */,
     _Xconst char*	/* res_name */,
     _Xconst char*	/* res_class */
-#endif
 );
 
 extern XlcConv _XomInitConverter(
-#if NeedFunctionPrototypes
     XOC			/* oc */,
     XOMTextType		/* type */
-#endif
 );
 
 extern int _XomConvert(
-#if NeedFunctionPrototypes
     XOC			/* oc */,
     XlcConv		/* conv */,
     XPointer*		/* from */,
@@ -176,7 +171,6 @@ extern int _XomConvert(
     int*		/* to_left */,
     XPointer*		/* args */,
     int			/* num_args */
-#endif
 );
 
 extern int

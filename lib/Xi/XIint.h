@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xi/XIint.h,v 3.0 1996/08/25 13:52:55 dawes Exp $ */
+/* $XFree86: xc/lib/Xi/XIint.h,v 3.2 2003/07/07 15:34:22 eich Exp $ */
 
 /*
  *	XIint.h - Header definition and support file for the internal
@@ -9,23 +9,17 @@
 #define _XIINT_H_
 
 extern XExtDisplayInfo * XInput_find_display(
-#if NeedFunctionPrototypes
 	Display*
-#endif
 );
 
 extern int _XiCheckExtInit(
-#if NeedFunctionPrototypes
 	Display*,
 	int
-#endif
 );
 
 extern XExtensionVersion * _XiGetExtensionVersion(
-#if NeedFunctionPrototypes
 	Display*,
 	_Xconst char*
-#endif
 );
 
 #endif

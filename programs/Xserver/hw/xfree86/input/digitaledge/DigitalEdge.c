@@ -30,7 +30,7 @@
  * Probably buggy as hell, no idea what the initialisation strings are,
  * no idea how to ack it. If the tablet stops responding power cycle it.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/digitaledge/DigitalEdge.c,v 1.7 2003/09/24 02:43:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/digitaledge/DigitalEdge.c,v 1.8 2003/09/24 03:16:58 dawes Exp $ */
 
 #include "xf86Version.h"
 
@@ -303,18 +303,14 @@ static const char *ss_initstr =
 #define ENQUEUE	xf86eqEnqueue
 
 extern void xf86eqEnqueue(
-#if NeedFunctionPrototypes
 			     xEventPtr	/*e */
-#endif
     );
 #endif
 
 extern void miPointerDeltaCursor(
-#if NeedFunctionPrototypes
 				    int /*dx */ ,
 				    int /*dy */ ,
 				    unsigned long	/*time */
-#endif
     );
 
 #if !defined(sun) || defined(i386)

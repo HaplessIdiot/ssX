@@ -1,4 +1,4 @@
-/* $XConsortium: xkbPrOtherEv.c /main/1 1996/01/14 16:46:43 kaleb $ */
+/* $Xorg: xkbPrOtherEv.c,v 1.3 2000/08/17 19:53:48 cpqbld Exp $ */
 /************************************************************
 Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,6 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
+/* $XFree86$ */
 
 #include <stdio.h>
 #include <math.h>
@@ -39,24 +40,15 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "XIproto.h"
 
 extern	void	ProcessOtherEvent(
-#if NeedFunctionPrototypes
     xEvent *		/* xE */,
     DeviceIntPtr 	/* dev */,
     int 		/* count */
-#endif
 );
 
 /***====================================================================***/
 
 void
-#if NeedFunctionPrototypes
 XkbProcessOtherEvent(xEvent *xE,DeviceIntPtr dev,int count)
-#else
-XkbProcessOtherEvent(xE,dev,count)
-    xEvent *		xE;
-    DeviceIntPtr 	dev;
-    int 		count;
-#endif
 {
 Bool	xkbCares,isBtn;
 

@@ -24,14 +24,13 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/ImUtil.c,v 3.11 2003/04/13 19:22:16 dawes Exp $ */
+/* $XFree86: xc/lib/X11/ImUtil.c,v 3.12 2003/04/15 22:10:06 herrb Exp $ */
 
 #include <X11/Xlibint.h>
 #include <X11/Xutil.h>
 #include <stdio.h>
 #include "ImUtil.h"
 
-#if NeedFunctionPrototypes
 static int _XDestroyImage(XImage *);
 static unsigned long _XGetPixel(XImage *, int, int);
 static unsigned long _XGetPixel1(XImage *, int, int);
@@ -45,7 +44,6 @@ static int _XPutPixel16(XImage *, int, int, unsigned long);
 static int _XPutPixel32(XImage *, int, int, unsigned long);
 static XImage *_XSubImage(XImage *, int, int, unsigned int, unsigned int);
 static int _XAddPixel(XImage *, long);
-#endif
 
 static unsigned char const _lomask[0x09] = { 0x00, 0x01, 0x03, 0x07, 0x0f, 0x1f, 0x3f, 0x7f, 0xff };
 static unsigned char const _himask[0x09] = { 0xff, 0xfe, 0xfc, 0xf8, 0xf0, 0xe0, 0xc0, 0x80, 0x00 };

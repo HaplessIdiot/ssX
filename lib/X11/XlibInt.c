@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XlibInt.c,v 3.37 2003/05/23 14:38:27 tsi Exp $ */
+/* $XFree86: xc/lib/X11/XlibInt.c,v 3.38 2003/10/30 21:55:05 alanh Exp $ */
 
 /*
  *	XlibInt.c - Internal support routines for the C subroutine
@@ -1330,17 +1330,10 @@ void _XReadPad(
  * This routine may have to be reworked if int < long;
  */
 void
-#if NeedFunctionPrototypes
 _XSend (
 	register Display *dpy,
 	_Xconst char *data,
 	register long size)
-#else
-_XSend (dpy, data, size)
-	register Display *dpy;
-	char *data;
-	register long size;
-#endif
 {
 	struct iovec iov[3];
 	static char const pad[3] = {0, 0, 0};
@@ -1929,21 +1922,13 @@ _XAsyncReply(
  * because could not allocate memory.
  * Assumes Display locked when called.
  */
-#if NeedFunctionPrototypes
-Status _XRegisterInternalConnection(
+Status
+_XRegisterInternalConnection(
     Display* dpy,
     int fd,
     _XInternalConnectionProc callback,
     XPointer call_data
 )
-#else
-Status
-_XRegisterInternalConnection(
-    Display *dpy,
-    int fd,
-    _XInternalConnectionProc callback,
-    XPointer call_data)
-#endif
 {
     struct _XConnectionInfo *new_conni, **iptr;
     struct _XConnWatchInfo *watchers;
@@ -1986,17 +1971,11 @@ _XRegisterInternalConnection(
  *
  * Assumes Display locked when called.
  */
-#if NeedFunctionPrototypes
-void _XUnregisterInternalConnection(
+void
+_XUnregisterInternalConnection(
     Display* dpy,
     int fd
 )
-#else
-void
-_XUnregisterInternalConnection(
-    Display *dpy,
-    int fd)
-#endif
 {
     struct _XConnectionInfo *info_list, **prev;
     struct _XConnWatchInfo *watch;
@@ -2030,19 +2009,12 @@ _XUnregisterInternalConnection(
  * The list is allocated with Xmalloc and should be freed by the caller
  * with Xfree;
  */
-#if NeedFunctionPrototypes
-Status XInternalConnectionNumbers(
+Status
+XInternalConnectionNumbers(
     Display *dpy,
     int **fd_return,
     int *count_return
 )
-#else
-Status
-XInternalConnectionNumbers(dpy, fd_return, count_return)
-    Display *dpy;
-    int **fd_return;
-    int *count_return;
-#endif
 {
     int count;
     struct _XConnectionInfo *info_list;
@@ -2098,17 +2070,11 @@ static void _XProcessInternalConnection(
  * for this fd.
  * The Display is NOT locked during the call.
  */
-#if NeedFunctionPrototypes
-void XProcessInternalConnection(
+void
+XProcessInternalConnection(
     Display* dpy,
     int fd
 )
-#else
-void
-XProcessInternalConnection(
-    Display *dpy,
-    int fd)
-#endif
 {
     struct _XConnectionInfo *info_list;
 
@@ -2129,19 +2095,12 @@ XProcessInternalConnection(
  * If any connections are already registered, the callback is immediately
  * called for each of them.
  */
-#if NeedFunctionPrototypes
-Status XAddConnectionWatch(
+Status
+XAddConnectionWatch(
     Display* dpy,
     XConnectionWatchProc callback,
     XPointer client_data
 )
-#else
-Status
-XAddConnectionWatch(dpy, callback, client_data)
-    Display *dpy;
-    XConnectionWatchProc callback;
-    XPointer client_data;
-#endif
 {
     struct _XConnWatchInfo *new_watcher, **wptr;
     struct _XConnectionInfo *info_list;
@@ -2191,19 +2150,12 @@ XAddConnectionWatch(dpy, callback, client_data)
  * Both callback and client_data must match what was passed to
  * XAddConnectionWatch.
  */ 
-#if NeedFunctionPrototypes
-void XRemoveConnectionWatch(
+void
+XRemoveConnectionWatch(
     Display* dpy,
     XConnectionWatchProc callback,
     XPointer client_data
 )
-#else
-void
-XRemoveConnectionWatch(dpy, callback, client_data)
-    Display *dpy;
-    XConnectionWatchProc callback;
-    XPointer client_data;
-#endif
 {
     struct _XConnWatchInfo *watch;
     struct _XConnWatchInfo *previous = NULL;
@@ -3027,12 +2979,7 @@ Visual *_XVIDtoVisual(
 }
 
 int
-#if NeedFunctionPrototypes
 XFree (void *data)
-#else
-XFree (data)
-	char *data;
-#endif
 {
 	Xfree (data);
 	return 1;

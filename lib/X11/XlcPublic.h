@@ -31,7 +31,7 @@
  * Modifier: Takanori Tateno   FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/XlcPublic.h,v 1.10 2003/04/13 19:22:19 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlcPublic.h,v 1.11 2003/04/17 02:06:31 dawes Exp $ */
 /*
  * Most of this API is documented in i18n/Framework.PS
  */
@@ -140,10 +140,8 @@ extern Bool _XlcAddCharSet(
    Return NULL if successful, otherwise the name of the first argument
    specifiying a nonexistent attribute. */
 extern char *_XlcGetCSValues(
-#if NeedVarargsPrototypes
     XlcCharSet		charset,
     ...
-#endif
 );
 
 _XFUNCPROTOEND
@@ -177,13 +175,10 @@ typedef XlcConv (*XlcOpenConverterProc)(
 );
 
 typedef void (*XlcCloseConverterProc)(
-#if NeedFunctionPrototypes
     XlcConv		/* conv */
-#endif
 );
 
 typedef int (*XlcConvertProc)(
-#if NeedFunctionPrototypes
     XlcConv		/* conv */,
     XPointer*		/* from */,
     int*		/* from_left */,
@@ -191,13 +186,10 @@ typedef int (*XlcConvertProc)(
     int*		/* to_left */,
     XPointer*		/* args */,
     int			/* num_args */
-#endif
 );
 
 typedef void (*XlcResetConverterProc)(
-#if NeedFunctionPrototypes
     XlcConv		/* conv */
-#endif
 );
 
 typedef struct _XlcConvMethodsRec{
@@ -230,15 +222,11 @@ typedef struct _XlcConvRec {
 _XFUNCPROTOBEGIN
 
 extern Bool _XInitOM(
-#if NeedFunctionPrototypes
     XLCd		/* lcd */
-#endif
 );
 
 extern Bool _XInitIM(
-#if NeedFunctionPrototypes
     XLCd		/* lcd */
-#endif
 );
 
 extern XIM _XimOpenIM(
@@ -250,10 +238,8 @@ extern XIM _XimOpenIM(
 );
 
 extern char *_XGetLCValues(
-#if NeedVarargsPrototypes
     XLCd		/* lcd */,
     ...
-#endif
 );
 
 extern XlcConv _XlcOpenConverter(
@@ -303,16 +289,12 @@ extern char *_XlcFileName(
 );
 
 extern int _Xwcslen(
-#if NeedFunctionPrototypes
     wchar_t*		/* wstr */
-#endif
 );
 
 extern wchar_t *_Xwcscpy(
-#if NeedFunctionPrototypes
     wchar_t*		/* wstr1 */,
     wchar_t*		/* wstr2 */
-#endif
 );
 
 extern wchar_t *_Xwcsncpy(wchar_t *wstr1, wchar_t *wstr2, int len);
