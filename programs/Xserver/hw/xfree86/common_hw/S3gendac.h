@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.h,v 3.0 1994/06/12 16:36:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.h,v 3.1 1994/09/26 15:32:17 dawes Exp $ */
 /* Jon Tombs <jon@esix2.us.es>  */
 
 
@@ -14,3 +14,8 @@ int S3gendacSetClock(
 #endif
 );     
 
+int ICS5342SetClock( 
+#if NeedFunctionPrototypes
+   long freq, int clock
+#endif
+);     

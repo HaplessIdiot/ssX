@@ -122,7 +122,7 @@ If graphics redrawing goes wrong, first try the
 <tt>&dquot;no_bitblt&dquot;</tt>
 option if your chip has the BitBLT engine, if that doesn't work, try the
 <tt>&dquot;noaccel&dquot</tt>; option, which disables all accelerated
-functions.
+functions. The <tt>&dquot;no_imageblt&dquot;</tt> option may be sufficient.
 
 In order to be able to run at a depth of 16bpp and 32bpp, and to improve
 performance at 8bpp, linear addressing must be enabled. This is generally
@@ -221,6 +221,17 @@ Option &dquot;no_bitblt&dquot;
         disabling the use of the BitBLT engine (which the 5424 does not
         have), while retaining some acceleration. This will be useful for
         problems related to functions that use the BitBLT engine.
+<tag>
+Option &dquot;no_imageblt&dquot;
+</tag>
+	This option, when used with a 5426/28/29/3x, will have the effect of
+        disabling the use of BitBLT functions that go from system memory
+        to video memory. This is useful for problems relating to image
+        write, such as a little white line at the top left corner of the
+        screen, or a skewed image after a console switch back to the
+        server, which have been observed on some configurations,
+	especially VLB 5426 and 5434 with a fast CPU. Note that this
+	option results in reduced performance.
 <tag>
 chipset &dquot;clgd54xx&dquot;
 </tag>
@@ -553,7 +564,7 @@ Chipset is not detected.
 Incorrect little lines (mostly white) appear occasionally
 </tag>
 	This may be related to a problem with system-to-video-memory BitBLT
-	operations. Try <tt>"no_bitblt"</tt> if it annoys you.
+	operations. Try the <tt>"no_imageblt"</tt> option if it annoys you.
 <tag>
 Textmode is not properly restored
 </tag>
@@ -603,7 +614,7 @@ New features in XFree86 3.1.1:
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.4 1995/01/11 09:47:58 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.5 1995/01/15 10:34:26 dawes Exp $
 </verb>
 
 </article>

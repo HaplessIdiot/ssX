@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Option.h,v 1.1 94/03/28 21:24:25 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.17 1995/01/10 10:23:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.18 1995/01/15 10:33:13 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -82,6 +82,7 @@ typedef struct {
 #define OPTION_SW_CURSOR	42 /* Turn off HW cursor (Mach32) */
 #define OPTION_NO_BITBLT	43 /* Disable hardware bitblt (cirrus) */
 #define OPTION_FAVOUR_BITBLT	44 /* Favour use of BitBLT (cirrus) */
+#define OPTION_NO_IMAGEBLT	45 /* Avoid system-to-video BitBLT (cirrus) */
 
 /* RAMDAC options */
 #define OPTION_BT485_CURS	50 /* Override Bt485 RAMDAC probe */
@@ -136,6 +137,7 @@ typedef struct {
 #define CLOCK_OPTION_ICS2595     6 /* use TI3025 programmable clocks */
 #define CLOCK_OPTION_CIRRUS      7 /* use Cirrus programmable clocks */
 #define CLOCK_OPTION_CH8391      8 /* use Chrontel 8391 programmable clocks */
+#define CLOCK_OPTION_ICS5342     9 /* use ICS 5342 programmable clocks */
 
 /*
  * Table to map option strings to tokens.
@@ -179,6 +181,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "no_bitblt",	OPTION_NO_BITBLT },
   { "favour_bitblt",	OPTION_FAVOUR_BITBLT },
   { "favor_bitblt",	OPTION_FAVOUR_BITBLT },
+  { "no_imageblt",	OPTION_NO_IMAGEBLT },
 
   { "bt485_curs",	OPTION_BT485_CURS },
   { "ti3020_curs",	OPTION_TI3020_CURS },
@@ -232,7 +235,7 @@ OptFlagRec xf86_ClockOptionTab [] = {
   { "s3gendac",		CLOCK_OPTION_S3GENDAC },  /* S3 gendac */
   { "s3_sdac",		CLOCK_OPTION_S3GENDAC },  /* S3 SDAC */
   { "ics5300",		CLOCK_OPTION_S3GENDAC },  /* S3 gendac compatible */
-  { "ics5342",		CLOCK_OPTION_S3GENDAC },  /* S3 SDAC compatible */
+  { "ics5342",		CLOCK_OPTION_ICS5342 },   /* not completely S3 SDAC compatible */
   { "ti3025",		CLOCK_OPTION_TI3025 },    /* TI3025 */
   { "ics2595",		CLOCK_OPTION_ICS2595 },   /* ICS2595 */
   { "cirrus",		CLOCK_OPTION_CIRRUS }, 	  /* Cirrus built-in */

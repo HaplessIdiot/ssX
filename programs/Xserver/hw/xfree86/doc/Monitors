@@ -797,6 +797,15 @@ Section "Monitor"
     BandWidth 110 MHz
     HorizSync 31.5-64 kHz
     VertRefresh 50-120 Hz
+#
+#   here are some VESA modes to start with
+#
+    ModeLine  "640x480"    31.5    640  664  704  832    480  489  492  520
+    ModeLine  "800x600"    36      800  824  896 1024    600  601  603  625
+    ModeLine  "800x600"    40      800  840  968 1056    600  601  605  628 +hsync +vsync
+    ModeLine  "800x600"    50      800  856  976 1040    600  637  643  666  +hsync +vsync
+    ModeLine "1024x768"    65     1024 1032 1176 1344    768  771  777  806 -hsync -vsync
+    ModeLine "1024x768"    75     1024 1048 1184 1328    768  771  777  806 -hsync -vsync
 EndSection
  
 #From: koenig@nova.tat.physik.uni-tuebingen.de (Harald Koenig)
@@ -809,9 +818,18 @@ Section "Monitor"
     HorizSync 31.5-82 kHz
     VertRefresh 50-150 Hz
     ModeLine "640x480" 25 640 672 768 800 480 490 492 525
-    ModeLine "800x600" 28 640 672 768 800 480 490 492 525
     ModeLine "1024x768" 76 1024 1024 1088 1168 768 768 779 806
     ModeLine "1280x1024" 110 1280 1340 1444 1582 1024 1024 1048 1070
+    ModeLine "1280x1024" 135 1280 1312 1456 1712 1024 1027 1030 1064
+#
+#   here are some more VESA modes to start with
+#
+    ModeLine  "640x480"    31.5    640  664  704  832    480  489  492  520
+    ModeLine  "800x600"    36      800  824  896 1024    600  601  603  625
+    ModeLine  "800x600"    40      800  840  968 1056    600  601  605  628 +hsync +vsync
+    ModeLine  "800x600"    50      800  856  976 1040    600  637  643  666  +hsync +vsync
+    ModeLine "1024x768"    65     1024 1032 1176 1344    768  771  777  806 -hsync -vsync
+    ModeLine "1024x768"    75     1024 1048 1184 1328    768  771  777  806 -hsync -vsync
 EndSection
  
 #From: Helmut Geyer <Helmut.Geyer@iwr.uni-heidelberg.de>
@@ -979,4 +997,4 @@ Section "Monitor"
     ModeLine "640x480"  28  640  664  728  792 480 484 490 505
 EndSection
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Monitors,v 3.4 1994/10/04 03:29:48 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Monitors,v 3.5 1995/01/10 10:26:07 dawes Exp $

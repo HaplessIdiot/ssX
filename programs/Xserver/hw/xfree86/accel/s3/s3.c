@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.60 1995/01/12 12:03:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.61 1995/01/15 10:32:52 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -429,6 +429,7 @@ s3Probe()
     *   pixMuxMinWidth         - smallest physical width supported in
     *                            pixmux mode
     *   nonMuxMaxClock         - highest dot clock supported without pixmux
+    *   pixMuxMinClock         - lowest dot clock supported with pixmux
     *   nonMuxMaxMemory        - max video memory accessible without pixmux
     *   pixMuxLimitedWidths    - pixmux only works for logical display
     *                            widths 1024 and 2048
@@ -443,6 +444,7 @@ s3Probe()
    Bool pixMuxNeeded = FALSE;
    int pixMuxMinWidth = 1024;
    int nonMuxMaxClock = 0;
+   int pixMuxMinClock = 0;
    int nonMuxMaxMemory = 8192;
    Bool pixMuxLimitedWidths = TRUE;
    Bool pixMuxInterlaceOK = TRUE;
@@ -1030,8 +1032,9 @@ s3Probe()
    if (S3_864_SERIES(s3ChipId) || S3_805_I_SERIES(s3ChipId) 
        || S3_801_SERIES(s3ChipId)) {
       if (s3RamdacType == UNKNOWN_DAC) {
-	 if (s3ProbeSDAC()) {
-	    OFLG_SET(CLOCK_OPTION_S3GENDAC, &s3InfoRec.clockOptions);
+	 if (s3ProbeSDAC() &&
+	     !OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions)) {
+	    OFLG_SET(CLOCK_OPTION_S3GENDAC,    &s3InfoRec.clockOptions);
 	    OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
 	    s3ClockSelectFunc = s3GendacClockSelect;
 	    numClocks = 3;
@@ -1232,7 +1235,10 @@ s3Probe()
       case ATT22C498_DAC:
       case STG1700_DAC:
       case S3_SDAC_DAC:
-	 s3InfoRec.dacSpeed = 135000;
+	 if (OFLG_ISSET(CLOCK_OPTION_ICS5342, &s3InfoRec.clockOptions)) 
+	    s3InfoRec.dacSpeed = 125000;  /* limit of current ICS5342 clock code */
+	 else
+	    s3InfoRec.dacSpeed = 135000;
 	 break;
       case TI3020_DAC:
          if (OFLG_ISSET(OPTION_ELSA_W2000PRO, &s3InfoRec.options))
@@ -1315,15 +1321,23 @@ s3Probe()
    } else if (s3ATT498PixMux) {
       pixMuxPossible = TRUE;
       if (DAC_IS_ATT20C498 && !DAC_IS_ATT22C498) {
-	 if (S3_864_SERIES(s3ChipId))
+	 if (S3_864_SERIES(s3ChipId)) {
 	    nonMuxMaxClock = 95000; /* 864 DCLK limit */
-	 else if (S3_805_I_SERIES(s3ChipId))
+	    pixMuxMinClock = 67500;
+	 }
+	 else if (S3_805_I_SERIES(s3ChipId)) {
 	    nonMuxMaxClock = 90000;  /* XXXX just a guess, who has 805i docs? */
-	 else
+	    pixMuxMinClock = 67500;
+	 }
+	 else {
 	    nonMuxMaxClock = 67500;
+	    pixMuxMinClock = 67500;
+	 }
       }
-      else
+      else {
 	 nonMuxMaxClock = 67500;
+	 pixMuxMinClock = 67500;
+      }
       allowPixMuxInterlace = FALSE;
       allowPixMuxSwitching = TRUE;
       pixMuxLimitedWidths = FALSE;
@@ -1401,7 +1415,8 @@ s3Probe()
 	 ErrorF("%s %s: Using Sierra SC11412 programmable clock\n",
 		clockchip_probed, s3InfoRec.name);
       numClocks = 3;
-   } else if (OFLG_ISSET(CLOCK_OPTION_S3GENDAC, &s3InfoRec.clockOptions)) {
+   } else if (OFLG_ISSET(CLOCK_OPTION_S3GENDAC, &s3InfoRec.clockOptions) ||
+	      OFLG_ISSET(CLOCK_OPTION_ICS5342,  &s3InfoRec.clockOptions)) {
       s3ClockSelectFunc = s3GendacClockSelect;
       if (xf86Verbose) {
 	 unsigned char saveCR55;
@@ -1422,8 +1437,10 @@ s3Probe()
 	 n1 = n & 0x1f;
 	 n2 = (n>>5) & 0x03;
 	 mclk = ((1431818 * (m+2.0)) / (n1+2.0) / (1 << n2) + 50) / 100;
-	 ErrorF("%s %s: Using S3 Gendac/SDAC programmable clock (MCLK %1.3f MHz)\n",
-		clockchip_probed, s3InfoRec.name
+	 ErrorF("%s %s: Using %s programmable clock (MCLK %1.3f MHz)\n"
+		,clockchip_probed, s3InfoRec.name
+		,OFLG_ISSET(CLOCK_OPTION_ICS5342, &s3InfoRec.clockOptions)
+			? "ICS5342" : "S3 Gendac/SDAC"
 		,mclk / 1000.0);
 	 if (s3InfoRec.s3MClk > 0) {
 	    ErrorF("%s %s: using specified MCLK value of %1.3f MHz for DRAM timings\n",
@@ -1483,6 +1500,8 @@ s3Probe()
 	    maxRawClock = 100000;
 	 }
       } else if (OFLG_ISSET(CLOCK_OPTION_S3GENDAC, &s3InfoRec.clockOptions)) {
+	 maxRawClock = 110000;
+      } else if (OFLG_ISSET(CLOCK_OPTION_ICS5342, &s3InfoRec.clockOptions)) {
 	 maxRawClock = 110000;
       } else if (OFLG_ISSET(CLOCK_OPTION_TI3025, &s3InfoRec.clockOptions)) {
 	 maxRawClock = s3InfoRec.dacSpeed; /* Is this right?? */
@@ -1649,6 +1668,13 @@ s3Probe()
 
    if (!OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions)) {
       Bool clocksChanged = FALSE;
+      Bool numClocksChanged = FALSE;
+      int newNumClocks = s3InfoRec.clocks;
+
+      if (S3_864_SERIES(s3ChipId))
+	 nonMuxMaxClock = 95000;
+      else if (S3_805_I_SERIES(s3ChipId))
+	 nonMuxMaxClock = 90000;  /* XXXX just a guess, who has 805i docs? */
 
       for (j = 0; j < s3InfoRec.clocks; j++) {
 	 switch(s3RamdacType) {
@@ -1678,12 +1704,22 @@ s3Probe()
 	 case STG1700_DAC:	/* XXXX should this be here? */
 	    switch (s3Bpp) {
 	    case 1:
-	       /*
-	        * This one depends on pixel multiplexing for 8bpp.
-	        * Although existing code implies it depends on ramdac
-	        * clock doubling instead (are the two tied together?)
-	        * Hopefully no 498s are used with non-programable clocks
-	        */
+	       if (!numClocksChanged) {
+		  newNumClocks = 32;
+		  numClocksChanged = TRUE;
+		  clocksChanged = TRUE;
+		  for(i = s3InfoRec.clocks; i < newNumClocks; i++)
+		     s3InfoRec.clock[j] = 0;  /* XXXX is clock[] initialized? */
+		  if (s3InfoRec.clocks > 16) 
+		     s3InfoRec.clocks = 16;
+	       }
+	       if (s3InfoRec.clock[j] * 2 > pixMuxMinClock &&
+		   s3InfoRec.clock[j] * 2 <= s3InfoRec.dacSpeed)
+		  s3InfoRec.clock[j + 16] = s3InfoRec.clock[j] * 2;
+	       else
+		  s3InfoRec.clock[j + 16] = 0;
+	       if (s3InfoRec.clock[j] > nonMuxMaxClock)
+		  s3InfoRec.clock[j] = 0;
 	       break;
 	    case 2:
 	       /* No change for 16bpp */
@@ -1719,6 +1755,9 @@ s3Probe()
 	    break;
 	 }
       }
+      if (numClocksChanged)
+	 s3InfoRec.clocks = newNumClocks;
+
       if (xf86Verbose && clocksChanged) {
 	 ErrorF("%s %s: Effective pixel clocks available for depth %d:\n",
 		XCONFIG_PROBED, s3InfoRec.name, s3InfoRec.depth);
@@ -1819,7 +1858,16 @@ s3Probe()
 	  * and mark those modes for which pixmux must be used.
 	  */
 	 if (pixMuxPossible) {
-	    if ((s3InfoRec.clock[pMode->Clock] / 1000) >
+	    if (s3Bpp == 1 && s3ATT498PixMux && !DAC_IS_SDAC &&
+		(S3_864_SERIES(s3ChipId) || S3_805_I_SERIES(s3ChipId))
+		&& !OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE,
+			       &s3InfoRec.clockOptions)) {
+	       if (pMode->Clock > 15) {
+		  pMode->Flags |= V_PIXMUX;
+		  pixMuxNeeded = TRUE;
+	       }
+	    }
+	    else if ((s3InfoRec.clock[pMode->Clock] / 1000) >
 	        (nonMuxMaxClock / 1000)) {
 	       pMode->Flags |= V_PIXMUX;
 	       pixMuxNeeded = TRUE;
@@ -2186,6 +2234,7 @@ s3ClockSelect(no)
       outb(vgaCRReg, save2);
       break;
    default:
+      no &= 0xF;
       if (no == 0x03)
       {
 	 /*
@@ -2322,7 +2371,10 @@ s3GendacClockSelect(freq)
       break;
    default:
       {
-	 (void) S3gendacSetClock(freq, 2); /* can't fail */
+	 if (OFLG_ISSET(CLOCK_OPTION_ICS5342, &s3InfoRec.clockOptions))
+	    (void) ICS5342SetClock(freq, 2); /* can't fail */
+	 else
+	    (void) S3gendacSetClock(freq, 2); /* can't fail */
 	 outb(vgaCRIndex, 0x42);/* select the clock */
 	 outb(vgaCRReg, 0x02);
 	 usleep(150000);

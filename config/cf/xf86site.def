@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.30 1995/01/12 12:00:17 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.31 1995/01/14 10:39:36 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -110,8 +110,9 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.30 1995/01/12 12:00:17 dawes Exp $
  */
 
 /*
- * To play with LBX, uncomment this.  Note, after doing this, you should
- * do the following to build a server with lbx:
+ * To build with LBX, uncomment the BuildLBX line below.  Note, after doing
+ * this, you should do the following to build an X server with lbx:
+ *
  *   cd programs/Xserver
  *   make clean
  *   make Makefile
@@ -121,6 +122,7 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.30 1995/01/12 12:00:17 dawes Exp $
  *   make
  *
  * To build the lbxproxy, do:
+ *
  *   cd workInProgress
  *   make Makefile
  *   make SUBDIRS=lbx Makefiles

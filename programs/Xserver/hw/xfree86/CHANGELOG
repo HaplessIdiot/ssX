@@ -1,3 +1,13 @@
+XFree86 3.1.0Ca (18 January 1995)
+211. Late LBX updates from the XC.
+210. Add a "no_imageblt" option for the Cirrus driver (Harm Hanemaayer).
+209. Support for 2:1 pixmux 8bpp RAMDACs on boards with fixed clock chips.
+208. S3 changes for the ICS5342 ramdac/clock (Harald Koenig).
+207. Fix problem in miZeroClipLine() which can cause a server hang
+     (Harald Koenig).
+206. Fix register unlocking problem in S3 server (for Stealth 64 VRAM)
+     (Harald Koenig).
+
 XFree86 3.1.0C (15 January 1995)
 205. Preliminary programmable clock support for the Mach64 server
      (Kevin Martin).

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.c,v 3.2 1994/09/26 15:32:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/S3gendac.c,v 3.3 1995/01/10 10:25:14 dawes Exp $ */
 /*
  * Progaming of the S3 gendac programable clocks, from the S3 Gendac
  * programing documentation by S3 Inc. 
@@ -12,6 +12,7 @@
 #include <math.h>
 
 extern int vgaIOBase;
+static int min_n2;
 
 static void setdacpll(
 #if NeedFunctionPrototypes
@@ -19,16 +20,40 @@ int reg, unsigned char data1, unsigned char data2
 #endif
 );
 
+static int commonSetClock( 
+#if NeedFunctionPrototypes
+   long freq, int clock
+#endif
+);     
+
 int
 S3gendacSetClock(freq, clk)
 long freq;
 int clk;
 {
+   min_n2 = 0;
+   return commonSetClock(freq, clk);
+}
+
+int
+ICS5342SetClock(freq, clk)
+long freq;
+int clk;
+{
+   min_n2 = 1;
+   return commonSetClock(freq, clk);
+}
+
+static int
+commonSetClock(freq, clk)
+long freq;
+int clk;
+{
    double ffreq;
-   double div, diff, min_diff;
+   double div, diff, best_diff;
    unsigned int m, m0;
    unsigned char n, n1, n2;
-   unsigned char min_n1, min_n2, min_m;
+   unsigned char best_n1=16+2, best_n2=2, best_m=125+2;
 
    ffreq = (double) freq;
 
@@ -46,9 +71,9 @@ int clk;
    /* work out suitable timings */
 
    ffreq /= BASE_GENDAC_FREQ;
-   min_diff = ffreq;
+   best_diff = ffreq;
    
-   for (n2=0; n2<=3; n2++) {
+   for (n2=min_n2; n2<=3; n2++) {
       for (n1 = 1+2; n1 <= 31+2; n1++) {
 	 m0 = ffreq * (1<<n2) * n1;
 	 for (m = m0-1; m <= m0+1; m++) {	 
@@ -60,11 +85,11 @@ int clk;
 	       diff = ffreq - div / (1<<n2);
 	       if (diff < 0.0) 
 		  diff = -diff;
-	       if (diff < min_diff) {
-		  min_diff = diff;
-		  min_m    = m;
-		  min_n1   = n1;
-		  min_n2   = n2;
+	       if (diff < best_diff) {
+		  best_diff = diff;
+		  best_m    = m;
+		  best_n1   = n1;
+		  best_n2   = n2;
 	       }
 	    }
 	 }
@@ -73,11 +98,11 @@ int clk;
    
 #if 0
    ErrorF("clk %d, setting to %1.3f MHz\n", clk,
-	  ((double)(min_m) / (double)(min_n1) / (1 << min_n2)) * BASE_GENDAC_FREQ / 1e3);
+	  ((double)(best_m) / (double)(best_n1) / (1 << best_n2)) * BASE_GENDAC_FREQ / 1e3);
 #endif
 
-   n = (min_n1 - 2) | (min_n2 << 5);
-   m = min_m - 2;
+   n = (best_n1 - 2) | (best_n2 << 5);
+   m = best_m - 2;
    setdacpll(clk, m, n);
 
    return 0;

@@ -1,5 +1,5 @@
 /* $XConsortium: cir_teblt8.c,v 1.2 94/04/17 20:32:34 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_teblt8.c,v 3.10 1994/10/23 13:00:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_teblt8.c,v 3.11 1994/12/25 12:35:12 dawes Exp $ */
 /*
  * TEGblt - ImageText expanded glyph fonts only.  For
  * 8 bit displays, in Copy mode with no clipping.
@@ -134,7 +134,8 @@ void CirrusImageGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 
 	/* We only accelerate fonts 32 or less pixels wide. */
 	/* Let cfb handle writing into offscreen pixmap. */
-	if (vgaBitsPerPixel == 8 && (!CHECKSCREEN(pdstBase) || !xf86VTSema)) {
+	if (vgaBitsPerPixel == 8 && (pDrawable->type != DRAWABLE_WINDOW ||
+	!xf86VTSema)) {
 	        cfbImageGlyphBlt8(pDrawable, pGC, xInit, yInit, nglyph, ppci,
 	        	pglyphBase);
 		return;	        
@@ -180,9 +181,7 @@ void CirrusImageGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     bbox.y1 = y;
     bbox.y2 = y + h;
 
-       	switch ((*pGC->pScreen->RectIn)(
-               	((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))
-                ->pCompositeClip, &bbox))
+        switch (RECT_IN_REGION(pGC->pScreen, cfbGetCompositeClip(pGC), &bbox))
         {
         case rgnPART:
 		switch (vgaBitsPerPixel) {
@@ -350,7 +349,7 @@ void CirrusPolyGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 
 	PolyGlyph = NULL;
 
-	if (HAVEBITBLTENGINE())
+	if (HAVEBITBLTENGINE() && !cirrusAvoidImageBLT)
 		fontwidthlimit = 32;	/* BitBLT transfer function used. */
 	else
 		fontwidthlimit = 16;	/* Color expansion function used. */
@@ -386,8 +385,7 @@ void CirrusPolyGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     bbox.y1 = y;
     bbox.y2 = y + h;
 
-    switch ((*pGC->pScreen->RectIn)(
-                ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip, &bbox))
+    switch (RECT_IN_REGION(pGC->pScreen, cfbGetCompositeClip(pGC), &bbox))
     {
       case rgnPART:
         if (pGC->alu == GXcopy)
@@ -402,7 +400,7 @@ void CirrusPolyGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	/* Allocate list of pointers to glyph bitmaps. */
 	glyphp = (unsigned long **)ALLOCATE_LOCAL(nglyph * sizeof(unsigned long *));
 
-	if (HAVEBITBLTENGINE()) {
+	if (HAVEBITBLTENGINE() && !cirrusAvoidImageBLT) {
 		/* On the 543x, we can use BitBLT text transfer for
 		 * transparent text. This is because on the 543x,
 		 * transparency in the BitBLT engine is 'fixed' to be
