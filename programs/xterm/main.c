@@ -64,7 +64,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.128 2001/04/12 01:02:50 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.129 2001/04/28 13:51:55 dickey Exp $ */
 
 
 /* main.c */
@@ -2985,6 +2985,9 @@ spawn (void)
 		    cfsetospeed(&tio, VAL_LINE_SPEED);
 #else /* !MINIX */
 #ifndef USE_POSIX_TERMIOS
+# if defined(Lynx) && !defined(CBAUD)
+#  define CBAUD V_CBAUD
+# endif
 		    tio.c_cflag &= ~(CBAUD);
 #ifdef BAUD_0
 		    /* baud rate is 0 (don't care) */

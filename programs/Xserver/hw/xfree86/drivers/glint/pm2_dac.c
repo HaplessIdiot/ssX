@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_dac.c,v 1.21 2001/01/31 16:14:58 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_dac.c,v 1.22 2001/02/07 13:26:20 alanh Exp $ */
 
 #include "Xarch.h"
 #include "xf86.h"
@@ -272,6 +272,8 @@ Permedia2Restore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
 	xf86MsgVerb(X_INFO, 2, "Resetting Engine - Please Wait.\n");
     };
 #endif
+
+    GLINT_SLOW_WRITE_REG(0xFF, PM2DACReadMask);
 
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[Aperture0 >> 3], Aperture0);
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[Aperture1 >> 3], Aperture1);

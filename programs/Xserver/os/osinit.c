@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.20 2000/08/10 17:40:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.21 2001/01/17 22:37:11 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -59,6 +59,10 @@ SOFTWARE.
 #else
 #define PATH_MAX 1024
 #endif
+#endif
+
+#if defined(Lynx)
+#include <sys/wait.h>
 #endif
 
 #if !defined(SYSV) && !defined(AMOEBA) && !defined(_MINIX) && !defined(WIN32) && !defined(Lynx) && !defined(QNX4)

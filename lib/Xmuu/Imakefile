@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Xmuu/Imakefile,v 1.1 1999/06/06 08:48:36 dawes Exp $
+XCOMM $XFree86: xc/lib/Xmuu/Imakefile,v 1.1 2001/03/30 02:18:41 keithp Exp $
 XCOMM Mini Xmu library: pull out just those things that are used by apps 
 XCOMM that do not use Xt and Xaw in the core applications
 XCOMM 
@@ -47,7 +47,10 @@ OBJS = 	ClientWin.o\
 	GetHost.o\
 	Lower.o
 
-INCLUDES = -I$(XMUSRC)
+### Commented out following line...
+### INCLUDES = -I$(XMUSRC)
+### ... it breaks Lower.c (which needs -I../../lib/misc to find snprintf.c)
+###
 
 #include <Library.tmpl>
 
