@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrender/Picture.c,v 1.5 2000/12/05 03:13:30 keithp Exp $
+ * $XFree86: xc/lib/Xrender/Picture.c,v 1.6 2000/12/05 07:42:29 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -113,6 +113,7 @@ XRenderChangePicture (Display                   *dpy,
     req->reqType = info->codes->major_opcode;
     req->renderReqType = X_RenderChangePicture;
     req->picture = picture;
+    req->mask = valuemask;
     _XRenderProcessPictureAttributes (dpy,
 				      req,
 				      valuemask,
