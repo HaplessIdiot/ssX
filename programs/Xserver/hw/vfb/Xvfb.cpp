@@ -119,6 +119,6 @@ xwud -in /usr/tmp/Xvfb_screen0
 Displays screen 0 of the server started by the preceding example.
 .SH "SEE ALSO"
 .PP
-X(1), Xserver(1), xwd(1), xwud(1), XWDFile.h
+X(__miscmansuffix__), Xserver(1), xwd(1), xwud(1), XWDFile.h
 .SH AUTHORS
 David P. Wiggins, The Open Group, Inc.

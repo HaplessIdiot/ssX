@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.cpp,v 1.2 2000/06/15 20:50:02 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.cpp,v 1.3 2000/12/11 20:18:02 dawes Exp $ 
 .TH XFree86 1 "Version 4.0.2"  "XFree86"
 .SH NAME
 XFree86 - X11R6 X server
@@ -304,8 +304,8 @@ Initial access control list for display \fIn\fP
 .LP
 Note: <XRoot> refers to the root of the X11 install tree.
 .SH "SEE ALSO"
-X(1), Xserver(1), xdm(1), xinit(1), XF86Config(4/5), xf86config(1),
-XF86_SVGA(1), XF86_VGA16(1), XF86_Mono(1), XF86_Accel(1), xvidtune(1)
+X(__miscmansuffix__), Xserver(1), xdm(1), xinit(1),
+XF86Config(__filemansuffix__), xf86config(1), xf86cfg(1), xvidtune(1)
 .SH AUTHORS
 .PP
 For X11R5, \fIXF86 1.2\fP was provided by:

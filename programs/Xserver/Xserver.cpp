@@ -18,7 +18,7 @@
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
-.\" $XFree86: xc/programs/Xserver/Xserver.man,v 3.11tsi Exp $
+.\" $XFree86: xc/programs/Xserver/Xserver.man,v 3.12 1999/03/14 03:21:21 dawes Exp $
 .TH XSERVER 1 "Release 6.4"  "X Version 11"
 .SH NAME
 Xserver \- X Window System display server
@@ -535,7 +535,7 @@ property Woo-Hoo	OhBoy = "*son"	ad
 The X server supports client connections via a platform-dependent subset of
 the following transport types: TCP\/IP, Unix Domain sockets, DECnet,
 and several varieties of SVR4 local connections.  See the DISPLAY
-NAMES section of the \fIX(1)\fP manual page to learn how to specify
+NAMES section of the \fIX(__miscmansuffix__)\fP manual page to learn how to specify
 which transport type clients should try to use.
 .SH GRANTING ACCESS
 The X server implements a platform-dependent subset of the following
@@ -667,7 +667,7 @@ Default error log file if the server is run from \fIxdm(1)\fP
 .LP
 Note: <XRoot> refers to the root of the X11 install tree.
 .SH "SEE ALSO"
-General information: X(1)
+General information: X(__miscmansuffix__)
 .PP
 Protocols:
 .I "X Window System Protocol,"
@@ -677,7 +677,7 @@ Protocols:
 Fonts: bdftopcf(1), mkfontdir(1), xfs(1), xlsfonts(1), xfontsel(1), xfd(1),
 .I "X Logical Font Description Conventions"
 .PP
-Security: Xsecurity(1), xauth(1), Xau(1), xdm(1), xhost(1), xfwp(1)
+Security: Xsecurity(__miscmansuffix__), xauth(1), Xau(1), xdm(1), xhost(1), xfwp(1)
 .I "Security Extension Specification"
 .PP
 Starting the server: xdm(1), xinit(1)
@@ -686,7 +686,7 @@ Controlling the server once started: xset(1), xsetroot(1), xhost(1)
 .PP
 Server-specific man pages: 
 Xdec(1), XmacII(1), Xsun(1), Xnest(1), Xvfb(1),
-XF86_Accel(1), XF86_SVGA(1), XFree86(1)
+XFree86(1), Xdarwin(1).
 .PP
 Server internal documentation:
 .I "Definition of the Porting Layer for the X v11 Sample Server"
