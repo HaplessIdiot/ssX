@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.26 1999/04/04 00:20:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.27 1999/04/05 07:13:02 dawes Exp $ */
 /*
  * Copyright 1996,1999 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -36,6 +36,11 @@
 #include "xf86Parser.h"
 #include "xf86tokens.h"
 
+#ifdef NEW_INPUT
+#include "xf86Xinput.h"
+#include "mouse.h"
+#endif
+
 #include "tcl.h"
 
 #include "xfsconf.h"
@@ -46,13 +51,13 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-char xf86ConfigFile[128] = "";
 XF86ConfigPtr config_list;
 
 Tcl_Interp *errinterp;
 
 Bool Must_have_memory = FALSE;
 
+#ifndef NEW_INPUT
 SymTabRec xfsMouseTab[] = {
 	  { PROT_MS,                    "microsoft" },
 	  { PROT_MSC,                   "mousesystems" },
@@ -76,6 +81,7 @@ SymTabRec xfsMouseTab[] = {
 	  { PROT_AUTO,                  "auto" },
 	  { -1,                         "" },
 };
+#endif
 
 /* Error handling functions */
 

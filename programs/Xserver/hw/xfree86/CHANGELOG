@@ -1,4 +1,7 @@
 XFree86 3.9Px (12 July 1999)
+2882. Updates to get XF86Setup to build again after the NewInput-related
+      changes, and have XF86Setup print a short message stating that it
+      isn't usable before exiting (#3012, Joe Moss).
 2881. Fix some compiler warnings in lib/Xext (#3011, Matt Grossman).
 2880. Fix a bug in the wacom driver that shows up when multiple wacom devices
       don't report the same valuators (#3010, Frederic Lepied).
@@ -8426,4 +8429,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.798 1999/07/12 05:10:41 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.799 1999/07/12 05:57:27 dawes Exp $

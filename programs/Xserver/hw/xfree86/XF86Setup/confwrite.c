@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/confwrite.c,v 1.6 1999/04/29 05:12:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/confwrite.c,v 1.7 1999/04/29 09:13:42 dawes Exp $ */
 /*
  * Copyright 1999 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -50,8 +50,14 @@
 static int putsection_files   (Tcl_Interp *interp, char *varpfx);
 static int putsection_module  (Tcl_Interp *interp, char *varpfx);
 static int putsection_flags   (Tcl_Interp *interp, char *varpfx);
+#ifndef NEW_INPUT
 static int putsection_keyboard(Tcl_Interp *interp, char *varpfx);
 static int putsection_pointer (Tcl_Interp *interp, char *varpfx);
+#endif
+#if 0
+static int putsection_input   (Tcl_Interp *interp, char *varpfx);
+static int putsection_dri     (Tcl_Interp *interp, char *varpfx);
+#endif
 static int putsection_vidadptr(Tcl_Interp *interp, char *varpfx);
 static int putsection_modes   (Tcl_Interp *interp, char *varpfx);
 static int putsection_monitor (Tcl_Interp *interp, char *varpfx);
@@ -99,8 +105,14 @@ TCL_XF86WriteXF86Config(clientData, interp, argc, argv)
 	putsection_files   (interp, argv[2]);
 	putsection_module  (interp, argv[2]);
 	putsection_flags   (interp, argv[2]);
+#ifndef NEW_INPUT
 	putsection_keyboard(interp, argv[2]);
 	putsection_pointer (interp, argv[2]);
+#endif
+#if 0
+	putsection_input   (interp, argv[2]);
+	putsection_dri     (interp, argv[2]);
+#endif
 	putsection_vidadptr(interp, argv[2]);
 	putsection_modes   (interp, argv[2]);
 	putsection_monitor (interp, argv[2]);
@@ -233,6 +245,7 @@ putsection_flags(interp, varpfx)
 	return TCL_OK;
 }
 
+#ifndef NEW_INPUT
 static int
 putsection_keyboard(interp, varpfx)
   Tcl_Interp *interp;
@@ -325,6 +338,7 @@ putsection_pointer(interp, varpfx)
 	}
 	return TCL_OK;
 }
+#endif /* NEW_INPUT */
 
 static int
 putsection_monitor(interp, varpfx)

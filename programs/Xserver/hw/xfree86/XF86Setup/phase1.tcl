@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.19 1999/03/21 07:34:57 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.20 1999/04/05 07:13:00 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -174,12 +174,16 @@ proc parray {a {pattern *}} {
     }
 }
 
-set vlist [xf86config_readfile /home/X11R6/lib/X11/XF86Config /home/X11R6 Cfg]
+#########
+puts "XF86Setup is not yet functional.  Please use xf86config for now."
+exit 0
+
+set vlist [xf86config_readfile Cfg]
 foreach arr [lsort [info vars Cfg*]] {
 	#parray $arr
 }
-#xf86config_writefile test.cfg Cfg
-exit 0
+xf86config_writefile test.cfg Cfg
+#exit 0
 
 if { !$NoCurses } {
 	if [info exists env(TERM)] {
@@ -197,7 +201,8 @@ if { !$NoCurses } {
 
 check_for_files $Xwinhome
 
-set ConfigFile [xf86config_findfile]
+#set ConfigFile [xf86config_findfile]
+set ConfigFile XF86Config
 set StartServer 1
 set ReConfig 0
 set UseConfigFile 0

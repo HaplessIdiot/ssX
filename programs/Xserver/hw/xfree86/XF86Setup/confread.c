@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/confread.c,v 1.6 1999/04/29 05:12:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/confread.c,v 1.7 1999/04/29 09:13:42 dawes Exp $ */
 /*
  * Copyright 1999 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -53,8 +53,14 @@ char *rgbPath = RGB_DB;
 static int  getsection_files   (Tcl_Interp *interp, char *varpfx);
 static int  getsection_module  (Tcl_Interp *interp, char *varpfx);
 static int  getsection_flags   (Tcl_Interp *interp, char *varpfx);
+#ifndef NEW_INPUT
 static int  getsection_keyboard(Tcl_Interp *interp, char *varpfx);
 static int  getsection_pointer (Tcl_Interp *interp, char *varpfx);
+#endif
+#if 0
+static int  getsection_input   (Tcl_Interp *interp, char *varpfx);
+static int  getsection_dri     (Tcl_Interp *interp, char *varpfx);
+#endif
 static int  getsection_vidadptr(Tcl_Interp *interp, char *varpfx);
 static int  getsection_modes   (Tcl_Interp *interp, char *varpfx);
 static int  getsection_monitor (Tcl_Interp *interp, char *varpfx);
@@ -79,6 +85,9 @@ static void read_modes(
 
 #define APPEND_ELEMENT	(TCL_APPEND_VALUE|TCL_LIST_ELEMENT)
 
+#define CONFPATH "%A,%R,/etc/X11/%R,%P/etc/X11/%R,%E,%F,/etc/X11/%F," \
+		 "%P/etc/X11/%F,%D/%X,/etc/X11/%X,/etc/%X,%P/etc/X11/%X.%H," \
+		 "%P/etc/X11/%X,%P/lib/X11/%X.%H,%P/lib/X11/%X"
 
 /*
    Implements the xf86config_readfile command which locates and reads
@@ -92,23 +101,22 @@ TCL_XF86ReadXF86Config(clientData, interp, argc, argv)
     int		argc;
     char	*argv[];
 {
-	int	pfxarg = 2;
-	char	filename[128];
+	int	pfxarg = 1;
+	char	*filename, *cmdline = NULL;
 
-	if (argc > 4) {
+	if (argc > 3) {
 		Tcl_SetResult(interp,
-		    "Usage: xf86config_readfile [filename] <xwinhome> <prefix>",
+		    "Usage: xf86config_readfile [cmdline] <prefix>",
 		    TCL_STATIC);
 		return TCL_ERROR;
 	}
 
-	if (argc == 4) {
-		strncpy(xf86ConfigFile, argv[1], 127);
-		xf86ConfigFile[127] = '\0';
-		pfxarg = 3;
+	if (argc == 3) {
+		cmdline = argv[1];
+		pfxarg = 2;
 	}
 
-	if (xf86OpenConfigFile(filename) == 0) {
+	if ((filename = xf86OpenConfigFile(CONFPATH, cmdline, NULL)) == NULL) {
 		Tcl_SetResult(interp,
 			"Unable to open file" , TCL_STATIC);
 		return TCL_ERROR;
@@ -123,8 +131,14 @@ TCL_XF86ReadXF86Config(clientData, interp, argc, argv)
 	getsection_files   (interp, argv[pfxarg]);
 	getsection_module  (interp, argv[pfxarg]);
 	getsection_flags   (interp, argv[pfxarg]);
+#ifndef NEW_INPUT
 	getsection_keyboard(interp, argv[pfxarg]);
 	getsection_pointer (interp, argv[pfxarg]);
+#endif
+#if 0
+	getsection_input   (interp, argv[pfxarg]);
+	getsection_dri     (interp, argv[pfxarg]);
+#endif
 	getsection_vidadptr(interp, argv[pfxarg]);
 	getsection_modes   (interp, argv[pfxarg]);
 	getsection_monitor (interp, argv[pfxarg]);
@@ -188,6 +202,8 @@ getsection_flags(interp, varpfx)
 		config_list->conf_flags->flg_option_lst);
 	return TCL_OK;
 }
+
+#ifndef NEW_INPUT
 
 /*
   Set the Tcl variables for the config from the Keyboard section
@@ -374,6 +390,8 @@ getsection_pointer(interp, varpfx)
 
 	return TCL_OK;
 }
+
+#endif /* NEW_INPUT */
 
 /*
   Set the Tcl variables for the config from the Monitor sections
