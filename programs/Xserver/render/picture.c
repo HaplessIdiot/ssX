@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picture.c,v 1.16 2001/07/19 04:42:10 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/picture.c,v 1.17 2001/07/20 19:22:37 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -165,6 +165,8 @@ PictureCreateDefaultFormats (ScreenPtr pScreen, int *nformatp)
     int		    bpp;
     int		    type;
     int		    r, g, b;
+    int		    d;
+    DepthPtr	    pDepth;
 
     nformats = 0;
     /* formats required by protocol */
@@ -183,19 +185,6 @@ PictureCreateDefaultFormats (ScreenPtr pScreen, int *nformatp)
     formats[nformats].format = PICT_a8;
     formats[nformats].depth = 8;
     nformats++;
-    /* other nice formats */
-    formats[nformats].format = PICT_r5g6b5;
-    formats[nformats].depth = 16;
-    nformats++;
-    formats[nformats].format = PICT_a1r5g5b5;
-    formats[nformats].depth = 16;
-    nformats++;
-    if (BitsPerPixel (15) == 16)
-    {
-	formats[nformats].format = PICT_x1r5g5b5;
-	formats[nformats].depth = 15;
-	nformats++;
-    }
 
     /* now look through the depths and visuals adding other formats */
     for (v = 0; v < pScreen->numVisuals; v++)
@@ -211,23 +200,29 @@ PictureCreateDefaultFormats (ScreenPtr pScreen, int *nformatp)
 	    r = Ones (pVisual->redMask);
 	    g = Ones (pVisual->greenMask);
 	    b = Ones (pVisual->blueMask);
-	    format = 0;
-	    if (pVisual->offsetBlue == 0)
+	    type = PICT_TYPE_OTHER;
+	    /*
+	     * Current rendering code supports only two direct formats,
+	     * fields must be packed together at the bottom of the pixel
+	     * and must be either RGB or BGR
+	     */
+	    if (pVisual->offsetBlue == 0 &&
+		pVisual->offsetGreen == b &&
+		pVisual->offsetRed == b + g)
 	    {
-		if (pVisual->offsetGreen == b && pVisual->offsetRed == b + g)
-		{
-		    format = PICT_FORMAT(bpp, PICT_TYPE_ARGB, 0, r, g, b);
-		}
+		type = PICT_TYPE_ARGB;
 	    }
-	    else if (pVisual->offsetRed == 0)
+	    else if (pVisual->offsetRed == 0 &&
+		     pVisual->offsetGreen == r && 
+		     pVisual->offsetBlue == r + g)
 	    {
-		if (pVisual->offsetGreen == r && pVisual->offsetBlue == r + g)
-		{
-		    format = PICT_FORMAT(bpp, PICT_TYPE_ABGR, 0, r, g, b);
-		}
+		type = PICT_TYPE_ABGR;
 	    }
-	    if (format)
+	    if (type != PICT_TYPE_OTHER)
+	    {
+		format = PICT_FORMAT(bpp, type, 0, r, g, b);
 		nformats = addFormat (formats, nformats, format, depth);
+	    }
 	    break;
 	case StaticColor:
 	case PseudoColor:
@@ -241,6 +236,58 @@ PictureCreateDefaultFormats (ScreenPtr pScreen, int *nformatp)
 	    break;
 	}
     }
+    /*
+     * Walk supported depths and add useful Direct formats
+     */
+    for (d = 0; d < pScreen->numDepths; d++)
+    {
+	pDepth = &pScreen->allowedDepths[d];
+	bpp = BitsPerPixel (pDepth->depth);
+	format = 0;
+	switch (bpp) {
+	case 16:
+	    /* depth 15 formats */
+	    if (pDepth->depth >= 15)
+	    {
+		nformats = addFormat (formats, nformats,
+				      PICT_x1r5g5b5, pDepth->depth);
+		nformats = addFormat (formats, nformats,
+				      PICT_x1b5g5r5, pDepth->depth);
+	    }
+	    /* depth 16 formats */
+	    if (pDepth->depth >= 16) 
+	    {
+		nformats = addFormat (formats, nformats,
+				      PICT_a1r5g5b5, pDepth->depth);
+		nformats = addFormat (formats, nformats,
+				      PICT_a1b5g5r5, pDepth->depth);
+		nformats = addFormat (formats, nformats,
+				      PICT_r5g6b5, pDepth->depth);
+		nformats = addFormat (formats, nformats,
+				      PICT_b5g6r5, pDepth->depth);
+	    }
+	    break;
+	case 24:
+	    if (pDepth->depth >= 24)
+	    {
+		nformats = addFormat (formats, nformats,
+				      PICT_r8g8b8, pDepth->depth);
+		nformats = addFormat (formats, nformats,
+				      PICT_b8g8r8, pDepth->depth);
+	    }
+	    break;
+	case 32:
+	    if (pDepth->depth >= 24)
+	    {
+		nformats = addFormat (formats, nformats,
+				      PICT_x8r8g8b8, pDepth->depth);
+		nformats = addFormat (formats, nformats,
+				      PICT_x8b8g8r8, pDepth->depth);
+	    }
+	    break;
+	}
+    }
+    
 
     pFormats = (PictFormatPtr) xalloc (nformats * sizeof (PictFormatRec));
     if (!pFormats)
@@ -256,39 +303,41 @@ PictureCreateDefaultFormats (ScreenPtr pScreen, int *nformatp)
 	case PICT_TYPE_ARGB:
 	    pFormats[f].type = PictTypeDirect;
 	    
-	    pFormats[f].direct.alpha = (PICT_FORMAT_R(format) +
-					PICT_FORMAT_G(format) +
-					PICT_FORMAT_B(format));
 	    pFormats[f].direct.alphaMask = Mask(PICT_FORMAT_A(format));
+	    if (pFormats[f].direct.alphaMask)
+		pFormats[f].direct.alpha = (PICT_FORMAT_R(format) +
+					    PICT_FORMAT_G(format) +
+					    PICT_FORMAT_B(format));
 	    
+	    pFormats[f].direct.redMask = Mask(PICT_FORMAT_R(format));
 	    pFormats[f].direct.red = (PICT_FORMAT_G(format) + 
 				      PICT_FORMAT_B(format));
-	    pFormats[f].direct.redMask = Mask(PICT_FORMAT_R(format));
 	    
-	    pFormats[f].direct.green = PICT_FORMAT_B(format);
 	    pFormats[f].direct.greenMask = Mask(PICT_FORMAT_G(format));
+	    pFormats[f].direct.green = PICT_FORMAT_B(format);
 	    
-	    pFormats[f].direct.blue = 0;
 	    pFormats[f].direct.blueMask = Mask(PICT_FORMAT_B(format));
+	    pFormats[f].direct.blue = 0;
 	    break;
 
 	case PICT_TYPE_ABGR:
 	    pFormats[f].type = PictTypeDirect;
 	    
-	    pFormats[f].direct.alpha = (PICT_FORMAT_B(format) +
-					PICT_FORMAT_G(format) +
-					PICT_FORMAT_R(format));
 	    pFormats[f].direct.alphaMask = Mask(PICT_FORMAT_A(format));
+	    if (pFormats[f].direct.alphaMask)
+		pFormats[f].direct.alpha = (PICT_FORMAT_B(format) +
+					    PICT_FORMAT_G(format) +
+					    PICT_FORMAT_R(format));
 	    
+	    pFormats[f].direct.blueMask = Mask(PICT_FORMAT_B(format));
 	    pFormats[f].direct.blue = (PICT_FORMAT_G(format) + 
 				       PICT_FORMAT_R(format));
-	    pFormats[f].direct.blueMask = Mask(PICT_FORMAT_B(format));
 	    
-	    pFormats[f].direct.green = PICT_FORMAT_R(format);
 	    pFormats[f].direct.greenMask = Mask(PICT_FORMAT_G(format));
+	    pFormats[f].direct.green = PICT_FORMAT_R(format);
 	    
-	    pFormats[f].direct.red = 0;
 	    pFormats[f].direct.redMask = Mask(PICT_FORMAT_R(format));
+	    pFormats[f].direct.red = 0;
 	    break;
 
 	case PICT_TYPE_A:
@@ -543,6 +592,7 @@ SetPictureToDefaults (PicturePtr    pPicture)
     pPicture->polyMode = PolyModePrecise;
     pPicture->freeCompClip = FALSE;
     pPicture->clientClipType = CT_NONE;
+    pPicture->componentAlpha = FALSE;
 
     pPicture->alphaMap = 0;
     pPicture->alphaOrigin.x = 0;
