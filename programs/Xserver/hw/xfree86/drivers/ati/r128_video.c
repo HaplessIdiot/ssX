@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.4 2000/11/21 23:10:34 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.5 2000/11/29 22:01:11 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -125,9 +125,11 @@ static XF86VideoFormatRec Formats[NUM_FORMATS] =
    {15, DirectColor}, {16, DirectColor}, {24, DirectColor}
 };
 
-#define NUM_ATTRIBUTES 4
 
-static XF86AttributeRec Attributes[NUM_ATTRIBUTES] =
+/* Turn off DoubleBuffer for now */
+#define NUM_ATTRIBUTES 3
+
+static XF86AttributeRec Attributes[NUM_ATTRIBUTES + 1] =
 {
    {XvSettable | XvGettable, 0, (1 << 24) - 1, "XV_COLORKEY"},
    {XvSettable | XvGettable, -64, 63, "XV_BRIGHTNESS"},
@@ -586,25 +588,22 @@ R128DisplayVideo(
     h_inc = ((src_w - 1) << 12) / (drw_w - 1);
     step_by = 1;
 
-    while(h_inc >= (4 << 12)) {
+    while(h_inc >= (2 << 12)) {
 	step_by++;
 	h_inc >>= 1;
     }
-
-    step_by |= (step_by == 1) ? (step_by << 8) : ((step_by - 1) << 8);
-
+	
     skip = (left >> 16) & ~7;
     offset += skip << 1;
 
     OUTREG(R128_OV0_REG_LOAD_CNTL, 1);
     while(!(INREG(R128_OV0_REG_LOAD_CNTL) & (1 << 3)));
 
-    OUTREG(R128_OV0_H_INC, h_inc | (h_inc << 15));
-    OUTREG(R128_OV0_STEP_BY, step_by);
+    OUTREG(R128_OV0_H_INC, h_inc | ((h_inc >> 1) << 16));
+    OUTREG(R128_OV0_STEP_BY, step_by | (step_by << 8));
     OUTREG(R128_OV0_Y_X_START, dstBox->x1 | (dstBox->y1 << 16));
     OUTREG(R128_OV0_Y_X_END,   dstBox->x2 | (dstBox->y2 << 16));
     OUTREG(R128_OV0_V_INC, ((src_h - 1) << 20) / (drw_h - 1));
-
     OUTREG(R128_OV0_P1_BLANK_LINES_AT_TOP, 0x00000fff | ((src_h - 1) << 16));
     OUTREG(R128_OV0_VID_BUF_PITCH0_VALUE, pitch);
     OUTREG(R128_OV0_P1_X_START_END, width);
@@ -612,14 +611,13 @@ R128DisplayVideo(
     OUTREG(R128_OV0_P3_X_START_END, width >> 1);
     OUTREG(R128_OV0_VID_BUF0_BASE_ADRS, offset & 0xfffffff0);
     OUTREG(R128_OV0_P1_V_ACCUM_INIT, (2 << 20) | 0x00000001);  /* fixme */
-    OUTREG(R128_OV0_P1_H_ACCUM_INIT, (3 << 28));
+    OUTREG(R128_OV0_P1_H_ACCUM_INIT, (3 << 28));	       /* fixme */
 
     if(id == FOURCC_UYVY)
        OUTREG(R128_OV0_SCALE_CNTL, 0x41008C03);
     else
        OUTREG(R128_OV0_SCALE_CNTL, 0x41008B03);
 
- 
     OUTREG(R128_OV0_REG_LOAD_CNTL, 0);
 }
 
