@@ -27,7 +27,7 @@
  * Authors: Rickard E. (Rik) Faith <faith@valinux.com>
  *	    Kevin E. Martin <martin@valinux.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.12 2000/06/17 00:03:34 martin Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.13 2000/06/19 23:41:35 alanh Exp $
  * 
  */
 
@@ -70,7 +70,7 @@ extern int xf86RemoveSIGIOHandler(int fd);
 
 #ifdef __alpha__
 extern unsigned long _bus_base(void);
-#define BUS_BASE _bus_base();
+#define BUS_BASE _bus_base()
 #else
 #define BUS_BASE (0)
 #endif
@@ -502,7 +502,11 @@ int drmAddMap(int fd,
 {
     drm_map_t map;
 
-    map.offset  = offset + BUS_BASE;
+    map.offset  = offset;
+#ifdef __alpha__
+    if (!(type & DRM_SHM))
+	map.offset += BUS_BASE;
+#endif
     map.size    = size;
     map.handle  = 0;
     map.type    = type;
