@@ -1,4 +1,6 @@
-3982. Attempt to add support for Matrox SDRAM G400s (Mark Vojkovich).
+3983. Fix Xinerama problems that occured when screen zero was not at (0,0)
+      (Mark Vojkovich).
+3982. Add untested support for Matrox SDRAM G400s (Mark Vojkovich).
 3981. Improve memory probing reliability in the Matrox driver (Mark Vojkovich).
 3980. Change loader search order to look in more specific subdirectories first,
       thereby avoiding loading 3.3.* module versions (Marc La France).
