@@ -125,6 +125,7 @@ XRenderFreeGlyphs (Display   *dpy,
     GetReq(RenderFreeGlyphs, req);
     req->reqType = info->codes->major_opcode;
     req->renderReqType = X_RenderFreeGlyphs;
+    req->glyphset = glyphset;
     len = nglyphs;
     SetReqLen(req, len, len);
     len <<= 2;
