@@ -29,7 +29,7 @@
 			0)
 
 
-#define XF86_DATE	"25 January 2003"
+#define XF86_DATE	"29 January 2003"
 
 #endif
 

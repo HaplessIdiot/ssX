@@ -1,4 +1,14 @@
 XFree86 4.2.99.5 (XX January 2003)
+ 812. Fix a typo in the "pl2" XKB map (#A.1553, Piotr Xurek).
+ 811. Fix a null dereference in Mesa that can cause an X server crash at
+      client exit (#A.1548, Ezra Peisach).
+ 810. Improve the XTT code that prevents unexpected data to be passed to
+      XAA (#5600, Chisato Yamauchi).
+ 809. xkbcomp/rules/xfree86.xml wasn't being installed (#5599, Ivan Pascal).
+ 808. Add knowledge about two Korean foundries to mkfontscale (#5598,
+      Jungshik Shin).
+ 807. Disable the INREG fallbackup in the radeon 3D driver on Alpha because
+      it references a function that's not availalbe (#5596, Jeff Wiedemeier).
  806. Fixed patch 760: VBEInit takes entity index, not screen index 
       (Egbert Eich).
  805. Card name changes/fixes (Hui Yu@ATI).
@@ -16163,4 +16173,8 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2507 2003/01/29 18:06:03 martin Exp $
+<<<<<<< CHANGELOG
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2506 2003/01/29 15:42:14 eich Exp $
+=======
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2508 2003/01/29 19:29:46 eich Exp $
+>>>>>>> 3.2508
