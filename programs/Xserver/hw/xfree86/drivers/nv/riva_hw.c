@@ -1129,11 +1129,16 @@ static void SetStartAddress
      */
     outb(0x3D4, 0x0D);
     outb(0x3D5, offset);
+    offset >>= 8;
     outb(0x3D4, 0x0C);
-    outb(0x3D5, offset >> 8);
+    outb(0x3D5, offset);
+    offset >>= 8;
     outb(0x3D4, 0x19);
     tmp = inb(0x3D5);
-    outb(0x3D5, ((offset >> 16) & 0x0F) | (tmp & 0xF0));
+    outb(0x3D5, (offset & 0x1F) | (tmp & 0xE0));
+    outb(0x3D4, 0x2D);
+    tmp = inb(0x3D5);
+    outb(0x3D5, (offset & 0x60) | (tmp & 0x9F));
     /*
      * 4 pixel pan register.
      */

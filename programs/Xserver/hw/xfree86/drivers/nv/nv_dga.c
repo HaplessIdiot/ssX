@@ -54,7 +54,7 @@ NVSetupDGAMode(
    DisplayModePtr firstMode, pMode;
    NVPtr pNv = NVPTR(pScrn);
    DGAModePtr mode, newmodes;
-   int size, pitch, Bpp = bitsPerPixel >> 3;
+   int size, pitch, tmp, Bpp = bitsPerPixel >> 3;
 
 SECOND_PASS:
 
@@ -108,9 +108,11 @@ SECOND_PASS:
 	    mode->pixmapWidth = mode->imageWidth;
 	    mode->pixmapHeight = mode->imageHeight;
 	    mode->maxViewportX = mode->imageWidth - mode->viewportWidth;
-	   /* this might need to get clamped to some maximum */
 	    mode->maxViewportY = mode->imageHeight - mode->viewportHeight;
-
+            tmp = (8*1024*1024 / mode->bytesPerScanline) - mode->viewportHeight;
+	    if(tmp < 0) tmp = 0;
+            if(tmp < mode->maxViewportY)
+                mode->maxViewportY = tmp;
 	    (*num)++;
 	}
 
