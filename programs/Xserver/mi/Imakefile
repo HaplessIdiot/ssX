@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/mi/Imakefile,v 3.12 1997/02/18 17:51:52 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/mi/Imakefile,v 3.13 1997/02/18 22:26:34 hohndel Exp $
 XCOMM $XConsortium: Imakefile /main/44 1996/12/02 10:22:16 lehors $
 #include <Server.tmpl>
 
@@ -7,7 +7,9 @@ CBRT_SRC = cbrt.c
 CBRT_OBJ = cbrt.o
 #endif
 
-#if ! DoLoadableServer
+#if DoLoadableServer
+EXTRAMIINITEXTOBJ = miinitext.o
+#else
 MIINITEXTSRC = miinitext.c
 MIINITEXTOBJ = miinitext.o
 #endif
@@ -64,6 +66,8 @@ NormalLibraryTarget(cbrt,cbrt.o)
 
 SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(EXT_DEFINES))
 SpecialCObjectRule(miscrinit,$(ICONFIGFILES),$(EXT_DEFINES))
+
+AllTarget($(EXTRAMIINITEXTOBJ))
 
 InstallLinkKitLibrary(mi,$(LINKKITDIR)/lib)
 InstallLinkKitLibrary(cbrt,$(LINKKITDIR)/lib)
