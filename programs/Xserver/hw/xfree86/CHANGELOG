@@ -1,4 +1,9 @@
 XFree86 4.3.99.17 (xx November 2003)
+ 625. OS/2 build fixes:
+       - Cleanup of bootstrap leftovers in xc/config/imake.
+       - Explicitly define int32_t and int64_t in Mesa.
+       - Missing Xft/Imakefile patch.
+      (Bugzilla #915, Frank Giessler).
  624. Fix hide/unhide of XDarwin application with xpr when an AppleWM-aware
       window manager is not present (Torrey T. Lyons).
  623. Fix generic rootless code bug which caused the wrong region to be
@@ -18262,7 +18267,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2993 2003/11/26 03:47:49 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2994 2003/11/27 02:05:40 torrey Exp $
 
 
 

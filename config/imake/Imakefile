@@ -3,7 +3,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/imake/Imakefile,v 3.17tsi Exp $
+XCOMM $XFree86: xc/config/imake/Imakefile,v 3.18 2003/10/21 17:41:44 tsi Exp $
 
 XCOMM Some compilers generate fatal errors if an -L directory does
 XCOMM not exist.  Since BUILDLIBDIR may not exist yet suppress its use.
@@ -73,3 +73,9 @@ clean::
 	RemoveFile(Makefile.proto)
 	RemoveFile(imakemdep_cpp.h)
 	$(RM) -r bootstrap
+
+#ifdef OS2Architecture
+clean::
+	RemoveFiles(imake ccimake)
+
+#endif
