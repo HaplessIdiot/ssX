@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.19 2001/05/16 14:06:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.21 2002/12/04 10:28:05 eich Exp $ */
 
 #if defined(WIN32)
 #include <X11/Xwinsock.h>
@@ -223,6 +223,22 @@ AbortDDX()
 void
 DarwinHandleGUI(int argc, char *argv[])
 {
+}
+
+void GlxExtensionInit();
+void GlxWrapInitVisuals(void *procPtr);
+
+void
+DarwinGlxExtensionInit()
+{
+    GlxExtensionInit();
+}
+
+void
+DarwinGlxWrapInitVisuals(
+    void *procPtr)
+{
+    GlxWrapInitVisuals(procPtr);
 }
 #endif
 

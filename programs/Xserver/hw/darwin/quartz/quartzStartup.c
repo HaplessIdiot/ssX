@@ -28,17 +28,28 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzStartup.c,v 1.7 2001/09/23 04:04:49 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzStartup.c,v 1.1 2002/03/28 02:21:19 torrey Exp $ */
 
 #include <fcntl.h>
+#include <unistd.h>
+#include <CoreFoundation/CoreFoundation.h>
 #include "quartzCommon.h"
 #include "darwin.h"
 #include "opaque.h"
+#include "micmap.h"
 
 int NSApplicationMain(int argc, char *argv[]);
 
 char **envpGlobal;      // argcGlobal and argvGlobal
                         // are from dix/globals.c
+
+// GLX bundle function pointers
+typedef void (*GlxExtensionInitPtr)(void); 
+static GlxExtensionInitPtr GlxExtensionInit = NULL;
+
+typedef void (*GlxWrapInitVisualsPtr)(miInitVisualsProcPtr *);
+static GlxWrapInitVisualsPtr GlxWrapInitVisuals = NULL;
+
 
 /*
  * DarwinHandleGUI
@@ -91,6 +102,83 @@ void DarwinHandleGUI(
     main_exit = NSApplicationMain(argc, argv);
     exit(main_exit);
 }
+
+
+/*
+ * LoadGlxBundle
+ *  The Quartz mode X server needs to dynamically load the appropriate
+ *  bundle before initializing GLX.
+ */
+static void LoadGlxBundle(void)
+{
+    CFBundleRef mainBundle;
+    CFStringRef bundleName;
+    CFURLRef    bundleURL;
+    CFBundleRef glxBundle;
+
+    // Get the main bundle for the application
+    mainBundle = CFBundleGetMainBundle();
+
+    // Choose the bundle to load
+    if (quartzUseAGL) {
+        bundleName = CFSTR("glxAGL.bundle");
+    } else {
+        bundleName = CFSTR("glxMesa.bundle");
+    }
+
+    // Look for the appropriate GLX bundle in the main bundle by name
+    bundleURL = CFBundleCopyResourceURL(mainBundle, bundleName,
+                                        NULL, NULL);
+
+    // Make a bundle instance using the URLRef
+    glxBundle = CFBundleCreate(kCFAllocatorDefault, bundleURL);
+
+    if (!CFBundleLoadExecutable(glxBundle)) {
+        FatalError("Could not load GLX bundle.");
+    }
+
+    // Find the GLX init functions
+    GlxExtensionInit = (void *) CFBundleGetFunctionPointerForName(
+                                glxBundle, CFSTR("GlxExtensionInit"));
+
+    GlxWrapInitVisuals = (void *) CFBundleGetFunctionPointerForName(
+                                glxBundle, CFSTR("GlxWrapInitVisuals"));
+
+    if (!GlxExtensionInit || !GlxWrapInitVisuals) {
+        FatalError("Could not initialize GLX bundle.");
+    }
+
+    // Release the CF objects
+    CFRelease(mainBundle);
+    CFRelease(bundleURL);
+}
+
+
+/*
+ * DarwinGlxExtensionInit
+ *  Initialize the GLX extension.
+ */
+void DarwinGlxExtensionInit(void)
+{
+    if (!GlxExtensionInit)
+        LoadGlxBundle();
+
+    GlxExtensionInit();
+}
+
+
+/*
+ * DarwinGlxWrapInitVisuals
+ */
+void DarwinGlxWrapInitVisuals(
+    miInitVisualsProcPtr *procPtr)
+{
+    if (!GlxWrapInitVisuals)
+        LoadGlxBundle();
+
+    GlxWrapInitVisuals(procPtr);
+}
+
 
 int QuartzProcessArgument( int argc, char *argv[], int i )
 {

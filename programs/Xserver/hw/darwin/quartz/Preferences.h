@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.h,v 1.10 2001/10/14 03:02:18 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/Preferences.h,v 1.1 2002/03/28 02:21:18 torrey Exp $ */
 
 #import <Cocoa/Cocoa.h>
 
@@ -53,6 +53,7 @@
 + (void)setMouseAccelChange:(BOOL)newMouseAccelChange;
 + (void)setUseQDCursor:(int)newUseQDCursor;
 + (void)setRootless:(BOOL)newRootless;
++ (void)setUseAGL:(BOOL)newUseAGL;
 + (void)setModeWindow:(BOOL)newModeWindow;
 + (void)setStartupHelp:(BOOL)newStartupHelp;
 + (void)setSystemBeep:(BOOL)newSystemBeep;
@@ -77,6 +78,7 @@
 + (BOOL)mouseAccelChange;
 + (int)useQDCursor;
 + (BOOL)rootless;
++ (BOOL)useAGL;
 + (BOOL)modeWindow;
 + (BOOL)startupHelp;
 + (BOOL)systemBeep;
