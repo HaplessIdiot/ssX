@@ -7,7 +7,7 @@ XCOMM $OpenBSD: OpenBSDLib.rules,v 1.1 2000/10/09 20:43:58 matthieu Exp $
  * OpenBSD shared library rules
  */
 
-XCOMM $XFree86: xc/config/cf/OpenBSDLib.rules,v 1.14 2004/03/21 11:29:13 herrb Exp $
+XCOMM $XFree86: xc/config/cf/OpenBSDLib.rules,v 1.15 2004/03/25 03:36:21 dawes Exp $
 
 #ifndef UseElfFormat
 #define UseElfFormat NO
@@ -80,7 +80,7 @@ XCOMM $XFree86: xc/config/cf/OpenBSDLib.rules,v 1.14 2004/03/21 11:29:13 herrb E
 #define InstallSharedLibrary(libname,rev,dest)				@@\
 install::								@@\
 	MakeDir($(DESTDIR)dest)						@@\
-	$(INSTALL) $(INSTALLFLAGS) $(INSTBINFLAGS) Concat(lib,libname.so.rev) $(DESTDIR)dest
+	$(INSTALL) $(INSTALLFLAGS) $(INSTBINFLAGS) Concat($(LIBPREFIX),libname.so.rev) $(DESTDIR)dest
 #endif /* InstallSharedLibrary */
 
 /*
@@ -99,9 +99,9 @@ install::								@@\
 #ifndef SharedLibraryTarget
 
 #define SharedLibraryTarget(libname,rev,solist,down,up)			@@\
-AllTarget(Concat(lib,libname.so.rev))					@@\
+AllTarget(Concat($(LIBPREFIX),libname.so.rev))				@@\
 									@@\
-Concat(lib,libname.so.rev):  solist					@@\
+Concat($(LIBPREFIX),libname.so.rev):  solist				@@\
 	$(RM) $@~							@@\
 	set -x; \							@@\
 		(cd down; $(CC) -o up/$@~ $(SHLIBLDFLAGS) -Wl,-soname,$@\ @@\
@@ -111,7 +111,7 @@ Concat(lib,libname.so.rev):  solist					@@\
 	$(MV) $@~ $@							@@\
 									@@\
 clean::									@@\
-	$(RM) Concat(lib,libname.so.rev)
+	$(RM) Concat($(LIBPREFIX),libname.so.rev)
 
 #endif /* SharedLibraryTarget */
 
@@ -121,9 +121,9 @@ clean::									@@\
  */
 #ifndef SharedDepLibraryTarget
 #define SharedDepLibraryTarget(libname,rev,deplist,solist,down,up)	@@\
-AllTarget(Concat(lib,libname.so.rev))					@@\
+AllTarget(Concat($(LIBPREFIX),libname.so.rev))				@@\
 									@@\
-Concat(lib,libname.so.rev):  deplist $(EXTRALIBRARYDEPS)		@@\
+Concat($(LIBPREFIX),libname.so.rev):  deplist $(EXTRALIBRARYDEPS)	@@\
 	$(RM) $@~							@@\
 	(cd down; $(CC) -o up/$@~ $(SHLIBLDFLAGS) solist $(REQUIREDLIBS)) @@\
 	$(RM) $@							@@\
@@ -131,7 +131,7 @@ Concat(lib,libname.so.rev):  deplist $(EXTRALIBRARYDEPS)		@@\
 	LinkBuildLibrary($@)						@@\
 									@@\
 clean::									@@\
-	$(RM) Concat(lib,libname.so.rev)
+	$(RM) Concat($(LIBPREFIX),libname.so.rev)
 
 #endif /* SharedDepLibraryTarget */
 

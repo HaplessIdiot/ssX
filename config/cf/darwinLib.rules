@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/darwinLib.rules,v 1.10 2004/03/25 03:19:15 dawes Exp $
+XCOMM $XFree86: xc/config/cf/darwinLib.rules,v 1.11 2004/03/25 03:36:21 dawes Exp $
 /*
  * Darwin/Mac OS X shared library rules
  */
@@ -46,14 +46,14 @@ XCOMM $XFree86: xc/config/cf/darwinLib.rules,v 1.10 2004/03/25 03:19:15 dawes Ex
 #define InstallSharedLibrary(libname,rev,dest)				@@\
 install::								@@\
 	MakeDir($(DESTDIR)dest)						@@\
-	$(INSTALL) $(INSTALLFLAGS) $(INSTLIBFLAGS) Concat(lib,libname.rev.dylib) $(DESTDIR)dest @@\
+	$(INSTALL) $(INSTALLFLAGS) $(INSTLIBFLAGS) Concat($(LIBPREFIX),libname.rev.dylib) $(DESTDIR)dest @@\
 	@SetMajorRev(rev); \						@@\
 	  if [ rev != $$MAJREV ]; then (set -x;				@@\
-	    $(RM) Concat($(DESTDIR)dest/lib,libname.$$MAJREV.dylib) && \ @@\
-	    $(LN) Concat(lib,libname.rev.dylib) Concat($(DESTDIR)dest/lib,libname.$$MAJREV.dylib)); fi @@\
+	    $(RM) Concat($(DESTDIR)dest/$(LIBPREFIX),libname.$$MAJREV.dylib) && \ @@\
+	    $(LN) Concat($(LIBPREFIX),libname.rev.dylib) Concat($(DESTDIR)dest/$(LIBPREFIX),libname.$$MAJREV.dylib)); fi @@\
 	@if $(SOSYMLINK); then (set -x; \				@@\
-	  $(RM) Concat($(DESTDIR)dest/lib,libname.dylib); \		@@\
-	  $(LN) Concat(lib,libname.rev.dylib) Concat($(DESTDIR)dest/lib,libname.dylib)); fi
+	  $(RM) Concat($(DESTDIR)dest/$(LIBPREFIX),libname.dylib); \	@@\
+	  $(LN) Concat($(LIBPREFIX),libname.rev.dylib) Concat($(DESTDIR)dest/$(LIBPREFIX),libname.dylib)); fi
 #endif /* InstallSharedLibrary */
 
 /*
@@ -63,12 +63,12 @@ install::								@@\
  */
 #ifndef SharedLibraryTarget
 # define SharedLibraryTarget(libname,rev,solist,down,up)		@@\
-AllTarget(Concat(lib,libname.rev.dylib))				@@\
+AllTarget(Concat($(LIBPREFIX),libname.rev.dylib))			@@\
 									@@\
-Concat(lib,libname.rev.dylib):  solist $(EXTRALIBRARYDEPS)		@@\
+Concat($(LIBPREFIX),libname.rev.dylib):  solist $(EXTRALIBRARYDEPS)	@@\
 	$(RM) $@~							@@\
 	@SetMajorRev(rev); \						@@\
-	  INSTALLNAME=Concat(lib,libname.$$MAJREV.dylib); \		@@\
+	  INSTALLNAME=Concat($(LIBPREFIX),libname.$$MAJREV.dylib); \	@@\
 	  (set -x; cd down; $(CC) -o up/$@~ $(SHLIBLDFLAGS) -install_name $(USRLIBDIR)/$$INSTALLNAME -current_version rev -compatibility_version rev solist $(REQUIREDLIBS)); \ @@\
 	  if [ $$INSTALLNAME != $@ ]; then (set -x; \			@@\
 	    $(RM) $$INSTALLNAME; $(LN) $@ $$INSTALLNAME); fi; \		@@\
@@ -76,15 +76,15 @@ Concat(lib,libname.rev.dylib):  solist $(EXTRALIBRARYDEPS)		@@\
 	$(RM) $@							@@\
 	$(MV) $@~ $@							@@\
 	@if $(SOSYMLINK); then (set -x; \				@@\
-	  $(RM) Concat(lib,libname.dylib); \				@@\
-	  $(LN) $@ Concat(lib,libname.dylib)); fi			@@\
+	  $(RM) Concat($(LIBPREFIX),libname.dylib); \			@@\
+	  $(LN) $@ Concat($(LIBPREFIX),libname.dylib)); fi		@@\
 	LinkBuildLibrary($@)						@@\
-	LinkBuildLibraryMaybe(Concat(lib,libname.dylib),$(SOSYMLINK))	@@\
+	LinkBuildLibraryMaybe(Concat($(LIBPREFIX),libname.dylib),$(SOSYMLINK)) @@\
 									@@\
 clean::									@@\
 	@SetMajorRev(rev); \						@@\
-	set -x; $(RM) Concat(lib,libname.$$MAJREV.dylib)		@@\
-	$(RM) Concat(lib,libname.rev.dylib) Concat(lib,libname.dylib)
+	set -x; $(RM) Concat($(LIBPREFIX),libname.$$MAJREV.dylib)	@@\
+	$(RM) Concat($(LIBPREFIX),libname.rev.dylib) Concat($(LIBPREFIX),libname.dylib)
 
 #endif /* SharedLibraryTarget */
 
@@ -93,12 +93,12 @@ clean::									@@\
  */
 #ifndef SharedDepLibraryTarget
 # define SharedDepLibraryTarget(libname,rev,deplist,solist,down,up)	@@\
-AllTarget(Concat(lib,libname.rev.dylib))				@@\
+AllTarget(Concat($(LIBPREFIX),libname.rev.dylib))			@@\
 									@@\
-Concat(lib,libname.rev.dylib):  deplist $(EXTRALIBRARYDEPS)		@@\
+Concat($(LIBPREFIX),libname.rev.dylib):  deplist $(EXTRALIBRARYDEPS)	@@\
 	$(RM) $@~							@@\
 	@SetMajorRev(rev); \						@@\
-	  INSTALLNAME=Concat(lib,libname.$$MAJREV.dylib); \		@@\
+	  INSTALLNAME=Concat($(LIBPREFIX),libname.$$MAJREV.dylib); \	@@\
 	  (set -x; cd down; $(CC) -o up/$@~ $(SHLIBLDFLAGS) -install_name $(USRLIBDIR)/$$INSTALLNAME -current_version rev -compatibility_version rev solist $(REQUIREDLIBS)); \ @@\
 	  if [ $$INSTALLNAME != $@ ]; then (set -x; \			@@\
 	    $(RM) $$INSTALLNAME; $(LN) $@ $$INSTALLNAME); fi; \		@@\
@@ -106,15 +106,15 @@ Concat(lib,libname.rev.dylib):  deplist $(EXTRALIBRARYDEPS)		@@\
 	$(RM) $@							@@\
 	$(MV) $@~ $@							@@\
 	@if $(SOSYMLINK); then (set -x; \				@@\
-	  $(RM) Concat(lib,libname.dylib); \				@@\
-	  $(LN) $@ Concat(lib,libname.dylib)); fi			@@\
+	  $(RM) Concat($(LIBPREFIX),libname.dylib); \			@@\
+	  $(LN) $@ Concat($(LIBPREFIX),libname.dylib)); fi		@@\
 	LinkBuildLibrary($@)						@@\
-	LinkBuildLibraryMaybe(Concat(lib,libname.dylib),$(SOSYMLINK))	@@\
+	LinkBuildLibraryMaybe(Concat($(LIBPREFIX),libname.dylib),$(SOSYMLINK)) @@\
 									@@\
 clean::									@@\
 	@SetMajorRev(rev); \						@@\
-	set -x; $(RM) Concat(lib,libname.$$MAJREV.dylib)		@@\
-	$(RM) Concat(lib,libname.rev.dylib) Concat(lib,libname.dylib)
+	set -x; $(RM) Concat($(LIBPREFIX),libname.$$MAJREV.dylib)	@@\
+	$(RM) Concat($(LIBPREFIX),libname.rev.dylib) Concat($(LIBPREFIX),libname.dylib)
 
 #endif /* SharedDepLibraryTarget */
 
@@ -123,12 +123,12 @@ clean::									@@\
  */
 #ifndef SharedDepCplusplusLibraryTarget
 # define SharedDepCplusplusLibraryTarget(libname,rev,deplist,solist,down,up)	@@\
-AllTarget(Concat(lib,libname.rev.dylib))				@@\
+AllTarget(Concat($(LIBPREFIX),libname.rev.dylib))			@@\
 									@@\
-Concat(lib,libname.rev.dylib):  deplist $(EXTRALIBRARYDEPS)		@@\
+Concat($(LIBPREFIX),libname.rev.dylib):  deplist $(EXTRALIBRARYDEPS)	@@\
 	$(RM) $@~							@@\
 	@SetMajorRev(rev); \						@@\
-	  INSTALLNAME=Concat(lib,libname.$$MAJREV.dylib); \		@@\
+	  INSTALLNAME=Concat($(LIBPREFIX),libname.$$MAJREV.dylib); \	@@\
 	  (set -x; cd down; $(CXX) -o up/$@~ $(SHLIBLDFLAGS) -install_name $(USRLIBDIR)/$$INSTALLNAME -current_version rev -compatibility_version rev solist $(REQUIREDLIBS)); \ @@\
 	  if [ $$INSTALLNAME != $@ ]; then (set -x; \			@@\
 	    $(RM) $$INSTALLNAME; $(LN) $@ $$INSTALLNAME); fi; \		@@\
@@ -136,15 +136,15 @@ Concat(lib,libname.rev.dylib):  deplist $(EXTRALIBRARYDEPS)		@@\
 	$(RM) $@							@@\
 	$(MV) $@~ $@							@@\
 	@if $(SOSYMLINK); then (set -x; \				@@\
-	  $(RM) Concat(lib,libname.dylib); \				@@\
-	  $(LN) $@ Concat(lib,libname.dylib)); fi			@@\
+	  $(RM) Concat($(LIBPREFIX),libname.dylib); \			@@\
+	  $(LN) $@ Concat($(LIBPREFIX),libname.dylib)); fi		@@\
 	LinkBuildLibrary($@)						@@\
-	LinkBuildLibraryMaybe(Concat(lib,libname.dylib),$(SOSYMLINK))	@@\
+	LinkBuildLibraryMaybe(Concat($(LIBPREFIX),libname.dylib),$(SOSYMLINK)) @@\
 									@@\
 clean::									@@\
 	@SetMajorRev(rev); \						@@\
-	set -x; $(RM) Concat(lib,libname.$$MAJREV.dylib)		@@\
-	$(RM) Concat(lib,libname.rev.dylib) Concat(lib,libname.dylib)
+	set -x; $(RM) Concat($(LIBPREFIX),libname.$$MAJREV.dylib)	@@\
+	$(RM) Concat($(LIBPREFIX),libname.rev.dylib) Concat($(LIBPREFIX),libname.dylib)
 
 #endif /* SharedDepCplusplusLibraryTarget */
 

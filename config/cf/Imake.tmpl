@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.157 2004/03/14 22:36:15 tsi Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.158 2004/04/05 02:33:07 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -1686,6 +1686,8 @@ TCLIBDIR = TclLibDir
         CONFIGSRC = ConfigSrc
          IMAKESRC = $(CONFIGSRC)/imake
         DEPENDSRC = DependDir
+
+        LIBPREFIX = lib
 
           INCROOT = IncRoot		/* base of where to put header files */
         USRLIBDIR = UsrLibDir		/* nonshared libraries */

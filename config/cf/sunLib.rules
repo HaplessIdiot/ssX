@@ -4,7 +4,7 @@ XCOMM $Xorg: sunLib.rules,v 1.3 2000/08/17 19:41:48 cpqbld Exp $
  * SunOS shared library rules
  */
 
-XCOMM $XFree86: xc/config/cf/sunLib.rules,v 1.4 2001/05/28 02:42:25 tsi Exp $
+XCOMM $XFree86: xc/config/cf/sunLib.rules,v 1.5 2004/03/25 03:36:21 dawes Exp $
 
 #ifndef HasSharedLibraries
 #define HasSharedLibraries YES
@@ -51,7 +51,7 @@ XCOMM $XFree86: xc/config/cf/sunLib.rules,v 1.4 2001/05/28 02:42:25 tsi Exp $
  */
 #ifndef InstallSharedLibrary
 #define	InstallSharedLibrary(libname,rev,dest)				@@\
-InstallTarget(install,Concat(lib,libname.so.rev),$(INSTLIBFLAGS),dest)
+InstallTarget(install,Concat($(LIBPREFIX),libname.so.rev),$(INSTLIBFLAGS),dest)
 #endif /* InstallSharedLibrary */
 
 /*
@@ -68,7 +68,7 @@ install::								@@\
 #if HasPurify
 #define PureCleanSharedLibrary(libname,rev)				@@\
 clean clean.pure::							@@\
-	$(RM) Concat3(lib,libname,_pure_*.so.rev)
+	$(RM) Concat3($(LIBPREFIX),libname,_pure_*.so.rev)
 #else
 #define PureCleanSharedLibrary(libname,rev) /**/
 #endif
@@ -80,9 +80,9 @@ clean clean.pure::							@@\
  */
 #ifndef SharedLibraryTarget
 #define SharedLibraryTarget(libname,rev,solist,down,up)			@@\
-AllTarget(Concat(lib,libname.so.rev))					@@\
+AllTarget(Concat($(LIBPREFIX),libname.so.rev))				@@\
 									@@\
-Concat(lib,libname.so.rev):  solist $(EXTRALIBRARYDEPS)			@@\
+Concat($(LIBPREFIX),libname.so.rev):  solist $(EXTRALIBRARYDEPS)	@@\
 	$(RM) $@~							@@\
 	(cd down; $(LD) -o up/$@~ $(SHLIBLDFLAGS) solist $(REQUIREDLIBS)) @@\
 	$(RM) $@ 							@@\
@@ -90,7 +90,7 @@ Concat(lib,libname.so.rev):  solist $(EXTRALIBRARYDEPS)			@@\
 	LinkBuildLibrary($@)						@@\
 									@@\
 clean::									@@\
-	$(RM) Concat(lib,libname.so.rev)				@@\
+	$(RM) Concat($(LIBPREFIX),libname.so.rev)			@@\
 									@@\
 PureCleanSharedLibrary(libname,rev)
 #endif /* SharedLibraryTarget */
@@ -100,9 +100,9 @@ PureCleanSharedLibrary(libname,rev)
  */
 #ifndef SharedDepLibraryTarget
 #define SharedDepLibraryTarget(libname,rev,deplist,solist,down,up)	@@\
-AllTarget(Concat(lib,libname.so.rev))					@@\
+AllTarget(Concat($(LIBPREFIX),libname.so.rev))				@@\
 									@@\
-Concat(lib,libname.so.rev):  deplist $(EXTRALIBRARYDEPS)		@@\
+Concat($(LIBPREFIX),libname.so.rev):  deplist $(EXTRALIBRARYDEPS)	@@\
 	$(RM) $@~							@@\
 	(cd down; $(LD) -o up/$@~ $(SHLIBLDFLAGS) solist $(REQUIREDLIBS)) @@\
 	$(RM) $@ 							@@\
@@ -110,7 +110,7 @@ Concat(lib,libname.so.rev):  deplist $(EXTRALIBRARYDEPS)		@@\
 	LinkBuildLibrary($@)						@@\
 									@@\
 clean::									@@\
-	$(RM) Concat(lib,libname.so.rev)				@@\
+	$(RM) Concat($(LIBPREFIX),libname.so.rev)			@@\
 									@@\
 PureCleanSharedLibrary(libname,rev)
 #endif /* SharedDepLibraryTarget */
