@@ -1,5 +1,10 @@
 XCOMM $Xorg: Imakefile,v 1.1 2000/12/12 13:00:42 coskrey Exp $
 
+
+
+
+XCOMM $XFree86$
+
 #ifndef Win32Architecture
 # define XI18NTarget(name)						@@\
 all:: name								@@\

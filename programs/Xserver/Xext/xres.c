@@ -1,7 +1,7 @@
 /*
    Copyright (c) 2002  XFree86 Inc
 */
-/* $XFree86 $ */
+/* $XFree86$ */
 
 #define NEED_EVENTS
 #define NEED_REPLIES

@@ -24,6 +24,8 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
+/* $XFree86$ */
+
 #ifndef VMOD_H
 #define VMOD_H 1
 

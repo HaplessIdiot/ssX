@@ -24,6 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
+/* $XFree86$ */
 
 #ifndef INDICATORS_H
 #define INDICATORS_H 1

@@ -26,6 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
+/* $XFree86$ */
 
 #ifndef _XawLogo_h
 #define _XawLogo_h

@@ -1,3 +1,6 @@
+XCOMM
+XCOMM $XFree86$
+XCOMM
 XCOMM UTF-8 compose sequence definitions for the greek keyboard layout.
 XCOMM
 XCOMM This file is mostly meant to be used along with the xkb/symbols/el

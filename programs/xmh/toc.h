@@ -24,6 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
+/* $XFree86$ */
 
 #ifndef _toc_h
 #define _toc_h

@@ -23,6 +23,7 @@
  * or publicity pertaining to distribution of the software without specific,
  * written prior permission.
  */
+/* $XFree86$ */
 
 #ifndef _mlist_h
 #define _mlist_h

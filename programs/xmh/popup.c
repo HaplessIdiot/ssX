@@ -23,6 +23,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
+/* $XFree86$ */
 
 /* popup.c -- Handle pop-up widgets. */
 

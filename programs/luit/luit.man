@@ -1,3 +1,4 @@
+.\" $XFree86$
 .TH LUIT 1 __vendorversion__
 .SH NAME
 luit \- Locale and ISO\ 2022 support for Unicode terminals

@@ -4,6 +4,7 @@
  * Copyright (C) 1995-1998 Jean-loup Gailly.
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
+/* $XFree86$ */
 
 /* WARNING: this file should *not* be used by applications. It is
    part of the implementation of the compression library and is

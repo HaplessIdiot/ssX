@@ -24,6 +24,8 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
+/* $XFree86$ */
+
 #define DEBUG_VAR_NOT_LOCAL
 #define	DEBUG_VAR parseDebug
 #include "parseutils.h"

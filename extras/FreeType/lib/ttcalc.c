@@ -14,6 +14,7 @@
  *  understand and accept it fully.
  *
  ******************************************************************/
+/* $XFree86$ */
 
 #include "ttcalc.h"
 #include "ttdebug.h"
