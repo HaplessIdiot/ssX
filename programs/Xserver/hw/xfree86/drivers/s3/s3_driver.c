@@ -34,7 +34,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.9 2002/09/16 18:05:58 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.10 2002/10/31 19:11:22 alanh Exp $ */
 
 
 #include "xf86.h"
@@ -164,7 +164,7 @@ static OptionInfoRec S3Options[] = {
 	{ -1, NULL, OPTV_NONE, {0}, FALSE }
 };
 
-RamDacSupportedInfoRec IBMRamdacs[] = {
+RamDacSupportedInfoRec S3IBMRamdacs[] = {
 	{ IBM524_RAMDAC },
 	{ IBM524A_RAMDAC },
 	{ -1 }

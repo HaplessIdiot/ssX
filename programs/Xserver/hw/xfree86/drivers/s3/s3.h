@@ -24,7 +24,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3.h,v 1.14tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3.h,v 1.15 2002/09/18 17:11:48 tsi Exp $ */
 
 
 #ifndef _S3_H
@@ -196,7 +196,7 @@ void S3InitVideo(ScreenPtr pScreen);
 void S3InitStreams(ScrnInfoPtr pScrn, DisplayModePtr mode);
 
 /* IBMRGB */
-extern RamDacSupportedInfoRec IBMRamdacs[];
+extern RamDacSupportedInfoRec S3IBMRamdacs[];
 Bool S3ProbeIBMramdac(ScrnInfoPtr pScrn);
 void S3IBMRGB_PreInit(ScrnInfoPtr pScrn);
 void S3IBMRGB_Init(ScrnInfoPtr pScrn, DisplayModePtr mode);
