@@ -89,7 +89,7 @@ if test "$echo_cflags" = "yes" ; then
 fi
 
 if test "$echo_libs" = "yes" ; then
- libs="-lxft ${freetypelibs} ${fontconfiglibs} ${xrenderlibs}"
+ libs="-lXft ${freetypelibs} ${fontconfiglibs} ${xrenderlibs}"
  if test "${libdir}" != "/usr/lib" ; then
   echo -L${libdir} $libs
  else
