@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Opt.h,v 1.11 2001/03/13 16:03:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Opt.h,v 1.12 2001/05/04 19:05:30 dawes Exp $ */
 
 /* Option handling things that ModuleSetup procs can use */
 
@@ -46,7 +46,7 @@ int xf86SetIntOption(pointer optlist, const char *name, int deflt);
 double xf86SetRealOption(pointer optlist, const char *name, double deflt);
 char *xf86SetStrOption(pointer optlist, const char *name, char *deflt);
 int xf86SetBoolOption(pointer list, const char *name, int deflt );
-pointer xf86AddNewOption(pointer head, char *name, char *val );
+pointer xf86AddNewOption(pointer head, const char *name, const char *val );
 pointer xf86NewOption(char *name, char *value );
 pointer xf86NextOption(pointer list );
 pointer xf86OptionListCreate(const char **options, int count, int used);
@@ -76,7 +76,7 @@ Bool xf86GetOptValBool(const OptionInfoRec *table, int token, Bool *value);
 Bool xf86ReturnOptValBool(const OptionInfoRec *table, int token, Bool def);
 int xf86NameCmp(const char *s1, const char *s2);
 char *xf86NormalizeName(const char *s);
-pointer xf86ReplaceIntOption(pointer optlist,  char *name, int val);
-pointer xf86ReplaceBoolOption(pointer optlist, char *name, Bool val);
-pointer xf86ReplaceStrOption(pointer optlist,  char *name, char* val);        
+pointer xf86ReplaceIntOption(pointer optlist,  const char *name, const int val);
+pointer xf86ReplaceBoolOption(pointer optlist, const char *name, const Bool val);
+pointer xf86ReplaceStrOption(pointer optlist,  const char *name, const char* val);        
 #endif

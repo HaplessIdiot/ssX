@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.24 2002/04/04 14:05:40 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.25 2002/09/10 17:39:28 dawes Exp $ */
 
 /*
  * Copyright (c) 1998 by The XFree86 Project, Inc.
@@ -201,7 +201,7 @@ xf86SetBoolOption(pointer optlist, const char *name, int deflt)
  * it the option is alread present.
  */
 pointer
-xf86ReplaceIntOption(pointer optlist, char *name, int val)
+xf86ReplaceIntOption(pointer optlist, const char *name, const int val)
 {
     char *tmp = xnfalloc(16);
     sprintf(tmp,"%i",val);
@@ -209,20 +209,21 @@ xf86ReplaceIntOption(pointer optlist, char *name, int val)
 }
 
 pointer
-xf86ReplaceBoolOption(pointer optlist, char *name, Bool val)
+xf86ReplaceBoolOption(pointer optlist, const char *name, const Bool val)
 {
     return xf86AddNewOption(optlist,name,(Bool)val?"True":"False");
 }
 
 pointer
-xf86ReplaceStrOption(pointer optlist, char *name, char* val)
+xf86ReplaceStrOption(pointer optlist, const char *name, const char* val)
 {
       return xf86AddNewOption(optlist,name,val);
 }
 
 pointer
-xf86AddNewOption(pointer head, char *name, char *val)
+xf86AddNewOption(pointer head, const char *name, const char *val)
 {
+    /* XXX These should actually be allocated in the parser library. */
     char *tmp = strdup(val);
     char *tmp_name = strdup(name);
 
