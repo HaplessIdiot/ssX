@@ -1,4 +1,5 @@
 /* $XConsortium: Window.c,v 1.5 94/02/16 11:53:17 rws Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -15,7 +16,11 @@ is" without express or implied warranty.
 #include "X.h"
 #include "Xproto.h"
 #include "gcstruct.h"
+#ifdef __EMX__
+#include "../../include/window.h"
+#else
 #include "window.h"
+#endif
 #include "windowstr.h"
 #include "pixmapstr.h"
 #include "colormapst.h"
@@ -30,7 +35,11 @@ is" without express or implied warranty.
 
 #include "Display.h"
 #include "Screen.h"
+#ifdef __EMX__
+#include "GC1.h"
+#else
 #include "GC.h"
+#endif
 #include "Drawable.h"
 #include "Color.h"
 #include "Visual.h"

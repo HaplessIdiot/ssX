@@ -1,4 +1,5 @@
 /* $XConsortium: suBox.s,v 1.2 94/03/29 11:19:18 dpw Exp $ */
+/* $XFree86$ */
 /*******************************************************************************
 			Copyright 1992 by Glenn G. Lai 
 
@@ -233,7 +234,7 @@ npLoop:
 	MOV_B	(AL, CONTENT(segment))
 npLoop3:
 	MOV_W	(CONST(0x3cd), DX)
-	OUT1_B	(DX)
+	OUT_B
 npLoop1:
 	MOV_L	(CONTENT(speedUpTop), EAX)
 	SUB_L	(EDI, EAX)
@@ -335,7 +336,7 @@ npPartial2:
 	INC_B	(AL)
 	MOV_B	(AL, CONTENT(segment))
 	MOV_W	(CONST(0x3cd), DX)
-	OUT1_B	(DX)
+	OUT_B
 
 	MOV_L	(fill, EAX)
 	MOV_L	(EBX, ECX)
@@ -440,16 +441,16 @@ pNoR:
 /***************************/
 	MOV_W	(CONST(0x3c4), DX)
 	MOV_W	(CONST(0x0604), AX )
-	OUT1_W	(DX)
+	OUT_W
 	MOV_W	(CONST(0x3ce), DX)
 	MOV_W	(CONST(0x0001), AX)
-	OUT1_W	(DX)
+	OUT_W
 	MOV_W	(CONST(0x0003), AX)
-	OUT1_W	(DX)
+	OUT_W
 	MOV_W	(CONST(0x4005), AX)
-	OUT1_W	(DX)
+	OUT_W
 	MOV_W	(CONST(0xff08), AX)
-	OUT1_W	(DX)
+	OUT_W
 /***************************/
 	MOV_L	(EDI, EAX)
 	SHR_L	(CONST(18), EAX)
@@ -470,7 +471,7 @@ pLoop:
 	MOV_B	(AL, CONTENT(segment))
 pLoop3:
 	MOV_W	(CONST(0x3cd), DX)
-	OUT1_B	(DX)
+	OUT_B
 pLoop1:
 	MOV_L	(CONTENT(speedUpTop), EAX)
 	SUB_L	(EDI, EAX)
@@ -500,9 +501,9 @@ pLoop4:
 
 	MOV_W	(CONST(0x3c4), DX)
 	MOV_W	(CONST(0x0f02), AX)
-	OUT1_W	(DX)
+	OUT_W
 	MOV_W	(CONST(0x0c04), AX)
-	OUT1_W	(DX)
+	OUT_W
 
 	POP_L	(EBX)
 	POP_L	(ESI)
@@ -517,7 +518,7 @@ pPartial:
 
 	MOV_W	(CONTENT(lMask), AX)
 	MOV_W	(CONST(0x3c4), DX)
-	OUT1_W	(DX)
+	OUT_W
 
 	MOV_L	(fill, EAX)
 	MOV_L	(CONTENT(mCount), EBX)
@@ -528,7 +529,7 @@ pPartial:
 	STOS_B
 	DEC_L	(ECX)
 	MOV_W	(CONST(0x0f02), AX)
-	OUT1_W	(DX)
+	OUT_W
 	MOV_L	(fill, EAX)
 pPartial1:
 	SUB_L	(ECX, EBX)
@@ -547,7 +548,7 @@ pPartial2:
 	INC_B	(AL)
 	MOV_B	(AL, CONTENT(segment))
 	MOV_W	(CONST(0x3cd), DX)
-	OUT1_B	(DX)
+	OUT_B
 
 	MOV_L	(fill, EAX)
 	MOV_L	(EBX, ECX)
@@ -566,7 +567,7 @@ pPartial4:
 	CMP_W	(CONST(0x0f02), AX)
 	JE	(pPartial5)
 	MOV_W	(CONST(0x3c4), DX)
-	OUT1_W	(DX)
+	OUT_W
 	MOV_L	(fill, EAX)
 	MOV_B	(AL, REGIND(EDI))
 pPartial5:
@@ -577,9 +578,9 @@ pPartial5:
 
 	MOV_W	(CONST(0x3c4), DX)
 	MOV_W	(CONST(0x0f02), AX)
-	OUT1_W	(DX)
+	OUT_W
 	MOV_W	(CONST(0x0c04), AX)
-	OUT1_W	(DX)
+	OUT_W
 done:
 	POP_L	(EBX)
 	POP_L	(ESI)
@@ -592,7 +593,7 @@ return:
 pMR:
 	MOV_W	(CONTENT(rMask), AX)
 	MOV_W	(CONST(0x3c4), DX)
-	OUT1_W	(DX)
+	OUT_W
 
 	MOV_L	(fill, EAX)
 	MOV_L	(CONTENT(allowance), EBX)
@@ -610,7 +611,7 @@ pMR1:
 pLMR:
 	MOV_W	(CONTENT(rMask), AX)
 	MOV_W	(CONST(0x3c4), DX)
-	OUT1_W	(DX)
+	OUT_W
 
 	MOV_L	(fill, EAX)
 	MOV_L	(CONTENT(allowance), EBX)
@@ -626,7 +627,7 @@ pLMR1:
 pLM:
 	MOV_W	(CONTENT(lMask), AX)
 	MOV_W	(CONST(0x3c4), DX)
-	OUT1_W	(DX)
+	OUT_W
 
 	MOV_L	(fill, EAX)
 	MOV_L	(CONTENT(allowance), EBX)
@@ -643,7 +644,7 @@ pLM1:
 pM:
 	MOV_W	(CONST(0x0f02), AX)
 	MOV_W	(CONST(0x3c4), DX)
-	OUT1_W	(DX)
+	OUT_W
 
 	MOV_L	(fill, EAX)
 	MOV_L	(CONTENT(mCount), EBX)

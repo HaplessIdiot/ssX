@@ -1,5 +1,5 @@
 /* $XConsortium: Xtranssock.c,v 1.34 95/01/12 18:25:25 kaleb Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.10 1995/01/25 10:46:15 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.11 1995/01/28 15:44:19 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -130,7 +130,8 @@ from the X Consortium.
 #undef SO_DONTLINGER
 #endif
 
-#ifdef __EMX__
+#if defined(__EMX__)
+#if defined(NOT_EMX09A)
 static int IBMsockInit = 0;
 #define SocketInitOnce()\
     if (!IBMsockInit) {\
@@ -147,10 +148,13 @@ static int IBMsockInit = 0;
 #define close soclose
 #undef ioctl
 #define ioctl sockioctl
+#else
+#define SocketInitOnce() /**/
+#endif
+/* this is still not there */
 #define SOCKET int
 #else
 /* others don't need this */
-#define SocketInitOnce() /**/
 #endif
 
 /*
@@ -1560,10 +1564,7 @@ int ret;
     PRMSG (2,"TRANS(SocketRead) (%d,%x,%d)\n", ciptr->fd, buf, size);
 
 #if defined(WIN32) || defined(__EMX__)
-    ret = recv ((SOCKET)ciptr->fd, buf, size, 0);
-printf("recv: return = %d\n",ret);
-if (ret==-1) psock_errno("read");
-return ret;
+    return recv ((SOCKET)ciptr->fd, buf, size, 0);
 #else
     return read (ciptr->fd, buf, size);
 #endif /* WIN32 */

@@ -70,6 +70,9 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 
 #ifndef OPEN_MAX
+#ifdef __EMX__
+#define OPEN_MAX 256
+#else
 #ifdef SVR4
 #define OPEN_MAX 128
 #else
@@ -79,6 +82,7 @@ in this Software without prior written authorization from the X Consortium.
 #define OPEN_MAX NOFILE
 #else
 #define OPEN_MAX NOFILES_MAX
+#endif
 #endif
 #endif
 #endif

@@ -1,5 +1,5 @@
 /* $XConsortium: xhost.c,v 11.62 94/04/17 20:23:18 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xhost/xhost.c,v 3.0 1994/04/28 12:45:28 dawes Exp $ */
 /*
 
 Copyright (c) 1985, 1986, 1987  X Consortium
@@ -187,7 +187,9 @@ main(argc, argv)
 #ifdef DNETCONN
 	setnodeent(1);		/* keep the database accessed */
 #endif
+#ifndef __EMX__
 	sethostent(1);		/* don't close the data base each time */
+#endif
 	list = XListHosts(dpy, &nhosts, &enabled);
 	if (enabled)
 	    printf ("access control enabled, only authorized clients can connect\n");
@@ -228,7 +230,9 @@ main(argc, argv)
 		    printf("\n");
 	    }
 	    free(list);
+#ifndef __EMX__
 	    endhostent();
+#endif
 	}
 	exit(0);
     }

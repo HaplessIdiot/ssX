@@ -1,5 +1,5 @@
 /* $XConsortium: Xlib.h,v 11.237 94/09/01 18:44:49 kaleb Exp $ */
-/* $XFree86: xc/lib/X11/Xlib.h,v 3.2 1994/09/17 13:44:15 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xlib.h,v 3.3 1995/02/12 02:32:25 dawes Exp $ */
 /* 
 
 Copyright (c) 1985, 1986, 1987, 1991  X Consortium
@@ -72,8 +72,12 @@ in this Software without prior written authorization from the X Consortium.
 #ifndef X_WCHAR
 #include <stddef.h>
 #else
+#ifdef __EMX__
+#include <stdlib.h>
+#else
 /* replace this with #include or typedef appropriate for your system */
 typedef unsigned long wchar_t;
+#endif
 #endif
 
 typedef char *XPointer;

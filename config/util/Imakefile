@@ -1,9 +1,11 @@
 XCOMM $XConsortium: Imakefile,v 1.8 94/03/29 15:54:11 gildea Exp $
-XCOMM $XFree86: xc/config/util/Imakefile,v 3.2 1994/11/27 07:02:04 dawes Exp $
+XCOMM $XFree86: xc/config/util/Imakefile,v 3.3 1994/12/17 09:36:53 dawes Exp $
 #if UseCCMakeDepend
 MDEP_PROG = makedepend
 #endif
+#ifndef OS2Architecture
 GCCMDEP_PROG = gccmakedep
+#endif
          PROGRAMS = xmkmf $(MDEP_PROG) $(GCCMDEP_PROG) mergelib
           DEPLIBS =
   EXTRA_LIBRARIES =
@@ -19,7 +21,9 @@ GCCCMD = gcc
 CppScriptTarget(xmkmf,xmkmf.cpp,-DCONFIGDIRSPEC='"'"-I$(CONFIGDIR)"'"',$(ICONFIGFILES))
 CppScriptTarget(makedepend,mdepend.cpp,-DPREPROC='"'"$(PREPROCESSCMD)"'"',$(ICONFIGFILES))
 CppScriptTarget(mergelib,mergelib.cpp,"-DARCMD=$(AR)" "-DRANLIB=$(RANLIB)",$(ICONFIGFILES))
+#ifndef OS2Architecture
 CppScriptTarget(gccmakedep,gccmdep.cpp,-DCCCMD='"'"$(GCCCMD)"'"' -DRMCMD='"'"$(RM)"'"' -DLNCMD='"'"$(LN)"'"' -DMVCMD='"'"$(MV)"'"',$(ICONFIGFILES))
+#endif
 
 #if HasSymLinks
 #if CrossCompiling
@@ -49,4 +53,6 @@ InstallNamedProg(indir.cmd,indir.cmd,$(BINDIR))
 InstallNamedProg(os2inst.cmd,os2inst.cmd,$(BINDIR))
 #endif
 InstallNamedProg(mergelib,mergelib,$(BINDIR))
+#ifndef OS2Architecture
 InstallNamedProg(gccmakedep,gccmakedep,$(BINDIR))
+#endif

@@ -1,5 +1,5 @@
 /* $XConsortium: Xtrans.c,v 1.28 94/12/01 16:30:09 kaleb Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.5 1994/11/30 20:34:38 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.6 1995/01/12 05:54:15 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -105,6 +105,9 @@ Xtransport_table Xtransports[] = {
 #endif /* !LOCALCONN */
     &TRANS(SocketUNIXFuncs),	TRANS_SOCKET_UNIX_INDEX,
 #endif /* UNIXCONN */
+#if defined(OS2PIPECONN)
+    &TRANS(OS2LocalFuncs),	TRANS_LOCAL_LOCAL_INDEX,
+#endif /* OS2PIPECONN */
 #if defined(LOCALCONN)
     &TRANS(LocalFuncs),		TRANS_LOCAL_LOCAL_INDEX,
     &TRANS(PTSFuncs),		TRANS_LOCAL_PTS_INDEX,

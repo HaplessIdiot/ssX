@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
 XCOMM $XConsortium: Imake.tmpl,v 1.224 94/12/27 03:57:50 gildea Exp $
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.8 1995/01/25 10:42:43 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.9 1995/03/04 05:48:24 dawes Exp $
 XCOMM
 
 /*
@@ -759,6 +759,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #ifndef CCsuf
 #define CCsuf cxx
+#endif
+#ifndef SHsuf
+#define SHsuf sh
 #endif
 #ifndef ManSuffix
 #define ManSuffix	n		/* use just one tab or cpp will die */

@@ -2,7 +2,7 @@
  * This script serves as a helper cmd file for imake. Install this in
  * the path just like imake itself.
  *
- * $XFree86$ */
+ * $XFree86: xc/config/imake/imakesvc.cmd,v 3.0 1994/12/17 09:33:44 dawes Exp $ */
  */
 '@echo off'
 call RxFuncAdd 'SysFileDelete', 'RexxUtil', 'SysFileDelete'
@@ -82,6 +82,15 @@ SELECT
       /* imakesvc 8 arg */
       SAY SUBWORD(TRANSLATE(all,'  ','222c'x),2)
    END
+   WHEN code=9 THEN DO
+      /* imakesvc 9 dst.c incl.h src.c */
+      dst = TRANSLATE(WORD(all,2),'\','/')
+      src = TRANSLATE(WORD(all,4),'\','/')
+      CALL SysFileDelete(dst)
+      CALL LINEOUT dst,'#include "'WORD(all,3)'"'
+      CALL LINEOUT dst,'#include "'src'"'
+      CALL LINEOUT dst 
+   END
    OTHERWISE NOP
 END
 RETURN
@@ -100,7 +109,8 @@ RETURN pfx
 
 exists:
 'DIR 'arg(1)' > nul 2>nul'
-RETURN rc
+IF rc = 0 THEN return 0
+RETURN 1
 
 discard: PROCEDURE
 arg rec files

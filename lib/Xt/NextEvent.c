@@ -1,5 +1,5 @@
 /* $XConsortium: NextEvent.c,v 1.145 94/10/10 18:59:29 kaleb Exp $ */
-/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.4 1994/10/20 06:06:11 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.5 1995/01/12 05:56:10 dawes Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -69,9 +69,7 @@ extern int errno;
 #endif
 
 #ifdef __EMX__
-#define BSD_SELECT
 #include <sys/time.h>
-#include <sys/select.h>
 #endif
 
 #ifdef MINIX

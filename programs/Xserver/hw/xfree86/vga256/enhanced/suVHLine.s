@@ -1,4 +1,5 @@
 /* $XConsortium: suVHLine.s,v 1.2 94/03/29 11:19:22 dpw Exp $ */
+/* $XFree86$ */
 /*******************************************************************************
 			Copyright 1992, 1993 by Glenn G. Lai 
 
@@ -82,7 +83,7 @@ windowV:
 	MOV_L	(EAX, ECX)
 	SHR_L	(CONST(16), EAX)
 	MOV_L	(CONST(0x3cd), EDX)
-	OUT1_B	(DX)
+	OUT_B
 	AND_L	(CONST(0xffff), ECX)
 	ADD_L	(CONTENT(GLNAME(vgaWriteBottom)), ECX)
 	MOV_L	(REGOFF(8,ESP), EAX)
@@ -114,7 +115,7 @@ moreThanOnePoint:
 	MOV_L	(len, ECX)
 wVLoop:
 	MOV_L	(CONST(0x3cd), EDX)
-	OUT1_B	(DX)
+	OUT_B
 
 	XOR_L	(EDX, EDX)
 	MOV_L	(CONTENT(speedUpTop), EAX)
@@ -203,7 +204,7 @@ windowH:
 	MOV_L	(EAX, ECX)
 	SHR_L	(CONST(16), EAX)
 	MOV_W	(CONST(0x3cd), DX)
-	OUT1_B	(DX)
+	OUT_B
 	AND_L	(CONST(0xffff), ECX)
 	ADD_L	(CONTENT(GLNAME(vgaWriteBottom)), ECX)
 	MOV_L	(REGOFF(8,ESP), EAX)
@@ -222,7 +223,7 @@ windowH8:
 	SHR_L	(CONST(16), EAX)
 	MOV_B	(AL, CONTENT(segment))
 	MOV_W	(CONST(0x3cd), DX)
-	OUT1_B	(DX)
+	OUT_B
 
 	AND_L	(CONST(0xffff), EDI)
 	ADD_L	(CONTENT(GLNAME(vgaWriteBottom)), EDI)
@@ -262,7 +263,7 @@ windowH5:
 	MOV_B	(CONTENT(segment), AL)
 	INC_B	(AL)
 	MOV_L	(CONST(0x3cd), EDX)
-	OUT1_B	(DX)
+	OUT_B
 	MOV_L	(REGOFF(12,ESP), EAX)
 	SUB_L	(CONST(0x10000), EDI)
 	SHR_L	(CONST(1), ECX)
@@ -338,23 +339,23 @@ pMode:
 /***************************/
 	MOV_W	(CONST(0x3c4), DX)
 	MOV_W	(CONST(0x0604), AX )
-	OUT1_W	(DX)
+	OUT_W
 	MOV_W	(CONST(0x3ce), DX)
 	MOV_W	(CONST(0x0001), AX)
-	OUT1_W	(DX)
+	OUT_W
 	MOV_W	(CONST(0x0003), AX)
-	OUT1_W	(DX)
+	OUT_W
 	MOV_W	(CONST(0x4005), AX)
-	OUT1_W	(DX)
+	OUT_W
 	MOV_W	(CONST(0xff08), AX)
-	OUT1_W	(DX)
+	OUT_W
 /***************************/
 	MOV_L	(fill, EBX)
 	MOV_L 	(dst, EDI)
 	MOV_L	(EDI, EAX)
 	SHR_L	(CONST(18), EAX)
 	DEC_W	(DX)
-	OUT1_B	(DX)
+	OUT_B
 	MOV_W	(CONST(0x3c4), DX)
 
 	AND_L	(CONST(0x3ffff), EDI)
@@ -369,13 +370,13 @@ pMode:
 	JZ	(pMode1)
 
 	MOV_W	(REGDIS(lMaskTable,ESI,2), AX)
-	OUT1_W	(DX)
+	OUT_W
 	SUB_L	(ESI, ECX)
 	MOV_B	(BL, REGIND(EDI))
 	INC_L	(EDI)
 pMode1:
 	MOV_W	(CONST(0x0f02), AX)
-	OUT1_W	(DX)
+	OUT_W
 
 	MOV_L	(EBX, EAX)
 	MOV_L	(ECX, ESI)
@@ -396,13 +397,13 @@ pMode3:
 	SHL_L	(CONST(1), ESI)
 	JZ	(pMode4)
 	MOV_W	(rMaskTable(ESI), AX)
-	OUT1_W	(DX)
+	OUT_W
 	MOV_B	(BL, REGIND(EDI))
 	MOV_W	(CONST(0x0f02), AX)
-	OUT1_W	(DX)
+	OUT_W
 pMode4:
 	MOV_W	(CONST(0x0c04), AX)
-	OUT1_W	(DX)
+	OUT_W
 npDone:
 	POP_L 	(EBX)
 	POP_L 	(ESI)

@@ -1,14 +1,16 @@
 /* $XConsortium: xf86_OSlib.h,v 1.7 95/01/16 13:17:55 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.12 1995/01/10 10:27:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.14 1995/01/28 17:04:16 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
- * Copyright 1992 by David Dawes <dawes@physics.su.oz.au>
+ * Copyright 1992 by David Dawes <dawes@XFree86.org>
  * Copyright 1992 by Jim Tsillas <jtsilla@damon.ccs.northeastern.edu>
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1992 by Robert Baron <Robert.Baron@ernst.mach.cs.cmu.edu>
- * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
+ * Copyright 1992 by Orest Zborowski <obz@eskimo.com>
  * Copyright 1993 by Vrije Universiteit, The Netherlands
- * Copyright 1993 by David Wexelblat <dwex@goblin.org>
+ * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
+ * Copyright 1994 by Holger Veit <veit@gmd.de>
+ * Copyright 1994, 1995 by The XFree86 Project, Inc
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -35,6 +37,10 @@
 #define _XF86_OSLIB_H
 
 #include <X11/Xos.h>
+
+#ifdef __EMX__
+#define NO_INLINE
+#endif
 #include "compiler.h"
 
 #if defined(MACH386) || defined(__OSF__)
@@ -186,23 +192,12 @@ extern int errno;
 /**************************************************************************/
 /* 386BSD and derivatives,  BSD/386                                       */
 /**************************************************************************/
-#ifdef __BSD__
-# undef __BSD__
-#endif
 
 #if defined(__386BSD__) && (defined(__FreeBSD__) || defined(__NetBSD__))
 # undef __386BSD__
 #endif
 
-/*
- * Use __BSD__ instead of CSRG_BASED to avoid excessive warnings
- * from makedepend (because makedepend doesn't have __FreeBSD__ etc defined).
- */
-#if defined(__386BSD__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__bsdi__)
-#define __BSD__
-#endif
-
-#ifdef __BSD__
+#ifdef CSRG_BASED
 # include <sys/ioctl.h>
 # include <signal.h>
 
@@ -238,7 +233,7 @@ extern int errno;
 #   endif /* SYSCONS_SUPPORT */
 #   if defined(PCVT_SUPPORT)
 #    if !defined(SYSCONS_SUPPORT)
-#     /* no syscons, so include pcvt specific header file */
+      /* no syscons, so include pcvt specific header file */
 #     if defined(__FreeBSD__) || defined(__NetBSD__)
 #      include <machine/pcvt_ioctl.h>
 #     else
@@ -283,8 +278,7 @@ extern int errno;
 #   define NULL 0
 # endif
 
-#undef __BSD__
-#endif /* __BSD__ */
+#endif /* CSRG_BASED */
 
 /**************************************************************************/
 /* Mach and OSF/1                                                         */
@@ -372,6 +366,41 @@ extern capability iopcap;
 # define MOUSE_PROTOCOL_IN_KERNEL
 
 #endif /* AMOEBA */
+
+/**************************************************************************/
+/* OS/2                                                                   */
+/**************************************************************************/
+/* currently OS/2 with EMX/GCC compiler only */
+#if defined(__EMX__)
+# include <signal.h>
+# include <errno.h>
+# include <sys/stat.h>
+
+/* I would have liked to have this included here always, but
+ * it causes clashes for BYTE and BOOL with Xmd.h, which is too dangerous. 
+ * So I'll include it in place where I know it does no harm.
+ */
+#if defined(I_NEED_OS2_H)
+# undef BOOL
+# undef BYTE
+# include <os2.h>
+#endif
+
+  /* keyboard types */
+# define KB_84                   1
+# define KB_101                  2
+/* could detect more keyboards */
+# define KB_OTHER                3
+
+  /* LEDs */
+#  define LED_CAP 0x40
+#  define LED_NUM 0x20
+#  define LED_SCR 0x10
+
+  /* mouse driver */
+# define MOUSE_PROTOCOL_IN_KERNEL
+
+#endif
 
 /**************************************************************************/
 /* Generic                                                                */

@@ -1,3 +1,10 @@
+XFree86 3.1.1c (12 March 1995)
+ 32. Updates for OS/2, including work on the X server support (Holger Veit).
+ 31. SVGA driver for the ARK 1000PV and 2000PV chipsets (Harm Hanemaayer).
+ 30. Add predefs to makedepend for FreeBSD and NetBSD.  This allows
+     xf86_OSlib.h to be cleaned up a little.
+ 29. Fix config rules for Sentinel build (David Wexelblat).
+
 XFree86 3.1.1b (8 March 1995)
  28. Fix for byte swapped extension problem in lbxproxy (Dave Lemke).
  27. Support for Unixware 2.0 (Robin Cutshaw and Kaleb Keithley).

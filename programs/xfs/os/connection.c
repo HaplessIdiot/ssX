@@ -1,5 +1,5 @@
 /* $XConsortium: connection.c,v 1.29 94/04/17 19:56:05 mor Exp $ */
-/* $XFree86: xc/programs/xfs/os/connection.c,v 3.2 1994/10/20 06:15:32 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/connection.c,v 3.3 1995/03/08 04:58:26 dawes Exp $ */
 /*
  * handles connections
  */
@@ -77,12 +77,14 @@ in this Software without prior written authorization from the X Consortium.
 #ifndef MINIX
 #include	<sys/param.h>
 #include	<sys/socket.h>
+#ifndef __EMX__
 #include	<sys/uio.h>
+#endif
 #endif
 #include	<signal.h>
 
 #ifdef __EMX__
-#define _NFILE  NOFILE
+#define _NFILE OPEN_MAX
 #endif
 
 #include	"FS.h"

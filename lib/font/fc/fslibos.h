@@ -1,4 +1,5 @@
 /* $XConsortium: fslibos.h,v 1.14 94/04/17 20:17:41 mor Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation
@@ -58,7 +59,7 @@ from the X Consortium.
 #endif
 #endif
 #ifndef OPEN_MAX
-#ifdef SVR4
+#if defined(SVR4) || defined(__EMX__)
 #define OPEN_MAX 256
 #else
 #include <sys/param.h>

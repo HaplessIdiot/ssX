@@ -1,5 +1,5 @@
 /* $XConsortium: XlibInt.c,v 11.230 94/11/29 00:06:42 gildea Exp $ */
-/* $XFree86: xc/lib/X11/XlibInt.c,v 3.1 1994/10/20 06:03:21 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlibInt.c,v 3.2 1995/01/12 05:55:36 dawes Exp $ */
 /*
 
 Copyright (c) 1985, 1986, 1987  X Consortium
@@ -88,11 +88,7 @@ xthread_t (*_Xthread_self_fn)() = NULL;
 #define ETEST() (WSAGetLastError() == WSAEWOULDBLOCK)
 #else
 #if defined(EAGAIN) && defined(EWOULDBLOCK)
-#ifdef __EMX__
-#define ETEST() (sock_errno() == EAGAIN || sock_errno() == EWOULDBLOCK)
-#else
 #define ETEST() (errno == EAGAIN || errno == EWOULDBLOCK)
-#endif
 #else
 #ifdef EAGAIN
 #define ETEST() (errno == EAGAIN)
@@ -106,7 +102,7 @@ xthread_t (*_Xthread_self_fn)() = NULL;
 #define ESET(val) WSASetLastError(val)
 #else
 #ifdef __EMX__
-#define ECHECK(err) (sock_errno() == err)
+#define ECHECK(err) (errno == err)
 #define ESET(val)
 #else
 #define ECHECK(err) (errno == err)
@@ -2696,11 +2692,7 @@ _XDefaultIOError (dpy)
 #ifdef WIN32
 			WSAGetLastError(), strerror(WSAGetLastError()),
 #else
-#ifdef __EMX__
-			sock_errno(), "socket error",
-#else
 			errno, strerror (errno),
-#endif
 #endif
 			DisplayString (dpy));
 	    (void) fprintf (stderr, 
@@ -3265,7 +3257,13 @@ char *__XOS2RedirRoot(char *fname)
      * because not all file opens respect them.
      */
     static char redirname[300]; /* enough for long filenames */
-    char *root = (char*)getenv("X11ROOT");
+    char *root;
+
+    /* if name does not start with /, assume it is not root-based */
+    if (fname==0 || !(fname[0]=='/' || fname[0]=='\\'))
+	return fname;
+
+    root = (char*)getenv("X11ROOT");
     if (root==0 || 
 	(fname[1]==':' && tolower(fname[0]) >= 'a' && tolower(fname[0] <= 'z') ||
         (strlen(fname)+strlen(root)+2) > 300))

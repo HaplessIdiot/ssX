@@ -1,5 +1,5 @@
 /* $XConsortium: io.c,v 1.16 94/04/17 19:56:06 mor Exp $ */
-/* $XFree86: xc/programs/xfs/os/io.c,v 3.1 1994/06/13 14:55:58 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/io.c,v 3.2 1994/06/28 12:33:03 dawes Exp $ */
 /*
  * i/o functions
  */
@@ -55,7 +55,9 @@ in this Software without prior written authorization from the X Consortium.
 #include	<sys/types.h>
 #ifndef MINIX
 #include	<sys/param.h>
+#ifndef __EMX__
 #include	<sys/uio.h>
+#endif
 #endif
 
 #include	"FSproto.h"

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.4 94/11/21 18:30:38 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/XIE/mixie/Imakefile,v 3.1 1994/12/02 05:44:38 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/XIE/mixie/Imakefile,v 3.2 1995/01/28 15:45:18 dawes Exp $
 #include <Server.tmpl>
 
 #define	IHaveSubdirs
@@ -14,7 +14,14 @@ OBJS = control/?*.o fax/?*.o import/?*.o jpeg/?*.o process/?*.o export/?*.o
 DONES = control/DONE fax/DONE import/DONE jpeg/DONE process/DONE export/DONE 
 #endif
 
+#ifdef OS2Architecture
+all:: DONE
+	cp $(OBJS) .
+
+NormalDepLibraryTarget(mixie,$(SUBDIRS) $(DONES),?*.o)
+#else
 NormalDepLibraryTarget(mixie,$(SUBDIRS) $(DONES),$(OBJS))
+#endif
 
 ForceSubdirs($(SUBDIRS))
 

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.6 94/03/29 16:21:51 matt Exp $
-XCOMM $XFree86: xc/config/imake/Imakefile,v 3.0 1994/05/21 23:39:52 dawes Exp $
+XCOMM $XFree86: xc/config/imake/Imakefile,v 3.1 1994/10/20 06:00:34 dawes Exp $
 
 DEPLIBS = 
 
@@ -22,6 +22,9 @@ SimpleHostProgramTarget(imake)
 #else
 SimpleProgramTarget(imake)
 #endif
+#else /* OS2Architecture */
+all::
+
 #endif
 
 clean::

@@ -1,4 +1,5 @@
-/* $XConsortium: suBitBlt2.s,v 1.2 94/03/29 11:19:16 dpw Exp $ */
+/* $XConsortium: suBBlt2.s,v 1.1 95/01/26 15:07:11 kaleb Exp $ */
+/* $XFree86$ */
 /*******************************************************************************
 			Copyright 1992 by Glenn G. Lai 
 
@@ -144,7 +145,7 @@ pwLoop:
 	MOV_B	(AL, CONTENT(segment))
 pwLoop3:
 	MOV_W	(CONST(0x3cd), DX)
-	OUT1_B	(DX)
+	OUT_B
 pwLoop1:
 	MOV_L	(CONTENT(speedUpTop), EAX)
 	SUB_L	(EDI, EAX)
@@ -255,7 +256,7 @@ pwPartial2:
 	INC_B	(AL)
 	MOV_B	(AL, CONTENT(segment))
 	MOV_W	(CONST(0x3cd), DX)
-	OUT1_B	(DX)
+	OUT_B
 
 	MOV_L	(EBX, ECX)
 	SHR_L	(CONST(1), ECX)
@@ -422,7 +423,7 @@ wpLoop:
 	MOV_B	(AL, CONTENT(segment))
 wpLoop3:
 	MOV_W	(CONST(0x3cd), DX)
-	OUT1_B	(DX)
+	OUT_B
 wpLoop1:
 	MOV_L	(CONTENT(speedUpTop), EAX)
 	SUB_L	(ESI, EAX)
@@ -476,7 +477,7 @@ wpPartial2:
 	ADD_B	(CONST(16), AL)
 	MOV_B	(AL, CONTENT(segment))
 	MOV_W	(CONST(0x3cd), DX)
-	OUT1_B	(DX)
+	OUT_B
 
 	MOV_L	(EBX, ECX)
 	SHR_L	(CONST(1), ECX)

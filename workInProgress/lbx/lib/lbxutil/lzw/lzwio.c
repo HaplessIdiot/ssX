@@ -24,6 +24,7 @@
  */
 
 /* $XConsortium: lzwio.c,v 1.4 94/03/08 16:58:45 dpw Exp $ */
+/* $XFree86$ */
 
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>
@@ -32,7 +33,9 @@
 extern int errno;
 #endif
 #include <sys/param.h>
+#ifndef __EMX__
 #include <sys/uio.h>
+#endif
 #include "lbxbufstr.h"
 
 #ifndef NULL

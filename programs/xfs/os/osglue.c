@@ -1,5 +1,5 @@
 /* $XConsortium: osglue.c,v 1.10 94/04/17 19:56:07 dpw Exp $ */
-/* $XFree86: xc/programs/xfs/os/osglue.c,v 3.0 1994/10/20 06:15:34 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/osglue.c,v 3.1 1995/03/08 04:58:30 dawes Exp $ */
 /*
 Copyright (c) 1987  X Consortium
 
@@ -62,7 +62,7 @@ in this Software without prior written authorization from the X Consortium.
 #define  XK_LATIN1
 #include <X11/keysymdef.h>
 #ifdef __EMX__
-#define _NFILE NOFILE
+#define _NFILE 256
 #endif
 
 Bool        drone_server = FALSE;

@@ -27,6 +27,11 @@ all: compress
 compress: USERMEM ${LIBC}
 	${CC} ${CFLAGS} -o $@ $@.c
 
+#this one is for OS/2, change location of BINMODE
+BINMODE=/emx/lib/binmode.o
+compress.exe: compress.c
+	gcc -O -o compress.exe compress.c ${BINMODE}
+
 # USERMEM may have to be set by hand.  It should contain the amount of
 # available user memory in bytes.  Set it to zero, for physical memory
 # less than 1 Meg.

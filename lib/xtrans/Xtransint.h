@@ -1,5 +1,5 @@
 /* $XConsortium: Xtransint.h,v 1.21 94/05/10 11:08:46 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.4 1994/11/30 20:34:39 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.5 1994/12/17 09:42:03 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -121,7 +121,11 @@ extern int  errno;		/* Internal system error number. */
 #ifdef NOFILE
 #define OPEN_MAX NOFILE
 #else
+#ifndef __EMX__
 #define OPEN_MAX NOFILES_MAX
+#else
+#define OPEN_MAX 256
+#endif
 #endif
 #endif
 #endif
