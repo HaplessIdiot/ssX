@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Command.c,v 1.12 2001/01/17 19:42:26 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Command.c,v 1.13 2001/12/14 19:54:39 dawes Exp $ */
 
 /*
  * Command.c - Command button widget
@@ -512,9 +512,6 @@ XawCommandSetValues(Widget current, Widget request, Widget cnew,
     Boolean redisplay = False;
 
     if (oldcbw->core.sensitive != cbw->core.sensitive && !cbw->core.sensitive) {
-	if (cbw->command.set)
-	    XawCommandToggle(cnew);
-	cbw->command.set = False;
 	cbw->command.highlighted = HighlightNone;
 	redisplay = True;
     }
