@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.10 1996/11/18 13:08:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.11 1996/12/19 10:01:06 dawes Exp $ */
 /*
  * Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
  *
@@ -39,8 +39,8 @@
 
 #define NO_COMPILER_H_EXTRAS
 #include "xf86Procs.h"
-#include "xf86_Config.h"
 #include "xf86_OSlib.h"
+#include "xf86_Config.h"
 
 #include "tcl.h"
 #define XF86SETUP_NO_FUNC_RENAME

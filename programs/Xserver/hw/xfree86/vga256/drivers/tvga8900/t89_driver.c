@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.50 1996/11/20 14:01:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.51 1996/12/12 09:17:01 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -221,7 +221,6 @@ TGUISetClock(no)
 	int p, q, r, s; 
 	int startn, endn;
 	int endm;
-	int startk = 1, endk = 1;
 	unsigned char temp;
 
 	p = q = r = s = 0;
@@ -246,12 +245,7 @@ TGUISetClock(no)
 	if (vgaBitsPerPixel == 32)
 		freq *= 3;
 
-	if (freq < 16000)
-		startk = 2;
-	else if (freq > 75000)
-		endk = 2;
-	
-	for (k=startk;k<endk;k++)
+	for (k=1;k<3;k++)
 	  for (n=startn;n<endn;n++)
 	    for (m=1;m<endm;m++)
 	    {

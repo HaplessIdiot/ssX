@@ -1,3 +1,11 @@
+XFree86 3.2h (20 December 1996)
+ 117. Fix a "void * used in arithmetic" warning in lnx_video.c.
+ 116. Allow the XInput "AlwaysCore" feature to be controlled dynamically
+      via an "integer feedback" (Frederic Lepied).
+ 115. Fix TGUI clock programming problems (Alan Hourihane).
+ 114. Fix clock scaling with ClockChip "cirrus" (Harm Hanemaayer).
+ 113. Fix some compile problems on SVR4 (Takaaki Nomura).
+
 XFree86 3.2g (19 December 1996)
  112. Separate the function prototypes out of xf86_OSlib.h (Stuart Anderson).
  111. Fix for change 97 (which was causing a server startup problem)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.10 1996/11/24 09:56:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.11 1996/12/09 11:53:09 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -112,8 +112,10 @@ unsigned long Size;
 			   strerror(errno));
 	}
 	/* This requirers linux-0.99.pl10 or above */
-	base = (pointer)mmap((caddr_t)0, JENSEN_SHIFT(Size), PROT_READ|PROT_WRITE,
-			     MAP_SHARED, fd, (off_t)(JENSEN_SHIFT(Base) + BUS_BASE));
+	base = (pointer)mmap((caddr_t)0, JENSEN_SHIFT(Size),
+			     PROT_READ|PROT_WRITE,
+			     MAP_SHARED, fd,
+			     (off_t)(JENSEN_SHIFT((off_t)Base) + BUS_BASE));
 #endif
 	close(fd);
 	if ((long)base == -1)

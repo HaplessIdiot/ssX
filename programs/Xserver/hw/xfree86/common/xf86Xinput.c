@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.18 1996/10/16 14:40:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.19 1996/12/18 03:12:29 dawes Exp $ */
 
 #include "Xmd.h"
 #include "XI.h"
@@ -78,10 +78,25 @@ static SymTabRec XinputTab[] = {
 
 /***********************************************************************
  *
+ * xf86AlwaysCoreControl --
+ *	
+ *	Control proc for the integer feedback that controls the always
+ * core feature.
+ *
+ ***********************************************************************
+ */
+static void
+xf86AlwaysCoreControl(DeviceIntPtr	device,
+		      IntegerCtrl	*control)
+{
+}
+
+/***********************************************************************
+ *
  * Core devices functions --
  *	
  *	Test if device is the core device by checking the
- * XI86_ALWAYS_CORE flag and the inputInfo struct.
+ * value of always core feedback and the inputInfo struct.
  *
  ***********************************************************************
  */
@@ -90,7 +105,8 @@ xf86IsCorePointer(DeviceIntPtr	device)
 {
     LocalDevicePtr	local = (LocalDevicePtr) device->public.devicePrivate;
     
-    return((local->flags & XI86_ALWAYS_CORE) ||
+    return((local->always_core_feedback &&
+	    local->always_core_feedback->ctrl.integer_displayed) ||
 	   (device == inputInfo.pointer));
 }
 
@@ -250,6 +266,29 @@ xf86AddDeviceAssoc(DeviceAssocPtr	assoc)
 
 /***********************************************************************
  *
+ * xf86XinputFinalizeInit --
+ * 
+ *	Create and initialize an integer feedback to control the always
+ * core feature.
+ *
+ ***********************************************************************
+ */
+void
+xf86XinputFinalizeInit(DeviceIntPtr	dev)
+{
+    LocalDevicePtr        local = (LocalDevicePtr)dev->public.devicePrivate;
+    
+    if (InitIntegerFeedbackClassDeviceStruct(dev, xf86AlwaysCoreControl) == FALSE) {
+	ErrorF("Unable to init integer feedback for always core feature\n");
+    } else {
+	local->always_core_feedback = dev->intfeed;
+	dev->intfeed->ctrl.integer_displayed = (local->flags & XI86_ALWAYS_CORE) ? 1 : 0;
+    }
+}
+
+
+/***********************************************************************
+ *
  * InitExtInput --
  * 
  *	Initialize any extended devices we might have. It is called from
@@ -277,7 +316,10 @@ InitExtInput()
         FatalError("Too many input devices");
       localDevices[i]->atom = MakeAtom(localDevices[i]->name, strlen(localDevices[i]->name), TRUE);
       dev->public.devicePrivate = (pointer) localDevices[i];
-      localDevices[i]->dev = dev;
+      localDevices[i]->dev = dev;      
+
+      xf86XinputFinalizeInit(dev);
+      
       RegisterOtherDevice(dev);
       ErrorF("%s Adding extended device \"%s\" (type: %s)\n", XCONFIG_GIVEN,
 	     localDevices[i]->name, localDevices[i]->type_name);

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.40 1996/12/17 21:01:02 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.41 1996/12/19 10:02:30 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -45,8 +45,6 @@
 #endif
 #endif
 
-#include <errno.h>
-
 #if !defined(AMOEBA) && !defined(MINIX)
 #define _NEED_SYSI86
 #endif
@@ -58,6 +56,11 @@
 
 #include "xf86.h"
 #include "xf86Priv.h"
+#if 0
+#include <errno.h>
+#else
+#include "xf86_OSlib.h"
+#endif
 #include "xf86_HWlib.h"
 #include "vga.h"
 #ifdef PC98_EGC
@@ -534,7 +537,7 @@ setExternClock(clock)
         {
           char *progname, clockarg[8], clockindex[3];
 
-          if ((progname = rindex(vga256InfoRec.clockprog, '/')))
+          if ((progname = strrchr(vga256InfoRec.clockprog, '/')))
             progname++;
           else
             progname = vga256InfoRec.clockprog;

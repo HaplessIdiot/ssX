@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.18 1996/08/26 10:49:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.19 1996/10/16 14:40:51 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -606,7 +606,8 @@ xf86MouseAllocate()
     local->atom = 0;
     local->dev = NULL;
     local->private = mouse;
-
+    local->always_core_feedback = 0;
+    
     mouse->device = NULL;
     mouse->mseFd = -1;
     mouse->mseDevice = "";

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Dl.c,v 3.7 1996/10/03 08:34:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Dl.c,v 3.8 1996/10/06 13:16:05 dawes Exp $ */
 
 /*    
  * Copyright 1995 by Frederic Lepied, France. <fred@sugix.frmug.fr.net>
@@ -119,7 +119,7 @@ xf86LoadModule(const char *	file,
 	int l;
 
 	if (file[0] == '/') {
-	    module_name = rindex(file, '/') + 1;
+	    module_name = strrchr(file, '/') + 1;
 	} else {
 	    module_name = &file[0];
 	}

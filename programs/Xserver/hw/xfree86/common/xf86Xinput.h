@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.11 1996/10/16 14:40:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.12 1996/12/18 03:12:30 dawes Exp $ */
 
 #ifndef _xf86Xinput_h
 #define _xf86Xinput_h
@@ -102,6 +102,7 @@ typedef struct _LocalDeviceRec {
     unsigned int	first;
     unsigned int	last;
     char		*type_name;
+    IntegerFeedbackPtr	always_core_feedback;
 } LocalDeviceRec, *LocalDevicePtr;
 
 typedef struct _DeviceAssocRec 
@@ -258,6 +259,13 @@ xf86GetMotionEvents(
 		    unsigned long	start,
 		    unsigned long	stop,
 		    ScreenPtr		pScreen
+#endif
+);
+
+void
+xf86XinputFinalizeInit(
+#if NeedFunctionPrototypes
+		       DeviceIntPtr	dev
 #endif
 );
 
