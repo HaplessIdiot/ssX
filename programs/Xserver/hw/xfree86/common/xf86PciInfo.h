@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.145 2003/03/18 23:08:23 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.146tsi Exp $ */
 /*
  * Copyright 1995-2002 by The XFree86 Project, Inc.
  *
@@ -89,12 +89,16 @@
 #define PCI_CHIP_QV1280			0x3033
 
 /* ATI */
+#define PCI_CHIP_RS100_4136		0x4136
+#define PCI_CHIP_RS200_4137		0x4137
 #define PCI_CHIP_R300_AD		0x4144
 #define PCI_CHIP_R300_AE		0x4145
 #define PCI_CHIP_R300_AF		0x4146
 #define PCI_CHIP_R300_AG		0x4147
 #define PCI_CHIP_MACH32			0x4158
 #define PCI_CHIP_R200_BB		0x4242
+#define PCI_CHIP_RS100_4336		0x4336
+#define PCI_CHIP_RS200_4337		0x4337
 #define PCI_CHIP_MACH64CT		0x4354
 #define PCI_CHIP_MACH64CX		0x4358
 #define PCI_CHIP_MACH64ET		0x4554
@@ -186,10 +190,6 @@
 #define PCI_CHIP_RV200_QX		0x5158
 #define PCI_CHIP_RV100_QY		0x5159
 #define PCI_CHIP_RV100_QZ		0x515A
-#define PCI_CHIP_RS100_4136             0x4136
-#define PCI_CHIP_RS100_4336             0x4336
-#define PCI_CHIP_RS200_4137             0x4137
-#define PCI_CHIP_RS200_4337             0x4337
 #define PCI_CHIP_R200_Qh		0x5168
 #define PCI_CHIP_R200_Qi		0x5169
 #define PCI_CHIP_R200_Qj		0x516A
@@ -217,14 +217,14 @@
 #define PCI_CHIP_MACH64VT		0x5654
 #define PCI_CHIP_MACH64VU		0x5655
 #define PCI_CHIP_MACH64VV		0x5656
-#define PCI_CHIP_RV280_5960             0x5960
-#define PCI_CHIP_RV280_5961             0x5961
-#define PCI_CHIP_RV280_5962             0x5962
-#define PCI_CHIP_RV280_5963             0x5963
-#define PCI_CHIP_RV280_5968             0x5968
-#define PCI_CHIP_RV280_5969             0x5969
-#define PCI_CHIP_RV280_596A             0x596A
-#define PCI_CHIP_RV280_596B             0x596B
+#define PCI_CHIP_RV280_5960		0x5960
+#define PCI_CHIP_RV280_5961		0x5961
+#define PCI_CHIP_RV280_5962		0x5962
+#define PCI_CHIP_RV280_5963		0x5963
+#define PCI_CHIP_RV280_5968		0x5968
+#define PCI_CHIP_RV280_5969		0x5969
+#define PCI_CHIP_RV280_596A		0x596A
+#define PCI_CHIP_RV280_596B		0x596B
 
 /* Avance Logic */
 #define PCI_CHIP_ALG2064		0x2064
@@ -355,14 +355,14 @@
 #define PCI_CHIP_SIS6326		0x6326
 #define PCI_CHIP_SIS7001		0x7001
 #define PCI_CHIP_SIS300			0x0300
-#define PCI_CHIP_SIS315H                0x0310
-#define PCI_CHIP_SIS315PRO              0x0325
-#define PCI_CHIP_SIS330                 0x0330
+#define PCI_CHIP_SIS315H		0x0310
+#define PCI_CHIP_SIS315PRO		0x0325
+#define PCI_CHIP_SIS330			0x0330
 #define PCI_CHIP_SIS630			0x6300
 #define PCI_CHIP_SIS540			0x5300
-#define PCI_CHIP_SIS550                 0x5315 
-#define PCI_CHIP_SIS650                 0x6325 
-#define PCI_CHIP_SIS730                 0x7300
+#define PCI_CHIP_SIS550			0x5315 
+#define PCI_CHIP_SIS650			0x6325 
+#define PCI_CHIP_SIS730			0x7300
 
 /* Hewlett-Packard */
 #define PCI_CHIP_ELROY			0x1054
