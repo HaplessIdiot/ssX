@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/Imakefile,v 1.2 1999/12/06 03:57:06 robin Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/Imakefile,v 1.3 2000/01/23 15:35:47 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -12,6 +12,7 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
 	   -I$(XF86SRC)/int10 -I$(XF86SRC)/ddc \
 	   -I$(XF86SRC)/i2c
 
+SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
 
 LibraryModuleTarget(vbe, $(OBJS))
