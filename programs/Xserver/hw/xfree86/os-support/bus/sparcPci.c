@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.7 2002/08/27 22:07:08 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.8 2002/09/16 16:55:33 tsi Exp $ */
 /*
  * Copyright (C) 2001 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -759,7 +759,7 @@ xf86AccResFromOS(resPtr pRes)
 
 #if defined(ARCH_PCI_PCI_BRIDGE)
 
-/* Definition specific to Sun's APB P2P bridge (a.k.a. Simba) */
+/* Definitions specific to Sun's APB P2P bridge (a.k.a. Simba) */
 #define APB_IO_ADDRESS_MAP	0xDE
 #define APB_MEM_ADDRESS_MAP	0xDF
 
@@ -858,7 +858,7 @@ simbaControlBridge(int bus, CARD16 mask, CARD16 value)
 			     tmp | PCI_PCI_BRIDGE_MASTER_ABORT_EN);
 	}
 
-	/* Insert emultion of other P2P controls here */
+	/* Insert emulation of other P2P controls here */
     }
 
     return (current & ~mask) | (value & mask);
