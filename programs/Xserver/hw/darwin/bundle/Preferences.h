@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.h,v 1.5 2001/05/09 07:16:19 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.h,v 1.6 2001/07/06 00:37:47 torrey Exp $ */
 
 #import <Cocoa/Cocoa.h>
 
@@ -12,7 +12,8 @@
     IBOutlet id keymapFileField;
     IBOutlet id loadKeymapFileButton;
     IBOutlet id pickKeymapFileButton;
-    IBOutlet id splashStartupHelpButton;
+    IBOutlet id modeMatrix;
+    IBOutlet id modeWindowButton;
     IBOutlet id startupHelpButton;
     IBOutlet id systemBeepButton;
     IBOutlet id mouseAccelChangeButton;
@@ -22,6 +23,7 @@
     int modifiers;
     NSMutableString *switchString;
 }
+
 - (IBAction)close:(id)sender;
 - (IBAction)pickFile:(id)sender;
 - (IBAction)saveChanges:(id)sender;
@@ -30,6 +32,7 @@
 - (BOOL)sendEvent:(NSEvent*)anEvent;
 
 - (void)awakeFromNib;
+- (void)windowWillClose:(NSNotification *)aNotification;
 
 + (void)setUseKeymapFile:(BOOL)newUseKeymapFile;
 + (void)setKeymapFile:(NSString*)newFile;
@@ -40,6 +43,8 @@
 + (void)setDockSwitch:(BOOL)newDockSwitch;
 + (void)setFakeButtons:(BOOL)newFakeButtons;
 + (void)setMouseAccelChange:(BOOL)newMouseAccelChange;
++ (void)setRootless:(BOOL)newRootless;
++ (void)setModeWindow:(BOOL)newModeWindow;
 + (void)setStartupHelp:(BOOL)newStartupHelp;
 + (void)setSystemBeep:(BOOL)newSystemBeep;
 + (void)saveToDisk;
@@ -53,6 +58,8 @@
 + (BOOL)dockSwitch;
 + (BOOL)fakeButtons;
 + (BOOL)mouseAccelChange;
++ (BOOL)rootless;
++ (BOOL)modeWindow;
 + (BOOL)startupHelp;
 + (BOOL)systemBeep;
 

@@ -3,7 +3,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.h,v 1.7 2001/05/09 07:16:19 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.h,v 1.8 2001/05/16 06:10:08 torrey Exp $ */
 
 #import <Cocoa/Cocoa.h>
 
@@ -17,7 +17,9 @@
     NSLock *serverLock;
     NSTask *clientTask;
     NSPort *signalPort;
+    BOOL serverRunning;
     BOOL serverVisible;
+    BOOL rootlessMenuBarVisible;
     BOOL appQuitting;
     UInt32 mouseState;
 
@@ -25,7 +27,9 @@
     int eventWriteFD;
 
     // Aqua interface
-    IBOutlet NSPanel *helpWindow;
+    IBOutlet NSWindow *modeWindow;
+    IBOutlet id startupModeButton;
+    IBOutlet NSWindow *helpWindow;
     IBOutlet id startupHelpButton;
     IBOutlet NSPanel *switchWindow;
 }
@@ -37,6 +41,7 @@
 - (void)getNXMouse:(NXEvent*)ev;
 + (void)append:(NSString*)value toEnv:(NSString*)name;
 
+- (void)startX;
 - (void)run;
 - (void)toggle;
 - (void)show;
@@ -49,6 +54,8 @@
 - (void)sendShowHide:(BOOL)show;
 
 // Aqua interface actions
+- (IBAction)startFullScreen:(id)sender;
+- (IBAction)startRootless:(id)sender;
 - (IBAction)closeHelpAndShow:(id)sender;
 - (IBAction)showAction:(id)sender;
 

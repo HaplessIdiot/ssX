@@ -17,9 +17,10 @@
                 keyField = id; 
                 keymapFileField = id; 
                 loadKeymapFileButton = id; 
+                modeMatrix = id; 
+                modeWindowButton = id; 
                 mouseAccelChangeButton = id; 
                 pickKeymapFileButton = id; 
-                splashStartupHelpButton = id; 
                 startupHelpButton = id; 
                 systemBeepButton = id; 
                 window = id; 
@@ -33,10 +34,21 @@
             SUPERCLASS = NSApplication; 
         }, 
         {
-            ACTIONS = {applicationWillResignActive = id; closeHelpAndShow = id; showAction = id; }; 
+            ACTIONS = {
+                closeHelpAndShow = id; 
+                showAction = id; 
+                startFullScreen = id; 
+                startRootless = id; 
+            }; 
             CLASS = Xserver; 
             LANGUAGE = ObjC; 
-            OUTLETS = {helpWindow = id; startupHelpButton = id; switchWindow = id; }; 
+            OUTLETS = {
+                helpWindow = id; 
+                modeWindow = id; 
+                startupHelpButton = id; 
+                startupModeButton = id; 
+                switchWindow = id; 
+            }; 
             SUPERCLASS = NSObject; 
         }
     ); 

@@ -3,7 +3,7 @@
 
   Quartz-specific functions and definitions
 */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.h,v 1.2 2001/04/02 05:18:50 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.h,v 1.3 2001/04/11 08:34:18 torrey Exp $ */
 
 #ifndef _QUARTZ_H
 #define _QUARTZ_H
@@ -13,6 +13,7 @@
 #include "quartzShared.h"
 #include "quartzPasteboard.h"
 
+int QuartzProcessArgument(int argc, char *argv[], int i);
 void QuartzOsVendorInit(void);
 Bool QuartzAddScreen(ScreenPtr screen);
 void QuartzGiveUp(void);

@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.27 2001/07/01 02:13:40 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.28 2001/07/06 00:37:47 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -40,9 +40,6 @@
 // Leave undefined for no safety quit.
 #undef QUARTZ_SAFETY_DELAY
 
-// Should Quartz mode default to rootless?
-#define QUARTZ_DEFAULT_ROOTLESS 0
-
 /* Fake button press/release for scroll wheel move. */
 #define SCROLLWHEELUPFAKE	4
 #define SCROLLWHEELDOWNFAKE	5
@@ -53,7 +50,7 @@ int                     darwinEventFD = -1;
 Bool                    quartz = FALSE;
 int                     quartzEventWriteFD = -1;
 int                     quartzStartClients = 1;
-int                     quartzRootless = QUARTZ_DEFAULT_ROOTLESS;
+int                     quartzRootless = -1;
 int                     quartzUseSysBeep = 0;
 int                     quartzMouseAccelChange = 1;
 int                     darwinFakeButtons = 0;
@@ -907,10 +904,17 @@ void OsVendorInit(void)
  * ddxProcessArgument --
  *  Process device-dependent command line args. Returns 0 if argument is
  *  not device dependent, otherwise Count of number of elements of argv
- *  hat are part of a device dependent commandline option.
+ *  that are part of a device dependent commandline option.
  */
 int ddxProcessArgument( int argc, char *argv[], int i )
 {
+#ifdef DARWIN_WITH_QUARTZ
+    int numDone;
+
+    if ((numDone = QuartzProcessArgument( argc, argv, i )))
+        return numDone;
+#endif
+
     if ( !strcmp( argv[i], "-screen" ) ) {
         if ( i == argc-1 ) {
             FatalError( "-screen must be followed by a number\n" );
@@ -942,55 +946,6 @@ int ddxProcessArgument( int argc, char *argv[], int i )
         ErrorF( "Using keymapping provided in %s.\n", darwinKeymapFile );
         return 2;
     }
-
-#ifdef DARWIN_WITH_QUARTZ
-
-    /* fullscreen: CoreGraphics full-screen mode
-     * rootless: Cocoa rootless mode
-     * quartz: Default, either fullscreen or rootless */
-
-    if ( !strcmp( argv[i], "-fullscreen" ) ) {
-        quartz = TRUE;
-        quartzRootless = FALSE;
-        ErrorF( "Running full screen in parallel with Mac OS X Quartz window server.\n" );
-#ifdef QUARTZ_SAFETY_DELAY
-        ErrorF( "Quitting in %d seconds if no controller is found.\n",
-                QUARTZ_SAFETY_DELAY );
-#endif
-        return 1;
-    }
-
-    if ( !strcmp( argv[i], "-rootless" ) ) {
-        quartz = TRUE;
-        quartzRootless = TRUE;
-        ErrorF( "Running rootless inside Mac OS X window server.\n" );
-#ifdef QUARTZ_SAFETY_DELAY
-        ErrorF( "Quitting in %d seconds if no controller is found.\n",
-                QUARTZ_SAFETY_DELAY );
-#endif
-        return 1;
-     }
-
-    if ( !strcmp( argv[i], "-quartz" ) ) {
-        quartz = TRUE;
-        ErrorF( "Running in parallel with Mac OS X Quartz window server.\n" );
-#ifdef QUARTZ_SAFETY_DELAY
-        ErrorF( "Quitting in %d seconds if no controller is found.\n",
-                QUARTZ_SAFETY_DELAY );
-#endif
-        return 1;
-    }
-
-    // The Mac OS X front end uses this argument, which we just ignore here.
-    if ( !strcmp( argv[i], "-nostartx" ) ) {
-        return 1;
-    }
-
-    // This command line arg is passed when launched from the Aqua GUI.
-    if ( !strncmp( argv[i], "-psn_", 5 ) ) {
-        return 1;
-    }
-#endif
 
     if ( !strcmp( argv[i], "-size" ) ) {
         if ( i >= argc-2 ) {
@@ -1071,8 +1026,7 @@ void ddxUseMsg( void )
     ErrorF("Quartz modes:\n");
     ErrorF("-fullscreen : run full screen in parallel with Mac OS X window server.\n");
     ErrorF("-rootless : run rootless inside Mac OS X window server.\n");
-    ErrorF("-quartz : Mac OS X default mode (currently %s)\n",
-           QUARTZ_DEFAULT_ROOTLESS ? "rootless" : "full screen");
+    ErrorF("-quartz : use default Mac OS X window server mode\n");
     ErrorF("\n");
     ErrorF("IOKit specific options (ignored in Quartz modes):\n");
 #endif

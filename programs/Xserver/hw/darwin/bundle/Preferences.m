@@ -3,7 +3,7 @@
 //
 //  This class keeps track of the user preferences.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.m,v 1.6 2001/05/09 07:16:19 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.m,v 1.7 2001/07/06 00:37:47 torrey Exp $ */
 
 #import "Preferences.h"
 #import "quartzShared.h"
@@ -19,6 +19,8 @@
                     @"/System/Library/Keyboards/USA.keymapping", @"KeymappingFile",
                     @"NO", @"UseKeymappingFile",
                     @"Cmd-Opt-a", @"SwitchString",
+                    @"NO", @"UseRootlessMode",
+                    @"YES", @"ShowModePickWindow",
                     @"YES", @"ShowStartupHelp",
                     [NSNumber numberWithInt:0], @"SwitchKeyCode",
                     [NSNumber numberWithInt:(NSCommandKeyMask | NSAlternateKeyMask)],
@@ -67,7 +69,9 @@
     [displayNumber setIntValue:[Preferences display]];
     [dockSwitchButton setIntValue:[Preferences dockSwitch]];
     [fakeButton setIntValue:[Preferences fakeButtons]];
+    [modeMatrix setState:[Preferences rootless] atRow:0 column:1];
     [startupHelpButton setIntValue:[Preferences startupHelp]];
+    [modeWindowButton setIntValue:[Preferences modeWindow]];
     [systemBeepButton setIntValue:[Preferences systemBeep]];
     [mouseAccelChangeButton setIntValue:[Preferences mouseAccelChange]];
 }
@@ -75,7 +79,13 @@
 - (void)awakeFromNib
 {
     [self resetWindow];
-    [splashStartupHelpButton setIntValue:[Preferences startupHelp]];
+}
+
+// Preference window delegate
+- (void)windowWillClose:(NSNotification *)aNotification
+{
+    [self resetWindow];
+    [self initSwitchKey];
 }
 
 // User cancelled the changes
@@ -112,6 +122,8 @@
     [Preferences setDisplay:[displayNumber intValue]];
     [Preferences setDockSwitch:[dockSwitchButton intValue]];
     [Preferences setFakeButtons:[fakeButton intValue]];
+    [Preferences setRootless:[[modeMatrix cellAtRow:0 column:1] state]];
+    [Preferences setModeWindow:[modeWindowButton intValue]];
     [Preferences setStartupHelp:[startupHelpButton intValue]];
     [Preferences setSystemBeep:[systemBeepButton intValue]];
     [Preferences setMouseAccelChange:[mouseAccelChangeButton intValue]];
@@ -218,6 +230,18 @@
     quartzMouseAccelChange = newMouseAccelChange;
 }
 
++ (void)setModeWindow:(BOOL)newModeWindow
+{
+    [[NSUserDefaults standardUserDefaults] setBool:newModeWindow
+            forKey:@"ShowModePickWindow"];
+}
+
++ (void)setRootless:(BOOL)newRootless
+{
+    [[NSUserDefaults standardUserDefaults] setBool:newRootless
+            forKey:@"UseRootlessMode"];
+}
+
 + (void)setStartupHelp:(BOOL)newStartupHelp
 {
     [[NSUserDefaults standardUserDefaults] setBool:newStartupHelp
@@ -287,6 +311,18 @@
 {
     return [[NSUserDefaults standardUserDefaults]
                 boolForKey:@"AllowMouseAccelChange"];
+}
+
++ (BOOL)rootless
+{
+    return [[NSUserDefaults standardUserDefaults]
+                boolForKey:@"UseRootlessMode"];
+}
+
++ (BOOL)modeWindow
+{
+    return [[NSUserDefaults standardUserDefaults]
+                boolForKey:@"ShowModePickWindow"];
 }
 
 + (BOOL)startupHelp
