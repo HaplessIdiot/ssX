@@ -2,7 +2,7 @@ XCOMM $XConsortium: os2.cf /main/1 1996/10/31 14:47:25 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.16 1996/12/27 06:50:23 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.17 1997/01/05 11:49:38 dawes Exp $
 
 #define OSName           OS/2
 #define OSVendor	 IBM
@@ -97,16 +97,16 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.16 1996/12/27 06:50:23 dawes 
 #define ConnectionFlags		-DTCPCONN -DOS2PIPECONN
 #define StdIncDir $(C_INCLUDE_PATH)
 
-/* XF86Setup stuff */
-#define HasTcl			YES
-#define TclLibDir		$(X11ROOT)$(SHLIBDIR)
-#define TclIncDir		$(X11ROOT)$(INCROOT)/tcl
-#define TclLibName		xtcl
+/* XF86Setup stuff - does not work yet! */
+#define HasTcl			NO
+/*define TclLibDir		$(X11ROOT)$(SHLIBDIR)*/
+/*define TclIncDir		$(X11ROOT)$(INCROOT)/tcl*/
+/*define TclLibName		xtcl*/
 
-#define HasTk			YES
-#define TkLibDir		$(X11ROOT)$(SHLIBDIR)
-#define TkIncDir		$(X11ROOT)$(INCROOT)/tk
-#define TkLibName		xtk
+#define HasTk			NO
+/*define TkLibDir		$(X11ROOT)$(SHLIBDIR)*/
+/*define TkIncDir		$(X11ROOT)$(INCROOT)/tk*/
+/*define TkLibName		xtk*/
 
 /*
  * Compiler Features
@@ -145,9 +145,8 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.16 1996/12/27 06:50:23 dawes 
 #define InstallCmd	install
 
 #define LdCmd	ld
-#define ExtraLoadFlags	/**/
-#define ExtraLibraries	$(LIBRARY_PATH)/binmode.Osuf -lsocket -lbsd
-/*define ServerExtraSysLibs -lemxio*/
+#define ExtraLoadFlags	-Zbin-files
+#define ExtraLibraries	-lsocket -lbsd
 
 /* quite a number of programs you need, most of them the same as
  * with Unix, but listed here for completeness
