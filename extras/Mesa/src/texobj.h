@@ -1,7 +1,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  4.0.3
+ * Version:  4.0.4
  *
  * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
@@ -38,7 +38,7 @@
 
 extern struct gl_texture_object *
 _mesa_alloc_texture_object( struct gl_shared_state *shared, GLuint name,
-                            GLuint dimensions );
+                            GLenum target );
 
 
 extern void

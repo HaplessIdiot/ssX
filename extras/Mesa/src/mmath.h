@@ -171,17 +171,17 @@ do {						\
    GLfloat len = LEN_SQUARED_3FV(V);		\
    if (len) {					\
       len = (GLfloat) (1.0 / GL_SQRT(len));	\
-      V[0] = (GLfloat) (V[0] * len);		\
-      V[1] = (GLfloat) (V[1] * len);		\
-      V[2] = (GLfloat) (V[2] * len);		\
+      (V)[0] = (GLfloat) ((V)[0] * len);		\
+      (V)[1] = (GLfloat) ((V)[1] * len);		\
+      (V)[2] = (GLfloat) ((V)[2] * len);		\
    }						\
 } while(0)
 
-#define LEN_3FV( V ) (GL_SQRT(V[0]*V[0]+V[1]*V[1]+V[2]*V[2]))
-#define LEN_2FV( V ) (GL_SQRT(V[0]*V[0]+V[1]*V[1]))
+#define LEN_3FV( V ) (GL_SQRT((V)[0]*(V)[0]+(V)[1]*(V)[1]+(V)[2]*(V)[2]))
+#define LEN_2FV( V ) (GL_SQRT((V)[0]*(V)[0]+(V)[1]*(V)[1]))
 
-#define LEN_SQUARED_3FV( V ) (V[0]*V[0]+V[1]*V[1]+V[2]*V[2])
-#define LEN_SQUARED_2FV( V ) (V[0]*V[0]+V[1]*V[1])
+#define LEN_SQUARED_3FV( V ) ((V)[0]*(V)[0]+(V)[1]*(V)[1]+(V)[2]*(V)[2])
+#define LEN_SQUARED_2FV( V ) ((V)[0]*(V)[0]+(V)[1]*(V)[1])
 
 
 /*
@@ -398,8 +398,8 @@ static INLINE int iceil(float f)
 #define UNCLAMPED_FLOAT_TO_UBYTE(b, f)					\
         do {								\
            union { GLfloat r; GLuint i; } __tmp;			\
-           __tmp.r = f;							\
-           b = ((__tmp.i >= IEEE_0996)					\
+           __tmp.r = (f);						\
+           b = ((__tmp.i >= IEEE_0996)				\
                ? ((GLint)__tmp.i < 0) ? (GLubyte)0 : (GLubyte)255	\
                : (__tmp.r = __tmp.r*(255.0F/256.0F) + 32768.0F,		\
                   (GLubyte)__tmp.i));					\
@@ -417,7 +417,7 @@ static INLINE int iceil(float f)
 	b = ((GLubyte) IROUND(CLAMP(f, 0.0F, 1.0F) * 255.0F))
 
 #define CLAMPED_FLOAT_TO_UBYTE(b, f) \
-	b = ((GLubyte) IROUND(f * 255.0F))
+	b = ((GLubyte) IROUND((f) * 255.0F))
 
 #define COPY_FLOAT( dst, src )		(dst) = (src)
 
@@ -431,10 +431,10 @@ static INLINE int iceil(float f)
 
 /* Convert GLubyte in [0,255] to GLfloat in [0.0,1.0] */
 extern float _mesa_ubyte_to_float_color_tab[256];
-#define UBYTE_TO_FLOAT(u) _mesa_ubyte_to_float_color_tab[(unsigned int)u]
+#define UBYTE_TO_FLOAT(u) _mesa_ubyte_to_float_color_tab[(unsigned int)(u)]
 
 /* Convert GLfloat in [0.0,1.0] to GLubyte in [0,255] */
-#define FLOAT_TO_UBYTE(X)	((GLubyte) (GLint) (((X)) * 255.0F))
+#define FLOAT_TO_UBYTE(X)	((GLubyte) (GLint) ((X) * 255.0F))
 
 
 /* Convert GLbyte in [-128,127] to GLfloat in [-1.0,1.0] */
@@ -488,12 +488,14 @@ extern float _mesa_ubyte_to_float_color_tab[256];
 #define SHORT_TO_USHORT(s) ((s) < 0 ? 0 : ((GLushort) (((s) * 65535 / 32767))))
 #define INT_TO_USHORT(i)   ((i) < 0 ? 0 : ((GLushort) ((i) >> 15)))
 #define UINT_TO_USHORT(i)  ((i) < 0 ? 0 : ((GLushort) ((i) >> 16)))
-#define UNCLAMPED_FLOAT_TO_USHORT(us, f)   us = (GLushort) (f * 65535.0F)
+#define UNCLAMPED_FLOAT_TO_USHORT(us, f)   us = (GLushort) ((f) * 65535.0F)
 
 
 
 /*
  * Linear interpolation
+ * NOTE:  OUT argument is evaluated twice!
+ * NOTE:  Be wary of using *coord++ as an argument to any of these macros!
  */
 #define LINTERP(T, OUT, IN)	((OUT) + (T) * ((IN) - (OUT)))
 
@@ -509,56 +511,56 @@ do {						\
 
 #define INTERP_CHAN( t, dstc, outc, inc )	\
 do {						\
-   GLfloat inf = CHAN_TO_FLOAT( inc );	\
+   GLfloat inf = CHAN_TO_FLOAT( inc );		\
    GLfloat outf = CHAN_TO_FLOAT( outc );	\
    GLfloat dstf = LINTERP( t, outf, inf );	\
    UNCLAMPED_FLOAT_TO_CHAN( dstc, dstf );	\
 } while (0)
 
 #define INTERP_UI( t, dstui, outui, inui )	\
-   dstui = (GLuint) (GLint) LINTERP( t, (GLfloat) outui, (GLfloat) inui )
+   dstui = (GLuint) (GLint) LINTERP( t, (GLfloat) (outui), (GLfloat) (inui) )
 
 #define INTERP_F( t, dstf, outf, inf )		\
    dstf = LINTERP( t, outf, inf )
 
-#define INTERP_4F( t, dst, out, in )		\
-do {						\
-   dst[0] = LINTERP( t, out[0], in[0] );	\
-   dst[1] = LINTERP( t, out[1], in[1] );	\
-   dst[2] = LINTERP( t, out[2], in[2] );	\
-   dst[3] = LINTERP( t, out[3], in[3] );	\
+#define INTERP_4F( t, dst, out, in )			\
+do {							\
+   (dst)[0] = LINTERP( (t), (out)[0], (in)[0] );	\
+   (dst)[1] = LINTERP( (t), (out)[1], (in)[1] );	\
+   (dst)[2] = LINTERP( (t), (out)[2], (in)[2] );	\
+   (dst)[3] = LINTERP( (t), (out)[3], (in)[3] );	\
 } while (0)
 
-#define INTERP_3F( t, dst, out, in )		\
-do {						\
-   dst[0] = LINTERP( t, out[0], in[0] );	\
-   dst[1] = LINTERP( t, out[1], in[1] );	\
-   dst[2] = LINTERP( t, out[2], in[2] );	\
+#define INTERP_3F( t, dst, out, in )			\
+do {							\
+   (dst)[0] = LINTERP( (t), (out)[0], (in)[0] );	\
+   (dst)[1] = LINTERP( (t), (out)[1], (in)[1] );	\
+   (dst)[2] = LINTERP( (t), (out)[2], (in)[2] );	\
 } while (0)
 
-#define INTERP_4CHAN( t, dst, out, in )		\
-do {						\
-   INTERP_CHAN( t, dst[0], out[0], in[0] );	\
-   INTERP_CHAN( t, dst[1], out[1], in[1] );	\
-   INTERP_CHAN( t, dst[2], out[2], in[2] );	\
-   INTERP_CHAN( t, dst[3], out[3], in[3] );	\
+#define INTERP_4CHAN( t, dst, out, in )			\
+do {							\
+   INTERP_CHAN( (t), (dst)[0], (out)[0], (in)[0] );	\
+   INTERP_CHAN( (t), (dst)[1], (out)[1], (in)[1] );	\
+   INTERP_CHAN( (t), (dst)[2], (out)[2], (in)[2] );	\
+   INTERP_CHAN( (t), (dst)[3], (out)[3], (in)[3] );	\
 } while (0)
 
-#define INTERP_3CHAN( t, dst, out, in )		\
-do {						\
-   INTERP_CHAN( t, dst[0], out[0], in[0] );	\
-   INTERP_CHAN( t, dst[1], out[1], in[1] );	\
-   INTERP_CHAN( t, dst[2], out[2], in[2] );	\
+#define INTERP_3CHAN( t, dst, out, in )			\
+do {							\
+   INTERP_CHAN( (t), (dst)[0], (out)[0], (in)[0] );	\
+   INTERP_CHAN( (t), (dst)[1], (out)[1], (in)[1] );	\
+   INTERP_CHAN( (t), (dst)[2], (out)[2], (in)[2] );	\
 } while (0)
 
-#define INTERP_SZ( t, vec, to, out, in, sz )			\
-do {								\
-   switch (sz) {						\
-   case 4: vec[to][3] = LINTERP( t, vec[out][3], vec[in][3] );	\
-   case 3: vec[to][2] = LINTERP( t, vec[out][2], vec[in][2] );	\
-   case 2: vec[to][1] = LINTERP( t, vec[out][1], vec[in][1] );	\
-   case 1: vec[to][0] = LINTERP( t, vec[out][0], vec[in][0] );	\
-   }								\
+#define INTERP_SZ( t, vec, to, out, in, sz )				\
+do {							       		\
+   switch (sz) {							\
+   case 4: (vec)[to][3] = LINTERP( (t), (vec)[out][3], (vec)[in][3] );	\
+   case 3: (vec)[to][2] = LINTERP( (t), (vec)[out][2], (vec)[in][2] );	\
+   case 2: (vec)[to][1] = LINTERP( (t), (vec)[out][1], (vec)[in][1] );	\
+   case 1: (vec)[to][0] = LINTERP( (t), (vec)[out][0], (vec)[in][0] );	\
+   }									\
 } while(0)
 
 

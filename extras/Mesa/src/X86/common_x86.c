@@ -37,6 +37,10 @@
 #if defined(USE_SSE_ASM) && defined(__linux__)
 #include <signal.h>
 #endif
+#if defined(USE_SSE_ASM) && defined(__FreeBSD__)
+#include <sys/types.h>
+#include <sys/sysctl.h>
+#endif
 
 #include "context.h"
 #include "common_x86_asm.h"
@@ -212,8 +216,16 @@ static void check_os_sse_support( void )
    message( "Cannot test OS support for SSE, disabling to be safe.\n" );
    _mesa_x86_cpu_features &= ~(X86_FEATURE_XMM);
 #endif /* _POSIX_SOURCE && X86_FXSR_MAGIC */
+#elif defined(__FreeBSD__)
+   {
+      int ret, len, enabled;
+      len = sizeof(enabled);
+      ret = sysctlbyname("hw.instruction_sse", &enabled, &len, NULL, 0);
+      if (ret || !enabled)
+         _mesa_x86_cpu_features &= ~(X86_FEATURE_XMM);
+   }
 #else
-   /* Do nothing on non-Linux platforms for now.
+   /* Do nothing on other platforms for now.
     */
    message( "Not testing OS support for SSE, leaving enabled.\n" );
 #endif /* __linux__ */
