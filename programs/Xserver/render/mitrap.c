@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/mitrap.c,v 1.1 2002/05/13 05:25:33 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/mitrap.c,v 1.2 2002/05/13 07:22:38 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -71,37 +71,48 @@ miCreateAlphaPicture (ScreenPtr pScreen, PictFormatPtr pPictFormat,
     return pPicture;
 }
 
+static Fixed
+miLineFixedX (xLineFixed *l, Fixed y, Bool ceil)
+{
+    Fixed   dx = l->p2.x - l->p1.x;
+    Fixed_32_32	ex = (Fixed_32_32) (y - l->p1.y) * dx;
+    Fixed   dy = l->p2.y - l->p1.y;
+    if (ceil)
+	ex += (dy - 1);
+    return l->p1.x + (Fixed) (ex / dy);
+}
+
 void
 miTrapezoidBounds (int ntrap, xTrapezoid *traps, BoxPtr box)
 {
-    box->y1 = FixedToInt (traps->top);
-    box->y2 = FixedToInt (FixedCeil (traps->bottom));
-    box->x1 = FixedToInt (min (traps->left.p1.x, traps->left.p2.x));
-    box->x2 = FixedToInt (FixedCeil (max (traps->right.p1.x, traps->right.p2.x)));
-    ntrap--;
-    traps++;
-    while (ntrap--)
+    box->y1 = MAXSHORT;
+    box->y2 = MINSHORT;
+    box->x1 = MAXSHORT;
+    box->x2 = MINSHORT;
+    for (; ntrap; ntrap--, traps++)
     {
-	INT16 y1 = FixedToInt (traps->top);
-	INT16 y2 = FixedToInt (FixedCeil (traps->bottom));
-	INT16 x1 = FixedToInt (min (traps->left.p1.x, traps->left.p2.x));
-	INT16 x2 = FixedToInt (FixedCeil (max (traps->right.p1.x, traps->right.p2.x)));
+	INT16 x1, y1, x2, y2;
 
-	traps++;
+	if ((int) (traps->top - traps->bottom) >= 0)
+	    continue;
+	y1 = FixedToInt (traps->top);
 	if (y1 < box->y1)
 	    box->y1 = y1;
+	
+	y2 = FixedToInt (FixedCeil (traps->bottom));
 	if (y2 > box->y2)
 	    box->y2 = y2;
+	
+	x1 = FixedToInt (min (miLineFixedX (&traps->left, traps->top, FALSE),
+			      miLineFixedX (&traps->left, traps->bottom, FALSE)));
 	if (x1 < box->x1)
 	    box->x1 = x1;
+	
+	x2 = FixedToInt (FixedCeil (max (miLineFixedX (&traps->right, traps->top, TRUE),
+					 miLineFixedX (&traps->right, traps->bottom, TRUE))));
 	if (x2 > box->x2)
 	    box->x2 = x2;
     }
-    /* XXX bug in fbtrap.c */
-    box->x1--;
-    box->y1--;
-    box->x2++;
-    box->y2++;
 }
 
 void
@@ -122,23 +133,29 @@ miTrapezoids (CARD8	    op,
     if (maskFormat)
     {
 	miTrapezoidBounds (ntrap, traps, &bounds);
+	if (bounds.y1 >= bounds.y2 || bounds.x1 >= bounds.x2)
+	    return;
 	pPicture = miCreateAlphaPicture (pScreen, maskFormat,
 					 bounds.x2 - bounds.x1,
 					 bounds.y2 - bounds.y1);
 	if (!pPicture)
 	    return;
     }
-    while (ntrap--)
+    for (; ntrap; ntrap--, traps++)
     {
 	if (!maskFormat)
 	{
 	    miTrapezoidBounds (1, traps, &bounds);
+	    if (bounds.y1 >= bounds.y2 || bounds.x1 >= bounds.x1)
+		continue;
 	    pPicture = miCreateAlphaPicture (pScreen, maskFormat,
 					     bounds.x2 - bounds.x1,
 					     bounds.y2 - bounds.y1);
 	    if (!pPicture)
-		break;
+		continue;
 	}
+	if ((int) (traps->top - traps->bottom) >= 0)
+	    continue;
 	(*ps->RasterizeTrapezoid) (pPicture, traps, 
 				   -bounds.x1, -bounds.y1);
 	if (!maskFormat)
@@ -149,7 +166,6 @@ miTrapezoids (CARD8	    op,
 			      bounds.y2 - bounds.y1);
 	    FreePicture (pPicture, 0);
 	}
-	traps++;
     }
     /* XXX adjust xSrc and ySrc */
     if (maskFormat)
