@@ -1,5 +1,10 @@
+/* $XFree86$ */
 
-#ifdef __sparc_v9__
+#if defined(__sparc_v9__) && !defined(__linux__)
+#define SPARC_64BIT_ADDR
+#endif
+
+#ifdef SPARC_64BIT_ADDR
 #define LDPTR		ldx
 #define V4F_DATA	0x00
 #define V4F_START	0x08

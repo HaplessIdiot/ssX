@@ -1,9 +1,16 @@
+/* $XFree86$ */
+
 /* DO NOT EDIT - This file generated automatically with glsparcasm.py script */
 #include "../glapioffsets.h"
 
 /* The _glapi_Dispatch symbol addresses get relocated into the
  * sethi/or instruction sequences below at library init time.
  */
+
+
+#if defined(__sparc_v9__) && !defined(__linux__)
+#define SPARC_64BIT_ADDR
+#endif
 
 
 .text
@@ -24,7 +31,7 @@ _mesa_sparc_glapi_begin:
 .globl glNewList
 .type glNewList,#function
 glNewList:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -45,7 +52,7 @@ glNewList:
 .globl glEndList
 .type glEndList,#function
 glEndList:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -66,7 +73,7 @@ glEndList:
 .globl glCallList
 .type glCallList,#function
 glCallList:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -87,7 +94,7 @@ glCallList:
 .globl glCallLists
 .type glCallLists,#function
 glCallLists:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -108,7 +115,7 @@ glCallLists:
 .globl glDeleteLists
 .type glDeleteLists,#function
 glDeleteLists:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -129,7 +136,7 @@ glDeleteLists:
 .globl glGenLists
 .type glGenLists,#function
 glGenLists:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -150,7 +157,7 @@ glGenLists:
 .globl glListBase
 .type glListBase,#function
 glListBase:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -171,7 +178,7 @@ glListBase:
 .globl glBegin
 .type glBegin,#function
 glBegin:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -192,7 +199,7 @@ glBegin:
 .globl glBitmap
 .type glBitmap,#function
 glBitmap:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -213,7 +220,7 @@ glBitmap:
 .globl glColor3b
 .type glColor3b,#function
 glColor3b:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -234,7 +241,7 @@ glColor3b:
 .globl glColor3bv
 .type glColor3bv,#function
 glColor3bv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -255,7 +262,7 @@ glColor3bv:
 .globl glColor3d
 .type glColor3d,#function
 glColor3d:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -276,7 +283,7 @@ glColor3d:
 .globl glColor3dv
 .type glColor3dv,#function
 glColor3dv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -297,7 +304,7 @@ glColor3dv:
 .globl glColor3f
 .type glColor3f,#function
 glColor3f:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -318,7 +325,7 @@ glColor3f:
 .globl glColor3fv
 .type glColor3fv,#function
 glColor3fv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -339,7 +346,7 @@ glColor3fv:
 .globl glColor3i
 .type glColor3i,#function
 glColor3i:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -360,7 +367,7 @@ glColor3i:
 .globl glColor3iv
 .type glColor3iv,#function
 glColor3iv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -381,7 +388,7 @@ glColor3iv:
 .globl glColor3s
 .type glColor3s,#function
 glColor3s:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -402,7 +409,7 @@ glColor3s:
 .globl glColor3sv
 .type glColor3sv,#function
 glColor3sv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -423,7 +430,7 @@ glColor3sv:
 .globl glColor3ub
 .type glColor3ub,#function
 glColor3ub:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -444,7 +451,7 @@ glColor3ub:
 .globl glColor3ubv
 .type glColor3ubv,#function
 glColor3ubv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -465,7 +472,7 @@ glColor3ubv:
 .globl glColor3ui
 .type glColor3ui,#function
 glColor3ui:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -486,7 +493,7 @@ glColor3ui:
 .globl glColor3uiv
 .type glColor3uiv,#function
 glColor3uiv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -507,7 +514,7 @@ glColor3uiv:
 .globl glColor3us
 .type glColor3us,#function
 glColor3us:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -528,7 +535,7 @@ glColor3us:
 .globl glColor3usv
 .type glColor3usv,#function
 glColor3usv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -549,7 +556,7 @@ glColor3usv:
 .globl glColor4b
 .type glColor4b,#function
 glColor4b:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -570,7 +577,7 @@ glColor4b:
 .globl glColor4bv
 .type glColor4bv,#function
 glColor4bv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -591,7 +598,7 @@ glColor4bv:
 .globl glColor4d
 .type glColor4d,#function
 glColor4d:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -612,7 +619,7 @@ glColor4d:
 .globl glColor4dv
 .type glColor4dv,#function
 glColor4dv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -633,7 +640,7 @@ glColor4dv:
 .globl glColor4f
 .type glColor4f,#function
 glColor4f:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -654,7 +661,7 @@ glColor4f:
 .globl glColor4fv
 .type glColor4fv,#function
 glColor4fv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -675,7 +682,7 @@ glColor4fv:
 .globl glColor4i
 .type glColor4i,#function
 glColor4i:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -696,7 +703,7 @@ glColor4i:
 .globl glColor4iv
 .type glColor4iv,#function
 glColor4iv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -717,7 +724,7 @@ glColor4iv:
 .globl glColor4s
 .type glColor4s,#function
 glColor4s:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -738,7 +745,7 @@ glColor4s:
 .globl glColor4sv
 .type glColor4sv,#function
 glColor4sv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -759,7 +766,7 @@ glColor4sv:
 .globl glColor4ub
 .type glColor4ub,#function
 glColor4ub:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -780,7 +787,7 @@ glColor4ub:
 .globl glColor4ubv
 .type glColor4ubv,#function
 glColor4ubv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -801,7 +808,7 @@ glColor4ubv:
 .globl glColor4ui
 .type glColor4ui,#function
 glColor4ui:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -822,7 +829,7 @@ glColor4ui:
 .globl glColor4uiv
 .type glColor4uiv,#function
 glColor4uiv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -843,7 +850,7 @@ glColor4uiv:
 .globl glColor4us
 .type glColor4us,#function
 glColor4us:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -864,7 +871,7 @@ glColor4us:
 .globl glColor4usv
 .type glColor4usv,#function
 glColor4usv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -885,7 +892,7 @@ glColor4usv:
 .globl glEdgeFlag
 .type glEdgeFlag,#function
 glEdgeFlag:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -906,7 +913,7 @@ glEdgeFlag:
 .globl glEdgeFlagv
 .type glEdgeFlagv,#function
 glEdgeFlagv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -927,7 +934,7 @@ glEdgeFlagv:
 .globl glEnd
 .type glEnd,#function
 glEnd:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -948,7 +955,7 @@ glEnd:
 .globl glIndexd
 .type glIndexd,#function
 glIndexd:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -969,7 +976,7 @@ glIndexd:
 .globl glIndexdv
 .type glIndexdv,#function
 glIndexdv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -990,7 +997,7 @@ glIndexdv:
 .globl glIndexf
 .type glIndexf,#function
 glIndexf:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1011,7 +1018,7 @@ glIndexf:
 .globl glIndexfv
 .type glIndexfv,#function
 glIndexfv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1032,7 +1039,7 @@ glIndexfv:
 .globl glIndexi
 .type glIndexi,#function
 glIndexi:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1053,7 +1060,7 @@ glIndexi:
 .globl glIndexiv
 .type glIndexiv,#function
 glIndexiv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1074,7 +1081,7 @@ glIndexiv:
 .globl glIndexs
 .type glIndexs,#function
 glIndexs:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1095,7 +1102,7 @@ glIndexs:
 .globl glIndexsv
 .type glIndexsv,#function
 glIndexsv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1116,7 +1123,7 @@ glIndexsv:
 .globl glNormal3b
 .type glNormal3b,#function
 glNormal3b:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1137,7 +1144,7 @@ glNormal3b:
 .globl glNormal3bv
 .type glNormal3bv,#function
 glNormal3bv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1158,7 +1165,7 @@ glNormal3bv:
 .globl glNormal3d
 .type glNormal3d,#function
 glNormal3d:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1179,7 +1186,7 @@ glNormal3d:
 .globl glNormal3dv
 .type glNormal3dv,#function
 glNormal3dv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1200,7 +1207,7 @@ glNormal3dv:
 .globl glNormal3f
 .type glNormal3f,#function
 glNormal3f:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1221,7 +1228,7 @@ glNormal3f:
 .globl glNormal3fv
 .type glNormal3fv,#function
 glNormal3fv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1242,7 +1249,7 @@ glNormal3fv:
 .globl glNormal3i
 .type glNormal3i,#function
 glNormal3i:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1263,7 +1270,7 @@ glNormal3i:
 .globl glNormal3iv
 .type glNormal3iv,#function
 glNormal3iv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1284,7 +1291,7 @@ glNormal3iv:
 .globl glNormal3s
 .type glNormal3s,#function
 glNormal3s:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1305,7 +1312,7 @@ glNormal3s:
 .globl glNormal3sv
 .type glNormal3sv,#function
 glNormal3sv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1326,7 +1333,7 @@ glNormal3sv:
 .globl glRasterPos2d
 .type glRasterPos2d,#function
 glRasterPos2d:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1347,7 +1354,7 @@ glRasterPos2d:
 .globl glRasterPos2dv
 .type glRasterPos2dv,#function
 glRasterPos2dv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1368,7 +1375,7 @@ glRasterPos2dv:
 .globl glRasterPos2f
 .type glRasterPos2f,#function
 glRasterPos2f:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1389,7 +1396,7 @@ glRasterPos2f:
 .globl glRasterPos2fv
 .type glRasterPos2fv,#function
 glRasterPos2fv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1410,7 +1417,7 @@ glRasterPos2fv:
 .globl glRasterPos2i
 .type glRasterPos2i,#function
 glRasterPos2i:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1431,7 +1438,7 @@ glRasterPos2i:
 .globl glRasterPos2iv
 .type glRasterPos2iv,#function
 glRasterPos2iv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1452,7 +1459,7 @@ glRasterPos2iv:
 .globl glRasterPos2s
 .type glRasterPos2s,#function
 glRasterPos2s:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1473,7 +1480,7 @@ glRasterPos2s:
 .globl glRasterPos2sv
 .type glRasterPos2sv,#function
 glRasterPos2sv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1494,7 +1501,7 @@ glRasterPos2sv:
 .globl glRasterPos3d
 .type glRasterPos3d,#function
 glRasterPos3d:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1515,7 +1522,7 @@ glRasterPos3d:
 .globl glRasterPos3dv
 .type glRasterPos3dv,#function
 glRasterPos3dv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1536,7 +1543,7 @@ glRasterPos3dv:
 .globl glRasterPos3f
 .type glRasterPos3f,#function
 glRasterPos3f:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1557,7 +1564,7 @@ glRasterPos3f:
 .globl glRasterPos3fv
 .type glRasterPos3fv,#function
 glRasterPos3fv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1578,7 +1585,7 @@ glRasterPos3fv:
 .globl glRasterPos3i
 .type glRasterPos3i,#function
 glRasterPos3i:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1599,7 +1606,7 @@ glRasterPos3i:
 .globl glRasterPos3iv
 .type glRasterPos3iv,#function
 glRasterPos3iv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1620,7 +1627,7 @@ glRasterPos3iv:
 .globl glRasterPos3s
 .type glRasterPos3s,#function
 glRasterPos3s:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1641,7 +1648,7 @@ glRasterPos3s:
 .globl glRasterPos3sv
 .type glRasterPos3sv,#function
 glRasterPos3sv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1662,7 +1669,7 @@ glRasterPos3sv:
 .globl glRasterPos4d
 .type glRasterPos4d,#function
 glRasterPos4d:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1683,7 +1690,7 @@ glRasterPos4d:
 .globl glRasterPos4dv
 .type glRasterPos4dv,#function
 glRasterPos4dv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1704,7 +1711,7 @@ glRasterPos4dv:
 .globl glRasterPos4f
 .type glRasterPos4f,#function
 glRasterPos4f:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1725,7 +1732,7 @@ glRasterPos4f:
 .globl glRasterPos4fv
 .type glRasterPos4fv,#function
 glRasterPos4fv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1746,7 +1753,7 @@ glRasterPos4fv:
 .globl glRasterPos4i
 .type glRasterPos4i,#function
 glRasterPos4i:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1767,7 +1774,7 @@ glRasterPos4i:
 .globl glRasterPos4iv
 .type glRasterPos4iv,#function
 glRasterPos4iv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1788,7 +1795,7 @@ glRasterPos4iv:
 .globl glRasterPos4s
 .type glRasterPos4s,#function
 glRasterPos4s:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1809,7 +1816,7 @@ glRasterPos4s:
 .globl glRasterPos4sv
 .type glRasterPos4sv,#function
 glRasterPos4sv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1830,7 +1837,7 @@ glRasterPos4sv:
 .globl glRectd
 .type glRectd,#function
 glRectd:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1851,7 +1858,7 @@ glRectd:
 .globl glRectdv
 .type glRectdv,#function
 glRectdv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1872,7 +1879,7 @@ glRectdv:
 .globl glRectf
 .type glRectf,#function
 glRectf:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1893,7 +1900,7 @@ glRectf:
 .globl glRectfv
 .type glRectfv,#function
 glRectfv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1914,7 +1921,7 @@ glRectfv:
 .globl glRecti
 .type glRecti,#function
 glRecti:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1935,7 +1942,7 @@ glRecti:
 .globl glRectiv
 .type glRectiv,#function
 glRectiv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1956,7 +1963,7 @@ glRectiv:
 .globl glRects
 .type glRects,#function
 glRects:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1977,7 +1984,7 @@ glRects:
 .globl glRectsv
 .type glRectsv,#function
 glRectsv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -1998,7 +2005,7 @@ glRectsv:
 .globl glTexCoord1d
 .type glTexCoord1d,#function
 glTexCoord1d:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2019,7 +2026,7 @@ glTexCoord1d:
 .globl glTexCoord1dv
 .type glTexCoord1dv,#function
 glTexCoord1dv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2040,7 +2047,7 @@ glTexCoord1dv:
 .globl glTexCoord1f
 .type glTexCoord1f,#function
 glTexCoord1f:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2061,7 +2068,7 @@ glTexCoord1f:
 .globl glTexCoord1fv
 .type glTexCoord1fv,#function
 glTexCoord1fv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2082,7 +2089,7 @@ glTexCoord1fv:
 .globl glTexCoord1i
 .type glTexCoord1i,#function
 glTexCoord1i:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2103,7 +2110,7 @@ glTexCoord1i:
 .globl glTexCoord1iv
 .type glTexCoord1iv,#function
 glTexCoord1iv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2124,7 +2131,7 @@ glTexCoord1iv:
 .globl glTexCoord1s
 .type glTexCoord1s,#function
 glTexCoord1s:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2145,7 +2152,7 @@ glTexCoord1s:
 .globl glTexCoord1sv
 .type glTexCoord1sv,#function
 glTexCoord1sv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2166,7 +2173,7 @@ glTexCoord1sv:
 .globl glTexCoord2d
 .type glTexCoord2d,#function
 glTexCoord2d:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2187,7 +2194,7 @@ glTexCoord2d:
 .globl glTexCoord2dv
 .type glTexCoord2dv,#function
 glTexCoord2dv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2208,7 +2215,7 @@ glTexCoord2dv:
 .globl glTexCoord2f
 .type glTexCoord2f,#function
 glTexCoord2f:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2229,7 +2236,7 @@ glTexCoord2f:
 .globl glTexCoord2fv
 .type glTexCoord2fv,#function
 glTexCoord2fv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2250,7 +2257,7 @@ glTexCoord2fv:
 .globl glTexCoord2i
 .type glTexCoord2i,#function
 glTexCoord2i:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2271,7 +2278,7 @@ glTexCoord2i:
 .globl glTexCoord2iv
 .type glTexCoord2iv,#function
 glTexCoord2iv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2292,7 +2299,7 @@ glTexCoord2iv:
 .globl glTexCoord2s
 .type glTexCoord2s,#function
 glTexCoord2s:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2313,7 +2320,7 @@ glTexCoord2s:
 .globl glTexCoord2sv
 .type glTexCoord2sv,#function
 glTexCoord2sv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2334,7 +2341,7 @@ glTexCoord2sv:
 .globl glTexCoord3d
 .type glTexCoord3d,#function
 glTexCoord3d:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2355,7 +2362,7 @@ glTexCoord3d:
 .globl glTexCoord3dv
 .type glTexCoord3dv,#function
 glTexCoord3dv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2376,7 +2383,7 @@ glTexCoord3dv:
 .globl glTexCoord3f
 .type glTexCoord3f,#function
 glTexCoord3f:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2397,7 +2404,7 @@ glTexCoord3f:
 .globl glTexCoord3fv
 .type glTexCoord3fv,#function
 glTexCoord3fv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2418,7 +2425,7 @@ glTexCoord3fv:
 .globl glTexCoord3i
 .type glTexCoord3i,#function
 glTexCoord3i:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2439,7 +2446,7 @@ glTexCoord3i:
 .globl glTexCoord3iv
 .type glTexCoord3iv,#function
 glTexCoord3iv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2460,7 +2467,7 @@ glTexCoord3iv:
 .globl glTexCoord3s
 .type glTexCoord3s,#function
 glTexCoord3s:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2481,7 +2488,7 @@ glTexCoord3s:
 .globl glTexCoord3sv
 .type glTexCoord3sv,#function
 glTexCoord3sv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2502,7 +2509,7 @@ glTexCoord3sv:
 .globl glTexCoord4d
 .type glTexCoord4d,#function
 glTexCoord4d:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2523,7 +2530,7 @@ glTexCoord4d:
 .globl glTexCoord4dv
 .type glTexCoord4dv,#function
 glTexCoord4dv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2544,7 +2551,7 @@ glTexCoord4dv:
 .globl glTexCoord4f
 .type glTexCoord4f,#function
 glTexCoord4f:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2565,7 +2572,7 @@ glTexCoord4f:
 .globl glTexCoord4fv
 .type glTexCoord4fv,#function
 glTexCoord4fv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2586,7 +2593,7 @@ glTexCoord4fv:
 .globl glTexCoord4i
 .type glTexCoord4i,#function
 glTexCoord4i:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2607,7 +2614,7 @@ glTexCoord4i:
 .globl glTexCoord4iv
 .type glTexCoord4iv,#function
 glTexCoord4iv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2628,7 +2635,7 @@ glTexCoord4iv:
 .globl glTexCoord4s
 .type glTexCoord4s,#function
 glTexCoord4s:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2649,7 +2656,7 @@ glTexCoord4s:
 .globl glTexCoord4sv
 .type glTexCoord4sv,#function
 glTexCoord4sv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2670,7 +2677,7 @@ glTexCoord4sv:
 .globl glVertex2d
 .type glVertex2d,#function
 glVertex2d:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2691,7 +2698,7 @@ glVertex2d:
 .globl glVertex2dv
 .type glVertex2dv,#function
 glVertex2dv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2712,7 +2719,7 @@ glVertex2dv:
 .globl glVertex2f
 .type glVertex2f,#function
 glVertex2f:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2733,7 +2740,7 @@ glVertex2f:
 .globl glVertex2fv
 .type glVertex2fv,#function
 glVertex2fv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2754,7 +2761,7 @@ glVertex2fv:
 .globl glVertex2i
 .type glVertex2i,#function
 glVertex2i:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2775,7 +2782,7 @@ glVertex2i:
 .globl glVertex2iv
 .type glVertex2iv,#function
 glVertex2iv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2796,7 +2803,7 @@ glVertex2iv:
 .globl glVertex2s
 .type glVertex2s,#function
 glVertex2s:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2817,7 +2824,7 @@ glVertex2s:
 .globl glVertex2sv
 .type glVertex2sv,#function
 glVertex2sv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2838,7 +2845,7 @@ glVertex2sv:
 .globl glVertex3d
 .type glVertex3d,#function
 glVertex3d:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2859,7 +2866,7 @@ glVertex3d:
 .globl glVertex3dv
 .type glVertex3dv,#function
 glVertex3dv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2880,7 +2887,7 @@ glVertex3dv:
 .globl glVertex3f
 .type glVertex3f,#function
 glVertex3f:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2901,7 +2908,7 @@ glVertex3f:
 .globl glVertex3fv
 .type glVertex3fv,#function
 glVertex3fv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2922,7 +2929,7 @@ glVertex3fv:
 .globl glVertex3i
 .type glVertex3i,#function
 glVertex3i:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2943,7 +2950,7 @@ glVertex3i:
 .globl glVertex3iv
 .type glVertex3iv,#function
 glVertex3iv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2964,7 +2971,7 @@ glVertex3iv:
 .globl glVertex3s
 .type glVertex3s,#function
 glVertex3s:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -2985,7 +2992,7 @@ glVertex3s:
 .globl glVertex3sv
 .type glVertex3sv,#function
 glVertex3sv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3006,7 +3013,7 @@ glVertex3sv:
 .globl glVertex4d
 .type glVertex4d,#function
 glVertex4d:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3027,7 +3034,7 @@ glVertex4d:
 .globl glVertex4dv
 .type glVertex4dv,#function
 glVertex4dv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3048,7 +3055,7 @@ glVertex4dv:
 .globl glVertex4f
 .type glVertex4f,#function
 glVertex4f:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3069,7 +3076,7 @@ glVertex4f:
 .globl glVertex4fv
 .type glVertex4fv,#function
 glVertex4fv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3090,7 +3097,7 @@ glVertex4fv:
 .globl glVertex4i
 .type glVertex4i,#function
 glVertex4i:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3111,7 +3118,7 @@ glVertex4i:
 .globl glVertex4iv
 .type glVertex4iv,#function
 glVertex4iv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3132,7 +3139,7 @@ glVertex4iv:
 .globl glVertex4s
 .type glVertex4s,#function
 glVertex4s:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3153,7 +3160,7 @@ glVertex4s:
 .globl glVertex4sv
 .type glVertex4sv,#function
 glVertex4sv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3174,7 +3181,7 @@ glVertex4sv:
 .globl glClipPlane
 .type glClipPlane,#function
 glClipPlane:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3195,7 +3202,7 @@ glClipPlane:
 .globl glColorMaterial
 .type glColorMaterial,#function
 glColorMaterial:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3216,7 +3223,7 @@ glColorMaterial:
 .globl glCullFace
 .type glCullFace,#function
 glCullFace:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3237,7 +3244,7 @@ glCullFace:
 .globl glFogf
 .type glFogf,#function
 glFogf:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3258,7 +3265,7 @@ glFogf:
 .globl glFogfv
 .type glFogfv,#function
 glFogfv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3279,7 +3286,7 @@ glFogfv:
 .globl glFogi
 .type glFogi,#function
 glFogi:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3300,7 +3307,7 @@ glFogi:
 .globl glFogiv
 .type glFogiv,#function
 glFogiv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3321,7 +3328,7 @@ glFogiv:
 .globl glFrontFace
 .type glFrontFace,#function
 glFrontFace:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3342,7 +3349,7 @@ glFrontFace:
 .globl glHint
 .type glHint,#function
 glHint:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3363,7 +3370,7 @@ glHint:
 .globl glLightf
 .type glLightf,#function
 glLightf:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3384,7 +3391,7 @@ glLightf:
 .globl glLightfv
 .type glLightfv,#function
 glLightfv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3405,7 +3412,7 @@ glLightfv:
 .globl glLighti
 .type glLighti,#function
 glLighti:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3426,7 +3433,7 @@ glLighti:
 .globl glLightiv
 .type glLightiv,#function
 glLightiv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3447,7 +3454,7 @@ glLightiv:
 .globl glLightModelf
 .type glLightModelf,#function
 glLightModelf:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3468,7 +3475,7 @@ glLightModelf:
 .globl glLightModelfv
 .type glLightModelfv,#function
 glLightModelfv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3489,7 +3496,7 @@ glLightModelfv:
 .globl glLightModeli
 .type glLightModeli,#function
 glLightModeli:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3510,7 +3517,7 @@ glLightModeli:
 .globl glLightModeliv
 .type glLightModeliv,#function
 glLightModeliv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3531,7 +3538,7 @@ glLightModeliv:
 .globl glLineStipple
 .type glLineStipple,#function
 glLineStipple:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3552,7 +3559,7 @@ glLineStipple:
 .globl glLineWidth
 .type glLineWidth,#function
 glLineWidth:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3573,7 +3580,7 @@ glLineWidth:
 .globl glMaterialf
 .type glMaterialf,#function
 glMaterialf:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3594,7 +3601,7 @@ glMaterialf:
 .globl glMaterialfv
 .type glMaterialfv,#function
 glMaterialfv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3615,7 +3622,7 @@ glMaterialfv:
 .globl glMateriali
 .type glMateriali,#function
 glMateriali:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3636,7 +3643,7 @@ glMateriali:
 .globl glMaterialiv
 .type glMaterialiv,#function
 glMaterialiv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3657,7 +3664,7 @@ glMaterialiv:
 .globl glPointSize
 .type glPointSize,#function
 glPointSize:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3678,7 +3685,7 @@ glPointSize:
 .globl glPolygonMode
 .type glPolygonMode,#function
 glPolygonMode:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3699,7 +3706,7 @@ glPolygonMode:
 .globl glPolygonStipple
 .type glPolygonStipple,#function
 glPolygonStipple:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3720,7 +3727,7 @@ glPolygonStipple:
 .globl glScissor
 .type glScissor,#function
 glScissor:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3741,7 +3748,7 @@ glScissor:
 .globl glShadeModel
 .type glShadeModel,#function
 glShadeModel:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3762,7 +3769,7 @@ glShadeModel:
 .globl glTexParameterf
 .type glTexParameterf,#function
 glTexParameterf:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3783,7 +3790,7 @@ glTexParameterf:
 .globl glTexParameterfv
 .type glTexParameterfv,#function
 glTexParameterfv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3804,7 +3811,7 @@ glTexParameterfv:
 .globl glTexParameteri
 .type glTexParameteri,#function
 glTexParameteri:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3825,7 +3832,7 @@ glTexParameteri:
 .globl glTexParameteriv
 .type glTexParameteriv,#function
 glTexParameteriv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3846,7 +3853,7 @@ glTexParameteriv:
 .globl glTexImage1D
 .type glTexImage1D,#function
 glTexImage1D:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3867,7 +3874,7 @@ glTexImage1D:
 .globl glTexImage2D
 .type glTexImage2D,#function
 glTexImage2D:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3888,7 +3895,7 @@ glTexImage2D:
 .globl glTexEnvf
 .type glTexEnvf,#function
 glTexEnvf:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3909,7 +3916,7 @@ glTexEnvf:
 .globl glTexEnvfv
 .type glTexEnvfv,#function
 glTexEnvfv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3930,7 +3937,7 @@ glTexEnvfv:
 .globl glTexEnvi
 .type glTexEnvi,#function
 glTexEnvi:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3951,7 +3958,7 @@ glTexEnvi:
 .globl glTexEnviv
 .type glTexEnviv,#function
 glTexEnviv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3972,7 +3979,7 @@ glTexEnviv:
 .globl glTexGend
 .type glTexGend,#function
 glTexGend:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -3993,7 +4000,7 @@ glTexGend:
 .globl glTexGendv
 .type glTexGendv,#function
 glTexGendv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4014,7 +4021,7 @@ glTexGendv:
 .globl glTexGenf
 .type glTexGenf,#function
 glTexGenf:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4035,7 +4042,7 @@ glTexGenf:
 .globl glTexGenfv
 .type glTexGenfv,#function
 glTexGenfv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4056,7 +4063,7 @@ glTexGenfv:
 .globl glTexGeni
 .type glTexGeni,#function
 glTexGeni:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4077,7 +4084,7 @@ glTexGeni:
 .globl glTexGeniv
 .type glTexGeniv,#function
 glTexGeniv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4098,7 +4105,7 @@ glTexGeniv:
 .globl glFeedbackBuffer
 .type glFeedbackBuffer,#function
 glFeedbackBuffer:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4119,7 +4126,7 @@ glFeedbackBuffer:
 .globl glSelectBuffer
 .type glSelectBuffer,#function
 glSelectBuffer:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4140,7 +4147,7 @@ glSelectBuffer:
 .globl glRenderMode
 .type glRenderMode,#function
 glRenderMode:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4161,7 +4168,7 @@ glRenderMode:
 .globl glInitNames
 .type glInitNames,#function
 glInitNames:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4182,7 +4189,7 @@ glInitNames:
 .globl glLoadName
 .type glLoadName,#function
 glLoadName:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4203,7 +4210,7 @@ glLoadName:
 .globl glPassThrough
 .type glPassThrough,#function
 glPassThrough:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4224,7 +4231,7 @@ glPassThrough:
 .globl glPopName
 .type glPopName,#function
 glPopName:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4245,7 +4252,7 @@ glPopName:
 .globl glPushName
 .type glPushName,#function
 glPushName:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4266,7 +4273,7 @@ glPushName:
 .globl glDrawBuffer
 .type glDrawBuffer,#function
 glDrawBuffer:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4287,7 +4294,7 @@ glDrawBuffer:
 .globl glClear
 .type glClear,#function
 glClear:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4308,7 +4315,7 @@ glClear:
 .globl glClearAccum
 .type glClearAccum,#function
 glClearAccum:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4329,7 +4336,7 @@ glClearAccum:
 .globl glClearIndex
 .type glClearIndex,#function
 glClearIndex:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4350,7 +4357,7 @@ glClearIndex:
 .globl glClearColor
 .type glClearColor,#function
 glClearColor:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4371,7 +4378,7 @@ glClearColor:
 .globl glClearStencil
 .type glClearStencil,#function
 glClearStencil:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4392,7 +4399,7 @@ glClearStencil:
 .globl glClearDepth
 .type glClearDepth,#function
 glClearDepth:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4413,7 +4420,7 @@ glClearDepth:
 .globl glStencilMask
 .type glStencilMask,#function
 glStencilMask:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4434,7 +4441,7 @@ glStencilMask:
 .globl glColorMask
 .type glColorMask,#function
 glColorMask:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4455,7 +4462,7 @@ glColorMask:
 .globl glDepthMask
 .type glDepthMask,#function
 glDepthMask:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4476,7 +4483,7 @@ glDepthMask:
 .globl glIndexMask
 .type glIndexMask,#function
 glIndexMask:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4497,7 +4504,7 @@ glIndexMask:
 .globl glAccum
 .type glAccum,#function
 glAccum:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4518,7 +4525,7 @@ glAccum:
 .globl glDisable
 .type glDisable,#function
 glDisable:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4539,7 +4546,7 @@ glDisable:
 .globl glEnable
 .type glEnable,#function
 glEnable:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4560,7 +4567,7 @@ glEnable:
 .globl glFinish
 .type glFinish,#function
 glFinish:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4581,7 +4588,7 @@ glFinish:
 .globl glFlush
 .type glFlush,#function
 glFlush:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4602,7 +4609,7 @@ glFlush:
 .globl glPopAttrib
 .type glPopAttrib,#function
 glPopAttrib:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4623,7 +4630,7 @@ glPopAttrib:
 .globl glPushAttrib
 .type glPushAttrib,#function
 glPushAttrib:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4644,7 +4651,7 @@ glPushAttrib:
 .globl glMap1d
 .type glMap1d,#function
 glMap1d:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4665,7 +4672,7 @@ glMap1d:
 .globl glMap1f
 .type glMap1f,#function
 glMap1f:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4686,7 +4693,7 @@ glMap1f:
 .globl glMap2d
 .type glMap2d,#function
 glMap2d:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4707,7 +4714,7 @@ glMap2d:
 .globl glMap2f
 .type glMap2f,#function
 glMap2f:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4728,7 +4735,7 @@ glMap2f:
 .globl glMapGrid1d
 .type glMapGrid1d,#function
 glMapGrid1d:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4749,7 +4756,7 @@ glMapGrid1d:
 .globl glMapGrid1f
 .type glMapGrid1f,#function
 glMapGrid1f:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4770,7 +4777,7 @@ glMapGrid1f:
 .globl glMapGrid2d
 .type glMapGrid2d,#function
 glMapGrid2d:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4791,7 +4798,7 @@ glMapGrid2d:
 .globl glMapGrid2f
 .type glMapGrid2f,#function
 glMapGrid2f:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4812,7 +4819,7 @@ glMapGrid2f:
 .globl glEvalCoord1d
 .type glEvalCoord1d,#function
 glEvalCoord1d:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4833,7 +4840,7 @@ glEvalCoord1d:
 .globl glEvalCoord1dv
 .type glEvalCoord1dv,#function
 glEvalCoord1dv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4854,7 +4861,7 @@ glEvalCoord1dv:
 .globl glEvalCoord1f
 .type glEvalCoord1f,#function
 glEvalCoord1f:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4875,7 +4882,7 @@ glEvalCoord1f:
 .globl glEvalCoord1fv
 .type glEvalCoord1fv,#function
 glEvalCoord1fv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4896,7 +4903,7 @@ glEvalCoord1fv:
 .globl glEvalCoord2d
 .type glEvalCoord2d,#function
 glEvalCoord2d:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4917,7 +4924,7 @@ glEvalCoord2d:
 .globl glEvalCoord2dv
 .type glEvalCoord2dv,#function
 glEvalCoord2dv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4938,7 +4945,7 @@ glEvalCoord2dv:
 .globl glEvalCoord2f
 .type glEvalCoord2f,#function
 glEvalCoord2f:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4959,7 +4966,7 @@ glEvalCoord2f:
 .globl glEvalCoord2fv
 .type glEvalCoord2fv,#function
 glEvalCoord2fv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -4980,7 +4987,7 @@ glEvalCoord2fv:
 .globl glEvalMesh1
 .type glEvalMesh1,#function
 glEvalMesh1:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5001,7 +5008,7 @@ glEvalMesh1:
 .globl glEvalPoint1
 .type glEvalPoint1,#function
 glEvalPoint1:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5022,7 +5029,7 @@ glEvalPoint1:
 .globl glEvalMesh2
 .type glEvalMesh2,#function
 glEvalMesh2:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5043,7 +5050,7 @@ glEvalMesh2:
 .globl glEvalPoint2
 .type glEvalPoint2,#function
 glEvalPoint2:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5064,7 +5071,7 @@ glEvalPoint2:
 .globl glAlphaFunc
 .type glAlphaFunc,#function
 glAlphaFunc:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5085,7 +5092,7 @@ glAlphaFunc:
 .globl glBlendFunc
 .type glBlendFunc,#function
 glBlendFunc:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5106,7 +5113,7 @@ glBlendFunc:
 .globl glLogicOp
 .type glLogicOp,#function
 glLogicOp:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5127,7 +5134,7 @@ glLogicOp:
 .globl glStencilFunc
 .type glStencilFunc,#function
 glStencilFunc:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5148,7 +5155,7 @@ glStencilFunc:
 .globl glStencilOp
 .type glStencilOp,#function
 glStencilOp:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5169,7 +5176,7 @@ glStencilOp:
 .globl glDepthFunc
 .type glDepthFunc,#function
 glDepthFunc:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5190,7 +5197,7 @@ glDepthFunc:
 .globl glPixelZoom
 .type glPixelZoom,#function
 glPixelZoom:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5211,7 +5218,7 @@ glPixelZoom:
 .globl glPixelTransferf
 .type glPixelTransferf,#function
 glPixelTransferf:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5232,7 +5239,7 @@ glPixelTransferf:
 .globl glPixelTransferi
 .type glPixelTransferi,#function
 glPixelTransferi:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5253,7 +5260,7 @@ glPixelTransferi:
 .globl glPixelStoref
 .type glPixelStoref,#function
 glPixelStoref:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5274,7 +5281,7 @@ glPixelStoref:
 .globl glPixelStorei
 .type glPixelStorei,#function
 glPixelStorei:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5295,7 +5302,7 @@ glPixelStorei:
 .globl glPixelMapfv
 .type glPixelMapfv,#function
 glPixelMapfv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5316,7 +5323,7 @@ glPixelMapfv:
 .globl glPixelMapuiv
 .type glPixelMapuiv,#function
 glPixelMapuiv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5337,7 +5344,7 @@ glPixelMapuiv:
 .globl glPixelMapusv
 .type glPixelMapusv,#function
 glPixelMapusv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5358,7 +5365,7 @@ glPixelMapusv:
 .globl glReadBuffer
 .type glReadBuffer,#function
 glReadBuffer:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5379,7 +5386,7 @@ glReadBuffer:
 .globl glCopyPixels
 .type glCopyPixels,#function
 glCopyPixels:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5400,7 +5407,7 @@ glCopyPixels:
 .globl glReadPixels
 .type glReadPixels,#function
 glReadPixels:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5421,7 +5428,7 @@ glReadPixels:
 .globl glDrawPixels
 .type glDrawPixels,#function
 glDrawPixels:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5442,7 +5449,7 @@ glDrawPixels:
 .globl glGetBooleanv
 .type glGetBooleanv,#function
 glGetBooleanv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5463,7 +5470,7 @@ glGetBooleanv:
 .globl glGetClipPlane
 .type glGetClipPlane,#function
 glGetClipPlane:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5484,7 +5491,7 @@ glGetClipPlane:
 .globl glGetDoublev
 .type glGetDoublev,#function
 glGetDoublev:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5505,7 +5512,7 @@ glGetDoublev:
 .globl glGetError
 .type glGetError,#function
 glGetError:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5526,7 +5533,7 @@ glGetError:
 .globl glGetFloatv
 .type glGetFloatv,#function
 glGetFloatv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5547,7 +5554,7 @@ glGetFloatv:
 .globl glGetIntegerv
 .type glGetIntegerv,#function
 glGetIntegerv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5568,7 +5575,7 @@ glGetIntegerv:
 .globl glGetLightfv
 .type glGetLightfv,#function
 glGetLightfv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5589,7 +5596,7 @@ glGetLightfv:
 .globl glGetLightiv
 .type glGetLightiv,#function
 glGetLightiv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5610,7 +5617,7 @@ glGetLightiv:
 .globl glGetMapdv
 .type glGetMapdv,#function
 glGetMapdv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5631,7 +5638,7 @@ glGetMapdv:
 .globl glGetMapfv
 .type glGetMapfv,#function
 glGetMapfv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5652,7 +5659,7 @@ glGetMapfv:
 .globl glGetMapiv
 .type glGetMapiv,#function
 glGetMapiv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5673,7 +5680,7 @@ glGetMapiv:
 .globl glGetMaterialfv
 .type glGetMaterialfv,#function
 glGetMaterialfv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5694,7 +5701,7 @@ glGetMaterialfv:
 .globl glGetMaterialiv
 .type glGetMaterialiv,#function
 glGetMaterialiv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5715,7 +5722,7 @@ glGetMaterialiv:
 .globl glGetPixelMapfv
 .type glGetPixelMapfv,#function
 glGetPixelMapfv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5736,7 +5743,7 @@ glGetPixelMapfv:
 .globl glGetPixelMapuiv
 .type glGetPixelMapuiv,#function
 glGetPixelMapuiv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5757,7 +5764,7 @@ glGetPixelMapuiv:
 .globl glGetPixelMapusv
 .type glGetPixelMapusv,#function
 glGetPixelMapusv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5778,7 +5785,7 @@ glGetPixelMapusv:
 .globl glGetPolygonStipple
 .type glGetPolygonStipple,#function
 glGetPolygonStipple:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5799,7 +5806,7 @@ glGetPolygonStipple:
 .globl glGetString
 .type glGetString,#function
 glGetString:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5820,7 +5827,7 @@ glGetString:
 .globl glGetTexEnvfv
 .type glGetTexEnvfv,#function
 glGetTexEnvfv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5841,7 +5848,7 @@ glGetTexEnvfv:
 .globl glGetTexEnviv
 .type glGetTexEnviv,#function
 glGetTexEnviv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5862,7 +5869,7 @@ glGetTexEnviv:
 .globl glGetTexGendv
 .type glGetTexGendv,#function
 glGetTexGendv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5883,7 +5890,7 @@ glGetTexGendv:
 .globl glGetTexGenfv
 .type glGetTexGenfv,#function
 glGetTexGenfv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5904,7 +5911,7 @@ glGetTexGenfv:
 .globl glGetTexGeniv
 .type glGetTexGeniv,#function
 glGetTexGeniv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5925,7 +5932,7 @@ glGetTexGeniv:
 .globl glGetTexImage
 .type glGetTexImage,#function
 glGetTexImage:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5946,7 +5953,7 @@ glGetTexImage:
 .globl glGetTexParameterfv
 .type glGetTexParameterfv,#function
 glGetTexParameterfv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5967,7 +5974,7 @@ glGetTexParameterfv:
 .globl glGetTexParameteriv
 .type glGetTexParameteriv,#function
 glGetTexParameteriv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -5988,7 +5995,7 @@ glGetTexParameteriv:
 .globl glGetTexLevelParameterfv
 .type glGetTexLevelParameterfv,#function
 glGetTexLevelParameterfv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6009,7 +6016,7 @@ glGetTexLevelParameterfv:
 .globl glGetTexLevelParameteriv
 .type glGetTexLevelParameteriv,#function
 glGetTexLevelParameteriv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6030,7 +6037,7 @@ glGetTexLevelParameteriv:
 .globl glIsEnabled
 .type glIsEnabled,#function
 glIsEnabled:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6051,7 +6058,7 @@ glIsEnabled:
 .globl glIsList
 .type glIsList,#function
 glIsList:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6072,7 +6079,7 @@ glIsList:
 .globl glDepthRange
 .type glDepthRange,#function
 glDepthRange:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6093,7 +6100,7 @@ glDepthRange:
 .globl glFrustum
 .type glFrustum,#function
 glFrustum:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6114,7 +6121,7 @@ glFrustum:
 .globl glLoadIdentity
 .type glLoadIdentity,#function
 glLoadIdentity:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6135,7 +6142,7 @@ glLoadIdentity:
 .globl glLoadMatrixf
 .type glLoadMatrixf,#function
 glLoadMatrixf:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6156,7 +6163,7 @@ glLoadMatrixf:
 .globl glLoadMatrixd
 .type glLoadMatrixd,#function
 glLoadMatrixd:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6177,7 +6184,7 @@ glLoadMatrixd:
 .globl glMatrixMode
 .type glMatrixMode,#function
 glMatrixMode:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6198,7 +6205,7 @@ glMatrixMode:
 .globl glMultMatrixf
 .type glMultMatrixf,#function
 glMultMatrixf:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6219,7 +6226,7 @@ glMultMatrixf:
 .globl glMultMatrixd
 .type glMultMatrixd,#function
 glMultMatrixd:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6240,7 +6247,7 @@ glMultMatrixd:
 .globl glOrtho
 .type glOrtho,#function
 glOrtho:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6261,7 +6268,7 @@ glOrtho:
 .globl glPopMatrix
 .type glPopMatrix,#function
 glPopMatrix:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6282,7 +6289,7 @@ glPopMatrix:
 .globl glPushMatrix
 .type glPushMatrix,#function
 glPushMatrix:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6303,7 +6310,7 @@ glPushMatrix:
 .globl glRotated
 .type glRotated,#function
 glRotated:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6324,7 +6331,7 @@ glRotated:
 .globl glRotatef
 .type glRotatef,#function
 glRotatef:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6345,7 +6352,7 @@ glRotatef:
 .globl glScaled
 .type glScaled,#function
 glScaled:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6366,7 +6373,7 @@ glScaled:
 .globl glScalef
 .type glScalef,#function
 glScalef:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6387,7 +6394,7 @@ glScalef:
 .globl glTranslated
 .type glTranslated,#function
 glTranslated:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6408,7 +6415,7 @@ glTranslated:
 .globl glTranslatef
 .type glTranslatef,#function
 glTranslatef:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6429,7 +6436,7 @@ glTranslatef:
 .globl glViewport
 .type glViewport,#function
 glViewport:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6450,7 +6457,7 @@ glViewport:
 .globl glArrayElement
 .type glArrayElement,#function
 glArrayElement:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6471,7 +6478,7 @@ glArrayElement:
 .globl glColorPointer
 .type glColorPointer,#function
 glColorPointer:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6492,7 +6499,7 @@ glColorPointer:
 .globl glDisableClientState
 .type glDisableClientState,#function
 glDisableClientState:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6513,7 +6520,7 @@ glDisableClientState:
 .globl glDrawArrays
 .type glDrawArrays,#function
 glDrawArrays:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6534,7 +6541,7 @@ glDrawArrays:
 .globl glDrawElements
 .type glDrawElements,#function
 glDrawElements:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6555,7 +6562,7 @@ glDrawElements:
 .globl glEdgeFlagPointer
 .type glEdgeFlagPointer,#function
 glEdgeFlagPointer:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6576,7 +6583,7 @@ glEdgeFlagPointer:
 .globl glEnableClientState
 .type glEnableClientState,#function
 glEnableClientState:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6597,7 +6604,7 @@ glEnableClientState:
 .globl glGetPointerv
 .type glGetPointerv,#function
 glGetPointerv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6618,7 +6625,7 @@ glGetPointerv:
 .globl glIndexPointer
 .type glIndexPointer,#function
 glIndexPointer:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6639,7 +6646,7 @@ glIndexPointer:
 .globl glInterleavedArrays
 .type glInterleavedArrays,#function
 glInterleavedArrays:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6660,7 +6667,7 @@ glInterleavedArrays:
 .globl glNormalPointer
 .type glNormalPointer,#function
 glNormalPointer:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6681,7 +6688,7 @@ glNormalPointer:
 .globl glTexCoordPointer
 .type glTexCoordPointer,#function
 glTexCoordPointer:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6702,7 +6709,7 @@ glTexCoordPointer:
 .globl glVertexPointer
 .type glVertexPointer,#function
 glVertexPointer:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6723,7 +6730,7 @@ glVertexPointer:
 .globl glPolygonOffset
 .type glPolygonOffset,#function
 glPolygonOffset:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6744,7 +6751,7 @@ glPolygonOffset:
 .globl glCopyTexImage1D
 .type glCopyTexImage1D,#function
 glCopyTexImage1D:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6765,7 +6772,7 @@ glCopyTexImage1D:
 .globl glCopyTexImage2D
 .type glCopyTexImage2D,#function
 glCopyTexImage2D:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6786,7 +6793,7 @@ glCopyTexImage2D:
 .globl glCopyTexSubImage1D
 .type glCopyTexSubImage1D,#function
 glCopyTexSubImage1D:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6807,7 +6814,7 @@ glCopyTexSubImage1D:
 .globl glCopyTexSubImage2D
 .type glCopyTexSubImage2D,#function
 glCopyTexSubImage2D:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6828,7 +6835,7 @@ glCopyTexSubImage2D:
 .globl glTexSubImage1D
 .type glTexSubImage1D,#function
 glTexSubImage1D:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6849,7 +6856,7 @@ glTexSubImage1D:
 .globl glTexSubImage2D
 .type glTexSubImage2D,#function
 glTexSubImage2D:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6870,7 +6877,7 @@ glTexSubImage2D:
 .globl glAreTexturesResident
 .type glAreTexturesResident,#function
 glAreTexturesResident:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6891,7 +6898,7 @@ glAreTexturesResident:
 .globl glBindTexture
 .type glBindTexture,#function
 glBindTexture:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6912,7 +6919,7 @@ glBindTexture:
 .globl glDeleteTextures
 .type glDeleteTextures,#function
 glDeleteTextures:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6933,7 +6940,7 @@ glDeleteTextures:
 .globl glGenTextures
 .type glGenTextures,#function
 glGenTextures:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6954,7 +6961,7 @@ glGenTextures:
 .globl glIsTexture
 .type glIsTexture,#function
 glIsTexture:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6975,7 +6982,7 @@ glIsTexture:
 .globl glPrioritizeTextures
 .type glPrioritizeTextures,#function
 glPrioritizeTextures:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -6996,7 +7003,7 @@ glPrioritizeTextures:
 .globl glIndexub
 .type glIndexub,#function
 glIndexub:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7017,7 +7024,7 @@ glIndexub:
 .globl glIndexubv
 .type glIndexubv,#function
 glIndexubv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7038,7 +7045,7 @@ glIndexubv:
 .globl glPopClientAttrib
 .type glPopClientAttrib,#function
 glPopClientAttrib:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7059,7 +7066,7 @@ glPopClientAttrib:
 .globl glPushClientAttrib
 .type glPushClientAttrib,#function
 glPushClientAttrib:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7080,7 +7087,7 @@ glPushClientAttrib:
 .globl glBlendColor
 .type glBlendColor,#function
 glBlendColor:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7101,7 +7108,7 @@ glBlendColor:
 .globl glBlendEquation
 .type glBlendEquation,#function
 glBlendEquation:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7122,7 +7129,7 @@ glBlendEquation:
 .globl glDrawRangeElements
 .type glDrawRangeElements,#function
 glDrawRangeElements:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7143,7 +7150,7 @@ glDrawRangeElements:
 .globl glColorTable
 .type glColorTable,#function
 glColorTable:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7164,7 +7171,7 @@ glColorTable:
 .globl glColorTableParameterfv
 .type glColorTableParameterfv,#function
 glColorTableParameterfv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7185,7 +7192,7 @@ glColorTableParameterfv:
 .globl glColorTableParameteriv
 .type glColorTableParameteriv,#function
 glColorTableParameteriv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7206,7 +7213,7 @@ glColorTableParameteriv:
 .globl glCopyColorTable
 .type glCopyColorTable,#function
 glCopyColorTable:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7227,7 +7234,7 @@ glCopyColorTable:
 .globl glGetColorTable
 .type glGetColorTable,#function
 glGetColorTable:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7248,7 +7255,7 @@ glGetColorTable:
 .globl glGetColorTableParameterfv
 .type glGetColorTableParameterfv,#function
 glGetColorTableParameterfv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7269,7 +7276,7 @@ glGetColorTableParameterfv:
 .globl glGetColorTableParameteriv
 .type glGetColorTableParameteriv,#function
 glGetColorTableParameteriv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7290,7 +7297,7 @@ glGetColorTableParameteriv:
 .globl glColorSubTable
 .type glColorSubTable,#function
 glColorSubTable:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7311,7 +7318,7 @@ glColorSubTable:
 .globl glCopyColorSubTable
 .type glCopyColorSubTable,#function
 glCopyColorSubTable:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7332,7 +7339,7 @@ glCopyColorSubTable:
 .globl glConvolutionFilter1D
 .type glConvolutionFilter1D,#function
 glConvolutionFilter1D:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7353,7 +7360,7 @@ glConvolutionFilter1D:
 .globl glConvolutionFilter2D
 .type glConvolutionFilter2D,#function
 glConvolutionFilter2D:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7374,7 +7381,7 @@ glConvolutionFilter2D:
 .globl glConvolutionParameterf
 .type glConvolutionParameterf,#function
 glConvolutionParameterf:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7395,7 +7402,7 @@ glConvolutionParameterf:
 .globl glConvolutionParameterfv
 .type glConvolutionParameterfv,#function
 glConvolutionParameterfv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7416,7 +7423,7 @@ glConvolutionParameterfv:
 .globl glConvolutionParameteri
 .type glConvolutionParameteri,#function
 glConvolutionParameteri:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7437,7 +7444,7 @@ glConvolutionParameteri:
 .globl glConvolutionParameteriv
 .type glConvolutionParameteriv,#function
 glConvolutionParameteriv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7458,7 +7465,7 @@ glConvolutionParameteriv:
 .globl glCopyConvolutionFilter1D
 .type glCopyConvolutionFilter1D,#function
 glCopyConvolutionFilter1D:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7479,7 +7486,7 @@ glCopyConvolutionFilter1D:
 .globl glCopyConvolutionFilter2D
 .type glCopyConvolutionFilter2D,#function
 glCopyConvolutionFilter2D:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7500,7 +7507,7 @@ glCopyConvolutionFilter2D:
 .globl glGetConvolutionFilter
 .type glGetConvolutionFilter,#function
 glGetConvolutionFilter:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7521,7 +7528,7 @@ glGetConvolutionFilter:
 .globl glGetConvolutionParameterfv
 .type glGetConvolutionParameterfv,#function
 glGetConvolutionParameterfv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7542,7 +7549,7 @@ glGetConvolutionParameterfv:
 .globl glGetConvolutionParameteriv
 .type glGetConvolutionParameteriv,#function
 glGetConvolutionParameteriv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7563,7 +7570,7 @@ glGetConvolutionParameteriv:
 .globl glGetSeparableFilter
 .type glGetSeparableFilter,#function
 glGetSeparableFilter:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7584,7 +7591,7 @@ glGetSeparableFilter:
 .globl glSeparableFilter2D
 .type glSeparableFilter2D,#function
 glSeparableFilter2D:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7605,7 +7612,7 @@ glSeparableFilter2D:
 .globl glGetHistogram
 .type glGetHistogram,#function
 glGetHistogram:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7626,7 +7633,7 @@ glGetHistogram:
 .globl glGetHistogramParameterfv
 .type glGetHistogramParameterfv,#function
 glGetHistogramParameterfv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7647,7 +7654,7 @@ glGetHistogramParameterfv:
 .globl glGetHistogramParameteriv
 .type glGetHistogramParameteriv,#function
 glGetHistogramParameteriv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7668,7 +7675,7 @@ glGetHistogramParameteriv:
 .globl glGetMinmax
 .type glGetMinmax,#function
 glGetMinmax:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7689,7 +7696,7 @@ glGetMinmax:
 .globl glGetMinmaxParameterfv
 .type glGetMinmaxParameterfv,#function
 glGetMinmaxParameterfv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7710,7 +7717,7 @@ glGetMinmaxParameterfv:
 .globl glGetMinmaxParameteriv
 .type glGetMinmaxParameteriv,#function
 glGetMinmaxParameteriv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7731,7 +7738,7 @@ glGetMinmaxParameteriv:
 .globl glHistogram
 .type glHistogram,#function
 glHistogram:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7752,7 +7759,7 @@ glHistogram:
 .globl glMinmax
 .type glMinmax,#function
 glMinmax:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7773,7 +7780,7 @@ glMinmax:
 .globl glResetHistogram
 .type glResetHistogram,#function
 glResetHistogram:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7794,7 +7801,7 @@ glResetHistogram:
 .globl glResetMinmax
 .type glResetMinmax,#function
 glResetMinmax:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7815,7 +7822,7 @@ glResetMinmax:
 .globl glTexImage3D
 .type glTexImage3D,#function
 glTexImage3D:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7836,7 +7843,7 @@ glTexImage3D:
 .globl glTexSubImage3D
 .type glTexSubImage3D,#function
 glTexSubImage3D:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7857,7 +7864,7 @@ glTexSubImage3D:
 .globl glCopyTexSubImage3D
 .type glCopyTexSubImage3D,#function
 glCopyTexSubImage3D:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7878,7 +7885,7 @@ glCopyTexSubImage3D:
 .globl glActiveTextureARB
 .type glActiveTextureARB,#function
 glActiveTextureARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7899,7 +7906,7 @@ glActiveTextureARB:
 .globl glClientActiveTextureARB
 .type glClientActiveTextureARB,#function
 glClientActiveTextureARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7920,7 +7927,7 @@ glClientActiveTextureARB:
 .globl glMultiTexCoord1dARB
 .type glMultiTexCoord1dARB,#function
 glMultiTexCoord1dARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7941,7 +7948,7 @@ glMultiTexCoord1dARB:
 .globl glMultiTexCoord1dvARB
 .type glMultiTexCoord1dvARB,#function
 glMultiTexCoord1dvARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7962,7 +7969,7 @@ glMultiTexCoord1dvARB:
 .globl glMultiTexCoord1fARB
 .type glMultiTexCoord1fARB,#function
 glMultiTexCoord1fARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -7983,7 +7990,7 @@ glMultiTexCoord1fARB:
 .globl glMultiTexCoord1fvARB
 .type glMultiTexCoord1fvARB,#function
 glMultiTexCoord1fvARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8004,7 +8011,7 @@ glMultiTexCoord1fvARB:
 .globl glMultiTexCoord1iARB
 .type glMultiTexCoord1iARB,#function
 glMultiTexCoord1iARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8025,7 +8032,7 @@ glMultiTexCoord1iARB:
 .globl glMultiTexCoord1ivARB
 .type glMultiTexCoord1ivARB,#function
 glMultiTexCoord1ivARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8046,7 +8053,7 @@ glMultiTexCoord1ivARB:
 .globl glMultiTexCoord1sARB
 .type glMultiTexCoord1sARB,#function
 glMultiTexCoord1sARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8067,7 +8074,7 @@ glMultiTexCoord1sARB:
 .globl glMultiTexCoord1svARB
 .type glMultiTexCoord1svARB,#function
 glMultiTexCoord1svARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8088,7 +8095,7 @@ glMultiTexCoord1svARB:
 .globl glMultiTexCoord2dARB
 .type glMultiTexCoord2dARB,#function
 glMultiTexCoord2dARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8109,7 +8116,7 @@ glMultiTexCoord2dARB:
 .globl glMultiTexCoord2dvARB
 .type glMultiTexCoord2dvARB,#function
 glMultiTexCoord2dvARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8130,7 +8137,7 @@ glMultiTexCoord2dvARB:
 .globl glMultiTexCoord2fARB
 .type glMultiTexCoord2fARB,#function
 glMultiTexCoord2fARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8151,7 +8158,7 @@ glMultiTexCoord2fARB:
 .globl glMultiTexCoord2fvARB
 .type glMultiTexCoord2fvARB,#function
 glMultiTexCoord2fvARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8172,7 +8179,7 @@ glMultiTexCoord2fvARB:
 .globl glMultiTexCoord2iARB
 .type glMultiTexCoord2iARB,#function
 glMultiTexCoord2iARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8193,7 +8200,7 @@ glMultiTexCoord2iARB:
 .globl glMultiTexCoord2ivARB
 .type glMultiTexCoord2ivARB,#function
 glMultiTexCoord2ivARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8214,7 +8221,7 @@ glMultiTexCoord2ivARB:
 .globl glMultiTexCoord2sARB
 .type glMultiTexCoord2sARB,#function
 glMultiTexCoord2sARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8235,7 +8242,7 @@ glMultiTexCoord2sARB:
 .globl glMultiTexCoord2svARB
 .type glMultiTexCoord2svARB,#function
 glMultiTexCoord2svARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8256,7 +8263,7 @@ glMultiTexCoord2svARB:
 .globl glMultiTexCoord3dARB
 .type glMultiTexCoord3dARB,#function
 glMultiTexCoord3dARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8277,7 +8284,7 @@ glMultiTexCoord3dARB:
 .globl glMultiTexCoord3dvARB
 .type glMultiTexCoord3dvARB,#function
 glMultiTexCoord3dvARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8298,7 +8305,7 @@ glMultiTexCoord3dvARB:
 .globl glMultiTexCoord3fARB
 .type glMultiTexCoord3fARB,#function
 glMultiTexCoord3fARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8319,7 +8326,7 @@ glMultiTexCoord3fARB:
 .globl glMultiTexCoord3fvARB
 .type glMultiTexCoord3fvARB,#function
 glMultiTexCoord3fvARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8340,7 +8347,7 @@ glMultiTexCoord3fvARB:
 .globl glMultiTexCoord3iARB
 .type glMultiTexCoord3iARB,#function
 glMultiTexCoord3iARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8361,7 +8368,7 @@ glMultiTexCoord3iARB:
 .globl glMultiTexCoord3ivARB
 .type glMultiTexCoord3ivARB,#function
 glMultiTexCoord3ivARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8382,7 +8389,7 @@ glMultiTexCoord3ivARB:
 .globl glMultiTexCoord3sARB
 .type glMultiTexCoord3sARB,#function
 glMultiTexCoord3sARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8403,7 +8410,7 @@ glMultiTexCoord3sARB:
 .globl glMultiTexCoord3svARB
 .type glMultiTexCoord3svARB,#function
 glMultiTexCoord3svARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8424,7 +8431,7 @@ glMultiTexCoord3svARB:
 .globl glMultiTexCoord4dARB
 .type glMultiTexCoord4dARB,#function
 glMultiTexCoord4dARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8445,7 +8452,7 @@ glMultiTexCoord4dARB:
 .globl glMultiTexCoord4dvARB
 .type glMultiTexCoord4dvARB,#function
 glMultiTexCoord4dvARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8466,7 +8473,7 @@ glMultiTexCoord4dvARB:
 .globl glMultiTexCoord4fARB
 .type glMultiTexCoord4fARB,#function
 glMultiTexCoord4fARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8487,7 +8494,7 @@ glMultiTexCoord4fARB:
 .globl glMultiTexCoord4fvARB
 .type glMultiTexCoord4fvARB,#function
 glMultiTexCoord4fvARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8508,7 +8515,7 @@ glMultiTexCoord4fvARB:
 .globl glMultiTexCoord4iARB
 .type glMultiTexCoord4iARB,#function
 glMultiTexCoord4iARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8529,7 +8536,7 @@ glMultiTexCoord4iARB:
 .globl glMultiTexCoord4ivARB
 .type glMultiTexCoord4ivARB,#function
 glMultiTexCoord4ivARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8550,7 +8557,7 @@ glMultiTexCoord4ivARB:
 .globl glMultiTexCoord4sARB
 .type glMultiTexCoord4sARB,#function
 glMultiTexCoord4sARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8571,7 +8578,7 @@ glMultiTexCoord4sARB:
 .globl glMultiTexCoord4svARB
 .type glMultiTexCoord4svARB,#function
 glMultiTexCoord4svARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8592,7 +8599,7 @@ glMultiTexCoord4svARB:
 .globl glLoadTransposeMatrixfARB
 .type glLoadTransposeMatrixfARB,#function
 glLoadTransposeMatrixfARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8613,7 +8620,7 @@ glLoadTransposeMatrixfARB:
 .globl glLoadTransposeMatrixdARB
 .type glLoadTransposeMatrixdARB,#function
 glLoadTransposeMatrixdARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8634,7 +8641,7 @@ glLoadTransposeMatrixdARB:
 .globl glMultTransposeMatrixfARB
 .type glMultTransposeMatrixfARB,#function
 glMultTransposeMatrixfARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8655,7 +8662,7 @@ glMultTransposeMatrixfARB:
 .globl glMultTransposeMatrixdARB
 .type glMultTransposeMatrixdARB,#function
 glMultTransposeMatrixdARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8676,7 +8683,7 @@ glMultTransposeMatrixdARB:
 .globl glSampleCoverageARB
 .type glSampleCoverageARB,#function
 glSampleCoverageARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8697,7 +8704,7 @@ glSampleCoverageARB:
 .globl gl__unused413
 .type gl__unused413,#function
 gl__unused413:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8718,7 +8725,7 @@ gl__unused413:
 .globl glCompressedTexImage3DARB
 .type glCompressedTexImage3DARB,#function
 glCompressedTexImage3DARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8739,7 +8746,7 @@ glCompressedTexImage3DARB:
 .globl glCompressedTexImage2DARB
 .type glCompressedTexImage2DARB,#function
 glCompressedTexImage2DARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8760,7 +8767,7 @@ glCompressedTexImage2DARB:
 .globl glCompressedTexImage1DARB
 .type glCompressedTexImage1DARB,#function
 glCompressedTexImage1DARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8781,7 +8788,7 @@ glCompressedTexImage1DARB:
 .globl glCompressedTexSubImage3DARB
 .type glCompressedTexSubImage3DARB,#function
 glCompressedTexSubImage3DARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8802,7 +8809,7 @@ glCompressedTexSubImage3DARB:
 .globl glCompressedTexSubImage2DARB
 .type glCompressedTexSubImage2DARB,#function
 glCompressedTexSubImage2DARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8823,7 +8830,7 @@ glCompressedTexSubImage2DARB:
 .globl glCompressedTexSubImage1DARB
 .type glCompressedTexSubImage1DARB,#function
 glCompressedTexSubImage1DARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8844,7 +8851,7 @@ glCompressedTexSubImage1DARB:
 .globl glGetCompressedTexImageARB
 .type glGetCompressedTexImageARB,#function
 glGetCompressedTexImageARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8865,7 +8872,7 @@ glGetCompressedTexImageARB:
 .globl glActiveTexture
 .type glActiveTexture,#function
 glActiveTexture:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8886,7 +8893,7 @@ glActiveTexture:
 .globl glClientActiveTexture
 .type glClientActiveTexture,#function
 glClientActiveTexture:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8907,7 +8914,7 @@ glClientActiveTexture:
 .globl glMultiTexCoord1d
 .type glMultiTexCoord1d,#function
 glMultiTexCoord1d:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8928,7 +8935,7 @@ glMultiTexCoord1d:
 .globl glMultiTexCoord1dv
 .type glMultiTexCoord1dv,#function
 glMultiTexCoord1dv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8949,7 +8956,7 @@ glMultiTexCoord1dv:
 .globl glMultiTexCoord1f
 .type glMultiTexCoord1f,#function
 glMultiTexCoord1f:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8970,7 +8977,7 @@ glMultiTexCoord1f:
 .globl glMultiTexCoord1fv
 .type glMultiTexCoord1fv,#function
 glMultiTexCoord1fv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -8991,7 +8998,7 @@ glMultiTexCoord1fv:
 .globl glMultiTexCoord1i
 .type glMultiTexCoord1i,#function
 glMultiTexCoord1i:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9012,7 +9019,7 @@ glMultiTexCoord1i:
 .globl glMultiTexCoord1iv
 .type glMultiTexCoord1iv,#function
 glMultiTexCoord1iv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9033,7 +9040,7 @@ glMultiTexCoord1iv:
 .globl glMultiTexCoord1s
 .type glMultiTexCoord1s,#function
 glMultiTexCoord1s:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9054,7 +9061,7 @@ glMultiTexCoord1s:
 .globl glMultiTexCoord1sv
 .type glMultiTexCoord1sv,#function
 glMultiTexCoord1sv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9075,7 +9082,7 @@ glMultiTexCoord1sv:
 .globl glMultiTexCoord2d
 .type glMultiTexCoord2d,#function
 glMultiTexCoord2d:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9096,7 +9103,7 @@ glMultiTexCoord2d:
 .globl glMultiTexCoord2dv
 .type glMultiTexCoord2dv,#function
 glMultiTexCoord2dv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9117,7 +9124,7 @@ glMultiTexCoord2dv:
 .globl glMultiTexCoord2f
 .type glMultiTexCoord2f,#function
 glMultiTexCoord2f:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9138,7 +9145,7 @@ glMultiTexCoord2f:
 .globl glMultiTexCoord2fv
 .type glMultiTexCoord2fv,#function
 glMultiTexCoord2fv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9159,7 +9166,7 @@ glMultiTexCoord2fv:
 .globl glMultiTexCoord2i
 .type glMultiTexCoord2i,#function
 glMultiTexCoord2i:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9180,7 +9187,7 @@ glMultiTexCoord2i:
 .globl glMultiTexCoord2iv
 .type glMultiTexCoord2iv,#function
 glMultiTexCoord2iv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9201,7 +9208,7 @@ glMultiTexCoord2iv:
 .globl glMultiTexCoord2s
 .type glMultiTexCoord2s,#function
 glMultiTexCoord2s:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9222,7 +9229,7 @@ glMultiTexCoord2s:
 .globl glMultiTexCoord2sv
 .type glMultiTexCoord2sv,#function
 glMultiTexCoord2sv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9243,7 +9250,7 @@ glMultiTexCoord2sv:
 .globl glMultiTexCoord3d
 .type glMultiTexCoord3d,#function
 glMultiTexCoord3d:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9264,7 +9271,7 @@ glMultiTexCoord3d:
 .globl glMultiTexCoord3dv
 .type glMultiTexCoord3dv,#function
 glMultiTexCoord3dv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9285,7 +9292,7 @@ glMultiTexCoord3dv:
 .globl glMultiTexCoord3f
 .type glMultiTexCoord3f,#function
 glMultiTexCoord3f:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9306,7 +9313,7 @@ glMultiTexCoord3f:
 .globl glMultiTexCoord3fv
 .type glMultiTexCoord3fv,#function
 glMultiTexCoord3fv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9327,7 +9334,7 @@ glMultiTexCoord3fv:
 .globl glMultiTexCoord3i
 .type glMultiTexCoord3i,#function
 glMultiTexCoord3i:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9348,7 +9355,7 @@ glMultiTexCoord3i:
 .globl glMultiTexCoord3iv
 .type glMultiTexCoord3iv,#function
 glMultiTexCoord3iv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9369,7 +9376,7 @@ glMultiTexCoord3iv:
 .globl glMultiTexCoord3s
 .type glMultiTexCoord3s,#function
 glMultiTexCoord3s:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9390,7 +9397,7 @@ glMultiTexCoord3s:
 .globl glMultiTexCoord3sv
 .type glMultiTexCoord3sv,#function
 glMultiTexCoord3sv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9411,7 +9418,7 @@ glMultiTexCoord3sv:
 .globl glMultiTexCoord4d
 .type glMultiTexCoord4d,#function
 glMultiTexCoord4d:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9432,7 +9439,7 @@ glMultiTexCoord4d:
 .globl glMultiTexCoord4dv
 .type glMultiTexCoord4dv,#function
 glMultiTexCoord4dv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9453,7 +9460,7 @@ glMultiTexCoord4dv:
 .globl glMultiTexCoord4f
 .type glMultiTexCoord4f,#function
 glMultiTexCoord4f:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9474,7 +9481,7 @@ glMultiTexCoord4f:
 .globl glMultiTexCoord4fv
 .type glMultiTexCoord4fv,#function
 glMultiTexCoord4fv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9495,7 +9502,7 @@ glMultiTexCoord4fv:
 .globl glMultiTexCoord4i
 .type glMultiTexCoord4i,#function
 glMultiTexCoord4i:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9516,7 +9523,7 @@ glMultiTexCoord4i:
 .globl glMultiTexCoord4iv
 .type glMultiTexCoord4iv,#function
 glMultiTexCoord4iv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9537,7 +9544,7 @@ glMultiTexCoord4iv:
 .globl glMultiTexCoord4s
 .type glMultiTexCoord4s,#function
 glMultiTexCoord4s:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9558,7 +9565,7 @@ glMultiTexCoord4s:
 .globl glMultiTexCoord4sv
 .type glMultiTexCoord4sv,#function
 glMultiTexCoord4sv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9579,7 +9586,7 @@ glMultiTexCoord4sv:
 .globl glLoadTransposeMatrixf
 .type glLoadTransposeMatrixf,#function
 glLoadTransposeMatrixf:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9600,7 +9607,7 @@ glLoadTransposeMatrixf:
 .globl glLoadTransposeMatrixd
 .type glLoadTransposeMatrixd,#function
 glLoadTransposeMatrixd:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9621,7 +9628,7 @@ glLoadTransposeMatrixd:
 .globl glMultTransposeMatrixf
 .type glMultTransposeMatrixf,#function
 glMultTransposeMatrixf:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9642,7 +9649,7 @@ glMultTransposeMatrixf:
 .globl glMultTransposeMatrixd
 .type glMultTransposeMatrixd,#function
 glMultTransposeMatrixd:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9663,7 +9670,7 @@ glMultTransposeMatrixd:
 .globl glSampleCoverage
 .type glSampleCoverage,#function
 glSampleCoverage:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9684,7 +9691,7 @@ glSampleCoverage:
 .globl glCompressedTexImage3D
 .type glCompressedTexImage3D,#function
 glCompressedTexImage3D:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9705,7 +9712,7 @@ glCompressedTexImage3D:
 .globl glCompressedTexImage2D
 .type glCompressedTexImage2D,#function
 glCompressedTexImage2D:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9726,7 +9733,7 @@ glCompressedTexImage2D:
 .globl glCompressedTexImage1D
 .type glCompressedTexImage1D,#function
 glCompressedTexImage1D:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9747,7 +9754,7 @@ glCompressedTexImage1D:
 .globl glCompressedTexSubImage3D
 .type glCompressedTexSubImage3D,#function
 glCompressedTexSubImage3D:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9768,7 +9775,7 @@ glCompressedTexSubImage3D:
 .globl glCompressedTexSubImage2D
 .type glCompressedTexSubImage2D,#function
 glCompressedTexSubImage2D:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9789,7 +9796,7 @@ glCompressedTexSubImage2D:
 .globl glCompressedTexSubImage1D
 .type glCompressedTexSubImage1D,#function
 glCompressedTexSubImage1D:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9810,7 +9817,7 @@ glCompressedTexSubImage1D:
 .globl glGetCompressedTexImage
 .type glGetCompressedTexImage,#function
 glGetCompressedTexImage:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9831,7 +9838,7 @@ glGetCompressedTexImage:
 .globl glBlendColorEXT
 .type glBlendColorEXT,#function
 glBlendColorEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9852,7 +9859,7 @@ glBlendColorEXT:
 .globl glPolygonOffsetEXT
 .type glPolygonOffsetEXT,#function
 glPolygonOffsetEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9873,7 +9880,7 @@ glPolygonOffsetEXT:
 .globl glTexImage3DEXT
 .type glTexImage3DEXT,#function
 glTexImage3DEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9894,7 +9901,7 @@ glTexImage3DEXT:
 .globl glTexSubImage3DEXT
 .type glTexSubImage3DEXT,#function
 glTexSubImage3DEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9915,7 +9922,7 @@ glTexSubImage3DEXT:
 .globl glGetTexFilterFuncSGIS
 .type glGetTexFilterFuncSGIS,#function
 glGetTexFilterFuncSGIS:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9936,7 +9943,7 @@ glGetTexFilterFuncSGIS:
 .globl glTexFilterFuncSGIS
 .type glTexFilterFuncSGIS,#function
 glTexFilterFuncSGIS:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9957,7 +9964,7 @@ glTexFilterFuncSGIS:
 .globl glTexSubImage1DEXT
 .type glTexSubImage1DEXT,#function
 glTexSubImage1DEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9978,7 +9985,7 @@ glTexSubImage1DEXT:
 .globl glTexSubImage2DEXT
 .type glTexSubImage2DEXT,#function
 glTexSubImage2DEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -9999,7 +10006,7 @@ glTexSubImage2DEXT:
 .globl glCopyTexImage1DEXT
 .type glCopyTexImage1DEXT,#function
 glCopyTexImage1DEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10020,7 +10027,7 @@ glCopyTexImage1DEXT:
 .globl glCopyTexImage2DEXT
 .type glCopyTexImage2DEXT,#function
 glCopyTexImage2DEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10041,7 +10048,7 @@ glCopyTexImage2DEXT:
 .globl glCopyTexSubImage1DEXT
 .type glCopyTexSubImage1DEXT,#function
 glCopyTexSubImage1DEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10062,7 +10069,7 @@ glCopyTexSubImage1DEXT:
 .globl glCopyTexSubImage2DEXT
 .type glCopyTexSubImage2DEXT,#function
 glCopyTexSubImage2DEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10083,7 +10090,7 @@ glCopyTexSubImage2DEXT:
 .globl glCopyTexSubImage3DEXT
 .type glCopyTexSubImage3DEXT,#function
 glCopyTexSubImage3DEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10104,7 +10111,7 @@ glCopyTexSubImage3DEXT:
 .globl glGetHistogramEXT
 .type glGetHistogramEXT,#function
 glGetHistogramEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10125,7 +10132,7 @@ glGetHistogramEXT:
 .globl glGetHistogramParameterfvEXT
 .type glGetHistogramParameterfvEXT,#function
 glGetHistogramParameterfvEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10146,7 +10153,7 @@ glGetHistogramParameterfvEXT:
 .globl glGetHistogramParameterivEXT
 .type glGetHistogramParameterivEXT,#function
 glGetHistogramParameterivEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10167,7 +10174,7 @@ glGetHistogramParameterivEXT:
 .globl glGetMinmaxEXT
 .type glGetMinmaxEXT,#function
 glGetMinmaxEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10188,7 +10195,7 @@ glGetMinmaxEXT:
 .globl glGetMinmaxParameterfvEXT
 .type glGetMinmaxParameterfvEXT,#function
 glGetMinmaxParameterfvEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10209,7 +10216,7 @@ glGetMinmaxParameterfvEXT:
 .globl glGetMinmaxParameterivEXT
 .type glGetMinmaxParameterivEXT,#function
 glGetMinmaxParameterivEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10230,7 +10237,7 @@ glGetMinmaxParameterivEXT:
 .globl glHistogramEXT
 .type glHistogramEXT,#function
 glHistogramEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10251,7 +10258,7 @@ glHistogramEXT:
 .globl glMinmaxEXT
 .type glMinmaxEXT,#function
 glMinmaxEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10272,7 +10279,7 @@ glMinmaxEXT:
 .globl glResetHistogramEXT
 .type glResetHistogramEXT,#function
 glResetHistogramEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10293,7 +10300,7 @@ glResetHistogramEXT:
 .globl glResetMinmaxEXT
 .type glResetMinmaxEXT,#function
 glResetMinmaxEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10314,7 +10321,7 @@ glResetMinmaxEXT:
 .globl glConvolutionFilter1DEXT
 .type glConvolutionFilter1DEXT,#function
 glConvolutionFilter1DEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10335,7 +10342,7 @@ glConvolutionFilter1DEXT:
 .globl glConvolutionFilter2DEXT
 .type glConvolutionFilter2DEXT,#function
 glConvolutionFilter2DEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10356,7 +10363,7 @@ glConvolutionFilter2DEXT:
 .globl glConvolutionParameterfEXT
 .type glConvolutionParameterfEXT,#function
 glConvolutionParameterfEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10377,7 +10384,7 @@ glConvolutionParameterfEXT:
 .globl glConvolutionParameterfvEXT
 .type glConvolutionParameterfvEXT,#function
 glConvolutionParameterfvEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10398,7 +10405,7 @@ glConvolutionParameterfvEXT:
 .globl glConvolutionParameteriEXT
 .type glConvolutionParameteriEXT,#function
 glConvolutionParameteriEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10419,7 +10426,7 @@ glConvolutionParameteriEXT:
 .globl glConvolutionParameterivEXT
 .type glConvolutionParameterivEXT,#function
 glConvolutionParameterivEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10440,7 +10447,7 @@ glConvolutionParameterivEXT:
 .globl glCopyConvolutionFilter1DEXT
 .type glCopyConvolutionFilter1DEXT,#function
 glCopyConvolutionFilter1DEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10461,7 +10468,7 @@ glCopyConvolutionFilter1DEXT:
 .globl glCopyConvolutionFilter2DEXT
 .type glCopyConvolutionFilter2DEXT,#function
 glCopyConvolutionFilter2DEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10482,7 +10489,7 @@ glCopyConvolutionFilter2DEXT:
 .globl glGetConvolutionFilterEXT
 .type glGetConvolutionFilterEXT,#function
 glGetConvolutionFilterEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10503,7 +10510,7 @@ glGetConvolutionFilterEXT:
 .globl glGetConvolutionParameterfvEXT
 .type glGetConvolutionParameterfvEXT,#function
 glGetConvolutionParameterfvEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10524,7 +10531,7 @@ glGetConvolutionParameterfvEXT:
 .globl glGetConvolutionParameterivEXT
 .type glGetConvolutionParameterivEXT,#function
 glGetConvolutionParameterivEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10545,7 +10552,7 @@ glGetConvolutionParameterivEXT:
 .globl glGetSeparableFilterEXT
 .type glGetSeparableFilterEXT,#function
 glGetSeparableFilterEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10566,7 +10573,7 @@ glGetSeparableFilterEXT:
 .globl glSeparableFilter2DEXT
 .type glSeparableFilter2DEXT,#function
 glSeparableFilter2DEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10587,7 +10594,7 @@ glSeparableFilter2DEXT:
 .globl glColorTableSGI
 .type glColorTableSGI,#function
 glColorTableSGI:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10608,7 +10615,7 @@ glColorTableSGI:
 .globl glColorTableParameterfvSGI
 .type glColorTableParameterfvSGI,#function
 glColorTableParameterfvSGI:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10629,7 +10636,7 @@ glColorTableParameterfvSGI:
 .globl glColorTableParameterivSGI
 .type glColorTableParameterivSGI,#function
 glColorTableParameterivSGI:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10650,7 +10657,7 @@ glColorTableParameterivSGI:
 .globl glCopyColorTableSGI
 .type glCopyColorTableSGI,#function
 glCopyColorTableSGI:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10671,7 +10678,7 @@ glCopyColorTableSGI:
 .globl glGetColorTableSGI
 .type glGetColorTableSGI,#function
 glGetColorTableSGI:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10692,7 +10699,7 @@ glGetColorTableSGI:
 .globl glGetColorTableParameterfvSGI
 .type glGetColorTableParameterfvSGI,#function
 glGetColorTableParameterfvSGI:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10713,7 +10720,7 @@ glGetColorTableParameterfvSGI:
 .globl glGetColorTableParameterivSGI
 .type glGetColorTableParameterivSGI,#function
 glGetColorTableParameterivSGI:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10734,7 +10741,7 @@ glGetColorTableParameterivSGI:
 .globl glPixelTexGenSGIX
 .type glPixelTexGenSGIX,#function
 glPixelTexGenSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10755,7 +10762,7 @@ glPixelTexGenSGIX:
 .globl glPixelTexGenParameteriSGIS
 .type glPixelTexGenParameteriSGIS,#function
 glPixelTexGenParameteriSGIS:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10776,7 +10783,7 @@ glPixelTexGenParameteriSGIS:
 .globl glPixelTexGenParameterivSGIS
 .type glPixelTexGenParameterivSGIS,#function
 glPixelTexGenParameterivSGIS:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10797,7 +10804,7 @@ glPixelTexGenParameterivSGIS:
 .globl glPixelTexGenParameterfSGIS
 .type glPixelTexGenParameterfSGIS,#function
 glPixelTexGenParameterfSGIS:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10818,7 +10825,7 @@ glPixelTexGenParameterfSGIS:
 .globl glPixelTexGenParameterfvSGIS
 .type glPixelTexGenParameterfvSGIS,#function
 glPixelTexGenParameterfvSGIS:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10839,7 +10846,7 @@ glPixelTexGenParameterfvSGIS:
 .globl glGetPixelTexGenParameterivSGIS
 .type glGetPixelTexGenParameterivSGIS,#function
 glGetPixelTexGenParameterivSGIS:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10860,7 +10867,7 @@ glGetPixelTexGenParameterivSGIS:
 .globl glGetPixelTexGenParameterfvSGIS
 .type glGetPixelTexGenParameterfvSGIS,#function
 glGetPixelTexGenParameterfvSGIS:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10881,7 +10888,7 @@ glGetPixelTexGenParameterfvSGIS:
 .globl glTexImage4DSGIS
 .type glTexImage4DSGIS,#function
 glTexImage4DSGIS:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10902,7 +10909,7 @@ glTexImage4DSGIS:
 .globl glTexSubImage4DSGIS
 .type glTexSubImage4DSGIS,#function
 glTexSubImage4DSGIS:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10923,7 +10930,7 @@ glTexSubImage4DSGIS:
 .globl glAreTexturesResidentEXT
 .type glAreTexturesResidentEXT,#function
 glAreTexturesResidentEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10944,7 +10951,7 @@ glAreTexturesResidentEXT:
 .globl glBindTextureEXT
 .type glBindTextureEXT,#function
 glBindTextureEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10965,7 +10972,7 @@ glBindTextureEXT:
 .globl glDeleteTexturesEXT
 .type glDeleteTexturesEXT,#function
 glDeleteTexturesEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -10986,7 +10993,7 @@ glDeleteTexturesEXT:
 .globl glGenTexturesEXT
 .type glGenTexturesEXT,#function
 glGenTexturesEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11007,7 +11014,7 @@ glGenTexturesEXT:
 .globl glIsTextureEXT
 .type glIsTextureEXT,#function
 glIsTextureEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11028,7 +11035,7 @@ glIsTextureEXT:
 .globl glPrioritizeTexturesEXT
 .type glPrioritizeTexturesEXT,#function
 glPrioritizeTexturesEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11049,7 +11056,7 @@ glPrioritizeTexturesEXT:
 .globl glDetailTexFuncSGIS
 .type glDetailTexFuncSGIS,#function
 glDetailTexFuncSGIS:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11070,7 +11077,7 @@ glDetailTexFuncSGIS:
 .globl glGetDetailTexFuncSGIS
 .type glGetDetailTexFuncSGIS,#function
 glGetDetailTexFuncSGIS:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11091,7 +11098,7 @@ glGetDetailTexFuncSGIS:
 .globl glSharpenTexFuncSGIS
 .type glSharpenTexFuncSGIS,#function
 glSharpenTexFuncSGIS:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11112,7 +11119,7 @@ glSharpenTexFuncSGIS:
 .globl glGetSharpenTexFuncSGIS
 .type glGetSharpenTexFuncSGIS,#function
 glGetSharpenTexFuncSGIS:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11133,7 +11140,7 @@ glGetSharpenTexFuncSGIS:
 .globl glSampleMaskSGIS
 .type glSampleMaskSGIS,#function
 glSampleMaskSGIS:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11154,7 +11161,7 @@ glSampleMaskSGIS:
 .globl glSamplePatternSGIS
 .type glSamplePatternSGIS,#function
 glSamplePatternSGIS:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11175,7 +11182,7 @@ glSamplePatternSGIS:
 .globl glArrayElementEXT
 .type glArrayElementEXT,#function
 glArrayElementEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11196,7 +11203,7 @@ glArrayElementEXT:
 .globl glColorPointerEXT
 .type glColorPointerEXT,#function
 glColorPointerEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11217,7 +11224,7 @@ glColorPointerEXT:
 .globl glDrawArraysEXT
 .type glDrawArraysEXT,#function
 glDrawArraysEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11238,7 +11245,7 @@ glDrawArraysEXT:
 .globl glEdgeFlagPointerEXT
 .type glEdgeFlagPointerEXT,#function
 glEdgeFlagPointerEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11259,7 +11266,7 @@ glEdgeFlagPointerEXT:
 .globl glGetPointervEXT
 .type glGetPointervEXT,#function
 glGetPointervEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11280,7 +11287,7 @@ glGetPointervEXT:
 .globl glIndexPointerEXT
 .type glIndexPointerEXT,#function
 glIndexPointerEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11301,7 +11308,7 @@ glIndexPointerEXT:
 .globl glNormalPointerEXT
 .type glNormalPointerEXT,#function
 glNormalPointerEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11322,7 +11329,7 @@ glNormalPointerEXT:
 .globl glTexCoordPointerEXT
 .type glTexCoordPointerEXT,#function
 glTexCoordPointerEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11343,7 +11350,7 @@ glTexCoordPointerEXT:
 .globl glVertexPointerEXT
 .type glVertexPointerEXT,#function
 glVertexPointerEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11364,7 +11371,7 @@ glVertexPointerEXT:
 .globl glBlendEquationEXT
 .type glBlendEquationEXT,#function
 glBlendEquationEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11385,7 +11392,7 @@ glBlendEquationEXT:
 .globl glSpriteParameterfSGIX
 .type glSpriteParameterfSGIX,#function
 glSpriteParameterfSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11406,7 +11413,7 @@ glSpriteParameterfSGIX:
 .globl glSpriteParameterfvSGIX
 .type glSpriteParameterfvSGIX,#function
 glSpriteParameterfvSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11427,7 +11434,7 @@ glSpriteParameterfvSGIX:
 .globl glSpriteParameteriSGIX
 .type glSpriteParameteriSGIX,#function
 glSpriteParameteriSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11448,7 +11455,7 @@ glSpriteParameteriSGIX:
 .globl glSpriteParameterivSGIX
 .type glSpriteParameterivSGIX,#function
 glSpriteParameterivSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11469,7 +11476,7 @@ glSpriteParameterivSGIX:
 .globl glPointParameterfEXT
 .type glPointParameterfEXT,#function
 glPointParameterfEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11490,7 +11497,7 @@ glPointParameterfEXT:
 .globl glPointParameterfvEXT
 .type glPointParameterfvEXT,#function
 glPointParameterfvEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11511,7 +11518,7 @@ glPointParameterfvEXT:
 .globl glPointParameterfARB
 .type glPointParameterfARB,#function
 glPointParameterfARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11532,7 +11539,7 @@ glPointParameterfARB:
 .globl glPointParameterfvARB
 .type glPointParameterfvARB,#function
 glPointParameterfvARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11553,7 +11560,7 @@ glPointParameterfvARB:
 .globl glPointParameterfSGIS
 .type glPointParameterfSGIS,#function
 glPointParameterfSGIS:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11574,7 +11581,7 @@ glPointParameterfSGIS:
 .globl glPointParameterfvSGIS
 .type glPointParameterfvSGIS,#function
 glPointParameterfvSGIS:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11595,7 +11602,7 @@ glPointParameterfvSGIS:
 .globl glGetInstrumentsSGIX
 .type glGetInstrumentsSGIX,#function
 glGetInstrumentsSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11616,7 +11623,7 @@ glGetInstrumentsSGIX:
 .globl glInstrumentsBufferSGIX
 .type glInstrumentsBufferSGIX,#function
 glInstrumentsBufferSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11637,7 +11644,7 @@ glInstrumentsBufferSGIX:
 .globl glPollInstrumentsSGIX
 .type glPollInstrumentsSGIX,#function
 glPollInstrumentsSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11658,7 +11665,7 @@ glPollInstrumentsSGIX:
 .globl glReadInstrumentsSGIX
 .type glReadInstrumentsSGIX,#function
 glReadInstrumentsSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11679,7 +11686,7 @@ glReadInstrumentsSGIX:
 .globl glStartInstrumentsSGIX
 .type glStartInstrumentsSGIX,#function
 glStartInstrumentsSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11700,7 +11707,7 @@ glStartInstrumentsSGIX:
 .globl glStopInstrumentsSGIX
 .type glStopInstrumentsSGIX,#function
 glStopInstrumentsSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11721,7 +11728,7 @@ glStopInstrumentsSGIX:
 .globl glFrameZoomSGIX
 .type glFrameZoomSGIX,#function
 glFrameZoomSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11742,7 +11749,7 @@ glFrameZoomSGIX:
 .globl glTagSampleBufferSGIX
 .type glTagSampleBufferSGIX,#function
 glTagSampleBufferSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11763,7 +11770,7 @@ glTagSampleBufferSGIX:
 .globl glReferencePlaneSGIX
 .type glReferencePlaneSGIX,#function
 glReferencePlaneSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11784,7 +11791,7 @@ glReferencePlaneSGIX:
 .globl glFlushRasterSGIX
 .type glFlushRasterSGIX,#function
 glFlushRasterSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11805,7 +11812,7 @@ glFlushRasterSGIX:
 .globl glColorSubTableEXT
 .type glColorSubTableEXT,#function
 glColorSubTableEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11826,7 +11833,7 @@ glColorSubTableEXT:
 .globl glCopyColorSubTableEXT
 .type glCopyColorSubTableEXT,#function
 glCopyColorSubTableEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11847,7 +11854,7 @@ glCopyColorSubTableEXT:
 .globl glHintPGI
 .type glHintPGI,#function
 glHintPGI:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11868,7 +11875,7 @@ glHintPGI:
 .globl glColorTableEXT
 .type glColorTableEXT,#function
 glColorTableEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11889,7 +11896,7 @@ glColorTableEXT:
 .globl glGetColorTableEXT
 .type glGetColorTableEXT,#function
 glGetColorTableEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11910,7 +11917,7 @@ glGetColorTableEXT:
 .globl glGetColorTableParameterivEXT
 .type glGetColorTableParameterivEXT,#function
 glGetColorTableParameterivEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11931,7 +11938,7 @@ glGetColorTableParameterivEXT:
 .globl glGetColorTableParameterfvEXT
 .type glGetColorTableParameterfvEXT,#function
 glGetColorTableParameterfvEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11952,7 +11959,7 @@ glGetColorTableParameterfvEXT:
 .globl glGetListParameterfvSGIX
 .type glGetListParameterfvSGIX,#function
 glGetListParameterfvSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11973,7 +11980,7 @@ glGetListParameterfvSGIX:
 .globl glGetListParameterivSGIX
 .type glGetListParameterivSGIX,#function
 glGetListParameterivSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -11994,7 +12001,7 @@ glGetListParameterivSGIX:
 .globl glListParameterfSGIX
 .type glListParameterfSGIX,#function
 glListParameterfSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12015,7 +12022,7 @@ glListParameterfSGIX:
 .globl glListParameterfvSGIX
 .type glListParameterfvSGIX,#function
 glListParameterfvSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12036,7 +12043,7 @@ glListParameterfvSGIX:
 .globl glListParameteriSGIX
 .type glListParameteriSGIX,#function
 glListParameteriSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12057,7 +12064,7 @@ glListParameteriSGIX:
 .globl glListParameterivSGIX
 .type glListParameterivSGIX,#function
 glListParameterivSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12078,7 +12085,7 @@ glListParameterivSGIX:
 .globl glIndexMaterialEXT
 .type glIndexMaterialEXT,#function
 glIndexMaterialEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12099,7 +12106,7 @@ glIndexMaterialEXT:
 .globl glIndexFuncEXT
 .type glIndexFuncEXT,#function
 glIndexFuncEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12120,7 +12127,7 @@ glIndexFuncEXT:
 .globl glLockArraysEXT
 .type glLockArraysEXT,#function
 glLockArraysEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12141,7 +12148,7 @@ glLockArraysEXT:
 .globl glUnlockArraysEXT
 .type glUnlockArraysEXT,#function
 glUnlockArraysEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12162,7 +12169,7 @@ glUnlockArraysEXT:
 .globl glCullParameterdvEXT
 .type glCullParameterdvEXT,#function
 glCullParameterdvEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12183,7 +12190,7 @@ glCullParameterdvEXT:
 .globl glCullParameterfvEXT
 .type glCullParameterfvEXT,#function
 glCullParameterfvEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12204,7 +12211,7 @@ glCullParameterfvEXT:
 .globl glFragmentColorMaterialSGIX
 .type glFragmentColorMaterialSGIX,#function
 glFragmentColorMaterialSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12225,7 +12232,7 @@ glFragmentColorMaterialSGIX:
 .globl glFragmentLightfSGIX
 .type glFragmentLightfSGIX,#function
 glFragmentLightfSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12246,7 +12253,7 @@ glFragmentLightfSGIX:
 .globl glFragmentLightfvSGIX
 .type glFragmentLightfvSGIX,#function
 glFragmentLightfvSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12267,7 +12274,7 @@ glFragmentLightfvSGIX:
 .globl glFragmentLightiSGIX
 .type glFragmentLightiSGIX,#function
 glFragmentLightiSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12288,7 +12295,7 @@ glFragmentLightiSGIX:
 .globl glFragmentLightivSGIX
 .type glFragmentLightivSGIX,#function
 glFragmentLightivSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12309,7 +12316,7 @@ glFragmentLightivSGIX:
 .globl glFragmentLightModelfSGIX
 .type glFragmentLightModelfSGIX,#function
 glFragmentLightModelfSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12330,7 +12337,7 @@ glFragmentLightModelfSGIX:
 .globl glFragmentLightModelfvSGIX
 .type glFragmentLightModelfvSGIX,#function
 glFragmentLightModelfvSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12351,7 +12358,7 @@ glFragmentLightModelfvSGIX:
 .globl glFragmentLightModeliSGIX
 .type glFragmentLightModeliSGIX,#function
 glFragmentLightModeliSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12372,7 +12379,7 @@ glFragmentLightModeliSGIX:
 .globl glFragmentLightModelivSGIX
 .type glFragmentLightModelivSGIX,#function
 glFragmentLightModelivSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12393,7 +12400,7 @@ glFragmentLightModelivSGIX:
 .globl glFragmentMaterialfSGIX
 .type glFragmentMaterialfSGIX,#function
 glFragmentMaterialfSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12414,7 +12421,7 @@ glFragmentMaterialfSGIX:
 .globl glFragmentMaterialfvSGIX
 .type glFragmentMaterialfvSGIX,#function
 glFragmentMaterialfvSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12435,7 +12442,7 @@ glFragmentMaterialfvSGIX:
 .globl glFragmentMaterialiSGIX
 .type glFragmentMaterialiSGIX,#function
 glFragmentMaterialiSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12456,7 +12463,7 @@ glFragmentMaterialiSGIX:
 .globl glFragmentMaterialivSGIX
 .type glFragmentMaterialivSGIX,#function
 glFragmentMaterialivSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12477,7 +12484,7 @@ glFragmentMaterialivSGIX:
 .globl glGetFragmentLightfvSGIX
 .type glGetFragmentLightfvSGIX,#function
 glGetFragmentLightfvSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12498,7 +12505,7 @@ glGetFragmentLightfvSGIX:
 .globl glGetFragmentLightivSGIX
 .type glGetFragmentLightivSGIX,#function
 glGetFragmentLightivSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12519,7 +12526,7 @@ glGetFragmentLightivSGIX:
 .globl glGetFragmentMaterialfvSGIX
 .type glGetFragmentMaterialfvSGIX,#function
 glGetFragmentMaterialfvSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12540,7 +12547,7 @@ glGetFragmentMaterialfvSGIX:
 .globl glGetFragmentMaterialivSGIX
 .type glGetFragmentMaterialivSGIX,#function
 glGetFragmentMaterialivSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12561,7 +12568,7 @@ glGetFragmentMaterialivSGIX:
 .globl glLightEnviSGIX
 .type glLightEnviSGIX,#function
 glLightEnviSGIX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12582,7 +12589,7 @@ glLightEnviSGIX:
 .globl glDrawRangeElementsEXT
 .type glDrawRangeElementsEXT,#function
 glDrawRangeElementsEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12603,7 +12610,7 @@ glDrawRangeElementsEXT:
 .globl glSecondaryColor3bEXT
 .type glSecondaryColor3bEXT,#function
 glSecondaryColor3bEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12624,7 +12631,7 @@ glSecondaryColor3bEXT:
 .globl glSecondaryColor3bvEXT
 .type glSecondaryColor3bvEXT,#function
 glSecondaryColor3bvEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12645,7 +12652,7 @@ glSecondaryColor3bvEXT:
 .globl glSecondaryColor3dEXT
 .type glSecondaryColor3dEXT,#function
 glSecondaryColor3dEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12666,7 +12673,7 @@ glSecondaryColor3dEXT:
 .globl glSecondaryColor3dvEXT
 .type glSecondaryColor3dvEXT,#function
 glSecondaryColor3dvEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12687,7 +12694,7 @@ glSecondaryColor3dvEXT:
 .globl glSecondaryColor3fEXT
 .type glSecondaryColor3fEXT,#function
 glSecondaryColor3fEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12708,7 +12715,7 @@ glSecondaryColor3fEXT:
 .globl glSecondaryColor3fvEXT
 .type glSecondaryColor3fvEXT,#function
 glSecondaryColor3fvEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12729,7 +12736,7 @@ glSecondaryColor3fvEXT:
 .globl glSecondaryColor3iEXT
 .type glSecondaryColor3iEXT,#function
 glSecondaryColor3iEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12750,7 +12757,7 @@ glSecondaryColor3iEXT:
 .globl glSecondaryColor3ivEXT
 .type glSecondaryColor3ivEXT,#function
 glSecondaryColor3ivEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12771,7 +12778,7 @@ glSecondaryColor3ivEXT:
 .globl glSecondaryColor3sEXT
 .type glSecondaryColor3sEXT,#function
 glSecondaryColor3sEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12792,7 +12799,7 @@ glSecondaryColor3sEXT:
 .globl glSecondaryColor3svEXT
 .type glSecondaryColor3svEXT,#function
 glSecondaryColor3svEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12813,7 +12820,7 @@ glSecondaryColor3svEXT:
 .globl glSecondaryColor3ubEXT
 .type glSecondaryColor3ubEXT,#function
 glSecondaryColor3ubEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12834,7 +12841,7 @@ glSecondaryColor3ubEXT:
 .globl glSecondaryColor3ubvEXT
 .type glSecondaryColor3ubvEXT,#function
 glSecondaryColor3ubvEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12855,7 +12862,7 @@ glSecondaryColor3ubvEXT:
 .globl glSecondaryColor3uiEXT
 .type glSecondaryColor3uiEXT,#function
 glSecondaryColor3uiEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12876,7 +12883,7 @@ glSecondaryColor3uiEXT:
 .globl glSecondaryColor3uivEXT
 .type glSecondaryColor3uivEXT,#function
 glSecondaryColor3uivEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12897,7 +12904,7 @@ glSecondaryColor3uivEXT:
 .globl glSecondaryColor3usEXT
 .type glSecondaryColor3usEXT,#function
 glSecondaryColor3usEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12918,7 +12925,7 @@ glSecondaryColor3usEXT:
 .globl glSecondaryColor3usvEXT
 .type glSecondaryColor3usvEXT,#function
 glSecondaryColor3usvEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12939,7 +12946,7 @@ glSecondaryColor3usvEXT:
 .globl glSecondaryColorPointerEXT
 .type glSecondaryColorPointerEXT,#function
 glSecondaryColorPointerEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12960,7 +12967,7 @@ glSecondaryColorPointerEXT:
 .globl glMultiDrawArraysEXT
 .type glMultiDrawArraysEXT,#function
 glMultiDrawArraysEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -12981,7 +12988,7 @@ glMultiDrawArraysEXT:
 .globl glMultiDrawElementsEXT
 .type glMultiDrawElementsEXT,#function
 glMultiDrawElementsEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13002,7 +13009,7 @@ glMultiDrawElementsEXT:
 .globl glFogCoordfEXT
 .type glFogCoordfEXT,#function
 glFogCoordfEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13023,7 +13030,7 @@ glFogCoordfEXT:
 .globl glFogCoordfvEXT
 .type glFogCoordfvEXT,#function
 glFogCoordfvEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13044,7 +13051,7 @@ glFogCoordfvEXT:
 .globl glFogCoorddEXT
 .type glFogCoorddEXT,#function
 glFogCoorddEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13065,7 +13072,7 @@ glFogCoorddEXT:
 .globl glFogCoorddvEXT
 .type glFogCoorddvEXT,#function
 glFogCoorddvEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13086,7 +13093,7 @@ glFogCoorddvEXT:
 .globl glFogCoordPointerEXT
 .type glFogCoordPointerEXT,#function
 glFogCoordPointerEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13107,7 +13114,7 @@ glFogCoordPointerEXT:
 .globl glBlendFuncSeparateEXT
 .type glBlendFuncSeparateEXT,#function
 glBlendFuncSeparateEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13128,7 +13135,7 @@ glBlendFuncSeparateEXT:
 .globl glBlendFuncSeparateINGR
 .type glBlendFuncSeparateINGR,#function
 glBlendFuncSeparateINGR:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13149,7 +13156,7 @@ glBlendFuncSeparateINGR:
 .globl glVertexWeightfEXT
 .type glVertexWeightfEXT,#function
 glVertexWeightfEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13170,7 +13177,7 @@ glVertexWeightfEXT:
 .globl glVertexWeightfvEXT
 .type glVertexWeightfvEXT,#function
 glVertexWeightfvEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13191,7 +13198,7 @@ glVertexWeightfvEXT:
 .globl glVertexWeightPointerEXT
 .type glVertexWeightPointerEXT,#function
 glVertexWeightPointerEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13212,7 +13219,7 @@ glVertexWeightPointerEXT:
 .globl glFlushVertexArrayRangeNV
 .type glFlushVertexArrayRangeNV,#function
 glFlushVertexArrayRangeNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13233,7 +13240,7 @@ glFlushVertexArrayRangeNV:
 .globl glVertexArrayRangeNV
 .type glVertexArrayRangeNV,#function
 glVertexArrayRangeNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13254,7 +13261,7 @@ glVertexArrayRangeNV:
 .globl glCombinerParameterfvNV
 .type glCombinerParameterfvNV,#function
 glCombinerParameterfvNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13275,7 +13282,7 @@ glCombinerParameterfvNV:
 .globl glCombinerParameterfNV
 .type glCombinerParameterfNV,#function
 glCombinerParameterfNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13296,7 +13303,7 @@ glCombinerParameterfNV:
 .globl glCombinerParameterivNV
 .type glCombinerParameterivNV,#function
 glCombinerParameterivNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13317,7 +13324,7 @@ glCombinerParameterivNV:
 .globl glCombinerParameteriNV
 .type glCombinerParameteriNV,#function
 glCombinerParameteriNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13338,7 +13345,7 @@ glCombinerParameteriNV:
 .globl glCombinerInputNV
 .type glCombinerInputNV,#function
 glCombinerInputNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13359,7 +13366,7 @@ glCombinerInputNV:
 .globl glCombinerOutputNV
 .type glCombinerOutputNV,#function
 glCombinerOutputNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13380,7 +13387,7 @@ glCombinerOutputNV:
 .globl glFinalCombinerInputNV
 .type glFinalCombinerInputNV,#function
 glFinalCombinerInputNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13401,7 +13408,7 @@ glFinalCombinerInputNV:
 .globl glGetCombinerInputParameterfvNV
 .type glGetCombinerInputParameterfvNV,#function
 glGetCombinerInputParameterfvNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13422,7 +13429,7 @@ glGetCombinerInputParameterfvNV:
 .globl glGetCombinerInputParameterivNV
 .type glGetCombinerInputParameterivNV,#function
 glGetCombinerInputParameterivNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13443,7 +13450,7 @@ glGetCombinerInputParameterivNV:
 .globl glGetCombinerOutputParameterfvNV
 .type glGetCombinerOutputParameterfvNV,#function
 glGetCombinerOutputParameterfvNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13464,7 +13471,7 @@ glGetCombinerOutputParameterfvNV:
 .globl glGetCombinerOutputParameterivNV
 .type glGetCombinerOutputParameterivNV,#function
 glGetCombinerOutputParameterivNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13485,7 +13492,7 @@ glGetCombinerOutputParameterivNV:
 .globl glGetFinalCombinerInputParameterfvNV
 .type glGetFinalCombinerInputParameterfvNV,#function
 glGetFinalCombinerInputParameterfvNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13506,7 +13513,7 @@ glGetFinalCombinerInputParameterfvNV:
 .globl glGetFinalCombinerInputParameterivNV
 .type glGetFinalCombinerInputParameterivNV,#function
 glGetFinalCombinerInputParameterivNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13527,7 +13534,7 @@ glGetFinalCombinerInputParameterivNV:
 .globl glResizeBuffersMESA
 .type glResizeBuffersMESA,#function
 glResizeBuffersMESA:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13548,7 +13555,7 @@ glResizeBuffersMESA:
 .globl glWindowPos2dMESA
 .type glWindowPos2dMESA,#function
 glWindowPos2dMESA:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13569,7 +13576,7 @@ glWindowPos2dMESA:
 .globl glWindowPos2dvMESA
 .type glWindowPos2dvMESA,#function
 glWindowPos2dvMESA:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13590,7 +13597,7 @@ glWindowPos2dvMESA:
 .globl glWindowPos2fMESA
 .type glWindowPos2fMESA,#function
 glWindowPos2fMESA:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13611,7 +13618,7 @@ glWindowPos2fMESA:
 .globl glWindowPos2fvMESA
 .type glWindowPos2fvMESA,#function
 glWindowPos2fvMESA:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13632,7 +13639,7 @@ glWindowPos2fvMESA:
 .globl glWindowPos2iMESA
 .type glWindowPos2iMESA,#function
 glWindowPos2iMESA:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13653,7 +13660,7 @@ glWindowPos2iMESA:
 .globl glWindowPos2ivMESA
 .type glWindowPos2ivMESA,#function
 glWindowPos2ivMESA:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13674,7 +13681,7 @@ glWindowPos2ivMESA:
 .globl glWindowPos2sMESA
 .type glWindowPos2sMESA,#function
 glWindowPos2sMESA:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13695,7 +13702,7 @@ glWindowPos2sMESA:
 .globl glWindowPos2svMESA
 .type glWindowPos2svMESA,#function
 glWindowPos2svMESA:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13716,7 +13723,7 @@ glWindowPos2svMESA:
 .globl glWindowPos3dMESA
 .type glWindowPos3dMESA,#function
 glWindowPos3dMESA:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13737,7 +13744,7 @@ glWindowPos3dMESA:
 .globl glWindowPos3dvMESA
 .type glWindowPos3dvMESA,#function
 glWindowPos3dvMESA:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13758,7 +13765,7 @@ glWindowPos3dvMESA:
 .globl glWindowPos3fMESA
 .type glWindowPos3fMESA,#function
 glWindowPos3fMESA:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13779,7 +13786,7 @@ glWindowPos3fMESA:
 .globl glWindowPos3fvMESA
 .type glWindowPos3fvMESA,#function
 glWindowPos3fvMESA:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13800,7 +13807,7 @@ glWindowPos3fvMESA:
 .globl glWindowPos3iMESA
 .type glWindowPos3iMESA,#function
 glWindowPos3iMESA:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13821,7 +13828,7 @@ glWindowPos3iMESA:
 .globl glWindowPos3ivMESA
 .type glWindowPos3ivMESA,#function
 glWindowPos3ivMESA:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13842,7 +13849,7 @@ glWindowPos3ivMESA:
 .globl glWindowPos3sMESA
 .type glWindowPos3sMESA,#function
 glWindowPos3sMESA:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13863,7 +13870,7 @@ glWindowPos3sMESA:
 .globl glWindowPos3svMESA
 .type glWindowPos3svMESA,#function
 glWindowPos3svMESA:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13884,7 +13891,7 @@ glWindowPos3svMESA:
 .globl glWindowPos4dMESA
 .type glWindowPos4dMESA,#function
 glWindowPos4dMESA:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13905,7 +13912,7 @@ glWindowPos4dMESA:
 .globl glWindowPos4dvMESA
 .type glWindowPos4dvMESA,#function
 glWindowPos4dvMESA:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13926,7 +13933,7 @@ glWindowPos4dvMESA:
 .globl glWindowPos4fMESA
 .type glWindowPos4fMESA,#function
 glWindowPos4fMESA:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13947,7 +13954,7 @@ glWindowPos4fMESA:
 .globl glWindowPos4fvMESA
 .type glWindowPos4fvMESA,#function
 glWindowPos4fvMESA:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13968,7 +13975,7 @@ glWindowPos4fvMESA:
 .globl glWindowPos4iMESA
 .type glWindowPos4iMESA,#function
 glWindowPos4iMESA:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -13989,7 +13996,7 @@ glWindowPos4iMESA:
 .globl glWindowPos4ivMESA
 .type glWindowPos4ivMESA,#function
 glWindowPos4ivMESA:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14010,7 +14017,7 @@ glWindowPos4ivMESA:
 .globl glWindowPos4sMESA
 .type glWindowPos4sMESA,#function
 glWindowPos4sMESA:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14031,7 +14038,7 @@ glWindowPos4sMESA:
 .globl glWindowPos4svMESA
 .type glWindowPos4svMESA,#function
 glWindowPos4svMESA:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14052,7 +14059,7 @@ glWindowPos4svMESA:
 .globl glTbufferMask3DFX
 .type glTbufferMask3DFX,#function
 glTbufferMask3DFX:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14073,7 +14080,7 @@ glTbufferMask3DFX:
 .globl glSampleMaskEXT
 .type glSampleMaskEXT,#function
 glSampleMaskEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14094,7 +14101,7 @@ glSampleMaskEXT:
 .globl glSamplePatternEXT
 .type glSamplePatternEXT,#function
 glSamplePatternEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14115,7 +14122,7 @@ glSamplePatternEXT:
 .globl glDeleteFencesNV
 .type glDeleteFencesNV,#function
 glDeleteFencesNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14136,7 +14143,7 @@ glDeleteFencesNV:
 .globl glGenFencesNV
 .type glGenFencesNV,#function
 glGenFencesNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14157,7 +14164,7 @@ glGenFencesNV:
 .globl glIsFenceNV
 .type glIsFenceNV,#function
 glIsFenceNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14178,7 +14185,7 @@ glIsFenceNV:
 .globl glTestFenceNV
 .type glTestFenceNV,#function
 glTestFenceNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14199,7 +14206,7 @@ glTestFenceNV:
 .globl glGetFenceivNV
 .type glGetFenceivNV,#function
 glGetFenceivNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14220,7 +14227,7 @@ glGetFenceivNV:
 .globl glFinishFenceNV
 .type glFinishFenceNV,#function
 glFinishFenceNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14241,7 +14248,7 @@ glFinishFenceNV:
 .globl glSetFenceNV
 .type glSetFenceNV,#function
 glSetFenceNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14262,7 +14269,7 @@ glSetFenceNV:
 .globl glWindowPos2dARB
 .type glWindowPos2dARB,#function
 glWindowPos2dARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14283,7 +14290,7 @@ glWindowPos2dARB:
 .globl glWindowPos2fARB
 .type glWindowPos2fARB,#function
 glWindowPos2fARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14304,7 +14311,7 @@ glWindowPos2fARB:
 .globl glWindowPos2iARB
 .type glWindowPos2iARB,#function
 glWindowPos2iARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14325,7 +14332,7 @@ glWindowPos2iARB:
 .globl glWindowPos2sARB
 .type glWindowPos2sARB,#function
 glWindowPos2sARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14346,7 +14353,7 @@ glWindowPos2sARB:
 .globl glWindowPos2dvARB
 .type glWindowPos2dvARB,#function
 glWindowPos2dvARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14367,7 +14374,7 @@ glWindowPos2dvARB:
 .globl glWindowPos2fvARB
 .type glWindowPos2fvARB,#function
 glWindowPos2fvARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14388,7 +14395,7 @@ glWindowPos2fvARB:
 .globl glWindowPos2ivARB
 .type glWindowPos2ivARB,#function
 glWindowPos2ivARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14409,7 +14416,7 @@ glWindowPos2ivARB:
 .globl glWindowPos2svARB
 .type glWindowPos2svARB,#function
 glWindowPos2svARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14430,7 +14437,7 @@ glWindowPos2svARB:
 .globl glWindowPos3dARB
 .type glWindowPos3dARB,#function
 glWindowPos3dARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14451,7 +14458,7 @@ glWindowPos3dARB:
 .globl glWindowPos3fARB
 .type glWindowPos3fARB,#function
 glWindowPos3fARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14472,7 +14479,7 @@ glWindowPos3fARB:
 .globl glWindowPos3iARB
 .type glWindowPos3iARB,#function
 glWindowPos3iARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14493,7 +14500,7 @@ glWindowPos3iARB:
 .globl glWindowPos3sARB
 .type glWindowPos3sARB,#function
 glWindowPos3sARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14514,7 +14521,7 @@ glWindowPos3sARB:
 .globl glWindowPos3dvARB
 .type glWindowPos3dvARB,#function
 glWindowPos3dvARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14535,7 +14542,7 @@ glWindowPos3dvARB:
 .globl glWindowPos3fvARB
 .type glWindowPos3fvARB,#function
 glWindowPos3fvARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14556,7 +14563,7 @@ glWindowPos3fvARB:
 .globl glWindowPos3ivARB
 .type glWindowPos3ivARB,#function
 glWindowPos3ivARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14577,7 +14584,7 @@ glWindowPos3ivARB:
 .globl glWindowPos3svARB
 .type glWindowPos3svARB,#function
 glWindowPos3svARB:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14598,7 +14605,7 @@ glWindowPos3svARB:
 .globl glAreProgramsResidentNV
 .type glAreProgramsResidentNV,#function
 glAreProgramsResidentNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14619,7 +14626,7 @@ glAreProgramsResidentNV:
 .globl glBindProgramNV
 .type glBindProgramNV,#function
 glBindProgramNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14640,7 +14647,7 @@ glBindProgramNV:
 .globl glDeleteProgramsNV
 .type glDeleteProgramsNV,#function
 glDeleteProgramsNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14661,7 +14668,7 @@ glDeleteProgramsNV:
 .globl glExecuteProgramNV
 .type glExecuteProgramNV,#function
 glExecuteProgramNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14682,7 +14689,7 @@ glExecuteProgramNV:
 .globl glGenProgramsNV
 .type glGenProgramsNV,#function
 glGenProgramsNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14703,7 +14710,7 @@ glGenProgramsNV:
 .globl glGetProgramParameterdvNV
 .type glGetProgramParameterdvNV,#function
 glGetProgramParameterdvNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14724,7 +14731,7 @@ glGetProgramParameterdvNV:
 .globl glGetProgramParameterfvNV
 .type glGetProgramParameterfvNV,#function
 glGetProgramParameterfvNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14745,7 +14752,7 @@ glGetProgramParameterfvNV:
 .globl glGetProgramivNV
 .type glGetProgramivNV,#function
 glGetProgramivNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14766,7 +14773,7 @@ glGetProgramivNV:
 .globl glGetProgramStringNV
 .type glGetProgramStringNV,#function
 glGetProgramStringNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14787,7 +14794,7 @@ glGetProgramStringNV:
 .globl glGetTrackMatrixivNV
 .type glGetTrackMatrixivNV,#function
 glGetTrackMatrixivNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14808,7 +14815,7 @@ glGetTrackMatrixivNV:
 .globl glGetVertexAttribdvNV
 .type glGetVertexAttribdvNV,#function
 glGetVertexAttribdvNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14829,7 +14836,7 @@ glGetVertexAttribdvNV:
 .globl glGetVertexAttribfvNV
 .type glGetVertexAttribfvNV,#function
 glGetVertexAttribfvNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14850,7 +14857,7 @@ glGetVertexAttribfvNV:
 .globl glGetVertexAttribivNV
 .type glGetVertexAttribivNV,#function
 glGetVertexAttribivNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14871,7 +14878,7 @@ glGetVertexAttribivNV:
 .globl glGetVertexAttribPointervNV
 .type glGetVertexAttribPointervNV,#function
 glGetVertexAttribPointervNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14892,7 +14899,7 @@ glGetVertexAttribPointervNV:
 .globl glIsProgramNV
 .type glIsProgramNV,#function
 glIsProgramNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14913,7 +14920,7 @@ glIsProgramNV:
 .globl glLoadProgramNV
 .type glLoadProgramNV,#function
 glLoadProgramNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14934,7 +14941,7 @@ glLoadProgramNV:
 .globl glProgramParameter4dNV
 .type glProgramParameter4dNV,#function
 glProgramParameter4dNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14955,7 +14962,7 @@ glProgramParameter4dNV:
 .globl glProgramParameter4dvNV
 .type glProgramParameter4dvNV,#function
 glProgramParameter4dvNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14976,7 +14983,7 @@ glProgramParameter4dvNV:
 .globl glProgramParameter4fNV
 .type glProgramParameter4fNV,#function
 glProgramParameter4fNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -14997,7 +15004,7 @@ glProgramParameter4fNV:
 .globl glProgramParameter4fvNV
 .type glProgramParameter4fvNV,#function
 glProgramParameter4fvNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15018,7 +15025,7 @@ glProgramParameter4fvNV:
 .globl glProgramParameters4dvNV
 .type glProgramParameters4dvNV,#function
 glProgramParameters4dvNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15039,7 +15046,7 @@ glProgramParameters4dvNV:
 .globl glProgramParameters4fvNV
 .type glProgramParameters4fvNV,#function
 glProgramParameters4fvNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15060,7 +15067,7 @@ glProgramParameters4fvNV:
 .globl glRequestResidentProgramsNV
 .type glRequestResidentProgramsNV,#function
 glRequestResidentProgramsNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15081,7 +15088,7 @@ glRequestResidentProgramsNV:
 .globl glTrackMatrixNV
 .type glTrackMatrixNV,#function
 glTrackMatrixNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15102,7 +15109,7 @@ glTrackMatrixNV:
 .globl glVertexAttribPointerNV
 .type glVertexAttribPointerNV,#function
 glVertexAttribPointerNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15123,7 +15130,7 @@ glVertexAttribPointerNV:
 .globl glVertexAttrib1dNV
 .type glVertexAttrib1dNV,#function
 glVertexAttrib1dNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15144,7 +15151,7 @@ glVertexAttrib1dNV:
 .globl glVertexAttrib1dvNV
 .type glVertexAttrib1dvNV,#function
 glVertexAttrib1dvNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15165,7 +15172,7 @@ glVertexAttrib1dvNV:
 .globl glVertexAttrib1fNV
 .type glVertexAttrib1fNV,#function
 glVertexAttrib1fNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15186,7 +15193,7 @@ glVertexAttrib1fNV:
 .globl glVertexAttrib1fvNV
 .type glVertexAttrib1fvNV,#function
 glVertexAttrib1fvNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15207,7 +15214,7 @@ glVertexAttrib1fvNV:
 .globl glVertexAttrib1sNV
 .type glVertexAttrib1sNV,#function
 glVertexAttrib1sNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15228,7 +15235,7 @@ glVertexAttrib1sNV:
 .globl glVertexAttrib1svNV
 .type glVertexAttrib1svNV,#function
 glVertexAttrib1svNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15249,7 +15256,7 @@ glVertexAttrib1svNV:
 .globl glVertexAttrib2dNV
 .type glVertexAttrib2dNV,#function
 glVertexAttrib2dNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15270,7 +15277,7 @@ glVertexAttrib2dNV:
 .globl glVertexAttrib2dvNV
 .type glVertexAttrib2dvNV,#function
 glVertexAttrib2dvNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15291,7 +15298,7 @@ glVertexAttrib2dvNV:
 .globl glVertexAttrib2fNV
 .type glVertexAttrib2fNV,#function
 glVertexAttrib2fNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15312,7 +15319,7 @@ glVertexAttrib2fNV:
 .globl glVertexAttrib2fvNV
 .type glVertexAttrib2fvNV,#function
 glVertexAttrib2fvNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15333,7 +15340,7 @@ glVertexAttrib2fvNV:
 .globl glVertexAttrib2sNV
 .type glVertexAttrib2sNV,#function
 glVertexAttrib2sNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15354,7 +15361,7 @@ glVertexAttrib2sNV:
 .globl glVertexAttrib2svNV
 .type glVertexAttrib2svNV,#function
 glVertexAttrib2svNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15375,7 +15382,7 @@ glVertexAttrib2svNV:
 .globl glVertexAttrib3dNV
 .type glVertexAttrib3dNV,#function
 glVertexAttrib3dNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15396,7 +15403,7 @@ glVertexAttrib3dNV:
 .globl glVertexAttrib3dvNV
 .type glVertexAttrib3dvNV,#function
 glVertexAttrib3dvNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15417,7 +15424,7 @@ glVertexAttrib3dvNV:
 .globl glVertexAttrib3fNV
 .type glVertexAttrib3fNV,#function
 glVertexAttrib3fNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15438,7 +15445,7 @@ glVertexAttrib3fNV:
 .globl glVertexAttrib3fvNV
 .type glVertexAttrib3fvNV,#function
 glVertexAttrib3fvNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15459,7 +15466,7 @@ glVertexAttrib3fvNV:
 .globl glVertexAttrib3sNV
 .type glVertexAttrib3sNV,#function
 glVertexAttrib3sNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15480,7 +15487,7 @@ glVertexAttrib3sNV:
 .globl glVertexAttrib3svNV
 .type glVertexAttrib3svNV,#function
 glVertexAttrib3svNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15501,7 +15508,7 @@ glVertexAttrib3svNV:
 .globl glVertexAttrib4dNV
 .type glVertexAttrib4dNV,#function
 glVertexAttrib4dNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15522,7 +15529,7 @@ glVertexAttrib4dNV:
 .globl glVertexAttrib4dvNV
 .type glVertexAttrib4dvNV,#function
 glVertexAttrib4dvNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15543,7 +15550,7 @@ glVertexAttrib4dvNV:
 .globl glVertexAttrib4fNV
 .type glVertexAttrib4fNV,#function
 glVertexAttrib4fNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15564,7 +15571,7 @@ glVertexAttrib4fNV:
 .globl glVertexAttrib4fvNV
 .type glVertexAttrib4fvNV,#function
 glVertexAttrib4fvNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15585,7 +15592,7 @@ glVertexAttrib4fvNV:
 .globl glVertexAttrib4sNV
 .type glVertexAttrib4sNV,#function
 glVertexAttrib4sNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15606,7 +15613,7 @@ glVertexAttrib4sNV:
 .globl glVertexAttrib4svNV
 .type glVertexAttrib4svNV,#function
 glVertexAttrib4svNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15627,7 +15634,7 @@ glVertexAttrib4svNV:
 .globl glVertexAttrib4ubNV
 .type glVertexAttrib4ubNV,#function
 glVertexAttrib4ubNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15648,7 +15655,7 @@ glVertexAttrib4ubNV:
 .globl glVertexAttrib4ubvNV
 .type glVertexAttrib4ubvNV,#function
 glVertexAttrib4ubvNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15669,7 +15676,7 @@ glVertexAttrib4ubvNV:
 .globl glVertexAttribs1dvNV
 .type glVertexAttribs1dvNV,#function
 glVertexAttribs1dvNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15690,7 +15697,7 @@ glVertexAttribs1dvNV:
 .globl glVertexAttribs1fvNV
 .type glVertexAttribs1fvNV,#function
 glVertexAttribs1fvNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15711,7 +15718,7 @@ glVertexAttribs1fvNV:
 .globl glVertexAttribs1svNV
 .type glVertexAttribs1svNV,#function
 glVertexAttribs1svNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15732,7 +15739,7 @@ glVertexAttribs1svNV:
 .globl glVertexAttribs2dvNV
 .type glVertexAttribs2dvNV,#function
 glVertexAttribs2dvNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15753,7 +15760,7 @@ glVertexAttribs2dvNV:
 .globl glVertexAttribs2fvNV
 .type glVertexAttribs2fvNV,#function
 glVertexAttribs2fvNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15774,7 +15781,7 @@ glVertexAttribs2fvNV:
 .globl glVertexAttribs2svNV
 .type glVertexAttribs2svNV,#function
 glVertexAttribs2svNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15795,7 +15802,7 @@ glVertexAttribs2svNV:
 .globl glVertexAttribs3dvNV
 .type glVertexAttribs3dvNV,#function
 glVertexAttribs3dvNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15816,7 +15823,7 @@ glVertexAttribs3dvNV:
 .globl glVertexAttribs3fvNV
 .type glVertexAttribs3fvNV,#function
 glVertexAttribs3fvNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15837,7 +15844,7 @@ glVertexAttribs3fvNV:
 .globl glVertexAttribs3svNV
 .type glVertexAttribs3svNV,#function
 glVertexAttribs3svNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15858,7 +15865,7 @@ glVertexAttribs3svNV:
 .globl glVertexAttribs4dvNV
 .type glVertexAttribs4dvNV,#function
 glVertexAttribs4dvNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15879,7 +15886,7 @@ glVertexAttribs4dvNV:
 .globl glVertexAttribs4fvNV
 .type glVertexAttribs4fvNV,#function
 glVertexAttribs4fvNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15900,7 +15907,7 @@ glVertexAttribs4fvNV:
 .globl glVertexAttribs4svNV
 .type glVertexAttribs4svNV,#function
 glVertexAttribs4svNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15921,7 +15928,7 @@ glVertexAttribs4svNV:
 .globl glVertexAttribs4ubvNV
 .type glVertexAttribs4ubvNV,#function
 glVertexAttribs4ubvNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15942,7 +15949,7 @@ glVertexAttribs4ubvNV:
 .globl glPointParameteriNV
 .type glPointParameteriNV,#function
 glPointParameteriNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15963,7 +15970,7 @@ glPointParameteriNV:
 .globl glPointParameterivNV
 .type glPointParameterivNV,#function
 glPointParameterivNV:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -15984,7 +15991,7 @@ glPointParameterivNV:
 .globl glBlendFuncSeparate
 .type glBlendFuncSeparate,#function
 glBlendFuncSeparate:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16005,7 +16012,7 @@ glBlendFuncSeparate:
 .globl glFogCoordf
 .type glFogCoordf,#function
 glFogCoordf:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16026,7 +16033,7 @@ glFogCoordf:
 .globl glFogCoordfv
 .type glFogCoordfv,#function
 glFogCoordfv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16047,7 +16054,7 @@ glFogCoordfv:
 .globl glFogCoordd
 .type glFogCoordd,#function
 glFogCoordd:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16068,7 +16075,7 @@ glFogCoordd:
 .globl glFogCoorddv
 .type glFogCoorddv,#function
 glFogCoorddv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16089,7 +16096,7 @@ glFogCoorddv:
 .globl glFogCoordPointer
 .type glFogCoordPointer,#function
 glFogCoordPointer:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16110,7 +16117,7 @@ glFogCoordPointer:
 .globl glMultiDrawArrays
 .type glMultiDrawArrays,#function
 glMultiDrawArrays:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16131,7 +16138,7 @@ glMultiDrawArrays:
 .globl glMultiDrawElements
 .type glMultiDrawElements,#function
 glMultiDrawElements:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16152,7 +16159,7 @@ glMultiDrawElements:
 .globl glPointParameterf
 .type glPointParameterf,#function
 glPointParameterf:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16173,7 +16180,7 @@ glPointParameterf:
 .globl glPointParameterfv
 .type glPointParameterfv,#function
 glPointParameterfv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16194,7 +16201,7 @@ glPointParameterfv:
 .globl glPointParameteri
 .type glPointParameteri,#function
 glPointParameteri:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16215,7 +16222,7 @@ glPointParameteri:
 .globl glPointParameteriv
 .type glPointParameteriv,#function
 glPointParameteriv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16236,7 +16243,7 @@ glPointParameteriv:
 .globl glSecondaryColor3b
 .type glSecondaryColor3b,#function
 glSecondaryColor3b:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16257,7 +16264,7 @@ glSecondaryColor3b:
 .globl glSecondaryColor3bv
 .type glSecondaryColor3bv,#function
 glSecondaryColor3bv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16278,7 +16285,7 @@ glSecondaryColor3bv:
 .globl glSecondaryColor3d
 .type glSecondaryColor3d,#function
 glSecondaryColor3d:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16299,7 +16306,7 @@ glSecondaryColor3d:
 .globl glSecondaryColor3dv
 .type glSecondaryColor3dv,#function
 glSecondaryColor3dv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16320,7 +16327,7 @@ glSecondaryColor3dv:
 .globl glSecondaryColor3f
 .type glSecondaryColor3f,#function
 glSecondaryColor3f:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16341,7 +16348,7 @@ glSecondaryColor3f:
 .globl glSecondaryColor3fv
 .type glSecondaryColor3fv,#function
 glSecondaryColor3fv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16362,7 +16369,7 @@ glSecondaryColor3fv:
 .globl glSecondaryColor3i
 .type glSecondaryColor3i,#function
 glSecondaryColor3i:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16383,7 +16390,7 @@ glSecondaryColor3i:
 .globl glSecondaryColor3iv
 .type glSecondaryColor3iv,#function
 glSecondaryColor3iv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16404,7 +16411,7 @@ glSecondaryColor3iv:
 .globl glSecondaryColor3s
 .type glSecondaryColor3s,#function
 glSecondaryColor3s:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16425,7 +16432,7 @@ glSecondaryColor3s:
 .globl glSecondaryColor3sv
 .type glSecondaryColor3sv,#function
 glSecondaryColor3sv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16446,7 +16453,7 @@ glSecondaryColor3sv:
 .globl glSecondaryColor3ub
 .type glSecondaryColor3ub,#function
 glSecondaryColor3ub:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16467,7 +16474,7 @@ glSecondaryColor3ub:
 .globl glSecondaryColor3ubv
 .type glSecondaryColor3ubv,#function
 glSecondaryColor3ubv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16488,7 +16495,7 @@ glSecondaryColor3ubv:
 .globl glSecondaryColor3ui
 .type glSecondaryColor3ui,#function
 glSecondaryColor3ui:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16509,7 +16516,7 @@ glSecondaryColor3ui:
 .globl glSecondaryColor3uiv
 .type glSecondaryColor3uiv,#function
 glSecondaryColor3uiv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16530,7 +16537,7 @@ glSecondaryColor3uiv:
 .globl glSecondaryColor3us
 .type glSecondaryColor3us,#function
 glSecondaryColor3us:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16551,7 +16558,7 @@ glSecondaryColor3us:
 .globl glSecondaryColor3usv
 .type glSecondaryColor3usv,#function
 glSecondaryColor3usv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16572,7 +16579,7 @@ glSecondaryColor3usv:
 .globl glSecondaryColorPointer
 .type glSecondaryColorPointer,#function
 glSecondaryColorPointer:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16593,7 +16600,7 @@ glSecondaryColorPointer:
 .globl glWindowPos2d
 .type glWindowPos2d,#function
 glWindowPos2d:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16614,7 +16621,7 @@ glWindowPos2d:
 .globl glWindowPos2dv
 .type glWindowPos2dv,#function
 glWindowPos2dv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16635,7 +16642,7 @@ glWindowPos2dv:
 .globl glWindowPos2f
 .type glWindowPos2f,#function
 glWindowPos2f:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16656,7 +16663,7 @@ glWindowPos2f:
 .globl glWindowPos2fv
 .type glWindowPos2fv,#function
 glWindowPos2fv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16677,7 +16684,7 @@ glWindowPos2fv:
 .globl glWindowPos2i
 .type glWindowPos2i,#function
 glWindowPos2i:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16698,7 +16705,7 @@ glWindowPos2i:
 .globl glWindowPos2iv
 .type glWindowPos2iv,#function
 glWindowPos2iv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16719,7 +16726,7 @@ glWindowPos2iv:
 .globl glWindowPos2s
 .type glWindowPos2s,#function
 glWindowPos2s:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16740,7 +16747,7 @@ glWindowPos2s:
 .globl glWindowPos2sv
 .type glWindowPos2sv,#function
 glWindowPos2sv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16761,7 +16768,7 @@ glWindowPos2sv:
 .globl glWindowPos3d
 .type glWindowPos3d,#function
 glWindowPos3d:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16782,7 +16789,7 @@ glWindowPos3d:
 .globl glWindowPos3dv
 .type glWindowPos3dv,#function
 glWindowPos3dv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16803,7 +16810,7 @@ glWindowPos3dv:
 .globl glWindowPos3f
 .type glWindowPos3f,#function
 glWindowPos3f:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16824,7 +16831,7 @@ glWindowPos3f:
 .globl glWindowPos3fv
 .type glWindowPos3fv,#function
 glWindowPos3fv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16845,7 +16852,7 @@ glWindowPos3fv:
 .globl glWindowPos3i
 .type glWindowPos3i,#function
 glWindowPos3i:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16866,7 +16873,7 @@ glWindowPos3i:
 .globl glWindowPos3iv
 .type glWindowPos3iv,#function
 glWindowPos3iv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16887,7 +16894,7 @@ glWindowPos3iv:
 .globl glWindowPos3s
 .type glWindowPos3s,#function
 glWindowPos3s:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16908,7 +16915,7 @@ glWindowPos3s:
 .globl glWindowPos3sv
 .type glWindowPos3sv,#function
 glWindowPos3sv:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
@@ -16929,7 +16936,7 @@ glWindowPos3sv:
 .globl glActiveStencilFaceEXT
 .type glActiveStencilFaceEXT,#function
 glActiveStencilFaceEXT:
-#ifdef __sparc_v9__
+#ifdef SPARC_64BIT_ADDR
 	sethi	%hi(0x00000000), %g2
 	sethi	%hi(0x00000000), %g1
 	or	%g2, %lo(0x00000000), %g2
