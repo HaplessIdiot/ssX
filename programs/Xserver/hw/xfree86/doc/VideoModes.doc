@@ -1,6 +1,8 @@
   The Hitchhiker's Guide to X386/XFree86 Video Timing
   (or, Tweaking your Monitor for Fun and Profit)
-  Eric S. Raymond esr@snark.thyrsus.com 1
+  Eric S. Raymond esr@snark.thyrsus.com        (from an original by Chin
+  Fang fangchin@leland.stanford.edu; portions derive from a how-to by
+  Bob Crosson crosson@cam.nist.gov)
   This is version 1.0, Jan 8th 1993.
 
   1.  Introduction
@@ -54,22 +56,13 @@
 
   The pattern starts at the top left of the screen, goes across the
   screen to the right in a straight line, and stops temporarily on the
-
-
-
-    1. (from an original by Chin Fang
-
-
-  fangchin@leland.stanford.edu; portions derive from a how-
-
-
-  to by Bob Crosson crosson@cam.nist.gov,
   right side of the screen.  Then the beam is swept back to the left
   side of the display, but down one line.  The new line is swept from
   left to right just as the first line was.  This pattern is repeated
   until the bottom line on the display has been swept.  Then the beam is
   moved from the bottom right corner of the display to the top left
   corner, and the pattern is started over again.
+
 
   Starting the beam at the top left of the display is called the
   beginning of a frame.  The frame ends when the beam reaches the the
@@ -136,6 +129,7 @@
   monitor manual.  The vertical sync frequency number is typically
   calibrated in Hz (cycles per second), the horizontal one in KHz
   (kilocycles per second).  The usual ranges are between 50 and 80Hz
+
   vertical, and between 31 and 135KHz horizontal.
 
   If you have a multisync monitor, these frequencies will be given as
@@ -161,12 +155,14 @@
   XFree86 uses a slightly different multi-line format.
 
 
+
        WGA: 86C911 (mem: 1024k clocks: 25 28 40 3 50 77 36 45 0 0 79 31 94 65 75 71)
        ---  ------       -----         --------------------------------------------
         |     |            |                 Possible driving frequencies in MHz
         |     |            +-- Size of on-board frame-buffer RAM
         |     +-- Chip type
         +-- Server type
+
 
 
 
@@ -184,8 +180,10 @@
   above:
 
 
+
        wga
                Clocks  25 28 40 3 50 77 36 45 0 0 79 31 94 65 75 71
+
 
 
 
@@ -197,6 +195,7 @@
   The monitor's video bandwidth:
 
   Finally, it's useful to know your monitor's video bandwidth, so you
+
   know approximately what the highest dot clock you can use is.  There's
   a lot of give here, though --- some monitors can run as much as 30%
   over their nominal bandwidth.
@@ -212,11 +211,13 @@
   use):
 
 
+
                640x480                 25
                800x600                 36
                1024x768                65
                1024x768 interlaced     45
                1280x1024               110
+
 
 
 
@@ -230,6 +231,7 @@
   or so.  With an SVGA and most hi-res monitors, you can't get anywhere
   near the limit of your monitor's video bandwidth.  The following are
   examples:
+
 
 
                Brand                           Video Bandwidth
@@ -247,6 +249,7 @@
 
 
 
+
   Even low-end monitors usually aren't terribly bandwidth-constrained
   for their rated resolutions.  The NEC Multisync II makes a good
   example --- it can't even display 800x600 per its spec.  It can only
@@ -258,10 +261,12 @@
   At these two driving frequencies, your screen image may not be as
   sharp as it should be, but definitely of tolerable quality. Of course
   it would be nicer if NEC Multisync II had a video bandwidth higher
+
   than, say, 36Mhz.  But this is not critical for common tasks like text
   editing, as long as the difference is not so significant as to cause
   severe image distortion (your eyes would tell you right away if this
   were so).
+
   What these control:
 
   The sync frequency ranges of your monitor, together with your video
@@ -309,7 +314,9 @@
         frequencies are better, as they reduce flicker.  60Hz is good,
         VESA-standard 72Hz is better.  Compute it as
 
+
                   RR = DCF / (HFL * VFL)
+
 
 
 
@@ -320,6 +327,7 @@
   About Bandwidth:
 
   Monitor makers like to advertise high bandwidth because it constrains
+
   the sharpness of intensity and color changes on the screen.  A high
   bandwidth means smaller visible details.
 
@@ -342,6 +350,7 @@
   persistence of vision enables you to "see" the whole image.
 
   Here are some pictures to help:
+
 
 
         _______________________
@@ -368,6 +377,7 @@
 
 
 
+
   Remember that the actual raster scan is a very tight zigzag pattern;
   that is, the beam moves left <-> right and at the same time up <->
   down.
@@ -383,6 +393,7 @@
   screen can be updated thus REFRESHED per second!
 
   You need to understand this concept to design a configuration which
+
   trades off resolution against flicker in whatever way suits your
   needs.
 
@@ -390,7 +401,9 @@
 
   Another way to look at the formula we derived above is
 
+
                DCF = RR * HFL * VFL
+
 
 
 
@@ -446,6 +459,7 @@
   dots per line by the number of visible lines.  For a display with a
   resolution of 800x600, this would be 800 x 600 = 480,000, which is the
   number of visible dots on the display.  This is also, at one byte per
+
   dot, the number of bytes of video memory that are necessary on your
   adapter card.
 
@@ -511,6 +525,7 @@
   For this example, that's 708 ticks.  To get your actual VFL, multiply
   that by 1.05 to get 743 ticks.
 
+
   About that 4:3 --- a ratio of 4:3 for width to height of the displayed
   area approximates the Golden Section, (1 + sqrt(5))/2.  Human beings
   seem to be wired to find this kind of rectangle pleasant to look at;
@@ -563,6 +578,7 @@
 
 
 
+
         |___ __ __ __ __ __ __ __ __ __ __ __ __
         |_ _ _ _ _ _ _ _ _ _ _ _                |
         |_______________________|_______________|_____
@@ -572,6 +588,7 @@
                                 |   |<----->|   |
                                 |<->|  HSP  |<->|
                                 HGT1         HGT2
+
 
 
 
@@ -655,17 +672,15 @@
 
 
 
+        |___ __ __ __ __ __ __ __ __ __ __ __ __
+        |_ _ _ _ _ _ _ _ _ _ _ _                |
+        |_______________________|_______________|_____
+        0                      VR              VFL     unit: ticks
+                                ^   ^       ^
+                                |   |       |
+                                |<->|<----->|
+                                 VGT    VSP
 
-
-
-   |___ __ __ __ __ __ __ __ __ __ __ __ __
-   |_ _ _ _ _ _ _ _ _ _ _ _                |
-   |_______________________|_______________|_____
-   0                      VR              VFL     unit: ticks
-                           ^   ^       ^
-                           |   |       |
-                           |<->|<----->|
-                            VGT    VSP
 
 
 
@@ -708,6 +723,7 @@
   illuminated to form the picture (what we've called HR).  The second
   field of the section indicates at which dot the horizontal sync pulse
   will begin.  The third field indicates at which dot the horizontal
+
   sync pulse will end.  The fourth field specifies the total horizontal
   frame length (HFL).
 
@@ -721,13 +737,11 @@
   Example:
 
 
+            #Modename    clock  horizontal timing  vertical timing
 
+            "752x564"     40    752 784  944 1088  564 567 569 611
+                          44.5  752 792  976 1240  564 567 570 600
 
-
-       #Modename    clock  horizontal timing  vertical timing
-
-       "752x564"     40    752 784  944 1088  564 567 569 611
-                     44.5  752 792  976 1240  564 567 570 600
 
 
 
@@ -775,11 +789,14 @@
   Note that the vertical numbers don't have to be divisible by eight!
 
   Let's return to the example we've been working.  According to the
+
   above, all we need to do from now on is to write our result into
   Xconfig as follows:
 
 
+
        < name >   DCF     HR  SH1 SH2   HFL   VR  SV1 SV2 VFL
+
 
 
 
@@ -789,9 +806,9 @@
 
 
 
+       #name    clock   horizontal timing   vertical timing    flag
+       936x702  65      936 968 1200 1232   702 702 710 737
 
-  #name    clock   horizontal timing   vertical timing    flag
-  936x702  65      936 968 1200 1232   702 702 710 737
 
 
 
@@ -838,6 +855,7 @@
   Q. But how about interlace/non-interlace?
 
   A. At a fixed dot clock, an interlaced display is going to flicker
+
   worse than a non-interlaced one, which is why the market has moved
   away from them.  What you buy with the increased flicker is higher
   resolution with a slower dot clock.  If the DCF were fast enough (say
@@ -856,6 +874,7 @@
      2. if high resolution is desirable and your monitor supports it,
         try to get a SVGA card that provides a matching dot clock or
         DCF. The higher, the better!
+
   11.  Two More Example Calculations
 
   Here's another hypothetical:
@@ -901,6 +920,7 @@
   become
 
   800 (800+68) (800+68+152) (800+68+152+68)
+
 
   or
 
@@ -966,6 +986,7 @@
   seconds/frame, or 1/0.017892 frames/second.
 
   1 / (0.017136 seconds/frame) = 58.4 frames/second
+
 
   If the manual says the vertical sync rate is 58.4 Hz, or 58.4 Hz is in
   the range of the display's vertical sync rate, we are fine.  If the
@@ -1099,27 +1120,6 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
        # the following line works but is right of center
        "752x564"  40  752  784  944 1088  564 567 569 611
        #        44.5  752 792  976 1240  564 567 570 600
@@ -1163,6 +1163,7 @@
 
 
 
+
   12.  Fixing Problems with the Image.
 
   OK, so you've got your X configuration numbers.  You put them in
@@ -1183,6 +1184,7 @@
   your image is too large in both dimensions you will probably have to
   go to a higher dot clock to fix it.  Since this raises the usable
   resolution, it is seldom a problem!
+
 
   The image is displaced to the left or right
 
@@ -1227,8 +1229,9 @@
   Finally, remember that increasing either frame length will decrease
   your refresh rate, and vice-versa.
 
+
   $XConsortium: VidModes.sgml,v 1.3 95/01/27 16:14:33 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VidModes.sgml,v 3.6 1995/07/21 14:40:58 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VidModes.sgml,v 3.7 1995/08/13 09:45:11 dawes Exp $
 
 
 
@@ -1249,8 +1252,4 @@
 
 
 
-
-
-
-
-$XFree86$
+\n$XFree86$
