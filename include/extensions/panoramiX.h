@@ -19,6 +19,7 @@
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
+/* $XFree86$ */
 
 /* THIS IS NOT AN X PROJECT TEAM SPECIFICATION */
 
