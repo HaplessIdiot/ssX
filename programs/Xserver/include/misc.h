@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.24 2000/08/23 22:10:15 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.25 2001/01/17 22:36:57 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -181,11 +181,6 @@ typedef struct _xReq *xReqPtr;
  * Some implementations #define these through <math.h>, so preclude
  * #include'ing it later.
  */
-
-#ifdef __CYGWIN__
-/* needed to avoid INFINITY redeclarations from CYGWIN math.h */
-#define __STRICT_ANSI__
-#endif
 
 #include <math.h>
 #endif

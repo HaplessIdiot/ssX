@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.14 2001/05/03 20:13:11 alanh Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.15 2001/05/04 00:38:23 alanh Exp $
 
 #ifndef OSName
 #define OSName                  Cygwin
@@ -71,11 +71,6 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.14 2001/05/03 20:13:11 ala
 #define ExpandManNames          NO
 #define HasDlopen	        NO
 #define HasGnuMake		YES
-#ifndef DefaultCCOptions
-#define DefaultCCOptions        -Wall
-#endif /* DefaultCCOptions */
-#define DefaultGcc2i386Opt      -O2 
-#define LibraryCDebugFlags      -O2
 #define UseGccMakeDepend	YES
 
 /*
@@ -107,7 +102,9 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.14 2001/05/03 20:13:11 ala
 
 #define LdCombineFlags          -r
 
-#define OptimizedCDebugFlags	-O2 -fno-strength-reduce -fpcc-struct-return -m486
+# ifndef OptimizedCDebugFlags
+#  define OptimizedCDebugFlags	DefaultGcc2i386Opt
+# endif
 
 #define StandardDefines         -D__i386__ -DWIN32_LEAN_AND_MEAN -DX_LOCALE -D_X86_ -D__STDC__ -DNO_TCP_H -D__CYGWIN__ -D_XOPEN_SOURCE -D_POSIX_C_SOURCE=199309L -D_BSD_SOURCE -D_SVID_SOURCE -D_GNU_SOURCE -DX_SOURCE
 
