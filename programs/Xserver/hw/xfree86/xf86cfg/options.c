@@ -57,14 +57,22 @@ static void AddDriverOption(Widget, XtPointer, XtPointer);
 /*
  * Initialization
  */
+Widget optionsShell;
 static XF86OptionPtr *options;
-static Widget shell, add, remov, update, list, name, value;
+static Widget add, remov, update, list, name, value;
 static char *option_str;
 static int option_index, popped = False;
 
 /*
  * Implementation
  */
+void
+CreateOptionsShell(void)
+{
+    optionsShell = XtCreatePopupShell("options", transientShellWidgetClass,
+				      toplevel, NULL, 0);
+}
+
 #ifdef USE_MODULES
 void
 OptionsPopup(XF86OptionPtr *opts, char *driver, OptionInfoPtr drv_opts)
@@ -91,10 +99,10 @@ OptionsPopup(XF86OptionPtr *opts)
 
 	first = 0;
 
-	shell = XtCreatePopupShell("options", transientShellWidgetClass,
-				   toplevel, NULL, 0);
+	if (optionsShell == NULL)
+	    CreateOptionsShell();
 	pane = XtCreateManagedWidget("pane", panedWidgetClass,
-				     shell, NULL, 0);
+				     optionsShell, NULL, 0);
 	form = XtCreateManagedWidget("commands", formWidgetClass,
 				     pane, NULL, 0);
 	add = XtCreateManagedWidget("add", commandWidgetClass,
@@ -142,8 +150,8 @@ OptionsPopup(XF86OptionPtr *opts)
 #endif
 
 	XtAddCallback(popdown, XtNcallback, PopdownCallback, NULL);
-	XtRealizeWidget(shell);
-	XSetWMProtocols(DPY, XtWindow(shell), &wm_delete_window, 1);
+	XtRealizeWidget(optionsShell);
+	XSetWMProtocols(DPY, XtWindow(optionsShell), &wm_delete_window, 1);
 
 #ifdef USE_MODULES
 	{
@@ -204,10 +212,10 @@ OptionsPopup(XF86OptionPtr *opts)
 
     UpdateOptionList();
     popped = True;
-    XtPopup(shell, XtGrabExclusive);
+    XtPopup(optionsShell, XtGrabExclusive);
 
     while (popped)
-	XtAppProcessEvent(XtWidgetToApplicationContext(shell), XtIMAll);
+	XtAppProcessEvent(XtWidgetToApplicationContext(optionsShell), XtIMAll);
 }
 
 static void
@@ -263,7 +271,7 @@ UpdateOptionList(void)
 static void
 PopdownCallback(Widget w, XtPointer user_data, XtPointer call_data)
 {
-    XtPopdown(shell);
+    XtPopdown(optionsShell);
     popped = False;
 }
 

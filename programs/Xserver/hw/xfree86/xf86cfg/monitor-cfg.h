@@ -40,5 +40,9 @@
 XtPointer MonitorConfig(XtPointer);
 void MonitorLayout(XF86SetupInfo*);
 void MonitorVidtune(XF86SetupInfo*);
+int string_to_parser_range(char*, parser_range*, int);
+#define PARSER_RANGE_SIZE	256
+/* string must have at least 256 bytes */
+int parser_range_to_string(char*, parser_range*, int);
 
 #endif /* _xf86cfg_monitor_h */

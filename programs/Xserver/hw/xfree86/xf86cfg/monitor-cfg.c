@@ -52,10 +52,6 @@ static Bool MonitorConfigCheck(void);
 static void MonitorHsyncCallback(Widget, XtPointer, XtPointer);
 static void MonitorVsyncCallback(Widget, XtPointer, XtPointer);
 static void MonitorSelectCardCallback(Widget, XtPointer, XtPointer);
-static int string_to_parser_range(char*, parser_range*, int);
-#define PARSER_RANGE_SIZE	256
-/* string must have at least 256 bytes */
-static int parser_range_to_string(char*, parser_range*, int);
 
 extern void DrawCables(void);
 
@@ -258,7 +254,7 @@ MonitorConfigCheck(void)
     return (True);
 }
 
-static int
+int
 string_to_parser_range(char *str, parser_range *range, int nrange)
 {
     double val;
@@ -295,7 +291,7 @@ string_to_parser_range(char *str, parser_range *range, int nrange)
     return (i);
 }
 
-static int
+int
 parser_range_to_string(char *str, parser_range *range, int nrange)
 {
     int i, len;

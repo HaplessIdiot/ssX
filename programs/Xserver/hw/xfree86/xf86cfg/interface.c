@@ -153,6 +153,7 @@ static XtActionsRec actions[] = {
     {"accessx-close", CloseAccessXAction},
     {"testmode-cancel", CancelTestModeAction},
     {"help-close", HelpCancelAction},
+    {"expert-close", ExpertCloseAction},
 };
 
 static char *device_names[] = {
@@ -185,7 +186,7 @@ static XrmOptionDescRec optionDescList[] = {
 int
 main(int argc, char *argv[])
 {
-    Widget pane, popup, mouse, keyboard, card, monitor;
+    Widget pane, hpane, expert, popup, mouse, keyboard, card, monitor;
     Widget bottom, sme, smemodeline, help, quit, layopt;
     XColor color, tmp;
     Pixmap pixmap;
@@ -201,31 +202,26 @@ main(int argc, char *argv[])
 	XFree86Dir = DefaultXFree86Dir;
 
     chdir(XFree86Dir);
-    
+
     for (i = 1; i < argc; i++) {
 	if (strcmp(argv[i], "-xf86config") == 0) {
 	    if (i + 1 < argc)
 		XF86Config_path = argv[++i];
-	    continue;
 	} else if (strcmp(argv[i], "-modulepath") == 0) {
 	    if (i + 1 < argc)
 		XF86Module_path = argv[++i];
-	    continue;
 	} else if (strcmp(argv[i], "-serverpath") == 0) {
 	    if (i + 1 < argc)
 		XFree86_path = argv[++i];
-	    continue;
 	} else if (strcmp(argv[i], "-fontpath") == 0) {
 	    if (i + 1 < argc)
 		XF86Font_path = argv[++i];
-	    continue;
 	} else if (strcmp(argv[i], "-rgbpath") == 0) {
 	    if (i + 1 < argc)
 		XF86RGB_path = argv[++i];
-	    continue;
 	}
     }
-
+    
     startedx = startx();
 /*    if (XF86Config_path == NULL)
 	XF86Config_path = "/etc/X11/XF86Config-4";*/
@@ -253,8 +249,12 @@ main(int argc, char *argv[])
 
     pane = XtCreateManagedWidget("pane", panedWidgetClass,
 				 toplevel, NULL, 0);
+    hpane = XtVaCreateManagedWidget("hpane", panedWidgetClass, pane,
+				    XtNorientation, XtorientHorizontal, NULL, 0);
     menu = XtCreateManagedWidget("topM", menuButtonWidgetClass,
-				 pane, NULL, 0);
+				 hpane, NULL, 0);
+    expert = XtCreateManagedWidget("expert", commandWidgetClass, hpane, NULL, 0);
+    XtAddCallback(expert, XtNcallback, ExpertCallback, NULL);
     popup = XtCreatePopupShell("menu", simpleMenuWidgetClass,
 			       menu, NULL, 0);
     sme = XtCreateManagedWidget("layout", smeBSBObjectClass,
@@ -459,8 +459,8 @@ AskConfig(void)
 	XSetWMProtocols(DPY, XtWindow(shell_cf), &wm_delete_window, 1);
 	XtSetArg(args[0], XtNlabel, &l);
 	XtGetValues(dialog, args, 1);
-	label = XtMalloc(strlen(l) + 12);
-	strcpy(label, "XF86Config\n");
+	label = XtMalloc(strlen(l) + strlen(XF86CONFIG));
+	XmuSnprintf(label, sizeof(label), "%s\n", XF86CONFIG);
 	strcat(label, l);
 	XtSetArg(args[0], XtNlabel, label);
 	XtSetValues(dialog, args, 1);
@@ -475,7 +475,7 @@ AskConfig(void)
 	XtGetValues(dialog, args, 1);
 	switch (cf_state) {
 	    case CF_XF86Config:
-		str = "XF86Config";
+		str = XF86CONFIG;
 		XtSetArg(args[num_args], XtNvalue, XF86Config_path);
 		++num_args;
 		break;
@@ -1499,41 +1499,19 @@ DisableDeviceCallback(Widget w, XtPointer user_data, XtPointer call_data)
     }
 }
 
+/* ARGSUSED */
 void
 RemoveDeviceCallback(Widget w, XtPointer user_data, XtPointer call_data)
 {
     int i, j;
 
-    if (config_mode == CONFIG_SCREEN) {
-	for (i = 0; i < computer.num_screens; i++)
-	    if (computer.screens[i]->widget == config) {
-		xf86cfgDevice *mon, *dev;
-
-		RemoveScreen(mon = computer.screens[i]->monitor,
-			     dev = computer.screens[i]->card);
-
-/*
-		for (j = 0; j < computer.num_devices; j++) {
-		    if (computer.devices[j] == mon ||
-			computer.devices[j] == dev) {
-			if (--computer.devices[j]->refcount <= 0) {
-			    XtDestroyWidget(computer.devices[j]->widget);
-			    XtFree((XtPointer)computer.devices[j]);
-			    if (--computer.num_devices > j)
-				memmove(&computer.devices[j],
-					&computer.devices[j + 1],
-					(computer.num_devices - j) *
-					sizeof(xf86cfgDevice*));
-			    --j;
-			}
-		    }
-		}
-*/
-
-		ScreenSetup(False);
-	    }
-	return;
-    }
+    for (i = 0; i < computer.num_screens; i++)
+	if (computer.screens[i]->widget == config) {
+	    RemoveScreen(computer.screens[i]->monitor,
+			 computer.screens[i]->card);
+	    ScreenSetup(False);
+	    return;
+	}
 
     for (i = 0; i < computer.num_devices; i++) {
 	if (computer.devices[i]->widget == config) {

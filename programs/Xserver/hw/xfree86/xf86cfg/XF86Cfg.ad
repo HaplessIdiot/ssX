@@ -178,7 +178,6 @@ lines		-1,0,0,0,0,-1
 *card.label:			Card
 *monitor.label:			Monitor
 
-!*commands.background:		black
 *commands.borderWidth:		0
 *commands.defaultDistance:	2
 *commands.?.bottom:		chainTop
@@ -193,6 +192,10 @@ lines		-1,0,0,0,0,-1
 *commands.card.tip:		Add video card
 *commands.monitor.tip:		Add monitor
 
+*hpane.showGrip:		False
+*hpane.expert.label:		Expert Mode
+*topM.min:			200
+*topM.max:			200
 *topM.justify:			left
 *topM.label:			Configure Layout
 *topM*layout.label:		Configure Layout
@@ -445,6 +448,9 @@ XF86Cfg.translations:	#override \
 <Message>WM_PROTOCOLS:	accessx-close()
 .xf86cfg.test.translations:	#override \
 <Message>WM_PROTOCOLS:	testmode-cancel()
+.xf86cfg.Expert.translations:	#override \
+<Message>WM_PROTOCOLS:	expert-close()
+
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !! Options
@@ -1248,6 +1254,9 @@ font		-*-helvetica-bold-o-*-*-8-*-*-*-*-*-*-1;\
 draw-string	12,21, "Button";\
 draw-string	9,30, "Release"
 
+*panner.width:		100
+*panner.height:		100
+
 *help*text.properties:\
 default?family=Times&weight=Medium&slant=R&pixelsize=12&registry=ISO8859&encoding=1,\
 b?weight=Bold,\
@@ -1327,3 +1336,434 @@ Press in the <b>Enable ???</b> label to set specific options.\
 <p>\
 <font color=red>Note</font>: currently, if you press the \
 <tt><b>Apply changes</b></tt> button there is no way to undo your changes.</font>
+
+
+*Expert.geometry:				800x600
+*Expert*vpane.min:				64
+*Expert*vpane.max:				64
+*Expert*vpane.showGrip:				False
+*Expert*vpane.close.showGrip:			False
+*Expert*vpane.close.min:			26
+*Expert*vpane.close.max:			26
+*panner.internalSpace:				1
+*panner.shadowThickness:			0
+*panner.shadowColor:				gray60
+*panner.backgroundStipple:			black
+*panner.borderColor:				gray40
+
+*expert*tree.hSpace:				12
+*expert*tree*Box.hSpace:			4
+*expert*tree*vSpace:				4
+*expert*tree*LogFile.Text.width:		192
+*expert*tree*RgbPath.Text.width:		192
+*expert*tree*ModulePath.Text.width:		192
+
+*expert*tree*Form.defaultDistance:		4
+
+*expert*tree.backgroundPixmap:			xlogo64?foreground=gray90&background=gray92
+*expert*tree.foreground:			gray45
+
+*expert*tree*Label.backgroundPixmap:		ParentRelative
+
+*expert*tree*Box.backgroundPixmap:		gradient:vertical?dimension=3&start=gray85&end=gray95
+*expert*tree*Box.borderWidth:			0
+*expert*tree*Box.background:			gray85
+*expert*Box.displayList:\
+foreground	gray40;\
+lines		1,-1,-1,-1,-1,1;\
+foreground	white;\
+lines		-1,0,0,0,0,-1
+
+*expert*tree*Form.backgroundPixmap:		gradient:vertical?dimension=3&start=gray85&end=gray95
+*expert*tree*Form.borderWidth:			0
+*expert*tree*Form.background:			gray85
+*expert*Form.displayList:\
+foreground	gray40;\
+lines		1,-1,-1,-1,-1,1;\
+foreground	white;\
+lines		-1,0,0,0,0,-1
+
+*expert*tree*Text.width:			160
+
+*expert*tree*fontpath.Text.width:		228
+*expert*tree*fontpath.value.fromVert:		remove
+*expert*tree*fontpath.valueNew.fromVert:	new
+
+*expert*tree*modulepath.Text.width:		228
+*expert*tree*modulepath.value.fromVert:		remove
+*expert*tree*modulepath.valueNew.fromVert:	new
+
+*expert*tree*module.options.fromHoriz:		remove
+*expert*tree*module.label.fromVert:		remove
+*expert*tree*module.value.fromHoriz:		new
+*expert*tree*module.value.width:		78
+
+*expert*tree*video*Label.justify:		left
+*expert*tree*video.options.fromHoriz:		remove
+*expert*tree*video.adaptor.fromHoriz:		options
+*expert*tree*video.vendorL.width:		78
+*expert*tree*video.vendorL.label:		VendorName
+*expert*tree*video.vendorL.fromVert:		remove
+*expert*tree*video.vendor.fromVert:		remove
+*expert*tree*video.vendor.fromHoriz:		vendorL
+*expert*tree*video.boardL.width:		78
+*expert*tree*video.boardL.label:		BoardName
+*expert*tree*video.boardL.fromVert:		vendor
+*expert*tree*video.board.fromVert:		vendor
+*expert*tree*video.board.fromHoriz:		boardL
+*expert*tree*video.busidL.width:		78
+*expert*tree*video.busidL.label:		BusID
+*expert*tree*video.busidL.fromVert:		board
+*expert*tree*video.busid.fromVert:		board
+*expert*tree*video.busid.fromHoriz:		busidL
+*expert*tree*video.driverL.width:		78
+*expert*tree*video.driverL.label:		Driver
+*expert*tree*video.driverL.fromVert:		busid
+*expert*tree*video.driver.fromVert:		busid
+*expert*tree*video.driver.fromHoriz:		driverL
+*expert*tree*video.value.fromHoriz:		new
+*expert*tree*video.value.width:			78
+*expert*tree*VideoPort.fromVert:		driver
+*expert*tree*VideoPort.horizDistance:		120
+*expert*tree*video.value.width:			149
+
+*expert*tree*port.value.fromHoriz:		new
+*expert*tree*port.options.fromHoriz:		remove
+*expert*tree*port.label.fromVert:		remove
+*expert*tree*port.value.width:			78
+
+*expert*tree*modes.mode.fromHoriz:		remove
+*expert*tree*modes.value.fromHoriz:		new
+*expert*tree*modes.value.width:			78
+
+*expert*tree*modeline.label.fromHoriz:		remove
+*expert*tree*modeline.modeline.fromVert:	remove
+*expert*tree*modeline.modeline.width:		480
+*expert*tree*modeline.value.fromHoriz:		new
+*expert*tree*modeline.value.width:		120
+*expert*tree*modeline.modelineNew.fromVert:	value
+*expert*tree*modeline.modelineNew.width:	480
+
+*expert*tree*monitor.options.fromHoriz:		remove
+*expert*tree*monitor.label.fromHoriz:		options
+
+*expert*tree*monitor.Label.justify:		left
+*expert*tree*monitor.Text.width:		120
+*expert*tree*monitor.vendorL.width:		100
+*expert*tree*monitor.vendorL.label:		VendorName
+*expert*tree*monitor.vendorL.fromVert:		remove
+*expert*tree*monitor.vendor.fromVert:		remove
+*expert*tree*monitor.vendor.fromHoriz:		vendorL
+*expert*tree*monitor.modelnameL.width:		100
+*expert*tree*monitor.modelnameL.label:		ModelName
+*expert*tree*monitor.modelnameL.fromVert:	vendor
+*expert*tree*monitor.modelname.fromVert:	vendor
+*expert*tree*monitor.modelname.fromHoriz:	modelnameL
+*expert*tree*monitor.widthL.width:		100
+*expert*tree*monitor.widthL.label:		Width (mm)
+*expert*tree*monitor.widthL.fromVert:		modelname
+*expert*tree*monitor.width.fromVert:		modelname
+*expert*tree*monitor.width.fromHoriz:		widthL
+*expert*tree*monitor.heightL.width:		100
+*expert*tree*monitor.heightL.label:		Height (mm)
+*expert*tree*monitor.heightL.fromVert:		width
+*expert*tree*monitor.height.fromVert:		width
+*expert*tree*monitor.height.fromHoriz:		heightL
+*expert*tree*monitor.hsyncL.width:		100
+*expert*tree*monitor.hsyncL.label:		Hsync
+*expert*tree*monitor.hsyncL.fromVert:		heightL
+*expert*tree*monitor.hsync.fromVert:		height
+*expert*tree*monitor.hsync.fromHoriz:		hsyncL
+*expert*tree*monitor.vrefreshL.width:		100
+*expert*tree*monitor.vrefreshL.label:		Vrefresh
+*expert*tree*monitor.vrefreshL.fromVert:	hsync
+*expert*tree*monitor.vrefresh.fromVert:		hsync
+*expert*tree*monitor.vrefresh.fromHoriz:	vrefreshL
+*expert*tree*monitor.gammaRedL.width:		100
+*expert*tree*monitor.gammaRedL.label:		Gamma (red)
+*expert*tree*monitor.gammaRedL.fromVert:	vrefresh
+*expert*tree*monitor.gammaRed.fromVert:		vrefresh
+*expert*tree*monitor.gammaRed.fromHoriz:	gammaRedL
+*expert*tree*monitor.gammaGreenL.width:		100
+*expert*tree*monitor.gammaGreenL.label:		Gamma (green)
+*expert*tree*monitor.gammaGreenL.fromVert:	gammaRed
+*expert*tree*monitor.gammaGreen.fromVert:	gammaRed
+*expert*tree*monitor.gammaGreen.fromHoriz:	gammaGreenL
+*expert*tree*monitor.gammaBlueL.width:		100
+*expert*tree*monitor.gammaBlueL.label:		Gamma (blue)
+*expert*tree*monitor.gammaBlueL.fromVert:	gammaGreen
+*expert*tree*monitor.gammaBlue.fromVert:	gammaGreen
+*expert*tree*monitor.gammaBlue.fromHoriz:	gammaBlueL
+*expert*tree*monitor.value.width:		191
+*expert*tree*monitor.value.fromHoriz:		new
+
+*expert*tree*device.Label.justify:		left
+*expert*tree*device.options.fromHoriz:		remove
+*expert*tree*device.label.fromHoriz:		options
+*expert*tree*device.vendorL.label:		VendorName
+*expert*tree*device.vendorL.width:		100
+*expert*tree*device.vendorL.fromVert:		remove
+*expert*tree*device.vendor.fromVert:		remove
+*expert*tree*device.vendor.fromHoriz:		vendorL
+*expert*tree*device.boardL.label:		BoardName
+*expert*tree*device.boardL.width:		100
+*expert*tree*device.boardL.fromVert:		vendor
+*expert*tree*device.board.fromVert:		vendor
+*expert*tree*device.board.fromHoriz:		boardL
+*expert*tree*device.chipsetL.label:		Chipset
+*expert*tree*device.chipsetL.width:		100
+*expert*tree*device.chipsetL.fromVert:		board
+*expert*tree*device.chipset.fromVert:		board
+*expert*tree*device.chipset.fromHoriz:		chipsetL
+*expert*tree*device.busidL.label:		BusID
+*expert*tree*device.busidL.width:		100
+*expert*tree*device.busidL.fromVert:		chipset
+*expert*tree*device.busid.fromVert:		chipset
+*expert*tree*device.busid.fromHoriz:		chipsetL
+*expert*tree*device.cardL.label:		Card
+*expert*tree*device.cardL.width:		100
+*expert*tree*device.cardL.fromVert:		busid
+*expert*tree*device.card.fromVert:		busid
+*expert*tree*device.card.fromHoriz:		cardL
+*expert*tree*device.driverL.label:		Driver
+*expert*tree*device.driverL.width:		100
+*expert*tree*device.driverL.fromVert:		card
+*expert*tree*device.driver.fromVert:		card
+*expert*tree*device.driver.fromHoriz:		driverL
+*expert*tree*device.ramdacL.label:		Ramdac
+*expert*tree*device.ramdacL.width:		100
+*expert*tree*device.ramdacL.fromVert:		driverL
+*expert*tree*device.ramdac.fromVert:		driver
+*expert*tree*device.ramdac.fromHoriz:		ramdacL
+*expert*tree*device.dacSpeedL.label:		DacSpeed
+*expert*tree*device.dacSpeedL.width:		100
+*expert*tree*device.dacSpeedL.fromVert:		ramdac
+*expert*tree*device.dacSpeed.fromVert:		ramdac
+*expert*tree*device.dacSpeed.fromHoriz:		dacSpeedL
+*expert*tree*device.videoRamL.label:		VideoRam
+*expert*tree*device.videoRamL.width:		100
+*expert*tree*device.videoRamL.fromVert:		dacSpeed
+*expert*tree*device.videoRam.fromVert:		dacSpeed
+*expert*tree*device.videoRam.fromHoriz:		videoRamL
+*expert*tree*device.textClockFreqL.label:	TextClockFreq
+*expert*tree*device.textClockFreqL.width:	100
+*expert*tree*device.textClockFreqL.fromVert:	videoRam
+*expert*tree*device.textClockFreq.fromVert:	videoRam
+*expert*tree*device.textClockFreq.fromHoriz:	textClockFreqL
+*expert*tree*device.biosBaseL.label:		BiosBase
+*expert*tree*device.biosBaseL.width:		100
+*expert*tree*device.biosBaseL.fromVert:		textClockFreq
+*expert*tree*device.biosBase.fromVert:		textClockFreq
+*expert*tree*device.biosBase.fromHoriz:		biosBaseL
+*expert*tree*device.memBaseL.label:		MemBase
+*expert*tree*device.memBaseL.width:		100
+*expert*tree*device.memBaseL.fromVert:		biosBase
+*expert*tree*device.memBase.fromVert:		biosBase
+*expert*tree*device.memBase.fromHoriz:		memBaseL
+*expert*tree*device.ioBaseL.label:		IOBase
+*expert*tree*device.ioBaseL.width:		100
+*expert*tree*device.ioBaseL.fromVert:		memBase
+*expert*tree*device.ioBase.fromVert:		memBase
+*expert*tree*device.ioBase.fromHoriz:		ioBaseL
+*expert*tree*device.clockChipL.label:		ClockChip
+*expert*tree*device.clockChipL.width:		100
+*expert*tree*device.clockChipL.fromVert:	ioBase
+*expert*tree*device.clockChip.fromVert:		ioBase
+*expert*tree*device.clockChip.fromHoriz:	clockChipL
+*expert*tree*device.devClockL.label:		Clocks
+*expert*tree*device.devClockL.width:		100
+*expert*tree*device.devClockL.fromVert:		clockChip
+*expert*tree*device.devClock.fromVert:		clockChip
+*expert*tree*device.devClock.fromHoriz:		devClockL
+*expert*tree*device.chipIdL.label:		ChipId
+*expert*tree*device.chipIdL.width:		100
+*expert*tree*device.chipIdL.fromVert:		devClock
+*expert*tree*device.chipId.fromVert:		devClock
+*expert*tree*device.chipId.fromHoriz:		chipIdL
+*expert*tree*device.chipRevL.label:		ChipRev
+*expert*tree*device.chipRevL.width:		100
+*expert*tree*device.chipRevL.fromVert:		chipId
+*expert*tree*device.chipRev.fromVert:		chipId
+*expert*tree*device.chipRev.fromHoriz:		chipRevL
+*expert*tree*device.irqL.label:			IRQ
+*expert*tree*device.irqL.width:			100
+*expert*tree*device.irqL.fromVert:		chipRev
+*expert*tree*device.irq.fromVert:		chipRev
+*expert*tree*device.irq.fromHoriz:		irqL
+*expert*tree*device.screenL.label:		Screen
+*expert*tree*device.screenL.width:		100
+*expert*tree*device.screenL.fromVert:		irq
+*expert*tree*device.screen.fromVert:		irq
+*expert*tree*device.screen.fromHoriz:		screenL
+*expert*tree*device.value.fromHoriz:		new
+
+*expert*tree*screen.Label.justify:		left
+*expert*tree*screen.options.fromHoriz:		remove
+*expert*tree*screen.label.fromHoriz:		options
+*expert*tree*screen.defaultDepthL.label:	DefaultDepth
+*expert*tree*screen.defaultDepthL.width:	92
+*expert*tree*screen.defaultDepthL.fromVert:	remove
+*expert*tree*screen.defaultDepth.fromVert:	remove
+*expert*tree*screen.defaultDepth.fromHoriz:	defaultDepthL
+*expert*tree*screen.defaultBppL.label:		DefaultBpp
+*expert*tree*screen.defaultBppL.width:		92
+*expert*tree*screen.defaultBppL.fromVert:	defaultDepth
+*expert*tree*screen.defaultBpp.fromVert:	defaultDepth
+*expert*tree*screen.defaultBpp.fromHoriz:	defaultBppL
+*expert*tree*screen.defaultFbBppL.label:	DefaultFbBpp
+*expert*tree*screen.defaultFbBppL.width:	92
+*expert*tree*screen.defaultFbBppL.fromVert:	defaultBpp
+*expert*tree*screen.defaultFbBpp.fromVert:	defaultBpp
+*expert*tree*screen.defaultFbBpp.fromHoriz:	defaultFbBppL
+*expert*tree*screen.monitorL.label:		Monitor
+*expert*tree*screen.monitorL.width:		92
+*expert*tree*screen.monitorL.fromVert:		defaultFbBpp
+*expert*tree*screen.monitor.fromVert:		defaultFbBpp
+*expert*tree*screen.monitor.fromHoriz:		monitorL
+*expert*tree*screen.deviceL.label:		Device
+*expert*tree*screen.deviceL.width:		92
+*expert*tree*screen.deviceL.fromVert:		monitor
+*expert*tree*screen.device.fromVert:		monitor
+*expert*tree*screen.device.fromHoriz:		deviceL
+*expert*tree*screen.value.fromHoriz:		new
+
+*expert*tree*adaptor.label.fromHoriz:		remove
+
+*expert*tree*display.Label.width:		64
+*expert*tree*display.Label.justify:		left
+*expert*tree*display.options.fromHoriz:		remove
+*expert*tree*display.viewportL.label:		Viewport
+*expert*tree*display.viewportL.fromVert:	remove
+*expert*tree*display.viewport.fromVert:		remove
+*expert*tree*display.viewport.fromHoriz:	viewportL
+*expert*tree*display.virtualL.label:		Virtual
+*expert*tree*display.virtualL.fromVert:		viewport
+*expert*tree*display.virtual.fromVert:		viewport
+*expert*tree*display.virtual.fromHoriz:		virtualL
+*expert*tree*display.depthL.label:		Depth
+*expert*tree*display.depthL.fromVert:		virtual
+*expert*tree*display.depth.fromVert:		virtual
+*expert*tree*display.depth.fromHoriz:		depthL
+*expert*tree*display.bppL.label:		FbBPP
+*expert*tree*display.bppL.fromVert:		depth
+*expert*tree*display.bpp.fromVert:		depth
+*expert*tree*display.bpp.fromHoriz:		bppL
+*expert*tree*display.visualL.label:		Visual
+*expert*tree*display.visualL.fromVert:		bpp
+*expert*tree*display.visual.fromVert:		bpp
+*expert*tree*display.visual.fromHoriz:		visualL
+*expert*tree*display.weightL.label:		Weight
+*expert*tree*display.weightL.fromVert:		visual
+*expert*tree*display.weight.fromVert:		visual
+*expert*tree*display.weight.fromHoriz:		weightL
+*expert*tree*display.blackL.label:		Black
+*expert*tree*display.blackL.fromVert:		weight
+*expert*tree*display.black.fromVert:		weight
+*expert*tree*display.black.fromHoriz:		blackL
+*expert*tree*display.whiteL.label:		White
+*expert*tree*display.whiteL.fromVert:		black
+*expert*tree*display.white.fromVert:		black
+*expert*tree*display.white.fromHoriz:		whiteL
+
+*expert*tree*mode.label.fromHoriz:		remove
+*expert*tree*mode.value.fromHoriz:		new
+*expert*tree*mode.value.width:			100
+
+*expert*tree*input.options.fromHoriz:		remove
+*expert*tree*input.label.fromHoriz:		options
+*expert*tree*input.driverL.label:		Driver
+*expert*tree*input.driverL.fromVert:		remove
+*expert*tree*input.driver.fromVert:		remove
+*expert*tree*input.driver.fromHoriz:		driverL
+*expert*tree*input.value.fromHoriz:		new
+
+*expert*tree*layout.options.fromHoriz:		remove
+*expert*tree*layout.label.fromHoriz:		options
+*expert*tree*layout.value.fromHoriz:		new
+
+*expert*tree*adjacency.Text.width:		46
+*expert*tree*adjacency.MenuButton.width:	122
+*expert*tree*adjacency.label.fromHoriz:		remove
+*expert*tree*adjacency.scrnumL.label:		Screen number
+*expert*tree*adjacency.scrnumL.horizDistance:	50
+*expert*tree*adjacency.scrnum.width:		32
+*expert*tree*adjacency.scrnumL.fromVert:	remove
+*expert*tree*adjacency.scrnum.fromVert:		remove
+*expert*tree*adjacency.scrnum.fromHoriz:	scrnumL
+*expert*tree*adjacency.above.label:		Above
+*expert*tree*adjacency.above.fromVert:		scrnumL
+*expert*tree*adjacency.above.vertDistance:	20
+*expert*tree*adjacency.above.horizDistance:	96
+*expert*tree*adjacency.below.label:		Below
+*expert*tree*adjacency.below.horizDistance:	96
+*expert*tree*adjacency.leftOf.label:		LeftOf
+*expert*tree*adjacency.leftOf.fromVert:		above
+*expert*tree*adjacency.screen.fromVert:		above
+*expert*tree*adjacency.screen.fromHoriz:	leftOf
+*expert*tree*adjacency.rightOf.label:		RightOf
+*expert*tree*adjacency.rightOf.fromVert:	above
+*expert*tree*adjacency.rightOf.fromHoriz:	screen
+*expert*tree*adjacency.below.fromVert:		screen
+*expert*tree*adjacency.relative.label:		Relative
+*expert*tree*adjacency.relative.horizDistance:	53
+*expert*tree*adjacency.relative.fromVert:	below
+*expert*tree*adjacency.absolute.fromVert:	below
+*expert*tree*adjacency*absolute.label:		Absolute
+*expert*tree*adjacency*absolute.fromHoriz:	relative
+*expert*tree*adjacency*adjxL.label:		X
+*expert*tree*adjacency*adjxL.horizDistance:	42
+*expert*tree*adjacency*adjxL.fromVert:		absolute
+*expert*tree*adjacency*adjx.fromVert:		absolute
+*expert*tree*adjacency*adjx.fromHoriz:		adjxL
+*expert*tree*adjacency*adjyL.label:		Y
+*expert*tree*adjacency*adjyL.horizDistance:	12
+*expert*tree*adjacency*adjyL.fromVert:		absolute
+*expert*tree*adjacency*adjyL.fromHoriz:		adjx
+*expert*tree*adjacency*adjy.fromVert:		absolute
+*expert*tree*adjacency*adjy.fromHoriz:		adjyL
+
+*expert*tree*inputref.options.fromHoriz:	remove
+*expert*tree*inputref.label.fromHoriz:		options
+
+*expert*tree*vendor.Text.width:			100
+*expert*tree*vendor.options.fromHoriz:		remove
+*expert*tree*vendor.label.fromHoriz:		options
+*expert*tree*vendor.value.fromHoriz:		new
+
+*expert*tree*vendorSub.Text.width:		140
+*expert*tree*vendorSub.options.fromHoriz:	remove
+*expert*tree*vendorSub.label.fromHoriz:		options
+*expert*tree*vendorSub.nameL.label:		Name
+*expert*tree*vendorSub.nameL.fromVert:		remove
+*expert*tree*vendorSub.name.fromVert:		remove
+*expert*tree*vendorSub.name.fromHoriz:		nameL
+*expert*tree*vendorSub.value.fromHoriz:		new
+
+*expert*tree*dri.Text.width:			100
+*expert*tree*dri.Label.width:			78
+*expert*tree*dri.Label.justify:			left
+*expert*tree*dri.nameL.label:			Group name
+*expert*tree*dri.name.fromHoriz:		nameL
+*expert*tree*dri.groupL.label:			Group
+*expert*tree*dri.groupL.fromVert:		name
+*expert*tree*dri.group.fromVert:		name
+*expert*tree*dri.group.fromHoriz:		groupL
+*expert*tree*dri.modeL.label:			Mode
+*expert*tree*dri.modeL.fromVert:		group
+*expert*tree*dri.mode.fromVert:			group
+*expert*tree*dri.mode.fromHoriz:		modeL
+
+*expert*tree*buffers.Label.width:		50
+*expert*tree*buffers.Text.width:		100
+*expert*tree*buffers.countL.label:		Count
+*expert*tree*buffers.countL.fromVert:		remove
+*expert*tree*buffers.count.fromVert:		remove
+*expert*tree*buffers.count.fromHoriz:		countL
+*expert*tree*buffers.sizeL.label:		Size
+*expert*tree*buffers.sizeL.fromVert:		count
+*expert*tree*buffers.size.fromVert:		count
+*expert*tree*buffers.size.fromHoriz:		sizeL
+*expert*tree*buffers.flagsL.label:		Flags
+*expert*tree*buffers.flagsL.fromVert:		size
+*expert*tree*buffers.flags.fromVert:		size
+*expert*tree*buffers.flags.fromHoriz:		flagsL

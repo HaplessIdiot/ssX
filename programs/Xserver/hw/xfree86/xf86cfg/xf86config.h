@@ -40,6 +40,8 @@
 	(XF86ConfInputrefPtr)xf86addListItem((GenericListPtr)(head), (GenericListPtr)(ptr))
 #define xf86addDevice(head, ptr)	\
 	(XF86ConfDevicePtr)xf86addListItem((GenericListPtr)(head), (GenericListPtr)(ptr))
+#define xf86addDisplayMode(head, ptr)	\
+	(XF86ModePtr)xf86addListItem((GenericListPtr)(head), (GenericListPtr)(ptr))
 #define xf86addMonitor(head, ptr)	\
 	(XF86ConfMonitorPtr)xf86addListItem((GenericListPtr)(head), (GenericListPtr)(ptr))
 #define xf86addScreen(head, ptr)	\
@@ -48,16 +50,52 @@
 	(XF86ConfLayoutPtr)xf86addListItem((GenericListPtr)(head), (GenericListPtr)(ptr))
 #define xf86addModeLine(head, ptr)	\
 	(XF86ConfModeLinePtr)xf86addListItem((GenericListPtr)(head), (GenericListPtr)(ptr))
+#define xf86addModes(head, ptr)		\
+	(XF86ConfModesPtr)xf86addListItem((GenericListPtr)(head), (GenericListPtr)(ptr))
+#define xf86addModesLink(head, ptr)	\
+	(XF86ConfModesLinkPtr)xf86addListItem((GenericListPtr)(head), (GenericListPtr)(ptr))
+#define xf86addModule(head, ptr)	\
+	(XF86LoadPtr)xf86addListItem((GenericListPtr)(head), (GenericListPtr)(ptr))
+#define xf86addScreenAdaptor(head, ptr)	\
+	(XF86ConfAdaptorLinkPtr)xf86addListItem((GenericListPtr)(head), (GenericListPtr)(ptr))
+#define xf86addScreenDisplay(head, ptr)	\
+	(XF86ConfDisplayPtr)xf86addListItem((GenericListPtr)(head), (GenericListPtr)(ptr))
+#define xf86addVideoAdaptor(head, ptr)	\
+	(XF86ConfVideoAdaptorPtr)xf86addListItem((GenericListPtr)(head), (GenericListPtr)(ptr))
+#define xf86addVideoPort(head, ptr)	\
+	(XF86ConfVideoPortPtr)xf86addListItem((GenericListPtr)(head), (GenericListPtr)(ptr))
+#define xf86addAdjacency(head, ptr)	\
+	(XF86ConfAdjacencyPtr)xf86addListItem((GenericListPtr)(head), (GenericListPtr)(ptr))
+#define xf86addVendor(head, ptr)	\
+	(XF86ConfVendorPtr)xf86addListItem((GenericListPtr)(head), (GenericListPtr)(ptr))
+#define xf86addVendorSub(head, ptr)	\
+	(XF86ConfVendSubPtr)xf86addListItem((GenericListPtr)(head), (GenericListPtr)(ptr))
+#define xf86addBuffers(head, ptr)	\
+	(XF86ConfBuffersPtr)xf86addListItem((GenericListPtr)(head), (GenericListPtr)(ptr))
+
 
 int xf86removeOption(XF86OptionPtr*, char*);
 int xf86removeInput(XF86ConfigPtr, XF86ConfInputPtr);
 int xf86removeInputRef(XF86ConfLayoutPtr, XF86ConfInputPtr);
 int xf86removeDevice(XF86ConfigPtr, XF86ConfDevicePtr);
+int xf86removeDisplayMode(XF86ConfDisplayPtr, XF86ModePtr);
 int xf86removeMonitor(XF86ConfigPtr, XF86ConfMonitorPtr);
 int xf86removeScreen(XF86ConfigPtr, XF86ConfScreenPtr);
 int xf86removeAdjacency(XF86ConfLayoutPtr, XF86ConfAdjacencyPtr);
 int xf86removeInactive(XF86ConfLayoutPtr, XF86ConfInactivePtr);
 int xf86removeLayout(XF86ConfigPtr, XF86ConfLayoutPtr);
+int xf86removeModule(XF86ConfigPtr, XF86LoadPtr);
+int xf86removeModes(XF86ConfigPtr, XF86ConfModesPtr);
+int xf86removeModesModeLine(XF86ConfModesPtr, XF86ConfModeLinePtr);
+int xf86removeMonitorModeLine(XF86ConfMonitorPtr, XF86ConfModeLinePtr);
+int xf86removeMonitorModesLink(XF86ConfMonitorPtr, XF86ConfModesLinkPtr);
+int xf86removeScreenAdaptorLink(XF86ConfScreenPtr, XF86ConfAdaptorLinkPtr);
+int xf86removeScreenDisplay(XF86ConfScreenPtr, XF86ConfDisplayPtr);
+int xf86removeVideoAdaptor(XF86ConfigPtr, XF86ConfVideoAdaptorPtr);
+int xf86removeVideoPort(XF86ConfVideoAdaptorPtr, XF86ConfVideoPortPtr);
+int xf86removeVendor(XF86ConfigPtr, XF86ConfVendorPtr);
+int xf86removeVendorSub(XF86ConfVendorPtr, XF86ConfVendSubPtr);
+int xf86removeBuffers(XF86ConfDRIPtr, XF86ConfBuffersPtr);
 
 int xf86renameInput(XF86ConfigPtr, XF86ConfInputPtr, char*);
 int xf86renameDevice(XF86ConfigPtr, XF86ConfDevicePtr, char*);
@@ -65,5 +103,9 @@ int xf86renameMonitor(XF86ConfigPtr, XF86ConfMonitorPtr, char*);
 int xf86renameLayout(XF86ConfigPtr, XF86ConfLayoutPtr, char*);
 int xf86renameScreen(XF86ConfigPtr, XF86ConfScreenPtr, char*);
 
-#endif /* _xf86cfg_xf86config_h */
+extern void xf86freeAdaptorLinkList(XF86ConfAdaptorLinkPtr);
+extern void xf86freeDisplayList(XF86ConfDisplayPtr);
+extern void xf86freeModeList(XF86ModePtr);
+extern void xf86freeVendorSubList(XF86ConfVendSubPtr);
 
+#endif /* _xf86cfg_xf86config_h */

@@ -153,7 +153,7 @@ xf86removeDevice(XF86ConfigPtr config, XF86ConfDevicePtr device)
 	if (scr->scrn_device == device) {
 	    xf86removeScreen(config, scr);
 	    if (scr == psc)
-		scr = config->conf_screen_lst;
+		scr = psc = config->conf_screen_lst;
 	    else
 		scr = psc;
 	    continue;
@@ -206,10 +206,7 @@ xf86removeMonitor(XF86ConfigPtr config, XF86ConfMonitorPtr monitor)
     while (scr != NULL) {
 	if (scr->scrn_monitor == monitor) {
 	    xf86removeScreen(config, scr);
-	    if (scr == psc)
-		scr = config->conf_screen_lst;
-	    else
-		scr = psc;
+	    scr = psc = config->conf_screen_lst;
 	    continue;
 	}
 	psc = scr;
@@ -310,8 +307,10 @@ xf86removeScreen(XF86ConfigPtr config, XF86ConfScreenPtr screen)
 	lay = (XF86ConfLayoutPtr)(lay->list.next);
     }
 
+    xf86freeAdaptorLinkList(screen->scrn_adaptor_lst);
+    xf86freeDisplayList(screen->scrn_display_lst);
+
     XtFree(screen->scrn_identifier);
-    XtFree(screen->scrn_obso_driver);
     XtFree(screen->scrn_monitor_str);
     XtFree(screen->scrn_device_str);
     xf86optionListFree(screen->scrn_option_lst);
@@ -432,6 +431,414 @@ xf86removeLayout(XF86ConfigPtr config, XF86ConfLayoutPtr layout)
 	prev->list.next = lay->list.next;
     XtFree(lay->lay_identifier);
     XtFree((XtPointer)lay);
+
+    return (True);
+}
+
+int
+xf86removeModule(XF86ConfigPtr config, XF86LoadPtr load)
+{
+    XF86LoadPtr prev, mod;
+
+    if (config == NULL || config->conf_modules == NULL ||
+	config->conf_modules->mod_load_lst == NULL)
+	return (False);
+
+    for (mod = prev = config->conf_modules->mod_load_lst;
+	 mod != NULL; prev = mod, mod = (XF86LoadPtr)(mod->list.next))
+	if (load == mod) {
+	    if (mod == prev)
+		config->conf_modules->mod_load_lst =
+		    (XF86LoadPtr)(mod->list.next);
+	    else
+		prev->list.next = mod->list.next;
+	    XtFree(mod->load_name);
+	    xf86optionListFree(mod->load_opt);
+
+	    return (True);
+	}
+
+    return (False);
+}
+
+int
+xf86removeModes(XF86ConfigPtr config, XF86ConfModesPtr modes)
+{
+    XF86ConfModesPtr mod;
+    XF86ConfModeLinePtr ml, next;
+    XF86ConfMonitorPtr mon;
+
+    if (config == NULL || modes == NULL)
+	return (False);
+
+    /* check if modes is in config */
+    if ((mod = config->conf_modes_lst) == modes)
+	config->conf_modes_lst = (XF86ConfModesPtr)(mod->list.next);
+    else
+	for (; mod != NULL; mod = (XF86ConfModesPtr)(mod->list.next))
+	    if ((XF86ConfModesPtr)(mod->list.next) == modes) {
+		mod->list.next = modes->list.next;
+		break;
+	    }
+
+    if (mod == NULL)
+	return (False);
+
+    /* remove references in monitor sections */
+    mon = config->conf_monitor_lst;
+    while (mon) {
+	XF86ConfModesLinkPtr m, p;
+
+	m = p = mon->mon_modes_sect_lst;
+	while (m) {
+	    if (m->ml_modes == modes) {
+		XtFree(m->ml_modes_str);
+		if (m == mon->mon_modes_sect_lst)
+		    p = mon->mon_modes_sect_lst =
+			(XF86ConfModesLinkPtr)(m->list.next);
+		else {
+		    p->list.next = m->list.next;
+		    p = p->list.next;
+		}
+		XtFree((XtPointer)m);
+		m = p;
+		continue;
+	    }
+	    p = m;
+	    m = (XF86ConfModesLinkPtr)(m->list.next);
+	}
+	mon = (XF86ConfMonitorPtr)(mon->list.next);
+    }
+
+    /* free modelines */
+    ml = modes->mon_modeline_lst;
+    while (ml) {
+	next = (XF86ConfModeLinePtr)(ml->list.next);
+	XtFree(ml->ml_identifier);
+	XtFree((XtPointer)ml);
+	ml = next;
+    }
+
+    /* free mode */
+    XtFree(modes->modes_identifier);
+    XtFree((XtPointer)modes);
+
+    return (True);
+}
+
+int
+xf86removeModesModeLine(XF86ConfModesPtr modes, XF86ConfModeLinePtr modeline)
+{
+    XF86ConfModeLinePtr ml, prev;
+
+    if (modes == NULL || modeline == NULL || modes->mon_modeline_lst == NULL)
+	return (False);
+
+    for (ml = prev = modes->mon_modeline_lst; ml;
+	 prev = ml, ml = (XF86ConfModeLinePtr)(ml->list.next))
+	if (ml == modeline) {
+	    if (prev == ml)
+		modes->mon_modeline_lst = (XF86ConfModeLinePtr)(ml->list.next);
+	    else
+		prev->list.next = ml->list.next;
+	    XtFree(modeline->ml_identifier);
+	    XtFree((XtPointer)modeline);
+	    return (True);
+	}
+
+    return (False);
+}
+
+int
+xf86removeMonitorModeLine(XF86ConfMonitorPtr monitor, XF86ConfModeLinePtr modeline)
+{
+    XF86ConfModeLinePtr ml, prev;
+
+    if (monitor == NULL || modeline == NULL || monitor->mon_modeline_lst == NULL)
+	return (False);
+
+    for (ml = prev = monitor->mon_modeline_lst; ml;
+	 prev = ml, ml = (XF86ConfModeLinePtr)(ml->list.next))
+	if (ml == modeline) {
+	    if (prev == ml)
+		monitor->mon_modeline_lst = (XF86ConfModeLinePtr)(ml->list.next);
+	    else
+		prev->list.next = ml->list.next;
+	    XtFree(modeline->ml_identifier);
+	    XtFree((XtPointer)modeline);
+	    return (True);
+	}
+
+    return (False);
+}
+
+int
+xf86removeMonitorModesLink(XF86ConfMonitorPtr monitor, XF86ConfModesLinkPtr link)
+{
+    XF86ConfModesLinkPtr lnk, prev;
+
+    if (monitor == NULL || link == NULL || monitor->mon_modes_sect_lst == NULL)
+	return (False);
+
+    for (lnk = prev = monitor->mon_modes_sect_lst; lnk != NULL;
+	 prev = lnk, lnk = (XF86ConfModesLinkPtr)(lnk->list.next))
+	if (lnk == link) {
+	    if (prev == lnk)
+		monitor->mon_modes_sect_lst = (XF86ConfModesLinkPtr)(lnk->list.next);
+	    else
+		prev->list.next = lnk->list.next;
+	    XtFree(link->ml_modes_str);
+	    XtFree((XtPointer)link);
+
+	    return (True);
+	}
+
+    return (False);
+}
+
+int
+xf86removeScreenAdaptorLink(XF86ConfScreenPtr scrn, XF86ConfAdaptorLinkPtr link)
+{
+    XF86ConfAdaptorLinkPtr lnk, prev;
+
+    if (scrn == NULL || link == NULL || scrn->scrn_adaptor_lst == NULL)
+	return (False);
+
+    for (lnk = prev = scrn->scrn_adaptor_lst; lnk != NULL;
+	 prev = lnk, lnk = (XF86ConfAdaptorLinkPtr)(lnk->list.next))
+	if (lnk == link) {
+	    if (prev == lnk)
+		scrn->scrn_adaptor_lst =
+		    (XF86ConfAdaptorLinkPtr)(lnk->list.next);
+	    else
+		prev->list.next = lnk->list.next;
+	    XtFree(link->al_adaptor_str);
+	    XtFree((XtPointer)link);
+
+	    return (True);
+	}
+
+    return (False);
+}
+
+int
+xf86removeScreenDisplay(XF86ConfScreenPtr scrn, XF86ConfDisplayPtr display)
+{
+    XF86ConfDisplayPtr dsp, prev;
+
+    if (scrn == NULL || display == NULL || scrn->scrn_display_lst == NULL)
+	return (False);
+
+    for (dsp = prev = scrn->scrn_display_lst; dsp != NULL;
+	 prev = dsp, dsp = (XF86ConfDisplayPtr)(dsp->list.next))
+	if (dsp == display) {
+	    if (prev == dsp)
+		scrn->scrn_display_lst =
+		    (XF86ConfDisplayPtr)(dsp->list.next);
+	    else
+		prev->list.next = dsp->list.next;
+	    xf86optionListFree(display->disp_option_lst);
+	    XtFree((XtPointer)display->disp_visual);
+	    xf86freeModeList(display->disp_mode_lst);
+	    XtFree((XtPointer)display);
+
+	    return (True);
+	}
+
+    return (False);
+}
+
+int
+xf86removeVideoAdaptor(XF86ConfigPtr config, XF86ConfVideoAdaptorPtr video)
+{
+    XF86ConfVideoAdaptorPtr vid;
+    XF86ConfScreenPtr scrn;
+    XF86ConfVideoPortPtr vp, next;
+
+    if (config == NULL || video == NULL)
+	return (False);
+
+    /* check if video is in config and update videoadaptor list */
+    if ((vid = config->conf_videoadaptor_lst) == video)
+	config->conf_videoadaptor_lst = (XF86ConfVideoAdaptorPtr)(vid->list.next);
+    else
+	for (; vid != NULL; vid = (XF86ConfVideoAdaptorPtr)(vid->list.next))
+	    if ((XF86ConfVideoAdaptorPtr)(vid->list.next) == video) {
+		vid->list.next = video->list.next;
+		break;
+	    }
+
+    if (vid == NULL)
+	return (False);
+
+    /* remove references in screen sections */
+    scrn = config->conf_screen_lst;
+    while (scrn) {
+	XF86ConfAdaptorLinkPtr v, p;
+
+	v = p = scrn->scrn_adaptor_lst;
+	while (v) {
+	    if (v->al_adaptor == video) {
+		XtFree(v->al_adaptor_str);
+		if (v == scrn->scrn_adaptor_lst)
+		    p = scrn->scrn_adaptor_lst =
+			(XF86ConfAdaptorLinkPtr)(v->list.next);
+		else {
+		    p->list.next = v->list.next;
+		    p = p->list.next;
+		}
+		XtFree((XtPointer)v);
+		v = p;
+		continue;
+	    }
+	    p = v;
+	    v = (XF86ConfAdaptorLinkPtr)(v->list.next);
+	}
+	scrn = (XF86ConfScreenPtr)(scrn->list.next);
+    }
+
+    /* free videoports */
+    vp = video->va_port_lst;
+    while (vp) {
+	next = (XF86ConfVideoPortPtr)(vp->list.next);
+	XtFree(vp->vp_identifier);
+	xf86optionListFree(vp->vp_option_lst);
+	XtFree((XtPointer)vp);
+	vp = next;
+    }
+
+    /* free videoadaptor */
+    XtFree(video->va_identifier);
+    XtFree(video->va_vendor);
+    XtFree(video->va_board);
+    XtFree(video->va_busid);
+    XtFree(video->va_driver);
+    XtFree(video->va_fwdref);
+    xf86optionListFree(video->va_option_lst);
+    XtFree((XtPointer)video);
+
+    return (True);
+}
+
+int
+xf86removeVideoPort(XF86ConfVideoAdaptorPtr va, XF86ConfVideoPortPtr vp)
+{
+    XF86ConfVideoPortPtr prev;
+
+    if (va == NULL || vp == NULL)
+	return (False);
+
+    if ((prev = va->va_port_lst) == vp)
+	va->va_port_lst = (XF86ConfVideoPortPtr)(va->va_port_lst->list.next);
+    else {
+	while (prev && (XF86ConfVideoPortPtr)(prev->list.next) != vp)
+	    prev = (XF86ConfVideoPortPtr)(prev->list.next);
+	if (prev == NULL)
+	    return (False);
+	prev->list.next = vp->list.next;
+    }
+
+    xf86optionListFree(vp->vp_option_lst);
+    XtFree((XtPointer)vp);
+
+    return (True);
+}
+
+int
+xf86removeDisplayMode(XF86ConfDisplayPtr display, XF86ModePtr mode)
+{
+    XF86ModePtr prev;
+
+    if (display == NULL || mode == NULL)
+	return (False);
+
+    if ((prev = display->disp_mode_lst) == mode)
+	display->disp_mode_lst = (XF86ModePtr)(display->disp_mode_lst->list.next);
+    else {
+	while (prev && (XF86ModePtr)(prev->list.next) != mode)
+	    prev = (XF86ModePtr)(prev->list.next);
+	if (prev == NULL)
+	    return (False);
+	prev->list.next = mode->list.next;
+    }
+
+    XtFree((XtPointer)mode);
+
+    return (True);
+}
+
+int
+xf86removeVendor(XF86ConfigPtr config, XF86ConfVendorPtr vendor)
+{
+    XF86ConfVendorPtr prev;
+
+    if (config == NULL || vendor == NULL)
+	return (False);
+
+    if ((prev = config->conf_vendor_lst) == vendor)
+	config->conf_vendor_lst = (XF86ConfVendorPtr)(config->conf_vendor_lst->list.next);
+    else {
+	while (prev && (XF86ConfVendorPtr)(prev->list.next) != vendor)
+	    prev = (XF86ConfVendorPtr)(prev->list.next);
+	if (prev == NULL)
+	    return (False);
+	prev->list.next = vendor->list.next;
+    }
+
+    xf86optionListFree(vendor->vnd_option_lst);
+    xf86freeVendorSubList(vendor->vnd_sub_lst);
+    XtFree(vendor->vnd_identifier);
+    XtFree((XtPointer)vendor);
+
+    return (True);
+}
+
+int
+xf86removeVendorSub(XF86ConfVendorPtr vendor, XF86ConfVendSubPtr sub)
+{
+    XF86ConfVendSubPtr prev;
+
+    if (vendor == NULL || sub == NULL)
+	return (False);
+
+    if ((prev = vendor->vnd_sub_lst) == sub)
+	vendor->vnd_sub_lst = (XF86ConfVendSubPtr)(vendor->vnd_sub_lst->list.next);
+    else {
+	while (prev && (XF86ConfVendSubPtr)(prev->list.next) != sub)
+	    prev = (XF86ConfVendSubPtr)(prev->list.next);
+	if (prev == NULL)
+	    return (False);
+	prev->list.next = sub->list.next;
+    }
+
+    xf86optionListFree(sub->vs_option_lst);
+    XtFree(sub->vs_name);
+    XtFree(sub->vs_identifier);
+    XtFree((XtPointer)sub);
+
+    return (True);
+}
+
+int
+xf86removeBuffers(XF86ConfDRIPtr dri, XF86ConfBuffersPtr buf)
+{
+    XF86ConfBuffersPtr prev;
+
+    if (dri == NULL || buf == NULL)
+	return (False);
+
+    if ((prev = dri->dri_buffers_lst) == buf)
+	dri->dri_buffers_lst = (XF86ConfBuffersPtr)(dri->dri_buffers_lst->list.next);
+    else {
+	while (prev && (XF86ConfBuffersPtr)(prev->list.next) != buf)
+	    prev = (XF86ConfBuffersPtr)(prev->list.next);
+	if (prev == NULL)
+	    return (False);
+	prev->list.next = buf->list.next;
+    }
+
+    XtFree(buf->buf_flags);
+    XtFree((XtPointer)buf);
 
     return (True);
 }
