@@ -1,4 +1,6 @@
 XFree86 4.3.99.903 (xx January 2004)
+ 758. Add overlooked SecondaryColor entries to AppleDRI indirect dispatch
+      table (Torrey T. Lyons).
  757. Allocate pBIOSInfo->UserSetting in the via driver, which fixes a crash
       (James Harris).
  756. Fix Linux drm kernel modules to handle the nopage() prototype change in
@@ -18544,7 +18546,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3101 2004/01/14 21:32:57 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3102 2004/01/15 01:43:46 dawes Exp $
 
 
 
