@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/r128/Imakefile.inc,v 1.2 2004/04/22 13:58:40 tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/drivers/dri/r128/Imakefile.inc,v 1.3 2004/12/10 16:06:57 alanh Exp $
 
 #ifndef MesaDrvSrcDir
 #define MesaDrvSrcDir $(MESASRCDIR)/src/mesa/drivers/dri
@@ -132,5 +132,4 @@ LinkSourceFile(r128_texobj.h, $(MESADRVSRCDIR)/r128)
 LinkSourceFile(r128_texstate.c, $(MESADRVSRCDIR)/r128)
 LinkSourceFile(r128_tris.c, $(MESADRVSRCDIR)/r128)
 LinkSourceFile(r128_tris.h, $(MESADRVSRCDIR)/r128)
-LinkSourceFile(r128_vb.h, $(MESADRVSRCDIR)/r128)
 #endif
