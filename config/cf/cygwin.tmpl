@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/cygwin.tmpl,v 3.15 2003/05/27 21:56:39 tsi Exp $
+XCOMM $XFree86: xc/config/cf/cygwin.tmpl,v 3.16tsi Exp $
 
 #if UseCygIPC
 #define SharedX11Reqs -lcygipc
@@ -18,7 +18,7 @@ XCOMM $XFree86: xc/config/cf/cygwin.tmpl,v 3.15 2003/05/27 21:56:39 tsi Exp $
 #define SharedXtstReqs $(LDPRELIB) $(XLIB)
 #define SharedXieReqs $(LDPRELIB) $(XONLYLIB)
 #define SharedSMReqs $(LDPRELIB) $(ICELIB)
-#define SharedXpReqs $(LDPRELIB) $(XAUTHLIB) $(EXTENSIONLIB) $(XONLYLIB)
+#define SharedXpReqs $(LDPRELIB) $(XAUTHLIB) $(XLIB)
 #define SharedXvReqs $(LDPRELIB) $(XLIB)
 #define SharedGLReqs	$(LDPRELIB) $(XLIB)
 #define SharedGLUReqs	$(LDPRELIB) $(XLIB) $(GLXLIB)
@@ -27,10 +27,10 @@ XCOMM #define SharedXfontReqs $(LDPRELIB) $(XLIB)
 #define SharedXxf86miscReqs $(LDPRELIB) $(XLIB)
 #define SharedXpmReqs $(LDPRELIB) $(XLIB)
 #define SharedXxf86dgaReqs $(LDPRELIB) $(XLIB)
-#define SharedXssReqs $(LDPRELIB) $(XLIB) $(EXTENSIONLIB) $(XTOOLLIB)
+#define SharedXssReqs $(LDPRELIB) $(XLIB) $(XTOOLLIB)
 #define SharedDPSReqs $(LDPRELIB) $(SMLIB) $(ICELIB) $(XTOOLLIB) $(XLIB)
 #define SharedDPSTKReqs  $(LDPRELIB) $(SMLIB) $(ICELIB) $(XTOOLLIB) $(DPSLIB) $(XLIB)
-#define SharedXrenderReqs $(LDPRELIB) $(EXTENSIONLIB) $(XLIB)
+#define SharedXrenderReqs $(LDPRELIB) $(XLIB)
 #define SharedpsresReqs $(LDPRELIB) $(SMLIB) $(ICELIB) $(XTOOLLIB) $(XLIB)
 #define SharedXmuuReqs $(LDPRELIB) $(XTOOLLIB) $(XLIB)
 #define SharedXrandrReqs $(LDPRELIB) $(XRENDERLIB) $(XLIB)
