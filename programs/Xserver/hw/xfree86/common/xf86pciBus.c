@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.58tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.59 2002/09/18 12:48:58 tsi Exp $ */
 /*
  * Copyright (c) 1997-2002 by The XFree86 Project, Inc.
  */
@@ -2640,7 +2640,7 @@ initPciBusState(void)
 	    pbap->set_f = pciSetBusAccess;
 	    pbap->enable_f = pciDrvBusAccessEnable;
 	    pbap->disable_f = pciDrvBusAccessDisable;
-	    savePciBusState(pbap);
+	    savePciDrvBusState(pbap);
 	} else switch (pbp->subclass) {
 	case PCI_SUBCLASS_BRIDGE_HOST:
 	    pbap->type = BUS_PCI;
