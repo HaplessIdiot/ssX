@@ -10,10 +10,10 @@
     <author>
         <htmlurl url="http://www.valinux.com/"
           name="VA Linux Systems, Inc."> Professional Services - Graphics.
-    <date>5 January 2001
+    <date>15 March 2001
 
     <ident>
-    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRIcomp.sgml,v 1.9 2000/12/12 17:48:10 alanh Exp $
+    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRIcomp.sgml,v 1.10 2001/01/08 01:07:34 martin Exp $
     </ident>
 
     <toc>
@@ -22,7 +22,7 @@
 
       <sect1>Copyright <p>
 
-          <bf>Copyright &copy; 2000 by VA Linux Systems, Inc.
+          <bf>Copyright &copy; 2000-2001 by VA Linux Systems, Inc.
           All Rights Reserved.</bf>
         <p>
           <bf>Permission is granted to make and distribute verbatim copies 
@@ -79,7 +79,8 @@
 
       <p>
         The DRI 3D drivers generally work on systems with Intel or AMD CPUs.
-        However, there is limited support for Alpha and Sparc.
+        However, there is limited support for Alpha and PowerPC support is
+        underway.
 
       <p>
         For 3dfx Voodoo3 hardware, you'll also need:
@@ -115,7 +116,8 @@
 
         The DRI project closely tracks Linux kernel development.  Since
         the internal Linux data structures might change in the 2.4 Linux
-        kernel, it's important to have use the most recent Linux kernel.
+        kernel, it's important to use the most recent Linux kernel and
+        not an old, intermediate development release.
         As of this writing (Jan 2001), 2.4.0 is the most recent version
         of Linux which the DRI is synchronized to.
       <p>
@@ -243,7 +245,7 @@
             To enable this optimization edit your xc/config/host.def file
             and add the line:
 
-            #define DefaultCCOptions -ansi GccWarningOptions -pipe -mcpu=ev6
+            #define DefaultGcc2AxpOpt -O2 -mcpu=ev6 
 
             Additional speed improvements to 3D rendering can be achieved
             by installing Compaq's Math Libraries (CPML) which can be 
@@ -516,7 +518,7 @@
         <p>
         To load the appropriate DRI module in your running kernel you can
         either use ismod and restart your X server or copy the kernel module
-        to <tt>/lib/modules/2.4.x/kernel/driver/char/drm/</tt> then run
+        to <tt>/lib/modules/2.4.x/kernel/drivers/char/drm/</tt> then run
         depmod and restart your X server.
         <p>
         Make sure you first unload any older DRI kernel modules that might

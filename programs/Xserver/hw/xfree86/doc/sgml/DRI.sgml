@@ -10,10 +10,10 @@
     <author>
         <htmlurl url="http://www.valinux.com/"
           name="VA Linux Systems, Inc."> Professional Services - Graphics.
-    <date>5 January 2001
+    <date>15 March 2001
 
     <ident>
-    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.15 2000/12/12 18:54:29 dawes Exp $
+    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.16 2001/01/08 01:07:33 martin Exp $
     </ident>
 
     <toc>
@@ -22,7 +22,7 @@
 <p>
       <sect1>Copyright
 <p>
-          <bf>Copyright &copy; 2000 by VA Linux Systems, Inc.
+          <bf>Copyright &copy; 2000-2001 by VA Linux Systems, Inc.
           All Rights Reserved.</bf>
 <p>
           <bf>Permission is granted to make and distribute verbatim copies 
@@ -94,35 +94,9 @@
           Like the SSE optimizations, a runtime check is made to determine
           if the CPU can execute 3DNow! instructions.
 
-          The build environment for both of these new architectures 
-          have a pre-build environment that will correctly build the 
-          DRI drivers and Mesa meaning no extra configuration is necessary
-          to build the DRI for these architectures.
-
-        <sect2>Alpha Features
-	<p>
-            On newer Alpha processors, it should be noted that a
-            significant performance increase can be seen with the 
-            addition of the -mcpu= command that should be passed to
-            GCC upon compilation. Dependent of the architecture of the 
-            processor, for example -mcpu=ev6 will build specifically
-            for the EV6 based AXP's, giving both byte and word alignment 
-            access to the DRI/Mesa drivers.
-
-            Use this as an example of compiling with this extra speed.
-            In your host.def file that should reside in the xc/config 
-            directory, add the line.
-
-            #define DefaultGcc2AxpOpt -O2 -mcpu=ev6
-
-            Additional speed improvements to 3D rendering can be achieved
-            by installing Compaq's Math Libraries (CPML) which can be 
-            obtained from the following URL.
-
-            http://www.support.compaq.com/alpha-tools/software/index.html
-
-          Alpha systems can benefit from several compile-time optimizations
-          which are described in the DRI Compile Guide.
+          Alpha-based systems can use Compaq's optimized math library for
+          improved 3D performance.  See the DRI Compilation Guide for
+          details.
 
       <sect1> Graphics Hardware
 	<p>
@@ -251,9 +225,13 @@
 
         Next, the DRI section can be used to restrict access to direct
         rendering.
+        A client can only use direct rendering if it has permission to
+        open the <tt>/dev/dri/card?</tt> file(s).
+        The permissions on these DRI device files is controlled by the "DRI"
+        section in the XF86Config file.
         <p>
         If you want all of the users on your system to be able to use
-        direct-rendering, then use a simple DRI section:
+        direct-rendering, then use a simple DRI section like this:
         <verb>
 	Section "DRI"
 	     Mode 0666
@@ -476,8 +454,70 @@
     <sect>General Trouble Shooting
 <p>
         This section contains information to help you diagnose general
-         problems.
-         See below for additional information for specific hardware.
+        problems.
+        See below for additional information for specific hardware.
+
+      <sect1>Bus Mastering
+<p>
+        DMA-based DRI drivers (that's most DRI drivers) cannot function
+        unless bus mastering is enabled for your graphics card.
+        By default, some systems don't having bus mastering on.
+        You should enable it in your BIOS.
+        <p>
+        Alternately, you can check the status of bus mastering and change
+        the setting from within Linux.  There may be similar procedures for
+        other operating systems.
+        <p>
+        Run <tt>lspci</tt> (as root) and find the information
+        describing your graphics adapter.  For example:
+        <P>
+
+        <verb>
+    00:00.0 Host bridge: Intel Corporation 440BX/ZX - 82443BX/ZX Host bridge (rev 03)
+    00:01.0 PCI bridge: Intel Corporation 440BX/ZX - 82443BX/ZX AGP bridge (rev 03)
+    00:07.0 ISA bridge: Intel Corporation 82371AB PIIX4 ISA (rev 02)
+    00:07.1 IDE interface: Intel Corporation 82371AB PIIX4 IDE (rev 01)
+    00:07.2 USB Controller: Intel Corporation 82371AB PIIX4 USB (rev 01)
+    00:07.3 Bridge: Intel Corporation 82371AB PIIX4 ACPI (rev 02)
+    00:11.0 Ethernet controller: Intel Corporation 82557 [Ethernet Pro 100] (rev 08)
+    00:12.0 SCSI storage controller: Symbios Logic Inc. (formerly NCR) 53c895 (rev 02)
+    00:14.0 Multimedia audio controller: Ensoniq ES1371 [AudioPCI-97] (rev 08)
+    01:00.0 VGA compatible controller: 3Dfx Interactive, Inc.: Unknown device 0009 (rev 01)
+        </verb>
+        <p>
+	The bus, device, and function number comprise the device id,
+	which is conventionally written in the form bus:dev.func, or 
+	in this case 01:00.0.
+        <p>
+        Use the <tt>setpci</tt> command to examine bit two of register 4 for
+        your graphics card.  This will indicate whether or not bus mastering
+        is enabled.
+        <p>
+        <verb>
+        setpci -s 01:00.0 4.w
+        </verb>
+        <p>
+        A hexidecimal value will be printed.  Convert the least significant
+        digit to binary.  For example, if you see 3, that's 0011 in binary
+        (bit two is 0).  If you see 7, that's 0111 in binary (bit two is 1).
+        In the first example, bus mastering is disabled.  It's enabled in
+        the second example.
+        <p>
+        The following shell script will enabled bus mastering for your
+        graphics card and host bridge.  Run it as root.
+        <verb>
+    #!/bin/bash
+    dev=01:00.0   # change as appropriate
+    echo Enabling bus mastering on device $dev
+    setpci -s $dev 4.w=$(printf %x $((0x$(setpci -s $dev 4.w)|4)))
+    dev=00:00.0
+    echo Enabling bus mastering on host bridge $dev
+    setpci -s $dev 4.w=$(printf %x $((0x$(setpci -s $dev 4.w)|4)))
+        </verb>
+        <p>
+        You can check if this worked by running the first setpci command again.
+        <p>
+
 
       <sect1>The X Server
 <p>
@@ -706,14 +746,22 @@
             </verb>
 
           <p>
-            The kernel module for the Voodoo3 is named <tt>tdfx.o</tt> and
+            The kernel module for 3dfx hardware is named <tt>tdfx.o</tt> and
 	    should be installed in /lib/modules/2.4.x/kernel/driver/char/drm/.
             It will be automatically loaded by the Xserver if needed.
           <p>
-	    The DRI 3D driver for the Voodoo3 should be in
+	    The DRI 3D driver for 3dfx hardware should be in
 	    <tt>/usr/X11R6/lib/modules/dri/tdfx_dri.so</tt>.
             This will be automatically loaded by libGL.so.
           <p>
+            The Voodoo5 supports 3D rendering in 16 and 32 bpp modes.
+            When running in 32bpp mode an 8-bit stencil buffer and 24-bit
+            Z (depth) buffer are offered.
+            When running in 16bpp mode only a 16-bit Z (depth) buffer is
+            offered and stencil is implemented in software.
+          <p>
+            A software-based accumulation buffer is available in both
+            16 and 32bpp modes.
 
         <sect2>Troubleshooting
 <p>
@@ -731,9 +779,17 @@
               the 16 bit/pixel screen mode.
               Use <tt/xdpyinfo/ to verify that all your visuals are depth 16.
               Edit your XF86Config file if needed.
-           <item>
+            <item>
               The <tt>/dev/3dfx</tt> device is not used for DRI; it's only for
               Glide on older 3dfx hardware.
+            <item>
+              Different versions of Glide are needed for Voodoo3 and Voodoo5.
+              See the DRI website's resources page to download the right
+              version of Glide.
+            <item>
+              Voodoo4/5 may be run at 24bpp (instead of 32bpp, the default)
+              but 3D acceleration is not supported in that mode.
+              32bpp mode is fully 3D accelerated.
           </itemize>
 
         <sect2>Performance
@@ -742,7 +798,7 @@
             <item>
               Normally, buffer swapping in double-buffered applications is
               synchronized to your monitor's refresh rate.
-              This may be overridden by setting the <tt/FX_GLIDE_SWAPINTERNVAL/
+              This may be overridden by setting the <tt/FX_GLIDE_SWAPINTERVAL/
               environment variable.
               The value of this variable indicates the maximum number of
               swap buffer commands can be buffered.
@@ -798,97 +854,6 @@
                   Using <tt/glColorMask(r, g, b, a)/ when r!=g or g!=b.
               </itemize>
             <item>
-              The lowest mipmap level is sometimes miscolored in trilinear-
-              sampled polygons.
-          </itemize>
-
-
-      <sect1>3dfx Voodoo5 Series
-<p>
-        <sect2>Dependencies
-<p>
-          The Voodoo5 DRI driver requires a special versions of
-          the 3dfx Glide library, different than that used for Voodoo3
-          hardware.
-          It can be downloaded from the DRI website.
-<p>
-        <sect2>Configuration
-<p>
-            Your XF86Config file's device section must specify the
-            <tt>tdfx</tt> device:
-            <verb>
-        Section "Device"
-            Identifier  "Voodoo5"
-            VendorName  "3dfx"
-            Driver      "tdfx"
-        EndSection
-            </verb>
-            The Screen section should then reference the Voodoo3 device:
-            <verb>
-	Section "Screen"
-	    Identifier  "Screen 1"
-	    Device      "Voodoo5"
-	    Monitor     "High Res Monitor"
-	    DefaultDepth 24
-	    Subsection "Display"
-		Depth       16
-		Modes       "1280x1024" "1024x768" "800x600" "640x480"
-		ViewPort    0 0
-	    EndSubsection
-	    Subsection "Display"
-		Depth       24
-		Modes       "1280x1024" "1024x768" "800x600" "640x480"
-		ViewPort    0 0
-	    EndSubsection
-        EndSection
-            </verb>
-          <p>
-            The kernel module for the Voodoo5 is named <tt>tdfx.o</tt> and
-	    should be installed in /lib/modules/2.4.x/kernel/driver/char/drm/.
-            It will be automatically loaded by the Xserver if needed.
-          <p>
-	    The DRI 3D driver for the Voodoo5 should be in
-	    <tt>/usr/X11R6/lib/modules/dri/tdfx_dri.so</tt>.
-            This will be automatically loaded by libGL.so.
-          <p>
-            The Voodoo5 supports 3D rendering in 16 and 32 bpp modes.
-            When running in 32bpp mode an 8-bit stencil buffer and 24-bit
-            Z (depth) buffer are offered.
-            When running in 16bpp mode only a 16-bit Z (depth) buffer is
-            offered and stencil is implemented in software.
-          <p>
-            A software-based accumulation buffer is available in both
-            16 and 32bpp modes.
-          <p>
-
-        <sect2>Troubleshooting
-<p>
-          <itemize>
-           <item>
-              The <tt>/dev/3dfx</tt> device is not used for DRI; it's only for
-              Glide on older 3dfx hardware.
-           <item>
-              Different versions of Glide are needed for Voodoo3 and Voodoo5.
-              See the DRI website's resources page to download the right
-              version of Glide.
-          </itemize>
-
-        <sect2>Performance
-<p>
-          <itemize>
-            <item>
-              Normally, buffer swapping in double-buffered applications is
-              synchronized to your monitor's refresh rate.
-              This may be overridden by setting the <tt/FX_GLIDE_SWAPINTERNVAL/
-              environment variable.
-              The value of this variable indicates the maximum number of
-              swap buffer commands can be buffered.
-              Zero allows maximum frame rate.
-            <item>
-              Rendering with 16-bit per texel textures is faster than using
-              32-bit per texel textures.  The <tt/internalFormat/ parameter
-              to <tt/glTexImage2D/ can be used to control texel size.
-            <item>
               The Voodoo5 driver reverts to software rendering under the
               same conditions Voodoo3 with three exceptions.
               First, stencil operations are implemented in hardware when the
@@ -897,6 +862,18 @@
               hardware.
               Third, <tt/glColorMask/ is fully supported in hardware when
               the screen is configured for 32 bits/pixel.
+            <item>
+              As of January, 2001 the second VSA-100 chip on the Voodoo5 is
+              not yet operational.
+              Therefore, the board isn't being used to its full capacity.
+              The second VSA-100 chip will allow Scan-Line Interleave (SLI)
+              mode for full-screen applications and games, potentially doubling
+              the system's fill rate.
+              When the second VSA-100 chip is activated
+              glGetString(GL_RENDERER) will report Voodoo5 instead of Voodoo4.
+            <item>
+              The lowest mipmap level is sometimes miscolored in trilinear-
+              sampled polygons.
           </itemize>
 
         <sect2>Known Problems
@@ -906,24 +883,11 @@
               The lowest mipmap level is sometimes miscolored in trilinear-
               sampled polygons (Voodoo3/Banshee).
             <item>
-              Voodoo4/5 may be run at 24bpp (instead of 32bpp, the default)
-              but 3D acceleration is not supported in that mode.
-              32bpp mode is fully 3D accelerated.
-            <item>
               Fog doesn't work with orthographic projections.
             <item>
               The accuracy of blending operations on Voodoo4/5 isn't always
               very good.
               If you run Glean, you'll find some test failures.
-            <item>
-              As of October, 2000 the second VSA-100 chip on the Voodoo5 is
-              not yet operational.
-              Therefore, the board isn't being used to its full capacity.
-              The second VSA-100 chip will allow Scan-Line Interleave (SLI)
-              mode for full-screen applications and games, potentially doubling
-              the system's fill rate.
-              When the second VSA-100 chip is activated
-              glGetString(GL_RENDERER) will report Voodoo5 instead of Voodoo4.
             <item>
               The Glide library cannot be used directly; it's only meant to
               be used via the tdfx DRI driver.
@@ -954,6 +918,7 @@
             Identifier  "i810"
             VendorName  "Intel"
             Driver      "i810"
+	    Option	"AGPMode" "1"
 	    VideoRam    10000
         EndSection
             </verb>
@@ -1019,6 +984,7 @@
             Identifier  "MGA"
             VendorName  "Matrox"
             Driver      "mga"
+	    Option	"AGPMode" "1"
 	    VideoRam    32768
         EndSection
             </verb>
@@ -1072,9 +1038,14 @@
           <item>Using glLogicOp.
           <item>Using glPolygonStipple or glLineStipple.
           <item>Using 1D or 3D textures.
+	  <item>Using texture borders.
+	  <item>Using glDepthFunc(GL_NEVER).
           <item>Using the accumulation buffer.
           </itemize>
-
+<p>
+          The AGP mode may be set to 1, 2, or 4.  One is used by default.
+          Higher AGP speeds may result in unreliable performance depending
+          on your motherboard.
 
         <sect2>IRQ Assignment
 <p>
@@ -1144,6 +1115,8 @@
             Identifier  "Rage128"
             VendorName  "ATI"
             Driver      "ati"
+	    Option	"AGPMode" "1"
+	    Option	"UseCCEFor2D" "false"
         EndSection
             </verb>
             The Screen section should then reference the Rage 128 device:
@@ -1182,10 +1155,19 @@
           While PCI Rage 128 based cards are supported, they do not yet
           support PCI GART, so they will not perform as well as their
           AGP counterparts.
+<p>
+          For AGP cards, the AGP mode may be set to 1, 2, or 4.  One is
+          used by default.
+          Higher AGP speeds may result in unreliable performance depending
+          on your motherboard.
 
         <sect2>Known Problems
 <p>
-          None.
+          If you experience stability problems you may try setting the
+	  <tt>UseCCEFor2D</tt> option to <tt>true</tt>.  This will
+	  effectively disable 2D hardware acceleration.  Performance will
+	  be degraded, of course.
+<p>
 
 
       <sect1>ATI Radeon
@@ -1204,6 +1186,7 @@
             Identifier  "Radeon"
             VendorName  "ATI"
             Driver      "ati"
+	    Option	"AGPMode" "1"
         EndSection
             </verb>
             The Screen section should then reference the Radeon device:
@@ -1242,6 +1225,10 @@
           While this driver supports many of the features of ATI Radeon
           cards, we do not <em/yet/ fully support the card's TCL
           features.  This work is progressing, but is not yet ready.
+<p>
+          The AGP mode may be set to 1, 2, or 4.  One is used by default.
+          Higher AGP speeds may result in unreliable performance depending
+          on your motherboard.
 
         <sect2>Known Problems
 <p>
