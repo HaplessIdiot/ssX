@@ -1,5 +1,5 @@
 /*
- * $XFree86: $
+ * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.2 2000/12/02 10:02:05 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -96,15 +96,33 @@ XftGlyphLoad (Display		*dpy,
 	if (error)
 	    continue;
 
-#define FLOOR(x)  ((x) & -64)
-#define CEIL(x)   (((x)+63) & -64)
-#define TRUNC(x)  ((x) >> 6)
+#define FLOOR(x)    ((x) & -64)
+#define CEIL(x)	    (((x)+63) & -64)
+#define TRUNC(x)    ((x) >> 6)
+#define ROUND(x)    (((x)+32) & -64)
 		
 	glyph = font->face->glyph;
 	
 	left  = FLOOR( glyph->metrics.horiBearingX );
 	right = CEIL( glyph->metrics.horiBearingX + glyph->metrics.width );
 	width = TRUNC(right - left);
+	/*
+	 * Try to keep monospace fonts ink-inside
+	 */
+	if (font->monospace)
+	{
+	    if (TRUNC(right) > font->max_advance_width)
+	    {
+		int adjust;
+
+		adjust = right - (font->max_advance_width << 6);
+		if (adjust > left)
+		    adjust = left;
+		left -= adjust;
+		right -= adjust;
+		width = font->max_advance_width;
+	    }
+	}
 
 	top    = CEIL( glyph->metrics.horiBearingY );
 	bottom = FLOOR( glyph->metrics.horiBearingY - glyph->metrics.height );
@@ -213,9 +231,9 @@ XftGlyphLoad (Display		*dpy,
 	gi->x = -TRUNC(left);
 	gi->y = TRUNC(top);
 	if (font->monospace)
-	    gi->xOff = font->face->max_advance_width * font->size / (64 * font->face->units_per_EM);
+	    gi->xOff = font->max_advance_width;
 	else
-	    gi->xOff = ((glyph->metrics.horiAdvance + 0x20) >> 6);
+	    gi->xOff = TRUNC(ROUND(glyph->metrics.horiAdvance));
 	gi->yOff = 0;
 	g = charcode;
 
