@@ -1,3 +1,4 @@
+ 594. Add ScreenToScreenColorExpansion support for I810 (Mark Vojkovich).
  593. Add/fix support for the Rage 128 Mobility chips (M3/M4) (Kevin Martin).
 
 XFree86 4.0.1d (8 September 2000)
@@ -11,7 +12,7 @@ XFree86 4.0.1d (8 September 2000)
  587. Disable DRI acceleration in depth 15 on the I810 because it doesn't 
       work (Mark Vojkovich).
  586. Fix some ordering problems in the I810ScreenInit that broke the 
-      software cursor (Mark Vojkovich).
+      software cursor and backing store (Mark Vojkovich).
  585. Convert the I810 driver from cfb to fb (Mark Vojkovich).
  584. Fix some depth/bpp confusion in the I810 driver.  Depth 15 works now
       (Mark Vojkovich).
@@ -11126,4 +11127,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1307 2000/09/13 08:00:01 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1308 2000/09/13 15:47:29 martin Exp $
