@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.49 2004/01/19 01:22:46 torrey Exp $
+XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.50 2004/01/20 23:54:50 torrey Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -217,17 +217,22 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 # define ByteOrder              X_LITTLE_ENDIAN
 #endif /* i386DarwinArchitecture */
 
+#if OSMajorVersion < 7
+# define DarwinLocaleDefines    -DX_LOCALE
+#else
+# define DarwinLocaleDefines    /**/
+# define XawI18nDefines         -DHAS_WCHAR_H -DHAS_WCTYPE_H -DNO_WIDEC_H
+#endif
+
 /*
  * __DARWIN__ will be used for platform specific #ifdefs that can't
  * be handled by existing X defines.
  *
  * Darwin's alloca() seg faults (rather than returning NULL) on failed
  * allocations, so we can't use it.
- *
- * Darwin's setlocale() doesn't work properly, so use X11's instead.
  */
 #define StandardDefines         DarwinMachineDefines -D__DARWIN__ \
-                                -DNO_ALLOCA -DX_LOCALE -DCSRG_BASED
+                                -DNO_ALLOCA -DCSRG_BASED DarwinLocaleDefines
 
 /*
  * Set this to NO to just build the client libs, which should work without
