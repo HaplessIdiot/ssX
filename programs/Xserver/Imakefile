@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/249 1997/12/11 11:18:14 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.186tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.187 2000/08/24 22:20:08 tsi Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -892,8 +892,33 @@ $(ITSYOBJS) $(ITSYLIBS) $(ITSYSYSLIBS):: $(ITSYDIRS)
 ServerTarget(Xitsy,$(ITSYDIRS),$(ITSYOBJS),$(ITSYLIBS),$(ITSYSYSLIBS))
 #endif /* XItsyServer */
 
+#if XvesaServer
+XCOMM
+XCOMM server with vesa driver only based on Keith's server
+XCOMM
+
+    VESADIR = $(KDRIVE)/vesa
+       VESA = $(VESADIR)/LibraryTargetName(vesa)
+
+      KDDIRS = StdKdDirs
+
+    VESADIRS = $(STDDIRS) $(KDDIRS) $(VESADIR)
+
+   VESALIBS = PreFbLibs $(VESA) KdLibs FbPostFbLibs
+VESASYSLIBS = StdKdSysLibs
+
+#if HasParallelMake
+MakeMutex($(VESADIRS) $(VESAOBJS) $(VESALIBS) $(VESASYSLIBS))
+#endif
+#if ForceServerRemake
+$(VESAOBJS) $(XVESA) $(VESALIBS) $(VESASYSLIBS):: $(VESADIRS)
+	@if [ -f $@ ]; then touch $@; fi
+#endif
+ServerTarget(Xvesa,$(VESADIRS),$(VESAOBJS),$(VESALIBS),$(VESASYSLIBS))
+#endif /* XvesaServer */
+
 KDRIVEDIRS=$(KDDIRS) $(FBDEVDIR) $(SAVAGEDIR) $(TRIDENTDIR) $(SIS530DIR) \
-	$(TRIODIR) $(TS300DIR) $(ITSYDIR) $(IGSDIR)
+	$(TRIODIR) $(TS300DIR) $(ITSYDIR) $(IGSDIR) $(VESADIRS)
 
 #if XprtServer
 XCOMM

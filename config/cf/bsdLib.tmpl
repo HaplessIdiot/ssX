@@ -1,5 +1,5 @@
 XCOMM $XConsortium: bsdLib.tmpl /main/3 1996/09/28 16:09:25 rws $
-XCOMM $XFree86: xc/config/cf/bsdLib.tmpl,v 3.4 1997/08/26 10:00:41 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/bsdLib.tmpl,v 3.5 1999/06/06 12:13:22 dawes Exp $
 
 /*
  * NetBSD/FreeBSD/OpenBSD shared library template
@@ -42,7 +42,10 @@ XMULIB = $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
 #define CplusplusLibC
 #define FrescoSysLibs	CplusplusLibC MathLibrary
 
+/* Allow for libpthread, as overridden by OS definitions */
+#if !defined(SharedX11Reqs)
 #define SharedX11Reqs
+#endif
 #define SharedOldXReqs	$(LDPRELIB) $(XLIBONLY)
 #define SharedXtReqs	$(LDPRELIB) $(XLIBONLY) $(SMLIB) $(ICELIB)
 #define SharedXawReqs	$(LDPRELIB) $(XMULIB) $(XTOOLLIB) $(XPMLIB) $(XLIB)
