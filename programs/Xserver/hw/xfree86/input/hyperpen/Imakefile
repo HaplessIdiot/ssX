@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/Imakefile,v 1.7 2000/12/01 17:43:06 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/input/hyperpen/Imakefile,v 1.1 2001/10/01 13:44:13 eich Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -10,7 +10,7 @@ DEFINES = -DLINUX_INPUT
 SRCS = xf86HyperPen.c
 OBJS = xf86HyperPen.o
 
-DRIVER = HyperPen
+DRIVER = hyperpen
 
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86SRC)/loader -I$(XF86OSSRC) \
          -I$(SERVERSRC)/include -I$(SERVERSRC)/mi -I$(XINCLUDESRC) -I$(EXTINCSRC)
