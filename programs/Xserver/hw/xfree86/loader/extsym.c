@@ -39,6 +39,8 @@ extern RESTYPE ShmSegType, ShmPixType;
 extern Bool noPanoramiXExtension;
 extern int PanoramiXNumScreens;
 extern PanoramiXData *panoramiXdataPtr;
+extern unsigned long XRT_WINDOW;
+extern unsigned long XRT_PIXMAP;
 #endif
 
 LOOKUP extLookupTab[] = {
@@ -51,6 +53,8 @@ LOOKUP extLookupTab[] = {
  SYMVAR(noPanoramiXExtension)
  SYMVAR(PanoramiXNumScreens)
  SYMVAR(panoramiXdataPtr)
+ SYMVAR(XRT_WINDOW)
+ SYMVAR(XRT_PIXMAP)
 #endif
 
  { 0, 0 },
