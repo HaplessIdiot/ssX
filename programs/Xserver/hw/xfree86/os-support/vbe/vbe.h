@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbe.h,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbe.h,v 1.9 2002/09/12 15:20:19 tsi Exp $ */
 
 /*
  *                   XFree86 vbe module
@@ -243,7 +243,7 @@ typedef enum {
 	VBESetGetLogicalScanlineLength(pVbe, SCANWID_SET_BYTES, width, \
 					NULL, NULL, NULL)
 #define VBEGetLogicalScanline(pVbe, pixels, bytes, max)	\
-	VBESetGetLogicalScanlineLength(pVbe, SCANWID_GET, NULL, \
+	VBESetGetLogicalScanlineLength(pVbe, SCANWID_GET, 0, \
 					pixels, bytes, max)
 #define VBEGetMaxLogicalScanline(pVbe, pixels, bytes, max)	\
 	VBESetGetLogicalScanlineLength(pVbe, SCANWID_GET_MAX, \
