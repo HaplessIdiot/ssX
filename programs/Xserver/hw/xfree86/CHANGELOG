@@ -1,4 +1,6 @@
 XFree86 4.1.99.3 (xx December 2001)
+ 583. Re-instate makedepend's recognition of backslash line terminations
+      (Marc La France).
  582. Add proper reference counting to the XvMCContext so that destroying
       the context before destroying associated surfaces is handled correctly
       (#5083, Matthew J. Sottek).
@@ -14355,4 +14357,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2091 2001/12/17 20:52:25 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2092 2001/12/18 04:23:57 dawes Exp $

@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/main.c,v 3.23 2001/12/14 19:53:20 dawes Exp $ */
+/* $XFree86: xc/config/makedepend/main.c,v 3.24 2001/12/17 20:52:22 dawes Exp $ */
 
 #include "def.h"
 #ifdef hpux
@@ -560,69 +560,86 @@ char *getnextline(struct filepointer *filep)
 
 	for(bol = p--; ++p < eof; ) {
 
-	    /* Consume C "slash asterisk ... asterisk slash" comments. */
-	    if (*p == '/' &&
-		(p+1) < eof && *(p+1) == '*') {
-		*p++ = ' ', *p++ = ' ';
+		/* Consume C "slash asterisk ... asterisk slash" comments. */
+		if (*p == '/' && (p+1) < eof && *(p+1) == '*') {
+			*p++ = ' ', *p++ = ' ';
 
-		while (*p) {
-		    if (*p == '*' &&
-			(p+1) < eof && *(p+1) == '/') {
-			*p++ = ' ', *p = ' ';
-			break;
-		    }
-		    else if (*p == '\n')
-			lineno++;
-		    *p++ = ' ';
+			while (*p) {
+				if (*p == '*' &&
+				    (p+1) < eof && *(p+1) == '/') {
+					*p++ = ' ', *p = ' ';
+					break;
+				}
+				if (*p == '\n')
+					lineno++;
+				*p++ = ' ';
+			}
+			continue;
 		}
-		continue;
-	    }
 
-	    /* Consume C++ "slash slash" comments. */
-	    else if (*p == '/'   &&
-		     (p+1) < eof && *(p+1) == '/') {
-		*p++ = ' ', *p++ = ' ';
+		/* Consume C++ "slash slash" comments. */
+		if (*p == '/'   && (p+1) < eof && *(p+1) == '/') {
+			*p++ = ' ', *p++ = ' ';
 
-		while (*p) {
+			while (*p) {
 
-		    /* If last character on the line is a \ (backslash)
-		     * then the comment continues on the next line. */
-		    if (*p == '\\' &&
-			(p+1) < eof && *(p+1) == '\n') {
-			*(p++) = ' ';
-			*(p++) = ' ';
-			lineno++;
-		    }
-
-		    /* If the end of the line has the trigraph "??/" then
-		     * that is the same as a \ (backslash) and the comment
-		     * continues on the next line. */
-		    else if (*p == '?' &&
-			     (p+1) < eof && *(p+1) == '?' &&
-			     (p+2) < eof && *(p+2) == '/' &&
-			     (p+3) < eof && *(p+3) == '\n') {
-			*(p++) = ' ';
-			*(p++) = ' ';
-			*(p++) = ' ';
-			*(p++) = ' ';
-			lineno++;
-		    }
-
-		    /* Check to see if we're at the end of the line. */
-		    else if (*p == '\n') {
-			/* Decrement so that the next iteration of the outer
-			 * for loop will handle the case of "*p == '\n'" (in
-			 * the next else if). */
-			--p;
-			break;  /* break out of while loop to continue */
-		    } else {
-			*p++ = ' ';
-		    }
+				/*
+				 * If last character on the line is a '\'
+				 * (backslash) then the comment continues on
+				 * the next line.
+				 */
+				if (*p == '\\' &&
+				    (p+1) < eof && *(p+1) == '\n') {
+					*(p++) = ' ';
+					*(p++) = ' ';
+					lineno++;
+				}
+				/*
+				 * If the end of the line has the trigraph
+				 * "??/" then that is the same as a '\'
+				 * (backslash) and the comment continues on
+				 * the next line.
+				 */
+				else if (*p == '?' && (p+3) < eof &&
+					 *(p+1) == '?' &&
+					 *(p+2) == '/' &&
+					 *(p+3) == '\n') {
+					*(p++) = ' ';
+					*(p++) = ' ';
+					*(p++) = ' ';
+					*(p++) = ' ';
+					lineno++;
+				}
+				/*
+				 * Check to see if we're at the end of the
+				 * line.
+				 */
+				else if (*p == '\n') {
+					/*
+					 * Decrement so that the next iteration
+					 * of the outer for loop will handle
+					 * the case of "*p == '\n'" (in the
+					 * next if).
+					 */
+					--p;
+					break;  /* continue while loop */
+				} else {
+					*p++ = ' ';
+				}
+			}
+			continue;
 		}
-		continue;
-	    }
 
-		else if (*p == '\n') {
+		if (*p == '\\') {
+			if ((p+1) < eof && *(p+1) == '\n') {
+				*p = ' ';
+				*(p+1) = ' ';
+				lineno++;
+			}
+			continue;
+		}
+
+		if (*p == '\n') {
 			lineno++;
 			if (*bol == '#') {
 				char *cp;
