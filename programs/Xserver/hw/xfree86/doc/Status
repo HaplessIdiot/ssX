@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                                3 March 2000
+                               11 August 2000
 
                                   Abstract
 
@@ -122,8 +122,7 @@ architectures known to work on (e.g., Alpha, PPC), etc.
             Support for the AL2101, ALI2228, ALI2301, ALI2302, ALI2308,
             ALI2401 chipsets.  Support is provided by the XF86_SVGA server,
             using the al2101 driver for the AL2101, and the ali driver for
-            the others.  The status of this support is unknown because we
-            don't have any recent test reports, and these drivers have no
+            the others.  These drivers reportedly work, but they have no
             maintainer.
 
       4.0.1:
@@ -568,7 +567,7 @@ architectures known to work on (e.g., Alpha, PPC), etc.
       Summary:
             No Weitek chips are supported in 4.0.1.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.17 2000/06/19 15:00:54 tsi Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.18 2000/08/11 21:12:49 dawes Exp $
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/Status,v 1.12 2000/06/17 17:44:23 dawes Exp $
+$XFree86$
