@@ -17,9 +17,9 @@
   October 1994:
 
      1. XFree86 3.1.1 includes the X Consortium's recently released
-        public patches (up to fix-11).  The XFree86 Project, Inc has
+        public patches (up to fix-10).  The XFree86 Project, Inc has
         worked with the X Consortium to have much of XFree86 3.1.1
-        included in the X Consortium's fix-11.
+        included in the X Consortium's fix-10.
 
      2. A new accelerated server for Mach64 boards.
 
@@ -844,6 +844,8 @@
 
      o  Red Hat Software, Chapel Hill, NC
 
+     o  SPEA Software AG, Starnberg, Germany
+
      o  Clifford M Stein
 
      o  Joel Storm
@@ -858,9 +860,9 @@
 
      o  Unifix Software GmbH, Braunschweig, Germany
 
-     o  Vixie Enterprises, La Honda, CA
+     o  Vixie Enterprises (http://www.vix.com/), La Honda, CA
 
-     o  Walnut Creek CDROM (//www.cdrom.com/), Concord, CA
+     o  Walnut Creek CDROM (http://www.cdrom.com/), Concord, CA
 
      o  Xtreme s.a.s., Livorno, Italy
 
@@ -874,7 +876,7 @@
   10.  Source and binary archive sites
 
 
-  Source patches are available to upgrade X11R6 PL11 from the X
+  Source patches are available to upgrade X11R6 PL10 from the X
   Consortium to XFree86 3.1.1.  They and binaries for many OSs are
   available via anonymous FTP from:
 
@@ -920,8 +922,6 @@
 
         +  ftp.fee.vutbr.cz:/pub/XFree86
            (ftp://ftp.fee.vutbr.cz/pub/XFree86) (source and binaries)
-
-
         +  ftp.gwdg.de:/pub/Xfree86 (ftp://ftp.gwdg.de/pub/Xfree86)
            (source and binaries)
 
@@ -988,7 +988,7 @@
   archive, and which compile-time option selections were made when
   building the distribution.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.9 1995/01/18 10:47:07 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.10 1995/01/19 05:22:51 dawes Exp $
 
 
 

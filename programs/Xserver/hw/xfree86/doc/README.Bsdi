@@ -12,10 +12,14 @@
   well as binary distributions for many architectures.
 
   The sources for XFree86 are available by anonymous ftp from:
-      ftp.XFree86.org:/pub/XFree86/current
+
+  ftp.XFree86.org:/pub/XFree86/current
+  (ftp://ftp.XFree86.org/pub/XFree86/current)
 
   Binaries for BSD/386 1.1 will be available from:
-      ftp.bsdi.com:/contrib/X11/XFree86
+
+  ftp.bsdi.com:/contrib/X11/XFree86
+  (ftp://ftp.bsdi.com/contrib/X11/XFree86)
 
   If you're running BSD 1.0, you'll have to build it from the source.
   Building the distribution on BSD/386 1.0 is untested, but belived to
@@ -23,9 +27,9 @@
   please let us know so that we can correct any incompatibilities.  If
   you've done it and want to share your binaries, please let the Bsdi
   mailing list know.  The binaries are compiled using gcc 2.5.8. There
-  may be problems using XFree86 3.1 on a 386/486 without a math copro-
-  cessor. If you experience these kind of problems, you may have better
-  luck building from the source using gcc 1.42 instead.
+  may be problems using XFree86 3.1 on a 386/486 without a math
+  coprocessor. If you experience these kind of problems, you may have
+  better luck building from the source using gcc 1.42 instead.
 
 
   2.  Bug Reports for This Document
@@ -62,7 +66,6 @@
 
         xf86-lib.tar.gz
            data files needed at runtime
-
 
      Choose at least one of the following to match your hardware:
 
@@ -124,10 +127,12 @@
 
         ie, on my machine, I do the following:
 
+
+
+
             % cd /usr/local
             % mkdir X11R6
             % ln -s /usr/local/X11R6 /usr/X11R6
-
 
 
      2. You must be logged in as root to unpack the archives and use a
@@ -323,8 +328,69 @@
                   return (-1);
     #endif
 
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.5 1995/01/19 05:22:41 dawes Exp $
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.4 1995/01/15 10:34:11 dawes Exp $
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

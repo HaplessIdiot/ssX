@@ -211,7 +211,7 @@
   different interface than the P9000.  As a result, they may need an
   entirely new server.  If you need support for one of these cards, you
   should look into XInside's AcceleratedX.  It's a commercial product
-  that costs about $199.  Send email to info@xinside.com for more
+  that costs about $99.  Send email to info@xinside.com for more
   information.  Their P9000 server is also much faster than ours at
   present (but then this server is free :-)
 
@@ -456,7 +456,7 @@
   During the course of the next few months, people will be working on
   acceleration, etc.  Please send any patches to me (nygren@mit.edu).
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.3 1995/01/15 10:34:17 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.4 1995/01/19 05:22:49 dawes Exp $
 
 
 
