@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/miext/shadow/shrotate.c,v 1.1 2001/07/20 19:25:02 keithp Exp $
+ * $XFree86: xc/programs/Xserver/miext/shadow/shrotate.c,v 1.2 2001/07/21 00:58:00 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -132,7 +132,7 @@ shadowUpdateRotatePacked (ScreenPtr	pScreen,
 	    scr_y1 = shaHeight - box_y2;
 	    scr_y2 = shaHeight - box_y1;
 
-	    sha_x1 = (shaWidth - scr_x1 - (pixelsPerBits - 1));
+	    sha_x1 = (shaWidth - scr_x1 - 1);
 	    sha_y1 = box_y2 - 1;
 	    break;
 	case 270:
