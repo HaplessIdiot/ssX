@@ -1034,7 +1034,7 @@
     <layout>
       <configItem>
         <name>ir</name>
-        <description>Farsi</description>
+        <description>Iranian</description>
         <description xml:lang="ru">Фарси</description>
       </configItem>
       <variantList/>

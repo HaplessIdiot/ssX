@@ -4,7 +4,7 @@
 //  Rules descriptions for XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.62 2003/02/14 21:53:11 dawes Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.63 2003/02/14 22:59:09 dawes Exp $
 
 ! model
   pc101		Generic 101-key PC
@@ -128,7 +128,6 @@
   nl		Dutch
   dvorak	Dvorak
   ee		Estonian
-  ir		Farsi
   fi		Finnish
   fr		French
   fr-latin9	French (alternative)
@@ -143,6 +142,7 @@
   hu_qwerty	Hungarian (qwerty)
   is		Icelandic
   iu		Inuktitut
+  ir		Iranian
   il		Israeli
   it		Italian
   jp		Japanese
