@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.33 2000/11/02 16:55:29 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.34 2000/11/03 01:15:49 martin Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -1015,6 +1015,12 @@ ATIProbe
         (_p)->iEntity = -2;                                                \
     } while (0)
 
+#ifndef AVOID_CPIO
+
+    (void)memset(fChipsets, FALSE, SizeOf(fChipsets));
+
+#endif /* AVOID_CPIO */
+
     if (!(flags & PROBE_DETECT))
     {
         /*
@@ -1024,71 +1030,63 @@ ATIProbe
          * "ChipID" not recognised by the driver.  Those device sections that
          * specify a "ChipRev" without a "ChipID" are also weeded out.
          */
-        if ((nGDev = xf86MatchDevice(ATI_NAME, &GDevs)) <= 0)
-        {
-            if (xf86MatchDevice(R128_NAME, NULL))
-                DoRage128 = TRUE;
-            else if (xf86MatchDevice(RADEON_NAME, NULL))
-                DoRadeon = TRUE;
-            else
-                return FALSE;
-        }
-
         nATIGDev = 0;
-        ATIGDevs = (ATIGDevPtr)xnfcalloc(nGDev, SizeOf(ATIGDev));
+        if ((nGDev = xf86MatchDevice(ATI_NAME, &GDevs)) > 0)
+        {
+            ATIGDevs = (ATIGDevPtr)xnfcalloc(nGDev, SizeOf(ATIGDev));
+
+            for (i = 0, pATIGDev = ATIGDevs;  i < nGDev;  i++)
+            {
+                pGDev = GDevs[i];
+                Chipset = ATIIdentProbe(pGDev->chipset);
+                if (Chipset == -1)
+                    continue;
+
+                if ((pGDev->chipID > (int)((CARD16)(-1))) ||
+                    (pGDev->chipRev > (int)((CARD8)(-1))))
+                    continue;
+
+                if (pGDev->chipID >= 0)
+                {
+                    if (ATIChipID(pGDev->chipID, 0) == ATI_CHIP_Mach64)
+                        continue;
+                }
+                else
+                {
+                    if (pGDev->chipRev >= 0)
+                        continue;
+                }
+
+                pATIGDev->pGDev = pGDev;
+                pATIGDev->Chipset = Chipset;
+                nATIGDev++;
+                pATIGDev++;
+
+                xf86MsgVerb(X_INFO, 3,
+                    ATI_NAME ":  Candidate \"Device\" section \"%s\".\n",
+                    pGDev->identifier);
 
 #ifndef AVOID_CPIO
 
-        (void)memset(fChipsets, FALSE, SizeOf(fChipsets));
+                fChipsets[Chipset] = TRUE;
 
 #endif /* AVOID_CPIO */
 
-        for (i = 0, pATIGDev = ATIGDevs;  i < nGDev;  i++)
-        {
-            pGDev = GDevs[i];
-            Chipset = ATIIdentProbe(pGDev->chipset);
-            if (Chipset == -1)
-                continue;
-
-            if ((pGDev->chipID > (int)((CARD16)(-1))) ||
-                (pGDev->chipRev > (int)((CARD8)(-1))))
-                continue;
-
-            if (pGDev->chipID >= 0)
-            {
-                if (ATIChipID(pGDev->chipID, 0) == ATI_CHIP_Mach64)
-                    continue;
-            }
-            else
-            {
-                if (pGDev->chipRev >= 0)
-                    continue;
             }
 
-            pATIGDev->pGDev = pGDev;
-            pATIGDev->Chipset = Chipset;
-            nATIGDev++;
-            pATIGDev++;
+            xfree(GDevs);
 
-            xf86MsgVerb(X_INFO, 3,
-                ATI_NAME ":  Candidate \"Device\" section \"%s\".\n",
-                pGDev->identifier);
-
-#ifndef AVOID_CPIO
-
-            fChipsets[Chipset] = TRUE;
-
-#endif /* AVOID_CPIO */
-
+            if (!nATIGDev)
+            {
+                xfree(ATIGDevs);
+                ATIGDevs = NULL;
+            }
         }
 
-        xfree(GDevs);
-
-        if (!nATIGDev)
-        {
-            xfree(ATIGDevs);
-            ATIGDevs = NULL;
-        }
+        if (xf86MatchDevice(R128_NAME, NULL) > 0)
+            DoRage128 = TRUE;
+        if (xf86MatchDevice(RADEON_NAME, NULL) > 0)
+            DoRadeon = TRUE;
     }
 
 #ifndef AVOID_CPIO
