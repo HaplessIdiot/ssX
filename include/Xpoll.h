@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/include/Xpoll.h,v 3.8 2001/01/17 17:53:11 dawes Exp $ */
+/* $XFree86: xc/include/Xpoll.h,v 3.9tsi Exp $ */
 
 #ifndef _XPOLL_H_
 #define _XPOLL_H_
@@ -59,9 +59,13 @@ from The Open Group.
 #if defined(AIXV4) && !defined(NFDBITS)
 #include <sys/select.h>
 #endif
+
 #include <X11/Xmd.h>
-#ifdef CSRG_BASED
+
+/* <sys/param.h> should define NBBY */
 #include <sys/param.h>
+
+#ifdef CSRG_BASED
 # if BSD < 199103
 typedef long fd_mask;
 # endif

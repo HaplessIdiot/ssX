@@ -96,7 +96,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* $XFree86: xc/programs/Xserver/os/log.c,v 1.6 2003/11/07 13:45:27 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/log.c,v 1.7tsi Exp $ */
 
 #include "Xos.h"
 #include <stdio.h>
@@ -109,6 +109,9 @@ OR PERFORMANCE OF THIS SOFTWARE.
 #include "site.h"
 #include "opaque.h"
 
+#ifdef NEED_STRLCAT
+extern size_t strlcpy(char *dst, const char *src, size_t siz);
+#endif
 
 #ifdef DDXOSVERRORF
 void (*OsVendorVErrorFProc)(const char *, va_list args) = NULL;

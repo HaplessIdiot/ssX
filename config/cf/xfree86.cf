@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.468 2004/03/17 19:48:24 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.469tsi Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -1877,7 +1877,7 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 #  if defined(UseInstalled)
 #   define DefaultCCOptions /* -ansi */
 #  else
-#   define DefaultCCOptions -ansi -pedantic GccWarningOptions
+#   define DefaultCCOptions -ansi GccWarningOptions
 #  endif
 # endif
 # if defined(UseInstalled)
