@@ -6,7 +6,7 @@
 char rcsId_vmware[] =
     "Id: vmware.c,v 1.11 2001/02/23 02:10:39 yoel Exp $";
 #endif
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.c,v 1.20 2004/07/25 20:49:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.c,v 1.21tsi Exp $ */
 
 /*
  * TODO: support the vmware linux kernel fb driver (Option "UseFBDev").
@@ -901,6 +901,7 @@ VMWAREModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     VMWAREPtr pVMWARE = VMWAREPTR(pScrn);
     VMWARERegPtr vmwareReg = &pVMWARE->ModeReg;
 
+    hwp->Flags |= VGA_FIX_SYNC_PULSES;
     vgaHWUnlock(hwp);
     if (!vgaHWInit(pScrn, mode))
         return FALSE;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.33 2004/04/03 22:05:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.34tsi Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -2580,7 +2580,7 @@ static Bool VIAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "VIAModeInit\n"));
 
-
+    hwp->Flags |= VGA_FIX_SYNC_PULSES;
     if (!vgaHWInit(pScrn, mode)) {
         vgaHWBlankScreen(pScrn, TRUE);
         return FALSE;
