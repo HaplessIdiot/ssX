@@ -119,10 +119,10 @@ pages to see the details.
 
 <sect1> Clients <p>
 
-<em>xsetpointer</em> is used to  change the device controling the core
+<em>xsetpointer</em> is used to  change the device controlling the core
 pointer and to list available extended devices. <p>
 
-<em>xsetmode</em> is used to change the mode (aboslute or relative) of
+<em>xsetmode</em> is used to change the mode (absolute or relative) of
 an extended device. The device  has to  support relative and  absolute
 modes and the device must not control the core pointer. <p>
 
@@ -130,7 +130,7 @@ Consult the man pages for details.
 
 
 <verb>
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/xinput.sgml,v 3.0 1996/05/12 12:36:36 dawes Exp $
 </verb>
 
 </article>
