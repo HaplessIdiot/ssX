@@ -1,4 +1,8 @@
 XFree86 4.2.99.1 (5 June 2002)
+ 185. Modify the r128 and radeon drivers to use fbdev's DPMS support when
+      fbdev is enabled (#5219, Michel Dänzer).
+ 184. Add support for the composite sync mode flag to the radeon driver
+      (#5219, Michel Dänzer).
  183. Add a mkfontscale utility for creating fonts.scale files (#5213, 5214,
       Juliusz Chroboczek).
  182. Add a 1152x768 mode suitable for Titanium PowerBooks to the set of
@@ -14892,4 +14896,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2243 2002/06/05 00:00:34 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2244 2002/06/05 19:46:01 dawes Exp $

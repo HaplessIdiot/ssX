@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_reg.h,v 1.14 2002/02/22 21:45:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_reg.h,v 1.15 2002/04/24 16:20:40 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -348,6 +348,7 @@ do {									\
 #       define RADEON_CRTC2_DISP_DIS        (1 << 23)
 #       define RADEON_CRTC2_EN              (1 << 25)
 #       define RADEON_CRTC2_DISP_REQ_EN_B   (1 << 26)
+#       define RADEON_CRTC2_CSYNC_EN        (1 << 27)
 #       define RADEON_CRTC2_HSYNC_DIS       (1 << 28)
 #       define RADEON_CRTC2_VSYNC_DIS       (1 << 29)
 #define RADEON_CRTC_GUI_TRIG_VLINE          0x0218
