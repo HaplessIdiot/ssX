@@ -670,7 +670,9 @@
 
         o  Harm Hanemaayer <hhanemaa@cs.ruu.nl>,
 
-        o  Bill Reynolds <bill@goshawk.lanl.gov>
+        o  Bill Reynolds <bill@goshawk.lanl.gov>,
+
+        o  Corin Anderson <corina@bdc.cirrus.com>
 
      Western Digital accelerated code by:
 
@@ -720,9 +722,9 @@
 
         o  Ported to X11R5 by Rik Faith <faith@cs.unc.edu>.
 
+
+
         o  Rewritten by Marc La France <Marc.La-France@ualberta.ca>
-
-
 
      WD90C24 support by:
 
@@ -746,6 +748,8 @@
         o  Simon Cooper <scooper@vizlab.rutgers.edu>,
 
         o  Harm Hanemaayer <hhanemaa@cs.ruu.nl>,
+
+        o  Corin Anderson <corina@bdc.cirrus.com>
 
      Cirrus CL64xx driver by:
 
@@ -785,10 +789,10 @@
 
         o  Jon Block <block@frc.com>
 
+
         o  Mike Hollick <hollick@graphics.cis.upenn.edu>
 
      MX SVGA driver by:
-
 
         o  Frank Dikker <dikker@cs.utwente.nl>
 
@@ -917,10 +921,9 @@
   contribution or by the donation of equipment and resources.  The
   XFree86 Project, Inc gratefully acknowledges these contributions, and
   hopes that we can do justice to them by continuing to release high-
+
   quality free software for the betterment of the Internet community as
   a whole.
-
-
 
      o  UUNET Communications Services, Inc. <http://www.uu.net/>
 
@@ -984,9 +987,8 @@
 
      o  Linux Support Team, Erlangen, Germany
 
+
      o  LunetIX Softfair <http://www.lunetix.de>, Berlin, Germany
-
-
 
      o  Morse Telecommunications <http://www.morse.net>, Long Beach, NY
 
@@ -1050,9 +1052,9 @@
 
      o  North America:
 
+
+
         +  ftp://XFree86.cdrom.com/pub/XFree86 (source and binaries)
-
-
 
         +  ftp://ftp.rge.com/pub/X/XFree86/XFree86 (source and binaries)
 
@@ -1117,6 +1119,7 @@
 
         +  ftp://ftp.sf.co.kr/pub/XFree86 (source and binaries)
 
+
         +  ftp://ftp.nectec.or.th/pub/mirrors/XFree86 (source patches
            and binaries)
 
@@ -1133,16 +1136,13 @@
   building the distribution.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.50 1996/08/13 11:30:56 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.51 1996/08/16 12:30:43 dawes Exp $
 
 
 
 
 
   $XConsortium: README.sgml /main/15 1996/01/30 15:13:03 kaleb $
-
-
-
 
 
 
