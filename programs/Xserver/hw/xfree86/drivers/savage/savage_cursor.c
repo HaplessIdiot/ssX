@@ -39,6 +39,27 @@ static void SavageSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg);
                       } 
 #define MAX_CURS 64
 
+/*
+ * Disable HW Cursor on stretched LCDs. We don't know how to
+ * detect if display is stretched. Therefore we cannot rescale
+ * the HW cursor position.
+ */
+
+static Bool
+SavageUseHWCursor(ScreenPtr pScr, CursorPtr pCurs)
+{
+    ScrnInfoPtr pScrn = xf86Screens[pScr->myNum];
+    SavagePtr psav = SAVPTR(pScrn);
+
+    if (psav->PanelX != pScrn->currentMode->HDisplay 
+	|| psav->PanelY != pScrn->currentMode->VDisplay) {
+	/* BIT 1 : CRT is active, BIT 2 : LCD is active */
+	unsigned char cr6d = inCRReg( 0x6d );
+	if (cr6d & 0x02)
+	    return FALSE;
+    }
+    return TRUE;
+}
 
 Bool 
 SavageHWCursorInit(ScreenPtr pScreen)
@@ -80,8 +101,12 @@ SavageHWCursorInit(ScreenPtr pScreen)
     infoPtr->LoadCursorImage = SavageLoadCursorImage;
     infoPtr->HideCursor = SavageHideCursor;
     infoPtr->ShowCursor = SavageShowCursor;
-    infoPtr->UseHWCursor = NULL;
 
+    if ((S3_SAVAGE_MOBILE_SERIES(psav->Chipset)
+	 || (psav->Chipset == S3_PROSAVAGE)) && !psav->CrtOnly)
+	infoPtr->UseHWCursor = SavageUseHWCursor;
+    else
+	infoPtr->UseHWCursor = NULL;
     if( !psav->CursorKByte )
 	psav->CursorKByte = pScrn->videoRam - 4;
 
@@ -93,8 +118,9 @@ SavageHWCursorInit(ScreenPtr pScreen)
 void
 SavageShowCursor(ScrnInfoPtr pScrn)
 {
-   /* Turn cursor on. */
+    /* Turn cursor on. */
    outCRReg( 0x45, inCRReg(0x45) | 0x01 );
+   SAVPTR(pScrn)->hwc_on = TRUE;
 }
 
 
@@ -102,12 +128,12 @@ void
 SavageHideCursor(ScrnInfoPtr pScrn)
 {
     /* Turn cursor off. */
-
     if( S3_SAVAGE4_SERIES( SAVPTR(pScrn)->Chipset ) )
     {
        waitHSync(5);
     }
     outCRReg( 0x45, inCRReg(0x45) & 0xfe );
+    SAVPTR(pScrn)->hwc_on = FALSE;
 }
 
 static void

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.64 2002/12/17 20:55:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.65 2003/01/15 03:30:49 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -2369,9 +2369,12 @@ SetupMouse(InputInfoPtr pInfo)
 **               [CHRIS-211092]
 */
 
+/*
+ * Do a reset wrap mode before reset.
+ */
 #define do_ps2Reset(x)  { \
     int i = 10;\
-    while (i-- > 0) { \
+     while (i-- > 0) { \
        xf86FlushInput(x->fd); \
        if (ps2Reset(x)) break; \
     } \
@@ -2388,6 +2391,7 @@ initMouseHW(InputInfoPtr pInfo)
     pointer options;
     unsigned char *param = NULL;
     int paramlen = 0;
+    int count = 10;
 
     switch (pMse->protocolID) {
 	case PROT_LOGI:		/* Logitech Mice */
@@ -2610,19 +2614,35 @@ initMouseHW(InputInfoPtr pInfo)
 	    /* Nothing to do. */
 	    break;
     }
-    
+ REDO:  /*
+	 * If one part of the PS/2 mouse initialization fails
+	 * redo complete initialization. There are mice which
+	 * have occasional problems with initialization and
+	 * are in an unknown state.
+	 */
     if (paramlen > 0) {
-	int count = 10;
-	
-	while (count--) {
-	    if (ps2SendPacket(pInfo,param,paramlen))
-		break;
+	if (pMse->class & (MSE_PS2 | MSE_XPS2)) {
+	    int count = 10;
+	    /*
+	     * If this fails try it again. We hope to
+	     * detect a misconfigured mouse later on
+	     * so we can redo the initialization.
+	     */
+	    while (count--) {
+		if (ps2SendPacket(pInfo,param,paramlen))
+		    break;
 	    usleep(30000);
+	    } 
+	    if (!count)
+		xf86Msg(X_ERROR, "%s: Mouse initialization failed\n",
+			pInfo->name);
+	} else {
+	    if (xf86WriteSerial(pInfo->fd, param, paramlen) != paramlen)
+		xf86Msg(X_ERROR, "%s: Mouse initialization failed\n",
+			pInfo->name);
 	}
-	if (!count)
-	    xf86Msg(X_ERROR, "%s: Mouse initialization failed\n", pInfo->name);
- 	usleep(30000);
- 	xf86FlushInput(pInfo->fd);
+	usleep(30000);
+	xf86FlushInput(pInfo->fd);
     }
 
     if (pMse->class & (MSE_PS2 | MSE_XPS2)) {
@@ -2631,14 +2651,16 @@ initMouseHW(InputInfoPtr pInfo)
 	    osInfo->SetPS2Res(pInfo, pMse->protocol, pMse->sampleRate,
 			      pMse->resolution);
 	} else {
-	    int count = 10;
 	    unsigned char c2[2];
 	    
-	    c = 230;		/* 1:1 scaling */
-	    xf86WriteSerial(pInfo->fd, &c, 1);
-	    c = 244;		/* enable mouse */
-	    xf86WriteSerial(pInfo->fd, &c, 1);
-	    c2[0] = 243;	/* set sampling rate */
+	    c = 0xE6;	/*230*/	/* 1:1 scaling */
+	    if (!ps2SendPacket(pInfo,&c,1)) {
+		if (!count--)
+		    return FALSE;
+		do_ps2Reset(pInfo);
+		goto REDO;
+	    }
+	    c2[0] = 0xF3; /*243*/ /* set sampling rate */
 	    if (pMse->sampleRate > 0) {
 		if (pMse->sampleRate >= 200)
 		    c2[1] = 200;
@@ -2655,8 +2677,13 @@ initMouseHW(InputInfoPtr pInfo)
 	    } else {
 		c2[1] = 100;
 	    }
-	    xf86WriteSerial(pInfo->fd, c2, 2);
-	    c2[0] = 232;	/* set device resolution */
+	    if (!ps2SendPacket(pInfo,c2,2)) {
+		if (!count--)
+		    return FALSE;
+		do_ps2Reset(pInfo);
+		goto REDO;
+	    }
+	    c2[0] = 0xE8; /*232*/	/* set device resolution */
 	    if (pMse->resolution > 0) {
 		if (pMse->resolution >= 200)
 		    c2[1] = 3;
@@ -2669,21 +2696,31 @@ initMouseHW(InputInfoPtr pInfo)
 	    } else {
 		c2[1] = 2;
 	    }
-	    xf86WriteSerial(pInfo->fd, c2, 2);
+	    if (!ps2SendPacket(pInfo,c2,2)) {
+		if (!count--)
+		    return FALSE;
+		do_ps2Reset(pInfo);
+		goto REDO;
+	    }
 	    usleep(30000);
 	    xf86FlushInput(pInfo->fd);
-	    do {
-	      if (!ps2EnableDataReporting(pInfo)) {
+	    if (!ps2EnableDataReporting(pInfo)) {
 		xf86Msg(X_INFO, "%s: ps2EnableDataReporting: failed\n",
 			pInfo->name);
 		xf86FlushInput(pInfo->fd);
-	      } else {
+		if (!count--)
+		    return FALSE;
+		do_ps2Reset(pInfo);
+		goto REDO;
+	    } else {
 		xf86Msg(X_INFO, "%s: ps2EnableDataReporting: succeeded\n",
 			pInfo->name);
-		break;
-              }
-	    } while (count --);
+	    }
 	}
+	/*
+	 * The PS/2 reset handling needs to be rechecked.
+	 * We need to wait until after the 4.3 release.
+	 */
     }
     return TRUE;
 }

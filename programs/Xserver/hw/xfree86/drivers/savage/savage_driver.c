@@ -2832,15 +2832,16 @@ static Bool SavageSaveScreen(ScreenPtr pScreen, int mode)
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     TRACE(("SavageSaveScreen(0x%x)\n", mode));
 
-    if( pScrn->vtSema && SAVPTR(pScrn)->hwcursor )
-    {
+    if( pScrn->vtSema && SAVPTR(pScrn)->hwcursor && SAVPTR(pScrn)->hwc_on) {
+
 	if( xf86IsUnblank(mode) )
 	    SavageShowCursor( pScrn );
 	else
 	    SavageHideCursor( pScrn );
+	SAVPTR(pScrn)->hwc_on = TRUE;
     }
 
-    return vgaHWSaveScreen(pScreen, mode);
+	return vgaHWSaveScreen(pScreen, mode);
 }
 
 

@@ -118,6 +118,7 @@ typedef struct _Savage {
     Bool		fifo_moderate;
     Bool		fifo_aggressive;
     Bool		hwcursor;
+    Bool		hwc_on;
     Bool		NoAccel;
     Bool		shadowFB;
     Bool		UseBIOS;
