@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/lisp.lsp,v 1.1 2002/09/22 07:09:09 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/lisp.lsp,v 1.2 2002/10/06 17:11:48 paulo Exp $
 ;;
 
 (require "syntax")
@@ -290,21 +290,11 @@
 
     ;;  Rules for "conditionals"
     (syntable :preprocessor *prop-preprocessor* nil
-
-	;;  One line comments.
-	(syntoken ";"
-	    :begin :simple-comment
-	    :contained t)
+	(synaugment :comments-and-strings)
 
 	;;  Any reasonable symbol.
 	(syntoken "[A-Za-z0-9_+/<=>*%@-]+"
 	    :switch -1)
-
-	;;  Multiline comments.
-	(syntoken "#|"
-	    :nospec t
-	    :begin :comment
-	    :contained t)
 
 	;;  A conditional expression.
 	(syntoken "("
@@ -313,6 +303,7 @@
 	    :contained t)
 
 	(syntable :preprocessor-expression *prop-preprocessor* nil
+	    (synaugment :comments-and-strings)
 
 	    ;;  Recursive rule.
 	    (syntoken "("
@@ -325,6 +316,7 @@
 		:switch -2)
 
 	    (syntable :preprocessor-recursive *prop-preprocessor* nil
+		(synaugment :comments-and-strings)
 		(syntoken "("
 		    :nospec t
 		    :begin :preprocessor-recursive
@@ -364,5 +356,11 @@
 	(syntoken "|"
 	    :nospec t
 	    :switch -1)
+    )
+
+    (syntable :comments-and-strings nil nil
+	(syntoken "\"" :nospec t :begin :string :contained t)
+	(syntoken "#|" :nospec t :begin :comment :contained t)
+	(syntoken ";" :begin :simple-comment :contained t)
     )
 )

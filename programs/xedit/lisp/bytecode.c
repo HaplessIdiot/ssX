@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.5 2002/09/29 02:55:00 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.6 2002/10/06 17:11:40 paulo Exp $ */
 
 
 /*
@@ -221,7 +221,7 @@ struct _LispCom {
     unsigned char *bytecode;	/* Bytecode generated so far */
     long length;
 
-    CodeBlock *block;
+    CodeBlock *block, *toplevel;
 
     int tagbody;		/* Inside a tagbody block? */
     int level;			/* Nesting level */
@@ -401,7 +401,7 @@ Lisp_Compile(LispMac *mac, LispBuiltin *builtin)
 
 	    memset(&com, 0, sizeof(LispCom));
 	    com.mac = mac;
-	    com.block = LispCalloc(mac, 1, sizeof(CodeBlock));
+	    com.toplevel = com.block = LispCalloc(mac, 1, sizeof(CodeBlock));
 	    com.block->type = LispBlockClosure;
 	    com.block->tag = name;
 
@@ -1115,7 +1115,7 @@ LispCompileForm(LispMac *mac, LispObj *form)
     memset(&com, 0, sizeof(LispCom));
 
     com.mac = mac;
-    com.block = LispCalloc(mac, 1, sizeof(CodeBlock));
+    com.toplevel = com.block = LispCalloc(mac, 1, sizeof(CodeBlock));
     com.block->type = LispBlockNone;
 
     pfailed = &failed;
@@ -1986,22 +1986,56 @@ LinkOptimize_0(LispCom *com)
 }
 
 static void
+LinkResolveLabels(LispCom *com, CodeBlock *block)
+{
+    int i;
+    LispMac *mac = com->mac;
+    CodeTree *tree = block->tree;
+
+    for (; tree; tree = tree->next) {
+	if (tree->type == CodeTreeBlock)
+	    LinkResolveLabels(com, tree->data.block);
+	else if (tree->type == CodeTreeLabel) {
+	    for (i = 0; i < block->tagbody.length; i++)
+		if (XEQL(tree->data.object, block->tagbody.labels[i]) == T) {
+		    block->tagbody.codes[i] = tree;
+		    break;
+		}
+	}
+    }
+}
+
+static void
 LinkResolveJumps(LispCom *com, CodeBlock *block)
 {
-    int i, go;
+    int i;
     LispMac *mac = com->mac;
+    CodeBlock *body = block;
     CodeTree *ptr, *tree = block->tree;
 
-    go = 0;
+    /* Check if there is a tagbody. Error checking already done */
+    while (body && body->type != LispBlockBody)
+	body = body->prev;
+
     for (; tree; tree = tree->next) {
 	switch (tree->type) {
 	    case CodeTreeBytecode:
+	    case CodeTreeLabel:
 		break;
+
 	    case CodeTreeBlock:
 		LinkResolveJumps(com, tree->data.block);
 		break;
+
 	    case CodeTreeGo:
-		++go;
+		for (i = 0; i < body->tagbody.length; i++)
+		    if (XEQL(tree->data.object, body->tagbody.labels[i]) == T)
+			break;
+		if (i == body->tagbody.length)
+		    LispDestroy(mac, "COMPILE: no visible tag %s to GO",
+				STROBJ(tree->data.object));
+		/* Now the jump code is known */
+		tree->data.tree = body->tagbody.codes[i];
 		break;
 
 	    case CodeTreeCond:
@@ -2039,14 +2073,6 @@ LinkResolveJumps(LispCom *com, CodeBlock *block)
 		    tree->data.tree = tree->group;
 		break;
 
-	    case CodeTreeLabel:
-		for (i = 0; i < block->tagbody.length; i++)
-		    if (XEQL(tree->data.object, block->tagbody.labels[i]) == T) {
-			block->tagbody.codes[i] = tree;
-			break;
-		    }
-		break;
-
 	    case CodeTreeReturn:
 		/* One bytecode is guaranteed to exist in the code tree */
 		if (tree->data.block->parent == NULL)
@@ -2054,9 +2080,13 @@ LinkResolveJumps(LispCom *com, CodeBlock *block)
 		    tree->data.tree = tree->data.block->tail;
 		else {
 		    for (;;) {
+#if 0
 			for (ptr = tree->data.block->parent; ptr; ptr = ptr->next)
 			    if (ptr->type == CodeTreeBytecode)
 				break;
+#else
+			ptr = tree->data.block->parent->next;
+#endif
 			if (ptr) {
 			    tree->data.tree = ptr;
 			    break;
@@ -2066,34 +2096,6 @@ LinkResolveJumps(LispCom *com, CodeBlock *block)
 			    tree->data.block = tree->data.block->prev;
 		    }
 		}
-		break;
-	}
-    }
-
-    if (!go)
-	return;
-
-    /* Resolve labeled jumps */
-    for (tree = block->tree; tree; tree = tree->next) {
-	switch (tree->type) {
-	    case CodeTreeBytecode:
-	    case CodeTreeBlock:
-	    case CodeTreeLabel:
-	    case CodeTreeCond:
-	    case CodeTreeJump:
-	    case CodeTreeJumpIf:
-	    case CodeTreeReturn:
-		break;
-	    case CodeTreeGo:
-		/* Error checking if inside a tagbody block already done */
-		for (i = 0; i < block->tagbody.length; i++)
-		    if (XEQL(tree->data.object, block->tagbody.labels[i]) == T)
-			break;
-		if (i == block->tagbody.length)
-		    LispDestroy(mac, "COMPILE: no visible tag %s to GO",
-				STROBJ(tree->data.object));
-		/* Now the jump code is known */
-		tree->data.tree = block->tagbody.codes[i];
 		break;
 	}
     }
@@ -2612,6 +2614,9 @@ LinkBytecode(LispCom *com)
 
     /* First level optimization */
     LinkOptimize_0(com);
+
+    /* Resolve tagbody labels */
+    LinkResolveLabels(com, com->block);
 
     /* Resolve any pending jumps */
     LinkResolveJumps(com, com->block);
