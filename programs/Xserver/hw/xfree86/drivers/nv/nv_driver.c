@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.66 2001/05/15 10:19:39 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.67 2001/06/15 21:22:53 dawes Exp $ */
 
 #include "nv_include.h"
 
@@ -1659,6 +1659,7 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     VisualPtr visual;
     unsigned char *FBStart;
     int width, height, displayWidth;
+    BoxRec AvailFBArea;
 
     /* 
      * First get the ScrnInfoRec
@@ -1829,6 +1830,13 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     if(!pNv->ShadowFB) /* hardware cursor needs to wrap this layer */
 	NVDGAInit(pScreen);
+
+    AvailFBArea.x1 = 0;
+    AvailFBArea.y1 = 0;
+    AvailFBArea.x2 = pScrn->displayWidth;
+    AvailFBArea.y2 = (min(pNv->FbUsableSize, 32*1024*1024)) / 
+                     (pScrn->displayWidth * pScrn->bitsPerPixel / 8);
+    xf86InitFBManager(pScreen, &AvailFBArea);
     
     if (!pNv->NoAccel)
 	NVAccelInit(pScreen);
