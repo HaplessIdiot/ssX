@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.22 2000/02/27 03:09:47 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.23 2000/03/01 16:00:50 tsi Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -55,45 +55,6 @@ xf86MonPtr ConfiguredMonitor;
 Bool xf86DoConfigurePass1 = TRUE;
 Bool foundMouse = FALSE;
 
-static char *
-DDCTimings(unsigned char *c1, unsigned char *c2, unsigned char *c3)
-{
-    /* We just send back the resolutions, as the monitors maximum 
-     * and minimum hsync/vsync values will select the highest possible
-     * refresh rate anyway. 
-     */
-    if (*c2&0x01) {
-	*c2 &= 0xFE;
-	return ("1280x1024");
-    }
-    if (*c3&0x80) {
-	*c3 &= 0x7F;
-	return ("1152x870");
-    }
-    if (*c2&0x1E) {
-	*c2 &= 0xE1;
-	return ("1024x768");
-    }
-    if (*c2&0x20) {
-	*c2 &= 0xCF;
-	return ("832x624");
-    }
-    if ((*c1&0x03) || (*c2&0xC3)) {
-	*c1 &= 0xFC; *c2 &= 0x3C;
-	return ("800x600");
-    }
-    if (*c1&0xC0) {
-	*c1 &= 0x3F;
-	return ("720x400");
-    }
-    if (*c1&0x3C) {
-	*c1 &= 0xC3;
-	return ("640x480");
-    }
-    /* If we get here - no more modes */
-    return NULL;
-}
-
 static void
 GetPciCard(int vendor, int chipType, int *vendor1, int *vendor2, int *card)
 {
@@ -133,7 +94,7 @@ GetPciCard(int vendor, int chipType, int *vendor1, int *vendor2, int *card)
 GDevPtr
 xf86AddDeviceToConfigure(char *driver, pciVideoPtr pVideo, int chipset)
 {
-    int busType, i;
+    int busType, i, j;
 
     if (xf86DoProbe || !xf86DoConfigure || !xf86DoConfigurePass1)
 	return NULL;
@@ -170,8 +131,11 @@ xf86AddDeviceToConfigure(char *driver, pciVideoPtr pVideo, int chipset)
     NewDevice.iDriver = CurrentDriver;
     NewDevice.pVideo = pVideo;
 
-    /* Fill in what we know */
-    NewDevice.GDev.driver = driver;
+    /* Fill in what we know, converting the driver name to lower case */
+    NewDevice.GDev.driver = xnfalloc(strlen(driver) + 1);
+    for (j = 0;  driver[j];  j++)
+	NewDevice.GDev.driver[j] = tolower(driver[j]);
+    NewDevice.GDev.driver[j] = 0;
 
     if (pVideo) {
 	int vendor1, vendor2, card;
