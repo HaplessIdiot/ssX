@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.92 1997/05/24 13:46:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.93 1997/06/03 14:12:31 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -449,16 +449,15 @@ vgaProbe()
       	   vga256InfoRec.bitsPerPixel = 1;
 	   if(!defaultVisualGiven)
 	   	vga256InfoRec.defaultVisual = StaticGray;
-	   xf86weight.red = 1;
-	   xf86weight.green = 1;
-	   xf86weight.blue = 1;
+	   xf86weight.red = 6;
+	   xf86weight.green = 6;
+	   xf86weight.blue = 6;
 	   break;
 	case 4:
 	   vga256InfoRec.depth = 4;
       	   vga256InfoRec.bitsPerPixel = 8;
  	   if(!defaultVisualGiven)
           	vga256InfoRec.defaultVisual = PseudoColor;
-	   xf86bpp = 8;	/* is that correct? */ 
 	   xf86weight.red = 6;
 	   xf86weight.green = 6;
 	   xf86weight.blue = 6;
@@ -552,7 +551,7 @@ vgaProbe()
 
 
 	/* We do this after the option has been verified. */
-	if (vgaBitsPerPixel == 8
+	if (vgaBitsPerPixel <= 8
 	&& OFLG_ISSET(OPTION_DAC_8_BIT, &vga256InfoRec.options)) {
             ErrorF("%s %s: Using 8 bits per color component\n",
                 XCONFIG_GIVEN, vga256InfoRec.name);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.40 1997/05/18 13:58:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.41 1997/05/25 14:41:21 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -2385,7 +2385,7 @@ static char *devicesection_text =
 "    Identifier	\"Generic VGA\"\n"
 "    VendorName	\"Unknown\"\n"
 "    BoardName	\"Unknown\"\n"
-"    Chipset	\"generic\"\n"
+"#   Chipset	\"generic\"\n"
 "\n"
 "#    VideoRam	256\n"
 "\n"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.28 1997/05/22 14:22:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.29 1997/06/06 06:07:21 hohndel Exp $ */
 /*
  * PCI Probe
  *
@@ -44,6 +44,8 @@
 #define PCI_CHIP_MACH64ET	0x4554
 #define PCI_CHIP_MACH64VT	0x5654
 #define PCI_CHIP_MACH64GT	0x4754
+#define PCI_CHIP_MACH64GU	0x4755
+#define PCI_CHIP_MACH64LT	0x4C47
 
 /* Avance Logic */
 #define PCI_CHIP_ALG2301	0x2301
@@ -195,6 +197,8 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_MACH64ET,	"Mach64 ET"},
 				{PCI_CHIP_MACH64VT,	"Mach64 VT"},
 				{PCI_CHIP_MACH64GT,	"Mach64 GT"},
+				{PCI_CHIP_MACH64GU,	"Mach64 GT"},
+				{PCI_CHIP_MACH64LT,	"Mach64 LT"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_AVANCE,	"Avance Logic",	{
 				{PCI_CHIP_ALG2301,	"ALG2301"},

@@ -1,5 +1,4 @@
-/* $XConsortium: lcDB.c /main/11 1996/12/05 11:10:38 swick $ */
-/* $XFree86: xc/lib/X11/lcDB.c,v 3.2 1996/04/15 11:15:54 dawes Exp $ */
+/* $TOG: lcDB.c /main/12 1997/06/02 17:27:50 kaleb $ */
 /*
  *
  * Copyright IBM Corporation 1993
@@ -29,6 +28,10 @@
  *  This is source code modified by FUJITSU LIMITED under the Joint
  *  Development Agreement for the CDE/Motif PST.
  */
+/* $XFree86: xc/lib/X11/lcDB.c,v 3.3 1996/12/23 05:59:59 dawes Exp $ */
+
+
+
 #ifndef	NOT_X_ENV
 
 #include <X11/Xlib.h>
@@ -1214,30 +1217,26 @@ _XlcCreateLocaleDataBase(lcd)
     Database p, database = (Database)NULL;
     XlcDatabase lc_db = (XlcDatabase)NULL;
     XrmQuark name_q;
-    char pathname[256], *name;
+    char *name;
     int i, n;
 
     name = _XlcFileName(lcd, "locale");
     if(name == NULL){
 	return (XPointer)NULL;
     }
-#ifdef __EMX__
-    strcpy(pathname,__XOS2RedirRoot(name));
-#else
-    strcpy(pathname, name);
-#endif
-    Xfree(name);
 
-    name_q = XrmStringToQuark(pathname);
+    name_q = XrmStringToQuark(name);
     for(list = _db_list; list; list = list->next){
 	if(name_q == list->name_q){
 	    list->ref_count++;
+	    Xfree (name);
 	    return XLC_PUBLIC(lcd, xlocale_db) = (XPointer)list->lc_db;
 	}
     }
 
-    database = CreateDatabase(pathname);
+    database = CreateDatabase(name);
     if(database == (Database)NULL){
+	Xfree (name);
 	return (XPointer)NULL;
     }
     n = CountDatabase(database);
@@ -1263,13 +1262,15 @@ _XlcCreateLocaleDataBase(lcd)
     new->next = _db_list;
     _db_list = new;
 
+    Xfree (name);
     return XLC_PUBLIC(lcd, xlocale_db) = (XPointer)lc_db;
 
- err:;
+ err:
     DestroyDatabase(database);
     if(lc_db != (XlcDatabase)NULL){
 	Xfree((char *)lc_db);
     }
+    Xfree (name);
     return (XPointer)NULL;
 }
 

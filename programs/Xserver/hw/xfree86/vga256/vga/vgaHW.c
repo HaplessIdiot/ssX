@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.57 1997/03/27 18:40:18 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.58 1997/04/08 10:14:05 hohndel Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -123,24 +123,6 @@ Bool nv1VGABodge= FALSE;
 #define WHITE_VALUE 0x3F
 #define BLACK_VALUE 0x00
 #define OVERSCAN_VALUE 0x01
-
-static CARD32
-vgaOffMode(
-#if NeedFunctionPrototypes
-     OsTimerPtr	/* timer */,
-     CARD32	/* now */,
-     pointer	/* arg */
-#endif
-);
-
-static CARD32
-vgaSuspendMode(
-#if NeedFunctionPrototypes
-     OsTimerPtr	/* timer */,
-     CARD32	/* now */,
-     pointer	/* arg */
-#endif
-);
 
 static Bool
 setExternClock(

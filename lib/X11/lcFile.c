@@ -1,4 +1,4 @@
-/* $XConsortium: lcFile.c /main/6 1996/09/28 16:37:56 rws $ */
+/* $TOG: lcFile.c /main/9 1997/06/03 15:52:47 kaleb $ */
 /*
  *
  * Copyright IBM Corporation 1993
@@ -23,7 +23,6 @@
  * SOFTWARE.
  *
 */
-/* $XFree86: xc/lib/X11/lcFile.c,v 3.6.2.2 1997/05/30 13:40:04 dawes Exp $ */
 #include <stdio.h>
 #include <ctype.h>
 #include "Xlibint.h"
@@ -37,9 +36,34 @@ extern char *getenv();
 
 #define	iscomment(ch)	((ch) == '#' || (ch) == '\0')
 #define isreadable(f)	((access((f), R_OK) != -1) ? 1 : 0)
-/*
-#define	isspace(ch)	((ch) == ' ' || (ch) == '\t' || (ch) == '\n')
-*/
+
+#define XLC_BUFSIZE 256
+
+#ifndef X_NOT_POSIX
+#ifdef _POSIX_SOURCE
+#include <limits.h>
+#else
+#define _POSIX_SOURCE
+#include <limits.h>
+#undef _POSIX_SOURCE
+#endif
+#endif
+#ifndef PATH_MAX
+#ifdef WIN32
+#define PATH_MAX 512
+#else
+#include <sys/param.h>
+#endif
+#ifndef PATH_MAX
+#ifdef MAXPATHLEN
+#define PATH_MAX MAXPATHLEN
+#else
+#define PATH_MAX 1024
+#endif
+#endif
+#endif
+
+#define NUM_LOCALEDIR	64
 
 static int
 parse_line(line, argv, argsize)
@@ -70,13 +94,7 @@ parse_line(line, argv, argsize)
     return argc;
 }
 
-#ifndef __EMX__
-#define LC_PATHDELIM ':'
-#else
-#define LC_PATHDELIM ';'
-#endif
-
-
+/* parse the colon separated list in path into argv */
 int
 _XlcParsePath(path, argv, argsize)
     char *path;
@@ -86,7 +104,7 @@ _XlcParsePath(path, argv, argsize)
     char *p = path;
     int i, n;
 
-    while((p = strchr(p, LC_PATHDELIM)) != NULL){
+    while((p = strchr(p, ':')) != NULL){
 	*p = ' ';	/* place space on delimter */
     }
     n = parse_line(path, argv, argsize);
@@ -127,45 +145,30 @@ xlocaledir(buf, buf_len)
 	}
     }
     if (len < buf_len)
-#ifndef __EMX__
-	strncpy(p, XLOCALEDIR, buf_len - len);
-#else
-	strncpy(p,__XOS2RedirRoot(XLOCALEDIR), buf_len - len);
-#endif
+	strncpy(p, XLOCALEDIR, buf_len-len);
     buf[buf_len-1] = '\0';
 }
 
 enum { LtoR, RtoL };
 
 static char *
-_XlcResolveName(lc_name, file_name, direction)
+resolve_name(lc_name, file_name, direction)
     char *lc_name;
     char *file_name;
     int direction;	/* mapping direction */
 {
     FILE *fp;
-    char buf[BUFSIZE], *name = NULL;
+    char buf[XLC_BUFSIZE], *name = NULL;
 
     fp = fopen(file_name, "r");
     if(fp == (FILE *)NULL){
 	return NULL;
     }
 
-    while(fgets(buf, BUFSIZE, fp) != NULL){
+    while(fgets(buf, XLC_BUFSIZE, fp) != NULL){
 	char *p = buf;
 	int n;
 	char *args[2], *from, *to;
-#ifdef __EMX__  /* Take out CR under OS/2 */
-	int len;
-
-	len=strlen(p);
-	if(len>1){
-	   if(*(p+len-2) == '\r' && *(p+len-1) == '\n'){
-	       *(p+len-2) = '\n';
-	       *(p+len-1) = '\0';
-	   }
-	}
-#endif
 	while(isspace(*p)){
 	    ++p;
 	}
@@ -219,32 +222,29 @@ _XlcFileName(lcd, category)
     XLCd lcd;
     char *category;
 {
-    char lc_name[BUFSIZE];
-    char cat[BUFSIZE], dir[BUFSIZE];
+    char *siname;
+    char cat[XLC_BUFSIZE], dir[XLC_BUFSIZE];
     int i, n;
-    char *args[256];
+    char *args[NUM_LOCALEDIR];
     char *file_name = NULL;
 
     if(lcd == (XLCd)NULL){
 	return NULL;
     }
 
-    if(! _XlcResolveLocaleName(XLC_PUBLIC(lcd, siname), lc_name,
-			       NULL, NULL, NULL)){
-	return NULL;
-    }
+    siname = XLC_PUBLIC(lcd, siname);
 
     lowercase(cat, category);
-    xlocaledir(dir,BUFSIZE);
-    n = _XlcParsePath(dir, args, 256);
+    xlocaledir(dir,XLC_BUFSIZE);
+    n = _XlcParsePath(dir, args, NUM_LOCALEDIR);
     for(i = 0; i < n; ++i){
-	char buf[BUFSIZE], *name;
+	char buf[PATH_MAX], *name;
 
 	name = NULL;
 	if ((5 + (args[i] ? strlen (args[i]) : 0) +
-	    (cat ? strlen (cat) : 0)) < BUFSIZE) {
+	    (cat ? strlen (cat) : 0)) < PATH_MAX) {
 	    sprintf(buf, "%s/%s.dir", args[i], cat);
-	    name = _XlcResolveName(lc_name, buf, RtoL);
+	    name = resolve_name(siname, buf, RtoL);
 	}
 	if(name == NULL){
 	    continue;
@@ -275,153 +275,70 @@ _XlcFileName(lcd, category)
 #endif
 
 int
-_XlcResolveLocaleName(lc_name, full_name, language, territory, codeset)
-    char *lc_name;
-    char *full_name;
-    char *language;
-    char *territory;
-    char *codeset;
+_XlcResolveLocaleName(lc_name, pub)
+    char* lc_name;
+    XLCdPublicPart* pub;
 {
-    char dir[BUFSIZE], buf[BUFSIZE], *name = NULL;
-    int i, n;
-    char *args[256];
+    char dir[PATH_MAX], buf[PATH_MAX], *name = NULL;
+    char *dst;
+    int i, n, len, sinamelen;
+    char *args[NUM_LOCALEDIR];
     static char locale_alias[] = LOCALE_ALIAS;
 
-    xlocaledir(dir,BUFSIZE);
-    n = _XlcParsePath(dir, args, 256);
+    xlocaledir (dir, PATH_MAX);
+    n = _XlcParsePath(dir, args, NUM_LOCALEDIR);
     for(i = 0; i < n; ++i){
 	if ((2 + (args[i] ? strlen (args[i]) : 0) + 
-	    strlen (locale_alias)) < BUFSIZE) {
-	    sprintf(buf, "%s/%s", args[i], locale_alias);
-	    name = _XlcResolveName(lc_name, buf, LtoR);
+	    strlen (locale_alias)) < PATH_MAX) {
+	    sprintf (buf, "%s/%s", args[i], locale_alias);
+	    name = resolve_name (lc_name, buf, LtoR);
 	}
 	if(name != NULL){
 	    break;
 	}
     }
 
-    if(name != NULL){
-	if(strlen(name) < BUFSIZE - 1){
-	    strcpy(buf, name);
-	}else{
-	    fprintf(stderr, "Warning: locale \"%s\" is too long, ignored\n",
-		    name);
-	    *buf = '\0';
-	}
-	Xfree(name);
-    }else{
-	if(strlen(lc_name) < BUFSIZE - 1){
-	    strcpy(buf, lc_name);
-	}else{
-	    fprintf(stderr, "Warning: locale \"%s\" is too long, ignored\n",
-		    lc_name);
-	    *buf = '\0';
-	}
-    }
-    if(full_name != NULL){
-	strcpy(full_name, buf);
+    if (name == NULL) {
+	/* vendor locale name == Xlocale name, no expansion of alias */
+	pub->siname = Xmalloc (strlen (lc_name) + 1);
+	strcpy (pub->siname, lc_name);
+    } else {
+	pub->siname = name;
     }
 
-    if(language || territory || codeset){
-	char *ptr, *name_p;
-	/*
-	 * Decompose locale name
-	 */
-	if(language) *language = '\0';
-	if(territory) *territory = '\0';
-	if(codeset) *codeset = '\0';
-
-	name_p = buf;
-	ptr = strchr(name_p, '_');
-	if (!ptr)
-	    ptr = strchr(name_p, '.');
-	if (!ptr)
-	    ptr = name_p + strlen(name_p);
-
-	/*
-	 * The size of the language, territory, codset buffers is 128 in
-	 * initialize() in lcPublic.c
-	 */
-	if (language) {
-	    if (ptr - name_p < 128) {
-		strncpy(language, name_p, ptr - name_p);
-		language[ptr - name_p] = '\0';
-	    } else {
-		fprintf(stderr,
-	      "Warning: language part of locale \"%s\" is too long, ignored\n",
-			buf);
-	    }
-	}
-	if (*ptr == '_') {
-	    name_p = ptr + 1;
-	    ptr = strchr(name_p, '.');
-	    if (!ptr)
-		ptr = name_p + strlen(name_p);
-	    if (territory) {
-		if (ptr - name_p < 128) {
-		    strncpy(territory, name_p, ptr - name_p);
-		    territory[ptr - name_p] = '\0';
-		} else {
-		    fprintf(stderr,
-	     "Warning: territory part of locale \"%s\" is too long, ignored\n",
-			    buf);
-		}
-	    }
-	}
-	if (*ptr == '.') {
-	    name_p = ptr + 1;
-	    ptr = name_p + strlen(name_p);
-	    if (codeset) {
-		if (ptr - name_p < 128) {
-		    strcpy(codeset, name_p);
-		} else {
-		    fprintf(stderr,
-		"Warning: codeset part of locale \"%s\" is too long, ignored\n",
-			    buf);
-		}
-	    }
-	}
+    sinamelen = strlen (pub->siname);
+    if (sinamelen == 1 && pub->siname[0] == 'C') {
+	pub->language = pub->siname;
+	pub->territory = pub->codeset = NULL;
+	return 1;
     }
 
-    return (buf[0] != '\0') ? 1 : 0;
-}
+    /* 
+     * pub->siname is in the format <lang>_<terr>.<codeset>, typical would
+     * be "en_US.ISO8859-1", "en_US.utf8", or "ru_RU.KOI-8"
+     */
+    pub->siname = Xrealloc (pub->siname, 2 * (sinamelen + 1));
 
-/************************************************************************/
-#ifndef	LOCALE_DIR
-#define	LOCALE_DIR	"locale.dir"
-#endif
+    /* language */
+    dst = &pub->siname[sinamelen + 1];
+    strcpy (dst, pub->siname);
+    pub->language = dst;
 
-int
-_XlcResolveDBName(lc_name, file_name)
-    char *lc_name;
-    char *file_name;
-{
-    char dir[BUFSIZE], buf[BUFSIZE], *name = NULL;
-    int i, n;
-    char *args[256];
-    static char locale_dir[] = LOCALE_DIR;
+    /* territory */
+    dst = strchr (dst, '_');
+    if (dst) {
+	*dst = '\0';
+	pub->territory = ++dst;
+    }
 
-    xlocaledir(dir,BUFSIZE);
-    n = _XlcParsePath(dir, args, 256);
-    for(i = 0; i < n; ++i){
-	if ((2 + (args[i] ? strlen (args[i]) : 0) + 
-	    strlen (locale_dir)) < BUFSIZE) {
-	    sprintf(buf, "%s/%s", args[i], locale_dir);
-	    name = _XlcResolveName(lc_name, buf, RtoL);
-	}
-	if(name != NULL){
-	    break;
-	}
+    /* codeset */
+    dst = strchr (dst, '.');
+    if (dst) {
+	*dst = '\0';
+	pub->codeset = ++dst;
     }
-    if(name == NULL){
-	return 0;
-    }
-    strcpy(buf, name);
-    Xfree(name);
-    if(file_name != NULL){
-	strcpy(file_name, buf);
-    }
-    return 1;
+
+    return (pub->siname[0] != '\0') ? 1 : 0;
 }
 
 /************************************************************************/

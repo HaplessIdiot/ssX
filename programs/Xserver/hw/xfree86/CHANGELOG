@@ -1,4 +1,17 @@
 XFree86 3.9d (xx June 1997)
+ 976. Allow the ChipId and ChipRev values to be overriden from the XF86Config
+      for the Mach64 server.
+ 975. Fix some 1bpp and 4bpp problems (#609, Marc Aurele La France).
+ 974. Changes to allow SuperProbe, Mach64 driver, scanpci and vgaPCI to
+      detect the newer ATI 3D Rage II+ chips (#609, Marc Aurele La France).
+ 973. Allow the server side of the multibuffer extension to compile (#609,
+      Marc Aurele La France).
+ 972. Continue removal of the XF86_VGA16 & XF86_Mono servers (#609,
+      Marc Aurele La France).
+ 971. Add some new keywords to xf86_Config.h (#608, Stuart Anderson).
+ 970. Fix problem building the PC98 loader server (#607, Takaaki Nomura).
+ 969. Fix xdm/Imakefile for OpenBSD (which doesn't have libcrypt)
+      (#606, Matthieu Herrb).
  968. Fix default value for xf86bpp (David Dawes, Dirk Hohndel).
  967. Some cleanups to tseng driver, re-apply the STG1700 RAMDAC changes and
       re-introduce some 1/4bpp checks (#605, Koen Gadeyne).
@@ -19,7 +32,7 @@ XFree86 3.9d (xx June 1997)
       (#600, David Bateman).
  957. Fix build problems in tseng_driver.c (#599, David Bateman).
  956. Fix XF86Setup build problem (#598, Takaaki Nomura).
- 955. Fix yet another fontserver problem (#597, Kaleb Keithley).
+ 955. Fix yet another fontserver problem (#597, Arthur Barstow).
  954. Remove bogus changes to xc/Imakefile (Dirk Hohndel).
  953. Fix incorrect define for DGA (Steve Kump).
 
@@ -4851,4 +4864,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.483 1997/06/03 14:11:12 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.484 1997/06/06 06:07:08 hohndel Exp $

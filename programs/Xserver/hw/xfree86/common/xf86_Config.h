@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.67 1997/05/18 12:12:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.68 1997/06/03 14:11:49 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -211,6 +211,7 @@ static SymTabRec MouseTab[] = {
 #define FONTPATH	1040
 #define RGBPATH		1041
 #define MODULEPATH	1042
+#define LOGFILEPATH	1043
 
 #ifdef INIT_CONFIG
 static SymTabRec FilesTab[] = {
@@ -218,6 +219,7 @@ static SymTabRec FilesTab[] = {
   { FONTPATH,	"fontpath" },
   { RGBPATH,	"rgbpath" },
   { MODULEPATH,	"modulepath" },
+  { LOGFILEPATH,"logfile" },
   { -1,		"" },
 };
 #endif /* INIT_CONFIG */
@@ -262,6 +264,7 @@ static SymTabRec ServerFlagsTab[] = {
 #define VERTREFRESH	1075
 #define MODE		1076
 #define GAMMA		1077
+#define DIMENSIONS	1078
 
 #ifdef INIT_CONFIG
 static SymTabRec MonitorTab[] = {
@@ -276,6 +279,7 @@ static SymTabRec MonitorTab[] = {
   { VERTREFRESH,"vertrefresh" },
   { MODE,	"mode" },
   { GAMMA,	"gamma" },
+  { DIMENSIONS,	"dimensions" },
   { -1,		"" },
 };
 #endif /* INIT_CONFIG */
@@ -547,6 +551,7 @@ static SymTabRec KeyboardTab[] = {
 #define REPEATEDMIDDLE	59
 #define DEVICE_NAME	60
 #define ALWAYSCORE	61
+#define BUTTONS		62
 
 #ifdef INIT_CONFIG
 static SymTabRec PointerTab[] = {
@@ -569,6 +574,7 @@ static SymTabRec PointerTab[] = {
 #ifdef XINPUT
   { ALWAYSCORE,"alwayscore" },
 #endif
+  { BUTTONS,"buttons" },
   { -1,		"" },
 };
 #endif /* INIT_CONFIG */
@@ -625,6 +631,17 @@ static SymTabRec VisualTab[] = {
 };
 #endif /* INIT_CONFIG */
 
+/* Vendor Section keywords */
+#define VENDORNAME	100
+
+#ifdef INIT_CONFIG
+static SymTabRec VendorTab[] = {
+  { ENDSECTION,	"endsection"},
+  { VENDORNAME,		"vendor" },
+  { -1,         "" },
+};
+#endif /* INIT_CONFIG */
+
 #endif /* XCONFIG_FLAGS_ONLY */
 
 #define S3_MODEPRIV_SIZE	4
@@ -657,6 +674,7 @@ static SymTabRec VisualTab[] = {
 #define XCONFIG_VGABASE         20      /* XF86Config or default */
 #define XCONFIG_MODULEPATH      21      /* XF86Config or default */
 #define XCONFIG_MEMCLOCK        22      /* XF86Config or default */
+#define XCONFIG_LOGFILEPATH     23      /* XF86Config or default */
 
 #define XCONFIG_GIVEN		"(**)"
 #define XCONFIG_PROBED		"(--)"
@@ -670,5 +688,11 @@ OFlagSet  GenericXF86ConfigFlag;
 extern OFlagSet  GenericXF86ConfigFlag;
 
 #endif  /* INIT_CONFIG */
+
+void addChipRec(
+#if NeedFunctionPrototypes
+void *
+#endif
+);
 
 #endif /* _xf86_config_h */

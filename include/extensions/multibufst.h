@@ -1,6 +1,6 @@
 /*
  * $XConsortium: multibufst.h,v 1.16 95/06/08 23:20:39 gildea Exp $
- * $XFree86$
+ * $XFree86: xc/include/extensions/multibufst.h,v 3.1 1996/05/06 05:52:39 dawes Exp $
  *
 Copyright (c) 1989  X Consortium
 
@@ -36,6 +36,7 @@ in this Software without prior written authorization from the X Consortium.
 #include "multibuf.h"
 #ifdef _MULTIBUF_SERVER_
 #include "input.h"
+#include "scrnintstr.h"
 #endif
 
 #if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)

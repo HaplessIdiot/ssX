@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.130 1997/06/03 14:11:47 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.131 1997/06/06 06:07:12 hohndel Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1773,10 +1773,12 @@ configPointerSection(MouseDevPtr	mouse_dev,
 	*devicename = strdup(val.str);
 	break;
 
+#ifndef XF86SETUP
 #ifdef XINPUT
     case ALWAYSCORE:
 	xf86AlwaysCore(mouse_dev->local, TRUE);
 	break;
+#endif
 #endif
 	
     case EOF:

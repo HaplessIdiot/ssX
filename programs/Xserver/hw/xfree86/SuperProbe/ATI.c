@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ATI.c,v 3.12 1997/03/27 18:38:11 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ATI.c,v 3.13 1997/05/22 14:22:21 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -117,7 +117,9 @@ int chip, *Chipset;
 				*Chipset = CHIP_ATI264VT;
 			break;
 		case 0x00D3:
+		case 0x00D4:
 		case 0x4754:
+		case 0x4755:
 			if (chip & 0x40000000)
 			{
 				Mach64xTB = TRUE;

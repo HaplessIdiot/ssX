@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.77 1997/05/28 13:24:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.78 1997/06/03 14:11:25 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -547,6 +547,12 @@ static ATIInformationBlock *GetATIInformationBlock(BlockIO)
 	 return &info;
 
    tmp = inl(ioCONFIG_CHIP_ID);
+   if (mach64InfoRec.chipID) {
+	ErrorF("%s %s: Mach64 chipset override, using ChipID 0x%04x instead"
+		" of 0x%04x\n", XCONFIG_GIVEN, mach64InfoRec.name,
+		mach64InfoRec.chipID & CFG_CHIP_TYPE, tmp & CFG_CHIP_TYPE);
+	tmp = (tmp & ~CFG_CHIP_TYPE) | (mach64InfoRec.chipID & CFG_CHIP_TYPE);
+   }
    switch (tmp & CFG_CHIP_TYPE) {
    case MACH64_GX_ID:
 	info.ChipType = MACH64_GX;
@@ -564,6 +570,8 @@ static ATIInformationBlock *GetATIInformationBlock(BlockIO)
 	info.ChipType = MACH64_VT;
 	break;
    case MACH64_GT_ID:
+   case MACH64_GU_ID:
+   case MACH64_GP_ID:
 	info.ChipType = MACH64_GT;
 	break;
    default:
@@ -578,7 +586,14 @@ static ATIInformationBlock *GetATIInformationBlock(BlockIO)
 	info.Mach64_Present = FALSE;
 	return &info;
    }
-   info.ChipRev = (tmp & CFG_CHIP_REV) >> 24;
+   if (mach64InfoRec.chipRev) {
+	ErrorF("%s %s: Mach64 chipset override, using ChipRev 0x%02x instead"
+		" of 0x%02x\n", XCONFIG_GIVEN, mach64InfoRec.name,
+		mach64InfoRec.chipRev & 0xFF, (tmp & CFG_CHIP_REV) >> 24);
+	info.ChipRev = mach64InfoRec.chipRev & 0xFF;
+   } else {
+	info.ChipRev = (tmp & CFG_CHIP_REV) >> 24;
+   }
 #ifdef DEBUG
    ErrorF("CONFIG_CHIP_ID reports: %s rev %d\n",
 	  xf86TokenToString(mach64ChipTable, info.ChipType), info.ChipRev);
@@ -707,6 +722,7 @@ GetATIPCIInformation()
     pciConfigPtr pcrp, *pcrpp;
     Bool found = FALSE;
     int i = 0;
+    int devid;
 
     pcrpp = xf86scanpci(mach64InfoRec.scrnIndex);
 
@@ -716,6 +732,7 @@ GetATIPCIInformation()
     while (pcrp = pcrpp[i]) {
 	if (pcrp->_vendor == PCI_ATI_VENDOR_ID) {
 	    found = TRUE;
+	    devid = pcrp->_device;
 	    switch (pcrp->_device) {
 	    case PCI_MACH64_GX:
 		info.ChipType = MACH64_GX;
@@ -733,6 +750,8 @@ GetATIPCIInformation()
 		info.ChipType = MACH64_VT;
 		break;
 	    case PCI_MACH64_GT:
+	    case PCI_MACH64_GU:
+	    case PCI_MACH64_GP:
 		info.ChipType = MACH64_GT;
 		break;
 	    default:
@@ -789,11 +808,18 @@ GetATIPCIInformation()
     xf86cleanpci();
 
     if (found && xf86Verbose) {
+      if (info.ChipType != MACH64_UNKNOWN) {
 	ErrorF("%s %s: PCI: %s rev %d, Aperture @ 0x%08x,"
 		" %s I/O @ 0x%04x\n", XCONFIG_PROBED, mach64InfoRec.name,
 		xf86TokenToString(mach64ChipTable, info.ChipType),
 		info.ChipRev, info.ApertureBase,
 		info.BlockIO ? "Block" : "Sparse", info.IOBase);
+      } else {
+	ErrorF("%s %s: PCI: unknown ATI (0x%04x) rev %d, Aperture @ 0x%08x,"
+		" %s I/O @ 0x%04x\n", XCONFIG_PROBED, mach64InfoRec.name,
+		devid, info.ChipRev, info.ApertureBase,
+		info.BlockIO ? "Block" : "Sparse", info.IOBase);
+      }
     }
     if (found) {
 	return &info;
@@ -966,7 +992,7 @@ mach64Probe()
 	return(FALSE);
     }
 
-    if (pciInfo) {
+    if (pciInfo && !mach64InfoRec.chipID) {
 	if (pciInfo->ChipType != info->ChipType) {
 	    ErrorF("%s %s: PCI (%s) and CONFIG_CHIP_ID (%s) don't agree on"
 		   " ChipType,\n"
@@ -979,7 +1005,7 @@ mach64Probe()
 	mach64ChipType = info->ChipType;
     }
 
-    if (pciInfo) {
+    if (pciInfo && !mach64InfoRec.chipRev) {
 	if (pciInfo->ChipRev != info->ChipRev) {
 	    ErrorF("%s %s: PCI (%d) and CONFIG_CHIP_ID (%d) don't agree on"
 		   " ChipRev,\n"
