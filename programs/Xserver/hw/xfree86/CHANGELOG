@@ -1,4 +1,7 @@
 XFree86 4.4.99.19 (xx November 2004)
+ 235. Add an experimental "EDID Data" option to allow EDID data to be
+      provided through the config file, and change the type of the
+      DDC/EDID root window property data from signed to unsigned (David Dawes).
  234. Change the server's infrastructure to generate a tree of SBUS display
       adapters, rather than a simple list (Marc La France).
  233. Fix a typo in xeyes/Eyes.c (Bugzilla #1519, Phillip Vandry).
@@ -19196,7 +19199,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3358 2004/12/07 16:35:34 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3359 2004/12/07 21:53:44 tsi Exp $
 
 
 
