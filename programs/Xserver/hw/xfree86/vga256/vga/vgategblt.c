@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgategblt.c,v 3.2 1996/02/04 09:15:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgategblt.c,v 3.3 1996/12/19 10:02:32 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -49,7 +49,7 @@ SOFTWARE.
 /* $XConsortium: vgategblt.c /main/2 1995/11/13 09:27:18 kaleb $ */
 
 #include	"vga256.h"
-#include	<compiler.h>
+#include	"compiler.h"
 
 #define MFB_CONSTS_ONLY
 #include "maskbits.h"
