@@ -1,4 +1,6 @@
 XFree86 4.2.99.3 (xx November 2002)
+ 515. When compiled with GCC, force imake to generate Makefile's using GCC's
+      preprocessor rather than a system-provided one (Marc La France).
  514. Replace hard-coded "lib" directory names with LibDirName in X11.tmpl
       (#5480, Mike Harris).
  513. Add some README files for XKB and it's configuration files (#5479, 5483,
@@ -15563,4 +15565,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2401 2002/11/22 03:56:37 paulo Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2402 2002/11/22 04:27:01 dawes Exp $
