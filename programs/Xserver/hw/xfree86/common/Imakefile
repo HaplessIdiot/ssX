@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.111 2000/02/08 13:13:03 eich Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.113 2000/02/23 19:16:42 alanh Exp $
 
 
 
@@ -157,7 +157,11 @@ OFILES = \
 CONSDEFINES = XFree86ConsoleDefines
 EXP_DEFINES = -DEXPIRY_TIME=XF86ServerExpiry $(EXP_FORCE_DEFINES)
 PROJECTROOT = ProjectRoot
-XCONFIGDEFINES = -DPROJECTROOT='"$(PROJECTROOT)"'
+    DRIVERS = XF86CardDrivers
+   IDRIVERS = mouse XInputDrivers
+XCONFIGDEFINES = -DPROJECTROOT='"$(PROJECTROOT)"' \
+		 -DDRIVERS='"$(DRIVERS)"' \
+		 -DIDRIVERS='"$(IDRIVERS)"'
 
 #if defined(SunArchitecture) && defined(SVR4Architecture) && OSMinorVersion >= 8
   OSDEFINES = -DSOL8
