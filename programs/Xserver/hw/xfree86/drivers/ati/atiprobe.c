@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.58 2003/07/02 17:31:29 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.59 2003/09/24 02:43:18 dawes Exp $ */
 /*
  * Copyright 1997 through 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -1753,6 +1753,7 @@ ATIProbe
                     case ATI_CHIP_R300:
                     case ATI_CHIP_RV350:
                     case ATI_CHIP_R350:
+                    case ATI_CHIP_R360:
                         DoRadeon = TRUE;
                         continue;
 

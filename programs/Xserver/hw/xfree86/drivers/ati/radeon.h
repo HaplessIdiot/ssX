@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.40 2003/07/02 17:31:29 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.41 2003/09/28 20:15:54 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -94,20 +94,6 @@ do {									\
 #define RADEONPTR(pScrn)      ((RADEONInfoPtr)(pScrn)->driverPrivate)
 
 typedef struct {
-				/* All values in XCLKS    */
-    int               ML;            /* Memory Read Latency    */
-    int               MB;            /* Memory Burst Length    */
-    int               Trcd;          /* RAS to CAS delay       */
-    int               Trp;           /* RAS percentage         */
-    int               Twr;           /* Write Recovery         */
-    int               CL;            /* CAS Latency            */
-    int               Tr2w;          /* Read to Write Delay    */
-    int               Rloop;         /* Loop Latency           */
-    int               Rloop_fudge;   /* Add to ML to get Rloop */
-    char              *name;
-} RADEONRAMRec, *RADEONRAMPtr;
-
-typedef struct {
 				/* Common registers */
     CARD32            ovr_clr;
     CARD32            ovr_wid_left_right;
@@ -144,6 +130,7 @@ typedef struct {
     CARD32            crtc_pitch;
     CARD32            disp_merge_cntl;
     CARD32            grph_buffer_cntl;
+    CARD32            crtc_more_cntl;
 
 				/* CRTC2 registers */
     CARD32            crtc2_gen_cntl;
@@ -261,8 +248,14 @@ typedef enum {
     CHIP_FAMILY_RV280,
     CHIP_FAMILY_R300,
     CHIP_FAMILY_R350,
-    CHIP_FAMILY_RV350
+    CHIP_FAMILY_RV350,
+    CHIP_FAMILY_LAST
 } RADEONChipFamily;
+
+typedef struct {
+    CARD32 freq;
+    CARD32 value;
+}RADEONTMDSPll;
 
 typedef struct {
     EntityInfoPtr     pEnt;
@@ -325,7 +318,6 @@ typedef struct {
     int               FeedbackDivider;
     int               PostDivider;
     Bool              UseBiosDividers;
-
 				/* EDID data using DDC interface */
     Bool              ddc_bios;
     Bool              ddc1;
@@ -334,7 +326,12 @@ typedef struct {
     CARD32            DDCReg;
 
     RADEONPLLRec      pll;
-    RADEONRAMPtr      ram;
+    RADEONTMDSPll     tmds_pll[4];
+    int               RamWidth;
+    float	      sclk;		/* in MHz */
+    float	      mclk;		/* in MHz */
+    Bool	      IsDDR;
+    int               DispPriority;
 
     RADEONSaveRec     SavedReg;         /* Original (text) mode              */
     RADEONSaveRec     ModeReg;          /* Current mode                      */
