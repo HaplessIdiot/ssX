@@ -116,6 +116,8 @@ Display *XOpenDisplay (display)
 	char *conn_auth_name, *conn_auth_data;
 	int conn_auth_namelen, conn_auth_datalen;
 	unsigned long mask;
+       long int conn_buf_size;
+       char *xlib_buffer_size;
 
 	bzero((char *) &client, sizeof(client));
 	bzero((char *) &prefix, sizeof(prefix));
@@ -249,11 +251,24 @@ Display *XOpenDisplay (display)
 	}	
 
 	/* Set up the output buffers. */
-	if ((dpy->bufptr = dpy->buffer = Xcalloc(1, BUFSIZE)) == NULL) {
-	        OutOfMemory (dpy, setup);
-		return(NULL);
-	}
-	dpy->bufmax = dpy->buffer + BUFSIZE;
+#ifndef XLIBDEFAULTBUFSIZE
+#define XLIBDEFAULTBUFSIZE 16384 /* 16k */
+#endif
+#ifndef XLIBMINBUFSIZE
+#define XLIBMINBUFSIZE BUFSIZE /* old default buffer size */
+#endif
+    if ((xlib_buffer_size = getenv("XLIBBUFFERSIZE")) == NULL)
+        conn_buf_size = XLIBDEFAULTBUFSIZE;
+    else
+        conn_buf_size = 1024 * strtol(xlib_buffer_size, NULL, 10);
+    if (conn_buf_size < XLIBMINBUFSIZE)
+        conn_buf_size = XLIBMINBUFSIZE;
+
+    if ((dpy->bufptr = dpy->buffer = Xcalloc(1, conn_buf_size)) == NULL) {
+         OutOfMemory (dpy, setup);
+         return(NULL);
+    }
+    dpy->bufmax = dpy->buffer + conn_buf_size;
  
 	/* Set up the input event queue and input event queue parameters. */
 	dpy->head = dpy->tail = NULL;

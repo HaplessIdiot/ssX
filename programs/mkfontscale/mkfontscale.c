@@ -19,7 +19,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.8 2003/06/30 16:52:57 eich Exp $ */
+/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.9 2003/07/01 13:05:34 eich Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -74,32 +74,36 @@ char *outfilename;
 
 #define countof(_a) (sizeof(_a)/sizeof((_a)[0]))
 
-int doDirectory(char*, int, ListPtr);
+static int doDirectory(char*, int, ListPtr);
 static int checkEncoding(FT_Face face, char *encoding_name);
 static int checkExtraEncoding(FT_Face face, char *encoding_name, int found);
 static int find_cmap(int type, int pid, int eid, FT_Face face);
 static char* notice_foundry(char *notice);
 static char* vendor_foundry(signed char *vendor);
-int readFontScale(HashTablePtr entries, char *dirname);
+static int readFontScale(HashTablePtr entries, char *dirname);
 ListPtr makeXLFD(char *filename, FT_Face face, int);
+static int readEncodings(ListPtr encodings, char *dirname);
 
 static FT_Library ft_library;
 static float bigEncodingFuzz = 0.02;
 
+static int relative;
 static int doScalable;
 static int doBitmaps;
-static int doEncodings;
+static int onlyEncodings;
+static int onlyEncodings;
 static ListPtr encodingsToDo;
 static int reencodeLegacy;
-char *encodingPrefix = NULL;
+static char *encodingPrefix;
+static char *exclusionSuffix;
 
 static void
 usage(void)
 {
     fprintf(stderr, 
-            "mkfontscale [ -b ] [ -s ] [ -o filename ] \n"
-            "            [ -x encoding ] [ -f fuzz ] [ -l ] "
-            "[ -e directory ] [ -p prefix ]\n"
+            "mkfontscale [ -b ] [ -s ] [ -o filename ] [-x suffix ]\n"
+            "            [ -a encoding ] [ -f fuzz ] [ -l ] "
+            "            [ -e directory ] [ -p prefix ] [ -n ] [ -r ] \n"
             "            [ directory ]...\n");
 }
 
@@ -108,8 +112,11 @@ main(int argc, char **argv)
 {
     int argn;
     FT_Error ftrc;
-    int rc;
+    int rc, ll = 0;
     char prefix[NPREFIX];
+
+    encodingPrefix = NULL;
+    exclusionSuffix = NULL;
 
     if(getcwd(prefix, NPREFIX - 1) == NULL) {
         perror("Couldn't get cwd");
@@ -117,6 +124,7 @@ main(int argc, char **argv)
     }
     if(prefix[strlen(prefix) - 1] != '/')
         strcat(prefix, "/");
+    encodingPrefix = dsprintf("%s", prefix);
 
     outfilename = NULL;
 
@@ -127,8 +135,9 @@ main(int argc, char **argv)
                                NULL, 0);
     doBitmaps = 0;
     doScalable = 1;
+    onlyEncodings = 0;
+    relative = 0;
     reencodeLegacy = 1;
-    doEncodings = 0;
     encodingsToDo = NULL;
 
     argn = 1;
@@ -138,7 +147,14 @@ main(int argc, char **argv)
         if(argv[argn][1] == '-') {
             argn++;
             break;
-        } else if(strcmp(argv[argn], "-x") == 0) {
+        } else if (strcmp(argv[argn], "-x") == 0) {
+            if(argn >= argc - 1) {
+                usage();
+                exit(1);
+            }
+            exclusionSuffix = argv[argn + 1];
+            argn += 2;
+        } else if(strcmp(argv[argn], "-a") == 0) {
             if(argn >= argc - 1) {
                 usage();
                 exit(1);
@@ -154,14 +170,14 @@ main(int argc, char **argv)
                 usage();
                 exit(1);
             }
-            strcpy(prefix, argv[argn + 1]);
+            free(encodingPrefix);
+            encodingPrefix = dsprintf("%s", argv[argn + 1]);
             argn += 2;
         } else if(strcmp(argv[argn], "-e") == 0) {
             if(argn >= argc - 1) {
                 usage();
                 exit(1);
             }
-            doEncodings = 1;
             rc = readEncodings(encodingsToDo, argv[argn + 1]);
             if(rc < 0)
                 exit(1);
@@ -171,6 +187,12 @@ main(int argc, char **argv)
             argn++;
         } else if(strcmp(argv[argn], "-s") == 0) {
             doScalable = 0;
+            argn++;
+        } else if(strcmp(argv[argn], "-n") == 0) {
+            onlyEncodings = 1;
+            argn++;
+        } else if(strcmp(argv[argn], "-r") == 0) {
+            relative = 1;
             argn++;
         } else if(strcmp(argv[argn], "-l") == 0) {
             reencodeLegacy = !reencodeLegacy;
@@ -199,8 +221,6 @@ main(int argc, char **argv)
         }
     }
 
-    encodingPrefix = dsprintf("%s", prefix);
-
     if(outfilename == NULL) {
         if(doBitmaps)
             outfilename = "fonts.dir";
@@ -213,13 +233,14 @@ main(int argc, char **argv)
         fprintf(stderr, "Could not initialise FreeType library: %d\n", ftrc);
         exit(1);
     }
-        
+
+    ll = listLength(encodingsToDo);
 
     if (argn == argc)
-        doDirectory(".", doEncodings, encodingsToDo);
+        doDirectory(".", ll, encodingsToDo);
     else
         while(argn < argc) {
-            doDirectory(argv[argn], doEncodings, encodingsToDo);
+            doDirectory(argv[argn], ll, encodingsToDo);
             argn++;
         }
     return 0;
@@ -629,7 +650,7 @@ makeXLFD(char *filename, FT_Face face, int isBitmap)
     return xlfd;
 }
 
-int
+static int
 readFontScale(HashTablePtr entries, char *dirname)
 {
     int n = strlen(dirname);
@@ -695,11 +716,11 @@ filePrio(char *filename)
     return 0;
 }
 
-int
-doDirectory(char *dirname_given, int doEncodings, ListPtr encodingsToDo)
+static int
+doDirectory(char *dirname_given, int numEncodings, ListPtr encodingsToDo)
 {
-    char *dirname, *fontscale_name, *filename;
-    FILE *fontscale;
+    char *dirname, *fontscale_name, *filename, *encdir;
+    FILE *fontscale, *encfile;
     DIR *dirp;
     struct dirent *entry;
     FT_Error ftrc;
@@ -708,7 +729,10 @@ doDirectory(char *dirname_given, int doEncodings, ListPtr encodingsToDo)
     HashTablePtr entries;
     HashBucketPtr *array;
     int i, n, found, rc;
-    int isBitmap;
+    int isBitmap=0,xl=0;
+
+    if (exclusionSuffix)
+        xl = strlen (exclusionSuffix);
 
     i = strlen(dirname_given);
     if(i == 0)
@@ -723,27 +747,9 @@ doDirectory(char *dirname_given, int doEncodings, ListPtr encodingsToDo)
         exit(1);
     }
 
-    if(doEncodings) {
-        char *e = dsprintf("%s%s", dirname, "encodings.dir");
-        FILE *out;
-        ListPtr l;
-
-        if(e == NULL) {
-            perror("encodings");
-            exit(1);
-        }
-        unlink(e);
-        out = fopen(e, "w");
-        if(out == NULL) {
-            perror("open(encodings.dir)");
-            exit(1);
-        }
-        fprintf(out, "%d\n", listLength(encodingsToDo));
-        for(l = encodingsToDo; l; l = l->next) {
-            fprintf(out, "%s\n", l->value);
-        }
-    }
-
+    if (onlyEncodings) 
+	goto encodings;
+    
     entries = makeHashTable();
     if(doBitmaps && !doScalable) {
         readFontScale(entries, dirname);
@@ -784,6 +790,13 @@ doDirectory(char *dirname_given, int doEncodings, ListPtr encodingsToDo)
         int have_face = 0;
         char *xlfd_name = NULL;
         xlfd = NULL;
+
+	if (xl) {
+	    int dl = strlen (entry->d_name);
+	    if (strcmp (entry->d_name + dl - xl, exclusionSuffix) == 0)
+		continue;
+	}
+
         filename = dsprintf("%s%s", dirname, entry->d_name);
 
         if(doBitmaps)
@@ -915,6 +928,29 @@ doDirectory(char *dirname_given, int doEncodings, ListPtr encodingsToDo)
         fclose(fontscale);
         free(fontscale_name);
     }
+
+ encodings:
+    encdir = dsprintf("%s%s", dirname, "encodings.dir");
+
+    if(encdir == NULL) {
+	perror("encodings");
+	exit(1);
+    }
+    unlink(encdir);
+
+    if (numEncodings) {
+	encfile = fopen(encdir, "w");
+	if(encfile == NULL) {
+	    perror("open(encodings.dir)");
+	    exit(1);
+	}
+        fprintf(encfile, "%d\n", numEncodings);
+        for(lp = encodingsToDo; lp; lp = lp->next) {
+            fprintf(encfile, "%s\n", lp->value);
+        }
+	fclose (encfile);
+    }
+
     free(dirname);
     return 1;
 }
@@ -1172,11 +1208,10 @@ vendor_foundry(signed char *vendor)
     return NULL;
 }
 
-int
+static int
 readEncodings(ListPtr encodings, char *dirname)
 {
     char *fullname;
-    int slash;
     DIR *dirp;
     struct dirent *file;
     char **names, **name;
@@ -1203,7 +1238,7 @@ readEncodings(ListPtr encodings, char *dirname)
             continue;
 
         for(name = names; *name; name++) {
-            if(fullname[0] != '/') {
+            if(fullname[0] != '/' && !relative) {
                 char *n;
                 n = dsprintf("%s%s", encodingPrefix, fullname);
                 if(n == NULL) {
@@ -1211,10 +1246,12 @@ readEncodings(ListPtr encodings, char *dirname)
                     closedir(dirp);
                     return -1;
                 }
-                free(fullname);
-                fullname = n;
+                encodingsToDo = listConsF(encodingsToDo, "%s %s", *name, n);
+                free(n);
+            } else {
+                encodingsToDo = 
+                    listConsF(encodingsToDo, "%s %s", *name, fullname);
             }
-            encodingsToDo = listConsF(encodingsToDo, "%s %s", *name ,fullname);
             if(encodingsToDo == NULL) {
                 fprintf(stderr, "Couldn't allocate encodings\n");
                 closedir(dirp);

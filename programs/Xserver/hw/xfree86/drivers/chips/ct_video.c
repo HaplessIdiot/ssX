@@ -625,8 +625,8 @@ CHIPSDisplayVideo(
 
     /* Vertical Zoom */
     if (drw_h > src_h) {
-        m1f = m1f | 0x80;
-	m1e = m1e | 0x08; /* set V-interpolation */
+        m1f = m1f | 0x80; /* set V-interpolation */
+	m1e = m1e | 0x08; 
 	tmp = cPtr->VideoZoomMax * src_h / drw_h ;
 	cPtr->writeMR(cPtr, 0x33, tmp);
     }

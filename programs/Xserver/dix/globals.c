@@ -79,6 +79,7 @@ PtrCtrl defaultPointerControl = {
 ClientPtr *clients;
 ClientPtr  serverClient;
 int  currentMaxClients;   /* current size of clients array */
+long maxBigRequestSize = MAX_BIG_REQUEST_SIZE;
 
 WindowPtr *WindowTable;
 

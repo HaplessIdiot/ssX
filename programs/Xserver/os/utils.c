@@ -555,6 +555,7 @@ void UseMsg(void)
     ErrorF("-v                     screen-saver without video blanking\n");
     ErrorF("-wm                    WhenMapped default backing-store\n");
     ErrorF("-x string              loads named extension at init time \n");
+    ErrorF("-maxbigreqsize	   set maximal bigrequest size \n");
 #ifdef PANORAMIX
     ErrorF("+xinerama              Enable XINERAMA extension\n");
     ErrorF("-xinerama              Disable XINERAMA extension\n");
@@ -874,6 +875,24 @@ ProcessCommandLine(int argc, char *argv[])
 	    defaultScreenSaverBlanking = DontPreferBlanking;
 	else if ( strcmp( argv[i], "-wm") == 0)
 	    defaultBackingStore = WhenMapped;
+        else if ( strcmp( argv[i], "-maxbigreqsize") == 0) {
+             if(++i < argc) {
+                 int reqSizeArg = atoi(argv[i]);
+
+                 /* Request size > 128MB does not make much sense... */
+                 if( reqSizeArg > 0 && reqSizeArg < 128 ) {
+                     maxBigRequestSize = (reqSizeArg * 1048576) - 1;
+                 }
+                 else
+                 {
+                     UseMsg();
+                 }
+             }
+             else
+             {
+                 UseMsg();
+             }
+         }
 #ifdef PANORAMIX
 	else if ( strcmp( argv[i], "+xinerama") == 0){
 	    noPanoramiXExtension = FALSE;

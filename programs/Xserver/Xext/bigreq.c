@@ -73,6 +73,7 @@ ProcBigReqDispatch (client)
     REQUEST(xBigReqEnableReq);
     xBigReqEnableReply rep;
     register int n;
+    extern long maxBigRequestSize;
 
     if (client->swapped) {
 	swaps(&stuff->length, n);
@@ -84,7 +85,7 @@ ProcBigReqDispatch (client)
     rep.type = X_Reply;
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
-    rep.max_request_size = MAX_BIG_REQUEST_SIZE;
+    rep.max_request_size = maxBigRequestSize;
     if (client->swapped) {
     	swaps(&rep.sequenceNumber, n);
 	swapl(&rep.max_request_size, n);

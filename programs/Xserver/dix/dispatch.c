@@ -444,7 +444,7 @@ Dispatch(void)
 		client->requestLog[client->requestLogIndex] = MAJOROP;
 		client->requestLogIndex++;
 #endif
-		if (result > (MAX_BIG_REQUEST_SIZE << 2))
+		if (result > (maxBigRequestSize << 2))
 		    result = BadLength;
 		else
 		    result = (* client->requestVector[MAJOROP])(client);

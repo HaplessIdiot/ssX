@@ -71,7 +71,7 @@ SOFTWARE.
 #define MAX_REQUEST_SIZE 65535
 #endif
 #ifndef MAX_BIG_REQUEST_SIZE
-#define MAX_BIG_REQUEST_SIZE 1048575
+#define MAX_BIG_REQUEST_SIZE 4194303
 #endif
 
 typedef pointer	FID;

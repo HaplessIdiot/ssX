@@ -74,6 +74,7 @@ extern int limitNoFile;
 #endif
 extern Bool permitOldBugs;
 extern Bool defeatAccessControl;
+extern long maxBigRequestSize;
 extern char* protNoListen;
 extern Bool blackRoot;
 

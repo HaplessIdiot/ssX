@@ -179,18 +179,18 @@ hashElements(HashTablePtr table)
 }
 
 static int
-key_first_cmp(void *v1, void *v2)
+key_first_cmp(const void *v1, const void *v2)
 {
-    HashBucketPtr *b1 = v1, *b2 = v2;
+    const HashBucketPtr *b1 = v1, *b2 = v2;
     int c1 = strcmp_lwr((*b1)->key, (*b2)->key);
     if(c1 != 0) return c1;
     return strcmp((*b1)->value, (*b2)->value);
 }
 
 static int
-value_first_cmp(void *v1, void *v2)
+value_first_cmp(const void *v1, const void *v2)
 {
-    HashBucketPtr *b1 = v1, *b2 = v2;
+    const HashBucketPtr *b1 = v1, *b2 = v2;
     int c1 = strcmp((*b1)->value, (*b2)->value);
     if(c1 != 0) return c1;
     return strcmp_lwr((*b1)->key, (*b2)->key);
