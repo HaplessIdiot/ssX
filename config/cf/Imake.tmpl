@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.117 2002/02/15 07:36:18 keithp Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.118 2002/03/05 03:52:32 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -392,6 +392,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #ifndef HasPamMisc
 #define HasPamMisc		NO
+#endif
+#ifndef HasGetpeereid
+#define HasGetpeereid		NO
 #endif
 /* byte-order defaults */
 #ifndef ByteOrder
