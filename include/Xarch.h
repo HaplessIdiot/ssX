@@ -37,6 +37,9 @@
 #include <sys/byteorder.h>
 #endif
 #elif defined(CSRG_BASED)
+#ifdef __OpenBSD__
+#include <sys/types.h>
+#endif
 #include <machine/endian.h>
 #elif defined(linux)
 #if defined __STRICT_ANSI__

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.26 1998/10/25 07:12:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.27 1998/11/15 04:30:28 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -166,6 +166,7 @@ extern CARD32 MGAAtypeNoBLK[16];
 #define	NICE_DASH_PATTERN	0x00000020
 #define	TWO_PASS_COLOR_EXPAND	0x00000040
 #define	MGA_NO_PLANEMASK	0x00000080
+#define USE_LINEAR_EXPANSION	0x00000100
 
 
 #define TRANSPARENCY_KEY	255

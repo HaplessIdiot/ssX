@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.59 1998/11/29 10:50:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.60 1998/12/05 14:40:11 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -71,6 +71,8 @@
 #include "mibstore.h"
 
 #include "micmap.h"
+
+#include "xf86DDC.h"
 
 /*
  * If using cfb, cfb.h is required.  Select the others for the bpp values
@@ -233,6 +235,7 @@ static const char *vgahwSymbols[] = {
     "vgaHWLock",
     "vgaHWFreeHWRec",
     "vgaHWSaveScreen",
+    "vgaHWddc1SetSpeed",
     NULL
 };
 
@@ -260,6 +263,20 @@ static const char *ramdacSymbols[] = {
     "xf86DestroyCursorInfoRec",
     NULL
 };
+
+static const char *ddcSymbols[] = {
+    "xf86PrintEDID",
+    "xf86DoEDID_DDC1",
+    NULL
+};
+
+/* Not used yet
+static const char *i2cSymbols[] = {
+    "xf86CreateI2CBusRec",
+    "xf86I2CBusInit",
+    NULL
+};
+*/
 
 #ifdef XFree86LOADER
 
@@ -313,7 +330,7 @@ mgaSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 * might refer to.
 	 */
 	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols,
-			  ramdacSymbols, NULL);
+			  ramdacSymbols, ddcSymbols, NULL);
 
 	/*
 	 * The return value must be non-NULL on success even though there
@@ -1422,6 +1439,15 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	}
 	xf86LoaderReqSymLists(ramdacSymbols, NULL);
     }
+    /* Load DDC if needed */
+    /* This gives us DDC1 - we should be able to get DDC2B using i2c */
+    if (pMga->ddc1Read) {
+	if (!xf86LoadSubModule(pScrn, "ddc")) {
+	    MGAFreeRec(pScrn);
+	    return FALSE;
+	}
+	xf86LoaderReqSymLists(ddcSymbols, NULL);
+    }
 
     return TRUE;
 }
@@ -1845,6 +1871,12 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	(pMga->Overlay8Plus24 ? 0 : CMAP_PALETTED_TRUECOLOR) |
 			CMAP_RELOAD_ON_MODE_SWITCH))	
 	return FALSE;
+
+    /* Initialize DDC and output Monitor info */
+    /* This gives us DDC1 - we should be able to get DDC2B using i2c */
+    if (pMga->ddc1Read) {
+	xf86PrintEDID( xf86DoEDID_DDC1(pScrn->scrnIndex, vgaHWddc1SetSpeed, pMga->ddc1Read ) );
+    }
 
 #ifdef DPMSExtension
     xf86DPMSInit(pScreen, MGADisplayPowerManagementSet, 0);

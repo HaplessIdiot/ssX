@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.5 1998/10/25 07:12:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.6 1998/12/06 06:08:41 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -18,10 +18,7 @@
 #include "xf86fbman.h"
 #include "servermd.h"
 
-#define MAX_PREALLOC_BOXES	128
-#define MAX_PREALLOC_POINTS	256
-#define MAX_PREALLOC_INTS	MAX_PREALLOC_POINTS  /* must be >= 255 */
-#define MAX_PREALLOC_POINTERS   (255 + 7)
+#define MAX_PREALLOC_MEM	65536	/* MUST be >= 1024 */
 
 #define MIN_OFFPIX_SIZE		(320*200)
 
@@ -93,14 +90,8 @@ XAADestroyInfoRec(XAAInfoRecPtr infoRec)
     if(infoRec->ClosePixmapCache)
 	(*infoRec->ClosePixmapCache)(infoRec->pScrn->pScreen);
    
-    if(infoRec->PreAllocBoxes)
-	xfree(infoRec->PreAllocBoxes);
-
-    if(infoRec->PreAllocDDXPointRecs)
-	xfree(infoRec->PreAllocDDXPointRecs);
-
-    if(infoRec->PreAllocInts)
-	xfree(infoRec->PreAllocInts);
+    if(infoRec->PreAllocMem)
+	xfree(infoRec->PreAllocMem);
 
     if(infoRec->PixmapCachePrivate)
 	xfree(infoRec->PixmapCachePrivate);
@@ -179,27 +170,10 @@ XAAInit(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     pScrn->LeaveVT = XAALeaveVT;
 
 
-    infoRec->PreAllocBoxes = 
-		(BoxPtr)xalloc(MAX_PREALLOC_BOXES * sizeof(BoxRec));
-    if(infoRec->PreAllocBoxes)
-    	infoRec->NumPreAllocBoxes = MAX_PREALLOC_BOXES;
-
-
-    infoRec->PreAllocDDXPointRecs = 
-		(DDXPointPtr)xalloc(MAX_PREALLOC_POINTS * sizeof(DDXPointRec));
-    if(infoRec->PreAllocDDXPointRecs)
-    	infoRec->NumPreAllocDDXPointRecs = MAX_PREALLOC_POINTS;
-
-
-    infoRec->PreAllocInts = 
-		(int*)xalloc(MAX_PREALLOC_INTS * sizeof(int));
-    if(infoRec->PreAllocInts)
-    	infoRec->NumPreAllocInts = MAX_PREALLOC_INTS;
-
-    infoRec->PreAllocPointers = 
-		(pointer)xalloc(MAX_PREALLOC_INTS * sizeof(pointer));
-    if(infoRec->PreAllocPointers)
-    	infoRec->NumPreAllocPointers = MAX_PREALLOC_POINTERS;
+    infoRec->PreAllocMem = 
+		(unsigned char*)xalloc(MAX_PREALLOC_MEM);
+    if(infoRec->PreAllocMem)
+    	infoRec->PreAllocSize = MAX_PREALLOC_MEM;
 
     if(infoRec->Flags & PIXMAP_CACHE) 
 	xf86RegisterFreeBoxCallback(pScreen, infoRec->InitPixmapCache,

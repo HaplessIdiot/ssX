@@ -23,7 +23,7 @@
  * dealings in this Software without prior written authorization from the
  * XFree86 Project.
  */
-/* $XFree86: xc/lib/font/Type1/module/type1mod.c,v 1.1.2.1 1998/07/05 14:36:00 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/module/type1mod.c,v 1.2 1998/07/25 06:57:02 dawes Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -66,18 +66,17 @@ type1ModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
 
 extern void Type1RegisterFontFileFunctions(void);
 
-FontModule type1Module[] = {
-    {
-	Type1RegisterFontFileFunctions,
-	"Type1"
-    }
+FontModule type1Module = {
+    Type1RegisterFontFileFunctions,
+    "Type1",
+    NULL
 };
 
 static pointer
 type1Setup(pointer module, pointer opts, int *errmaj, int *errmin)
 {
-    
-    LoadFont(&type1Module[0]);
+    type1Module.module = module;
+    LoadFont(&type1Module);
 
     /* Need a non-NULL return */
     return (pointer)1;

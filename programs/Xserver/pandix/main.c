@@ -19,6 +19,7 @@
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
+/* $XFree86$ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -90,8 +91,6 @@ extern int defaultScreenSaverAllowExposures;
 
 #ifdef DPMSExtension
 #include "dpms.h"
-extern BOOL DPMSCapableFlag;
-extern BOOL DPMSEnabled;
 #endif
 
 void ddxGiveUp();
@@ -169,6 +168,38 @@ NotImplemented()
 }
 
 /*
+ * Dummy entry for ReplySwapVector[]
+ */
+/*ARGSUSED*/
+void
+ReplyNotSwappd(
+#if NeedNestedPrototypes
+	ClientPtr pClient ,
+	int size ,
+	void * pbuf
+#endif
+	)
+{
+    FatalError("Not implemented");
+}
+
+ /*
+ * This array gives the bytesperPixel value for cases where the number
+ * of bits per pixel is a multiple of 8 but not a power of 2.
+ */
+static int answerBytesPerPixel[ 33 ] = {
+	~0, 0, ~0, ~0,	/* 1 bit per pixel */
+	0, ~0, ~0, ~0,	/* 4 bits per pixel */
+	0, ~0, ~0, ~0,	/* 8 bits per pixel */
+	~0,~0, ~0, ~0,
+	0, ~0, ~0, ~0,	/* 16 bits per pixel */
+	~0,~0, ~0, ~0,
+	3, ~0, ~0, ~0,	/* 24 bits per pixel */
+	~0,~0, ~0, ~0,
+	0		/* 32 bits per pixel */
+};
+
+/*
  * This array encodes the answer to the question "what is the log base 2
  * of the number of pixels that fit in a scanline pad unit?"
  * Note that ~0 is an invalid entry (mostly for the benefit of the reader).
@@ -236,7 +267,7 @@ main(argc, argv)
     int		argc;
     char	*argv[];
 {
-    int		i, j, k;
+    int		i, j, k, error;
     HWEventQueueType	alwaysCheckForInput[2];
 
     /* Notice if we're restart.  Probably this is because we jumped through
@@ -250,12 +281,7 @@ main(argc, argv)
     ExpandCommandLine(&argc, &argv);
 #endif
 
-#ifdef _SC_OPEN_MAX
-    /* if sysconf(_SC_OPEN_MAX) is supported, at runtime MaxClients will be
-     * reassigned instead of using MAXSOCKS */
-    if (MaxClients == 0)
-        MaxClients = MIN(MAXCLIENTS, sysconf(_SC_OPEN_MAX));
-#endif
+    InitConnectionLimits();
 
     /* These are needed by some routines which are called from interrupt
      * handlers, thus have no direct calling path back to main and thus
@@ -274,6 +300,13 @@ main(argc, argv)
 	ScreenSaverInterval = defaultScreenSaverInterval;
 	ScreenSaverBlanking = defaultScreenSaverBlanking;
 	ScreenSaverAllowExposures = defaultScreenSaverAllowExposures;
+#ifdef DPMSExtension
+	DPMSStandbyTime = defaultDPMSStandbyTime;
+	DPMSSuspendTime = defaultDPMSSuspendTime;
+	DPMSOffTime = defaultDPMSOffTime;
+	DPMSEnabled = defaultDPMSEnabled;
+	DPMSPowerLevel = 0;
+#endif
 	InitBlockAndWakeupHandlers();
 	/* Perform any operating system dependent initializations you'd like */
 	OsInit();		
@@ -316,6 +349,7 @@ main(argc, argv)
 	PixmapWidthPaddingInfo[1].padPixelsLog2 = answer[j][k];
  	j = indexForBitsPerPixel[8]; /* bits per byte */
  	PixmapWidthPaddingInfo[1].padBytesLog2 = answer[j][k];
+	PixmapWidthPaddingInfo[1].bitsPerPixel = 1;
 
 #ifdef INTERNAL_VS_EXTERNAL_PADDING
 	/* Fake out protocol interface to make them believe we support
@@ -327,6 +361,7 @@ main(argc, argv)
 	PixmapWidthPaddingInfoProto[1].padPixelsLog2 = answer[j][k];
  	j = indexForBitsPerPixel[8]; /* bits per byte */
  	PixmapWidthPaddingInfoProto[1].padBytesLog2 = answer[j][k];
+	PixmapWidthPaddingInfo[1].bitsPerPixel = 1;
 #endif /* INTERNAL_VS_EXTERNAL_PADDING */
 
 	InitAtoms();
@@ -373,8 +408,13 @@ main(argc, argv)
 	    FatalError("failed to initialize core devices");
 
 	InitFonts();
-	if (SetDefaultFontPath(defaultFontPath) != Success)
-	    ErrorF("failed to set default font path '%s'", defaultFontPath);
+	if (loadableFonts) {
+	    SetFontPath(0, 0, (unsigned char *)defaultFontPath, &error);
+	} else {
+	    if (SetDefaultFontPath(defaultFontPath) != Success)
+		ErrorF("failed to set default font path '%s'",
+			defaultFontPath);
+	}
 	if (!SetDefaultFont(defaultTextFont))
 	    FatalError("could not open default font '%s'", defaultTextFont);
 	if (!(rootCursor = CreateRootCursor(defaultCursorFont, 0)))
@@ -449,6 +489,7 @@ main(argc, argv)
 
 	if (dispatchException & DE_TERMINATE)
 	{
+	    OsCleanup();
 	    ddxGiveUp();
 	    break;
 	}
@@ -647,8 +688,8 @@ AddScreen(pfnInit, argc, argv)
     if (!pScreen)
 	return -1;
 
-    pScreen->devPrivates = (DevUnion *)xalloc(screenPrivateCount *
-					      sizeof(DevUnion));
+    pScreen->devPrivates = (DevUnion *)xcalloc(sizeof(DevUnion),
+						screenPrivateCount);
     if (!pScreen->devPrivates && screenPrivateCount)
     {
 	xfree(pScreen);
@@ -657,17 +698,19 @@ AddScreen(pfnInit, argc, argv)
     pScreen->myNum = i;
     pScreen->WindowPrivateLen = 0;
     pScreen->WindowPrivateSizes = (unsigned *)NULL;
-    pScreen->totalWindowSize = sizeof(WindowRec);
+    pScreen->totalWindowSize =
+	((sizeof(WindowRec) + sizeof(long) - 1) / sizeof(long)) * sizeof(long);
     pScreen->GCPrivateLen = 0;
     pScreen->GCPrivateSizes = (unsigned *)NULL;
-    pScreen->totalGCSize = sizeof(GC);
+    pScreen->totalGCSize = 
+	((sizeof(GC) + sizeof(long) - 1) / sizeof(long)) * sizeof(long);
 #ifdef PIXPRIV
     pScreen->PixmapPrivateLen = 0;
     pScreen->PixmapPrivateSizes = (unsigned *)NULL;
-    pScreen->totalPixmapSize = sizeof(PixmapRec);
+    pScreen->totalPixmapSize = BitmapBytePad(sizeof(PixmapRec)*8);
 #endif
-    pScreen->ClipNotify = (void (*)())NULL; /* for R4 ddx compatibility */
-    pScreen->CreateScreenResources = (Bool (*)())NULL;
+    pScreen->ClipNotify = 0; /* for R4 ddx compatibility */
+    pScreen->CreateScreenResources = 0;
     
 #ifdef DEBUG
     for (jNI = &pScreen->QueryBestSize; 
@@ -697,6 +740,17 @@ AddScreen(pfnInit, argc, argv)
  	    (scanlinepad/bitsPerPixel) - 1;
  	j = indexForBitsPerPixel[ 8 ]; /* bits per byte */
  	PixmapWidthPaddingInfo[ depth ].padBytesLog2 = answer[j][k];
+	PixmapWidthPaddingInfo[ depth ].bitsPerPixel = bitsPerPixel;
+	if (answerBytesPerPixel[bitsPerPixel])
+	{
+	    PixmapWidthPaddingInfo[ depth ].notPower2 = 1;
+	    PixmapWidthPaddingInfo[ depth ].bytesPerPixel =
+		answerBytesPerPixel[bitsPerPixel];
+	}
+	else
+	{
+	    PixmapWidthPaddingInfo[ depth ].notPower2 = 0;
+	}
 
 #ifdef INTERNAL_VS_EXTERNAL_PADDING
 	/* Fake out protocol interface to make them believe we support
@@ -709,6 +763,17 @@ AddScreen(pfnInit, argc, argv)
  	    (BITMAP_SCANLINE_PAD_PROTO/bitsPerPixel) - 1;
  	j = indexForBitsPerPixel[ 8 ]; /* bits per byte */
  	PixmapWidthPaddingInfoProto[ depth ].padBytesLog2 = answer[j][k];
+	PixmapWidthPaddingInfo[ depth ].bitsPerPixel = bitsPerPixel;
+	if (answerBytesPerPixel[bitsPerPixel])
+	{
+	    PixmapWidthPaddingInfo[ depth ].notPower2 = 1;
+	    PixmapWidthPaddingInfo[ depth ].bytesPerPixel =
+		answerBytesPerPixel[bitsPerPixel];
+	}
+	else
+	{
+	    PixmapWidthPaddingInfo[ depth ].notPower2 = 0;
+	}
 #endif /* INTERNAL_VS_EXTERNAL_PADDING */
     }
   

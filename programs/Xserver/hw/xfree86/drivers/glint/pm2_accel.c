@@ -29,7 +29,7 @@
  * 
  * Permedia 2 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_accel.c,v 1.9 1998/11/28 10:43:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_accel.c,v 1.10 1998/12/06 06:08:32 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -228,7 +228,9 @@ Permedia2AccelInit(ScreenPtr pScreen)
 
     Permedia2InitializeEngine(pScrn);
 
-    infoPtr->Flags = PIXMAP_CACHE;
+    infoPtr->Flags = PIXMAP_CACHE |
+		     OFFSCREEN_PIXMAPS |
+		     LINEAR_FRAMEBUFFER;
  
     infoPtr->Sync = Permedia2Sync;
 

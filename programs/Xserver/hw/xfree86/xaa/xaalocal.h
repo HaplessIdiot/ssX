@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.13 1998/11/15 04:30:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.14 1998/12/06 06:08:43 dawes Exp $ */
 
 #ifndef _XAALOCAL_H
 #define _XAALOCAL_H
@@ -21,6 +21,7 @@
 #define DO_CACHE_EXPAND		0x00000005
 #define DO_IMAGE_WRITE		0x00000006
 #define DO_PIXMAP_COPY		0x00000007
+#define DO_SOLID		0x00000008
 
 
 typedef CARD32 * (*GlyphScanlineFuncPtr)(
@@ -462,13 +463,34 @@ XAAWritePixmapScanline (
    int bpp, int depth
 );
 
-int
-XAAGetRectClipBoxes(
-    RegionPtr prgnClip,
-    BoxPtr pboxClippedBase,
-    int nrectFill,
-    xRectangle *prectInit
+typedef void (*ClipAndRenderRectsFunc)(GCPtr, int, BoxPtr, int, int); 
+
+
+void
+XAAClipAndRenderRects(
+   GCPtr pGC, 
+   ClipAndRenderRectsFunc func, 
+   int nrectFill, 
+   xRectangle *prectInit, 
+   int xorg, int yorg
 );
+
+
+typedef void (*ClipAndRenderSpansFunc)(GCPtr, int, DDXPointPtr, int*, 
+							int, int, int);
+
+void
+XAAClipAndRenderSpans(
+    GCPtr pGC, 
+    DDXPointPtr	ppt,
+    int		*pwidth,
+    int		nspans,
+    int		fSorted,
+    ClipAndRenderSpansFunc func,
+    int 	xorg,
+    int		yorg
+);
+
 
 void
 XAAFillSolidRects(
@@ -558,23 +580,7 @@ XAAFillImageWriteRects(
 );
 
 void
-XAAPolyFillRectSolid(
-    DrawablePtr pDraw,
-    GCPtr pGC,
-    int	nrectFill,
-    xRectangle *prectInit
-);
-
-void
-XAAPolyFillRectStippled(
-    DrawablePtr pDraw,
-    GCPtr pGC,
-    int	nrectFill,
-    xRectangle *prectInit
-);
-
-void
-XAAPolyFillRectTiled(
+XAAPolyFillRect(
     DrawablePtr pDraw,
     GCPtr pGC,
     int	nrectFill,
@@ -1089,28 +1095,7 @@ XAAFillCacheExpandSpans(
 );
 
 void
-XAAFillSpansSolid(
-    DrawablePtr pDrawable,
-    GC		*pGC,
-    int		nInit,
-    DDXPointPtr pptInit,
-    int *pwidth,
-    int fSorted 
-);
-
-
-void
-XAAFillSpansStippled(
-    DrawablePtr pDrawable,
-    GC		*pGC,
-    int		nInit,
-    DDXPointPtr pptInit,
-    int *pwidth,
-    int fSorted 
-);
-
-void
-XAAFillSpansTiled(
+XAAFillSpans(
     DrawablePtr pDrawable,
     GC		*pGC,
     int		nInit,
@@ -1342,6 +1327,13 @@ void XAAMoveDWORDS(
    register int dwords 
 );
 
+int
+XAAGetRectClipBoxes(
+    RegionPtr	prgnClip,
+    BoxPtr pboxClippedBase,
+    int nrectFill,
+    xRectangle *prectInit
+);
 
 void
 XAAPolyFillArcSolid(DrawablePtr pDraw, GCPtr pGC, int narcs, xArc *parcs);

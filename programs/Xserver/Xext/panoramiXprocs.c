@@ -19,6 +19,8 @@
 *   or  in  FAR 52.227-19, as applicable.                       *
 *                                                               *
 *****************************************************************/
+/* $XFree86$ */
+
 #include <stdio.h>
 #include "X.h"
 #define NEED_REPLIES
@@ -1519,15 +1521,13 @@ int PanoramiXCopyPlane(ClientPtr client)
 	    pGC->pScreen = pSrc->pScreen;
 	    save_alu = pGC->alu;
 	    pGC->alu = GXcopy;
-	    pCompositeClip = ((miPrivGC*)
-		    (pGC->devPrivates[miGCPrivateIndex].ptr))->pCompositeClip;
-	    ((miPrivGC*)(pGC->devPrivates[miGCPrivateIndex].ptr))->pCompositeClip = 
+	    pCompositeClip = pGC->pCompositeClip;
+	    pGC->pCompositeClip = 
 &tempReg;
 	    FetchRgnPtrs[i++] = (*pGC->ops->CopyPlane)(pSrc, (DrawablePtr) pMap,
 			 pGC, srcx, srcy, width, height, 0, 0, stuff->bitPlane);
 	    pGC->alu = save_alu;
-	    ((miPrivGC*) (pGC->devPrivates[miGCPrivateIndex].ptr))->pCompositeClip = 
-pCompositeClip;
+	    pGC->pCompositeClip = pCompositeClip;
 	    if (SrcScr >= 0)
 		j = 0;
 	}

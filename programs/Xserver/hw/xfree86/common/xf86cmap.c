@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.c,v 1.5 1998/11/29 13:09:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.c,v 1.6 1998/12/06 06:08:25 dawes Exp $ */
 
 #ifdef _XOPEN_SOURCE
 #include <math.h>
@@ -769,11 +769,33 @@ static void
 ComputeGamma(CMapScreenPtr priv)
 {
     int elements = priv->gammaElements - 1;
-    double RedGamma = 1.0 / (double)priv->pScrn->gamma.red;
-    double GreenGamma = 1.0 / (double)priv->pScrn->gamma.green;
-    double BlueGamma = 1.0 / (double)priv->pScrn->gamma.blue;
+    double RedGamma, GreenGamma, BlueGamma;
     int i;
 
+#ifndef DONT_CHECK_GAMMA
+    /* This check is to catch drivers that are not initialising pScrn->gamma */
+    if (priv->pScrn->gamma.red < GAMMA_MIN ||
+	priv->pScrn->gamma.red > GAMMA_MAX ||
+	priv->pScrn->gamma.green < GAMMA_MIN ||
+	priv->pScrn->gamma.green > GAMMA_MAX ||
+	priv->pScrn->gamma.blue < GAMMA_MIN ||
+	priv->pScrn->gamma.blue > GAMMA_MAX) {
+
+	xf86DrvMsgVerb(priv->pScrn->scrnIndex, X_WARNING, 0,
+	    "The %s driver didn't call xf86SetGamma() to initialise\n"
+	    "\tthe gamma values.\n", priv->pScrn->driverName);
+	xf86DrvMsgVerb(priv->pScrn->scrnIndex, X_WARNING, 0,
+	    "PLEASE FIX THE `%s' DRIVER!\n", priv->pScrn->driverName);
+	priv->pScrn->gamma.red = 1.0;
+	priv->pScrn->gamma.green = 1.0;
+	priv->pScrn->gamma.blue = 1.0;
+    }
+#endif
+
+    RedGamma = 1.0 / (double)priv->pScrn->gamma.red;
+    GreenGamma = 1.0 / (double)priv->pScrn->gamma.green;
+    BlueGamma = 1.0 / (double)priv->pScrn->gamma.blue;
+    
     for(i = 0; i <= elements; i++) {
 	if(RedGamma == 1.0)  
 	    priv->gamma[i].red = i;

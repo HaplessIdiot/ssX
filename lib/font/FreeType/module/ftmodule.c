@@ -23,7 +23,7 @@
  * dealings in this Software without prior written authorization from the
  * XFree86 Project.
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/FreeType/module/ftmodule.c,v 1.1 1998/09/06 07:31:59 dawes Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -66,18 +66,17 @@ freetypeModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
 
 extern void FreeTypeRegisterFontFileFunctions(void);
 
-FontModule freetypeModule[] = {
-    {
-	FreeTypeRegisterFontFileFunctions,
-	"FreeType"
-    }
+FontModule freetypeModule = {
+    FreeTypeRegisterFontFileFunctions,
+    "FreeType",
+    NULL
 };
 
 static pointer
 freetypeSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 {
-    
-    LoadFont(&freetypeModule[0]);
+    freetypeModule.module = module;
+    LoadFont(&freetypeModule);
 
     /* Need a non-NULL return */
     return (pointer)1;

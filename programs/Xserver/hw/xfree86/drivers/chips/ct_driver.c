@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.39 1998/11/28 10:43:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.40 1998/11/29 10:50:22 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -1254,6 +1254,14 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	}
     }
 
+    /* The gamma fields must be initialised when using the new cmap code */
+    if (pScrn->depth > 1) {
+	Gamma zeros = {0.0, 0.0, 0.0};
+
+	if (!xf86SetGamma(pScrn, zeros))
+	    return FALSE;
+    }
+
     /* Store register values that might be messed up by a suspend resume */
     /* Do this early as some of the other code in PreInit relies on it   */
     cPtr->SuspendHack.vgaIOBaseFlag = (inb(0x3CC) & 0x01);
@@ -1827,6 +1835,14 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
 		       xf86GetVisualName(pScrn->defaultVisual), pScrn->depth);
 	    return FALSE;
 	}
+    }
+
+    /* The gamma fields must be initialised when using the new cmap code */
+    if (pScrn->depth > 1) {
+	Gamma zeros = {0.0, 0.0, 0.0};
+
+	if (!xf86SetGamma(pScrn, zeros))
+	    return FALSE;
     }
 
     /* Store register values that might be messed up by a suspend resume */

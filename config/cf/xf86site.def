@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.131 1998/09/06 04:46:51 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.132 1998/09/13 05:45:42 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -370,6 +370,12 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.131 1998/09/06 04:46:51 dawes Exp 
  * If you don't want to build PEX, uncomment this.
  *
 #define BuildPexExt		NO
+ */
+
+/* 
+ * If you want to build Xinerama, uncomment this.
+ *
+#define BuildXinerama		YES
  */
 
 /*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.12 1998/11/15 04:30:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.13 1998/12/06 06:08:39 dawes Exp $ */
 
 #ifndef _XAA_H
 #define _XAA_H
@@ -1150,14 +1150,9 @@ typedef struct _XAAInfoRec {
    /* Miscellaneous */
 
    GC ScratchGC;
-   int NumPreAllocBoxes;
-   BoxPtr PreAllocBoxes;
-   int NumPreAllocDDXPointRecs;
-   DDXPointPtr PreAllocDDXPointRecs;
-   int NumPreAllocInts;
-   int* PreAllocInts;
-   int NumPreAllocPointers;
-   pointer PreAllocPointers;
+   int PreAllocSize;
+   unsigned char *PreAllocMem;
+
    CharInfoPtr CharInfo[255];
    NonTEGlyphInfo GlyphInfo[255];
 

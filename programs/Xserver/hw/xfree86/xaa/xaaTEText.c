@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaTEText.c,v 1.3 1998/08/13 14:46:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaTEText.c,v 1.4 1998/09/27 04:43:46 dawes Exp $ */
 
 /********************************************************************
 
@@ -247,7 +247,7 @@ XAAGlyphBltTEColorExpansion(
 
 	    if(!glyphs) {
 		int count;
-		glyphs = (unsigned int**)infoRec->PreAllocPointers;
+		glyphs = (unsigned int**)(infoRec->PreAllocMem);
 
 		for(count = 0; count < nglyph; count++) 
  			glyphs[count] = (unsigned int*) 

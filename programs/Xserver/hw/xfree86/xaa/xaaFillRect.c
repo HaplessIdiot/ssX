@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillRect.c,v 1.7 1998/11/15 04:30:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillRect.c,v 1.8 1998/12/06 06:08:40 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -12,268 +12,336 @@
 #include "xaa.h"
 #include "xaalocal.h"
 
-/*
-   Much of this file based on code by 
-	Harm Hanemaayer (H.Hanemaayer@inter.nl.net).
-*/
+
+static void XAARenderSolidRects(GCPtr, int, BoxPtr, int, int);
+static void XAARenderColor8x8Rects(GCPtr, int, BoxPtr, int, int);
+static void XAARenderMono8x8Rects(GCPtr, int, BoxPtr, int, int);
+static void XAARenderColorExpandRects(GCPtr, int, BoxPtr, int, int);
+static void XAARenderCacheExpandRects(GCPtr, int, BoxPtr, int, int);
+static void XAARenderCacheBltRects(GCPtr, int, BoxPtr, int, int);
+static void XAARenderImageWriteRects(GCPtr, int, BoxPtr, int, int);
+static void XAARenderPixmapCopyRects(GCPtr, int, BoxPtr, int, int);
+
+void
+XAAPolyFillRect(
+    DrawablePtr pDraw,
+    GCPtr pGC,
+    int		nrectFill, 	/* number of rectangles to fill */
+    xRectangle	*prectInit   	/* Pointer to first rectangle to fill */
+){
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+    int		xorg = pDraw->x;
+    int		yorg = pDraw->y;
+    int		type = 0;
+    ClipAndRenderRectsFunc function;
+
+    if((nrectFill <= 0) || !pGC->planemask)
+        return;
+
+    switch(pGC->fillStyle) {
+    case FillSolid:
+	type = DO_SOLID;
+	break;
+    case FillStippled:
+	type = (*infoRec->StippledFillChooser)(pGC);
+	break;
+    case FillOpaqueStippled:
+	if(pGC->fgPixel == pGC->bgPixel)
+	    type = DO_SOLID;
+	else
+	    type = (*infoRec->OpaqueStippledFillChooser)(pGC);
+	break;
+    case FillTiled:
+	type = (*infoRec->TiledFillChooser)(pGC);
+	break;
+    }
+
+    switch(type) {
+    case DO_SOLID:
+	function = XAARenderSolidRects;	
+	break;	
+    case DO_COLOR_8x8:
+	function = XAARenderColor8x8Rects;	
+	break;	
+    case DO_MONO_8x8:
+	function = XAARenderMono8x8Rects;	
+	break;	
+    case DO_CACHE_BLT:
+	function = XAARenderCacheBltRects;	
+	break;	
+    case DO_COLOR_EXPAND:
+	function = XAARenderColorExpandRects;	
+	break;	
+    case DO_CACHE_EXPAND:
+	function = XAARenderCacheExpandRects;	
+	break;	
+    case DO_IMAGE_WRITE:
+	function = XAARenderImageWriteRects;	
+	break;	
+    case DO_PIXMAP_COPY:
+	function = XAARenderPixmapCopyRects;	
+	break;	
+    default:
+	(*XAAFallbackOps.PolyFillRect)(pDraw, pGC, nrectFill, prectInit);
+	return;
+    }
+
+    if(xorg | yorg) {
+	int n = nrectFill;
+	xRectangle *prect = prectInit;
+
+	while(n--) {
+	    prect->x += xorg;
+	    prect->y += yorg;
+	    prect++;
+	}
+    }
+
+    
+    XAAClipAndRenderRects(pGC, function, nrectFill, prectInit, xorg, yorg);
+}
+
 
 
 	/*********************\
 	|     Solid Rects     |
 	\*********************/
 
-void
-XAAPolyFillRectSolid(
-    DrawablePtr pDraw,
-    GCPtr pGC,
-    int		nrectFill, 	/* number of rectangles to fill */
-    xRectangle	*prectInit   	/* Pointer to first rectangle to fill */
-)
-{
-    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
-    int 	MaxBoxes = nrectFill * REGION_NUM_RECTS(pGC->pCompositeClip);
-    BoxPtr	pClipBoxes;
-    int		nboxes;
-    int		xorg = pDraw->x;
-    int		yorg = pDraw->y;
+static void
+XAARenderSolidRects(
+   GCPtr pGC,
+   int nboxes,
+   BoxPtr pClipBoxes,
+   int xorg, int yorg
+){
+   XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
 
-    if(nrectFill <= 0)
-        return;
-
-    if(xorg | yorg) {
-	int n = nrectFill;
-	xRectangle *prect = prectInit;
-
-	while(n--) {
-	    prect->x += xorg;
-	    prect->y += yorg;
-	    prect++;
-	}
-    }
-
-    if(MaxBoxes > infoRec->NumPreAllocBoxes) {
-	pClipBoxes = (BoxPtr)ALLOCATE_LOCAL(MaxBoxes * sizeof(BoxRec));
-	if(!pClipBoxes) return;	
-    } else pClipBoxes = infoRec->PreAllocBoxes;
-    
-    nboxes = XAAGetRectClipBoxes(pGC->pCompositeClip, pClipBoxes, 
-					nrectFill, prectInit);
-
-    if(nboxes) {
-	(*infoRec->FillSolidRects) (infoRec->pScrn, 
-		pGC->fgPixel, pGC->alu, pGC->planemask, nboxes, pClipBoxes);
-    }
-   
-    if(pClipBoxes != infoRec->PreAllocBoxes)
-	DEALLOCATE_LOCAL(pClipBoxes);
+   (*infoRec->FillSolidRects) (infoRec->pScrn, 
+               pGC->fgPixel, pGC->alu, pGC->planemask, nboxes, pClipBoxes);
 }
 
 
+	/************************\
+	|     Mono 8x8 Rects     |
+	\************************/
 
-	/******************\
-	|  Stippled Rects  |
-	\******************/
-
-void
-XAAPolyFillRectStippled(
-    DrawablePtr pDraw,
-    GCPtr pGC,
-    int		nrectFill, 	/* number of rectangles to fill */
-    xRectangle	*prectInit   	/* Pointer to first rectangle to fill */
+static void
+XAARenderMono8x8Rects(
+   GCPtr pGC,
+   int nboxes,
+   BoxPtr pClipBoxes,
+   int xorg, int yorg
 ){
-    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
-    int 	MaxBoxes = nrectFill * REGION_NUM_RECTS(pGC->pCompositeClip);
-    BoxPtr	pClipBoxes;
-    int		nboxes, type, fg, bg;
-    int		xorg = pDraw->x;
-    int		yorg = pDraw->y;
+   XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+   XAAPixmapPtr pPriv;
+   int fg, bg;
 
-    if(nrectFill <= 0)
-        return;
+   switch(pGC->fillStyle) {
+   case FillStippled:
+      pPriv = XAA_GET_PIXMAP_PRIVATE(pGC->stipple);
+      fg = pGC->fgPixel;  bg = -1;
+      break;
+   case FillOpaqueStippled:
+      pPriv = XAA_GET_PIXMAP_PRIVATE(pGC->stipple);
+      fg = pGC->fgPixel;  bg = pGC->bgPixel;
+      break;
+   case FillTiled:
+      pPriv = XAA_GET_PIXMAP_PRIVATE(pGC->tile.pixmap);
+      fg = pPriv->fg;  bg = pPriv->bg;
+      break;
+   }
 
-    if(pGC->fillStyle == FillStippled) {
-	type = (*infoRec->StippledFillChooser)(pGC);
-	fg = pGC->fgPixel;  bg = -1;
-    } else {
-	type = (*infoRec->OpaqueStippledFillChooser)(pGC);
-	fg = pGC->fgPixel;  bg = pGC->bgPixel;
-    }
-
-    if(!type) {
-	(*XAAFallbackOps.PolyFillRect)(pDraw, pGC, nrectFill, prectInit);
-	return;
-    }
-
-    if(xorg | yorg) {
-	int n = nrectFill;
-	xRectangle *prect = prectInit;
-
-	while(n--) {
-	    prect->x += xorg;
-	    prect->y += yorg;
-	    prect++;
-	}
-    }
-
-    if(MaxBoxes > infoRec->NumPreAllocBoxes) {
-	pClipBoxes = (BoxPtr)ALLOCATE_LOCAL(MaxBoxes * sizeof(BoxRec));
-	if(!pClipBoxes) return;	
-    } else pClipBoxes = infoRec->PreAllocBoxes;
-    
-    nboxes = XAAGetRectClipBoxes(pGC->pCompositeClip, pClipBoxes, 
-					nrectFill, prectInit);
-
-    if(nboxes) {
-        XAAPixmapPtr pPriv = XAA_GET_PIXMAP_PRIVATE(pGC->stipple);
-	XAACacheInfoPtr pCache;
-
-	if((fg == bg) && (bg != -1) && infoRec->FillSolidRects){
-	   (*infoRec->FillSolidRects) (infoRec->pScrn, fg,
-			pGC->alu, pGC->planemask, nboxes, pClipBoxes);
-	} else
-	switch(type) {
-	case DO_MONO_8x8:
-           (*infoRec->FillMono8x8PatternRects) (infoRec->pScrn, 
+   (*infoRec->FillMono8x8PatternRects) (infoRec->pScrn, 
                 fg, bg, pGC->alu, pGC->planemask, 
                 nboxes, pClipBoxes, pPriv->pattern0, pPriv->pattern1, 
                 (xorg + pGC->patOrg.x), (yorg + pGC->patOrg.y));
-	    break;
-	case DO_COLOR_8x8:
-            pCache = (*infoRec->CacheColor8x8Pattern)(
-                        infoRec->pScrn, pGC->stipple, fg, bg);
-            (*infoRec->FillColor8x8PatternRects) (infoRec->pScrn,
+}
+
+	/*************************\
+	|     Color 8x8 Rects     |
+	\*************************/
+
+static void
+XAARenderColor8x8Rects(
+   GCPtr pGC,
+   int nboxes,
+   BoxPtr pClipBoxes,
+   int xorg, int yorg
+){
+   XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+   XAACacheInfoPtr pCache;
+   XAAPixmapPtr pPriv;
+   PixmapPtr pPix;
+   int fg, bg;
+
+   switch(pGC->fillStyle) {
+   case FillStippled:
+      pPix = pGC->stipple;
+      pPriv = XAA_GET_PIXMAP_PRIVATE(pPix);
+      fg = pGC->fgPixel;  bg = -1;
+      break;
+   case FillOpaqueStippled:
+      pPix = pGC->stipple;
+      pPriv = XAA_GET_PIXMAP_PRIVATE(pPix);
+      fg = pGC->fgPixel;  bg = pGC->bgPixel;
+      break;
+   case FillTiled:
+      pPix = pGC->tile.pixmap;
+      pPriv = XAA_GET_PIXMAP_PRIVATE(pPix);
+      fg = -1;  bg = -1;
+      break;
+   }
+
+   pCache = (*infoRec->CacheColor8x8Pattern)(infoRec->pScrn, pPix, fg, bg);
+   (*infoRec->FillColor8x8PatternRects) (infoRec->pScrn,
+                pGC->alu, pGC->planemask, nboxes, pClipBoxes, 
+                (xorg + pGC->patOrg.x), (yorg + pGC->patOrg.y), pCache);
+}
+
+
+	/****************************\
+	|     Color Expand Rects     |
+	\****************************/
+
+static void
+XAARenderColorExpandRects(
+   GCPtr pGC,
+   int nboxes,
+   BoxPtr pClipBoxes,
+   int xorg, int yorg
+){
+   XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+   int fg, bg;
+
+   switch(pGC->fillStyle) {
+   case FillStippled:
+      fg = pGC->fgPixel;  bg = -1;
+      break;
+   case FillOpaqueStippled:
+      fg = pGC->fgPixel;  bg = pGC->bgPixel;
+      break;
+   }
+
+   (*infoRec->FillColorExpandRects) (infoRec->pScrn, fg, bg, 
                 pGC->alu, pGC->planemask, nboxes, pClipBoxes, 
                 (xorg + pGC->patOrg.x), (yorg + pGC->patOrg.y),
-                pCache);
-	    break;
-	case DO_CACHE_EXPAND:
-            (*infoRec->FillCacheExpandRects) (infoRec->pScrn, fg, bg,
-                pGC->alu, pGC->planemask, nboxes, pClipBoxes, 
-                (xorg + pGC->patOrg.x), (yorg + pGC->patOrg.y), 
-                pGC->stipple);
-	    break;
-	case DO_CACHE_BLT:
-             pCache = (*infoRec->CacheStipple)(infoRec->pScrn, pGC->stipple, 
-                                                        fg, bg);
-             (*infoRec->FillCacheBltRects) (infoRec->pScrn, pGC->alu, 
+		pGC->stipple);
+}
+
+
+	/*************************\
+	|     Cache Blt Rects     |
+	\*************************/
+
+static void
+XAARenderCacheBltRects(
+   GCPtr pGC,
+   int nboxes,
+   BoxPtr pClipBoxes,
+   int xorg, int yorg
+){
+   XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+   XAACacheInfoPtr pCache;
+
+   switch(pGC->fillStyle) {
+   case FillStippled:
+      pCache = (*infoRec->CacheStipple)(infoRec->pScrn, pGC->stipple, 
+					pGC->fgPixel, -1);
+      break;
+   case FillOpaqueStippled:
+      pCache = (*infoRec->CacheStipple)(infoRec->pScrn, pGC->stipple, 
+					pGC->fgPixel, pGC->bgPixel);
+      break;
+   case FillTiled:
+      pCache = (*infoRec->CacheTile)(infoRec->pScrn, pGC->tile.pixmap);
+      break;
+   }
+
+   (*infoRec->FillCacheBltRects) (infoRec->pScrn, pGC->alu, 
                 pGC->planemask, nboxes, pClipBoxes, 
-                (xorg + pGC->patOrg.x), (yorg + pGC->patOrg.y), 
-                pCache);
-	     break;
-	case DO_COLOR_EXPAND:
-           (*infoRec->FillColorExpandRects) (infoRec->pScrn, fg, bg, 
+                (xorg + pGC->patOrg.x), (yorg + pGC->patOrg.y), pCache);
+}
+
+
+	/****************************\
+	|     Cache Expand Rects     |
+	\****************************/
+
+static void
+XAARenderCacheExpandRects(
+   GCPtr pGC,
+   int nboxes,
+   BoxPtr pClipBoxes,
+   int xorg, int yorg
+){
+   XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+   int fg, bg;
+
+   switch(pGC->fillStyle) {
+   case FillStippled:
+      fg = pGC->fgPixel;  bg = -1;
+      break;
+   case FillOpaqueStippled:
+      fg = pGC->fgPixel;  bg = pGC->bgPixel;
+      break;
+   }
+
+   (*infoRec->FillCacheExpandRects) (infoRec->pScrn, fg, bg,
                 pGC->alu, pGC->planemask, nboxes, pClipBoxes, 
                 (xorg + pGC->patOrg.x), (yorg + pGC->patOrg.y), 
                 pGC->stipple);
-	    break;
-	}
-    }
-   
-    if(pClipBoxes != infoRec->PreAllocBoxes)
-	DEALLOCATE_LOCAL(pClipBoxes);
 }
 
 
 
-	/***************\
-	|  Tiled Rects  |
-	\***************/
+	/***************************\
+	|     Image Write Rects     |
+	\***************************/
 
-void
-XAAPolyFillRectTiled(
-    DrawablePtr pDraw,
-    GCPtr pGC,
-    int		nrectFill, 	/* number of rectangles to fill */
-    xRectangle	*prectInit   	/* Pointer to first rectangle to fill */
+static void
+XAARenderImageWriteRects(
+   GCPtr pGC,
+   int nboxes,
+   BoxPtr pClipBoxes,
+   int xorg, int yorg
 ){
-    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
-    int 	MaxBoxes = nrectFill * REGION_NUM_RECTS(pGC->pCompositeClip);
-    BoxPtr	pClipBoxes;
-    int		nboxes, type;
-    int		xorg = pDraw->x;
-    int		yorg = pDraw->y;
+   XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
 
-    if(nrectFill <= 0)
-        return;
-
-    if(!(type = (*infoRec->TiledFillChooser)(pGC))) {
-	(*XAAFallbackOps.PolyFillRect)(pDraw, pGC, nrectFill, prectInit);
-	return;
-    }
-
-    if(xorg | yorg) {
-	int n = nrectFill;
-	xRectangle *prect = prectInit;
-
-	while(n--) {
-	    prect->x += xorg;
-	    prect->y += yorg;
-	    prect++;
-	}
-    }
-
-    if(MaxBoxes > infoRec->NumPreAllocBoxes) {
-	pClipBoxes = (BoxPtr)ALLOCATE_LOCAL(MaxBoxes * sizeof(BoxRec));
-	if(!pClipBoxes) return;	
-    } else pClipBoxes = infoRec->PreAllocBoxes;
-    
-    nboxes = XAAGetRectClipBoxes(pGC->pCompositeClip, pClipBoxes, 
-					nrectFill, prectInit);
-
-    if(nboxes) {
-	XAAPixmapPtr pPriv = XAA_GET_PIXMAP_PRIVATE(pGC->tile.pixmap);
-	XAACacheInfoPtr pCache;
-
-	switch(type) {
-	case DO_MONO_8x8:
-           (*infoRec->FillMono8x8PatternRects) (infoRec->pScrn, 
-                pPriv->fg, pPriv->bg, pGC->alu, pGC->planemask, 
-                nboxes, pClipBoxes, pPriv->pattern0, pPriv->pattern1, 
-                (xorg + pGC->patOrg.x), (yorg + pGC->patOrg.y));
-	    break;
-	case DO_COLOR_8x8:
-            pCache = (*infoRec->CacheColor8x8Pattern)(
-                        infoRec->pScrn, pGC->tile.pixmap, -1, -1);
-            (*infoRec->FillColor8x8PatternRects) (infoRec->pScrn,
-                pGC->alu, pGC->planemask, nboxes, pClipBoxes, 
-                (xorg + pGC->patOrg.x), (yorg + pGC->patOrg.y),
-                pCache);
-	    break;
-	case DO_CACHE_BLT:
-            pCache = (*infoRec->CacheTile)(infoRec->pScrn, pGC->tile.pixmap);
-            (*infoRec->FillCacheBltRects) (infoRec->pScrn, pGC->alu, 
-                pGC->planemask, nboxes, pClipBoxes, 
-                (xorg + pGC->patOrg.x), (yorg + pGC->patOrg.y), 
-                pCache);
-	    break;
-	case DO_IMAGE_WRITE:
-            (*infoRec->FillImageWriteRects) (infoRec->pScrn, pGC->alu, 
+   (*infoRec->FillImageWriteRects) (infoRec->pScrn, pGC->alu, 
                 pGC->planemask, nboxes, pClipBoxes, 
                 (xorg + pGC->patOrg.x), (yorg + pGC->patOrg.y),
                 pGC->tile.pixmap);
-	    break;
-	case DO_PIXMAP_COPY:
-	    pCache = &(infoRec->ScratchCacheInfoRec);
-	    pCache->x = pPriv->offscreenArea->box.x1;
-	    pCache->y = pPriv->offscreenArea->box.y1;
-	    pCache->w = pCache->orig_w = 
-		pPriv->offscreenArea->box.x2 - pCache->x;
-	    pCache->h = pCache->orig_h = 
-		pPriv->offscreenArea->box.y2 - pCache->y;
-
-            (*infoRec->FillCacheBltRects) (infoRec->pScrn, pGC->alu, 
-                pGC->planemask, nboxes, pClipBoxes, 
-                (xorg + pGC->patOrg.x), (yorg + pGC->patOrg.y), 
-                pCache);
-	    break;
-	}
-    }
-   
-    if(pClipBoxes != infoRec->PreAllocBoxes)
-	DEALLOCATE_LOCAL(pClipBoxes);
 }
 
 
+
+	/***************************\
+	|     Pixmap Copy Rects     |
+	\***************************/
+
+static void
+XAARenderPixmapCopyRects(
+   GCPtr pGC,
+   int nboxes,
+   BoxPtr pClipBoxes,
+   int xorg, int yorg
+){
+   XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+   XAACacheInfoPtr pCache = &(infoRec->ScratchCacheInfoRec);
+   XAAPixmapPtr pPriv = XAA_GET_PIXMAP_PRIVATE(pGC->tile.pixmap);
+
+   pCache->x = pPriv->offscreenArea->box.x1;
+   pCache->y = pPriv->offscreenArea->box.y1;
+   pCache->w = pCache->orig_w = 
+		pPriv->offscreenArea->box.x2 - pCache->x;
+   pCache->h = pCache->orig_h = 
+		pPriv->offscreenArea->box.y2 - pCache->y;
+
+   (*infoRec->FillCacheBltRects) (infoRec->pScrn, pGC->alu, 
+                pGC->planemask, nboxes, pClipBoxes, 
+                (xorg + pGC->patOrg.x), (yorg + pGC->patOrg.y), 
+                pCache);
+}
 
 
 
@@ -832,6 +900,97 @@ XAAFillImageWriteRects(
 	/*************\
 	|  Utilities  |
 	\*************/
+
+
+void
+XAAClipAndRenderRects(
+   GCPtr pGC, 
+   ClipAndRenderRectsFunc BoxFunc, 
+   int nrectFill, 
+   xRectangle *prect, 
+   int xorg, int yorg
+){
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+    int 	Right, Bottom, MaxBoxes;
+    BoxPtr 	pextent, pboxClipped, pboxClippedBase;
+
+    MaxBoxes = infoRec->PreAllocSize/sizeof(BoxRec);  
+    pboxClippedBase = (BoxPtr)infoRec->PreAllocMem;
+    pboxClipped = pboxClippedBase;
+
+    if (REGION_NUM_RECTS(pGC->pCompositeClip) == 1) {
+	pextent = REGION_RECTS(pGC->pCompositeClip);
+    	while (nrectFill--) {
+	    pboxClipped->x1 = max(pextent->x1, prect->x);
+	    pboxClipped->y1 = max(pextent->y1, prect->y);
+
+	    Right = (int)prect->x + (int)prect->width;
+	    pboxClipped->x2 = min(pextent->x2, Right);
+    
+	    Bottom = (int)prect->y + (int)prect->height;
+	    pboxClipped->y2 = min(pextent->y2, Bottom);
+
+	    prect++;
+	    if ((pboxClipped->x1 < pboxClipped->x2) &&
+		(pboxClipped->y1 < pboxClipped->y2)) {
+		pboxClipped++;
+		if(pboxClipped >= (pboxClippedBase + MaxBoxes)) {
+		    (*BoxFunc)(pGC, MaxBoxes, pboxClippedBase, xorg, yorg); 
+		    pboxClipped = pboxClippedBase;
+		}
+	    }
+    	}
+    } else {
+	pextent = REGION_EXTENTS(pGC->pScreen, pGC->pCompositeClip);
+    	while (nrectFill--) {
+	    int n;
+	    BoxRec box, *pbox;
+   
+	    box.x1 = max(pextent->x1, prect->x);
+   	    box.y1 = max(pextent->y1, prect->y);
+     
+	    Right = (int)prect->x + (int)prect->width;
+	    box.x2 = min(pextent->x2, Right);
+  
+	    Bottom = (int)prect->y + (int)prect->height;
+	    box.y2 = min(pextent->y2, Bottom);
+    
+	    prect++;
+    
+	    if ((box.x1 >= box.x2) || (box.y1 >= box.y2))
+	    	continue;
+    
+	    n = REGION_NUM_RECTS (pGC->pCompositeClip);
+	    pbox = REGION_RECTS(pGC->pCompositeClip);
+    
+	    /* clip the rectangle to each box in the clip region
+	       this is logically equivalent to calling Intersect()
+	    */
+	    while(n--) {
+		pboxClipped->x1 = max(box.x1, pbox->x1);
+		pboxClipped->y1 = max(box.y1, pbox->y1);
+		pboxClipped->x2 = min(box.x2, pbox->x2);
+		pboxClipped->y2 = min(box.y2, pbox->y2);
+		pbox++;
+
+		/* see if clipping left anything */
+		if(pboxClipped->x1 < pboxClipped->x2 && 
+		   pboxClipped->y1 < pboxClipped->y2) {
+		    pboxClipped++;
+		    if(pboxClipped >= (pboxClippedBase + MaxBoxes)) {
+			(*BoxFunc)(pGC, MaxBoxes, pboxClippedBase, xorg, yorg); 
+			pboxClipped = pboxClippedBase;
+		    }
+		}
+	    }
+    	}
+    }
+
+    if(pboxClipped != pboxClippedBase)
+	(*BoxFunc)(pGC, pboxClipped - pboxClippedBase, pboxClippedBase, 
+					xorg, yorg); 
+}
+
 
 int
 XAAGetRectClipBoxes(

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.6 1998/10/05 13:23:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.7 1998/11/15 04:30:39 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -327,10 +327,10 @@ XAAPutImage(
 	TheRect.width = w;
 	TheRect.height = h; 
 
-	if(MaxBoxes > infoRec->NumPreAllocBoxes) {
-	   pClipBoxes = (BoxPtr)ALLOCATE_LOCAL(MaxBoxes * sizeof(BoxRec));
-	   if(!pClipBoxes) return;	
-	} else pClipBoxes = infoRec->PreAllocBoxes;
+	if(MaxBoxes > (infoRec->PreAllocSize/sizeof(BoxRec))) {
+	    pClipBoxes = (BoxPtr)xalloc(MaxBoxes * sizeof(BoxRec));
+	    if(!pClipBoxes) return;	
+	} else pClipBoxes = (BoxPtr)infoRec->PreAllocMem;
 
 	nboxes = 
 	  XAAGetRectClipBoxes(pGC->pCompositeClip, pClipBoxes, 1, &TheRect);
@@ -393,8 +393,8 @@ XAAPutImage(
 
 	}
 
-	if(pClipBoxes != infoRec->PreAllocBoxes)
-	   DEALLOCATE_LOCAL(pClipBoxes);
+	if(pClipBoxes != (BoxPtr)infoRec->PreAllocMem)
+	    xfree(pClipBoxes);
     } else 
 	XAAFallbackOps.PutImage(pDraw, pGC, depth, x, y, w, h, leftPad, 
 				format, pImage);

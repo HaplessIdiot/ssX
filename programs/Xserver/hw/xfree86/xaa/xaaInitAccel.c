@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.13 1998/11/15 04:30:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.14 1998/12/06 06:08:41 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -78,7 +78,7 @@ static OptionInfoRec XAAOptions[] = {
 				OPTV_BOOLEAN,	{0}, FALSE },
     {XAAOPT_PIXMAP_CACHE,		"XaaNoPixmapCache",
 				OPTV_BOOLEAN,	{0}, FALSE },
-    {XAAOPT_OFFSCREEN_PIXMAPS,		"XaaOffscreenPixmaps",
+    {XAAOPT_OFFSCREEN_PIXMAPS,		"XaaNoOffscreenPixmaps",
 				OPTV_BOOLEAN,	{0}, FALSE },
     { -1,				NULL,
 				OPTV_NONE,	{0}, FALSE }
@@ -902,13 +902,13 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 
     if(infoRec->FillSolidRects) {
 	if(!infoRec->PolyFillRectSolid) {
-	    infoRec->PolyFillRectSolid = XAAPolyFillRectSolid;
+	    infoRec->PolyFillRectSolid = XAAPolyFillRect;
 	    infoRec->PolyFillRectSolidFlags = infoRec->FillSolidRectsFlags;
 	}
     }
     if(infoRec->FillSolidSpans) {
 	if(!infoRec->FillSpansSolid) {
-	    infoRec->FillSpansSolid = XAAFillSpansSolid;
+	    infoRec->FillSpansSolid = XAAFillSpans;
 	    infoRec->FillSpansSolidFlags = infoRec->FillSolidSpansFlags;
 	}
     }
@@ -919,7 +919,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	infoRec->FillCacheExpandRects) {
 	if(!infoRec->PolyFillRectStippled) {
 
-	    infoRec->PolyFillRectStippled = XAAPolyFillRectStippled;
+	    infoRec->PolyFillRectStippled = XAAPolyFillRect;
 	    infoRec->PolyFillRectStippledFlags = 0;
 	}
     }
@@ -928,7 +928,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	infoRec->FillCacheExpandSpans) {
 	if(!infoRec->FillSpansStippled) {
 
-	    infoRec->FillSpansStippled = XAAFillSpansStippled;
+	    infoRec->FillSpansStippled = XAAFillSpans;
 	    infoRec->FillSpansStippledFlags = 0;
 	}
     }
@@ -938,7 +938,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	infoRec->FillCacheExpandRects) {
 	if(!infoRec->PolyFillRectOpaqueStippled) {
 
-	    infoRec->PolyFillRectOpaqueStippled = XAAPolyFillRectStippled;
+	    infoRec->PolyFillRectOpaqueStippled = XAAPolyFillRect;
 	    infoRec->PolyFillRectOpaqueStippledFlags = 0;
 	}
     }
@@ -947,7 +947,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	infoRec->FillCacheExpandSpans) {
 	if(!infoRec->FillSpansOpaqueStippled) {
 
-	    infoRec->FillSpansOpaqueStippled = XAAFillSpansStippled;
+	    infoRec->FillSpansOpaqueStippled = XAAFillSpans;
 	    infoRec->FillSpansOpaqueStippledFlags = 0;
 	}
     }
@@ -957,7 +957,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	infoRec->FillCacheBltRects || infoRec->FillImageWriteRects) {
 	if(!infoRec->PolyFillRectTiled) {
 
-	    infoRec->PolyFillRectTiled = XAAPolyFillRectTiled;
+	    infoRec->PolyFillRectTiled = XAAPolyFillRect;
 	    infoRec->PolyFillRectTiledFlags = 0;
 	}
     }
@@ -965,7 +965,7 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	infoRec->FillCacheBltSpans) {
 	if(!infoRec->FillSpansTiled) {
 
-	    infoRec->FillSpansTiled = XAAFillSpansTiled;
+	    infoRec->FillSpansTiled = XAAFillSpans;
 	    infoRec->FillSpansTiledFlags = 0;
 	}
     }

@@ -22,18 +22,10 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.18 1998/07/25 16:55:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.19 1998/12/05 14:40:09 dawes Exp $ */
 
 #ifndef _xf86Xinput_h
 #define _xf86Xinput_h
-
-#if 0
-/*
- * THIS IS A BIG UGGLY HACK!!!
- * vvvvvvvvvvvvvvvvv */
-#define LexPtr void *
-/* ^^^^^^^^^^^^^^^^^ */
-#endif
 
 #ifndef NEED_EVENTS
 #define NEED_EVENTS
@@ -44,9 +36,6 @@
 #include "XI.h"
 #include "XIproto.h"
 #include "XIstubs.h"
-#if 0
-#include "xf86Opt.h"
-#endif
 
 #define XI86_NO_OPEN_ON_INIT    1 /* open the device only when needed */
 #define XI86_CONFIGURED         2 /* the device has been configured */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaCpyPlane.c,v 1.2 1998/07/25 16:58:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaCpyPlane.c,v 1.3 1998/11/22 10:37:39 dawes Exp $ */
 
 /*
    A CopyPlane function that handles bitmap->screen copies and
@@ -31,7 +31,7 @@ static void XAACopyPlaneNtoNColorExpand(DrawablePtr pSrc, DrawablePtr pDst,
 					DDXPointPtr pptSrc);
 
 
-static TmpBitPlane; 
+static unsigned long TmpBitPlane; 
 
 RegionPtr
 XAACopyPlaneColorExpansion(
@@ -102,7 +102,7 @@ XAACopyPlaneNtoNColorExpand(
     int srcwidth = ((PixmapPtr)pSrc)->devKind; 
     int pitch, width, height, h, i, index, offset;
     int Bpp = pSrc->bitsPerPixel >> 3;
-    unsigned int mask = TmpBitPlane;
+    unsigned long mask = TmpBitPlane;
 
     if(TmpBitPlane < 8) {
 	offset = 0;
@@ -171,10 +171,10 @@ XAAPushPixelsSolidColorExpansion(
    TheRect.width = dx;
    TheRect.height = dy; 
 
-   if(MaxBoxes > infoRec->NumPreAllocBoxes) {
-	pClipBoxes = (BoxPtr)ALLOCATE_LOCAL(MaxBoxes * sizeof(BoxRec));
+   if(MaxBoxes > (infoRec->PreAllocSize/sizeof(BoxRec))) {
+	pClipBoxes = (BoxPtr)xalloc(MaxBoxes * sizeof(BoxRec));
 	if(!pClipBoxes) return;	
-   } else pClipBoxes = infoRec->PreAllocBoxes;
+   } else pClipBoxes = (BoxPtr)infoRec->PreAllocMem;
 
    nboxes = XAAGetRectClipBoxes(pGC->pCompositeClip, pClipBoxes, 1, &TheRect);
    pbox = pClipBoxes;
@@ -190,7 +190,7 @@ XAAPushPixelsSolidColorExpansion(
 	pbox++;
    }
 
-    if(pClipBoxes != infoRec->PreAllocBoxes)
-	DEALLOCATE_LOCAL(pClipBoxes);
+    if(pClipBoxes != (BoxPtr)infoRec->PreAllocMem)
+	xfree(pClipBoxes);
 }
 

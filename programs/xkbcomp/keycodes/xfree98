@@ -111,8 +111,8 @@ default xkb_keycodes "pc98" {
 
     <INS>  =  64;
     <DELE> =  65;
-    <PGUP> =  62;
-    <PGDN> =  63;
+    <PGUP> =  63;
+    <PGDN> =  62;
     <UP>   =  66;
     <LEFT> =  67;
     <RGHT> =  68;

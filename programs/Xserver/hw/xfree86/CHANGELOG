@@ -1,3 +1,25 @@
+XFree86 3.9Nq (13 December 1998)
+2070. DDC1 support for TVP3026 based Matrox cards (#2309, Andrew Aitchison).
+2069. More rewrites of the way spans and rects are handles in XAA so that
+      it never has to allocate any memory, thereby eliminating potential
+      stack overflow problems (#2308, Mark Vojkovich).
+2068. MGA driver-provided FillCacheBltRects replacement, optimised for fastblt
+      (#2307, Mark Vojkovich).
+2067. Choose MGA planar vs linear screen to screen colour expansion at runtime
+      rather than at compile time (#2307, Mark Vojkovich).
+2066. Fix a build problem related to Xarch.h on OpenBSD (#2306,
+      Matthieu Herrb).
+2065. Fix a typo in FreeBSD.cf that affects adding the runtime library
+      search patch for 2.2.x (#2305, Keisuke Inoue).
+2064. Some update XKB files for French-Canadian keyboards (#2204, Eric Moreau). 
+2063. Fix an incorrect realloc in xmodmap (#2303, Alexander V. Lukyanov).
+2062. Fix depth 30 for the glint driver (#2297, Alan Hourihane).
+2061. Resync pandix and panmi, and fix some panoramix build problems
+      (#2296, Alan Hourihane).
+2060. Enable offscreen pixmaps for the glint driver (#2295, Alan Hourihane).
+2059. Fix PC98 XKB (#2292, Hirofumi Nishizuka and #2300, Tetsuo Tsukamoto).
+2058. Fix some unresolved symbols (#2293, Michael Rohleder).
+
 XFree86 3.9Np (6 December 1998)
 2057. Some xedit updates (#2291, Paulo Cesar Pereira de Andrade).
 2056. Updates to the Xaw text code (#2291, Paulo Cesar Pereira de Andrade).
@@ -6924,4 +6946,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.648 1998/12/05 14:39:59 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.649 1998/12/06 06:08:17 dawes Exp $

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/Xext/extmod/Imakefile,v 1.9 1998/10/06 06:08:26 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xext/extmod/Imakefile,v 1.10 1998/11/15 06:20:57 dawes Exp $
 XCOMM This directory is only entered if DoLoadableServer is set
 
 #define IHaveModules
@@ -89,7 +89,7 @@ LinkSourceFile(cup.c,..)
 #if BuildXinerama
         PNRXSRCS = panoramiX.c panoramiXSwap.c panoramiXprocs.c
         PNRXOBJS = panoramiX.o panoramiXSwap.o panoramiXprocs.o
-    PNRXINCLUDES = -I$(FONTINCSRC) -I../mi
+    PNRXINCLUDES = -I$(FONTINCSRC) -I../../mi
 #endif
 
      MODINITSRCS = modinit.c 
@@ -113,7 +113,7 @@ LinkSourceFile(cup.c,..)
 
 XF86INCLUDES = -I$(XF86COMSRC)
     INCLUDES = -I.. -I../../include -I$(XINCLUDESRC) -I$(EXTINCSRC) \
-	       $(XF86INCLUDES) -I$(FONTINCSRC)
+	       $(XF86INCLUDES) -I$(FONTINCSRC) -I$(PNRXINCLUDES)
     LINTLIBS = ../../dix/llib-ldix.ln ../../os/llib-los.ln
 
 LinkSourceFile(shape.c,..)
@@ -126,6 +126,9 @@ LinkSourceFile(bigreq.c,..)
 LinkSourceFile(sync.c,..)
 LinkSourceFile(xcmisc.c,..)
 LinkSourceFile(xprint.c,..)
+LinkSourceFile(panoramiX.c,..)
+LinkSourceFile(panoramiXSwap.c,..)
+LinkSourceFile(panoramiXprocs.c,..)
 
 ModuleObjectRule()
 SpecialCObjectRule(modinit,$(ICONFIGFILES),$(EXT_DEFINES))
