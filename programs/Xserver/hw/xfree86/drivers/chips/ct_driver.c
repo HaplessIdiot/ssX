@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.44 1998/12/29 13:00:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.45 1999/01/14 13:04:18 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -936,7 +936,6 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     CHIPSPtr cPtr;
     int *numChipsets;
     const char *reqSym = NULL;
-    int apertureSize;
 
     xf86AddControlledResource(pScrn,IO);
 
@@ -1066,7 +1065,11 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	clockRanges->interlaceAllowed = TRUE;
     clockRanges->doubleScanAllowed = FALSE;
 
-    apertureSize = cPtr->FbMapSize - cPtr->FrameBufferSize;
+    /* 
+     * Reduce the amount of video ram for the modes, so that they
+     * don't overlap with the DSTN framebuffer
+     */
+    pScrn->videoRam -= (cPtr->FrameBufferSize + 1023) / 1024;
     
     if (cPtr->Flags & ChipsAccelSupport) {
 	/*
@@ -1077,7 +1080,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
       cPtr->Rounding = 64 * (pScrn->bitsPerPixel <= 8 ? 8 
 			     : pScrn->bitsPerPixel);
 	/* 16 Kb cache for each bpp */
-	apertureSize -= 16 * 1024 * (pScrn->bitsPerPixel >> 3);
+	pScrn->videoRam -= 16 * (pScrn->bitsPerPixel >> 3);
     } else {
 	cPtr->Rounding = 8;
 	if (pScrn->bitsPerPixel >= 8)
@@ -1088,28 +1091,46 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 			  pScrn->display->modes, clockRanges,
 			  NULL, 256, 2048, cPtr->Rounding,
 			  128, 2048, pScrn->display->virtualX,
-			  pScrn->display->virtualY, apertureSize,
+			  pScrn->display->virtualY, cPtr->FbMapSize,
 			  LOOKUP_BEST_REFRESH);
     /*
      * If we are using accel and don't find any valid modes
      * we might not have enough memory for a 64 bit rounding
      * and 16 Kb per bpp cache. Let's try without it.
-     * Should we disable accel also ?
      */
-    if (i == -1 && (cPtr->Flags & ChipsAccelSupport)) {
+    if (i < 1 && (cPtr->Flags & ChipsAccelSupport)) {
 	cPtr->Rounding = 8;
 	if (pScrn->bitsPerPixel >= 8)
 	    cPtr->Rounding *= pScrn->bitsPerPixel;
-	apertureSize += 16 * 1024 * (pScrn->bitsPerPixel >> 3);
+	pScrn->videoRam += 16 * (pScrn->bitsPerPixel >> 3);
+	
+	/*
+	 * If the modepool isn't empty, we'll need to delete it
+	 * before revalidating the mode list
+	 */
+	{
+	    DisplayModePtr first, p, n;
+	    p = pScrn->modes;
+	    if ( p != NULL) {
+		do {
+		    if (!(first = pScrn->modes))
+			break;
+		    n = p->next;
+		    xf86DeleteMode(&(pScrn->modes), p);
+		    p = n;
+		} while (p != NULL && p != first);
+	    }
+	    pScrn->modePool = NULL;
+	}
 	
 	i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
 			      pScrn->display->modes, clockRanges,
 			      NULL, 256, 2048, cPtr->Rounding,
 			      128, 2048, pScrn->display->virtualX,
-			      pScrn->display->virtualY, apertureSize,
+			      pScrn->display->virtualY, cPtr->FbMapSize,
 			      LOOKUP_BEST_REFRESH);
 
-	if (i > -1) {
+	if (i >= 1) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		       "not enough free memory to adjust display pitch.\n");
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
@@ -1122,6 +1143,11 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	CHIPSFreeRec(pScrn);
 	return FALSE;
     }
+
+    /*
+     * Put the DSTN framebuffer back into the video ram
+     */
+    pScrn->videoRam += (cPtr->FrameBufferSize + 1023) / 1024;
 
     /* Prune the modes marked as invalid */
     xf86PruneDriverModes(pScrn);
@@ -1554,14 +1580,15 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	if (tmp & 1) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Frame Buffer used\n");
 	    if (!(tmp & 0x80)) {
-		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-			   "Using embedded Frame Buffer\n");
 		/* Formula for calculating the size of the framebuffer. 3
 		 * bits per pixel 10 pixels per 32 bit dword. If frame
 		 * acceleration is enabled the size can be halved.
 		 */
 		cPtr->FrameBufferSize = ( Size->HDisplay * 
-					  Size->VDisplay / 5 ) * ((tmp & 2) ? 1 : 2);
+				  Size->VDisplay / 5 ) * ((tmp & 2) ? 1 : 2);
+		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+			   "Using embedded Frame Buffer, size %d bytes\n",
+			   cPtr->FrameBufferSize);
 	    } else
 		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 			   "Using external Frame Buffer used\n");
@@ -2486,13 +2513,15 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 	if (tmp & 1) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Frame Buffer used\n");
 	    if ((cPtr->Chipset > CHIPS_CT65530) && !(tmp & 0x80)) {
-		xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Using embedded Frame Buffer\n");
 		/* Formula for calculating the size of the framebuffer. 3
 		 * bits per pixel 10 pixels per 32 bit dword. If frame
 		 * acceleration is enabled the size can be halved.
 		 */
 		cPtr->FrameBufferSize = ( Size->HDisplay *
 			Size->VDisplay / 5 ) * ((tmp & 2) ? 1 : 2);
+		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+			   "Using embedded Frame Buffer, size %d bytes\n",
+			   cPtr->FrameBufferSize);
 	    } else
 		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 			   "Using external Frame Buffer used\n");
