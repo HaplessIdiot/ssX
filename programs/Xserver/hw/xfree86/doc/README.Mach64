@@ -84,7 +84,7 @@
   uses a font and pixmap cache that is only available at a screen width
   of 1024.  This restriction will be removed in a future version of the
   X server.  To obtain the best performance from your video card, you
-  need to make sure that there is enough room offscreen for the caches
+  need to make sure that there is enough room off-screen for the caches
   (at least 1024x256).  In addition to the cache, the Mach64 uses memory
   mapped registers which are mapped to the last 1024 bytes of the memory
   aperture.  This takes away another line from video memory.  Thus, you
@@ -144,7 +144,7 @@
 
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach64.sgml,v 3.1 1995/06/08 06:27:40 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach64.sgml,v 3.2 1995/06/25 09:53:40 dawes Exp $
 
 
 

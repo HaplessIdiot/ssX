@@ -27,7 +27,7 @@
   of the Hercules Graphite series, Spider Black Widow VLB and Black
   Widow Plus VLB, Boca Vortek VL, CatsEye/X XGA-2, and the PS/2-57
   planar XGA-2. The Orchid Celsius is very similar to the Spider and
-  Boca boards, except some batchs may use one of the AT&T 20C490 series
+  Boca boards, except some batches may use one of the AT&T 20C490 series
   RAMDACs, instead of the Sierra 15025. There has also been a report of
   a generic board that uses a UMC RAMDAC that may be an AT&T 20C490
   Clone.
@@ -54,11 +54,11 @@
 
 
 
-     o  Some special-case speedup added to cached font rendoring in
+     o  Some special-case speedup added to cached font rendering in
         3.1.1 has been disabled as is over-aggressive in some cases.
         This cuts the performance on terminal-fonts in half, and font
         performance is already low for the AGX chips compared to their
-        contempories.
+        contemporaries.
 
 
 
@@ -123,10 +123,10 @@
   for the AGX-014, AGX-015, AGX-016, and ISA-based XGA-1 and XGA-2 is
   the Chipset. However to get full capability out of the the AGX-01456
   chips, the RAMDAC should be specified.  Other parms may select
-  additional capabities, or may used to override the defaults or reduce
-  start-up time be suppressing probing. XGA specific configuration is
-  coverd at the end of this document. The XGA entries can generally be
-  used to override defaults for the AGX-01456 as well.
+  additional capabilities, or may used to override the defaults or
+  reduce start-up time be suppressing probing. XGA specific
+  configuration is covered at the end of this document. The XGA entries
+  can generally be used to override defaults for the AGX-01456 as well.
 
 
 
@@ -293,7 +293,7 @@
 
            "fast_dram"
               All of the vram options are cleared.  Should be specified
-              if directly specifying VRAM options inorder to clear POST
+              if directly specifying VRAM options in order to clear POST
               settings.
 
 
@@ -372,17 +372,17 @@
         subsequent runs won't probe clocks and will be quicker to
         startup. For the clock probe it is recommended that the X server
         be run with the -probeonly option. The values in the clocks
-        statement are the harware input clocks and correspond to the
+        statement are the hardware input clocks and correspond to the
         pixel clock only at 8bpp in direct-clocking RAMDAC modes. The
-        server will divide/mulitply those values as appropriate for the
+        server will divide/multiply those values as appropriate for the
         RAMDAC modes available at the current pixel depth. The available
         pixel clocks will be displayed in the startup messages.
 
         For the 2MB Hercules Graphites, with the "herc-dual-dac" RAMDAC
         specified, earlier versions of the server generated an
-        additional 16 clocks with values doubled and some xeroed.  Those
-        are no longer needed and you should reprobe and renter the clock
-        values to ensure all clocks are available to you.
+        additional 16 clocks with values doubled and some zeroed.  Those
+        are no longer needed and you should re-probe and re-enter the
+        clock values to ensure all clocks are available to you.
 
         The AGX-015 2MB Hercules Graphite VL Pro with an ICS1494M
         9251-516 clock chip has probed clock values of:
@@ -506,7 +506,7 @@
      MEMbase        nnnn
         The XGA display memory address (the address the XGA coprocessor
         uses for video memory). This is also the system memory address
-        of the linear aperature on boards that support it.
+        of the linear aperture on boards that support it.
 
         POS register 4 bits 7-1 contains bits 31-25 of the XGA's display
         memory address. Bits 24-22 of of the display memory address
@@ -547,7 +547,7 @@
      VGAbase        nnnn
         Can be used to override the default 0xA0000 address for the 64KB
         video memory address used by the server. The only values
-        exceptable are 0xA0000 and 0xB0000. VGA text mode restore does
+        acceptable are 0xA0000 and 0xB0000. VGA text mode restore does
         not work under Linux if 0xB0000 is specified.
 
         AGX-01456 also default to 0xA0000.
@@ -563,7 +563,7 @@
 
 
      DACspeed      nnnn
-        Can be used to overide the servers default maximum Pixel Clock
+        Can be used to override the servers default maximum Pixel Clock
         for XGA-2 of 80Mhz.  The limit can be raised as high as 90Mhz,
         or set to lower values.
 
@@ -593,7 +593,7 @@
   is not known whether the clockprobing will work. Some XGA-1 chips may
   support 16bpp.
   $XConsortium: agx.sgml,v 1.4 95/01/27 16:14:35 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.9 1995/06/24 10:28:41 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.10 1995/06/25 09:53:43 dawes Exp $
 
 
 

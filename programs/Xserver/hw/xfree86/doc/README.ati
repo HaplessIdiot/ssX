@@ -71,7 +71,7 @@
   Other than these, ATI's board naming convention (if it can be said
   that one exists) starts to fall apart.
 
-  The VGA Wonder series was also availble through ATI's OEM channel
+  The VGA Wonder series was also available through ATI's OEM channel
   under the name VGA1024.  Thus, the ATI VGA driver also supports
   VGA1024, VGA1024D, VGA1024XL, VGA1024DXL and VGA1024VLB boards, among
   others.
@@ -235,7 +235,7 @@
   France, tsi@ualberta.ca
 
   $XConsortium: ati.sgml,v 1.1 95/01/06 20:29:55 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.4 1995/05/27 03:11:53 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.5 1995/06/25 09:53:45 dawes Exp $
 
 
 

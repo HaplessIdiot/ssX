@@ -370,7 +370,7 @@
         The old path to the pipes on ISC's R4 /tmp/.X11-unix has changed
         to /dev/X/ISCCONN. For compatibility reasons on ISC, the pipes
         in the new directory will be linked to a file inside the old.
-        This will normaly be a hard link, so it can't go across
+        This will normally be a hard link, so it can't go across
         filesystems. On ISC Version 4.x this is now allowed. But you
         should use the new S5L on both filesystems.  ISC30 systems
         should take care that the two directories are on the same FS.
@@ -388,7 +388,7 @@
 
 
   $XConsortium: isc.sgml,v 1.2 95/01/27 16:14:38 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.5 1995/03/04 06:16:01 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.6 1995/06/25 09:53:47 dawes Exp $
 
 
 
