@@ -1,5 +1,5 @@
 /* $XConsortium: util.c,v 1.17 94/04/17 20:03:48 rws Exp $ */
-/* $XFree86: xc/programs/xdm/util.c,v 3.1 1994/06/26 13:11:48 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/util.c,v 3.2 1994/06/28 12:32:42 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -219,7 +219,7 @@ freeArgs (argv)
 
 CleanUpChild ()
 {
-#if defined(SYSV) || defined(SVR4) || defined(linux)
+#if defined(SYSV) || defined(SVR4)
 #if !(defined(SVR4) && defined(i386))
 	setpgrp ();
 #endif

@@ -1,5 +1,5 @@
 /* $XConsortium: session.c,v 1.72 94/04/17 20:03:45 gildea Exp $ */
-/* $XFree86: xc/programs/xdm/session.c,v 3.1 1994/05/22 00:02:09 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/session.c,v 3.2 1994/06/26 13:11:47 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -537,19 +537,19 @@ StartClient (verify, d, pidp, name, passwd)
 	    LogError("setgroups for \"%s\" failed, errno=%d\n", name, errno);
 	    return (0);
 	}
-#if (BSD >= 199103)
-	if (setlogin(name) < 0)
-	{
-	    LogError("setlogin for \"%s\" failed, errno=%d", name, errno);
-	    return(0);
-	}
-#endif
 #else
 	if (setgid(verify->gid) < 0)
 	{
 	    LogError("setgid %d (user \"%s\") failed, errno=%d\n",
 		     verify->gid, name, errno);
 	    return (0);
+	}
+#endif
+#if (BSD >= 199103)
+	if (setlogin(name) < 0)
+	{
+	    LogError("setlogin for \"%s\" failed, errno=%d", name, errno);
+	    return(0);
 	}
 #endif
 	if (setuid(verify->uid) < 0)
