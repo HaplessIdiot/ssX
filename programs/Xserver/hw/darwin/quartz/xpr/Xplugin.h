@@ -30,7 +30,7 @@
 
    Note that these interfaces are provided solely for the use of the
    X11 server. Any other uses are unsupported and strongly discouraged. */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/xpr/Xplugin.h,v 1.2 2003/05/02 00:08:49 torrey Exp $ */
 
 #ifndef XPLUGIN_H
 #define XPLUGIN_H 1
@@ -174,6 +174,7 @@ enum xp_window_changes_enum {
     XP_STACKING			= 1 << 3,
     XP_DEPTH			= 1 << 4,
     XP_COLORMAP			= 1 << 5,
+    XP_WINDOW_LEVEL		= 1 << 6,
 };
 
 struct xp_window_changes_struct {
@@ -199,6 +200,9 @@ struct xp_window_changes_struct {
     /* XP_COLORMAP, window-only */
     xp_colormap_fun *colormap;
     void *colormap_data;
+
+    /* XP_WINDOW_LEVEL, window-only */
+    int window_level;
 };
 
 typedef struct xp_window_changes_struct xp_window_changes;
@@ -242,7 +246,7 @@ enum xp_init_options_enum {
 };
 
 
-
+
 /* Miscellaneous functions */
 
 /* Initialize the plugin library. Only the copy/fill/composite functions
@@ -271,7 +275,7 @@ extern xp_error xp_disable_update (void);
 extern xp_error xp_reenable_update (void);
 
 
-
+
 /* Cursor functions. */
 
 /* Installs the specified cursor. ARGB-DATA should point to 32-bit
@@ -291,7 +295,7 @@ extern xp_error xp_hide_cursor (void);
 extern xp_error xp_show_cursor (void);
 
 
-
+
 /* Window functions. */
 
 /* Create a new window as defined by MASK and VALUES. MASK must contain
@@ -406,7 +410,7 @@ extern xp_error xp_find_window (int x, int y, xp_window_id above_id,
 extern xp_error xp_get_window_bounds (xp_window_id id, xp_box *bounds_ret);
 
 
-
+
 /* Window surface functions. */
 
 /* Create a new VRAM surface on the specified window. If successful,
@@ -461,7 +465,7 @@ extern xp_error xp_attach_gl_context (void *cgl_ctx, xp_surface_id sid);
 extern xp_error xp_update_gl_context (void *cgl_ctx);
 
 
-
+
 /* Window frame functions. */
 
 /* Possible arguments to xp_frame_get_rect (). */
@@ -524,7 +528,8 @@ extern xp_error xp_frame_draw (xp_window_id wid, int class, unsigned int attr,
 			       unsigned int title_len,
 			       const unsigned char *title_bytes);
 
-
+
+
 /* Memory manipulation functions. */
 
 enum xp_composite_op_enum {
@@ -584,4 +589,3 @@ extern unsigned int xp_fill_bytes_threshold, xp_copy_bytes_threshold,
 
 
 #endif /* XPLUGIN_H */
-
