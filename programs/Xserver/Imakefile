@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:47:01 cpqbld Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.208 2001/01/17 22:12:17 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.209 2001/01/24 00:06:09 dawes Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -1121,9 +1121,11 @@ DARWINDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(DDXDIR1) 
 DARWINOBJS = 
 DARWINLIBS = PreFbLibs hw/darwin/libdarwin.a $(CFB16) $(CFB32) $(CFB8) PostFbLibs ../../lib/font/libXfont.a ../../lib/font/stubs/libfntstubs.a
 
-XCOMM We need extra link flags for IOKit and CoreGraphics.
+XCOMM We need extra link flags for IOKit. For Quartz support, we also need
+XCOMM CoreGraphics in ApplicationServices and HIToolbox in Carbon.
 #if DarwinQuartzSupport
-EXTRA_LOAD_FLAGS = -framework IOKit -framework CoreGraphics
+EXTRA_LOAD_FLAGS = -framework IOKit -framework ApplicationServices \
+                   -framework Carbon
 #else
 EXTRA_LOAD_FLAGS = -framework IOKit
 #endif	/* DarwinQuartzSupport */
