@@ -1,4 +1,5 @@
 XFree86 4.3.99.12 (xx August 2003)
+ 412. Allow building libOSMesa during non-XFree86 builds (Marc La France).
  411. Rip out incorrect limits on the number of PCI buses an ix86 chipset can
       handle and implement an improved solution for avoiding "phantom" PCI
       buses (Marc La France, Bugzilla #604).
@@ -17640,7 +17641,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2834 2003/08/29 20:48:56 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2835 2003/08/29 21:07:36 tsi Exp $
 
 
 
