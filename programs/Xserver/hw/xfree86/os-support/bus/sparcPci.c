@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.15tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.16tsi Exp $ */
 /*
  * Copyright (C) 2001-2003 The XFree86 Project, Inc.
  * All rights reserved.
@@ -297,7 +297,7 @@ sparcPciInit(void)
 	sparcDomainRec     domain;
 	sparcDomainPtr     pDomain;
 	pciBusFuncs_p      pFunctions;
-	char               *prop_val;
+	char               *prop_val, *bridge_name;
 	int                prop_len, bus;
 
 	prop_val = promGetProperty("name", &prop_len);
@@ -313,26 +313,37 @@ sparcPciInit(void)
 		continue;
 	}
 
+	/* Ensure NUL-termination and only check the first name */
+	prop_val[prop_len] = '\0';
+	if (!strlen(prop_val))
+	    continue;
+
 	pFunctions = &sparcPCIFunctions;
 	(void)memset(&domain, 0, sizeof(domain));
 
-	if (!strncmp("SUNW,sabre",   prop_val, prop_len) ||
-	    !strncmp("pci108e,a000", prop_val, prop_len) ||
-	    !strncmp("pci108e,a001", prop_val, prop_len)) {
+	do {
+	    static Bool sabre_seen = FALSE;
+
+	    if (!strcmp("SUNW,sabre",   prop_val) ||
+		!strcmp("pci108e,a000", prop_val))
+		bridge_name = "Sabre";
+	    else
+	    if (!strcmp("pci108e,a001", prop_val))
+		bridge_name = "Hummingbird";
+	    else
+		break;
+
 	    /*
 	     * There can only be one "Sabre" bridge in a system.  It provides
 	     * PCI configuration space, a 24-bit I/O space and a 32-bit memory
 	     * space, all three of which are at fixed physical CPU addresses.
 	     */
-	    static Bool sabre_seen = FALSE;
-
-	    xf86Msg(X_INFO,
-		"Sabre or Hummingbird PCI host bridge found (\"%s\")\n",
-		prop_val);
+	    xf86Msg(X_INFO, "%s PCI host bridge found (\"%s\")\n",
+		bridge_name, prop_val);
 
 	    /* There can only be one Sabre */
 	    if (sabre_seen)
-		continue;
+		goto nextNode;
 	    sabre_seen = TRUE;
 
 	    /* Get "bus-range" property */
@@ -340,7 +351,7 @@ sparcPciInit(void)
 	    if (!prop_val || (prop_len != 8) ||
 		(((unsigned int *)prop_val)[0]) ||
 		(((unsigned int *)prop_val)[1] >= 256))
-		continue;
+		goto nextNode;
 
 	    pci_addr         = 0x01fe01000000ull;
 	    domain.io_addr   = 0x01fe02000000ull;
@@ -351,9 +362,12 @@ sparcPciInit(void)
 	    domain.bus_max   = ((int *)prop_val)[1];
 
 	    pFunctions = &sabrePCIFunctions;
-	} else
-	if (!strncmp("SUNW,psycho",  prop_val, prop_len) ||
-	    !strncmp("pci108e,8000", prop_val, prop_len)) {
+
+	    goto newDomain;
+	} while (0);
+
+	if (!strcmp("SUNW,psycho",  prop_val) ||
+	    !strcmp("pci108e,8000", prop_val)) {
 	    /*
 	     * A "Psycho" host bridge provides two PCI interfaces, each with
 	     * its own 16-bit I/O and 31-bit memory spaces.  Both share the
@@ -369,7 +383,7 @@ sparcPciInit(void)
 	    if (!prop_val || (prop_len != 8) ||
 		(((unsigned int *)prop_val)[1] >= 256) ||
 		(((unsigned int *)prop_val)[0] > ((unsigned int *)prop_val)[1]))
-		continue;
+		goto nextNode;
 
 	    domain.bus_min = ((int *)prop_val)[0];
 	    domain.bus_max = ((int *)prop_val)[1];
@@ -398,7 +412,7 @@ sparcPciInit(void)
 		 ((unsigned int *)prop_val)[26]) ||
 		(((unsigned int *)prop_val)[20] !=
 		 ((unsigned int *)prop_val)[27]))
-		continue;
+		goto nextNode;
 
 	    /* Use memcpy() to avoid alignment issues */
 	    (void)memcpy(&pci_addr, prop_val + 12,
@@ -410,41 +424,57 @@ sparcPciInit(void)
 
 	    domain.io_size  = 0x000000010000ull;
 	    domain.mem_size = 0x000080000000ull;
-	} else
-	if (!strncmp("SUNW,schizo",  prop_val, prop_len) ||
-	    !strncmp("pci108e,8001", prop_val, prop_len)) {
+
+	    goto newDomain;
+	}
+
+	do {
+	    volatile unsigned long long mem_match, mem_mask, io_match, io_mask;
+	    unsigned long Offset;
+	    pointer pSchizo;
+
+	    if (!strcmp("SUNW,schizo",    prop_val) ||
+		!strcmp("pci108e,8001",   prop_val))
+		bridge_name = "Schizo";
+	    else
+	    if (!strcmp("SUNW,schizo+",   prop_val) ||
+		!strcmp("pci108e,8002",   prop_val))
+		bridge_name = "Schizo+";
+	    else
+	    if (!strcmp("SUNW,tomatillo", prop_val) ||
+		!strcmp("pci108e,a801",   prop_val))
+		bridge_name = "Tomatillo";
+	    else
+		break;
+
 	    /*
-	     * I have no docs on the "Schizo", but judging from the Linux
-	     * kernel, it also provides two PCI domains.  Each PCI
-	     * configuration space is the usual 16M in size, followed by a
-	     * variable-length I/O space.  Each domain also provides a
+	     * I have no docs on the "Schizo", nor on any of its revisions, but
+	     * judging from the Linux kernel, it also provides two PCI domains.
+	     * Each PCI configuration space is the usual 16M in size, followed
+	     * by a variable-length I/O space.  Each domain also provides a
 	     * variable-length memory space.  The kernel seems to think the I/O
 	     * spaces are 16M long, and the memory spaces, 2G, but these
 	     * assumptions are actually only present in source code comments.
 	     * Sun has, however, confirmed to me the validity of these
 	     * assumptions.
 	     */
-	    volatile unsigned long long mem_match, mem_mask, io_match, io_mask;
-	    unsigned long Offset;
-	    pointer pSchizo;
-
-	    xf86Msg(X_INFO,
-		"Schizo PCI host bridge found (\"%s\")\n", prop_val);
+	    xf86Msg(X_INFO, "%s PCI host bridge found (\"%s\")\n",
+		bridge_name, prop_val);
 
 	    /* Get "bus-range" property */
 	    prop_val = promGetProperty("bus-range", &prop_len);
 	    if (!prop_val || (prop_len != 8) ||
 		(((unsigned int *)prop_val)[1] >= 256) ||
 		(((unsigned int *)prop_val)[0] > ((unsigned int *)prop_val)[1]))
-		continue;
+		goto nextNode;
 
 	    domain.bus_min = ((int *)prop_val)[0];
 	    domain.bus_max = ((int *)prop_val)[1];
 
 	    /* Get "reg" property */
 	    prop_val = promGetProperty("reg", &prop_len);
-	    if (!prop_val || (prop_len != 48))
-		continue;
+	    if (!prop_val || ((prop_len != 48) && (prop_len != 64)))
+		goto nextNode;
 
 	    /* Temporarily map some of Schizo's registers */
 	    pSchizo = sparcMapAperture(-1, VIDMEM_MMIO,
@@ -471,18 +501,21 @@ sparcPciInit(void)
 	    io_mask  = (((io_mask  - 1) ^ io_mask ) >> 1) + 1;
 
 	    if (io_mask <= 0x000001000000ull)	/* Nothing left for I/O */
-		continue;
+		goto nextNode;
 
 	    domain.mem_addr = mem_match & ~0x8000000000000000ull;
 	    domain.mem_size = mem_mask;
 	    pci_addr        = io_match  & ~0x8000000000000000ull;
 	    domain.io_addr  = pci_addr  +  0x0000000001000000ull;
 	    domain.io_size  = io_mask   -  0x0000000001000000ull;
-	} else {
-	    xf86Msg(X_WARNING, "Unknown PCI host bridge: \"%s\"\n", prop_val);
-	    continue;
-	}
 
+	    goto newDomain;
+	} while (0);
+
+	xf86Msg(X_WARNING, "Unknown PCI host bridge: \"%s\"\n", prop_val);
+	continue;
+
+newDomain:
 	/* Only map as much PCI configuration as we need */
 	domain.pci = (char *)sparcMapAperture(-1, VIDMEM_MMIO,
 	    pci_addr + PCI_MAKE_TAG(domain.bus_min, 0, 0),
@@ -599,6 +632,8 @@ sparcPciInit(void)
 
 	/* Assume the host bridge is device 0, function 0 on its bus */
 	SetBitInMap(0, pDomain->dfn_mask);
+
+nextNode:;
     }
 
     sparcPromClose();
