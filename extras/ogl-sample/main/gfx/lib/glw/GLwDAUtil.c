@@ -40,12 +40,31 @@
  * $Header$
  */
 
+/* $XFree86$ */
+
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 #include <GL/glx.h>
 #include <GL/gl.h>
-#include <Xm/PrimitiveP.h>
-#include "GLwDrawAP.h"
+
+/*
+ * By default only a static library is created because most of the UNIX
+ * loaders, if not all, complain about unresolved symbols even if the
+ * application doesn't use the modules in which such symbols are referenced.
+ * However, if your system supports libraries with weak symbols (e.g.
+ * Solaris, FreeBSD and Linux) it is possible to fool the loader using these
+ * weak symbols.
+ */
+#ifdef USE_XM_STUBS
+#pragma weak _XmPrimitiveHighlightPixmapDefault	= _Xm_Stub_Pointer_
+#pragma weak _XmHighlightColorDefault		= _Xm_Stub_Pointer_
+#pragma weak _XmForegroundColorDefault		= _Xm_Stub_Pointer_
+#pragma weak _XmBackgroundColorDefault		= _Xm_Stub_Pointer_
+#pragma weak _XmStrings				= _Xm_Stub_Pointer_
+#pragma weak xmPrimitiveClassRec		= _Xm_Stub_Pointer_
+
+static XtPointer _Xm_Stub_Pointer_ = NULL;
+#endif
 
 void GLwDrawingAreaMakeCurrent (Widget w, GLXContext ctx)
 {

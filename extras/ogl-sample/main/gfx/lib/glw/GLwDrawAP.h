@@ -37,13 +37,25 @@
 ** $Header$
 */
 
+/*
+** This file has been slightly modified from the original by Carlos A. M. dos
+** Santos <casantos@cpmet.ufpel.tche.br> for integration into XFree86 source
+** tree and for generating both Motif(TM) 1.2 and 2.x versions of the widgets
+** in the same library.
+*/
+/* $XFree86$ */
+
 #ifndef _GLwDrawAP_h
 #define _GLwDrawAP_h
 
 #ifdef __GLX_MOTIF
-#include "GLwMDrawA.h"
+# ifndef __GLX_INCLUDE_PRIMITIVE_P_H	/* Used during library compilation */
+#  include <Xm/PrimitiveP.h>
+# endif
+# include <GL/GLwMDrawA.h>		/* includes IntrinsicP.h */
 #else
-#include "GLwDrawA.h"
+# include <X11/IntrinsicP.h>
+# include <GL/GLwDrawA.h>
 #endif
 
 typedef struct _GLwDrawingAreaClassPart

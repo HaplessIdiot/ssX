@@ -38,15 +38,14 @@
 */
 
 #include <stdio.h>
-#include <X11/IntrinsicP.h>
-#include <X11/StringDefs.h>
 #include <GL/glx.h>
 #include <GL/gl.h>
 #ifdef __GLX_MOTIF
-#include <Xm/PrimitiveP.h>
 #include "GLwMDrawAP.h"
 #else /* not __GLX_MOTIF */
 #include "GLwDrawAP.h"
+#include <X11/IntrinsicP.h>
+#include <X11/StringDefs.h>
 #endif /* __GLX_MOTIF */
 #include <assert.h>
 
