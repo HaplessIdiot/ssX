@@ -31,7 +31,7 @@
  * Modifier:  Takanori Tateno   FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/omGeneric.c,v 3.19 2001/03/02 23:01:28 dawes Exp $ */
+/* $XFree86: xc/lib/X11/omGeneric.c,v 3.20 2001/04/05 17:42:26 dawes Exp $ */
 
 /*
  * Fixed the algorithms in parse_fontname() and parse_fontdata()
@@ -1056,6 +1056,21 @@ parse_fontdata(oc, font_set, font_data, font_data_count, name_list, name_list_co
 	     *
 	     * Owen Taylor <otaylor@redhat.com>     12 Jul 2000
 	     */
+	    /* The reason why this routine modifies font_data and has a
+	     * font_data_return is that if it is called with C_PRIMARY, then
+	     * font_data_return is used by the caller and with the others classes
+	     * font_data is used by the caller (font_data can be different
+	     * than font_data_return if we do not break here).
+	     * However, a close look at the code (e.g., the drawing funcs) shows
+	     * that breaking or not here change nothing! 
+	     * So we should 'break' here.
+	     * Hopefully this also fix a memory leak: if we do not break here
+	     * and found a match later font_data->xlfd_name is deferenced without
+	     * being freed. Finally, this speed up font loading.
+	     *
+	     * <olivier.chapuis@free.fr>             2002-06-29
+	     */
+	    break;
 	}
 
 	switch(class) {
@@ -1126,13 +1141,21 @@ parse_vw(oc, font_set, name_list, count)
     int		ret = 0, i = 0;
 
     if(vmap_num > 0) {
-	if(parse_fontdata(oc, font_set, vmap, vmap_num, name_list, count, C_VMAP) == -1)
+	if(parse_fontdata(oc, font_set, vmap, vmap_num, name_list, count,
+			  C_VMAP, &font_data_return) == -1) {
+	    if(font_data_return.xlfd_name != NULL)
+		 XFree(font_data_return.xlfd_name);
 	    return (-1);
+	}
+	if(font_data_return.xlfd_name != NULL)
+	    XFree(font_data_return.xlfd_name);
     }
 
     if(vrotate_num > 0) {
 	ret = parse_fontdata(oc, font_set, (FontData) vrotate, vrotate_num,
 			     name_list, count, C_VROTATE, &font_data_return);
+	if(font_data_return.xlfd_name != NULL)
+	    XFree(font_data_return.xlfd_name);
 	if(ret == -1) {
 	    return (-1);
 	} else if(ret == False) {
@@ -1168,6 +1191,8 @@ parse_vw(oc, font_set, name_list, count)
 
 	    ret = parse_fontdata(oc, font_set, (FontData) vrotate, vrotate_num,
 				 name_list, count, C_VROTATE, &font_data_return);
+	    if(font_data_return.xlfd_name != NULL)
+		XFree(font_data_return.xlfd_name);
 	    if(ret == -1)
 		return (-1);
 	}
@@ -1237,6 +1262,7 @@ parse_fontname(oc)
 		font_set->side = font_data_return.side;
 
                 Xfree (font_data_return.xlfd_name);
+                font_data_return.xlfd_name = NULL;
 
 		if(parse_vw(oc, font_set, name_list, count) == -1)
 		    goto err;
@@ -1258,6 +1284,10 @@ parse_fontname(oc)
 	    ret = parse_fontdata(oc, font_set, font_set->substitute,
 				 font_set->substitute_num,
 				 name_list, count, C_SUBSTITUTE, &font_data_return);
+	    if(font_data_return.xlfd_name != NULL) {
+		XFree(font_data_return.xlfd_name);
+		font_data_return.xlfd_name = NULL;
+	    }
 	    if(ret == -1) {
 		goto err;
 	    } else if(ret == True) {
@@ -1295,6 +1325,8 @@ err:
     XFreeStringList(name_list);
     /* Prevent this from being freed twice */
     oc->core.base_name_list = NULL;
+    if(font_data_return.xlfd_name != NULL)
+	XFree(font_data_return.xlfd_name);
 
     return -1;
 }
@@ -1475,6 +1507,13 @@ void destroy_fontdata(gen,dpy)
 	font_set = gen->font_set;
 	font_set_num = gen->font_set_num;
 	for( ; font_set_num-- ; font_set++) {
+	    if(font_set->font) {
+		if(font_set->font->fid)
+		    XFreeFont(dpy,font_set->font);
+		else
+		    XFreeFontInfo(NULL, font_set->font, 1);
+		font_set->font = NULL;
+	    }
 	    if(font_set->font_data) {
 		free_fontdataOC(dpy,
 			font_set->font_data, font_set->font_data_count);

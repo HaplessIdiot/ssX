@@ -35,7 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86: dpsXpriv.c,v 1.6 2001/11/16 16:47:52 dawes Exp $ */
+/* $XFree86: xc/lib/dps/dpsXpriv.c,v 1.7 2002/03/05 21:50:14 herrb Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -192,14 +192,14 @@ static void OutputEventHandler (
 static int BlockForEvent (
     Display *dpy)
 {
-    long readfds;
+    fd_set readfds;
   
     XDPSQuitBlocking = false;
     /* XDPSQuitBlocking becomes true if a zombie status event or
        any output event is received by the status event handler for
        the currently-awaiting-results context. */
     while (1) {
-	readfds = (1 << ConnectionNumber(dpy));
+	FD_SET(ConnectionNumber(dpy), &readfds);
 	if (select (ConnectionNumber(dpy)+1, (SELECT_TYPE) &readfds,
 		    (SELECT_TYPE) NULL, (SELECT_TYPE) NULL,
 		    (struct timeval *) NULL) < 0) {

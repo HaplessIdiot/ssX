@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/xclock/Clock.c,v 3.22 2002/08/28 04:32:24 keithp Exp $ */
+/* $XFree86: xc/programs/xclock/Clock.c,v 3.23 2002/10/17 01:00:01 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/StringDefs.h>
@@ -109,6 +109,8 @@ static XtResource resources[] = {
 	offset(utime), XtRImmediate, (XtPointer) FALSE},
     {XtNanalog, XtCBoolean, XtRBoolean, sizeof(Boolean),
         offset(analog), XtRImmediate, (XtPointer) TRUE},
+    {XtNtwentyfour, XtCBoolean, XtRBoolean, sizeof(Boolean),
+        offset(twentyfour), XtRImmediate, (XtPointer) TRUE},
     {XtNbrief, XtCBoolean, XtRBoolean, sizeof(Boolean),
         offset(brief), XtRImmediate, (XtPointer) FALSE},
     {XtNstrftime, XtCString, XtRString, sizeof(String),
@@ -416,9 +418,21 @@ TimeString (ClockWidget w, struct tm *tm)
 {
    if (w->clock.brief)
    {
-      static char brief[5];
-      sprintf (brief, "%02d:%02d", tm->tm_hour, tm->tm_min);
-      return brief;
+      if (w->clock.twentyfour)
+      {
+	  static char brief[6];
+	  sprintf (brief, "%02d:%02d", tm->tm_hour, tm->tm_min);
+	  return brief;
+      }
+      else
+      {
+	 static char brief[9];
+	 int hour = tm->tm_hour % 12;
+	 if (!hour) hour = 12;
+	 sprintf (brief, "%02d:%02d %cM", hour, tm->tm_min,
+	    tm->tm_hour >= 12 ? 'P' : 'A');
+	 return brief;
+      }
    }
    else if (w->clock.utime)
    {
@@ -438,10 +452,14 @@ TimeString (ClockWidget w, struct tm *tm)
      ctime[STRFTIME_BUFF_SIZE-1] = '\0';
      return ctime;
    }
-
-
-   return asctime (tm);
-
+   else if (w->clock.twentyfour)
+      return asctime (tm);
+   else
+   {
+      static char long12[28];
+      strftime(long12, sizeof long12, "%a %b %d %I:%M:%S %p %Y", tm);
+      return long12;
+   }
 }
 
 /* ARGSUSED */

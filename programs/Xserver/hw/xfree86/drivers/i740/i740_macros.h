@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_macros.h,v 1.2 2000/02/23 04:47:14 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_macros.h,v 1.3 2002/01/25 21:56:03 tsi Exp $ */
 
 /*
  * Authors:
@@ -33,10 +33,13 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
 
+#include "xf86fbman.h"
+
+
 #define	WAIT_ENGINE_IDLE_PIO() {					\
-	    outb(pI740->ioBase + XRX, BITBLT_CNTL);			\
-	    while (inb(pI740->ioBase + XRX + 1) & BITBLT_STATUS)	\
-		outb(pI740->ioBase + XRX, BITBLT_CNTL);			\
+	    outb(XRX, BITBLT_CNTL);					\
+	    while (inb(XRX+1) & BITBLT_STATUS)				\
+		outb(XRX, BITBLT_CNTL);					\
 	}
 
 #define	WAIT_ENGINE_IDLE_MMIO() {					\

@@ -49,7 +49,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/xclock/Clock.h,v 1.10 2002/06/14 22:34:57 keithp Exp $ */
+/* $XFree86: xc/programs/xclock/Clock.h,v 1.11 2002/10/17 01:00:01 dawes Exp $ */
 
 #ifndef _XawClock_h
 #define _XawClock_h
@@ -66,6 +66,7 @@ SOFTWARE.
 
  Name		     Class		RepType		Default Value
  ----		     -----		-------		-------------
+ twentyfour	     Boolean		Boolean		True
  analog		     Boolean		Boolean		True
  background	     Background		Pixel		white
  backingStore	     BackingStore	BackingStore	default
@@ -93,6 +94,9 @@ SOFTWARE.
 		/* color of hands */
 #define XtNhand "hands"
 
+
+		/* Boolean: 24-hour if TRUE */
+#define XtNtwentyfour "twentyfour"
 
 		/* Boolean: digital if FALSE */
 #define XtNanalog "analog"

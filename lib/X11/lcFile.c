@@ -23,7 +23,7 @@
  * SOFTWARE.
  *
 */
-/* $XFree86: xc/lib/X11/lcFile.c,v 3.26 2002/05/31 18:45:42 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcFile.c,v 3.27 2002/09/04 03:09:48 dawes Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -443,6 +443,10 @@ _XlcLocaleDirName(dir_name, lc_name)
   xlocaledir (dir, PATH_MAX);
   n = _XlcParsePath(dir, args, 256);
   for (i = 0; i < n; ++i){
+    if (name != NULL && name != lc_name) {
+       XFree(name);
+       name = NULL;
+    }
     if ((2 + (args[i] ? strlen(args[i]) : 0) + 
 	 strlen(locale_alias)) < PATH_MAX) {
       sprintf (buf, "%s/%s", args[i], locale_alias);
@@ -471,15 +475,26 @@ _XlcLocaleDirName(dir_name, lc_name)
 	*p = '\0';
 	break;
       }
+      XFree(target_name);
+      target_name = NULL;
     }
   }
+
+  if (name != NULL && name != lc_name) {
+      XFree(name);
+  }
+
   if (target_name == NULL) {
     /* vendor locale name == Xlocale name, no expansion of alias */
     target_dir = args[0];
     target_name = lc_name;
   }
+
   strcpy(dir_name, target_dir);
   strcat(dir_name, "/");
   strcat(dir_name, target_name);
+  if (target_name != lc_name) {
+      XFree(target_name);
+  }
   return dir_name;
 }

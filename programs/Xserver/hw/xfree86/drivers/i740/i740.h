@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740.h,v 1.4 2001/05/04 19:05:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740.h,v 1.5 2002/01/25 21:56:02 tsi Exp $ */
 
 /*
  * Authors:
@@ -56,13 +56,12 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 typedef struct _I740Rec *I740Ptr;
 
-typedef void (*I740WriteIndexedByteFunc)(I740Ptr pI740, IOADDRESS addr, 
+typedef void (*I740WriteIndexedByteFunc)(I740Ptr pI740, int addr, 
 					 unsigned char index, char value);
-typedef char (*I740ReadIndexedByteFunc)(I740Ptr pI740, IOADDRESS addr, 
+typedef char (*I740ReadIndexedByteFunc)(I740Ptr pI740, int addr, 
 					unsigned char index);
-typedef void (*I740WriteByteFunc)(I740Ptr pI740, IOADDRESS addr,
-				  unsigned char value);
-typedef char (*I740ReadByteFunc)(I740Ptr pI740, IOADDRESS addr);
+typedef void (*I740WriteByteFunc)(I740Ptr pI740, int addr, unsigned char value);
+typedef char (*I740ReadByteFunc)(I740Ptr pI740, int addr);
 
 typedef struct {
   unsigned char DisplayControl;
@@ -115,7 +114,29 @@ typedef struct _I740Rec {
   I740WriteByteFunc writeStandard;
   I740ReadByteFunc readStandard;
   OptionInfoPtr Options;
-  IOADDRESS ioBase;
+
+  /*DGA*/
+  DGAModePtr DGAModes;
+  int numDGAModes;
+  Bool DGAactive;
+  int DGAViewportStatus;
+  BoxRec FbMemBox;
+  /*-*/
+
+  /*I2C*/
+  I2CBusPtr             rc_i2c;
+  /*-*/
+
+  /*-*/ /*Overlay*/
+  XF86VideoAdaptorPtr adaptor;
+  unsigned long OverlayStart;
+  unsigned long OverlayPhysical;
+  int colorKey;
+  ScreenBlockHandlerProcPtr BlockHandler;
+  int ov_offset_x,ov_offset_y;
+  /*-*/
+
+  Bool usevgacompat;
 } I740Rec;
 
 #define I740PTR(p) ((I740Ptr)((p)->driverPrivate))
@@ -124,13 +145,13 @@ extern Bool I740CursorInit(ScreenPtr pScreen);
 extern Bool I740AccelInit(ScreenPtr pScreen);
 void I740SetPIOAccess(I740Ptr pI740);
 void I740SetMMIOAccess(I740Ptr pI740);
+void I740InitVideo(ScreenPtr pScreen);
+
+Bool I740SwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
+void I740AdjustFrame(int scrnIndex, int x, int y, int flags);
+
 
 #define minb(p) MMIO_IN8(pI740->MMIOBase, (p))
 #define moutb(p,v) MMIO_OUT8(pI740->MMIOBase, (p),(v))
 
 #endif
-  
-
-
-
-
