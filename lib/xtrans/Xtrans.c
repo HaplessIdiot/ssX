@@ -1,5 +1,5 @@
 /* $XConsortium: Xtrans.c,v 1.28 94/12/01 16:30:09 kaleb Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.6 1995/01/12 05:54:15 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.7 1995/03/11 14:10:18 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -442,8 +442,9 @@ char	*address;
 
     if (ciptr == NULL)
     {
-	PRMSG (1,"TRANS(Open): transport open failed for %s/%s:%s\n",
-	       protocol, host, port);
+	if (!(thistrans->flags & TRANS_DISABLED))
+	    PRMSG (1,"TRANS(Open): transport open failed for %s/%s:%s\n",
+	           protocol, host, port);
 	free (protocol);
 	free (host);
 	free (port);
@@ -1077,6 +1078,9 @@ XtransConnInfo 	**ciptrs_ret;
 
 	if ((ciptr = TRANS(OpenCOTSServer(buffer))) == NULL)
 	{
+	    if (trans->flags & TRANS_DISABLED)
+		continue;
+
 	    PRMSG (1,
 	  "TRANS(MakeAllCOTSServerListeners) failed to open listener for %s\n",
 		  trans->TransName, 0, 0);
