@@ -1,5 +1,8 @@
-XFree86 3.1.2Ba (28 December 1995)
-176. Modify lnxLib.rules to find libc.sa on Slackware 3.0.
+XFree86 3.1.2Ba (3 January 1996)
+178. Fix support for the old ET4000 in the et4000 driver.
+177. Fix problem with the SIS driver that can cause a server crash
+     (Alan Hourihane).
+176. Modify linux config for building a.out binaries on Slackware 3.0.
 175. Fix Linux Joystick compilation problems.
 174. Doc updates.
 
