@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/r61_main/5 1996/02/02 18:44:52 gildea $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.66tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.67 1996/10/03 08:29:58 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -1125,12 +1125,12 @@ DDXDIR2 = hw/xfree98
 XF98NECS3SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) \
                    $(CFB24DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
 XF98NECS3OBJS = $(XF98COMSRC)/XF86_S3.o $(XF98ACCELSRC)/s3nec/s3Conf.o \
-                $(XF98NECDRIVERSRC)/newmmio/newmmio.o \
-                $(XF98NECDRIVERSRC)/mmio_928/mmio_928.o \
-                $(XF98NECDRIVERSRC)/s3_generic/s3_generic.o
-XF98NECS3LIBS = $(XF98ACCELSRC)/s3nec/LibraryTargetName(s3) \
-                $(XF98ACCELSRC)/s3nec/s3newmmio/LibraryTargetName(s3newmmio) \
-                $(XF98ACCELSRC)/s3nec/s3mmio/LibraryTargetName(s3mmio) \
+                $(XF98NECS3DRIVERSRC)/newmmio/newmmio.o \
+                $(XF98NECS3DRIVERSRC)/mmio_928/mmio_928.o \
+                $(XF98NECS3DRIVERSRC)/s3_generic/s3_generic.o
+XF98NECS3LIBS = $(XF98ACCELSRC)/s3nec/LibraryTargetName(s3nec) \
+                $(XF98ACCELSRC)/s3nec/s3newmmio/LibraryTargetName(s3necnewmmio) \
+                $(XF98ACCELSRC)/s3nec/s3mmio/LibraryTargetName(s3necmmio) \
                 $(XF98LIBSNEC) CFBLibs \
                 $(XF98ACCELSRC)/cache/LibraryTargetName(xf86cache)
 XF98NECS3SYSLIBS = $(SYSLIBS)
@@ -1160,9 +1160,9 @@ XF98PWSKBOBJS = $(XF98COMSRC)/XF86_S3.o $(XF98ACCELSRC)/s3pwskb/s3Conf.o \
                 $(XF98PWSKBDRIVERSRC)/newmmio/newmmio.o \
                 $(XF98PWSKBDRIVERSRC)/mmio_928/mmio_928.o \
                 $(XF98PWSKBDRIVERSRC)/s3_generic/s3_generic.o
-XF98PWSKBLIBS = $(XF98ACCELSRC)/s3pwskb/LibraryTargetName(s3) \
-                $(XF98ACCELSRC)/s3pwskb/s3newmmio/LibraryTargetName(s3newmmio) \
-                $(XF98ACCELSRC)/s3pwskb/s3mmio/LibraryTargetName(s3mmio) \
+XF98PWSKBLIBS = $(XF98ACCELSRC)/s3pwskb/LibraryTargetName(s3pwskb) \
+                $(XF98ACCELSRC)/s3pwskb/s3newmmio/LibraryTargetName(s3pwskbnewmmio) \
+                $(XF98ACCELSRC)/s3pwskb/s3mmio/LibraryTargetName(s3pwskbmmio) \
                 $(XF98LIBSPWSKB) CFBLibs \
                 $(XF98ACCELSRC)/cache/LibraryTargetName(xf86cache)
 XF98PWSKBSYSLIBS = $(SYSLIBS)
@@ -1192,9 +1192,9 @@ XF98PWLBOBJS = $(XF98COMSRC)/XF86_S3.o $(XF98ACCELSRC)/s3pwlb/s3Conf.o \
                $(XF98PWLBDRIVERSRC)/newmmio/newmmio.o \
                $(XF98PWLBDRIVERSRC)/mmio_928/mmio_928.o \
                $(XF98PWLBDRIVERSRC)/s3_generic/s3_generic.o
-XF98PWLBLIBS = $(XF98ACCELSRC)/s3pwlb/LibraryTargetName(s3) \
-               $(XF98ACCELSRC)/s3pwlb/s3newmmio/LibraryTargetName(s3newmmio) \
-               $(XF98ACCELSRC)/s3pwlb/s3mmio/LibraryTargetName(s3mmio) \
+XF98PWLBLIBS = $(XF98ACCELSRC)/s3pwlb/LibraryTargetName(s3pwlb) \
+               $(XF98ACCELSRC)/s3pwlb/s3newmmio/LibraryTargetName(s3pwlbnewmmio) \
+               $(XF98ACCELSRC)/s3pwlb/s3mmio/LibraryTargetName(s3pwlbmmio) \
                $(XF98LIBSPWLB) CFBLibs \
                $(XF98ACCELSRC)/cache/LibraryTargetName(xf86cache)
 XF98PWLBSYSLIBS = $(SYSLIBS)
@@ -1224,9 +1224,9 @@ XF98GA968OBJS = $(XF98COMSRC)/XF86_S3.o $(XF98ACCELSRC)/s3ga968/s3Conf.o \
                 $(XF98GA968DRIVERSRC)/newmmio/newmmio.o \
                 $(XF98GA968DRIVERSRC)/mmio_928/mmio_928.o \
                 $(XF98GA968DRIVERSRC)/s3_generic/s3_generic.o
-XF98GA968LIBS = $(XF98ACCELSRC)/s3ga968/LibraryTargetName(s3) \
-                $(XF98ACCELSRC)/s3ga968/s3newmmio/LibraryTargetName(s3newmmio) \
-                $(XF98ACCELSRC)/s3ga968/s3mmio/LibraryTargetName(s3mmio) \
+XF98GA968LIBS = $(XF98ACCELSRC)/s3ga968/LibraryTargetName(s3ga968) \
+                $(XF98ACCELSRC)/s3ga968/s3newmmio/LibraryTargetName(s3ga968newmmio) \
+                $(XF98ACCELSRC)/s3ga968/s3mmio/LibraryTargetName(s3ga968mmio) \
                 $(XF98LIBSGA968) CFBLibs \
                 $(XF98ACCELSRC)/cache/LibraryTargetName(xf86cache)
 XF98GA968SYSLIBS = $(SYSLIBS)

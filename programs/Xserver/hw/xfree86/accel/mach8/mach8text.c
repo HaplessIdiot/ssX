@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8text.c,v 3.3 1995/01/28 17:01:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8text.c,v 3.4 1996/02/04 09:03:54 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -232,15 +232,19 @@ int mach8NoCPolyText(pDraw, pGC, x, y, count, chars, is8bit)
    outw (BKGD_COLOR, (short) pGC->bgPixel);
 
    for (; --numRects >= 0; ++pBox) {
-      WaitQueue(4);
-      outw (MULTIFUNC_CNTL, SCISSORS_L | (short)pBox->x1);
-      outw(MULTIFUNC_CNTL, SCISSORS_T | (short)pBox->y1);
-      outw(MULTIFUNC_CNTL, SCISSORS_R | (short)(pBox->x2 - 1));
-      outw(MULTIFUNC_CNTL, SCISSORS_B | (short)(pBox->y2 - 1));
+     /*
+      * Skip all boxes that are completely above or below the text string.
+      */
+     if( pBox->y2 >= y - maxAscent && pBox->y1 <= y + maxDescent ) {
+       WaitQueue(4);
+       outw (MULTIFUNC_CNTL, SCISSORS_L | (short)pBox->x1);
+       outw(MULTIFUNC_CNTL, SCISSORS_T | (short)pBox->y1);
+       outw(MULTIFUNC_CNTL, SCISSORS_R | (short)(pBox->x2 - 1));
+       outw(MULTIFUNC_CNTL, SCISSORS_B | (short)(pBox->y2 - 1));
 
-      mach8PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int) n, 
-			charinfo, FONTGLYPHS(pGC->font));
-
+       mach8PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int) n, 
+			 charinfo, FONTGLYPHS(pGC->font));
+     }
    }
 
    WaitQueue(7);
@@ -367,15 +371,19 @@ int mach8NoCImageText(pDraw, pGC, x, y, count, chars, is8bit)
    outw (BKGD_COLOR, (short) pGC->bgPixel);
 
    for (; --numRects >= 0; ++pBox) {
-      WaitQueue(4);
-      outw (MULTIFUNC_CNTL, SCISSORS_L | (short)pBox->x1);
-      outw(MULTIFUNC_CNTL, SCISSORS_T | (short)pBox->y1);
-      outw(MULTIFUNC_CNTL, SCISSORS_R | (short)(pBox->x2 - 1));
-      outw(MULTIFUNC_CNTL, SCISSORS_B | (short)(pBox->y2 - 1));
+     /*
+      * Skip all boxes that are completely above or below the text string.
+      */
+     if( pBox->y2 >= y - maxAscent && pBox->y1 <= y + maxDescent ) {
+       WaitQueue(4);
+       outw (MULTIFUNC_CNTL, SCISSORS_L | (short)pBox->x1);
+       outw(MULTIFUNC_CNTL, SCISSORS_T | (short)pBox->y1);
+       outw(MULTIFUNC_CNTL, SCISSORS_R | (short)(pBox->x2 - 1));
+       outw(MULTIFUNC_CNTL, SCISSORS_B | (short)(pBox->y2 - 1));
 
-      mach8PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int) n, 
-			charinfo, FONTGLYPHS(pGC->font));
-
+       mach8PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int) n, 
+			 charinfo, FONTGLYPHS(pGC->font));
+     }
    }
 
    WaitQueue(7);
