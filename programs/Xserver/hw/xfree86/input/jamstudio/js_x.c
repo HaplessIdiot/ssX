@@ -20,7 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/jamstudio/js_x.c,v 1.1tsi Exp $ */
 
 #include <sys/types.h>
 #include "xf86Version.h"
@@ -47,7 +47,6 @@
 #define SYSCALL(call) while(((call) == -1) && (errno == EINTR))
 
 #ifdef XFREE86_V4
-#ifdef XFree86LOADER
 
 struct hiddev_event
 {
@@ -324,8 +323,10 @@ xf86JS_XInit(InputDriverPtr drv, IDevPtr dev, int flags)
    return (local);
 }
 
-InputDriverRec JS_X =
+InputDriverRec JAMSTUDIO =
       { 1, "js_x", NULL, xf86JS_XInit, xf86JS_XUnInit, NULL, 0 };
+
+#ifdef XFree86LOADER
 
 static void
 xf86JS_XUnplug(pointer p)
@@ -336,7 +337,7 @@ xf86JS_XUnplug(pointer p)
 static pointer
 xf86JS_XPlug(pointer module, pointer options, int *errmaj, int *errmin)
 {
-   xf86AddInputDriver(&JS_X, module, 0);
+   xf86AddInputDriver(&JAMSTUDIO, module, 0);
    return module;
 }
 
@@ -350,8 +351,7 @@ static XF86ModuleVersionInfo xf86JS_XVersionRec = {
    ABI_CLASS_XINPUT,
    ABI_XINPUT_VERSION,
    MOD_CLASS_XINPUT,
-   {0, 0, 0, 0}				/* signature, to be patched into the file by */
-   /* a tool */
+   {0, 0, 0, 0}		/* signature, to be patched into the file by a tool */
 };
 
 XF86ModuleData js_xModuleData = { &xf86JS_XVersionRec,
