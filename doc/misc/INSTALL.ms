@@ -3,8 +3,8 @@
 .\" X11R6.6 Installation instructions. Use troff -ms macros
 .\"
 .\"
-.\" $XFree86: xc/doc/misc/INSTALL.ms,v 1.6 2001/05/24 16:34:49 dawes Exp $
-.ds Ts August 20, 2000\"
+.\" $XFree86: xc/doc/misc/INSTALL.ms,v 1.7 2001/12/19 21:37:27 dawes Exp $
+.ds Ts April 4, 2001\"
 .\"
 .ie t \{
 .nr LL 6.5i
@@ -55,9 +55,8 @@ Copyright \(co 1999,2000,2001 IBM Corporation
 Copyright \(co 1999,2000,2001 Hummingbird Communications Ltd.
 Copyright \(co 1999,2000,2001 Silicon Graphics, Inc.
 Copyright \(co 1999,2000,2001 Sun Microsystems, Inc.
-Copyright \(co 1999,2000,2001 The Open Group
+Copyright \(co 1998,1999,2000,2001 The Open Group
 .fi
-Copyright \(co 1998 The Open Group
 .nr PS 9
 .nr VS 11
 .LP
@@ -100,13 +99,13 @@ X Window System is a trademark of The Open Group.
 .nH 1 "Introduction"
 .\"
 This document is the installation notes that were provided with X.Org's
-X11R6.5.1 release.  If you're building XFree86, it can be used as
-a rough guide.  Be aware that most of the details are not targetted
+X11R6.6 release.  If you're building XFree86, it can be used as
+a rough guide.  Be aware that most of the details are not targeted
 specifically at the current XFree86 source tree.  XFree86-specific
 documentation can be found in the \fBxc/programs/Xserver/hw/xfree86/doc\fP
 directory and on-line at http://www.xfree86.org/current/.  Some of the
 documentation there is out of date, so also be aware of that.  There is
-currently no up to date document specifically targetted at building
+currently no up to date document specifically targeted at building
 XFree86 from source.
 
 .nH 1 "Easy Build Instructions"
@@ -184,20 +183,20 @@ releases, and this release is no different.
 
 Every release of X has been progressively easier to configure, build,
 and install than the preceding releases \(em and we believe this 
-release is the easiest release to build yet. That not withstanding, 
+release is the easiest release to build yet. That notwithstanding, 
 if things do go amiss during the build we assume that you have the 
 basic skills necessary, and the willingness, to debug any errors 
 that may occur in the build process. When you install, if you're 
 going to use \fIxdm\fP or replace your system's old X, we assume 
 you have a basic understanding of your system's initialization 
-process. For Remote Execution (RX, embedding) we assume you that 
+process. For Remote Execution (RX, embedding) we assume that 
 you understand the fundamentals of HTTP, CGI, and HTML. If these 
 assumptions are not correct then you should consider finding someone 
 who has proficiency in these areas to do the build and install for you.
 .LP
 After the release has been out for a while more up to date information 
 about any newly-discovered problems may be found in the \fIFrequently 
-Asked Questions\fP posting appearing monthly on the Usenet newsgroup
+Asked Questions\fP posting, which appears monthly on the Usenet newsgroup
 comp.windows.x and xpert mailing list. The FAQ is also available via 
 anonymous FTP from ftp://ftp.x.org/ in the file 
 ftp://ftp.x.org/contrib/faqs/FAQ.Z, or possibly on one of X 
@@ -646,7 +645,7 @@ You can install the manual pages by typing the following as root:
 
 .nH 2 "Shared Libraries"
 
-The version number of some of the the shared libraries has been changed.
+The version number of some of the shared libraries has been changed.
 On SunOS 4, which supports minor version numbers for shared libraries,
 programs linked with the R6.6 libraries will use the new libraries with
 no special action required. 
