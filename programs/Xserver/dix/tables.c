@@ -46,129 +46,40 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: tables.c,v 1.25 94/04/17 20:26:46 gildea Exp $ */
+/* $XFree86$ */
 
-extern int    ProcInitialConnection(), ProcEstablishConnection();
+#include "X.h"
+#define NEED_EVENTS
+#define NEED_REPLIES
+#include "Xproto.h"
+#include "windowstr.h"
+#include "dispatch.h"
+#include "swaprep.h"
+#include "swapreq.h"
 
-extern int    ProcBadRequest(), ProcCreateWindow(),
-    ProcChangeWindowAttributes(), ProcGetWindowAttributes(),
-    ProcDestroyWindow(), ProcDestroySubwindows(), ProcChangeSaveSet(),
-    ProcReparentWindow(), ProcMapWindow(), ProcMapSubwindows(),
-    ProcUnmapWindow(), ProcUnmapSubwindows(), ProcConfigureWindow(),
-    ProcCirculateWindow(), ProcGetGeometry(), ProcQueryTree(),
-    ProcInternAtom(), ProcGetAtomName(), ProcChangeProperty(),
-    ProcDeleteProperty(), ProcGetProperty(), ProcListProperties(),
-    ProcSetSelectionOwner(), ProcGetSelectionOwner(), ProcConvertSelection(),
-    ProcSendEvent(), ProcGrabPointer(), ProcUngrabPointer(),
-    ProcGrabButton(), ProcUngrabButton(), ProcChangeActivePointerGrab(),
-    ProcGrabKeyboard(), ProcUngrabKeyboard(), ProcGrabKey(),
-    ProcUngrabKey(), ProcAllowEvents(), ProcGrabServer(),
-    ProcUngrabServer(), ProcQueryPointer(), ProcGetMotionEvents(),
-    ProcTranslateCoords(), ProcWarpPointer(), ProcSetInputFocus(),
-    ProcGetInputFocus(), ProcQueryKeymap(), ProcOpenFont(),
-    ProcCloseFont(), ProcQueryFont(), ProcQueryTextExtents(),
-    ProcListFonts(), ProcListFontsWithInfo(), ProcSetFontPath(),
-    ProcGetFontPath(), ProcCreatePixmap(), ProcFreePixmap(),
-    ProcCreateGC(), ProcChangeGC(), ProcCopyGC(),
-    ProcSetDashes(), ProcSetClipRectangles(), ProcFreeGC(),
-    ProcClearToBackground(), ProcCopyArea(), ProcCopyPlane(),
-    ProcPolyPoint(), ProcPolyLine(), ProcPolySegment(),
-    ProcPolyRectangle(), ProcPolyArc(), ProcFillPoly(),
-    ProcPolyFillRectangle(), ProcPolyFillArc(), ProcPutImage(),
-    ProcGetImage(), ProcPolyText(),
-    ProcImageText8(), ProcImageText16(), ProcCreateColormap(),
-    ProcFreeColormap(), ProcCopyColormapAndFree(), ProcInstallColormap(),
-    ProcUninstallColormap(), ProcListInstalledColormaps(), ProcAllocColor(),
-    ProcAllocNamedColor(), ProcAllocColorCells(), ProcAllocColorPlanes(),
-    ProcFreeColors(), ProcStoreColors(), ProcStoreNamedColor(),
-    ProcQueryColors(), ProcLookupColor(), ProcCreateCursor(),
-    ProcCreateGlyphCursor(), ProcFreeCursor(), ProcRecolorCursor(),
-    ProcQueryBestSize(), ProcQueryExtension(), ProcListExtensions(),
-    ProcChangeKeyboardMapping(), ProcSetPointerMapping(),
-    ProcGetKeyboardMapping(), ProcGetPointerMapping(),
-    ProcChangeKeyboardControl(),
-    ProcGetKeyboardControl(), ProcBell(), ProcChangePointerControl(),
-    ProcGetPointerControl(), ProcSetScreenSaver(), ProcGetScreenSaver(),
-    ProcChangeHosts(), ProcListHosts(), ProcChangeAccessControl(),
-    ProcChangeCloseDownMode(), ProcKillClient(),
-    ProcRotateProperties(), ProcForceScreenSaver(),
-    ProcSetModifierMapping(), ProcGetModifierMapping(),
-    ProcNoOperation();
-
-extern int    SProcSProcBadRequest(), SProcCreateWindow(),
-    SProcChangeWindowAttributes(), 
-    SProcReparentWindow(), SProcConfigureWindow(),
-    SProcInternAtom(), SProcChangeProperty(),
-    SProcDeleteProperty(), SProcGetProperty(),
-    SProcSetSelectionOwner(),
-    SProcConvertSelection(),
-    SProcSendEvent(), SProcGrabPointer(),
-    SProcGrabButton(), SProcUngrabButton(), SProcChangeActivePointerGrab(),
-    SProcGrabKeyboard(), SProcGrabKey(),
-    SProcUngrabKey(), SProcGetMotionEvents(),
-    SProcTranslateCoords(), SProcWarpPointer(), SProcSetInputFocus(),
-    SProcOpenFont(),
-    SProcListFonts(), SProcListFontsWithInfo(), SProcSetFontPath(),
-    SProcCreatePixmap(),
-    SProcCreateGC(), SProcChangeGC(), SProcCopyGC(),
-    SProcSetDashes(), SProcSetClipRectangles(),
-    SProcClearToBackground(), SProcCopyArea(), SProcCopyPlane(),
-    SProcPoly(), SProcFillPoly(), SProcPutImage(),
-    SProcGetImage(), SProcPolyText(), 
-    SProcImageText(), SProcCreateColormap(),
-    SProcCopyColormapAndFree(), SProcAllocColor(),
-    SProcAllocNamedColor(), SProcAllocColorCells(), SProcAllocColorPlanes(),
-    SProcFreeColors(), SProcStoreColors(), SProcStoreNamedColor(),
-    SProcQueryColors(), SProcLookupColor(), SProcCreateCursor(),
-    SProcCreateGlyphCursor(), SProcRecolorCursor(),
-    SProcQueryBestSize(), SProcQueryExtension(),
-    SProcChangeKeyboardMapping(), SProcChangeKeyboardControl(),
-    SProcChangePointerControl(),
-    SProcSetScreenSaver(),
-    SProcChangeHosts(),
-    SProcRotateProperties(), 
-    SProcNoOperation(), SProcResourceReq(), SProcSimpleReq();
-
-extern void 
-    SErrorEvent(), NotImplemented(), SKeyButtonPtrEvent(), SEnterLeaveEvent(),
-    SFocusEvent(), SKeymapNotifyEvent(), SExposeEvent(),
-    SGraphicsExposureEvent(), SNoExposureEvent(), SVisibilityEvent(),
-    SCreateNotifyEvent(), SDestroyNotifyEvent(), SUnmapNotifyEvent(),
-    SMapNotifyEvent(), SMapRequestEvent(), SReparentEvent(),
-    SConfigureNotifyEvent(), SConfigureRequestEvent(), SGravityEvent(),
-    SResizeRequestEvent(), SCirculateEvent(),
-    SPropertyEvent(), SSelectionClearEvent(), SSelectionRequestEvent(),
-    SSelectionNotifyEvent(), SColormapEvent(), SClientMessageEvent(), SMappingEvent();
-
-extern void
-    SGetWindowAttributesReply(), SGetGeometryReply(), SQueryTreeReply(),
-    SInternAtomReply(), SGetAtomNameReply(), SGetPropertyReply(),
-    SListPropertiesReply(), 
-    SGetSelectionOwnerReply(),
-    SQueryPointerReply(), SGetMotionEventsReply(), STranslateCoordsReply(),
-    SGetInputFocusReply(), SQueryKeymapReply(), SQueryFontReply(),
-    SQueryTextExtentsReply(), SListFontsReply(), SListFontsWithInfoReply(),
-    SGetFontPathReply(), SGetImageReply(), SListInstalledColormapsReply(),
-    SAllocColorReply(), SAllocNamedColorReply(), SAllocColorCellsReply(),
-    SAllocColorPlanesReply(), SQueryColorsReply(), SLookupColorReply(),
-    SQueryBestSizeReply(), SListExtensionsReply(),
-    SGetKeyboardMappingReply(), SGetKeyboardControlReply(), 
-    SGetPointerControlReply(), SGetScreenSaverReply(), 
-    SListHostsReply(), SGetPointerMappingReply(),
-    SGetModifierMappingReply(), SGenericReply();
+extern void NotImplemented();
 
 #ifdef K5AUTH
 extern int
     k5_stage1(), k5_stage2(), k5_stage3(), k5_bad();
 #endif
 
-int (* InitialVector[3]) () =
+int (* InitialVector[3]) (
+#if NeedNestedPrototypes
+	ClientPtr /* client */
+#endif
+    ) =
 {
     0,
     ProcInitialConnection,
     ProcEstablishConnection
 };
 
-int (* ProcVector[256]) () =
+int (* ProcVector[256]) (
+#if NeedNestedPrototypes
+	ClientPtr /* client */
+#endif
+    ) =
 {
     ProcBadRequest,
     ProcCreateWindow,
@@ -300,7 +211,11 @@ int (* ProcVector[256]) () =
     ProcNoOperation    
 };
 
-int (* SwappedProcVector[256]) () =
+int (* SwappedProcVector[256]) (
+#if NeedNestedPrototypes
+	ClientPtr /* client */
+#endif
+    ) =
 {
     ProcBadRequest,
     SProcCreateWindow,

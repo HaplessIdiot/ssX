@@ -1,10 +1,10 @@
 LIBRARY XIE
-DESCRIPTION "X11R6 XFree86 libXIE.dll for OS/2 EMX09B VERSION=6.1"
+DESCRIPTION "X11R6 XFree86 3.1.2E libXIE.dll for OS/2 EMX09B VERSION=6.1"
 CODE
 	PRELOAD
 DATA
 	MULTIPLE NONSHARED
-STACKSIZE 4096
+STACKSIZE 32768
 EXPORTS
 	 XieAbort  @ 1
 	 XieAllocatePhotofloGraph  @ 2
@@ -115,3 +115,93 @@ EXPORTS
 	 XieTecWhiteAdjustCIELabShift  @ 107
 	 XieTecYCCToRGB  @ 108
 	 XieTecYCbCrToRGB  @ 109
+	_XiePhotofloSize @ 110
+	_XieElemImportClientLUT @ 111
+	_XieElemImportClientPhoto @ 112
+	_XieElemImportClientROI @ 113
+	_XieElemImportDrawable @ 114
+	_XieElemImportDrawablePlane @ 115
+	_XieElemImportLUT @ 116
+	_XieElemImportPhotomap @ 117
+	_XieElemImportROI @ 118
+	_XieElemArithmetic @ 119
+	_XieElemBandCombine @ 120
+	_XieElemBandExtract @ 121
+	_XieElemBandSelect @ 122
+	_XieElemBlend @ 123
+	_XieElemCompare @ 124
+	_XieElemConstrain @ 125
+	_XieElemConvertFromIndex @ 126
+	_XieElemConvertFromRGB @ 127
+	_XieElemConvertToIndex @ 128
+	_XieElemConvertToRGB @ 129
+	_XieElemConvolve @ 130
+	_XieElemDither @ 131
+	_XieElemGeometry @ 132
+	_XieElemLogical @ 133
+	_XieElemMatchHistogram @ 134
+	_XieElemMath @ 135
+	_XieElemPasteUp @ 136
+	_XieElemPoint @ 137
+	_XieElemUnconstrain @ 138
+	_XieElemExportClientHistogram @ 139
+	_XieElemExportClientLUT @ 140
+	_XieElemExportClientPhoto @ 141
+	_XieElemExportClientROI @ 142
+	_XieElemExportDrawable @ 143
+	_XieElemExportDrawablePlane @ 144
+	_XieElemExportLUT @ 145
+	_XieElemExportPhotomap @ 146
+	_XieElemExportROI @ 147
+	_XieFloError @ 148
+	_XieColorAllocEvent @ 149
+	_XieDecodeNotifyEvent @ 150
+	_XieExportAvailableEvent @ 151
+	_XieImportObscuredEvent @ 152
+	_XiePhotofloDoneEvent @ 153
+	_XieConvertToIEEE @ 154
+	_XieCloseDisplay @ 155
+	_XiePrintError @ 156
+	_XieTechniqueLength @ 157
+	_XieEncodeTechnique @ 158
+	_XieColorAllocAllParam @ 159
+	_XieColorAllocMatchParam @ 160
+	_XieColorAllocRequantizeParam @ 161
+	_XieRGBToCIELabParam @ 162
+	_XieRGBToYCbCrParam @ 163
+	_XieRGBToYCCParam @ 164
+	_XieYCbCrToRGBParam @ 165
+	_XieYCCToRGBParam @ 166
+	_XieCIELabToRGBParam @ 167
+	_XieConvolveConstantParam @ 168
+	_XieClipScaleParam @ 169
+	_XieDecodeUncompressedSingleParam @ 170
+	_XieDecodeUncompressedTripleParam @ 171
+	_XieDecodeG31DParam @ 172
+	_XieDecodeTIFFPackBitsParam @ 173
+	_XieDecodeJPEGBaselineParam @ 174
+	_XieDitherOrderedParam @ 175
+	_XieEncodeUncompressedSingleParam @ 176
+	_XieEncodeUncompressedTripleParam @ 177
+	_XieEncodeG31DParam @ 178
+	_XieEncodeTIFFPackBitsParam @ 179
+	_XieEncodeServerChoiceParam @ 180
+	_XieEncodeG32DParam @ 181
+	_XieEncodeG42DParam @ 182
+	_XieEncodeJPEGBaselineParam @ 183
+	_XieEncodeJPEGLosslessParam @ 184
+	_XieEncodeTIFF2Param @ 185
+	_XieGeomAntialiasByAreaParam @ 186
+	_XieGeomAntialiasByLowpassParam @ 187
+	_XieGeomGaussianParam @ 188
+	_XieGeomNearestNeighborParam @ 189
+	_XieHistogramGaussianParam @ 190
+	_XieHistogramHyperbolicParam @ 191
+	_XieWhiteAdjustCIELabShiftParam @ 192
+	_XieInitTechFuncTable @ 193
+	_XieRegisterTechFunc @ 194
+	_XieLookupTechFunc @ 195
+	_XieExtInfoHeader @ 196
+	_XieElemFuncs @ 197
+	_XieTechFuncsInitialized @ 198
+	_XieTechFuncs @  199

@@ -1,5 +1,5 @@
 /* $XConsortium: main.c /main/82 1995/11/07 19:47:02 gildea $ */
-/* $XFree86: xc/config/makedepend/main.c,v 3.6 1996/01/24 21:55:45 dawes Exp $ */
+/* $XFree86: xc/config/makedepend/main.c,v 3.7 1996/02/20 14:31:44 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -322,16 +322,27 @@ main(argc, argv)
 #ifdef __EMX__
 	    {
 		char *emxinc = getenv("C_INCLUDE_PATH");
+		/* can have more than one component */
 		if (emxinc) {
-	    	    if (incp >= includedirs + MAXDIRS)
-			fatalerr("Too many -I flags.\n");
-		    *incp++ = emxinc;
+		    char *beg, *end;
+		    beg= (char*)strdup(emxinc);
+		    for (;;) {
+			end = (char*)strchr(beg,';');
+			if (end) *end = 0;
+		    	if (incp >= includedirs + MAXDIRS)
+				fatalerr("Too many include dirs\n");
+			*incp++ = beg;
+			if (!end) break;
+			beg = end+1;
+		    }
 		}
 	    }
-#endif
+#else /* !__EMX__, does not use INCLUDEDIR at all */
 	    if (incp >= includedirs + MAXDIRS)
 		fatalerr("Too many -I flags.\n");
 	    *incp++ = INCLUDEDIR;
+#endif
+
 #ifdef POSTINCDIR
 	    if (incp >= includedirs + MAXDIRS)
 		fatalerr("Too many -I flags.\n");
@@ -427,6 +438,21 @@ main(argc, argv)
 	exit(0);
 }
 
+#ifdef __EMX__
+/*
+ * eliminate \r chars from file
+ */
+static int elim_cr(char *buf, int sz)
+{
+	int i,wp;
+	for (i= wp = 0; i<sz; i++) {
+		if (buf[i] != '\r')
+			buf[wp++] = buf[i];
+	}
+	return wp;
+}
+#endif
+
 struct filepointer *getfile(file)
 	char	*file;
 {
@@ -447,6 +473,9 @@ struct filepointer *getfile(file)
 		fatalerr("cannot allocate mem\n");
 	if ((st.st_size = read(fd, content->f_base, st.st_size)) < 0)
 		fatalerr("failed to read %s\n", file);
+#ifdef __EMX__
+	st.st_size = elim_cr(content->f_base,st.st_size);
+#endif
 	close(fd);
 	content->f_len = st.st_size+1;
 	content->f_p = content->f_base;
@@ -515,7 +544,7 @@ char *getline(filep)
 			}
 			continue;
 		}
-#ifdef WIN32
+#if defined(WIN32) || defined(__EMX__)
 		else if (*p == '/' && *(p+1) == '/') { /* consume comments */
 			*p++ = ' ', *p++ = ' ';
 			while (*p && *p != '\n')

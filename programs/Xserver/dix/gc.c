@@ -46,7 +46,8 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 5.27 94/04/17 20:26:36 dpw Exp $ */
+/* $XConsortium: gc.c,v 5.28 95/02/27 16:42:14 dpw Exp $ */
+/* $XFree86$ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -62,6 +63,7 @@ SOFTWARE.
 #include "dix.h"
 
 extern XID clientErrorValue;
+extern FontPtr defaultFont;
 
 static Bool CreateDefaultTile(
 #if NeedFunctionPrototypes
@@ -114,8 +116,16 @@ NOTE:
 32 bits long
 */
 
+/* The following macros produce the same result, but the second one doesn't
+ * yield a warning message from gcc (the generated object code is different).
+ */
+#if 0
 #define NEXTVAL(_type, _var) \
     { if (fPointer) _var = (_type)*pPtr++; else _var = (_type)*pval++; }
+#else
+#define NEXTVAL(_type, _var) \
+    { if (fPointer) _var = *((_type*)pPtr++); else _var = *((_type*)pval++); }
+#endif
 
 int
 DoChangeGC(pGC, mask, pval, fPointer)
@@ -124,7 +134,7 @@ DoChangeGC(pGC, mask, pval, fPointer)
     XID			*pval;
     int			fPointer;
 {
-    register BITS32 	index;
+    register BITS32 	index2;
     register int 	error = 0;
     PixmapPtr 		pPixmap;
     BITS32		maskQ;
@@ -135,10 +145,10 @@ DoChangeGC(pGC, mask, pval, fPointer)
     maskQ = mask;	/* save these for when we walk the GCque */
     while (mask && !error) 
     {
-	index = (BITS32) lowbit (mask);
-	mask &= ~index;
-	pGC->stateChanges |= index;
-	switch (index)
+	index2 = (BITS32) lowbit (mask);
+	mask &= ~index2;
+	pGC->stateChanges |= index2;
+	switch (index2)
 	{
 	    case GCFunction:
 	    {
@@ -503,8 +513,12 @@ BUG:
 */
 
 static GCPtr
+#if NeedFunctionPrototypes
+AllocateGC(ScreenPtr pScreen)
+#else
 AllocateGC(pScreen)
     ScreenPtr pScreen;
+#endif
 {
     GCPtr pGC;
     register char *ptr;
@@ -542,7 +556,6 @@ CreateGC(pDrawable, mask, pval, pStatus)
     int		*pStatus;
 {
     register GCPtr pGC;
-    extern FontPtr defaultFont;
 
     pGC = AllocateGC(pDrawable->pScreen);
     if (!pGC)
@@ -602,7 +615,7 @@ CreateGC(pDrawable, mask, pval, pStatus)
     pGC->stipple = pGC->pScreen->PixmapPerDepth[0];
     pGC->stipple->refcnt++;
 
-    pGC->stateChanges = (1 << GCLastBit+1) - 1;
+    pGC->stateChanges = (1 << (GCLastBit+1)) - 1;
     if (!(*pGC->pScreen->CreateGC)(pGC))
 	*pStatus = BadAlloc;
     else if (mask)
@@ -670,9 +683,8 @@ CopyGC(pgcSrc, pgcDst, mask)
     register GC		*pgcDst;
     register BITS32	mask;
 {
-    register BITS32	index;
+    register BITS32	index2;
     BITS32		maskQ;
-    int i;
     int 		error = 0;
 
     if (pgcSrc == pgcDst)
@@ -682,9 +694,9 @@ CopyGC(pgcSrc, pgcDst, mask)
     maskQ = mask;
     while (mask)
     {
-	index = (BITS32) lowbit (mask);
-	mask &= ~index;
-	switch (index)
+	index2 = (BITS32) lowbit (mask);
+	mask &= ~index2;
+	switch (index2)
 	{
 	    case GCFunction:
 		pgcDst->alu = pgcSrc->alu;
@@ -789,6 +801,7 @@ CopyGC(pgcSrc, pgcDst, mask)
 		else
 		{
 		    unsigned char *dash;
+		    unsigned int i;
 
 		    dash = (unsigned char *)xalloc(pgcSrc->numInDashList *
 						   sizeof(unsigned char));
@@ -887,7 +900,6 @@ CreateScratchGC(pScreen, depth)
     unsigned depth;
 {
     register GCPtr pGC;
-    extern FontPtr defaultFont;
 
     pGC = AllocateGC(pScreen);
     if (!pGC)
@@ -927,7 +939,7 @@ CreateScratchGC(pScreen, depth)
     pGC->lastWinOrg.x = 0;
     pGC->lastWinOrg.y = 0;
 
-    pGC->stateChanges = (1 << GCLastBit+1) - 1;
+    pGC->stateChanges = (1 << (GCLastBit+1)) - 1;
     if (!(*pScreen->CreateGC)(pGC))
     {
 	FreeGC(pGC, (XID)0);
@@ -1220,7 +1232,7 @@ GetScratchGC(depth, pScreen)
 	    pGC->clipOrg.y = 0;
 	    if (pGC->clientClipType != CT_NONE)
 		(*pGC->funcs->ChangeClip) (pGC, CT_NONE, NULL, 0);
-	    pGC->stateChanges = (1 << GCLastBit+1) - 1;
+	    pGC->stateChanges = (1 << (GCLastBit+1)) - 1;
 	    return pGC;
 	}
     /* if we make it this far, need to roll our own */

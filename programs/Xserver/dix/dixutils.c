@@ -83,6 +83,7 @@ Author:  Adobe Systems Incorporated
 */
 
 /* $XConsortium: dixutils.c,v 1.50 94/04/17 20:26:31 dpw Exp $ */
+/* $XFree86$ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -505,10 +506,22 @@ ProcessWorkQueue()
 }
 
 Bool
+#if NeedFunctionPrototypes
+QueueWorkProc (
+    Bool	(*function)(
+#if NeedNestedPrototypes
+		ClientPtr	/* pClient */,
+		pointer		/* closure */
+#endif
+		),
+    ClientPtr	client,
+    pointer	closure)
+#else
 QueueWorkProc (function, client, closure)
     Bool	(*function)();
     ClientPtr	client;
     pointer	closure;
+#endif
 {
     WorkQueuePtr    q;
 
@@ -535,7 +548,7 @@ QueueWorkProc (function, client, closure)
 typedef struct _SleepQueue {
     struct _SleepQueue	*next;
     ClientPtr		client;
-    Bool		(*function)();
+    ClientSleepProcPtr  function;
     pointer		closure;
 } SleepQueueRec, *SleepQueuePtr;
 
@@ -544,7 +557,7 @@ static SleepQueuePtr	sleepQueue = NULL;
 Bool
 ClientSleep (client, function, closure)
     ClientPtr	client;
-    Bool	(*function)();
+    ClientSleepProcPtr function;
     pointer	closure;
 {
     SleepQueuePtr   q;
@@ -621,10 +634,17 @@ static int numCallbackListsToCleanup = 0;
 static CallbackListPtr **listsToCleanup = NULL;
 
 static Bool 
+#if NeedFunctionPrototypes
+_AddCallback(
+    CallbackListPtr *pcbl,
+    CallbackProcPtr callback,
+    pointer         data)
+#else
 _AddCallback(pcbl, callback, data)
     CallbackListPtr *pcbl;
     CallbackProcPtr callback;
     pointer         data;
+#endif
 {
     CallbackPtr     cbr;
 
@@ -640,14 +660,20 @@ _AddCallback(pcbl, callback, data)
 }
 
 static Bool 
+#if NeedFunctionPrototypes
+_DeleteCallback(
+    CallbackListPtr *pcbl,
+    CallbackProcPtr callback,
+    pointer         data)
+#else
 _DeleteCallback(pcbl, callback, data)
     CallbackListPtr *pcbl;
     CallbackProcPtr callback;
     pointer         data;
+#endif
 {
     CallbackListPtr cbl = *pcbl;
     CallbackPtr     cbr, pcbr;
-    int i;
 
     for (pcbr = NULL, cbr = cbl->list;
 	 cbr != NULL;
@@ -677,9 +703,15 @@ _DeleteCallback(pcbl, callback, data)
 }
 
 static void 
+#if NeedFunctionPrototypes
+_CallCallbacks(
+    CallbackListPtr    *pcbl,
+    pointer	    call_data)
+#else
 _CallCallbacks(pcbl, call_data)
     CallbackListPtr    *pcbl;
     pointer	    call_data;
+#endif
 {
     CallbackListPtr cbl = *pcbl;
     CallbackPtr     cbr, pcbr;
@@ -734,8 +766,13 @@ _CallCallbacks(pcbl, call_data)
 }
 
 static void
+#if NeedFunctionPrototypes
+_DeleteCallbackList(
+    CallbackListPtr    *pcbl)
+#else
 _DeleteCallbackList(pcbl)
     CallbackListPtr    *pcbl;
+#endif
 {
     CallbackListPtr cbl = *pcbl;
     CallbackPtr     cbr, nextcbr;
@@ -749,7 +786,7 @@ _DeleteCallbackList(pcbl)
 
     for (i = 0; i < numCallbackListsToCleanup; i++)
     {
-	if (listsToCleanup[i] = pcbl)
+	if ((listsToCleanup[i] = pcbl) != 0)
 	{
 	    listsToCleanup[i] = NULL;
 	    break;

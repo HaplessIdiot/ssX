@@ -1,5 +1,5 @@
 /* $XConsortium: getkmap.c,v 1.7 94/04/17 20:33:11 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xi/getkmap.c,v 3.0 1996/03/29 22:13:24 dawes Exp $ */
 
 /************************************************************
 
@@ -64,10 +64,9 @@ SOFTWARE.
 #include "extnsionst.h"
 #include "extinit.h"			/* LookupDeviceIntRec */
 #include "exglobals.h"
+#include "swaprep.h"
 
 #include "getkmap.h"
-
-extern	void	CopySwap32Write();
 
 /***********************************************************************
  *
@@ -144,7 +143,7 @@ ProcXGetDeviceKeyMapping(client)
     rep.length = (k->mapWidth * stuff->count); /* KeySyms are 4 bytes */
     WriteReplyToClient(client, sizeof(xGetDeviceKeyMappingReply), &rep);
 
-    client->pSwapReplyFunc = CopySwap32Write;
+    client->pSwapReplyFunc = (ReplySwapPtr)CopySwap32Write;
     WriteSwappedDataToClient(
 	client,
 	k->mapWidth * stuff->count * sizeof(KeySym),

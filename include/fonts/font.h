@@ -1,4 +1,5 @@
 /* $XConsortium: font.h,v 1.13 94/04/17 20:11:07 gildea Exp $ */
+/* $XFree86$ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -107,22 +108,74 @@ extern int StartListFontsWithInfo(
 #endif
 );
 
-extern FontNamesPtr MakeFontNamesRecord( /* size */ );
-extern void FreeFontNames();
-extern int  AddFontNamesName();
+extern FontNamesPtr MakeFontNamesRecord(
+#if NeedFunctionPrototypes
+    unsigned /* size */
+#endif
+);
 
+extern void FreeFontNames(
+#if NeedFunctionPrototypes
+    FontNamesPtr /* pFN*/
+#endif
+);
+
+extern int  AddFontNamesName(
+#if NeedFunctionPrototypes
+    FontNamesPtr /* names */,
+    char * /* name */,
+    int /* length */
+#endif
+);
+
+#if 0 /* unused */
 extern int  FontToFSError();
-
 extern FontResolutionPtr GetClientResolution();
+#endif
 
 typedef struct _FontPatternCache    *FontPatternCachePtr;
 
-extern FontPatternCachePtr  MakeFontPatternCache ();
-extern void		    FreeFontPatternCache ();
-extern void		    EmtpyFontPatternCache ();
-extern void		    CacheFontPattern ();
-extern FontPtr		    FindCachedFontPattern ();
-extern void		    RemoveCachedFontPattern ();
+extern FontPatternCachePtr  MakeFontPatternCache (
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void		    FreeFontPatternCache (
+#if NeedFunctionPrototypes
+    FontPatternCachePtr /* cache */
+#endif
+);
+
+extern void		    EmptyFontPatternCache (
+#if NeedFunctionPrototypes
+    FontPatternCachePtr /* cache */
+#endif
+);
+
+extern void		    CacheFontPattern (
+#if NeedFunctionPrototypes
+    FontPatternCachePtr /* cache */,
+    char * /* pattern */,
+    int /* patlen */,
+    FontPtr /* pFont */
+#endif
+);
+
+extern FontPtr		    FindCachedFontPattern (
+#if NeedFunctionPrototypes
+    FontPatternCachePtr /* cache */,
+    char * /* pattern */,
+    int /* patlen */
+#endif
+);
+
+extern void		    RemoveCachedFontPattern (
+#if NeedFunctionPrototypes
+    FontPatternCachePtr /* cache */,
+    FontPtr /* pFont */
+#endif
+);
 
 typedef enum {
     Linear8Bit, TwoD8Bit, Linear16Bit, TwoD16Bit

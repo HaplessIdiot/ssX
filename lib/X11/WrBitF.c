@@ -1,5 +1,5 @@
 /* $XConsortium: WrBitF.c,v 1.13 94/04/17 20:21:32 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/WrBitF.c,v 3.0 1994/10/20 06:03:13 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -115,7 +115,7 @@ int XWriteBitmapFile(display, filename, bitmap, width, height, x_hot, y_hot)
     name++;
 
 #ifdef __EMX__
-  filename = __XOS2RedirRoot(filename);
+  filename = (char*)__XOS2RedirRoot(filename);
 #endif
   if (!(stream = fopen(filename, "w")))
     return(BitmapOpenFailed);

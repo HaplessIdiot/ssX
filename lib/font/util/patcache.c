@@ -1,4 +1,5 @@
 /* $XConsortium: patcache.c,v 1.7 94/04/17 20:17:37 gildea Exp $ */
+/* $XFree86$ */
 
 /*
 
@@ -108,6 +109,7 @@ Hash (string, len)
 }
 
 /* Empty cache (for rehash) */
+void
 EmptyFontPatternCache (cache)
     FontPatternCachePtr	cache;
 {

@@ -48,6 +48,7 @@ SOFTWARE.
 
 
 /* $XConsortium: cursor.c,v 1.44 94/04/17 20:26:20 dpw Exp $ */
+/* $XFree86$ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -69,8 +70,12 @@ typedef struct _GlyphShare {
 static GlyphSharePtr sharedGlyphs = (GlyphSharePtr)NULL;
 
 static void
+#if NeedFunctionPrototypes
+FreeCursorBits(CursorBitsPtr bits)
+#else
 FreeCursorBits(bits)
     CursorBitsPtr bits;
+#endif
 {
     if (--bits->refcnt > 0)
 	return;
@@ -252,14 +257,14 @@ AllocGlyphCursor(source, sourceChar, mask, maskChar,
 	if (!maskfont)
 	{
 	    register long n;
-	    register unsigned char *bits;
+	    register unsigned char *mskptr;
 
 	    n = BitmapBytePad(cm.width)*(long)cm.height;
-	    bits = mskbits = (unsigned char *)xalloc(n);
-	    if (!bits)
+	    mskptr = mskbits = (unsigned char *)xalloc(n);
+	    if (!mskptr)
 		return BadAlloc;
 	    while (--n >= 0)
-		*bits++ = ~0;
+		*mskptr++ = ~0;
 	}
 	else
 	{
@@ -268,10 +273,10 @@ AllocGlyphCursor(source, sourceChar, mask, maskChar,
 		client->errorValue = maskChar;
 		return BadValue;
 	    }
-	    if (res = ServerBitsFromGlyph(maskfont, maskChar, &cm, &mskbits))
+	    if ((res = ServerBitsFromGlyph(maskfont, maskChar, &cm, &mskbits)) != 0)
 		return res;
 	}
-	if (res = ServerBitsFromGlyph(sourcefont, sourceChar, &cm, &srcbits))
+	if ((res = ServerBitsFromGlyph(sourcefont, sourceChar, &cm, &srcbits)) != 0)
 	{
 	    xfree(mskbits);
 	    return res;

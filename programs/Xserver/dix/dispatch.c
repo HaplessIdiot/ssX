@@ -1,5 +1,5 @@
 /* $XConsortium: dispatch.c /main/168 1995/12/08 13:37:16 dpw $ */
-/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.3 1995/01/12 05:56:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.4 1996/01/05 13:17:55 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -65,6 +65,10 @@ SOFTWARE.
 #include "servermd.h"
 #include "extnsionst.h"
 #include "dixfont.h"
+#include "dispatch.h"
+#include "swaprep.h"
+#include "swapreq.h"
+#include "dixevents.h"
 
 #define mskcnt ((MAXCLIENTS + 31) / 32)
 #define BITMASK(i) (1 << ((i) & 31))
@@ -77,13 +81,6 @@ SOFTWARE.
 extern WindowPtr *WindowTable;
 extern xConnSetupPrefix connSetupPrefix;
 extern char *ConnectionInfo;
-extern void ReleaseActiveGrabs();
-extern void NotImplemented();
-extern void SwapConnClientPrefix(
-#if NeedFunctionPrototypes
-    xConnClientPrefix	*
-#endif
-);
 
 Selection *CurrentSelections;
 int NumCurrentSelections;
@@ -113,8 +110,6 @@ extern int (* k5_Vector[256]) ();
 #endif
 extern int (* SwappedProcVector[256]) ();
 extern void (* ReplySwapVector[256]) ();
-extern void Swap32Write(), SLHostsExtend(), SQColorsExtend(), WriteSConnectionInfo();
-extern void WriteSConnSetupPrefix();
 
 static void KillAllClients(
 #if NeedFunctionPrototypes
@@ -310,7 +305,8 @@ Dispatch()
 		    result = (* client->requestVector[MAJOROP])(client);
 	    
 #ifdef LBX
-		if (client->largeReqBuf)
+		if (client->largeReqBuf &&
+		    client->largeReqBuf == client->requestBuffer)
 		{
 		    /*
 		     * We just finished handling an LBX large request,
@@ -724,7 +720,7 @@ ProcQueryTree(client)
     WriteReplyToClient(client, sizeof(xQueryTreeReply), &reply);
     if (numChildren)
     {
-    	client->pSwapReplyFunc = Swap32Write;
+    	client->pSwapReplyFunc = (ReplySwapPtr) Swap32Write;
 	WriteSwappedDataToClient(client, numChildren * sizeof(Window), childIDs);
 	DEALLOCATE_LOCAL(childIDs);
     }
@@ -1003,7 +999,6 @@ int
 ProcGrabServer(client)
     register ClientPtr client;
 {
-    REQUEST(xReq);
     REQUEST_SIZE_MATCH(xReq);
     if (grabState != GrabNone && client != grabClient)
     {
@@ -1029,8 +1024,12 @@ ProcGrabServer(client)
 }
 
 static void
+#if NeedFunctionPrototypes
+UngrabServer(ClientPtr client)
+#else
 UngrabServer(client)
     ClientPtr client;
+#endif
 {
     int i;
 
@@ -1060,7 +1059,6 @@ int
 ProcUngrabServer(client)
     register ClientPtr client;
 {
-    REQUEST(xReq);
     REQUEST_SIZE_MATCH(xReq);
     UngrabServer(client);
     return(client->noClientException);
@@ -2444,7 +2442,7 @@ ProcListInstalledColormaps(client)
     preply->nColormaps = nummaps;
     preply->length = nummaps;
     WriteReplyToClient(client, sizeof (xListInstalledColormapsReply), preply);
-    client->pSwapReplyFunc = Swap32Write;
+    client->pSwapReplyFunc = (ReplySwapPtr) Swap32Write;
     WriteSwappedDataToClient(client, nummaps * sizeof(Colormap), &preply[1]);
     DEALLOCATE_LOCAL(preply);
     return(client->noClientException);
@@ -2587,7 +2585,7 @@ ProcAllocColorCells           (client)
 	accr.nPixels = npixels;
 	accr.nMasks = nmasks;
         WriteReplyToClient(client, sizeof (xAllocColorCellsReply), &accr);
-	client->pSwapReplyFunc = Swap32Write;
+	client->pSwapReplyFunc = (ReplySwapPtr) Swap32Write;
 	WriteSwappedDataToClient(client, length, ppixels);
 	DEALLOCATE_LOCAL(ppixels);
         return (client->noClientException);        
@@ -2646,7 +2644,7 @@ ProcAllocColorPlanes(client)
 	}
 	acpr.length = length >> 2;
 	WriteReplyToClient(client, sizeof(xAllocColorPlanesReply), &acpr);
-	client->pSwapReplyFunc = Swap32Write;
+	client->pSwapReplyFunc = (ReplySwapPtr) Swap32Write;
 	WriteSwappedDataToClient(client, length, ppixels);
 	DEALLOCATE_LOCAL(ppixels);
         return (client->noClientException);        
@@ -2798,7 +2796,7 @@ ProcQueryColors(client)
 	WriteReplyToClient(client, sizeof(xQueryColorsReply), &qcr);
 	if (count)
 	{
-	    client->pSwapReplyFunc = SQColorsExtend;
+	    client->pSwapReplyFunc = (ReplySwapPtr) SQColorsExtend;
 	    WriteSwappedDataToClient(client, count * sizeof(xrgb), prgbs);
 	}
 	if (prgbs) DEALLOCATE_LOCAL(prgbs);
@@ -3077,7 +3075,6 @@ int
 ProcGetScreenSaver(client)
     register ClientPtr client;
 {
-    REQUEST(xReq);
     xGetScreenSaverReply rep;
 
     REQUEST_SIZE_MATCH(xReq);
@@ -3121,11 +3118,9 @@ int
 ProcListHosts(client)
     register ClientPtr client;
 {
-extern int GetHosts();
     xListHostsReply reply;
     int	len, nHosts, result;
     pointer	pdata;
-    REQUEST(xListHostsReq);
 
     REQUEST_SIZE_MATCH(xListHostsReq);
     result = GetHosts(&pdata, &nHosts, &len, &reply.enabled);
@@ -3138,7 +3133,7 @@ extern int GetHosts();
     WriteReplyToClient(client, sizeof(xListHostsReply), &reply);
     if (nHosts)
     {
-	client->pSwapReplyFunc = SLHostsExtend;
+	client->pSwapReplyFunc = (ReplySwapPtr) SLHostsExtend;
 	WriteSwappedDataToClient(client, len, pdata);
     }
     xfree(pdata);
@@ -3241,7 +3236,6 @@ ProcGetFontPath(client)
     xGetFontPathReply reply;
     int stringLens, numpaths;
     unsigned char *bufferStart;
-    REQUEST (xReq);
 
     REQUEST_SIZE_MATCH(xReq);
     bufferStart = GetFontPath(&numpaths, &stringLens);
@@ -3298,8 +3292,6 @@ int ProcForceScreenSaver(client)
 int ProcNoOperation(client)
     register ClientPtr client;
 {
-    REQUEST(xReq);
-
     REQUEST_AT_LEAST_SIZE(xReq);
     
     /* noop -- don't do anything */

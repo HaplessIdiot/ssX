@@ -1,4 +1,5 @@
 /* $XConsortium: fontutil.c,v 1.10 94/04/17 20:17:33 dpw Exp $ */
+/* $XFree86$ */
 
 /*
 
@@ -146,7 +147,7 @@ QueryTextExtents(pFont, count, chars, info)
     int		i;
     unsigned long   t;
     xCharInfo	*defaultChar = 0;
-    char	defc[2];
+    unsigned char defc[2];
     int		firstReal;
 
     charinfo = (xCharInfo **) xalloc(count * sizeof(xCharInfo *));

@@ -1,5 +1,5 @@
 /* $XConsortium: GetDflt.c /main/45 1996/02/28 12:16:36 kaleb $ */
-/* $XFree86: xc/lib/X11/GetDflt.c,v 3.6 1996/01/21 01:48:03 dawes Exp $ */
+/* $XFree86: xc/lib/X11/GetDflt.c,v 3.7 1996/03/16 12:45:21 dawes Exp $ */
 
 /***********************************************************
 
@@ -207,6 +207,10 @@ char *XGetDefault(dpy, prog, name)
 #ifdef WIN32
 	char *progname2;
 #endif
+#ifdef __EMX__
+	char *progname2;
+	char *dotpos;
+#endif
 
 	/*
 	 * strip path off of program name (XXX - this is OS specific)
@@ -217,6 +221,14 @@ char *XGetDefault(dpy, prog, name)
 	if (progname2 && (!progname || progname < progname2))
 	    progname = progname2;
 #endif
+#ifdef __EMX__  /* Very similar to WIN32 */
+	progname2 = strrchr (prog, '\\');
+	if (progname2 && (!progname || progname < progname2))
+	    progname = progname2;
+	dotpos = strrchr (prog, '.');
+	if (dotpos && (dotpos>progname2)) *dotpos='\0';
+#endif  /* We take out the .exe suffix  */
+
 	if (progname)
 	    progname++;
 	else

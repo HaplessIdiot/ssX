@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: property.c,v 5.16 94/04/17 20:26:42 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/dix/property.c,v 3.0 1994/12/25 12:15:58 dawes Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -55,9 +55,13 @@ SOFTWARE.
 #include "windowstr.h"
 #include "propertyst.h"
 #include "dixstruct.h"
+#include "dispatch.h"
+#include "swaprep.h"
 
 extern void (*ReplySwapVector[]) ();
+#if 0
 extern void CopySwap16Write(), CopySwap32Write(), Swap32Write();
+#endif
 
 #if defined(LBX) || defined(LBX_COMPAT)
 int fWriteToClient(client, len, buf)
@@ -558,12 +562,12 @@ ProcGetProperty(client)
 		if (len)
 		{
 		    switch (reply.format) {
-		    case 32: client->pSwapReplyFunc = CopySwap32Write; break;
-		    case 16: client->pSwapReplyFunc = CopySwap16Write; break;
+		    case 32: client->pSwapReplyFunc = (ReplySwapPtr)CopySwap32Write; break;
+		    case 16: client->pSwapReplyFunc = (ReplySwapPtr)CopySwap16Write; break;
 #if defined(LBX) || defined(LBX_COMPAT)
-		    default: client->pSwapReplyFunc = (void (*) ())fWriteToClient; break;
+		    default: client->pSwapReplyFunc = (ReplySwapPtr)fWriteToClient; break;
 #else
-		    default: client->pSwapReplyFunc = (void (*) ())WriteToClient; break;
+		    default: client->pSwapReplyFunc = (ReplySwapPtr)WriteToClient; break;
 #endif
 		    }
 		    WriteSwappedDataToClient(client, len,
@@ -645,7 +649,7 @@ ProcListProperties(client)
     WriteReplyToClient(client, sizeof(xGenericReply), &xlpr);
     if (numProps)
     {
-        client->pSwapReplyFunc = Swap32Write;
+        client->pSwapReplyFunc = (ReplySwapPtr)Swap32Write;
         WriteSwappedDataToClient(client, numProps * sizeof(Atom), pAtoms);
         DEALLOCATE_LOCAL(pAtoms);
     }

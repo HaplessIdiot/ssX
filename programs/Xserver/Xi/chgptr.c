@@ -1,5 +1,5 @@
 /* $XConsortium: chgptr.c /main/19 1996/01/14 16:44:45 kaleb $ */
-/* $XFree86: xc/programs/Xserver/Xi/chgptr.c,v 3.1 1996/03/10 11:53:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xi/chgptr.c,v 3.2 1996/03/29 22:13:02 dawes Exp $ */
 
 /************************************************************
 
@@ -68,6 +68,7 @@ SOFTWARE.
 #include "extnsionst.h"
 #include "extinit.h"			/* LookupDeviceIntRec */
 
+#include "dixevents.h"
 #include "exevents.h"
 #include "exglobals.h"
 

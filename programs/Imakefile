@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/71 1995/12/06 13:54:19 matt $
-XCOMM $XFree86: xc/programs/Imakefile,v 3.11 1995/12/23 09:37:16 dawes Exp $
+XCOMM $XFree86: xc/programs/Imakefile,v 3.12 1996/01/05 13:16:10 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -31,6 +31,10 @@ XVIDTUNE = xvidtune
 XF86DGA = xf86dga
 #endif
 
+#if BuildLBX
+LBXPROXY = lbxproxy
+#endif
+
 #if BuildServersOnly
 SUBDIRS = $(XSDIR)
 #else
@@ -44,7 +48,7 @@ SUBDIRS = \
 	$(XINIDIR) $(XKBDIRS) xkill xlogo xlsatoms xlsclients xlsfonts \
 	xmag xmh xmodmap xprop xrdb xrefresh xset \
 	xsetmode xsetpointer xsetroot xsm xstdcmap xterm \
-	$(XVIDTUNE) \
+	$(XVIDTUNE) $(LBXPROXY) \
 	xwd xwininfo xwud $(XSDIR) scripts
 
 #else /* AmoebaArchitecture */

@@ -47,6 +47,7 @@ SOFTWARE.
 ********************************************************/
 
 /* $XConsortium: swaprep.c /main/25 1995/12/08 13:39:45 dpw $ */
+/* $XFree86$ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -56,8 +57,28 @@ SOFTWARE.
 #include "dixstruct.h"
 #include "fontstruct.h"
 #include "scrnintstr.h"
+#include "swaprep.h"
 
-void SwapVisual(), SwapConnSetup(), SwapWinRoot();
+static void SwapFontInfo(
+#if NeedFunctionPrototypes
+    xQueryFontReply * /* pr */
+#endif
+);
+
+#ifndef LBX
+static void SwapCharInfo(
+#if NeedFunctionPrototypes
+    xCharInfo * /* pInfo */
+#endif
+    );
+
+static void SwapFont(
+#if NeedFunctionPrototypes
+    xQueryFontReply * /* pr */,
+    Bool /* hasGlyphs */
+#endif
+    );
+#endif
 
 /* Thanks to Jack Palevich for testing and subsequently rewriting all this */
 void

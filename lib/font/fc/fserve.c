@@ -1,5 +1,5 @@
 /* $XConsortium: fserve.c,v 1.44 95/04/05 19:58:07 kaleb Exp $ */
-/* $XFree86: xc/lib/font/fc/fserve.c,v 3.1 1996/01/05 13:14:00 dawes Exp $ */
+/* $XFree86: xc/lib/font/fc/fserve.c,v 3.2 1996/02/09 08:19:35 dawes Exp $ */
 /*
 
 Copyright (c) 1990  X Consortium
@@ -1237,11 +1237,11 @@ fs_wakeup(fpe, LastSelectMask)
     /* see if there's any data to be read */
     if (FD_ISSET(conn->fs_fd, LastSelectMask)) {
 
-#ifdef NOTDEF			/* bogus - doesn't deal with EOF very well,
+#if defined(NOTDEF) || defined(__EMX__)		/* bogus - doesn't deal with EOF very well,
 				 * now does it ... */
 	/*
 	 * make sure it isn't spurious - mouse events seem to trigger extra
-	 * problems
+	 * problems. Under OS/2, this is especially true ...
 	 */
 	if (_fs_data_ready(conn) <= 0) {
 	    return FALSE;
