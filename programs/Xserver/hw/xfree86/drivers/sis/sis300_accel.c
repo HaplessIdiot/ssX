@@ -42,6 +42,7 @@
 #include "compiler.h"
 #include "xaa.h"
 #include "xaalocal.h"
+#include "xaarop.h"
 
 #include "sis.h"
 #include "sis300_accel.h"
@@ -371,46 +372,6 @@ SiSRestoreAccelState(ScrnInfoPtr pScrn)
 }
 #endif
 
-static const int sisALUConv[] =
-{
-    0x00,       /* dest = 0;            0,      GXclear,        0 */
-    0x88,       /* dest &= src;         DSa,    GXand,          0x1 */
-    0x44,       /* dest = src & ~dest;  SDna,   GXandReverse,   0x2 */
-    0xCC,       /* dest = src;          S,      GXcopy,         0x3 */
-    0x22,       /* dest &= ~src;        DSna,   GXandInverted,  0x4 */
-    0xAA,       /* dest = dest;         D,      GXnoop,         0x5 */
-    0x66,       /* dest = ^src;         DSx,    GXxor,          0x6 */
-    0xEE,       /* dest |= src;         DSo,    GXor,           0x7 */
-    0x11,       /* dest = ~src & ~dest; DSon,   GXnor,          0x8 */
-    0x99,       /* dest ^= ~src ;       DSxn,   GXequiv,        0x9 */
-    0x55,       /* dest = ~dest;        Dn,     GXInvert,       0xA */
-    0xDD,       /* dest = src|~dest ;   SDno,   GXorReverse,    0xB */
-    0x33,       /* dest = ~src;         Sn,     GXcopyInverted, 0xC */
-    0xBB,       /* dest |= ~src;        DSno,   GXorInverted,   0xD */
-    0x77,       /* dest = ~src|~dest;   DSan,   GXnand,         0xE */
-    0xFF,       /* dest = 0xFF;         1,      GXset,          0xF */
-};
-/* same ROP but with Pattern as Source */
-static const int sisPatALUConv[] =
-{
-    0x00,       /* dest = 0;            0,      GXclear,        0 */
-    0xA0,       /* dest &= src;         DPa,    GXand,          0x1 */
-    0x50,       /* dest = src & ~dest;  PDna,   GXandReverse,   0x2 */
-    0xF0,       /* dest = src;          P,      GXcopy,         0x3 */
-    0x0A,       /* dest &= ~src;        DPna,   GXandInverted,  0x4 */
-    0xAA,       /* dest = dest;         D,      GXnoop,         0x5 */
-    0x5A,       /* dest = ^src;         DPx,    GXxor,          0x6 */
-    0xFA,       /* dest |= src;         DPo,    GXor,           0x7 */
-    0x05,       /* dest = ~src & ~dest; DPon,   GXnor,          0x8 */
-    0xA5,       /* dest ^= ~src ;       DPxn,   GXequiv,        0x9 */
-    0x55,       /* dest = ~dest;        Dn,     GXInvert,       0xA */
-    0xF5,       /* dest = src|~dest ;   PDno,   GXorReverse,    0xB */
-    0x0F,       /* dest = ~src;         Pn,     GXcopyInverted, 0xC */
-    0xAF,       /* dest |= ~src;        DPno,   GXorInverted,   0xD */
-    0x5F,       /* dest = ~src|~dest;   DPan,   GXnand,         0xE */
-    0xFF,       /* dest = 0xFF;         1,      GXset,          0xF */
-};
-
 static void SiSSetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
                                 int xdir, int ydir, int rop,
                                 unsigned int planemask, int trans_color)
@@ -429,7 +390,7 @@ static void SiSSetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
 	   SiSSetupSRCTrans(trans_color)
 	   SiSSetupCMDFlag(TRANSPARENT_BITBLT)
 	} else {
-	   SiSSetupROP(sisALUConv[rop])
+	   SiSSetupROP(XAACopyROP[rop])
 	}
 	if(xdir > 0) {
 	   SiSSetupCMDFlag(X_INC)
@@ -499,7 +460,7 @@ SiSSetupForSolidFill(ScrnInfoPtr pScrn,
 	SiSSetupPATFG(color)
 	SiSSetupDSTRect(pSiS->scrnOffset, -1)
 	SiSSetupDSTColorDepth(pSiS->DstColor);
-	SiSSetupROP(sisPatALUConv[rop])
+	SiSSetupROP(XAAPatternROP[rop])
 	/* SiSSetupCMDFlag(PATFG) - is zero */
 }
 
@@ -657,7 +618,7 @@ SiSSetupForSolidLine(ScrnInfoPtr pScrn,
 	SiSSetupPATFG(color)
 	SiSSetupDSTRect(pSiS->scrnOffset, -1)
 	SiSSetupDSTColorDepth(pSiS->DstColor);
-	SiSSetupROP(sisPatALUConv[rop])
+	SiSSetupROP(XAAPatternROP[rop])
 	SiSSetupCMDFlag(PATFG | LINE)
 }
 
@@ -746,7 +707,7 @@ SiSSetupForDashedLine(ScrnInfoPtr pScrn,
 	SiSSetupStyleLow(*pattern)
 	SiSSetupStyleHigh(*(pattern+4))
 	SiSSetupStylePeriod(length-1);
-	SiSSetupROP(sisPatALUConv[rop])
+	SiSSetupROP(XAAPatternROP[rop])
 	SiSSetupPATFG(fg)
 	SiSSetupCMDFlag(LINE | LINE_STYLE)
 	if(bg != -1) {
@@ -806,7 +767,7 @@ SiSSetupForMonoPatternFill(ScrnInfoPtr pScrn,
 	SiSSetupDSTColorDepth(pSiS->DstColor);
 	SiSSetupMONOPAT(patx,paty)
 	SiSSetupPATFG(fg)
-	SiSSetupROP(sisPatALUConv[rop])
+	SiSSetupROP(XAAPatternROP[rop])
 	SiSSetupCMDFlag(PATMONO)
 	if(bg != -1) {
 	   SiSSetupPATBG(bg)
@@ -940,7 +901,7 @@ SiSSetupForCPUToScreenColorExpand(ScrnInfoPtr pScrn,
 	SiSSetupDSTColorDepth(pSiS->DstColor);
 	SiSSetupSRCXY(0,0)
 	SiSSetupSRCFG(fg)
-	SiSSetupROP(sisPatALUConv[rop])
+	SiSSetupROP(XAAPatternROP[rop])
 	SiSSetupCMDFlag(X_INC | Y_INC | COLOREXP)
 	if(bg == -1) {
 	   SiSSetupCMDFlag(TRANSPARENT)
@@ -992,7 +953,7 @@ SiSSetupForScreenToScreenColorExpand(ScrnInfoPtr pScrn,
 
 	SiSSetupDSTColorDepth(pSiS->DstColor)
 	SiSSetupDSTRect(pSiS->scrnOffset, -1)
-	SiSSetupROP(sisALUConv[rop])
+	SiSSetupROP(XAACopyROP[rop])
 	SiSSetupSRCFG(fg)
 	/* SiSSetupSRCXY(0,0) */
 
@@ -1158,7 +1119,7 @@ SiSSetupForScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 	while((MMIO_IN16(pSiS->IOBase, 0x8242) & 0x1F00) != 0) {} /* WDR: == 0x10 */
 
 	SiSSetupSRCXY(0,0);
-	SiSSetupROP(sisALUConv[rop]);
+	SiSSetupROP(XAACopyROP[rop]);
 	SiSSetupSRCFG(fg);
 	SiSSetupDSTRect(pSiS->scrnOffset, -1);
 	SiSSetupDSTColorDepth(pSiS->DstColor);
