@@ -5,7 +5,7 @@
  *    Freetype engine's common types specification
  *    (this spec has no associated body).
  *
- *  Copyright 1996-1998 by
+ *  Copyright 1996-1999 by
  *  David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  *  This file is part of the FreeType project, and may only be used
@@ -20,7 +20,7 @@
  *   of the high-level interface.  See also 'freetype.h'.
  *
  ******************************************************************/
-/* $XFree86: xc/extras/FreeType/lib/tttypes.h,v 1.3 1998/09/06 07:31:56 dawes Exp $ */
+/* $XFree86: xc/extras/FreeType/lib/tttypes.h,v 1.4 1999/01/24 03:38:35 dawes Exp $ */
 
 #ifndef TTTYPES_H
 #define TTTYPES_H
@@ -28,12 +28,9 @@
 #include "ttconfig.h"
 #include "freetype.h"
 
-#ifdef DEBUG
-#ifndef ARM_1212
-#include <stdio.h>
-#else
-#include <std.h>
-#endif
+#ifdef __MACTYPES__
+#error "<MacTypes.h> have been included, and this prevents the proper\
+ compilation of this library.  Please remove the precompiled headers."
 #endif
 
   typedef          char   String;
@@ -87,7 +84,8 @@
 #define NULL  (void*)0
 #endif
 
-  typedef long*  PStorage;
+  typedef Long      Storage;
+  typedef Storage*  PStorage;
 
 
 /* Rounding mode constants */

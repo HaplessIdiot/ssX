@@ -4,7 +4,7 @@
  *
  *    API extension for iterating over Cmaps
  *
- *  Copyright 1996-1998 by Juliusz Chroboczek,
+ *  Copyright 1996-1999 by Juliusz Chroboczek,
  *  David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  *  This file is part of the FreeType project, and may only be used
@@ -24,7 +24,7 @@
 
 static Long    charmap_first4  ( PCMap4, UShort* );
 static Long    charmap_next4   ( PCMap4, UShort, UShort* );
-static Long    charmap_last4  ( PCMap4, UShort* );
+static Long    charmap_last4   ( PCMap4, UShort* );
 static UShort  charmap_find_id4( PCMap4, UShort, TCMap4Segment*, UShort );
 
 
@@ -46,6 +46,7 @@ static UShort  charmap_find_id4( PCMap4, UShort, TCMap4Segment*, UShort );
  *
  ******************************************************************/
 
+EXPORT_FUNC
 TT_Long  TT_CharMap_First( TT_CharMap  charMap,
                            TT_UShort*  id )
 {
@@ -56,7 +57,7 @@ TT_Long  TT_CharMap_First( TT_CharMap  charMap,
   if ( !( cmap = HANDLE_CharMap( charMap ) ) )
     return -1;
 
-  switch( cmap->format )
+  switch ( cmap->format )
   {
   case 0:
     if ( id )
@@ -88,8 +89,7 @@ TT_Long  TT_CharMap_First( TT_CharMap  charMap,
         return i;
       }
       i++;
-    }
-    while (i != 0);  /* because i is UShort !! */
+    } while ( i != 0 );  /* because i is UShort! */
 
     return -1;
   }
@@ -102,7 +102,7 @@ static Long  charmap_first4( PCMap4   cmap4,
   UShort firstCode;
 
 
-  if( cmap4->segCountX2 / 2 < 1 )
+  if ( cmap4->segCountX2 / 2 < 1 )
     return -1;
 
   firstCode = cmap4->segments[0].startCount;
@@ -133,6 +133,7 @@ static Long  charmap_first4( PCMap4   cmap4,
  *
  ******************************************************************/
 
+EXPORT_FUNC
 TT_Long  TT_CharMap_Next( TT_CharMap  charMap,
                           TT_UShort   index,
                           TT_UShort*  id )
@@ -141,14 +142,14 @@ TT_Long  TT_CharMap_Next( TT_CharMap  charMap,
   UShort      i, c;
 
 
-  cmap = HANDLE_CharMap(charMap);
-  if (!cmap)
+  cmap = HANDLE_CharMap( charMap );
+  if ( !cmap )
     return -1;
 
   switch ( cmap->format )
   {
   case 0:
-    if( index < 255 )
+    if ( index < 255 )
     {
       if ( id )
         *id = cmap->c.cmap0.glyphIdArray[index + 1];
@@ -167,7 +168,7 @@ TT_Long  TT_CharMap_Next( TT_CharMap  charMap,
 
       if ( index + 1 < firstCode + cmap->c.cmap6.entryCount )
       {
-        if( id )
+        if ( id )
           *id = cmap->c.cmap6.glyphIdArray[index + 1 - firstCode];
         return index + 1;
       }
@@ -176,7 +177,7 @@ TT_Long  TT_CharMap_Next( TT_CharMap  charMap,
     }
 
   default:
-    /* Now loop from 0 to 65535. We can't use a simple "for' on */
+    /* Now loop from 0 to 65535. We can't use a simple "for" on */
     /* 16-bits systems, hence the "strange" loop here..         */
     i = 0;
     do
@@ -184,13 +185,12 @@ TT_Long  TT_CharMap_Next( TT_CharMap  charMap,
       c = TT_Char_Index( charMap, i );
       if ( c > 0 )
       {
-        if( id )
+        if ( id )
           *id = c;
         return i;
       }
       i++;
-    }
-    while (i != 0);  /* because i is UShort !! */
+    } while ( i != 0 );  /* because i is UShort! */
 
     return -1;
   }
@@ -256,6 +256,7 @@ charmap_find_id4( PCMap4          cmap4,
   }
 }
 
+
 /*******************************************************************
  *
  *  Function    :  TT_CharMap_Last
@@ -274,8 +275,9 @@ charmap_find_id4( PCMap4          cmap4,
  *
  ******************************************************************/
 
+EXPORT_FUNC
 TT_Long  TT_CharMap_Last( TT_CharMap  charMap,
-                           TT_UShort*  id )
+                          TT_UShort*  id )
 {
   PCMapTable  cmap;
   UShort      i, c;
@@ -284,7 +286,7 @@ TT_Long  TT_CharMap_Last( TT_CharMap  charMap,
   if ( !( cmap = HANDLE_CharMap( charMap ) ) )
     return -1;
 
-  switch( cmap->format )
+  switch ( cmap->format )
   {
   case 0:
     if ( id )
@@ -314,8 +316,7 @@ TT_Long  TT_CharMap_Last( TT_CharMap  charMap,
         return i;
       }
       i--;
-    }
-    while (i != 0);
+    } while ( i != 0 );
 
     return -1;
   }
@@ -323,20 +324,24 @@ TT_Long  TT_CharMap_Last( TT_CharMap  charMap,
 
 
 static Long  charmap_last4( PCMap4   cmap4,
-                             UShort*  id )
+                            UShort*  id )
 {
   UShort lastCode;
 
 
-  if( cmap4->segCountX2 / 2 < 1 )
+  if ( cmap4->segCountX2 / 2 < 1 )
     return -1;
 
-  lastCode = cmap4->segments[cmap4->segCountX2/2-1].endCount;
+  lastCode = cmap4->segments[cmap4->segCountX2 / 2 - 1].endCount;
 
   if ( id )
-    *id = charmap_find_id4( cmap4, lastCode, &(cmap4->segments[cmap4->segCountX2/2-1]), 0 );
+    *id = charmap_find_id4( cmap4,
+                            lastCode,
+                            &(cmap4->segments[cmap4->segCountX2 / 2 - 1]),
+                            0 );
 
   return lastCode;
 }
+
 
 /* END */

@@ -4,7 +4,7 @@
  *
  *    Arithmetic Computations (body).
  *
- *  Copyright 1996-1998 by
+ *  Copyright 1996-1999 by
  *  David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  *  This file is part of the FreeType project, and may only be used
@@ -46,22 +46,6 @@
 
 
 #ifdef LONG64
-
-#if 0
-  LOCAL_FUNC
-  TT_Int32  MulDiv( TT_Int32  a, TT_Int32  b, TT_Int32  c )
-  {
-    TT_Int32  s;
-
-
-    s  = a; a = ABS( a );
-    s ^= b; b = ABS( b );
-    s ^= c; c = ABS( c );
-
-    a = (TT_Int64)a * b / c;
-    return ( s < 0 ) ? -a : a;
-  }
-#endif
 
   EXPORT_FUNC
   TT_Long  TT_MulDiv( TT_Long  a, TT_Long  b, TT_Long  c )
@@ -130,48 +114,9 @@
 
 #else /* LONG64 */
 
-#if 0
-  LOCAL_FUNC
-  TT_Int32  MulDiv( TT_Int32  a, TT_Int32  b, TT_Int32  c )
-  {
-    TT_Int64  temp;
-    TT_Int32  s;
 
-
-    s  = a; a = ABS( a );
-    s ^= b; b = ABS( b );
-    s ^= c; c = ABS( c );
-
-    MulTo64( a, b, &temp );
-    a = Div64by32( &temp, c );
-
-    return ( s < 0 ) ? -a : a;
-  }
-
-
-  LOCAL_FUNC
-  TT_Int32  MulDiv_Round( TT_Int32  a, TT_Int32  b, TT_Int32  c )
-  {
-    TT_Int64  temp, temp2;
-    TT_Int32  s;
-
-
-    s  = a; a = ABS( a );
-    s ^= b; b = ABS( b );
-    s ^= c; c = ABS( c );
-
-    MulTo64( a, b, &temp );
-    temp2.hi = (TT_Int32)(c >> 31);
-    temp2.lo = (TT_Word32)(c / 2);
-    Add64( &temp, &temp2, &temp );
-    a = Div64by32( &temp, c );
-
-    return ( s < 0 ) ? -a : a;
-  }
-#endif
-
-  /* The TT_MulDiv function has been optimised thanks to ideas from      */
-  /* Graham Asher. The trick is to optimise computation when everything  */
+  /* The TT_MulDiv function has been optimized thanks to ideas from      */
+  /* Graham Asher. The trick is to optimize computation when everything  */
   /* fits within 32-bits (a rather common case).                         */
   /*                                                                     */
   /*  we compute 'a*b+c/2', then divide it by 'c'. (positive values)     */
@@ -218,7 +163,7 @@
     return ( s < 0 ) ? -a : a;
   }
 
-  /* The optimisation for TT_MulFix is different. We could simply be     */
+  /* The optimization for TT_MulFix is different. We could simply be     */
   /* happy by applying the same principles than with TT_MulDiv, because  */
   /*                                                                     */
   /*    c = 0x10000 < 176096                                             */
@@ -267,14 +212,14 @@
     /* Remember that -(0x80000000) == 0x80000000 with 2-complement! */
     /* We take care of that here.                                   */
 
-    x->hi ^= 0xFFFFFFFF;
-    x->lo ^= 0xFFFFFFFF;
+    x->hi ^= 0xFFFFFFFFUL;
+    x->lo ^= 0xFFFFFFFFUL;
     x->lo++;
 
     if ( !x->lo )
     {
       x->hi++;
-      if ( (TT_Int32)x->hi == 0x80000000 )  /* Check -MaxInt32 - 1 */
+      if ( x->hi == 0x80000000UL )  /* Check -MaxInt32 - 1 */
       {
         x->lo--;
         x->hi--;  /* We return 0x7FFFFFFF! */
@@ -333,7 +278,7 @@
 
     if ( i2 )
     {
-      if ( i1 >= (TT_Word32)-(TT_Int32)i2 ) hi += 1 << 16;
+      if ( i1 >= (TT_Word32)-(TT_Int32)i2 ) hi += 1L << 16;
       i1 += i2;
     }
 
@@ -377,7 +322,7 @@
     lo = x->lo;
 
     if ( r >= (TT_Word32)y )   /* we know y is to be treated as unsigned here */
-      return ( s < 0 ) ? 0x80000001 : 0x7FFFFFFF;
+      return ( s < 0 ) ? 0x80000001UL : 0x7FFFFFFFUL;
                             /* Return Max/Min Int32 if divide overflow */
                             /* This includes division by zero!         */
     q = 0;

@@ -4,7 +4,7 @@
  *
  *    Memory management component (specification).
  *
- *  Copyright 1996-1998 by
+ *  Copyright 1996-1999 by
  *  David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  *  This file is part of the FreeType project, and may only be used
@@ -25,7 +25,7 @@
  *    'legacy' applications (all four test programs have been updated).
  *
  ******************************************************************/
-/* $XFree86: xc/extras/FreeType/lib/ttmemory.h,v 1.2 1998/09/06 07:31:56 dawes Exp $ */
+/* $XFree86: xc/extras/FreeType/lib/ttmemory.h,v 1.3 1999/01/24 03:38:35 dawes Exp $ */
 
 #ifndef TTMEMORY_H
 #define TTMEMORY_H
@@ -86,7 +86,7 @@
   /* case of error, the pointer is always set to NULL.             */
 
   EXPORT_DEF
-  TT_Error  TT_Alloc( Long  Size, void**  P );
+  TT_Error  TT_Alloc( ULong  Size, void**  P );
 
 #ifdef TT_CONFIG_OPTION_EXTEND_ENGINE
 
@@ -96,7 +96,7 @@
   /* '*P' is freed (if it's non-NULL) in case of error.            */
 
   EXPORT_DEF
-  TT_Error  TT_Realloc( Long  Size, void**  P );
+  TT_Error  TT_Realloc( ULong  Size, void**  P );
 
 #endif /* TT_CONFIG_OPTION_EXTEND_ENGINE */
 
