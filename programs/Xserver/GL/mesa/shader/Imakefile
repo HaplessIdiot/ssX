@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/swrast/Imakefile,v 1.1 2004/04/08 10:08:02 alanh Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/shader/Imakefile,v 1.1 2004/12/10 16:07:00 alanh Exp $
 
 #if DoLoadableServer
 #if !BuildModuleInSubdir
@@ -13,7 +13,7 @@ SUBDIRS = module
 
 #define NeedAllMesaSrc
 #define NeedToLinkMesaSrc
-#define MesaSwrastBuildDir /**/
+#define MesaShaderBuildDir /**/
 #if !defined(IHaveModules) || !BuildModuleInSubdir
 #include "../../../../../lib/GL/mesa/shader/Imakefile.inc"
 #else
@@ -21,8 +21,8 @@ SUBDIRS = module
 #endif
 
 
-         SRCS = $(MESA_SWRAST_SRCS)
-         OBJS = $(MESA_SWRAST_OBJS)
+         SRCS = $(MESA_SHADER_SRCS)
+         OBJS = $(MESA_SHADER_OBJS)
 
      INCLUDES = -I$(MESASRCDIR)/src/mesa \
 		-I$(MESASRCDIR)/src/mesa/main \
