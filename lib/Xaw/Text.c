@@ -3857,7 +3857,6 @@ _XawTextSetSource(Widget w, Widget source,
     Bool resolve = False;
 #endif
 
-    _XawTextPrepareToUpdate(ctx);
 #ifndef OLDXAW
     if (source != ctx->text.source)
 	_XawSourceRemoveText(ctx->text.source, w, ctx->text.source &&
@@ -3873,6 +3872,7 @@ _XawTextSetSource(Widget w, Widget source,
     ctx->text.s.left = ctx->text.s.right = 0;
     ctx->text.insertPos = ctx->text.old_insert = startPos;
     ctx->text.lastPos = GETLASTPOS;
+    _XawTextPrepareToUpdate(ctx);
 
     _XawTextBuildLineTable(ctx, top, True);
 
