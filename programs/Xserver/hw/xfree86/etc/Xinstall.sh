@@ -1,13 +1,13 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.27 2001/06/06 19:23:16 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.28 2001/07/02 09:37:18 alanh Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
-# Portions Copyright © 1996-2000 by The XFree86 Project, Inc.
+# Copyright © 1996-2001 by The XFree86 Project, Inc.
 #
-# This script should be used to install XFree86 4.1.0.
+# This script should be used to install XFree86 4.2.0.
 #
 # Parts of this script are based on the old preinst.sh and postinst.sh
 # scripts.
@@ -20,7 +20,7 @@
 # Fallbacks for when the bindist version can't be auto-detected.
 # These should be updated for each release.
 
-FULLPREFIX=4.1
+FULLPREFIX=4.2
 PATCHLEVEL=0
 VERSION=$FULLPREFIX.$PATCHLEVEL
 FULLVERSION=$FULLPREFIX.0
