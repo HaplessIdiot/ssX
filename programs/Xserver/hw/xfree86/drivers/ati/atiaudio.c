@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiload.h,v 1.5tsi Exp $ */
+/* $XFree86$ */
 /*
- * Copyright 2000 through 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
+ * Copyright 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,36 +21,27 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ___ATILOAD_H___
-#define ___ATILOAD_H___ 1
+#include "atiaudio.h"
 
-#ifdef XFree86LOADER
-
-#include "atipriv.h"
-#include "atiproto.h"
-
-#include "xf86str.h"
-
-extern const char *ATIint10Symbols[], *ATIddcSymbols[], *ATIvbeSymbols[],
-
-#ifndef AVOID_CPIO
-
-                  *ATIxf1bppSymbols[], *ATIxf4bppSymbols[],
-
-#endif /* AVOID_CPIO */
-
-                  *ATIfbSymbols[], *ATIshadowfbSymbols[], *ATIxaaSymbols[],
-                  *ATIramdacSymbols[], *ATIi2cSymbols[];
-
-extern pointer ATILoadModule  FunctionPrototype((ScrnInfoPtr, const char *,
-                                                 const char **));
-extern pointer ATILoadModules FunctionPrototype((ScrnInfoPtr, ATIPtr));
-
-#else /* XFree86LOADER */
-
-#define ATILoadModule(pScreenInfo, Module, SymboList) ((pointer)1)
-#define ATILoadModules(pScreenInfo, pATI)             ((pointer)1)
-
-#endif /* XFree86LOADER */
-
-#endif /* ___ATILOAD_H___ */
+/*
+ * Audio chip definitions.
+ */
+const char *ATIAudioNames[] =
+{
+    "Philips TEA5582",
+    "Mono with audio mux",
+    "Philips TDA9850",
+    "Sony CXA2020S",
+    "ITT MSP3410D",
+    "Crystal CS4236B",
+    "Philips TDA9851",
+    "ITT MSP3415",
+    "ITT MSP3430",
+    "Unknown type (9)",
+    "Unknown type (10)",
+    "Unknown type (11)",
+    "Unknown type (12)",
+    "Unknown type (13)",
+    "Unknown type (14)",
+    "No audio"
+};

@@ -1,4 +1,5 @@
 XFree86 4.3.99.9 (xx July 2003)
+ 327. Add Mach64 I2C framework.  Derived from GATOS project (Marc La France).
  326. Removed ru_yawerty xkb symbols file as it is misleading as suggested
       by Ivan Pasacal (Bugzilla #516, Ivan Pascal).
  325. Fixed two bounds errors in rman 
@@ -17362,7 +17363,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2783 2003/07/23 00:48:55 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2784 2003/07/24 13:50:20 eich Exp $
 
 
 

@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiload.h,v 1.5tsi Exp $ */
+/* $XFree86$ */
 /*
- * Copyright 2000 through 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
+ * Copyright 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,36 +21,32 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ___ATILOAD_H___
-#define ___ATILOAD_H___ 1
+#ifndef ___ATIDECODER_H___
+#define ___ATIDECODER_H___ 1
 
-#ifdef XFree86LOADER
+/*
+ * Video decoder definitions.
+ */
+typedef enum
+{
+    ATI_DECODER_NONE,
+    ATI_DECODER_BT819,
+    ATI_DECODER_BT829,
+    ATI_DECODER_BT829A,
+    ATI_DECODER_SA7111,
+    ATI_DECODER_SA7112,
+    ATI_DECODER_THEATER,
+    ATI_DECODER_7,
+    ATI_DECODER_8,
+    ATI_DECODER_9,
+    ATI_DECODER_10,
+    ATI_DECODER_11,
+    ATI_DECODER_12,
+    ATI_DECODER_13,
+    ATI_DECODER_14,
+    ATI_DECODER_15
+} ATIDecoderType;
 
-#include "atipriv.h"
-#include "atiproto.h"
+extern const char *ATIDecoderNames[];
 
-#include "xf86str.h"
-
-extern const char *ATIint10Symbols[], *ATIddcSymbols[], *ATIvbeSymbols[],
-
-#ifndef AVOID_CPIO
-
-                  *ATIxf1bppSymbols[], *ATIxf4bppSymbols[],
-
-#endif /* AVOID_CPIO */
-
-                  *ATIfbSymbols[], *ATIshadowfbSymbols[], *ATIxaaSymbols[],
-                  *ATIramdacSymbols[], *ATIi2cSymbols[];
-
-extern pointer ATILoadModule  FunctionPrototype((ScrnInfoPtr, const char *,
-                                                 const char **));
-extern pointer ATILoadModules FunctionPrototype((ScrnInfoPtr, ATIPtr));
-
-#else /* XFree86LOADER */
-
-#define ATILoadModule(pScreenInfo, Module, SymboList) ((pointer)1)
-#define ATILoadModules(pScreenInfo, pATI)             ((pointer)1)
-
-#endif /* XFree86LOADER */
-
-#endif /* ___ATILOAD_H___ */
+#endif /* ___ATIDECODER_H___ */
