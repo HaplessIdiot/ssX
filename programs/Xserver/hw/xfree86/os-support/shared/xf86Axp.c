@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #include "xf86Axp.h"
 
 axpParams xf86AXPParams[] = { 

@@ -193,3 +193,7 @@ should be grateful to Sallman too :-).
    * Motif is a trademark of the Open Group.
 
   ------------------------------------------------------------------------
+
+
+
+$XFree86$
