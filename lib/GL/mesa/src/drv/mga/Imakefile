@@ -155,8 +155,7 @@ MESA_INCLUDES = -I. -I.. -I../../include
 		../../vertices.c \
 		../../winpos.c \
 		../../xform.c \
-		../../zoom.c \
-		../../X86/common_x86.c
+		../../zoom.c
 
      MESAOBJS = ../../aatriangle.o \
 		../../accum.o \

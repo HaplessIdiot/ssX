@@ -152,8 +152,7 @@ LinkSourceFile(fxvs_tmp.h, ../../../../../../extras/Mesa/src/FX)
 		../../vertices.c \
 		../../winpos.c \
 		../../xform.c \
-		../../zoom.c \
-		../../X86/common_x86.c
+		../../zoom.c
 
      MESAOBJS = ../../aatriangle.o \
 		../../accum.o \

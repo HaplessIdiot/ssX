@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/gamma/Imakefile,v 1.9 2000/06/17 00:02:55 martin Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/gamma/Imakefile,v 1.10 2000/06/20 20:34:36 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -133,8 +133,7 @@ MESA_INCLUDES = -I. -I.. -I../../include
 		../../vertices.c \
 		../../winpos.c \
 		../../xform.c \
-		../../zoom.c \
-		../../X86/common_x86.c
+		../../zoom.c
 
      MESAOBJS = ../../aatriangle.o \
 		../../accum.o \
