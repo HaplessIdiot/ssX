@@ -1,5 +1,5 @@
 /* $XConsortium: get_load.c /main/37 1996/03/09 09:38:04 kaleb $ */
-/* $XFree86: xc/programs/xload/get_load.c,v 1.19 2003/11/17 22:20:54 dawes Exp $ */
+/* $XFree86: xc/programs/xload/get_load.c,v 1.20 2003/11/22 04:11:38 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -270,7 +270,7 @@ void InitLoadPoint()				/* SYSV386 version */
 	xload_error("cannot allocat space for", PROC_NAME);
 	  
     first_buf = (XtPointer) namelist[2].n_value;
-    last_buf  = first_buf + v.v_buf * sizeof(struct buf);
+    last_buf  = (char *)first_buf + v.v_buf * sizeof(struct buf);
 }
 	
 /* ARGSUSED */
@@ -296,7 +296,7 @@ XtPointer	call_data;	/* pointer to (double) return value */
 	      (p[i].p_stat == SIDL) ||
 	      (p[i].p_stat == SXBRK) ||
 	      (p[i].p_stat == SSLEEP && (p[i].p_pri < PZERO) &&
-	       (p[i].p_wchan >= first_buf) && (p[i].p_wchan < last_buf)))
+	       (p[i].p_wchan >= (char *)first_buf) && (p[i].p_wchan < (char *)last_buf)))
 	    nproc++;
 
     /* update the load average using a decay filter */
