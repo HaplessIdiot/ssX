@@ -277,6 +277,7 @@
 #define PCI_CHIP_8400		0x8400
 #define PCI_CHIP_8420		0x8420
 #define PCI_CHIP_8500		0x8500
+#define PCI_CHIP_8520		0x8520
 #define PCI_CHIP_9320		0x9320
 #define PCI_CHIP_9388		0x9388
 #define PCI_CHIP_9397		0x9397
@@ -809,6 +810,7 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_8400,		"CyberBlade/i7",0},
 				{PCI_CHIP_8420,		"CyberBlade/DSTN/i7",0},
 				{PCI_CHIP_8500,		"CyberBlade/i1",0},
+				{PCI_CHIP_8520,		"CyberBlade/DSTN/i1",0},
 				{0x0000,		NULL,0}}},
 #ifdef VENDOR_INCLUDE_NONVIDEO
      {PCI_VENDOR_ALI, {
