@@ -1,9 +1,18 @@
 XCOMM $XConsortium: Imakefile /main/2 1996/09/28 17:06:40 rws $
+
+
+
+
+XCOMM $XFree86$
 #include <Server.tmpl>
+
+#if DoLoadableServer
+EXTRAINCLUDES = $(XF86COMSRC)
+#endif
 
        SRCS = dbe.c midbe.c
        OBJS = dbe.o midbe.o
-   INCLUDES = -I../include -I$(XINCLUDESRC) -I$(EXTINCSRC)
+   INCLUDES = -I../include -I$(XINCLUDESRC) -I$(EXTINCSRC) -I$(EXTRAINCLUDES)
    LINTLIBS = ../dix/llib-ldix.ln ../os/llib-los.ln
 
 NormalLibraryTarget(dbe,$(OBJS))
@@ -11,5 +20,8 @@ LintLibraryTarget(dbe,$(SRCS))
 NormalLintTarget($(SRCS))
 
 InstallLinkKitLibrary(dbe,$(LINKKITDIR)/lib)
+#if DoLoadableServer
+InstallDynamicModule(LibraryTargetName(dbe),$(MODULEDIR))
+#endif
 
 DependTarget()
