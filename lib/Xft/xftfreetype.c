@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.21 2002/05/31 23:21:23 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.22 2002/06/02 20:33:45 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -79,7 +79,8 @@ _XftGetFile (const FcChar8 *file, int id)
     
     f->lock = 0;
     f->face = 0;
-    f->size = 0;
+    f->xsize = 0;
+    f->ysize = 0;
     return f;
 }
 
@@ -100,7 +101,8 @@ _XftGetFaceFile (FT_Face face)
     f->id = 0;
     f->lock = 0;
     f->face = face;
-    f->size = 0;
+    f->xsize = 0;
+    f->ysize = 0;
     return f;
 }
 
@@ -157,7 +159,8 @@ _XftLockFile (XftFtFile *f)
 	if (FT_New_Face (_XftFTlibrary, f->file, f->id, &f->face))
 	    --f->lock;
 	    
-	f->size = 0;
+	f->xsize = 0;
+	f->ysize = 0;
 	f->matrix.xx = f->matrix.xy = f->matrix.yx = f->matrix.yy = 0;
 	_XftUncacheFiles ();
     }
@@ -178,18 +181,19 @@ _XftUnlockFile (XftFtFile *f)
 }
 
 FcBool
-_XftSetFace (XftFtFile *f, FT_F26Dot6 size, FT_Matrix *matrix)
+_XftSetFace (XftFtFile *f, FT_F26Dot6 xsize, FT_F26Dot6 ysize, FT_Matrix *matrix)
 {
     FT_Face face = f->face;
     
-    if (f->size != size)
+    if (f->xsize != xsize || f->ysize != ysize)
     {
 	if (XftDebug() & XFT_DBG_GLYPH)
-	    printf ("Set face size to %d (%d)\n", 
-		    (int) (size >> 6), (int) size);
-	if (FT_Set_Char_Size (face, size, size, 0, 0))
+	    printf ("Set face size to %dx%d (%dx%d)\n", 
+		    (int) (xsize >> 6), (int) (ysize >> 6), (int) xsize, (int) ysize);
+	if (FT_Set_Char_Size (face, xsize, ysize, 0, 0))
 	    return False;
-	f->size = size;
+	f->xsize = xsize;
+	f->ysize = ysize;
     }
     if (!FT_Matrix_Equal (&f->matrix, matrix))
     {
@@ -307,6 +311,7 @@ XftFontInfoFill (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
     FcChar8	    *filename;
     int		    id;
     double	    dsize;
+    double	    aspect;
     FcMatrix	    *font_matrix;
     FcBool	    hinting, vertical_layout, autohint, global_advance;
     FcChar32	    hash, *hashp;
@@ -355,7 +360,11 @@ XftFontInfoFill (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
     if (FcPatternGetDouble (pattern, FC_PIXEL_SIZE, 0, &dsize) != FcResultMatch)
 	goto bail1;
 
-    fi->size = (FT_F26Dot6) (dsize * 64.0);
+    if (FcPatternGetDouble (pattern, FC_ASPECT, 0, &aspect) != FcResultMatch)
+	aspect = 1.0;
+    
+    fi->ysize = (FT_F26Dot6) (dsize * 64.0);
+    fi->xsize = (FT_F26Dot6) (dsize * aspect * 64.0);
 
     /*
      * Get antialias value
@@ -643,7 +652,7 @@ XftFontOpenInfo (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
     if (!face)
 	goto bail0;
 
-    if (!_XftSetFace (fi->file, fi->size, &fi->matrix))
+    if (!_XftSetFace (fi->file, fi->xsize, fi->ysize, &fi->matrix))
 	goto bail1;
 
     antialias = fi->antialias;
@@ -945,9 +954,9 @@ XftFontManageMemory (Display *dpy)
 	font = (XftFontInt *) public;
 
 	if (XftDebug () & XFT_DBG_CACHE)
-	    printf ("freeing unreferenced font %s/%d size %d\n",
+	    printf ("freeing unreferenced font %s/%d size %dx%d\n",
 		    font->info.file->file, font->info.file->id,
-		    (int) font->info.size >> 6);
+		    (int) font->info.xsize >> 6, (int) font->info.ysize >> 6);
 
 	/* Unhook from display list */
 	for (prev = &info->fonts; *prev; prev = &(*(XftFontInt **) prev)->next)

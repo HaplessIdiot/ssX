@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftint.h,v 1.31 2002/05/31 04:45:12 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftint.h,v 1.32 2002/05/31 23:21:23 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -81,7 +81,8 @@ typedef struct _XftFtFile {
     char		*file;	    /* file name */
     int			id;	    /* font index within that file */
 
-    FT_F26Dot6		size;	    /* current size setting */
+    FT_F26Dot6		xsize;	    /* current xsize setting */
+    FT_F26Dot6		ysize;	    /* current ysize setting */
     FT_Matrix		matrix;	    /* current matrix setting */
     
     int			lock;	    /* lock count; can't unload unless 0 */
@@ -102,7 +103,7 @@ struct _XftFontInfo {
     /*
      * Rendering options
      */
-    FT_F26Dot6		size;
+    FT_F26Dot6		xsize, ysize;	/* pixel size */
     FcBool		antialias;	/* doing antialiasing */
     int			rgba;		/* subpixel order */
     FT_Matrix		matrix;		/* glyph transformation matrix */
@@ -348,7 +349,7 @@ XftDrawRenderPrepare (XftDraw	*draw);
 
 /* xftfreetype.c */
 FcBool
-_XftSetFace (XftFtFile *f, FT_F26Dot6 size, FT_Matrix *matrix);
+_XftSetFace (XftFtFile *f, FT_F26Dot6 xsize, FT_F26Dot6 ysize, FT_Matrix *matrix);
 
 void
 XftFontManageMemory (Display *dpy);
