@@ -1,5 +1,5 @@
 /* $XConsortium: access.c,v 1.5 95/01/27 15:05:53 kaleb Exp $ */
-/* $XFree86: xc/workInProgress/lbx/programs/lbxproxy/os/access.c,v 3.1 1994/11/30 21:32:48 dawes Exp $ */
+/* $XFree86: xc/workInProgress/lbx/programs/lbxproxy/os/access.c,v 3.2 1995/01/28 16:24:00 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -964,7 +964,7 @@ ConvertAddr (saddr, len, addr)
     switch (saddr->sa_family)
     {
     case AF_UNSPEC:
-#ifdef UNIXCONN
+#if defined(UNIXCONN) || defined(LOCALCONN)
     case AF_UNIX:
 #endif
         return FamilyLocal;
