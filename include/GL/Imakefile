@@ -1,14 +1,11 @@
-
-XCOMM $XFree86: xc/include/GL/Imakefile,v 1.11 2001/03/16 23:29:57 herrb Exp $
+XCOMM $XFree86: xc/include/GL/Imakefile,v 1.12 2001/03/22 21:48:52 dawes Exp $
 
 LinkSourceFile(gl.h, ../../extras/Mesa/include/GL)
 LinkSourceFile(glext.h, ../../extras/Mesa/include/GL)
 LinkSourceFile(osmesa.h, ../../extras/Mesa/include/GL)
 
-#if BuildGLXLibrary
 GLXHEADERS = gl.h glext.h glu.h glx.h glxint.h glxmd.h glxproto.h \
 	     glxtokens.h osmesa.h
-#endif
 
 HEADERS = $(GLXHEADERS)
 
@@ -19,3 +16,4 @@ InstallMultipleFlags($(HEADERS),$(INCDIR)/GL,$(INSTINCFLAGS))
 
 InstallDriverSDKNonExecFile(glxint.h,$(DRIVERSDKINCLUDEDIR)/GL)
 InstallDriverSDKNonExecFile(glxtokens.h,$(DRIVERSDKINCLUDEDIR)/GL)
+
