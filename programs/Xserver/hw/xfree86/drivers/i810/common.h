@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/common.h,v 1.2 2002/10/30 12:52:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/common.h,v 1.3 2002/12/10 01:27:04 dawes Exp $ */
 
 /*
  * Authors:
@@ -50,11 +50,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifdef I830DEBUG
 #define MARKER() ErrorF("\n### %s:%d: >>> %s <<< ###\n\n", \
 			 __FILE__, __LINE__,__FUNCTION__)
-#define DPRINTF DPRINTF_stub
+#define DPRINTF I830DPRINTF_stub
 #else /* #ifdef I830DEBUG */
 #define MARKER()
-/* this is a real ugle hack to get the compiler to optimize the debugging statements into oblivion */
-#define DPRINTF if(0) DPRINTF_stub
+/* this is a real ugly hack to get the compiler to optimize the debugging statements into oblivion */
+#define DPRINTF if(0) I830DPRINTF_stub
 #endif /* #ifdef I830DEBUG */
 
 #define KB(x) ((x) * 1024)
@@ -81,8 +81,8 @@ extern const char *I810fbSymbols[];
 extern const char *I810xaaSymbols[];
 extern const char *I810shadowSymbols[];
 
-extern void DPRINTF_stub(const char *filename, int line, const char *function,
-		         const char *fmt, ...);
+extern void I830DPRINTF_stub(const char *filename, int line,
+			     const char *function, const char *fmt, ...);
 
 #ifdef _I830_H_
 #define PrintErrorState I830PrintErrorState
