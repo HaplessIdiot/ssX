@@ -22,7 +22,7 @@
  * Authors: Alan Hourihane, alanh@fairlite.demon.co.uk
  *          Sven Luther <luther@dpt-info.u-strasbg.fr>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_video.c,v 1.9 2002/05/17 15:57:01 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_video.c,v 1.10 2002/05/17 17:13:48 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -604,8 +604,8 @@ HWCopyFlat(ScrnInfoPtr pScrn, CARD8 *src, int w, int h)
 	    GLINT_MoveDWORDS(
 		(CARD32*)((char*)pGlint->IOBase + OutputFIFO + 4),
 	 	(CARD32*)src, pGlint->FIFOSize - 1);
-	    dwords -= pGlint->FIFOSize - 1;
-	    src += pGlint->FIFOSize - 1;
+	    dwords -= (pGlint->FIFOSize - 1);
+	    src += (pGlint->FIFOSize << 2) - 4;
     	}
     	if(dwords) {
 	    GLINT_WAIT(dwords + 1);
