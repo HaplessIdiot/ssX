@@ -64,7 +64,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.55 2002/01/25 21:56:17 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.56 2003/08/24 17:37:03 dawes Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -125,6 +125,7 @@ extern void xf86WrapperInit(void);
 #define xf86FatalError(a, b) \
 	if (dispatchException & DE_TERMINATE) { \
 		ErrorF(a, b); \
+		ErrorF("\n"); \
 		return; \
 	} else FatalError(a, b)
 
