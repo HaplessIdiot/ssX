@@ -1,7 +1,8 @@
 /* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init.c,v 1.3 2002/24/04 01:16:16 dawes Exp $ */
 /*
- * Mode switching code (CRT1 section) for
- * SiS 300/540/630/730/315/550/650/M650/651/661FX/M661FX/740/741/330
+ * Mode initializing code (CRT1 section) for
+ * for SiS 300/305/540/630/730 and
+ *     SiS 315/550/650/M650/651/661FX/M661FX/740/741/330/660/M660/760/M760
  * (Universal module for Linux kernel framebuffer and XFree86 4.x)
  *
  * Assembler-To-C translation
@@ -2833,7 +2834,7 @@ SiS_SetCRT1Group(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,
   SiS_Pr->SiS_SetFlag &= (~ProgrammingCRT2);
 
 #ifdef LINUX_XF86
-  xf86DrvMsgVerb(0, X_PROBED, 3, "(init: VBType=0x%04x, VBInfo=0x%04x)\n",
+  xf86DrvMsgVerb(0, X_PROBED, 4, "(init: VBType=0x%04x, VBInfo=0x%04x)\n",
                     SiS_Pr->SiS_VBType, SiS_Pr->SiS_VBInfo);
 #endif
 

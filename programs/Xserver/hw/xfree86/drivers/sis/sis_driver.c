@@ -26,23 +26,25 @@
  * Author: Thomas Winischhofer <thomas@winischhofer.net>
  *		- driver entirely rewritten, only basic structure taken from old code
  *		  (except sis_dri.c, sis_shadow.c and parts of sis_dga.c;
- *		  these were taken over; sis_dri.c was slightly adapted)
+ *		  these were taken over; sis_dri.c was slightly adapted):
+ *              - rewritten for 5597/5598, 6326 and 530/620 chipsets,
+ *              - rewritten for 300 series (300/540/630/730),
  *              - 315 series (315/550/650/651/M650/661FX/M661FX/740/741) support
  *		- Xabre series (330) support
- *              - new mode switching code for 300, 315 and 330 series
- *              - dual head support on 300, 315 and 330 series
- * 		- merged-framebuffer support on 300, 315 and 330 series
- *		- Xinerama extension for MergedFB mode
- *              - rewritten for 5597/5598, 6326 and 530/620 chipsets,
- *              - rewritten for 300/540/630/730 chipsets,
+ *              - dual head support for 300, 315 and 330 series
+ * 		- merged-framebuffer support for 300, 315 and 330 series
+ *		- pseudo-xinerama extension for MergedFB mode
+ *              - SiS video bridge support for 300, 315 and 330 series (LCD, TV, VGA2),
+ *		- LVDS support for 300 and 315 series,
+ *              - Chrontel 7019/LVDS support (650, 740; up to 1600x1200)
+ * 		- Chrontel 700x, 701x support for TV output
  *              - VESA mode switching (deprecated),
- *              - extended CRT2/video bridge handling support,
- *              - 650/740/Chrontel 7019/LVDS support (up to 1600x1200)
- *              - 30x/30xB/30xLV video bridge support (300, 315, 330 series)
+ *		- plasma panel support,
  *              - entirely rewritten Xv support for 300 series
  *              - Xv support for 5597/5598, 6326, 530/620, 315 and 330 series
  *              - TV and hi-res support for the 6326
- *		- Color HW cursor support for 300(emulated), 315 and 330 series
+ *		- color HW cursor support for 300(emulated), 315 and 330 series
+ *		- SiSCtrl interface for 300, 315 and 330 series
  *              - etc. etc. etc.
  *
  * This notice covers the entire driver code
@@ -267,8 +269,6 @@ static const char *vbeSymbols[] = {
     NULL
 };
 
-#ifdef XFree86LOADER
-
 #ifdef XF86DRI
 static const char *drmSymbols[] = {
     "drmAddMap",
@@ -300,6 +300,8 @@ static const char *driSymbols[] = {
     NULL
 };
 #endif
+
+#ifdef XFree86LOADER
 
 static MODULESETUPPROTO(sisSetup);
 
@@ -4818,6 +4820,18 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
         xf86LoaderReqSymLists(shadowSymbols, NULL);
     }
 
+    /* Load the dri module if requested. */
+#ifdef XF86DRI
+    if(pSiS->loadDRI) {
+       if(xf86LoadSubModule(pScrn, "dri")) {
+          xf86LoaderReqSymLists(driSymbols, drmSymbols, NULL);
+       } else {
+          xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+	  	"Remove >Load \"dri\"< from the Module section of your config file\n");
+       }
+    }
+#endif    
+
     /* Now load and initialize VBE module for VESA and mode restoring. */
     pSiS->UseVESA = 0;
     if(pSiS->VESA == 1) {
@@ -6198,23 +6212,14 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      * For bpp > 8, the default visuals are not acceptable because we only
      * support TrueColor and not DirectColor.
      */
-    if(pScrn->bitsPerPixel > 8) {
-       if(!miSetVisualTypes(pScrn->depth, TrueColorMask, pScrn->rgbBits,
-                             pScrn->defaultVisual)) {
-	  SISSaveScreen(pScreen, SCREEN_SAVER_OFF);
-	  SISErrorLog(pScrn, "miSetVisualTypes() failed (bpp %d)\n",
-			pScrn->bitsPerPixel);
-	  return FALSE;
-       }
-    } else {
-       if(!miSetVisualTypes(pScrn->depth,
-                          miGetDefaultVisualMask(pScrn->depth),
-                          pScrn->rgbBits, pScrn->defaultVisual)) {
-	  SISSaveScreen(pScreen, SCREEN_SAVER_OFF);
-	  SISErrorLog(pScrn, "miSetVisualTypes() failed (bpp %d)\n",
-			pScrn->bitsPerPixel);
-	  return FALSE;
-       }
+    if(!miSetVisualTypes(pScrn->depth,
+    			 (pScrn->bitsPerPixel > 8) ?
+			 	TrueColorMask : miGetDefaultVisualMask(pScrn->depth),
+			 pScrn->rgbBits, pScrn->defaultVisual)) {
+       SISSaveScreen(pScreen, SCREEN_SAVER_OFF);
+       SISErrorLog(pScrn, "miSetVisualTypes() failed (bpp %d)\n",
+	  		pScrn->bitsPerPixel);
+       return FALSE;
     }
 
     width = pScrn->virtualX;
@@ -6257,22 +6262,24 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     pSiS->cmdQueueLen = 0; /* Force an EngineIdle() at start */
 
 #ifdef XF86DRI
+    if(pSiS->loadDRI) {
 #ifdef SISDUALHEAD
-    /* No DRI in dual head mode */
-    if(pSiS->DualHeadMode) {
-       pSiS->directRenderingEnabled = FALSE;
-       xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+       /* No DRI in dual head mode */
+       if(pSiS->DualHeadMode) {
+          pSiS->directRenderingEnabled = FALSE;
+          xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 		"DRI not supported in Dual Head mode\n");
-    } else
+       } else
 #endif
-       /* Force the initialization of the context */
-       if(pSiS->VGAEngine != SIS_315_VGA) {
+          /* Force the initialization of the context */
+              if(pSiS->VGAEngine != SIS_315_VGA) {
           pSiS->directRenderingEnabled = SISDRIScreenInit(pScreen);
        } else {
           xf86DrvMsg(pScrn->scrnIndex, X_NOT_IMPLEMENTED,
-	  	"DRI not supported on this chipset\n");
+	        "DRI not supported on this chipset\n");
           pSiS->directRenderingEnabled = FALSE;
        }
+    }
 #endif
 
     /*
@@ -6459,18 +6466,20 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 #endif
 
 #ifdef XF86DRI
-    if(pSiS->directRenderingEnabled) {
-       /* Now that mi, drm and others have done their thing,
-        * complete the DRI setup.
-        */
-       pSiS->directRenderingEnabled = SISDRIFinishScreenInit(pScreen);
-    }
-    if(pSiS->directRenderingEnabled) {
-       xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Direct rendering enabled\n");
-       /* TODO */
-       /* SISSetLFBConfig(pSiS); */
-    } else {
-       xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Direct rendering disabled\n");
+    if(pSiS->loadDRI) {
+       if(pSiS->directRenderingEnabled) {
+          /* Now that mi, drm and others have done their thing,
+           * complete the DRI setup.
+           */
+          pSiS->directRenderingEnabled = SISDRIFinishScreenInit(pScreen);
+       }
+       if(pSiS->directRenderingEnabled) {
+          xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Direct rendering enabled\n");
+          /* TODO */
+          /* SISSetLFBConfig(pSiS); */
+       } else {
+          xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Direct rendering disabled\n");
+       }
     }
 #endif
 
@@ -8030,9 +8039,9 @@ void SiSPreSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode, int viewmode)
        usScratchCR38 &= ~0x03;   		/* Clear LCDA/DualEdge bits */
     }
 
-    xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3, "VBFlags=0x%lx\n", pSiS->VBFlags);
+    xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 4, "VBFlags=0x%lx\n", pSiS->VBFlags);
 
-    xf86DrvMsgVerb(pScrn->scrnIndex, X_PROBED, 3, 
+    xf86DrvMsgVerb(pScrn->scrnIndex, X_PROBED, 4,
 	   "Before: CR30=0x%02x, CR31=0x%02x, CR32=0x%02x, CR33=0x%02x, CR%02x=0x%02x\n",
               usScratchCR30, usScratchCR31, usScratchCR32, usScratchCR33, temp, usScratchCR38);
 
@@ -8228,7 +8237,7 @@ void SiSPreSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode, int viewmode)
         outSISIDXREG(SISCR, temp, usScratchCR38);
      }
 
-     xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
+     xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 4,
 		"After:  CR30=0x%02x, CR31=0x%02x, CR33=0x%02x, CR%02x=%02x\n",
 		    usScratchCR30, usScratchCR31, usScratchCR33, temp, usScratchCR38);
 

@@ -36,7 +36,7 @@
 
 #define SISDRIVERVERSIONYEAR    3
 #define SISDRIVERVERSIONMONTH   10
-#define SISDRIVERVERSIONDAY     3
+#define SISDRIVERVERSIONDAY     5
 #define SISDRIVERREVISION       1
 
 #define SISDRIVERIVERSION (SISDRIVERVERSIONYEAR << 16) | (SISDRIVERVERSIONMONTH << 8) \
@@ -664,6 +664,8 @@ typedef struct {
     Bool 		ShadowFB;
     unsigned char 	*ShadowPtr;
     int  		ShadowPitch;
+
+    Bool		loadDRI;
 
 #ifdef XF86DRI
     Bool 		directRenderingEnabled;

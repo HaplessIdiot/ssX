@@ -50,6 +50,7 @@ typedef enum {
     OPTION_FORCE_CRT1TYPE,
     OPTION_FORCE_CRT2TYPE,
     OPTION_SHADOW_FB,
+    OPTION_DRI,
     OPTION_ROTATE,
     OPTION_NOXVIDEO,
     OPTION_VESA,
@@ -152,6 +153,7 @@ static const OptionInfoRec SISOptions[] = {
     { OPTION_FORCE_CRT1TYPE,    	"ForceCRT1Type",          OPTV_ANYSTR,    {0}, FALSE },
     { OPTION_FORCE_CRT2TYPE,    	"ForceCRT2Type",          OPTV_ANYSTR,    {0}, FALSE },
     { OPTION_SHADOW_FB,         	"ShadowFB",               OPTV_BOOLEAN,   {0}, FALSE },
+    { OPTION_DRI,         		"DRI",               	  OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_ROTATE,            	"Rotate",                 OPTV_ANYSTR,    {0}, FALSE },
     { OPTION_NOXVIDEO,          	"NoXvideo",               OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_VESA,			"Vesa",		          OPTV_BOOLEAN,   {0}, FALSE },
@@ -282,6 +284,7 @@ SiSOptions(ScrnInfoPtr pScrn)
     pSiS->HWCursor = TRUE;
     pSiS->Rotate = FALSE;
     pSiS->ShadowFB = FALSE;
+    pSiS->loadDRI = TRUE;
     pSiS->VESA = -1;
     pSiS->NoXvideo = FALSE;
     pSiS->maxxfbmem = 0;
@@ -1444,6 +1447,14 @@ SiSOptions(ScrnInfoPtr pScrn)
 
        }
     }
+
+    /* DRI */
+    from = X_DEFAULT;
+    if(xf86GetOptValBool(pSiS->Options, OPTION_DRI, &pSiS->loadDRI)) {
+       from = X_CONFIG;
+    }
+    xf86DrvMsg(pScrn->scrnIndex, from, "DRI %s\n",
+       pSiS->loadDRI ? enabledstr : disabledstr);
 
    /* NoXVideo
     * Set this to TRUE to disable Xv hardware video acceleration
