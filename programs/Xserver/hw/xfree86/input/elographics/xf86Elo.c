@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elographics/xf86Elo.c,v 1.10 2000/06/07 22:03:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elographics/xf86Elo.c,v 1.11 2000/08/11 19:10:45 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -1196,7 +1196,7 @@ xf86EloControl(DeviceIntPtr	dev,
 
   case DEVICE_INIT:
     {
-#if defined(sun) && !defined(i386)
+#if defined(sun) && !defined(i386) && !defined(XFREE86_V4)
       char      *name = (char *) getenv("ELO_DEV");
       char      *calib = (char *) getenv("ELO_CALIB");
       char	*speed = (char *) getenv("ELO_SPEED");
@@ -1205,7 +1205,7 @@ xf86EloControl(DeviceIntPtr	dev,
       
       DBG(2, ErrorF("Elographics touchscreen init...\n"));
 
-#if defined(sun) && !defined(i386)
+#if defined(sun) && !defined(i386) && !defined(XFREE86_V4)
       if (name) {
 	priv->input_dev = strdup(name);
 	ErrorF("Elographics touchscreen port changed to '%s'\n",

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_mem.c,v 1.15 2001/01/06 20:19:13 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_mem.c,v 1.17 2001/02/15 19:37:26 eich Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -101,7 +101,7 @@ setup_int_vect(xf86Int10InfoPtr pInt)
 #endif
 
 int
-setup_system_bios(memType base_addr)
+setup_system_bios(void *base_addr)
 {
     char *base = (char *) base_addr;
 
