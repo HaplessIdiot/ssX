@@ -23,7 +23,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_video.c,v 1.6 2000/09/01 19:26:41 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_video.c,v 1.7 2000/09/02 18:02:31 mvojkovi Exp $ */
 
 /*
  * i810_video.c: i810 Xv driver. Based on the mga Xv driver by Mark Vojkovich.
@@ -53,6 +53,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "xaa.h"
 #include "xaalocal.h"
 #include "dixstruct.h"
+#include "fourcc.h"
 
 #define OFF_DELAY 	200  /* milliseconds */
 #define FREE_DELAY 	60000
@@ -116,6 +117,10 @@ static Atom xvBrightness, xvContrast, xvColorKey;
 #define HL_DOWN_INTERPOLATION	0x00300000
 
 #define Y_ADJUST			0x00010000	
+#define BYTE_ORDER			0x0000C000
+#define UV_SWAP			0x00004000
+#define Y_SWAP			0x00008000
+#define Y_AND_UV_SWAP		0x0000C000
 #define SOURCE_FORMAT			0x00003C00
 #define	RGB_555			0x00000800
 #define	RGB_565			0x00000C00
@@ -203,44 +208,14 @@ static XF86AttributeRec Attributes[NUM_ATTRIBUTES] =
    {XvSettable | XvGettable, 0, 255, "XV_CONTRAST"}
 };
 
-#define NUM_IMAGES 2
+#define NUM_IMAGES 4
 
 static XF86ImageRec Images[NUM_IMAGES] =
 {
-   {
-	0x32595559,
-        XvYUV,
-	LSBFirst,
-	{'Y','U','Y','2',
-	  0x00,0x00,0x00,0x10,0x80,0x00,0x00,0xAA,0x00,0x38,0x9B,0x71},
-	16,
-	XvPacked,
-	1,
-	0, 0, 0, 0 ,
-	8, 8, 8, 
-	1, 2, 2,
-	1, 1, 1,
-	{'Y','U','Y','V',
-	  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	XvTopToBottom
-   },
-   {
-	0x32315659,
-        XvYUV,
-	LSBFirst,
-	{'Y','V','1','2',
-	  0x00,0x00,0x00,0x10,0x80,0x00,0x00,0xAA,0x00,0x38,0x9B,0x71},
-	12,
-	XvPlanar,
-	3,
-	0, 0, 0, 0 ,
-	8, 8, 8, 
-	1, 2, 2,
-	1, 2, 2,
-	{'Y','V','U',
-	  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	XvTopToBottom
-   }
+	XVIMAGE_YUY2,
+	XVIMAGE_YV12,
+	XVIMAGE_I420,
+	XVIMAGE_UYVY
 };
 
 typedef struct {
@@ -379,8 +354,8 @@ I810SetupImageVideo(ScreenPtr pScreen)
 
     adapt->pPortPrivates[0].ptr = (pointer)(pPriv);
     adapt->pAttributes = Attributes;
-    adapt->nImages = 2;
-    adapt->nAttributes = 3;
+    adapt->nImages = NUM_IMAGES;
+    adapt->nAttributes = NUM_ATTRIBUTES;
     adapt->pImages = Images;
     adapt->PutVideo = NULL;
     adapt->PutStill = NULL;
@@ -686,7 +661,8 @@ I810CopyPlanarData(
    int top,
    int left,
    int h,
-   int w
+   int w,
+   int id
    )
 {
     I810Ptr pI810 = I810PTR(pScrn);
@@ -707,12 +683,19 @@ I810CopyPlanarData(
 	dst1 += IMAGE_MAX_WIDTH;
     }
 
-    /* Copy V data */
+    /* Copy V data for YV12, or U data for I420 */
     src2 = buf + (srcH*srcPitch) + ((top*srcPitch)>>2) + (left>>1);
-    if (pPriv->currentBuf == 0)
-	dst2 = (unsigned char *) pPriv->VBuf0VirtAddr;
-    else
-	dst2 = (unsigned char *) pPriv->VBuf1VirtAddr;
+    if (pPriv->currentBuf == 0) {
+	if (id == FOURCC_I420)
+	    dst2 = (unsigned char *) pPriv->UBuf0VirtAddr;
+	else
+	    dst2 = (unsigned char *) pPriv->VBuf0VirtAddr;
+    } else {
+	if (id == FOURCC_I420)
+	    dst2 = (unsigned char *) pPriv->UBuf1VirtAddr;
+	else
+	    dst2 = (unsigned char *) pPriv->VBuf1VirtAddr;
+    }
 
     for (i = 0; i < h/2; i++) {
 	memcpy(dst2, src2, w/2);
@@ -720,12 +703,19 @@ I810CopyPlanarData(
 	dst2 += IMAGE_MAX_WIDTH>>1;
     }
 
-    /* Copy U data */
+    /* Copy U data for YV12, or V data for I420 */
     src3 = buf + (srcH*srcPitch) + ((srcH*srcPitch)>>2) + ((top*srcPitch)>>2) + (left>>1);
-    if (pPriv->currentBuf == 0)
-	dst3 = (unsigned char *) pPriv->UBuf0VirtAddr;
-    else
-	dst3 = (unsigned char *) pPriv->UBuf1VirtAddr;
+    if (pPriv->currentBuf == 0) {
+	if (id == FOURCC_I420) 
+	    dst3 = (unsigned char *) pPriv->VBuf0VirtAddr;
+	else
+	    dst3 = (unsigned char *) pPriv->UBuf0VirtAddr;
+    } else {
+	if (id == FOURCC_I420) 
+	    dst3 = (unsigned char *) pPriv->VBuf1VirtAddr;
+	else
+	    dst3 = (unsigned char *) pPriv->UBuf1VirtAddr;
+    }
     
     for (i = 0; i < h/2; i++) {
 	memcpy(dst3, src3, w/2);
@@ -752,12 +742,14 @@ I810DisplayVideo(
     unsigned int swidth;
 
     switch(id) {
-    case 0x32315659: /* YV12 */
+    case FOURCC_YV12:
+    case FOURCC_I420:
 	swidth = (width + 7) & ~7;
 	overlay->SWID = (swidth << 15) | swidth;
 	overlay->SWIDQW = (swidth << 12) | (swidth >> 3);
 	break;
-    case 0x32595559: /* YUY2 */
+    case FOURCC_UYVY:
+    case FOURCC_YUY2:
     default:
 	swidth = ((width + 3) & ~3) << 1;
 	overlay->SWID = swidth;
@@ -868,16 +860,21 @@ I810DisplayVideo(
     }
 
     switch(id) {
-    case 0x32315659: /* YV12 */
+    case FOURCC_YV12:
+    case FOURCC_I420:
 	overlay->OV0STRIDE = IMAGE_MAX_WIDTH | (IMAGE_MAX_WIDTH << 15);
 	overlay->OV0CMD &= ~SOURCE_FORMAT;
 	overlay->OV0CMD |= YUV_420;
 	break;
-    case 0x32595559: /* YUY2 */
+    case FOURCC_UYVY:
+    case FOURCC_YUY2:
 	overlay->OV0STRIDE = IMAGE_MAX_WIDTH << 1;
 	overlay->OV0CMD &= ~SOURCE_FORMAT;
 	overlay->OV0CMD |= YUV_422;
-    default: /* we may have to do something different here ? */
+	overlay->OV0CMD &= ~BYTE_ORDER;
+	if (id == FOURCC_UYVY)
+	    overlay->OV0CMD |= Y_SWAP;
+	default: /* we may have to do something different here ? */
 	break;
     }
 
@@ -903,55 +900,57 @@ I810PutImage(
   Bool sync,
   RegionPtr clipBoxes, pointer data
 ){
-   I810Ptr pI810 = I810PTR(pScrn);
-   I810PortPrivPtr pPriv = (I810PortPrivPtr)data;
-   INT32 x1, x2, y1, y2;
-   int srcPitch;
-   int top, left, npixels, nlines;
-   BoxRec dstBox;
+    I810Ptr pI810 = I810PTR(pScrn);
+    I810PortPrivPtr pPriv = (I810PortPrivPtr)data;
+    INT32 x1, x2, y1, y2;
+    int srcPitch;
+    int top, left, npixels, nlines;
+    BoxRec dstBox;
 
-   if(drw_w > 16384) drw_w = 16384;
+    if(drw_w > 16384) drw_w = 16384;
 
-   /* Clip */
-   x1 = src_x;
-   x2 = src_x + src_w;
-   y1 = src_y;
-   y2 = src_y + src_h;
+    /* Clip */
+    x1 = src_x;
+    x2 = src_x + src_w;
+    y1 = src_y;
+    y2 = src_y + src_h;
 
-   dstBox.x1 = drw_x;
-   dstBox.x2 = drw_x + drw_w;
-   dstBox.y1 = drw_y;
-   dstBox.y2 = drw_y + drw_h;
+    dstBox.x1 = drw_x;
+    dstBox.x2 = drw_x + drw_w;
+    dstBox.y1 = drw_y;
+    dstBox.y2 = drw_y + drw_h;
 
-   I810ClipVideo(&dstBox, &x1, &x2, &y1, &y2, 
-		REGION_EXTENTS(pScreen, clipBoxes), width, height);
+    I810ClipVideo(&dstBox, &x1, &x2, &y1, &y2, 
+		  REGION_EXTENTS(pScreen, clipBoxes), width, height);
 
-   if((x1 >= x2) || (y1 >= y2))
-     return Success;
+    if((x1 >= x2) || (y1 >= y2))
+       return Success;
 
-   dstBox.x1 -= pScrn->frameX0;
-   dstBox.x2 -= pScrn->frameX0;
-   dstBox.y1 -= pScrn->frameY0;
-   dstBox.y2 -= pScrn->frameY0;
+    dstBox.x1 -= pScrn->frameX0;
+    dstBox.x2 -= pScrn->frameX0;
+    dstBox.y1 -= pScrn->frameY0;
+    dstBox.y2 -= pScrn->frameY0;
 
-   switch(id) {
-   case 0x32315659: /* YV12 */
-	srcPitch = (width + 3) & ~3;
-	break;
-   case 0x32595559: /* YUY2 */
-   default:
-	srcPitch = (width << 1);
-	break;
-   }  
+    switch(id) {
+    case FOURCC_YV12:
+    case FOURCC_I420:
+	 srcPitch = (width + 3) & ~3;
+	 break;
+    case FOURCC_UYVY:
+    case FOURCC_YUY2:
+    default:
+	 srcPitch = (width << 1);
+	 break;
+    }  
 
-   /* wait for the last rendered buffer to be flipped in */
-   while (((INREG(DOV0STA)&0x00100000)>>20) != pPriv->currentBuf);
+    /* wait for the last rendered buffer to be flipped in */
+    while (((INREG(DOV0STA)&0x00100000)>>20) != pPriv->currentBuf);
 
-   /* buffer swap */
-   if (pPriv->currentBuf == 0)
-     pPriv->currentBuf = 1;
-   else
-     pPriv->currentBuf = 0;
+    /* buffer swap */
+    if (pPriv->currentBuf == 0)
+        pPriv->currentBuf = 1;
+    else
+        pPriv->currentBuf = 0;
 
     /* copy data */
     top = y1 >> 16;
@@ -959,12 +958,14 @@ I810PutImage(
     npixels = ((((x2 + 0xffff) >> 16) + 1) & ~1) - left;
 
     switch(id) {
-    case 0x32315659: /* YV12 */
+    case FOURCC_YV12:
+    case FOURCC_I420:
 	top &= ~1;
 	nlines = ((((y2 + 0xffff) >> 16) + 1) & ~1) - top;
-	I810CopyPlanarData(pScrn, buf, srcPitch, height, top, left, nlines, npixels);
+	I810CopyPlanarData(pScrn, buf, srcPitch, height, top, left, nlines, npixels, id);
 	break;
-    case 0x32595559: /* YUY2 */
+    case FOURCC_UYVY:
+    case FOURCC_YUY2:
     default:
 	nlines = ((y2 + 0xffff) >> 16) - top;
 	I810CopyPackedData(pScrn, buf, srcPitch, top, left, nlines, npixels);
@@ -1006,7 +1007,8 @@ I810QueryImageAttributes(
     if(offsets) offsets[0] = 0;
 
     switch(id) {
-    case 0x32315659: /* YV12 */
+    case FOURCC_YV12:
+    case FOURCC_I420:
 	*h = (*h + 1) & ~1;
 	size = (*w + 3) & ~3;
 	if(pitches) pitches[0] = size;
@@ -1019,7 +1021,8 @@ I810QueryImageAttributes(
 	if(offsets) offsets[2] = size;
 	size += tmp;
 	break;
-    case 0x32595559: /* YUY2 */
+    case FOURCC_UYVY:
+    case FOURCC_YUY2:
     default:
 	size = *w << 1;
 	if(pitches) pitches[0] = size;
