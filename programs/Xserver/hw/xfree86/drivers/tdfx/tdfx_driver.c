@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.75 2001/05/15 10:19:40 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.76 2001/05/21 21:43:55 dawes Exp $ */
 
 /*
  * Authors:
@@ -941,7 +941,7 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
   i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
 			pScrn->display->modes, clockRanges,
 			0, 320, 2048, 16*pScrn->bitsPerPixel, 
-			200, 1536,
+			200, 2047,
 			pScrn->display->virtualX, pScrn->display->virtualY,
 			availableMem, LOOKUP_BEST_REFRESH);
 
@@ -1910,8 +1910,8 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 
   scanlines = (pTDFX->backOffset - pTDFX->fbOffset) / pTDFX->stride;
   if(pTDFX->ChipType < PCI_CHIP_VOODOO5) {
-      if (scanlines > 2048) 
-	scanlines = 2048;
+      if (scanlines > 2047) 
+	scanlines = 2047;
   } else {
       /* MaxClip seems to have only 12 bits => 0->4095 */
       if (scanlines > 4095) 
