@@ -25,7 +25,11 @@ typedef unsigned long ulong;
 
 /* XXX Lots of xalloc() calls don't check for failure. */
 
-#define DEBUG(x) (x)
+#if 0
+# define DEBUG(x) (x)
+#else
+# define DEBUG(x)
+#endif
 
 static void     V4LIdentify(int flags);
 static Bool     V4LProbe(DriverPtr drv, int flags);
@@ -100,20 +104,27 @@ v4lSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 
 #endif
 
+#define VIDEO_OFF     0  /* really off */
+#define VIDEO_RGB     1  /* rgb overlay (directly to fb) */
+#define VIDEO_YUV     2  /* yuv overlay (to offscreen memory + hw scaling) */
+#define VIDEO_RECLIP  3  /* temporarly off, window clipping changes */
+
 typedef struct _PortPrivRec {
     ScrnInfoPtr                 pScrn;
     FBAreaPtr			pFBArea[2];
-    int				VideoOn;	/* yes/no */
+    int				VideoOn;
     Bool			StreamOn;
 
     /* file handle */
     int 			fd;
     char                        devname[16];
     int                         useCount;
+    struct video_capability     cap;
 
-    /* overlay */
-    struct video_buffer		ov_fbuf;
-    struct video_window		ov_win;
+    /* RGB overlay */
+    struct video_buffer		rgb_fbuf;
+    struct video_window		rgb_win;
+    int                         rgbpalette;
 
     /* attributes */
     struct video_picture	pict;
@@ -121,6 +132,17 @@ typedef struct _PortPrivRec {
 
     XF86VideoEncodingPtr        enc;
     int                         nenc,cenc;
+
+    /* yuv to offscreen */
+    XF86OffscreenImagePtr       format;   /* list */
+    int                         nformat;  /* # if list entries */
+    XF86OffscreenImagePtr       myfmt;    /* which one is YUY2 (packed) */
+    int                         have_yuv;
+
+    int                         yuv_width,yuv_height;
+    XF86SurfacePtr              surface;
+    struct video_buffer		yuv_fbuf;
+    struct video_window		yuv_win;
 } PortPrivRec, *PortPrivPtr;
 
 #define XV_ENCODING	"XV_ENCODING"
@@ -143,7 +165,22 @@ InputVideoFormats[] = {
     { 15, TrueColor },
     { 16, TrueColor },
     { 24, TrueColor },
+    { 32, TrueColor },
 };
+
+#define V4L_ATTR 8
+
+static XF86AttributeRec Attributes[V4L_ATTR] = {
+   {XvSettable | XvGettable, -1000,    1000, XV_ENCODING},
+   {XvSettable | XvGettable, -1000,    1000, XV_BRIGHTNESS},
+   {XvSettable | XvGettable, -1000,    1000, XV_CONTRAST},
+   {XvSettable | XvGettable, -1000,    1000, XV_SATURATION},
+   {XvSettable | XvGettable, -1000,    1000, XV_HUE},
+   {XvSettable | XvGettable, -1000,    1000, XV_VOLUME},
+   {XvSettable | XvGettable,     0,       1, XV_MUTE},
+   {XvSettable | XvGettable,     0, 16*1000, XV_FREQ},
+};
+
 
 /* ---------------------------------------------------------------------- */
 /* forward decl */
@@ -172,14 +209,26 @@ static int V4lOpenDevice(PortPrivPtr pPPriv, ScrnInfoPtr pScrn)
     if (pPPriv->fd == -1) {
 	pPPriv->fd = open(pPPriv->devname, O_RDWR, 0);
 
-	pPPriv->ov_fbuf.width        = pScrn->virtualX;
-	pPPriv->ov_fbuf.height       = pScrn->virtualY;
-	pPPriv->ov_fbuf.depth        = pScrn->bitsPerPixel;
-	pPPriv->ov_fbuf.bytesperline = pScrn->displayWidth * ((pScrn->bitsPerPixel + 7)/8);
-	pPPriv->ov_fbuf.base         = (pointer)(pScrn->memPhysBase + pScrn->fbOffset);
+	pPPriv->rgb_fbuf.width        = pScrn->virtualX;
+	pPPriv->rgb_fbuf.height       = pScrn->virtualY;
+	pPPriv->rgb_fbuf.depth        = pScrn->bitsPerPixel;
+	pPPriv->rgb_fbuf.bytesperline = pScrn->displayWidth * ((pScrn->bitsPerPixel + 7)/8);
+	pPPriv->rgb_fbuf.base         = (pointer)(pScrn->memPhysBase + pScrn->fbOffset);
 	
-	if (-1 == ioctl(pPPriv->fd,VIDIOCSFBUF,&(pPPriv->ov_fbuf)))
-	    perror("ioctl VIDIOCSFBUF");
+	switch (pScrn->bitsPerPixel) {
+	case 16:
+	    if (pScrn->weight.green == 5)
+		pPPriv->rgbpalette = VIDEO_PALETTE_RGB555;
+	    else
+		pPPriv->rgbpalette = VIDEO_PALETTE_RGB565;
+	    break;
+	case 24:
+	    pPPriv->rgbpalette = VIDEO_PALETTE_RGB24;
+	    break;
+	case 32:
+	    pPPriv->rgbpalette = VIDEO_PALETTE_RGB32;
+	    break;
+	}
     }
 
     if (pPPriv->fd == -1)
@@ -200,7 +249,6 @@ static void V4lCloseDevice(PortPrivPtr pPPriv)
     }
 }
 
-
 static int
 V4lPutVideo(ScrnInfoPtr pScrn,
     short vid_x, short vid_y, short drw_x, short drw_y,
@@ -210,13 +258,133 @@ V4lPutVideo(ScrnInfoPtr pScrn,
     PortPrivPtr pPPriv = (PortPrivPtr) data;
     struct video_clip *clip;
     BoxPtr pBox;
+    RegionRec newReg;
+    BoxRec    newBox;
     unsigned int i,dx,dy,dw,dh;
+    int width,height;
     int one=1;
 
-    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "Xv/PV\n"));
+    /* Open a file handle to the device */
+    if (VIDEO_OFF == pPPriv->VideoOn) {
+	if (V4lOpenDevice(pPPriv, pScrn))
+	    return BadAccess;
+    }
+
+    if (pPPriv->have_yuv) {
+	DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "Xv/PV yuv\n"));
+	width  = pPPriv->enc[pPPriv->cenc].width;
+        height = pPPriv->enc[pPPriv->cenc].height/2; /* no interlace */
+	if (drw_w < width)
+	    width = drw_w;
+	if (drw_h < height)
+	    height = drw_h;
+	if ((height != pPPriv->yuv_height) || (width != pPPriv->yuv_width)) {
+	    /* new size -- free old surface */
+	    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "  surface resize\n"));
+	    if (pPPriv->surface) {
+		pPPriv->VideoOn = VIDEO_OFF;
+		pPPriv->myfmt->stop(pPPriv->surface);
+		pPPriv->myfmt->free_surface(pPPriv->surface);
+		xfree(pPPriv->surface);
+		pPPriv->surface    = NULL;
+	    }
+	    pPPriv->yuv_width  = width;
+	    pPPriv->yuv_height = height;
+	}
+	if (!pPPriv->surface) {
+	    /* allocate + setup offscreen surface */
+	    if (NULL == (pPPriv->surface = xalloc(sizeof(XF86SurfaceRec))))
+		return FALSE;
+	    if (Success != pPPriv->myfmt->alloc_surface
+		(pScrn,pPPriv->myfmt->image->id,
+		 pPPriv->yuv_width,pPPriv->yuv_height,pPPriv->surface)) {
+		xfree(pPPriv->surface);
+		pPPriv->surface = NULL;
+		goto fallback_to_rgb;
+	    }
+	    pPPriv->yuv_fbuf.width        = pPPriv->surface->width;
+	    pPPriv->yuv_fbuf.height       = pPPriv->surface->height;
+	    pPPriv->yuv_fbuf.depth        = 16;
+	    pPPriv->yuv_fbuf.bytesperline = pPPriv->surface->pitches[0];
+	    pPPriv->yuv_fbuf.base         =
+		(pointer)(pScrn->memPhysBase + pPPriv->surface->offsets[0]);
+	    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "  surface: %p+%d = %p, %dx%d, pitch %d\n",
+				 pScrn->memPhysBase,pPPriv->surface->offsets[0],
+				 pScrn->memPhysBase+pPPriv->surface->offsets[0],
+				 pPPriv->surface->width,pPPriv->surface->height,
+				 pPPriv->surface->pitches[0]));
+	    pPPriv->yuv_win.width         = pPPriv->surface->width;
+	    pPPriv->yuv_win.height        = pPPriv->surface->height;
+	}
+
+	/* program driver */
+	if (VIDEO_YUV != pPPriv->VideoOn) {
+	    if (-1 == ioctl(pPPriv->fd,VIDIOCSFBUF,&(pPPriv->yuv_fbuf)))
+		perror("ioctl VIDIOCSFBUF");
+	    if (-1 == ioctl(pPPriv->fd,VIDIOCGPICT,&pPPriv->pict))
+		perror("ioctl VIDIOCGPICT");
+	    pPPriv->pict.palette = VIDEO_PALETTE_YUV422;
+	    if (-1 == ioctl(pPPriv->fd,VIDIOCSPICT,&pPPriv->pict))
+		perror("ioctl VIDIOCSPICT");
+	    if (-1 == ioctl(pPPriv->fd,VIDIOCSWIN,&(pPPriv->yuv_win)))
+		perror("ioctl VIDIOCSWIN");
+	    if (-1 == ioctl(pPPriv->fd, VIDIOCCAPTURE, &one))
+		perror("ioctl VIDIOCCAPTURE(1)");
+	}
+
+	if (0 == (pPPriv->myfmt->flags & VIDEO_INVERT_CLIPLIST)) {
+	    /* invert cliplist */
+	    newBox.x1 = drw_x;
+	    newBox.y1 = drw_y;
+	    newBox.x2 = drw_x + drw_w;
+	    newBox.y2 = drw_y + drw_h;
+
+	    if (pPPriv->myfmt->flags & VIDEO_CLIP_TO_VIEWPORT) {
+		/* trim to the viewport */
+		if(newBox.x1 < pScrn->frameX0)
+		    newBox.x1 = pScrn->frameX0;
+		if(newBox.x2 > pScrn->frameX1)
+		    newBox.x2 = pScrn->frameX1;
+		
+		if(newBox.y1 < pScrn->frameY0)
+		    newBox.y1 = pScrn->frameY0;
+		if(newBox.y2 > pScrn->frameY1)
+		    newBox.y2 = pScrn->frameY1;
+	    }
+
+	    REGION_INIT(pScrn->pScreen, &newReg, &newBox, 1);
+	    REGION_SUBTRACT(pScrn->pScreen, &newReg, &newReg, clipBoxes);
+	    clipBoxes = &newReg;
+	}
+
+	/* start overlay */
+	DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2,
+			     "over: - %d,%d -> %d,%d  (%dx%d) (yuv=%dx%d)\n",
+			     drw_x, drw_y,
+			     drw_x+drw_w, drw_y+drw_h,
+			     drw_w, drw_h,
+			     pPPriv->surface->width,pPPriv->surface->height));
+	pPPriv->myfmt->display(pPPriv->surface,
+			       0, 0, drw_x, drw_y,
+			       pPPriv->surface->width,
+			       pPPriv->surface->height,
+			       drw_w, drw_h,
+			       clipBoxes);
+	if (0 == (pPPriv->myfmt->flags & VIDEO_INVERT_CLIPLIST)) {
+	    REGION_UNINIT(pScrn->pScreen, &newReg); 
+	}
+	pPPriv->VideoOn = VIDEO_YUV;
+	return Success;
+    }
+
+ fallback_to_rgb:
+    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "Xv/PV rgb\n"));
     /* FIXME: vid-* is ignored for now, not supported by v4l */
 
-    V4lQueryBestSize(pScrn, 0, vid_w, vid_h, drw_w, drw_h, &dw, &dh, data);
+    dw = (drw_w < pPPriv->enc[pPPriv->cenc].width) ?
+	drw_w : pPPriv->enc[pPPriv->cenc].width;
+    dh = (drw_h < pPPriv->enc[pPPriv->cenc].height) ?
+	drw_h : pPPriv->enc[pPPriv->cenc].height;
     /* if the window is too big, center the video */
     dx = drw_x + (drw_w - dw)/2;
     dy = drw_y + (drw_h - dh)/2;
@@ -230,25 +398,25 @@ V4lPutVideo(ScrnInfoPtr pScrn,
 		drw_w,drw_h,drw_x,drw_y));
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "  use: %dx%d+%d+%d\n",
 		dw,dh,dx,dy));
-    pPPriv->ov_win.x      = dx;
-    pPPriv->ov_win.y      = dy;
-    pPPriv->ov_win.width  = dw;
-    pPPriv->ov_win.height = dh;
-    pPPriv->ov_win.flags  = 0;
+    pPPriv->rgb_win.x      = dx;
+    pPPriv->rgb_win.y      = dy;
+    pPPriv->rgb_win.width  = dw;
+    pPPriv->rgb_win.height = dh;
+    pPPriv->rgb_win.flags  = 0;
  
     /* clipping */
-    if (pPPriv->ov_win.clips) {
-	xfree(pPPriv->ov_win.clips);
-	pPPriv->ov_win.clips = NULL;
+    if (pPPriv->rgb_win.clips) {
+	xfree(pPPriv->rgb_win.clips);
+	pPPriv->rgb_win.clips = NULL;
     }
-    pPPriv->ov_win.clipcount = REGION_NUM_RECTS(clipBoxes);
+    pPPriv->rgb_win.clipcount = REGION_NUM_RECTS(clipBoxes);
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2,"  clip: have #%d\n",
-		pPPriv->ov_win.clipcount));
-    if (0 != pPPriv->ov_win.clipcount) {
-	pPPriv->ov_win.clips = xalloc(pPPriv->ov_win.clipcount*sizeof(struct video_clip));
-	memset(pPPriv->ov_win.clips,0,pPPriv->ov_win.clipcount*sizeof(struct video_clip));
+		pPPriv->rgb_win.clipcount));
+    if (0 != pPPriv->rgb_win.clipcount) {
+	pPPriv->rgb_win.clips = xalloc(pPPriv->rgb_win.clipcount*sizeof(struct video_clip));
+	memset(pPPriv->rgb_win.clips,0,pPPriv->rgb_win.clipcount*sizeof(struct video_clip));
 	pBox = REGION_RECTS(clipBoxes);
-	clip = pPPriv->ov_win.clips;
+	clip = pPPriv->rgb_win.clips;
 	for (i = 0; i < REGION_NUM_RECTS(clipBoxes); i++, pBox++, clip++) {
 	    clip->x	 = pBox->x1 - dx;
 	    clip->y      = pBox->y1 - dy;
@@ -257,20 +425,21 @@ V4lPutVideo(ScrnInfoPtr pScrn,
 	}
     }
 
-    /* Open a file handle to the device */
-
-    if (!pPPriv->VideoOn) {
-	if (V4lOpenDevice(pPPriv, pScrn))
-	    return BadAccess;
-	pPPriv->VideoOn = 1;
-    }
-
     /* start */
-
-    if (-1 == ioctl(pPPriv->fd,VIDIOCSWIN,&(pPPriv->ov_win)))
+    if (VIDEO_RGB != pPPriv->VideoOn) {
+	if (-1 == ioctl(pPPriv->fd,VIDIOCSFBUF,&(pPPriv->rgb_fbuf)))
+	    perror("ioctl VIDIOCSFBUF");
+	if (-1 == ioctl(pPPriv->fd,VIDIOCGPICT,&pPPriv->pict))
+	    perror("ioctl VIDIOCGPICT");
+	pPPriv->pict.palette = pPPriv->rgbpalette;
+	if (-1 == ioctl(pPPriv->fd,VIDIOCSPICT,&pPPriv->pict))
+	    perror("ioctl VIDIOCSPICT");
+    }
+    if (-1 == ioctl(pPPriv->fd,VIDIOCSWIN,&(pPPriv->rgb_win)))
 	perror("ioctl VIDIOCSWIN");
     if (-1 == ioctl(pPPriv->fd, VIDIOCCAPTURE, &one))
 	perror("ioctl VIDIOCCAPTURE(1)");
+    pPPriv->VideoOn = VIDEO_RGB;
 
     return Success;
 }
@@ -295,18 +464,34 @@ V4lStopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit)
     PortPrivPtr pPPriv = (PortPrivPtr) data;  
     int zero=0;
 
-    if (!pPPriv->VideoOn) {
+    if (VIDEO_OFF == pPPriv->VideoOn) {
 	DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2,
 	      "Xv/StopVideo called with video already off\n"));
 	return;
     }
-    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "Xv/StopVideo\n"));
+    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "Xv/StopVideo exit=%d\n",exit));
 
-    if (-1 == ioctl(pPPriv->fd, VIDIOCCAPTURE, &zero))
-	perror("ioctl VIDIOCCAPTURE(0)");
-
-    V4lCloseDevice(pPPriv);
-    pPPriv->VideoOn = 0;
+    if (!exit) {
+	/* just reclipping, we have to stop DMA transfers to the visible screen */
+	if (VIDEO_RGB == pPPriv->VideoOn) {
+	    if (-1 == ioctl(pPPriv->fd, VIDIOCCAPTURE, &zero))
+		perror("ioctl VIDIOCCAPTURE(0)");
+	    pPPriv->VideoOn = VIDEO_RECLIP;
+	}
+    } else {
+	/* video stop - turn off and free everything */
+	if (VIDEO_YUV == pPPriv->VideoOn) {
+	    pPPriv->myfmt->stop(pPPriv->surface);
+	    pPPriv->myfmt->free_surface(pPPriv->surface);
+	    xfree(pPPriv->surface);
+	    pPPriv->surface = NULL;
+	}
+	if (-1 == ioctl(pPPriv->fd, VIDIOCCAPTURE, &zero))
+	    perror("ioctl VIDIOCCAPTURE(0)");
+	
+	V4lCloseDevice(pPPriv);
+	pPPriv->VideoOn = VIDEO_OFF;
+    }
 }
 
 /* v4l uses range 0 - 65535; Xv uses -1000 - 1000 */
@@ -333,11 +518,11 @@ V4lSetPortAttribute(ScrnInfoPtr pScrn,
     struct video_channel chan;
     int ret = Success;
 
-    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "Xv/SPA %d, %d\n",
-	attribute, value));
-
     if (V4lOpenDevice(pPPriv, pScrn))
 	return BadAccess;
+
+    DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "Xv/SPA %d, %d\n",
+	attribute, value));
 
     if (-1 == pPPriv->fd) {
 	ret = Success /* FIXME: EBUSY/ENODEV ?? */;
@@ -381,6 +566,12 @@ V4lSetPortAttribute(ScrnInfoPtr pScrn,
     } else if (attribute == xvFreq) {
 	if (-1 == ioctl(pPPriv->fd,VIDIOCSFREQ,&value))
 	    perror("ioctl VIDIOCSFREQ");
+#if 0
+    } else if (pPPriv->have_yuv &&
+	       pPPriv->myfmt->setAttribute) {
+	/* not mine -> pass to yuv scaler driver */
+	ret = pPPriv->myfmt->setAttribute(pScrn, attribute, value);
+#endif
     } else {
 	ret = BadValue;
     }
@@ -424,6 +615,12 @@ V4lGetPortAttribute(ScrnInfoPtr pScrn,
 	}
     } else if (attribute == xvFreq) {
 	ioctl(pPPriv->fd,VIDIOCGFREQ,value);
+#if 0
+    } else if (pPPriv->have_yuv &&
+	       pPPriv->myfmt->getAttribute) {
+	/* not mine -> pass to yuv scaler driver */
+	ret = pPPriv->myfmt->getAttribute(pScrn, attribute, value);
+#endif
     } else {
 	ret = BadValue;
     }
@@ -444,8 +641,13 @@ V4lQueryBestSize(ScrnInfoPtr pScrn, Bool motion,
     int maxx = pPPriv->enc[pPPriv->cenc].width;
     int maxy = pPPriv->enc[pPPriv->cenc].height;
 
-    *p_w = (drw_w < maxx) ? drw_w : maxx;
-    *p_h = (drw_h < maxy) ? drw_h : maxy;
+    if (pPPriv->have_yuv) {
+	*p_w = pPPriv->myfmt->max_width;
+	*p_h = pPPriv->myfmt->max_height;
+    } else {
+	*p_w = (drw_w < maxx) ? drw_w : maxx;
+	*p_h = (drw_h < maxy) ? drw_h : maxy;
+    }
 
     DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "Xv/BS %d %dx%d %dx%d\n",
 			 pPPriv->cenc,drw_w,drw_h,*p_w,*p_h));
@@ -467,32 +669,28 @@ V4LIdentify(int flags)
 static char*
 fixname(char *str)
 {
-	int s,d;
-	for (s=0, d=0;; s++) {
-		if (str[s] == '-')
-			continue;
-		str[d++] = tolower(str[s]);
-		if (0 == str[s])
-			break;
-	}
-	return str;
+    int s,d;
+    for (s=0, d=0;; s++) {
+	if (str[s] == '-')
+	    continue;
+	str[d++] = tolower(str[s]);
+	if (0 == str[s])
+	    break;
+    }
+    return str;
 }
 
 static XF86VideoEncodingPtr
-V4LBuildEncodings(int fd, int *count)
+V4LBuildEncodings(int fd, int *count, int channels)
 {
-    static struct video_capability  cap;
     static struct video_channel     channel;
     XF86VideoEncodingPtr            enc;
     int i;
 
-    if (-1 == ioctl(fd,VIDIOCGCAP,&cap))
-	return NULL;
+    enc = xalloc(sizeof(XF86VideoEncodingRec)*3*channels);
+    memset(enc,0,sizeof(XF86VideoEncodingRec)*3*channels);
 
-    enc = xalloc(sizeof(XF86VideoEncodingRec)*3*cap.channels);
-    memset(enc,0,sizeof(XF86VideoEncodingRec)*3*cap.channels);
-
-    for (i = 0; i < 3*cap.channels; ) {
+    for (i = 0; i < 3*channels; ) {
 	channel.channel = i/3;
 	if (-1 == ioctl(fd,VIDIOCGCHAN,&channel)) {
 	    perror("ioctl VIDIOCGCHAN");
@@ -533,28 +731,16 @@ V4LBuildEncodings(int fd, int *count)
     return enc;
 }
 
-
-static XF86AttributeRec Attributes[8] = {
-   {XvSettable | XvGettable, -1000,    1000, XV_ENCODING},
-   {XvSettable | XvGettable, -1000,    1000, XV_BRIGHTNESS},
-   {XvSettable | XvGettable, -1000,    1000, XV_CONTRAST},
-   {XvSettable | XvGettable, -1000,    1000, XV_SATURATION},
-   {XvSettable | XvGettable, -1000,    1000, XV_HUE},
-   {XvSettable | XvGettable, -1000,    1000, XV_VOLUME},
-   {XvSettable | XvGettable,     0,       1, XV_MUTE},
-   {XvSettable | XvGettable,     0, 16*1000, XV_FREQ},
-};
-
-
 static int
 V4LInit(ScrnInfoPtr pScrn, XF86VideoAdaptorPtr **adaptors)
 {
+    ScreenPtr pScreen = screenInfo.screens[pScrn->scrnIndex];
     PortPrivPtr pPPriv;
     DevUnion *Private;
     XF86VideoAdaptorPtr *VAR = NULL;
     XF86VideoEncodingPtr enc;
     char dev[18];
-    int  fd,i,nenc;
+    int  fd,i,j,nenc;
 
     DEBUG(xf86Msg(X_INFO, "v4l: init start\n"));
 
@@ -567,8 +753,6 @@ V4LInit(ScrnInfoPtr pScrn, XF86VideoAdaptorPtr **adaptors)
 	    if (fd == -1)
 		break;
 	}
-	if (NULL == (enc = V4LBuildEncodings(fd,&nenc)))
-	    break;
 	
 	DEBUG(xf86Msg(X_INFO,  "v4l: %s ok\n",dev));
 
@@ -580,9 +764,44 @@ V4LInit(ScrnInfoPtr pScrn, XF86VideoAdaptorPtr **adaptors)
 	pPPriv->fd    = -1;
 	strncpy(pPPriv->devname, dev, 16);
 	pPPriv->useCount=0;
+
+	/* check device */
+	if (-1   == ioctl(fd,VIDIOCGCAP,&pPPriv->cap)	||
+	    NULL == (enc = V4LBuildEncodings
+		     (fd,&nenc,pPPriv->cap.channels))) {
+	    xfree(pPPriv);
+	    break;
+	}
 	pPPriv->enc = enc;
 	pPPriv->nenc = nenc;
 
+#if 1
+	/* check for yuv (see if the driver accepts VIDEO_PALETTE_YUV422) */
+	ioctl(fd,VIDIOCGPICT,&pPPriv->pict);
+	pPPriv->pict.palette = VIDEO_PALETTE_YUV422;
+	if (0 == ioctl(fd,VIDIOCSPICT,&pPPriv->pict)) {
+	    ioctl(fd,VIDIOCGPICT,&pPPriv->pict);    
+	    if (VIDEO_PALETTE_YUV422 == pPPriv->pict.palette) {
+		/* works, check screen capabilities */
+		DEBUG(xf86Msg(X_INFO, "v4l: kernel driver supports yuv422.\n"));
+		pPPriv->format = xf86XVQueryOffscreenImages
+		    (pScreen,&pPPriv->nformat);
+		DEBUG(xf86Msg(X_INFO, "v4l: screen driver supports %d yuv formats (%p)\n",
+			      pPPriv->nformat,pPPriv->format));
+		for (j = 0; j < pPPriv->nformat; j++) {
+		    DEBUG(xf86Msg(X_INFO, "v4l: yuv format: %4.4s\n",
+				  (char*)&(pPPriv->format[j].image->id)));
+		    if (pPPriv->format[j].image->id     == 0x32595559 &&
+			pPPriv->format[j].image->format == XvPacked) {
+			pPPriv->have_yuv = 1;
+			pPPriv->myfmt = pPPriv->format+j;
+			DEBUG(xf86Msg(X_INFO,  "v4l: matching format found, offscreen yuv enabled.\n"));
+		    }
+		}
+	    }
+	}
+#endif
+	
 	/* alloc VideoAdaptorRec */
 	VAR = xrealloc(VAR,sizeof(XF86VideoAdaptorPtr)*(i+1));
 	VAR[i] = xalloc(sizeof(XF86VideoAdaptorRec));
@@ -591,8 +810,23 @@ V4LInit(ScrnInfoPtr pScrn, XF86VideoAdaptorPtr **adaptors)
 	memset(VAR[i],0,sizeof(XF86VideoAdaptorRec));
 
 	/* add attribute lists */
-	VAR[i]->nAttributes = 8;
-	VAR[i]->pAttributes = Attributes;
+	if (pPPriv->have_yuv) {
+#if 0
+	    VAR[i]->nAttributes = V4L_ATTR + pPPriv->myfmt->num_attributes;
+	    VAR[i]->pAttributes = xalloc(VAR[i]->nAttributes *
+					 sizeof(XF86AttributeRec));
+	    memcpy(VAR[i]->pAttributes, Attributes,
+		   sizeof(XF86AttributeRec) * V4L_ATTR);
+	    memcpy(VAR[i]->pAttributes+V4L_ATTR, pPPriv->myfmt->attributes,
+		   sizeof(XF86AttributeRec) * pPPriv->myfmt->num_attributes);
+#else
+	    VAR[i]->nAttributes = V4L_ATTR;
+	    VAR[i]->pAttributes = Attributes;
+#endif
+	} else {
+	    VAR[i]->nAttributes = V4L_ATTR;
+	    VAR[i]->pAttributes = Attributes;
+	}
 
 	/* hook in private data */
 	Private = xalloc(sizeof(DevUnion));
@@ -644,8 +878,9 @@ static Bool
 V4LProbe(DriverPtr drv, int flags)
 {
     if (flags & PROBE_DETECT)
-	return FALSE;
+	return TRUE;
 
     xf86XVRegisterGenericAdaptorDriver(V4LInit);
+    drv->refCount++;
     return TRUE;
 }
