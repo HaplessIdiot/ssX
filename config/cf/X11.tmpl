@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.179 2002/11/15 02:33:08 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.180 2002/11/19 21:33:44 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1702,7 +1702,6 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #endif
 #endif
 
-#if BuildScreenSaverLibrary
 #ifndef SharedLibXss
 #define SharedLibXss	NO
 #endif
@@ -1715,9 +1714,7 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #ifndef ProfileLibXss
 #define ProfileLibXss	NO
 #endif
-#endif
 
-#if BuildXF86MiscLibrary
 #ifndef SharedLibXxf86misc
 #define SharedLibXxf86misc	NO
 #endif
@@ -1730,9 +1727,7 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #ifndef ProfileLibXxf86misc
 #define ProfileLibXxf86misc	NO
 #endif
-#endif
 
-#if BuildXF86VidModeLibrary
 #ifndef SharedLibXxf86vm
 #define SharedLibXxf86vm	NO
 #endif
@@ -1745,9 +1740,7 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #ifndef ProfileLibXxf86vm
 #define ProfileLibXxf86vm	NO
 #endif
-#endif
 
-#if BuildXF86DGALibrary
 #ifndef SharedLibXxf86dga
 #define SharedLibXxf86dga	NO
 #endif
@@ -1760,9 +1753,7 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #ifndef ProfileLibXxf86dga
 #define ProfileLibXxf86dga	NO
 #endif
-#endif
 
-#if BuildXF86RushLibrary
 #ifndef SharedLibXxf86rush
 #define SharedLibXxf86rush	NO
 #endif
@@ -1775,9 +1766,7 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #ifndef ProfileLibXxf86rush
 #define ProfileLibXxf86rush	NO
 #endif
-#endif
 
-#if BuildXvLibrary
 #ifndef SharedLibXv
 #define SharedLibXv		YES
 #endif
@@ -1790,9 +1779,7 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #ifndef ProfileLibXv
 #define ProfileLibXv		NO
 #endif
-#endif
 
-#if BuildXvMCLibrary
 #ifndef SharedLibXvMC
 #define SharedLibXvMC		NO
 #endif
@@ -1805,9 +1792,7 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #ifndef ProfileLibXvMC
 #define ProfileLibXvMC		NO
 #endif
-#endif
 
-#if BuildXineramaLibrary
 #ifndef SharedLibXinerama
 #define SharedLibXinerama	NO
 #endif
@@ -1820,9 +1805,7 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #ifndef ProfileLibXinerama
 #define ProfileLibXinerama	NO
 #endif
-#endif
 
-#if BuildXResLibrary
 #ifndef SharedLibXRes
 #define SharedLibXRes           NO
 #endif
@@ -1835,9 +1818,7 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #ifndef ProfileLibXRes
 #define ProfileLibXRes          NO
 #endif
-#endif
 
-#if BuildDPSLibrary
 #ifndef SharedLibDps
 #define SharedLibDps		HasSharedLibraries
 #endif
@@ -1850,9 +1831,7 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #ifndef ProfileLibDps
 #define ProfileLibDps		NO
 #endif
-#endif
 
-#if BuildDPSTkLibrary
 #ifndef SharedLibDpsTk
 #define SharedLibDpsTk		HasSharedLibraries
 #endif
@@ -1865,9 +1844,7 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #ifndef ProfileLibDpsTk
 #define ProfileLibDpsTk		NO
 #endif
-#endif
 
-#if BuildPSResLibrary
 #ifndef SharedLibPSRes
 #define SharedLibPSRes		HasSharedLibraries
 #endif
@@ -1880,9 +1857,7 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #ifndef ProfileLibPSRes
 #define ProfileLibPSRes		NO
 #endif
-#endif
 
-#if BuildRenderLibrary
 #ifndef SharedLibXrender
 #define SharedLibXrender	HasSharedLibraries
 #endif
@@ -1895,9 +1870,7 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #ifndef ProfileLibXrender
 #define ProfileLibXrender	NO
 #endif
-#endif
 
-#if BuildRandRLibrary
 #ifndef SharedLibXrandr
 #define SharedLibXrandr		HasSharedLibraries
 #endif
@@ -1910,9 +1883,7 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #ifndef ProfileLibXrandr
 #define ProfileLibXrandr	NO
 #endif
-#endif
 
-#if BuildXcursorLibrary
 #ifndef SharedLibXcursor
 #define SharedLibXcursor	HasSharedLibraries
 #endif
@@ -1925,9 +1896,7 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #ifndef ProfileLibXcursor
 #define ProfileLibXcursor	NO
 #endif
-#endif
 
-#if BuildGLULibrary
 #ifndef SharedLibGlu
 #define SharedLibGlu		HasSharedLibraries
 #endif
@@ -1940,9 +1909,7 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #ifndef ProfileLibGlu
 #define ProfileLibGlu		NO
 #endif
-#endif
 
-#if BuildGLXLibrary
 #ifndef SharedLibGlx
 #define SharedLibGlx		HasSharedLibraries
 #endif
@@ -1993,7 +1960,6 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #ifndef GLwUseXmStubs
 #define GLwUseXmStubs		NO	/* create stub (weak) Motif symbols */
 #endif
-#endif /* BuildGLXLibrary */
 
 #ifndef SharedLibXext
 #define SharedLibXext HasSharedLibraries
