@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_regs.h,v 1.3 1999/01/23 09:55:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_regs.h,v 1.4 1999/01/24 13:32:37 dawes Exp $ */
 
 /* TGA hardware description (minimal)
  *
@@ -40,15 +40,46 @@
 #define TYPE_TGA_24PLANE		1
 #define TYPE_TGA_24PLUSZ		3
 
+/* #define PROFILE */
+#undef PROFILE
+
 #ifdef __alpha__
 /* we can avoid an mb() if we write to an alternate register space each time */
 
+#define MAX_OFFSET 8192
+#define OFFSET_INC 1024
+
+#define TGA_GET_IOBASE() iobase = (unsigned long)pTga->IOBaseDense;
+#define TGA_GET_OFFSET() offset = pTga->regOffset;
+#define TGA_SAVE_OFFSET() pTga->regOffset = offset;
+
+#ifdef PROFILE
+static __inline__ unsigned int realcc()
+{
+  u_long cc;
+  __asm__ volatile("rpcc %0" : "=r"(cc) : : "memory");
+  return cc;
+}
+
 #define TGA_FAST_WRITE_REG(v,r) \
 do {\
-  *(unsigned int *)(((char *)pTga->IOBaseDense) + pTga->regOffset + (r)) = v;\
-  if(pTga->regOffset >= 1047552) (pTga->regOffset = 0);\
-  else (pTga->regOffset += 1024);\
+start = realcc();\
+  *(unsigned int *)(iobase + offset + (r)) = v;\
+  offset += OFFSET_INC;\
+  if(offset > MAX_OFFSET) (offset = 0);\
+  stop = realcc();\
+  ErrorF("TGA_FAST_WRITE_REG = %d\n", stop - start);\
 } while (0)
+
+#else
+
+#define TGA_FAST_WRITE_REG(v,r) \
+do {\
+  *(unsigned int *)(iobase + offset + (r)) = v;\
+  offset += OFFSET_INC;\
+  if(offset > MAX_OFFSET) (offset = 0);\
+} while (0)
+#endif /* PROFILE */
 
 #define TGA_WRITE_REG(v,r) \
 	do {\
@@ -59,6 +90,10 @@ do {\
 	( *(unsigned int *)((char*)(pTga->IOBaseDense)+(r)))
 
 #else
+#define TGA_GET_OFFSET() ;
+#define TGA_SAVE_OFFSET() ;
+#define TGA_GET_WRITEME() ;
+
 #define TGA_WRITE_REG(v,r) \
 	*(unsigned int *)((char*)(pTga->IOBase)+(r)) = v;
 
