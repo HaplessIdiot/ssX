@@ -1383,7 +1383,7 @@ _BuildLineTable(TextWidget ctx, XawTextPosition position, int line)
 	    ctx->text.clear_to_eol = True;
 	}
 	if (lt->textWidth != width) {
-	    if (lt->textWidth < width)
+	    if (lt->textWidth > width)
 		ctx->text.clear_to_eol = True;
 	    lt->textWidth = width;
 	}

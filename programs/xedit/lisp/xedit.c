@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.2 2002/09/29 02:55:00 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.3 2002/10/06 17:11:45 paulo Exp $ */
 
 #include "../xedit.h"
 #include <X11/Xaw/TextSrcP.h>	/* Needs some private definitions */
@@ -609,7 +609,10 @@ XeditInteractiveCallback(Widget w, XtPointer client_data, XtPointer call_data)
     mac->running = 0;
 
     data->syntablep = syntable;
-    if (indent && syntable != NIL)
+    if (indent && syntable != NIL &&
+	/* Doing an undo, probably will need an exported interface for this
+	 * case. Should not change the text now. */
+	(!src->textSrc.enable_undo || !src->textSrc.undo_state))
 	XtAddCallback(textwindow, XtNpositionCallback,
 		      XeditIndentationCallback, data);
 }
