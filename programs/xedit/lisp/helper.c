@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.23 2002/03/10 04:57:46 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.24 2002/03/16 05:53:52 paulo Exp $ */
 
 #include "helper.h"
 #include "pathname.h"
@@ -428,7 +428,7 @@ LispReallyDo(LispMac *mac, LispBuiltin *builtin, int refs)
 	if (refs) {
 	    ERROR_CHECK_CONSTANT(symbol);
 	    LispAddVar(mac, symbol, value);
-	    mac->env.head += 2;
+	    ++mac->env.head;
 	}
     }
 
@@ -438,7 +438,7 @@ LispReallyDo(LispMac *mac, LispBuiltin *builtin, int refs)
 	    list = CAR(object);
 	    ERROR_CHECK_CONSTANT(CAR(list));
 	    LispAddVar(mac, CAR(list), CADR(list));
-	    mac->env.head += 2;
+	    ++mac->env.head;
 	}
     }
 
@@ -601,7 +601,7 @@ LispReallyDoListTimes(LispMac *mac, LispBuiltin *builtin, int times)
 	LispAddVar(mac, symbol, INTEGER(count));
     else
 	LispAddVar(mac, symbol, CAR(value));
-    mac->env.head += 2;
+    ++mac->env.head;
 
     /* Execute iterations */
     for (;;) {

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.33 2002/03/12 23:28:54 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.34 2002/03/16 05:53:52 paulo Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -1295,7 +1295,7 @@ Lisp_Let(LispMac *mac, LispBuiltin *builtin)
 	pair = CAR(list);
 	ERROR_CHECK_CONSTANT(CAR(pair));
 	LispAddVar(mac, CAR(pair), CDR(pair));
-	mac->env.head += 2;
+	++mac->env.head;
     }
 
     mac->protect.length = length;
@@ -1356,7 +1356,7 @@ Lisp_LetP(LispMac *mac, LispBuiltin *builtin)
 
 	ERROR_CHECK_CONSTANT(var);
 	LispAddVar(mac, var, val);
-	mac->env.head += 2;
+	++mac->env.head;
     }
 
     result = NIL;
@@ -2267,7 +2267,7 @@ Lisp_Progv(LispMac *mac, LispBuiltin *builtin)
 	cons = CAR(valist);
 	ERROR_CHECK_CONSTANT(CAR(cons));
 	LispAddVar(mac, CAR(cons), CDR(cons));
-	mac->env.head += 2;
+	++mac->env.head;
     }
 
     for (; CONS_P(body); body = CDR(body))
