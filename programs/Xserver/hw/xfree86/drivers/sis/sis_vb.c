@@ -102,16 +102,32 @@ static int
 SISDetectCRT1(ScrnInfoPtr pScrn)
 {
     SISPtr  pSiS = SISPTR(pScrn);
-    unsigned char SR1F,CR63=0,pel;
+    unsigned char SR1F,CR63=0,CR17,pel;
     int i, ret=0;
+    Bool mustwait = FALSE;
 
     inSISIDXREG(SISSR,0x1F,SR1F);
     orSISIDXREG(SISSR,0x1F,0x04);
+    andSISIDXREG(SISSR,0x1F,0x3F);
+    if(SR1F & 0xc0) mustwait = TRUE;
 
     if(pSiS->VGAEngine == SIS_315_VGA) {
        inSISIDXREG(SISCR,0x63,CR63);
        CR63 &= 0x40;
        andSISIDXREG(SISCR,0x63,0xBF);
+    }
+
+    inSISIDXREG(SISCR,0x17,CR17);
+    CR17 &= 0x80;
+    if(!CR17) {
+       orSISIDXREG(SISCR,0x17,0x80);
+       mustwait = TRUE;
+       outSISIDXREG(SISSR, 0x00, 0x01);
+       outSISIDXREG(SISSR, 0x00, 0x03);
+    }
+
+    if(mustwait) {
+       for(i=0; i < 10; i++) SISWaitRetraceCRT1(pScrn);
     }
 
     pel = inSISREG(SISPEL);
@@ -135,6 +151,8 @@ SISDetectCRT1(ScrnInfoPtr pScrn)
     if(pSiS->VGAEngine == SIS_315_VGA) {
        setSISIDXREG(SISCR,0x63,0xBF,CR63);
     }
+
+    setSISIDXREG(SISCR,0x17,0x7F,CR17);
 
     outSISIDXREG(SISSR,0x1F,SR1F);
 

@@ -55,6 +55,7 @@
 BOOLEAN SiSBIOSSetMode(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,
                        ScrnInfoPtr pScrn, DisplayModePtr mode, BOOLEAN IsCustom);
 DisplayModePtr SiSBuildBuiltInModeList(ScrnInfoPtr pScrn, BOOLEAN includelcdmodes, BOOLEAN isfordvi);
+int    SiSTranslateToVESA(ScrnInfoPtr pScrn, int modenumber);
 #ifdef SISDUALHEAD
 BOOLEAN SiSBIOSSetModeCRT1(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,
                        ScrnInfoPtr pScrn, DisplayModePtr mode, BOOLEAN IsCustom);
@@ -72,8 +73,7 @@ BOOLEAN SiSSetMode(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,
 #endif
 
 #ifndef LINUX_XF86
-static ULONG GetDRAMSize(SiS_Private *SiS_Pr,
-                         PSIS_HW_DEVICE_INFO HwDeviceExtension);
+static ULONG GetDRAMSize(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension);
 #endif
 
 #if defined(ALLOC_PRAGMA)
@@ -3856,7 +3856,7 @@ SiS_CheckBuildCustomMode(ScrnInfoPtr pScrn, DisplayModePtr mode, int VBFlags)
    return 1;
 }
 
-/* TW: Build a list of supported modes */
+/* Build a list of supported modes */
 DisplayModePtr
 SiSBuildBuiltInModeList(ScrnInfoPtr pScrn, BOOLEAN includelcdmodes, BOOLEAN isfordvi)
 {
@@ -4385,7 +4385,41 @@ SiSBuildBuiltInModeList(ScrnInfoPtr pScrn, BOOLEAN includelcdmodes, BOOLEAN isfo
    return first;
 
 }
+
+/* Build a list of supported modes */
+int
+SiSTranslateToVESA(ScrnInfoPtr pScrn, int modenumber)
+{
+   SISPtr         pSiS = SISPTR(pScrn);
+   int i;
+
+   /* Initialize our pointers */
+   if(pSiS->VGAEngine == SIS_300_VGA) {
+#ifdef SIS300
+	InitTo300Pointer(pSiS->SiS_Pr, &pSiS->sishw_ext);
+#else
+	return -1;
 #endif
+   } else if(pSiS->VGAEngine == SIS_315_VGA) {
+#ifdef SIS315H
+       	InitTo310Pointer(pSiS->SiS_Pr, &pSiS->sishw_ext);
+#else
+	return -1;
+#endif
+   } else return -1;
+
+   if(modenumber <= 0x13) return modenumber;
+
+   i = 0;
+   while(pSiS->SiS_Pr->SiS_EModeIDTable[i].Ext_ModeID != 0xff) {
+      if(pSiS->SiS_Pr->SiS_EModeIDTable[i].Ext_ModeID == modenumber) {
+         return (int)pSiS->SiS_Pr->SiS_EModeIDTable[i].Ext_VESAID;
+      }
+      i++;
+   }
+   return -1;
+}
+#endif  /* Xfree86 */
 
 #ifdef LINUX_KERNEL
 int

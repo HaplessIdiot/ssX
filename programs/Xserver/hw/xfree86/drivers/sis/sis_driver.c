@@ -156,7 +156,8 @@ Bool           SISCycleCRT2Type(int scrnIndex, DisplayModePtr mode);
 static void SiSDumpModeInfo(ScrnInfoPtr pScrn, DisplayModePtr mode);
 #endif
 
-/* TW: New mode switching functions */
+/* Mode switching functions */
+extern int      SiSTranslateToVESA(ScrnInfoPtr pScrn, int modenumber);
 extern BOOLEAN 	SiSBIOSSetMode(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,
                                ScrnInfoPtr pScrn, DisplayModePtr mode, BOOLEAN IsCustom);
 extern BOOLEAN  SiSSetMode(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,
@@ -5791,13 +5792,19 @@ SISRestore(ScrnInfoPtr pScrn)
 	         "Restoring by setting old mode 0x%02x\n", pSiS->OldMode);
 		 
            if(((pSiS->OldMode <= 0x13) || (!pSiS->sisfbfound)) && (pSiS->pVbe)) {
-              if(VBESetVBEMode(pSiS->pVbe, pSiS->OldMode, NULL) == TRUE) {
-	         SISSpecialRestore(pScrn);
-		 SiS_GetSetModeID(pScrn,pSiS->OldMode);
-	      	 vesasuccess = TRUE;
+	      int vmode = SiSTranslateToVESA(pScrn, pSiS->OldMode);
+	      if(vmode > 0) {
+                 if(VBESetVBEMode(pSiS->pVbe, vmode, NULL) == TRUE) {
+	            SISSpecialRestore(pScrn);
+		    SiS_GetSetModeID(pScrn,pSiS->OldMode);
+	      	    vesasuccess = TRUE;
+	         } else {
+	            xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
+		 	"VBE failed to restore mode 0x%x\n", pSiS->OldMode);
+	         }
 	      } else {
 	         xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 3,
-		 	"VBE failed to restore mode 0x%x\n", pSiS->OldMode);
+		 	"Can't identify VESA mode number for mode 0x%x\n", pSiS->OldMode);
 	      }
            }
 
@@ -5837,6 +5844,12 @@ SISRestore(ScrnInfoPtr pScrn)
 	      pSiS->SiS_Pr->SiS_CustomT = backupspecialtiming;
 
 	   }
+
+	   /* Restore CRT1 status */
+	   if(pSiS->VGAEngine == SIS_315_VGA) {
+              outSISIDXREG(SISCR, 0x63, pSiS->oldCR63);
+           }
+           outSISIDXREG(SISSR, 0x1f, pSiS->oldSR1F);
 
 #ifdef SISVRAMQ
 	   /* Restore queue mode registers on 315/330 series */
