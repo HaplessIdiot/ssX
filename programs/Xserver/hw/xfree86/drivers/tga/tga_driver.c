@@ -22,7 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.19 1999/03/20 08:59:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.20 1999/04/17 07:07:00 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -1300,7 +1300,7 @@ TGACloseScreen(int scrnIndex, ScreenPtr pScreen)
     TGAPtr pTga = TGAPTR(pScrn);
 
     TGARestore(pScrn);
-    xf86memset(pTga->FbBase, 0, pScrn->videoRam * 1024);
+    memset(pTga->FbBase, 0, pScrn->videoRam * 1024);
     TGAUnmapMem(pScrn);
     if(pTga->AccelInfoRec)
 	XAADestroyInfoRec(pTga->AccelInfoRec);
@@ -1401,6 +1401,7 @@ TGARestoreHWCursor(ScrnInfoPtr pScrn)
   unsigned char *p = NULL;
   int i = 0;
   TGAPtr pTga;
+#ifdef __alpha__
   const CARD64 cursor_source[64] = {
     0x000000ff00000000,0x000000ff00000000,0x000000ff00000000,0x000000ff00000000,
     0x000000ff00000000,0x000000ff00000000,0x000000ff00000000,0x000000ff00000000,
@@ -1410,6 +1411,7 @@ TGARestoreHWCursor(ScrnInfoPtr pScrn)
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
   };
+#endif
 
   pTga = TGAPTR(pScrn);
 
@@ -1440,6 +1442,7 @@ TGARestoreHWCursor(ScrnInfoPtr pScrn)
   tgaBTOutIndReg(pScrn, BT_CURS_DATA, 0x00, 0x00);
   tgaBTOutIndReg(pScrn, BT_CURS_DATA, 0x00, 0x00);
 
+#ifdef __alpha__
   /* load the console cursor */
   tgaBTOutIndReg(pScrn, BT_WRITE_ADDR, 0xFC, 0x00);
   p = (unsigned char *)cursor_source;
@@ -1447,6 +1450,7 @@ TGARestoreHWCursor(ScrnInfoPtr pScrn)
     tgaBTOutIndReg(pScrn, BT_CURS_RAM_DATA, 0x00, *p++);
   for(i = 0; i < 512; i++)
     tgaBTOutIndReg(pScrn, BT_CURS_RAM_DATA, 0x00, 0xff);
+#endif
 
   return;
 }

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vmodes.c,v 1.2 1999/04/17 07:06:42 dawes Exp $ */
 /*
  * file vmodes.c
  *
@@ -234,7 +234,7 @@ int v_setmodefixed(struct v_board_t *board)
         v_out32(iob+DRAMCTL, tmp);
         v_out32(iob+PCLKPLL, v2kcombineNMP(2, 21, 2));
     }
-    xf86usleep(500);
+    usleep(500);
   
     v_initdac(board, 16, 0);
   
@@ -289,7 +289,7 @@ int v_setmode(struct v_board_t *board, struct v_modeinfo_t *mode)
     if (board->chip != V1000_DEVICE) {
       v_out32(iob+SCLKPLL, 0xa4854);  /* mclk=125 sclk=60 */
                                       /* M/N/P/P = 84/5/2/4 */
-      xf86usleep(500);
+      usleep(500);
     }
 
     /* this has something to do with memory */
@@ -310,7 +310,7 @@ int v_setmode(struct v_board_t *board, struct v_modeinfo_t *mode)
         V2200CalcClock(mode->clock/1000.0, &M, &N, &P);
         v_out32(iob+PCLKPLL, v2kcombineNMP(N, M, P));
     }
-    xf86usleep(500);
+    usleep(500);
 
     /* init the ramdac */
     v_initdac(board, mode->bitsperpixel, doubleclock);
