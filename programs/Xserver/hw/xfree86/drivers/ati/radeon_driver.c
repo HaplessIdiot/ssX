@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.100 2003/07/14 23:07:25 daenzer Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.101tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -71,19 +71,7 @@
 #include "radeon_sarea.h"
 #endif
 
-#define USE_FB                  /* not until overlays */
-#ifdef USE_FB
 #include "fb.h"
-#else
-
-				/* CFB support */
-#define PSZ 8
-#include "cfb.h"
-#undef PSZ
-#include "cfb16.h"
-#include "cfb24.h"
-#include "cfb32.h"
-#endif
 
 				/* colormap initialization */
 #include "micmap.h"
@@ -230,21 +218,11 @@ static const char *ddcSymbols[] = {
     NULL
 };
 
-#ifdef USE_FB
 static const char *fbSymbols[] = {
     "fbScreenInit",
     "fbPictureInit",
     NULL
 };
-#else
-static const char *cfbSymbols[] = {
-    "cfbScreenInit",
-    "cfb16ScreenInit",
-    "cfb24ScreenInit",
-    "cfb32ScreenInit",
-    NULL
-};
-#endif
 
 static const char *xaaSymbols[] = {
     "XAACreateInfoRec",
@@ -359,11 +337,7 @@ void RADEONLoaderRefSymLists(void)
      * refer to.
      */
     xf86LoaderRefSymLists(vgahwSymbols,
-#ifdef USE_FB
 			  fbSymbols,
-#else
-			  cfbSymbols,
-#endif
 			  xaaSymbols,
 #if 0
 			  xf8_32bppSymbols,
@@ -3251,10 +3225,6 @@ static Bool RADEONPreInitModes(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
     RADEONInfoPtr  info = RADEONPTR(pScrn);
     ClockRangePtr  clockRanges;
     int            modesFound;
-    char          *mod = NULL;
-#ifndef USE_FB
-    const char    *Sym = NULL;
-#endif
     RADEONEntPtr pRADEONEnt = RADEONEntPriv(pScrn);
 
     /* This option has two purposes:
@@ -3510,23 +3480,9 @@ static Bool RADEONPreInitModes(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
     xf86SetDpi(pScrn, 0, 0);
 
 				/* Get ScreenInit function */
-#ifdef USE_FB
-    mod = "fb";
-#else
-    switch (pScrn->bitsPerPixel) {
-    case  8: mod = "cfb";   Sym = "cfbScreenInit";   break;
-    case 16: mod = "cfb16"; Sym = "cfb16ScreenInit"; break;
-    case 32: mod = "cfb32"; Sym = "cfb32ScreenInit"; break;
-    }
-#endif
+    if (!xf86LoadSubModule(pScrn, "fb")) return FALSE;
 
-    if (mod && !xf86LoadSubModule(pScrn, mod)) return FALSE;
-
-#ifdef USE_FB
     xf86LoaderReqSymLists(fbSymbols, NULL);
-#else
-    xf86LoaderReqSymbols(Sym, NULL);
-#endif
 
     info->CurrentLayout.displayWidth = pScrn->displayWidth;
     info->CurrentLayout.mode = pScrn->currentMode;
@@ -4156,8 +4112,8 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 #ifdef XF86DRI
 				/* Setup DRI after visuals have been
-				   established, but before cfbScreenInit is
-				   called.  cfbScreenInit will eventually
+				   established, but before fbScreenInit is
+				   called.  fbScreenInit will eventually
 				   call the driver's InitGLXVisuals call
 				   back. */
     {
@@ -4216,38 +4172,11 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     }
 #endif
 
-#ifdef USE_FB
     if (!fbScreenInit(pScreen, info->FB,
 		      pScrn->virtualX, pScrn->virtualY,
 		      pScrn->xDpi, pScrn->yDpi, pScrn->displayWidth,
 		      pScrn->bitsPerPixel))
 	return FALSE;
-#else
-    switch (pScrn->bitsPerPixel) {
-    case 8:
-	if (!cfbScreenInit(pScreen, info->FB,
-			   pScrn->virtualX, pScrn->virtualY,
-			   pScrn->xDpi, pScrn->yDpi, pScrn->displayWidth))
-	    return FALSE;
-	break;
-    case 16:
-	if (!cfb16ScreenInit(pScreen, info->FB,
-			     pScrn->virtualX, pScrn->virtualY,
-			     pScrn->xDpi, pScrn->yDpi, pScrn->displayWidth))
-	    return FALSE;
-	break;
-    case 32:
-	if (!cfb32ScreenInit(pScreen, info->FB,
-			     pScrn->virtualX, pScrn->virtualY,
-			     pScrn->xDpi, pScrn->yDpi, pScrn->displayWidth))
-	    return FALSE;
-	break;
-    default:
-	xf86DrvMsg(scrnIndex, X_ERROR,
-		   "Invalid bpp (%d)\n", pScrn->bitsPerPixel);
-	return FALSE;
-    }
-#endif
 
     xf86SetBlackWhitePixels(pScreen);
 
@@ -4267,10 +4196,8 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	}
     }
 
-#ifdef USE_FB
     /* Must be after RGB order fixed */
     fbPictureInit (pScreen, 0, 0);
-#endif
 
 #ifdef RENDER
     if (PictureGetSubpixelOrder (pScreen) == SubPixelUnknown)
@@ -4620,7 +4547,7 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 #ifdef XF86DRI
 				/* DRI finalization */
     if (info->directRenderingEnabled) {
-				/* Now that mi, cfb, drm and others have
+				/* Now that mi, fb, drm and others have
 				   done their thing, complete the DRI
 				   setup. */
 	info->directRenderingEnabled = RADEONDRIFinishScreenInit(pScreen);
