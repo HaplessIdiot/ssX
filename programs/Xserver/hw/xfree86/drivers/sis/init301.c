@@ -1724,11 +1724,13 @@ SiS_GetLCDResInfo(SiS_Private *SiS_Pr, USHORT ModeNo, USHORT ModeIdIndex,
      if(SiS_Pr->SiS_LCDInfo & DontExpandLCD) {
         if(SiS_GetReg(SiS_Pr->SiS_P3d4,0x39) & 0x01) SiS_Pr->SiS_LCDInfo |= LCDPass11;
      }
-     if(SiS_Pr->SiS_ROMNew) {
+     if((SiS_Pr->SiS_ROMNew) && (!(SiS_Pr->PanelSelfDetected))) {
         SiS_Pr->SiS_LCDInfo &= ~(LCDRGB18Bit);
 	temp = SiS_GetReg(SiS_Pr->SiS_P3d4,0x35);
         if(temp & 0x01) SiS_Pr->SiS_LCDInfo |= LCDRGB18Bit;
-	if(temp & 0x02) SiS_Pr->SiS_LCDInfo |= LCDDualLink;
+	if(SiS_Pr->SiS_VBType & (VB_SIS302LV | VB_SIS302ELV)) {
+	   if(temp & 0x02) SiS_Pr->SiS_LCDInfo |= LCDDualLink;
+	}
      }
   }
 #endif
@@ -10333,10 +10335,11 @@ SiS_SenseLCDDDC(SiS_Private *SiS_Pr, SISPtr pSiS)
    if(paneltype) {
        if(!SiS_Pr->CP_PreferredX) SiS_Pr->CP_PreferredX = SiS_Pr->CP_MaxX;
        if(!SiS_Pr->CP_PreferredY) SiS_Pr->CP_PreferredY = SiS_Pr->CP_MaxY;
-       cr37 &= 0xf1;
-       SiS_SetRegANDOR(SiS_Pr->SiS_P3d4,0x36,0xf0,paneltype);
-       SiS_SetRegANDOR(SiS_Pr->SiS_P3d4,0x37,0xf3,cr37);
        SiS_SetRegOR(SiS_Pr->SiS_P3d4,0x32,0x08);
+       SiS_SetRegANDOR(SiS_Pr->SiS_P3d4,0x36,0xf0,paneltype);
+       cr37 &= 0xf1;
+       SiS_SetRegANDOR(SiS_Pr->SiS_P3d4,0x37,0xf3,cr37);
+       SiS_Pr->PanelSelfDetected = TRUE;
 #ifdef TWDEBUG
        xf86DrvMsgVerb(pSiS->pScrn->scrnIndex, X_PROBED, 3, 
        	"CRT2: [DDC LCD results: 0x%02x, 0x%02x]\n", paneltype, cr37);
@@ -11454,7 +11457,7 @@ SetCRT2SyncDither661(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, USHORT ModeNo, US
          temp |= infoflag;
          SiS_SetRegANDOR(SiS_Pr->SiS_Part1Port,0x19,0x0f,temp);
       }
-      
+
    }
 }
 

@@ -2925,6 +2925,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
        pSiS->SiS_Pr->SiS_CHOverScan = -1;
        pSiS->SiS_Pr->SiS_ChSW = FALSE;
        pSiS->SiS_Pr->SiS_CustomT = CUT_NONE;
+       pSiS->SiS_Pr->PanelSelfDetected = FALSE;
        pSiS->SiS_Pr->UsePanelScaler = -1;
        pSiS->SiS_Pr->CenterScreen = -1;
        pSiS->SiS_Pr->CRT1UsesCustomMode = FALSE;

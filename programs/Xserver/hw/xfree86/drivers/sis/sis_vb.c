@@ -234,7 +234,7 @@ void SISCRT1PreInit(ScrnInfoPtr pScrn)
 void SISLCDPreInit(ScrnInfoPtr pScrn)
 {
     SISPtr  pSiS = SISPTR(pScrn);
-    unsigned char CR32, CR36, CR37, CR7D=0;
+    unsigned char CR32, CR36, CR37, CR7D=0, tmp;
 
     pSiS->LCDwidth = 0;
 
@@ -355,6 +355,13 @@ void SISLCDPreInit(ScrnInfoPtr pScrn)
                 pSiS->LCDheight = SiS661_LCD_Type[(CR36 & 0x0f)].LCDheight;
 	        pSiS->LCDwidth = SiS661_LCD_Type[(CR36 & 0x0f)].LCDwidth;
 	        if(CR37 & 0x10) pSiS->VBLCDFlags |= VB_LCD_EXPANDING;
+		if(pSiS->sishw_ext.jChipType < SIS_661) {
+		   if(!(pSiS->SiS_Pr->PanelSelfDetected)) {
+		      inSISIDXREG(SISCR,0x35,tmp);
+		      CR37 &= 0xfc;
+		      CR37 |= (tmp & 0x01);
+		   }
+		}
  	     } else {
 	        pSiS->VBLCDFlags |= SiS315_LCD_Type[(CR36 & 0x0f)].VBLCD_lcdflag;
                 pSiS->LCDheight = SiS315_LCD_Type[(CR36 & 0x0f)].LCDheight;
@@ -425,7 +432,7 @@ void SISTVPreInit(ScrnInfoPtr pScrn)
        pSiS->VBFlags |= (TV_HIVISION | TV_PAL);
     else if((CR32 & 0x80) && (pSiS->SiS_SD_Flags & SiS_SD_SUPPORTYPBPR)) {
        pSiS->VBFlags |= TV_YPBPR;
-       if((pSiS->Chipset == PCI_CHIP_SIS660) || (pSiS->ROM661New)) {
+       if(pSiS->Chipset == PCI_CHIP_SIS660) {
           if(CR38 & 0x04) {
              switch(CR35 & 0xE0) {
              case 0x20: pSiS->VBFlags |= TV_YPBPR525P; break;
