@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/xdmcp.c,v 3.22 2003/07/09 15:27:39 tsi Exp $ */
+/* $XFree86: xc/programs/xdm/xdmcp.c,v 3.23 2003/07/18 15:53:28 tsi Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -91,6 +91,9 @@ static void send_willing (struct sockaddr *from, int fromlen, ARRAY8Ptr authenti
 int	xdmcpFd = -1;
 #endif
 int	chooserFd = -1;
+#if defined(IPv6) && defined(AF_INET6)
+int	chooserFd6 = -1;
+#endif
 
 FD_TYPE	WellKnownSocketsMask;
 int	WellKnownSocketsMax;
@@ -114,6 +117,14 @@ DestroyWellKnownSockets (void)
 	FD_CLR(chooserFd, &WellKnownSocketsMask);
 	chooserFd = -1;
     }
+#if defined(IPv6) && defined(AF_INET6)
+    if (chooserFd6 != -1)
+    {
+	close (chooserFd6);
+	FD_CLR(chooserFd6, &WellKnownSocketsMask);
+	chooserFd6 = -1;
+    }
+#endif
     CloseListenSockets();
 }
 
@@ -136,6 +147,9 @@ AnyWellKnownSockets (void)
     return 
 #ifdef STREAMS_CONN
       xdmcpFd != -1 ||
+#endif
+#if defined(IPv6) && defined(AF_INET6)
+      chooserFd6 != -1 ||
 #endif
       chooserFd != -1 || FD_ANYSET(&WellKnownSocketsMask);
 }
@@ -399,6 +413,18 @@ WaitForSomething (void)
 		ProcessChooserSocket (chooserFd);
 		FD_CLR(chooserFd, &reads);
 	    }
+#if defined(IPv6) && defined(AF_INET6)
+	    if (chooserFd6 >= 0 && FD_ISSET (chooserFd6, &reads))
+	    {
+#ifdef ISC
+	        if (!ChildReady) {
+	           WaitForSomething ();
+                } else
+#endif
+		ProcessChooserSocket (chooserFd6);
+		FD_CLR(chooserFd6, &reads);
+	    }
+#endif 
 	    ProcessListenSockets(&reads);
 	}
 	if (ChildReady)
@@ -509,7 +535,7 @@ NetworkAddressToName(
 		    hints.ai_flags = AI_CANONNAME;
 		    if (getaddrinfo(hostent->h_name, NULL, &hints, &ai) == 0) {
 			hostname = ai->ai_canonname;
-			while ((nai = ai->ai_next) != NULL) {
+			for (nai = ai->ai_next; nai!=NULL; nai=nai->ai_next) {
 			    if ((ai->ai_protocol == nai->ai_protocol) &&
 				(ai->ai_addrlen == nai->ai_addrlen) &&
 			        (memcmp(ai->ai_addr,nai->ai_addr,
@@ -1380,7 +1406,7 @@ NetworkAddressToHostname (
 #if defined(IPv6) && defined(AF_INET6)
 		struct addrinfo	*ai = NULL, *nai;
 		if (getaddrinfo(hostent->h_name, NULL, NULL, &ai) == 0) {
-		    while ((nai = ai->ai_next) != NULL) {
+		    for (nai = ai; nai != NULL; nai = nai->ai_next) {
 			if ((af_type == nai->ai_family) &&
 			  (connectionAddress->length == nai->ai_addrlen) &&
 			  (memcmp(connectionAddress->data,nai->ai_addr,
@@ -1388,7 +1414,7 @@ NetworkAddressToHostname (
 			    break;
 			}
 		    }
-		    if (nai == NULL) {
+		    if (ai == NULL) {
 			inet_ntop(af_type, connectionAddress->data, 
 			  dotted, sizeof(dotted));
 
