@@ -1,4 +1,6 @@
 XFree86 3.0Fd (25 September 1994)
+375. AGX documentation updates (Henry Worth).
+374. Fix for text-mode restore problem with AGX server (Henry Worth).
 373. Change name of XF86Vga256Drivers to XF86SvgaDrivers.
 372. Documentation updates.
 371. Enable 16bpp, 32bpp for 964+Bt485.
