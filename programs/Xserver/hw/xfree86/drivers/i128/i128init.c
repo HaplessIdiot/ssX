@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128init.c,v 1.1 2000/10/04 23:34:59 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128init.c,v 1.2 2000/10/23 14:11:39 robin Exp $ */
 /*
  * Copyright 1995-2000 by Robin Cutshaw <robin@XFree86.Org>
  * Copyright 1998 by Number Nine Visual Technology, Inc.
@@ -418,10 +418,12 @@ I128Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	tmp = 0x00000070;
 	if (pI128->Chipset == PCI_CHIP_I128_T2R)
 		tmp |= 0x00000100;
-	if ((pI128->Chipset == PCI_CHIP_I128_T2R4) && pI128->FlatPanel)
-		tmp |= 0x00000100;	/* Turn on digital flat panel support */
-	else
-		tmp &= 0xfffffeff;	/* Turn off digital flat panel */
+	if (pI128->Chipset == PCI_CHIP_I128_T2R4) {
+		if (pI128->FlatPanel)
+			tmp |= 0x00000100;    /* Turn on digital flat panel */
+		else
+			tmp &= 0xfffffeff;    /* Turn off digital flat panel */
+	}
 	if (pI128->DACSyncOnGreen || (mode->Flags & V_CSYNC))
 		tmp |= 0x00000004;
 	pI128->mem.rbase_g[CRT_1CON] = tmp;
