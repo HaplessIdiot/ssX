@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.84 1999/04/18 04:08:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.85 1999/04/25 10:02:36 dawes Exp $ */
 
 /*
  *
@@ -31,8 +31,6 @@
 #include "loaderProcs.h"
 #include "xf86Pci.h"
 #include "xf86.h"
-#include "xf86Priv.h"
-#define XF86_OS_PRIVS
 #include "xf86_OSproc.h"
 #define DECLARE_CARD_DATASTRUCTURES
 #include "xf86PciInfo.h"
@@ -437,10 +435,6 @@ LOOKUP xfree86LookupTab[] = {
    /* Misc */
    SYMFUNC(GetTimeInMillis)
 
-   /* XXX Check these */
-   SYMFUNC(xf86MouseInit)
-   SYMFUNC(xf86SetKbdRepeat)
-
 #ifdef XINPUT
    SYMFUNC(xf86IsCorePointer)
    SYMFUNC(xf86PostMotionEvent)
@@ -771,15 +765,6 @@ LOOKUP xfree86LookupTab[] = {
    SYMVAR(xf86errno)
    SYMVAR(xf86HUGE_VAL)
 
-#ifdef XF86MISC
-   SYMVAR(xf86AllowMouseOpenFail)
-   SYMVAR(xf86MiscModInDevAllowNonLocal)
-   SYMVAR(xf86MiscModInDevEnabled)
-#endif
-#ifdef XF86VIDMODE
-   SYMVAR(xf86VidModeEnabled)
-   SYMVAR(xf86VidModeAllowNonLocal)
-#endif
    /* General variables (from xf86.h) */
    SYMVAR(xf86ScreenIndex)
    SYMVAR(xf86PixmapIndex)
