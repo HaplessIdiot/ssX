@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.7 1996/10/17 15:13:21 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA.c,v 3.8 1996/10/18 14:58:10 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -397,6 +397,12 @@ Bool XF86DGAViewPortChanged(dpy, screen, n)
 #include <signal.h>
 extern int errno;
 
+#if defined(SVR4) && !defined(sun) && !defined(SCO325)
+#define DEV_MEM "/dev/pmem"
+#else
+#define DEV_MEM "/dev/mem"
+#endif
+
 #if defined(ISC) && defined(HAS_SVR3_MMAP)
 struct kd_memloc XFree86mloc;
 #endif
@@ -516,10 +522,10 @@ int *width, *bank, *ram;
 		"XF86DGAGetVideo: failed to open /dev/pmap$ (rc=%d)\n",
 		rc);
 #else
-   if ((fd = open("/dev/mem", O_RDWR)) < 0)
+   if ((fd = open(DEV_MEM, O_RDWR)) < 0)
    {
-        fprintf(stderr, "XF86DGAGetVideo: failed to open /dev/mem (%s)\n",
-                           strerror(errno));
+        fprintf(stderr, "XF86DGAGetVideo: failed to open %s (%s)\n",
+                           DEV_MEM, strerror(errno));
 #endif
 #endif
         exit (-1);
@@ -594,8 +600,8 @@ int *width, *bank, *ram;
 	   (long)offset, *bank);
 #endif
    if (*addr == (char *) -1) {
-        fprintf(stderr, "XF86DGAGetVideo: failed to mmap /dev/mem (%s)\n",
-                           strerror(errno));
+        fprintf(stderr, "XF86DGAGetVideo: failed to mmap %s (%s)\n",
+                           DEV_MEM, strerror(errno));
 #endif /* !__EMX__*/
 #endif /* !Lynx */
 #endif /* !ISC && !HAS_SVR3_MMAP */
