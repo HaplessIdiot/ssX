@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.41 1999/09/27 06:29:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.44 1999/11/19 13:54:22 hohndel Exp $ */
 /*
  * PCI Probe
  *
@@ -475,8 +475,8 @@
 #define PCI_CHIP_VIRGE_GX2	0x8A10
 #define PCI_CHIP_Savage3D	0x8A20
 #define PCI_CHIP_Savage3D_MV	0x8A21
-#define PCI_CHIP_SAVAGE4	0x8A22
-#define PCI_CHIP_SAVAGE2000	0x9102
+#define PCI_CHIP_Savage4	0x8A22
+#define PCI_CHIP_Savage2000	0x9102
 #define PCI_CHIP_VIRGE_MX	0x8C01
 #define PCI_CHIP_VIRGE_MXPLUS	0x8C01
 #define PCI_CHIP_VIRGE_MXP	0x8C03

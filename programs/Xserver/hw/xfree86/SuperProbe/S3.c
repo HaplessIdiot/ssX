@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/S3.c,v 3.23 1999/06/06 08:48:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/S3.c,v 3.25 1999/11/19 13:54:16 hohndel Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -192,7 +192,7 @@ int *Chipset;
 				break;
 			case PCI_CHIP_SAVAGE2000:
 			        PCIProbed = TRUE;
-				*Chipset = CHIP_S3_Savage200;
+				*Chipset = CHIP_S3_Savage2000;
 				break;
 #if 0  /* use port probing then... */
 			default:
