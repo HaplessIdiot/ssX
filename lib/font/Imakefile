@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/14 1998/06/16 15:23:15 msr $
-XCOMM $XFree86: xc/lib/font/Imakefile,v 3.15 1998/10/03 09:07:10 dawes Exp $
+XCOMM $XFree86: xc/lib/font/Imakefile,v 3.16 1999/01/11 05:13:15 dawes Exp $
 #include <Server.tmpl>
 
 #define	IHaveSubdirs
@@ -9,6 +9,10 @@ XCOMM $XFree86: xc/lib/font/Imakefile,v 3.15 1998/10/03 09:07:10 dawes Exp $
 #endif
 #if NormalLibFont && SharedLibFont && SeparateSharedCompile
 STATIC_OBJSDIR = unshared/
+#endif
+
+#ifdef SharedXfontReqs
+REQUIREDLIBS = SharedXfontReqs
 #endif
 
 #if BuildFreeType
