@@ -1468,7 +1468,6 @@ SiSDetermineROMLayout661(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
    UCHAR  *ROMAddr  = HwInfo->pjVirtualRomBase;
    USHORT romversoffs, romvmaj = 1, romvmin = 0;
 
-   /* Will need to do this for 650/740 as well soon */
    if(HwInfo->jChipType >= SIS_661) {
       romversoffs = ROMAddr[0x16] | (ROMAddr[0x17] << 8);
       if(romversoffs) {
@@ -1478,6 +1477,13 @@ SiSDetermineROMLayout661(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 	 }
       }
       if((romvmaj != 0) || (romvmin >= 92)) {
+	 return TRUE;
+      }
+   } else if(IS_SIS650740) {
+      if((ROMAddr[0x1a] = 'N') &&
+         (ROMAddr[0x1b] = 'e') &&
+         (ROMAddr[0x1c] = 'w') &&
+         (ROMAddr[0x1d] = 'V')) {
 	 return TRUE;
       }
    }
@@ -3386,6 +3392,7 @@ SiS_ResetVB(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
    if(SiS_Pr->SiS_UseROM) {
       if(HwInfo->jChipType < SIS_330) {
          temp = ROMAddr[VB310Data_1_2_Offset] | 0x40;
+	 if(SiS_Pr->SiS_ROMNew) temp = ROMAddr[0x80] | 0x40;
          SiS_SetReg(SiS_Pr->SiS_Part1Port,0x02,temp);
       } else if(HwInfo->jChipType >= SIS_661) {
          temp = ROMAddr[0x7e];
