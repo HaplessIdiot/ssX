@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.56 2000/12/11 16:03:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.57 2000/12/15 15:19:35 dawes Exp $ */
 
 /*
  * Authors:
@@ -1649,7 +1649,8 @@ static void allocateMemory(ScrnInfoPtr pScrn) {
   /* it to be on a page boundary too, just  */
   /* for giggles.                           */
   pTDFX->fbOffset
-      = (pTDFX->backOffset - (pScrn->virtualY+128)*pTDFX->stride) &~ 0xFFF;
+      = (pTDFX->backOffset -
+	 (pScrn->virtualY+PIXMAP_CACHE_LINES)*pTDFX->stride) &~ 0xFFF;
   /* Give the cmd fifo at least             */
   /* CMDFIFO_PAGES pages, but no more than  */
   /* 255.                                   */
@@ -1678,7 +1679,8 @@ static void allocateMemory(ScrnInfoPtr pScrn) {
   xf86DrvMsg(pScrn->scrnIndex, X_INFO,
              "Front Buffer Offset: [0x%08X, 0x%08X)\n",
              pTDFX->fbOffset,
-             pTDFX->fbOffset + (pScrn->virtualY+128)*pTDFX->stride);
+             pTDFX->fbOffset +
+		(pScrn->virtualY+PIXMAP_CACHE_LINES)*pTDFX->stride);
   xf86DrvMsg(pScrn->scrnIndex, X_INFO,
              "BackOffset: [0x%08X, 0x%08X)\n",
              pTDFX->backOffset,
@@ -1733,7 +1735,7 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
     return FALSE;
   }
 
-  maxy=pScrn->virtualY+128;
+  maxy=pScrn->virtualY+PIXMAP_CACHE_LINES;
   MemBox.y1 = pScrn->virtualY;
   MemBox.x1 = 0;
   MemBox.x2 = pScrn->displayWidth;
