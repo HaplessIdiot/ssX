@@ -1,4 +1,14 @@
 XFree86 4.4.99.7 (xx May 2004)
+ 113. Automatic configuration updates:
+       - Auto-detect DPMS support based on EDID data.
+       - Fix DPMS enable/disable logic.
+       - Allow multiple probe phases, allowing the driver search to continue
+         after failures at the PreInit stage.
+       - Update static driver list handling to allow automatic configuration
+         to work with static servers.
+       - Add a '-autoconfig' command line option to force automatic
+         configuration mode.
+      (X-Oz Technologies).
 
 XFree86 4.4.99.6 (27 May 2004)
  112. Bump the limit on the number of PCI devices the X server will scan for to
@@ -18928,7 +18938,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3260 2004/05/27 01:18:07 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3261 2004/05/27 11:02:20 dawes Exp $
 
 
 

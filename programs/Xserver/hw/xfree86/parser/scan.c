@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.30 2003/11/03 05:11:52 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.31 2004/02/13 23:58:50 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -27,7 +27,7 @@
  * 
  */
 /*
- * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2004 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -770,12 +770,17 @@ xf86closeConfigFile (void)
 void
 xf86setBuiltinConfig(const char *config[])
 {
+	/* Reset counters, etc. */
+	pushToken = LOCK_TOKEN;
+	configPos = 0;
+	configLineNo = 0;
+	configFile = NULL;
+
 	builtinConfig = config;
 	configPath = xf86configStrdup("<builtin configuration>");
 	configBuf = xf86confmalloc (CONFIG_BUF_LEN);
 	configRBuf = xf86confmalloc (CONFIG_BUF_LEN);
 	configBuf[0] = '\0';		/* sanity ... */
-
 }
 
 void

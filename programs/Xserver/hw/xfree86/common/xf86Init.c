@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.214 2004/03/14 02:25:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.215 2004/04/03 22:26:23 dawes Exp $ */
 
 /*
  * Loosely based on code bearing the following copyright:
@@ -6,7 +6,7 @@
  *   Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  */
 /*
- * Copyright (c) 1992-2003 by The XFree86 Project, Inc.
+ * Copyright (c) 1992-2004 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -51,6 +51,52 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+/*
+ * Automatic configuration support is
+ * Copyright 2003, 2004 by X-Oz Technologies.
+ * All rights reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ * 
+ *  1. Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions, and the following disclaimer.
+ *
+ *  2. Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/or other materials provided
+ *     with the distribution.
+ * 
+ *  3. The end-user documentation included with the redistribution,
+ *     if any, must include the following acknowledgment: "This product
+ *     includes software developed by X-Oz Technologies
+ *     (http://www.x-oz.com/)."  Alternately, this acknowledgment may
+ *     appear in the software itself, if and wherever such third-party
+ *     acknowledgments normally appear.
+ *
+ *  4. Except as contained in this notice, the name of X-Oz
+ *     Technologies shall not be used in advertising or otherwise to
+ *     promote the sale, use or other dealings in this Software without
+ *     prior written authorization from X-Oz Technologies.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL X-OZ TECHNOLOGIES OR ITS CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * 
+ */
+
 
 #include <stdlib.h>
 
@@ -119,6 +165,8 @@ extern int xtest_command_key;
 static void xf86PrintBanner(void);
 static void xf86PrintMarkers(void);
 static void xf86RunVtInit(void);
+
+static Bool autoconfig = FALSE;
 
 #ifdef DO_CHECK_BETA
 static int extraDays = 0;
@@ -246,6 +294,13 @@ xf86CreateRootWindow(WindowPtr pWin)
 static void
 PostConfigInit(void)
 {
+    static Bool done = FALSE;
+
+    if (done)
+	return;
+
+    done = TRUE;
+
     /*
      * Install signal handler for unexpected signals
      */
@@ -292,11 +347,13 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
   char                   **modulelist;
   pointer                *optionlist;
 #endif
+  char                   **driverlist;
   screenLayoutPtr	 layout;
   Pix24Flags		 screenpix24, pix24;
   MessageType		 pix24From = X_DEFAULT;
   Bool			 pix24Fail = FALSE;
-  Bool			 autoconfig = FALSE;
+  Bool			 autoretry = FALSE;
+  int			 found = 0;
   
 #ifdef __UNIXOS2__
   os2ServerVideoAccess();  /* See if we have access to the screen before doing anything */
@@ -337,7 +394,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
     }
 
     /* Read and parse the config file */
-    if (!xf86DoProbe && !xf86DoConfigure) {
+    if (!autoconfig && !xf86DoProbe && !xf86DoConfigure) {
       switch (xf86HandleConfigFile(FALSE)) {
       case CONFIG_OK:
 	break;
@@ -421,39 +478,79 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 	PostConfigInit();
     }
 
+retry:
+
     /* Initialise the resource broker */
     xf86ResourceBrokerInit();
 
-#ifdef XFree86LOADER
-    /* Load all modules specified explicitly in the config file */
-    if ((modulelist = xf86ModulelistFromConfig(&optionlist))) {
-      xf86LoadModules(modulelist, optionlist);
-      xfree(modulelist);
-      xfree(optionlist);
-    }
-
-    /* Load all driver modules specified in the config file */
-    if ((modulelist = xf86DriverlistFromConfig())) {
-      xf86LoadModules(modulelist, NULL);
-      xfree(modulelist);
-    }
-
-    /* Setup the builtin input drivers */
-    xf86AddInputDriver(&xf86KEYBOARD, NULL, 0);
-    /* Load all input driver modules specified in the config file. */
-    if ((modulelist = xf86InputDriverlistFromConfig())) {
-      xf86LoadModules(modulelist, NULL);
-      xfree(modulelist);
-    }
-
     /*
-     * It is expected that xf86AddDriver()/xf86AddInputDriver will be
-     * called for each driver as it is loaded.  Those functions save the
-     * module pointers for drivers.
-     * XXX Nothing keeps track of them for other modules.
+     * Do whatever is needed to setup the initial driver list.  Don't
+     * redo this again when doing an autoconfig retry.
      */
-    /* XXX What do we do if not all of these could be loaded? */
+
+    if (!autoretry) {
+#ifdef XFree86LOADER
+      /* Load all modules specified explicitly in the config file */
+      if ((modulelist = xf86ModulelistFromConfig(&optionlist))) {
+        xf86LoadModules(modulelist, optionlist);
+        xfree(modulelist);
+        xfree(optionlist);
+      }
+
+      /* Load all driver modules specified in the config file */
+      if ((driverlist = xf86DriverlistFromConfig())) {
+        xf86LoadModules(driverlist, NULL);
+        xfree(driverlist);
+      }
+
+      /* Setup the builtin input drivers */
+      xf86AddInputDriver(&xf86KEYBOARD, NULL, 0);
+      /* Load all input driver modules specified in the config file. */
+      if ((modulelist = xf86InputDriverlistFromConfig())) {
+	xf86LoadModules(modulelist, NULL);
+	xfree(modulelist);
+      }
+
+      /*
+       * It is expected that xf86AddDriver()/xf86AddInputDriver will be
+       * called for each driver as it is loaded.  Those functions save the
+       * module pointers for drivers.
+       * XXX Nothing keeps track of them for other modules.
+       */
+      /* XXX What do we do if not all of these could be loaded? */
+
+#else
+
+      /* Re-order the driver list for the benefit of autoconfiguration. */
+      if (autoconfig && (driverlist = xf86DriverlistFromConfig())) {
+	DriverPtr *newList = xnfcalloc(1, xf86NumDrivers * sizeof(DriverPtr));
+	int numNew;
+
+	for (i = 0; driverlist[i]; i++) {
+	  for (j = 0; j < xf86NumDrivers; j++) {
+	    if (xf86DriverList[j] && xf86DriverList[j]->driverName &&
+	        xf86NameCmp(xf86DriverList[j]->driverName,
+			    driverlist[i]) == 0) {
+	      newList[i] = xf86DriverList[j];
+	      xf86DriverList[j] = NULL;
+	      break;
+	    }
+	  }
+	}
+	numNew = i;
+	/* Write the new list out. */
+	for (i = 0; i < xf86NumDrivers; i++) {
+	  if (i < numNew)
+	    xf86DriverList[i] = newList[i];
+	  else
+	    xf86DriverList[i] = NULL;
+	}
+	xf86NumDrivers = numNew;
+	xfree(newList);
+	xfree(driverlist);
+      }
 #endif
+    }
 
     /*
      * At this point, xf86DriverList[] is all filled in with entries for
@@ -473,14 +570,16 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
      */
 
     for (i = 0; i < xf86NumDrivers; i++)
-      /* The Identify function is mandatory, but if it isn't there continue */
-      if (xf86DriverList[i]->Identify != NULL)
-	xf86DriverList[i]->Identify(0);
-      else {
-        xf86Msg(X_WARNING, "Driver `%s' has no Identify function\n",
-	       xf86DriverList[i]->driverName ? xf86DriverList[i]->driverName
+      if (xf86DriverList[i]) {
+	/* The Identify function is mandatory, but if it isn't there continue */
+	if (xf86DriverList[i]->Identify != NULL)
+	  xf86DriverList[i]->Identify(0);
+	else {
+	  xf86Msg(X_WARNING, "Driver `%s' has no Identify function\n",
+	         xf86DriverList[i]->driverName ? xf86DriverList[i]->driverName
 					     : "noname");
-      }
+	}
+    }
 
     /*
      * Locate bus slot that had register IO enabled at server startup
@@ -495,16 +594,29 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
      * instance of the hardware found.
      */
 
+    /*
+     * For autoconfiguration, where several drivers will be tried in
+     * sequence, we need to make sure that those with a failing Probe() up
+     * until the first successful Probe() are deleted here.  This is
+     * important for the autoconfiguration retry mechanism.
+     */
+
+    found = 0;
     for (i = 0; i < xf86NumDrivers; i++) {
-      if (xf86DriverList[i]->Probe != NULL)
-	xf86DriverList[i]->Probe(xf86DriverList[i], PROBE_DEFAULT);
-      else {
-        xf86MsgVerb(X_WARNING, 0,
-		"Driver `%s' has no Probe function (ignoring)\n",
-		xf86DriverList[i]->driverName ? xf86DriverList[i]->driverName
+      if (xf86DriverList[i]) {
+	if (xf86DriverList[i]->Probe != NULL) {
+	  if (xf86DriverList[i]->Probe(xf86DriverList[i], PROBE_DEFAULT))
+	    found++;
+	  if (!found)
+	    xf86DeleteDriver(i);
+	} else {
+	  xf86MsgVerb(X_WARNING, 0,
+		  "Driver `%s' has no Probe function (ignoring)\n",
+		  xf86DriverList[i]->driverName ? xf86DriverList[i]->driverName
 					     : "noname");
+	}
+	xf86SetPciVideo(NULL,NONE);
       }
-      xf86SetPciVideo(NULL,NONE);
     }
 
     /*
@@ -608,6 +720,28 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
     /*
      * If no screens left, return now.
      */
+
+    /*
+     * If autoconfig, try again.  The first driver remaining in the list
+     * must be the one that had a successful Probe() but an unsuccessful
+     * PreInit().  Remove that driver before trying again.
+     */
+    if (xf86NumScreens == 0 && autoconfig) {
+	for (i = 0; i < xf86NumDrivers; i++) {
+	    if (xf86DriverList[i]) {
+		xf86DeleteDriver(i);
+		autoretry = TRUE;
+		/* Clear claimed config sections. */
+		for (j = 0; xf86ConfigLayout.screens[j].screen != NULL; j++) {
+		    xf86ConfigLayout.screens[j].screen->device->claimed = FALSE;
+		}
+		goto retry;
+	    }
+	}
+	xf86Msg(X_ERROR,
+		"Auto configuration failed.  No drivers left to try.\n");
+	return;
+    }
 
     if (xf86NumScreens == 0) {
       xf86Msg(X_ERROR,
@@ -1356,6 +1490,11 @@ ddxProcessArgument(int argc, char **argv, int i)
     xf86ShowUnresolved = TRUE;
     return 1;
   }
+  if (!strcmp(argv[i],"-autoconfig"))
+  {
+    autoconfig = TRUE;
+    return 1;
+  }
   if (!strcmp(argv[i],"-probeonly"))
   {
     xf86ProbeOnly = TRUE;
@@ -1659,6 +1798,7 @@ ddxUseMsg()
     ErrorF("-xf86config file       specify a configuration file, relative to the\n");
     ErrorF("                       XF86Config search path, only root can use absolute\n");
   }
+  ErrorF("-autoconfig            automatic configuration, even when a config file exits\n");
   ErrorF("-probeonly             probe for devices, then exit\n");
   ErrorF("-scanpci               execute the scanpci module and exit\n");
   ErrorF("-verbose [n]           verbose startup messages\n");

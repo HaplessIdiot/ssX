@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.64 2003/11/12 03:29:33 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.65 2003/11/12 19:06:46 dawes Exp $
 .TH XFree86 1 __vendorversion__
 .SH NAME
 XFree86 - X11R6 X server
@@ -145,7 +145,7 @@ will use.  Without this option,
 will pick the first available Virtual Terminal that it can locate.  This
 option applies only to platforms such as Linux, BSD, SVR3 and SVR4, that
 have virtual terminal support.
-.TP
+.TP 8
 .B \-allowMouseOpenFail
 Allow the server to start up even if the mouse device can't be opened
 or initialised.  This is equivalent to the
@@ -166,6 +166,11 @@ to the
 .B AllowNonLocalXvidtune
 XF86Config(__filemansuffix__) file option.  By default non-local
 connections are not allowed.
+.TP 8
+.B \-autoconfig
+Use automatic XFree86 server configuration, even if a configuration file
+is available.  By default automatic configuration is only used when a
+configuration file cannot be found.
 .TP 8
 .BI \-bgamma " value"
 Set the blue gamma correction.

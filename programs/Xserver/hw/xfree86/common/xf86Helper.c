@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.137 2004/02/13 23:58:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.138 2004/03/14 02:25:36 dawes Exp $ */
 
 /*
- * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2004 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -107,19 +107,24 @@ xf86AddDriver(DriverPtr driver, pointer module, int flags)
     xf86DriverList[xf86NumDrivers - 1]->module = module;
     xf86DriverList[xf86NumDrivers - 1]->refCount = 0;
 }
+#endif
 
 void
 xf86DeleteDriver(int drvIndex)
 {
     if (xf86DriverList[drvIndex]
 	&& (!xf86DriverHasEntities(xf86DriverList[drvIndex]))) {
+	xf86ClearDriverEntities(xf86DriverList[drvIndex]);
+#ifdef XFree86LOADER
 	if (xf86DriverList[drvIndex]->module)
 	    UnloadModule(xf86DriverList[drvIndex]->module);
 	xfree(xf86DriverList[drvIndex]);
+#endif
 	xf86DriverList[drvIndex] = NULL;
     }
 }
 
+#ifdef XFree86LOADER
 /* Add a pointer to a new InputDriverRec to xf86InputDriverList */
 
 void

@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.77 2003/11/03 05:11:03 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.79 2004/03/30 10:34:06 eich Exp $ */
 /*
- * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2004 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -170,6 +170,7 @@ static PciBusPtr xf86PciBus = NULL;
 static void getPciClassFlags(pciConfigPtr *pcrpp);
 static void pciConvertListToHost(int bus, int dev, int func, resPtr list);
 static PciBusPtr xf86GetPciBridgeInfo(void);
+static int FindDiscardedPciSlot(int bus, int device, int func);
 
 void
 xf86FormatPciBusNumber(int busnum, char *buffer)
@@ -2924,7 +2925,8 @@ xf86ClaimPciSlot(int bus, int device, int func, DriverPtr drvp,
     int num;
     
     if (xf86CheckPciSlot(bus, device, func)) {
-	num = xf86AllocateEntity();
+	if ((num = FindDiscardedPciSlot(bus, device, func)) < 0)
+	    num = xf86AllocateEntity();
 	p = xf86Entities[num];
 	p->driver = drvp;
 	p->chipset = chipset;
@@ -3308,6 +3310,8 @@ xf86CheckPciSlot(int bus, int device, int func)
 
     for (i = 0; i < xf86NumEntities; i++) {
 	p = xf86Entities[i];
+	if (!p->driver)
+	    continue;
 	/* Check if this PCI slot is taken */
 	if (p->busType == BUS_PCI && p->pciBusId.bus == bus &&
 	    p->pciBusId.device == device && p->pciBusId.func == func)
@@ -3317,6 +3321,22 @@ xf86CheckPciSlot(int bus, int device, int func)
     return TRUE;
 }
 
+static int
+FindDiscardedPciSlot(int bus, int device, int func)
+{
+    int i;
+    EntityPtr p;
+
+    for (i = 0; i < xf86NumEntities; i++) {
+	p = xf86Entities[i];
+	if (!p->driver && 
+	    p->busType == BUS_PCI && p->pciBusId.bus == bus &&
+	    p->pciBusId.device == device && p->pciBusId.func == func) {
+	    return i;
+	}
+    }
+    return -1;
+}
 
 /*
  * This used to load the scanpci module.  The pcidata module is now used

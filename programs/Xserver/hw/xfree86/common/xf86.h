@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.173 2004/01/27 01:31:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.174 2004/02/13 23:58:35 dawes Exp $ */
 
 /*
- * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2004 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -145,6 +145,7 @@ resPtr xf86DupResList(const resPtr rlist);
 void xf86FreeResList(resPtr rlist);
 void xf86ClaimFixedResources(resList list, int entityIndex);
 Bool xf86DriverHasEntities(DriverPtr drvp);
+void xf86ClearDriverEntities(DriverPtr drvp);
 void xf86AddEntityToScreen(ScrnInfoPtr pScrn, int entityIndex);
 void xf86SetEntityInstanceForScreen(ScrnInfoPtr pScrn, int entityIndex,
 				    int instance);

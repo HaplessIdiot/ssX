@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.81tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.82 2004/05/06 00:49:05 tsi Exp $ */
 /*
- * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2004 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -300,10 +300,20 @@ xf86DriverHasEntities(DriverPtr drvp)
 {
     int i;
     for (i = 0; i < xf86NumEntities; i++) {
-	if (xf86Entities[i]->driver == drvp) 
+	if (xf86Entities[i]->driver == drvp && xf86Entities[i]->inUse) 
 	    return TRUE;
     }
     return FALSE;
+}
+
+void
+xf86ClearDriverEntities(DriverPtr drvp)
+{
+    int i;
+    for (i = 0; i < xf86NumEntities; i++) {
+	if (xf86Entities[i]->driver == drvp)
+	    xf86Entities[i]->driver = NULL;
+    }
 }
 
 void
