@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Init.c,v 1.8 95/01/16 13:17:00 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.21 1995/07/12 15:37:16 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.22 1995/11/05 06:54:20 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -600,6 +600,26 @@ xf86PrintConfig()
 }
 
 
+/*
+ * This is for publically released beta server binaries.
+ *
+ * The current version is written to $HOME/XF86_BETA_FILE
+ *
+ * Defining EXPIRE_SERVER enables the server expiry date.  If EXPIRY_TIME
+ * is 0, this is disabled.
+ *
+ * Defining SHOW_BETA_MESSAGE enables displaying the beta message when first
+ * running a new beta version (the current version is checked against the
+ * contents of $HOME/XF86_BETA_FILE).
+ *
+ * If EXPIRE_SERVER is defined, the message will be displayed both with
+ * WARNING_DAYS days of expiry and after expiry regardless of
+ * SHOW_BETA_MESSAGE.
+ *
+ * MESSAGE_SLEEP sets the sleep time (in seconds) after displaying the
+ * message.
+ */
+
 #ifndef XF86_BETA_FILE
 #define XF86_BETA_FILE ".XFree86"
 #endif
@@ -619,8 +639,10 @@ xf86PrintConfig()
 #ifndef MESSAGE_SLEEP
 #define MESSAGE_SLEEP 10
 #endif
+#ifndef WARNING_DAYS
+#define WARNING_DAYS 7
+#endif
 #define DAY_IN_SECONDS (24 * 60 * 60)
-#define WEEK_IN_SECONDS (7 * DAY_IN_SECONDS)
 
 extern char *getenv();
 
@@ -637,20 +659,24 @@ xf86CheckBeta()
   Bool expiresoon = FALSE;
   Bool requireconfirm = FALSE;
   char oldvers[16] = {0, };
+#ifndef X_NOT_STDC_ENV
   time_t expirytime = EXPIRY_TIME;
+#else
+  long expirytime = EXPIRY_TIME;
+#endif
  
-#ifdef SHOW_BETA_MESSAGE
   /*
    * Check if the beta message should be displayed.  It is displayed when
    * the version doesn't match that in $HOME/.XFree86, and when within
    * one week of the expiry date.
    */
-  
+
+#ifdef SHOW_BETA_MESSAGE
   if (!(home = getenv("HOME")))
     showmessage = TRUE;
   else {
     if (!(filename =
-	  (char *)ALLOCATE_LOCAL(strlen(home) + strlen(XF86_BETA_FILE) + 1)))
+	  (char *)ALLOCATE_LOCAL(strlen(home) + strlen(XF86_BETA_FILE) + 2)))
       showmessage = TRUE;
     else {
       if (home[0] == '/' && home[1] == '\0')
@@ -674,7 +700,7 @@ xf86CheckBeta()
     if (time(NULL) > expirytime) {
       showmessage = TRUE;
       expired = TRUE;
-    } else if (expirytime - time(NULL) < WEEK_IN_SECONDS) {
+    } else if (expirytime - time(NULL) < WARNING_DAYS * (DAY_IN_SECONDS)) {
       showmessage = TRUE;
       expiresoon = TRUE;
     }
@@ -728,6 +754,7 @@ xf86CheckBeta()
       if (!expired) {
 	if (requireconfirm) {
 	  char c[2];
+	  fflush(m);
 	  fprintf(m, "\nHit <Enter> to continue: ");
 	  fflush(m);
 	  fgets(c, 2, m);

@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.6 95/01/23 15:35:11 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.40 1995/07/22 04:18:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.41 1995/11/04 11:30:31 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -862,12 +862,11 @@ cirrusProbe()
 		    temp = (inb(vgaIOBase + 5) | 0x00) & 0xFE;
 		    outb(vgaIOBase + 5, temp); /* this disables centering */
 		    outb(vgaIOBase + 4, 0x2c); /* this is the 7543 register */
+		    temp = (inb(vgaIOBase + 5) | 0x20) & 0xF7;
+		    outb(vgaIOBase + 5, temp); /* enable shadow write */
 	            }
 	       else
 	            outb(vgaIOBase + 4, 0x1c);
-#if 0
-	       outb(vgaIOBase+5,(inb(vgaIOBase+5)|0x20)&0xF7);
-#endif
 	       switch (inb(vgaIOBase + 5) & 0xc0) 
 		    {
 		  case 0xc0:
