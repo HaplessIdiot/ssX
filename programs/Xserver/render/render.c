@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/render.c,v 1.21 2002/11/01 00:14:20 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/render.c,v 1.22 2002/11/06 22:45:36 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -501,6 +501,7 @@ ProcRenderQueryPictFormats (ClientPtr client)
 	swapl (&reply->numScreens, n);
 	swapl (&reply->numDepths, n);
 	swapl (&reply->numVisuals, n);
+	swapl (&reply->numSubpixel, n);
     }
     WriteToClient(client, rlength, (char *) reply);
     xfree (reply);
@@ -1890,7 +1891,6 @@ static int
 SProcRenderTrapezoids (ClientPtr client)
 {
     register int n;
-    int		ntraps;
     REQUEST(xRenderTrapezoidsReq);
 
     REQUEST_AT_LEAST_SIZE(xRenderTrapezoidsReq);
@@ -1908,7 +1908,6 @@ static int
 SProcRenderTriangles (ClientPtr client)
 {
     register int n;
-    int		ntraps;
     REQUEST(xRenderTrianglesReq);
 
     REQUEST_AT_LEAST_SIZE(xRenderTrianglesReq);
@@ -1926,7 +1925,6 @@ static int
 SProcRenderTriStrip (ClientPtr client)
 {
     register int n;
-    int		ntraps;
     REQUEST(xRenderTriStripReq);
 
     REQUEST_AT_LEAST_SIZE(xRenderTriStripReq);
@@ -1944,7 +1942,6 @@ static int
 SProcRenderTriFan (ClientPtr client)
 {
     register int n;
-    int		ntraps;
     REQUEST(xRenderTriFanReq);
 
     REQUEST_AT_LEAST_SIZE(xRenderTriFanReq);
