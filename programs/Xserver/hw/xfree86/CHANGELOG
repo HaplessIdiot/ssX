@@ -1,4 +1,9 @@
 XFree86 4.1.99.1 (xx June 2001)
+  86. Fix makedepend for use on Cygwin/XFree86.
+      Use makedepend on Cygwin/XFree86. 
+      Fix SharedDepLibraryTarget so that build dependencies are correct,
+      this fixes libGLU's build problem (Alan Hourihane).
+  85. Don't define MKSTEMP on Cygwin/XFree86 (#4725, Harold Hunt).
   84. Fix memory count function for I128 (Mark Thompson).
   83. Use TermcapLibrary as -lncurses instead of -ltermcap, fixes problem
       building xterm/resize on Cygwin/XFree86 (#4749, Harold Hunt).
@@ -13458,4 +13463,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1834 2001/06/07 11:19:53 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1835 2001/06/07 14:35:08 robin Exp $

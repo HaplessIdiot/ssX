@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.18 2001/06/04 13:04:40 alanh Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.19 2001/06/07 11:19:52 alanh Exp $
 
 #ifndef OSName
 #define OSName                  Cygwin
@@ -13,7 +13,7 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.18 2001/06/04 13:04:40 ala
 #define OSMinorVersion          3
 #endif
 #ifndef OSTeenyVersion
-#define OSTeenyVersion		1
+#define OSTeenyVersion		2
 #endif
 
 #define ProjectRoot /usr/X11R6
@@ -80,7 +80,7 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.18 2001/06/04 13:04:40 ala
 #define ExpandManNames          NO
 #define HasDlopen	        NO
 #define HasGnuMake		YES
-#define UseGccMakeDepend	YES
+#define UseGccMakeDepend	NO
 
 /*
  * This options may depend on the state of POSIX thread
@@ -104,8 +104,6 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.18 2001/06/04 13:04:40 ala
 #define HasFlex			YES
 
 #define PreProcessCmd           CcCmd -E
-
-#define StdIncDir               `CcCmd --print-libgcc-file-name | sed 's,\\\\,/,g' | sed 's,libgcc.a,../../../../i686-pc-cygwin/include,'`
 
 #define PostIncDir              `CcCmd --print-libgcc-file-name | sed 's,\\\\,/,g' | sed 's,libgcc.a,include,'`
 
