@@ -27,7 +27,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.28 2003/07/16 01:38:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.29tsi Exp $ */
 
 #if !defined(__CFB_H__) || defined(CFB_PROTOTYPES_ONLY)
 
@@ -342,6 +342,28 @@ extern RegionPtr cfbBitBlt(
 );
 
 #define cfbCopyPlaneExpand cfbBitBlt
+
+extern RegionPtr cfbCopyPlaneReduce(
+    DrawablePtr /*pSrcDrawable*/,
+    DrawablePtr /*pDstDrawable*/,
+    GCPtr /*pGC*/,
+    int /*srcx*/,
+    int /*srcy*/,
+    int /*width*/,
+    int /*height*/,
+    int /*dstx*/,
+    int /*dsty*/,
+    void (* /*doCopyPlane*/)(
+	DrawablePtr /*pSrc*/,
+	DrawablePtr /*pDst*/,
+	int /*alu*/,
+	RegionPtr /*prgnDst*/,
+	DDXPointPtr /*pptSrc*/,
+	unsigned long /*planemask*/,
+	unsigned long /*bitPlane*/ /* We must know which plane to reduce! */
+	),
+    unsigned long /*bitPlane*/
+);
 
 extern void cfbDoBitblt(
     DrawablePtr /*pSrc*/,
