@@ -1,12 +1,12 @@
 XCOMM platform:  $XConsortium: FreeBSD.cf,v 1.5 95/04/07 19:42:53 kaleb Exp $
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.31 1995/07/12 15:27:09 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.32 1995/09/17 06:27:44 dawes Exp $
 
 #define OSName            FreeBSD 2.0.5
 #define OSVendor          /**/
 XCOMM operating system:  OSName
 #define OSMajorVersion    2
-#define OSMinorVersion    1
-#define OSTeenyVersion    0
+#define OSMinorVersion    0
+#define OSTeenyVersion    5
 
 #define HasGcc			YES
 #define HasGcc2			YES
@@ -76,7 +76,7 @@ XCOMM operating system:  OSName
 #define XawI18nDefines	-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
 
 #ifdef i386Architecture
-# define OptimizedCDebugFlags -m486 -O2
+# define OptimizedCDebugFlags -m486 DefaultGcc2i386Opt
 # if OSMajorVersion < 2
 #  define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DXNO_SYSCONF
 # else
