@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:47:01 cpqbld Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.219 2001/04/16 21:02:49 herrb Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.220 2001/04/18 17:14:00 dawes Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -486,28 +486,6 @@ ServerTarget(XsunMono,$(SUNMDIRS),$(SUNMOBJS),$(SUNMLIBS),$(FONTLIBS) $(SYSLIBS)
 #define ServerToInstall XsunMono
 #endif
 #endif /* XsunLynxMonoServer */
-
-
-#if XibmServer
-XCOMM
-XCOMM IBM server
-XCOMM
-#if SpecialMalloc
-IBMALLOCLIB = hw/ibm/common/LibraryTargetName(ibmalloc)
-#else
-IBMALLOCLIB =
-#endif
-MFBDIR  = mfb
-CFB8DIR = cfb
-DDXDIR1 = hw/ibm
-IBMDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(DDXDIR1) $(DEPDIRS)
-IBMOBJS = hw/ibm/common/ibmcomm.o hw/ibm/common/ibmDate.o
-IBMLIBS = hw/ibm/AIX/hft.o hw/ibm/LibraryTargetName(ibm) $(IBMALLOCLIB) CFB8Libs
-ServerTarget(Xibm,$(IBMDIRS),$(IBMOBJS),$(IBMLIBS),$(FONTLIBS) $(SYSLIBS))
-#ifndef ServerToInstall
-#define ServerToInstall Xibm
-#endif
-#endif /* XibmServer */
 
 
 #if XhpServer
