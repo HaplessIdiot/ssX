@@ -1,3 +1,18 @@
+XFree86 3.1.2Ab (9 December 1995)
+108. Modify xterm to call XSupportsLocale() before initialising I18N
+     support (William Volkman).
+107. Fix S3 support for clocks up to 135MHz in 8 bpp for S3 868 cards
+     with ATT20C409 Gendac (e.g., Elsa Winner 1000AVI) (Dirk Hohndel).
+106. Fix S3 HW cursor handling for doublescan modes (Jon Tombs).
+105. Config and doc updates for NetBSD 1.1 (Matthieu Herrb).
+104. Preliminary (unaccelerated) I128 server code (Robin Cutshaw).
+103. Attempt to fix problem of Mach64 server mis-detecting the CH8398
+     RAMDAC.
+102. Modify the Mach64 server to use the membase address it reads from
+     the configuration registers.
+101. Fix cursor colour problem at 16, 32bpp with the Mach64 server.
+100. Preliminary support for Mach64 CT.
+
 XFree86 3.1.2Aa (2 December 1995)
  99. Fix for xterm behaving badly when TERM is set to "vt100" (Joerg Wunsch).
  98. XDGA (direct graphics access) support added via the XFree86 VidMode
