@@ -42,6 +42,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_153">Patch #153 - 2001/3/29 - XFree86 4.0.3</A>
 <LI><A HREF="#xterm_152">Patch #152 - 2001/3/13 - XFree86 4.0.2</A>
 <LI><A HREF="#xterm_151">Patch #151 - 2001/3/10 - XFree86 4.0.2</A>
 <LI><A HREF="#xterm_150">Patch #150 - 2000/12/29 - XFree86 4.0.2</A>
@@ -196,6 +197,26 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_153">Patch #153 - 2001/3/29 - XFree86 4.0.3</A></H1>
+<ul>
+	<li>increase PTYCHARLEN to 8 for os390, add some debugging traces
+	  for UTMP functions (patch by Paul Gilmartin).
+
+	<li>correct an misplaced brace in <code>SelectionReceived()</code>
+	  (patch by Bruno Haible).
+
+	<li>correct an assignment dropped in <code>SelectionReceived()</code>
+	  which made it not compile for wide-characters combined with debug
+	  traces.
+
+	<li>correct typo, clarify description of 88- and 256-color controls
+	  (report by Bram Moolenaar).
+
+	<li>correct a typo in ctlseqs.ms which caused DEC Locator control
+	  sequences using single quote "'" display grave "`" instead (reported
+	  by Paul Williams, apparently in patch #114).
+</ul>
 
 <H1><A NAME="xterm_152">Patch #152 - 2001/3/13 - XFree86 4.0.2</A></H1>
 <ul>
