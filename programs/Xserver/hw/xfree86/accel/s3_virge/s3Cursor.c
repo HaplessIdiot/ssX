@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3Cursor.c,v 3.4 1996/12/17 21:00:09 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3Cursor.c,v 3.5 1996/12/27 07:02:18 dawes Exp $
  *
  * Copyright 1991 MIPS Computer Systems, Inc.
  *
@@ -239,10 +239,12 @@ s3LoadCursor(pScr, pCurs, x, y)
 {
    int   index = pScr->myNum;
    int   i;
-   int   n, bytes_remaining, xpos, ypos, ram_loc;
+   int   n, ram_loc;
    unsigned short *ram;
    unsigned char tmp;
    int cpos;
+   char * videobuffer = (char *) s3VideoMem;
+   char * cursorbuffer;
 
    if (!xf86VTSema)
       return;
@@ -294,41 +296,33 @@ s3LoadCursor(pScr, pCurs, x, y)
    WaitIdle();
 
    /*
-    * This form is general enough for any valid DisplayWidth.  The only
-    * assumption is that it is even.
+    * SM [07/03/97]:
+    * We change the cursor location now to be at the top of vidmem - 1K.
+    * This solves problems on OS/2.
+    * We also now use MemToBus to copy the cursor bits, as this eliminates alignement
+    * and size problems with 24bpp (1024/3 *3 != 1024!!)
+    * 
     */
-   xpos = s3CursorStartX;
-   ypos = s3CursorStartY;
-   bytes_remaining = 1024;
-   ram_loc = 0;
-   while (bytes_remaining > 0) {
-      if (s3BppDisplayWidth - xpos < bytes_remaining)
-         n = s3BppDisplayWidth - xpos;
-      else
-         n = bytes_remaining;
+   cursorbuffer = &videobuffer[s3CursorStartX + s3CursorStartY*s3BppDisplayWidth];
+   n = 1024;
 
-#define S3CURSORRAMWIDTH 16
-   if (s3InfoRec.modes->Flags & V_DBLSCAN) {
-      char *ram_tmp = (char *) (ram + ram_loc);
-      for (i = 0; i < n/2; i += S3CURSORRAMWIDTH) {
-      (*s3ImageWriteFunc)((xpos+i*2)/s3Bpp, ypos, S3CURSORRAMWIDTH/s3Bpp, 1,
-			  ram_tmp, S3CURSORRAMWIDTH, 0, 0, ROP_S, ~0);
-      (*s3ImageWriteFunc)((xpos+S3CURSORRAMWIDTH+i*2)/s3Bpp, ypos, S3CURSORRAMWIDTH/s3Bpp, 1,
-			  ram_tmp, S3CURSORRAMWIDTH, 0, 0, ROP_S, ~0);
-      ram_tmp += S3CURSORRAMWIDTH;
+   if (!(s3InfoRec.modes->Flags & V_DBLSCAN)) {
+       MemToBus(cursorbuffer, (char *) ram, n);
+       }
+/* Disable this for now for the doublescan cursor mode, until I figured 
+ * out if I'm doing it right.
+#define S3CURSORRAMWIDTH 16   
+   else {
+      ram_loc = 0;
+      for(i = 0; i < n; i += 2*S3CURSORRAMWIDTH){
+	MemToBus((char *) (cursorbuffer + i),(char *)(ram + ram_loc), 
+		S3CURSORRAMWIDTH);
+ 	MemToBus((char *) (cursorbuffer + i + S3CURSORRAMWIDTH),
+		(char *)(ram + ram_loc), S3CURSORRAMWIDTH);
+	ram_loc += S3CURSORRAMWIDTH;
+	}
       }
-   } else
-      (*s3ImageWriteFunc)(xpos/s3Bpp, ypos, n/s3Bpp, 1,
-			  (char *)(ram + ram_loc), n, 0, 0,
-			  ROP_S, ~0);
-      if (s3InfoRec.modes->Flags & V_DBLSCAN)
-         ram_loc += n/4;
-      else
-         ram_loc += n/2;
-      ypos++;
-      xpos = 0;
-      bytes_remaining -= n;
-   }
+*/ 
 
    UNBLOCK_CURSOR;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.7 1997/01/20 12:38:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.8 1997/02/27 14:00:07 hohndel Exp $ */
 
 
 /* AccelInfoRec flags */
@@ -24,7 +24,7 @@
 #define HARDWARE_PATTERN_BIT_ORDER_MSBFIRST	0x40000
 #define HARDWARE_PATTERN_MONO_TRANSPARENCY	0x80000
 #define NO_TEXT_COLOR_EXPANSION		0x100000
-
+#define HARDWARE_PATTERN_NOT_LINEAR	0x200000
 /* Graphics operation flags */
 
 #define GXCOPY_ONLY		0x1

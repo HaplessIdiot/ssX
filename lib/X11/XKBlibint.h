@@ -1,5 +1,5 @@
 /* $XConsortium: XKBlibint.h /main/12 1996/12/27 15:12:48 kaleb $ */
-/* $XFree86: xc/lib/X11/XKBlibint.h,v 3.0 1996/12/12 09:13:31 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XKBlibint.h,v 3.1 1996/12/28 08:09:36 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -84,6 +84,7 @@ typedef struct _XkbInfoRec {
 	XkbMapChangesRec changes;
 	Atom		 composeLED;
 	XkbConverters	 cvt;
+	XkbConverters	 latin1cvt;
 } XkbInfoRec, *XkbInfoPtr;
 
 

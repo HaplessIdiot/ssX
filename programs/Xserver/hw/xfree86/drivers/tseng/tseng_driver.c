@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.55 1997/02/28 08:21:21 hohndel Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.1 1997/03/06 23:17:14 hohndel Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -286,6 +286,8 @@ ET4000LinMem(Bool autodetect)
   */
   
   unsigned long mask = 0;
+
+  if (vgaBitsPerPixel < 8) return FALSE;
 
   if (vga256InfoRec.MemBase != 0)   /* MemBase given from XF86Config */
   {
@@ -840,6 +842,8 @@ ET4000Probe()
    * Linear mode and >8bpp mode handling
    */
 
+  if (vgaBitsPerPixel >= 8) {
+
   if (et4000_type >= TYPE_ET4000W32Pc)
   {
     OFLG_SET(OPTION_LINEAR, &ET4000.ChipOptionFlags);
@@ -967,6 +971,13 @@ ET4000Probe()
   }
         
   OFLG_SET(OPTION_NOACCEL, &ET4000.ChipOptionFlags);
+  
+  } /* if (vgaBitsPerPixel >= 8) */
+  else {
+    OFLG_CLR(OPTION_HW_CURSOR, &vga256InfoRec.options);
+    OFLG_CLR(OPTION_LINEAR, &vga256InfoRec.options);
+    OFLG_SET(OPTION_NOACCEL, &vga256InfoRec.options);
+  }
 
 #endif
 
@@ -977,12 +988,14 @@ ET4000Probe()
     OFLG_SET(OPTION_HIBIT_HIGH, &ET4000.ChipOptionFlags);
     OFLG_SET(OPTION_HIBIT_LOW, &ET4000.ChipOptionFlags);
 #ifndef MONOVGA
+    if (vgaBitsPerPixel >= 8) {
     OFLG_SET(OPTION_PCI_BURST_ON, &ET4000.ChipOptionFlags);
     OFLG_SET(OPTION_PCI_BURST_OFF, &ET4000.ChipOptionFlags);
     OFLG_SET(OPTION_W32_INTERLEAVE_ON, &ET4000.ChipOptionFlags);
     OFLG_SET(OPTION_W32_INTERLEAVE_OFF, &ET4000.ChipOptionFlags);
     OFLG_SET(OPTION_SLOW_DRAM, &ET4000.ChipOptionFlags);
     OFLG_SET(OPTION_FAST_DRAM, &ET4000.ChipOptionFlags);
+    }
 #endif
 
 /*
@@ -1079,6 +1092,7 @@ ET4000Probe()
       }
     }
 #endif
+#endif
     if (et4000_type == TYPE_ET6000)
     {
       int tmp = inb(ET6Kbase+0x67);
@@ -1091,7 +1105,6 @@ ET4000Probe()
       ErrorF("%s %s: ET6000: MClk: %3.2f MHz\n", XCONFIG_PROBED,
              vga256InfoRec.name, gendacMNToClock(initialET6KMclkM, initialET6KMclkN)/1000.0);
     }
-#endif
 
   if (!OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions)) {
     if (!vga256InfoRec.clocks) vgaGetClocks(numClocks, ClockSelect);
@@ -1100,7 +1113,8 @@ ET4000Probe()
   vga256InfoRec.bankedMono = TRUE;
 #ifndef MONOVGA
 #ifdef XFreeXDGA
-  vga256InfoRec.directMode = XF86DGADirectPresent;
+  if (vgaBitsPerPixel >= 8)
+    vga256InfoRec.directMode = XF86DGADirectPresent;
 #endif
 #endif
 
@@ -1130,6 +1144,8 @@ ET4000FbInit()
 #ifndef MONOVGA
   int useSpeedUp;
 
+  if (vgaBitsPerPixel < 8) return;
+  
   if (xf86Verbose && ET4000.ChipUseLinearAddressing)
           ErrorF("%s %s: %s: Using linear framebuffer at 0x%08X.\n",
                   XCONFIG_PROBED, vga256InfoRec.name,
@@ -1204,8 +1220,10 @@ ET4000EnterLeave(enter)
 
 #ifndef MONOVGA
 #ifdef XFreeXDGA
+  if (vgaBitsPerPixel >= 8) {
   if (vga256InfoRec.directMode&XF86DGADirectGraphics && !enter)
     return;
+  }
 #endif
 #endif
 
@@ -1390,9 +1408,11 @@ ET4000Restore(restore)
   /* MEGA-kludge: we need to know if we're "restoring" a graphics mode or not.
    * If so, init the ACL, else, don't touch it...  Yuck.
    */
+  if (vgaBitsPerPixel >= 8) {
   if (restore->Gr_Mode && (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options)))
   {
     tseng_init_acl(); /* initialize the accelerator registers for XAA interface */
+  }
   }
 #endif
 #ifndef W32_ACCEL_SUPPORT
@@ -1576,8 +1596,15 @@ ET4000Init(mode)
   if (et4000_type >= TYPE_ET6000) new->std.Sequencer[1] |= 0x04;
   row_offset = new->std.CRTC[19];
 #else
-  new->std.Attribute[16] = 0x01;  /* use the FAST 256 Color Mode */
-  row_offset = vga256InfoRec.displayWidth >> 3; /* overruled by 16/24/32 bpp code */
+  if (vgaBitsPerPixel < 8) {
+    /* Don't ask me why this is needed on the ET6000 and not on the others */
+    if (et4000_type >= TYPE_ET6000) new->std.Sequencer[1] |= 0x04;
+    row_offset = new->std.CRTC[19];
+  }
+  else {
+    new->std.Attribute[16] = 0x01;  /* use the FAST 256 Color Mode */
+    row_offset = vga256InfoRec.displayWidth >> 3; /* overruled by 16/24/32 bpp code */
+  }
 #endif
   new->std.CRTC[20] = 0x60;
   new->std.CRTC[23] = 0xAB;
@@ -1595,11 +1622,15 @@ ET4000Init(mode)
 #ifdef MONOVGA
   new->Misc = 0x00;
 #else
-  new->Misc = 0x80;
+  if (vgaBitsPerPixel < 8)
+    new->Misc = 0x00;
+  else
+    new->Misc = 0x80;
 #endif
 
 #ifndef MONOVGA
   new->RCConf = initialRCConf;
+  if (vgaBitsPerPixel >= 8) {
   if (OFLG_ISSET(OPTION_FAST_DRAM, &vga256InfoRec.options))
   {
     /*
@@ -1617,6 +1648,7 @@ ET4000Init(mode)
       new->RCConf |= 0x08;
     /* Trcd */
     new->RCConf &= ~0x20;
+  }
   }
 #ifdef W32_SUPPORT
   /*
@@ -1876,13 +1908,18 @@ ET4000Adjust(x, y)
      int x, y;
 {
 
+  int Base, BytesPerPix;
 #ifdef MONOVGA
-  int Base = (y * vga256InfoRec.displayWidth + x + 3) >> 3;
+  Base = (y * vga256InfoRec.displayWidth + x + 3) >> 3;
 #else
-  int BytesPerPix = vga256InfoRec.bitsPerPixel>>3;
-  int Base = ((y * vga256InfoRec.displayWidth + x + 1)*BytesPerPix) >> 2;
-  /* adjust Base address so it is a non-fractional multiple of BytesPerPix */
-  Base -= (Base % BytesPerPix);
+  if (vgaBitsPerPixel < 8)
+    Base = (y * vga256InfoRec.displayWidth + x + 3) >> 3;
+  else {
+    BytesPerPix = vga256InfoRec.bitsPerPixel>>3;
+    Base = ((y * vga256InfoRec.displayWidth + x + 1)*BytesPerPix) >> 2;
+    /* adjust Base address so it is a non-fractional multiple of BytesPerPix */
+    Base -= (Base % BytesPerPix);
+  }
 #endif
 
   outw(vgaIOBase + 4, (Base & 0x00FF00) | 0x0C);

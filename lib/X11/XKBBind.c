@@ -1,4 +1,4 @@
-/* $XConsortium: XKBBind.c /main/21 1996/12/27 15:12:34 kaleb $ */
+/* $TOG: XKBBind.c /main/25 1997/02/26 13:53:26 kaleb $ */
 /*
 
 Copyright (c) 1985, 1987, 1994  X Consortium
@@ -586,6 +586,7 @@ _XkbLoadDpy(dpy)
     xkbi->desc = desc;
 
     _XkbGetConverters(_XkbGetCharset(),&xkbi->cvt);
+    _XkbGetConverters("ISO8859-1",&xkbi->latin1cvt);
     UnlockDisplay(dpy);
     oldEvents= xkbi->selected_events;
     if (!(xkbi->xlib_ctrls&XkbLC_IgnoreNewKeyboards)) {
@@ -668,6 +669,8 @@ XkbTranslateKeySym(dpy, sym_rtrn, mods, buffer, nbytes, extra_rtrn)
 #endif
 {
     register XkbInfoPtr	xkb;
+    XkbKSToMBFunc cvtr;
+    XPointer priv;
     char tmp[4];
     register struct _XKeytrans *p; 
     int n;
@@ -705,8 +708,15 @@ XkbTranslateKeySym(dpy, sym_rtrn, mods, buffer, nbytes, extra_rtrn)
     if ( xkb->cvt.KSToUpper && (mods&LockMask) ) {
 	*sym_rtrn = (*xkb->cvt.KSToUpper)(*sym_rtrn);
     }
-    n = (*xkb->cvt.KSToMB)(xkb->cvt.KSToMBPriv,*sym_rtrn,buffer,nbytes,
-								extra_rtrn);
+    if (xkb->xlib_ctrls & XkbLC_ForceLatin1Lookup) {
+	cvtr = xkb->latin1cvt.KSToMB;
+	priv = xkb->latin1cvt.KSToMBPriv;
+    } else {
+	cvtr = xkb->cvt.KSToMB;
+	priv = xkb->cvt.KSToMBPriv;
+    }
+
+    n = (*cvtr)(priv,*sym_rtrn,buffer,nbytes,extra_rtrn);
 
     if ((!xkb->cvt.KSToUpper)&&( mods&LockMask )) {
 	register int i;

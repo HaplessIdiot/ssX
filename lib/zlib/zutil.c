@@ -1,11 +1,11 @@
-/* $XConsortium: zutil.c /main/2 1996/03/07 13:53:58 mor $ */
+/* $TOG: zutil.c /main/3 1997/02/26 17:44:19 kaleb $ */
 
 /* zutil.c -- target dependent utility functions for the compression library
  * Copyright (C) 1995-1996 Jean-loup Gailly.
  * For conditions of distribution and use, see copyright notice in zlib.h 
  */
 
-/* $Id: zutil.c,v 1.1 1996/12/22 03:29:32 dawes Exp $ */
+/* $Id: zutil.c,v 1.2 1997/03/10 10:10:52 hohndel Exp $ */
 
 #include <stdio.h>
 
@@ -16,8 +16,6 @@ struct internal_state      {int dummy;}; /* for buggy compilers */
 #ifndef STDC
 extern void exit OF((int));
 #endif
-
-const char *zlib_version = ZLIB_VERSION;
 
 const char *z_errmsg[10] = {
 "need dictionary",     /* Z_NEED_DICT       2  */
@@ -32,12 +30,19 @@ const char *z_errmsg[10] = {
 ""};
 
 
+const char *zlibVersion()
+{
+    return ZLIB_VERSION;
+}
+
+#ifdef DEBUG
 void z_error (m)
     char *m;
 {
     fprintf(stderr, "%s\n", m);
     exit(1);
 }
+#endif
 
 #ifndef HAVE_MEMCPY
 
@@ -50,6 +55,19 @@ void zmemcpy(dest, source, len)
     do {
         *dest++ = *source++; /* ??? to be unrolled */
     } while (--len != 0);
+}
+
+int zmemcmp(s1, s2, len)
+    Bytef* s1;
+    Bytef* s2;
+    uInt  len;
+{
+    uInt j;
+
+    for (j = 0; j < len; j++) {
+        if (s1[j] != s2[j]) return 2*(s1[j] > s2[j])-1;
+    }
+    return 0;
 }
 
 void zmemzero(dest, len)
@@ -137,14 +155,14 @@ void  zcfree (voidpf opaque, voidpf ptr)
         return;
     }
     ptr = opaque; /* just to make some compilers happy */
-    z_error("zcfree: ptr not found");
+    Assert(0, "zcfree: ptr not found");
 }
 #endif
 #endif /* __TURBOC__ */
 
 
-#if defined(M_I86) && !(defined(__WATCOMC__) && defined(__386__))
-/* Microsoft C */
+#if defined(M_I86) && !defined(__32BIT__)
+/* Microsoft C in 16-bit mode */
 
 #  define MY_ZCALLOC
 
@@ -180,7 +198,7 @@ voidpf zcalloc (opaque, items, size)
     unsigned items;
     unsigned size;
 {
-    if (opaque) opaque = 0; /* to make compiler happy */
+    if (opaque) items += size - size; /* make compiler happy */
     return (voidpf)calloc(items, size);
 }
 
@@ -188,8 +206,8 @@ void  zcfree (opaque, ptr)
     voidpf opaque;
     voidpf ptr;
 {
-    if (opaque) opaque = 0; /* to make compiler happy */
     free(ptr);
+    if (opaque) return; /* make compiler happy */
 }
 
 #endif /* MY_ZCALLOC */

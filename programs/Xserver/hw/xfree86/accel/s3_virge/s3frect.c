@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3frect.c,v 3.6 1996/11/18 13:10:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3frect.c,v 3.7 1996/12/27 07:02:31 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -184,6 +184,11 @@ DoCacheOpStipple(pix)
      PixmapPtr pix;
 {
    CacheInfoPtr pci = &cInfo;
+
+/* SM[07/03/97]
+ * Disable Stipples for now until we find a way to fix color expands 
+ */
+   return NULL;
 
    if( (pixmap_size) && (pix->drawable.width <= pixmap_size) &&
        (pix->drawable.height <= pixmap_size) ) {

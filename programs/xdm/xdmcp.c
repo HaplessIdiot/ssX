@@ -1,5 +1,5 @@
 /* $XConsortium: xdmcp.c,v 1.15 94/09/19 20:16:38 converse Exp $ */
-/* $XFree86: xc/programs/xdm/xdmcp.c,v 3.4 1997/01/18 07:02:25 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/xdmcp.c,v 3.5 1997/02/16 10:27:39 hohndel Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -951,8 +951,8 @@ manage (from, fromlen, length)
     int			expectlen;
     struct protoDisplay	*pdpy;
     struct display	*d;
-    char		*name;
-    char		*class;
+    char		*name = NULL;
+    char		*class = NULL;
     XdmcpNetaddr	from_save;
     ARRAY8		clientAddress, clientPort;
     CARD16		connectionType;
@@ -1027,7 +1027,10 @@ manage (from, fromlen, length)
 		class[displayClass.length] = '\0';
 	    }
 	    else
-		class = (char *) 0;
+	    {
+		free ((char *) class);
+		class = (char *) NULL;
+	    }
 	    from_save = (XdmcpNetaddr) malloc (fromlen);
 	    if (!from_save)
 	    {
@@ -1085,6 +1088,8 @@ manage (from, fromlen, length)
     }
 abort:
     XdmcpDisposeARRAY8 (&displayClass);
+    if (name) free ((char*) name);
+    if (class) free ((char*) class);
 }
 
 SendFailed (d, reason)

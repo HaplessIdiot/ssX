@@ -37,7 +37,7 @@
  *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.33 1997/03/03 10:20:08 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mgadriver.c,v 1.1 1997/03/06 23:16:03 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -74,6 +74,13 @@
 
 extern vgaPCIInformation *vgaPCIInfo;
 
+extern vgaHWCursorRec vgaHWCursor;
+
+extern void MGACursorInit();
+extern void MGARestoreCursor();
+extern void MGAWarpCursor();
+extern void MGAQueryBestSize();
+
 /*
  * Driver data structures.
  */
@@ -95,7 +102,8 @@ static unsigned char* MGAInitDAC;
  */
 static unsigned char MGADACregs[] = {
 	0x0F, 0x18, 0x19, 0x1A, 0x1C, 0x1D, 0x1E, 0x2A, 0x2B, 0x30,
-	0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A
+	0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A,
+	0x06
 };
 
 /*
@@ -401,7 +409,7 @@ MGAReadBios()
  * Read/write to the DAC via MMIO 
  */
 
-static void outTi3026(reg, val)
+void outTi3026(reg, val)
 unsigned char reg, val;
 {
 	if (!MGAMMIOBase)
@@ -411,7 +419,7 @@ unsigned char reg, val;
 	OUTREG8(RAMDAC_OFFSET + TVP3026_DATA, val);
 }
 
-static unsigned char inTi3026(reg)
+unsigned char inTi3026(reg)
 unsigned char reg;
 {
 	unsigned char val;
@@ -1000,6 +1008,7 @@ MGAProbe()
 #if 0 /* [rdk] do we really need this? */
 	OFLG_SET(OPTION_DAC_8_BIT, &MGA.ChipOptionFlags);
 #endif
+	OFLG_SET(OPTION_SW_CURSOR, &MGA.ChipOptionFlags);
 
 	OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions);
 	OFLG_SET(OPTION_DAC_8_BIT, &vga256InfoRec.options);
@@ -1281,16 +1290,23 @@ MGAFbInit()
  
 	if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options))
 	{
-#if 0
-		/*
-		 * Hardware cursor is not supported yet.
+
+	        /*
+		 * Hardware cursor
 		 */
-		vgaHWCursor.Initialized = TRUE;
-		vgaHWCursor.Init = MGACursorInit;
-		vgaHWCursor.Restore = (void (*)())NoopDDA;
-		vgaHWCursor.Warp = xf86PointerScreenFuncs.WarpCursor;
-		vgaHWCursor.QueryBestSize = mfbQueryBestSize;
-#endif
+	        if ( !OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options)) {
+		    vgaHWCursor.Initialized = TRUE;
+		    vgaHWCursor.Init = MGACursorInit;
+		    vgaHWCursor.Restore = MGARestoreCursor;
+		    vgaHWCursor.Warp = MGAWarpCursor;
+		    vgaHWCursor.QueryBestSize = MGAQueryBestSize;
+		    ErrorF("%s %s: Using hardware cursor\n",
+			   XCONFIG_PROBED, vga256InfoRec.name);
+		}	
+		else
+		    ErrorF("%s %s: Disabling hardware cursor\n",
+			   XCONFIG_GIVEN, vga256InfoRec.name);
+
 		/*
 		 * now call the new acc interface
 		 */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3fcach.c,v 3.4 1996/12/27 07:02:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3fcach.c,v 3.5 1997/01/14 22:17:20 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -81,14 +81,16 @@ s3FontCache8Init()
    }
 
    /* y now includes the cursor space */
+   /* Modified to take into account cursor at top of vidmem. SM[07/03/97] */
    x = x2 = 0;
-   y = y2 = s3CursorStartY + s3CursorLines;
-   h = h2 = s3ScissB + 1 - y;
+   y = y2 = s3InfoRec.virtualY; 
+   h = h2 = s3ScissB + 1 - y - s3CursorLines;
    w = w2 = s3DisplayWidth;
 
    /*
     * If a full-size pixmap expansion area will fit to the right, put it
     * there.
+    * Pixmap cache reenabled as a test: SM[07/03/97] -- not yet
     */
    if (0 && !OFLG_ISSET(OPTION_NO_PIXMAP_CACHE, &s3InfoRec.options)) {
     if (s3DisplayWidth - s3InfoRec.virtualX >= MAX_PIXMAP_WIDTH ||

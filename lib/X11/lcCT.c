@@ -1,4 +1,4 @@
-/* $XConsortium: lcCT.c /main/9 1996/12/05 10:40:19 swick $ */
+/* $TOG: lcCT.c /main/11 1997/02/11 17:48:39 kaleb $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -31,7 +31,7 @@
  * Modifier: Takanori Tateno   FUJITSU LIMITED
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/lcCT.c,v 3.5 1997/01/18 07:17:40 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "XlcPubI.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.21 1997/02/25 14:20:52 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.22 1997/03/03 15:55:15 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1686,15 +1686,15 @@ redo_mode_lookup:
    s3BppDisplayWidth = s3Bpp * s3DisplayWidth;
    /*
     * Work out where to locate S3's HW cursor storage.  It must be on a
-    * 1k boundary.  When using a RAMDAC cursor, set s3CursorStartY
-    * and s3CursorLines appropriately for the memory usage calculation below
+    * 1k boundary.  We now set the cursor at the top of video memory -1K
+    * to fix some problems on OS/2. SM[07/03/97]
     */
 
    if (OFLG_ISSET(OPTION_SW_CURSOR, &s3InfoRec.options)) {
       s3CursorStartY = s3InfoRec.virtualY;
       s3CursorLines = 0;
    } else {
-      int st_addr = (s3InfoRec.virtualY * s3BppDisplayWidth + 1023) & ~1023;
+      int st_addr = s3InfoRec.videoRam * 1024 - 1024;
       s3CursorStartX = st_addr % s3BppDisplayWidth;
       s3CursorStartY = st_addr / s3BppDisplayWidth;
       s3CursorLines = ((s3CursorStartX + 1023) / s3BppDisplayWidth) + 1;
@@ -1717,8 +1717,8 @@ redo_mode_lookup:
     * way it will require the recalculation of everything above.  This one
     * is in the too-hard basket.
     */
-   if ((s3BppDisplayWidth * (s3CursorStartY + s3CursorLines)) >
-       s3InfoRec.videoRam * 1024) { /* XXXX improve this message */
+   if ((s3BppDisplayWidth * (s3InfoRec.virtualY)) >
+       s3InfoRec.videoRam * 1024 - 1024) { /* XXXX improve this message */
       ErrorF("%s %s: Display size %dx%d is too large: ",
              OFLG_ISSET(XCONFIG_VIRTUAL,&s3InfoRec.xconfigFlag) ?
                  XCONFIG_GIVEN : XCONFIG_PROBED,

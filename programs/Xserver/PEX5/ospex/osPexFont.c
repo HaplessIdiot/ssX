@@ -1,5 +1,5 @@
 /* $XConsortium: osPexFont.c /main/10 1996/12/06 11:02:43 lehors $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ospex/osPexFont.c,v 3.5 1997/02/18 17:51:06 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ospex/osPexFont.c,v 3.6 1997/02/24 17:46:24 hohndel Exp $ */
 
 /*
 
@@ -94,8 +94,13 @@ extern char *getenv();
 #endif
 
 /* A convenient shorthand. */
+#ifndef XFree86LOADER
 typedef struct dirent	 ENTRY;
+#else
+typedef struct _xf86dirent ENTRY;
+#endif
 #define FileName(file) file->d_name
+
 
 #else  /* WIN32 */
 

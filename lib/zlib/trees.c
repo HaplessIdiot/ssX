@@ -1,4 +1,4 @@
-/* $XConsortium: trees.c /main/2 1996/03/07 13:53:46 mor $ */
+/* $TOG: trees.c /main/3 1997/02/26 17:43:55 kaleb $ */
 
 /* trees.c -- output deflated data using Huffman coding
  * Copyright (C) 1995-1996 Jean-loup Gailly
@@ -31,7 +31,7 @@
  *          Addison-Wesley, 1983. ISBN 0-201-06672-6.
  */
 
-/* $Id: trees.c,v 1.1 1996/12/22 03:29:32 dawes Exp $ */
+/* $Id: trees.c,v 1.2 1997/03/10 10:10:46 hohndel Exp $ */
 
 #include "deflate.h"
 
@@ -156,7 +156,7 @@ local void copy_block     OF((deflate_state *s, charf *buf, unsigned len,
 
 #else /* DEBUG */
 #  define send_code(s, c, tree) \
-     { if (verbose>1) fprintf(stderr,"\ncd %3d ",(c)); \
+     { if (verbose>2) fprintf(stderr,"\ncd %3d ",(c)); \
        send_bits(s, tree[c].Code, tree[c].Len); }
 #endif
 
@@ -234,7 +234,7 @@ local void send_bits(s, value, length)
  */
 local void tr_static_init()
 {
-    static static_init_done = 0;
+    static int static_init_done = 0;
     int n;        /* iterates over tree elements */
     int bits;     /* bit counter */
     int length;   /* length value */

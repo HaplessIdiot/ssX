@@ -1,4 +1,4 @@
-/* $XConsortium: inffast.c /main/2 1996/03/07 13:53:21 mor $ */
+/* $TOG: inffast.c /main/3 1997/02/26 17:43:09 kaleb $ */
 
 /* inffast.c -- process literals and length/distance pairs fast
  * Copyright (C) 1995-1996 Mark Adler
@@ -34,7 +34,7 @@ uInt bl, bd;
 inflate_huft *tl;
 inflate_huft *td; /* need separate declaration for Borland C++ */
 inflate_blocks_statef *s;
-z_stream *z;
+z_streamp z;
 {
   inflate_huft *t;      /* temporary pointer */
   uInt e;               /* extra bits or operation */

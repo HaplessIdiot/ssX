@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.9 1997/01/24 01:04:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.10 1997/02/17 09:48:47 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -935,13 +935,17 @@ static void DoCacheTile(pix)
              * The width of the tile is 1, 2, 4, or 8.
              * The height is 1, 2, 4, or 8.
              */
+            pci->flags = 1;
+	    if(xf86AccelInfoRec.Flags & HARDWARE_PATTERN_NOT_LINEAR)
+		goto REGULAR_TILE;
+
             Write8x8Pattern(pci,
                 pix->drawable.width, pix->drawable.height,
                 pix->devPrivate.ptr, pix->devKind);
-            pci->flags = 1;
             return;
         }
 
+REGULAR_TILE:
 
     xf86AccelInfoRec.ImageWrite(pci->x, pci->y, pci->pix_w, pci->pix_h,
          pix->devPrivate.ptr, pix->devKind, GXcopy, 0xFFFFFFFF);
@@ -1139,6 +1143,10 @@ static int DoCacheStipple(slot, pDrawable, pGC)
              * We write the stipple to a full-depth scratch pixmap now
              * using CopyPlane1ToN, and then call Write8x8Pattern.
              */
+            pci->flags = 1;
+	    if(xf86AccelInfoRec.Flags & HARDWARE_PATTERN_NOT_LINEAR)
+		goto REGULAR_STIPPLE;
+
 	    pScreen = screenInfo.screens[xf86ScreenIndex];
 	    rootWin = WindowTable[pScreen->myNum];
 	    scratchpixptr = (unsigned char *)ALLOCATE_LOCAL(
@@ -1165,11 +1173,12 @@ static int DoCacheStipple(slot, pDrawable, pGC)
                 scratchpix->devPrivate.ptr, scratchpix->devKind);
             DEALLOCATE_LOCAL(scratchpixptr);
             FreeScratchPixmapHeader(scratchpix);
-            pci->flags = 1;
             *realpci = *pci;
             DEALLOCATE_LOCAL(pci);
             return 1;
         }
+
+REGULAR_STIPPLE:
 
     if (pGC->fillStyle == FillStippled &&
     ((xf86GCInfoRec.CopyAreaFlags & NO_TRANSPARENCY)

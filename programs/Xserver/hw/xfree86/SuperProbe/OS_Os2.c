@@ -27,7 +27,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Os2.c,v 3.6 1996/12/23 06:31:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Os2.c,v 3.7 1997/03/07 00:28:59 hohndel Exp $ */
 
 
 #include "Probe.h"
@@ -172,7 +172,7 @@ Byte *MapVGA()
 }
 
 Byte *MapMem(adress,size)
-	unsigned long address;
+	unsigned long adress;
 	unsigned long size;
 {
 	return((Byte*)0);

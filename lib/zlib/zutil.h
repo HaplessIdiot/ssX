@@ -1,4 +1,4 @@
-/* $XConsortium: zutil.h /main/2 1996/03/07 13:54:02 mor $ */
+/* $TOG: zutil.h /main/3 1997/02/26 17:44:26 kaleb $ */
 
 /* zutil.h -- internal interface and configuration of the compression library
  * Copyright (C) 1995-1996 Jean-loup Gailly.
@@ -10,14 +10,14 @@
    subject to change. Applications should only use zlib.h.
  */
 
-/* $Id: zutil.h,v 1.1 1996/12/22 03:29:32 dawes Exp $ */
+/* $Id: zutil.h,v 1.2 1997/03/10 10:10:53 hohndel Exp $ */
 
 #ifndef _Z_UTIL_H
 #define _Z_UTIL_H
 
 #include "zlib.h"
 
-#if defined(MSDOS) || defined(VMS) || defined(CRAY) || defined(WIN32)
+#if defined(MSDOS)||defined(VMS)||defined(CRAY)||defined(WIN32)||defined(RISCOS)
 #   include <stddef.h>
 #   include <errno.h>
 #else
@@ -42,10 +42,10 @@ typedef unsigned long  ulg;
 extern const char *z_errmsg[10]; /* indexed by 2-zlib_error */
 /* (size given to avoid silly warnings with Visual C++) */
 
-#define ERR_MSG(err) (char*)z_errmsg[Z_NEED_DICT-(err)]
+#define ERR_MSG(err) z_errmsg[Z_NEED_DICT-(err)]
 
 #define ERR_RETURN(strm,err) \
-  return (strm->msg = ERR_MSG(err), (err))
+  return (strm->msg = (char*)ERR_MSG(err), (err))
 /* To be used only when the state is known to be valid */
 
         /* common constants */
@@ -118,6 +118,10 @@ extern const char *z_errmsg[10]; /* indexed by 2-zlib_error */
 #  define OS_CODE  0x0a
 #endif
 
+#if defined(_BEOS_) || defined(RISCOS)
+#  define fdopen(fd,mode) NULL /* No fdopen() */
+#endif
+
         /* Common defaults */
 
 #ifndef OS_CODE
@@ -161,6 +165,7 @@ extern const char *z_errmsg[10]; /* indexed by 2-zlib_error */
 #  endif
 #else
    extern void zmemcpy  OF((Bytef* dest, Bytef* source, uInt len));
+   extern int  zmemcmp  OF((Bytef* s1,   Bytef* s2, uInt len));
    extern void zmemzero OF((Bytef* dest, uInt len));
 #endif
 
@@ -170,6 +175,7 @@ extern const char *z_errmsg[10]; /* indexed by 2-zlib_error */
 #  ifndef verbose
 #    define verbose 0
 #  endif
+   extern void z_error    OF((char *m));
 #  define Assert(cond,msg) {if(!(cond)) z_error(msg);}
 #  define Trace(x) fprintf x
 #  define Tracev(x) {if (verbose) fprintf x ;}
@@ -187,8 +193,6 @@ extern const char *z_errmsg[10]; /* indexed by 2-zlib_error */
 
 
 typedef uLong (*check_func) OF((uLong check, const Bytef *buf, uInt len));
-
-extern void z_error    OF((char *m));
 
 voidpf zcalloc OF((voidpf opaque, unsigned items, unsigned size));
 void   zcfree  OF((voidpf opaque, voidpf ptr));

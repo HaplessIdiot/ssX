@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/38 1996/11/03 19:32:18 kaleb $
-XCOMM $XFree86: xc/lib/Imakefile,v 3.16 1996/12/31 04:15:26 dawes Exp $
+XCOMM $XFree86: xc/lib/Imakefile,v 3.17 1997/01/12 10:39:26 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags
 
@@ -49,7 +49,7 @@ XDPMSLIBDIR = Xdpms
 LBXUTILDIR = lbxutil
 #endif
 
-#if !HasGzipLibrary && (BuildLBX || GzipFontCompression)
+#if (BuildLBX || GzipFontCompression) && !HasZlib
 ZLIBDIR = zlib
 #endif
 

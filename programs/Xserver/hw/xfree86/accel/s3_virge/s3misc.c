@@ -467,6 +467,7 @@ s3EnterLeaveVT(enter, screen_idx)
 
          s3Unlock();
 	 s3Init(s3InfoRec.modes);
+         s3InitSTREAMS(s3InfoRec.modes);
          s3InitEnvironment();
 	 AlreadyInited = TRUE;
 	 s3RestoreDACvalues();

@@ -1,4 +1,4 @@
-/* $XConsortium: inftrees.h /main/2 1996/03/07 13:53:36 mor $ */
+/* $TOG: inftrees.h /main/4 1997/02/26 17:43:36 kaleb $ */
 
 /* inftrees.h -- header to use inftrees.c
  * Copyright (C) 1995-1996 Mark Adler
@@ -37,7 +37,7 @@ extern int inflate_trees_bits OF((
     uIntf *,                    /* 19 code lengths */
     uIntf *,                    /* bits tree desired/actual depth */
     inflate_huft * FAR *,       /* bits tree result */
-    z_stream *));               /* for zalloc, zfree functions */
+    z_streamp ));               /* for zalloc, zfree functions */
 
 extern int inflate_trees_dynamic OF((
     uInt,                       /* number of literal/length codes */
@@ -47,7 +47,7 @@ extern int inflate_trees_dynamic OF((
     uIntf *,                    /* distance desired/actual bit depth */
     inflate_huft * FAR *,       /* literal/length tree result */
     inflate_huft * FAR *,       /* distance tree result */
-    z_stream *));               /* for zalloc, zfree functions */
+    z_streamp ));               /* for zalloc, zfree functions */
 
 extern int inflate_trees_fixed OF((
     uIntf *,                    /* literal desired/actual bit depth */
@@ -57,5 +57,5 @@ extern int inflate_trees_fixed OF((
 
 extern int inflate_trees_free OF((
     inflate_huft *,             /* tables to free */
-    z_stream *));               /* for zfree function */
+    z_streamp ));               /* for zfree function */
 

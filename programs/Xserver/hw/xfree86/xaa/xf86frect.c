@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.10 1997/01/20 12:38:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.12 1997/02/27 14:00:05 hohndel Exp $ */
 
 /*
  * Fill rectangles.
@@ -40,7 +40,7 @@ in this Software without prior written authorization from the X Consortium.
 */
 
 /* $XConsortium: cfbfillrct.c,v 5.18 94/04/17 20:28:47 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.10 1997/01/20 12:38:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.12 1997/02/27 14:00:05 hohndel Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -693,6 +693,14 @@ if( (pBoxInit->x2 - pBoxInit->x1) <= 100 )
 		        /* patternx, patterny are ignored in this case. */
 		        xf86AccelInfoRec.SubsequentFill8x8Pattern(
 		            patternx, patterny, rectX1, rectY1, rectWidth,
+		            rectHeight);
+		    else
+		    if (xf86AccelInfoRec.Flags
+		    & HARDWARE_PATTERN_NOT_LINEAR)
+		        xf86AccelInfoRec.SubsequentFill8x8Pattern(
+		            patternx + ((- adjLeftX) & 7),
+			    patterny + ((- adjTopY) & 7), 
+			    rectX1, rectY1, rectWidth,
 		            rectHeight);
 		    else
 		        xf86AccelInfoRec.SubsequentFill8x8Pattern(

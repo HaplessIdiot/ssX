@@ -1,6 +1,6 @@
 /* 
  * $XConsortium: xset.c /main/71 1996/11/24 17:24:48 rws $ 
- * $XFree86: xc/programs/xset/xset.c,v 3.8 1997/01/27 08:26:32 dawes Exp $ 
+ * $XFree86: xc/programs/xset/xset.c,v 3.9 1997/02/14 10:29:50 dawes Exp $ 
  */
 
 /*
@@ -408,6 +408,10 @@ for (i = 1; i < argc; ) {
 	       */
 #if defined(SYSV) || defined(SVR4)
 #define usleep(us) sleep((us / 1000000 > 0) ? us / 1000000 : 1)
+#else
+#if defined(__EMX__)
+#define usleep(us) _sleep2((us / 1000 > 0) ? us / 1000 : 1)
+#endif
 #endif
 #ifdef __EMX__
 #define usleep(us) _sleep2(us/1000)

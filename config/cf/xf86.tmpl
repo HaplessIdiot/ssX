@@ -2,7 +2,7 @@ XCOMM $XConsortium: xf86.tmpl /main/2 1996/10/31 15:01:41 kaleb $
 
 
 
-XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.14 1997/02/25 14:18:44 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.15 1997/02/25 16:04:38 hohndel Exp $
 
 #if XF86LinkKit
     TOP_INCLUDES = TopIncludes
@@ -75,8 +75,12 @@ XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.14 1997/02/25 14:18:44 hohndel Exp $
 /* This overrides an AssembleObject in xf86.rules or in an os-dependent
  * rules file (currently only minix.cf and os2.rules (uncritical))
  */
+#define ModCPPOnlyAsm(basename,options) RemoveFile(basename.i)		@@\
+	$(MODCPP) AsmDefines $(DEFINES) $(INCLUDES) options basename.s | \	@@\
+		grep -v '^\#' > basename.i
+
 #undef AssembleObject
-#define AssembleObject(flags) CPPOnlyAsm($*,flags)			@@\
+#define AssembleObject(flags) ModCPPOnlyAsm($*,flags)			@@\
 	$(MODAS) $(MODASFLAGS) -o $*.o $*.i				@@\
 	RemoveFile($*.i)
 

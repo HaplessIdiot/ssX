@@ -1,5 +1,5 @@
 XCOMM $XConsortium: sunLib.tmpl /main/44 1996/12/09 16:34:30 kaleb $
-XCOMM $XFree86: xc/config/cf/sunLib.tmpl,v 3.6 1996/01/05 13:06:45 dawes Exp $
+XCOMM $XFree86: xc/config/cf/sunLib.tmpl,v 3.7 1996/12/23 05:50:33 dawes Exp $
 
 /*
  * SunOS shared library template
@@ -11,30 +11,33 @@ XCOMM $XFree86: xc/config/cf/sunLib.tmpl,v 3.6 1996/01/05 13:06:45 dawes Exp $
 #  define SharedXmuReqs $(LDPRELIBS) $(XTOOLLIB) $(XLIB)
 # endif
 
-# ifndef SharedX11Rev
-#  define SharedX11Rev 4.20
-# endif
-# ifndef SharedOldXRev
-#  define SharedOldXRev 4.20
-# endif
-# ifndef SharedXtRev
-#  define SharedXtRev 4.20
-# endif
-# ifndef SharedXmuRev
-#  define SharedXmuRev 4.20
-# endif
-# ifndef SharedXextRev
-#  define SharedXextRev 4.30
-# endif
-# ifndef SharedXiRev
-#  define SharedXiRev 4.20
-# endif
-# ifndef SharedXtstRev
-#  define SharedXtstRev 1.10
-# endif
-# ifndef SharedPexRev
-#  define SharedPexRev 1.10
-# endif
+#ifndef SharedX11Rev
+#define SharedX11Rev 4.30
+#endif
+#ifndef SharedOldXRev
+#define SharedOldXRev 4.20
+#endif
+#ifndef SharedXtRev
+#define SharedXtRev 4.20
+#endif
+#ifndef SharedXawRev
+#define SharedXawRev 6.10
+#endif
+#ifndef SharedXmuRev
+#define SharedXmuRev 4.20
+#endif
+#ifndef SharedXextRev
+#define SharedXextRev 4.40
+#endif
+#ifndef SharedXiRev
+#define SharedXiRev 4.20
+#endif
+#ifndef SharedXtstRev
+#define SharedXtstRev 1.20
+#endif
+#ifndef SharedPexRev
+#define SharedPexRev 1.10
+#endif
 
 #else				/* else it's Solaris */
 

@@ -4,11 +4,13 @@ XCOMM $XConsortium: Imakefile /main/9 1996/02/24 10:04:59 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/Imakefile,v 3.10 1997/01/05 11:58:44 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/Imakefile,v 3.11 1997/03/04 10:40:40 hohndel Exp $
 #include <Server.tmpl>
-#define IHaveSubdirs
 
+#ifndef DoLoadableServer
+#define IHaveSubdirs
 SUBDIRS = XF86MonoDrivers
+#endif
 
 #ifndef OS2Architecture
 SRCS = */?*.c

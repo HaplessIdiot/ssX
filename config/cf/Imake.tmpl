@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
 XCOMM $XConsortium: Imake.tmpl /main/243 1996/11/13 14:42:56 lehors $
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.34 1997/02/23 09:24:39 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.35 1997/02/25 14:18:42 hohndel Exp $
 XCOMM
 
 /*
@@ -272,6 +272,15 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef HasFfs
 #define HasFfs			YES
 #endif
+#ifndef HasZlib
+#define HasZlib			NO
+#endif
+#if !HasZlib		/* if OS doesn't have it, we'll build it */
+#undef GzipLibrary	/* GzipLibrary was valid only if HasGzipLibrary */
+#endif
+#ifndef GzipLibrary	/* if OS config didn't define it, assume it's -lz */
+#define GzipLibrary -lz
+#endif
 #if HasKrb5
 #ifndef Krb5Includes
 #define Krb5Includes -I/krb5/include
@@ -363,15 +372,6 @@ TCLIBDIR = TclLibDir
 #else
 #define TclLibrary
 #endif
-#endif
-#ifndef HasGzipLibrary
-#define HasGzipLibrary	NO
-#endif
-#if !HasGzipLibrary	/* if OS doesn't have it, we'll build it */
-#undef GzipLibrary	/* GzipLibrary was valid only if HasGzipLibrary */
-#endif
-#ifndef GzipLibrary	/* if OS config didn't define it, assume it's -lz */
-#define GzipLibrary -lz
 #endif
 #ifndef NeedConstPrototypes
 #define NeedConstPrototypes	NO
@@ -755,6 +755,9 @@ TCLIBDIR = TclLibDir
 #ifndef ModuleCcCmd
 #define ModuleCcCmd CcCmd
 #endif
+#ifndef ModuleCppCmd
+#define ModuleCppCmd CppCmd
+#endif
 #ifndef ModuleCFlags
 #define ModuleCFlags $(CDEBUGFLAGS) $(CCOPTIONS) $(THREAD_CFLAGS) $(ALLDEFINES)
 #endif
@@ -1112,6 +1115,7 @@ CXXEXTRA_INCLUDES = CplusplusExtraIncludes
              NEQN = NeqnCmd
               COL = ColCmd
             MODCC = ModuleCcCmd
+           MODCPP = ModuleCppCmd
         MODCFLAGS = ModuleCFlags
             MODAS = ModuleAsCmd
        MODASFLAGS = ModuleAsFlags

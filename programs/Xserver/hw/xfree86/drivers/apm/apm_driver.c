@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/apm/apm_driver.c,v 3.12 1997/02/28 08:19:20 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.1 1997/03/06 23:14:30 hohndel Exp $ */
 
 /*
  * These are X and server generic header files.
@@ -364,7 +364,7 @@ comp_lmn(clock)
 	float   fvco, d, r;
 
 	for (l = 3; l >= 0; --l) {
-		fvco = fout * pow(2.0, (double) l);
+		fvco = fout * (1 << l);
 		if (WITHIN(fvco, 125000.0, 250000.0))
 			break;
 	}
@@ -377,7 +377,7 @@ comp_lmn(clock)
 	for (nv = 128; nv > 0; --nv) {
 		if (!WITHIN(fvco / nv, 300.0, 30000.0))
 			continue;
-		mv = (int) rint(nv / r);
+		mv = (int) (nv / r + 0.5);
 		if (!WITHIN(mv, 0, 129))
 			continue;
 		if (!WITHIN(14318.0 / mv, 300.0, 30000.0))
@@ -392,7 +392,7 @@ comp_lmn(clock)
 	}
 /*
 	ErrorF("%6.2f\t%6.2f\t%d\t%d\t%d\n", fout / 1000.0,
-		(n * 14318.0) / (m * pow(2.0, l) * 1000.0),
+		(n * 14318.0) / (m * (1 << l) * 1000.0),
 		n - 1, m - 1, l);
  */
 	return ((n - 1) << 16) | ((m - 1) << 8) | (l << 2) | (4 << 4);

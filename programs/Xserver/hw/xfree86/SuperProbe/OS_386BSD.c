@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_386BSD.c,v 3.10 1996/12/23 06:31:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_386BSD.c,v 3.12 1997/03/07 00:28:54 hohndel Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Dawes <dawes@xfree86.org>
  *
@@ -286,7 +286,7 @@ Byte *MapVGA()
 	return(base);
 }
 
-Byte *MapMem(adress,size)
+Byte *MapMem(address,size)
 	unsigned long address;
 	unsigned long size;
 {
