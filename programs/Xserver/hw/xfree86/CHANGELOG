@@ -1,4 +1,7 @@
 XFree86 4.3.99.17 (xx November 2003)
+ 636. Restore the behaviour of scalable fonts.dir entries in directories with
+      the ":unscaled" attribute (Chisato Yamauchi, David Dawes, reported by
+      Mike Fabian).
  635. Fix xmodmap's output of the modifiers map when the first column keysym
       is empty (Ivan Pascal).
  634. Fixes for XKB keyboard maps:
@@ -18294,7 +18297,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3004 2003/12/02 13:02:33 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3005 2003/12/02 13:23:09 pascal Exp $
 
 
 
