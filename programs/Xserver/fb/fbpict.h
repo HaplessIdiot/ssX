@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbpict.h,v 1.3 2001/01/21 21:19:09 tsi Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbpict.h,v 1.4 2001/05/29 04:54:09 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -68,10 +68,12 @@ typedef void	(*CompositeFunc) (CARD8      op,
 				  CARD16     width,
 				  CARD16     height);
 
-typedef CARD32 (*FbCompositeFetch)(FbBits *line, CARD32 offset);
-typedef void (*FbCompositeStore) (FbBits *line, CARD32 offset, CARD32 value);
+typedef struct _FbCompositeOperand FbCompositeOperand;
 
-typedef struct _FbCompositeOperand {
+typedef CARD32 (*FbCompositeFetch)(FbCompositeOperand *op);
+typedef void (*FbCompositeStore) (FbCompositeOperand *op, CARD32 value);
+
+struct _FbCompositeOperand {
     FbBits		*line;
     CARD32		offset;
     FbStride		stride;
@@ -81,7 +83,7 @@ typedef struct _FbCompositeOperand {
     FbCompositeFetch	fetch;
     FbCompositeFetch	fetcha;
     FbCompositeStore	store;
-} FbCompositeOperand;
+};
 
 typedef void (*FbCombineFunc) (FbCompositeOperand	*src,
 			       FbCompositeOperand	*msk,
@@ -190,139 +192,139 @@ FbCombineSaturate (FbCompositeOperand   *src,
  */
 
 CARD32
-fbFetch_a8r8g8b8 (FbBits *line, CARD32 offset);
+fbFetch_a8r8g8b8 (FbCompositeOperand *op);
 
 CARD32
-fbFetch_x8r8g8b8 (FbBits *line, CARD32 offset);
+fbFetch_x8r8g8b8 (FbCompositeOperand *op);
 
 CARD32
-fbFetch_a8b8g8r8 (FbBits *line, CARD32 offset);
+fbFetch_a8b8g8r8 (FbCompositeOperand *op);
 
 CARD32
-fbFetch_x8b8g8r8 (FbBits *line, CARD32 offset);
+fbFetch_x8b8g8r8 (FbCompositeOperand *op);
 
 CARD32
-fbFetch_r8g8b8 (FbBits *line, CARD32 offset);
+fbFetch_r8g8b8 (FbCompositeOperand *op);
 
 CARD32
-fbFetch_b8g8r8 (FbBits *line, CARD32 offset);
+fbFetch_b8g8r8 (FbCompositeOperand *op);
 
 CARD32
-fbFetch_r5g6b5 (FbBits *line, CARD32 offset);
+fbFetch_r5g6b5 (FbCompositeOperand *op);
 
 CARD32
-fbFetch_b5g6r5 (FbBits *line, CARD32 offset);
+fbFetch_b5g6r5 (FbCompositeOperand *op);
 
 CARD32
-fbFetch_a1r5g5b5 (FbBits *line, CARD32 offset);
+fbFetch_a1r5g5b5 (FbCompositeOperand *op);
 
 CARD32
-fbFetch_x1r5g5b5 (FbBits *line, CARD32 offset);
+fbFetch_x1r5g5b5 (FbCompositeOperand *op);
 
 CARD32
-fbFetch_a1b5g5r5 (FbBits *line, CARD32 offset);
+fbFetch_a1b5g5r5 (FbCompositeOperand *op);
 
 CARD32
-fbFetch_x1b5g5r5 (FbBits *line, CARD32 offset);
+fbFetch_x1b5g5r5 (FbCompositeOperand *op);
 
 CARD32
-fbFetch_a8 (FbBits *line, CARD32 offset);
+fbFetch_a8 (FbCompositeOperand *op);
 
 CARD32
-fbFetch_r3g3b2 (FbBits *line, CARD32 offset);
+fbFetch_r3g3b2 (FbCompositeOperand *op);
 
 CARD32
-fbFetch_b2g3r3 (FbBits *line, CARD32 offset);
+fbFetch_b2g3r3 (FbCompositeOperand *op);
 
 CARD32
-fbFetch_a2r2g2b2 (FbBits *line, CARD32 offset);
+fbFetch_a2r2g2b2 (FbCompositeOperand *op);
 
 CARD32
-fbFetch_a2b2g2r2 (FbBits *line, CARD32 offset);
+fbFetch_a2b2g2r2 (FbCompositeOperand *op);
 
 CARD32
-fbFetch_a4 (FbBits *line, CARD32 offset);
+fbFetch_a4 (FbCompositeOperand *op);
 
 CARD32
-fbFetch_r1g2b1 (FbBits *line, CARD32 offset);
+fbFetch_r1g2b1 (FbCompositeOperand *op);
 
 CARD32
-fbFetch_b1g2r1 (FbBits *line, CARD32 offset);
+fbFetch_b1g2r1 (FbCompositeOperand *op);
 
 CARD32
-fbFetch_a1r1g1b1 (FbBits *line, CARD32 offset);
+fbFetch_a1r1g1b1 (FbCompositeOperand *op);
 
 CARD32
-fbFetch_a1b1g1r1 (FbBits *line, CARD32 offset);
+fbFetch_a1b1g1r1 (FbCompositeOperand *op);
 
 CARD32
-fbFetch_a1 (FbBits *line, CARD32 offset);
+fbFetch_a1 (FbCompositeOperand *op);
 
 void
-fbStore_a8r8g8b8 (FbBits *line, CARD32 offset, CARD32 value);
+fbStore_a8r8g8b8 (FbCompositeOperand *op, CARD32 value);
 
 void
-fbStore_x8r8g8b8 (FbBits *line, CARD32 offset, CARD32 value);
+fbStore_x8r8g8b8 (FbCompositeOperand *op, CARD32 value);
 
 void
-fbStore_a8b8g8r8 (FbBits *line, CARD32 offset, CARD32 value);
+fbStore_a8b8g8r8 (FbCompositeOperand *op, CARD32 value);
 
 void
-fbStore_x8b8g8r8 (FbBits *line, CARD32 offset, CARD32 value);
+fbStore_x8b8g8r8 (FbCompositeOperand *op, CARD32 value);
 
 void
-fbStore_r8g8b8 (FbBits *line, CARD32 offset, CARD32 value);
+fbStore_r8g8b8 (FbCompositeOperand *op, CARD32 value);
 
 void
-fbStore_b8g8r8 (FbBits *line, CARD32 offset, CARD32 value);
+fbStore_b8g8r8 (FbCompositeOperand *op, CARD32 value);
 
 void
-fbStore_r5g6b5 (FbBits *line, CARD32 offset, CARD32 value);
+fbStore_r5g6b5 (FbCompositeOperand *op, CARD32 value);
 
 void
-fbStore_b5g6r5 (FbBits *line, CARD32 offset, CARD32 value);
+fbStore_b5g6r5 (FbCompositeOperand *op, CARD32 value);
 
 void
-fbStore_a1r5g5b5 (FbBits *line, CARD32 offset, CARD32 value);
+fbStore_a1r5g5b5 (FbCompositeOperand *op, CARD32 value);
 
 void
-fbStore_x1r5g5b5 (FbBits *line, CARD32 offset, CARD32 value);
+fbStore_x1r5g5b5 (FbCompositeOperand *op, CARD32 value);
 
 void
-fbStore_a1b5g5r5 (FbBits *line, CARD32 offset, CARD32 value);
+fbStore_a1b5g5r5 (FbCompositeOperand *op, CARD32 value);
 
 void
-fbStore_x1b5g5r5 (FbBits *line, CARD32 offset, CARD32 value);
+fbStore_x1b5g5r5 (FbCompositeOperand *op, CARD32 value);
 
 void
-fbStore_a8 (FbBits *line, CARD32 offset, CARD32 value);
+fbStore_a8 (FbCompositeOperand *op, CARD32 value);
 
 void
-fbStore_r3g3b2 (FbBits *line, CARD32 offset, CARD32 value);
+fbStore_r3g3b2 (FbCompositeOperand *op, CARD32 value);
 
 void
-fbStore_b2g3r3 (FbBits *line, CARD32 offset, CARD32 value);
+fbStore_b2g3r3 (FbCompositeOperand *op, CARD32 value);
 
 void
-fbStore_a2r2g2b2 (FbBits *line, CARD32 offset, CARD32 value);
+fbStore_a2r2g2b2 (FbCompositeOperand *op, CARD32 value);
 
 void
-fbStore_a4 (FbBits *line, CARD32 offset, CARD32 value);
+fbStore_a4 (FbCompositeOperand *op, CARD32 value);
 
 void
-fbStore_r1g2b1 (FbBits *line, CARD32 offset, CARD32 value);
+fbStore_r1g2b1 (FbCompositeOperand *op, CARD32 value);
 
 void
-fbStore_b1g2r1 (FbBits *line, CARD32 offset, CARD32 value);
+fbStore_b1g2r1 (FbCompositeOperand *op, CARD32 value);
 
 void
-fbStore_a1r1g1b1 (FbBits *line, CARD32 offset, CARD32 value);
+fbStore_a1r1g1b1 (FbCompositeOperand *op, CARD32 value);
 
 void
-fbStore_a1b1g1r1 (FbBits *line, CARD32 offset, CARD32 value);
+fbStore_a1b1g1r1 (FbCompositeOperand *op, CARD32 value);
 
 void
-fbStore_a1 (FbBits *line, CARD32 offset, CARD32 value);
+fbStore_a1 (FbCompositeOperand *op, CARD32 value);
 
 Bool
 fbBuildCompositeOperand (PicturePtr	    pPict,

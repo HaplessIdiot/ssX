@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picture.c,v 1.11 2000/12/05 03:13:33 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/picture.c,v 1.12 2000/12/07 23:54:04 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -715,8 +715,8 @@ SetPictureClipRects (PicturePtr	pPicture,
     return result;
 }
 
-void
-ValidatePicture(PicturePtr pPicture)
+static void
+ValidateOnePicture (PicturePtr pPicture)
 {
     if (pPicture->serialNumber != pPicture->pDrawable->serialNumber)
     {
@@ -726,6 +726,14 @@ ValidatePicture(PicturePtr pPicture)
 	pPicture->stateChanges = 0;
 	pPicture->serialNumber = pPicture->pDrawable->serialNumber;
     }
+}
+
+void
+ValidatePicture(PicturePtr pPicture)
+{
+    ValidateOnePicture (pPicture);
+    if (pPicture->alphaMap)
+	ValidateOnePicture (pPicture->alphaMap);
 }
 
 int

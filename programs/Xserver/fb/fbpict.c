@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbpict.c,v 1.9 2001/05/29 04:54:09 keithp Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbpict.c,v 1.10 2001/06/04 09:43:27 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -875,6 +875,9 @@ fbComposite (CARD8      op,
     CompositeFunc   func;
     Bool	    srcRepeat = pSrc->repeat;
     Bool	    maskRepeat = FALSE;
+    Bool	    srcAlphaMap = pSrc->alphaMap != 0;
+    Bool	    maskAlphaMap = FALSE;
+    Bool	    dstAlphaMap = pDst->alphaMap != 0;
     int		    x_msk, y_msk, x_src, y_src, x_dst, y_dst;
     int		    w, h, w_this, h_this;
     
@@ -887,6 +890,7 @@ fbComposite (CARD8      op,
 	xMask += pMask->pDrawable->x;
 	yMask += pMask->pDrawable->y;
 	maskRepeat = pMask->repeat;
+	maskAlphaMap = pMask->alphaMap != 0;
     }
     
     if (!miComputeCompositeRegion (&region,
@@ -904,6 +908,7 @@ fbComposite (CARD8      op,
 	return;
 				   
     func = fbCompositeGeneral;
+    if (!maskAlphaMap && !srcAlphaMap && !dstAlphaMap)
     switch (op) {
     case PictOpOver:
 	if (pMask)
