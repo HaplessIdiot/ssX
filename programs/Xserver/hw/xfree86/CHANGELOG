@@ -1,4 +1,5 @@
 XFree86 3.2m (2 January 1997)
+ 165. Fix some problems creating Xserver links in XF86Setup (Dirk Hohndel).
  164. Update to R6.3 public patch 1.
  165. XAA udpates (Harm Hanemaayer).
  163. Fix problems with out-of-date cirrus_acl.c (Harm Hanemaayer).
