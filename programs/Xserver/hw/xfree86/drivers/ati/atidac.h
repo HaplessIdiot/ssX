@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.h,v 1.3 1999/07/06 11:38:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.h,v 1.4 1999/07/18 03:26:53 dawes Exp $ */
 /*
- * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -73,7 +73,7 @@ extern const DACRec ATIDACDescriptors[];
     {                                         \
         (void)inb(GENS1(pATI->CPIO_VGABase)); \
         (void)inb(GENS1(pATI->CPIO_VGABase)); \
-    } while(0)
+    } while (0)
 
 extern void  ATISetDACIOPorts FunctionPrototype((ATIPtr, ATICRTCType));
 extern CARD8 ATIGetDACCmdReg  FunctionPrototype((ATIPtr));

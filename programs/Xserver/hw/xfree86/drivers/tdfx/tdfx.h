@@ -5,7 +5,7 @@
 
    Copyright: 1998,1999
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.7 1999/12/27 01:33:58 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.8 2000/02/15 07:13:41 martin Exp $ */
 
 #ifndef _TDFX_H_
 #define _TDFX_H_
@@ -156,7 +156,7 @@ typedef struct _TDFXRec {
   TDFXSyncFunc sync;
   int syncDone;
   int scanlineWidth;
-  int *scanlineColorExpandBuffers[2];
+  unsigned char *scanlineColorExpandBuffers[2];
   PROPDATA
 #ifdef XF86DRI
   Bool directRenderingEnabled;

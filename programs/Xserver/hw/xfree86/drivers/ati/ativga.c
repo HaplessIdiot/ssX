@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.c,v 1.7 1999/10/26 15:58:18 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.c,v 1.8 1999/11/02 16:16:40 tsi Exp $ */
 /*
- * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -44,7 +44,7 @@ ATIVGAPreInit
 {
     int Index;
 
-    /* Initialize sequencer register values */
+    /* Initialise sequencer register values */
     pATIHW->seq[0] = 0x03U;
     if (pScreenInfo->depth == 1)
         pATIHW->seq[2] = 0x01U << BIT_PLANE;
@@ -57,7 +57,7 @@ ATIVGAPreInit
     else
         pATIHW->seq[4] = 0x0AU;
 
-    /* Initialize CRTC register values */
+    /* Initialise CRTC register values */
     if ((pScreenInfo->depth >= 8) &&
         ((pATI->Chip >= ATI_CHIP_264CT) ||
          (pATI->CPIO_VGAWonder &&
@@ -72,7 +72,7 @@ ATIVGAPreInit
         pATIHW->crt[23] = 0xE3U;
     pATIHW->crt[24] = 0xFFU;
 
-    /* Initialize attribute controller register values */
+    /* Initialise attribute controller register values */
     if (pScreenInfo->depth == 1)
     {
         Bool FlipPixels = xf86GetFlipPixels();
@@ -99,7 +99,7 @@ ATIVGAPreInit
     }
     pATIHW->attr[18] = 0x0FU;
 
-    /* Initialize graphics controller register values */
+    /* Initialise graphics controller register values */
     if (pScreenInfo->depth == 1)
         pATIHW->gra[4] = BIT_PLANE;
     else if (pScreenInfo->depth <= 4)
@@ -107,7 +107,7 @@ ATIVGAPreInit
     else if (pATI->Chip >= ATI_CHIP_264CT)
         pATIHW->gra[5] = 0x40U;
     if (pATI->UseSmallApertures && (pATI->Chip >= ATI_CHIP_264CT) &&
-        ((pATI->Chip >= ATI_CHIP_264VT) || pATI->Block0Base))
+        ((pATI->Chip >= ATI_CHIP_264VT) || !pATI->LinearBase))
         pATIHW->gra[6] = 0x01U;         /* 128kB aperture */
     else
         pATIHW->gra[6] = 0x05U;         /* 64kB aperture */
@@ -423,9 +423,24 @@ void
 ATIVGASaveScreen
 (
     ATIPtr pATI,
-    int    On
+    int    Mode
 )
 {
     (void)inb(GENS1(pATI->CPIO_VGABase));       /* Reset flip-flop */
-    outb(ATTRX, On ? 0x20U : 0x00U);            /* Turn PAS on or off */
+
+    switch (Mode)
+    {
+        case SCREEN_SAVER_OFF:
+        case SCREEN_SAVER_FORCER:
+            outb(ATTRX, 0x20U);                /* Turn PAS on */
+            break;
+
+        case SCREEN_SAVER_ON:
+        case SCREEN_SAVER_CYCLE:
+            outb(ATTRX, 0x00U);                /* Turn PAS off */
+            break;
+
+        default:
+            break;
+    }
 }

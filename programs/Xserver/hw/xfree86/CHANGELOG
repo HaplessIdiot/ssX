@@ -1,4 +1,10 @@
 XFree86 3.9.17Za (17 February 2000)
+3811. A rework of Kevin Martin's Mach64 acceleration.  Only solid fills for
+      now (Marc La France).
+3810. ATI Mobility fixes (Marc La France).
+3809. A new clock ordering has been reported for Mach32's.  Treated as a
+      different clock chip for now (Marc La France).
+3808. Build fixups (Marc La France).
 3807. Fix a bug in the code that checks for the presence of a core keyboard
       and pointer (David Dawes).
 3806. Remove unnecessary system headers from Xext/fontcache.c, which were
@@ -9733,4 +9739,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1015 2000/02/17 15:34:37 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1016 2000/02/18 00:47:27 dawes Exp $

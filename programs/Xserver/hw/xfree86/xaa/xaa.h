@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.26 1999/06/14 07:32:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.27 1999/07/10 12:17:41 dawes Exp $ */
 
 #ifndef _XAA_H
 #define _XAA_H
@@ -254,8 +254,8 @@ typedef struct _XAAInfoRec {
 
    void (*SubsequentScreenToScreenCopy)(
 	ScrnInfoPtr pScrn,
-	int x1, int y1,
-	int x2, int y2,
+	int xsrc, int ysrc,
+	int xdst, int ydst,
 	int w, int h
    );
 
@@ -294,7 +294,7 @@ typedef struct _XAAInfoRec {
 
    void (*SubsequentSolidTwoPointLine)(
 	ScrnInfoPtr pScrn,
-	int x1, int y1, int x2, int y2, int flags
+	int xa, int ya, int xb, int yb, int flags
    );   
 
    void (*SubsequentSolidBresenhamLine)(
@@ -323,7 +323,7 @@ typedef struct _XAAInfoRec {
 
    void (*SubsequentDashedTwoPointLine)(
 	ScrnInfoPtr pScrn,
-	int x1, int y1, int x2, int y2, int flags, int phase
+	int xa, int ya, int xb, int yb, int flags, int phase
    );   
 
    void (*SubsequentDashedBresenhamLine)(

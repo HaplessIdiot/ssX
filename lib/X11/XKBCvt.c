@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.23 2000/01/31 14:40:58 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.24 2000/02/12 02:54:06 dawes Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -173,7 +173,7 @@ _XkbKSToKnownSet (priv, keysym, buffer, nbytes, extra_rtrn)
     if ((keysym&0xffffff00)==0xff00) {
 	return _XkbHandleSpecialSym(keysym, buf, nbytes, extra_rtrn);
     }
-    return _XimGetCharCode (keysymSet, keysym, buf, nbytes);
+    return _XimGetCharCode (keysymSet, keysym, (unsigned char *)buf, nbytes);
 }
 
 typedef struct _XkbToKS {

@@ -1,5 +1,5 @@
 /* $XConsortium: showfont.c,v 1.13 94/04/17 20:44:07 gildea Exp $ */
-/* $XFree86: xc/programs/showfont/showfont.c,v 1.1 2000/02/13 03:26:15 dawes Exp $ */
+/* $XFree86: xc/programs/showfont/showfont.c,v 1.2 2000/02/14 19:20:56 dawes Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -288,7 +288,7 @@ show_props(pi, po, pd)
 	printf("%s\t", buf);
 	switch (po->type) {
 	case PropTypeString:
-	    strncpy(buf, pd + po->value.position, po->value.length);
+	    strncpy(buf, (char *)(pd + po->value.position), po->value.length);
 	    buf[po->value.length] = '\0';
 	    printf("%s\n", buf);
 	    break;
@@ -353,8 +353,8 @@ main(argc, argv)
     int         argc;
     char      **argv;
 {
-    const char *servername = "localhost:7100"; /* -server: font server name */
-    const char *fontname = NULL; /* -fn: font name */
+    char *servername = "localhost:7100"; /* -server: font server name */
+    char *fontname = NULL; /* -fn: font name */
     int         i;
     Font        fid,
                 dummy;

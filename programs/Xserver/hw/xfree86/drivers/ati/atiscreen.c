@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.4 1999/09/27 06:29:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.5 1999/11/02 16:16:39 tsi Exp $ */
 /*
- * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -22,6 +22,7 @@
  */
 
 #include "ati.h"
+#include "atiadapter.h"
 #include "aticonsole.h"
 #include "atidac.h"
 #include "atiscreen.h"
@@ -84,7 +85,7 @@ ATIRefreshArea
 /*
  * ATIScreenInit --
  *
- * This function is called by DIX to initialize the screen.
+ * This function is called by DIX to initialise the screen.
  */
 Bool
 ATIScreenInit
@@ -104,7 +105,7 @@ ATIScreenInit
     if (!ATIEnterGraphics(pScreen, pScreenInfo, pATI))
         return FALSE;
 
-    /* Re-initialize mi's visual list */
+    /* Re-initialise mi's visual list */
     miClearVisualTypes();
 
     if ((pScreenInfo->depth > 8) && (pATI->DAC == ATI_DAC_INTERNAL))
@@ -132,7 +133,7 @@ ATIScreenInit
         }
     }
 
-    /* Initialize framebuffer layer */
+    /* Initialise framebuffer layer */
     switch (pScreenInfo->bitsPerPixel)
     {
         case 1:
@@ -206,17 +207,21 @@ ATIScreenInit
 
     xf86SetBlackWhitePixels(pScreen);
 
-    /* Initialize banking if needed */
+    /* Initialise banking if needed */
     if (!miInitializeBanking(pScreen,
                              pScreenInfo->virtualX, pScreenInfo->virtualY,
                              pScreenInfo->displayWidth, &pATI->BankInfo))
         return FALSE;
 
-    /* Initialize backing store */
+    /* Setup acceleration */
+    if (!ATIAdapterAccelInit(pScreenInfo, pScreen, pATI))
+        return FALSE;
+
+    /* Initialise backing store */
     miInitializeBackingStore(pScreen);
     xf86SetBackingStore(pScreen);
 
-    /* Initialize software cursor */
+    /* Initialise software cursor */
     miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
 
     /* Create default colourmap */
@@ -230,7 +235,7 @@ ATIScreenInit
                                  CMAP_LOAD_EVEN_IF_OFFSCREEN))
             return FALSE;
 
-    /* Initialize shadow framebuffer */
+    /* Initialise shadow framebuffer */
     if (pATI->OptionShadowFB &&
         !ShadowFBInit(pScreen, ATIRefreshArea))
         return FALSE;
@@ -261,6 +266,12 @@ ATICloseScreen
     ScrnInfoPtr pScreenInfo = xf86Screens[iScreen];
     ATIPtr      pATI        = ATIPTR(pScreenInfo);
     Bool        Closed      = TRUE;
+
+    if (pATI->pXAAInfo)
+    {
+        XAADestroyInfoRec(pATI->pXAAInfo);
+        pATI->pXAAInfo = NULL;
+    }
 
     if ((pScreen->CloseScreen = pATI->CloseScreen))
     {

@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadjust.c,v 1.3 1999/07/06 11:38:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadjust.c,v 1.4 1999/08/01 07:57:18 dawes Exp $ */
 /*
- * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -127,7 +127,7 @@ ATIAdjustPreInit
 /*
  * ATIAdjustFrame --
  *
- * This function is used to initialize the SVGA Start Address - the first
+ * This function is used to initialise the SVGA Start Address - the first
  * displayed location in video memory.  This is used to implement the virtual
  * window.
  */

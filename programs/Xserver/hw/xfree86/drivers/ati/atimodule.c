@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimodule.c,v 1.3 1999/07/06 11:38:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimodule.c,v 1.4 1999/09/25 14:37:21 dawes Exp $ */
 /*
- * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -77,6 +77,9 @@ ATISetup
             "cfb24ScreenInit",
             "cfb32ScreenInit",
             "ShadowFBInit",
+            "XAACreateInfoRec",
+            "XAADestroyInfoRec",
+            "XAAInit",
             NULL);
 
         return (pointer)TRUE;
@@ -132,6 +135,16 @@ ATILoadModules
     if (pATI->OptionShadowFB &&
         !ATILoadModule(pScreenInfo, "shadowfb", "ShadowFBInit"))
         return FALSE;
+
+    /* Load XAA if needed */
+    if (pATI->OptionAccel)
+    {
+        if (!ATILoadModule(pScreenInfo, "xaa", "XAAInit"))
+            return FALSE;
+
+        /* Require more XAA symbols */
+        xf86LoaderReqSymbols("XAACreateInfoRec", "XAADestroyInfoRec", NULL);
+    }
 
     /* Load depth-specific entry points */
     switch (pScreenInfo->bitsPerPixel)

@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_vga.c,v 1.10 1999/06/20 15:02:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_vga.c,v 1.1 2000/02/12 20:45:37 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -292,8 +292,8 @@ SiSInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     int offset;
     int clock = mode->Clock;
     unsigned int vclk[5];
-    unsigned int CRT_CPUthresholdLow ;
-    unsigned int CRT_CPUthresholdHigh ;
+    int CRT_CPUthresholdLow ;
+    int CRT_CPUthresholdHigh ;
     unsigned int CRT_ENGthreshold ;
 
     int num, denum, div, sbit, scale;
@@ -346,7 +346,7 @@ SiSInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    pReg->sisRegs3C4[BankReg] |= 0x04;
 	    break;
 	case 16:
-	    pSiS->DstColor = 0x8000;
+	    pSiS->DstColor = (short)0x8000;
 	    offset <<= 1;
 	    pReg->sisRegs3C4[BankReg] |= 0x08;
 	    break;
@@ -364,7 +364,7 @@ SiSInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    }
 	    break;
 	case 32:
-	    pSiS->DstColor = 0xC000;
+	    pSiS->DstColor = (short)0xC000;
 	    offset <<= 2;
 	    switch (pSiS->Chipset)  {
 		case PCI_CHIP_SIS300:

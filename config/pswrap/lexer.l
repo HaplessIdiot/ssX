@@ -36,7 +36,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86$ */
+/* $XFree86: xc/config/pswrap/lexer.l,v 1.5 2000/02/17 14:00:31 dawes Exp $ */
 
 #include <ctype.h>
 #include <stdlib.h>
@@ -358,7 +358,7 @@ endps { 		/* BOGUS end of a wrap */
 	/* body part - PostScript code */
 %}
 
-<PS>\%.*$ {			/* a PS comment, ignore */
+<PS>\%.* {			/* a PS comment, ignore */
 	if (nonComment) {
 	    newLine = false;
 	    DEBUGP((stderr,"comment %s\n",yytext));

@@ -30,6 +30,7 @@
 
 Notice===
  */
+/* $XFree86: $ */
 
 #include "xttversion.h"
 
@@ -109,7 +110,7 @@ static char *X_TT_CodeConvModulePath = NULL;
 #   endif /* CCONV_MODULE_SUBDIR */
 
 #   ifndef CCONV_MODULE_EXTENTION
-#     if ! MakeDllModules
+#     if !defined(MakeDllModules)
 #       define CCONV_MODULE_EXTENTION ".a"
 #     else
 #       define CCONV_MODULE_EXTENTION ".so"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_priv.c,v 1.5 2000/02/16 15:12:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_priv.c,v 1.6 2000/02/16 15:28:33 dawes Exp $ */
 
 
 #if 0
@@ -71,7 +71,7 @@ void InstallFifo(TDFXPtr pTDFX)
 void TDFXResetFifo(TDFXPtr pTDFX)
 {
   int oldValue;
-  INT32 start_sec, end_sec, dummy;
+  CARD32 start_sec, end_sec, dummy;
 
   ErrorF("Resetting FIFO\n");
   /* Shut down the fifo */
@@ -107,7 +107,7 @@ void TDFXSyncFifo(ScrnInfoPtr pScrn)
   TDFXPtr pTDFX;
   int i, cnt;
   int stat;
-  INT32 start_sec, end_sec, dummy;
+  CARD32 start_sec, end_sec, dummy;
 
   TDFXTRACEACCEL("TDFXSyncFifo start\n");
   pTDFX=TDFXPTR(pScrn);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_accel.c,v 1.4 1999/12/14 01:33:49 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_accel.c,v 1.6 2000/02/15 07:13:42 martin Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -821,7 +821,7 @@ static void TDFXSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
 {
   TDFXPtr pTDFX;
   int i, size, cnt;
-  int *pos;
+  unsigned char *pos;
 
   TDFXTRACEACCEL("SubsequentColorExpandScanline bufno=%d\n", bufno);
   pTDFX = TDFXPTR(pScrn);

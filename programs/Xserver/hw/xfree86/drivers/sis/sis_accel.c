@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_accel.c,v 1.12 1999/05/30 02:28:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_accel.c,v 1.14 2000/02/12 20:45:33 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -61,12 +61,8 @@ static void SiSSubsequentSolidHorVertLine(ScrnInfoPtr pScrn,
         int x, int y, int len, int dir);
 
 
-static void SiSInitializeAccelerator(ScrnInfoPtr pScrn)
-{
-    SISPtr pSiS = SISPTR(pScrn);
-}
-
-Bool SiSAccelInit(ScreenPtr pScreen)
+Bool
+SiSAccelInit(ScreenPtr pScreen)
 {
     XAAInfoRecPtr infoPtr;
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
@@ -76,8 +72,6 @@ Bool SiSAccelInit(ScreenPtr pScreen)
 
     pSiS->AccelInfoPtr = infoPtr = XAACreateInfoRec();
     if (!infoPtr) return FALSE;
-
-    SiSInitializeAccelerator(pScrn);
 
     infoPtr->Flags = PIXMAP_CACHE |
 		     OFFSCREEN_PIXMAPS |
