@@ -125,7 +125,7 @@ is to adapt an instance of
 in UTF-8 mode to the locale's encoding.  For most locales, this
 doesn't require using any flags:
 .IP
-$ xterm -u8 -e luit
+$ xterm \-u8 \-e luit
 .PP
 
 .B Luit
@@ -135,8 +135,13 @@ such applications, you will need to directly manipulate
 .BR luit 's
 ISO\ 2022 state:
 .IP
-$ xterm -u8 -e luit -g1 'CP 1252'
+$ xterm \-u8 \-e luit \-g2 'CP 1252'
 .PP
+The
+.B \-v
+flag may be used in order to examine
+.BR luit 's
+initial state.
 
 Future versions of
 .B XTerm
@@ -188,9 +193,9 @@ Selecting alternate sets of control characters is not supported and
 will never be.
 
 .SH SEE ALSO
-xterm(1), unicode(7), utf\-8(7), charsets(7).
-.I Character Code Structure and Extension Techniques (ISO\ 2022, ECMA\-35).
-.I Control Functions for Coded Character Sets (ISO\ 6429, ECMA\-48).
+xterm(1), unicode(7), utf-8(7), charsets(7).
+.I Character Code Structure and Extension Techniques (ISO\ 2022, ECMA-35).
+.I Control Functions for Coded Character Sets (ISO\ 6429, ECMA-48).
 
 .SH AUTHOR
 Luit was written by Juliusz Chroboczek <jch@xfree86.org> for the

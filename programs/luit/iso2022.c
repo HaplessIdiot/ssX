@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/luit/iso2022.c,v 1.2 2001/11/08 04:00:14 tsi Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -239,7 +239,7 @@ reportIso2022(Iso2022Ptr i)
 int
 initIso2022(char *locale, Iso2022Ptr i)
 {
-    int gl = 0, gr = 1;
+    int gl = 0, gr = 2;
     CharsetPtr g0 = NULL, g1 = NULL, g2 = NULL, g3 = NULL;
     int rc;
     
@@ -256,12 +256,12 @@ initIso2022(char *locale, Iso2022Ptr i)
     if(g1)
         G1(i) = g1;
     else
-        G1(i) = getCharsetByName("ISO 8859-1");
+        G1(i) = getUnknownCharset(T_94);
 
     if(g2)
         G2(i) = g2;
     else
-        G2(i) = getUnknownCharset(T_94);
+        G2(i) = getCharsetByName("ISO 8859-1");
 
     if(g3)
         G3(i) = g3;
