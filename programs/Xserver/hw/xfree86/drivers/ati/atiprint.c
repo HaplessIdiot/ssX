@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.9 2000/02/18 12:19:30 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.10 2000/03/01 16:00:59 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -45,9 +45,12 @@ ATIPrintBIOS
     unsigned int Index = Start & ~(16U - 1U);
     unsigned char Printable[17];
 
+    if (xf86GetVerbosity() <= 4)
+        return;
+
     memset(Printable, 0, SizeOf(Printable));
 
-    xf86ErrorFVerb(4, "\n BIOS data at 0x%08X:", Start + pATI->BIOSBase);
+    xf86ErrorFVerb(5, "\n BIOS data at 0x%08X:", Start + pATI->BIOSBase);
 
     for (;  Index < ((End + (16U - 1U)) & ~(16U - 1U));  Index++)
     {
@@ -56,20 +59,20 @@ ATIPrintBIOS
             if (!(Index & (16U - 1U)))
             {
                 if (Printable[0])
-                    xf86ErrorFVerb(4, "  |%s|", Printable);
+                    xf86ErrorFVerb(5, "  |%s|", Printable);
                 Char = Printable;
-                xf86ErrorFVerb(4, "\n 0x%08X: ", Index + pATI->BIOSBase);
+                xf86ErrorFVerb(5, "\n 0x%08X: ", Index + pATI->BIOSBase);
             }
-            xf86ErrorFVerb(4, " ");
+            xf86ErrorFVerb(5, " ");
         }
         if ((Index < Start) || (Index >= End))
         {
-            xf86ErrorFVerb(4, "  ");
+            xf86ErrorFVerb(5, "  ");
             *Char++ = ' ';
         }
         else
         {
-            xf86ErrorFVerb(4, "%02X", BIOS[Index]);
+            xf86ErrorFVerb(5, "%02X", BIOS[Index]);
             if (isprint(BIOS[Index]))
                 *Char++ = BIOS[Index];
             else
@@ -77,7 +80,7 @@ ATIPrintBIOS
         }
     }
 
-    xf86ErrorFVerb(4, "  |%s|\n", Printable);
+    xf86ErrorFVerb(5, "  |%s|\n", Printable);
 }
 
 /*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.13 2000/02/27 02:45:25 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.14 2000/03/01 16:00:58 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -845,6 +845,8 @@ ATIPreInit
 
             if (LCDPanelInfo > 0)
             {
+                CARD8 ClockMask, PostMask, xpDiv, maxpDiv, pDiv;
+
                 pATI->LCDPanelID = BIOSByte(LCDPanelInfo);
                 pATI->LCDHorizontal = BIOSWord(LCDPanelInfo + 0x19U);
                 pATI->LCDVertical = BIOSWord(LCDPanelInfo + 0x1BU);
@@ -855,12 +857,17 @@ ATIPreInit
                 else
                     i = (inb(R_GENMO) & 0x0CU) >> 2;
 
-                /* Get post divider */
-                j = (GetBits(ATIGetMach64PLLReg(PLL_XCLK_CNTL),
-                             PLL_VCLK0_XDIV << i) *
-                     (MaxBits(PLL_VCLK0_POST_DIV) + 1)) |
-                    GetBits(ATIGetMach64PLLReg(PLL_VCLK_POST_DIV),
-                            PLL_VCLK0_POST_DIV << (i * 2));
+                /*
+                 * Get post divider.  A GCC bug has caused the following
+                 * expression to be broken down into its individual
+                 * components.
+                 */
+                ClockMask = PLL_VCLK0_XDIV << i;
+                PostMask = PLL_VCLK0_POST_DIV << (i * 2);
+                xpDiv = GetBits(ATIGetMach64PLLReg(PLL_XCLK_CNTL), ClockMask);
+                maxpDiv = MaxBits(PLL_VCLK0_POST_DIV) + 1;
+                pDiv = GetBits(ATIGetMach64PLLReg(PLL_VCLK_POST_DIV), PostMask);
+                j = (xpDiv * maxpDiv) | pDiv;
 
                 /* Calculate clock of mode on entry */
                 Numerator = ATIGetMach64PLLReg(PLL_VCLK0_FB_DIV + i) *
@@ -869,6 +876,13 @@ ATIPreInit
                     pATI->ReferenceDenominator *
                     pATI->ClockDescriptor.PostDividers[j];
                 pATI->LCDClock = ATIDivide(Numerator, Denominator, 1, 0);
+                xf86DrvMsgVerb(pScreenInfo->scrnIndex, X_INFO, 2,
+                    "Panel clock data:\n CRTC_GEN_CNTL 0x%08x\n"
+                    " CLOCK_CNTL 0x%08x\n GENMO 0x%02X\n"
+                    " Clock index %d\n Post divider index %d\n"
+                    " Numerator %d\n Denominator %d\n",
+                    inl(pATI->CPIO_CRTC_GEN_CNTL), inl(pATI->CPIO_CLOCK_CNTL),
+                    inb(R_GENMO), i, j, Numerator, Denominator);
             }
         }
     }
@@ -1288,12 +1302,13 @@ ATIPreInit
                     if ((IOValue2 &= pGDev->MemBase) &&
                         (IOValue2 <= (MaxBits(CFG_MEM_AP_LOC) << 22)))
                         pATI->LinearBase = IOValue2;
-                }
 
-                if (pATI->LinearBase)
-                {
-                    if ((pATI->BusType != ATI_BUS_PCI) &&
-                        (pATI->BusType != ATI_BUS_AGP))
+                    if (!pATI->LinearBase)
+                        xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                            "Linear aperture not configured.  Specify"
+                            " \"MemBase\" override in XF86Config \"Device\""
+                            " section.\n");
+                    else
                     {
                         if (pATI->VideoRAM < 4096)
                             pATI->LinearSize = 4 * 1024 * 1024;
