@@ -53,6 +53,7 @@ in this Software without prior written authorization from The Open Group.
  * or other dealings in this Software without prior written authorization
  * from said copyright holders.
  */
+/* $XFree86$ */
 
 /*******************************************************************
 **

@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 
 #ifndef _XF86INT10_H
 #define _XF86INT10_H

@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /* 
  * replacement for xf86Keymap.h - for Solaris8_x86
  */ 

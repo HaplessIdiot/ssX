@@ -1,3 +1,4 @@
+/* $XFree86$ */
 
 #ifdef _VM86_LINUX
 

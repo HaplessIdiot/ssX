@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #ifndef XF86X86EMU_H_
 #define XF86X86EMU_H_
 #include <x86emu.h>

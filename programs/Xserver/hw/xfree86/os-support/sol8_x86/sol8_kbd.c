@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@XFree86.org> 
