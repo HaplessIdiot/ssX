@@ -2,7 +2,7 @@
 
                                Matthieu Herrb
 
-                      Last modified on: 2 December 2001
+                     Last modified on: 31 December 2001
 
 1.  What and Where is XFree86?
 
@@ -201,15 +201,14 @@ To enable the aperture driver, once included in the kernel, set
 in /etc/sysctl.conf.  See the xf86(4) manual page for details.
 
 Another (less recommended) way to enable linear memory and I/O ports access
-is to disable the kernel security feature by adding 'option INSECURE' in your
-kernel configuration file and build a new kernel.  You will also need to com-
-ment out the line initializing securelevel to 1 in /etc/rc.securelevel.
+is to disable the kernel security feature by initializing securelevel to -1
+in /etc/rc.securelevel.
 
      Caveat: the aperture driver only allows one access at a time (so
      that the system is in the same security state once X is launched).
      This means that if you run multiple servers on multiple virtual
-     terminals, only the first one will have linear memory access.  Use
-     'option INSECURE' if you need more that one X server at a time.
+     terminals, only the first one will have linear memory access.  Set
+     securelevel to -1 if you need more that one X server at a time.
 
 7.3  MIT-SHM
 
@@ -292,8 +291,8 @@ For the Titanium Powerbook G4, you can try the following mode line in
 
      Modeline "1152x768" 78.741 1152 1173 1269 1440  768 769 772 800 +HSync +VSync
 
-You need a kernel compiled with ``option INSECURE'' in the configuration file
-to run XFree86 on OpenBSD/macppc.
+You need to set securelevel to -1 in the /etc/rc.securelevel configuration
+file to run XFree86 on OpenBSD/macppc.
 
 9.  Building New X Clients
 
@@ -309,7 +308,7 @@ Many thanks to all people who contributed to make XFree86 work on *BSD, in
 particular, David Dawes, Pace Willison, Amancio Hasty, Christoph Robitschko,
 Nate Williams, Rod Grimes, Jack Velte and Michael Smith.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.22 2001/12/04 21:08:07 herrb Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.23 2001/12/31 19:02:24 herrb Exp $
 
 
-$XFree86: lnxdoc.rules,v 3.24 2001/11/15 17:36:06 dawes Exp $
+$XFree86: $
