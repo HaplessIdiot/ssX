@@ -59,13 +59,10 @@ typedef struct {
 
 typedef struct {
     pciVideoPtr		PciInfo;
-    pciVideoPtr		PciInfoGeometry;
     pciVideoPtr		MXPciInfo[GLINT_MAX_MX_DEVICES];
     int			numMXDevices;
     PCITAG		PciTag;
-    PCITAG		PciTagGeometry;
     EntityInfoPtr	pEnt;
-    EntityInfoPtr	pEntGeometry;
     EntityInfoPtr	pEntMX[GLINT_MAX_MX_DEVICES];
     RamDacHelperRecPtr	RamDac;
     int			MemClock;
@@ -162,12 +159,16 @@ typedef struct {
 			((PCI_VENDOR_3DLABS << 16) | PCI_CHIP_PERMEDIA2)
 #define PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V	\
 			((PCI_VENDOR_3DLABS << 16) | PCI_CHIP_PERMEDIA2V)
+#define PCI_VENDOR_3DLABS_CHIP_300SX	\
+			((PCI_VENDOR_3DLABS << 16) | PCI_CHIP_300SX)
 #define PCI_VENDOR_3DLABS_CHIP_500TX	\
 			((PCI_VENDOR_3DLABS << 16) | PCI_CHIP_500TX)
 #define PCI_VENDOR_3DLABS_CHIP_MX	\
 			((PCI_VENDOR_3DLABS << 16) | PCI_CHIP_MX)
 #define PCI_VENDOR_3DLABS_CHIP_GAMMA	\
 			((PCI_VENDOR_3DLABS << 16) | PCI_CHIP_GAMMA)
+#define PCI_VENDOR_3DLABS_CHIP_DELTA	\
+			((PCI_VENDOR_3DLABS << 16) | PCI_CHIP_DELTA)
 
 /* Prototypes */
 
@@ -189,6 +190,7 @@ void PermediaRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
 void PermediaSave(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
 Bool PermediaInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 Bool PermediaAccelInit(ScreenPtr pScreen);
+void PermediaInitializeEngine(ScrnInfoPtr pScrn);
 void Permedia2VRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
 void Permedia2VSave(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
 Bool Permedia2VInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
@@ -198,11 +200,15 @@ void TXRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
 void TXSave(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
 Bool TXInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 Bool TXAccelInit(ScreenPtr pScreen);
+void TXInitializeEngine(ScrnInfoPtr pScrn);
+
+Bool SXAccelInit(ScreenPtr pScreen);
 
 void DualMXRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
 void DualMXSave(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
 Bool DualMXInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 Bool DualMXAccelInit(ScreenPtr pScreen);
+void DualMXInitializeEngine(ScrnInfoPtr pScrn);
 
 void glintOutIBMRGBIndReg(ScrnInfoPtr pScrn,
 		     CARD32 reg, unsigned char mask, unsigned char data);
@@ -218,10 +224,17 @@ Bool glintIBM640HWCursorInit(ScreenPtr pScreen);
 void glintOutTIIndReg(ScrnInfoPtr pScrn,
 		     CARD32 reg, unsigned char mask, unsigned char data);
 unsigned char glintInTIIndReg(ScrnInfoPtr pScrn, CARD32 reg);
+void DUALglintOutTIIndReg(ScrnInfoPtr pScrn,
+		     CARD32 reg, unsigned char mask, unsigned char data);
+unsigned char DUALglintInTIIndReg(ScrnInfoPtr pScrn, CARD32 reg);
 void glintTIWriteAddress(ScrnInfoPtr pScrn, CARD32 index);
 void glintTIReadAddress(ScrnInfoPtr pScrn, CARD32 index);
 void glintTIWriteData(ScrnInfoPtr pScrn, unsigned char data);
 unsigned char glintTIReadData(ScrnInfoPtr pScrn);
+void DUALglintTIWriteAddress(ScrnInfoPtr pScrn, CARD32 index);
+void DUALglintTIReadAddress(ScrnInfoPtr pScrn, CARD32 index);
+void DUALglintTIWriteData(ScrnInfoPtr pScrn, unsigned char data);
+unsigned char DUALglintTIReadData(ScrnInfoPtr pScrn);
 Bool glintTIHWCursorInit(ScreenPtr pScreen);
 
 void Permedia2OutIndReg(ScrnInfoPtr pScrn,
@@ -231,6 +244,8 @@ void Permedia2WriteAddress(ScrnInfoPtr pScrn, CARD32 index);
 void Permedia2ReadAddress(ScrnInfoPtr pScrn, CARD32 index);
 void Permedia2WriteData(ScrnInfoPtr pScrn, unsigned char data);
 unsigned char Permedia2ReadData(ScrnInfoPtr pScrn);
+void TIramdacLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
+    			  LOCO *colors, VisualPtr pVisual);
 void Permedia2LoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
     			  LOCO *colors, VisualPtr pVisual);
 void Permedia2LoadPalette16(ScrnInfoPtr pScrn, int numColors, int *indices,

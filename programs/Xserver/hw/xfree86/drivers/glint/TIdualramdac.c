@@ -27,7 +27,7 @@
  * glintOutTIIndReg() and glintInTIIndReg() are used to access 
  * the indirect TI RAMDAC registers only.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/TIramdac.c,v 1.1 1999/06/14 07:31:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/TIdualramdac.c,v 1.1 1999/06/14 07:31:51 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -56,7 +56,7 @@
 #define TI_CURS_Y_HIGH           0x4078 
 
 void
-glintOutTIIndReg(ScrnInfoPtr pScrn,
+DUALglintOutTIIndReg(ScrnInfoPtr pScrn,
 		     CARD32 reg, unsigned char mask, unsigned char data)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
@@ -66,22 +66,22 @@ glintOutTIIndReg(ScrnInfoPtr pScrn,
     if ((reg & 0xf0) == 0xa0) { /* this is really a direct register write */
 	offset = TI_WRITE_ADDR + ((reg & 0xf) << 3);
 	if (mask != 0x00)
-	    tmp = GLINT_READ_REG(offset) & mask;
+	    tmp = GLINT_SECONDARY_READ_REG(offset) & mask;
 
-	GLINT_SLOW_WRITE_REG(tmp | data, offset);
+	GLINT_SECONDARY_SLOW_WRITE_REG(tmp | data, offset);
     }
     else { /* normal indirect access */
-	GLINT_SLOW_WRITE_REG(reg & 0xFF, TI_WRITE_ADDR);
+	GLINT_SECONDARY_SLOW_WRITE_REG(reg & 0xFF, TI_WRITE_ADDR);
 
 	if (mask != 0x00)
-	    tmp = GLINT_READ_REG(TI_INDEX_DATA) & mask;
+	    tmp = GLINT_SECONDARY_READ_REG(TI_INDEX_DATA) & mask;
 
-	GLINT_SLOW_WRITE_REG(tmp | data, TI_INDEX_DATA);
+	GLINT_SECONDARY_SLOW_WRITE_REG(tmp | data, TI_INDEX_DATA);
     }
 }
 
 unsigned char
-glintInTIIndReg (ScrnInfoPtr pScrn, CARD32 reg)
+DUALglintInTIIndReg (ScrnInfoPtr pScrn, CARD32 reg)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
     unsigned char ret;
@@ -89,62 +89,45 @@ glintInTIIndReg (ScrnInfoPtr pScrn, CARD32 reg)
 
     if ((reg & 0xf0) == 0xa0) { /* this is really a direct register write */
 	offset = TI_WRITE_ADDR + ((reg & 0xf) << 3);
-	ret = GLINT_READ_REG(offset);
+	ret = GLINT_SECONDARY_READ_REG(offset);
     }
     else { /* normal indirect access */
-	GLINT_SLOW_WRITE_REG(reg & 0xFF, TI_WRITE_ADDR);
-	ret = GLINT_READ_REG(TI_INDEX_DATA);
+	GLINT_SECONDARY_SLOW_WRITE_REG(reg & 0xFF, TI_WRITE_ADDR);
+	ret = GLINT_SECONDARY_READ_REG(TI_INDEX_DATA);
     }
 
     return (ret);
 }
 
 void
-glintTIWriteAddress (ScrnInfoPtr pScrn, CARD32 index)
+DUALglintTIWriteAddress (ScrnInfoPtr pScrn, CARD32 index)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
     
-    GLINT_SLOW_WRITE_REG(index, TI_WRITE_ADDR);
+    GLINT_SECONDARY_SLOW_WRITE_REG(index, TI_WRITE_ADDR);
 }
 
 void
-glintTIWriteData (ScrnInfoPtr pScrn, unsigned char data)
+DUALglintTIWriteData (ScrnInfoPtr pScrn, unsigned char data)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
     
-    GLINT_SLOW_WRITE_REG(data, TI_RAMDAC_DATA);
+    GLINT_SECONDARY_SLOW_WRITE_REG(data, TI_RAMDAC_DATA);
 }
 
 void
-glintTIReadAddress (ScrnInfoPtr pScrn, CARD32 index)
+DUALglintTIReadAddress (ScrnInfoPtr pScrn, CARD32 index)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
     
-    GLINT_SLOW_WRITE_REG(0xFF, TI_PIXEL_MASK);
-    GLINT_SLOW_WRITE_REG(index, TI_READ_ADDR);
+    GLINT_SECONDARY_SLOW_WRITE_REG(0xFF, TI_PIXEL_MASK);
+    GLINT_SECONDARY_SLOW_WRITE_REG(index, TI_READ_ADDR);
 }
 
 unsigned char
-glintTIReadData (ScrnInfoPtr pScrn)
+DUALglintTIReadData (ScrnInfoPtr pScrn)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
     
-    return(GLINT_READ_REG(TI_RAMDAC_DATA));
-}
-
-Bool 
-glintTIHWCursorInit(ScreenPtr pScreen)
-{
-    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-    GLINTPtr pGlint = GLINTPTR(pScrn);
-    xf86CursorInfoPtr infoPtr;
-
-    infoPtr = xf86CreateCursorInfoRec();
-    if(!infoPtr) return FALSE;
-    
-    pGlint->CursorInfoRec = infoPtr;
-
-    (*pGlint->RamDac->HWCursorInit)(infoPtr);
-
-    return(xf86InitCursor(pScreen, infoPtr));
+    return(GLINT_SECONDARY_READ_REG(TI_RAMDAC_DATA));
 }

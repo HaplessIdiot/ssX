@@ -14,10 +14,12 @@ DRIINCLUDES=-I$(SERVERSRC)/GL/dri -I$(LIBSRC)/GL/dri
 
 SRCS = glint_driver.c pm2_dac.c pm2ramdac.c pm2_accel.c pm_dac.c IBMramdac.c \
        pm_accel.c tx_dac.c tx_accel.c pm2v_dac.c pm2vramdac.c pm2_video.c \
-       TIramdac.c dualmx_dac.c dualmx_accel.c glint_shadow.c $(DRISRC)
+       TIramdac.c dualmx_dac.c dualmx_accel.c glint_shadow.c $(DRISRC) \
+       sx_accel.c TIdualramdac.c
 OBJS = glint_driver.o pm2_dac.o pm2ramdac.o pm2_accel.o pm_dac.o IBMramdac.o \
        pm_accel.o tx_dac.o tx_accel.o pm2v_dac.o pm2vramdac.o pm2_video.o \
-       TIramdac.o dualmx_dac.o dualmx_accel.o glint_shadow.o $(DRIOBJ)
+       TIramdac.o dualmx_dac.o dualmx_accel.o glint_shadow.o $(DRIOBJ) \
+       sx_accel.o TIdualramdac.o
 
 #if defined(XF86DriverSDK)
 INCLUDES = -I. -I../../include
@@ -33,7 +35,7 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/Xext \
            -I$(XF86SRC)/xf4bpp -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
 	   -I$(XF86SRC)/ddc -I$(XF86SRC)/i2c -I$(EXTINCSRC) $(DRIINCLUDES) \
 	   -I$(XF86SRC)/shadowfb -I$(XF86SRC)/fbdevhw \
-	   -I$(XTOP)/include
+	   -I$(XTOP)/include -I$(XF86OSSRC)/vbe
 #endif
 
 DEFINES = $(GLX_DEFINES)
