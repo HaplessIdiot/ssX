@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.47 1999/07/05 12:12:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.48 1999/07/10 12:17:43 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -1820,7 +1820,7 @@ static char *XF86Config_fontpathchunk_text =
 "\n"
 "#    Option     \"Protocol\"      \"Xqueue\"\n"
 "\n"
-"    Option \"AutoRepeat\" \"500 5\"\n"
+"    Option \"AutoRepeat\" \"500 30\"\n"
 "\n"
 "# Specify which keyboard LEDs can be user-controlled (eg, with xset(1))\n"
 "#    Option	\"Xleds\"      \"1 2 3\"\n"
