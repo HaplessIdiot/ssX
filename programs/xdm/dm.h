@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/dm.h,v 3.29tsi Exp $ */
+/* $XFree86: xc/programs/xdm/dm.h,v 3.30 2003/07/09 15:27:38 tsi Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -518,6 +518,11 @@ extern void ProcessRequestSocket(int fd);
 #define Setjmp(e)   sigsetjmp(e,1)
 #define Longjmp(e,v)	siglongjmp(e,v)
 #define Jmp_buf		sigjmp_buf
+#endif
+
+#ifndef HAS_SNPRINTF
+#include <X11/Xmu/SysUtil.h>
+#define snprintf XmuSnprintf
 #endif
 
 typedef SIGVAL (*SIGFUNC)(int);
