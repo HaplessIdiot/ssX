@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.47 1999/05/30 02:27:53 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.48 1999/06/06 08:47:43 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1893,10 +1893,6 @@ ProjectUnsharedLibReferences(XKBUI,xkbui,$(XKBUILIBSRC),XBuildLibDir)
 #endif
 #endif /* BuildXKBuilib */
 
-#ifndef XawDepLibs
-#define XawDepLibs $(XPMLIB)
-        DEPXAWLIB = $(XPMLIB)
-#endif
 #ifndef XawClientDepLibs
 #define XawClientDepLibs $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXPMLIB) $(DEPXLIB)
 #endif
