@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -55,7 +56,9 @@ SOFTWARE.
 #define NullCursor ((CursorPtr)NULL)
 
 /* Provide support for alpha composited cursors */
+#ifdef RENDER
 #define ARGB_CURSOR
+#endif
 
 typedef struct _Cursor *CursorPtr;
 typedef struct _CursorMetric *CursorMetricPtr;
