@@ -3,8 +3,8 @@
 .\" X11R6.4 Release Notes. Use troff -ms macros
 .\"
 .\"
-.\" $XFree86: xc/doc/misc/RELNOTES.ms,v 1.6 2001/01/22 22:27:00 dawes Exp $
-.ds Ts August 20, 2000\" 
+.\" $XFree86: xc/doc/misc/RELNOTES.ms,v 1.7 2001/12/19 21:37:28 dawes Exp $
+.ds Ts April 4, 2001\" 
 .\"
 .ie t \{
 .nr LL 6.5i
@@ -104,7 +104,7 @@ of the copyright holder.
 
 .nH 1 "Introductory Note"
 This document is the release notes that were provided with X.Org's
-X11R6.5.1 release.  The XFree86-specific information in this document is
+X11R6.6 release.  The XFree86-specific information in this document is
 out of date.  The XFree86-specific documentation can be found
 in the \fBxc/programs/Xserver/hw/xfree86/doc\fP directory, and on-line
 at http://www.xfree86.org/current/.
@@ -419,10 +419,10 @@ X Project Team specification.
 .nH 1 "ANSIfication"
 
 R6.1 was officially the last release that supported traditional K&R C.
-Like R6.3 and R6.4, R6.5 assumes a Standard C compiler and environment.
-We have not intentionally removed any K&R C support from old code, and
-most of the release will continue to build on platforms without an ANSI
-C compiler.
+Like all releases since R6.3, R6.6 assumes a Standard C compiler and
+environment.  We have not intentionally removed any K&R C support from
+old code, and most of the release will continue to build on platforms
+without an ANSI C compiler.
 
 .nH 1 "VSW5"
 
