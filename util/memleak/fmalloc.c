@@ -1,6 +1,6 @@
 /*
  * $XConsortium: fmalloc.c /main/7 1996/11/24 17:42:06 rws $
- * $XFree86: xc/util/memleak/fmalloc.c,v 3.1 1995/05/07 14:08:43 dawes Exp $
+ * $XFree86: xc/util/memleak/fmalloc.c,v 3.2 1996/12/23 07:19:36 dawes Exp $
  *
 Copyright (c) 1992  X Consortium
 
@@ -97,7 +97,7 @@ typedef struct _head {
 
 typedef struct _tail {
     int		    tailMagic;
-#ifdef __alpha
+#if defined(__alpha) || defined(__alpha__)
     int		    tailPad;
 #endif
 } TailRec, *TailPtr;
