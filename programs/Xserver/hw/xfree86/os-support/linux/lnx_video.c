@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.59 2001/10/01 13:44:14 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.61 2002/04/04 14:05:54 eich Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -717,7 +717,7 @@ mapVidMemSparse(int ScreenNum, unsigned long Base, unsigned long Size, int flags
 
     close(fd);
       
-    if (ret == (unsigned long)MAP_FAILED || ret != (DENSE_BASE + Base)) {
+    if (ret == (unsigned long)MAP_FAILED) {
         FatalError("xf86MapVidMemSparse: Could not (dense) mmap fb (%s)\n",
 		   strerror(errno));
     }
@@ -744,7 +744,7 @@ mapVidMemSparse(int ScreenNum, unsigned long Base, unsigned long Size, int flags
 		Base, Size, ret);
 
 #endif
-    return (pointer)(DENSE_BASE + Base);
+    return (pointer) ret;
 }
 
 static void
