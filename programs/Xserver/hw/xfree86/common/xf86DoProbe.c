@@ -67,6 +67,13 @@ DoProbe()
 						   PROBE_DETECT);
 	ErrorF("Probe in driver `%s' returns %s\n",
 	       xf86DriverList[i]->driverName, BOOLTOSTRING(probeResult));
+
+	/* If we have a result, then call XXXIdentify function in driver */
+	if (probeResult) {
+	    if (xf86DriverList[i]->Identify != NULL) {
+	    	xf86DriverList[i]->Identify(0);
+	    }
+	}
     }
 
 #ifdef XFree86LOADER
