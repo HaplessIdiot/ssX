@@ -1,4 +1,13 @@
-XFree86 3.1.0Ab (17 December 1994)
+XFree86 3.1.0Ab (18 December 1994)
+140. Item 58. below (the patch didn't get included before).
+139. Add some sanity checking for horizontal timing parameters (including
+     HTotal overflow for 864 with 24bpp, pixmux and HTotal > 1024)
+     (Harald Koenig).
+138. Add check for 864 DCLK limit for 24bpp (Harald Koenig).
+137. Clean up of SDAC/GENDAC detection and related messages (Harald Koenig).
+136. Allow the following ramdac and clock chips to be specified by name:
+     att21c498 (att20c498), ics5300 (s3_gendac), ics5342 (s3_sdac),
+     ics9161a & dcs2824 (icd2061a).  (Harald Koenig)
 135. OS/2 updates, including config updates, SuperProbe support and
      compile-time support for most of the Xserver (Holger Veit).
 134. Updated cl64xx driver, including support for the CL6440.  Note, the
