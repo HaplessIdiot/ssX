@@ -161,10 +161,8 @@ extern void DestroySubwindows(
    framework whose ChangeWindowAttributes function conflicts here. */
 #ifdef __DARWIN__
 #define ChangeWindowAttributes Darwin_X_ChangeWindowAttributes
-#else
-extern int ChangeWindowAttributes(
 #endif
-extern int Darwin_X_ChangeWindowAttributes(
+extern int ChangeWindowAttributes(
 #if NeedFunctionPrototypes
     WindowPtr /*pWin*/,
     Mask /*vmask*/,
