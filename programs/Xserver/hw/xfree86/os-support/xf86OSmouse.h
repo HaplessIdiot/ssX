@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86OSmouse.h,v 1.12 2000/12/18 15:52:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86OSmouse.h,v 1.13 2001/03/04 01:43:28 tsi Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -123,7 +123,8 @@ typedef struct _MouseDevRec {
     int                 invY;
     int			mouseFlags;	/* Flags to Clear after opening
 					 * mouse dev */
-    int			truebuttons;	/* Arg to maintain before
+    int			truebuttons;	/* (not used)
+					 * Arg to maintain before
 					 * emulate3buttons timer callback */
     int			resolution;
     int			negativeZ;
