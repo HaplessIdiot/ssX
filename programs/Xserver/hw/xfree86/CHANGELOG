@@ -1,4 +1,6 @@
 XFree86 4.2.99.902 (XX February 2003)
+ 896. Added radeon driver options documentation to the Options file
+      (#5621, Michel Dänzer).
  895. Fix the return value of SetFontPath() when a font path element is bad
       (David Dawes).
  894. Add some more HP keyboard layouts (Peter Soos).
@@ -16373,4 +16375,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2553 2003/02/14 23:03:35 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2554 2003/02/15 03:47:06 dawes Exp $
