@@ -1,13 +1,13 @@
-                   Release Notes for XFree86[tm] 4.3.99.15
+                   Release Notes for XFree86[tm] 4.3.99.16
 
                           The XFree86 Project, Inc
 
-                              26 February 2003
+                              21 November 2003
 
                                   Abstract
 
      This document contains some information about features present in
-     XFree86 4.3.99.15 and their status.
+     XFree86 4.3.99.16 and their status.
 
 1.  Introduction to the 4.x Release Series
 
@@ -16,31 +16,47 @@ XFree86 4 represents a significant redesign of the XFree86 X server.  Not all
 of the hardware drivers from 3.3.x have been ported to 4.x yet, but con-
 versely, 4.x has support for a lot of hardware that is not supported in
 3.3.x.  Our Driver Status document summarizes how the hardware driver support
-compares between 3.3.6 and 4.3.99.15.  Please check there first before down-
-loading 4.3.99.15.
+compares between 3.3.6 and 4.3.99.16.  Please check there first before down-
+loading 4.3.99.16.
 
-The 4.0.1 release introduced a new graphical configuration tool, "xf86cfg",
-and a text mode interface was added to it for the 4.0.2 release.  It is the
-preferred configuration tool provided by with XFree86.  The trusty old text-
-based tool "xf86config" can also be used for generating X server config
-files.  In addition to these tools, the XFree86 server has some built in
-capabilities for generating a base config file.  This works well for most
-hardware, and in most cases is the easiest way to get an initial config file.
-To try it out, just run (as root):
+XFree86 4.4 introduces an automatic configuration mechanism for the XFree86
+server.  This makes it possible to start XFree86 in a usable way without
+first creating a configuration file.  The initial automatic configuration
+support is currently targetted towards Linux and FreeBSD.  Automatic configu-
+ration will be supported on other platforms in future releases.  If you're
+running Linux or FreeBSD, try it out if you don't already have a working
+XF86Config file.  If you want to customise things afterwards, you can cut and
+paste the automatically generated configuration from the
+/var/log/XFree86.0.log file into an XF86Config file and make your customisa-
+tions there.  Runtime and dynamic configuration is planned for future
+releases.
+
+If you don't have any luck with automatic configuration, or you are using a
+platform that it isn't currently supported on, try one of the older methods
+for getting started.
+
+XFree86 comes with a graphical configuration tool called "xf86cfg".  It also
+has a text mode interface.  It can be used to create an iniital configuration
+file, and to customise existing configurations.
+
+Next in the order of configuration preferences is to make use of the XFree86
+server's ability to create a starting configuration file.  To do this, just
+run (as root):
 
      XFree86 -configure
 
-Each of these configuration options will give you a reasonable starting point
-for a suitable configuration file.  We've put some effort into documenting
-the 4.3.99.15 config file format, and you can find that information in the
-XF86Config manual page.  Check there and the driver-specific manual pages and
-the related documentation for further information.  References to this
-driver-specific information can be found in the tables below (section 3.,
-page 1).
+and follow the instructions.
 
-We have plans to make the configuration file optional in a future release.
-The XFree86 server is close to being able to automatically determine a com-
-plete base configuration for most popular hardware configurations.
+Finally, the trusty old text-based tool "xf86config" can also be used for
+generating X server config files.
+
+At least one of these configuration options will give you a reasonable start-
+ing point for a suitable configuration file.  With the automatic mechanism
+you might even find that you don't need one!  If you do need to customise the
+configuration file, you can find it fully documented in the XF86Config manual
+page.  Also check the driver-specific manual pages and the related documenta-
+tion for further information.  References to this driver-specific information
+can be found in the tables below (section 3., page 1).
 
 Before you go to download and install the binary distributions for this
 release, please have a quick read through the Installation Document.  It may
@@ -51,9 +67,11 @@ The other sections below describe some of the new features and changes
 between 3.3.x and 4.0.  There are lot's of new features, and we definitely
 don't have enough space to cover them all here.
 
-2.  Summary of new features in 4.3.0.
+2.  Summary of new features in 4.4.0.
 
-2.1  Video Driver Enhancements
+2.1  NEEDS TO BE UPDATED
+
+2.2  Video Driver Enhancements
 
    o  ATI Radeon 9x00 2D support added, and 3D support added for the Radeon
      8500, 9000, 9100, and M9.  The 3D support for the Radeon now includes
@@ -85,14 +103,14 @@ don't have enough space to cover them all here.
 
    o  Various updates and bug fixes have been made to most other drivers.
 
-2.2  Input Driver Enhancements
+2.3  Input Driver Enhancements
 
    o  The mouse driver now has automatic protocol detection for PS/2 mice.
 
    o  Several new input drivers have been added, including tek4957, jamstudio
      (js_x), fpit, palmax, and ur98 (Linux only).
 
-2.3  X Server and Extension Updates
+2.4  X Server and Extension Updates
 
    o  Support for the RandR extension has been partially integrated into the
      XFree86 server, providing support for resizing the root window at run-
@@ -106,7 +124,7 @@ don't have enough space to cover them all here.
      hard coded.  An X server configuration option has been added to allow
      the VT switching hot keys to be disabled.
 
-2.4  Client and Library Updates
+2.5  Client and Library Updates
 
    o  An Xcursor library providing support for alpha blended (ARGB) and ani-
      mated cursors.  Two Xcursor themes are provided (redglass and white-
@@ -142,7 +160,7 @@ don't have enough space to cover them all here.
         o  Sort the options list which is displayed in help- and syntax-mes-
           sages at runtime to simplify maintenance.
 
-2.5  I18N and Font Updates
+2.6  I18N and Font Updates
 
    o  FreeType2 updated to version 2.1.1.
 
@@ -169,7 +187,7 @@ don't have enough space to cover them all here.
      flexible way of supporting multiple language layouts and switching
      between them.
 
-2.6  OS Support Updates
+2.7  OS Support Updates
 
    o  Updates for Darwin/Mac OS X, including:
 
@@ -206,7 +224,7 @@ grams/Xserver/hw/xfree86/CHANGELOG?rev=HEAD>.
 
 3.1  Video Drivers
 
-XFree86 4.3.99.15 includes the following video drivers:
+XFree86 4.3.99.16 includes the following video drivers:
 
 +--------------+--------------------------+---------------------------------------------+
 |Driver Name   | Description              | Further Information                         |
@@ -261,7 +279,7 @@ Drivers marked with (-) are for Linux/mips only.
 Darwin/Mac OS X uses IOKit drivers and does not use the module loader drivers
 listed above. Further information can be found in README.Darwin.
 
-XFree86 4.3.99.15 includes the following input drivers:
+XFree86 4.3.99.16 includes the following input drivers:
 
 3.2  Input Drivers
 
@@ -298,12 +316,12 @@ Drivers marked with (*) are available for Linux only.
 4.  Overview of XFree86 4.x.
 
 Unlike XFree86 3.3.x where there are multiple X server binaries, each of
-which drive different hardware, XFree86 4.3.99.15 has a single X server
+which drive different hardware, XFree86 4.3.99.16 has a single X server
 binary called XFree86.  This binary can either have one or more video drivers
 linked in statically, or, more usually, dynamically load the video drivers
 and other modules that are needed.
 
-XFree86 4.3.99.15 has X server support for most UNIX(R) and UNIX-like operat-
+XFree86 4.3.99.16 has X server support for most UNIX(R) and UNIX-like operat-
 ing systems on Intel/x86 platforms, plus support for Linux on Alpha, PowerPC,
 IA-64, Sparc, and Mips platforms, and for Darwin on PowerPC.  Work on support
 for additional architectures and operating systems is in progress, and is
@@ -325,7 +343,7 @@ they do not need to be recompiled for every different operating system.  In
 the future we plan to take advantage of this to provide more frequent driver
 module updates in between major releases.
 
-The loader in version 4.3.99.15 has support for Intel (x86), Alpha and Pow-
+The loader in version 4.3.99.16 has support for Intel (x86), Alpha and Pow-
 erPC platforms.  It also has preliminary support for Sparc platforms.
 
 The X server makes use of modules for video drivers, X server extensions,
@@ -673,7 +691,7 @@ Known problems:
 
 4.7  DGA version 2
 
-DGA 2.0 is included in 4.3.99.15, but is not implemented by all drivers.
+DGA 2.0 is included in 4.3.99.16, but is not implemented by all drivers.
 Preliminary documentation for the client libraries can be found in the
 README.DGA document.  A good degree of backwards compatibility with version
 1.0 is provided.
@@ -742,7 +760,7 @@ anti-aliased text and geometric objects as well as perform translucent image
 overlays and other image operations not possible with the core X rendering
 system.
 
-XFree86 4.3.99.15 provides a partial implementation of Render sufficient for
+XFree86 4.3.99.16 provides a partial implementation of Render sufficient for
 drawing anti-aliased text and image composition.  Still to be implemented are
 geometric primitives and affine transformation of images.
 
@@ -777,12 +795,12 @@ the Xft(3) man page.
 
 4.11.2  FreeType support in Xft
 
-XFree86 4.3.99.15 includes sources for FreeType version 2.1.1, and, by
+XFree86 4.3.99.16 includes sources for FreeType version 2.1.1, and, by
 default, they are built and installed automatically.
 
 4.11.3  Application Support For Anti-Aliased Text
 
-Only three applications have been modified in XFree86 4.3.99.15 to work with
+Only three applications have been modified in XFree86 4.3.99.16 to work with
 the Render extension and the Xft and FreeType libraries to provide anti-
 aliased text.  Xterm, xditview and x11perf.  Migration of other applications
 may occur in future releases.
@@ -928,7 +946,7 @@ location pointing to the new location.  Some run-time generated files are now
 located under the appropriate subdirectories of /var, again with the relevant
 symbolic links in the old location.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.82 eich Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.83 dawes Exp $
 
 
 $XFree86: $
