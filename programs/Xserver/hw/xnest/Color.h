@@ -1,4 +1,4 @@
-/* $XConsortium: Color.h,v 1.1 93/07/12 15:28:00 rws Exp $ */
+/* $Xorg: Color.h,v 1.3 2000/08/17 19:53:28 cpqbld Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -12,6 +12,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
+/* $XFree86$ */
 
 #ifndef XNESTCOLOR_H
 #define XNESTCOLOR_H
@@ -40,17 +41,18 @@ typedef struct {
 
 #define xnestPixel(pixel) (pixel)
 
-Bool xnestCreateColormap();
-void xnestDestroyColormap ();
-void xnestSetInstalledColormapWindows();
-void xnestSetScreenSaverColormapWindow();
-void xnestDirectInstallColormaps();
-void xnestDirectUninstallColormaps();
-void xnestInstallColormap();
-void xnestUninstallColormap();
-int xnestListInstalledColormaps();
-void xnestStoreColors();
-void xnestResolveColor();
-Bool xnestCreateDefaultColormap();
+Bool xnestCreateColormap(ColormapPtr pCmap);
+void xnestDestroyColormap(ColormapPtr pCmap);
+void xnestSetInstalledColormapWindows(ScreenPtr pScreen);
+void xnestSetScreenSaverColormapWindow(ScreenPtr pScreen);
+void xnestDirectInstallColormaps(ScreenPtr pScreen);
+void xnestDirectUninstallColormaps(ScreenPtr pScreen);
+void xnestInstallColormap(ColormapPtr pCmap);
+void xnestUninstallColormap(ColormapPtr pCmap);
+int xnestListInstalledColormaps(ScreenPtr pScreen, Colormap *pCmapIDs);
+void xnestStoreColors(ColormapPtr pCmap, int nColors, xColorItem *pColors);
+void xnestResolveColor(unsigned short *pRed, unsigned short *pGreen,
+		       unsigned short *pBlue, VisualPtr pVisual);
+Bool xnestCreateDefaultColormap(ScreenPtr pScreen);
 
 #endif /* XNESTCOLOR_H */

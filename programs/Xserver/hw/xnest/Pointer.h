@@ -1,4 +1,4 @@
-/* $XConsortium: Pointer.h,v 1.1 93/07/12 15:28:44 rws Exp $ */
+/* $Xorg: Pointer.h,v 1.3 2000/08/17 19:53:28 cpqbld Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -12,6 +12,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
+/* $XFree86$ */
 
 #ifndef XNESTPOINTER_H
 #define XNESTPOINTER_H
@@ -22,7 +23,7 @@ is" without express or implied warranty.
         (ButtonPressMask | ButtonReleaseMask | PointerMotionMask | \
 	 EnterWindowMask | LeaveWindowMask)
 
-void xnestChangePointerControl();
-int xnestPointerProc();
+void xnestChangePointerControl(DeviceIntPtr pDev, PtrCtrl *ctrl);
+int xnestPointerProc(DeviceIntPtr pDev, int onoff);
 
 #endif /* XNESTPOINTER_H */

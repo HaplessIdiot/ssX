@@ -1,4 +1,4 @@
-/* $XConsortium: Handlers.h,v 1.1 93/07/12 15:28:31 rws Exp $ */
+/* $Xorg: Handlers.h,v 1.3 2000/08/17 19:53:28 cpqbld Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -12,11 +12,13 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
+/* $XFree86$ */
 
 #ifndef XNESTHANDLERS_H
 #define XNESTHANDLERS_H
 
-void xnestBlockHandler();
-void xnestWakeupHandler();
+void xnestBlockHandler(pointer blockData, OSTimePtr pTimeout,
+		       pointer pReadMask);
+void xnestWakeupHandler(pointer blockData, int result, pointer pReadMask);
 
 #endif /* XNESTHANDLERS_H */

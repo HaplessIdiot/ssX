@@ -1,4 +1,4 @@
-/* $XConsortium: Events.h,v 1.2 93/09/23 18:57:02 rws Exp $ */
+/* $Xorg: Events.h,v 1.3 2000/08/17 19:53:28 cpqbld Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -12,6 +12,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
+/* $XFree86$ */
 
 #ifndef XNESTEVENTS_H
 #define XNESTEVENTS_H
@@ -22,7 +23,8 @@ is" without express or implied warranty.
 
 extern CARD32 lastEventTime;
 
-void xnestCollectExposures();
-void xnestCollectEvents();
+void SetTimeSinceLastInputEvent(void);
+void xnestCollectExposures(void);
+void xnestCollectEvents(void);
 
 #endif /* XNESTEVENTS_H */

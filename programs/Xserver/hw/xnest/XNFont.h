@@ -1,4 +1,4 @@
-/* $XConsortium: Font.h,v 1.1 93/07/12 15:28:20 rws Exp $ */
+/* $Xorg: XNFont.h,v 1.3 2000/08/17 19:53:28 cpqbld Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -12,6 +12,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
+/* $XFree86$ */
 
 
 #ifndef XNESTFONT_H
@@ -30,7 +31,7 @@ extern int xnestFontPrivateIndex;
 
 #define xnestFont(pFont) (xnestFontStruct(pFont)->fid)
 
-Bool xnestRealizeFont();
-Bool xnestUnrealizeFont();
+Bool xnestRealizeFont(ScreenPtr pScreen, FontPtr pFont);
+Bool xnestUnrealizeFont(ScreenPtr pScreen, FontPtr pFont);
 
 #endif /* XNESTFONT_H */

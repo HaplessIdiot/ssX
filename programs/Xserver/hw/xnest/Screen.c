@@ -12,7 +12,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Screen.c,v 3.11 2003/01/10 13:29:40 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Screen.c,v 3.12 2003/11/14 22:25:59 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -40,8 +40,6 @@ is" without express or implied warranty.
 #include "mipointer.h"
 #include "Args.h"
 
-extern Window xnestParentWindow;
-
 Window xnestDefaultWindows[MAXSCREENS];
 Window xnestScreenSaverWindows[MAXSCREENS];
 
@@ -53,8 +51,8 @@ extern void GlxWrapInitVisuals(miInitVisualsProcPtr *);
 int xnestScreenGeneration = -1;
 #endif
 
-ScreenPtr xnestScreen(window)
-     Window window;
+ScreenPtr
+xnestScreen(Window window)
 {
   int i;
   
@@ -65,8 +63,8 @@ ScreenPtr xnestScreen(window)
   return NULL;
 }
 
-static int offset(mask)
-     unsigned long mask;
+static int
+offset(unsigned long mask)
 {
   int count;
   
@@ -76,9 +74,8 @@ static int offset(mask)
   return count;
 }
 
-static Bool xnestSaveScreen(pScreen, what)
-     ScreenPtr pScreen;
-     int what;
+static Bool
+xnestSaveScreen(ScreenPtr pScreen, int what)
 {
   if (xnestSoftwareScreenSaver)
     return False;
@@ -110,17 +107,13 @@ static Bool xnestSaveScreen(pScreen, what)
 }
 
 static Bool
-xnestCursorOffScreen (ppScreen, x, y)
-    ScreenPtr   *ppScreen;
-    int         *x, *y;
+xnestCursorOffScreen(ScreenPtr *ppScreen, int *x, int *y)
 {
     return FALSE;
 }
 
 static void
-xnestCrossScreen (pScreen, entering)
-    ScreenPtr   pScreen;
-    Bool        entering;
+xnestCrossScreen(ScreenPtr pScreen, Bool entering)
 {
 }
 
@@ -131,11 +124,8 @@ static miPointerScreenFuncRec xnestPointerCursorFuncs =
     miPointerWarpCursor
 };
 
-Bool xnestOpenScreen(index, pScreen, argc, argv)
-     int index;
-     register ScreenPtr pScreen;
-     int argc;
-     char *argv[];
+Bool
+xnestOpenScreen(int index, ScreenPtr pScreen, int argc, char *argv[])
 {
   VisualPtr visuals;
   DepthPtr depths;
@@ -297,8 +287,8 @@ Bool xnestOpenScreen(index, pScreen, argc, argv)
   pScreen->SaveScreen = xnestSaveScreen;
   pScreen->GetImage = xnestGetImage;
   pScreen->GetSpans = xnestGetSpans;
-  pScreen->PointerNonInterestBox = (void (*)()) 0;
-  pScreen->SourceValidate = (void (*)()) 0;
+  pScreen->PointerNonInterestBox = NULL;
+  pScreen->SourceValidate = NULL;
 
   /* Window Procedures */
   
@@ -308,7 +298,7 @@ Bool xnestOpenScreen(index, pScreen, argc, argv)
   pScreen->ChangeWindowAttributes = xnestChangeWindowAttributes;
   pScreen->RealizeWindow = xnestRealizeWindow;
   pScreen->UnrealizeWindow = xnestUnrealizeWindow;
-  pScreen->PostValidateTree = (void (*)()) 0;
+  pScreen->PostValidateTree = NULL;
   pScreen->WindowExposures = xnestWindowExposures;
   pScreen->PaintWindowBackground = xnestPaintWindowBackground;
   pScreen->PaintWindowBorder = xnestPaintWindowBorder;
@@ -322,12 +312,12 @@ Bool xnestOpenScreen(index, pScreen, argc, argv)
 
   /* Backing store procedures */
   
-  pScreen->SaveDoomedAreas = (void (*)()) 0;
-  pScreen->RestoreAreas = (RegionPtr (*)()) 0;
-  pScreen->ExposeCopy = (void (*)()) 0;
-  pScreen->TranslateBackingStore = (RegionPtr (*)()) 0;
-  pScreen->ClearBackingStore = (RegionPtr (*)()) 0;
-  pScreen->DrawGuarantee = (void (*)()) 0;
+  pScreen->SaveDoomedAreas = NULL;
+  pScreen->RestoreAreas = NULL;
+  pScreen->ExposeCopy = NULL;
+  pScreen->TranslateBackingStore = NULL;
+  pScreen->ClearBackingStore = NULL;
+  pScreen->DrawGuarantee = NULL;
 
   /* Font procedures */
 
@@ -362,10 +352,10 @@ Bool xnestOpenScreen(index, pScreen, argc, argv)
 
   /* OS layer procedures */
 
-  pScreen->BlockHandler = (void (*)())NoopDDA;
-  pScreen->WakeupHandler = (void (*)())NoopDDA;
-  pScreen->blockData = (pointer)0;
-  pScreen->wakeupData = (pointer)0;
+  pScreen->BlockHandler = (ScreenBlockHandlerProcPtr)NoopDDA;
+  pScreen->WakeupHandler = (ScreenWakeupHandlerProcPtr)NoopDDA;
+  pScreen->blockData = NULL;
+  pScreen->wakeupData = NULL;
   if (!miScreenDevPrivateInit(pScreen, xnestWidth, NULL))
       return FALSE;
 
@@ -437,9 +427,8 @@ Bool xnestOpenScreen(index, pScreen, argc, argv)
   return True;
 }
 
-Bool xnestCloseScreen(index, pScreen)
-     int index;
-     ScreenPtr pScreen;
+Bool
+xnestCloseScreen(int index, ScreenPtr pScreen)
 {
   int i;
   

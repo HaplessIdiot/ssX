@@ -1,4 +1,4 @@
-/* $XConsortium: GetTime.c,v 1.5 94/04/17 20:30:01 dpw Exp $ */
+/* $Xorg: GetTime.c,v 1.3 2000/08/17 19:53:28 cpqbld Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium
@@ -28,12 +28,14 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
+/* $XFree86$ */
 
 
 #include "Xos.h"
+#include "os.h"
 #include <time.h>
 
-long
+CARD32
 GetTimeInMillis()
 {
     struct timeval  tp;

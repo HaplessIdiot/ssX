@@ -1,4 +1,4 @@
-/* $XConsortium: GC.h,v 1.1 93/07/12 15:28:24 rws Exp $ */
+/* $Xorg: XNGC.h,v 1.3 2000/08/17 19:53:28 cpqbld Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -12,6 +12,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
+/* $XFree86$ */
 
 #ifndef XNESTGC_H
 #define XNESTGC_H
@@ -30,14 +31,14 @@ extern int xnestGCPrivateIndex;
 
 #define xnestGC(pGC) (xnestGCPriv(pGC)->gc)
 
-Bool xnestCreateGC();
-void xnestValidateGC();
-void xnestChangeGC();
-void xnestCopyGC();
-void xnestDestroyGC();
-void xnestChangeClip();
-void xnestDestroyClip();
-void xnestDestroyClipHelper();
-void xnestCopyClip();
+Bool xnestCreateGC(GCPtr pGC);
+void xnestValidateGC(GCPtr pGC, unsigned long changes, DrawablePtr pDrawable);
+void xnestChangeGC(GCPtr pGC, unsigned long mask);
+void xnestCopyGC(GCPtr pGCSrc, unsigned long mask, GCPtr pGCDst);
+void xnestDestroyGC(GCPtr pGC);
+void xnestChangeClip(GCPtr pGC, int type, pointer pValue, int nRects);
+void xnestDestroyClip(GCPtr pGC);
+void xnestDestroyClipHelper(GCPtr pGC);
+void xnestCopyClip(GCPtr pGCDst, GCPtr pGCSrc);
 
 #endif /* XNESTGC_H */

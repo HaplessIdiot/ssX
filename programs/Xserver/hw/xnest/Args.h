@@ -1,4 +1,4 @@
-/* $XConsortium: Args.h,v 1.1 93/07/12 15:27:56 rws Exp $ */
+/* $Xorg: Args.h,v 1.3 2000/08/17 19:53:27 cpqbld Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -12,6 +12,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
+/* $XFree86$ */
 
 #ifndef XNESTARGC_H
 #define XNESTARGS_H
@@ -34,5 +35,6 @@ extern Bool xnestUserBorderWidth;
 extern char *xnestWindowName;           
 extern int xnestNumScreens;
 extern Bool xnestDoDirectColormaps;
+extern Window xnestParentWindow;
 
 #endif /* XNESTARGS_H */
