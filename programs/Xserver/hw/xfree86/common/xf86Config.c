@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.285 2005/02/03 02:01:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.286 2005/02/15 03:08:27 dawes Exp $ */
 
 
 /*
@@ -5075,6 +5075,7 @@ xf86ConfDupMonitor(const MonRec *pMonitor, int depth)
 
     m->handle = pMonitor->handle;
     m->defaultMon = pMonitor->defaultMon;
+    m->flags = pMonitor->flags;
     m->id = xstrdup(pMonitor->id);
     if (pMonitor->id && !m->id) {
 	xf86ConfFreeMonitorData(m);

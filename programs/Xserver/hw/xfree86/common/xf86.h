@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.182 2005/01/28 02:11:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.183 2005/02/17 03:46:48 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
@@ -617,6 +617,8 @@ ModeStatus xf86InitialCheckModeForDriver(ScrnInfoPtr scrp, DisplayModePtr mode,
 					 int virtualY);
 ModeStatus xf86CheckModeForDriver(ScrnInfoPtr scrp, DisplayModePtr mode,
 				  int flags);
+Bool xf86SetMonitorParameters(ScrnInfoPtr pScrn, MonPtr monitor,
+			      int hSize, int vSize, int refresh);
 int xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 		      char **modeNames, ClockRangePtr clockRanges,
 		      int *linePitches, int minPitch, int maxPitch,

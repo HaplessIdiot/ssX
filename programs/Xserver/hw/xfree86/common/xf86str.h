@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.104 2005/02/17 03:46:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.105 2005/02/18 02:55:05 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-2005 by The XFree86 Project, Inc.
@@ -281,6 +281,10 @@ typedef struct { float red, green, blue; } Gamma;
 #define GAMMA_MIN	(1.0 / GAMMA_MAX)
 #define GAMMA_ZERO	(GAMMA_MIN / 100.0)
 
+/* Monitor "flags" bits. */
+#define MON_TOLERANCES_OPTIONAL		0x01
+#define MON_PARAMETERS_SET		0x02
+
 typedef struct {
     char *		id;
     char *		vendor;
@@ -300,6 +304,7 @@ typedef struct {
     int			numModeSetNames;
     char **		modeSetNames;
     Bool		defaultMon;
+    int			flags;
     ConfigDataHandle	handle;
 } MonRec, *MonPtr;
 

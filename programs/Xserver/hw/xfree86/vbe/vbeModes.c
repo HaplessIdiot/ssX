@@ -1,6 +1,6 @@
 #define DEBUG_VERB 2
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbeModes.c,v 1.4 2003/11/06 18:38:14 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vbe/vbeModes.c,v 1.5 2004/12/11 20:38:46 dawes Exp $ */
 
 /*
  * Copyright © 2002 David Dawes
@@ -32,7 +32,7 @@
  *
  */
 /*
- * Copyright (c) 2002-2004 by The XFree86 Project, Inc.
+ * Copyright (c) 2002-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -174,6 +174,7 @@ CheckMode(ScrnInfoPtr pScrn, vbeInfoPtr pVbe, VbeInfoBlock *vbe, int id,
     VbeModeInfoData *data;
     Bool modeOK = FALSE;
     ModeStatus status = MODE_OK;
+    const char *prefix = "";
 
     major = (unsigned)(vbe->VESAVersion >> 8);
 
@@ -192,7 +193,7 @@ CheckMode(ScrnInfoPtr pScrn, vbeInfoPtr pVbe, VbeInfoBlock *vbe, int id,
 	 (mode->BitsPerPixel <= 8 &&
 	  mode->BitsPerPixel == pScrn->bitsPerPixel))) {
 	modeOK = TRUE;
-	xf86ErrorFVerb(DEBUG_VERB, "*");
+	prefix = "*";
     }
 
     /*
@@ -224,7 +225,8 @@ CheckMode(ScrnInfoPtr pScrn, vbeInfoPtr pVbe, VbeInfoBlock *vbe, int id,
     }
 
     xf86ErrorFVerb(DEBUG_VERB,
-	    "Mode: %x (%dx%d)\n", id, mode->XResolution, mode->YResolution);
+	    "%sMode: %x (%dx%d)\n", prefix, id,
+	     mode->XResolution, mode->YResolution);
     xf86ErrorFVerb(DEBUG_VERB,
 	    "	ModeAttributes: 0x%x\n", mode->ModeAttributes);
     xf86ErrorFVerb(DEBUG_VERB,
@@ -348,6 +350,7 @@ VBEGetModePool(ScrnInfoPtr pScrn, vbeInfoPtr pVbe, VbeInfoBlock *vbe,
     DisplayModePtr pMode, p = NULL, modePool = NULL;
     int i = 0;
 
+    xf86SetMonitorParameters(pScrn, pScrn->monitor, 0, 0, 0);
     if (modeTypes & V_MODETYPE_VBE) {
 	while (vbe->VideoModePtr[i] != 0xffff) {
 	    int id = vbe->VideoModePtr[i++];

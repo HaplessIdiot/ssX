@@ -30,7 +30,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * Copyright 2002 Shigehiro Nomura
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.77 2004/11/26 13:45:01 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.78 2005/02/18 02:55:09 dawes Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -1336,25 +1336,9 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	 * If the monitor parameters are not specified explicitly, set them
 	 * so that 60Hz modes up to the panel size are allowed.
 	 */
-	if (pScrn->monitor->nHsync == 0) {
-	    pScrn->monitor->nHsync = 1;
-	    pScrn->monitor->hsync[0].lo = 28;
-	    pScrn->monitor->hsync[0].hi =
-				60.0 * 1.07 * nPtr->NeoPanelHeight / 1000.0;
-	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-		       "Using hsync range matching panel size: %.2f-%.2f kHz\n",
-		       pScrn->monitor->hsync[0].lo,
-		       pScrn->monitor->hsync[0].hi);
-	}
-	if (pScrn->monitor->nVrefresh == 0) {
-	    pScrn->monitor->nVrefresh = 1;
-	    pScrn->monitor->vrefresh[0].lo = 55.0;
-	    pScrn->monitor->vrefresh[0].hi = 65.0;
-	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-		       "Using vsync range for panel: %.2f-%.2f kHz\n",
-		       pScrn->monitor->vrefresh[0].lo,
-		       pScrn->monitor->vrefresh[0].hi);
-	}
+	xf86SetMonitorParameters(pScrn, pScrn->monitor,
+				 nPtr->NeoPanelWidth, nPtr->NeoPanelHeight,
+				 60);
     }
 
     /*
