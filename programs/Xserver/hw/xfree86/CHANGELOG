@@ -1,4 +1,16 @@
 XFree86 3.9.15d (29 August 1999)
+3017. 3Dfx driver for Banshee and Voodoo3 (#3188,
+      Daryll Strauss/Precision Insight).
+3016. Fix a 24/32 GetImage problem (#3187, Mark Vojkovich).
+3015. Intel i740 driver (#3186, Precision Insight/Daryll Strauss).
+3014. Fix a planemask problem in 24bpp with the recently added MGA point
+      speedups (#3185, Mark Vojkovich).
+3013. Some new and updated ISO 10646-1 fonts, including 5x7, 6x10, 6x13, 6x13B,
+      7x13, 7x13B, 7x14, 7x14B, 8x13, 8x13B, 9x15, 9x15B, 10x20, 9x18, 12x13ja,
+      18x18ja (#3184, Markus Kuhn, Robert Brady, Birger Langkjer,
+      Constantine Stathopoulos).
+3012. Update the default xdm config file to disable listening for XDMCP
+      requests (#3183, Matthieu Herrb).
 3011. Reinstate the code to stop DDC1 problems on secondary screens with
       the MGA driver (#3182, Andrew Aitchison).
 3010. Fix for the option handling in the glide driver (#3181, Henrik Harmsen).
@@ -8665,4 +8677,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.819 1999/08/28 09:00:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.820 1999/08/28 14:32:41 dawes Exp $

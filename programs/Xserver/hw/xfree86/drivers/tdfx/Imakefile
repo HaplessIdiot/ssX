@@ -1,0 +1,41 @@
+XCOMM $XFree86$
+XCOMM
+XCOMM This is the Imakefile for the TDFX driver.  
+XCOMM 
+
+#define IHaveModules
+#include <Server.tmpl>
+
+SRCS = tdfx_driver.c tdfx_io.c tdfx_hwcurs.c tdfx_accel.c \
+	tdfx_dri.c tdfx_dga.c
+
+OBJS = tdfx_driver.o tdfx_io.o tdfx_hwcurs.o tdfx_accel.o \
+	tdfx_dri.o tdfx_dga.o
+
+INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
+           -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
+	   -I$(XF86SRC)/xaa -I$(XF86SRC)/rac \
+           -I$(SERVERSRC)/cfb -I$(XF86SRC)/xaa -I$(XF86SRC)/ramdac \
+	   -I$(XF86SRC)/vgahw -I$(XF86SRC)/ddc -I$(XF86SRC)/i2c \
+	   -I$(SERVERSRC)/Xext \
+           -I$(FONTINCSRC) -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
+	   -I$(EXTINCSRC) \
+	-I$(SERVERSRC)/GL/dri -I$(LIBSRC)/GL/dri
+
+DEFINES = $(GLX_DEFINES)
+
+#if MakeHasPosixVariableSubstitutions
+SubdirLibraryRule($(OBJS))
+#endif
+
+ModuleObjectRule()
+
+ObjectModuleTarget(tdfx,$(OBJS))
+
+InstallObjectModule(tdfx,$(MODULEDIR),drivers)
+
+XCOMM To install a man page remove the x and add these lines
+XCOMM xCppManTarget(tdfx,)
+XCOMM xInstallModuleManPage(tdfx)
+
+DependTarget()

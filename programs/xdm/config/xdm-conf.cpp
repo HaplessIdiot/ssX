@@ -1,5 +1,5 @@
 ! $XConsortium: xdm-conf.cpp /main/3 1996/01/15 15:17:26 gildea $
-! $XFree86: xc/programs/xdm/config/xdm-conf.cpp,v 1.3 1998/12/06 13:30:40 dawes Exp $
+! $XFree86: xc/programs/xdm/config/xdm-conf.cpp,v 1.4 1999/03/14 03:22:25 dawes Exp $
 DisplayManager.errorLogFile:	XDMDIR/xdm-errors
 DisplayManager.pidFile:		XDMDIR/xdm-pid
 DisplayManager.keyFile:		XDMDIR/xdm-keys
@@ -23,3 +23,6 @@ DisplayManager*authComplain:	false
 ! this is a new line Caolan, 9312811@ul.ie
 DisplayManager*loginmoveInterval:      10
 #endif /* XPM */
+! SECURITY: do not listen for XDMCP or Chooser requests
+! Comment out this line if you want to manage X terminals with xdm
+DisplayManager.requestPort:	0
