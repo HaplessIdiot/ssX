@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.158tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.159 2004/03/22 17:01:14 tsi Exp $ */
 
 /*
  * Copyright (c) 1995-2003 by The XFree86 Project, Inc.
@@ -317,6 +317,7 @@
 /* Cirrus Logic */
 #define PCI_CHIP_GD7548			0x0038
 #define PCI_CHIP_GD7555			0x0040
+#define PCI_CHIP_GD7556			0x004C
 #define PCI_CHIP_GD5430			0x00A0
 #define PCI_CHIP_GD5434_4		0x00A4
 #define PCI_CHIP_GD5434_8		0x00A8

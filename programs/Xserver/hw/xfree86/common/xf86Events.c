@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.161 2004/04/03 22:26:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.162 2004/04/03 22:31:23 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -543,7 +543,7 @@ xf86PostKbdEvent(unsigned key)
       }
     } else
 #endif /* i386 && SVR4 */
-    {
+    if (!xf86IsPc98()) {
       switch (scanCode) {
       case 0x59:        scanCode = KEY_0x59; break;
       case 0x5a:        scanCode = KEY_0x5A; break;
@@ -655,10 +655,12 @@ xf86PostKbdEvent(unsigned key)
    * they need to get the same key code as the base key on the same
    * physical keyboard key.
    */
-  if (scanCode == KEY_SysReqest)
-    scanCode = KEY_Print;
-  else if (scanCode == KEY_Break)
-    scanCode = KEY_Pause;
+  if (xf86IsPc98()) {
+    if (scanCode == KEY_SysReqest)
+      scanCode = KEY_Print;
+    else if (scanCode == KEY_Break)
+      scanCode = KEY_Pause;
+  }
 #endif
   
   /*

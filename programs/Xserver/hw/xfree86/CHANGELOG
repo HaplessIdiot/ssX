@@ -1,4 +1,8 @@
 XFree86 4.4.99.7 (xx May 2004)
+ 125. Add support for the NEC PC-9821 with CLGD755x to the Cirrus driver,
+      and update the relevant Japanese docs (Satoshi Kimura).
+ 124. Don't do various keycode conversions on NEC PC-98 platforms
+      (Satoshi Kimura).
  123. Add IconMaxWidth and TitleIndent configuration parameters for twm
       (Bugzilla #1124, Alexander Pohoyda).
  122. Add support for XPM icons to twm (Bugzilla #968, Alexander Pohoyda).
@@ -18965,7 +18969,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3269 2004/06/08 00:59:49 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3270 2004/06/08 01:17:00 dawes Exp $
 
 
 
