@@ -1,5 +1,5 @@
 XCOMM $XConsortium: lnxLib.rules,v 1.8 95/01/16 21:11:00 kaleb Exp $
-XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.12 1995/04/09 13:39:21 dawes Exp $
+XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.13 1995/05/27 01:56:48 dawes Exp $
 
 /*
  * Linux shared library rules (DLL & ELF versions)
@@ -68,9 +68,7 @@ install:: Concat(lib,libname.so.rev) 					@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	$(INSTALL) $(INSTALLFLAGS) $(INSTBINFLAGS) Concat(lib,libname.so.rev) $(DESTDIR)dest @@\
 	(T=`echo Concat($(DESTDIR)dest/lib,libname.so.rev) | sed 's/\.[^\.]*$$//'`;\
-		$(RM) $$T && $(LN) Concat(lib,libname.so.rev) $$T)	@@\
-	$(RM) Concat($(DESTDIR)dest/lib,libname.so)			@@\
-	$(LN) Concat(lib,libname.so.rev) Concat($(DESTDIR)dest/lib,libname.so)
+		$(RM) $$T && $(LN) Concat(lib,libname.so.rev) $$T)
 #endif /* InstallSharedLibrary */
 
 /*
@@ -96,13 +94,10 @@ Concat(lib,libname.so.rev):  solist					@@\
 		$(CC) -o up/$@~ $(SHLIBLDFLAGS) -Wl,-soname,$$T solist $(REQUIREDLIBS) BaseShLibReqs) @@\
 	$(RM) $@ 							@@\
 	$(MV) $@~ $@							@@\
-	$(RM) Concat(lib,libname.so)					@@\
-	$(LN) $@ Concat(lib,libname.so)					@@\
 	LinkBuildLibrary($@)						@@\
-	LinkBuildLibrary(Concat(lib,libname.so))			@@\
 									@@\
 clean::									@@\
-	$(RM) Concat(lib,libname.so.rev) Concat(lib,libname.so)
+	$(RM) Concat(lib,libname.so.rev)
 
 #endif /* SharedLibraryTarget */
 

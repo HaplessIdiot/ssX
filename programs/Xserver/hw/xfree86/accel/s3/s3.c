@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.8 95/01/25 00:44:45 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.77 1995/04/24 05:20:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.78 1995/05/27 03:10:00 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -1558,21 +1558,17 @@ s3Probe()
    } else if (s3ATT498PixMux) {
       pixMuxPossible = TRUE;
       if (DAC_IS_ATT20C498 && !DAC_IS_ATT22C498) {
-	 if (S3_864_SERIES(s3ChipId)) {
+	 if (S3_866_SERIES(s3ChipId) || S3_868_SERIES(s3ChipId)) {
 	    nonMuxMaxClock = 95000; /* 864 DCLK limit */
 	    pixMuxMinClock = 67500;
 	 }
-	 else if (S3_866_SERIES(s3ChipId) || S3_868_SERIES(s3ChipId)) {
+	 else if (S3_864_SERIES(s3ChipId)) {
 	    nonMuxMaxClock = 100000;
 	    pixMuxMinClock =  67500;
 	 }
 	 else if (S3_805_I_SERIES(s3ChipId)) {
 	    nonMuxMaxClock = 90000;  /* XXXX just a guess, who has 805i docs? */
 	    pixMuxMinClock = 67500;
-	 }
-	 else if (S3_866_SERIES(s3ChipId) || S3_868_SERIES(s3ChipId)) {
-	    nonMuxMaxClock = 100000;
-	    pixMuxMinClock =  67500;
 	 }
 	 else {
 	    nonMuxMaxClock = 67500;

@@ -2,13 +2,13 @@
  
 <article>
  
-<title> README for XFree86 3.1.1 on BSD/386 1.1
+<title> README for XFree86 3.1.2 on BSD/OS 2.0
 <author> Hans Nasten
-<date> 27 January 1995
+<date> 30 May 1996
 <toc>
 
 <sect> What and Where is XFree86? <p>
-XFree86 3.1.1 is a port of X11R6 that supports several versions of
+XFree86 3.1.2 is a port of X11R6 that supports several versions of
 Intel-based Unix.  It is derived from X386 1.2, which was the X server
 distributed with X11R5.  This release consists of many new features
 and performance improvements as well as many bug fixes.  The release
@@ -21,22 +21,29 @@ The sources for XFree86 are available by anonymous ftp from:
     name="ftp.XFree86.org:/pub/XFree86/current"
     url="ftp://ftp.XFree86.org/pub/XFree86/current">
 <p>
-Binaries for BSD/386 1.1 will be available from:
+Binaries for BSD/OS 2.0 will be available from:
 <p>
 <url
     name="ftp.XFree86.org:/pub/XFree86/current/binaries/Bsdi"
     url="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/Bsdi">
 <p>
-If you're running BSD 1.0, you'll have to build it from source.
-Building the distribution on BSD/386 1.0 is untested, but believed to
-work correctly. If you run into trouble building on BSD/386 1.0, please
+If you're running a earlier version of BSD/OS, you'll have to build the
+distribution from source.
+Building the distribution on BSD/386 1.1 and 1.0 is untested, but believed to
+work correctly. If you run into trouble building on a earlier release, please
 let us know so that we can correct any incompatibilities.
 If you've done it and want to share your binaries, please let the Bsdi
 mailing list know.
-The binaries are compiled using gcc 2.5.8. There may be problems using
-XFree86 3.1 on a 386/486 without a math coprocessor. If you experience
-these kind of problems, you may have better luck building from the source
-using gcc 1.42 instead.
+The binaries are built using gcc 2.6.3 as distributed with BSD/OS 2.0.
+The XFree86 3.1.2 server displays large amounts of diagnostic output to
+stderr when the server is started. If the server is started from the console
+on BSD/OS 2.0, the output to stderr will block and the server will hang.
+The workaround for this is to redirect stdout and stderr to a file when using
+startx or xinit. This problem does only appear on BSD/OS 2.0, earlier
+versions are not affected.
+If you build the distribution from source using a gcc compiler built using
+the generic gcc source code, you may run into problems using the binaries
+on a 386/486 not equipped with a math coprocessor.
 
 <sect> Bug Reports for This Document <p>
 Send email to <it>nasten@Everyware.SE</it> (Hans Nasten)
@@ -59,33 +66,33 @@ The contents of the archives are:
 <descrip>
 <tag>REQUIRED:</tag>
     <descrip>
-    <tag/X311doc.tgz/     READMEs and XFree86 specific man pages.
-    <tag/X311bin.tgz/     all of the executable X client applications.
-    <tag/X311fnts.tgz/    all fonts
-    <tag/X311lib.tgz/     data files needed at runtime
+    <tag/X312doc.tgz/     READMEs and XFree86 specific man pages.
+    <tag/X312bin.tgz/     all of the executable X client applications.
+    <tag/X312fnts.tgz/    all fonts
+    <tag/X312lib.tgz/     data files needed at runtime
     </descrip>
 <tag>Choose at least one of the following to match your hardware:</tag>
     <descrip>
-    <tag/X311SVGA.tgz/    the 8-bit pseudo-color X server for Super VGA cards
-    <tag/X311VG16.tgz/    the 4-bit pseudo-color X server for VGA &amp;
+    <tag/X312SVGA.tgz/    the 8-bit pseudo-color X server for Super VGA cards
+    <tag/X312VG16.tgz/    the 4-bit pseudo-color X server for VGA &amp;
 			  SVGA cards.
-    <tag/X311Mono.tgz/    the Monochrome X Server
-    <tag/X3118514.tgz/    the X server for IBM 8514/A and compatible boards
-    <tag/X311AGX.tgz/     the X server for AGX boards
-    <tag/X311Ma8.tgz/     the X server for ATI Mach8 boards
-    <tag/X311Ma32.tgz/    the X server for ATI Mach32 boards
-    <tag/X311Ma64.tgz/    the X server for ATI Mach64 boards
-    <tag/X311P9K.tgz/     the X server for P9000 based boards
-    <tag/X311S3.tgz/      the X server for S3 based boards
-    <tag/X311W32.tgz/     the X server for ET4000/W32 based boards
+    <tag/X312Mono.tgz/    the Monochrome X Server
+    <tag/X3128514.tgz/    the X server for IBM 8514/A and compatible boards
+    <tag/X312AGX.tgz/     the X server for AGX boards
+    <tag/X312Ma8.tgz/     the X server for ATI Mach8 boards
+    <tag/X312Ma32.tgz/    the X server for ATI Mach32 boards
+    <tag/X312Ma64.tgz/    the X server for ATI Mach64 boards
+    <tag/X312P9K.tgz/     the X server for P9000 based boards
+    <tag/X312S3.tgz/      the X server for S3 based boards
+    <tag/X312W32.tgz/     the X server for ET4000/W32 based boards
     </descrip>
 <tag/OPTIONAL:</tag>
     <descrip>
-    <tag/X311fsrv.tgz/    the font server with man pages.
-    <tag/X311prog.tgz/    the <tt>include/X11</tt> header files and
+    <tag/X312fsrv.tgz/    the font server with man pages.
+    <tag/X312prog.tgz/    the <tt>include/X11</tt> header files and
 	static libraries needed only for compiling other X applications
-    <tag/X311man.tgz/     all man pages
-    <tag/X311link.tgz/    the server reconfiguration kit.
+    <tag/X312man.tgz/     all man pages
+    <tag/X312link.tgz/    the server reconfiguration kit.
     </descrip>
 </descrip>
 If this is your first time, then you should be able to safely
@@ -112,7 +119,7 @@ To unpack and install the archives:
 	`<tt>umask</tt>' value of 022.  Typing `<tt>umask 022</tt>' sets it.
         Caution:
 	If you do not extract the files as user `<tt>root</tt>' with the
-	correct umask you may not be able to run XFree86 3.1.1. The X
+	correct umask you may not be able to run XFree86 3.1.2. The X
 	server needs special permissions that are only granted to the
 	root user. You must also cd to <tt>/</tt> before extracting the
         archives.
@@ -268,15 +275,16 @@ and later.  This should be used to protect the inclusion of
 
 For code that really is specific to a particular i386 BSD port, use
 <tt>__FreeBSD__</tt> for FreeBSD, <tt>__NetBSD__</tt> for NetBSD,
-<tt>__386BSD__</tt> for 386BSD, and <tt>__bsdi__</tt> for BSD/386.
+<tt>__386BSD__</tt> for 386BSD, and <tt>__bsdi__</tt> for BSD/OS.
 
 
-<sect> Linear access to the frame buffer <p>
+<sect> Linear access to the frame buffer using BSD/386 1.1<p>
 The stock BSD/386 1.1 kernel has problems when trying to mmap the frame
 buffer as a linear ( unbanked ) memory area in high memory. This patch
 removes the check in <tt>/sys/i386/isa/vga.c</tt> that disables mmapping the
 frame buffer in linear mode. Please consult the BSD/386 1.1 release notes for
-instructions on how to build a new kernel.
+instructions on how to build a new kernel. This patch is not needed on
+BSD/OS 2.0.
 <itemize>
 <item> save the patch below in a separate file.
 <item> cd to <tt>/sys/i386/isa</tt>.
@@ -310,7 +318,7 @@ instructions on how to build a new kernel.
 
 <verb>
 $XConsortium: Bsdi.sgml,v 1.3 95/01/23 15:34:39 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.8 1995/01/28 00:50:52 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.9 1995/01/28 16:01:18 dawes Exp $
 </verb>
 
 </article>

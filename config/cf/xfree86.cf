@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xfree86.cf,v 1.9 95/01/25 16:42:40 kaleb Exp $
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.53 1995/03/12 11:02:08 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.54 1995/05/27 01:56:54 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -217,6 +217,17 @@ XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.53 1995/03/12 11:02:08 dawes Exp $
 #define BuildType1	YES
 #endif
 
+/*
+ * Build scanpci?
+ */
+#ifndef BuildScanpci
+#if SystemV || SystemV4 || defined(LinuxArchitecture) || defined(i386BsdArchitecture)
+#define BuildScanpci		YES
+#else
+#define BuildScanpci		NO
+#endif
+#endif
+
 #ifndef CompressAllFonts
 #define CompressAllFonts	YES
 #endif
@@ -305,7 +316,7 @@ VGA16DRIVERSRC = $(XF86SRC)/drivers/vga16
 #ifdef SiteIConfigFiles
 #undef SiteIConfigFiles
 #endif
-#define SiteIConfigFiles $(TOP)/site.def $(TOP)/Imakefile $(IRULESRC)/host.def
+#define SiteIConfigFiles $(TOP)/xf86site.def $(TOP)/Imakefile $(IRULESRC)/host.def
 #else
        XF86SRC = $(SERVERSRC)/hw/xfree86
   XF86ACCELSRC = $(XF86SRC)/accel

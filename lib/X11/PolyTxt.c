@@ -1,4 +1,5 @@
 /* $XConsortium: PolyTxt.c,v 11.23 94/04/17 20:20:28 kaleb Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1986  X Consortium
@@ -164,7 +165,6 @@ XDrawText(dpy, d, gc, x, y, items, nitems)
 		}
 		/* watch out for signs on chars */
 		*(unsigned char *)tbuf = 254;  /* elt->len */
-	    	*tbuf = 254;     /* elt->len */
                 memcpy (tbuf+2 , CharacterOffset, 254);
 		PartialNChars = PartialNChars - 254;
 		CharacterOffset += 254;
