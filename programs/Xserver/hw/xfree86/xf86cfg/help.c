@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/help.c,v 1.5 2001/07/25 15:05:08 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/help.c,v 1.6 2001/10/28 03:34:06 tsi Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -58,9 +58,6 @@ void Html_ModeStart(Widget);
  * Initialization
  */
 static Widget shell, text;
-extern Widget toplevel;
-extern Display *DPY;
-extern Atom wm_delete_window;
 static Bool popped_up = False;
 
 /*
