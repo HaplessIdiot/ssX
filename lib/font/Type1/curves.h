@@ -26,6 +26,8 @@
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
+/* $XFree86$ */
+
 /*SHARED*/
  
 #define   StepConic(R,xA,yA,xB,yB,xC,yC,r)      t1_StepConic(R,xA,yA,xB,yB,xC,yC,r)

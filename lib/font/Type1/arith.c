@@ -26,6 +26,8 @@
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
+/* $XFree86$ */
+
  /* ARITH    CWEB         V0006 ********                             */
 /*
 :h1.ARITH Module - Portable Module for Multiple Precision Fixed Point Arithmetic

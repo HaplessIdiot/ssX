@@ -26,6 +26,8 @@
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
+/* $XFree86$ */
+
  /* PATHS    CWEB         V0021 ********                             */
 /*
 :h1 id=paths.PATHS Module - Path Operator Handler

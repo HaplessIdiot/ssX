@@ -26,6 +26,8 @@
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
+/* $XFree86$ */
+
  /* HINTS    CWEB         V0006 ********                             */
 /*
 :h1.HINTS Module - Processing Rasterization Hints
