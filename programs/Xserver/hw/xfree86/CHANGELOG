@@ -1,4 +1,6 @@
 XFree86 4.1.99.2 (xx October 2001)
+ 469. Make sure Cygwin checks ENOBUFS for error test in XlibInt.c, as under
+      Cygwin when the socket is full ENOBUFS is returned (Brian Genisio).
  468. Fix SIGFPE in LastLinePel for ATI Radeon, console restoring on dual CRT
       head on VE, improved panel and ddc line detection (ATI Technologies).
  467. Fix bug that caused hardware cursors to disappear on mode switches when
@@ -14139,4 +14141,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2032 2001/11/08 04:15:26 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2033 2001/11/08 23:18:25 alanh Exp $
