@@ -20,14 +20,15 @@ InstallTarget(install,name,$(INSTDATAFLAGS),$(THEMEDIR))
 #define CursorLinkTarget(dst,src)					@@\
 all:: dst								@@\
 									@@\
-LinkFile(dst,src)							@@\
+dst: src								@@\
+	$(LN) src dst							@@\
 									@@\
 clean::									@@\
 	$(RM) dst							@@\
 									@@\
 install.link:: $(THEMEDIR)/dst						@@\
-									@@\
-LinkFile($(THEMEDIR)/dst,$(THEMEDIR)/src)
+	RemoveFile($(THEMEDIR)/dst)					@@\
+	(set -x; cd $(THEMEDIR) && $(LN) src dst)
 
 CursorTarget(X_cursor)
 CursorLinkTarget(arrow,right_ptr)
