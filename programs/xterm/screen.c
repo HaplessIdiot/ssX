@@ -54,7 +54,7 @@
  * SOFTWARE.
  */
 
-/* $XFree86: xc/programs/xterm/screen.c,v 3.44 1999/09/25 14:38:36 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/screen.c,v 3.45 1999/10/13 04:21:46 dawes Exp $ */
 
 /* screen.c */
 
@@ -1110,26 +1110,6 @@ ScreenResize (
 	TRACE(("ScreenResize cannot do anything to pty\n"))
 #endif	/* sun vs TIOCSWINSZ */
 	return (0);
-}
-
-void
-ScrnClrWrapped(TScreen *screen, int row)
-{
-	long value = (long)SCRN_BUF_FLAGS(screen, row + screen->topline) & ~ LINEWRAPPED;
-	SCRN_BUF_FLAGS(screen, row + screen->topline) = (Char *)value;
-}
-
-void
-ScrnSetWrapped(TScreen *screen, int row)
-{
-	long value = (long)SCRN_BUF_FLAGS(screen, row + screen->topline) | LINEWRAPPED;
-	SCRN_BUF_FLAGS(screen, row + screen->topline) = (Char *)value;
-}
-
-Bool
-ScrnTstWrapped(TScreen *screen, int row)
-{
-	return (long)SCRN_BUF_FLAGS(screen, row + screen->topline) & LINEWRAPPED;
 }
 
 /*

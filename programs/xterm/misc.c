@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: misc.c /main/112 1996/11/29 10:34:07 swick $
- *	$XFree86: xc/programs/xterm/misc.c,v 3.44 1999/09/27 06:30:21 dawes Exp $
+ *	$XFree86: xc/programs/xterm/misc.c,v 3.45 1999/10/13 04:21:45 dawes Exp $
  */
 
 /*
@@ -450,6 +450,8 @@ Bell(int which GCC_UNUSED, int percent)
     register TScreen *screen = &term->screen;
     struct timeval curtime;
     long now_msecs;
+
+    TRACE(("BELL %d\n", percent))
 
     /* has enough time gone by that we are allowed to ring
        the bell again? */
@@ -1410,7 +1412,7 @@ do_dcs(Char *dcsbuf, size_t dcslen)
 char *
 udk_lookup(int keycode, int *len)
 {
-	if (keycode < MAX_UDK) {
+	if (keycode >= 0 && keycode < MAX_UDK) {
 		*len = user_keys[keycode].len;
 		return user_keys[keycode].str;
 	}

@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.38 1999/09/27 06:30:24 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.40 1999/11/19 13:55:24 hohndel Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_122">Patch #122 - 1999/12/28 - XFree86 3.9.16f</A>
 <LI><A HREF="#xterm_121">Patch #121 - 1999/11/14 - XFree86 3.9.16c</A>
 <LI><A HREF="#xterm_120">Patch #120 - 1999/10/28 - XFree86 3.9.16c</A>
 <LI><A HREF="#xterm_119">Patch #119 - 1999/10/16 - XFree86 3.9.16c</A>
@@ -165,6 +166,51 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
 
+<H1><A NAME="xterm_122">Patch #122 - 1999/12/28 - XFree86 3.9.16f</A></H1>
+<ul>
+	<li>move the suggested wheel-mouse button translations into charproc.c
+	  to simplify customization.  Correct some minor logic errors in the
+	  support for buttons 4 and 5, used for wheel mice (reported by
+	  Bram Moolenaar).
+
+	<li>implement <em>metaSendsEscape</em> resource, with corresponding
+	  control sequence and menu entry.  Like <em>eightBitInput</em>, this
+	  causes xterm to send ESC prefixing the given key, but applies to
+	  all keys and is independent of the 8-bit/7-bit terminal setting.
+	  (requests by Alexander V Lukyanov and Marc Feeley).
+
+	<li>correct potential indexing with negative subscript in udk_lookup(),
+	  (reported by Ian Collier &lt;Ian.Collier@comlab.ox.ac.uk&gt;).
+
+	<li>modify configure script that sets TERMINFO_DIR to use ${prefix}
+	  rather than /usr if the --prefix option was specified (request by
+	  Zdenek Sekera &lt;zs@sgi.com&gt;).
+
+	<li>modify checks for repeat-character control sequence to test the
+	  character class against xterm's state table, rather than the
+	  isprint() macro (patch by Alexander V Lukyanov).
+
+	<li>change several functions to macros to improve speed
+
+	<li>two corrections to simulation of bold font via overstriking:
+	<ul>
+	  <li>use clipping to avoid leaving trash at end of the text, and
+	  <li>add brackets so wide-character logic does not fall-through
+	    into the overstriking logic (reported by 
+	    Marc Feeley &lt;feeley@IRO.UMontreal.CA&gt;)
+	</ul>
+
+	<li>add several entries to termcap file to make it have the same set
+	 of aliases as the terminfo file.
+
+	<li>scale the color values used for xterm-256color terminfo entry to
+	 0..1000, as expected by ncurses.
+
+	<li>change xterm-r6 terminfo definitions for F1-F4 to match program.
+
+	<li>Add QNX/Neutrino support (Frank Guangxin Liu
+	 &lt;frank@ctcqnx4.ctc.cummins.com&gt;)
+</ul>
 <H1><A NAME="xterm_121">Patch #121 - 1999/11/14 - XFree86 3.9.16c</A></H1>
 <ul>
 	<li>change label on "Sun/PC Keyboard" popup menu entry to "VT220
@@ -339,7 +385,7 @@ xc/programs/Xserver/hw/xfree86).
 	  David Green &lt;greendjf@cvhp152.marconicomms.com&gt; and
 	  David Ellement &lt;ellement@sdd.hp.com&gt; both on HP-UX, whose
 	  compiler does care about syntax).
-	  
+
 	<li>change ifdef's using __CYGWIN32__ to __CYGWIN__ (reported by Suhaib
 	  M. Siddiqi &lt;Ssiddiqi@InspirePharm.Com&gt;, who is told that the
 	  next Cygnus release will drop that symbol in their next release).
@@ -351,14 +397,14 @@ xc/programs/Xserver/hw/xfree86).
 	 problem report:
 	<blockquote>
 	xterm consumes cpu when selecting text with mouse (holding
-	down left mouse button) and when a program working under the 
-	xterm outputs something to stdout. 
-	<p> 
+	down left mouse button) and when a program working under the
+	xterm outputs something to stdout.
+	<p>
 	Easy way to reproduce:<br>
 		<code>while :; do echo aaa; sleep 1; done</code><br>
-	(while this runs, select text and hold down left mouse button) 
+	(while this runs, select text and hold down left mouse button)
 	watch cpu load.<br>
-	release left mouse button - spinning stops. 
+	release left mouse button - spinning stops.
 	</blockquote>
 </ul>
 
@@ -372,7 +418,7 @@ xc/programs/Xserver/hw/xfree86).
 	  xterm; some platforms use the -g option of ls to toggle group off
 	  rather than on (reported by Greg Smith).
 
-	<li>minor improvement to toolbar geometry, to make it not resizable. 
+	<li>minor improvement to toolbar geometry, to make it not resizable.
 	  This still is not satisfactory (but is usable) since the toolbar
 	  overlaps the xterm widget if the window is resized to make it
 	  smaller.  It appears that some work is needed for the xterm widget's
@@ -387,33 +433,33 @@ xc/programs/Xserver/hw/xfree86).
 	  winterm provides this option).
 
 	<li>integrated change by Steve Wall to
-	  add support for DEC Locator control sequences for xterm: 
+	  add support for DEC Locator control sequences for xterm:
 	  <pre>
- 
-		DECEFR - Enable Filter Rectangle 
-		DECELR - Enable Locator Reports 
-		DECSLE - Select Locator Events 
-		DECRQLP - Request Locator Position 
-	  </pre>  
-	  This allows the xterm mouse to be used with applications that use the 
-	  DEC Locator sequences, such as VAX Tpu, or SMG$ based applications. 
+
+		DECEFR - Enable Filter Rectangle
+		DECELR - Enable Locator Reports
+		DECSLE - Select Locator Events
+		DECRQLP - Request Locator Position
+	  </pre>
+	  This allows the xterm mouse to be used with applications that use the
+	  DEC Locator sequences, such as VAX Tpu, or SMG$ based applications.
 
 	<li>patch from Matthias Baake &lt;Matthias.Baake@gmx.de&gt;, for print
 	  action.  From his notes:
 	  <ul>
-	    <li>Bug 1: 
-	      Underlined text is preceded by ESC [0;2m . This should be ESC [0;4m , ESC 
-	      [2m doesn't seem to have any effect. (print.c/send_SGR) 
-	 
-	    <li>Bug 2: 
-	      The check for the last non-empty column (while (last &gt; 0) ... in 
-	      print.c/printLine) omits the rightmost column of the screen, the loop must 
-	      start with last = screen-&gt;max_col+1 instead of last = screen-&gt;max_col. 
-	 
-	    <li>Bug 3: 
-	      Any attributes of the first character (and of all immediately following 
-	      characters with the same attributes) are ignored. The variable attr 
-	      (print.c/printLine) should be initialized with 0, not with *a &amp; SGR_MASK. 
+	    <li>Bug 1:
+	      Underlined text is preceded by ESC [0;2m . This should be ESC [0;4m , ESC
+	      [2m doesn't seem to have any effect. (print.c/send_SGR)
+
+	    <li>Bug 2:
+	      The check for the last non-empty column (while (last &gt; 0) ... in
+	      print.c/printLine) omits the rightmost column of the screen, the loop must
+	      start with last = screen-&gt;max_col+1 instead of last = screen-&gt;max_col.
+
+	    <li>Bug 3:
+	      Any attributes of the first character (and of all immediately following
+	      characters with the same attributes) are ignored. The variable attr
+	      (print.c/printLine) should be initialized with 0, not with *a &amp; SGR_MASK.
 	  </ul>
 </ul>
 
@@ -441,9 +487,9 @@ xc/programs/Xserver/hw/xfree86).
 
 	<li>add configure script checks for Athena headers and libraries under
 	  /usr/contrib to work on HPUX (reported by several people:
-		David Nixon &lt;djn@csc.liv.ac.uk&gt; 
-		Aryeh Koenigsberg &lt;aryeh.koenigsberg@telrad.co.il&gt; 
-		Johannes M&#x00E4;hner &lt;johanm@camline.com&gt; 
+		David Nixon &lt;djn@csc.liv.ac.uk&gt;
+		Aryeh Koenigsberg &lt;aryeh.koenigsberg@telrad.co.il&gt;
+		Johannes M&#x00E4;hner &lt;johanm@camline.com&gt;
 		Andrew Gaylard &lt;andrew.gaylard@bsw.co.za&gt;).
 
 	<li>add check to configure script if xterm is installed setgid rather
@@ -564,7 +610,7 @@ longterm plan to allow configuring with Motif libraries.
 	    responses; when in 7-bit mode, only the final byte of ST was seen.
 
 	  <li>Allow multiple color #;name pairs in OSC 4,
-	    and document changes to match. 
+	    and document changes to match.
 	</ul>
 </ul>
 

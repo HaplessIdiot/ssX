@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: cursor.c,v 1.14 93/09/20 17:42:23 hersh Exp $
- *	$XFree86: xc/programs/xterm/cursor.c,v 3.10 1999/07/04 06:40:13 dawes Exp $
+ *	$XFree86: xc/programs/xterm/cursor.c,v 3.11 1999/07/11 08:49:36 dawes Exp $
  */
 
 /*
@@ -45,17 +45,11 @@
  * prevent the application from changing the screen contents under the
  * highlighted region.
  */
-static void _CheckSelection (register TScreen *screen)
-{
-    if ((screen->cur_row < screen->endHRow) ||
-	(screen->cur_row == screen->endHRow &&
-	 screen->cur_col < screen->endHCol))
-    {
+#define _CheckSelection(screen) \
+    if ((screen->cur_row < screen->endHRow) || \
+	(screen->cur_row == screen->endHRow && \
+	 screen->cur_col < screen->endHCol)) \
 	DisownSelection(term);
-    }
-}
-
-
 
 /*
  * Moves the cursor to the specified position, checking for bounds.
