@@ -36,8 +36,6 @@
 #include "cfb16.h"
 #include "cfb24.h"
 #include "cfb32.h"
-#include "cfb24_32.h"
-#include "cfb8_32.h"
 
 #include "xaa.h"
 #include "xf86cmap.h"

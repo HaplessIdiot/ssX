@@ -54,7 +54,6 @@ static Bool    NVSaveScreen(ScreenPtr pScreen, Bool unblank);
 static void    NVFreeScreen(int scrnIndex, int flags);
 static int     NVValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose,
                            int flags);
-static void    NVRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 
 /* Internally used functions */
 
@@ -86,12 +85,6 @@ DriverRec NV = {
         0
 };
 
-#define NV_CHIP_RIVA128 ((PCI_VENDOR_NVIDIA_SGS << 16)| PCI_CHIP_RIVA128)
-#define NV_CHIP_TNT     ((PCI_VENDOR_NVIDIA     << 16)| PCI_CHIP_TNT)
-#define NV_CHIP_TNT2    ((PCI_VENDOR_NVIDIA     << 16)| PCI_CHIP_TNT2)
-#define NV_CHIP_UTNT2   ((PCI_VENDOR_NVIDIA     << 16)| PCI_CHIP_UTNT2)
-#define NV_CHIP_VTNT2   ((PCI_VENDOR_NVIDIA     << 16)| PCI_CHIP_VTNT2)
-#define NV_CHIP_ITNT2   ((PCI_VENDOR_NVIDIA     << 16)| PCI_CHIP_ITNT2)
 
 /* Supported chipsets */
 static SymTabRec NVChipsets[] = {
@@ -145,8 +138,6 @@ static const char *cfbSymbols[] = {
     "cfb16ScreenInit",
     "cfb24ScreenInit",
     "cfb32ScreenInit",
-    "cfb8_32ScreenInit",
-    "cfb24_32ScreenInit",
     NULL
 };
 
@@ -223,17 +214,26 @@ static XF86ModuleVersionInfo nvVersRec =
 XF86ModuleData nvModuleData = { &nvVersRec, nvSetup, NULL };
 #endif
 
+
+typedef enum {
+    OPTION_SW_CURSOR,
+    OPTION_HW_CURSOR,
+    OPTION_NOACCEL,
+    OPTION_SHOWCACHE,
+    OPTION_SHADOW_FB,
+    OPTION_FBDEV,
+    OPTION_ROTATE
+} NVOpts;
+
+
 static OptionInfoRec NVOptions[] = {
     { OPTION_SW_CURSOR,         "SWcursor",     OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_HW_CURSOR,         "HWcursor",     OPTV_BOOLEAN,   {0}, FALSE },
-    { OPTION_PCI_RETRY,         "PciRetry",     OPTV_BOOLEAN,   {0}, FALSE },
-    { OPTION_RGB_BITS,          "RGBbits",      OPTV_INTEGER,   {0}, FALSE },
     { OPTION_NOACCEL,           "NoAccel",      OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_SHOWCACHE,         "ShowCache",    OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_SHADOW_FB,         "ShadowFB",     OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_FBDEV,             "UseFBDev",     OPTV_BOOLEAN,   {0}, FALSE },
-    { OPTION_COLOR_KEY,         "ColorKey",     OPTV_INTEGER,   {0}, FALSE },
-    { OPTION_SET_MCLK,          "SetMclk",      OPTV_FREQ,      {0}, FALSE },
+    { OPTION_ROTATE,		"Rotate",	OPTV_ANYSTR,	{0}, FALSE },
     { -1,                       NULL,           OPTV_NONE,      {0}, FALSE }
 };
 
@@ -251,34 +251,6 @@ static NVRamdacRec DacInit = {
         0, 0, X_DEFAULT, X_DEFAULT, FALSE
 }; 
 
-
-/* another theft from MGA-driver */
-static void
-NVRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
-{
-    NVPtr pNv = NVPTR(pScrn);
-    int width, height, Bpp, FBPitch;
-    unsigned char *src, *dst;
-   
-    Bpp = pScrn->bitsPerPixel >> 3;
-    FBPitch = pScrn->displayWidth * Bpp;
-
-    while(num--) {
-        width = (pbox->x2 - pbox->x1) * Bpp;
-        height = pbox->y2 - pbox->y1;
-        src = pNv->ShadowPtr + (pbox->y1 * pNv->ShadowPitch) + 
-            (pbox->x1 * Bpp);
-        dst = pNv->FbStart + (pbox->y1 * FBPitch) + (pbox->x1 * Bpp);
-
-        while(height--) {
-            memcpy(dst, src, width);
-            dst += FBPitch;
-            src += pNv->ShadowPitch;
-        }
-        
-        pbox++;
-    }
-} 
 
 
 static Bool
@@ -481,10 +453,14 @@ NVAdjustFrame(int scrnIndex, int x, int y, int flags)
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     int startAddr;
     NVPtr pNv = NVPTR(pScrn);
+    NVFBLayout *pLayout = &pNv->CurrentLayout;
 
     DEBUG(xf86DrvMsg(scrnIndex, X_INFO, "NVAdjustFrame\n"));
 
-    startAddr = (((y*pScrn->virtualX)+x)*(pScrn->bitsPerPixel/8));
+    if(pNv->ShowCache && y && pScrn->vtSema) 
+	y += pScrn->virtualY - 1;	
+
+    startAddr = (((y*pLayout->displayWidth)+x)*(pLayout->bitsPerPixel/8));
     pNv->riva.SetStartAddress(&pNv->riva, startAddr);
 }
 
@@ -514,12 +490,9 @@ NVEnterVT(int scrnIndex, int flags)
 static Bool
 NVEnterVTFBDev(int scrnIndex, int flags)
 {
-/*    ScrnInfoPtr pScrn = xf86Screens[scrnIndex]; */
     DEBUG(xf86DrvMsg(scrnIndex, X_INFO, "NVEnterVTFBDev\n"));
 
     fbdevHWEnterVT(scrnIndex,flags);
-/*    MGAStormSync(pScrn);
-      MGAStormEngineInit(pScrn); */
     return TRUE;
 }
 
@@ -576,10 +549,9 @@ NVCloseScreen(int scrnIndex, ScreenPtr pScreen)
     if ( pNv->expandBuffer )
         xfree(pNv->expandBuffer);
 
-
     pScrn->vtSema = FALSE;
-    return TRUE;
-/*    return (*pScreen->CloseScreen)(scrnIndex, pScreen); */
+    pScreen->CloseScreen = pNv->CloseScreen;
+    return (*pScreen->CloseScreen)(scrnIndex, pScreen);
 }
 
 /* Free up any persistent data structures */
@@ -616,12 +588,11 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     NVPtr pNv;
     MessageType from;
     int i;
-    double real;
     int bytesPerPixel;
     ClockRangePtr clockRanges;
     char *mod = NULL;
     const char *reqSym = NULL;
-    int flags24;
+    const char *s;
 
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NVPreInit\n"));
     /*
@@ -699,13 +670,9 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     /*
      * The first thing we should figure out is the depth, bpp, etc.
      * Our default depth is 8, so pass it to the helper function.
-     * We support both 24bpp and 32bpp layouts, so indicate that.
      */
 
-/*    flags24 = Support24bppFb | Support32bppFb | SupportConvert32to24; */
-    flags24 = Support32bppFb;
-
-    if (!xf86SetDepthBpp(pScrn, 8, 8, 8, flags24)) {
+    if (!xf86SetDepthBpp(pScrn, 8, 8, 8, Support32bppFb)) {
 	return FALSE;
     } else {
 	/* Check that the returned depth is one we support */
@@ -737,19 +704,15 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 	/* The defaults are OK for us */
 	rgb zeros = {0, 0, 0};
 
-	if (!xf86SetWeight(pScrn, zeros, zeros)) {
+	if (!xf86SetWeight(pScrn, zeros, zeros))
 	    return FALSE;
-	} else {
-	    /* XXX check that weight returned is supported */
-            ;
-        }
     }
 
     if (!xf86SetDefaultVisual(pScrn, -1)) {
 	return FALSE;
     } else {
 	/* We don't currently support DirectColor at > 8bpp */
-	if (pScrn->depth > 8 && pScrn->defaultVisual != TrueColor) {
+	if (pScrn->depth > 8 && (pScrn->defaultVisual != TrueColor)) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Given default visual"
 		       " (%s) is not supported at depth %d\n",
 		       xf86GetVisualName(pScrn->defaultVisual), pScrn->depth);
@@ -769,16 +732,9 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, NVOptions);
 
     /* Set the bits per RGB for 8bpp mode */
-    if (pScrn->depth == 8) {
-	/* XXX This is here just to test options. */
-	/* Default to 8 */
+    if (pScrn->depth == 8)
 	pScrn->rgbBits = 8;
-	if (xf86GetOptValInteger(NVOptions, OPTION_RGB_BITS,
-				 &pScrn->rgbBits)) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Bits per RGB set to %d\n",
-		       pScrn->rgbBits);
-	}
-    }
+
     from = X_DEFAULT;
     pNv->HWCursor = TRUE;
     /*
@@ -799,16 +755,9 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 	pNv->NoAccel = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
     }
-    if (xf86ReturnOptValBool(NVOptions, OPTION_PCI_RETRY, FALSE)) {
-	pNv->UsePCIRetry = TRUE;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry enabled\n");
-    }
     if (xf86ReturnOptValBool(NVOptions, OPTION_SHOWCACHE, FALSE)) {
 	pNv->ShowCache = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ShowCache enabled\n");
-    }
-    if (xf86GetOptValFreq(NVOptions, OPTION_SET_MCLK, OPTUNITS_MHZ, &real)) {
-	pNv->MemClk = (int)(real * 1000.0);
     }
     if (xf86ReturnOptValBool(NVOptions, OPTION_SHADOW_FB, FALSE)) {
 	pNv->ShadowFB = TRUE;
@@ -833,6 +782,30 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 	pScrn->EnterVT       = NVEnterVTFBDev;
 	pScrn->LeaveVT       = fbdevHWLeaveVT;
 	pScrn->ValidMode     = fbdevHWValidMode;
+    }
+    pNv->Rotate = 0;
+    if ((s = xf86GetOptValString(NVOptions, OPTION_ROTATE))) {
+      if(!xf86NameCmp(s, "CW")) {
+	pNv->ShadowFB = TRUE;
+	pNv->NoAccel = TRUE;
+	pNv->HWCursor = FALSE;
+	pNv->Rotate = 1;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+		"Rotating screen clockwise - acceleration disabled\n");
+      } else
+      if(!xf86NameCmp(s, "CCW")) {
+	pNv->ShadowFB = TRUE;
+	pNv->NoAccel = TRUE;
+	pNv->HWCursor = FALSE;
+	pNv->Rotate = -1;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+		"Rotating screen counter clockwise - acceleration disabled\n");
+      } else {
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+		"\"%s\" is not a valid value for Option \"Rotate\"\n", s);
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+		"Valid options are \"CW\" or \"CCW\"\n");
+      }
     }
 
     /*
@@ -958,8 +931,6 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
      */
     (*pNv->PreInit)(pScrn);
     
-    /* HW bpp matches reported bpp */
-    pNv->HwBpp = pScrn->bitsPerPixel;
 
     /*
      * If the user has specified the amount of memory in the XF86Config
@@ -981,24 +952,6 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 	
     pNv->FbMapSize = pScrn->videoRam * 1024;
 
-    /* Set the bpp shift value */
-    switch (pScrn->bitsPerPixel) {
-    case 8:
-	pNv->BppShift = 0;
-	break;
-    case 16:
-	pNv->BppShift = 1;
-	break;
-    case 24:
-	pNv->BppShift = 0;
-	break;
-    case 32:
-	pNv->BppShift = 2;
-	break;
-    }
-
-    pNv->Rounding = 128 >> pNv->BppShift;
-
     /*
      * If the driver can do gamma correction, it should call xf86SetGamma()
      * here.
@@ -1012,67 +965,34 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
 
-    /* XXX Set HW cursor use */
+    pNv->FbUsableSize = pNv->FbMapSize;
 
-    /* Set the min pixel clock */
-    pNv->MinClock = 12000;	/* XXX Guess, need to check this */
-    xf86DrvMsg(pScrn->scrnIndex, X_DEFAULT, "Min pixel clock is %d MHz\n",
-	       pNv->MinClock / 1000);
-    /*
-     * If the user has specified ramdac speed in the XF86Config
-     * file, we respect that setting.
-     */
-    if (pNv->pEnt->device->dacSpeeds[0]) {
-	int speed = 0;
-
-	switch (pScrn->bitsPerPixel) {
-	case 8:
-	   speed = pNv->pEnt->device->dacSpeeds[DAC_BPP8];
-	   break;
-	case 16:
-	   speed = pNv->pEnt->device->dacSpeeds[DAC_BPP16];
-	   break;
-	case 24:
-	   speed = pNv->pEnt->device->dacSpeeds[DAC_BPP24];
-	   break;
-	case 32:
-	   speed = pNv->pEnt->device->dacSpeeds[DAC_BPP32];
-	   break;
-	}
-	if (speed == 0)
-	    pNv->MaxClock = pNv->pEnt->device->dacSpeeds[0];
-	else
-	    pNv->MaxClock = speed;
-	from = X_CONFIG;
-    } else {
-	pNv->MaxClock = pNv->Dac.maxPixelClock;
-	from = pNv->Dac.ClockFrom;
+    /* Remove reserved memory from end of buffer */
+    switch( pNv->riva.Architecture ) {
+    case 3:
+      pNv->FbUsableSize -= 32 * 1024;
+      break;
+    case 4:
+      pNv->FbUsableSize -= 128 * 1024;
+      break;
     }
-    xf86DrvMsg(pScrn->scrnIndex, from, "Max pixel clock is %d MHz\n",
-	       pNv->MaxClock / 1000);
+
 
     /*
      * Setup the ClockRanges, which describe what clock ranges are available,
      * and what sort of modes they can be used for.
      */
+
+    pNv->MinClock = 12000;
+    pNv->MaxClock = pNv->riva.MaxVClockFreqKHz;
+
     clockRanges = xnfalloc(sizeof(ClockRange));
     clockRanges->next = NULL;
     clockRanges->minClock = pNv->MinClock;
     clockRanges->maxClock = pNv->MaxClock;
     clockRanges->clockIndex = -1;		/* programmable */
-    clockRanges->interlaceAllowed = TRUE;
-    clockRanges->doubleScanAllowed = TRUE;
-
-    /* Only set MemClk if appropriate for the ramdac */
-    if (pNv->Dac.SetMemClk) {
-	if (pNv->MemClk == 0) {
-	    pNv->MemClk = pNv->Dac.MemoryClock;
-	    from = pNv->Dac.MemClkFrom;
-	} else
-	    from = X_CONFIG;
-	xf86DrvMsg(pScrn->scrnIndex, from, "MCLK used is %.1f MHz\n",
-		   pNv->MemClk / 1000.0);
-    }
+    clockRanges->interlaceAllowed = FALSE;
+    clockRanges->doubleScanAllowed = FALSE;
 
     /*
      * xf86ValidateModes will check that the mode HTotal and VTotal values
@@ -1080,22 +1000,15 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
      * pScrn->maxVValue are set.  Since our NVValidMode() already takes
      * care of this, we don't worry about setting them here.
      */
-    {
-	int *linePitches = NULL;
-	int minPitch = 256;
-	int maxPitch = 2048;	
-        
+    {        
 	i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
 			      pScrn->display->modes, clockRanges,
-			      linePitches, minPitch, maxPitch,
-			      pNv->Rounding * pScrn->bitsPerPixel, 128, 2048,
+			      NULL, 256, 2048,
+			      32 * pScrn->bitsPerPixel, 128, 2048,
 			      pScrn->display->virtualX,
 			      pScrn->display->virtualY,
-			      pNv->FbMapSize,
+			      pNv->FbUsableSize,
 			      LOOKUP_BEST_REFRESH);
-
-	if (linePitches)
-	   xfree(linePitches);
     }
 
     if (i < 1 && pNv->FBDev) {
@@ -1136,25 +1049,6 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     /* Set display resolution */
     xf86SetDpi(pScrn, 0, 0);
 
-    /*
-     * Compute the byte offset into the linear frame buffer where the
-     * frame buffer data should actually begin.
-     */
-
-    pNv->YDstOrg = 0;
-    xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2, "YDstOrg is set to %d\n",
-		   pNv->YDstOrg);
-    pNv->FbUsableSize = pNv->FbMapSize - pNv->YDstOrg * bytesPerPixel;
-
-    /* Remove reserved memory from end of buffer */
-    switch( pNv->riva.Architecture ) {
-    case 3:
-      pNv->FbUsableSize -= 32 * 1024;
-      break;
-    case 4:
-      pNv->FbUsableSize -= 128 * 1024;
-      break;
-    }
 
     /*
      * XXX This should be taken into account in some way in the mode valdation
@@ -1171,19 +1065,12 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 	mod = "cfb16";
 	reqSym = "cfb16ScreenInit";
 	break;
-    case 24:
-	if (pix24bpp == 24) {
-	    mod = "cfb24";
-	    reqSym = "cfb24ScreenInit";
-	} else {
-	    mod = "xf24_32bpp";
-	    reqSym = "cfb24_32ScreenInit";
-	}
-	break;
     case 32:
         mod = "cfb32";
         reqSym = "cfb32ScreenInit";
 	break;
+    default:
+	return FALSE;
     }
     if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
 	NVFreeRec(pScrn);
@@ -1218,6 +1105,15 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 	}
 	xf86LoaderReqSymLists(shadowSymbols, NULL);
     }
+
+    pNv->CurrentLayout.bitsPerPixel = pScrn->bitsPerPixel;
+    pNv->CurrentLayout.depth = pScrn->depth;
+    pNv->CurrentLayout.displayWidth = pScrn->displayWidth;
+    pNv->CurrentLayout.weight.red = pScrn->weight.red;
+    pNv->CurrentLayout.weight.green = pScrn->weight.green;
+    pNv->CurrentLayout.weight.blue = pScrn->weight.blue;
+    pNv->CurrentLayout.mode = pScrn->currentMode;
+
     return TRUE;
 }
 
@@ -1249,7 +1145,7 @@ NVMapMem(ScrnInfoPtr pScrn)
     if (pNv->FbBase == NULL)
 	return FALSE;
 
-    pNv->FbStart = pNv->FbBase + pNv->YDstOrg * (pScrn->bitsPerPixel / 8);
+    pNv->FbStart = pNv->FbBase;
 
     return TRUE;
 }
@@ -1270,7 +1166,7 @@ NVMapMemFBDev(ScrnInfoPtr pScrn)
     if (pNv->IOBase == NULL)
         return FALSE;
 
-    pNv->FbStart = pNv->FbBase + pNv->YDstOrg * (pScrn->bitsPerPixel / 8);
+    pNv->FbStart = pNv->FbBase;
 
     return TRUE;
 }
@@ -1337,6 +1233,8 @@ NVModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     vgaHWProtect(pScrn, FALSE);
 
+    pNv->CurrentLayout.mode = mode;
+
     return TRUE;
 }
 
@@ -1376,6 +1274,7 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     int ret;
     VisualPtr visual;
     unsigned char *FBStart;
+    int width, height, displayWidth;
 
     /* 
      * First get the ScrnInfoRec
@@ -1445,18 +1344,15 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     /* Setup the visuals we support. */
 
-    /* All NV support DirectColor and can do overlays in 32bpp */
-    if(pNv->Overlay8Plus24 && (pScrn->bitsPerPixel == 32)) {
-	if (!miSetVisualTypes(8, PseudoColorMask | GrayScaleMask,
-			      pScrn->rgbBits, PseudoColor))
-		return FALSE;
-	if (!miSetVisualTypes(24, TrueColorMask, pScrn->rgbBits, TrueColor))
-		return FALSE;
+    if (pScrn->bitsPerPixel > 8) {
+        if (!miSetVisualTypes(pScrn->depth, TrueColorMask, pScrn->rgbBits,
+                              pScrn->defaultVisual))
+            return FALSE;
     } else {
-	if (!miSetVisualTypes(pScrn->depth,
-			      miGetDefaultVisualMask(pScrn->depth),
-			      pScrn->rgbBits, pScrn->defaultVisual))
-	    return FALSE;
+        if (!miSetVisualTypes(pScrn->depth, 
+                              miGetDefaultVisualMask(pScrn->depth),
+                              pScrn->rgbBits, pScrn->defaultVisual))
+            return FALSE;
     }
 
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- Visuals set up\n"));
@@ -1466,11 +1362,22 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      * pScreen fields.
      */
 
+    width = pScrn->virtualX;
+    height = pScrn->virtualY;
+    displayWidth = pScrn->displayWidth;
+
+
+    if(pNv->Rotate) {
+	height = pScrn->virtualX;
+	width = pScrn->virtualY;
+    }
+
+
     if(pNv->ShadowFB) {
-	pNv->ShadowPitch = 
-		((pScrn->virtualX * pScrn->bitsPerPixel >> 3) + 3) & ~3L;
-	pNv->ShadowPtr = xalloc(pNv->ShadowPitch * pScrn->virtualY);
-	FBStart = pNv->ShadowPtr;
+ 	pNv->ShadowPitch = BitmapBytePad(pScrn->bitsPerPixel * width);
+        pNv->ShadowPtr = xalloc(pNv->ShadowPitch * height);
+	displayWidth = pNv->ShadowPitch / (pScrn->bitsPerPixel >> 3);
+        FBStart = pNv->ShadowPtr;
     } else {
 	pNv->ShadowPtr = NULL;
 	FBStart = pNv->FbStart;
@@ -1479,39 +1386,21 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     switch (pScrn->bitsPerPixel) {
     case 8:
 	ret = cfbScreenInit(pScreen, FBStart,
-			pScrn->virtualX, pScrn->virtualY,
+			width, height,
 			pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth);
+			displayWidth);
 	break;
     case 16:
 	ret = cfb16ScreenInit(pScreen, FBStart,
-			pScrn->virtualX, pScrn->virtualY,
+			width, height,
 			pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth);
-	break;
-    case 24:
-	if (pix24bpp == 24)
-	    ret = cfb24ScreenInit(pScreen, FBStart,
-			pScrn->virtualX, pScrn->virtualY,
-			pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth);
-	else
-	    ret = cfb24_32ScreenInit(pScreen, FBStart,
-			pScrn->virtualX, pScrn->virtualY,
-			pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth);
+			displayWidth);
 	break;
     case 32:
-	if(pNv->Overlay8Plus24)
-	    ret = cfb8_32ScreenInit(pScreen, FBStart,
-			pScrn->virtualX, pScrn->virtualY,
+	ret = cfb32ScreenInit(pScreen, FBStart,
+			width, height,
 			pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth);
-	else 
-	    ret = cfb32ScreenInit(pScreen, FBStart,
-			pScrn->virtualX, pScrn->virtualY,
-			pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth);
+			displayWidth);
 	break;
     default:
 	xf86DrvMsg(scrnIndex, X_ERROR,
@@ -1522,6 +1411,7 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     }
     if (!ret)
 	return FALSE;
+
 
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- cfb set up\n"));
 
@@ -1578,16 +1468,31 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     
     /* Initialize colormap layer.  
 	Must follow initialization of the default colormap */
-    if(!xf86HandleColormaps(pScreen, 256, 8, 
-        (pNv->FBDev ? fbdevHWLoadPalette : NVdac->LoadPalette), NULL,
-        (pNv->Overlay8Plus24 ? 0 : CMAP_PALETTED_TRUECOLOR) |
-                        CMAP_RELOAD_ON_MODE_SWITCH))    
-        return FALSE;
+    if(!xf86HandleColormaps(pScreen, 256, 
+		(pNv->riva.Architecture == 3) ? 6 : 8,
+		(pNv->FBDev ? fbdevHWLoadPalette : NVdac->LoadPalette), 
+		NULL, CMAP_RELOAD_ON_MODE_SWITCH))    
+	return FALSE;
 
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- Palette loaded\n"));
     
-    if(pNv->ShadowFB)
-	ShadowFBInit(pScreen, NVRefreshArea);
+    if(pNv->ShadowFB) {
+	RefreshAreaFuncPtr refreshArea = NVRefreshArea;
+
+	if(pNv->Rotate) {
+   	   pNv->PointerMoved = pScrn->PointerMoved;
+	   pScrn->PointerMoved = NVPointerMoved;
+
+	   switch(pScrn->bitsPerPixel) {
+	   case 8:	refreshArea = NVRefreshArea8;	break;
+	   case 16:	refreshArea = NVRefreshArea16;	break;
+	   case 24:	refreshArea = NVRefreshArea24;	break;
+	   case 32:	refreshArea = NVRefreshArea32;	break;
+	   }
+	}
+
+	ShadowFBInit(pScreen, refreshArea);
+    }
 
 #ifdef DPMSExtension
     /* Call the vgaHW DPMS function directly.
@@ -1599,7 +1504,7 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- Color maps etc. set up\n"));
     
     pScrn->memPhysBase = pNv->FbAddress;
-    pScrn->fbOffset = pNv->YDstOrg * (pScrn->bitsPerPixel / 8);
+    pScrn->fbOffset = 0;
 
 #ifdef XvExtension
     {
