@@ -1,4 +1,7 @@
 XFree86 4.1.99.2 (xx August 2001)
+ 255. Make xdm use BSD authentification on OpenBSD and use setproctitle() 
+      instead of home grown version where available (enabled on 
+      OpenBSD and NetBSD only) (Matthieu Herrb).
  254. Make -configure generate the DisplaySize from the acquired DDC
       information (#4897, Andrew C Aitchison).
 
@@ -13764,4 +13767,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1923 2001/08/20 21:02:05 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1924 2001/08/21 19:23:24 alanh Exp $

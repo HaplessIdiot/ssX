@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/dm.h,v 3.24 2001/07/23 13:15:52 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/dm.h,v 3.25 2001/07/25 15:05:19 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -108,6 +108,16 @@ typedef union wait	waitType;
 #include <security/pam_appl.h>
 #endif
 
+#ifdef CSRG_BASED
+#include <sys/param.h>
+#ifdef HAS_SETUSERCONTEXT
+#include <login_cap.h>
+#include <pwd.h>
+#ifdef USE_BSDAUTH
+#include <bsd_auth.h>
+#endif
+#endif
+#endif
 
 # define waitCompose(sig,core,code) ((sig) * 256 + (core) * 128 + (code))
 # define waitVal(w)	waitCompose(waitSig(w), waitCore(w), waitCode(w))
@@ -364,7 +374,9 @@ extern void BecomeOrphan (void);
 extern void CloseOnFork (void);
 extern void RegisterCloseOnFork (int fd);
 extern void StartDisplay (struct display *d);
+#ifndef HAS_SETPROCTITLE
 extern void SetTitle (char *name, ...);
+#endif
 
 /* in dpylist.c */
 extern int AnyDisplaysLeft (void);

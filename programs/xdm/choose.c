@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xdm/choose.c,v 3.12 2001/07/23 13:15:51 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/choose.c,v 3.13 2001/07/25 15:05:19 dawes Exp $ */
 
 /*
  * choose.c
@@ -496,7 +496,11 @@ RunChooser (struct display *d)
     char    **env;
 
     Debug ("RunChooser %s\n", d->name);
+#ifndef HAS_SETPROCTITLE
     SetTitle (d->name, "chooser", (char *) 0);
+#else
+    setproctitle("chooser %s", d->name);
+#endif
     LoadXloginResources (d);
     args = parseArgs ((char **) 0, d->chooser);
     strcpy (buf, "-xdmaddress ");
