@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.55 1999/01/15 02:12:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.56 1999/01/17 10:54:12 dawes Exp $ */
 
 /*
  *
@@ -292,6 +292,10 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86Break2)
    SYMFUNC(xf86Break3)
    SYMFUNC(xf86SetBackingStore)
+
+   /* xf86Init.c */
+   SYMFUNC(xf86GetPixFormat)
+   SYMFUNC(xf86GetBppFromDepth)
 
    /* xf86Mode.c */
    SYMFUNC(xf86GetNearestClock)
