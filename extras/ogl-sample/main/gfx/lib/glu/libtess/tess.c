@@ -35,9 +35,8 @@
 /*
 ** Author: Eric Veach, July 1994.
 **
-** $Date: 2001/01/15 21:49:23 $ $Revision: 1.1 $
-** $Header: /vol1/history/xf86/xc/extras/ogl-sample/main/gfx/lib/glu/libtess/tess.c,v 1.1 2001/01/15 21:49:23 dawes Exp $
 */
+/* $XFree86$ */
 
 #include "gluos.h"
 #include <stddef.h>
@@ -271,7 +270,8 @@ gluTessNormal( GLUtesselator *tess, GLdouble x, GLdouble y, GLdouble z )
 }
 
 void GLAPIENTRY
-gluTessCallback( GLUtesselator *tess, GLenum which, void (GLAPIENTRY *fn)())
+gluTessCallback( GLUtesselator *tess, GLenum which,
+		GLvoid (GLAPIENTRY *fn)(GLvoid))
 {
   switch( which ) {
   case GLU_TESS_BEGIN:
