@@ -27,7 +27,7 @@
 
 <title>XFree86 X server ``New Design'' (DRAFT)
 <author>The XFree86 Project, Inc
-<date>Last modified 1 August 2001
+<date>Last modified 18 May 2002
 
 
 
@@ -36,7 +36,7 @@
 
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.47 2002/01/16 20:38:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.48 2002/02/14 22:07:59 tsi Exp $
 </ident>
 
 
@@ -5677,9 +5677,9 @@ typedef struct {
   <quote><p>
     &s.code;Bool xf86IsUnblank(int mode)&e.code;
     <quote><p>
-      Returns &s.code;FALSE&e.code; when the screen saver mode specified
+      Returns &s.code;TRUE&e.code; when the screen saver mode specified
       by &s.code;mode&e.code; requires the screen be unblanked,
-      and &s.code;TRUE&e.code; otherwise.  The screen saver modes that
+      and &s.code;FALSE&e.code; otherwise.  The screen saver modes that
       require blanking are &s.code;SCREEN_SAVER_ON&e.code; and
       &s.code;SCREEN_SAVER_CYCLE&e.code;, and the screen saver modes that
       require unblanking are &s.code;SCREEN_SAVER_OFF&e.code; and
