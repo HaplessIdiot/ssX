@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbglyph.c,v 1.6 2000/02/18 16:23:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbglyph.c,v 1.8 2000/09/22 05:58:01 keithp Exp $ */
 
 #include "fb.h"
 #include	"fontstruct.h"
@@ -95,7 +95,7 @@ fbGlyphIn (RegionPtr	pRegion,
 #else
 #define	_A	f0
 #define _B	f1
-#define _C	f1
+#define _C	f2
 #define _AB	f0
 #define _BC	f1
 #define _CA	f2
