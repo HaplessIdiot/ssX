@@ -3,8 +3,6 @@ lib/libGL.so.1.2
 lib/libGL.so
 lib/libICE.so.6.3
 lib/libICE.so
-lib/libOSMesa.so.3.3
-lib/libOSMesa.so
 lib/libPEX5.so.6.0
 lib/libPEX5.so
 lib/libSM.so.6.0
@@ -42,3 +40,5 @@ lib/libdpstk.so.1.0
 lib/libdpstk.so
 lib/libpsres.so.1.0
 lib/libpsres.so
+lib/liboldX.so.6.0
+lib/liboldX.so
