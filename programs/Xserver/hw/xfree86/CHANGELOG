@@ -1,4 +1,12 @@
 XFree86 4.1.99.4 (xx December 2001)
+ 610. Fix some typos in the X.Org INSTALL doc (#5113, Chris Pepper).
+ 609. Fix an bug that prevented the releasing of XvMC memory on exit (#5112,
+      Matthew J. Sottek).
+ 608. Some Xprint build warning fixes (David Dawes).
+ 607. Xprt PCL3 support (#5111, Mark Snitily, from X11R6.6).
+ 606. Xprt PostScript bitmap cache (#5110, Chris Bare, from X11R6.6).
+ 605. Updates for the Romanian (ro) XKB map (#5108, Marius Andreiana).
+ 604. Update s3virge docs (#5107, Kevin Brosius).
  603. Disable pixmap24 option for Permedia3/4/R4 as the chip doesn't support
       this (Alan Hourihane).
  602. Add French localization of XDarwin help file (Olivier Verdier).
@@ -14394,4 +14402,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2098 2001/12/20 06:42:18 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2099 2001/12/21 09:53:05 alanh Exp $
