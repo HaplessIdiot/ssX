@@ -26,7 +26,7 @@
  * this work is sponsored by Appian Graphics.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.10 2000/12/29 16:48:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.11 2001/01/30 10:06:35 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -70,8 +70,10 @@ Permedia3MemorySizeDetect(ScrnInfoPtr pScrn)
     for(i=0;i<64;i++) {
     	/* Clear test memory */
 	MMIO_OUT32(pGlint->FbBase,i*1024*1024, 0);
+	mem_barrier();
     	/* ok, now write 0xf5f5f5f5 magic */
 	MMIO_OUT32(pGlint->FbBase,i*1024*1024, 0xf5f5f5f5);
+	mem_barrier();
     	/* Let's check for wrapover, write will fail */
 	if (MMIO_IN32(pGlint->FbBase, i*1024*1024) == 0xf5f5f5f5) 
 		size = i;
