@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/ddxList.c,v 3.6 2001/01/17 22:37:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxList.c,v 3.7 2001/10/28 03:34:19 tsi Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -57,7 +57,7 @@ static char *componentDirs[_XkbListNumComponents] = {
 
 /***====================================================================***/
 
-Status
+static Status
 #if NeedFunctionPrototypes
 _AddListComponent(	XkbSrvListInfoPtr	list,
 			int			what,

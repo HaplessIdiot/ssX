@@ -2,11 +2,11 @@
  *  Copyright (C) 1998 Itai Nahshon, Michael Schimek
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/i2c/xf86i2c.h,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/i2c/xf86i2c.h,v 1.9 2003/05/05 21:18:41 tsi Exp $ */
 #ifndef _XF86I2C_H
 #define _XF86I2C_H
 
-#include "miscstruct.h"
+#include "regionstr.h"
 
 typedef unsigned char  I2CByte;
 typedef unsigned short I2CSlaveAddr;

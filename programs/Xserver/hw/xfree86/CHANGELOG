@@ -1,4 +1,11 @@
 XFree86 4.3.99.9 (xx July 2003)
+ 307. A lot of X server prototype cleanups, including fixing an
+      inconsistency between the cfbBitBlt and CopyPlane functions 
+      exposed by the prototyping (#A.1859, Alexander Stohr).
+ 306. Fix missing newline in Message -> MessageF transition in dri_glx.c
+      (#A.1833, Alexander Stohr).
+ 305. Fill out the sunleo man page (#A.1783, Arnaud Quette).
+ 304. Fix a typo in the XSetWMProtocols(3) man page (#5697, Alexander Pohoyda).
  303. Fix for a few Xlib charset converters (Bruno Haible).
  302. Fix calculation of CRTC2 frame offset with page flipping in radeon driver
       (Michel Daenzer)
@@ -17299,7 +17306,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2774 2003/07/14 23:07:26 daenzer Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2775 2003/07/15 17:34:52 pascal Exp $
 
 
 

@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbInit.c,v 3.25 2003/02/09 02:28:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbInit.c,v 3.27 2003/03/17 23:52:27 paulo Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -45,6 +45,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "XKBgeom.h"
 #include <X11/extensions/XKMformat.h>
 #include <X11/extensions/XKBfile.h>
+#include "xkb.h"
 
 
 #define	CREATE_ATOM(s)	MakeAtom(s,sizeof(s)-1,1)
@@ -668,12 +669,19 @@ XkbEventCauseRec	cause;
 
 Bool
 #if NeedFunctionPrototypes
-XkbInitKeyboardDeviceStruct(	DeviceIntPtr		dev,
-				XkbComponentNamesPtr	names,
-				KeySymsPtr		pSymsIn,
-				CARD8 			pModsIn[],
-				void			(*bellProc)(),
-				void			(*ctrlProc)())
+XkbInitKeyboardDeviceStruct(
+    DeviceIntPtr		dev,
+    XkbComponentNamesPtr	names,
+    KeySymsPtr                  pSymsIn,
+    CARD8                       pModsIn[],
+    void                        (*bellProc)(
+        int /*percent*/,
+        DeviceIntPtr /*device*/,
+        pointer /*ctrl*/,
+        int),
+    void                        (*ctrlProc)(
+        DeviceIntPtr /*device*/,
+        KeybdCtrl * /*ctrl*/))
 #else
 XkbInitKeyboardDeviceStruct( dev,names,pSymsIn,pModsIn,bellProc,ctrlProc )
     DeviceIntPtr		  dev;

@@ -26,12 +26,12 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
+/* $XFree86$ */
 
 
 #ifndef MIVALIDATE_H
 #define MIVALIDATE_H
 
-#include "miscstruct.h"
 #include "regionstr.h"
 
 typedef union _Validate {

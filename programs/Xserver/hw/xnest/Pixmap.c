@@ -12,11 +12,11 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Pixmap.c,v 3.4 2002/05/14 21:59:38 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Pixmap.c,v 3.6 2003/01/10 13:29:40 eich Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
-#include "miscstruct.h"
+#include "regionstr.h"
 #include "pixmapstr.h"
 #include "scrnintstr.h"
 #include "regionstr.h"

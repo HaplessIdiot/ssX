@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkb.c,v 3.16 2002/04/04 14:05:57 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkb.c,v 3.18 2002/12/20 20:18:35 paulo Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -36,6 +36,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define	XKBSRV_NEED_FILE_FUNCS
 #include "XKBsrv.h"
 #include "extnsionst.h"
+#include "modinit.h"
+#include "xkb.h"
 
 #include "XI.h"
 
@@ -6918,7 +6920,7 @@ XkbResetProc(extEntry)
 
 void
 #if NeedFunctionPrototypes
-XkbExtensionInit(void)
+XkbExtensionInit(INITARGS)
 #else
 XkbExtensionInit()
 #endif

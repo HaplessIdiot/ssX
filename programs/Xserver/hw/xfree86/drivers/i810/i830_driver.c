@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.33 2003/04/23 21:51:38 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.34 2003/06/18 13:14:17 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -154,7 +154,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "micmap.h"
 
 #include "fb.h"
-#include "miscstruct.h"
+#include "regionstr.h"
 #include "xf86xv.h"
 #include "Xv.h"
 #include "vbe.h"

@@ -23,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_arc.c,v 1.9 2000/06/25 12:46:00 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_arc.c,v 1.10 2001/12/14 19:59:51 dawes Exp $ */
 
 
 #include "X.h"
@@ -32,7 +32,7 @@ in this Software without prior written authorization from The Open Group.
 #include "pixmapstr.h"
 #include "regionstr.h"
 #include "Xprotostr.h"
-#include "miscstruct.h"
+#include "regopmstr.h"
 #include "mizerarc.h"
 #include "mi.h"
 #include "scrnintstr.h"

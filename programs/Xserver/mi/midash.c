@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/midash.c,v 1.3 2001/08/06 21:46:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/midash.c,v 1.4 2001/12/14 20:00:21 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $Xorg: midash.c,v 1.4 2001/02/09 02:05:20 xorgcvs Exp $ */
-#include "miscstruct.h"
+#include "regionstr.h"
 #include "mistruct.h"
 #include "mifpoly.h"
 

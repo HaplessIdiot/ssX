@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.41tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.43 2003/06/25 18:06:25 eich Exp $ */
 
 /*
  * Authors:
@@ -92,7 +92,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /* The driver's own header file: */
 
 
-#include "miscstruct.h"
+#include "regionstr.h"
 
 #include "xf86xv.h"
 #include "Xv.h"

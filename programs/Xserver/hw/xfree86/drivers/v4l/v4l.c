@@ -2,7 +2,7 @@
  *  video4linux Xv Driver 
  *  based on Michael Schimek's permedia 2 driver.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.29 2001/10/31 22:50:29 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.30 2002/05/14 20:19:53 alanh Exp $ */
 
 #include "videodev.h"
 #include "xf86.h"
@@ -13,7 +13,7 @@
 #include "xf86fbman.h"
 #include "xf86xv.h"
 #include "Xv.h"
-#include "miscstruct.h"
+#include "regionstr.h"
 #include "dgaproc.h"
 #include "xf86str.h"
 

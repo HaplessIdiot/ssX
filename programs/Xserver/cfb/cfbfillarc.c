@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbfillarc.c,v 3.4 2001/01/17 22:36:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbfillarc.c,v 3.5 2001/12/14 19:59:22 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -29,7 +29,7 @@ in this Software without prior written authorization from The Open Group.
 
 #include "X.h"
 #include "Xprotostr.h"
-#include "miscstruct.h"
+#include "regionstr.h"
 #include "gcstruct.h"
 #include "pixmapstr.h"
 #include "scrnintstr.h"
@@ -47,10 +47,10 @@ in this Software without prior written authorization from The Open Group.
 #endif
 
 static void
-RROP_NAME(cfbFillEllipseSolid) (pDraw, pGC, arc)
-    DrawablePtr pDraw;
-    GCPtr pGC;
-    xArc *arc;
+RROP_NAME(cfbFillEllipseSolid)(
+    DrawablePtr pDraw,
+    GCPtr pGC,
+    xArc *arc)
 {
     STUPID int x, y, e;
     STUPID int yk, xk, ym, xm, dx, dy, xorg, yorg;
@@ -254,10 +254,10 @@ RROP_NAME(cfbFillEllipseSolid) (pDraw, pGC, arc)
     }
 
 static void
-RROP_NAME(cfbFillArcSliceSolid)(pDraw, pGC, arc)
-    DrawablePtr pDraw;
-    GCPtr pGC;
-    xArc *arc;
+RROP_NAME(cfbFillArcSliceSolid)(
+    DrawablePtr pDraw,
+    GCPtr pGC,
+    xArc *arc)
 {
     int yk, xk, ym, xm, dx, dy, xorg, yorg, slw;
     register int x, y, e;

@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbUtils.c,v 3.13 2001/08/23 14:33:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbUtils.c,v 3.14 2003/05/15 12:04:03 pascal Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -40,12 +40,13 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define	XKBSRV_NEED_FILE_FUNCS
 #include "XKBsrv.h"
 #include "extensions/XKBgeom.h"
+#include "xkb.h"
 
 #ifdef MODE_SWITCH
 extern Bool noKME; /* defined in os/utils.c */
 #endif
 
-	int	XkbDisableLockActions = 0;
+int	XkbDisableLockActions = 0;
 
 /***====================================================================***/
 

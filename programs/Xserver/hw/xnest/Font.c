@@ -12,13 +12,13 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Font.c,v 3.4 1996/12/27 07:07:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Font.c,v 3.5 2001/01/17 22:36:55 dawes Exp $ */
 
 #include "X.h"
 #include "Xatom.h"
 #include "Xproto.h"
 #include "misc.h"
-#include "miscstruct.h"
+#include "regionstr.h"
 #include "font.h"
 #include "fontstruct.h"
 #include "scrnintstr.h"

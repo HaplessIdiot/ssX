@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miwindow.c,v 1.6 2001/08/22 23:10:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miwindow.c,v 1.7 2001/12/14 20:00:28 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 /* $Xorg: miwindow.c,v 1.4 2001/02/09 02:05:22 xorgcvs Exp $ */
 #include "X.h"
-#include "miscstruct.h"
+#include "regionstr.h"
 #include "region.h"
 #include "mi.h"
 #include "windowstr.h"

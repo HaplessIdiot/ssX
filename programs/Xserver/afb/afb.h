@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afb.h,v 3.7 2001/08/01 00:44:47 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afb.h,v 3.8 2001/10/28 03:32:57 tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -56,7 +56,7 @@ SOFTWARE.
 #include "region.h"
 #include "gc.h"
 #include "colormap.h"
-#include "miscstruct.h"
+#include "regionstr.h"
 #include "mibstore.h"
 #include "mfb.h"
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/mesa/src/X/xf86glx.c,v 1.17 2002/11/19 14:39:51 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/mesa/src/X/xf86glx.c,v 1.18 2002/12/17 05:03:24 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -33,7 +33,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
 
-#include <miscstruct.h>
+#include <regionstr.h>
 #include <resource.h>
 #include <GL/gl.h>
 #include <GL/glxint.h>

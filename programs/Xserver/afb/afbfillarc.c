@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbfillarc.c,v 3.0 1996/08/18 01:45:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbfillarc.c,v 3.1 1998/03/20 21:04:54 hohndel Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -30,7 +30,7 @@ in this Software without prior written authorization from the X Consortium.
 
 #include "X.h"
 #include "Xprotostr.h"
-#include "miscstruct.h"
+#include "regionstr.h"
 #include "gcstruct.h"
 #include "pixmapstr.h"
 #include "scrnintstr.h"
