@@ -375,7 +375,7 @@ ProcPanoramiXShapeRectangles (client)
 
     if(!(win = (PanoramiXRes *)SecurityLookupIDByType(
 		client, stuff->dest, XRT_WINDOW, SecurityWriteAccess)))
-	return BadRequest;
+	return BadWindow;
 
     FOR_NSCREENS(j) {
 	stuff->dest = win->info[j].id;
@@ -464,15 +464,19 @@ ProcPanoramiXShapeMask (client)
 
     if(!(win = (PanoramiXRes *)SecurityLookupIDByType(
 		client, stuff->dest, XRT_WINDOW, SecurityWriteAccess)))
-	return BadRequest;
+	return BadWindow;
 
-    if(!(pmap = (PanoramiXRes *)SecurityLookupIDByType(
+    if(stuff->src != None) {
+	if(!(pmap = (PanoramiXRes *)SecurityLookupIDByType(
 		client, stuff->src, XRT_PIXMAP, SecurityReadAccess)))
-	return BadRequest;
+	    return BadPixmap;
+    } else
+	pmap = NULL;
 
     FOR_NSCREENS(j) {
 	stuff->dest = win->info[j].id;
-	stuff->src  = pmap->info[j].id;
+	if(pmap)
+	    stuff->src  = pmap->info[j].id;
 	result = ProcShapeMask (client);
 	BREAK_IF(result != Success);
     }
@@ -575,11 +579,11 @@ ProcPanoramiXShapeCombine (client)
 
     if(!(win = (PanoramiXRes *)SecurityLookupIDByType(
 		client, stuff->dest, XRT_WINDOW, SecurityWriteAccess)))
-	return BadRequest;
+	return BadWindow;
 
     if(!(win2 = (PanoramiXRes *)SecurityLookupIDByType(
 		client, stuff->src, XRT_WINDOW, SecurityReadAccess)))
-	return BadRequest;
+	return BadWindow;
 
     FOR_NSCREENS(j) {
 	stuff->dest = win->info[j].id;
@@ -644,7 +648,7 @@ ProcPanoramiXShapeOffset (client)
    
     if(!(win = (PanoramiXRes *)SecurityLookupIDByType(
 		client, stuff->dest, XRT_WINDOW, SecurityWriteAccess)))
-	return BadRequest;
+	return BadWindow;
 
     FOR_NSCREENS(j) {
 	stuff->dest = win->info[j].id;
@@ -1050,37 +1054,29 @@ ProcShapeDispatch (client)
         if ( !noPanoramiXExtension )
 	    return ProcPanoramiXShapeRectangles (client);
         else 
-	    return ProcShapeRectangles (client);
-#else
-	return ProcShapeRectangles (client);
 #endif
+	return ProcShapeRectangles (client);
     case X_ShapeMask:
 #ifdef PANORAMIX
         if ( !noPanoramiXExtension )
            return ProcPanoramiXShapeMask (client);
 	else
-	   return ProcShapeMask (client);
-#else
-	return ProcShapeMask (client);
 #endif
+	return ProcShapeMask (client);
     case X_ShapeCombine:
 #ifdef PANORAMIX
         if ( !noPanoramiXExtension )
            return ProcPanoramiXShapeCombine (client);
 	else
-	   return ProcShapeCombine (client);
-#else
-	return ProcShapeCombine (client);
 #endif
+	return ProcShapeCombine (client);
     case X_ShapeOffset:
 #ifdef PANORAMIX
         if ( !noPanoramiXExtension )
            return ProcPanoramiXShapeOffset (client);
 	else
-	   return ProcShapeOffset (client);
-#else
-	return ProcShapeOffset (client);
 #endif
+	return ProcShapeOffset (client);
     case X_ShapeQueryExtents:
 	return ProcShapeQueryExtents (client);
     case X_ShapeSelectInput:
