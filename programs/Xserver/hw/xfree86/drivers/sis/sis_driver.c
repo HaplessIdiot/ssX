@@ -25,7 +25,7 @@
  * Modified 1996 by Xavier Ducoin <xavier@rd.lectra.fr>
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis86c201.c,v 3.23 1997/02/28 08:22:30 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.1 1997/03/06 23:16:55 hohndel Exp $ */
 
 /*#define DEBUG*/
 /*#define IO_DEBUG*/
@@ -179,6 +179,7 @@ int SISchipset;
 /* default is enhanced mode (use option to disable)*/
 Bool sisUseLinear = TRUE;
 Bool sisUseMMIO = TRUE;
+Bool sisUseXAAcolorExp = TRUE;
 static int SISDisplayableMemory;
 unsigned char *sisMMIOBase = NULL;
 unsigned int PCIMMIOBase=0 ;
@@ -852,8 +853,12 @@ SISFbInit()
 	}
 
 	if (sisUseMMIO) {
-	   if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options)) 
+	   if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options)) {
+	       if ( !sisUseLinear || 
+		   OFLG_ISSET(OPTION_XAA_NO_COL_EXP, &vga256InfoRec.options))
+		   sisUseXAAcolorExp = FALSE;
 	       SISAccelInit();
+	   }
 	   else if ( sisUseLinear ) {
 	       ErrorF("%s %s: SIS: using old accelerated functions.\n",
 		 XCONFIG_PROBED, vga256InfoRec.name);

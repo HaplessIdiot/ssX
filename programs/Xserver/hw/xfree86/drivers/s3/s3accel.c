@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3accel.c,v 1.5 1997/04/08 10:13:03 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3accel.c,v 1.6 1997/04/12 13:45:30 hohndel Exp $ */
 
 /*
  *
@@ -529,17 +529,17 @@ void S3SubsequentDashedBresenhamLine32(x1, y1, octant, err, e1, e2, length,
 	if (octant & YMAJOR){
    	    if(octant & YDECREASING)   
    	    	cmd = CMD_LINE | DRAW | LINETYPE | PLANAR | _32BIT | 
-						WRTDATA | VECDIR_090;
+					PCDATA | WRTDATA | VECDIR_090;
             else 
 	    	cmd = CMD_LINE | DRAW | LINETYPE | PLANAR | _32BIT | 
-						WRTDATA | VECDIR_270;
+					PCDATA | WRTDATA | VECDIR_270;
 	} else {
     	    if(octant & XDECREASING)   
    	    	cmd = CMD_LINE | DRAW | LINETYPE | PLANAR | _32BIT |
- 						WRTDATA | VECDIR_180;
+ 					PCDATA | WRTDATA | VECDIR_180;
             else 
 	    	cmd = CMD_LINE | DRAW | LINETYPE | PLANAR | _32BIT | 
-						WRTDATA | VECDIR_000; 
+					PCDATA | WRTDATA | VECDIR_000; 
 	}
  
      	WaitQueue(4);
@@ -612,17 +612,17 @@ void S3SubsequentDashedBresenhamLine16(x1, y1, octant, err, e1, e2, length,
 	if (octant & YMAJOR){
    	    if(octant & YDECREASING)   
    	    	cmd = CMD_LINE | DRAW | LINETYPE | PLANAR | _16BIT | 
-						WRTDATA | VECDIR_090;
+					PCDATA | WRTDATA | VECDIR_090;
             else 
 	    	cmd = CMD_LINE | DRAW | LINETYPE | PLANAR | _16BIT | 
-						WRTDATA | VECDIR_270;
+					PCDATA | WRTDATA | VECDIR_270;
 	} else {
     	    if(octant & XDECREASING)   
    	    	cmd = CMD_LINE | DRAW | LINETYPE | PLANAR | _16BIT |
- 						WRTDATA | VECDIR_180;
+ 					PCDATA | WRTDATA | VECDIR_180;
             else 
 	    	cmd = CMD_LINE | DRAW | LINETYPE | PLANAR | _16BIT | 
-						WRTDATA | VECDIR_000; 
+					PCDATA | WRTDATA | VECDIR_000; 
 	}
  
      	WaitQueue(4);

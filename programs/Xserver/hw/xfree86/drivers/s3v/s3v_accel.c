@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_accel.c,v 1.3 1997/03/28 09:42:50 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_accel.c,v 1.4 1997/04/08 10:13:11 hohndel Exp $ */
 
 /*
  *
@@ -23,6 +23,9 @@
  *       29/03/97: Took out ROP definitions and moved them to s3v_rop.c
  * [0.4] 01/04/97: All basic accelerated features now support a planemask.
  *                 Lines basically work, but may not match cfb yet. 
+ * [0.5] 14/04/97: Further optimisations, implemented option "pci_retry" which
+ *                 relies on PCI bus to do WaitQueues(). Added support for
+ *                 32bpp bitblits and solid rects using GE in 16bpp mode.
  *
  * Note: we use a few macros to query the state of the coprocessor. 
  * WaitIdle() waits until the GE is idle.
@@ -52,12 +55,19 @@ static int s3vSavedCmd = 0;
 static int s3vSavedRectCmdForLine = 0;
 static int s3vSyncForLineBug = 0;
 static int s3vLineHWClipSet = 0;
+static int s3vNeedResetClip = TRUE;
 
 void S3VAccelSync();
+void S3VAccelInit();
+void S3VAccelInit32();
 void S3VSetupForScreenToScreenCopy();
 void S3VSubsequentScreenToScreenCopy();
+void S3VSetupForScreenToScreenCopy32();
+void S3VSubsequentScreenToScreenCopy32();
 void S3VSetupForFillRectSolid();
 void S3VSubsequentFillRectSolid();
+void S3VSetupForFillRectSolid32();
+void S3VSubsequentFillRectSolid32();
 void S3VSetupForCPUToScreenColorExpand();
 void S3VSubsequentCPUToScreenColorExpand();
 void S3VSetupFor8x8PatternColorExpand();
@@ -95,7 +105,7 @@ S3VAccelInit()
       s3vPriv.bltbug_width1 = 29;
       s3vPriv.bltbug_width2 = 32;
       }
-    else {
+    else if (vgaBitsPerPixel == 24) {
       s3vPriv.PlaneMask = 0xffffff;
       s3vAccelCmd |= DST_24BPP;
       s3vPriv.bltbug_width1 = 16;
@@ -111,6 +121,7 @@ S3VAccelInit()
          NO_SYNC_AFTER_CPU_COLOR_EXPAND |
          HARDWARE_CLIP_LINE |
          TWO_POINT_LINE_NOT_LAST ; 
+
     xf86AccelInfoRec.PatternFlags = HARDWARE_PATTERN_MONO_TRANSPARENCY |
          HARDWARE_PATTERN_BIT_ORDER_MSBFIRST |  
          HARDWARE_PATTERN_PROGRAMMED_BITS |
@@ -197,6 +208,64 @@ S3VAccelInit()
 
 } 
 
+
+/* This is the acceleration init function for 32bpp. Right now, we only
+ * support CopyArea and FillRectSolid, using the graphics engine in 16bpp mode.
+ */
+
+void 
+S3VAccelInit32() 
+{
+
+/* Set-up our GE command primitive */
+    
+    s3vAccelCmd = 0;
+    s3vAccelCmd |= DRAW ;
+    s3vPriv.PlaneMask = 0xffff;
+    s3vAccelCmd |= DST_16BPP;
+    s3vPriv.bltbug_width1 = 29;
+    s3vPriv.bltbug_width2 = 32;
+
+    xf86AccelInfoRec.Flags = PIXMAP_CACHE |
+         COP_FRAMEBUFFER_CONCURRENCY |
+         BACKGROUND_OPERATIONS; 
+
+    xf86AccelInfoRec.Sync = S3VAccelSync;
+
+
+    /* ScreenToScreen copies */
+
+    xf86AccelInfoRec.SetupForScreenToScreenCopy =
+        S3VSetupForScreenToScreenCopy32;
+    xf86AccelInfoRec.SubsequentScreenToScreenCopy =
+        S3VSubsequentScreenToScreenCopy32;
+    xf86GCInfoRec.CopyAreaFlags = NO_TRANSPARENCY | NO_PLANEMASK; 
+
+    /* Filled rectangles */
+
+    xf86AccelInfoRec.SetupForFillRectSolid = 
+        S3VSetupForFillRectSolid32;
+    xf86AccelInfoRec.SubsequentFillRectSolid = 
+        S3VSubsequentFillRectSolid32;
+    xf86GCInfoRec.PolyFillRectSolidFlags = NO_PLANEMASK;  
+
+
+    /* Init pixmap cache */
+
+    xf86InitPixmapCache(&vga256InfoRec, vga256InfoRec.virtualY *
+       vga256InfoRec.displayWidth * vga256InfoRec.bitsPerPixel / 8,
+       vga256InfoRec.videoRam * 1024 -1024);
+
+    /* And these are screen parameters used to setup the GE. Remember, 
+     * we use 16bpp mode for the 32bpp Ops.
+     */
+    s3vPriv.Width = vga256InfoRec.displayWidth ;
+    s3vPriv.Bpp = vgaBitsPerPixel / 8;
+    s3vPriv.Bpl = s3vPriv.Width * s3vPriv.Bpp;
+    s3vPriv.ScissB = (vga256InfoRec.videoRam * 1024 - 1024) / s3vPriv.Bpl;
+}
+
+
 /* The sync function for the GE */
 void
 S3VAccelSync()
@@ -204,15 +273,18 @@ S3VAccelSync()
 
     WaitCommandEmpty(); 
     WaitIdleEmpty(); 
-    SETB_CLIP_L_R(0, s3vPriv.Width);
-    SETB_CLIP_T_B(0, s3vPriv.ScissB);
+    if (s3vNeedResetClip){
+       s3vNeedResetClip = FALSE;
+       SETB_CLIP_L_R(0, s3vPriv.Width);
+       SETB_CLIP_T_B(0, s3vPriv.ScissB);
+    }
 
 /* Workaround for possible bug when pattern fills follow lines */
     if(s3vSyncForLineBug){
-        WaitQueue(4);
+        /* WaitQueue(4); */
+        SETB_CMD_SET(s3vAccelCmd | CMD_BITBLT | ROP_D | CMD_AUTOEXEC);
         SETB_RSRC_XY(0,0);
         SETB_RWIDTH_HEIGHT(0,1);
-        SETB_CMD_SET(s3vAccelCmd | CMD_BITBLT | ROP_D | CMD_AUTOEXEC);
         SETB_RDEST_XY(0,0);
         WaitIdleEmpty(); 
         s3vSyncForLineBug = FALSE;
@@ -246,14 +318,9 @@ unsigned char tmp;
     SETB_DEST_BASE(0);   
     SETB_CLIP_L_R(0, s3vPriv.Width);
     SETB_CLIP_T_B(0, s3vPriv.ScissB);
-    CMD_DMA_ENABLE(0);
-    CMD_DMA_READP(0);
-    CMD_DMA_WRITEP(0);
+    s3vNeedResetClip = FALSE;
     
 }
-
-
-/* And now the accelerated primitives proper */
 
 
 
@@ -295,12 +362,52 @@ S3VSubsequentScreenToScreenCopy(x1, y1, x2, y2, w, h)
 int x1, y1, x2, y2, w, h;
 {
 
-    WaitCommandEmpty();
     WaitQueue(3);
     SETB_RWIDTH_HEIGHT(w - 1, h);
     SETB_RSRC_XY( (s3vSavedCmd & CMD_XP) ? x1 : (x1 + w -1), 
         (s3vSavedCmd & CMD_YP) ? y1 : (y1 + h - 1));
     SETB_RDEST_XY( (s3vSavedCmd & CMD_XP) ? x2 : (x2 + w - 1),
+        (s3vSavedCmd & CMD_YP) ? y2 : (y2 + h - 1));
+
+}
+
+
+/* This is the setup and subsequent S->S copy for 32bpp, with GE 
+ * in 16bpp mode. 
+ */
+
+void 
+S3VSetupForScreenToScreenCopy32(xdir, ydir, rop, planemask,
+transparency_color)
+    int xdir, ydir;
+    int rop;
+    unsigned planemask;
+    int transparency_color;
+{
+
+    int cmd = s3vAccelCmd;
+ 
+    cmd |= (CMD_AUTOEXEC | s3vAlu[rop] | CMD_BITBLT);
+
+    if(xdir == 1) cmd |= CMD_XP;
+    if(ydir == 1) cmd |= CMD_YP;
+    s3vSavedCmd = cmd;
+   
+    WaitQueue(1);
+    SETB_CMD_SET(cmd);
+
+}
+
+void 
+S3VSubsequentScreenToScreenCopy32(x1, y1, x2, y2, w, h)
+int x1, y1, x2, y2, w, h;
+{
+
+    WaitQueue(3);
+    SETB_RWIDTH_HEIGHT(w * 2 - 1, h);
+    SETB_RSRC_XY( (s3vSavedCmd & CMD_XP) ? (x1 * 2) : ((x1 + w) * 2 -1), 
+        (s3vSavedCmd & CMD_YP) ? y1 : (y1 + h - 1));
+    SETB_RDEST_XY( (s3vSavedCmd & CMD_XP) ? (x2 * 2) : ((x2 + w) * 2 - 1),
         (s3vSavedCmd & CMD_YP) ? y2 : (y2 + h - 1));
 
 }
@@ -379,12 +486,44 @@ int x, y, w, h;
 
 }
 
+/* These are the accelerated solid rectangles for 32bpp mode. We use 
+ * the graphic engine in 16bpp mode, and use the mono patterns to expand
+ * to the proper 32 bits of color. No support for planemask, however...
+ */
+
+void 
+S3VSetupForFillRectSolid32(color, rop, planemask)
+int color, rop;
+unsigned planemask;
+{
+int cmd = s3vAccelCmd;
+
+    cmd |= (CMD_AUTOEXEC | CMD_BITBLT | MIX_MONO_PATT | CMD_XP | CMD_YP);
+    cmd |= s3vAlu_sp[rop];
+ 
+    WaitQueue(4);
+    SETB_CMD_SET(cmd);
+    SETB_MONO_PAT0(0xaaaaaaaa);
+    SETB_MONO_PAT1(0xaaaaaaaa);
+    SETB_PAT_FG_CLR(color & 0xffff);
+    SETB_PAT_BG_CLR((color >> 16) & 0xffff);
+}
+
+void 
+S3VSubsequentFillRectSolid32(x, y, w, h)
+int x, y, w, h;
+{
+    WaitQueue(2);
+    SETB_RWIDTH_HEIGHT((w * 2) - 1, h);
+    SETB_RDEST_XY(x * 2, y);
+}
+
 
 /* These are the CPUToScreen color expand functions. We support a planemask
  * and transparency. The planemask is supported by making use of the 
  * mono pattern registers and using a ROP which is adjusted. Transparency
  * is handled through the ViRGE color expansion bitblt. 
- * Unfortunately, we have to use a hack, when thr ROP does not contain
+ * Unfortunately, we have to use a hack, when the ROP does not contain
  * the source (ex. GX_CLEAR), because in that case, writing to the 
  * image transfer area will hang the chip, and XAA will write to the 
  * transfer area regardless of ROP. 
@@ -444,15 +583,17 @@ S3VSubsequentCPUToScreenColorExpand(x, y, w, h, skipleft)
 int x, y, w, h, skipleft;
 {
 
-    WaitCommandEmpty();
     WaitQueue(3);
     if(skipleft != 0) { 
         SETB_CLIP_L_R(x + skipleft, s3vPriv.Width); 
+        s3vNeedResetClip = TRUE;
         }
     else {
+        s3vNeedResetClip = FALSE;
         SETB_CLIP_L_R(0, s3vPriv.Width); 
         } 
     SETB_RWIDTH_HEIGHT(w - 1, h);
+    WaitIdle();
     SETB_RDEST_XY(x, y);   
 }
 
@@ -462,7 +603,7 @@ int x, y, w, h, skipleft;
  * Looking at the databook, one would think that you cannot do pattern fills, 
  * but we use the same trick as above with the rectangles, use the BIT_BLT
  * operation with the pattern and src/dst rectangles the same. We also 
- * support a planemask byusing an adjusted ROP and doing a fill with 
+ * support a planemask by using an adjusted ROP and doing a fill with 
  * CPU mono source expanded to the planemask (as for the filled rects). 
  *
  * The other thing we would like to do is support transparency. This is 
@@ -547,7 +688,6 @@ int x, y, w, h;
     int dwords_to_transfer;
     int new_width;
 
-    WaitCommandEmpty();
     if(s3vSavedCmd != NEED_MONO_FILL) {  /* Opaque case, no planemask */
         WaitQueue(3);
         SETB_RWIDTH_HEIGHT(w - 1, h);
@@ -562,10 +702,14 @@ int x, y, w, h;
 
         WaitQueue(3);
         SETB_RWIDTH_HEIGHT(new_width - 1, h);
-        if (new_width != w) 
+        if (new_width != w) {
              SETB_CLIP_L_R(x, x + w -1); 
-        else 
-             SETB_CLIP_L_R(0, s3vPriv.Width); 
+             s3vNeedResetClip = TRUE;
+             }
+        else {
+             SETB_CLIP_L_R(0, s3vPriv.Width);
+             s3vNeedResetClip = FALSE;
+             } 
         SETB_RDEST_XY(x, y);
         S3VWriteImageTransferArea (dwords_to_transfer, 0xffffffff);
         }  
@@ -637,8 +781,6 @@ int x, y, w, h;
     int dwords_to_transfer;
     int new_width;
 
-    WaitCommandEmpty();
-
     if(s3vSavedCmd != NEED_MONO_FILL){   /* No planemask */
         WaitQueue(2);
         SETB_RWIDTH_HEIGHT(w - 1, h);
@@ -649,10 +791,14 @@ int x, y, w, h;
         dwords_to_transfer = h * ((new_width + 31) / 32) ;
 
         WaitQueue(3);
-        if (new_width != w) 
+        if (new_width != w) {
+             s3vNeedResetClip = TRUE;
              SETB_CLIP_L_R(x, x + w -1); 
-        else 
+             }
+        else {
              SETB_CLIP_L_R(0, s3vPriv.Width); 
+             s3vNeedResetClip = FALSE;
+             }
         SETB_RWIDTH_HEIGHT(new_width - 1, h);
         SETB_RDEST_XY(x, y);
         S3VWriteImageTransferArea (dwords_to_transfer, 0xffffffff);
@@ -729,6 +875,7 @@ int x1, x2, y1, y2, bias;
         SETB_CLIP_L_R(0, s3vPriv.Width); 
         SETB_CLIP_T_B(0, s3vPriv.ScissB); 
         s3vLineHWClipSet = FALSE;
+        s3vNeedResetClip = FALSE;
         }
   
     WaitQueue(1);  
@@ -745,6 +892,7 @@ int x1, y1, x2, y2;
     SETB_CLIP_L_R(x1, x1 + x2); 
     SETB_CLIP_T_B(y1, y1+ y2);   
     s3vLineHWClipSet = TRUE;
+    s3vNeedResetClip = TRUE;
 }
 
 
@@ -779,10 +927,11 @@ unsigned int *image_transfer;
 
     blocks = dwords / 8192;
     left_to_do = dwords - blocks * 8192;
-    image_transfer = (int *) &IMG_TRANS;  
-    for(j = 0; j < blocks ; j ++)
+    for(j = 0; j < blocks ; j ++) {
+        image_transfer = (int *) &IMG_TRANS;
         for(i = 0; i < 8192; i++)
             *image_transfer++ = value;
+    }
     image_transfer = (int *) &IMG_TRANS;
     for(i = 0; i < left_to_do; i++)
         *image_transfer++ = value;

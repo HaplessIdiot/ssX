@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.5 1997/03/22 09:35:57 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.6 1997/04/12 13:45:32 hohndel Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -1474,10 +1474,8 @@ TVGA8900Restore(restore)
 			outb(0x3C7, restore->TRDReg); 
 	}
 
-	/*
-	 * Now restore generic VGA Registers
-	 */
-	vgaHWRestore((vgaHWPtr)restore);
+	if (TVGAchipset < TGUI96xx)
+		vgaHWRestore((vgaHWPtr)restore);
 
 	if (vgaBitsPerPixel >= 8) {
 	/* Do the DAC */
@@ -1489,6 +1487,7 @@ TVGA8900Restore(restore)
 		inb(0x3C8);
 	}
 	}
+
 	if (tridentTGUIProgrammableClocks)
 	{
 		if (OFLG_ISSET(OPTION_TGUI_MCLK_66, &vga256InfoRec.options))
@@ -1559,6 +1558,9 @@ TVGA8900Restore(restore)
 		outw(vgaIOBase + 4, ((restore->PCIReg) << 8) | 0x39);
 
 	outw(0x3C4, ((restore->NewMode1 ^ 0x02) << 8) | 0x0E);
+
+	if (TVGAchipset >= TGUI96xx) 
+		vgaHWRestore((vgaHWPtr)restore);
 
 	vgaProtect(FALSE);
 }
@@ -2117,7 +2119,7 @@ TVGA8900Adjust(x, y)
 	if (vgaBitsPerPixel == 16)
 		shift = 1;
 	if (vgaBitsPerPixel == 24)
-		base *= 3;
+		base = ((base + 1) & ~0x03) * 3;
 	if (vgaBitsPerPixel == 32)
 		shift = 2;
 	/* 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/drivers/Imakefile,v 1.4 1997/03/24 13:14:36 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/drivers/Imakefile,v 1.6 1997/04/08 14:55:39 hohndel Exp $
 
 
 #define IHaveModules
@@ -60,28 +60,28 @@ SUBDIRS = $(EGCDIR) $(GANBWAPDIR) $(PEGCDIR) $(NKVNECDIR) $(WABSDIR) \
 MakeSubdirs($(SUBDIRS))
 #endif
 
-#if XF98EGCServer
+#if XF98EGCServer || XF98EGCModule
 NormalDepLibraryTarget(driveregc,$(EGCDIR) $(EGCOBJS),$(EGCOBJS))
 #endif
-#if XF98GANBWAPServer
+#if XF98GANBWAPServer || XF98GANBWAPModule
 NormalDepLibraryTarget(driverganbwap,$(GANBWAPDIR) $(GANBWAPOBJS),$(GANBWAPOBJS))
 #endif
-#if XF98PEGCServer
+#if XF98PEGCServer || XF98PEGCModule
 NormalDepLibraryTarget(driverpegc,$(PEGCDIR) $(PEGCOBJS),$(PEGCOBJS))
 #endif
-#if XF98NKVNECServer
+#if XF98NKVNECServer || XF98NKVNECModule
 NormalDepLibraryTarget(drivernkvnec,$(NKVNECDIR) $(NKVNECOBJS),$(NKVNECOBJS))
 #endif
-#if XF98WABSServer
+#if XF98WABSServer || XF98WABSModule
 NormalDepLibraryTarget(driverwabs,$(WABSDIR) $(WABSOBJS),$(WABSOBJS))
 #endif
-#if XF98WABEPServer
+#if XF98WABEPServer || XF98WABEPModule
 NormalDepLibraryTarget(driverwabep,$(WABEPDIR) $(WABEPOBJS),$(WABEPOBJS))
 #endif
-#if XF98WSNAServer
+#if XF98WSNAServer || XF98WSNAModule
 NormalDepLibraryTarget(driverwsna,$(WSNADIR) $(WSNAOBJS),$(WSNAOBJS))
 #endif
-#if XF98TGUIServer
+#if XF98TGUIServer || XF98TGUIModule
 NormalDepLibraryTarget(drivertrident,$(TGUIDIR) $(TGUIOBJS),$(TGUIOBJS))
 #endif
 

@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_rop.h,v 1.2 1997/04/08 14:54:31 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -9,6 +9,9 @@
  * planemasks and transparency.
  *
  * Created by Sebastien Marineau, 29/03/97.
+ * This file should be included only from s3v_accel.c to avoid 
+ * duplicate symbols. 
+ * 
  */
 
 #include "regs3v.h"
