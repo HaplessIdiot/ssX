@@ -1,4 +1,5 @@
 /* $XConsortium: mach32.h,v 1.1 94/03/28 21:06:49 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -169,6 +170,11 @@ void mach32RestoreColor0(
 #endif
 );
 /* mach32gc.c */
+void mach32InitGC(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
 Bool mach32CreateGC(
 #if NeedFunctionPrototypes
     register GCPtr pGC
@@ -285,7 +291,7 @@ void mach32InitAperture(
 );
 void mach32SetRamdac(
 #if NeedFunctionPrototypes
-    int clock
+    int *clock
 #endif
 );
 void mach32InitDisplay(
