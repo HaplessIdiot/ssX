@@ -1,7 +1,7 @@
 // using the level(switch) map, the right Control key temporarily
 // chooses the third group level (until it is released).
 //
-// $XFree86: xc/programs/xkbcomp/symbols/level3,v 1.3 2003/04/19 12:22:11 pascal Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/level3,v 1.4 2003/05/05 12:11:10 pascal Exp $
 //
 
 partial modifier_keys
@@ -18,7 +18,6 @@ xkb_symbols "ralt_switch" {
     type[Group1]="ONE_LEVEL",
     symbols[Group1] = [ ISO_Level3_Shift ]
     };
-  modifier_map Mod5   { ISO_Level3_Shift };
 };
 
 partial modifier_keys
@@ -27,7 +26,6 @@ xkb_symbols "ralt_switch_multikey" {
     type[Group1]="TWO_LEVEL",
     symbols[Group1] = [ ISO_Level3_Shift, Multi_key ]
     };
-  modifier_map Mod5   { ISO_Level3_Shift };
 };
 
 // using the level(menu_switch) map, the Menu key temporarily

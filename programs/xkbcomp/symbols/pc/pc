@@ -1,6 +1,6 @@
 
 //
-// $XFree86: xc/programs/xkbcomp/symbols/pc/pc,v 1.6 2003/02/11 02:51:11 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/pc/pc,v 1.7 2003/04/19 12:22:12 pascal Exp $
 
 partial hidden alphanumeric_keys modifier_keys 
 xkb_symbols "basic" {
@@ -170,13 +170,28 @@ xkb_symbols "basic" {
     key <KPDL> {  	[  KP_Delete,	KP_Decimal ]	};
     // End "Keypad" section
 
-
     // begin modifier mappings
     modifier_map Shift  { Shift_L, Shift_R };
     modifier_map Lock   { Caps_Lock, ISO_Lock };
     modifier_map Control{ Control_L, Control_R };
-    modifier_map Mod1   { Alt_L, Alt_R };
     modifier_map Mod2   { Num_Lock };
+
+    //  Fake keys for virtual<->real modifiers mapping 
+    key <LVL3> {	[ ISO_Level3_Shift	]	};
+    key <MDSW> {	[ Mode_switch 		]	};
+    modifier_map Mod5   { <LVL3>, <MDSW> };
+
+    key <ALT>  {	[ Alt_L		]	};
+    modifier_map Mod1   { <ALT> };
+
+    key <META> {	[ Meta_L	]	};
+    modifier_map Mod1   { <META> };
+
+    key <SUPR> {	[ Super_L	]	};
+    modifier_map Mod4   { <SUPR> };
+
+    key <HYPR> {	[ Hyper_L	]	};
+    modifier_map Mod4   { <HYPR> };
 };
 
 // definition for the PC-AT type 101 key keyboard
@@ -185,8 +200,6 @@ xkb_symbols "pc101" {
     key <LALT> {	[ 	Alt_L,	Meta_L 		]	};
     key <RALT> {	[	Alt_R,	Meta_R		]	};
 
-    // begin modifier mappings
-    modifier_map Mod1   { Alt_L, Alt_R, Meta_L, Meta_R };
 };
 
 // definition for the extra key on 102-key keyboards
@@ -205,9 +218,6 @@ xkb_symbols "pc104" {
     key <RWIN> {	[	Super_R			]	};
     key <MENU> {	[	Menu			]	};
 
-    // modifier mappings
-    modifier_map Mod1   { Alt_L, Alt_R, Meta_L, Meta_R };
-    modifier_map Mod4   { Super_L, Super_R };
 };
 
 // defintion which includes both the Windows95 keyboards _and_

@@ -3,7 +3,7 @@
 
 
 
-// $XFree86: xc/programs/xkbcomp/keycodes/xfree86,v 3.18 2002/10/15 02:11:38 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/keycodes/xfree86,v 3.19 2003/04/19 12:22:09 pascal Exp $
 
 // "standard" XFree86 codes
 // It seems that the "default" must be the first entry in the file.
@@ -294,13 +294,13 @@ xkb_keycodes "basic" {
 
     // Other codes never generated.  The XFree86 ddx never generates
     // these codes.
-
-    // <U5D> =    93;
-    // <U7C> =   124;
-    // <U7D> =   125;
-    // <U7E> =   126;
-    // <U7F> =   127;
-    // <U80> =   128;
+    // Thus we can use them as fake keys
+    <MDSW> =    93; // <U5D>
+    <LVL3> =   124; // <U7C>
+    <ALT>  =   125; // <U7D>
+    <META> =   126; // <U7E>
+    <SUPR> =   127; // <U7F>
+    <HYPR> =   128; // <U80>
 
     indicator 1 = "Caps Lock";
     indicator 2 = "Num Lock";
