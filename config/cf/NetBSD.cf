@@ -2,7 +2,7 @@ XCOMM platform:  $XConsortium: NetBSD.cf /main/16 1996/10/31 14:47:14 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.46 1996/12/27 06:50:17 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.47 1996/12/31 04:14:32 dawes Exp $
 
 #ifndef OpenBSDArchitecture
 
@@ -47,8 +47,9 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
  */
 #if defined(OpenBSDArchitecture) || \
    defined(NetBSDArchitecture) && \
-    ((OSMajorVersion == 1 && OSMinorVersion > 2) || \
-     (OSMajorVersion == 1 && OSMinorVersion == 2 && OSTeenyVersion >= 2))
+    ((OSMajorVersion > 1) || \
+     (OSMajorVersion == 1 && OSMinorVersion > 2) || \
+     (OSMajorVersion == 1 && OSMinorVersion == 2 && OSTeenyVersion > 1))
 #  define HasPoll			YES
 #endif
 #define HasNdbm         	YES
@@ -128,6 +129,15 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define GccGasOption 		-DGCCUSESGAS
 #define AsmDefines 		-DUSE_GAS
 
+/* UseElfFormat defaults to YES if __ELF__ set */
+#ifndef UseElfFormat
+# ifdef __ELF__
+#  undef __ELF__			/* other imake files shouldn't care */
+#  define UseElfFormat YES
+# else
+#  define UseElfFormat NO
+# endif
+#endif
 
 #ifdef i386Architecture
 # define OptimizedCDebugFlags 	-m486 DefaultGcc2i386Opt
@@ -163,9 +173,16 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define StandardDefines	-DCSRG_BASED
 #define XawI18nDefines	-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
 
-/* Dynamic loading supported starting in 1.0, but not yet on the Alpha. */
-#if (!defined(AlphaArchitecture) && (OSMajorVersion > 0)) || \
-    (defined(AlphaArchitecture) && 0) /* NOT YET */
+/*
+ * Dynamic loading supported starting in 1.0 on a.out platforms,
+ * and on all ELF platforms.
+ *
+ * XXX May not be correct on NetBSD/pmax (ELF, but might not have
+ * working shared libs).
+ */
+#if ((OSMajorVersion > 0) && \
+     !defined(AlphaArchitecture) && !defined(MipsArchitecture)) || \
+    UseElfFormat
 # ifndef BuildDynamicLoading
 # define BuildDynamicLoading	YES
 # endif
@@ -186,8 +203,9 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #endif
 
 #if defined(NetBSDArchitecture) && \
-    ((OSMajorVersion == 1 && OSMinorVersion > 2) || \
-     (OSMajorVersion == 1 && OSMinorVersion == 2 && OSTeenyVersion >= 2))
+    ((OSMajorVersion > 1) || \
+     (OSMajorVersion == 1 && OSMinorVersion > 2) || \
+     (OSMajorVersion == 1 && OSMinorVersion == 2 && OSTeenyVersion > 1))
 #ifndef HasGzipLibrary
 #define HasGzipLibrary  YES
 #endif
@@ -303,33 +321,19 @@ install.man:: 								@@\
 	InstallManPageAliases(file,destdir,aliases)
 
 /*
- * Shared libraries supported for most ports starting in 1.0, but not
- * (quite) yet on the Alpha.
+ * Shared libraries supported starting in 1.0 on a.out platforms,
+ * and on all ELF platforms.
+ *
+ * XXX May not be correct on NetBSD/pmax (ELF, but might not have
+ * working shared libs).
  */
-#if (!defined(AlphaArchitecture) && (OSMajorVersion > 0)) || \
-    (defined(AlphaArchitecture) && 0) /* NOT YET */
+#if ((OSMajorVersion > 0) && \
+     !defined(AlphaArchitecture) && !defined(MipsArchitecture)) || \
+    UseElfFormat
 # ifndef HasSharedLibraries
 # define HasSharedLibraries	YES
 # endif
 #endif
-
-/*
- * ELF supported on the Alpha starting (not quite yet), not yet on other
- * architectures.
- */
-#if (defined(AlphaArchitecture) && 0) /* NOT YET */
-# ifndef UseElfFormat
-# define UseElfFormat	YES
-# endif
-#endif
-
-/*
- * Default to non-ELF without shared library support if nothing else
- * set above.
- */
-#ifndef UseElfFormat
-#define UseElfFormat    NO
-#endif 
 
 #ifndef OSBinaryType
 #if UseElfFormat
