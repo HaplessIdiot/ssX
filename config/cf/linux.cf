@@ -4,7 +4,7 @@ XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.154 2000/12/11 19:42:55 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.155 2000/12/12 23:24:25 dawes Exp $
 
 #ifndef LinuxElfDefault
 # define LinuxElfDefault	YES
@@ -142,6 +142,9 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define BuildRman		NO
 #define BuildHtmlManPages	NO
 #define FSUseSyslog		YES
+#ifndef HasKatmaiSupport
+#define HasKatmaiSupport	NO
+#endif
 #endif
 
 #if LinuxDistribution == LinuxRedHat
