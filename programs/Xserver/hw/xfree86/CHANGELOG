@@ -1,4 +1,6 @@
 XFree86 4.4.99.13 (xx August 2004)
+ 169. Update the gb3212.1980-0 encoding to hande fonts that do not have
+      a unicode table (Bugzilla #1230, Roland Mainz).
  168. Fix glint driver build warning (Bugzilla #1462, Nicolas Joly).
  167. Fix some errors in the Dzongka/Tibetan XKB map (Bugzilla #1450,
       Christopher Fynn).
@@ -19073,7 +19075,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3306 2004/08/27 16:30:14 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3307 2004/09/01 22:56:56 dawes Exp $
 
 
 
