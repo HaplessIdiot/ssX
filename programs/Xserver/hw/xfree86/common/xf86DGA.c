@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.2 1998/07/25 16:55:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.3 1999/01/14 13:04:05 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -202,7 +202,8 @@ DGAEnableDirectMode(int scrnIndex)
      * just for one screen.
      */
 
-    xf86SaveRestoreImage(scrnIndex, SaveImage);
+    if (xf86Screens[scrnIndex]->SaveRestoreImage)
+	xf86Screens[scrnIndex]->SaveRestoreImage(scrnIndex, SaveImage);
     pDGA->pDGAInfo->SetDirectMode(scrnIndex, TRUE);
     pDGA->Active = TRUE;
     xf86Screens[scrnIndex]->vtSema = FALSE;
@@ -221,7 +222,8 @@ DGADisableDirectMode(int scrnIndex)
     xf86Screens[scrnIndex]->vtSema = TRUE;
     pDGA->Active = FALSE;
     pDGA->pDGAInfo->SetDirectMode(scrnIndex, FALSE);
-    xf86SaveRestoreImage(scrnIndex, RestoreImage);
+    if (xf86Screens[scrnIndex]->SaveRestoreImage)
+	xf86Screens[scrnIndex]->SaveRestoreImage(scrnIndex, RestoreImage);
 }
 
 void

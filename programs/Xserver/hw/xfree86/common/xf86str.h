@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.15 1999/01/14 01:44:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.16 1999/01/14 13:04:10 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -318,6 +318,13 @@ typedef enum {
     Pix24Use32
 } Pix24Flags;
 
+/* flags for SaveRestoreImage */
+typedef enum {
+    SaveImage,
+    RestoreImage,
+    FreeImage
+} SaveRestoreFlags;
+
 /*
  * The driver list struct.  This contains the information required for each
  * driver before a ScrnInfoRec has been allocated.
@@ -480,6 +487,8 @@ typedef struct _ScrnInfoRec {
     void		(*FreeScreen)(int scrnIndex, int flags);
     int			(*ValidMode)(int scrnIndex, DisplayModePtr mode,
 				     Bool verbose, int flags);
+    Bool		(*SaveRestoreImage)(int scrnIndex,
+					    SaveRestoreFlags what);
     /*
      * This can be used when the minor ABI version is incremented.
      * The NUM_* parameter must be reduced appropriately to keep the
@@ -504,13 +513,6 @@ typedef enum {
 			/* modes in the Monitor Section */
     MODE_VID		/* this is called from the VidMode extension */
 } ValidModeFlags;
-
-/* flags for xf86SaveRestoreImage */
-typedef enum {
-    SaveImage,
-    RestoreImage,
-    FreeImage
-} SaveRestoreFlags;
 
 /* flags for xf86LookupMode */
 typedef enum {

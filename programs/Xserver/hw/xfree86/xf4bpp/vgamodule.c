@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgamodule.c,v 1.6 1999/01/17 12:29:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgamodule.c,v 1.7 1999/01/24 13:32:41 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -28,7 +28,6 @@
 #ifdef XFree86LOADER
 #include "xf86Module.h"
 
-MODULEINITPROTO(xf4bppModuleInit);
 static MODULESETUPPROTO(xf4bppSetup);
 
 static XF86ModuleVersionInfo VersRec =
@@ -41,18 +40,11 @@ static XF86ModuleVersionInfo VersRec =
         1, 0, 0,
         ABI_CLASS_ANSIC,	/* Only need ansic layer */
         ABI_ANSIC_VERSION,
-        NULL,
+        MOD_CLASS_NONE,
         {0,0,0,0}       /* signature, to be patched into the file by a tool */
 };
 
-void
-xf4bppModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
-                 ModuleTearDownProc *teardown)
-{
-    *vers = &VersRec;
-    *setup = xf4bppSetup;
-    *teardown = NULL;
-}
+XF86ModuleData xf4bppModuleData = { &VersRec, xf4bppSetup, NULL };
 
 static pointer
 xf4bppSetup(pointer module, pointer opts, int *errmaj, int *errmin)

@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.68 1999/01/17 10:54:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.69 1999/01/23 09:55:49 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -287,7 +287,6 @@ static const char *i2cSymbols[] = {
 
 #ifdef XFree86LOADER
 
-MODULEINITPROTO(mgaModuleInit);
 static MODULESETUPPROTO(mgaSetup);
 
 static XF86ModuleVersionInfo mgaVersRec =
@@ -300,22 +299,11 @@ static XF86ModuleVersionInfo mgaVersRec =
 	MGA_MAJOR_VERSION, MGA_MINOR_VERSION, MGA_PATCHLEVEL,
 	ABI_CLASS_VIDEODRV,			/* This is a video driver */
 	ABI_VIDEODRV_VERSION,
-	NULL,
+	MOD_CLASS_VIDEODRV,
 	{0,0,0,0}
 };
 
-/*
- * This function is the module init function.
- * Its name has to be the driver name followed by ModuleInit()
- */
-void
-mgaModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
-	      ModuleTearDownProc *teardown)
-{
-    *vers = &mgaVersRec;
-    *setup = mgaSetup;
-    *teardown = NULL;
-}
+XF86ModuleData mgaModuleData = { &mgaVersRec, mgaSetup, NULL };
 
 static pointer
 mgaSetup(pointer module, pointer opts, int *errmaj, int *errmin)

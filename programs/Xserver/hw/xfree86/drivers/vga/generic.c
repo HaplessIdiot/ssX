@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.20 1999/01/14 13:04:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.21 1999/01/17 10:54:07 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -124,7 +124,6 @@ static const char *racSymbols[] = {
 
 /* Module loader interface */
 
-MODULEINITPROTO(vgaModuleInit);
 static MODULESETUPPROTO(GenericSetup);
 
 static XF86ModuleVersionInfo GenericVersionRec =
@@ -137,22 +136,15 @@ static XF86ModuleVersionInfo GenericVersionRec =
     VGA_VERSION_MAJOR, VGA_VERSION_MINOR, VGA_PATCHLEVEL,
     ABI_CLASS_VIDEODRV,
     ABI_VIDEODRV_VERSION,
-    NULL,
+    MOD_CLASS_VIDEODRV,
     {0, 0, 0, 0}
 };
 
 /*
- * This function is called by the loader to initialise the module.  The
- * function name must be the module name followed by "ModuleInit".
+ * This data is accessed by the loader.  The name must be the module name
+ * followed by "ModuleInit".
  */
-void
-vgaModuleInit(XF86ModuleVersionInfo **VersionPtr, ModuleSetupProc *Setup,
-              ModuleTearDownProc *TearDown)
-{
-    *VersionPtr = &GenericVersionRec;
-    *Setup      = GenericSetup;
-    *TearDown   = NULL;
-}
+XF86ModuleData vgaModuleData = { &GenericVersionRec, GenericSetup, NULL };
 
 static pointer
 GenericSetup(pointer Module, pointer Options, int *ErrorMajor, int *ErrorMinor)

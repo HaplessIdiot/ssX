@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.11 1999/01/17 10:54:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.12 1999/01/23 09:56:11 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -45,7 +45,6 @@ static unsigned long XAAGeneration = 0;
 
 
 #ifdef XFree86LOADER
-MODULEINITPROTO(xaaModuleInit);
 
 static XF86ModuleVersionInfo xaaVersRec =
 {
@@ -55,21 +54,15 @@ static XF86ModuleVersionInfo xaaVersRec =
 	MODINFOSTRING2,
 	XF86_VERSION_CURRENT,
 	1, 0, 0,
-	ABI_CLASS_VIDEODRV,		/* a video driver module */
+	ABI_CLASS_VIDEODRV,		/* requires the video driver ABI */
 	ABI_VIDEODRV_VERSION,
-	NULL,
+	MOD_CLASS_NONE,
 	{0,0,0,0}
 };
 
 
-void
-xaaModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
-	      ModuleTearDownProc *teardown)
-{
-    *vers = &xaaVersRec;
-    *setup = NULL;
-    *teardown = NULL;
-}
+XF86ModuleData xaaModuleData = { &xaaVersRec, NULL, NULL };
+
 #endif
 
 

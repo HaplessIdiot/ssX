@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.3 1998/12/13 10:33:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/xf86DDC.c,v 1.4 1999/01/14 13:04:15 dawes Exp $ */
 
 /* xf86DDC.c 
  * 
@@ -20,7 +20,6 @@ const char *i2cSymbols[] = {
 
 #ifdef XFree86LOADER
 
-MODULEINITPROTO(ddcModuleInit);
 static MODULESETUPPROTO(ddcSetup);
 
 static XF86ModuleVersionInfo ddcVersRec =
@@ -31,20 +30,13 @@ static XF86ModuleVersionInfo ddcVersRec =
     MODINFOSTRING2,
     XF86_VERSION_CURRENT,
     1, 0, 0,
-    ABI_CLASS_VIDEODRV,		/* a video driver module */
+    ABI_CLASS_VIDEODRV,		/* needs the video driver ABI */
     ABI_VIDEODRV_VERSION,
+    MOD_CLASS_NONE,
     {0,0,0,0}
 };
 
-
-void
-ddcModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
-	      ModuleTearDownProc *teardown)
-{
-    *vers = &ddcVersRec;
-    *setup = ddcSetup;
-    *teardown = NULL;
-}
+XF86ModuleData ddcModuleData = { &ddcVersRec, ddcSetup, NULL };
 
 static pointer
 ddcSetup(pointer module, pointer opts, int *errmaj, int *errmin)

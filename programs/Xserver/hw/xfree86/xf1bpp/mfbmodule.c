@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf1bpp/mfbmodule.c,v 1.4 1999/01/17 10:54:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf1bpp/mfbmodule.c,v 1.5 1999/01/17 12:29:23 dawes Exp $ */
 /*
  * Copyright (C) 1997 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -28,7 +28,6 @@
 #ifdef XFree86LOADER
 #include "xf86Module.h"
 
-MODULEINITPROTO(xf1bppModuleInit);
 
 static XF86ModuleVersionInfo VersRec =
 {
@@ -40,16 +39,10 @@ static XF86ModuleVersionInfo VersRec =
         1, 0, 0,
         ABI_CLASS_ANSIC,        /* Only need ansic layer */
         ABI_ANSIC_VERSION,
-        NULL,
+        MOD_CLASS_NONE,
         {0,0,0,0}       /* signature, to be patched into the file by a tool */
 };
 
-void
-xf1bppModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
-                 ModuleTearDownProc *teardown)
-{
-    *vers = &VersRec;
-    *setup = NULL;
-    *teardown = NULL;
-}
+XF86ModuleData xf1bppModuleData = { &VersRec, NULL, NULL };
+
 #endif

@@ -1,8 +1,7 @@
-/* $XFree86: xc/programs/Xserver/dbe/dbemodule.c,v 1.4 1999/01/17 10:53:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dbe/dbemodule.c,v 1.5 1999/01/17 12:29:23 dawes Exp $ */
 
 #include "xf86Module.h"
 
-MODULEINITPROTO(dbeModuleInit);
 static MODULESETUPPROTO(dbeSetup);
 
 extern void DbeExtensionInit(INITARGS);
@@ -24,21 +23,14 @@ static XF86ModuleVersionInfo VersRec =
 	1, 0, 0,
 	ABI_CLASS_EXTENSION,
 	ABI_EXTENSION_VERSION,
-	NULL,
+	MOD_CLASS_EXTENSION,
 	{0,0,0,0}
 };
 
 /*
- * Entry point for the loader code
+ * Data for the loader
  */
-void
-dbeModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
-	      ModuleTearDownProc *teardown)
-{
-    *vers = &VersRec;
-    *setup = dbeSetup;
-    *teardown = NULL;
-}
+XF86ModuleData dbeModuleData = { &VersRec, dbeSetup, NULL };
 
 static pointer
 dbeSetup(pointer module, pointer opts, int *errmaj, int *errmin)

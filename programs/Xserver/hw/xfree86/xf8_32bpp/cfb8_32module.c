@@ -1,11 +1,10 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfb8_32module.c,v 1.4 1999/01/17 12:29:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf8_32bpp/cfb8_32module.c,v 1.5 1999/01/24 13:32:42 dawes Exp $ */
 
 
 #ifdef XFree86LOADER
 
 #include "xf86Module.h"
 
-MODULEINITPROTO(xf8_32bppModuleInit);
 static MODULESETUPPROTO(xf8_32bppSetup);
 
 static XF86ModuleVersionInfo VersRec =
@@ -18,18 +17,11 @@ static XF86ModuleVersionInfo VersRec =
         1, 0, 0,
         ABI_CLASS_ANSIC,                /* Only need the ansic layer */
         ABI_ANSIC_VERSION,
-        NULL,
+        MOD_CLASS_NONE,
         {0,0,0,0}       /* signature, to be patched into the file by a tool */
 };
 
-void
-xf8_32bppModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
-              ModuleTearDownProc *teardown)
-{
-    *vers = &VersRec;
-    *setup = xf8_32bppSetup;
-    *teardown = NULL;
-}
+XF86ModuleData xf8_32bppModuleData = { &VersRec, xf8_32bppSetup, NULL };
 
 static pointer
 xf8_32bppSetup(pointer module, pointer opts, int *errmaj, int *errmin)

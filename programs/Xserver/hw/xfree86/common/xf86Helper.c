@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.22 1999/01/23 09:55:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.23 1999/01/24 13:32:34 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -82,6 +82,12 @@ xf86AllocateScreen(DriverPtr drv, int flags)
     xf86Screens[i]->origIndex = i;	/* This never changes */
     xf86Screens[i]->privates = xnfcalloc(sizeof(DevUnion),
 					 xf86ScrnInfoPrivateCount);
+    /*
+     * Almost everything uses this default, and many of those that don't
+     * will wrap it.
+     */
+    xf86Screens[i]->SaveRestoreImage = xf86SaveRestoreImage;
+
     xf86Screens[i]->drv = drv;
     drv->refCount++;
 #ifdef XFree86LOADER

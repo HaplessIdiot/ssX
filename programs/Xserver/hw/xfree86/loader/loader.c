@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.29 1999/01/14 13:04:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.30 1999/01/17 10:54:10 dawes Exp $ */
 
 /*
  *
@@ -212,19 +212,19 @@ LoaderInit(void)
     LoaderAddSymbols(-1, -1, fontLookupTab ) ;
 
     xf86MsgVerb(X_INFO, 2, "Module ABI versions:\n");
-    xf86ErrorFVerb(2, "\tANSI C Emulation: %d.%d\n",
+    xf86ErrorFVerb(2, "\t%s: %d.%d\n", ABI_CLASS_ANSIC,
 			GET_ABI_MAJOR(LoaderVersionInfo.ansicVersion),
 			GET_ABI_MINOR(LoaderVersionInfo.ansicVersion));
-    xf86ErrorFVerb(2, "\tXFree86 Video Driver: %d.%d\n",
+    xf86ErrorFVerb(2, "\t%s: %d.%d\n", ABI_CLASS_VIDEODRV,
 			GET_ABI_MAJOR(LoaderVersionInfo.videodrvVersion),
 			GET_ABI_MINOR(LoaderVersionInfo.videodrvVersion));
-    xf86ErrorFVerb(2, "\tXInput Driver: %d.%d\n",
+    xf86ErrorFVerb(2, "\t%s : %d.%d\n", ABI_CLASS_XINPUT,
 			GET_ABI_MAJOR(LoaderVersionInfo.xinputVersion),
 			GET_ABI_MINOR(LoaderVersionInfo.xinputVersion));
-    xf86ErrorFVerb(2, "\tServer Extension: %d.%d\n",
+    xf86ErrorFVerb(2, "\t%s : %d.%d\n", ABI_CLASS_EXTENSION,
 			GET_ABI_MAJOR(LoaderVersionInfo.extensionVersion),
 			GET_ABI_MINOR(LoaderVersionInfo.extensionVersion));
-    xf86ErrorFVerb(2, "\tFont Renderer: %d.%d\n",
+    xf86ErrorFVerb(2, "\t%s : %d.%d\n", ABI_CLASS_FONT,
 			GET_ABI_MAJOR(LoaderVersionInfo.fontVersion),
 			GET_ABI_MINOR(LoaderVersionInfo.fontVersion));
 #if defined(linux) && defined(__alpha__)

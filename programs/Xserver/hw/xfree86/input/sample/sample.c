@@ -24,7 +24,7 @@
  * in this Software without prior written authorization from Metro Link.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/sample/sample.c,v 1.3 1999/01/14 13:04:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/sample/sample.c,v 1.4 1999/01/17 10:54:10 dawes Exp $ */
 
 #define _SAMPLE_C_
 /*****************************************************************************
@@ -61,7 +61,7 @@ static XF86ModuleVersionInfo VersionRec =
 	1, 0, 0,
 	ABI_CLASS_XINPUT,
 	ABI_XINPUT_VERSION,
-	NULL,
+	MOD_CLASS_XINPUT,
 	{0, 0, 0, 0}				/* signature, to be patched into the file by
 								 * a tool */
 };
@@ -81,20 +81,12 @@ static char *default_options[] =
 	"FlowControl", "None"
 };
 
+XF86ModuleData sampleModuleData = { &VersionRec, SetupProc, TearDownProc };
+
 /*****************************************************************************
  *	Function Definitions
  ****************************************************************************/
 
-
-void
-ModuleInit(	XF86ModuleVersionInfo **vers,
-			ModuleSetupProc *setup,
-			ModuleTearDownProc *teardown )
-{
-	*vers = &VersionRec;
-	*setup = &SetupProc;
-	*teardown = &TearDownProc;
-}
 
 /* 
  * The TearDownProc may have to be tailored to your device

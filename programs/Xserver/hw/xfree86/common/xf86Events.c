@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.56 1998/08/19 13:13:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.57 1998/09/13 05:23:31 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1281,7 +1281,10 @@ xf86VTSwitch()
 {
   int i;
 
-ErrorF("xf86VTSwitch()\n");
+#ifdef DEBUG
+  ErrorF("xf86VTSwitch()\n");
+#endif
+
 #ifdef XFreeXDGA
   /*
    * Not ideal, but until someone adds DGA events to the DGA client we
@@ -1304,12 +1307,15 @@ ErrorF("xf86VTSwitch()\n");
    */
   if (xf86Screens[0]->vtSema) {
 
-ErrorF("xf86VTSwitch: Leaving, xf86Exiting is %s\n",
-	BOOLTOSTRING(xf86Exiting));
+#ifdef DEBUG
+    ErrorF("xf86VTSwitch: Leaving, xf86Exiting is %s\n",
+	   BOOLTOSTRING(xf86Exiting));
+#endif
 
     for (i = 0; i < xf86NumScreens; i++) {
       if (!xf86Exiting)
-	xf86SaveRestoreImage(i, SaveImage);
+	if (xf86Screens[i]->SaveRestoreImage)
+	  xf86Screens[i]->SaveRestoreImage(i, SaveImage);
       xf86Screens[i]->LeaveVT(i, 0);
     }
 
@@ -1323,12 +1329,15 @@ ErrorF("xf86VTSwitch: Leaving, xf86Exiting is %s\n",
        * switch failed 
        */
 
-ErrorF("xf86VTSwitch: Leave failed\n");
+#ifdef DEBUG
+      ErrorF("xf86VTSwitch: Leave failed\n");
+#endif
       for (i = 0; i < xf86NumScreens; i++) {
 	if (!xf86Screens[i]->EnterVT(i, 0))
 	  FatalError("EnterVT failed for screen %d\n", i);
 	if (!xf86Exiting) {
-	  xf86SaveRestoreImage(i, RestoreImage);
+	  if (xf86Screens[i]->SaveRestoreImage)
+	    xf86Screens[i]->SaveRestoreImage(i, RestoreImage);
 	}
       }
       SaveScreens(SCREEN_SAVER_FORCER, ScreenSaverReset);
@@ -1345,7 +1354,9 @@ ErrorF("xf86VTSwitch: Leave failed\n");
       xf86DisableIO();
     }
   } else {
-ErrorF("xf86VTSwitch: Entering\n");
+#ifdef DEBUG
+    ErrorF("xf86VTSwitch: Entering\n");
+#endif
     if (!xf86VTSwitchTo()) return;
       
     xf86EnableIO();
@@ -1354,7 +1365,8 @@ ErrorF("xf86VTSwitch: Entering\n");
       xf86Screens[i]->vtSema = TRUE;
       if (!xf86Screens[i]->EnterVT(i, 0))
 	FatalError("EnterVT failed for screen %d\n", i);
-      xf86SaveRestoreImage(i, RestoreImage);
+      if (xf86Screens[i]->SaveRestoreImage)
+	xf86Screens[i]->SaveRestoreImage(i, RestoreImage);
     }
 
     /* Turn screen saver off when switching back */

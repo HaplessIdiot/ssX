@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.29 1998/12/05 14:40:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.30 1999/01/24 13:32:40 dawes Exp $ */
 
 
 
@@ -199,7 +199,7 @@ typedef struct _xf86dirent XF86DIRENT;
 #define sscanf			xf86sscanf
 #define strcat(cp,ccp)		xf86strcat(cp,ccp)
 #define strcmp(ccp1,ccp2)	xf86strcmp(ccp1,ccp2)
-#define strcasecmp(ccp1,ccp2)	xf86casestrcmp(ccp1,ccp2)
+#define strcasecmp(ccp1,ccp2)	xf86strcasecmp(ccp1,ccp2)
 #define strcpy(cp,ccp)		xf86strcpy(cp,ccp)
 #define strcspn(ccp1,ccp2)	xf86strcspn(ccp1,ccp2)
 #define strerror(i)		xf86strerror(i)

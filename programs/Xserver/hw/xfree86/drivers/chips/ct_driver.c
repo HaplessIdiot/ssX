@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.47 1999/01/17 10:53:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.48 1999/01/23 09:55:47 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -442,7 +442,7 @@ static DisplayModeRec ChipsNTSCMode = {
 
 /*
  * This contains the functions needed by the server after loading the driver
- * module.  It must be supplied, and gets passed back by the ModuleInit
+ * module.  It must be supplied, and gets passed back by the SetupProc
  * function in the dynamic case.  In the static case, a reference to this
  * is compiled in, and this requires that the name of this DriverRec be
  * an upper-case version of the driver name.
@@ -652,7 +652,6 @@ static const char *i2cSymbols[] = {
 
 #ifdef XFree86LOADER
 
-MODULEINITPROTO(chipsModuleInit);
 static MODULESETUPPROTO(chipsSetup);
 
 static XF86ModuleVersionInfo chipsVersRec =
@@ -665,22 +664,15 @@ static XF86ModuleVersionInfo chipsVersRec =
 	CHIPS_MAJOR_VERSION, CHIPS_MINOR_VERSION, CHIPS_PATCHLEVEL,
 	ABI_CLASS_VIDEODRV,
 	ABI_VIDEODRV_VERSION,
-	NULL,
+	MOD_CLASS_VIDEODRV,
 	{0,0,0,0}
 };
 
 /*
- * This function is the module init function.
- * Its name has to be the driver name followed by ModuleInit()
+ * This is the module init data.
+ * Its name has to be the driver name followed by ModuleData
  */
-void
-chipsModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
-	      ModuleTearDownProc *teardown)
-{
-    *vers = &chipsVersRec;
-    *setup = chipsSetup;
-    *teardown = NULL;  
-}
+XF86ModuleData chipsModuleData = { &chipsVersRec, chipsSetup, NULL };
 
 static pointer
 chipsSetup(pointer module, pointer opts, int *errmaj, int *errmin)

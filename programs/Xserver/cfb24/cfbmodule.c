@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb24/cfbmodule.c,v 1.6 1999/01/17 10:53:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb24/cfbmodule.c,v 1.7 1999/01/24 13:32:28 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -30,15 +30,7 @@
 #include "xf86Module.h"
 #include "cfb.h"
 
-MODULEINITPROTO(cfb24ModuleInit);
 static MODULESETUPPROTO(cfb24Setup);
-
-    /*
-     * this is the module init function that is executed when loading
-     * libcfb as a module. Its name has to be ModuleInit.
-     * With this we initialize the function and variable pointers used
-     * in generic parts of XFree86
-     */
 
 static XF86ModuleVersionInfo VersRec =
 {
@@ -50,18 +42,11 @@ static XF86ModuleVersionInfo VersRec =
 	1, 0, 0,
 	ABI_CLASS_ANSIC,		/* Only need the ansic layer */
 	ABI_ANSIC_VERSION,
-	NULL,
+	MOD_CLASS_NONE,
 	{0,0,0,0}       /* signature, to be patched into the file by a tool */
 };
 
-void
-cfb24ModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
-		ModuleTearDownProc *teardown)
-{
-    *vers = &VersRec;
-    *setup = cfb24Setup;
-    *teardown = NULL;
-}
+XF86ModuleData cfb24ModuleData = { &VersRec, cfb24Setup, NULL };
 
 static pointer
 cfb24Setup(pointer module, pointer opts, int *errmaj, int *errmin)

@@ -48,7 +48,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elo2300/elo.c,v 1.3 1999/01/14 13:04:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elo2300/elo.c,v 1.4 1999/01/17 10:54:08 dawes Exp $ */
 
 #define _elo_C_
 /*****************************************************************************
@@ -85,7 +85,7 @@ static XF86ModuleVersionInfo VersionRec =
 	1, 0, 0,
 	ABI_CLASS_XINPUT,
 	ABI_XINPUT_VERSION,
-	NULL,
+	MOD_CLASS_XINPUT,
 	{0, 0, 0, 0}				/* signature, to be patched into the file by
 								 * a tool */
 };
@@ -101,20 +101,11 @@ static char *default_options[] =
 	"FlowControl", "None"
 };
 
+XF86ModuleData elo2300ModuleData = { &VersionRec, SetupProc, TearDownProc };
+
 /*****************************************************************************
  *	Function Definitions
  ****************************************************************************/
-
-void
-elo2300ModuleInit(	XF86ModuleVersionInfo **vers,
-			ModuleSetupProc *setup,
-			ModuleTearDownProc *teardown )
-{
-	*vers = &VersionRec;
-	*setup = &SetupProc;
-	*teardown = &TearDownProc;
-}
-
 
 static void
 TearDownProc( pointer p )

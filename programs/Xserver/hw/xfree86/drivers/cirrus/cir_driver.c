@@ -9,7 +9,7 @@
  *	Guy DESBIEF
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.28 1999/01/14 13:04:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.29 1999/01/17 10:54:00 dawes Exp $ */
 
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -186,7 +186,6 @@ static OptionInfoRec CIROptions[] = {
 
 #ifdef XFree86LOADER
 
-MODULEINITPROTO(cirrusModuleInit);
 static MODULESETUPPROTO(cirSetup);
 
 static XF86ModuleVersionInfo cirVersRec =
@@ -199,22 +198,15 @@ static XF86ModuleVersionInfo cirVersRec =
 	CIR_MAJOR_VERSION, CIR_MINOR_VERSION, CIR_PATCHLEVEL,
 	ABI_CLASS_VIDEODRV,			/* This is a video driver */
 	ABI_VIDEODRV_VERSION,
-	NULL,
+	MOD_CLASS_VIDEODRV,
 	{0,0,0,0}
 };
 
 /*
- * This function is the module init function.
- * Its name has to be the driver name followed by ModuleInit()
+ * This is the module init data.
+ * Its name has to be the driver name followed by ModuleData.
  */
-void
-cirrusModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
-	         ModuleTearDownProc *teardown)
-{
-    *vers = &cirVersRec;
-    *setup = cirSetup;
-    *teardown = NULL;
-}
+XF86ModuleData cirrusModuleData = { &cirVersRec, cirSetup, NULL };
 
 static pointer
 cirSetup(pointer module, pointer opts, int *errmaj, int *errmin)

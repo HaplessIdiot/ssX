@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.21 1999/01/14 13:04:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.22 1999/01/17 10:54:01 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -99,7 +99,7 @@ static Bool	GLINTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 
 /* 
  * This contains the functions needed by the server after loading the driver
- * module.  It must be supplied, and gets passed back by the ModuleInit
+ * module.  It must be supplied, and gets passed back by the SetupProc
  * function in the dynamic case.  In the static case, a reference to this
  * is compiled in, and this requires that the name of this DriverRec be
  * an upper-case version of the driver name.
@@ -209,7 +209,6 @@ static const char *racSymbols[] = {
 
 #ifdef XFree86LOADER
 
-MODULEINITPROTO(glintModuleInit);
 static MODULESETUPPROTO(glintSetup);
 
 static XF86ModuleVersionInfo glintVersRec =
@@ -222,24 +221,11 @@ static XF86ModuleVersionInfo glintVersRec =
 	GLINT_MAJOR_VERSION, GLINT_MINOR_VERSION, GLINT_PATCHLEVEL,
 	ABI_CLASS_VIDEODRV,			/* This is a video driver */
 	ABI_VIDEODRV_VERSION,
-	NULL,
+	MOD_CLASS_VIDEODRV,
 	{0,0,0,0}
 };
 
-/*
- * This function is the magic init function for XFree86 modules.
- * It adds the DriverRec to the list of available drivers.
- *
- * Its name has to be the driver name followed by ModuleInit()
- */
-void
-glintModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
-		ModuleTearDownProc *teardown)
-{
-    *vers = &glintVersRec;
-    *setup = glintSetup;
-    *teardown = NULL;
-}
+XF86ModuleData glintModuleData = { &glintVersRec, glintSetup, NULL };
 
 pointer
 glintSetup(pointer module, pointer opts, int *errmaj, int *errmin)

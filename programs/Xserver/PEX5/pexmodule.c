@@ -1,9 +1,8 @@
-/* $XFree86: xc/programs/Xserver/PEX5/pexmodule.c,v 1.3 1998/12/13 10:33:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/pexmodule.c,v 1.4 1999/01/17 10:53:46 dawes Exp $ */
 
 #include "xf86Module.h"
 #include "PEX.h"
 
-MODULEINITPROTO(pex5ModuleInit);
 static MODULESETUPPROTO(pex5Setup);
 
 extern void PexExtensionInit(INITARGS);
@@ -25,19 +24,11 @@ static XF86ModuleVersionInfo VersRec =
 	1, 0, 0,
 	ABI_CLASS_EXTENSION,
 	ABI_EXTENSION_VERSION,
-	NULL,
+	MOD_CLASS_EXTENSION,
 	{0,0,0,0}
 };
 
-
-void
-pex5ModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
-	       ModuleTearDownProc *teardown)
-{
-    *vers = &VersRec;
-    *setup = pex5Setup;
-    *teardown = NULL;
-}
+XF86ModuleData pex5ModuleData = { &VersRec, pex5Setup, NULL };
 
 static pointer
 pex5Setup(pointer module, pointer opts, int *errmaj, int *errmin)

@@ -1,14 +1,15 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.10 1999/01/24 03:13:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.11 1999/01/24 13:32:35 dawes Exp $ */
 
 /*
- * Copyright (c) 1997 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
  */
 
 /*
- * This file contains modules related things that non-XFree86 specific
- * code needs for loadable module support.  It should include a bare
- * minimum of other headers, and this should be the only XFree86-specific
- * header required by that other code.
+ * This file contains the parts of the loader interface that are visible
+ * to modules.  This is the only loader-related header that modules should
+ * include.
+ *
+ * It should include a bare minimum of other headers.
  *
  * Longer term, the module/loader code should probably live directly under
  * Xserver/.
@@ -31,14 +32,13 @@ typedef enum {
 
 #define DEFAULT_LIST ((char *)-1)
 
-typedef enum {
-    ABI_CLASS_NONE		= 0,	/* No ABI used */
-    ABI_CLASS_ANSIC,			/* only requires the ansic wrapper */
-    ABI_CLASS_VIDEODRV,			/* Requires the video driver ABI */
-    ABI_CLASS_XINPUT,			/* XInput driver */
-    ABI_CLASS_EXTENSION,		/* extension module */
-    ABI_CLASS_FONT			/* font renderer */
-} LoaderAbiTypes;
+/* Built-in ABI classes.  These definitions must not be changed. */
+#define ABI_CLASS_NONE		NULL
+#define ABI_CLASS_ANSIC		"XFree86 ANSI C Emulation"
+#define ABI_CLASS_VIDEODRV	"XFree86 Video Driver"
+#define ABI_CLASS_XINPUT	"XFree86 XInput driver"
+#define ABI_CLASS_EXTENSION	"XFree86 Server Extension"
+#define ABI_CLASS_FONT		"XFree86 Font Renderer"
 
 #define ABI_MINOR_MASK		0x0000FFFF
 #define ABI_MAJOR_MASK		0xFFFF0000
@@ -68,7 +68,7 @@ typedef enum {
 #define MODULEVENDORSTRING	"The XFree86 Project"
 #endif
 
-/* Error return codes for errmaj */
+/* Error return codes for errmaj.  New codes must only be added at the end. */
 typedef enum {
     LDR_NOERROR = 0,
     LDR_NOMEM,		/* memory allocation failed */
@@ -82,23 +82,37 @@ typedef enum {
     LDR_NOPORTOPEN,	/* could not open port (check errmin) */
     LDR_NOHARDWARE,	/* could not query/initialize the hardware device */
     LDR_MISMATCH,	/* the module didn't match the spec'd requirments */
-    LDR_BADUSAGE	/* LoadModule is called with bad arguments */
+    LDR_BADUSAGE,	/* LoadModule is called with bad arguments */
+    LDR_INVALID		/* The module doesn't have a valid ModuleData object */
 } LoaderErrorCode;
+
+/*
+ * Some common module classes.  The moduleclass can be used to identify
+ * that modules loaded are of the correct type.  This is a finer
+ * classification than the ABI classes even though the default set of
+ * classes have the same names.  For example, not all modules that require
+ * the video driver ABI are themselves video drivers.
+ */
+#define MOD_CLASS_NONE		NULL
+#define MOD_CLASS_VIDEODRV	"XFree86 Video Driver"
+#define MOD_CLASS_XINPUT	"XFree86 XInput Driver"
+#define MOD_CLASS_FONT		"XFree86 Font Renderer"
+#define MOD_CLASS_EXTENSION	"XFree86 Server Extension"
 
 /* This structure is expected to be returned by the initfunc */
 typedef struct {
-    char *	modname;	/* name of module, e.g. "foo" */
-    char *	vendor;		/* vendor specific string */
-    CARD32	_modinfo1_;	/* constant MODINFOSTRING1/2 to find */
-    CARD32	_modinfo2_;	/* infoarea with a binary editor or sign tool */
-    CARD32	xf86version;	/* contains XF86_VERSION_CURRENT */
-    CARD8	majorversion;	/* module-specific major version */
-    CARD8	minorversion;	/* module-specific minor version */
-    CARD16	patchlevel;	/* module-specific patch level */
-    CARD32	abiclass;	/* ABI class that the module uses */
-    CARD32	abiversion;	/* ABI version */
-    char *	abivendor;	/* vendor-defined ABI (overrides abiclass) */
-    CARD32	checksum[4];	/* contains a digital signature of the */
+    const char * modname;	/* name of module, e.g. "foo" */
+    const char * vendor;	/* vendor specific string */
+    CARD32	 _modinfo1_;	/* constant MODINFOSTRING1/2 to find */
+    CARD32	 _modinfo2_;	/* infoarea with a binary editor or sign tool */
+    CARD32	 xf86version;	/* contains XF86_VERSION_CURRENT */
+    CARD8	 majorversion;	/* module-specific major version */
+    CARD8	 minorversion;	/* module-specific minor version */
+    CARD16	 patchlevel;	/* module-specific patch level */
+    const char * abiclass;	/* ABI class that the module uses */
+    CARD32	 abiversion;	/* ABI version */
+    const char * moduleclass;	/* module class description */
+    CARD32	 checksum[4];	/* contains a digital signature of the */
 				/* version info structure */
 } XF86ModuleVersionInfo;
 
@@ -107,12 +121,12 @@ typedef struct {
  * specify version and/or ABI requirements.
  */
 typedef struct {
-    CARD8	majorversion;	/* module-specific major version */
-    CARD8	minorversion;	/* moudle-specific minor version */
-    CARD16	patchlevel;	/* module-specific patch level */
-    CARD32	abiclass;	/* ABI class that the module uses */
-    CARD32	abiversion;	/* ABI version */
-    char *	abivendor;	/* vendor-defined ABI (overrides abiclass) */
+    CARD8	 majorversion;	/* module-specific major version */
+    CARD8	 minorversion;	/* moudle-specific minor version */
+    CARD16	 patchlevel;	/* module-specific patch level */
+    const char * abiclass;	/* ABI class that the module uses */
+    CARD32	 abiversion;	/* ABI version */
+    const char * moduleclass;	/* module class */
 } XF86ModReqInfo;
 
 /* values to indicate unspecified fields in XF86ModReqInfo. */
@@ -155,11 +169,13 @@ int LoaderCheckUnresolved(int);
 
 typedef pointer (*ModuleSetupProc)(pointer, pointer, int *, int *);
 typedef void (*ModuleTearDownProc)(pointer);
-#define MODULEINITARGS	XF86ModuleVersionInfo **, ModuleSetupProc *,	\
-			ModuleTearDownProc *
-typedef void (*ModuleInitProc)(MODULEINITARGS);
-#define MODULEINITPROTO(func) void func(MODULEINITARGS)
 #define MODULESETUPPROTO(func) pointer func(pointer, pointer, int*, int*)
 #define MODULETEARDOWNPROTO(func) void func(pointer)
+
+typedef struct {
+    XF86ModuleVersionInfo *	vers;
+    ModuleSetupProc		setup;
+    ModuleTearDownProc		teardown;
+} XF86ModuleData;
 
 #endif /* _XF86STR_H */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/extmod/modinit.c,v 1.6 1999/01/17 10:53:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/extmod/modinit.c,v 1.7 1999/01/17 12:29:22 dawes Exp $ */
 
 /*
  *
@@ -32,7 +32,6 @@
 #include "xf86Module.h"
 #include "xf86Opt.h"
 
-MODULEINITPROTO(extmodModuleInit);
 static MODULESETUPPROTO(extmodSetup);
 
 extern Bool noTestExtensions;
@@ -282,22 +281,14 @@ static XF86ModuleVersionInfo VersRec =
 	1, 0, 0,
 	ABI_CLASS_EXTENSION,
 	ABI_EXTENSION_VERSION,
-	NULL,
+	MOD_CLASS_EXTENSION,
 	{0,0,0,0}
 };
 
 /*
- * Entry point for the loader code
+ * Data for the loader
  */
-void
-extmodModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
-		 ModuleTearDownProc *teardown)
-{
-    *vers = &VersRec;
-    *setup = extmodSetup;
-    *teardown = NULL;
-}
-
+XF86ModuleData extmodModuleData = { &VersRec, extmodSetup, NULL };
 
 static pointer
 extmodSetup(pointer module, pointer opts, int *errmaj, int *errmin)
