@@ -6,7 +6,7 @@
    Pre-fb-write callbacks and RENDER support - Nolan Leake (nolan@vmware.com)
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/shadowfb/shadow.c,v 1.16 2003/02/18 02:38:20 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/shadowfb/shadow.c,v 1.17 2003/02/18 19:10:35 alanh Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -468,7 +468,8 @@ ShadowComposite(
     box.x2 = box.x1 + width;
     box.y2 = box.y1 + height;
 
-    if (pDst->pDrawable->type == DRAWABLE_WINDOW && BOX_NOT_EMPTY(box)) {
+    if (pPriv->vtSema
+	&& pDst->pDrawable->type == DRAWABLE_WINDOW && BOX_NOT_EMPTY(box)) {
         if (pPriv->preRefresh)
             (*pPriv->preRefresh)(pPriv->pScrn, 1, &box);
         boxNotEmpty = TRUE;
