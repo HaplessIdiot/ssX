@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.71 1997/11/08 17:07:26 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.72 1998/01/24 16:57:30 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -718,7 +718,14 @@ extern int configScreen(XF86ConfScreenPtr);
 extern int ScreentoIndex(XF86ConfScreenPtr);
 extern int configLayout(XF86ConfLayoutPtr);
 extern int configFrameBuffers(void);
-extern void xf86Config(int);
+#ifndef CONFIG_RETURN_TYPE
+#ifdef XF86SETUP
+#define CONFIG_RETURN_TYPE int
+#else
+#define CONFIG_RETURN_TYPE void
+#endif
+#endif
+extern CONFIG_RETURN_TYPE xf86Config(int);
 extern Bool xf86LookupMode(DisplayModePtr, ScrnInfoPtr, int);
 extern void addChipRec(void *);
 extern int xf86CheckMode(ScrnInfoPtr, DisplayModePtr, MonPtr, Bool);
