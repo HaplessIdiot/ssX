@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Id: access.c,v 3.44 2003/05/25 10:38:47 herrb Exp $ */
+/* $XFree86$ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
