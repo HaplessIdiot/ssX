@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaStipple.c,v 1.7 2000/02/29 17:38:32 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaStipple.c,v 1.9 2000/06/13 02:51:25 mvojkovi Exp $ */
 
 #include "xaa.h"
 #include "xaalocal.h"
@@ -697,9 +697,8 @@ StippleUpTo32(
     pat |= SHIFT_L(pat,width);
 
     while(dwords--) {
-#ifdef TRIPLE_BITS
 	CARD32 bits = SHIFT_R(pat,shift) | SHIFT_L(pat,width-shift);
-
+#ifdef TRIPLE_BITS
 	if(dwords >= 2) {
 	    WRITE_BITS3(bits);
 	    dwords -= 2;
@@ -710,7 +709,7 @@ StippleUpTo32(
 	    WRITE_BITS1(bits);
 	}
 #else
-	WRITE_BITS(SHIFT_R(pat,shift) | SHIFT_L(pat,width-shift));
+	WRITE_BITS(bits);
 #endif
 
 	shift += 32;
@@ -734,9 +733,8 @@ StippleUpTo32_Inverted(
     pat |= SHIFT_L(pat,width);
 
     while(dwords--) {
-#ifdef TRIPLE_BITS
 	CARD32 bits = ~(SHIFT_R(pat,shift) | SHIFT_L(pat,width-shift));
-
+#ifdef TRIPLE_BITS
 	if(dwords >= 2) {
 	    WRITE_BITS3(bits);
 	    dwords -= 2;
@@ -747,7 +745,7 @@ StippleUpTo32_Inverted(
 	    WRITE_BITS1(bits);
 	}
 #else
-	WRITE_BITS(~(SHIFT_R(pat,shift) | SHIFT_L(pat,width-shift)));
+	WRITE_BITS(bits);
 #endif
 
 	shift += 32;

@@ -176,8 +176,9 @@ EXPNAME(XAATEGlyphRenderer)(
 
 	    base = (CARD32*)infoRec->ColorExpandBase;
 
-	    while(count--) {	
-		WRITE_BITS(SHIFT_R(glyphs[0][line++],skipleft));
+	    while(count--) {
+		register CARD32 tmp = SHIFT_R(glyphs[0][line++],skipleft);
+		WRITE_BITS(tmp);
 	    }
     
 	    w -= width;
@@ -373,8 +374,9 @@ EXPNAME(XAATEGlyphRendererScanline)(
 	bufferNo = 0;
 
 	while(count--) {	
+	    register CARD32 tmp = SHIFT_R(glyphs[0][line++],skipleft);
 	    base = (CARD32*)infoRec->ScanlineColorExpandBuffers[bufferNo];
-	    WRITE_BITS(SHIFT_R(glyphs[0][line++],skipleft));
+	    WRITE_BITS(tmp);
 	    (*infoRec->SubsequentColorExpandScanline)(pScrn, bufferNo++);
 	    if(bufferNo >= infoRec->NumScanlineColorExpandBuffers)
 	    	bufferNo = 0;

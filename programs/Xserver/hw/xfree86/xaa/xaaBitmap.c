@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaBitmap.c,v 1.8 2000/06/13 02:51:24 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaBitmap.c,v 1.9 2000/06/29 10:55:41 alanh Exp $ */
 
 
 #include "xaa.h"
@@ -190,8 +190,9 @@ BitmapScanline_Shifted(
    int count, int skipleft )
 {
      while(count--) {
-	WRITE_BITS(SHIFT_R(*bits,skipleft) | 
-		SHIFT_L(*(bits + 1),(32 - skipleft)));
+	register CARD32 tmp = SHIFT_R(*bits,skipleft) | 
+			      SHIFT_L(*(bits + 1),(32 - skipleft));
+	WRITE_BITS(tmp);
 	bits++;
      }
      return base;
@@ -203,8 +204,9 @@ BitmapScanline_Shifted_Inverted(
    int count, int skipleft )
 {
      while(count--) {
-	WRITE_BITS(~(SHIFT_R(*bits,skipleft) | 
-		SHIFT_L(*(bits + 1),(32 - skipleft))));
+	register CARD32 tmp = ~(SHIFT_R(*bits,skipleft) | 
+				SHIFT_L(*(bits + 1),(32 - skipleft)));
+	WRITE_BITS(tmp);
 	bits++;
      }
      return base;
@@ -215,12 +217,14 @@ BitmapScanline_Shifted_Careful(
    CARD32 *bits, CARD32 *base,
    int count, int skipleft )
 {
+     register CARD32 tmp;
      while(--count) {
-	WRITE_BITS(SHIFT_R(*bits,skipleft) | 
-		SHIFT_L(*(bits + 1),(32 - skipleft)));
+ 	tmp = SHIFT_R(*bits,skipleft) | SHIFT_L(*(bits + 1),(32 - skipleft));
+	WRITE_BITS(tmp);
 	bits++;
      }
-     WRITE_BITS(SHIFT_R(*bits,skipleft));
+     tmp = SHIFT_R(*bits,skipleft);
+     WRITE_BITS(tmp);
 
      return base;
 }
@@ -230,12 +234,14 @@ BitmapScanline_Shifted_Inverted_Careful(
    CARD32 *bits, CARD32 *base,
    int count, int skipleft )
 {
+     register CARD32 tmp;
      while(--count) {
-	WRITE_BITS(~(SHIFT_R(*bits,skipleft) | 
-		SHIFT_L(*(bits + 1),(32 - skipleft))));
+	tmp = ~(SHIFT_R(*bits,skipleft) | SHIFT_L(*(bits + 1),(32 - skipleft)));
+	WRITE_BITS(tmp);
 	bits++;
      }
-     WRITE_BITS(~(SHIFT_R(*bits,skipleft)));
+     tmp = ~(SHIFT_R(*bits,skipleft));
+     WRITE_BITS(tmp);
      return base;
 }
 
