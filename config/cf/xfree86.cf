@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.434 2003/01/16 16:09:05 eich Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.435 2003/01/28 22:41:38 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -323,6 +323,10 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 # ifndef XF86Int10
 #  define XF86Int10		YES
 # endif
+/* vbe module */
+# ifndef XF86VBE
+#  define XF86VBE		YES
+# endif
 
 /*
  * Amiga framebuffer module.
@@ -448,6 +452,10 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 # ifndef XF86Int10
 #  define XF86Int10		YES
 # endif
+/* vbe module */
+# ifndef XF86VBE
+#  define XF86VBE		YES
+# endif
 
 # define AgpGartDrivers	/**/
 
@@ -534,6 +542,10 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 /* int10 module */
 # ifndef XF86Int10
 #  define XF86Int10		YES
+# endif
+/* vbe module */
+# ifndef XF86VBE
+#  define XF86VBE		YES
 # endif
 
 # ifndef DevelDrivers
@@ -633,6 +645,10 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 # ifndef UseX86Emu
 #  define UseX86Emu		NO
 # endif
+/* vbe module */
+# ifndef XF86VBE
+#  define XF86VBE		YES
+# endif
 
 # ifndef DevelDrivers
 #  if XFree86Devel
@@ -717,6 +733,10 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 # ifndef XF86Int10
 #  define XF86Int10		YES
 # endif
+/* vbe module */
+# ifndef XF86VBE
+#  define XF86VBE		YES
+# endif
 
 # ifndef DevelDrivers
 #  if XFree86Devel
@@ -796,6 +816,10 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 /* int10 module */
 # ifndef XF86Int10
 #  define XF86Int10		YES
+# endif
+/* vbe module */
+# ifndef XF86VBE
+#  define XF86VBE		YES
 # endif
 
 # ifndef DevelDrivers
@@ -884,6 +908,10 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 # ifndef XF86Int10
 #  define XF86Int10		YES
 # endif
+/* vbe module */
+# ifndef XF86VBE
+#  define XF86VBE		YES
+# endif
 
 # ifndef DevelDrivers
 #  if XFree86Devel
@@ -968,6 +996,10 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 # ifndef XF86Int10
 #  define XF86Int10		YES
 # endif
+/* vbe module */
+# ifndef XF86VBE
+#  define XF86VBE		YES
+# endif
 
 # ifndef DevelDrivers
 #  if XFree86Devel
@@ -1051,6 +1083,10 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 /* int10 module */
 # ifndef XF86Int10
 #  define XF86Int10		YES
+# endif
+/* vbe module */
+# ifndef XF86VBE
+#  define XF86VBE		YES
 # endif
 
 # ifndef XF86CardDrivers
@@ -1157,6 +1193,10 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 
 #ifndef BuildXF86DRI
 #define BuildXF86DRI	NO
+#endif
+
+#ifndef BuildXF86DRM
+#define BuildXF86DRM	NO
 #endif
 
 #ifndef GlxStubLib

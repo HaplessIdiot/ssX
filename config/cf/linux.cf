@@ -4,7 +4,7 @@ XCOMM platform:  $Xorg: linux.cf,v 1.3 2000/08/17 19:41:47 cpqbld Exp $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.199 2003/02/04 12:02:17 eich Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.200 2003/02/16 23:59:07 alanh Exp $
 
 #ifndef LinuxElfDefault
 # define LinuxElfDefault	YES
@@ -324,6 +324,12 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 # endif
 #endif
 
+#if 0
+/*
+ * Building the DRM module requires kernel source be installed.  It's safest
+ * to just not enable it by default.
+ */
+
 /* The DRM module requires kernel services that appeared in late 2.1.x
    kernels and are known to be present in 2.2.x kernels.  Unfortunately,
    the kernel API is a moving target and the module may break with new
@@ -351,6 +357,7 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #  else
 #    define BuildXF86DRM	NO
 #  endif
+#endif
 #endif
 
 #ifndef HasAgpGart
