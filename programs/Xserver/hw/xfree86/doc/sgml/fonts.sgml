@@ -9,7 +9,7 @@
 <date>17 November 2003</date>
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.22 2003/11/19 01:44:58 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.23 2003/11/24 01:57:56 dawes Exp $
 </ident>
 
 <toc>
@@ -1087,7 +1087,7 @@ name="FreeType-specific notes about fontenc"> earlier in this document.
 
 <sect2>About the <it/X-TrueType/ TrueType backend <label id="sec:X-TT">
 
-The `X-TrueType' backend is a backend based on version 1 of the FreeType
+<p>The `X-TrueType' backend is a backend based on version 1 of the FreeType
 library.  X-TrueType doesn't use the `fontenc' layer for managing font
 encodings, but instead uses its own database of encodings.
 
@@ -1101,16 +1101,16 @@ url="http://x-tt.sourceforge.jp/" name="the After X-TT Project page">.
 
 <sect2>Delayed glyph rasterisation
 
-<p>When loading a large character set, the old <it/FreeType/ delayed
-glyph rasterisation until the time at which the glyph was first used.
-The new FreeType (libfreetype-xtt2) has an improved `very lazy' metric
-calculation method to speed up the process when loading TrueType or
-OpenType fonts.   Although the <it/X-TT/ module also has this method,
-the "<tt/vl=y/" TTCap option must be set if you want to use it.  This
-is the default method for <it/FreeType/ when it loads multi-byte fonts.
-Even if you use a unicode font which has tens of thousands of glyphs,
-this delay will not be worrisome as long as you use the new <it/FreeType/
-backend -- its `very lazy' method is super-fast.
+<p>When loading a proportional fonts which contain a huge number of glyphs,
+the old <it/FreeType/ delayed glyph rasterisation until the time at which
+the glyph was first used.   The new FreeType (libfreetype-xtt2) has an
+improved `very lazy' metric calculation method to speed up the process when
+loading TrueType or OpenType fonts.   Although the <it/X-TT/ module also
+has this method, the "<tt/vl=y/" TTCap option must be set if you want to
+use it.  This is the default method for <it/FreeType/ when it loads
+multi-byte fonts.   Even if you use a unicode font which has tens of
+thousands of glyphs, this delay will not be worrisome as long as you use
+the new <it/FreeType/ backend -- its `very lazy' method is super-fast.
 
 The maximum error of bitmap position using `very lazy' method is 1 pixel,
 and is the same as that of a character-cell spacing.  When the X-TT
