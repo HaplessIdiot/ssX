@@ -5,13 +5,14 @@
 
    Copyright: 1998,1999
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.16 2000/12/08 17:22:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.17 2000/12/15 15:19:35 dawes Exp $ */
 
 #ifndef _TDFX_H_
 #define _TDFX_H_
 
 #include "xf86PciInfo.h"
 #include "xf86Pci.h"
+#include "xf86xv.h"
 #include "tdfxdefs.h"
 
 #ifdef XF86DRI
@@ -34,12 +35,6 @@
 
 struct _TDFXRec;
 typedef struct _TDFXRec *TDFXPtr;
-
-#ifdef XF86DRI
-#define PIXMAP_CACHE_LINES 128
-#else
-#define PIXMAP_CACHE_LINES 512
-#endif
 
 #include "tdfx_priv.h"
 extern void TDFXSwapContextFifo(ScreenPtr pScreen);
@@ -204,7 +199,15 @@ typedef struct _TDFXRec {
    * shadow everything and make it happen automatically for every write. */
   INT32 sst2DSrcFmtShadow;
   INT32 sst2DDstFmtShadow;
-  int pixmapCacheLines;
+  int pixmapCacheLinesMin;
+  int pixmapCacheLinesMax;
+  FBAreaPtr reservedArea;
+  Bool ShowCache;
+  FBLinearPtr videoScratch;
+  int videoKey;
+  void (*VideoTimerCallback)(ScrnInfoPtr, Time);
+  XF86VideoAdaptorPtr adaptor;
+  ScreenBlockHandlerProcPtr BlockHandler;
 } TDFXRec;
 
 typedef struct {
