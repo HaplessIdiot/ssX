@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.80 2001/10/01 13:44:02 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.81 2001/10/28 03:33:19 tsi Exp $ */
 
 /*
  * Copyright (c) 1997-2000 by The XFree86 Project, Inc.
@@ -533,7 +533,7 @@ typedef struct _CurrAccRec {
 /* new RAC */
 
 /* Resource Type values */
-#define ResNone		-1
+#define ResNone		((unsigned long)(-1))
 
 #define ResMem		0x0001
 #define ResIo		0x0002
