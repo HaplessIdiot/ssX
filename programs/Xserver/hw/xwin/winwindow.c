@@ -28,7 +28,7 @@
  * Authors:	Harold L Hunt II
  *		MATSUZAKI Kensuke
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winwindow.c,v 1.3 2002/10/17 08:18:25 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winwindow.c,v 1.4 2002/10/31 23:04:39 alanh Exp $ */
 
 #include "win.h"
 
@@ -198,11 +198,6 @@ winPositionWindowPRootless (WindowPtr pWin, int x, int y)
 
   fResult = winGetScreenPriv(pWin->drawable.pScreen)->PositionWindow(pWin, x, y);
   
-  if (wBoundingShape(pWin))
-    {
-      winReshape (pWin);
-    }
-  
   winUpdateRgn (pWin);
   
   return fResult;
@@ -237,12 +232,19 @@ Bool
 winUnmapWindowPRootless (WindowPtr pWin)
 {
   Bool			fResult = FALSE;
+  winWindowPriv(pWin);
 
 #if CYGDEBUG
   ErrorF ("winUnmapWindowPRootless()\n");
 #endif
 
   fResult = winGetScreenPriv(pWin->drawable.pScreen)->UnrealizeWindow(pWin);
+  
+  if (pWinPriv->hRgn != NULL)
+    {
+      DeleteObject(pWinPriv->hRgn);
+      pWinPriv->hRgn = NULL;
+    }
   
   winUpdateRgn (pWin);
   
@@ -264,6 +266,8 @@ winMapWindowPRootless (WindowPtr pWin)
 #endif
 
   fResult = winGetScreenPriv(pWin->drawable.pScreen)->RealizeWindow(pWin);
+  
+  winReshape (pWin);
   
   winUpdateRgn (pWin);
   
@@ -402,22 +406,18 @@ winReshape (WindowPtr pWin)
       return;
     }
   
-  if (wBoundingShape(pWin)) 
+  if (pWinPriv->hRgn != NULL)
     {
-      REGION_INIT(pScreen, &rrNewShape, NullBox, 0);
-      REGION_COPY(pScreen, &rrNewShape, wBoundingShape(pWin));
-      REGION_TRANSLATE(pScreen, &rrNewShape, pWin->borderWidth,
-                       pWin->borderWidth);
+      DeleteObject (pWinPriv->hRgn);
+      pWinPriv->hRgn = NULL;
     }
-  else
-    {
-      if (pWinPriv->hRgn != NULL)
-        {
-	  DeleteObject (pWinPriv->hRgn);
-	  pWinPriv->hRgn = NULL;
-	  return;
-        }
-    }
+  
+  if (!wBoundingShape(pWin)) return;
+
+  REGION_INIT(pScreen, &rrNewShape, NullBox, 0);
+  REGION_COPY(pScreen, &rrNewShape, wBoundingShape(pWin));
+  REGION_TRANSLATE(pScreen, &rrNewShape, pWin->borderWidth,
+                   pWin->borderWidth);
   
   nRects = REGION_NUM_RECTS(&rrNewShape);
   pShape = REGION_RECTS(&rrNewShape);
@@ -441,23 +441,8 @@ winReshape (WindowPtr pWin)
 
 	  DeleteObject (hRgnRect);
         }
-
-      if (pWinPriv->hRgn != NULL)
-	{
-	  DeleteObject (pWinPriv->hRgn);
-	  pWinPriv->hRgn = NULL;
-	}
       
       pWinPriv->hRgn = hRgn;
-    }
-  else
-    {
-      if (pWinPriv->hRgn != NULL)
-        {
-	  DeleteObject (pWinPriv->hRgn);
-	  pWinPriv->hRgn = NULL;
-        }
-      
     }
 
   REGION_UNINIT(pScreen, &rrNewShape);
