@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.6 1997/09/09 10:27:40 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint.c,v 1.7 1997/09/12 09:23:11 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane, Wigan, England.
  *
@@ -46,6 +46,7 @@
 #include "IBMRGB.h"
 
 #include "xf86xaa.h"
+#include "xf86cursor.h"
 #include "xf86scrin.h"
 #include "xf86_Config.h"
 
@@ -244,6 +245,14 @@ ModuleInit(data,magic)
 	return;
 }
 #endif /* XFree86LOADER */
+
+extern void XAAQueryBestSize();
+extern void XAAWarpCursor();
+extern void glintIBMShowCursor();
+extern void glintIBMHideCursor();
+extern void glintIBMSetCursorPosition();
+extern void glintIBMSetCursorColors();
+extern void glintIBMLoadCursorImage();
 
 Bool glintDoubleBufferMode = FALSE;
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
@@ -687,9 +696,8 @@ glintProbe()
 						0xE0000000) >> 29));
 	} else if (coprotype == PCI_CHIP_3DLABS_PERMEDIA) {
 	  GLINTFrameBufferSize = GLINT_READ_REG(PMMemConfig);
-	  ErrorF("Memconfig register 0x%x\n", GLINTFrameBufferSize);
+	  /* ErrorF("Memconfig register 0x%x\n", GLINTFrameBufferSize); */
 	  glintInfoRec.videoRam = 2048 * (((GLINTFrameBufferSize >> 29) & 0x03) + 1);
-
 	}
 	ErrorF("%s %s: videoram : %dk\n", XCONFIG_PROBED, 
 		glintInfoRec.name, glintInfoRec.videoRam);
@@ -946,9 +954,6 @@ glintInitialize (int scr_index, ScreenPtr pScreen, int argc, char **argv)
 
 	XF86FLIP_PIXELS();
 
-	pScreen->CloseScreen = glintCloseScreen;
-	pScreen->SaveScreen = glintSaveScreen;
-
 	switch(glintInfoRec.bitsPerPixel) {
 		case 8:
 			pScreen->InstallColormap = glintInstallColormap;
@@ -968,11 +973,33 @@ glintInitialize (int scr_index, ScreenPtr pScreen, int argc, char **argv)
 	}
 
 	if (OFLG_ISSET(OPTION_IBMRGB_CURS, &glintInfoRec.options)) {
+#if 0
 		pScreen->QueryBestSize = glintQueryBestSize;
 		xf86PointerScreenFuncs.WarpCursor = glintWarpCursor;
 		(void)glintCursorInit(0, pScreen);
+#endif
+		XAACursorInfoRec.MaxHeight = 64;
+		XAACursorInfoRec.MaxWidth = 64;
+		XAACursorInfoRec.Flags = USE_HARDWARE_CURSOR |
+					 HARDWARE_CURSOR_TRUECOLOR_AT_8BPP |
+					 HARDWARE_CURSOR_AND_SOURCE_WITH_MASK |
+					 HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE |
+					 HARDWARE_CURSOR_CHAR_BIT_FORMAT |
+					 HARDWARE_CURSOR_PROGRAMMED_BITS |
+					 HARDWARE_CURSOR_PROGRAMMED_ORIGIN;
+		XAACursorInfoRec.ShowCursor = glintIBMShowCursor;
+		XAACursorInfoRec.HideCursor = glintIBMHideCursor;
+		XAACursorInfoRec.SetCursorColors = glintIBMSetCursorColors;
+		XAACursorInfoRec.SetCursorPosition = glintIBMSetCursorPosition;
+		XAACursorInfoRec.LoadCursorImage = glintIBMLoadCursorImage;
+		pScreen->QueryBestSize = XAAQueryBestSize;
+		xf86PointerScreenFuncs.WarpCursor = XAAWarpCursor;
+		(void)XAACursorInit(0, pScreen);
 	} else 
 	miDCInitialize (pScreen, &xf86PointerScreenFuncs);
+
+	pScreen->CloseScreen = glintCloseScreen;
+	pScreen->SaveScreen = glintSaveScreen;
 
 	savepScreen = pScreen;
 
@@ -1032,8 +1059,12 @@ glintEnterLeaveVT(Bool enter, int screen_idx)
 	    glintSetCRTCRegs(&glintCRTCRegs);
 	    glintRestoreDACvalues();
 	    glintRestoreColor0(pScreen);
+#if 0
 	    (void)glintCursorInit(0, pScreen);
 	    glintRestoreCursor(pScreen);
+#endif
+	    (void)XAACursorInit(0, pScreen);
+	    XAARestoreCursor(pScreen);
 	    glintAdjustFrame(pScr->frameX0, pScr->frameY0);
 
 	    if (pspix->devPrivate.ptr != glintVideoMem && ppix) {
@@ -1266,5 +1297,26 @@ glintValidMode(DisplayModePtr mode, Bool verbose, int flag)
 			XCONFIG_GIVEN, glintInfoRec.name);
 	return MODE_BAD;
     }
+
+    if (mode->Flags & V_INTERLACE)
+    {
+	ErrorF("%s %s: Cannot support interlaced modes, deleting.\n",
+			XCONFIG_GIVEN, glintInfoRec.name);
+	return MODE_BAD;
+    }
+
+    if ((coprotype == PCI_CHIP_3DLABS_PERMEDIA) && (mode->CrtcHDisplay > 1536))
+    {
+	ErrorF("HDisplay is %d, cannot support HDisplay > 1536, deleting.\n",
+			mode->CrtcHDisplay);
+	return MODE_BAD;
+    }
+
+
     return MODE_OK;
 }
+
+
+
+
+

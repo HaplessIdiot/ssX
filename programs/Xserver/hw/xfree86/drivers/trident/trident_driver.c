@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.13 1997/09/09 10:27:48 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.14 1997/09/12 09:23:15 hohndel Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -58,6 +58,8 @@
 #include "dix.h"
 
 #include "compiler.h"
+
+#include "xf86cursor.h"
 
 #include "xf86.h"
 #include "xf86Version.h"
@@ -141,6 +143,16 @@ extern void TGUISetWrite();
 extern void TGUISetReadWrite();
 static int  TGUIPitchAdjust();
 
+extern void TridentShowCursor();
+extern void TridentHideCursor();
+extern void TridentSetCursorPosition();
+extern void TridentSetCursorColors();
+extern void TridentLoadCursorImage();
+extern Bool XAACursorInit();
+extern void XAARestoreCursor();
+extern void XAAWarpCursor();
+extern void XAAQueryBestSize();
+
 vgaVideoChipRec TRIDENT = {
   TVGA8900Probe,
   TVGA8900Ident,
@@ -206,7 +218,7 @@ static int CyberLCDHeight, CyberLCDWidth;
 static unsigned char DRAMspeed;
 static int TridentDisplayableMemory;
 unsigned char *tguiMMIOBase = NULL;
-
+int TridentCursorAddress;
 
 int TGUIRops_alu[16] = {
 	TGUIROP_0,
@@ -866,6 +878,9 @@ TVGA8900Probe()
 				REV = "Unknown ID - Please report to trident@xfree86.org";
 				break;
 		}
+		if (!OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options)) {
+			OFLG_SET(OPTION_HW_CURSOR, &vga256InfoRec.options);
+		}
 		outb(vgaIOBase + 4, 0xCF);
 		temp = inb(vgaIOBase + 5);
 		ErrorF("%s %s: BIOS reports Clock Control Bits 0x%x\n",
@@ -1321,18 +1336,29 @@ TVGA8900FbInit()
 	{
 	  if (OFLG_ISSET(OPTION_HW_CURSOR, &vga256InfoRec.options))
 	  {
-		if (offscreen_available < (IsCyber ? 4096 : 1024))
+		if (offscreen_available < 4096)
 			ErrorF("%s %s: Not enough off-screen video"
 				" memory for hw cursor, using sw cursor.\n",
 				XCONFIG_PROBED, vga256InfoRec.name);
 		else {
-			TridentCursorWidth = 32;
-			TridentCursorHeight = 32;
+			TridentCursorAddress = ((vga256InfoRec.videoRam * 1024) - 4096);
+			XAACursorInfoRec.Flags = USE_HARDWARE_CURSOR |
+					      HARDWARE_CURSOR_BIT_ORDER_MSBFIRST |
+					      HARDWARE_CURSOR_LONG_BIT_FORMAT |
+					      HARDWARE_CURSOR_PROGRAMMED_BITS |
+					      HARDWARE_CURSOR_PROGRAMMED_ORIGIN;
+			vgaHWCursor.Init = XAACursorInit;
 			vgaHWCursor.Initialized = TRUE;
-			vgaHWCursor.Init = TridentCursorInit;
-			vgaHWCursor.Restore = TridentRestoreCursor;
-			vgaHWCursor.Warp = TridentWarpCursor;
-			vgaHWCursor.QueryBestSize = TridentQueryBestSize;
+			vgaHWCursor.Restore = XAARestoreCursor;
+			vgaHWCursor.Warp = XAAWarpCursor;
+			vgaHWCursor.QueryBestSize = XAAQueryBestSize;
+			XAACursorInfoRec.MaxHeight = 64;
+			XAACursorInfoRec.MaxWidth = 64;
+			XAACursorInfoRec.ShowCursor = TridentShowCursor;
+			XAACursorInfoRec.HideCursor = TridentHideCursor;
+			XAACursorInfoRec.SetCursorColors = TridentSetCursorColors;
+			XAACursorInfoRec.SetCursorPosition = TridentSetCursorPosition;
+			XAACursorInfoRec.LoadCursorImage = TridentLoadCursorImage;
 			ErrorF("%s %s: Using hardware cursor\n",
 				XCONFIG_GIVEN, vga256InfoRec.name);
 		}

@@ -1,13 +1,13 @@
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/Imakefile,v 1.3 1997/06/10 13:52:06 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/Imakefile,v 1.4 1997/07/29 12:07:29 hohndel Exp $
 
 
 #include <Server.tmpl>
 
-SRCS = 	glint.c glint_init.c glint_accel.c glintcmap.c IBMRGB.c glintcur.c \
+SRCS = 	glint.c glint_init.c glint_accel.c glintcmap.c IBMRGB.c \
 	glintIBMCurs.c
 
-OBJS = 	glint.o glint_init.o glint_accel.o glintcmap.o IBMRGB.o glintcur.o \
+OBJS = 	glint.o glint_init.o glint_accel.o glintcmap.o IBMRGB.o \
 	glintIBMCurs.o
 
 INCLUDES = -I$(XF86SRC) -I. -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \

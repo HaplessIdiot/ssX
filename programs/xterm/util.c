@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: util.c /main/33 1996/12/01 23:47:10 swick $
- *	$XFree86: xc/programs/xterm/util.c,v 3.16 1997/06/29 07:54:43 dawes Exp $
+ *	$XFree86: xc/programs/xterm/util.c,v 3.17 1997/07/29 13:26:07 hohndel Exp $
  */
 
 /*
@@ -1436,12 +1436,12 @@ resetXtermGC(screen, flags, hilite)
  * BOLD or UNDERLINE color-mode active, those will be used unless we've got
  * an SGR foreground color active.
  */
-unsigned
+int
 extract_fg (color, flags)
 	unsigned color;
 	unsigned flags;
 {
-	unsigned fg = (color >> 4) & 0xf;
+	int fg = (int) ((color >> 4) & 0xf);
 	if (fg == extract_bg(color))
 	{
 		if (term->screen.colorULMode && (flags & UNDERLINE))
@@ -1452,11 +1452,11 @@ extract_fg (color, flags)
 	return fg;
 }
 
-unsigned
+int
 extract_bg (color)
 	unsigned color;
 {
-	return color & 0xf;
+	return (int) (color & 0xf);
 }
 
 /*

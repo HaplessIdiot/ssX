@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: scrollbar.c /main/47 1996/12/01 23:47:08 swick $
- *	$XFree86: xc/programs/xterm/scrollbar.c,v 3.8 1997/05/23 09:19:54 dawes Exp $
+ *	$XFree86: xc/programs/xterm/scrollbar.c,v 3.9 1997/08/26 10:01:58 hohndel Exp $
  */
 
 /*
@@ -178,6 +178,9 @@ static void ResizeScreen(xw, min_width, min_height )
 	     geomreqresult = XtMakeResizeRequest ((Widget)xw, repWidth,
 						  repHeight, NULL, NULL);
 	}
+	XSync(screen->display, FALSE);	/* synchronize */
+	if(XtAppPending(app_con))
+		xevents();
 
 #ifndef nothack
 	XSetWMNormalHints(screen->display, XtWindow(XtParent(xw)), &sizehints);

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: ptyx.h /main/67 1996/11/29 10:34:19 swick $
- *	$XFree86: xc/programs/xterm/ptyx.h,v 3.25 1997/08/12 12:02:19 hohndel Exp $
+ *	$XFree86: xc/programs/xterm/ptyx.h,v 3.26 1997/08/26 10:01:57 hohndel Exp $
  */
 
 /*
@@ -322,6 +322,10 @@ typedef struct {
 
 #ifndef OPT_ISO_COLORS
 #define OPT_ISO_COLORS  1 /* true if xterm is configured with ISO colors */
+#endif
+
+#ifndef OPT_SUNPC_KBD
+#define OPT_SUNPC_KBD	1 /* true if xterm supports Sun/PC keyboard map */
 #endif
 
 #ifndef OPT_TRACE
@@ -775,10 +779,10 @@ typedef struct _XtermWidgetRec {
     TKeyboard	keyboard;	/* terminal keyboard		*/
     TScreen	screen;		/* terminal screen		*/
     unsigned	flags;		/* mode flags			*/
-    unsigned    cur_foreground;	/* current foreground color	*/
-    unsigned    cur_background;	/* current background color	*/
+    int         cur_foreground;	/* current foreground color	*/
+    int         cur_background;	/* current background color	*/
 #if OPT_ISO_COLORS
-    unsigned    sgr_foreground;	/* current SGR foreground color	*/
+    int         sgr_foreground;	/* current SGR foreground color	*/
 #endif
 #if OPT_ISO_COLORS || OPT_DEC_CHRSET
     int         num_ptrs;	/* number of pointers per row in 'ScrnBuf' */

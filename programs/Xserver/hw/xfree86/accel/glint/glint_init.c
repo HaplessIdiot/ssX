@@ -35,6 +35,10 @@
 #include "glint.h"
 #include "xf86_Config.h"
 
+#if DEBUG
+#define MEMDEBUG 1
+#endif
+
 typedef struct {
 	unsigned long glintRegs[0x200];
 	unsigned long DacRegs[0x100];
@@ -44,10 +48,6 @@ static glintRegisters SR;
 /* if < graphicsmem then framebuffer is not correct !? */
 /* #define  VGASize glintInfoRec.videoRam*1024 */
 #define  VGASize glintInfoRec.virtualX*glintInfoRec.virtualY*glintInfoRec.bitsPerPixel/8
-
-#if DEBUG
-#define MEMDEBUG 1
-#endif
 
 unsigned char *glintVideoMemSave=NULL;
 unsigned char *glintVideoMemSavegr=NULL;
@@ -65,6 +65,7 @@ void glintDumpRegs(void);
 unsigned int glintSetLUT(int , unsigned int );
 int pprod;
 extern int coprotype;
+
 
 #define PARTPROD(a,b,c) (((a)<<6) | ((b)<<3) | (c))
 
@@ -165,7 +166,6 @@ Shiftbpp(int value)
     }
     return (value);
 }
-		
 
 void
 glintCalcCRTCRegs(glintCRTCRegPtr crtcRegs, DisplayModePtr mode)
@@ -205,7 +205,7 @@ glintCalcCRTCRegs(glintCRTCRegPtr crtcRegs, DisplayModePtr mode)
     if (coprotype == PCI_CHIP_3DLABS_PERMEDIA) 
 	{
 	    crtcRegs->vclkctl = 0x03 | 
-		(((33*10000*6 + (crtcRegs->clock_sel-1)) / crtcRegs->clock_sel) << 2);
+	      (((33*10000*6 + (crtcRegs->clock_sel-1)) / crtcRegs->clock_sel) << 2);
 	}
     else
 	{
@@ -255,9 +255,8 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
     if (coprotype == PCI_CHIP_3DLABS_500TX) {
 	GLINT_WRITE_REG(pprod | 0x600,	LBReadMode);
 	GLINT_WRITE_REG(0x01,		LBWriteMode);
-	GLINT_WRITE_REG(0x8842,		LBReadFormat);
-	GLINT_WRITE_REG(0x8842,		LBWriteFormat);
-    }
+   }
+
     GLINT_WRITE_REG(1,			FBWriteMode);
     GLINT_WRITE_REG(pprod,		FBReadMode);
 #if 0
@@ -267,7 +266,6 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
 #else
     GLINT_WRITE_REG(0,			ScissorMode);
 #endif
-
 
     /*
      * this one depends on the color depth
@@ -321,17 +319,18 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
 	}
     }
     else if (coprotype == PCI_CHIP_3DLABS_PERMEDIA) {
-	switch (glintInfoRec.bitsPerPixel) {
+	switch (glintInfoRec.depth) {
 	case 8:
-	    GLINT_WRITE_REG(0x0, FBReadPixel);
-	    break;
-	case 16:
-	    GLINT_WRITE_REG(0x1, FBReadPixel);
-	    break;
-	case 32:
-	    GLINT_WRITE_REG(0x2, FBReadPixel);
-	    break;
+	  GLINT_WRITE_REG(0x0, FBReadPixel);
+	  break;
+	case 15: case 16:
+	  GLINT_WRITE_REG(0x1, FBReadPixel);
+	  break;
+	case 24: case 32:
+	  GLINT_WRITE_REG(0x2, FBReadPixel);
+	  break;
 	}
+
 	GLINT_WRITE_REG(0x0,		DitherMode);
 	GLINT_WRITE_REG(0x3000,		AlphaBlendMode);
 	GLINT_WRITE_REG(0x0,		ColorDDAMode);
@@ -393,15 +392,23 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
 	GLINT_WRITE_REG(crtcRegs->v_blank_end,	VTGVGateEnd);
     } 
     else if (coprotype == PCI_CHIP_3DLABS_PERMEDIA) {
-	GLINT_WRITE_REG(0x0,			TextureAddressMode);
-	GLINT_WRITE_REG(0x0,			TextureReadMode);
-	GLINT_WRITE_REG(1,			DFIFODis);
-	GLINT_WRITE_REG(3,			FIFODis);
+      
+      /* Max dotclock is 80 kHz for Permedia 8Mb */
+      if (!glintInfoRec.dacSpeeds[0] && 
+	  crtcRegs->clock_sel > 80000 && 
+	  coprotype == PCI_CHIP_3DLABS_PERMEDIA)
+ 	FatalError("Pixelclock ist to high for permedia = %d MHz.\nMax mode clock <= 80 MHz. \n",
+ 		   crtcRegs->clock_sel/1000);
 
-	/*
-	 * this is the Permedia version of crtc registers
-	 */
-	GLINT_WRITE_REG(crtcRegs->h_blank_end,	PMHgEnd);
+      GLINT_WRITE_REG(0x0,			TextureAddressMode);
+      GLINT_WRITE_REG(0x0,			TextureReadMode);
+      GLINT_WRITE_REG(1,			DFIFODis);
+      GLINT_WRITE_REG(3,			FIFODis);
+
+      /*
+       * this is the Permedia version of crtc registers
+       */
+      GLINT_WRITE_REG(crtcRegs->h_blank_end,	PMHgEnd);
 
 	GLINT_WRITE_REG(crtcRegs->vclkctl,	VClkCtl);
 	GLINT_WRITE_REG(0,			PMScreenBase);
@@ -416,12 +423,9 @@ glintSetCRTCRegs(glintCRTCRegPtr crtcRegs)
 	GLINT_WRITE_REG(crtcRegs->v_blank_end,	PMVbEnd);
 	GLINT_WRITE_REG(crtcRegs->v_sync_start-1,	PMVsStart);
 	GLINT_WRITE_REG(crtcRegs->v_sync_end-1,	PMVsEnd);
-
     }
 
-    /* #ifdef STANDARTMODE */
     IBMRGB52x_Init_Stdmode(crtcRegs->clock_sel);
-    /* IBMRGBClockSelect(crtcRegs->clock_sel); */
   
     if (coprotype == PCI_CHIP_3DLABS_500TX) 
 	{
@@ -549,9 +553,6 @@ glintCleanUp(void)
     if (!glintInitialized)
 	return;
   
-#if 0
-    if (coprotype == PCI_CHIP_3DLABS_PERMEDIA) 
-#endif
       /* save for X-Console */
       xf86memcpy(glintVideoMemSavegr, (unsigned char *)glintVideoMem,
 		 glintInfoRec.virtualX * glintInfoRec.virtualY *
@@ -562,16 +563,25 @@ glintCleanUp(void)
 		 glintInfoRec.virtualX * glintInfoRec.virtualY *
 		 glintInfoRec.bitsPerPixel / 8);
 #endif
-    if (glintVideoMemSave && glintVideoMem) {
+
+    if (glintVideoMemSave && glintVideoMem)
       xf86memcpy((unsigned char *)glintVideoMem, glintVideoMemSave, VGASize);
+
 #if MEMDEBUG
       ErrorF("CleanUp: restoring 0x%x bytes saved memory\n",VGASize);
 #endif
-    }
 
     restoreGLINTstate();
 }
 
+void permediapreinit(void)
+{
+  GLINT_WRITE_REG(0x01,       FIFODis); 
+  GLINT_WRITE_REG(0x00,       Aperture0);
+  GLINT_WRITE_REG(0x00,       Aperture1);
+  GLINT_WRITE_REG(0xffffffff, PMFramebufferWriteMask);
+  GLINT_WRITE_REG(0xffffffff, PMBypassWriteMask);
+}
 
 Bool
 glintInit(DisplayModePtr mode)
@@ -598,27 +608,22 @@ glintInit(DisplayModePtr mode)
     if (coprotype == PCI_CHIP_3DLABS_500TX) {
 	GLINT_WRITE_REG(0xdc000017,  LBMemoryEDO);
 	GLINT_WRITE_REG(0x60400800,  FBMemoryCtl);
-	GLINT_WRITE_REG(0xFFFFFFFF,	 FBWrMaskk);
+	GLINT_WRITE_REG(0xFFFFFFFF,  FBWrMaskk);
 	GLINT_WRITE_REG(0x00000002,  FBTXMemCtl);
     } 
 
 
     if (coprotype == PCI_CHIP_3DLABS_PERMEDIA) 
-    {
-	GLINT_WRITE_REG(0x01,       FIFODis); 
-	GLINT_WRITE_REG(0x00,       Aperture0);
-	GLINT_WRITE_REG(0x00,       Aperture1);
-	GLINT_WRITE_REG(0xffffffff, PMFramebufferWriteMask);
-	GLINT_WRITE_REG(0xffffffff, PMBypassWriteMask);
-
-
-	/* switch to graphics Mode */
-	GLINT_WRITE_REG((unsigned char)PERMEDIA_VGA_CTRL_INDEX, PERMEDIA_MMVGA_INDEX_REG);
-	usData = (unsigned short)GLINT_READ_REG(PERMEDIA_MMVGA_DATA_REG);
-	usData &= ~PERMEDIA_VGA_ENABLE;
-	usData = (usData << 8) | PERMEDIA_VGA_CTRL_INDEX;
-	GLINT_WRITE_REG((unsigned short)usData, PERMEDIA_MMVGA_INDEX_REG);
-    }
+	{
+	  permediapreinit();
+	  
+	  /* switch to graphics Mode */
+	  GLINT_WRITE_REG((unsigned char)PERMEDIA_VGA_CTRL_INDEX, PERMEDIA_MMVGA_INDEX_REG);
+	  usData = (unsigned short)GLINT_READ_REG(PERMEDIA_MMVGA_DATA_REG);
+	  usData &= ~PERMEDIA_VGA_ENABLE;
+	  usData = (usData << 8) | PERMEDIA_VGA_CTRL_INDEX;
+	  GLINT_WRITE_REG((unsigned short)usData, PERMEDIA_MMVGA_INDEX_REG);
+	}
 
     xf86memcpy(glintVideoMemSave, (unsigned char *)glintVideoMem, VGASize);
 #if MEMDEBUG
@@ -627,6 +632,7 @@ glintInit(DisplayModePtr mode)
 				             glintInfoRec.bitsPerPixel);
     ErrorF("Init: saving 0x%x bytes VT mem\n",VGASize);
 #endif
+
 
     if (!glintInitialized)
       xf86memset((unsigned char *)glintVideoMem, 0, glintInfoRec.virtualX *
@@ -637,8 +643,7 @@ glintInit(DisplayModePtr mode)
 		 glintInfoRec.bitsPerPixel / 8);
 #if MEMDEBUG
     ErrorF("Init: setting/restoring 0x%x bytes GRAPHICS mem\n",
-    		glintInfoRec.virtualX *
-		glintInfoRec.virtualY * glintInfoRec.bitsPerPixel / 8);
+	   glintInfoRec.virtualX, glintInfoRec.virtualY, glintInfoRec.bitsPerPixel);
 #endif
 
     /*
@@ -710,8 +715,8 @@ InitLUT(void)
 		
 		for (i=0;i<256;i++) {
 		    r = (i >> (6-nr)) & mr;
-		    g = (i >> (6-ng)) & mg;
-		    b = (i >> (6-nb)) & mb;
+		    /* g = (i >> (6-ng)) & mg; */
+		    /* b = (i >> (6-nb)) & mb; */
 		    currentglintdac[i].r = xf86rGammaMap[(r*255+mr/2)/mr];
 		    currentglintdac[i].g = xf86gGammaMap[(r*255+mg/2)/mg];
 		    currentglintdac[i].b = xf86bGammaMap[(r*255+mb/2)/mb];
@@ -720,7 +725,6 @@ InitLUT(void)
 	}
 
    	GLINT_SLOW_WRITE_REG(0x00, IBMRGB_WRITE_ADDR);
-
    	for (i=0; i<256; i++) {
 	    GLINT_SLOW_WRITE_REG(currentglintdac[i].r,IBMRGB_RAMDAC_DATA);
 	    GLINT_SLOW_WRITE_REG(currentglintdac[i].g,IBMRGB_RAMDAC_DATA);
@@ -756,11 +760,7 @@ glintInitAperture(int screen_idx)
 		    SR.glintRegs[20] = GLINT_READ_REG(PMInterruptLine);
 		    SR.glintRegs[19] = GLINT_READ_REG(ChipConfig);
 	  
-		    GLINT_WRITE_REG(0x01,       FIFODis); 
-		    GLINT_WRITE_REG(0x00,       Aperture0);
-		    GLINT_WRITE_REG(0x00,       Aperture1);
-		    GLINT_WRITE_REG(0xffffffff, PMFramebufferWriteMask);
-		    GLINT_WRITE_REG(0xffffffff, PMBypassWriteMask);
+		    permediapreinit();
 
 		    saveGLINTstate(); 
 		}
@@ -913,3 +913,6 @@ glintDumpCoreDrawRegs()
 	}
     ErrorF("\n");
 }
+
+
+
