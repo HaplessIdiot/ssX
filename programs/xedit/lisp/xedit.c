@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.22 2002/12/16 03:59:27 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.23 2002/12/26 06:34:27 paulo Exp $ */
 
 #include "../xedit.h"
 #include <X11/Xaw/TextSrcP.h>	/* Needs some private definitions */
@@ -56,6 +56,7 @@
 #define LISP_ENTER()						\
     if (!lisp__running) {					\
 	lisp__data.running = 1;					\
+	XFlush(XtDisplay(textwindow));				\
 	ENABLE_SIGALRM();					\
 	if (sigsetjmp(lisp__data.jmp, 1) != 0) {		\
 	    DISABLE_SIGALRM();					\
