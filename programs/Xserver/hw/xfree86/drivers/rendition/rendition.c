@@ -283,6 +283,9 @@ renditionProbe(DriverPtr drv, int flags)
     int *usedChips;
     int c;
 
+    if (flags & PROBE_DETECTISA) return FALSE;
+    if (flags & PROBE_DETECTFBDEV) return FALSE;
+
     /* Find the config file Device sections that match this
      * driver, and return if there are none. */
     if ((numDevSections=xf86MatchDevice(RENDITION_NAME, &devSections)) <= 0)

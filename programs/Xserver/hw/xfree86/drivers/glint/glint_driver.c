@@ -616,6 +616,8 @@ GLINTProbe(DriverPtr drv, int flags)
      * specified.
      */
 
+    if (flags & PROBE_DETECTISA) return FALSE;
+
     if ((numDevSections = xf86MatchDevice(GLINT_DRIVER_NAME,
 					  &devSections)) <= 0) {
 	/*

@@ -455,6 +455,9 @@ S3VProbe(DriverPtr drv, int flags)
     Bool foundScreen = FALSE;
     
     PVERB5("	S3VProbe begin\n");
+
+    if (flags & PROBE_DETECTISA) return FALSE;
+    if (flags & PROBE_DETECTFBDEV) return FALSE;
     
     if ((numDevSections = xf86MatchDevice(S3VIRGE_DRIVER_NAME,
 					  &devSections)) <= 0) {
