@@ -3,7 +3,7 @@ XCOMM!/bin/sh
 XCOMM
 XCOMM makedepend which uses 'gcc -M'
 XCOMM
-XCOMM $XFree86: xc/config/util/gccmdep.cpp,v 3.1 1995/05/07 11:34:35 dawes Exp $
+XCOMM $XFree86: xc/config/util/gccmdep.cpp,v 3.2 1995/06/01 08:19:39 dawes Exp $
 XCOMM
 XCOMM Based on mdepend.cpp and code supplied by Hongjiu Lu <hjl@nynexst.com>
 XCOMM
@@ -47,6 +47,9 @@ XCOMM ignore these flags
 			-s)
 			    magic_string="$2"
 			    shift
+			    ;;
+			-f-)
+			    makefile="-"
 			    ;;
 			-f)
 			    makefile="$2"
@@ -93,11 +96,13 @@ case "$makefile" in
 	;;
 esac
 
-if [ x"$append" = xn ]; then
-    sed -e "/^$magic_string/,\$d" < $makefile > $TMP
-    echo "$magic_string" >> $TMP
-else
-    cp $makefile $TMP
+if [ X"$makefile" != X- ]; then
+    if [ x"$append" = xn ]; then
+        sed -e "/^$magic_string/,\$d" < $makefile > $TMP
+        echo "$magic_string" >> $TMP
+    else
+        cp $makefile $TMP
+    fi
 fi
 
 XCOMM need to link .s files to .S
@@ -114,11 +119,15 @@ done
 
 CMD="$CC -M $args `echo $files | sed -e 's,\.s$,\.S,g' -e 's,\.s ,\.S ,g'` | \
 	sed -e 's,\.S$,\.s,g' -e 's,\.S ,\.s ,g'"
-CMD="$CMD >> $TMP"
+if [ X"$makefile" != X- ]; then
+    CMD="$CMD >> $TMP"
+fi
 eval $CMD
-$RM ${makefile}.bak
-$MV $makefile ${makefile}.bak
-$MV $TMP $makefile
+if [ X"$makefile" != X- ]; then
+    $RM ${makefile}.bak
+    $MV $makefile ${makefile}.bak
+    $MV $TMP $makefile
+fi
 
 if [ x"$asmfiles" != x ]; then
     $RM $asmfiles
