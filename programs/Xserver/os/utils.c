@@ -48,7 +48,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.99tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.100tsi Exp $ */
 /*
  * Copyright (c) 1996-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -212,7 +212,7 @@ int userdefinedfontpath = 0;
 
 char *dev_tty_from_init = NULL;		/* since we need to parse it anyway */
 
-extern int dispatchExceptionAtReset;
+extern char dispatchExceptionAtReset;
 
 OsSigHandlerPtr
 OsSignal(sig, handler)

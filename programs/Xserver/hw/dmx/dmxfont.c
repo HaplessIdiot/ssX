@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxfont.c,v 1.1tsi Exp $ */
 /*
  * Copyright 2001-2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -203,11 +203,10 @@ static int dmxProcSetFontPath(ClientPtr client)
 		break;
 
 	if (result) {
-	    int  ignoreresult, ignoreerror;
+	    int ignoreerror;
 
 	    /* Restore old fontpath in the DMX server */
-	    ignoreresult = SetFontPath(client, nOldPaths, oldFontPath,
-				       &ignoreerror);
+	    SetFontPath(client, nOldPaths, oldFontPath, &ignoreerror);
 	} else {
 	    result = client->noClientException;
 	    client->errorValue = error;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/g_renderswap.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/glxProxy/g_renderswap.c,v 1.3tsi Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -1087,7 +1087,6 @@ void __glXDispSwap_TexGend(GLbyte *pc)
 void __glXDispSwap_TexGendv(GLbyte *pc)
 {
 	GLenum pname;
-	GLint cmdlen;
 	GLint compsize;
 	__GLX_DECLARE_SWAP_VARIABLES;
 	__GLX_DECLARE_SWAP_ARRAY_VARIABLES;
@@ -1096,10 +1095,11 @@ void __glXDispSwap_TexGendv(GLbyte *pc)
 	pname = *(GLenum *)(pc + 4);
 	compsize = __glTexGendv_size(pname);
 	if (compsize < 0) compsize = 0;
-	cmdlen = __GLX_PAD(8+compsize*8);
 
 #ifdef __GLX_ALIGN64
 	if ((unsigned long)(pc) & 7) {
+	    GLint cmdlen = __GLX_PAD(8+compsize*8);
+
 	    __GLX_MEM_COPY(pc-4, pc, cmdlen);
 	    pc -= 4;
 	}

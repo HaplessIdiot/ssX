@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/config/dmxcompat.c,v 1.1tsi Exp $ */
 /*
  * Copyright 2002 Red Hat Inc., Durham, North Carolina.
  *
@@ -116,7 +116,6 @@ DMXConfigEntryPtr dmxVDLRead(const char *filename)
     DMXConfigSubPtr     sub     = NULL;
     DMXConfigDisplayPtr display = NULL;
     DMXConfigFullDimPtr fdim    = NULL;
-    int                 vcount  = 0;
     int                 dcount  = 0;
     int                 icount  = 0;
     int                 x, y, xoff, yoff, xorig, yorig;
@@ -157,7 +156,6 @@ DMXConfigEntryPtr dmxVDLRead(const char *filename)
             state = virtualCount;
             break;
         case virtualCount:
-            vcount = dmxVDLCount(buf);
             state = virtualEntry;
             break;
         case virtualEntry:

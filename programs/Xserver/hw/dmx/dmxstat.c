@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxstat.c,v 1.1tsi Exp $ */
 /*
  * Copyright 2002, 2003 Red Hat Inc., Durham, North Carolina.
  *
@@ -69,7 +69,6 @@ struct _DMXStatInfo {
 /* Interval in mS between statistic message log entries. */
        int        dmxStatInterval;
 static int        dmxStatDisplays;
-static OsTimerPtr dmxStatTimer;
 
 /** Return the number of microseconds as an unsigned long.
  * Unfortunately, this is only useful for intervals < about 4 sec.  */
@@ -214,6 +213,5 @@ static CARD32 dmxStatCallback(OsTimerPtr timer, CARD32 t, pointer arg)
 void dmxStatInit(void)
 {
     if (dmxStatInterval)
-        dmxStatTimer = TimerSet(NULL, 0,
-                                dmxStatInterval, dmxStatCallback, NULL);
+        TimerSet(NULL, 0, dmxStatInterval, dmxStatCallback, NULL);
 }

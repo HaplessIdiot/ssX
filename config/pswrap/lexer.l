@@ -36,7 +36,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86: xc/config/pswrap/lexer.l,v 1.10 2001/10/28 03:32:03 tsi Exp $ */
+/* $XFree86: xc/config/pswrap/lexer.l,v 1.11tsi Exp $ */
 
 #include <ctype.h>
 #include <stdlib.h>
@@ -184,20 +184,6 @@ W		([ \t\n\r])
 	    DEBUGP((stderr,"CNAME ->%s\n",yytext));
 	    return CNAME;
 	}
-}
-
-<STR>^defineps	{	/* part of string text */
-	register int i = yyleng;
-	register unsigned char *c = (unsigned char *) yytext;
-
-	if (yyleng + curleng >= maxstring) {
-		stringerr(1);
-		BEGIN PS;
-		*sbody = '\0';
-		return PSSTRING;
-	}
-	curleng += yyleng;
-	for (; i > 0; --i) *sbody++ = *c++;
 }
 
 endps { 		/* BOGUS end of a wrap */

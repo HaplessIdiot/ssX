@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/dmx/Imakefile,v 1.4tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/dmx/Imakefile,v 1.5tsi Exp $
 
 #include <Server.tmpl>
 
@@ -15,11 +15,14 @@ GLXPROXY_SUBDIR = glxProxy
 
 #define IHaveSubdirs
 
-#if BuildServersOnly && !BuildDmxDevelTools
-SUBDIRS = input config $(GLXPROXY_SUBDIR)
-#else
-SUBDIRS = input config doc examples $(GLXPROXY_SUBDIR)
+#if !BuildServersOnly || BuildDmxDevelTools
+EXAMPLEDIR = examples
+#if BuildSgmlDocs
+DMXDOCDIR = doc
 #endif
+#endif
+
+SUBDIRS = input config $(DMXDOCDIR) $(EXAMPLEDIR) $(GLXPROXY_SUBDIR)
 
 #if BuildRender
 RENDER_SRCS = dmxpict.c

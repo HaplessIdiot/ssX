@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/dmxwindow.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxwindow.c,v 1.2tsi Exp $ */
 /*
  * Copyright 2001-2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -896,12 +896,8 @@ void dmxResizeWindow(WindowPtr pWindow, int x, int y,
     ScreenPtr       pScreen = pWindow->drawable.pScreen;
     DMXScreenInfo  *dmxScreen = &dmxScreens[pScreen->myNum];
     dmxWinPrivPtr   pWinPriv = DMX_GET_WINDOW_PRIV(pWindow);
-    dmxWinPrivPtr   pSibPriv;
     unsigned int    m;
     XWindowChanges  c;
-
-    if (pSib)
-	pSibPriv = DMX_GET_WINDOW_PRIV(pSib);
 
     DMX_UNWRAP(ResizeWindow, dmxScreen, pScreen);
 #if 1

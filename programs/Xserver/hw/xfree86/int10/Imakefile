@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/int10/Imakefile,v 1.19 2004/03/18 07:07:06 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/int10/Imakefile,v 1.20tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -87,7 +87,7 @@ ARCHDEFINES = -D_PC
 # elif defined(ia64Architecture)
 /* ARCHDEFINES = -D_PC_IO -D_PC_PCI */
 # elif defined(SparcArchitecture) || defined(PpcArchitecture) || \
-       defined(SGIArchitecture)
+       defined(MipsArchitecture)
 ARCHDEFINES = -D__BIG_ENDIAN__
 # endif
 
@@ -98,7 +98,6 @@ SRCS = pci.c xf86int10module.c helper_exec.c helper_mem.c xf86int10.c \
 
 OBJS = pci.o xf86int10module.o helper_exec.o helper_mem.o xf86int10.o \
        xf86x86emu.o generic.o $(X86EMUOBJS)
-
 
 #endif
 
