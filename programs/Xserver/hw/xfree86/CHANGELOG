@@ -1,4 +1,4 @@
-XFree86 4.0a (4 April 2000)
+XFree86 4.0a (6 April 2000)
   94. Major OS/2 resync (#3859, Holger Veit).
   93. Fix some 'XFree86 -configure' problems when multiple cards (#3850,
       Paulo Cesar Pereira de Andrade).
@@ -10214,4 +10214,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1118 2000/04/04 22:36:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1119 2000/04/05 18:13:37 dawes Exp $
