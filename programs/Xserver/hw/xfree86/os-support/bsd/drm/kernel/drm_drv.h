@@ -127,6 +127,12 @@
 #define DRIVER_NUM_CARDS 1
 #endif
 
+#if 1 && DRM_DEBUG_CODE
+int DRM(flags) = DRM_FLAG_DEBUG;
+#else
+int DRM(flags) = 0;
+#endif
+
 static int DRM(init)(device_t nbdev);
 static void DRM(cleanup)(device_t nbdev);
 
@@ -228,7 +234,6 @@ static struct cdevsw DRM(cdevsw) = {
 	.d_open =	DRM( open ),
 	.d_close =	DRM( close ),
 	.d_read =	DRM( read ),
-	.d_write =	DRM( write ),
 	.d_ioctl =	DRM( ioctl ),
 	.d_poll =	DRM( poll ),
 	.d_mmap =	DRM( mmap ),
@@ -290,7 +295,7 @@ static struct cdevsw DRM(cdevsw) = {
 	DRM(open),
 	DRM(close),
 	DRM(read),
-	DRM(write),
+	nowrite,
 	DRM(ioctl),
 	nostop,
 	notty,
@@ -515,20 +520,11 @@ static int DRM(setup)( drm_device_t *dev )
 #endif
 	dev->context_wait = 0;
 
-	dev->ctx_start = 0;
-	dev->lck_start = 0;
-
-	dev->buf_rp = dev->buf;
-	dev->buf_wp = dev->buf;
-	dev->buf_end = dev->buf + DRM_BSZ;
 #ifdef __FreeBSD__
 	dev->buf_sigio = NULL;
 #elif defined(__NetBSD__)
 	dev->buf_pgid = 0;
 #endif
-	dev->buf_readers = 0;
-	dev->buf_writers = 0;
-	dev->buf_selecting = 0;
 
 	DRM_DEBUG( "\n" );
 
@@ -1129,11 +1125,6 @@ int DRM(lock)( DRM_IOCTL_ARGS )
 #if __HAVE_MULTIPLE_DMA_QUEUES
 	drm_queue_t *q;
 #endif
-#if __HAVE_DMA_HISTOGRAM
-        cycles_t start;
-
-        dev->lck_start = start = get_cycles();
-#endif
 
 	DRM_COPY_FROM_USER_IOCTL( lock, (drm_lock_t *)data, sizeof(lock) );
 
@@ -1209,10 +1200,6 @@ int DRM(lock)( DRM_IOCTL_ARGS )
         }
 
         DRM_DEBUG( "%d %s\n", lock.context, ret ? "interrupted" : "has lock" );
-
-#if __HAVE_DMA_HISTOGRAM
-        atomic_inc(&dev->histo.lacq[DRM(histogram_slot)(get_cycles()-start)]);
-#endif
 
 	return DRM_ERR(ret);
 }

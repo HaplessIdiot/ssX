@@ -234,7 +234,6 @@ typedef struct drm_chipinfo
 
 typedef unsigned long dma_addr_t;
 typedef u_int32_t atomic_t;
-typedef u_int32_t cycles_t;
 typedef u_int32_t u32;
 typedef u_int16_t u16;
 typedef u_int8_t u8;
@@ -385,7 +384,6 @@ extern d_ioctl_t	DRM(ioctl);
 extern d_open_t		DRM(open);
 extern d_close_t	DRM(close);
 extern d_read_t		DRM(read);
-extern d_write_t	DRM(write);
 extern d_poll_t		DRM(poll);
 extern d_mmap_t		DRM(mmap);
 extern int		DRM(open_helper)(dev_t kdev, int flags, int fmt, 
