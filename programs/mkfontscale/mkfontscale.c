@@ -19,7 +19,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.13tsi Exp $ */
+/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.14 2003/10/24 20:38:13 tsi Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -57,7 +57,7 @@ char *encodings_array[] =
     { "iso8859-1", "iso8859-2", "iso8859-3", "iso8859-4", "iso8859-5",
       "iso8859-6", "iso8859-7", "iso8859-8", "iso8859-9", "iso8859-10",
       "iso8859-11", "iso8859-12", "iso8859-13", "iso8859-14", "iso8859-15",
-      "koi8-r", "koi8-u", "koi8-ru", "koi8-e",
+      "koi8-r", "koi8-u", "koi8-ru", "koi8-e", "koi8-uni",
       "tis620-2",
       "adobe-standard", "adobe-symbol",
       "ibm-cp437", "microsoft-cp1252",
@@ -1051,7 +1051,7 @@ checkEncoding(FT_Face face, char *encoding_name)
                 for(i = encoding->first; i < encoding->size; i++) {
                     c = FontEncRecode(i, mapping);
                     if(CODE_IGNORED(c) ||
-                       (koi8 && c >= 0x2200 && c < 0x2600)) {
+                       (koi8 && (c >= 0x2200 && c < 0x2600 || c == 0x00b2))) {
                         continue;
                     } else {
                         if(FT_Get_Char_Index(face, c) == 0) {
