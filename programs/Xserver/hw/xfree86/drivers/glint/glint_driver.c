@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.84 2000/06/12 10:11:37 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.86 2000/06/16 12:23:31 eich Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -111,13 +111,6 @@ static Bool	GLINTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static int pix24bpp = 0;
 static Bool FBDevProbed = FALSE;
  
-#define VERSION 4000
-#define GLINT_NAME "GLINT"
-#define GLINT_DRIVER_NAME "glint"
-#define GLINT_MAJOR_VERSION 1
-#define GLINT_MINOR_VERSION 0
-#define GLINT_PATCHLEVEL 0
-
 /* 
  * This contains the functions needed by the server after loading the driver
  * module.  It must be supplied, and gets passed back by the SetupProc

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.29 2000/06/12 10:11:37 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.30 2000/06/14 21:57:50 dawes Exp $ */
 /*
  * Copyright 1997,1998 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -47,6 +47,13 @@
 
 #define GLINT_MAX_MX_DEVICES 2
 #define GLINT_VGA_MMIO_OFF 0x6000
+
+#define VERSION 4000
+#define GLINT_NAME "GLINT"
+#define GLINT_DRIVER_NAME "glint"
+#define GLINT_MAJOR_VERSION 1
+#define GLINT_MINOR_VERSION 0
+#define GLINT_PATCHLEVEL 0
 
 typedef struct {
 	CARD32 glintRegs[0x2000];
