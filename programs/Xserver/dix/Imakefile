@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/dix/Imakefile,v 3.20 2004/09/21 18:37:48 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/dix/Imakefile,v 3.21 2005/03/23 03:11:26 dawes Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -151,7 +151,7 @@ SpecialCObjectRule(privates,$(ICONFIGFILES),$(_NOOP_))
 SpecialCObjectRule(window,$(ICONFIGFILES),$(QUARTZ_DEFINES))
 
 #if PrintOnlyServer
-AllTarget($(XPOBJ))
+NormalLibraryTarget(xpstubs,$(XPOBJ))
 SpecialCObjectRule(xpstubs,NullParameter,-I$(SERVERSRC)/Xprint)
 #endif
 
