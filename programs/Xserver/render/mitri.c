@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/mitri.c,v 1.3 2002/05/17 18:08:31 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/mitri.c,v 1.4 2002/05/22 04:41:39 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -33,18 +33,18 @@
 void
 miPointFixedBounds (int npoint, xPointFixed *points, BoxPtr bounds)
 {
-    bounds->x1 = FixedToInt (points->x);
-    bounds->x2 = FixedToInt (FixedCeil (points->x));
-    bounds->y1 = FixedToInt (points->y);
-    bounds->y2 = FixedToInt (FixedCeil (points->y));
+    bounds->x1 = xFixedToInt (points->x);
+    bounds->x2 = xFixedToInt (xFixedCeil (points->x));
+    bounds->y1 = xFixedToInt (points->y);
+    bounds->y2 = xFixedToInt (xFixedCeil (points->y));
     points++;
     npoint--;
     while (npoint-- > 0)
     {
-	INT16	x1 = FixedToInt (points->x);
-	INT16	x2 = FixedToInt (FixedCeil (points->x));
-	INT16	y1 = FixedToInt (points->y);
-	INT16	y2 = FixedToInt (FixedCeil (points->y));
+	INT16	x1 = xFixedToInt (points->x);
+	INT16	x2 = xFixedToInt (xFixedCeil (points->x));
+	INT16	y1 = xFixedToInt (points->y);
+	INT16	y2 = xFixedToInt (xFixedCeil (points->y));
 
 	if (x1 < bounds->x1)
 	    bounds->x1 = x1;

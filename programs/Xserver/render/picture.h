@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picture.h,v 1.9 2002/05/17 17:07:36 tsi Exp $
+ * $XFree86: xc/programs/Xserver/render/picture.h,v 1.10 2002/05/17 18:08:31 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -110,42 +110,45 @@ typedef struct _Picture		*PicturePtr;
 /* Fixed point updates from Carl Worth, USC, Information Sciences Institute */
 
 #ifdef WIN32
-typedef __int64		Fixed_32_32;
+typedef __int64		xFixed_32_32;
 #else
 #  if defined(__alpha__) || defined(__alpha) || \
       defined(ia64) || defined(__ia64__) || \
       defined(__sparc64__) || \
       defined(__s390x__) || \
       defined(x86_64) || defined (__x86_64__)
-typedef long		Fixed_32_32;
+typedef long		xFixed_32_32;
 # else
 #  if defined(__GNUC__) && \
     ((__GNUC__ > 2) || \
      ((__GNUC__ == 2) && defined(__GNUC_MINOR__) && (__GNUC_MINOR__ > 7)))
 __extension__
 #  endif
-typedef long long int	Fixed_32_32;
+typedef long long int	xFixed_32_32;
 # endif
 #endif
 
-typedef CARD32		Fixed_1_31;
-typedef CARD32		Fixed_1_16;
-typedef INT32		Fixed_16_16;
+typedef CARD32		xFixed_1_31;
+typedef CARD32		xFixed_1_16;
+typedef INT32		xFixed_16_16;
 
-/* An unadorned "Fixed" is the same as Fixed_16_16, (since it's quite common in the code) */
-typedef	Fixed_16_16	Fixed;
-#define FIXED_BITS	16
+/*
+ * An unadorned "xFixed" is the same as xFixed_16_16, 
+ * (since it's quite common in the code) 
+ */
+typedef	xFixed_16_16	xFixed;
+#define XFIXED_BITS	16
 
-#define FixedToInt(f)	(int) ((f) >> FIXED_BITS)
-#define IntToFixed(i)	((Fixed) (i) << FIXED_BITS)
-#define FixedE		((Fixed) 1)
-#define Fixed1		(IntToFixed(1))
-#define Fixed1MinusE	(Fixed1 - FixedE)
-#define FixedFrac(f)	((f) & Fixed1MinusE)
-#define FixedFloor(f)	((f) & ~Fixed1MinusE)
-#define FixedCeil(f)	FixedFloor((f) + Fixed1MinusE)
+#define xFixedToInt(f)	(int) ((f) >> XFIXED_BITS)
+#define IntToxFixed(i)	((xFixed) (i) << XFIXED_BITS)
+#define xFixedE		((xFixed) 1)
+#define xFixed1		(IntToxFixed(1))
+#define xFixed1MinusE	(xFixed1 - xFixedE)
+#define xFixedFrac(f)	((f) & xFixed1MinusE)
+#define xFixedFloor(f)	((f) & ~xFixed1MinusE)
+#define xFixedCeil(f)	xFixedFloor((f) + xFixed1MinusE)
 
-#define FixedFraction(f)	((f) & Fixed1MinusE)
-#define FixedMod2(f)		((f) & (Fixed1 | Fixed1MinusE))
+#define xFixedFraction(f)	((f) & xFixed1MinusE)
+#define xFixedMod2(f)		((f) & (xFixed1 | xFixed1MinusE))
 
 #endif /* _PICTURE_H_ */
