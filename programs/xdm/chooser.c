@@ -1,5 +1,6 @@
 /*
  * $XConsortium: chooser.c,v 1.19 94/04/17 20:03:34 rws Exp $
+ * $XFree86$
  *
 Copyright (c) 1990  X Consortium
 
@@ -71,6 +72,14 @@ in this Software without prior written authorization from the X Consortium.
 
 #ifdef SVR4
 #include    <sys/sockio.h>
+#include    <stropts.h>
+#endif
+#if defined(SYSV) && defined(i386)
+#include    <sys/stream.h>
+#ifdef ISC
+#include    <sys/stropts.h>
+#include    <sys/sioctl.h>
+#endif
 #endif
 #include    <sys/socket.h>
 #include    <netinet/in.h>
@@ -156,6 +165,63 @@ static int  pingTry;
 
 static XdmcpBuffer	directBuffer, broadcastBuffer;
 static XdmcpBuffer	buffer;
+
+#if ((defined(SVR4) && !defined(sun)) || defined(ISC)) && defined(SIOCGIFCONF)
+
+/* Deal with different SIOCGIFCONF ioctl semantics on these OSs */
+
+static int
+ifioctl (fd, cmd, arg)
+    int fd;
+    int cmd;
+    char *arg;
+{
+    struct strioctl ioc;
+    int ret;
+
+    bzero((char *) &ioc, sizeof(ioc));
+    ioc.ic_cmd = cmd;
+    ioc.ic_timout = 0;
+    if (cmd == SIOCGIFCONF)
+    {
+	ioc.ic_len = ((struct ifconf *) arg)->ifc_len;
+	ioc.ic_dp = ((struct ifconf *) arg)->ifc_buf;
+#ifdef ISC
+	/* SIOCGIFCONF is somewhat brain damaged on ISC. The argument
+	 * buffer must contain the ifconf structure as header. Ifc_req
+	 * is also not a pointer but a one element array of ifreq
+	 * structures. On return this array is extended by enough
+	 * ifreq fields to hold all interfaces. The return buffer length
+	 * is placed in the buffer header.
+	 */
+        ((struct ifconf *) ioc.ic_dp)->ifc_len =
+                                         ioc.ic_len - sizeof(struct ifconf);
+#endif
+    }
+    else
+    {
+	ioc.ic_len = sizeof(struct ifreq);
+	ioc.ic_dp = arg;
+    }
+    ret = ioctl(fd, I_STR, (char *) &ioc);
+    if (ret >= 0 && cmd == SIOCGIFCONF)
+#ifdef SVR4
+	((struct ifconf *) arg)->ifc_len = ioc.ic_len;
+#endif
+#ifdef ISC
+    {
+	((struct ifconf *) arg)->ifc_len =
+				 ((struct ifconf *)ioc.ic_dp)->ifc_len;
+	((struct ifconf *) arg)->ifc_buf = 
+			(caddr_t)((struct ifconf *)ioc.ic_dp)->ifc_req;
+    }
+#endif
+    return(ret);
+}
+#else /* ((SVR4 && !sun) || ISC) && SIOCGIFCONF */
+#define ifioctl ioctl
+#endif /* ((SVR4 && !sun) || ISC) && SIOCGIFCONF */
+
 
 /* ARGSUSED */
 static void
@@ -459,6 +525,121 @@ RegisterHostaddr (addr, len, type)
  *  addresses on the local host.
  */
 
+#ifdef NCR
+
+#include <sys/un.h>    
+#include <stropts.h> 
+#include <tiuser.h> 
+
+#include <sys/stream.h>
+#include <net/if.h>
+#include <netinet/ip.h>
+#include <netinet/ip_var.h>
+#include <netinet/in.h> 
+#include <netinet/in_var.h>
+
+RegisterHostname (name)
+    char    *name;
+{
+    /*
+     * The Wolongong drivers used by NCR SVR4/MP-RAS don't understand the
+     * socket IO calls that most other drivers seem to like. Because of
+     * this, this routine must be special cased for NCR. Eventually,
+     * this will be cleared up.
+     */ 
+
+    struct ipb ifnet;
+    struct in_ifaddr ifaddr;
+    struct strioctl str;
+    unsigned char *addr;
+    register HOST *host;
+    int family, len;
+
+    if (!strcmp (name, BROADCAST_HOSTNAME))
+    {
+	if ((fd = open ("/dev/ip", O_RDWR, 0 )) < 0)
+	    return;
+
+	/* Indicate that we want to start at the begining */
+	ifnet.ib_next = (struct ipb *) 1;
+
+	while (ifnet.ib_next)
+	{
+	    str.ic_cmd = IPIOC_GETIPB;
+	    str.ic_timout = 0;
+	    str.ic_len = sizeof (struct ipb);
+	    str.ic_dp = (char *) &ifnet;
+
+	    if (ioctl (fd, (int) I_STR, (char *) &str) < 0)
+	    {
+		close (fd);
+		return;
+	    }
+
+	    ifaddr.ia_next = (struct in_ifaddr *) ifnet.if_addrlist;
+	    str.ic_cmd = IPIOC_GETINADDR;
+	    str.ic_timout = 0;
+	    str.ic_len = sizeof (struct in_ifaddr);
+	    str.ic_dp = (char *) &ifaddr;
+
+	    if (ioctl (fd, (int) I_STR, (char *) &str) < 0)
+	    {
+		close (fd);
+		return;
+	    }
+
+#define IA_BROADADDR(ia) \
+	((struct sockaddr_in *)(&((struct in_ifaddr *)ia)->ia_broadaddr))
+
+	    RegisterHostaddr ((struct sockaddr *)IA_BROADADDR(&ifaddr),
+			      sizeof (struct sockaddr_in),
+			      BROADCAST_QUERY);
+#undef IA_BROADADDR
+	}
+	close(fd);
+    }
+    else
+    {
+
+	/* address as hex string, e.g., "12180022" (depreciated) */
+	if (strlen(name) == 8 &&
+	    FromHex(name, (char *)&in_addr.sin_addr, strlen(name)) == 0)
+	{
+	    in_addr.sin_family = AF_INET;
+	}
+	/* Per RFC 1123, check first for IP address in dotted-decimal form */
+	else if ((in_addr.sin_addr.s_addr = inet_addr(name)) != -1)
+	    in_addr.sin_family = AF_INET;
+	else
+	{
+	    hostent = gethostbyname (name);
+	    if (!hostent)
+		return;
+	    if (hostent->h_addrtype != AF_INET || hostent->h_length != 4)
+	    	return;
+	    in_addr.sin_family = hostent->h_addrtype;
+	    memmove( &in_addr.sin_addr, hostent->h_addr, 4);
+	}
+	in_addr.sin_port = htons (XDM_UDP_PORT);
+#ifdef BSD44SOCKETS
+	in_addr.sin_len = sizeof(in_addr);
+#endif
+	RegisterHostaddr ((struct sockaddr *)&in_addr, sizeof (in_addr),
+			  QUERY);
+    }
+}
+
+#else /* NCR */
+
+/* Handle variable length ifreq in BNR2 and later */
+#ifdef AF_LINK
+#define ifr_size(p) (sizeof (struct ifreq) + \
+		     (p->ifr_addr.sa_len > sizeof (p->ifr_addr) ? \
+		      p->ifr_addr.sa_len - sizeof (p->ifr_addr) : 0))
+#else
+#define ifr_size(p) (sizeof (struct ifreq))
+#endif
+
 RegisterHostname (name)
     char    *name;
 {
@@ -467,26 +648,27 @@ RegisterHostname (name)
     struct ifconf	ifc;
     register struct ifreq *ifr;
     struct sockaddr	broad_addr;
-    char		buf[2048];
+    char		buf[2048], *cp, *cplim;
     int			n;
 
     if (!strcmp (name, BROADCAST_HOSTNAME))
     {
 	ifc.ifc_len = sizeof (buf);
 	ifc.ifc_buf = buf;
-	if (ioctl (socketFD, (int) SIOCGIFCONF, (char *) &ifc) < 0)
+	if (ifioctl (socketFD, (int) SIOCGIFCONF, (char *) &ifc) < 0)
 	    return;
-	for (ifr = ifc.ifc_req
-#if defined (__bsdi__) || defined(__NetBSD__)
-	     ; (char *)ifr < ifc.ifc_buf + ifc.ifc_len;
-	     ifr = (struct ifreq *)((char *)ifr + sizeof (struct ifreq) +
-		(ifr->ifr_addr.sa_len > sizeof (ifr->ifr_addr) ?
-		 ifr->ifr_addr.sa_len - sizeof (ifr->ifr_addr) : 0))
+
+#ifdef ISC
+#define IFC_IFC_REQ (struct ifreq *) ifc.ifc_buf
 #else
-	     , n = ifc.ifc_len / sizeof (struct ifreq); --n >= 0; ifr++
+#define IFC_IFC_REQ ifc.ifc_req
 #endif
-	     )
+
+	cplim = (char *) IFC_IFC_REQ + ifc.ifc_len;
+
+	for (cp = (char *) IFC_IFC_REQ; cp < cplim; cp += ifr_size (ifr))
 	{
+	    ifr = (struct ifreq *) cp;
 	    if (ifr->ifr_addr.sa_family != AF_INET)
 		continue;
 
@@ -498,13 +680,13 @@ RegisterHostname (name)
 		struct ifreq    broad_req;
     
 		broad_req = *ifr;
-		if (ioctl (socketFD, SIOCGIFFLAGS, (char *) &broad_req) != -1 &&
+		if (ifioctl (socketFD, SIOCGIFFLAGS, (char *) &broad_req) != -1 &&
 		    (broad_req.ifr_flags & IFF_BROADCAST) &&
 		    (broad_req.ifr_flags & IFF_UP)
 		    )
 		{
 		    broad_req = *ifr;
-		    if (ioctl (socketFD, SIOCGIFBRDADDR, &broad_req) != -1)
+		    if (ifioctl (socketFD, SIOCGIFBRDADDR, &broad_req) != -1)
 			broad_addr = broad_req.ifr_addr;
 		    else
 			continue;
@@ -552,6 +734,7 @@ RegisterHostname (name)
 			  QUERY);
     }
 }
+#endif /* NCR */
 
 static ARRAYofARRAY8	AuthenticationNames;
 
