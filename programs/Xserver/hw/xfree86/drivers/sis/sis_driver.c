@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.83 2002/12/01 02:11:17 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.114tsi Exp $ */
 /*
  * Copyright 2001, 2002, 2003 by Thomas Winischhofer, Vienna, Austria.
  *
@@ -359,6 +359,8 @@ static const char *vbeSymbols[] = {
     NULL
 };
 
+#ifdef XFree86LOADER
+
 #ifdef XF86DRI
 static const char *drmSymbols[] = {
     "drmAddMap",
@@ -390,8 +392,6 @@ static const char *driSymbols[] = {
     NULL
 };
 #endif
-
-#ifdef XFree86LOADER
 
 static MODULESETUPPROTO(sisSetup);
 
@@ -10047,15 +10047,19 @@ void SiSPostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 	   if(doit) {
               inSISIDXREG(SISCR, 0x17, usScratchCR17);
     	      if(pSiS->CRT1off) {
-	         if(usScratchCR17 & 0x80) flag = TRUE;
-		 usScratchCR17 &= ~0x80;
+	         if(usScratchCR17 & 0x80) {
+		    flag = TRUE;
+		    usScratchCR17 &= ~0x80;
+		 }
     	      } else {
-	         if(!(usScratchCR17 & 0x80)) flag = TRUE;
-        	 usScratchCR17 |= 0x80;
+	         if(!(usScratchCR17 & 0x80)) {
+		    flag = TRUE;
+        	    usScratchCR17 |= 0x80;
+		 }
               }
-	      outSISIDXREG(SISCR, 0x17, usScratchCR17);
 	      /* Reset only if status changed */
 	      if(flag) {
+	         outSISIDXREG(SISCR, 0x17, usScratchCR17);
 	         outSISIDXREG(SISSR, 0x00, 0x01);    /* Synchronous Reset */
 	         usleep(10000);
                  outSISIDXREG(SISSR, 0x00, 0x03);    /* End Reset */
