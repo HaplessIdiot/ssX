@@ -108,17 +108,20 @@ InitCommonPointer(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
    SiS_Pr->SiS_PALTiming      = SiS_PALTiming;
    SiS_Pr->SiS_HiTVSt1Timing  = SiS_HiTVSt1Timing;
    SiS_Pr->SiS_HiTVSt2Timing  = SiS_HiTVSt2Timing;
-   SiS_Pr->SiS_HiTVTextTiming = SiS_HiTVTextTiming;
+
    SiS_Pr->SiS_HiTVExtTiming  = SiS_HiTVExtTiming;
    SiS_Pr->SiS_HiTVGroup3Data = SiS_HiTVGroup3Data;
    SiS_Pr->SiS_HiTVGroup3Simu = SiS_HiTVGroup3Simu;
+#if 0
+   SiS_Pr->SiS_HiTVTextTiming = SiS_HiTVTextTiming;
    SiS_Pr->SiS_HiTVGroup3Text = SiS_HiTVGroup3Text;
+#endif
 
    SiS_Pr->SiS_StPALData   = SiS_StPALData;
    SiS_Pr->SiS_ExtPALData  = SiS_ExtPALData;
    SiS_Pr->SiS_StNTSCData  = SiS_StNTSCData;
    SiS_Pr->SiS_ExtNTSCData = SiS_ExtNTSCData;
-/* SiS_Pr->SiS_St1HiTVData = SiS_St1HiTVData;  */
+   SiS_Pr->SiS_St1HiTVData = SiS_StHiTVData; 
    SiS_Pr->SiS_St2HiTVData = SiS_St2HiTVData;
    SiS_Pr->SiS_ExtHiTVData = SiS_ExtHiTVData;
    SiS_Pr->SiS_St525iData  = SiS_StNTSCData;
@@ -1021,8 +1024,8 @@ SiS_GetModeID_TV(int VGAEngine, ULONG VBFlags, int HDisplay, int VDisplay, int D
              if(VDisplay == 300) ModeIndex = ModeIndex_400x300[Depth];
              break;
       	case 512:
-	     if( ((VBFlags & TV_YPBPR) && (VBFlags & (TV_YPBPR525P | TV_YPBPR750P))) ||
-	         (VBFlags & TV_HIVISION) 					     ||
+	     if( ((VBFlags & TV_YPBPR) && (VBFlags & (TV_YPBPR525P | TV_YPBPR750P | TV_YPBPR1080I))) ||
+	         (VBFlags & TV_HIVISION) 					    		     ||
 	         ((!(VBFlags & (TV_YPBPR | TV_PALM))) && (VBFlags & TV_PAL)) ) {
 	        if(VDisplay == 384) ModeIndex = ModeIndex_512x384[Depth];
 	     }
@@ -1032,7 +1035,7 @@ SiS_GetModeID_TV(int VGAEngine, ULONG VBFlags, int HDisplay, int VDisplay, int D
 	     else if(VDisplay == 400) ModeIndex = ModeIndex_640x400[Depth];
 	     break;
 	case 720:
-	     if(!(VBFlags & TV_HIVISION)) {
+	     if((!(VBFlags & TV_HIVISION)) && (!((VBFlags & TV_YPBPR) && (VBFlags & TV_YPBPR1080I)))) {
                 if(VDisplay == 480) {
 		   if((VBFlags & TV_YPBPR) || (VBFlags & (TV_NTSC | TV_PALM)))
                       ModeIndex = ModeIndex_720x480[Depth];
@@ -1043,7 +1046,7 @@ SiS_GetModeID_TV(int VGAEngine, ULONG VBFlags, int HDisplay, int VDisplay, int D
 	     }
              break;
 	case 768:
-	     if(!(VBFlags & TV_HIVISION)) {
+	     if((!(VBFlags & TV_HIVISION)) && (!((VBFlags & TV_YPBPR) && (VBFlags & TV_YPBPR1080I)))) {
 	        if((!(VBFlags & (TV_YPBPR | TV_PALM))) && (VBFlags & TV_PAL)) {
           	   if(VDisplay == 576) ModeIndex = ModeIndex_768x576[Depth];
 		}
@@ -1052,7 +1055,7 @@ SiS_GetModeID_TV(int VGAEngine, ULONG VBFlags, int HDisplay, int VDisplay, int D
 	case 800:
 	     if(VDisplay == 600) ModeIndex = ModeIndex_800x600[Depth];
 	     else if(VDisplay == 480) {
-	        if(VBFlags & TV_HIVISION) {
+	        if((VBFlags & TV_HIVISION) || ((VBFlags & TV_YPBPR) && (VBFlags & TV_YPBPR1080I))) {
 		   ModeIndex = ModeIndex_800x480[Depth];
 		}
 	     }
@@ -1063,13 +1066,13 @@ SiS_GetModeID_TV(int VGAEngine, ULONG VBFlags, int HDisplay, int VDisplay, int D
 		   ModeIndex = ModeIndex_1024x768[Depth];
 		}
 	     } else if(VDisplay == 576) {
-	        if(VBFlags & TV_HIVISION) {
+	        if((VBFlags & TV_HIVISION) || ((VBFlags & TV_YPBPR) && (VBFlags & TV_YPBPR1080I))) {
 		   ModeIndex = ModeIndex_1024x576[Depth];
 		}
 	     }
 	     break;
 	case 1280:
-	     if(VBFlags & TV_HIVISION) {
+	     if((VBFlags & TV_HIVISION) || ((VBFlags & TV_YPBPR) && (VBFlags & TV_YPBPR1080I))) {
 	        if(VDisplay == 720)       ModeIndex = ModeIndex_1280x720[Depth];
 		else if(VDisplay == 1024) ModeIndex = ModeIndex_1280x1024[Depth];
 	     }
@@ -3586,7 +3589,7 @@ SiSSetMode(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,USHORT ModeNo)
    USHORT  ModeIdIndex;
    UCHAR  *ROMAddr  = HwInfo->pjVirtualRomBase;
    SISIOADDRESS BaseAddr = HwInfo->ulIOAddress;
-   unsigned char backupreg=0, tempr1, tempr2;
+   unsigned char backupreg=0;
 #ifndef LINUX_XF86
    USHORT  KeepLockReg;
 
@@ -3599,9 +3602,7 @@ SiSSetMode(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,USHORT ModeNo)
    }
 
    SiSInitPtr(SiS_Pr, HwInfo);
-
    SiSRegInit(SiS_Pr, BaseAddr);
-
    SiS_GetSysFlags(SiS_Pr, HwInfo);
 
 #ifdef LINUX_XF86
@@ -3611,9 +3612,7 @@ SiSSetMode(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,USHORT ModeNo)
          SiS_Pr->SiS_VGAINFO = 0x11;
 
    SiSInitPCIetc(SiS_Pr, HwInfo);
-
    SiSSetLVDSetc(SiS_Pr, HwInfo);
-
    SiSDetermineROMUsage(SiS_Pr, HwInfo);
 
    if(!SiS_Pr->UseCustomMode) {
@@ -3762,14 +3761,6 @@ SiSSetMode(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,USHORT ModeNo)
 
 	 SiS_SetReg(SiS_Pr->SiS_P3d4,0x38,backupreg);
 
-	 tempr1 = SiS_GetReg(SiS_Pr->SiS_P3d4,0x30);
-	 tempr2 = SiS_GetReg(SiS_Pr->SiS_Part2Port,0x00);
-	 if(tempr1 & SetCRT2ToAVIDEO) tempr2 &= 0xF7;
-	 else			      tempr2 |= 0x08;
-	 if(tempr1 & SetCRT2ToSVIDEO) tempr2 &= 0xFB;
-	 else			      tempr2 |= 0x04;
-	 SiS_SetReg(SiS_Pr->SiS_Part2Port,0x00,tempr2);
-
 	 if((IS_SIS650) && (SiS_GetReg(SiS_Pr->SiS_P3d4,0x30) & 0xfc)) {
 	    if((ModeNo == 0x03) || (ModeNo == 0x10)) {
 	       SiS_SetRegOR(SiS_Pr->SiS_P3d4,0x51,0x80);
@@ -3777,7 +3768,7 @@ SiSSetMode(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,USHORT ModeNo)
             }
 	 }
 
-	 if(tempr1 & SetCRT2ToLCD) {
+	 if(SiS_GetReg(SiS_Pr->SiS_P3d4,0x30) & SetCRT2ToLCD) {
 	    SiS_SetRegAND(SiS_Pr->SiS_P3d4,0x38,0xfc);
 	 }
       } else if((HwInfo->jChipType == SIS_630) ||
@@ -3854,7 +3845,7 @@ SiSBIOSSetModeCRT2(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, ScrnInfoPtr pScrn,
    UCHAR  *ROMAddr  = HwInfo->pjVirtualRomBase;
    SISIOADDRESS BaseAddr = HwInfo->ulIOAddress;
    UShort  ModeNo   = 0;
-   unsigned char tempr1, tempr2, backupreg=0;
+   unsigned char backupreg=0;
    SISPtr  pSiS     = SISPTR(pScrn);
 #ifdef SISDUALHEAD
    SISEntPtr pSiSEnt = pSiS->entityPrivate;
@@ -3886,17 +3877,11 @@ SiSBIOSSetModeCRT2(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, ScrnInfoPtr pScrn,
    }
 
    SiSRegInit(SiS_Pr, BaseAddr);
-
    SiSInitPtr(SiS_Pr, HwInfo);
-
    SiS_GetSysFlags(SiS_Pr, HwInfo);
-
    SiS_Pr->SiS_VGAINFO = SiS_GetSetBIOSScratch(pScrn, 0x489, 0xff);
-
    SiSInitPCIetc(SiS_Pr, HwInfo);
-
    SiSSetLVDSetc(SiS_Pr, HwInfo);
-
    SiSDetermineROMUsage(SiS_Pr, HwInfo);
 
    /* Save mode info so we can set it from within SetMode for CRT1 */
@@ -4024,15 +4009,7 @@ SiSBIOSSetModeCRT2(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, ScrnInfoPtr pScrn,
 
 	 SiS_SetReg(SiS_Pr->SiS_P3d4,0x38,backupreg);
 
-	 tempr1 = SiS_GetReg(SiS_Pr->SiS_P3d4,0x30);
-	 tempr2 = SiS_GetReg(SiS_Pr->SiS_Part2Port,0x00);
-	 if(tempr1 & SetCRT2ToAVIDEO) tempr2 &= 0xF7;
-	 else			      tempr2 |= 0x08;
-	 if(tempr1 & SetCRT2ToSVIDEO) tempr2 &= 0xFB;
-	 else			      tempr2 |= 0x04;
-	 SiS_SetReg(SiS_Pr->SiS_Part2Port,0x00,tempr2);
-
-	 if(tempr1 & SetCRT2ToLCD) {
+	 if(SiS_GetReg(SiS_Pr->SiS_P3d4,0x30) & SetCRT2ToLCD) {
 	    SiS_SetRegAND(SiS_Pr->SiS_P3d4,0x38,0xfc);
 	 }
       } else if((HwInfo->jChipType == SIS_630) ||
@@ -4090,17 +4067,11 @@ SiSBIOSSetModeCRT1(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, ScrnInfoPtr pScrn,
    }
 
    SiSInitPtr(SiS_Pr, HwInfo);
-
    SiSRegInit(SiS_Pr, BaseAddr);
-
    SiS_GetSysFlags(SiS_Pr, HwInfo);
-
    SiS_Pr->SiS_VGAINFO = SiS_GetSetBIOSScratch(pScrn, 0x489, 0xff);
-
    SiSInitPCIetc(SiS_Pr, HwInfo);
-
    SiSSetLVDSetc(SiS_Pr, HwInfo);
-
    SiSDetermineROMUsage(SiS_Pr, HwInfo);
 
    /* We don't clear the buffer under X */

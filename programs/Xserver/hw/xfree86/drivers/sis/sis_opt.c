@@ -56,6 +56,7 @@ typedef enum {
     OPTION_RENDER,
     OPTION_FORCE_CRT1TYPE,
     OPTION_FORCE_CRT2TYPE,
+    OPTION_YPBPRAR,
     OPTION_SHADOW_FB,
     OPTION_DRI,
     OPTION_AGP_SIZE,
@@ -159,6 +160,7 @@ static const OptionInfoRec SISOptions[] = {
     { OPTION_RENDER,        		"RenderAcceleration",     OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_FORCE_CRT1TYPE,    	"ForceCRT1Type",          OPTV_STRING,    {0}, FALSE },
     { OPTION_FORCE_CRT2TYPE,    	"ForceCRT2Type",          OPTV_STRING,    {0}, FALSE },
+    { OPTION_YPBPRAR,  		  	"YPbPrAspectRatio",       OPTV_STRING,    {0}, FALSE },
     { OPTION_SHADOW_FB,         	"ShadowFB",               OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_DRI,         		"DRI",               	  OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_AGP_SIZE,			"AGPSize",      	  OPTV_INTEGER,   {0}, FALSE },
@@ -339,6 +341,7 @@ SiSOptions(ScrnInfoPtr pScrn)
     pSiS->forcecrt2redetection = TRUE;   /* default changed since 13/09/2003 */
     pSiS->ForceCRT1Type = CRT1_VGA;
     pSiS->ForceCRT2Type = CRT2_DEFAULT;
+    pSiS->ForceYPbPrAR = TV_YPBPR169;
     pSiS->ForceTVType = -1;
     pSiS->CRT1gamma = TRUE;
     pSiS->CRT1gammaGiven = FALSE;
@@ -745,6 +748,9 @@ SiSOptions(ScrnInfoPtr pScrn)
        if(xf86GetOptValString(pSiS->Options, OPTION_FORCE_CRT2TYPE)) {
           xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mystring, "ForceCRT2Type");
        }
+       if(xf86GetOptValString(pSiS->Options, OPTION_YPBPRAR)) {
+          xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mystring, "YPbPrAspectRatio");
+       }
        if(xf86GetOptValBool(pSiS->Options, OPTION_SCALELCD, &val)) {
           xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mystring, "ScaleLCD");
        }
@@ -1013,18 +1019,25 @@ SiSOptions(ScrnInfoPtr pScrn)
 		   pSiS->FSTN = TRUE;
 		}
 #ifdef ENABLE_YPBPR
-	     } else if(!xf86NameCmp(strptr,"HIVISION1080I")) {
+	     } else if(!xf86NameCmp(strptr,"HIVISION")) {
 		pSiS->ForceCRT2Type = CRT2_TV;
 	        pSiS->ForceTVType = TV_HIVISION;
-	     } else if((!xf86NameCmp(strptr,"YPBPR525I")) && (pSiS->VGAEngine == SIS_315_VGA)) {
+	     } else if((!xf86NameCmp(strptr,"YPBPR1080I")) && (pSiS->VGAEngine == SIS_315_VGA)) {
+	        pSiS->ForceCRT2Type = CRT2_TV;
+		pSiS->ForceTVType = TV_YPBPR;
+		pSiS->ForceYPbPrType = TV_YPBPR1080I;
+	     } else if(((!xf86NameCmp(strptr,"YPBPR525I")) || (!xf86NameCmp(strptr,"YPBPR480I"))) &&
+	               (pSiS->VGAEngine == SIS_315_VGA)) {
 		pSiS->ForceCRT2Type = CRT2_TV;
 		pSiS->ForceTVType = TV_YPBPR;
 		pSiS->ForceYPbPrType = TV_YPBPR525I;
-	     } else if((!xf86NameCmp(strptr,"YPBPR525P")) && (pSiS->VGAEngine == SIS_315_VGA)) {
+	     } else if(((!xf86NameCmp(strptr,"YPBPR525P")) || (!xf86NameCmp(strptr,"YPBPR480P"))) &&
+	               (pSiS->VGAEngine == SIS_315_VGA)) {
 		pSiS->ForceCRT2Type = CRT2_TV;
 		pSiS->ForceTVType = TV_YPBPR;
 		pSiS->ForceYPbPrType = TV_YPBPR525P;
-	     } else if((!xf86NameCmp(strptr,"YPBPR750P")) && (pSiS->VGAEngine == SIS_315_VGA)) {
+	     } else if(((!xf86NameCmp(strptr,"YPBPR750P")) || (!xf86NameCmp(strptr,"YPBPR720P"))) &&
+	               (pSiS->VGAEngine == SIS_315_VGA)) {
 		pSiS->ForceCRT2Type = CRT2_TV;
 		pSiS->ForceTVType = TV_YPBPR;
 		pSiS->ForceYPbPrType = TV_YPBPR750P;
@@ -1036,8 +1049,9 @@ SiSOptions(ScrnInfoPtr pScrn)
 		    "\t\"SVIDEO+COMPOSITE\", \"SCART\", \"VGA\" (=\"DVI-A\") or \"NONE\"; on the SiS550\n"
 		    "\talso \"DSTN\" and \"FSTN\""
 #ifdef ENABLE_YPBPR
-		    				"; on SiS bridges also \"HIVISION1080I\", and on the\n"
-		    "\tSiS315/330 series with SiS bridge also \"YPBPR525I\", \"YPBPR525P\" and \"YPBPR750P\""
+		    				"; on SiS 301/301B bridges also \"HIVISION\", and on\n"
+		    "\tSiS315/330 series with 301C/30xLV bridge also \"YPBPR480I\", \"YPBPR480P\",\n"
+		    "\t\"YPBPR720P\" and \"YPBPR1080I\""
 #endif
 		    "\n");
 	     }
@@ -1046,6 +1060,23 @@ SiSOptions(ScrnInfoPtr pScrn)
                 xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
                     "CRT2 type shall be %s\n", strptr);
           }
+
+	  if(pSiS->ForceTVType == TV_YPBPR) {
+	     strptr = (char *)xf86GetOptValString(pSiS->Options, OPTION_YPBPRAR);
+             if(strptr != NULL) {
+	        if(!xf86NameCmp(strptr,"4:3LB"))
+                   pSiS->ForceYPbPrAR = TV_YPBPR43LB;
+		else if(!xf86NameCmp(strptr,"4:3"))
+                   pSiS->ForceYPbPrAR = TV_YPBPR43;
+		else if(!xf86NameCmp(strptr,"16:9"))
+                   pSiS->ForceYPbPrAR = TV_YPBPR169;
+		else {
+		   xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mybadparm, strptr, "YPbPrAspectRatio");
+		   xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+	            	"Valid parameters are \"4:3LB\", \"4:3\" and \"16:9\"\n");
+		}
+	     }
+	  }
 
 	  strptr = (char *)xf86GetOptValString(pSiS->Options, OPTION_SPECIALTIMING);
           if(strptr != NULL) {

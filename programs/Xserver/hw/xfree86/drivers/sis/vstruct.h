@@ -444,6 +444,7 @@ typedef struct _SiS_Private
 	const SiS_TVDataStruct   *SiS_ExtPALData;
 	const SiS_TVDataStruct   *SiS_StNTSCData;
 	const SiS_TVDataStruct   *SiS_ExtNTSCData;
+	const SiS_TVDataStruct   *SiS_St1HiTVData;
 	const SiS_TVDataStruct   *SiS_St2HiTVData;
 	const SiS_TVDataStruct   *SiS_ExtHiTVData;
 	const SiS_TVDataStruct   *SiS_St525iData;
@@ -457,10 +458,12 @@ typedef struct _SiS_Private
 	const UCHAR *SiS_HiTVExtTiming;
 	const UCHAR *SiS_HiTVSt1Timing;
 	const UCHAR *SiS_HiTVSt2Timing;
-	const UCHAR *SiS_HiTVTextTiming;
 	const UCHAR *SiS_HiTVGroup3Data;
 	const UCHAR *SiS_HiTVGroup3Simu;
+#if 0
+	const UCHAR *SiS_HiTVTextTiming;
 	const UCHAR *SiS_HiTVGroup3Text;
+#endif
 	const SiS_PanelDelayTblStruct *SiS_PanelDelayTbl;
 	const SiS_PanelDelayTblStruct *SiS_PanelDelayTblLVDS;
 	const SiS_LVDSDataStruct  *SiS_LVDS800x600Data_1;

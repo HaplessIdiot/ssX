@@ -387,7 +387,7 @@ void SISLCDPreInit(ScrnInfoPtr pScrn)
 void SISTVPreInit(ScrnInfoPtr pScrn)
 {
     SISPtr  pSiS = SISPTR(pScrn);
-    unsigned char SR16, SR38, CR32, CR35=0, CR38=0, CR79;
+    unsigned char SR16, SR38, CR32, CR35=0, CR38=0, CR79, CR39;
     int temp = 0;
 
     if(!(pSiS->VBFlags & VB_VIDEOBRIDGE)) return;
@@ -416,7 +416,7 @@ void SISTVPreInit(ScrnInfoPtr pScrn)
 
     if(CR32 & 0x47) pSiS->VBFlags |= CRT2_TV;
 
-    if(pSiS->Chipset == PCI_CHIP_SIS660) {
+    if(pSiS->SiS_SD_Flags & SiS_SD_SUPPORTYPBPR) {
        if(CR32 & 0x80) pSiS->VBFlags |= CRT2_TV;
     } else {
        CR32 &= 0x7f;
@@ -428,14 +428,41 @@ void SISTVPreInit(ScrnInfoPtr pScrn)
        pSiS->VBFlags |= TV_SVIDEO;
     else if(CR32 & 0x04)
        pSiS->VBFlags |= TV_SCART;
-    else if((CR32 & 0x40) && (pSiS->VBFlags & VB_SISBRIDGE))
+    else if((CR32 & 0x40) && (pSiS->SiS_SD_Flags & SiS_SD_SUPPORTHIVISION))
        pSiS->VBFlags |= (TV_HIVISION | TV_PAL);
-    else if((CR32 & 0x80) && (pSiS->VBFlags & (VB_301C|VB_301LV|VB_302LV|VB_302ELV))) {
+    else if((CR32 & 0x80) && (pSiS->SiS_SD_Flags & SiS_SD_SUPPORTYPBPR)) {
        pSiS->VBFlags |= TV_YPBPR;
-       if(CR38 & 0x04) {
-          if(CR35 & 0x20)      pSiS->VBFlags |= TV_YPBPR525P;
-	  else if(CR35 & 0x40) pSiS->VBFlags |= TV_YPBPR750P;
-	  else                 pSiS->VBFlags |= TV_YPBPR525I;
+       if(pSiS->Chipset == PCI_CHIP_SIS660) {
+          if(CR38 & 0x04) {
+             switch((CR35 & 0xE0)) {
+             case 0x20: pSiS->VBFlags |= TV_YPBPR525P; break;
+	     case 0x40: pSiS->VBFlags |= TV_YPBPR750P; break;
+	     case 0x60: pSiS->VBFlags |= TV_YPBPR1080I; break;
+	     default:   pSiS->VBFlags |= TV_YPBPR525I;
+	     }
+          }
+          inSISIDXREG(SISCR,0x39,CR39);
+	  CR39 &= 0x03;
+	  if(CR39 == 0x00)      pSiS->VBFlags |= TV_YPBPR43LB;
+	  else if(CR39 == 0x01) pSiS->VBFlags |= TV_YPBPR43;
+	  else if(CR39 == 0x02) pSiS->VBFlags |= TV_YPBPR169;
+	  else			pSiS->VBFlags |= TV_YPBPR43;
+       } else if(pSiS->SiS_SD_Flags & SiS_SD_SUPPORTYPBPR) {
+          if(CR38 & 0x08) {
+	     switch((CR38 & 0x30)) {
+	     case 0x10: pSiS->VBFlags |= TV_YPBPR525P; break;
+	     case 0x20: pSiS->VBFlags |= TV_YPBPR750P; break;
+	     case 0x30: pSiS->VBFlags |= TV_YPBPR1080I; break;
+	     default:   pSiS->VBFlags |= TV_YPBPR525I;
+	     }
+	  }
+	  if(pSiS->SiS_SD_Flags & SiS_SD_SUPPORTYPBPRAR) {
+             inSISIDXREG(SISCR,0x3B,CR39);
+	     CR39 &= 0x03;
+	     if(CR39 == 0x00)      pSiS->VBFlags |= TV_YPBPR43LB;
+	     else if(CR39 == 0x01) pSiS->VBFlags |= TV_YPBPR169;
+	     else if(CR39 == 0x03) pSiS->VBFlags |= TV_YPBPR43;
+	  }
        }
     } else if((CR38 & 0x04) && (pSiS->VBFlags & VB_CHRONTEL))
        pSiS->VBFlags |= (TV_CHSCART | TV_PAL);
@@ -496,19 +523,19 @@ void SISTVPreInit(ScrnInfoPtr pScrn)
     }
 
     if(pSiS->VBFlags & TV_HIVISION) {
-       xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "BIOS reports HiVision 1080i TV\n");
+       xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "BIOS reports HiVision TV\n");
     }
 
-    if(pSiS->VBFlags & (TV_CHSCART|TV_CHYPBPR525I)) {
+    if((pSiS->VBFlags & VB_CHRONTEL) && (pSiS->VBFlags & (TV_CHSCART|TV_CHYPBPR525I))) {
        xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Chrontel: %s forced\n",
-       	(pSiS->VBFlags & TV_CHSCART) ? "SCART (PAL)" : "YPbPr (525i)");
+       	(pSiS->VBFlags & TV_CHSCART) ? "SCART (PAL)" : "YPbPr (480i)");
     }
 
     if(pSiS->VBFlags & TV_YPBPR) {
-       xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "BIOS reports YPbPr TV (%s)\n",
-         (pSiS->VBFlags & TV_YPBPR525I) ? "525i" :
-	     ((pSiS->VBFlags & TV_YPBPR525P) ? "525p" :
-	        ((pSiS->VBFlags & TV_YPBPR750P) ? "750p" : "unknown format")));
+       xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Detected YPbPr TV (%s)\n",
+         (pSiS->VBFlags & TV_YPBPR525I) ? "480i" :
+	     ((pSiS->VBFlags & TV_YPBPR525P) ? "480p" :
+	        ((pSiS->VBFlags & TV_YPBPR750P) ? "720p" : "1080i")));
     }
 }
 

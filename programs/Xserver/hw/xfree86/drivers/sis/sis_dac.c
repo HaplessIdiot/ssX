@@ -1056,10 +1056,13 @@ SiS301BSave(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     Part2max = 0x4d;
     Part3max = 0x3e;
     Part4max = 0x23;
-    if(pSiS->VBFlags & (VB_301C|VB_302ELV))
+    if(pSiS->VBFlags & (VB_301C|VB_302ELV)) {
        Part2max = 0xff;
-    if(pSiS->VBFlags & (VB_301C|VB_301LV|VB_302LV|VB_302ELV))
+       Part4max = 0x3c;
+    }
+    if(pSiS->VBFlags & (VB_301LV|VB_302LV)) {
        Part4max = 0x34;
+    }
 
     SiSVBSave(pScrn, sisReg, Part1max, Part2max, Part3max, Part4max);
 
@@ -1078,10 +1081,13 @@ SiS301BRestore(ScrnInfoPtr pScrn, SISRegPtr sisReg)
     Part2max = 0x4d;
     Part3max = 0x3e;
     Part4max = 0x22;
-    if(pSiS->VBFlags & (VB_301C|VB_302ELV))
+    if(pSiS->VBFlags & (VB_301C|VB_302ELV)) {
        Part2max = 0xff;
-    if(pSiS->VBFlags & (VB_301LV|VB_302LV|VB_302ELV))
-       Part4max = 0x24;
+       Part4max = 0x3c;
+    }
+    if(pSiS->VBFlags & (VB_301LV|VB_302LV)) {
+       Part4max = 0x34;
+    }
 
     SiS_DisableBridge(pSiS->SiS_Pr, &pSiS->sishw_ext);
 
@@ -1260,7 +1266,7 @@ SiSRestoreBridge(ScrnInfoPtr pScrn, SISRegPtr sisReg)
    sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
 #endif
 
-   for(i = 0x30; i <= 0x39; i++) {
+   for(i = 0x30; i <= 0x3b; i++) {
       if(i == 0x34) continue;
       outSISIDXREG(SISCR, i, sisReg->sisRegs3D4[i]);
    }
@@ -1443,7 +1449,10 @@ SiSEstimateCRT2Clock(ScrnInfoPtr pScrn, BOOLEAN IsForMergedFBCRT2)
 		 return 70000;
 	      }
 	   } else if(pSiS->VBFlags & VB_SISBRIDGE) {
-	      return 70000;
+	      if(pSiS->SiS_SD_Flags & SiS_SD_SUPPORTYPBPR)
+	         return 75000;
+	      else
+	         return 70000;
 	   }
 	}
 
