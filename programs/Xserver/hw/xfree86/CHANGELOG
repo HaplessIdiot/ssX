@@ -1,4 +1,8 @@
 XFree86 4.3.99.6 (xx May 2003)
+ 188. When using cpp to generate scripts and data files, change XCOMM to pound
+      signs even when preceeded by only whitespace, and provide a means to
+      generate output lines with trailing backslashes.  Change `startx` script
+      accordingly (Marc La France).
 
 XFree86 4.3.99.5 (25 May 2003)
  187. Fix XDMCP queries in xdm on systems using getifaddrs(). 
@@ -17013,7 +17017,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2708 2003/05/25 10:42:41 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2709 2003/05/25 11:06:38 dawes Exp $
 
 
 
