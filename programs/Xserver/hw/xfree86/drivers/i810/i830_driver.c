@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.56 2004/04/03 10:41:31 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.57 2004/06/10 13:08:28 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -659,7 +659,7 @@ SetDisplayDevices(ScrnInfoPtr pScrn, int devices)
 }
 
 static Bool
-GetBIOSVersion(ScrnInfoPtr pScrn, Bool *version)
+GetBIOSVersion(ScrnInfoPtr pScrn, unsigned int *version)
 {
    vbeInfoPtr pVbe = I830PTR(pScrn)->pVbe;
 
