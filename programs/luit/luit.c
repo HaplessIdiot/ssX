@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/luit/luit.c,v 1.2 2001/11/08 04:00:14 tsi Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -390,7 +390,7 @@ static int
 convert(ifd, ofd)
 {
     int i;
-    char buf[BUFFER_SIZE];
+    unsigned char buf[BUFFER_SIZE];
 
     while(1) {
         i = read(ifd, buf, BUFFER_SIZE);
@@ -503,7 +503,7 @@ sigchldHandler(int sig)
 void
 parent(int pid, int pty)
 {
-    char buf[BUFFER_SIZE];
+    unsigned char buf[BUFFER_SIZE];
     int i;
     int val;
     int rc;
