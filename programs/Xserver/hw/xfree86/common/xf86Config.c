@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.242 2001/05/16 20:08:35 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.243 2001/07/23 13:15:46 dawes Exp $ */
 
 
 /*
@@ -1008,6 +1008,11 @@ configInputKbd(IDevPtr inputp)
      xfree(s);
      s = xf86SetStrOption(inputp->commonOptions, "Device", NULL);
      xf86Msg(X_CONFIG, "Keyboard: Protocol: wskbd\n");
+     if (s == NULL) {
+	 xf86ConfigError("A \"device\" option is required with"
+			 " the \"wskbd\" keyboard protocol");
+	 return FALSE;
+     }
      xf86Info.kbdFd = open(s, O_RDONLY | O_NONBLOCK | O_EXCL);
      if (xf86Info.kbdFd == -1) {
        xf86ConfigError("cannot open \"%s\"", s);
