@@ -1,4 +1,6 @@
 XFree86 4.1.99.2 (xx September 2001)
+ 358. Fix byte ordering issue in XDarwin when loading keymapping files on x86
+      and correctly set ByteOrder for PPC and x86 (Rob Braun).
  357. When XDarwin is launched from the Finder, start X clients in an
       interactive shell if user's shell is Bourne-based (Torrey T. Lyons).
  356. Add CaseSensitiveFileSystem definition, which defaults to YES, except
@@ -13976,4 +13978,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1977 2001/10/06 01:20:44 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1978 2001/10/06 07:08:01 torrey Exp $

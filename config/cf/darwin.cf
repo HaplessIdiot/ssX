@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.18 2001/10/03 23:38:13 torrey Exp $
+XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.19 2001/10/06 01:20:46 torrey Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -94,11 +94,13 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #ifdef PpcDarwinArchitecture
 # define DarwinMachineDefines   -D__powerpc__
 # define OptimizedCDebugFlags   -O2
+# define ByteOrder              X_BIG_ENDIAN
 #endif /* PpcDarwinArchitecture */
 
 #ifdef i386DarwinArchitecture
 # define DarwinMachineDefines   -D__i386__
 # define OptimizedCDebugFlags   -O2 -fno-strength-reduce
+# define ByteOrder              X_LITTLE_ENDIAN
 #endif /* i386DarwinArchitecture */
 
 /*
