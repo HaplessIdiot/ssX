@@ -33,7 +33,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 **
 **
 ***************************************************************************/
-/* $XFree86: xc/lib/XvMC/hw/i810/I810XvMC.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/lib/XvMC/hw/i810/I810XvMC.c,v 1.8 2002/09/18 17:11:43 tsi Exp $ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -224,7 +224,7 @@ Status XvMCCreateContext(Display *display, XvPortID port,
 
   /* Get magic number and put it in privData for passing */
   drmGetMagic(pI810XvMC->fd,&magic);
-  context->flags = (ulong)magic;
+  context->flags = (unsigned long)magic;
 
   /*
     Pass control to the X server to create a drmContext for us and
@@ -494,7 +494,7 @@ Status XvMCCreateSurface( Display *display, XvMCContext *context,
     U and V surfaces.
   */
   pI810Surface->offsets[0] = priv_data[0];
-  if(((ulong)pI810Surface->data + pI810Surface->offsets[0]) & 4095) {
+  if(((unsigned long)pI810Surface->data + pI810Surface->offsets[0]) & 4095) {
     printf("XvMCCreateSurface: Surface offset 0 is not 4096 aligned\n");
   }
 
@@ -507,13 +507,13 @@ Status XvMCCreateSurface( Display *display, XvMCContext *context,
   else {
     /* Planar surface */
     pI810Surface->offsets[1] = priv_data[1];
-    if(((ulong)pI810Surface->data + pI810Surface->offsets[1]) & 2047) {
+    if(((unsigned long)pI810Surface->data + pI810Surface->offsets[1]) & 2047) {
       printf("XvMCCreateSurface: Surface offset 1 is not 2048 aligned\n");
     }
 
-    pI810Surface->offsets[2] = ((ulong)pI810Surface->offsets[1] +
+    pI810Surface->offsets[2] = ((unsigned long)pI810Surface->offsets[1] +
 				(1<<(pI810Surface->pitch - 1)) * 288);
-    if(((ulong)pI810Surface->data + pI810Surface->offsets[2]) & 2047) {
+    if(((unsigned long)pI810Surface->data + pI810Surface->offsets[2]) & 2047) {
       printf("XvMCCreateSurface: Surface offset 2 is not 2048 aligned\n");
     }
 
@@ -523,7 +523,7 @@ Status XvMCCreateSurface( Display *display, XvMCContext *context,
   free(priv_data);
 
   /* Clear the surface to 0 */
-  memset((void *)((ulong)pI810Surface->data + (ulong)pI810Surface->offsets[0]),
+  memset((void *)((unsigned long)pI810Surface->data + (unsigned long)pI810Surface->offsets[0]),
 	 0, ((1<<pI810Surface->pitch) * surface->height));
 
   switch(surface->surface_type_id) {
@@ -734,12 +734,12 @@ void dp(unsigned int *address, unsigned int i) {
 
 #define PACK_CORR_DATA(d,b,n)          \
             memcpy(d,b,n);             \
-            d = (uint *)((ulong)d + n);
+            d = (uint *)((unsigned long)d + n);
 
 #define MARK_CORR_DATA(d,n)                          \
             do {                                     \
-              uint* q = (uint*)((ulong)d - n);        \
-              while((ulong)q < (ulong)d) {             \
+              uint* q = (uint*)((unsigned long)d - n);        \
+              while((unsigned long)q < (unsigned long)d) {             \
                *q++ += 0x00330033;                   \
               }                                      \
 	    }while(0);
@@ -761,21 +761,21 @@ void dp(unsigned int *address, unsigned int i) {
             do {                                     \
               short *t = top,*b = bottom;            \
               PACK_CORR_DATA(d,t,16);                \
-              t = (short *)((ulong)t + 16);           \
+              t = (short *)((unsigned long)t + 16);           \
               PACK_CORR_DATA(d,b,16);                \
-              b = (short *)((ulong)b + 16);           \
+              b = (short *)((unsigned long)b + 16);           \
               PACK_CORR_DATA(d,t,16);                \
-              t = (short *)((ulong)t + 16);           \
+              t = (short *)((unsigned long)t + 16);           \
               PACK_CORR_DATA(d,b,16);                \
-              b = (short *)((ulong)b + 16);           \
+              b = (short *)((unsigned long)b + 16);           \
               PACK_CORR_DATA(d,t,16);                \
-              t = (short *)((ulong)t + 16);           \
+              t = (short *)((unsigned long)t + 16);           \
               PACK_CORR_DATA(d,b,16);                \
-              b = (short *)((ulong)b + 16);           \
+              b = (short *)((unsigned long)b + 16);           \
               PACK_CORR_DATA(d,t,16);                \
-              t = (short *)((ulong)t + 16);           \
+              t = (short *)((unsigned long)t + 16);           \
               PACK_CORR_DATA(d,b,16);                \
-              b = (short *)((ulong)b + 16);           \
+              b = (short *)((unsigned long)b + 16);           \
             }while(0);
 
 /* Used for DCT 0 when we need DCT 1. */
@@ -783,34 +783,34 @@ void dp(unsigned int *address, unsigned int i) {
             do{                                      \
               short *t = top,*b = bottom;            \
               PACK_CORR_DATA(d,t,16);                \
-              t = (short *)((ulong)t + 32);           \
+              t = (short *)((unsigned long)t + 32);           \
               PACK_CORR_DATA(d,t,16);                \
-              t = (short *)((ulong)t + 32);           \
+              t = (short *)((unsigned long)t + 32);           \
               PACK_CORR_DATA(d,t,16);                \
-              t = (short *)((ulong)t + 32);           \
+              t = (short *)((unsigned long)t + 32);           \
               PACK_CORR_DATA(d,t,16);                \
-              t = (short *)((ulong)t + 32);           \
+              t = (short *)((unsigned long)t + 32);           \
               PACK_CORR_DATA(d,b,16);                \
-              b = (short *)((ulong)b + 32);           \
+              b = (short *)((unsigned long)b + 32);           \
               PACK_CORR_DATA(d,b,16);                \
-              b = (short *)((ulong)b + 32);           \
+              b = (short *)((unsigned long)b + 32);           \
               PACK_CORR_DATA(d,b,16);                \
-              b = (short *)((ulong)b + 32);           \
+              b = (short *)((unsigned long)b + 32);           \
               PACK_CORR_DATA(d,b,16);                \
-              b = (short *)((ulong)b + 32);           \
+              b = (short *)((unsigned long)b + 32);           \
             }while(0);
 
 #define PACK_CORR_DATA_SHORT(d,block)                \
             do {                                     \
               short *b = block;                      \
               PACK_CORR_DATA(d,b,16);                \
-              b = (short *)((ulong)b + 32);           \
+              b = (short *)((unsigned long)b + 32);           \
               PACK_CORR_DATA(d,b,16);                \
-              b = (short *)((ulong)b + 32);           \
+              b = (short *)((unsigned long)b + 32);           \
               PACK_CORR_DATA(d,b,16);                \
-              b = (short *)((ulong)b + 32);           \
+              b = (short *)((unsigned long)b + 32);           \
               PACK_CORR_DATA(d,b,16);                \
-              b = (short *)((ulong)b + 32);           \
+              b = (short *)((unsigned long)b + 32);           \
             }while(0);
 
 /* Lookup tables to speed common calculations */
@@ -988,7 +988,7 @@ static __inline__ void dispatchYContext(i810XvMCSurface *privTarget,
   *data++ = privFuture->mi3y;
 
   mc.idx = pDMA->idx;
-  mc.used = (ulong)data - (ulong)pDMA->address;
+  mc.used = (unsigned long)data - (unsigned long)pDMA->address;
   mc.last_render = ++pI810XvMC->last_render;
   privTarget->last_render = pI810XvMC->last_render;
   I810_MC(pI810XvMC,&mc);
@@ -1252,7 +1252,7 @@ static __inline__ void renderFieldinField(uint **datay,uint **datau,
   *dy++ = *(uint *)fmv;
   *dy++ = *(uint *)bmv;
   PACK_CORR_DATA(dy,block_ptr,ysize);
-  block_ptr = (short *)((ulong)block_ptr + ysize);
+  block_ptr = (short *)((unsigned long)block_ptr + ysize);
   /* End Y Blocks */
 
   fmv[0] /= 2;
@@ -1269,7 +1269,7 @@ static __inline__ void renderFieldinField(uint **datay,uint **datau,
   *du++ = *(uint *)fmv;
   *du++ = *(uint *)bmv;
   PACK_CORR_DATA(du,block_ptr,usize);
-  block_ptr = (short *)((ulong)block_ptr + usize);
+  block_ptr = (short *)((unsigned long)block_ptr + usize);
 
   /* V Block */
   *dv++ = GFXBLOCK + 4 + (vsize>>2);
@@ -1279,7 +1279,7 @@ static __inline__ void renderFieldinField(uint **datay,uint **datau,
   *dv++ = *(uint *)fmv;
   *dv++ = *(uint *)bmv;
   PACK_CORR_DATA(dv,block_ptr,vsize);
-  block_ptr = (short *)((ulong)block_ptr + vsize);
+  block_ptr = (short *)((unsigned long)block_ptr + vsize);
 
   *datay = dy;
   *datau = du;
@@ -1400,7 +1400,7 @@ static __inline__ void render16x8inField(uint **datay,uint **datau,
   *dy++ = *(uint *)fmv;
   *dy++ = *(uint *)bmv;
   PACK_CORR_DATA(dy,block_ptr,y1size);
-  block_ptr = (short *)((ulong)block_ptr + y1size);
+  block_ptr = (short *)((unsigned long)block_ptr + y1size);
 
   /* Second Y Block */
   *dy++ = GFXBLOCK + 4 + (y2size>>2);
@@ -1410,7 +1410,7 @@ static __inline__ void render16x8inField(uint **datay,uint **datau,
   *dy++ = *(uint *)&fmv[2];
   *dy++ = *(uint *)&bmv[2];
   PACK_CORR_DATA(dy,block_ptr,y2size);
-  block_ptr = (short *)((ulong)block_ptr + y2size);
+  block_ptr = (short *)((unsigned long)block_ptr + y2size);
   /* End Y Blocks */
 
   fmv[0] /= 2;
@@ -1433,7 +1433,7 @@ static __inline__ void render16x8inField(uint **datay,uint **datau,
   *du++ = *(uint *)fmv;
   *du++ = *(uint *)bmv;
   PACK_CORR_DATA(du,block_ptr,usize);
-  block_ptr = (short *)((ulong)block_ptr + usize);
+  block_ptr = (short *)((unsigned long)block_ptr + usize);
 
   /* Second U block */
   *du++ = GFXBLOCK + 4 + (usize>>2);
@@ -1443,7 +1443,7 @@ static __inline__ void render16x8inField(uint **datay,uint **datau,
   *du++ = *(uint *)&fmv[2];
   *du++ = *(uint *)&bmv[2];
   PACK_CORR_DATA(du,block_ptr,usize);
-  block_ptr = (short *)((ulong)block_ptr + usize);
+  block_ptr = (short *)((unsigned long)block_ptr + usize);
   /* End U Blocks */
 
   /* V Blocks */
@@ -1454,7 +1454,7 @@ static __inline__ void render16x8inField(uint **datay,uint **datau,
   *dv++ = *(uint *)fmv;
   *dv++ = *(uint *)bmv;
   PACK_CORR_DATA(dv,block_ptr,vsize);
-  block_ptr = (short *)((ulong)block_ptr + vsize);
+  block_ptr = (short *)((unsigned long)block_ptr + vsize);
 
   /* Second V Block */
   *dv++ = GFXBLOCK + 4 + (vsize>>2);
@@ -1464,7 +1464,7 @@ static __inline__ void render16x8inField(uint **datay,uint **datau,
   *dv++ = *(uint *)&fmv[2];
   *dv++ = *(uint *)&bmv[2];
   PACK_CORR_DATA(dv,block_ptr,vsize);
-  block_ptr = (short *)((ulong)block_ptr + vsize);
+  block_ptr = (short *)((unsigned long)block_ptr + vsize);
   /* End V Blocks */
 
   *datay = dy;
@@ -1519,7 +1519,7 @@ static __inline__ void renderDualPrimeinField(uint **datay,uint **datau,
   *dy++ = *(uint *)fmv;
   *dy++ = *(uint *)bmv;
   PACK_CORR_DATA(dy,block_ptr,ysize);
-  block_ptr = (short *)((ulong)block_ptr + ysize);
+  block_ptr = (short *)((unsigned long)block_ptr + ysize);
   /* End Y Blocks */
  
   fmv[0] /= 2;
@@ -1536,7 +1536,7 @@ static __inline__ void renderDualPrimeinField(uint **datay,uint **datau,
   *du++ = *(uint *)fmv;
   *du++ = *(uint *)bmv;
   PACK_CORR_DATA(du,block_ptr,usize);
-  block_ptr = (short *)((ulong)block_ptr + usize);
+  block_ptr = (short *)((unsigned long)block_ptr + usize);
 
   /* V Block */
   *dv++ = GFXBLOCK + 4 + (vsize>>2);
@@ -1546,7 +1546,7 @@ static __inline__ void renderDualPrimeinField(uint **datay,uint **datau,
   *dv++ = *(uint *)fmv;
   *dv++ = *(uint *)bmv;
   PACK_CORR_DATA(dv,block_ptr,vsize);
-  block_ptr = (short *)((ulong)block_ptr + vsize);
+  block_ptr = (short *)((unsigned long)block_ptr + vsize);
 
   *datay = dy;
   *datau = du;
@@ -1607,7 +1607,7 @@ static __inline__ void renderFieldinFrame(uint **datay,uint **datau,
   *dy++ = *(uint *)&fmv[0];
   *dy++ = *(uint *)&bmv[0];
   PACK_CORR_DATA(dy,block_ptr,y1size);
-  block_ptr = (short *)((ulong)block_ptr + y1size);
+  block_ptr = (short *)((unsigned long)block_ptr + y1size);
 
   /* Second Y Block */
   *dy++ = GFXBLOCK + 4 + (y2size>>2);
@@ -1617,7 +1617,7 @@ static __inline__ void renderFieldinFrame(uint **datay,uint **datau,
   *dy++ = *(uint *)&fmv[2];
   *dy++ = *(uint *)&bmv[2];
   PACK_CORR_DATA(dy,block_ptr,y2size);
-  block_ptr = (short *)((ulong)block_ptr + y2size);
+  block_ptr = (short *)((unsigned long)block_ptr + y2size);
   /* End Y Blocks */
 
   fmv[0] /= 2;
@@ -1651,9 +1651,9 @@ static __inline__ void renderFieldinFrame(uint **datay,uint **datau,
   *du++ = *(uint *)&fmv[2];
   *du++ = *(uint *)&bmv[2];
   if(usize) {
-    block_ptr = (short *)((ulong)block_ptr + 16);
+    block_ptr = (short *)((unsigned long)block_ptr + 16);
     PACK_CORR_DATA_SHORT(du,block_ptr);
-    block_ptr = (short *)((ulong)block_ptr + 112);
+    block_ptr = (short *)((unsigned long)block_ptr + 112);
   }
   /* End U Blocks */
 
@@ -1676,9 +1676,9 @@ static __inline__ void renderFieldinFrame(uint **datay,uint **datau,
   *dv++ = *(uint *)&fmv[2];
   *dv++ = *(uint *)&bmv[2];
   if(vsize) {
-    block_ptr = (short *)((ulong)block_ptr + 16);
+    block_ptr = (short *)((unsigned long)block_ptr + 16);
     PACK_CORR_DATA_SHORT(dv,block_ptr);
-    block_ptr = (short *)((ulong)block_ptr + 112);
+    block_ptr = (short *)((unsigned long)block_ptr + 112);
   }
   /* End V Blocks */
 
@@ -1789,13 +1789,13 @@ static __inline__ void renderFieldinFrameDCT0(uint **datay,uint **datau,
   *dy++ = *(uint *)&fmv[2];
   *dy++ = *(uint *)&bmv[2];
   if(dw1[1] & (1<<27)) {
-    top_left_b = (short *)((ulong)top_left_b + 16);
-    bottom_left_b = (short *)((ulong)bottom_left_b + 16);
+    top_left_b = (short *)((unsigned long)top_left_b + 16);
+    bottom_left_b = (short *)((unsigned long)bottom_left_b + 16);
     PACK_CORR_DATA_0to1(dy,top_left_b,bottom_left_b);
   }
   if(dw1[1] & (1<<26)) {
-    top_right_b = (short *)((ulong)top_right_b + 16);
-    bottom_right_b = (short *)((ulong)bottom_right_b + 16);
+    top_right_b = (short *)((unsigned long)top_right_b + 16);
+    bottom_right_b = (short *)((unsigned long)bottom_right_b + 16);
     PACK_CORR_DATA_0to1(dy,top_right_b,bottom_right_b);
   }
   /* End Y Blocks */
@@ -1831,9 +1831,9 @@ static __inline__ void renderFieldinFrameDCT0(uint **datay,uint **datau,
   *du++ = *(uint *)&fmv[2];
   *du++ = *(uint *)&bmv[2];
   if(usize) {
-    block_ptr = (short *)((ulong)block_ptr + 16);
+    block_ptr = (short *)((unsigned long)block_ptr + 16);
     PACK_CORR_DATA_SHORT(du,block_ptr);
-    block_ptr = (short *)((ulong)block_ptr + 112);
+    block_ptr = (short *)((unsigned long)block_ptr + 112);
   }
   /* End U Blocks */
 
@@ -1856,9 +1856,9 @@ static __inline__ void renderFieldinFrameDCT0(uint **datay,uint **datau,
   *dv++ = *(uint *)&fmv[2];
   *dv++ = *(uint *)&bmv[2];
   if(vsize) {
-    block_ptr = (short *)((ulong)block_ptr + 16);
+    block_ptr = (short *)((unsigned long)block_ptr + 16);
     PACK_CORR_DATA_SHORT(dv,block_ptr);
-    block_ptr = (short *)((ulong)block_ptr + 112);
+    block_ptr = (short *)((unsigned long)block_ptr + 112);
   }
   /* End V Blocks */
 
@@ -1911,7 +1911,7 @@ static __inline__ void renderFrameinFrame(uint **datay,uint **datau,
   *dy++ = *(uint *)fmv;
   *dy++ = *(uint *)bmv;
   PACK_CORR_DATA(dy,block_ptr,ysize);
-  block_ptr = (short *)((ulong)block_ptr + ysize);
+  block_ptr = (short *)((unsigned long)block_ptr + ysize);
   /* End Y Blocks */
 
   fmv[0] /= 2;
@@ -1930,7 +1930,7 @@ static __inline__ void renderFrameinFrame(uint **datay,uint **datau,
   *du++ = *(uint *)fmv;
   *du++ = *(uint *)bmv;
   PACK_CORR_DATA(du,block_ptr,usize);
-  block_ptr = (short *)((ulong)block_ptr + usize);
+  block_ptr = (short *)((unsigned long)block_ptr + usize);
   /* End U Block */
 
   /* V Block */
@@ -1941,7 +1941,7 @@ static __inline__ void renderFrameinFrame(uint **datay,uint **datau,
   *dv++ = *(uint *)fmv;
   *dv++ = *(uint *)bmv;
   PACK_CORR_DATA(dv,block_ptr,vsize);
-  block_ptr = (short *)((ulong)block_ptr + vsize);
+  block_ptr = (short *)((unsigned long)block_ptr + vsize);
   /* End V Block */
 
   *datay = dy;
@@ -2030,13 +2030,13 @@ static __inline__ void renderFrameinFrameDCT1(uint **datay,uint **datau,
   *dy++ = *(uint *)bmv;
   if(dw1 & (1<<27)) {
     PACK_CORR_DATA_1to0(dy,top_left_b,bottom_left_b);
-    top_left_b = (short *)((ulong)top_left_b + 64);
-    bottom_left_b = (short *)((ulong)bottom_left_b + 64);
+    top_left_b = (short *)((unsigned long)top_left_b + 64);
+    bottom_left_b = (short *)((unsigned long)bottom_left_b + 64);
   }
   if(dw1 & (1<<26)) {
     PACK_CORR_DATA_1to0(dy,top_right_b,bottom_right_b);
-    top_right_b = (short *)((ulong)top_right_b + 64);
-    bottom_right_b = (short *)((ulong)bottom_right_b + 64);
+    top_right_b = (short *)((unsigned long)top_right_b + 64);
+    bottom_right_b = (short *)((unsigned long)bottom_right_b + 64);
   }
   if(dw1 & (1<<27)) {
     PACK_CORR_DATA_1to0(dy,top_left_b,bottom_left_b);
@@ -2062,7 +2062,7 @@ static __inline__ void renderFrameinFrameDCT1(uint **datay,uint **datau,
   *du++ = *(uint *)fmv;
   *du++ = *(uint *)bmv;
   PACK_CORR_DATA(du,block_ptr,usize);
-  block_ptr = (short *)((ulong)block_ptr + usize);
+  block_ptr = (short *)((unsigned long)block_ptr + usize);
 
   /* V Block */
   *dv++ = GFXBLOCK + 4 + (vsize>>2);
@@ -2072,7 +2072,7 @@ static __inline__ void renderFrameinFrameDCT1(uint **datay,uint **datau,
   *dv++ = *(uint *)fmv;
   *dv++ = *(uint *)bmv;
   PACK_CORR_DATA(dv,block_ptr,vsize);
-  block_ptr = (short *)((ulong)block_ptr + vsize);
+  block_ptr = (short *)((unsigned long)block_ptr + vsize);
 
   *datay = dy;
   *datau = du;
@@ -2133,7 +2133,7 @@ static __inline__ void renderDualPrimeinFrame(uint **datay,uint **datau,
   *dy++ = *(uint *)fmv;
   *dy++ = *(uint *)bmv;;
   PACK_CORR_DATA(dy,block_ptr,y1size);
-  block_ptr = (short *)((ulong)block_ptr + y1size);
+  block_ptr = (short *)((unsigned long)block_ptr + y1size);
 
   /* Second Y Block */
   *dy++ = GFXBLOCK + 4 + (y2size>>2);
@@ -2143,7 +2143,7 @@ static __inline__ void renderDualPrimeinFrame(uint **datay,uint **datau,
   *dy++ = *(uint *)&fmv[2];
   *dy++ = *(uint *)&bmv[2];
   PACK_CORR_DATA(dy,block_ptr,y2size);
-  block_ptr = (short *)((ulong)block_ptr + y2size);
+  block_ptr = (short *)((unsigned long)block_ptr + y2size);
 
   fmv[0] /= 2;
   fmv[1] /= 2;
@@ -2176,9 +2176,9 @@ static __inline__ void renderDualPrimeinFrame(uint **datay,uint **datau,
   *du++ = *(uint *)&fmv[2];
   *du++ = *(uint *)&bmv[2];
   if(dw1[1] & (1<<23)) {
-    block_ptr = (short *)((ulong)block_ptr + 16);
+    block_ptr = (short *)((unsigned long)block_ptr + 16);
     PACK_CORR_DATA_SHORT(du,block_ptr);
-    block_ptr = (short *)((ulong)block_ptr + 112);
+    block_ptr = (short *)((unsigned long)block_ptr + 112);
   }
   /* End U Blocks */
 
@@ -2201,9 +2201,9 @@ static __inline__ void renderDualPrimeinFrame(uint **datay,uint **datau,
   *dv++ = *(uint *)&fmv[2];
   *dv++ = *(uint *)&bmv[2];
   if(dw1[1] & (1<<22)) {
-    block_ptr = (short *)((ulong)block_ptr + 16);
+    block_ptr = (short *)((unsigned long)block_ptr + 16);
     PACK_CORR_DATA_SHORT(dv,block_ptr);
-    block_ptr = (short *)((ulong)block_ptr + 112);
+    block_ptr = (short *)((unsigned long)block_ptr + 112);
   }
   /* End V Blocks */
 
@@ -2316,13 +2316,13 @@ static __inline__ void renderDualPrimeinFrameDCT0(uint **datay,uint **datau,
   *dy++ = *(uint *)&fmv[2];
   *dy++ = *(uint *)&bmv[2];
   if(cbp & 0x20) {
-    top_left_b = (short *)((ulong)top_left_b + 16);
-    bottom_left_b = (short *)((ulong)bottom_left_b + 16);
+    top_left_b = (short *)((unsigned long)top_left_b + 16);
+    bottom_left_b = (short *)((unsigned long)bottom_left_b + 16);
     PACK_CORR_DATA_0to1(dy,top_left_b,bottom_left_b);
   }
   if(cbp & 0x10) {
-    top_right_b = (short *)((ulong)top_right_b + 16);
-    bottom_right_b = (short *)((ulong)bottom_right_b + 16);
+    top_right_b = (short *)((unsigned long)top_right_b + 16);
+    bottom_right_b = (short *)((unsigned long)bottom_right_b + 16);
     PACK_CORR_DATA_0to1(dy,top_right_b,bottom_right_b);
   }
   /* End Y Blocks */
@@ -2359,9 +2359,9 @@ static __inline__ void renderDualPrimeinFrameDCT0(uint **datay,uint **datau,
   *du++ = *(uint *)&fmv[2];
   *du++ = *(uint *)&bmv[2];
   if(cbp & (1<<23)) {
-    block_ptr = (short *)((ulong)block_ptr + 16);
+    block_ptr = (short *)((unsigned long)block_ptr + 16);
     PACK_CORR_DATA_SHORT(du,block_ptr);
-    block_ptr = (short *)((ulong)block_ptr + 112);
+    block_ptr = (short *)((unsigned long)block_ptr + 112);
   }
   /* End U Blocks */
 
@@ -2384,9 +2384,9 @@ static __inline__ void renderDualPrimeinFrameDCT0(uint **datay,uint **datau,
   *dv++ = *(uint *)&fmv[2];
   *dv++ = *(uint *)&bmv[2];
   if(cbp & (1<<22)) {
-    block_ptr = (short *)((ulong)block_ptr + 16);
+    block_ptr = (short *)((unsigned long)block_ptr + 16);
     PACK_CORR_DATA_SHORT(dv,block_ptr);
-    block_ptr = (short *)((ulong)block_ptr + 112);
+    block_ptr = (short *)((unsigned long)block_ptr + 112);
   }
   /* End V Blocks */
 
@@ -2533,7 +2533,7 @@ Status XvMCRenderSurface(Display *display, XvMCContext *context,
 
     /* If buffers are almost full dispatch them */
     if(datay) {
-      pDMAy->used = (ulong)datay - (ulong)pDMAy->address;
+      pDMAy->used = (unsigned long)datay - (unsigned long)pDMAy->address;
       if(pDMAy->used  > 3520) {
 	if(dirty_context) {
 	  dispatchYContext(privTarget,privPast,privFuture,pI810XvMC);
@@ -2548,7 +2548,7 @@ Status XvMCRenderSurface(Display *display, XvMCContext *context,
       } /* datay near full */
     } /* if(datay) */
     if(datau) {
-      pDMAu[u_index]->used = (ulong)datau - (ulong)pDMAu[u_index]->address;
+      pDMAu[u_index]->used = (unsigned long)datau - (unsigned long)pDMAu[u_index]->address;
       if(pDMAu[u_index]->used > 3904) {
 	u_index++;
 	datau = NULL;
@@ -2566,7 +2566,7 @@ Status XvMCRenderSurface(Display *display, XvMCContext *context,
       } /* datau near full */
     } /* if(datau) */
     if(datav) {
-      pDMAv[v_index]->used = (ulong)datav - (ulong)pDMAv[v_index]->address;
+      pDMAv[v_index]->used = (unsigned long)datav - (unsigned long)pDMAv[v_index]->address;
       if(pDMAv[v_index]->used > 3904) {
 	v_index++;
 	datav = NULL;
@@ -2756,12 +2756,12 @@ Status XvMCRenderSurface(Display *display, XvMCContext *context,
     dispatchYContext(privTarget,privPast,privFuture,pI810XvMC);
   }
   mc.idx = pDMAy->idx;
-  mc.used = (ulong)datay - (ulong)pDMAy->address;
+  mc.used = (unsigned long)datay - (unsigned long)pDMAy->address;
   mc.last_render = ++pI810XvMC->last_render;
   privTarget->last_render = pI810XvMC->last_render;
   I810_MC(pI810XvMC,&mc);
 
-  pDMAu[u_index]->used = (ulong)datau - (ulong)pDMAu[u_index]->address;
+  pDMAu[u_index]->used = (unsigned long)datau - (unsigned long)pDMAu[u_index]->address;
   for(j=0; j<=u_index; j++) {
     mc.idx = pDMAu[j]->idx;
     mc.used = pDMAu[j]->used;
@@ -2769,7 +2769,7 @@ Status XvMCRenderSurface(Display *display, XvMCContext *context,
     privTarget->last_render = pI810XvMC->last_render;
     I810_MC(pI810XvMC,&mc);
   }
-  pDMAv[v_index]->used = (ulong)datav - (ulong)pDMAv[v_index]->address;
+  pDMAv[v_index]->used = (unsigned long)datav - (unsigned long)pDMAv[v_index]->address;
   for(j=0; j<=v_index; j++) {
     mc.idx = pDMAv[j]->idx;
     mc.used = pDMAv[j]->used;
@@ -3131,20 +3131,20 @@ Status XvMCPutSurface(Display *display,XvMCSurface *surface,
 
   /* buffer locations, add the offset from the clipping */
   if(pI810XvMC->current) {
-    pORegs->OBUF_1Y = (ulong)pI810Surface->offset +
-      (ulong)pI810Surface->offsets[0] + ysrc_offset;
-    pORegs->OBUF_1V = (ulong)pI810Surface->offset +
-      (ulong)pI810Surface->offsets[2] + uvsrc_offset;
-    pORegs->OBUF_1U = (ulong)pI810Surface->offset +
-      (ulong)pI810Surface->offsets[1] + uvsrc_offset;
+    pORegs->OBUF_1Y = (unsigned long)pI810Surface->offset +
+      (unsigned long)pI810Surface->offsets[0] + ysrc_offset;
+    pORegs->OBUF_1V = (unsigned long)pI810Surface->offset +
+      (unsigned long)pI810Surface->offsets[2] + uvsrc_offset;
+    pORegs->OBUF_1U = (unsigned long)pI810Surface->offset +
+      (unsigned long)pI810Surface->offsets[1] + uvsrc_offset;
   }
   else {
-    pORegs->OBUF_0Y = (ulong)pI810Surface->offset +
-      (ulong)pI810Surface->offsets[0] + ysrc_offset;
-    pORegs->OBUF_0V = (ulong)pI810Surface->offset +
-      (ulong)pI810Surface->offsets[2] + uvsrc_offset;
-    pORegs->OBUF_0U = (ulong)pI810Surface->offset +
-      (ulong)pI810Surface->offsets[1] + uvsrc_offset;
+    pORegs->OBUF_0Y = (unsigned long)pI810Surface->offset +
+      (unsigned long)pI810Surface->offsets[0] + ysrc_offset;
+    pORegs->OBUF_0V = (unsigned long)pI810Surface->offset +
+      (unsigned long)pI810Surface->offsets[2] + uvsrc_offset;
+    pORegs->OBUF_0U = (unsigned long)pI810Surface->offset +
+      (unsigned long)pI810Surface->offsets[1] + uvsrc_offset;
   }
 
   switch(surface->surface_type_id) {
@@ -3545,7 +3545,7 @@ Status XvMCCreateSubpicture(Display *display, XvMCContext *context,
      address (Client memeory address) or offset (physical offset from fb base)
   */
   pI810Subpicture->offsets[0] = priv_data[0];
-  if(((ulong)pI810Subpicture->data + pI810Subpicture->offsets[0]) & 4095) {
+  if(((unsigned long)pI810Subpicture->data + pI810Subpicture->offsets[0]) & 4095) {
     printf("XvMCCreateSubpicture: Subpicture offset 0 is not 4096 aligned\n");
   }
 
@@ -3553,7 +3553,7 @@ Status XvMCCreateSubpicture(Display *display, XvMCContext *context,
   free(priv_data);
 
   /* Clear the surface to 0 */
-  memset((void *)((ulong)pI810Subpicture->data + (ulong)pI810Subpicture->offsets[0]),
+  memset((void *)((unsigned long)pI810Subpicture->data + (unsigned long)pI810Subpicture->offsets[0]),
 	 0, ((1<<pI810Subpicture->pitch) * subpicture->height));
 
   switch(subpicture->xvimage_id) {
@@ -3632,8 +3632,8 @@ Status XvMCClearSubpicture(Display *display, XvMCSubpicture *subpicture,
   }
 
   for(i=y; i<y + height; i++) {
-    memset((void *)((ulong)pI810Subpicture->data +
-		    (ulong)pI810Subpicture->offsets[0] + x +
+    memset((void *)((unsigned long)pI810Subpicture->data +
+		    (unsigned long)pI810Subpicture->offsets[0] + x +
 		    (1<<pI810Subpicture->pitch) * i),(char)color,width);
   }
 
@@ -3696,11 +3696,11 @@ Status XvMCCompositeSubpicture(Display *display, XvMCSubpicture *subpicture,
   }
 
   for(i=0; i<height; i++) {
-    memcpy((void *)((ulong)pI810Subpicture->data +
-		    (ulong)pI810Subpicture->offsets[0] + dstx +
+    memcpy((void *)((unsigned long)pI810Subpicture->data +
+		    (unsigned long)pI810Subpicture->offsets[0] + dstx +
 		    (1<<pI810Subpicture->pitch) * (i + dsty)),
-	   (void *)((ulong)image->data +
-		    (ulong)image->offsets[0] + srcx +
+	   (void *)((unsigned long)image->data +
+		    (unsigned long)image->offsets[0] + srcx +
 		    image->pitches[0] * (i + srcy))
 	   ,width);
   }
@@ -4025,9 +4025,9 @@ Status XvMCBlendSubpicture2(Display *display,
   *data++ = (2<<29) | (0x43<<22) | 0x4;
   *data++ = (0xcc<<16) | (1<<26) | (1<<(privTarget->pitch - 1));
   *data++ = (target_surface->height<<15) | (target_surface->width>>1);
-  *data++ = (ulong)privTarget->offset + (ulong)privTarget->offsets[1];
+  *data++ = (unsigned long)privTarget->offset + (unsigned long)privTarget->offsets[1];
   *data++ = (1<<(privSource->pitch - 1));
-  *data++ = (ulong)privSource->offset + (ulong)privSource->offsets[1];
+  *data++ = (unsigned long)privSource->offset + (unsigned long)privSource->offsets[1];
 
   /* Context 1 select */
   *data++ = CMD_FLUSH;
@@ -4114,9 +4114,9 @@ Status XvMCBlendSubpicture2(Display *display,
   *data++ = (2<<29) | (0x43<<22) | 0x4;
   *data++ = (0xcc<<16) | (1<<26) | (1<<(privTarget->pitch - 1));
   *data++ = (target_surface->height<<15) | (target_surface->width>>1);
-  *data++ = (ulong)privTarget->offset + (ulong)privTarget->offsets[2];
+  *data++ = (unsigned long)privTarget->offset + (unsigned long)privTarget->offsets[2];
   *data++ = (1<<(privSource->pitch - 1));
-  *data++ = (ulong)privSource->offset + (ulong)privSource->offsets[2];
+  *data++ = (unsigned long)privSource->offset + (unsigned long)privSource->offsets[2];
 
   /* Context 1 select */
   *data++ = CMD_FLUSH;
@@ -4201,7 +4201,7 @@ Status XvMCBlendSubpicture2(Display *display,
 
 
   /* Dispatch */
-  pDMA->used = (ulong)data - (ulong)pDMA->address;
+  pDMA->used = (unsigned long)data - (unsigned long)pDMA->address;
   mc.idx = pDMA->idx;
   mc.used = pDMA->used;
   mc.last_render = ++pI810XvMC->last_render;
