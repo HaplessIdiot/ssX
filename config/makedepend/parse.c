@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/parse.c,v 1.14tsi Exp $ */
+/* $XFree86: xc/config/makedepend/parse.c,v 1.15tsi Exp $ */
 
 #include "def.h"
 
@@ -438,7 +438,7 @@ static char args[S_ARGS_BUFLEN];
     {
 	*val++ = '\0';
 
-	do /* parse the parametere list */
+	do /* parse the parameter list */
 	{
 	    while (*val == ' ' || *val == '\t')
 		val++;
@@ -493,6 +493,7 @@ static char args[S_ARGS_BUFLEN];
 		loop=0;
 	    }
 	    else
+	    if (*val != '.')
 	    {
 		fprintf(stderr, "trailing ) on macro arguments missing\n");
 		loop=0;
