@@ -6,7 +6,7 @@
 char rcsId_vmwarexaa[] =
     "Id: $";
 #endif
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmwarexaa.c,v 1.2 2002/10/16 22:26:55 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmwarexaa.c,v 1.3 2002/12/10 04:17:20 dawes Exp $ */
 
 #include "vmware.h"
 
@@ -14,7 +14,7 @@ char rcsId_vmwarexaa[] =
 /* We'll assume we average about 32x32 alpha surfaces (4096 bytes) or larger */
 #define OFFSCREEN_SCRATCH_MAX_SLOTS OFFSCREEN_SCRATCH_SIZE / 4096
 
-const char *xaaSymbols[] = {
+const char *vmwareXaaSymbols[] = {
     "XAACreateInfoRec",
     "XAADestroyInfoRec",
     "XAAInit",
@@ -182,14 +182,15 @@ vmwareXAAScreenInit(ScreenPtr pScreen)
                        pVMWARE->offscreenScratch->size,
                        pVMWARE->offscreenScratch->offset)); 
 
-            pVMWARE->heap = Heap_Create(osPtr, pVMWARE->offscreenScratch->size,
+            pVMWARE->heap = vmwareHeap_Create(osPtr,
+                                        pVMWARE->offscreenScratch->size,
                                         OFFSCREEN_SCRATCH_MAX_SLOTS,
                                         pVMWARE->offscreenScratch->offset,
                                         pScrn->virtualX, pScrn->virtualY,
                                         pVMWARE->bitsPerPixel,
                                         pVMWARE->fbPitch,
                                         pVMWARE->fbOffset);
-            pVMWARE->frontBuffer = Heap_GetFrontBuffer(pVMWARE->heap);
+            pVMWARE->frontBuffer = vmwareHeap_GetFrontBuffer(pVMWARE->heap);
 
             xaaInfo->SetupForCPUToScreenAlphaTexture =
                vmwareSetupForCPUToScreenAlphaTexture;
@@ -261,7 +262,7 @@ vmwareXAACloseScreen(ScreenPtr pScreen)
     
 #ifdef RENDER
     if (pVMWARE->heap) {
-        Heap_Destroy(pVMWARE->heap);
+        vmwareHeap_Destroy(pVMWARE->heap);
         pVMWARE->heap = NULL;
     }
 #endif
@@ -278,7 +279,7 @@ vmwareXAASync(ScrnInfoPtr pScrn)
 
 #ifdef RENDER
     if (pVMWARE->heap) {
-        Heap_Clear(pVMWARE->heap);
+        vmwareHeap_Clear(pVMWARE->heap);
     }
 #endif
 }
@@ -479,7 +480,7 @@ vmwareSetupForCPUToScreenAlphaTexture(ScrnInfoPtr pScrn, int op,
         return FALSE;
     }
     
-    surf = Heap_AllocSurface(pVMWARE->heap, width, height, width * 4, 32);
+    surf = vmwareHeap_AllocSurface(pVMWARE->heap, width, height, width * 4, 32);
     
     if (!surf) {
         return FALSE;
@@ -515,7 +516,7 @@ vmwareSetupForCPUToScreenTexture(ScrnInfoPtr pScrn, int op,
         return FALSE;
     }
     
-    surf = Heap_AllocSurface(pVMWARE->heap, width, height, texPitch, 32);
+    surf = vmwareHeap_AllocSurface(pVMWARE->heap, width, height, texPitch, 32);
     
     if (!surf) {
         return FALSE;

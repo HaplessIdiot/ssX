@@ -6,7 +6,7 @@
 char rcsId_vmware[] =
     "Id: vmware.c,v 1.11 2001/02/23 02:10:39 yoel Exp $";
 #endif
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.c,v 1.13 2002/10/16 22:12:53 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.c,v 1.14 2002/12/10 04:17:19 dawes Exp $ */
 
 /*
  * TODO: support the vmware linux kernel fb driver (Option "UseFBDev").
@@ -743,7 +743,7 @@ VMWAREPreInit(ScrnInfoPtr pScrn, int flags)
             VMWAREFreeRec(pScrn);
             return FALSE;
         }
-        xf86LoaderReqSymLists(xaaSymbols, NULL);
+        xf86LoaderReqSymLists(vmwareXaaSymbols, NULL);
     }
 
     return TRUE;
@@ -1398,7 +1398,7 @@ vmwareSetup(pointer module, pointer opts, int *errmaj, int *errmin)
         xf86AddDriver(&VMWARE, module, 0);
 
         LoaderRefSymLists(vgahwSymbols, fbSymbols, ramdacSymbols,
-                          shadowfbSymbols, xaaSymbols, NULL);
+                          shadowfbSymbols, vmwareXaaSymbols, NULL);
 
         return (pointer)1;
     }

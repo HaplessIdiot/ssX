@@ -3,7 +3,7 @@
  * All Rights Reserved
  * Id: vmware.h,v 1.6 2001/01/30 18:13:47 bennett Exp $
  * **********************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.h,v 1.7 2002/10/16 22:12:53 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.h,v 1.8 2002/12/10 04:17:19 dawes Exp $ */
 
 #ifndef VMWARE_H
 #define VMWARE_H
@@ -165,7 +165,7 @@ static __inline ScrnInfoPtr infoFromScreen(ScreenPtr s) {
 
 #define MOUSE_ID 1
 
-extern const char *xaaSymbols[];
+extern const char *vmwareXaaSymbols[];
 
 /*#define DEBUG_LOGGING*/
 #ifdef DEBUG_LOGGING
