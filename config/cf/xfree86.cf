@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.111 1996/10/03 08:54:42 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.112 1996/10/06 13:09:56 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -637,6 +637,7 @@ XCOMM $XConsortium: xfree86.cf /main/17 1996/01/03 14:50:55 kaleb $
 #endif
 
 LINKKITDIR = LinkKitDir
+XF98LINKKITDIR = LinkKitDir
 
 /*
  * Some commonly refered to directories are defined here.
@@ -644,11 +645,11 @@ LINKKITDIR = LinkKitDir
 
 #if XF86LinkKit
        XF86SRC = $(TOP)
-  XF86ACCELSRC = $(XF86SRC)/lib
-    XF86COMSRC = $(XF86SRC)/lib
+  XF86ACCELSRC = $(XF86SRC)/lib86
+    XF86COMSRC = $(XF86SRC)/lib86
  XF86CONFIGSRC = $(XF86SRC)
-     XF86HWSRC = $(XF86SRC)/lib
-     XF86OSSRC = $(XF86SRC)/lib
+     XF86HWSRC = $(XF86SRC)/lib86
+     XF86OSSRC = $(XF86SRC)/lib86
      DRIVERSRC = $(XF86SRC)/drivers
   VGADRIVERSRC = $(XF86SRC)/drivers/vga256
 VGA16DRIVERSRC = $(XF86SRC)/drivers/vga16
@@ -658,17 +659,24 @@ VGA16DRIVERSRC = $(XF86SRC)/drivers/vga16
   S3VDRIVERSRC = $(XF86SRC)/drivers/s3_virge
 
            XF98SRC = $(TOP)
-      XF98ACCELSRC = $(XF98SRC)/lib
-        XF98COMSRC = $(XF98SRC)/lib
+      XF98ACCELSRC = $(XF98SRC)/lib98
+        XF98COMSRC = $(XF98SRC)/lib98
      XF98CONFIGSRC = $(XF98SRC)
-         XF98HWSRC = $(XF98SRC)/lib
-         XF98OSSRC = $(XF98SRC)/lib
-     XF98DRIVERSRC = $(XF98SRC)/drivers
-  XF98VGADRIVERSRC = $(XF98SRC)/drivers/vga256
-XF98VGA16DRIVERSRC = $(XF98SRC)/drivers/vga16
- XF98VGA2DRIVERSRC = $(XF98SRC)/drivers/vga2
- XF98MONODRIVERSRC = $(XF98SRC)/drivers/mono
-  XF98NECDRIVERSRC = $(XF98SRC)/drivers/s3
+         XF98HWSRC = $(XF98SRC)/lib98
+      XF98HWNECSRC = $(XF98SRC)/lib98
+    XF98HWPWSKBSRC = $(XF98SRC)/lib98
+     XF98HWPWLBSRC = $(XF98SRC)/lib98
+    XF98HWGA968SRC = $(XF98SRC)/lib98
+         XF98OSSRC = $(XF98SRC)/lib98
+     XF98DRIVERSRC = $(XF98SRC)/drivers98
+  XF98VGADRIVERSRC = $(XF98SRC)/drivers98/vga256
+XF98VGA16DRIVERSRC = $(XF98SRC)/drivers98/vga16
+ XF98VGA2DRIVERSRC = $(XF98SRC)/drivers98/vga2
+ XF98MONODRIVERSRC = $(XF98SRC)/drivers98/mono
+XF98NECS3DRIVERSRC = $(XF98SRC)/drivers98/s3nec
+XF98PWSKBDRIVERSRC = $(XF98SRC)/drivers98/s3pwskb
+ XF98PWLBDRIVERSRC = $(XF98SRC)/drivers98/s3pwlb
+XF98GA968DRIVERSRC = $(XF98SRC)/drivers98/s3ga968
 
 #ifdef SiteIConfigFiles
 #undef SiteIConfigFiles
@@ -707,7 +715,7 @@ VGA16DRIVERSRC = $(XF86SRC)/vga16/drivers
 XF98VGA16DRIVERSRC = $(XF98SRC)/vga16/drivers
  XF98VGA2DRIVERSRC = $(XF98SRC)/vga2/drivers
  XF98MONODRIVERSRC = $(XF98SRC)/mono/drivers
-  XF98NECDRIVERSRC = $(XF98SRC)/accel/s3nec/drivers
+XF98NECS3DRIVERSRC = $(XF98SRC)/accel/s3nec/drivers
 XF98PWSKBDRIVERSRC = $(XF98SRC)/accel/s3pwskb/drivers
  XF98PWLBDRIVERSRC = $(XF98SRC)/accel/s3pwlb/drivers
 XF98GA968DRIVERSRC = $(XF98SRC)/accel/s3ga968/drivers

@@ -4,7 +4,7 @@ XCOMM platform:  $XConsortium: NetBSD.cf /main/14 1996/01/28 07:42:14 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.40 1996/10/03 08:28:04 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.41 1996/10/06 13:09:36 dawes Exp $
 
 #ifndef OpenBSDArchitecture
 
@@ -72,9 +72,9 @@ XCOMM operating system:  OSName
 #endif
 #define HasWChar32		YES
 /*
- * There's a bug in NetBSD 1.0 and 1.1 dlsym()
+ * There's a bug in NetBSD 1.0, 1.1 and 1.2 dlsym()
  */
-#if !defined(OpenBSDArchitecture) && OSMajorVersion == 1 && OSMinorVersion < 2
+#if !defined(OpenBSDArchitecture) && OSMajorVersion == 1 && OSMinorVersion <= 2
 #  define HasDlsymBug		YES
 #endif
 
