@@ -105,7 +105,7 @@ all keys are bound: kernel-specific, multiple keysym, and dead keys are not
 handled by the server. All others are translated to their X equivalents.
 Note that the XFree86 server only allows for four modifier maps: unshifted,
 shifted, modeswitch unshifted and modeswitch shifted.  Depending on what
-the modeswitch key is (it is settable in your <tt>XF86Config</tt> and defaults
+the modeswitch key is (it is configurable in your <tt>XF86Config</tt> and defaults
 to Alt),
 XFree86 will read those tables into its keymaps.  This means if you use
 certain keys, like left-Control, for Linux modeswitch, that will not be
@@ -175,7 +175,7 @@ about Linux support or the Linux distribution should be made to
 <it>orestz@eskimo.com.</it>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Linux.sgml,v 3.1 1994/12/26 11:03:27 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Linux.sgml,v 3.2 1995/01/21 07:16:33 dawes Exp $
 </verb>
 
 </article>

@@ -68,7 +68,7 @@ man pages, config files, and the server link kit.  The full distribution
 takes over 55MB of disk space.  The large archives are split into
 smaller chunks.
 
-All archives are now made using the NetBSD package tools. We recommand
+All archives are now made using the NetBSD package tools. We recommend
 that you install these tools first.  All packages can be installed
 using <tt/pkg_add/.
 
@@ -283,7 +283,7 @@ the console entry in <tt>/etc/ttys</tt>:
 
 <p>
 The <tt/XF86Config/ file tells the X server what kind of monitor, video card
-and mouse you have.  You <em/must/ create it to tell the xerver what
+and mouse you have.  You <em/must/ create it to tell the server what
 specific hardware you have.
 
 If you plan to fine tune the screen size or position on your monitor
@@ -294,7 +294,7 @@ If your mouse does not work try using kermit or tip to connect to the
 mouse serial port and verify that it does indeed generate characters.
 
 If you've been running a previous version of XFree86, you can get the
-video card and monitor information from your previous <tt/XConfig/
+video card and monitor information from your previous <tt/Xconfig/
 file. Don't forget to update the font and RGB paths.
 
 
@@ -629,7 +629,7 @@ and many others.
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.4 1995/01/15 10:34:15 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.5 1995/01/21 07:16:35 dawes Exp $
 </verb>
 
 </article>

@@ -18,7 +18,7 @@ might work for you, too.
 <descrip>
 <tag>S3 801/805, AT&amp;T 20C490 (or similar) RAMDAC</tag>
 	<itemize>
-        <item> Orchid Farenheit 1280+ VLB
+        <item> Orchid Fahrenheit 1280+ VLB
         <item> Actix GE32
 	</itemize>
 
@@ -271,7 +271,7 @@ might work for you, too.
 <sect> 16bpp and 32bpp
 <p>
 
-On 801/805 + AT&amp;T490 Cards (like the Farenheit 1280+ VLB) only 15 and
+On 801/805 + AT&amp;T490 Cards (like the Fahrenheit 1280+ VLB) only 15 and
 16bpp are supported. 32bpp isn't available on this type of
 chips. (There is a 24 bit mode under MS Windows, but it's not a 32bpp
 sparse mode but a real 3 bytes/pixel mode -- implementing this in
@@ -303,7 +303,7 @@ overdrive it using XF86_S3. Better contact the XFree86 team first to
 verify that running XF86_S3 will not damage your board.
 
 If you feel adventurous you could also open up your computer and have
-a peek at your RAMDAC. The RAMDAC is usually ome the larger chips
+a peek at your RAMDAC. The RAMDAC is usually one the larger chips
 (second or third largest chip that is NOT an EPROM) on the board.  The
 markings on it are usually
 
@@ -427,7 +427,7 @@ exit
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.5 1995/01/18 06:11:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.6 1995/01/21 07:16:41 dawes Exp $
 </verb>
 
 </article>

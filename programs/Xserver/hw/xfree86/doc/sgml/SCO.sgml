@@ -48,7 +48,7 @@ This file may not be present if the upgrade is too substantial
 <tag/XFXXX-lkit.tz/         The server link kit (all drivers + PEX).
 <tag/XFXXX-util.tz/         Lots of PD utilities provided as is.
 <tag/XFXXX-pex.tz/          All files relating to PEX including libraries
-                          and header files.  The likkit is required to
+                          and header files.  The LinkKit is required to
                           obtain servers capable of running PEX.
 </descrip></quote>
 
@@ -309,7 +309,7 @@ Compiling XFree86,
 <itemize>
 <item>Compress is used instead of pack for compressing the man pages.
 <item>The default compile line will contain <tt>-D_NO_PROTOTYPE</tt> instead
-      of <tt>-DNO_PROTOTYP</tt>E as this is what 3.2.4 expects.
+      of <tt>-DNO_PROTOTYPE</tt> as this is what 3.2.4 expects.
 </itemize>
 <item> If you have problems with <tt>mkshlib</tt> reporting an error like
 <verb>
@@ -582,6 +582,6 @@ for providing an
 ftp site for the binary distribution.
 
 <verb>  
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.2 1995/01/15 10:34:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.3 1995/01/21 07:16:42 dawes Exp $
 </verb>
 </article>

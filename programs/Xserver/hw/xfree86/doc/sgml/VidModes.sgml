@@ -564,7 +564,7 @@ You'll have to do a little trial and error for this part.  But most of the
 time, we can safely assume that a sync pulse is about 3.5 to 4.0 microsecond
 in length.
 
-For concretness again, let's take HSP to be 3.8 microseconds (which btw, is not
+For concreteness again, let's take HSP to be 3.8 microseconds (which btw, is not
 a bad value to start with when experimenting).
 
 Now, using the 65Mhz clock timing above, we know HSP is equivalent to 247 clock
@@ -659,7 +659,7 @@ section contains the number of dots per line which will be illuminated to form
 the picture (what we've called HR).  The second field of the section indicates
 at which dot the horizontal sync pulse will begin.  The third field indicates
 at which dot the horizontal sync pulse will end.  The fourth field specifies
-the toal horizontal frame length (HFL).
+the total horizontal frame length (HFL).
 
 The vertical section also contains four fields.  The first field contains the
 number of visible lines which will appear on the display (VR).  The second
@@ -1146,7 +1146,7 @@ Finally, remember that increasing either frame length will decrease your
 refresh rate, and vice-versa.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VidModes.sgml,v 3.1 1994/12/25 08:38:41 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VidModes.sgml,v 3.2 1995/01/21 07:16:47 dawes Exp $
 </verb>
 
 </article>

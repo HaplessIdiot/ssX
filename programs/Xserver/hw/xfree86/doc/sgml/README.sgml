@@ -608,7 +608,7 @@ is still being determined.
 
 An additional benefit of this incorporation is that The XFree86 Project,
 Inc has obtained outside financial support for our work.  This will
-hopefully give us the freedom to be more proactive in obtaining new
+hopefully give us the freedom to be more pro-active in obtaining new
 video hardware, and enable us to release better products more quickly,
 as we will be able to go and get what we need, and get it into the hands
 of the people who can do the work.
@@ -805,7 +805,7 @@ file that describes what files you need to take from the archive, and which
 compile-time option selections were made when building the distribution.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.10 1995/01/19 05:22:51 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.11 1995/01/21 07:16:39 dawes Exp $
 </verb>
 
 </article>

@@ -164,9 +164,9 @@ separate tar balls.
  # umask 022
 </verb></tscreen>
 
-<item> If you have 52Mb free in the <tt>/usr</tt> partion ``<tt>cd
+<item> If you have 52Mb free in the <tt>/usr</tt> partition ``<tt>cd
      /usr</tt>'' and skip to no. 3.
-     Otherwise, create a directory on another partion and sym link it into
+     Otherwise, create a directory on another partition and sym link it into
      <tt>/usr</tt>:
 
 <tscreen><verb>
@@ -295,7 +295,7 @@ to ``off'' or build another kernel with more VTs as described below.
 The display manager makes your PC look like an X terminal.  That is, it
 presents you with a login screen that runs under X.
 
-The easiest way to automaticly start the display manager on boot is to
+The easiest way to automatically start the display manager on boot is to
 add a line in <tt>/etc/ttys</tt> to start it on one of the unoccupied
 virtual terminals:
 
@@ -317,7 +317,7 @@ loging in as root on the console and typing ``<tt/xdm -nodaemon/''.
 <sect>Configuring X for Your Hardware
 <p>
 The <tt/XF86Config/ file tells the X server what kind of monitor, video card
-and mouse you have.  You <em/must/ create it to tell the xerver what
+and mouse you have.  You <em/must/ create it to tell the server what
 specific hardware you have.
 
 XFree86 3.1 uses a new configuration file format. Consult the
@@ -570,7 +570,7 @@ Many thanks to:
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.6 1995/01/20 04:21:38 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.7 1995/01/21 07:16:32 dawes Exp $
 </verb>
 
 </article>

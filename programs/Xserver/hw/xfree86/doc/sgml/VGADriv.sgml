@@ -708,9 +708,9 @@ mode.
 <sect1> The FbInit() function <p>
 The <bf>FbInit()</bf> function is required for drivers with accelerated graphics
 support.  It is used to replace default cfb.banked functions with
-accelerated chip-specific versions.  cfbLowlevFuncs is a struct containing
+accelerated chip-specific versions.  vga256LowlevFuncs is a struct containing
 a list of functions which can be replaced.  This struct defined in
-cfbfuncs.h.  Examples of <bf>FbInit()</bf> functions can be found in the et4000,
+vga256.h.  Examples of <bf>FbInit()</bf> functions can be found in the et4000,
 pvga1 and cirrus drivers.
 
 If you do NOT need this function, simply don't define it, and put `NoopDDA'
@@ -903,7 +903,7 @@ Sunnyvale, CA  94086 <newline>
 </descrip>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VGADriv.sgml,v 3.2 1995/01/19 05:22:53 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VGADriv.sgml,v 3.3 1995/01/21 07:16:44 dawes Exp $
 </verb>
 
 </article>

@@ -17,15 +17,15 @@
 <sect>README for XFree86 3.1 on Mach<p>
 
 <bf>NOTE:</bf>  THIS TEXT WILL LOOK A LOT LIKE THE README.MACH FOR XFREE86 2.1,
-BECAUSE NOT MUCH HAS CHANGED FROM THE MACH OS PRESPECTIVE.  ON THE
-OTHERHAND, THERE ARE SIGNIFICANT DIFFERENCES IN THE BUILD INSTRUCTIONS.
+BECAUSE NOT MUCH HAS CHANGED FROM THE MACH OS PERSPECTIVE.  ON THE
+OTHER HAND, THERE ARE SIGNIFICANT DIFFERENCES IN THE BUILD INSTRUCTIONS.
 BE CAREFUL TO FOLLOW THEM.<p>
 
 All XFree86 client binaries should work with not only the Mach 2.5
 kernel but also the Mach 3.0 kernel.  Mach 2.5 kernels should support
 both the traditional SVGA/VGA servers and the newer accelerator
 servers.  The Mach 3.0 kernel MK83 has a fix necessary for Mach 3.0 to
-support the new accelerator servers and for Superprobe; this change
+support the new accelerator servers and for SuperProbe; this change
 allows the full 64K of I/O ports to be accessed.  <bf>THUS, IF YOU USE
 MACH 3.0, YOU MUST RUN MACH 3.0 Kernel RELEASE MK83 OR LATER TO USE
 ANY ACCELERATOR SERVER</bf>.  The XF86_SVGA server, XF86_VGA16 server, and
@@ -171,7 +171,7 @@ necessary for Mach is that the X servers be able to open <tt>/dev/iopl</tt>
 read/write.  There are many ways to achieve this effect.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach.sgml,v 3.0 1994/12/20 11:33:28 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach.sgml,v 3.1 1994/12/26 11:03:29 dawes Exp $
 </verb>
 
 </article>

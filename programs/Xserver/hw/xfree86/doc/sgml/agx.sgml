@@ -63,7 +63,7 @@
         the current server does not support these.<p>
 
 <item>  The video memory probe has been problematic, recent fixes 
-        haven't failed yet, but earler versions showed promise too...<p>
+        haven't failed yet, but earlier versions showed promise too...<p>
 
 <item>  Needs more testing.<p>
 
@@ -83,7 +83,7 @@
         improvements. Many existing acceleration routines are Q&amp;D 
         adaptations of existing routines from other servers that support
         graphics chips that differ significantly, architecturally, from
-        that XGA and are undoubtly less than optimal.<p>
+        that XGA and are undoubtedly less than optimal.<p>
 
 <item>  Support other pixel depths.<p>                       
 
@@ -512,7 +512,7 @@ Set or clear CPU access wait state, default is the POST setting.
 <p>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.2 1995/01/11 09:47:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.3 1995/01/21 07:16:49 dawes Exp $
 </verb>
 
 </article>
