@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.56 2002/09/29 23:54:34 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.57 2002/10/16 17:06:01 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -1869,7 +1869,7 @@ xf86PrintModes(ScrnInfoPtr scrp)
 {
     DisplayModePtr p;
     float hsync, refresh = 0;
-    char *desc, *desc2, *prefix;
+    char *desc, *desc2, *prefix, *uprefix;
 
     if (scrp == NULL)
 	return;
@@ -1912,24 +1912,28 @@ xf86PrintModes(ScrnInfoPtr scrp)
 	    prefix = "Default mode";
 	else
 	    prefix = "Mode";
+	if (p->type & M_T_USERDEF)
+	    uprefix = "*";
+	else
+	    uprefix = " ";
 	if (hsync == 0 || refresh == 0) {
 	    if (p->name)
 		xf86DrvMsg(scrp->scrnIndex, X_CONFIG,
-			   "%s \"%s\"\n", prefix, p->name);
+			   "%s%s \"%s\"\n", uprefix, prefix, p->name);
 	    else
 		xf86DrvMsg(scrp->scrnIndex, X_PROBED,
-			   "%s %dx%d (unnamed)\n", prefix, p->HDisplay,
-			    p->VDisplay);
+			   "%s%s %dx%d (unnamed)\n",
+			   uprefix, prefix, p->HDisplay, p->VDisplay);
 	} else if (p->Clock == p->SynthClock) {
 	    xf86DrvMsg(scrp->scrnIndex, X_CONFIG,
-			"%s \"%s\": %.1f MHz, %.1f kHz, %.1f Hz%s%s\n",
-			prefix, p->name, p->Clock / 1000.0, hsync, refresh,
-			desc, desc2);
+			"%s%s \"%s\": %.1f MHz, %.1f kHz, %.1f Hz%s%s\n",
+			uprefix, prefix, p->name, p->Clock / 1000.0,
+			hsync, refresh, desc, desc2);
 	} else {
 	    xf86DrvMsg(scrp->scrnIndex, X_CONFIG,
-			"%s \"%s\": %.1f MHz (scaled from %.1f MHz), "
+			"%s%s \"%s\": %.1f MHz (scaled from %.1f MHz), "
 			"%.1f kHz, %.1f Hz%s%s\n",
-			prefix, p->name, p->Clock / 1000.0,
+			uprefix, prefix, p->name, p->Clock / 1000.0,
 			p->SynthClock / 1000.0, hsync, refresh, desc, desc2);
 	}
 	if (hsync != 0 && refresh != 0)
