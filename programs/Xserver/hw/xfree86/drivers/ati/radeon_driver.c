@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.79 2003/01/17 19:54:03 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.80 2003/01/25 20:43:46 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -3654,6 +3654,20 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     fbPictureInit (pScreen, 0, 0);
 #endif
 
+#ifdef RENDER
+    if (PictureGetSubpixelOrder (pScreen) == SubPixelUnknown)
+    {
+	int subPixelOrder;
+
+	switch (info->DisplayType) {
+	case MT_NONE:	subPixelOrder = SubPixelUnknown; break;
+	case MT_LCD:	subPixelOrder = SubPixelHorizontalRGB; break;
+	case MT_DFP:	subPixelOrder = SubPixelHorizontalRGB; break;
+	default:	subPixelOrder = SubPixelNone; break;
+	}
+	PictureSetSubpixelOrder (pScreen, subPixelOrder);
+    }
+#endif
 				/* Memory manager setup */
 #ifdef XF86DRI
     if (info->directRenderingEnabled) {

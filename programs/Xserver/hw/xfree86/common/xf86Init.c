@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.192 2002/10/19 20:04:21 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.193 2002/12/03 18:17:40 tsi Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -851,13 +851,14 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
       xf86Screens[i]->pScreen->CreateWindow = xf86CreateRootWindow;
 
 #ifdef RENDER
+    if (PictureGetSubpixelOrder (xf86Screens[i]->pScreen) == SubPixelUnknown)
     {
 	xf86MonPtr DDC = (xf86MonPtr)(xf86Screens[i]->monitor->DDC); 
 	PictureSetSubpixelOrder (xf86Screens[i]->pScreen,
 				 DDC ?
 				 (DDC->features.input_type ?
 				  SubPixelHorizontalRGB : SubPixelNone) :
-				 SubPixelUnknown);;
+				 SubPixelUnknown);
     }
 #endif
 #ifdef RANDR
