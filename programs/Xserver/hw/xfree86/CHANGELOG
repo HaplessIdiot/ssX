@@ -1,4 +1,14 @@
 XFree86 4.2.99.903 (xx February 2003)
+ 947. Luit fixes:
+       - Fix a bug with --encoding being too strict with the syntax.
+       - Add a -x flag that causes luit to exit as soon as the child does.
+       - Update the man page to synchronise with Tomohiro's work on XTerm.
+      (#5643, Juliusz Chroboczek).
+ 946. Fix some endianness bugs in the r200 DRI driver, and guard a debugging
+      print message (Michel Dänzer).
+ 945. Fix radeon HW cursor artifacts when switching between 2-color and
+      ARGB cursors by always using the ARGB mode (#A.1639, Michel Dänzer and
+      Fredrik Höglund).
  944. Fix rootless XDarwin crash when trying to GetImage with a rectangle
       bigger then the associated top level window (Apple).
  943. Add support for multi-head on ZX1-based Itanium2 systems  (Marc La France
@@ -16489,4 +16499,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2578 2003/02/23 20:26:43 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2579 2003/02/23 21:48:21 torrey Exp $
