@@ -4,6 +4,8 @@
    Written by Mark Vojkovich (mvojkovi@ucsd.edu)
 */
 
+/* $XFree86$ */
+
 #include "X.h"
 #include "Xproto.h"
 #include "misc.h"
