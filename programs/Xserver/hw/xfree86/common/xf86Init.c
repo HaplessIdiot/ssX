@@ -162,10 +162,7 @@ ErrorF("xf86CreateRootWindow(%p)\n", pWin);
       
       /* free memory */
       pOldRegProp = xf86RegisteredPropertiesTable[pScreen->myNum];
-      while (pOldRegProp!=NULL) { 
-	xfree(pOldRegProp->data);
-	pOldRegProp->data = NULL;
-	
+      while (pOldRegProp!=NULL) { 	
 	pRegProp = pOldRegProp->next;
 	xfree(pOldRegProp);
 	pOldRegProp = pRegProp;
