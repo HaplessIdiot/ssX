@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: maskbits.h,v 1.33 94/04/17 20:28:13 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/mfb/maskbits.h,v 3.3 1996/12/09 11:56:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/maskbits.h,v 3.4 1997/02/27 14:00:14 hohndel Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "servermd.h"
@@ -242,7 +242,7 @@ extern PixelType mask[];
 #define BitLeft(b,s)	SCRLEFT(b,s)
 #define BitRight(b,s)	SCRRIGHT(b,s)
 
-#ifdef XFree86LOADER
+#ifdef XFree86Server
 #define LONG2CHARSSAMEORDER(x) ((unsigned long)(x))
 #if PPW == 32
 #define LONG2CHARSDIFFORDER( x ) ( ( ( ( x ) & (unsigned long)0x000000FF ) << 0x18 ) \
@@ -267,7 +267,7 @@ extern PixelType mask[];
 		        | ( ( ( x ) & 0xFF000000FF000000UL) >> 0x18 ) )
 #endif /* __alpha__ */
 #endif /* PPW */
-#endif /* XFree86LOADER */
+#endif /* XFree86Server */
 #if (BITMAP_BIT_ORDER == IMAGE_BYTE_ORDER)
 #define LONG2CHARS(x) ((unsigned long)(x))
 #else

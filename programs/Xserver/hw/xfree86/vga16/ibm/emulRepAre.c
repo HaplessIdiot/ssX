@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/emulRepAre.c,v 3.4 1996/12/23 06:52:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/emulRepAre.c,v 3.5 1997/03/13 15:10:49 hohndel Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -48,26 +48,26 @@ ScreenPtr pScrn ;
 	for ( ;
 	      currentHoriz <= ( goalWidth >> 1 ) ;
 	      currentHoriz <<= 1 ) {
-		vgaBitBlt( pWin, GXcopy, planeMask, planeMask,
+		vga16BitBlt( pWin, GXcopy, planeMask, planeMask,
 			x, y,
 			x + currentHoriz, y,
 			currentHoriz, currentVert ) ;
 	}
 	if ( goalWidth - currentHoriz )
-		vgaBitBlt( pWin, GXcopy, planeMask, planeMask,
+		vga16BitBlt( pWin, GXcopy, planeMask, planeMask,
 			x, y,
 			x + currentHoriz, y,
 			goalWidth - currentHoriz, currentVert ) ;
 	for ( ;
 	      currentVert <= ( goalHeight >> 1 ) ;
 	      currentVert <<= 1 ) {
-		vgaBitBlt( pWin, GXcopy, planeMask, planeMask,
+		vga16BitBlt( pWin, GXcopy, planeMask, planeMask,
 			x, y,
 			x, y + currentVert,
 			goalWidth, currentVert ) ;
 	}
 	if ( goalHeight - currentVert )
-		vgaBitBlt( pWin, GXcopy, planeMask, planeMask,
+		vga16BitBlt( pWin, GXcopy, planeMask, planeMask,
 			x, y,
 			x, y + currentVert,
 			goalWidth, goalHeight - currentVert ) ;
