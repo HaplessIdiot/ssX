@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.34 2000/03/05 16:59:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.35 2000/08/11 17:27:15 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -167,10 +167,10 @@ static int  devMemFd = -1;
 #endif
 #define DEV_MEM "/dev/mem"
 
-static pointer mapVidMem(int, unsigned long, unsigned long);
+static pointer mapVidMem(int, unsigned long, unsigned long, int);
 static void unmapVidMem(int, pointer, unsigned long);
 #ifdef __alpha__
-static pointer mapVidMemSparse(int, unsigned long, unsigned long);
+static pointer mapVidMemSparse(int, unsigned long, unsigned long, int);
 static void unmapVidMemSparse(int, pointer, unsigned long);
 #endif
 #ifdef HAS_MTRR_SUPPORT
@@ -303,7 +303,7 @@ xf86OSInitVidMem(VidMemInfoPtr pVidMem)
 }
 
 static pointer
-mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size)
+mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size, int flags)
 {
 	pointer base;
 
@@ -530,7 +530,7 @@ xf86MapInfoUnmap(struct memAccess *memInfoP, unsigned long Size)
 }
 
 static pointer
-armMapVidMem(int ScreenNum, unsigned long Base, unsigned long Size)
+armMapVidMem(int ScreenNum, unsigned long Base, unsigned long Size, int flags)
 {
 	struct memAccess *memInfoP;
 	
@@ -558,7 +558,7 @@ armMapVidMem(int ScreenNum, unsigned long Base, unsigned long Size)
 	    base = xf86MapInfoMap(memInfoP, Base, Size);
 	    return (base);
 	}
-	return mapVidMem(ScreenNum, Base, Size);
+	return mapVidMem(ScreenNum, Base, Size, flags);
 }
 
 static void
@@ -1345,7 +1345,7 @@ sethae(u_int64_t hae)
 }
 
 static pointer
-mapVidMemSparse(int ScreenNum, unsigned long Base, unsigned long Size)
+mapVidMemSparse(int ScreenNum, unsigned long Base, unsigned long Size, int flags)
 {
     static Bool was_here = FALSE;
 

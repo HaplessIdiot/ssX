@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_video.c,v 3.12 1999/04/29 09:13:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_video.c,v 3.13 2000/04/05 18:13:54 dawes Exp $ */
 /*
  * (c) Copyright 1994,1999 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -102,7 +102,7 @@ typedef struct {
 
 /* ARGSUSED */
 static pointer
-mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size)
+mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size, int flags)
 {
 	DIOParPkt	par;
 	ULONG		plen;

@@ -1,9 +1,9 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86OSpriv.h,v 1.2 1999/04/25 15:30:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86OSpriv.h,v 1.4 2000/02/15 02:00:14 eich Exp $ */
 
 #ifndef _XF86OSPRIV_H
 #define _XF86OSPRIV_H
 
-typedef pointer (*MapMemProcPtr)(int, unsigned long, unsigned long);
+typedef pointer (*MapMemProcPtr)(int, unsigned long, unsigned long, int);
 typedef void (*UnmapMemProcPtr)(int, pointer, unsigned long);
 typedef pointer (*SetWCProcPtr)(int, unsigned long, unsigned long, Bool,
 				MessageType);

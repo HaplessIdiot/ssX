@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.36 2000/06/27 21:41:37 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.37 2000/10/17 16:53:20 tsi Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -80,13 +80,13 @@ extern void sethae(unsigned long hae);
 /* Video Memory Mapping section                                            */
 /***************************************************************************/
 
-static pointer mapVidMem(int, unsigned long, unsigned long);
+static pointer mapVidMem(int, unsigned long, unsigned long, int);
 static void unmapVidMem(int, pointer, unsigned long);
 #if defined (__alpha__) 
-static pointer mapVidMemSparse(int, unsigned long, unsigned long);
+static pointer mapVidMemSparse(int, unsigned long, unsigned long, int);
 static void unmapVidMemSparse(int, pointer, unsigned long);
 # if defined(JENSEN_SUPPORT)
-static pointer mapVidMemJensen(int, unsigned long, unsigned long);
+static pointer mapVidMemJensen(int, unsigned long, unsigned long, int);
 static void unmapVidMemJensen(int, pointer, unsigned long);
 # endif
 #endif
@@ -329,13 +329,28 @@ xf86OSInitVidMem(VidMemInfoPtr pVidMem)
 
 
 static pointer
-mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size)
+mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size, int flags)
 {
     pointer base;
     int fd;
-
+    int mapflags = MAP_SHARED; 
+    
 #if defined(__ia64__)
-    if ((fd = open(DEV_MEM, O_RDWR | O_SYNC)) < 0) {
+#ifndef MAP_WRITECOMBINED
+#define MAP_WRITECOMBINED 0x00010000
+#endif
+#ifndef MAP_NONCACHED
+#define MAP_NONCACHED 0x00020000
+#endif
+    if(flags & VIDMEM_FRAMEBUFFER) 
+        mapflags |= MAP_WRITECOMBINED; 
+    else
+        mapflags |= MAP_NONCACHED; 
+#endif
+
+#if defined(__ia64_)
+    /* this will disappear when people upgrade their kernels */
+    if ((fd = open(DEV_MEM, O_RDWR|O_SYNC)) < 0) {
 #else
     if ((fd = open(DEV_MEM, O_RDWR)) < 0) {
 #endif
@@ -345,7 +360,7 @@ mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size)
     /* This requires linux-0.99.pl10 or above */
     base = mmap((caddr_t)0, Size,
 		PROT_READ|PROT_WRITE,
-		MAP_SHARED, fd,
+		mapflags, fd,
 		(off_t)(off_t)Base + BUS_BASE);
     close(fd);
     if (base == MAP_FAILED) {
@@ -520,7 +535,7 @@ static void
 writeSparse32(int Value, pointer Base, register unsigned long Offset);
 
 static pointer
-mapVidMemSparse(int ScreenNum, unsigned long Base, unsigned long Size)
+mapVidMemSparse(int ScreenNum, unsigned long Base, unsigned long Size, int flags)
 {
     int fd;
     static Bool was_here = FALSE;
@@ -764,7 +779,7 @@ writeSparseJensenNB32(int Value, pointer Base, register unsigned long Offset);
 #define JENSEN_SHIFT(x) ((long)x<<SPARSE)
 
 static pointer
-mapVidMemJensen(int ScreenNum, unsigned long Base, unsigned long Size)
+mapVidMemJensen(int ScreenNum, unsigned long Base, unsigned long Size, int flags)
 {
   pointer base;
   int fd;

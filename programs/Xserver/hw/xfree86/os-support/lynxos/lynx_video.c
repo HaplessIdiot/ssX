@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_video.c,v 3.14 1999/12/08 06:10:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_video.c,v 3.16 2000/04/17 16:30:13 eich Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -91,7 +91,7 @@ smemCleanup(void)
 }
 
 static pointer
-MapVidMem(int ScreenNum, unsigned long Base, unsigned long Size)
+MapVidMem(int ScreenNum, unsigned long Base, unsigned long Size, int flags)
 {
 	static int once;
 	int	free_slot = -1;
