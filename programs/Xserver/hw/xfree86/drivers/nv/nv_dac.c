@@ -37,7 +37,7 @@
 |*                                                                           *|
  \***************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.41tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.42 2004/11/26 11:48:48 tsi Exp $ */
 
 #include "nv_include.h"
 
@@ -193,6 +193,9 @@ NVDACInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     nvReg->vpll2 = nvReg->pll;
     nvReg->vpllB = nvReg->pllB;
     nvReg->vpll2B = nvReg->pllB;
+
+    VGA_WR08(pNv->PCIO, 0x03D4, 0x1C);
+    nvReg->fifo = VGA_RD08(pNv->PCIO, 0x03D5) & ~(1<<5);
 
     if(pNv->CRTCnumber) {
        nvReg->head  = pNv->PCRTC0[0x00000860/4] & ~0x00001000;
