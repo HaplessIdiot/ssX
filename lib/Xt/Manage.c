@@ -1,5 +1,4 @@
-/* $XConsortium: Manage.c /main/35 1996/09/28 16:46:36 rws $ */
-/* $XFree86: xc/lib/Xt/Manage.c,v 3.2 1996/06/10 08:43:04 dawes Exp $ */
+/* $TOG: Manage.c /main/36 1997/05/15 17:30:16 kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -33,6 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
+/* $XFree86: xc/lib/Xt/Manage.c,v 3.3 1996/12/23 06:01:20 dawes Exp $ */
 
 /*
 
@@ -223,7 +223,7 @@ static void ManageChildren(children, num_children, parent, call_change_managed, 
     if (num_children <= MAXCHILDREN) {
 	unique_children = cache;
     } else {
-	unique_children = (WidgetList) XtMalloc(num_children * sizeof(Widget));
+	unique_children = (WidgetList) __XtMalloc(num_children * sizeof(Widget));
     }
     num_unique_children = 0;
     for (i = 0; i < num_children; i++) {

@@ -1,5 +1,4 @@
-/* $XConsortium: Error.c /main/37 1996/11/13 14:45:02 lehors $ */
-/* $XFree86: xc/lib/Xt/Error.c,v 3.2 1996/12/23 06:01:14 dawes Exp $ */
+/* $TOG: Error.c /main/38 1997/05/15 17:29:05 kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -33,6 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
+/* $XFree86: xc/lib/Xt/Error.c,v 3.3 1996/12/26 03:41:22 dawes Exp $ */
 
 /*
 
@@ -290,7 +290,7 @@ suid bit on the executable.");
 	 * messages shouldn't be called frequently enough for this
 	 * to be a performance issue.
 	 */
-	if ((message = XtMalloc (BIGBUF))) {
+	if ((message = __XtMalloc (BIGBUF))) {
 	    /* 
 	     * it may be desireable to initialize  the last few bytes of 
 	     * message ... 
