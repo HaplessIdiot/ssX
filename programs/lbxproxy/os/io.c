@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/lbxproxy/os/io.c,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/lbxproxy/os/io.c,v 1.12tsi Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -315,9 +315,9 @@ StandardReadRequestFromClient(client)
 	    if (needed > oci->size)
 	    {
 		/* make buffer bigger to accomodate request */
-		char *ibuf;
+		unsigned char *ibuf;
 
-		ibuf = (char *)xrealloc(oci->buffer, needed);
+		ibuf = (unsigned char *)xrealloc(oci->buffer, needed);
 		if (!ibuf)
 		{
 		    YieldControlDeath();
@@ -332,7 +332,7 @@ StandardReadRequestFromClient(client)
 
 	if (oc->trans_conn)
 	    result = _LBXPROXYTransRead(oc->trans_conn, 
-					oci->buffer + oci->bufcnt,
+					(char *)oci->buffer + oci->bufcnt,
 				        oci->size - oci->bufcnt);
 	else
 	    /*
@@ -357,9 +357,9 @@ StandardReadRequestFromClient(client)
 	if ((oci->size > BUFWATERMARK) &&
 	    (oci->bufcnt < BUFSIZE) && (needed < BUFSIZE))
 	{
-	    char *ibuf;
+	    unsigned char *ibuf;
 
-	    ibuf = (char *)xrealloc(oci->buffer, BUFSIZE);
+	    ibuf = (unsigned char *)xrealloc(oci->buffer, BUFSIZE);
 	    if (ibuf)
 	    {
 		oci->size = BUFSIZE;
@@ -576,9 +576,9 @@ InsertFakeRequest(client, data, count)
     gotnow = oci->bufcnt + oci->buffer - oci->bufptr;
     if ((gotnow + count) > oci->size)
     {
-	char *ibuf;
+	unsigned char *ibuf;
 
-	ibuf = (char *)xrealloc(oci->buffer, gotnow + count);
+	ibuf = (unsigned char *)xrealloc(oci->buffer, gotnow + count);
 	if (!ibuf)
 	    return(FALSE);
 	oci->size = gotnow + count;
@@ -1122,7 +1122,7 @@ AllocateInputBuffer()
     oci = (ConnectionInputPtr)xalloc(sizeof(ConnectionInput));
     if (!oci)
 	return (ConnectionInputPtr)NULL;
-    oci->buffer = (char *)xalloc(BUFSIZE);
+    oci->buffer = (unsigned char *)xalloc(BUFSIZE);
     if (!oci->buffer)
     {
 	xfree(oci);

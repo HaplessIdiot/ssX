@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/mesa/X/xf86glx.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/mesa/X/xf86glx.c,v 1.2tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -798,7 +798,7 @@ GLboolean __MESA_copyContext(__GLcontext *dst, const __GLcontext *src,
 			     GLuint mask)
 {
     XMesaContext xm_dst = (XMesaContext) dst->DriverCtx;
-    const XMesaContext xm_src = (const XMesaContext) src->DriverCtx;
+    const XMesaContext xm_src = (XMesaContext) src->DriverCtx;
     _mesa_copy_context(&xm_src->mesa, &xm_dst->mesa, mask);
     return GL_TRUE;
 }

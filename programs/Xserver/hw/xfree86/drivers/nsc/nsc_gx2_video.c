@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_video.c,v 1.9 2004/03/30 10:34:07 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_video.c,v 1.10tsi Exp $ */
 /*
  * $Workfile: nsc_gx2_video.c $
  * $Revision$
@@ -232,14 +232,11 @@ static Atom xvColorKey, xvColorKeyMode, xvFilter
 void
 GX2InitVideo(ScreenPtr pScreen)
 {
-    GeodePtr pGeode;
     ScrnInfoPtr pScreenInfo = xf86Screens[pScreen->myNum];
     XF86VideoAdaptorPtr *adaptors, *newAdaptors = NULL;
     XF86VideoAdaptorPtr newAdaptor = NULL;
 
     int num_adaptors;
-
-    pGeode = GEODEPTR(pScreenInfo);
 
     newAdaptor = GX2SetupImageVideo(pScreen);
     GX2InitOffscreenImages(pScreen);

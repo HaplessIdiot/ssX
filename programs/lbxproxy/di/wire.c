@@ -45,7 +45,7 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/lbxproxy/di/wire.c,v 1.15tsi Exp $ */
+/* $XFree86: xc/programs/lbxproxy/di/wire.c,v 1.16tsi Exp $ */
 
 #include "lbx.h"
 #include <stdio.h>
@@ -1397,8 +1397,8 @@ static void
 StartProxy(
     XServerPtr  server)
 {
-    char        buf[1024];
-    int         reqlen;
+    unsigned char buf[1024];
+    int           reqlen;
     xLbxStartProxyReq *n = (xLbxStartProxyReq *) buf;
 
     LbxOptInit(server);

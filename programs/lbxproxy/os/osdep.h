@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/lbxproxy/os/osdep.h,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/lbxproxy/os/osdep.h,v 1.12tsi Exp $ */
 
 #define BOTIMEOUT 200 /* in milliseconds */
 #define BUFSIZE 4096
@@ -109,9 +109,9 @@ SOFTWARE.
 
 typedef struct _connectionInput {
     struct _connectionInput *next;
-    char *buffer;               /* contains current client input */
-    char *bufptr;               /* pointer to current start of data */
-    int  bufcnt;                /* count of bytes in buffer */
+    unsigned char *buffer;      /* contains current client input */
+    unsigned char *bufptr;      /* pointer to current start of data */
+    int bufcnt;                 /* count of bytes in buffer */
     int lenLastReq;
     int size;
 } ConnectionInput, *ConnectionInputPtr;
