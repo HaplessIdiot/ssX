@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.248 2005/01/28 02:11:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.249 2005/01/28 03:56:35 dawes Exp $ */
 
 /*
  *
@@ -202,25 +202,29 @@ extern long __umodsi3(long, long);
 #pragma weak __umodsi3
 #endif
 
-#if defined(__SUNPRO_C) && defined(__i386)
-extern long __div64();
-extern long __divrem64();
-extern long __rem64();
-extern unsigned long __udiv64();
-extern unsigned long __udivrem64();
-extern unsigned long __urem64();
-extern long __mul64();
-extern long __xtol();
-extern long long __xtoll();
-extern unsigned long __xtoul();
-extern unsigned long long __xtoull();
+#if defined(sun) && defined(i386)
+#if !defined(__GNUC__)
+extern long __div64(long, long);
+extern long __mul64(long, long);
+#endif
+extern long __divrem64(long, long);
+extern long __rem64(long, long);
+extern unsigned long __udiv64(unsigned long, unsigned long);
+extern unsigned long __udivrem64(unsigned long, unsigned long);
+extern unsigned long __urem64(unsigned long, unsigned long);
+extern long __xtol(long);
+extern long long __xtoll(long);
+extern unsigned long __xtoul(long);
+extern unsigned long long __xtoull(long);
+#if !defined(__GNUC__)
 #pragma weak __div64
+#pragma weak __mul64
+#endif
 #pragma weak __divrem64
 #pragma weak __rem64
 #pragma weak __udiv64
 #pragma weak __udivrem64
 #pragma weak __urem64
-#pragma weak __mul64
 #pragma weak __xtol
 #pragma weak __xtoll
 #pragma weak __xtoul
@@ -1221,14 +1225,16 @@ LOOKUP xfree86LookupTab[] = {
     SYMFUNC(__umoddi3)
     SYMFUNC(__umodsi3)
 #endif
-#if defined(__SUNPRO_C) && defined(__i386)
+#if defined(sun) && defined(i386)
+#if !defined(__GNUC__)
     SYMFUNC(__div64)
+    SYMFUNC(__mul64)
+#endif
     SYMFUNC(__divrem64)
     SYMFUNC(__rem64)
     SYMFUNC(__udiv64)
     SYMFUNC(__udivrem64)
     SYMFUNC(__urem64)
-    SYMFUNC(__mul64)
     SYMFUNC(__xtol)
     SYMFUNC(__xtoll)
     SYMFUNC(__xtoul)
