@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/linux.c,v 1.28 2002/09/16 18:06:14 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/int10/linux.c,v 1.29tsi Exp $ */
 /*
  * linux specific part of the int10 module
  * Copyright 1999 Egbert Eich
@@ -123,7 +123,7 @@ xf86ExtendedInitInt10(int entityIndex, int Flags)
 		ErrorF("Mapping sys bios area\n");
 #endif
 		if ((sysMem = mmap((void *)(SYS_BIOS), BIOS_SIZE,
-				   PROT_READ | PROT_WRITE | PROT_EXEC,
+				   PROT_READ | PROT_EXEC,
 				   MAP_SHARED | MAP_FIXED, fd, SYS_BIOS))
 		    == MAP_FAILED) {
 		    xf86DrvMsg(screen, X_ERROR, "Cannot map SYS BIOS\n");
