@@ -89,7 +89,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.169tsi Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.170 2003/10/24 20:38:23 tsi Exp $ */
 
 /* main.c */
 
@@ -2688,7 +2688,7 @@ spawn(void)
 
     /* Noisy compilers */
     (void) rc;
-#ifdef USE_SYSV_UTMP
+#if defined(HAVE_UTMP) && defined(USE_SYSV_UTMP)
     (void) utret;
 #endif
 
