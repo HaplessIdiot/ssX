@@ -11,7 +11,7 @@
  *    Guy DESBIEF
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.20 2001/05/04 19:05:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.21 2001/06/13 23:34:08 dawes Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -213,6 +213,7 @@ static const char *shadowSymbols[] = {
 static const char *ddcSymbols[] = {
 	"xf86PrintEDID",
 	"xf86DoEDID_DDC2",
+	"xf86SetDDCproperties",
 	NULL
 };
 

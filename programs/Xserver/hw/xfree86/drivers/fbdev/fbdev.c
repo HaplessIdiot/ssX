@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.31 2001/06/13 23:34:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.32 2001/06/14 02:23:49 keithp Exp $ */
 
 /*
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
@@ -384,7 +384,6 @@ FBDevPreInit(ScrnInfoPtr pScrn, int flags)
 	int default_depth;
 	const char *mod = NULL, *s;
 	const char **syms = NULL;
-	Gamma zeros = {0.0, 0.0, 0.0};
 
 	if (flags & PROBE_DETECT) return FALSE;
 
@@ -444,7 +443,13 @@ FBDevPreInit(ScrnInfoPtr pScrn, int flags)
 		return FALSE;
 	}
 
-	xf86SetGamma(pScrn,zeros);
+	{
+		Gamma zeros = {0.0, 0.0, 0.0};
+
+		if (!xf86SetGamma(pScrn,zeros)) {
+			return FALSE;
+		}
+	}
 
 	pScrn->progClock = TRUE;
 	pScrn->rgbBits   = 8;

@@ -24,7 +24,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_video.c,v 1.2 2001/04/19 12:40:33 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_video.c,v 1.3 2001/05/16 13:43:17 alanh Exp $ */
 
 /*
  * sis_video.c: SIS Xv driver. Based on the mga Xv driver by Mark Vojkovich
@@ -1053,14 +1053,14 @@ MIRROR:
 
 
 static void 
-SISStopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit)
+SISStopVideo(ScrnInfoPtr pScrn, pointer data, Bool shutdown)
 {
   SISPortPrivPtr pPriv = (SISPortPrivPtr)data;
   SISPtr pSIS = SISPTR(pScrn);
 
   REGION_EMPTY(pScrn->pScreen, &pPriv->clip);   
 
-  if(exit) {
+  if(shutdown) {
      if(pPriv->videoStatus & CLIENT_VIDEO_ON) {
        close_overlay(pSIS, pPriv);
      }

@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.64 2001/05/16 13:43:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.65 2001/05/19 18:29:21 dawes Exp $ */
 
 #include "fb.h"
 #include "xf1bpp.h"
@@ -184,37 +184,39 @@ int sis2Reg32MMIO[]={0x8200,0x8204,0x8208,0x820C,0x8210,0x8214,0x8218,0x821C,
              0x8240, 0x8300};
 
 static const char *xaaSymbols[] = {
-    "XAADestroyInfoRec",
-    "XAACreateInfoRec",
-    "XAAInit",
-    "XAAStippleScanlineFuncLSBFirst",
-    "XAAOverlayFBfuncs",
-    "XAACachePlanarMonoStipple",
-    "XAAScreenIndex",
     "XAACopyROP",
-    "XAAHelpPatternROP",
+    "XAACreateInfoRec",
+    "XAADestroyInfoRec",
     "XAAFillSolidRects",
+    "XAAHelpPatternROP",
+    "XAAInit",
     NULL
 };
 
 static const char *vgahwSymbols[] = {
-    "vgaHWGetHWRec",
-    "vgaHWUnlock",
-    "vgaHWInit",
-    "vgaHWSave",
-    "vgaHWRestore",
-    "vgaHWProtect",
-    "vgaHWGetIOBase",
-    "vgaHWMapMem",
-    "vgaHWLock",
     "vgaHWFreeHWRec",
+    "vgaHWGetHWRec",
+    "vgaHWGetIOBase",
+    "vgaHWGetIndex",
+    "vgaHWInit",
+    "vgaHWLock",
+    "vgaHWMapMem",
+    "vgaHWProtect",
+    "vgaHWRestore",
+    "vgaHWSave",
     "vgaHWSaveScreen",
+    "vgaHWUnlock",
+    NULL
+};
+
+static const char *miscfbSymbols[] = {
+    "xf1bppScreenInit",
+    "xf4bppScreenInit",
     NULL
 };
 
 static const char *fbSymbols[] = {
-    "xf1bppScreenInit",
-    "xf4bppScreenInit",
+    "fbPictureInit",
     "fbScreenInit",
     NULL
 };
@@ -224,10 +226,16 @@ static const char *shadowSymbols[] = {
     NULL
 };
 
+static const char *ramdacSymbols[] = {
+    "xf86CreateCursorInfoRec",
+    "xf86DestroyCursorInfoRec",
+    "xf86InitCursor",
+    NULL
+};
 
 static const char *ddcSymbols[] = {
     "xf86PrintEDID",
-    "xf86DoEDID_DDC1",
+    "xf86SetDDCproperties",
     NULL
 };
 
@@ -237,43 +245,40 @@ static const char *i2cSymbols[] = {
     NULL
 };
 
+static const char *vbeSymbols[] = {
+    "VBEInit",
+    "vbeDoEDID",
+    "vbeFree",
+    NULL
+};
+
 #ifdef XF86DRI
 static const char *drmSymbols[] = {
-    "drmAddBufs",
     "drmAddMap",
-    "drmAvailable",
-    "drmCtlAddCommand",
+    "drmAgpAcquire",
+    "drmAgpAlloc",
+    "drmAgpBase",
+    "drmAgpBind",
+    "drmAgpEnable",
+    "drmAgpFree",
+    "drmAgpGetMode",
+    "drmAgpRelease",
     "drmCtlInstHandler",
     "drmGetInterruptFromBusID",
-    "drmMapBufs",
-    "drmMarkBufs",
-    "drmUnmapBufs",
-    "drmAgpAcquire",
-    "drmAgpRelease",
-    "drmAgpEnable",
-    "drmAgpAlloc",
-    "drmAgpFree",
-    "drmAgpBind",
-    "drmAgpGetMode",
-    "drmAgpBase",
-    "drmAgpSize",
     "drmSiSAgpInit",
     NULL
 };
 
 static const char *driSymbols[] = {
-    "DRIGetDrawableIndex",
-    "DRIFinishScreenInit",
-    "DRIDestroyInfoRec",
     "DRICloseScreen",
-    "DRIDestroyInfoRec",
-    "DRIScreenInit",
-    "DRIQueryVersion",
     "DRICreateInfoRec",
-    "DRILock",
-    "DRIUnlock",
+    "DRIDestroyInfoRec",
+    "DRIFinishScreenInit",
     "DRIGetSAREAPrivate",
-    "DRIGetContext",
+    "DRILock",
+    "DRIQueryVersion",
+    "DRIScreenInit",
+    "DRIUnlock",
     "GlxSetVisualConfigs",
     NULL
 };
@@ -309,11 +314,12 @@ sisSetup(pointer module, pointer opts, int *errmaj, int *errmin)
         setupDone = TRUE;
         xf86AddDriver(&SIS, module, 0);
         LoaderRefSymLists(vgahwSymbols, fbSymbols, i2cSymbols, xaaSymbols,
-                        shadowSymbols,
+			  miscfbSymbols, shadowSymbols, ramdacSymbols,
+			  vbeSymbols,
 #ifdef XF86DRI
-                    drmSymbols, driSymbols,
+			  drmSymbols, driSymbols,
 #endif
-                    NULL);
+			  NULL);
         return (pointer)TRUE;
     } 
 
@@ -644,6 +650,8 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     /* The ramdac module should be loaded here when needed */
     if (!xf86LoadSubModule(pScrn, "ramdac"))
         return FALSE;
+
+    xf86LoaderReqSymLists(ramdacSymbols, NULL);
 
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
@@ -1002,8 +1010,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     case 24:
     case 32:
         mod = "fb";
-        Sym = "fbScreenInit";
-    break;
+	break;
     }
 
     if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
@@ -1011,7 +1018,13 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
         return FALSE;
     }
 
-    xf86LoaderReqSymbols(Sym, NULL);
+    if (mod) {
+	if (Sym) {
+	    xf86LoaderReqSymbols(Sym, NULL);
+	} else {
+	    xf86LoaderReqSymLists(fbSymbols, NULL);
+	}
+    }
 
     if (!xf86LoadSubModule(pScrn, "i2c")) {
         SISFreeRec(pScrn);
@@ -1051,6 +1064,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     {
     Bool ret;
     if (xf86LoadSubModule(pScrn, "vbe")) {
+	xf86LoaderReqSymLists(vbeSymbols, NULL);
         if ((pVbe = VBEInit(NULL,pSiS->pEnt->index))) {
             ret = xf86SetDDCproperties(pScrn,
                       xf86PrintEDID(vbeDoEDID(pVbe,NULL)));

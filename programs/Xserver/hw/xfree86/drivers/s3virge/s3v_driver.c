@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.75 2001/05/25 18:19:14 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.76 2001/05/28 08:22:56 eich Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -245,22 +245,24 @@ static const OptionInfoRec S3VOptions[] =
  * Note that vgahwSymbols and xaaSymbols are referenced outside the
  * XFree86LOADER define in later code, so are defined outside of that
  * define here also.
- * cfbSymbols and ramdacSymbols are only referenced from within the
- * ...LOADER define.
  */
 
 static const char *vgahwSymbols[] = {
+    "vgaHWBlankScreen",
+    "vgaHWCopyReg",
     "vgaHWGetHWRec",
-    "vgaHWSetMmioFuncs",
     "vgaHWGetIOBase",
-    "vgaHWSave",
+    "vgaHWGetIndex",
+    "vgaHWInit",
+    "vgaHWLock",
+    "vgaHWMapMem",
     "vgaHWProtect",
     "vgaHWRestore",
-    "vgaHWMapMem",
-    "vgaHWUnmapMem",
-    "vgaHWInit",
+    "vgaHWSave",
     "vgaHWSaveScreen",
-    "vgaHWLock",
+    "vgaHWSetMmioFuncs",
+    "vgaHWSetStdFuncs",
+    "vgaHWUnmapMem",
    /* not used by ViRGE (at the moment :( ) */
    /*
     "vgaHWUnlock",
@@ -270,20 +272,23 @@ static const char *vgahwSymbols[] = {
 };
 
 static const char *xaaSymbols[] = {
+    "XAACopyROP",
+    "XAACopyROP_PM",
     "XAADestroyInfoRec",
     "XAACreateInfoRec",
+    "XAAFillSolidRects",
+    "XAAHelpPatternROP",
+    "XAAHelpSolidROP",
     "XAAInit",
-   /*
-    "XAAStippleScanlineFuncLSBFirst",
-    "XAAOverlayFBfuncs",
-    */
     NULL
 };
 
 static const char *ramdacSymbols[] = {
-    "xf86InitCursor",
     "xf86CreateCursorInfoRec",
+    "xf86InitCursor",
+#if 0
     "xf86DestroyCursorInfoRec",
+#endif
     NULL
 };
 
@@ -291,6 +296,7 @@ static const char *ddcSymbols[] = {
     "xf86PrintEDID",
     "xf86DoEDID_DDC1",
     "xf86DoEDID_DDC2",
+    "xf86SetDDCproperties",
     NULL
 };
 
@@ -313,13 +319,10 @@ static const char *vbeSymbols[] = {
 };
 
 static const char *fbSymbols[] = {
-  "fbScreenInit",
-  "fbBres",
   "fbPictureInit",
+  "fbScreenInit",
   NULL
 };
-
-#ifdef XFree86LOADER
 
 static const char *int10Symbols[] = {
     "xf86InitInt10",
@@ -339,6 +342,8 @@ static const char *cfbSymbols[] = {
     "cfb32BresS",
     NULL
 };
+
+#ifdef XFree86LOADER
 
 static MODULESETUPPROTO(s3virgeSetup);
 
@@ -1267,7 +1272,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
        if (ps3v->LCDClk) {
 	  lcdclk = ps3v->LCDClk;
        } else {
-	  int n1, n2, sr12, sr13, sr29;
+	  unsigned char sr12, sr13, sr29;
           VGAOUT8(0x3c4, 0x12);
           sr12 = VGAIN8(0x3c5);
           VGAOUT8(0x3c4, 0x13);

@@ -13,7 +13,7 @@
  *	David Dawes, Andrew E. Mileski, Leonard N. Zubkoff,
  *	Guy DESBIEF, Itai Nahshon.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.37 2001/05/04 19:05:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.38 2001/06/13 23:34:09 dawes Exp $ */
 
 #define EXPERIMENTAL
 
@@ -212,6 +212,7 @@ static const char *ddcSymbols[] = {
 #if LGuseI2C
 	"xf86DoEDID_DDC2",
 #endif
+	"xf86SetDDCproperties",
 	NULL
 };
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_video.c,v 1.2 2001/04/18 15:29:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_video.c,v 1.3 2001/05/18 23:35:33 dawes Exp $ */
 
 #include "Xv.h"
 #include "dix.h"
@@ -966,7 +966,7 @@ SavageClipVideo(
 } 
 
 static void 
-SavageStopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit)
+SavageStopVideo(ScrnInfoPtr pScrn, pointer data, Bool shutdown)
 {
     SavagePortPrivPtr pPriv = (SavagePortPrivPtr)data;
     /*SavagePtr psav = SAVPTR(pScrn); */
@@ -977,7 +977,7 @@ SavageStopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit)
 
     SavageStreamsOff( pScrn );
 
-    if(exit) {
+    if(shutdown) {
 	if(pPriv->area) {
 	    xf86FreeOffscreenArea(pPriv->area);
 	    pPriv->area = NULL;

@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.53 2001/06/13 23:34:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.54 2001/06/14 02:23:49 keithp Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -613,7 +613,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
     int linearSize = 1024;
     int maxWidth = 1024;
     int maxHeight = 1024;
-    unsigned char type, display;
+    unsigned char type, dpy;
     int w;
     int apertureSize;
     char *s;
@@ -708,7 +708,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
     /* Determine the panel type */
     VGAwGR(0x09,0x26);
     type = VGArGR(0x21);
-    display = VGArGR(0x20);
+    dpy = VGArGR(0x20);
     
     /* Determine panel width -- used in NeoValidMode. */
     w = VGArGR(0x20);
@@ -971,8 +971,8 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg(pScrn->scrnIndex,X_CONFIG,
 		   "Internal LCD only display mode\n");
     else {
-	nPtr->internDisp = ((display & 0x02) == 0x02);
-    	nPtr->externDisp = ((display & 0x01) == 0x01);
+	nPtr->internDisp = ((dpy & 0x02) == 0x02);
+    	nPtr->externDisp = ((dpy & 0x01) == 0x01);
 	if (nPtr->internDisp && nPtr->externDisp)
 	    xf86DrvMsg(pScrn->scrnIndex,X_PROBED,
 		       "Simultaneous LCD/CRT display mode\n");

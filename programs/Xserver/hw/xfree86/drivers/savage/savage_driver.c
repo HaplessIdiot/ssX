@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.18 2001/05/18 16:03:12 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.19 2001/05/18 23:35:32 dawes Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -187,35 +187,44 @@ static const OptionInfoRec SavageOptions[] =
 
 
 static const char *vgaHWSymbols[] = {
+    "vgaHWBlankScreen",
+    "vgaHWCopyReg",
     "vgaHWGetHWRec",
-    "vgaHWSetMmioFuncs",
     "vgaHWGetIOBase",
-    "vgaHWSave",
+    "vgaHWGetIndex",
+    "vgaHWInit",
+    "vgaHWLock",
     "vgaHWProtect",
     "vgaHWRestore",
-    "vgaHWMapMem",
-    "vgaHWUnmapMem",
-    "vgaHWInit",
+    "vgaHWSave",
     "vgaHWSaveScreen",
-    "vgaHWLock",
+    "vgaHWSetMmioFuncs",
+    "vgaHWSetStdFuncs",
+    "vgaHWUnmapMem",
+    "vgaHWddc1SetSpeed",
 #if 0
-    "vgaHWUnlock",
     "vgaHWFreeHWRec",
+    "vgaHWMapMem",
+    "vgaHWUnlock",
 #endif
     NULL
 };
 
 static const char *ramdacSymbols[] = {
-    "xf86InitCursor",
     "xf86CreateCursorInfoRec",
+#if 0
     "xf86DestroyCursorInfoRec",
+#endif
+    "xf86InitCursor",
     NULL
 };
 
 static const char *vbeSymbols[] = {
     "VBEInit",
     "vbeDoEDID",
+#if 0
     "vbeFree",
+#endif
     NULL
 };
 
@@ -226,7 +235,10 @@ static const char *vbeOptSymbols[] = {
 };
 
 static const char *ddcSymbols[] = {
-    "xf86InterpretEDID",
+    "xf86DoEDID_DDC1",
+    "xf86DoEDID_DDC2",
+    "xf86PrintEDID",
+    "xf86SetDDCproperties",
     NULL
 };
 
@@ -241,10 +253,12 @@ static const char *xaaSymbols[] = {
     "XAACopyROP_PM",
     "XAACreateInfoRec",
     "XAADestroyInfoRec",
-    "XAAHelpPatternROP",
-    "XAAHelpSolidROP",
-    "XAAInit",
     "XAAFillSolidRects",
+    "XAAHelpPatternROP",
+#if 0
+    "XAAHelpSolidROP",
+#endif
+    "XAAInit",
     "XAAScreenIndex",
     NULL
 };
@@ -256,16 +270,19 @@ static const char *shadowSymbols[] = {
 
 static const char *int10Symbols[] = {
     "xf86ExecX86int10",
+#if 0
     "xf86FreeInt10",
+#endif
     "xf86InitInt10",
     "xf86Int10AllocPages",
     "xf86Int10FreePages",
+    "xf86int10Addr",
     NULL
 };
 
 static const char *fbSymbols[] = {
-    "fbScreenInit",
     "fbPictureInit",
+    "fbScreenInit",
     NULL
 };
 
@@ -297,7 +314,7 @@ static pointer SavageSetup(pointer module, pointer opts, int *errmaj,
 	setupDone = TRUE;
 	xf86AddDriver(&SAVAGE, module, 0);
 	LoaderRefSymLists(vgaHWSymbols, fbSymbols, ramdacSymbols, 
-			  xaaSymbols, shadowSymbols, vbeSymbols,
+			  xaaSymbols, shadowSymbols, vbeSymbols, vbeOptSymbols,
 			  int10Symbols, i2cSymbols, ddcSymbols, NULL);
 	return (pointer) 1;
     } else {
@@ -856,9 +873,6 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 
     if (xf86LoadSubModule(pScrn, "vbe")) {
 	xf86LoaderReqSymLists(vbeSymbols, NULL);
-#ifdef XFree86LOADER
-	LoaderRefSymLists(vbeOptSymbols, NULL);
-#endif
 	psav->pVbe = VBEInit(psav->pInt10, pEnt->index);
     }
 
@@ -1113,11 +1127,11 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 	    if ( xf86LoadSubModule(pScrn, "i2c") ) {
 		xf86LoaderReqSymLists(i2cSymbols,NULL);
 		if (SavageI2CInit(pScrn)) {
-		    CARD32 tmp = (INREG(DDC_REG));
-		    OUTREG(DDC_REG,(tmp | 0x13));
+		    CARD32 temp = (INREG(DDC_REG));
+		    OUTREG(DDC_REG,(temp | 0x13));
 		    xf86SetDDCproperties(pScrn,xf86PrintEDID(
 			xf86DoEDID_DDC2(pScrn->scrnIndex,psav->I2C)));
-		    OUTREG(DDC_REG,tmp);
+		    OUTREG(DDC_REG,temp);
 	        }
 	    }
         }
@@ -1287,7 +1301,6 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 	else
 	/*if( xf86Verbose )*/
 	{
-	    int i;
 	    SavageModeEntryPtr pmt;
 
 	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
@@ -1321,7 +1334,7 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
     }
 
-    xf86LoaderReqSymbols("fbScreenInit", NULL);
+    xf86LoaderReqSymLists(fbSymbols, NULL);
 
     if( !psav->NoAccel ) {
 	if( !xf86LoadSubModule(pScrn, "xaa") ) {
@@ -2417,7 +2430,6 @@ static Bool SavageModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    if( (pmt->Width == mode->HDisplay) && 
 	        (pmt->Height == mode->VDisplay) )
 	    {
-		int j;
 		int jDelta = 99;
 		int jBest = 0;
 

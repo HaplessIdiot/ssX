@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.21 2001/06/07 14:28:38 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.22 2001/06/13 23:34:13 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -207,6 +207,7 @@ static const char *ddcSymbols[] = {
     "xf86DoEDID_DDC1",
     "xf86DoEDID_DDC2",
     "xf86PrintEDID",
+    "xf86SetDDCproperties",
     NULL
 };
 
@@ -854,7 +855,6 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
 
     /* see if we can find a flatpanel */
     if (!pI128->FlatPanel && mon) {
-	int i;
         for (i=0; i<4; i++)
     	    if (mon->det_mon[i].type == DS_NAME) {
 		if (strncmp((char *)mon->det_mon[i].section.name,
@@ -1560,7 +1560,7 @@ I128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* Initialize HW cursor layer. 
 	Must follow software cursor initialization*/
     if (pI128->HWCursor) { 
-	Bool ret = TRUE;
+	ret = TRUE;
     	switch(pI128->RamdacType) {
 	       case TI3025_DAC:
 		  ret = I128TIHWCursorInit(pScrn); break;

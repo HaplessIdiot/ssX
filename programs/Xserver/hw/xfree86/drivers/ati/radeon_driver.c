@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.28 2001/05/31 08:37:15 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.29 2001/06/13 23:34:06 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -219,6 +219,7 @@ static const char *fbdevHWSymbols[] = {
 
 static const char *ddcSymbols[] = {
     "xf86PrintEDID",
+    "xf86SetDDCproperties",
     NULL
 };
 

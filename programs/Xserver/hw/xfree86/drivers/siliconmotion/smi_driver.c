@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from The XFree86 Project or Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.12 2001/05/15 10:19:40 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.13 2001/05/25 18:19:14 eich Exp $ */
 
 #include "xf86Resources.h"
 #include "xf86RAC.h"
@@ -190,41 +190,46 @@ static const OptionInfoRec SMIOptions[] =
  * Note that vgahwSymbols and xaaSymbols are referenced outside the
  * XFree86LOADER define in later code, so are defined outside of that
  * define here also.
- * fbSymbols and ramdacSymbols are only referenced from within the
- * ...LOADER define.
  */
 
 static const char *vgahwSymbols[] =
 {
+	"vgaHWCopyReg",
 	"vgaHWGetHWRec",
-	"vgaHWSetMmioFuncs",
 	"vgaHWGetIOBase",
-	"vgaHWSave",
+	"vgaHWGetIndex",
+	"vgaHWInit",
+	"vgaHWLock",
+	"vgaHWMapMem",
 	"vgaHWProtect",
 	"vgaHWRestore",
-	"vgaHWMapMem",
-	"vgaHWUnmapMem",
-	"vgaHWInit",
+	"vgaHWSave",
 	"vgaHWSaveScreen",
-	"vgaHWLock",
+	"vgaHWSetMmioFuncs",
+	"vgaHWSetStdFuncs",
+	"vgaHWUnmapMem",
+	"vgaHWddc1SetSpeed",
 	NULL
 };
 
 static const char *xaaSymbols[] =
 {
-	"XAADestroyInfoRec",
+	"XAACopyROP",
 	"XAACreateInfoRec",
+	"XAADestroyInfoRec",
+	"XAAFallbackOps",
+	"XAAFillSolidRects",
 	"XAAInit",
-	"XAAOverlayFBfuncs",
+	"XAAPatternROP",
+	"XAAScreenIndex",
 	NULL
 };
 
 static const char *ramdacSymbols[] =
 {
-	"xf86InitCursor",
 	"xf86CreateCursorInfoRec",
 	"xf86DestroyCursorInfoRec",
-	"xf86CursorScreenIndex",
+	"xf86InitCursor",
 	NULL
 };
 
@@ -233,17 +238,19 @@ static const char *ddcSymbols[] =
 	"xf86PrintEDID",
 	"xf86DoEDID_DDC1",
 	"xf86DoEDID_DDC2",
+	"xf86SetDDCproperties",
 	NULL
 };
 
 static const char *i2cSymbols[] =
 {
 	"xf86CreateI2CBusRec",
-	"xf86DestroyI2CBusRec",
-	"xf86I2CBusInit",
 	"xf86CreateI2CDevRec",
-	"xf86I2CWriteByte",
+	"xf86DestroyI2CBusRec",
 	"xf86DestroyI2CDevRec",
+	"xf86I2CBusInit",
+	"xf86I2CDevInit",
+	"xf86I2CWriteByte",
 	NULL
 };
 
@@ -255,9 +262,9 @@ static const char *shadowSymbols[] =
 
 static const char *int10Symbols[] =
 {
-	"xf86InitInt10",
 	"xf86ExecX86int10",
 	"xf86FreeInt10",
+	"xf86InitInt10",
 	NULL
 };
 
@@ -272,8 +279,8 @@ static const char *vbeSymbols[] =
 static const char *fbSymbols[] =
 {
 #ifdef USE_FB
-	"fbScreenInit",
 	"fbPictureInit",
+	"fbScreenInit",
 #else
 	"cfbScreenInit",
 	"cfb16ScreenInit",

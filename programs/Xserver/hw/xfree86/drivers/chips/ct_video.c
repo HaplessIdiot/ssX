@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_video.c,v 1.6 2001/02/15 18:36:11 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_video.c,v 1.7 2001/05/15 10:19:36 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -402,7 +402,7 @@ CHIPSClipVideo(
 } 
 
 static void 
-CHIPSStopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit)
+CHIPSStopVideo(ScrnInfoPtr pScrn, pointer data, Bool shadow)
 {
   CHIPSPortPrivPtr pPriv = (CHIPSPortPrivPtr)data;
   CHIPSPtr cPtr = CHIPSPTR(pScrn);
@@ -410,7 +410,7 @@ CHIPSStopVideo(ScrnInfoPtr pScrn, pointer data, Bool exit)
 
   REGION_EMPTY(pScrn->pScreen, &pPriv->clip);   
   CHIPSHiQVSync(pScrn);
-  if(exit) {
+  if(shadow) {
      if(pPriv->videoStatus & CLIENT_VIDEO_ON) {
 	mr3c = cPtr->readMR(cPtr, 0x3C);
 	cPtr->writeMR(cPtr, 0x3C, (mr3c & 0xFE));

@@ -7,7 +7,7 @@ char rcsId_vmware[] =
 
     "Id: vmware.c,v 1.11 2001/02/23 02:10:39 yoel Exp $";
 #endif
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.c,v 1.3 2001/05/10 21:04:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.c,v 1.4 2001/05/16 06:48:12 keithp Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -86,6 +86,25 @@ static PciChipsets VMWAREPciChipsets[] = {
 	{ PCI_CHIP_VMWARE0405, PCI_CHIP_VMWARE0405, RES_EXCLUSIVE_VGA },
 	{ PCI_CHIP_VMWARE0710, PCI_CHIP_VMWARE0710, vmwareLegacyRes },
 	{ -1,		       -1,		    RES_UNDEFINED }
+};
+
+static const char *vgahwSymbols[] = {
+	"vgaHWGetHWRec",
+	"vgaHWGetIOBase",
+	"vgaHWGetIndex",
+	"vgaHWInit",
+	"vgaHWProtect",
+	"vgaHWRestore",
+	"vgaHWSave",
+	"vgaHWSaveScreen",
+	"vgaHWUnlock",
+	NULL
+};
+
+static const char *fbSymbols[] = {
+	"fbPictureInit",
+	"fbScreenInit",
+	NULL
 };
 
 #ifdef XFree86LOADER
@@ -390,7 +409,7 @@ VMWAREPreInit(ScrnInfoPtr pScrn, int flags)
 		return FALSE;
 	}
 
-/*	xf86LoaderReqSymLists(vgahwSymbols, NULL); */ /* FIXME */
+	xf86LoaderReqSymLists(vgahwSymbols, NULL);
 
 	if (!vgaHWGetHWRec(pScrn)) {
 		return FALSE;
@@ -617,12 +636,17 @@ VMWAREPreInit(ScrnInfoPtr pScrn, int flags)
 		VMWAREFreeRec(pScrn);
 		return FALSE;
 	}
+	xf86LoaderReqSymLists(fbSymbols, NULL);
+#if 0
+	/* XXX This driver doesn't use XAA! */
 	if (!pVMWARE->noAccel || pVMWARE->hwCursor) {
 		if (!xf86LoadSubModule(pScrn, "xaa")) {
 			VMWAREFreeRec(pScrn);
 			return FALSE;
 		}
+		xf86LoaderReqSymLists(xaaSymbols, NULL);
 	}
+#endif
 	return TRUE;
 }
 
@@ -887,9 +911,7 @@ VMWAREScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	if (!ret)
 		return FALSE;
 
-#ifdef RENDER
 	fbPictureInit (pScreen, 0, 0);
-#endif
 
         /* Override the default mask/offset settings */
         if (pScrn->bitsPerPixel > 8) {
@@ -1079,6 +1101,9 @@ vmwareSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	if (!setupDone) {
 		setupDone = TRUE;
 		xf86AddDriver(&VMWARE, module, 0);
+
+		LoaderRefSymLists(vgahwSymbols, fbSymbols, NULL);
+
 		return (pointer)1;
 	}
 	if (errmaj) {

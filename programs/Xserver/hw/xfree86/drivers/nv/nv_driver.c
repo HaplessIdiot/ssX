@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.64 2001/05/04 19:05:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.66 2001/05/15 10:19:39 eich Exp $ */
 
 #include "nv_include.h"
 
@@ -152,17 +152,19 @@ static PciChipsets NVPciChipsets[] = {
  */
 
 static const char *vgahwSymbols[] = {
-    "vgaHWGetHWRec",
-    "vgaHWUnlock",
-    "vgaHWInit",
-    "vgaHWProtect",
-    "vgaHWGetIOBase",
-    "vgaHWMapMem",
-    "vgaHWLock",
-    "vgaHWFreeHWRec",
-    "vgaHWSaveScreen",
-    "vgaHWddc1SetSpeed",
     "vgaHWDPMSSet",
+    "vgaHWFreeHWRec",
+    "vgaHWGetHWRec",
+    "vgaHWGetIndex",
+    "vgaHWInit",
+    "vgaHWLock",
+    "vgaHWMapMem",
+    "vgaHWProtect",
+    "vgaHWRestore",
+    "vgaHWSave",
+    "vgaHWSaveScreen",
+    "vgaHWUnlock",
+    "vgaHWddc1SetSpeed",
     NULL
 };
 
@@ -179,24 +181,26 @@ static const char *cfbSymbols[] = {
 };
 #else
 static const char *fbSymbols[] = {
-    "fbScreenInit",
-    "fbBres",
     "fbPictureInit",
+    "fbScreenInit",
     NULL
 };
 #endif
 
 static const char *xaaSymbols[] = {
-    "XAADestroyInfoRec",
+    "XAACopyROP",
     "XAACreateInfoRec",
+    "XAADestroyInfoRec",
+    "XAAFallbackOps",
     "XAAInit",
+    "XAAPatternROP",
     NULL
 };
 
 static const char *ramdacSymbols[] = {
-    "xf86InitCursor",
     "xf86CreateCursorInfoRec",
     "xf86DestroyCursorInfoRec",
+    "xf86InitCursor",
     NULL
 };
 
@@ -208,6 +212,7 @@ static const char *ddcSymbols[] = {
 #if NVuseI2C
     "xf86DoEDID_DDC2",
 #endif
+    "xf86SetDDCproperties",
     NULL
 };
 
@@ -233,24 +238,20 @@ static const char *fbdevHWSymbols[] = {
     "fbdevHWInit",
     "fbdevHWUseBuildinMode",
 
-    "fbdevHWGetDepth",
     "fbdevHWGetVidmem",
 
     /* colormap */
     "fbdevHWLoadPalette",
 
     /* ScrnInfo hooks */
-    "fbdevHWSwitchMode",
     "fbdevHWAdjustFrame",
     "fbdevHWEnterVT",
     "fbdevHWLeaveVT",
-    "fbdevHWValidMode",
-    "fbdevHWRestore",
     "fbdevHWModeInit",
     "fbdevHWSave",
+    "fbdevHWSwitchMode",
+    "fbdevHWValidMode",
 
-    "fbdevHWUnmapMMIO",
-    "fbdevHWUnmapVidmem",
     "fbdevHWMapMMIO",
     "fbdevHWMapVidmem",
 
@@ -258,8 +259,8 @@ static const char *fbdevHWSymbols[] = {
 };
 
 static const char *int10Symbols[] = {
-    "xf86InitInt10",
     "xf86FreeInt10",
+    "xf86InitInt10",
     NULL
 };
 
@@ -839,8 +840,10 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
     int i;
     int bytesPerPixel;
     ClockRangePtr clockRanges;
+#ifndef NV_USE_FB
     char *mod = NULL;
     const char *reqSym = NULL;
+#endif
     const char *s;
 
     if (flags & PROBE_DETECT) {

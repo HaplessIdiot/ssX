@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.80 2001/06/12 22:22:05 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.81 2001/06/14 23:37:26 dawes Exp $ */
 
 /*
  * Authors:
@@ -187,55 +187,43 @@ static const OptionInfoRec TDFXOptions[] = {
 };
 
 static const char *vgahwSymbols[] = {
-    "vgaHWGetHWRec",
-    "vgaHWSave", /* Added */
-    "vgaHWRestore", /* Added */
-    "vgaHWProtect",
-    "vgaHWInit",
-    "vgaHWMapMem",
-    "vgaHWSetMmioFuncs",
-    "vgaHWGetIOBase",
-    "vgaHWLock",
-    "vgaHWUnlock",
     "vgaHWFreeHWRec",
+    "vgaHWGetHWRec",
+    "vgaHWGetIOBase",
+    "vgaHWGetIndex",
+    "vgaHWInit",
+    "vgaHWLock",
+    "vgaHWMapMem",
+    "vgaHWProtect",
+    "vgaHWRestore",
+    "vgaHWSave",
     "vgaHWSeqReset",
-    "vgaHWHandleColormaps",
+    "vgaHWUnlock",
     0
 };
 
 static const char *ramdacSymbols[] = {
-    "xf86InitCursor",
     "xf86CreateCursorInfoRec",
-    "xf86DestroyCursorInfoRec",
+    "xf86InitCursor",
     NULL
 };
 
 static const char *ddcSymbols[] = {
     "xf86PrintEDID",
-    "xf86DoEDID_DDC1",
+    "xf86SetDDCproperties",
     NULL
 };
 
-#ifdef XFree86LOADER
 static const char *fbSymbols[] = {
-    "fbScreenInit",
     "fbPictureInit",
-    NULL
-};
-
-static const char *xf8_32bppSymbols[] = {
-    "xf86Overlay8Plus32Init",
+    "fbScreenInit",
     NULL
 };
 
 static const char *xaaSymbols[] = {
-    "XAADestroyInfoRec",
     "XAACreateInfoRec",
+    "XAADestroyInfoRec",
     "XAAInit",
-    "XAAStippleScanlineFuncLSBFirst",
-    "XAAOverlayFBfuncs",
-    "XAACachePlanarMonoStipple",
-    "XAAScreenIndex",
     "XAAReverseBitOrder",
     NULL
 };
@@ -243,47 +231,42 @@ static const char *xaaSymbols[] = {
 static const char *vbeSymbols[] = {
     "VBEInit",
     "vbeDoEDID",
+    "vbeFree",
+    NULL
+};
+
+static const char *int10Symbols[] = {
+    "xf86FreeInt10",
+    "xf86InitInt10",
     NULL
 };
 
 #ifdef XF86DRI
 static const char *drmSymbols[] = {
-    "drmAddBufs",
     "drmAddMap",
-    "drmAvailable",
-    "drmCtlAddCommand",
-    "drmCtlInstHandler",
-    "drmGetInterruptFromBusID",
-    "drmMapBufs",
-    "drmMarkBufs",
-    "drmUnmapBufs",
     "drmFreeVersion",
     "drmGetVersion",
     NULL
 };
 
 static const char *driSymbols[] = {
-    "DRIGetDrawableIndex",
-    "DRIFinishScreenInit",
-    "DRIDestroyInfoRec",
     "DRICloseScreen",
-    "DRIDestroyInfoRec",
-    "DRIScreenInit",
-    "DRIDestroyInfoRec",
     "DRICreateInfoRec",
-    "DRILock",
-    "DRIUnlock",
+    "DRIDestroyInfoRec",
+    "DRIFinishScreenInit",
     "DRIGetSAREAPrivate",
-    "DRIGetContext",
+    "DRILock",
+    "DRIMoveBuffersHelper",
     "DRIQueryVersion",
-    "DRIAdjustFrame",
-    "DRIOpenFullScreen",
-    "DRICloseFullScreen",
+    "DRIScreenInit",
+    "DRIUnlock",
     "GlxSetVisualConfigs",
     NULL
 };
 
 #endif
+
+#ifdef XFree86LOADER
 
 static MODULESETUPPROTO(tdfxSetup);
 
@@ -324,7 +307,7 @@ tdfxSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 * might refer to.
 	 */
 	LoaderRefSymLists(vgahwSymbols, fbSymbols, xaaSymbols, 
-			  xf8_32bppSymbols, ramdacSymbols, vbeSymbols,
+			  ramdacSymbols, vbeSymbols, int10Symbols,
 #ifdef XF86DRI
 			  drmSymbols, driSymbols,
 #endif
@@ -388,9 +371,7 @@ static void
 TDFXProbeDDC(ScrnInfoPtr pScrn, int index)
 {
     vbeInfoPtr pVbe;
-#ifdef XFree86LOADER
     if (xf86LoadSubModule(pScrn, "vbe"))
-#endif
     {
 	pVbe =  VBEInit(NULL,index);
 	ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
@@ -686,6 +667,8 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
 #if !defined(__powerpc__)
   if (xf86LoadSubModule(pScrn, "int10")) {
     xf86Int10InfoPtr pInt;
+
+    xf86LoaderReqSymLists(int10Symbols, NULL);
     xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
                "Softbooting the board (through the int10 interface).\n");
     pInt = xf86InitInt10(pTDFX->pEnt->index);
@@ -970,13 +953,14 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
     TDFXFreeRec(pScrn);
     return FALSE;
   }
-  xf86LoaderReqSymbols("fbScreenInit", "fbPictureInit", NULL);
+  xf86LoaderReqSymLists(fbSymbols, NULL);
 
   if (!xf86ReturnOptValBool(pTDFX->Options, OPTION_NOACCEL, FALSE)) {
     if (!xf86LoadSubModule(pScrn, "xaa")) {
       TDFXFreeRec(pScrn);
       return FALSE;
     }
+    xf86LoaderReqSymLists(xaaSymbols, NULL);
   }
 
   if (!xf86GetOptValBool(pTDFX->Options, OPTION_SHOWCACHE, &(pTDFX->ShowCache))) {
@@ -1018,6 +1002,8 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
   if (xf86LoadSubModule(pScrn, "vbe")) {
       xf86MonPtr pMon;
       vbeInfoPtr pVbe = VBEInit(NULL,pTDFX->pEnt->index);
+
+      xf86LoaderReqSymLists(vbeSymbols, NULL);
       pMon = vbeDoEDID(pVbe, NULL);
       vbeFree(pVbe);
       xf86SetDDCproperties(pScrn,xf86PrintEDID(pMon));

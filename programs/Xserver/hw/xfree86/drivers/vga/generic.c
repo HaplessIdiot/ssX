@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.53 2001/05/04 19:05:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.54 2001/05/16 06:48:11 keithp Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -112,25 +112,34 @@ static const OptionInfoRec GenericOptions[] = {
 };
 
 static const char *vgahwSymbols[] = {
-    "vgaHWGetHWRec",
-    "vgaHWUnlock",
-    "vgaHWInit",
-    "vgaHWProtect",
-    "vgaHWGetIOBase",
-    "vgaHWMapMem",
-    "vgaHWLock",
+    "vgaHWBlankScreen",
+    "vgaHWDPMSSet",
     "vgaHWFreeHWRec",
+    "vgaHWGetHWRec",
+    "vgaHWGetIOBase",
+    "vgaHWGetIndex",
+    "vgaHWHandleColormaps",
+    "vgaHWInit",
+    "vgaHWLock",
+    "vgaHWMapMem",
+    "vgaHWProtect",
+    "vgaHWRestore",
+    "vgaHWSave",
     "vgaHWSaveScreen",
+    "vgaHWUnlock",
+    "vgaHWUnmapMem",
+    NULL
+};
+
+static const char *miscfbSymbols[] = {
+    "xf1bppScreenInit",
+    "xf4bppScreenInit",
     NULL
 };
 
 static const char *fbSymbols[] = {
-    "xf1bppScreenInit",
-    "xf4bppScreenInit",
-    "fbScreenInit",
-#ifdef RENDER
     "fbPictureInit",
-#endif
+    "fbScreenInit",
     NULL
 };
 
@@ -174,8 +183,8 @@ GenericSetup(pointer Module, pointer Options, int *ErrorMajor, int *ErrorMinor)
     {
         Initialised = TRUE;
         xf86AddDriver(&VGA, Module, 0);
-	LoaderRefSymLists(vgahwSymbols, fbSymbols, shadowfbSymbols,
-			  NULL);
+	LoaderRefSymLists(vgahwSymbols, miscfbSymbols, fbSymbols,
+			  shadowfbSymbols, NULL);
         return (pointer)TRUE;
     }
 
@@ -456,8 +465,8 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
     static ClockRange GenericClockRange = {NULL, 0, 80000, 0, FALSE, TRUE, 1, 1, 0};
     MessageType       From;
     int               i, videoRam, Rounding, nModes = 0;
-    char             *Module;
-    const char	     *Sym;
+    const char       *Module = NULL;
+    const char	     *Sym = NULL;
     vgaHWPtr          pvgaHW;
     GenericPtr        pGenericPriv;
     EntityInfoPtr     pEnt;
@@ -492,7 +501,7 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
     {
         case 1:  Module = "xf1bpp"; Sym = "xf1bppScreenInit";  break;
         case 4:  Module = "xf4bpp"; Sym = "xf4bppScreenInit";  break;
-        default: Module = "fb";	    Sym = "fbScreenInit";      break;
+        default: Module = "fb";                                break;
     }
     xf86PrintDepthBpp(pScreenInfo);
 
@@ -677,17 +686,22 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
         xf86DrvMsg(pScreenInfo->scrnIndex, X_CONFIG,
 		   "Using \"Shadow Framebuffer\"\n");
 	Module = "fb";
-	Sym = "fbScreenInit";
 	if (!xf86LoadSubModule(pScreenInfo, "shadowfb"))
 	    return FALSE;
 	xf86LoaderReqSymLists(shadowfbSymbols, NULL);
     }
 
     /* Ensure depth-specific entry points are available */
-    if (!xf86LoadSubModule(pScreenInfo, Module))
+    if (Module && !xf86LoadSubModule(pScreenInfo, Module))
 	return FALSE;
 
-    xf86LoaderReqSymbols(Sym, NULL);
+    if (Module) {
+	if (Sym) {
+	    xf86LoaderReqSymbols(Sym, NULL);
+	} else {
+	    xf86LoaderReqSymLists(fbSymbols, NULL);
+	}
+    }
 
     /* Only one chipset here */
     if (!pScreenInfo->chipset)

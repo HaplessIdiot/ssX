@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.111 2001/05/25 18:19:12 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.112 2001/06/13 23:34:07 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -710,6 +710,7 @@ static const char *ddcSymbols[] = {
     "xf86DoEDID_DDC1",
     "xf86DoEDID_DDC2",
     "xf86PrintEDID",
+    "xf86SetDDCproperties",
     NULL
 };
 
@@ -1467,7 +1468,6 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 
     /* Set the bits per RGB */
     if (pScrn->depth > 1) {
-	int val;
 	/* Default to 6, is this right for HiQV?? */
 	pScrn->rgbBits = 6;
 	if (xf86GetOptValInteger(cPtr->Options, OPTION_RGB_BITS, &val)) {
@@ -1828,8 +1828,6 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
         * with the Crt2Memory option 
         */
         if(cPtr->SecondCrtc == FALSE) {
-	    MessageType from;
-	  
 	    int crt2mem = -1, adjust;
 	  
 	    xf86GetOptValInteger(cPtr->Options, OPTION_CRT2_MEM, &crt2mem);
@@ -2056,7 +2054,6 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     /* Probe the dot clocks */
     for (i = 0; i < 3; i++) {
       unsigned int N,M,PSN,P,VCO_D;
-      unsigned char tmp;
       int offset = i * 4;
       
       tmp = cPtr->readXR(cPtr,0xC2 + offset);
@@ -2352,8 +2349,6 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 		xf86LoaderReqSymLists(i2cSymbols,NULL);
 	    
 		if (chips_i2cInit(pScrn)) {
-		    xf86MonPtr pMon;
-		    
 		    if ((pMon = xf86PrintEDID(xf86DoEDID_DDC2(pScrn->scrnIndex,
 						      cPtr->I2C))) != NULL)
 		       ddc_done = TRUE;

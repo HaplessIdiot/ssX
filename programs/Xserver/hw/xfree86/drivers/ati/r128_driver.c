@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.32 2001/05/25 02:44:36 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.33 2001/06/13 23:34:05 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -224,13 +224,14 @@ static const char *fbdevHWSymbols[] = {
 
 static const char *ddcSymbols[] = {
     "xf86PrintEDID",
+    "xf86SetDDCproperties",
     NULL
 };
 
 #ifdef USE_FB
 static const char *fbSymbols[] = {
-    "fbScreenInit",
     "fbPictureInit",
+    "fbScreenInit",
     NULL
 };
 #else
