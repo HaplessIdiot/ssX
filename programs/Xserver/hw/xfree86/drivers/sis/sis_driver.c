@@ -2842,19 +2842,16 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     switch(pSiS->VGAEngine) {
       case SIS_300_VGA:
         pSiS->CursorSize = 4096;
-    	pix24flags = Support32bppFb |
-		     SupportConvert24to32;
+    	pix24flags = Support32bppFb;
 	break;
       case SIS_315_VGA:
         pSiS->CursorSize = 16384;
-    	pix24flags = Support32bppFb |
-		     SupportConvert24to32;
+    	pix24flags = Support32bppFb;
 	break;
       case SIS_530_VGA:
         pSiS->CursorSize = 2048;
     	pix24flags = Support32bppFb 	  |
 	             Support24bppFb 	  |
-		     SupportConvert24to32 |
 		     SupportConvert32to24;
         break;
       default:
