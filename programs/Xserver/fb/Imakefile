@@ -2,13 +2,21 @@ XCOMM $XFree86: $
 XCOMM 
 XCOMM 
 XCOMM $Id$
+#define IHaveModule
 #include <Server.tmpl>
 
 #ifdef FbNoPixelAddrCode
 DEFINES=-DFBNOPIXADDR -DFBNO24BIT
 #endif
+  
+#ifdef XFree86Version
+#if DoLoadableServer
+XFMODSRC = fbmodule.c
+XFMODOBJ = fbmodule.o
+#endif
+#endif
 
-SRCS =	fbarc.c \
+SRCS =	$(XFMODSRC) \
 	fballpriv.c \
 	fbbits.c \
 	fbblt.c \
@@ -36,7 +44,8 @@ SRCS =	fbarc.c \
 	fbutil.c \
 	fbwindow.c
 
-OBJS =	fbarc.o \
+OBJS =	$(XFMODOBJ) \
+	fbarc.o \
 	fballpriv.o \
 	fbbits.o \
 	fbblt.o \
@@ -65,7 +74,7 @@ OBJS =	fbarc.o \
 	fbwindow.o
 	
    INCLUDES = -I. -I../mi -I../include -I$(XINCLUDESRC) \
-	      -I$(FONTINCSRC) $(EXTRAINCLUDES)
+	      -I$(FONTINCSRC) -I$(XF86SRC)/common $(EXTRAINCLUDES)
    LINTLIBS = ../dix/llib-ldix.ln ../os/llib-los.ln \
 	     ../mi/llib-lmi.ln
 
@@ -76,6 +85,8 @@ NormalLibraryTarget(fb,$(OBJS))
 LintLibraryTarget(fb,$(SRCS))
 
 NormalLintTarget($(SRCS))
+
+InstallLibraryModule(fb,$(MODULEDIR),.)
 
 #ifndef OS2Architecture
 DependTarget()
