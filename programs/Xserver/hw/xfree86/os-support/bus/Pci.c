@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.62 2002/09/18 17:52:06 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.63 2002/10/03 02:04:19 tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -238,8 +238,8 @@ pciInit()
 #endif
 
 	ARCH_PCI_INIT();
-	if (pciNumBuses <= 0)
 #if defined(ARCH_PCI_OS_INIT)
+	if (pciNumBuses <= 0)
 	    ARCH_PCI_OS_INIT();
 #endif
 }
