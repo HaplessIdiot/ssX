@@ -39,6 +39,7 @@ XRenderCompositeTrapezoids (Display		*dpy,
     xRenderTrapezoidsReq    *req;
     int			    n;
     long    		    len;
+    unsigned long	    max_req = dpy->bigreq_size ? dpy->bigreq_size : dpy->max_request_size;
 
     RenderSimpleCheckExtension (dpy, info);
     LockDisplay(dpy);
@@ -55,8 +56,8 @@ XRenderCompositeTrapezoids (Display		*dpy,
 	req->ySrc = ySrc;
 	n = ntrap;
 	len = ((long) n) * (SIZEOF (xTrapezoid) >> 2);
-	if (!dpy->bigreq_size && len > (dpy->max_request_size - req->length)) {
-	    n = (dpy->max_request_size - req->length) / (SIZEOF (xTrapezoid) >> 2);
+	if (len > (max_req - req->length)) {
+	    n = (max_req - req->length) / (SIZEOF (xTrapezoid) >> 2);
 	    len = ((long)n) * (SIZEOF (xTrapezoid) >> 2);
 	}
 	SetReqLen (req, len, len);
