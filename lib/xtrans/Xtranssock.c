@@ -1,5 +1,5 @@
-/* $XConsortium: Xtranssock.c,v 1.34 95/01/12 18:25:25 kaleb Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.12 1995/03/11 14:10:23 dawes Exp $ */
+/* $XConsortium: Xtranssock.c,v 1.36 95/04/28 15:23:33 mor Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.13 1995/03/12 00:12:25 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -1399,7 +1399,101 @@ else
 #endif /* TCPCONN */
 
 
+
 #ifdef UNIXCONN
+
+/*
+ * Make sure 'host' is really local.
+ */
+
+static int
+UnixHostReallyLocal (host)
+
+char *host;
+
+{
+    char hostnamebuf[256];
+
+    TRANS(GetHostname) (hostnamebuf, sizeof (hostnamebuf));
+
+    if (strcmp (hostnamebuf, host) == 0)
+    {
+	return (1);
+    }
+    else
+    {
+	/*
+	 * A host may have more than one network address.  If any of the
+	 * network addresses of 'host' (specified to the connect call)
+	 * match any of the network addresses of 'hostname' (determined
+	 * by TRANS(GetHostname)), then the two hostnames are equivalent,
+	 * and we know that 'host' is really a local host.
+	 */
+
+	struct hostent *specified_local_host;
+	struct hostent *actual_local_host;
+	char specified_local_addr_list[10][4];
+	int scount, equiv, i, j;
+
+	if ((specified_local_host = gethostbyname (host)) == NULL)
+	    return (0);
+
+	scount = 0;
+	while (specified_local_host->h_addr_list[scount] && scount <= 8)
+	{
+	    /*
+	     * The 2nd call to gethostname() overrides the data
+	     * from the 1st call, so we must save the address list.
+	     */
+
+	    specified_local_addr_list[scount][0] =
+		specified_local_host->h_addr_list[scount][0];
+	    specified_local_addr_list[scount][1] =
+		specified_local_host->h_addr_list[scount][1];
+	    specified_local_addr_list[scount][2] =
+		specified_local_host->h_addr_list[scount][2];
+	    specified_local_addr_list[scount][3] =
+		specified_local_host->h_addr_list[scount][3];
+	    scount++;
+	}
+
+	if ((actual_local_host = gethostbyname (hostnamebuf)) == NULL)
+	    return (0);
+
+	equiv = 0;
+	i = 0;
+
+	while (i < scount && !equiv)
+	{
+	    j = 0;
+
+	    while (actual_local_host->h_addr_list[j])
+	    {
+		if ((specified_local_addr_list[i][0] ==
+		     actual_local_host->h_addr_list[j][0]) &&
+		    (specified_local_addr_list[i][1] ==
+		     actual_local_host->h_addr_list[j][1]) &&
+		    (specified_local_addr_list[i][2] ==
+		     actual_local_host->h_addr_list[j][2]) &&
+		    (specified_local_addr_list[i][3] ==
+		     actual_local_host->h_addr_list[j][3]))
+		{
+		    /* They're equal, so we're done */
+		    
+		    equiv = 1;
+		    break;
+		}
+
+		j++;
+	    }
+
+	    i++;
+	}
+	
+    return (equiv);
+    }
+}
+
 static int
 TRANS(SocketUNIXConnect) (ciptr, host, port)
 
@@ -1419,6 +1513,27 @@ char *port;
 
     PRMSG (2,"TRANS(SocketUNIXConnect) (%d,%s,%s)\n", ciptr->fd, host, port);
     
+    /*
+     * Make sure 'host' is really local.  If not, we return failure.
+     * The reason we make this check is because a process may advertise
+     * a "local" network ID for which it can accept connections, but if
+     * a process on a remote machine tries to connect to this network ID,
+     * we know for sure it will fail.
+     */
+
+    if (strcmp (host, "unix") != 0 && !UnixHostReallyLocal (host))
+    {
+	PRMSG (1,
+	   "TRANS(SocketUNIXConnect): Cannot connect to non-local host %s\n",
+	       host, 0, 0);
+	return TRANS_CONNECT_FAILED;
+    }
+
+
+    /*
+     * Check the port.
+     */
+
     if (!port || !*port)
     {
 	PRMSG (1,"TRANS(SocketUNIXConnect): Missing port specification\n",

@@ -1,4 +1,4 @@
-/* $XConsortium: Xtransdnet.c,v 1.14 94/04/17 20:23:02 mor Exp $ */
+/* $XConsortium: Xtransdnet.c,v 1.16 95/02/10 17:54:09 mor Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -52,9 +52,28 @@ from the X Consortium.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifndef WIN32
 #include <netdnet/dn.h>
 #include <netdnet/dnetdb.h>
 #include <sys/ioctl.h>
+#endif /* !WIN32 */
+
+#include <stdio.h>
+
+#ifdef WIN32
+#define _WILLWINSOCK_
+#define BOOL wBOOL
+#undef Status
+#define Status wStatus
+#include <prgpre.h> /* PATHWORKS header normally in %MSTOOLS%\h\pathwork */
+#undef Status
+#define Status int
+#undef BOOL
+#include <X11/Xw32defs.h>
+#undef close
+#define close closesocket
+#endif /* WIN32 */
+
 
 #if defined(X11_t)
 #define DNETOBJ "X$X"
@@ -551,7 +570,11 @@ BytesReadable_t	*pend;
 {
     PRMSG (2,"TRANS(DNETBytesReadable) (%x,%d,%x)\n", ciptr, ciptr->fd, pend);
 
+#ifdef WIN32
+    return ioctlsocket ((SOCKET) ciptr->fd, FIONREAD, (u_long *) pend);
+#else
     return ioctl(ciptr->fd, FIONREAD, (char *)pend);
+#endif /* WIN32 */
 }
 
 
@@ -565,7 +588,11 @@ int		size;
 {
     PRMSG (2,"TRANS(DNETRead) (%d,%x,%d)\n", ciptr->fd, buf, size);
 
+#ifdef WIN32
+    return recv ((SOCKET)ciptr->fd, buf, size, 0);
+#else
     return read (ciptr->fd, buf, size);
+#endif /* WIN32 */
 }
 
 
@@ -579,7 +606,11 @@ int		size;
 {
     PRMSG (2,"TRANS(DNETWrite) (%d,%x,%d)\n", ciptr->fd, buf, size);
 
+#ifdef WIN32
+    return send ((SOCKET)ciptr->fd, buf, size, 0);
+#else
     return write (ciptr->fd, buf, size);
+#endif /* WIN32 */
 }
 
 
@@ -637,7 +668,7 @@ XtransConnInfo	ciptr;
 
 Xtransport	TRANS(DNETFuncs) = {
     /* DNET Interface */
-    "decnet",
+    "dnet",
     0,
 #ifdef TRANS_CLIENT
     TRANS(DNETOpenCOTSClient),

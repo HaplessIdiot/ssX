@@ -54,7 +54,7 @@ in this Software without prior written authorization from the X Consortium.
 /***********************************************************************
  *
  * $XConsortium: lex.l,v 1.70 95/03/01 16:37:51 kaleb Exp $
- * $XFree86: xc/programs/twm/lex.l,v 3.5 1995/06/14 07:52:59 dawes Exp $
+ * $XFree86: xc/programs/twm/lex.l,v 3.6 1995/06/17 12:21:30 dawes Exp $
  *
  * .twmrc lex file
  *
@@ -68,7 +68,7 @@ in this Software without prior written authorization from the X Consortium.
 extern char *ProgramName;
 
 extern int ParseError;
-#if defined(FLEX_SCANNER) || ((defined(AMOEBA) || defined(MINIX)) && defined(yywrap))
+#ifdef FLEX_SCANNER
 int yylineno;
 
 #undef YY_INPUT

@@ -1,5 +1,5 @@
-/* $XConsortium: connection.c,v 1.190 94/11/08 20:47:43 mor Exp $ */
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.10 1995/03/18 11:11:27 dawes Exp $ */
+/* $XConsortium: connection.c,v 1.195 95/04/25 20:33:53 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.11 1995/04/09 13:54:27 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -553,15 +553,6 @@ ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
 
 #ifdef LBX
 
-XtransConnInfo
-ClientTransportObject(client)
-    ClientPtr	client;
-{
-    OsCommPtr oc = (OsCommPtr) client->osPrivate;
-
-    return oc->trans_conn;
-}
-
 int
 ClientConnectionNumber (client)
     ClientPtr	client;
@@ -631,6 +622,17 @@ AllocNewConnection (trans_conn, fd, Read, Writev, Close)
     client->public.uncompressedWriteToClient = UncompressWriteToClient;
     client->public.requestLength = StandardRequestLength;
     return client;
+}
+
+ClientPtr
+AllocPiggybackConnection (client, Read, Writev, Close)
+    ClientPtr client;
+    int	    (*Read)();
+    int	    (*Writev)();
+    void    (*Close)();
+{
+    OsCommPtr oc = (OsCommPtr) client->osPrivate;
+    return AllocNewConnection(oc->trans_conn, oc->fd, Read, Writev, Close);
 }
 
 void

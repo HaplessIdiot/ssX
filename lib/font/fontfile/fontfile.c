@@ -1,5 +1,5 @@
-/* $XConsortium: fontfile.c,v 1.27 94/04/17 20:17:06 gildea Exp $ */
-/* $XFree86$ */
+/* $XConsortium: fontfile.c,v 1.28 95/02/21 14:17:19 mor Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fontfile.c,v 3.0 1995/02/12 02:33:16 dawes Exp $ */
 
 /*
 
@@ -290,6 +290,7 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
 				     entry->u.alias.resolved, aliasName, &vals);
 	    ret = FontNameAlias;
 	    break;
+#ifdef NOTYET
 	case FONT_ENTRY_BC:
 	    bc = &entry->u.bc;
 	    entry = bc->entry;
@@ -299,6 +300,7 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
 	    if (ret == Successful && *pFont)
 		(*pFont)->fpe = fpe;
 	    break;
+#endif
 	default:
 	    ret = BadFontName;
 	}
@@ -688,8 +690,6 @@ _FontFileListFonts (client, fpe, pat, len, max, names, mark_aliases)
     lowerName.length = len;
     lowerName.ndashes = FontFileCountDashes (lowerChars, len);
 
-    if (max <= 0) return result;
-
     /* Match XLFD patterns */
 
     strcpy (zeroChars, lowerChars);
@@ -948,8 +948,8 @@ FontFileListOneFontWithInfo (client, fpe, namep, namelenp, pFontInfo)
 	    *namelenp = strlen (*namep = alias->resolved);
 	    ret = FontNameAlias;
 	    break;
-	case FONT_ENTRY_BC:
 #ifdef NOTYET
+	case FONT_ENTRY_BC:
 	    /* no LFWI for this yet */
 	    bc = &entry->u.bc;
 	    entry = bc->entry;
@@ -958,8 +958,8 @@ FontFileListOneFontWithInfo (client, fpe, namep, namelenp, pFontInfo)
     	    strcat (fileName, scalable->fileName);
 	    ret = (*scalable->renderer->GetInfoScalable)
 		    (fpe, *pFontInfo, entry, tmpName, fileName, &bc->vals);
-#endif
 	    break;
+#endif
 	default:
 	    ret = BadFontName;
 	}

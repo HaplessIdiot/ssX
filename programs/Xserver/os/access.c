@@ -1,5 +1,5 @@
-/* $XConsortium: access.c,v 1.75 94/11/21 18:27:47 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.6 1995/03/04 06:24:00 dawes Exp $ */
+/* $XConsortium: access.c,v 1.76 95/04/06 16:10:29 mor Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.7 1995/05/07 12:25:25 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
