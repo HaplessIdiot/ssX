@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: bsdi.cf,v 1.11 94/04/07 15:42:57 rws Exp $
-XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.3 1994/05/30 08:17:46 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.4 1994/06/12 16:30:13 dawes Exp $
 
 #define OSName            BSD/386 1.1
 #define OSVendor          BSDI
@@ -9,10 +9,26 @@ XCOMM operating system:  OSName
 
 #define HasPutenv	YES
 #define HasBSD44Sockets	YES
+
+XCOMM BSD/386 1.1 comes with gcc 2.5.8 installed as gcc2 and gcc 1.42 installed
+XCOMM as cc and gcc.
+XCOMM BSD/386 1.0 comes with gcc 1.40 as the only compiler.
+XCOMM The default is to use gcc2 on BSD/386 1.1 and gcc1 on BSD/386 1.0
+XCOMM The defaults can be altered by defining "HasGcc2" as YES or NO in
+XCOMM xf86site.def
+
 #if OSMinorVersion >= 1
-#define HasGcc2		YES
-#define HasGcc2ForCplusplus YES
-#define CcCmd		gcc2
+# ifndef HasGcc2
+#  define HasGcc2		YES
+# endif
+#endif
+#if HasGcc2 = YES
+# define HasGcc2ForCplusplus	YES
+# define CcCmd			gcc2
+# define OptimizedCDebugFlags	-O2 -m486
+#else
+# define CcCmd			cc
+# define OptimizedCDebugFlags	-O
 #endif
 #define CppCmd		/usr/bin/cpp
 #define TroffCmd	groff -Tps
@@ -43,8 +59,6 @@ XCOMM operating system:  OSName
           COL = /usr/bin/col
          NEQN = /usr/bin/eqn -Tascii
         NROFF = /usr/bin/nroff
-
-#define OptimizedCDebugFlags	-O2 -m486
 
 #define DefaultUserPath		:/bin:/usr/bin:/usr/local/bin:$(BINDIR)
 #define DefaultSystemPath	/sbin:/usr/sbin:/bin:/usr/bin:$(BINDIR)

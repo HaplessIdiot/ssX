@@ -1,7 +1,7 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.193 94/04/10 17:39:55 rws Exp $
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.2 1994/07/15 06:52:17 dawes Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.194 94/08/30 17:25:36 matt Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.3 1994/08/06 05:56:19 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -26,10 +26,13 @@ XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.2 1994/07/15 06:52:17 dawes
  * CenterProgramTarget		(program,srclist,objlist,locallibs,syslibs)
  * SentinelLinkTarget		(step,program,linklist)
  * SentinelProgramTarget	(program,deplist,linklist)
+ * SentinelCplusplusProgramTarget	(program,deplist,linklist)
  * PurifyLinkTarget		(step,program,linklist)
  * PurifyProgramTarget		(program,deplist,linklist)
+ * PurifyCplusplusProgramTarget	(program,deplist,linklist)
  * ProofLinkTarget		(step,program,linklist)
  * ProofProgramTarget		(program,deplist,linklist)
+ * ProofCplusplusProgramTarget	(program,deplist,linklist)
  * ProofCleanTarget		()
  * RemoveTargetProgram		(program)
  * MakeDir			(dir)
@@ -288,13 +291,30 @@ ProgramTargetName(step.sentinel):					@@\
 ProgramTargetName(program.sentinel): deplist				@@\
 	RemoveTargetProgram($@)						@@\
 	$(CCENVSETUP) $(SENTINEL) $(SENTINELOPTIONS) $(CC) -o $@ $(LDOPTIONS) linklist $(EXTRA_LOAD_FLAGS) @@\
-									@@\
+
 clean clean.sentinel::							@@\
-	RemoveFile(program.sentinel program.sentinel.*)
+	RemoveFile(program.sentinel)
 #else
 #define	SentinelProgramTarget(program,deplist,linklist) /**/
 #endif
 #endif /* SentinelProgramTarget */
+
+/*
+ * SentinelCplusplusProgramTarget - generate rules to make Sentinel image 
+ */
+#ifndef SentinelCplusplusProgramTarget
+#if HasSentinel
+#define	SentinelCplusplusProgramTarget(program,deplist,linklist)	@@\
+ProgramTargetName(program.sentinel): deplist				@@\
+	RemoveTargetProgram($@)						@@\
+	$(CXXENVSETUP) $(SENTINEL) $(SENTINELOPTIONS) $(CXX) -o $@ $(CXXLDOPTIONS) linklist $(EXTRA_LOAD_FLAGS) @@\
+									@@\
+clean clean.sentinel::							@@\
+	RemoveFile(program.sentinel)
+#else
+#define	SentinelCplusplusProgramTarget(program,deplist,linklist) /**/
+#endif
+#endif /* SentinelCplusplusProgramTarget */
 
 #ifndef PurifyLinkTarget
 #if HasPurify
@@ -318,11 +338,28 @@ ProgramTargetName(program.pure): deplist				@@\
 	$(CCENVSETUP) $(PURIFY) $(PURIFYOPTIONS) $(CC) -o $@ $(LDOPTIONS) linklist $(EXTRA_LOAD_FLAGS) @@\
 									@@\
 clean clean.pure::							@@\
-	RemoveFile(program.pure program.pure.*)
+	RemoveFile(program.pure)
 #else
 #define	PurifyProgramTarget(program,deplist,linklist) /**/
 #endif
 #endif /* PurifyProgramTarget */
+
+/*
+ * PurifyCplusplusProgramTarget - generate rules to make Purify'ed image
+ */
+#ifndef PurifyCplusplusProgramTarget
+#if HasPurify
+#define	PurifyCplusplusProgramTarget(program,deplist,linklist)		@@\
+ProgramTargetName(program.pure): deplist				@@\
+	RemoveTargetProgram($@)						@@\
+	$(CXXENVSETUP) $(PURIFY) $(PURIFYOPTIONS) $(CXX) -o $@ $(CXXLDOPTIONS) linklist $(EXTRA_LOAD_FLAGS) @@\
+									@@\
+clean clean.pure::							@@\
+	RemoveFile(program.pure)
+#else
+#define	PurifyCplusplusProgramTarget(program,deplist,linklist) /**/
+#endif
+#endif /* PurifyCplusplusProgramTarget */
 
 #ifndef ProofLinkTarget
 #if HasTestCenter
@@ -341,7 +378,7 @@ ProgramTargetName(step.tc):						@@\
 #ifndef ProofProgramTarget
 #if HasTestCenter
 #define	ProofProgramTarget(program,deplist,linklist)			@@\
-ProgramTargetName(program.tc): deplist				@@\
+ProgramTargetName(program.tc): deplist					@@\
 	RemoveTargetProgram($@)						@@\
 	$(CCENVSETUP) $(PROOF) $(PROOFOPTIONS) $(CC) -o $@ $(LDOPTIONS) linklist $(EXTRA_LOAD_FLAGS) @@\
 									@@\
@@ -351,6 +388,23 @@ clean clean.tc::							@@\
 #define	ProofProgramTarget(program,deplist,linklist) /**/
 #endif
 #endif /* ProofProgramTarget */
+
+/*
+ * ProofCplusplusProgramTarget - generate rules to make Proof'ed image
+ */
+#ifndef ProofCplusplusProgramTarget
+#if HasTestCenter
+#define	ProofCplusplusProgramTarget(program,deplist,linklist)		@@\
+ProgramTargetName(program.tc): deplist					@@\
+	RemoveTargetProgram($@)						@@\
+	$(CXXENVSETUP) $(PROOF) $(PROOFOPTIONS) $(CXX) -o $@ $(CXXLDOPTIONS) linklist $(EXTRA_LOAD_FLAGS) @@\
+									@@\
+clean clean.tc::							@@\
+	RemoveFiles(program.tc program.tc.*.*)
+#else
+#define	ProofCplusplusProgramTarget(program,deplist,linklist) /**/
+#endif
+#endif /* ProofCplusplusProgramTarget */
 
 #ifndef ProofCleanTarget
 #if HasTestCenter
@@ -457,9 +511,9 @@ ProgramTargetName(program): objects deplibs				@@\
 	RemoveTargetProgram($@)						@@\
 	CplusplusLinkRule($@,$(CXXLDOPTIONS),objects,locallibs $(LDLIBS) syslibs) @@\
 									@@\
-SentinelProgramTarget(program,objects deplibs,objects locallibs $(LDLIBS) syslibs) @@\
-PurifyProgramTarget(program,objects deplibs,objects locallibs $(LDLIBS) syslibs) @@\
-ProofProgramTarget(program,objects deplibs,objects locallibs $(LDLIBS) syslibs) @@\
+SentinelCplusplusProgramTarget(program,objects deplibs,objects locallibs $(LDLIBS) syslibs) @@\
+PurifyCplusplusProgramTarget(program,objects deplibs,objects locallibs $(LDLIBS) syslibs) @@\
+ProofCplusplusProgramTarget(program,objects deplibs,objects locallibs $(LDLIBS) syslibs) @@\
 									@@\
 clean::									@@\
 	RemoveFile(ProgramTargetName(program))
@@ -537,9 +591,9 @@ ProgramTargetName(program): $(objs) $(deplib)				@@\
 	CplusplusLinkRule($@,$(CXXLDOPTIONS),$(objs),locallib $(LDLIBS) syslib) @@\
 									@@\
 CenterProgramTarget(program,$(srcs),$(objs),locallib,syslib)		@@\
-SentinelProgramTarget(program,$(objs) $(deplib),$(objs) locallib $(LDLIBS) syslib) @@\
-PurifyProgramTarget(program,$(objs) $(deplib),$(objs) locallib $(LDLIBS) syslib) @@\
-ProofProgramTarget(program,$(objs) $(deplib),$(objs) locallib $(LDLIBS) syslib) @@\
+SentinelCplusplusProgramTarget(program,$(objs) $(deplib),$(objs) locallib $(LDLIBS) syslib) @@\
+PurifyCplusplusProgramTarget(program,$(objs) $(deplib),$(objs) locallib $(LDLIBS) syslib) @@\
+ProofCplusplusProgramTarget(program,$(objs) $(deplib),$(objs) locallib $(LDLIBS) syslib) @@\
 									@@\
 InstallProgram(program,$(BINDIR))					@@\
 InstallManPage(program,$(MANDIR))

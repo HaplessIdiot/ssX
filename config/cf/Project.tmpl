@@ -1,7 +1,7 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.242 94/04/13 14:58:40 rws Exp $
-XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.3 1994/07/15 06:52:22 dawes Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.244 94/08/17 18:57:34 matt Exp $
+XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.4 1994/07/24 11:38:46 dawes Exp $
 
 /****************************************************************************
  *                                                                          *
@@ -75,7 +75,7 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.3 1994/07/15 06:52:22 dawes Exp $
 #define BuildXKBlib		NO	/* not yet a standard part of Xlib */
 #endif
 #ifndef BuildFresco
-#if HasCplusplus && !HasGcc2ForCplusplus
+#if HasCplusplus 
 #define BuildFresco		YES
 #else
 #define BuildFresco		NO
@@ -341,6 +341,9 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.3 1994/07/15 06:52:22 dawes Exp $
 #ifndef TwmDir
 #define TwmDir $(LIBDIR)/twm
 #endif
+#ifndef XsmDir
+#define XsmDir $(LIBDIR)/xsm
+#endif
 #ifndef NlsDir
 #define NlsDir $(LIBDIR)/nls
 #endif
@@ -430,6 +433,7 @@ XCOMM X Window System make variables; these need to be coordinated with rules
          XINITDIR = XinitDir		/* xinit config files */
            XDMDIR = XdmDir		/* xdm config files */
            TWMDIR = TwmDir		/* twm config files */
+           XSMDIR = XsmDir		/* xsm config files */
            NLSDIR = NlsDir		/* nls files */
        XLOCALEDIR = XLocaleDir		/* locale files */
         PEXAPIDIR = PexApiDir		/* PEX support files */

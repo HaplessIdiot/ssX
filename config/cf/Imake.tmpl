@@ -1,7 +1,7 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.219 94/05/13 15:58:31 matt Exp $
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.1 1994/05/22 06:37:40 dawes Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.220 94/08/30 17:25:36 matt Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.2 1994/05/30 08:17:43 dawes Exp $
 XCOMM
 
 /*
@@ -757,22 +757,8 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef ExtraFilesToClean
 #define ExtraFilesToClean /**/
 #endif
-#ifndef SentinelFilesToClean
-#if HasSentinel
-#define SentinelFilesToClean .sentinel
-#else
-#define SentinelFilesToClean /**/
-#endif
-#endif
-#ifndef PureFilesToClean
-#if HasPurify
-#define PureFilesToClean .pure
-#else
-#define PureFilesToClean /**/
-#endif
-#endif
 #ifndef FilesToClean
-#define FilesToClean *.CKP *.ln *.BAK *.bak *.Osuf core errs ,* *~ *.a .emacs_* tags TAGS make.log MakeOut PureFilesToClean
+#define FilesToClean *.CKP *.ln *.BAK *.bak *.Osuf core errs ,* *~ *.a .emacs_* tags TAGS make.log MakeOut 
 #endif
 
           PATHSEP = PathSeparator
