@@ -1,4 +1,6 @@
 XFree86 4.3.99.13 (xx September 2003)
+ 450. Fix libGL bug that could cause deadlock when switching contexts
+      (John Harper).
  449. Improve the contrast of the whiteglass xterm cursor, and fix the
       hotspot of the whiteglass right_ptr cursor and add transparency
       to it (#5867, René Rebe).
@@ -17744,7 +17746,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2858 2003/09/17 05:48:26 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2859 2003/09/18 00:38:29 dawes Exp $
 
 
 
