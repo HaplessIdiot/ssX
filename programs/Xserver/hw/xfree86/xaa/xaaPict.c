@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPict.c,v 1.4 2000/10/21 22:38:33 mvojkovi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPict.c,v 1.5 2000/10/22 20:54:30 mvojkovi Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -44,6 +44,49 @@
 #include "servermd.h"
 
 static Bool
+XAAGetPixelFromRGBA (
+    CARD32 *pixel,
+    CARD16 red,
+    CARD16 green,
+    CARD16 blue,
+    CARD16 alpha,
+    CARD32 format
+){
+    int rbits, bbits, gbits, abits;
+    int rshift, bshift, gshift, ashift;
+
+    *pixel = 0;
+
+    if(!PICT_FORMAT_COLOR(format))
+    	return FALSE;
+	
+    rbits = PICT_FORMAT_R(format);
+    gbits = PICT_FORMAT_G(format);
+    bbits = PICT_FORMAT_B(format);
+    abits = PICT_FORMAT_A(format);
+    
+    if(PICT_FORMAT_TYPE(format) == PICT_TYPE_ARGB) {
+        bshift = 0;
+        gshift = bbits;
+	rshift = gshift + gbits;
+	ashift = rshift + rbits;
+    } else {  /* PICT_TYPE_ABGR */
+        rshift = 0;
+	gshift = rbits;
+	bshift = gshift + gbits;
+	ashift = bshift + bbits;
+    }
+    
+    *pixel |=  ( blue >> (16 - bbits)) << bshift;
+    *pixel |=  (  red >> (16 - rbits)) << rshift;
+    *pixel |=  (green >> (16 - gbits)) << gshift;
+    *pixel |=  (alpha >> (16 - abits)) << ashift;
+
+    return TRUE;
+}
+
+
+static Bool
 XAAGetRGBAFromPixel(
     CARD32 pixel,
     CARD16 *red,
@@ -52,68 +95,56 @@ XAAGetRGBAFromPixel(
     CARD16 *alpha,
     CARD32 format
 ){
-
-    *alpha = 0xffff;
-
-    switch(PICT_FORMAT_BPP(format)) {
-    case 32:
-	switch(format) {
-	case PICT_a8r8g8b8:
-	    *alpha = (pixel >> 24) & 0x000000ff;
-	    *alpha |= *alpha << 8;
-	case PICT_x8r8g8b8:
-	    *blue = pixel & 0x000000ff;
-	    *blue |= *blue << 8;
-	    *green = pixel & 0x0000ff00;
-	    *green |= *green >> 8;
-	    *red = (pixel >> 16) & 0x000000ff;
-	    *red |= *red << 8;
-	    return TRUE;
-	case PICT_a8b8g8r8:
-	    *alpha = (pixel >> 24) & 0x000000ff;
-	    *alpha |= *alpha << 8;
-	case PICT_x8b8g8r8:
-	    *red = pixel & 0x000000ff;
-	    *red |= *red << 8;
-	    *green = pixel & 0x0000ff00;
-	    *green |= *green >> 8;
-	    *blue = (pixel >> 16) & 0x000000ff;
-	    *blue |= *blue << 8;
-	    return TRUE;
-	default:
-	    break;
-	}
-	break;
-    case 24:
-	switch(format) {
-	case PICT_r8g8b8:
-	    *blue = pixel & 0x000000ff;
-	    *blue |= *blue << 8;
-	    *green = pixel & 0x0000ff00;
-	    *green |= *green >> 8;
-	    *red = (pixel >> 16) & 0x000000ff;
-	    *red |= *red << 8;
-	    return TRUE;
-	case PICT_b8g8r8:
-	    *red = pixel & 0x000000ff;
-	    *red |= *red << 8;
-	    *green = pixel & 0x0000ff00;
-	    *green |= *green >> 8;
-	    *blue = (pixel >> 16) & 0x000000ff;
-	    *blue |= *blue << 8;
-	    return TRUE;
-	default:
-	     break;
-	}
-	break;
-    case 16:
-    case 8:
-    case 4:
-    default:
-	return FALSE;
+    int rbits, bbits, gbits, abits;
+    int rshift, bshift, gshift, ashift;
+    
+    if(!PICT_FORMAT_COLOR(format))
+    	return FALSE;
+	
+    rbits = PICT_FORMAT_R(format);
+    gbits = PICT_FORMAT_G(format);
+    bbits = PICT_FORMAT_B(format);
+    abits = PICT_FORMAT_A(format);
+    
+    if(PICT_FORMAT_TYPE(format) == PICT_TYPE_ARGB) {
+        bshift = 0;
+        gshift = bbits;
+	rshift = gshift + gbits;
+	ashift = rshift + rbits;
+    } else {  /* PICT_TYPE_ABGR */
+        rshift = 0;
+	gshift = rbits;
+	bshift = gshift + gbits;
+	ashift = bshift + bbits;
     }
-
-    return FALSE;
+ 
+    *red = ((pixel >> rshift ) & ((1 << rbits) - 1)) << (16 - rbits);
+    while(rbits < 16) {
+       *red |= *red >> rbits;
+       rbits <<= 1;
+    }
+    
+    *green = ((pixel >> gshift ) & ((1 << gbits) - 1)) << (16 - gbits);
+    while(gbits < 16) {
+       *green |= *green >> gbits;
+       gbits <<= 1;
+    }
+        
+    *blue = ((pixel >> bshift ) & ((1 << bbits) - 1)) << (16 - bbits);
+    while(bbits < 16) {
+       *blue |= *blue >> bbits;
+       bbits <<= 1;
+    }  
+    
+    if(abits) {
+       *alpha = ((pixel >> ashift ) & ((1 << abits) - 1)) << (16 - abits);
+       while(abits < 16) {
+          *alpha |= *alpha >> abits;
+          abits <<= 1;
+       }     
+    } else *alpha = 0xffff;
+      
+    return TRUE;
 }
 
 /* 8:8:8 + PICT_a8 -> 8:8:8:8 texture */
@@ -183,6 +214,20 @@ XAADoComposite (
 
 	   if(!XAAGetRGBAFromPixel(pixel,&red,&green,&blue,&alpha,pSrc->format))
 		return FALSE;
+
+#if 0				
+	   /* pull out color expandable operations here */
+	   if((pMask->format == PICT_a1) && (alpha == 0xffff) &&
+	       infoRec->WriteBitmap &&  (op == PictOpOver) &&
+	       !(infoRec->WriteBitmapFlags & NO_TRANSPARENCY) &&
+	       (!(infoRec->WriteBitmapFlags & RGB_EQUAL) || 
+	         (red == green == blue)))
+	   {
+	        XAAGetPixelFromRGBA(&pixel, red, green, blue, 0, pDst->format);
+		
+		return TRUE;
+	   }
+#endif
 
 	   if((alpha != 0xffff) &&
               (infoRec->CPUToScreenAlphaTextureFlags & XAA_RENDER_NO_SRC_ALPHA))
