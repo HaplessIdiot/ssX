@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                              25 February 2003
+                              26 February 2003
 
                                   Abstract
 
@@ -30,10 +30,9 @@ older hardware.
 
 XFree86 is produced by The XFree86 Project, Inc, which is a group of mostly
 volunteer independent developers.  XFree86 is a non-commercial organisation,
-and would not be viable without the development contributions of volunteers.
-XFree86 has no ties to any commercial organisations, and receives no direct
-funding or support from any commercial organisations.  XFree86 values its
-independence highly.
+and would not be viable without the invaluable development contributions of
+volunteers.  This release is dedicated to all who have supported and con-
+tributed to XFree86 over the last eleven years.
 
 2.  Pointers to additional information
 
@@ -152,7 +151,7 @@ yourself, send the entire log file with your bug report but not the operating
 system core dump.  Do not edit  the log file as our developers use it to
 reproduce and debug your problem.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.131 2003/02/25 19:31:01 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.132 2003/02/26 16:41:14 dawes Exp $
 
 
 $XFree86: $
