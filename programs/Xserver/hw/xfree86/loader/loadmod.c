@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.32 1999/01/03 03:58:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.33 1999/01/14 13:04:58 dawes Exp $ */
 
 /*
  *
@@ -74,6 +74,7 @@ static char *FindModule (const char *, const char *, const char **, PatternPtr);
 static void CheckVersion (const char *, XF86ModuleVersionInfo *);
 static void UnloadModuleOrDriver (ModuleDescPtr mod);
 static char *LoaderGetCanonicalName(const char *, PatternPtr);
+static void RemoveChild(ModuleDescPtr);
 
 ModuleVersions LoaderVersionInfo = {
 	XF86_VERSION_CURRENT,
@@ -638,8 +639,10 @@ LoadSubModule(ModuleDescPtr parent, const char *module, const char *path,
 
 	submod = LoadModule (module, path, subdirlist, patternlist, options,
 						 errmaj, errmin);
-	if (submod)
+	if (submod) {
 		parent->child = AddSibling (parent->child, submod);
+		submod->parent = parent;
+	}
 	return submod;
 }
 
@@ -671,7 +674,7 @@ LoadExtension (ExtensionModule *e)
 }
 
 ModuleDescPtr
-DuplicateModule(ModuleDescPtr mod)
+DuplicateModule(ModuleDescPtr mod, ModuleDescPtr parent)
 {
 	ModuleDescPtr ret;
 
@@ -694,8 +697,9 @@ DuplicateModule(ModuleDescPtr mod)
 	ret->TearDownProc = mod->TearDownProc;
 	ret->TearDownData = NULL;
 	ret->path = mod->path;
-	ret->child = DuplicateModule(mod->child);
-	ret->sib = DuplicateModule(mod->sib);
+	ret->child = DuplicateModule(mod->child, ret);
+	ret->sib = DuplicateModule(mod->sib, parent);
+	ret->parent = parent;
 
 	return ret;
 }
@@ -931,7 +935,29 @@ UnloadModuleOrDriver (ModuleDescPtr mod)
     if (mod->sib)
         UnloadModuleOrDriver (mod->sib);
     TestFree (mod->name);
-	TestFree (mod->filename);
+    TestFree (mod->filename);
+    xfree (mod);
+}
+
+void
+UnloadSubModule(ModuleDescPtr mod)
+{
+    if (mod == NULL || mod->name == NULL)
+	return;
+
+    xf86MsgVerb(X_INFO, 3, "UnloadSubModule: \"%s\"\n", mod->name);
+
+    if ((mod->TearDownProc) && (mod->TearDownData))
+        mod->TearDownProc (mod->TearDownData);
+    LoaderUnload (mod->handle);
+
+    RemoveChild(mod);
+
+    if (mod->child)
+        UnloadModuleOrDriver (mod->child);
+
+    TestFree (mod->name);
+    TestFree (mod->filename);
     xfree (mod);
 }
 
@@ -967,6 +993,7 @@ NewModuleDesc (const char *name)
 	{
 		mdp->child = NULL;
 		mdp->sib = NULL;
+		mdp->parent = NULL;
 		mdp->demand_next = NULL;
 		mdp->name = xstrdup (name);
 		mdp->filename = NULL;
@@ -988,6 +1015,58 @@ AddSibling (ModuleDescPtr head, ModuleDescPtr new)
     new->sib = head;
     return (new);
 
+}
+
+static void
+RemoveChild (ModuleDescPtr child)
+{
+	ModuleDescPtr mdp;
+	ModuleDescPtr prevsib;
+	ModuleDescPtr parent;
+
+	if (!child->parent)
+		return;
+
+	parent = child->parent;
+#define DEBUG
+#ifdef DEBUG
+	ErrorF("Before: child: %s, parent: %s\n", child->name, child->parent->name);
+	mdp = parent->child;
+	while (mdp) {
+		ErrorF("Before: kid: %s\n", mdp->name);
+		mdp = mdp->sib;
+	}
+#endif
+	if (parent->child == child) {
+		parent->child = child->sib;
+#ifdef DEBUG
+	ErrorF("After: child: %s, parent: %s\n", child->name, child->parent->name);
+	mdp = parent->child;
+	while (mdp) {
+		ErrorF("After: kid: %s\n", mdp->name);
+		mdp = mdp->sib;
+	}
+#endif
+		return;
+	}
+
+    prevsib = parent->child;
+	mdp = prevsib->sib;
+	while (mdp && mdp != child) {
+		prevsib = mdp;
+		mdp = mdp->sib;
+	}
+	if (mdp == child)
+		prevsib->sib = child->sib;
+#ifdef DEBUG
+	ErrorF("After: child: %s, parent: %s\n", child->name, child->parent->name);
+	mdp = parent->child;
+	while (mdp) {
+		ErrorF("After: kid: %s\n", mdp->name);
+		mdp = mdp->sib;
+	}
+#endif
+	return;
 }
 
 void

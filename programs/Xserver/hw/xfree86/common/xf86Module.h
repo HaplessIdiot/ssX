@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.5 1998/12/13 10:33:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.6 1999/01/03 03:58:29 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -111,7 +111,8 @@ pointer LoadModule(const char *, const char *, pointer, int *, int *);
 pointer LoadSubModule(pointer, const char *, const char *, const char **,
 		      const char **, pointer, int *, int *);
 void UnloadModule(pointer);
-pointer DuplicateModule(pointer);
+void UnloadSubModule(pointer);
+pointer DuplicateModule(pointer, pointer);
 void LoadFont(pointer);
 #endif
 char **LoaderListDirs(const char *, const char **, const char **);
