@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.5 2001/04/18 17:14:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.1 2000/08/10 17:40:37 dawes Exp $ */
 
 #include "win.h"
 
@@ -30,7 +30,7 @@ int		g_nNumScreens;
 winScreenInfo	g_winScreens[MAXSCREENS];
 int		g_nLastScreen = -1;
 ColormapPtr	g_cmInstalledMaps[MAXSCREENS];
-int		g_fdMessageQueue = -1;
+int		g_fdMessageQueue = WIN_FD_INVALID;
 int		g_winScreenPrivateIndex = -1;
 unsigned long	g_winGeneration = 0;
 
@@ -163,17 +163,21 @@ ddxProcessArgument (int argc, char *argv[], int i)
 
       nScreenNum = atoi (argv[i+1]);
 
+      /* Validate the specified screen number */
       if (nScreenNum < 0 || nScreenNum >= MAXSCREENS)
         {
           ErrorF ("Invalid screen number %d\n", nScreenNum);
           UseMsg ();
 	  return 0;
         }
+      
+      /* Grab the height, width, and depth parameters */
       if (3 != sscanf (argv[i+2], "%dx%dx%d",
 		       (int*)&g_winScreens[nScreenNum].dwWidth,
 		       (int*)&g_winScreens[nScreenNum].dwHeight,
 		       (int*)&g_winScreens[nScreenNum].dwDepth))
         {
+	  /* I see no height, width, and depth here */
           ErrorF ("Invalid screen configuration %s\n", argv[i+2]);
           UseMsg ();
 	  return 0;
@@ -200,16 +204,21 @@ ddxProcessArgument (int argc, char *argv[], int i)
 	}
 
       pix = atoi (argv[i]);
+
+      /* Is this parameter attached to a screen or global? */
       if (-1 == g_nLastScreen)
         {
-          int i;
-          for (i = 0; i < MAXSCREENS; i++)
+          int			j;
+
+	  /* Parameter is for all screens */
+          for (j = 0; j < MAXSCREENS; j++)
             {
-              g_winScreens[i].pixelBlack = pix;
+              g_winScreens[j].pixelBlack = pix;
             }
         }
       else
         {
+	  /* Parameter is for a single screen */
           g_winScreens[g_nLastScreen].pixelBlack = pix;
         }
       return 2;
@@ -230,16 +239,21 @@ ddxProcessArgument (int argc, char *argv[], int i)
 	}
 
       pix = atoi (argv[i]);
+
+      /* Is this parameter attached to a screen or global? */
       if (-1 == g_nLastScreen)
         {
-          int i;
-          for (i = 0; i < MAXSCREENS; i++)
+          int			j;
+
+	  /* Parameter is for all screens */
+          for (j = 0; j < MAXSCREENS; j++)
             {
-              g_winScreens[i].pixelWhite = pix;
+              g_winScreens[j].pixelWhite = pix;
             }
         }
       else
         {
+	  /* Parameter is for a single screen */
           g_winScreens[g_nLastScreen].pixelWhite = pix;
         }
       return 2;
@@ -261,17 +275,20 @@ ddxProcessArgument (int argc, char *argv[], int i)
 
       uiLinebias = atoi (argv[i]);
 
+      /* Is this parameter attached to a screen or global? */
       if (-1 == g_nLastScreen)
         {
-          int		i;
+          int		j;
 
-          for (i = 0; i < MAXSCREENS; i++)
+	  /* Parameter is for all screens */
+          for (j = 0; j < MAXSCREENS; j++)
             {
-              g_winScreens[i].dwLineBias = uiLinebias;
+              g_winScreens[j].dwLineBias = uiLinebias;
             }
         }
       else
         {
+	  /* Parameter is for a single screen */
           g_winScreens[g_nLastScreen].dwLineBias = uiLinebias;
         }
       return 2;
@@ -308,12 +325,12 @@ ddxProcessArgument (int argc, char *argv[], int i)
       /* Is this parameter attached to a screen or global? */
       if (-1 == g_nLastScreen)
 	{
-	  int		i;
+	  int		j;
 
 	  /* Parameter is for all screens */
-	  for (i = 0; i < MAXSCREENS; i++)
+	  for (j = 0; j < MAXSCREENS; j++)
 	    {
-	      g_winScreens[i].dwEnginePreferred = dwEngine;
+	      g_winScreens[j].dwEnginePreferred = dwEngine;
 	    }
 	}
       else
@@ -334,12 +351,12 @@ ddxProcessArgument (int argc, char *argv[], int i)
       /* Is this parameter attached to a screen or is it global? */
       if (-1 == g_nLastScreen)
 	{
-	  int			i;
+	  int			j;
 
 	  /* Parameter is for all screens */
-	  for (i = 0; i < MAXSCREENS; i++)
+	  for (j = 0; j < MAXSCREENS; j++)
 	    {
-	      g_winScreens[i].fFullScreen = TRUE;
+	      g_winScreens[j].fFullScreen = TRUE;
 	    }
 	}
       else
