@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.22 1999/10/26 15:58:12 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.23 1999/11/02 16:16:29 tsi Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -284,6 +284,8 @@ xf86HandleBuiltinMode(ScrnInfoPtr scrp,
     modep->CrtcVTotal      = p->CrtcVTotal;
     modep->CrtcHAdjusted   = p->CrtcHAdjusted;
     modep->CrtcVAdjusted   = p->CrtcVAdjusted;
+    modep->HSync           = p->HSync;
+    modep->VRefresh        = p->VRefresh;
 
     p->prev = modep;
     
@@ -406,25 +408,28 @@ xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
 		    MulFactor = cp->ClockMulFactor;
 		    ModePrivFlags = cp->PrivFlags;
 		    break;
-		} else {
+		}
+		if (p->VRefresh > 0.0)
+		    refresh = p->VRefresh;
+		else {
 		    refresh = p->Clock * 1000.0 / p->HTotal / p->VTotal;
-		    if (p->Flags & V_INTERLACE) {
+		    if (p->Flags & V_INTERLACE)
 			refresh *= 2.0;
-			refresh /= INTERLACE_REFRESH_WEIGHT;
-		    }
 		    if (p->Flags & V_DBLSCAN)
 			refresh /= 2.0;
 		    if (p->VScan > 1)
 			refresh /= p->VScan;
-		    if (refresh > bestRefresh) {
-			bestMode = p;
-			DivFactor = cp->ClockDivFactor;
-			MulFactor = cp->ClockMulFactor;
-			ModePrivFlags = cp->PrivFlags;
-			bestRefresh = refresh;
-		    }
-		    continue;
 		}
+		if (p->Flags & V_INTERLACE)
+		    refresh /= INTERLACE_REFRESH_WEIGHT;
+		if (refresh > bestRefresh) {
+		    bestMode = p;
+		    DivFactor = cp->ClockDivFactor;
+		    MulFactor = cp->ClockMulFactor;
+		    ModePrivFlags = cp->PrivFlags;
+		    bestRefresh = refresh;
+		}
+		continue;
 	    }
 
 	    /*
@@ -449,35 +454,23 @@ xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
 		if (!found)
 		    status = MODE_NOCLOCK;
 		continue;
-	    } else {
-		found = TRUE;
 	    }
+	    found = TRUE;
 
-	    /*
-	     * If strategy is neither LOOKUP_BEST_REFRESH or
-	     * LOOKUP_CLOSEST_CLOCK the required mode has been found.
-	     */
-	    if (strategy != LOOKUP_BEST_REFRESH &&
-		strategy != LOOKUP_CLOSEST_CLOCK) {
-		bestMode = p;
-		DivFactor = cp->ClockDivFactor;
-		MulFactor = cp->ClockMulFactor;
-		ModePrivFlags = cp->PrivFlags;
-		extraFlags = k;
-		clockIndex = i;
-		break;
-	    } else
-	    /* Otherwise, record the refresh or gap and continue looking */
 	    if (strategy == LOOKUP_BEST_REFRESH) {
-		refresh = p->Clock * 1000.0 / p->HTotal / p->VTotal;
-		if (p->Flags & V_INTERLACE) {
-		    refresh *= 2.0;
-		    refresh /= INTERLACE_REFRESH_WEIGHT;
+		if (p->VRefresh > 0.0)
+		    refresh = p->VRefresh;
+		else {
+		    refresh = p->Clock * 1000.0 / p->HTotal / p->VTotal;
+		    if (p->Flags & V_INTERLACE)
+			refresh *= 2.0;
+		    if (p->Flags & V_DBLSCAN)
+			refresh /= 2.0;
+		    if (p->VScan > 1)
+			refresh /= p->VScan;
 		}
-		if (p->Flags & V_DBLSCAN)
-		    refresh /= 2.0;
-		if (p->VScan > 1)
-		    refresh /= p->VScan;
+		if (p->Flags & V_INTERLACE)
+		    refresh /= INTERLACE_REFRESH_WEIGHT;
 		if (refresh > bestRefresh) {
 		    bestMode = p;
 		    DivFactor = cp->ClockDivFactor;
@@ -488,7 +481,8 @@ xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
 		    bestRefresh = refresh;
 		}
 		continue;
-	    } else if (strategy == LOOKUP_CLOSEST_CLOCK) {
+	    }
+	    if (strategy == LOOKUP_CLOSEST_CLOCK) {
 		if (gap < minimumGap) {
 		    bestMode = p;
 		    DivFactor = cp->ClockDivFactor;
@@ -500,6 +494,17 @@ xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
 		}
 		continue;
 	    }
+	    /*
+	     * If strategy is neither LOOKUP_BEST_REFRESH or
+	     * LOOKUP_CLOSEST_CLOCK the required mode has been found.
+	     */
+	    bestMode = p;
+	    DivFactor = cp->ClockDivFactor;
+	    MulFactor = cp->ClockMulFactor;
+	    ModePrivFlags = cp->PrivFlags;
+	    extraFlags = k;
+	    clockIndex = i;
+	    break;
 	}
     }
     if (!found || bestMode == NULL)
@@ -547,6 +552,8 @@ xf86LookupMode(ScrnInfoPtr scrp, DisplayModePtr modep,
     modep->CrtcVTotal		= bestMode->CrtcVTotal;
     modep->CrtcHAdjusted	= bestMode->CrtcHAdjusted;
     modep->CrtcVAdjusted	= bestMode->CrtcVAdjusted;
+    modep->HSync		= bestMode->HSync;
+    modep->VRefresh		= bestMode->VRefresh;
 
     bestMode->prev = modep;
 
@@ -629,7 +636,6 @@ xf86SetModeCrtc(DisplayModePtr p, int adjustFlags)
  * This function takes a mode and monitor description, and determines
  * if the mode is valid for the monitor.
  */
-
 ModeStatus
 xf86CheckModeForMonitor(DisplayModePtr mode, MonPtr monitor)
 {
@@ -725,7 +731,6 @@ xf86InitialCheckModeForDriver(ScrnInfoPtr scrp, DisplayModePtr mode,
     ModeStatus status;
     Bool allowDiv2 = (strategy & LOOKUP_CLKDIV2) != 0;
     int i, needDiv2;
-    float hsync, vrefresh;
 
     /* Sanity checks */
     if (!scrp || !mode || !clockRanges) {
@@ -812,12 +817,12 @@ xf86InitialCheckModeForDriver(ScrnInfoPtr scrp, DisplayModePtr mode,
 	return MODE_ERROR;
     }
 
+    mode->HSync = (float)mode->SynthClock / (float)mode->CrtcHTotal;
     if (monitor->nHsync > 0) {
 	/* Check hsync against the allowed ranges */
-	hsync = (float)mode->SynthClock / (float)mode->CrtcHTotal;
 	for (i = 0; i < monitor->nHsync; i++)
-	    if ((hsync > monitor->hsync[i].lo * (1.0 - SYNC_TOLERANCE)) &&
-		(hsync < monitor->hsync[i].hi * (1.0 + SYNC_TOLERANCE)))
+	    if ((mode->HSync > monitor->hsync[i].lo * (1.0 - SYNC_TOLERANCE)) &&
+		(mode->HSync < monitor->hsync[i].hi * (1.0 + SYNC_TOLERANCE)))
 		break;
 
 	/* Now see whether we ran out of sync ranges without finding a match */
@@ -825,13 +830,15 @@ xf86InitialCheckModeForDriver(ScrnInfoPtr scrp, DisplayModePtr mode,
 	    return MODE_HSYNC;
     }
 
+    mode->VRefresh = (mode->SynthClock * 1000.0) /
+	(mode->CrtcHTotal * mode->CrtcVTotal);
     if (monitor->nVrefresh > 0) {
 	/* Check vrefresh against the allowed ranges */
-	vrefresh = (mode->SynthClock * 1000.0) /
-		   (mode->CrtcHTotal * mode->CrtcVTotal);
 	for (i = 0; i < monitor->nVrefresh; i++)
-	    if ((vrefresh > monitor->vrefresh[i].lo * (1.0 - SYNC_TOLERANCE)) &&
-		(vrefresh < monitor->vrefresh[i].hi * (1.0 + SYNC_TOLERANCE)))
+	    if ((mode->VRefresh >
+		 monitor->vrefresh[i].lo * (1.0 - SYNC_TOLERANCE)) &&
+		(mode->VRefresh <
+		 monitor->vrefresh[i].hi * (1.0 + SYNC_TOLERANCE)))
 		break;
 
 	/* Now see whether we ran out of refresh ranges without finding a match */
@@ -1134,11 +1141,8 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
     last = NULL;
     if (modeNames != NULL) {
 	for (i = 0; modeNames[i] != NULL; i++) {
-	    new = xnfalloc(sizeof(DisplayModeRec));
-	    new->type = 0;
-	    new->status = MODE_OK;
+	    new = xnfcalloc(1, sizeof(DisplayModeRec));
 	    new->prev = last;
-	    new->next = NULL;
 	    new->name = xnfalloc(strlen(modeNames[i]) + 1);
 	    strcpy(new->name, modeNames[i]);
 	    if (new->prev)
@@ -1185,11 +1189,8 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
 	    if (r == NULL)
 		break;
 
-	    p = xnfalloc(sizeof(DisplayModeRec));
-	    p->type = 0;
-	    p->status = MODE_OK;
+	    p = xnfcalloc(1, sizeof(DisplayModeRec));
 	    p->prev = last;
-	    p->next = NULL;
 	    p->name = xnfalloc(strlen(r->name) + 1);
 	    strcpy(p->name, r->name);
 	    if (p->prev)
@@ -1447,7 +1448,10 @@ xf86PrintModes(ScrnInfoPtr scrp)
 
     do {
 	desc = desc2 = "";
-	hsync = (float)p->Clock / (float)p->HTotal;
+	if (p->HSync > 0.0)
+	    hsync = p->HSync;
+	else
+	    hsync = (float)p->Clock / (float)p->HTotal;
 	refresh = hsync * 1000.0 / p->VTotal;
 	if (p->Flags & V_INTERLACE) {
 	    refresh *= 2.0;
@@ -1461,6 +1465,8 @@ xf86PrintModes(ScrnInfoPtr scrp)
 	    refresh /= p->VScan;
 	    desc2 = " (VScan)";
 	}
+	if (p->VRefresh > 0.0)
+	    refresh = p->VRefresh;
 	if (p->type & M_T_BUILTIN)
 	    prefix = "Built-in mode";
 	else if (p->type & M_T_DEFAULT)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticrtc.c,v 1.12 1999/11/02 16:16:36 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticrtc.c,v 1.13 1999/11/04 02:12:42 tsi Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -309,10 +309,10 @@ ATICRTCPreInit
              */
             pATIHW->lcd_gen_ctrl |= LCD_ON;
 
-            if (!pATI->OptionDevel)
+            if (!pATI->OptionSync)
             {
                 int HDisplay, VDisplay;
-    
+
                 /*
                  * XXX
                  *
@@ -336,10 +336,10 @@ ATICRTCPreInit
                         inl(pATI->CPIO_CRTC_V_TOTAL_DISP);
                     pATIHW->crtc_v_sync_strt_wid =
                         inl(pATI->CPIO_CRTC_V_SYNC_STRT_WID);
-    
+
                     HDisplay = GetBits(pATIHW->crtc_h_total_disp, CRTC_H_DISP);
                     VDisplay = GetBits(pATIHW->crtc_v_total_disp, CRTC_V_DISP);
-    
+
                     pATI->LCDHSyncStart =
                         (GetBits(pATIHW->crtc_h_sync_strt_wid,
                                  CRTC_H_SYNC_STRT_HI) *
@@ -373,12 +373,12 @@ ATICRTCPreInit
                     pATIHW->crt[16] = GetReg(CRTX(pATI->CPIO_VGABase), 0x10U);
                     pATIHW->crt[17] = GetReg(CRTX(pATI->CPIO_VGABase), 0x11U);
                     pATIHW->crt[18] = GetReg(CRTX(pATI->CPIO_VGABase), 0x12U);
-    
+
                     HDisplay = pATIHW->crt[1] + 1;
                     VDisplay = (((pATIHW->crt[7] << 3) & 0x0200U) |
                                 ((pATIHW->crt[7] << 7) & 0x0100U) |
                                 pATIHW->crt[18]) + 1;
-    
+
                     pATI->LCDHSyncStart = pATIHW->crt[4] - HDisplay;
                     pATI->LCDHSyncWidth =
                         (pATIHW->crt[5] - pATIHW->crt[4]) & 0x1FU;
@@ -392,12 +392,12 @@ ATICRTCPreInit
                                             ((pATIHW->crt[7] << 8) & 0x0100U) |
                                             pATIHW->crt[6]) + 2 - VDisplay;
                 }
-    
+
                 HDisplay <<= 3;
                 pATI->LCDHSyncStart <<= 3;
                 pATI->LCDHSyncWidth <<= 3;
                 pATI->LCDHBlankWidth <<= 3;
-    
+
                 /* If the mode on entry wasn't stretched, adjust timings */
                 if (!(pATIHW->horz_stretching & HORZ_STRETCH_EN) &&
                     ((HDisplay = pATI->LCDHorizontal - HDisplay) > 0))
@@ -409,7 +409,7 @@ ATICRTCPreInit
                     if (pATI->LCDHBlankWidth < HDisplay)
                         pATI->LCDHBlankWidth = HDisplay;
                 }
-    
+
                 if (!(pATIHW->vert_stretching & VERT_STRETCH_EN) &&
                     ((VDisplay = pATI->LCDVertical - VDisplay) > 0))
                 {
@@ -595,7 +595,7 @@ ATICRTCCalculate
     int Index;
 
     /* Clobber mode timings */
-    if ((pATI->LCDPanelID >= 0) && !pATI->OptionCRT &&
+    if ((pATI->LCDPanelID >= 0) && !pATI->OptionCRT && !pATI->OptionSync &&
         !pMode->CrtcHAdjusted && !pMode->CrtcVAdjusted)
     {
         int VScan;
@@ -627,19 +627,16 @@ ATICRTCCalculate
                 break;
         }
 
-        if (!pATI->OptionDevel)
-        {
-            pMode->HSyncStart = pMode->HDisplay + pATI->LCDHSyncStart;
-            pMode->HSyncEnd = pMode->HSyncStart + pATI->LCDHSyncWidth;
-            pMode->HTotal = pMode->HDisplay + pATI->LCDHBlankWidth;
-    
-            pMode->VSyncStart = pMode->VDisplay +
-                ATIDivide(pATI->LCDVSyncStart, VScan, 0, 0);
-            pMode->VSyncEnd = pMode->VSyncStart +
-                ATIDivide(pATI->LCDVSyncWidth, VScan, 0, 1);
-            pMode->VTotal = pMode->VDisplay +
-                ATIDivide(pATI->LCDVBlankWidth, VScan, 0, 0);
-        }
+        pMode->HSyncStart = pMode->HDisplay + pATI->LCDHSyncStart;
+        pMode->HSyncEnd = pMode->HSyncStart + pATI->LCDHSyncWidth;
+        pMode->HTotal = pMode->HDisplay + pATI->LCDHBlankWidth;
+
+        pMode->VSyncStart = pMode->VDisplay +
+            ATIDivide(pATI->LCDVSyncStart, VScan, 0, 0);
+        pMode->VSyncEnd = pMode->VSyncStart +
+            ATIDivide(pATI->LCDVSyncWidth, VScan, 0, 1);
+        pMode->VTotal = pMode->VDisplay +
+            ATIDivide(pATI->LCDVBlankWidth, VScan, 0, 0);
     }
 
     switch (pATIHW->crtc)
@@ -728,6 +725,8 @@ ATICRTCCalculate
             VDisplay <<= 1;
         if (pMode->VScan > 1)
             VDisplay *= pMode->VScan;
+        if (pMode->Flags & V_INTERLACE)
+            VDisplay >>= 1;
 
         if (pATI->Chip == ATI_CHIP_264LT)
             pATIHW->horz_stretching = inl(pATI->CPIO_HORZ_STRETCHING);
@@ -742,13 +741,12 @@ ATICRTCCalculate
                 ~(AUTO_VERT_RATIO | VERT_STRETCH_MODE);
 
             /*
-             * Don't use vertical blending if the mode is too wide, too short,
-             * or not vertically stretched.
+             * Don't use vertical blending if the mode is too wide or not
+             * vertically stretched.
              */
             if (!pATI->OptionCRT &&
                 (pMode->HDisplay <= pATI->LCDVBlendFIFOSize) &&
-                (VDisplay < pATI->LCDVertical) &&
-                (VDisplay >= (pATI->LCDVertical / 2)))
+                (VDisplay < pATI->LCDVertical))
                 pATIHW->ext_vert_stretch |= VERT_STRETCH_MODE;
 
             outl(pATI->CPIO_LCD_INDEX, lcd_index);

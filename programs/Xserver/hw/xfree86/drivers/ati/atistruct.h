@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.8 1999/11/02 16:16:39 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.9 1999/11/04 02:12:44 tsi Exp $ */
 /*
  * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -258,6 +258,7 @@ typedef struct _ATIRec
     CARD8 OptionLinear;         /* Use linear fb aperture when available */
     CARD8 OptionProbeClocks;    /* Force probe for fixed clocks */
     CARD8 OptionShadowFB;       /* Use shadow frame buffer */
+    CARD8 OptionSync;           /* Temporary */
 
     /*
      * State flags.

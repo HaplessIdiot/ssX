@@ -10,15 +10,24 @@
 # hackish perl - author Dirk Hohndel
 # Copyright 1999 by The XFree86 Project, Inc.
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/common/modeline2c.pl,v 1.1 1999/03/21 16:20:54 hohndel Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/common/modeline2c.pl,v 1.2 1999/03/29 12:55:55 dawes Exp $
 
 my %flagshash;
 $flagshash{""} = "0";
-$flagshash{"Interlace"} = "V_INTERLACE";
-$flagshash{"+hsync"} = "V_PHSYNC";
-$flagshash{"-hsync"} = "V_NHSYNC";
-$flagshash{"+vsync"} = "V_PVSYNC";
-$flagshash{"-vsync"} = "V_NVSYNC";
+# $flagshash{"Interlace"} = "V_INTERLACE";
+# $flagshash{"+hsync"} = "V_PHSYNC";
+# $flagshash{"-hsync"} = "V_NHSYNC";
+# $flagshash{"+vsync"} = "V_PVSYNC";
+# $flagshash{"-vsync"} = "V_NVSYNC";
+# XXX I'm definitely not a perl guru...   -- tsi
+$flagshash{"+hsync +vsync"} = "V_PHSYNC | V_PVSYNC";
+$flagshash{"+hsync -vsync"} = "V_PHSYNC | V_NVSYNC";
+$flagshash{"-hsync +vsync"} = "V_NHSYNC | V_PVSYNC";
+$flagshash{"-hsync -vsync"} = "V_NHSYNC | V_NVSYNC";
+$flagshash{"+hsync +vsync Interlace"} = "V_PHSYNC | V_PVSYNC | V_INTERLACE";
+$flagshash{"+hsync -vsync Interlace"} = "V_PHSYNC | V_NVSYNC | V_INTERLACE";
+$flagshash{"-hsync +vsync Interlace"} = "V_NHSYNC | V_PVSYNC | V_INTERLACE";
+$flagshash{"-hsync -vsync Interlace"} = "V_NHSYNC | V_NVSYNC | V_INTERLACE";
 
 # stop CVS from expanding the XFree86 Id here...
 
@@ -42,8 +51,8 @@ printf("/* \$$proj: \$ */
 
 #include \"globals.h\"
 
-#define MODEPREFIX(name)	NULL, NULL, name, 0,M_T_DEFAULT
-#define MODESUFFIX		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,FALSE,FALSE,0,0,0
+#define MODEPREFIX(name) NULL, NULL, name, 0,M_T_DEFAULT
+#define MODESUFFIX       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,FALSE,FALSE,0,NULL,0,0.0,0.0
 
 DisplayModeRec xf86DefaultModes [] = {
 ");
@@ -64,4 +73,4 @@ while (<>) {
 
 
 }
-printf("\t{MODEPREFIX(NULL),0,0,0,0,0,0,0,0,0,0,MODESUFFIX}\n};\n");
+printf("\t{MODEPREFIX(NULL),0,0,0,0,0,0,0,0,0,0,0,0,MODESUFFIX}\n};\n");

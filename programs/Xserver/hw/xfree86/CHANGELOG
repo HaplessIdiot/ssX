@@ -1,3 +1,8 @@
+3296. ATI LCD changes to add interlaced mode support and near-final rework of
+      mode validation (Marc La France).
+3295. Keep track of a mode's hsync and vrefresh rates used for monitor checks
+      so they can be displayed by xf86PrintModes() (Marc La France).
+3294. Add sync polarities to VESA modes (Marc La France).
 3293. Fix VESA mode typos and some warnings (Marc La France).
 3292. Add GeForce/Quadro support to the NVIDIA driver (Chas Inman, 
       Mark Vojkovich).
@@ -9021,4 +9026,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.848 1999/11/12 02:14:06 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.849 1999/11/16 03:27:52 tsi Exp $

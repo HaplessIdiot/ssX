@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.53 1999/10/26 15:58:13 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.54 1999/11/02 16:16:31 tsi Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -94,8 +94,8 @@ typedef enum {
 # define M_T_CLOCK_CRTC_C  (M_T_CLOCK_C | M_T_CRTC_C)
                                /* built-in mode - configure CRTC and clock */
 # define M_T_DEFAULT 0x10	/* (VESA) default modes */
-/* Video mode */
 
+/* Video mode */
 typedef struct _DisplayModeRec {
     struct _DisplayModeRec *	prev;
     struct _DisplayModeRec *	next;
@@ -139,6 +139,8 @@ typedef struct _DisplayModeRec {
     int				PrivSize;
     INT32 *			Private;
     int				PrivFlags;
+
+    float			HSync, VRefresh;
 } DisplayModeRec, *DisplayModePtr;
 
 /* The monitor description */
