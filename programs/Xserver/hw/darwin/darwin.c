@@ -29,7 +29,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.53 2003/10/16 23:50:07 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.54 2003/11/04 02:47:38 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -112,7 +112,7 @@ const int NUMFORMATS = sizeof(formats)/sizeof(formats[0]);
 #define PRE_RELEASE XF86_VERSION_SNAP
 #endif
 
-static void
+void
 DarwinPrintBanner()
 {
 #if PRE_RELEASE
