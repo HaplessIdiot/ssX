@@ -638,11 +638,6 @@ DoConfigure()
 	goto bail;
     }
 
-    if (!havePrimary) {
-	ErrorF("Unable to configure XFree86 - Primary card driver not found.\n");
-	goto bail;
-    }
-
     /* Let's write the config file now ! */
     xf86config = malloc(sizeof(XF86ConfigRec));
     memset ((XF86ConfigPtr)xf86config, 0, sizeof(XF86ConfigRec));
@@ -658,6 +653,11 @@ DoConfigure()
     xf86config->conf_vendor_lst = configureVendorSection();
     xf86config->conf_dri = configureDRISection();
     xf86config->conf_input_lst = configureInputSection();
+
+    if (!havePrimary) {
+	ErrorF("Unable to configure XFree86 - Primary card driver not found.\n");
+	goto bail;
+    }
 
     if (!(home = getenv("HOME")))
     	home = "/";
