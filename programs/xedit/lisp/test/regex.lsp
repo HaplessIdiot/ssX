@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86$
+;; $XFree86: xc/programs/xedit/lisp/test/regex.lsp,v 1.1 2002/12/10 03:59:04 paulo Exp $
 ;;
 
 ;; Basic regex tests. This file is only for xedit lisp and for it's regex
@@ -320,3 +320,121 @@
 (setq re (re-comp "a(.*)b\\1"))
 (re-test '((3 . 5) (4 . 4)) re "xxxab" :count 2)
 (re-test '((4 . 12) (5 . 8)) re "xxxxazzzbzzz" :count 2)
+
+(setq re (re-comp "abc" :icase t))
+(re-test '((0 . 3)) re "AbC")
+
+(setq re (re-comp "[0-9][a-z]+" :icase t))
+(re-test '((3 . 10)) re "xxx0aaZxYT9")
+
+(setq re (re-comp "a.b" :icase t))
+(re-test '((10 . 13)) re "aaaaaaaaaaaxB")
+
+(setq re (re-comp "a.*z" :icase t))
+(re-test '((3 . 9)) re "xxxAaaaaZ")
+(re-test '((2 . 6)) re "xxaaaZaaa")
+
+(setq re (re-comp "\\<(lambda|defun|defmacro)\\>" :icase t))
+(re-test '((5 . 11)) re "    (lambda")
+(re-test '((5 . 11) (5 . 11)) re "    (lambda" :count 2)
+(re-test :nomatch re "lamda defunn deffmacro")
+
+(setq re (re-comp "\\<(nil|t)\\>" :icase t))
+(re-test '((3 . 6)) re "it Nil")
+(re-test '((3 . 6) (3 . 6)) re "it Nil" :count 6)
+(re-test :nomatch re "nilo")
+
+(setq re (re-comp "\\<(begin|end)\\>" :icase t))
+(re-test '((21 . 24) (21 . 24)) re "beginning the ending EnD" :count 7)
+
+(setq re (re-comp "a.*" :newline t))
+(re-test '((0 . 1)) re "a
+aaa")
+(re-test '((3 . 4)) re "xyza
+aa")
+
+(setq re (re-comp "a.+" :newline t))
+(re-test '((2 . 5)) re "a
+aaa")
+(re-test '((5 . 7)) re "xyza
+aa")
+
+(setq re (re-comp "a.?" :newline t))
+(re-test '((0 . 1)) re "a
+aaa")
+(re-test '((3 . 4)) re "xyza
+aa")
+
+(setq re (re-comp "a.*b.*c" :newline t))
+(re-test '((11 . 14)) re "xxaa
+zyacb
+abc")
+(re-test '((6 . 9)) re "xxxab
+abc
+c")
+
+(setq re (re-comp "a.+b.*c" :newline t))
+(re-test '((6 . 10)) re "ab
+bc
+abbc")
+
+(setq re (re-comp "a.?b.*c" :newline t))
+(re-test '((4 . 8)) re "ab
+cabbc
+cc")
+
+(setq re (re-comp "^foo$" :newline t))
+(re-test '((11 . 14)) re "bar
+foobar
+foo")
+(re-test '((0 . 3)) re "foo
+bar
+foo
+bar")
+(re-test '((8 . 11)) re "foo
+bar
+foo
+bar" :notbol t)
+(re-test '((8 . 11)) re "foo
+bar
+foo" :notbol t)
+(re-test :nomatch re "foo
+bar
+foo" :notbol t :noteol t)
+
+(setq re (re-comp "^\\s*#\\s*(define|include)\\s+.+" :newline t))
+(re-test '((8 . 18)) re "#define
+#include x")
+(re-test '((8 . 18) (9 . 16)) re "#define
+#include x" :count 2)
+
+(setq re (re-comp "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"))
+(re-test '((3 . 259)) re "zzzxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxzzz")
+
+(setq re (re-comp "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567890~ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567890~ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567890~ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567890~ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567890~"))
+(re-test '((13 . 333)) re "String here: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567890~ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567890~ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567890~ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567890~ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567890~/")
+
+(setq re (re-comp "(.*)\\D(\\d+)"))
+(re-test '((0 . 6) (0 . 3) (4 . 6)) re "abcW12" :count 3)
+(re-test '((0 . 6) (0 . 3)) re "abcW12" :count 2)
+(re-test '((0 . 6)) re "abcW12" :count 1)
+(re-test nil re "abcW12" :count 0)
+(re-test '((0 . 6) (0 . 3) (4 . 6)) re "abcW12abcW12" :count 3)
+(re-test '((0 . 6) (0 . 3) (4 . 6)) re "abcW12abcW12a" :count 3)
+
+(setq re (re-comp ".*\\d"))
+(re-test '((0 . 2)) re "a1a1a1aaaaaaa")			; minimal match only
+
+(setq re (re-comp "(.*)\\d"))
+(re-test '((0 . 2) (0 . 1)) re "a1a1a1aaaaaaa" :count 2); minimal match only
+
+(setq re (re-comp ".*(\\d)"))
+(re-test '((0 . 2) (1 . 2)) re "a1a1a1aaaaaaa" :count 2); minimal match only
+
+;; XXX this very simple pattern was entering an infinite loop
+;; actually, this pattern is not supported, just test if is not
+;; crashing (not supported because it is not cheap to match variations
+;; of the pattern)
+(setq re (re-comp "(.*a)?"))
+(re-test '((0 . 1)) re "aaaa")		; expected, minimal match
+(re-test '((0 . 1) (0 . 1)) re "aaaa" :count 2)

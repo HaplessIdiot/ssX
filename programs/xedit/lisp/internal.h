@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.47 2002/11/30 23:13:12 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.48 2002/12/06 03:25:27 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -260,7 +260,7 @@ typedef struct _LispMac LispMac;
 
 /* real number */
 #define REALP(object)							\
-    (POINTERP(object) ? XINTP(object) || DFLOATP(object) ||		\
+    (POINTERP(object) ? XINTP(object) || XDFLOATP(object) ||		\
 			XRATIOP(object) || XBIGNUMP(object) ||		\
 			XBIGRATIOP(object) :				\
 			FIXNUMP(object))
@@ -278,7 +278,7 @@ typedef struct _LispMac LispMac;
 
 /* generic number */
 #define NUMBERP(object)							\
-    (POINTERP(object) ? XINTP(object) || DFLOATP(object) ||		\
+    (POINTERP(object) ? XINTP(object) || XDFLOATP(object) ||		\
 			XRATIOP(object) || XBIGNUMP(object) ||		\
 			XBIGRATIOP(object) || XCOMPLEXP(object) :	\
 			FIXNUMP(object))

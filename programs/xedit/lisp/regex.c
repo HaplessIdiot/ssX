@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/regex.c,v 1.8 2002/11/23 08:26:50 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/regex.c,v 1.9 2002/12/10 03:59:03 paulo Exp $ */
 
 #include "regex.h"
 #include "private.h"
@@ -157,7 +157,7 @@ Lisp_Reexec(LispBuiltin *builtin)
 	if (nmatch > 10)
 	    LispDestroy("%s: COUNT cannot be larger than 10", STRFUN(builtin));
     }
-    if (nmatch & (cflags & RE_NOSUB))
+    if (nmatch && (cflags & RE_NOSUB))
 	nmatch = 1;
 
     eflags = RE_STARTEND;
@@ -178,8 +178,7 @@ Lisp_Reexec(LispBuiltin *builtin)
 	if (nmatch && match[0].rm_eo >= match[0].rm_so) {
 	    result = CONS(CONS(FIXNUM(match[0].rm_so),
 			       FIXNUM(match[0].rm_eo)), NIL);
-	    if (nmatch > 1 && !(cflags & RE_NOSUB) &&
-		match[1].rm_eo >= match[1].rm_so) {
+	    if (nmatch > 1 && match[1].rm_eo >= match[1].rm_so) {
 		int i;
 		GC_ENTER();
 		LispObj *cons = result;
