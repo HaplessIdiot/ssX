@@ -1,0 +1,11 @@
+Makefile
+Makefile.in
+aclocal.m4
+configure
+install-sh
+missing
+mkinstalldirs
+config.h.in
+stamp.h.in
+libtool
+lib

@@ -1,0 +1,12 @@
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+
+callback.o: callback.c ../include/GL/glut.h ../include/GL/gl.h ../include/GL/glu.h internal.h
+color.o: color.c ../include/GL/glut.h ../include/GL/gl.h ../include/GL/glu.h
+font.o: font.c ../include/GL/glut.h ../include/GL/gl.h ../include/GL/glu.h
+globals.o: globals.c ../include/GL/glut.h ../include/GL/gl.h ../include/GL/glu.h ../include/GL/amesa.h internal.h
+init.o: init.c ../include/GL/glut.h ../include/GL/gl.h ../include/GL/glu.h internal.h
+menu.o: menu.c ../include/GL/glut.h ../include/GL/gl.h ../include/GL/glu.h
+models.o: models.c ../include/GL/glut.h ../include/GL/gl.h ../include/GL/glu.h
+overlay.o: overlay.c ../include/GL/glut.h ../include/GL/gl.h ../include/GL/glu.h
+state.o: state.c ../include/GL/glut.h ../include/GL/gl.h ../include/GL/glu.h
+window.o: window.c ../include/GL/glut.h ../include/GL/gl.h ../include/GL/glu.h ../include/GL/amesa.h internal.h

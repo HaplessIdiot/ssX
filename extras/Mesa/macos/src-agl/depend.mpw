@@ -1,0 +1,16 @@
+"::Binaries.MPW:maglVirtualSrceen.o" Ä  ¶
+	":maglConfig.h" ¶
+	":maglMemory.h" ¶
+	":maglError.h" ¶
+	":maglConfig.h" ¶
+	":::Headers:gl.h" ¶
+	"Code Warrior:Metrowerks:CodeWarrior MPW:MPW::Interfaces&Libraries:Interfaces:CIncludes:assert.h" ¶
+	":maglRenderers.h" ¶
+	":::Headers:GLI:gli.h" ¶
+	":::Headers:GLI:gliConstants.h" ¶
+	":::Headers:GLI:gliContext.h" ¶
+	":::Headers:GLI:gliDispatch.h" ¶
+	":::Headers:GLI:gliRenderer.h" ¶
+	":::Headers:GLI:gliAttribute.h" ¶
+	":::Headers:GLI:gliPixelFormat.h" ¶
+	":maglValidate.h"

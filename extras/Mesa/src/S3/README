@@ -1,0 +1,4 @@
+
+This driver (S3 Virge) is obsolete.  The code no longer works
+with Mesa 3.x.  It's kept just for historical reasons and reference.
+
