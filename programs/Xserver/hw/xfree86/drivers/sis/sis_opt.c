@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_opt.c,v 1.8 2001/08/01 00:44:54 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_opt.c,v 1.12 2002/11/29 13:52:07 eich Exp $ */
 /*
  *
  * SiS driver option evaluation
@@ -180,6 +180,7 @@ SiSOptions(ScrnInfoPtr pScrn)
     pSiS->sis6326yfilterstrong = -1;
     pSiS->tvxpos = 0;			/* TW: Some day hopefully general TV settings (Chrontel, 6326 only now) */
     pSiS->tvypos = 0;
+    pSiS->NonDefaultPAL = -1;
 
     if(pSiS->Chipset == PCI_CHIP_SIS530) {
     	 /* TW: TQ still broken on 530/620? */
@@ -257,15 +258,27 @@ SiSOptions(ScrnInfoPtr pScrn)
                     pSiS->TurboQueue ? "enabled" : "disabled");
     }
 
-    /* Force CRT2 type (300/310/325 series only) */
+    /* Force CRT2 type (300/310/325 series only)
+       TW: SVIDEO, COMPOSITE and SCART for overriding detection
+     */
     pSiS->ForceCRT2Type = CRT2_DEFAULT;
+    pSiS->ForceTVType = -1;
     if((pSiS->VGAEngine == SIS_300_VGA) || (pSiS->VGAEngine == SIS_315_VGA)) {
       strptr = (char *)xf86GetOptValString(pSiS->Options, OPTION_FORCE_CRT2TYPE);
       if (strptr != NULL)
       {
         if((!strcmp(strptr,"TV")) || (!strcmp(strptr,"tv")))
             pSiS->ForceCRT2Type = CRT2_TV;
-        else if((!strcmp(strptr,"LCD")) || (!strcmp(strptr,"lcd")))
+ 	else if((!strcmp(strptr,"SVIDEO")) || (!strcmp(strptr,"svideo"))) {
+            pSiS->ForceCRT2Type = CRT2_TV;
+	    pSiS->ForceTVType = TV_SVIDEO;
+        } else if((!strcmp(strptr,"COMPOSITE")) || (!strcmp(strptr,"composite"))) {
+            pSiS->ForceCRT2Type = CRT2_TV;
+	    pSiS->ForceTVType = TV_AVIDEO;
+        } else if((!strcmp(strptr,"SCART")) || (!strcmp(strptr,"scart"))) {
+            pSiS->ForceCRT2Type = CRT2_TV;
+	    pSiS->ForceTVType = TV_SCART;
+        } else if((!strcmp(strptr,"LCD")) || (!strcmp(strptr,"lcd")))
             pSiS->ForceCRT2Type = CRT2_LCD;
         else if((!strcmp(strptr,"VGA")) || (!strcmp(strptr,"vga")))
             pSiS->ForceCRT2Type = CRT2_VGA;
@@ -275,7 +288,7 @@ SiSOptions(ScrnInfoPtr pScrn)
 	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 	    	"\"%s\" is not a valid value for Option \"ForceCRT2Type\"}n", strptr);
 	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	        "Valid options are \"LCD\", \"TV\", \"VGA\" or \"NONE\"\n");
+	        "Valid options are \"LCD\", \"TV\", \"SVIDEO\", \"COMPOSITE\", \"SCART\", \"VGA\" or \"NONE\"\n");
 	}
 
         if(pSiS->ForceCRT2Type != CRT2_DEFAULT)
@@ -466,13 +479,19 @@ SiSOptions(ScrnInfoPtr pScrn)
        if(strptr != NULL) {
           if((!strcmp(strptr,"PAL")) || (!strcmp(strptr,"pal")))
 	     pSiS->OptTVStand = 1;
-  	  else if((!strcmp(strptr,"NTSC")) || (!strcmp(strptr,"ntsc")))
+	  else if((!strcmp(strptr,"PALM")) || (!strcmp(strptr,"palm"))) {
+	     pSiS->OptTVStand = 1;
+	     pSiS->NonDefaultPAL = 1;
+  	  } else if((!strcmp(strptr,"PALN")) || (!strcmp(strptr,"paln"))) {
+	     pSiS->OptTVStand = 1;
+	     pSiS->NonDefaultPAL = 0;
+  	  } else if((!strcmp(strptr,"NTSC")) || (!strcmp(strptr,"ntsc")))
 	     pSiS->OptTVStand = 0;
 	  else {
 	     xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 	     	"\"%s\" is not a valid value for Option \"TVStandard\"\n", strptr);
              xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	        "Valid options are \"PAL\" or \"NTSC\"\n");
+	        "Valid options are \"PAL\", \"PALM\", \"PALN\" or \"NTSC\"\n");
 	  }
 
 	  if(pSiS->OptTVStand != -1)

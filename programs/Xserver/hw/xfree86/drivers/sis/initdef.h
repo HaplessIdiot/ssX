@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/initdef.h,v 1.4 2000/12/02 01:16:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/initdef.h,v 1.6 2002/11/29 13:52:06 eich Exp $ */
 
 
 #ifndef _INITDEF_
@@ -18,6 +18,8 @@
 #define VB_NoLCD        	0x8000
 #define VB_SIS301BLV302BLV      (VB_SIS301B|VB_SIS302B|VB_SIS30xLV|VB_SIS30xNEW)
 #define VB_SIS301B302B          (VB_SIS301B|VB_SIS302B)
+
+#define IS_SIS650740            ((HwDeviceExtension->jChipType >= SIS_650) && (HwDeviceExtension->jChipType < SIS_330))
 
 #define CRT1Len                 17
 #define LVDSCRT1Len             15
@@ -142,10 +144,12 @@
 */
 
 #define EnableDualEdge 		0x01   /* CR38 (310/325 series) */
-/* #define PAL_NTSC             0x01      (only on 315PRO) */
 #define SetToLCDA		0x02   /* TW: LCD channel A (302B and 650+LVDS only) */
+#define EnableSiSHiVision       0x04   /* TW: HiVision on SiS bridge */
 #define EnableLVDSHiVision      0x08   /* TW: Only on 650/LVDS systems */
-#define SetYPbPr                0x10   /* TW: YPbPr color format */
+#define SetYPbPr                0x10   /* TW: YPbPr color format (Chrontel only) */
+#define SiSHiVision1            0x10   /* TW: See SetHiVision() */
+#define SiSHiVision2            0x20
 #define EnablePALMN             0x40
 #define EnablePALN              0x80
 

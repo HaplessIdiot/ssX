@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_setup.c,v 1.5 2001/04/19 12:40:33 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_setup.c,v 1.6 2002/11/29 13:52:07 eich Exp $ */
 /*
  * Basic hardware and memory detection
  *
@@ -296,12 +296,13 @@ sis300Setup(ScrnInfoPtr pScrn)
 	    pSiS->BusWidth);
 }
 
-/* TW: for 315, 315H, 315PRO */
+/* TW: for 315, 315H, 315PRO, 330 */
 static  void
 sis310Setup(ScrnInfoPtr pScrn)
 {
     SISPtr  pSiS = SISPTR(pScrn);
-    int     bus[4]     = {64, 64, 128, 128};
+    int     busSDR[4]  = {64, 64, 128, 128};
+    int     busDDR[4]  = {32, 32,  64,  64};
     int     busDDRA[4] = {64+32, 64+32 , (64+32)*2, (64+32)*2};
     unsigned int config, config1, config2;
     char    *dramTypeStr310[] = {
@@ -320,51 +321,92 @@ sis310Setup(ScrnInfoPtr pScrn)
 	"Dual channel SDR SDRAM",
 	"Dual channel SDR SGRAM",
 	"Dual channel DDR SDRAM",
-	"Dual channel DDR SGRAM",
-        "" };
+	"Dual channel DDR SGRAM"};
+    char    *dramTypeStr330[] = {
+        "Single Channel SDR SDRAM",
+        "",
+        "Single Channel DDR SDRAM",
+        "",
+        "--unknown--",
+        "",
+        "--unknown--",
+        "",
+	"Asymetric Dual Channel SDR SDRAM",
+	"",
+	"Asymetric Dual Channel DDR SDRAM",
+	"",
+	"Dual channel SDR SDRAM",
+	"",
+	"Dual channel DDR SDRAM",
+	""};
 
     inSISIDXREG(SISSR, 0x14, config);
-    pScrn->videoRam = (1 << ((config & 0xF0) >> 4)) * 1024;
-
-    /* TW: 315 DDR/SDR configuration specials */
-
     config1 = (config & 0x0C) >> 2;
-
-    /* If SINGLE_CHANNEL_2_RANK or DUAL_CHANNEL_1_RANK -> mem * 2 */
-    if((config1 == 0x01) || (config1 == 0x03))
-        pScrn->videoRam <<= 1;
-
-    /* If DDR asymetric -> mem * 1,5 */
-    if(config1 == 0x02)
-        pScrn->videoRam += pScrn->videoRam/2;
-
-    pSiS->MemClock = SiSMclk(pSiS);
-
     inSISIDXREG(SISSR, 0x3A, config2);
     config2 &= 0x03;
 
+    pScrn->videoRam = (1 << ((config & 0xF0) >> 4)) * 1024;
+
+    if(pSiS->Chipset == PCI_CHIP_SIS330) {
+
+       if(config1) pScrn->videoRam <<= 1;
+
+    } else {
+
+       /* If SINGLE_CHANNEL_2_RANK or DUAL_CHANNEL_1_RANK -> mem * 2 */
+       if((config1 == 0x01) || (config1 == 0x03))
+           pScrn->videoRam <<= 1;
+
+       /* If DDR asymetric -> mem * 1,5 */
+       if(config1 == 0x02)
+           pScrn->videoRam += pScrn->videoRam/2;
+
+    }
+
+    pSiS->MemClock = SiSMclk(pSiS);
+
     xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
             "Detected DRAM type: %s\n",
-	    dramTypeStr310[(config1 * 4) + config2]);
+	    (pSiS->Chipset == PCI_CHIP_SIS330) ?
+	        dramTypeStr330[(config1 * 4) + (config2 & 0x02)] :
+	           dramTypeStr310[(config1 * 4) + config2]);
 
     xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
             "Detected memory clock: %3.3f MHz\n",
             pSiS->MemClock/1000.0);
 
     /* TW: DDR -> mclk * 2 - needed for bandwidth calculation */
-    if(config2 & 0x02) pSiS->MemClock *= 2;
-
-    if(config1 == 0x02)
-        pSiS->BusWidth = busDDRA[(config & 0x03)];
-    else
-        pSiS->BusWidth = bus[(config & 0x03)];
+    if(pSiS->Chipset == PCI_CHIP_SIS330) {
+       if(config2 & 0x02) {
+       	  pSiS->MemClock *= 2;
+	  if(config1 == 0x02) {
+	     pSiS->BusWidth = busDDRA[0];
+	  } else {
+	     pSiS->BusWidth = busDDR[(config & 0x02)];
+	  }
+       } else {
+          if(config1 == 0x02) {
+	     pSiS->BusWidth = busDDRA[2];
+	  } else {
+             pSiS->BusWidth = busSDR[(config & 0x02)];
+	  }
+       }
+    } else {
+       if(config2 & 0x02) pSiS->MemClock *= 2;
+       if(config1 == 0x02)
+          pSiS->BusWidth = busDDRA[(config & 0x03)];
+       else if(config2 & 0x02)
+          pSiS->BusWidth = busDDR[(config & 0x03)];
+       else
+          pSiS->BusWidth = busSDR[(config & 0x03)];
+    }
 
     xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
             "Detected DRAM bus width: %d bit\n",
 	    pSiS->BusWidth);
 }
 
-/* TW: for 550, 650, 740, (330?) */
+/* TW: for 550, 650, 740 */
 static  void
 sis550Setup(ScrnInfoPtr pScrn)
 {
@@ -449,11 +491,11 @@ SiSSetup(ScrnInfoPtr pScrn)
     case    PCI_CHIP_SIS315:
     case    PCI_CHIP_SIS315H:
     case    PCI_CHIP_SIS315PRO:
+    case    PCI_CHIP_SIS330:
     	sis310Setup(pScrn);
 	break;
     case    PCI_CHIP_SIS550:
     case    PCI_CHIP_SIS650: /* + 740 */
-    case    PCI_CHIP_SIS330: /* ? */
         sis550Setup(pScrn);
 	break;
     default:

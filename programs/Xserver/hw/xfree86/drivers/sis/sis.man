@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.man,v 1.5 2001/12/17 20:52:34 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.man,v 1.8 2002/11/29 13:52:06 eich Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH SIS __drivermansuffix__ __vendorversion__
@@ -15,8 +15,8 @@ sis \- SiS video driver
 .SH DESCRIPTION
 .B sis
 is an XFree86 driver for SiS video chips. The driver is accelerated, and
-provides support for 8, 16 and 24 colordepths. Depending on the chip used,
-XVideo, Render and other extensions are supported as well.
+provides support for 8, 16 and 24 colordepths. XVideo, Render and other
+extensions are supported as well.
 .SH SUPPORTED HARDWARE
 The
 .B sis
@@ -31,6 +31,7 @@ driver supports PCI and AGP video cards based on the following chipsets:
 .B SiS315/H/PRO
 .B SiS550
 .B SiS650/651/650M/740
+.B SiS330 (Xabre)
 .PP
 In the following text, the following terms are used:
 .PP
@@ -40,12 +41,13 @@ for SiS5597/5598, 530/620 and 6326/AGP/DVD
 .B 300 series
 for SiS300/305, 540 and 630/730
 .PP
-.B 310/325 series
-for SiS315/H/PRO, 550 and 650/651/650M/740
+.B 310/325/330 series
+for SiS315/H/PRO, 550 and 650/651/650M/740, 330
 .SH CONFIGURATION DETAILS
 Please refer to XF86Config(__filemansuffix__) for general configuration
 details.  This section only covers configuration details specific to this
-driver.
+driver. Please note that support for the SiS330 is new and there may be
+some problems.
 .PP
 .I "1. For all supported chipsets"
 .PP
@@ -94,7 +96,27 @@ The driver will also auto-detect the maximum dotclock and DAC speed.
 If you have problems getting high resolutions because of dot clock
 limitations, try using the
 .B \*qDacSpeed\*q
-option, also in the device section.
+option, also in the device section. However, this is not recommended
+for the 6326. For this chipset, the driver has two built-in modes for
+high resolutions which you should use instead. These are named
+.B \*qSIS1280x1024-75\*q
+and
+.B \*qSIS1600x1200-60\*q
+and they will be added to the list of default modes. To use these modes,
+just place them in your Screen section. Example:
+.PP
+.BI "Modes \*qSIS1600x1200-60\*q \*qSIS1280x1024x75\*q \*q1024x768\*q ...
+.PP
+1280x1024 is only available at 8 and 16bpp. 1600x1200 is available
+at 8bpp only.
+.PP
+TV support for the 6326
+.PP
+TV output is supported on the 6326. The driver will auto detect a
+TV connected, and in this case add the following modes to the list
+of default modes: "PAL800x600", "PAL800x600U", "PAL720x540",
+"PAL640x480", "NTSC640x480", "NTSC640x480U" and "NTSC640x400".
+Use these modes like the hi-res modes described above.
 .PP
 The following driver
 .B Options
@@ -110,15 +132,44 @@ only one cycle per read/write operation instead of two cycles.
 Default: on.
 .TP
 .BI "Option \*qNoHostBus\*q \*q" boolean \*q
-(For SiS5597/5598 only). Disable CPU-to-VGA host bus support. This
+(SiS5597/5598 only). Disable CPU-to-VGA host bus support. This
 speeds up CPU to video RAM transfers. Default: Host bus is enabled.
 .TP
 .BI "Option \*qNoXVideo\*q \*q" boolean \*q
 Disable XV (XVideo) extension support. Default: XVideo is on.
+.TP
+.BI "Option \*qTVStandard\*q \*q" string \*q
+(6326 only) Possible parameters are
+.B PAL
+or
+.B NTSC
+. The default is set by a jumper on the card.
+.TP
+.BI "Option \*qTVXPosOffset\*q \*q" integer \*q
+(6326 only) This option allows horizontal relocation the TV output.
+The range is from -16 to 16.
+.TP
+.BI "Option \*qTVYPosOffset\*q \*q" integer \*q
+(6326 only) This option allows vertical relocation the TV output.
+The range is from -16 to 16.
+.TP
+.BI "Option \*qSIS6326TVEnableYFilter\*q \*q" boolean \*q
+(6326 only) This option allows enabling/disabling the Y filter for
+TV output.
+.TP
+.BI "Option \*qSIS6326TVAntiFlicker\*q \*q" string \*q
+(6326 only) This option allow enabling/disabling the anti flicker
+facility for TV output. Possible parameters are
+.B OFF, LOW, MED, HIGH
+or
+.B ADAPTIVE.
+By experience,
+.B ADAPTIVE
+yields the best results.
 .PP
-.I "2. 300 and 310/325 series specific information"
+.I "2. 300 and 310/325/330 series specific information"
 .PP
-The 300 and 310/325 series very often come with a video bridge for
+The 300 and 310/325/330 series very often come with a video bridge for
 controlling LCD and TV output. Hereinafter, the term
 .B CRT1
 refers to the VGA output of the chip, and
@@ -153,7 +204,7 @@ About XVideo support
 .PP
 XVideo is supported on all chipsets of both families. However, there
 are some differences in hardware features which cause limitations.
-The 300 series as well as the SiS550, 650M and 651 support two video
+The 300 series as well as the SiS550, 650M, 651 and 330 support two video
 overlays. The SiS315/H/PRO and 650/740 support only one such overlay.
 On chips with two overlays, one overlay is used for CRT1, the other
 for CRT2. On the other chipsets, the option
@@ -211,29 +262,21 @@ Force display type to one of:
 ,
 .B TV
 ,
+.B SVIDEO
+,
+.B COMPOSITE
+,
+.B SCART,
+,
 .B LCD
-or
+,
 .B VGA
 ;
 .B NONE
-will disable CRT2.
+will disable CRT2. The SVIDEO, COMPOSITE and SCART parameters
+can be used to force the driver to use a specific TV output
+connector (if present).
 Default: auto detect.
-.TP
-.BI "Option \*qTVStandard\*q \*q" string \*q
-Force the TV standard to either
-.B PAL
-or
-.B NTSC
-. Default: BIOS setting.
-.TP
-.BI "Option \*qTVOverscan\*q \*q" boolean \*q
-On machines with a Chrontel TV encoder, this can be used to
-force the TV mode to overscan or underscan.
-.B True
-means overscan,
-.B false
-means underscan.
-Default: BIOS setting.
 .TP
 .BI "Option \*qPanelDelayCompensation\*q \*q" integer \*q
 This option is only for machines with a 300 series chipset
@@ -259,6 +302,42 @@ BIOS image, the display might not be initialized correctly.
 In order to prevent this, set this option's parameter to
 .B false
 . Default: ROM data is used
+.TP
+.BI "Option \*qTVStandard\*q \*q" string \*q
+Force the TV standard to either
+.B PAL
+or
+.B NTSC
+. On some machines with 630, 730 or 650/740,
+.B PALM
+and
+.B PALN
+are supported as well. Default: BIOS setting.
+.TP
+.BI "Option \*qTVXPosOffset\*q \*q" integer \*q
+This option allows horizontal relocation the TV output.
+The range is from -32 to 32. Not supported on the Chrontel
+7019 yet.
+.TP
+.BI "Option \*qTVYPosOffset\*q \*q" integer \*q
+This option allows vertical relocation the TV output.
+The range is from -32 to 32. Not supported on the Chrontel
+7019 yet.
+.TP
+.BI "Option \*qCHTVOverscan\*q \*q" boolean \*q
+On machines with a Chrontel TV encoder, this can be used to
+force the TV mode to overscan or underscan.
+.B True
+means overscan,
+.B false
+means underscan.
+Default: BIOS setting.
+.TP
+.BI "Option \*qCHTVSuperOverscan\*q \*q" boolean \*q
+On machines with a Chrontel 7005 TV encoder, this option
+enables a super-overscan mode. This is only supported if
+the TV standard is PAL. Super overscan will produce an
+image on the TV which is larger than the viewable area.
 .PP
 .I "3. 300 series specific information"
 .PP
@@ -316,6 +395,12 @@ Then you need to specify any of these amounts as the
 parameter for the
 .B \*qMaxXFBMem\*q
 option. The value is to be given without 'KB'.
+.SH "KNOWN BUGS"
+For some reason, PAL TV output on the SiS301LV bridge is
+only black and white. NTSC is OK, though.
+.PP
+LCD panels with a resolution of 1280x1024 do not work
+correctly.
 .SH "SEE ALSO"
 XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(__miscmansuffix__)
 .PP

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.23 2001/11/30 12:12:00 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.27 2002/11/29 13:52:06 eich Exp $ */
 /*
  * Copyright 1998,1999 by Alan Hourihane, Wigan, England.
  * Parts Copyright 2001, 2002 by Thomas Winischhofer, Vienna, Austria
@@ -159,6 +159,9 @@ typedef unsigned long IOADDRESS;
 #define TV_SVIDEO               0x00000200
 #define TV_SCART                0x00000400
 #define TV_INTERFACE            (TV_AVIDEO | TV_SVIDEO | TV_SCART)
+#define TV_PALM                 0x00001000
+#define TV_PALN                 0x00002000
+#define VGA2_CONNECTED          0x00040000
 #define DISPTYPE_CRT1		0x00080000  	/* TW: CRT1 connected and used */
 #define DISPTYPE_DISP1		DISPTYPE_CRT1
 #define VB_301                  0x00100000	/* Video bridge type */
@@ -345,6 +348,8 @@ typedef struct {
     int			sistvsaturation;
     int			tvxpos;
     int			tvypos;
+    int			ForceTVType;
+    int                 NonDefaultPAL;
 } SISEntRec, *SISEntPtr;
 #endif
 
@@ -574,6 +579,8 @@ typedef struct {
     int			NoYV12;			/* TW: Disable Xv YV12 support (old series) */
     unsigned char       postVBCR32;
     int			newFastVram;		/* TW: Replaces FastVram */
+    int			ForceTVType;
+    int                 NonDefaultPAL;
 } SISRec, *SISPtr;
 
 typedef struct _ModeInfoData {
