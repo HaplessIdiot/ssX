@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: data.h /main/13 1996/11/24 17:35:40 rws $
- *	$XFree86: xc/programs/xterm/data.h,v 3.8 1998/01/11 03:48:39 dawes Exp $
+ *	$XFree86: xc/programs/xterm/data.h,v 3.9 1998/03/20 21:08:36 hohndel Exp $
  */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -66,6 +66,13 @@ extern char *ptydev;
 extern char *ttydev;
 extern char *xterm_name;
 extern Boolean sunFunctionKeys;
+#if OPT_ZICONBEEP 
+extern int zIconBeep; 
+extern Boolean zIconBeep_flagged; 
+#endif 
+#if OPT_SAME_NAME 
+extern Boolean sameName; 
+#endif 
 #if OPT_SUNPC_KBD
 extern Boolean sunKeyboard;
 #endif
