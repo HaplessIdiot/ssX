@@ -14,6 +14,7 @@ typedef struct {
 
 typedef struct {
    unsigned char	key;
+   void                (*EnableDisableFBAccess)(int scrnIndex, Bool enable);
 } cfb8_32ScreenRec, *cfb8_32ScreenPtr;
 
 

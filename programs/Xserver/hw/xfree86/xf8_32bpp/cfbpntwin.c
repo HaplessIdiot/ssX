@@ -25,7 +25,6 @@ cfb8_32PaintWindow(
     RegionPtr   pRegion,
     int         what
 ){
-    cfb8_32ScreenPtr pScreenPriv;
     WindowPtr pBgWin;
     int xorg, yorg;
 

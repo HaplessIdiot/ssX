@@ -327,7 +327,7 @@ Do8To8Blt(
 	}
 
 	if(xdir < 0) {
-	    register tmp = (width - 1) << 2;
+	    register int tmp = (width - 1) << 2;
 	    src += tmp;
 	    dst += tmp;
 	}
@@ -371,7 +371,7 @@ Do24To24Blt(
 	}
 
 	if(xdir < 0) {
-	    register tmp = (width - 1) << 2;
+	    register int tmp = (width - 1) << 2;
 	    src += tmp;
 	    dst += tmp;
 	}
