@@ -1,3 +1,4 @@
+1232. Xterm patch #150 (Thomas Dickey).
 1231. Fix 24/8 Overlay support on Permedia2v and Permedia3 chipsets 
       (Alan Hourihane).
 1230. Add CyberStretch option to the trident driver for Cyber chipsets that
@@ -12152,4 +12153,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1502 2000/12/28 15:03:44 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1503 2000/12/29 16:48:26 alanh Exp $
