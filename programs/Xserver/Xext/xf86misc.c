@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.17 1996/08/20 12:25:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.18 1996/08/21 08:38:23 dawes Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -355,16 +355,13 @@ ProcXF86MiscSetMouseSettings(client)
             flags = stuff->flags;
 	}
 
-    if (stuff->chordmiddle) {
-        if (stuff->emulate3buttons)
+    if (stuff->chordmiddle)
+        if (stuff->emulate3buttons
+		|| !(stuff->mousetype == MTYPE_MICROSOFT
+		     || stuff->mousetype == MTYPE_LOGIMAN) )
 	    return miscErrorBase + XF86MiscBadMouseCombo;
-        if ( !(stuff->mousetype == MTYPE_MICROSOFT
-                 || stuff->mousetype == MTYPE_LOGIMAN) )
-	    return miscErrorBase + XF86MiscBadMouseCombo;
-	
-        xf86Info.mouseDev->chordMiddle = stuff->chordmiddle!=0;
-    }
 
+    xf86Info.mouseDev->chordMiddle = stuff->chordmiddle!=0;
     xf86Info.mouseDev->emulate3Buttons = stuff->emulate3buttons!=0;
     xf86Info.mouseDev->emulate3Timeout = stuff->emulate3timeout;
 

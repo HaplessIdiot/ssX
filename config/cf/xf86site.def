@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.92 1996/11/20 14:00:27 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.93 1996/12/09 11:48:07 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -198,7 +198,9 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.92 1996/11/20 14:00:27 dawes Exp $
 #define XF98GA968Server		YES
  */
 
+#ifndef XnestServer
 #define XnestServer		YES
+#endif
 
 /*
  * Set the default server (ie the one that gets the sym-link to "X")

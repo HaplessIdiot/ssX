@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.33 1996/11/24 09:54:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.34 1996/12/09 11:51:36 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -996,7 +996,7 @@ s3ImageWriteNoMem (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
    for (j = 0; j < h; j++) {
       /* This assumes we can cast odd addresses to short! */
       short *psrcs = (short *)&psrc[px*s3Bpp];
-      for (i = 0; i < w; ) {
+      for (i = 0; i < w & ~1; ) {
 	 if (s3InfoRec.bitsPerPixel == 32) {
 	    outl (PIX_TRANS, *((int*)(psrcs)));
 	    psrcs+=2;
@@ -1007,6 +1007,8 @@ s3ImageWriteNoMem (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
 	    i += 2;
 	 }
       }
+      if (i < w)  /* can't happen for 32bpp */
+	 outw (PIX_TRANS, *((char*)psrcs));
       psrc += pwidth;
    }
 #if 0
@@ -1079,7 +1081,7 @@ s3ImageReadNoMem (x, y, w, h, psrc, pwidth, px, py, planemask)
 
    for (j = 0; j < h; j++) {
       short *psrcs = (short *)&psrc[px*s3Bpp]; 
-      for (i = 0; i < w; ) {
+      for (i = 0; i < w & ~1; ) {
 	 if (s3InfoRec.bitsPerPixel == 32) {
 	    *((long*)(psrcs)) = inl(PIX_TRANS);
 	    psrcs += 2;
@@ -1089,6 +1091,8 @@ s3ImageReadNoMem (x, y, w, h, psrc, pwidth, px, py, planemask)
 	    i += 2;
 	 }
       }
+      if (i < w)  /* can't happen for 32bpp */
+	 *((char*)psrcs) = inw(PIX_TRANS);
       psrc += pwidth;
    }
    WaitQueue16_32(2,3);

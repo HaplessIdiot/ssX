@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/postinst.sh,v 3.10 1996/10/24 12:31:06 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/postinst.sh,v 3.11 1996/10/26 09:41:16 dawes Exp $
 #
 # postinst.sh (for XFree86 3.2)
 #
@@ -107,7 +107,12 @@ if [ -d $TINFODIR ]; then
 fi
 
 case `uname` in
-	Linux|FreeBSD|NetBSD|OpenBSD)
+	FreeBSD)
+		echo ""
+		echo "Running ldconfig"
+		/sbin/ldconfig -m /usr/X11R6/lib
+		;;
+	Linux|NetBSD|OpenBSD)
 		echo ""
 		echo "You may need to reboot (or run ldconfig) before the"
 		echo "newly installed shared libraries can be used."

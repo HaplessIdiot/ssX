@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/r61_main/5 1996/02/02 18:44:52 gildea $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.71 1996/11/24 09:51:28 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.72 1996/12/12 09:14:38 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -1421,7 +1421,11 @@ CFB16DIR = cfb16
 CFB32DIR = cfb32
 XVFBDDXDIR  = hw/vfb
 XVFBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB32DIR) $(XVFBDDXDIR) $(DEPDIRS)
+#ifndef LynxOSArchitecture
 XVFBOBJS = hw/vfb/stubs.o
+#else
+XVFBOBJS = hw/vfb/stubs.o dix/main.o
+#endif
 XVFB = hw/vfb/LibraryTargetName(vfb)
 XVFBLIBS = $(DIX) $(OS) $(FONT) $(XVFB) $(MFB) cfb/LibraryTargetName(cfb)  \
 	   cfb16/LibraryTargetName(cfb) cfb32/LibraryTargetName(cfb) $(MI) \

@@ -32,7 +32,7 @@
  *		RAMDAC timing, and BIOS stuff
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.11 1996/11/18 13:18:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.12 1996/12/09 11:54:23 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -389,6 +389,10 @@ unsigned char reg;
  *   vgaBitsPerPixel		IN	Bits per pixel.
  *
  * HISTORY
+ *   December 14, 1996 - [aem] Andrew E. Mileski
+ *   Fixed loop clock to be based on the calculated, not requested,
+ *   pixel clock. Added f_max = maximum f_vco frequency.
+ *
  *   October 19, 1996 - [aem] Andrew E. Mileski
  *   Commented the loop clock code (wow, I understand everything now),
  *   and simplified it a bit. This should really be two separate functions.
@@ -401,27 +405,20 @@ unsigned char reg;
  *   Based on the TVP3026 code in the S3 driver.
  */
 
-/*
- * It is _OKAY_ to have TI_MAX_VCO_FREQ > chip speed,
- * as long as the final output clock f_pll <= chip speed.
- * The VCO drives a divider (which can handle it), but
- * the output clock drives most of the chip.
- * Read the docs very carefully - and trust me :-) [aem]
- *
- * The following values are all in kHz
- */
-#define TI_MAX_VCO_FREQ	250000
+/* The following values are in kHz */
 #define TI_MIN_VCO_FREQ	110000
+#define TI_MAX_VCO_FREQ	220000
 #define TI_REF_FREQ	14318.18
 
 static void 
-MGATi3026SetClock( f_pll, bpp, m24 )
-	long	f_pll;
+MGATi3026SetClock( f_out, bpp, m24 )
+	long	f_out;
 	int	bpp;
 {
-	/* Pixel clock: f_vco = 8 * TI_REF_FREQ * ( 65 - m ) / ( 65 - n ) */
-	double f_vco;
+	/* Pixel clock values */
+	double f_vco, f_pll;
 	int n, p, m;
+	long f_max;
 
 	/* Pixel clock: These are used to pick a value for m */
 	double c, ic, m_err;
@@ -429,7 +426,7 @@ MGATi3026SetClock( f_pll, bpp, m24 )
 
 	/* Loop clock values */
 	int ln, lp, lm, lq;
-	long z;
+	double z;
 
 	/*
 	 * First we deal with setting the pixel clock PLL.
@@ -437,19 +434,29 @@ MGATi3026SetClock( f_pll, bpp, m24 )
 	 */
 
 	/* Make sure that 13.75 MHz <= f_pll <= chip max */
-	if ( f_pll < ( TI_MIN_VCO_FREQ / 8 ))
-		f_pll = TI_MIN_VCO_FREQ / 8;
-	if ( f_pll > vga256InfoRec.maxClock )
-		f_pll = vga256InfoRec.maxClock;
+	if ( vga256InfoRec.maxClock > TI_MAX_VCO_FREQ )
+		f_max = vga256InfoRec.maxClock;
+	else
+		f_max = TI_MAX_VCO_FREQ;
+	if ( f_out < ( TI_MIN_VCO_FREQ / 8 ))
+		f_out = TI_MIN_VCO_FREQ / 8;
+	if ( f_out > f_max )
+		f_out = f_max;
 
 	/* Assume a frequency multipler of 1.0 to start */
-	f_vco = ( double ) f_pll;
+	f_vco = ( double ) f_out;
 
 	/*
 	 * f_pll = f_vco / 2 ^ p
-	 * Choose p so that f_vco >= TI_MIN_VCO_FREQ
+	 * Choose p so that TI_MIN_VCO_FREQ <= f_vco <= f_max
 	 */
-	for ( p = 0; p < 3 && f_vco <= TI_MIN_VCO_FREQ; p++ )
+	for (
+		p = 0;
+			p < 3
+			&& f_vco < TI_MIN_VCO_FREQ
+			&& ( f_vco * 2.0 ) <= ( double ) f_max;
+		p++
+	)
 		f_vco *= 2.0;
 
 	/*
@@ -486,10 +493,20 @@ MGATi3026SetClock( f_pll, bpp, m24 )
 	m = 65 - best_m;
 	n = 65 - best_n;
 
+	/* Now all the calculations can be completed */
+	f_vco = 8.0 * TI_REF_FREQ * best_m / best_n;
+	f_pll = f_vco / ( 1 << p );
+
 	/* Values for the pixel clock PLL registers */
-	newVS->DACclk[ 0 ] = ( n & 0x3f ) | 0xC0;
+	newVS->DACclk[ 0 ] = ( n & 0x3f ) | 0xc0;
 	newVS->DACclk[ 1 ] = ( m & 0x3f );
-	newVS->DACclk[ 2 ] = ( p & 0x03 ) | 0xB0;
+	newVS->DACclk[ 2 ] = ( p & 0x03 ) | 0xb0;
+
+
+#ifdef DEBUG
+	ErrorF( "f_out=%ld f_pll=%.1f f_vco=%.1f n=%d m=%d p=%d\n",
+		f_out, f_pll, f_vco, n, m, p );
+#endif
 
 	/*
 	 * Now that the pixel clock PLL is setup,
@@ -514,7 +531,7 @@ MGATi3026SetClock( f_pll, bpp, m24 )
 			ln = 65 - 8;
 
 		/* Note: this is actually 100 * z for more precision */
-		z = (11000 * (65 - ln)) / ((f_pll / 1000) * (65 - lm));
+		z = ( 11000 * ( 65 - ln )) / (( f_pll / 1000 ) * ( 65 - lm ));
 	}
 	else {
 		/* ln:lm = ln:4 */
@@ -524,7 +541,7 @@ MGATi3026SetClock( f_pll, bpp, m24 )
 		ln = 65 - 4 * ( 64 / 8 ) / bpp;
 
 		/* Note: this is actually 100 * z for more precision */
-		z = ((11000 / 4) * (65 - ln)) / (f_pll / 1000) ;
+		z = (( 11000 / 4 ) * ( 65 - ln )) / ( f_pll / 1000 );
 	}
 
 	/*
@@ -536,17 +553,17 @@ MGATi3026SetClock( f_pll, bpp, m24 )
 	lq = 0;
 
 	/* Note: z is actually 100 * z for more precision */
-	if ( z <= 200 )
+	if ( z <= 200.0 )
 		lp = 0;
-	else if ( z <= 400 )
+	else if ( z <= 400.0 )
 		lp = 1;
-	else if ( z <= 800 )
+	else if ( z <= 800.0 )
 		lp = 2;
-	else if ( z <= 1600 )
+	else if ( z <= 1600.0 )
 		lp = 3;
 	else {
 		lp = 3;
-		lq = z / 1600;
+		lq = ( int )( z / 1600.0 );
 	}
  
 	/* Values for the loop clock PLL registers */
@@ -566,8 +583,8 @@ MGATi3026SetClock( f_pll, bpp, m24 )
 	newVS->DACreg[ 18 ] = lq | 0x38;
 
 #ifdef DEBUG
-	ErrorF("bpp %d  ln %2d  lm %2d  lz %4d  lp %2d  lq %2d\n",
-		bpp,ln,lm,z,lp,lq);
+	ErrorF( "bpp=%d z=%.1f ln=%d lm=%d lp=%d lq=%d\n",
+		bpp, z, ln, lm, lp, lq );
 #endif
 }
 

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.28 1996/09/22 05:03:15 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.29 1996/11/18 13:10:20 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -134,9 +134,12 @@ extern int s3hotX, s3hotY;
 
 #define VerticalRetraceWait() \
 { \
-   while ((inb(vgaIOBase + 0x0A) & 0x08) == 0x00) ; \
-   while ((inb(vgaIOBase + 0x0A) & 0x08) == 0x08) ; \
-   while ((inb(vgaIOBase + 0x0A) & 0x08) == 0x00) ; \
+   outb(vgaCRIndex, 0x17); \
+   if ( inb(vgaCRReg) & 0x80 ) { \
+       while ((inb(vgaIOBase + 0x0A) & 0x08) == 0x00) ; \
+       while ((inb(vgaIOBase + 0x0A) & 0x08) == 0x08) ; \
+       while ((inb(vgaIOBase + 0x0A) & 0x08) == 0x00) ; \
+       }\
 }
 
 Bool

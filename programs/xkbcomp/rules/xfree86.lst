@@ -6,6 +6,7 @@
 ! model
   pc101		Generic 101-key PC
   pc102		Generic 102-key (Intl) PC
+  pc104		Generic 104-key PC
   dell101	Dell 101-key PC
   everex	Everex STEPnote
   flexpro	Keytronic FlexPro

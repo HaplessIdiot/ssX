@@ -1,3 +1,19 @@
+XFree86 3.2f (18 December 1996)
+  98. XAA support for the ET6000 (Koen Gadeyne).
+  97. Fix an S3 server crash caused by an off-by-one access when displaying
+      images (Harald Koenig).
+  96. Updates to LynxOS support for 2.5.0 (Thomas Mueller).
+  95. Add a "pc104" XKB layout for keyboards with the extra "Windows" keys
+      (Joe Moss).
+  94. Fix for problem clearing "chordmiddle" flag from XF86Setup (Joe Moss).
+  93. Ti3026 clock programming updates for the MGA driver (Andrew E. Mileski).
+  92. A general s3init.c cleanup and modularization.  This isolates
+      ramdac register save/restore functions, and moves them into
+      s3ramdacs.c (Mark Vojkovich).
+  91. Fix S3 server lockup due to vsync wait when power-saving mode is
+      active (Xavier Ducoin).
+  90. PC98 LinkKit updates (Takaaki Nomura).
+
 XFree86 3.2e (12 December 1996)
   89. Fix some TGUI clock programming problems (Massimiliano Ghilardi).
   88. Disable <ctrl><alt><backspace> when in DGA mode (Mark Vojkovich).

@@ -48,7 +48,7 @@ SOFTWARE.
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
 /* $XConsortium: servermd.h /main/56 1996/01/04 17:19:24 gildea $ */
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.15 1996/10/16 14:44:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.16 1996/12/09 11:56:28 dawes Exp $ */
 
 /*
  * Machine dependent values:
@@ -131,6 +131,23 @@ SOFTWARE.
 #define FAST_UNALIGNED_READS
 
 #endif /* vax */
+
+#if (defined(Lynx) && defined(__powerpc__))
+
+/* For now this is for Xvfb only */
+#define IMAGE_BYTE_ORDER        MSBFirst
+#define BITMAP_BIT_ORDER        MSBFirst
+#define GLYPHPADBYTES           4
+#define GETLEFTBITS_ALIGNMENT   1
+
+#define LARGE_INSTRUCTION_CACHE
+#define FAST_CONSTANT_OFFSET_MODE
+#define PLENTIFUL_REGISTERS
+#define AVOID_MEMORY_READ
+
+#define FAST_MEMCPY
+
+#endif /* LynxOS PowerPC */
 
 #if (defined(sun) && !(defined(i386) && defined(SVR4))) || (defined(AMOEBA) && (defined(sparc) || defined(mc68000))) || (defined(__NetBSD__) && (defined(__sparc__) || defined(mc68000))) || (defined(__OpenBSD__) && (defined(__sparc__) || defined(mc68000))) || (defined(Lynx) && defined(__sparc__))
 
