@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_priv.h,v 1.4 2000/02/08 17:19:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_priv.h,v 1.5 2000/02/18 12:20:05 tsi Exp $ */
 
 
 #ifndef _TDFX_FIFO_H_
@@ -11,7 +11,7 @@ typedef int   int32;
 typedef short int16;
 typedef char  int8;
 
-#define CMDFIFO_PAGES 64
+#define CMDFIFO_PAGES 255
 
 #define PROPSAREADATA \
   volatile int fifoPtr; \
@@ -58,7 +58,7 @@ typedef char  int8;
 #endif
 #define DECLARE SET_PKT2_HEADER
 #define DECLARE_LAUNCH SET_PK1_HEADER_LAUNCH
-#define TDFXSendNOP TDFXSendNOPPrivate
+#define TDFXSendNOP TDFXSendNOPFifo
 
 /*
 ** Structures for Banshee AGP/CMD Transfer/MISC registers.

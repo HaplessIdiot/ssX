@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_accel.c,v 1.14 2000/08/25 16:25:36 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_accel.c,v 1.15 2000/09/24 13:51:30 alanh Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -73,6 +73,8 @@ static void TDFXSubsequentCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
                                                      int skipleft);
 static void TDFXSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno);
 
+void TDFXSelectBuffer(TDFXPtr pTDFX, int which);
+
 void
 TDFXNeedSync(ScrnInfoPtr pScrn) {
   TDFXPtr pTDFX = TDFXPTR(pScrn);
@@ -88,7 +90,7 @@ TDFXFirstSync(ScrnInfoPtr pScrn) {
 #ifdef XF86DRI
     if (pTDFX->directRenderingEnabled) {
       DRILock(screenInfo.screens[pScrn->scrnIndex], 0);
-      TDFXSwapContextPrivate(screenInfo.screens[pScrn->scrnIndex]);
+      TDFXSwapContextFifo(screenInfo.screens[pScrn->scrnIndex]);
     }
 #endif
     pTDFX->syncDone=TRUE;
@@ -105,7 +107,6 @@ TDFXCheckSync(ScrnInfoPtr pScrn) {
     pTDFX->syncDone=FALSE;
 #ifdef XF86DRI
     if (pTDFX->directRenderingEnabled) {
-      TDFXLostContext(screenInfo.screens[pScrn->scrnIndex]);
       DRIUnlock(screenInfo.screens[pScrn->scrnIndex]);
     }
 #endif
@@ -124,8 +125,10 @@ TDFXSelectBuffer(TDFXPtr pTDFX, int which) {
     else fmt=pTDFX->stride|((pTDFX->cpp+1)<<16);
     TDFXWriteLong(pTDFX, SST_2D_DSTBASEADDR, pTDFX->fbOffset);
     TDFXWriteLong(pTDFX, SST_2D_DSTFORMAT, fmt);
+    pTDFX->sst2DDstFmtShadow = fmt;
     TDFXWriteLong(pTDFX, SST_2D_SRCBASEADDR, pTDFX->fbOffset);
     TDFXWriteLong(pTDFX, SST_2D_SRCFORMAT, fmt);
+    pTDFX->sst2DSrcFmtShadow = fmt;
     break;
   case TDFX_BACK:
     if (pTDFX->cpp==2)
@@ -134,8 +137,10 @@ TDFXSelectBuffer(TDFXPtr pTDFX, int which) {
       fmt=((pTDFX->stride+127)/128)|(5<<16); /* Tiled 32bpp */
     TDFXWriteLong(pTDFX, SST_2D_DSTBASEADDR, pTDFX->backOffset|BIT(31));
     TDFXWriteLong(pTDFX, SST_2D_DSTFORMAT, fmt);
+    pTDFX->sst2DDstFmtShadow = fmt;
     TDFXWriteLong(pTDFX, SST_2D_SRCBASEADDR, pTDFX->backOffset|BIT(31));
     TDFXWriteLong(pTDFX, SST_2D_SRCFORMAT, fmt);
+    pTDFX->sst2DSrcFmtShadow = fmt;
     break;
   case TDFX_DEPTH:
     if (pTDFX->cpp==2)
@@ -144,8 +149,10 @@ TDFXSelectBuffer(TDFXPtr pTDFX, int which) {
       fmt=((pTDFX->stride+127)/128)|(5<<16); /* Tiled 32bpp */
     TDFXWriteLong(pTDFX, SST_2D_DSTBASEADDR, pTDFX->depthOffset|BIT(31));
     TDFXWriteLong(pTDFX, SST_2D_DSTFORMAT, fmt);
+    pTDFX->sst2DDstFmtShadow = fmt;
     TDFXWriteLong(pTDFX, SST_2D_SRCBASEADDR, pTDFX->depthOffset|BIT(31));
     TDFXWriteLong(pTDFX, SST_2D_SRCFORMAT, fmt);
+    pTDFX->sst2DSrcFmtShadow = fmt;
     break;
   default:
     ;
@@ -233,21 +240,7 @@ TDFXAccelInit(ScreenPtr pScreen)
   infoPtr->SubsequentScreenToScreenCopy = TDFXSubsequentScreenToScreenCopy;
   infoPtr->ScreenToScreenCopyFlags = commonFlags;
 
-#ifndef PROP_3DFX
-  /* We can use direct method because we're writing straight to the board */
-  infoPtr->SetupForCPUToScreenColorExpandFill =
-    TDFXSetupForCPUToScreenColorExpandFill;
-  infoPtr->SubsequentCPUToScreenColorExpandFill =
-    TDFXSubsequentCPUToScreenColorExpandFill;
-  infoPtr->ColorExpandBase = pTDFX->MMIOBase[0]+SST_2D_LAUNCH;
-  infoPtr->ColorExpandRange = 128;
-  infoPtr->CPUToScreenColorExpandFillFlags = commonFlags |
-    CPU_TRANSFER_PAD_DWORD | SCANLINE_PAD_DWORD |
-    LEFT_EDGE_CLIPPING; /* | LEFT_EDGE_CLIPPING_NEGATIVE_X; */
-  pTDFX->scanlineColorExpandBuffers[0]=0;
-  pTDFX->scanlineColorExpandBuffers[1]=0;
-#else
-  /* When we're using the proprietary interface we have to use indirect */
+  /* When we're using the fifo we have to use indirect expansion */
   pTDFX->scanlineColorExpandBuffers[0] = xalloc((pScrn->virtualX+62)/32*4);
   pTDFX->scanlineColorExpandBuffers[1] = xalloc((pScrn->virtualX+62)/32*4);
   infoPtr->NumScanlineColorExpandBuffers=2;
@@ -261,7 +254,6 @@ TDFXAccelInit(ScreenPtr pScreen)
   infoPtr->ScanlineCPUToScreenColorExpandFillFlags = commonFlags |
     CPU_TRANSFER_PAD_DWORD | SCANLINE_PAD_DWORD |
     LEFT_EDGE_CLIPPING; /* | LEFT_EDGE_CLIPPING_NEGATIVE_X; */
-#endif
 
   infoPtr->SetupForMono8x8PatternFill = TDFXSetupForMono8x8PatternFill;
   infoPtr->SubsequentMono8x8PatternFillRect =
@@ -288,6 +280,9 @@ TDFXAccelInit(ScreenPtr pScreen)
   TDFXWriteLongMMIO(pTDFX, SST_2D_SRCBASEADDR, pTDFX->ModeReg.srcbaseaddr);
   pTDFX->ModeReg.dstbaseaddr=pTDFX->fbOffset;
   TDFXWriteLongMMIO(pTDFX, SST_2D_DSTBASEADDR, pTDFX->ModeReg.dstbaseaddr);
+
+  pTDFX->sst2DSrcFmtShadow = TDFXReadLongMMIO(pTDFX, SST_2D_SRCFORMAT);
+  pTDFX->sst2DDstFmtShadow = TDFXReadLongMMIO(pTDFX, SST_2D_DSTFORMAT);
 
   /* Fill in acceleration functions */
   return XAAInit(pScreen, infoPtr);
@@ -433,7 +428,9 @@ TDFXSetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, int ydir, int rop,
   TDFXMakeRoom(pTDFX, 2);
   DECLARE(SSTCP_SRCFORMAT|SSTCP_DSTFORMAT);
   TDFXWriteLong(pTDFX, SST_2D_DSTFORMAT, fmt);
+  pTDFX->sst2DDstFmtShadow = fmt;
   TDFXWriteLong(pTDFX, SST_2D_SRCFORMAT, fmt);
+  pTDFX->sst2DSrcFmtShadow = fmt;
 }  
 
 void
@@ -491,6 +488,7 @@ TDFXSetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
   DECLARE(SSTCP_DSTFORMAT|SSTCP_COLORFORE|
 		 SSTCP_COLORBACK);
   TDFXWriteLong(pTDFX, SST_2D_DSTFORMAT, fmt);
+  pTDFX->sst2DDstFmtShadow = fmt;
   TDFXWriteLong(pTDFX, SST_2D_COLORBACK, color);
   TDFXWriteLong(pTDFX, SST_2D_COLORFORE, color);
 }
@@ -540,6 +538,7 @@ TDFXSetupForMono8x8PatternFill(ScrnInfoPtr pScrn, int patx, int paty,
 		  |SSTCP_PATTERN1ALIAS|SSTCP_COLORFORE|
 		  SSTCP_COLORBACK);
   TDFXWriteLong(pTDFX, SST_2D_DSTFORMAT, fmt);
+  pTDFX->sst2DDstFmtShadow = fmt;
   TDFXWriteLong(pTDFX, SST_2D_PATTERN0, patx);
   TDFXWriteLong(pTDFX, SST_2D_PATTERN1, paty);
   TDFXWriteLong(pTDFX, SST_2D_COLORBACK, bg);
@@ -655,6 +654,7 @@ TDFXNonTEGlyphRenderer(ScrnInfoPtr pScrn, int x, int y, int n,
 		(pbox->x2&0x1FFF));
   TDFXWriteLong(pTDFX, SST_2D_SRCFORMAT, SST_2D_PIXFMT_1BPP |
 		SST_2D_SOURCE_PACKING_DWORD);
+  pTDFX->sst2DSrcFmtShadow = SST_2D_PIXFMT_1BPP | SST_2D_SOURCE_PACKING_DWORD;
   TDFXWriteLong(pTDFX, SST_2D_SRCXY, 0);
   TDFXWriteLong(pTDFX, SST_2D_COLORFORE, fg);
   TDFXWriteLong(pTDFX, SST_2D_COMMAND, pTDFX->Cmd);
@@ -788,9 +788,11 @@ TDFXSubsequentScreenToScreenColorExpandFill(ScrnInfoPtr pScrn, int x, int y,
 	  SSTCP_DSTSIZE|SSTCP_DSTXY|SSTCP_COMMAND |
 	  SSTCP_CLIP1MIN|SSTCP_CLIP1MAX);
   TDFXWriteLong(pTDFX,SST_2D_DSTFORMAT, fmt);
+  pTDFX->sst2DDstFmtShadow = fmt;
   TDFXWriteLong(pTDFX,SST_2D_CLIP1MIN, (x&0x1FFF) | ((y&0x1FFF)<<16));
   TDFXWriteLong(pTDFX,SST_2D_CLIP1MAX, ((x+w)&0x1FFF) | (((y+h)&0x1FFF)<<16));
   TDFXWriteLong(pTDFX,SST_2D_SRCFORMAT, pTDFX->stride);
+  pTDFX->sst2DSrcFmtShadow = pTDFX->stride;
   TDFXWriteLong(pTDFX,SST_2D_SRCXY, (srcx&0x1FFF) | ((srcy&0x1FFF)<<16));
   TDFXWriteLong(pTDFX,SST_2D_DSTSIZE, ((w+offset)&0x1FFF) | ((h&0x1FFF)<<16));
   TDFXWriteLong(pTDFX,SST_2D_DSTXY, ((x-offset)&0x1FFF) | ((y&0x1FFF)<<16));
@@ -849,9 +851,11 @@ TDFXSubsequentCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, int x, int y,
 	  SSTCP_DSTFORMAT|SSTCP_DSTSIZE|SSTCP_SRCXY|
 	  SSTCP_DSTXY|SSTCP_COMMAND);
   TDFXWriteLong(pTDFX, SST_2D_DSTFORMAT, fmt);
+  pTDFX->sst2DDstFmtShadow = fmt;
   TDFXWriteLong(pTDFX, SST_2D_CLIP1MIN, ((y&0x1FFF)<<16)|(x&0x1FFF));
   TDFXWriteLong(pTDFX, SST_2D_CLIP1MAX, (((y+h)&0x1FFF)<<16)|((x+w)&0x1FFF));
   TDFXWriteLong(pTDFX, SST_2D_SRCFORMAT, (((w+31)/32)*4) & 0x3FFF);
+  pTDFX->sst2DSrcFmtShadow = (((w+31)/32)*4) & 0x3FFF;
   TDFXWriteLong(pTDFX, SST_2D_SRCXY, skipleft&0x1F);
   TDFXWriteLong(pTDFX, SST_2D_DSTSIZE, ((w-skipleft)&0x1FFF)|((h&0x1FFF)<<16));
   TDFXWriteLong(pTDFX, SST_2D_DSTXY, ((x+skipleft)&0x1FFF) | ((y&0x1FFF)<<16));

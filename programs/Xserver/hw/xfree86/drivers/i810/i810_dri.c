@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.11 2000/09/17 01:36:27 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.12 2000/09/24 13:51:26 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -601,7 +601,10 @@ Bool I810DRIScreenInit(ScreenPtr pScreen)
    }
    
    /* Allocate FrontBuffer etc. */
-   I810AllocateFront(pScrn);
+   if (!I810AllocateFront(pScrn)) {
+      DRICloseScreen(pScreen);
+      return FALSE;
+   }
 
    /* Allocate buffer memory */
    I810AllocHigh( &(pI810->BufferMem), &(pI810->SysMem), 

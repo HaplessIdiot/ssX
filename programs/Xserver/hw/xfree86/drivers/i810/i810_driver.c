@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.35 2000/11/13 23:06:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.36 2000/12/01 00:24:34 dawes Exp $ */
 
 /*
  * Authors:
@@ -122,7 +122,8 @@ typedef enum {
    OPTION_SW_CURSOR,
    OPTION_COLOR_KEY,
    OPTION_CACHE_LINES,
-   OPTION_DAC_6BIT
+   OPTION_DAC_6BIT,
+   OPTION_DRI
 } I810Opts;
 
 static OptionInfoRec I810Options[] = {
@@ -131,6 +132,7 @@ static OptionInfoRec I810Options[] = {
    { OPTION_COLOR_KEY, "ColorKey", OPTV_INTEGER, {0}, FALSE },
    { OPTION_CACHE_LINES, "CacheLines", OPTV_INTEGER, {0}, FALSE},
    { OPTION_DAC_6BIT, "Dac6Bit", OPTV_BOOLEAN, {0}, FALSE},
+   { OPTION_DRI, "DRI", OPTV_BOOLEAN, {0}, FALSE},
    { -1, NULL, OPTV_NONE, {0}, FALSE}
 };
 
@@ -438,6 +440,7 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
    MessageType from;
    int flags24;
    rgb defaultWeight = {0, 0, 0};
+   int mem;
 
    if (pScrn->numEntities != 1) return FALSE;
 
@@ -627,10 +630,28 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
     *  Changed to 8 Meg so we can have acceleration by default (Mark).
     */
    pScrn->videoRam = 8192;	
-   from = X_PROBED;
+   from = X_DEFAULT;
    if (pI810->pEnt->device->videoRam) {
       pScrn->videoRam = pI810->pEnt->device->videoRam;
       from = X_CONFIG;
+   }
+
+   mem = I810CheckAvailableMemory(pScrn);
+   if (mem > 0 && mem < pScrn->videoRam) {
+      xf86DrvMsg(pScrn->scrnIndex, X_WARNING, "%dk of memory was requested,"
+		 " but the\n\t maximum AGP memory available is %dk.\n",
+		 pScrn->videoRam, mem);
+      from = X_PROBED;
+      if (mem > (6 * 1024)) {
+	 xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		    "Reducing video memory to 4MB\n"); 
+	 pScrn->videoRam = 4096;
+      } else {
+	 xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Less than 6MB of AGP memory"
+		    "is available. Cannot proceed.\n");
+	 I810FreeRec(pScrn);
+	 return FALSE;
+      }
    }
 
    xf86DrvMsg(pScrn->scrnIndex, from, "Will alloc AGP framebuffer: %d kByte\n",
@@ -1536,15 +1557,23 @@ I810AllocateFront(ScrnInfoPtr pScrn) {
 
    xf86GetOptValInteger(I810Options, OPTION_CACHE_LINES, &cache_lines);
 
-   if(cache_lines >= 0)	
-	pI810->FbMemBox.y2 += cache_lines;
-   else {
-       /* make sure there is enough for two DVD sized YUV buffers */
-	pI810->FbMemBox.y2 += (pScrn->depth == 24) ? 256 : 384;
-	if (pScrn->displayWidth <= 1024)
-	    pI810->FbMemBox.y2 += (pScrn->depth == 24) ? 256 : 384;
-	cache_lines = pI810->FbMemBox.y2 - pScrn->virtualY;
+   if (cache_lines < 0) {
+      /* make sure there is enough for two DVD sized YUV buffers */
+      cache_lines = (pScrn->depth == 24) ? 256 : 384;
+      if (pScrn->displayWidth <= 1024)
+	 cache_lines *= 2;
    }
+   /* Make sure there's enough space for cache_lines. */
+   {
+      int maxCacheLines;
+
+      maxCacheLines = ((pScrn->videoRam - 256) * 1024 /
+		        (pScrn->bitsPerPixel / 8) /
+			pScrn->displayWidth) - pScrn->virtualY;
+      if (maxCacheLines >= 0 && cache_lines > maxCacheLines)
+	 cache_lines = maxCacheLines;
+   }
+   pI810->FbMemBox.y2 += cache_lines;
 
    xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
          "Adding %i scanlines for pixmap caching\n", cache_lines);
@@ -1553,11 +1582,16 @@ I810AllocateFront(ScrnInfoPtr pScrn) {
     * of memory so we can have nice alignment for the tiled regions at
     * the start of memory.
     */
-   I810AllocLow( &(pI810->FrontBuffer), 
+
+   if (!I810AllocLow( &(pI810->FrontBuffer), 
 		 &(pI810->SysMem), 
 		 ((pI810->FbMemBox.x2 * 
 		   pI810->FbMemBox.y2 * 
-		   pI810->cpp) + 4095) & ~4095);
+		   pI810->cpp) + 4095) & ~4095)) {
+      xf86DrvMsg(pScrn->scrnIndex,
+		 X_WARNING, "Framebuffer allocation failed\n");
+      return FALSE;
+   }
    
    memset( &(pI810->LpRing), 0, sizeof( I810RingBuffer ) );
    if(I810AllocLow( &(pI810->LpRing.mem), &(pI810->SysMem), 16*4096 )) {
@@ -1631,7 +1665,8 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
     * InitGLXVisuals call back.
     */
    
-   if (!xf86ReturnOptValBool(I810Options, OPTION_NOACCEL, FALSE)) {
+   if (!xf86ReturnOptValBool(I810Options, OPTION_NOACCEL, FALSE) &&
+       xf86ReturnOptValBool(I810Options, OPTION_DRI, TRUE)) {
       pI810->directRenderingEnabled = I810DRIScreenInit(pScreen); 
    } else {
       pI810->directRenderingEnabled = FALSE;
@@ -1640,8 +1675,9 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 #else
    pI810->directRenderingEnabled = FALSE;
    if (!I810AllocateGARTMemory( pScrn )) 
-     return FALSE;
-   I810AllocateFront(pScrn);
+      return FALSE;
+   if (!I810AllocateFront(pScrn))
+      return FALSE;
 #endif
    
    if (!I810MapMem(pScrn)) return FALSE;
@@ -1693,7 +1729,8 @@ I810ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
       pI810->DoneFrontAlloc = FALSE;
       if (!I810AllocateGARTMemory( pScrn ))
          return FALSE;
-      I810AllocateFront(pScrn);
+      if (!I810AllocateFront(pScrn))
+	 return FALSE;
    }
 #endif
 
@@ -1942,6 +1979,7 @@ I810CloseScreen(int scrnIndex, ScreenPtr pScreen)
     */
    pI810->SysMem = pI810->SavedSysMem;
    pI810->DcacheMem = pI810->SavedDcacheMem;
+   pI810->DoneFrontAlloc = FALSE;
 
    pScrn->vtSema=FALSE;
    pScreen->CloseScreen = pI810->CloseScreen;

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_sli.c,v 1.4 2000/08/25 16:25:36 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_ansic.h"
@@ -12,7 +12,7 @@
 /* #define RD_ABORT_ERROR */
 #define H3VDD
 
-static Bool TDFXDisableSLI(TDFXPtr pTDFX)
+Bool TDFXDisableSLI(TDFXPtr pTDFX)
 {
   int i;
   int v;
