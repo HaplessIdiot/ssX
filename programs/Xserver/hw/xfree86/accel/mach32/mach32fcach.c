@@ -1,5 +1,5 @@
 /* $XConsortium: mach32fcach.c,v 1.1 94/03/28 21:07:38 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32fcach.c,v 3.1 1994/07/15 06:58:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32fcach.c,v 3.2 1994/08/31 04:21:40 dawes Exp $ */
 /*
  * Copyright 1992, 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -77,32 +77,32 @@ mach32FontCache8Init()
    int BitPlane;
    CachePool FontPool;
 
-   /* y now includes the cursor space */
+   /* free_ram accounts for the cursor space */
    free_ram = mach32InfoRec.videoRam * 1024 -
 	(mach32InfoRec.virtualX * mach32InfoRec.virtualY * 
 	(mach32InfoRec.bitsPerPixel / 8));
-   x = PIXMAP_WIDTH;
+   x = 0;
    y = mach32InfoRec.virtualY;
-   h = free_ram / mach32InfoRec.virtualX;
-   w = mach32InfoRec.virtualX - x;
+   h = free_ram / (mach32InfoRec.virtualX * (mach32InfoRec.bitsPerPixel / 8));
+   w = mach32InfoRec.virtualX - PIXMAP_WIDTH;
 
    if (mach32InfoRec.bitsPerPixel == 8) {
       mach32cachereadmask = mach32cachemaskswapped8;
    } else {
       mach32cachereadmask = mach32cachemask;
    }
-   /* Currently no pixmap cache when mach32DisplayWidth < 1024 */
-   if ((h <  PIXMAP_WIDTH) || (mach32InfoRec.virtualX < 1024)) { /* no pixmap cache */
+   /* Note, mach32InfoRec.virtual is always >= 1024 */
+   if (h < PIXMAP_WIDTH) {
       w = mach32InfoRec.virtualX;
-      x = 0;
       ErrorF("%s %s: No pixmap expanding area available\n",
 	     XCONFIG_PROBED, mach32InfoRec.name);
    } else {
 	 if (first) {
-	    mach32InitFrect(0, y, PIXMAP_WIDTH);
+	    mach32InitFrect(w, y, PIXMAP_WIDTH);
+	    ErrorF("%s %s: Using a single %dx%d area for expanding pixmaps\n",
+		   XCONFIG_PROBED, mach32InfoRec.name, PIXMAP_WIDTH,
+		   PIXMAP_WIDTH);
 	 }
-         ErrorF("%s %s: Using a single %dx%d area for expanding pixmaps\n",
-	        XCONFIG_PROBED, mach32InfoRec.name, PIXMAP_WIDTH, PIXMAP_WIDTH);
    }
 
    /*
@@ -110,17 +110,18 @@ mach32FontCache8Init()
     * 2 mcomplete 6x13 fonts.
     */
    if (w >= 6*32 && h >= 2*13) {
-      if( first ) {
+      if (first)  {
          FontPool = xf86CreateCachePool(ALIGNMENT);
-         for( BitPlane = mach32InfoRec.bitsPerPixel-1; BitPlane >= 0; BitPlane-- ) {
-            xf86AddToCachePool(FontPool, x, y, w, h, BitPlane );
+         for (BitPlane = mach32InfoRec.bitsPerPixel-1; BitPlane >= 0;
+	      BitPlane--) {
+            xf86AddToCachePool(FontPool, x, y, w, h, BitPlane);
 	 }
 
          xf86InitFontCache(FontPool, w, h, mach32ImageOpStipple, mach32alu);
          xf86InitText(mach32GlyphWrite, mach32NoCPolyText, mach32NoCImageText );
          ErrorF("%s %s: Using %d planes of %dx%d at (%d,%d) aligned %d as font cache\n",
                 XCONFIG_PROBED, mach32InfoRec.name,
-                mach32InfoRec.bitsPerPixel, w, h, x, y, ALIGNMENT );
+                mach32InfoRec.bitsPerPixel, w, h, x, y, ALIGNMENT);
       }
       else {
         xf86ReleaseFontCache();
@@ -130,9 +131,9 @@ mach32FontCache8Init()
       /*
        * Crash and burn if the cached glyph write function gets called.
        */
-      xf86InitText( NULL, mach32NoCPolyText, mach32NoCImageText );
-      ErrorF( "%s %s: No font cache available\n",
-              XCONFIG_PROBED, mach32InfoRec.name );
+      xf86InitText(NULL, mach32NoCPolyText, mach32NoCImageText);
+      ErrorF("%s %s: No font cache available\n",
+              XCONFIG_PROBED, mach32InfoRec.name);
    }
    first = 0;
    return;

@@ -88,10 +88,10 @@ s3FontCache8Init()
 	 }
 	 y += PIXMAP_WIDTH;
       } else {
-	 w = 768;
+	 w = s3DisplayWidth - PIXMAP_WIDTH;
 	 if (h >= PIXMAP_WIDTH) { /* XXXX This test should now be redundant */
 	    if (first) {
-	       s3InitFrect(768, y, PIXMAP_WIDTH);
+	       s3InitFrect(w, y, PIXMAP_WIDTH);
 	    }
 	 }
       }
