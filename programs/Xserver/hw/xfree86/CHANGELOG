@@ -1,0 +1,7 @@
+XFree86 3.0a (28 April 1994)
+  4. Add XFree86 server names to the list in xinit.
+  3. Set XawI18nDefines correctly for SVR4.0.
+  2. Update ncr.cf to pick up AllocateLocalDefines when building servers.
+  1. Fold in client/lib OS support not picked up by the XC.
+
+XFree86 3.0 (26 April 1994)
