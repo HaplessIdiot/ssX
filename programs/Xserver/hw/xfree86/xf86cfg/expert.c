@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/expert.c,v 1.5 2000/12/02 15:31:02 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/expert.c,v 1.6 2000/12/27 23:37:37 paulo Exp $
  */
 
 #include "config.h"
@@ -124,6 +124,7 @@ union _TreeData {
     } layout;
     struct {
 	Widget menu, button, scrnum, adjx, adjy;
+	XF86ConfScreenPtr screen;
 	XF86ConfAdjacencyPtr adjacency;
     } adjacency;
     struct {
@@ -182,6 +183,7 @@ static void CreateFontPath(TreeNode*, char*);
 static Widget CreateFontPathField(TreeNode*, char*, Bool);
 static void FontPathChanged(TreeNode*);
 static void NewFontPathCallback(Widget, XtPointer, XtPointer);
+static void FontPathCallback(Widget, XtPointer, XtPointer);
 
 static void CreateModulePath(TreeNode*, char*);
 static Widget CreateModulePathField(TreeNode*, char*, Bool);
@@ -522,6 +524,12 @@ CreateFontPathField(TreeNode *fontpath, char *value, Bool addnew)
 					NULL, 0);
 	XtAddCallback(command, XtNcallback, DestroyCallback,
 		      (XtPointer)fontpath);
+	command = XtCreateManagedWidget("up", commandWidgetClass, box, NULL, 0);
+	XtAddCallback(command, XtNcallback, FontPathCallback,
+		      (XtPointer)fontpath);
+	command = XtCreateManagedWidget("down", commandWidgetClass, box, NULL, 0);
+	XtAddCallback(command, XtNcallback, FontPathCallback,
+		      (XtPointer)fontpath);
 	text = XtVaCreateManagedWidget("value", asciiTextWidgetClass, box,
 				       XtNeditType, XawtextEdit,
 				       XtNstring, value, NULL, 0);
@@ -589,6 +597,44 @@ NewFontPathCallback(Widget unused, XtPointer user_data, XtPointer call_data)
     FontPathChanged(fontpath->child);
     RelayoutTree();
 }
+
+/*ARGSUSED*/
+static void
+FontPathCallback(Widget w, XtPointer user_data, XtPointer call_data)
+{
+    TreeNode *parent, *node, *fontpath = (TreeNode*)user_data;
+    char *t1, *t2;
+    Widget w1, w2;
+
+    parent = fontpath->parent;
+    node = parent->child;
+    if (!node->next->next)
+	return;
+    if (strcmp(XtName(w), "up") == 0) {
+	if (node == fontpath)
+	    while (node->next->next)
+		node = node->next;
+	else
+	    while (node && node->next != fontpath)
+		node = node->next;
+    }
+    else {
+	if (fontpath->next->next)
+	    node = fontpath->next;
+	/* else is already correct */
+    }
+
+    w1 = node->data->files.text;
+    w2 = fontpath->data->files.text;
+
+    XtVaGetValues(w1, XtNstring, &t1, NULL);
+    XtVaGetValues(w2, XtNstring, &t2, NULL);
+    t1 = XtNewString(t1);
+    XtVaSetValues(w1, XtNstring, t2, NULL);
+    XtVaSetValues(w2, XtNstring, t1, NULL);
+    XtFree(t1);
+}
+
 
 /* ModulePath */
 /* Don't need to set the update tree field, as it is already set
@@ -2759,13 +2805,14 @@ ScreenDestroy(TreeNode *node)
 
 		for (i = 0; i < composite->composite.num_children; ++i)
 		    if (strcmp(XtName(composite->composite.children[i]),
-			       node->data->screen.screen->scrn_identifier) == 0)
+			       node->data->screen.screen->scrn_identifier) == 0) {
 			XtDestroyWidget(composite->composite.children[i]);
+			break;
+		    }
 
-		if (adj && adj->data->adjacency.adjacency &&
-		    strcmp(adj->data->adjacency.adjacency->adj_screen_str,
-			   node->data->screen.screen->scrn_identifier) == 0)
+		if (adj->data->adjacency.screen == node->data->screen.screen)
 		    DeleteNode(adj);
+
 		adj = next;
 	    }
 
@@ -2777,6 +2824,9 @@ ScreenDestroy(TreeNode *node)
 		config = computer.screens[i]->widget;
 		RemoveDeviceCallback(NULL, NULL, NULL);
 	    }
+
+	/* for the case of screens added and removed in the expert dialog */
+	xf86removeScreen(XF86Config, node->data->screen.screen);
     }
 }
 
@@ -3084,6 +3134,8 @@ NewScreenDisplayCallback(Widget w, XtPointer user_data, XtPointer call_data)
     parent = node->parent;
     DeleteNode(node);
     dsp = (XF86ConfDisplayPtr)XtCalloc(1, sizeof(XF86ConfDisplayRec));
+    dsp->disp_black.red = dsp->disp_black.green = dsp->disp_black.blue =
+    dsp->disp_white.red = dsp->disp_white.green = dsp->disp_white.blue = -1;
     parent->parent->data->screen.screen->scrn_display_lst =
 	xf86addScreenDisplay(parent->parent->data->screen.screen->scrn_display_lst,
 			     dsp);
@@ -3584,6 +3636,7 @@ CreateAdjacency(TreeNode *parent, XF86ConfAdjacencyPtr adj)
 
     while (adj) {
 	data = (TreeData*)XtCalloc(1, sizeof(TreeData));
+	data->adjacency.screen = adj ? adj->adj_screen : NULL;
 	data->adjacency.adjacency = adj;
 	node = NewNode(parent, NULL, NULL, parent->node, data);
 	node->destroy = AdjacencyDestroy;
@@ -3740,6 +3793,8 @@ NewAdjacencyCallback(Widget w, XtPointer user_data, XtPointer call_data)
     DeleteNode(node);
     adj = (XF86ConfAdjacencyPtr)XtCalloc(1, sizeof(XF86ConfAdjacencyRec));
     adj->adj_screen = xf86findScreen(ident, XF86Config->conf_screen_lst);
+    if (adj->adj_screen)
+	adj->adj_screen_str = XtNewString(adj->adj_screen->scrn_identifier);
     parent->parent->data->layout.layout->lay_adjacency_lst =
 	xf86addAdjacency(parent->parent->data->layout.layout->lay_adjacency_lst,
 			 adj);
