@@ -1,4 +1,7 @@
 XFree86 4.0b (?? April 2000)
+ 102. Fix XAA problems with CPU-to-screen colour expansion (Marc La France).
+ 101. For panel support in the ATI driver, add an entry to the monitor
+      section's mode list for the panel's native resolution (Marc La France).
  100. Fix depth24 acceleration problems with 300SX (Alan Hourihane).
   99. Update glint driver for fb24_32 and ensure memset used in fb is
       xf86memset when using loader (Alan Hourihane).
@@ -8,8 +11,8 @@ XFree86 4.0b (?? April 2000)
       extensions (Mark Vojkovich).
   96. Fix a NonTE text bug in XAA where zero-height primitives could be passed
       to the driver (Mark Vojkovich).
-  95. Except for 24bpp, dd CPU-to-screen colour expansion acceleration for
-      Mach64's (Kevin Martin, Marc La France).
+  95. Add CPU-to-screen colour expansion acceleration for Mach64's
+      (Kevin Martin, Marc La France).
 
 XFree86 4.0a (6 April 2000)
   94. Major OS/2 resync (#3859, Holger Veit).
@@ -10227,4 +10230,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1122 2000/04/08 19:27:34 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1125 2000/04/11 17:35:43 alanh Exp $

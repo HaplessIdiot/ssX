@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.20 2000/04/07 03:57:47 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.21 2000/04/09 03:38:57 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -341,6 +341,7 @@ ATIPreInit
     GDevPtr         pGDev;
     EntityInfoPtr   pEntity;
     resPtr          pResources;
+    DisplayModePtr  pMode;
     Bool            AllowCRT = TRUE;
     CARD32          IOValue1, IOValue2 = 0;
     int             i, j, AcceleratorVideoRAM = 0, VGAVideoRAM = 0;
@@ -1579,7 +1580,8 @@ ATIPreInit
         }
         else if (!pATI->UseSmallApertures)
             pATI->OldHW.SetBank = pATI->NewHW.SetBank;
-        else if (!(inl(pATI->CPIO_CONFIG_CNTL) & CFG_MEM_VGA_AP_EN))
+        else if ((pATI->OldHW.crtc == ATI_CRTC_VGA) &&
+                 !(inl(pATI->CPIO_CONFIG_CNTL) & CFG_MEM_VGA_AP_EN))
         {
             pATI->OldHW.SetBank = (ATIBankProcPtr)NoopDDA;
             pATI->OldHW.nBank = 1;
@@ -1898,6 +1900,52 @@ ATIPreInit
          * and/or vertical refresh tolerances.
          */
         Strategy |= LOOKUP_OPTIONAL_TOLERANCES;
+
+        /*
+         * Add a mode to the end of the monitor's list for the panel's native
+         * resolution.
+         */
+        pMode = (DisplayModePtr)xnfcalloc(1, SizeOf(DisplayModeRec));
+        pMode->name = "Native panel mode";
+        pMode->type = M_T_BUILTIN;
+        pMode->Clock = pATI->LCDClock;
+        pMode->HDisplay = pATI->LCDHorizontal;
+        pMode->VDisplay = pATI->LCDVertical; 
+
+        /*
+         * These timings are bogus, but enough to survive sync tolerance
+         * checks.
+         */
+        pMode->HSyncStart = pMode->HDisplay;
+        pMode->HSyncEnd = pMode->HSyncStart + minPitch;
+        pMode->HTotal = pMode->HSyncEnd + minPitch;
+        pMode->VSyncStart = pMode->VDisplay;
+        pMode->VSyncEnd = pMode->VSyncStart + 1;
+        pMode->VTotal = pMode->VSyncEnd + 1;
+
+        pMode->CrtcHDisplay = pMode->HDisplay;
+        pMode->CrtcHBlankStart = pMode->HDisplay;
+        pMode->CrtcHSyncStart = pMode->HSyncStart;
+        pMode->CrtcHSyncEnd = pMode->HSyncEnd;
+        pMode->CrtcHBlankEnd = pMode->HTotal;
+        pMode->CrtcHTotal = pMode->HTotal;
+
+        pMode->CrtcVDisplay = pMode->VDisplay;
+        pMode->CrtcVBlankStart = pMode->VDisplay;
+        pMode->CrtcVSyncStart = pMode->VSyncStart;
+        pMode->CrtcVSyncEnd = pMode->VSyncEnd;
+        pMode->CrtcVBlankEnd = pMode->VTotal;
+        pMode->CrtcVTotal = pMode->VTotal;
+
+        if (!pScreenInfo->monitor->Modes)
+            pScreenInfo->monitor->Modes = pMode;
+        else
+        {
+            pScreenInfo->monitor->Last->next = pMode;
+            pMode->prev = pScreenInfo->monitor->Last;
+        }
+
+        pScreenInfo->monitor->Last = pMode;
     }
 
     i = xf86ValidateModes(pScreenInfo,
