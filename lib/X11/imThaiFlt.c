@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.16 2003/01/07 02:04:59 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.17 2003/01/08 17:45:02 tsi Exp $ */
 
 /*
 **++ 
@@ -602,11 +602,11 @@ Private Bool ThaiComposeConvert();
 #define IC_GetContextChar(ic) \
 		(IC_RealGetPreviousChar(ic,2))
 #define IC_DeletePreviousChar(ic) \
-		(IC_RealDeletePreviousChar(ic,1))
+		(IC_RealDeletePreviousChar(ic))
 
 Private unsigned char
 #if NeedFunctionPrototypes
-IC_RealGetPreviousChar(Xic ic, XIMStringConversionPosition pos)
+IC_RealGetPreviousChar(Xic ic, unsigned short pos)
 #else
 IC_RealGetPreviousChar(ic, pos)
   Xic ic;
@@ -619,10 +619,13 @@ IC_RealGetPreviousChar(ic, pos)
         XIMStringConversionCallbackStruct screc;
         unsigned char c;
 
-        screc.position = pos;
+        /* Use a safe value of position = 0 and stretch the range to desired
+         * place, as XIM protocol is unclear here whether it could be negative
+         */
+        screc.position = 0;
         screc.direction = XIMBackwardChar;
         screc.operation = XIMStringConversionRetrieval;
-        screc.factor = 1;
+        screc.factor = pos;
         screc.text = 0;
 
         (cb->callback)((XIC)ic, cb->client_data, (XPointer)&screc);
@@ -651,11 +654,10 @@ IC_RealGetPreviousChar(ic, pos)
 
 Private unsigned char
 #if NeedFunctionPrototypes
-IC_RealDeletePreviousChar(Xic ic, XIMStringConversionPosition pos)
+IC_RealDeletePreviousChar(Xic ic)
 #else
-IC_RealDeletePreviousChar(ic, pos)
+IC_RealDeletePreviousChar(ic)
   Xic ic;
-  XIMStringConversionPosition pos;
 #endif
 {
     XICCallback* cb = &ic->core.string_conversion_callback;
@@ -664,7 +666,7 @@ IC_RealDeletePreviousChar(ic, pos)
         XIMStringConversionCallbackStruct screc;
         unsigned char c;
 
-        screc.position = pos;
+        screc.position = 0;
         screc.direction = XIMBackwardChar;
         screc.operation = XIMStringConversionSubstitution;
         screc.factor = 1;
