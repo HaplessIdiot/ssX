@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.122 2001/10/28 00:16:26 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.124 2001/11/30 12:11:54 eich Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1081,6 +1081,9 @@ xf86SigHandler(int signo)
 #if defined(XFree86LOADER)
   if (xf86Initialising)
       LoaderCheckUnresolved(LD_RESOLV_IFDONE);
+  ErrorF("\n"
+	 "   *** If unresolved symbols were reported above, they might not\n"
+	 "   *** be the reason for the server aborting.\n");
 #endif
   FatalError("Caught signal %d.  Server aborting\n", signo);
 }
