@@ -1,4 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:42:37 dpw Exp $
+XCOMM $XFree86$
 #include <Server.tmpl>
 
 SRCS1 =	 mfbgc.c mfbwindow.c mfbfont.c \
@@ -13,7 +14,8 @@ SRCS1 =	 mfbgc.c mfbwindow.c mfbfont.c \
 SRCS =	 $(SRCS1) mfbseg.c mfbpgbwht.c mfbpgbblak.c mfbpgbinv.c mfbigbwht.c \
 	 mfbigbblak.c mfbpawhite.c mfbpablack.c mfbpainv.c mfbtewhite.c \
 	 mfbteblack.c mfbbltC.c mfbbltX.c mfbbltCI.c mfbbltO.c mfbbltG.c \
-	 mfbtileC.c mfbtileG.c mfbbltCOB.c mfbbltCIOB.c
+	 mfbtileC.c mfbtileG.c mfbplywhite.c mfbplyblack.c mfbplyinv.c \
+	 mfbbltTBC.c mfbbltTBCI.c
 
 OBJS =   mfbgc.o mfbwindow.o mfbfont.o \
 	 mfbfillrct.o mfbpntwin.o maskbits.o mfbpixmap.o \
@@ -26,47 +28,57 @@ OBJS =   mfbgc.o mfbwindow.o mfbfont.o \
 	 mfbigbwht.o mfbigbblak.o mfbcmap.o \
 	 mfbpawhite.o mfbpablack.o mfbpainv.o mfbtileC.o mfbtileG.o \
          mfbtewhite.o mfbteblack.o mfbmisc.o mfbbstore.o \
-         mfbbltCOB.o mfbbltCIOB.o
+         mfbplywhite.o mfbplyblack.o mfbplyinv.o \
+	 mfbbltTBC.o mfbbltTBCI.o
 
-INCLUDES = -I$(SERVERSRC)a256/vga -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
+INCLUDES = -I. -I$(XF86SRC)/vga256/vga -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
            -I$(SERVERSRC)/include -I$(INCLUDESRC) -I$(FONTINCSRC)
 
-DEFINES = -DBANKEDMONOVGA
+LINTDEFS = -DMFBPOLYGLYPHBLT=mfbPolyGlyphBltWhite \
+           -DMFBIMAGEGLYPHBLT=mfbImageGlyphBltWhite \
+           -DEQWHOLEWORD=\=\~0 -DOPEQ=\|=
+LINTLIBS = $(SERVERSRC)/dix/llib-ldix.ln $(SERVERSRC)/os/llib-los.ln \
+           $(SERVERSRC)/mi/llib-lmi.ln
+
+DEFINES = -DXF86MONOVGA -DBANKEDMONOVGA -DMFB_LINE_BANK
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
+NormalLintTarget($(LINTDEFS) $(SRCS1))
 
-ObjectFromSpecialSource(maskbits,$(SERVERSRC)/mfb/maskbits,/**/)
-ObjectFromSpecialSource(mfbblt,$(SERVERSRC)/mfb/mfbblt,/**/)
-ObjectFromSpecialSource(mfbbres,$(SERVERSRC)/mfb/mfbbres,/**/)
-ObjectFromSpecialSource(mfbbresd,$(SERVERSRC)/mfb/mfbbresd,/**/)
-ObjectFromSpecialSource(mfbbstore,$(SERVERSRC)/mfb/mfbbstore,/**/)
-ObjectFromSpecialSource(mfbclip,$(SERVERSRC)/mfb/mfbclip,/**/)
-ObjectFromSpecialSource(mfbcmap,$(SERVERSRC)/mfb/mfbcmap,/**/)
-ObjectFromSpecialSource(mfbfillarc,$(SERVERSRC)/mfb/mfbfillarc,/**/)
-ObjectFromSpecialSource(mfbfillrct,$(SERVERSRC)/mfb/mfbfillrct,/**/)
-ObjectFromSpecialSource(mfbfillsp,$(SERVERSRC)/mfb/mfbfillsp,/**/)
-ObjectFromSpecialSource(mfbfont,$(SERVERSRC)/mfb/mfbfont,/**/)
-ObjectFromSpecialSource(mfbgc,$(SERVERSRC)/mfb/mfbgc,/**/)
-ObjectFromSpecialSource(mfbgetsp,$(SERVERSRC)/mfb/mfbgetsp,/**/)
-ObjectFromSpecialSource(mfbhrzvert,$(SERVERSRC)/mfb/mfbhrzvert,/**/)
-ObjectFromSpecialSource(mfbimage,$(SERVERSRC)/mfb/mfbimage,/**/)
-ObjectFromSpecialSource(mfbimggblt,$(SERVERSRC)/mfb/mfbimggblt,/**/)
-ObjectFromSpecialSource(mfbline,$(SERVERSRC)/mfb/mfbline,/**/)
-ObjectFromSpecialSource(mfbmisc,$(SERVERSRC)/mfb/mfbmisc,/**/)
-ObjectFromSpecialSource(mfbpixmap,$(SERVERSRC)/mfb/mfbpixmap,/**/)
-ObjectFromSpecialSource(mfbplygblt,$(SERVERSRC)/mfb/mfbplygblt,/**/)
-ObjectFromSpecialSource(mfbpntarea,$(SERVERSRC)/mfb/mfbpntarea,/**/)
-ObjectFromSpecialSource(mfbpntwin,$(SERVERSRC)/mfb/mfbpntwin,/**/)
-ObjectFromSpecialSource(mfbpolypnt,$(SERVERSRC)/mfb/mfbpolypnt,/**/)
-ObjectFromSpecialSource(mfbpushpxl,$(SERVERSRC)/mfb/mfbpushpxl,/**/)
-ObjectFromSpecialSource(mfbscrclse,$(SERVERSRC)/mfb/mfbscrclse,/**/)
-ObjectFromSpecialSource(mfbscrinit,$(SERVERSRC)/mfb/mfbscrinit,/**/)
-ObjectFromSpecialSource(mfbsetsp,$(SERVERSRC)/mfb/mfbsetsp,/**/)
-ObjectFromSpecialSource(mfbtegblt,$(SERVERSRC)/mfb/mfbtegblt,/**/)
-ObjectFromSpecialSource(mfbtile,$(SERVERSRC)/mfb/mfbtile,/**/)
-ObjectFromSpecialSource(mfbwindow,$(SERVERSRC)/mfb/mfbwindow,/**/)
-ObjectFromSpecialSource(mfbzerarc,$(SERVERSRC)/mfb/mfbzerarc,/**/)
+#define MfbSourceDir $(SERVERSRC)/mfb
+
+LinkSourceFile(maskbits.c,MfbSourceDir)
+LinkSourceFile(mfbbres.c,MfbSourceDir)
+LinkSourceFile(mfbbresd.c,MfbSourceDir)
+LinkSourceFile(mfbbstore.c,MfbSourceDir)
+LinkSourceFile(mfbclip.c,MfbSourceDir)
+LinkSourceFile(mfbcmap.c,MfbSourceDir)
+LinkSourceFile(mfbfillarc.c,MfbSourceDir)
+LinkSourceFile(mfbfillrct.c,MfbSourceDir)
+LinkSourceFile(mfbfillsp.c,MfbSourceDir)
+LinkSourceFile(mfbfont.c,MfbSourceDir)
+LinkSourceFile(mfbgc.c,MfbSourceDir)
+LinkSourceFile(mfbgetsp.c,MfbSourceDir)
+LinkSourceFile(mfbhrzvert.c,MfbSourceDir)
+LinkSourceFile(mfbimage.c,MfbSourceDir)
+LinkSourceFile(mfbimggblt.c,MfbSourceDir)
+LinkSourceFile(mfbline.c,MfbSourceDir)
+LinkSourceFile(mfbmisc.c,MfbSourceDir)
+LinkSourceFile(mfbpixmap.c,MfbSourceDir)
+LinkSourceFile(mfbply1rct.c,MfbSourceDir)
+LinkSourceFile(mfbplygblt.c,MfbSourceDir)
+LinkSourceFile(mfbpntarea.c,MfbSourceDir)
+LinkSourceFile(mfbpntwin.c,MfbSourceDir)
+LinkSourceFile(mfbpolypnt.c,MfbSourceDir)
+LinkSourceFile(mfbpushpxl.c,MfbSourceDir)
+LinkSourceFile(mfbscrclse.c,MfbSourceDir)
+LinkSourceFile(mfbscrinit.c,MfbSourceDir)
+LinkSourceFile(mfbsetsp.c,MfbSourceDir)
+LinkSourceFile(mfbtegblt.c,MfbSourceDir)
+LinkSourceFile(mfbtile.c,MfbSourceDir)
+LinkSourceFile(mfbwindow.c,MfbSourceDir)
+LinkSourceFile(mfbzerarc.c,MfbSourceDir)
 
 ObjectFromSpecialSource(mfbseg,mfbline,-DPOLYSEGMENT)
 
@@ -90,15 +102,21 @@ ObjectFromSpecialSource(mfbtewhite,mfbtegblt,-DMFBTEGLYPHBLT=mfbTEGlyphBltWhite 
 
 ObjectFromSpecialSource(mfbteblack,mfbtegblt,-DMFBTEGLYPHBLT=mfbTEGlyphBltBlack -DOP=\~ -DCLIPTETEXT=mfbImageGlyphBltBlack)
 
-ObjectFromSpecialSource(mfbbltC,mfbbltc,-DMROP=Mcopy)
+ObjectFromSpecialSource(mfbplywhite,mfbply1rct,-DMFBFILLPOLY1RECT=mfbFillPolyWhite -DOPEQ=\|= -DEQWHOLEWORD=\=\~0)
 
-ObjectFromSpecialSource(mfbbltCOB,mfbbltc,-DMROP=Mcopy -DONEBANK)
+ObjectFromSpecialSource(mfbplyblack,mfbply1rct,-DMFBFILLPOLY1RECT=mfbFillPolyBlack -DOPEQ=\&=\~ -DEQWHOLEWORD=\=0)
+
+ObjectFromSpecialSource(mfbplyinv,mfbply1rct,-DMFBFILLPOLY1RECT=mfbFillPolyInvert -DOPEQ=\^= -DEQWHOLEWORD=\^=\~0)
+
+ObjectFromSpecialSource(mfbbltC,mfbblt,-DMROP=Mcopy)
+
+ObjectFromSpecialSource(mfbbltTBC,mfbblt,-DMROP=Mcopy -DTWO_BANKS_COPY)
 
 ObjectFromSpecialSource(mfbbltX,mfbblt,-DMROP=Mxor)
 
-ObjectFromSpecialSource(mfbbltCI,mfbbltc,-DMROP=McopyInverted)
+ObjectFromSpecialSource(mfbbltCI,mfbblt,-DMROP=McopyInverted)
 
-ObjectFromSpecialSource(mfbbltCIOB,mfbbltc,-DMROP=McopyInverted -DONEBANK)
+ObjectFromSpecialSource(mfbbltTBCI,mfbblt,-DMROP=McopyInverted -DTWO_BANKS_COPY)
 
 ObjectFromSpecialSource(mfbbltO,mfbblt,'-DMROP=Mor')
 
@@ -107,16 +125,5 @@ ObjectFromSpecialSource(mfbbltG,mfbblt,-DMROP=0)
 ObjectFromSpecialSource(mfbtileC,mfbtile,-DMROP=Mcopy)
 
 ObjectFromSpecialSource(mfbtileG,mfbtile,-DMROP=0)
-
-mfb.h: $(SERVERSRC)/mfb/mfb.h
-	$(RM) $@
-	$(LN) $?  $@
-
-$(OBJS): mfb.h
-
-depend:: mfb.h
-
-clean::
-	$(RM) mfb.h
 
 DependTarget()

@@ -1,9 +1,9 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:43:09 dpw Exp $
 #include <Server.tmpl>
 
-SRCS = 	vgaHW.c vga.c vgaBank.s
+SRCS = 	vgaHW.c vga.c vgaBank.s vgaLBank.s
 
-OBJS = 	vgaHW.o vga.o vgaBank.o
+OBJS = 	vgaHW.o vga.o vgaBank.o vgaLBank.o
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86HWSRC) -I../../vga256/vga \
            -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
@@ -11,15 +11,19 @@ INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(XF86HWSRC) -I../../vga256/vga \
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
+NormalAsmObjectRule()
 
 #if DirtyStartup
-DEFINES = -DDIRTY_STARTUP
+STARTUPDEFINES = -DDIRTY_STARTUP
 #endif
 
-DEFINES = -DMONOVGA -DXF86MONOVGA
+#if XF86Vga2Banked
+BANKEDDEFINES = -DBANKEDMONOVGA
+#endif
+DEFINES = $(STARTUPDEFINES) -DMONOVGA -DXF86MONOVGA $(BANKEDDEFINES)
 
-ObjectFromSpecialSource(vga,../../vga256/vga/vga,/**/)
-ObjectFromSpecialSource(vgaHW,../../vga256/vga/vgaHW,/**/)
-ObjectFromSpecialAsmSource(vgaBank,../../vga256/vga/vgaBank,/**/)
+LinkSourceFile(vga.c,../../vga256/vga)
+LinkSourceFile(vgaHW.c,../../vga256/vga)
+LinkSourceFile(vgaBank.s,../../vga256/vga)
 
 DependTarget()
