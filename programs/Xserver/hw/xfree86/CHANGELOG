@@ -1,4 +1,6 @@
 XFree86 3.1.2Dj (12 May 1996)
+524. Disable POSIX_TERMIOS in xterm for FreeBSD versions prior to 2.1.
+523. Add a document for XInput (Frederic Lepied).
 522. Have the server remove the compiled keymap file when shutting down
      (Joe Moss).
 521. Fix problem of XkbListComponents() not listing anything in
