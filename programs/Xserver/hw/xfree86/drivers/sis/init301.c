@@ -11807,6 +11807,12 @@ SiS_FinalizeLCD(SiS_Private *SiS_Pr, USHORT BaseAddr,UCHAR *ROMAddr,USHORT ModeN
 
   if(!(SiS_Pr->SiS_VBType & VB_SIS301LV302LV)) return;
 
+  if(SiS_Pr->SiS_VBInfo & (SetCRT2ToLCD | SetCRT2ToLCDA)) {
+     if(SiS_Pr->LVDSHL != -1) {
+        SiS_SetRegANDOR(SiS_Pr->SiS_Part4Port,0x24,0xfc,SiS_Pr->LVDSHL);
+     }
+  }
+
   if(SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_PanelCustom) return;
   if(SiS_Pr->UseCustomMode) return;
 
@@ -11832,7 +11838,9 @@ SiS_FinalizeLCD(SiS_Private *SiS_Pr, USHORT BaseAddr,UCHAR *ROMAddr,USHORT ModeN
 
   if(SiS_Pr->SiS_CustomT == CUT_CLEVO1024) {
      if(SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1024x768) {  /* Maybe all panels? */
-        SiS_SetRegANDOR(SiS_Pr->SiS_Part4Port,0x24,0xfc,0x01);
+        if(SiS_Pr->LVDSHL == -1) {
+           SiS_SetRegANDOR(SiS_Pr->SiS_Part4Port,0x24,0xfc,0x01);
+	}
 	return;
      }
   }
@@ -11840,7 +11848,9 @@ SiS_FinalizeLCD(SiS_Private *SiS_Pr, USHORT BaseAddr,UCHAR *ROMAddr,USHORT ModeN
   if(SiS_Pr->SiS_CustomT == CUT_CLEVO10242) {
      if(SiS_Pr->SiS_VBInfo & (SetCRT2ToLCD | SetCRT2ToLCDA)) {
         if(SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1024x768) {  /* Maybe all panels? */
-           SiS_SetRegANDOR(SiS_Pr->SiS_Part4Port,0x24,0xfc,0x01);
+	   if(SiS_Pr->LVDSHL == -1) {
+              SiS_SetRegANDOR(SiS_Pr->SiS_Part4Port,0x24,0xfc,0x01);
+	   }
 	   if(SiS_Pr->SiS_VBInfo & SetCRT2ToLCDA) {
 	      tempch = SiS_GetReg1(SiS_Pr->SiS_P3d4,0x36) >> 4;
 	      if(tempch == 3) {
@@ -11861,8 +11871,10 @@ SiS_FinalizeLCD(SiS_Private *SiS_Pr, USHORT BaseAddr,UCHAR *ROMAddr,USHORT ModeN
 	SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x30,0x00);
 	SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x34,0x10);
      } else if(SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1280x1024) {   /* Maybe all panels? */
-        /* Maybe ACER only? */
-        SiS_SetRegANDOR(SiS_Pr->SiS_Part4Port,0x24,0xfc,0x01);
+        if(SiS_Pr->LVDSHL == -1) {
+           /* Maybe ACER only? */
+           SiS_SetRegANDOR(SiS_Pr->SiS_Part4Port,0x24,0xfc,0x01);
+	}
      }
      tempch = SiS_GetReg1(SiS_Pr->SiS_P3d4,0x36);
      tempch &= 0xf0;
