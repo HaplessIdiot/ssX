@@ -526,7 +526,7 @@ XVFB = Xvfb
 #if defined(XF86Server) || (!MakeDllModules && (defined(XnestServer) || defined(XVirtualFramebufferServer)))
 MakeMutex($(XF86SERVER) $(XNEST) $(XVFB))
 #endif
-MakeMutex($(STDDIRS) mfb cfb cfb16 cfb32)
+MakeMutex($(STDDIRS) mfb fb cfb cfb16 cfb24 cfb32)
 #endif
 
 
@@ -534,6 +534,7 @@ MakeMutex($(STDDIRS) mfb cfb cfb16 cfb32)
 XCOMM
 XCOMM XFree86 Server
 XCOMM
+FBDIR = fb
 MFBDIR  = mfb
 CFB8DIR = cfb
 CFB16DIR = cfb16
@@ -543,7 +544,7 @@ CFB32DIR = cfb32
 AFBDIR = afb
 #endif
 DDXDIR1  = hw/xfree86
-XF86SERVERSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) $(AFBDIR) $(DDXDIR1) $(DEPDIRS)
+XF86SERVERSUBDIRS = $(STDDIRS) $(MFBDIR) $(FBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) $(AFBDIR) $(DDXDIR1) $(DEPDIRS)
 XF86INIT   = $(XF86COMSRC)/xf86Init.o $(XF86COMSRC)/xf86IniExt.o
 XF86COMLIB = $(XF86COMSRC)/LibraryTargetName(xf86)
 XF86PARSLIB= $(XF86PARSERSRC)/LibraryTargetName(xf86config)
