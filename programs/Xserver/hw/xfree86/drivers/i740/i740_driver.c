@@ -92,6 +92,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "xf86xv.h"
 #include "Xv.h"
 
+#include "vbe.h"
+
 /* Required Functions: */
 static OptionInfoPtr I740AvailableOptions(int chipid, int busid);
 
@@ -454,6 +456,18 @@ I740Probe(DriverPtr drv, int flags) {
   return foundScreen;
 }
 
+extern xf86MonPtr ConfiguredMonitor;
+
+void
+I740ProbeDDC(ScrnInfoPtr pScrn, int index)
+{
+    vbeInfoPtr pVbe;
+    if (xf86LoadSubModule(pScrn, "vbe")) {
+	pVbe = VBEInit(NULL,index);
+	ConfiguredMonitor = vbeDoEDID(pVbe);
+    }
+}
+
 /*
  * I740PreInit --
  *
@@ -473,17 +487,7 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
   int flags24;
   rgb defaultWeight = {0, 0, 0};
 
-  if (flags & PROBE_DETECT) return FALSE;
-
   if (pScrn->numEntities != 1) return FALSE;
-
-  /* The vgahw module should be loaded here when needed */
-  if (!xf86LoadSubModule(pScrn, "vgahw")) return FALSE;
-
-  xf86LoaderReqSymLists(vgahwSymbols, NULL);
-
-  /* Allocate a vgaHWRec */
-  if (!vgaHWGetHWRec(pScrn)) return FALSE;
 
   /* Allocate driverPrivate */
   if (!I740GetRec(pScrn)) {
@@ -494,6 +498,19 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
 
   pI740->pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
   if (pI740->pEnt->location.type != BUS_PCI) return FALSE;
+
+  if (flags & PROBE_DETECT) {
+	I740ProbeDDC(pScrn, pI740->pEnt->index);
+	return;
+  }
+
+  /* The vgahw module should be loaded here when needed */
+  if (!xf86LoadSubModule(pScrn, "vgahw")) return FALSE;
+
+  xf86LoaderReqSymLists(vgahwSymbols, NULL);
+
+  /* Allocate a vgaHWRec */
+  if (!vgaHWGetHWRec(pScrn)) return FALSE;
 
   pI740->PciInfo = xf86GetPciInfoForEntity(pI740->pEnt->index);
   pI740->PciTag = pciTag(pI740->PciInfo->bus, pI740->PciInfo->device,
