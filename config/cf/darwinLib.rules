@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/darwinLib.rules,v 1.11 2004/03/25 03:36:21 dawes Exp $
+XCOMM $XFree86: xc/config/cf/darwinLib.rules,v 1.12 2004/04/08 01:40:19 dawes Exp $
 /*
  * Darwin/Mac OS X shared library rules
  */
@@ -48,7 +48,7 @@ install::								@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	$(INSTALL) $(INSTALLFLAGS) $(INSTLIBFLAGS) Concat($(LIBPREFIX),libname.rev.dylib) $(DESTDIR)dest @@\
 	@SetMajorRev(rev); \						@@\
-	  if [ rev != $$MAJREV ]; then (set -x;				@@\
+	  if [ rev != $$MAJREV ]; then (set -x; \			@@\
 	    $(RM) Concat($(DESTDIR)dest/$(LIBPREFIX),libname.$$MAJREV.dylib) && \ @@\
 	    $(LN) Concat($(LIBPREFIX),libname.rev.dylib) Concat($(DESTDIR)dest/$(LIBPREFIX),libname.$$MAJREV.dylib)); fi @@\
 	@if $(SOSYMLINK); then (set -x; \				@@\
