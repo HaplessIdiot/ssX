@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.53 2000/06/07 02:13:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.54 2000/10/20 12:57:26 alanh Exp $ */
 
 /*
  *
@@ -28,7 +28,7 @@
 #include "os.h"
 /* For stat() and related stuff */
 #define NO_OSLIB_PROTOTYPES
-#define NO_COMPILER_H
+/* #define NO_COMPILER_H */
 #include "xf86_OSlib.h"
 #if defined(SVR4)
 #include <sys/stat.h>
