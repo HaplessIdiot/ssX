@@ -1,4 +1,71 @@
 XFree86 4.0.99.1 (16 February 2001)
+ 194. Fixed several memleaks in PCI bus code (Egbert Eich).
+ 193. Added code to disable SIGIO when entering SETUP state and reenable
+      it when leaving SETUP state (Egbert Eich).
+ 192. Add type of option argument as comment to config file.
+      (xf86cfg might need some fixing) (Egbert Eich).
+      (Hopefully) fixed reordering of chips so primary comes first 
+      (Egbert Eich).
+ 191. Fixed bug that caused server to crash when a DGA private colormap 
+      was freed as miSprite still had a pointer to this colormap 
+      (Egbert Eich).
+ 190. Fixed savage driver for altered vbe functionality (Egbert Eich).
+ 189. Moved bulk of generic VBE functionality from VESA driver into 
+      the vbe module (Egbert Eich).
+ 188. Fixed some bugs in vesa driver (Egbert Eich).
+ 187. Fixed memleaks in parser code as well as several referenced freed 
+      pointers which pollute output of memory debugger and obsucre debugging
+      (Egbert Eich).
+ 186.  Fixed ChangeWindowAttributes() in cfb8_16 code (Egbert Eich).
+ 185. Moved Linux specific typedef from shared/xf86AXP.h to linux-specific
+      os-level code (Egbert Eich).
+ 184. Added option to int10 softbooter to POST even primary device.
+ 183. Fixed memory leak in linux int10 code (Egbert Eich).
+ 182. Modified vm86 trap code not to fail on a #LOCK prefix byte 
+      (Egbert Eich).
+ 181. Fixed memory leak in posix_tty.c (Egbert Eich).
+ 180. Added support to generic driver to POST even primary devices
+      (Egbert Eich).
+ 179. Added support for more AXP chipsets that require sparse addressing
+      to bsd os level (Egbert Eich).
+ 178. Added missing symbols to C&T driver (Egbert Eich).
+ 177. Fixed problems with Xv code in C&T driver (Egbert Eich).
+ 176. Fixed a vertical and horizontal offsets on HiQV chips due to
+      non-"standard" handling of H/VBlankEnd registers (Egbert Eich).
+ 175. Removed code that sets a chipset into graphics mode when 
+      saving/restoring fonts in standard vga code. This causes problems 
+      on some trident chipsets (Egbert Eich). [EXPERIMENTAL!]
+ 174. Moved KGA code that handles the H/VBlankEnd code that overscans remain
+      invisible to separate functions. This way drivers have better control
+      over these registers.
+ 173. TGA driver fixes (Jay Estabrook).
+ 172. Moved option processing to allow VGAClock option to be processed
+      (Egbert Eich).
+ 171. Added option to swap heads on a matrox G400 dual head (Stefan Dirsch).
+ 170. Added handling of broken planemask support on different models of
+      matrox G100 cards (Egbert Eich). 
+ 169. Fixed minor memory leak in ati driver (Egbert Eich).
+ 168. Fixed resource registration in TDFX driver (Egbert Eich).
+ 167. Set new modelines for Trident LCD modes (Egbert Eich).
+ 166. Fixed handling of PreEnd Control register on Trident (Egbert Eich).
+ 165. Fixed problem with Trident Blade Mono8x8Patterns (Egbert Eich).
+ 164. Fixed clock division for CyberBlade E4 (Egbert Eich).
+ 163. Removed last static symbols from Tseng driver (Egbert Eich).
+ 162. Fixed handling of ICS5341 RAMDAC under 24bpp (Egbert Eich).
+ 161. Fixed resource registration in rendition driver (Egbert Eich).
+ 160. Attempt to fix various other issues on rendition - driver remains
+      to be broken though (Egbert Eich)!
+ 159. Fixed false linear size for NeoMagic 2380 (Egbert Eich).
+ 158. Modified calulation of aperture size in NeoMagic driver to use the 
+      available video memory instead of the map size (Egbert Eich).
+ 157. Added a delay to prevent rare cases of lockups when starting 
+      X on NeoMagic 2160 (Miles Lane).
+ 156. Added DGA to Cirrus driver (Egbert Eich).
+ 155. Missing symbols added to Cirrus driver (Egbert Eich).
+ 154. Fixed acceleration on Alpine (Cirrus) driver. PIO and MMIO versions of 
+      the accelerator driver now support the same functionality (Egbert Eich).
+ 153. Removed unneededed call to xfree() in ddc code (Egbert Eich).
+ 152. Fix NV, Glint, ati and mga drivers for Alpha EV56 machines
  151. Siliconmotion driver updates, including:
         - Color change/flash at 8bpp when switch back to desktop in rotation
           mode.
@@ -12477,4 +12544,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1579 2001/02/15 11:05:37 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1580 2001/02/15 18:20:29 dawes Exp $
