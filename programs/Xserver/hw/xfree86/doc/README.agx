@@ -42,81 +42,82 @@
   3.  Known Problems
 
 
-  o  The accelerated line routines don't match lines written by the
-     mi/cfb routines. This is noticeable when switching between virtual
-     consoles while running routines that draw and erase lines. Seems to
-     have been reduced after some recent fixes to the mi/cfb code.
+     o  The accelerated line routines don't match lines written by the
+        mi/cfb routines. This is noticeable when switching between
+        virtual consoles while running routines that draw and erase
+        lines. Seems to have been reduced after some recent fixes to the
+        mi/cfb code.
 
 
 
-  o  The AGX-016 adds support for additional virtual width's, the
-     current server does not support these.
+     o  The AGX-016 adds support for additional virtual width's, the
+        current server does not support these.
 
 
 
-  o  The video memory probe has been problematic, recent fixes haven't
-     failed yet, but earler versions showed promise too...
+     o  The video memory probe has been problematic, recent fixes
+        haven't failed yet, but earler versions showed promise too...
 
 
 
-  o  Needs more testing.
+     o  Needs more testing.
 
 
 
-
-  o  Sometimes running with -probeonly option under Linux results in
-     corruption of the lower-order characters of the font (most
-     noticable are the blanks). This is difficult to reproduce (I've
-     only seen once myself), one fix was made hours before 3.1 release
-     that may have fixed it, but ...
+     o  Sometimes running with -probeonly option under Linux results in
+        corruption of the lower-order characters of the font (most
+        noticable are the blanks). This is difficult to reproduce (I've
+        only seen once myself), one fix was made hours before 3.1
+        release that may have fixed it, but ...
 
 
   4.  ToDo
 
 
-  o  Address the above known problems.
+     o  Address the above known problems.
 
 
 
-  o  Additional acceleration routines and general performance
-     improvements. Many existing acceleration routines are Q&D
-     adaptations of existing routines from other servers that support
-     graphics chips that differ significantly, architecturally, from
-     that XGA and are undoubtly less than optimal.
+     o  Additional acceleration routines and general performance
+        improvements. Many existing acceleration routines are Q&D
+        adaptations of existing routines from other servers that support
+        graphics chips that differ significantly, architecturally, from
+        that XGA and are undoubtly less than optimal.
 
 
 
-  o  Support other pixel depths.
+     o  Support other pixel depths.
 
 
 
 
-  o  Complete HW cursor support, most of the code is done (or borrowed
-     from other servers). There just remains a little setup code and
-     then finding a lot of time to debug and test the numerous
-     permutations.
+     o  Complete HW cursor support, most of the code is done (or
+        borrowed from other servers). There just remains a little setup
+        code and then finding a lot of time to debug and test the
+        numerous permutations.
 
 
 
-  o  Complete support for the Graphite Pro's 84-pin RAMDAC.  (the 2MB
-     version of the Graphite Pro has both RAMDACs, the 1Mb only the
-     44-pin RAMDAC). Currently, the 84-pin RAMDAC is only supported in
-     clock-doubled pixmux mode, the server will switch between RAMDACs
-     as required by the video mode.
+     o  Complete support for the Graphite Pro's 84-pin RAMDAC.  (the 2MB
+        version of the Graphite Pro has both RAMDACs, the 1Mb only the
+        44-pin RAMDAC). Currently, the 84-pin RAMDAC is only supported
+        in clock-doubled pixmux mode, the server will switch between
+        RAMDACs as required by the video mode.
 
 
 
-  o  Implement more HW probing, this will be difficult as it appears
-     some (all?) vendors don't implement the VESA VXE POS registers,
-     although the AGX chip does support it (and some vendors claim VXE
-     compliance...). There are a few rev/vendor registers in the AGX
-     chip but they are not documented. Note: SuperProbe also does not
-     yet support probing for AGX/XGA chips.
+     o  Implement more HW probing, this will be difficult as it appears
+        some (all?) vendors don't implement the VESA VXE POS registers,
+        although the AGX chip does support it (and some vendors claim
+        VXE compliance...). There are a few rev/vendor registers in the
+        AGX chip but they are not documented. Note: SuperProbe also does
+        not yet support probing for AGX/XGA chips.
 
 
 
-  o  Micro-optimizations, in particularly reducing processing overhead
-     for common special cases that don't require full generality.
+     o  Micro-optimizations, in particularly reducing processing
+        overhead for common special cases that don't require full
+        generality.
 
 
   5.  XF86Config
@@ -129,7 +130,6 @@
         Be sure to check the clock rating of the RAMDAC(s) on your video
         board and don't exceed that rating even if the server allows it,
         overclocking RAMDACs will damage them.
-
         The clock rating generally appears as suffix to part number, may
         only have the most significant digit(s), and may be mixed with
         other codes (e.g. package type). For example, an 85Mhz Bt481 in

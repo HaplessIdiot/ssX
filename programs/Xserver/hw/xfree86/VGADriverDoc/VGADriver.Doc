@@ -191,124 +191,129 @@
   configuration steps that must be followed:
 
 
-  1. Choose the name for your driver subdirectory and data structures.
-     Since the current driver scheme allows (in fact, encourages)
-     putting drivers for multiple related chipsets in a single driver,
-     it is usually best to use the vendor name, rather than a chipset
-     version.  The fact that older XFree86 drivers do not follow this
-     convention should not deter you from using it now - most of that
-     code was developed before the driver interface had been made
-     flexible and extensible.
+     1. Choose the name for your driver subdirectory and data
+        structures.  Since the current driver scheme allows (in fact,
+        encourages) putting drivers for multiple related chipsets in a
+        single driver, it is usually best to use the vendor name, rather
+        than a chipset version.  The fact that older XFree86 drivers do
+        not follow this convention should not deter you from using it
+        now - most of that code was developed before the driver
+        interface had been made flexible and extensible.
 
-     For this documentation, we'll use chips from the SuperDuper Chips
-     vendor.  Hence, we'll use `sdc' for the name of the driver.
+        For this documentation, we'll use chips from the SuperDuper
+        Chips vendor.  Hence, we'll use `sdc' for the name of the
+        driver.
 
-  2. Decide whether your driver will support the color server, the
-     monochrome server, or both.  For this documentation, we will assume
-     that both the color and monochrome servers will be supported.  If
-     you intend to support only the color server, the steps for the
-     monochrome server can be ignored.  If you intend to support only
-     the monochrome server, the steps for the color server listed should
-     be performed for the monochrome server, and the monochrome steps
-     ignored.  Most of the existing drivers support only the color or
-     both servers; the ``generic'' driver is the only driver (currently)
-     that supports just the monochrome server.
+     2. Decide whether your driver will support the color server, the
+        monochrome server, or both.  For this documentation, we will
+        assume that both the color and monochrome servers will be
+        supported.  If you intend to support only the color server, the
+        steps for the monochrome server can be ignored.  If you intend
+        to support only the monochrome server, the steps for the color
+        server listed should be performed for the monochrome server, and
+        the monochrome steps ignored.  Most of the existing drivers
+        support only the color or both servers; the ``generic'' driver
+        is the only driver (currently) that supports just the monochrome
+        server.
 
-  3. Create your driver directories:
-
-
-  o  If you are working in the source tree, create the following
-     directories:
-
-        xc/programs/Xserver/hw/xfree86/vga256/drivers/sdc
-        xc/programs/Xserver/hw/xfree86/vga16/drivers/sdc
-        xc/programs/Xserver/hw/xfree86/vga2/drivers/sdc
+     3. Create your driver directories:
 
 
-  o  If you are working in the Link Kit, create the following
-     directories:
+        o  If you are working in the source tree, create the following
+           directories:
 
-        /usr/X11R6/lib/Server/drivers/vga256/sdc
-        /usr/X11R6/lib/Server/drivers/vga16/sdc
-        /usr/X11R6/lib/Server/drivers/vga2/sdc
-
-
-
-  4. Set up the Imakefile parameters to cause your driver to be built:
+              xc/programs/Xserver/hw/xfree86/vga256/drivers/sdc
+              xc/programs/Xserver/hw/xfree86/vga16/drivers/sdc
+              xc/programs/Xserver/hw/xfree86/vga2/drivers/sdc
 
 
-  o  If you are working in the source tree:
+        o  If you are working in the Link Kit, create the following
+           directories:
 
-     a. Edit the file xc/config/cf/xfree86.cf, and add `sdc' to the list
-        for the definitions for `XF86Vga256Drivers', `XF86Vga16Drivers'
-        and `XF86Vga2Drivers'.  You should put `sdc' just before
-        `generic' in the list (i.e. second last), to ensure that none of
-        the other driver's probe functions incorrectly detect the `sdc'
-        chipset .
-
-     b. Edit the file xc/config/cf/xf86site.def, and add the same
-        entries in this file (this is just a comment that shows the
-        default values).
-
-     c. Edit the site.def.LK file in
-        xc/programs/Xserver/hw/xfree86/LinkKit/, and add the same
-        entries in this file.  This is the prototype `site.def' file
-        that will be installed in the Link Kit.
+              /usr/X11R6/lib/Server/drivers/vga256/sdc
+              /usr/X11R6/lib/Server/drivers/vga16/sdc
+              /usr/X11R6/lib/Server/drivers/vga2/sdc
 
 
 
-  o  If you are working in the Link Kit, edit the file
-     /usr/X11R6/lib/Server/site.def, and add `sdc' to the
-     `XF86Vga256Drivers', `XF86Vga16Drivers' and `XF86Vga2Drivers'
-     definitions as described in (a) above.
+     4. Set up the Imakefile parameters to cause your driver to be
+        built:
 
-  5. Now copy the prototype files into your new directories:
 
-  o  If you are working in the source tree, copy the `stub' files as
-     follows (directories are below xc/programs/Xserver):
+        o  If you are working in the source tree:
 
-     Imakefile.stub =>
-        hw/xfree86/vga256/drivers/sdc/Imakefile
+           a. Edit the file xc/config/cf/xfree86.cf, and add `sdc' to
+              the list for the definitions for `XF86Vga256Drivers',
+              `XF86Vga16Drivers' and `XF86Vga2Drivers'.  You should put
+              `sdc' just before `generic' in the list (i.e. second
+              last), to ensure that none of the other driver's probe
+              functions incorrectly detect the `sdc' chipset .
 
-     stub_driver.c =>
-        hw/xfree86/vga256/drivers/sdc/sdc_driver.c
+           b. Edit the file xc/config/cf/xf86site.def, and add the same
+              entries in this file (this is just a comment that shows
+              the default values).
 
-     stub_bank.s =>
-        hw/xfree86/vga256/drivers/sdc/sdc_bank.s
+           c. Edit the site.def.LK file in
+              xc/programs/Xserver/hw/xfree86/LinkKit/, and add the same
+              entries in this file.  This is the prototype `site.def'
+              file that will be installed in the Link Kit.
 
-     Imakefile.stub =>
-        hw/xfree86/vga16/drivers/sdc/Imakefile (then edit this Imakefile
-        and make the changes described in the comments).
 
-     Imakefile.stub =>
-        hw/xfree86/vga2/drivers/sdc/Imakefile (then edit this Imakefile
-        and make the changes described in the comments).
 
-  o  If you are working in the Link Kit, copy the `stub' files as
-     follows:
+        o  If you are working in the Link Kit, edit the file
+           /usr/X11R6/lib/Server/site.def, and add `sdc' to the
+           `XF86Vga256Drivers', `XF86Vga16Drivers' and `XF86Vga2Drivers'
+           definitions as described in (a) above.
 
-     Imakefile.stub =>
-        /usr/X11R6/lib/Server/drivers/vga256/sdc/Imakefile
+     5. Now copy the prototype files into your new directories:
 
-     stub_driver.c =>
-        /usr/X11R6/lib/Server/drivers/vga256/sdc/sdc_driver.c
+        o  If you are working in the source tree, copy the `stub' files
+           as follows (directories are below xc/programs/Xserver):
 
-     stub_bank.s =>
-        /usr/X11R6/lib/Server/drivers/vga256/sdc/sdc_bank.s
+           Imakefile.stub =>
+              hw/xfree86/vga256/drivers/sdc/Imakefile
 
-     Imakefile.stub =>
-        /usr/X11R6/lib/Server/drivers/vga16/sdc/Imakefile (then edit
-        this Imakefile and make the changes described in the comments).
+           stub_driver.c =>
+              hw/xfree86/vga256/drivers/sdc/sdc_driver.c
 
-     Imakefile.stub =>
-        /usr/X11R6/lib/Server/drivers/vga2/sdc/Imakefile (then edit this
-        Imakefile and make the changes described in the comments).
+           stub_bank.s =>
+              hw/xfree86/vga256/drivers/sdc/sdc_bank.s
 
-  6. Edit each of the files you've just copied, and replace `stub' with
-     `sdc' and `STUB' with `SDC' wherever they appear.
+           Imakefile.stub =>
+              hw/xfree86/vga16/drivers/sdc/Imakefile (then edit this
+              Imakefile and make the changes described in the comments).
 
-     That's all the prep work needed.  Now it's time to work on the
-     actual driver.
+           Imakefile.stub =>
+              hw/xfree86/vga2/drivers/sdc/Imakefile (then edit this
+              Imakefile and make the changes described in the comments).
+
+        o  If you are working in the Link Kit, copy the `stub' files as
+           follows:
+
+           Imakefile.stub =>
+              /usr/X11R6/lib/Server/drivers/vga256/sdc/Imakefile
+
+           stub_driver.c =>
+              /usr/X11R6/lib/Server/drivers/vga256/sdc/sdc_driver.c
+
+           stub_bank.s =>
+              /usr/X11R6/lib/Server/drivers/vga256/sdc/sdc_bank.s
+
+           Imakefile.stub =>
+              /usr/X11R6/lib/Server/drivers/vga16/sdc/Imakefile (then
+              edit this Imakefile and make the changes described in the
+              comments).
+
+           Imakefile.stub =>
+              /usr/X11R6/lib/Server/drivers/vga2/sdc/Imakefile (then
+              edit this Imakefile and make the changes described in the
+              comments).
+
+     6. Edit each of the files you've just copied, and replace `stub'
+        with `sdc' and `STUB' with `SDC' wherever they appear.
+
+  That's all the prep work needed.  Now it's time to work on the actual
+  driver.
 
 
   5.  The Bank-Switching Functions
@@ -384,97 +389,101 @@
   responsibilities of the driver are:
 
 
-  1. Provide a chipset-descriptor data structure to the server.  This
-     data structure contains pointers to the driver functions and some
-     data-structure initialization as well.
+     1. Provide a chipset-descriptor data structure to the server.  This
+        data structure contains pointers to the driver functions and
+        some data-structure initialization as well.
 
-  2. Provide a driver-local data structure to hold the contents of the
-     chipset registers.  This data structure will contain a generic part
-     and a driver-specific part.  It is used to save the initial chipset
-     state, and is initialized by the driver to put the chipset into
-     different modes.
 
-  3. Provide an identification function that the server will call to
-     list the chipsets that the driver is capable of supporting.
+     2. Provide a driver-local data structure to hold the contents of
+        the chipset registers.  This data structure will contain a
+        generic part and a driver-specific part.  It is used to save the
+        initial chipset state, and is initialized by the driver to put
+        the chipset into different modes.
 
-  4. Provide a probe function that will identify this chipset as
-     different from all others, and return a positive response if the
-     chipset this driver supports is installed, and a negative response
-     otherwise.
+     3. Provide an identification function that the server will call to
+        list the chipsets that the driver is capable of supporting.
 
-  5. Provide a function to select dot-clocks available on the board.
+     4. Provide a probe function that will identify this chipset as
+        different from all others, and return a positive response if the
+        chipset this driver supports is installed, and a negative
+        response otherwise.
 
-  6. Provide functions to save, restore, and initialize the driver-
-     local data structure.
+     5. Provide a function to select dot-clocks available on the board.
 
-  7. Provide a function to set the starting address for display in the
-     video memory.  This implements the virtual-screen for the server.
+     6. Provide functions to save, restore, and initialize the driver-
+        local data structure.
 
-  8. Perhaps provide a function for use during VT-switching.
+     7. Provide a function to set the starting address for display in
+        the video memory.  This implements the virtual-screen for the
+        server.
 
-  9. Perhaps provide a function to check if each mode is suitable for
-     the chipset being used.
+     8. Perhaps provide a function for use during VT-switching.
+
+     9. Perhaps provide a function to check if each mode is suitable for
+        the chipset being used.
 
   Before stepping through the driver file in detail, here are some
   important issues:
 
 
-  1. If your driver supports both the color and monochrome servers, you
-     should take care of both cases in the same file.  Most things are
-     the same - you can differentiate between the two with the MONOVGA
-     #define.  If the 16 color server is supported, code specific to it
-     can be enabled with the XF86VGA16 #define.  In most cases  it is
-     sufficient to put the following near the top of the stub_driver.c
-     file:
+     1. If your driver supports both the color and monochrome servers,
+        you should take care of both cases in the same file.  Most
+        things are the same - you can differentiate between the two with
+        the MONOVGA #define.  If the 16 color server is supported, code
+        specific to it can be enabled with the XF86VGA16 #define.  In
+        most cases  it is sufficient to put the following near the top
+        of the stub_driver.c file:
 
-        #ifdef XF86VGA16
-        #define MONOVGA
-        #endif
+           #ifdef XF86VGA16
+           #define MONOVGA
+           #endif
 
 
-  2. The color server uses the SVGA's 8-bit packed-pixel mode.  The
-     monochrome and vga16 servers uses the VGA's 16-color mode (4 bit-
-     planes).  Only one plane is enabled for the monochrome server.
+     2. The color server uses the SVGA's 8-bit packed-pixel mode.  The
+        monochrome and vga16 servers uses the VGA's 16-color mode (4
+        bit-planes).  Only one plane is enabled for the monochrome
+        server.
 
-  3. It is possible for you to define your monochrome driver so that no
-     bank-switching is done.  This is not particularly desirable, as it
-     yields only 64k of viewing area.
+     3. It is possible for you to define your monochrome driver so that
+        no bank-switching is done.  This is not particularly desirable,
+        as it yields only 64k of viewing area.
 
-     Keeping these things in mind, you need to find the registers from
-     your SVGA chipset that control the desired features.  In
-     particular, registers that control:
+  Keeping these things in mind, you need to find the registers from your
+  SVGA chipset that control the desired features.  In particular, regis-
+  ters that control:
 
-  1. Clock select bits.  The two low-order bits are part of the standard
-     Miscellaneous Output Register; most SVGA chipsets will include 1 or
-     2 more bits, allowing the use of 8 or 16 discrete clocks.
+     1. Clock select bits.  The two low-order bits are part of the
+        standard Miscellaneous Output Register; most SVGA chipsets will
+        include 1 or 2 more bits, allowing the use of 8 or 16 discrete
+        clocks.
 
-  2. Bank selection.  The SVGA chipset will have one or two registers
-     that control read/write bank selection.
+     2. Bank selection.  The SVGA chipset will have one or two registers
+        that control read/write bank selection.
 
-  3. CRTC extensions.  The standard VGA registers don't have enough bits
-     to address large displays.  So the SVGA chipsets have extension
-     bits.
+     3. CRTC extensions.  The standard VGA registers don't have enough
+        bits to address large displays.  So the SVGA chipsets have
+        extension bits.
 
-  4. Interlaced mode.  Standard VGA does not support interlaced
-     displays.  So the SVGA chipset will have a bit somewhere to control
-     interlaced mode.  Some chipsets require additional registers to be
-     set up to control interlaced mode
+     4. Interlaced mode.  Standard VGA does not support interlaced
+        displays.  So the SVGA chipset will have a bit somewhere to
+        control interlaced mode.  Some chipsets require additional
+        registers to be set up to control interlaced mode
 
-  5. Starting address.  The standard VGA only has 16 bits in which to
-     specify the starting address for the display.  This restricts the
-     screen size usable by the virtual screen feature.  The SVGA chipset
-     will usually provide one or more extension bits.
+     5. Starting address.  The standard VGA only has 16 bits in which to
+        specify the starting address for the display.  This restricts
+        the screen size usable by the virtual screen feature.  The SVGA
+        chipset will usually provide one or more extension bits.
 
-  6. Lock registers.  Many SVGA chipset prevent modification of extended
-     registers unless the registers are first ``unlocked''.  You will
-     need to disable protection of any registers you will need for other
-     purposes.
+     6. Lock registers.  Many SVGA chipset prevent modification of
+        extended registers unless the registers are first ``unlocked''.
+        You will need to disable protection of any registers you will
+        need for other purposes.
 
-  7. Any other facilities.  Some chipset may, for example, require that
-     certain bits be set before you can access extended VGA memory
-     (beyond the IBM-standard 256k).  Or other facilities; read through
-     all of the extended register descriptions and see if anything
-     important leaps out at you.
+     7. Any other facilities.  Some chipset may, for example, require
+        that certain bits be set before you can access extended VGA
+        memory (beyond the IBM-standard 256k).  Or other facilities;
+        read through all of the extended register descriptions and see
+        if anything important leaps out at you.
 
   If you are fortunate, the chipset vendor will include in the databook
   some tables of register settings for various BIOS modes.  You can
@@ -525,7 +534,6 @@
   manipulated by your driver.  That's all there is to this data
   structure.
 
-
   Next you must initialize the `SDC' structure (type `vgaVideoChipRec').
   This is the global structure that identifies your driver to the
   server.  Its name MUST be `SDC', in all caps - i.e. it must match the
@@ -539,51 +547,53 @@
   Next, you must initialize the information about how your chipset does
   bank switching.  The following fields must be filled in:
 
-  1. ChipMapSize - the amount of memory that must be mapped into the
-     server's address space.  This is almost always 64k (from 0xA0000 to
-     0xAFFFF).  Some chipsets use a 128k map (from 0xA0000 to 0xBFFFF).
-     If your chipset gives an option, use the 64k window, as a 128k
-     window rules out using a Hercules or Monochrome Display Adapter
-     card with the SVGA.
+     1. ChipMapSize - the amount of memory that must be mapped into the
+        server's address space.  This is almost always 64k (from 0xA0000
+        to 0xAFFFF).  Some chipsets use a 128k map (from 0xA0000 to
+        0xBFFFF).  If your chipset gives an option, use the 64k window,
+        as a 128k window rules out using a Hercules or Monochrome
+        Display Adapter card with the SVGA.
 
-  2. ChipSegmentSize - the size of each bank within the ChipMapSize
-     window.  This is usually also 64k, however, some chipsets split the
-     mapped window into a read portion and a write portion (for example
-     the PVGA1/Western Digital chipsets).
+     2. ChipSegmentSize - the size of each bank within the ChipMapSize
+        window.  This is usually also 64k, however, some chipsets split
+        the mapped window into a read portion and a write portion (for
+        example the PVGA1/Western Digital chipsets).
 
-  3. ChipSegmentShift - the number of bits by which an address will be
-     shifted right to mask of the bank number.  This is log-base-2 of
-     ChipSegmentSize.
+     3. ChipSegmentShift - the number of bits by which an address will
+        be shifted right to mask of the bank number.  This is log-base-2
+        of ChipSegmentSize.
 
-  4. ChipSegmentMask - a bitmask used to mask off the address within a
-     given bank.  This is (ChipSegmentSize-1).
+     4. ChipSegmentMask - a bitmask used to mask off the address within
+        a given bank.  This is (ChipSegmentSize-1).
 
-  5. ChipReadBottom,ChipReadTop - the addresses within the mapped window
-     in which read operations can be done.  Usually 0, and 64k,
-     respectively, except for those chipset that have separate read and
-     write windows.
+     5. ChipReadBottom,ChipReadTop - the addresses within the mapped
+        window in which read operations can be done.  Usually 0, and
+        64k, respectively, except for those chipset that have separate
+        read and write windows.
 
-  6. ChipWriteBottom,ChipWriteTop - same as above, for write operations.
+     6. ChipWriteBottom,ChipWriteTop - same as above, for write
+        operations.
 
-  7. ChipUse2Banks - a boolean value for whether this chipset has one or
-     two bank registers.  This is used to set up the screen-to-screen
-     operations properly.
+     7. ChipUse2Banks - a boolean value for whether this chipset has one
+        or two bank registers.  This is used to set up the screen-to-
+        screen operations properly.
 
-     There are three more fields that must be filled in:
+  There are three more fields that must be filled in:
 
-  1. ChipInterlaceType - this is either VGA_NO_DIVIDE_VERT or
-     VGA_DIVIDE_VERT.  Some chipsets require that the vertical timing
-     numbers be divided in half for interlaced modes.  Setting this flag
-     will take care of that.
+     1. ChipInterlaceType - this is either VGA_NO_DIVIDE_VERT or
+        VGA_DIVIDE_VERT.  Some chipsets require that the vertical timing
+        numbers be divided in half for interlaced modes.  Setting this
+        flag will take care of that.
 
-  2. ChipOptionFlags - this should always be `{0,}' in the data
-     structure initialization.  This is a bitfield that contains the
-     Option flags that are valid for this driver.  The appropriate bits
-     are initialized at the end of the Probe function.
+     2. ChipOptionFlags - this should always be `{0,}' in the data
+        structure initialization.  This is a bitfield that contains the
+        Option flags that are valid for this driver.  The appropriate
+        bits are initialized at the end of the Probe function.
 
-  3. ChipRounding - this gets set to the multiple by which the virtual
-     width of the display must be rounded for the 256-color server.
-     This value is usually 8, but may be 4 or 16 for some chipsets.
+     3. ChipRounding - this gets set to the multiple by which the
+        virtual width of the display must be rounded for the 256-color
+        server.  This value is usually 8, but may be 4 or 16 for some
+        chipsets.
 
 
   6.3.  The Ident() function
@@ -637,30 +647,35 @@
   Once the chipset is successfully identified, the Probe() function must
   do some other initializations:
 
-  1. If the user has not specified the `VideoRam' parameter in the
-     XF86Config file, the amount of installed memory must be determined.
+     1. If the user has not specified the `VideoRam' parameter in the
+        XF86Config file, the amount of installed memory must be
+        determined.
 
-  2. If the user has not specified the `Clocks' parameter in the
-     XF86Config file, the values for the available dot-clocks must be
-     determined.  This is done by calling the vgaGetClocks() function,
-     and passing it the number of clocks available and a pointer to the
-     ClockSelect() function.
+     2. If the user has not specified the `Clocks' parameter in the
+        XF86Config file, the values for the available dot-clocks must be
+        determined.  This is done by calling the vgaGetClocks()
+        function, and passing it the number of clocks available and a
+        pointer to the ClockSelect() function.
 
-  3. It is recommended that the `maxClock' field of the server's
-     `vga256InfoRec' structure be filled in with the maximum dot-clock
-     rate allowed for this chipset (specified in KHz).  If this is not
-     filled in a probe time, a default (currently 90MHz) will be used.
 
-  4. The `chipset' field of the server's `vga256InfoRec' structure must
-     be initialized to the name of the installed chipset.
+     3. It is recommended that the `maxClock' field of the server's
+        `vga256InfoRec' structure be filled in with the maximum dot-
+        clock rate allowed for this chipset (specified in KHz).  If this
+        is not filled in a probe time, a default (currently 90MHz) will
+        be used.
 
-  5. If the driver will be used with the monochrome server, the
-     `bankedMono' field of the server's `vga256InfoRec' structure must
-     be set to indicate whether the monochrome driver supports banking.
+     4. The `chipset' field of the server's `vga256InfoRec' structure
+        must be initialized to the name of the installed chipset.
 
-  6. If any option flags are used by this driver, the `ChipOptionFlags'
-     structure in the `vgaVideoChipRec' must be initialized with the
-     allowed option flags using the OFLG_SET() macro.
+     5. If the driver will be used with the monochrome server, the
+        `bankedMono' field of the server's `vga256InfoRec' structure
+        must be set to indicate whether the monochrome driver supports
+        banking.
+
+     6. If any option flags are used by this driver, the
+        `ChipOptionFlags' structure in the `vgaVideoChipRec' must be
+        initialized with the allowed option flags using the OFLG_SET()
+        macro.
 
 
   6.6.  The EnterLeave() function
@@ -682,18 +697,18 @@
   both restore a saved state and to install a new one created by the
   server.  The Restore() function must complete the following actions:
 
-  1. Ensure that Bank 0 is selected, and that any other state
-     information required prior to writing out a new state has been set
-     up.
+     1. Ensure that Bank 0 is selected, and that any other state
+        information required prior to writing out a new state has been
+        set up.
 
-  2. Call vgaHWRestore() to restore the generic VGA portion of the state
-     information.  This function is in the vgaHW.c file.
+     2. Call vgaHWRestore() to restore the generic VGA portion of the
+        state information.  This function is in the vgaHW.c file.
 
-  3. Restore the chipset-specific portion of the state information.
-     This may be done by simply writing out the register, or by doing a
-     read/modify/write cycle if only certain bits are to be modified.
-     Be sure to note the comment in the sample driver about how to
-     handle clock-select bits.
+     3. Restore the chipset-specific portion of the state information.
+        This may be done by simply writing out the register, or by doing
+        a read/modify/write cycle if only certain bits are to be
+        modified.  Be sure to note the comment in the sample driver
+        about how to handle clock-select bits.
 
   6.8.  The Save() function
 
@@ -701,12 +716,13 @@
   information when the server starts.  The Save() function must complete
   the following actions:
 
-  1. Ensure that Bank 0 is selected.
+     1. Ensure that Bank 0 is selected.
 
-  2. Call vgaHWSave() to extract the generic VGA portion of the state
-     information.  This function is in the vgaHW.c file.
+     2. Call vgaHWSave() to extract the generic VGA portion of the state
+        information.  This function is in the vgaHW.c file.
 
-  3. Extract the chipset-specific portion of the state information.
+     3. Extract the chipset-specific portion of the state information.
+
 
   6.9.  The Init() function
 
@@ -724,6 +740,7 @@
   The information about the particular mode being initialized is passed
   in the `mode' parameter, a pointer to a `DisplayModeRec' structure.
   This can be dereferenced to determine the needed parameters.
+
   If you only know how to initialize certain bits of the register, do
   that here, and make sure that the Restore() function does a
   read/modify/write to only manipulate those bits.  Again, refer to the
@@ -799,42 +816,44 @@
   you are working in the source tree or in the Link Kit.  Here are the
   steps for the initial build after installing your new driver files:
 
-  o  If you are working in the source tree, follow these steps:
+     o  If you are working in the source tree, follow these steps:
 
-     Go to xc/programs/Xserver, and enter `make Makefile', then `make
-     Makefiles depend all'
+        Go to xc/programs/Xserver, and enter `make Makefile', then `make
+        Makefiles depend all'
 
-  o  If you are working in the Link Kit, follow these steps:
-
-
-     1. Go to /usr/X11R6/lib/Server, and enter `./mkmf'
-
-     2. In the same directory, enter `make'
-
-     To rebuild the server after the initial build (e.g. after making
-     changes to your driver):
+     o  If you are working in the Link Kit, follow these steps:
 
 
-  o  If you are working in the source tree, follow these steps:
+        1. Go to /usr/X11R6/lib/Server, and enter `./mkmf'
+
+        2. In the same directory, enter `make'
+
+  To rebuild the server after the initial build (e.g. after making
+  changes to your driver):
 
 
-     1. Go to the appropriate drivers/ directory (e.g.,
-        xc/programs/Xserver/hw/xfree86/vga256/drivers), and enter
-        `make'.
-
-     2. Go to xc/programs/Xserver, and enter `make loadXF86_SVGA' (to
-        link the color server), `make loadXF86_VGA16' (to link the 16
-        color server) or `make loadXF86_Mono' (to link the mono server).
+     o  If you are working in the source tree, follow these steps:
 
 
-  o  If you are working in the Link Kit, follow these steps:
+        1. Go to the appropriate drivers/ directory (e.g.,
+           xc/programs/Xserver/hw/xfree86/vga256/drivers), and enter
+           `make'.
+
+        2. Go to xc/programs/Xserver, and enter `make loadXF86_SVGA' (to
+           link the color server), `make loadXF86_VGA16' (to link the 16
+           color server) or `make loadXF86_Mono' (to link the mono
+           server).
 
 
-     1. Go to the appropriate driver directory, and enter `make'.
+     o  If you are working in the Link Kit, follow these steps:
 
-     2. Go to /usr/X11R6/lib/server, and enter `make loadXF86_SVGA' (to
-        link the color server) or `make loadXF86_VGA16' (to link the 16
-        color server) or `make loadXF86_Mono' (to link the mono server).
+
+        1. Go to the appropriate driver directory, and enter `make'.
+
+        2. Go to /usr/X11R6/lib/server, and enter `make loadXF86_SVGA'
+           (to link the color server) or `make loadXF86_VGA16' (to link
+           the 16 color server) or `make loadXF86_Mono' (to link the
+           mono server).
 
 
   8.  Debugging
@@ -859,25 +878,25 @@
   rebuild your driver for debugging, though.  Do the following:
 
 
-  1. Go to the driver directory.
+     1. Go to the driver directory.
 
-  2. Edit the Makefile.  Look for the SECOND definition of
-     `CDEBUGFLAGS'.  Change this definition to
+     2. Edit the Makefile.  Look for the SECOND definition of
+        `CDEBUGFLAGS'.  Change this definition to
 
-                     CDEBUGFLAGS = -g -DNO_INLINE
+                        CDEBUGFLAGS = -g -DNO_INLINE
 
 
 
-  (this will enable debugging symbols and disable inlining of functions,
-  which can make single-stepping a nightmare).
+     (this will enable debugging symbols and disable inlining of func-
+     tions, which can make single-stepping a nightmare).
 
-  3. Remove the `sdc_driver.o' file.
+     3. Remove the `sdc_driver.o' file.
 
-  4. Now follow the steps above for rebuilding the server.
+     4. Now follow the steps above for rebuilding the server.
 
-     (Alternatively, instead of editing the Makefile, you can simply do
-     `make CDEBUGFLAGS="-g -DNO_INLINE"' after removing the old .o file,
-     then rebuild the server as described above).
+        (Alternatively, instead of editing the Makefile, you can simply
+        do `make CDEBUGFLAGS="-g -DNO_INLINE"' after removing the old .o
+        file, then rebuild the server as described above).
 
   This will give you a server with which you can set breakpoints in the
   driver functions and single-step them.  If you are working in the
@@ -902,6 +921,7 @@
   learning about this kind of programming, a week is more reasonable.
 
 
+
   10.  Advanced Topics
 
   Newer chipsets are getting into two advanced areas: programmable clock
@@ -915,24 +935,25 @@
   11.  References
 
 
-  o  Programmer's Guide to the EGA and VGA Cards, 2nd ed.
+     o  Programmer's Guide to the EGA and VGA Cards, 2nd ed.
 
-     Richard Ferraro
+        Richard Ferraro
 
-     Addison-Wesley, 1990
+        Addison-Wesley, 1990
 
-     ISBN 0-201-57025-4
-     (This is the bible of SVGA programming - it has a few errors, so
-     watch out).
+        ISBN 0-201-57025-4
 
-  o  vgadoc3.zip
+        (This is the bible of SVGA programming - it has a few errors, so
+        watch out).
 
-     Finn Thoegersen
+     o  vgadoc3.zip
 
-     (This is a collection of SVGA and other chipset documentation.  It
-     is available on most MS-DOS/Windows related FTP archives, including
-     wuarchive.  It is DOS/BIOS oriented, but is still extremely useful,
-     especially for developing probe functions).
+        Finn Thoegersen
+
+        (This is a collection of SVGA and other chipset documentation.
+        It is available on most MS-DOS/Windows related FTP archives,
+        including wuarchive.  It is DOS/BIOS oriented, but is still
+        extremely useful, especially for developing probe functions).
 
 
   12.  Vendor Contact Information
@@ -967,7 +988,6 @@
 
         (44) 0727-872424 (UK)
 
-
      Genoa Systems (GVGA)
         75 E. Trimble Road
 
@@ -988,6 +1008,7 @@
 
      Oak Technology, Inc (OTI-067,OTI-077)
         139 Kifer Ct.
+
         Sunnyvale, CA 94086
 
         (408) 737-0888
@@ -1027,27 +1048,6 @@
         (714) 932-4900
 
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VGADriv.sgml,v 3.1 1995/01/10 10:55:30 dawes Exp $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

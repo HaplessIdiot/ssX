@@ -1,96 +1,142 @@
-  XFree86 3.1 P9000 Server Release Notes
+  XFree86 3.1.1 P9000 Server Release Notes
   Erik Nygren (nygren@mit.edu)
-  20 September 1994
+  1995 January 15
 
   1.  Change Log
 
 
+     1995.01.15:
+
+        o  Fixed problem with line capping in accelerated line drawing.
+           (Chris Mason)
+
+        o  Fixed p9000QuadAluGXset to be  0 rather than 1.  (Erik
+           Nygren)
+
+     1995.01.14:
+
+        o  Clocks line is no longer used in XF86Config file.  Operation
+           should now be consistent with the operation of the other
+           servers which use programmable clocks. (Erik Nygren)
+
+        o  Users with 1MB cards can now explicitly specify videoRam in
+           the XF86Config file when autoprobing fails.  The new vram_128
+           option may also be used to force the detection of 128Kx8
+           SIMM's. (Erik Nygren)
+
+        o  Added p9000line.c and p9000seg.c for accelerated line drawing
+           code using the p9000 quad/clipping engine.  Blazingly fast
+           for 1 clipping rectangle, could be made faster for multiple
+           clipping regions by using software clipping. There is still a
+           bug which causes xtest to report Cap style incorrect for thin
+           line and CapNotLast for the XDrawLines tests but not for the
+           XDrawLine or XDrawSegments tests fixed in 1995.01.15 patch.
+           (Chris Mason)
+
+        o  Changed p9000blt.c, and p9000win.c to wait for the quad/blit
+           engine to be free.  Before a quad/blit, check SR_ISSUE_QBN,
+           then blit, then when all blits are done, do a p9000QBNotBusy.
+           (Chris Mason)
+
+        o  Changed p9000init.c to clear the screen using the quad meta
+           coord drawing mode.  Appears the rect mode does not update
+           the CINDEX register correctly.  Changed the color to 1
+           (black) from 0. (Chris)
+
+        o  Added p9000QuadAlu.  When drawing a quad, the p9000
+           equivilant to X's source  is the foreground mask.  When
+           bliting/pixel8ing/pixel1ing, it is the p9000 source mask and
+           the p9000alu lookup table should be used. (Chris Mason)
+
+        o  Added some more registers to p9000reg.h. (Chris Mason)
+
      1994.09.20:
 
-     o  Fixed problem which prevented 16 bpp modes from working (Erik
-        Nygren)
+        o  Fixed problem which prevented 16 bpp modes from working (Erik
+           Nygren)
 
      1994.09.16:
 
-     o  Added screen blanking support for 16 bpp and 32 bpp modes.
-        Screen blanking now powers down the RAMDAC rather than just
-        changing the planemask. (Chris Mason, Erik Nygren)
+        o  Added screen blanking support for 16 bpp and 32 bpp modes.
+           Screen blanking now powers down the RAMDAC rather than just
+           changing the planemask. (Chris Mason, Erik Nygren)
 
-     o  Fixed more problems caused by switch to XF86Config (Erik Nygren)
+        o  Fixed more problems caused by switch to XF86Config (Erik
+           Nygren)
 
-     o  Possible fix to maxclock for Orchid P9000 (Harry Langenbacher,
-        Erik Nygren)
+        o  Possible fix to maxclock for Orchid P9000 (Harry
+           Langenbacher, Erik Nygren)
 
      1994.09.15:
 
-     o  Now almost always works with XF86Config changes (Erik Nygren)
+        o  Now almost always works with XF86Config changes (Erik Nygren)
 
-     o  Cursor code looks at VTSema before writing to RAMDAC.  This had
-        been causing the x11perf server crash (Erik Nygren)
+        o  Cursor code looks at VTSema before writing to RAMDAC.  This
+           had been causing the x11perf server crash (Erik Nygren)
 
      1994.09.08:
 
-     o  Fixed problem with xdm and restarting the server (Erik Nygren)
+        o  Fixed problem with xdm and restarting the server (Erik
+           Nygren)
 
-     o  Fixed and enabled ImageRead in CopyArea (Chris Mason)
+        o  Fixed and enabled ImageRead in CopyArea (Chris Mason)
 
-     o  Made informational comments conform to standard :-) (Erik
-        Nygren)
+        o  Made informational comments conform to standard :-) (Erik
+           Nygren)
 
      1994.09.05:
 
-     o  Fixed BIOS probe for Viper PCI (Bob Hollinger)
+        o  Fixed BIOS probe for Viper PCI (Bob Hollinger)
 
-     o  Fixes to Orchid P9000 support (Harry Langenbacher)
+        o  Fixes to Orchid P9000 support (Harry Langenbacher)
 
-     o  Changing of datatypes in clock code (Harry Langenbacher)
+        o  Changing of datatypes in clock code (Harry Langenbacher)
 
-     o  Fixed clock and misc reg restoration so now works fine with
-        svgalib (Chris Mason, Harry, Erik)
+        o  Fixed clock and misc reg restoration so now works fine with
+           svgalib (Chris Mason, Harry, Erik)
 
      1994.08.29:
 
-     o  Increased number of memory regions in xf86_OSlib.h from 2 to 3
-        as needed by the Viper PCI (Erik Nygren)
+        o  Increased number of memory regions in xf86_OSlib.h from 2 to
+           3 as needed by the Viper PCI (Erik Nygren)
 
-     o  Changed method of short pauses in p9000vga.c to outb(0x80,0)
-        (Erik)
+        o  Changed method of short pauses in p9000vga.c to outb(0x80,0)
+           (Erik)
 
-     o  Rewrote routines to determine sysconfig from horizontal
-        resolution.  Also added check for valid hres to probe. (Erik
-        Nygren)
+        o  Rewrote routines to determine sysconfig from horizontal
+           resolution.  Also added check for valid hres to probe. (Erik
+           Nygren)
 
-     o  Added MoveWindow acceleration for all depths.  Opaque move even
-        looks nice at 32bpp now!  (Chris Mason)
+        o  Added MoveWindow acceleration for all depths.  Opaque move
+           even looks nice at 32bpp now!  (Chris Mason)
 
+        o  Minor fixes to acceleration.  Acceleration is now enabled by
+           default (Chris Mason)
 
-     o  Minor fixes to acceleration.  Acceleration is now enabled by
-        default (Chris Mason)
+        o  Added "noaccel" option (Erik Nygren)
 
-     o  Added "noaccel" option (Erik Nygren)
-
-     o  Added some fixes for Viper PCI (Matt Thomas)
+        o  Added some fixes for Viper PCI (Matt Thomas)
 
      1994.07.21:
 
-     o  Preliminary Viper PCI support - totally untested so disabled
-        (Erik Nygren)
+        o  Preliminary Viper PCI support - totally untested so disabled
+           (Erik Nygren)
 
-     o  Preliminary Orchid P9000 support - incomplete and totally
-        untested so disabled (Erik Nygren)
+        o  Preliminary Orchid P9000 support - incomplete and totally
+           untested so disabled (Erik Nygren)
 
-     o  Preliminary accelerated support - incomplete and not fully
-        tested so disabled (Erik Nygren and Chris Mason)
+        o  Preliminary accelerated support - incomplete and not fully
+           tested so disabled (Erik Nygren and Chris Mason)
 
      1994.07.08:
 
-     o  16 and 32 bpp TrueColor support (Erik Nygren)
+        o  16 and 32 bpp TrueColor support (Erik Nygren)
 
-     o  Color restoration hopefully fixed (Erik Nygren)
+        o  Color restoration hopefully fixed (Erik Nygren)
 
-     o  Changes to how "Modes" line in Xconfig is processed
+        o  Changes to how "Modes" line in Xconfig is processed
 
-     o  Removed banking support   :-(
+        o  Removed banking support   :-(
 
   I've started adding in support for other cards and for acceleration.
   Due to its untested nature, it is disabled.  A define at the top of
@@ -118,9 +164,15 @@
   2.  Supported Cards
 
 
+
+
   2.1.  Diamond Viper VLB
 
-  All Viper VLB's should work with this server, hopefully....  :-)
+  All Viper VLB's should work with this server, hopefully....  :-) Due
+  to Diamond's putting the same BIOS in some Viper VLB's as are used in
+  Viper PCI's, the probe may detect you have a Viper PCI when you really
+  have a Viper VLB.  If this happens, put chipset "vipervlb" into your
+  XF86Config file.
 
 
   2.2.  Diamond Viper PCI
@@ -134,9 +186,14 @@
   *p9k
 
   You should run this program and change these values after you add more
-  PCI cards or move existing cards to different slots.  Eventually we
-  would like to autodetect the IOBase and memBase, but this doesn't yet
-  work.
+  PCI cards or move existing cards to different slots.  According to
+  David DeWolfe (SXDJD@orca.alaska.edu), you need to run PCIDUMP.EXE
+  after a clean boot to DOS (with no AUTOEXEC.BAT or CONFIG.SYS).  This
+  may be accomplished by holding down the SHIFT key while DOS is boot-
+  ing.
+
+  Eventually we would like to autodetect the IOBase and memBase, but
+  this doesn't yet work.
 
 
   3.  Orchid P9000 and random clones
@@ -151,12 +208,12 @@
 
   These are NOT supported yet.  We don't have the hardware to write and
   or test drivers for them on.  The docs I have says the P9100 has a
-  different interface.  As a result, they may need an entirely new
-  server.  If you need support for one of these cards, you should look
-  into XInside's AcceleratedX.  It's a commercial product that costs
-  about $199.  Send email to info@xinside.com for more information.
-  Their P9000 server is also much faster than ours at present (but then
-  this server is free :-)
+  different interface than the P9000.  As a result, they may need an
+  entirely new server.  If you need support for one of these cards, you
+  should look into XInside's AcceleratedX.  It's a commercial product
+  that costs about $199.  Send email to info@xinside.com for more
+  information.  Their P9000 server is also much faster than ours at
+  present (but then this server is free :-)
 
 
   5.  Acceleration
@@ -168,11 +225,11 @@
   turned off with the "noaccel" option.  The following things are now
   accelerated:
 
-  o  Hardware cursor (8/16/32bpp)
+     o  Hardware cursor (8/16/32bpp)
 
-  o  MoveWindow (8/16/32bpp)
+     o  MoveWindow (8/16/32bpp)
 
-  o  CopyArea (8bpp)
+     o  CopyArea (8bpp)
 
 
   6.  High Color and TrueColor
@@ -194,7 +251,6 @@
      xv 3.00
         Works fine in 32 bpp and in 16 bpp with 24 bit images.  Has
         problems with colors in 8 bit images in 8 bpp mode.
-
 
      Mosaic 2.1
         Has problems with colormap in both 16 bpp and 32 bpp.  Newer
@@ -262,6 +318,7 @@
 
      ChipSet
         "vipervlb" or "viperpci" or "orchidp9000"
+
      MemBase
 
         Viper VLB:
@@ -271,7 +328,6 @@
         Orchid P9000:
            0xC0000000 or 0xD0000000 or 0xE0000000 (this MUST be set to
            correspond to the jumpers)
-
         Viper PCI:
            any value coresponding to the output of PCIDUMP.EXE
 
@@ -285,12 +341,16 @@
 
      Clocks
         any values between 25 and 135 corresponding to the clocks for
-        the mode entries being used
+        the mode entries being used.  This line may now be omitted and
+        clocks will be matched automatically.
 
      Option
 
         "sw_cursor"
            use software cursor
+
+        "vram_128"
+           use if you have 1024K VRAM in 128Kx8 SIMMS
 
         "sync_on_green"
            generate sync pulses on the green signal.  Most (all?) P9000
@@ -303,6 +363,7 @@
      Modes
         almost any valid mode (there are constraints on the horiz res so
         not all values are possible)
+
 
   The current supported keywords in the Display section of the
   XF86Config file are:
@@ -328,13 +389,18 @@
 
 
 
+
+
+
+
+
   Section "Device"
       Identifier "ViperVLB"
       VendorName "Diamond"
       BoardName "Viper VLB"
-      Clocks 81 50 31 87 115 25 25.175 60  # These only need to match to modes
       Videoram 2048                        # This is manditory
       Membase 0x80000000                   # This is manditory on non-ViperVLB's
+      IOBase  0xe000                       # Use this ONLY on ViperPCI's
   EndSection
 
   Section "Screen"
@@ -358,23 +424,31 @@
   right when you return from the VT until it is moved between windows
   (and changes color and shape).
 
+  Autoprobing doesn't always properly detect cards with 1024K of VRAM.
+  If you have a problem with this, try putting VideoRAM 1024 into the
+  Device section of your XF86Config file.  If this still doesn't help,
+  try adding Option "vram_128".
+
 
   11.  Credits
 
   Major contributors to P9000 code:
 
-  o  Erik Nygren (nygren@mit.edu)
+     o  Erik Nygren (nygren@mit.edu)
 
-  o  Harry Langenbacher (harry@brain.jpl.nasa.gov)
+     o  Harry Langenbacher (harry@brain.jpl.nasa.gov)
 
-  o  Chris Mason (mason@mail.csh.rit.edu)
+     o  Chris Mason (mason@mail.csh.rit.edu)
 
-     Thanks to Matt Thomas (thomas@lkg.dec.com) and Bob Hollinger
-     (bob@interaccess.com) for helping to get the Viper PCI server
-     working.
+  Thanks to Matt Thomas (thomas@lkg.dec.com) and Bob Hollinger
+  (bob@interaccess.com) for helping to get the Viper PCI server working.
 
   Special thanks to David Moews (dmoews@xraysgi.ims.uconn.edu) whose
   banking patch could unfortunately not be included.
+
+  Special thanks to Henrik Harmsen (d9hh@dtek.chalmers.se) whose 16bpp
+  and 32bpp accelerated blit code won't be included until the next
+  XFree86 release.
 
   Thanks to Andy, David, Dave, Michael, Bob, all the XFree86 core team
   people, and everyone else!
@@ -382,15 +456,7 @@
   During the course of the next few months, people will be working on
   acceleration, etc.  Please send any patches to me (nygren@mit.edu).
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.2 1995/01/11 09:47:52 dawes Exp $
-
-
-
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.3 1995/01/15 10:34:17 dawes Exp $
 
 
 

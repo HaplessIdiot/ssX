@@ -1,7 +1,7 @@
-  README for XFree86 3.1.0B on NetBSD
+  README for XFree86 3.1.1 on NetBSD
   Rich  Murphey, David Dawes, Marc  Wandschneider, Mark  Weaver,
   Matthieu Herrb
-  29 November 1994
+  15 January 1995
 
   1.  What and Where is XFree86?
 
@@ -16,17 +16,21 @@
 
   The sources for XFree86 are available by anonymous ftp from:
 
+  ftp.XFree86.org:/pub/XFree86/current
   (ftp://ftp.XFree86.org/pub/XFree86/current)
 
   Binaries for NetBSD 1.0 are available from:
 
+  ftp.XFree86.org:/pub/XFree86/current/NetBSD
   (ftp://ftp.XFree86.org/pub/XFree86/current/NetBSD)
 
-  (ftp://ftp.laas.fr/pub/NetBSD/XFree86-3.1)
+  ftp.laas.fr:/pub/NetBSD/XFree86-3.1.1
+  (ftp://ftp.laas.fr/pub/NetBSD/XFree86-3.1.1)
 
-  (ftp://ftp.iastate.edu/pub/netbsd/XFree86-3.1)
+  ftp.iastate.edu:/pub/netbsd/XFree86-3.1.1
+  (ftp://ftp.iastate.edu/pub/netbsd/XFree86-3.1.1)
 
-  (ftp://ftp.eecs.umich.edu/BSD/XFree86)
+  ftp.eecs.umich.edu:/BSD/XFree86 (ftp://ftp.eecs.umich.edu/BSD/XFree86)
 
   If you're still running NetBSD 0.9, you'll have to build it from the
   source.  If you've done it and want to share your binaries, please let
@@ -35,7 +39,8 @@
   This release has also been tested on NetBSD-current of January, 1st
   1995 with option "COMPAT_10" in the kernel config file.
 
-  XFree86 now also builds on NetBSD/sparc. See section ``'' for details.
+  XFree86 now also builds on NetBSD/sparc. See section ``Building on
+  NetBSD/sparc'' for details.
 
 
   2.  Bug Reports for This Document
@@ -130,6 +135,7 @@
 
         otherfonts
            the other fonts (100dpi, scaled, Japanese, Chinese, etc)
+
         linkkit
            X server reconfiguration kit
 
@@ -141,29 +147,29 @@
   3.1.  Installing the packages with pkg_add
 
 
-  1. Concatenate back the multi-part packages you want to install (bin,
-     fonts, linkkit and otherfonts):
+     1. Concatenate back the multi-part packages you want to install
+        (bin, fonts, linkkit and otherfonts):
 
-        % cat xf86-3.1.0B-bin.tar.gz.* > xf86-3.1.0B-bin.tar.gz
-        % cat xf86-3.1.0B-fonts.tar.gz.* > xf86-3.1.0B-fonts.tar.gz
-        % cat xf86-3.1.0B-linkkit.tar.gz.* > xf86-3.1.0B-linkkit.tar.gz
-        % cat xf86-3.1.0B-otherfonts.tar.gz.* > xf86-3.1.0B-otherfonts.tar.gz
-
-
-
-  You can remove individual parts once they are cat'd together.
-
-  2. Become ``root''.
-
-  3. For each package that you want to install type:
-
-        # pkg_add xf86-3.1.0B-<pkg>.tar.gz
+           % cat xf86-3.1.1-bin.tar.gz.* > xf86-3.1.1-bin.tar.gz
+           % cat xf86-3.1.1-fonts.tar.gz.* > xf86-3.1.1-fonts.tar.gz
+           % cat xf86-3.1.1-linkkit.tar.gz.* > xf86-3.1.1-linkkit.tar.gz
+           % cat xf86-3.1.1-otherfonts.tar.gz.* > xf86-3.1.1-otherfonts.tar.gz
 
 
 
-  If you don't have enough room in /usr/X11R6 you can specify another
-  directory by using the -p option to pkg_add. See pkg_add(8) for
-  details.
+     You can remove individual parts once they are cat'd together.
+
+     2. Become ``root''.
+
+     3. For each package that you want to install type:
+
+           # pkg_add xf86-3.1.1-<pkg>.tar.gz
+
+
+
+     If you don't have enough room in /usr/X11R6 you can specify another
+     directory by using the -p option to pkg_add. See pkg_add(8) for
+     details.
 
   Continue with item ``Setting XWINHOME'' below.
 
@@ -172,106 +178,104 @@
 
   To unpack and install the archives:
 
-  1. Create some destination directory in which you'd like the X
-     distribution to live.  /usr/X11R6 is recommended, but if that
-     partition is full (as it is on my machine), then just create an
-     alternate directory, and sym-link /usr/X11R6 to this place.
+     1. Create some destination directory in which you'd like the X
+        distribution to live.  /usr/X11R6 is recommended, but if that
+        partition is full (as it is on my machine), then just create an
+        alternate directory, and sym-link /usr/X11R6 to this place.
 
-     ie, on my machine, I do the following:
+        ie, on my machine, I do the following:
 
-           % cd /usr/local
-           % mkdir X11R6
-           % ln -s /usr/local/X11R6 /usr/X11R6
-
-
-
-
-  2. You must be logged in as root to unpack the archives and use a
-     ``umask'' value of 022.  Typing ``umask 022'' sets it.  Caution: If
-     you do not extract the files as user ``root'' with the correct
-     umask you may not be able to run XFree86 3.1.0B.  The X server
-     needs special permissions that are only granted to the root user.
-
-     Assuming that the destination directory for XFree86 3.1.0B is
-     /usr/X11R6, run the following from wherever all the archive files
-     are (replace /usr/X11R6 with wherever you wish them to go if that
-     isn't the place):
-        cd /usr/X11R6
-
-        cat xf86-3.1.0B-bin.tar.gz.* | tar xzf -
-        cat xf86-3.1.0B-fonts.tar.gz.* | tar xzf -
-        cat xf86-3.1.0B-linkkit.tar.gz.* | tar xzf -
-        cat xf86-3.1.0B-other-fonts.tar.gz.* | tar xzf -
-
-        tar xzf xf86-3.1.0B-config.tar.gz
-        tar xzf xf86-3.1.0B-doc.tar.gz
-        tar xzf xf86-3.1.0B-fs.tar.gz
-        tar xzf xf86-3.1.0B-lib.tar.gz
-        tar xzf xf86-3.1.0B-man.tar.gz
-        tar xzf xf86-3.1.0B-man.tar.gz
-        tar xzf xf86-3.1.0B-prog.tar.gz
-
-
-
-  And unpack the server(s) you need:
-
-        tar xzf xf86-<server>.tar.gz
+              % cd /usr/local
+              % mkdir X11R6
+              % ln -s /usr/local/X11R6 /usr/X11R6
 
 
 
 
-  3. Set the XWINHOME environment variable to the path where you
-     installed XFree86. Under csh  type:
+     2. You must be logged in as root to unpack the archives and use a
+        ``umask'' value of 022.  Typing ``umask 022'' sets it.  Caution:
+        If you do not extract the files as user ``root'' with the
+        correct umask you may not be able to run XFree86 3.1.1.  The X
+        server needs special permissions that are only granted to the
+        root user.
 
-        setenv XWINHOME /usr/X11R6
+        Assuming that the destination directory for XFree86 3.1.1 is
+        /usr/X11R6, run the following from wherever all the archive
+        files are (replace /usr/X11R6 with wherever you wish them to go
+        if that isn't the place):
 
+           cd /usr/X11R6
 
+           cat xf86-3.1.1-bin.tar.gz.* | tar xzf -
+           cat xf86-3.1.1-fonts.tar.gz.* | tar xzf -
+           cat xf86-3.1.1-linkkit.tar.gz.* | tar xzf -
+           cat xf86-3.1.1-other-fonts.tar.gz.* | tar xzf -
 
-
-  under sh  type
-
-        XWINHOME=/usr/X11R6
-        export XWINHOME
-
-
-
-
-  (Replace /usr/X11R6 by the appropriate dir if necessary).
-
-  Also, don't forget to include these lines in your .login or .profile
-  for permanent use.
-
-  4. Create a symbolic link in ${XWINHOME}/bin named ``X'' that points
-     to the server that matches your video card: See the XF86_* man
-     pages for hardware details. For example, if you have an ET4000
-     based SVGA card:
-
-
-        cd $XWINHOME/bin
-        rm -f X
-        ln -s XF86_SVGA X
+           tar xzf xf86-3.1.1-config.tar.gz
+           tar xzf xf86-3.1.1-doc.tar.gz
+           tar xzf xf86-3.1.1-fs.tar.gz
+           tar xzf xf86-3.1.1-lib.tar.gz
+           tar xzf xf86-3.1.1-man.tar.gz
+           tar xzf xf86-3.1.1-man.tar.gz
+           tar xzf xf86-3.1.1-prog.tar.gz
 
 
 
+     And unpack the server(s) you need:
 
-  5. Install support for the shared libraries: add the following lines
-     at the end of /etc/rc.local:
+           tar xzf xf86-<server>.tar.gz
 
 
 
 
+     3. Set the XWINHOME environment variable to the path where you
+        installed XFree86. Under csh  type:
 
-
-   if [ -d /usr/X11R6/lib ]; then
-      echo 'Adding X shared libraries'
-      ldconfig /usr/X11R6/lib
-   fi
+           setenv XWINHOME /usr/X11R6
 
 
 
 
-  6. Reboot your machine to take all previous modifications into
-     account.
+     under sh  type
+
+           XWINHOME=/usr/X11R6
+           export XWINHOME
+
+
+
+
+     (Replace /usr/X11R6 by the appropriate dir if necessary).
+
+     Also, don't forget to include these lines in your .login or .pro-
+     file for permanent use.
+
+     4. Create a symbolic link in ${XWINHOME}/bin named ``X'' that
+        points to the server that matches your video card: See the
+        XF86_* man pages for hardware details. For example, if you have
+        an ET4000 based SVGA card:
+
+
+           cd $XWINHOME/bin
+           rm -f X
+           ln -s XF86_SVGA X
+
+
+
+
+     5. Install support for the shared libraries: add the following
+        lines at the end of /etc/rc.local:
+
+
+           if [ -d /usr/X11R6/lib ]; then
+              echo 'Adding X shared libraries'
+              ldconfig /usr/X11R6/lib
+           fi
+
+
+
+
+     6. Reboot your machine to take all previous modifications into
+        account.
 
   If X was already installed on your machine and you have customized
   your xinit or xdm runtime configuration scripts, omit the config
@@ -326,7 +330,6 @@
 
   If your mouse does not work try using kermit or tip to connect to the
   mouse serial port and verify that it does indeed generate characters.
-
 
   If you've been running a previous version of XFree86, you can get the
   video card and monitor information from your previous XConfig file.
@@ -391,10 +394,7 @@
   If using pccons you get the mesage:
 
 
-
-
-
-  > XFree86 Version 3.1.0B / X Window System
+  > XFree86 Version 3.1.1 / X Window System
   > (protocol Version 11, revision 0, vendor release 6000)
   > Operating System: NetBSD
   > Configured drivers:
@@ -426,42 +426,42 @@
 
   There are two ways to allow XFree86 to access linear memory:
 
-  1. Disable the kernel security feature by initializing the
-     ``securelevel'' variable to -1 in /sys/kern/kern_sysctl.c, line 205
-     and building a new kernel. For more informations, see the comments
-     in /usr/include/sys/systm.h.
+     1. Disable the kernel security feature by initializing the
+        ``securelevel'' variable to -1 in /sys/kern/kern_sysctl.c, line
+        205 and building a new kernel. For more informations, see the
+        comments in /usr/include/sys/systm.h.
 
-  2. Install the NetBSD aperture driver:
+     2. Install the NetBSD aperture driver:
 
-     a. add the following lines to the end of /etc/rc.local:
+        a. add the following lines to the end of /etc/rc.local:
 
-           KERNDIR=/usr/X11R6/lib/X11/kernel
-           if [ -f ${KERNDIR}/ap.o ]; then
-             modload -o ${KERNDIR}/ap -e ap -p ${KERNDIR}/apinstall ${KERNDIR}/ap.o
-           fi
-
-
+              KERNDIR=/usr/X11R6/lib/X11/kernel
+              if [ -f ${KERNDIR}/ap.o ]; then
+                modload -o ${KERNDIR}/ap -e ap -p ${KERNDIR}/apinstall ${KERNDIR}/ap.o
+              fi
 
 
-     b. On pre 1.0 versions of NetBSD modload does not execute post-
-        install scripts. If you're running NetBSD 1.0 or later skip
-        this. Else create the device manually:
-
-        WARNING: be sure to understand what you'll do before proceeding
-
-        i. find out what major device number will be allocated to you by
-           modload. Modload allocates major numbers beginning at 29. So
-           if ``ap'' is your only device driver module, it will have
-           major number 29. If it's the third, it will be 31...
-
-        ii.
-           goto the /dev directory and type: ``mknod xf86 c 29 0''
-           (replace 29 by the appropriate value if you load more than
-           one device driver module.
 
 
-     c. Reboot your system. XFree86 will auto-detect the aperture driver
-        if available.
+        b. On pre 1.0 versions of NetBSD modload does not execute post-
+           install scripts. If you're running NetBSD 1.0 or later skip
+           this. Else create the device manually:
+
+           WARNING: be sure to understand what you'll do before
+           proceeding
+
+           i. find out what major device number will be allocated to you
+              by modload. Modload allocates major numbers beginning at
+              29. So if ``ap'' is your only device driver module, it
+              will have major number 29. If it's the third, it will be
+              31...
+
+           ii.
+              goto the /dev directory and type: ``mknod xf86 c 29 0''
+              (replace 29 by the appropriate value if you load more than
+              one device driver module.
+        c. Reboot your system. XFree86 will auto-detect the aperture
+           driver if available.
 
 
        Caveat: the NetBSD aperture driver only allows one access at
@@ -474,7 +474,7 @@
 
   7.2.  MIT-SHM
 
-  NetBSD 1.0 supports System V shared memory. If XFree86 3.1.0B detects
+  NetBSD 1.0 supports System V shared memory. If XFree86 3.1.1 detects
   this support in your kernel, it will support the MIT-SHM extension.
 
   Under NetBSD 1.0, use the following to add shared memory support to
@@ -550,7 +550,7 @@
 
   8.2.  Support for shared libs under NetBSD 1.0
 
-  By default XFree86 3.1.0B builds for NetBSD 1.0 with shared libraries
+  By default XFree86 3.1.1 builds for NetBSD 1.0 with shared libraries
   support. If you're building on 0.9 or don't want shared libraries add
   the following line to xf86site.def:
 
@@ -562,19 +562,20 @@
 
   8.3.  Building on NetBSD/sparc
 
-  XFree86 3.1.0B now also compiles on NetBSD/sparc. The Sun server
+  XFree86 3.1.1 now also compiles on NetBSD/sparc. The Sun server
   patches from Dennis Ferguson and Matthew Green have been integrated in
   xc/programs/Xserver/hw/sun.  Small modifications to xf86site.def are
   needed:
 
-  o  Set all variables defining the servers to build to NO. (The
-     variables controlling the Sun servers to build Xsun24Server,
-     XsunServer and XsunMonoServer are defined at the end of NetBSD.cf.)
+     o  Set all variables defining the servers to build to NO. (The
+        variables controlling the Sun servers to build Xsun24Server,
+        XsunServer and XsunMonoServer are defined at the end of
+        NetBSD.cf.)
 
-  o  Set ServerToInstall to the sun server of your choice. (Xsun or
-     XsunMono).
+     o  Set ServerToInstall to the sun server of your choice. (Xsun or
+        XsunMono).
 
-  o  Look at other applicable options in the INSTALL document.
+     o  Look at other applicable options in the INSTALL document.
 
   Problems with this port should be reported to the port-
   sparc@NetBSD.Org mailing list or directly to me matthieu@laas.fr
@@ -592,6 +593,7 @@
   To avoid the ``Virtual memory exhausted'' message from cc while
   compiling, increase the data and stack size limits (in csh type
   ``limit datasize 32M'' and ``limit stacksize 16M'').
+
   Note: Starting with XFree86 2.1 and NetBSD 0.9A, the symbol __386BSD__
   no longer gets defined either by the compiler or via the X config
   files for *BSD systems.  When porting clients to *BSD systems, make
@@ -632,21 +634,19 @@
 
   Many thanks to:
 
-  o  Pace Willison for providing the initial port to 386BSD.
+     o  Pace Willison for providing the initial port to 386BSD.
 
-  o  Amancio Hasty for fixing cursor restoration, mouse bugs and many
-     others.
+     o  Amancio Hasty for fixing cursor restoration, mouse bugs and many
+        others.
 
-  o  Christoph Robitschko for fixing com.c and thus select().
+     o  Christoph Robitschko for fixing com.c and thus select().
 
-  o  Nate Williams for the patchkit support for X.
+     o  Nate Williams for the patchkit support for X.
 
-  o  Rod Grimes and Jack Velte of Walnut Creek Cdrom for use of their
-     machines in preparing the FreeBSD binary release.
+     o  Rod Grimes and Jack Velte of Walnut Creek Cdrom for use of their
+        machines in preparing the FreeBSD binary release.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.3 1995/01/04 04:40:32 dawes Exp $
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.4 1995/01/15 10:34:15 dawes Exp $
 
 
 

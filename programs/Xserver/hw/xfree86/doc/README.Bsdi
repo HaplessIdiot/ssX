@@ -1,4 +1,4 @@
-  README for XFree86 3.1 on BSD/386 1.1
+  README for XFree86 3.1.1 on BSD/386 1.1
   Hans Nasten
   13 November 1994
 
@@ -117,33 +117,33 @@
 
   To unpack and install the archives:
 
-  1. create some destination directory in which you'd like the X
-     distribution to live.  /usr/X11R6 is recommended, but if that
-     partition is full (as it is on my machine), then just create an
-     alternate directory, and sym-link /usr/X11R6 to this place.
+     1. create some destination directory in which you'd like the X
+        distribution to live.  /usr/X11R6 is recommended, but if that
+        partition is full (as it is on my machine), then just create an
+        alternate directory, and sym-link /usr/X11R6 to this place.
 
-     ie, on my machine, I do the following:
+        ie, on my machine, I do the following:
 
-         % cd /usr/local
-         % mkdir X11R6
-         % ln -s /usr/local/X11R6 /usr/X11R6
+            % cd /usr/local
+            % mkdir X11R6
+            % ln -s /usr/local/X11R6 /usr/X11R6
 
 
 
-  2. You must be logged in as root to unpack the archives and use a
-     `umask' value of 022.  Typing `umask 022' sets it.  Caution: If you
-     do not extract the files as user `root' with the correct umask you
-     may not be able to run XFree86 3.1.  The X server needs special
-     permissions that are only granted to the root user. You must also
-     cd to / before extracting the archives.
+     2. You must be logged in as root to unpack the archives and use a
+        `umask' value of 022.  Typing `umask 022' sets it.  Caution: If
+        you do not extract the files as user `root' with the correct
+        umask you may not be able to run XFree86 3.1.  The X server
+        needs special permissions that are only granted to the root
+        user. You must also cd to / before extracting the archives.
 
-  3. Create a symbolic link in /usr/X11R6/bin named `X' that points to
-     the server that matches your video card: See the XF86_* man pages
-     for hardware details. For example, if you have an ET4000 based SVGA
-     card:
-         cd /usr/X11R6/bin
-         rm -f X
-         ln -s XF86_SVGA X
+     3. Create a symbolic link in /usr/X11R6/bin named `X' that points
+        to the server that matches your video card: See the XF86_* man
+        pages for hardware details. For example, if you have an ET4000
+        based SVGA card:
+            cd /usr/X11R6/bin
+            rm -f X
+            ln -s XF86_SVGA X
 
 
   Note: you don't need to uncompress the fonts files in lib/X11/fonts.
@@ -196,17 +196,17 @@
 
   You'll need info on your hardware:
 
-  o  Your mouse type, baud rate and it's /dev entry.
+     o  Your mouse type, baud rate and it's /dev entry.
 
-  o  The video card's chipset (e.g. ET4000, S3, etc).
+     o  The video card's chipset (e.g. ET4000, S3, etc).
 
-  o  Your monitor's sync frequencies.
+     o  Your monitor's sync frequencies.
 
-     The easiest way to find which device your mouse is plugged into is
-     to use `cat' or `kermit' to look at the output of the mouse.
-     Connect to it and just make sure that it generates output when the
-     mouse is moved or clicked:
-       % cat < /dev/tty00
+  The easiest way to find which device your mouse is plugged into is to
+  use `cat' or `kermit' to look at the output of the mouse.  Connect to
+  it and just make sure that it generates output when the mouse is moved
+  or clicked:
+    % cat < /dev/tty00
 
   If you can't find the right mouse device then use `dmesg|grep com' to
   get a list of devices that were detected upon booting:
@@ -292,105 +292,39 @@
   the frame buffer in linear mode. Please consult the BSD/386 1.1
   release notes for instructions on how to build a new kernel.
 
-  o  save the patch below in a separate file.
-
-  o  cd to /sys/i386/isa.
-
-  o  apply the patch with ``patch -p <the_separate_patch_file''
-
-  o  rebuild and install the new kernel.
-
-  o  reboot.
-
-     vga.c patch:
-     *** vga.c.orig  Sun Dec 19 09:35:01 1993
-     --- vga.c       Mon Oct 24 01:38:44 1994
-     ***************
-     *** 159,165 ****
-       #if 0
-             if (off + NBPG > vgap->vga_mem_size)
-                     return (-1);
-     ! #else
-             if (off + NBPG > IOM_END)
-                     return (-1);
-       #endif
-     --- 159,165 ----
-       #if 0
-             if (off + NBPG > vgap->vga_mem_size)
-                     return (-1);
-     ! /*#else*/
-             if (off + NBPG > IOM_END)
-                     return (-1);
-       #endif
-
-
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.3 1995/01/04 04:40:27 dawes Exp $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+     o  save the patch below in a separate file.
+
+     o  cd to /sys/i386/isa.
+
+     o  apply the patch with ``patch -p <the_separate_patch_file''
+
+     o  rebuild and install the new kernel.
+
+     o  reboot.
+
+  vga.c patch:
+  *** vga.c.orig  Sun Dec 19 09:35:01 1993
+  --- vga.c       Mon Oct 24 01:38:44 1994
+  ***************
+  *** 159,165 ****
+    #if 0
+          if (off + NBPG > vgap->vga_mem_size)
+                  return (-1);
+  ! #else
+          if (off + NBPG > IOM_END)
+                  return (-1);
+    #endif
+  --- 159,165 ----
+    #if 0
+          if (off + NBPG > vgap->vga_mem_size)
+                  return (-1);
+  ! /*#else*/
+          if (off + NBPG > IOM_END)
+                  return (-1);
+    #endif
+
+
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.4 1995/01/15 10:34:11 dawes Exp $
 
 
 

@@ -195,7 +195,6 @@
   replace the XF86Config clocks with the clocks reported by the probe.
   You should then change the chipset specification to "vgawonder".
 
-
   You should not need to change your mode definitions except for those
   that are already driving your monitor close to its tolerance limits.
   You might need to change the dot clock used to one with the next lower
@@ -256,6 +255,7 @@
 
 
   Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.2 1995/01/04 04:40:33 dawes Exp $
+
 
 
 

@@ -122,11 +122,11 @@
   There are some fundamental things you need to know before hacking an
   Xconfig entry.  These are:
 
-  1. your monitor's horizontal and vertical sync frequency options
+     1. your monitor's horizontal and vertical sync frequency options
 
-  2. your video adapter's driving clock frequency, or "dot clock"
+     2. your video adapter's driving clock frequency, or "dot clock"
 
-  3. your monitor's bandwidth
+     3. your monitor's bandwidth
 
   The monitor sync frequencies:
 
@@ -327,9 +327,7 @@
         the monitor's visible resolution, but typically somewhat larger.
         We'll get to the details of this below.
 
-
   About Bandwidth:
-
   Monitor makers like to advertise high bandwidth because it constrains
   the sharpness of intensity and color changes on the screen.  A high
   bandwidth means smaller visible details.
@@ -393,12 +391,9 @@
   This is your screen's refresh rate, because it's how many times your
   screen can be updated thus REFRESHED per second!
 
-
   You need to understand this concept to design a configuration which
   trades off resolution against flicker in whatever way suits your
   needs.
-
-
   5.  Tradeoffs in Configuring your System
 
 
@@ -526,6 +521,7 @@
   resolution to 3/4ths of the horizontal resolution you just calculated.
   For this example, that's 708 ticks.  To get your actual VFL, multiply
   that by 1.05 to get 743 ticks.
+
   About that 4:3 --- a ratio of 4:3 for width to height of the displayed
   area approximates the Golden Section, (1 + sqrt(5))/2.  Human beings
   seem to be wired to find this kind of rectangle pleasant to look at;
@@ -588,7 +584,6 @@
                                 |   |<----->|   |
                                 |<->|  HSP  |<->|
                                 HGT1         HGT2
-
 
 
 
@@ -855,18 +850,19 @@
   90MHz or up) even interlacing wouldn't produce flicker -- but at
   present speeds, interlaced monitors are a bad idea for X.
 
-
   Q. Can you summarize what we have discussed so far?
 
   A. In a nutshell:
 
 
-  1. for any fixed driving frequency, raising max resolution incurs the
-     penalty of lowering refresh rate and thus introducing more flicker.
 
-  2. if high resolution is desirable and your monitor supports it, try
-     to get a SVGA card that provides a matching dot clock or DCF. The
-     higher, the better!
+     1. for any fixed driving frequency, raising max resolution incurs
+        the penalty of lowering refresh rate and thus introducing more
+        flicker.
+
+     2. if high resolution is desirable and your monitor supports it,
+        try to get a SVGA card that provides a matching dot clock or
+        DCF. The higher, the better!
 
 
   11.  Two More Example Calculations
@@ -926,7 +922,6 @@
   have to calculate how much time it takes to display a single line.
   That's easy, because we know each line is 1088 dots and each dot is
   .025 microsecond.  Each line is, therefore,
-
   (1088 dots/line) x (.025 microseconds/dot) = 27.2 microseconds/line
 
   Since we chose 800 visible dots per line, let's choose the number of
@@ -986,7 +981,6 @@
   the range of the display's vertical sync rate, we are fine.  If the
   display cannot handle this rate, we'll have to change the number of
   lines per frame by adjusting all of the timings proportionally.
-
 
   Now we combine the horizontal and vertical timing numbers together
   with the resolution and clock values to produce a test configuration
@@ -1053,7 +1047,6 @@
   A line of 1136 dots at .025 microsecond/dot means that a line
   represents 1136 x .025 = 28.4 microseconds.
 
-
   Since we chose 800 dots/line horizontal resolution, we choose 600
   lines/frame as the vertical resolution.
 
@@ -1061,7 +1054,6 @@
   64 microseconds long.  In terms of lines, 64 microseconds is
 
   (64 microseconds/pulse) / (28.4 microseconds/line) = 2.25 lines/pulse
-
   We round 2.25 up to 3 lines for the vertical sync pulse.
 
   The manual says the time between the last displayed line and the start
@@ -1105,6 +1097,14 @@
   the resolution I wanted.
 
   Example: Timings I have tried:
+
+
+
+
+
+
+
+
 
 
 

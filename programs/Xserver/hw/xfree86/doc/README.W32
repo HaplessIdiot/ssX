@@ -24,18 +24,18 @@
 
   If you have problems with the server.  Try the following things:
 
-  o  Take out the Hercules monochrome adapter, if you have one.  Many
-     configurations of the ET4000/W32 series do not allow one in the
-     system.
+     o  Take out the Hercules monochrome adapter, if you have one.  Many
+        configurations of the ET4000/W32 series do not allow one in the
+        system.
 
-  o  Get a motherboard with its local bus running at 33 MHz.  Many, if
-     not all, ET4000/W32 boards will surely behave in a funny way on a
-     50-MHz bus.  You may have to use a wait state or two, but first try
-     without any.
+     o  Get a motherboard with its local bus running at 33 MHz.  Many,
+        if not all, ET4000/W32 boards will surely behave in a funny way
+        on a 50-MHz bus.  You may have to use a wait state or two, but
+        first try without any.
 
-     Note that the built-in power saver (for a "green" monitor) has not
-     been tested.  Also do not expect it to work on a board without a
-     w32p_rev_c or later chip.
+  Note that the built-in power saver (for a "green" monitor) has not
+  been tested.  Also do not expect it to work on a board without a
+  w32p_rev_c or later chip.
 
 
   2.  Acknowledgments

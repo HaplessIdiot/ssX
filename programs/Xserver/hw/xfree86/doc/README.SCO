@@ -82,38 +82,38 @@
 
   To install the XFree86 binaries just follow these steps.
 
-  1. Obtain the files you require.
+     1. Obtain the files you require.
 
 
-     as root,
+        as root,
 
 
-  2. create a directory /usr/X11R6, permissions 755 should do nicely.
+     2. create a directory /usr/X11R6, permissions 755 should do nicely.
 
-  3. cd /usr/X11R6
+     3. cd /usr/X11R6
 
-  4. extract the archives, for example:
-                 gunzip < XFXXX-bin.tz | tar xvf -
+     4. extract the archives, for example:
+                    gunzip < XFXXX-bin.tz | tar xvf -
 
 
-  5. if you have installed man pages see the later section on setting up
-     man pages.
+     5. if you have installed man pages see the later section on setting
+        up man pages.
 
-  6. Look through /usr/X11R6/lib/X11/doc/INSTALL, especially section 2
-     on configuring and using XFree86.   This should allow you to get a
-     server up and running.  Before starting the server check in the
-     later section ``Before Running XFree86'', in this document, to see
-     if there are any system requirements you have to make for the
-     server to operate correctly.
+     6. Look through /usr/X11R6/lib/X11/doc/INSTALL, especially section
+        2 on configuring and using XFree86.   This should allow you to
+        get a server up and running.  Before starting the server check
+        in the later section ``Before Running XFree86'', in this
+        document, to see if there are any system requirements you have
+        to make for the server to operate correctly.
 
-     If you intend using the programs from the utilities archive then
-     you should be aware that they are provided as is.  They are not
-     part of the XFree86 distribution nor are they part of the standard
-     MIT distribution.  Every attempt is made to ensure that they work
-     to a usable degree but they are not perfect.  All programs in the
-     utilities archive come with a manual entry (which is also in the
-     utilities archive).  Information on the author(s) can usually be
-     located in the man page or by running the executable.
+  If you intend using the programs from the utilities archive then you
+  should be aware that they are provided as is.  They are not part of
+  the XFree86 distribution nor are they part of the standard MIT distri-
+  bution.  Every attempt is made to ensure that they work to a usable
+  degree but they are not perfect.  All programs in the utilities
+  archive come with a manual entry (which is also in the utilities
+  archive).  Information on the author(s) can usually be located in the
+  man page or by running the executable.
 
 
 
@@ -226,12 +226,12 @@
   compression. The most likely Parameters you will be interested in
   changing are:
 
-  1. What Fonts etc get compiled.
+     1. What Fonts etc get compiled.
 
-  2. What gets installed (XdmConfig, FSConfig, ...)
+     2. What gets installed (XdmConfig, FSConfig, ...)
 
-     Use gcc, preferably 2.5.8 or later but an earlier version may still
-     do the job.  Configure it with "./configure i386-*-sco".
+  Use gcc, preferably 2.5.8 or later but an earlier version may still do
+  the job.  Configure it with "./configure i386-*-sco".
 
 
   Make sure you do the fixincludes for gcc.
@@ -339,40 +339,35 @@
 
   Compiling XFree86,
 
-       A)  Check that you have a "sys/uio.h" as there have been
-       reports of systems which have it and systems which don't!
-       If you already have one it need not be changed.  Otherwise
-       see the 3.2.2 section above on how to create one.
+     1. Check that you have a "sys/uio.h" as there have been reports of
+        systems which have it and systems which don't!  If you already
+        have one it need not be changed.  Otherwise see the 3.2.2
+        section above on how to create one.
+
+     2. Check the paragraph on site.def/xf86site.def in the compiling
+        for 3.2.2 section.
+
+     3. Add a -DSCO324 to the BOOTSTRAPCFLAGS when you do the make
+        World.
+                make BOOTSTRAPCFLAGS="-DSYSV -Di386 -DSCO -DSCO324" World
+
+     Under 3.2.4 several different options become activated.
+
+        o  Compress is used instead of pack for compressing the man
+           pages.
+
+        o  The default compile line will contain -D_NO_PROTOTYPE instead
+           of -DNO_PROTOTYPE as this is what 3.2.4 expects.
+
+     4. If you have problems with mkshlib reporting an error like
+                mkshlib: : cannot exec /bin/sh
 
 
-       B)  Check the paragraph on site.def/xf86site.def in the
-       compiling for 3.2.2 section.
+     when compiling libX11, then the following should fix it,
+             rm -f lib/X/libX11.a
+             env - make
 
-
-       G)  Add a -DSCO324 to the BOOTSTRAPCFLAGS when you do the
-       make World.
-               make BOOTSTRAPCFLAGS="-DSYSV -Di386 -DSCO -DSCO324" World
-
-       Under 3.2.4 several different options become activated.
-
-
-       o  Compress is used instead of pack for compressing the man
-          pages.
-
-       o  The default compile line will contain -D_NO_PROTOTYPE
-          instead of -DNO_PROTOTYPE as this is what 3.2.4 expects.
-
-          H)  If you have problems with mkshlib reporting an error
-          like
-                  mkshlib: : cannot exec /bin/sh
-
-
-       when compiling libX11, then the following should fix it,
-               rm -f lib/X/libX11.a
-               env - make
-
-       The error is related to a lack of environment space.
-
+     The error is related to a lack of environment space.
 
   9.  Compiling with __STDC__=0
 
@@ -394,11 +389,10 @@
            #define GCC_STDC_VALUE 1
 
 
+
   should become,
 
            #define GCC_STDC_VALUE 0
-
-
 
   It is recommended to use gcc compiled without the STDC_VALUE=0 for
   building XFree86.  It is, however, possible with the above changes.
@@ -428,15 +422,17 @@
   11.  Known Problems
 
 
-  o  After running the server you may see some strange characters in
-     your input to the shell.  This is due to some unprocessed scancodes
-     and is of no concern.  This will be fixed in a future release.
+     o  After running the server you may see some strange characters in
+        your input to the shell.  This is due to some unprocessed
+        scancodes and is of no concern.  This will be fixed in a future
+        release.
 
 
-  o  Not all of the applications in /usr/X11R6/bin have been debugged.
+     o  Not all of the applications in /usr/X11R6/bin have been
+        debugged.
 
 
-  o  Shared libraries are not implemented in XFree86 3.1 yet.
+     o  Shared libraries are not implemented in XFree86 3.1 yet.
 
 
 
@@ -460,9 +456,11 @@
           driver from the distribution may allow the server to
           operate correctly.
 
+
      Problem:
 
-          x386install does not work.
+
+     x386install does not work.
 
 
      Causes:
@@ -528,7 +526,6 @@
            not support dynamic resizing or xterms fully so this command
            must be run after resizing an xterm in order for
            curses/termcap applications to operate correctly.
-
      Problem:
 
         1. When starting X it dies with an error "Cannot access a needed
@@ -591,11 +588,9 @@
 
      Problem:
 
-
-     When compiling the XFree86 source under 3.2.4, libX11
-     fails to get built with an error like "mkshlib : : cannot
-     exec /bin/sh"
-
+          When compiling the XFree86 source under 3.2.4, libX11
+          fails to get built with an error like "mkshlib : : cannot
+          exec /bin/sh"
 
      Causes:
 
@@ -658,7 +653,9 @@
                   ./idmkenv
 
 
-     and try it out.
+          and try it out.
+
+
 
 
   13.  Acknowledgements
@@ -679,7 +676,10 @@
   an ftp site for the binary distribution.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.1 1994/12/26 11:03:36 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.2 1995/01/15 10:34:22 dawes Exp $
+
+
+
 
 
 

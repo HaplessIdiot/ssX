@@ -1,6 +1,6 @@
   README for XFree86 3.1.1 on FreeBSD 2.0
   Rich Murphey, David Dawes
-  8 January 1995
+  15 January 1995
 
   1.  What and Where is XFree86?
 
@@ -15,14 +15,16 @@
 
   The sources for XFree86 are available by anonymous ftp from:
 
+  ftp.XFree86.org:/pub/XFree86/current
   (ftp://ftp.XFree86.org/pub/XFree86/current)
 
 
   Binaries for XFree86 on FreeBSD are available from:
 
-  (ftp://ftp.XFree86.org/pub/XFree86/current/FreeBSD)
+  ftp.XFree86.org:/pub/XFree86/current/binaries/FreeBSD
+  (ftp://ftp.XFree86.org/pub/XFree86/current/binaries/FreeBSD)
 
-  (ftp://XFree86.cdrom.com/pub/XFree86)
+  XFree86.cdrom.com:/pub/XFree86 (ftp://XFree86.cdrom.com/pub/XFree86)
 
   Send email to Rich-Murphey@Rice.edu or XFree86@XFree86.org if you have
   comments or suggestions about this file and we'll revise it.
@@ -35,7 +37,7 @@
   unpack.  If you can't decide what to pick and you have 52Mb of disk
   space, it's safe to unpack everything.
 
-  At a minimum you need to unpack the 'required' XFree86-3.1-*.tar.gz
+  At a minimum you need to unpack the 'required' XFree86-3.1.1-*.tar.gz
   archives plus at least one server that matches your vga card.  You'll
   need 9Mb for the minimum required run-time binaries only.
 
@@ -62,8 +64,6 @@
 
         8514
            8-bit color for IBM 8514 and true compatibles.
-
-
         AGX
            8-bit color for AGX boards.
 
@@ -160,58 +160,58 @@
   2.1.  Full Install:
 
 
-  1. You must be logged in as root to unpack the archives because
-     several executables are set-user-id.  Otherwise the server may
-     abort if you unpack it as an ordinary user.  You must also use a
-     ``umask'' value of 022 because the X server requires special
-     permissions.
+     1. You must be logged in as root to unpack the archives because
+        several executables are set-user-id.  Otherwise the server may
+        abort if you unpack it as an ordinary user.  You must also use a
+        ``umask'' value of 022 because the X server requires special
+        permissions.
 
-        % su
-        # umask 022
-
-
-
-
-  2. If you have 52Mb free in the /usr partion ``cd /usr'' and skip to
-     no. 3.  Otherwise, create a directory on another partion and sym
-     link it into /usr:
-
-
-        # cd /usr/local
-        # mkdir X11R6
-        # ln -s /usr/local/X11R6 /usr/X11R6
+           % su
+           # umask 022
 
 
 
 
-  3. Unpack everything:
-
-     If you are using sh (as root usually does):
-
-
-        # for i in XFree86-3.1-*.tar.gz; do
-        #   tar -xzf $i
-        # done
+     2. If you have 52Mb free in the /usr partion ``cd /usr'' and skip
+        to no. 3.  Otherwise, create a directory on another partion and
+        sym link it into /usr:
 
 
-
-
-  Else, if you are using csh:
-
-        % foreach i (XFree86-3.1-*.tar.gz)
-        %   tar -xzf $i
-        % end
+           # cd /usr/local
+           # mkdir X11R6
+           # ln -s /usr/local/X11R6 /usr/X11R6
 
 
 
 
-  4. Create a symbolic link ``X'' that points to the server that matches
-     your video card.  The XF86_* man pages list which vga chip sets are
-     supported by each server.  For example, if you have an ET4000 based
-     card you will use the XF86_SVGA server:
+     3. Unpack everything:
+
+        If you are using sh (as root usually does):
 
 
-        # cd /usr/X11R6/bin; rm X; ln -s XF86_SVGA X
+           # for i in XFree86-3.1.1-*.tar.gz; do
+           #   tar -xzf $i
+           # done
+
+
+
+
+     Else, if you are using csh:
+
+           % foreach i (XFree86-3.1.1-*.tar.gz)
+           %   tar -xzf $i
+           % end
+
+
+
+
+     4. Create a symbolic link ``X'' that points to the server that
+        matches your video card.  The XF86_* man pages list which vga
+        chip sets are supported by each server.  For example, if you
+        have an ET4000 based card you will use the XF86_SVGA server:
+
+
+           # cd /usr/X11R6/bin; rm X; ln -s XF86_SVGA X
 
 
 
@@ -222,7 +222,7 @@
 
 
         # for i in bin fonts lib xinit-config; do
-        #   tar -xzf  XFree86-3.1-$i.tar.gz
+        #   tar -xzf  XFree86-3.1.1-$i.tar.gz
         # done
 
 
@@ -233,7 +233,7 @@
   card you will use the XF86_SVGA server:
 
 
-        # tar -xzf XFree86-3.1-SVGA.tar.gz
+        # tar -xzf XFree86-3.1.1-SVGA.tar.gz
         # cd /usr/X11R6/bin; rm X; ln -s XF86_SVGA X
 
 
@@ -258,7 +258,6 @@
 
 
         # ldconfig /usr/lib /usr/local/lib /usr/X11R6/lib
-
 
 
 
@@ -329,7 +328,6 @@
   You should also make sure that /usr/X11R6/bin/X is a symbolic link to
   the Xserver that matches your video card or edit the file Xservers in
   /usr/X11R6/lib/X11/xdm to specify the pathname of the X server.
-
   The change to /etc/ttys won't take effect untill you either reboot or
   ``kill -HUP 1'' to force initd to reread /etc/ttys.  You can also test
   the display manager manually by loging in as root on the console and
@@ -366,11 +364,11 @@
   You'll need info on your hardware:
 
 
-  o  Your mouse type, baud rate and it's /dev entry.
+     o  Your mouse type, baud rate and it's /dev entry.
 
-  o  The video card's chipset (e.g. ET4000, S3, etc).
+     o  The video card's chipset (e.g. ET4000, S3, etc).
 
-  o  Your monitor's sync frequencies.
+     o  Your monitor's sync frequencies.
 
   The easiest way to find which device your mouse is plugged into is to
   use ``cat'' or ``kermit'' to look at the output of the mouse.  Connect
@@ -394,8 +392,10 @@
   Then double check the /dev entries corresponding to these devices.
   Use the script /dev/MAKEDEV to create entries if they don't already
   exist:
-        % cd /dev
-        % sh MAKEDEV tty00
+
+
+   % cd /dev
+   % sh MAKEDEV tty00
 
 
 
@@ -434,6 +434,7 @@
   GENERIC kernel or any kernel configuration which is a superset.
 
   For a general description of BSD kernel configuration get
+  smm.02.config.ps.Z
   (ftp://gatekeeper.dec.com/pub/BSD/manuals/smm.02.config.ps.Z).  It is
   a ready-to-print postscript copy of the kernel configuration chapter
   from the system maintainers manual.
@@ -459,7 +460,6 @@
 
   The number of virtual consoles can be set using the NCONS option:
 
-
         options                "NCONS=4"               #4 virtual consoles
 
 
@@ -468,23 +468,19 @@
   more VTs than gettys as described in the end of section 3, and 4 is a
   reasonable minimum.
 
-  The server supports several console drivers: pccons, syscons, codrv
-  and pcvt.  The syscons driver is the default in FreeBSD 1.1.5 and
-  higher.  They are detected at runtime and no configuration of the
-  server itself is required.
-
-  The codrv console driver is not bundled with FreeBSD.  It is available
-  from  (ftp://ftp.uni-duisburg.de/pub/unix/386bsd-0.1/unofficial/codrv)
-  and from bsd386.first.gmd.de in ~veit/codrv (no ANON FTP, login with
-  ``guest''/``guest'', cd to ~veit/codrv).
+  The server supports several console drivers: pccons, syscons and pcvt.
+  The syscons driver is the default in FreeBSD 1.1.5 and higher.  They
+  are detected at runtime and no configuration of the server itself is
+  required.
 
   The pcvt console driver is bundled in /usr/ports/util/pcvt in FreeBSD
   versions 1.0.2 and above.  It can also be ftp-ed from:
 
+  FreeBSD.cdrom.com:/pub/FreeBSD/FreeBSD-1.1/ports/util/pcvt
   (ftp://FreeBSD.cdrom.com/pub/FreeBSD/FreeBSD-1.1/ports/util/pcvt)
 
   Refer to the README.FreeBSD
-  (ftp:/FreeBSD.cdrom.com/pub/FreeBSD/FreeBSD-1.1/ports/util/pcvt/README.FreeBSD)
+  (ftp://FreeBSD.cdrom.com/pub/FreeBSD/FreeBSD-1.1/ports/util/pcvt/README.FreeBSD)
   file there for complete installation instructions.
 
   The XFree86 servers include support for the MIT-SHM extension.  The
@@ -515,7 +511,7 @@
   The server link kit allows you to build an X server using a minimum
   amount of disk space.  Just unpack it, make the appropriate changes to
   site.def, type ``./mkmf' and ``make'' to link the server.  See
-  /usr/X11R6/lib/Server/README for more info.
+  README.LinkKit (LinkKit.html) for more info.
 
   The source tree takes about 114Mb before compiling and an additional
   100Mb after ``make World''.  You should configure the distribution by
@@ -525,8 +521,7 @@
   library support, add the following line to site.def:
 
 
-
-   #define BuildBsdSharedLibs             NO
+        #define BuildBsdSharedLibs             NO
 
 
 
@@ -592,24 +587,29 @@
   and __bsdi__ for BSD/386.
 
 
+
   9.  Thanks
 
   Many thanks to:
 
-  o  Pace Willison  for providing initial *BSD support.
+     o  Pace Willison  for providing initial *BSD support.
 
-  o  Amancio Hasty for 386BSD kernel and S3 chipset support.
+     o  Amancio Hasty for 386BSD kernel and S3 chipset support.
 
-  o  David Greenman, Nate Williams, Jordan Hubbard for FreeBSD kernel
-     support.
+     o  David Greenman, Nate Williams, Jordan Hubbard for FreeBSD kernel
+        support.
 
-  o  Rod Grimes, Jordan Hubbard and Jack Velte for the use of Walnut
-     Creek Cdrom's hardware.
+     o  Rod Grimes, Jordan Hubbard and Jack Velte for the use of Walnut
+        Creek Cdrom's hardware.
 
-  o  Orest Zborowski, Simon Cooper and Dirk Hohndel for ideas from the
-     Linux distribution.
+     o  Orest Zborowski, Simon Cooper and Dirk Hohndel for ideas from
+        the Linux distribution.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.4 1995/01/08 07:41:55 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.5 1995/01/15 10:34:13 dawes Exp $
+
+
+
+
 
 
 

@@ -39,29 +39,29 @@
   2.1.  Known bugs:
 
 
-  1. No video ram probing. Only known way to get this info is through an
-     INT 10 call, but you can't do this in a user process.
+     1. No video ram probing. Only known way to get this info is through
+        an INT 10 call, but you can't do this in a user process.
 
 
-  2. Clock probing. I'm not sure the docs in vgadoc3 are correct.
+     2. Clock probing. I'm not sure the docs in vgadoc3 are correct.
 
 
-  3. Random lockups with the SVGA server
+     3. Random lockups with the SVGA server
 
 
   2.2.  What's been tested:
 
 
-  1. An HT216-32 chip.
+     1. An HT216-32 chip.
 
 
-  2. 800x600 mode and 640x480 mode
+     2. 800x600 mode and 640x480 mode
 
 
-  3. Mode switching and switching to text mode through CTRL-ALT-F1
+     3. Mode switching and switching to text mode through CTRL-ALT-F1
 
 
-  4. Only been tested on Linux.
+     4. Only been tested on Linux.
 
 
   3.  Who to contact:
@@ -75,21 +75,21 @@
   4.1.  Thanks to:
 
 
-  o  Cara Cocking for loving me and supporting me. Without her I'd be a
-     bowl of jello.
+     o  Cara Cocking for loving me and supporting me. Without her I'd be
+        a bowl of jello.
 
 
-  o  XFree86 team for the great stub code that allowed me to get this
-     going.
+     o  XFree86 team for the great stub code that allowed me to get this
+        going.
 
 
-  o  Finn Thoegersen for compiling vgadoc3. Without this I would not
-     have had a clue.
+     o  Finn Thoegersen for compiling vgadoc3. Without this I would not
+        have had a clue.
 
 
-  o  Harm Hanemaayer for the vga.c program in svgalib. Without this I
-     would not have had the breakthroughs I needed to get the thing up
-     and running.
+     o  Harm Hanemaayer for the vga.c program in svgalib. Without this I
+        would not have had the breakthroughs I needed to get the thing
+        up and running.
 
 
   4.2.  Other things I've already done:
@@ -104,13 +104,13 @@
   4.3.  Things to do:
 
 
-  o  Try dual banking mode.
+     o  Try dual banking mode.
 
 
-  o  Write an svgalib driver.
+     o  Write an svgalib driver.
 
 
-  o  Go back to graduate school. (I'm a glutton for punishment.)
+     o  Go back to graduate school. (I'm a glutton for punishment.)
 
 
 

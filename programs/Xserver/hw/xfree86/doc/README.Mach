@@ -64,7 +64,7 @@
   formula:
 
 
-       < type > * 8 + < com port >
+  < type > * 8 + < com port >
 
 
   < com port > is 0, or 1 or ... depending on which com port you plug

@@ -1,6 +1,6 @@
   Information for S3 Chipset Users
   The XFree86 Project Inc.
-  14 December 1994
+  15 January 1995
 
   1.  Supported hardware
 
@@ -14,9 +14,9 @@
 
      S3 801/805, AT&T 20C490 (or similar) RAMDAC
 
-     o  Orchid Farenheit 1280+ VLB
+        o  Orchid Farenheit 1280+ VLB
 
-     o  Actix GE32
+        o  Actix GE32
 
         8 and 15/16 bpp
 
@@ -31,8 +31,8 @@
 
      S3 805 VLB, S3 GENDAC (RAMDAC + clock synthesizer)
 
-     o  MIRO 10SD (available for VLB and PCI) It is not known whether
-        all 10SDs use the S3 GENDAC.
+        o  MIRO 10SD (available for VLB and PCI) It is not known whether
+           all 10SDs use the S3 GENDAC.
 
         8 and 15/16 bpp
 
@@ -45,9 +45,28 @@
 
 
 
+     S3 801/805, AT&T 20C490 RAMDAC, ICD2061A Clockchip
+
+        o  STB PowerGraph X.24 S3 (ISA)
+
+        8 and 15/16 bpp
+
+        Note: the AT&T20C490 RAMDAC is not automatically detected by the
+        server.  You need to provide a `Ramdac "att20c490"' entry in
+        your XF86Config.
+
+
+           ClockChip "icd2061a"
+           RamDac    "att20c490"
+           Option    "dac_8_bit
+
+
+
+
+
      S3 805, Diamond SS2410 RAMDAC, ICD2061A Clockchip
 
-     o  Diamond Stealth 24 VLB
+        o  Diamond Stealth 24 VLB
 
 
         8 bpp only.
@@ -58,7 +77,7 @@
 
      S3 928, AT&T 20C490 RAMDAC
 
-     o  Actix Ultra
+        o  Actix Ultra
 
         8 and 15/16 bpp
 
@@ -75,9 +94,9 @@
 
      S3 928, Sierra SC15025 RAMDAC, ICD2061A Clockchip
 
-     o  ELSA Winner 1000 ISA/EISA (``TwinBus'', not Winner1000ISA!!)
+        o  ELSA Winner 1000 ISA/EISA (``TwinBus'', not Winner1000ISA!!)
 
-     o  ELSA Winner 1000 VL
+        o  ELSA Winner 1000 VL
 
         8, 15/16 and 24(32) bpp
 
@@ -96,7 +115,7 @@
 
      S3 928, Bt9485 RAMDAC, ICD2061A Clockchip
 
-     o  STB Pegasus VL
+        o  STB Pegasus VL
 
         8 bpp only
 
@@ -111,7 +130,7 @@
 
      S3 928, Bt485 RAMDAC, SC11412 Clockchip
 
-     o  SPEA Mercury 2MB VL
+        o  SPEA Mercury 2MB VL
 
         8, 15/16 and 24(32) bpp
 
@@ -125,7 +144,7 @@
 
      S3 928, Bt485 RAMDAC, ICD2061A Clockchip
 
-     o  #9 GXE Level 10, 11, 12
+        o  #9 GXE Level 10, 11, 12
 
 
         8 bpp only
@@ -138,7 +157,7 @@
 
      S3 928, Ti3020 RAMDAC, ICD2061A Clockchip
 
-     o  #9 GXE Level 14, 16
+        o  #9 GXE Level 14, 16
 
         8 bpp only
 
@@ -152,9 +171,9 @@
 
      S3 864, AT&T20c498 or STG1700 RAMDAC, ICD2061A or ICS9161 Clockchip
 
-     o  Elsa Winner1000PRO VLB
+        o  Elsa Winner1000PRO VLB
 
-     o  Elsa Winner1000PRO PCI
+        o  Elsa Winner1000PRO PCI
 
         8, 15/16 and 24(32) bpp
 
@@ -162,7 +181,7 @@
 
      S3 864, STG1700 RAMDAC, ICD2061A Clockchip
 
-     o  Actix GraphicsENGINE 64 VLB/2MB
+        o  Actix GraphicsENGINE 64 VLB/2MB
 
         8, 15/16 (and probably 24(32)) bpp
 
@@ -170,7 +189,7 @@
 
      S3 864, 20C498 or 21C498 RAMDAC, ICS2595 Clockchip
 
-     o  SPEA MirageP64 2MB DRAM  (BIOS 3.xx)
+        o  SPEA MirageP64 2MB DRAM  (BIOS 3.xx)
 
         8 and 15/16 bpp
 
@@ -187,7 +206,7 @@
 
      S3 864, AT&T21C498-13 RAMDAC, ICD2061A Clockchip
 
-     o  #9 GXE64 - PCI
+        o  #9 GXE64 - PCI
 
         8, 15/16, 24(32) bpp
 
@@ -196,9 +215,10 @@
         Option "dac_8_bit" (recommended)
 
 
+
      S3 964, AT&T 20C505 RAMDAC, ICD2061A Clockchip
 
-     o  Miro Crystal 20SV PCI
+        o  Miro Crystal 20SV PCI
 
         8, 15/16, 24(32) bpp
 
@@ -206,7 +226,7 @@
 
      S3 964, Bt485 RAMDAC, ICD2061A Clockchip
 
-     o  Diamond Stealth 64
+        o  Diamond Stealth 64
 
         8, 15/16, 24(32) bpp
 
@@ -214,7 +234,7 @@
 
      S3 964, Bt9485 RAMDAC, ICS9161a Clockchip
 
-     o  SPEA Mercury 64
+        o  SPEA Mercury 64
 
         8, 15/16, 24(32) bpp
 
@@ -224,7 +244,7 @@
 
      S3 964, Ti3020 RAMDAC, ICD2061A Clockchip
 
-     o  Elsa Winner2000PRO PCI
+        o  Elsa Winner2000PRO PCI
 
         8 bpp only
 
@@ -232,9 +252,9 @@
 
      S3 964, Ti3025 RAMDAC, Ti3025 Clockchip
 
-     o  #9 GXE64 Pro VLB
+        o  #9 GXE64 Pro VLB
 
-     o  #9 GXE64 Pro PCI
+        o  #9 GXE64 Pro PCI
 
         8 bpp, 15, 16 and 24(32) bpp
 
@@ -242,7 +262,6 @@
 
         There are some known problems with the GXE64 Pro support,
         including some image shifting/wrapping at 15/16/24 bpp.
-
         We have found that #9 no longer support the GXE64 Pro at
         1600x1200.  They do however have a new (and more expensive)
         board called the GXE64Pro-1600 which uses a 220MHz RAMDAC
@@ -306,12 +325,15 @@
   For example:
 
 
-                 @@
-                 @@ AT&T
 
-               ATT20C490-11
-                9339S ES
-                 9869874
+
+
+            @@
+            @@ AT&T
+
+          ATT20C490-11
+           9339S ES
+            9869874
 
 
 
@@ -327,10 +349,9 @@
   chips labeled -80 or -8  should use `DacSpeed 80' in the device
   section
 
-
-  S3716-ME SDAC  ==>  DacSpeed 110
-  SC15025-8      ==>  DacSpeed  80
-  ATT20C490-80   ==>  DacSpeed  80
+       S3716-ME SDAC  ==>  DacSpeed 110
+       SC15025-8      ==>  DacSpeed  80
+       ATT20C490-80   ==>  DacSpeed  80
 
 
 
@@ -340,28 +361,7 @@
   symptom of this not being correct is the HW cursor being chopped off
   when positioned close to the right edge of the screen.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.3 1995/01/11 09:47:53 dawes Exp $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.4 1995/01/15 10:34:20 dawes Exp $
 
 
 
