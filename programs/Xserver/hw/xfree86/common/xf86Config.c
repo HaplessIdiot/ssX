@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.134 1997/06/30 07:13:04 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.135 1997/07/29 12:07:50 hohndel Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -3026,7 +3026,7 @@ configScreenSection()
     case BLANKTIME:
       if (xf86GetToken(NULL) != NUMBER)
 	xf86ConfigError("Screensaver blank time expected");
-      if (!xf86sFlag)
+      if (!dummy && !xf86sFlag)
 	defaultScreenSaverTime = ScreenSaverTime = val.num * MILLI_PER_MIN;
       break;
 
@@ -3034,7 +3034,8 @@ configScreenSection()
       if (xf86GetToken(NULL) != NUMBER)
 	xf86ConfigError("Screensaver standby time expected");
 #ifdef DPMSExtension
-      defaultDPMSStandbyTime = DPMSStandbyTime = val.num * MILLI_PER_MIN;
+      if (!dummy)
+        defaultDPMSStandbyTime = DPMSStandbyTime = val.num * MILLI_PER_MIN;
 #endif
       break;
 
@@ -3042,7 +3043,8 @@ configScreenSection()
       if (xf86GetToken(NULL) != NUMBER)
 	xf86ConfigError("Screensaver suspend time expected");
 #ifdef DPMSExtension
-      defaultDPMSSuspendTime = DPMSSuspendTime = val.num * MILLI_PER_MIN;
+      if (!dummy)
+        defaultDPMSSuspendTime = DPMSSuspendTime = val.num * MILLI_PER_MIN;
 #endif
       break;
 
@@ -3050,7 +3052,8 @@ configScreenSection()
       if (xf86GetToken(NULL) != NUMBER)
 	xf86ConfigError("Screensaver off time expected");
 #ifdef DPMSExtension
-      defaultDPMSOffTime = DPMSOffTime = val.num * MILLI_PER_MIN;
+      if (!dummy)
+        defaultDPMSOffTime = DPMSOffTime = val.num * MILLI_PER_MIN;
 #endif
       break;
 

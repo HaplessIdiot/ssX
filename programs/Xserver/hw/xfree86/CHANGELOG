@@ -1,4 +1,5 @@
 XFree86 3.9l (31 July 1997)
+1170. Fix parsing of DPMS parameters in config file.
 1169. Catch a NULL dereference in lib/X11/lcFile.c (#843, Dirk Hohndel).
 1168. Xterm support for compound text cut and paste (#836, Kaleb Keithley).
 1166. Fix some I128 problems reported with PPro CPUs (#834, Robin Cutshaw).
@@ -5214,4 +5215,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.516 1997/07/31 09:18:31 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.517 1997/07/31 11:50:44 dawes Exp $
