@@ -23,7 +23,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_video.c,v 1.13 2000/12/06 00:08:49 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_video.c,v 1.14 2000/12/06 01:40:49 mvojkovi Exp $ */
 
 /*
  * i810_video.c: i810 Xv driver. Based on the mga Xv driver by Mark Vojkovich.
@@ -600,6 +600,9 @@ I810QueryBestSize(
   unsigned int *p_w, unsigned int *p_h, 
   pointer data
 ){
+   if(vid_w > (drw_w << 1)) drw_w = vid_w >> 1;
+   if(vid_h > (drw_h << 1)) drw_h = vid_h >> 1;
+
   *p_w = drw_w;
   *p_h = drw_h; 
 }
