@@ -1,17 +1,44 @@
-XFree86 3.0Dk (8 September 1994)
+XFree86 3.0Dk (11 September 1994)
+267. Fix LinkKit Imakefile for building SVGA server (Simon Cooper).
+266. Update lnxLib.rules for new dll tools (Orest Zborowski).
+265. Add code to the VGA servers to handle drivers (like tvga with 512k
+     in 256 colour mode) which require scaling of the raw clock to give
+     the pixel clock.
+264. Add code to the VGA servers to handle drivers (like the generic 256
+     colour driver) which use only builtin modes.
+263. Fix bitPerRGB reported by the SVGA server.
+262. ET4000/W32 accelerated server (Glenn Lai).
+261. Fix for AGX rect tile and stipple code (Henry Worth).
+260. Add checks for the presence of Modes lines to servers that require them.
+259. S3 code to handle limits imposed by clock chips.
+258. Fix S3 pMode->SynthClock code (Harald Koenig).
+257. Fix S3 raw clock setting for SC15025 (Harald Koenig).
+256. Fixes for Mach32ImageStipple (Mike Bernson).
+255. Improve AGX support for the Hercules dual RAMDACs, provide
+     better screen blanking at startup, and fixe memory probe (Henry Worth).
+254. Add clockchip "ti3025" recognition (Hans Nasten).
+253. Fix xf86Config handling of ClockChip (Harald Koenig).
+252. Fix xf86Config handling of default colour weights (Harm Hanemaayer).
+251. P9000 updates (Erik Nygren).
+250. Fix SEGV problem in Mach32 font cache code.
+249. S3 code to handle clock/bpp/ramdac dependent raw-clock vs pixel clock
+     scaling.
 
 XFree86 3.0Dj (8 September 1994)
-245. Added a sample XF86Config file that gets installed as
+248. Fixed and enabled ImageRead in CopyArea for P9000 server (Chris Mason).
+247. Fixed xdm server restart problem with P9000 server (Erik Nygren).
+246. Added a sample XF86Config file that gets installed as
      $(LIBDIR)/XF86Config.eg.
-244. Change search method for XF86Conifg file.  Only allow user-specified
+245. Change search method for XF86Conifg file.  Only allow user-specified
      location when real-uid == 0.  Also change -xconfig flag to -xf86config,
      and $XCONFIG to $XF86CONFIG.
-243. Fix reconfig's problem with "ps/2" (Orest Zborowski).
-242. External changes for W32 server (Glenn Lai).
-241. Change ELSA probe to check for BIOS signature first (Harald Koenig).
-240. Preliminary support for the Ti3025 & #9GXE64pro (Robin Cutshaw).
+244. Fix reconfig's problem with "ps/2" (Orest Zborowski).
+243. External changes for W32 server (Glenn Lai).
+242. Change ELSA probe to check for BIOS signature first (Harald Koenig).
+241. Preliminary support for the Ti3025 & #9GXE64pro (Robin Cutshaw).
 
 XFree86 3.0Di (7 September 1994)
+240. Remove AGX server's dependence on VGA256 (Henry Worth).
 239. Fix display start address in vgawonder driver for Mach32 and Mach64
      boards (Marc Aurele La France).
 238. Fix clock probling in vgawonder driver for Mach64 boards

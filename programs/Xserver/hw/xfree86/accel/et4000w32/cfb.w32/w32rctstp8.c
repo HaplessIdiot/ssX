@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/w32rctstp8.c,v 3.0 1994/09/11 00:41:53 dawes Exp $ */
 /*
  * Fill 32 bit stippled rectangles for 8 bit frame buffers
  */
@@ -155,6 +155,7 @@ W328FillRectOpaqueStippled32 (pDrawable, pGC, nBox, pBox)
 	    {
 		wEnd = 7 - (nlwMiddle & 7);
 		nlwMiddle = (nlwMiddle >> 3) + 1;
+#undef GGL_DRAW
 #define GGL_DRAW \
 	    	while (h--) \
 	    	{ \
@@ -215,6 +216,7 @@ W328FillRectOpaqueStippled32 (pDrawable, pGC, nBox, pBox)
 	}
 	else
 	{
+#undef GGL_DRAW
 #define GGL_DRAW \
 	    while (h--) \
 	    { \
@@ -308,6 +310,7 @@ W328FillRectTransparentStippled32 (pDrawable, pGC, nBox, pBox)
 	    xor = devPriv->xor;
 	    if (w < PGSZ*2)
 	    {
+#undef GGL_DRAW
 #define GGL_DRAW \
 	    	while (h--) \
 	    	{ \
@@ -424,6 +427,7 @@ W328FillRectTransparentStippled32 (pDrawable, pGC, nBox, pBox)
 	}
 	else
 	{
+#undef GGL_DRAW
 #define GGL_DRAW \
 	    while (h--) \
 	    { \
@@ -559,6 +563,7 @@ W328FillRectStippledUnnatural (pDrawable, pGC, nBox, pBox)
 	}
 #undef GGL_PTR
 #define GGL_PTR pdstLine
+#undef GGL_DRAW
 #define GGL_DRAW \
 	while (h--) \
 	{ \

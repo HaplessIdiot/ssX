@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.1 94/03/28 21:55:24 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.15 1994/09/07 16:30:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.16 1994/09/11 00:53:24 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -454,8 +454,13 @@ vgaProbe()
 	    for (j=0; j < vga256InfoRec.clocks; j++)
 	    {
 	      if ((j % 8) == 0)
-	        ErrorF("\n%s %s: clocks:", XCONFIG_PROBED, vga256InfoRec.name);
-	      ErrorF(" %6.2f", (double)vga256InfoRec.clock[j]/1000.0);
+	      {
+		if (j != 0)
+		  ErrorF("\n");
+	        ErrorF("%s %s: pixel clocks:", XCONFIG_PROBED,
+		       vga256InfoRec.name);
+	      }
+	      ErrorF(" %6.2f", (double)vga256InfoRec.clock[j] / 1000.0);
 	    }
 	    ErrorF("\n");
 	  }
@@ -545,7 +550,7 @@ vgaProbe()
         maxX = maxY = -1;
         if (Drivers[i]->ChipBuiltinModes) {
           pEnd = pMode = vga256InfoRec.modes = Drivers[i]->ChipBuiltinModes;
-          ErrorF("%s %s: Using builtin driver modes:\n", XCONFIG_PROBED,
+          ErrorF("%s %s: Using builtin driver modes\n", XCONFIG_PROBED,
                  vga256InfoRec.name);
 	  do {
             ErrorF("%s %s: Builtin Mode: %s\n", XCONFIG_PROBED,
