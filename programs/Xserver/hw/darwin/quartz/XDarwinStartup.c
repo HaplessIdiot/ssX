@@ -38,15 +38,14 @@
  * dealings in this Software without prior written authorization from
  * Torrey T. Lyons.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/XDarwinStartup.c,v 1.6 2002/02/05 19:16:14 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XDarwinStartup.c,v 1.1 2002/03/28 02:21:18 torrey Exp $ */
 
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <sys/syslimits.h>
 #include <ApplicationServices/ApplicationServices.h>
-
-extern int errno;
 
 // Macros to build the path name
 #ifndef XBINDIR
