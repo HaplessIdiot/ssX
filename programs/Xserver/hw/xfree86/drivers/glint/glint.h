@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.39 2001/01/30 10:06:34 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.40 2001/01/31 16:14:54 alanh Exp $ */
 /*
  * Copyright 1997-2001 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -242,6 +242,7 @@ Bool TXInit(ScrnInfoPtr pScrn, DisplayModePtr mode, GLINTRegPtr glintReg);
 Bool TXAccelInit(ScreenPtr pScreen);
 void TXInitializeEngine(ScrnInfoPtr pScrn);
 
+void SXInitializeEngine(ScrnInfoPtr pScrn);
 Bool SXAccelInit(ScreenPtr pScreen);
 
 void DualMXRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);

@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.109 2001/01/30 10:06:34 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.110 2001/01/31 16:14:55 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -2924,9 +2924,11 @@ GLINTSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 			PermediaInitializeEngine(pScrn);
 			break;
     		case PCI_VENDOR_3DLABS_CHIP_500TX:
-    		case PCI_VENDOR_3DLABS_CHIP_300SX:
     		case PCI_VENDOR_3DLABS_CHIP_MX:
 	    		TXInitializeEngine(pScrn);
+			break;
+    		case PCI_VENDOR_3DLABS_CHIP_300SX:
+	    		SXInitializeEngine(pScrn);
 			break;
     		case PCI_VENDOR_3DLABS_CHIP_GAMMA:
 			switch (pGlint->MultiChip) {
@@ -3038,9 +3040,11 @@ GLINTEnterVT(int scrnIndex, int flags)
 		PermediaInitializeEngine(pScrn);
 		break;
     	case PCI_VENDOR_3DLABS_CHIP_500TX:
-    	case PCI_VENDOR_3DLABS_CHIP_300SX:
     	case PCI_VENDOR_3DLABS_CHIP_MX:
 	   	TXInitializeEngine(pScrn);
+		break;
+    	case PCI_VENDOR_3DLABS_CHIP_300SX:
+	   	SXInitializeEngine(pScrn);
 		break;
     	case PCI_VENDOR_3DLABS_CHIP_GAMMA:
 		switch (pGlint->MultiChip) {
