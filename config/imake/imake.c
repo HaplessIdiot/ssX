@@ -1,5 +1,5 @@
 /* $XConsortium: imake.c,v 1.87 94/04/17 20:10:28 rws Exp $ */
-/* $XFree86: xc/config/imake/imake.c,v 3.0 1994/04/29 14:03:34 dawes Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.1 1994/05/08 05:13:14 dawes Exp $ */
 
 /*****************************************************************************
  *                                                                           *
@@ -117,7 +117,7 @@ in this Software without prior written authorization from the X Consortium.
 #ifdef WIN32
 #include "Xw32defs.h"
 #endif
-#ifndef X_NOT_POSIX
+#if !defined(X_NOT_POSIX) && !defined(_POSIX_SOURCE)
 #define _POSIX_SOURCE
 #endif
 #include <sys/types.h>
