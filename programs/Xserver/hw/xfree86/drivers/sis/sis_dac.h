@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dac.h,v 1.18 2004/01/23 22:29:04 twini Exp $ */
+/* $XFree86$ */
 /*
  * DAC helper functions (Save/Restore, MemClk, etc)
  * Definitions and prototypes
@@ -60,6 +60,8 @@ extern void 	SiS_SetCH701x(SiS_Private *SiS_Pr, USHORT tempbx);
 extern USHORT 	SiS_GetCH70xx(SiS_Private *SiS_Pr, USHORT tempbx);
 extern void 	SiS_SetCH70xx(SiS_Private *SiS_Pr, USHORT tempbx);
 extern void     SiS_SetCH70xxANDOR(SiS_Private *SiS_Pr, USHORT tempax,USHORT tempbh);
+extern void     SiS_SetTrumpReg(SiS_Private *SiS_Pr, USHORT tempbx);
+extern USHORT   SiS_GetTrumpReg(SiS_Private *SiS_Pr, USHORT tempbx);
 extern void     SiS_DDC2Delay(SiS_Private *SiS_Pr, USHORT delaytime);
 extern USHORT   SiS_ReadDDC1Bit(SiS_Private *SiS_Pr);
 extern USHORT   SiS_HandleDDC(SiS_Private *SiS_Pr, unsigned long VBFlags, int VGAEngine,

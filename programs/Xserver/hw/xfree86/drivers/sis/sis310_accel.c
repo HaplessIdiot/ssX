@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis310_accel.c,v 1.39tsi Exp $ */
+/* $XFree86$ */
 /*
  * 2D Acceleration for SiS 315 and 330 series
  *
@@ -188,7 +188,7 @@ extern void SiSSubsequentCPUToScreenTexture(ScrnInfoPtr	pScrn,
 
 extern CARD32 SiSAlphaTextureFormats[2];
 extern CARD32 SiSTextureFormats[2];
-CARD32 SiSAlphaTextureFormats[2] = { PICT_a8,       0 };
+CARD32 SiSAlphaTextureFormats[2] = { PICT_a8      , 0 };
 CARD32 SiSTextureFormats[2]      = { PICT_a8r8g8b8, 0 };
 #endif
 #endif
@@ -1699,8 +1699,8 @@ SiSSetupForCPUToScreenAlphaTexture(ScrnInfoPtr pScrn,
 	unsigned char *renderaccelarray;
 
 #ifdef ACCELDEBUG
-	xf86DrvMsg(0, X_INFO, "AT: op %d ARGB %x %x %x %x, w %d h %d A-pitch %d\n",
-		op, alpha, red, green, blue, width, height, alphaPitch);
+	xf86DrvMsg(0, X_INFO, "AT: op %d type %d ARGB %x %x %x %x, w %d h %d A-pitch %d\n",
+		op, alphaType, alpha, red, green, blue, width, height, alphaPitch);
 #endif
 
     	if(op != PictOpOver) return FALSE;
@@ -1751,7 +1751,7 @@ SiSSetupForCPUToScreenAlphaTexture(ScrnInfoPtr pScrn,
 	      for(x = 0; x < width; x++) {
 	         myalpha = alphaPtr[x];
 	         dstPtr[x] = (renderaccelarray[red + myalpha] << 16)  |
-	     	  	     (renderaccelarray[green + myalpha] << 8) |
+	     	             (renderaccelarray[green + myalpha] << 8) |
 			     renderaccelarray[blue + myalpha]         |
 			     myalpha << 24;
 	      }
@@ -1767,7 +1767,7 @@ SiSSetupForCPUToScreenAlphaTexture(ScrnInfoPtr pScrn,
 	      for(x = 0; x < width; x++) {
 	         myalpha = alphaPtr[x];
 	         dstPtr[x] = (renderaccelarray[alpha + myalpha] << 24) |
-		 	     (renderaccelarray[red + myalpha] << 16)   |
+		    	     (renderaccelarray[red + myalpha] << 16)   |
 	   	    	     (renderaccelarray[green + myalpha] << 8)  |
 			     renderaccelarray[blue + myalpha];
 	      }
