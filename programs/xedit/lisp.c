@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp.c,v 1.17 2002/11/12 06:05:07 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp.c,v 1.18 2002/11/15 07:01:27 paulo Exp $ */
 
 #include "xedit.h"
 #include "lisp/lisp.h"
@@ -120,26 +120,18 @@ XeditDoLispEval(Widget output)
     Widget src;
     XawTextBlock block;
     XawTextPosition position, end;
-    int gotchars = 0;
 
     /* get lisp expression */
-    if ((position = XawTextGetInsertionPoint(textwindow)) == 0) {
-	Feep();
-	return;
-    }
-    end = position;
-    --position;
-
     src = XawTextGetSource(textwindow);
+    position = XawTextGetInsertionPoint(textwindow);
+    --position;
     while (position >= 0) {
 	(void)XawTextSourceRead(src, position, &block, 1);
-	if (!isspace(block.ptr[0])) {
-	    ++gotchars;
+	if (!isspace(block.ptr[0]))
 	    break;
-	}
-	--gotchars;
 	--position;
     }
+    end = position + 1;
 
     if (block.ptr[0] != ')') {
 	while (position >= 0) {
@@ -147,19 +139,13 @@ XeditDoLispEval(Widget output)
 	    if (isspace(block.ptr[0]) ||
 		block.ptr[0] == '(' ||
 		block.ptr[0] == ')' ||
-		block.ptr[0] == '\'' ||
-		block.ptr[0] == '`')
+		block.ptr[0] == '"' ||
+		block.ptr[0] == '|')
 		break;
-	    ++gotchars;
 	    --position;
 	}
-	++position;
-	if (position == end || gotchars <= 0) {
-	    Feep();
-	    return;
-	}
-	if ((block.ptr[0] == '\'' || block.ptr[0] == '`') && position > 0)
-	    --position;
+	if (!isspace(block.ptr[0]))
+	    ++position;
     }
     else {
 	/* XXX note that embedded '(' and ')' will confuse this code */
@@ -204,7 +190,10 @@ XeditDoLispEval(Widget output)
 	}
     }
 
-    XeditLispExecute(output, position, end);
+    if (position == end)
+	Feep();
+    else
+	XeditLispExecute(output, position, end);
 }
 
 void

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.41 2002/11/10 16:29:04 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.42 2002/11/15 07:01:29 paulo Exp $ */
 
 #include "helper.h"
 #include "pathname.h"
@@ -138,9 +138,11 @@ LispObjectCompare(LispObj *left, LispObj *right, int function)
 		break;
 	    case LispComplex_t:
 		if (LispObjectCompare(left->data.complex.real,
-				      right->data.complex.real, function) &&
+				      right->data.complex.real,
+				      function) == T &&
 		    LispObjectCompare(left->data.complex.imag,
-				      right->data.complex.imag, function))
+				      right->data.complex.imag,
+				      function) == T)
 		    result = T;
 		break;
 	    case LispBignum_t:

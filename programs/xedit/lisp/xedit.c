@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.13 2002/11/13 05:44:49 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.14 2002/11/15 07:01:31 paulo Exp $ */
 
 #include "../xedit.h"
 #include <X11/Xaw/TextSrcP.h>	/* Needs some private definitions */
@@ -116,9 +116,10 @@ static LispObj execute_stream;
 static LispString execute_string;
 static LispObj result_stream;
 static LispString result_string;
-static char result_buffer[8192];
 static XawTextPropertyList **property_lists;
 static Cardinal num_property_lists;
+
+extern int pagesize;
 
 static LispBuiltin xeditbuiltins[] = {
     {LispFunction, Xedit_AddEntity, "add-entity offset length identifier"},
@@ -266,9 +267,8 @@ LispXeditInitialize(void)
     result_stream.data.stream.type = LispStreamString;
     result_stream.data.stream.readable = 0;
     result_stream.data.stream.writable = 1;
-    result_string.string = result_buffer;
-    result_string.fixed = 1;
-    result_string.space = sizeof(result_buffer) - 2;
+    result_string.string = XtMalloc(pagesize);
+    result_string.space = pagesize;
 
     /* Initialize interactive edition function arguments */
     /* first argument is syntax table */
@@ -417,20 +417,13 @@ XeditPrint(Widget output, LispObj *object)
 
     result_string.length = result_string.output = 0;
     LispWriteObject(&result_stream, object);
-    if (result_string.length >= sizeof(result_buffer)) {
-	if (result_buffer[0] == '(')
-	    memcpy(result_buffer + sizeof(result_buffer) - 5, "...)\n", 5);
-	else
-	    memcpy(result_buffer + sizeof(result_buffer) - 4, "...\n", 4);
-    }
-    else
-	result_buffer[result_string.length++] = '\n';
+    LispSputc(&result_string, '\n');
 
     position = XawTextGetInsertionPoint(output);
     block.firstPos = 0;
     block.format = FMT8BIT;
     block.length = result_string.length;
-    block.ptr = result_buffer;
+    block.ptr = result_string.string;
     XawTextReplace(output, position, position, &block);
     XawTextSetInsertionPoint(output, position + block.length);
 }

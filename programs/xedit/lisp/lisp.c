@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.69 2002/11/13 04:35:46 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.70 2002/11/15 07:01:29 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -221,7 +221,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_AlphaCharP, "alpha-char-p char"},
     {LispMacro, Lisp_And, "and &rest args", 0, 0, Com_And},
     {LispFunction, Lisp_Append, "append &rest lists"},
-    {LispFunction, Lisp_Apply, "apply function arg &rest more-args"},
+    {LispFunction, Lisp_Apply, "apply function arg &rest more-args", 1},
     {LispFunction, Lisp_Aref, "aref array &rest subscripts"},
     {LispFunction, Lisp_Assoc, "assoc item list &key test test-not key"},
     {LispFunction, Lisp_AssocIf, "assoc-if predicate list &key key"},
@@ -346,7 +346,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Ffloor, "ffloor number &optional divisor", 1},
     {LispFunction, Lisp_Fmakunbound, "fmakunbound symbol"},
     {LispFunction, Lisp_Format, "format destination control-string &rest arguments"},
-    {LispFunction, Lisp_Funcall, "funcall function &rest arguments"},
+    {LispFunction, Lisp_Funcall, "funcall function &rest arguments", 1},
     {LispFunction, Lisp_Gc, "gc &optional car cdr"},
     {LispFunction, Lisp_Gcd, "gcd &rest integers"},
     {LispFunction, Lisp_Gensym, "gensym &optional arg"},
@@ -2658,45 +2658,17 @@ LispNewInteger(long integer)
 
 LispObj *
 LispNewRatio(long num, long den)
-/* Note that reduction is done here, so a integer may be returned */
 {
-    LispObj *ratio;
-    long rest, numerator = num, denominator = den;
+    LispObj *ratio = objseg.freeobj;
 
-    if (numerator == 0)
-	return (FIXNUM(0));
-
-    if (num < 0)
-	num = -num;
-
-    for (;;) {
-	if ((rest = den % num) == 0)
-	    break;
-	den = num;
-	num = rest;
-    }
-    if (den != 1) {
-	denominator /= num;
-	numerator /= num;
-    }
-
-    if (denominator < 0) {
-	numerator = -numerator;
-	denominator = -denominator;
-    }
-
-    if (denominator == 1)
-	return (FIXNUM(numerator));
-
-    ratio = objseg.freeobj;
     if (ratio == NIL)
 	ratio = Lisp__New(NIL, NIL);
     else
 	objseg.freeobj = CDR(ratio);
 
     ratio->type = LispRatio_t;
-    ratio->data.ratio.numerator = numerator;
-    ratio->data.ratio.denominator = denominator;
+    ratio->data.ratio.numerator = num;
+    ratio->data.ratio.denominator = den;
 
     return (ratio);
 }
@@ -5168,7 +5140,7 @@ LispBegin(void)
     LispRegexInit();
     LispWriteInit();
 
-    lisp__data.prompt = "> ";
+    lisp__data.prompt = isatty(0) ? "> " : NULL;
 
     lisp__data.errexit = !lisp__data.interactive;
 
