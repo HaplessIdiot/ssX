@@ -1,4 +1,5 @@
 XFree86 4.3.99.903 (xx February 2004)
+ 797. Fix GL_VERSION string for indirect rendering (Bugzilla #1147, DRI Project)
  796. Fix the 1024x576 modes in the via driver (Bugzilla #812, Luc Verhaegen,
       reported by Julian ???).
  795. Add uz_UZ locale (Bugzilla #1151, Mashrab Kuvatov).
@@ -18630,7 +18631,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3134 2004/02/09 01:35:19 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3135 2004/02/09 01:45:18 dawes Exp $
 
 
 

@@ -31,7 +31,7 @@
 ** published by SGI, but has not been independently verified as being
 ** compliant with the OpenGL(R) version 1.2.1 Specification.
 */
-/* $XFree86: xc/lib/GL/glx/glxclient.h,v 1.19 2004/01/28 18:11:38 alanh Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxclient.h,v 1.20 2004/01/28 22:09:59 alanh Exp $ */
 
 /*
  * Direct rendering support added by Precision Insight, Inc.
@@ -871,6 +871,7 @@ extern char *__glXInternalQueryServerString( Display *dpy, int opcode,
 extern char *__glXstrdup(const char *str);
 
 
+extern const char __glXGLClientVersion[];
 extern const char __glXGLClientExtensions[];
 extern char *__glXCombineExtensionStrings( const char *cext_string,
     const char *sext_string );

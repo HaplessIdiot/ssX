@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/glx/glxscreens.c,v 1.12 2003/09/28 20:15:43 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/glx/glxscreens.c,v 1.13 2004/01/28 18:11:50 alanh Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -46,6 +46,7 @@
 #include "glxserver.h"
 #include "glxutil.h"
 
+const char GLServerVersion[] = "1.2";
 static const char GLServerExtensions[] = 
 			"GL_ARB_depth_texture "
 			"GL_ARB_imaging "

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.29 2004/01/28 18:11:38 alanh Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.30 2004/01/30 20:33:06 alanh Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -156,6 +156,12 @@ const char __glXGLClientExtensions[] =
 
 static const char __glXGLXClientVendorName[] = "SGI";
 static const char __glXGLXClientVersion[] = "1.2";
+
+/**
+ * Textual version of the client-side GL core version.  This version is
+ * primarilly determined by what functionality has implemented protocol.
+ */
+const char __glXGLClientVersion[] = "1.2";
 
 #ifdef GLX_DIRECT_RENDERING
 static void * DriverCreateContextWrapper( __GLXscreenConfigs *psc,
