@@ -1,4 +1,25 @@
-XFree86 3.9.18a (24 February 2000)
+XFree86 3.9.18a (25 February 2000)
+3860. Make xclock's -brief option off by default, and document it in the
+      man page (#3740, Nozomi Ytow).
+3859. Improve the default convereters set in libX11, and use it for all
+      "one byte" locales (#3737, Ivan Pascal).
+3858. Some improvements to the generic converters set in libX11, including:
+       - some converter optimization
+       - actions that can be done once at initialization step moved to
+         lcGeneric.c
+       - converters from CharSet to MultiByte/WideChar added
+      (#3731, Ivan Pascal).
+3857. Add a "showCurrent" resource for Xaw, which makes the list widget
+      always show the selected item (#3728, Paulo Cesar Pereira de Andrade).
+3856. Use fb for the fbdev driver, and check if the fbdev modes are suitable
+      for the monitor (#3709, Michel Dänzer).
+3855. Add support for finding VT devices for Linux kernels compiled with
+      devfs (#3692, Christopher Sekiya).
+3854. Implmenent the Font Type font properties for the Speedo, Type 1 and
+      TrueType backends (#3688, Juliusz Chroboczek).
+3853. Add an installation script (Xinstall.sh) for installing binary
+      distributions (David Dawes).
+3852. Fix bitmap installation location for xditview (#3724, Harald Koenig).
 3851. Make -probe and -configure deal with vendor-supplied modules again
       (Marc La France).
 3850. Fix an exposure problem that occured in 8+32 mode when the root
@@ -9806,4 +9827,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1033 2000/02/25 01:41:55 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1034 2000/02/25 17:23:03 tsi Exp $

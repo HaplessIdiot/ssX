@@ -47,4 +47,16 @@ cs0	{
 	ct_encoding	ISO8859-1:GL
 }
 
+XCOMM 	cs1 class
+cs1	{
+	side		GR:Default
+	length		1
+#if WCHAR32
+	wc_encoding	\x30000000
+#else
+	wc_encoding	\x00008080
+#endif
+	ct_encoding	ISO8859-1:GR
+}
+
 END XLC_XLOCALE

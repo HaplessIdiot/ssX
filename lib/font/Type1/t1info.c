@@ -95,7 +95,7 @@ from The Open Group.
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/t1info.c,v 1.12 1999/05/15 12:10:07 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1info.c,v 1.13 1999/08/21 13:47:48 dawes Exp $ */
 
 #include "fntfilst.h"
 #include "fontutil.h"
@@ -195,7 +195,9 @@ static fontProp extraProps[] = {
     { "RAW_ASCENT", 0, },
     { "RAW_DESCENT", 0, },
     { "RAW_AVERAGE_WIDTH", 0, },
-    { "FACE_NAME", 0, }
+    { "FACE_NAME", 0, },
+    { "FONT_TYPE", 0, },
+    { "RASTERIZER_NAME", 0, }
 };
  
 /* this is a bit kludgy */
@@ -207,6 +209,8 @@ static fontProp extraProps[] = {
 #define RAWDESCENTPROP	5
 #define RAWWIDTHPROP	6
 #define FACE_NAMEPROP	7
+#define FONT_TYPEPROP   8
+#define RASTERIZER_NAMEPROP 9
 
 #define NNAMEPROPS (sizeof(fontNamePropTable) / sizeof(fontProp))
 #define NEXTRAPROPS (sizeof(extraProps) / sizeof(fontProp))
@@ -690,6 +694,16 @@ CIDComputeStdProps(FontInfoPtr pInfo, FontScalablePtr Vals,
             }
             pp->value = MakeAtom(infostrP, strlen(infostrP), TRUE);
             break;
+         case FONT_TYPEPROP:
+            *is_str = TRUE;
+            infostrP = "CIDFont";
+            pp->value = MakeAtom(infostrP, strlen(infostrP), TRUE);
+            break;
+         case RASTERIZER_NAMEPROP:
+            *is_str = TRUE;
+            infostrP = "X Consortium Type 1 Rasterizer";
+            pp->value = MakeAtom(infostrP, strlen(infostrP), TRUE);
+            break;
          case RAWPIXELPROP:
             *is_str = FALSE;
             pp->value = 1000;
@@ -816,6 +830,16 @@ ComputeStdProps(FontInfoPtr pInfo, FontScalablePtr Vals,
             if (rc || !infostrP) {
                 infostrP = "(unknown)"; 
             }
+            pp->value = MakeAtom(infostrP, strlen(infostrP), TRUE);
+            break;
+         case FONT_TYPEPROP:
+            *is_str = TRUE;
+            infostrP = "Type 1";
+            pp->value = MakeAtom(infostrP, strlen(infostrP), TRUE);
+            break;
+         case RASTERIZER_NAMEPROP:
+            *is_str = TRUE;
+            infostrP = "X Consortium Type 1 Rasterizer";
             pp->value = MakeAtom(infostrP, strlen(infostrP), TRUE);
             break;
          case RAWPIXELPROP:

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_init.c,v 3.9.2.3 1998/06/05 16:23:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_init.c,v 3.11 2000/02/08 13:13:30 eich Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -57,6 +57,8 @@ xf86OpenConsole(void)
     struct fb_var_screeninfo var;
     int fbfd;
 #endif
+    char *tty0[] = { "/dev/tty0", "/dev/vc/0", NULL };
+    char *vcs[] = { "/dev/vc/%d", "/dev/tty%d", NULL };
 
     if (serverGeneration == 1) 
     {
@@ -73,11 +75,17 @@ xf86OpenConsole(void)
 	    xf86Info.vtno = VTnum;
 	    from = X_CMDLINE;
 	} else {
-	    if ((fd = open("/dev/tty0",O_WRONLY,0)) < 0) {
+	    i=0;
+	    while (tty0[i] != NULL)
+	    {
+		if ((fd = open(tty0[i],O_WRONLY,0)) >= 0)
+		  break;
+		i++;
+	    }
+	    if (fd < 0)
 		FatalError(
 		    "xf86OpenConsole: Cannot open /dev/tty0 (%s)\n",
 		    strerror(errno));
-	    }
 	    if ((ioctl(fd, VT_OPENQRY, &xf86Info.vtno) < 0) ||
 		(xf86Info.vtno == -1)) {
 		FatalError("xf86OpenConsole: Cannot find a free VT\n");
@@ -97,15 +105,22 @@ xf86OpenConsole(void)
 #endif
 	xf86Msg(from, "using VT number %d\n\n", xf86Info.vtno);
 
-	sprintf(vtname,"/dev/tty%d",xf86Info.vtno); /* /dev/tty1-64 */
-
 	if (!KeepTty) {
 	    setpgrp();
 	}
 
-	if ((xf86Info.consoleFd = open(vtname, O_RDWR|O_NDELAY, 0)) < 0) {
-	    FatalError("xf86OpenConsole: Cannot open %s (%s)\n",
-		       vtname, strerror(errno));
+        i=0;
+        while (vcs[i] != NULL)
+        {
+            sprintf(vtname, vcs[i], xf86Info.vtno); /* /dev/tty1-64 */
+     	    if ((xf86Info.consoleFd = open(vtname, O_RDWR|O_NDELAY, 0)) >= 0)
+		break;
+            i++;
+        }
+
+	if (xf86Info.consoleFd < 0) {
+	    FatalError("xf86OpenConsole: Cannot open virtual console %d (%s)\n",
+		       xf86Info.vtno, strerror(errno));
 	}
 
 	/* change ownership of the vt */
