@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.222 2002/12/10 02:49:45 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.223 2002/12/20 02:43:43 dawes Exp $ */
 
 /*
  *
@@ -418,6 +418,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86GetAllowMouseOpenFail)
    SYMFUNC(xf86CommonSpecialKey)
    SYMFUNC(xf86IsPc98)
+   SYMFUNC(xf86DisableRandR)
    SYMFUNC(xf86GetVersion)
    SYMFUNC(xf86GetModuleVersion)
    SYMFUNC(xf86GetClocks)
