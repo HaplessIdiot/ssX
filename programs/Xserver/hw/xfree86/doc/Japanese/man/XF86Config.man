@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/doc/Japanese/man/XF86Config.man,v 1.2 1997/11/16 06:32:48 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/doc/Japanese/man/XF86Config.man,v 1.3 1998/04/05 02:28:40 dawes Exp $
 .\"
 .\" Japanese Version Copyright (c) 1996 Kazuyuki Okamoto
 .\"         all rights reserved.
@@ -82,6 +82,7 @@ EndSection
 .\" and the path to the RGB database.  These paths can also be set from
 .\" the command line (see \fIXserver(1)\fP).  The entries available
 .\" for this section are:
+\fBFiles\fP 節は標準のフォントのパスと RGB データベースへのパスを
 指定します。これらのパスはコマンドラインからも設定出来ます。この節に
 記述する内容は次のように書きます:
 .TP 8
@@ -90,8 +91,10 @@ EndSection
 .\" list of directories which the X server searches for font databases.
 .\" Multiple \fBFontPath\fP entries may be specified, and they will be
 .\" concatenated to build up the fontpath used by the server.
+フォントの検索経路(パス)を設定します。このパスは X サーバがフォント
 データベースを検索するディレクトリ群をカンマで区切ったリストです。
 複数の \fBFontPath\fP が記載されていると思いますが、これらを結合
+してサーバが使用するフォントパス (fontpath) を作成します。
 .sp
 .\" X11R6 allows the X server to request fonts from a font server.  A
 .\" font server is specified by placing a "<trans>/<hostname>:<port_number>"
@@ -101,9 +104,14 @@ EndSection
 .\" /usr/X11R6/lib/X11/fonts/misc.  If that fails, then request the
 .\" font from the \fIfont server\fP running on machine zok listening
 .\" for connections on TCP port number 7100.
+X11R6 は X サーバがフォントサーバにフォントを要求することが可能
+になりました。フォントサーバは場所を "<trans>/<hostname>:<port_number>"
+とフォントパスに指定します。例えば、フォントパス
 "/usr/X11R6/lib/X11/fonts/misc/,tcp/zok:7100" はまず最初にローカル
 ディレクトリ /usr/X11R6/lib/X11/fonts/misc を X サーバに伝えます。
 これが失敗したときに、ポート番号 7100 から TCP で接続して聞いて
+(listening) いる zok というホストで動作している \fIフォントサーバ\fP 
+にフォントを要求します。
 .TP 8
 .B RGBPath \fI"path"\fP
 .\" sets the path name for the RGB color database.
@@ -116,6 +124,7 @@ EndSection
 .\" Multiple \fBModulePath\fP entries may be specified, and they will be
 .\" concatenated to build the modulepath used by the server.
 .PP
+は動的モジュールを探索する経路(パス)を設定します。このパスは X サーバが
 指定した順にロードする動的モジュールを検索するディレクトリ群をカンマで区切った
 リストです。
 複数の \fBModulePath\fP が記載されていると思いますが、これらを結合
