@@ -1066,6 +1066,11 @@ static Bool R128PreInit(ScrnInfoPtr pScrn, int flags)
     R128TRACE(("R128PreInit\n"));
     if (pScrn->numEntities != 1) return FALSE;
 
+    if (!R128GetRec(pScrn)) {
+	vgaHWFreeHWRec(pScrn);
+	return FALSE;
+    }
+
     info               = R128PTR(pScrn);
 
     info->pEnt         = xf86GetEntityInfo(pScrn->entityList[0]);
@@ -1079,10 +1084,6 @@ static Bool R128PreInit(ScrnInfoPtr pScrn, int flags)
     if (!xf86LoadSubModule(pScrn, "vgahw")) return FALSE;
     xf86LoaderReqSymLists(vgahwSymbols, NULL);
     if (!vgaHWGetHWRec(pScrn)) return FALSE;
-    if (!R128GetRec(pScrn)) {
-	vgaHWFreeHWRec(pScrn);
-	return FALSE;
-    }
 
     info->PciInfo      = xf86GetPciInfoForEntity(info->pEnt->index);
     info->PciTag       = pciTag(info->PciInfo->bus,
