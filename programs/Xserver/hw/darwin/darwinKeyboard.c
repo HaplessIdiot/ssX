@@ -2,15 +2,15 @@
 //
 // Keyboard support for the Darwin X Server
 //
-// By Torrey T. Lyons
+// Copyright (c) 2001-2002 Torrey T. Lyons. All Rights Reserved.
 //
 // The code to parse the Darwin keymap is derived from dumpkeymap.c
-// by Eric Sunshine, which includes the following license:
-//
-//-----------------------------------------------------------------------------
+// by Eric Sunshine, which includes the following copyright:
 //
 // Copyright (C) 1999,2000 by Eric Sunshine <sunshine@sunshineco.com>
 // All rights reserved.
+//
+//-----------------------------------------------------------------------------
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -36,7 +36,7 @@
 //
 //=============================================================================
 
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwinKeyboard.c,v 1.14 2001/12/05 06:27:43 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwinKeyboard.c,v 1.15 2002/02/07 02:54:44 torrey Exp $ */
 
 /*
 ===========================================================================
@@ -67,8 +67,8 @@
 #include <architecture/byte_order.h>  // For the NXSwap*
 #include "darwin.h"
 #include "xfIOKit.h"
-#include "bundle/quartzAudio.h"
-#include "bundle/quartzShared.h"
+#include "quartz/quartzAudio.h"
+#include "quartz/quartzShared.h"
 
 #define XK_TECHNICAL		// needed to get XK_Escape
 #define XK_PUBLISHING

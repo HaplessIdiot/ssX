@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.23 2002/02/05 17:15:48 tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.24 2002/02/05 19:16:09 torrey Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -63,20 +63,20 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
  * Before Mac OS X 10.1 a number of features were missing or broken.
  */
 # if (OSMajorVersion == 1 && OSMinorVersion >= 4) || OSMajorVersion >= 5
-#  ifndef HasCarbonNSWindow
-#   define HasCarbonNSWindow     YES
+#  ifndef HasNSCarbonWindow
+#   define HasNSCarbonWindow    YES
 #  endif
 #  ifndef HasCGMachPort
-#   define HasCGMachPort         YES
+#   define HasCGMachPort        YES
 #  endif
 # else
 /* NSWindow(NSCarbonExtensions) is broken. */
-#  ifndef HasCarbonNSWindow
-#   define HasCarbonNSWindow     NO
+#  ifndef HasNSCarbonWindow
+#   define HasNSCarbonWindow    NO
 #  endif
 /* CGWindowServerCFMachPort() does not exist. */
 #  ifndef HasCGMachPort
-#   define HasCGMachPort         NO
+#   define HasCGMachPort        NO
 #  endif
 # endif
 #endif

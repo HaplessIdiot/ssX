@@ -46,7 +46,7 @@
                 startFullScreen = id; 
                 startRootless = id; 
             }; 
-            CLASS = Xserver; 
+            CLASS = XServer; 
             LANGUAGE = ObjC; 
             OUTLETS = {
                 helpWindow = id; 
