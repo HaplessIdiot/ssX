@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.14 2001/02/16 01:36:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.15 2001/02/16 01:43:07 dawes Exp $ */
 
 /*
  *
@@ -137,22 +137,76 @@ LOOKUP	*list ;
 {
     LOOKUP	*l = list;
     itemPtr	i;
-    char		*modname;
+    char	*modname;
+    char	**exports = NULL;
+    char	**e;
+    int		found = 0;
 
     if (!list)
 	return;
-    /* Visit every symbol in the lookup table,
-     * and add it to the given namespace.
+
+    /*
+     * First look for a symbol called <name>ExportedSymbols.  If it exists,
+     * only export the symbols that are listed in that array.  Otherwise
+     * export all of the external symbols.
+     */
+    modname = _LoaderHandleToCanonicalName(handle);
+    if (modname) {
+	char *exportname;
+
+	exportname = xf86loadermalloc(strlen("ExportedSymbols") +
+					strlen(modname) + 1);
+	if (exportname) {
+	    sprintf(exportname, "%sExportedSymbols", modname);
+	    while (l->symName) {
+		if (strcmp(l->symName, exportname) == 0) {
+		    exports = (char **)l->offset;
+#ifdef DEBUG
+		    ErrorF("LoaderAddSymbols: %s: %s found\n", modname,
+			   exportname);
+#endif
+		    break;
+		}
+	    }
+	}
+    }
+
+    /*
+     * Visit every symbol in the lookup table,
+     * and add it to the given namespace if appropriate based on the
+     * presence and content of an export list.
      */
     while ( l->symName ) {
-	i = xf86loadermalloc( sizeof( itemRec )) ;
-	i->name = l->symName ;
-	i->address = (char *) l->offset ;
-	i->handle = handle ;
-	i->module = module ;
-	LoaderHashAdd( i );
+	/* XXX This might be slow if lots of symbols are exported. */
+	if (exports) {
+	    found = 0;
+	    for (e = exports; *e != NULL; e++) {
+		if (strcmp(l->symName, *e) == 0) {
+		    found = 1;
+		    break;
+		}
+	    }
+	} else {
+	    found = 1;
+	}
+#ifdef DEBUG
+	ErrorF("LoaderAddSymbols: modname: Symbol \"%s\" %sexported\n",
+		l->symName, found ? "" : "NOT");
+#endif
+	if (found) {
+	    i = xf86loadermalloc( sizeof( itemRec )) ;
+	    i->name = l->symName ;
+	    i->address = (char *) l->offset ;
+	    i->handle = handle ;
+	    i->module = module ;
+	    LoaderHashAdd( i );
+	}
 	l ++ ;
     }
+    /*
+     * XXX It might be useful to check for exported symbols that weren't
+     * actually present in the module, and print a warning for them.
+     */
 }
 
 itemPtr
