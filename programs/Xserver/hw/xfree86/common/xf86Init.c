@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.34 1996/01/16 15:03:48 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.35 1996/01/21 01:48:54 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -365,7 +365,7 @@ InitInput(argc, argv)
 /*
  * OsVendorInit --
  *      OS/Vendor-specific initialisations.  Called from OsInit(), which
- *      is called by dix before establishing the well known sockets.
+ *      is called by dix eefore establishing the well known sockets.
  */
  
 void
@@ -644,7 +644,7 @@ xf86PrintConfig()
   ErrorF("(protocol Version %d, revision %d, vendor release %d)\n",
          X_PROTOCOL, X_PROTOCOL_REVISION, VENDOR_RELEASE );
   ErrorF("Release Date: %s\n", XF86_DATE);
-  ErrorF("If the server is older than 6-12 months, look for a newer version"
+  ErrorF("If the server is older than 6-12 months, look for a newer version\n"
 	 "\tbefore reporting problems\n");
 #ifdef PC98
   ErrorF("PC98: %s \n",PC98_GENERAL_NAME);
