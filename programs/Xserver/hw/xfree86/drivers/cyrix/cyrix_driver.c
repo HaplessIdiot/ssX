@@ -26,7 +26,7 @@
  *          Dirk H. Hohndel (hohndel@suse.de),
  *          Portions: the GGI project & confidential CYRIX databooks.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.8 2000/04/19 16:57:43 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.9 2000/06/21 17:28:06 dawes Exp $ */
 
 #include "compiler.h"
 #include "fb.h"
@@ -301,6 +301,7 @@ CYRIXProbe(DriverPtr drv, int flags)
     int i, numDevSections, numUsed, *usedChips;
     GDevPtr *devSections;
     ScrnInfoPtr pScrn;
+    Bool foundScreen = FALSE;
 
     /*
      * The aim here is to find all cards that this driver can handle,
@@ -332,13 +333,15 @@ CYRIXProbe(DriverPtr drv, int flags)
     if (numUsed <= 0)
 	return FALSE;
 
+    foundScreen = TRUE;
+
     /* Free it since we don't need that list after this */
     xfree(devSections);
 
-    for (i=0; i < numUsed; i++) {
+    if (!(flags & PROBE_DETECT)) {
+      for (i=0; i < numUsed; i++) {
 
-
-    /* Fill in what we can of the ScrnInfoRec */
+      /* Fill in what we can of the ScrnInfoRec */
 	    pScrn = NULL;
 	    if ((pScrn = xf86ConfigIsaEntity(pScrn, 0, usedChips[i],
 						   CYRIXISAChipsets, NULL,
@@ -358,8 +361,9 @@ CYRIXProbe(DriverPtr drv, int flags)
 		return (TRUE);
 	    }
 	    xfree(usedChips);
+      }
     }
-    return (TRUE);
+    return (foundScreen);
 }
 
 static int
@@ -497,9 +501,6 @@ CYRIXPreInit(ScrnInfoPtr pScrn, int flags)
 
     /*      end GGI MediaGX driver based code */
     if (padsize == 0) return (FALSE);
-
-    if (flags & PROBE_DETECT)
-	return TRUE;
 
     xf86ErrorF("%s: GX_BASE: 0x%x\n",CYRIX_NAME, physbase);
     xf86ErrorF("%s: Scratchpad size: %d kbytes\n",CYRIX_NAME, padsize);

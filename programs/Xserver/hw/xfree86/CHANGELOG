@@ -1,4 +1,5 @@
 XFree86 4.0.1a (XX XXXX 2000)
+ 432. Fix Cyrix driver for -configure (Alan Hourihane).
  431. Fix Glint PM3 memory detect when only 1MB of videoram (Alan Hourihane). 
  430. Fix DAC colour problem and blank out issue in glint driver 
       (Alan Hourihane).
@@ -10841,4 +10842,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1236 2000/07/09 20:20:07 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1237 2000/07/09 21:02:15 alanh Exp $
