@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.101 2000/12/06 15:35:18 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.102 2000/12/08 10:02:15 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -2766,7 +2766,6 @@ GLINTAdjustFrame(int scrnIndex, int x, int y, int flags)
 
     base = ((y * pScrn->displayWidth + x) >> 1) >> pGlint->BppShift;
     if (pScrn->bitsPerPixel == 24) base *= 3;
-    if (pScrn->bitsPerPixel == 32) base *= 4;
  
     switch (pGlint->Chipset)
     {
