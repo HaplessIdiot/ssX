@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: ptyx.h /main/66 1995/12/09 08:58:41 kaleb $
- *	$XFree86: xc/programs/xterm/ptyx.h,v 3.11 1996/06/10 09:18:53 dawes Exp $
+ *	$XFree86: xc/programs/xterm/ptyx.h,v 3.12 1996/08/10 13:09:50 dawes Exp $
  */
 
 /*
@@ -275,6 +275,14 @@ typedef struct {
 
 /***====================================================================***/
 
+#define OPT_ISO_COLORS  1 /* true if xterm is configured with ISO colors */
+#define OPT_BLINK_CURS  0 /* FIXME: do this later (96/7/31) */
+
+/***====================================================================***/
+
+#if OPT_ISO_COLORS
+#define if_OPT_ISO_COLORS(screen, code) if(screen->colorMode) code
+#define TERM_COLOR_FLAGS (term->flags & (FG_COLOR|BG_COLOR))
 #define MAXCOLORS 18
 #define COLOR_0		0
 #define COLOR_1		1
@@ -294,20 +302,35 @@ typedef struct {
 #define COLOR_15	15
 #define COLOR_BD	16
 #define COLOR_UL	17
+#else
+#define if_OPT_ISO_COLORS(screen, code) /* nothing */
+#define TERM_COLOR_FLAGS 0
+#endif	/* OPT_ISO_COLORS */
 
-#define MAX_PTRS 4	/* the number of pointers per row in 'ScrnBuf' */
+	/* the number of pointers per row in 'ScrnBuf' */
+#if OPT_ISO_COLORS
+#define MAX_PTRS term->num_ptrs
+#else
+#define MAX_PTRS 2
+#endif
 
 	/* ScrnBuf-level macros */
 #define BUF_CHARS(buf, row) (buf[MAX_PTRS * (row) + 0])
 #define BUF_ATTRS(buf, row) (buf[MAX_PTRS * (row) + 1])
+
+#if OPT_ISO_COLORS
 #define BUF_FORES(buf, row) (buf[MAX_PTRS * (row) + 2])
 #define BUF_BACKS(buf, row) (buf[MAX_PTRS * (row) + 3])
+#endif
 
 	/* TScreen-level macros */
 #define SCRN_BUF_CHARS(screen, row) BUF_CHARS(screen->buf, row)
 #define SCRN_BUF_ATTRS(screen, row) BUF_ATTRS(screen->buf, row)
+
+#if OPT_ISO_COLORS
 #define SCRN_BUF_FORES(screen, row) BUF_FORES(screen->buf, row)
 #define SCRN_BUF_BACKS(screen, row) BUF_BACKS(screen->buf, row)
+#endif
 
 typedef struct {
 /* These parameters apply to both windows */
@@ -333,12 +356,12 @@ typedef struct {
 	Pixel		cursorcolor;	/* Cursor color			*/
 	Pixel		mousecolor;	/* Mouse color			*/
 	Pixel		mousecolorback;	/* Mouse color background	*/
+#if OPT_ISO_COLORS
 	Pixel		Acolors[MAXCOLORS]; /* ANSI color emulation	*/
-	Pixel		original_fg;	/* reference for SGR reset fg	*/
-	Pixel		original_bg;	/* reference for SGR reset bg	*/
 	Boolean		colorMode;	/* are we using color mode?	*/
 	Boolean		colorULMode;	/* use color for underline?	*/
 	Boolean		colorBDMode;	/* use color for bold?		*/
+#endif
 	int		border;		/* inner border			*/
 	Cursor		arrow;		/* arrow cursor			*/
 	unsigned short	send_mouse_pos;	/* user wants mouse transition  */
@@ -374,7 +397,11 @@ typedef struct {
 	int		enbolden;	/* overstrike for bold font	*/
 	XPoint		*box;		/* draw unselected cursor	*/
 
-	int		cursor_state;	/* ON or OFF			*/
+	int		cursor_state;	/* ON, OFF, or BLINKED_OFF	*/
+#if OPT_BLINK_CURS
+	int		cursor_blink;	/* blink-rate (0=off) msecs	*/
+	XtIntervalId	cursor_timer;	/* timer-id for cursor-proc	*/
+#endif
 	int		cursor_set;	/* requested state		*/
 	int		cursor_col;	/* previous cursor column	*/
 	int		cursor_row;	/* previous cursor row		*/
@@ -570,6 +597,9 @@ typedef struct _XtermWidgetRec {
     unsigned	flags;		/* mode flags			*/
     unsigned    cur_foreground;	/* current foreground color	*/
     unsigned    cur_background;	/* current background color	*/
+#if OPT_ISO_COLORS
+    int         num_ptrs;	/* number of pointers per row in 'ScrnBuf' */
+#endif
     unsigned	initflags;	/* initial mode flags		*/
     Tabs	tabs;		/* tabstops of the terminal	*/
     Misc	misc;		/* miscellaneous parameters	*/
@@ -670,6 +700,7 @@ typedef struct Tek_Link
 /* flags for cursors */
 #define	OFF		0
 #define	ON		1
+#define	BLINKED_OFF	2
 #define	CLEAR		0
 #define	TOGGLE		1
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.4 1996/05/06 06:01:28 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.5 1996/06/29 09:10:57 dawes Exp $ */
 /*
  * Common/useful definitions for XTERM application
  */
@@ -48,8 +48,6 @@ extern int VTInit PROTO((void));
 extern int v_write PROTO((int f, char *d, int len));
 extern void FindFontSelection PROTO((char *atom_name, Bool justprobe));
 extern void HideCursor PROTO((void));
-extern void SGR_Background PROTO((int color));
-extern void SGR_Foreground PROTO((int color));
 extern void SetVTFont PROTO((int i, Bool doresize, char *name1, char *name2));
 extern void ShowCursor PROTO((void));
 extern void SwitchBufPtrs PROTO((TScreen *screen));
@@ -58,6 +56,11 @@ extern void VTRun PROTO((void));
 extern void set_cursor_gcs PROTO((TScreen *screen));
 extern void unparseputc PROTO((int c, int fd));
 extern void unparseseq PROTO((ANSI *ap, int fd));
+
+#if OPT_ISO_COLORS
+extern void SGR_Background PROTO((int color));
+extern void SGR_Foreground PROTO((int color));
+#endif
 
 /* cursor.c */
 extern void CarriageReturn PROTO((TScreen *screen));
@@ -140,9 +143,9 @@ extern int ScreenResize PROTO((TScreen *screen, int width, int height, unsigned 
 extern int ScrnGetAttributes PROTO((TScreen *screen, int row, int col, Char *str, int length));
 extern void ClearBufRows PROTO((TScreen *screen, int first, int last));
 extern void ScreenWrite PROTO((TScreen *screen, char *str, unsigned flags, unsigned cur_fg, unsigned cur_bg, int length));
-extern void ScrnDeleteChar PROTO((ScrnBuf sb, int row, int size, int n, int col));
+extern void ScrnDeleteChar PROTO((TScreen *screen, int n, int size));
 extern void ScrnDeleteLine PROTO((ScrnBuf sb, int n, int last, int size, int where));
-extern void ScrnInsertChar PROTO((ScrnBuf sb, int row, int size, int col, int n));
+extern void ScrnInsertChar PROTO((TScreen *screen, int n, int size));
 extern void ScrnInsertLine PROTO((ScrnBuf sb, int last, int where, int n, int size));
 extern void ScrnRefresh PROTO((TScreen *screen, int toprow, int leftcol, int nrows, int ncols, int force));
 extern void ScrnSetAttributes PROTO((TScreen *screen, int row, int col, unsigned mask, unsigned value, int length));
@@ -167,14 +170,11 @@ extern void TabZonk PROTO((Tabs	tabs));
 
 /* util.c */
 extern GC updatedXtermGC PROTO((TScreen *screen, int flags, int fg, int bg, Bool hilite));
-extern Pixel getXtermBackground PROTO((int flags, int color));
-extern Pixel getXtermForeground PROTO((int flags, int color));
 extern int AddToRefresh PROTO((TScreen *screen));
 extern int HandleExposure PROTO((TScreen *screen, XEvent *event));
 extern void ChangeColors PROTO((XtermWidget tw, ScrnColors *pNew));
 extern void ClearAbove PROTO((TScreen *screen));
 extern void ClearBelow PROTO((TScreen *screen));
-extern void ClearCurBackground PROTO((TScreen *screen, int top, int left, unsigned height, unsigned width));
 extern void ClearLeft PROTO((TScreen *screen));
 extern void ClearLine PROTO((TScreen *screen));
 extern void ClearRight PROTO((TScreen *screen));
@@ -191,6 +191,26 @@ extern void Scroll PROTO((TScreen *screen, int amount));
 extern void recolor_cursor PROTO((Cursor cursor, unsigned long fg, unsigned long bg));
 extern void resetXtermGC PROTO((TScreen *screen, int flags, Bool hilite));
 extern void scrolling_copy_area PROTO((TScreen *screen, int firstline, int nlines, int amount));
+
+#if OPT_ISO_COLORS
+
+extern Pixel getXtermBackground PROTO((int flags, int color));
+extern Pixel getXtermForeground PROTO((int flags, int color));
+extern void ClearCurBackground PROTO((TScreen *screen, int top, int left, unsigned height, unsigned width));
 extern void useCurBackground PROTO((Bool flag));
+
+#else /* !OPT_ISO_COLORS */
+
+#define ClearCurBackground(screen, top, left, height, width) \
+	XClearArea (screen->display, TextWindow(screen), \
+		left, top, width, height, FALSE)
+
+		/* FIXME: Reverse-Video? */
+#define getXtermBackground(flags, color) term->core.background_pixel
+#define getXtermForeground(flags, color) term->screen.foreground
+
+#define useCurBackground(flag) /*nothing*/
+
+#endif	/* OPT_ISO_COLORS */
 
 #endif	/* included_xterm_h */

@@ -64,4 +64,6 @@ LinkSourceFile(XKBMAlloc.c,$(XLIBSRC))
 LinkSourceFile(XKBAlloc.c,$(XLIBSRC))
 LinkSourceFile(XKBGAlloc.c,$(XLIBSRC))
 
+InstallLinkKitLibrary(xkb,$(LINKKITDIR)/lib)
+
 DependTarget()

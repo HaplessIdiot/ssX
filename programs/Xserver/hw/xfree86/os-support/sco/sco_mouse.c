@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_mouse.c,v 3.4 1996/02/04 09:10:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_mouse.c,v 3.5 1996/02/19 09:51:04 dawes Exp $ */
 
 
 
@@ -73,14 +73,14 @@ xf86OsMouseProc(pPointer, what)
 	ErrorF("ev_init: Failed to initialize event driver\n");
 
       dmask = real_mask;
-      xf86Info.mseFd = ev_open(&dmask);
-      switch (xf86Info.mseFd) {
+      xf86Info.mouseDev.mseFd = ev_open(&dmask);
+      switch (xf86Info.mouseDev.mseFd) {
 	case -1: FatalError("ev_open: Error in Configuration files\n");
 	case -2: FatalError("ev_open: No mouse devices to attach\n");
 	case -3: FatalError("ev_open: Unable to open a found device\n");
 	case -4: FatalError("ev_open: unable to open an event queue\n");
 	default:
-	  if (xf86Info.mseFd < 0)
+	  if (xf86Info.mouseDev.mseFd < 0)
 	    FatalError("ev_open: Failed to open device, reason unkown\n");
 	  break;
       }
@@ -109,7 +109,7 @@ xf86OsMouseProc(pPointer, what)
 			      map, 
 			      buttons,
 			      GetMotionEvents, 
-			      xf86MseCtrl, 
+			      (PtrCtrlProcPtr)xf86MseCtrl, 
 			      0);
       xfree(map);
       ev_suspend(); /* suspend device until its turned on */
@@ -117,19 +117,19 @@ xf86OsMouseProc(pPointer, what)
       
     case DEVICE_ON:
       ev_resume();
-      AddEnabledDevice(xf86Info.mseFd);
-      xf86Info.lastButtons = 0;
-      xf86Info.emulateState = 0;
+      AddEnabledDevice(xf86Info.mouseDev.mseFd);
+      xf86Info.mouseDev.lastButtons = 0;
+      xf86Info.mouseDev.emulateState = 0;
       pPointer->public.on = TRUE;
       break;
       
     case DEVICE_CLOSE:
     case DEVICE_OFF:
       pPointer->public.on = FALSE;
-      RemoveEnabledDevice(xf86Info.mseFd);
+      RemoveEnabledDevice(xf86Info.mouseDev.mseFd);
       if (what == DEVICE_CLOSE) {
 	ev_close();
-	xf86Info.mseFd = -1;
+	xf86Info.mouseDev.mseFd = -1;
       } else
 	ev_suspend();
       break;
@@ -158,7 +158,7 @@ xf86OsMouseEvents()
 			EV_TIME(*evp) - time, EV_TAG(*evp), EV_BUTTONS(*evp),
 			EV_DX(*evp), EV_DY(*evp));
 #endif
-		xf86PostMseEvent(EV_BUTTONS(*evp), EV_DX(*evp), -(EV_DY(*evp)));
+		xf86PostMseEvent(xf86Info.pMouse,EV_BUTTONS(*evp), EV_DX(*evp), -(EV_DY(*evp)));
 		ev_pop();
 	}
 

@@ -1,5 +1,5 @@
 /* $XConsortium: button.c /main/72 1996/05/25 08:23:02 kaleb $ */
-/* $XFree86: xc/programs/xterm/button.c,v 3.6 1996/06/10 09:18:47 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/button.c,v 3.7 1996/06/29 09:10:50 dawes Exp $ */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  *
@@ -1205,7 +1205,7 @@ int *format;
 	*targetP++ = XA_COMPOUND_TEXT(d);
 	*targetP++ = XA_LENGTH(d);
 	*targetP++ = XA_LIST_LENGTH(d);
-	memmove( (char*)targetP, (char*)std_targets, sizeof(Atom)*std_length);
+	memcpy ( (char*)targetP, (char*)std_targets, sizeof(Atom)*std_length);
 	XtFree((char*)std_targets);
 	*type = XA_ATOM;
 	*format = 32;
@@ -1230,7 +1230,7 @@ int *format;
 	    *(long*)*value = 1;
 	else {
 	    long temp = 1;
-	    memmove( (char*)*value, ((char*)&temp)+sizeof(long)-4, 4);
+	    memcpy ( (char*)*value, ((char*)&temp)+sizeof(long)-4, 4);
 	}
 	*type = XA_INTEGER;
 	*length = 1;
@@ -1243,7 +1243,7 @@ int *format;
 	    *(long*)*value = xterm->screen.selection_length;
 	else {
 	    long temp = xterm->screen.selection_length;
-	    memmove( (char*)*value, ((char*)&temp)+sizeof(long)-4, 4);
+	    memcpy ( (char*)*value, ((char*)&temp)+sizeof(long)-4, 4);
 	}
 	*type = XA_INTEGER;
 	*length = 1;

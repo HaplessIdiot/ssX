@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c /main/239 1995/12/10 17:21:49 gildea $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.38 1996/06/10 09:18:51 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.39 1996/07/08 10:37:14 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -2354,7 +2354,7 @@ spawn ()
 #endif	/* USE_SYSV_TERMIO */
 #if defined(UTMP) && defined(USE_SYSV_UTMP)
 		char* ptyname;
-		char* ptynameptr;
+		char* ptynameptr = 0;
 #endif
 
 #ifdef USE_USG_PTYS
@@ -2912,12 +2912,14 @@ spawn ()
 		*/
 #ifdef CRAY
 #define PTYCHARLEN 4
-#else
+#endif
+
 #ifdef __osf__
 #define PTYCHARLEN 5
-#else
-#define PTYCHARLEN 2
 #endif
+
+#ifndef PTYCHARLEN
+#define PTYCHARLEN 2
 #endif
 
 		(void) setutent ();
@@ -2929,12 +2931,10 @@ spawn ()
 		    ptynameptr = ptyname;
 		else
 		    ptynameptr = ptyname + strlen(ptyname) - PTYCHARLEN;
-		(void) strncpy(utmp.ut_id, ptynameptr, sizeof (utmp.ut_id));
 #else
-		(void) strncpy(utmp.ut_id,ptyname + sizeof("/dev/tty")-1,
-			       sizeof (utmp.ut_id));
-
+		ptynameptr = ptyname + sizeof("/dev/tty")-1;
 #endif
+		(void) strncpy(utmp.ut_id, ptynameptr, sizeof (utmp.ut_id));
 		utmp.ut_type = DEAD_PROCESS;
 
 		/* position to entry in utmp file */
@@ -3741,7 +3741,7 @@ Exit(n)
 	struct utmp *utptr;
 #endif
 	char* ptyname;
-	char* ptynameptr;
+	char* ptynameptr = 0;
 #if defined(WTMP) && !defined(SVR4)
 	int fd;			/* for /etc/wtmp */
 	int i;

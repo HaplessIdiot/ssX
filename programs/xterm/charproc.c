@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c /main/191 1996/01/23 11:34:26 kaleb $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.29 1996/07/08 10:37:11 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.30 1996/08/10 13:09:49 dawes Exp $
  */
 
 /*
@@ -136,13 +136,22 @@ static void bitclr PROTO((unsigned *p, int mask));
 static void bitset PROTO((unsigned *p, int mask));
 static void dotext PROTO((TScreen *screen, unsigned flags, int charset, Char *buf, Char *ptr, unsigned fg, unsigned bg));
 static void dpmodes PROTO((XtermWidget termw, void (*func)(unsigned *p, int mask)));
-static void restoremodes PROTO((XtermWidget termw));
 static void report_win_label PROTO((TScreen *screen, int code, XTextProperty *text, Status ok));
+static void restoremodes PROTO((XtermWidget termw));
 static void savemodes PROTO((XtermWidget termw));
 static void set_vt_box PROTO((TScreen *screen));
 static void unparseputn PROTO((unsigned int n, int fd));
 static void update_font_info PROTO((TScreen *screen, Bool doresize));
 static void window_ops PROTO((XtermWidget termw));
+
+#if OPT_BLINK_CURS
+static void BlinkCursor PROTO(( XtPointer closure, XtIntervalId* id));
+static void StartBlinking PROTO((TScreen *screen));
+static void StopBlinking PROTO((TScreen *screen));
+#else
+#define StartBlinking(screen) /* nothing */
+#define StopBlinking(screen) /* nothing */
+#endif
 
 #define	DEFAULT		-1
 #define	TEXT_BUF_SIZE	256
@@ -160,6 +169,7 @@ static void window_ops PROTO((XtermWidget termw));
 #define XtNcurses "curses"
 #define XtNhpLowerleftBugCompat "hpLowerleftBugCompat"
 #define XtNcursorColor "cursorColor"
+#define XtNcursorBlinkTime "cursorBlinkTime"
 #define XtNcutNewline "cutNewline"
 #define XtNcutToBeginningOfLine "cutToBeginningOfLine"
 #define XtNeightBitInput "eightBitInput"
@@ -233,6 +243,7 @@ static void window_ops PROTO((XtermWidget termw));
 #define XtCHpLowerleftBugCompat "HpLowerleftBugCompat"
 #define XtCCutNewline "CutNewline"
 #define XtCCutToBeginningOfLine "CutToBeginningOfLine"
+#define XtCCursorBlinkTime "CursorBlinkTime"
 #define XtCEightBitInput "EightBitInput"
 #define XtCEightBitOutput "EightBitOutput"
 #define XtCGeometry "Geometry"
@@ -310,6 +321,10 @@ static  int	defaultNMarginBell = N_MARGINBELL;
 static  int	defaultMultiClickTime = MULTICLICKTIME;
 static  int	defaultBellSuppressTime = BELLSUPPRESSMSEC;
 static	char *	_Font_Selected_ = "yes";  /* string is arbitrary */
+
+#if OPT_BLINK_CURS
+static  int	defaultBlinkTime = 0;
+#endif
 
 /*
  * Warning, the following must be kept under 1024 bytes or else some 
@@ -441,6 +456,11 @@ static XtResource resources[] = {
 {XtNcursorColor, XtCForeground, XtRPixel, sizeof(Pixel),
 	XtOffsetOf(XtermWidgetRec, screen.cursorcolor),
 	XtRString, "XtDefaultForeground"},
+#if OPT_BLINK_CURS
+{XtNcursorBlinkTime, XtCCursorBlinkTime, XtRInt, sizeof(int),
+	XtOffsetOf(XtermWidgetRec, screen.cursor_blink),
+        XtRInt, (XtPointer) &defaultBlinkTime},
+#endif
 {XtNeightBitInput, XtCEightBitInput, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, screen.input_eight_bits), 
 	XtRBoolean, (XtPointer) &defaultTRUE},
@@ -586,6 +606,7 @@ static XtResource resources[] = {
 	XtOffsetOf(XtermWidgetRec, misc.open_im),
 	XtRImmediate, (XtPointer)TRUE},
 #endif
+#if OPT_ISO_COLORS
 {XtNcolor0, XtCForeground, XtRPixel, sizeof(Pixel),
 	XtOffsetOf(XtermWidgetRec, screen.Acolors[COLOR_0]),
 	XtRString, "XtDefaultForeground"},
@@ -649,6 +670,7 @@ static XtResource resources[] = {
 {XtNcolorBDMode, XtCColorMode, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, screen.colorBDMode),
 	XtRBoolean, (XtPointer) &defaultFALSE},
+#endif /* OPT_ISO_COLORS */
 {XtNdynamicColors, XtCDynamicColors, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, misc.dynamicColors),
 	XtRBoolean, (XtPointer) &defaultTRUE},
@@ -709,6 +731,7 @@ static WidgetClassRec xtermClassRec = {
 
 WidgetClass xtermWidgetClass = (WidgetClass)&xtermClassRec;
 
+#if OPT_ISO_COLORS
 /*
  * The terminal's foreground and background colors are set via two mechanisms:
  *	text (cur_foreground, cur_background values that are passed down to
@@ -754,6 +777,7 @@ void SGR_Background(color)
 	XSetBackground(screen->display, screen->normalboldGC, bg);
 	XSetForeground(screen->display, screen->reverseboldGC, bg);
 }
+#endif /* OPT_ISO_COLORS */
 
 static void VTparse()
 {
@@ -1105,35 +1129,39 @@ static void VTparse()
 				switch (param[row]) {
 				 case DEFAULT:
 				 case 0:
-					if (term->flags & FG_COLOR)
+					if_OPT_ISO_COLORS(screen,{
+					    if (term->flags & FG_COLOR)
 						SGR_Foreground(-1);
-					if (term->flags & BG_COLOR)
+					    if (term->flags & BG_COLOR)
 						SGR_Background(-1);
+					})
 					term->flags &=
 						~(INVERSE|BOLD|UNDERLINE);
 					break;
 				 case 1:
 				 case 5:	/* Blink, really.	*/
 					term->flags |= BOLD;
-					if( screen->colorMode && 
-					    screen->colorBDMode) {
-					  if (!(term->flags & FG_COLOR) ||
-				              (term->cur_foreground==COLOR_UL)){
-					    SGR_Foreground(COLOR_BD);
+					if_OPT_ISO_COLORS(screen,{
+					  if (screen->colorBDMode) {
+					    if (!(term->flags & FG_COLOR) ||
+						(term->cur_foreground==COLOR_UL)){
+					      SGR_Foreground(COLOR_BD);
+					    }
+					    else   /* Set highlight bit */
+					      if (term->cur_foreground < 8)
+						term->cur_foreground |= 8;
 					  }
-					  else   /* Set highlight bit */
-                                            if (term->cur_foreground < 8)
-                                              term->cur_foreground |= 8;
-					}
+					})
 					break;
 				 case 4:	/* Underscore		*/
 					term->flags |= UNDERLINE;
-					if( screen->colorMode && 
-					    screen->colorULMode) {
-                                          if (!(term->flags & FG_COLOR)) {
-                                            SGR_Foreground(COLOR_UL);
+					if_OPT_ISO_COLORS(screen,{
+					  if (screen->colorULMode) {
+					    if (!(term->flags & FG_COLOR)) {
+					      SGR_Foreground(COLOR_UL);
+					    }
 					  }
-                                        }
+					})
 					break;
 				 case 7:
 					term->flags |= INVERSE;
@@ -1159,18 +1187,18 @@ static void VTparse()
 				 case 35:
 				 case 36:
 				 case 37:
-					if( screen->colorMode ) {
+					if_OPT_ISO_COLORS(screen,{
 					  SGR_Foreground(
 						(param[row] - 30)
-			                  	/* Set highlight bit if bold */
-					  	| ((term->flags & BOLD)
+						/* Set highlight bit if bold */
+						| ((term->flags & BOLD)
 						  ? 8 : 0));
-					}
+					})
 					break;
 				 case 39:
-					if( screen->colorMode ) {
+					if_OPT_ISO_COLORS(screen,{
 					  SGR_Foreground(-1);
-					}
+					})
 					break;
 				 case 40:
 				 case 41:
@@ -1180,22 +1208,22 @@ static void VTparse()
 				 case 45:
 				 case 46:
 				 case 47:
-					if( screen->colorMode ) {
+					if_OPT_ISO_COLORS(screen,{
 					  SGR_Background(param[row] - 40);
-					}
+					})
 					break;
 				 case 49:
-					if( screen->colorMode ) {
+					if_OPT_ISO_COLORS(screen,{
 					  SGR_Background(-1);
-					}
+					})
 					break;
 				 case 100:
-					if( screen->colorMode ) {
+					if_OPT_ISO_COLORS(screen,{
 					  if (term->flags & FG_COLOR)
 					    SGR_Foreground(-1);
 					  if (term->flags & BG_COLOR)
 					    SGR_Background(-1);
-					}
+					})
 					break;
 				}
 			}
@@ -1727,7 +1755,13 @@ in_put()
 	 * The blocking is optional, because it tends to increase the load
 	 * on the host.
 	 */
-	if (XtAppPending(app_con))
+	if (XtAppPending(app_con)
+#if OPT_BLINK_CURS
+	 || (screen->cursor_blink > 0
+	  && (screen->select || screen->always_highlight))
+	 || screen->cursor_state == BLINKED_OFF
+#endif
+	 )
 		select_timeout.tv_usec = 0;
 	else
 		select_timeout.tv_usec = 50000;
@@ -1797,9 +1831,11 @@ dotext(screen, flags, charset, buf, ptr, fg, bg )
 				*s = '\036';	/* UK pound sign*/
 		break;
 
+	case '1':
 	case 'B':	/* ASCII set				*/
 		break;
 
+	case '2':
 	case '0':	/* special graphics (line drawing)	*/
 		for (s=buf; s<ptr; ++s)
 			if (*s>=0x5f && *s<=0x7e)
@@ -1962,7 +1998,7 @@ dpmodes(termw, func)
 				if((j = func == bitset ? 132 : 80) !=
 				 ((termw->flags & IN132COLUMNS) ? 132 : 80) ||
 				 j != screen->max_col + 1)
-					RequestResize(termw, 0, j, TRUE);
+					RequestResize(termw, -1, j, TRUE);
 				(*func)(&termw->flags, IN132COLUMNS);
 			}
 			break;
@@ -2170,7 +2206,7 @@ restoremodes(termw)
 				if((j = (screen->save_modes[1] & IN132COLUMNS)
 				 ? 132 : 80) != ((termw->flags & IN132COLUMNS)
 				 ? 132 : 80) || j != screen->max_col + 1)
-					RequestResize(termw, 0, j, TRUE);
+					RequestResize(termw, -1, j, TRUE);
 				termw->flags &= ~IN132COLUMNS;
 				termw->flags |= screen->save_modes[1] &
 				 IN132COLUMNS;
@@ -2277,15 +2313,18 @@ report_win_label(screen, code, text, ok)
 	unparseputc(']', screen->respond);
 	unparseputc(code, screen->respond);
 
-	if (ok
-	 && XTextPropertyToStringList(text, &list, &length)) {
-		int n, c;
-		for (n = 0; n < length; n++) {
-			char *s = list[n];
-			while ((c = *s++) != '\0')
-				unparseputc(c, screen->respond);
+	if (ok) {
+		if (XTextPropertyToStringList(text, &list, &length)) {
+			int n, c;
+			for (n = 0; n < length; n++) {
+				char *s = list[n];
+				while ((c = *s++) != '\0')
+					unparseputc(c, screen->respond);
+			}
+			XFreeStringList(list);
 		}
-		XFreeStringList(list);
+		if (text->value != 0)
+			XFree(text->value);
 	}
 
 	unparseputc(ESC, screen->respond);
@@ -2571,12 +2610,12 @@ SwitchBufPtrs(screen)
     register TScreen *screen;
 {
     register int rows = screen->max_row + 1;
-    char *save [MAX_PTRS * MAX_ROWS];
+    char *save [4 /* MAX_PTRS */ * MAX_ROWS];
     Size_t len = MAX_PTRS * sizeof(char *) * rows;
 
-    memmove( (char *)save,           (char *)screen->buf,    len);
-    memmove( (char *)screen->buf,    (char *)screen->altbuf, len);
-    memmove( (char *)screen->altbuf, (char *)save,           len);
+    memcpy ( (char *)save,           (char *)screen->buf,    len);
+    memcpy ( (char *)screen->buf,    (char *)screen->altbuf, len);
+    memcpy ( (char *)screen->altbuf, (char *)save,           len);
 }
 
 void
@@ -2597,6 +2636,7 @@ VTRun()
 
 	screen->cursor_state = OFF;
 	screen->cursor_set = ON;
+	StartBlinking(screen);
 
 	bcnt = 0;
 	bptr = buffer;
@@ -2610,6 +2650,7 @@ VTRun()
 	bptr = buffer;
 	if(!setjmp(VTend))
 		VTparse();
+	StopBlinking(screen);
 	HideCursor();
 	screen->cursor_set = OFF;
 }
@@ -2642,7 +2683,8 @@ static void VTGraphicsOrNoExpose (event)
 	if (event->type == GraphicsExpose)
 	  if (HandleExposure (screen, event))
 		screen->cursor_state = OFF;
-	if ((event->type == NoExpose) || ((XGraphicsExposeEvent *)event)->count == 0) {
+	if ((event->type == NoExpose)
+	 || ((XGraphicsExposeEvent *)event)->count == 0) {
 		if (screen->incopy <= 0 && screen->scrolls > 0)
 			screen->scrolls--;
 		if (screen->scrolls)
@@ -2689,27 +2731,43 @@ static void RequestResize(termw, rows, cols, text)
 	Dimension replyWidth, replyHeight;
 	Dimension askedWidth, askedHeight;
 	XtGeometryResult status;
+	XWindowAttributes attrs;
 
 	askedWidth  = cols;
 	askedHeight = rows;
+
+	if (askedHeight == 0
+	 || askedWidth  == 0) {
+		XGetWindowAttributes(XtDisplay(termw),
+			RootWindowOfScreen(XtScreen(termw)), &attrs);
+	}
+
 	if (text) {
-		if (askedHeight <= 0)
-			askedHeight = screen->max_row + 1;
-		if (askedWidth <= 0)
-			askedWidth = screen->max_col + 1;
+		if (rows != 0) {
+			if (rows < 0)
+				askedHeight = screen->max_row + 1;
+			askedHeight *= FontHeight(screen);
+			askedHeight += (2 * screen->border);
+		}
 
-		askedWidth  *= FontWidth(screen);
-		askedHeight *= FontHeight(screen);
-
-		askedWidth  += (2 * screen->border) + screen->scrollbar;
-		askedHeight += (2 * screen->border);
+		if (cols != 0) {
+			if (cols < 0)
+				askedWidth = screen->max_col + 1;
+			askedWidth  *= FontWidth(screen);
+			askedWidth  += (2 * screen->border) + screen->scrollbar;
+		}
 
 	} else {
-		if (askedHeight <= 0)
+		if (rows < 0)
 			askedHeight = FullHeight(screen);
-		if (askedWidth <= 0)
+		if (cols < 0)
 			askedWidth = FullWidth(screen);
 	}
+
+	if (rows == 0)
+		askedHeight = attrs.height;
+	if (cols == 0)
+		askedWidth  = attrs.width;
 
 	status = XtMakeResizeRequest (
 	    (Widget) termw, 
@@ -2778,6 +2836,7 @@ static void VTInitialize (wrequest, wnew, args, num_args)
    XtermWidget request = (XtermWidget) wrequest;
    XtermWidget new     = (XtermWidget) wnew;
    int i;
+   Boolean color_ok;
 
    /* Zero out the entire "screen" component of "new" widget,
       then do field-by-field assigment of "screen" fields
@@ -2789,6 +2848,9 @@ static void VTInitialize (wrequest, wnew, args, num_args)
    new->screen.hp_ll_bc = request->screen.hp_ll_bc;
    new->screen.foreground = request->screen.foreground;
    new->screen.cursorcolor = request->screen.cursorcolor;
+#if OPT_BLINK_CURS
+   new->screen.cursor_blink = request->screen.cursor_blink;
+#endif
    new->screen.border = request->screen.border;
    new->screen.jumpscroll = request->screen.jumpscroll;
 #ifdef ALLOWLOGGING
@@ -2827,20 +2889,27 @@ static void VTInitialize (wrequest, wnew, args, num_args)
    new->screen.menu_font_names[fontMenu_fontsel] = NULL;
    new->screen.menu_font_number = fontMenu_fontdefault;
 
+#if OPT_ISO_COLORS
    new->screen.colorMode = request->screen.colorMode;
    new->screen.colorULMode = request->screen.colorULMode;
    new->screen.colorBDMode = request->screen.colorBDMode;
-   new->screen.underline = request->screen.underline;
-   for (i = 0; i < MAXCOLORS; i++) {
+   for (i = 0, color_ok = False; i < MAXCOLORS; i++) {
        new->screen.Acolors[i] = request->screen.Acolors[i];
+       if (new->screen.Acolors[i] != request->screen.foreground
+        && new->screen.Acolors[i] != request->core.background_pixel)
+	   color_ok = True;
    }
-   if (request->misc.re_verse) {
-       new->screen.original_bg = request->screen.foreground;
-       new->screen.original_fg = request->core.background_pixel;
-   } else {
-       new->screen.original_fg = request->screen.foreground;
-       new->screen.original_bg = request->core.background_pixel;
-   }
+   /* If none of the colors are anything other than the foreground or
+    * background, we'll assume this isn't color, no matter what the colorMode
+    * resource says.  (There doesn't seem to be any good way to determine if
+    * the resource lookup failed versus the user having misconfigured this).
+    */
+   if (!color_ok)
+	new->screen.colorMode = False;
+
+   new->num_ptrs = new->screen.colorMode ? 4 : 2;
+#endif /* OPT_ISO_COLORS */
+   new->screen.underline = request->screen.underline;
 
    new->cur_foreground = 0;
    new->cur_background = 0;
@@ -3268,6 +3337,9 @@ ShowCursor()
 	GC	currentGC;
 	Boolean	in_selection;
 
+	if (screen->cursor_state == BLINKED_OFF)
+		return;
+
 	if (eventMode != NORMAL) return;
 
 	if (screen->cur_row - screen->topline > screen->max_row)
@@ -3325,7 +3397,7 @@ ShowCursor()
 		}
 	}
 
-	x = CursorX (screen, screen->cur_col);
+	x = CursorX(screen, screen->cur_col);
 	y = CursorY(screen, screen->cur_row) + 
 	  screen->fnt_norm->ascent;
 	XDrawImageString(screen->display, TextWindow(screen), currentGC,
@@ -3356,7 +3428,7 @@ HideCursor()
 {
 	register TScreen *screen = &term->screen;
 	GC	currentGC;
-	register int x, y, flags, fg, bg;
+	register int x, y, flags, fg = 0, bg = 0;
 	char c;
 	Boolean	in_selection;
 
@@ -3365,8 +3437,11 @@ HideCursor()
 
 	c     = SCRN_BUF_CHARS(screen, screen->cursor_row)[screen->cursor_col];
 	flags = SCRN_BUF_ATTRS(screen, screen->cursor_row)[screen->cursor_col];
-	fg    = SCRN_BUF_FORES(screen, screen->cursor_row)[screen->cursor_col];
-	bg    = SCRN_BUF_BACKS(screen, screen->cursor_row)[screen->cursor_col];
+
+	if_OPT_ISO_COLORS(screen,{
+	    fg = SCRN_BUF_FORES(screen, screen->cursor_row)[screen->cursor_col];
+	    bg = SCRN_BUF_BACKS(screen, screen->cursor_row)[screen->cursor_col];
+	})
 
 	if (screen->cursor_row > screen->endHRow ||
 	    (screen->cursor_row == screen->endHRow &&
@@ -3382,7 +3457,7 @@ HideCursor()
 
 	if (c == 0)
 		c = ' ';
-	x = CursorX (screen, screen->cursor_col);
+	x = CursorX(screen, screen->cursor_col);
 	y = (((screen->cursor_row - screen->topline) * FontHeight(screen))) +
 	 screen->border;
 	y = y+screen->fnt_norm->ascent;
@@ -3397,6 +3472,63 @@ HideCursor()
 	screen->cursor_state = OFF;
 	resetXtermGC(screen, flags, in_selection);
 }
+
+#if OPT_BLINK_CURS
+static void
+StartBlinking(screen)
+	TScreen *screen;
+{
+	if (screen->cursor_blink > 0
+	 && screen->cursor_timer == 0) {
+		unsigned long half = screen->cursor_blink / 2;
+		if (half == 0)		/* wow! */
+			half = 1;	/* let's humor him anyway */
+		screen->cursor_timer = XtAppAddTimeOut(
+			app_con,
+			half,
+			BlinkCursor,
+			screen);
+	}
+}
+
+static void
+StopBlinking(screen)
+	TScreen *screen;
+{
+	if (screen->cursor_blink > 0)
+		XtRemoveTimeOut(screen->cursor_timer);
+	screen->cursor_timer = 0;
+}
+
+/*
+ * Blink the cursor by alternately showing/hiding cursor.  We leave the timer
+ * running all the time (even though that's a little inefficient) to make the
+ * logic simple.
+ */
+static void
+BlinkCursor(closure, id)	/* XtTimerCallbackProc */
+	XtPointer 	closure;
+	XtIntervalId*	id;
+{
+	TScreen *screen = (TScreen *)closure;
+
+	screen->cursor_timer = 0;
+	if (screen->cursor_state == ON) {
+		if(screen->select || screen->always_highlight) {
+			HideCursor();
+			if (screen->cursor_state == OFF)
+				screen->cursor_state = BLINKED_OFF;
+		}
+	} else if (screen->cursor_state == BLINKED_OFF) {
+		screen->cursor_state = OFF;
+		ShowCursor();
+		if (screen->cursor_state == OFF)
+			screen->cursor_state = BLINKED_OFF;
+	}
+	StartBlinking(screen);
+	xevents();
+}
+#endif /* OPT_BLINK_CURS */
 
 void
 VTReset(full)

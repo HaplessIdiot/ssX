@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: util.c,v 1.31 91/06/20 18:34:47 gildea Exp $
- *	$XFree86: xc/programs/xterm/util.c,v 3.6 1996/06/29 09:10:55 dawes Exp $
+ *	$XFree86: xc/programs/xterm/util.c,v 3.7 1996/08/10 13:09:56 dawes Exp $
  */
 
 /*
@@ -508,8 +508,7 @@ InsertChar (screen, n)
 	    }
 	}
 	/* adjust screen->buf */
-	ScrnInsertChar(screen->buf, screen->cur_row, screen->cur_col, n,
-			screen->max_col + 1);
+	ScrnInsertChar(screen, n, screen->max_col + 1);
 }
 
 /*
@@ -549,8 +548,7 @@ DeleteChar (screen, n)
 	    }
 	}
 	/* adjust screen->buf */
-	ScrnDeleteChar (screen->buf, screen->cur_row, screen->cur_col, n,
-			screen->max_col + 1);
+	ScrnDeleteChar (screen, n, screen->max_col + 1);
 
 }
 
@@ -637,13 +635,16 @@ register TScreen *screen;
 	    }
 	}
 	bzero(BUF_CHARS(buf, screen->cur_row) + screen->cur_col, len);
-	memset(attrs, term->flags & (FG_COLOR|BG_COLOR), len);
-	memset(BUF_FORES(buf, screen->cur_row) + screen->cur_col,
+	memset(attrs, TERM_COLOR_FLAGS, len);
+
+	if_OPT_ISO_COLORS(screen,{
+	    memset(BUF_FORES(buf, screen->cur_row) + screen->cur_col,
 		(term->flags & FG_COLOR)
 		? term->cur_foreground : 0, len);
-	memset(BUF_BACKS(buf, screen->cur_row) + screen->cur_col,
+	    memset(BUF_BACKS(buf, screen->cur_row) + screen->cur_col,
 		(term->flags & BG_COLOR)
 		? term->cur_background : 0, len);
+	})
 
 	/* with the right part cleared, we can't be wrapping */
 	attrs[0] &= ~LINEWRAPPED;
@@ -657,7 +658,7 @@ ClearLeft (screen)
     register TScreen *screen;
 {
 	int len = screen->cur_col + 1;
-	int flags = CHARDRAWN | (term->flags & (FG_COLOR|BG_COLOR));
+	int flags = CHARDRAWN | TERM_COLOR_FLAGS;
 
 	if(screen->cursor_state)
 		HideCursor();
@@ -679,11 +680,13 @@ ClearLeft (screen)
 	
 	memset(SCRN_BUF_CHARS(screen, screen->cur_row), ' ',   len);
 	memset(SCRN_BUF_ATTRS(screen, screen->cur_row), flags, len);
-	memset(SCRN_BUF_FORES(screen, screen->cur_row),
-		flags & FG_COLOR ? term->cur_foreground : 0, len);
-	memset(SCRN_BUF_BACKS(screen, screen->cur_row),
-		flags & BG_COLOR ? term->cur_background : 0, len);
 
+	if_OPT_ISO_COLORS(screen,{
+	    memset(SCRN_BUF_FORES(screen, screen->cur_row),
+		flags & FG_COLOR ? term->cur_foreground : 0, len);
+	    memset(SCRN_BUF_BACKS(screen, screen->cur_row),
+		flags & BG_COLOR ? term->cur_background : 0, len);
+	})
 }
 
 /* 
@@ -709,10 +712,14 @@ register TScreen *screen;
 		useCurBackground(FALSE);
 	    }
 	}
+
 	bzero (SCRN_BUF_CHARS(screen, screen->cur_row), (screen->max_col + 1));
 	bzero (SCRN_BUF_ATTRS(screen, screen->cur_row), (screen->max_col + 1));
-	bzero (SCRN_BUF_FORES(screen, screen->cur_row), (screen->max_col + 1));
-	bzero (SCRN_BUF_BACKS(screen, screen->cur_row), (screen->max_col + 1));
+
+	if_OPT_ISO_COLORS(screen,{
+	    bzero (SCRN_BUF_FORES(screen, screen->cur_row), (screen->max_col + 1));
+	    bzero (SCRN_BUF_BACKS(screen, screen->cur_row), (screen->max_col + 1));
+	})
 }
 
 void
@@ -1067,8 +1074,10 @@ ReverseVideo (termw)
 	 * We don't swap colors that happen to match the screen's foreground
 	 * and background because that tends to produce bizarre effects.
 	 */
-	EXCHANGE( screen->Acolors[0], screen->Acolors[7],  tmp )
-	EXCHANGE( screen->Acolors[8], screen->Acolors[15], tmp )
+	if_OPT_ISO_COLORS(screen,{
+		EXCHANGE( screen->Acolors[0], screen->Acolors[7],  tmp )
+		EXCHANGE( screen->Acolors[8], screen->Acolors[15], tmp )
+	})
 
 	tmp = termw->core.background_pixel;
 	if(screen->cursorcolor == screen->foreground)
@@ -1095,6 +1104,12 @@ ReverseVideo (termw)
 		ScrollBarReverseVideo(screen->scrollWidget);
 
 	XSetWindowBackground(screen->display, TextWindow(screen), termw->core.background_pixel);
+
+	/* the shell-window's background will be used in the first repainting
+	 * on resizing
+	 */
+	XSetWindowBackground(screen->display, VShellWindow, termw->core.background_pixel);
+
 	if(tek) {
 	    TekReverseVideo(screen);
 	}
@@ -1201,7 +1216,7 @@ resetXtermGC(screen, flags, hilite)
 	}
 }
 
-/* GET_FG */
+#if OPT_ISO_COLORS
 Pixel
 getXtermForeground(flags, color)
 	int flags;
@@ -1211,13 +1226,9 @@ getXtermForeground(flags, color)
 			? term->screen.Acolors[color]
 			: term->screen.foreground;
 
-	if (term->misc.re_verse && (fg == term->screen.original_fg))
-		fg = term->screen.original_bg;
-
 	return fg;
 }
 
-/* GET_BG */
 Pixel
 getXtermBackground(flags, color)
 	int flags;
@@ -1226,10 +1237,6 @@ getXtermBackground(flags, color)
 	Pixel bg = (flags & BG_COLOR) && (color >= 0)
 			? term->screen.Acolors[color]
 			: term->core.background_pixel;
-
-	if (term->misc.re_verse && (bg == term->screen.original_bg))
-		bg = term->screen.original_fg;
-
 	return bg;
 }
 
@@ -1265,3 +1272,4 @@ void ClearCurBackground(screen, top,left, height,width)
 		left, top, width, height, FALSE);
 	useCurBackground(FALSE);
 }
+#endif /* OPT_ISO_COLORS */
