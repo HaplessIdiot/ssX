@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.33 2001/01/06 21:29:17 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.34 2001/01/08 16:33:25 tsi Exp $ */
 
 /*
  *
@@ -2930,10 +2930,6 @@ void *modptr;
 {
     ELFModulePtr elffile = (ELFModulePtr)modptr;
     ELFRelocPtr  relptr, reltptr, *brelptr;
-#ifdef __ia64__
-    ELFOpdPtr opdent;
-    ELFPltEntryPtr pltent;
-#endif
 
 /*
  * Delete any unresolved relocations
@@ -2997,16 +2993,33 @@ void *modptr;
 #if defined(__alpha__) || defined(__ia64__)
     CheckandFree(elffile->got,elffile->gotsize);
 #endif
-#endif
 #if defined(__ia64__)
     CheckandFree(elffile->plt,elffile->pltsize);
-    while ((pltent = elffile->plt_entries)) {
-	elffile->plt_entries = pltent->next;
-	xf86loaderfree(pltent);
+#endif
+#endif
+#if defined(__alpha__) || defined(__ia64__)
+    {
+	ELFGotEntryPtr gotent;
+	while((gotent = elffile->got_entries)) {
+	    elffile->got_entries = gotent->next;
+	    xf86loaderfree(gotent);
+	}
     }
-    while ((opdent = elffile->opd_entries)) {
-	elffile->opd_entries = opdent->next;
-	xf86loaderfree(opdent);
+#endif
+#if defined(__ia64__)
+    {
+	ELFPltEntryPtr pltent;
+	while ((pltent = elffile->plt_entries)) {
+	    elffile->plt_entries = pltent->next;
+	    xf86loaderfree(pltent);
+	}
+    }
+    {
+	ELFOpdPtr opdent;
+	while ((opdent = elffile->opd_entries)) {
+	    elffile->opd_entries = opdent->next;
+	    xf86loaderfree(opdent);
+	}
     }
 #endif
     CheckandFreeFile(elffile->reltext,elffile->reltxtsize);

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_dd.c,v 1.1 2001/01/08 01:07:26 martin Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -71,10 +71,10 @@ static const GLubyte *radeonDDGetString( GLcontext *ctx, GLenum name )
 
    switch ( name ) {
    case GL_VENDOR:
-      return "VA Linux Systems, Inc.";
+      return (GLubyte *)"VA Linux Systems, Inc.";
 
    case GL_RENDERER:
-      sprintf( buffer, "Mesa DRI Radeon " RADEON_DATE );
+      sprintf( (pointer)buffer, "Mesa DRI Radeon " RADEON_DATE );
 
       /* Append any chipset-specific information.  None yet.
        */

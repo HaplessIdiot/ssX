@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.c,v 1.10 2000/12/13 00:45:19 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.c,v 1.11 2001/01/06 20:58:05 tsi Exp $ */
 /*
  * Copyright 1997 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -203,9 +203,9 @@ ATIDACPreInit
                 (blackColour.green == whiteColour.green) &&
                 (blackColour.blue == whiteColour.blue))
             {
-                blackColour.red = whiteColour.red ^ maxColour;
-                blackColour.green = whiteColour.green ^ maxColour;
-                blackColour.blue = whiteColour.blue ^ maxColour;
+                blackColour.red ^= maxColour;
+                blackColour.green ^= maxColour;
+                blackColour.blue ^= maxColour;
             }
 
             pATIHW->lut[(MONO_BLACK * 3) + 0] = blackColour.red;

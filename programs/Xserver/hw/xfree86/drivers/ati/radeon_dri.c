@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.1 2001/01/08 01:07:35 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario,
  *                VA Linux Systems Inc., Fremont, California.
@@ -382,8 +382,8 @@ do {									\
 
 /* Screen to screen copy of data in the depth buffer */
 static void RADEONScreenToScreenCopyDepth(ScrnInfoPtr pScrn,
-					  int x1, int y1,
-					  int x2, int y2,
+					  int xa, int ya,
+					  int xb, int yb,
 					  int w, int h)
 {
     RADEONInfoPtr info = RADEONPTR(pScrn);
@@ -392,26 +392,26 @@ static void RADEONScreenToScreenCopyDepth(ScrnInfoPtr pScrn,
     int           x, y, d;
     unsigned char *buf = info->FB + info->depthOffset;
 
-    if (x1 < x2) xdir = -1, xstart = w-1, xend = 0;
+    if (xa < xb) xdir = -1, xstart = w-1, xend = 0;
     else         xdir =  1, xstart = 0,   xend = w-1;
 
-    if (y1 < y2) ydir = -1, ystart = h-1, yend = 0;
+    if (ya < yb) ydir = -1, ystart = h-1, yend = 0;
     else         ydir =  1, ystart = 0,   yend = h-1;
 
     switch (pScrn->bitsPerPixel) {
     case 16:
 	for (x = xstart; x != xend; x += xdir) {
 	    for (y = ystart; y != yend; y += ydir) {
-		READ_DEPTH16(d, x1+x, y1+y);
-		WRITE_DEPTH16(x2+x, y2+y, d);
+		READ_DEPTH16(d, xa+x, ya+y);
+		WRITE_DEPTH16(xb+x, yb+y, d);
 	    }
 	}
 	break;
     case 32:
 	for (x = xstart; x != xend; x += xdir) {
 	    for (y = ystart; y != yend; y += ydir) {
-		READ_DEPTH32(d, x1+x, y1+y);
-		WRITE_DEPTH32(x2+x, y2+y, d);
+		READ_DEPTH32(d, xa+x, ya+y);
+		WRITE_DEPTH32(xb+x, yb+y, d);
 	    }
 	}
 	break;
@@ -421,7 +421,7 @@ static void RADEONScreenToScreenCopyDepth(ScrnInfoPtr pScrn,
 #endif
 
 /* Initialize the state of the back and depth buffers. */
-static void RADEONDRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 index)
+static void RADEONDRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 indx)
 {
     /* FIXME: This routine needs to have acceleration turned on */
     ScreenPtr          pScreen = pWin->drawable.pScreen;
@@ -497,14 +497,14 @@ static void RADEONDRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 index)
  * are reversed.
  */
 static void RADEONDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
-				 RegionPtr prgnSrc, CARD32 index)
+				 RegionPtr prgnSrc, CARD32 indx)
 {
     ScreenPtr     pScreen  = pParent->drawable.pScreen;
     ScrnInfoPtr   pScrn    = xf86Screens[pScreen->myNum];
     RADEONInfoPtr info     = RADEONPTR(pScrn);
 
     BoxPtr        pboxTmp, pboxNext, pboxBase;
-    DDXPointPtr   pptTmp, pptNew2;
+    DDXPointPtr   pptTmp;
     int           xdir, ydir;
 
     int           screenwidth = pScrn->virtualX;
@@ -513,9 +513,10 @@ static void RADEONDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
     BoxPtr        pbox     = REGION_RECTS(prgnSrc);
     int           nbox     = REGION_NUM_RECTS(prgnSrc);
 
-    BoxPtr        pboxNew1 = 0;
-    BoxPtr        pboxNew2 = 0;
-    DDXPointPtr   pptNew1  = 0;
+    BoxPtr        pboxNew1 = NULL;
+    BoxPtr        pboxNew2 = NULL;
+    DDXPointPtr   pptNew1  = NULL;
+    DDXPointPtr   pptNew2  = NULL;
     DDXPointPtr   pptSrc   = &ptOldOrg;
 
     int           dx       = pParent->drawable.x - ptOldOrg.x;
@@ -565,12 +566,10 @@ static void RADEONDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
 	    pboxNew2 = (BoxPtr)ALLOCATE_LOCAL(sizeof(BoxRec)*nbox);
 	    pptNew2  = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec)*nbox);
 	    if (!pboxNew2 || !pptNew2) {
-		if (pptNew2) DEALLOCATE_LOCAL(pptNew2);
-		if (pboxNew2) DEALLOCATE_LOCAL(pboxNew2);
-		if (pboxNew1) {
-		    DEALLOCATE_LOCAL(pptNew1);
-		    DEALLOCATE_LOCAL(pboxNew1);
-		}
+		DEALLOCATE_LOCAL(pptNew2);
+		DEALLOCATE_LOCAL(pboxNew2);
+		DEALLOCATE_LOCAL(pptNew1);
+		DEALLOCATE_LOCAL(pboxNew1);
 		return;
 	    }
 	    pboxBase = pboxNext = pbox;
@@ -600,15 +599,15 @@ static void RADEONDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
 					       -1, -1);
 
     for (; nbox-- ; pbox++) {
-	int x1    = pbox->x1;
-	int y1    = pbox->y1;
-	int destx = x1 + dx;
-	int desty = y1 + dy;
-	int w     = pbox->x2 - x1 + 1;
-	int h     = pbox->y2 - y1 + 1;
+	int xa    = pbox->x1;
+	int ya    = pbox->y1;
+	int destx = xa + dx;
+	int desty = ya + dy;
+	int w     = pbox->x2 - xa + 1;
+	int h     = pbox->y2 - ya + 1;
 
-	if (destx < 0)                x1 -= destx, w += destx, destx = 0;
-	if (desty < 0)                y1 -= desty, h += desty, desty = 0;
+	if (destx < 0)                xa -= destx, w += destx, destx = 0;
+	if (desty < 0)                ya -= desty, h += desty, desty = 0;
 	if (destx + w > screenwidth)  w = screenwidth  - destx;
 	if (desty + h > screenheight) h = screenheight - desty;
 
@@ -617,14 +616,14 @@ static void RADEONDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
 
 	RADEONSelectBuffer(pScrn, RADEON_BACK);
 	(*info->accel->SubsequentScreenToScreenCopy)(pScrn,
-						     x1, y1,
+						     xa, ya,
 						     destx, desty,
 						     w, h);
 	RADEONSelectBuffer(pScrn, RADEON_DEPTH);
 #if 0
 	/* FIXME: This is disabled because it is much too slow */
 	RADEONScreenToScreenCopyDepth(pScrn,
-				      x1, y1,
+				      xa, ya,
 				      destx, desty,
 				      w, h);
 #endif
@@ -632,14 +631,10 @@ static void RADEONDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
 
     RADEONSelectBuffer(pScrn, RADEON_FRONT);
 
-    if (pboxNew2) {
-	DEALLOCATE_LOCAL(pptNew2);
-	DEALLOCATE_LOCAL(pboxNew2);
-    }
-    if (pboxNew1) {
-	DEALLOCATE_LOCAL(pptNew1);
-	DEALLOCATE_LOCAL(pboxNew1);
-    }
+    DEALLOCATE_LOCAL(pptNew2);
+    DEALLOCATE_LOCAL(pboxNew2);
+    DEALLOCATE_LOCAL(pptNew1);
+    DEALLOCATE_LOCAL(pboxNew1);
 
     info->accel->NeedToSync = TRUE;
 }

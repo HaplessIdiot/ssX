@@ -26,7 +26,7 @@
  *
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.7 2000/12/01 19:56:01 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.8 2000/12/02 15:31:00 tsi Exp $
  */
 
 #include "vesa.h"
@@ -144,13 +144,29 @@ static const char *fbSymbols[] = {
 #endif
     "cfbScreenInit",
     "mfbScreenInit",
+    "cfb24_32ScreenInit",
     NULL
 };
 
 static const char *shadowSymbols[] = {
-    "ShadowInit",
+    "shadowAlloc",
+    "shadowInit",
+    "shadowUpdatePacked",
+    "shadowUpdatePlanar4",
+    "shadowUpdatePlanar4x8",
     NULL
 };
+
+static const char *vbeSymbols[] = {
+    "VBEInit",
+    "vbeDoEDID",
+    NULL
+};
+
+static const char *ddcSymbols[] = {
+    "xf86PrintEDID",
+    "xf86SetDDCproperties",
+    NULL};
 
 #ifdef XFree86LOADER
 
@@ -186,7 +202,11 @@ vesaSetup(pointer Module, pointer Options, int *ErrorMajor, int *ErrorMinor)
     {
 	Initialised = TRUE;
 	xf86AddDriver(&VESA, Module, 0);
-	LoaderRefSymLists(fbSymbols, shadowSymbols, NULL);
+	LoaderRefSymLists(fbSymbols,
+			  shadowSymbols,
+			  vbeSymbols,
+			  ddcSymbols,
+			  NULL);
 	return (pointer)TRUE;
     }
 

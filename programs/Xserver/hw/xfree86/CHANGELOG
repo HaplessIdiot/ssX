@@ -1,4 +1,8 @@
 XFree86 4.0.2a (?? January 2001)
+1256. Fix 1bpp colour map in vgaHW (Marc La France).
+1255. More IA64 loader fixes and make xf86sym.c compile again
+      (Michael Madore, Marc La France).
+1254. Add missing symbols in vesa driver (Marc La France).
 1253. Fix multihead pointer problem on Rage 128 (Mark Vojkovich).
 1252. Resync with DRI CVS trunk (Kevin Martin, VA Linux Systems)
       - Add Radeon 3D driver (Kevin Martin and Gareth Hughes)
@@ -12201,4 +12205,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1513 2001/01/08 01:07:30 martin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1514 2001/01/09 21:12:18 mvojkovi Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64io.h,v 1.4 2000/10/11 22:52:56 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64io.h,v 1.5 2001/01/06 20:58:06 tsi Exp $ */
 /*
  * Copyright 2000 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -166,11 +166,11 @@ extern void ATIMach64PollEngineStatus FunctionPrototype((ATIPtr));
  */
 #define ATIMach64WaitForFIFO(_pATI, _n)        \
     while (pATI->nAvailableFIFOEntries < (_n)) \
-        ATIMach64PollEngineStatus(pATI);
+        ATIMach64PollEngineStatus(pATI)
 
 #define ATIMach64WaitForIdle(_pATI)      \
     while (pATI->EngineIsBusy)           \
-        ATIMach64PollEngineStatus(pATI);
+        ATIMach64PollEngineStatus(pATI)
 
 extern void ATIAccessMach64PLLReg FunctionPrototype((ATIPtr, const CARD8,
                                                      const Bool));
