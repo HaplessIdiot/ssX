@@ -1,5 +1,5 @@
 /* $XConsortium: access.c,v 1.75 94/11/21 18:27:47 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.5 1995/01/28 16:16:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.6 1995/03/04 06:24:00 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -140,6 +140,13 @@ SOFTWARE.
 #endif
 #endif /* AMOEBA || MINIX */
 #endif /* ESIX */
+
+#ifdef CSRG_BASED
+#include <sys/param.h>
+#if (BSD >= 199103)
+#define VARIABLE_IFREQ
+#endif
+#endif
 
 #include "dixstruct.h"
 #include "osdep.h"
@@ -297,7 +304,7 @@ ifioctl (fd, cmd, arg)
  * for this fd and add them to the selfhosts list.
  */
 
-#ifdef NCR
+#ifdef WINTCP
 
 #include <sys/un.h>
 #include <stropts.h>
@@ -432,7 +439,7 @@ DefineSelf (fd)
     }
 }
 
-#else /* NCR */
+#else /* WINTCP */
 
 #if !defined(SIOCGIFCONF) || (defined (hpux) && ! defined (HAS_IFREQ))
 void
@@ -534,7 +541,7 @@ DefineSelf (fd)
 
 #else
 
-#ifdef AF_LINK
+#ifdef VARIABLE_IFREQ
 #define ifr_size(p) (sizeof (struct ifreq) + \
 		     (p->ifr_addr.sa_len > sizeof (p->ifr_addr) ? \
 		      p->ifr_addr.sa_len - sizeof (p->ifr_addr) : 0))
@@ -705,7 +712,7 @@ DefineSelf (fd)
     }
 }
 #endif /* hpux && !HAS_IFREQ */
-#endif /* NCR */
+#endif /* WINTCP */
 
 #ifdef XDMCP
 void
