@@ -1,4 +1,6 @@
 XFree86 4.0a (xx March 2000)
+  37. Add Mach64 solid zero-width line acceleration, except for 24bpp
+      (Marc La France).
   36. Add Mach64 mono 8x8 pattern fill acceleration (Marc La France).
   35. Fix DDC bug (John McCorquodale).
   34. Fix minClock and maxClock determination in ATI driver (Marc La France).
@@ -10095,4 +10097,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1101 2000/03/22 22:29:15 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1102 2000/03/24 19:17:27 tsi Exp $
