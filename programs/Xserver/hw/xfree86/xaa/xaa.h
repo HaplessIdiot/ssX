@@ -498,7 +498,7 @@ typedef struct _XAAInfoRec {
    int NumScanlineImageWriteBuffers;
    unsigned char **ScanlineImageWriteBuffers;
 
-  /* Image Reads */
+  /* Image Reads - OBSOLETE AND NOT USED */
 
    void (*SetupForImageRead) (
 	ScrnInfoPtr pScrn,

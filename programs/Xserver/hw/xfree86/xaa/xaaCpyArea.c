@@ -65,6 +65,16 @@ XAACopyArea(
 		pGC, srcx, srcy, width, height, dstx, dsty,
 		XAADoBitBlt, 0L));
 	}
+    } else if((pSrcDrawable->type == DRAWABLE_WINDOW) ||
+	       IS_OFFSCREEN_PIXMAP(pSrcDrawable)) {
+	if(infoRec->ReadPixmap && (pGC->alu == GXcopy) &&
+	   (pSrcDrawable->bitsPerPixel == pDstDrawable->bitsPerPixel) &&
+	  ((pGC->planemask & infoRec->FullPlanemask) == infoRec->FullPlanemask))
+	{
+            return (XAABitBlt( pSrcDrawable, pDstDrawable,
+		pGC, srcx, srcy, width, height, dstx, dsty,
+		XAADoImageRead, 0L));	
+	}
     }
 
     return (XAAFallbackOps.CopyArea(pSrcDrawable, pDstDrawable, pGC,
@@ -218,6 +228,36 @@ XAADoImageWrite(
 		pGC->alu, pGC->planemask, -1, pSrc->bitsPerPixel, pSrc->depth);
     }
 }
+
+
+void
+XAADoImageRead(
+    DrawablePtr	    pSrc, 
+    DrawablePtr	    pDst,
+    GC		    *pGC,
+    RegionPtr	    prgnDst,
+    DDXPointPtr	    pptSrc )
+{
+    int dstwidth;
+    unsigned char* pdstBase;			/* start of image */
+    unsigned char* dstPntr;			/* index into the image */
+    BoxPtr pbox = REGION_RECTS(prgnDst);
+    int nbox = REGION_NUM_RECTS(prgnDst);
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+    int Bpp = pSrc->bitsPerPixel >> 3; 
+
+    pdstBase = (unsigned char *)((PixmapPtr)pDst)->devPrivate.ptr;
+    dstwidth = (int)((PixmapPtr)pSrc)->devKind;
+
+    for(; nbox; pbox++, pptSrc++, nbox--) {
+        dstPntr = pdstBase + (pbox->y1 * dstwidth) + (pbox->x1 * Bpp);
+
+	(*infoRec->ReadPixmap)(infoRec->pScrn, pptSrc->x, pptSrc->y, 
+		pbox->x2 - pbox->x1, pbox->y2 - pbox->y1, dstPntr, dstwidth,
+		pSrc->bitsPerPixel, pSrc->depth);
+    }
+}
+
 
 void 
 XAAScreenToScreenBitBlt(
