@@ -1,6 +1,6 @@
 #!/bin/sh
 # $Xorg: xon.sh,v 1.4 2000/12/20 16:50:07 pookie Exp $
-# $XFree86: xc/programs/scripts/xon.sh,v 1.7 2002/11/20 05:00:00 dawes Exp $
+# $XFree86: xc/programs/scripts/xon.sh,v 1.8 2003/04/03 22:28:01 dawes Exp $
 # start up xterm (or any other X command) on the specified host
 # Usage: xon host [arguments] [command]
 
@@ -171,7 +171,7 @@ x*)
 	sess_mangr="SESSION_MANAGER=$SESSION_MANAGER "
 	;;
 esac
-vars='PATH=$PATH:/usr/X11R6/bin '"$xpath$xauth$sess_mangr"DISPLAY="$DISPLAY"
+vars='PATH=${PATH:+$PATH:}/usr/X11R6/bin '"$xpath$xauth$sess_mangr"DISPLAY="$DISPLAY"
 case $# in
 0)
 	$rcmd 'sh -c '"'$vars"' xterm '$ls' -name "'"$resource"'" -T "'"$label"'" -n "'"$label"'" '"$redirect'"
