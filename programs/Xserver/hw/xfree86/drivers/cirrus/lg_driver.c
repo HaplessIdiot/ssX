@@ -13,7 +13,7 @@
  *	David Dawes, Andrew E. Mileski, Leonard N. Zubkoff,
  *	Guy DESBIEF, Itai Nahshon.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.14 1999/12/26 18:24:19 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.15 2000/01/18 16:35:50 tsi Exp $ */
 
 /* Everything using inb/outb, etc needs "compiler.h" */
 /*#include "compiler.h"*/
@@ -45,7 +45,7 @@
 
 #include "micmap.h"
 
-#include "int10/xf86int10.h"
+#include "xf86int10.h"
 
 /*
  * If using cfb, cfb.h is required.  Select the others for the bpp values
