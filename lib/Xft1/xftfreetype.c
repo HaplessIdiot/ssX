@@ -212,6 +212,10 @@ _XftFreeTypeOpenFile (char *file, int id)
     f->face = face;
     f->size = 0;
     f->charmap = -1;
+    f->matrix.xx = 0x10000;
+    f->matrix.xy = 0x0;
+    f->matrix.yy = 0x10000;
+    f->matrix.yx = 0x0;
     return f;
 }
 
