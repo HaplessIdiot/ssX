@@ -23,7 +23,7 @@
  *  Based on work of Michael H. Schimek <m.schimek@netway.at>
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.18 2001/01/31 16:14:59 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_video.c,v 1.1 2001/02/24 14:29:19 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -542,7 +542,7 @@ compute_scale_factor(
     } else {
 	if (*src_w & 0x3) *src_w = (*src_w & ~0x3) + 4;
 	*shrink_delta = 1<<16;
-	for (;*dst_w > *src_w; *dst_w--) {
+	for (;*dst_w > *src_w; (*dst_w)--) {
 	    *zoom_delta = (*src_w << 16) / *dst_w;
 	    if (((((*zoom_delta&0xf)+1) * *dst_w * *dst_w) >> 16) < *src_w) {
 		*zoom_delta = ((*zoom_delta & ~0xf) + 0x10) & 0x0001fff0;

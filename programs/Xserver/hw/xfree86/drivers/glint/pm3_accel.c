@@ -26,7 +26,7 @@
  * 
  * Permedia 3 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.22 2001/02/05 15:10:43 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.23 2001/02/27 23:04:59 alanh Exp $ */
 
 #include "Xarch.h"
 #include "xf86.h"
@@ -58,9 +58,6 @@
 # define TRACE(str)
 #endif
 
-/* Sync */
-void Permedia3Sync(ScrnInfoPtr pScrn);
-void DualPermedia3Sync(ScrnInfoPtr pScrn);
 /* Clipping */
 static void Permedia3SetClippingRectangle(ScrnInfoPtr pScrn, int x, int y,
 				int w, int h);
