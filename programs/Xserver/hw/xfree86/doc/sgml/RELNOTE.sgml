@@ -744,6 +744,20 @@ However, if you didn't install <tt>X312Dfnon.tgz</tt> when installing
 	/usr/X11R6/bin/mkfontdir /usr/X11R6/lib/X11/fonts/misc
 </verb></tscreen>
  
+An up-to-date version of the xterm termcap and terminfo entries is
+included in the 3.1.2E update.  The files get installed in
+<tt>/usr/X11R6/lib/X11/etc</tt>.  To make use of these, you need to
+manually update your system's termcap or terminfo database.  If your
+system uses termcap, find the <tt>termcap</tt> file (it may be in
+<tt>/etc</tt> or somewhere under <tt>/usr/share</tt>), comment out the
+existing xterm entries, and add the new ones (which are in
+<tt>/usr/X11R6/lib/X11/etc/xterm.termcap</tt>).  If your system uses
+terminfo, the new entries can be installed by running:
+
+<tscreen><verb>
+	tic /usr/X11R6/lib/X11/etc/xterm.terminfo
+</verb></tscreen>
+
 <sect>Installing the XFree86 3.1.2D Beta Release
 <p>
 The XFree86 3.1.2D binary beta release is distributed as a full release,

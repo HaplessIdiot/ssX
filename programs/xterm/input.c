@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: input.c /main/20 1996/01/14 16:52:52 kaleb $
- *	$XFree86: xc/programs/xterm/input.c,v 3.5 1996/01/17 12:51:48 dawes Exp $
+ *	$XFree86: xc/programs/xterm/input.c,v 3.6 1996/02/12 11:16:43 dawes Exp $
  */
 
 /*
@@ -88,15 +88,18 @@ Input (keyboard, screen, event, eightbit)
 	ANSI	reply;
 
 #if XtSpecificationRelease >= 6
-	Status	status_return;
-
-	nbytes = XmbLookupString (screen->xic, event, strbuf, STRBUFSIZE,
-				&keysym, &status_return);
-#else
-	static XComposeStatus compose_status = {NULL, 0};
-	nbytes = XLookupString (event, strbuf, STRBUFSIZE,
-				&keysym, &compose_status);
+	if (screen->xic) {
+	    Status status_return;
+	    nbytes = XmbLookupString (screen->xic, event, strbuf, STRBUFSIZE,
+				      &keysym, &status_return);
+	}
+	else
 #endif
+	{
+	    static XComposeStatus compose_status = {NULL, 0};
+	    nbytes = XLookupString (event, strbuf, STRBUFSIZE,
+				    &keysym, &compose_status);
+	}
 
 	string = &strbuf[0];
 	reply.a_pintro = 0;
