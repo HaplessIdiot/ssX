@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/mesa/src/X/xf86glx.c,v 1.12 2002/02/22 21:45:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/mesa/src/X/xf86glx.c,v 1.14 2002/04/04 14:05:37 eich Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -639,15 +639,8 @@ GLboolean __MESA_resizeBuffers(__GLdrawableBuffer *buffer,
 {
     __MESA_buffer buf = (__MESA_buffer)glPriv->private;
 
-    if (buf->xm_buf && buf->xm_buf->xm_context) {
-	GLcontext *ctx = buf->xm_buf->xm_context->gl_ctx;
-	XMesaForceCurrent(buf->xm_buf->xm_context);
-	(*ctx->CurrentDispatch->ResizeBuffersMESA)();
-        if (MESA_CC) {
-	   XMesaContext xmesa = (XMesaContext) MESA_CC->DriverCtx;
-           XMesaForceCurrent(xmesa);
-	}
-    }
+    if (buf->xm_buf)
+	XMesaResizeBuffers(buf->xm_buf);
 
     return (*buf->fbresize)(buffer, x, y, width, height, glPriv, bufferMask);
 }
