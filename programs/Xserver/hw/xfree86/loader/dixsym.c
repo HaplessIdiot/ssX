@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.47 2002/02/16 16:35:51 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.48 2002/02/19 11:17:16 alanh Exp $ */
 
 
 /*
@@ -223,6 +223,14 @@ LOOKUP dixLookupTab[] = {
 #ifdef XCSECURITY
   SYMFUNC(SecurityLookupIDByClass)
   SYMFUNC(SecurityLookupIDByType)
+#endif
+  SYMFUNC(FindClientResourcesByType)
+  SYMFUNC(FindAllClientResources)
+  SYMVAR(lastResourceType)
+  SYMVAR(TypeMask)
+#ifdef RES
+  SYMFUNC(RegisterResourceName)
+  SYMVAR(ResourceNames)
 #endif
   /* swaprep.c */
   SYMFUNC(CopySwap32Write)
