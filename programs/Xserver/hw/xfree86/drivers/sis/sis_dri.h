@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.h,v 1.6 2001/05/16 13:43:17 alanh Exp $ */
+/* $XFree86$ */
 
 /* modified from tdfx_dri.h */
 

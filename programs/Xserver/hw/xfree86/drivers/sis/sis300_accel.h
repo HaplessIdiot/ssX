@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis300_accel.h,v 1.3 2001/04/19 12:40:33 alanh Exp $ */
+/* $XFree86$ */
 /*
  * 2D Acceleration for SiS300, SiS540, SiS630, SiS730, SiS530, SiS620
  * Definitions for the SIS engine communication

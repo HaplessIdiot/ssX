@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis6326_video.c,v 1.0 2002/05/13 21:23:00 dawes Exp $ */
+/* $XFree86$ */
 /*
  * Xv driver for SiS 5597/5598, 6236 and 530/620.
  *

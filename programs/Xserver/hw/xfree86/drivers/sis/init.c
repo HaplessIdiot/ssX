@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init.c,v 1.3 2002/24/04 01:16:16 dawes Exp $ */
+/* $XFree86$ */
 /*
  * Mode initializing code (CRT1 section) for
  * for SiS 300/305/540/630/730 and
@@ -3049,32 +3049,27 @@ SiS_StrangeStuff(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 static void
 SiS_SetPitchCRT1(SiS_Private *SiS_Pr, ScrnInfoPtr pScrn)
 {
-    SISPtr pSiS = SISPTR(pScrn);
-    ULong  HDisplay,temp;
+   SISPtr pSiS = SISPTR(pScrn);
+   UShort HDisplay = pSiS->scrnPitch >> 3;
 
-    HDisplay = pSiS->scrnPitch / 8;
-    SiS_SetReg(SiS_Pr->SiS_P3d4, 0x13, (HDisplay & 0xFF));
-    temp = (SiS_GetReg(SiS_Pr->SiS_P3c4, 0x0E) & 0xF0) | (HDisplay>>8);
-    SiS_SetReg(SiS_Pr->SiS_P3c4, 0x0E, temp);
+   SiS_SetReg(SiS_Pr->SiS_P3d4,0x13,(HDisplay & 0xFF));
+   SiS_SetRegANDOR(SiS_Pr->SiS_P3c4,0x0E,0xF0,(HDisplay>>8));
 }
 
 static void
 SiS_SetPitchCRT2(SiS_Private *SiS_Pr, ScrnInfoPtr pScrn)
 {
-    SISPtr pSiS = SISPTR(pScrn);
-    ULong  HDisplay,temp;
-
-    HDisplay = pSiS->scrnPitch2 / 8;
+   SISPtr pSiS = SISPTR(pScrn);
+   UShort HDisplay = pSiS->scrnPitch2 >> 3;
 
     /* Unlock CRT2 */
-    if (pSiS->VGAEngine == SIS_315_VGA)
-        SiS_SetRegOR(SiS_Pr->SiS_Part1Port,0x2F, 0x01);
-    else
-        SiS_SetRegOR(SiS_Pr->SiS_Part1Port,0x24, 0x01);
+   if(pSiS->VGAEngine == SIS_315_VGA)
+     SiS_SetRegOR(SiS_Pr->SiS_Part1Port,0x2F, 0x01);
+   else
+     SiS_SetRegOR(SiS_Pr->SiS_Part1Port,0x24, 0x01);
 
-    SiS_SetReg(SiS_Pr->SiS_Part1Port,0x07, (HDisplay & 0xFF));
-    temp = (SiS_GetReg(SiS_Pr->SiS_Part1Port,0x09) & 0xF0) | ((HDisplay >> 8) & 0xFF);
-    SiS_SetReg(SiS_Pr->SiS_Part1Port,0x09, temp);
+   SiS_SetReg(SiS_Pr->SiS_Part1Port,0x07,(HDisplay & 0xFF));
+   SiS_SetRegANDOR(SiS_Pr->SiS_Part1Port,0x09,0xF0,(HDisplay >> 8));
 }
 
 static void
@@ -3190,7 +3185,7 @@ SiSSetMode(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,USHORT ModeNo)
 	 }
 	 SiS_SetRegOR(SiS_Pr->SiS_P3c4,0x32,0x10);
 
-	 SiS_SetRegOR(SiS_Pr->SiS_Part2Port,0x02,0x0c);
+	 SiS_SetRegOR(SiS_Pr->SiS_Part2Port,0x00,0x0c);
 
          backupreg = SiS_GetReg(SiS_Pr->SiS_P3d4,0x38);
       } else {
@@ -3273,10 +3268,12 @@ SiSSetMode(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,USHORT ModeNo)
 
    if(SiS_Pr->SiS_VBType & VB_SIS301BLV302BLV) {
       if(HwInfo->jChipType >= SIS_315H) {
-	 if(SiS_IsVAMode(SiS_Pr,HwInfo)) {
-	    SiS_SetRegOR(SiS_Pr->SiS_P3d4,0x35,0x01);
-	 } else {
-	    SiS_SetRegAND(SiS_Pr->SiS_P3d4,0x35,0xFE);
+         if(HwInfo->jChipType < SIS_661) {
+	    if(SiS_IsVAMode(SiS_Pr,HwInfo)) {
+	       SiS_SetRegOR(SiS_Pr->SiS_P3d4,0x35,0x01);
+	    } else {
+	       SiS_SetRegAND(SiS_Pr->SiS_P3d4,0x35,0xFE);
+	    }
 	 }
 
 	 SiS_SetReg(SiS_Pr->SiS_P3d4,0x38,backupreg);
@@ -3411,6 +3408,7 @@ SiSBIOSSetModeCRT2(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, ScrnInfoPtr pScrn,
       pSiSEnt->CRT2IsCustom = IsCustom;
       pSiSEnt->CRT2CR30 = SiS_GetReg(SiS_Pr->SiS_P3d4,0x30);
       pSiSEnt->CRT2CR31 = SiS_GetReg(SiS_Pr->SiS_P3d4,0x31);
+      pSiSEnt->CRT2CR35 = SiS_GetReg(SiS_Pr->SiS_P3d4,0x35);
       pSiSEnt->CRT2CR38 = SiS_GetReg(SiS_Pr->SiS_P3d4,0x38);
       /* We can't set CRT2 mode before CRT1 mode is set */
       if(pSiSEnt->CRT1ModeNo == -1) {
@@ -3469,15 +3467,15 @@ SiSBIOSSetModeCRT2(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, ScrnInfoPtr pScrn,
       if(HwInfo->jChipType >= SIS_315H) {
          SiS_UnLockCRT2(SiS_Pr,HwInfo);
 	 if(HwInfo->jChipType < SIS_330) {
-           if(ROMAddr && SiS_Pr->SiS_UseROM) {
-             temp = ROMAddr[VB310Data_1_2_Offset];
-	     temp |= 0x40;
-             SiS_SetReg(SiS_Pr->SiS_Part1Port,0x02,temp);
-           }
+            if(ROMAddr && SiS_Pr->SiS_UseROM) {
+               temp = ROMAddr[VB310Data_1_2_Offset];
+	       temp |= 0x40;
+               SiS_SetReg(SiS_Pr->SiS_Part1Port,0x02,temp);
+            }
 	 }
 	 SiS_SetRegOR(SiS_Pr->SiS_P3c4,0x32,0x10);
 
-	 SiS_SetRegOR(SiS_Pr->SiS_Part2Port,0x02,0x0c);
+	 SiS_SetRegOR(SiS_Pr->SiS_Part2Port,0x00,0x0c);
 
          backupreg = SiS_GetReg(SiS_Pr->SiS_P3d4,0x38);
       } else {
@@ -3533,10 +3531,12 @@ SiSBIOSSetModeCRT2(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, ScrnInfoPtr pScrn,
 
    if(SiS_Pr->SiS_VBType & VB_SIS301BLV302BLV) {
       if(HwInfo->jChipType >= SIS_315H) {
-	 if(SiS_IsVAMode(SiS_Pr,HwInfo)) {
-	    SiS_SetRegOR(SiS_Pr->SiS_P3d4,0x35,0x01);
-	 } else {
-	    SiS_SetRegAND(SiS_Pr->SiS_P3d4,0x35,0xFE);
+         if(HwInfo->jChipType < SIS_661) {
+	    if(SiS_IsVAMode(SiS_Pr,HwInfo)) {
+	       SiS_SetRegOR(SiS_Pr->SiS_P3d4,0x35,0x01);
+	    } else {
+	       SiS_SetRegAND(SiS_Pr->SiS_P3d4,0x35,0xFE);
+	    }
 	 }
 
 	 SiS_SetReg(SiS_Pr->SiS_P3d4,0x38,backupreg);
@@ -3577,7 +3577,7 @@ SiSBIOSSetModeCRT1(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, ScrnInfoPtr pScrn,
    SISEntPtr pSiSEnt = pSiS->entityPrivate;
    USHORT  ModeIdIndex, ModeNo=0;
    SISIOADDRESS BaseAddr = HwInfo->ulIOAddress;
-   unsigned char backupreg=0, backupcr30, backupcr31, backupcr38;
+   unsigned char backupreg=0, backupcr30, backupcr31, backupcr38, backupcr35;
    BOOLEAN backupcustom;
 
    SiS_Pr->UseCustomMode = FALSE;
@@ -3699,16 +3699,19 @@ SiSBIOSSetModeCRT1(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, ScrnInfoPtr pScrn,
 	 backupcustom = SiS_Pr->UseCustomMode;
 	 backupcr30 = SiS_GetReg(SiS_Pr->SiS_P3d4,0x30);
 	 backupcr31 = SiS_GetReg(SiS_Pr->SiS_P3d4,0x31);
+	 backupcr35 = SiS_GetReg(SiS_Pr->SiS_P3d4,0x35);
 	 backupcr38 = SiS_GetReg(SiS_Pr->SiS_P3d4,0x38);
 	 if(SiS_Pr->SiS_VBInfo & SetCRT2ToLCDA) {
 	    SiS_SetReg(SiS_Pr->SiS_P3d4,0x30,pSiSEnt->CRT2CR30);
 	    SiS_SetReg(SiS_Pr->SiS_P3d4,0x31,pSiSEnt->CRT2CR31);
+	    SiS_SetReg(SiS_Pr->SiS_P3d4,0x35,pSiSEnt->CRT2CR35);
 	    SiS_SetReg(SiS_Pr->SiS_P3d4,0x38,pSiSEnt->CRT2CR38);
 	 }
 	 SiSBIOSSetModeCRT2(SiS_Pr, HwInfo, pSiSEnt->pScrn_1,
 			    pSiSEnt->CRT2DMode, pSiSEnt->CRT2IsCustom);
          SiS_SetReg(SiS_Pr->SiS_P3d4,0x30,backupcr30);
 	 SiS_SetReg(SiS_Pr->SiS_P3d4,0x31,backupcr31);
+	 SiS_SetReg(SiS_Pr->SiS_P3d4,0x35,backupcr35);
 	 SiS_SetReg(SiS_Pr->SiS_P3d4,0x38,backupcr38);
 	 SiS_Pr->UseCustomMode = backupcustom;
       }
