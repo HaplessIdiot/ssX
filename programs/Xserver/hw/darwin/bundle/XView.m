@@ -1,7 +1,7 @@
 /*
  * NSView subclass for Mac OS X rootless X server
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/XView.m,v 1.2 2001/09/17 03:08:40 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/XView.m,v 1.3 2001/11/05 05:12:16 torrey Exp $ */
 
 #include <ApplicationServices/ApplicationServices.h>
 
@@ -158,19 +158,32 @@ static void reallocShapeBits(NSSize minSize)
 
     if (count == 0) {
         // not shaped anymore - just refresh everything
-        mShaped = NO; // do this first
+
+        // reset alpha channel (fixme maybe not necessary)
+        [self lockFocus];
+        [[NSColor whiteColor] set]; 
+        NSRectFill([self frame]);
+        [self unlockFocus];
+
+        mShaped = NO;
         [self refreshRects:&bounds count:1];
     } else {
-        // copy everything from X11 to temp
-        // erase eraseRects from temp
-        // erase screen (this is necessary, but why?)
-        // copy everything from temp to screen
         mShaped = YES;
-        [self copyToShapeBits:&bounds count:1];
-        [self eraseFromShapeBits:eraseRects count:count];
+
+        // magic: 10.0.4 and 10.1 both require the alpha channel to be
+        // cleared explicitly. 10.0.4 additionally requires the view to
+        // be unlocked between the erase and the drawing code below.
         [self lockFocus];
         [[NSColor clearColor] set];
         NSRectFill([self frame]);
+        [self unlockFocus];
+
+        // copy everything from X11 to temp
+        // erase eraseRects from temp
+        // copy everything from temp to screen
+        [self lockFocus];
+        [self copyToShapeBits:&bounds count:1];
+        [self eraseFromShapeBits:eraseRects count:count];
         [self copyToScreen:&bounds count:1 fromTemp:YES];
         [[NSGraphicsContext currentContext] flushGraphics];
         [self unlockFocus];
@@ -302,9 +315,6 @@ static void reallocShapeBits(NSSize minSize)
         nsr.origin.y = bounds.size.height - nsr.origin.y - nsr.size.height;
         destRect = CGRectMake(nsr.origin.x, nsr.origin.y,
                               nsr.size.width, nsr.size.height);
-
-        // NSDrawBitmap but doesn't scale and can use more pixel layouts than
-        // Cocoa's RGBA. Maybe CGDrawBitmap is like this.
 
         dataProviderRef = CGDataProviderCreateDirectAccess(offsetbits,
                                 destRect.size.height * bytesPerRow, &cb);

@@ -1,7 +1,7 @@
 /*
  * NSWindow subclass for Mac OS X rootless X server
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/XWindow.m,v 1.3 2001/09/17 03:08:40 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/XWindow.m,v 1.4 2001/11/05 05:12:16 torrey Exp $ */
 
 #import "XWindow.h"
 
@@ -30,8 +30,8 @@
     if (! self) return NULL;
 
     [self setBackgroundColor:[NSColor clearColor]];  // erase transparent
-    [self setAlphaValue:1.0];  // draw opaque
-    [self setOpaque:NO]; // changed when window is shaped
+    [self setAlphaValue:1.0];       // draw opaque
+    [self setOpaque:YES];           // changed when window is shaped
 
     [self useOptimizedDrawing:YES]; // Has no overlapping sub-views
     [self setAutodisplay:NO];       // MUST NOT autodisplay! See comment above
