@@ -4,6 +4,11 @@
  *
  * Copyright 2002, 2003 by Thomas Winischhofer, Vienna, Austria
  *
+ * If distributed as part of the linux kernel, the contents of this file
+ * is entirely covered by the GPL.
+ *
+ * Otherwise, the following terms apply:
+ *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
  * the above copyright notice appear in all copies and that both that
@@ -23,6 +28,9 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  * Author: 	Thomas Winischhofer <thomas@winischhofer.net>
+ *
+ * Based on code by Silicon Intergrated Systems
+ *
  */
 
 #ifndef _INITDEF_
@@ -54,10 +62,11 @@
 #define IS_SISM650	        (SiS_Pr->SiS_SysFlags & (SF_IsM650 | SF_IsM652 | SF_IsM653))
 #define IS_SIS65x               (IS_SIS651 || IS_SISM650)
 #define IS_SIS660		(HwDeviceExtension->jChipType == SIS_660)
+#define IS_SIS760		(HwDeviceExtension->jChipType == SIS_760)
 #define IS_SIS650660            (IS_SIS650 || IS_SIS660)
 #define IS_SIS650740            ((HwDeviceExtension->jChipType >= SIS_650) && (HwDeviceExtension->jChipType < SIS_330))
-#define IS_SIS650740660         (IS_SIS650 || IS_SIS660 || IS_SIS740)
-#define IS_SIS550650740660      (IS_SIS550 || IS_SIS650 || IS_SIS660 || IS_SIS740)
+#define IS_SIS650740660         (IS_SIS650 || IS_SIS660 || IS_SIS740 || IS_SIS760)
+#define IS_SIS550650740660      (IS_SIS550 || IS_SIS650 || IS_SIS660 || IS_SIS740 || IS_SIS760)
 
 #define CRT1Len                 17
 #define LVDSCRT1Len             15

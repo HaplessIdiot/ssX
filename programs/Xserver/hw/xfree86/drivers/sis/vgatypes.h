@@ -4,6 +4,11 @@
  *
  * Copyright 2002, 2003 by Thomas Winischhofer, Vienna, Austria
  *
+ * If distributed as part of the linux kernel, the contents of this file
+ * is entirely covered by the GPL.
+ *
+ * Otherwise, the following terms apply:
+ *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
  * the above copyright notice appear in all copies and that both that
@@ -22,7 +27,8 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  *
- * Author: 	Thomas Winischhofer <thomas@winischhofer.net>
+ * Authors: 	Thomas Winischhofer <thomas@winischhofer.net>
+ *		Silicon Integrated Systems
  *
  */
 #ifndef _VGATYPES_
@@ -127,6 +133,7 @@ typedef enum _SIS_CHIP_TYPE {
     SIS_740,
     SIS_330,
     SIS_660,
+    SIS_760,
     MAX_SIS_CHIP
 } SIS_CHIP_TYPE;
 #endif

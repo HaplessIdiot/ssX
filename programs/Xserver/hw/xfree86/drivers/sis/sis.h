@@ -105,16 +105,16 @@ typedef unsigned long IOADDRESS;
 #define PCI_CHIP_SIS315PRO		0x0325
 #endif
 #ifndef PCI_CHIP_SIS550
-#define PCI_CHIP_SIS550			0x5315	/* This is 550_VGA */
+#define PCI_CHIP_SIS550			0x5315	/* 550_VGA */
 #endif
 #ifndef PCI_CHIP_SIS650
-#define PCI_CHIP_SIS650 		0x6325  /* This is 650_VGA and 740_VGA */
+#define PCI_CHIP_SIS650 		0x6325  /* 650_VGA and 740_VGA */
 #endif
 #ifndef PCI_CHIP_SIS330
 #define PCI_CHIP_SIS330 		0x0330
 #endif
 #ifndef PCI_CHIP_SIS660
-#define PCI_CHIP_SIS660 		0x6330
+#define PCI_CHIP_SIS660 		0x6330	/* 660_VGA and 760_VGA */
 #endif
 
 #define SIS_NAME                "SIS"
@@ -224,7 +224,8 @@ typedef unsigned long IOADDRESS;
 				(pSiS->Chipset == PCI_CHIP_SIS550) || \
 				(pSiS->Chipset == PCI_CHIP_SIS650) || \
 				(pSiS->Chipset == PCI_CHIP_SIS330) || \
-				(pSiS->Chipset == PCI_CHIP_SIS660)
+				(pSiS->Chipset == PCI_CHIP_SIS660) || \
+				(pSiS->Chipset == PCI_CHIP_SIS760)
 
 /* SiS6326Flags */
 #define SIS6326_HASTV		0x00000001
@@ -277,6 +278,8 @@ typedef unsigned char UChar;
 #define SiSCF_IsM653       0x00000010
 #define SiSCF_Is652        0x00000020
 #define SiSCF_Is65x        (SiSCF_Is651 | SiSCF_IsM650 | SiSCF_IsM652 | SiSCF_IsM653 | SiSCF_Is652)
+#define SiSCF_IsM660       0x00000100
+#define SiSCF_Is66x        (SiSCF_IsM660)
 
 /* For backup of register contents */
 typedef struct {
@@ -768,6 +771,8 @@ typedef struct _customttable {
     char *biosdate;
     unsigned short biosFootprintAddr[5];
     unsigned char biosFootprintData[5];
+    unsigned short pcisubsysvendor;
+    unsigned short pcisubsyscard;
     char *vendorName;
     char *cardName;
     unsigned long SpecialID;

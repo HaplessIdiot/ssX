@@ -4,6 +4,11 @@
  *
  * Copyright 2002, 2003 by Thomas Winischhofer, Vienna, Austria
  *
+ * If distributed as part of the linux kernel, the contents of this file
+ * is entirely covered by the GPL.
+ *
+ * Otherwise, the following terms apply:
+ *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
  * the above copyright notice appear in all copies and that both that
@@ -23,6 +28,9 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  * Author: 	Thomas Winischhofer <thomas@winischhofer.net>
+ *
+ * Based on code by Silicon Intergrated Systems
+ *
  */
 
 #ifndef _INIT_
@@ -921,27 +929,45 @@ static const SiS_LCDDataStruct  SiS_NoScaleData1400x1050[] =
 };
 
 static const SiS_LCDDataStruct  SiS_StLCD1600x1200Data[] =
-{  /* TODO */
-	{    0,   0,   0,   0,   0,   0}
+{
+	{27,  4, 800, 500, 2160, 1250 },
+	{27,  4, 800, 500, 2160, 1250 },
+	{ 6,  1, 900, 500, 2160, 1250 },
+	{ 6,  1, 900, 500, 2160, 1250 },
+	{27,  1, 800, 500, 2160, 1250 },
+	{ 4,  1,1080, 625, 2160, 1250 },
+	{ 5,  2,1350, 800, 2160, 1250 },
+	{135,88,1600,1100, 2160, 1250 },
+	{135,88,1600,1100, 2160, 1250 },
+	{ 1,  1,2160,1250, 2160, 1250 }
 };
 
 static const SiS_LCDDataStruct  SiS_ExtLCD1600x1200Data[] =
-{  /* TODO */
-	{    0,   0,   0,   0,   0,   0}
+{
+	{27, 4, 800, 500, 2160, 1250 },
+	{27, 4, 800, 500, 2160, 1250 },
+	{ 6, 1, 900, 500, 2160, 1250 },
+	{ 6, 1, 900, 500, 2160, 1250 },
+	{27, 1, 800, 500, 2160, 1250 },
+	{ 4, 1,1080, 625, 2160, 1250 },
+	{ 5, 2,1350, 800, 2160, 1250 },
+	{27,16,1500,1064, 2160, 1250 },
+	{27,16,1500,1064, 2160, 1250 },
+	{ 1, 1,2160,1250, 2160, 1250 }
 };
 
 static const SiS_LCDDataStruct  SiS_NoScaleData1600x1200[] =
-{  /* TODO - values guessed */
-        {1,  1, 2048, 1250, 2048, 1250},
-	{1,  1, 2048, 1250, 2048, 1250},
-	{1,  1, 2048, 1250, 2048, 1250},
-	{1,  1, 2048, 1250, 2048, 1250},
-	{1,  1, 2048, 1250, 2048, 1250},
-	{1,  1, 2048, 1250, 2048, 1250},
-	{1,  1, 2048, 1250, 2048, 1250},
-	{1,  1, 2048, 1250, 2048, 1250},
-	{1,  1, 2048, 1250, 2048, 1250},
-	{1,  1, 2048, 1250, 2048, 1250}
+{
+        {1,  1, 2160, 1250, 2048, 1250},
+	{1,  1, 2160, 1250, 2048, 1250},
+	{1,  1, 2160, 1250, 2048, 1250},
+	{1,  1, 2160, 1250, 2048, 1250},
+	{1,  1, 2160, 1250, 2048, 1250},
+	{1,  1, 2160, 1250, 2048, 1250},
+	{1,  1, 2160, 1250, 2048, 1250},
+	{1,  1, 2160, 1250, 2048, 1250},
+	{1,  1, 2160, 1250, 2048, 1250},
+	{1,  1, 2160, 1250, 2048, 1250},
 };
 
 static const SiS_LCDDataStruct  SiS_NoScaleData[] =
@@ -955,7 +981,7 @@ static const SiS_LCDDataStruct  SiS_NoScaleData[] =
 	{ 1, 1,1344, 806,1344, 806 },
 	{ 1, 1,1688,1066,1688,1066 },
         { 1, 1,1688, 802,1688, 802 },  /* 1280x768: 802 was 806 in both cases */
-        { 1, 1,2048,1250,2048,1250 },  /* 1600x1200 (guessed) */
+        { 1, 1,2160,1250,2160,1250 },  /* 1600x1200 */
 	{ 1, 1,1800,1000,1800,1000 }   /* 1280x960 */
 };
 
@@ -2469,7 +2495,7 @@ extern BOOLEAN   SiS_BridgeIsOn(SiS_Private *SiS_Pr, USHORT BaseAddr);
 extern BOOLEAN   SiS_BridgeIsEnable(SiS_Private *SiS_Pr, USHORT BaseAddr,PSIS_HW_DEVICE_INFO );
 extern void      SiS_GetVBInfo(SiS_Private *SiS_Pr, USHORT BaseAddr,UCHAR *ROMAddr,USHORT ModeNo,
                                USHORT ModeIdIndex,PSIS_HW_DEVICE_INFO HwDeviceExtension, int chkcrt2mode);
-extern BOOLEAN   SiS_GetLCDResInfo(SiS_Private *SiS_Pr, UCHAR *ROMAddr,USHORT ModeNo,
+extern void      SiS_GetLCDResInfo(SiS_Private *SiS_Pr, UCHAR *ROMAddr,USHORT ModeNo,
                                    USHORT ModeIdIndex, PSIS_HW_DEVICE_INFO HwDeviceExtension);
 extern void      SiS_SetHiVision(SiS_Private *SiS_Pr, USHORT BaseAddr,PSIS_HW_DEVICE_INFO HwDeviceExtension);
 extern USHORT    SiS_GetRatePtrCRT2(SiS_Private *SiS_Pr, UCHAR *ROMAddr, USHORT ModeNo,USHORT ModeIdIndex,
