@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/dummy/Imakefile,v 1.2 2004/03/18 07:06:43 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/dummy/Imakefile,v 1.3tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -49,9 +49,9 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/dummy/Imakefile,v 1.2 200
 #include <Server.tmpl>
 
 
-SRCS = dummy_driver.c dummy_cursor.c dummy_dga.c /* dummy_video.c */
+SRCS = dummy_driver.c
 
-OBJS = dummy_driver.o dummy_cursor.o dummy_dga.o /* dummy_video.o */
+OBJS = dummy_driver.o
 
 DEFINES = -DPSZ=8
 
@@ -80,8 +80,6 @@ DependTarget()
 
 InstallDriverSDKNonExecFile(Imakefile,$(DRIVERSDKDIR)/drivers/dummy)
 InstallDriverSDKNonExecFile(dummy.h,$(DRIVERSDKDIR)/drivers/dummy)
-InstallDriverSDKNonExecFile(dummy_cursor.c,$(DRIVERSDKDIR)/drivers/dummy)
-InstallDriverSDKNonExecFile(dummy_dga.c,$(DRIVERSDKDIR)/drivers/dummy)
 InstallDriverSDKNonExecFile(dummy_driver.c,$(DRIVERSDKDIR)/drivers/dummy)
 
 InstallDriverSDKObjectModule(dummy,$(DRIVERSDKMODULEDIR),drivers)
