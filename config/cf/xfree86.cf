@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.355 2001/04/10 16:07:47 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.356 2001/04/18 14:52:37 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -322,7 +322,11 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
 
 /* Sparc drivers */
 
-#if defined(SparcArchitecture) && !defined(LynxOSArchitecture) && !defined(NetBSDArchitecture) && !defined(OpenBSDArchitecture) && !defined(SunArchitecture)
+#if  defined(SparcArchitecture) && \
+    !defined(LynxOSArchitecture) && \
+    !defined(NetBSDArchitecture) && \
+    !defined(OpenBSDArchitecture) && \
+    !defined(SunArchitecture)
 # ifndef XF86Server
 #  define XF86Server            YES
 # endif
@@ -777,11 +781,25 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #    define GlxBuiltInSIS          NO
 #  endif
 
-#  if GlxBuiltInTdfx || GlxBuiltInMga || GlxBuiltInI810 || GlxBuiltInR128 || GlxBuiltInRadeon || GlxBuildInFfb || GlxBuiltInSIS
+#  if GlxBuiltInTdfx || \
+      GlxBuiltInMga || \
+      GlxBuiltInI810 || \
+      GlxBuiltInR128 || \
+      GlxBuiltInRadeon || \
+      GlxBuildInFfb || \
+      GlxBuiltInSIS
 #    define GlxDriverUsesMesa      YES
 #  endif
 
-#  if GlxBuiltInGamma || GlxBuiltInTdfx || GlxBuiltInMga || GlxBuiltInI810 || GlxBuiltInR128 || GlxBuiltInRadeon || GlxBuiltInFfb || GlxBuiltInSIS || GlxBuiltInMesa
+#  if GlxBuiltInGamma || \
+      GlxBuiltInTdfx || \
+      GlxBuiltInMga || \
+      GlxBuiltInI810 || \
+      GlxBuiltInR128 || \
+      GlxBuiltInRadeon || \
+      GlxBuiltInFfb || \
+      GlxBuiltInSIS || \
+      GlxBuiltInMesa
 #    define GlxUseBuiltInDRIDriver YES
 #    define DRIDynLoadDefines /**/
 #  else
@@ -1008,7 +1026,8 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #endif
 
 #ifndef BuildXF86Setup
-# if HasTk && HasTcl && BuildXF86VidModeLibrary && BuildXF86MiscLibrary && BuildXKBlib
+# if HasTk && HasTcl && \
+     BuildXF86VidModeLibrary && BuildXF86MiscLibrary && BuildXKBlib
 #  define BuildXF86Setup		YES
 # else
 #  define BuildXF86Setup		NO
