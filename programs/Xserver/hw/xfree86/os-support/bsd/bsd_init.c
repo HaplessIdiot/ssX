@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_init.c,v 3.10 1998/12/20 13:16:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_init.c,v 3.11 1998/12/20 21:59:00 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -250,11 +250,13 @@ xf86OpenConsole()
 	    {
 	        FatalError("xf86OpenConsole: VT_SETMODE VT_PROCESS failed\n");
 	    }
+#if !defined(USE_DEV_IO) && !defined(USE_I386_IOPL)
 	    if (ioctl(xf86Info.consoleFd, KDENABIO, 0) < 0)
 	    {
 	        FatalError("xf86OpenConsole: KDENABIO failed (%s)\n",
 		           strerror(errno));
 	    }
+#endif
 	    if (ioctl(xf86Info.consoleFd, KDSETMODE, KD_GRAPHICS) < 0)
 	    {
 	        FatalError("xf86OpenConsole: KDSETMODE KD_GRAPHICS failed\n");
@@ -567,11 +569,13 @@ xf86CloseConsole()
 	    VT.mode = VT_AUTO;
 	    ioctl(xf86Info.consoleFd, VT_SETMODE, &VT); /* dflt vt handling */
         }
+#if !defined(USE_DEV_IO) && !defined(USE_I386_IOPL)
         if (ioctl(xf86Info.consoleFd, KDDISABIO, 0) < 0)
         {
             xf86FatalError("xf86CloseConsole: KDDISABIO failed (%s)\n",
 	                   strerror(errno));
         }
+#endif
 	if (initialVT != -1)
 		ioctl(xf86Info.consoleFd, VT_ACTIVATE, initialVT);
         break;
