@@ -1,13 +1,13 @@
-<!-- $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/defs.ent,v 1.35 2003/12/05 16:08:06 dawes Exp $ -->
+<!-- $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/defs.ent,v 1.36 2003/12/19 04:26:13 dawes Exp $ -->
 
 <!-- shared entity definitions for the XFree86 documentation -->
 
 <!-- XFree86 version string -->
-<!ENTITY relvers CDATA "4.3.99.902">
+<!ENTITY relvers CDATA "4.3.99.903">
 <!ENTITY prevrelvers CDATA "4.3.0">
 <!ENTITY fullrelvers CDATA "4.4.0">
 <!ENTITY prevfullrelvers CDATA "4.3.0">
-<!ENTITY nextfullrelvers CDATA "4.4.0">
+<!ENTITY nextfullrelvers CDATA "4.5.0">
 <!ENTITY nextfullreldate CDATA "not scheduled">
 <!ENTITY nextupdrelvers CDATA "4.4.1">
 <!ENTITY srcvers CDATA "440">
@@ -16,9 +16,9 @@
 <!ENTITY prevfullsrcvers CDATA "430">
 <!ENTITY whichfullrel CDATA "seventh">
 <!ENTITY whichupdaterel CDATA "none">
-<!ENTITY reltag CDATA "xf-4_3_99_902">
+<!ENTITY reltag CDATA "xf-4_3_99_903">
 <!ENTITY relbranchtag CDATA "xf-4_4-branch">
-<!ENTITY rcnum CDATA "2">
+<!ENTITY rcnum CDATA "3">
 
 <!-- Version of the most recent 3.3.x release -->
 <!ENTITY legacyvers CDATA "3.3.6">
@@ -30,7 +30,7 @@
 <!ENTITY utilsvers CDATA "1.1.1">
 
 <!-- xtest version strings -->
-<!ENTITY xtestvers CDATA "4.0.2">
+<!ENTITY xtestvers CDATA "4.0.6">
 
 <!-- These should be set according to which snapshot/release this is -->
 <!ENTITY % firstsnap 'IGNORE'>
