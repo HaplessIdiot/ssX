@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.232 2000/10/20 14:58:59 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.233 2000/10/24 18:07:50 dawes Exp $ */
 
 
 /*
@@ -991,6 +991,20 @@ configInputKbd(IDevPtr inputp)
     xf86Info.kbdProc = xf86XqueKbdProc;
     xf86Info.kbdEvents = xf86XqueEvents;
     xf86Msg(X_CONFIG, "Xqueue selected for keyboard input\n");
+#endif
+#ifdef WSCONS_SUPPORT
+  } else if (xf86NameCmp(s, "wskbd") == 0) {
+     int xf86WSKbdProc(DeviceIntPtr, int);
+
+     xf86Info.kbdProc    = xf86WSKbdProc;
+     xf86Info.kbdEvents  = xf86KbdEvents;
+     s = xf86SetStrOption(inputp->commonOptions, "Device", NULL);
+     xf86Msg(X_CONFIG, "Keyboard: Protocol: wskbd\n");
+     xf86Info.kbdFd = open(s, O_RDONLY | O_NONBLOCK | O_EXCL);
+     if (xf86Info.kbdFd == -1) {
+       xf86ConfigError("cannot open \"%s\"", s);
+       return FALSE;
+     }
 #endif
   } else {
     xf86ConfigError("\"%s\" is not a valid keyboard protocol name", s);

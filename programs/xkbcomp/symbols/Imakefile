@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/16 1997/10/24 14:30:46 kaleb $
-XCOMM $XFree86: xc/programs/xkbcomp/symbols/Imakefile,v 3.26 2000/10/24 18:07:52 dawes Exp $
+XCOMM $XFree86: xc/programs/xkbcomp/symbols/Imakefile,v 3.27 2000/10/27 18:31:08 dawes Exp $
 #define IHaveSubdirs
 
       TESTDATA = 
@@ -8,7 +8,7 @@ XCOMM $XFree86: xc/programs/xkbcomp/symbols/Imakefile,v 3.26 2000/10/24 18:07:52
 		 gb gr group hu hu_US il il_phonetic iso9995-3 inet is it jp \
 		 keypad lock lt lt_b lt_new lt_p mk no pc104 \
 		 pl pt \
-		 ralt ro ru se si th ua us us_intl us_group3 vn
+		 ralt ro ru se si th ua us us_intl us_group3 vn yu
        SUBDIRS = digital fujitsu hp macintosh nec sgi sony sun xfree68
 
 MakeXkbDir($(LIBDIR)/xkb,symbols)

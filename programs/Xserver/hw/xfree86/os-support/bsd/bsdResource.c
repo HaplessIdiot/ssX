@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsdResource.c,v 1.1 2000/03/05 16:59:17 dawes Exp $ */
 
 /* Resource information code */
 
@@ -86,6 +86,44 @@ xf86AccResFromOS(resPtr ret)
     RANGE(range,0,0x1ff,ResExcIoBlock | ResEstimated);
     ret = xf86AddResToList(ret, &range, -1);
     /* XXX add others */
+    return ret;
+}
+
+#elif defined(__powerpc__)
+
+resRange PciAvoid[] = {_PCI_AVOID_PC_STYLE, _END};
+
+resPtr
+xf86BusAccWindowsFromOS(void)
+{
+    resPtr ret = NULL;
+    resRange range;
+
+    RANGE(range, 0, 0xffffffff, ResExcMemBlock);
+    ret = xf86AddResToList(ret, &range, -1);
+
+    RANGE(range, 0, 0x0000ffff, ResExcIoBlock);
+    ret = xf86AddResToList(ret, &range, -1);
+    return ret;
+}
+
+resPtr
+xf86PciBusAccWindowsFromOS(void)
+{
+    resPtr ret = NULL;
+    resRange range;
+
+    RANGE(range, 0, 0xffffffff, ResExcMemBlock);
+    ret = xf86AddResToList(ret, &range, -1);
+
+    RANGE(range, 0, 0x0000ffff, ResExcIoBlock);
+    ret = xf86AddResToList(ret, &range, -1);
+    return ret;
+}
+
+resPtr
+xf86AccResFromOS(resPtr ret)
+{
     return ret;
 }
 

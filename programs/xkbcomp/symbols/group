@@ -2,7 +2,7 @@
 // using the group(switch) map, the right alt key temporarily chooses 
 // the second keyboard group (until it is released).
 //
-// $XFree86$
+// $XFree86: xc/programs/xkbcomp/symbols/group,v 3.3 2000/10/28 00:34:06 dawes Exp $
 partial modifier_keys 
 xkb_symbols "switch" {
     key <RALT>	{ 	
@@ -67,12 +67,12 @@ xkb_symbols "ctrl_alt_toggle" {
     virtual_modifiers Alt;
     key <LALT> {
 	type="PC_BREAK",
-	symbols[Group1]= [ Alt_L,	ISO_Prev_Group ],
+	symbols[Group1]= [ NoSymbol,	ISO_Prev_Group ],
 	virtualMods= Alt
     };
     key <RALT> {
 	type="PC_BREAK",
-	symbols[Group1]= [ Alt_R,	ISO_Next_Group ],
+	symbols[Group1]= [ NoSymbol,	ISO_Next_Group ],
 	virtualMods= Alt
     };
     key <LCTL> {
@@ -94,11 +94,11 @@ partial modifier_keys
 xkb_symbols "alt_shift_toggle" {
     virtual_modifiers Alt;
     key <LALT> {
-	symbols[Group1]= [ Alt_L,	ISO_Prev_Group ],
+	symbols[Group1]= [ NoSymbol,	ISO_Prev_Group ],
 	virtualMods= Alt
     };
     key <RALT> {
-	symbols[Group1]= [ Alt_R,	ISO_Next_Group ],
+	symbols[Group1]= [ NoSymbol,	ISO_Next_Group ],
 	virtualMods= Alt
     };
     key <LFSH> {

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.322 2000/11/03 18:46:02 eich Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.323 2000/11/03 21:01:39 tsi Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -369,7 +369,7 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #endif
 
 /*
- * For Motorola 68k and PPC (currently Linux & LynxOS)
+ * For Motorola 68k and PPC (currently Linux, LynxOS and Net/OpenBSD)
  */
 #if defined(PpcArchitecture) || defined(Mc68020Architecture)
 # ifndef XF86Server

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.40 2000/08/23 22:10:16 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.41 2000/11/02 02:51:21 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -164,14 +164,17 @@ SOFTWARE.
 
 #endif /* __DARWIN__ */
 
-#if (defined(Lynx) && defined(__powerpc__))
+#if defined(__powerpc__)
 
-/* For now this is for Xvfb only */
 #define IMAGE_BYTE_ORDER        MSBFirst
 #define BITMAP_BIT_ORDER        MSBFirst
 #define GLYPHPADBYTES           4
 #define GETLEFTBITS_ALIGNMENT   1
+
+/* XXX Should this be for Lynx only? */
+#ifdef Lynx
 #define BITMAP_SCANLINE_UNIT	8
+#endif
 
 #define LARGE_INSTRUCTION_CACHE
 #define FAST_CONSTANT_OFFSET_MODE
@@ -180,7 +183,7 @@ SOFTWARE.
 
 #define FAST_MEMCPY
 
-#endif /* LynxOS PowerPC */
+#endif /* PowerPC */
 
 #if (defined(sun) && !(defined(i386) && defined(SVR4))) || \
     (defined(AMOEBA) && (defined(sparc) || defined(mc68000))) || \
@@ -427,22 +430,6 @@ SOFTWARE.
 #define GETLEFTBITS_ALIGNMENT  1
 
 #endif /* linux/m68k */
-
-#if defined (linux) && defined(__powerpc__)
-
-#define IMAGE_BYTE_ORDER       MSBFirst
-#define BITMAP_BIT_ORDER       MSBFirst
-#define GLYPHPADBYTES          4
-#define GETLEFTBITS_ALIGNMENT  1
-
-#define LARGE_INSTRUCTION_CACHE
-#define FAST_CONSTANT_OFFSET_MODE
-#define PLENTIFUL_REGISTERS
-#define AVOID_MEMORY_READ
-
-#define FAST_MEMCPY
-
-#endif /* Linux/PPC */
 
 #ifdef sgi
 

@@ -24,7 +24,7 @@
  * in this Software without prior written authorization from Metro Link.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xisb.c,v 1.3 1999/01/14 13:04:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xisb.c,v 1.4 1999/03/06 13:12:32 dawes Exp $ */
 
 /*
 	X Input Serial Buffer routines for use in any XInput driver that accesses
@@ -127,7 +127,8 @@ XisbRead (XISBuffer *b)
 		}
 	}
 	if (b->trace)
-		ErrorF ("read 0x%02x (%c)\n", b->buf[b->current], b->buf[b->current]);
+		ErrorF ("read 0x%02x (%c)\n", b->buf[b->current], 
+			isprint(b->buf[b->current])?b->buf[b->current]:'.');
 
 	return (b->buf[b->current++]);
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_io.c,v 3.16 1999/05/09 06:06:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_io.c,v 3.17 1999/09/04 13:04:42 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Dawes <dawes@xfree86.org>
@@ -158,6 +158,10 @@ xf86KbdOn()
 		ioctl(xf86Info.consoleFd, KDSKBMODE, K_RAW);
 #endif
 		break;
+#endif
+#ifdef WSCONS_SUPPORT
+	case WSCONS:
+		return xf86Info.kbdFd;
 #endif
 	}
 	return(xf86Info.consoleFd);

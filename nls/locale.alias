@@ -5,7 +5,7 @@ XCOMM	Each alias name is described within one line.
 XCOMM	The first word is the alias name (simplified locale name)
 XCOMM	the second word is full locale name.
 XCOMM
-XCOMM	$XFree86: xc/nls/locale.alias,v 1.27 2000/10/27 18:30:49 dawes Exp $
+XCOMM	$XFree86: xc/nls/locale.alias,v 1.28 2000/11/02 02:51:11 dawes Exp $
 XCOMM
 #ifdef R63_COMPAT
 XCOMM These entries are in the old format (no ':')
@@ -319,17 +319,19 @@ lo_LA.mulelao1					lo_LA.MULELAO-1
 XCOMM most locales in FreeBSD 2.1.[56] do not work, allow use of FreeBSD's
 XCOMM generic latin-1 locale name. N.B. "lt" is a bad code to use for a 
 XCOMM generic Latin-1 locale anyway because it is the country code for 
-XCOMM Lithuania, which by default uses Latin-4.
+XCOMM Lithuania, which by default uses Latin-7 (ISO-8859-13).
 lt_LN.ISO_8859-1				lt_LN.ISO8859-1
 #endif
-lt						lt_LT.ISO8859-4
-lt_LT						lt_LT.ISO8859-4
+lt						lt_LT.ISO8859-13
+lt_LT						lt_LT.ISO8859-13
 lt_LT.iso88594					lt_LT.ISO8859-4
 lt_LT.ISO_8859-4				lt_LT.ISO8859-4
-lt_LT.iso885915					lt_LT.ISO8859-15
-lv						lv_LV.ISO8859-4
-lv_LV						lv_LV.ISO8859-4
+lt_LT.iso885913					lt_LT.ISO8859-13
+lt_LT.ISO_8859-13				lt_LT.ISO8859-13
+lv						lv_LV.ISO8859-13
+lv_LV						lv_LV.ISO8859-13
 lv_LV.iso88594					lv_LV.ISO8859-4
+lv_LV.iso885913					lv_LV.ISO8859-13
 mk						mk_MK.ISO8859-5
 mk_MK						mk_MK.ISO8859-5
 mk_MK.iso88595					mk_MK.ISO8859-5
@@ -836,7 +838,7 @@ lo_LA.mulelao1:					lo_LA.MULELAO-1
 XCOMM most locales in FreeBSD 2.1.[56] do not work, allow use of FreeBSD's
 XCOMM generic latin-1 locale name. N.B. "lt" is a bad code to use for a 
 XCOMM generic Latin-1 locale anyway because it is the country code for 
-XCOMM Lithuania, which by default uses Latin-4.
+XCOMM Lithuania, which by default uses Latin-7 (ISO-8859-13).
 lt_LN.ISO_8859-1:				lt_LN.ISO8859-1
 #endif
 lt:						lt_LT.ISO8859-13
@@ -844,6 +846,7 @@ lt_LT:						lt_LT.ISO8859-13
 lt_LT.iso88594:					lt_LT.ISO8859-4
 lt_LT.ISO_8859-4:				lt_LT.ISO8859-4
 lt_LT.iso885913:				lt_LT.ISO8859-13
+lt_LT.ISO_8859-13:				lt_LT.ISO8859-13
 lv:						lv_LV.ISO8859-13
 lv_LV:						lv_LV.ISO8859-13
 lv_LV.iso88594:					lv_LV.ISO8859-4
@@ -1163,8 +1166,8 @@ Italian_Switzerland.1252:			it_CH.iso8859-1
 Italian_Italy.1252:				it_IT.iso8859-1
 Japanese_Japan.932:				ja_JP.SJIS
 Korean_Korea.949:				ko_KR.EUC
-Lithuanian_Lithuania.1257			lt_LT.iso8859-4
-Latvian_Latvia.1257:				lv_LV.iso8859-4
+Lithuanian_Lithuania.1257:			lt_LT.iso8859-13
+Latvian_Latvia.1257:				lv_LV.iso8859-13
 Dutch_Belgium.1252:				nl_BE.iso8859-1
 Dutch_Netherlands.1252:				nl_NL.iso8859-1
 Norwegian (Nynorsk)_Norway.1252:		no_NO.iso8859-1

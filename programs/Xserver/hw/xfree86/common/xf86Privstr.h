@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.16 1999/07/11 10:27:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.20 2000/09/19 12:46:13 eich Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -166,6 +166,7 @@ typedef struct {
 #define CODRV01X	   2
 #define SYSCONS		   8
 #define PCVT		  16
+#define WSCONS		  32
 #endif
 
 /* Values of xf86Info.mouseFlags */

@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.38 2000/07/07 20:06:56 tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.39 2000/08/01 23:38:45 dawes Exp $
 XCOMM
 
 #ifndef OSName
@@ -18,6 +18,22 @@ XCOMM
 #define	OSVendor	/**/
 #endif
 XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVersion)
+
+#ifdef Ports
+
+#define BinDir			/usr/local/bin
+#define UsrLibDir		/usr/local/lib
+#define ManDirectoryRoot	/usr/local/man
+#define LdPreLib		-L/usr/X11R6/lib -L/usr/local/lib
+#define XpmLibDir		/usr/X11R6/lib
+#define XpmIncDir		/usr/X11R6/include
+#define ConfigDir		/usr/X11R6/lib/X11/config
+#define IncRoot			/usr/local/include
+#define TopXInclude		-I/usr/X11R6/include
+#define ImakeCmd		imake -DPorts
+#define DocDir			/usr/local/share/doc
+
+#endif
 
 /*
  * C library features
@@ -39,7 +55,11 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define HasKrbIV		YES
 #endif
 #define HasDlopen		YES
-#define DlLibrary		/**/
+#ifndef PpcArchitecture
+#  define DlLibrary		/**/
+#else 
+#  define DlLibrary		-ldl
+#endif
 #define HasUsableFileMmap	YES
 
 #define HasNCurses		YES
@@ -59,7 +79,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 /*
  * Multi-thread safe libs 
  */	
-#if OSMajorVersion == 2 && OSMinorVersion >= 6 || OSMajorVersion >= 3
+#if !defined(PpcArchitecture) && (OSMajorVersion == 2 && OSMinorVersion >= 6 || OSMajorVersion >= 3)
 # define HasPosixThreads	YES
 # define ThreadedX		YES
 # define SystemMTDefines	-D_REENTRANT
@@ -69,12 +89,12 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #  define BuildThreadStubLibrary  YES 
 #  define NeedUIThrStubs          YES 
 #  define ThreadsCompileFlags	-pthread
-#  define ThreadsLibraries 	-lc_r
+#  define ThreadsLibraries     -lc_r
 # endif
 #endif
 
 #if OSMajorVersion == 2 && OSMinorVersion > 6 || OSMajorVersion >= 3
-# define HasThreadSafeAPI	YES
+# define HasThreadSafeAPI      YES
 #endif
 
 /*
@@ -104,50 +124,68 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #if defined(UseInstalled)
 #define DefaultCCOptions 	/**/
 #else
-#define DefaultCCOptions 	-ansi -Dasm=__asm GccWarningOptions
+#  ifdef  PpcArchitecture
+#    define DefaultCCOptions	-ansi -fsigned-char -Dasm=__asm GccWarningOptions
+#  else
+#    define DefaultCCOptions 	-ansi -Dasm=__asm GccWarningOptions
+#  endif
 #endif
 
 #define GccGasOption 		-DGCCUSESGAS
 #define AsmDefines 		-DUSE_GAS
 
 #ifdef i386Architecture
-# ifndef DefaultGcc2i386Opt
-#  if (OSMajorVersion == 2 && OSMinorVersion >= 3) || OSMajorVersion > 2
-    /* The GCC strength-reduce bug is fixed for OpenBSD 2.3 and later */
-#   define DefaultGcc2i386Opt	-O2
+#  ifndef DefaultGcc2i386Opt
+#    if (OSMajorVersion == 2 && OSMinorVersion >= 3) || OSMajorVersion > 2
+       /* The GCC strength-reduce bug is fixed for OpenBSD 2.3 and later */
+#      define DefaultGcc2i386Opt	-O2
+#    endif
 #  endif
-# endif
-# define OptimizedCDebugFlags	DefaultGcc2i386Opt
-# define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME
-# define ServerExtraSysLibs	-li386
-# define LdPostLib		/**/
-#else
-# define OptimizedCDebugFlags 	-O2
-# if defined(SparcArchitecture) || defined(AlphaArchitecture)
-#  define ServerOSDefines 	-DDDXOSINIT
-# else
-#  define ServerOSDefines 	/**/
-# endif
+#  define OptimizedCDebugFlags	DefaultGcc2i386Opt
+#  define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME
+#  define ServerExtraSysLibs	-li386
+#  define LdPostLib		/**/
+#  define ServerExtraDefines GccGasOption XFree86ServerDefines
+#  ifndef XFree86ConsoleDefines
+#    define XFree86ConsoleDefines -DPCCONS_SUPPORT -DPCVT_SUPPORT
+#  endif
 #endif
-#if defined(i386Architecture) || defined(ArcArchitecture)
-# define ServerExtraDefines GccGasOption XFree86ServerDefines
-# ifndef XFree86ConsoleDefines
-#  if defined(ArcArchitecture)
-#   define XFree86ConsoleDefines -DPCCONS_SUPPORT
-#  else
-#   define XFree86ConsoleDefines -DPCCONS_SUPPORT -DPCVT_SUPPORT
+
+#ifdef SparcArchitecture
+#  define OptimizedCDebugFlags	-O2
+#  define ServerOSDefines 	-DDDXOSINIT
+#  define ServerExtraDefines	XFree86ServerDefines
+#endif 
+
+#ifdef AlphaArchitecture
+#  define OptimizedCDebugFlags	-O2
+#  define ServerOSDefines 	-DDDXOSINIT
+#  define ServerExtraDefines	GccGasOption -D_XSERVER64
+#endif
+
+#ifdef ArcArchitecture
+#  define ServerExtraDefines GccGasOption XFree86ServerDefines
+#  ifndef XFree86ConsoleDefines
+#    define XFree86ConsoleDefines -DPCCONS_SUPPORT
 #  endif
-# endif
-#else
-# if defined(SparcArchitecture)
-#  define ServerExtraDefines  XFree86ServerDefines
-# else
-#  if defined(AlphaArchitecture)
-#   define ServerExtraDefines GccGasOption -D_XSERVER64
-#  else
-#   define ServerExtraDefines GccGasOption
+#endif
+
+#ifdef PpcArchitecture
+#  define OptimizedCDebugFlags 	-O2
+#  define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DDDXOSINIT
+#  define ServerExtraDefines	GccGasOption XFree86ServerDefines
+#  define XkbServerDefines	-DXKB_ALWAYS_USES_SOFT_REPEAT
+#  ifndef XFree86ConsoleDefines
+#    define XFree86ConsoleDefines	-DWSCONS_SUPPORT
 #  endif
-# endif
+#endif /* Ppc */
+
+#ifndef ServerOSDefines
+#  define ServerOSDefines 	/**/
+#endif
+
+#ifndef ServerExtraDefines
+#  define ServerExtraDefines GccGasOption
 #endif
 
 #define StandardDefines	-DCSRG_BASED
@@ -300,6 +338,14 @@ install:: fonts.alias							@@\
 	$(DESTDIR)dest/fonts.alias					@@\
 	$(RM) _fonts.alias
 #endif /* InstallFontAliasesNoComment */
+
+/*
+ * OpenBSD specific Imake Config files
+ */
+#ifndef LocalConfigFiles
+#define LocalConfigFiles \
+	OpenBSDLib.rules
+#endif
 
 /*
  * Architecture specific sections - put all architecture dependent
@@ -550,17 +596,34 @@ install:: fonts.alias							@@\
  */
 #ifdef PpcArchitecture
 
-/* #define GccWarningOptions -Wall -Wpointer-artith */
-
-# include <xf86.rules>
-# ifndef BuildServer
-#  define BuildServer		NO
-# endif
-
-# define HasSharedLibraries	NO
 # define UseElfFormat		YES
-# define BuildDynamicLoading	NO
 
+#  if XFree86Devel
+#   define GccWarningOptions -Wall -Wpointer-arith -Wstrict-prototypes \
+			  -Wmissing-prototypes -Wmissing-declarations \
+			  -Wnested-externs
+#  else
+#   define GccWarningOptions -Wall -Wpointer-arith
+#  endif
+
+# if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 8)
+#   ifndef DoLoadableServer
+#     define DoLoadableServer	YES
+#   endif
+#   define DevelDrivers cirrus ati
+    /* Support for USB Mices */
+#   define UsbMouseSupport		YES
+#   include <xfree86.cf>
+
+# else /* 2.7 and earlier */
+#  include <xf86.rules>
+#  ifndef BuildServer
+#   define BuildServer		YES
+#  endif
+
+#  define HasSharedLibraries	NO
+#  define BuildDynamicLoading	NO
+# endif
 #endif /* PpcArchitecture */
 
 /*
@@ -650,5 +713,8 @@ install:: fonts.alias							@@\
 #endif
 
 /* This must come last */
-#include <bsdLib.rules>
-
+#if OSMajorVersion == 2 && OSMinorVersion >= 8 || OSMajorVersion > 2
+# include <OpenBSDLib.rules>
+#else
+# include <bsdLib.rules>
+#endif

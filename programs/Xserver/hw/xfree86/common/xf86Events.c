@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.97 2000/08/11 19:51:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.99 2000/11/03 18:46:06 eich Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1347,3 +1347,38 @@ XTestGenerateEvent(int dev_type, int keycode, int keystate, int mousex,
 
 #endif /* XTESTEXT1 */
 
+#ifdef WSCONS_SUPPORT
+
+/* XXX Currently XKB is mandatory. */
+
+void
+xf86PostWSKbdEvent(struct wscons_event *event)
+{
+  int         type = event->type;
+  int         value = event->value;
+  Bool        down = (type == WSCONS_EVENT_KEY_DOWN ? TRUE : FALSE);
+  KeyClassRec *keyc = ((DeviceIntPtr)xf86Info.pKeyboard)->key;
+  xEvent      kevent;
+  KeySym      *keysym;
+  int         keycode;
+
+  /*
+   * Now map the scancodes to real X-keycodes ...
+   */
+  keycode = value + MIN_KEYCODE;
+  keysym = keyc->curKeySyms.map +
+	keyc->curKeySyms.mapWidth * (keycode - keyc->curKeySyms.minKeyCode);
+	    
+  /*
+   * check for an autorepeat-event
+   */
+  if ((down && KeyPressed(keycode)) &&
+      (xf86Info.autoRepeat != AutoRepeatModeOn || keyc->modifierMap[keycode]))
+    return;
+
+  xf86Info.lastEventTime = kevent.u.keyButtonPointer.time
+	= event->time.tv_sec * 1000 + event->time.tv_nsec / 1000000;
+
+  ENQUEUE(&kevent, keycode, (down ? KeyPress : KeyRelease), XE_KEYBOARD);
+}
+#endif /* WSCONS_SUPPORT */

@@ -1,4 +1,26 @@
 XFree86 4.0.1e (6 November 2000)
+ 911. Fix the ksc5601.1987-0 encoding file (#4226, 4228, Pablo Saratxaga).
+ 910. Update xdm/sessreg to write ":0" type entried in utmp on OpenBSD
+      (#4225, Matthieu Herrb).
+ 909. Fix for Xmu under NetBSD, which doesn't #define "unix" anymore (#4225,
+      Matthieu Herrb).
+ 908. Preliminary support for OpenBSD/powerpc (#4225, Tsubai Masanari,
+      Matthieu Herrb).
+ 907. Support for native WSCONS driver on NetBSD and OpenBSD (#4225,
+      Tsubai Masanari).
+ 906. Support for new OpenBSD 2.8 shared libs scheme (#4225, Matthieu Herrb).
+ 905. Support for the OpenBSD ports tree (#4225, Marc Espie).
+ 904. Update the list of layouts in the xfree86.lst file (#4224, Ivan Pascal).
+ 903. Add an XKB map for Serbian (#4224, Milos Rancic).
+ 903. New revision of the Bulgarian XKB map (#4224, Anton Zinoviev).
+ 902. Change the Alt key definitions in the "group switcher" descriptions
+      to not override the base Alt key mappings (#4223, Ivan Pascal).
+ 901. Change XKB Mode_switch behavior description to not clear "locked
+      group" (#4223, Ivan Pascal).
+ 900. Create a root window property "XFree86_DDC_EDID2_RAWDATA" when
+      suitable data is available (#4222, Andrew C. Aitchison).
+ 899. Fix some typos/errors in the Latvian and Lithuanian entries in
+      the locale.alias and locale.dir files (#4221, Nerijus Baliunas).
  898. Fix two more bugs in xkbcomp: handling of 'keycode aliases', and
       copying of strings when copying structures (#4208, Ivan Pascal).
  897. Added render extension support to tseng driver (Egbert Eich).
@@ -11475,4 +11497,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1379 2000/11/03 18:46:04 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1380 2000/11/06 18:21:55 dawes Exp $

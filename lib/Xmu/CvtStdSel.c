@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/CvtStdSel.c,v 3.12 1998/10/03 09:06:25 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/CvtStdSel.c,v 3.13 1999/03/21 07:34:36 dawes Exp $ */
 
 /*
  * This file contains routines to handle common selection targets.
@@ -81,6 +81,9 @@ in this Software without prior written authorization from The Open Group.
 #define USE_UNAME
 #endif
 #ifdef ultrix
+#define USE_UNAME
+#endif
+#ifdef CSRG_BASED
 #define USE_UNAME
 #endif
 #endif /*X_OS_FILE*/
@@ -154,7 +157,7 @@ get_os_name(void)
 #ifdef sun
 	return XtNewString("SunOS");
 #else
-# if !defined(SYSV) && defined(unix)
+# if !defined(SYSV) && (defined(CSRG_BASED) || defined(unix))
 	return XtNewString("BSD");
 # else
 	return NULL;

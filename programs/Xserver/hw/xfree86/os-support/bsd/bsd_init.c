@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_init.c,v 3.12 1999/02/14 03:20:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_init.c,v 3.13 1999/04/28 05:36:16 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -84,6 +84,9 @@ static char *supported_drivers[] = {
 #ifdef PCVT_SUPPORT
 	"pcvt",
 #endif
+#ifdef WSCONS_SUPPORT
+	"wscons",
+#endif
 };
 
 
@@ -109,6 +112,10 @@ static int xf86OpenSyscons(void);
 static int xf86OpenPcvt(void);
 #endif /* PCVT_SUPPORT */
 
+#ifdef WSCONS_SUPPORT
+static int xf86OpenWScons(void);
+#endif
+
 /*
  * The sequence of the driver probes is important; start with the
  * driver that is best distinguishable, and end with the most generic
@@ -124,6 +131,9 @@ static xf86ConsOpen_t xf86ConsTab[] = {
 #endif
 #ifdef PCCONS_SUPPORT
     xf86OpenPccons,
+#endif
+#ifdef WSCONS_SUPPORT
+    xf86OpenWScons,
 #endif
     (xf86ConsOpen_t)NULL
 };
@@ -265,6 +275,12 @@ xf86OpenConsole()
 	    }
    	    break; 
 #endif /* SYSCONS_SUPPORT || PCVT_SUPPORT */
+#ifdef WSCONS_SUPPORT
+	case WSCONS:
+	    fprintf(stderr, "xf86OpenConsole\n");
+	    /* xf86Info.consoleFd = open("/dev/wskbd0", 0); */
+   	    break; 
+#endif
         }
     }
     else 
@@ -549,6 +565,35 @@ xf86OpenPcvt()
 
 #endif /* PCVT_SUPPORT */
 
+#ifdef WSCONS_SUPPORT
+
+static int
+xf86OpenWScons()
+{
+    int fd = -1;
+    int mode = WSDISPLAYIO_MODE_MAPPED;
+    int i;
+    char ttyname[16];
+
+    /* XXX Is this ok? */
+    for (i = 0; i < 8; i++) {
+	sprintf(ttyname, "/dev/ttyE%d", i);
+	if ((fd = open(ttyname, 2)) != -1)
+	    break;
+    }
+    if (fd != -1) {
+	if (ioctl(fd, WSDISPLAYIO_SMODE, &mode) < 0) {
+	    FatalError("%s: WSDISPLAYIO_MODE_MAPPED failed (%s)\n%s\n", 
+		       "xf86OpenConsole", strerror(errno),
+		       CHECK_DRIVER_MSG);
+	}
+	xf86Info.consType = WSCONS;
+	xf86Msg(X_PROBED, "Using wscons driver\n");
+    }
+    return fd;
+}
+
+#endif /* WSCONS_SUPPORT */
 
 void
 xf86CloseConsole()
@@ -584,6 +629,14 @@ xf86CloseConsole()
 		ioctl(xf86Info.consoleFd, VT_ACTIVATE, initialVT);
         break;
 #endif /* SYSCONS_SUPPORT || PCVT_SUPPORT */
+#ifdef WSCONS_SUPPORT
+    case WSCONS:
+      {
+	int mode = WSDISPLAYIO_MODE_EMUL;
+	ioctl(xf86Info.screenFd, WSDISPLAYIO_SMODE, &mode);
+	break;
+      }
+#endif
     }
 
     if (xf86Info.screenFd != xf86Info.consoleFd)

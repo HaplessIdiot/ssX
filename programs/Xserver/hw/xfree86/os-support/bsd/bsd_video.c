@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.35 2000/08/11 17:27:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.36 2000/10/28 01:42:26 mvojkovi Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -173,12 +173,17 @@ static void unmapVidMem(int, pointer, unsigned long);
 static pointer mapVidMemSparse(int, unsigned long, unsigned long, int);
 static void unmapVidMemSparse(int, pointer, unsigned long);
 #endif
+#ifdef __powerpc__
+static pointer ppcMapVidMem(int, unsigned long, unsigned long);
+static void ppcUnmapVidMem(int, pointer, unsigned long);
+#endif
 #ifdef HAS_MTRR_SUPPORT
 static pointer setWC(int, unsigned long, unsigned long, Bool, MessageType);
 static void undoWC(int, pointer);
 static Bool cleanMTRR(void);
 #endif
 
+#if !defined(__powerpc__)
 /*
  * Check if /dev/mem can be mmap'd.  If it can't print a warning when
  * "warn" is TRUE.
@@ -267,12 +272,17 @@ checkDevMem(Bool warn)
 
 #endif
 }
+#endif /* !__powerpc__ */
 
 void
 xf86OSInitVidMem(VidMemInfoPtr pVidMem)
 {
+#if defined(__powerpc__)
+	pVidMem->linearSupported = TRUE;
+#else
 	checkDevMem(TRUE);
 	pVidMem->linearSupported = useDevMem;
+#endif
 #if defined(__alpha__)
 	if (has_bwx()) {
 	    xf86Msg(X_INFO,"Machine type has 8/16 bit access\n");
@@ -286,6 +296,9 @@ xf86OSInitVidMem(VidMemInfoPtr pVidMem)
 #elif defined(__arm32__)
 	pVidMem->mapMem = armMapVidMem;
 	pVidMem->unmapVidMem = armUnmapVidMem;
+#elif defined(__powerpc__)
+	pVidMem->mapMem = ppcMapVidMem;
+	pVidMem->unmapMem = ppcUnmapVidMem;
 #else
 	pVidMem->mapMem = mapVidMem;
 	pVidMem->unmapMem = unmapVidMem;
@@ -302,6 +315,7 @@ xf86OSInitVidMem(VidMemInfoPtr pVidMem)
 	pVidMem->initialised = TRUE;
 }
 
+#if !defined(__powerpc__)
 static pointer
 mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size, int flags)
 {
@@ -385,8 +399,9 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
 					MAP_SHARED, devMemFd, (off_t)Base+BUS_BASE);
 	if ((long)ptr == -1)
 	{
-		xf86Msg(X_WARNING, "xf86ReadBIOS: %s mmap failed (%s)\n",
-			DEV_MEM, strerror(errno));
+		xf86Msg(X_WARNING, 
+			"xf86ReadBIOS: %s mmap[s=%x,a=%x,o=%x] failed (%s)\n",
+			DEV_MEM, Len, Base, Offset, strerror(errno));
 		return(-1);
 	}
 #ifdef DEBUG
@@ -395,8 +410,13 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
 #endif
 	(void)memcpy(Buf, (void *)(ptr + Offset), Len);
 	(void)munmap((caddr_t)ptr, mlen);
+	xf86Msg(X_INFO, "xf86ReadBIOS(%x, %x, Buf, %x)"
+		"-> %02x %02x %02x %02x...\n",
+		Base, Offset, Len, Buf[0], Buf[1], Buf[2], Buf[3]);
 	return(Len);
 }
+
+#endif /* !__powerpc__ */
 
 #ifdef __arm32__
 
@@ -574,6 +594,63 @@ armUnmapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 }
 #endif /* __arm32__ */
 
+#if defined(__powerpc__)
+
+volatile unsigned char *ioBase = MAP_FAILED;
+
+static pointer
+ppcMapVidMem(int ScreenNum, unsigned long Base, unsigned long Size)
+{
+	int fd = xf86Info.screenFd;
+	pointer base;
+
+	fprintf(stderr, "mapVidMem %lx, %lx, fd = %d\n", Base, Size, fd);
+
+	base = mmap(0, Size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, Base);
+	if (base == MAP_FAILED)
+		FatalError("%s: could not mmap screen [s=%x,a=%x] (%s)\n",
+			   "xf86MapVidMem", Size, Base, strerror(errno));
+
+	return base;
+}
+
+static void
+ppcUnmapVidMem(int ScreenNum, pointer Base, unsigned long Size)
+{
+	munmap(Base, Size);
+}
+
+int
+xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
+	     int Len)
+{
+	int rv;
+	int kmem;
+
+ 	kmem = open("/dev/kmem", 2);
+ 	if (kmem == -1) {
+ 		FatalError("xf86ReadBIOS: open /dev/kmem\n");
+ 	}
+
+
+	fprintf(stderr, "xf86ReadBIOS() %lx %lx, %x\n", Base, Offset, Len);
+
+	if (Base < 0x80000000) {
+		fprintf(stderr, "No VGA\n");
+		return 0;
+	}
+
+
+	lseek(kmem, Base + Offset, 0);
+	rv = read(kmem, Buf, Len);
+	close(kmem);
+
+	return rv;
+}
+
+
+#endif /* __powerpc__ */
+
 #ifdef USE_I386_IOPL
 /***************************************************************************/
 /* I/O Permissions section                                                 */
@@ -710,7 +787,8 @@ Bool
 xf86DisableInterrupts()
 {
 
-#if !defined(__mips__) && !defined(__arm32__) && !defined(__alpha__)
+#if !defined(__mips__) && !defined(__arm32__) && !defined(__alpha__) && \
+    !defined(__powerpc__)
 #ifdef __GNUC__
 	__asm__ __volatile__("cli");
 #else 
@@ -725,7 +803,8 @@ void
 xf86EnableInterrupts()
 {
 
-#if !defined(__mips__) && !defined(__arm32__) && !defined(__alpha__)
+#if !defined(__mips__) && !defined(__arm32__) && !defined(__alpha__) && \
+    !defined(__powerpc__)
 #ifdef __GNUC__
 	__asm__ __volatile__("sti");
 #else 
@@ -735,6 +814,24 @@ xf86EnableInterrupts()
 
 	return;
 }
+
+/************************************************************************/
+/*  This is required for the loader                                     */
+/************************************************************************/
+#if defined(__powerpc__)
+void
+ppc_flush_icache(char *addr)
+{
+	__asm__ volatile (
+		"dcbf 0,%0;" 
+		"sync;" 
+		"icbi 0,%0;" 
+		"sync;" 
+		"isync;" 
+		: : "r"(addr) : "memory");
+}
+#endif
+
 
 #ifdef __NetBSD__
 /***************************************************************************/

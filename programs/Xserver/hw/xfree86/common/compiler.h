@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.70 2000/10/17 16:53:15 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.72 2000/11/03 18:46:06 eich Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -829,7 +829,7 @@ static __inline__ unsigned long ldw_u(unsigned short * r11)
 #define write_mem_barrier()	/* NOP */
 #endif /* __arm32__ */
 
-#elif (defined(Lynx) || defined(linux)) && defined(__powerpc__)
+#elif (defined(Lynx) || defined(linux) || defined(__OpenBSD__)) && defined(__powerpc__)
 
 #ifndef MAP_FAILED
 #define MAP_FAILED ((void *)-1)
@@ -848,7 +848,7 @@ xf86ReadMmio8(void *base, const unsigned long offset)
                         "eieio"
                         : "=r" (val)
                         : "b" (base), "r" (offset),
-                        "m" (*(volatile unsigned char *)(base+offset)));
+                        "m" (*((volatile unsigned char *)base+offset)));
         return(val);
 }
 
@@ -861,7 +861,7 @@ xf86ReadMmio16Be(void *base, const unsigned long offset)
                         "eieio"
                         : "=r" (val)
                         : "b" (base), "r" (offset),
-                        "m" (*(volatile unsigned char *)(base+offset)));
+                        "m" (*((volatile unsigned char *)base+offset)));
         return(val);
 }
 
@@ -874,7 +874,7 @@ xf86ReadMmio16Le(void *base, const unsigned long offset)
                         "eieio"
                         : "=r" (val)
                         : "b" (base), "r" (offset),
-                        "m" (*(volatile unsigned char *)(base+offset)));
+                        "m" (*((volatile unsigned char *)base+offset)));
         return(val);
 }
 
@@ -887,7 +887,7 @@ xf86ReadMmio32Be(void *base, const unsigned long offset)
                         "eieio"
                         : "=r" (val)
                         : "b" (base), "r" (offset),
-                        "m" (*(volatile unsigned char *)(base+offset)));
+                        "m" (*((volatile unsigned char *)base+offset)));
         return(val);
 }
 
@@ -900,7 +900,7 @@ xf86ReadMmio32Le(void *base, const unsigned long offset)
                         "eieio"
                         : "=r" (val)
                         : "b" (base), "r" (offset),
-                        "m" (*(volatile unsigned char *)(base+offset)));
+                        "m" (*((volatile unsigned char *)base+offset)));
         return(val);
 }
 
@@ -910,7 +910,7 @@ xf86WriteMmioNB8(void *base, const unsigned long offset,
 {
         __asm__ __volatile__(
                         "stbx %1,%2,%3\n\t"
-                        : "=m" (*(volatile unsigned char *)(base+offset))
+                        : "=m" (*((volatile unsigned char *)base+offset))
                         : "r" (val), "b" (base), "r" (offset));
 }
 
@@ -920,7 +920,7 @@ xf86WriteMmioNB16Le(void *base, const unsigned long offset,
 {
         __asm__ __volatile__(
                         "sthbrx %1,%2,%3\n\t"
-                        : "=m" (*(volatile unsigned char *)(base+offset))
+                        : "=m" (*((volatile unsigned char *)base+offset))
                         : "r" (val), "b" (base), "r" (offset));
 }
 
@@ -930,7 +930,7 @@ xf86WriteMmioNB16Be(void *base, const unsigned long offset,
 {
         __asm__ __volatile__(
                         "sthx %1,%2,%3\n\t"
-                        : "=m" (*(volatile unsigned char *)(base+offset))
+                        : "=m" (*((volatile unsigned char *)base+offset))
                         : "r" (val), "b" (base), "r" (offset));
 }
 
@@ -940,7 +940,7 @@ xf86WriteMmioNB32Le(void *base, const unsigned long offset,
 {
         __asm__ __volatile__(
                         "stwbrx %1,%2,%3\n\t"
-                        : "=m" (*(volatile unsigned char *)(base+offset))
+                        : "=m" (*((volatile unsigned char *)base+offset))
                         : "r" (val), "b" (base), "r" (offset));
 }
 
@@ -950,7 +950,7 @@ xf86WriteMmioNB32Be(void *base, const unsigned long offset,
 {
         __asm__ __volatile__(
                         "stwx %1,%2,%3\n\t"
-                        : "=m" (*(volatile unsigned char *)(base+offset))
+                        : "=m" (*((volatile unsigned char *)base+offset))
                         : "r" (val), "b" (base), "r" (offset));
 }
 
