@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xwud/xwud.c,v 3.8 2003/09/24 02:43:39 dawes Exp $ */
+/* $XFree86: xc/programs/xwud/xwud.c,v 3.10tsi Exp $ */
 
 /* xwud - marginally useful raster image undumper */
 
@@ -1186,31 +1186,31 @@ static void
 DumpHeader(const XWDFileHeader *header, const char *win_name)
 {
 	printf("window name:        %s\n", win_name);
-	printf("sizeof(XWDheader):  %d\n", sizeof(*header));
-	printf("header size:        %ld\n", header->header_size);
-	printf("file version:       %ld\n", header->file_version);
-	printf("pixmap format:      %ld\n", header->pixmap_format);
-	printf("pixmap depth:       %ld\n", header->pixmap_depth);
-	printf("pixmap width:       %ld\n", header->pixmap_width);
-	printf("pixmap height:      %ld\n", header->pixmap_height);
-	printf("x offset:           %ld\n", header->xoffset);
-	printf("byte order:         %ld\n", header->byte_order);
-	printf("bitmap unit:        %ld\n", header->bitmap_unit);
-	printf("bitmap bit order:   %ld\n", header->bitmap_bit_order);
-	printf("bitmap pad:         %ld\n", header->bitmap_pad);
-	printf("bits per pixel:     %ld\n", header->bits_per_pixel);
-	printf("bytes per line:     %ld\n", header->bytes_per_line);
-	printf("visual class:       %ld\n", header->visual_class);
-	printf("red mask:           %ld\n", header->red_mask);
-	printf("green mask:         %ld\n", header->green_mask);
-	printf("blue mask:          %ld\n", header->blue_mask);
-	printf("bits per rgb:       %ld\n", header->bits_per_rgb);
-	printf("colormap entries:   %ld\n", header->colormap_entries);
-	printf("num colors:         %ld\n", header->ncolors);
-	printf("window width:       %ld\n", header->window_width);
-	printf("window height:      %ld\n", header->window_height);
-	printf("window x:           %ld\n", header->window_x);
-	printf("window y:           %ld\n", header->window_y);
-	printf("border width:       %ld\n", header->window_bdrwidth);
+	printf("sizeof(XWDheader):  %d\n", (int)sizeof(*header));
+	printf("header size:        %d\n", (int)header->header_size);
+	printf("file version:       %d\n", (int)header->file_version);
+	printf("pixmap format:      %d\n", (int)header->pixmap_format);
+	printf("pixmap depth:       %d\n", (int)header->pixmap_depth);
+	printf("pixmap width:       %d\n", (int)header->pixmap_width);
+	printf("pixmap height:      %d\n", (int)header->pixmap_height);
+	printf("x offset:           %d\n", (int)header->xoffset);
+	printf("byte order:         %d\n", (int)header->byte_order);
+	printf("bitmap unit:        %d\n", (int)header->bitmap_unit);
+	printf("bitmap bit order:   %d\n", (int)header->bitmap_bit_order);
+	printf("bitmap pad:         %d\n", (int)header->bitmap_pad);
+	printf("bits per pixel:     %d\n", (int)header->bits_per_pixel);
+	printf("bytes per line:     %d\n", (int)header->bytes_per_line);
+	printf("visual class:       %d\n", (int)header->visual_class);
+	printf("red mask:           %d\n", (int)header->red_mask);
+	printf("green mask:         %d\n", (int)header->green_mask);
+	printf("blue mask:          %d\n", (int)header->blue_mask);
+	printf("bits per rgb:       %d\n", (int)header->bits_per_rgb);
+	printf("colormap entries:   %d\n", (int)header->colormap_entries);
+	printf("num colors:         %d\n", (int)header->ncolors);
+	printf("window width:       %d\n", (int)header->window_width);
+	printf("window height:      %d\n", (int)header->window_height);
+	printf("window x:           %d\n", (int)header->window_x);
+	printf("window y:           %d\n", (int)header->window_y);
+	printf("border width:       %d\n", (int)header->window_bdrwidth);
 }
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/fontconfig/Imakefile,v 1.14 2003/10/31 20:49:04 herrb Exp $
+XCOMM $XFree86: xc/lib/fontconfig/Imakefile,v 1.15tsi Exp $
 
 #define DoNormalLib NormalLibFontconfig
 #define DoSharedLib SharedLibFontconfig
@@ -22,7 +22,7 @@ FONTCONFIGSRC=$(TOP)/extras/fontconfig
 
 INCLUDES=$(FREETYPE2INCLUDES) -I$(FONTCONFIGSRC)/src -I$(XBUILDINCDIR)
 
-DEFINES=-DFC_DEFAULT_FONTS='"$(FC_DEFAULT_FONTS)"' -DHAVE_EXPAT
+DEFINES=-DFC_DEFAULT_FONTS='"$(FC_DEFAULT_FONTS)"' -DHAVE_EXPAT -DXFREE86_FT2
 
 REQUIREDLIBS=$(LDPRELIBS) $(FREETYPE2LIB) $(EXPATLIB)
 

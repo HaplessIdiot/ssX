@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.26 2003/10/24 16:20:53 tsi Exp $
+XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.27tsi Exp $
 
 #define DoNormalLib NormalLibXft
 #define DoSharedLib SharedLibXft
@@ -44,7 +44,7 @@ TYPE1DIR=XftType1Dir
 WARNINGS=-Wall -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wnested-externs
 #endif
 INCLUDES=$(FONTCONFIGINCLUDES) $(FREETYPE2INCLUDES) -I$(XBUILDINCDIR) $(WARNINGS)
-DEFINES=$(FREETYPE2DEFINES) $(RENDERDEFINES)
+DEFINES=$(FREETYPE2DEFINES) $(RENDERDEFINES) -DXFREE86_FT2
 
 XFT_REVISION=0
 

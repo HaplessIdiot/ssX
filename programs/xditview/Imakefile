@@ -3,14 +3,14 @@ XCOMM $XConsortium: Imakefile,v 1.15 94/04/04 21:49:55 gildea Exp $
 
 
 
-XCOMM $XFree86: xc/programs/xditview/Imakefile,v 1.5tsi Exp $
+XCOMM $XFree86: xc/programs/xditview/Imakefile,v 1.6tsi Exp $
 
 
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 #if BuildXftLibrary
     DEPFONTLIBS = XftClientDepLibs
        FONTLIBS = XftClientLibs
-       FONTDEFS = -DUSE_XFT
+       FONTDEFS = -DUSE_XFT -DXFREE86_FT2
       INCLUDES = $(XFTINCLUDES) -I$(XBUILDINCDIR)
 #endif
 #if HasMkstemp
