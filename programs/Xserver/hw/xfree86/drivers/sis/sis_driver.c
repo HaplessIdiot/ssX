@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.69 2001/11/30 12:12:00 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.82tsi Exp $ */
 /*
  * Copyright 1998,1999 by Alan Hourihane, Wigan, England.
  * Parts Copyright 2001, 2002 by Thomas Winischhofer, Vienna, Austria.
@@ -279,9 +279,6 @@ static const char *ddcSymbols[] = {
     "xf86SetDDCproperties",
     "xf86InterpretEDID",
     "xf86DoEDID_DDC1",
-#if SISI2C
-    "xf86DoEDID_DDC2",
-#endif
     NULL
 };
 
@@ -1477,7 +1474,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 
        i=0;
        do {
-         sprintf(name, "/dev/fb%1d\0", i);
+         sprintf(name, "/dev/fb%1d", i);
          if((fd = open(name, 'r'))) {
 
 	   if(!ioctl(fd, SISFB_GET_INFO, &mysisfbinfo)) {
@@ -3474,7 +3471,7 @@ SiS_SaveFonts(ScrnInfoPtr pScrn)
 {
     SISPtr pSiS = SISPTR(pScrn);
     unsigned char miscOut, attr10, gr4, gr5, gr6, seq2, seq4, scrn;
-    CARD8 *vgaIOBase = (CARD8 *)VGAHWPTR(pScrn)->IOBase;
+    pointer vgaIOBase = VGAHWPTR(pScrn)->Base;
 
     if (pSiS->fonts != NULL)
 	return;
@@ -3540,7 +3537,7 @@ SiS_RestoreFonts(ScrnInfoPtr pScrn)
 {
     SISPtr pSiS = SISPTR(pScrn);
     unsigned char miscOut, attr10, gr1, gr3, gr4, gr5, gr6, gr8, seq2, seq4, scrn;
-    CARD8 *vgaIOBase = (CARD8 *)VGAHWPTR(pScrn)->IOBase;
+    pointer vgaIOBase = VGAHWPTR(pScrn)->Base;
 
     if (pSiS->fonts == NULL)
 	return;
