@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.98 2003/12/07 18:28:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.99 2003/12/22 12:30:21 alanh Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -2358,6 +2358,11 @@ I810CloseScreen(int scrnIndex, ScreenPtr pScreen)
    XAAInfoRecPtr infoPtr = pI810->AccelInfoRec;
 
    if (pScrn->vtSema == TRUE) {
+      if (pI810->AccelInfoRec != NULL) {
+	 I810RefreshRing(pScrn);
+	 I810Sync(pScrn);
+	 pI810->AccelInfoRec->NeedToSync = FALSE;
+      }
       I810Restore(pScrn);
       vgaHWLock(hwp);
    }

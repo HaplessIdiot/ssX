@@ -1,4 +1,8 @@
 XFree86 4.3.99.903 (xx January 2004)
+ 726. Make sure that the ring buffer is flushed in I810CloseScreen().  This
+      fixes unpredictable behaviour that sometimes shows up after server
+      exit/restart or server reset, including memory corruption, spontaneous
+      reboots, etc, and some odd xtest behaviour (David Dawes).
  725. Xdmcp fixes for IPv6 and mixed IPv6/IPv4 operation. (Mario Klebsch, 
       Matthieu Herrb).
  724. Update rman by merging XFree86 changes to rman 3.2 (Thomas Dickey).
@@ -18467,7 +18471,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3072 2004/01/01 00:47:46 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3073 2004/01/01 17:17:31 herrb Exp $
 
 
 
