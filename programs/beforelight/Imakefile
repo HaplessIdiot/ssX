@@ -1,11 +1,14 @@
 XCOMM $XConsortium: Imakefile,v 1.2 93/09/18 16:23:30 rws Exp $
-XCOMM $XFree86: xc/programs/beforelight/Imakefile,v 3.1 1994/07/15 07:05:55 dawes Exp $
+XCOMM $XFree86: xc/programs/beforelight/Imakefile,v 3.2 1995/04/24 07:22:14 dawes Exp $
         DEPLIBS = XawClientDepLibs
 LOCAL_LIBRARIES = XawClientLibs
            SRCS = b4light.c
            OBJS = b4light.o
 
+AllTarget(ProgramTargetName(beforelight))
+
 NormalProgramTarget(beforelight,$(OBJS),$(DEPLIBS),$(LOCAL_LIBRARIES),NullParameter)
+InstallProgram(beforelight,$(BINDIR))
 InstallAppDefaultsLong(B4light,Beforelight)
 DependTarget()
 

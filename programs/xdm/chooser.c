@@ -1,6 +1,6 @@
 /*
  * $XConsortium: chooser.c,v 1.21 94/11/21 18:33:11 kaleb Exp $
- * $XFree86: xc/programs/xdm/chooser.c,v 3.4 1994/11/27 07:06:50 dawes Exp $
+ * $XFree86: xc/programs/xdm/chooser.c,v 3.5 1995/01/28 16:16:48 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -95,11 +95,20 @@ in this Software without prior written authorization from the X Consortium.
 #endif /* !MINIX */
 #include    <sys/ioctl.h>
 #if defined(STREAMSCONN)
-#if defined(NCR)
+#if defined(WINTCP)
 #include    <netinet/ip.h>
 #endif
 #include    <stropts.h>
 #include    <tiuser.h>
+#include    <netconfig.h>
+#include    <netdir.h>
+#endif
+
+#ifdef CSRG_BASED
+#include <sys/param.h>
+#if (BSD >= 199103)
+#define VARIABLE_IFREQ
+#endif
 #endif
 
 #define BROADCAST_HOSTNAME  "BROADCAST"
@@ -588,7 +597,7 @@ RegisterHostaddr (addr, len, type)
 #ifndef MINIX
 
 /* Handle variable length ifreq in BNR2 and later */
-#ifdef AF_LINK
+#ifdef VARIABLE_IFREQ
 #define ifr_size(p) (sizeof (struct ifreq) + \
 		     (p->ifr_addr.sa_len > sizeof (p->ifr_addr) ? \
 		      p->ifr_addr.sa_len - sizeof (p->ifr_addr) : 0))
@@ -609,7 +618,7 @@ RegisterHostname (name)
 
     if (!strcmp (name, BROADCAST_HOSTNAME))
     {
-#if defined(STREAMSCONN) && defined(NCR)
+#if defined(STREAMSCONN) && defined(WINTCP)
     int                 ipfd;
     struct ifconf       *ifcp;
     struct strioctl     ioc;
@@ -654,9 +663,9 @@ RegisterHostname (name)
 	cplim = (char *) IFC_IFC_REQ + ifc.ifc_len;
 
 	for (cp = (char *) IFC_IFC_REQ; cp < cplim; cp += ifr_size (ifr))
-#endif /* STREAMSCONN && NCR */
+#endif /* STREAMSCONN && WINTCP */
 	{
-#ifndef NCR
+#ifndef WINTCP
 	    ifr = (struct ifreq *) cp;
 #endif
 	    if (ifr->ifr_addr.sa_family != AF_INET)
@@ -670,7 +679,7 @@ RegisterHostname (name)
 		struct ifreq    broad_req;
     
 		broad_req = *ifr;
-#if defined(STREAMSCONN) && defined(NCR)
+#if defined(STREAMSCONN) && defined(WINTCP)
 		ioc.ic_cmd = IPIOC_GETIFFLAGS;
 		ioc.ic_timout = 0;
 		ioc.ic_len = sizeof( broad_req );
@@ -685,7 +694,7 @@ RegisterHostname (name)
 		    )
 		{
 		    broad_req = *ifr;
-#if defined(STREAMSCONN) && defined(NCR)
+#if defined(STREAMSCONN) && defined(WINTCP)
 		    ioc.ic_cmd = IPIOC_GETIFBRDADDR;
 		    ioc.ic_timout = 0;
 		    ioc.ic_len = sizeof( broad_req );
@@ -835,7 +844,37 @@ InitXDMCP (argv)
 #if defined(STREAMSCONN)
     if ((socketFD = t_open ("/dev/udp", O_RDWR, 0)) < 0)
 	return 0;
-    t_bind( socketFD, NULL, NULL );
+
+    if (t_bind( socketFD, NULL, NULL ) < 0)
+	{
+	t_close(socketFD);
+	return 0;
+	}
+
+    /*
+     * This part of the code looks contrived. It will actually fit in nicely
+     * when the CLTS part of Xtrans is implemented.
+     */
+    {
+    struct netconfig *nconf;
+
+    if( (nconf=getnetconfigent("udp")) == NULL )
+	{
+	t_unbind(socketFD);
+	t_close(socketFD);
+	return 0;
+	}
+
+    if( netdir_options(nconf, ND_SET_BROADCAST, socketFD, NULL) )
+	{
+	freenetconfigent(nconf);
+	t_unbind(socketFD);
+	t_close(socketFD);
+	return 0;
+	}
+
+    freenetconfigent(nconf);
+    }
 #else
 #ifdef MINIX
     udp_device= getenv("UDP_DEVICE");

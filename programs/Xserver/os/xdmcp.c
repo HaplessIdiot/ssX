@@ -1,5 +1,5 @@
 /* $XConsortium: xdmcp.c,v 1.31 94/06/03 17:21:13 mor Exp $ */
-/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.4 1994/10/23 13:02:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.5 1994/12/17 10:09:26 dawes Exp $ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *
@@ -41,6 +41,8 @@
 
 #ifdef STREAMSCONN
 #include <tiuser.h>
+#include <netconfig.h>
+#include <netdir.h>
 #endif
 
 #ifdef XDMCP
@@ -71,7 +73,7 @@ static XdmcpBuffer	    buffer;
 
 static struct sockaddr_in   ManagerAddress;
 
-static get_xdmcp_sock(
+static void get_xdmcp_sock(
 #if NeedFunctionPrototypes
     void
 #endif
@@ -910,14 +912,45 @@ XdmcpAddAuthorization (name, data)
  * to the state machine.
  */
 
-static
+static void
 get_xdmcp_sock()
 {
 #ifdef STREAMSCONN
-    if ((xdmcpSocket = t_open("/dev/udp", O_RDWR, 0)) < 0)
+    struct netconfig *nconf;
+
+    if ((xdmcpSocket = t_open("/dev/udp", O_RDWR, 0)) < 0) {
 	XdmcpWarning("t_open() of /dev/udp failed");
-    if( t_bind(xdmcpSocket,NULL,NULL) < 0 )
+	return;
+	}
+
+    if( t_bind(xdmcpSocket,NULL,NULL) < 0 ) {
+	XdmcpWarning("UDP socket creation failed");
 	t_error("t_bind(xdmcpSocket) failed" );
+	t_close(xdmcpSocket);
+	return;
+	}
+
+    /*
+     * This part of the code looks contrived. It will actually fit in nicely
+     * when the CLTS part of Xtrans is implemented.
+     */
+
+    if( (nconf=getnetconfigent("udp")) == NULL ) {
+	XdmcpWarning("UDP socket creation failed: getnetconfigent()");
+	t_unbind(xdmcpSocket);
+	t_close(xdmcpSocket);
+	return;
+	}
+
+    if( netdir_options(nconf, ND_SET_BROADCAST, xdmcpSocket, NULL) ) {
+	XdmcpWarning("UDP set broadcast option failed: netdir_options()");
+	freenetconfigent(nconf);
+	t_unbind(xdmcpSocket);
+	t_close(xdmcpSocket);
+	return;
+	}
+
+    freenetconfigent(nconf);
 #else
 #ifndef _MINIX
     int soopts = 1;

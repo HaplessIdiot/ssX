@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: ptyx.h,v 1.63 94/08/02 19:24:44 converse Exp $
- *	$XFree86: xc/programs/xterm/ptyx.h,v 3.1 1994/08/20 07:38:13 dawes Exp $
+ *	$XFree86: xc/programs/xterm/ptyx.h,v 3.2 1995/01/21 07:21:05 dawes Exp $
  */
 
 /*
@@ -103,7 +103,11 @@
 #ifdef hpux
 #define	PTYCHAR2	"fedcba9876543210"
 #else	/* !hpux */
+#ifdef __FreeBSD__
+#define	PTYCHAR2	"0123456789abcdefghijklmnopqrstuv"
+#else /* !__FreeBSD__ */
 #define	PTYCHAR2	"0123456789abcdef"
+#endif /* !__FreeBSD__ */
 #endif	/* !hpux */
 #endif	/* !PTYCHAR2 */
 

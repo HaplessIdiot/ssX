@@ -1,5 +1,5 @@
 /* $XConsortium: auth.c,v 1.56.1.1 95/01/27 14:42:23 kaleb Exp $ */
-/* $XFree86: xc/programs/xdm/auth.c,v 3.8 1995/01/12 05:57:06 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/auth.c,v 3.9 1995/01/30 03:28:54 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -94,6 +94,13 @@ from the X Consortium.
 
 #if ((defined(SVR4) && !defined(sun)) || defined(ISC)) && defined(SIOCGIFCONF)
 #define SYSV_SIOCGIFCONF
+#endif
+
+#ifdef CSRG_BASED
+#include <sys/param.h>
+#if (BSD >= 199103)
+#define VARIABLE_IFREQ
+#endif
 #endif
 
 #ifdef __EMX__
@@ -779,7 +786,7 @@ DefineSelf (fd, file, auth)
 
 #else
 
-#ifdef NCR
+#ifdef WINTCP
 
 #include <sys/un.h>
 #include <stropts.h>
@@ -853,12 +860,12 @@ DefineSelf (fd, file, auth)
     close(ipfd);
 }
 
-#else /* NCR */
+#else /* WINTCP */
 
 #ifdef SIOCGIFCONF
 
 /* Handle variable length ifreq in BNR2 and later */
-#ifdef AF_LINK
+#ifdef VARIABLE_IFREQ
 #define ifr_size(p) (sizeof (struct ifreq) + \
 		     (p->ifr_addr.sa_len > sizeof (p->ifr_addr) ? \
 		      p->ifr_addr.sa_len - sizeof (p->ifr_addr) : 0))
@@ -984,7 +991,7 @@ DefineSelf (fd, file, auth)
 }
 
 #endif /* SIOCGIFCONF else */
-#endif /* NCR else */
+#endif /* WINTCP else */
 #endif /* STREAMSCONN && !SYSV_SIOCGIFCONF else */
 
 
