@@ -13,6 +13,7 @@
 #include "os.h"
 #include "servermd.h"
 #include "mibank.h"
+#include "globals.h"
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86DDC.h"
@@ -1186,7 +1187,7 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
     int linePitch = -1, virtX = 0, virtY = 0;
     int newLinePitch, newVirtX, newVirtY;
     int modeSize;					/* in pixels */
-    Bool validateAllDefaultModes;
+    Bool validateAllDefaultModes = FALSE;
     Bool userModes = FALSE;
     int saveType;
     PixmapFormatRec *BankFormat;
@@ -1520,7 +1521,15 @@ xf86ValidateModes(ScrnInfoPtr scrp, DisplayModePtr availModes,
     }
 
     /* Lookup each mode */
-    validateAllDefaultModes = TRUE;
+#ifdef RANDR
+    if (!xf86Info.disableRandR	
+#ifdef PANORAMIX
+	&& noPanoramiXExtension
+#endif
+	)
+	validateAllDefaultModes = TRUE;
+#endif
+
     for (p = scrp->modes; ; p = p->next) {
 	Bool repeat;
 
