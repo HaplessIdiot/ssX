@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xterm/xterm_io.h,v 1.10 2003/03/23 02:01:41 dickey Exp $
+ * $XFree86: xc/programs/xterm/xterm_io.h,v 1.11 2003/11/23 23:53:15 dickey Exp $
  */
 
 /*
@@ -65,6 +65,10 @@
 #endif
 
 #ifdef linux
+#define USE_TERMIOS
+#endif
+
+#ifdef SCO325
 #define USE_TERMIOS
 #endif
 
