@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_pci.c,v 3.2 1999/12/06 03:54:34 robin Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -16,8 +16,8 @@ xf86GetPciSizeFromOS(PCITAG tag, int index, int* bits)
     char c[0x100];
     char *res;
     int bus, devfn, dev, fn;
-    int size[7];
-    int num;
+    unsigned int size[7];
+    unsigned int num;
     int Size;
 
     if (index > 7)
@@ -43,10 +43,13 @@ xf86GetPciSizeFromOS(PCITAG tag, int index, int* bits)
 	    dev = devfn >> 3;
 	    fn = devfn & 0x7;
 	    if (tag == pciTag(bus,dev,fn)) {
-		Size = size[index] - 1;
-		while (Size & 0x01) {
-		    Size = Size >> 1;
-		    (*bits)++;
+		*bits = 0;
+		if (size[index] != 0) {
+		    Size = size[index] - 1;
+		    while (Size & 0x01) {
+			Size = Size >> 1;
+			(*bits)++;
+		    }
 		}
 		return TRUE;
 	    }
