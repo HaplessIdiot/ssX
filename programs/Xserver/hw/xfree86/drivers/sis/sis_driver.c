@@ -745,22 +745,6 @@ SISIdentify(int flags)
     xf86PrintChipsets(SIS_NAME, "driver for SiS chipsets", SISChipsets);
 }
 
-static void
-SIS1bppColorMap(ScrnInfoPtr pScrn)
-{
-   SISPtr pSiS = SISPTR(pScrn);
-
-   outSISREG(SISCOLIDX, 0x00);
-   outSISREG(SISCOLDATA, 0x00);
-   outSISREG(SISCOLDATA, 0x00);
-   outSISREG(SISCOLDATA, 0x00);
-
-   outSISREG(SISCOLIDX, 0x3f);
-   outSISREG(SISCOLDATA, 0x3f);
-   outSISREG(SISCOLDATA, 0x3f);
-   outSISREG(SISCOLDATA, 0x3f);
-}
-
 #if 0
 /* This won't work as long as noone added the symbols to the symlist */
 static void
@@ -2051,8 +2035,6 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     unsigned long int i;
     int temp;
     ClockRangePtr clockRanges;
-    char *mod = NULL;
-    const char *Sym = NULL;
     int pix24flags;
 #ifdef SISDUALHEAD
     SISEntPtr pSiSEnt = NULL;
@@ -2546,29 +2528,23 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
      * The first thing we should figure out is the depth, bpp, etc.
      * Additionally, determine the size of the HWCursor memory area.
      */
-    switch (pSiS->VGAEngine) {
+    switch(pSiS->VGAEngine) {
       case SIS_300_VGA:
         pSiS->CursorSize = 4096;
-    	pix24flags = Support32bppFb |
-	             SupportConvert24to32;
+    	pix24flags = Support32bppFb;
 	break;
       case SIS_315_VGA:
         pSiS->CursorSize = 16384;
-    	pix24flags = Support32bppFb |
-	             SupportConvert24to32;
+    	pix24flags = Support32bppFb;
 	break;
       case SIS_530_VGA:
         pSiS->CursorSize = 2048;
     	pix24flags = Support32bppFb |
-	             Support24bppFb |
-                     SupportConvert24to32 |
-		     SupportConvert32to24;
+	             Support24bppFb;
         break;
       default:
         pSiS->CursorSize = 2048;
-        pix24flags = Support24bppFb |
-	             SupportConvert32to24 |
-	             PreferConvert32to24;
+        pix24flags = Support24bppFb;
 	break;
     }
 
@@ -2697,7 +2673,6 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
        }
     }
 
-
     if(!xf86SetDepthBpp(pScrn, 0, 0, 0, pix24flags)) {
        xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 	    	"xf86SetDepthBpp() error\n");
@@ -2718,16 +2693,17 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
           break;
        case 15:
 	  if((pSiS->VGAEngine == SIS_300_VGA) ||
-	     (pSiS->VGAEngine == SIS_315_VGA))
+	     (pSiS->VGAEngine == SIS_315_VGA)) {
 	     temp = 1;
+	  }
           break;
-      default:
+       default:
 	  temp = 1;
     }
 
     if(temp) {
        xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-               "Given depth (%d) is not supported by this driver/chipset\n",
+               "Given color depth (%d) is not supported by this driver/chipset\n",
                pScrn->depth);
        if(pSiS->pInt) xf86FreeInt10(pSiS->pInt);
        SISFreeRec(pScrn);
@@ -2736,9 +2712,20 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 
     xf86PrintDepthBpp(pScrn);
 
+    if( (((pSiS->VGAEngine == SIS_300_VGA) || (pSiS->VGAEngine == SIS_315_VGA)) &&
+         (pScrn->bitsPerPixel == 24)) ||
+	((pSiS->VGAEngine == SIS_OLD_VGA) && (pScrn->bitsPerPixel == 32)) ) {
+       xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+            "Framebuffer bpp %d not supported on this chipset\n", pScrn->bitsPerPixel);
+       if(pSiS->pInt) xf86FreeInt10(pSiS->pInt);
+       SISFreeRec(pScrn);
+       return FALSE;
+    }
+
     /* Get the depth24 pixmap format */
-    if(pScrn->depth == 24 && pix24bpp == 0)
+    if(pScrn->depth == 24 && pix24bpp == 0) {
        pix24bpp = xf86GetBppFromDepth(pScrn, 24);
+    }
 
     /*
      * This must happen after pScrn->display has been set because
@@ -2808,9 +2795,9 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     } else {
         /* We don't support DirectColor at > 8bpp */
         if(pScrn->depth > 8 && pScrn->defaultVisual != TrueColor) {
-            xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Given default visual "
-                        "(%s) is not supported at depth %d\n",
-                        xf86GetVisualName(pScrn->defaultVisual), pScrn->depth);
+            xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+	       	"Given default visual (%s) is not supported at depth %d\n",
+                xf86GetVisualName(pScrn->defaultVisual), pScrn->depth);
 #ifdef SISDUALHEAD
 	    if(pSiSEnt) pSiSEnt->ErrorAfterFirst = TRUE;
 #endif
@@ -4804,27 +4791,27 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     }
 #endif
 
-    /* Load bpp-specific modules */
+    /* Load fb module */
     switch(pScrn->bitsPerPixel) {
-      case 1:
-        mod = "xf1bpp";
-        Sym = "xf1bppScreenInit";
-        break;
-      case 4:
-        mod = "xf4bpp";
-        Sym = "xf4bppScreenInit";
-        break;
       case 8:
       case 16:
       case 24:
       case 32:
-        mod = "fb";
+	if(!xf86LoadSubModule(pScrn, "fb")) {
+           xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+	    	"Failed to load fb module");
+#ifdef SISDUALHEAD
+	   if(pSiSEnt) pSiSEnt->ErrorAfterFirst = TRUE;
+#endif
+	   if(pSiS->pInt) xf86FreeInt10(pSiS->pInt);
+	   sisRestoreExtRegisterLock(pSiS,srlockReg,crlockReg);
+           SISFreeRec(pScrn);
+           return FALSE;
+        }
 	break;
-    }
-
-    if(mod && xf86LoadSubModule(pScrn, mod) == NULL) {
+      default:
         xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-	    	"Could not load %s module", mod);
+	    	"Unsupported framebuffer bpp (%d)\n", pScrn->bitsPerPixel);
 #ifdef SISDUALHEAD
 	if(pSiSEnt) pSiSEnt->ErrorAfterFirst = TRUE;
 #endif
@@ -4833,14 +4820,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
         SISFreeRec(pScrn);
         return FALSE;
     }
-
-    if(mod) {
-	if(Sym) {
-	    xf86LoaderReqSymbols(Sym, NULL);
-	} else {
-	    xf86LoaderReqSymLists(fbSymbols, NULL);
-	}
-    }
+    xf86LoaderReqSymLists(fbSymbols, NULL);
 
     /* Load XAA if needed */
     if(!pSiS->NoAccel) {
@@ -6087,7 +6067,6 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     vgaHWPtr hwp;
     SISPtr pSiS;
     int ret;
-    int init_picture = 0;
     VisualPtr visual;
     unsigned long OnScreenSize;
     int height, width, displayWidth;
@@ -6348,38 +6327,27 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      * Call the framebuffer layer's ScreenInit function, and fill in other
      * pScreen fields.
      */
-
     switch(pScrn->bitsPerPixel) {
-      case 1:
-        ret = xf1bppScreenInit(pScreen, FBStart, width,
-                        height, pScrn->xDpi, pScrn->yDpi,
-                        displayWidth);
-        break;
-      case 4:
-        ret = xf4bppScreenInit(pScreen, FBStart, width,
-                        height, pScrn->xDpi, pScrn->yDpi,
-                        displayWidth);
-        break;
+      case 24:
+        if((pSiS->VGAEngine == SIS_300_VGA) || (pSiS->VGAEngine == SIS_315_VGA)) {
+	   ret = FALSE;
+	   break;
+        }
       case 8:
       case 16:
-      case 24:
       case 32:
         ret = fbScreenInit(pScreen, FBStart, width,
                         height, pScrn->xDpi, pScrn->yDpi,
                         displayWidth, pScrn->bitsPerPixel);
-
-	init_picture = 1;
         break;
       default:
-        xf86DrvMsg(scrnIndex, X_ERROR,
-               "Internal error: invalid bpp (%d) in SISScrnInit\n",
-               pScrn->bitsPerPixel);
-            ret = FALSE;
+        ret = FALSE;
         break;
     }
     if(!ret) {
-        xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-	    	"xf1bpp/xf4bpp/fbScreenInit() failed\n");
+        xf86DrvMsg(scrnIndex, X_ERROR,
+               "Unsupported bpp (%d) or fbScreenInit() failed\n",
+               pScrn->bitsPerPixel);
   	SISSaveScreen(pScreen, SCREEN_SAVER_OFF);
         return FALSE;
     }
@@ -6397,12 +6365,10 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
                 visual->blueMask = pScrn->mask.blue;
             }
         }
-    } else if(pScrn->depth == 1) {
-        SIS1bppColorMap(pScrn);
     }
 
     /* Initialize RENDER ext; must be after RGB ordering fixed */
-    if(init_picture)  fbPictureInit(pScreen, 0, 0);
+    fbPictureInit(pScreen, 0, 0);
 
     /* hardware cursor needs to wrap this layer    <-- TW: what does that mean? */
     if(!pSiS->ShadowFB)  SISDGAInit(pScreen);
