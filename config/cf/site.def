@@ -1,5 +1,5 @@
-XCOMM site:  $XConsortium: site.sample /main/19 1995/12/14 13:03:29 matt $
-XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.9 1996/01/05 13:06:42 dawes Exp $
+XCOMM site:  $XConsortium: site.def /main/revisionist/3 1996/10/15 09:31:04 swick $
+XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.10 1996/01/07 09:57:49 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -12,7 +12,8 @@ XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.9 1996/01/05 13:06:42 dawes Exp
  *                                                                         *
  * The before-half should only set things that the .cf file depends on.    *
  * For the .cf files shipped in this release, the main variables in this   *
- * category are HasGcc, HasGcc2, and HasCplusplus 			   *
+ * category are HasGcc, HasGcc2, HasCplusplus, OSMajorVersion,             *
+ * OSMinorVersion, and OSTeenyVersion.                                     *
  *                                                                         *
  * The after-half should contain all other definitions.  For example,      *
  * place your ProjectRoot definition here.                                 *
@@ -43,6 +44,21 @@ XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.9 1996/01/05 13:06:42 dawes Exp
 
 #include <host.def>
 
+/* On systems where cpp doesn't expand correctly macros in include directives
+ * the two following macros need to be defined directly (where "X11" is
+ * really whatever the TopLevelProject macro is defined to be).
+ */
+# if defined(SunArchitecture) || defined(AIXArchitecture) \
+     || defined(USLArchitecture) || defined(UXPArchitecture) \
+     || defined(SCOArchitecture)
+#  ifndef ProjectRulesFile
+#   define ProjectRulesFile	<X11.rules>
+#  endif
+#  ifndef ProjectTmplFile
+#   define ProjectTmplFile	<X11.tmpl>
+#  endif
+# endif
+
 /*
 #ifndef HasGcc2
 #define HasGcc2 YES
@@ -60,7 +76,7 @@ XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.9 1996/01/05 13:06:42 dawes Exp
 /* Only set HasXdmAuth to YES if you have a Wraphelp.c file. */
 /* #define HasXdmAuth YES */
 
-/* #define PreIncDir /usr/local/lib/gcc-lib/sparc-sun-sunos4.1.3/2.6.0/include */
+/* #define PreIncDir /usr/local/lib/gcc-lib/sparc-sun-solaris2.4/2.7.2/include */
 
 /*
 #if defined(SunArchitecture) && defined(SparcArchitecture)
