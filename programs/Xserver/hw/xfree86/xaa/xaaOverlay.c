@@ -187,6 +187,7 @@ XAAPaintWindow8_32(
 		pPriv->offscreenArea->box.x2 - pCache->x;
 	    pCache->h = pCache->orig_h = 
 		pPriv->offscreenArea->box.y2 - pCache->y;
+	    pCache->trans_color = -1;
 	     
 	    (*infoRec->FillCacheBltRects)(infoRec->pScrn, GXcopy, pm,
 				nBox, pBox, xorg, yorg, pCache);
