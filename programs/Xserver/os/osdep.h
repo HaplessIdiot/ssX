@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: osdep.h /main/42 1996/12/15 21:27:39 rws $ */
-/* $XFree86: xc/programs/Xserver/os/osdep.h,v 3.4 1996/12/23 07:09:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/osdep.h,v 3.5 1998/08/14 13:35:52 dawes Exp $ */
 
 #ifdef AMOEBA
 #include <stddef.h>
@@ -250,5 +250,5 @@ extern WorkQueuePtr workQueue;
 
 /* added by raphael */
 #define ffs mffs
-extern int mffs(long);
+extern int mffs(fd_mask);
 
