@@ -24,7 +24,7 @@
  *
  *
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_Ti.c,v 1.1 2001/07/02 10:46:04 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -261,10 +261,10 @@ void S3TiDAC_Restore(ScrnInfoPtr pScrn)
 	S3RegPtr restore = &pS3->SavedRegs;
 	int vgaCRIndex = pS3->vgaCRIndex, vgaCRReg = pS3->vgaCRReg;
 
-	S3OutTiIndReg(pScrn, TIDAC_multiplex_ctrl, 0x00,
+	S3OutTiIndReg(pScrn, TIDAC_true_color_ctrl, 0x00,
 		      restore->dacregs[TIDAC_true_color_ctrl]);
-	S3OutTiIndReg(pScrn, TIDAC_clock_select, 0x00,
-		      restore->dacregs[TIDAC_multiplex_ctrl]);
+	S3OutTiIndReg(pScrn, TIDAC_multiplex_ctrl, 0x00,
+		      restore->dacregs[TIDAC_multiplex_ctrl]);	
 	S3OutTiIndReg(pScrn, TIDAC_clock_select, 0x00,
 		      restore->dacregs[TIDAC_clock_select]);
 	S3OutTiIndReg(pScrn, TIDAC_output_clock_select, 0x00,
@@ -555,7 +555,6 @@ void S3TiDAC_Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		outb(vgaCRReg, 0x00);
 
 	S3OutTiIndReg(pScrn, TIDAC_sense_test, 0x00, 0x00);
-
 
 	if (pS3->s3Bpp > 1)
 	{

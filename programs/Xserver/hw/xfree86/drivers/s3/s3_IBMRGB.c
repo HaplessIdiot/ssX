@@ -24,7 +24,7 @@
  *
  *
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_IBMRGB.c,v 1.1 2001/07/02 10:46:04 alanh Exp $ */
 
 
 #include "xf86.h"
@@ -114,6 +114,9 @@ unsigned char S3IBMReadData(ScrnInfoPtr pScrn)
 Bool S3ProbeIBMramdac(ScrnInfoPtr pScrn)
 {
 	S3Ptr pS3 = S3PTR(pScrn);
+
+	if (pS3->Chipset != PCI_CHIP_968)
+		return FALSE;
 
 	pS3->RamDacRec = RamDacCreateInfoRec();
 	pS3->RamDacRec->ReadDAC = S3InIBMRGBIndReg;

@@ -34,7 +34,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.3 2001/08/15 11:54:27 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.4 2001/09/14 13:54:02 alanh Exp $ */
 
 
 #include "xf86.h"
@@ -130,26 +130,36 @@ static SymTabRec S3Chipsets[] = {
 	{ PCI_CHIP_964_1,	"964-1"},
 	{ PCI_CHIP_968,		"968" },
 	{ PCI_CHIP_TRIO, 	"Trio32/64" },
+	{ PCI_CHIP_AURORA64VP,	"Aurora64V+" },
 	{ -1, NULL }
 };
 
 
 static PciChipsets S3PciChipsets[] = {
-	{ PCI_CHIP_964_0,	PCI_CHIP_964_0,	RES_SHARED_VGA },
-	{ PCI_CHIP_964_1,	PCI_CHIP_964_1,	RES_SHARED_VGA },
-	{ PCI_CHIP_968, 	PCI_CHIP_968, 	RES_SHARED_VGA },
-	{ PCI_CHIP_TRIO, 	PCI_CHIP_TRIO, 	RES_SHARED_VGA },
-	{ -1,			-1,	      	RES_UNDEFINED }
+	{ PCI_CHIP_964_0,	PCI_CHIP_964_0,		RES_SHARED_VGA },
+	{ PCI_CHIP_964_1,	PCI_CHIP_964_1,		RES_SHARED_VGA },
+	{ PCI_CHIP_968, 	PCI_CHIP_968, 		RES_SHARED_VGA },
+	{ PCI_CHIP_TRIO, 	PCI_CHIP_TRIO, 		RES_SHARED_VGA },
+	{ PCI_CHIP_AURORA64VP,	PCI_CHIP_AURORA64VP, 	RES_SHARED_VGA },
+	{ -1,			-1,	      		RES_UNDEFINED }
 };
 
 typedef enum {
 	OPTION_NOACCEL,
-	OPTION_SWCURS
+	OPTION_SWCURS,
+	OPTION_SLOW_DRAM_REFRESH,
+	OPTION_SLOW_DRAM,
+	OPTION_SLOW_EDODRAM,
+	OPTION_SLOW_VRAM
 } S3Opts;
 
 static OptionInfoRec S3Options[] = {
 	{ OPTION_NOACCEL, "noaccel", OPTV_BOOLEAN, {0}, FALSE },
 	{ OPTION_SWCURS, "swcursor", OPTV_BOOLEAN, {0}, FALSE },
+	{ OPTION_SLOW_DRAM_REFRESH, "slow_dram_refresh", OPTV_BOOLEAN, {0}, FALSE },
+	{ OPTION_SLOW_DRAM, "slow_dram", OPTV_BOOLEAN, {0}, FALSE },
+	{ OPTION_SLOW_EDODRAM, "slow_edodram", OPTV_BOOLEAN, {0}, FALSE },
+	{ OPTION_SLOW_VRAM, "slow_vram", OPTV_BOOLEAN, {0}, FALSE },
 	{ -1, NULL, OPTV_NONE, {0}, FALSE }
 };
 
@@ -420,7 +430,6 @@ static Bool S3PreInit(ScrnInfoPtr pScrn, int flags)
 
 	pS3->s3Bpp = (pScrn->bitsPerPixel >> 3);
 
-#if 0
         xf86CollectOptions(pScrn, NULL);
         xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, S3Options);
          
@@ -429,8 +438,32 @@ static Bool S3PreInit(ScrnInfoPtr pScrn, int flags)
                 xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: NoAccel - acceleration disabled\n");
         } else          
                 pS3->NoAccel = FALSE;
-#endif
-                
+	if (xf86ReturnOptValBool(S3Options, OPTION_SWCURS, FALSE)) {
+		pS3->SWCursor = TRUE;
+		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: SWCursor - using software cursor\n");
+        } else
+		pS3->SWCursor = FALSE;
+	if (xf86ReturnOptValBool(S3Options, OPTION_SLOW_DRAM_REFRESH, FALSE)) {
+		pS3->SlowDRAMRefresh = TRUE;
+		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: Slow DRAM Refresh enabled\n");
+	} else
+		pS3->SlowDRAMRefresh = FALSE;
+	if (xf86ReturnOptValBool(S3Options, OPTION_SLOW_DRAM, FALSE)) {
+		pS3->SlowDRAM = TRUE;
+		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: Slow DRAM enabled\n");
+	} else
+		pS3->SlowDRAM = FALSE;
+	if (xf86ReturnOptValBool(S3Options, OPTION_SLOW_EDODRAM, FALSE)) {
+		pS3->SlowEDODRAM = TRUE;
+		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: Slow EDO DRAM enabled\n");
+	} else
+		pS3->SlowEDODRAM = FALSE;
+	if (xf86ReturnOptValBool(S3Options, OPTION_SLOW_DRAM, FALSE)) {
+		pS3->SlowVRAM = TRUE;
+		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Option: Slow VRAM enabled\n");
+	} else
+		pS3->SlowVRAM = FALSE;
+
         if (pScrn->numEntities > 1) {      
                 S3FreeRec(pScrn);
                 return FALSE;
@@ -493,6 +526,7 @@ static Bool S3PreInit(ScrnInfoPtr pScrn, int flags)
 	case PCI_CHIP_964_0:
 	case PCI_CHIP_964_1:
 	case PCI_CHIP_TRIO:
+	case PCI_CHIP_AURORA64VP:		/* ??? */
 		pS3->S3NewMMIO = FALSE;
 		break;
 	case PCI_CHIP_968:
@@ -501,7 +535,6 @@ static Bool S3PreInit(ScrnInfoPtr pScrn, int flags)
 	}
 
 	pS3->FBAddress = pS3->PciInfo->memBase[0];
-	pScrn->memPhysBase = pS3->FBAddress;
 	if (pS3->S3NewMMIO)
 		pS3->IOAddress = pS3->FBAddress + S3_NEWMMIO_REGBASE;
 
@@ -584,36 +617,32 @@ static Bool S3PreInit(ScrnInfoPtr pScrn, int flags)
 	pScrn->rgbBits = 8;	/* set default */
 
 	/* probe for dac */
-	if ((pS3->Chipset == PCI_CHIP_964_0) ||
-	    (pS3->Chipset == PCI_CHIP_964_1)) {
-		if (S3TiDACProbe(pScrn)) {
-			pS3->DacPreInit = S3TiDAC_PreInit;
-			pS3->DacInit = S3TiDAC_Init;
-			pS3->DacSave = S3TiDAC_Save;
-			pS3->DacRestore = S3TiDAC_Restore;
-			pS3->CursorInit = S3Ti_CursorInit;
-			pS3->MaxClock = 135000;
-			pScrn->rgbBits = 8;
-			if (pScrn->bitsPerPixel > 8)
-				pS3->LoadPalette = S3TiLoadPalette;
-			else
-				pS3->LoadPalette = S3GenericLoadPalette;
-
+	if (S3TiDACProbe(pScrn)) {
+		pS3->DacPreInit = S3TiDAC_PreInit;
+		pS3->DacInit = S3TiDAC_Init;
+		pS3->DacSave = S3TiDAC_Save;
+		pS3->DacRestore = S3TiDAC_Restore;
+#if 0
+		/* FIXME, cursor is drawn in wrong position */
+		pS3->CursorInit = S3Ti_CursorInit;
+#endif
+		pS3->MaxClock = 135000;
+		pScrn->rgbBits = 8;
+		if (pScrn->bitsPerPixel > 8)
+			pS3->LoadPalette = S3TiLoadPalette;
+		else
 			pS3->LoadPalette = S3GenericLoadPalette;
-		}
 	}
-	if (pS3->Chipset == PCI_CHIP_968) {
-		if (S3ProbeIBMramdac(pScrn)) {
-			pS3->DacPreInit = S3IBMRGB_PreInit;
-			pS3->DacInit = S3IBMRGB_Init;
-			pS3->DacSave = S3IBMRGB_Save;
-			pS3->DacRestore = S3IBMRGB_Restore;
-			pS3->CursorInit = S3IBMRGB_CursorInit;
-			pS3->RamDac->SetBpp = IBMramdac526SetBpp;
-			pS3->MaxClock = 170000;
-			pScrn->rgbBits = 8;
-			pS3->LoadPalette = S3GenericLoadPalette;
-		}
+	if (S3ProbeIBMramdac(pScrn)) {
+		pS3->DacPreInit = S3IBMRGB_PreInit;
+		pS3->DacInit = S3IBMRGB_Init;
+		pS3->DacSave = S3IBMRGB_Save;
+		pS3->DacRestore = S3IBMRGB_Restore;
+		pS3->CursorInit = S3IBMRGB_CursorInit;
+		pS3->RamDac->SetBpp = IBMramdac526SetBpp;
+		pS3->MaxClock = 170000;
+		pScrn->rgbBits = 8;
+		pS3->LoadPalette = S3GenericLoadPalette;
 	}
 	if (S3Trio64DACProbe(pScrn)) {
 		pS3->DacPreInit = S3Trio64DAC_PreInit;
@@ -644,6 +673,9 @@ static Bool S3PreInit(ScrnInfoPtr pScrn, int flags)
 			   "Ramdac probe failed\n");
 		return FALSE;
 	}
+
+	if (pS3->SWCursor)
+		pS3->CursorInit = NULL;
 
 	pS3->RefClock = S3GetRefClock(pScrn);
 
@@ -824,22 +856,26 @@ static Bool S3ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc,
         miInitializeBackingStore(pScreen);
         xf86SetBackingStore(pScreen);
 
-	if (pS3->S3NewMMIO) {
-		if (S3AccelInitNewMMIO(pScreen)) {
-			xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Acceleration enabled\n");
-			xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Using NewMMIO\n");
+	if (!pS3->NoAccel) {
+		if (pS3->S3NewMMIO) {
+			if (S3AccelInitNewMMIO(pScreen)) {
+				xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Acceleration enabled\n");
+				xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Using NewMMIO\n");
+			} else {
+				xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Acceleration initialization failed\n");
+				xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Acceleration disabled\n");
+			}
 		} else {
-			xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Acceleration initialization failed\n");
-			xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Acceleration disabled\n");
+			if (S3AccelInitPIO(pScreen)) {
+				xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Acceleration enabled\n");
+				xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Using PIO\n");
+			} else {
+				xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Acceleration initialization failed\n");
+				xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Acceleration disabled\n");
+			}
 		}
 	} else {
-		if (S3AccelInitPIO(pScreen)) {
-			xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Acceleration enabled\n");
-			xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Using PIO\n");
-		} else {
-			xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Acceleration initialization failed\n");
-			xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Acceleration disabled\n");
-		}
+		xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Acceleration disabled by option\n");
 	}
 
         miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
@@ -1188,14 +1224,18 @@ static Bool S3ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	outb(vgaCRIndex, 0x34);
 	outb(vgaCRReg, new->cr34);
 
-	new->cr3a = 0xb5;
+	if (pS3->SlowDRAMRefresh)
+		new->cr3a = 0xb7;
+	else
+		new->cr3a = 0xb5;
 	outb(vgaCRIndex, 0x3a);
 	outb(vgaCRReg, new->cr3a);
 
-	new->cr3b = (pVga->CRTC[0] + pVga->CRTC[4] + 1) / 2;
-	outb(vgaCRIndex, 0x3b);
-	outb(vgaCRIndex, 0x3b);
-	outb(vgaCRReg, new->cr3b);
+	if (pS3->Chipset != PCI_CHIP_AURORA64VP) {
+		new->cr3b = (pVga->CRTC[0] + pVga->CRTC[4] + 1) / 2;
+		outb(vgaCRIndex, 0x3b);
+		outb(vgaCRReg, new->cr3b);
+	}
 
 	new->cr3c = pVga->CRTC[0] / 2;
 	outb(vgaCRIndex, 0x3c);
@@ -1350,10 +1390,14 @@ static Bool S3ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
                 	else
                     		j = pVga->CRTC[0] + ((i & 0x01) << 8) + 1;
 		}
-
-		new->cr3b = j & 0xff;
-		outb(vgaCRReg, new->cr3b);
-		i |= (j & 0x100) >> 2;
+		if (pS3->Chipset == PCI_CHIP_AURORA64VP) {
+			outb(vgaCRReg, 0x00);
+			i &= ~0x40;
+		} else {
+			new->cr3b = j & 0xff;
+			outb(vgaCRReg, new->cr3b);
+			i |= (j & 0x100) >> 2;
+		}
 
 		outb(vgaCRIndex, 0x3c);
 		new->cr3c = (pVga->CRTC[0] + ((i & 0x01) << 8)) / 2;
@@ -1439,8 +1483,80 @@ static Bool S3ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	}
 
 	outb(vgaCRIndex, 0x66);
-	new->cr66 = inb(vgaCRReg) | 0x80;	/* XXX no newmmio */
+	new->cr66 = inb(vgaCRReg);
+	if (pS3->S3NewMMIO)
+		new->cr66 |= 0x88;
+	else
+		new->cr66 |= 0x80;
 	outb(vgaCRReg, new->cr66);
+
+	if (pS3->SlowVRAM) {
+		/*
+		 * some Diamond Stealth 64 VRAM cards have a problem with
+		 * VRAM timing, increas -RAS low timing from 3.5 MCLKs
+		 * to 4.5 MCLKs
+		 */
+		outb(vgaCRIndex, 0x39);
+		outb(vgaCRReg, 0xa5);
+		outb(vgaCRIndex, 0x68);
+		tmp = inb(vgaCRReg);
+		if (tmp & 0x30)				/* 3.5 MCLKs */
+			outb(vgaCRReg, tmp & 0xef);	/* 4.5 MCLKs */
+	}
+
+	if (pS3->SlowDRAM) {
+		/*
+		 * fixes some pixel errors for a SPEA Trio64V+ card
+		 * increas -RAS precharge timing from 2.5 MCLKs
+		 * to 3.5 MCLKs
+		 */
+		outb(vgaCRIndex, 0x39);
+		outb(vgaCRReg, 0xa5);
+		outb(vgaCRIndex, 0x68);
+		tmp = inb(vgaCRReg) & 0xf7;
+		outb(vgaCRReg, tmp);			/* 3.5 MCLKs */
+	}
+
+	if (pS3->SlowEDODRAM) {
+		/*
+		 * fixes some pixel errors for a SPEA Trio64V+ card
+		 * increas from 1-cycle to 2-cycle EDO mode
+		 */
+		outb(vgaCRIndex, 0x39);
+
+		outb(vgaCRReg, 0xa5);
+		outb(vgaCRIndex, 0x36);
+		tmp = inb(vgaCRReg);
+		if (!(tmp & 0x0c))			/* 1-cycle EDO */
+			outb(vgaCRReg, tmp | 0x08);	/* 2-cycle EDO */
+	}
+
+	if (pS3->Chipset == PCI_CHIP_AURORA64VP) {
+		outb(0x3c4, 0x08);
+		outb(0x3c5, 0x06);
+#if 0
+		outb(0x3c4, 0x54);
+		outb(0x3c5, 0x10);
+		outb(0x3c4, 0x55);
+		outb(0x3c5, 0x00);
+		outb(0x3c4, 0x56);
+		outb(0x3c5, 0x1c);
+		outb(0x3c4, 0x57);
+		outb(0x3c5, 0x00);
+#else
+		outb(0x3c4, 0x54);
+		outb(0x3c5, 0x1f);
+		outb(0x3c4, 0x55);
+		outb(0x3c5, 0x1f);
+		outb(0x3c4, 0x56);
+		outb(0x3c5, 0x1f);
+		outb(0x3c4, 0x57);
+		outb(0x3c5, 0x1f);
+#endif
+
+		outb(0x3c4, 0x08);
+		outb(0x3c5, 0x00);
+	}
 
 	pScrn->AdjustFrame(pScrn->scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
 
@@ -1532,12 +1648,12 @@ static void S3Restore(ScrnInfoPtr pScrn)
 		outb(vgaCRReg, 0x00);
 	}
 
+	pS3->DacRestore(pScrn);
+
 	if (pS3->RamDac->RamDacType == TI3025_RAMDAC) {
 		outb(vgaCRIndex, 0x5c);
 		outb(vgaCRReg, restore->s3syssave[0x0c + 16]);
 	}
-
-	pS3->DacRestore(pScrn);
 
 	for(i=32; i<46; i++) {
 		outb(vgaCRIndex, 0x40 + i);

@@ -24,7 +24,7 @@
  *
  *
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_Trio64DAC.c,v 1.1 2001/07/02 10:46:04 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -56,6 +56,8 @@ void S3Trio64DAC_Save(ScrnInfoPtr pScrn)
 	S3Ptr pS3 = S3PTR(pScrn);
 	S3RegPtr save = &pS3->SavedRegs;
 
+	save->dacregs[0] = inb(0x3cc);
+
 	outb(0x3c4, 0x08);
 	save->dacregs[1] = inb(0x3c5);
 	outb(0x3c5, 0x06);
@@ -70,6 +72,7 @@ void S3Trio64DAC_Save(ScrnInfoPtr pScrn)
 	save->dacregs[5] = inb(0x3c5);
 	outb(0x3c4, 0x15);
 	save->dacregs[6] = inb(0x3c5) & 0xfe;
+	outb(0x3c5, save->dacregs[6]);
 
 	outb(0x3c4, 0x18);
 	save->dacregs[7] = inb(0x3c5);
@@ -85,6 +88,15 @@ void S3Trio64DAC_Save(ScrnInfoPtr pScrn)
 	save->dacregs[12] = inb(0x3c5);
 	outb(0x3c4, 0x1b);
 	save->dacregs[13] = inb(0x3c5);
+
+	if (pS3->Chipset == PCI_CHIP_AURORA64VP) {
+		int i;
+
+		for (i=0x1a; i <= 0x6f; i++) {
+			outb(0x3c4, i);
+			save->dacregs[i] = inb(0x3c5);
+		}
+	}
 
 	outb(0x3c4, 0x08);
 	outb(0x3c5, 0x00);
@@ -120,7 +132,7 @@ void S3Trio64DAC_Restore(ScrnInfoPtr pScrn)
 	outb(0x3c5, restore->dacregs[11]);
 	outb(0x3c4, 0x1a);
 	outb(0x3c5, restore->dacregs[12]);
-	outb(0x3c4, 0x01b);
+	outb(0x3c4, 0x1b);
 	outb(0x3c5, restore->dacregs[13]);
 	outb(0x3c4, 0x15);
 	tmp = inb(0x3c5);
@@ -132,6 +144,15 @@ void S3Trio64DAC_Restore(ScrnInfoPtr pScrn)
 	outb(0x3c5, restore->dacregs[6]);
 	outb(0x3c4, 0x18);
 	outb(0x3c5, restore->dacregs[7]);
+
+	if (pS3->Chipset == PCI_CHIP_AURORA64VP) {
+		int i;
+
+		for (0x1a; i <= 0x6f; i++) {
+			outb(0x3c4, i);
+			outb(0x3c5, restore->dacregs[i]);
+		}
+	}
 
 	outb(0x3c4, 0x08);
 	outb(0x3c5, restore->dacregs[1]);
@@ -199,8 +220,6 @@ void S3TrioSetPLL(ScrnInfoPtr pScrn, int clk, unsigned char m,
 {
 	unsigned char tmp;
 	int index2;
-
-ErrorF("clk = %d, m = 0x%x, n = 0x%x\n", clk, m, n);
 
 	if (clk < 2) {
 		tmp = inb(0x3cc);
@@ -279,6 +298,13 @@ void S3Trio64DAC_PreInit(ScrnInfoPtr pScrn)
 	n1 = n & 0x1f;
 	n2 = (n >> 5) & 0x03;
 	mclk = ((1431818 * (m+2)) / (n1+2) / (1<<n2)+50)/100;
+	if (pS3->Chipset == PCI_CHIP_AURORA64VP) {
+		outb(0x3c4, 0x27);
+		SR27 = inb(0x3c5);
+		outb(0x3c4, 0x28);
+		SR28 = inb(0x3c5);
+		mclk /= ((SR27 >> 2) & 0x03) + 1;
+	}
 	pS3->mclk = mclk;
 
 	outb(0x3c4, 0x08);
@@ -296,8 +322,12 @@ void S3Trio64DAC_Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	int pixmux=0, invert_vclk=0, sr8, sr15, sr18, cr33;
 	unsigned char blank, tmp;
 
-	S3TrioSetClock(pScrn, mode->Clock, 2, 1, 1, 31, 0, 3, 2,
-		       135000, 270000);
+	if (pS3->Chipset == PCI_CHIP_AURORA64VP)
+		S3TrioSetClock(pScrn, mode->Clock, 2, 1, 1, 63, 0, 3, 2,
+			       135000, 270000);
+	else
+		S3TrioSetClock(pScrn, mode->Clock, 2, 1, 1, 31, 0, 3, 2,
+			       135000, 270000);
 
 	outb(0x3c4, 1);
 	blank = inb(0x3c5);
@@ -345,6 +375,11 @@ void S3Trio64DAC_Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	outb(0x3c5, sr15);
 	outb(0x3c4, 0x18);
 	outb(0x3c5, sr18);
+
+	if (pS3->Chipset == PCI_CHIP_AURORA64VP) {
+		outb(0x3c4, 0x28);
+		outb(0x3c5, 0x00);
+	}
 
 	outb(0x3c4, 0x08);
 	outb(0x3c5, sr8);
