@@ -1,4 +1,6 @@
 XFree86 4.0h (?? June 2000)
+ 396. Fix some DRI offscreen memory calculations in the Matrox driver 
+      (Mark Vojkovich).
  395. IA64 workarounds - should compile and run right out of the box now 
       (Mark Vojkovich).
  394. LBX, X-TrueType and Xnest warning fixes (Marc La France).
@@ -10772,4 +10774,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1220 2000/06/27 21:26:33 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1221 2000/06/27 21:48:40 mvojkovi Exp $
