@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.13 2001/05/02 15:06:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.14 2001/05/16 13:43:17 alanh Exp $ */
 
 /* modified from tdfx_dri.c, mga_dri.c */
 
@@ -22,7 +22,9 @@
   while((MMIO_IN16(pSiS->IOBase, BR(16)+2) & 0xE000) != 0xE000){}; \
   MMIO_IN16(pSiS->IOBase, 0x8240);
 
+#if 0
 extern Bool drmSiSAgpInit(int driSubFD, int offset, int size);
+#endif
 
 extern void GlxSetVisualConfigs(
     int nconfigs,
@@ -370,7 +372,9 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
     pSISDRI->AGPCmdBufOffset = pSIS->agpCmdBufAddr - pSIS->agpAddr;
     pSISDRI->AGPCmdBufSize = pSIS->agpCmdBufSize;
 
+#if 0
     drmSiSAgpInit(pSIS->drmSubFD, AGP_CMDBUF_SIZE,(AGP_SIZE - AGP_CMDBUF_SIZE));
+#endif
   }
   while(0);
     

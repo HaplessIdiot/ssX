@@ -59,6 +59,7 @@ SavageSetVESAMode( SavagePtr psav, int n, int Refresh )
 	    ErrorF("Set video mode failed\n");
 	}
     }
+#ifdef XFree86LOADER
     else
     {
 	if( !vbeModeInit( psav->pVbe, n ) )
@@ -66,6 +67,7 @@ SavageSetVESAMode( SavagePtr psav, int n, int Refresh )
 	    ErrorF("Set video mode failed\n");
 	}
     }
+#endif
 }
 
 
