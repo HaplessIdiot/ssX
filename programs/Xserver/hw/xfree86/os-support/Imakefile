@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/Imakefile,v 3.10 1996/08/11 13:01:59 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/Imakefile,v 3.11 1996/10/08 12:23:40 dawes Exp $
 
 
 
@@ -80,6 +80,7 @@ ForceSubdirs($(SUBDIRS))
 InstallLinkKitLibrary(xf86_os,$(LINKKITDIR)/lib86)
 InstallLinkKitNonExecFile(assyntax.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(xf86_OSlib.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(xf86_OSproc.h,$(LINKKITDIR)/include)
 
 DependSubdirs($(SUBDIRS))
 
