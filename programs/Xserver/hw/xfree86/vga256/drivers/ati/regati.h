@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/regati.h,v 3.1 1994/09/21 10:57:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/regati.h,v 3.2 1994/10/29 22:45:44 dawes Exp $ */
 /*
  * Copyright 1994 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -124,7 +124,7 @@
 #define MEMCFG_6			0x0004
 #define MEMCFG_8			0x0006
 #define DBLSCAN				0x0008
-#define INTERLAC			0x0010
+#define INTERLACE			0x0010
 #define DISPEN_NC			0x0000
 #define DISPEN_ENAB			0x0020
 #define DISPEN_DISAB			0x0040

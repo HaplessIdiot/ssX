@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/ati.test.c,v 3.5 Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/ati.test.c,v 3.6 1994/10/29 22:39:36 dawes Exp $ */
 /* ati.test.c -- Gather information about ATI video adapters.
  * Created: Sun Aug  9 10:15:01 1992
  * Author: Rickard E. Faith, faith@cs.unc.edu
@@ -455,7 +455,7 @@ ATIMach32videoRam(void)
 }
 
 static void
-PrintRegisters(int Port, int Number, unsigned char * Name, int GenS1)
+PrintRegisters(int Port, int Number, char * Name, int GenS1)
 {
 	int Index;
 

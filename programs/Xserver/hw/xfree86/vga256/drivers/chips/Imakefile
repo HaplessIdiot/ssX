@@ -1,0 +1,25 @@
+XCOMM $XFree86$
+#include <Server.tmpl>
+
+SRCS = ct_driver.c ct_bank.s
+
+OBJS = ct_driver.o ct_bank.o
+
+#if XF86LinkKit
+INCLUDES = -I. -I../../../include -I../..
+#else
+INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
+           -I../../vga -I$(SERVERSRC)/include -I$(INCLUDESRC)
+#endif
+
+NormalLibraryObjectRule()
+NormalAsmObjectRule()
+
+NormalRelocatableTarget(ct_drv,$(OBJS))
+
+InstallLinkKitNonExecFile(ct_driver.c,$(LINKKITDIR)/drivers/vga256/chips)
+InstallLinkKitNonExecFile(ct_bank.s,$(LINKKITDIR)/drivers/vga256/chips)
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga256/chips)
+
+DependTarget()
+

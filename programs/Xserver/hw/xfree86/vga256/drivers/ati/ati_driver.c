@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.10 1994/09/27 10:31:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.11 1994/10/29 22:45:38 dawes Exp $ */
 /*
  * Copyright 1994 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -835,6 +835,7 @@ ATIMatchClockLine(Clock_Line, Number_Of_Clocks, Calibration_Clock_Number)
 const int **Clock_Line, Number_Of_Clocks, Calibration_Clock_Number;
 {
         int Clock_Chip = 0, Clock_Chip_Index;
+        int Number_Of_Matching_Clocks = 0;
         int Minimum_Gap = CLOCK_TOLERANCE + 1;
 
         for (Clock_Chip_Index = 0;  Clock_Line[++Clock_Chip_Index]; )
@@ -873,8 +874,9 @@ const int **Clock_Line, Number_Of_Clocks, Calibration_Clock_Number;
                         Clock_Count++;
                 }
 
-                if (!Clock_Count)
+                if (Clock_Count <= Number_Of_Matching_Clocks)
                         continue;
+                Number_Of_Matching_Clocks = Clock_Count;
                 Clock_Chip = Clock_Chip_Index;
                 if (!(Minimum_Gap = Maximum_Gap))
                         break;
@@ -1839,7 +1841,8 @@ ATIEnterLeave(enter)
 Bool enter;
 {
         static unsigned char saved_ab,
-                saved_b4, saved_b8, saved_b9, saved_be;
+                saved_b1, saved_b4, saved_b5, saved_b6,
+                saved_b8, saved_b9, saved_be;
 #if 0
         static unsigned short saved_clock_sel, saved_misc_options,
                 saved_mem_bndry, saved_mem_cfg;
@@ -1889,9 +1892,18 @@ Bool enter;
                 vgaIOBase = (inb(R_GENMO) & 0x01) ?
                         ColourIOBase : MonochromeIOBase;
 
-                /* Clear protection bits in ATI extended registers */
+                /*
+                 * Ensure all registers are read/write and disable all non-VGA
+                 * emulations.
+                 */
+                saved_b1 = ATIGetExtReg(0xB1);
+                ATIPutExtReg(0xB1, saved_b1 & 0xFC);
                 saved_b4 = ATIGetExtReg(0xB4);
-                ATIPutExtReg(0xB4, saved_b4 & 0x03);
+                ATIPutExtReg(0xB4, 0);
+                saved_b5 = ATIGetExtReg(0xB5);
+                ATIPutExtReg(0xB5, saved_b5 & 0xBF);
+                saved_b6 = ATIGetExtReg(0xB6);
+                ATIPutExtReg(0xB6, saved_b6 & 0xDD);
                 saved_b8 = ATIGetExtReg(0xB8);
                 ATIPutExtReg(0xB8, saved_b8 & 0xC0);
                 saved_b9 = ATIGetExtReg(0xB9);
@@ -1899,7 +1911,7 @@ Bool enter;
                 if (ATIChip != ATI_CHIP_18800)
                 {
                         saved_be = ATIGetExtReg(0xBE);
-                        ATIPutExtReg(0xBE, saved_be | 0x01);
+                        ATIPutExtReg(0xBE, (saved_be & 0xFA) | 0x01);
                         if (ATIChip >= ATI_CHIP_28800_2)
                         {
                                 saved_ab = ATIGetExtReg(0xAB);
@@ -1930,17 +1942,35 @@ Bool enter;
                 {
                         /*
                          * Could not make CRTC[17] readable, so unprotect
-                         * CRTC[0-7] replacing VSyncEnd with a reasonable
-                         * substitute (halfway between VBlankEnd and VTotal).
+                         * CRTC[0-7] replacing VSyncEnd with zero.  This zero
+                         * will be replaced after acquiring the needed access.
                          */
-                        unsigned int VSyncEnd
-                            = (GetReg(CRTX(vgaIOBase), 0x06)    /* VTotal */
-                            +  GetReg(CRTX(vgaIOBase), 0x16)    /* VBlankEnd */
-                            +  3) / 2;
-                        PutReg(CRTX(vgaIOBase), 0x11,
-                                (VSyncEnd & 0x0F) | 0x20);
+                        unsigned int VSyncEnd, VBlankStart, VBlankEnd;
+                        unsigned char crt07, crt09;
+
+                        PutReg(CRTX(vgaIOBase), 0x11, 0x20);
                         /* Make CRTC[16-17] readable */
                         PutReg(CRTX(vgaIOBase), 0x03, tmp | 0x80);
+                        /* Make vertical synch pulse as wide as possible */
+                        crt07 = GetReg(CRTX(vgaIOBase), 0x07);
+                        crt09 = GetReg(CRTX(vgaIOBase), 0x09);
+                        VBlankStart =
+                                (((crt09 & 0x20) << 4) |
+                                 ((crt07 & 0x08) << 5) |
+                                 GetReg(CRTX(vgaIOBase), 0x15)) + 1;
+                        VBlankEnd =
+                                (VBlankStart & 0x380) |
+                                (GetReg(CRTX(vgaIOBase), 0x16) & 0x7F);
+                        if (VBlankEnd <= VBlankStart)
+                                VBlankEnd += 0x80;
+                        VSyncEnd =
+                                (((crt07 & 0x80) << 2) |
+                                 ((crt07 & 0x04) << 6) |
+                                 GetReg(CRTX(vgaIOBase), 0x10)) + 0x0F;
+                        if (VSyncEnd >= VBlankEnd)
+                                VSyncEnd = VBlankEnd - 1;
+                        PutReg(CRTX(vgaIOBase), 0x11,
+                                (VSyncEnd & 0x0F) | 0x20);
                 }
         }
         else
@@ -1950,8 +1980,13 @@ Bool enter;
                 outb(CRTD(vgaIOBase), tmp | 0x80);
 
                 /* Restore protection bits in ATI extended registers */
-                tmp = ATIGetExtReg(0xB4);
-                ATIPutExtReg(0xB4, (saved_b4 & 0xFC) | (tmp & 0x03));
+                tmp = ATIGetExtReg(0xB1);
+                ATIPutExtReg(0xB1, (saved_b1 & 0x03) | (tmp & 0xFC));
+                ATIPutExtReg(0xB4, (saved_b4       )               );
+                tmp = ATIGetExtReg(0xB5);
+                ATIPutExtReg(0xB5, (saved_b5 & 0x40) | (tmp & 0xBF));
+                tmp = ATIGetExtReg(0xB6);
+                ATIPutExtReg(0xB6, (saved_b6 & 0x22) | (tmp & 0xDD));
                 tmp = ATIGetExtReg(0xB8);
                 ATIPutExtReg(0xB8, (saved_b8 & 0x3F) | (tmp & 0xC0));
                 tmp = ATIGetExtReg(0xB9);
@@ -1959,7 +1994,7 @@ Bool enter;
                 if (ATIChip != ATI_CHIP_18800)
                 {
                         tmp = ATIGetExtReg(0xBE);
-                        ATIPutExtReg(0xBE, (saved_be & 0x01) | (tmp & 0xFE));
+                        ATIPutExtReg(0xBE, (saved_be & 0x05) | (tmp & 0xFA));
                         if (ATIChip >= ATI_CHIP_28800_2)
                         {
                                 tmp = ATIGetExtReg(0xAB);
@@ -2253,9 +2288,13 @@ DisplayModePtr mode;
         new->b4 = 0;
         new->b5 = 0;
 #       if defined(MONOVGA) || defined(XF86VGA16)
-                new->b6 = 0x41;
+                new->b6 = 0x40;
+                if (vga256InfoRec.videoRam > 256)
+                        new->b6 |= 0x01;
 #       else
-                new->b6 = 0x45;
+                new->b6 = 0x44;
+                if (vga256InfoRec.videoRam > 512)
+                        new->b6 |= 0x01;
 #       endif
         new->b8 = (ATIGetExtReg(0xB8) & 0xC0)       ;
         new->b9 = (ATIGetExtReg(0xB9) & 0x7F)       ;
@@ -2444,7 +2483,7 @@ DisplayModePtr mode;
                 }
                 mode->Clock |= (be & 0x10) >> 2;
         }
-        mode->Clock |= (misc & 0xC0) >> 2;              /* VGA clock select */
+        mode->Clock |= (misc & 0x0C) >> 2;              /* VGA clock select */
         mode->Clock = ATIUnmapClock(mode->Clock);       /* Reverse mapping */
         mode->SynthClock = vga256InfoRec.clock[mode->Clock];
 
