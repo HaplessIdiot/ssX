@@ -9,7 +9,7 @@
 <date>17 November 2003</date>
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.23 2003/11/24 01:57:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.24 2003/12/20 19:30:35 dawes Exp $
 </ident>
 
 <toc>
@@ -670,7 +670,7 @@ font type.
 
 <it/Please note:/ the X-TrueType (X-TT) backend does not use the
 <it/fontenc/ layer, but instead uses its own method for font
-reencoding.  If you are only interested in X-TT you may want to skip
+re-encoding.  If you are only interested in X-TT you may want to skip
 to <ref id="sec:symbol-fonts" name="Using Symbol Fonts">, as
 the intervening information does not apply to X-TT.  X-TT itself is
 described in more detail in <ref id="sec:X-TT" name="X-TrueType">.

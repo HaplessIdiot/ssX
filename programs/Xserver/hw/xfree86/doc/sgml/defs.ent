@@ -1,9 +1,9 @@
-<!-- $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/defs.ent,v 1.39 2004/02/24 03:41:40 dawes Exp $ -->
+<!-- $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/defs.ent,v 1.40 2005/01/15 04:36:18 dawes Exp $ -->
 
 <!-- shared entity definitions for the XFree86 documentation -->
 
 <!-- XFree86 version string -->
-<!ENTITY relvers CDATA "4.4.99.21">
+<!ENTITY relvers CDATA "4.4.99.901">
 <!ENTITY prevrelvers CDATA "4.4.0">
 <!ENTITY fullrelvers CDATA "4.5.0">
 <!ENTITY prevfullrelvers CDATA "4.4.0">
@@ -16,9 +16,9 @@
 <!ENTITY prevfullsrcvers CDATA "440">
 <!ENTITY whichfullrel CDATA "eighth">
 <!ENTITY whichupdaterel CDATA "none">
-<!ENTITY reltag CDATA "xf-4_4_99_21">
+<!ENTITY reltag CDATA "xf-4_4_99_901">
 <!ENTITY relbranchtag CDATA "xf-4_5-branch">
-<!ENTITY rcnum CDATA "0">
+<!ENTITY rcnum CDATA "1">
 
 <!-- Version of the most recent 3.3.x release -->
 <!ENTITY legacyvers CDATA "3.3.6">
@@ -36,17 +36,18 @@
 <!ENTITY % firstsnap 'INCLUDE'>
 <!ENTITY % latersnap 'IGNORE'>
 <!ENTITY % snapshot 'INCLUDE'>
-<!ENTITY % havebindist 'IGNORE'>
-<!ENTITY % nobindist 'INCLUDE'>
-<!ENTITY % docsonline 'IGNORE'>
+<!ENTITY % havebindist 'INCLUDE'>
+<!ENTITY % nobindist 'IGNORE'>
+<!ENTITY % docsonline 'INCLUDE'>
 <!ENTITY % notsnapshot 'IGNORE'>
-<!ENTITY % relcandidate 'IGNORE'>
+<!ENTITY % relcandidate 'INCLUDE'>
+<!ENTITY % notrelcandidate 'IGNORE'>
 <!ENTITY % release 'IGNORE'>
 <!ENTITY % firstrel 'IGNORE'>
 <!ENTITY % earlyrel 'IGNORE'>
 <!ENTITY % laterrel 'INCLUDE'>
 <!ENTITY % fullrel 'IGNORE'>
-<!ENTITY % fullbinaries 'IGNORE'>
+<!ENTITY % fullbinaries 'INCLUDE'>
 <!ENTITY % updaterel 'IGNORE'>
 <!ENTITY % prevrelwasupdate 'IGNORE'>
 

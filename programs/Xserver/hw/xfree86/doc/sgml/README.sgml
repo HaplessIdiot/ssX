@@ -16,7 +16,7 @@
 <date>14 January 2005
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.143 2004/12/08 22:27:11 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.144 2005/01/15 04:36:18 dawes Exp $
 </ident>
 
 <abstract>
@@ -58,7 +58,7 @@ XFree86 &relvers; is a pre-release snapshot of XFree86 &fullrelvers;.
 This snapshot is release candidate &rcnum; for version &fullrelvers;.
 ]]>
 Pre-release snapshots are provided for beta testing.  You should only install
-snapshots if you're comfortable dealing with possibly unstable beta-level
+snapshots if you are comfortable dealing with possibly unstable beta-level
 software.  If you find problems with this snapshot, you are encouraged
 to report your findings to the public XFree86 mailing list:
 <email>devel@XFree86.org</email>.
@@ -82,7 +82,7 @@ Specific release enhancements can be viewed in the
 
 Most modern PC video hardware is supported in XFree86 &relvers;, and
 most PC video hardware that isn't supported explicitly can be used with
-the "vesa" driver.  The <htmlurl name="Releaes Notes" url="RELNOTES3.html">
+the "vesa" driver.  The <htmlurl name="Release Notes" url="RELNOTES3.html">
 has a table showing the drivers provided with XFree86 &relvers;, and links
 to related documentation.
 
@@ -90,8 +90,6 @@ XFree86&reg; is produced by The XFree86 Project, Inc through the work
 of a group of volunteer independent developers.  The XFree86 Project is
 a non-commercial organisation and XFree86 would not exist without the
 invaluable development contributions of volunteers from around the world.
-This release is dedicated to the greater XFree86 community, developers
-and users alike.
 
 XFree86 is a registered trademark of The XFree86 Project, Inc.
 

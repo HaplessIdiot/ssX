@@ -5,10 +5,10 @@
 <article>
 <title>Building XFree86&reg; from a Source Distribution
 <author>David Dawes, Matthieu Herrb
-<Date>23 February 2004
+<Date>6 February 2005
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.15 2004/12/08 22:27:11 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.16 2004/12/31 15:07:42 tsi Exp $
 </ident>
 
 <abstract>
@@ -248,24 +248,22 @@ tail -f World.log
 <p>
 When the build is finished, you should check the <tt/World.Log/ file to
 see if there were any problems.  If there weren't any then you can
-install the binaries.  By default the "make World" process will ignore
-errors and build as much as possible.  If there were problems and they
-are not corrected at this stage, the installation process will fail.
-To restart the build process after correcting the problems, just
-run 'make'.  If Imakefiles or part of the build configuration was
-changed as part of correcting the problem, either re-run "make World",
-or run "make Everything".
+install the binaries.  By default the "make World" process will stop
+when the first error is found.  To restart the build process after
+correcting the problems, just run 'make'.  If Imakefiles or part of the
+build configuration was changed as part of correcting the problem, either
+re-run "make World", or run "make Everything".
 
-If you would prefer "make World" to exit at the first error, run it in the
-following way instead of the way described above:
+If you would prefer "make World" to continue as best it can past errors,
+then run it in the following way instead of the way described above:
 
 for Bourne-like shells:
 <quote><tt>
-make WORLDOPTS= World &gt; World.log 2&gt;&amp;1
+make WORLDOPTS=-k World &gt; World.log 2&gt;&amp;1
 </tt></quote>
 for C-shell variants:
 <quote><tt>
-make WORLDOPTS= World &gt;&amp; World.log
+make WORLDOPTS=-k World &gt;&amp; World.log
 </tt></quote>
 
 To do the install, run "<tt/make install/" and "<tt/make install.man/".

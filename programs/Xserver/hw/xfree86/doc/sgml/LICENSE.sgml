@@ -8,7 +8,7 @@
 <date>06 January 2005</date>
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.38 2004/12/31 16:07:05 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.39 2005/01/06 19:20:45 dawes Exp $
 </ident>
 
 <sect>Introduction
@@ -17,7 +17,7 @@ $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.38 2004/12/31
 accurate only for formal XFree86 releases.  It may not be complete or
 accurate for development code obtained directly from the CVS repository
 or from development, experimental, release candidate, or other snapshots.
-For licensing infomation about development code, contact the relevant
+For licensing information about development code, contact the relevant
 authors, contributors and copyright holders.</bf>
 
 XFree86&reg; code without an explicit copyright or not explicitly
