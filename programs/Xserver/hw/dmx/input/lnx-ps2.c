@@ -1,9 +1,9 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/input/lnx-ps2.c,v 1.1 2004/06/30 20:21:44 martin Exp $ */
 /* Portions of this file were derived from the following files:
  *
  **********************************************************************
  *
- * Xserver/hw/kdrive/linux/ps2.c
+ * Xserver/hw/tinyx/linux/ps2.c
  *
  * Copyright (c) 1999 by Keith Packard
  *

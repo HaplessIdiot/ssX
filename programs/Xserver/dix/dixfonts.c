@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.29 2003/11/17 22:20:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.30 2004/06/02 22:42:56 dawes Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -1966,17 +1966,17 @@ InitFonts ()
 {
     patternCache = MakeFontPatternCache();
 
-#ifndef KDRIVESERVER
+#ifdef NO_PRINTER_FONTS
     if (screenInfo.numScreens > screenInfo.numVideoScreens) {
 	PrinterFontRegisterFpeFunctions();
 	FontFileCheckRegisterFpeFunctions();
 #ifndef NOFONTSERVERACCESS
 	check_fs_register_fpe_functions();
 #endif
-    } else 
+    } else
 #endif
     {
-#ifdef KDRIVESERVER
+#ifdef REGISTER_BUILTIN_FONTS
 	BuiltinRegisterFpeFunctions();
 #endif
 	FontFileRegisterFpeFunctions();

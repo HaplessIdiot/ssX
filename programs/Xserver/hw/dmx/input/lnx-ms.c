@@ -1,9 +1,9 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/input/lnx-ms.c,v 1.1 2004/06/30 20:21:44 martin Exp $ */
 /* Portions of this file were derived from the following files:
  *
  **********************************************************************
  *
- * Xserver/hw/kdrive/linux/ms.c
+ * Xserver/hw/tinyx/linux/ms.c
  *
  * Copyright (c) 2001 by Juliusz Chroboczek
  * Copyright (c) 1999 by Keith Packard

@@ -1,4 +1,5 @@
 XFree86 4.4.99.902 (xx February 2005)
+ 327. Build fix for Mac OS X 10.4 (Bugzilla #1545, Torrey T. Lyons).
  326. Modify the SHLD/SHRD emulation to handle shifts > 15 for 16-bit
       operands, behaviour expected by the BIOS in an SM722 controller
       (Charles Dobson).
@@ -19383,7 +19384,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3434 2005/02/11 19:45:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3435 2005/02/12 20:52:02 dawes Exp $
 
 
 
