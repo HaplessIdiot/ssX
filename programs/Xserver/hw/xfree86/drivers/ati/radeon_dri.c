@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.25 2003/01/15 04:44:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.26 2003/01/29 18:06:06 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario,
  *                VA Linux Systems Inc., Fremont, California.
@@ -1705,15 +1705,15 @@ static void RADEONDRIRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 					       (CARD32)(-1), -1);
 
     for (i = 0 ; i < num ; i++, pbox++) {
-	int x1 = max(pbox->x1, 0), x2 = min(pbox->x2, pScrn->virtualX-1);
-	int y1 = max(pbox->y1, 0), y2 = min(pbox->y2, pScrn->virtualY-1);
+	int xa = max(pbox->x1, 0), xb = min(pbox->x2, pScrn->virtualX-1);
+	int ya = max(pbox->y1, 0), yb = min(pbox->y2, pScrn->virtualY-1);
 
-	if (x1 <= x2 && y1 <= y2) {
-	    (*info->accel->SubsequentScreenToScreenCopy)(pScrn, x1, y1,
-							 x1 + info->backX,
-							 y1 + info->backY,
-							 x2 - x1 + 1,
-							 y2 - y1 + 1);
+	if (xa <= xb && ya <= yb) {
+	    (*info->accel->SubsequentScreenToScreenCopy)(pScrn, xa, ya,
+							 xa + info->backX,
+							 ya + info->backY,
+							 xb - xa + 1,
+							 yb - ya + 1);
 	}
     }
 }
