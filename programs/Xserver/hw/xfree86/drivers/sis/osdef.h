@@ -83,11 +83,11 @@
 /**********************************************************************/
 
 #ifdef LINUX_XF86
-#define OutPortByte(p,v) outb((CARD16)(p),(CARD8)(v))
-#define OutPortWord(p,v) outw((CARD16)(p),(CARD16)(v))
-#define OutPortLong(p,v) outl((CARD16)(p),(CARD32)(v))
-#define InPortByte(p)    inb((CARD16)(p))
-#define InPortWord(p)    inw((CARD16)(p))
-#define InPortLong(p)    inl((CARD16)(p))
+#define OutPortByte(p,v) outb((IOADDRESS)(p),(CARD8)(v))
+#define OutPortWord(p,v) outw((IOADDRESS)(p),(CARD16)(v))
+#define OutPortLong(p,v) outl((IOADDRESS)(p),(CARD32)(v))
+#define InPortByte(p)    inb((IOADDRESS)(p))
+#define InPortWord(p)    inw((IOADDRESS)(p))
+#define InPortLong(p)    inl((IOADDRESS)(p))
 #endif
 
