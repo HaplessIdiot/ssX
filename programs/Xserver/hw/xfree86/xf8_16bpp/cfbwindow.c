@@ -30,8 +30,12 @@ cfb8_16CreateWindow(WindowPtr pWin)
 {
     cfbPrivWin *pPrivWin = cfbGetWindowPrivate(pWin);
 
+    pPrivWin->pRotatedBorder = NullPixmap;
+    pPrivWin->pRotatedBackground = NullPixmap;
     pPrivWin->fastBackground = FALSE;
     pPrivWin->fastBorder = FALSE;
+    pPrivWin->oldRotate.x = 0;
+    pPrivWin->oldRotate.y = 0;
 
     return TRUE;
 }
@@ -126,9 +130,11 @@ cfb8_16ChangeWindowAttributes(
     WindowPtr pWin,
     unsigned long mask
 ){
-    return TRUE;
+    if (pWin->drawable.bitsPerPixel == 16)
+        return cfb16ChangeWindowAttributes(pWin,mask);
+    else
+        return cfbChangeWindowAttributes(pWin,mask);
 }
-
 
 void
 cfb8_16WindowExposures(
