@@ -1,4 +1,5 @@
 XFree86 4.4.99.22 (xx January 2005)
+ 276. Ensure DGA screen dimensions fit in 16 bits (Marc La France).
  275. Fix handling of PCI 64-bit BARs (Derived from Michael Yaroslavtsev;
       Bugzilla #1531).
  274. Fix strtkysym test failure (Alan Coopersmith).
@@ -19288,7 +19289,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3387 2005/01/17 03:07:41 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3388 2005/01/20 17:28:08 tsi Exp $
 
 
 
