@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_driver.c,v 1.2 2000/05/23 04:47:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_driver.c,v 1.3 2000/06/20 05:08:47 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -63,12 +63,6 @@ static int	FFBValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose,
 
 /* ffb_dga.c */
 extern void FFB_InitDGA(ScreenPtr pScreen);
-
-#ifdef XF86DRI
-/* ffb_dri.c */
-extern Bool FFBDRIScreenInit(ScreenPtr);
-extern Bool FFBDRIFinishScreenInit(ScreenPtr);
-#endif
 
 void FFBSync(ScrnInfoPtr pScrn);
 
@@ -870,8 +864,6 @@ FFBScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     }
 
     if (!pFfb->NoAccel) {
-	extern Bool FFBAccelInit(ScreenPtr pScreen, FFBPtr pFfb);
-
 	if (!FFBAccelInit(pScreen, pFfb))
 	    return FALSE;
 	xf86Msg(X_INFO, "%s: Using acceleration\n", pFfb->psdp->device);
@@ -884,8 +876,6 @@ FFBScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      * Must follow software cursor initialization.
      */
     if (pFfb->HWCursor) { 
-	extern Bool FFBHWCursorInit(ScreenPtr pScreen);
-
 	if(!FFBHWCursorInit(pScreen)) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
 		       "Hardware cursor initialization failed\n");
@@ -965,8 +955,6 @@ FFBAdjustFrame(int scrnIndex, int x, int y, int flags)
     return;
 }
 
-extern void CreatorVtChange (ScreenPtr pScreen, int enter);
-
 /*
  * This is called when VT switching back to the X server.  Its job is
  * to reinitialise the video mode.
@@ -1020,6 +1008,11 @@ FFBCloseScreen(int scrnIndex, ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     FFBPtr pFfb = GET_FFB_FROM_SCRN(pScrn);
+
+#ifdef XF86DRI
+    if (pFfb->dri_enabled)
+	    FFBDRICloseScreen(pScreen);
+#endif
 
     /* Restore kernel ramdac state before we unmap registers. */
     FFBDacFini(pFfb);

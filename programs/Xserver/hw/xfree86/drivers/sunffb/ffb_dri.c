@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_dri.c,v 1.1 2000/06/20 05:08:47 dawes Exp $
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_dri.c,v 1.2 2000/06/20 20:34:38 dawes Exp $
  * Acceleration for the Creator and Creator3D framebuffer - DRI/DRM support.
  *
  * Copyright (C) 2000 David S. Miller (davem@redhat.com)
@@ -58,11 +58,13 @@ static char FFBClientDriverName[] = "ffb";
 
 /* Forward declarations. */
 static Bool FFBDRICreateContext(ScreenPtr, VisualPtr, drmContext,
-				void *, void *);
-static void FFBDRIDestroyContext(ScreenPtr, drmContext, void *);
+				void *, DRIContextType);
+static void FFBDRIDestroyContext(ScreenPtr, drmContext, DRIContextType);
 
 static void FFBDRIInitBuffers(WindowPtr, RegionPtr, CARD32);
 static void FFBDRIMoveBuffers(WindowPtr, DDXPointRec, RegionPtr, CARD32);
+
+static void FFBDRISetDrawableIndex(WindowPtr, CARD32);
 
 /* XXX Why isn't this in a header somewhere? XXX */
 extern void GlxSetVisualConfigs(int nconfigs, __GLXvisualConfig *configs,
@@ -248,6 +250,7 @@ FFBDRIScreenInit(ScreenPtr pScreen)
 	pDRIInfo->DestroyContext	= FFBDRIDestroyContext;
 	pDRIInfo->InitBuffers		= FFBDRIInitBuffers;
 	pDRIInfo->MoveBuffers		= FFBDRIMoveBuffers;
+	pDRIInfo->SetDrawableIndex	= FFBDRISetDrawableIndex;
 
 	/* Our InitBuffers depends heavily on this setting. */
 	pDRIInfo->bufferRequests	= DRI_3D_WINDOWS_ONLY;
@@ -368,14 +371,14 @@ FFBDRICloseScreen(ScreenPtr pScreen)
 
 static Bool
 FFBDRICreateContext(ScreenPtr pScreen, VisualPtr visual, drmContext hwContext,
-		 void *pVisualConfigPriv, void *contextStore)
+		 void *pVisualConfigPriv, DRIContextType context)
 {
 	/* Nothing to do... */
 	return TRUE;
 }
 
 static void
-FFBDRIDestroyContext(ScreenPtr pScreen, drmContext hwContext, void *contextStore)
+FFBDRIDestroyContext(ScreenPtr pScreen, drmContext hwContext, DRIContextType context)
 {
 	/* Nothing to do... */
 }
@@ -409,73 +412,72 @@ FFBDRIFinishScreenInit(ScreenPtr pScreen)
 	return DRIFinishScreenInit(pScreen);
 }
 
-/* XXX What I am doing here is gross.  The issue is that there is
- * XXX no callback into the driver for DRI drawable creation, which
- * XXX is the only spot where I can allocate a WID for the window.
- */
 static void
 FFBDRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 index)
 {
 	ScreenPtr pScreen = pWin->drawable.pScreen;
 	FFBPtr pFfb = GET_FFB_FROM_SCREEN(pScreen);
 	CreatorPrivWinPtr pFfbPrivWin = CreatorGetWindowPrivate(pWin);
-	unsigned int wid;
+	ffb_fbcPtr ffb = pFfb->regs;
+	unsigned int fbc;
+	BoxPtr pBox;
+	int nBox;
 
-	/* This depends heavily that it is _ONLY_ called for
-	 * 3d/DRI windows.  And therefore we know that index
-	 * is the DRI drawable index.
-	 */
-	if (FFBWidIsShared(pFfb, pFfbPrivWin->wid)) {
-		ffb_fbcPtr ffb = pFfb->regs;
-		unsigned int fbc;
-		BoxPtr pBox;
-		int nBox;
+	fbc = pFfbPrivWin->fbc_base;
+	fbc = (fbc & ~FFB_FBC_WB_MASK) | FFB_FBC_WB_AB;
+	fbc = (fbc & ~FFB_FBC_XE_MASK) | FFB_FBC_XE_ON;
+	fbc = (fbc & ~FFB_FBC_RGBE_MASK) | FFB_FBC_RGBE_OFF;
 
-		wid = FFBWidUnshare(pFfb, pFfbPrivWin->wid);
-		if (wid == (unsigned int) -1)
-			return;
+	pBox = REGION_RECTS(prgn);
+	nBox = (int) REGION_NUM_RECTS(prgn);
+	FFB_WRITE_ROP(pFfb, ffb, (FFB_ROP_NEW | (FFB_ROP_NEW << 8)));
+	FFB_WRITE_PPC(pFfb, ffb,
+		      (FFB_PPC_APE_DISABLE | FFB_PPC_CS_CONST | FFB_PPC_XS_WID),
+		      (FFB_PPC_APE_MASK | FFB_PPC_CS_MASK | FFB_PPC_XS_MASK));
+	FFB_WRITE_PMASK(pFfb, ffb, ~0);
+	FFB_WRITE_DRAWOP(pFfb, ffb, FFB_DRAWOP_RECTANGLE);
+	FFB_WRITE_FBC(pFfb, ffb, fbc);
+	FFB_WRITE_WID(pFfb, ffb, FFB_WID_WIN(pWin));
 
-		ErrorF("FFB: Allocated WID %x for DRI window.\n", wid);
+	while(nBox--) {
+		register int x, y, w, h;
 
-		pFfbPrivWin->wid = wid;
-		fbc = pFfbPrivWin->fbc_base;
-		fbc = (fbc & ~FFB_FBC_WB_MASK) | FFB_FBC_WB_AB;
-		fbc = (fbc & ~FFB_FBC_XE_MASK) | FFB_FBC_XE_ON;
-		fbc = (fbc & ~FFB_FBC_RGBE_MASK) | FFB_FBC_RGBE_OFF;
-
-		pBox = REGION_RECTS(prgn);
-		nBox = (int) REGION_NUM_RECTS(prgn);
-		FFB_WRITE_ROP(pFfb, ffb, (FFB_ROP_NEW | (FFB_ROP_NEW << 8)));
-		FFB_WRITE_PPC(pFfb, ffb,
-			      (FFB_PPC_APE_DISABLE | FFB_PPC_CS_CONST | FFB_PPC_XS_WID),
-			      (FFB_PPC_APE_MASK | FFB_PPC_CS_MASK | FFB_PPC_XS_MASK));
-		FFB_WRITE_PMASK(pFfb, ffb, ~0);
-		FFB_WRITE_DRAWOP(pFfb, ffb, FFB_DRAWOP_RECTANGLE);
-		FFB_WRITE_FBC(pFfb, ffb, fbc);
-		FFB_WRITE_WID(pFfb, ffb, FFB_WID_WIN(pWin));
-
-		while(nBox--) {
-			register int x, y, w, h;
-
-			x = pBox->x1;
-			y = pBox->y1;
-			w = (pBox->x2 - x);
-			h = (pBox->y2 - y);
-			FFBFifo(pFfb, 4);
-			FFB_WRITE64(&ffb->by, y, x);
-			FFB_WRITE64_2(&ffb->bh, h, w);
-			pBox++;
-		}
-		pFfb->rp_active = 1;
-		FFBSync(pFfb, ffb);
-
-		/* Now update the SAREA. */
-		pFfb->pFfbSarea->wid_table[index] = wid;
+		x = pBox->x1;
+		y = pBox->y1;
+		w = (pBox->x2 - x);
+		h = (pBox->y2 - y);
+		FFBFifo(pFfb, 4);
+		FFB_WRITE64(&ffb->by, y, x);
+		FFB_WRITE64_2(&ffb->bh, h, w);
+		pBox++;
 	}
+	pFfb->rp_active = 1;
+	FFBSync(pFfb, ffb);
 }
 
 static void
 FFBDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
 		  RegionPtr prgnSrc, CARD32 index)
 {
+}
+
+static void
+FFBDRISetDrawableIndex(WindowPtr pWin, CARD32 index)
+{
+	ScreenPtr pScreen = pWin->drawable.pScreen;
+	FFBPtr pFfb = GET_FFB_FROM_SCREEN(pScreen);
+	CreatorPrivWinPtr pFfbPrivWin = CreatorGetWindowPrivate(pWin);
+	unsigned int wid;
+
+	if (FFBWidIsShared(pFfb, pFfbPrivWin->wid)) {
+		wid = FFBWidUnshare(pFfb, pFfbPrivWin->wid);
+		if (wid == (unsigned int) -1)
+			return;
+
+		ErrorF("FFB: Allocated WID %x for DRI window.\n", wid);
+		pFfbPrivWin->wid = wid;
+
+		/* Now update the SAREA. */
+		pFfb->pFfbSarea->wid_table[index] = wid;
+	}
 }
