@@ -1,3 +1,7 @@
+
+XCOMM $XFree86: $
+
+
 #include <Server.tmpl>
 
 SRCS = 	glint.c glint_init.c glint_accel.c glintcmap.c IBMRGB.c glintcur.c \
