@@ -1,4 +1,6 @@
 XFree86 4.4.99.7 (xx May 2004)
+ 120. Fix a problem where a bigrequest length of zero does not generate
+      a BadLength error (based on report and patch from Peng Hongbo).
  119. Update xdm docs/config to handle authDir in a non-default location
       (#6269, Luke Mewburn).
  118. Remove stale code for Mac OS X 10.0 support (Torrey T. Lyons).
@@ -18958,7 +18960,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3266 2004/06/07 18:50:26 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3267 2004/06/08 00:11:11 dawes Exp $
 
 
 
