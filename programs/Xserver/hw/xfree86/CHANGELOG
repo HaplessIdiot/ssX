@@ -1,4 +1,6 @@
 XFree86 3.9Pq (6 June 1999)
+2719. Change the parser's error message printing so that they will end
+      up in the log file (David Dawes).
 2718. Add support for armscii-8, ibm-cp1133, mulelao-1, viscii1.1-1,
       tcvn-5712, georgian-academy, georgian-ps (not all complete yet)
       (#2843, Pablo Saratxaga).
@@ -8119,4 +8121,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.766 1999/06/06 08:48:38 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.767 1999/06/06 14:06:03 dawes Exp $

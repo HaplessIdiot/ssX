@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/cpconfig.c,v 1.3 1999/05/30 07:18:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/cpconfig.c,v 1.4 1999/05/30 14:04:27 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -31,10 +31,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <ctype.h>
 #include "xf86Parser.h"
-
-char xf86ConfigFile[128] = "";
 
 #ifdef MALLOC_FUNCTIONS
 void
@@ -98,4 +97,22 @@ main (int argc, char *argv[])
 		xf86WriteConfigFile (argv[2], conf);
 	}
 	exit(0);
+}
+
+/* Functions that the parser requires */
+
+void
+VErrorF(const char *f, va_list args)
+{
+	vfprintf(stderr, f, args);
+}
+
+void
+ErrorF(const char *f, ...)
+{
+	va_list args;
+
+	va_start(args, f);
+	vfprintf(stderr, f, args);
+	va_end(args);
 }
