@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.38 2001/10/08 13:03:23 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.39 2001/10/18 17:42:34 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -1237,17 +1237,17 @@ static Bool RADEONPreInitConfig(ScrnInfoPtr pScrn)
 #if 0
 	case PCI_CHIP_RADEON_XX: info->IsPCI = TRUE;  break;
 #endif
-    case PCI_CHIP_RADEON_QY:
-    case PCI_CHIP_RADEON_QZ:
-    case PCI_CHIP_RADEON_LW:
-    case PCI_CHIP_RADEON_LY:
-    case PCI_CHIP_RADEON_LZ:
+	case PCI_CHIP_RADEON_QY:
+	case PCI_CHIP_RADEON_QZ:
+	case PCI_CHIP_RADEON_LW:
+	case PCI_CHIP_RADEON_LY:
+	case PCI_CHIP_RADEON_LZ:
 	case PCI_CHIP_RADEON_QD:
 	case PCI_CHIP_RADEON_QE:
 	case PCI_CHIP_RADEON_QF:
 	case PCI_CHIP_RADEON_QG:
-    case PCI_CHIP_R200_QL:
-    case PCI_CHIP_RV200_QW:
+	case PCI_CHIP_R200_QL:
+	case PCI_CHIP_RV200_QW:
 	default:                 info->IsPCI = FALSE; break;
 	}
     }

@@ -5,7 +5,7 @@ XCOMM	Each alias name is described within one line.
 XCOMM	The first word is the alias name (simplified locale name)
 XCOMM	the second word is full locale name.
 XCOMM
-XCOMM	$XFree86: xc/nls/locale.alias,v 1.44 2001/10/01 13:43:58 eich Exp $
+XCOMM	$XFree86: xc/nls/locale.alias,v 1.45 2001/11/01 23:35:27 dawes Exp $
 XCOMM
 
 POSIX:						C
@@ -46,7 +46,7 @@ bg_BG.microsoftcp1251:				bg_BG.CP1251
 bg_BG.microsoft-cp1251:				bg_BG.CP1251
 bg_BG.MICROSOFT-CP1251:				bg_BG.CP1251
 bg_BG.iso88595:					bg_BG.ISO8859-5
-bg_BG.kio8r:					bg_BG.KIO8-R
+bg_BG.koi8r:					bg_BG.KOI8-R
 br:						br_FR.ISO8859-1
 br_FR:						br_FR.ISO8859-1
 br_FR.iso88591:					br_FR.ISO8859-1
