@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_hwcurs.c,v 1.2 1998/08/29 07:39:52 dawes Exp $ */
 
 /* (c) Itai Nahshon */
 
@@ -174,13 +174,13 @@ CIRHWCursorInit(ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     CIRPtr pCir = CIRPTR(pScrn);
-    XAACursorInfoPtr infoPtr;
+    xf86CursorInfoPtr infoPtr;
 
 #ifdef CIR_DEBUG
     ErrorF("CIRHWCursorInit\n");
 #endif
 
-    infoPtr = XAACreateCursorInfoRec();
+    infoPtr = xf86CreateCursorInfoRec();
     if(!infoPtr) return FALSE;
     
     pCir->CursorInfoRec = infoPtr;
@@ -202,8 +202,8 @@ CIRHWCursorInit(ScreenPtr pScreen)
     infoPtr->RealizeCursor = NULL;
 
 #ifdef CIR_DEBUG
-    ErrorF("CIRHWCursorInit before XAAInitCursor\n");
+    ErrorF("CIRHWCursorInit before xf86InitCursor\n");
 #endif
 
-    return(XAAInitCursor(pScreen, infoPtr));
+    return(xf86InitCursor(pScreen, infoPtr));
 }

@@ -9,7 +9,7 @@
  *	Guy DESBIEF
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.15 1998/08/29 05:43:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.16 1998/08/29 07:39:51 dawes Exp $ */
 
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -897,8 +897,15 @@ CIRPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     /* Load XAA if needed */
-    if (!pCir->NoAccel || pCir->HWCursor)
+    if (!pCir->NoAccel)
 	if (!xf86LoadSubModule(pScrn, "xaa")) {
+	    CIRFreeRec(pScrn);
+	    return FALSE;
+	}
+
+    /* Load ramdac if needed */
+    if (pCir->HWCursor)
+	if (!xf86LoadSubModule(pScrn, "ramdac")) {
 	    CIRFreeRec(pScrn);
 	    return FALSE;
 	}
@@ -1671,7 +1678,7 @@ CIRCloseScreen(int scrnIndex, ScreenPtr pScreen)
 	XAADestroyInfoRec(pCir->AccelInfoRec);
     pCir->AccelInfoRec = NULL;
     if (pCir->CursorInfoRec)
-    	XAADestroyCursorInfoRec(pCir->CursorInfoRec);
+    	xf86DestroyCursorInfoRec(pCir->CursorInfoRec);
     pCir->CursorInfoRec = NULL;
     if (pCir->DGAInfo)
         DGADestroyInfoRec(pCir->DGAInfo);

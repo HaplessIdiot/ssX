@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86RamDac.h,v 1.4 1998/08/20 08:56:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86RamDac.h,v 1.5 1998/08/29 05:44:02 dawes Exp $ */
 
 #ifndef _XF86RAMDAC_H
 #define _XF86RAMDAC_H 1
@@ -85,7 +85,7 @@ typedef struct _RamDacHelperRec {
     );
 
     void (*HWCursorInit)(
-	XAACursorInfoPtr infoPtr
+	xf86CursorInfoPtr infoPtr
     );
 } RamDacHelperRec, *RamDacHelperRecPtr;
 

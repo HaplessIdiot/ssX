@@ -23,7 +23,7 @@
  *
  * IBM RAMDAC routines.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/IBM.c,v 1.4 1998/08/20 08:56:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/IBM.c,v 1.5 1998/08/29 05:44:00 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -554,7 +554,7 @@ IBMramdac640UseHWCursor(ScreenPtr pScr, CursorPtr pCurs)
 }
 
 void
-IBMramdac526HWCursorInit(XAACursorInfoPtr infoPtr)
+IBMramdac526HWCursorInit(xf86CursorInfoPtr infoPtr)
 {
     infoPtr->MaxWidth = 64;
     infoPtr->MaxHeight = 64;
@@ -570,7 +570,7 @@ IBMramdac526HWCursorInit(XAACursorInfoPtr infoPtr)
 }
 
 void
-IBMramdac640HWCursorInit(XAACursorInfoPtr infoPtr)
+IBMramdac640HWCursorInit(xf86CursorInfoPtr infoPtr)
 {
     infoPtr->MaxWidth = 64;
     infoPtr->MaxHeight = 64;

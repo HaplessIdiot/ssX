@@ -1,11 +1,11 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86Cursor.h,v 1.1 1998/08/29 05:44:01 dawes Exp $ */
 
-#ifndef _XAACURSOR_H
-#define _XAACURSOR_H
+#ifndef _XF86CURSOR_H
+#define _XF86CURSOR_H
 
 #include "mipointrst.h"
 
-typedef struct _XAACursorInfoRec {
+typedef struct _xf86CursorInfoRec {
     ScrnInfoPtr pScrn;
     int Flags;
     int MaxWidth;
@@ -15,10 +15,10 @@ typedef struct _XAACursorInfoRec {
     void (*LoadCursorImage)(ScrnInfoPtr pScrn, unsigned char *bits);
     void (*HideCursor)(ScrnInfoPtr pScrn);
     void (*ShowCursor)(ScrnInfoPtr pScrn);
-    unsigned char* (*RealizeCursor)(struct _XAACursorInfoRec *, CursorPtr);
+    unsigned char* (*RealizeCursor)(struct _xf86CursorInfoRec *, CursorPtr);
     Bool (*UseHWCursor)(ScreenPtr, CursorPtr);
 
-} XAACursorInfoRec, *XAACursorInfoPtr;
+} xf86CursorInfoRec, *xf86CursorInfoPtr;
 
 typedef struct {
     Bool			SWCursor;
@@ -28,7 +28,7 @@ typedef struct {
     short			x;
     short			y;
     CursorPtr			CurrentCursor;
-    XAACursorInfoPtr		CursorInfoPtr;
+    xf86CursorInfoPtr		CursorInfoPtr;
     CloseScreenProcPtr          CloseScreen;
     RecolorCursorProcPtr	RecolorCursor;
     InstallColormapProcPtr	InstallColormap;
@@ -39,23 +39,23 @@ typedef struct {
     Bool                	(*SwitchMode)(int, DisplayModePtr,int);
     Bool                	(*EnterVT)(int, int);
     void                	(*LeaveVT)(int, int);
-} XAACursorScreenRec, *XAACursorScreenPtr;
+} xf86CursorScreenRec, *xf86CursorScreenPtr;
 
-Bool XAAInitCursor(
+Bool xf86InitCursor(
    ScreenPtr pScreen, 
-   XAACursorInfoPtr infoPtr
+   xf86CursorInfoPtr infoPtr
 );
 
-XAACursorInfoPtr XAACreateCursorInfoRec(void);
-void XAADestroyCursorInfoRec(XAACursorInfoPtr);
+xf86CursorInfoPtr xf86CreateCursorInfoRec(void);
+void xf86DestroyCursorInfoRec(xf86CursorInfoPtr);
 
 
-void XAASetCursor(ScreenPtr pScreen, CursorPtr pCurs, int x, int y);
-void XAAMoveCursor(ScreenPtr pScreen, int x, int y);
-void XAARecolorCursor(ScreenPtr pScreen, CursorPtr pCurs, Bool displayed);
-Bool XAAInitHardwareCursor(ScreenPtr pScreen, XAACursorInfoPtr infoPtr);
+void xf86SetCursor(ScreenPtr pScreen, CursorPtr pCurs, int x, int y);
+void xf86MoveCursor(ScreenPtr pScreen, int x, int y);
+void xf86RecolorCursor(ScreenPtr pScreen, CursorPtr pCurs, Bool displayed);
+Bool xf86InitHardwareCursor(ScreenPtr pScreen, xf86CursorInfoPtr infoPtr);
 
-extern int XAACursorScreenIndex;
+extern int xf86CursorScreenIndex;
 
 #define HARDWARE_CURSOR_INVERT_MASK 			0x00000001
 #define HARDWARE_CURSOR_AND_SOURCE_WITH_MASK		0x00000002
@@ -70,4 +70,4 @@ extern int XAACursorScreenIndex;
 #define HARDWARE_CURSOR_BIT_ORDER_MSBFIRST		0x00000400
 
 
-#endif /* _XAACURSOR_H */
+#endif /* _XF86CURSOR_H */

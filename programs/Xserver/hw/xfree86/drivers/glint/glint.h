@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.6 1998/08/20 08:55:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.7 1998/08/29 05:43:24 dawes Exp $ */
 /*
  * Copyright 1997,1998 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -85,7 +85,7 @@ typedef struct {
     CARD32		FrameBufferReadMode;
     CARD32		BltScanDirection;
     RamDacRecPtr	RamDacRec;
-    XAACursorInfoPtr	CursorInfoRec;
+    xf86CursorInfoPtr	CursorInfoRec;
     XAAInfoRecPtr	AccelInfoRec;
     CloseScreenProcPtr	CloseScreen;
 } GLINTRec, *GLINTPtr;

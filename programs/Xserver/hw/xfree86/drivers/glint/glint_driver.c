@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.5 1998/08/20 08:55:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.6 1998/08/29 05:43:27 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -1971,7 +1971,7 @@ GLINTCloseScreen(int scrnIndex, ScreenPtr pScreen)
     if(pGlint->AccelInfoRec)
 	XAADestroyInfoRec(pGlint->AccelInfoRec);
     if(pGlint->CursorInfoRec)
-	XAADestroyCursorInfoRec(pGlint->CursorInfoRec);
+	xf86DestroyCursorInfoRec(pGlint->CursorInfoRec);
     pScrn->vtSema = FALSE;
     
     pScreen->CloseScreen = pGlint->CloseScreen;

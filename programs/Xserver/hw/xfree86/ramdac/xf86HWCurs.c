@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86HWCurs.c,v 1.1 1998/08/29 05:44:01 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -14,17 +14,17 @@
 #include "mi.h"
 #include "mipointer.h"
 #include "xf86Cursor.h"
+#include "xf86CursorPriv.h"
 
-static unsigned char* RealizeCursorInterleave0(XAACursorInfoPtr, CursorPtr);
-static unsigned char* RealizeCursorInterleave1(XAACursorInfoPtr, CursorPtr);
-static unsigned char* RealizeCursorInterleave8(XAACursorInfoPtr, CursorPtr);
-static unsigned char* RealizeCursorInterleave16(XAACursorInfoPtr, CursorPtr);
-static unsigned char* RealizeCursorInterleave32(XAACursorInfoPtr, CursorPtr);
-static unsigned char* RealizeCursorInterleave64(XAACursorInfoPtr, CursorPtr);
-
+static unsigned char* RealizeCursorInterleave0(xf86CursorInfoPtr, CursorPtr);
+static unsigned char* RealizeCursorInterleave1(xf86CursorInfoPtr, CursorPtr);
+static unsigned char* RealizeCursorInterleave8(xf86CursorInfoPtr, CursorPtr);
+static unsigned char* RealizeCursorInterleave16(xf86CursorInfoPtr, CursorPtr);
+static unsigned char* RealizeCursorInterleave32(xf86CursorInfoPtr, CursorPtr);
+static unsigned char* RealizeCursorInterleave64(xf86CursorInfoPtr, CursorPtr);
 
 Bool 
-XAAInitHardwareCursor(ScreenPtr pScreen, XAACursorInfoPtr infoPtr)
+xf86InitHardwareCursor(ScreenPtr pScreen, xf86CursorInfoPtr infoPtr)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
 
@@ -66,11 +66,11 @@ XAAInitHardwareCursor(ScreenPtr pScreen, XAACursorInfoPtr infoPtr)
 
 
 void
-XAASetCursor(ScreenPtr pScreen, CursorPtr pCurs, int x, int y)
+xf86SetCursor(ScreenPtr pScreen, CursorPtr pCurs, int x, int y)
 {
-    XAACursorScreenPtr ScreenPriv = 
-	(XAACursorScreenPtr)pScreen->devPrivates[XAACursorScreenIndex].ptr;
-    XAACursorInfoPtr infoPtr = ScreenPriv->CursorInfoPtr;
+    xf86CursorScreenPtr ScreenPriv = 
+	(xf86CursorScreenPtr)pScreen->devPrivates[xf86CursorScreenIndex].ptr;
+    xf86CursorInfoPtr infoPtr = ScreenPriv->CursorInfoPtr;
     unsigned char *bits;
 
     if(!pCurs) {
@@ -93,7 +93,7 @@ XAASetCursor(ScreenPtr pScreen, CursorPtr pCurs, int x, int y)
     if(bits)
 	(*infoPtr->LoadCursorImage)(infoPtr->pScrn, bits);
 
-    XAARecolorCursor(pScreen, pCurs, 1);
+    xf86RecolorCursor(pScreen, pCurs, 1);
 
     (*infoPtr->SetCursorPosition)(infoPtr->pScrn, x, y);
 
@@ -102,11 +102,11 @@ XAASetCursor(ScreenPtr pScreen, CursorPtr pCurs, int x, int y)
 
 
 void
-XAAMoveCursor(ScreenPtr pScreen, int x, int y)
+xf86MoveCursor(ScreenPtr pScreen, int x, int y)
 {
-    XAACursorScreenPtr ScreenPriv = 
-	(XAACursorScreenPtr)pScreen->devPrivates[XAACursorScreenIndex].ptr;
-    XAACursorInfoPtr infoPtr = ScreenPriv->CursorInfoPtr;
+    xf86CursorScreenPtr ScreenPriv = 
+	(xf86CursorScreenPtr)pScreen->devPrivates[xf86CursorScreenIndex].ptr;
+    xf86CursorInfoPtr infoPtr = ScreenPriv->CursorInfoPtr;
 
     x -= infoPtr->pScrn->frameX0 + ScreenPriv->HotX;
     y -= infoPtr->pScrn->frameY0 + ScreenPriv->HotY;
@@ -115,11 +115,11 @@ XAAMoveCursor(ScreenPtr pScreen, int x, int y)
 }
 
 void 
-XAARecolorCursor(ScreenPtr pScreen, CursorPtr pCurs, Bool displayed)
+xf86RecolorCursor(ScreenPtr pScreen, CursorPtr pCurs, Bool displayed)
 {
-    XAACursorScreenPtr ScreenPriv = 
-	(XAACursorScreenPtr)pScreen->devPrivates[XAACursorScreenIndex].ptr;
-    XAACursorInfoPtr infoPtr = ScreenPriv->CursorInfoPtr;
+    xf86CursorScreenPtr ScreenPriv = 
+	(xf86CursorScreenPtr)pScreen->devPrivates[xf86CursorScreenIndex].ptr;
+    xf86CursorInfoPtr infoPtr = ScreenPriv->CursorInfoPtr;
 
     if(ScreenPriv->PalettedCursor) {
         xColorItem sourceColor, maskColor;
@@ -154,7 +154,7 @@ XAARecolorCursor(ScreenPtr pScreen, CursorPtr pCurs, Bool displayed)
 /* These functions assume that MaxWidth is a multiple of 32 */
 
 static unsigned char* 
-RealizeCursorInterleave0(XAACursorInfoPtr infoPtr, CursorPtr pCurs)
+RealizeCursorInterleave0(xf86CursorInfoPtr infoPtr, CursorPtr pCurs)
 {
     CARD32 *SrcS, *SrcM, *DstS, *DstM;
     CARD32 *pSrc, *pMsk;
@@ -216,8 +216,8 @@ RealizeCursorInterleave0(XAACursorInfoPtr infoPtr, CursorPtr pCurs)
 	    y--; 
 	    pSrc+=DstPitch, pMsk+=DstPitch) {
 	    for(x = 0; x < SrcPitch; x++) {
-		pSrc[x] = XAAReverseBitOrder(pSrc[x]);
-		pMsk[x] = XAAReverseBitOrder(pMsk[x]);
+		pSrc[x] = xf86ReverseBitOrder(pSrc[x]);
+		pMsk[x] = xf86ReverseBitOrder(pMsk[x]);
 	    }
 	}
     }
@@ -226,7 +226,7 @@ RealizeCursorInterleave0(XAACursorInfoPtr infoPtr, CursorPtr pCurs)
 }
 
 static unsigned char* 
-RealizeCursorInterleave1(XAACursorInfoPtr infoPtr, CursorPtr pCurs)
+RealizeCursorInterleave1(xf86CursorInfoPtr infoPtr, CursorPtr pCurs)
 {
     unsigned char *DstS, *DstM;
     unsigned char *pntr;
@@ -270,7 +270,7 @@ RealizeCursorInterleave1(XAACursorInfoPtr infoPtr, CursorPtr pCurs)
 
 
 static unsigned char* 
-RealizeCursorInterleave8(XAACursorInfoPtr infoPtr, CursorPtr pCurs)
+RealizeCursorInterleave8(xf86CursorInfoPtr infoPtr, CursorPtr pCurs)
 {
     unsigned char *DstS, *DstM;
     unsigned char *pntr;
@@ -305,7 +305,7 @@ RealizeCursorInterleave8(XAACursorInfoPtr infoPtr, CursorPtr pCurs)
 }
 
 static unsigned char* 
-RealizeCursorInterleave16(XAACursorInfoPtr infoPtr, CursorPtr pCurs)
+RealizeCursorInterleave16(xf86CursorInfoPtr infoPtr, CursorPtr pCurs)
 {
     unsigned short *DstS, *DstM;
     unsigned short *pntr;
@@ -340,7 +340,7 @@ RealizeCursorInterleave16(XAACursorInfoPtr infoPtr, CursorPtr pCurs)
 }
 
 static unsigned char* 
-RealizeCursorInterleave32(XAACursorInfoPtr infoPtr, CursorPtr pCurs)
+RealizeCursorInterleave32(xf86CursorInfoPtr infoPtr, CursorPtr pCurs)
 {
     CARD32 *DstS, *DstM;
     CARD32 *pntr;
@@ -375,7 +375,7 @@ RealizeCursorInterleave32(XAACursorInfoPtr infoPtr, CursorPtr pCurs)
 }
 
 static unsigned char* 
-RealizeCursorInterleave64(XAACursorInfoPtr infoPtr, CursorPtr pCurs)
+RealizeCursorInterleave64(xf86CursorInfoPtr infoPtr, CursorPtr pCurs)
 {
     CARD32 *DstS, *DstM;
     CARD32 *pntr;

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir.h,v 1.2 1998/08/29 07:39:50 dawes Exp $ */
 
 /* (c) Itai Nahshon */
 
@@ -64,7 +64,7 @@ typedef struct {
     CIRRegRec		SavedReg;
     CIRRegRec		ModeReg;
     XAAInfoRecPtr       AccelInfoRec;
-    XAACursorInfoPtr    CursorInfoRec;
+    xf86CursorInfoPtr   CursorInfoRec;
     DGAInfoPtr          DGAInfo;
 #if 0
     CARD32		BltScanDirection;

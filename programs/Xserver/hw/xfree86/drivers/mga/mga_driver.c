@@ -40,7 +40,7 @@
  *		RAMDAC MGA1064 timing,
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.37 1998/08/29 05:43:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.38 1998/08/29 08:56:43 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1851,7 +1851,7 @@ MGACloseScreen(int scrnIndex, ScreenPtr pScreen)
     if (pMga->AccelInfoRec)
 	XAADestroyInfoRec(pMga->AccelInfoRec);
     if (pMga->CursorInfoRec)
-    	XAADestroyCursorInfoRec(pMga->CursorInfoRec);
+    	xf86DestroyCursorInfoRec(pMga->CursorInfoRec);
     pScrn->vtSema = FALSE;
 
     pScreen->CloseScreen = pMga->CloseScreen;

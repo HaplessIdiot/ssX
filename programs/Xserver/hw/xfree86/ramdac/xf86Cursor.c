@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86Cursor.c,v 1.1 1998/08/29 05:44:01 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -16,61 +16,61 @@
 #include "mi.h"
 #include "xf86Cursor.h"
 
-int XAACursorScreenIndex = -1;
-static unsigned long XAACursorGeneration = 0;
+int xf86CursorScreenIndex = -1;
+static unsigned long xf86CursorGeneration = 0;
 
 /* sprite functions */
 
-static Bool XAACursorRealizeCursor(ScreenPtr, CursorPtr);
-static Bool XAACursorUnrealizeCursor(ScreenPtr, CursorPtr);
-static void XAACursorSetCursor(ScreenPtr, CursorPtr, int, int);
-static void XAACursorMoveCursor(ScreenPtr, int, int);
+static Bool xf86CursorRealizeCursor(ScreenPtr, CursorPtr);
+static Bool xf86CursorUnrealizeCursor(ScreenPtr, CursorPtr);
+static void xf86CursorSetCursor(ScreenPtr, CursorPtr, int, int);
+static void xf86CursorMoveCursor(ScreenPtr, int, int);
 
-static miPointerSpriteFuncRec XAACursorSpriteFuncs = {
-   XAACursorRealizeCursor,
-   XAACursorUnrealizeCursor,
-   XAACursorSetCursor,
-   XAACursorMoveCursor
+static miPointerSpriteFuncRec xf86CursorSpriteFuncs = {
+   xf86CursorRealizeCursor,
+   xf86CursorUnrealizeCursor,
+   xf86CursorSetCursor,
+   xf86CursorMoveCursor
 };
 
 /* Screen functions */
 
-static void XAACursorInstallColormap(ColormapPtr);
-static void XAACursorRecolorCursor(ScreenPtr, CursorPtr, Bool);
-static Bool XAACursorCloseScreen(int, ScreenPtr);
-static void XAACursorQueryBestSize(int, unsigned short*, unsigned short*, 
+static void xf86CursorInstallColormap(ColormapPtr);
+static void xf86CursorRecolorCursor(ScreenPtr, CursorPtr, Bool);
+static Bool xf86CursorCloseScreen(int, ScreenPtr);
+static void xf86CursorQueryBestSize(int, unsigned short*, unsigned short*, 
 				ScreenPtr);
 
 /* ScrnInfoRec functions */
 
-static Bool XAACursorSwitchMode(int, DisplayModePtr,int);
-static Bool XAACursorEnterVT(int, int);
-static void XAACursorLeaveVT(int, int);
+static Bool xf86CursorSwitchMode(int, DisplayModePtr,int);
+static Bool xf86CursorEnterVT(int, int);
+static void xf86CursorLeaveVT(int, int);
 
 
 Bool 
-XAAInitCursor(
+xf86InitCursor(
    ScreenPtr pScreen, 
-   XAACursorInfoPtr infoPtr
+   xf86CursorInfoPtr infoPtr
 )
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-    XAACursorScreenPtr ScreenPriv;
+    xf86CursorScreenPtr ScreenPriv;
     miPointerScreenPtr PointPriv;
  
-    if(XAACursorGeneration != serverGeneration) {
-	if((XAACursorScreenIndex = AllocateScreenPrivateIndex()) < 0)
+    if(xf86CursorGeneration != serverGeneration) {
+	if((xf86CursorScreenIndex = AllocateScreenPrivateIndex()) < 0)
 		return FALSE;
-	XAACursorGeneration = serverGeneration; 	
+	xf86CursorGeneration = serverGeneration; 	
     }
 
-    if(!XAAInitHardwareCursor(pScreen, infoPtr))
+    if(!xf86InitHardwareCursor(pScreen, infoPtr))
 	return FALSE;
 
-    ScreenPriv = (XAACursorScreenPtr)xcalloc(1, sizeof(XAACursorScreenRec));
+    ScreenPriv = (xf86CursorScreenPtr)xcalloc(1, sizeof(xf86CursorScreenRec));
     if(!ScreenPriv) return FALSE;
 
-    pScreen->devPrivates[XAACursorScreenIndex].ptr = (pointer)ScreenPriv;
+    pScreen->devPrivates[xf86CursorScreenIndex].ptr = (pointer)ScreenPriv;
 
     ScreenPriv->SWCursor = TRUE;
     ScreenPriv->isUp = FALSE;
@@ -80,16 +80,16 @@ XAAInitCursor(
     ScreenPriv->pInstalledMap = NULL;
 
     ScreenPriv->CloseScreen = pScreen->CloseScreen;
-    pScreen->CloseScreen = XAACursorCloseScreen;
+    pScreen->CloseScreen = xf86CursorCloseScreen;
     ScreenPriv->QueryBestSize = pScreen->QueryBestSize;
-    pScreen->QueryBestSize = XAACursorQueryBestSize;
+    pScreen->QueryBestSize = xf86CursorQueryBestSize;
     ScreenPriv->RecolorCursor = pScreen->RecolorCursor;
-    pScreen->RecolorCursor = XAACursorRecolorCursor;
+    pScreen->RecolorCursor = xf86CursorRecolorCursor;
 
     if((infoPtr->pScrn->bitsPerPixel == 8) &&
     		!(infoPtr->Flags & HARDWARE_CURSOR_TRUECOLOR_AT_8BPP)) {
 	ScreenPriv->InstallColormap = pScreen->InstallColormap;
-	pScreen->InstallColormap = XAACursorInstallColormap;
+	pScreen->InstallColormap = xf86CursorInstallColormap;
 	ScreenPriv->PalettedCursor = TRUE;
     }
 
@@ -97,14 +97,14 @@ XAAInitCursor(
 	(miPointerScreenPtr)pScreen->devPrivates[miPointerScreenIndex].ptr;
 
     ScreenPriv->spriteFuncs = PointPriv->spriteFuncs;
-    PointPriv->spriteFuncs = &XAACursorSpriteFuncs; 
+    PointPriv->spriteFuncs = &xf86CursorSpriteFuncs; 
 
     ScreenPriv->SwitchMode = pScrn->SwitchMode;
-    pScrn->SwitchMode = XAACursorSwitchMode;
+    pScrn->SwitchMode = xf86CursorSwitchMode;
     ScreenPriv->EnterVT = pScrn->EnterVT;
-    pScrn->EnterVT = XAACursorEnterVT; 
+    pScrn->EnterVT = xf86CursorEnterVT; 
     ScreenPriv->LeaveVT = pScrn->LeaveVT;
-    pScrn->LeaveVT = XAACursorLeaveVT;
+    pScrn->LeaveVT = xf86CursorLeaveVT;
 
     return TRUE;
 }
@@ -112,13 +112,13 @@ XAAInitCursor(
 /***** Screen functions *****/
 
 static Bool
-XAACursorCloseScreen(int i, ScreenPtr pScreen)
+xf86CursorCloseScreen(int i, ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     miPointerScreenPtr PointPriv = 
 	(miPointerScreenPtr)pScreen->devPrivates[miPointerScreenIndex].ptr;
-    XAACursorScreenPtr ScreenPriv = 
-	(XAACursorScreenPtr)pScreen->devPrivates[XAACursorScreenIndex].ptr;
+    xf86CursorScreenPtr ScreenPriv = 
+	(xf86CursorScreenPtr)pScreen->devPrivates[xf86CursorScreenIndex].ptr;
 
     pScreen->CloseScreen = ScreenPriv->CloseScreen;
     pScreen->QueryBestSize = ScreenPriv->QueryBestSize;
@@ -138,14 +138,14 @@ XAACursorCloseScreen(int i, ScreenPtr pScreen)
 }
 
 static void
-XAACursorQueryBestSize(
+xf86CursorQueryBestSize(
    int class, 
    unsigned short *width,
    unsigned short *height,
    ScreenPtr pScreen
 ){
-    XAACursorScreenPtr ScreenPriv = 
-	(XAACursorScreenPtr)pScreen->devPrivates[XAACursorScreenIndex].ptr;
+    xf86CursorScreenPtr ScreenPriv = 
+	(xf86CursorScreenPtr)pScreen->devPrivates[xf86CursorScreenIndex].ptr;
 
     if(class == CursorShape) {
 	*width = ScreenPriv->CursorInfoPtr->MaxWidth;
@@ -155,10 +155,10 @@ XAACursorQueryBestSize(
 }
    
 static void 
-XAACursorInstallColormap(ColormapPtr pMap)
+xf86CursorInstallColormap(ColormapPtr pMap)
 {
-    XAACursorScreenPtr ScreenPriv = 	
-     (XAACursorScreenPtr)pMap->pScreen->devPrivates[XAACursorScreenIndex].ptr;
+    xf86CursorScreenPtr ScreenPriv = 	
+     (xf86CursorScreenPtr)pMap->pScreen->devPrivates[xf86CursorScreenIndex].ptr;
 
     ScreenPriv->pInstalledMap = pMap;
     
@@ -167,41 +167,41 @@ XAACursorInstallColormap(ColormapPtr pMap)
 
 
 static void 
-XAACursorRecolorCursor(
+xf86CursorRecolorCursor(
     ScreenPtr pScreen, 
     CursorPtr pCurs, 
     Bool displayed )
 {
-    XAACursorScreenPtr ScreenPriv = 
-	(XAACursorScreenPtr)pScreen->devPrivates[XAACursorScreenIndex].ptr;
+    xf86CursorScreenPtr ScreenPriv = 
+	(xf86CursorScreenPtr)pScreen->devPrivates[xf86CursorScreenIndex].ptr;
 
     if(!displayed) return;
 
     if(ScreenPriv->SWCursor)
 	(*ScreenPriv->RecolorCursor)(pScreen, pCurs, displayed);
     else 
-	XAARecolorCursor(pScreen, pCurs, displayed);
+	xf86RecolorCursor(pScreen, pCurs, displayed);
 }
 
 /***** ScrnInfoRec functions *********/
 
 static Bool 
-XAACursorSwitchMode(int index, DisplayModePtr mode, int flags)
+xf86CursorSwitchMode(int index, DisplayModePtr mode, int flags)
 {
     Bool ret;
     ScreenPtr pScreen = screenInfo.screens[index];
-    XAACursorScreenPtr ScreenPriv = 
-     (XAACursorScreenPtr)pScreen->devPrivates[XAACursorScreenIndex].ptr;
+    xf86CursorScreenPtr ScreenPriv = 
+     (xf86CursorScreenPtr)pScreen->devPrivates[xf86CursorScreenIndex].ptr;
 
     if(ScreenPriv->isUp) {
-	XAASetCursor(pScreen, 0, ScreenPriv->x, ScreenPriv->y);
+	xf86SetCursor(pScreen, 0, ScreenPriv->x, ScreenPriv->y);
 	ScreenPriv->isUp = FALSE;
     }
 
     ret = (*ScreenPriv->SwitchMode)(index, mode, flags);
 
     if(ScreenPriv->CurrentCursor)
-	XAACursorSetCursor(pScreen, ScreenPriv->CurrentCursor, 
+	xf86CursorSetCursor(pScreen, ScreenPriv->CurrentCursor, 
 					ScreenPriv->x, ScreenPriv->y);
 
     return ret;
@@ -209,30 +209,30 @@ XAACursorSwitchMode(int index, DisplayModePtr mode, int flags)
 
 
 static Bool 
-XAACursorEnterVT(int index, int flags)
+xf86CursorEnterVT(int index, int flags)
 {
     Bool ret;
     ScreenPtr pScreen = screenInfo.screens[index];
-    XAACursorScreenPtr ScreenPriv = 
-     (XAACursorScreenPtr)pScreen->devPrivates[XAACursorScreenIndex].ptr;
+    xf86CursorScreenPtr ScreenPriv = 
+     (xf86CursorScreenPtr)pScreen->devPrivates[xf86CursorScreenIndex].ptr;
 
     ret = (*ScreenPriv->EnterVT)(index, flags);
 
     if(ScreenPriv->CurrentCursor)
-	XAACursorSetCursor(pScreen, ScreenPriv->CurrentCursor, 
+	xf86CursorSetCursor(pScreen, ScreenPriv->CurrentCursor, 
 			ScreenPriv->x, ScreenPriv->y);
     return ret;
 }
 
 static void 
-XAACursorLeaveVT(int index, int flags)
+xf86CursorLeaveVT(int index, int flags)
 {
     ScreenPtr pScreen = screenInfo.screens[index];
-    XAACursorScreenPtr ScreenPriv = 
-     (XAACursorScreenPtr)pScreen->devPrivates[XAACursorScreenIndex].ptr;
+    xf86CursorScreenPtr ScreenPriv = 
+     (xf86CursorScreenPtr)pScreen->devPrivates[xf86CursorScreenIndex].ptr;
 
     if(ScreenPriv->isUp) {   
-	XAASetCursor(pScreen, 0, ScreenPriv->x, ScreenPriv->y);
+	xf86SetCursor(pScreen, 0, ScreenPriv->x, ScreenPriv->y);
 	ScreenPriv->isUp = FALSE;
     }
     ScreenPriv->SWCursor = TRUE;
@@ -245,10 +245,10 @@ XAACursorLeaveVT(int index, int flags)
 
 
 static Bool
-XAACursorRealizeCursor(ScreenPtr pScreen, CursorPtr pCurs)
+xf86CursorRealizeCursor(ScreenPtr pScreen, CursorPtr pCurs)
 {
-    XAACursorScreenPtr ScreenPriv = 
-	(XAACursorScreenPtr)pScreen->devPrivates[XAACursorScreenIndex].ptr;
+    xf86CursorScreenPtr ScreenPriv = 
+	(xf86CursorScreenPtr)pScreen->devPrivates[xf86CursorScreenIndex].ptr;
 
     if(pCurs->refcnt <= 1)
 	pCurs->devPriv[pScreen->myNum] = NULL;
@@ -257,10 +257,10 @@ XAACursorRealizeCursor(ScreenPtr pScreen, CursorPtr pCurs)
 }
 
 static Bool
-XAACursorUnrealizeCursor(ScreenPtr pScreen, CursorPtr pCurs)
+xf86CursorUnrealizeCursor(ScreenPtr pScreen, CursorPtr pCurs)
 {
-    XAACursorScreenPtr ScreenPriv = 
-	(XAACursorScreenPtr)pScreen->devPrivates[XAACursorScreenIndex].ptr;
+    xf86CursorScreenPtr ScreenPriv = 
+	(xf86CursorScreenPtr)pScreen->devPrivates[xf86CursorScreenIndex].ptr;
     
     if(pCurs->refcnt <= 1) {
 	pointer privData = pCurs->devPriv[pScreen->myNum];
@@ -273,11 +273,11 @@ XAACursorUnrealizeCursor(ScreenPtr pScreen, CursorPtr pCurs)
 
 
 static void
-XAACursorSetCursor(ScreenPtr pScreen, CursorPtr pCurs, int x, int y)
+xf86CursorSetCursor(ScreenPtr pScreen, CursorPtr pCurs, int x, int y)
 {
-    XAACursorScreenPtr ScreenPriv = 
-	(XAACursorScreenPtr)pScreen->devPrivates[XAACursorScreenIndex].ptr;
-    XAACursorInfoPtr infoPtr = ScreenPriv->CursorInfoPtr;
+    xf86CursorScreenPtr ScreenPriv = 
+	(xf86CursorScreenPtr)pScreen->devPrivates[xf86CursorScreenIndex].ptr;
+    xf86CursorInfoPtr infoPtr = ScreenPriv->CursorInfoPtr;
 
     ScreenPriv->CurrentCursor = pCurs;
     ScreenPriv->x = x;
@@ -287,7 +287,7 @@ XAACursorSetCursor(ScreenPtr pScreen, CursorPtr pCurs, int x, int y)
 	if(ScreenPriv->SWCursor)
 	    (*ScreenPriv->spriteFuncs->SetCursor)(pScreen, 0, x, y);
 	else {
-	    if(ScreenPriv->isUp) XAASetCursor(pScreen, 0, x, y);
+	    if(ScreenPriv->isUp) xf86SetCursor(pScreen, 0, x, y);
 	    ScreenPriv->isUp = FALSE;
 	}
 	return;
@@ -304,7 +304,7 @@ XAACursorSetCursor(ScreenPtr pScreen, CursorPtr pCurs, int x, int y)
 	if(ScreenPriv->SWCursor) /* remove the SW cursor */
 	      (*ScreenPriv->spriteFuncs->SetCursor)(pScreen, 0, x, y);
 
-	XAASetCursor(pScreen, pCurs, x, y);
+	xf86SetCursor(pScreen, pCurs, x, y);
 	ScreenPriv->SWCursor = FALSE;
 	ScreenPriv->isUp = TRUE;
 	return; 
@@ -312,7 +312,7 @@ XAACursorSetCursor(ScreenPtr pScreen, CursorPtr pCurs, int x, int y)
 
     if(ScreenPriv->isUp) {
 	/* remove the HW cursor */
-	XAASetCursor(pScreen, 0, x, y);
+	xf86SetCursor(pScreen, 0, x, y);
 	ScreenPriv->isUp = FALSE;
     }
 
@@ -322,10 +322,10 @@ XAACursorSetCursor(ScreenPtr pScreen, CursorPtr pCurs, int x, int y)
 }
 
 static void
-XAACursorMoveCursor(ScreenPtr pScreen, int x, int y)
+xf86CursorMoveCursor(ScreenPtr pScreen, int x, int y)
 {
-    XAACursorScreenPtr ScreenPriv = 
-	(XAACursorScreenPtr)pScreen->devPrivates[XAACursorScreenIndex].ptr;
+    xf86CursorScreenPtr ScreenPriv = 
+	(xf86CursorScreenPtr)pScreen->devPrivates[xf86CursorScreenIndex].ptr;
 
     ScreenPriv->x = x;
     ScreenPriv->y = y;
@@ -333,20 +333,20 @@ XAACursorMoveCursor(ScreenPtr pScreen, int x, int y)
     if(ScreenPriv->SWCursor)
 	(*ScreenPriv->spriteFuncs->MoveCursor)(pScreen, x, y);
     else if(ScreenPriv->isUp)	
-	XAAMoveCursor(pScreen, x, y); 
+	xf86MoveCursor(pScreen, x, y); 
 }
 
 
 
-XAACursorInfoPtr 
-XAACreateCursorInfoRec(void)
+xf86CursorInfoPtr 
+xf86CreateCursorInfoRec(void)
 {
-    return((XAACursorInfoPtr)xcalloc(1,sizeof(XAACursorInfoRec)));
+    return((xf86CursorInfoPtr)xcalloc(1,sizeof(xf86CursorInfoRec)));
 }
 
 
 void 
-XAADestroyCursorInfoRec(XAACursorInfoPtr infoPtr)
+xf86DestroyCursorInfoRec(xf86CursorInfoPtr infoPtr)
 {
     if(infoPtr) xfree(infoPtr);
 }

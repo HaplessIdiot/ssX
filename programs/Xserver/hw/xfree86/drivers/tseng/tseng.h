@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.22 1998/08/19 07:49:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.23 1998/08/29 05:43:35 dawes Exp $ */
 
 
 
@@ -227,14 +227,14 @@ typedef struct {
     CloseScreenProcPtr CloseScreen;
     int save_divide;
     XAAInfoRecPtr AccelInfoRec;
-    XAACursorInfoPtr CursorInfoRec;
+    xf86CursorInfoPtr CursorInfoRec;
     CARD32 AccelColorBufferOffset;     /* offset in video memory where FG and BG colors will be stored */
     CARD32 AccelColorExpandBufferOffsets[3];   /* offset in video memory for ColorExpand buffers */
     unsigned char * XAAColorExpandBuffers[3];  /* pointers to colorexpand buffers */
     CARD32 AccelImageWriteBufferOffsets[2];    /* offset in video memory for ImageWrite Buffers */
     unsigned char * XAAScanlineImageWriteBuffers[2];   /* pointers to ImageWrite Buffers */
     CARD32 HWCursorBufferOffset;
-    unsigned char *XAAHWCursorBuffer;
+    unsigned char *HWCursorBuffer;
     unsigned char * XAAScanlineColorExpandBuffers[1];
     CARD32* ColExpLUT;
 } TsengRec, *TsengPtr;

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.34 1998/08/19 07:49:16 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.35 1998/08/29 05:43:38 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -2162,7 +2162,7 @@ TsengCloseScreen(int scrnIndex, ScreenPtr pScreen)
     if (pTseng->AccelInfoRec)
 	XAADestroyInfoRec(pTseng->AccelInfoRec);
     if (pTseng->CursorInfoRec)
-	XAADestroyCursorInfoRec(pTseng->CursorInfoRec);
+	xf86DestroyCursorInfoRec(pTseng->CursorInfoRec);
 
     pScrn->vtSema = FALSE;
 
