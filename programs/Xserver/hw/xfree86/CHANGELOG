@@ -1,4 +1,6 @@
 XFree86 4.3.99.902 (xx December 2003)
+ 665. Fix a problem with distinguishing unassigned characters in the FreeType
+      backend (Bugzilla #975, Roland Mainz, Chisato Yamauchi).
  664. Update Japanese localization of XDarwin GUI (Toshimitsu Tanaka).
  663. Fix setjmp-related build issues on Solaris 2.5.1/x86 (Lindsay Haigh).
  662. Xdm, xf86cfg, mkfontscale and fonttosfnt fixes for platforms without
@@ -18359,7 +18361,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3033 2003/12/17 17:45:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3034 2003/12/17 18:03:02 torrey Exp $
 
 
 
