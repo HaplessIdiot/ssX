@@ -31,7 +31,7 @@ OF THIS SOFTWARE.
                                makoto@sm.sony.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imDefIm.c,v 1.9 2001/10/28 03:32:34 tsi Exp $ */
+/* $XFree86: xc/lib/X11/imDefIm.c,v 1.10 2002/09/21 02:46:04 dawes Exp $ */
 
 #include <X11/Xatom.h>
 #define NEED_EVENTS
@@ -165,7 +165,7 @@ _XimCheckLocaleName(im, address, address_len, locale_name, len)
 	*p = '\0';
 
 	for( n = 0; n < len; n++ )
-	    if( locale_name[n] && !strcmp( pp, locale_name[n] ) )
+	    if( locale_name[n] && !_XlcCompareISOLatin1( pp, locale_name[n] ) )
 		return locale_name[n];
 	if (finish)
 	    break;
