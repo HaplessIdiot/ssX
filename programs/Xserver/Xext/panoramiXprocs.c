@@ -1045,7 +1045,13 @@ int PanoramiXCopyArea(ClientPtr client)
 	FOR_NSCREENS_BACKWARD(j) {
 	    stuff->gc = gc->info[j].id;
 	    VALIDATE_DRAWABLE_AND_GC(dst->info[j].id, pDst, pGC, client);
-	     
+
+	    if(drawables[0]->depth != pDst->depth) {
+		client->errorValue = stuff->dstDrawable;
+		xfree(data);
+		return (BadMatch);
+	    }
+
 	    (*pGC->ops->PutImage) (pDst, pGC, pDst->depth, dstx, dsty, 
 				   stuff->width, stuff->height, 
 				   0, ZPixmap, data);
