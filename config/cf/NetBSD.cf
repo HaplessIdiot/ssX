@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: NetBSD.cf,v 1.1 94/03/29 15:34:45 gildea Exp $
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.2 1994/05/29 02:01:41 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.3 1994/05/30 08:17:45 dawes Exp $
 
 #define OSName		NetBSD
 #define	OSVendor	/**/
@@ -7,49 +7,56 @@ XCOMM operating system:  OSName
 #define OSMajorVersion    0
 #define OSMinorVersion    9
 
-#define HasPutenv       YES
-#define HasBSD44Sockets YES
+/*
+ * C library features
+ */
 
-#define CppCmd          /usr/libexec/cpp -traditional
-#define PreProcessCmd   /usr/libexec/cpp -traditional
-#undef  InstallCmd
-#define InstallCmd /usr/bin/install
-#undef	TblCmd
-#define	TblCmd /usr/bin/tbl
-#undef	EqnCmd
-#define	EqnCmd /usr/bin/eqn -Tascii
-          COL = /usr/bin/col
-         NEQN = /usr/bin/neqn
-        NROFF = /usr/bin/nroff
-
-#define UseGas		YES
-#ifndef GccUsesGas
-# define GccUsesGas	YES
+#define HasNdbm         	YES
+#define HasPutenv       	YES
+#define HasBSD44Sockets 	YES
+#define Malloc0ReturnsNull	NO
+#define SetTtyGroup     	YES
+#ifndef HasLibCrypt
+# define HasLibCrypt		YES
+#endif
+#ifndef HasShm
+# define HasShm          	NO
 #endif
 
-#ifndef AsmDefines
-# define AsmDefines -DUSE_GAS
-#endif
+/*
+ * Compiler Features
+ */
+#define HasGcc			YES
+#define HasGcc2			YES
+#define HasCplusplus		YES
+#define HasGcc2ForCplusplus	YES
+#define GccUsesGas		YES
+#define UseGas			YES
+#define GnuCpp			YES
 
-#if GccUsesGas
-# define GccGasOption -DGCCUSESGAS
-#else
-# define GccGasOption /**/
-#endif
+#define NeedConstPrototypes	YES
+#define NeedFunctionPrototypes	YES
+#define NeedNestedPrototypes	YES
+#define NeedVarargsPrototypes	YES
+#define NeedWidePrototypes	NO
 
-#ifndef HasGcc2
-# define HasGcc2 YES
-#endif
+#define CppCmd          	/usr/libexec/cpp
+#define StandardCppDefines	-traditional
+#define PreProcessCmd   	CppCmd
 
-#define CcCmd gcc
-#define DefaultCCOptions /**/
+#define CcCmd 			gcc
+#define DefaultCCOptions 	/**/
+
+#define GccGasOption 		-DGCCUSESGAS
+#define AsmDefines 		-DUSE_GAS
+
 
 #ifdef i386Architecture
-#define OptimizedCDebugFlags -m486 -O2
-#define ServerOSDefines	-DDDXTIME
+# define OptimizedCDebugFlags 	-m486 -O2
+# define ServerOSDefines	-DDDXTIME
 #else
-#define OptimizedCDebugFlags -O2
-#define ServerOSDefines /**/
+# define OptimizedCDebugFlags 	-O2
+# define ServerOSDefines 	/**/
 #endif
 #ifdef i386Architecture
 #define ServerExtraDefines GccGasOption LinkKitDefines
@@ -57,20 +64,45 @@ XCOMM operating system:  OSName
 #define ServerExtraDefines GccGasOption
 #endif
 
-#define TroffCmd        groff -Tps
-#define SetTtyGroup     YES
-#define HasNdbm         YES
-#define HasShm          YES
+#define ExtraLibraries		-lgnumalloc
 
-#define HasLibCrypt	YES
+/*
+ * Make & install Features
+ */
 
-#define AvoidNullMakeCommand YES
+#define AvoidNullMakeCommand 	YES
+#define StripInstalledPrograms	YES
+#define CompressAllFonts	YES
+#define DefaultUserPath		.:/bin:/usr/bin:/usr/local/bin:$(BINDIR)
+#define DefaultSystemPath	/sbin:/usr/sbin:/bin:/usr/bin:$(BINDIR)
+
+#ifdef  InstallCmd
+# undef  InstallCmd
+# define InstallCmd 		/usr/bin/install
+#endif
+
+#ifndef ExtraFilesToClean
+# define ExtraFilesToClean 	*.core
+#endif
+
+/*
+ * Documentation formatting
+ */
+#undef	TblCmd
+#define	TblCmd 			/usr/bin/tbl
+#undef	EqnCmd
+#define	EqnCmd 			/usr/bin/eqn -Tascii
+          COL = /usr/bin/col
+         NEQN = /usr/bin/neqn
+        NROFF = /usr/bin/nroff
+#define TroffCmd        	groff -Tps
+
 
 XCOMM Man pages need to be formatted when installed, so override the default
 XCOMM imake rules.
 
-#define ManSuffix	1
-#define ManSourcePath	$(MANPATH)/cat
+#define ManSuffix		1
+#define ManSourcePath		$(MANPATH)/cat
 
 #define InstallManPageLong(file,destdir,dest)                           @@\
 all:: file.0								@@\
@@ -116,14 +148,6 @@ install.man:: 								@@\
 		); \							@@\
 	done
 
-#define NetBSDArchitecture
-
-#ifndef ExtraFilesToClean
-#define ExtraFilesToClean *.core
-#endif
-
-#define DefaultUserPath		:/bin:/usr/bin:/usr/local/bin:$(BINDIR)
-#define DefaultSystemPath	/sbin:/usr/sbin:/bin:/usr/bin:$(BINDIR)
 
 #include <bsdLib.rules>
 
