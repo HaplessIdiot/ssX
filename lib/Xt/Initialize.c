@@ -1,5 +1,5 @@
-/* $XConsortium: Initialize.c,v 1.222 94/12/12 18:59:11 kaleb Exp $ */
-/* $XFree86: xc/lib/Xt/Initialize.c,v 3.2 1994/12/02 05:42:20 dawes Exp $ */
+/* $XConsortium: Initialize.c,v 1.223 95/06/08 23:20:39 gildea Exp $ */
+/* $XFree86: xc/lib/Xt/Initialize.c,v 3.3 1995/01/28 15:43:57 dawes Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -73,7 +73,7 @@ in this Software without prior written authorization from the X Consortium.
 #include <stdio.h>
 #include <X11/Xlocale.h>
 
-#if __STDC__
+#ifdef __STDC__
 #define Const const
 #else
 #define Const /**/

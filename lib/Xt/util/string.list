@@ -1,8 +1,20 @@
-! $XConsortium: string.list,v 1.11 94/04/17 14:11:28 kaleb Exp $
+! $XConsortium: string.list,v 1.12 95/05/11 22:32:57 kaleb Exp $
 ! NOTE: To maintain binary compatibility, you can only APPEND items within
 !	a given list!!!!
+!
+! See the makestrs(1) manual.
+!
 
-:StringDefs.h XtStrings
+#prefix Xt
+#feature XTSTRINGDEFINES
+#externref extern
+#externdef 
+! note that the trailing space is required in the #externdef line.
+#ctmpl util/StrDefs.ct
+
+#file StringDefs.h
+#table XtStrings
+#htmpl util/StrDefs.ht
 
 Naccelerators
 NallowHoriz
@@ -217,6 +229,9 @@ Extdefaultfont
 NfontSet
 RFontSet
 CFontSet
+
+#table XtStringsR6
+
 RGravity
 NcreateHook
 NchangeHook
@@ -259,8 +274,9 @@ HpreGeometry
 HpostGeometry
 Hdestroy
 
-
-:ShellStr.h XtShellStrings
+#file Shell.h
+#table XtShellStrings
+#htmpl util/Shell.ht
 
 NiconName
 CIconName
@@ -339,6 +355,9 @@ NwmTimeout
 CWmTimeout
 NwaitForWm waitforwm
 CWaitForWm Waitforwm
+
+#table XtShellStringsR6
+
 Nwaitforwm
 CWaitforwm
 NclientLeader
@@ -377,3 +396,4 @@ CSessionID
 NshutdownCommand
 CShutdownCommand
 NerrorCallback
+

@@ -1,4 +1,4 @@
-/* $XConsortium: MaskEvent.c,v 11.25 94/04/17 20:20:17 kaleb Exp $ */
+/* $XConsortium: MaskEvent.c,v 11.26 95/06/08 23:20:39 gildea Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium
@@ -29,7 +29,7 @@ in this Software without prior written authorization from the X Consortium.
 #define NEED_EVENTS
 #include "Xlibint.h"
 
-#if __STDC__
+#ifdef __STDC__
 #define Const const
 #else
 #define Const /**/

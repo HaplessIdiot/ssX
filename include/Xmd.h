@@ -47,8 +47,8 @@ SOFTWARE.
 ******************************************************************/
 #ifndef XMD_H
 #define XMD_H 1
-/* $XConsortium: Xmd.h,v 1.47 94/04/17 20:10:50 rws Exp $ */
-/* $XFree86$ */
+/* $XConsortium: Xmd.h,v 1.49 95/06/08 23:20:39 gildea Exp $ */
+/* $XFree86: xc/include/Xmd.h,v 3.1 1995/03/11 14:48:01 dawes Exp $ */
 /*
  *  Xmd.h: MACHINE DEPENDENT DECLARATIONS.
  */
@@ -86,7 +86,7 @@ SOFTWARE.
  * The extra indirection in the __STDC__ case is to get macro arguments to
  * expand correctly before the concatenation, rather than afterward.
  */
-#if ((__STDC__ || defined(__cplusplus) || defined(c_plusplus)) && !defined(UNIXCPP)) || defined(ANSICPP)
+#if ((defined(__STDC__) || defined(__cplusplus) || defined(c_plusplus)) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define _SIZEOF(x) sz_##x
 #define SIZEOF(x) _SIZEOF(x)
 #else
@@ -107,7 +107,7 @@ typedef unsigned long CARD64;
 typedef unsigned int INT32;
 typedef unsigned int INT16;
 #else
-#if __STDC__
+#ifdef __STDC__
 typedef signed int INT32;
 typedef signed int INT16;
 #else
@@ -127,7 +127,7 @@ typedef long INT32;
 typedef short INT16;
 #endif
 
-#if __STDC__ || defined(sgi) || defined(AIXV3)
+#if defined(__STDC__) || defined(sgi) || defined(AIXV3)
 typedef signed char    INT8;
 #else
 typedef char           INT8;

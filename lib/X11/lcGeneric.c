@@ -1,4 +1,4 @@
-/* $XConsortium: lcGeneric.c,v 1.5 94/03/29 22:52:03 rws Exp $ */
+/* $XConsortium: lcGeneric.c,v 1.6 95/02/22 22:03:08 kaleb Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -78,33 +78,37 @@ err:
 
 static Bool
 string_to_encoding(str, encoding)
-char	*str,*encoding;
+    char *str;
+    char *encoding;
 {
-     char	*tmp1, *tmp2;
-     int	i, base;
+    char *next;
+    long value;
+    int base;
 
-     for(tmp1=str, i=0; *tmp1; i++){
-	  if(*tmp1++ != '\\'){
-	       return(False);
-	  }
-	  switch(*tmp1++){
-	  case 'x':
-	       base = 16;
-	       break;
-	  case 'o':
-	       base = 8;
-	       break;
-	  case 'd':
-	       base = 10;
-	       break;
-	  default:
-	       return(False);
-	  }
-	  encoding[i]=(char)strtol(tmp1, &tmp2, base);
-	  tmp1 = tmp2;
-     }
-     encoding[i]=0;
-     return(True);
+    while (*str) {
+	if (*str == '\\') {
+	    switch (*(str + 1)) {
+		case 'x':
+		case 'X':
+		    base = 16;
+		    break;
+		default:
+		    base = 8;
+		    break;
+	    }
+	    value = strtol(str + 2, &next, base);
+	    if (str + 2 != next) {
+		*((unsigned char *) encoding++) = (unsigned char) value;
+		str = next;
+		continue;
+	    }
+	}
+	*encoding++ = *str++;
+    }
+
+    *encoding = '\0';
+
+    return True;
 }
 
 static Bool
@@ -412,11 +416,28 @@ load_generic(lcd)
 	_XlcGetResource(lcd, "XLC_XLOCALE", name, &value, &num);
 	if (num > 0) {
 	    XlcCharSet charset;
+	    char *encoding;
 
 	    if (codeset == NULL && (codeset = add_codeset(gen)) == NULL)
 		goto err;
 	    for ( ; num-- > 0; value++) {
-		if (charset = _XlcGetCharSet(*value)) {
+		string_to_encoding(*value, name);
+		charset = NULL;
+		if ((encoding = strchr(name, ':')) &&
+		    (encoding = strchr(encoding + 1, ':'))) {
+		    *encoding++ = '\0';
+		    charset = _XlcAddCT(name, encoding);
+		}
+		if (charset == NULL) {
+		    charset = _XlcGetCharSet(name);
+		    if (charset == NULL &&
+			(charset = _XlcCreateDefaultCharSet(name, ""))) {
+			charset->side = codeset->side;
+			charset->char_size = codeset->length;
+			_XlcAddCharSet(charset);
+		    }
+		}
+		if (charset) {
 		    if (add_charset(codeset, charset) == False)
 			goto err;
 		}

@@ -1,4 +1,4 @@
-/* $XConsortium: CrGC.c,v 11.42 94/04/17 20:18:59 kaleb Exp $ */
+/* $XConsortium: CrGC.c,v 11.43 95/06/08 23:20:39 gildea Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium
@@ -28,7 +28,7 @@ in this Software without prior written authorization from the X Consortium.
 
 #include "Xlibint.h"
 
-#if __STDC__
+#ifdef __STDC__
 #define Const const
 #else
 #define Const /**/

@@ -1,6 +1,6 @@
 /*
- * $XConsortium: Xos.h,v 1.67 94/11/30 20:48:05 kaleb Exp $
- * $XFree86: xc/include/Xos.h,v 3.10 1995/03/08 04:49:18 dawes Exp $
+ * $XConsortium: Xos.h,v 1.68 95/06/02 16:51:21 gildea Exp $
+ * $XFree86: xc/include/Xos.h,v 3.11 1995/03/11 14:46:09 dawes Exp $
  * 
  * 
 Copyright (c) 1987  X Consortium
@@ -220,11 +220,15 @@ struct timeval {
 #endif /* SYSV */
 
 /* define X_GETTIMEOFDAY macro, a portable gettimeofday() */
-#if (defined(SVR4) && !defined(SVR42MP)) || defined(VMS) || defined(WIN32)
+#if defined(_XOPEN_XPG4) || defined(_XOPEN_UNIX) /* _XOPEN_UNIX is XPG4.2 */
+#define X_GETTIMEOFDAY(t) gettimeofday(t, (struct timezone*)0)
+#else
+#if defined(SVR4) || defined(VMS) || defined(WIN32)
 #define X_GETTIMEOFDAY(t) gettimeofday(t)
 #else
 #define X_GETTIMEOFDAY(t) gettimeofday(t, (struct timezone*)0)
 #endif
+#endif /* XPG4 else */
 
 #ifdef MINIX
 #include <errno.h>

@@ -1,5 +1,5 @@
-/* $XConsortium: Xrm.c,v 1.88 94/04/17 20:21:54 rws Exp $ */
-/* $XFree86$ */
+/* $XConsortium: Xrm.c,v 1.89 95/06/08 23:20:39 gildea Exp $ */
+/* $XFree86: xc/lib/X11/Xrm.c,v 3.0 1994/10/20 06:03:29 dawes Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988, 1990 by Digital Equipment Corporation, Maynard
@@ -64,12 +64,12 @@ from the X Consortium.
 #include 	"XrmI.h"
 #include	<X11/Xos.h>
 
-#if __STDC__
+#ifdef __STDC__
 #define Const const
 #else
 #define Const /**/
 #endif
-#if __STDC__ && !defined(NORCONST)
+#if defined(__STDC__) && !defined(NORCONST)
 #define RConst const
 #else
 #define RConst /**/

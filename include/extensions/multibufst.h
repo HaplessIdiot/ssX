@@ -1,5 +1,5 @@
 /*
- * $XConsortium: multibufst.h,v 1.15 94/04/17 20:11:22 dpw Exp $
+ * $XConsortium: multibufst.h,v 1.16 95/06/08 23:20:39 gildea Exp $
  *
 Copyright (c) 1989  X Consortium
 
@@ -37,7 +37,7 @@ in this Software without prior written authorization from the X Consortium.
 #include "input.h"
 #endif
 
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define MbufGetReq(name,req,info) GetReq (name, req); \
 	req->reqType = info->codes->major_opcode; \
 	req->mbufReqType = X_##name;
@@ -304,7 +304,7 @@ typedef struct {
     pSTRUCT2->FUNC_NAME = tmpFn;					\
 }
 
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define WRAP_SCREEN_FUNC(pSCREEN,pPRIV,FUNC_NAME, PRIV_FUNC_NAME)	\
 {									\
     if ((pPRIV->funcsWrapped & FUNC_NAME##Mask) == 0)			\

@@ -1,4 +1,4 @@
-/* $XConsortium: cmsMath.c,v 1.10 94/04/17 20:21:59 rws Exp $ */
+/* $XConsortium: cmsMath.c,v 1.11 95/06/08 23:20:39 gildea Exp $ */
 
 /*
 
@@ -34,7 +34,7 @@ in this Software without prior written authorization from the X Consortium.
 #include "Xlibint.h"
 #include "Xcmsint.h"
 
-#if !defined(X_NOT_STDC_ENV) && (__STDC__ || !(defined(sun) || (defined(sony) && !defined(SYSTYPE_SYSV) && !defined(_SYSTYPE_SYSV))))
+#if !defined(X_NOT_STDC_ENV) && (defined(__STDC__) || !(defined(sun) || (defined(sony) && !defined(SYSTYPE_SYSV) && !defined(_SYSTYPE_SYSV))))
 #include <float.h>
 #endif
 #ifndef DBL_EPSILON

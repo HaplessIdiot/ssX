@@ -1,4 +1,4 @@
-/* $XConsortium: miDestroy.c,v 5.3 94/04/17 20:37:05 rws Exp $ */
+/* $XConsortium: miDestroy.c,v 5.4 95/06/08 23:20:39 gildea Exp $ */
 
 /***********************************************************
 
@@ -64,7 +64,7 @@ SOFTWARE.
  ****Note that these functions may be replaced by PEX server porters.
  **/
 
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define CAT(a,b)    a##b
 #else
 #define CAT(a,b)    a/**/b

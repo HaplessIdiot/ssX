@@ -1,5 +1,5 @@
-/* $XConsortium: Intrinsic.c,v 1.196 94/11/21 18:20:56 kaleb Exp $ */
-/* $XFree86: xc/lib/Xt/Intrinsic.c,v 3.2 1994/12/02 05:42:22 dawes Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.197 95/04/07 19:51:22 kaleb Exp $ */
+/* $XFree86: xc/lib/Xt/Intrinsic.c,v 3.3 1995/01/28 15:44:00 dawes Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -307,6 +307,7 @@ static void RealizeWidget(widget)
     Window			window;
     Display*			display;
     String			class_name;
+    Widget			hookobj;
 
     if (!XtIsWidget(widget) || XtIsRealized(widget)) return;
     display = XtDisplay(widget);
@@ -324,6 +325,16 @@ static void RealizeWidget(widget)
 		      (String *)NULL, (Cardinal *)NULL);
     else (*realize) (widget, &value_mask, &values);
     window = XtWindow(widget);
+    hookobj = XtHooksOfDisplay(XtDisplayOfObject(widget));
+    if (XtHasCallbacks(hookobj,XtNchangeHook) == XtCallbackHasSome) {
+	XtChangeHookDataRec call_data;
+
+	call_data.type = XtHrealizeWidget;
+	call_data.widget = widget;
+	XtCallCallbackList(hookobj, 
+		((HookObject)hookobj)->hooks.changehook_callbacks, 
+		(XtPointer)&call_data);
+    }
 #ifndef NO_IDENTIFY_WINDOWS
     if (_XtGetPerDisplay(display)->appContext->identify_windows) {
 	int len_nm, len_cl;
@@ -379,7 +390,6 @@ static void RealizeWidget(widget)
 void XtRealizeWidget (widget)
     Widget		widget;
 {
-    Widget hookobj;
     WIDGET_TO_APPCON(widget);
 
     LOCK_APP(app);
@@ -389,16 +399,6 @@ void XtRealizeWidget (widget)
     }
     CallChangeManaged(widget);
     RealizeWidget(widget);
-    hookobj = XtHooksOfDisplay(XtDisplayOfObject(widget));
-    if (XtHasCallbacks(hookobj,XtNchangeHook) == XtCallbackHasSome) {
-	XtChangeHookDataRec call_data;
-
-	call_data.type = XtHrealizeWidget;
-	call_data.widget = widget;
-	XtCallCallbackList(hookobj, 
-		((HookObject)hookobj)->hooks.changehook_callbacks, 
-		(XtPointer)&call_data);
-    }
     UNLOCK_APP(app);
 } /* XtRealizeWidget */
 

@@ -1,4 +1,4 @@
-/* $XConsortium: CursorName.c,v 1.8 94/04/17 20:15:55 rws Exp $ */
+/* $XConsortium: CursorName.c,v 1.9 95/06/08 23:20:39 gildea Exp $ */
 
 /*
  
@@ -32,7 +32,7 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xmu/CurUtil.h>
 #include <X11/cursorfont.h>
 
-#if __STDC__
+#ifdef __STDC__
 #define Const const
 #else
 #define Const /**/

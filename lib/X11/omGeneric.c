@@ -1,4 +1,4 @@
-/* $XConsortium: omGeneric.c,v 1.6 94/03/29 22:52:12 rws Exp $ */
+/* $XConsortium: omGeneric.c,v 1.7 95/02/22 22:48:22 kaleb Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -797,8 +797,8 @@ close_om(om)
 	XFreeStringList(om->core.required_charset.charset_list);
     else
 	Xfree((char*)om->core.required_charset.charset_list);
-    if (om->core.orientation_list.orient)
-	Xfree(om->core.orientation_list.orient);
+    if (om->core.orientation_list.orientation)
+	Xfree(om->core.orientation_list.orientation);
 
     Xfree(om);
 
@@ -1021,8 +1021,8 @@ init_om(om)
 	return False;
 
     *orientation = XOMOrientation_LTR_TTB;
-    om->core.orientation_list.orient = orientation;
-    om->core.orientation_list.num_orient = 1;
+    om->core.orientation_list.orientation = orientation;
+    om->core.orientation_list.num_orientation = 1;
 
     return True;
 }

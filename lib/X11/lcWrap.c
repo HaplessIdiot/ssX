@@ -1,4 +1,4 @@
-/* $XConsortium: lcWrap.c,v 11.20 94/04/17 20:22:12 rws Exp $ */
+/* $XConsortium: lcWrap.c,v 11.23 95/06/08 23:20:39 gildea Exp $ */
 /*
 
 Copyright (c) 1991  X Consortium
@@ -65,7 +65,7 @@ from the X Consortium.
 #endif
 #include <X11/Xutil.h>
 
-#if __STDC__
+#ifdef __STDC__
 #define Const const
 #else
 #define Const /**/
@@ -270,9 +270,17 @@ _XOpenLC(name)
     XLCd lcd;
     XlcLoaderList loader;
     XLCdList cur;
+#if !defined(X_NOT_STDC_ENV) && !defined(X_LOCALE)
+    char siname[256];
+    char *_XlcMapOSLocaleName();
+#endif
 
-    if (name == NULL)
+    if (name == NULL) {
 	name = setlocale (LC_CTYPE, (char *)NULL);
+#if !defined(X_NOT_STDC_ENV) && !defined(X_LOCALE)
+	name = _XlcMapOSLocaleName (name, siname); 
+#endif
+    }
 
     _XLockMutex(_Xi18n_lock);
 
@@ -462,6 +470,10 @@ _XlcCopyFromArg(src, dst, size)
 {
     if (size == sizeof(long))
 	*((long *) dst) = (long) src;
+#ifdef LONG64
+    else if (size == sizeof(int))
+	*((int *) dst) = (int) src;
+#endif
     else if (size == sizeof(short))
 	*((short *) dst) = (short) src;
     else if (size == sizeof(char))

@@ -1,4 +1,4 @@
-/* $XConsortium: pl_store.h,v 1.3 94/04/17 20:22:46 mor Exp $ */
+/* $XConsortium: pl_store.h,v 1.4 95/06/08 23:20:39 gildea Exp $ */
 /*
 
 Copyright (c) 1992  X Consortium
@@ -213,7 +213,7 @@ from the X Consortium.
 /* ------------------------------------------------------------------------ */
 
 
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define PUT_TEMP(_pexType, _foo, _tFoo) PUT_TEMP_##_pexType (_foo, _tFoo);
 #else
 #define PUT_TEMP(_pexType, _foo, _tFoo) PUT_TEMP_/**/_pexType (_foo, _tFoo);
@@ -341,7 +341,7 @@ from the X Consortium.
 /*   STORE_FOOFP and STORE_LISTOF_FOOFP				    	    */
 /* ------------------------------------------------------------------------ */
 
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define DOSTORE(_pexType, _src, _dst, _fpConvert, _fpFormat) \
     DOSTORE_##_pexType (_src, _dst, _fpConvert, _fpFormat)
 #else

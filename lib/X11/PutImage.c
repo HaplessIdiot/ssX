@@ -1,4 +1,4 @@
-/* $XConsortium: PutImage.c,v 11.70 94/04/17 20:20:31 kaleb Exp $ */
+/* $XConsortium: PutImage.c,v 11.71 95/06/08 23:20:39 gildea Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium
@@ -30,12 +30,12 @@ in this Software without prior written authorization from the X Consortium.
 #include "Xutil.h"
 #include <stdio.h>
 
-#if __STDC__
+#ifdef __STDC__
 #define Const const
 #else
 #define Const /**/
 #endif
-#if __STDC__ && ((defined(sun) && defined(SVR4)) || defined(WIN32))
+#if defined(__STDC__) && ((defined(sun) && defined(SVR4)) || defined(WIN32))
 #define RConst /**/
 #else
 #define RConst Const
@@ -128,7 +128,7 @@ _XReverse_Bytes (bpt, nb)
 
 
 /* XXX the following functions are declared int instead of void because various
- * compilers and lints complain about later intialization of SwapFunc and/or
+ * compilers and lints complain about later initialization of SwapFunc and/or
  * (swapfunc == NoSwap) when void is used.
  */
 
@@ -577,7 +577,7 @@ static int Const HalfOrderWord[12] = {
 
 /* Cancel a GetReq operation, before doing _XSend or Data */
 
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define UnGetReq(name)\
     dpy->bufptr -= SIZEOF(x##name##Req);\
     dpy->request--

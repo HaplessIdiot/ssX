@@ -1,4 +1,4 @@
-/* $XConsortium: lcCharSet.c,v 1.2 94/01/20 18:06:19 rws Exp $ */
+/* $XConsortium: lcCharSet.c,v 1.3 95/02/22 22:02:59 kaleb Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -148,8 +148,14 @@ _XlcCreateDefaultCharSet(name, ct_sequence)
 	return (XlcCharSet) NULL;
     bzero((char *) charset, sizeof(XlcCharSetRec));
     
-    charset->name = name;
-    charset->ct_sequence = ct_sequence;
+    charset->name = (char *) Xmalloc(strlen(name) + strlen(ct_sequence) + 2);
+    if (charset->name == NULL) {
+	Xfree((char *) charset);
+	return (XlcCharSet) NULL;
+    }
+    strcpy(charset->name, name);
+    charset->ct_sequence = charset->name + strlen(name) + 1;
+    strcpy(charset->ct_sequence, ct_sequence);
     charset->get_values = get_values;
 
     _XlcParseCharSet(charset);

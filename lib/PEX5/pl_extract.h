@@ -1,4 +1,4 @@
-/* $XConsortium: pl_extract.h,v 1.4 94/04/17 20:22:29 mor Exp $ */
+/* $XConsortium: pl_extract.h,v 1.5 95/06/08 23:20:39 gildea Exp $ */
 /*
 
 Copyright (c) 1992  X Consortium
@@ -246,7 +246,7 @@ from the X Consortium.
 /* ------------------------------------------------------------------------ */
 
 
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define GET_TEMP(_pexType, _tFoo, _foo) GET_TEMP_##_pexType (_tFoo, _foo);
 #else
 #define GET_TEMP(_pexType, _tFoo, _foo) GET_TEMP_/**/_pexType (_tFoo, _foo);
@@ -398,7 +398,7 @@ from the X Consortium.
 /*   EXTRACT_FOOFP and EXTRACT_LISTOF_FOOFP    			    	    */
 /* ------------------------------------------------------------------------ */
 
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define DOEXTRACT(_pexType, _src, _dst, _fpConvert, _fpFormat) \
     DOEXTRACT_##_pexType (_src, _dst, _fpConvert, _fpFormat)
 #else

@@ -1,12 +1,12 @@
-XCOMM $XConsortium: Imakefile,v 1.8 94/03/29 15:54:11 gildea Exp $
-XCOMM $XFree86: xc/config/util/Imakefile,v 3.3 1994/12/17 09:36:53 dawes Exp $
+XCOMM $XConsortium: Imakefile,v 1.9 95/05/05 17:42:43 kaleb Exp $
+XCOMM $XFree86: xc/config/util/Imakefile,v 3.4 1995/03/11 14:03:27 dawes Exp $
 #if UseCCMakeDepend
 MDEP_PROG = makedepend
 #endif
 #ifndef OS2Architecture
 GCCMDEP_PROG = gccmakedep
 #endif
-         PROGRAMS = xmkmf $(MDEP_PROG) $(GCCMDEP_PROG) mergelib
+         PROGRAMS = xmkmf $(MDEP_PROG) $(GCCMDEP_PROG) mergelib makestrs
           DEPLIBS =
   EXTRA_LIBRARIES =
 
@@ -32,6 +32,9 @@ SimpleHostProgramTarget(lndir)
 SimpleProgramTarget(lndir)
 #endif
 #endif
+
+NormalProgramTarget(makestrs,makestrs.o,,,)
+InstallManPage(makestrs,$(MANDIR))
 
 InstallNamedProg(xmkmf,xmkmf,$(BINDIR))
 InstallManPage(xmkmf,$(MANDIR))

@@ -695,13 +695,12 @@ int format;
 			(unsigned char *)&req->bytelength, 1);
 }
 
-static Boolean GetConversion(ctx, event, target, property, widget, incremental)
+static Boolean GetConversion(ctx, event, target, property, widget)
 Select ctx;			/* logical owner */
 XSelectionRequestEvent* event;
 Atom target;
 Atom property;			/* requestor's property */
 Widget widget;			/* physical owner (receives events) */
-Boolean *incremental;
 {
     XtPointer value = NULL;
     unsigned long length;
@@ -736,7 +735,6 @@ Boolean *incremental;
 	     StartProtectedSection(ctx->dpy, event->requestor);
 	     PrepareIncremental(req, widget, event->requestor, property,
 				target, targetType, value, length, format);
-	     *incremental = True;
 	     return(TRUE);
 	}
 	ctx->req = req;
@@ -778,11 +776,9 @@ Boolean *incremental;
 	    XtFree((char*)value);
 	    XtFree((char*)req);
 	}
-	*incremental = FALSE;
     } else {
 	 PrepareIncremental(req, widget, event->requestor, property,
 			    target, targetType, value, length, format);
-	 *incremental = True;
     }
     return(TRUE);
 }
@@ -796,7 +792,6 @@ Boolean *cont;
 {
     Select ctx;
     XSelectionEvent ev;
-    Boolean incremental;
     Atom target;
     int count;
     Boolean writeback = FALSE;
@@ -845,8 +840,7 @@ Boolean *cont;
 	      for (p = (IndirectPair *)value; count; p++, count--) {
 		  EndProtectedSection(ctx->dpy);
 		  if (!GetConversion(ctx, (XSelectionRequestEvent*)event,
-				     p->target, p->property, widget,
-				     &incremental)) {
+				     p->target, p->property, widget)) {
 
 			p->target = None;
 			writeback = TRUE;
@@ -862,7 +856,7 @@ Boolean *cont;
 	       if (GetConversion(ctx, (XSelectionRequestEvent*)event,
 				 event->xselectionrequest.target,
 				 event->xselectionrequest.property,
-				 widget, &incremental))
+				 widget))
 		   ev.property = event->xselectionrequest.property;
 	       else {
 		   ev.property = None;
@@ -1815,7 +1809,7 @@ XSelectionRequestEvent *XtGetSelectionRequest( widget, selection, id )
     /*  req->event.requestor = XtWindow(requesting_widget); */
 	req->event.selection = selection;
     /*  req->event.target = requestors_target; */
-    /*	req->event.property = None; /* %%% what to do about side-effects? */
+    /*	req->event.property = None; *//* %%% what to do about side-effects? */
     /*  req->event.time = requestors_time; */
     }
     UNLOCK_APP(app);
@@ -2182,10 +2176,10 @@ void XtGetSelectionParameters(owner, selection, request_id, type_return,
 		       (unsigned char**) value_return);
     EndProtectedSection(dpy);
   } else {
-    value_return = NULL;
-    length_return = 0;
-    format_return = 0;
-    type_return = None;
+    *value_return = NULL;
+    *length_return = 0;
+    *format_return = 0;
+    *type_return = None;
   }
 }
 

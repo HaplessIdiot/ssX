@@ -1,4 +1,4 @@
-/* $XConsortium: TMaction.c,v 1.25 94/04/17 20:14:50 kaleb Exp $ */
+/* $XConsortium: TMaction.c,v 1.26 95/06/08 23:20:39 gildea Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -68,7 +68,7 @@ in this Software without prior written authorization from the X Consortium.
 #include "IntrinsicI.h"
 #include "StringDefs.h"
 
-#if __STDC__ && !defined(NORCONST)
+#if defined(__STDC__) && !defined(NORCONST)
 #define RConst const
 #else
 #define RConst /**/

@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_util.h,v 1.11 94/04/17 20:22:42 mor Exp $ */
+/* $XConsortium: pl_oc_util.h,v 1.12 95/06/08 23:20:39 gildea Exp $ */
 
 /******************************************************************************
 
@@ -217,7 +217,7 @@ SOFTWARE.
  * Output Command names and opcodes.
  */
 
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define OCNAME(_name_) pex##_name_
 #define OCOPCODE(_name_) PEXOC##_name_
 #define OCSIZE(_name_) sz_pex##_name_
@@ -464,7 +464,7 @@ SOFTWARE.
  * Generic macros to store OC data.
  * ------------------------------------------------------------------------- */
 
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 
 #define STORE_LIST(_name, _count, _pList, _pBuf) \
     STORE_LISTOF_##_name (_count, _pList, _pBuf)

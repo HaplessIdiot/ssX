@@ -1,5 +1,5 @@
-/* $XConsortium: Intrinsic.h,v 1.199 94/04/17 20:14:22 converse Exp $ */
-/* $XFree86$ */
+/* $XConsortium: Intrinsic.h,v 1.200 95/06/08 23:20:39 gildea Exp $ */
+/* $XFree86: xc/lib/Xt/Intrinsic.h,v 3.0 1994/05/29 02:03:38 dawes Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -752,7 +752,7 @@ extern void XtDisplayStringConversionWarning(
 #endif
 );
 
-#if __STDC__
+#ifdef __STDC__
 externalref XtConvertArgRec const colorConvertArgs[];
 externalref XtConvertArgRec const screenConvertArg[];
 #else

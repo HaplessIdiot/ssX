@@ -1,4 +1,4 @@
-/* $XConsortium: LRGB.c,v 1.29 93/10/07 18:49:28 rws Exp $" */
+/* $XConsortium: LRGB.c,v 1.30 94/06/03 17:51:49 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -42,7 +42,7 @@
 #include "Xlibint.h"
 #include "Xcmsint.h"
 
-#if __STDC__
+#ifdef __STDC__
 #define Const const
 #else
 #define Const /**/
@@ -1183,7 +1183,7 @@ _XcmsTableSearch (key, bitsPerRGB, base, nel, nKeyPtrSize, compar, interpol, ans
 	    / ((1 << bitsPerRGB) - 1);
 
     /* Special case so that zero intensity always maps to zero value */
-    if ((*compar) (key,lo) == 0) {
+    if ((*compar) (key,lo) <= 0) {
 	memcpy (answer, lo, nKeyPtrSize);
 	((IntensityRec *)answer)->value &= MASK[bitsPerRGB];
 	return XcmsSuccess;

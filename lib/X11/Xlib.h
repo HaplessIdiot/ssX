@@ -1,5 +1,5 @@
-/* $XConsortium: Xlib.h,v 11.237 94/09/01 18:44:49 kaleb Exp $ */
-/* $XFree86: xc/lib/X11/Xlib.h,v 3.3 1995/02/12 02:32:25 dawes Exp $ */
+/* $XConsortium: Xlib.h,v 11.239 95/05/22 19:37:37 kaleb Exp $ */
+/* $XFree86: xc/lib/X11/Xlib.h,v 3.4 1995/03/11 14:07:33 dawes Exp $ */
 /* 
 
 Copyright (c) 1985, 1986, 1987, 1991  X Consortium
@@ -1091,8 +1091,8 @@ typedef enum {
 } XOrientation;
 
 typedef struct {
-    int num_orient;
-    XOrientation *orient;	/* Input Text description */
+    int num_orientation;
+    XOrientation *orientation;	/* Input Text description */
 } XOMOrientation;
 
 typedef struct {
@@ -1254,9 +1254,19 @@ typedef	unsigned short	XIMStringConversionOperation;
 #define	XIMStringConversionSubstitution	(0x0001)
 #define	XIMStringConversionRetrival	(0x0002)
 
+typedef enum {
+    XIMForwardChar, XIMBackwardChar,
+    XIMForwardWord, XIMBackwardWord,
+    XIMCaretUp, XIMCaretDown,
+    XIMNextLine, XIMPreviousLine,
+    XIMLineStart, XIMLineEnd, 
+    XIMAbsolutePosition,
+    XIMDontChange
+} XIMCaretDirection;
+
 typedef struct _XIMStringConversionCallbackStruct {
     XIMStringConversionPosition position;
-    XIMStringConversionType type;
+    XIMCaretDirection direction;
     XIMStringConversionOperation operation;
     unsigned short factor;
     XIMStringConversionText *text;
@@ -1268,16 +1278,6 @@ typedef struct _XIMPreeditDrawCallbackStruct {
     int chg_length;	/* Length of the change in character count */
     XIMText *text;
 } XIMPreeditDrawCallbackStruct;
-
-typedef enum {
-    XIMForwardChar, XIMBackwardChar,
-    XIMForwardWord, XIMBackwardWord,
-    XIMCaretUp, XIMCaretDown,
-    XIMNextLine, XIMPreviousLine,
-    XIMLineStart, XIMLineEnd, 
-    XIMAbsolutePosition,
-    XIMDontChange
-} XIMCaretDirection;
 
 typedef enum {
     XIMIsInvisible,	/* Disable caret feedback */ 

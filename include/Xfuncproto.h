@@ -1,4 +1,4 @@
-/* $XConsortium: Xfuncproto.h,v 1.8 94/04/17 20:10:49 rws Exp $ */
+/* $XConsortium: Xfuncproto.h,v 1.9 95/06/08 23:20:39 gildea Exp $ */
 /* 
  * 
 Copyright (c) 1989, 1991  X Consortium
@@ -32,7 +32,7 @@ in this Software without prior written authorization from the X Consortium.
 #define _XFUNCPROTO_H_
 
 #ifndef NeedFunctionPrototypes
-#if defined(FUNCPROTO) || __STDC__ || defined(__cplusplus) || defined(c_plusplus)
+#if defined(FUNCPROTO) || defined(__STDC__) || defined(__cplusplus) || defined(c_plusplus)
 #define NeedFunctionPrototypes 1
 #else
 #define NeedFunctionPrototypes 0
@@ -40,7 +40,7 @@ in this Software without prior written authorization from the X Consortium.
 #endif /* NeedFunctionPrototypes */
 
 #ifndef NeedVarargsPrototypes
-#if __STDC__ || defined(__cplusplus) || defined(c_plusplus) || (FUNCPROTO&2)
+#if defined(__STDC__) || defined(__cplusplus) || defined(c_plusplus) || (FUNCPROTO&2)
 #define NeedVarargsPrototypes 1
 #else
 #define NeedVarargsPrototypes 0
@@ -50,7 +50,7 @@ in this Software without prior written authorization from the X Consortium.
 #if NeedFunctionPrototypes
 
 #ifndef NeedNestedPrototypes
-#if __STDC__ || defined(__cplusplus) || defined(c_plusplus) || (FUNCPROTO&8)
+#if defined(__STDC__) || defined(__cplusplus) || defined(c_plusplus) || (FUNCPROTO&8)
 #define NeedNestedPrototypes 1
 #else
 #define NeedNestedPrototypes 0
@@ -58,7 +58,7 @@ in this Software without prior written authorization from the X Consortium.
 #endif /* NeedNestedPrototypes */
 
 #ifndef _Xconst
-#if __STDC__ || defined(__cplusplus) || defined(c_plusplus) || (FUNCPROTO&4)
+#if defined(__STDC__) || defined(__cplusplus) || defined(c_plusplus) || (FUNCPROTO&4)
 #define _Xconst const
 #else
 #define _Xconst

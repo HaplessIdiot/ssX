@@ -1,7 +1,8 @@
-/* $XConsortium: imCallbk.c,v 1.6 94/04/17 20:22:02 rws Exp $ */
+/* $XConsortium: imCallbk.c,v 1.13 95/06/08 23:20:39 gildea Exp $ */
 /***********************************************************************
 Copyright 1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 Copyright 1994 by FUJITSU LIMITED
+Copyright 1994 by Sony Corporation
 
                         All Rights Reserved
 
@@ -9,22 +10,26 @@ Permission to use, copy, modify, and distribute this software and its
 documentation for any purpose and without fee is hereby granted, 
 provided that the above copyright notice appear in all copies and that
 both that copyright notice and this permission notice appear in 
-supporting documentation, and that the names of Digital or FUJITSU
-LIMITED not be used in advertising or publicity pertaining to distribution
-of the software without specific, written prior permission.  
+supporting documentation, and that the names of Digital, FUJITSU
+LIMITED and Sony Corporation not be used in advertising or publicity
+pertaining to distribution of the software without specific, written
+prior permission.  
 
-DIGITAL AND FUJITSU LIMITED DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
-SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS,
-IN NO EVENT SHALL DIGITAL BE LIABLE FOR ANY SPECIAL, INDIRECT OR
-CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
-DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
-TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
-OF THIS SOFTWARE.
+DIGITAL, FUJITSU LIMITED AND SONY CORPORATION DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL DIGITAL, FUJITSU LIMITED
+AND SONY CORPORATION BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
+USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
 
   Author: Hiroyuki Miyamoto  Digital Equipment Corporation
                              miyamoto@jrd.dec.com
   Modifier: Takashi Fujiwara FUJITSU LIMITED
 			     fujiwara@a80.tech.yk.fujitsu.co.jp
+	    Makoto Wakamatsu Sony Corporation
+		 	     makoto@sm.sony.co.jp
 				
 ***********************************************************************/
 
@@ -89,34 +94,34 @@ Private XimCbStatus _XimGeometryCallback(Xim, Xic, char*, int);
 Private XimCbStatus _XimStrConversionCallback(Xim, Xic, char*, int);
 Private XimCbStatus _XimPreeditStartCallback(Xim, Xic, char*, int);
 Private XimCbStatus _XimPreeditDoneCallback(Xim, Xic, char*, int);
-Private void _read_text_from_packet(Xim, char*, XIMText*);
 Private void _free_memory_for_text(XIMText*);
 Private XimCbStatus _XimPreeditDrawCallback(Xim, Xic, char*, int);
 Private XimCbStatus _XimPreeditCaretCallback(Xim, Xic, char*, int);
 Private XimCbStatus _XimStatusStartCallback(Xim, Xic, char*, int);
 Private XimCbStatus _XimStatusDoneCallback(Xim, Xic, char*, int);
 Private XimCbStatus _XimStatusDrawCallback(Xim, Xic, char*, int);
+Private XimCbStatus _XimPreeditStateNotifyCallback(Xim, Xic, char *, int);
 #else
 Public Bool _XimCbDispatch();
 Private XimCbStatus _XimGeometryCallback();
 Private XimCbStatus _XimStrConversionCallback();
 Private XimCbStatus _XimPreeditStartCallback();
 Private XimCbStatus _XimPreeditDoneCallback();
-Private void _read_text_from_packet();
 Private void _free_memory_for_text();
 Private XimCbStatus _XimPreeditDrawCallback();
 Private XimCbStatus _XimPreeditCaretCallback();
 Private XimCbStatus _XimStatusStartCallback();
 Private XimCbStatus _XimStatusDoneCallback();
 Private XimCbStatus _XimStatusDrawCallback();
+Private XimCbStatus _XimPreeditStateNotifyCallback();
 #endif /* NeedFunctionPrototypes */
 
-#if __STDC__
+#ifdef __STDC__
 #define Const const
 #else
 #define Const /**/
 #endif
-#if __STDC__ && ((defined(sun) && defined(SVR4)) || defined(WIN32))
+#if defined(__STDC__) && ((defined(sun) && defined(SVR4)) || defined(WIN32))
 #define RConst /**/
 #else
 #define RConst Const
@@ -145,7 +150,8 @@ static RConst XimCb callback_table[] = {
     _XimPreeditDoneCallback,	/* #078 */
     _XimStatusStartCallback,	/* #079 */
     _XimStatusDrawCallback,	/* #080 */
-    _XimStatusDoneCallback	/* #081 */
+    _XimStatusDoneCallback,	/* #081 */
+    _XimPreeditStateNotifyCallback	/* #082 */
     };
 
 
@@ -248,7 +254,7 @@ _XimCbDispatch(xim, len, data, call_data)
 
     /* check if the protocol should be processed here
      */
-    if (major_opcode >= 128) {
+    if (major_opcode > 82) {
 	status = XimCbBadOpcode;
 	goto quit;
     }
@@ -370,7 +376,7 @@ _XimStrConversionCallback(im, ic, proto, len)
 	int p = XIM_HEADER_SIZE;
 	cbrec.position = (XIMStringConversionPosition)
 	    *(CARD32*)&proto[p]; p += sz_CARD32;
-	cbrec.type = (XIMStringConversionType)
+	cbrec.direction = (XIMCaretDirection)
 	    *(CARD32*)&proto[p]; p += sz_CARD32;
 	cbrec.operation = (XIMStringConversionOperation)
 	    *(CARD32*)&proto[p]; p += sz_CARD32;
@@ -397,7 +403,6 @@ _XimStrConversionCallback(im, ic, proto, len)
 	CARD8	*buf;
 	INT16	 buf_len;
 	int	 p, length_in_bytes, i;
-	void	*tmp;
 
 	/* Assumption:
 	 * `cbrec.text->length' means the string length in characters
@@ -460,7 +465,7 @@ _XimPreeditStartCallback(im, ic, proto, len)
      */
     if (cb && cb->callback){
 	ret = (*(int (*)(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
 			XIC, XPointer, XPointer
 #endif
 			))(cb->callback))((XIC)ic, 
@@ -498,18 +503,6 @@ _XimPreeditStartCallback(im, ic, proto, len)
 	_XimFlushData(im);
     }
 
-    /* invoke PreeditStateNotify callback ? HM
-     */
-    {
-	cb = &ic->core.preedit_state_notify_callback;
-	if (cb->callback) {
-	    XIMPreeditStateNotifyCallbackStruct cbrec;
-
-	    cbrec.state = XIMPreeditEnable;
-	    (*cb->callback)((XIC)ic, cb->client_data, &cbrec);
-	}
-    }
-
     return(XimCbSuccess);
 }
 
@@ -528,7 +521,6 @@ _XimPreeditDoneCallback(im, ic, proto, len)
 #endif
 {
     XIMCallback* cb = &ic->core.preedit_attr.done_callback;
-    int ret;
 
     /* invoke the callback
      */
@@ -542,18 +534,6 @@ _XimPreeditDoneCallback(im, ic, proto, len)
 	return(XimCbNoCallback);
     }
 
-    /* invoke PreeditStateNotify callback ? HM
-     */
-    {
-	cb = &ic->core.preedit_state_notify_callback;
-	if (cb->callback) {
-	    XIMPreeditStateNotifyCallbackStruct cbrec;
-
-	    cbrec.state = XIMPreeditDisable;
-	    (*cb->callback)((XIC)ic, cb->client_data, &cbrec);
-	}
-    }
-
     return(XimCbSuccess);
 }
 
@@ -561,17 +541,25 @@ Private void
 #if NeedFunctionPrototypes
 _read_text_from_packet(Xim im, 
 		       char* buf, 
-		       XIMText* text)
+		       XIMText** text_ptr)
 #else
-_read_text_from_packet(im, buf, text)
+_read_text_from_packet(im, buf, text_ptr)
   Xim im;
   char* buf;
-  XIMText* text;
+  XIMText** text_ptr;
 #endif
 {
     int status;
+    XIMText* text;
 
     status = (int)*(BITMASK32*)buf; buf += sz_BITMASK32;
+
+    if (status & 0x00000003) {
+	*text_ptr = (XIMText*)NULL;
+	return;
+    }
+    *text_ptr = text = (XIMText*)Xmalloc(sizeof(XIMText));
+    if (text == (XIMText*)NULL) return;
 
     /* string part
      */
@@ -593,22 +581,22 @@ _read_text_from_packet(im, buf, text)
 	    tmp_buf[tmp_len] = '\0';
 
 	    text->encoding_is_wchar = False;
-	    text->length = _Ximctstowcs(im, 
+	    text->length = im->methods->ctstombs((XIM)im, 
 					tmp_buf, tmp_len, 
-					(wchar_t*)NULL, 0, 
-					&s); /* CT? HM */
+					NULL, 0, &s); /* CT? HM */
 	    if (s != XLookupNone) {
-		if (text->string.multi_byte
-		    = (char*)Xmalloc(text->length * XLC_PUBLIC(im->core.lcd,mb_cur_max))) {
+		if (text->string.multi_byte = (char*)Xmalloc(text->length+1)) {
 			int tmp;
-			tmp = _Ximctstombs(im,
+			tmp = im->methods->ctstombs((XIM)im,
 					   tmp_buf, tmp_len, 
 					   text->string.multi_byte, text->length, 
 					   &s);
-			text->string.multi_byte
-			  = (char*)Xrealloc(text->string.multi_byte, tmp+1);
 			text->string.multi_byte[tmp] = '\0';
 		}
+	    }
+	    else {
+		text->length = 0;
+		text->string.multi_byte = NULL;
 	    }
 
 	    Xfree(tmp_buf);
@@ -628,13 +616,26 @@ _read_text_from_packet(im, buf, text)
 
 	i = (int)*(CARD16*)buf; buf += sz_CARD16;
 	buf += sz_CARD16; /* skip `unused' */
-	text->feedback = (XIMFeedback*)Xmalloc(i);
+	text->feedback = (XIMFeedback*)Xmalloc(i*(sizeof(XIMFeedback)/sizeof(CARD32)));
 	j = 0;
 	while (i > 0) {
 	    text->feedback[j] = (XIMFeedback)*(CARD32*)buf;
 	    buf += sz_CARD32;
 	    i -= sz_CARD32;
 	    j++;
+	}
+	/* 
+	 * text->length tells how long both the status string and
+	 * the feedback array are. If there's "no string" the
+	 * text->length was set to zero previously. See above.
+	 * But if there is feedback (i.e. not "no feedback") then
+	 * we need to convey the length of the feedback array.
+	 * It might have been better if the protocol sent two
+	 * different values, one for the length of the status
+	 * string and one for the length of the feedback array.
+	 */
+	if (status & 0x00000001) /* "no string" bit on */ {
+	    text->length = j;
 	}
     }
 }
@@ -672,18 +673,14 @@ _XimPreeditDrawCallback(im, ic, proto, len)
 {
     XIMCallback* cb = &ic->core.preedit_attr.draw_callback;
     XIMPreeditDrawCallbackStruct cbs;
-    int p;
 
     /* invoke the callback
      */
     if (cb && cb->callback) {
-	p = 0;
-	cbs.caret      = (int)*(INT32*)&proto[p]; p += sz_INT32;
-	cbs.chg_first  = (int)*(INT32*)&proto[p]; p += sz_INT32;
-	cbs.chg_length = (int)*(INT32*)&proto[p]; p += sz_INT32;
-	if (cbs.text = (XIMText*)Xmalloc(sizeof(XIMText))) {
-	    _read_text_from_packet(im, (char*)&proto[p], (XIMText*)cbs.text);
-	}
+	cbs.caret      = (int)*(INT32*)proto; proto += sz_INT32;
+	cbs.chg_first  = (int)*(INT32*)proto; proto += sz_INT32;
+	cbs.chg_length = (int)*(INT32*)proto; proto += sz_INT32;
+	_read_text_from_packet(im, proto, &cbs.text);
 
 	(*cb->callback)((XIC)ic, cb->client_data, &cbs);
 
@@ -715,15 +712,13 @@ _XimPreeditCaretCallback(im, ic, proto, len)
 {
     XIMCallback* cb = &ic->core.preedit_attr.caret_callback;
     XIMPreeditCaretCallbackStruct cbs;
-    int p;
 
     /* invoke the callback
      */
     if (cb && cb->callback) {
-	p = XIM_HEADER_SIZE;
-	cbs.position  = (int)*(INT32*)&proto[p]; p += sz_INT32;
-	cbs.direction = (int)*(CARD32*)&proto[p]; p += sz_CARD32;
-	cbs.style     = (int)*(CARD32*)&proto[p]; p += sz_CARD32;
+	cbs.position  = (int)*(INT32*)proto; proto += sz_INT32;
+	cbs.direction = (XIMCaretDirection)*(CARD32*)proto; proto += sz_CARD32;
+	cbs.style     = (XIMCaretStyle)*(CARD32*)proto; proto += sz_CARD32;
 
 	(*cb->callback)((XIC)ic, cb->client_data, &cbs);
     }
@@ -843,22 +838,17 @@ _XimStatusDrawCallback(im, ic, proto, len)
     /* invoke the callback
      */
     if (cb && cb->callback) {
-	int p;
-
-	p = XIM_HEADER_SIZE;
-	cbs.type = (XIMStatusDataType)*(CARD32*)&proto[p]; p += sz_CARD32;
+	cbs.type = (XIMStatusDataType)*(CARD32*)proto; proto += sz_CARD32;
 	if (cbs.type == XIMTextType) {
-	    if (cbs.data.text = (XIMText*)Xmalloc(sizeof(XIMText))) {
-		_read_text_from_packet(im, proto, cbs.data.text);
-	    }
+	    _read_text_from_packet(im, proto, &cbs.data.text);
 	}
 	else if (cbs.type == XIMBitmapType) {
-	    cbs.data.bitmap = (Pixmap)*(CARD32*)&proto[p];
+	    cbs.data.bitmap = (Pixmap)*(CARD32*)proto;
 	}
 
-	(*cb->callback)((XIC)ic, cb->client_data, (XPointer)NULL);
+	(*cb->callback)((XIC)ic, cb->client_data, (XPointer)&cbs);
 
-	_free_memory_for_text((XIMText *)&cbs.data.text);
+	_free_memory_for_text((XIMText *)cbs.data.text);
     }
     else {
 
@@ -869,3 +859,34 @@ _XimStatusDrawCallback(im, ic, proto, len)
 
     return(XimCbSuccess);
 }
+
+Private XimCbStatus
+#if NeedFunctionPrototypes
+_XimPreeditStateNotifyCallback( Xim im, Xic ic, char* proto, int len )
+#else
+_XimPreeditStateNotifyCallback( im, ic, proto, len )
+    Xim		 im;
+    Xic		 ic;
+    char	*proto;
+    int		 len;
+#endif
+{
+    XIMCallback	*cb = &ic->core.preedit_attr.state_notify_callback;
+
+    /* invoke the callack
+     */
+    if( cb  &&  cb->callback ) {    
+	XIMPreeditStateNotifyCallbackStruct cbrec;
+
+	cbrec.state = *(BITMASK32 *)proto;
+	(*cb->callback)( (XIC)ic, cb->client_data, &cbrec );
+    }
+    else {
+	/* no callback registered
+	 */
+	return( XimCbNoCallback );
+    }
+
+    return( XimCbSuccess );
+}
+

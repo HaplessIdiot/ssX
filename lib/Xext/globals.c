@@ -1,4 +1,4 @@
-/* $XConsortium: globals.c,v 1.4 94/04/17 20:22:58 rws Exp $ */
+/* $XConsortium: globals.c,v 1.5 95/06/08 23:20:39 gildea Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -54,7 +54,7 @@ from the X Consortium.
 /*
  * If we need to define extra variables for each global
  */
-#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define ZEROINIT(t,var,val) SetZero(t,var,val); \
   SetZero (long, _libX_##var##Flag, 0); \
   SetZero (void *, _libX_##var##Ptr, NULL)
