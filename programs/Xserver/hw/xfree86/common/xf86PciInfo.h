@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.118 2002/01/04 22:24:25 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.119 2002/01/16 02:00:43 martin Exp $ */
 /*
  * PCI Probe
  *
@@ -640,10 +640,10 @@
 #define PCI_CHIP_NM2380		0x0016
 
 /* Intel */
-#define PCI_CHIP_I830_M_BRIDGE		0x3575
-#define PCI_CHIP_I830_M			0x3577
 #define PCI_CHIP_I815_BRIDGE		0x1130
 #define PCI_CHIP_I815			0x1132
+#define PCI_CHIP_I830_M_BRIDGE		0x3575
+#define PCI_CHIP_I830_M			0x3577
 #define PCI_CHIP_I810_BRIDGE		0x7120
 #define PCI_CHIP_I810			0x7121
 #define PCI_CHIP_I810_DC100_BRIDGE	0x7122
@@ -651,6 +651,7 @@
 #define PCI_CHIP_I810_E_BRIDGE		0x7124
 #define PCI_CHIP_I810_E			0x7125
 #define PCI_CHIP_I740_AGP		0x7800
+#define PCI_CHIP_460GX_SAC		0x84E0
 
 /* Silicon Motion Inc. */
 #define PCI_CHIP_SMI910		0x910
@@ -1559,6 +1560,8 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{0x0486, "82430ZX Aries",0},
 				{0x04A3, "82434LX/NX pci cache mem controller",0},
 				{0x0960, "960RD processor/bridge",0},
+				{0x0964, "960RD processor/bridge",0},
+				{PCI_CHIP_I815_BRIDGE, "i815 Bridge",0},
 				{0x1221, "82092AA",0},
 				{0x1222, "82092AA",0},
 				{0x1223, "SAA7116",0},
@@ -1571,8 +1574,11 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{0x1234, "82371MX bus-master IDE controller",0},
 				{0x1235, "82437MX",0},
 				{0x1237, "82441FX Natoma",0},
+				{0x123D, "683053 Programmable Interrupt Controller",0},
+				{0x123F, "460GX Integrated Hot-Plug Controller",0},
 				{0x124B, "82380FB",0},
 				{0x1250, "82439",0},
+				{PCI_CHIP_I830_M_BRIDGE, "i830M Bridge",0},
 				{0x7000, "82371 pci-isa bridge",0},
 				{0x7010, "82371 bus-master IDE controller",0},
 				{0x7020, "82371 bus-master IDE controller",0},
@@ -1582,6 +1588,9 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{0x7111, "82371AB PIIX4 IDE",0},
 				{0x7112, "82371AB PIIX4 USB",0},
 				{0x7113, "82371AB PIIX4 ACPI",0},
+				{PCI_CHIP_I810_BRIDGE, "i810 Bridge",0},
+				{PCI_CHIP_I810_DC100_BRIDGE, "i810-dc100 Bridge",0},
+				{PCI_CHIP_I810_E_BRIDGE, "i810e Bridge",0},
 				{0x7180, "82443LX PAC Host",0},
 				{0x7181, "82443LX PAC AGP",0},
 				{0x7190, "82443BX Host",0},
@@ -1590,20 +1599,25 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{0x71a0, "82443GX Host",0},
 				{0x71a1, "82443GX AGP",0},
 				{0x71a2, "82443GX Host (no AGP)",0},
+				{0x7600, "82372FB PCI-to-ISA (LPC) bridge",0},
+				{0x7601, "82372FB IDE",0},
+				{0x7602, "82372FB USB",0},
+				{0x7603, "82372FB SMBus",0},
 				{0x84C4, "P6",0},
 				{0x84C5, "82450GX20",0},
-				{PCI_CHIP_I810_BRIDGE,	"i810 Bridge",0},
-				{PCI_CHIP_I810_DC100_BRIDGE,	"i810-dc100 Bridge",0},
-				{PCI_CHIP_I810_E_BRIDGE,"i810e Bridge",0},
-				{PCI_CHIP_I815_BRIDGE,	"i815 Bridge",0},
-				{PCI_CHIP_I830_M_BRIDGE,"i830M Bridge",0},
+				{0x84CB, "460GX PCI Expander Bridge",0},
+				{PCI_CHIP_460GX_SAC, "84460GX System Address Controller",0},
+				{0x84E1, "460GX System Data Controller",0},
+				{0x84E2, "460GX AGP Bridge",0},
+				{0x84E3, "460GX Memory Access Controller",0},
+				{0x84E4, "460GX Memory Data Controller",0},
 #endif
-				{PCI_CHIP_I740_AGP,	"i740 (AGP)",0},
+				{PCI_CHIP_I815,		"i815",0},
+				{PCI_CHIP_I830_M,	"i830M",0},
 				{PCI_CHIP_I810,		"i810",0},
 				{PCI_CHIP_I810_DC100,	"i810-dc100",0},
 				{PCI_CHIP_I810_E,	"i810e",0},
-				{PCI_CHIP_I815,		"i815",0},
-				{PCI_CHIP_I830_M,	"i830M",0},
+				{PCI_CHIP_I740_AGP,	"i740 (AGP)",0},
 				{0x0000,		NULL,0}}},
     {PCI_VENDOR_ADAPTEC, {
 				{0x0010, "2940U2",0 },
