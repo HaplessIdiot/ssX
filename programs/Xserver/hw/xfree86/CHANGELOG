@@ -1,4 +1,6 @@
 XFree86 4.0.99.1 (?? February 2001)
+ 145. Fix NV, Glint, ati and mga drivers for Alpha EV56 machines
+      (Jay Estabrook).
  144. Fix the neomagic driver so that it saves/restores the palette (#4452,
       Ken Hornstein).
  143. Fix a palette saving bug in the vgahw module (#4452, Ken Hornstein).
@@ -12451,4 +12453,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1577 2001/02/13 19:19:12 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1578 2001/02/13 21:15:16 dawes Exp $
