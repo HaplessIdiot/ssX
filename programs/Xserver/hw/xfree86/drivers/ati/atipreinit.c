@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.35 2000/10/11 22:52:57 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.36 2000/10/13 13:27:00 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -617,8 +617,6 @@ ATIPreInit
     pATI->Block0Base = 0;       /* Might no longer be valid */
     if ((pVideo = pATI->PCIInfo))
     {
-        ATIRefreshPCIBases(pVideo, pVideo->thisCard);
-
         if (pATI->CPIODecoding == BLOCK_IO)
             pATI->CPIOBase = pVideo->ioBase[1];
 

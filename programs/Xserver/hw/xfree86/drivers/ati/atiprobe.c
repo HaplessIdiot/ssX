@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.29 2000/09/26 15:57:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.30 2000/10/11 22:52:57 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -1106,30 +1106,38 @@ ATIProbe
      * them in PCI configuration space.
      */
     if (xf86PciVideoInfo)
+    {
         for (i = 0;  (pVideo = xf86PciVideoInfo[i++]);  )
         {
-            pPCI = pVideo->thisCard;
+            if (pVideo->vendor != PCI_VENDOR_ATI)
+            {
+                pPCI = pVideo->thisCard;
 
-            if (pVideo->vendor == PCI_VENDOR_ATI)
-                ATIRefreshPCIBases(pVideo, pPCI);
-            else
                 ATIScanPCIBases(&PCIPorts, &nPCIPort,
                     &pPCI->pci_base0, pVideo->size,
                     (pciReadLong(pPCI->tag, PCI_CMD_STAT_REG) &
                      PCI_CMD_IO_ENABLE) ? 0 : Allowed);
+            }
         }
+    }
 
     /* Check non-video PCI devices for I/O bases */
     if (xf86PciInfo)
+    {
         for (i = 0;  (pPCI = xf86PciInfo[i++]);  )
+        {
             if ((pPCI->pci_vendor != PCI_VENDOR_ATI) &&
                 (pPCI->pci_base_class != PCI_CLASS_BRIDGE) &&
                 !(pPCI->pci_header_type &
                   ~GetByte(PCI_HEADER_MULTIFUNCTION, 2)))
+            {
                 ATIScanPCIBases(&PCIPorts, &nPCIPort,
                     &pPCI->pci_base0, pPCI->basesize,
                     (pciReadLong(pPCI->tag, PCI_CMD_STAT_REG) &
                      PCI_CMD_IO_ENABLE) ? 0 : Allowed);
+            }
+        }
+    }
 
     /* Generate ProbeFlags array from list of registered PCI I/O bases */
     (void)memset(ProbeFlags, Allowed | DoProbe, SizeOf(ProbeFlags));

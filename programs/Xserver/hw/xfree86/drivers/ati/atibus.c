@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibus.c,v 1.10 2000/08/22 21:54:29 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibus.c,v 1.11 2000/10/11 22:52:54 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -45,28 +45,6 @@ const char *ATIBusNames[] =
     "PCI",
     "AGP"
 };
-
-/*
- * ATIRefreshPCIBases --
- *
- * This function ensures the common layer's view of an adapter's PCI resources
- * is up-to-date.  This should eventually be moved into the common layer.
- */
-void
-ATIRefreshPCIBases
-(
-    pciVideoPtr  pVideo,
-    pciConfigPtr pPCI
-)
-{
-    pPCI->pci_base0 = pciReadLong(pPCI->tag, PCI_CMD_BASE_REG + 0);
-    pPCI->pci_base1 = pciReadLong(pPCI->tag, PCI_CMD_BASE_REG + 4);
-    pPCI->pci_base2 = pciReadLong(pPCI->tag, PCI_CMD_BASE_REG + 8);
-
-    pVideo->memBase[0] = PCIGETMEMORY(pPCI->pci_base0);
-    pVideo->ioBase[1]  = PCIGETIO(pPCI->pci_base1);
-    pVideo->memBase[2] = PCIGETMEMORY(pPCI->pci_base2);
-}
 
 /*
  * ATIClaimResources --
