@@ -9,7 +9,7 @@
  *	Guy DESBIEF
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.37 1999/05/09 10:51:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.38 1999/06/13 13:47:45 dawes Exp $ */
 
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -17,6 +17,8 @@
 /* All drivers should typically include these */
 #include "xf86.h"
 #include "xf86_OSproc.h"
+
+#include "xf86Resources.h"
 
 /* All drivers need this */
 #include "xf86_ansic.h"
@@ -30,6 +32,8 @@
 /* All drivers using the vgahw module need this */
 /* This driver needs to be modified to not use vgaHW for multihead operation */
 #include "vgaHW.h"
+
+#include "xf86RAC.h"
 
 /* All drivers initialising the SW cursor need this */
 #include "mipointer.h"
@@ -401,16 +405,14 @@ static Bool
 CIRProbe(DriverPtr drv, int flags)
 {
     int i;
-    pciVideoPtr pPci, *usedPci;
     GDevPtr *devSections;
-    GDevPtr *usedDevs;
+    pciVideoPtr pPci;
     int *usedChips;
     int numDevSections;
     int numUsed;
-    BusResource resource;
     Bool foundScreen = FALSE;
+    EntityInfoPtr pEnt;
 
-#if 1
     /*
      * The aim here is to find all cards that this driver can handle,
      * and for the ones not already claimed by another driver, claim the
@@ -426,7 +428,6 @@ CIRProbe(DriverPtr drv, int flags)
      * one for now, and just print a message about the others.
      */
 
-#endif
 
     /*
      * Next we check, if there has been a chipset override in the config file.
@@ -469,7 +470,7 @@ CIRProbe(DriverPtr drv, int flags)
 
     numUsed = xf86MatchPciInstances(CIR_NAME, PCI_VENDOR_CIRRUS,
 			CIRChipsets, CIRPciChipsets, devSections,
-			numDevSections, &usedDevs, &usedPci, &usedChips);
+			numDevSections, drv, &usedChips);
     /* Free it since we don't need that list after this */
     xfree(devSections);
     devSections = NULL;
@@ -477,20 +478,13 @@ CIRProbe(DriverPtr drv, int flags)
 	return FALSE;
 
     for (i = 0; i < numUsed; i++) {
-	pPci = usedPci[i];
-	resource = xf86FindPciResource(usedChips[i], CIRPciChipsets);
+	pEnt = xf86GetEntityInfo(usedChips[i]);
 
-	/*
-	 * Check that nothing else has claimed the slots.
-	 */
-	
-	if (xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func, resource)) {
+	if (pEnt->active) {
 	    ScrnInfoPtr pScrn;
 
 	    /* Allocate a ScrnInfoRec and claim the slot */
 	    pScrn = xf86AllocateScreen(drv, 0);
-	    xf86ClaimPciSlot(pPci->bus, pPci->device, pPci->func, resource,
-			     &CIRRUS, usedChips[i], pScrn->scrnIndex);
 
 	    /* Fill in what we can of the ScrnInfoRec */
 	    pScrn->driverVersion = VERSION;
@@ -502,6 +496,7 @@ CIRProbe(DriverPtr drv, int flags)
 	       functions.  But, the Laguna chips /are/ Cirrus chips, so
 	       they should be handled in this driver (as opposed to their
 	       own driver). */
+	    pPci = xf86GetPciInfoForEntity(pEnt->index);
 	    if (pPci->chipType == PCI_CHIP_GD5462 ||
 		pPci->chipType == PCI_CHIP_GD5464 ||
 		pPci->chipType == PCI_CHIP_GD5464BD ||
@@ -526,12 +521,13 @@ CIRProbe(DriverPtr drv, int flags)
 	      pScrn->FreeScreen	 = CIRFreeScreen;
 	      pScrn->ValidMode	 = CIRValidMode;
 	    }
-	    pScrn->device	 = usedDevs[i];
 	    foundScreen = TRUE;
+	    xf86ConfigActivePciEntity(pScrn, pEnt, CIRPciChipsets, NULL,
+				      NULL, NULL, NULL, NULL);
 	}
+	xfree(pEnt);
     }
-    xfree(usedDevs);
-    xfree(usedPci);
+    xfree(usedChips);
 
     return foundScreen;
 }
@@ -696,7 +692,6 @@ GetAccelPitchValues(ScrnInfoPtr pScrn)
 static Bool
 CIRPreInit(ScrnInfoPtr pScrn, int flags)
 {
-    pciVideoPtr *pciList = NULL;
     CIRPtr pCir;
     MessageType from;
     int i;
@@ -720,6 +715,9 @@ CIRPreInit(ScrnInfoPtr pScrn, int flags)
      * AllocateScreenPrivateIndex() from the ScreenInit() function.
      */
 
+    /* Check the number of entities, and fail if it isn't one. */
+    if (pScrn->numEntities != 1)
+	return FALSE;
 
     /* The vgahw module should be loaded here when needed */
     if (!xf86LoadSubModule(pScrn, "vgahw"))
@@ -732,6 +730,31 @@ CIRPreInit(ScrnInfoPtr pScrn, int flags)
      */
     if (!vgaHWGetHWRec(pScrn))
 	return FALSE;
+
+    /* Allocate the CIRRec driverPrivate */
+    if (!CIRGetRec(pScrn)) {
+	return FALSE;
+    }
+    pCir = CIRPTR(pScrn);
+    pCir->pScrn = pScrn;
+
+    /* Get the entity, and make sure it is PCI. */
+    pCir->pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
+    if (pCir->pEnt->location.type != BUS_PCI)
+	return FALSE;
+
+    /* Find the PCI info for this screen */
+    pCir->PciInfo = xf86GetPciInfoForEntity(pCir->pEnt->index);
+    pCir->PciTag = pciTag(pCir->PciInfo->bus, pCir->PciInfo->device,
+			  pCir->PciInfo->func);
+    
+    /*
+     * XXX Check which of the VGA resources are decode and/or actually
+     * required in operating mode?  For now, assume everything is needed,
+     * so don't call xf86SetOperatingState().
+     */
+    pScrn->racMemFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
+    pScrn->racIoFlags =  RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
 
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
@@ -807,13 +830,6 @@ CIRPreInit(ScrnInfoPtr pScrn, int flags)
     /* We use a programamble clock */
     pScrn->progClock = TRUE;
 
-    /* Allocate the CIRRec driverPrivate */
-    if (!CIRGetRec(pScrn)) {
-	return FALSE;
-    }
-    pCir = CIRPTR(pScrn);
-    pCir->pScrn = pScrn;
-
     /* Collect all of the relevant option flags (fill in pScrn->options) */
     xf86CollectOptions(pScrn, NULL);
 
@@ -842,33 +858,16 @@ CIRPreInit(ScrnInfoPtr pScrn, int flags)
 	pCir->NoAccel = TRUE;
     }
 
-    /* Find the PCI slot for this screen */
-    /*
-     * XXX Ignoring the Type list for now.  It might be needed when
-     * multiple cards are supported.
-     */
-    if ((i = xf86GetPciInfoForScreen(pScrn->scrnIndex, &pciList, NULL)) != 1) {
-	/* This shouldn't happen */
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		   "Expected one PCI card, but found %d\n", i);
-	CIRFreeRec(pScrn);
-	if (i > 0)
-	    xfree(pciList);
-	return FALSE;
-    }
-
-    pCir->PciInfo = *pciList;
-    xfree(pciList);
     /*
      * Set the Chipset and ChipRev, allowing config file entries to
      * override.
      */
-    if (pScrn->device->chipset && *pScrn->device->chipset) {
-	pScrn->chipset = pScrn->device->chipset;
+    if (pCir->pEnt->device->chipset && *pCir->pEnt->device->chipset) {
+	pScrn->chipset = pCir->pEnt->device->chipset;
         pCir->Chipset = xf86StringToToken(CIRChipsets, pScrn->chipset);
         from = X_CONFIG;
-    } else if (pScrn->device->chipID >= 0) {
-	pCir->Chipset = pScrn->device->chipID;
+    } else if (pCir->pEnt->device->chipID >= 0) {
+	pCir->Chipset = pCir->pEnt->device->chipID;
 	pScrn->chipset = (char *)xf86TokenToString(CIRChipsets, pCir->Chipset);
 	from = X_CONFIG;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipID override: 0x%04X\n",
@@ -878,8 +877,8 @@ CIRPreInit(ScrnInfoPtr pScrn, int flags)
 	pCir->Chipset = pCir->PciInfo->chipType;
 	pScrn->chipset = (char *)xf86TokenToString(CIRChipsets, pCir->Chipset);
     }
-    if (pScrn->device->chipRev >= 0) {
-	pCir->ChipRev = pScrn->device->chipRev;
+    if (pCir->pEnt->device->chipRev >= 0) {
+	pCir->ChipRev = pCir->pEnt->device->chipRev;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipRev override: %d\n",
 		   pCir->ChipRev);
     } else {
@@ -903,12 +902,13 @@ CIRPreInit(ScrnInfoPtr pScrn, int flags)
 
     xf86DrvMsg(pScrn->scrnIndex, from, "Chipset: \"%s\"\n", pScrn->chipset);
 	
-    pCir->PciTag = pciTag(pCir->PciInfo->bus, pCir->PciInfo->device,
-			  pCir->PciInfo->func);
-    
     /* Find the frame buffer base address */
-    if (pScrn->device->MemBase != 0) {
-	pCir->FbAddress = pScrn->device->MemBase;
+    if (pCir->pEnt->device->MemBase != 0) {
+	/*
+	 * XXX Should check that the config file value matches one of the
+	 * PCI base address values.
+	 */
+	pCir->FbAddress = pCir->pEnt->device->MemBase;
 	from = X_CONFIG;
     } else {
 	if (pCir->PciInfo->memBase[0] != 0) {
@@ -926,8 +926,8 @@ CIRPreInit(ScrnInfoPtr pScrn, int flags)
     xf86DrvMsg(pScrn->scrnIndex, from, "Linear framebuffer at 0x%lX\n",
 	       (unsigned long)pCir->FbAddress);
 
-    if (pScrn->device->IOBase != 0) {
-	pCir->IOAddress = pScrn->device->IOBase;
+    if (pCir->pEnt->device->IOBase != 0) {
+	pCir->IOAddress = pCir->pEnt->device->IOBase;
 	from = X_CONFIG;
     } else {
 	if (pCir->PciInfo->memBase[1] != 0) {
@@ -978,15 +978,12 @@ CIRPreInit(ScrnInfoPtr pScrn, int flags)
     (void) xf86GetOptValULong(CIROptions, OPTION_MEMCFG1, &pCir->SR0F);
     (void) xf86GetOptValULong(CIROptions, OPTION_MEMCFG2, &pCir->SR17);
 
-    xf86AddControlledResource(pScrn, MEM_IO);
-    xf86EnableAccess(&pScrn->Access);
-
     /*
      * If the user has specified the amount of memory in the XF86Config
      * file, we respect that setting.
      */
-    if (pScrn->device->videoRam != 0) {
-	pScrn->videoRam = pScrn->device->videoRam;
+    if (pCir->pEnt->device->videoRam != 0) {
+	pScrn->videoRam = pCir->pEnt->device->videoRam;
 	from = X_CONFIG;
     } else {
 	pScrn->videoRam = CIRCountRam(pScrn);
@@ -1007,7 +1004,7 @@ CIRPreInit(ScrnInfoPtr pScrn, int flags)
      * If the user has specified ramdac speed in the XF86Config
      * file, we respect that setting.
      */
-    if (pScrn->device->dacSpeeds[0]) {
+    if (pCir->pEnt->device->dacSpeeds[0]) {
         ErrorF("Do not specily a Clocks line for Cirrus chips\n");
         return FALSE;
     } else {
@@ -1201,8 +1198,6 @@ CIRPreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
     }
     xf86LoaderReqSymLists(ddcSymbols, NULL);
-
-    xf86DelControlledResource(&pScrn->Access, FALSE);
 
     return TRUE;
 }
@@ -1706,9 +1701,6 @@ CIRScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      */
     pScrn = xf86Screens[pScreen->myNum];
 
-    xf86AddControlledResource(pScrn, MEM_IO);
-    xf86EnableAccess(&pScrn->Access);
-
     hwp = VGAHWPTR(pScrn);
     pCir = CIRPTR(pScrn);
 
@@ -2024,8 +2016,6 @@ CIREnterVT(int scrnIndex, int flags)
 #ifdef CIR_DEBUG
     ErrorF("CIREnterVT\n");
 #endif
-
-    xf86EnableAccess(&pScrn->Access);
 
     /* Should we re-save the text mode on each VT enter? */
     return CIRModeInit(pScrn, pScrn->currentMode);

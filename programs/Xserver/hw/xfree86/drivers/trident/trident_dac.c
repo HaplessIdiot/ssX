@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.7 1999/04/15 06:39:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.8 1999/04/25 10:02:29 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -152,7 +152,6 @@ void
 TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
-    int i;
     unsigned char temp;
     int vgaIOBase;
     vgaHWGetIOBase(VGAHWPTR(pScrn));
@@ -219,7 +218,6 @@ void
 TridentSave(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
-    int i;
     unsigned char temp;
     int vgaIOBase;
     vgaHWGetIOBase(VGAHWPTR(pScrn));

@@ -10,7 +10,7 @@
  *  Inspired by cir.h
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg.h,v 1.4 1998/12/06 06:08:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg.h,v 1.5 1999/02/28 11:19:39 dawes Exp $ */
 
 #ifndef LG_H
 #define LG_H
@@ -55,6 +55,7 @@ typedef struct {
     ScrnInfoPtr         pScrn;
     pciVideoPtr		PciInfo;
     PCITAG		PciTag;
+    EntityInfoPtr	pEnt;
     int			Chipset;
     int                 ChipRev;
     int			Rounding;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir.h,v 1.9 1999/02/28 11:19:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir.h,v 1.10 1999/05/09 10:51:55 dawes Exp $ */
 
 /* (c) Itai Nahshon */
 
@@ -44,6 +44,7 @@ typedef struct {
     ScrnInfoPtr		pScrn;
     pciVideoPtr		PciInfo;
     PCITAG		PciTag;
+    EntityInfoPtr	pEnt;
     int			Chipset;
     int                 ChipRev;
     int			Rounding;
