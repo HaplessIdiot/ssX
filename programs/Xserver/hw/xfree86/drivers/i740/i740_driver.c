@@ -1655,6 +1655,26 @@ I740ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 
   xf86SetBlackWhitePixels(pScreen);
 
+  memset(&(pI740->FbMemBox), 0, sizeof(BoxRec));
+  pI740->FbMemBox.x1=0;
+  pI740->FbMemBox.x2=pScrn->displayWidth;
+  pI740->FbMemBox.y1=0;
+  pI740->FbMemBox.y2=pI740->FbMapSize/(pScrn->displayWidth*pI740->cpp);
+
+  I740DGAInit(pScreen);
+
+  if (!xf86InitFBManager(pScreen, &pI740->FbMemBox)) {
+    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Failed to init memory manager\n");
+    return FALSE;
+  }
+
+  if (!xf86ReturnOptValBool(pI740->Options, OPTION_NOACCEL, FALSE)) {
+    if (!I740AccelInit(pScreen)) {
+      xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		 "Hardware acceleration initialization failed\n");
+    }
+  }
+
   if (pScrn->bitsPerPixel>8) {
     visual = pScreen->visuals + pScreen->numVisuals;
     while (--visual >= pScreen->visuals) {
@@ -1674,6 +1694,13 @@ I740ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   xf86SetSilkenMouse(pScreen);
 
   miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
+
+  if (!xf86ReturnOptValBool(pI740->Options, OPTION_SW_CURSOR, FALSE)) {
+    if (!I740CursorInit(pScreen)) {
+      xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		 "Hardware cursor initialization failed\n");
+    }
+  }
 
   if (!miCreateDefColormap(pScreen)) return FALSE;
 
@@ -1697,33 +1724,6 @@ I740ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
     }
 
   xf86DPMSInit(pScreen, I740DisplayPowerManagementSet, 0);
-
-  memset(&(pI740->FbMemBox), 0, sizeof(BoxRec));
-  pI740->FbMemBox.x1=0;
-  pI740->FbMemBox.x2=pScrn->displayWidth;
-  pI740->FbMemBox.y1=0;
-  pI740->FbMemBox.y2=pI740->FbMapSize/(pScrn->displayWidth*pI740->cpp);
-
-  I740DGAInit(pScreen);
-
-  if (!xf86InitFBManager(pScreen, &pI740->FbMemBox)) {
-    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Failed to init memory manager\n");
-    return FALSE;
-  }
-
-  if (!xf86ReturnOptValBool(pI740->Options, OPTION_NOACCEL, FALSE)) {
-    if (!I740AccelInit(pScreen)) {
-      xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		 "Hardware acceleration initialization failed\n");
-    }
-  }
-
-  if (!xf86ReturnOptValBool(pI740->Options, OPTION_SW_CURSOR, FALSE)) {
-    if (!I740CursorInit(pScreen)) {
-      xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		 "Hardware cursor initialization failed\n");
-    }
-  }
 
   pScreen->SaveScreen = I740SaveScreen;
   pI740->CloseScreen = pScreen->CloseScreen;
