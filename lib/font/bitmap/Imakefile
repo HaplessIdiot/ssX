@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:46:34 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/lib/font/bitmap/Imakefile,v 1.9 2000/09/19 12:46:07 eich Exp $
+XCOMM $XFree86: xc/lib/font/bitmap/Imakefile,v 1.10 2001/01/17 19:43:26 dawes Exp $
 
 #if BuildServer && DoLoadableServer
 #define IHaveSubdirs
@@ -53,6 +53,8 @@ PCFDEFS=-DPCFFORMAT
 LibraryObjectRule()
 
 SpecialCLibObjectRule(bitmapfunc,$(ICONFIGFILES),$(GZIP_DEFS))
+SpecialCLibObjectRule(bitscale,$(ICONFIGFILES),$(GZIP_DEFS))
+
 SubdirLibraryRule($(OBJS))
 NormalLintTarget($(SRCS))
 

@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/font/bitmap/bitmapfunc.c,v 3.9 1999/11/19 13:53:28 hohndel Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bitmapfunc.c,v 3.10 2001/01/17 19:43:27 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -83,6 +83,7 @@ static BitmapFileFunctionsRec readers[] = {
 #define CAPABILITIES (CAP_MATRIX | CAP_CHARSUBSETTING)
 
 static FontRendererRec	renderers[] = {
+#ifdef	PCFFORMAT
     { ".pcf", 4, BitmapOpenBitmap, BitmapOpenScalable,
 	BitmapGetInfoBitmap, BitmapGetInfoScalable, 0,
 	CAPABILITIES },
@@ -101,6 +102,8 @@ static FontRendererRec	renderers[] = {
 	BitmapGetInfoBitmap, BitmapGetInfoScalable, 0,
 	CAPABILITIES },
 #endif
+#endif
+#ifdef	SNFFORMAT
     { ".snf", 4, BitmapOpenBitmap, BitmapOpenScalable,
 	BitmapGetInfoBitmap, BitmapGetInfoScalable, 0,
 	CAPABILITIES },
@@ -112,6 +115,8 @@ static FontRendererRec	renderers[] = {
 	BitmapGetInfoBitmap, BitmapGetInfoScalable, 0,
 	CAPABILITIES },
 #endif
+#endif
+#ifdef	BDFFORMAT
     { ".bdf", 4, BitmapOpenBitmap, BitmapOpenScalable,
 	BitmapGetInfoBitmap, BitmapGetInfoScalable, 0,
 	CAPABILITIES },
@@ -123,9 +128,12 @@ static FontRendererRec	renderers[] = {
 	BitmapGetInfoBitmap, BitmapGetInfoScalable, 0,
 	CAPABILITIES },
 #endif
+#endif
+#ifdef	PCFFORMAT
     { ".pmf", 4, BitmapOpenBitmap, BitmapOpenScalable,
 	BitmapGetInfoBitmap, BitmapGetInfoScalable, 0,
 	CAPABILITIES }
+#endif
 };
 
 int
@@ -163,10 +171,11 @@ BitmapOpenBitmap (FontPathElementPtr fpe, FontPtr *ppFont, int flags,
     ret = (*readers[i].ReadFont) (pFont, file, bit, byte, glyph, scan);
 
     FontFileClose (file);
-    if (ret != Successful)
-	xfree(pFont);
-    else
+    if (ret != Successful) {
+/*	xfree(pFont);	*/	/* Danny */
+    } else {
 	*ppFont = pFont;
+    }
     return ret;
 }
 

@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.16 1999/11/19 13:53:28 hohndel Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.17 2001/01/17 19:43:27 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -80,6 +80,7 @@ typedef FontPtr (*ScaleFunc) ( FontPtr /* pf */,
 /* These next two arrays must be kept in step with the renderer array */
 ScaleFunc scale[] =
 {
+#ifdef	PCFFORMAT
     BitmapScaleBitmaps,
     BitmapScaleBitmaps,
 #ifdef X_GZIP_FONT_COMPRESSION
@@ -88,17 +89,24 @@ ScaleFunc scale[] =
 #ifdef __EMX__
     BitmapScaleBitmaps,
 #endif
+#endif
+#ifdef	SNFFORMAT
     BitmapScaleBitmaps,
     BitmapScaleBitmaps,
 #ifdef X_GZIP_FONT_COMPRESSION
     BitmapScaleBitmaps,
 #endif
+#endif
+#ifdef	BDFFORMAT
     BitmapScaleBitmaps,
     BitmapScaleBitmaps,
 #ifdef X_GZIP_FONT_COMPRESSION
     BitmapScaleBitmaps,
 #endif
+#endif
+#ifdef	PCFFORMAT
     PrinterScaleBitmaps,
+#endif
 };
  
 static FontEntryPtr FindBestToScale ( FontPathElementPtr fpe, 
