@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.19 1997/02/11 10:01:43 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.20 1997/05/03 09:16:22 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
  *
@@ -56,11 +56,28 @@
 #include "vga.h"
 
 /*
+ * for PCI probing etc.
+ */
+#include "xf86_PCI.h"
+#include "vgaPCI.h"
+extern vgaPCIInformation *vgaPCIInfo;
+
+/*
  * If the driver makes use of XF86Config 'Option' flags, the following will be
  * required
  */
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
+
+/* DGA includes */
+#ifdef XFreeXDGA
+#include "X.h"
+#include "Xproto.h"
+#include "scrnintstr.h"
+#include "servermd.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
 
 /*
  * In many cases, this is sufficient for VGA16 support when VGA2 support is
@@ -436,12 +453,32 @@ STUBProbe()
     	}
   	else
 	{
+	       /*
+		* Start with PCI probing, this should get us quite far allready.
+		*/
+
+	       if (vgaPCIInfo)
+	       {
+		       if (vgaPCIInfo->Vendor!=PCI_VENDOR_SUPERDUPER)
+			       return(FALSE);
+
+		       switch(vgaPCIInfo->ChipType)
+		       {
+		       case PCI_CHIP_SUPERCHIP1:
+		       case PCI_CHIP_SUPERCHIP2:
+		       case PCI_CHIP_SUPERCHIP3:
+			       break;  /* ok, known chip */
+		       default:
+			       return(FALSE);
+		       }
+	       }
+
 		/*
-		 * OK.  We have to actually test the hardware.  The
-		 * EnterLeave() function (described below) unlocks access
-		 * to registers that may be locked, and for OSs that require
-		 * it, enables I/O access.  So we do this before we probe,
-		 * even though we don't know for sure that this chipset
+		 * If PCI probing isn't sufficient, we have to actually test
+		 * the hardware.  The EnterLeave() function (described below)
+		 * unlocks access to registers that may be locked, and for OSs
+		 * that require it, enables I/O access.  So we do this before
+		 * we probe, even though we don't know for sure that this chipset
 		 * is present.
 		 */
 		STUBEnterLeave(ENTER);
@@ -513,6 +550,14 @@ STUBProbe()
   	vga256InfoRec.chipset = STUBIdent(0);
   	vga256InfoRec.bankedMono = FALSE;
 	OFLG_SET(OPTION_FLG1, &STUB.ChipOptionFlags);
+
+
+	/* 
+	 * if your driver uses a programmable clockchip, you have
+	 * to set this option to avoid clock probing etc.
+	 */
+	OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions);
+
   	return(TRUE);
 }
 

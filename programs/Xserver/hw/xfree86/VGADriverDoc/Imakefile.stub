@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/Imakefile.stub,v 3.3 1996/12/23 06:31:55 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/Imakefile.stub,v 3.4 1996/12/24 02:24:00 dawes Exp $
 XCOMM
 XCOMM This is an Imakefile for the stub driver.  
 XCOMM 
@@ -10,7 +10,7 @@ SRCS = stub_driver.c stub_bank.s
 OBJS = stub_driver.o stub_bank.o
 
 #if XF86LinkKit
-INCLUDES = -I. -I../../../include -I../..
+INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
 #else
 XCOMM
 XCOMM This define is for use under vga256/drivers; comment it out for vga2 or

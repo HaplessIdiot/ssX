@@ -23,7 +23,7 @@
  * Author:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.19 1997/04/12 13:44:52 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.20 1997/05/03 09:17:15 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -508,6 +508,9 @@ tgaInitialize (scr_index, pScreen, argc, argv)
 			tgaInfoRec.displayWidth))
 		return(FALSE);
 
+	pScreen->whitePixel = (Pixel) 1;
+	pScreen->blackPixel = (Pixel) 0;
+	XF86FLIP_PIXELS();
 	pScreen->CloseScreen = tgaCloseScreen;
 	pScreen->SaveScreen = tgaSaveScreen;
 
