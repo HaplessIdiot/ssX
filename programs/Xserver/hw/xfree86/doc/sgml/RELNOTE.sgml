@@ -59,6 +59,8 @@ our usual support address.
   <item>Underscore characters are now ignored in Options and keywords in the 
 	XF86Config file.
   <item>The built-in X server malloc is used by default.
+  <item>Fix a problem that can cause the X server to crash when running
+	xvidtune.
   <item>A new pointer keyword <tt>RepeatMiddle</tt> has been added to support
 	dual-protocol 3-button mice which repeat the previous button event
 	when the middle button is pressed in Microsoft-compatible mode.  If
@@ -162,6 +164,13 @@ our usual support address.
 <itemize>
   <item>Incorrect handling of IBM RGB Ramdacs has been fixed.
 </itemize>
+<sect1> SuperProbe
+<p>
+<itemize>
+  <item>Added detection for C&amp;T 65548, Cirrus CL-GD7543/1, AT&amp;T
+	20C409, AT&amp;T20C499, and fixed an incorrect ET4000/W32 probe
+	problem.
+</itemize>
 <sect1> Client/Library changes
 <p>
 <itemize>
@@ -172,11 +181,12 @@ our usual support address.
   <item>xrdb dynamically allocates string space to avoid overruns.
   <item>A memory overrun problem in xterm has been fixed.
   <item>An "AllowNullPasswd" resource has been added to xdm.
+  <item>libXt bug fix from the X Consortium's fix-13.
 </itemize>
 <p>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.1 1995/11/16 11:05:54 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.2 1995/11/18 02:31:16 dawes Exp $
 </verb>
 
 </article>
