@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.214 2003/09/01 21:20:00 tsi Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.215 2003/09/03 15:52:18 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -571,7 +571,7 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 
 #ifndef BuildRandR
-#define BuildRandR		BuildRender
+#define BuildRandR		YES
 #endif
 #ifndef BuildRandRLibrary
 #define BuildRandRLibrary	!BuildServersOnly
