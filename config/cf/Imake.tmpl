@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.159 2004/04/08 01:40:19 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.160tsi Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -1132,6 +1132,15 @@ TCLIBDIR = TclLibDir
 #endif
 #ifndef AsmDefines
 #define AsmDefines /**/
+#endif
+#ifndef CPPAsmOptions
+# if HasGcc && \
+     ((GccMajorVersion < 3) || \
+      ((GccMajorVersion == 3) && (GccMinorVersion < 3)))
+#  define CPPAsmOptions -$$
+# else
+#  define CPPAsmOptios /**/
+# endif
 #endif
 #ifndef CompressCmd
 #define CompressCmd compress
