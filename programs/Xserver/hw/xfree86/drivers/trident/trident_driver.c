@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.132 2001/04/09 23:36:06 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.133 2001/04/26 15:07:44 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -1202,8 +1202,6 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	from = X_CONFIG;
 	pTrident->HWCursor = FALSE;
     }
-    xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
-		pTrident->HWCursor ? "HW" : "SW");
     if (xf86ReturnOptValBool(TRIDENTOptions, OPTION_NOACCEL, FALSE)) {
 	pTrident->NoAccel = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
@@ -1720,6 +1718,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    ramtype = "SGRAM";
 	    pTrident->HasSGRAM = TRUE;
 	    pTrident->NoAccel = TRUE; /* Disable acceleration */
+	    pTrident->HWCursor = FALSE;
 	    /* pTrident->IsCyber = TRUE; */
 	    Support24bpp = TRUE;
 	    chipset = "Cyber/BladeXP";
@@ -1731,6 +1730,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    ramtype = "SGRAM";
 	    pTrident->HasSGRAM = TRUE;
 	    pTrident->NoAccel = TRUE; /* Disable acceleration */
+	    pTrident->HWCursor = FALSE;
 	    pTrident->IsCyber = TRUE;
 	    Support24bpp = TRUE;
 	    chipset = "CyberBlade/XPm";
@@ -1738,6 +1738,8 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    pTrident->frequency = NTSC;
 	    break;
     }
+    xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
+		pTrident->HWCursor ? "HW" : "SW");
 
     if (!pScrn->progClock) {
 	pScrn->numClocks = NoClocks;
