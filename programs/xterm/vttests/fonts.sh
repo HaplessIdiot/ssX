@@ -1,5 +1,5 @@
 #!/bin/sh
-# $XFree86: xc/programs/xterm/vttests/fonts.sh,v 1.1 1999/04/11 13:11:43 dawes Exp $
+# $XFree86: xc/programs/xterm/vttests/fonts.sh,v 1.2 2000/10/27 18:31:17 dawes Exp $
 #
 # -- Thomas Dickey (1999/3/27)
 # Demonstrate the use of dynamic colors by setting the background successively
@@ -10,6 +10,8 @@ CMD='echo'
 OPT='-n'
 SUF=''
 TMP=/tmp/xterm$$
+eval '$CMD $OPT >$TMP || echo fail >$TMP' 2>/dev/null
+( test ! -f $TMP || test -s $TMP ) &&
 for verb in printf print ; do
     rm -f $TMP
     eval '$verb "\c" >$TMP || echo fail >$TMP' 2>/dev/null
