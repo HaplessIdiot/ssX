@@ -1,4 +1,5 @@
 /* $XConsortium: ReqTables.c,v 5.2 94/04/17 20:36:21 rws Exp $ */
+/* $XFree86 $ */
 
 /***********************************************************
 
@@ -61,7 +62,7 @@ SOFTWARE.
 #include "pexSwap.h"
 
 #ifdef XFree86LOADER
-#include "pexlibcwrapper.h"
+#include "xf86_libc.h"
 #endif
 
 #define LOCAL_FLAG extern

@@ -1,4 +1,5 @@
 /* $XConsortium: pexAccBuf.c,v 1.1 94/09/08 19:48:15 hersh Exp $ */
+/* $XFree86 $ */
 /*
 
 Copyright (c) 1994  X Consortium
@@ -39,7 +40,7 @@ from the X Consortium.
 #include "pexLookup.h"
 
 #ifdef XFree86LOADER
-#include "pexlibcwrapper.h"
+#include "xf86_libc.h"
 #endif
 
 #ifdef min

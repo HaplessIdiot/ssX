@@ -1,5 +1,5 @@
 /* $XConsortium: miNSTrim.c,v 5.5 94/04/17 20:37:11 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miNSTrim.c,v 3.0 1996/03/29 22:09:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miNSTrim.c,v 3.1 1997/02/18 17:48:33 hohndel Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -62,7 +62,7 @@ SOFTWARE.
 #include <stdio.h>
 
 #ifdef XFree86LOADER
-#include "pexlibcwrapper.h"
+#include "xf86_libc.h"
 #endif
 
 #define INACTIVE	0
@@ -890,9 +890,15 @@ abort:
 
 #ifdef NDEBUG
 
+#ifdef XFree86LOADER
+#define PRINT_EXTENT( _e ) \
+    xf86fprintf( xf86stderr, "extent: u = ( %f, %f), v = ( %f, %f)\n", \
+    (_e).umin, (_e).umax, (_e).vmin, (_e).vmax  );
+#else
 #define PRINT_EXTENT( _e ) \
     fprintf( stderr, "extent: u = ( %f, %f), v = ( %f, %f)\n", \
     (_e).umin, (_e).umax, (_e).vmin, (_e).vmax  );
+#endif
 
 /*++
  |
@@ -914,21 +920,42 @@ phg_nt_print_trim_rep_data( state )
 
     register int	i, j;
 
+#ifdef XFree86LOADER
+    xf86fprintf( xf86stderr, "Trim data: %d loops\n", tdata->nloops );
+#else
     fprintf( stderr, "Trim data: %d loops\n", tdata->nloops );
+#endif
     loop = tdata->loops;
     for ( i = 0; i < tdata->nloops; i++, loop++ ) {
+#ifdef XFree86LOADER
+	xf86fprintf( xf86stderr, "loop %d\n", i );
+#else
 	fprintf( stderr, "loop %d\n", i );
+#endif
 	PRINT_EXTENT( loop->extent )
 	for ( cur = loop->segs; cur; cur = cur->next ) {
+#ifdef XFree86LOADER
+	    xf86fprintf( xf86stderr, "\n\tsegment: visibility = %s, direction = %d\n",
+		cur->vis ? "PON" : "POFF", cur->dir );
+	    xf86fprintf( xf86stderr, "\tfirst = %d, last = %d, start = %d, end = %d\n",
+		cur->first, cur->last, cur->start, cur->end );
+	    xf86fprintf( xf86stderr, "\t" );
+#else
 	    fprintf( stderr, "\n\tsegment: visibility = %s, direction = %d\n",
 		cur->vis ? "PON" : "POFF", cur->dir );
 	    fprintf( stderr, "\tfirst = %d, last = %d, start = %d, end = %d\n",
 		cur->first, cur->last, cur->start, cur->end );
 	    fprintf( stderr, "\t" );
+#endif
 	    PRINT_EXTENT( cur->extent )
 	    for ( j = cur->first; j <= cur->last; j++ )
+#ifdef XFree86LOADER
+		xf86fprintf( xf86stderr, "\t\t%3d: ( %10f, %10f)\n", j,
+		    tdata->vertices[j].u, tdata->vertices[j].v );
+#else
 		fprintf( stderr, "\t\t%3d: ( %10f, %10f)\n", j,
 		    tdata->vertices[j].u, tdata->vertices[j].v );
+#endif
 	}
     }
 }
@@ -1558,6 +1585,40 @@ print_rect( rat, rect )
     char		rat;
     Nurb_edge_point	**rect;
 {
+#ifdef XFree86LOADER
+    xf86fprintf( xf86stderr, "\n" );
+    if ( rat ) {
+	xf86fprintf( xf86stderr, "LL: ( %f, %f) ==> ( %f, %f, %f, %f)\n",
+	    rect[LL-1]->u, rect[LL-1]->v,
+	    rect[LL-1]->pt.x, rect[LL-1]->pt.y, rect[LL-1]->pt.z,
+	    rect[LL-1]->pt.w );
+	xf86fprintf( xf86stderr, "LR: ( %f, %f) ==> ( %f, %f, %f, %f)\n",
+	    rect[LR-1]->u, rect[LR-1]->v,
+	    rect[LR-1]->pt.x, rect[LR-1]->pt.y, rect[LR-1]->pt.z,
+	    rect[LR-1]->pt.w );
+	xf86fprintf( xf86stderr, "UR: ( %f, %f) ==> ( %f, %f, %f, %f)\n",
+	    rect[UR-1]->u, rect[UR-1]->v,
+	    rect[UR-1]->pt.x, rect[UR-1]->pt.y, rect[UR-1]->pt.z,
+	    rect[UR-1]->pt.w );
+	xf86fprintf( xf86stderr, "UL: ( %f, %f) ==> ( %f, %f, %f, %f)\n",
+	    rect[UL-1]->u, rect[UL-1]->v,
+	    rect[UL-1]->pt.x, rect[UL-1]->pt.y, rect[UL-1]->pt.z,
+	    rect[UL-1]->pt.w );
+    } else {
+	xf86fprintf( xf86stderr, "LL: ( %f, %f) ==> ( %f, %f, %f)\n",
+	    rect[LL-1]->u, rect[LL-1]->v,
+	    rect[LL-1]->pt.x, rect[LL-1]->pt.y, rect[LL-1]->pt.z );
+	xf86fprintf( xf86stderr, "LR: ( %f, %f) ==> ( %f, %f, %f)\n",
+	    rect[LR-1]->u, rect[LR-1]->v,
+	    rect[LR-1]->pt.x, rect[LR-1]->pt.y, rect[LR-1]->pt.z );
+	xf86fprintf( xf86stderr, "UR: ( %f, %f) ==> ( %f, %f, %f)\n",
+	    rect[UR-1]->u, rect[UR-1]->v,
+	    rect[UR-1]->pt.x, rect[UR-1]->pt.y, rect[UR-1]->pt.z );
+	xf86fprintf( xf86stderr, "UL: ( %f, %f) ==> ( %f, %f, %f)\n",
+	    rect[UL-1]->u, rect[UL-1]->v,
+	    rect[UL-1]->pt.x, rect[UL-1]->pt.y, rect[UL-1]->pt.z );
+    }
+#else
     fprintf( stderr, "\n" );
     if ( rat ) {
 	fprintf( stderr, "LL: ( %f, %f) ==> ( %f, %f, %f, %f)\n",
@@ -1590,6 +1651,7 @@ print_rect( rat, rect )
 	    rect[UL-1]->u, rect[UL-1]->v,
 	    rect[UL-1]->pt.x, rect[UL-1]->pt.y, rect[UL-1]->pt.z );
     }
+#endif
 }
 #endif
 

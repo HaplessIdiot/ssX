@@ -1,5 +1,5 @@
 /* $XConsortium: miNSurf.c,v 5.10 94/04/17 20:37:12 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miNSurf.c,v 3.1 1996/03/29 22:09:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miNSurf.c,v 3.2 1997/02/18 17:48:34 hohndel Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -66,7 +66,7 @@ SOFTWARE.
 #include <stdio.h>
 
 #ifdef XFree86LOADER
-#include "pexlibcwrapper.h"
+#include "xf86_libc.h"
 #endif
 
 static ddpex3rtn       build_surf_reps();

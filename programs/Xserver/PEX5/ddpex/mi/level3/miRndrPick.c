@@ -1,4 +1,5 @@
 /* $XConsortium: miRndrPick.c,v 1.11 94/04/17 20:37:26 hersh Exp $ */
+/* $XFree86 $ */
 
 /************************************************************
 
@@ -45,7 +46,7 @@ in this Software without prior written authorization from the X Consortium.
 #include "ddpex4.h"
 
 #ifdef XFree86LOADER
-#include "pexlibcwrapper.h"
+#include "xf86_libc.h"
 #endif
 
 /* External variables used */

@@ -1,3 +1,9 @@
+XFree86 3.2Ai (xx February 1997)
+ 493. Add new xf86_libc.h to make porting to the new style loader
+      architecture easier. Adapt PEX5 using the new header file (Dirk Hohndel).
+ 492. Fixes for a.out loader (#74-76, Matthieu Herrb).
+ 491. More fixes for libc_wrapper.c (#73, Michael Rohleder).
+
 XFree86 3.2Ah (23 February 1997)
  490. Some a.out loader updates for Linux/a.out (#72, Harald Koenig).
  489. Add support for cross compilation of modules in the Imake rules

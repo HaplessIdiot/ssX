@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.8 1997/02/20 10:01:23 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.9 1997/02/23 09:25:16 dawes Exp $ */
 
 
 
@@ -143,6 +143,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86memcmp)
    SYMFUNC(xf86strcat)
    SYMFUNC(xf86strcpy)
+   SYMFUNC(xf86strncpy)
    SYMFUNC(xf86strncmp)
    SYMFUNC(xf86strcmp)
    SYMFUNC(xf86strlen)
@@ -158,6 +159,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86strerror)
    SYMFUNC(xf86setexternclock)
    SYMFUNC(xf86execl)
+   SYMFUNC(xf86getenv)
 
 /*
  * these are our own interfaces where libc functions
@@ -172,7 +174,6 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86fopen)
    SYMFUNC(xf86fclose)
    SYMFUNC(xf86fprintf)
-   SYMFUNC(xf86fscanf)
    SYMFUNC(xf86fgets)
    SYMFUNC(xf86fputs)
    SYMFUNC(xf86fgetc)

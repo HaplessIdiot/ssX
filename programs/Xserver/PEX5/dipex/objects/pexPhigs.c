@@ -1,5 +1,5 @@
 /* $XConsortium: pexPhigs.c,v 5.5 94/04/17 20:36:11 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/objects/pexPhigs.c,v 3.0 1995/07/07 15:36:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/objects/pexPhigs.c,v 3.1 1997/02/18 17:50:22 hohndel Exp $ */
 
 /***********************************************************
 
@@ -83,7 +83,7 @@ SOFTWARE.
 #include <stdio.h>
 
 #ifdef XFree86LOADER
-#include "pexlibcwrapper.h"
+#include "xf86_libc.h"
 #endif
 
 extern LUTAddWksXref();

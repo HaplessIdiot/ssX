@@ -213,7 +213,10 @@ char *symbol ;
 itemPtr	entry;
 
 entry=LoaderHashFind(symbol);
-ErrorF("0x%x %s\n", entry->address, entry->name );
+if (entry) 
+    ErrorF("0x%x %s\n", entry->address, entry->name );
+else
+    ErrorF("Symbol not found\n");
 }
 
 void

@@ -1,5 +1,5 @@
 /* $XConsortium: miInquire.c,v 5.10 95/06/08 23:20:39 gildea Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miInquire.c,v 3.1 1995/07/07 15:34:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miInquire.c,v 3.2 1997/02/18 17:48:26 hohndel Exp $ */
 
 /***********************************************************
 
@@ -59,7 +59,7 @@ SOFTWARE.
 #include "pexUtils.h"
 
 #ifdef XFree86LOADER
-#include "pexlibcwrapper.h"
+#include "xf86_libc.h"
 #endif
 
 /*

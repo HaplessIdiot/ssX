@@ -1,4 +1,5 @@
 /* $XConsortium: miLvl2Tab.c,v 5.5 94/04/17 20:37:08 hersh Exp $ */
+/* $XFree86 $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -54,7 +55,7 @@ SOFTWARE.
 #include "mipex.h"
 
 #ifdef XFree86LOADER
-#include "pexlibcwrapper.h"
+#include "xf86_libc.h"
 #endif
 
 /* procedures for PickExecuteOCTable and SearchExecuteOCTable */

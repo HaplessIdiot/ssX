@@ -1,4 +1,5 @@
 /* $XConsortium: miReplace.c,v 5.5 95/06/08 23:20:39 gildea Exp $ */
+/* $XFree86 $ */
 
 /***********************************************************
 
@@ -55,7 +56,7 @@ SOFTWARE.
 #include "miLight.h"
 
 #ifdef XFree86LOADER
-#include "pexlibcwrapper.h"
+#include "xf86_libc.h"
 #endif
 
 /**  Replace functions:

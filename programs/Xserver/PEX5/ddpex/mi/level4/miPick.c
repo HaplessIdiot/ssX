@@ -1,4 +1,5 @@
 /* $XConsortium: miPick.c,v 5.8 94/04/17 20:37:32 hersh Exp $ */
+/* $XFree86 $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -58,7 +59,7 @@ SOFTWARE.
 #include "pexExtract.h"
 
 #ifdef XFree86LOADER
-#include "pexlibcwrapper.h"
+#include "xf86_libc.h"
 #endif
 
 extern ddpex4rtn    UpdateStructRefs();

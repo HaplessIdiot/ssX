@@ -1,5 +1,5 @@
 /* $XConsortium: miMarkers.c,v 5.5 94/04/17 20:37:09 mor Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miMarkers.c,v 3.0 1996/03/29 22:09:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miMarkers.c,v 3.1 1997/02/18 17:48:31 hohndel Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -65,7 +65,7 @@ SOFTWARE.
 #include <stdio.h>
 
 #ifdef XFree86LOADER
-#include "pexlibcwrapper.h"
+#include "xf86_libc.h"
 #endif
 
 

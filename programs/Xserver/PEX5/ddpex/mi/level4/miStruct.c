@@ -1,5 +1,5 @@
 /* $XConsortium: miStruct.c,v 5.12 94/04/17 20:37:33 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level4/miStruct.c,v 3.0 1995/07/07 15:35:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level4/miStruct.c,v 3.1 1997/02/18 17:49:24 hohndel Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -60,7 +60,7 @@ SOFTWARE.
 #include "miStrMacro.h"
 
 #ifdef XFree86LOADER
-#include "pexlibcwrapper.h"
+#include "xf86_libc.h"
 #endif
 
 /*  Level 4 Workstation Support */

@@ -1,5 +1,5 @@
 /* $XConsortium: dipexExt.c,v 5.11 94/04/17 20:36:04 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/dipexExt.c,v 3.5 1997/02/18 17:50:07 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/dipexExt.c,v 3.6 1997/02/18 22:26:08 hohndel Exp $ */
 
 /***********************************************************
 
@@ -69,6 +69,7 @@ SOFTWARE.
 
 #ifdef XFree86LOADER
 #include "xf86.h"
+#include "xf86_libc.h"
 #endif
 
 unsigned long add_pad_of[] = {0, 3, 2, 1};

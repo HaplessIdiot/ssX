@@ -1,4 +1,5 @@
 /* $XConsortium: check.c,v 5.6 94/04/17 20:36:28 hersh Exp $ */
+/* $XFree86 $ */
 
 /***********************************************************
 
@@ -58,7 +59,7 @@ SOFTWARE.
 #include "pexError.h"
 
 #ifdef XFree86LOADER
-#include "pexlibcwrapper.h"
+#include "xf86_libc.h"
 #endif
 
 /*

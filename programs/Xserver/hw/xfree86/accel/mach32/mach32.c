@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.63 1997/01/19 12:49:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.66 1997/02/20 10:01:04 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -379,7 +379,7 @@ static ATIInformationBlock *GetATIInformationBlock()
    info.asic_identifier        = bios_data[ 0x43 ];
    info.bios_major             = bios_data[ 0x4c ];
    info.bios_minor             = bios_data[ 0x4d ];
-   strncpy( info.bios_date, bios_data + 0x50, 20 );
+   xf86strncpy( info.bios_date, bios_data + 0x50, 20 );
    
    info.VGA_Wonder_Present     = bios_data[ 0x44 ] & 0x40;
    info.Graphics_Ultra_Present = !(bios_data[ 0x44 ] & 0x40);

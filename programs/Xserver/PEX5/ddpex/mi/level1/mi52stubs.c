@@ -26,6 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 ******************************************************************/
+/* $XFree86: $ */
 
 #include "X.h"
 #include "PEX.h"
@@ -35,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
 #include "ddpex4.h"
 
 #ifdef XFree86LOADER
-#include "pexlibcwrapper.h"
+#include "xf86_libc.h"
 #endif
 
 ErrorCode

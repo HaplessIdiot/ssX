@@ -1,4 +1,5 @@
 /* $XConsortium: floatconv.c,v 5.6 94/04/17 20:36:32 hersh Exp $ */
+/* $XFree86 $ */
 
 /***********************************************************
 
@@ -81,7 +82,7 @@ SOFTWARE.
 #include"floatconv.h"
 
 #ifdef XFree86LOADER
-#include "pexlibcwrapper.h"
+#include "xf86_libc.h"
 #endif
 
 #define BITMASK(n) ((((unsigned long)1)<<n)-1)
