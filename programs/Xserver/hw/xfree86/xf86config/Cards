@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.65 1999/07/19 13:36:32 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.66 1999/08/28 09:01:18 dawes Exp $
 
 # VGA
 
@@ -366,7 +366,7 @@ CHIPSET CL-GD5480, 4MB
 SERVER SVGA
 DRIVER vga
 UNSUPPORTED
-COMMENT on card TV Tuner
+LINE # COMMENT on card TV Tuner
 NOCLOCKPROBE
 
 NAME PixelView Combo TV 3D AGP (Prolink)
@@ -374,7 +374,7 @@ CHIPSET CL-GD5465, 4MB
 SERVER SVGA
 DRIVER vga
 UNSUPPORTED
-COMMENT on card TV+FM Tuner
+LINE # COMMENT on card TV+FM Tuner
 NOCLOCKPROBE
 
 NAME Creative Labs Graphics Blaster Eclipse (OEM Model CT6510)
@@ -1622,16 +1622,16 @@ SEE ET6000 (generic)
 NAME Interay PMC Viper
 SEE ET6000 (generic)
 
-2-the-Max MAXColor 6000
+NAME 2-the-Max MAXColor 6000
 SEE ET6000 (generic)
 
-Gainward Challenger EV
+NAME Gainward Challenger EV
 SEE ET6000 (generic)
 
-MachSpeed VGA ET6000
+NAME MachSpeed VGA ET6000
 SEE ET6000 (generic)
 
-KouTech KeyVision 128 EV
+NAME KouTech KeyVision 128 EV
 SEE ET6000 (generic)
 
 NAME Jaton Video-58P
@@ -2822,22 +2822,22 @@ NAME STB nvidia 128
 SEE RIVA128
 
 NAME STB Velocity 4400
-SEE RIVATNT
+SEE RIVA TNT
 
 NAME ASUS 3Dexplorer
 SEE RIVA128
 
 NAME Guillemot Maxi Gamer Xentor
-SEE RIVATNT2
+SEE RIVA TNT2
 
 NAME Guillemot Maxi Gamer Xentor 32
-SEE RIVATNT2
+SEE RIVA TNT2
 
 NAME Creative Graphics Blaster TNT
-SEE RIVATNT
+SEE RIVA TNT
 
 NAME Creative Graphics Blaster TNT2
-SEE RIVATNT2
+SEE RIVA TNT2
 
 # 3DLabs
 

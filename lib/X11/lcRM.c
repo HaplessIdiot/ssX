@@ -22,6 +22,7 @@
  *
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
+ * Bug fixes: Bruno Haible	XFree86 Inc.
  */
 
 #include "Xlibint.h"
@@ -40,6 +41,8 @@ mbinit(state)
     _XlcResetConverter(((State) state)->conv);
 }
 
+/* Transforms one multibyte character, and return a 'char' in the same
+   parsing class. Returns the number of consumed bytes in *lenp. */
 static char
 mbchar(state, str, lenp)
     XPointer state;
@@ -47,24 +50,40 @@ mbchar(state, str, lenp)
     int *lenp;
 {
     XlcConv conv = ((State) state)->conv;
-    XlcCharSet charset;
-    char *from, *to, buf[BUFSIZ];
-    int from_left, to_left;
-    XPointer args[1];
+    char *from;
+    wchar_t *to, wc;
+    int cur_max, i, from_left, to_left, ret;
+
+    cur_max = XLC_PUBLIC(((State) state)->lcd, mb_cur_max);
+    if (cur_max == 1) {
+	*lenp = 1;
+	return *str;
+    }
 
     from = str;
-    *lenp = from_left = XLC_PUBLIC(((State) state)->lcd, mb_cur_max);
-    to = buf;
-    to_left = BUFSIZ;
-    args[0] = (XPointer) &charset;
+    from_left = cur_max;
+    /* Avoid overrun error which could occur if from_left > strlen(str). */
+    for (i = 0; i < cur_max; i++)
+	if (str[i] == '\0') {
+	    from_left = i;
+	    break;
+	}
+    *lenp = from_left;
 
-    _XlcConvert(conv, (XPointer *) &from, &from_left, (XPointer *) &to,
-		&to_left, args, 1);
-    
+    to = &wc;
+    to_left = 1;
+
+    ret = _XlcConvert(conv, (XPointer *) &from, &from_left,
+		      (XPointer *) &to, &to_left, NULL, 0);
     *lenp -= from_left;
 
-    /* XXX */
-    return buf[0];
+    if (ret < 0 || to_left > 0) {
+	/* Invalid or incomplete multibyte character seen. */
+	*lenp = 1;
+	return 0x7f;
+    }
+    /* Return a 'char' equivalent to wc. */
+    return (wc >= 0 && wc <= 0x7f ? wc : 0x7f);
 }
 
 static void
@@ -109,10 +128,9 @@ _XrmDefaultInitParseInfo(lcd, rm_state)
 	return (XrmMethods) NULL;
 
     state->lcd = lcd;
-    state->conv = _XlcOpenConverter(lcd, XlcNMultiByte, lcd, XlcNChar);
+    state->conv = _XlcOpenConverter(lcd, XlcNMultiByte, lcd, XlcNWideChar);
     if (state->conv == NULL) {
 	Xfree((char *) state);
-
 	return (XrmMethods) NULL;
     }
     

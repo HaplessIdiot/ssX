@@ -25,11 +25,18 @@ OR PERFORMANCE OF THIS SOFTWARE.
   Author: Hiromu Inukai (inukai@Japan.Sun.COM) SunSoft, inc.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/lcUTF.c,v 3.11 1999/06/06 14:05:54 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcUTF.c,v 3.12 1999/06/07 07:33:21 dawes Exp $ */
 
+/*
+ * An UTF-1 locale loader.
+ * Supports: all locales with codeset "utf".
+ * How: Provides converters for UTF-1.
+ * Platforms: Only those defining X_LOCALE (only Lynx, Linux-libc5, OS/2).
+ */
 
 #ifdef X_LOCALE
 
+#include "XlcPubI.h"
 #include "XlcUTF.h"
 
 static int getutfrune(
@@ -366,7 +373,6 @@ set_cjk_tab(fptr, to_tbl, from_tbl, to_max, fb_default)
     }
 }
 
-extern int _XlcResolveI18NPath();
 static char TBL_DATA_DIR[] = "tbl_data";
 
 static void

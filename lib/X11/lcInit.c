@@ -31,13 +31,14 @@
  *   Modifier: Masayoshi Shimamura      FUJITSU LIMITED 
  *
  */
-/* $XFree86: xc/lib/X11/lcInit.c,v 3.3 1997/11/22 06:50:12 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcInit.c,v 3.4 1997/11/22 12:50:10 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
 
 #define USE_GENERIC_LOADER
 #define USE_DEFAULT_LOADER
+#define USE_UTF8_LOADER
 #ifdef X_LOCALE
 # define USE_EUC_LOADER
 # define USE_SJIS_LOADER
@@ -71,6 +72,14 @@ extern XLCd _XaixOsDynamicLoad(
 
 #ifdef USE_GENERIC_LOADER
 extern XLCd _XlcGenericLoader(
+#if NeedFunctionPrototypes
+    _Xconst char*
+#endif
+);
+#endif
+
+#ifdef USE_UTF8_LOADER
+extern XLCd _XlcUtf8Loader(
 #if NeedFunctionPrototypes
     _Xconst char*
 #endif
@@ -131,6 +140,10 @@ _XlcInitLoader()
 
 #ifdef USE_DEFAULT_LOADER
     _XlcAddLoader(_XlcDefaultLoader, XlcHead);
+#endif
+
+#ifdef USE_UTF8_LOADER
+    _XlcAddLoader(_XlcUtf8Loader, XlcHead);
 #endif
 
 #ifdef USE_EUC_LOADER

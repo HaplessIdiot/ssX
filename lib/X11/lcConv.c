@@ -23,13 +23,17 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/lcConv.c,v 1.2 1999/05/09 10:50:38 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "XlcPubI.h"
 #include <stdio.h>
 
+#if NeedFunctionPrototypes
+typedef XlcConv (*XlcConverter)(XLCd, char *, XLCd, char *);
+#else
 typedef XlcConv (*XlcConverter)();
+#endif
 
 typedef struct _XlcConverterListRec {
     XLCd from_lcd;

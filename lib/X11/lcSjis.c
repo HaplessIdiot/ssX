@@ -35,8 +35,14 @@ OR PERFORMANCE OF THIS SOFTWARE.
 				makoto@sm.sony.co.jp
 
 *****************************************************************/
-/* $XFree86: xc/lib/X11/lcSjis.c,v 3.4 1997/11/22 12:50:11 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcSjis.c,v 3.5 1998/10/03 08:41:40 dawes Exp $ */
 
+/*
+ * A Japanese SJIS locale.
+ * Supports: all locales with codeset SJIS.
+ * How: Provides converters for SJIS.
+ * Platforms: Only those defining X_LOCALE (only Lynx, Linux-libc5, OS/2).
+ */
 
 #ifdef X_LOCALE
 

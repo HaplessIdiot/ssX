@@ -204,12 +204,15 @@ initialize(lcd)
     name = lcd->core->name;
 #if !defined(X_NOT_STDC_ENV) && !defined(X_LOCALE)
     /* 
-     * _XlMapOSLOcaleName will return the same string or a substring 
+     * _XlMapOSLocaleName will return the same string or a substring 
      * of name, so strlen(name) is okay 
      */
-    if ((len = strlen(name)) < sizeof sinamebuf) siname = sinamebuf;
-    else siname = Xmalloc (len + 1);
-    if (siname == NULL) return False;
+    if ((len = strlen(name)) < sizeof sinamebuf)
+        siname = sinamebuf;
+    else
+        siname = Xmalloc (len + 1);
+    if (siname == NULL)
+        return False;
     name = _XlcMapOSLocaleName(name, siname);
 #endif
     /* _XlcResolveLocaleName will lookup the SI's name for the locale */
@@ -220,7 +223,8 @@ initialize(lcd)
 	return False;
     }
 #if !defined(X_NOT_STDC_ENV) && !defined(X_LOCALE)
-    if (siname != sinamebuf) Xfree (siname);
+    if (siname != sinamebuf)
+        Xfree (siname);
 #endif
 
     if (pub->default_string == NULL)

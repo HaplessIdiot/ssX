@@ -1,5 +1,5 @@
 // $TOG: xfree86 /main/5 1997/08/02 10:11:05 kaleb $
-// $XFree86: xc/programs/xkbcomp/keycodes/xfree86,v 3.8 2000/02/09 13:30:48 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/keycodes/xfree86,v 3.9 2000/02/09 22:00:06 dawes Exp $
 default xkb_keycodes "xfree86" {
 
     minimum= 8;
@@ -170,7 +170,7 @@ default xkb_keycodes "xfree86" {
     <I27> =   167;
     <I28> =   168;
     <I29> =   169;
-    <I2A> =   170;
+    // <I2A> =   170;
     <I2B> =   171;
     <I2C> =   172;
     <I2D> =   173;
@@ -182,7 +182,7 @@ default xkb_keycodes "xfree86" {
     <I33> =   179;
     <I34> =   180;
     <I35> =   181;
-    <I36> =   182;
+    // <I36> =   182;
     // <I37> =   183;
     <I38> =   184;
     <I39> =   185;

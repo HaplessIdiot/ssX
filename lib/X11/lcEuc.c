@@ -30,8 +30,14 @@ OF THIS SOFTWARE.
              Yoshiyuki Segawa		(segawa@ossi.com)
 
 *****************************************************************/
-/* $XFree86: xc/lib/X11/lcEuc.c,v 3.5 1997/11/22 12:50:09 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcEuc.c,v 3.6 1998/10/03 08:41:38 dawes Exp $ */
 
+/*
+ * An EUC locale.
+ * Supports: all locales with codeset eucJP, eucKR, eucCN, eucTW.
+ * How: Provides converters for euc*.
+ * Platforms: Only those defining X_LOCALE (only Lynx, Linux-libc5, OS/2).
+ */
 
 #ifdef X_LOCALE
 
@@ -1462,11 +1468,7 @@ open_mbstocts(from_lcd, from_type, to_lcd, to_type)
 }
 
 XLCd
-#ifdef DYNAMIC_LOAD
-_XlcGenericLoader(name)
-#else
 _XlcEucLoader(name)
-#endif
     _Xconst char *name;
 {
     XLCd lcd;

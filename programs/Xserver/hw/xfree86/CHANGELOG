@@ -1,10 +1,43 @@
 XFree86 3.9.17e (11 February 2000)
+3722. Bug fixes, comments and cosmetics for the input method code:
+       - Add prefix "_Xim" to two input specific functions.
+       - Remove buggy function ConvertUCS4toUTF8 (bug: UCS-4 never contains
+         surrogates), and replace with simpler code. Based on a patch by
+         Ivan Pascal.
+       - Fix for _XimLookupMBText and _XimLookupWCText in multibyte locales
+         Patch by Ivan Pascal.
+      (#3664, Bruno Haible, Ivan Pascal).
+3721. Fix ugly code in _XlcCreateDefaultCharSet and add comments (#3663,
+      Bruno Haible).
+3720. Introduce a UTF-8 locale, including conversion from/to compound text.
+      This is not fully functional yet (#3662, Bruno Haible).
+3719. Resturcutre lib/X11/lcCt.c so that it is more understandable.  Update
+      the default_ct_data array.  Fix bugs in _XlcCheckCTSequence and cstoct,
+      and fix the UTF-8 introducing sequence (#3661, Bruno Haible).
+3718. Fix parsing of resource files so that it works better in multi-byte
+      locales (#3660, Bruno Haible).
+3717. Add commens to the libX11 locale files, declare _XlcInitLoader and
+      XlcConverter and a portability fix for dlopen() (#3659, Bruno Haible).
+3716. Fix an indentation problem in Xlib that was the origin of a malloc/free
+      bug (#3658, Bruno Haible).
+3715. Fix a bug in the locale file parsing routines (#3657, Bruno Haible).
+3714. Create a locale en_US.UTF-8.  This isn't fully functional yet, but
+      parts of Xlib work with it (#3657, Bruno Haible).
+3713. Modify xman to search for man pages in a locale-specific directory
+      first (#3652, Paulo Cesar Pereira de Andrade).
+3712. Have xedit use the BSD realpath() provided instead of the standard
+      Linux one because the Linux one behaves differently (#3652,
+      Paulo Cesar Pereira de Andrade).
+3711. Fix some typos in the Monitors and Cards files (#3652,
+      Paulo Cesar Pereira de Andrade).
+3710. Disable SilkenMouse in the C&T driver until the memory transfer
+      sync problem is solved (#3654, Nozomi Ytow).
 3709. Glint driver updates: register int10 module's symbols, and add a
       workaround to set the sync flags in supplied modes to make the HW
       cursor work with FBDev (#3650, Michel Danzer).
 3708. Don't "normalise" module names in xf86LoadModules (David Dawes).
 3707. Apm driver updates, including updates to the xf86Rush extension (#3649,
-      Loic Grenie).
+      3655, Loic Grenie).
 3706. Small cosmetic patch to glide driver (#3648, Loic Grenie).
 3705. Fix a bug in the way the BIOS mapping size is calculated in
       in the ReadBIOS functions (#3647, Loic Grenie).
@@ -14,13 +47,14 @@ XFree86 3.9.17e (11 February 2000)
       Michael Rohleder).
 3702. Fix a bigfont extension build problem on NetBSD and OpenBSD (#3644,
       Matthieu Herrb).
-3701. USB mouse support for *BSD (enabled for OpenBSD) (#3644, Matthieu Herrb).
+3701. USB mouse support for *BSD (enabled for OpenBSD) (#3644, 3656,
+      Matthieu Herrb).
 3700. Update README.fonts (#3643, Juliusz Chroboczek).
 3699. i810 driver and preliminary DRI support for i810 and mga (#3638,
       Keith Whitwell, Precision Insight).
 3698. 8+24 support upgraded to a non-destructive overlay (Mark Vojkovich).
 3697. Modify XAA to allow image rendering into DMA buffers (Mark Vojkovich).
-3696. Fix some SVR4.0 build problems (#3642, Satoshi Kimura).
+3696. Fix some SVR4.0 build problems (#3642, 3653, Satoshi Kimura).
 3695. Add XErrorDB entries for the DPS extension (#3639, Juliusz Chroboczek).
 3694. Fix a bigfont extension build problem on Linux/libc5 (#3637,
       Takaaki Nomura).
@@ -9562,4 +9596,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.989 2000/02/11 20:45:09 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.990 2000/02/11 22:35:46 dawes Exp $

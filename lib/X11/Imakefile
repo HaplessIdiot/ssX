@@ -3,7 +3,7 @@ XCOMM $TOG: Imakefile /main/196 1997/05/20 10:06:09 kaleb $
 
 
 
-XCOMM $XFree86: xc/lib/X11/Imakefile,v 3.27 1999/12/27 00:39:21 robin Exp $
+XCOMM $XFree86: xc/lib/X11/Imakefile,v 3.28 2000/02/08 17:18:43 dawes Exp $
 #define DoNormalLib NormalLibX11
 #define DoSharedLib SharedLibX11
 #define DoExtraLib SharedLibX11
@@ -768,9 +768,6 @@ OBJS3 = \
 #ifdef RsArchitecture
 LCDEPSYMSRCS = aixlcLoad.c
 #endif
-#ifdef OS2Architecture
-LCDEPSYMSRCS = os2Stubs.c
-#endif
 
 LCSRCS = \
 	SetLocale.c \
@@ -821,6 +818,7 @@ LCSRCS = \
 	lcStd.c \
 	lcTxtPr.c \
 	lcUTF.c \
+	lcUTF8.c \
 	lcUtil.c \
 	omDefault.c \
 	omGeneric.c \
@@ -838,9 +836,6 @@ LCDEPOBJS = XsunDL.o
 */
 #ifdef RsArchitecture
 LCDEPOBJS = aixlcLoad.o
-#endif
-#ifdef OS2Architecture
-LCDEPOBJS = os2Stubs.o
 #endif
 
 LCOBJS = \
@@ -892,6 +887,7 @@ LCOBJS = \
 	lcStd.o \
 	lcTxtPr.o \
 	lcUTF.o \
+	lcUTF8.o \
 	lcUtil.o \
 	omDefault.o \
 	omGeneric.o \
@@ -901,6 +897,14 @@ LCOBJS = \
 	omTextExt.o \
 	omTextPer.o \
 	omXChar.o
+
+#ifdef OS2Architecture
+MISCSRCS = os2Stubs.c
+#endif
+
+#ifdef OS2Architecture
+MISCOBJS = os2Stubs.o
+#endif
 
 OBJS = $(OBJS1) $(OBJS2) $(OBJS3)
 

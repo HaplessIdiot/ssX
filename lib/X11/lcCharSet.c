@@ -23,7 +23,7 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86: xc/lib/X11/lcCharSet.c,v 3.2 1999/05/09 10:50:38 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcCharSet.c,v 3.3 2000/02/08 17:18:44 dawes Exp $ */
 
 #include <stdio.h>
 #include "Xlibint.h"
@@ -31,7 +31,11 @@
 
 /* EXTERNS */
 /* lcCt.c */
-extern Bool _XlcParseCharSet();
+extern Bool _XlcParseCharSet(
+#if NeedFunctionPrototypes
+    XlcCharSet /* charset */
+#endif
+);
 
 #if NeedVarargsPrototypes
 char *
@@ -78,7 +82,7 @@ static XlcCharSetList charset_list = NULL;
 
 XlcCharSet
 _XlcGetCharSet(name)
-    char *name;
+    _Xconst char *name;
 {
     XlcCharSetList list;
     XrmQuark xrm_name;
@@ -144,16 +148,17 @@ get_values(charset, args, num_args)
 XlcCharSet
 _XlcCreateDefaultCharSet(name, ct_sequence)
     _Xconst char *name;
-    char *ct_sequence;
+    _Xconst char *ct_sequence;
 {
     XlcCharSet charset;
-    char *ptr = NULL;
+    _Xconst char *colon;
 
     charset = (XlcCharSet) Xmalloc(sizeof(XlcCharSetRec));
     if (charset == NULL)
 	return (XlcCharSet) NULL;
     bzero((char *) charset, sizeof(XlcCharSetRec));
-    
+
+    /* Fill in name and xrm_name.  */
     charset->name = (char *) Xmalloc(strlen(name) + strlen(ct_sequence) + 2);
     if (charset->name == NULL) {
 	Xfree((char *) charset);
@@ -162,15 +167,27 @@ _XlcCreateDefaultCharSet(name, ct_sequence)
     strcpy(charset->name, name);
     charset->xrm_name = XrmStringToQuark(charset->name);
 
-    if (ptr = strchr(charset->name, ':'))
-        *ptr = '\0';
-    charset->xrm_encoding_name = XrmStringToQuark(charset->name);
-    charset->encoding_name = XrmQuarkToString(charset->xrm_encoding_name);
-    if (ptr)
-        *ptr = ':';
+    /* Fill in encoding_name and xrm_encoding_name.  */
+    if ((colon = strchr(charset->name, ':')) != NULL) {
+        unsigned int length = colon - charset->name;
+        charset->encoding_name = (char *) Xmalloc(length + 1);
+        if (charset->encoding_name == NULL) {
+            Xfree((char *) charset->name);
+            Xfree((char *) charset);
+            return (XlcCharSet) NULL;
+        }
+        strncpy(charset->encoding_name, charset->name, length);
+        charset->encoding_name[length] = '\0';
+        charset->xrm_encoding_name = XrmStringToQuark(charset->encoding_name);
+    } else {
+        charset->encoding_name = charset->name;
+        charset->xrm_encoding_name = charset->xrm_name;
+    }
 
+    /* Fill in ct_sequence.  */
     charset->ct_sequence = charset->name + strlen(name) + 1;
     strcpy(charset->ct_sequence, ct_sequence);
+
     charset->get_values = get_values;
 
     _XlcParseCharSet(charset);

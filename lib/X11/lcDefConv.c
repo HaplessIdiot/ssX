@@ -23,10 +23,23 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/lcDefConv.c,v 1.2 1997/11/22 12:50:09 dawes Exp $ */
+
+/*
+ * The default locale loader.
+ * Supports: only the "C" locale.
+ * How: converts bytes to wide characters in a 1:1 manner.
+ * Platforms: all systems.
+ */
 
 #include "Xlibint.h"
 #include "XlcPubI.h"
+
+extern void _XlcAddUtf8Converters(
+#if NeedFunctionPrototypes
+    XLCd
+#endif
+);
 
 typedef struct _StateRec {
     XlcCharSet charset;
@@ -341,6 +354,8 @@ _XlcDefaultLoader(name)
 	return (XLCd) NULL;
 
     lcd = _XlcCreateLC(name, _XlcPublicMethods);
+    if (lcd == (XLCd) NULL)
+	return lcd;
 
     _XlcSetConverter(lcd, XlcNMultiByte, lcd, XlcNWideChar, open_strtowcs);
     _XlcSetConverter(lcd, XlcNMultiByte, lcd, XlcNCompoundText, open_strtostr);
@@ -358,6 +373,8 @@ _XlcDefaultLoader(name)
 
     _XlcSetConverter(lcd, XlcNCharSet, lcd, XlcNMultiByte, open_cstostr);
     _XlcSetConverter(lcd, XlcNCharSet, lcd, XlcNWideChar, open_strtowcs);
+
+    _XlcAddUtf8Converters(lcd);
 
     return lcd;
 }

@@ -31,7 +31,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
                                 fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imConv.c,v 1.19 2000/01/29 18:58:14 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imConv.c,v 1.20 2000/01/31 14:40:59 dawes Exp $ */
 
 #define NEED_EVENTS
 #include <stdio.h>
@@ -457,7 +457,7 @@ static struct CodesetRec CodesetTable[] = {
     {sLatin7,	"ISO8859-13",	"\033-?"},/* Baltic Rim */
     {sLatin8	"ISO8859-14",	"\033-?"},/* Celtic */
 #endif
-    {sUTF8,	"utf8",		"\033%B"},
+    {sUTF8,	"UTF-8",	"\033%G"},
     /* Non-standard */
     {sKoi8_r,	"KOI8-R", "\033%/1\200\210koi8-r\002"},
     {sKoi8_u,	"KOI8-U", "\033%/1\200\211koi8-u\002"},
@@ -475,179 +475,66 @@ static struct CodesetRec CodesetTable[] = {
 
 #define NUM_CODESETS sizeof CodesetTable / sizeof CodesetTable[0]
 
-unsigned long *
+/*
+ * Given the encoding name of a locale, returns the corresponding codeset
+ * in two formats:
+ *   - If cset_set is not NULL, *cset_ret is set to the corresponding
+ *     struct CodesetRec *.
+ *   - A pointer to the corresponding constant locale_code is returned.
+ * If the encoding name is not known, ISO-8859-1 is used as a fallback;
+ * thus the returned pointers are never NULL.
+ */
+unsigned long Const *
 #if NeedFunctionPrototypes
-_XGetLocaleCode (
-     char*	name,
-     XPointer*	cset_ret)
+_XimGetLocaleCode (
+    _Xconst char*	encoding_name,
+    XPointer*		cset_ret)
 #else
-_XGetLocaleCode (name, cset_ret)
-     char*	name;
-     XPointer*	cset_ret;
+_XimGetLocaleCode (name, cset_ret)
+    _Xconst char*	encoding_name;
+    XPointer*		cset_ret;
 #endif
 {
-  int i;
-  struct CodesetRec* cset = &CodesetTable[0]; /* ISO8859-1 */
+    int i;
+    struct CodesetRec* cset = &CodesetTable[0]; /* ISO8859-1 */
   
-  if (name) {
-    for (i = 0; i < NUM_CODESETS; i++) {
-      if (strcmp (name, CodesetTable[i].locale_name) == 0) {
-        cset = &CodesetTable[i];
-        break;
-      }
+    if (encoding_name) {
+        for (i = 0; i < NUM_CODESETS; i++) {
+            if (strcmp (encoding_name, CodesetTable[i].locale_name) == 0) {
+                cset = &CodesetTable[i];
+                break;
+            }
+        }
     }
-  }
   
-  if (cset_ret)
-    *cset_ret = (XPointer) cset;
-  return &(cset->locale_code);
+    if (cset_ret)
+        *cset_ret = (XPointer) cset;
+    return &(cset->locale_code);
 }
 
 #ifndef XK_emdash
 #define XK_emdash 0xaa9
 #endif
 
-
-/* ================================================================ */
 /*
-File:	ConvertUTF.C
-Author: Mark E. Davis
-Copyright (C) 1994 Taligent, Inc. All rights reserved.
-
-This code is copyrighted. Under the copyright laws, this code may not
-be copied, in whole or part, without prior written consent of Taligent. 
-
-Taligent grants the right to use or reprint this code as long as this
-ENTIRE copyright notice is reproduced in the code or reproduction.
-The code is provided AS-IS, AND TALIGENT DISCLAIMS ALL WARRANTIES,
-EITHER EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  IN
-NO EVENT WILL TALIGENT BE LIABLE FOR ANY DAMAGES WHATSOEVER (INCLUDING,
-WITHOUT LIMITATION, DAMAGES FOR LOSS OF BUSINESS PROFITS, BUSINESS
-INTERRUPTION, LOSS OF BUSINESS INFORMATION, OR OTHER PECUNIARY
-LOSS) ARISING OUT OF THE USE OR INABILITY TO USE THIS CODE, EVEN
-IF TALIGENT HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-BECAUSE SOME STATES DO NOT ALLOW THE EXCLUSION OR LIMITATION OF
-LIABILITY FOR CONSEQUENTIAL OR INCIDENTAL DAMAGES, THE ABOVE
-LIMITATION MAY NOT APPLY TO YOU.
-
-RESTRICTED RIGHTS LEGEND: Use, duplication, or disclosure by the
-government is subject to restrictions as set forth in subparagraph
-(c)(l)(ii) of the Rights in Technical Data and Computer Software
-clause at DFARS 252.227-7013 and FAR 52.227-19.
-
-This code may be protected by one or more U.S. and International
-Patents.
-
-TRADEMARKS: Taligent and the Taligent Design Mark are registered
-trademarks of Taligent, Inc.
-*/
-/* ================================================================ */
-
-#define kReplacementCharacter	0x0000FFFDUL
-#define kMaximumUCS2		0x0000FFFFUL
-#define kMaximumUCS4		0x7FFFFFFFUL
-
-typedef enum {
-	ok, 				/* conversion successful */
-	sourceExhausted,	/* partial character in source, but hit end */
-	targetExhausted		/* insuff. room in target for conversion */
-} ConversionResult;
-
-#define halfShift		10
-#define halfBase		0x0010000UL
-#define halfMask		0x3FFUL
-#define kSurrogateHighStart	0xD800UL
-#define kSurrogateHighEnd	0xDBFFUL
-#define kSurrogateLowStart	0xDC00UL
-#define kSurrogateLowEnd	0xDFFFUL
-
-typedef unsigned int UCS4; /* wchar_t, but on AIX, SunOS wchar_t is 16 bits */
-typedef unsigned char UTF8;
-
-#if 0
-static UCS4 Const offsetsFromUTF8[6] = {
-	0x00000000UL, 0x00003080UL, 0x000E2080UL,
- 	0x03C82080UL, 0xFA082080UL, 0x82082080UL
-};
-
-static char Const bytesFromUTF8[256] = {
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-	2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2, 3,3,3,3,3,3,3,3,4,4,4,4,5,5,5,5
-};
-#endif
-
-static UTF8 Const firstByteMark[7] = {
-	0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC
-};
-
-static ConversionResult	ConvertUCS4toUTF8 (
-	UCS4** sourceStart, UCS4* sourceEnd, 
-	UTF8** targetStart, UTF8* targetEnd)
-{
-	ConversionResult result = ok;
-	register UCS4* source = *sourceStart;
-	register UTF8* target = *targetStart;
-	while (source < sourceEnd) {
-		register UCS4 ch;
-		register unsigned short bytesToWrite = 0;
-		register const UCS4 byteMask = 0xBF;
-		register const UCS4 byteMark = 0x80; 
-		ch = *source++;
-		if (ch >= kSurrogateHighStart && ch <= kSurrogateHighEnd
-				&& source < sourceEnd) {
-			register UCS4 ch2 = *source;
-			if (ch2 >= kSurrogateLowStart && ch2 <= kSurrogateLowEnd) {
-				ch = ((ch - kSurrogateHighStart) << halfShift)
-					+ (ch2 - kSurrogateLowStart) + halfBase;
-				++source;
-			};
-		};
-		if (ch < 0x80) {		bytesToWrite = 1;
-		} else if (ch < 0x800) {	bytesToWrite = 2;
-		} else if (ch < 0x10000) {	bytesToWrite = 3;
-		} else if (ch < 0x200000) {	bytesToWrite = 4;
-		} else if (ch < 0x4000000) {	bytesToWrite = 5;
-		} else if (ch <= kMaximumUCS4){	bytesToWrite = 6;
-		} else {			bytesToWrite = 3;
-						ch = kReplacementCharacter;
-		}; /* I wish there were a smart way to avoid this conditional */
-		
-		target += bytesToWrite;
-		if (target > targetEnd) {
-			target -= bytesToWrite; result = targetExhausted; break;
-		};
-		switch (bytesToWrite) {	/* note: code falls through cases! */
-		case 6:	*--target = (ch | byteMark) & byteMask; ch >>= 6;
-		case 5:	*--target = (ch | byteMark) & byteMask; ch >>= 6;
-		case 4:	*--target = (ch | byteMark) & byteMask; ch >>= 6;
-		case 3:	*--target = (ch | byteMark) & byteMask; ch >>= 6;
-		case 2:	*--target = (ch | byteMark) & byteMask; ch >>= 6;
-		case 1:	*--target =  ch | firstByteMark[bytesToWrite];
-		};
-		target += bytesToWrite;
-	};
-	*sourceStart = source;
-	*targetStart = target;
-	return result;
-}
-
+ * Returns the locale dependent representation of a keysym.
+ * The locale's encoding is passed in form of its locale_code.
+ * The resulting multi-byte sequence is placed starting at buf (a buffer
+ * with nbytes bytes, nbytes should be >= 8) and is NUL terminated.
+ * Returns the length of the resulting multi-byte sequence, excluding the
+ * terminating NUL byte. Return 0 if the keysym is not representable in the
+ * locale,
+ */
 /*ARGSUSED*/
 int 
 #if NeedFunctionPrototypes
-_XGetCharCode (
-     unsigned long locale_code,
-     KeySym 		keysym,
-     unsigned char*	buf,
-     int 		nbytes)
+_XimGetCharCode (
+    unsigned long locale_code,
+    KeySym 		keysym,
+    unsigned char*	buf,
+    int 		nbytes)
 #else
-_XGetCharCode (locale_code, keysym, buf, nbytes)
+_XimGetCharCode (locale_code, keysym, buf, nbytes)
     unsigned long locale_code;
     KeySym keysym;
     unsigned char *buf;
@@ -657,18 +544,53 @@ _XGetCharCode (locale_code, keysym, buf, nbytes)
     unsigned long kset;
     int	count,isLatin1;
 
+    if ( keysym == NoSymbol )
+	return 0;
+
     if (locale_code == sUTF8) {
-	unsigned int ucs4[2];
-	unsigned int* ucs4vec[1];
-	unsigned char* utf8vec[1];
-
-	ucs4[0] = keysym_to_ucs4 (keysym);
-	ucs4[1] = 0;
-	ucs4vec[0] = ucs4;
-	utf8vec[0] = buf;
-
-	(void) ConvertUCS4toUTF8 (ucs4vec, &ucs4[1], utf8vec, &buf[nbytes]);
-	return (strlen ((char*) buf));
+        unsigned int ucs4 = keysym_to_ucs4 (keysym);
+        int count;
+        if (ucs4 < 0x80)
+            count = 1;
+        else if (ucs4 < 0x800)
+            count = 2;
+        else if (ucs4 < 0x10000)
+            count = 3;
+        else if (ucs4 < 0x200000)
+            count = 4;
+        else if (ucs4 < 0x4000000)
+            count = 5;
+        else if (ucs4 <= 0x7fffffff)
+            count = 6;
+        else {
+            fprintf(stderr, "bug in keysym_to_ucs4: 0x%04x\n", ucs4);
+            return 0;
+        }
+        if (nbytes <= count) {
+            fprintf(stderr, "_XimGetCharCode buffer too small\n");
+            return 0;
+        }
+        switch (count) { /* note: code falls through cases! */
+            case 6:
+                buf[5] = 0x80 | (ucs4 & 0x3f);
+                ucs4 = ucs4 >> 6; ucs4 |= 0x4000000;
+            case 5:
+                buf[4] = 0x80 | (ucs4 & 0x3f);
+                ucs4 = ucs4 >> 6; ucs4 |= 0x200000;
+            case 4:
+                buf[3] = 0x80 | (ucs4 & 0x3f);
+                ucs4 = ucs4 >> 6; ucs4 |= 0x10000;
+            case 3:
+                buf[2] = 0x80 | (ucs4 & 0x3f);
+                ucs4 = ucs4 >> 6; ucs4 |= 0x800;
+            case 2:
+                buf[1] = 0x80 | (ucs4 & 0x3f);
+                ucs4 = ucs4 >> 6; ucs4 |= 0xc0;
+            case 1:
+                buf[0] = ucs4;
+        }
+	buf[count]= '\0';
+        return count;
     }
 
     kset = locale_code&0xffffff;
@@ -676,9 +598,7 @@ _XGetCharCode (locale_code, keysym, buf, nbytes)
     isLatin1 = ((keysym&0xffffff00)==0);
     count = 0;
 
-    if ( keysym == NoSymbol )
-	return 0;
-    else if ((keysym >> 8) == kset) {
+    if ((keysym >> 8) == kset) {
 	count = 1;
 	switch (kset) {
 	case sKana:
@@ -855,30 +775,28 @@ _XimLookupMBText(ic, event, buffer, nbytes, keysym, status)
     int count, local_count;
     KeySym symbol;
     struct CodesetRec *cset;
-    int i;
     Status	dummy;
     Xim	im = (Xim)ic->core.im;
     XLCd lcd = im->core.lcd;
     unsigned char local_buf[BUF_SIZE];
     unsigned char look[BUF_SIZE];
 
-
     /* force a latin-1 lookup for compatibility */
     count = XLOOKUPSTRING(event, (char *)buffer, nbytes, &symbol, status);
     if (keysym != NULL) *keysym = symbol;
     if ((nbytes == 0) || (symbol == NoSymbol)) return count;
 
-    _XGetLocaleCode(XLC_PUBLIC(lcd,encoding_name), (XPointer *) &cset);
+    _XimGetLocaleCode(XLC_PUBLIC(lcd,encoding_name), (XPointer *) &cset);
     
     if ((count == 0 && cset != NULL) || 
 	(count == 1 && (symbol > 0x7f && symbol < 0xff00) && 
 	 cset->locale_code != 0)) {
-	if ((count = _XGetCharCode(cset->locale_code, symbol,
-				   look, sizeof look))) {
+	if ((count = _XimGetCharCode(cset->locale_code, symbol,
+                                     look, sizeof look))) {
 	    strcpy((char*) local_buf, cset->escape_seq);
 	    local_count = strlen(cset->escape_seq);
-	    local_buf[local_count] = look[0];
-	    local_count++;
+	    strncpy(&local_buf[local_count], look, count);
+	    local_count += local_count;
 	    local_buf[local_count] = '\0';
 	    if ((count = im->methods->ctstombs(ic->core.im,
 				(char*) local_buf, local_count,
@@ -915,7 +833,6 @@ _XimLookupWCText(ic, event, buffer, nbytes, keysym, status)
     int count, local_count;
     KeySym symbol;
     struct CodesetRec *cset;
-    int i;
     Status	dummy;
     Xim	im = (Xim)ic->core.im;
     XLCd lcd = im->core.lcd;
@@ -927,17 +844,17 @@ _XimLookupWCText(ic, event, buffer, nbytes, keysym, status)
     if (keysym != NULL) *keysym = symbol;
     if ((nbytes == 0) || (symbol == NoSymbol)) return count;
 
-    _XGetLocaleCode(XLC_PUBLIC(lcd,encoding_name), (XPointer *) &cset);
+    _XimGetLocaleCode(XLC_PUBLIC(lcd,encoding_name), (XPointer *) &cset);
     
     if ((count == 0 && cset != NULL) ||
 	(count == 1 && (symbol > 0x7f && symbol < 0xff00) &&
 	 cset->locale_code != 0)) {
-	if ((count = _XGetCharCode(cset->locale_code, symbol,
-				   look, sizeof look))) {
+	if ((count = _XimGetCharCode(cset->locale_code, symbol,
+                                     look, sizeof look))) {
 	    strcpy((char*) local_buf, cset->escape_seq);
 	    local_count = strlen(cset->escape_seq);
-	    local_buf[local_count] = look[0];
-	    local_count++;
+	    strncpy(&local_buf[local_count], look, count);
+	    local_count += count;
 	    local_buf[local_count] = '\0';
 	    if ((count = im->methods->ctstowcs(ic->core.im,
 				(char*) local_buf, local_count,

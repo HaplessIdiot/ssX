@@ -49,7 +49,7 @@ from The Open Group.
  *
  *		 Katsuhisa Yano		TOSHIBA Corp.
  */				
-/* $XFree86: xc/lib/X11/lcWrap.c,v 3.5 1999/05/09 10:50:41 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcWrap.c,v 3.6 2000/01/29 18:58:18 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
@@ -69,12 +69,6 @@ from The Open Group.
 #ifdef X_NOT_STDC_ENV
 extern char *getenv();
 #endif
-
-extern void _XlcInitLoader(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
 
 #ifdef XTHREADS
 LockInfoPtr _Xi18n_lock;
@@ -275,15 +269,16 @@ _XOpenLC(name)
     if (name == NULL) {
 	name = setlocale (LC_CTYPE, (char *)NULL);
 #if !defined(X_NOT_STDC_ENV) && !defined(X_LOCALE)
-    /* 
-     * _XlMapOSLOcaleName will return the same string or a substring 
-     * of name, so strlen(name) is okay 
-     */
-    if ((len = strlen(name)) > sizeof sinamebuf) {
-       siname = Xmalloc (len + 1);
-       if (siname == NULL) return NULL;
-    }
-    name = _XlcMapOSLocaleName(name, siname);
+        /* 
+         * _XlMapOSLocaleName will return the same string or a substring 
+         * of name, so strlen(name) is okay 
+         */
+        if ((len = strlen(name)) >= sizeof sinamebuf) {
+            siname = Xmalloc (len + 1);
+            if (siname == NULL)
+                return NULL;
+        }
+        name = _XlcMapOSLocaleName(name, siname);
 #endif
     }
 

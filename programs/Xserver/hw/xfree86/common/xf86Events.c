@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.88 2000/02/09 13:30:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.89 2000/02/09 15:47:46 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -430,6 +430,9 @@ xf86PostKbdEvent(unsigned key)
       /*
        * Ignore virtual shifts (E0 2A, E0 AA, E0 36, E0 B6)
        */
+    case 0x2A:
+    case 0x36:
+	return;
     default:
       xf86MsgVerb(X_INFO, 2, "Unreported Prefix0 scancode: 0x%02x\n",
 		  scanCode);
@@ -439,9 +442,6 @@ xf86PostKbdEvent(unsigned key)
        * with symbolic names at this level.
        */
       scanCode += 0x78;
-#if 0
-      return;                                  /* skip illegal */
-#endif
     }
   }
   

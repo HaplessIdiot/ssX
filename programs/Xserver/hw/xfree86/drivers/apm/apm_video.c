@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_video.c,v 1.1 2000/02/11 22:35:58 dawes Exp $ */
 
 #if PSZ != 24
 #include "dixstruct.h"
@@ -513,7 +513,7 @@ ApmQueryBestSize(ScrnInfoPtr pScrn, Bool motion, short vid_w, short vid_h,
 }
 
 static void
-ApmCopyData(char *src, char *dst, int srcPitch, int dstPitch,
+ApmCopyData(unsigned char *src, unsigned char *dst, int srcPitch, int dstPitch,
 	      int h, int w)
 {
     w <<= 1;
@@ -525,8 +525,8 @@ ApmCopyData(char *src, char *dst, int srcPitch, int dstPitch,
 }
 
 static void
-ApmCopyMungedData(char *src1, char *src2,
-		   char *src3, char *dst1,
+ApmCopyMungedData(unsigned char *src1, unsigned char *src2,
+		   unsigned char *src3, unsigned char *dst1,
 		   int srcPitch, int srcPitch2, int dstPitch, int h, int w)
 {
    CARD32 *dst = (CARD32*)dst1;
@@ -663,7 +663,7 @@ A(PutImage)(ScrnInfoPtr pScrn, short src_x, short src_y,
     ScreenPtr	pScreen = pScrn->pScreen;
     APMDECL(pScrn);
     INT32	x1, x2, y1, y2;
-    char	*dst_start;
+    unsigned char	*dst_start;
     int		pitch, Bpp, new_h, offset, offset2, offset3;
     CARD32	mask;
     FBAreaPtr	area;
@@ -674,8 +674,8 @@ A(PutImage)(ScrnInfoPtr pScrn, short src_x, short src_y,
     CARD32	tmp;
     Bool	offscreen;
 
-    offscreen = (buf < (char *)pApm->FbBase ||
-		    buf > (char *)pApm->FbBase + 0x400000);
+    offscreen = (buf < (unsigned char *)pApm->FbBase ||
+		    buf > (unsigned char *)pApm->FbBase + 0x400000);
 
     if(drw_w > 16384) drw_w = 16384;
 
@@ -820,7 +820,7 @@ A(PutImage)(ScrnInfoPtr pScrn, short src_x, short src_y,
     }
     pPriv->Bps = pPriv->Bpp * pPriv->xden;
     offset = (area->box.y1 * pitch) + (top * dstPitch);
-    dst_start = ((char *)pApm->FbBase) + (pPriv->data = offset + left);
+    dst_start = ((unsigned char *)pApm->FbBase) + (pPriv->data = offset + left);
     switch(id) {
     case 0x32315659:
 	top &= ~1;
@@ -842,7 +842,7 @@ A(PutImage)(ScrnInfoPtr pScrn, short src_x, short src_y,
 	if (offscreen)
 	    ApmCopyData(buf, dst_start, srcPitch, dstPitch, nlines, npixels);
 	else
-	    pPriv->data = buf - (char *)pApm->FbBase;
+	    pPriv->data = buf - (unsigned char *)pApm->FbBase;
         break;
     }
     A(WaitForFifo)(pApm, 3);

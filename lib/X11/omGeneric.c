@@ -31,7 +31,7 @@
  * Modifier:  Takanori Tateno   FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/omGeneric.c,v 3.11 1998/10/04 11:55:41 dawes Exp $ */
+/* $XFree86: xc/lib/X11/omGeneric.c,v 3.12 1999/05/09 10:50:41 dawes Exp $ */
 
 /*
  * Fixed the algorithms in parse_fontname() and parse_fontdata()
@@ -1917,7 +1917,8 @@ char **value;
         if ((bufptr = strchr(buf, ':'))) {
 	    len = (int)(bufptr - buf);
             bufptr++ ;
-	}
+	} else
+            len = strlen(buf);
         font_data->name = (char *) Xmalloc(len + 1);
         if (font_data->name == NULL)
             return NULL;

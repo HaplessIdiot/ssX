@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_funcs.c,v 1.9 2000/02/08 13:13:10 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_funcs.c,v 1.10 2000/02/11 22:35:57 dawes Exp $ */
 
 #define FASTER
 #ifndef PSZ
@@ -1178,6 +1178,7 @@ A(SetClippingRectangle)(ScrnInfoPtr pScrn, int x1, int y1, int x2, int y2)
   pApm->apmClip = TRUE;
 }
 
+static void
 A(SyncBlt)(ApmPtr pApm)
 {
     int again = (pApm->Chipset == AP6422);

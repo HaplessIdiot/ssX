@@ -768,6 +768,7 @@ EndSection
 Section "Monitor"
   Identifier "Sampo alphascan-17"
   ModelName "AlphaScan 17"
+  VendorName "UNKNOWN"
   BandWidth 95MHz
   HorizSync 30-77kHz
   VertRefresh 20-105Hz
@@ -1352,7 +1353,7 @@ EndSection
 Section "Monitor"
    Identifier      "Elsa 24"
    VendorName      "Elsa"
-   ModelName       "24H96
+   ModelName       "24H96"
    HorizSync       30-96
    VertRefresh     50-160
    # 640x480@60Hz
@@ -1382,5 +1383,5 @@ Section "Monitor"
 EndSection
 
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Monitors,v 3.16 1997/05/22 14:22:24 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Monitors,v 3.18 1999/11/19 13:54:25 hohndel Exp $
 # $XConsortium: Monitors /main/13 1996/10/25 14:11:55 kaleb $

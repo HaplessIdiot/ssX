@@ -31,8 +31,18 @@
  *   Modifier: Masayoshi Shimamura      FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.11 1999/05/09 10:50:39 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.12 2000/01/29 18:58:17 dawes Exp $ */
 
+/*
+ * A generic locale loader for all kinds of ISO-2022 based codesets.
+ * Supports: all locales.
+ * How: Provides generic converters for ISO-2022 based codesets. Extensible as
+ *      far as ISO-2022 is extensible: codesets can be given by name in the
+ *      stream. Overall distinction between GL (0x00..0x7f) and GR (0x80..0xff).
+ *      In every chunk between escape sequences, the number of bytes per
+ *      character (char_size) is constant.
+ * Platforms: all systems.
+ */
 
 #include "Xlibint.h"
 #include "XlcGeneric.h"
@@ -41,6 +51,12 @@
 #if !defined(X_NOT_STDC_ENV) && !defined(macII) && !defined(Lynx_22) && !defined(X_LOCALE)
 #define STDCVT
 #endif
+
+extern void _XlcAddUtf8Converters(
+#if NeedFunctionPrototypes
+    XLCd
+#endif
+);
 
 typedef struct _CTDataRec {
     char *name;
@@ -2867,6 +2883,8 @@ _XlcGenericLoader(name)
         _XlcSetConverter(lcd, XlcNString,    lcd, XlcNWideChar,     open_stdc_strtowcs);
     }
 #endif
+
+    _XlcAddUtf8Converters(lcd);
 
     return lcd;
 }

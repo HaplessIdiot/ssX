@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.12 2000/02/10 22:33:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.13 2000/02/11 18:06:49 dawes Exp $ */
 
 /*
  * Copyright 1999 by The XFree86 Project, Inc.
@@ -449,7 +449,7 @@ usbReadInput(InputInfoPtr pInfo)
     MouseDevPtr pMse;
     UsbMsePtr pUsbMse;
     int buttons = pMse->lastButtons;
-    int dx = 0, dy = 0, dz = 0;
+    int dx = 0, dy = 0, dz = 0, dw = 0;
     int n, c; 
     unsigned char *pBuf;
 
@@ -483,7 +483,7 @@ usbReadInput(InputInfoPtr pInfo)
 	if (hid_get_data(pBuf, &pUsbMse->loc_btn[n])) 
 	    buttons |= (1 << UMS_BUT(n));
     }
-    pMse->PostEvent(pInfo, buttons, dx, dy, dz);
+    pMse->PostEvent(pInfo, buttons, dx, dy, dz, dw);
     return;
 }
 

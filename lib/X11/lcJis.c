@@ -23,8 +23,14 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86: xc/lib/X11/lcJis.c,v 1.3 1997/11/22 12:50:10 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcJis.c,v 1.4 1998/10/03 08:41:39 dawes Exp $ */
 
+/*
+ * A Japanese JIS locale.
+ * Supports: all locales with codeset JIS7.
+ * How: Provides converters for JIS.
+ * Platforms: Only those defining X_LOCALE (only Lynx, Linux-libc5, OS/2).
+ */
 
 #ifdef X_LOCALE
 

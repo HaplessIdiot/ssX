@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xlcint.h,v 3.3 1997/11/22 12:50:08 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xlcint.h,v 3.4 1998/10/03 08:41:28 dawes Exp $ */
 
 /*
  * Copyright 1990, 1991 by OMRON Corporation, NTT Software Corporation,
@@ -160,12 +160,20 @@ typedef struct {
  * Methods for Xrm parsing
  */
 
+/* The state is a pointer to an object created by the locale's
+   init_parse_info function (default: _XrmDefaultInitParseInfo). */
+
+/* Sets the state to the initial state.
+   Initiates a sequence of calls to the XmbCharProc. */
 typedef void (*XmbInitProc)(
 #if NeedFunctionPrototypes
     XPointer		/* state */
 #endif
 );
 
+/* Transforms one multibyte character, starting at str, and return a 'char'
+   in the same parsing class (not a wide character!). Returns the number of
+   consumed bytes in *lenp. */
 typedef char (*XmbCharProc)(
 #if NeedFunctionPrototypes
     XPointer		/* state */,
@@ -174,18 +182,22 @@ typedef char (*XmbCharProc)(
 #endif
 );
 
+/* Terminates a sequence of calls to the XmbCharProc. */
 typedef void (*XmbFinishProc)(
 #if NeedFunctionPrototypes
     XPointer		/* state */
 #endif
 );
 
+/* Returns the name of the state's locale, as a static string. */
 typedef char* (*XlcNameProc)(
 #if NeedFunctionPrototypes
     XPointer		/* state */
 #endif
 );
 
+/* Frees the state, which was allocated by the locale's init_parse_info
+   function. */
 typedef void (*XrmDestroyProc)(
 #if NeedFunctionPrototypes
     XPointer		/* state */
@@ -818,9 +830,12 @@ typedef struct _XIC {
 #define NeedFunctionPrototypes 1
 #endif
 
+/* If the argument 'name' is appropriate for this loader, it instantiates an
+   XLCd object with appropriate locale methods and returns it. May return
+   NULL; in this case, the remaining loaders are tried. */
 typedef XLCd (*XLCdLoadProc)(
 #if NeedFunctionPrototypes
-    _Xconst char*
+    _Xconst char*	/* name */
 #endif
 );
 
@@ -982,6 +997,15 @@ extern char *_XlcSetValues(
 #endif
 );
 
+/* documented in i18n/Framework.PS */
+extern void _XlcInitLoader(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+/* documented in i18n/Framework.PS */
+/* Returns True on success, False on failure. */
 extern Bool _XlcAddLoader(
 #if NeedFunctionPrototypes
     XLCdLoadProc	/* proc */,
@@ -989,6 +1013,7 @@ extern Bool _XlcAddLoader(
 #endif
 );
 
+/* documented in i18n/Framework.PS */
 extern void _XlcRemoveLoader(
 #if NeedFunctionPrototypes
     XLCdLoadProc	/* proc */
