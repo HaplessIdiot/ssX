@@ -27,7 +27,7 @@
  * Authors: Rickard E. (Rik) Faith <faith@valinux.com>
  *	    Kevin E. Martin <martin@valinux.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.26 2002/09/16 18:47:23 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.27 2002/10/15 02:22:09 dawes Exp $
  *
  */
 
@@ -215,9 +215,9 @@ static int drmOpenDevice(long dev, int minor)
 
     if (stat(DRM_DIR_NAME, &st)) {
 	if (!isroot) return DRM_ERR_NOT_ROOT;
-	mkdir(DRM_DIR_NAME, 0755);
+	mkdir(DRM_DIR_NAME, DRM_DEV_DIRMODE);
 	chown(DRM_DIR_NAME, 0, 0); /* root:root */
-	chmod(DRM_DIR_NAME, 0755);
+	chmod(DRM_DIR_NAME, DRM_DEV_DIRMODE);
     }
 
     sprintf(buf, DRM_DEV_NAME, DRM_DIR_NAME, minor);

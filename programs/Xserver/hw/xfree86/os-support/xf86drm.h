@@ -26,7 +26,7 @@
  *
  * Author: Rickard E. (Rik) Faith <faith@valinux.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.14 2001/04/10 16:08:03 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.16 2002/09/16 18:06:12 eich Exp $
  *
  */
 
@@ -36,7 +36,9 @@
 				/* Defaults, if nothing set in xf86config */
 #define DRM_DEV_UID	 0
 #define DRM_DEV_GID	 0
-#define DRM_DEV_DIRMODE	 (S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP)
+/* Default /dev/dri directory permissions 0755 */
+#define DRM_DEV_DIRMODE	 	\
+	(S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH)
 #define DRM_DEV_MODE	 (S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP)
 
 #define DRM_DIR_NAME  "/dev/dri"
