@@ -1,5 +1,5 @@
 /*
- * Copyright 1992-2000 by Alan Hourihane, Wigan, England.
+ * Copyright 1992-2003 by Alan Hourihane, North Wales, UK.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.180 2003/08/23 15:03:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.181 2003/08/23 16:09:21 dawes Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -166,6 +166,7 @@ static SymTabRec TRIDENTChipsets[] = {
     { CYBERBLADEAI1D,		"cyberbladeAi1d" },
     { BLADEXP,			"bladeXP" },
     { CYBERBLADEXPAI1,		"cyberbladeXPAi1" },
+    { CYBERBLADEXP4,		"cyberbladeXP4" },
     { -1,				NULL }
 };
 
@@ -208,6 +209,7 @@ static PciChipsets TRIDENTPciChipsets[] = {
     { CYBERBLADEAI1D,	PCI_CHIP_8620,	RES_SHARED_VGA },
     { BLADEXP,		PCI_CHIP_9910,	RES_SHARED_VGA },
     { CYBERBLADEXPAI1,	PCI_CHIP_8820,	RES_SHARED_VGA },
+    { CYBERBLADEXP4,	PCI_CHIP_2100,	RES_SHARED_VGA },
     { -1,		-1,		RES_UNDEFINED }
 };
     
@@ -2015,6 +2017,18 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    pTrident->NewClockCode = TRUE;
 	    pTrident->frequency = NTSC;
 	    break;
+	case CYBERBLADEXP4:
+    	    pTrident->ddc1Read = Tridentddc1Read;
+	    ramtype = "SGRAM";
+            pTrident->HasSGRAM = TRUE;
+	    pTrident->IsCyber = TRUE;
+	    pTrident->shadowNew = TRUE;
+	    pTrident->NoAccel = TRUE; /* for now */
+	    Support24bpp = TRUE;
+	    chipset = "CyberBladeXP4";
+	    pTrident->NewClockCode = TRUE;
+	    pTrident->frequency = NTSC;
+	    break;
     }
 
     if (!pScrn->progClock) {
@@ -2636,6 +2650,7 @@ TRIDENTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	case CYBER9397DVD:
 	case BLADEXP:
 	case CYBERBLADEXPAI1:
+	case CYBERBLADEXP4:
 	    /* Get ready for MUX mode */
 	    if (pTrident->MUX && 
 		pScrn->bitsPerPixel == 8 && 

@@ -1,4 +1,6 @@
 XFree86 4.3.99.12 (xx August 2003)
+ 422. Add Trident CyberBladeXP4 support, but acceleration is currently
+      disabled. (Alan Hourihane).
  421. Xinstall.sh updates to reduce its reliance on external utilities and
       provide better diagnostics when required external utilities don't exist.
       (David Dawes).
@@ -17664,7 +17666,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2842 2003/09/04 13:58:07 pascal Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2843 2003/09/05 17:05:40 dawes Exp $
 
 
 

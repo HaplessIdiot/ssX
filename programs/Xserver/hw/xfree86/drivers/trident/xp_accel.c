@@ -1,5 +1,5 @@
 /*
- * Copyright 1992-2002 by Alan Hourihane, Sychdyn, North Wales, UK.
+ * Copyright 1992-2003 by Alan Hourihane, North Wales, UK.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -23,7 +23,7 @@
  * 
  * BladeXP accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/xp_accel.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/xp_accel.c,v 1.4 2002/10/09 16:38:20 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
