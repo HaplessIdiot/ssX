@@ -1,9 +1,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.5
+ * Version:  4.0.4
  *
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -72,7 +72,7 @@ static void print_list( struct cnode *n, int indent )
 	 print_list( n->data.l.head, indent + 2 );
 	 break;
       case word_t:
-	 printf( n->data.l.head->data.w.text );
+	 printf( "%s", n->data.l.head->data.w.text );
 	 break;
       case nil_t:
 	 printf("()");
@@ -268,17 +268,17 @@ static void fx_catch_signals( GLcontext *ctx, struct cnode *args )
  * Should environment vars override config vars?
  */
 
-struct var {
-   struct var *next, *prev;
+struct configvar {
+   struct configvar *next, *prev;
    const char *name;
    void (*notify)(const char *value, int line);
 };
 
-static struct var varlist = { &varlist, &varlist, 0, 0 };
+static struct configvar varlist = { &varlist, &varlist, 0, 0 };
 
 static void set_var( GLcontext *ctx, struct cnode *args )
 {
-   struct var *v;
+   struct configvar *v;
    struct cnode *head, *tail;
    const char *variable, *value;
 
@@ -306,7 +306,7 @@ void
 _mesa_register_config_var(const char *name,
                           void (*notify)( const char *, int ))
 {
-   struct var *v = MALLOC_STRUCT(var);
+   struct configvar *v = MALLOC_STRUCT(configvar);
    v->name = name;
    v->notify = notify;
    insert_at_tail( &varlist, v );

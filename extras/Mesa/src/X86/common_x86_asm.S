@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/X86/common_x86_asm.S,v 1.11 2002/03/05 20:27:24 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/X86/common_x86_asm.S,v 1.12 2002/09/09 21:30:02 dawes Exp $ */
 
 /*
  * Check extended CPU capabilities.  Now justs returns the raw CPUID
@@ -134,6 +134,15 @@ LLBL(cpuid_amd):
 	 * information after we verify that the extended functions are
 	 * supported.
 	 */
+	/* The features we need are almost all in the extended set.  The
+	 * exception is SSE enable, which is in the standard set (0x1).
+	 */
+	MOV_L	( CONST(0x1), EAX )
+	CPUID
+	TEST_L	( EAX, EAX )
+	JZ	( LLBL (cpuid_failed) )
+	MOV_L	( EDX, ESI )
+
 	MOV_L	( CONST(0x80000000), EAX )
 	CPUID
 	TEST_L	( EAX, EAX )
@@ -142,6 +151,10 @@ LLBL(cpuid_amd):
 	MOV_L	( CONST(0x80000001), EAX )
 	CPUID
 	MOV_L	( EDX, EAX )
+	
+	AND_L	( CONST(0x02000000), ESI )	/* OR in the SSE bit */
+	OR_L	( ESI, EAX )
+	
 	JMP	( LLBL (cpuid_done) )
 
 LLBL(cpuid_other):

@@ -1,7 +1,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  4.0.3
+ * Version:  4.0.4
  *
  * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
@@ -56,6 +56,42 @@
 #define ENUM_TO_FLOAT(X) ((GLfloat)(X))
 #define ENUM_TO_DOUBLE(X) ((GLdouble)(X))
 #endif
+
+
+
+/* Check if named extension is enabled, if not generate error and return */
+
+#define CHECK_EXTENSION_B(EXTNAME, PNAME)			\
+   if (!ctx->Extensions.EXTNAME) {				\
+      char message[100];					\
+      sprintf(message, "glGetBooleanv(0x%x)", (int) PNAME);	\
+      _mesa_error(ctx, GL_INVALID_VALUE, message);		\
+      return;							\
+   }	
+
+#define CHECK_EXTENSION_I(EXTNAME, PNAME)			\
+   if (!ctx->Extensions.EXTNAME) {				\
+      char message[100];					\
+      sprintf(message, "glGetIntegerv(0x%x)", (int) PNAME);	\
+      _mesa_error(ctx, GL_INVALID_VALUE, message);		\
+      return;							\
+   }	
+
+#define CHECK_EXTENSION_F(EXTNAME, PNAME)			\
+   if (!ctx->Extensions.EXTNAME) {				\
+      char message[100];					\
+      sprintf(message, "glGetFloatv(0x%x)", (int) PNAME);	\
+      _mesa_error(ctx, GL_INVALID_VALUE, message);		\
+      return;							\
+   }	
+
+#define CHECK_EXTENSION_D(EXTNAME, PNAME)			\
+   if (!ctx->Extensions.EXTNAME) {				\
+      char message[100];					\
+      sprintf(message, "glGetDoublev(0x%x)", (int) PNAME);	\
+      _mesa_error(ctx, GL_INVALID_VALUE, message);		\
+      return;							\
+   }	
 
 
 
@@ -1180,12 +1216,6 @@ _mesa_GetBooleanv( GLenum pname, GLboolean *params )
             return;
          }
          break;
-      case GL_MAX_CONVOLUTION_WIDTH:
-         *params = INT_TO_BOOL(ctx->Const.MaxConvolutionWidth);
-         break;
-      case GL_MAX_CONVOLUTION_HEIGHT:
-         *params = INT_TO_BOOL(ctx->Const.MaxConvolutionHeight);
-         break;
       case GL_POST_CONVOLUTION_RED_SCALE_EXT:
          *params = FLOAT_TO_BOOL(ctx->Pixel.PostConvolutionScale[0]);
          break;
@@ -1381,6 +1411,20 @@ _mesa_GetBooleanv( GLenum pname, GLboolean *params )
             _mesa_error(ctx, GL_INVALID_ENUM, "glGetBooleanv");
 	    return;
          }
+         break;
+
+      /* GL_NV_texture_rectangle */
+      case GL_TEXTURE_RECTANGLE_NV:
+         CHECK_EXTENSION_B(NV_texture_rectangle, pname);
+         *params = _mesa_IsEnabled(GL_TEXTURE_RECTANGLE_NV);
+         break;
+      case GL_TEXTURE_BINDING_RECTANGLE_NV:
+         CHECK_EXTENSION_B(NV_texture_rectangle, pname);
+         *params = INT_TO_BOOL(textureUnit->CurrentRect->Name);
+         break;
+      case GL_MAX_RECTANGLE_TEXTURE_SIZE_NV:
+         CHECK_EXTENSION_B(NV_texture_rectangle, pname);
+         *params = INT_TO_BOOL(ctx->Const.MaxTextureRectSize);
          break;
 
       default:
@@ -2484,12 +2528,6 @@ _mesa_GetDoublev( GLenum pname, GLdouble *params )
             return;
          }
          break;
-      case GL_MAX_CONVOLUTION_WIDTH:
-         *params = (GLdouble) ctx->Const.MaxConvolutionWidth;
-         break;
-      case GL_MAX_CONVOLUTION_HEIGHT:
-         *params = (GLdouble) ctx->Const.MaxConvolutionHeight;
-         break;
       case GL_POST_CONVOLUTION_RED_SCALE_EXT:
          *params = (GLdouble) ctx->Pixel.PostConvolutionScale[0];
          break;
@@ -2685,6 +2723,20 @@ _mesa_GetDoublev( GLenum pname, GLdouble *params )
             _mesa_error(ctx, GL_INVALID_ENUM, "glGetDoublev");
 	    return;
          }
+         break;
+
+      /* GL_NV_texture_rectangle */
+      case GL_TEXTURE_RECTANGLE_NV:
+         CHECK_EXTENSION_D(NV_texture_rectangle, pname);
+         *params = (GLdouble) _mesa_IsEnabled(GL_TEXTURE_RECTANGLE_NV);
+         break;
+      case GL_TEXTURE_BINDING_RECTANGLE_NV:
+         CHECK_EXTENSION_D(NV_texture_rectangle, pname);
+         *params = (GLdouble) textureUnit->CurrentRect->Name;
+         break;
+      case GL_MAX_RECTANGLE_TEXTURE_SIZE_NV:
+         CHECK_EXTENSION_D(NV_texture_rectangle, pname);
+         *params = (GLdouble) ctx->Const.MaxTextureRectSize;
          break;
 
       default:
@@ -3769,12 +3821,6 @@ _mesa_GetFloatv( GLenum pname, GLfloat *params )
             return;
          }
          break;
-      case GL_MAX_CONVOLUTION_WIDTH:
-         *params = (GLfloat) ctx->Const.MaxConvolutionWidth;
-         break;
-      case GL_MAX_CONVOLUTION_HEIGHT:
-         *params = (GLfloat) ctx->Const.MaxConvolutionHeight;
-         break;
       case GL_POST_CONVOLUTION_RED_SCALE_EXT:
          *params = ctx->Pixel.PostConvolutionScale[0];
          break;
@@ -3972,7 +4018,21 @@ _mesa_GetFloatv( GLenum pname, GLfloat *params )
          }
          break;
 
-      default:
+      /* GL_NV_texture_rectangle */
+      case GL_TEXTURE_RECTANGLE_NV:
+         CHECK_EXTENSION_F(NV_texture_rectangle, pname);
+         *params = (GLfloat) _mesa_IsEnabled(GL_TEXTURE_RECTANGLE_NV);
+         break;
+      case GL_TEXTURE_BINDING_RECTANGLE_NV:
+         CHECK_EXTENSION_F(NV_texture_rectangle, pname);
+         *params = (GLfloat) textureUnit->CurrentRect->Name;
+         break;
+      case GL_MAX_RECTANGLE_TEXTURE_SIZE_NV:
+         CHECK_EXTENSION_F(NV_texture_rectangle, pname);
+         *params = (GLfloat) ctx->Const.MaxTextureRectSize;
+         break;
+
+       default:
          GET_FLOAT_ERROR;
    }
 }
@@ -5075,12 +5135,6 @@ _mesa_GetIntegerv( GLenum pname, GLint *params )
             return;
          }
          break;
-      case GL_MAX_CONVOLUTION_WIDTH:
-         *params = ctx->Const.MaxConvolutionWidth;
-         break;
-      case GL_MAX_CONVOLUTION_HEIGHT:
-         *params = ctx->Const.MaxConvolutionHeight;
-         break;
       case GL_POST_CONVOLUTION_RED_SCALE_EXT:
          *params = (GLint) ctx->Pixel.PostConvolutionScale[0];
          break;
@@ -5299,6 +5353,20 @@ _mesa_GetIntegerv( GLenum pname, GLint *params )
          }
          break;
 
+      /* GL_NV_texture_rectangle */
+      case GL_TEXTURE_RECTANGLE_NV:
+         CHECK_EXTENSION_I(NV_texture_rectangle, pname);
+         *params = (GLint) _mesa_IsEnabled(GL_TEXTURE_RECTANGLE_NV);
+         break;
+      case GL_TEXTURE_BINDING_RECTANGLE_NV:
+         CHECK_EXTENSION_I(NV_texture_rectangle, pname);
+         *params = (GLint) textureUnit->CurrentRect->Name;
+         break;
+      case GL_MAX_RECTANGLE_TEXTURE_SIZE_NV:
+         CHECK_EXTENSION_I(NV_texture_rectangle, pname);
+         *params = (GLint) ctx->Const.MaxTextureRectSize;
+         break;
+
       default:
          _mesa_error( ctx, GL_INVALID_ENUM, "glGetIntegerv" );
    }
@@ -5368,8 +5436,8 @@ _mesa_GetString( GLenum name )
    GET_CURRENT_CONTEXT(ctx);
    static const char *vendor = "Brian Paul";
    static const char *renderer = "Mesa";
-   static const char *version_1_2 = "1.2 Mesa 4.0.3";
-   static const char *version_1_3 = "1.3 Mesa 4.0.3";
+   static const char *version_1_2 = "1.2 Mesa 4.0.4";
+   static const char *version_1_3 = "1.3 Mesa 4.0.4";
 
    ASSERT_OUTSIDE_BEGIN_END_WITH_RETVAL(ctx, 0);
 
@@ -5390,6 +5458,7 @@ _mesa_GetString( GLenum name )
                  ctx->Extensions.ARB_multisample &&
                  ctx->Extensions.ARB_texture_border_clamp &&
                  ctx->Extensions.ARB_texture_compression &&
+                 ctx->Extensions.ARB_texture_cube_map &&
                  ctx->Extensions.EXT_texture_env_add &&
                  ctx->Extensions.ARB_texture_env_combine &&
                  ctx->Extensions.ARB_texture_env_dot3)

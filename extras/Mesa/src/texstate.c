@@ -1,7 +1,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  4.0.3
+ * Version:  4.0.4
  *
  * Copyright (C) 1999-2002  Brian Paul   All Rights Reserved.
  *
@@ -113,6 +113,8 @@ _mesa_copy_texture_state( const GLcontext *src, GLcontext *dst )
                                 src->Texture.Unit[i].Current3D);
       _mesa_copy_texture_object(dst->Texture.Unit[i].CurrentCubeMap,
                                 src->Texture.Unit[i].CurrentCubeMap);
+      _mesa_copy_texture_object(dst->Texture.Unit[i].CurrentRect,
+                                src->Texture.Unit[i].CurrentRect);
    }
 }
 
@@ -985,11 +987,19 @@ _mesa_TexParameterfv( GLenum target, GLenum pname, const GLfloat *params )
          texObj = texUnit->Current3D;
          break;
       case GL_TEXTURE_CUBE_MAP_ARB:
-         if (ctx->Extensions.ARB_texture_cube_map) {
-            texObj = texUnit->CurrentCubeMap;
-            break;
+         if (!ctx->Extensions.ARB_texture_cube_map) {
+            _mesa_error( ctx, GL_INVALID_ENUM, "glTexParameter(target)" );
+            return;
          }
-         /* fallthrough */
+         texObj = texUnit->CurrentCubeMap;
+         break;
+      case GL_TEXTURE_RECTANGLE_NV:
+         if (!ctx->Extensions.NV_texture_rectangle) {
+            _mesa_error( ctx, GL_INVALID_ENUM, "glTexParameter(target)" );
+            return;
+         }
+         texObj = texUnit->CurrentRect;
+         break;
       default:
          _mesa_error( ctx, GL_INVALID_ENUM, "glTexParameter(target)" );
          return;
@@ -1001,11 +1011,15 @@ _mesa_TexParameterfv( GLenum target, GLenum pname, const GLfloat *params )
          if (texObj->MinFilter == eparam)
             return;
 
-         if (eparam==GL_NEAREST || eparam==GL_LINEAR
-             || eparam==GL_NEAREST_MIPMAP_NEAREST
-             || eparam==GL_LINEAR_MIPMAP_NEAREST
-             || eparam==GL_NEAREST_MIPMAP_LINEAR
-             || eparam==GL_LINEAR_MIPMAP_LINEAR) {
+         if (eparam==GL_NEAREST || eparam==GL_LINEAR) {
+            FLUSH_VERTICES(ctx, _NEW_TEXTURE);
+            texObj->MinFilter = eparam;
+         }
+         else if ((eparam==GL_NEAREST_MIPMAP_NEAREST ||
+                   eparam==GL_LINEAR_MIPMAP_NEAREST ||
+                   eparam==GL_NEAREST_MIPMAP_LINEAR ||
+                   eparam==GL_LINEAR_MIPMAP_LINEAR) &&
+                  texObj->Target != GL_TEXTURE_RECTANGLE_NV) {
             FLUSH_VERTICES(ctx, _NEW_TEXTURE);
             texObj->MinFilter = eparam;
          }
@@ -1031,13 +1045,18 @@ _mesa_TexParameterfv( GLenum target, GLenum pname, const GLfloat *params )
       case GL_TEXTURE_WRAP_S:
          if (texObj->WrapS == eparam)
             return;
-         if (eparam==GL_CLAMP ||
-             eparam==GL_REPEAT ||
-             eparam==GL_CLAMP_TO_EDGE ||
+         if (eparam == GL_CLAMP || eparam == GL_CLAMP_TO_EDGE ||
              (eparam == GL_CLAMP_TO_BORDER_ARB &&
-              ctx->Extensions.ARB_texture_border_clamp) ||
-             (eparam == GL_MIRRORED_REPEAT_ARB &&
-              ctx->Extensions.ARB_texture_mirrored_repeat)) {
+              ctx->Extensions.ARB_texture_border_clamp)) {
+            /* any texture target */
+            FLUSH_VERTICES(ctx, _NEW_TEXTURE);
+            texObj->WrapS = eparam;
+         }
+         else if (texObj->Target != GL_TEXTURE_RECTANGLE_NV &&
+                  (eparam == GL_REPEAT ||
+                   (eparam == GL_MIRRORED_REPEAT_ARB &&
+                    ctx->Extensions.ARB_texture_mirrored_repeat))) {
+            /* non-rectangle texture */
             FLUSH_VERTICES(ctx, _NEW_TEXTURE);
             texObj->WrapS = eparam;
          }
@@ -1049,13 +1068,18 @@ _mesa_TexParameterfv( GLenum target, GLenum pname, const GLfloat *params )
       case GL_TEXTURE_WRAP_T:
          if (texObj->WrapT == eparam)
             return;
-         if (eparam==GL_CLAMP ||
-             eparam==GL_REPEAT ||
-             eparam==GL_CLAMP_TO_EDGE ||
+         if (eparam == GL_CLAMP || eparam == GL_CLAMP_TO_EDGE ||
              (eparam == GL_CLAMP_TO_BORDER_ARB &&
-              ctx->Extensions.ARB_texture_border_clamp) ||
-             (eparam == GL_MIRRORED_REPEAT_ARB &&
-              ctx->Extensions.ARB_texture_mirrored_repeat)) {
+              ctx->Extensions.ARB_texture_border_clamp)) {
+            /* any texture target */
+            FLUSH_VERTICES(ctx, _NEW_TEXTURE);
+            texObj->WrapT = eparam;
+         }
+         else if (texObj->Target != GL_TEXTURE_RECTANGLE_NV &&
+                  (eparam == GL_REPEAT ||
+                   (eparam == GL_MIRRORED_REPEAT_ARB &&
+                    ctx->Extensions.ARB_texture_mirrored_repeat))) {
+            /* non-rectangle texture */
             FLUSH_VERTICES(ctx, _NEW_TEXTURE);
             texObj->WrapT = eparam;
          }
@@ -1067,13 +1091,18 @@ _mesa_TexParameterfv( GLenum target, GLenum pname, const GLfloat *params )
       case GL_TEXTURE_WRAP_R_EXT:
          if (texObj->WrapR == eparam)
             return;
-         if (eparam==GL_CLAMP ||
-             eparam==GL_REPEAT ||
-             eparam==GL_CLAMP_TO_EDGE ||
+         if (eparam == GL_CLAMP || eparam == GL_CLAMP_TO_EDGE ||
              (eparam == GL_CLAMP_TO_BORDER_ARB &&
-              ctx->Extensions.ARB_texture_border_clamp) ||
-             (eparam == GL_MIRRORED_REPEAT_ARB &&
-              ctx->Extensions.ARB_texture_mirrored_repeat)) {
+              ctx->Extensions.ARB_texture_border_clamp)) {
+            /* any texture target */
+            FLUSH_VERTICES(ctx, _NEW_TEXTURE);
+            texObj->WrapR = eparam;
+         }
+         else if (texObj->Target != GL_TEXTURE_RECTANGLE_NV &&
+                  (eparam == GL_REPEAT ||
+                   (eparam == GL_MIRRORED_REPEAT_ARB &&
+                    ctx->Extensions.ARB_texture_mirrored_repeat))) {
+            /* non-rectangle texture */
             FLUSH_VERTICES(ctx, _NEW_TEXTURE);
             texObj->WrapR = eparam;
          }
@@ -1102,6 +1131,10 @@ _mesa_TexParameterfv( GLenum target, GLenum pname, const GLfloat *params )
          break;
       case GL_TEXTURE_BASE_LEVEL:
          if (params[0] < 0.0) {
+            _mesa_error(ctx, GL_INVALID_VALUE, "glTexParameter(param)" );
+            return;
+         }
+         if (target == GL_TEXTURE_RECTANGLE_NV && params[0] != 0.0) {
             _mesa_error(ctx, GL_INVALID_VALUE, "glTexParameter(param)" );
             return;
          }
@@ -1255,6 +1288,9 @@ tex_image_dimensions(GLcontext *ctx, GLenum target)
       case GL_TEXTURE_CUBE_MAP_POSITIVE_Z_ARB:
       case GL_TEXTURE_CUBE_MAP_NEGATIVE_Z_ARB:
          return ctx->Extensions.ARB_texture_cube_map ? 2 : 0;
+      case GL_TEXTURE_RECTANGLE_NV:
+      case GL_PROXY_TEXTURE_RECTANGLE_NV:
+         return ctx->Extensions.NV_texture_rectangle ? 2 : 0;
       default:
          _mesa_problem(ctx, "bad target in _mesa_tex_target_dimensions()");
          return 0;
@@ -1291,6 +1327,19 @@ _mesa_GetTexLevelParameteriv( GLenum target, GLint level,
    case GL_PROXY_TEXTURE_3D:
       maxLevels = ctx->Const.Max3DTextureLevels;
       break;
+   case GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB:
+   case GL_TEXTURE_CUBE_MAP_NEGATIVE_X_ARB:
+   case GL_TEXTURE_CUBE_MAP_POSITIVE_Y_ARB:
+   case GL_TEXTURE_CUBE_MAP_NEGATIVE_Y_ARB:
+   case GL_TEXTURE_CUBE_MAP_POSITIVE_Z_ARB:
+   case GL_TEXTURE_CUBE_MAP_NEGATIVE_Z_ARB:
+   case GL_PROXY_TEXTURE_CUBE_MAP_ARB:
+      maxLevels = ctx->Const.MaxCubeTextureLevels;
+      break;
+   case GL_TEXTURE_RECTANGLE_NV:
+   case GL_PROXY_TEXTURE_RECTANGLE_NV:
+      maxLevels = 1;
+      break;
    default:
       maxLevels = ctx->Const.MaxCubeTextureLevels;
       break;
@@ -1314,7 +1363,8 @@ _mesa_GetTexLevelParameteriv( GLenum target, GLint level,
    isProxy = (target == GL_PROXY_TEXTURE_1D) ||
              (target == GL_PROXY_TEXTURE_2D) ||
              (target == GL_PROXY_TEXTURE_3D) ||
-             (target == GL_PROXY_TEXTURE_CUBE_MAP_ARB);
+             (target == GL_PROXY_TEXTURE_CUBE_MAP_ARB) ||
+             (target == GL_PROXY_TEXTURE_RECTANGLE_NV);
 
    switch (pname) {
       case GL_TEXTURE_WIDTH:
