@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.103 1999/03/14 03:21:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.104 1999/03/14 11:17:56 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -672,8 +672,10 @@ InitInput(argc, argv)
 void
 OsVendorInit()
 {
+#if 0	/* Moved directly to OsInit() in osinit.c */
   /* Init the libc wrappers */
   xf86WrapperInit();
+#endif
 
 
 #ifdef SIGCHLD

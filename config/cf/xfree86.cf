@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.209 1999/03/14 05:50:52 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.210 1999/03/21 07:34:24 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -653,17 +653,14 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #define UseServerLock	YES
 #endif
 
-#if DoLoadableServer
-/* These are currenty not compatible with the loadable server */
 #ifndef XnestServer
-#define XnestServer			NO
+#define XnestServer			YES
 #endif
 #ifndef XVirtualFramebufferServer
-#define XVirtualFramebufferServer	NO
+#define XVirtualFramebufferServer	YES
 #endif
 #ifndef XprtServer
-#define XprtServer			NO
-#endif
+#define XprtServer			YES
 #endif
 
 #if XF86LinkKit

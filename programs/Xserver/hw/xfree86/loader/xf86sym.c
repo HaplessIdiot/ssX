@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.73 1999/03/14 11:18:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.74 1999/03/20 08:59:30 dawes Exp $ */
 
 /*
  *
@@ -655,18 +655,6 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86usleep)
    SYMFUNC(xf86execl)
 
-#if 0
-/* Serial access routines */
-   SYMFUNC(xf86OpenSerial)
-   SYMFUNC(xf86SetSerial)
-   SYMFUNC(xf86ReadSerial)
-   SYMFUNC(xf86WriteSerial)
-   SYMFUNC(xf86CloseSerial)
-#endif
-
-#if 0
-   SYMFUNC(xf86setexternclock)
-#endif
    SYMFUNC(xf86getsecs)
    SYMFUNC(xf86fpossize)      /* for returning sizeof(fpos_t) */
   

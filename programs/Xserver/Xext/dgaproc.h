@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/dgaproc.h,v 1.6 1999/03/14 11:17:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/dgaproc.h,v 1.7 1999/03/21 07:34:43 dawes Exp $ */
 
 #ifndef __DGAPROC_H
 #define __DGAPROC_H
@@ -125,8 +125,8 @@ Bool DGAStealKeyEvent(int index, xEvent *e);
 
 
 
-unsigned char DGAReqCode;
-int DGAErrorBase;
+extern unsigned char DGAReqCode;
+extern int DGAErrorBase;
 
 
 

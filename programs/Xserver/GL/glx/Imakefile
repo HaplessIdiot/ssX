@@ -40,9 +40,9 @@ XCOMM comment out the define in ../mesa/src/X/xf86glx.c
 ModuleObjectRule()
 SubdirLibraryRule($(OBJS))
 #else
-NormalLibraryTarget(glx,$(OBJS))
 NormalLibraryObjectRule()
 #endif
+NormalLibraryTarget(glx,$(OBJS))
 
 LintLibraryTarget(glx,$(SRCS))
 NormalLintTarget($(SRCS))

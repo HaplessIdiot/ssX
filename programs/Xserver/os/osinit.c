@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.15 1998/08/14 13:35:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.16 1998/10/04 09:39:45 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -78,6 +78,10 @@ int limitNoFile = -1;
 
 Bool OsDelayInitColors = FALSE;
 
+#ifdef XFree86LOADER
+extern void xf86WrapperInit(void);
+#endif
+
 void
 OsInit()
 {
@@ -92,6 +96,9 @@ OsInit()
 #endif
 
     if (!been_here) {
+#ifdef XFree86LOADER
+	xf86WrapperInit();
+#endif
 #if !defined(MINIX) && !defined(SCO)
 	fclose(stdin);
 	fclose(stdout);

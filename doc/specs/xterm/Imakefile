@@ -1,7 +1,7 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/02/10 21:08:29 rws Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/doc/specs/xterm/Imakefile,v 1.2 1998/12/20 11:56:41 dawes Exp $
 
-MakeSimpleDoc(ctlseqs,ctlseqs.ms)
+MakeTblDoc(ctlseqs,ctlseqs.ms)
 
 AllTarget(ctlseqs.txt)
 

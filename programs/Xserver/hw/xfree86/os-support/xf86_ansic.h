@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.17 1999/01/31 14:29:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.18 1999/03/06 13:12:45 dawes Exp $ */
 
 #ifndef _XF86_ANSIC_H
 #define _XF86_ANSIC_H
@@ -249,8 +249,6 @@ extern int xf86ffs(int);
 extern char* xf86strdup(const char*);
 extern void xf86bzero(void*,unsigned int);
 extern void xf86getsecs(INT32 *, INT32 *);
-extern int xf86getbitsperpixel(int);
-extern Bool xf86setexternclock(char *, int, int);
 extern int xf86execl(const char *, const char *, ...);
 extern long xf86fpossize(void);
 

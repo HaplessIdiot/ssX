@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/Xext/extmod/Imakefile,v 1.12 1999/01/03 03:58:18 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xext/extmod/Imakefile,v 1.13 1999/02/01 11:55:53 dawes Exp $
 XCOMM This directory is only entered if DoLoadableServer is set
 
 #define IHaveModules
@@ -29,9 +29,10 @@ LinkSourceFile(xf86misc.c,..)
 #endif
 
 #if BuildXF86DGA
-     XF86DGASRCS = xf86dga.c
-     XF86DGAOBJS = xf86dga.o
+     XF86DGASRCS = xf86dga.c xf86dga2.c
+     XF86DGAOBJS = xf86dga.o xf86dga2.o
 LinkSourceFile(xf86dga.c,..)
+LinkSourceFile(xf86dga2.c,..)
 #endif
 
 #if BuildDPMS

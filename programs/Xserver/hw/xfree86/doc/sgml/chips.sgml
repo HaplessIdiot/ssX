@@ -27,7 +27,7 @@ to use this version. These features include
 <item>Hardware/Software cursor switching on the fly, that should fix
 	many of the known hardware cursor problems.
 <item>Gamma correction at all depths and DirectColor visuals for depths of
-	15bpp or greater with the HiQV series of chipsets.
+	15 or greater with the HiQV series of chipsets.
 <item>Supports PsuedoColor overlays on 16bpp TrueColor screens for HiQV.
 <item>32bpp pixmaps while using a framebuffer in 24bpp packed pixel mode.
 <item>Heaps more acceleration.
@@ -344,7 +344,7 @@ SetMemClk 38.000
 	the memory clock to preserve power in modes that don't need the full
 	speed of the memory to work correctly.
 <tag>
-Option "RGBbits  "8"
+Option "RGBbits"  "8"
 </tag>
 	By default it is assumed that there are 6 significant bits in the
 	RGB representation of the colours in 4bpp and above. If the colours
@@ -782,12 +782,13 @@ video processor beyond it capabilities won't cause damage.
 </verb>
 	however as XFree86 version 4.0 allows 32bpp pixmaps to be used with
 	framebuffers operating in 24bpp, this mode of operating will cost
-	performance for you gain in functionality.
+	performance for no gain in functionality.
 
 	Note that the "<tt>-bpp</tt>" option has been removed from XFree86
 	version 4.0 and replaced with a "<tt>-depth</tt>" and "<tt>-fbbpp</tt>"
-	option because of the confusion between the number of bits per pixel
-	used to represent to framebuffer and the pixmaps in the screens memory.
+	option because of the confusion between the depth and number of
+        bits per pixel used to represent to framebuffer and the pixmaps
+        in the screens memory.
 </descrip>
 
   A general problem with the server that can manifested in many way such
@@ -852,7 +853,7 @@ We also thank the many people on the net who have contributed by reporting
 bugs and extensively testing this server.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.20 1998/03/27 23:23:37 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.21 1999/03/21 07:35:01 dawes Exp $
 </verb>
 
 </article>
