@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/g_render.c,v 1.4 2002/02/22 21:32:53 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/g_render.c,v 1.10 2004/04/08 10:07:33 alanh Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -423,8 +423,8 @@
    void __indirect_gl ## name (GLenum target, GLenum pname, const type * v) \
    { \
       __GLX_DECLARE_VARIABLES(); \
-      compsize = __gl ## name ## _size(pname); \
       __GLX_LOAD_VARIABLES(); \
+      compsize = __gl ## name ## _size(pname); \
       cmdlen =  8 + RENDER_SIZE(type, compsize); \
       __GLX_BEGIN(rop, cmdlen); \
       __GLX_PUT_LONG(4, target); \
