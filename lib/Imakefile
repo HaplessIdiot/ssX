@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:44:00 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/lib/Imakefile,v 3.62 2002/03/04 19:34:48 mvojkovi Exp $
+XCOMM $XFree86: xc/lib/Imakefile,v 3.63 2002/04/02 16:27:08 alanh Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags
@@ -106,7 +106,7 @@ RENDERLIBDIR = Xrender
 #endif
 
 #if BuildLibxml2Library
-LIBXML2LIBDIR = libxml2
+LIBXML2BUILDDIR = libxml2
 #endif
 
 #if BuildExpatLibrary
@@ -210,7 +210,7 @@ LINTSUBDIRS = $(XAULIBDIR) $(XDMCPLIBDIR) $(THRSTUBLIBDIR) $(X11LIBDIR) \
 	     $(XVLIBDIR) $(GLXLIBDIR) $(GLULIBDIR) $(GLWLIBDIR) \
 	     $(DPSLIBDIR) $(DPSTKLIBDIR) $(PSRESLIBDIR) $(XINERAMADIR) \
 	     $(ZLIBDIR) $(REGEXDIR) $(RENDERLIBDIR) $(FREETYPE2BUILDDIR) \
-	     $(LIBXML2LIBDIR) $(EXPATBUILDDIR) $(FONTCONFIGLIBDIR) \
+	     $(LIBXML2BUILDDIR) $(EXPATBUILDDIR) $(FONTCONFIGLIBDIR) \
 	     $(XFTLIBDIR) $(XFT1LIBDIR) $(XVMCLIBDIR) $(RANDRLIBDIR) \
              $(XTRAPLIBDIR) $(XRESLIBDIR)
 
