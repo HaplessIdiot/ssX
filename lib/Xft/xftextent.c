@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftextent.c,v 1.8 2002/07/06 01:24:34 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftextent.c,v 1.9 2002/10/11 17:53:02 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -220,6 +220,50 @@ XftTextExtentsUtf8 (Display	    *dpy,
     glyphs = glyphs_local;
     size = NUM_LOCAL;
     while (len && (l = FcUtf8ToUcs4 (string, &ucs4, len)) > 0)
+    {
+	if (i == size)
+	{
+	    glyphs_new = malloc (size * 2 * sizeof (FT_UInt));
+	    if (!glyphs_new)
+	    {
+		if (glyphs != glyphs_local)
+		    free (glyphs);
+		memset (extents, '\0', sizeof (XGlyphInfo));
+		return;
+	    }
+	    memcpy (glyphs_new, glyphs, size * sizeof (FT_UInt));
+	    size *= 2;
+	    if (glyphs != glyphs_local)
+		free (glyphs);
+	    glyphs = glyphs_new;
+	}
+	glyphs[i++] = XftCharIndex (dpy, pub, ucs4);
+	string += l;
+	len -= l;
+    }
+    XftGlyphExtents (dpy, pub, glyphs, i, extents);
+    if (glyphs != glyphs_local)
+	free (glyphs);
+}
+
+void
+XftTextExtentsUtf16 (Display		*dpy,
+		     XftFont		*pub,
+		     _Xconst FcChar8	*string, 
+		     FcEndian		endian,
+		     int		len,
+		     XGlyphInfo		*extents)
+{
+    FT_UInt	    *glyphs, *glyphs_new, glyphs_local[NUM_LOCAL];
+    FcChar32	    ucs4;
+    int		    i;
+    int		    l;
+    int		    size;
+
+    i = 0;
+    glyphs = glyphs_local;
+    size = NUM_LOCAL;
+    while (len && (l = FcUtf16ToUcs4 (string, endian, &ucs4, len)) > 0)
     {
 	if (i == size)
 	{

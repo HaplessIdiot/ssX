@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftrender.c,v 1.12 2002/08/12 22:16:08 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftrender.c,v 1.14 2002/10/11 17:53:02 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -673,7 +673,7 @@ XftTextRender8 (Display		*dpy,
     }
     for (i = 0; i < len; i++)
 	glyphs[i] = XftCharIndex (dpy, pub, string[i]);
-    XftGlyphRender (dpy, PictOpOver, src, pub, dst, 
+    XftGlyphRender (dpy, op, src, pub, dst, 
 		     srcx, srcy, x, y, glyphs, len);
     if (glyphs != glyphs_local)
 	free (glyphs);
@@ -705,7 +705,7 @@ XftTextRender16 (Display	    *dpy,
     }
     for (i = 0; i < len; i++)
 	glyphs[i] = XftCharIndex (dpy, pub, string[i]);
-    XftGlyphRender (dpy, PictOpOver, src, pub, dst, 
+    XftGlyphRender (dpy, op, src, pub, dst, 
 		     srcx, srcy, x, y, glyphs, len);
     if (glyphs != glyphs_local)
 	free (glyphs);
@@ -738,7 +738,7 @@ XftTextRender16BE (Display	    *dpy,
     for (i = 0; i < len; i++)
 	glyphs[i] = XftCharIndex (dpy, pub, 
 				  (string[i*2]<<8) | string[i*2+1]);
-    XftGlyphRender (dpy, PictOpOver, src, pub, dst, 
+    XftGlyphRender (dpy, op, src, pub, dst, 
 		     srcx, srcy, x, y, glyphs, len);
     if (glyphs != glyphs_local)
 	free (glyphs);
@@ -771,7 +771,7 @@ XftTextRender16LE (Display	    *dpy,
     for (i = 0; i < len; i++)
 	glyphs[i] = XftCharIndex (dpy, pub, 
 				  string[i*2] | (string[i*2+1]<<8));
-    XftGlyphRender (dpy, PictOpOver, src, pub, dst, 
+    XftGlyphRender (dpy, op, src, pub, dst, 
 		     srcx, srcy, x, y, glyphs, len);
     if (glyphs != glyphs_local)
 	free (glyphs);
@@ -803,7 +803,7 @@ XftTextRender32 (Display	    *dpy,
     }
     for (i = 0; i < len; i++)
 	glyphs[i] = XftCharIndex (dpy, pub, string[i]);
-    XftGlyphRender (dpy, PictOpOver, src, pub, dst, 
+    XftGlyphRender (dpy, op, src, pub, dst, 
 		     srcx, srcy, x, y, glyphs, len);
     if (glyphs != glyphs_local)
 	free (glyphs);
@@ -839,7 +839,7 @@ XftTextRender32BE (Display	    *dpy,
 				  (string[i*4+1] << 16) |
 				  (string[i*4+2] << 8) |
 				  (string[i*4+3]));
-    XftGlyphRender (dpy, PictOpOver, src, pub, dst, 
+    XftGlyphRender (dpy, op, src, pub, dst, 
 		     srcx, srcy, x, y, glyphs, len);
     if (glyphs != glyphs_local)
 	free (glyphs);
@@ -875,7 +875,7 @@ XftTextRender32LE (Display	    *dpy,
 				  (string[i*4+1] << 8) |
 				  (string[i*4+2] << 16) |
 				  (string[i*4+3] << 24));
-    XftGlyphRender (dpy, PictOpOver, src, pub, dst, 
+    XftGlyphRender (dpy, op, src, pub, dst, 
 		     srcx, srcy, x, y, glyphs, len);
     if (glyphs != glyphs_local)
 	free (glyphs);
@@ -904,6 +904,56 @@ XftTextRenderUtf8 (Display	    *dpy,
     glyphs = glyphs_local;
     size = NUM_LOCAL;
     while (len && (l = FcUtf8ToUcs4 (string, &ucs4, len)) > 0)
+    {
+	if (i == size)
+	{
+	    glyphs_new = malloc (size * 2 * sizeof (FT_UInt));
+	    if (!glyphs_new)
+	    {
+		if (glyphs != glyphs_local)
+		    free (glyphs);
+		return;
+	    }
+	    memcpy (glyphs_new, glyphs, size * sizeof (FT_UInt));
+	    size *= 2;
+	    if (glyphs != glyphs_local)
+		free (glyphs);
+	    glyphs = glyphs_new;
+	}
+	glyphs[i++] = XftCharIndex (dpy, pub, ucs4);
+	string += l;
+	len -= l;
+    }
+    XftGlyphRender (dpy, op, src, pub, dst,
+		     srcx, srcy, x, y, glyphs, i);
+    if (glyphs != glyphs_local)
+	free (glyphs);
+}
+
+void
+XftTextRenderUtf16 (Display	    *dpy,
+		    int		    op,
+		    Picture	    src,
+		    XftFont	    *pub,
+		    Picture	    dst,
+		    int		    srcx,
+		    int		    srcy,
+		    int		    x,
+		    int		    y,
+		    _Xconst FcChar8 *string,
+		    FcEndian	    endian,
+		    int		    len)
+{
+    FT_UInt	    *glyphs, *glyphs_new, glyphs_local[NUM_LOCAL];
+    FcChar32	    ucs4;
+    int		    i;
+    int		    l;
+    int		    size;
+
+    i = 0;
+    glyphs = glyphs_local;
+    size = NUM_LOCAL;
+    while (len && (l = FcUtf16ToUcs4 (string, endian, &ucs4, len)) > 0)
     {
 	if (i == size)
 	{

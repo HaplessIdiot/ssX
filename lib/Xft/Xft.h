@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/Xft.h,v 1.28 2002/08/31 18:08:10 keithp Exp $
+ * $XFree86: xc/lib/Xft/Xft.h,v 1.30 2002/10/11 17:53:02 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -325,11 +325,12 @@ XftTextExtentsUtf8 (Display	    *dpy,
 		    XGlyphInfo	    *extents);
 
 void
-XftTextExtentsUtf16 (XftFont		*pub,
+XftTextExtentsUtf16 (Display		*dpy,
+		     XftFont		*pub,
 		     _Xconst FcChar8	*string, 
 		     FcEndian		endian,
-		    int			len,
-		    XGlyphInfo		*extents);
+		     int		len,
+		     XGlyphInfo		*extents);
 
 /* xftfont.c */
 FcPattern *
@@ -605,6 +606,20 @@ XftTextRenderUtf8 (Display	    *dpy,
 		   int		    y,
 		   _Xconst FcChar8  *string,
 		   int		    len);
+
+void
+XftTextRenderUtf16 (Display	    *dpy,
+		    int		    op,
+		    Picture	    src,
+		    XftFont	    *pub,
+		    Picture	    dst,
+		    int		    srcx,
+		    int		    srcy,
+		    int		    x,
+		    int		    y,
+		    _Xconst FcChar8 *string,
+		    FcEndian	    endian,
+		    int		    len);
 
 /* xftstr.c */
 
