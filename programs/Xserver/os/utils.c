@@ -45,7 +45,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.76 2001/11/06 16:11:38 alanh Exp $ */
+/* $XFree86: utils.c,v 3.77 2001/11/19 20:44:18 tsi Exp $ */
 
 #ifdef __CYGWIN__
 #include <stdlib.h>
@@ -390,6 +390,8 @@ SIGVAL
 AutoResetServer (sig)
     int sig;
 {
+    int olderrno = errno;
+
     dispatchException |= DE_RESET;
     isItTimeToYield = TRUE;
 #ifdef GPROF
@@ -399,6 +401,7 @@ AutoResetServer (sig)
 #if defined(SYSV) && defined(X_NOT_POSIX)
     OsSignal (SIGHUP, AutoResetServer);
 #endif
+    errno = olderrno;
 }
 
 /* Force connections to close and then exit on SIGTERM, SIGINT */
@@ -408,12 +411,15 @@ SIGVAL
 GiveUp(sig)
     int sig;
 {
+    int olderrno = errno;
+
     dispatchException |= DE_TERMINATE;
     isItTimeToYield = TRUE;
 #if defined(SYSV) && defined(X_NOT_POSIX)
     if (sig)
 	OsSignal(sig, SIG_IGN);
 #endif
+    errno = olderrno;
 }
 
 #if __GNUC__
@@ -1484,11 +1490,14 @@ SmartScheduleStartTimer (void)
 void
 SmartScheduleTimer (int sig)
 {
+    int olderrno = errno;
+
     SmartScheduleTime += SmartScheduleInterval;
     if (SmartScheduleIdle)
     {
 	SmartScheduleStopTimer ();
     }
+    errno = olderrno;
 }
 #endif
 

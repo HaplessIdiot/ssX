@@ -64,7 +64,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.140 2001/11/05 02:07:15 dickey Exp $ */
+/* $XFree86: main.c,v 3.141 2001/11/14 01:52:47 dickey Exp $ */
 
 
 /* main.c */
@@ -4569,6 +4569,7 @@ nonblocking_wait(void)
 /* ARGSUSED */
 static SIGNAL_T reapchild (int n GCC_UNUSED)
 {
+    int olderrno = errno;
     int pid;
 
     pid = wait(NULL);
@@ -4590,6 +4591,7 @@ static SIGNAL_T reapchild (int n GCC_UNUSED)
 	}
     } while ( (pid=nonblocking_wait()) > 0);
 
+    errno = olderrno;
     SIGNAL_RETURN;
 }
 #endif /* !VMS */

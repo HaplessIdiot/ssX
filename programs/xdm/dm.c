@@ -205,11 +205,14 @@ main (int argc, char **argv)
 static SIGVAL
 RescanNotify (int n)
 {
+    int olderrno = errno;
+
     Debug ("Caught SIGHUP\n");
     Rescan = 1;
 #ifdef SIGNALS_RESET_WHEN_CAUGHT
     (void) Signal (SIGHUP, RescanNotify);
 #endif
+    errno = olderrno;
 }
 
 static void
@@ -344,6 +347,8 @@ RescanIfMod (void)
 static SIGVAL
 StopAll (int n)
 {
+    int olderrno = errno;
+
     if (parent_pid != getpid())
     {
 	/* 
@@ -356,6 +361,7 @@ StopAll (int n)
 	Debug ("Child xdm caught SIGTERM before it remove that signal.\n");
 	(void) Signal (n, SIG_DFL);
 	TerminateProcess (getpid(), SIGTERM);
+	errno = olderrno;
 	return;
     }
     Debug ("Shutting down entire manager\n");
@@ -368,6 +374,7 @@ StopAll (int n)
     (void) Signal (SIGTERM, StopAll);
     (void) Signal (SIGINT, StopAll);
 #endif
+    errno = olderrno;
 }
 
 /*
@@ -382,10 +389,13 @@ int	ChildReady;
 static SIGVAL
 ChildNotify (int n)
 {
+    int olderrno = errno;
+
     ChildReady = 1;
 #ifdef ISC
     (void) Signal (SIGCHLD, ChildNotify);
 #endif
+    errno = olderrno;
 }
 #endif
 
