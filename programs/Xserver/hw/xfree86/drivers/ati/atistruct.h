@@ -31,6 +31,8 @@
 #include "xf86Resources.h"
 #include "xaa.h"
 
+#define USE_FB
+
 #define CacheSlotOf(____Register) ((____Register) / UnitOf(DWORD_SELECT))
 
 /*

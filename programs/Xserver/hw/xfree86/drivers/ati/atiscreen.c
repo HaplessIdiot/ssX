@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.11 2000/08/04 21:07:16 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiscreen.c,v 1.12 2000/10/11 22:52:57 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -34,6 +34,11 @@
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
+
+#ifdef USE_FB
+#include "fb.h"
+#else
+
 #undef PSZ
 #define PSZ 8
 #include "cfb.h"
@@ -41,6 +46,7 @@
 #include "cfb16.h"
 #include "cfb24.h"
 #include "cfb32.h"
+#endif
 
 #include "mibank.h"
 #include "micmap.h"
@@ -119,6 +125,8 @@ ATIScreenInit
                           pScreenInfo->defaultVisual))
         return FALSE;
 
+    miSetPixmapDepths ();
+
     pFB = pATI->pMemory;
     if (pATI->OptionShadowFB)
     {
@@ -154,6 +162,21 @@ ATIScreenInit
 
 #endif /* AVOID_CPIO */
 
+#ifdef USE_FB
+	case 8:
+	case 16:
+	case 24:
+	case 32:
+            pATI->Closeable = fbScreenInit(pScreen, pFB,
+                pScreenInfo->virtualX, pScreenInfo->virtualY,
+                pScreenInfo->xDpi, pScreenInfo->yDpi, pATI->displayWidth,
+		pATI->bitsPerPixel);
+#ifdef RENDER
+	    if (pATI->Closeable)
+		fbPictureInit (pScreen, 0, 0);
+#endif
+            break;
+#else
         case 8:
             pATI->Closeable = cfbScreenInit(pScreen, pFB,
                 pScreenInfo->virtualX, pScreenInfo->virtualY,
@@ -177,6 +200,7 @@ ATIScreenInit
                 pScreenInfo->virtualX, pScreenInfo->virtualY,
                 pScreenInfo->xDpi, pScreenInfo->yDpi, pATI->displayWidth);
             break;
+#endif
 
         default:
             return FALSE;
