@@ -1,3 +1,4 @@
+/* $XFree86: $ */
 /*
 
 xf86WideLine does not maintain a span list and subsequently does not
