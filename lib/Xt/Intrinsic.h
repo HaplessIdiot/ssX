@@ -44,7 +44,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xt/Intrinsic.h,v 3.3 1998/01/25 04:00:01 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Intrinsic.h,v 3.4 1998/10/03 09:06:55 dawes Exp $ */
 
 #ifndef _XtIntrinsic_h
 #define _XtIntrinsic_h
@@ -2054,7 +2054,7 @@ extern void XtGetConstraintResourceList(
 #define XtDefaultFont		"XtDefaultFont"
 #define XtDefaultFontSet	"XtDefaultFontSet"
 
-#if defined(CRAY) || defined(__arm) || defined(__ACK)
+#if defined(CRAY) || defined(__ACK)
 #if __STDC__ && !defined(__ACK)
 #define XtOffset(p_type,field) _Offsetof(p_type,field)
 #else

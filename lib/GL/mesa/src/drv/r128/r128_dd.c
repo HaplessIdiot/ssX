@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_dd.c,v 1.4 2000/12/07 15:43:37 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_dd.c,v 1.5 2000/12/12 17:17:06 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -45,7 +45,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "X86/common_x86_asm.h"
 #endif
 
-#define R128_DATE	"20001212"
+#define R128_DATE	"20001215"
 
 /* Return the current color buffer size */
 static void r128DDGetBufferSize( GLcontext *ctx,

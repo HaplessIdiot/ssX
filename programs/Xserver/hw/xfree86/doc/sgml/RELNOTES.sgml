@@ -9,7 +9,7 @@
 <date>15 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.55 2000/12/15 21:56:47 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.56 2000/12/15 22:01:09 dawes Exp $
 </ident>
 
 <abstract>
@@ -105,6 +105,9 @@ don't have enough space to cover them all here.
   <item>The trident driver has lots of fixes to the CyberBlade/Blade
 	support, XVideo support for the Image/Blade series (although
 	scaling doesn't work yet on the Image series).
+
+  <item>The s3virge driver has stabilized ViRGE GX2 support, includes
+	ViRGE DX and ViRGE support for XVideo YUV images, and various fixes.
 
   <item>The 3Dlabs (glint) driver now has Permedia3 support.
 
