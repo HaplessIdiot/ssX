@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000cmap.c,v 3.12 1997/02/12 08:55:42 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000cmap.c,v 3.13 1997/02/18 12:04:07 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -243,35 +243,5 @@ p9000UninstallColormap(pmap)
     return;
 
   (*pmap->pScreen->InstallColormap) (defColormap);
-}
-
-
-/* Restores a screen that the screen saver has been running on */
-void
-p9000UnblankScreen(pScreen)
-     ScreenPtr pScreen;
-{
-  if (xf86VTSema)
-    {
-#if 0
-      if (p9000InfoRec.bitsPerPixel == 8)
-	{
-	  Pixel       pix = 0;
-	  xrgb        rgb;
-
-	  if (InstalledMaps[pScreen->myNum] == NOMAPYET)
-	    return;
-	  QueryColors(InstalledMaps[pScreen->myNum], 1, &pix, &rgb);  
-	  outb(BT_WRITE_ADDR, 0);
-	  outb(BT_RAMDAC_DATA, rgb.red >> 8);
-	  outb(BT_RAMDAC_DATA, rgb.green >> 8);
-	  outb(BT_RAMDAC_DATA, rgb.blue >> 8);
-	  outw(BT_PIXEL_MASK, 0xff);
-	}
-#else
-      /* Power the RAMDAC back up. */
-      p9000OutBtReg(BT_COMMAND_REG_0, 0xFE, 0x0 /* ~BT_CR0_POWERDOWN */);  
-#endif
-    }
 }
 
