@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.17 2000/03/03 20:02:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.18 2000/03/03 20:36:42 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV and Wacom V protocols.
@@ -2868,6 +2868,27 @@ xf86WcmAllocate(char *  name,
     char			*dev_name = (char *) getenv("WACOM_DEV");  
 #endif
 
+    priv = (WacomDevicePtr) xalloc(sizeof(WacomDeviceRec));
+    if (!priv)
+	return NULL;
+
+    common = (WacomCommonPtr) xalloc(sizeof(WacomCommonRec));
+    if (!common) {
+	xfree(priv);
+	return NULL;
+    }
+
+#ifdef XFREE86_V4
+    local = xf86AllocateInput(wcmDrv, 0);
+#else
+    local = (LocalDevicePtr) xalloc(sizeof(LocalDeviceRec));
+#endif
+    if (!local) {
+	xfree(priv);
+	xfree(common);
+	return NULL;
+    }
+
     local->name = name;
     local->flags = 0;
 #ifndef XFREE86_V4
@@ -2952,7 +2973,8 @@ xf86WcmAllocateStylus()
 {
     LocalDevicePtr        local = xf86WcmAllocate(XI_STYLUS, STYLUS_ID);
 
-    local->type_name = "Wacom Stylus";
+    if (local)
+	local->type_name = "Wacom Stylus";
     return local;
 }
 
@@ -2968,7 +2990,8 @@ xf86WcmAllocateCursor()
 {
     LocalDevicePtr        local = xf86WcmAllocate(XI_CURSOR, CURSOR_ID);
 
-    local->type_name = "Wacom Cursor";
+    if (local)
+	local->type_name = "Wacom Cursor";
     return local;
 }
 
@@ -2984,7 +3007,8 @@ xf86WcmAllocateEraser()
 {
     LocalDevicePtr        local = xf86WcmAllocate(XI_ERASER, ABSOLUTE_FLAG|ERASER_ID);
 
-    local->type_name = "Wacom Eraser";
+    if (local)
+	local->type_name = "Wacom Eraser";
     return local;
 }
 
@@ -3098,6 +3122,9 @@ xf86WcmInit(InputDriverPtr	drv,
     wcmDrv = drv;
 
     fakeLocal = (LocalDevicePtr) xcalloc(1, sizeof(LocalDeviceRec));
+    if (!fakeLocal)
+	return NULL;
+
     fakeLocal->conf_idev = dev;
 
     /* Force default serial port options to exist because the serial init
@@ -3124,15 +3151,14 @@ xf86WcmInit(InputDriverPtr	drv,
 	goto SetupProc_fail;
     }
     
-    if (local)
-	priv = (WacomDevicePtr) local->private;
-    if (priv)
-	common = priv->common;
-
-    if (!local || !priv || !common) {
-	goto SetupProc_fail;
+    if (!local) {
+	xfree(fakeLocal);
+	return NULL;
     }
-    
+
+    priv = (WacomDevicePtr) local->private;
+    common = priv->common;
+
     local->options = fakeLocal->options;
     local->conf_idev = fakeLocal->conf_idev;
     local->name = dev->identifier;
@@ -3304,9 +3330,7 @@ xf86WcmInit(InputDriverPtr	drv,
 	xfree(common);
     if (priv)
 	xfree(priv);
-    if (local)
-	xfree(local);
-    return NULL;
+    return local;
 }
 
 #ifdef XFree86LOADER

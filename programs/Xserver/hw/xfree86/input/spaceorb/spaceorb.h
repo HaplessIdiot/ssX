@@ -1,5 +1,7 @@
 /* 
- * Copyright (c) 1998  Metro Link Incorporated
+ * Author: Guido Heumer <gheumer@hons.cs.usyd.edu.au>
+ *
+ * Template driver used: Copyright (c) 1998  Metro Link Incorporated
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -24,12 +26,14 @@
  * in this Software without prior written authorization from Metro Link.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/spaceorb/spaceorb.h,v 1.1 1998/12/05 14:40:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/spaceorb/spaceorb.h,v 1.2 1999/02/01 12:13:00 dawes Exp $ */
 
 #ifndef	_SPACEORB_H_
 #define _SPACEORB_H_
 
-#include <xf86Module.h>
+/* check if it works without
+
+#include <xf86Module.h> */
 
 /******************************************************************************
  *		Definitions
@@ -66,7 +70,7 @@ SPACEORBPrivateRec, *SPACEORBPrivatePtr;
 /******************************************************************************
  *		Declarations
  *****************************************************************************/
-static MODULESETUPPROTO( SetupProc );
+static MODULESETUPPROTO(SPACEORBSetupProc);
 static void TearDownProc (pointer p);
 static Bool DeviceControl (DeviceIntPtr, int);
 static Bool DeviceOn (DeviceIntPtr);
@@ -78,8 +82,12 @@ static int ControlProc (LocalDevicePtr, xDeviceCtl *);
 static void CloseProc (LocalDevicePtr);
 static int SwitchMode (ClientPtr, DeviceIntPtr, int);
 static Bool ConvertProc (LocalDevicePtr, int, int, int, int, int, int, int, int, int *, int *);
-static Bool QueryHardware (SPACEORBPrivatePtr, int *, int *);
+static Bool QueryHardware (SPACEORBPrivatePtr);
+static void NewPacket (SPACEORBPrivatePtr priv);
 static Bool SPACEORBGetPacket (SPACEORBPrivatePtr priv);
+
+static InputInfoPtr
+SpaceorbPreInit(InputDriverPtr drv, IDevPtr dev, int flags);
 /* 
  *    DO NOT PUT ANYTHING AFTER THIS ENDIF
  */
