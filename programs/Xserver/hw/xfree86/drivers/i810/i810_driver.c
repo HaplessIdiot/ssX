@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.83tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.84 2003/04/23 21:51:37 tsi Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -1627,9 +1627,10 @@ I810SetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
    i810Reg->OverlayActiveEnd = mode->CrtcHDisplay - 32;
 
    /* Turn on interlaced mode if necessary */
-   if (mode->Flags & V_INTERLACE)
+   if (mode->Flags & V_INTERLACE) {
       i810Reg->InterlaceControl = INTERLACE_ENABLE;
-   else
+      i810Reg->ExtVertDispEnd *= 2;
+   } else
       i810Reg->InterlaceControl = INTERLACE_DISABLE;
 
    /*
