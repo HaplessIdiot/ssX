@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/package.c,v 1.1 2002/02/12 16:07:55 paulo Exp $ */
 
 #include "package.h"
 #include "private.h"
@@ -35,9 +35,15 @@
 /*
  * Prototypes
  */
+static int LispDoSymbol(LispMac*, LispObj*, LispAtom*, int);
 static LispObj *LispReallyDoSymbols(LispMac*, LispBuiltin*, int, int);
 static LispObj *LispDoSymbols(LispMac*, LispBuiltin*, int, int);
 static LispObj *LispFindPackageOrDie(LispMac*, LispBuiltin*, LispObj*);
+
+/*
+ * Initialization
+ */
+extern LispProperty *NOPROPERTY;
 
 /*
  * Implementation
@@ -79,6 +85,31 @@ LispFindPackage(LispMac *mac, LispObj *name)
     return (LispFindPackageFromString(mac, string));
 }
 
+/*   This function is used to avoid some namespace polution caused by the
+ * way builtin functions are created, all function name arguments enter
+ * the current package, but most of them do not have a property */
+static int
+LispDoSymbol(LispMac *mac, LispObj *package, LispAtom *atom, int if_extern)
+{
+    int dosymbol;
+
+    /* condition 1: atom package is current package */
+    dosymbol = atom->package == package;
+    if (dosymbol) {
+	/* condition 2: intern and extern symbols or symbol is extern */
+	dosymbol = !if_extern || atom->ext;
+	if (dosymbol) {
+	    /* condition 3: atom has properties or is in
+	     * the current package */
+	    dosymbol = atom->property != NOPROPERTY ||
+		       package == mac->keyword ||
+		       package == PACKAGE;
+	}
+    }
+
+    return (dosymbol);
+}
+
 static LispObj *
 LispFindPackageOrDie(LispMac *mac, LispBuiltin *builtin, LispObj *name)
 {
@@ -98,9 +129,9 @@ LispReallyDoSymbols(LispMac *mac, LispBuiltin *builtin,
 		    int only_externs, int all_symbols)
 {
     int i;
-    LispPackage *pack;
+    LispPackage *pack = NULL;
     LispAtom *atom, *next_atom;
-    LispObj *variable, *package, *code, *result_form;
+    LispObj *variable, *package = NULL, *list, *code, *result_form;
 
     LispObj *init, *body;
 
@@ -142,9 +173,11 @@ LispReallyDoSymbols(LispMac *mac, LispBuiltin *builtin,
     LispAddVar(mac, variable, NIL);
     mac->env.head += 2;
 
-    for (package = PACK; CONS_P(package); package = CDR(package)) {
-	if (all_symbols)
-	    pack = CAR(package)->data.package.package;
+    for (list = PACK; CONS_P(list); list = CDR(list)) {
+	if (all_symbols) {
+	    package = CAR(list);
+	    pack = package->data.package.package;
+	}
 
 	/* Traverse the symbol list, executing body */
 	for (i = 0; i < STRTBLSZ; i++) {
@@ -155,7 +188,7 @@ LispReallyDoSymbols(LispMac *mac, LispBuiltin *builtin,
 		 * variable is removed. */
 		next_atom = atom->next;
 
-		if (!only_externs || atom->ext) {
+		if (LispDoSymbol(mac, package, atom, only_externs)) {
 		    LispSetVar(mac, variable, atom->object);
 		    for (code = body; CONS_P(code); code = CDR(code))
 			EVAL(CAR(code));
@@ -204,7 +237,7 @@ Lisp_DoAllSymbols(LispMac *mac, LispBuiltin *builtin)
  do-all-symbols init &rest body
  */
 {
-    return (LispDoSymbols(mac, builtin, 1, 1));
+    return (LispDoSymbols(mac, builtin, 0, 1));
 }
 
 LispObj *
@@ -231,21 +264,10 @@ Lisp_FindAllSymbols(LispMac *mac, LispBuiltin *builtin)
  find-all-symbols string-or-symbol
  */
 {
-    /*   There is a problem here. If match to string-or-symbol is not in
-     * the current package, but exists in another package, the printed
-     * representation does not differentiate the symbols.
-     *   I am not sure if the correct solution would be to change the
-     * print routines to always print the package name of an object,
-     * if it's home package is not the current one. There is no fast
-     * way to check if a symbol is in the current package. When a symbol
-     * is printed, there is no way to track down how it's pointer was taken,
-     * and checking for it's "visibility" requires traversing and
-     * strcmp'ing all atom->string entries of the current package. */
-
-    char *string;
+    char *string = NULL;
     LispAtom *atom;
     LispPackage *pack;
-    LispObj *list, *package, *result, *cons;
+    LispObj *list, *package, *result;
     int i, protect = mac->protect.length;
 
     LispObj *string_or_symbol;
@@ -260,7 +282,7 @@ Lisp_FindAllSymbols(LispMac *mac, LispBuiltin *builtin)
 	LispDestroy(mac, "%s: %s is not a string or symbol",
 		    STRFUN(builtin), STROBJ(string_or_symbol));
 
-    result = cons = NIL;
+    result = NIL;
 
     /* Will find at least one symbol matching string-or-symbol,
      * the value of string-or-symbol itself :-) */
@@ -276,17 +298,19 @@ Lisp_FindAllSymbols(LispMac *mac, LispBuiltin *builtin)
 	    atom = pack->atoms[i];
 	    while (atom) {
 
-		if (atom->package == package) {
+		if (LispDoSymbol(mac, package, atom, 0)) {
 		    /* Return only one pointer to a matching symbol */
 
 		    if (strcmp(atom->string, string) == 0) {
 			if (result == NIL) {
-			    result = cons = CONS(atom->object, NIL);
+			    result = CONS(atom->object, NIL);
 			    mac->protect.objects[mac->protect.length++] = result;
 			}
 			else {
-			    CDR(cons) = CONS(atom->object, NIL);
-			    cons = CDR(cons);
+			    /* Put symbols defined first in the
+			     * beginning of the result list */
+			    CDR(result) = CONS(CAR(result), CDR(result));
+			    CAR(result) = atom->object;
 			}
 		    }
 		}

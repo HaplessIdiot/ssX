@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.3 2002/02/08 02:59:29 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.4 2002/02/12 16:07:55 paulo Exp $ */
 
 #include "read.h"
 #include "stream.h"
@@ -63,7 +63,7 @@
 
 extern char **environ;
 
-LispObj *Oopen, *Oclose, *Oif_does_not_exist;
+LispObj *Oopen, *Oclose, *Kif_does_not_exist;
 
 Atom_id Sprobe, Sinput, Soutput, Sio, Snew_version, Srename,
 	Srename_and_delete, Soverwrite, Sappend, Ssupersede,
@@ -77,7 +77,7 @@ LispStreamInit(LispMac *mac)
 {
     Oopen		= STATIC_ATOM("OPEN");
     Oclose		= STATIC_ATOM("CLOSE");
-    Oif_does_not_exist	= STATIC_ATOM("IF-DOES-NOT-EXIST");
+    Kif_does_not_exist	= KEYWORD("IF-DOES-NOT-EXIST");
 
     Sprobe		= GETATOMID("PROBE");
     Sinput		= GETATOMID("INPUT");
@@ -197,7 +197,7 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
     if (odirection != NIL) {
 	direction = -1;
 	if (KEYWORD_P(odirection)) {
-	    atom = ATOMID(odirection->data.quote);
+	    atom = ATOMID(odirection);
 
 	    if (atom == Sprobe)
 		direction = DIR_PROBE;
@@ -221,7 +221,7 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
 	    ATOMID(element_type) == Scharacter)
 	    ;	/* do nothing */
 	else if (KEYWORD_P(element_type) &&
-	    ATOMID(element_type->data.quote) == Sdefault)
+	    ATOMID(element_type) == Sdefault)
 	    ;	/* do nothing */
 	else
 	    LispDestroy(mac, "%s: only :%s and %s supported for :ELEMENT-TYPE, not %s",
@@ -231,7 +231,7 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
     if (if_exists != NIL) {
 	exist = -1;
 	if (KEYWORD_P(if_exists)) {
-	    atom = ATOMID(if_exists->data.quote);
+	    atom = ATOMID(if_exists);
 
 	    if (atom == Serror)
 		exist = EXT_ERROR;
@@ -257,7 +257,7 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
     if (if_does_not_exist != NIL) {
 	noexist = -1;
 	if (KEYWORD_P(if_does_not_exist)) {
-	    atom = ATOMID(if_does_not_exist->data.quote);
+	    atom = ATOMID(if_does_not_exist);
 
 	    if (atom == Serror)
 		noexist = NOEXT_ERROR;
@@ -277,7 +277,7 @@ Lisp_Open(LispMac *mac, LispBuiltin *builtin)
 	    ATOMID(external_format) == Scharacter)
 	    ;	/* do nothing */
 	else if (KEYWORD_P(external_format) &&
-	    ATOMID(external_format->data.quote) == Sdefault)
+	    ATOMID(external_format) == Sdefault)
 	    ;	/* do nothing */
 	else
 	    LispDestroy(mac, "%s: only :%s and %s supported for :EXTERNAL-FORMAT, not %s",
@@ -793,7 +793,7 @@ Lisp_MakeStringOutputStream(LispMac *mac, LispBuiltin *builtin)
 	if (SYMBOL_P(element_type) && ATOMID(element_type) == Scharacter)
 	    ;	/* do nothing */
 	else if (KEYWORD_P(element_type) &&
-	    ATOMID(element_type->data.quote) == Sdefault)
+	    ATOMID(element_type) == Sdefault)
 	    ;	/* do nothing */
 	else
 	    LispDestroy(mac, "%s: only :%s and %s supported for :ELEMENT-TYPE, not %s",
@@ -866,7 +866,7 @@ Lisp_MakePipe(LispMac *mac, LispBuiltin *builtin)
     if (odirection != NIL) {
 	direction = -1;
 	if (KEYWORD_P(odirection)) {
-	    atom = ATOMID(odirection->data.quote);
+	    atom = ATOMID(odirection);
 
 	    if (atom == Sprobe)
 		direction = DIR_PROBE;
@@ -889,7 +889,7 @@ Lisp_MakePipe(LispMac *mac, LispBuiltin *builtin)
 	if (SYMBOL_P(element_type) && ATOMID(element_type) == Scharacter)
 	    ;	/* do nothing */
 	else if (KEYWORD_P(element_type) &&
-	    ATOMID(element_type->data.quote) == Sdefault)
+	    ATOMID(element_type) == Sdefault)
 	    ;	/* do nothing */
 	else
 	    LispDestroy(mac, "%s: only :%s and %s supported for :ELEMENT-TYPE, not %s",
@@ -901,7 +901,7 @@ Lisp_MakePipe(LispMac *mac, LispBuiltin *builtin)
 	if (SYMBOL_P(external_format) && ATOMID(external_format) == Scharacter)
 	    ;	/* do nothing */
 	else if (KEYWORD_P(external_format) &&
-	    ATOMID(external_format->data.quote) == Sdefault)
+	    ATOMID(external_format) == Sdefault)
 	    ;	/* do nothing */
 	else
 	    LispDestroy(mac, "%s: only :%s and %s supported for :EXTERNAL-FORMAT, not %s",

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.21 2002/02/10 02:50:06 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.22 2002/02/12 16:07:54 paulo Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -44,7 +44,7 @@ extern LispObj *LispRunSetf(LispMac*, LispObj*, LispObj*, LispObj*);
 /*
  * Initialization
  */
-LispObj *Omake_array, *Oinitial_contents, *Osetf;
+LispObj *Omake_array, *Kinitial_contents, *Osetf;
 
 Atom_id Sotherwise, Svariable, Sstructure, Stype, Ssetf;
 
@@ -55,7 +55,7 @@ void
 LispCoreInit(LispMac *mac)
 {
     Omake_array		= STATIC_ATOM("MAKE-ARRAY");
-    Oinitial_contents	= STATIC_ATOM("INITIAL-CONTENTS");
+    Kinitial_contents	= KEYWORD("INITIAL-CONTENTS");
     Osetf		= STATIC_ATOM("SETF");
 
     Sotherwise		= GETATOMID("OTHERWISE");
@@ -860,10 +860,6 @@ Lisp_Eq(LispMac *mac, LispBuiltin *builtin)
 		if (left->data.atom == right->data.atom)
 		    result = T;
 		break;
-	    case LispKeyword_t:
-		if (left->data.quote->data.atom == right->data.quote->data.atom)
-		    result = T;
-		break;
 	    default:
 		if (left == right)
 		    result = T;
@@ -890,10 +886,6 @@ Lisp_Eql(LispMac *mac, LispBuiltin *builtin)
 	switch (left->type) {
 	    case LispAtom_t:
 		if (left->data.atom == right->data.atom)
-		    result = T;
-		break;
-	    case LispKeyword_t:
-		if (left->data.quote->data.atom == right->data.quote->data.atom)
 		    result = T;
 		break;
 	    case LispReal_t:
@@ -2990,7 +2982,6 @@ Lisp_Symbolp(LispMac *mac, LispBuiltin *builtin)
 	case LispNil_t:
 	case LispTrue_t:
 	case LispAtom_t:
-	case LispKeyword_t:
 	case LispLambda_t:
 	    return (T);
 	default:
@@ -3201,10 +3192,6 @@ Lisp_Throw(LispMac *mac, LispBuiltin *builtin)
 		case LispString_t:
 		    jmp = tag->data.atom == block->tag.data.atom;
 		    break;
-		case LispKeyword_t:
-		    jmp = tag->data.quote->data.atom ==
-			  block->tag.data.quote->data.atom;
-		    break;
 		case LispCharacter_t:
 		case LispInteger_t:
 		    jmp = tag->data.integer == block->tag.data.integer;
@@ -3283,7 +3270,7 @@ Lisp_Typep(LispMac *mac, LispBuiltin *builtin)
 	else if (atom == Svector || atom == Sarray)
 	    result = object->type == LispArray_t ? T : NIL;
 	else if (atom == Skeyword)
-	    result = object->type == LispKeyword_t ? T : NIL;
+	    result = KEYWORD_P(object) ? T : NIL;
 	else if (atom == Sfunction)
 	    result = object->type == LispLambda_t ? T : NIL;
 	else if (atom == Spathname)

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.6 2002/02/12 16:07:55 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.7 2002/02/13 04:11:27 paulo Exp $ */
 
 #include <errno.h>
 #include "read.h"
@@ -562,21 +562,23 @@ static LispObj *
 LispParseAtom(LispMac *mac, char *package, char *symbol,
 	      int intern, int unreadable)
 {
-    LispObj *object = NULL;
+    LispObj *object = NULL, *thepackage = NULL;
     LispPackage *pack = NULL;
 
     /* If package is empty, it is a keyword */
-    if (package[0] == '\0')
-	pack = mac->keyword;
+    if (package[0] == '\0') {
+	thepackage = mac->keyword;
+	pack = mac->key;
+    }
 
     else {
 	/* Else, search it in the package list */
-	LispObj *entry = LispFindPackageFromString(mac, package);
+	thepackage = LispFindPackageFromString(mac, package);
 
-	if (entry == NIL)
+	if (thepackage == NIL)
 	    LispDestroy(mac, "READ: the package %s is not available", package);
 
-	pack = entry->data.package.package;
+	pack = thepackage->data.package.package;
     }
 
     if (pack == mac->pack && intern) {
@@ -588,30 +590,31 @@ LispParseAtom(LispMac *mac, char *package, char *symbol,
 	    object->data.atom->unreadable = 1;
     }
 
-    else if (intern || pack == mac->keyword) {
+    else if (intern || pack == mac->key) {
 	/* Symbol is created, or just fetched from the specified package */
 
 	LispPackage *savepack;
+	LispObj *savepackage = PACKAGE;
 
 	/* Remember curent package */
 	savepack = mac->pack;
 
 	/* Temporarily set another package */
 	mac->pack = pack;
+	PACKAGE = thepackage;
 
 	/* Get the object pointer */
 	object = ATOM(symbol);
 	if (unreadable)
 	    object->data.atom->unreadable = 1;
 
-	if (pack == mac->keyword) {
+	if (pack == mac->key)
 	    /* All keywords are external symbols */
 	    LispExportSymbol(mac, object);
-	    object = KEYWORD(object);
-	}
 
 	/* Restore current package */
 	mac->pack = savepack;
+	PACKAGE = savepackage;
     }
 
     else {
@@ -1154,10 +1157,7 @@ LispReadArray(LispMac *mac, long dimensions)
     if (INVALID_P(data))
 	LispDestroy(mac, "READ: invalid array specification");
 
-    if (mac->protect.length + 2 >= mac->protect.space)
-	LispMoreProtects(mac);
-    initial = KEYWORD(Oinitial_contents);
-    mac->protect.objects[mac->protect.length++] = initial;
+    initial = Kinitial_contents;
 
     if (dimensions) {
 	dim = cons = CONS(INTEGER(dimensions), NIL);
@@ -1182,6 +1182,11 @@ LispReadArray(LispMac *mac, long dimensions)
 	dim = NIL;
 
     function = Omake_array;
+
+    protect = mac->protect.length;
+    if (mac->protect.length + 2 >= mac->protect.space)
+	LispMoreProtects(mac);
+    mac->protect.objects[mac->protect.length++] = dim;
     arguments = CONS(dim, CONS(initial, CONS(data, NIL)));
     mac->protect.objects[mac->protect.length++] = arguments;
 
@@ -1287,7 +1292,7 @@ LispEvalFeature(LispMac *mac, LispObj *feature)
     /* check if specified atom is in the feature list
      * note that all elements of the feature list must be keywords */
     for (object = FEAT; CONS_P(object); object = CDR(object))
-	if (ATOMID(CAR(object)->data.quote) == test)
+	if (ATOMID(CAR(object)) == test)
 	    return (T);
 
     /* unknown feature */

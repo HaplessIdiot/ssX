@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/write.h,v 1.1 2002/02/08 02:59:30 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/write.h,v 1.2 2002/02/08 03:54:07 paulo Exp $ */
 
 #ifndef Lisp_write_h
 #define Lisp_write_h
@@ -46,6 +46,8 @@ int LispWriteChars(LispMac*, LispObj*, int, int);
 int LispWriteStr(LispMac*, LispObj*, char*);
 
 /* use default parameters to write objects */
+	/* object must be an atom */
+int LispWriteAtom(LispMac*, LispObj*, LispObj*);
 	/* object must be an integer */
 int LispWriteInteger(LispMac*, LispObj*, LispObj*);
 	/* object must be a character */

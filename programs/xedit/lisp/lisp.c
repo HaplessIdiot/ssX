@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.32 2002/02/10 02:50:07 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.33 2002/02/12 16:07:54 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -114,6 +114,10 @@ static INLINE LispObj *LispGetVarPack(LispMac*, LispObj*);
 /* create environment for function call */
 static void LispMakeEnvironment(LispMac*, LispObj*, LispObj*, char*, int);
 
+	/* if not already in keyword package, move atom to keyword package */
+static void LispCheckKeyword(LispMac*, LispObj*);
+
+	/* builtin backquote parsing */
 static LispObj *LispEvalBackquoteObject(LispMac*, LispObj*, int, int);
 static LispObj *LispEvalBackquote(LispMac*, LispObj*, int);
 
@@ -159,17 +163,19 @@ static LispObj lispt = {LispTrue_t};
 static LispObj lispunbound = {LispNil_t};
 LispObj *NIL = &lispnil, *T = &lispt, *UNBOUND = &lispunbound;
 
+LispObj *Okey, *Orest, *Ooptional, *Oaux;
+
 Atom_id Snil, St;
 Atom_id Slambda, Saux, Skey, Soptional, Srest;
 Atom_id Satom, Ssymbol, Sinteger, Scharacter, Sreal, Sstring, Slist,
 	Scons, Svector, Sarray, Sstruct, Skeyword, Sfunction, Spathname,
 	Srational, Sfloat, Scomplex, Sopaque, Sdefault;
 
-LispObj *Oformat, *Ounspecific;
+LispObj *Oformat, *Kunspecific;
 
 static LispObj **objseg, *freeobj = &lispnil;
 static LispProperty noproperty;
-static LispProperty *NOPROPERTY = &noproperty;
+LispProperty *NOPROPERTY = &noproperty;
 static int segsize, minfree, numseg;
 static int nfree, nobjs;
 int pagesize, gcpro;
@@ -274,7 +280,6 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Gc, "gc &optional car cdr"},
     {LispFunction, Lisp_Gcd, "gcd &rest integers"},
     {LispFunction, Lisp_Get, "get symbol indicator &optional default"},
-    {LispFunction, Lisp_Getenv, "getenv name"},
     {LispMacro, Lisp_Go, "go tag"},
     {LispFunction, Lisp_HostNamestring, "host-namestring pathname"},
     {LispMacro, Lisp_If, "if test then &optional else"},
@@ -307,7 +312,6 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_MakeArray, "make-array dimensions &key element-type initial-element initial-contents adjustable fill-pointer displaced-to displaced-index-offset"},
     {LispFunction, Lisp_MakeList, "make-list size &key initial-element"},
     {LispFunction, Lisp_MakePathname, "make-pathname &key host device directory name type version defaults"},
-    {LispFunction, Lisp_MakePipe, "make-pipe command-line &key direction element-type external-format"},
     {LispFunction, Lisp_MakeStringInputStream, "make-string-input-stream string &optional start end"},
     {LispFunction, Lisp_MakeStringOutputStream, "make-string-output-stream &key element-type"},
     {LispFunction, Lisp_GetOutputStreamString, "get-output-stream-string string-output-stream"},
@@ -342,10 +346,6 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_PathnameType, "pathname-type pathname"},
     {LispFunction, Lisp_PathnameVersion, "pathname-version pathname"},
     {LispFunction, Lisp_Pathnamep, "pathnamep object"},
-    {LispFunction, Lisp_PipeBroken, "pipe-broken pipe-stream"},
-    {LispFunction, Lisp_PipeErrorStream, "pipe-error-stream pipe-stream"},
-    {LispFunction, Lisp_PipeInputDescriptor, "pipe-input-descriptor pipe-stream"},
-    {LispFunction, Lisp_PipeErrorDescriptor, "pipe-error-descriptor pipe-stream"},
     {LispFunction, Lisp_Plusp, "plusp number"},
     {LispFunction, Lisp_Prin1, "prin1 object &optional output-stream"},
     {LispFunction, Lisp_Princ, "princ object &optional output-stream"},
@@ -360,9 +360,6 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Quit, "quit &optional status"},
     {LispMacro, Lisp_Quote, "quote object"},
     {LispFunction, Lisp_Rational, "rational number"},
-#if 0
-    {LispFunction, Lisp_Rationalize, "rationalize number"},
-#endif
     {LispFunction, Lisp_Rationalp, "rationalp object"},
     {LispFunction, Lisp_Read, "read &optional input-stream (eof-error-p t) eof-value recursive-p"},
     {LispFunction, Lisp_ReadChar, "read-char &optional input-stream (eof-error-p t) eof-value recursive-p"},
@@ -378,7 +375,6 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Reverse, "reverse sequence"},
     {LispFunction, Lisp_Rplaca, "rplaca place value"},
     {LispFunction, Lisp_Rplacd, "rplacd place value"},
-    {LispFunction, Lisp_Setenv, "setenv name value &optional overwrite"},
     {LispFunction, Lisp_Set, "set symbol value"},
     {LispMacro, Lisp_Setf, "setf &rest form"},
     {LispMacro, Lisp_SetQ, "setq &rest form"},
@@ -418,13 +414,11 @@ static LispBuiltin lispbuiltins[] = {
     {LispMacro, Lisp_Time, "time form"},
     {LispFunction, Lisp_Truename, "truename pathname"},
     {LispMacro, Lisp_Unless, "unless test &rest body"},
-    {LispMacro, Lisp_Until, "until test &rest body"},
     {LispFunction, Lisp_Unsetenv, "unsetenv name"},
     {LispFunction, Lisp_UserHomedirPathname, "user-homedir-pathname &optional host"},
     {LispMacro, Lisp_UnwindProtect, "unwind-protect protect &rest cleanup"},
     {LispFunction, Lisp_Vector, "vector &rest objects"},
     {LispMacro, Lisp_When, "when test &rest body"},
-    {LispMacro, Lisp_While, "while test &rest body"},
     {LispFunction, Lisp_WriteChar, "write-char string &optional output-stream"},
     {LispFunction, Lisp_WriteLine, "write-line string &optional output-stream &key start end"},
     {LispFunction, Lisp_WriteString, "write-string string &optional output-stream &key start end"},
@@ -437,6 +431,18 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_XeditStructStore, "lisp::struct-store atom struct value", 1},
     {LispFunction, Lisp_XeditVectorStore, "lisp::vector-store array subscripts value", 1},
     {LispFunction, Lisp_Zerop, "zerop number"},
+};
+
+static LispBuiltin extbuiltins[] = {
+    {LispFunction, Lisp_Getenv, "getenv name"},
+    {LispFunction, Lisp_MakePipe, "make-pipe command-line &key direction element-type external-format"},
+    {LispFunction, Lisp_PipeBroken, "pipe-broken pipe-stream"},
+    {LispFunction, Lisp_PipeErrorStream, "pipe-error-stream pipe-stream"},
+    {LispFunction, Lisp_PipeInputDescriptor, "pipe-input-descriptor pipe-stream"},
+    {LispFunction, Lisp_PipeErrorDescriptor, "pipe-error-descriptor pipe-stream"},
+    {LispFunction, Lisp_Setenv, "setenv name value &optional overwrite"},
+    {LispMacro, Lisp_Until, "until test &rest body"},
+    {LispMacro, Lisp_While, "while test &rest body"},
 };
 
 /*
@@ -517,6 +523,7 @@ LispDestroy(LispMac *mac, char *fmt, ...)
 	free(mac->mem.mem[--mac->mem.mem_level]);
 
     /* If the package was changed and an error happened */
+    PACKAGE = mac->savepackage;
     mac->pack = mac->savepack;
 
     LispTopLevel(mac);
@@ -638,6 +645,7 @@ LispTopLevel(LispMac *mac)
     mac->dyn.length = 0;
     mac->protect.length = 0;
 
+    mac->savepackage = PACKAGE;
     mac->savepack = mac->pack;
 }
 
@@ -646,12 +654,11 @@ LispGC(LispMac *mac, LispObj *car, LispObj *cdr)
 {
     LispObj *entry, *last, **pentry, **eentry;
     unsigned i, j;
-    LispAtom *atom, *patom, *natom;
+    LispAtom *atom;
     struct timeval start, end;
 #ifdef DEBUG
     long sec, msec;
     int count = nfree;
-    int atoms_free = 0;
 #else
     long msec;
 #endif
@@ -697,9 +704,8 @@ LispGC(LispMac *mac, LispObj *car, LispObj *cdr)
 	    LispMark((*pentry)->data.atom->property->value);
 	}
 
-	/* Traverse atom list, protecting properties, function/structure
-	 * definitions if mac->gc.immutablebits set, and if nothing
-	 * associated with atom, make it candidate to be released. */
+	/* Traverse atom list, protecting properties, and function/structure
+	 * definitions if mac->gc.immutablebits set */
 	for (i = 0; i < STRTBLSZ; i++) {
 	    atom = pack->atoms[i];
 	    while (atom) {
@@ -716,10 +722,7 @@ LispGC(LispMac *mac, LispObj *car, LispObj *cdr)
 			if (atom->a_defstruct)
 			    LispImmutable(atom->property->structure.definition);
 		    }
-		    atom->mark = LispTrue_t;
 		}
-		else
-		    atom->mark = LispNil_t;
 		atom = atom->next;
 	    }
 	}
@@ -759,16 +762,9 @@ LispGC(LispMac *mac, LispObj *car, LispObj *cdr)
 
     for (j = 0; j < numseg; j++) {
 	for (entry = objseg[j], last = entry + segsize; entry < last; entry++) {
-	    if (entry->mark) {
+	    if (entry->mark)
 		entry->mark = LispNil_t;
-		if (entry->type == LispAtom_t)
-		    entry->data.atom->mark = LispTrue_t;
-	    }
-	    else if (entry->prot) {
-		if (entry->type == LispAtom_t)
-		    entry->data.atom->mark = LispTrue_t;
-	    }
-	    else {
+	    else if (!entry->prot) {
 		switch (entry->type) {
 		    case LispString_t:
 			free(THESTR(entry));
@@ -823,42 +819,6 @@ LispGC(LispMac *mac, LispObj *car, LispObj *cdr)
 	}
     }
 
-    /* free unused atoms */
-    for (entry = PACK; CONS_P(entry); entry = CDR(entry)) {
-	LispPackage *pack = CAR(entry)->data.package.package;
-
-	for (i = 0; i < STRTBLSZ; i++) {
-	    patom = atom = pack->atoms[i];
-	    while (atom) {
-		natom = atom->next;
-		if (!atom->mark && !atom->prot) {
-		    /* Maybe these checks should be done in the
-		     * LispRemAtomXXX functions */
-		    if (atom->property != NOPROPERTY &&
-			atom->property->value == NULL &&
-			atom->property->fun.function == NULL &&
-			atom->property->properties == NULL &&
-			atom->property->setf == NULL &&
-			atom->property->structure.definition == NULL)
-			/* if no more references to property */
-			free(atom->property);
-
-		    free(atom);
-		    if (patom == atom)
-			patom = pack->atoms[i] = natom;
-		    else
-			patom->next = natom;
-#ifdef DEBUG
-		    ++atoms_free;
-#endif
-		}
-		else
-		    patom = atom;
-		atom = natom;
-	    }
-	}
-    }
-
     mac->gc.immutablebits = 0;
 
 #ifdef DEBUG
@@ -874,7 +834,6 @@ LispGC(LispMac *mac, LispObj *car, LispObj *cdr)
 		"%d recovered, %d free, %d protected, %d total",
 		sec, msec,
 		nfree - count, nfree, nobjs - nfree, nobjs);
-    LispMessage(mac, "gc: %d atom(s) freed", atoms_free);
 #else
     if (mac->gc.timebits) {
 	gettimeofday(&end, NULL);
@@ -1083,7 +1042,7 @@ LispGetAtomString(LispMac *mac, char *string, int perm)
 }
 
 LispAtom *
-LispDoGetAtom(LispMac *mac, char *str, int prot, int perm)
+LispDoGetAtom(LispMac *mac, char *str, int perm)
 {
     LispAtom *atom;
     int ii = 0;
@@ -1095,18 +1054,14 @@ LispDoGetAtom(LispMac *mac, char *str, int prot, int perm)
 	ii = -ii;
     ii %= STRTBLSZ;
     for (atom = mac->pack->atoms[ii]; atom; atom = atom->next)
-	if (strcmp(atom->string, str) == 0) {
-	    if (prot && !atom->prot)
-		atom->prot = 1;
+	if (strcmp(atom->string, str) == 0)
 	    return (atom);
-	}
+
     atom = (LispAtom*)LispCalloc(mac, 1, sizeof(LispAtom));
     atom->string = LispGetAtomString(mac, str, perm);
     LispMused(mac, atom);
     atom->next = mac->pack->atoms[ii];
     mac->pack->atoms[ii] = atom;
-    if (prot)
-	atom->prot = 1;
     atom->property = NOPROPERTY;
 
     return (atom);
@@ -1131,10 +1086,9 @@ LispAllocAtomProperty(LispMac *mac, LispAtom *atom)
 static void
 LispIncrementAtomReference(LispMac *mac, LispAtom *atom)
 {
-    if (atom->property == NOPROPERTY)
-	LispDestroy(mac, "internal error at INCREMENT-ATOM-REFERENCE");
-
-    ++atom->property->refcount;
+    if (atom->property != NOPROPERTY)
+	/* if atom->property is NOPROPERTY, this is an unbound symbol */
+	++atom->property->refcount;
 }
 
 /* Assumes atom property is not NOPROPERTY */
@@ -1142,7 +1096,8 @@ static void
 LispDecrementAtomReference(LispMac *mac, LispAtom *atom)
 {
     if (atom->property == NOPROPERTY)
-	LispDestroy(mac, "internal error at DECREMENT-ATOM-REFERENCE");
+	/* if atom->property is NOPROPERTY, this is an unbound symbol */
+	return;
 
     --atom->property->refcount;
 
@@ -1181,7 +1136,7 @@ LispSetAtomObjectProperty(LispMac *mac, LispAtom *atom, LispObj *object)
     else if (atom->watch) {
 	if (atom->object == PACKNAM) {
 	    if (!PACKAGE_P(object))
-		LispDestroy(mac, "Symbol %s must be package, not %s",
+		LispDestroy(mac, "Symbol %s must be a package, not %s",
 			    STRPTR(PACKNAM), STROBJ(object));
 	    mac->pack = object->data.package.package;
 	}
@@ -1351,13 +1306,13 @@ LispRemAtomStructProperty(LispMac *mac, LispAtom *atom)
 LispAtom *
 LispGetAtom(LispMac *mac, char *str)
 {
-    return (LispDoGetAtom(mac, str, 0, 0));
+    return (LispDoGetAtom(mac, str, 0));
 }
 
 LispAtom *
 LispGetPermAtom(LispMac *mac, char *str)
 {
-    return (LispDoGetAtom(mac, str, 1, 1));
+    return (LispDoGetAtom(mac, str, 1));
 }
 
 static LispObj *
@@ -1406,6 +1361,19 @@ LispPutAtomProperty(LispMac *mac, LispAtom *atom, LispObj *key, LispObj *val)
     return (res);
 }
 
+/* Used to make sure that when defining a function like:
+ *	(defun my-function (... &key key1 key2 key3 ...)
+ * key1, key2, and key3 will be in the keyword package
+ */
+static void
+LispCheckKeyword(LispMac *mac, LispObj *keyword)
+{
+    if (KEYWORD_P(keyword))
+	return;
+
+    (void)KEYWORD(STRPTR(keyword));
+}
+
 void
 LispCheckArguments(LispMac *mac, LispFunType type, LispObj *args, char *name)
 {
@@ -1445,31 +1413,32 @@ LispCheckArguments(LispMac *mac, LispFunType type, LispObj *args, char *name)
 			    (CDR(CDR(CAR(obj))) != NIL &&
 			     CDR(CDR(CDR(CAR(obj))))))
 			    LispDestroy(mac, "%s %s: bad special &KEY %s",
-					fnames[type], name,
-					LispStrObj(mac, obj));
+					fnames[type], name, STROBJ(obj));
 		    }
 		    /* is this a default value? */
 		    else if (!SYMBOL_P(CAR(obj)))
 			LispDestroy(mac,
 				    "%s %s: %s cannot be a %s argument name",
 				    fnames[type], name,
-				    LispStrObj(mac, CAR(obj)), types[type]);
+				    STROBJ(CAR(obj)), types[type]);
 		    /* check if default value provided, and optionally a `svar' */
 		    else if (CDR(obj) != NIL &&
 			     (!CONS_P(CDR(obj)) ||
 			      (CDR(CDR(obj)) != NIL &&
 			       (!SYMBOL_P(CAR(CDR(CDR(obj)))) ||
 				CDR(CDR(CDR(obj))) != NIL))))
-				/* only accept svar for &OPTIONAL */
 			LispDestroy(mac,
 				    "%s %s: bad argument specification %s",
-				    fnames[type], name, LispStrObj(mac, obj));
+				    fnames[type], name, STROBJ(obj));
+		    else if (key)
+			/* add to keyword package */
+			LispCheckKeyword(mac, CAR(obj));
 		}
 		else
 		    LispDestroy(mac, "%s %s: bad argument specification %s",
-				fnames[type], name, LispStrObj(mac, obj));
+				fnames[type], name, STROBJ(obj));
 	    }
-	    else if (!SYMBOL_P(obj))
+	    else if (!SYMBOL_P(obj) || KEYWORD_P(obj))
 		LispDestroy(mac, "%s %s: %s cannot be a %s argument",
 			    fnames[type], name, STROBJ(obj), types[type]);
 	    else if (STRPTR(obj)[0] == '&') {
@@ -1511,6 +1480,9 @@ LispCheckArguments(LispMac *mac, LispFunType type, LispObj *args, char *name)
 		    LispDestroy(mac, "%s %s: %s not allowed/implemented",
 				fnames[type], name, STRPTR(obj));
 	    }
+	    else if (key)
+		/* add to keyword package */
+		LispCheckKeyword(mac, obj);
 	}
 	if (args != NIL)
 	    LispDestroy(mac, "%s %s: %s cannot end %s arguments",
@@ -1622,9 +1594,6 @@ mark_again:
 	    obj->mark = LispTrue_t;
 	    obj = obj->data.lambda.code;
 	    goto mark_again;
-	case LispKeyword_t:
-	    obj->data.quote->mark = LispTrue_t;
-	    break;
 	case LispQuote_t:
 	case LispBackquote_t:
 	    if (obj->data.quote->type <= LispAtom_t) {
@@ -1638,7 +1607,7 @@ mark_again:
 	    }
 	case LispPathname_t:
 	    obj->mark = LispTrue_t;
-	    obj = obj->data.quote;
+	    obj = obj->data.pathname;
 	    goto mark_again;
 	case LispComma_t:
 	    obj->mark = LispTrue_t;
@@ -1703,9 +1672,6 @@ immutable_again:
 	    obj->prot = LispTrue_t;
 	    obj = obj->data.lambda.code;
 	    goto immutable_again;
-	case LispKeyword_t:
-	    obj->data.quote->prot = LispTrue_t;
-	    break;
 	case LispQuote_t:
 	case LispBackquote_t:
 	    if (obj->data.quote->type <= LispAtom_t) {
@@ -1719,7 +1685,7 @@ immutable_again:
 	    }
 	case LispPathname_t:
 	    obj->prot = LispTrue_t;
-	    obj = obj->data.quote;
+	    obj = obj->data.pathname;
 	    goto immutable_again;
 	case LispComma_t:
 	    obj->prot = LispTrue_t;
@@ -1779,9 +1745,6 @@ mutable_again:
 	    obj->prot = LispNil_t;
 	    obj = obj->data.lambda.code;
 	    goto mutable_again;
-	case LispKeyword_t:
-	    obj->data.quote->prot = LispNil_t;
-	    break;
 	case LispQuote_t:
 	case LispBackquote_t:
 	    if (obj->data.quote->type <= LispAtom_t) {
@@ -1795,7 +1758,7 @@ mutable_again:
 	    }
 	case LispPathname_t:
 	    obj->prot = LispNil_t;
-	    obj = obj->data.quote;
+	    obj = obj->data.pathname;
 	    goto mutable_again;
 	case LispComma_t:
 	    obj->prot = LispNil_t;
@@ -1900,18 +1863,12 @@ LispObj *
 LispNewAtom(LispMac *mac, char *str)
 {
     LispObj *object;
-    LispAtom *atom = LispDoGetAtom(mac, str, 0, 0);
+    LispAtom *atom = LispDoGetAtom(mac, str, 0);
 
     if (atom->object)
 	return (atom->object);
 
-    if (!atom->prot) {
-	atom->prot = LispTrue_t;
-	object = LispNew(mac, NIL, NIL);
-	atom->prot = LispNil_t;
-    }
-    else
-	object = LispNew(mac, NIL, NIL);
+    object = LispNew(mac, NIL, NIL);
     object->type = LispAtom_t;
     object->data.atom = atom;
     atom->object = object;
@@ -1924,7 +1881,7 @@ LispObj *
 LispNewStaticAtom(LispMac *mac, char *str)
 {
     LispObj *object;
-    LispAtom *atom = LispDoGetAtom(mac, str, 1, 1);
+    LispAtom *atom = LispDoGetAtom(mac, str, 1);
 
     object = LispNewSymbol(mac, atom);
     object->prot = LispTrue_t;
@@ -1940,14 +1897,7 @@ LispNewSymbol(LispMac *mac, LispAtom *atom)
     else {
 	LispObj *symbol;
 
-	if (!atom->prot) {
-	    atom->prot = LispTrue_t;
-	    symbol = LispNew(mac, NIL, NIL);
-	    atom->prot = LispNil_t;
-	}
-	else
-	    symbol = LispNew(mac, NIL, NIL);
- 
+	symbol = LispNew(mac, NIL, NIL);
 	symbol->type = LispAtom_t;
 	symbol->data.atom = atom;
 	atom->object = symbol;
@@ -2175,15 +2125,39 @@ LispNewOpaque(LispMac *mac, void *data, int type)
     return (opaque);
 }
 
+/* string argument must be static, or allocated */
 LispObj *
-LispNewKeyword(LispMac *mac, LispObj *obj)
+LispNewKeyword(LispMac *mac, char *string)
 {
-    LispObj *key = LispNew(mac, obj, NIL);
+    LispObj *keyword;
 
-    key->type = LispKeyword_t;
-    key->data.quote = obj;
+    if (PACKAGE != mac->keyword) {
+	LispObj *savepackage;
+	LispPackage *savepack;
 
-    return (key);
+	/* Save package environment */
+	savepackage = PACKAGE;
+	savepack = mac->pack;
+
+	/* Change package environment */
+	PACKAGE = mac->keyword;
+	mac->pack = mac->key;
+
+	/* Create symbol in keyword package */
+	keyword = LispNewStaticAtom(mac, string);
+
+	/* Restore package environment */
+	PACKAGE = savepackage;
+	mac->pack = savepack;
+    }
+    else
+	/* Just create symbol in keyword package */
+	keyword = LispNewStaticAtom(mac, string);
+
+    /* Export keyword symbol */
+    LispExportSymbol(mac, keyword);
+
+    return (keyword);
 }
 
 LispObj *
@@ -2192,7 +2166,7 @@ LispNewPathname(LispMac *mac, LispObj *obj)
     LispObj *path = LispNew(mac, obj, NIL);
 
     path->type = LispPathname_t;
-    path->data.quote = obj;
+    path->data.pathname = obj;
 
     return (path);
 }
@@ -2317,7 +2291,7 @@ LispGetVarPack(LispMac *mac, LispObj *symbol)
 	atom = mac->pack->atoms[i];
 	while (atom) {
 
-	    if (atom->property == property)
+	    if (property != NOPROPERTY && atom->property == property)
 		/* Symbol already in the current package */
 		return (atom->object);
 
@@ -2406,7 +2380,7 @@ LispImportSymbol(LispMac *mac, LispObj *symbol)
 	}
 
 	/* Create copy of atom in current package */
-	atom = LispDoGetAtom(mac, STRPTR(symbol), 0, 0);
+	atom = LispDoGetAtom(mac, STRPTR(symbol), 0);
 	/*   Need to create a copy because if anything new is atached to the
 	 * property, the current package is the owner, not the previous one. */
 
@@ -3238,37 +3212,39 @@ if (NCONSTANT_P(var)) {						\
 	/* check for special lambda list keywords */
 	if (SYMBOL_P(spec)) {
 	    atom = ATOMID(spec);
-	    if (atom == Srest) {
-		restp = CDR(list);
-		rest = 1;
-		/* this assumes no errors in arguments specification */
-		if (CDR(restp) != NIL) {
-		    auxp = CDR(CDR(restp));
-		    aux = 1;
+	    if (atom[0] == '&') {
+		if (atom == Srest) {
+		    restp = CDR(list);
+		    rest = 1;
+		    /* this assumes no errors in arguments specification */
+		    if (CDR(restp) != NIL) {
+			auxp = CDR(CDR(restp));
+			aux = 1;
+		    }
+		    break;
 		}
-		break;
-	    }
-	    else if (atom == Soptional) {
-		optional = 1;
-		continue;
-	    }
-	    else if (atom == Skey) {
-		nkey = ncvt = 0;
-		keyp = CDR(list);
-		for (karg = arg; CONS_P(karg); karg = CDR(karg))
-		    ++nkey;
-		if (nkey & 1)
-		    LispDestroy(mac, "%s: &KEY needs arguments as pairs",
-				fname);
-		nkey >>= 1;
-		karg = arg;
-		key = 1;
-		continue;
-	    }
-	    else if (atom == Saux) {
-		auxp = CDR(list);
-		aux = 1;
-		break;
+		else if (atom == Soptional) {
+		    optional = 1;
+		    continue;
+		}
+		else if (atom == Skey) {
+		    nkey = ncvt = 0;
+		    keyp = CDR(list);
+		    for (karg = arg; CONS_P(karg); karg = CDR(karg))
+			++nkey;
+		    if (nkey & 1)
+			LispDestroy(mac, "%s: &KEY needs arguments as pairs",
+				    fname);
+		    nkey >>= 1;
+		    karg = arg;
+		    key = 1;
+		    continue;
+		}
+		else if (atom == Saux) {
+		    auxp = CDR(list);
+		    aux = 1;
+		    break;
+		}
 	    }
 	    /* else just add to environment */
 	}
@@ -3336,7 +3312,7 @@ if (NCONSTANT_P(var)) {						\
 		    compar = CAR(keylist);
 
 		    if (KEYWORD_P(compar)) {
-			if (ATOMID(compar->data.quote) == atom) {
+			if (ATOMID(compar) == atom) {
 			    if (!CONS_P(CDR(keylist)))
 				LispDestroy(mac, "%s: expecting :%s value",
 					    fname, STRPTR(keyword));
@@ -3507,7 +3483,6 @@ if (NCONSTANT_P(var)) {						\
 		}
 		else {
 		    if (KEYWORD_P(arg)) {
-			arg = arg->data.quote;
 			if (ATOMID(arg) == ATOMID(keyword)) {
 			    found = 1;
 			    break;
@@ -3537,9 +3512,11 @@ LispEval(LispMac *mac, LispObj *obj)
 
     switch (obj->type) {
 	case LispAtom_t:
-	    if ((res = LispDoGetVar(mac, obj)) == NULL)
+	    if (KEYWORD_P(obj))
+		res = obj;
+	    else if ((res = LispDoGetVar(mac, obj)) == NULL)
 		LispDestroy(mac, "EVAL: the variable %s is unbound",
-			    STRPTR(obj));
+			    STROBJ(obj));
 	    return (res);
 	case LispQuote_t:
 	    return (obj->data.quote);
@@ -4086,7 +4063,7 @@ LispBegin(int argc, char *argv[])
     int i;
     char results[4];
     LispMac *mac = malloc(sizeof(LispMac));
-    LispObj *object;
+    LispObj *object, *lisp, *ext;
 
     if (mac == NULL)
 	return (NULL);
@@ -4127,7 +4104,7 @@ LispBegin(int argc, char *argv[])
 
     /* Initialize package system, the current package is LISP. Order of
      * initialization is very important here */
-    PACKAGE = LispNewPackage(mac, STRING("LISP"), NIL);
+    PACKAGE = lisp = LispNewPackage(mac, STRING("LISP"), NIL);
 
     /* Make LISP package the current one */
     mac->pack = mac->savepack = PACKAGE->data.package.package;
@@ -4163,10 +4140,19 @@ LispBegin(int argc, char *argv[])
     PACK = CONS(object, PACK);
 
     /* Allow easy access to the keyword package */
-    mac->keyword = object->data.package.package;
+    mac->keyword = object;
+    mac->key = object->data.package.package;
 
-    /* Initialize some static important symbols  */
-    Ounspecific		= STATIC_ATOM("UNSPECIFIC");
+    /* Initialize some static important symbols */
+    Okey		= STATIC_ATOM("&KEY");
+    LispExportSymbol(mac, Okey);
+    Orest		= STATIC_ATOM("&REST");
+    LispExportSymbol(mac, Orest);
+    Ooptional		= STATIC_ATOM("&OPTIONAL");
+    LispExportSymbol(mac, Ooptional);
+    Oaux		= STATIC_ATOM("&AUX");
+    LispExportSymbol(mac, Oaux);
+    Kunspecific		= KEYWORD("UNSPECIFIC");
     Oformat		= STATIC_ATOM("FORMAT");
 
     Omake_struct	= STATIC_ATOM("MAKE-STRUCT");
@@ -4178,14 +4164,14 @@ LispBegin(int argc, char *argv[])
     Sstruct_store	= ATOMID(Ostruct_store);
     Sstruct_type	= ATOMID(Ostruct_type);
 
-    /* Initialize some static atom ids  */
+    /* Initialize some static atom ids */
     Snil		= GETATOMID("NIL");
     St			= GETATOMID("T");
     Slambda		= GETATOMID("LAMBDA");
-    Saux		= GETATOMID("&AUX");
-    Skey		= GETATOMID("&KEY");
-    Soptional		= GETATOMID("&OPTIONAL");
-    Srest		= GETATOMID("&REST");
+    Saux		= ATOMID(Oaux);
+    Skey		= ATOMID(Okey);
+    Soptional		= ATOMID(Ooptional);
+    Srest		= ATOMID(Orest);
     Sand		= GETATOMID("AND");
     Sor			= GETATOMID("OR");
     Snot		= GETATOMID("NOT");
@@ -4267,8 +4253,8 @@ LispBegin(int argc, char *argv[])
     LispProclaimSpecial(mac, mac->modules, MOD, NIL);
     LispExportSymbol(mac, mac->modules);
 
-    FEAT = object = CONS(KEYWORD(ATOM2("UNIX")), NIL);
-    CDR(object) = CONS(KEYWORD(ATOM2("XEDIT")), NIL);
+    FEAT = object = CONS(KEYWORD("UNIX"), NIL);
+    CDR(object) = CONS(KEYWORD("XEDIT"), NIL);
     /* add more features... object = CDR(object); CDR(object) = ... */
     mac->features = ATOM2("*FEATURES*");
     LispProclaimSpecial(mac, mac->features, FEAT, NIL);
@@ -4306,11 +4292,26 @@ LispBegin(int argc, char *argv[])
     else
 	RUN[0] = RUN[1] = RUN[2] = RES[0] = RES[1] = RES[2] = NIL;
 
+    /* Add LISP builtin functions */
     for (i = 0; i < sizeof(lispbuiltins) / sizeof(lispbuiltins[0]); i++)
 	LispAddBuiltinFunction(mac, &lispbuiltins[i]);
 
-    /* Save pointer to LISP package */
-    object = PACKAGE;
+    /* Create EXT package */
+    PACKAGE = ext = LispNewPackage(mac, STRING("EXT"), NIL);
+
+    /* Make EXT the current package */
+    LispSetVar(mac, PACKNAM, PACKAGE);
+    mac->pack = mac->savepack = PACKAGE->data.package.package;
+
+    /* Update list of packages */
+    PACK = CONS(PACKAGE, PACK);
+
+    /* Import LISP external symbols in EXT package */
+    LispUsePackage(mac, lisp);
+
+    /* Add EXT non standard builtin functions */
+    for (i = 0; i < sizeof(extbuiltins) / sizeof(extbuiltins[0]); i++)
+	LispAddBuiltinFunction(mac, &extbuiltins[i]);
 
     /* Create USER package */
     PACKAGE = LispNewPackage(mac, STRING("USER"), NIL);
@@ -4322,8 +4323,10 @@ LispBegin(int argc, char *argv[])
     /* Update list of packages */
     PACK = CONS(PACKAGE, PACK);
 
-    /* USER package inherits all LISP package external symbols */
-    LispUsePackage(mac, object);
+    /* USER package inherits all LISP external symbols */
+    LispUsePackage(mac, lisp);
+    /* And all EXT external symbols */
+    LispUsePackage(mac, ext);
 
     return (mac);
 }
