@@ -49,7 +49,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/xclock/ClockP.h,v 1.7 2002/05/17 22:37:47 keithp Exp $ */
+/* $XFree86: xc/programs/xclock/ClockP.h,v 1.8 2002/05/17 23:55:29 keithp Exp $ */
 
 #ifndef _XawClockP_h
 #define _XawClockP_h
@@ -58,6 +58,7 @@ SOFTWARE.
 #include "Clock.h"
 #include <X11/Xaw/SimpleP.h>
 #ifdef XRENDER
+#include <X11/Xft/Xft.h>
 #include <X11/extensions/Xrender.h>
 #endif
 
@@ -100,18 +101,19 @@ typedef struct {
 	 XtIntervalId interval_id;
 	 char prev_time_string[ASCII_TIME_BUFLEN];
 #ifdef XRENDER
-	 XRenderColor	hour_color;
-	 XRenderColor	min_color;
-	 XRenderColor	sec_color;
-	 XRenderColor	major_color;
-	 XRenderColor	minor_color;
+	 XftColor	hour_color;
+	 XftColor	min_color;
+	 XftColor	sec_color;
+	 XftColor	major_color;
+	 XftColor	minor_color;
+	 XftFont	*face;
     
 	 XRenderPictFormat  *mask_format;
 	 Boolean    render;
 	 Boolean    sharp;
+	 XftDraw    *draw;
 	 Picture    picture;
 	 Picture    fill_picture;
-	 XRenderColor	fill_color;
 	 XRectangle damage;
 	 XDouble    x_scale;
 	 XDouble    x_off;

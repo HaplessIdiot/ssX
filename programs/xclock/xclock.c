@@ -27,7 +27,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
-/* $XFree86: xc/programs/xclock/xclock.c,v 1.11 2002/05/17 22:37:47 keithp Exp $ */
+/* $XFree86: xc/programs/xclock/xclock.c,v 1.12 2002/05/17 23:55:29 keithp Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -61,8 +61,11 @@ static XrmOptionDescRec options[] = {
 {"-analog",	"*clock.analog",	XrmoptionNoArg,		"TRUE"},
 {"-brief",      "*clock.brief",	        XrmoptionNoArg,	        "TRUE"},
 {"-utime",      "*clock.utime",	        XrmoptionNoArg,	        "TRUE"},
+#ifdef XRENDER
+{"-face",	"*clock.face",		XrmoptionSepArg,	NULL},
 {"-render",	"*clock.render",	XrmoptionNoArg,		"TRUE"},
 {"-sharp",	"*clock.sharp",		XrmoptionNoArg,		"TRUE"},
+#endif
 };
 
 static void quit ( Widget w, XEvent *event, String *params, 
@@ -85,7 +88,10 @@ Syntax(char *call)
 	(void) printf ("       [-hl <color>] [-bd <color>]\n");
 	(void) printf ("       [-fn <font_name>] [-help] [-padding <pixels>]\n");
 	(void) printf ("       [-rv] [-update <seconds>] [-display displayname]\n");
-	(void) printf ("       [-render] [-geometry geom]\n\n");
+#ifdef XRENDER
+	(void) printf ("       [-render] [-face <face name>] [-sharp]\n");
+#endif
+	(void) printf ("       [-geometry geom]\n\n");
 	exit(1);
 }
 

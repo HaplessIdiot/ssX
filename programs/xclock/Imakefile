@@ -1,15 +1,20 @@
 XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:54:12 cpqbld Exp $
-#if BuildRenderLibrary
+#ifndef XClockUseRender
+#define XClockUseRender BuildRenderLibrary
+#endif
+
+#if XClockUseRender
     XRENDERDEFS = -DXRENDER
-    XRENDERDEPS = $(DEPXRENDERLIB)
-    XRENDERLIBS = $(XRENDERLIB) -lm
-    XRENDERINCS = $(XRENDERINCLUDES)
+    XRENDERDEPS = XftClientDepLibs $(DEPXFTLIB) $(DEPXRENDERLIB)
+    XRENDERLIBS = XftClientLibs $(XRENDERLIB) -lm
+    XRENDERINCS = $(XFTINCLUDES) $(XRENDERINCLUDES)
 #endif
         DEPLIBS = $(XRENDERDEPS) XkbClientDepLibs XawClientDepLibs
 LOCAL_LIBRARIES = $(XRENDERLIBS) XkbClientLibs XawClientLibs
            SRCS = xclock.c Clock.c
            OBJS = xclock.o Clock.o
         HEADERS = ClockP.h Clock.h
+       INCLUDES = $(XRENDERINCS)
         DEFINES = $(XRENDERDEFS) XkbClientDefines
 
 ComplexProgramTarget(xclock)
