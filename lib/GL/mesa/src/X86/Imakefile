@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/X86/Imakefile,v 1.19 2002/02/22 21:32:57 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/X86/Imakefile,v 1.20 2002/02/27 00:51:15 dawes Exp $
 
 /*
  * Need both shared and unshared Mesa objects in the following cases:
@@ -94,5 +94,8 @@ matypes.h: gen_matypes.c
 includes:: matypes.h
 
 depend:: matypes.h
+
+clean::
+	RemoveFiles(matypes.h ProgramTargetName(gen_matypes)
 
 DependTarget()
