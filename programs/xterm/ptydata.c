@@ -1,12 +1,12 @@
-/* $XTermId: ptydata.c,v 1.57 2004/06/01 22:39:20 tom Exp $ */
+/* $XTermId: ptydata.c,v 1.59 2005/01/10 00:26:13 tom Exp $ */
 
 /*
- * $XFree86: xc/programs/xterm/ptydata.c,v 1.20 2004/05/26 01:19:55 dickey Exp $
+ * $XFree86: xc/programs/xterm/ptydata.c,v 1.21 2004/06/06 22:15:25 dickey Exp $
  */
 
 /************************************************************
 
-Copyright 1999-2002,2004 by Thomas E. Dickey
+Copyright 1999-2004,2005 by Thomas E. Dickey
 
                         All Rights Reserved
 
@@ -58,7 +58,7 @@ authorization.
  * Convert the 8-bit codes in data->buffer[] into Unicode in data->utf_data.
  * The number of bytes converted will be nonzero iff there is data.
  */
-static Boolean
+static Bool
 decodeUtf8(PtyData * data)
 {
     int i;
@@ -244,10 +244,10 @@ readPtyData(TScreen * screen, PtySelect * select_mask, PtyData * data)
  * value, return false anyway.
  */
 #if OPT_WIDE_CHARS
-Boolean
+Bool
 morePtyData(TScreen * screen GCC_UNUSED, PtyData * data)
 {
-    Boolean result = (data->last > data->next);
+    Bool result = (data->last > data->next);
     if (result && screen->utf8_mode) {
 	if (!data->utf_size)
 	    result = decodeUtf8(data);

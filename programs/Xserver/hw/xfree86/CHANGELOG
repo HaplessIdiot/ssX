@@ -1,4 +1,5 @@
 XFree86 4.4.99.22 (xx January 2005)
+ 265. Xterm patch #198 (Thomas Dickey).
 
 XFree86 4.4.99.21 (12 January 2005)
  264. In font handling, avoid potential security issues related to wrap-around
@@ -19272,7 +19273,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3383 2005/01/11 23:01:12 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3384 2005/01/12 12:02:34 dawes Exp $
 
 
 

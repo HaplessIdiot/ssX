@@ -1,13 +1,13 @@
-/* $XTermId: data.h,v 1.78 2004/06/01 22:16:09 tom Exp $ */
+/* $XTermId: data.h,v 1.82 2005/01/12 22:08:00 tom Exp $ */
 
 /*
  *	$Xorg: data.h,v 1.3 2000/08/17 19:55:08 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/data.h,v 3.33 2004/04/13 09:42:00 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/data.h,v 3.34 2004/06/06 22:15:25 dickey Exp $ */
 
 /*
- * Copyright 2002-2003,2004 by Thomas E. Dickey
+ * Copyright 2002-2004,2005 by Thomas E. Dickey
  *
  *                         All Rights Reserved
  *
@@ -87,7 +87,6 @@ extern Char *Tpushback;
 extern TekLink *TekRefresh;
 extern TekWidget tekWidget;
 extern Widget tekshellwidget;
-extern int TEKgcFontMask;
 extern int T_lastx;
 extern int T_lasty;
 extern int Ttoggled;
@@ -142,7 +141,7 @@ extern XtermWidget term;
 
 extern char *ProgramName;
 extern Arg ourTopLevelShellArgs[];
-extern int number_ourTopLevelShellArgs;
+extern Cardinal number_ourTopLevelShellArgs;
 extern Bool waiting_for_initial_map;
 extern Atom wm_delete_window;
 
@@ -155,6 +154,7 @@ typedef struct {
     char *tty_modes;
     Boolean hold_screen;	/* true if we keep window open  */
     Boolean utmpInhibit;
+    Boolean utmpDisplayId;
     Boolean messages;
     Boolean sunFunctionKeys;	/* %%% should be widget resource? */
 #if OPT_SUNPC_KBD
