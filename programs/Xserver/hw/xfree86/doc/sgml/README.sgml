@@ -4,6 +4,7 @@
 <!ENTITY % twodiffs 'IGNORE'>	 <!-- patch is split into two diff files -->
 <!ENTITY % threediffs 'IGNORE'> <!-- patch is split into three diff files -->
 <!ENTITY % fourdiffs 'INCLUDE'> <!-- patch is split into four diff files -->
+<!ENTITY % difftar 'INCLUDE'> <!-- patch also contains a tarball -->
 ]>
 
 
@@ -11,10 +12,10 @@
 
 <title>README for XFree86&tm; &relvers;
 <author>The XFree86 Project, Inc
-<date>30 June 2000
+<date>8 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.107 2000/07/02 16:35:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.108 2000/12/08 19:10:24 dawes Exp $
 </ident>
 
 <abstract>
@@ -225,29 +226,49 @@ contains the general X11 documentation in hardcopy format.
 
 <![ %onediff; [
 A source patch relative to version &prevrelvers; is also available.
-The patch file is <tt>&prevrelvers;-&relvers;.diff.gz</tt>.  This patch
+The patch file is <tt>&prevrelvers;-&relvers;.diff.gz</tt>.
+<![ %difftar; [
+There is also a tarball that contains some files that have components that
+can't be included in a diff.  It is <tt>&relvers;.tgz</tt>.
+]]>
+The patch
 should be applied to a clean &prevrelvers; source tree, working from
 the directory containing the <tt>xc/</tt> directory.  The patch should
 be applied by running:
 
 <tscreen><verb>
-gunzip &lt; &prevrelvers;-&relvers;.diff.gz | patch -p0 -E
+gzip -d &lt; &prevrelvers;-&relvers;.diff.gz | patch -p0 -E
 </verb></tscreen>
+<![ %difftar; [
+<tscreen><verb>
+gzip -d &lt; &relvers;.tgz | tar vxf -
+</verb></tscreen>
+]]>
 ]]>
 
 <![ %twodiffs; [
 A source patch relative to version &prevrelvers; is also available.
 Because of its size, it is split into two parts.
 The patch files are <tt>&prevrelvers;-&relvers;.diff1.gz</tt> and
-<tt>&prevrelvers;-&relvers;.diff2.gz</tt>.  These patches should
+<tt>&prevrelvers;-&relvers;.diff2.gz</tt>.
+<![ %difftar; [
+There is also a tarball that contains some files that have components that
+can't be included in a diff.  It is <tt>&relvers;.tgz</tt>.
+]]>
+These patches should
 be applied to a clean &prevrelvers; source tree, working from the directory
 containing the <tt>xc/</tt> directory.  The patches should be applied by
 running:
 
 <tscreen><verb>
-gunzip &lt; &prevrelvers;-&relvers;.diff1.gz | patch -p0 -E
-gunzip &lt; &prevrelvers;-&relvers;.diff2.gz | patch -p0 -E
+gzip -d &lt; &prevrelvers;-&relvers;.diff1.gz | patch -p0 -E
+gzip -d &lt; &prevrelvers;-&relvers;.diff2.gz | patch -p0 -E
 </verb></tscreen>
+<![ %difftar; [
+<tscreen><verb>
+gzip -d &lt; &relvers;.tgz | tar vxf -
+</verb></tscreen>
+]]>
 ]]>
 
 <![ %threediffs; [
@@ -255,16 +276,26 @@ A source patch relative to version &prevrelvers; is also available.
 Because of its size, it is split into three parts.
 The patch files are <tt>&prevrelvers;-&relvers;.diff1.gz</tt>,
 <tt>&prevrelvers;-&relvers;.diff2.gz</tt> and
-<tt>&prevrelvers;-&relvers;.diff3.gz</tt>.  These patches should
+<tt>&prevrelvers;-&relvers;.diff3.gz</tt>.
+<![ %difftar; [
+There is also a tarball that contains some files that have components that
+can't be included in a diff.  It is <tt>&relvers;.tgz</tt>.
+]]>
+These patches should
 be applied to a clean &prevrelvers; source tree, working from the directory
 containing the <tt>xc/</tt> directory.  The patches should be applied by
 running:
 
 <tscreen><verb>
-gunzip &lt; &prevrelvers;-&relvers;.diff1.gz | patch -p0 -E
-gunzip &lt; &prevrelvers;-&relvers;.diff2.gz | patch -p0 -E
-gunzip &lt; &prevrelvers;-&relvers;.diff3.gz | patch -p0 -E
+gzip -d &lt; &prevrelvers;-&relvers;.diff1.gz | patch -p0 -E
+gzip -d &lt; &prevrelvers;-&relvers;.diff2.gz | patch -p0 -E
+gzip -d &lt; &prevrelvers;-&relvers;.diff3.gz | patch -p0 -E
 </verb></tscreen>
+<![ %difftar; [
+<tscreen><verb>
+gzip -d &lt; &relvers;.tgz | tar vxf -
+</verb></tscreen>
+]]>
 ]]>
 
 <![ %fourdiffs; [
@@ -273,17 +304,27 @@ Because of its size, it is split into four parts.
 The patch files are <tt>&prevrelvers;-&relvers;.diff1.gz</tt>,
 <tt>&prevrelvers;-&relvers;.diff2.gz</tt>,
 <tt>&prevrelvers;-&relvers;.diff3.gz</tt> and
-<tt>&prevrelvers;-&relvers;.diff4.gz</tt>.  These patches should
+<tt>&prevrelvers;-&relvers;.diff4.gz</tt>.
+<![ %difftar; [
+There is also a tarball that contains some files that have components that
+can't be included in a diff.  It is <tt>&relvers;.tgz</tt>.
+]]>
+These patches should
 be applied to a clean &prevrelvers; source tree, working from the directory
 containing the <tt>xc/</tt> directory.  The patches should be applied by
 running:
 
 <tscreen><verb>
-gunzip &lt; &prevrelvers;-&relvers;.diff1.gz | patch -p0 -E
-gunzip &lt; &prevrelvers;-&relvers;.diff2.gz | patch -p0 -E
-gunzip &lt; &prevrelvers;-&relvers;.diff3.gz | patch -p0 -E
-gunzip &lt; &prevrelvers;-&relvers;.diff4.gz | patch -p0 -E
+gzip -d &lt; &prevrelvers;-&relvers;.diff1.gz | patch -p0 -E
+gzip -d &lt; &prevrelvers;-&relvers;.diff2.gz | patch -p0 -E
+gzip -d &lt; &prevrelvers;-&relvers;.diff3.gz | patch -p0 -E
+gzip -d &lt; &prevrelvers;-&relvers;.diff4.gz | patch -p0 -E
 </verb></tscreen>
+<![ %difftar; [
+<tscreen><verb>
+gzip -d &lt; &relvers;.tgz | tar vxf -
+</verb></tscreen>
+]]>
 ]]>
 
 The contrib part of the distribution has been folded into the main
