@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/require.c,v 1.10 2002/02/14 04:48:10 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/require.c,v 1.11 2002/03/08 04:33:18 paulo Exp $ */
 
 #include "require.h"
 
@@ -79,7 +79,7 @@ Lisp_Require(LispMac *mac, LispBuiltin *builtin)
 	pathname = module;
 
     for (obj = MOD; CONS_P(obj); obj = CDR(obj)) {
-	if (strcmp(THESTR(CAR(obj)), THESTR(module)))
+	if (strcmp(THESTR(CAR(obj)), THESTR(module)) == 0)
 	    return (module);
     }
 

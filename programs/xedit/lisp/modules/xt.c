@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/xt.c,v 1.10 2001/10/20 00:19:36 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/xt.c,v 1.11 2002/01/30 21:01:00 paulo Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -339,9 +339,7 @@ Lisp_XtCoerceToWidgetList(LispMac *mac, LispBuiltin *builtin)
     opaque = ARGUMENT(1);
     onumber = ARGUMENT(0);
 
-    if (!INT_P(onumber))
-	LispDestroy(mac, "%s: %s is not a positive integer",
-		    STRFUN(builtin), STROBJ(onumber));
+    ERROR_CHECK_INDEX(onumber);
     num_children = onumber->data.integer;
 
     if (!CHECKO(opaque, xtWidgetList_t))
@@ -362,9 +360,9 @@ Lisp_XtCoerceToWidgetList(LispMac *mac, LispBuiltin *builtin)
     }
 
     result = APPLY(ATOM("MAKE-XT-WIDGET-LIST"),
-		   CONS(KEYWORD(ATOM("NUM-CHILDREN")),
+		   CONS(KEYWORD("NUM-CHILDREN"),
 			CONS(INTEGER(num_children),
-			     CONS(KEYWORD(ATOM("CHILDREN")),
+			     CONS(KEYWORD("CHILDREN"),
 				  CONS(widget_list, NIL)))));
     GCUProtect();
 
@@ -391,10 +389,7 @@ Lisp_XtAddCallback(LispMac *mac, LispBuiltin *builtin)
 	LispDestroy(mac, "%s: cannot convert %s to Widget",
 		    STRFUN(builtin), STROBJ(widget));
 
-    if (!STRING_P(callback_name))
-	LispDestroy(mac, "%s: %s is not a string",
-		    STRFUN(builtin), STROBJ(callback_name));
-
+    ERROR_CHECK_STRING(callback_name);
     if (!SYMBOL_P(callback) && callback->type != LispLambda_t)
 	LispDestroy(mac, "%s: %s cannot be used as a callback",
 		    STRFUN(builtin), STROBJ(callback));
@@ -409,7 +404,7 @@ Lisp_XtAddCallback(LispMac *mac, LispBuiltin *builtin)
     arguments->mac = mac;
     arguments->data = data;
 
-    XtAddCallback((Widget)(widget->data.opaque.data), STRPTR(callback_name),
+    XtAddCallback((Widget)(widget->data.opaque.data), THESTR(callback_name),
 		  LispXtCallback, (XtPointer)arguments);
     XtAddCallback((Widget)(widget->data.opaque.data), XtNdestroyCallback,
 		  LispXtCleanupCallback, (XtPointer)arguments);
@@ -442,14 +437,10 @@ Lisp_XtAppAddInput(LispMac *mac, LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(app_context));
     appcon = (XtAppContext)(app_context->data.opaque.data);
 
-    if (!INDEX_P(fileno))
-	LispDestroy(mac, "%s: %s is not a positive integer",
-		    STRFUN(builtin), STROBJ(fileno));
+    ERROR_CHECK_INDEX(fileno);
     source = fileno->data.integer;
 
-    if (!INT_P(ocondition))
-	LispDestroy(mac, "%s: %s is not an integer",
-		    STRFUN(builtin), STROBJ(ocondition));
+    ERROR_CHECK_FIXNUM(ocondition);
     condition = ocondition->data.integer;
 
     if (!SYMBOL_P(function) && function->type != LispLambda_t)
@@ -544,42 +535,32 @@ Lisp_XtAppInitialize(LispMac *mac, LispBuiltin *builtin)
     application_class = ARGUMENT(1);
     app_context_return = ARGUMENT(0);
 
-    if (!SYMBOL_P(app_context_return))
-	LispDestroy(mac, "%s: %s is not a symbol",
-		    STRFUN(builtin), STROBJ(app_context_return));
+    ERROR_CHECK_SYMBOL(app_context_return);
+    ERROR_CHECK_STRING(application_class);
 
-    if (!STRING_P(application_class))
-	LispDestroy(mac, "%s: %s is not a string",
-		    STRFUN(builtin), STROBJ(application_class));
-
-    if (options != NIL && !CONS_P(options))
-	LispDestroy(mac, "%s: %s is not an option list",
-		    STRFUN(builtin), STROBJ(options));
+    if (options != NIL) {
+	ERROR_CHECK_CONS(options);
+    }
 
     /* check fallback resources, if given */
     if (fallback_resources != NIL) {
 	LispObj *string;
 	int count;
 
-	if (!CONS_P(fallback_resources))
-	    LispDestroy(mac, "%s: %s is not a list of strings",
-			STRFUN(builtin), STROBJ(fallback_resources));
-
+	ERROR_CHECK_LIST(fallback_resources);
 	for (string = fallback_resources, count = 0; CONS_P(string);
 	     string = CDR(string), count++)
-	    if (!STRING_P(CAR(string)))
-		LispDestroy(mac, "%s: %s is not a string",
-			    STRFUN(builtin), STROBJ(CAR(string)));
+	    ERROR_CHECK_STRING(CAR(string));
 
 	/* fallback resources was correctly specified */
 	fallback = LispMalloc(mac, sizeof(String) * (count + 1));
 	for (string = fallback_resources, count = 0; CONS_P(string);
 	     string = CDR(string), count++)
-	    fallback[count] = STRPTR(CAR(string));
+	    fallback[count] = THESTR(CAR(string));
 	fallback[count] = NULL;
     }
 
-    shell = XtAppInitialize(&appcon, STRPTR(application_class), NULL,
+    shell = XtAppInitialize(&appcon, THESTR(application_class), NULL,
 			    0, &zero, NULL, fallback, NULL, 0);
     if (fallback)
 	LispFree(mac, fallback);
@@ -660,9 +641,7 @@ Lisp_XtAppProcessEvent(LispMac *mac, LispBuiltin *builtin)
     appcon = (XtAppContext)(app_context->data.opaque.data);
     if (omask == NIL)
 	mask = XtIMAll;
-    else if (!INT_P(omask))
-	LispDestroy(mac, "%s: %s is not an integer",
-		    STRFUN(builtin), STROBJ(omask));
+    ERROR_CHECK_FIXNUM(omask);
     mask = omask->data.integer;
 
     if (mask != (mask & XtIMAll))
@@ -809,10 +788,8 @@ LispXtCreateWidget(LispMac *mac, LispBuiltin *builtin, int options)
     owidget_class = ARGUMENT(1);
     oname = ARGUMENT(0);
 
-    if (!STRING_P(oname))
-	LispDestroy(mac, "%s: %s is not a string",
-		    STRFUN(builtin), STROBJ(oname));
-    name = STRPTR(oname);
+    ERROR_CHECK_STRING(oname);
+    name = THESTR(oname);
 
     if (!CHECKO(owidget_class, xtWidgetClass_t))
 	LispDestroy(mac, "%s: cannot convert %s to WidgetClass",
@@ -824,9 +801,9 @@ LispXtCreateWidget(LispMac *mac, LispBuiltin *builtin, int options)
 		    STRFUN(builtin), STROBJ(oparent));
     parent = (Widget)(oparent->data.opaque.data);
 
-    if (arguments != NIL && !CONS_P(arguments))
-	LispDestroy(mac, "%s: %s is not a list of conses",
-		    STRFUN(builtin), STROBJ(arguments));
+    if (arguments != NIL) {
+	ERROR_CHECK_CONS(arguments);
+    }
 
     if (options == SHELL)
 	widget = XtCreatePopupShell(name, widget_class, parent, NULL, 0);
@@ -879,9 +856,7 @@ Lisp_XtGetValues(LispMac *mac, LispBuiltin *builtin)
 	LispDestroy(mac, "%s: cannot convert %s to Widget",
 		    STRFUN(builtin), STROBJ(owidget));
     widget = (Widget)(owidget->data.opaque.data);
-    if (!CONS_P(arguments))
-	LispDestroy(mac, "%s: %s is not a string list",
-		    STRFUN(builtin), STROBJ(arguments));
+    ERROR_CHECK_LIST(arguments);
 
     rlist = GetResourceList(XtClass(widget));
     plist =  XtParent(widget) ?
@@ -890,10 +865,8 @@ Lisp_XtGetValues(LispMac *mac, LispBuiltin *builtin)
     GCProtect();
     result = NIL;
     for (list = arguments; CONS_P(list); list = CDR(list)) {
-	if (!STRING_P(CAR(list)))
-	    LispDestroy(mac, "%s: %s is not a string",
-			STRFUN(builtin), STROBJ(CAR(list)));
-	if ((resource = GetResourceInfo(STRPTR(CAR(list)), rlist, plist))
+	ERROR_CHECK_STRING(CAR(list));
+	if ((resource = GetResourceInfo(THESTR(CAR(list)), rlist, plist))
 	     == NULL) {
 	    int i;
 	    Widget child;
@@ -906,7 +879,7 @@ Lisp_XtGetValues(LispMac *mac, LispBuiltin *builtin)
 		    XtGetValues(widget, args, 1);
 		    if (child && XtParent(child) == widget) {
 			resource =
-			    GetResourceInfo(STRPTR(CAR(list)),
+			    GetResourceInfo(THESTR(CAR(list)),
 					    GetResourceList(XtClass(child)),
 					    NULL);
 			if (resource)
@@ -916,23 +889,23 @@ Lisp_XtGetValues(LispMac *mac, LispBuiltin *builtin)
 	    }
 	    if (resource == NULL) {
 		LispMessage(mac, "%s: resource %s not available",
-			    STRFUN(builtin), STRPTR(CAR(list)));
+			    STRFUN(builtin), THESTR(CAR(list)));
 		continue;
 	    }
 	}
 	switch (resource->size) {
 	    case 1:
-		XtSetArg(args[0], STRPTR(CAR(list)), &c1);
+		XtSetArg(args[0], THESTR(CAR(list)), &c1);
 		break;
 	    case 2:
-		XtSetArg(args[0], STRPTR(CAR(list)), &c2);
+		XtSetArg(args[0], THESTR(CAR(list)), &c2);
 		break;
 	    case 4:
-		XtSetArg(args[0], STRPTR(CAR(list)), &c4);
+		XtSetArg(args[0], THESTR(CAR(list)), &c4);
 		break;
 #ifdef LONG64
 	    case 1:
-		XtSetArg(args[0], STRPTR(CAR(list)), &c8);
+		XtSetArg(args[0], THESTR(CAR(list)), &c8);
 		break;
 #endif
 	}
@@ -1094,9 +1067,7 @@ Lisp_XtPopup(LispMac *mac, LispBuiltin *builtin)
     if (!CHECKO(widget, xtWidget_t))
 	LispDestroy(mac, "%s: cannot convert %s to Widget",
 		    STRFUN(builtin), STROBJ(widget));
-    if (!INDEX_P(grab_kind))
-	LispDestroy(mac, "%s: %d is not a positive integer",
-		    STRFUN(builtin), STROBJ(grab_kind));
+    ERROR_CHECK_INDEX(grab_kind);
     kind = (XtGrabKind)grab_kind->data.integer;
     if (kind != XtGrabExclusive && kind != XtGrabNone &&
 	kind != XtGrabNonexclusive)
@@ -1165,10 +1136,7 @@ Lisp_XtSetValues(LispMac *mac, LispBuiltin *builtin)
 	LispDestroy(mac, "%s: cannot convert %s to Widget",
 		    STRFUN(builtin), STROBJ(owidget));
     widget = (Widget)(owidget->data.opaque.data);
-    if (!CONS_P(arguments))
-	LispDestroy(mac, "%s: %s is not a cons list",
-		    STRFUN(builtin), STROBJ(arguments));
-
+    ERROR_CHECK_LIST(arguments);
     resources = LispConvertResources(mac, arguments, widget,
 				     GetResourceList(XtClass(widget)),
 				     XtParent(widget) ?
@@ -1463,7 +1431,7 @@ LispConvertResources(LispMac *mac, LispObj *list, Widget widget,
 	    LispDestroy(mac, "%s: %s is not a string", fname, STROBJ(arg));
 	}
 
-	if ((resource = GetResourceInfo(STRPTR(arg), rlist, plist)) == NULL) {
+	if ((resource = GetResourceInfo(THESTR(arg), rlist, plist)) == NULL) {
 	    int i;
 	    Arg args[1];
 	    Widget child;
@@ -1476,7 +1444,7 @@ LispConvertResources(LispMac *mac, LispObj *list, Widget widget,
 		    XtGetValues(widget, args, 1);
 		    if (child && XtParent(child) == widget) {
 			resource =
-			    GetResourceInfo(STRPTR(arg),
+			    GetResourceInfo(THESTR(arg),
 					    GetResourceList(XtClass(child)),
 					    NULL);
 			if (resource)
@@ -1486,7 +1454,7 @@ LispConvertResources(LispMac *mac, LispObj *list, Widget widget,
 	    }
 	    if (resource == NULL) {
 		LispMessage(mac, "%s: resource %s not available",
-			    fname, STRPTR(arg));
+			    fname, THESTR(arg));
 		continue;
 	    }
 	}
@@ -1548,8 +1516,8 @@ LispConvertResources(LispMac *mac, LispObj *list, Widget widget,
 			fname, STROBJ(val));
 	}
 
-	from.size = val == NIL ? 1 : strlen(STRPTR(val)) + 1;
-	from.addr = val == NIL ? "" : STRPTR(val);
+	from.size = val == NIL ? 1 : strlen(THESTR(val)) + 1;
+	from.addr = val == NIL ? "" : THESTR(val);
 	switch (to.size = resource->size) {
 	    case 1:
 		to.addr = (XtPointer)&c1;
@@ -1567,7 +1535,7 @@ LispConvertResources(LispMac *mac, LispObj *list, Widget widget,
 #endif
 	    default:
 		LispWarning(mac, "%s: bad resource size %d for %s",
-			    fname, to.size, STRPTR(arg));
+			    fname, to.size, THESTR(arg));
 		continue;
 	}
 

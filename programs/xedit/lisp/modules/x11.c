@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/x11.c,v 1.4 2001/10/15 07:05:53 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/x11.c,v 1.5 2002/01/30 21:01:00 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -125,13 +125,9 @@ x-open-display &optional display-name
 
     display_name = ARGUMENT(0);
 
-    if (display_name == NIL)
-	dname = NULL;
-    else if (!STRING_P(display_name))
-	LispDestroy(mac, "%s: %s is not a valid display name",
-		    STRFUN(builtin), STROBJ(display_name));
-    else
-	dname = STRPTR(display_name);
+    if (display_name == NIL)	dname = NULL;
+    else			ERROR_CHECK_STRING(display_name);
+    else			dname = THESTR(display_name);
 
     return (OPAQUE(XOpenDisplay(dname), x11Display_t));
 }
@@ -229,7 +225,7 @@ Lisp_XBlackPixel(LispMac *mac, LispBuiltin *builtin)
 
     if (oscreen == NIL)
 	screen = DefaultScreen(display);
-    else if (!INT_P(oscreen) || !INDEX_P(oscreen))
+    else if (!INT_P(oscreen) || !INDEX(oscreen))
 	LispDestroy(mac, "%s: %s is not a positive integer",
 		    STRFUN(builtin), STROBJ(oscreen));
     else
@@ -278,13 +274,9 @@ Lisp_XWhitePixel(LispMac *mac, LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(odisplay));
     display = (Display*)(odisplay->data.opaque.data);
 
-    if (oscreen == NIL)
-	screen = DefaultScreen(display);
-    else if (!INT_P(oscreen) || !INDEX_P(oscreen))
-	LispDestroy(mac, "%s: %s is not a positive integer",
-		    STRFUN(builtin), STROBJ(oscreen));
-    else
-	screen = oscreen->data.integer;
+    if (oscreen == NIL)	screen = DefaultScreen(display);
+    else		ERROR_CHECK_FIXNUM(oscreen);
+    else		screen = oscreen->data.integer;
 
     if (screen >= ScreenCount(display))
 	LispDestroy(mac, "%s: screen index %d too large, %d screens available",
@@ -329,13 +321,9 @@ Lisp_XDefaultGC(LispMac *mac, LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(odisplay));
     display = (Display*)(odisplay->data.opaque.data);
 
-    if (oscreen == NIL)
-	screen = DefaultScreen(display);
-    else if (!INT_P(oscreen) || !INDEX_P(oscreen))
-	LispDestroy(mac, "%s: %s is not a positive integer",
-		    STRFUN(builtin), STROBJ(oscreen));
-    else
-	screen = oscreen->data.integer;
+    if (oscreen == NIL)	screen = DefaultScreen(display);
+    else		ERROR_CHECK_FIXNUM(oscreen);
+    else		screen = oscreen->data.integer;
 
     if (screen >= ScreenCount(display))
 	LispDestroy(mac, "%s: screen index %d too large, %d screens available",
@@ -397,48 +385,31 @@ Lisp_XCreateSimpleWindow(LispMac *mac, LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(oparent));
     parent = (Window)(oparent->data.opaque.data);
 
-    if (!INT_P(ox))
-	LispDestroy(mac, "%s: %s is not an integer",
-		    STRFUN(builtin), STROBJ(ox));
+    ERROR_CHECK_FIXNUM(ox);
     x = ox->data.integer;
 
-    if (!INT_P(oy))
-	LispDestroy(mac, "%s: %s is not an integer",
-		    STRFUN(builtin), STROBJ(oy));
+    ERROR_CHECK_FIXNUM(oy);
     y = oy->data.integer;
 
-    if (!INDEX_P(owidth))
-	LispDestroy(mac, "%s: %s is not a positive integer",
-		    STRFUN(builtin), STROBJ(owidth));
+    ERROR_CHECK_INDEX(owidth);
     width = owidth->data.integer;
 
-    if (!INDEX_P(oheight))
-	LispDestroy(mac, "%s: %s is not a positive integer",
-		    STRFUN(builtin), STROBJ(oheight));
+    ERROR_CHECK_INDEX(oheight);
     height = oheight->data.integer;
 
     /* check &OPTIONAL parameters */
-    if (oborder_width == NIL)
-	border_width = 1;
-    else if (!INDEX_P(oborder_width))
-	LispDestroy(mac, "%s: %s is not a positive integer",
-		    STRFUN(builtin), STROBJ(oborder_width));
-    else
-	border_width = oborder_width->data.integer;
+    if (oborder_width == NIL)	border_width = 1;
+    else			ERROR_CHECK_INDEX(oborder_width);
+    else			border_width = oborder_width->data.integer;
 
-    if (oborder == NIL)
-	border = BlackPixel(display, DefaultScreen(display));
-    else if (!INT_P(oborder))
-	LispDestroy(mac, "%s: %s is not an integer",
-		    STRFUN(builtin), STROBJ(oborder));
-    else
-	border = oborder->data.integer;
+    if (oborder == NIL)	border = BlackPixel(display, DefaultScreen(display));
+    else		ERROR_CHECK_FIXNUM(oborder);
+    else		border = oborder->data.integer;
 
     if (obackground == NIL)
 	background = WhitePixel(display, DefaultScreen(display));
-    else if (!INT_P(obackground))
-	LispDestroy(mac, "%s: %s is not an integer",
-		    STRFUN(builtin), STROBJ(obackground));
+    else
+	ERROR_CHECK_FIXNUM(obackground);
     else
 	background = obackground->data.integer;
 
@@ -565,24 +536,16 @@ Lisp_XDrawLine(LispMac *mac, LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(ogc));
     gc = (GC)(ogc->data.opaque.data);
 
-    if (!INT_P(ox1))
-	LispDestroy(mac, "%s: %s is not an integer",
-		    STRFUN(builtin), STROBJ(ox1));
+    ERROR_CHECK_FIXNUM(ox1);
     x1 = ox1->data.integer;
 
-    if (!INT_P(oy1))
-	LispDestroy(mac, "%s: %s is not an integer",
-		    STRFUN(builtin), STROBJ(oy1));
+    ERROR_CHECK_FIXNUM(oy1);
     y1 = oy1->data.integer;
 
-    if (!INT_P(ox2))
-	LispDestroy(mac, "%s: %s is not an integer",
-		    STRFUN(builtin), STROBJ(ox1));
+    ERROR_CHECK_FIXNUM(ox2);
     x2 = ox2->data.integer;
 
-    if (!INT_P(oy2))
-	LispDestroy(mac, "%s: %s is not an integer",
-		    STRFUN(builtin), STROBJ(oy2));
+    ERROR_CHECK_FIXNUM(oy2);
     y2 = oy2->data.integer;
 
     XDrawLine(display, drawable, gc, x1, y1, x2, y2);
@@ -609,13 +572,9 @@ Lisp_XBell(LispMac *mac, LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(odisplay));
     display = (Display*)(odisplay->data.opaque.data);
 
-    if (opercent == NIL)
-	percent = 0;
-    else if (!INT_P(opercent))
-	LispDestroy(mac, "%s: %s is not an integer",
-		    STRFUN(builtin), STROBJ(opercent));
-    else
-	percent = opercent->data.integer;
+    if (opercent == NIL)	percent = 0;
+    else			ERROR_CHECK_FIXNUM(opercent);
+    else			percent = opercent->data.integer;
 
     if (percent < -100 || percent > 100)
 	LispDestroy(mac, "%s: percent value %d out of range -100 to 100",

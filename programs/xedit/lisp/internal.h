@@ -264,6 +264,12 @@
 	LispDestroy(mac, "%s: %s is not an integer",		\
 		    STRFUN(builtin), STROBJ(object))
 
+/* XXX previous macros misnamed FIXNUM */
+#define ERROR_CHECK_FIXNUM(object)				\
+    if (!INT_P(object))						\
+	LispDestroy(mac, "%s: %s is not a fixnum",		\
+		    STRFUN(builtin), STROBJ(object))
+
 #define ERROR_CHECK_FLOAT(object)				\
     if (!FLOAT_P(object))					\
 	LispDestroy(mac, "%s: %s is not a float number",	\
