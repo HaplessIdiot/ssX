@@ -1,4 +1,7 @@
 XFree86 4.3.99.5 (xx May 2003)
+ 186. Initial imake/config support for more closely (and more
+      automatically) emulating how libtool handles shared library revisions.
+      Implmemented for Linux only so far (David Dawes).
  185. Fix libexpat shared lib revision on platforms that use minor version
       numbers (David Dawes).
  184. Update Tamil keyboard map (Thuraiappah Vaseeharan).
@@ -17006,7 +17009,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2705 2003/05/24 11:32:49 pascal Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2706 2003/05/25 01:27:39 dawes Exp $
 
 
 

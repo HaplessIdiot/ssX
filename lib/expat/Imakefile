@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/expat/Imakefile,v 1.6 2003/04/10 20:22:12 herrb Exp $
+XCOMM $XFree86: xc/lib/expat/Imakefile,v 1.7 2003/05/25 01:27:38 dawes Exp $
 
 #define DoNormalLib NormalLibExpat
 #define DoSharedLib SharedLibExpat
@@ -8,6 +8,9 @@ XCOMM $XFree86: xc/lib/expat/Imakefile,v 1.6 2003/04/10 20:22:12 herrb Exp $
 #define HasSharedData YES
 #define LibName expat
 #define SoRev SOEXPATREV
+#ifdef SharedLibtoolExpatRev
+#define SharedLibtoolRev SharedLibtoolExpatRev
+#endif
 #define LibHeaders YES
 
 #include <Threads.tmpl>

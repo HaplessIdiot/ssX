@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/freetype2/Imakefile,v 1.10 2003/03/25 04:18:14 dawes Exp $
+XCOMM $XFree86: xc/lib/freetype2/Imakefile,v 1.11 2003/05/23 23:39:52 torrey Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags
@@ -16,6 +16,9 @@ XCOMM $XFree86: xc/lib/freetype2/Imakefile,v 1.10 2003/03/25 04:18:14 dawes Exp 
 #define LibName frtype
 #endif
 #define SoRev SOFREETYPE2REV
+#ifdef SharedLibtoolFreetype2Rev
+#define SharedLibtoolRev SharedLibtoolFreetype2Rev
+#endif
 #define LibHeaders NO
 
 #include <Threads.tmpl>
