@@ -25,7 +25,8 @@ INCLUDES = -I. -I$(XF86SRC)/xf4bpp -I$(XF86SRC)/xf1bpp \
 	   -I$(SERVERSRC)/include  -I$(XF86SRC)/xaa \
 	   -I$(XF86SRC)/xf24_32bpp -I$(XF86SRC)/xf8_32bpp \
 	   -I$(XF86SRC)/ramdac -I$(SERVERSRC)/Xext \
-	   -I$(XF86SRC)/shadowfb -I$(XF86SRC)/rac -I$(XF86SRC)/loader
+	   -I$(XF86SRC)/shadowfb -I$(XF86SRC)/rac -I$(XF86SRC)/loader \
+	   -I$(SERVERSRC)/render -I$(EXTINCSRC)
 #endif
 
 XCOMM

@@ -1,15 +1,13 @@
-XCOMM $XFree86: $
+XCOMM $XFree86: xc/programs/Xserver/render/Imakefile,v 1.1 2000/08/25 23:40:56 keithp Exp $
 #include <Server.tmpl>
 
-       SRCS = 	fbpict.c \
-       		glyph.c \
+       SRCS =   glyph.c \
 		miglyph.c \
 		mipict.c \
 		picture.c \
 		render.c
 
-       OBJS =   fbpict.o \
-       		glyph.o \
+       OBJS =   glyph.o \
 		miglyph.o \
 		mipict.o \
 		picture.o \

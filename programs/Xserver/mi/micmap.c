@@ -104,41 +104,18 @@ miResolveColor(unsigned short *pred, unsigned short *pgreen,
     int shift = 16 - pVisual->bitsPerRGBValue;
     unsigned lim = (1 << pVisual->bitsPerRGBValue) - 1;
 
-    if ((pVisual->class == PseudoColor) || (pVisual->class == DirectColor))
-    {
-	/* rescale to rgb bits */
-	*pred = ((*pred >> shift) * 65535) / lim;
-	*pgreen = ((*pgreen >> shift) * 65535) / lim;
-	*pblue = ((*pblue >> shift) * 65535) / lim;
-    }
-    else if (pVisual->class == GrayScale)
+    if ((pVisual->class | DynamicClass) == GrayScale)
     {
 	/* rescale to gray then rgb bits */
 	*pred = (30L * *pred + 59L * *pgreen + 11L * *pblue) / 100;
 	*pblue = *pgreen = *pred = ((*pred >> shift) * 65535) / lim;
     }
-    else if (pVisual->class == StaticGray)
-    {
-	unsigned limg = pVisual->ColormapEntries - 1;
-	/* rescale to gray then [0..limg] then [0..65535] then rgb bits */
-	*pred = (30L * *pred + 59L * *pgreen + 11L * *pblue) / 100;
-	*pred = ((((*pred * (limg + 1))) >> 16) * 65535) / limg;
-	*pblue = *pgreen = *pred = ((*pred >> shift) * 65535) / lim;
-    }
     else
     {
-	unsigned limr, limg, limb;
-
-	limr = pVisual->redMask >> pVisual->offsetRed;
-	limg = pVisual->greenMask >> pVisual->offsetGreen;
-	limb = pVisual->blueMask >> pVisual->offsetBlue;
-	/* rescale to [0..limN] then [0..65535] then rgb bits */
-	*pred = ((((((*pred * (limr + 1)) >> 16) *
-		    65535) / limr) >> shift) * 65535) / lim;
-	*pgreen = ((((((*pgreen * (limg + 1)) >> 16) *
-		      65535) / limg) >> shift) * 65535) / lim;
-	*pblue = ((((((*pblue * (limb + 1)) >> 16) *
-		     65535) / limb) >> shift) * 65535) / lim;
+	/* rescale to rgb bits */
+	*pred = ((*pred >> shift) * 65535) / lim;
+	*pgreen = ((*pgreen >> shift) * 65535) / lim;
+	*pblue = ((*pblue >> shift) * 65535) / lim;
     }
 }
 
@@ -470,6 +447,33 @@ miGetDefaultVisualMask(int depth)
 	return SMALL_VISUALS;
 }
 
+Bool
+miVisualTypesSet (int depth)
+{
+    miVisualsPtr    visuals;
+
+    for (visuals = miVisuals; visuals; visuals = visuals->next)
+	if (visuals->depth == depth)
+	    return TRUE;
+    return FALSE;
+}
+
+Bool
+miSetPixmapDepths (void)
+{
+    int	d, f;
+    
+    /* Add any unlisted depths from the pixmap formats */
+    for (f = 0; f < screenInfo.numPixmapFormats; f++) 
+    {
+	d = screenInfo.formats[f].depth;
+	if (!miVisualTypesSet (d))
+	{
+	    if (!miSetVisualTypes (d, 0, 0, -1))
+		return FALSE;
+	}
+    }
+}
 
 Bool
 miInitVisuals(VisualPtr *visualp, DepthPtr *depthp, int *nvisualp,

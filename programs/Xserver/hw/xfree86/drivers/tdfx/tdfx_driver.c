@@ -97,6 +97,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "dri.h"
 #endif
 
+#ifdef RENDER
+#include "picturestr.h"
+#endif
+
 /* Required Functions: */
 
 static OptionInfoPtr	TDFXAvailableOptions(int chipid, int busid);
@@ -205,6 +209,9 @@ static const char *vgahwSymbols[] = {
 
 static const char *fbSymbols[] = {
     "fbScreenInit",
+#ifdef RENDER
+    "fbPictureInit",
+#endif
     NULL
 };
 
@@ -923,6 +930,9 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
     return FALSE;
   }
   xf86LoaderReqSymbols("fbScreenInit", NULL);
+#ifdef RENDER
+  xf86LoaderReqSymbols("fbPictureInit", NULL);
+#endif
 
   if (!xf86ReturnOptValBool(TDFXOptions, OPTION_NOACCEL, FALSE)) {
     if (!xf86LoadSubModule(pScrn, "xaa")) {
@@ -1718,6 +1728,8 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 			pScrn->rgbBits, pScrn->defaultVisual))
     return FALSE;
 
+  miSetPixmapDepths ();
+    
 #ifdef XF86DRI
   /*
    * Setup DRI after visuals have been established, but before fbScreenInit
@@ -1740,6 +1752,9 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
 		       pScrn->xDpi, pScrn->yDpi,
 		       pScrn->displayWidth, pScrn->bitsPerPixel))
       return FALSE;
+#ifdef RENDER
+    fbPictureInit (pScreen, 0, 0);
+#endif
     break;
   default:
     xf86DrvMsg(scrnIndex, X_ERROR,

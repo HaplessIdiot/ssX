@@ -90,9 +90,12 @@ static PixmapFormatRec formats[MAXFORMATS] = {
 	{ 8,	8,	BITMAP_SCANLINE_PAD },
 	{ 15,	16,	BITMAP_SCANLINE_PAD },
 	{ 16,	16,	BITMAP_SCANLINE_PAD },
-	{ 24,	32,	BITMAP_SCANLINE_PAD }
+	{ 24,	32,	BITMAP_SCANLINE_PAD },
+#ifdef RENDER
+	{ 32,	32,	BITMAP_SCANLINE_PAD },
+#endif
 };
-static int numFormats = 6;
+static int numFormats = 7;
 static Bool formatsDone = FALSE;
 
 InputDriverRec xf86KEYBOARD = {

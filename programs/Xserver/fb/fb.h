@@ -38,6 +38,9 @@
 #include "mi.h"
 #include "migc.h"
 #include "mibstore.h"
+#ifdef RENDER
+#include "picturestr.h"
+#endif
 
 /*
  * This single define controls the basic size of data manipulated
@@ -1488,6 +1491,29 @@ fbPolySegment (DrawablePtr  pDrawable,
 	       xSegment	    *pseg);
 
 #define fbPolyRectangle	miPolyRectangle
+
+/*
+ * fbpict.c
+ */
+
+#ifdef RENDER
+void
+fbComposite (CARD8      op,
+	     PicturePtr pSrc,
+	     PicturePtr pMask,
+	     PicturePtr pDst,
+	     INT16      xSrc,
+	     INT16      ySrc,
+	     INT16      xMask,
+	     INT16      yMask,
+	     INT16      xDst,
+	     INT16      yDst,
+	     CARD16     width,
+	     CARD16     height);
+
+Bool
+fbPictureInit (ScreenPtr pScreen, PictFormatPtr formats, int nformats);
+#endif
 
 /*
  * fbpixmap.c
