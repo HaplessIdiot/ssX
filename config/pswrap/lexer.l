@@ -763,7 +763,7 @@ int yywrap () {
     	return (0);
 /* The following appears not to work with flex.  As it is error
    handling code, we just comment it out. */
-#if 0
+#if !defined(FLEX_SCANNER)
     if (yybgin != (yysvec+1)) {	/* make sure we are in state 0 */
 	ErrIntro(yylineno);
 	fprintf(stderr,"end of input file/missing endps\n");

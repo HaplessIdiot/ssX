@@ -2,7 +2,7 @@ XCOMM platform:  $TOG: FreeBSD.cf /main/21 1997/10/05 20:42:34 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.89 2000/02/12 20:45:00 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.90 2000/02/14 18:11:44 dawes Exp $
 
 #ifndef UseElfFormat
 #define UseElfFormat		DefaultToElfFormat
@@ -69,6 +69,10 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define VendorHasX11R6_3libXext	YES	/* XC or XFree86 >= 3.3.1 */
 
 #define MkdirHierCmd		mkdir -p
+
+#ifndef LexCmd
+#define LexCmd			flex -l
+#endif
 
 #define CcCmd			cc
 #define CppCmd			/usr/bin/cpp
