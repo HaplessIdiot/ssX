@@ -69,8 +69,13 @@ shown in the file(s).
 <p>
 The XFree86 beta releases are intended for people who are prepared to
 test software which might be unstable and which might be buggy, and report
-the results of the testing.  If you are going to test this software, you
-should be prepared for the following:
+the results of the testing.  These beta releases are not intended for
+beginners, but for people who have a basic knowledge of the OS so that they
+don't require much support for issues like upgrading system libraries and
+obtaining necessary packages.
+
+If you are going to test this software, you should be prepared for the
+following:
 <itemize>
   <item>Installation problems.  The installation procedure for beta releases
 	gets only very limited testing prior to release.  You should be
@@ -111,6 +116,16 @@ new Xserver extensions: DOUBLE-BUFFER, XKEYBOARD and RECORD.  LBX has
 been dropped from R6.1, and as such, has been dropped from XFree86 too.
 It is expected that it will reappear in some form in a future release.
 <p>
+<sect> OS issues
+<p>
+Beta testers should always check the OS specific README files for
+special requirements or caveats. 
+<p>
+Testers running Linux/Elf (on Intel platforms) should note that they will
+need ld.so-1.7.14 and libncurses.so.3.0 (which is ncurses-1.9.9e). Both
+can be found at <url name="tsx-11.mit.edu:pub/linux/packages/GCC"
+url="ftp://tsx-11.mit.edu/pub/linux/packages/GCC">.
+
 <sect> New Features in 3.1.2G
 <p>
 3.1.2G is primarily a bug-fix release.  It is intended to fix some serious
@@ -158,7 +173,10 @@ problems that were discovered shortly after 3.1.2F was released.
 	with VLB cards when the "linear" option wasn't specified.
   <item>PCI burst write is now turned off by default for PCI TGUI cards.
 	This fixes a problem that showed up with 3.1.2F when the
-	"tgui_pci_write_off" option wasn't specified.
+	"tgui_pci_write_off" option wasn't specified. On the downside,
+	this can result in reduced performance for cards that can do PCI
+	burst writes. This can be solved by adding the option
+	"tgui_pci_write_on" to the Device Section.
 </itemize>
 <sect1> Ark driver (SVGA server)
 <p>
@@ -170,7 +188,7 @@ problems that were discovered shortly after 3.1.2F was released.
 <p>
 <itemize>
   <item>A driver for the Alliance ProMotion 6442 has been added (from
-	Alliance Semiconductor).
+	Alliance Semiconductor). This has not been thoroughly tested.
 </itemize>
 <sect1> Cirrus driver (SVGA server)
 <p>
@@ -271,6 +289,7 @@ problems that were discovered shortly after 3.1.2F was released.
 <p>
 <itemize>
   <item>Support has been added for the Series 2 cards.
+  <item>Support has been added for 8MB cards.
 </itemize>
 <sect1> Trident driver (SVGA server)
 <p>
@@ -1209,7 +1228,7 @@ instructions, the files for that version will still be in the
 -->
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.37 1996/09/01 04:16:07 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.38 1996/09/01 08:19:29 dawes Exp $
 </verb>
 
 </article>

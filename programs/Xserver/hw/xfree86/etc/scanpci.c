@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.19 1996/08/23 11:04:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.20 1996/09/01 04:46:24 dawes Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -602,6 +602,7 @@ struct pci_vendor_device {
         { 0x113C, "PLX", {
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1142, "Alliance", {
+                            { 0x6422, "ProMotion 6422", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x114A, "VMIC", {
                             { 0x0000, (char *)NULL, NF } } },
@@ -1126,7 +1127,7 @@ enable_os_io()
 #endif
 #endif
 #if defined(__NetBSD__)
-#if !defined(NetBSD1_1)
+#if !defined(USE_I386_IOPL)
     if ((io_fd = open("/dev/io", O_RDWR, 0)) < 0) {
 	perror("/dev/io");
 	exit(1);
@@ -1169,7 +1170,7 @@ disable_os_io()
     close(io_fd);
 #endif
 #if defined(__NetBSD__)
-#if !defined(NetBSD1_1)
+#if !defined(USE_I386_IOPL)
     close(io_fd);
 #else
     if (i386_iopl(0) < 0) {

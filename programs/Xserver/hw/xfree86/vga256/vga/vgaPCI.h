@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.9 1996/08/18 01:52:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.10 1996/09/01 04:48:06 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -28,6 +28,7 @@
 #define PCI_VENDOR_SIS		0x1039
 #define PCI_VENDOR_NUMNINE	0x105D
 #define PCI_VENDOR_UMC		0x1060
+#define PCI_VENDOR_ALLIANCE	0x1142
 #define PCI_VENDOR_S3		0x5333
 #define PCI_VENDOR_ARK		0xEDD8
 
@@ -88,6 +89,9 @@
 /* Number Nine */
 #define PCI_CHIP_I128		0x2309
 #define PCI_CHIP_I128_2		0x2339
+
+/* Alliance Semiconductor */
+#define PCI_CHIP_AP6422		0x6422
 
 /* S3 */
 #define PCI_CHIP_TRIO		0x8811
@@ -203,6 +207,9 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_I128_2,	"Imagine 128 II"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_UMC,	"UMC",	{
+				{0x0000,		NULL}}},
+    {PCI_VENDOR_ALLIANCE, "Alliance Semiconductor", {
+				{PCI_CHIP_AP6422,	"ProMotion 6422"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_S3,	"S3",	{
 				{PCI_CHIP_TRIO,		"Trio32/64"},

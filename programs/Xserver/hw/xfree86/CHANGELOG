@@ -1,3 +1,9 @@
+XFree86 3.1.2Fc (3 September 1996)
+770. Documentation updates (Dirk Hohndel, Matthieu Herrb).
+769. Updates for OpenBSD, including support for recent changes to the
+     console drivers (Matthieu Herrb).
+768. Need rint() for ISC and Lynx (Michael Rohleder).
+
 XFree86 3.1.2Fb (1 September 1996)
 767. S3 support for the Diamond SS2410 RAMDAC (eriks).
 746. Fix resize on Linux (for terminfo) (Rik Faith).

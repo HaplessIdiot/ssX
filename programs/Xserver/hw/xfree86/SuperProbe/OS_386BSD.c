@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_386BSD.c,v 3.6 1996/03/29 22:15:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_386BSD.c,v 3.7 1996/06/10 09:12:32 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Dawes <dawes@xfree86.org>
  *
@@ -74,6 +74,12 @@
 #  endif
 #endif
 
+#if !defined(__OpenBSD__)
+#  define CONSOLE_DEVICE "/dev/ttyv0"
+#else
+#  define CONSOLE_DEVICE "/dev/ttyC0"
+#endif
+
 static int CONS_fd = -1;
 static int BIOS_fd = -1;
 
@@ -133,11 +139,11 @@ int OpenVideo()
 			return(-1);
 		}
 		if ((CONS_fd = open("/dev/vga", O_RDWR, 0)) < 0
-		    && (CONS_fd = open("/dev/ttyv0", O_RDWR, 0)) < 0)
+		    && (CONS_fd = open(CONSOLE_DEVICE, O_RDWR, 0)) < 0)
 		{
 			fprintf(stderr,
-				"%s: Cannot open /dev/vga nor /dev/ttyv0\n", 
-				MyName);
+				"%s: Cannot open /dev/vga nor %s\n", 
+				MyName, CONSOLE_DEVICE);
 			return(-1);
 		}
 #endif
@@ -351,7 +357,7 @@ CONST int NumPorts;
 CONST Word *Ports;
 {
 #ifdef __NetBSD__ 
-#ifdef NetBSD1_1
+#ifdef USE_I386_IOPL
     if (IOEnabled++ == 0) {
 	i386_iopl(TRUE);
     }
@@ -373,7 +379,7 @@ CONST int NumPorts;
 CONST Word *Port;
 {
 #ifdef __NetBSD__
-#ifdef NetBSD1_1
+#ifdef USE_I386_IOPL
     if (--IOEnabled == 0) {
 	i386_iopl(FALSE);
     }

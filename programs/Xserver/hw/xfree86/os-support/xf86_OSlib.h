@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.26 1996/06/10 09:15:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.27 1996/08/11 13:02:00 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -260,6 +260,14 @@ extern int errno;
 #   define CONSOLE_X_MODE_OFF PCCONIOCCOOK
 #   define CONSOLE_X_BELL PCCONIOCBEEP
 #  else /* __bsdi__ */
+#   if defined(__OpenBSD__)
+#     ifdef PCCONS_SUPPORT
+#       include <machine/pccons.h>
+#       undef CONSOLE_X_MODE_ON
+#       undef CONSOLE_X_MODE_OFF
+#       undef CONSOLE_X_BELL
+#     endif
+#   endif
 #   ifdef CODRV_SUPPORT
 #    define COMPAT_CO011
 #    if defined(__FreeBSD__) || defined(__NetBSD__)
@@ -495,6 +503,15 @@ extern int sys_nerr;
      ((n) >= 0 && (n) < sys_nerr) ? sys_errlist[n] : "unknown error"
 # endif /* !strerror */
 #endif /* NEED_STRERROR */
+
+#if defined(ISC) || defined(Lynx)
+#define rint(x) RInt(x)
+double RInt(
+#if NeedFunctionPrototypes
+	double x
+#endif
+);
+#endif
 
 #ifndef VT_SYSREQ_DEFAULT
 #define VT_SYSREQ_DEFAULT FALSE

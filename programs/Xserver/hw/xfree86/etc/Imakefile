@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/15 1996/01/30 15:20:13 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.17 1996/05/13 06:39:53 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/etc/Imakefile,v 3.18 1996/08/25 14:12:00 dawes Exp $
 #include <Server.tmpl>
 
 #if SystemV
@@ -80,6 +80,7 @@ InstallManPage(kbd_mode,$(MANDIR))
        SRCS2 = scanpci.c
 
 #if defined(NetBSDArchitecture) && OSMajorVersion >= 1 && OSMinorVersion >= 1
+DEFINES = -DUSE_I386_IOPL
 SYS_LIBRARIES = -li386
 #endif
 

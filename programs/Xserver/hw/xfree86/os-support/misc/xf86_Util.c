@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/xf86_Util.c,v 3.1 1996/02/04 09:10:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/misc/xf86_Util.c,v 3.2 1996/02/09 08:20:52 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -93,5 +93,34 @@ char *ptr;
 {
 	ErrorF("Dealloc: %s line %d; ptr = 0x%x\n", file, line, ptr);
 	Xfree(ptr);
+}
+#endif
+
+#if defined(ISC) || defined(Lynx)
+
+#include <math.h>
+
+/* Needed for apm_driver.c */
+/* These functions are modeled after the functions inside gnu's libc */
+
+static double copysign(double x, double y)
+{
+	x = fabs(x);
+	return y < 0 ? - x : x;
+}
+
+double RInt(double x)
+{
+	double s,t;
+	const double one = 1.0;
+	const static double L = 4503599627370496.0E0;
+
+	if (x!=x)
+		return(x);
+	if (copysign(x,one) >= L)
+		return(x);
+	s = copysign(L,x);
+	t = x + s;
+	return (t - s);
 }
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_init.c,v 3.5 1996/02/04 09:09:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_init.c,v 3.6 1996/06/30 04:42:06 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -49,7 +49,11 @@ static int initialVT = -1;
 
 #ifdef PCCONS_SUPPORT
 /* Stock 0.1 386bsd pccons console driver interface */
-#define PCCONS_CONSOLE_DEV1 "/dev/ttyv0"
+#ifndef __OpenBSD__
+#  define PCCONS_CONSOLE_DEV1 "/dev/ttyv0"
+#else
+#  define PCCONS_CONSOLE_DEV1 "/dev/ttyC0"
+#endif
 #define PCCONS_CONSOLE_DEV2 "/dev/vga"
 #define PCCONS_CONSOLE_MODE O_RDWR|O_NDELAY
 #endif
@@ -69,7 +73,11 @@ static int initialVT = -1;
 
 #ifdef PCVT_SUPPORT
 /* Hellmuth Michaelis' pcvt driver */
-#define PCVT_CONSOLE_DEV "/dev/ttyv0"
+#ifndef __OpenBSD__
+#  define PCVT_CONSOLE_DEV "/dev/ttyv0"
+#else
+#  define PCVT_CONSOLE_DEV "/dev/ttyC0"
+#endif
 #define PCVT_CONSOLE_MODE O_RDWR|O_NDELAY
 #endif
 
@@ -450,7 +458,11 @@ xf86OpenSyscons()
 	    }
 
 	    close(fd);
+#ifndef __OpenBSD__
 	    sprintf(vtname, "/dev/ttyv%01x", xf86Info.vtno - 1);
+#else 
+	    sprintf(vtname, "/dev/ttyC%01x", xf86Info.vtno - 1);
+#endif	    
 	    if ((fd = open(vtname, SYSCONS_CONSOLE_MODE, 0)) < 0)
 	    {
 		FatalError("xf86OpenSyscons: Cannot open %s (%s)\n",
@@ -624,7 +636,11 @@ xf86OpenPcvt()
 	    }
 
 	    close(fd);
+#ifndef __OpenBSD__
 	    sprintf(vtname, "/dev/ttyv%01x", xf86Info.vtno - 1);
+#else
+	    sprintf(vtname, "/dev/ttyC%01x", xf86Info.vtno - 1);
+#endif
 	    if ((fd = open(vtname, PCVT_CONSOLE_MODE, 0)) < 0)
 	    {
 		FatalError("xf86OpenPcvt: Cannot open %s (%s)\n",
