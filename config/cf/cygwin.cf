@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.48 2002/11/28 16:50:58 alanh Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.49tsi Exp $
 
 #ifndef OSName
 # define OSName                 Cygwin
@@ -199,7 +199,7 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.48 2002/11/28 16:50:58 ala
 				ServerSnprintfDefines \
 				SmartScheduleDefines \
 				DebugDefines XFree86XResDefines \
-				-DX_BYTE_ORDER=ByteOrder
+				-DX_BYTE_ORDER=$(X_BYTE_ORDER)
 #define ServerOSDefines         XWinServerDefines \
 				-DDDXTIME -DFD_SETSIZE=256 -DDDXOSINIT \
 				-DDDXOSVERRORF -DDDXOSFATALERROR

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.445 2003/04/24 22:14:53 herrb Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.446tsi Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -1737,7 +1737,7 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 				ServerSnprintfDefines \
 				SmartScheduleDefines \
 				DebugDefines XFree86XResDefines \
-				-DX_BYTE_ORDER=ByteOrder
+				-DX_BYTE_ORDER=$(X_BYTE_ORDER)
 #endif
 
 #ifndef XFree86ServerOSDefines

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/tdfx/Imakefile.inc,v 1.1 2001/03/23 19:18:44 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/tdfx/Imakefile.inc,v 1.4tsi Exp $
 
 #ifndef MesaDrvSrcDir
 #define MesaDrvSrcDir $(GLXLIBSRC)/mesa/src/drv
@@ -16,7 +16,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
 
 #if BuildXF86DRI
-  DRI_DEFINES = GlxDefines -DX_BYTE_ORDER=ByteOrder
+  DRI_DEFINES = GlxDefines -DX_BYTE_ORDER=$(X_BYTE_ORDER)
  DRI_INCLUDES = -I$(GLXLIBSRC)/dri \
 		-I$(GLXLIBSRC)/glx \
 		-I$(INCLUDESRC) \
