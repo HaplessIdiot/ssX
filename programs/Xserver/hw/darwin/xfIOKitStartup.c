@@ -3,7 +3,7 @@
  * Startup code for the IOKit Darwin X Server
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKitStartup.c,v 1.1 2001/03/24 23:08:53 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKitStartup.c,v 1.2 2001/04/01 07:12:13 torrey Exp $ */
 
 #include "mi.h"
 #include "mipointer.h"
@@ -39,7 +39,7 @@ void QuartzHide(void) {
     FatalError("QuartzHide called without Quartz support.\n");
 }
 
-void QuartzShow(void) {
+void QuartzShow(int x, int y) {
     FatalError("QuartzShow called without Quartz support.\n");
 }
 

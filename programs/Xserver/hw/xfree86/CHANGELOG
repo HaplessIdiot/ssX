@@ -1,4 +1,6 @@
 XFree86 4.0.99.3 (11 April 2001)
+ 374. Fix problems with XDarwin hardware cursor support in Quartz mode
+      (Gregory Parker).
  373. Resync with DRI CVS trunk (VA Linux Systems).
  372. Fix bug in XvMC protocol (Bob Paauwe).
  371. Ensure NoInt10 is used for PC98 (Alan Hourihane).
@@ -221,7 +223,7 @@ XFree86 4.0.99.2 (6 April 2001)
       Quit Xdarwin cleanly, wether from the Xserve or from Cocoa front end,
       Fix a case typp which cases the Xdarwin server not to start if 
       installed on a case sensitive file system like UFS. 
-      (#4504, #4507, #45011, Gegory Parker, Torrey T. Lyons). 
+      (#4504, #4507, #45011, Gregory Parker, Torrey T. Lyons). 
  271. Move Section DRI/Endsection into the DRI function to be consistant with 
       all of the other sections. (Quentin Neill)
  270. Made xf4bpp code moer 64bit clean (still doesn't work on Alphas)
@@ -12929,4 +12931,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1681 2001/04/10 00:30:14 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1682 2001/04/10 16:07:55 dawes Exp $

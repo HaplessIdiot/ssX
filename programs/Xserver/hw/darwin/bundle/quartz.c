@@ -5,7 +5,7 @@
  * By Gregory Robert Parker
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.4 2001/04/02 05:18:50 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.5 2001/04/07 22:06:06 torrey Exp $ */
 
 // X headers
 #include "scrnintstr.h"
@@ -25,6 +25,7 @@
 #include "../darwin.h"
 #include "quartz.h"
 #include "quartzAudio.h"
+#include "quartzCursor.h"
 
 #define kDarwinMaxScreens 100
 static ScreenPtr darwinScreens[kDarwinMaxScreens];
@@ -112,28 +113,23 @@ Bool QuartzAddScreen(ScreenPtr pScreen)
 
 /* 
  * QuartzCapture
- *  Capture the screen so we can draw and hide the Aqua cursor.
+ *  Capture the screen so we can draw.
  */
 static void QuartzCapture(void)
 {
     if (! CGDisplayIsCaptured(kCGDirectMainDisplay)) {
         CGDisplayCapture(kCGDirectMainDisplay);
-// FIXME: Properly initialize X cursor
-#if 0
-        CGDisplayHideCursor(kCGDirectMainDisplay);
-#endif
     }
 }
 
 
 /* 
  * QuartzRelease
- *  Release the screen so others can draw and restore the Aqua cursor.
+ *  Release the screen so others can draw.
  */
 static void QuartzRelease(void)
 {
     if (CGDisplayIsCaptured(kCGDirectMainDisplay)) {
-        InitCursor();
         CGDisplayRelease(kCGDirectMainDisplay);
     }
 }
@@ -172,7 +168,7 @@ static void QuartzDisplayInit(void)
 
 /*
  * QuartzOsVendorInit
- * Quartz display initialization.
+ *  Quartz display initialization.
  */
 void QuartzOsVendorInit(void)
 {
@@ -183,27 +179,34 @@ void QuartzOsVendorInit(void)
 
 /* 
  * QuartzShow
- * Show the X server on screen. Does nothing if already shown.
- * recapture the screen, restore the X clip regions.
+ *  Show the X server on screen. Does nothing if already shown.
+ *  Recapture the screen, restore the X clip regions, and restore
+ *  the X server cursor state.
  */
-void QuartzShow(void) {
+void QuartzShow(
+    int x,	// cursor location
+    int y )
+{
     int i;
 
     QuartzCapture();
     if (xhidden) {
         for (i = 0; i < darwinNumScreens; i++) {
-        if (darwinScreens[i]) 
-            xf86SetRootClip(darwinScreens[i], true);
+            if (darwinScreens[i]) {
+                xf86SetRootClip(darwinScreens[i], true);
+                QuartzResumeXCursor(darwinScreens[i], x, y);
+            }
         }
     }
-    xhidden = false;
+    xhidden = FALSE;
 }
 
 
 /* 
  * QuartzHide
  *  Remove the X server display from the screen. Does nothing if already hidden.
- *  Release the screen, set X clip regions to prevent drawing.
+ *  Release the screen, set X clip regions to prevent drawing, and restore the
+ *  Aqua cursor.
  */
 void QuartzHide(void)
 {
@@ -211,12 +214,14 @@ void QuartzHide(void)
 
     if (!xhidden) {
         for (i = 0; i < darwinNumScreens; i++) {
-            if (darwinScreens[i]) 
-                xf86SetRootClip(darwinScreens[i], false);	
+            if (darwinScreens[i]) {
+                QuartzSuspendXCursor(darwinScreens[i]);
+                xf86SetRootClip(darwinScreens[i], false);
+            }
         }
     } 
     QuartzRelease();
-    xhidden = true;
+    xhidden = TRUE;
 }
 
 
