@@ -16,7 +16,7 @@
 <date>14 January 2005
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.144 2005/01/15 04:36:18 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.145 2005/02/06 22:41:40 dawes Exp $
 </ident>
 
 <abstract>
@@ -82,7 +82,7 @@ Specific release enhancements can be viewed in the
 
 Most modern PC video hardware is supported in XFree86 &relvers;, and
 most PC video hardware that isn't supported explicitly can be used with
-the "vesa" driver.  The <htmlurl name="Release Notes" url="RELNOTES3.html">
+the "vesa" driver.  The <htmlurl name="Release Notes" url="RELNOTES4.html">
 has a table showing the drivers provided with XFree86 &relvers;, and links
 to related documentation.
 

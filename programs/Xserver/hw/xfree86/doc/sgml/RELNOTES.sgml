@@ -9,7 +9,7 @@
 <date>26 January 2005
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.120 2005/01/15 04:36:18 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.121 2005/01/26 17:38:16 dawes Exp $
 </ident>
 
 <abstract>
@@ -36,6 +36,21 @@ The current release (&relvers;) is the latest in that series.
 XFree86 4 represents a significant redesign of the XFree86 X server,
 with a strong focus on modularity and clean interfaces compared with the
 previous XFree86 3.x series.
+
+<![ %relcandidate [
+<sect1>&fullrelvers; RC&rcnum;
+<p>
+This is release candidate &rcnum; for the &fullrelvers; release.  This
+release candidate is feature-complete.  Known problems with this release
+candidate include:
+
+<itemize>
+<item>The DRM kernel source is incomplete/broken.
+
+<item>The documentation is not up to date.
+
+</itemize>
+]]>
 
 <sect>Configuration: a Quick Synopsis
 <p>
