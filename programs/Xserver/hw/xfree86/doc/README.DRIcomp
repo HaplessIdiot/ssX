@@ -2,7 +2,7 @@
 
           VA Linux Systems, Inc. Professional Services - Graphics.
 
-                                15 March 2001
+                                21 April 2001
 
 1.  Preamble
 
@@ -137,7 +137,8 @@ Here are the basic steps for kernel setup.
         o Go to Character devices
 
         o Disable Direct Rendering Manager (XFree86 DRI support) since we'll
-          use the DRI module from the XFree86/DRI tree.
+          use the DRI code from the XFree86/DRI tree and will compile it
+          there.
 
         o Go to /dev/agpgart (AGP Support) (EXPERIMENTAL) (NEW)
 
@@ -424,7 +425,7 @@ headers. This can be fixed by explicitly setting the value of TREE.  If the
 path to your kernel source is /usr/src/linux-2.4.x,
 
                cd ~/DRI-CVS/build/xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel
-               make TREE=/usr/src/linux-2.4
+               make TREE=/usr/src/linux-2.4.x/include
 
 or alternatively, edit Makefile to include this change.
 
@@ -437,13 +438,15 @@ first.
 The DRI kernel modules are in ~/DRI-CVS/build/xc/pro-
 grams/Xserver/hw/xfree86/os-support/linux/drm/kernel/.
 
-To load the appropriate DRI module in your running kernel you can either use
+To load the appropriate DRM module in your running kernel you can either use
 ismod and restart your X server or copy the kernel module to /lib/mod-
 ules/2.4.x/kernel/drivers/char/drm/ then run depmod and restart your X
 server.
 
 Make sure you first unload any older DRI kernel modules that might be already
 loaded.
+
+Note that some DRM modules require that the agpgart module be loaded first.
 
 9.  Normal Installation and Configuration
 
@@ -595,7 +598,7 @@ At this point your X server should be up and running with hardware-acceler-
 ated direct rendering.  Please read the DRI User Guide for information about
 trouble shooting and how to use the DRI-enabled X server for 3D applications.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRIcomp.sgml,v 1.13 2001/04/05 19:29:42 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRIcomp.sgml,v 1.14 2001/05/02 15:06:08 dawes Exp $
 
 
 $XFree86$
