@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.171 2000/11/13 23:09:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.172 2000/11/27 05:06:46 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -1568,7 +1568,11 @@ xf86PrintBanner()
     "please check the latest version in the XFree86 CVS repository\n"
     "(http://www.XFree86.Org/cvs)\n");
 #endif
-  ErrorF("\nXFree86 Version%s/ X Window System\n", XF86_VERSION);
+  ErrorF("\nXFree86 Version%s", XF86_VERSION);
+#ifdef XF86_CUSTOM_VERSION
+  ErrorF("(%s) ", XF86_CUSTOM_VERSION);
+#endif
+  ErrorF("/ X Window System\n");
   ErrorF("(protocol Version %d, revision %d, vendor release %d)\n",
          X_PROTOCOL, X_PROTOCOL_REVISION, VENDOR_RELEASE );
   ErrorF("Release Date: %s\n", XF86_DATE);

@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunleo/leo_accel.c,v 1.1 2000/05/18 23:21:38 dawes Exp $ */
 
 #define	PSZ	32
 #include	<asm/types.h>
@@ -73,6 +73,8 @@ int	leoRopTable[16] = {
 static void
 LeoCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr prgnSrc)
 {
+	ScreenPtr pScreen = pWin->drawable.pScreen;
+	LeoPtr pLeo = LeoGetScreenPrivate (pScreen);
 	DDXPointPtr pptSrc;
 	DDXPointPtr ppt;
 	RegionPtr prgnDst;
@@ -80,7 +82,9 @@ LeoCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr prgnSrc)
 	int dx, dy;
 	int i, nbox;
 	WindowPtr pwinRoot;
-	extern WindowPtr *WindowTable;
+
+	if (pLeo->vtSema)
+		return;
 
 	dx = ptOldOrg.x - pWin->drawable.x;
 	dy = ptOldOrg.y - pWin->drawable.y;

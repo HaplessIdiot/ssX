@@ -24,7 +24,7 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_accel.c,v 1.2 2000/05/23 04:47:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_accel.c,v 1.3 2000/06/23 19:29:45 dawes Exp $ */
 
 #include	<asm/types.h>
 #include	<math.h>
@@ -328,6 +328,9 @@ CreatorPaintWindow(WindowPtr pWin, RegionPtr pRegion, int what)
 	WindowPtr pBgWin;
 	int depth = pWin->drawable.depth;
 
+	if (pFfb->vtSema)
+		return;
+
 	FFBLOG(("CreatorPaintWindow: WIN(%p) what(%d)\n", pWin, what));
 	pPrivWin = cfbGetWindowPrivate(pWin);
 	pFfbPrivWin = CreatorGetWindowPrivate(pWin);
@@ -452,6 +455,9 @@ CreatorCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr prgnSrc)
 	int i, nbox;
 	WindowPtr pwinRoot;
 
+	if (pFfb->vtSema)
+		return;
+
 	FFBLOG(("CreatorCopyWindow: WIN(%p)\n", pWin));
 
 	REGION_INIT(pScreen, &rgnDst, NullBox, 0);
@@ -510,7 +516,10 @@ CreatorSaveAreas(PixmapPtr pPixmap, RegionPtr prgnSave, int xorg, int yorg, Wind
 	register BoxPtr pBox;
 	register int i;
 	PixmapPtr pScrPix;
-    
+
+	if (pFfb->vtSema)
+		return;
+
 	FFBLOG(("CreatorSaveAreas: WIN(%p)\n", pWin));
 	i = REGION_NUM_RECTS(prgnSave);
 	pPtsInit = (DDXPointPtr)ALLOCATE_LOCAL(i * sizeof(DDXPointRec));
@@ -556,7 +565,11 @@ CreatorRestoreAreas(PixmapPtr pPixmap, RegionPtr prgnRestore, int xorg, int yorg
 	cfb8_32WidScreenPtr pScreenPriv =
 		CFB8_32WID_GET_SCREEN_PRIVATE(pScreen);
 	PixmapPtr pScrPix;
-    
+
+	pFfb = GET_FFB_FROM_SCREEN(pScreen);
+	if (pFfb->vtSema)
+		return;
+
 	FFBLOG(("CreatorRestoreAreas: WIN(%p)\n", pWin));
 	i = REGION_NUM_RECTS(prgnRestore);
 	pPtsInit = (DDXPointPtr)ALLOCATE_LOCAL(i*sizeof(DDXPointRec));

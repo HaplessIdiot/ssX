@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.327 2000/11/28 20:59:13 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.328 2000/11/29 15:51:18 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -1088,10 +1088,6 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 /*
  * Other stuff used in the X Server source.
  */
-
-#ifndef AsmDefines
-# define AsmDefines /**/
-#endif
 
 #ifndef OtherIConfigFiles
 # define OtherIConfigFiles $(IRULESRC)/xfree86.cf $(IRULESRC)/xf86.rules

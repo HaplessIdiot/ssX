@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg6/cg6_driver.c,v 1.1 2000/05/23 04:47:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg6/cg6_driver.c,v 1.2 2000/06/30 17:15:15 dawes Exp $ */
 
 #define PSZ 8
 #include "xf86.h"
@@ -611,10 +611,14 @@ CG6CloseScreen(int scrnIndex, ScreenPtr pScreen)
     Cg6Ptr pCg6 = GET_CG6_FROM_SCRN(pScrn);
 
     pScrn->vtSema = FALSE;
+
     xf86UnmapSbusMem(pCg6->psdp, pCg6->fbc,
 		     CG6_RAM_VOFF - CG6_FBC_VOFF +
 		     (pCg6->psdp->width * pCg6->psdp->height));
     
+    if (pCg6->HWCursor)
+    	xf86SbusHideOsHwCursor(pCg6->psdp);
+
     pScreen->CloseScreen = pCg6->CloseScreen;
     return (*pScreen->CloseScreen)(scrnIndex, pScreen);
     return FALSE;

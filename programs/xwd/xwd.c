@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xwd/xwd.c,v 3.4 1998/10/04 09:42:02 dawes Exp $ */
+/* $XFree86: xc/programs/xwd/xwd.c,v 3.5 1999/03/07 11:41:37 dawes Exp $ */
 
 /*
  * xwd.c MIT Project Athena, X Window system window raster image dumper.
@@ -646,14 +646,12 @@ _swaplong (bp, n)
     register char *sp;
 
     while (bp < ep) {
-	sp = bp + 3;
-	c = *sp;
-	*sp = *bp;
-	*bp++ = c;
-	sp = bp + 1;
-	c = *sp;
-	*sp = *bp;
-	*bp++ = c;
-	bp += 2;
+        c = bp[3];
+        bp[3] = bp[0];
+        bp[0] = c;
+        c = bp[2];
+        bp[2] = bp[1];
+        bp[1] = c;
+        bp += 4;
     }
 }

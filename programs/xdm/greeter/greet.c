@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/greet.c,v 3.7 2000/06/14 00:16:16 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/greet.c,v 3.8 2000/11/14 21:59:25 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -180,7 +180,7 @@ InitGreet (struct display *d)
     int opcode, evbase, errbase, majret, minret;
     unsigned int value = XkbPCF_GrabsUseXKBStateMask;
     if (XkbQueryExtension (dpy, &opcode, &evbase, &errbase, &majret, &minret)) {
-	if (XkbSetPerClientControls (dpy, XkbPCF_GrabsUseXKBStateMask, &value))
+	if (!XkbSetPerClientControls (dpy, XkbPCF_GrabsUseXKBStateMask, &value))
 	    LogError ("%s\n", "SetPerClientControls failed");
     }
     }

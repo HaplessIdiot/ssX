@@ -24,7 +24,7 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb.h,v 1.3 2000/06/20 05:08:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb.h,v 1.4 2000/06/23 19:29:45 dawes Exp $ */
 
 #ifndef FFB_H
 #define FFB_H
@@ -192,6 +192,7 @@ typedef struct {
 	sbusDevicePtr psdp;
 	Bool HWCursor;
 	Bool NoAccel;
+	Bool vtSema;
 	CloseScreenProcPtr CloseScreen;
 	xf86CursorInfoPtr CursorInfoRec;
 	unsigned char CursorShiftX, CursorShiftY;

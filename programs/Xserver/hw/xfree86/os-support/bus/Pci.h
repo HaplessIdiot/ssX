@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.14 2000/10/17 16:53:19 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.15 2000/11/06 19:24:09 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -158,8 +158,7 @@
 # define ARCH_PCI_OS_INIT linuxPciInit
 # define INCLUDE_XF86_MAP_PCI_MEM
 #elif defined(__ia64__) && defined(linux)
-# define ARCH_PCI_INIT ix86PciInit
-# define ARCH_PCI_OS_INIT linuxPciInit
+# define ARCH_PCI_INIT linuxPciInit
 # define INCLUDE_XF86_MAP_PCI_MEM
 #elif defined(__alpha__) && defined(__FreeBSD__)
 # define ARCH_PCI_INIT freebsdPciInit
