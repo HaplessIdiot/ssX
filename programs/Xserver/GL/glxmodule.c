@@ -93,6 +93,7 @@ static XF86ModuleVersionInfo VersRec =
         1, 0, 0,
         ABI_CLASS_EXTENSION,
         ABI_EXTENSION_VERSION,
+        MOD_CLASS_NONE,
         {0,0,0,0}
 };
 
