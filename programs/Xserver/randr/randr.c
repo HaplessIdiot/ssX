@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.9 2001/06/11 01:38:32 keithp Exp $
+ * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.10 2001/06/26 18:23:34 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation, Inc.
  *
@@ -265,7 +265,7 @@ TellChanged (WindowPtr pWin, pointer value)
 
     pHead = (RREventPtr *) LookupIDByType (pWin->drawable.id, EventType);
     if (!pHead)
-	return;
+	return WT_WALKCHILDREN;
 
     se.type = RRScreenChangeNotify + RREventBase;
     se.rotation = (CARD8) pScrPriv->rotation;
@@ -304,6 +304,7 @@ TellChanged (WindowPtr pWin, pointer value)
 	se.sequenceNumber = client->sequence;
 	WriteEventsToClient (client, 1, (xEvent *) &se);
     }
+    return WT_WALKCHILDREN;
 }
 
 static Bool
