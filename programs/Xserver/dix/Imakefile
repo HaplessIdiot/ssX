@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.47 94/11/21 18:27:00 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/dix/Imakefile,v 3.3 1995/01/28 15:45:46 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/dix/Imakefile,v 3.4 1995/05/27 03:00:19 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = atom.c colormap.c cursor.c devices.c dispatch.c dixutils.c events.c \
@@ -72,7 +72,11 @@ SpecialCObjectRule(dispatch,$(ICONFIGFILES),$(K5DEFS))
 SpecialCObjectRule(main,$(ICONFIGFILES),$(VENDOR_DEFINES))
 
 #ifndef LinkDirectory
+#if !BuildLBX
 InstallLinkKitLibrary(dix,$(LINKKITDIR)/lib)
+#else
+InstallLinkKitNamedLibrary(dix,dixlbx,$(LINKKITDIR)/lib)
+#endif
 #endif
 
 #ifdef LinkDirectory
