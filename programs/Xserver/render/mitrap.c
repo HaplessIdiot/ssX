@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/mitrap.c,v 1.5 2002/05/22 04:41:38 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/mitrap.c,v 1.6 2002/05/31 16:48:52 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -135,6 +135,11 @@ miTrapezoids (CARD8	    op,
     PictureScreenPtr    ps = GetPictureScreen(pScreen);
     PicturePtr		pPicture = 0;
     BoxRec		bounds;
+    INT16		xDst, yDst;
+    INT16		xRel, yRel;
+    
+    xDst = traps[0].left.p1.x >> 16;
+    yDst = traps[0].left.p1.y >> 16;
     
     if (maskFormat)
     {
@@ -166,18 +171,21 @@ miTrapezoids (CARD8	    op,
 				   -bounds.x1, -bounds.y1);
 	if (!maskFormat)
 	{
+	    xRel = bounds.x1 + xSrc - xDst;
+	    yRel = bounds.y1 + ySrc - yDst;
 	    CompositePicture (op, pSrc, pPicture, pDst,
-			      xSrc, ySrc, 0, 0, bounds.x1, bounds.y1,
+			      xRel, yRel, 0, 0, bounds.x1, bounds.y1,
 			      bounds.x2 - bounds.x1,
 			      bounds.y2 - bounds.y1);
 	    FreePicture (pPicture, 0);
 	}
     }
-    /* XXX adjust xSrc and ySrc */
     if (maskFormat)
     {
+	xRel = bounds.x1 + xSrc - xDst;
+	yRel = bounds.y1 + ySrc - yDst;
 	CompositePicture (op, pSrc, pPicture, pDst,
-			  xSrc, ySrc, 0, 0, bounds.x1, bounds.y1,
+			  xRel, yRel, 0, 0, bounds.x1, bounds.y1,
 			  bounds.x2 - bounds.x1,
 			  bounds.y2 - bounds.y1);
 	FreePicture (pPicture, 0);
