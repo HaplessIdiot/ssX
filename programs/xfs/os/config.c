@@ -1,4 +1,5 @@
 /* $XConsortium: config.c,v 1.15 94/04/17 19:56:03 dpw Exp $ */
+/* $XFree86$ */
 /*
 Copyright (c) 1987  X Consortium
 
