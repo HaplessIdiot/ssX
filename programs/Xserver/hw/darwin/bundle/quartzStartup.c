@@ -3,11 +3,11 @@
  * Startup code for the Quartz Darwin X Server
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzStartup.c,v 1.2 2001/04/02 08:50:56 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzStartup.c,v 1.3 2001/04/05 06:08:46 torrey Exp $ */
 
 #include <fcntl.h>
 #include "opaque.h"
-#include "../darwin.h"
+#include "darwin.h"
 #include "quartzShared.h"
 
 char **envpGlobal;      // argcGlobal and argvGlobal

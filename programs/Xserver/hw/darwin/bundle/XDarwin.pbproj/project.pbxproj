@@ -173,6 +173,16 @@
 			path = /System/Library/Frameworks/IOKit.framework;
 			refType = 0;
 		};
+		017D6F4400E861FB7F000001 = {
+			isa = PBXFileReference;
+			path = rootlessGC.c;
+			refType = 4;
+		};
+		017D6F4500E861FB7F000001 = {
+			isa = PBXFileReference;
+			path = rootlessScreen.c;
+			refType = 4;
+		};
 		018F40F2003E1902CE6F79C2 = {
 			children = (
 				018F40F3003E1916CE6F79C2,
@@ -506,7 +516,7 @@
 				02A1FEA6006D34BE416877C2,
 			);
 			isa = PBXGroup;
-			name = "IOKit Support";
+			name = IOKit;
 			path = ..;
 			refType = 2;
 		};
@@ -632,6 +642,7 @@
 				018F40F2003E1902CE6F79C2,
 				170DFB0000729C86416877C2,
 				43B962CE00617089416877C2,
+				32FEE13C00E07C3E7F000001,
 			);
 			isa = PBXGroup;
 			name = "Other Sources";
@@ -692,6 +703,51 @@
 			path = /System/Library/Frameworks/Foundation.framework;
 			refType = 0;
 		};
+		32FEE13C00E07C3E7F000001 = {
+			children = (
+				32FEE13E00E07CBE7F000001,
+				32FEE13F00E07CBE7F000001,
+				32FEE14000E07CBE7F000001,
+				32FEE14100E07CBE7F000001,
+				32FEE14200E07CBE7F000001,
+				017D6F4400E861FB7F000001,
+				017D6F4500E861FB7F000001,
+				32FEE14900E07D317F000001,
+			);
+			isa = PBXGroup;
+			name = Rootless;
+			refType = 4;
+		};
+		32FEE13E00E07CBE7F000001 = {
+			isa = PBXFileReference;
+			path = rootless.h;
+			refType = 4;
+		};
+		32FEE13F00E07CBE7F000001 = {
+			isa = PBXFileReference;
+			path = rootlessAqua.h;
+			refType = 4;
+		};
+		32FEE14000E07CBE7F000001 = {
+			isa = PBXFileReference;
+			path = rootlessAquaGlue.c;
+			refType = 4;
+		};
+		32FEE14100E07CBE7F000001 = {
+			isa = PBXFileReference;
+			path = rootlessAquaImp.h;
+			refType = 4;
+		};
+		32FEE14200E07CBE7F000001 = {
+			isa = PBXFileReference;
+			path = rootlessAquaImp.m;
+			refType = 4;
+		};
+		32FEE14900E07D317F000001 = {
+			isa = PBXFileReference;
+			path = rootlessValTree.c;
+			refType = 4;
+		};
 		3576829A0077B8F17F000001 = {
 			isa = PBXFileReference;
 			path = quartzCursor.c;
@@ -717,7 +773,7 @@
 				02A1FEA8006D38F0416877C2,
 			);
 			isa = PBXGroup;
-			name = "Quartz Support";
+			name = Quartz;
 			refType = 4;
 		};
 		43B962CF00617089416877C2 = {
