@@ -31,6 +31,7 @@ Author: Keith Packard, MIT X Consortium
 */
 
 /* $XConsortium: cfbrctstp8.c,v 1.17 94/04/17 20:28:59 dpw Exp $ */
+/* $XFree86$ */
 
 #if PSZ == 8
 
