@@ -25,7 +25,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/Xserver/cfb/cfbply1rct.c,v 3.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbply1rct.c,v 3.10 2003/10/29 22:44:53 tsi Exp $ */
 
 #include "X.h"
 
@@ -76,10 +76,10 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
     int		    step1 = 0, step2 = 0;
     int		    sign1 = 0, sign2 = 0;
     int		    h;
-#if PSZ != 24 && PPW > 1
     int		    l;
-#endif
+#if PSZ != 24 && PPW > 1
     int		    r;
+#endif
     int		    nmiddle;
     RROP_DECLARE
 
