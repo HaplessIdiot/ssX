@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/dgaproc.h,v 1.11 1999/04/17 07:05:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/dgaproc.h,v 1.12 1999/05/09 11:57:18 dawes Exp $ */
 
 #ifndef __DGAPROC_H
 #define __DGAPROC_H
@@ -123,6 +123,7 @@ void DGACloseFramebuffer(int index);
 
 extern unsigned char DGAReqCode;
 extern int DGAErrorBase;
+extern int DGAEventBase;
 extern int *XDGAEventBase;
 
 
