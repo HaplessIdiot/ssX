@@ -51,11 +51,11 @@ NVPointerMoved(int index, int x, int y)
     int newX, newY;
 
     if(pNv->Rotate == 1) {
-	newX = pScrn->currentMode->HDisplay - y - 1;
+	newX = pScrn->pScreen->height - y - 1;
 	newY = x;
     } else {
 	newX = y;
-	newY = pScrn->currentMode->VDisplay - x - 1;
+	newY = pScrn->pScreen->width - x - 1;
     }
 
     (*pNv->PointerMoved)(index, newX, newY);
