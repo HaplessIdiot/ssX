@@ -1,40 +1,63 @@
 XFree86 3.9.17Z (14 February 2000)
-3783. Synced with latest Mesa 3.3 sources (Brian Paul, Precision Insight).
-3782. Bug fixes for DRI (Kevin Martin, Precision Insight).
-3781. Bug fixes for tdfx DRI driver (Daryll Strauss, Precision Insight).
-3780. Fix for dead keys in XKB Norwegian keyboards (#3702, 3703,
+3796. Indented xfree86 for better readability. (Egbert Eich)
+3795. Fixed int10 build rules (hope they are right now) (Egbert Eich)
+3794. Changed lnxResources.c to know about differences between ev4/5 and ev6.
+      (Egbert Eich).
+3793. xf86pciBus.c restores old registration if attempt fo fix PCI
+      registration fails. (Egbert Eich)
+3792. Removed sparse mapping from vidmem.c. (Egbert Eich)
+3791. Changed memory mapping for linux on Alpha:
+       - removed separate mapping functions for sparse and dense.
+       - allow for 32bit read/write to access memory directly without
+         going thru a function call if Jensen support is not enabled
+      (Egbert Eich)
+3790. Fix for dead keys in XKB Norwegian keyboards (#3702, 3703,
       Preston Brown).
-3779. Cleanups for the contrib programs recently moved into the main xc/
+3789. Synced with latest Mesa 3.3 sources (Brian Paul, Precision Insight).
+3788. Bug fixes for DRI (Kevin Martin, Precision Insight).
+3787. Bug fixes for tdfx DRI driver (Daryll Strauss, Precision Insight).
+3786. Cleanups for the contrib programs recently moved into the main xc/
       tree (#3701, Bruno Haible).
-3778. Small lynx.cf fix (#3700, Thomas Mueller).
-3777. Initialise MMIO32 for r128 when using fbdev (#3699, Kostas Gewrgiou).
-3776. Avoid most lockups for Trio3D startup (s3virge driver) (#3698,
+3785. Small lynx.cf fix (#3700, Thomas Mueller).
+3784. Initialise MMIO32 for r128 when using fbdev (#3699, Kostas Gewrgiou).
+3783. Avoid most lockups for Trio3D startup (s3virge driver) (#3698,
       Harald Koenig).
-3775. Fix unresolved and conflicting symbols in X-TT, and fix the broken
+3782. Fix unresolved and conflicting symbols in X-TT, and fix the broken
       BIG5 converter (#3697, Takuya Shiozaki).
-3774. Update README.fonts (#3696, Juliusz Chroboczek).
-3773. Add dot, line, arc accelerations for 24bpp in fb, and cleanup most
+3781. Update README.fonts (#3696, Juliusz Chroboczek).
+3780. Add dot, line, arc accelerations for 24bpp in fb, and cleanup most
       warnings (#3695, Keith Packard).
-3772. Make it possible to build the r128 driver with support for fb
+3779. Make it possible to build the r128 driver with support for fb
       (disabled by default) (#3693, Keith Packard).
-3771. Fix a problem with lnx_ev56 (#3693, Keith Packard).
-3770. Fix references to noPanoramiXExtension when Xinerama is not built
+3778. Fix a problem with lnx_ev56 (#3693, Keith Packard).
+3777. Fix references to noPanoramiXExtension when Xinerama is not built
       (#3691, Christopher Sekiya).
-3769. Fix possible races in xauth and libXau (#3690, 3694, Colin Phipps).
-3768. Fix some Xv and PC-98 init bugs in the apm driver (#3689, Loic Grenie).
-3767. Fix SVR4.0 build problem in the cyrix driver (David Dawes).
-3766. Fix SVR4.0 build problems in the sis driver (#3687, Takaaki Nomura).
-3765. Change CppProgram to /usr/bin/cpp for FreeBSD.
-3764. DPS build fixes (#3686, Juliusz Chroboczek, David Dawes).
-3763. Back out the pMga->PointerMoved change.
-3762. Fix DRI/DRM code to build tdfx driver and turn off building MGA DRI
+3776. Fix possible races in xauth and libXau (#3690, 3694, Colin Phipps).
+3775. Fix some Xv and PC-98 init bugs in the apm driver (#3689, Loic Grenie).
+3774. Fix SVR4.0 build problem in the cyrix driver (David Dawes).
+3773. Fix SVR4.0 build problems in the sis driver (#3687, Takaaki Nomura).
+3772. Change CppProgram to /usr/bin/cpp for FreeBSD.
+3771. DPS build fixes (#3686, Juliusz Chroboczek, David Dawes).
+3770. Back out the pMga->PointerMoved change.
+3769. Fix DRI/DRM code to build tdfx driver and turn off building MGA DRI
       support until the next code merge (Kevin Martin).
-3761. Attempt to first read the PLL parameters in the BIOS from PCI space,
+3768. Attempt to first read the PLL parameters in the BIOS from PCI space,
       then fallback to 0xc0000, and then fallback to default PLL parameters
       in r128 driver (Kevin Martin).
-3760. Fix compiler warnings in r128 driver (Kevin Martin).
+3767. Fix compiler warnings in r128 driver (Kevin Martin).
 
 XFree86 3.9.17f (12 February 2000)
+3766. Moved Alpha ev5/56 read dense functions to a separate file.
+      (Egbert Eich)
+3765. Improved RAC support for asynchronous events (not yet enabled).
+      (Egbert Eich)
+3764. Fixed a bug that prevented restoration of PCI registers after
+      a VT switch. (Egbert Eich)
+3763. Fixed support for BIOS reading on multiple chipset cards. (Egbert Eich)
+3762. Separated stub functions from pcitweak. (Egbert Eich)
+3761. Rewrote scanpci to use libxf86_os.a. (Egbert Eich)
+3760. Improved server state notification callback handler to meet the
+      needs of multi-head dri. (Egbert Eich)
 3759. Mga fix for pMga->PointerMoved init (#3684, Isao Ohishi).
 3758. Import FreeType 1.3.1 and X-TrueType 1.3, and incorporate the
       font cache extension (#3653, Akio Morita, X-TrueType team, Nozomi Ytow).
@@ -9688,4 +9711,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1007 2000/02/15 00:40:32 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1008 2000/02/15 07:13:35 martin Exp $
