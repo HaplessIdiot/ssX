@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.10 1997/07/06 06:50:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.11 1997/07/06 07:00:52 dawes Exp $ */
 
 
 
@@ -58,7 +58,7 @@ typedef struct _xf86dirent XF86DIRENT;
 
 #endif /* defined(XFree86LOADER) || defined(NEED_XF86_TYPES) */
 
-#ifndef XFree86LOADER
+#ifdef XFree86LOADER
 
 /*
  * the rest of this file should only be included for code that is supposed

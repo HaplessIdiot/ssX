@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.31 1997/06/15 12:32:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.32 1997/06/25 08:24:55 hohndel Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -304,9 +304,9 @@ i128Probe()
    i128io.rbase_b = inl(iR.iobase + 0x0C) & 0xFFFFFF00;
    i128io.rbase_i = inl(iR.iobase + 0x10) & 0xFFFFFF00;
    i128io.rbase_e = inl(iR.iobase + 0x14) & 0xFFFF8003;
-   i128io.id =      inl(iR.iobase + 0x18) & 0x7FFFFFFF;
-   i128io.config1 = inl(iR.iobase + 0x1C) & 0xF3333F1F;
-   i128io.config2 = inl(iR.iobase + 0x20) & 0xFFF70F03;
+   i128io.id =      inl(iR.iobase + 0x18) & /* 0x7FFFFFFF */ 0xFFFFFFFF;
+   i128io.config1 = inl(iR.iobase + 0x1C) & /* 0xF3333F1F */ 0xFF333F1F;
+   i128io.config2 = inl(iR.iobase + 0x20) & /* 0xFFF70F03 */ 0xC1F70FFF;
    i128io.soft_sw = inl(iR.iobase + 0x28) & 0x0000FFFF;
    i128io.vga_ctl = inl(iR.iobase + 0x30) & 0x0000FFFF;
 
@@ -358,11 +358,11 @@ i128Probe()
 
    /* enable all of the memory mapped windows */
 
-   i128io.config1 &= 0xF300201D;
+   i128io.config1 &= 0xFF00001F;
    i128io.config1 |= 0x00333F10;
    outl(iR.iobase + 0x1C, i128io.config1);
 
-   i128io.config2 &= 0xFF000000;
+   i128io.config2 &= 0xFF0FFFFF;
    i128io.config2 |= 0x00500000;
    outl(iR.iobase + 0x20, i128io.config2);
 
@@ -620,9 +620,13 @@ i128Probe()
       ErrorF("%s %s: Ramdac type: %s\n",
          XCONFIG_PROBED, i128InfoRec.name, i128InfoRec.ramdac);
 
-/* i128io.config2&0x80000000 is obsolete - DAC is always 220 MHZ (for now) */
+/*
+ * i128io.config2&0x80000000 is obsolete
+ * rev 2 board or 8MB rev 1 board DAC is always 220 MHZ (for now)
+ */
    if (i128InfoRec.dacSpeeds[0] <= 0) {
-      if (i128io.config2&0x80000000)
+      if ((pcrp->_device_vendor == I128_DEVICE_ID2) ||
+          (i128InfoRec.videoRam == 8192))
 	 i128InfoRec.dacSpeeds[0] = 220000;
       else
 	 i128InfoRec.dacSpeeds[0] = 175000;
@@ -895,15 +899,17 @@ i128ProgramIBMRGB(freq, flags)
    i128mem.rbase_g_b[IDXL_I] = IBMRGB_misc4;
    i128mem.rbase_g_b[DATA_I] = 0x00;
 
-   if (i128RamdacType == IBM526_DAC) {
-	/* program mclock to 57MHz */
-   	i128mem.rbase_g_b[IDXL_I] = IBMRGB_pll_ref_div_fix;
-   	i128mem.rbase_g_b[DATA_I] = 0x08;
-   	i128mem.rbase_g_b[IDXL_I] = IBMRGB_sysclk_ref_div;
-   	i128mem.rbase_g_b[DATA_I] = 0x47;
-   }
-
    /* ?? There is no write to cursor control register */
+
+   if (i128RamdacType == IBM526_DAC) {
+	/* program mclock to 52MHz */
+   	i128mem.rbase_g_b[IDXL_I] = IBMRGB_sysclk_ref_div;
+   	i128mem.rbase_g_b[DATA_I] = 0x08;
+   	i128mem.rbase_g_b[IDXL_I] = IBMRGB_sysclk_vco_div;
+   	i128mem.rbase_g_b[DATA_I] = 0x41;
+	/* should delay at least a millisec so we'll wait 50 */
+   	xf86usleep(50000);
+   }
 
    switch (i128InfoRec.depth) {
    	case 24: /* 32 bit */
@@ -940,7 +946,6 @@ i128ProgramIBMRGB(freq, flags)
    i128mem.rbase_g_b[IDXH_I] = tmph;
    i128mem.rbase_g_b[IDXL_I] = tmpl;
 
-   xf86usleep(150000);
    return(TRUE);
 }
 
@@ -951,7 +956,9 @@ int freq;
 {
    unsigned char tmp, misc_ctrl, aux_ctrl, oclk, col_key, mux1_ctrl, mux2_ctrl;
    unsigned char n, m, p;
-   int nl, ml, pl;
+   double ffreq, diff, mindiff;
+   int ni, mi, pi;
+   int best_n=32, best_m=32;
 
    if (freq < 20000) {
       ErrorF("%s %s: Specified dot clock (%.3f) too low for TI 3025",
@@ -959,10 +966,55 @@ int freq;
       return(FALSE);
    }
 
-   Ti3025CalcNMP(freq, &nl, &ml, &pl);
-   n = (unsigned char )nl;
-   m = (unsigned char )ml;
-   p = (unsigned char )pl;
+   
+#define FREQ_MIN   12000
+#define FREQ_MAX  220000
+
+   if (freq < FREQ_MIN)
+      ffreq = FREQ_MIN / 1000.0;
+   else if (freq > FREQ_MAX)
+      ffreq = FREQ_MAX / 1000.0;
+   else
+      ffreq = freq / 1000.0;
+   
+   for(pi=0; (pi<4) && (ffreq<110.0); pi++)
+      ffreq *= 2;
+
+   if (pi==4) {
+      ffreq /= 2;
+      pi--;
+   }
+   
+   /* now 110.0 <= ffreq <= 220.0 */   
+   
+   ffreq /= TI_REF_FREQ;
+   
+   /* now 7.6825 <= ffreq <= 15.3650 */
+   /* the remaining formula is  ffreq = (m+2)*8 / (n+2) */
+   
+   mindiff = ffreq;
+   
+   for (ni = 1; ni <= (int)(TI_REF_FREQ/0.5 - 2); ni++) {
+      mi = (int)(ffreq * (ni+2) / 8.0 + 0.5) - 2;
+      if (mi < 1)
+	 mi = 1;
+      else if (mi > 127) 
+	 mi = 127;
+      
+      diff = ((mi+2) * 8) / (ni+2.0) - ffreq;
+      if (diff<0)
+	 diff = -diff;
+      
+      if (diff < mindiff) {
+	 mindiff = diff;
+	 best_n = ni;
+	 best_m = mi;
+      }
+   }
+
+   n = (unsigned char )best_n;
+   m = (unsigned char )best_m;
+   p = (unsigned char )pi;
 
    tmp = i128mem.rbase_g_b[INDEX_TI];
 

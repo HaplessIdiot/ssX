@@ -27,7 +27,7 @@
  * 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128misc.c,v 3.4 1997/01/24 01:02:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128misc.c,v 3.5 1997/01/27 06:57:40 dawes Exp $ */
 
 #include "servermd.h"
 
@@ -189,13 +189,9 @@ i128EnterLeaveVT(enter, screen_idx)
 
 	 if ((pointer)pspix->devPrivate.ptr != i128VideoMem && ppix) {
 	    pspix->devPrivate.ptr = i128VideoMem;
-#ifdef WORKWORKWORK
-	    (*i128ImageWriteFunc)(0, 0, pScreen->width, pScreen->height,
-			        ppix->devPrivate.ptr,
-			        PixmapBytePad(i128DisplayWidth, 
-					      pScreen->rootDepth),
-			        0, 0, i128alu[GXcopy], ~0);
-#endif
+	    memcpy((char *)i128VideoMem, (char *)ppix->devPrivate.ptr,
+		   pScreen->height *
+		   PixmapBytePad(i128DisplayWidth, pScreen->rootDepth));
 	 }
       }
       if (ppix) {
@@ -207,13 +203,9 @@ i128EnterLeaveVT(enter, screen_idx)
 	 ppix = (pScreen->CreatePixmap)(pScreen, i128DisplayWidth,
 					pScreen->height, pScreen->rootDepth);
 	 if (ppix) {
-#ifdef WORKWORKWORK
-	    (*i128ImageReadFunc)(0, 0, pScreen->width, pScreen->height,
-			       ppix->devPrivate.ptr,
-			       PixmapBytePad(i128DisplayWidth, 
-					     pScreen->rootDepth),
-			       0, 0, ~0);
-#endif
+	    memcpy((char *)ppix->devPrivate.ptr, (char *)i128VideoMem,
+		   pScreen->height *
+		   PixmapBytePad(i128DisplayWidth, pScreen->rootDepth));
 	    pspix->devPrivate.ptr = ppix->devPrivate.ptr;
 	 }
       }

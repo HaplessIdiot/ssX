@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.5 1997/06/03 14:12:22 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.6 1997/06/29 11:40:34 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -307,19 +307,30 @@ void tseng_init_acl()
     *ACL_INTERRUPT_STATUS = 0x0;
     *ACL_ACCELERATOR_STATUS = 0x0;
 
-    if (et4000_type >= TYPE_ET6000)
+    if (Is_ET6K)
     {
       *ACL_STEPPING_INHIBIT = 0x0; /* let all maps (Src, Dst, Mix, Pat) step */
       *ACL_6K_CONFIG = 0x00;        /* maximum performance -- what did you think? */
       *ACL_POWER_CONTROL = 0x01;   /* conserve power when ACL is idle */
+      *ACL_MIX_CONTROL = 0x33;
     }
     else /* W32i/W32p */
     {
       *ACL_RELOAD_CONTROL = 0x0;
       *ACL_SYNC_ENABLE = 0x1;
+      *ACL_ROUTING_CONTROL = 0x00;
     }
 
-    if (et4000_type < TYPE_ET4000W32P)   /* W32i */
+    if (Is_W32p_up)
+    { 
+        /* Enable the W32p startup bit and set use an eight-bit pixel depth */
+        *ACL_NQ_X_POSITION = 0;
+        *ACL_NQ_Y_POSITION = 0;
+	*ACL_PIXEL_DEPTH = (vgaBitsPerPixel - 8) << 1;
+	/* writing destination address will start ACL */
+        *ACL_OPERATION_STATE = 0x10;
+    }
+    else
     {
         /* X, Y positions set to zero's for w32 and w32i */
         *ACL_X_POSITION = 0;
@@ -331,22 +342,12 @@ void tseng_init_acl()
          */
         *ACL_VIRTUAL_BUS_SIZE = 0x00;
     }
-    else /* w32p and ET6000 */
-    { 
-        /* Enable the W32p startup bit and set use an eight-bit pixel depth */
-        *ACL_NQ_X_POSITION = 0;
-        *ACL_NQ_Y_POSITION = 0;
-	*ACL_PIXEL_DEPTH = (vgaBitsPerPixel - 8) << 1;
-	/* writing destination address will start ACL */
-        *ACL_OPERATION_STATE = 0x10;
-    }
     *ACL_DESTINATION_Y_OFFSET = vga256InfoRec.displayWidth * (vgaBitsPerPixel / 8) - 1;
     *ACL_XY_DIRECTION = 0;
 
     *MMU_CONTROL = 0x74;
 
-    if ((et4000_type < TYPE_ET6000) && (et4000_type > TYPE_ET4000W32I)
-         && TSENG.ChipUseLinearAddressing) /* W32p */
+    if (Is_W32p && TSENG.ChipUseLinearAddressing)
     {
       /*
        * Since the w32p revs C and D don't have any memory mapped when the
