@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #ifndef _WINDEF_H
 #define _WINDEF_H
 #ifdef __cplusplus

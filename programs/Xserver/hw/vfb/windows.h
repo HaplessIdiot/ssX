@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
 	windows.h - main header file for the Win32 API
 
