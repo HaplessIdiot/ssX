@@ -73,7 +73,7 @@ in this Software without prior written authorization from The Open Group.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/ps/Ps.h,v 1.11 2001/11/21 22:40:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/Ps.h,v 1.12 2001/12/14 19:59:15 dawes Exp $ */
 
 #ifndef _PS_H_
 #define _PS_H_
@@ -502,5 +502,15 @@ extern void PsCopyDisplayList(PixmapPtr src, PixmapPtr dst, int xoff,
 extern PsElmPtr PsCreateFillElementList(PixmapPtr pix, int *nElms);
 extern PsElmPtr PsCloneFillElementList(int nElms, PsElmPtr elms);
 extern void PsDestroyFillElementList(int nElms, PsElmPtr elms);
+
+/*
+ *  Functions in PsCache.c
+ */
+
+#ifdef BM_CACHE
+extern int PsBmIsImageCached(int gWidth, int gHeight, char *pBuffer);
+extern int PsBmPutImageInCache(int gWidth, int gHeight, char *pBuffer);
+extern void PsBmClearImageCache(void);
+#endif
 
 #endif  /* _PS_H_ */

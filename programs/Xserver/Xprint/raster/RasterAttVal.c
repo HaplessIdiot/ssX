@@ -1,4 +1,4 @@
-/* $Xorg: RasterAttVal.c,v 1.3 2000/08/17 19:48:12 cpqbld Exp $ */
+/* $Xorg: RasterAttVal.c,v 1.4 2001/03/14 18:46:34 pookie Exp $ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.
@@ -30,7 +30,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/raster/RasterAttVal.c,v 1.2 2001/08/01 00:44:46 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/raster/RasterAttVal.c,v 1.3 2001/10/31 22:50:29 tsi Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -48,14 +48,16 @@ copyright holders.
  * define valid values and defaults for Printer pool
  */
 static XpOid ValidContentOrientationsOids[] = {
-    xpoid_val_content_orientation_portrait
+    xpoid_val_content_orientation_portrait,
+    xpoid_val_content_orientation_landscape
 };
 static XpOidList ValidContentOrientations = {
     ValidContentOrientationsOids, XpNumber(ValidContentOrientationsOids)
 };
 
 static XpOid DefaultContentOrientationsOids[] = {
-    xpoid_val_content_orientation_portrait
+    xpoid_val_content_orientation_portrait,
+    xpoid_val_content_orientation_landscape
 };
 static XpOidList DefaultContentOrientations = {
     DefaultContentOrientationsOids, XpNumber(DefaultContentOrientationsOids)
@@ -111,7 +113,8 @@ static XpOidList ValidSetupProviso = {
 };
 
 static XpOidDocFmt ValidDocFormatsSupportedFmts[] = {
-    { "Postscript", "2", NULL }
+    { "Postscript", "2", NULL },
+    { "PCL", "3", NULL }
 };
 static XpOidDocFmtList ValidDocFormatsSupported = {
     ValidDocFormatsSupportedFmts, XpNumber(ValidDocFormatsSupportedFmts)
@@ -133,7 +136,8 @@ static XpOidDocFmtList DefaultEmbeddedFormatsSupported = {
 };
 
 static XpOidDocFmt ValidRawFormatsSupportedFmts[] = {
-    { "Postscript", "2", NULL }
+    { "Postscript", "2", NULL },
+    { "PCL", "3", NULL }
 };
 static XpOidDocFmtList ValidRawFormatsSupported = {
     ValidRawFormatsSupportedFmts, XpNumber(ValidRawFormatsSupportedFmts)
@@ -218,6 +222,30 @@ static XpOidDocFmt DefaultDocumentFormat = {
     "Postscript", "2", NULL
 };
 
+static XpOid ValidAvailableCompressionsOids[] = {
+    xpoid_val_available_compressions_0,
+    xpoid_val_available_compressions_01,
+    xpoid_val_available_compressions_02,
+    xpoid_val_available_compressions_03,
+    xpoid_val_available_compressions_012,
+    xpoid_val_available_compressions_013,
+    xpoid_val_available_compressions_023,
+    xpoid_val_available_compressions_0123
+};
+
+static XpOidList ValidAvailableCompressions = {
+    ValidAvailableCompressionsOids, XpNumber(ValidAvailableCompressionsOids)
+};
+
+static XpOid DefaultAvailableCompressionsOids[] = {
+    xpoid_val_available_compressions_0123,
+    xpoid_val_available_compressions_0
+};
+
+static XpOidList DefaultAvailableCompressions = {
+    DefaultAvailableCompressionsOids, XpNumber(DefaultAvailableCompressionsOids)
+};
+
 
 /*
  * init struct for XpValidate*Pool
@@ -232,5 +260,6 @@ XpValidatePoolsRec RasterValidatePoolsRec = {
     &ValidListfontsModes, &DefaultListfontsModes,
     &ValidRawFormatsSupported, &DefaultRawFormatsSupported,
     &ValidSetupProviso,
-    &DefaultDocumentFormat
+    &DefaultDocumentFormat,
+    &ValidAvailableCompressions, &DefaultAvailableCompressions
 };

@@ -1,4 +1,4 @@
-/* $Xorg: Raster.c,v 1.3 2000/08/17 19:48:11 cpqbld Exp $ */
+/* $Xorg: Raster.c,v 1.4 2001/03/14 18:46:12 pookie Exp $ */
 /*
 (c) Copyright 1996 Hewlett-Packard Company
 (c) Copyright 1996 International Business Machines Corp.
@@ -31,7 +31,7 @@ dealings in this Software without prior written authorization from said
 copyright holders.
 */
 
-/* $XFree86: xc/programs/Xserver/Xprint/raster/Raster.c,v 1.9 2001/12/04 17:28:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/raster/Raster.c,v 1.10 2001/12/06 15:08:44 tsi Exp $ */
 
 /*******************************************************************
 **
@@ -54,7 +54,8 @@ copyright holders.
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
-
+#include <sys/types.h>
+#include <sys/stat.h>
 #include "X.h"
 #include "Xos.h"	/* for SIGCLD on pre-POSIX systems */
 #define NEED_EVENTS
@@ -77,6 +78,7 @@ copyright holders.
 
 #include "attributes.h"
 #include "AttrValid.h"
+#include "DiPrint.h"
 
 static void AllocateRasterPrivates(
     ScreenPtr pScreen);
@@ -144,21 +146,36 @@ static int RasterReproducibleArea(XpContextPtr pCon,
 			      xRectangle *pRect);
 
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
-
-extern Bool _XpBoolNoop();
-extern void _XpVoidNoop();
-extern void XpDestroyAttributes();
-extern char *ReplaceFileString(
-    char *string,
-    char *inFileName,
-    char *outFileName);
-extern char *XpGetConfigDir();
-
-extern XpValidatePoolsRec RasterValidatePoolsRec; /* From RasterAttVal.c */
+#define DOC_PCL		1
+#define DOC_RASTER	2
 
 static int RasterScreenPrivateIndex, RasterContextPrivateIndex;
 static int RasterGeneration = 0;
 static char RASTER_DRIV_NAME[] = "XP-RASTER";
+static int doc_type = DOC_RASTER;
+
+#define ABSOLUTE_PCLCOMP_PATH1 "/usr/openwin/bin/pclcomp"
+#define ABSOLUTE_PCLCOMP_PATH2 "/usr/X11/bin/pclcomp"
+
+static char *pcl3_output_cmds[] = {
+        "xpr -device ljet -rv -landscape < %(InFile)% | pclcomp -0 > %(OutFile)%",
+        "xpr -device ljet -rv -landscape < %(InFile)% | pclcomp -01 > %(OutFile)%",
+        "xpr -device ljet -rv -landscape < %(InFile)% | pclcomp -02 > %(OutFile)%",
+        "xpr -device ljet -rv -landscape < %(InFile)% | pclcomp -03 > %(OutFile)%",
+        "xpr -device ljet -rv -landscape < %(InFile)% | pclcomp -012 > %(OutFile)%",
+        "xpr -device ljet -rv -landscape < %(InFile)% | pclcomp -013 > %(OutFile)%",
+        "xpr -device ljet -rv -landscape < %(InFile)% | pclcomp -023 > %(OutFile)%",
+        "xpr -device ljet -rv -landscape < %(InFile)% | pclcomp -0123 > %(OutFile)%",
+        "xpr -device ljet -rv -landscape < %(InFile)% > %(OutFile)%",
+        "xpr -device ljet -rv < %(InFile)% | pclcomp -0 > %(OutFile)%",
+        "xpr -device ljet -rv < %(InFile)% | pclcomp -01 > %(OutFile)%",
+        "xpr -device ljet -rv < %(InFile)% | pclcomp -02 > %(OutFile)%",
+        "xpr -device ljet -rv < %(InFile)% | pclcomp -03 > %(OutFile)%",
+        "xpr -device ljet -rv < %(InFile)% | pclcomp -012 > %(OutFile)%",
+        "xpr -device ljet -rv < %(InFile)% | pclcomp -013 > %(OutFile)%",
+        "xpr -device ljet -rv < %(InFile)% | pclcomp -023 > %(OutFile)%",
+        "xpr -device ljet -rv < %(InFile)% | pclcomp -0123 > %(OutFile)%",
+        "xpr -device ljet -rv < %(InFile)% > %(OutFile)%"};
 
 Bool
 InitializeRasterDriver(
@@ -216,7 +233,7 @@ InitializeRasterDriver(
     scalingScreenInit(pScreen);
     */
 
-    pScreen->SaveScreen = _XpBoolNoop;
+    pScreen->SaveScreen = (SaveScreenProcPtr)_XpBoolNoop;
     pPriv->ChangeWindowAttributes = pScreen->ChangeWindowAttributes;
     pScreen->ChangeWindowAttributes = RasterChangeWindowAttributes;
     pPriv->CloseScreen = pScreen->CloseScreen;
@@ -243,15 +260,113 @@ GetPropString(
       pCon->devPrivates[RasterContextPrivateIndex].ptr;
     char *type;
     XrmValue val;
-    
+    struct stat status;
+    int pclcomp_exists = 0;
+
     if( XrmGetResource(pConPriv->config, propName, propName, &type, &val) == 
        True )
         return (char *)val.addr;
 
     if( !strcmp( propName, RASTER_PRINT_PAGE_COMMAND ) )
-      return "xpr -device ps %(InFile)% > %(OutFile)%";
+      if( doc_type == DOC_RASTER )
+        return "xpr -device ps %(InFile)% > %(OutFile)%";
+      else
+      {
+        XpOid orientation;
+        XpOid compression;
+        int   pcl3_output_index = 0;
+
+        orientation = XpGetContentOrientation(pCon);
+        compression = XpGetAvailableCompression(pCon);
+
+        switch(orientation) {
+        case xpoid_val_content_orientation_landscape:
+           pcl3_output_index = 0;
+           break;
+        default:
+           pcl3_output_index += 9;
+           break;
+        }
+
+        if(stat(ABSOLUTE_PCLCOMP_PATH1, &status) != -1)
+           pclcomp_exists = 1;
+        else if(stat(ABSOLUTE_PCLCOMP_PATH2, &status) != -1)
+           pclcomp_exists = 1;
+
+        if(pclcomp_exists)
+           switch(compression) {
+           case xpoid_val_available_compressions_0:
+              pcl3_output_index += 0;
+              break;
+           case xpoid_val_available_compressions_01:
+              pcl3_output_index += 1;
+              break;
+           case xpoid_val_available_compressions_02:
+              pcl3_output_index += 2;
+              break;
+           case xpoid_val_available_compressions_03:
+              pcl3_output_index += 3;
+              break;
+           case xpoid_val_available_compressions_012:
+              pcl3_output_index += 4;
+              break;
+           case xpoid_val_available_compressions_013:
+              pcl3_output_index += 5;
+              break;
+           case xpoid_val_available_compressions_023:
+              pcl3_output_index += 6;
+              break;
+           default:
+              pcl3_output_index += 7;
+              break;
+           }
+        else
+           pcl3_output_index += 8;
+
+        return pcl3_output_cmds[pcl3_output_index];
+      }
     else
       return NULL;
+}
+
+static void
+SetDocumentType(
+     XpContextPtr pCon)
+{
+    XpOidList* attrs_supported;
+
+    /*
+     * only validate attributes found in document-attributes-supported
+     */
+    attrs_supported =
+	XpGetListAttr(pCon, XPPrinterAttr,
+		      xpoid_att_document_attributes_supported,
+		      (const XpOidList*)NULL);
+
+    if(XpOidListHasOid(attrs_supported, xpoid_att_document_format))
+    {
+	const char* value_in;
+	XpOidDocFmt *f;
+
+	value_in = XpGetStringAttr(pCon, XPDocAttr, xpoid_att_document_format);
+
+	f = XpOidDocFmtNew( value_in );
+
+	if( f != NULL )
+	{
+	    if( !strcmp( f->format, "PCL" ) )
+		doc_type = DOC_PCL;
+	    else
+		doc_type = DOC_RASTER;
+
+	    XpOidDocFmtDelete( f );
+	}
+    }
+
+    /*
+     * clean up
+     */
+    XpOidListDelete(attrs_supported);
 }
 
 static int
@@ -262,6 +377,8 @@ StartJob(
 {
     RasterContextPrivPtr pConPriv = (RasterContextPrivPtr)
 			 pCon->devPrivates[RasterContextPrivateIndex].ptr;
+
+    SetDocumentType( pCon );
 
     /*
      * Check for existing page file, and delete it if it exists.
@@ -312,6 +429,10 @@ static int EndDoc(
 {
     return Success;
 }
+
+#if 0
+
+/* XXX Not used. */
 
 /*
  * BuidArgVector takes a pointer to a comma-separated list of command
@@ -364,6 +485,7 @@ BuildArgVector(
 
     return argVector;
 }
+#endif
 
 static int
 EndJob(
@@ -1062,7 +1184,7 @@ RasterChangeWindowAttributes(
 	mask |= CWBackingStore;
     }
 
-    if(pScreenPriv->ChangeWindowAttributes != (Bool (*)())NULL)
+    if(pScreenPriv->ChangeWindowAttributes != NULL)
     {
         pScreen->ChangeWindowAttributes = pScreenPriv->ChangeWindowAttributes;
         status = pScreen->ChangeWindowAttributes(pWin, mask);
@@ -1365,7 +1487,7 @@ RasterCloseScreen(
     /*
      * Call any wrapped CloseScreen proc.
      */
-    if(pScreenPriv->CloseScreen != (Bool (*)())NULL)
+    if(pScreenPriv->CloseScreen != NULL)
     {
         pScreen->CloseScreen = pScreenPriv->CloseScreen;
         status = pScreen->CloseScreen(index, pScreen);

@@ -76,7 +76,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclInit.c,v 1.9 2001/10/28 03:32:54 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclInit.c,v 1.10 2001/12/19 21:55:58 dawes Exp $ */
 
 #include <stdio.h>
 #include <string.h>
@@ -92,7 +92,6 @@ copyright holders.
 #include "DiPrint.h"
 
 #define MODELDIRNAME "/models"
-extern XpValidatePoolsRec PclValidatePoolsRec;
 
 static void AllocatePclPrivates(ScreenPtr pScreen);
 static int PclInitContext(XpContextPtr pCon);

@@ -30,7 +30,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/Pclmap.h,v 1.4 2001/01/17 22:36:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/Pclmap.h,v 1.5 2001/07/25 15:05:00 dawes Exp $ */
 
 #ifndef _PCLMAP_H_
 #define _PCLMAP_H_
@@ -73,6 +73,8 @@ copyright holders.
 #define CATNAME(prefix,subname) prefix/**/Lj3/**/subname
 #endif
 #endif /* XP_PCL_LJ3 */
+
+#ifdef PCLNAME
 
 /* PclInit.c */
 #define InitializePclDriver		CATNAME(Initialize, PclDriver)
@@ -201,5 +203,7 @@ copyright holders.
 #define PclUnrealizeCursor		PCLNAME(UnrealizeCursor)
 #define PclRecolorCursor		PCLNAME(RecolorCursor)
 #define PclSetCursorPosition		PCLNAME(SetCursorPosition)
+
+#endif
 
 #endif /* _PCLMAP_H_ */

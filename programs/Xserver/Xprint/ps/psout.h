@@ -57,7 +57,7 @@ in this Software without prior written authorization from The Open Group.
  * or other dealings in this Software without prior written authorization
  * from said copyright holders.
  */
-/* $XFree86: xc/programs/Xserver/Xprint/ps/psout.h,v 1.3 2001/11/21 22:40:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/ps/psout.h,v 1.4 2001/12/14 19:59:18 dawes Exp $ */
 
 /*******************************************************************
 **
@@ -201,5 +201,15 @@ extern void PsOut_SetPattern(PsOutPtr self, void *tag, PsFillEnum type);
 
 extern void PsOut_RawData(PsOutPtr self, char *data, int len);
 extern void PsOut_DownloadType1(PsOutPtr self, char *name, char *fname);
+
+#ifdef BM_CACHE
+extern void PsOut_BeginImageCache(PsOutPtr self, long cache_id);
+extern void PsOut_EndImageCache(PsOutPtr self);
+extern void PsOut_ImageCache(PsOutPtr self, int x, int y, long cache_id,
+			     int bclr, int fclr);
+#endif
+
+extern FILE *PsOut_ChangeFile(PsOutPtr self, FILE *fp);
+
 
 #endif
