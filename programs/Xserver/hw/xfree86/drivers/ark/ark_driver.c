@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_driver.c,v 1.11 2001/01/29 15:15:44 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_driver.c,v 1.12 2001/05/04 19:05:32 dawes Exp $ */
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
  *
@@ -108,7 +108,8 @@ typedef enum {
 } ARKOpts;
 
 static const OptionInfoRec ARKOptions[] = {
-	{ OPTION_NOACCEL, "noaccel", OPTV_BOOLEAN, {0}, FALSE }
+	{ OPTION_NOACCEL, "noaccel", OPTV_BOOLEAN, {0}, FALSE },
+	{ -1,		  NULL,	     OPTV_NONE,	   {0}, FALSE }
 };
 
 static const char *fbSymbols[] = {

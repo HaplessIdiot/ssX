@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.11 2001/04/05 21:29:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.12 2001/05/04 19:05:40 dawes Exp $ */
 
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
@@ -142,7 +142,8 @@ static const OptionInfoRec IMSTTOptions[] =
 	{ OPTION_NOACCEL, "noaccel", OPTV_BOOLEAN, {0}, FALSE },
 	{ OPTION_SWCURSOR, "swcursor", OPTV_BOOLEAN, {0}, FALSE },
 	{ OPTION_INITDAC, "initdac", OPTV_BOOLEAN, {0}, FALSE },
-	{ OPTION_FBDEV,	"UseFBDev", OPTV_BOOLEAN, {0}, FALSE }
+	{ OPTION_FBDEV,	"UseFBDev", OPTV_BOOLEAN, {0}, FALSE },
+	{ -1, NULL, OPTV_NONE, {0}, FALSE }
 };
 
 
