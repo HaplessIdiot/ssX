@@ -1,4 +1,10 @@
 XFree86 3.9.17b (23 January 2000)
+3576. Import a minimal subset of the x86emu 0.6 distribution (David Dawes).
+3575. Register the required/referenced int10 symbols in the nv driver
+      so that there are no warnings on platforms that don't have this
+      module (David Dawes).
+3574. Don't probe for PC98 architecture on Solaris (David Dawes).
+3573. Fix some SVR4.0 build problems related to bzero() (David Dawes).
 3572. Rewrite the way Xinerama deals with events (Mark Vojkovich).
 3571. Fix VT switching problem in shadowfb (Marc La France).
 3570. Initialize DST_X_DIR and DST_Y_DIR for solid filled rects and for
@@ -9315,4 +9321,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.945 2000/01/22 21:35:45 martin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.947 2000/01/23 04:23:08 mvojkovi Exp $
