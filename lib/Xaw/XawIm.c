@@ -53,7 +53,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86: xc/lib/Xaw/XawIm.c,v 1.2 1998/05/11 12:55:24 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/XawIm.c,v 1.3 1998/06/28 08:59:53 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -241,7 +241,7 @@ static void ConfigureCB( w, closure, event )
 
     if ((vw = SearchVendorShell(w)) == NULL) return;
 
-    if (ve = GetExtPart(vw)) {
+    if ((ve = GetExtPart(vw)) != NULL) {
         if (IsSharedIC(ve)) return;
 	if ((ve->im.xim == NULL) ||
 	    ((p = GetIcTableShared(w, ve)) == NULL) ||
@@ -282,6 +282,7 @@ static Widget SetErrCnxt( w, xim )
     return(contextErrData->widget);
 }
 
+#if 0
 static Widget GetErrCnxt( error_im )
     XIM	error_im;
 {
@@ -293,6 +294,7 @@ static Widget GetErrCnxt( error_im )
     }
     return(contextErrData->widget);
 }
+#endif
 
 static void CloseIM( ve )
     XawVendorShellExtPart * ve;
@@ -395,6 +397,7 @@ static void VendorShellDestroyed( w, cl_data, ca_data )
     return;
 }
 
+#if 0
 static int IOErrorHandler( error_im )
     XIM error_im;
 {
@@ -407,6 +410,7 @@ static int IOErrorHandler( error_im )
     DestroyAllIM(ve);
     return(0);
 }
+#endif
 
 /*
  * Attempt to open an input method
@@ -624,7 +628,7 @@ static void UnregisterFromVendorShell(w, ve)
 {
     XawIcTableList	*prev, p;
 
-    for (prev = &ve->ic.ic_table; p = *prev; prev = &p->next) {
+    for (prev = &ve->ic.ic_table; (p = *prev) != NULL; prev = &p->next) {
 	if (p->widget == w) {
 	    *prev = p->next;
 	    XtFree((char *)p);
@@ -911,7 +915,7 @@ static void SetICValues( w, ve, focus )
 {
     XawIcTableList	p;
     XPoint		position;
-    XRectangle		pe_area, st_area;
+    XRectangle		pe_area;
     XVaNestedList	pe_attr = NULL, st_attr = NULL;
     XPointer		ic_a[20], pe_a[20], st_a[20];
     int			ic_cnt = 0, pe_cnt = 0, st_cnt = 0;
@@ -1100,6 +1104,13 @@ static void UnsetICFocus(w, ve)
     }
 }
 
+extern void _XtCopyFromArg(
+#if NeedFunctionPrototypes
+    XtArgVal        /* src */,
+    char*           /* dst */,
+    unsigned int    /* size */
+#endif
+);
 static void SetValues( w, ve, args, num_args )
     Widget w;
     XawVendorShellExtPart * ve;
@@ -1196,7 +1207,7 @@ static void SetFocusValues( inwidg, args, num_args, focus )
     VendorShellWidget		vw;
 
     if ((vw = SearchVendorShell(inwidg)) == NULL) return;
-    if (ve = GetExtPart(vw)) {
+    if ((ve = GetExtPart(vw)) != NULL) {
 	if (num_args > 0) SetValues(inwidg, ve, args, num_args);
 	if (focus) SetFocus(inwidg, ve);
 	if (XtIsRealized((Widget)vw) && ve->im.xim) {
@@ -1219,7 +1230,7 @@ static void UnsetFocus( inwidg )
     XawIcTableList		p;
 
     if ((vw = SearchVendorShell(inwidg)) == NULL) return;
-    if (ve = GetExtPart(vw)) {
+    if ((ve = GetExtPart(vw)) != NULL) {
 	if ((p = GetIcTableShared(inwidg, ve)) == NULL) return;
 	if (p->flg & CIICFocus) {
 	    p->flg &= ~CIICFocus;
@@ -1447,7 +1458,7 @@ _XawImGetShellHeight( w )
     XawVendorShellExtPart *ve;
 
     if (!XtIsVendorShell( w ) ) return( w->core.height );
-    if ( ve = GetExtPart( (VendorShellWidget) w ) ) {
+    if ( (ve = GetExtPart( (VendorShellWidget) w )) != NULL ) {
 	return( w->core.height - ve->im.area_height );
     }
     return( w->core.height );
@@ -1466,7 +1477,7 @@ _XawImRealize( w )
     extern void XawVendorShellExtResize();
 
     if ( !XtIsRealized( w ) || !XtIsVendorShell( w ) ) return;
-    if ( ve = GetExtPart( (VendorShellWidget) w ) ) {
+    if ( (ve = GetExtPart( (VendorShellWidget) w )) != NULL ) {
 	XtAddEventHandler( w, (EventMask)StructureNotifyMask, FALSE,
 			  XawVendorShellExtResize, (XtPointer)NULL );
 	AllCreateIC(ve);
@@ -1486,7 +1497,7 @@ _XawImInitialize( w, ext )
     XawVendorShellExtPart	*ve;
 
     if ( !XtIsVendorShell( w ) ) return;
-    if ( ve = SetExtPart( (VendorShellWidget) w, (XawVendorShellExtWidget)ext ) ) {
+    if ( (ve = SetExtPart( (VendorShellWidget) w, (XawVendorShellExtWidget)ext )) != NULL ) {
 	if ( Initialize( (VendorShellWidget) w, ve ) == FALSE ) return;
 	XtAddCallback( w, XtNdestroyCallback, VendorShellDestroyed,
 		      (XtPointer) NULL );
@@ -1506,7 +1517,7 @@ _XawImReconnect( inwidg )
     VendorShellWidget		vw;
 
     if ((vw = SearchVendorShell(inwidg)) == NULL) return;
-    if (ve = GetExtPart(vw)) {
+    if ((ve = GetExtPart(vw)) != NULL) {
 	Reconnect(ve);
     }
 }
@@ -1524,7 +1535,7 @@ _XawImRegister(inwidg)
     VendorShellWidget		vw;
 
     if ((vw = SearchVendorShell(inwidg)) == NULL) return;
-    if (ve = GetExtPart(vw)) {
+    if ((ve = GetExtPart(vw)) != NULL) {
 	Register(inwidg, ve);
     }
 }
@@ -1542,7 +1553,7 @@ _XawImUnregister(inwidg)
     VendorShellWidget		vw;
 
     if ((vw = SearchVendorShell(inwidg)) == NULL) return;
-    if (ve = GetExtPart(vw)) {
+    if ((ve = GetExtPart(vw)) != NULL) {
 	Unregister(inwidg, ve);
     }
 }
@@ -1687,6 +1698,6 @@ _XawImDestroy( w, ext )
     XawVendorShellExtPart        *ve;
 
     if ( !XtIsVendorShell( w ) ) return;
-    if ( ve = GetExtPart( (VendorShellWidget) w ) )
+    if ( (ve = GetExtPart( (VendorShellWidget) w )) != NULL )
         Destroy( w, ve );
 }

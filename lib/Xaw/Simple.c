@@ -48,7 +48,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/lib/Xaw/Simple.c,v 1.1.1.1.12.2 1998/05/18 14:08:41 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Simple.c,v 1.3 1998/06/28 08:41:45 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -187,7 +187,7 @@ static void Realize(w, valueMask, attributes)
     Mask *valueMask;
     XSetWindowAttributes *attributes;
 {
-    Pixmap border_pixmap;
+    Pixmap border_pixmap = CopyFromParent;
     if (!XtIsSensitive(w)) {
 	/* change border to gray; have to remember the old one,
 	 * so XtDestroyWidget deletes the proper one */

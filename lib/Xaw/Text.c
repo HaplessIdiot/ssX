@@ -48,7 +48,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/lib/Xaw/Text.c,v 3.2.4.2 1998/05/16 09:05:21 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.c,v 3.4 1998/06/28 08:41:47 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -906,7 +906,7 @@ Position *x, *y;
   *line = 0;
   *x = ctx->text.margin.left;
   *y = ctx->text.margin.top;
-  if (visible = IsPositionVisible(ctx, pos)) {
+  if ((visible = IsPositionVisible(ctx, pos)) != False) {
     *line = LineForPosition(ctx, pos);
     *y = ctx->text.lt.info[*line].y;
     *x = ctx->text.margin.left;

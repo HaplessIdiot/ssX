@@ -108,6 +108,7 @@ SRCS = \
 	MultiSink.c \
 	Paned.c \
 	Panner.c \
+	Pixmap.c \
 	Porthole.c \
 	Repeater.c \
 	Scrollbar.c \
@@ -156,6 +157,7 @@ OBJS = \
 	MultiSink.o \
 	Paned.o \
 	Panner.o \
+	Pixmap.o \
 	Porthole.o \
 	Repeater.o \
 	Scrollbar.o \

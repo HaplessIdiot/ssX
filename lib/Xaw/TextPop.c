@@ -27,7 +27,7 @@ in this Software without prior written authorization from the X Consortium.
 
 */
 
-/* $XFree86: xc/lib/Xaw/TextPop.c,v 1.1.1.2.4.2 1998/05/18 14:08:43 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextPop.c,v 1.2 1998/06/28 08:41:47 dawes Exp $ */
 
 /************************************************************
  *
@@ -1302,6 +1302,8 @@ XEvent *event;
       return;
     }
   }
+  else
+    return;
   
   num_args = 0;
   XtSetArg(args[num_args], XtNwidth, &width); num_args++;

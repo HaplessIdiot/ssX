@@ -48,7 +48,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/lib/Xaw/Form.c,v 1.3 1998/06/28 08:41:44 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Form.c,v 1.4 1998/06/28 11:02:08 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -817,7 +817,7 @@ static XtGeometryResult PreferredGeometry( widget, request, reply  )
     reply->width = w->form.preferred_width;
     reply->height = w->form.preferred_height;
     reply->request_mode = CWWidth | CWHeight;
-    if (  request->request_mode & (CWWidth | CWHeight) ==
+    if (  (request->request_mode & (CWWidth | CWHeight)) ==
 	    (CWWidth | CWHeight)
 	  && request->width == reply->width
 	  && request->height == reply->height)

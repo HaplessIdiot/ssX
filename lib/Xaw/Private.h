@@ -1,6 +1,4 @@
 /*
- * $Id$
- *
  * Copyright (c) 1998 by The XFree86 Project, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -27,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Private.h,v 3.2 1998/04/28 13:33:33 robin Exp $ */
+/* $XFree86: xc/lib/Xaw/Private.h,v 3.3 1998/06/28 11:02:11 dawes Exp $ */
 
 #ifndef _XawPrivate_h
 #define _XawPrivate_h
@@ -99,5 +97,37 @@ XawDLClass *XawCreateDisplayListClass(String,
 				      XawDLArgsInitProc, XawDLArgsDestructor,
 				      XawDLDataInitProc, XawDLDataDestructor);
 Boolean XawDeclareDisplayListProc(XawDLClass*, String, XawDisplayListProc);
+
+/* pixmaps */
+typedef struct _XawArgVal {
+  String name;
+  String value;
+} XawArgVal;
+
+typedef struct _XawParams {
+  String name;
+  String type;
+  String ext;
+  XawArgVal **args;
+  Cardinal num_args;
+} XawParams;
+
+typedef struct _XawPixmap {
+  String name;
+  Pixmap pixmap;
+  Pixmap mask;
+  Dimension width;
+  Dimension height;
+} XawPixmap;
+
+typedef Boolean (*XawPixmapLoader)(XawParams*, Screen*, Colormap, int,
+				   Pixmap*, Pixmap*,
+				   Dimension*, Dimension*);
+extern Boolean XawPixmapsInitialize();
+extern Boolean XawAddPixmapLoader(String, String, XawPixmapLoader);
+extern XawPixmap *XawLoadPixmap(String, Screen*, Colormap, int);
+extern XawParams *XawParseParamsString(String name);
+extern void XawFreeParamsStruct(XawParams *params);
+extern XawArgVal *XawFindArgVal(XawParams *params, String name);
 
 #endif /* _XawPrivate_h */

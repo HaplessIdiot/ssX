@@ -655,7 +655,7 @@ static void NotifyScroll( gw, event, params, num_params   )
    Cardinal *num_params;	/* we only support 1 */
 {
     ScrollbarWidget w = (ScrollbarWidget) gw;
-    int call_data;
+    int call_data = 0;
     char style;
     Position x, y;
 

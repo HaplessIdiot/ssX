@@ -27,7 +27,7 @@ in this Software without prior written authorization from the X Consortium.
 
 */
 
-/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.1.1.2.4.2 1998/05/16 09:05:19 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.3 1998/06/28 08:41:43 dawes Exp $ */
 
 /*
  * AsciiSrc.c - AsciiSrc object. (For use with the text widget).
@@ -421,7 +421,7 @@ Boolean	              include;
   AsciiSrcObject src = (AsciiSrcObject) w;
   int inc;
   Piece* piece;
-  XawTextPosition first, first_eol_position;
+  XawTextPosition first, first_eol_position = 0;
   char* ptr;
 
   if (type == XawstAll) {	/* Optomize this common case. */
@@ -520,7 +520,8 @@ Boolean	              include;
   case XawstPositions: 
     position += count * inc;
     break;
-/*  case XawstAll:		---- handled in special code above */
+  case XawstAll:		/* ---- handled in special code above */
+    break;
   }
 
   if ( dir == XawsdLeft )
@@ -980,7 +981,7 @@ InitStringOrFile(src, newString)
 AsciiSrcObject src;
 Boolean newString;
 {
-    char * open_mode;
+    char * open_mode = NULL;
     FILE * file;
     char fileName[TMPSIZ];
 
@@ -1217,7 +1218,7 @@ FindPiece(src, position, first)
 AsciiSrcObject src;
 XawTextPosition position, *first;
 {
-  Piece * old_piece, * piece = src->ascii_src.first_piece;
+  Piece * old_piece = NULL, * piece = src->ascii_src.first_piece;
   XawTextPosition temp;
 
   for ( temp = 0 ; piece != NULL ; temp += piece->used, piece = piece->next ) {

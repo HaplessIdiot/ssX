@@ -1057,7 +1057,7 @@ XtPointer junk, callData;
     int loc;
     char action_type;
     Cursor cursor;
-    Direction direction;
+    Direction direction = 0;
     Arg arglist[1];
 
     action_type = *call_data->params[0];

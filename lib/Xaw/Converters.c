@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Converters.c,v 3.2 1998/04/28 13:33:32 robin Exp $ */
+/* $XFree86: xc/lib/Xaw/Converters.c,v 3.3 1998/06/28 11:02:08 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -90,6 +90,8 @@ static Boolean _XawCvtFontStructToString(Display*, XrmValue*, Cardinal*,
 					 XrmValue*, XrmValue*, XtPointer*);
 static Boolean _XawCvtStringToDisplayList(Display*, XrmValue*, Cardinal*,
 					  XrmValue*, XrmValue*, XtPointer*);
+static Boolean _XawCvtStringToPixmap(Display*, XrmValue*, Cardinal*,
+				     XrmValue*, XrmValue*, XtPointer*);
 
 /*
  * Initialization
@@ -152,6 +154,11 @@ XawInitializeDefaultConverters(void)
 		     NULL);
   XtSetTypeConverter(XtRString, XawRDisplayList,
 		     _XawCvtStringToDisplayList,
+		     &DLArgs[0], XtNumber(DLArgs),
+		     XtCacheAll,
+		     NULL);
+  XtSetTypeConverter(XtRString, XtRPixmap,
+		     _XawCvtStringToPixmap,
 		     &DLArgs[0], XtNumber(DLArgs),
 		     XtCacheAll,
 		     NULL);
@@ -353,4 +360,64 @@ _XawCvtStringToDisplayList(Display *dpy, XrmValue *args, Cardinal *num_args,
     }
 
   done(XawDisplayList*, dlist);
+}
+
+Boolean
+_XawCvtStringToPixmap(Display *dpy, XrmValue *args, Cardinal *num_args,
+		      XrmValue *fromVal, XrmValue *toVal,
+		      XtPointer *converter_data)
+{
+  XawPixmap *xaw_pixmap;
+  Pixmap pixmap;
+  Screen *screen;
+  Colormap colormap;
+  int depth;
+  String name;
+
+  if (*num_args != 3)
+    {
+      XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+		      XtNwrongParameters, "cvtStringToPixmap",
+		      XtCToolkitError,
+		      "String to Pixmap  conversion needs screen, "
+		      "colormap, and depth arguments",
+		      (String *)NULL, (Cardinal *)NULL);
+      return (False);
+    }
+
+  screen     = *(Screen **)args[0].addr;
+  colormap   = *(Colormap *)args[1].addr;
+  depth      = *(int *)args[2].addr;
+
+  name = (String)(fromVal[0].addr);
+
+  if (strcasecmp(name, "None") == 0)
+    pixmap = None;
+  else if (strcasecmp(name, "ParentRelative") == 0)
+    pixmap = ParentRelative;
+  else if (strcasecmp(name, "XtUnspecifiedPixmap") == 0)
+    pixmap = XtUnspecifiedPixmap;
+  else
+    {
+      xaw_pixmap = XawLoadPixmap(name, screen, colormap, depth);
+      if (!xaw_pixmap)
+	{
+	  String params[1];
+	  Cardinal num_params = 1;
+
+	  params[0] = (String)fromVal->addr;
+	  XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+			  XtNconversionError, "cvtStringToPixmap",
+			  XtCToolkitError,
+			  "Cannot convert \"%s\" to type Pixmap",
+			  params, &num_params);
+	  toVal->addr = (XtPointer)XtUnspecifiedPixmap;
+	  toVal->size = sizeof(Pixmap);
+	  return (False);
+	}
+      else
+	pixmap = xaw_pixmap->pixmap;
+    }
+
+  done(Pixmap, pixmap);
 }
