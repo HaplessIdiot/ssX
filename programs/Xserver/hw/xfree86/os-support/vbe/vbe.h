@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbe.h,v 1.7 2002/07/16 17:00:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbe.h,v 1.7 2002/07/16 17:04:08 dawes Exp $ */
 
 /*
  *                   XFree86 vbe module
@@ -322,5 +322,7 @@ void
 VBEVesaSaveRestore(vbeInfoPtr pVbe, vbeSaveRestorePtr vbe_sr,
 		   vbeSaveRestoreFunction function);
 
+int VBEGetPixelClock(vbeInfoPtr pVbe, int mode, int clock);
+Bool VBEDPMSSet(vbeInfoPtr pVbe, int mode);
 
 #endif
