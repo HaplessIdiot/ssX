@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.12 1998/11/28 10:43:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.13 1998/11/29 10:50:32 dawes Exp $ */
 
 /*
  *
@@ -1302,7 +1302,6 @@ vgaHWInit(ScrnInfoPtr scrninfp, DisplayModePtr mode)
 }
 
 
-
 /*
  * these are some more hardware specific helpers, formerly in vga.c
  */
@@ -1313,6 +1312,7 @@ vgaHWGetHWRecPrivate(void)
 	vgaHWPrivateIndex = xf86AllocateScrnInfoPrivateIndex();
     return;
 }
+
 
 Bool
 vgaHWGetHWRec(ScrnInfoPtr scrp)
@@ -1369,7 +1369,7 @@ vgaHWGetHWRec(ScrnInfoPtr scrp)
         for (i=0; i<768; i++) regp->DAC[i] = 0x00;
         /* ... and the overscan */
         if (scrp->depth >= 4)
-            regp->Attribute[17] = 0xFF;
+            regp->Attribute[OVERSCAN] = 0xFF;
     }
     if (xf86FindOption(scrp->confScreen->options, "ShowOverscan")) {
 	xf86MarkOptionUsedByName(scrp->confScreen->options, "ShowOverscan");
@@ -1377,7 +1377,7 @@ vgaHWGetHWRec(ScrnInfoPtr scrp)
 	regp->DAC[765] = 0x3F; 
 	regp->DAC[766] = 0x00; 
 	regp->DAC[767] = 0x3F; 
-	regp->Attribute[17] = 0xFF;
+	regp->Attribute[OVERSCAN] = 0xFF;
 	hwp->ShowOverscan = TRUE;
     } else
 	hwp->ShowOverscan = FALSE;
@@ -1408,7 +1408,6 @@ vgaHWFreeHWRec(ScrnInfoPtr scrp)
 	VGAHWPTRLVAL(scrp) = NULL;
     }
 }
-
 
 
 Bool
@@ -1457,7 +1456,6 @@ vgaHWGetIOBase(vgaHWPtr hwp)
 }
 
 
-
 void
 vgaHWLock(vgaHWPtr hwp)
 {
@@ -1471,6 +1469,7 @@ vgaHWUnlock(vgaHWPtr hwp)
     /* Unprotect CRTC[0-7] */
      hwp->writeCrtc(hwp, 0x11, hwp->readCrtc(hwp, 0x11) | 0x80);
 }
+
 
 static void
 vgaHWLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
@@ -1495,6 +1494,7 @@ vgaHWLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
 
     hwp->disablePalette(hwp);
 }
+
 
 static void
 vgaHWSetOverscan(ScrnInfoPtr pScrn, int overscan)
@@ -1523,6 +1523,7 @@ vgaHWSetOverscan(ScrnInfoPtr pScrn, int overscan)
 
     hwp->disablePalette(hwp);
 }
+
 
 Bool
 vgaHWHandleColormaps(ScreenPtr pScreen)
