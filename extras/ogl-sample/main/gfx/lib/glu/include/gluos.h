@@ -1,8 +1,8 @@
 /*
 ** gluos.h - operating system dependencies for GLU
 **
-** $Header$
 */
+/* $XFree86$ */
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
 
