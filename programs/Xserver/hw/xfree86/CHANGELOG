@@ -1,4 +1,7 @@
 XFree86 3.9.18Z (3 March 2000)
+3928. Restrict the X server -configure option to root, and fix a crash
+      when the server fails to read the first stage config file that it
+      writes when run with this option (David Dawes).
 3927. Modify the parser's xf86WriteConfigFile() function to write the
       file using the real user id when the real and effective ids are
       different (David Dawes).
@@ -9957,4 +9960,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1062 2000/03/04 01:52:54 martin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1063 2000/03/04 03:25:48 dawes Exp $
