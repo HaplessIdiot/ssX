@@ -11423,6 +11423,8 @@ SetCRT2SyncDither661(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, USHORT ModeNo, US
 
       if(ModeNo <= 0x13) {
          infoflag = SiS_GetRegByte(SiS_Pr->SiS_P3ca+2);
+      } else if(SiS_Pr->UseCustomMode) {
+         infoflag = SiS_Pr->CInfoFlag;
       } else {
          infoflag = SiS_Pr->SiS_RefIndex[RTI].Ext_InfoFlag;
       }
@@ -11452,7 +11454,7 @@ SetCRT2SyncDither661(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, USHORT ModeNo, US
          temp |= infoflag;
          SiS_SetRegANDOR(SiS_Pr->SiS_Part1Port,0x19,0x0f,temp);
       }
-
+      
    }
 }
 
