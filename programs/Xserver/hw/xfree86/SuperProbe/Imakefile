@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/7 1996/01/26 13:30:06 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Imakefile,v 3.19 1996/11/24 09:52:50 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Imakefile,v 3.20 1996/12/09 11:51:13 dawes Exp $
 
 #if defined(SVR3Architecture) || defined(SVR4Architecture) || defined(SCOArchitecture)
 # define OSModule OS_SYSV
@@ -54,7 +54,7 @@ BASE_OBJ = MDA.o Herc.o CGA.o VGA.o RamDac.o MemProbe.o PCI.o
 SVGA_SRC = Tseng.c WD.c ChipsTech.c Video7.c Genoa.c Trident.c Oak.c \
 	   Cirrus.c Ahead.c ATI.c S3.c AL.c Yamaha.c NCR.c MX.c \
 	   RealTek.c Primus.c Compaq.c HMC.c UMC.c Weitek.c SiS.c \
-	   ARK.c /*Alliance.c*/
+	   ARK.c Alliance.c
 SVGA_OBJ = Tseng.o WD.o ChipsTech.o Video7.o Genoa.o Trident.o Oak.o \
 	   Cirrus.o Ahead.o ATI.o S3.o AL.o Yamaha.o NCR.o MX.o \
 	   RealTek.o Primus.o Compaq.o HMC.o UMC.o Weitek.o SiS.o \
