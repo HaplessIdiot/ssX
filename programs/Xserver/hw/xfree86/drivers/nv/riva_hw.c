@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.14 2001/07/11 22:15:08 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.15 2001/08/17 13:27:55 dawes Exp $ */
 
 #include "nv_local.h"
 #include "riva_hw.h"
@@ -1222,11 +1222,11 @@ static void CalcStateExt
                                          &(state->arbitration0),
                                          &(state->arbitration1),
                                           chip);
-            state->cursor0  = 0x00;
-            state->cursor1  = 0xFC;
+            state->cursor0  = 0x80 | (chip->CursorStart >> 17);
+            state->cursor1  = (chip->CursorStart >> 11) << 2;
+	    state->cursor2  = chip->CursorStart >> 24;
 	    if (doubleScan)
 		state->cursor1 |= 2;
-            state->cursor2  = 0x00000000;
             state->pllsel   = 0x10000700;
             state->config   = chip->PFB[0x00000200/4];
             state->general  = bpp == 16 ? 0x00101100 : 0x00100100;
@@ -1556,7 +1556,8 @@ static void LoadStateExt
     VGA_WR08(chip->PCIO, 0x03D5, state->cursor0);
     VGA_WR08(chip->PCIO, 0x03D4, 0x31);
     VGA_WR08(chip->PCIO, 0x03D5, state->cursor1);
-    chip->PRAMDAC[0x00000300/4]  = state->cursor2;
+    VGA_WR08(chip->PCIO, 0x03D4, 0x2F);
+    VGA_WR08(chip->PCIO, 0x03D5, state->cursor2);
     chip->PRAMDAC[0x00000508/4]  = state->vpll;
     chip->PRAMDAC[0x0000050C/4]  = state->pllsel;
     chip->PRAMDAC[0x00000600/4]  = state->general;
@@ -1607,7 +1608,8 @@ static void UnloadStateExt
     state->cursor0      = VGA_RD08(chip->PCIO, 0x03D5);
     VGA_WR08(chip->PCIO, 0x03D4, 0x31);
     state->cursor1      = VGA_RD08(chip->PCIO, 0x03D5);
-    state->cursor2      = chip->PRAMDAC[0x00000300/4];
+    VGA_WR08(chip->PCIO, 0x03D4, 0x2F);
+    state->cursor2      = VGA_RD08(chip->PCIO, 0x03D5);
     state->vpll         = chip->PRAMDAC[0x00000508/4];
     state->pllsel       = chip->PRAMDAC[0x0000050C/4];
     state->general      = chip->PRAMDAC[0x00000600/4];
@@ -1967,7 +1969,8 @@ static void nv10GetConfig
             break;
     }
     chip->CrystalFreqKHz   = (chip->PEXTDEV[0x00000000/4] & 0x00000040) ? 14318 : 13500;
-    chip->CURSOR           = &(chip->PRAMIN[0x00010000/4 - 0x0800/4]);
+    chip->CursorStart      = (chip->RamAmountKBytes - 128) * 1024;
+    chip->CURSOR           = NULL;  /* can't set this here */
     chip->CURSORPOS        = &(chip->PRAMDAC[0x0300/4]);
     chip->VBLANKENABLE     = &(chip->PCRTC[0x0140/4]);
     chip->VBLANK           = &(chip->PCRTC[0x0100/4]);

@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
 \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.h,v 1.11 2001/07/11 22:15:08 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.h,v 1.12 2001/07/19 02:22:51 tsi Exp $ */
 #ifndef __RIVA_HW_H__
 #define __RIVA_HW_H__
 #define RIVA_SW_VERSION 0x00010003
@@ -336,6 +336,7 @@ typedef struct _riva_hw_inst
     U032 VBlankBit;
     U032 FifoFreeCount;
     U032 FifoEmptyCount;
+    U032 CursorStart;
     /*
      * Non-FIFO registers.
      */
