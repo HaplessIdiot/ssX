@@ -1,0 +1,10 @@
+XCOMM $XFree86$
+
+InstallHardcopyDoc(xilib,xilib.PS.gz)
+InstallHardcopyDoc(xiport,xiport.PS.gz)
+InstallHardcopyDoc(xiproto,xiproto.PS.gz)
+
+/* Prevent conflicts with XProtocol */
+LinkFile(xilib.PS.gz,lib.PS.gz)
+LinkFile(xiport.PS.gz,port.PS.gz)
+LinkFile(xiproto.PS.gz,proto.PS.gz)

@@ -1,0 +1,4 @@
+XCOMM $XFree86$
+
+InstallHardcopyDoc(man,man.PS.gz)
+

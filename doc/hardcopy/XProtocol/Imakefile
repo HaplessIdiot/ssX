@@ -1,0 +1,5 @@
+XCOMM $XFree86$
+
+InstallHardcopyDoc(proto,proto.PS.gz)
+InstallHardcopyDoc(proto.idx,proto.idx.PS.gz)
+

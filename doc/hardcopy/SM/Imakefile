@@ -1,0 +1,5 @@
+XCOMM $XFree86$
+
+InstallHardcopyDoc(SMlib,SMlib.PS.gz)
+InstallHardcopyDoc(xsmp,xsmp.PS.gz)
+

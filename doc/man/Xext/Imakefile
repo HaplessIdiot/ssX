@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:41:54 cpqbld Exp $
 
 
 
-XCOMM $XFree86$
+XCOMM $XFree86: xc/doc/man/Xext/Imakefile,v 1.3tsi Exp $
 
 MANDIR = $(LIBMANDIR)
 MANSUFFIX = $(LIBMANSUFFIX)
@@ -15,7 +15,6 @@ SUBDIRS = dbe
 all::
 
 MakeSubdirs($(SUBDIRS))
-DependSubdirs($(SUBDIRS))
 
 #if ExpandManNames
 InstallManPageLong(XShape,$(MANDIR),XShapeQueryExtension)

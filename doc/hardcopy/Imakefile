@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/doc/specs/Imakefile,v 1.3 2000/03/02 17:52:57 dawes Exp $
+XCOMM $XFree86: xc/doc/hardcopy/Imakefile,v 1.1tsi Exp $
 
 #if defined(HardcopyDocDirs)
 
@@ -10,6 +10,5 @@ SUBDIRS = HardcopyDocDirs
 all::
 
 MakeSubdirs($(SUBDIRS))
-DependSubdirs($(SUBDIRS))
 
 #endif
