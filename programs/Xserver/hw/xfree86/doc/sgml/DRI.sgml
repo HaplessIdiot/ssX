@@ -15,7 +15,7 @@
       <date>24 October 2000
 
     <ident>
-    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.10 2000/11/16 17:18:16 alanh Exp $
+    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.11 2000/11/16 17:20:12 alanh Exp $
     </ident>
 
     <toc>
@@ -75,9 +75,9 @@
         to brianp@valinux.com.
 
     <sect>Supported Architectures & Hardware
-
+	<p>
       <sect1>Architectures
-
+	<p>
           The Architectures currently supported by the DRI have grown
           from the initial Intel i386 based machines to now include, 
           the Alpha Processor and the Sun SPARC machines.
@@ -88,7 +88,7 @@
           to build the DRI for these architectures.
 
         <sect2>Alpha Features
-
+	<p>
             On newer Alpha processors, it should be noted that a
             significant performance increase can be seen with the 
             addition of the -mcpu= command that should be passed to
@@ -115,6 +115,7 @@
             #define UseCompaqMathLibrary YES
 
       <sect1> Graphics Hardware
+	<p>
           XFree86 4.0 (or later versions) includes 3D acceleration for the
           following graphics hardware:
 
