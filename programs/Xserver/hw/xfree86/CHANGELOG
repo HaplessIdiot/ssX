@@ -1,4 +1,6 @@
 XFree86 4.4.99.6 (xx May 2004)
+ 107. Let XDarwin interpret scroll wheel mouse events correctly when shift is
+      held down (Benjamin Burke).
 
 XFree86 4.4.99.5 (12 May 2004)
  106. Fixes and updates for XKB keymaps:
@@ -18918,7 +18920,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3253 2004/05/08 07:27:42 pascal Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3254 2004/05/12 11:02:39 dawes Exp $
 
 
 
