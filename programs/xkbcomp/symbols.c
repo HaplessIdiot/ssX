@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbcomp/symbols.c,v 3.11 2001/02/20 16:43:14 paulo Exp $ */
+/* $XFree86: xc/programs/xkbcomp/symbols.c,v 3.12 2002/06/05 00:00:37 dawes Exp $ */
 
 #include "xkbcomp.h"
 #include "tokens.h"
@@ -397,11 +397,19 @@ Bool		report,clobber;
 	uFree(into->syms[group]);
     if ((from->syms[group]!=NULL)&&(resultSyms!=from->syms[group]))
 	uFree(from->syms[group]);
+    if ((into->acts[group]!=NULL)&&(resultActs!=into->acts[group]))
+	uFree(into->acts[group]);
+    if ((from->acts[group]!=NULL)&&(resultActs!=from->acts[group]))
+	uFree(from->acts[group]);
     into->numLevels[group]= resultWidth;
     into->syms[group]= resultSyms;
     from->syms[group]= NULL;
+    into->acts[group]= resultActs;
+    from->acts[group]= NULL;
     into->symsDefined|= (1<<group);
     from->symsDefined&= ~(1<<group);
+    into->actsDefined|= (1<<group);
+    from->actsDefined&= ~(1<<group);
     return True;
 }
 
