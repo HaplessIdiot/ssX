@@ -1,4 +1,4 @@
-/* $Xorg: Xlcint.h,v 1.3 2000/08/17 19:45:06 cpqbld Exp $ */
+/* $Xorg: Xlcint.h,v 1.4 2001/02/09 02:03:38 xorgcvs Exp $ */
 /*
 
 Copyright 1991, 1998  The Open Group
@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xlcint.h,v 3.9 2001/07/25 15:04:44 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xlcint.h,v 3.10 2001/08/01 00:44:38 tsi Exp $ */
 
 /*
  * Copyright 1990, 1991 by OMRON Corporation, NTT Software Corporation,
@@ -1002,6 +1002,11 @@ extern void _XlcAddUtf8Converters(
     XLCd		lcd
 );
 
+/* Registers UTF-8 converters for a UTF-8 locale. */
+extern void _XlcAddUtf8LocaleConverters(
+    XLCd		lcd
+);
+
 /* The default locale loader. Assumes an ASCII encoding. */
 extern XLCd _XlcDefaultLoader(
     const char*		name
@@ -1032,6 +1037,10 @@ extern XLCd _XlcSjisLoader(
 /* The old ISO-2022-JP locale loader. */
 extern XLCd _XlcJisLoader(
     const char*		name
+);
+
+extern XLCd _XlcDynamicLoad(
+    char*
 );
 
 /* The old dynamic loader. */

@@ -1,4 +1,14 @@
 XFree86 4.1.99.2 (xx November 2001)
+ 482. Autodetect when -fno-merge-constants is needed for building modules,
+      and enable its use by default in those cases (Marc La France,
+      David Dawes).
+ 481. Status doc updates (#4991, Branden Robinson).
+ 480. Fix for flickering i815 LCDs (#4968, Poul-Henning Kamp, Harald Koenig).
+ 479. Move much of the I18N code in Xlib into separately loadable
+      modules (#4965, 5043, Ernie Coskrey, from X11R6.6).
+ 478. Modify UXTerm.ad's font5 resource so that xterm can display double
+      width characters using a font distributed with XFree86 (#4962,
+      Tomohiro KUBOTA).
  477. Add Dutch localization of XDarwin front end (Paul Edens).
  476. Add a quick check to not use as the default mode any internal modes
       with horizontal timing parameters that aren't CRT-friendly (David Dawes).
@@ -14153,4 +14163,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2041 2001/11/14 22:56:42 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2042 2001/11/15 07:36:20 torrey Exp $
