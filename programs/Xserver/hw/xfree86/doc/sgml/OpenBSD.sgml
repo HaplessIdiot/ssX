@@ -9,7 +9,7 @@ Matthieu Herrb
 <Date>Last modified on: 2 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.11 2000/07/02 02:35:27 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.12 2000/12/02 15:27:09 herrb Exp $
 </ident>
 
 <toc>
@@ -232,7 +232,44 @@ To enable the aperture driver, once included in the kernel, set
 machdep.allowaperture=1     
 </verb></tscreen>
 in <tt>/etc/sysctl.conf</tt>.
-     
+
+Some drivers need a patch to the aperture driver in the kernel to work
+correctly with int10 support. If you get warning from xf86ReadBIOS
+like this one:
+<tscreen><verb>
+(II) checkDevMem: using aperture driver /dev/xf86
+(WW) xf86ReadBIOS: /dev/mem mmap[s=600,a=0,o=0] failed (Invalid argument)
+</verb></tscreen>
+you should patch your kernel and rebuild it. Until it's integrated in
+OpenBSD-current, or a better fix is found, the patch is available at 
+<htmlurl
+name="ftp://ftp.laas.fr/pub/ii/matthieu/OpenBSD/patch-kernel-xf4"
+url="ftp://ftp.laas.fr/pub/ii/matthieu/OpenBSD/patch-kernel-xf4">.
+
+I've also included it below, if you want to edit the source file by
+hand. 
+
+<tscreen><verb>
+Index: sys/arch/i386/i386/mem.c
+===================================================================
+RCS file: /cvs/src/sys/arch/i386/i386/mem.c,v
+retrieving revision 1.14
+diff -u -r1.14 mem.c
+--- sys/arch/i386/i386/mem.c	1999/11/20 11:11:28	1.14
++++ sys/arch/i386/i386/mem.c	2000/11/13 10:54:22
+@@ -269,8 +269,8 @@
+ /* minor device 4 is aperture driver */
+ 	case 4:
+ 		if (allowaperture &&
+-		    (((off >= VGA_START && off <= BIOS_END) ||
+-		    (unsigned)off > (unsigned)ctob(physmem))))
++		    (off <= BIOS_END || 
++		     (unsigned)off > (unsigned)ctob(physmem)))
+ 			return i386_btop(off);
+ 		else 
+ 			return -1;
+</verb></tscreen>
+
 <p>
 Another (less recommended) way to enable linear memory and I/O ports
 access is to disable the kernel security feature by adding ``option
