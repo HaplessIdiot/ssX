@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.78 2001/02/27 23:04:58 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.79 2001/04/01 14:00:07 tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -450,7 +450,7 @@ __ustw (unsigned long r5, unsigned short * r11)
 #define outw(a,b)	_outw(b,a)
 #define outl(a,b)	_outl(b,a) 
 
-#elif (defined(linux) || defined(Lynx)) && defined(__sparc__)
+#elif (defined(linux) || defined(Lynx) || defined(sun)) && defined(__sparc__)
 
 #if !defined(Lynx)
 #ifndef ASI_PL
