@@ -41,6 +41,7 @@ in this Software without prior written authorization from The Open Group.
  *         XSetExtensionErrorHandler	establish an extension error handler
  *         XMissingExtension		raise an error about missing ext
  */
+/* $XFree86$ */
 
 #include <stdio.h>
 #include "Xlibint.h"
