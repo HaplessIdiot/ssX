@@ -1,4 +1,9 @@
 XFree86 4.1.99.1 (xx June 2001)
+  24. Remove all VGA'isms from the glint driver, it doesn't need them
+      (Alan Hourihane).
+  23. Support the Delta in the glint driver, needed for boards that have
+      the Delta connected to the rasterizer, as it acts as an arbiter for
+      the bus. Resolves acceleration troubles. (Alan Hourihane).
   22. Add an lv entry to XKB's keymap/xfree86 file (#4685, Nerijus Baliunas).
   21. Fix some typos in XKB's xfree86.lst file (#4684, Nerijus Baliunas).
   20. Add DDXOSVERRORF ifdefs to the XFree86 ddx code that make use of the
@@ -13343,4 +13348,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1799 2001/05/24 16:34:50 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1800 2001/05/24 19:43:02 dawes Exp $

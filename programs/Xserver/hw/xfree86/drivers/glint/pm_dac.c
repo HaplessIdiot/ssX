@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm_dac.c,v 1.8 2001/01/31 16:15:04 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm_dac.c,v 1.9 2001/02/07 13:26:21 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -55,8 +55,8 @@ PermediaInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pReg->glintRegs[PMFramebufferWriteMask >> 3] = 0xFFFFFFFF;
     pReg->glintRegs[PMBypassWriteMask >> 3] = 0xFFFFFFFF;
 
-    pReg->glintRegs[DFIFODis >> 3] = 0;
-    pReg->glintRegs[FIFODis >> 3] = 1;
+    pReg->glintRegs[DFIFODis >> 3] = 1;
+    pReg->glintRegs[FIFODis >> 3] = 3;
 
     temp1 = mode->CrtcHSyncStart - mode->CrtcHDisplay;
     temp2 = mode->CrtcVSyncStart - mode->CrtcVDisplay;
@@ -122,6 +122,7 @@ PermediaInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	ramdacReg->DacRegs[IBMRGB_misc2] |= PCLK_SEL_LCLK;
     else 
 	ramdacReg->DacRegs[IBMRGB_misc2] |= PCLK_SEL_PLL;
+    ramdacReg->DacRegs[IBMRGB_misc3] = 0;
     ramdacReg->DacRegs[IBMRGB_misc_clock] = 1;
     ramdacReg->DacRegs[IBMRGB_sync] = 0;
     ramdacReg->DacRegs[IBMRGB_hsync_pos] = 0;
@@ -138,6 +139,11 @@ void
 PermediaSave(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
+
+    /* We can't rely on the vgahw layer copying the font information
+     * back properly, due to problems with MMIO access to VGA space
+     * so we memcpy the information using the slow routines */
+    xf86SlowBcopy((CARD8*)pGlint->FbBase, (CARD8*)pGlint->VGAdata, 65536);
 
     glintReg->glintRegs[Aperture0 >> 3]  = GLINT_READ_REG(Aperture0);
     glintReg->glintRegs[Aperture1 >> 3]  = GLINT_READ_REG(Aperture1);
@@ -168,6 +174,12 @@ void
 PermediaRestore(ScrnInfoPtr pScrn, GLINTRegPtr pReg)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
+
+    /* We can't rely on the vgahw layer copying the font information
+     * back properly, due to problems with MMIO access to VGA space
+     * so we memcpy the information using the slow routines */
+    if (pGlint->STATE)
+	xf86SlowBcopy((CARD8*)pGlint->VGAdata, (CARD8*)pGlint->FbBase, 65536);
 
     RESTOREREG(ChipConfig);
     RESTOREREG(DFIFODis);
