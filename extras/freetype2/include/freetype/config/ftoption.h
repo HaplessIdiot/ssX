@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /***************************************************************************/
 /*                                                                         */
 /*  ftoption.h                                                             */
@@ -16,13 +17,14 @@
 /***************************************************************************/
 
 
-#ifndef FTOPTION_H
-#define FTOPTION_H
+#ifndef __FTOPTION_H__
+#define __FTOPTION_H__
 
 
-#ifdef __cplusplus
-  extern "C" {
-#endif
+#include <ft2build.h>
+
+
+FT_BEGIN_HEADER
 
 
   /*************************************************************************/
@@ -70,6 +72,22 @@
   /*   documentation.                                                      */
   /*                                                                       */
 #undef FT_CONFIG_OPTION_NO_CONVENIENCE_FUNCS
+
+
+  /*************************************************************************/
+  /*                                                                       */
+  /* Module errors                                                         */
+  /*                                                                       */
+  /*   If this macro is set (which is the default), the higher byte of an  */
+  /*   error code gives the module in which the error has occurred, while  */
+  /*   the lower byte is the real error code.                              */
+  /*                                                                       */
+  /*   Unsetting this macro makes sense for backwards compatibility; only  */
+  /*   the real error code is emitted, and the higher byte is always zero. */
+  /*                                                                       */
+  /*   More details can be found in the files ftmoderr.h and fterrors.h.   */
+  /*                                                                       */
+#define FT_CONFIG_OPTION_USE_MODULE_ERRORS
 
 
   /*************************************************************************/
@@ -138,12 +156,22 @@
 
   /*************************************************************************/
   /*                                                                       */
-  /* Many compilers provide the non-ANSI `long long' 64-bit type.  You can */
-  /* activate it by defining the FTCALC_USE_LONG_LONG macro.  Note that    */
-  /* this will produce many -ansi warnings during library compilation, and */
-  /* that in many cases the generated code will not be smaller or faster!  */
+  /* Many compilers provide a non-ANSI 64-bit data type that can be used   */
+  /* by FreeType to speed up some computations.  However, this will create */
+  /* some problems when compiling the library in strict ANSI mode.         */
   /*                                                                       */
-#undef FTCALC_USE_LONG_LONG
+  /* For this reason, the use of 64-bit ints is normally disabled when     */
+  /* the __STDC__ macro is defined.  You can however disable this by       */
+  /* defining here the macro FT_CONFIG_OPTION_FORCE_INT64.                 */
+  /*                                                                       */
+  /* For most compilers, this will only create compilation warnings        */
+  /* when building the library.                                            */
+  /*                                                                       */
+  /* ObNote: The compiler-specific 64-bit integers are detected in the     */
+  /*         file "ftconfig.h" either statically, or through Autoconf      */
+  /*         on platforms that support it.                                 */
+  /*                                                                       */
+#define  FT_CONFIG_OPTION_FORCE_INT64
 
 
   /*************************************************************************/
@@ -199,8 +227,8 @@
   /*                                                                       */
   /*   Don't define any of these macros to compile in `release' mode!      */
   /*                                                                       */
-#undef  FT_DEBUG_LEVEL_ERROR
-#undef  FT_DEBUG_LEVEL_TRACE
+/* #define  FT_DEBUG_LEVEL_ERROR */
+/* #define  FT_DEBUG_LEVEL_TRACE */
 
 
   /*************************************************************************/
@@ -210,7 +238,7 @@
   /*   Used for debugging, this configuration macro should disappear       */
   /*   soon.                                                               */
   /*                                                                       */
-#define FT_CONFIG_OPTION_OLD_CALCS
+#undef  FT_CONFIG_OPTION_OLD_CALCS
 
 
   /*************************************************************************/
@@ -220,7 +248,7 @@
   /*                                                                       */
   /* This must be greater than 4kByte.                                     */
   /*                                                                       */
-#define FT_RENDER_POOL_SIZE  32768
+#define FT_RENDER_POOL_SIZE  32768L
 
 
   /*************************************************************************/
@@ -310,7 +338,7 @@
   /* By undefining this, you will only compile the code necessary to load  */
   /* TrueType glyphs without hinting.                                      */
   /*                                                                       */
-#define TT_CONFIG_OPTION_BYTECODE_INTERPRETER
+#define  TT_CONFIG_OPTION_BYTECODE_INTERPRETER
 
 
   /*************************************************************************/
@@ -389,12 +417,10 @@
 #undef T1_CONFIG_OPTION_NO_MM_SUPPORT
 
 
-#ifdef __cplusplus
-  }
-#endif
+FT_END_HEADER
 
 
-#endif /* FTOPTION_H */
+#endif /* __FTOPTION_H__ */
 
 
 /* END */
