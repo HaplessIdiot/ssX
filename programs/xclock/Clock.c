@@ -988,6 +988,10 @@ Redisplay(Widget gw, XEvent *event, Region region)
 	    DrawClockFace(w);
 	}
     } else {
+#ifdef XRENDER
+	if (w->clock.render)
+	    XClipBox (region, &w->clock.damage);
+#endif
 	w->clock.prev_time_string[0] = '\0';
     }
     clock_tic((XtPointer)w, (XtIntervalId)0);
