@@ -4,24 +4,24 @@ XFree86 4.3.99.14 (xx October 2003)
         resized video RAM.
       * Fixed viewport/video overlay window alingment issues.
       * Fixed calculation of video overlay memory size.
-      * Fixed video overlay on TV out (BugzillaR #213). (Egbert Eich).
+      * Fixed video overlay on TV out (Bugzilla #213). (Egbert Eich).
  494. Fixed mode setting in trident driver: use mode passed in function 
-      argument, not value in currentMode (BugzillaR #197, Egbert Eich).
+      argument, not value in currentMode (Bugzilla #197, Egbert Eich).
  493. Added delay when writing to Glint PM2 ramdac to avoid lockups 
       (Egbert Eich).
  492. Fixed bug in Glint Bresenham line fallback code that caused line be drawn
-      beyond framebuffer boundaries (BugzillaR #624, Egbert Eich).
+      beyond framebuffer boundaries (Bugzilla #624, Egbert Eich).
  490. Force sane pallette when entering DGA mode in Matrox driver 
       (Egbert Eich).
  489. ATi Rage128: Wait with modifying FP video mode according to BIOS values
       until final call of ValidMode() to prevent modes from being rejected
-      (BugzillaR #661, Egbert Eich).
+      (Bugzilla #661, Egbert Eich).
  488. Some Savage BIOSes turn on clock doubling on non-doubled modes. 
       Added code that catches and fixes this situation (Egbert Eich).
  487. Tdfx driver: Fixed order of initialization/deinitialization in 
       ScreenInit()/ CloseScreen().
       Fixed texture video support, removed artefacts in last line of overlay
-      video support (BugzillaR #299). (Egbert Eich).
+      video support (Bugzilla #299). (Egbert Eich).
  486. Add "automatic configuration" support for the XFree86 server, allowing
       it to be started in a useful way without an XF86Config file.
        - Add support to the config file parser for processing internally
@@ -96,14 +96,14 @@ XFree86 4.3.99.14 (xx October 2003)
       . Fixed restauration of grapical text mode.
       . Added YUY2 video format.
       . Corrected accel framebuffer pitches and max screen height 
-      (BugzillaR #528, Egbert Eich).
+      (Bugzilla #528, Egbert Eich).
  474. Moved DisableMMIO() out of the unmap() function, added call to 
       EnableMMIO() to EnterVT() to work around lockup problems when 
-      switching between two Xserver (BugzillaR #748, Egbert Eich).
+      switching between two Xserver (Bugzilla #748, Egbert Eich).
  473. Fixed problem with text widget in Xaw when widget has a different 
       depth than the default visual (Bugzilla #745, Wolfram Gloger).
  472. Fixed Sig11 when calling X -query with no ipv6 support in kernel 
-      (BugzillaR #737, Egbert Eich).
+      (Bugzilla #737, Egbert Eich).
  471. Added support for Sparc64 and AMD64 on FreeBSD.
       This patch also disables warnings from system headers, fixes some elf
       relocations also relevant for other platforms and disables translation of
@@ -113,7 +113,7 @@ XFree86 4.3.99.14 (xx October 2003)
  469. Fixed CRT modes > FP panel size for siliconmotion (Bugzilla #727, 
       Hugues Fournier).
  468. Fixed xedit coredumps: update counter of free objects when getting an
-      object from the list (BugzillaR #722, Egbert Eich).
+      object from the list (Bugzilla #722, Egbert Eich).
  467. Fixed definititon of UseInstalledOnCrossCompile so that it never is
       undefined (Harlod L. Hunt II).
  466. Add the 'b' flag to fopen() when opening binary xkm files. This is
@@ -222,9 +222,9 @@ XFree86 4.3.99.12 (10 September 2003)
       allowing the more descriptive logging to be used throughout the server,
       and the log messages to be more uniform in formatting (David Dawes).
  436. Added support for the Compaq Evo keyboard (Stanislav Brabec).
- 435. Fixed writes past end of array in via_bios.c (BugzillaR #662,
+ 435. Fixed writes past end of array in via_bios.c (Bugzilla #662,
       Egbert Eich).
- 434. Let luit copy the termios settings from the calling terminal (BugzillaR
+ 434. Let luit copy the termios settings from the calling terminal (Bugzilla
       #641, Juliusz Chroboczek).
  433. Add _ADOBE_POSTSCRIPT_FONTNAME to the list of font properties xlsfonts
       that are atoms and should be convertet to strings when run with the
@@ -342,9 +342,9 @@ XFree86 4.3.99.11 (25 August 2003)
  392. Fixed a crash when _XIMProtoOpenIM(), hich is called through XOpenIM() 
       API when protocol IM is being set up,  fails (Bugzilla #618, 
       Hisashi MIYASHITA).
- 391. Fixed a possible source of Sig11 in Jamstudio driver (BugzillaR #617,
+ 391. Fixed a possible source of Sig11 in Jamstudio driver (Bugzilla #617,
       Jonathan Hough, Egbert Eich).
- 390. Fixed building without RENDER support (BugzillaR #306, Matthieu Herrb, 
+ 390. Fixed building without RENDER support (Bugzilla #306, Matthieu Herrb, 
       Egbert Eich).
  389. Pass pointer obtained by Xalloc() to Xfree() not the one that may be
       manipulated in the mean time (Bugzilla #614, Alan Coopersmith).
@@ -408,7 +408,7 @@ XFree86 4.3.99.11 (25 August 2003)
       aliases to IPv4 and IPv6 (Matthieu Herrb, Egbert Eich).
  368. Added fallback Xlib transport layer if IPv6 socket cannot be openend
       (Egbert Eich).
- 367. Added missing symbol to the vbeSymbols table in i740 driver (BugzillaR
+ 367. Added missing symbol to the vbeSymbols table in i740 driver (Bugzilla
       #583, Egbert Eich).
  366. Changed scripts containing 'head -1' which is not supported by 
       POSIX 1003.1-2001 any more (Bugzilla #570, #569, Paul Eggert, 
@@ -453,8 +453,8 @@ XFree86 4.3.99.10 (10 August 2003)
  352. Fixed freeing of properties form xkb_geomerty block (Bugzilla #550, 
       Alexander Pohoyda).
  351. Fixed string octal number parsing and string to int conversion for "\00"
-      in xkbcomp (BugzillaR #553, Egbert Eich).
- 350. Removed stale definition from XftCompat.h (BugzillaR #543, Egbert Eich).
+      in xkbcomp (Bugzilla #553, Egbert Eich).
+ 350. Removed stale definition from XftCompat.h (Bugzilla #543, Egbert Eich).
  349. Added XLC_LOCALE file for zh_CN.UTF-8, moved iso10646 encoding to the end
       in ja_JP, ko_KR and zh_TW UTF-8  XLC_LOCALE files 
       (Bugzilla #544, Akira TAGOH).
@@ -465,7 +465,7 @@ XFree86 4.3.99.10 (10 August 2003)
       Frank Murphy).
  345. Add new charset sequence for CText at the end of list. This way the
       sequence of a charsets that were added earlier will be picked if two
-      sequences for the same charset are registered (BugzillaR #228, 
+      sequences for the same charset are registered (Bugzilla #228, 
       Egbert Eich).
  344. Use return value sysconf (_SC_OPEN_MAX) instead of the fixed number 256
       for allowed number of open files on POSIX.1 conformant systems
@@ -474,13 +474,13 @@ XFree86 4.3.99.10 (10 August 2003)
       made mkfontsdir script install on platforms that use extensions (Bugzilla
       536, Frank Giessler).
  342, Fixed a sig11 in Xaw that may appear on the rare condition that no font
-      can be found (BugzillaR #482, Egbert Eich).
+      can be found (Bugzilla #482, Egbert Eich).
  341. Added KP_Separator to symbols that can generate decimal() in xcalc
       (Egbert Eich).
  340. Disabled Color8x8PatternFill() in savage driver (Egbert Eich).
  339. Fixed a sig11 in twm when used with a session manager (Egbert Eich).
  338. Fixed rounding of refresh rate in RandR, updated Xrandr man page 
-       (BugzillaR #527, Egbert Eich).
+       (Bugzilla #527, Egbert Eich).
  337. Added MenuBorderWidth and MenuBorderColor options to twm (Bugzilla #529, 
       Alexander Pohoyda)
  336. Update for VIA driver:   
@@ -603,7 +603,7 @@ XFree86 4.3.99.9 (25 July 2003)
  315. Change DEVID macro to work around glitch in SCO's C compiler
       (Marc La France).
  314. Fixed Radeon driver so that clone modes survive server reset 
-      (BugzillaR #487, Egbert Eich).
+      (Bugzilla #487, Egbert Eich).
  313. Changed behavior of FreeType and Type1 renderer: when no encoding file
       is found fail with BadFontName instead of using an iso8859-1 encoding
       (Bugzilla #479, Roland Mainz, Juliusz Chroboczek, Egbert Eich).
@@ -685,7 +685,7 @@ XFree86 4.3.99.8 (10 July 2003)
         . Make Delete key send  DEL by default on SCO in xterm
         . Fix to make fonttosfnt compile (Bugzilla #470, Kean Johnston).
  284. Added missing ro2 symbols file to list of files to install 
-      (BugzillaR #476, Egbert Eich).
+      (Bugzilla #476, Egbert Eich).
  283. Corrected precedence problem in test in xc/lib/X11/XKBUse.c:
       XkbUseExtension(). This avoids an extra round trip during application
       startup (Bugzilla #473, Owen Taylor).
@@ -738,7 +738,7 @@ XFree86 4.3.99.8 (10 July 2003)
       resources (Bugzilla #357, Egbert Eich).
  261. Attempt to fix VIA driver lockups when moving windows:
       assumed bug compatibility to previous S3 products 
-      (BugzillaR #435, Egbert Eich).
+      (Bugzilla #435, Egbert Eich).
  260. Disabled mode writeback to client program from MGA driver (Egbert Eich).
  259. #ifdef'ed variables in os-support/bsd in cases they are not needed
       (Bugzilla #430, Jason L. Wright).
@@ -754,7 +754,7 @@ XFree86 4.3.99.8 (10 July 2003)
  254. Replaced inline asms with compier intrinsics for Intel compiler
       (Bugzilla #427, Slava Sysoltsev).
  253. Partly fixed build problems caused by mkfontdir replacement
-      (BugzillaR #425, Egbert Eich).
+      (Bugzilla #425, Egbert Eich).
  252. SiS driver update:
       Fixed Xabre support
       (Final) fix for Compaq 3045US
@@ -773,8 +773,8 @@ XFree86 4.3.99.8 (10 July 2003)
       fixed misleading error messages (Bugzilla #418, Andreas Kies).
  246. Added PanoramiX supprt for the RENDER requests: Trapezoids, Triangles,
       TriStrip, TriFan, SetPictureTransform and SetPictureFilter 
-      (BugzillaR #138, Egbert Eich).
- 245. Fixed SW/Theme cursor drawing glitches in i740 driver (BugzillaR #21,
+      (Bugzilla #138, Egbert Eich).
+ 245. Fixed SW/Theme cursor drawing glitches in i740 driver (Bugzilla #21,
       Egbert Eich).
  244. Added input driver for Aiptek tablet (Bugzilla: #393, (list #5686), 
       Bryan W. Headley).
@@ -17927,7 +17927,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2874 2003/10/08 14:58:23 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2875 2003/10/08 15:48:36 eich Exp $
 
 
 
