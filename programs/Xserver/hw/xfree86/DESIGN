@@ -2,7 +2,7 @@
 
                                   DRAFT
 
-Last modified: 19 July 1998.
+Last modified: 2 August 1998.
 
 
 
@@ -32,41 +32,24 @@ The broad design principles are:
         -- mixing different color depths and visuals on different
            and ideally even on the same screen
         -- better control of the PCI device used
-        -- better config file parser (Metro Link is helping there)
+        -- better config file parser
         -- get rid of all VGA compatibility assumptions
 
 Unless we find major deficiencies in the DIX layer, we should avoid
-making changes there.  It is however a reasonable thing to add OS or
-DDX-specific hooks to the DIX layer if needed (we have done this in
-the past).
-
-While we are at it, we might want to continue the source tree layout
-changes that were started with collecting the drivers in one
-directory.
-
-The xfree86/common level may need some reorganising, but no significant
-change in the entry points is requires of the drivers. Keyboard
-handling should be moved in to the os-support layer.
-
-common_hw needs to be rethought as it doesn't really work the way it
-was intended to. Most likely all that we should keep here is truly
-generic code like the clock calculations or some generic RAMDAC and
-cursor code. But if that makes sense is still open at this point.
-In any case, we should not generate one huge module with all the code in
-it, but allow the drivers to pick what they need from here.
+making changes there.
 
 
-Section 1:   The XF86Config File
-================================
+Section 1: The XF86Config File
+==============================
 
 The XF86Config file format is similar to the old format, with the following
 changes:
 
 1.1 Device section
 
-    The "Device" sections will be similar to what they currently are,
-    and will describe hardware-specific information for a single video
-    card.  Some new keywords are added:
+    The "Device" sections are similar to what they used to be, and
+    describe hardware-specific information for a single video card.
+    Some new keywords are added:
 
       Driver "drivername"
 
@@ -79,7 +62,7 @@ changes:
         purpose is to identify particular cards in a multi-headed
         configuration.  The format of the argument is intentionally
         vague, and may be architecture dependent.  For a PCI bus, it
-        might be something like "bus:slot:func".
+        is something like "bus:slot:func".
 
     A "Device" section is considered "active" if there is a reference
     to it in an active "Screen" section.
@@ -91,31 +74,48 @@ changes:
     added.  (The 'Driver' keyword may be accepted in place of the
     'Identifier' keyword for compatibility purposes.)  The Identifier
     can be used to identify which Screen is to be active when multiple
-    "Screen" sections are present.  It may be possible to specify the
-    active Screen from the command line.  A default will be chosen in
-    the absence of one being specified.  A "Screen" section is considered
-    "active" if there is a reference to it either from the command line,
-    or from an active "ServerLayout" section.
+    "Screen" sections are present.  It is possible to specify the active
+    Screen from the command line.  A default is chosen in the absence
+    of one being specified.  A "Screen" section is considered "active"
+    if there is a reference to it either from the command line, or from
+    an active "ServerLayout" section.
 
 1.3 ServerLayout section
 
     The "ServerLayout" section is a new section that is used to identify
-    which "Screen" sections are to be used in a multi-headed configuration.
-    Each "ServerLayout" section has an identifier and a list of Screen
-    section identifiers.  A "ServerLayout" section can be made active
-    by being referenced on the command line.  In the absence of this,
-    a default will be chosen.
+    which "Screen" sections are to be used in a multi-headed configuration,
+    and the relative layout of those screens.  Each "ServerLayout"
+    section has an identifier and a list of Screen section identifiers.
+    A "ServerLayout" section can be made active by being referenced on
+    the command line.  In the absence of this, a default will be chosen.
+    The 'Screen' names may optionally be followed by the names of the
+    four screens adjacent to it.  The order of these is top, bottom,
+    left, right.  Here is an example of a "ServerLayout" section for
+    two screens, with the second located to the right of the first:
 
-[OTHER CHANGES TO COME]
+      Section "ServerLayout"
+        Identifier "Main Layout"
+        Screen     "Screen 1"  ""  ""  ""  "Screen 2"
+        Screen     "Screen 2"
+      EndSection
+
+1.4 Options
+
+    Options are used more extensively.  They may appear in most sections
+    now.  Options related to drivers can be present in the Screen, Device
+    and Monitor sections and the Display subsections.  The order of
+    precedence is Display, Screen, Monitor, Device.  Options have been
+    extended to allow an optional value to be specified in addition to
+    the option name.  For more details about options, see Section 8.
 
 
-Section 2: Driver Interface Aims
-================================
+Section 2: Driver Interface
+===========================
 
-The aim of this driver interface plan is to identify a minimal set of
-driver entry points that are required based on the external events that
-the driver must react to, and to not impose any non-essential structure
-on the way they are used beyond that.
+The driver interface consists of a minimal set of entry points that are
+required based on the external events that the driver must react to.
+No non-essential structure is imposed on the way they are used beyond
+that.  This is a significant difference compared with the old design.
 
 The entry points for drawing operations are already taken care of by
 the framebuffer code (including, XAA).  Extensions and enhancements to
@@ -144,8 +144,8 @@ Events that a driver needs to react to are:
      at the end of each server generation.
 
 
-In addition to these events, the following functions will be required
-by the XFree86-common layer:
+In addition to these events, the following functions are required by
+the XFree86 common layer:
 
    Identify:
 
@@ -168,9 +168,12 @@ The VidMode extension will also require:
    ValidMode:
 
      Identify if a new mode is usable with the current configuration.
-     It is likely that the PreInit function would internally make use of
-     the ValidMode function.
+     The PreInit function (and/or helpers it calls) may also make use
+     of the ValidMode function or something similar.
 
+
+Other extensions may require other entry points.  The drivers will
+inform the common layer of these in such cases.
 
 
 Section 3: Control Flow in the Server and Mandatory Driver Functions
@@ -188,10 +191,12 @@ Here is what InitOutput() does:
 
     The XF86Config file is read in full, and the resulting information
     stored in data structures.  None of the parsed information is
-    processed at this point.
+    processed at this point.  The parser data structures are opaque to
+    the video drivers and to most of the common layer code.
 
     The entire file is parsed first to remove any section ordering
     requirements.
+
 
 3.2  Initial processing of parsed information and command line options:
 
@@ -201,23 +206,27 @@ Here is what InitOutput() does:
     and to determine which "ServerLayout", "Screen" and "Device" sections
     are active.
 
+
 3.3  Enable port I/O access
 
-    Port I/O access will be controlled from the xfree86-common layer,
-    and will be all or nothing.  It is enabled prior to calling driver
-    probes, at the start of subsequent server generations, and when VT
-    switching back to the Xserver.  It is disabled at the end of server
-    generations, and when VT switching away from the Xserver.
+    Port I/O access is controlled from the XFree86 common layer, and is
+    "all or nothing".  It is enabled prior to calling driver probes, at
+    the start of subsequent server generations, and when VT switching
+    back to the Xserver.  It is disabled at the end of server generations,
+    and when VT switching away from the Xserver.
+
+    The implementation details of this may vary on different platforms.
+
 
 3.4  General bus probe:
 
     This is done at the start of the first server generation only.
 
-    In the case of ix86 machines, this will be a general PCI probe.  The
-    full information obtained here will be available to the drivers.  This
-    information persists for the life of the Xserver.  In the PCI case,
-    the PCI information for all video cards found is available in
-    by calling xf86GetPciVideoInfo():
+    In the case of ix86 machines, this will be a general PCI probe.
+    The full information obtained here will be available to the drivers.
+    This information persists for the life of the Xserver.  In the PCI
+    case, the PCI information for all video cards found is available by
+    calling xf86GetPciVideoInfo():
 
       pciVideoPtr *xf86GetPciVideoInfo()
 
@@ -231,11 +240,16 @@ Here is what InitOutput() does:
 
     This is done at the start of the first server generation only.
 
-    Once the config file has been parsed, the initial set of modules to
-    be loaded can be identified.  The initial set of modules are those
-    explicitly mentioned in the "Module" section, as well as those drivers
-    explicitly mentioned in active Device sections.  Each driver module
-    referenced in the active Device sections is loaded exactly once.
+    The core server contains a list of mandatory modules.  These are loaded
+    first.  Currently the only module on this list is the bitmap font module.
+
+    The next set of modules loaded are those specified explicitly in the
+    "Module" section of the config file.
+
+    The final set of initial modules are the driver modules referenced by
+    the active Device sections in the config file.  Each of these modules
+    is loaded exactly once.
+
 
 3.6  Register Video Drivers:
 
@@ -264,10 +278,9 @@ Here is what InitOutput() does:
     Once all the drivers are registered, their ChipIdentify() functions
     are called.
 
-
     void ChipIdentify(int flags)
 
-      This are expected to print a message indicating the driver name,
+      This is expected to print a message indicating the driver name,
       a short summary of what it supports, and a list of the chipset
       names that it supports.  It may use the xf86PrintChipsets() helper
       to do this.
@@ -280,22 +293,22 @@ Here is what InitOutput() does:
       function to format the identification message.
 
 
-3.7  Probe:
+3.7  Driver Probe:
 
-    This is done at the start of the first server generation only.
+    This is done at the start of the first server generation only.  The
+    ChipProbe() function of each registered video driver is called.
 
-    The ChipProbe() function of each registered video driver is called.
-
-    Bool ChipProbe(DriverPtr drv, int flags);
+    Bool ChipProbe(DriverPtr drv, int flags)
 
       The purpose of this is to identify all instances of hardware
-      supported by the driver.
+      supported by the driver.  The flags value is currently not used,
+      and should be ignored by the driver.
 
       The probe must not attempt to probe bus slot locations that
       have already been claimed by another probe.  In the ix86 case,
       this means that a driver requiring vga-compatibility access must
       immediately return FALSE if the vga entry in the bus list has already
-      been claimed.  Drivers which don't require vga-compatibility, but
+      been claimed.  Drivers that don't require vga-compatibility, but
       which may use it if available must restrict their probe to examining
       the PCI entries in the card list which have not yet been claimed by
       other drivers.  Here "examining" means doing anything that may affect
@@ -312,14 +325,15 @@ Here is what InitOutput() does:
 
       The probe must be a minimal probe.  It should just determine if
       there is a card present that it can drive.  It should use the
-      least intrusive probe methods possible.  It must not do things
-      like probe for other things like the amount of memory installed, etc.
+      least intrusive probe methods possible.  It must not do anything
+      that is not essential, like probing for other details such as the
+      amount of memory installed, etc.
 
       Allocate a ScrnInfoRec for each instance of the hardware found,
       and fill in the basic information, including the other driver
-      entry points.  Information not probed must be initialised with a
-      defined "unknown" value.  The xf86AllocateScreen() function must
-      be used to allocate the ScrnInfoRec.
+      entry points.  The xf86AllocateScreen() function must be used to
+      allocate the ScrnInfoRec, and it takes care of initialising fields
+      to defined "unused" values.
 
       Claim the bus slots for each instance of the hardware found.  This
       prevents other drivers from claiming the same hardware.
@@ -336,16 +350,16 @@ Here is what InitOutput() does:
     ScrnInfoPtr xf86AllocateScreen(DriverPtr drv, int flags)
 
       This function allocates a new ScrnInfoRec in the xf86Screens[]
-      array.  This is normally used by the video driver ChipProbe()
-      functions.  The return value is a pointer to the newly allocated
-      ScrnInfoRec.  The scrnIndex, origIndex, module and drv fields are
-      initialised.  The reference count in drv is incremented.  The
-      storage for any currently allocated "privates" pointers is also
-      allocated and the privates field initialised (the privates data
-      is of course not allocated or initialised).  This function never
-      returns on failure.  If the allocation fails, the server exits
-      with a fatal error.  The flags value is not currently used, and
-      should be set to zero.
+      array.  This is function is normally called by the video driver
+      ChipProbe() functions.  The return value is a pointer to the newly
+      allocated ScrnInfoRec.  The scrnIndex, origIndex, module and drv
+      fields are initialised.  The reference count in drv is incremented.
+      The storage for any currently allocated "privates" pointers is
+      also allocated and the privates field initialised (the privates
+      data is of course not allocated or initialised).  This function
+      never returns on failure.  If the allocation fails, the server
+      exits with a fatal error.  The flags value is not currently used,
+      and should be set to zero.
 
 
     At the completion of this, a list of ScrnInfoRecs have been allocated
@@ -417,13 +431,14 @@ Here is what InitOutput() does:
       within this function, it must be unmapped before returning.  Driver
       specific information should be stored in a structure hooked into
       the ScrnInfoRec's "driverPrivate" field.  Any other modules which
-      require persistent data should be initialised in this function,
-      and they should allocate a "privates" index to hook their data into
-      by calling xf86AllocateScrnInfoPrivateIndex().  The "privates"
-      data is persistent.
+      require persistent data (ie data that persists across server
+      generations) should be initialised in this function, and they
+      should allocate a "privates" index to hook their data into by
+      calling xf86AllocateScrnInfoPrivateIndex().  The "privates" data
+      is persistent.
 
-      Helper functions for some of these things will be provided at the
-      xfree86-common level, and the driver can choose to make use of
+      Helper functions for some of these things are provided at the
+      XFree86 common level, and the driver can choose to make use of
       them.
 
       Modules may be loaded at any point in this function, and all modules
@@ -443,14 +458,20 @@ Here is what InitOutput() does:
       in some way (unsupported depth, no valid modes, not enough video
       memory, etc), and TRUE if it is usable.
 
+      It is expected that if the ChipPreInit returns TRUE then the only
+      reasons that subsequent stages in the driver might fail are lack or
+      resources (like xalloc failures).  All other possible reasons for
+      failure should be determined by the ChipPreInit function.
+
+
     The ScrnInfoRecs for screens where the ChipPreInit fails are removed.
-    If none remain, set screenInfo.numScreens to 0 and return.
+    If none remain, InitOutput sets screenInfo.numScreens to 0 and returns.
 
     At this point, further fields of the ScrnInfoRecs would normally be
-    filled in.  Except for the ones marked (*), most are not strictly
-    mandatory, but many are required by other layers and/or helper functions
-    that the driver may choose to use.  The documentation for those layers
-    and helper functions will indicate which they require.
+    filled in.  Most are not strictly mandatory, but many are required
+    by other layers and/or helper functions that the driver may choose
+    to use.  The documentation for those layers and helper functions
+    indicates which they require.
 
     The following fields of the ScrnInfoRecs should be filled in if the
     driver is going to use them:
@@ -484,7 +505,7 @@ Here is what InitOutput() does:
           ramdac
           clockchip
           numClocks             (if not programmable)
-          clock[]              (if not programmable)
+          clock[]               (if not programmable)
           videoRam
           biosBase
           memBase
@@ -492,10 +513,6 @@ Here is what InitOutput() does:
           driverPrivate
           chipID
           chipRev
-
-    NOTE: none of the modules the driver makes use of are loaded at this
-    point, so ChipPreInit must not try to access them in any way.  To do
-    so at this point is usually not appropriate anyway.
 
 
     pointer xf86LoadSubModule(ScrnInfoPtr pScrn, const char *name)
@@ -512,7 +529,7 @@ Here is what InitOutput() does:
     void UnloadModule(pointer module)
 
       Unloads the module referenced by "module".  "module" should be
-      a pointer returned by xf86LoadSubModule().
+      a pointer returned previously by xf86LoadSubModule().
 
 
 3.10  Cleaning up unused drivers:
@@ -526,30 +543,29 @@ Here is what InitOutput() does:
 
     This is done at the start of the first server generation only.
 
-    Sort the screens based on the indexing specified in the "Screen"
-    sections.
-
     (*) The details of this have not yet been determined.
+
 
 3.12  AddScreen:
 
-    At this point, the valid screens are known.  Call AddScreen for each
-    of them, passing ChipScreenInit as the argument.  AddScreen is a
-    DIX function which allocates a new screenInfo.screen[] entry (aka
-    pScreen), and does some basic initialisation of it.  It then calls
-    the ChipScreenInit function, with pScreen as one of its arguments.
-    If ChipScreenInit returns FALSE, AddScreen returns -1.  Otherwise
-    it returns the index of the screen.  AddScreen should only fail
-    because of programming errors or failure to allocate resources
-    (like memory).  All configuration problems should be detected out
-    before this point.
+    At this point, the valid screens are known.  AddScreen is called
+    for each of them, passing ChipScreenInit as the argument.  AddScreen
+    is a DIX function that allocates a new screenInfo.screen[] entry
+    (aka pScreen), and does some basic initialisation of it.  It then
+    calls the ChipScreenInit function, with pScreen as one of its
+    arguments.  If ChipScreenInit returns FALSE, AddScreen returns -1.
+    Otherwise it returns the index of the screen.  AddScreen should only
+    fail because of programming errors or failure to allocate resources
+    (like memory).  All configuration problems should be detected before
+    this point.
 
     Bool ChipScreenInit(int index, ScreenPtr pScreen, int argc, char **argv);
 
       This is called at the start of each server generation.
 
-      Fill in all of pScreen, possibly doing some of this by calling a
-      framebuffer ScreenInit function.
+      Fill in all of pScreen, possibly doing some of this by calling
+      ScreenInit functions from other layers like mi, framebuffers (cfb,
+      etc), and extensions.
 
       Map any video memory or other memory regions.
 
@@ -559,6 +575,7 @@ Here is what InitOutput() does:
       Initialise the initial video mode.  The ScrnInfoRec's vtSema field
       should be set to TRUE just prior to changing the video hardware's
       state.
+
 
     The ChipScreenInit function (or functions from other layers that it
     calls) should allocate entries in the ScreenRec's devPrivates area
@@ -575,8 +592,8 @@ Here is what InitOutput() does:
     The ChipScreenInit function should initialise the CloseScreen and
     SaveScreen fields of pScreen.  The old value of pScreen->CloseScreen
     should be saved as part of the driver's per-screen private data,
-    allowing it to be called from ChipCloseScreen.  This amounts to
-    wrapping the existing CloseScreen function.
+    allowing it to be called from ChipCloseScreen.  This means that
+    the existing CloseScreen function is wrapped.
 
 
 3.13  Finishing InitOutput():
@@ -587,7 +604,8 @@ Here is what InitOutput() does:
 
 3.14  Mode Switching:
 
-    When a SwitchMode event is received, ChipSwitchMode() is called:
+    When a SwitchMode event is received, ChipSwitchMode() is called (when
+    it exists):
 
     Bool ChipSwitchMode(int index, DisplayModePtr mode, int flags);
 
@@ -597,7 +615,8 @@ Here is what InitOutput() does:
 
 3.15  Changing Viewport:
 
-    When a Change Viewport event is received, ChipAdjustFrame() is called:
+    When a Change Viewport event is received, ChipAdjustFrame() is called
+    (when it exists):
 
     void ChipAdjustFrame(int index, int x, int y, int flags);
 
@@ -632,25 +651,23 @@ Here is what InitOutput() does:
 
     Bool ChipEnterVT(int index, int flags);
 
-      Map memory regions
+      This function should map memory regions, initialise the current video
+      mode and initialise the viewport, turn on the HW cursor if appropriate,
+      etc.
 
-      Save the video state (*)
+      Should it re-save the video state before the initialising the
+      video mode?
 
-      Initialise the current video mode
-
-      Initialise the viewport, HW cursor, etc
-
-      (*) should this be done?
 
     void ChipLeaveVT(int index, int flags);
 
-      Invalidate pixmap cache, font cache, etc.
+      This function should restore the saved video state and unmap the
+      memory regions.  If appropriate it should also turn off the HW
+      cursor, and invalidate any pixmap/font caches.
 
-      Turn off HW cursor, etc
 
-      Restore saved video state (probably by calling ChipRestore)
-
-      Unmap memory regions
+    Other layers may wrap the ChipEnterVT and ChipLeaveVT functions if
+    they need to take some action when these events are received.
 
 
 3.17  End of server generation:
@@ -660,15 +677,16 @@ Here is what InitOutput() does:
 
     Bool ChipCloseScreen(int index, ScreenPtr pScreen);
 
-      Restore saved video state (probably by calling ChipRestore)
+      This function should restore the saved video state and unmap the
+      memory regions.
 
-      Unmap memory regions
+      It should also free per-screen data structures allocated by the
+      driver.  Note that the persistent data held in the ScrnInfoRec's
+      driverPrivate field should not be freed here because it is needed
+      by subsequent server generations.
 
-      Free per-screen data structures allocated by the driver.  Note that
-      the persistent data held in the ScrnInfoRec's driverPrivate field
-      should not be freed here because it is needed by subsequent server
-      generations.  The ScrnInfoRec's vtSema field should be set to FALSE
-      once the video HW state has been restored.
+      The ScrnInfoRec's vtSema field should be set to FALSE once the
+      video HW state has been restored.
 
       Before freeing the per-screen driver data the saved CloseScreen value
       should be restored to pScreen->CloseScreen, and that function should
@@ -678,8 +696,8 @@ Here is what InitOutput() does:
 Section 4: Optional Driver Functions
 ====================================
 
-The functions outlined here can be accessed from the XFree86-common
-layer, but their presence is optional.
+The functions outlined here can be called from the XFree86 common layer,
+but their presence is optional.
 
 4.1  Mode Validation:
 
@@ -703,19 +721,18 @@ layer, but their presence is optional.
 
       Free any driver-allocated data that may have been allocated up to
       and including an unsuccessful ChipScreenInit() call.  This would
-      predominantly be data allocated by ChipPreInit() that persists across
-      server generations.  It would include the driverPrivate, and any
-      "privates" entries that modules may have allocated.
-
+      predominantly be data allocated by ChipPreInit() that persists
+      across server generations.  It would include the driverPrivate,
+      and any "privates" entries that modules may have allocated.
 
 
 Section 5: Recommended driver functions
 =======================================
 
-The functions outlined here are for internal use by the driver only.  They
-are entirely optional, and are never accessed directly from higher layers.
-The sample function declarations shown here are just samples.  The interface
-(if any) used is up to the driver.
+The functions outlined here are for internal use by the driver only.
+They are entirely optional, and are never accessed directly from higher
+layers.  The sample function declarations shown here are just examples.
+The interface (if any) used is up to the driver.
 
 5.1  Save:
 
@@ -757,12 +774,11 @@ Section 6: Data and Data Structures
 6.1  Command line data
 
 Command line options are typically global, and are stored in global
-variables.  These variables are read-only and are available to
-drivers via a function call interface.  Most of these command
-line values are processed via helper functions to ensure that they are
-treated consistently by all drivers.  The other means of access is
-provided for cases where the supplied helper functions might not
-be appropriate.
+variables.  These variables are read-only and are available to drivers
+via a function call interface.  Most of these command line values are
+processed via helper functions to ensure that they are treated consistently
+by all drivers.  The other means of access is provided for cases where
+the supplied helper functions might not be appropriate.
 
 Some of them are:
 
@@ -828,7 +844,7 @@ functions:
 
 In addition to these, the defaultColorVisualClass value can be set.  This
 is allowed so that the behaviour of cfb's visual initialisation code can
-be controlled.  It should probably be done differently.
+be controlled.  This is almost redundant and it will likely be removed soon.
 
 
     void xf86SetDefaultColorVisualClass(int class)
@@ -839,52 +855,50 @@ be controlled.  It should probably be done differently.
 
 6.2  Data handling
 
-Config file data contains parts that are global, and parts that
-are Screen specific.  All of it is parsed into data structures
-that neither the drivers or most other parts of the server need to know
-about.
+Config file data contains parts that are global, and parts that are
+Screen specific.  All of it is parsed into data structures that neither
+the drivers or most other parts of the server need to know about.
 
 The global data is typically not required by drivers, and as such, most
 of it is stored in the private xf86InfoRec.
 
-The screen-specific data collected from the config file is stored
-in screen/device/display/monitor-specific data structures that are
-separate from the ScrnInfoRecs, with the appropriate elements/fields
-hooked into the ScrnInfoRecs as required.  The screen config data is
-held in confScreenRec, device data in the GDevRec, monitor data
-in the MonRec, and display data in the DispRec.
+The screen-specific data collected from the config file is stored in
+screen/device/display/monitor-specific data structures that are separate
+from the ScrnInfoRecs, with the appropriate elements/fields hooked into
+the ScrnInfoRecs as required.  The screen config data is held in
+confScreenRec, device data in the GDevRec, monitor data in the MonRec,
+and display data in the DispRec.
 
-The XFree86-common layer's screen specific data (the actual data in
-use for each screen) is held in the ScrnInfoRecs.  As has been outlined
+The XFree86 common layer's screen specific data (the actual data in use
+for each screen) is held in the ScrnInfoRecs.  As has been outlined
 above, the ScrnInfoRecs are allocated at probe time, and it is the
-responsibility of the Drivers' Probe() and PreInit() functions to
-finish filling them in based on both data provided on the command line
-and data provided from the Config file.  The precedence for this is:
+responsibility of the Drivers' Probe() and PreInit() functions to finish
+filling them in based on both data provided on the command line and data
+provided from the Config file.  The precedence for this is:
 
     command line  ->  config file  ->  probed/default data
 
-For most things in this category there are helper functions that
-the drivers can use to ensure that the above precedence is consistently
+For most things in this category there are helper functions that the
+drivers can use to ensure that the above precedence is consistently
 used.
 
-As well as containing screen-specific data that the XFree86-common layer
+As well as containing screen-specific data that the XFree86 common layer
 (including essential parts of the server infrastructure as well as helper
 functions) needs to access, it also contains some data that drivers use
-internally.  There needs to be a balance between things that lots of
-drivers need and the size/obscurity of the ScrnInfoRec.  Exactly where
-to draw the line on this is yet to be decided.
+internally.  When considering whether to add a new field to the
+ScrnInfoRec, consider the balance between the convenience of things that
+lots of drivers need and the size/obscurity of the ScrnInfoRec.
 
 Per-screen driver specific data that cannot be accommodated with the
 static ScrnInfoRec fields is held in a driver-defined data structure,
 a pointer to which is assigned to the ScrnInfoRec's driverPrivate field.
 This is per-screen data that persists across server generations (as does
-the bulk of the static ScrnInfoRec data).  It would typically also include
-the video card's saved state.
+the bulk of the static ScrnInfoRec data).  It would typically also
+include the video card's saved state.
 
-Per-screen data for other modules that the driver uses (for example
-a vgahw module, or a framebuffer (e.g., XAA) module) that is reset for
-each server generation is hooked into the ScrnInfoRec through it's
-'privates' field.
+Per-screen data for other modules that the driver uses (for example,
+the XAA module) that is reset for each server generation is hooked into
+the ScrnInfoRec through it's 'privates' field.
 
 
 Once it has stabilised, the data structures and variables accessible to
@@ -937,10 +951,10 @@ AllocateScreenPrivateIndex() function.
 
     int AllocateScreenPrivateIndex()
 
-      This function allocates a new element in the "devPrivates" field of
-      all currently existing ScreenRecs.  The return value is the index
-      of this new element in the "devPrivates" array.  The "devPrivates" field
-      is of type DevUnion:
+      This function allocates a new element in the "devPrivates" field
+      of all currently existing ScreenRecs.  The return value is the
+      index of this new element in the "devPrivates" array.  The
+      "devPrivates" field is of type DevUnion:
 
         typedef union _DevUnion {
             pointer             ptr;
@@ -994,7 +1008,7 @@ xf86AllocateScrnInfoPrivateIndex() function.
 Section 7: Keeping Track of Bus Slots
 =====================================
 
-The XFree86-common layer keeps track of bus slot usage.  The data
+The XFree86 common layer keeps track of bus slot usage.  The data
 structures used for this are opaque to the drivers, and a function
 interface is provided for drivers to use.  Currently PCI (and basic ISA)
 bus it implemented.  Others will be added as required.
@@ -1040,10 +1054,11 @@ bus it implemented.  Others will be added as required.
 
       Takes a BusID string, and if it is in the correct format, returns
       the PCI bus, device, func values that it indicates.  The format
-      of the string is expected to be "bus:device:func", where each are
-      decimal integers.  The ":func" part may be omitted, and the func
-      value assumed to be zero, but this isn't encouraged.  If the string
-      isn't a valid PCI BusID, the return value is FALSE.
+      of the string is expected to be "bus:device:func" or
+      "PCI:bus:device:func" , where each are decimal integers.  The
+      ":func" part may be omitted, and the func value assumed to be
+      zero, but this isn't encouraged.  If the string isn't a valid PCI
+      BusID, the return value is FALSE.
 
 
     Bool xf86ComparePciBusString(const char *busID, int bus, int device,
@@ -1203,7 +1218,9 @@ Next, the higher level functions that most drivers would use.
 
       Prints out warning messages for each option in the list of options
       that isn't marked as used.  This is intended to show options that
-      the driver hasn't recognised.
+      the driver hasn't recognised.  It would normally be called near
+      the end of the ChipScreenInit function, but only when
+      serverGeneration == 1.
 
 
     OptionInfoPtr xf86TokenToOptinfo(OptionInfoPtr table, int token)
@@ -1267,8 +1284,97 @@ Next, the higher level functions that most drivers would use.
       required.
 
 
-Section 9: Offscreen Memory Manager
-===================================
+Section 9: Modules, Drivers, Include Files and Interface Issues
+===============================================================
+
+NOTE: this section is new and incomplete.
+
+
+9.1 Include files
+
+The following include files are typically required by video drivers:
+
+  All drivers should include these:
+
+    "xf86.h"
+    "xf86_OSproc.h"
+    "xf86_ansic.h"
+
+  Wherever inb/outb (and related things) are used the following should be
+  included:
+
+    "compiler.h"
+   
+  Drivers that need to access PCI vendor/device definitions need this:
+
+    "xf86PciInfo.h"
+
+  Drivers that need to access the PCI config space need this:
+
+    "xf86Pci.h"
+
+  Drivers that initialise a SW cursor need this:
+
+    "mipointer.h"
+
+  All drivers implementing backing store need this:
+
+    "mibstore.h"
+
+  All drivers using the mi colourmap code need this:
+
+    "micmap.h"
+
+  If a driver uses the vgahw module, it needs this:
+
+    "vgaHW.h"
+
+  Drivers supporting VGA or Hercules monochrome screens need:
+
+    "xf1bpp.h"
+
+  Drivers supporting VGA or EGC 16-colour screens need:
+
+    "xf4bpp.h"
+
+  Drivers using cfb need:
+
+    #define PSZ 8
+    #include "cfb.h"
+    #undef PSZ
+
+  Drivers supporting bpp 16, 24 or 32 with cfb need one or more of:
+
+    "cfb16.h"
+    "cfb24.h"
+    "cfb32.h"
+
+  If a driver uses XAA, it needs these:
+
+    "xaa.h"
+    "xaalocal.h"
+
+  If a driver uses the fb manager, it needs this:
+
+    "xf86fbman.h"
+ 
+
+Non-driver modules should include "xf86_ansic.h" to get the correct
+wrapping of ANSI C/libc functions.
+
+All modules must NOT include any system include files, and the following:
+
+    "xf86Priv.h"
+    "xf86Privstr.h"
+    "xf86_libc.h"
+    "xf86_OSlib.h"
+    "Xos.h"
+
+and any other include files with "priv" in their name.
+
+
+Section 10: Offscreen Memory Manager
+====================================
 
 Management of offscreen video memory may be handled by the XFree86
 framebuffer manager.  The manager provides functions in the ScrnInfoRec
@@ -1331,8 +1437,8 @@ provide it's own memory manager in place of the generic one, however,
 it should provide the exact same interface.
 
 
-Section 10: DPMS Extension
-=========================
+Section 11: DPMS Extension
+==========================
 
 Support code for the DPMS extension is included in the XFree86 common layer.
 This code provides an interface between the main extension code, and a means
@@ -1365,7 +1471,7 @@ that gets called when the DPMS level is changed:
       values are defined in "extensions/dpms.h".
 
 
-Section 11: DGA Extension
+Section 12: DGA Extension
 =========================
 
 Support code for the DGA extension is included in the XFree86 common layer.
@@ -1474,10 +1580,10 @@ The following functions may optionally be provided:
 APPENDICES
 ==========
 
-These appendices describe modules/layers and helpers that video driver might
-find useful.  While video drivers are not required to use any of these
-to be considered "compliant", the use of appropriate ones is encouraged
-to improve the consistency of behaviour of drivers.
+These appendices describe modules/layers and helpers that video driver
+might find useful.  While video drivers are not required to use any of
+these to be considered "compliant", the use of appropriate helpers is
+encouraged to improve the consistency of behaviour of drivers.
 
 Appendix A: Helper Functions
 ============================
@@ -1495,38 +1601,39 @@ A.1  Functions for printing messages:
     FatalError(const char *format, ...)
 
       This prints a message and causes the Xserver to abort.  It should
-      rarely be used within a video driver, as most error conditions should
-      be flagged by the return values of the driver functions.  This allows
-      the higher layers to decide how to proceed.  In rare cases, this can
-      be used within a driver if a fatal unexpected condition is found.
+      rarely be used within a video driver, as most error conditions
+      should be flagged by the return values of the driver functions.
+      This allows the higher layers to decide how to proceed.  In rare
+      cases, this can be used within a driver if a fatal unexpected
+      condition is found.
 
 
     xf86ErrorF(const char *format, ...)
 
-      This is like ErrorF(), except that the message is only printed when
-      the Xserver's verbosity level is set to the default (1) or higher.
-      It means that the messages are not printed when the server is started
-      with the -quiet flag.  Typically this function would only be used for
-      continuing messages started with one of the more specialised functions
-      described below.
+      This is like ErrorF(), except that the message is only printed
+      when the Xserver's verbosity level is set to the default (1) or
+      higher.  It means that the messages are not printed when the server
+      is started with the -quiet flag.  Typically this function would
+      only be used for continuing messages started with one of the more
+      specialised functions described below.
 
 
     xf86ErrorFVerb(int verb, const char *format, ...)
 
       Like xf86ErrorF, except the minimum verbosity level for which the
-      message is to be printed is given explicitly.  Passing a 'verb' value
-      of zero means the message is always printed.  A value higher than 1
-      can be used for information would normally not be needed, but
-      which might be required when diagnosing problems.
+      message is to be printed is given explicitly.  Passing a 'verb'
+      value of zero means the message is always printed.  A value higher
+      than 1 can be used for information would normally not be needed,
+      but which might be useful when diagnosing problems.
 
 
     xf86Msg(MessageType type, const char *format, ...)
 
       This is like xf86ErrorF, except that the message is prefixed with
-      a marker determined by the value of 'type'.  The marker is used to
-      indicate the type of message (warning, error, probed value, config
-      value, etc).  Note the xf86Verbose value is ignored for messages of
-      type X_ERROR
+      a marker determined by the value of 'type'.  The marker is used
+      to indicate the type of message (warning, error, probed value,
+      config value, etc).  Note the xf86Verbose value is ignored for
+      messages of type X_ERROR
 
 
     xf86MsgVerb(MessageType type, int verb, const char *format, ...)
@@ -1538,15 +1645,15 @@ A.1  Functions for printing messages:
 
       This is like xf86Msg except that the driver's name (the 'name'
       field of the ScrnInfoRec) followed by the scrnIndex in parentheses
-      is printed following the prefix.  This should be used by video drivers
-      in most cases as it clearly indicates which driver/screen the message
-      is for.
+      is printed following the prefix.  This should be used by video
+      drivers in most cases as it clearly indicates which driver/screen
+      the message is for.
 
-      NOTE: This function can only be used after the ScrnInfoRec and its
-      name field have been allocated.  That means that it can not be used
-      before the END of the ChipProbe() function.  Prior to that, use
-      xf86Msg, providing the driver's name explicitly.  No screen number
-      can be supplied at that point.
+      NOTE: This function can only be used after the ScrnInfoRec and
+      its name field have been allocated.  That means that it can not
+      be used before the END of the ChipProbe() function.  Prior to
+      that, use xf86Msg, providing the driver's name explicitly.  No
+      screen number can be supplied at that point.
 
 
     xf86DrvMsgVerb(int scrnIndex, MessageType type, int verb,
@@ -1566,9 +1673,9 @@ A.2  Functions for setting values based on command line and config file:
       the Display subsection that matches the depth/bpp.  This function
       should normally be called very early from the ChipPreInit function.
 
-      It requires that the confScreen field of the ScrnInfoRec be initialised
-      prior to calling it.  This is done by the XFree86-common layer prior
-      to calling ChipPreInit.
+      It requires that the confScreen field of the ScrnInfoRec be
+      initialised prior to calling it.  This is done by the XFree86
+      common layer prior to calling ChipPreInit.
 
       The parameters passed are:
 
@@ -1744,10 +1851,10 @@ A.3  Primary Mode functions:
                           unsigned long apertureSize,
                           LookupModeFlags strategy)
 
-      This function basically selects the set of modes to use based on those
-      available and the various constraints.  It also sets some other related
-      parameters.  It is normally called near the end of the ChipPreInit
-      function.
+      This function basically selects the set of modes to use based on
+      those available and the various constraints.  It also sets some
+      other related parameters.  It is normally called near the end of
+      the ChipPreInit function.
 
       The parameters passed to the function are:
 
@@ -1816,26 +1923,27 @@ A.3  Primary Mode functions:
         displayWidth   The resulting line pitch.
         virtualFrom    Where the virtual size was determined from.
 
-      The first stage of this function checks that the virtualX and virtualY
-      values supplied (if > 0) are consistent with the line pitch and maxHeight
-      limitations.  If not, an error message is printed, and the return value
-      is -1.
+      The first stage of this function checks that the virtualX and
+      virtualY values supplied (if > 0) are consistent with the line
+      pitch and maxHeight limitations.  If not, an error message is
+      printed, and the return value is -1.
 
-      The second stage sets up the mode pool, eliminating immediately any
-      modes that exceed the driver's line pitch limits, and also the virtual
-      width and height limits (if > 0).  For each mode removed an informational
-      message is printed at verbosity level 2.  If the mode pool ends up being
-      empty, an error message is printed, and the return value is -1.
+      The second stage sets up the mode pool, eliminating immediately
+      any modes that exceed the driver's line pitch limits, and also
+      the virtual width and height limits (if > 0).  For each mode
+      removed an informational message is printed at verbosity level 2.
+      If the mode pool ends up being empty, an error message is printed,
+      and the return value is -1.
 
       The final stage is to lookup each mode, and fill in the remaining
-      parameters.  If an error condition is encountered, a message is printed,
-      and the return value is -1.  Otherwise, the return value is the
-      number of valid modes found (0 if none are found).
+      parameters.  If an error condition is encountered, a message is
+      printed, and the return value is -1.  Otherwise, the return value
+      is the number of valid modes found (0 if none are found).
 
-      A message is only printed by this function when a fundamental problem
-      is found.  It is intended that this function may be called more than
-      once if there is more than one set of constraints that the driver can
-      work within.
+      A message is only printed by this function when a fundamental
+      problem is found.  It is intended that this function may be called
+      more than once if there is more than one set of constraints that
+      the driver can work within.
 
       If this function returns -1, the ChipPreInit function should return
       FALSE.
@@ -1845,19 +1953,19 @@ A.3  Primary Mode functions:
 
       This function deletes modes in the modes field of the ScrnInfoRec
       that have been marked as invalid.  This is normally run after
-      having run xf86ValidateModes() for the last time.  For each mode that
-      is deleted, a warning message is printed out indicating the reason
-      for it being deleted.
+      having run xf86ValidateModes() for the last time.  For each mode
+      that is deleted, a warning message is printed out indicating the
+      reason for it being deleted.
 
 
     void xf86SetCrtcForModes(ScrnInfoPtr scrp, int adjustFlags)
 
-      This function fills in the Crtc* fields for all the modes in the modes
-      field of the ScrnInfoRec.  The adjustFlags parameter determines how
-      the vertical CRTC values are scaled for interlaced modes.  They
-      are halved if it is INTERLACE_HALVE_V.  The vertical CRTC values are
-      doubled for doublescan modes, and are further multiplied by the VScan
-      value.
+      This function fills in the Crtc* fields for all the modes in the
+      modes field of the ScrnInfoRec.  The adjustFlags parameter determines
+      how the vertical CRTC values are scaled for interlaced modes.
+      They are halved if it is INTERLACE_HALVE_V.  The vertical CRTC
+      values are doubled for doublescan modes, and are further multiplied
+      by the VScan value.
 
       This function is normally called after calling xf86PruneDriverModes.
 
@@ -1867,10 +1975,10 @@ A.3  Primary Mode functions:
 
     void xf86PrintModes(ScrnInfoPtr scrp)
 
-      This function prints out the virtual size setting, and the line pitch
-      being used.  It also prints out one line for each mode being used,
-      including its pixel clock, horizontal sync rate, refresh rate, and
-      whether it is interlaced or multiscan.
+      This function prints out the virtual size setting, and the line
+      pitch being used.  It also prints out one line for each mode being
+      used, including its pixel clock, horizontal sync rate, refresh
+      rate, and whether it is interlaced or multiscan.
 
       This function is normally called after calling xf86SetCrtcForModes.
 
@@ -1914,11 +2022,12 @@ A.4  Secondary Mode functions:
       clockRanges and strategy parameters are as for the xf86ValidateModes
       function above.
 
-      This function requires the modePool, clock[], numClocks and progClock
-      fields of the ScrnInfoRec to be initialised before being called.
+      This function requires the modePool, clock[], numClocks and
+      progClock fields of the ScrnInfoRec to be initialised before being
+      called.
 
-      The return value is MODE_OK if a mode was found.  Otherwise it indicates
-      why a matching mode could not be found.
+      The return value is MODE_OK if a mode was found.  Otherwise it
+      indicates why a matching mode could not be found.
 
 
     ModeStatus xf86InitialCheckModeForDriver(ScrnInfoPtr scrp,
@@ -1927,13 +2036,13 @@ A.4  Secondary Mode functions:
                                              int virtualY)
 
       This function checks the passed mode against some basic driver
-      constraints.  Apart from the ones passed explicitly, the
-      maxHValue and maxVValue fields of the ScrnInfoRec are also used.
-      If the ValidMode field of the ScrnInfoRec is set, that function is
-      also called to check the mode.
+      constraints.  Apart from the ones passed explicitly, the maxHValue
+      and maxVValue fields of the ScrnInfoRec are also used.  If the
+      ValidMode field of the ScrnInfoRec is set, that function is also
+      called to check the mode.
 
-      If the mode is consistent with the constraints, the return value is
-      MODE_OK.  Otherwise the return value indicates which constraint
+      If the mode is consistent with the constraints, the return value
+      is MODE_OK.  Otherwise the return value indicates which constraint
       wasn't met.
 
 
@@ -1965,9 +2074,9 @@ A.5  Functions for handling strings and tokens:
     const char *xf86TokenToString(SymTabPtr table, int token)
 
       This function returns the first string in "table" that matches
-      "token".  If no match is found, NULL is returned (NOTE, older versions
-      of this function would return the string "unknown" when no match is
-      found).
+      "token".  If no match is found, NULL is returned (NOTE, older
+      versions of this function would return the string "unknown" when
+      no match is found).
 
 
     int xf86StringToToken(SymTabPtr table, const char *string)
@@ -1986,18 +2095,18 @@ A.6  Functions for finding which config file entries to use:
     int xf86MatchDevice(const char *drivername, GDevPtr **driversectlist)
 
       This function takes the name of the driver and returns via
-      "driversectlist" a list of device sections that match the driver name.
-      The function return value is the number of matches found.  If
-      there are no Device sections with a matching name, then the first
-      Device section without a Driver statement is returned (this is for
-      backward compatibility in a single-headed configuration).  If a
-      fatal error is encountered the return value is -1.
+      "driversectlist" a list of device sections that match the driver
+      name.  The function return value is the number of matches found.
+      If there are no Device sections with a matching name, then the
+      first Device section without a Driver statement is returned (this
+      is for backward compatibility in a single-headed configuration).
+      If a fatal error is encountered the return value is -1.
 
-      This function would normally be used the early stages of a ChipProbe()
-      function.
+      This function would normally be used the early stages of a
+      ChipProbe() function.
 
-      The caller should use xfree() to free *driversectlist when it is no
-      longer needed.
+      The caller should use xfree() to free *driversectlist when it is
+      no longer needed.
 
 
     int xf86MatchPciInstances(const char *driverName, int vendorID,
@@ -2027,8 +2136,8 @@ A.6  Functions for finding which config file entries to use:
       order of precedence is: config file chipset, config file ChipID,
       probed PCI device ID.
 
-      In cases where a driver handles PCI chipsets with more than
-      one vendor ID, it may set "vendorID" to 0, and OR each devID in the
+      In cases where a driver handles PCI chipsets with more than one
+      vendor ID, it may set "vendorID" to 0, and OR each devID in the
       list with (the vendor ID << 16).
 
       The config file device sections and PCI records for confirmed
@@ -2042,8 +2151,8 @@ A.6  Functions for finding which config file entries to use:
 
 A.7  Probing discrete clocks on old hardware:
 
-    The xf86GetClocks() function may be used to assist in finding
-    the discrete pixel clock values on older hardware.
+    The xf86GetClocks() function may be used to assist in finding the
+    discrete pixel clock values on older hardware.
 
 
     void xf86GetClocks(ScrnInfoPtr pScrn, int num,
@@ -2066,8 +2175,8 @@ A.7  Probing discrete clocks on old hardware:
       "knownclkvalue" are the index and value of a known clock.  These
       are the known references on which the comparative measurements
       are based.  The number of clocks probed is set in pScrn->numClocks,
-      and the probed clocks are set in the pScrn->clock[] array.  All of
-      the clock values are in units of kHz.
+      and the probed clocks are set in the pScrn->clock[] array.  All
+      of the clock values are in units of kHz.
 
 
     void xf86ShowClocks(ScrnInfoPtr scrp, MessageType from)
@@ -2082,8 +2191,8 @@ Appendix B: The "vgahw" module
 
 The vgahw modules provides an interface for saving, restoring and
 programming the standard VGA registers, and for handling VGA colourmaps.
-It currently has the registers and memory window hard coded.  It may
-be reasonable to abstract this somewhat to allow this module to be used
+It currently has the registers and memory window hard coded.  It may be
+reasonable to abstract this somewhat to allow this module to be used
 with PCI chipsets that remap the VGA registers and memory window
 
 B.1  Data Structures:
@@ -2123,14 +2232,14 @@ B.2  General vgahw Functions:
       once per screen.  This function should normally be called from
       the driver's ChipPreInit function.
 
-      Once allocated, a pointer to the vgaHWRec can be obtained from the
-      ScrnInfoPtr with the VGAHWPTR(scrp) macro.
+      Once allocated, a pointer to the vgaHWRec can be obtained from
+      the ScrnInfoPtr with the VGAHWPTR(scrp) macro.
 
 
     void vgaHWFreeHWRec(ScrnInfoPtr scrp)
 
-      This function frees a vgaHWRec structure.  It should be called from
-      a driver's ChipFreeScreen() function.
+      This function frees a vgaHWRec structure.  It should be called
+      from a driver's ChipFreeScreen() function.
 
 
     Bool vgaHWMapMem(ScrnInfoPtr scrp)
@@ -2150,18 +2259,18 @@ B.2  General vgahw Functions:
     void vgaHWGetIOBase(vgaHWPtr hwp)
 
       This function initialises the IOBase field of the vgaHWRec.  This
-      function must be called before using any other functions that access
-      the video hardware.
+      function must be called before using any other functions that
+      access the video hardware.
 
-      A macro VGAHW_GET_IOBASE() is also available in vgaHW.h that returns
-      the I/O base, and this may be used when the vgahw module is not loaded
-      (for example, in the ChipProbe() function).
+      A macro VGAHW_GET_IOBASE() is also available in vgaHW.h that
+      returns the I/O base, and this may be used when the vgahw module
+      is not loaded (for example, in the ChipProbe() function).
 
 
     void vgaHWUnlock(vgaHWPtr hwp)
 
-      This function unlocks the VGA CRTC[0-7] registers, and must be called
-      before attempting to write to those registers.
+      This function unlocks the VGA CRTC[0-7] registers, and must be
+      called before attempting to write to those registers.
 
       A macro VGAHW_ULOCK(base) is also available in vgaHW.h that does
       the same thing, and this may be used when the vgahw module is not
@@ -2191,17 +2300,17 @@ B.2  General vgahw Functions:
 
       This function programs the VGA state.  The state programmed is
       that contained in the vgaRegRec pointed to by 'restore'.  If
-      restoreFonts is TRUE, the fonts and text memory is programmed also.
-      The vgaHWRec and its IOBase fields must be initialised first.
-      The registers must be unlocked, and if restoreFonts is TRUE, the
-      VGA memory window must be mapped.
+      restoreFonts is TRUE, the fonts and text memory is programmed
+      also.  The vgaHWRec and its IOBase fields must be initialised
+      first.  The registers must be unlocked, and if restoreFonts is
+      TRUE, the VGA memory window must be mapped.
 
 
     void vgaHWInit(ScrnInfoPtr scrninfp, DisplayModePtr mode)
 
       This function fills in the vgaHWRec's ModeReg field with the values
-      appropriate for programming the given video mode.  It requires that
-      the ScrnInfoRec's depth field is initialised, which determines
+      appropriate for programming the given video mode.  It requires
+      that the ScrnInfoRec's depth field is initialised, which determines
       how the registers are programmed.
 
 
@@ -2222,6 +2331,14 @@ B.2  General vgahw Functions:
 
       This function blanks and unblanks the screen.  It is blanked when
       on is FALSE, and unblanked when on is TRUE.
+
+
+    void vgaHWBlankScreen(ScrnInfoPtr pScrn, Bool on)
+
+      This function blanks and unblanks the screen.  It is blanked when
+      on is FALSE, and unblanked when on is TRUE.  This function is
+      provided for use in cases where the ScrnInfoRec can't be derived
+      from the ScreenRec, like probing for clocks.
 
 
 B.3  VGA Colourmap Functions:
@@ -2253,6 +2370,8 @@ most drivers (even those which don't fit that basic description).
 The information here is based on the initial conversion of the Matrox
 Millennium driver to the "new design".  For a fleshing out and sample
 implementation of some of the bits outlined here, refer to that driver.
+Note that this is an example only.  The approach used here will not be
+appropriate for all drivers.
 
 Each driver must reserve a unique driver name, and a string that is used
 to prefix all of its externally visible symbols.  This is to avoid name
@@ -2272,10 +2391,6 @@ C.1  Include files
     If the driver uses port I/O directly, it needs:
 
         "compiler.h"
-
-    For the module versioning, it needs:
-
-        "xf86Version.h"
 
     Drivers for PCI hardware need:
 
@@ -2300,6 +2415,10 @@ C.1  Include files
     Drivers using the mi SW cursor need:
 
         "mipointer.h"
+
+    Drivers using the mi colourmap code need:
+
+        "micmap.h"
 
     Drivers supporting VGA or Hercules monochrome screens need:
 
@@ -3001,30 +3120,26 @@ C.3  Functions
              * code.
              */
 
-            if (pScrn->depth >= 8) {
-                /* Reset cfb's visual list. */
-                cfbClearVisualTypes();
-            }
+            /* Reset the visual list */
+            miClearVisualTypes();
 
             /*
              * Setup the visuals supported.  This driver only supports
-             * TrueColor for bpp > 8, so explicitly call cfbSetVisualTypes
-             * to override the defaults that cfbInitVisuals would otherwise
-             * use.
+             * TrueColor for bpp > 8, so the default set of visuals isn't
+             * acceptable.  To deal with this, call miSetVisualTypes with
+             * the appropriate visual mask.
              */
 
             if (pScrn->bitsPerPixel > 8) {
-                if (!cfbSetVisualTypes(pScrn->depth,
-                                       1 << TrueColor, pScrn->rgbBits))
+                if (!miSetVisualTypes(pScrn->depth, TrueColorMask,
+                                      pScrn->rgbBits, pScrn->defaultVisual))
+                    return FALSE;
+            } else {
+                if (!miSetVisualTypes(pScrn->depth,
+                                      miGetDefaultVisualMask(pScrn->depth),
+                                      pScrn->rgbBits, pScrn->defaultVisual))
                     return FALSE;
             }
-
-            /*
-             * Temporarily set the global defaultColorVisualClass to make
-             * cfbInitVisuals do what we want.
-             */
-            savedDefaultVisualClass = xf86GetDefaultColorVisualClass();
-            xf86SetDefaultColorVisualClass(pScrn->defaultVisual);
 
             /*
              * Initialise the framebuffer.
@@ -3072,9 +3187,6 @@ C.3  Functions
                 ret = FALSE;
                 break;
             }
-
-            /* Restore default before returning an error */
-            xf86SetDefaultColorVisualClass(savedDefaultVisualClass);
 
             if (!ret)
                 return FALSE;
