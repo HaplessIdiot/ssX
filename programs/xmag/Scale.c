@@ -1,4 +1,5 @@
 /* $XConsortium: Scale.c,v 1.18 94/04/17 20:24:57 gildea Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989  X Consortium
