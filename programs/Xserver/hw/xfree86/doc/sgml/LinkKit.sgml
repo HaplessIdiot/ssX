@@ -2,11 +2,11 @@
 
 <article>
 
-<title> Readme for the XFree86 3.1.1 LinkKit
+<title> Readme for the XFree86 3.1.2 LinkKit
 <author> The XFree86 Project, Inc.
-<date> 15 February 1995
+<date> 4 July 1995
 
-<sect> Readme for the XFree86 3.1.1 LinkKit <p>
+<sect> Readme for the XFree86 3.1.2 LinkKit <p>
 <enum>
 <item> For systems which don't use gcc-2, you may need to install libgcc.a if
    the binary distribution you are using was built with gcc-2.
@@ -111,7 +111,7 @@
 
 <verb>
 $XConsortium: LinkKit.sgml,v 1.2 95/01/16 13:17:43 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LinkKit.sgml,v 3.3 1995/01/28 16:01:36 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LinkKit.sgml,v 3.4 1995/05/27 03:11:41 dawes Exp $
 </verb>
 
 </article>

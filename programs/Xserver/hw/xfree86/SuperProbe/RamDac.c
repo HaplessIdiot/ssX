@@ -30,7 +30,7 @@
  */
 
 /* $XConsortium: RamDac.c,v 1.4 95/01/12 19:19:44 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.9 1995/05/27 03:01:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.10 1995/06/29 13:27:40 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -561,6 +561,11 @@ int *RamDac;
 	if ((cid == 0x44) && (did == 0x00)) {
 	   Found = TRUE;
 	   *RamDac = DAC_STG1700;
+	   *RamDac |= DAC_6_8_PROGRAM;
+	}
+	if ((cid == 0x44) && (did == 0x03)) {
+	   Found = TRUE;
+	   *RamDac = DAC_STG1703;
 	   *RamDac |= DAC_6_8_PROGRAM;
 	}
 

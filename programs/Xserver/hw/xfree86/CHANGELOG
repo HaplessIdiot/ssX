@@ -1,3 +1,10 @@
+XFree86 3.1.1Ca (5 July 1995)
+189. Don't enable HAS_MMAP for Xvfb on Linux (Marc Aurele La France).
+188. Code to detect the STG1703 RAMDAC in SuperProbe and the S3 server
+     (Harald Koenig).
+187. A few AGX bug fixes (Henry Worth).
+186. More pre-fix-12 fix-trackers.
+
 XFree86 3.1.1C (3 July 1995)
 185. Manual page updates.
 184. Add extended power_saver support to the VGA and Mach64 servers.
@@ -51,7 +58,7 @@ XFree86 3.1.1Be (25 June 1995)
 XFree86 3.1.1Bd (24 June 1995)
 163. Add a BuildLBXProxyOnly Imake config option to allow building lbxproxy
      from a self-contained cut-down source tree.
-162. vtname was to short in Linux OS-dep code (similar change for LynxOS
+162. vtname was too short in Linux OS-dep code (similar change for LynxOS
      and SCO too) (Pascal Haible).
 161. Change uses of malloc/free in Xserver to xalloc/xfree (Pascal Haible).
 160. AGX documentation updates (Henry Worth).
@@ -91,7 +98,7 @@ XFree86 3.1.1Bc (21 June 1995)
 XFree86 3.1.1Bb (17 June 1995)
 142. Config updates to make LinkKit more self-contained
      (Marc Aurele La France).
-141. For some problems with blocking stderr on BSD/OS 2.0 (Hans Nasten).
+141. Fix some problems with blocking stderr on BSD/OS 2.0 (Hans Nasten).
 140. Add auto-apply mode to xvidtune, and flesh out the xvidtune man
      page (Joe Moss).
 139. AGX font cache bug fixes, and fix font clipping problem (Henry Worth).

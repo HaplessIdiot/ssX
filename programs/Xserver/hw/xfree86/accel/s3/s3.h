@@ -1,5 +1,5 @@
 /* $XConsortium: s3.h,v 1.8 95/01/27 14:45:24 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.21 1995/04/09 13:46:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.22 1995/06/29 13:30:47 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -190,6 +190,7 @@ extern Bool s3ATT498PixMux;
 #define IBMRGB524_DAC     16
 #define IBMRGB525_DAC     17
 #define IBMRGB528_DAC     18
+#define STG1703_DAC       19
 
 #define DAC_IS_BT485_SERIES	(s3RamdacType == BT485_DAC || \
 				 s3RamdacType == ATT20C505_DAC)
@@ -203,7 +204,8 @@ extern Bool s3ATT498PixMux;
 #define DAC_IS_ATT498		(DAC_IS_ATT20C498 || DAC_IS_ATT22C498)
 #define DAC_IS_ATT490		(s3RamdacType == ATT20C490_DAC)
 #define DAC_IS_SC15025		(s3RamdacType == SC15025_DAC)
-#define DAC_IS_STG1700          (s3RamdacType == STG1700_DAC)
+#define DAC_IS_STG1703          (s3RamdacType == STG1703_DAC)
+#define DAC_IS_STG1700          (s3RamdacType == STG1700_DAC || DAC_IS_STG1703)
 #define DAC_IS_SDAC             (s3RamdacType == S3_SDAC_DAC)
 #define DAC_IS_GENDAC           (s3RamdacType == S3_GENDAC_DAC)
 #define DAC_IS_TRIO32           (s3RamdacType == S3_TRIO32_DAC)

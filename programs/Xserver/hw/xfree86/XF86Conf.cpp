@@ -1,5 +1,5 @@
 XCOMM $XConsortium: XF86Conf.cpp,v 1.5 95/01/16 13:16:10 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.11 1995/01/28 15:46:18 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.cpp,v 3.12 1995/03/18 10:52:43 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -160,10 +160,6 @@ Section "Monitor"
     Identifier	"Generic Monitor"
     VendorName	"Unknown"
     ModelName	"Unknown"
-
-XCOMM Bandwidth is in MHz unless units are specified
-
-    Bandwidth	25.2
 
 XCOMM HorizSync is in kHz unless units are specified.
 XCOMM HorizSync may be a comma separated list of discrete values, or a

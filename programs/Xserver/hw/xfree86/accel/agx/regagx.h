@@ -1,5 +1,5 @@
 /* $XConsortium: regagx.h,v 1.4 95/01/23 15:33:47 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/regagx.h,v 3.13 1995/06/21 11:51:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/regagx.h,v 3.14 1995/06/24 10:27:33 dawes Exp $ */
 /*
  * AGXregs.h
  *
@@ -588,7 +588,7 @@ extern agxPixMap *agxCurPixMap[2];
 #define IR_M2_VRAM_256		    		0x01
 
 #define IR_M3_MODE_REG_3		0x6D
-#define IR_M3_PRESERVE_MASK			0x2D
+#define IR_M3_PRESERVE_MASK			0x23
 #define IR_M3_MASK				0x2F
 #define IR_M3_B1F00_GE_ADDRESS			0x01
 #define IR_M3_MCS16_INHIBIT    			0x02
@@ -625,7 +625,7 @@ extern agxPixMap *agxCurPixMap[2];
 #define IR_M7_LOCAL_BUS 	                0x01
 
 #define IR_M8_MODE_REG_8		0x71
-#define IR_M8_PRESERVE_MASK                     0x00
+#define IR_M8_PRESERVE_MASK                     0x40
 #define IR_M8_288_SRC_ADJUST			0x01
 #define IR_M8_128_SRC_ADJUST			0x02
 #define IR_M8_288_DST_ADJUST			0x04
@@ -635,7 +635,8 @@ extern agxPixMap *agxCurPixMap[2];
 #define IR_M8_VRAM_RAS_EXTEND                   0x40
 #define IR_M8_BIG_BUFFER_ENABLE			0x80
 
-#define IR_M10_MODE_REG_10		0x71
+#define IR_M10_MODE_REG_10		0x78
+#define IR_M10_MASK                             0x85
 #define IR_M10_PRESERVE_MASK                    0x85
 #define IR_M10_PCI_ENABLE			0x01
 #define IR_M10_1MB_AP_ENABLE			0x02
@@ -649,7 +650,7 @@ extern agxPixMap *agxCurPixMap[2];
 #define IR_VDR_DMA_CHAN				0x0E
 #define IR_VDR_DMA_ENABLE			0x01
 
-#define IR_VESA_VENDOR_ID			0x75
+#define IR_VESA_VENDOR_ID		0x75
 
 
 /* XGA-NI Extensions */

@@ -1,5 +1,5 @@
 /* $XConsortium: agxInit.c,v 1.7 95/01/23 15:33:43 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.20 1995/06/24 10:27:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.21 1995/07/01 10:48:03 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -160,7 +160,7 @@ agxSaveReg  agxSaveIdx[MAX_AGX_IDX_REGS] = {
  { AGX_NEW,	 	IR_M5_MODE_REG_5,		IR_M5_MASK,	0 },
  { AGX_NEW,	 	IR_M7_MODE_REG_7,		IR_M7_MASK,	0x20 },
  { AGX_16,	 	IR_M8_MODE_REG_8,		0xFF,          	0 },
- { AGX_16,	 	IR_M10_MODE_REG_10,		0x87,          	0 },
+ { AGX_16,	 	IR_M10_MODE_REG_10,		IR_M10_MASK,   	0 },
 
  { XGA_2, 		IR_NI_PLL_PRG_REG,		0xFF,		0 },
  { XGA_2, 		IR_NI_DIR_CNTL,			0x07,		0 },
@@ -558,6 +558,9 @@ agxSetCRTCRegs(crtcRegs)
                           && ( crtcRegs->clock_sel > 15 
                                ||  crtcRegs->bpp > 8 ) ;
 
+   agxCurPixMap[0] = NULL;
+   agxCurPixMap[1] = NULL;
+
    /*
     * Now initialize the display controller.
     * The CRTC registers are passed in from the calling routine.
@@ -699,7 +702,8 @@ agxSetCRTCRegs(crtcRegs)
          outb(agxIdxReg,IR_M7_MODE_REG_7); 
          byteData = inb(agxByteData) & IR_M7_PRESERVE_MASK;
          byteData &= ~IR_M7_BUFFER_ENABLE;
-         if (OFLG_ISSET(OPTION_FIFO_MODERATE, &agxInfoRec.options))
+         if (OFLG_ISSET(OPTION_FIFO_MODERATE, &agxInfoRec.options)
+             || OFLG_ISSET(OPTION_FIFO_AGGRESSIVE, &agxInfoRec.options))
              byteData |= IR_M7_BUFFER_ENABLE;
          if (OFLG_ISSET(OPTION_FIFO_CONSERV, &agxInfoRec.options))
              byteData &= ~IR_M7_BUFFER_ENABLE;  /* actually the default */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.11 1995/06/04 02:56:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.12 1995/06/10 13:20:48 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -1583,10 +1583,6 @@ static char *monitorsection_text1 =
 "\n";
 
 static char *monitorsection_text2 =
-"# Bandwidth is in MHz unless units are specified\n"
-"\n"
-"#    Bandwidth	25.2\n"
-"\n"
 "# HorizSync is in kHz unless units are specified.\n"
 "# HorizSync may be a comma separated list of discrete values, or a\n"
 "# comma separated list of ranges of values.\n"

@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.9 95/04/07 19:28:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.86 1995/07/03 08:48:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.87 1995/07/03 09:23:58 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -32,6 +32,8 @@
  * 
  * Id: s3.c,v 2.6 1993/08/09 06:17:57 jon Exp jon
  */
+
+#define STG1703_CLOCK_SUPPORT
 
 #include "misc.h"
 #include "cfb.h"
@@ -174,9 +176,11 @@ static SymTabRec s3DacTable[] = {
    { IBMRGB528_DAC,	"ibm_rgb528" },
    { IBMRGB52x_DAC,	"ibm_rgb52x" },
    { ATT20C490_DAC,	"att20c490" },
+   { ATT20C490_DAC,	"att20c491" },
    { ATT20C490_DAC,	"ch8391" },
    { SC15025_DAC,	"sc15025" },
    { STG1700_DAC,	"stg1700" },
+   { STG1703_DAC,	"stg1703" },
    { S3_SDAC_DAC,	"s3_sdac" },
    { S3_SDAC_DAC,	"ics5342" },       /* XXXX should be checked if true */
    { S3_GENDAC_DAC,	"s3gendac" },
@@ -198,6 +202,9 @@ static Bool ti3026ClockSelect();
 static Bool IBMRGBClockSelect();
 static void s3ProgramTi3025Clock();
 static Bool ch8391ClockSelect();
+#ifdef STG1703_CLOCK_SUPPORT
+static Bool STG1703ClockSelect();
+#endif
 ScreenPtr s3savepScreen;
 Bool  s3Localbus = FALSE;
 Bool  s3VLB = FALSE;
@@ -1200,7 +1207,7 @@ s3Probe()
 	 }
       }
 
-      /* If it wasn't a Sierra, probe for the STG1700 */
+      /* If it wasn't a Sierra, probe for the STG1700 and STG1703 */
       if (s3RamdacType == UNKNOWN_DAC) 
       {
          int cid, did, daccomm, readmask;
@@ -1223,6 +1230,20 @@ s3Probe()
 	    ErrorF("%s %s: Detected an STG1700 RAMDAC\n",
 	           XCONFIG_PROBED, s3InfoRec.name);
 	    s3RamdacType = STG1700_DAC;
+         }
+         else if ((cid == 0x44) && (did == 0x03))
+         {
+	    ErrorF("%s %s: Detected an STG1703 RAMDAC\n",
+	           XCONFIG_PROBED, s3InfoRec.name);
+	    s3RamdacType = STG1703_DAC;
+#ifdef STG1703_CLOCK_SUPPORT
+	    if (!OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE,
+			    &s3InfoRec.clockOptions)) {
+	       OFLG_SET(CLOCK_OPTION_STG1703,    &s3InfoRec.clockOptions);
+	       OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
+	       clockchip_probed = XCONFIG_PROBED;
+	    }
+#endif
          }
 	 xf86setdaccomm(daccomm);
       }
@@ -1367,6 +1388,7 @@ s3Probe()
       case ATT20C498_DAC:
       case ATT22C498_DAC:
       case STG1700_DAC:
+      case STG1703_DAC:
       case S3_SDAC_DAC:
 	 if (!S3_86x_SERIES(s3ChipId) && !S3_805_I_SERIES(s3ChipId))
 	    chips = "864, 868 and 805i chips";
@@ -1451,6 +1473,7 @@ s3Probe()
 	 case ATT20C498_DAC:
 	 case ATT22C498_DAC:
 	 case STG1700_DAC:
+	 case STG1703_DAC:
 	 case S3_SDAC_DAC:
 	 case S3_GENDAC_DAC:
 	 case S3_TRIO32_DAC:
@@ -1499,6 +1522,7 @@ s3Probe()
       case ATT20C498_DAC:
       case ATT22C498_DAC:
       case STG1700_DAC:
+      case STG1703_DAC:
       case S3_SDAC_DAC:
       case S3_TRIO32_DAC:
       case S3_TRIO64_DAC:
@@ -2019,6 +2043,14 @@ s3Probe()
 	 ErrorF("%s %s: Using Chrontel 8391 programmable clock\n",
 		XCONFIG_GIVEN, s3InfoRec.name);
       numClocks = 3;
+#ifdef STG1703_CLOCK_SUPPORT
+   } else if (OFLG_ISSET(CLOCK_OPTION_STG1703, &s3InfoRec.clockOptions)) {
+      s3ClockSelectFunc = STG1703ClockSelect;
+      if (xf86Verbose)
+	 ErrorF("%s %s: Using STG1703 programmable clock\n",
+		XCONFIG_GIVEN, s3InfoRec.name);
+      numClocks = 3;
+#endif
    } else {
       s3ClockSelectFunc = s3ClockSelect;
       numClocks = 16;
@@ -2063,6 +2095,10 @@ s3Probe()
 	 maxRawClock = 145000; /* This is what is in common_hw/ICS2595.h */
       } else if (OFLG_ISSET(CLOCK_OPTION_CH8391, &s3InfoRec.clockOptions)) {
 	 maxRawClock = 135000;
+#ifdef STG1703_CLOCK_SUPPORT
+      } else if (OFLG_ISSET(CLOCK_OPTION_STG1703, &s3InfoRec.clockOptions)) {
+	 maxRawClock = 135000;
+#endif
       } else if (OFLG_ISSET(CLOCK_OPTION_S3TRIO, &s3InfoRec.clockOptions)) {
 	 maxRawClock = 135000;
       } else {
@@ -2111,6 +2147,7 @@ s3Probe()
    case ATT20C498_DAC:
    case ATT22C498_DAC:
    case STG1700_DAC:
+   case STG1703_DAC:
    case S3_SDAC_DAC:
       if (s3ATT498PixMux) {
 	 s3InfoRec.maxClock = s3InfoRec.dacSpeed;
@@ -2284,7 +2321,8 @@ s3Probe()
 	    break;
 	 case ATT20C498_DAC:
 	 case ATT22C498_DAC:
-	 case STG1700_DAC:	/* XXXX should this be here? */
+	 case STG1700_DAC:
+	 case STG1703_DAC:	/* XXXX should this be here? */
 	    switch (s3Bpp) {
 	    case 1:
 	       if (!numClocksChanged) {
@@ -2634,6 +2672,7 @@ s3Probe()
 	 case ATT20C498_DAC:
 	 case ATT22C498_DAC:
 	 case STG1700_DAC:
+	 case STG1703_DAC:
 	 case S3_SDAC_DAC:
 	    switch (s3Bpp) {
 	    case 1:
@@ -3215,6 +3254,45 @@ ch8391ClockSelect(freq)
    LOCK_SYS_REGS;
    return(result);
 }
+
+#ifdef STG1703_CLOCK_SUPPORT
+static Bool
+STG1703ClockSelect(freq)
+     int   freq;
+
+{
+   Bool result = TRUE;
+   unsigned char tmp;
+ 
+   UNLOCK_SYS_REGS;
+   
+   switch(freq)
+   {
+   case CLK_REG_SAVE:
+   case CLK_REG_RESTORE:
+      result = s3ClockSelect(freq);
+      break;
+   default:
+      {
+	 /* Check if clock frequency is within range */
+	 /* XXXX Check this elsewhere */
+	 if (freq < 8500 || freq > 135000) {
+	    ErrorF("%s %s: Specified dot clock (%.3f) out of range for STG1703",
+		   XCONFIG_PROBED, s3InfoRec.name, freq / 1000.0);
+	    result = FALSE;
+	    break;
+	 }
+	 (void) STG1703SetClock(freq, 2); /* can't fail */
+	 outb(vgaCRIndex, 0x42);/* select the clock */
+	 tmp = inb(vgaCRReg) & 0xf0;
+	 outb(vgaCRReg, tmp | 0x02);
+	 usleep(150000);
+      }
+   }
+   LOCK_SYS_REGS;
+   return(result);
+}
+#endif
 
 static Bool
 s3ValidMode(mode)
