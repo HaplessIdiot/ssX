@@ -7,7 +7,7 @@ char rcsId_vmware[] =
 
     "Id: vmware.c,v 1.11 2001/02/23 02:10:39 yoel Exp $";
 #endif
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.c,v 1.1 2001/04/05 19:29:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.c,v 1.2 2001/05/04 19:05:50 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -347,6 +347,10 @@ VMWAREPreInit(ScrnInfoPtr pScrn, int flags)
 	int i;
 	const char* mod;
 	ClockRange* clockRanges;
+
+	if (flags & PROBE_DETECT) {
+		return FALSE;
+	}
 
 	if (pScrn->numEntities != 1) {
 		return FALSE;
@@ -1092,7 +1096,12 @@ VMWAREProbe(DriverPtr drv, int flags)
 		numUsed = xf86MatchPciInstances(VMWARE_NAME, PCI_VENDOR_VMWARE,
 				VMWAREChipsets, VMWAREPciChipsets, devSections,
 				numDevSections, drv, &usedChips);
-		for (i = 0; i < numUsed; i++) {
+		xfree(devSections);
+		if (numUsed <= 0)
+			return FALSE;
+		if (flags & PROBE_DETECT)
+			foundScreen = TRUE;
+		else for (i = 0; i < numUsed; i++) {
 			ScrnInfoPtr pScrn = NULL;
 
 			VmwareLog(("Even some VMware SVGA PCI instances exists\n"));
@@ -1116,11 +1125,8 @@ VMWAREProbe(DriverPtr drv, int flags)
 				foundScreen = TRUE;
 			}
 		}
-		if (numUsed > 0) {
-			xfree(usedChips);
-		}
+		xfree(usedChips);
 	}
-	xfree(devSections);
 	return foundScreen;
 }
 
