@@ -39,7 +39,7 @@
 *				user library.
 *
 ****************************************************************************/
-/* $XFree86: xc/extras/x86emu/src/x86emu/sys.c,v 1.2 2000/04/05 18:13:14 dawes Exp $ */
+/* $XFree86: xc/extras/x86emu/src/x86emu/sys.c,v 1.4 2000/04/17 16:29:46 eich Exp $ */
 
 #include "x86emu.h"
 #include "x86emu/regs.h"
@@ -56,7 +56,7 @@ X86EMU_sysEnv		_X86EMU_env;		/* Global emulator machine state */
 X86EMU_intrFuncs	_X86EMU_intrTab[256];
 
 /*----------------------------- Implementation ----------------------------*/
-#ifdef __alpha__
+#if defined(__alpha__) || defined(__alpha)
 /* to cope with broken egcs-1.1.2 :-(((( */
 
 /*
@@ -263,7 +263,7 @@ u16 X86API rdw(
 		}
 	else
 #endif
-#ifdef __alpha__
+#if defined(__alpha__) || defined(__alpha)
 		val = ldw_u((u16*)(M.mem_base + addr));
 #else
 		val = *(u16*)(M.mem_base + addr);
@@ -300,7 +300,7 @@ u32 X86API rdl(
 		}
 	else
 #endif
-#ifdef __alpha__
+#if defined(__alpha__) || defined(__alpha)
 		val = ldl_u((u32*)(M.mem_base + addr));
 #else
 		val = *(u32*)(M.mem_base + addr);
@@ -356,7 +356,7 @@ DB(	if (DEBUG_MEM_TRACE())
 		}
 	else
 #endif
-#ifdef __alpha__
+#if defined(__alpha__) || defined(__alpha)
 	 stw_u(val,(u16*)(M.mem_base + addr));
 #else
 	 *(u16*)(M.mem_base + addr) = val;
@@ -390,7 +390,7 @@ DB(	if (DEBUG_MEM_TRACE())
 		}
 	else
 #endif
-#ifdef __alpha__
+#if defined(__alpha__) || defined(__alpha)
 	 stl_u(val,(u32*)(M.mem_base + addr));
 #else
 	 *(u32*)(M.mem_base + addr) = val;

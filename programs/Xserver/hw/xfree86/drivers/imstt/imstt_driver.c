@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.7 2000/07/26 01:52:21 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.8 2000/08/01 20:05:43 dawes Exp $ */
 
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
@@ -225,7 +225,7 @@ pointer IMSTTSetup(pointer module, pointer opts, int *errmaj,
 	if (!setupDone) {
 		setupDone = TRUE;
 		xf86AddDriver(&IMSTT, module, 0);
-		LoaderRefSymLists(0, cfbSymbols, xaaSymbols, 0, 9, fbdevHWSymbols, 0, 0, 0, NULL);
+		LoaderRefSymLists(cfbSymbols, xaaSymbols, fbdevHWSymbols, NULL);
 		return (pointer) 1;
 	} else {
 		if (errmaj)

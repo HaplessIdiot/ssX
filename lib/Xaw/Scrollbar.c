@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Scrollbar.c,v 1.8 1999/05/03 12:15:42 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Scrollbar.c,v 1.9 1999/06/06 08:48:08 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -831,6 +831,10 @@ static void
 NotifyThumb(Widget gw, XEvent *event, String *params, Cardinal *num_params)
 {
     ScrollbarWidget w = (ScrollbarWidget)gw;
+    union {
+	XtPointer xtp;
+	float xtf;
+    } xtpf;
 
     if (w->scrollbar.direction == 0)	/* if no StartScroll */
 	return;
@@ -841,7 +845,8 @@ NotifyThumb(Widget gw, XEvent *event, String *params, Cardinal *num_params)
     /* thumbProc is not pretty, but is necessary for backwards
        compatibility on those architectures for which it work{s,ed};
        the intent is to pass a (truncated) float by value. */
-    XtCallCallbacks(gw, XtNthumbProc, *(XtPointer*)&w->scrollbar.top);
+    xtpf.xtf = w->scrollbar.top;
+    XtCallCallbacks(gw, XtNthumbProc, xtpf.xtp);
     XtCallCallbacks(gw, XtNjumpProc, (XtPointer)&w->scrollbar.top);
 
     PaintThumb(w);

@@ -35,6 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 #ifndef	DPSCONFIG_H
 #define	DPSCONFIG_H
@@ -89,7 +90,7 @@
 #define IEEEFLOAT 1
 #endif /* IEEEFLOAT */
 
-#ifdef __alpha
+#if defined(__alpha) || defined(__alpha__)
 #define IEEEFLOAT 1
 #endif /* __alpha */
 
@@ -124,9 +125,9 @@
 
 #ifndef SWAPBITS
 
-#ifdef __alpha
+#if defined(__alpha) || defined(__alpha__)
 #define SWAPBITS 1
-#endif /* alpha */
+#endif /* __alpha */
 
 #ifdef vax
 #define SWAPBITS 1
@@ -176,7 +177,7 @@
 
 #ifndef MIN_POINTER_ALIGN
  
-#ifdef __alpha
+#if defined(__alpha) || defined(__alpha__)
 #define MIN_POINTER_ALIGN 8
 #endif /* __alpha */
 

@@ -66,7 +66,7 @@ terms and conditions:
 	Gary Rogers, AGE Logic, Inc., January 1994
 
 ****************************************************************************/
-/* $XFree86: xc/programs/Xserver/XIE/mixie/jpeg/jconfig.h,v 1.2 1996/12/31 04:16:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/mixie/jpeg/jconfig.h,v 1.3 1998/10/04 09:36:20 dawes Exp $ */
 
 /*
  * jconfig.h
@@ -467,7 +467,8 @@ typedef short INT16;
 /* to have 64-bit longs, you might want to change this. */
 
 #ifndef XMD_H					/* X11/xmd.h correctly defines INT32 */
-#if defined(__alpha) || defined(__alpha__)
+#if defined(__alpha) || defined(__alpha__) || \
+    defined(__ia64__) || defined(ia64)
 typedef int INT32;
 #else
 typedef long INT32;

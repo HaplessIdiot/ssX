@@ -1,4 +1,11 @@
 XFree86 4.0.1c (25 August 2000)
+ 527. Fix minor symbol resoltion problem in dlopen() loader (Marc La France).
+ 526. Alpha changes that fell out of RadHat's IA-64 changes (Marc La France).
+ 525. A merge of most of RedHat's IA-64 changes (Keith Fish, Stephane Eranian,
+      Bill Nottingham, Marc La France):
+      - Don't force static server build.
+      - Fix NULL #define'ition for loader server.
+      - Various #if-testing changes.
  524. Fix the few problems that showed up with the integration of the cygwin
       support (Suhaib M. Siddiqi).
  523. ATI driver changes (Marc La France):
@@ -11019,4 +11026,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1275 2000/08/22 21:54:27 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1276 2000/08/23 21:06:19 dawes Exp $

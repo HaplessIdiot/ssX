@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.20 2000/04/20 21:28:37 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.21 2000/06/21 17:28:07 dawes Exp $ */
 
 /*
  * Authors:
@@ -291,8 +291,8 @@ i740Setup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 */
 	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols, 
 			  xf8_32bppSymbols, ramdacSymbols, vbeSymbols,
-			  0 /* ddcsymbols */, 0 /* i2csymbols */, 0 /* shadowSymbols */,
-			  0 /* fbdevsymbols */, NULL);
+			  NULL /* ddcsymbols */, NULL /* i2csymbols */, NULL /* shadowSymbols */,
+			  NULL /* fbdevsymbols */, NULL);
 
 	/*
 	 * The return value must be non-NULL on success even though there

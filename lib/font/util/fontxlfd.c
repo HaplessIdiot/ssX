@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/util/fontxlfd.c,v 3.6 1998/10/03 09:07:31 dawes Exp $ */
+/* $XFree86: xc/lib/font/util/fontxlfd.c,v 3.7 1999/08/21 13:48:09 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -201,7 +201,8 @@ xlfd_round_double(double x)
       significant digits.  How do you round to n significant digits on
       a binary machine?  */
 
-#if defined(i386) || defined(__i386__) || defined(__alpha__)
+#if defined(i386) || defined(__i386__) || \
+    defined(__alpha__) || defined(__alpha)
 #if !defined(__EMX__)
 #include <float.h>
 
