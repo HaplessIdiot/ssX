@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.122 2001/04/19 09:28:32 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.124 2001/05/15 10:19:37 eich Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -1708,8 +1708,12 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "FIFO Size is %d DWORDS\n",
 	       pGlint->FIFOSize);
 
+#if defined(__sparc__)
+    pGlint->VGAcore = FALSE;
+#else
     if (pGlint->FBDev || FBDevProbed)
     	pGlint->VGAcore = FALSE;
+#endif
 
     if (pGlint->VGAcore) {
     	/* Initialize the card through int10 interface if needed */
@@ -2746,8 +2750,10 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     pGlint->BlockHandler = pScreen->BlockHandler;
     pScreen->BlockHandler = GLINTBlockHandler;
 
+#if !defined(__sparc__)
     if (!pGlint->ShadowFB)
 	GLINTDGAInit(pScreen);
+#endif
 
     if (pScrn->bitsPerPixel > 8) {
         /* Fixup RGB ordering */
@@ -3437,22 +3443,74 @@ void GLINT_MoveDWORDS(
 #ifdef __alpha__
      write_mem_barrier();
 #endif
-     while(dwords & ~0x03) {
-	*dest = *src;
-	*(dest + 1) = *(src + 1);
-	*(dest + 2) = *(src + 2);
-	*(dest + 3) = *(src + 3);
-	src += 4;
-	dest += 4;
-	dwords -= 4;
-     }	
-
-     while(dwords) {
-        *dest = *src;
-	src++;
-	dest++;
-	dwords--;
-     }
+    if ((unsigned long)src & 0x3UL) {
+	    unsigned char *pchar;
+	    while (dwords & ~0x03) {
+		    pchar = (unsigned char *)(src + 0);
+		    *(dest + 0) = (((CARD32)pchar[0] << 24) |
+				   ((CARD32)pchar[1] << 16) |
+				   ((CARD32)pchar[2] << 8) |
+				   ((CARD32)pchar[3] << 0));
+		    pchar = (unsigned char *)(src + 1);
+		    *(dest + 1) = (((CARD32)pchar[0] << 24) |
+				   ((CARD32)pchar[1] << 16) |
+				   ((CARD32)pchar[2] << 8) |
+				   ((CARD32)pchar[3] << 0));
+		    pchar = (unsigned char *)(src + 2);
+		    *(dest + 2) = (((CARD32)pchar[0] << 24) |
+				   ((CARD32)pchar[1] << 16) |
+				   ((CARD32)pchar[2] << 8) |
+				   ((CARD32)pchar[3] << 0));
+		    pchar = (unsigned char *)(src + 3);
+		    *(dest + 3) = (((CARD32)pchar[0] << 24) |
+				   ((CARD32)pchar[1] << 16) |
+				   ((CARD32)pchar[2] << 8) |
+				   ((CARD32)pchar[3] << 0));
+		    src += 4;
+		    dest += 4;
+		    dwords -= 4;
+	    }	
+	    if (!dwords)
+		    return;
+	    pchar = (unsigned char *)(src + 0);
+	    *(dest + 0) = (((CARD32)pchar[0] << 24) |
+			   ((CARD32)pchar[1] << 16) |
+			   ((CARD32)pchar[2] << 8) |
+			   ((CARD32)pchar[3] << 0));
+	    if (dwords == 1)
+		    return;
+	    pchar = (unsigned char *)(src + 1);
+	    *(dest + 1) = (((CARD32)pchar[0] << 24) |
+			   ((CARD32)pchar[1] << 16) |
+			   ((CARD32)pchar[2] << 8) |
+			   ((CARD32)pchar[3] << 0));
+	    if (dwords == 2)
+		    return;
+	    pchar = (unsigned char *)(src + 2);
+	    *(dest + 2) = (((CARD32)pchar[0] << 24) |
+			   ((CARD32)pchar[1] << 16) |
+			   ((CARD32)pchar[2] << 8) |
+			   ((CARD32)pchar[3] << 0));
+    } else {
+	    while (dwords & ~0x03) {
+		    *dest = *src;
+		    *(dest + 1) = *(src + 1);
+		    *(dest + 2) = *(src + 2);
+		    *(dest + 3) = *(src + 3);
+		    src += 4;
+		    dest += 4;
+		    dwords -= 4;
+	    }	
+	    if (!dwords)
+		    return;
+	    *dest = *src;
+	    if (dwords == 1)
+		    return;
+	    *(dest + 1) = *(src + 1);
+	    if (dwords == 2)
+		    return;
+	    *(dest + 2) = *(src + 2);
+    }
 }
 
 int

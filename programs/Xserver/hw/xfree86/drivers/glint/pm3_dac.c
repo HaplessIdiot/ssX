@@ -26,7 +26,7 @@
  * this work is sponsored by Appian Graphics.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.22 2001/03/20 19:08:58 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.23 2001/05/09 09:48:17 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -331,6 +331,7 @@ Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode, GLINTRegPtr pReg)
 	STOREDAC(PM2VDACRDColorFormat, 0x2E);
     	break;
     case 16:
+    	temp3 |= PM3RD_MiscControl_DIRECTCOLOR_ENABLE;
 	STOREDAC(PM2VDACRDPixelSize, 0x01);
 	if (pScrn->depth == 15) {
 	    STOREDAC(PM2VDACRDColorFormat, 0x61);
@@ -339,10 +340,12 @@ Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode, GLINTRegPtr pReg)
 	}
     	break;
     case 24:
+    	temp3 |= PM3RD_MiscControl_DIRECTCOLOR_ENABLE;
 	STOREDAC(PM2VDACRDPixelSize, 0x04);
 	STOREDAC(PM2VDACRDColorFormat, 0x60);
     	break;
     case 32:
+    	temp3 |= PM3RD_MiscControl_DIRECTCOLOR_ENABLE;
 	if (pScrn->overlayFlags & OVERLAY_8_32_PLANAR) {
 	    temp3 |= 0x18;
 	    STOREDAC(PM2VDACRDOverlayKey, pScrn->colorKey);
