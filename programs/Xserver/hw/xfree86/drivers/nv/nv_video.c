@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_video.c,v 1.14 2003/04/23 21:51:42 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_video.c,v 1.15 2003/07/31 20:24:29 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -560,6 +560,11 @@ NVPutBlitImage (
         break;
     }
 
+    if(pNv->CurrentLayout.depth == 15) {
+        NVDmaStart(pNv, SURFACE_FORMAT, 1);
+        NVDmaNext (pNv, SURFACE_FORMAT_DEPTH15);
+    }
+
     NVDmaStart(pNv, STRETCH_BLIT_FORMAT, 1);
     NVDmaNext (pNv, format);
 
@@ -581,6 +586,11 @@ NVPutBlitImage (
        NVDmaNext (pNv, offset);
        NVDmaNext (pNv, srcpoint);
        pbox++;
+    }
+
+    if(pNv->CurrentLayout.depth == 15) {
+        NVDmaStart(pNv, SURFACE_FORMAT, 1);
+        NVDmaNext (pNv, SURFACE_FORMAT_DEPTH16);
     }
 
     NVDmaKickoff(pNv);

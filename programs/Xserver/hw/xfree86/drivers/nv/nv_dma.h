@@ -38,10 +38,11 @@
 |*                                                                           *|
  \***************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dma.h $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dma.h,v 1.1 2003/07/31 20:24:29 mvojkovi Exp $ */
 
 #define SURFACE_FORMAT                                              0x00000300
 #define SURFACE_FORMAT_DEPTH8                                       0x00000001
+#define SURFACE_FORMAT_DEPTH15                                      0x00000002
 #define SURFACE_FORMAT_DEPTH16                                      0x00000004
 #define SURFACE_FORMAT_DEPTH24                                      0x00000006
 #define SURFACE_PITCH                                               0x00000304
