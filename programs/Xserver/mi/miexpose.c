@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miexpose.c,v 3.4 1999/01/26 10:40:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miexpose.c,v 3.5 1999/04/11 13:11:19 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -90,6 +90,7 @@ extern WindowPtr *WindowTable;
 
 #ifdef PANORAMIX
 #include "panoramiX.h"
+#include "panoramiXsrv.h"
 #endif
 
 /*
@@ -145,6 +146,7 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
     WindowPtr pSrcWin;
     BoxRec expBox;
     Bool extents;
+
 
     /* avoid work if we can */
     if (!pGC->graphicsExposures &&
@@ -413,29 +415,7 @@ miSendGraphicsExpose (client, pRgn, drawable, major, minor)
 	    (Mask)0, NoEventMask, NullGrab);
     }
 }
-#ifdef PANORAMIX
-Bool
-PanoramiXBoxOffScreen(pWin, pBox)
-    register WindowPtr pWin;
-    RegionPtr pBox;
-{
-    register ScreenPtr pScreen = pWin->drawable.pScreen;
-    BoxRec box;
 
-    box = *(REGION_EXTENTS(pScreen, &pWin->winSize));
-
-    if ((pBox->extents.x2 < box.x1) && (pBox->extents.x1 < box.x1))
-       return TRUE;
-    if ((pBox->extents.x1 > box.x2) && (pBox->extents.x2 > box.x2))
-       return TRUE;
-    if ((pBox->extents.y2 < box.y1) && (pBox->extents.y1 < box.y1))
-       return TRUE;
-    if ((pBox->extents.y1 > box.y2) && (pBox->extents.y2 > box.y2))
-       return TRUE;
-
-    return FALSE; 
-}
-#endif
 
 void
 miSendExposures(pWin, pRgn, dx, dy)
@@ -463,28 +443,39 @@ miSendExposures(pWin, pRgn, dx, dy)
 	pe->u.expose.height = pBox->y2 - pBox->y1;
 	pe->u.expose.count = i;
     }
+
 #ifdef PANORAMIX
-	/* In the case where a window is split between one
-	   or more screen, an expose event will be written
-	   to the client describing the section of the window
-	   which is exposed per screen. This causes a failure
-	   in the vsw test  CH07/grbbtn because the test is
-	   poorly written and expects 1 expose event and fails
-	   when it reads more than 1 expose event when the 
-	   window is split. The server is in fact doing the
-	   expected and correct behavior. -mad 08/29/96
-	 */
-    if (!noPanoramiXExtension){
-	if (PanoramiXMapped){
-	    if (!PanoramiXBoxOffScreen(pWin,pRgn))
-		DeliverEvents(pWin, pEvent, numRects, NullWindow);
-	}else
-            DeliverEvents(pWin, pEvent, numRects, NullWindow);
-    } else 
-        DeliverEvents(pWin, pEvent, numRects, NullWindow);
-#else
-    DeliverEvents(pWin, pEvent, numRects, NullWindow);
+    if(!noPanoramiXExtension) {
+	int scrnum = pWin->drawable.pScreen->myNum;
+	int x = 0, y = 0;
+	XID realWin;
+
+	if(!pWin->parent) {
+	    x = panoramiXdataPtr[scrnum].x;
+	    y = panoramiXdataPtr[scrnum].y;
+	    pWin = WindowTable[0];
+	    realWin = pWin->drawable.id;
+	} else if (scrnum) {
+	    PanoramiXRes *win;
+	    win = PanoramiXFindIDByScrnum(XRT_WINDOW, 
+			pWin->drawable.id, scrnum);
+	    if(!win) {
+		DEALLOCATE_LOCAL(pEvent);
+		return;
+	    }
+	    realWin = win->info[0].id;
+	    pWin = LookupIDByType(realWin, RT_WINDOW);
+	}
+	if(x || y || scrnum)
+	  for (i = 0; i < numRects; i++) {
+	      pEvent[i].u.expose.window = realWin;
+	      pEvent[i].u.expose.x += x;
+	      pEvent[i].u.expose.y += y;
+	  }
+    }
 #endif
+
+    DeliverEvents(pWin, pEvent, numRects, NullWindow);
 
     DEALLOCATE_LOCAL(pEvent);
 }
