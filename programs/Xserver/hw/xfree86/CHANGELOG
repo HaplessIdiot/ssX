@@ -1,4 +1,7 @@
 XFree86 4.2.99.902 (XX February 2003)
+ 885. Added einitialization of screen layout after RandR size change
+      on a multihead setup. This keeps cursor movement beween screens
+      working (Egbert Eich).
  884. Remove Xcms.txt entries that have server-side equivalents.  It looks
       like the slightly different resulting colour definitions from the
       Xcms.txt entries were responsible for an xtest failure.
@@ -16348,4 +16351,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2546 2003/02/13 03:21:26 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2547 2003/02/13 03:44:57 dawes Exp $
