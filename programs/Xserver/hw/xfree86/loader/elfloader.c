@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.28 2000/09/29 08:59:47 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.30 2000/12/06 15:35:27 eich Exp $ */
 
 /*
  *
@@ -46,6 +46,7 @@
 #include "sym.h"
 #include "loader.h"
 
+#define NO_COMPILER_H_EXTRAS
 #include "compiler.h"
 
 /*
