@@ -2,7 +2,7 @@ XCOMM platform:  $TOG: FreeBSD.cf /main/21 1997/10/05 20:42:34 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.97 2000/08/01 23:38:45 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.98 2000/08/16 01:45:27 dawes Exp $
 
 #ifndef UseElfFormat
 #define UseElfFormat		DefaultToElfFormat
@@ -203,6 +203,11 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #ifndef HasZlib
 #define HasZlib		YES
 #endif
+#endif
+
+/* PAM appeared in FreeBSD 3.1 */
+#if (OSMajorVersion > 3) || (OSMajorVersion == 3 && OSMinorVersion >=1 )
+#define HasPam		YES
 #endif
 
 /*
@@ -501,6 +506,10 @@ InstallManPageAliasesBase(file,destdir,aliases)
 
 #define ServerExtraSysLibs	IoLibrary
  
+#ifndef PamLibraries
+#define PamLibraries		-lpam DlLibrary
+#endif
+
 /*
  * A hack to work around an optimization problem with gcc 2.95.2
  */
