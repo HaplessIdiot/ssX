@@ -11,7 +11,7 @@
  *	Guy DESBIEF
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.62 2000/12/06 15:35:15 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.63 2000/12/27 04:57:10 dawes Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -125,7 +125,12 @@ static const char *lgSymbols[] = {
 	"LgAvailableOptions",
 	NULL
 };
-
+static const char *vbeSymbols[] = {
+	"VBEInit",
+	"vbeDoEDID",
+	"vbeFree",
+	NULL
+};
 
 #ifdef XFree86LOADER
 
@@ -162,7 +167,7 @@ cirSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 		setupDone = TRUE;
 		xf86AddDriver(&CIRRUS, module, 0);
 
-		LoaderRefSymLists(alpSymbols, lgSymbols, NULL);
+		LoaderRefSymLists(alpSymbols, lgSymbols, vbeSymbols, NULL);
 		return (pointer)1;
 	}
 	if (errmaj) *errmaj = LDR_ONCEONLY;
@@ -396,6 +401,9 @@ cirProbeDDC(ScrnInfoPtr pScrn, int index)
     vbeInfoPtr pVbe;
 
     if (xf86LoadSubModule(pScrn, "vbe")) {
+#ifdef XFree86LOADER
+	xf86LoaderReqSymLists(vbeSymbols,NULL);
+#endif
         pVbe = VBEInit(NULL,index);
         ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
     }

@@ -1,6 +1,6 @@
 /* (c) Itai Nahshon */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_xaam.c,v 1.2 2000/02/08 13:13:14 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_xaam.c,v 1.4 2000/12/06 15:35:15 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -19,21 +19,21 @@
 #ifdef DEBUG
 #define minb(p) \
         ErrorF("minb(%X)\n", p),\
-        MMIO_IN8(pCir->IOBase, (p))
+        MMIO_IN8(pCir->chip.alp->BLTBase, (p))
 #define moutb(p,v) \
         ErrorF("moutb(%X)\n", p),\
-	MMIO_OUT8(pCir->IOBase, (p),(v))
+	MMIO_OUT8(pCir->chip.alp->BLTBase, (p),(v))
 #define minl(p) \
         ErrorF("minl(%X)\n", p),\
-        MMIO_IN32(pCir->IOBase, (p))
+        MMIO_IN32(pCir->chip.alp->BLTBase, (p))
 #define moutl(p,v) \
         ErrorF("moutl(%X)\n", p),\
-	MMIO_OUT32(pCir->IOBase, (p),(v))
+	MMIO_OUT32(pCir->chip.alp->BLTBase, (p),(v))
 #else
-#define minb(p) MMIO_IN8(pCir->IOBase, (p))
-#define moutb(p,v) MMIO_OUT8(pCir->IOBase, (p),(v))
-#define minl(p) MMIO_IN32(pCir->IOBase, (p))
-#define moutl(p,v) MMIO_OUT32(pCir->IOBase, (p),(v))
+#define minb(p) MMIO_IN8(pCir->chip.alp->BLTBase, (p))
+#define moutb(p,v) MMIO_OUT8(pCir->chip.alp->BLTBase, (p),(v))
+#define minl(p) MMIO_IN32(pCir->chip.alp->BLTBase, (p))
+#define moutl(p,v) MMIO_OUT32(pCir->chip.alp->BLTBase, (p),(v))
 #endif
 
 #define WAIT while(minb(0x40) & pCir->chip.alp->waitMsk){};
@@ -174,6 +174,17 @@ AlpXAAInitMMIO(ScreenPtr pScreen)
 
 	XAAPtr = XAACreateInfoRec();
 	if (!XAAPtr) return FALSE;
+
+	
+	switch (pCir->Chipset)
+	{
+	case PCI_CHIP_GD5480:
+		pCir->chip.alp->BLTBase = pCir->IOBase + 0x100;
+		break;
+	default:
+		pCir->chip.alp->BLTBase = pCir->IOBase;
+		break;
+	}
 
 	XAAPtr->SetupForScreenToScreenCopy = AlpSetupForScreenToScreenCopy;
 	XAAPtr->SubsequentScreenToScreenCopy = AlpSubsequentScreenToScreenCopy;

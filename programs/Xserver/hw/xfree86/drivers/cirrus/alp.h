@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp.h,v 1.2 2000/02/08 13:13:13 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp.h,v 1.4 2000/12/06 15:35:15 eich Exp $ */
 
 /* (c) Itai Nahshon */
 
@@ -69,6 +69,10 @@ typedef struct alpRec {
         CARD32 monoPattern8x8;
 
         Bool                autoStart;
+
+	/* MMIO Base for BitBLT operation. This is
+	   IOBase for 5446 and 7548, IOBase+0x100 for 5480 */
+	unsigned char *	    BLTBase;
 /* XXX For XF86Config based mem configuration */
 	CARD32			sr0f, sr17;
 } AlpRec, *AlpPtr;
