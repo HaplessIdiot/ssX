@@ -140,7 +140,11 @@
   5.2.  General X server changes
 
 
-     o  stuff...
+     o  The X servers include a new DPMS extension, which was donated by
+        Digital Equipment Corporation.  Not all DPMS modes have been
+        implemented by all servers yet, but this should improve in the
+        next release.  See the XF86Config(4/5) and xset(1) man pages for
+        further details.
 
   5.3.  XF86Setup
 
@@ -155,7 +159,7 @@
   5.5.  XInput Extension
 
 
-     o  stuff...
+     o  Multiple input devices can share the core pointer.
 
   5.6.  S3 server
 
@@ -190,11 +194,9 @@
   5.12.  TGA server
 
 
+
+
      o  stuff...
-
-
-
-
 
   5.13.  SVGA/VGA16/Mono servers
 
@@ -256,11 +258,14 @@
 
      o  stuff...
 
+
+
+
+
   5.25.  ALI driver (SVGA server)
 
 
      o  stuff...
-
 
   5.26.  ATI driver (SVGA server)
 
@@ -316,15 +321,23 @@
   The following are required for all installations:
 
 
-       preinst.sh      Pre-installation script
-       postinst.sh     Post-installation script
-       X32bin.tgz      Clients, run-time libs, and app-defaults files
-       X32doc.tgz      Documentation
-       X32fnts.tgz     75dpi, misc and PEX fonts
-       X32lib.tgz      Data files required at run-time
-       X32man.tgz      Manual pages
-       X32set.tgz      XF86Setup utility
-       X32VG16.tgz     16 colour VGA server (XF86Setup needs this server)
+
+
+
+
+
+
+
+  preinst.sh      Pre-installation script
+  postinst.sh     Post-installation script
+  X32bin.tgz      Clients, run-time libs, and app-defaults files
+  X32doc.tgz      Documentation
+  X32fnts.tgz     75dpi, misc and PEX fonts
+  X32lib.tgz      Data files required at run-time
+  X32man.tgz      Manual pages
+  X32set.tgz      XF86Setup utility
+  X32VG16.tgz     16 colour VGA server (XF86Setup needs this server)
+
 
 
 
@@ -377,19 +390,22 @@
   a PC98 machine is, you don't need any of these.
 
 
-       X329NS3.tgz     PC98 NEC(S3) server
-       X329SPW.tgz     PC98 PCSKB-PowerWindow(S3) server
-       X329LPW.tgz     PC98 PowerWindowLB(S3) server
-       X329EGC.tgz     PC98 EGC(generic) server
-       X329GA9.tgz     PC98 GA-968V4/PCI(S3 968) server
-       X329GAN.tgz     PC98 GANB-WAP(cirrus) server
-       X329480.tgz     PC98 PEGC-480(generic) server
-       X329NKV.tgz     PC98 NKV-NEC(cirrus) server
-       X329WS.tgz      PC98 WABS(cirrus) server
-       X329WEP.tgz     PC98 WAB-EP(cirrus) server
-       X329WSN.tgz     PC98 WSN-A2F(cirrus) server
-       X329TGU.tgz     PC98 TGUI server
 
+
+
+
+  X329NS3.tgz     PC98 NEC(S3) server
+  X329SPW.tgz     PC98 PCSKB-PowerWindow(S3) server
+  X329LPW.tgz     PC98 PowerWindowLB(S3) server
+  X329EGC.tgz     PC98 EGC(generic) server
+  X329GA9.tgz     PC98 GA-968V4/PCI(S3 968) server
+  X329GAN.tgz     PC98 GANB-WAP(cirrus) server
+  X329480.tgz     PC98 PEGC-480(generic) server
+  X329NKV.tgz     PC98 NKV-NEC(cirrus) server
+  X329WS.tgz      PC98 WABS(cirrus) server
+  X329WEP.tgz     PC98 WAB-EP(cirrus) server
+  X329WSN.tgz     PC98 WSN-A2F(cirrus) server
+  X329TGU.tgz     PC98 TGUI server
 
 
 
@@ -444,8 +460,6 @@
                sh /var/tmp/preinst.sh
 
 
-
-
   The .tgz files are gzipped tar files.  To extract them, go to
   /usr/X11R6, and run the following as root for each file you need:
 
@@ -459,7 +473,6 @@
   there are no other messages associated with this, they can be safely
   ignored.  Note: You should not be running X while doing this installa-
   tion.  Doing so may cause the installation to fail, or cause your X
-
   session to crash.
 
   If you are using NetBSD or FreeBSD, a more reliable (and highly
@@ -498,20 +511,7 @@
   line.  Check /etc/rc to see how ldconfig gets run at boot time.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.49 1997/01/20 12:36:35 dawes Exp $
-
-
-
-
-
-
-
-
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.51 1997/01/22 11:38:44 dawes Exp $
 
 
 

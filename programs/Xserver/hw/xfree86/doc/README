@@ -1,78 +1,19 @@
-  README for XFree86[TM] 3.2
+  README for XFree86[TM] 3.2A
   The XFree86 Project, Inc
 
-  29 October 1996
+  22 January 1997
 
-  XFree86 is a port of X11R6.1 that supports several Unix and Unix-like
-  operating systems on Intel and other platforms.  This release consists
-  of new features and performance improvements as well as many bug
-  fixes.  The release is available as source patches against the X Con-
-  sortium X11R6.1 code, as well as binary distributions for many archi-
-  tectures.
+  XFree86 is a port of X11R6.3 that supports several Unix and Unix-like
+  operating systems on Intel and other platforms.
 
-  1.  What's new in XFree86 3.2
+  1.  What's new in XFree86 3.2A
 
   The following items are some of the features that have been added
-  since XFree86 3.1.2 was released in August 1995:
+  since XFree86 3.2 was released in October 1996:
 
-     1. XFree86 3.2 includes the X Consortium's X11R6.1.
+     1. XFree86 3.2 includes the X Consortium's X11R6.3.
 
-     2. Support for OS/2.
-
-     3. Support for Linux/AXP on DEC Alpha/AXP (both ECOFF and ELF).
-
-     4. Support for Linux/m68k.
-
-     5. Support for the Japanese PC98 platforms.
-
-     6. A new graphical configuration utility XF86Setup.
-
-     7. Support for the S3 Trio64V+.
-
-     8. A new server (XF86_S3V) for the S3 ViRGE and ViRGE/VX.
-
-     9. Support in the S3 server for chipset driver "newmmio" for S3
-        868, 968 and Trio64V+ chips.
-
-     10.
-        Support for more Mach64 cards (GX rev 3, CT, VT, GT).
-
-     11.
-        Support for the ET6000.
-
-     12.
-        Support for some new Cirrus chips.
-
-     13.
-        Support for Trident TGUI chips.
-
-     14.
-        Support for the Number Nine Imagine 128.
-
-     15.
-        Support for the Matrox Millennium.
-
-     16.
-        Support for the NVidia NV1 / SGS Thomson STG2000.
-
-     17.
-        Support for some SiS chips.
-
-     18.
-        Support for more Chips & Technologies chips.
-
-     19.
-        Support for DEC 21030 (aka DEC TGA;  Linux/AXP only).
-
-     20.
-        DGA server extension.
-
-     21.
-        XInput extension is implemented.
-
-  Further information can be found in the RELNOTES file.  For a detailed
-  list of changes, refer to the CHANGELOG file in the source
-  distribution.
+  Further information can be found in the RELNOTES file.
 
   2.  Systems XFree86 has been tested on
 
@@ -114,8 +55,6 @@
 
      SVR3:
 
-        o  SCO: 3.2.2, 3.2.4
-
         o  ISC: 3.0, 4.0, 4.1
 
 
@@ -123,20 +62,13 @@
 
         o  NetBSD 1.0, 1.1, 1.2
 
+
+
         o  OpenBSD 2.0
 
         o  FreeBSD 1.1.5.1, 2.0.5, 2.1, 2.1.5, 2.2-current
 
-        o  BSD/386 1.1, BSD/OS 2.0
-
-
-        o  Mach 386
-
         o  Linux (Intel x86, DEC Alpha/AXP and m68k)
-
-        o  Amoeba
-
-        o  Minix-386
 
         o  LynxOS AT 2.2.1, 2.3.0, 2.4.0
 
@@ -153,7 +85,8 @@
 
   3.  Supported video-card chip-sets
 
-  At this time, XFree86 3.2 supports the following accelerated chipsets:
+  At this time, XFree86 3.2A supports the following accelerated
+  chipsets:
 
 
      8514/A
@@ -193,8 +126,6 @@
 
      Matrox
         MGA2064W
-
-
 
      Number Nine
         I128 (not accelerated yet)
@@ -280,8 +211,8 @@
   Video 7) for more information about using those chipsets.
 
   The monochrome server also supports generic VGA cards, using 64k of
-  video memory in a single bank, the Hyundai HGC1280, Sigma LaserView,
-  Visa and Apollo monochrome cards.
+  video memory in a single bank, the Hercules monochrome card, the
+  Hyundai HGC1280, Sigma LaserView, Visa and Apollo monochrome cards.
 
   The VGA16 server supports memory banking with the ET4000, Trident,
   ATI, NCR, OAK and Cirrus 6420 chipsets allowing virtual display sizes
@@ -325,12 +256,11 @@
   mostly discussions about XFree86 and related topics. Many questions
   can be answered there.
 
-
-
-
   5.  Credits
 
   XFree86 was originally put together by:
+
+
 
      o  David Dawes <dawes@XFree86.org>
 
@@ -392,11 +322,10 @@
 
      o  Philip Wheatley <Philip.Wheatley@ColumbiaSC.NCR.COM>
 
-
-
      o  Thomas Wolfram <wolf@prz.tu-berlin.de>
 
      o  Orest Zborowski <orestz@eskimo.com>
+
 
 
      386BSD, FreeBSD, NetBSD  support by:
@@ -459,10 +388,11 @@
 
      Linux shared libraries by:
 
-
         o  Orest Zborowski <orestz@eskimo.com>,
 
         o  Dirk Hohndel <hohndel@XFree86.org>
+
+
 
      PC98 support by:
 
@@ -524,11 +454,11 @@
 
         o  Masato Yoshida (Contributor of PW805i support)
 
-
-
      Original accelerated code by:
 
         o  Kevin Martin <martin@cs.unc.edu>,
+
+
 
         o  Rik Faith <faith@cs.unc.edu>,
 
@@ -590,11 +520,11 @@
 
         o  Hans Nasten <nasten@everyware.se>,
 
-
-
         o  Scott Laird <scott@laird.com>
 
      Cirrus accelerated code by:
+
+
 
         o  Simon Cooper <scooper@vizlab.rutgers.edu>,
 
@@ -656,11 +586,11 @@
 
         o  Ported to X11R5 by Rik Faith <faith@cs.unc.edu>.
 
-
-
         o  Rewritten by Marc La France <Marc.La-France@ualberta.ca>
 
      WD90C24 support by:
+
+
 
         o  Brad Bosch <brad@lachman.com>
 
@@ -723,10 +653,10 @@
 
         o  Paolo Severini <lendl@dist.dist.unige.it>
 
-
      Avance Logic ``ali'' SVGA driver by:
 
         o  Ching-Tai Chiu <cchiu@netcom.com>
+
 
      Chips & Technologies SVGA driver by:
 
@@ -788,11 +718,11 @@
 
         o  Joe Moss <joe@XFree86.org>
 
-
-
      XFree86-Misc extension by:
 
         o  Joe Moss <joe@XFree86.org>
+
+
 
         o  David Dawes <dawes@XFree86.org>
 
@@ -839,6 +769,8 @@
 
      o  Marc Evans <marc@XFree86.org>
 
+     o  Harm Hanemaayer <H.Hanemaayer@inter.nl.net>
+
      o  Dirk Hohndel <hohndel@XFree86.org>
 
      o  Harald Koenig <koenig@XFree86.org>
@@ -852,14 +784,11 @@
   Mail sent to <Core@XFree86.org> will reach the core team.  Please note
   that support questions should be sent to <XFree86@XFree86.org>.
 
-
-
-
-
   7.  The XFree86 Project, Inc.
 
-  The XFree86 Project, Inc, has been founded to accomplish two major
-  goals:
+  The XFree86 Project, Inc, was founded to accomplish two major goals:
+
+
 
      1. To provide a vehicle by which XFree86 can be represented in X
         Consortium, Inc, the organization responsible for the design,
@@ -881,8 +810,8 @@
   By doing this, we were able to be involved in the beta-test interval
   for X11R6, and have contributed the majority of XFree86 to the X11R6
   and X11R6.1 core release.  The version of XFree86 in the initial X11R6
-  core is 3.0.  The version of XFree86 in the current X11R6.1 release is
-  3.1.2C.
+  core is 3.0.  The version of XFree86 in the current X11R6.3 release is
+  3.2.
 
   An additional benefit of this incorporation is that The XFree86
   Project, Inc has obtained outside financial support for our work.
@@ -921,12 +850,12 @@
   new.
 
   Here is a list of the organizations and individuals who have provided
-
   sponsorship to The XFree86 Project, Inc, either by financial
   contribution or by the donation of equipment and resources.  The
   XFree86 Project, Inc gratefully acknowledges these contributions, and
   hopes that we can do justice to them by continuing to release high-
   quality free software for the betterment of the Internet community as
+
   a whole.
 
      o  UUNET Communications Services, Inc. <http://www.uu.net/>
@@ -987,10 +916,11 @@
 
      o  Daniel Kraemer
 
-
      o  Frank & Paige McCormick
 
      o  Linux International
+
+
 
      o  Linux Support Team, Erlangen, Germany
 
@@ -1045,13 +975,9 @@
   with the papers.  For more information, contact The XFree86 Project,
   Inc, at <BOD@XFree86.org>
 
-  8.  Source and binary archive sites
+  8.  Archive sites
 
-  Source patches are available to upgrade X11R6.1 PL1 from the X
-  Consortium to XFree86 3.2.  They and binaries for many OSs are
-  available via anonymous FTP from:
-
-
+  Binaries for many OSs are available via anonymous FTP from:
 
 
      o  ftp://ftp.XFree86.org/pub/XFree86
@@ -1059,6 +985,8 @@
   and the following mirror sites:
 
      o  North America:
+
+
 
         +  ftp://ftp.rge.com/pub/X/XFree86 (source and binaries)
 
@@ -1110,23 +1038,29 @@
            and binaries)
 
 
-  Refer to the README file under the specified directory for information
-  on which files you need to get to build your distribution.
-
-  Ensure that you are getting XFree86 3.2 - some of these sites may
+  Ensure that you are getting XFree86 3.2A - some of these sites may
   archive older releases as well.  Check the RELNOTES to find which
   files you need to take from the archive.
 
 
-
-
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.69 1997/01/20 12:36:33 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.70 1997/01/22 11:06:18 dawes Exp $
 
 
 
 
 
   $XConsortium: README.sgml /main/31 1996/10/28 05:43:24 kaleb $
+
+
+
+
+
+
+
+
+
+
+
 
 
 
