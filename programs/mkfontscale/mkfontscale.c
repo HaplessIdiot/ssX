@@ -19,7 +19,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/mkfontscale/mkfontscale.c,v 1.1 2002/06/05 19:46:04 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,15 +34,7 @@
 #include <freetype/tttables.h>
 #include <freetype/ttnameid.h>
 #include <freetype/t1tables.h>
-#include "freetype/internal/ftobjs.h"
-#include "freetype/internal/t1types.h"
-#include "freetype/ftmodule.h"
 
-#define FACE_TYPE(FACE) ((FACE)->driver->clazz->root.module_name)
-#define T1INFO(FACE) \
-  (strcasecmp(FACE_TYPE(FACE), "type1") == 0 ?\
-   (&((T1_FaceRec*)FACE)->type1.font_info) : \
-   NULL)
 #define CODE_IGNORED(c) ((c) < 0x20 || \
                          ((c) >= 0x7F && (c) <= 0xA0) || \
                          (c) == 0xAD)
@@ -56,36 +48,33 @@ char *encodings_array[] =
       "iso8859-11", "iso8859-12", "iso8859-13", "iso8859-14", "iso8859-15",
       "koi8-r", "koi8-u", "koi8-e",
       "adobe-standard", "adobe-symbol", "ibm-cp437", "microsoft-cp1252",
+      /* But not "adobe-dingbats", as it uses generic glyph names. */
       "jisx0201.1976-0", "jisx0208.1983-0", "jisx0208.1990-0",
-      "jisx0212.1190-0", "big5.eten-0", "gb2312.1980-0",
+      "jisx0212.1190-0", "big5-0", "gb2312.1980-0",
       "ksc5601.1987-0", "ksc5601.1992-3"};
 
-char *forced_encodings_array[] =
-    { "iso10646-1" };
-
 char *extra_encodings_array[] =
-    { "adobe-fontspecific", "microsoft-symbol" };
+    { "iso10646-1", "adobe-fontspecific", "microsoft-symbol" };
 
-ListPtr encodings, forced_encodings, extra_encodings;
+ListPtr encodings, extra_encodings;
 
 #define countof(_a) (sizeof(_a)/sizeof((_a)[0]))
 
 int doDirectory(char*);
-static int checkEncoding(FT_Face face, char *encoding_name, int force);
+static int checkEncoding(FT_Face face, char *encoding_name);
 static int checkExtraEncoding(FT_Face face, char *encoding_name, int found);
-static int find_cmap(int type, int pid, int eid, FT_Face face, 
-                     FT_CharMap *cmap_return);
+static int find_cmap(int type, int pid, int eid, FT_Face face);
 static char* notice_foundry(char *notice);
-static char* vendor_foundry(char *vendor);
+static char* vendor_foundry(signed char *vendor);
 
 static FT_Library ft_library;
+static float bigEncodingFuzz = 0.02;
 
 static void
 usage(void)
 {
     fprintf(stderr, 
-            "mkfontscale [ -e encoding ] [ -f encoding ] [ directory ]\n");
-    exit(1);
+            "mkfontscale [ -e encoding ] [ -f fuzz ] [ directory ]\n");
 }
 
 int
@@ -95,9 +84,6 @@ main(int argc, char **argv)
     FT_Error ftrc;
 
     encodings = makeList(encodings_array, countof(encodings_array), NULL, 0);
-    forced_encodings = makeList(forced_encodings_array, 
-                                countof(forced_encodings_array),
-                                NULL, 0);
 
     extra_encodings = makeList(extra_encodings_array, 
                                countof(extra_encodings_array),
@@ -111,23 +97,28 @@ main(int argc, char **argv)
             argn++;
             break;
         } else if(argv[argn][1] == 'e') {
-            if(argn >= argc - 1)
+            if(argn >= argc - 1) {
                 usage();
+                exit(1);
+            }
             makeList(&argv[argn + 1], 1, encodings, 0);
             argn += 2;
         } else if(argv[argn][1] == 'f') {
-            if(argn >= argc - 1)
+            if(argn >= argc - 1) {
                 usage();
-            makeList(&argv[argn + 1], 1, forced_encodings, 0);
+                exit(1);
+            }
+            bigEncodingFuzz = atof(argv[argn + 1]) / 100.0;
             argn += 2;
         } else {
             usage();
+            exit(1);
         }
     }
 
     ftrc = FT_Init_FreeType(&ft_library);
     if(ftrc) {
-        fprintf(stderr, "Couldn't init library: %d\n", ftrc);
+        fprintf(stderr, "Could not initialise FreeType library: %d\n", ftrc);
         exit(1);
     }
         
@@ -168,14 +159,15 @@ getNameHelper(FT_Face face, int nid, int pid, int eid,
             case TT_PLATFORM_MICROSOFT:
                 if(name.language_id != TT_MS_LANGID_ENGLISH_UNITED_STATES &&
                    name.language_id != TT_MS_LANGID_ENGLISH_UNITED_KINGDOM)
-                    break;
-                continue;
+                    continue;
                 break;
             default:
-                break;
+                continue;
             }
-            *name_return = name;
-            return 1;
+            if(name.string_len > 0) {
+                *name_return = name;
+                return 1;
+            }
         }
     }
     return 0;
@@ -198,7 +190,7 @@ getName(FT_Face face, int nid)
             exit(1);
         }
         for(i = 0; i < name.string_len / 2; i++) {
-            if(name.string[2 * i])
+            if(name.string[2 * i] != 0)
                 string[i] = '?';
             else
                 string[i] = name.string[2 * i + 1];
@@ -280,10 +272,18 @@ t1Weight(char *weight)
         return "medium";
     if(strcmp(weight, "Medium") == 0)
         return "medium";
+    if(strcmp(weight, "Book") == 0)
+        return "medium";
+    if(strcmp(weight, "Roman") == 0) /* Some URW++ fonts do that! */
+        return "medium";
+    if(strcmp(weight, "Demi") == 0)
+        return "semibold";
+    if(strcmp(weight, "DemiBold") == 0)
+        return "semibold";
     else if(strcmp(weight, "Bold") == 0)
         return "bold";
     else {
-        fprintf(stderr, "Unknown Type 1 weight %s\n", weight);
+        fprintf(stderr, "Unknown Type 1 weight \"%s\"\n", weight);
         return NULL;
     }
 }
@@ -312,11 +312,11 @@ doDirectory(char *dirname_given)
     TT_HoriHeader *hhea;
     TT_OS2 *os2;
     TT_Postscript *post;
-    T1_FontInfo *t1info;
+    PS_FontInfoRec *t1info, t1info_rec;
     char *foundry, *family, *weight, *slant, *sWidth, *adstyle, 
-        *spacing;
+        *spacing, *full_name;
     ListPtr encoding, entries = NULL;
-    int i, found;
+    int i, found, rc;
 
     i = strlen(dirname_given);
     if(i == 0)
@@ -358,12 +358,18 @@ doDirectory(char *dirname_given)
         sWidth = NULL;
         adstyle = NULL;
         spacing = NULL;
+        full_name = NULL;
 
         head = FT_Get_Sfnt_Table(face, ft_sfnt_head);
         hhea = FT_Get_Sfnt_Table(face, ft_sfnt_hhea);
         os2 = FT_Get_Sfnt_Table(face, ft_sfnt_os2);
         post = FT_Get_Sfnt_Table(face, ft_sfnt_post);
-        t1info = T1INFO(face);
+
+        rc = FT_Get_PS_Font_Info(face, &t1info_rec);
+        if(rc == 0)
+            t1info = &t1info_rec;
+        else
+            t1info = NULL;
         
         if(!family)
             family = getName(face, TT_NAME_ID_FONT_FAMILY);
@@ -372,26 +378,44 @@ doDirectory(char *dirname_given)
         if(!family)
             family = getName(face, TT_NAME_ID_PS_NAME);
 
+        if(!full_name)
+            full_name = getName(face, TT_NAME_ID_FULL_NAME);
+        if(!full_name)
+            full_name = getName(face, TT_NAME_ID_PS_NAME);
+
         if(os2 && os2->version != 0xFFFF) {
             if(!weight)
                 weight = os2Weight(os2->usWeightClass);
             if(!sWidth)
                 sWidth = os2Width(os2->usWidthClass);
             if(!foundry)
-		/* os2->achVendID is exlicitly "signed" */
-                foundry = vendor_foundry((char *)os2->achVendID);
+                foundry = vendor_foundry(os2->achVendID);
             if(!slant)
                 slant = os2->fsSelection & 1 ? "i" : "r";
         }
 
         if(post) {
-            if(!spacing)
-                spacing = post->isFixedPitch ? "m" : "p";
+            if(!spacing) {
+                if(post->isFixedPitch) {
+                    if(hhea->min_Left_Side_Bearing >= 0 &&
+                       hhea->xMax_Extent <= hhea->advance_Width_Max) {
+                        spacing = "c";
+                    } else {
+                        spacing = "m";
+                    }
+                } else {
+                    spacing = "p";
+                }
+            }
         }
             
         if(t1info) {
             if(!family)
                 family = t1info->family_name;
+            if(!family)
+                family = t1info->full_name;
+            if(!full_name)
+                full_name = t1info->full_name;
             if(!foundry)
                 foundry = notice_foundry(t1info->notice);
             if(!weight)
@@ -410,7 +434,7 @@ doDirectory(char *dirname_given)
             if(!slant)
                 slant = head->Mac_Style & 2 ? "i" : "r";
             if(!weight)
-                slant = head->Mac_Style & 1 ? "bold" : "medium";
+                weight = head->Mac_Style & 1 ? "bold" : "medium";
         }
 
         if(!foundry) {
@@ -427,6 +451,13 @@ doDirectory(char *dirname_given)
             }
         }
 
+        if(strcmp(slant, "i") == 0) {
+            if(strstr(full_name, "Oblique"))
+                slant = "o";
+            if(strstr(full_name, "Slanted"))
+                slant = "o";
+        }
+
         if(!foundry) foundry = "misc";
         if(!family) {
             fprintf(stderr, "Couldn't get family name for %s\n", filename);
@@ -439,18 +470,8 @@ doDirectory(char *dirname_given)
         if(!adstyle) adstyle = "";
         if(!spacing) spacing = "p";
 
-        for(encoding = forced_encodings; encoding; encoding = encoding->next)
-            if(checkEncoding(face, encoding->value, 1)) {
-                entries = listConsF(entries,
-                                    "%s -%s-%s-%s-%s-%s-%s-0-0-0-0-%s-0-%s",
-                                    entry->d_name,
-                                    foundry, family, 
-                                    weight, slant, sWidth, adstyle, spacing,
-                                    encoding->value);
-            }
-
         for(encoding = encodings; encoding; encoding = encoding->next)
-            if(checkEncoding(face, encoding->value, 0)) {
+            if(checkEncoding(face, encoding->value)) {
                 found = 1;
                 entries = listConsF(entries,
                                     "%s -%s-%s-%s-%s-%s-%s-0-0-0-0-%s-0-%s",
@@ -461,7 +482,7 @@ doDirectory(char *dirname_given)
             }
         for(encoding = extra_encodings; encoding; encoding = encoding->next)
             if(checkExtraEncoding(face, encoding->value, found)) {
-                found = 1;
+                /* Do not set found! */
                 entries = listConsF(entries,
                                     "%s -%s-%s-%s-%s-%s-%s-0-0-0-0-%s-0-%s",
                                     entry->d_name,
@@ -485,54 +506,48 @@ doDirectory(char *dirname_given)
 }
 
 static int
-checkEncoding(FT_Face face, char *encoding_name, int force)
+checkEncoding(FT_Face face, char *encoding_name)
 {
     FontEncPtr encoding;
     FontMapPtr mapping;
     int i, j, c, koi8;
-    FT_CharMap cmap;
+    char *n;
 
     encoding = FontEncFind(encoding_name, NULL);
     if(!encoding)
         return 0;
 
-    for(mapping = encoding->mappings; mapping; mapping = mapping->next) {
-        if(find_cmap(mapping->type, mapping->pid, mapping->eid, face, &cmap)) {
-            if(force) {
-                return 1;
-            } else {
+    /* An encoding is ``small'' if one of the following is true:
+         - it uses PostScript glyph names;
+         - it is linear and has no more than 256 codepoints; or
+         - it is a matrix encoding and has no more than one column.
+       
+       For small encodings, we require perfect coverage except for
+       CODE_IGNORED and KOI-8 linedrawing glyphs.  
+
+       For large encodings, we require coverage up to bigEncodingFuzz. */
+
+
+    if(FT_Has_PS_Glyph_Names(face)) {
+        for(mapping = encoding->mappings; mapping; mapping = mapping->next) {
+            if(mapping->type == FONT_ENCODING_POSTSCRIPT) {
                 if(encoding->row_size > 0) {
                     for(i = encoding->first; i < encoding->size; i++) {
                         for(j = encoding->first_col; 
                             j < encoding->row_size; 
                             j++) {
-                            c = FontEncRecode((i<<8) | j, mapping);
-                            if(CODE_IGNORED(c)) {
-                                continue;
-                            } else {
-                                if(FT_Get_Char_Index(face, c) == 0) {
-                                    return 0;
-                                }
+                            n = FontEncName((i<<8) | j, mapping);
+                            if(n && FT_Get_Name_Index(face, n) == 0) {
+                                return 0;
                             }
                         }
                     }
                     return 1;
                 } else {
-                    /* For the KOI8-* encodings, ignore the lack of
-                       linedrawing characters */
-                    if(strncmp(encoding->name, "koi8-", 5) == 0)
-                        koi8 = 1;
-                    else
-                        koi8 = 0;
                     for(i = encoding->first; i < encoding->size; i++) {
-                        c = FontEncRecode(i, mapping);
-                        if(CODE_IGNORED(c) ||
-                           (koi8 && i >= 0x80 && i < 0xA0)) {
-                            continue;
-                        } else {
-                            if(FT_Get_Char_Index(face, c) == 0) {
-                                return 0;
-                            }
+                        n = FontEncName(i, mapping);
+                        if(n && FT_Get_Name_Index(face, n) == 0) {
+                            return 0;
                         }
                     }
                     return 1;
@@ -540,13 +555,75 @@ checkEncoding(FT_Face face, char *encoding_name, int force)
             }
         }
     }
+
+    for(mapping = encoding->mappings; mapping; mapping = mapping->next) {
+        if(find_cmap(mapping->type, mapping->pid, mapping->eid, face)) {
+            int total = 0, failed = 0;
+            if(encoding->row_size > 0) {
+                int estimate = 
+                    (encoding->size - encoding->first) *
+                    (encoding->row_size - encoding->first_col);
+                for(i = encoding->first; i < encoding->size; i++) {
+                    for(j = encoding->first_col; 
+                        j < encoding->row_size; 
+                        j++) {
+                        c = FontEncRecode((i<<8) | j, mapping);
+                        if(CODE_IGNORED(c)) {
+                            continue;
+                        } else {
+                            if(FT_Get_Char_Index(face, c) == 0) {
+                                failed++;
+                            }
+                            total++;
+                            if((encoding->size <= 1 && failed > 0) ||
+                               ((float)failed >= bigEncodingFuzz * estimate)) {
+                                return 0;
+                            }
+                        }
+                    }
+                }
+                if((float)failed >= total * bigEncodingFuzz)
+                    return 0;
+                else
+                    return 1;
+            } else {
+                int estimate = encoding->size - encoding->first;
+                /* For the KOI8 encodings, ignore the lack of
+                   linedrawing characters */
+                if(strncmp(encoding->name, "koi8-", 5) == 0)
+                    koi8 = 1;
+                else
+                    koi8 = 0;
+                for(i = encoding->first; i < encoding->size; i++) {
+                    c = FontEncRecode(i, mapping);
+                    if(CODE_IGNORED(c) ||
+                       (koi8 && i >= 0x80 && i < 0xA0)) {
+                        continue;
+                    } else {
+                        if(FT_Get_Char_Index(face, c) == 0) {
+                            failed++;
+                        }
+                        total++;
+                        if((encoding->size <= 256 && failed > 0) ||
+                           ((float)failed >= bigEncodingFuzz * estimate)) {
+                            return 0;
+                        }
+                    }
+                }
+                if((float)failed >= total * bigEncodingFuzz)
+                    return 0;
+                else
+                    return 1;
+            }
+        }
+    }
     return 0;
 }
 
 static int 
-find_cmap(int type, int pid, int eid, FT_Face face, FT_CharMap *cmap_return)
+find_cmap(int type, int pid, int eid, FT_Face face)
 {
-    int i, n;
+    int i, n, rc;
     FT_CharMap cmap = NULL;
 
     n = face->num_charmaps;
@@ -556,8 +633,9 @@ find_cmap(int type, int pid, int eid, FT_Face face, FT_CharMap *cmap_return)
         for(i=0; i<n; i++) {
             cmap = face->charmaps[i];
             if(cmap->platform_id == pid && cmap->encoding_id == eid) {
-                *cmap_return = cmap;
-                return 1;
+                rc = FT_Set_Charmap(face, cmap);
+                if(rc == 0)
+                    return 1;
             }
         }
         break;
@@ -567,8 +645,9 @@ find_cmap(int type, int pid, int eid, FT_Face face, FT_CharMap *cmap_return)
             cmap = face->charmaps[i];
             if(cmap->platform_id == TT_PLATFORM_MICROSOFT && 
                cmap->encoding_id == TT_MS_ID_UNICODE_CS) {
-                *cmap_return = cmap;
-                return 1;
+                rc = FT_Set_Charmap(face, cmap);
+                if(rc == 0)
+                    return 1;
             }
         }
         break;
@@ -576,16 +655,18 @@ find_cmap(int type, int pid, int eid, FT_Face face, FT_CharMap *cmap_return)
         for(i=0; i<n; i++) {
             cmap = face->charmaps[i];
             if(cmap->platform_id == TT_PLATFORM_APPLE_UNICODE) {
-                *cmap_return = cmap;
-                return 1;
+                rc = FT_Set_Charmap(face, cmap);
+                if(rc == 0)
+                    return 1;
             }
         }
         /* ISO Unicode? */
         for(i=0; i<n; i++) {
             cmap = face->charmaps[i];
             if(cmap->platform_id == TT_PLATFORM_ISO) {
-                *cmap_return = cmap;
-                return 1;
+                rc = FT_Set_Charmap(face, cmap);
+                if(rc == 0)
+                    return 1;
             }
         }
         break;
@@ -598,26 +679,43 @@ find_cmap(int type, int pid, int eid, FT_Face face, FT_CharMap *cmap_return)
 static int
 checkExtraEncoding(FT_Face face, char *encoding_name, int found)
 {
-    FT_CharMap cmap;
+    int c;
 
-    if(strcasecmp(encoding_name, "microsoft-symbol") == 0) {
+    if(strcasecmp(encoding_name, "iso10646-1") == 0) {
+        if(find_cmap(FONT_ENCODING_UNICODE, -1, -1, face)) {
+            int found = 0;
+            /* Export as Unicode if there are at least 15 BMP
+               characters that are not a space or ignored. */
+            for(c = 0x21; c < 0x10000; c++) {
+                if(CODE_IGNORED(c))
+                    continue;
+                if(FT_Get_Char_Index(face, c) > 0)
+                    found++;
+                if(found >= 15)
+                    return 1;
+            }
+            return 0;
+        } else
+            return 0;
+    } else if(strcasecmp(encoding_name, "microsoft-symbol") == 0) {
         if(find_cmap(FONT_ENCODING_TRUETYPE,
                      TT_PLATFORM_MICROSOFT, TT_MS_ID_SYMBOL_CS,
-                     face, &cmap))
+                     face))
             return 1;
         else
             return 0;
     } else if(strcasecmp(encoding_name, "adobe-fontspecific") == 0) {
         if(!found) {
-            if(strcmp(FACE_TYPE(face), "type1") == 0)
+            if(FT_Has_PS_Glyph_Names(face))
                 return 1;
             else
                 return 0;
         } else
             return 0;
+    } else {
+        fprintf(stderr, "Unknown extra encoding %s\n", encoding_name);
+        return 0;
     }
-
-    return 0;
 }
 
 static char*
@@ -631,7 +729,7 @@ notice_foundry(char *notice)
 }
 
 static int
-vendor_match(char *vendor, char *vendor_string)
+vendor_match(signed char *vendor, char *vendor_string)
 {
     /* vendor is not necessarily NUL-terminated. */
     int i, len;
@@ -645,7 +743,7 @@ vendor_match(char *vendor, char *vendor_string)
 }
 
 static char*
-vendor_foundry(char *vendor)
+vendor_foundry(signed char *vendor)
 {
     int i;
     for(i = 0; i < countof(vendor_foundries); i++)
