@@ -21,7 +21,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_xvpriv.h,v 1.1tsi Exp $ */
 #ifndef __VIA_XVPRIV_H
 #define __VIA_XVPRIV_H
 
@@ -29,16 +29,6 @@
 #define	  XV_SWOV_PORTID    0
 
 #define	  COMMAND_FOR_SWOV	XV_SWOV_PORTID
-
-static char * XVPORTNAME[1] =
-{
-   "XV_SWOV",
-};
-
-static int XVPORTID[1] =
-{
-   XV_SWOV_PORTID   ,
-};
 
 typedef struct {
     unsigned long  xvPortID;

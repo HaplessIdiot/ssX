@@ -21,16 +21,16 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_memmgr.h,v 1.1 2003/04/15 15:35:47 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_memmgr.h,v 1.2tsi Exp $ */
 /* kernel internal memory management */
 
 /*#define   XV_DEBUG	  1*/	  /* write log msg to /var/log/XFree86.0.log */
 #define XV_DEBUG 0
 
 #if XV_DEBUG
-  #define DBG_DD(x) (x)
+#  define DBG_DD(x) (x)
 #else
-  #define DBG_DD(x)
+#  define DBG_DD(x)
 #endif
 
 #ifndef __VIA_MEMMGR_H

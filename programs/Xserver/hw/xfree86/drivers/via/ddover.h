@@ -21,13 +21,13 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/ddover.h,v 1.1tsi Exp $ */
 /*#define   XV_DEBUG	  1*/	  /* write log msg to /var/log/XFree86.0.log */
 
 #ifdef XV_DEBUG
-  #define DBG_DD(x) (x)
+#  define DBG_DD(x) (x)
 #else
-  #define DBG_DD(x)
+#  define DBG_DD(x)
 #endif
 
 #ifndef __DDOVER
